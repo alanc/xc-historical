@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.23 91/03/19 12:39:12 gildea Exp $ */
+/* $XConsortium: xditview.c,v 1.24 91/04/02 15:07:36 gildea Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -39,8 +39,10 @@
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Label.h>
+#include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
+#include <X11/Xaw/AsciiText.h>
 
 #include "libXdvi/Dvi.h"
 
@@ -60,6 +62,7 @@ static XrmOptionDescRec options[] = {
 {"-page",	    "*dvi.pageNumber",	    XrmoptionSepArg,	NULL},
 {"-backingStore",   "*dvi.backingStore",    XrmoptionSepArg,	NULL},
 {"-noPolyText",	    "*dvi.noPolyText",	    XrmoptionNoArg,	"TRUE"},
+{"-resolution",	    "*dvi.screenResolution",XrmoptionSepArg,    NULL},
 };
 
 static char	current_file_name[1024];
@@ -76,40 +79,53 @@ Syntax(call)
 	(void) printf ("Usage: %s [-fg <color>] [-bg <color>]\n", call);
 	(void) printf ("       [-bd <color>] [-bw <pixels>] [-help]\n");
 	(void) printf ("       [-display displayname] [-geometry geom]\n");
-	(void) printf ("       [-page <page-number>] [-backing <backing-store>]\n\n");
+	(void) printf ("       [-page <page-number>] [-backing <backing-store>]\n");
+	(void) printf ("       [-resolution <screen-resolution>]\n\n");
 	exit(1);
 }
 
 static void	NewFile ();
 static Widget	toplevel, paned, form, panner, porthole, dvi;
-static Widget	page;
-static Widget	simpleMenu;
+static Widget	popupMenu;
+static Widget	menuBar;
+static Widget	fileMenuButton, fileMenu;
+static Widget	pageLabel, prevButton, pageNumber, nextButton;
 
-static void	NextPage(), PreviousPage(), SelectPage(), OpenFile(), Quit();
+static void	NextPage(), PreviousPage(), OpenFile(), RevisitFile (), Quit();
 
-static struct menuEntry {
+struct menuEntry {
     char    *name;
     void    (*function)();
-} menuEntries[] = {
+};
+
+static struct menuEntry popupMenuEntries[] = {
     "nextPage",	    NextPage,
     "previousPage", PreviousPage,
-    "selectPage",   SelectPage,
     "openFile",	    OpenFile,
+    "revisitFile",  RevisitFile,
     "quit",	    Quit,
 };
 
-static void	NextPageAction(), PreviousPageAction(), SelectPageAction();
-static void	OpenFileAction(), QuitAction();
+static struct menuEntry fileMenuEntries[] = {
+    "openFile",	    OpenFile,
+    "revisitFile",  RevisitFile,
+    "quit",	    Quit,
+};
+
+static void	NextPageAction(), PreviousPageAction();
+static void	OpenFileAction(), RevisitFileAction (), QuitAction();
 static void	AcceptAction(), CancelAction();
+static void	UpdatePageNumber (), Noop ();
 
 XtActionsRec xditview_actions[] = {
     "NextPage",	    NextPageAction,
     "PreviousPage", PreviousPageAction,
-    "SelectPage",   SelectPageAction,
     "OpenFile",	    OpenFileAction,
     "Quit",	    QuitAction,
     "Accept",	    AcceptAction,
     "Cancel",	    CancelAction,
+    "SetPageNumber",UpdatePageNumber,
+    "Noop",	    Noop,
 };
 
 static Atom wm_delete_window;
@@ -170,14 +186,6 @@ XtPointer panner_ptr, report_ptr;
     XtSetValues (panner, args, n);
 }
 
-#define MenuNextPage		0
-#define MenuPreviousPage	1
-#define MenuSelectPage		2
-#define MenuOpenFile		3
-#define	MenuQuit		4
-
-static char	pageLabel[256] = "Page <none>";
-
 void main(argc, argv)
     int argc;
     char **argv;
@@ -185,9 +193,6 @@ void main(argc, argv)
     char	    *file_name = 0;
     int		    i;
     XtAppContext    xtcontext;
-    static Arg	    labelArgs[] = {
-			{XtNlabel, (XtArgVal) pageLabel},
-		    };
     Arg		    topLevelArgs[2];
     Widget          entry;
 
@@ -217,21 +222,44 @@ void main(argc, argv)
 	file_name = argv[1];
 
     /*
-     * create the menu and insert the entries
+     * create the popup menu and insert the entries
      */
-    simpleMenu = XtCreatePopupShell ("menu", simpleMenuWidgetClass, toplevel,
+    popupMenu = XtCreatePopupShell ("popupMenu", simpleMenuWidgetClass, toplevel,
 				    NULL, 0);
-    for (i = 0; i < XtNumber (menuEntries); i++) {
-	entry = XtCreateManagedWidget(menuEntries[i].name, 
-				      smeBSBObjectClass, simpleMenu,
+    for (i = 0; i < XtNumber (popupMenuEntries); i++) {
+	entry = XtCreateManagedWidget(popupMenuEntries[i].name, 
+				      smeBSBObjectClass, popupMenu,
 				      NULL, (Cardinal) 0);
-	XtAddCallback(entry, XtNcallback, menuEntries[i].function, NULL);
+	XtAddCallback(entry, XtNcallback, popupMenuEntries[i].function, NULL);
     }
 
     paned = XtCreateManagedWidget("paned", panedWidgetClass, toplevel,
 				    NULL, (Cardinal) 0);
-    page = XtCreateManagedWidget ("label", labelWidgetClass, paned,
-					labelArgs, XtNumber (labelArgs));
+    menuBar = XtCreateManagedWidget ("menuBar", boxWidgetClass, paned, 0, 0);
+
+    fileMenuButton = XtCreateManagedWidget ("fileMenuButton", menuButtonWidgetClass,
+				    menuBar, NULL, (Cardinal) 0);
+    fileMenu = XtCreatePopupShell ("fileMenu", simpleMenuWidgetClass,
+				    fileMenuButton, NULL, (Cardinal) 0);
+    for (i = 0; i < XtNumber (fileMenuEntries); i++) {
+	entry = XtCreateManagedWidget(fileMenuEntries[i].name,
+				      smeBSBObjectClass, fileMenu,
+				      NULL, (Cardinal) 0);
+	XtAddCallback (entry, XtNcallback, fileMenuEntries[i].function, NULL);
+    }
+
+    pageLabel = XtCreateManagedWidget("pageLabel", labelWidgetClass,
+					menuBar, NULL, (Cardinal) 0);
+    
+    prevButton = XtCreateManagedWidget ("prevButton", commandWidgetClass,
+					menuBar, NULL, (Cardinal) 0);
+
+    pageNumber = XtCreateManagedWidget("pageNumber", asciiTextWidgetClass,
+					menuBar, NULL, (Cardinal) 0);
+  
+    nextButton = XtCreateManagedWidget ("nextButton", commandWidgetClass,
+					 menuBar, NULL, (Cardinal) 0);
+
     form = XtCreateManagedWidget ("form", formWidgetClass, paned,
 				    NULL, (Cardinal) 0);
     panner = XtCreateManagedWidget ("panner", pannerWidgetClass,
@@ -259,6 +287,10 @@ SetPageNumber (number)
 {
     Arg	arg[2];
     int	actual_number, last_page;
+    XawTextBlock    text;
+    int		    length;
+    char	    value[128];
+    char	    *cur;
 
     XtSetArg (arg[0], XtNpageNumber, number);
     XtSetValues (dvi, arg, 1);
@@ -266,20 +298,31 @@ SetPageNumber (number)
     XtSetArg (arg[1], XtNlastPageNumber, &last_page);
     XtGetValues (dvi, arg, 2);
     if (actual_number == 0)
-	sprintf (pageLabel, "Page <none>");
+	sprintf (value, "<none>");
     else if (last_page > 0)
-	sprintf (pageLabel, "Page %d of %d", actual_number, last_page);
+	sprintf (value, "%d of %d", actual_number, last_page);
     else
-	sprintf (pageLabel, "Page %d", actual_number);
-    XtSetArg (arg[0], XtNlabel, pageLabel);
-    XtSetValues (page, arg, 1);
+	sprintf (value, "%d", actual_number);
+    text.firstPos = 0;
+    text.length = strlen (value);
+    text.ptr = value;
+    text.format = FMT8BIT;
+    XtSetArg (arg[0], XtNstring, &cur);
+    XtGetValues (XawTextGetSource (pageNumber), arg, 1);
+    length = strlen (cur);
+    XawTextReplace (pageNumber, 0, length, &text);
 }
 
 static void
-SelectPageNumber (number_string)
-char	*number_string;
+UpdatePageNumber ()
 {
-	SetPageNumber (atoi(number_string));
+    Widget  src;
+    char    *string;
+    Arg	    arg[1];
+
+    XtSetArg (arg[0], XtNstring, &string);
+    XtGetValues (XawTextGetSource(pageNumber), arg, 1);
+    SetPageNumber (atoi(string));
 }
 
 static void
@@ -321,7 +364,7 @@ char	*name;
 	n = name;
     XtSetArg (arg[1], XtNiconName, n);
     XtSetValues (toplevel, arg, 2);
-    SelectPageNumber ("1");
+    SetPageNumber (1);
     strcpy (current_file_name, name);
     current_file = new_file;
 }
@@ -378,21 +421,6 @@ PreviousPageAction ()
 }
 
 static void
-SelectPage (entry, name, data)
-    Widget  entry;
-    caddr_t name, data;
-{
-    SelectPageAction ();
-    ResetMenuEntry (entry);
-}
-
-static void
-SelectPageAction ()
-{
-    MakePrompt (toplevel, "Page number", SelectPageNumber, "");
-}
-
-static void
 OpenFile (entry, name, data)
     Widget  entry;
     caddr_t name, data;
@@ -409,6 +437,22 @@ OpenFileAction ()
     else
 	fileBuf[0] = '\0';
     MakePrompt (toplevel, "File to open:", NewFile, fileBuf);
+}
+
+static void
+RevisitFile (entry, name, data)
+    Widget  entry;
+    caddr_t name, data;
+{
+    RevisitFileAction ();
+    ResetMenuEntry (entry);
+}
+
+static void
+RevisitFileAction ()
+{
+    if (current_file_name[0])
+	NewFile (current_file_name);
 }
 
 static void
@@ -454,6 +498,11 @@ void AcceptAction (widget, event, params, num_params)
 {
     (*promptfunction)(XawDialogGetValueString(promptDialog));
     CancelAction (widget, event, params, num_params);
+}
+
+static
+void Noop ()
+{
 }
 
 MakePrompt(centerw, prompt, func, def)

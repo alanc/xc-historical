@@ -5,50 +5,93 @@
 *paned.form.porthole.height:		800
 *paned.label.skipAdjust:	true
 
+*MenuButton.shapeStyle: oval
+*Command.shapeStyle: oval
+
+*resizable: false
+
+*fileMenuButton.label:		File
+*fileMenuButton.leftBitmap:	menu12
+*fileMenuButton.menuName:	fileMenu
+
+*fileMenu.openFile.label:	Open File
+*fileMenu.revisitFile.label:	Revisit File
+*fileMenu.quit.label:		Quit
+
+*pageLabel.label:		Page:
+*pageLabel.borderWidth:		0
+
+*prevButton.bitmap:		ldblarrow
+*prevButton.internalHeight:	0
+*prevButton.Translations: 	#override <BtnUp>: PreviousPage() unset()
+
+*pageNumber.translations: #override\
+     Ctrl<Key>J:    SetPageNumber()\n\
+     Ctrl<Key>M:    SetPageNumber()\n\
+     <Key>Linefeed: SetPageNumber()\n\
+     <Key>Return:   SetPageNumber()\n\
+     Ctrl<Key>O:    Noop()\n\
+     Meta<Key>I:    Noop()\n\
+     Ctrl<Key>N:    Noop()\n\
+     Ctrl<Key>P:    Noop()\n\
+     Ctrl<Key>Z:    Noop()\n\
+     Meta<Key>Z:    Noop()\n\
+     Ctrl<Key>V:    Noop()\n\
+     Meta<Key>V:    Noop()
+*pageNumber*editType:	edit
+
+*nextButton.bitmap:		rdblarrow
+*nextButton.internalHeight:	0
+*nextButton.translations: 	#override <BtnUp>: NextPage() unset()
+
+
 *paned.form.porthole.dvi.translations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
+	Ctrl<Key>v:	NextPage()\n\
+	Meta<Key>v:	PreviousPage()\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
-	<Key>Select:	SelectPage()\n\
 	<Key>Find:	OpenFile()
 *paned.form.porthole.dvi.baseTranslations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
+	Ctrl<Key>v:	NextPage()\n\
+	Meta<Key>v:	PreviousPage()\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
-	<Key>Select:	SelectPage()\n\
 	<Key>Find:	OpenFile()
 *paned.label.translations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
+	Ctrl<Key>v:	NextPage()\n\
+	Meta<Key>v:	PreviousPage()\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
-	<Key>Select:	SelectPage()\n\
 	<Key>Find:	OpenFile()
 *paned.label.baseTranslations: #augment \
-	<Btn1Down>:	XawPositionSimpleMenu(menu) MenuPopup(menu)\n\
+	<Btn1Down>:	XawPositionSimpleMenu(popupMenu) MenuPopup(popupMenu)\n\
+	Ctrl<Key>v:	NextPage()\n\
+	Meta<Key>v:	PreviousPage()\n\
 	<Key>Next:	NextPage()\n\
 	<Key>Prior:	PreviousPage()\n\
-	<Key>Select:	SelectPage()\n\
 	<Key>Find:	OpenFile()
-*menu.nextPage.label:		Next Page
-*menu.previousPage.label:	Previous Page
-*menu.selectPage.label:		Select Page
-*menu.openFile.label:		Open
-*menu.quit.label:		Quit
+*popupMenu.nextPage.label:	Next Page
+*popupMenu.previousPage.label:	Previous Page
+*popupMenu.openFile.label:	Open
+*popupMenu.quit.label:		Quit
 
 *promptShell.allowShellResize:	true
-*promptShell.promptDialog.value.translations: #override \
-	<Key>Return:	Accept()
-*promptShell.promptDialog.value.baseTranslations: #override \
-	<Key>Return:	Accept()
+*promptShell.promptDialog.value.translations: #override\
+	<Key>Return: Accept()
+*promptShell.promptDialog.value.baseTranslations: #override\
+	<Key>Return: Accept()
 
 *promptShell.promptDialog.accept.label: Accept
-*promptShell.promptDialog.accept.translations: #override \
-	<BtnUp>:	Accept() unset()
+*promptShell.promptDialog.accept.translations: #override\
+	<BtnUp>: Accept() unset()
 *promptShell.promptDialog.accept.baseTranslations: #override \
-	<BtnUp>:	Accept() unset()
+	<BtnUp>: Accept() unset()
 
 *promptShell.promptDialog.cancel.label: Cancel
 *promptShell.promptDialog.cancel.translations: #override \
-	<BtnUp>:	Cancel() unset()
+	<BtnUp>: Cancel() unset()
 *promptShell.promptDialog.cancel.baseTranslations: #override \
-	<BtnUp>:	Cancel() unset()
+	<BtnUp>: Cancel() unset()

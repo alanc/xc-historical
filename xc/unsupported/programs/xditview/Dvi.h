@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Dvi.h,v 1.3 89/05/16 14:24:40 keith Exp $
+* $XConsortium: Dvi.h,v 1.4 89/07/21 14:22:06 jim Exp $
 */
 
 #ifndef _XtDvi_h
@@ -26,12 +26,18 @@
 #define XtNlastPageNumber   "lastPageNumber"
 #define XtNnoPolyText	"noPolyText"
 #define XtNseek		"seek"
+#define XtNscreenResolution "screenResolution"
+#define XtNpageWidth	"pageWidth"
+#define XtNpageHeight	"pageHeight"
 
 #define XtCFontMap	"FontMap"
 #define XtCPageNumber	"PageNumber"
 #define XtCLastPageNumber   "LastPageNumber"
 #define XtCNoPolyText	"NoPolyText"
 #define XtCSeek		"Seek"
+#define XtCScreenResolution "ScreenResolution"
+#define XtCPageWidth	"PageWidth"
+#define XtCPageHeight	"PageHeight"
 
 typedef struct _DviRec *DviWidget;  /* completely defined in DviPrivate.h */
 typedef struct _DviClassRec *DviWidgetClass;    /* completely defined in DviPrivate.h */

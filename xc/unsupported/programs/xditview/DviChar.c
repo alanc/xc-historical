@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.11 90/12/02 18:17:35 keith Exp $ */
+/* $XConsortium: DviChar.c,v 1.4 91/01/10 17:00:34 gildea Exp $ */
 
 /*
  * DviChar.c
@@ -388,7 +388,16 @@ static DviCharNameMap ISO8859_1_map = {
 {	0,		/* 253 */},
 {	0,		/* 254 */},
 {	0,		/* 255 */},
-}};
+},
+{
+{   "fi",	    "fi",   },
+{   "fl",	    "fl",   },
+{   "ff",	    "ff",   },
+{   "Fi",	    "Fi",   },
+{   "Fl",	    "Fl",   },
+{   0,		    0,	    },
+}
+};
 
 static DviCharNameMap Adobe_Symbol_map = {
 	"adobe-fontspecific",
@@ -650,7 +659,11 @@ static DviCharNameMap Adobe_Symbol_map = {
 {	"rk",		/* 253 */},
 {	"rb",		/* 254 */},
 {	0,		/* 255 */},
-}};
+},
+{
+{	0,	    0	},
+}
+};
 
 static void
 load_standard_maps ()

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.4 89/05/16 14:24:42 keith Exp $
+ * $XConsortium: DviP.h,v 1.5 89/07/22 19:44:08 keith Exp $
  */
 
 /* 
@@ -66,6 +66,7 @@ typedef struct _dviFontList {
 	char			*dvi_name;
 	char			*x_name;
 	int			dvi_number;
+	Boolean			scalable;
 	DviFontSizeList		*sizes;
 	DviCharNameMap		*char_map;
 } DviFontList;
@@ -95,6 +96,7 @@ typedef struct _dviCharCache {
 typedef struct _dviState {
 	struct _dviState	*next;
 	int			font_size;
+	int			font_bound;
 	int			font_number;
 	int			line_style;
 	int			line_width;
@@ -124,6 +126,9 @@ typedef struct {
 	FILE		*file;
 	Boolean		noPolyText;
 	Boolean		seek;		/* file is "seekable" */
+	int		screen_resolution;
+	float		page_width;
+	float		page_height;
 	/*
  	 * private state
  	 */
@@ -140,9 +145,12 @@ typedef struct {
 	int		device_resolution;
 	int		line_width;
 	int		line_style;
+	int		desired_width;
+	int		desired_height;
 	int		backing_store;
 	XFontStruct	*font;
 	int		display_enable;
+	double		scale;		/* device coordinates to pixels */
 	struct ExposedExtents {
 	    int x1, y1, x2, y2;
 	}		extents;
@@ -177,6 +185,10 @@ typedef struct {
     ) : ( \
 	(dw->dvi.ungot = 1),\
 	ungetc (c, dw->dvi.file)))
+
+#define ToX(dw,device)		    ((device) * (dw)->dvi.scale + 0.5)
+#define ToDevice(dw,x)		    ((x) / (dw)->dvi.scale + 0.5)
+#define FontSizeInPixels(dw,size)   ((size) * (dw)->dvi.screen_resolution / 72)
 
 /*
  * Full widget declaration

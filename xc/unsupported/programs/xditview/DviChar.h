@@ -13,6 +13,7 @@
 # define DVI_MAX_SYNONYMS	10
 # define DVI_MAP_SIZE		256
 # define DVI_HASH_SIZE		256
+# define DVI_MAX_LIGATURES	16
 
 typedef struct _dviCharNameHash {
 	struct _dviCharNameHash	*next;
@@ -24,6 +25,7 @@ typedef struct _dviCharNameMap {
     char		*encoding;
     int			special;
     char		*dvi_names[DVI_MAP_SIZE][DVI_MAX_SYNONYMS];
+    char		*ligatures[DVI_MAX_LIGATURES][2];
     DviCharNameHash	*buckets[DVI_HASH_SIZE];
 } DviCharNameMap;
 
@@ -35,3 +37,4 @@ extern char		*DviCharName ( /* DviCharNameMap *map, int index, int synonym */ );
 #define DviCharName(map,index,synonym)	((map)->dvi_names[index][synonym])
 #endif
 extern int		DviCharIndex ( /* DviCharNameMap *map, char *name */ );
+extern char		*DviCharIsLigature ( /* DviCharNameMap *map, char *name */ );

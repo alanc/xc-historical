@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: parse.c,v 1.5 91/02/19 19:30:47 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -90,98 +90,48 @@ ParseInput(dw)
 			(void) DviGetC(dw,&c);
 		    	if (c == ' ')
 			    break;
-			/*
-			 * ugly as sin, but a big win when
-			 * inlined...
-			 */
-
-			prevFont = -1;
-	PutCharacter:	;
-			/*
-			 * quick and dirty extents calculation:
-			 */
-			if (dw->dvi.state->y + 24 >= dw->dvi.extents.y1 &&
-			    dw->dvi.state->y - 24 <= dw->dvi.extents.y2 &&
-			    dw->dvi.state->x + 24 >= dw->dvi.extents.x1 &&
-			    dw->dvi.state->x - 24 <= dw->dvi.extents.x2)
-			{
-	    	    	    register XFontStruct	*font;
-			    register XTextItem		*text;
-    	    	    
-	    	    	    if (!dw->dvi.display_enable)
-		    	    	    break;
-    	    	    
-	    	    	    if (dw->dvi.state->y != dw->dvi.cache.y ||
-	    	    	    	dw->dvi.cache.char_index >= DVI_CHAR_CACHE_SIZE)
-				FlushCharCache (dw);
-			    /*
-			     * load a new font, if the current block is not empty,
-			     * step to the next.
-			     */
-			    if (dw->dvi.cache.font_size != dw->dvi.state->font_size ||
-		    	       	dw->dvi.cache.font_number != dw->dvi.state->font_number)
-		    	    {
-			        dw->dvi.cache.font_size = dw->dvi.state->font_size;
-			        dw->dvi.cache.font_number = dw->dvi.state->font_number;
-			        dw->dvi.cache.font = QueryFont (dw,
-						      dw->dvi.cache.font_number,
-						      dw->dvi.cache.font_size);
-				if (dw->dvi.cache.cache[dw->dvi.cache.index].nchars != 0) {
-				    ++dw->dvi.cache.index;
-				    if (dw->dvi.cache.index >= dw->dvi.cache.max)
-					FlushCharCache (dw);
-				    dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
-				}
-	    	    	    }
-			    if (dw->dvi.cache.x != dw->dvi.state->x) {
-				if (dw->dvi.cache.cache[dw->dvi.cache.index].nchars != 0) {
-				    ++dw->dvi.cache.index;
-				    if (dw->dvi.cache.index >= dw->dvi.cache.max)
-					FlushCharCache (dw);
-				    dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
-				}
-			    }
-	    	    	    font = dw->dvi.cache.font;
-			    text = &dw->dvi.cache.cache[dw->dvi.cache.index];
-			    if (text->nchars == 0) {
-				text->chars = &dw->dvi.cache.char_cache[dw->dvi.cache.char_index];
-				text->delta = dw->dvi.state->x - dw->dvi.cache.x;
-				if (font != dw->dvi.font) {
-				    text->font = font->fid;
-				    dw->dvi.font = font;
-				} else
-				    text->font = None;
-				dw->dvi.cache.x += text->delta;
-			    }
-			    dw->dvi.cache.char_cache[dw->dvi.cache.char_index++] = (char) c;
-			    ++text->nchars;
-			    dw->dvi.cache.x += charWidth(font,c);
-			}
-			if (prevFont != -1)
-			    dw->dvi.state->font_number = prevFont;
+			PutCharacter (dw, c);
 			break;
 		case 'C':
 			GetWord(dw, Buffer, BUFSIZ);
 			{
 	    	    	    DviCharNameMap	*map;
 			    int			i;
+			    int			savex;
+			    char		*ligature;
     	    	    
+			    c = -1;
 			    prevFont = -1;
 	    	    	    map = QueryFontMap (dw, dw->dvi.state->font_number);
-	    	    	    if (map) {
-		    	    	    c = DviCharIndex (map, Buffer);
-		    	    	    if (c == -1) {
-					for (i = 1; map = QueryFontMap (dw, i); i++)
-					    if (map->special)
-						if ((c = DviCharIndex (map, Buffer)) != -1) {
-						    prevFont = dw->dvi.state->font_number;
-						    dw->dvi.state->font_number = i;
-						    break;
-						}
+	    	    	    if (map)
+			    {
+		    	    	c = DviCharIndex (map, Buffer);
+				if (c == -1)
+				    if (ligature = DviCharIsLigature (map, Buffer)) {
+					savex = dw->dvi.state->x;
+					while (c = *ligature++) {
+					    if (PutCharacter (dw, c))
+						dw->dvi.state->x = ToDevice (dw, dw->dvi.cache.x);
+					    else
+						dw->dvi.state->x += CharacterWidth (dw, c);
+					}
+					dw->dvi.state->x = savex;
+					break;
 				    }
-				    if (c != -1)
-					goto PutCharacter;
-	    	    	    }
+			    }
+	    	    	    if (c == -1) {
+			    	for (i = 1; map = QueryFontMap (dw, i); i++)
+				    if (map->special)
+				    	if ((c = DviCharIndex (map, Buffer)) != -1) {
+					    prevFont = dw->dvi.state->font_number;
+					    dw->dvi.state->font_number = i;
+					    break;
+				    	}
+			    }
+			    if (c != -1)
+				PutCharacter (dw, c);
+			    if (prevFont != -1)
+				dw->dvi.state->font_number = prevFont;
 			}
 			break;
 		case 'D':	/* draw function */
@@ -283,6 +233,100 @@ InitTypesetter (dw)
 		pop_env (dw);
 	push_env (dw);
 	FlushCharCache (dw);
+}
+
+SetFont (dw)
+    DviWidget	dw;
+{
+    dw->dvi.cache.font_size = dw->dvi.state->font_size;
+    dw->dvi.cache.font_number = dw->dvi.state->font_number;
+    dw->dvi.cache.font = QueryFont (dw,
+			  dw->dvi.cache.font_number,
+			  dw->dvi.cache.font_size);
+}
+
+CharacterWidth (dw, c)
+    DviWidget	dw;
+{
+    if (dw->dvi.cache.font_size != dw->dvi.state->font_size ||
+	dw->dvi.cache.font_number != dw->dvi.state->font_number)
+    {
+	SetFont (dw);
+    }
+    return ToDevice (dw, charWidth(dw->dvi.font, c));
+}
+
+PutCharacter (dw, c)
+    DviWidget	dw;
+    int		c;
+{
+    int	prevFont;
+    int	xx, yx;
+    int	fx;
+    int	w;
+
+    xx = ToX(dw, dw->dvi.state->x);
+    yx = ToX(dw, dw->dvi.state->y);
+    fx = FontSizeInPixels (dw, dw->dvi.state->font_size);
+    /*
+     * quick and dirty extents calculation:
+     */
+    if (yx + fx >= dw->dvi.extents.y1 &&
+	yx - fx <= dw->dvi.extents.y2 &&
+	xx + fx >= dw->dvi.extents.x1 &&
+	xx - fx <= dw->dvi.extents.x2)
+    {
+	register XFontStruct	*font;
+	register XTextItem		*text;
+	int	spaceWidth;
+
+	if (!dw->dvi.display_enable)
+	    return FALSE;
+
+	if (yx != dw->dvi.cache.y ||
+	    dw->dvi.cache.char_index >= DVI_CHAR_CACHE_SIZE)
+	    FlushCharCache (dw);
+	/*
+	 * load a new font, if the current block is not empty,
+	 * step to the next.
+	 */
+	if (dw->dvi.cache.font_size != dw->dvi.state->font_size ||
+	    dw->dvi.cache.font_number != dw->dvi.state->font_number)
+	{
+	    SetFont (dw);
+	    if (dw->dvi.cache.cache[dw->dvi.cache.index].nchars != 0) {
+		++dw->dvi.cache.index;
+		if (dw->dvi.cache.index >= dw->dvi.cache.max)
+		    FlushCharCache (dw);
+		dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
+	    }
+	}
+	if (xx != dw->dvi.cache.x) {
+	    if (dw->dvi.cache.cache[dw->dvi.cache.index].nchars != 0) {
+		++dw->dvi.cache.index;
+		if (dw->dvi.cache.index >= dw->dvi.cache.max)
+		    FlushCharCache (dw);
+		dw->dvi.cache.cache[dw->dvi.cache.index].nchars = 0;
+	    }
+	}
+	font = dw->dvi.cache.font;
+	text = &dw->dvi.cache.cache[dw->dvi.cache.index];
+	if (text->nchars == 0) {
+	    text->chars = &dw->dvi.cache.char_cache[dw->dvi.cache.char_index];
+	    text->delta = xx - dw->dvi.cache.x;
+	    if (font != dw->dvi.font) {
+		text->font = font->fid;
+		dw->dvi.font = font;
+	    } else
+		text->font = None;
+	    dw->dvi.cache.x += text->delta;
+	}
+	dw->dvi.cache.char_cache[dw->dvi.cache.char_index++] = (char) c;
+	++text->nchars;
+	dw->dvi.cache.x += charWidth(font,c);
+	return TRUE;
+    }
+    return FALSE;
 }
 
 static

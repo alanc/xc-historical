@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.13 91/02/19 19:29:33 converse Exp $ */
+/* $XConsortium: Dvi.c,v 1.14 91/07/24 12:16:16 dave Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -79,9 +79,6 @@ S2	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
 
 #define offset(field) XtOffsetOf(DviRec, field)
 
-# define MY_WIDTH(dw)	(dw->dvi.device_resolution * 9)
-# define MY_HEIGHT(dw)	(dw->dvi.device_resolution * 11)
-
 static XtResource resources[] = { 
 	{XtNfontMap, XtCFontMap, XtRString, sizeof (char *),
 	 offset(dvi.font_map_string), XtRString, NULL /* set in code */},
@@ -101,6 +98,12 @@ static XtResource resources[] = {
 	 offset(dvi.backing_store), XtRString, "default"},
 	{XtNnoPolyText, XtCNoPolyText, XtRBoolean, sizeof (Boolean),
 	 offset(dvi.noPolyText), XtRImmediate, (XtPointer) False},
+	{XtNscreenResolution, XtCScreenResolution, XtRInt, sizeof (int),
+	 offset(dvi.screen_resolution), XtRImmediate, (XtPointer) 75},
+	{XtNpageWidth, XtCPageWidth, XtRFloat, sizeof (float),
+	 offset(dvi.page_width), XtRString, "8.5"},
+	{XtNpageHeight, XtCPageHeight, XtRFloat, sizeof (float),
+	 offset(dvi.page_height), XtRString, "11"},
 };
 
 #undef offset
@@ -137,7 +140,7 @@ DviClassRec dviClassRec = {
 	Redisplay,			/* expose		  */
 	SetValues,			/* set_values		  */
 	SetValuesHook,			/* set_values_hook	  */
-	NULL,				/* set_values_almost	  */
+	XtInheritSetValuesAlmost,	/* set_values_almost	  */
 	NULL,				/* get_values_hook	  */
 	NULL,				/* accept_focus		  */
 	XtVersion,			/* version		  */
@@ -177,30 +180,31 @@ static void ClassInitialize ()
 static void Initialize(request, new)
 	Widget request, new;
 {
-	DviWidget	dw = (DviWidget) new;
+    DviWidget	dw = (DviWidget) new;
 
-	dw->dvi.current_page = 0;
-	dw->dvi.font_map = 0;
-	dw->dvi.cache.index = 0;
-	dw->dvi.file = 0;
-	dw->dvi.seek = False;
-	dw->dvi.device_resolution = 75;
-	dw->dvi.tmpFile = 0;
-	dw->dvi.readingTmp = 0;
-	dw->dvi.ungot = 0;
-	dw->dvi.file_map = 0;
-	dw->dvi.fonts = 0;
-	dw->dvi.font_map = 0;
-	dw->dvi.current_page = 0;
-	dw->dvi.font_size = 0;
-	dw->dvi.font_number = 0;
-	dw->dvi.device_resolution = 0;
-	dw->dvi.line_width = 0;
-	dw->dvi.backing_store = 0;
-	dw->dvi.font = 0;
-	dw->dvi.display_enable = 0;
-	dw->dvi.state = 0;
-	dw->dvi.cache.font = 0; 
+    dw->dvi.current_page = 0;
+    dw->dvi.font_map = 0;
+    dw->dvi.cache.index = 0;
+    dw->dvi.file = 0;
+    dw->dvi.seek = False;
+    dw->dvi.device_resolution = 75;
+    dw->dvi.tmpFile = 0;
+    dw->dvi.readingTmp = 0;
+    dw->dvi.ungot = 0;
+    dw->dvi.file_map = 0;
+    dw->dvi.fonts = 0;
+    dw->dvi.font_map = 0;
+    dw->dvi.current_page = 0;
+    dw->dvi.font_size = 0;
+    dw->dvi.font_number = 0;
+    dw->dvi.device_resolution = 0;
+    dw->dvi.line_width = 0;
+    dw->dvi.backing_store = 0;
+    dw->dvi.font = 0;
+    dw->dvi.display_enable = 0;
+    dw->dvi.state = 0;
+    dw->dvi.cache.font = 0; 
+    RequestDesiredSize (dw);
 }
 
 static void
@@ -209,21 +213,21 @@ Realize (w, valueMask, attrs)
 	XtValueMask		*valueMask;
 	XSetWindowAttributes	*attrs;
 {
-	DviWidget	dw = (DviWidget) w;
-	XGCValues	values;
+    DviWidget	dw = (DviWidget) w;
+    XGCValues	values;
 
-	if (dw->dvi.backing_store != Always + WhenMapped + NotUseful) {
-	    attrs->backing_store = dw->dvi.backing_store;
-	    *valueMask |= CWBackingStore;
-	}
-	XtCreateWindow (w, (unsigned)InputOutput, (Visual *) CopyFromParent,
-			*valueMask, attrs);
-	values.foreground = dw->dvi.foreground;
-	dw->dvi.normal_GC = XCreateGC (XtDisplay (w), XtWindow (w),
-					GCForeground, &values);
-	if (dw->dvi.file)
-		OpenFile (dw);
-	ParseFontMap (dw);
+    if (dw->dvi.backing_store != Always + WhenMapped + NotUseful) {
+	attrs->backing_store = dw->dvi.backing_store;
+	*valueMask |= CWBackingStore;
+    }
+    XtCreateWindow (w, (unsigned)InputOutput, (Visual *) CopyFromParent,
+		    *valueMask, attrs);
+    values.foreground = dw->dvi.foreground;
+    dw->dvi.normal_GC = XCreateGC (XtDisplay (w), XtWindow (w),
+				    GCForeground, &values);
+    if (dw->dvi.file)
+	OpenFile (dw);
+    ParseFontMap (dw);
 }
 
 static void
@@ -257,6 +261,21 @@ Redisplay(w, event, region)
 	dw->dvi.extents.x2 = extents.x + extents.width;
 	dw->dvi.extents.y2 = extents.y + extents.height;
 	ShowDvi (dw);
+}
+
+RequestDesiredSize (dw)
+    DviWidget	dw;
+{
+    XtWidgetGeometry	req, rep;
+
+    dw->dvi.desired_width = dw->dvi.page_width *
+				 dw->dvi.screen_resolution;
+    dw->dvi.desired_height = dw->dvi.page_height *
+				  dw->dvi.screen_resolution;
+    req.request_mode = CWWidth|CWHeight;
+    req.width = dw->dvi.desired_width;
+    req.height = dw->dvi.desired_height;
+    XtMakeGeometryRequest ((Widget) dw, &req, &rep);
 }
 
 /*
@@ -300,6 +319,15 @@ SetValues (current, request, new)
 			current->dvi.font_map_string = 0;
 			ParseFontMap (new);
 		}
+	}
+	request->dvi.scale = ((double) request->dvi.screen_resolution) /
+			     ((double) request->dvi.device_resolution);
+	if (current->dvi.page_width !=  request->dvi.page_width ||
+	    current->dvi.page_height != request->dvi.page_height ||
+	    current->dvi.screen_resolution != request->dvi.screen_resolution)
+	{
+	    RequestDesiredSize (request);
+	    redisplay = TRUE;
 	}
 	return redisplay;
 }
@@ -360,11 +388,11 @@ QueryGeometry (w, request, geometry_return)
 	DviWidget		dw = (DviWidget) w;
 
 	ret = XtGeometryYes;
-	if ((int)request->width < MY_WIDTH(dw)
-	    || (int)request->height < MY_HEIGHT(dw))
+	if ((int)request->width < dw->dvi.desired_width
+	    || (int)request->height < dw->dvi.desired_height)
 		ret = XtGeometryAlmost;
-	geometry_return->width = MY_WIDTH(dw);
-	geometry_return->height = MY_HEIGHT(dw);
+	geometry_return->width = dw->dvi.desired_width;
+	geometry_return->height = dw->dvi.desired_height;
 	geometry_return->request_mode = CWWidth|CWHeight;
 	return ret;
 }
@@ -373,15 +401,11 @@ SetDeviceResolution (dw, resolution)
 	DviWidget   dw;
 	int	    resolution;
 {
-	XtWidgetGeometry	request, reply;
-
-	if (resolution != dw->dvi.device_resolution) {
-		dw->dvi.device_resolution = resolution;
-		request.request_mode = CWWidth|CWHeight;
-		request.width = MY_WIDTH(dw);
-		request.height = MY_HEIGHT(dw);
-		XtMakeGeometryRequest ((Widget) dw, &request, &reply);
-	}
+    if (resolution != dw->dvi.device_resolution) {
+	dw->dvi.device_resolution = resolution;
+	dw->dvi.scale = ((double)  dw->dvi.screen_resolution) /
+			((double) resolution);
+    }
 }
 
 static void
