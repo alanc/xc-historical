@@ -1,8 +1,9 @@
+#ifndef _XTRANS_H
+#define _XTRANS_H
+
 /*      Copyright (c) 1993 NCR Corporation - Dayton, Ohio, USA */
 /*        All Rights Reserved   */
 
-#ifndef _XTRANS_H
-#define _XTRANS_H
 /*
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -92,9 +93,9 @@
 #define XTRANS_MAX_ADDR_LEN	128	/* large enough to hold sun_path */
 
 typedef	union {
-	unsigned short	family;
-	unsigned char	addr[XTRANS_MAX_ADDR_LEN];
-	}	Xtransaddr;
+    unsigned short	family;
+    unsigned char	addr[XTRANS_MAX_ADDR_LEN];
+} Xtransaddr;
 
 
 #ifdef LONG64
@@ -153,21 +154,25 @@ XtransConnInfo TRANS(OpenCOTSClient)(
     char *		/* address */
 #endif
 );
+
 XtransConnInfo TRANS(OpenCOTSServer)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
+
 XtransConnInfo TRANS(OpenCLTSClient)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
+
 XtransConnInfo TRANS(OpenCLTSServer)(
 #if NeedFunctionPrototypes
     char *		/* address */
 #endif
 );
+
 int TRANS(SetOption)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -175,29 +180,34 @@ int TRANS(SetOption)(
     int			/* arg */
 #endif
 );
+
 int TRANS(CreateListener)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     char *		/* port */
 #endif
 );
+
 XtransConnInfo TRANS(Accept)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(Connect)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     char *		/* address */
 #endif
 );
+
 int TRANS(BytesReadable)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
     BytesReadable_t *	/* pend */
 #endif
 );
+
 int TRANS(Read)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -205,6 +215,7 @@ int TRANS(Read)(
     int			/* size */
 #endif
 );
+
 int TRANS(Write)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -212,6 +223,7 @@ int TRANS(Write)(
     int			/* size */
 #endif
 );
+
 int TRANS(Readv)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -219,6 +231,7 @@ int TRANS(Readv)(
     int			/* size */
 #endif
 );
+
 int TRANS(Writev)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -226,26 +239,31 @@ int TRANS(Writev)(
     int			/* size */
 #endif
 );
+
 int TRANS(Disconnect)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(Close)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(NameToAddr)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(AddrToName)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(GetMyAddr)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -254,6 +272,7 @@ int TRANS(GetMyAddr)(
     Xtransaddr **	/* addrp */
 #endif
 );
+
 int TRANS(GetPeerAddr)(
 #if NeedFunctionPrototypes
     XtransConnInfo,	/* ciptr */
@@ -262,11 +281,13 @@ int TRANS(GetPeerAddr)(
     Xtransaddr **	/* addrp */
 #endif
 );
+
 int TRANS(GetConnectionNumber)(
 #if NeedFunctionPrototypes
     XtransConnInfo	/* ciptr */
 #endif
 );
+
 int TRANS(MakeAllCOTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
@@ -274,6 +295,7 @@ int TRANS(MakeAllCOTSServerListeners)(
     XtransConnInfo **	/* ciptrs_ret */
 #endif
 );
+
 int TRANS(MakeAllCLTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
@@ -281,6 +303,7 @@ int TRANS(MakeAllCLTSServerListeners)(
     XtransConnInfo **	/* ciptrs_ret */
 #endif
 );
+
 
 /*
  * Function Prototypes for Utility Functions.
