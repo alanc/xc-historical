@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.162 90/06/05 14:17:35 jim Exp $
+ * $XConsortium: menus.c,v 1.163 90/06/19 12:20:02 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.162 90/06/05 14:17:35 jim Exp $";
+"$XConsortium: menus.c,v 1.163 90/06/19 12:20:02 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1750,7 +1750,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		InstallWindowColormaps (0, tmp_win);
 		if (tmp_win->hilite_w) XMapWindow (dpy, tmp_win->hilite_w);
 		SetBorder (tmp_win, True);
-		SetFocus (tmp_win);
+		SetFocus (tmp_win, CurrentTime);
 		Scr->FocusRoot = FALSE;
 		Scr->Focus = tmp_win;
 	    }
@@ -2180,7 +2180,7 @@ Execute(s)
 void
 FocusOnRoot()
 {
-    SetFocus ((TwmWindow *) NULL);
+    SetFocus ((TwmWindow *) NULL, CurrentTime);
     if (Scr->Focus != NULL)
     {
 	SetBorder (Scr->Focus, False);
@@ -2324,7 +2324,7 @@ int def_x, def_y;
 		SetBorder (t, False);
 		if (t == Scr->Focus)
 		{
-		    SetFocus ((TwmWindow *) NULL);
+		    SetFocus ((TwmWindow *) NULL, CurrentTime);
 		    Scr->Focus = NULL;
 		    Scr->FocusRoot = TRUE;
 		}
@@ -2352,7 +2352,7 @@ int def_x, def_y;
     SetBorder (tmp_win, False);
     if (tmp_win == Scr->Focus)
     {
-	SetFocus ((TwmWindow *) NULL);
+	SetFocus ((TwmWindow *) NULL, CurrentTime);
 	Scr->Focus = NULL;
 	Scr->FocusRoot = TRUE;
     }

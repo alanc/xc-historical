@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.113 90/04/13 13:52:12 jim Exp $
+ * $XConsortium: twm.c,v 1.114 90/06/07 16:32:42 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.113 90/04/13 13:52:12 jim Exp $";
+"$XConsortium: twm.c,v 1.114 90/06/07 16:32:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -348,7 +348,7 @@ main(argc, argv, environ)
 
 	if (FirstScreen)
 	{
-	    SetFocus ((TwmWindow *)NULL);
+	    SetFocus ((TwmWindow *)NULL, CurrentTime);
 
 	    /* define cursors */
 
@@ -749,7 +749,7 @@ void Reborder ()
     }
 
     XUngrabServer (dpy);
-    SetFocus ((TwmWindow*)NULL);
+    SetFocus ((TwmWindow*)NULL, CurrentTime);
 }
 
 SIGNAL_T Done()

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.39 90/03/16 12:06:46 jim Exp $
+ * $XConsortium: util.c,v 1.40 90/04/30 16:56:10 converse Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.39 90/03/16 12:06:46 jim Exp $";
+"$XConsortium: util.c,v 1.40 90/04/30 16:56:10 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -595,8 +595,9 @@ MyFont *font;
  * SetFocus - separate routine to set focus to make things more understandable
  * and easier to debug
  */
-SetFocus (tmp_win)
+SetFocus (tmp_win, time)
     TwmWindow *tmp_win;
+    Time	time;
 {
     Window w = (tmp_win ? tmp_win->w : PointerRoot);
 
@@ -609,7 +610,7 @@ SetFocus (tmp_win)
     }
 #endif
 
-    XSetInputFocus (dpy, w, RevertToPointerRoot, CurrentTime);
+    XSetInputFocus (dpy, w, RevertToPointerRoot, time);
 }
 
 

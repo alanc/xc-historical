@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.161 90/06/05 14:17:40 jim Exp $
+ * $XConsortium: events.c,v 1.162 90/09/20 16:59:44 converse Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.161 90/06/05 14:17:40 jim Exp $";
+"$XConsortium: events.c,v 1.162 90/09/20 16:59:44 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -1938,8 +1938,9 @@ HandleEnterNotify()
 			    InstallWindowColormaps (EnterNotify,	/* 2 */
 						    &Scr->TwmRoot);
 			SetBorder (Tmp_win, True);			/* 3 */
-			if (Tmp_win->title_w && Scr->TitleFocus)	/* 4 */
-			  SetFocus (Tmp_win);
+			if (Tmp_win->title_w && Scr->TitleFocus &&	/* 4 */
+			    Tmp_win->wmhints->input)
+			  SetFocus (Tmp_win, ewp->time);
 			if (Tmp_win->protocols & DoesWmTakeFocus)	/* 5 */
 			  SendTakeFocusMessage (Tmp_win, ewp->time);
 			Scr->Focus = Tmp_win;
@@ -2097,7 +2098,7 @@ HandleLeaveNotify()
 		    SetBorder (Tmp_win, False);
 		    if (Scr->TitleFocus ||
 			Tmp_win->protocols & DoesWmTakeFocus)
-		      SetFocus ((TwmWindow *) NULL);
+		      SetFocus ((TwmWindow *) NULL, Event.xcrossing.time);
 		    Scr->Focus = NULL;
 		} else if (Event.xcrossing.window == Tmp_win->w &&
 				!scanArgs.enters) {
