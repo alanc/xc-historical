@@ -22,7 +22,8 @@ allocations.
 Build the system by:
 
 1)	As super-user, run the script R3setup.sh located in this directory.
-	Now leave super-user mode.
+	Now leave super-user mode.  This should only ever be done once on a
+	machine.  
 
 2)	In the top-level directory, type:
 
