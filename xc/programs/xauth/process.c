@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.16 88/12/12 14:59:08 jim Exp $
+ * $XConsortium: process.c,v 1.17 88/12/12 15:17:07 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -79,6 +79,8 @@ struct _list_data {
 
 static char *stdin_filename = "(stdin)";
 static char *stdout_filename = "(stdout)";
+static char *Yes = "yes";
+static char *No = "no";
 
 static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static int do_help(), do_source(), do_info(), do_exit();
@@ -583,7 +585,8 @@ static int dispatch_command (inputfilename, lineno, argc, argv, tab, statusp)
 
 
 static AuthList *xauth_head = NULL;	/* list of auth entries */
-static Bool xauth_modified = False;
+static Bool xauth_modified = False;	/* if added, removed, or merged */
+static Bool xauth_allowed = True;	/* if allowed to write auth file */
 static char *xauth_filename = NULL;
 static Bool dieing = False;
 
@@ -624,6 +627,7 @@ int auth_initialize (authfilename)
     int n;
     AuthList *head, *tail;
     FILE *authfp;
+    Bool exists;
 
     register_signals ();
 
@@ -644,6 +648,14 @@ int auth_initialize (authfilename)
     hexvalues['d'] = hexvalues['D'] = 0xd;
     hexvalues['e'] = hexvalues['E'] = 0xe;
     hexvalues['f'] = hexvalues['F'] = 0xf;
+
+    exists = (access (authfilename, F_OK) == 0);
+    if (exists && access (authfilename, W_OK) != 0) {
+	fprintf (stderr,
+	 "%s:  %s not writable, changes will be ignored\n",
+		 ProgramName, authfilename);
+	xauth_allowed = False;
+    }
 
     if (break_locks && verbose) {
 	printf ("Attempting to break locks on authority file %s\n",
@@ -741,29 +753,35 @@ int auth_finalize ()
 {
     char tmpnam[1024];			/* large filename size */
 
-    if (dieing) {
-	if (xauth_modified && verbose) {
-	    printf ("Aborting changes to authority file %s\n",
-		    xauth_filename);
-	}
-    } else if (xauth_modified) {
-	if (verbose) {
-	    printf ("%s authority file %s\n", 
-		    ignore_locks ? "Ignoring locks and writing" :
-		    "Writing", xauth_filename);
-	}
-	tmpnam[0] = '\0';
-	if (write_auth_file (tmpnam) == -1) {
-	    fprintf (stderr, "%s:  unable to write authority file %s\n",
-		     ProgramName, tmpnam);
+    if (xauth_modified) {
+	if (dieing) {
+	    if (verbose) {
+		printf ("Aborting changes to authority file %s\n",
+			xauth_filename);
+	    }
+	} else if (!xauth_allowed) {
+	    fprintf (stderr, 
+		     "%s:  %s not writable, changes ignored\n",
+		     ProgramName, xauth_filename);
 	} else {
-	    (void) unlink (xauth_filename);
-	    if (link (tmpnam, xauth_filename) == -1) {
-		fprintf (stderr,
-			 "%s:  unable to link authority file %s, use %s\n",
-			 ProgramName, xauth_filename, tmpnam);
+	    if (verbose) {
+		printf ("%s authority file %s\n", 
+			ignore_locks ? "Ignoring locks and writing" :
+			"Writing", xauth_filename);
+	    }
+	    tmpnam[0] = '\0';
+	    if (write_auth_file (tmpnam) == -1) {
+		fprintf (stderr, "%s:  unable to write authority file %s\n",
+			 ProgramName, tmpnam);
 	    } else {
-		(void) unlink (tmpnam);
+		(void) unlink (xauth_filename);
+		if (link (tmpnam, xauth_filename) == -1) {
+		    fprintf (stderr,
+			     "%s:  unable to link authority file %s, use %s\n",
+			     ProgramName, xauth_filename, tmpnam);
+		} else {
+		    (void) unlink (tmpnam);
+		}
 	    }
 	}
     }
@@ -1401,15 +1419,24 @@ static int do_info (inputfilename, lineno, argc, argv)
     int argc;
     char **argv;
 {
+    int n;
+    AuthList *l;
+
     if (argc != 1) {
 	prefix (inputfilename, lineno);
 	badcommandline (argv[0]);
 	return 1;
     }
-    printf ("authority filename:    %s\n",
+
+    for (l = xauth_head, n = 0; l; l = l->next, n++) ;
+
+    printf ("Auth file name:       %s\n",
 	    xauth_filename ? xauth_filename : "(none)");
-    printf ("modified:              %s\n", xauth_modified ? "yes" : "no");
-    printf ("input from:            %s:%d\n", inputfilename, lineno);
+    printf ("Number of entries:    %d\n", n);
+    printf ("Auth file locked:     %s\n", ignore_locks ? No : Yes);
+    printf ("Changes made:         %s\n", xauth_modified ? Yes : No);
+    printf ("Changes permanent:    %s\n", xauth_allowed ? Yes : No);
+    printf ("Input file name:      %s:%d\n", inputfilename, lineno);
     return 0;
 }
 
