@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.1 91/02/26 16:34:49 keith Exp $
+ * $XConsortium: fontxlfd.c,v 1.1 91/05/10 16:51:54 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@
 #include	"fontmisc.h"
 #include	"fontstruct.h"
 #include	"fontxlfd.h"
+#include	<X11/Xos.h>
 
 static char *
 GetInt(ptr, val)
@@ -56,7 +57,6 @@ FontParseXLFDName(fname, vals, subst)
                *ptr3,
                *ptr4;
     FontScalableRec tmpvals;
-    char       *index();
     char        replaceChar = '0';
     char        tmpBuf[1024];
     int         spacingLen;
