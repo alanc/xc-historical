@@ -141,7 +141,10 @@ typedef struct _TopLevelClassRec {
 
 TopLevelClassRec topLevelClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
-    /* class_name         */    "TopLevel",
+    /* class_name         */    "No Name",
+				/* toplevel doesn't have a name it is pass
+       				 * to XtInitialize
+				 */
     /* size               */    sizeof(TopLevelRec),
     /* Class Initializer  */	ClassInitialize,
     /* Class init'ed ?    */	FALSE,
@@ -748,7 +751,13 @@ char *argv[];
 
 	/*
 	     Create the top level widget.
+	     Unlike most classes the toplevel widget class has no classname
+	     The name is supplied in the call to XtInitialize.
 	 */
+	(void) strcpy(
+	    ((TopLevelClassRec *)(topLevelWidgetClass))->core_class.class_name
+	        = (String)XtMalloc((unsigned)strlen(classname)),
+	       classname);
 	root = TopLevelCreate(name, topLevelWidgetClass,
 			      &(dpy->screens[dpy->default_screen]),
 			       args, num_args);
