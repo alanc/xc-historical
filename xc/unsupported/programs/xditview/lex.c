@@ -1,9 +1,13 @@
-#include	<stdio.h>
-#include	<ctype.h>
+#include <X11/Xos.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <stdio.h>
+#include <ctype.h>
+#include "DviP.h"
 
 char *
-GetLine(fp, Buffer, Length)
-	FILE	*fp;
+GetLine(dw, Buffer, Length)
+	DviWidget	dw;
 	char	*Buffer;
 	int	Length;
 {
@@ -12,21 +16,21 @@ GetLine(fp, Buffer, Length)
 	
 	Length--;			    /* Save room for final NULL */
 	
-	while (i < Length && (c = getc (fp)) != EOF && c != '\n')
+	while (i < Length && DviGetC (dw, &c) != EOF && c != '\n')
 		if (p)
 			*p++ = c;
 	if (c == '\n' && p)		    /* Retain the newline like fgets */
 		*p++ = c;
 	if (c == '\n')
-		ungetc(c, fp);
+		DviUngetC(dw, c);
 	if (p)	
 		*p = NULL;
 	return (Buffer);
 } 
 
 char *
-GetWord(fp, Buffer, Length)
-	FILE	*fp;
+GetWord(dw, Buffer, Length)
+	DviWidget	dw;
 	char	*Buffer;
 	int	Length;
 {
@@ -34,33 +38,33 @@ GetWord(fp, Buffer, Length)
 	char	*p = Buffer;
 	
 	Length--;			    /* Save room for final NULL */
-	while ((c = getc (fp)) != EOF && isspace(c))
+	while (DviGetC(dw, &c) != EOF && isspace(c))
 		;
 	if (c != EOF)
-		ungetc(c, fp);
-	while (i < Length && (c = getc (fp)) != EOF && !isspace(c))
+		DviUngetC(dw, c);
+	while (i < Length && DviGetC(dw, &c) != EOF && !isspace(c))
 		if (p)
 			*p++ = c;
 	if (c != EOF)
-		ungetc(c, fp);
+		DviUngetC(dw, c);
 	if (p)
 		*p = NULL;
 	return (Buffer);
 } 
 
-GetNumber(fp)
-	FILE	*fp;
+GetNumber(dw)
+	DviWidget	dw;
 {
 	int	i = 0,  c;
 
-	while ((c = getc (fp)) != EOF && isspace(c))
+	while (DviGetC(dw, &c) != EOF && isspace(c))
 		;
 	if (c != EOF)
-		ungetc(c, fp);
-	while ((c = getc (fp)) != EOF && isdigit(c))
+		DviUngetC(dw, c);
+	while (DviGetC(dw, &c) != EOF && isdigit(c))
 		i = i*10 + c - '0';
 	if (c != EOF)
-		ungetc(c, fp);
+		DviUngetC(dw, c);
 	return (i);
 }
 	

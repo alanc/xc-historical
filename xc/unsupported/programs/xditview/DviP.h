@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: DviP.h,v 1.1 89/03/01 15:50:43 keith Exp $
  */
 
 /* 
@@ -83,6 +83,7 @@ typedef struct _dviCharCache {
 	XTextItem	cache[DVI_TEXT_CACHE_SIZE];
 	char		char_cache[DVI_CHAR_CACHE_SIZE];
 	int		index;
+	int		max;
 	int		char_index;
 	int		font_size;
 	int		font_number;
@@ -120,10 +121,15 @@ typedef struct {
 	char		*file_name;
 	int		requested_page;
 	int		last_page;
+	XFontStruct	*default_font;
+	Boolean		noPolyText;
 	/*
  	 * private state
  	 */
 	FILE		*file;
+	FILE		*tmpFile;	/* used when reading stdin */
+	char		readingTmp;	/* reading now from tmp */
+	char		ungot;		/* have ungetc'd a char */
 	GC		normal_GC;
 	DviFileMap	*file_map;
 	DviFontList	*fonts;
@@ -135,7 +141,6 @@ typedef struct {
 	int		line_style;
 	int		backing_store;
 	XFontStruct	*font;
-	XFontStruct	*default_font;
 	int		display_enable;
 	struct ExposedExtents {
 	    int x1, y1, x2, y2;
@@ -143,6 +148,40 @@ typedef struct {
 	DviState	*state;
 	DviCharCache	cache;
 } DviPart;
+
+#define DviGetIn(dw,cp)\
+    (dw->dvi.tmpFile ? (\
+	dw->dvi.ungot ? (\
+	    (dw->dvi.ungot = 0),\
+	    (*cp = getc(dw->dvi.file))\
+	) : (\
+	    putc ((*cp = getc(dw->dvi.file)), dw->dvi.tmpFile),\
+	    *cp\
+	)\
+    ) :\
+	(*cp = getc (dw->dvi.file))\
+)
+
+#define DviGetC(dw, cp)\
+    (dw->dvi.readingTmp ? (\
+	((*cp = getc (dw->dvi.tmpFile)) == EOF) ? (\
+	    fseek (dw->dvi.tmpFile, 0l, 2),\
+	    (dw->dvi.readingTmp = 0),\
+	    DviGetIn (dw,cp)\
+	) : (\
+	    *cp\
+	)\
+    ) : (\
+	DviGetIn(dw,cp)\
+    )\
+)
+
+#define DviUngetC(dw, c)\
+    (dw->dvi.readingTmp ? (\
+	ungetc (c, dw->dvi.tmpFile)\
+    ) : ( \
+	(dw->dvi.ungot = 1),\
+	ungetc (c, dw->dvi.file)))
 
 /*
  * Full widget declaration

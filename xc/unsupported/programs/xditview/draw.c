@@ -42,20 +42,18 @@ VerticalGoto(dw, NewPosition)
 FlushCharCache (dw)
 	DviWidget	dw;
 {
-	if (dw->dvi.cache.char_index == 0)
-		return;
-#ifdef DEBUG
-	dw->dvi.cache.char_cache[dw->dvi.cache.char_index] = '\0';
-	printf ("%d %d,%d %d: %s\n",
-		dw->dvi.cache.y, dw->dvi.cache.x, dw->dvi.state->x,
-	 	dw->dvi.cache.char_index, dw->dvi.cache.char_cache);
-#endif
-	XDrawText (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
+	if (dw->dvi.cache.char_index != 0)
+	    XDrawText (XtDisplay (dw), XtWindow (dw), dw->dvi.normal_GC,
 			dw->dvi.cache.start_x, dw->dvi.cache.start_y,
  			dw->dvi.cache.cache, dw->dvi.cache.index + 1);
 	dw->dvi.cache.index = 0;
+	dw->dvi.cache.max = DVI_TEXT_CACHE_SIZE;
+	if (dw->dvi.noPolyText)
+	    dw->dvi.cache.max = 1;
 	dw->dvi.cache.char_index = 0;
 	dw->dvi.cache.cache[0].nchars = 0;
+	dw->dvi.cache.start_x = dw->dvi.cache.x = dw->dvi.state->x;
+	dw->dvi.cache.start_y = dw->dvi.cache.y = dw->dvi.state->y;
 }
 
 ClearPage (dw)

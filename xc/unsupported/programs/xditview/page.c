@@ -55,7 +55,10 @@ RememberPagePosition(dw, number)
 		m->next = dw->dvi.file_map;
 		dw->dvi.file_map = m;
 	}
-	m->position = ftell (dw->dvi.file);
+	if (dw->dvi.tmpFile)
+		m->position = ftell (dw->dvi.tmpFile);
+	else
+		m->position = ftell (dw->dvi.file);
 }
 
 SearchPagePosition (dw, number)
@@ -69,10 +72,14 @@ SearchPagePosition (dw, number)
 	return m->position;
 }
 
-FileSeek(fp, Position)
-FILE	*fp;
-long	Position;
+FileSeek(dw, Position)
+DviWidget	dw;
+long		Position;
 {
-	fseek(fp,Position,0);
+	if (dw->dvi.tmpFile) {
+		dw->dvi.readingTmp = 1;
+		fseek (dw->dvi.tmpFile, Position, 0);
+	} else
+		fseek (dw->dvi.file, Position, 0);
 }
 

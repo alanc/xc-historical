@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.1 89/03/01 15:50:38 keith Exp $";
 #endif lint
 
 /*
@@ -56,8 +56,8 @@ S2	-*-symbol-medium-r-normal--*-%s-75-75-*-*-adobe-fontspecific\n\
 
 #define offset(field) XtOffset(DviWidget, field)
 
-# define MY_WIDTH	1000
-# define MY_HEIGHT	1000
+# define MY_WIDTH	675
+# define MY_HEIGHT	825
 
 static XtResource resources[] = { 
 	{XtNfontMap, XtCFontMap, XtRString, sizeof (char *),
@@ -70,8 +70,12 @@ static XtResource resources[] = {
 	 offset (dvi.last_page), XtRString, "0"},
 	{XtNfileName, XtCFileName, XtRString, sizeof (char *),
 	 offset(dvi.file_name), XtRString, (char *) 0},
+	{XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
+	 offset(dvi.default_font), XtRString, "xtdefaultfont"},
 	{XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
 	 offset(dvi.backing_store), XtRString, "default"},
+	{XtNnoPolyText, XtCNoPolyText, XtRBoolean, sizeof (Boolean),
+	 offset(dvi.noPolyText), XtRString, "false"},
 };
 
 #undef offset
@@ -81,6 +85,7 @@ static void		Initialize(), Realize (), Destroy (), Redisplay ();
 static Boolean		SetValues ();
 static XtGeometryResult	QueryGeometry ();
 static void		ShowDvi ();
+static void		CloseFile (), OpenFile ();
 
 static DviClassRec dviClassRec = {
 {
@@ -166,10 +171,8 @@ Realize (w, valueMask, attrs)
 	values.foreground = dw->dvi.foreground;
 	dw->dvi.normal_GC = XCreateGC (XtDisplay (w), XtWindow (w),
 					GCForeground, &values);
-	dw->dvi.default_font = XQueryFont (XtDisplay (w), XtWindow (w),
-					   dw->dvi.normal_GC);
 	if (dw->dvi.file_name)
-		dw->dvi.file = fopen (dw->dvi.file_name, "r");
+		OpenFile (dw);
 	ParseFontMap (dw);
 }
 
@@ -237,18 +240,45 @@ SetValues (current, request, new)
 		ParseFontMap (new);
 	}
 	if (current->dvi.file_name != request->dvi.file_name) {
-		redisplay = TRUE;
-		if (current->dvi.file)
-			fclose (current->dvi.file);
-		new->dvi.file = fopen (request->dvi.file_name, "r");
+		CloseFile (current);
 		new->dvi.file_name = malloc (strlen (request->dvi.file_name) + 1);
 		if (new->dvi.file_name)
 			strcpy (new->dvi.file_name, request->dvi.file_name);
 		if (current->dvi.file_name)
 			free (current->dvi.file_name);
-		new->dvi.requested_page = 1;
+		OpenFile (new);
+		redisplay = TRUE;
 	}
 	return redisplay;
+}
+
+static void CloseFile (dw)
+	DviWidget	dw;
+{
+	if (dw->dvi.file) {
+		if (strcmp (dw->dvi.file, "-"))
+			fclose (dw->dvi.file);
+		else
+			fclose (dw->dvi.tmpFile);
+	}
+}
+
+static void OpenFile (dw)
+	DviWidget	dw;
+{
+	char	tmpName[sizeof ("/tmp/dviXXXXXX")];
+
+	if (!strcmp (dw->dvi.file_name, "-")) {
+		dw->dvi.file = stdin;
+		strcpy (tmpName, "/tmp/dviXXXXXX");
+		mktemp (tmpName);
+		dw->dvi.tmpFile = fopen (tmpName, "w+");
+		unlink (tmpName);
+	} else {
+		dw->dvi.file = fopen (dw->dvi.file_name, "r");
+		dw->dvi.tmpFile = 0;
+	}
+	dw->dvi.requested_page = 1;
 }
 
 static XtGeometryResult
@@ -259,7 +289,7 @@ QueryGeometry (w, request, geometry_return)
 	XtGeometryResult	ret;
 
 	ret = XtGeometryYes;
-	if (request->width != MY_WIDTH || request->height != MY_HEIGHT)
+	if (request->width < MY_WIDTH || request->height < MY_HEIGHT)
 		ret = XtGeometryAlmost;
 	geometry_return->width = MY_WIDTH;
 	geometry_return->height = MY_HEIGHT;
@@ -296,7 +326,7 @@ ShowDvi (dw)
 
 	file_position = SearchPagePosition (dw, dw->dvi.requested_page);
 	if (file_position != -1) {
-		FileSeek(dw->dvi.file, file_position);
+		FileSeek(dw, file_position);
 		dw->dvi.current_page = dw->dvi.requested_page;
 	} else {
 		for (i=dw->dvi.requested_page; i > 0; i--) {
@@ -306,7 +336,7 @@ ShowDvi (dw)
 		}
 		if (file_position == -1)
 			file_position = 0;
-		FileSeek (dw->dvi.file, file_position);
+		FileSeek (dw, file_position);
 
 		dw->dvi.current_page = i;
 		
@@ -320,14 +350,13 @@ ShowDvi (dw)
 				file_position = SearchPagePosition (dw,
 						dw->dvi.current_page);
 				if (file_position != -1)
-					FileSeek (dw->dvi.file, file_position);
-				if (dw->dvi.requested_page > dw->dvi.last_page)
-					dw->dvi.requested_page = dw->dvi.last_page;
+					FileSeek (dw, file_position);
 			}
 		}
 	}
 	
 	dw->dvi.display_enable = 1;
 	ParseInput (dw);
-	FlushCharCache (dw);
+	if (dw->dvi.last_page && dw->dvi.requested_page > dw->dvi.last_page)
+		dw->dvi.requested_page = dw->dvi.last_page;
 }
