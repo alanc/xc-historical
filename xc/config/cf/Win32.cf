@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.16 93/08/17 14:28:36 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.17 93/08/17 19:41:15 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -23,6 +23,7 @@ XCOMM operating system:  OSName
 #define ExtraLibraries libc.lib kernel32.lib wsock32.lib
 #define MakeCmd nmake -nologo
 #define LdCmd link32
+#define MathLibrary
 #define HasSymLinks		NO
 #define HasPutenv		YES
 #define Osuf obj
