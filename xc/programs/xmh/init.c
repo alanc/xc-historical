@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.53 91/02/17 16:49:50 dave Exp $
+ * $XConsortium: init.c,v 2.54 91/04/02 19:28:46 gildea Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -346,9 +346,14 @@ char **argv;
     fid = myfopen(str, "r");
     if (fid) {
 	while (ptr = ReadLine(fid)) {
+	    char *cp;
+
 	    (void) strncpy(str2, ptr, 5);
 	    str2[5] = '\0';
-	    LowerCase(str2, str2);
+	    for (cp = str2; *cp; cp++) {
+		if ('A' <= *cp && *cp <= 'Z')
+		    *cp = *cp - 'A' + 'a';
+	    }
 	    if (strcmp(str2, "path:") == 0) {
 		ptr += 5;
 		while (*ptr == ' ' || *ptr == '\t')
