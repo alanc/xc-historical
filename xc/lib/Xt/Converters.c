@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.71 91/04/30 12:28:43 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.72 91/04/30 18:57:41 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -44,55 +44,45 @@ static Const String XtNwrongParameters = "wrongParameters";
 static Const String XtNconversionError = "conversionError";
 static Const String XtNmissingCharsetList = "missingCharsetList";
 
-static XrmQuark  XtQAtom;
+#define XtQAtom		XrmPermStringToQuark(XtRAtom)
+#define XtQCursor	XrmPermStringToQuark(XtRCursor)
+#define XtQDisplay	XrmPermStringToQuark(XtRDisplay)
+#define XtQFile		XrmPermStringToQuark(XtRFile)
+#define XtQFloat	XrmPermStringToQuark(XtRFloat)
+#define XtQGeometry	XrmPermStringToQuark(XtRGeometry)
+#define XtQInitialState	XrmPermStringToQuark(XtRInitialState)
+#define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
+#define XtQShort	XrmPermStringToQuark(XtRShort)
+#define XtQUnsignedChar	XrmPermStringToQuark(XtRUnsignedChar)
+#define XtQVisual	XrmPermStringToQuark(XtRVisual)
+
 static XrmQuark  XtQBoolean;
 static XrmQuark  XtQBool;
 static XrmQuark  XtQColor;
-static XrmQuark  XtQCursor;
-static XrmQuark  XtQDisplay;
 static XrmQuark  XtQDimension;
-static XrmQuark  XtQFile;
-static XrmQuark  XtQFloat;
 static XrmQuark  XtQFont;
 static XrmQuark  XtQFontSet;
 static XrmQuark  XtQFontStruct;
-static XrmQuark  XtQGeometry;
-static XrmQuark  XtQInitialState;
 static XrmQuark  XtQInt;
 static XrmQuark  XtQPixel;
-static XrmQuark  XtQPixmap;
 static XrmQuark  XtQPosition;
-static XrmQuark  XtQShort;
 XrmQuark  XtQString;
-static XrmQuark  XtQUnsignedChar;
-static XrmQuark  XtQVisual;
 
 void _XtConvertInitialize()
 {
 /* Representation types */
 
-    XtQAtom		= XrmPermStringToQuark(XtRAtom);
     XtQBoolean		= XrmPermStringToQuark(XtRBoolean);
     XtQColor		= XrmPermStringToQuark(XtRColor);
-    XtQCursor		= XrmPermStringToQuark(XtRCursor);
     XtQDimension	= XrmPermStringToQuark(XtRDimension);
-    XtQDisplay		= XrmPermStringToQuark(XtRDisplay);
-    XtQFile		= XrmPermStringToQuark(XtRFile);
-    XtQFloat		= XrmPermStringToQuark(XtRFloat);
     XtQFont		= XrmPermStringToQuark(XtRFont);
     XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
     XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
-    XtQGeometry		= XrmPermStringToQuark(XtRGeometry);
-    XtQInitialState     = XrmPermStringToQuark(XtRInitialState);
     XtQInt		= XrmPermStringToQuark(XtRInt);
     XtQBool		= XrmPermStringToQuark(XtRBool);
     XtQPixel		= XrmPermStringToQuark(XtRPixel);
-    XtQPixmap		= XrmPermStringToQuark(XtRPixmap);
     XtQPosition		= XrmPermStringToQuark(XtRPosition);
-    XtQShort            = XrmPermStringToQuark(XtRShort);
     XtQString		= XrmPermStringToQuark(XtRString);
-    XtQUnsignedChar     = XrmPermStringToQuark(XtRUnsignedChar);
-    XtQVisual	        = XrmPermStringToQuark(XtRVisual);
 }
 
 #define	done(type, value) \
@@ -113,7 +103,6 @@ void _XtConvertInitialize()
 	    return True;					\
 	}
 
-static Boolean CvtStringToBoolean();
 
 #if NeedFunctionPrototypes
 void XtDisplayStringConversionWarning(
@@ -152,7 +141,7 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 		Boolean report;
 		toVal.addr = (caddr_t)&report; /* Xresource.h says caddr_t */
 		toVal.size = sizeof(Boolean);
-		if (XtCallConverter(dpy, CvtStringToBoolean, (XrmValuePtr)NULL,
+		if (XtCallConverter(dpy, XtCvtStringToBoolean, (XrmValuePtr)NULL,
 				    (Cardinal)0, &value, &toVal,
 				    (XtCacheRef*)NULL))
 		    report_it = report ? Report : Ignore;
@@ -198,27 +187,6 @@ void XtStringConversionWarning(from, toType)
 
 static int CompareISOLatin1();
 
-static Boolean CvtXColorToPixel();
-static Boolean CvtIntToBoolean();
-static Boolean CvtIntToBool();
-static Boolean CvtIntToPixmap();
-static Boolean CvtIntToFont();
-static Boolean CvtIntOrPixelToXColor();
-static Boolean CvtIntToPixel();
-
-static Boolean CvtStringToBool();
-static Boolean CvtStringToCursor();
-static Boolean CvtStringToDisplay();
-static Boolean CvtStringToFile();
-static Boolean CvtStringToFloat();
-static Boolean CvtStringToFont();
-static Boolean CvtStringToFontSet();
-static Boolean CvtStringToFontStruct();
-static Boolean CvtStringToGeometry();
-static Boolean CvtStringToInt();
-static Boolean CvtStringToShort();
-static Boolean CvtStringToUnsignedChar();
-static Boolean CvtStringToPixel();
 
 static Boolean IsInteger(string, value)
     String string;
@@ -269,7 +237,7 @@ static Boolean IsInteger(string, value)
 
 
 /*ARGSUSED*/
-static Boolean CvtIntToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -287,7 +255,7 @@ static Boolean CvtIntToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
 
 
 /*ARGSUSED*/
-static Boolean CvtIntToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -305,7 +273,7 @@ static Boolean CvtIntToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
 
 
 /*ARGSUSED*/
-static Boolean CvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -336,7 +304,7 @@ static Boolean CvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_r
 
 
 /*ARGSUSED*/
-static Boolean CvtIntToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -354,7 +322,7 @@ static Boolean CvtIntToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
 
 
 /*ARGSUSED*/
-static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -393,7 +361,7 @@ XtConvertArgRec Const colorConvertArgs[] = {
 
 
 /* ARGSUSED */
-static Boolean CvtIntOrPixelToXColor(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToColor(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -419,7 +387,7 @@ static Boolean CvtIntOrPixelToXColor(dpy, args, num_args, fromVal, toVal, closur
 }
 
 
-static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -556,7 +524,7 @@ static XtConvertArgRec Const displayConvertArg[] = {
 };
 
 /*ARGSUSED*/
-static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -689,7 +657,7 @@ static void FreeCursor(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -715,7 +683,7 @@ static Boolean CvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_r
 
 
 /*ARGSUSED*/
-static Boolean CvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -757,7 +725,7 @@ static void FreeFile(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -779,7 +747,7 @@ static Boolean CvtStringToFloat(dpy, args, num_args, fromVal, toVal, closure_ret
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -869,7 +837,7 @@ static void FreeFont(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
-static Boolean CvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -886,14 +854,13 @@ static Boolean CvtIntToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
-static Boolean 
-CvtStringToFontSet( dpy, args, num_args, fromVal, toVal, closure_ret )
-    Display*  dpy;
+Boolean XtCvtStringToFontSet(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*    dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
-    XrmValuePtr       fromVal;
-    XrmValuePtr       toVal;
-    XtPointer *closure_ret;
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+    XtPointer   *closure_ret;
 {
     XFontSet  f;
     Display*  display;
@@ -1027,8 +994,8 @@ static XtConvertArgRec Const localeDisplayConvertArgs[] = {
 
 
 /*ARGSUSED*/
-static Boolean
-CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean
+XtCvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1121,7 +1088,7 @@ static void FreeFontStruct(app, toVal, closure, args, num_args)
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1144,7 +1111,7 @@ static Boolean CvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1167,7 +1134,7 @@ static Boolean CvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1194,7 +1161,7 @@ static Boolean CvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, clos
 
 
 /*ARGSUSED*/
-static Boolean CvtXColorToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtColorToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1211,7 +1178,7 @@ static Boolean CvtXColorToPixel(dpy, args, num_args, fromVal, toVal, closure_ret
 }
 
 /*ARGSUSED*/
-static Boolean CvtIntToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1228,7 +1195,7 @@ static Boolean CvtIntToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
-static Boolean CvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1296,8 +1263,8 @@ static int CompareISOLatin1 (first, second)
 
 
 /*ARGSUSED*/
-static Boolean 
-CvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean 
+XtCvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1330,8 +1297,7 @@ static XtConvertArgRec Const visualConvertArgs[] = {
 };
 
 /*ARGSUSED*/
-static Boolean 
-CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;		/* Screen, depth */
     Cardinal    *num_args;	/* 2 */
@@ -1384,8 +1350,7 @@ CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
 
 
 /*ARGSUSED*/
-static Boolean 
-CvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
+Boolean XtCvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -1420,56 +1385,59 @@ _XtAddDefaultConverters(table)
 	    (XtConvertArgList) convert_args, (Cardinal)num_args, \
 	    True, cache, destructor)
 
-    Add(XtQColor,   XtQPixel,	    CvtXColorToPixel,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQBoolean,	    CvtIntToBoolean,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQBool,	    CvtIntToBool,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQDimension,   CvtIntToShort,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQPixel,	    CvtIntToPixel,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQPosition,    CvtIntToShort,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQPixmap,	    CvtIntToPixmap,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQFont,	    CvtIntToFont,	NULL, 0, XtCacheNone);
-    Add(XtQInt,	    XtQColor,	    CvtIntOrPixelToXColor,
+    Add(XtQColor, XtQPixel,       XtCvtColorToPixel,   NULL, 0, XtCacheNone);
+
+    Add(XtQInt,   XtQBoolean,     XtCvtIntToBoolean,   NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQBool,	  XtCvtIntToBool,      NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQColor,	  XtCvtIntToColor,
+	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
+    Add(XtQInt,   XtQDimension,   XtCvtIntToShort,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQFont,	  XtCvtIntToFont,      NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQPixel,	  XtCvtIntToPixel,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQPixmap,      XtCvtIntToPixmap,    NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQPosition,    XtCvtIntToShort,     NULL, 0, XtCacheNone);
+
+    Add(XtQPixel, XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
 
-    Add(XtQString,  XtQBoolean,	    CvtStringToBoolean, NULL, 0, XtCacheNone);
-    Add(XtQString,  XtQBool,	    CvtStringToBool,	NULL, 0, XtCacheNone);
-    Add2(XtQString,  XtQCursor,	    CvtStringToCursor,
+    Add(XtQString, XtQAtom,       XtCvtStringToAtom,
+	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
+    Add(XtQString, XtQBoolean,    XtCvtStringToBoolean, NULL, 0, XtCacheNone);
+    Add(XtQString, XtQBool,       XtCvtStringToBool,    NULL, 0, XtCacheNone);
+   Add2(XtQString, XtQCursor,     XtCvtStringToCursor,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeCursor);
+    Add(XtQString, XtQDimension,  XtCvtStringToShort,   NULL, 0, XtCacheNone);
+    Add(XtQString, XtQDisplay,    XtCvtStringToDisplay, NULL, 0, XtCacheAll);
+   Add2(XtQString, XtQFile,       XtCvtStringToFile,    NULL, 0,
+	XtCacheAll | XtCacheRefCount, FreeFile);
+    Add(XtQString, XtQFloat,      XtCvtStringToFloat,   NULL, 0, XtCacheNone);
 
-    Add(XtQString,  XtQDimension,   CvtStringToShort,	NULL, 0, XtCacheNone);
-    Add(XtQString,  XtQDisplay,	    CvtStringToDisplay, NULL, 0, XtCacheAll);
-    Add2(XtQString, XtQFile,	    CvtStringToFile,	NULL, 0,
-	 XtCacheAll | XtCacheRefCount, FreeFile);
-    Add(XtQString,  XtQFloat,	    CvtStringToFloat,	NULL, 0, XtCacheNone);
-    Add2(XtQString, XtQFont,	    CvtStringToFont,
+   Add2(XtQString, XtQFont,       XtCvtStringToFont,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFont);
-    Add2(XtQString, XtQFontSet,     CvtStringToFontSet,
+   Add2(XtQString, XtQFontSet,    XtCvtStringToFontSet,
 	localeDisplayConvertArgs, XtNumber(localeDisplayConvertArgs),
 	XtCacheByDisplay, FreeFontSet);
-    Add2(XtQString, XtQFontStruct,  CvtStringToFontStruct,
+   Add2(XtQString, XtQFontStruct, XtCvtStringToFontStruct,
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
-    Add(XtQString,  XtQInt,	    CvtStringToInt,	NULL, 0, XtCacheAll);
-    Add(XtQString,  XtQPosition,    CvtStringToShort,	NULL, 0, XtCacheAll);
-    Add2(XtQString, XtQPixel,	    CvtStringToPixel,
+
+    Add(XtQString, XtQGeometry,   CvtStringToGeometry, NULL, 0, XtCacheNone);
+
+    Add(XtQString, XtQInt,	    XtCvtStringToInt,    NULL, 0, XtCacheAll);
+    Add(XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
+	XtCacheNone);
+   Add2(XtQString, XtQPixel,        XtCvtStringToPixel,
 	colorConvertArgs, XtNumber(colorConvertArgs),
 	XtCacheByDisplay, FreePixel);
-    Add(XtQString,  XtQShort,	    CvtStringToShort,	NULL, 0, XtCacheAll);
-    Add(XtQString,  XtQUnsignedChar,CvtStringToUnsignedChar,NULL,0,XtCacheAll);
-
-    Add(XtQPixel,   XtQColor,	    CvtIntOrPixelToXColor,
-	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
-
-    Add(XtQString,  XtQGeometry,    CvtStringToGeometry, NULL, 0, XtCacheNone);
-    Add(XtQString,  XtQInitialState,CvtStringToInitialState, NULL, 0, XtCacheNone);
-    Add2(XtQString, XtQVisual,	    CvtStringToVisual,
+    Add(XtQString, XtQPosition,     XtCvtStringToShort,  NULL, 0, XtCacheAll);
+    Add(XtQString, XtQShort,        XtCvtStringToShort,  NULL, 0, XtCacheAll);
+    Add(XtQString, XtQUnsignedChar, XtCvtStringToUnsignedChar,
+	NULL, 0, XtCacheAll);
+   Add2(XtQString, XtQVisual,       XtCvtStringToVisual,
 	visualConvertArgs, XtNumber(visualConvertArgs),
 	XtCacheByDisplay, NULL);
-
-    Add(XtQString,  XtQAtom,	    CvtStringToAtom,
-	displayConvertArg, XtNumber(displayConvertArg), XtCacheNone);
 
    _XtAddTMConverters(table);
 }
