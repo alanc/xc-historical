@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.4 89/11/05 12:57:11 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.5 89/11/05 15:15:24 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -29,6 +29,13 @@ without any express or implied warranty.
 
 extern void miPolyFillArc();
 
+/* gcc 1.35 is stupid */
+#if defined(__GNUC__) && defined(mc68020)
+    #define STUPID volatile
+#else
+    #define STUPID
+#endif
+
 static void
 cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     DrawablePtr pDraw;
@@ -36,8 +43,8 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     xArc *arc;
 {
     int iscircle;
-    int x, y, e, ex;
-    int yk, xk, ym, xm, dx, dy, xorg, yorg;
+    STUPID int x, y, e, ex;
+    STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
     int slw;
     miFillArcRec info;
     int *addrlt, *addrlb;
