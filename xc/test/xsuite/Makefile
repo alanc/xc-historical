@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.4 94/04/04 19:08:31 rws Exp $
+# $XConsortium: Makefile,v 1.5 94/04/17 20:59:47 rws Exp dpw $
 
 #
 # Makefile for building the TET and the X test suite libraries/utilities.
@@ -82,6 +82,7 @@ install:
 	cd xtest/src/xim; pmake install
 	cd xtest/fonts; pmake install
 	cd xtest/src/bin/mc ; pmake install
+	cd xtest/src/bin/mc/tmpl ; pmake install
 	cd xtest/src/pixval/blowup; pmake install
 
 clean:

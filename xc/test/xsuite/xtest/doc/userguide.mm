@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.10 92/07/04 17:05:08 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.11 92/07/05 12:46:46 rws Exp dpw $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
@@ -1183,6 +1183,8 @@ Build
 and install in the xtest bin directory as follows.
 .cS
 cd $TET_ROOT/xtest/src/bin/mc
+pmake install
+cd $TET_ROOT/xtest/src/bin/mc/tmpl
 pmake install
 .cE
 .H 2 "Building the blowup utility"
