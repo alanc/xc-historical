@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.87 91/01/08 09:25:02 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.88 91/01/08 11:58:37 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -321,6 +321,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #endif
 #ifndef HasDESLibrary
 #define HasDESLibrary		NO	/* if you have any DES library */
+#endif
+#ifndef HasSecureRPC
+#define HasSecureRPC		NO	/* if you have Secure RPC */
 #endif
 #ifndef HasShm
 #if SystemV || SystemV4
