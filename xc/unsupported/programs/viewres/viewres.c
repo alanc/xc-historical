@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.21 90/02/05 23:42:32 jim Exp $
+ * $XConsortium: viewres.c,v 1.22 90/02/06 15:00:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -110,18 +110,22 @@ static XtActionsRec viewres_actions[] = {
 #define FORMAT_HORIZONTAL 2
 #define FORMAT_VERTICAL 3
 #define FORMAT_number 4
-#define SELECT_NOTHING 0
-#define SELECT_PARENTS 1
-#define SELECT_ALL 2
-#define SELECT_WITH_RESOURCES 3
-#define SELECT_WITHOUT_RESOURCES 4
-#define SELECT_number 5
+#define SELECT_INVERT 0
+#define SELECT_NOTHING 1
+#define SELECT_PARENTS 2
+#define SELECT_ALL 3
+#define SELECT_WITH_RESOURCES 4
+#define SELECT_WITHOUT_RESOURCES 5
+#define SELECT_number 6
 
 static Widget treeWidget;
 static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
 static Widget format_widgets[FORMAT_number];
 static Widget select_widgets[SELECT_number];
 static WidgetNode *topnode;
+
+static Arg false_args[1] = {{ XtNstate, (XtArgVal) FALSE }};
+static Arg true_args[1] = {{ XtNstate, (XtArgVal) TRUE }};
 
 struct {
     int n_elements;
@@ -218,12 +222,7 @@ static void add_to_selected_list (node, updatewidget)
     INSERT_NODE (node, selected_list.n_elements);
     selected_list.n_elements++;
 
-    if (updatewidget) {
-	Arg args[1];
-
-	XtSetArg (args[0], XtNstate, TRUE);
-	XtSetValues (node->instance, args, ONE);
-    }
+    if (updatewidget) XtSetValues (node->instance, true_args, ONE);
 }
 
 static Boolean remove_from_selected_list (node, updatewidget)
@@ -244,14 +243,23 @@ static Boolean remove_from_selected_list (node, updatewidget)
     }
     selected_list.n_elements -= skips;
 
-    if (updatewidget) {
-	Widget w = node->instance;
-	Arg args[1];
-
-	XtSetArg (args[0], XtNstate, FALSE);
-	XtSetValues (w, args, ONE);
-    }
+    if (updatewidget) XtSetValues (node->instance, false_args, ONE);
 }
+
+static Boolean remove_nodes_from_selected_list (start, count, updatewidget)
+    int start, count;
+    Boolean updatewidget;
+{
+    int i;
+
+    for (i = 0; i < count; i++) {
+	register WidgetNode *p = selected_list.elements[i];
+	REMOVE_NODE (p);
+	if (updatewidget) XtSetValues (p->instance, false_args, ONE);
+    }
+    selected_list.n_elements -= copydown (0);
+}
+	    
 
 /* ARGSUSED */
 static void select_callback (gw, closure, data)
@@ -261,17 +269,19 @@ static void select_callback (gw, closure, data)
 {
     register int i;
     int nselected = selected_list.n_elements;
-    Arg args[1];
 
     switch ((int) closure) {
-      case SELECT_NOTHING:		/* clear selection_list */
-	XtSetArg (args[0], XtNstate, FALSE);
-	for (i = 0; i < nselected; i++) {
-	    register WidgetNode *p = selected_list.elements[i];
-	    REMOVE_NODE (p);
-	    XtSetValues (p->instance, args, ONE);
+      case SELECT_INVERT:		/* toggle selection state */
+	for (i = 0; i < nwidgets; i++) {
+	    WidgetNode *node = &widget_list[i];
+
+	    if (node->selection_index < 0) add_to_selected_list (node, TRUE);
 	}
-	selected_list.n_elements = 0;
+	remove_nodes_from_selected_list (0, nselected, True);
+	break;
+
+      case SELECT_NOTHING:		/* clear selection_list */
+	remove_nodes_from_selected_list (0, nselected, True);
 	break;
 
       case SELECT_PARENTS:		/* chain up adding to selection_list */
@@ -282,7 +292,7 @@ static void select_callback (gw, closure, data)
 	    while (parent = parent->superclass) {  /* do parents */
 		if (parent->selection_index >= 0 &&  /* hit already selected */
 		    parent->selection_index < nselected) break;	 /* later... */
-		add_to_selected_list (parent, True);
+		add_to_selected_list (parent, TRUE);
 	    }
 	}
 	break;
@@ -294,7 +304,7 @@ static void select_callback (gw, closure, data)
 					nwidgets);
 	}
 	for (i = 0; i < nwidgets; i++) {
-	    add_to_selected_list (&widget_list[i], True);
+	    add_to_selected_list (&widget_list[i], TRUE);
 	}
 	break;
 
@@ -302,7 +312,7 @@ static void select_callback (gw, closure, data)
 	for (i = 0; i < nwidgets; i++) {
 	    WidgetNode *node = &widget_list[i];
 
-	    if (node->nresources > 0) add_to_selected_list (node, True);
+	    if (node->nnewresources > 0) add_to_selected_list (node, TRUE);
 	}
 	break;
 
@@ -310,7 +320,7 @@ static void select_callback (gw, closure, data)
 	for (i = 0; i < nwidgets; i++) {
 	    WidgetNode *node = &widget_list[i];
 
-	    if (node->nresources == 0) add_to_selected_list (node, True);
+	    if (node->nnewresources == 0) add_to_selected_list (node, TRUE);
 	}
 	break;
 
@@ -369,7 +379,9 @@ main (argc, argv)
     XtSetArg (args[1], XtNheight, 1);
     dummy = XtCreateWidget ("dummy", widgetClass, toplevel, args, TWO);
     for (i = 0; i < nwidgets; i++) {
-	initialize_resources (&widget_list[i], dummy, topnode);
+	WidgetNode *node = &widget_list[i];
+	initialize_resources (node, dummy, topnode);
+	node->nnewresources = count_owned_resources (node, node);
     }
     XtDestroyWidget (dummy);
 
@@ -423,6 +435,7 @@ main (argc, argv)
     MAKE_SELECT (SELECT_NOTHING, "unselect");
     (void) XtCreateManagedWidget ("line", smeLineObjectClass, selectMenu,
 				  NULL, ZERO);
+    MAKE_SELECT (SELECT_INVERT, "selectInvert");
     MAKE_SELECT (SELECT_PARENTS, "selectParents");
     MAKE_SELECT (SELECT_ALL, "selectAll");
     MAKE_SELECT (SELECT_WITH_RESOURCES, "selectWithResources");
@@ -525,9 +538,9 @@ static void HandleSetOrientation (w, event, params, num_params)
     if (XmuCompareISOLatin1 (cmd, "toggle") == 0) {
 	horiz = !oldhoriz;
     } else if (XmuCompareISOLatin1 (cmd, "horizontal") == 0) {
-	horiz = True;
+	horiz = TRUE;
     } else if (XmuCompareISOLatin1 (cmd, "vertical") == 0) {
-	horiz = False;
+	horiz = FALSE;
     } else {
 	XBell (XtDisplay(w), 0);
 	return;
@@ -554,7 +567,9 @@ static void HandleSelect (w, event, params, num_params)
 
     cmd = (char *) params[0];
 
-    if (XmuCompareISOLatin1 (cmd, "nothing") == 0) {
+    if (XmuCompareISOLatin1 (cmd, "invert") == 0) {
+	obj = SELECT_INVERT;
+    } else if (XmuCompareISOLatin1 (cmd, "nothing") == 0) {
 	obj = SELECT_NOTHING;
     } else if (XmuCompareISOLatin1 (cmd, "parents") == 0) {
 	obj = SELECT_PARENTS;
