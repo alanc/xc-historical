@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skyFillRct.c,v 1.2 91/12/11 21:40:49 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -63,7 +63,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 /* ------ */
 
 
-#if PPW == 4
+#if PSZ == 8
 extern void cfb8FillRectOpaqueStippled32();
 extern void cfb8FillRectTransparentStippled32();
 extern void cfb8FillRectStippledUnnatural();
@@ -171,7 +171,7 @@ skyPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 		BoxFill = cfbFillRectTile32General;
 	}
 	break;
-#if (PPW == 4)
+#if (PSZ == 8)
     case FillStippled:
 	if (!((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
 							pRotatedPixmap)
@@ -480,7 +480,7 @@ skyPolyFillRectSolid_1Rect(pDrawable, pGC, nrect, prect)
 	    /* Set boundary rectangle */
 
 	    SKYSetMaskXY(scrnNum, pClipBox->x1, pClipBox->y1);
-	    SKYSetPixmap(scrnNum, MaskMap, SC_INVIS_VRAM_BASE,
+	    SKYSetPixmap(scrnNum, MaskMap, SKY_INVIS_VRAM_BASE(scrnNum),
 		pClipBox->x2 - pClipBox->x1,
 		pClipBox->y2 - pClipBox->y1,
 		PixSize1);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyReg.h,v 1.2	91/07/16 13:16:14 jap Exp $
+ * $XConsortium: skyReg.h,v 1.3 91/12/11 21:25:42 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -216,7 +216,7 @@ extern skyCopRegRec	COPREG_SHADOW[];	/* Coprocessor shadow struct */
 					PackCoord(x,y), (op))
 
 #define SKYSetupScreenPix(i,pixsize)	\
-	SKYSetPixmap(i,PixMapC,SC_VRAM_BASE,1280,1024, pixsize)
+	SKYSetPixmap(i,PixMapC,SKY_VRAM_BASE[i],1280,1024, pixsize)
 
 
 /* Initiates a pixel operation that uses a tile.

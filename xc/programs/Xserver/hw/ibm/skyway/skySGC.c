@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skySGC.c,v 1.6 91/12/11 21:40:54 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -95,7 +95,7 @@ GCOps	skyTEOps1Rect_Win = {
     skyCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-#if PPW == 4
+#if PSZ == 8
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
 #else
@@ -103,7 +103,7 @@ GCOps	skyTEOps1Rect_Win = {
     cfbSegmentSS,
 #endif
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -115,7 +115,7 @@ GCOps	skyTEOps1Rect_Win = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
+#if PSZ == 8
     cfbTEGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
@@ -135,7 +135,7 @@ GCOps	skyTEOps1Rect = {
     skyCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-#if PPW == 4
+#if PSZ == 8
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
 #else
@@ -143,7 +143,7 @@ GCOps	skyTEOps1Rect = {
     cfbSegmentSS,
 #endif
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -155,7 +155,7 @@ GCOps	skyTEOps1Rect = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
+#if PSZ == 8
     cfbTEGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
@@ -177,7 +177,7 @@ GCOps	skyTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -189,7 +189,7 @@ GCOps	skyTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
+#if PSZ == 8
     cfbTEGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
@@ -209,7 +209,7 @@ GCOps	skyNonTEOps1Rect_Win = {
     skyCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-#if PPW == 4
+#if PSZ == 8
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
 #else
@@ -217,7 +217,7 @@ GCOps	skyNonTEOps1Rect_Win = {
     cfbSegmentSS,
 #endif
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -243,7 +243,7 @@ GCOps	skyNonTEOps1Rect = {
     skyCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-#if PPW == 4
+#if PSZ == 8
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
 #else
@@ -251,7 +251,7 @@ GCOps	skyNonTEOps1Rect = {
     cfbSegmentSS,
 #endif
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -279,7 +279,7 @@ GCOps	skyNonTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-#if PPW == 4
+#if PSZ == 8
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -291,7 +291,7 @@ GCOps	skyNonTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
+#if PSZ == 8
     cfbImageGlyphBlt8,
     cfbPolyGlyphBlt8,
     cfbPushPixels8,
@@ -323,7 +323,7 @@ skyMatchCommon (pDrawable, pGC, devPriv)
 	FONTMINBOUNDS(pGC->font,characterWidth) >= 0)
     {
 	if (TERMINALFONT(pGC->font)
-#if PPW == 4
+#if PSZ == 8
 	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 	)
@@ -465,7 +465,7 @@ skyDestroyOps (ops)
     }									\
 }
 
-#if PPW == 4
+#if PSZ == 8
 /* See if Tile is can be represented as OpaqueStipple. If so, convert tile
  * to a packed stipple (no scanline pad).  Code borrowed from sunGX.c.
  *
@@ -631,7 +631,7 @@ skyCheckDegenerateTile (pPixmap, pGC)
 
     return TRUE;
 }
-#endif /* PPW == 4 */
+#endif /* PSZ == 8 */
 
 
 /* See if tile is not too big. */
@@ -652,7 +652,7 @@ skyCheckTile(pPixmap, pGC)
     }
 
 #ifndef NO_DEGEN_TEST
-#if PPW == 4
+#if PSZ == 8
     if (skyCheckDegenerateTile(pPixmap, pGC, stipple))
     {
 	pSkyPriv->fillMode = fill_stipple;
@@ -1076,7 +1076,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    break;
-#if (PPW == 4)
+#if (PSZ == 8)
 	case FillStippled:
 	case FillOpaqueStippled:
 	    {
@@ -1129,7 +1129,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    new_rrop = FALSE;
 	else
 	{
-#if PPW ==  4
+#if PSZ == 8
 	    new_line = TRUE;
 	    new_text = TRUE;
 #endif
@@ -1176,7 +1176,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	}
 	if (pGC->lineWidth == 0)
 	{
-#if PPW == 4
+#if PSZ == 8
 	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
 	    {
 		switch (devPriv->rop)
@@ -1206,7 +1206,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    {
 		if (pGC->fillStyle == FillSolid)
 		{
-#if PPW == 4
+#if PSZ == 8
 		    if (devPriv->oneRect)
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
@@ -1247,7 +1247,7 @@ skyValidateGC(pGC, changes, pDrawable)
         }
         else
         {
-#if PPW == 4
+#if PSZ == 8
 	    if (pGC->fillStyle == FillSolid)
 	    {
 		if (devPriv->rop == GXcopy)
@@ -1261,12 +1261,12 @@ skyValidateGC(pGC, changes, pDrawable)
             /* special case ImageGlyphBlt for terminal emulator fonts */
             if (TERMINALFONT(pGC->font) &&
 		(pGC->planemask & PMSK) == PMSK
-#if PPW == 4
+#if PSZ == 8
 		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 		)
 	    {
-#if PPW == 4
+#if PSZ == 8
                 pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
 #else
                 pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
@@ -1274,7 +1274,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    }
             else
 	    {
-#if PPW == 4
+#if PSZ == 8
 		if (devPriv->rop == GXcopy &&
 		    pGC->fillStyle == FillSolid &&
 		    (pGC->planemask & PMSK) == PMSK)
@@ -1314,7 +1314,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-#if PPW == 4
+#if PSZ == 8
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
@@ -1322,7 +1322,7 @@ skyValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-#if PPW == 4
+#if PSZ == 8
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
@@ -1335,7 +1335,7 @@ skyValidateGC(pGC, changes, pDrawable)
     } /* end of new_fillspans */
 
     if (new_fillarea) {
-#if PPW != 4
+#if PSZ != 8
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled
 		|| pSkyPriv->fillMode != punt)
@@ -1343,7 +1343,7 @@ skyValidateGC(pGC, changes, pDrawable)
 	    pGC->ops->PolyFillRect = skyPolyFillRect;
 	}
 #endif
-#if PPW == 4
+#if PSZ == 8
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
 	    pGC->ops->PushPixels = cfbPushPixels8;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyHdwr.h,v 1.3 91/07/16 13:17:42 jap Exp $
+ * $XConsortium: skyHdwr.h,v 1.4 91/12/11 21:25:05 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *
@@ -71,6 +71,8 @@ typedef volatile struct	_skyIOReg
 *****************************************************************************/
 
 extern ulong		SKY_SEGMENT[];		/* Skyway segment address    */
+extern ulong		SKY_VRAM_BASE[];	/* Offset of VRAM area from  */
+						/* segment address           */
 extern ulong		SKY_VRAM_START[];	/* Start of VRAM area        */
 extern ulong		SKY_DMA0[];		/* DMA address 0             */
 extern ulong		SKY_DMA1[];		/* DMA address 1             */
@@ -144,22 +146,17 @@ extern ulong		SKY_TILESTIPID_CTR[];	/* TileStip ID counter       */
 #define SKY_WIDTH            1280
 #define SKY_HEIGHT           1024
 
-#define SKY_INVISO_SIZE		(SC_VRAM_END - SC_INVIS_VRAM_BASE + 1)
+#define SKY_INVISO_SIZE		(SC_VRAM_END_OFF - SC_INVIS_VRAM_OFF + 1)
 #define SKY_TILESTIP_AREAS	0x8
 #define SKY_MAX_TILESTIP_SIZE	(SKY_INVISO_SIZE/SKY_TILESTIP_AREAS)
 
-/* skycolor */
+#define SKY_INVIS_VRAM_BASE(scrnNum) \
+    (SKY_VRAM_BASE[scrnNum] + SC_INVIS_VRAM_OFF)
 
-#define SC_VRAM_BASE       0x400000	/* Start of screen VRAM     */
-#define SC_INVIS_VRAM_BASE 0x540000	/* Start of off-screen VRAM */
-#define SC_VRAM_END        0x5fffff	/* Last byte of VRAM        */
+/* skycolor-- offsets from SKY_VRAM_BASE[scrnNum] or SKY_VRAM_START[scrnNum] */
 
-
-/* skymono */
-
-#define SM_VRAM_BASE       0x400000	/* Start of screen VRAM     */
-#define SM_INVIS_VRAM_BASE 0x4A0000	/* Start of off-screen VRAM */
-#define SM_VRAM_END        0x4fffff	/* Last byte of VRAM        */
+#define SC_INVIS_VRAM_OFF  0x140000	/* Start of off-screen VRAM */
+#define SC_VRAM_END_OFF    0x1fffff	/* Last byte of VRAM        */
 
 
 /*   CRTC REGISTERS     */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skyFill.c,v 1.2 91/12/11 21:40:47 eswu Exp $
  *
  * Copyright IBM Corporation 1991 
  *
@@ -137,7 +137,7 @@ skyFindTileStip(scrnNum, tileStipID, size, base)
     if (! foundSlot)
 	entry = HashEntry(tileStipID);		/* Use first entry searched */
 
-    *base = SC_INVIS_VRAM_BASE + entry*SKY_MAX_TILESTIP_SIZE;
+    *base = SKY_INVIS_VRAM_BASE(scrnNum) + entry*SKY_MAX_TILESTIP_SIZE;
 
     TRACE(("\tentry=%d, base=0x%x, install=%d\n",
 	entry, base, id==tileStipID && id != 0));

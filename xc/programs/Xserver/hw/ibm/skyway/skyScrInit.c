@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyScrInit.c,v 1.3 91/10/17 14:43:03 eswu Exp $ 
+ * $XConsortium: skyScrInit.c,v 1.4 91/12/11 21:25:52 eswu Exp $ 
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -61,6 +61,7 @@ unsigned long ddpGCPrivateIndex;
 uint		skyHandle[MAXSCREENS];
 
 ulong           SKY_SEGMENT[MAXSCREENS];
+ulong           SKY_VRAM_BASE[MAXSCREENS];
 ulong           SKY_VRAM_START[MAXSCREENS];
 ulong           SKY_DMA0[MAXSCREENS];
 ulong           SKY_DMA1[MAXSCREENS];
@@ -147,6 +148,7 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
     segAddr = (ulong) skyHdwrInfo.segment;
 
     SKY_SEGMENT[scrnNum]    = segAddr;
+    SKY_VRAM_BASE[scrnNum]  = skyRegMap.vr_addr;
     SKY_VRAM_START[scrnNum] = segAddr | skyRegMap.vr_addr;
     IOREG[scrnNum]          = (skyIORegPtr) (segAddr | skyRegMap.io_addr);
     COPREG[scrnNum]         = (skyCopRegPtr) (segAddr | skyRegMap.cp_addr);
@@ -165,6 +167,7 @@ skyScreenInit(scrnNum, pScreen, argc, argv)
 
     TRACE(("SEGADDR[%d]      = %x\n", scrnNum, segAddr));
     TRACE(("VRAM_SEGMENT[%d] = %x\n", scrnNum, SKY_SEGMENT[scrnNum]));
+    TRACE(("VRAM_BASE[%d]    = %x\n", scrnNum, SKY_VRAM_BASE[scrnNum]));
     TRACE(("VRAM_START[%d]   = %x\n", scrnNum, SKY_VRAM_START[scrnNum]));
     TRACE(("IOREG[%d]        = %x\n", scrnNum, IOREG[scrnNum]));
     TRACE(("COPREG[%d]       = %x\n", scrnNum, COPREG[scrnNum]));
