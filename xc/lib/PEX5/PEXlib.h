@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.1 92/05/08 15:12:28 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.3 92/05/20 21:27:13 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -738,7 +738,7 @@ typedef struct {
     PEXEnumTypeIndex    polyline_interp;
     PEXTableIndex       line_bundle_index;
     PEXEnumTypeIndex    interior_style;
-    PEXTableIndex       interior_style_index;
+    PEXTypeOrTableIndex interior_style_index;
     PEXColorSpecifier   surface_color;
     PEXReflectionAttributes   reflection_attr;
     PEXEnumTypeIndex    reflection_model;
@@ -1260,18 +1260,6 @@ typedef struct {
             PEXName *names;
         } AddToNameSet;
         struct {
-            PEXCoord origin;
-            PEXCoord offset;
-            int length;
-            char *string;
-        } AnnotationText;
-        struct {
-            PEXCoord2D origin;
-            PEXCoord2D offset;
-            int length;
-            char *string;
-        } AnnotationText2D;
-        struct {
             int length;
             char *data;
         } ApplicationData;
@@ -1439,7 +1427,7 @@ typedef struct {
             PEXListOfVertex *vertex_lists;
         } PolylineSetWithData;
         struct {
-            int shape;
+            int shape_hint;
             unsigned int facet_attributes;
             unsigned int vertex_attributes;
             int color_type;
@@ -1614,13 +1602,13 @@ typedef struct {
             PEXArrayOfFacetData facet_data;
             unsigned int vertex_count;
             PEXArrayOfVertex vertices;
-            unsigned int edge_count;
+            unsigned int index_count;
             PEXSwitch *edge_flags;
             PEXConnectivityData *connectivity;
         } SetOfFillAreaSets;
         struct {
             int psc_type;
-            PEXPSCData *characteristics;
+            PEXPSCData characteristics;
         } SetParaSurfCharacteristics;
         struct {
             PEXCoord ref_point;
@@ -1707,18 +1695,6 @@ typedef struct {
             unsigned int index;
         } SetViewIndex;
         struct {
-            PEXCoord origin;
-            PEXVector vector1;
-            PEXVector vector2;
-            int length;
-            char *string;
-        } Text;
-        struct {
-            PEXCoord2D origin;
-            int length;
-            char *string;
-        } Text2D;
-        struct {
             unsigned int facet_attributes;
             unsigned int vertex_attributes;
             int color_type;
@@ -1731,13 +1707,34 @@ typedef struct {
 
 
 /*
- * preformatted output commands
+ * encoded output commands
  */
 
 /* macro for inquiring max length for PEXGetOCAddr */
 
 #define PEXGetOCAddrMaxSize(_display) \
     ((_display)->bufmax - (_display)->buffer)
+
+
+/*
+ * constants for utilities
+ */
+
+/* constants for PEXRotate */
+#define PEXXAxis	1
+#define PEXYAxis	2
+#define PEXZAxis	3
+
+/* constants for utilities return status */
+#define	 PEXBadVector		1
+#define	 PEXBadVectors		2
+#define	 PEXBadLimits   	3
+#define	 PEXBadViewport 	4
+#define	 PEXBadPlanes		5
+#define	 PEXBadPRP		6
+#define	 PEXBadMatrix		7
+#define	 PEXBadPrimitive	8
+#define	 PEXBadDistance		9
 
 
 /*
@@ -2064,9 +2061,8 @@ extern PEXWorkstation PEXCreateWorkstation(
 extern PEXOCData *PEXDecodeOCs(
 #if NeedFunctionPrototypes
     int 		/* float_format */,
-    unsigned long 		/* length */,
-    char *		/* encoded_ocs */,
-    unsigned long *		/* oc_count_return */
+    unsigned long 		/* oc_count */,
+    char *		/* encoded_ocs */
 #endif
 );
 
@@ -2384,7 +2380,7 @@ extern void PEXFillAreaWithData(
 #endif
 );
 
-extern void PEXFinishOC(
+extern void PEXFinishOCs(
 #if NeedFunctionPrototypes
     Display *		/* display */
 #endif
@@ -2633,7 +2629,7 @@ extern PEXImpDepConstant *PEXGetImpDepConstants(
 extern PEXName *PEXGetNameSet(
 #if NeedFunctionPrototypes
     Display *		/* display */,
-    PEXNameSet 		/* nameSet */,
+    PEXNameSet 		/* nameset */,
     unsigned long *		/* count_return */
 #endif
 );
@@ -2642,13 +2638,6 @@ extern char *PEXGetOCAddr(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     int 		/* length */
-#endif
-);
-
-extern int PEXGetOCSize(
-#if NeedFunctionPrototypes
-    int 		/* float_format */,
-    PEXOCData *		/* oc_data */
 #endif
 );
 
@@ -2716,6 +2705,14 @@ extern PEXSCAttributes *PEXGetSearchContext(
     Display *		/* display */,
     PEXSearchContext 		/* context */,
     unsigned long 		/* value_mask */
+#endif
+);
+
+extern int PEXGetSizeOCs(
+#if NeedFunctionPrototypes
+    int 		/* float_format */,
+    int 		/* oc_count */,
+    PEXOCData *		/* oc_data */
 #endif
 );
 
@@ -3608,7 +3605,7 @@ extern void PEXSetOfFillAreaSets(
     PEXArrayOfFacetData 		/* facet_data */,
     unsigned int 		/* vertex_count */,
     PEXArrayOfVertex 		/* vertices */,
-    unsigned int 		/* edge_count */,
+    unsigned int 		/* index_count */,
     PEXSwitch *		/* edge_flags */,
     PEXConnectivityData *		/* connectivity */
 #endif
