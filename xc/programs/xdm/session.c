@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.12 89/01/16 17:11:34 keith Exp $
+ * $XConsortium: session.c,v 1.13 89/03/11 09:43:05 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -340,4 +340,74 @@ char			*file;
 		return waitVal (result);
 	}
 	return 0;
+}
+
+int
+execute (argv, environ)
+char	**argv;
+char	**environ;
+{
+	execve (argv[0], argv, environ);
+#ifdef SYSV
+	/*
+	 * shell scripts can't be run in SYSV directly
+	 */
+	if (errno == ENOEXEC) {
+		char	program[1024], *e, *p, *optarg;
+		FILE	*f;
+		char	**newargv, **av;
+		int	argc;
+
+		/*
+		 * emulate BSD kernel behaviour -- read
+		 * the first line; check if it starts
+		 * with "#!", in which case it uses
+		 * the rest of the line as the name of
+		 * program to run.  Else use "/bin/sh".
+		 */
+		f = fopen (argv[0], "r");
+		if (!f)
+			return -1;
+		if (fgets (program, sizeof (program) - 1, f) == NULL) {
+			fclose (f);
+			return -1;
+		}
+		fclose (f);
+		e = program + strlen (program) - 1;
+		if (*e == '\n')
+			*e = '\0';
+		if (!strncmp (program, "#!", 2)) {
+			p = program + 2;
+			while (*p && iswhite (*p))
+				++p;
+			optarg = p;
+			while (*optarg && !iswhite (*optarg))
+				++optarg;
+			if (*optarg) {
+				*optarg = '\0';
+				do
+					++optarg;
+				while (*optarg && iswhite (*optarg));
+			} else
+				optarg = 0;
+		} else {
+			p = "/bin/sh";
+			optarg = 0;
+		}
+		Debug ("Shell script execution: %s (optarg %s)\n",
+			p, optarg ? optarg : "(null)");
+ 		for (av = argv, argc = 0; *av; av++, argc++)
+			;
+		newargv = (char **) malloc ((argc + (optarg ? 3 : 2)) * sizeof (char *));
+		if (!newargv)
+			return -1;
+		av = newargv;
+		*av++ = p;
+		if (optarg)
+			*av++ = optarg;
+		while (*av++ = *argv++)
+			;
+		execve (newargv[0], newargv, environ);
+	}
+#endif
 }
