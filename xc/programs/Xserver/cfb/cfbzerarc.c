@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.1 89/09/04 11:07:19 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.2 89/09/04 16:02:51 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -28,20 +28,20 @@ without any express or implied warranty.
 #include "mizerarc.h"
 
 #if PPW == 4
+
 static void
-cfbZeroCircleSS8Copy(pDraw, pGC, arc)
+cfbZeroArcSS8Copy(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
 {
-    register int x, y, d, dn, dp;
-    register int mask;
-    miZeroCircleRec info;
-    register char *addrb;
-    char *xorgb, *yorgb, *xorgob, *yorgob;
+    miZeroArcRec info;
+    register int x, y, a, b, d, mask;
+    register int k1, k3, dx1, dy1;
+    char *addrb;
+    register char *yorgb, *yorgob;
     unsigned long pixel = pGC->fgPixel;
-    int rop = pGC->alu;
-    int nlwidth, xoffset, yoffset;
+    int nlwidth, yoffset, dyoffset;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
@@ -55,177 +55,173 @@ cfbZeroCircleSS8Copy(pDraw, pGC, arc)
 	addrb = (char *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind);
     }
-    miZeroCircleSetup(arc, &info);
-    xorgb = addrb + ((info.xorg + pDraw->y) * nlwidth);
+    miZeroArcSetup(arc, &info);
     yorgb = addrb + ((info.yorg + pDraw->y) * nlwidth);
-    xorgob = addrb + ((info.xorgo + pDraw->y) * nlwidth);
     yorgob = addrb + ((info.yorgo + pDraw->y) * nlwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
+    x = info.x;
     y = info.y;
-    yoffset = nlwidth * y;
+    yoffset = y * nlwidth;
+    k1 = info.k1;
+    k3 = info.k3;
+    a = info.a;
+    b = info.b;
     d = info.d;
-    dn = info.dn;
-    dp = info.dp;
+    dx1 = info.dx1;
+    dy1 = info.dy1;
+    dyoffset = dy1 * nlwidth;
     mask = info.initialMask;
-    if ((mask == 0xff) && (info.startx < 0))
-	for (x = info.x, xoffset = nlwidth * x;
-	     x <= y;
-	     x++, xoffset += nlwidth)
+    if (!(arc->width & 1))
+    {
+	if (mask & 1)
+	    *(yorgb + info.xorg) = pixel;
+	if (mask & 4)
+	    *(yorgob + info.xorg) = pixel;
+    }
+    if (!info.endx)
+	mask = info.endMask;
+    if ((mask == 0xf) && (info.startx < 0) &&
+	(arc->width == arc->height) && !(arc->width & 1))
+    {
+	int xoffset = x * nlwidth;
+	char *yorghb = yorgb + (info.h * nlwidth);
+	int xorghp = info.xorg + info.h;
+	int xorghn = info.xorg - info.h;
+
+	while (1)
 	{
-	    *(yorgob - xoffset + info.xorg + y) = pixel;
-	    *(yorgob - yoffset + info.xorgo - x) = pixel;
-	    *(yorgb + xoffset + info.xorgo - y) = pixel;
 	    *(yorgb + yoffset + info.xorg + x) = pixel;
-	    if (x == y)
+	    *(yorgb + yoffset + info.xorg - x) = pixel;
+	    *(yorgob - yoffset + info.xorg - x) = pixel;
+	    *(yorgob - yoffset + info.xorg + x) = pixel;
+	    if (a < 0)
 		break;
-	    if (x)
-	    {
-		*(yorgob - yoffset + info.xorg + x) = pixel;
-		*(yorgob - xoffset + info.xorgo - y) = pixel;
-		*(yorgb + yoffset + info.xorgo - x) = pixel;
-		*(yorgb + xoffset + info.xorg + y) = pixel;
-	    }
+	    *(yorghb - xoffset + xorghp - y) = pixel;
+	    *(yorghb - xoffset + xorghn + y) = pixel;
+	    *(yorghb + xoffset + xorghn + y) = pixel;
+	    *(yorghb + xoffset + xorghp - y) = pixel;
+	    b -= k1;
+	    x++;
+	    xoffset += nlwidth;
 	    if (d < 0)
 	    {
-		d += (x << 2) + dn;
+		a += k1;
+		d += b;
 	    }
 	    else
 	    {
-		d += ((x - y) << 2) + dp;
-		y--;
-		yoffset -= nlwidth;
+		y++;
+		yoffset += nlwidth;
+		a += k3;
+		d -= a;
 	    }
 	}
-    else
-	for (x = info.x, xoffset = nlwidth * x;
-	     x <= y;
-	     x++, xoffset += nlwidth)
+	x = info.w;
+	yoffset = info.h * nlwidth;
+    }
+    else if ((mask == 0xf) && (info.startx < 0))
+    {
+	while (y < info.h)
 	{
-	    if (x == info.startx)
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		dyoffset = nlwidth;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    *(yorgb + yoffset + info.xorg + x) = pixel;
+	    *(yorgb + yoffset + info.xorgo - x) = pixel;
+	    *(yorgob - yoffset + info.xorgo - x) = pixel;
+	    *(yorgob - yoffset + info.xorg + x) = pixel;
+	    b -= k1;
+	    if (d < 0)
+	    {
+		x += dx1;
+		y += dy1;
+		yoffset += dyoffset;
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		x++;
+		y++;
+		yoffset += nlwidth;
+		a += k3;
+		d -= a;
+	    }
+	}
+    }
+    else
+    {
+	while (y < info.h)
+	{
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		dyoffset = nlwidth;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    if ((x == info.startx) || (y == info.starty))
 		mask = info.startMask;
 	    if (mask & 1)
-		*(yorgob - xoffset + info.xorg + y) = pixel;
+		*(yorgb + yoffset + info.xorg + x) = pixel;
+	    if (mask & 2)
+		*(yorgb + yoffset + info.xorgo - x) = pixel;
 	    if (mask & 4)
 		*(yorgob - yoffset + info.xorgo - x) = pixel;
-	    if (mask & 16)
-		*(yorgb + xoffset + info.xorgo - y) = pixel;
-	    if (mask & 64)
-		*(yorgb + yoffset + info.xorg + x) = pixel;
-	    if (x == y)
-		break;
-	    if (x)
-	    {
-		if (mask & 2)
-		    *(yorgob - yoffset + info.xorg + x) = pixel;
-		if (mask & 8)
-		    *(yorgob - xoffset + info.xorgo - y) = pixel;
-		if (mask & 32)
-		    *(yorgb + yoffset + info.xorgo - x) = pixel;
-		if (mask & 128)
-		    *(yorgb + xoffset + info.xorg + y) = pixel;
-	    }
-	    if (x == info.endx)
+	    if (mask & 8)
+		*(yorgob - yoffset + info.xorg + x) = pixel;
+	    if ((x == info.endx) || (y == info.endy))
 		mask = info.endMask;
+	    b -= k1;
 	    if (d < 0)
 	    {
-		d += (x << 2) + dn;
+		x += dx1;
+		y += dy1;
+		yoffset += dyoffset;
+		a += k1;
+		d += b;
 	    }
 	    else
 	    {
-		d += ((x - y) << 2) + dp;
-		y--;
-		yoffset -= nlwidth;
+		x++;
+		y++;
+		yoffset += nlwidth;
+		a += k3;
+		d -= a;
 	    }
 	}
-}
-#endif
-
-#define DoPix(bit, x, y) \
-if (mask & bit) \
-{ \
-    addrl = x + ((y) >> PWSH); \
-    pmask = cfbmask[(y) & PIM] & planemask; \
-    *addrl = (*addrl & ~pmask) | (DoRop(rop, pixel, *addrl) & pmask); \
-}
-
-static void
-cfbZeroCircleSS(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
-{
-    register int x, y, d, dn, dp;
-    register int mask;
-    miZeroCircleRec info;
-    register int *addrl;
-    int *xorgl, *yorgl, *xorgol, *yorgol;
-    unsigned long pixel = PFILL(pGC->fgPixel);
-    unsigned long planemask = PFILL(pGC->planemask);
-    unsigned long pmask;
-    int rop = pGC->alu;
-    int nlwidth, xoffset, yoffset;
-
-    if (pDraw->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind);
     }
-    else
+    for (; x <= info.w; x++)
     {
-	addrl = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDraw)->devKind);
-    }
-    nlwidth >>= 2;
-    miZeroCircleSetup(arc, &info);
-    xorgl = addrl + ((info.xorg + pDraw->y) * nlwidth);
-    yorgl = addrl + ((info.yorg + pDraw->y) * nlwidth);
-    xorgol = addrl + ((info.xorgo + pDraw->y) * nlwidth);
-    yorgol = addrl + ((info.yorgo + pDraw->y) * nlwidth);
-    info.xorg += pDraw->x;
-    info.xorgo += pDraw->x;
-    y = info.y;
-    yoffset = nlwidth * y;
-    d = info.d;
-    dn = info.dn;
-    dp = info.dp;
-    mask = info.initialMask;
-    for (x = info.x, xoffset = nlwidth * x; x <= y; x++, xoffset += nlwidth)
-    {
-	if (x == info.startx)
-	    mask = info.startMask;
-	DoPix(1, yorgol - xoffset, info.xorg + y);
-	DoPix(4, yorgol - yoffset, info.xorgo - x);
-	DoPix(16, yorgl + xoffset, info.xorgo - y);
-	DoPix(64, yorgl + yoffset, info.xorg + x);
-	if (x == y)
-	    break;
-	if (x)
+	if (mask & 1)
+	    *(yorgb + yoffset + info.xorg + x) = pixel;
+	if (mask & 2)
+	    *(yorgb + yoffset + info.xorgo - x) = pixel;
+	if (arc->height & 1)
 	{
-	    DoPix(2, yorgol - yoffset, info.xorg + x);
-	    DoPix(8, yorgol - xoffset, info.xorgo - y);
-	    DoPix(32, yorgl + yoffset, info.xorgo - x);
-	    DoPix(128, yorgl + xoffset, info.xorg + y);
-	}
-	if (x == info.endx)
-	    mask = info.endMask;
-	if (d < 0)
-	{
-	    d += (x << 2) + dn;
-	}
-	else
-	{
-	    d += ((x - y) << 2) + dp;
-	    y--;
-	    yoffset -= nlwidth;
+	    if (mask & 4)
+		*(yorgob - yoffset + info.xorgo - x) = pixel;
+	    if (mask & 8)
+		*(yorgob - yoffset + info.xorg + x) = pixel;
 	}
     }
 }
 
 void
-cfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
+cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
     int		narcs;
@@ -235,29 +231,20 @@ cfbZeroPolyArcSS(pDraw, pGC, narcs, parcs)
     register int i;
     BoxRec box;
     RegionPtr cclip;
-    void (*func)();
 
-#if PPW == 4
-    if ((pGC->alu == GXcopy) && ((pGC->planemask & PMSK) == PMSK))
-	func = cfbZeroCircleSS8Copy;
-    else
-#endif
-	func = cfbZeroCircleSS;
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
-	if (arc->width == arc->height)
-	{
-	    box.x1 = arc->x + pDraw->x;
-	    box.y1 = arc->y + pDraw->y;
-	    box.x2 = box.x1 + (int)arc->width + 1;
-	    box.y2 = box.y1 + (int)arc->width + 1;
-	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
-		(*func)(pDraw, pGC, arc);
-	    else
-		miZeroPolyArc(pDraw, pGC, 1, arc);
-	}
+	box.x1 = arc->x + pDraw->x;
+	box.y1 = arc->y + pDraw->y;
+	box.x2 = box.x1 + (int)arc->width + 1;
+	box.y2 = box.y1 + (int)arc->height + 1;
+	if (arc->width && arc->height &&
+	    (*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
+	    cfbZeroArcSS8Copy(pDraw, pGC, arc);
 	else
-	    miPolyArc(pDraw, pGC, 1, arc);
+	    miZeroPolyArc(pDraw, pGC, 1, arc);
     }
 }
+
+#endif
