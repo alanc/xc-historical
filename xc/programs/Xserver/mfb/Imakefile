@@ -27,7 +27,7 @@ LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(mfb,$(OBJS))
-LintLibraryTarget(mfb,$(LINTDEFS) $(SRCS))
+LintLibraryTarget(mfb,$(SRCS))
 NormalLintTarget($(LINTDEFS) $(SRCS))
 
 DependTarget()
