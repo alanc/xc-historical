@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.78 89/12/09 17:01:15 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.79 89/12/10 10:24:06 rws Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -86,7 +86,7 @@ static XtResource shellResources[]=
 	    Offset(core.y), XtRImmediate, (XtPointer)BIGSIZE},
 	{ XtNdepth, XtCDepth, XtRInt, sizeof(int),
 	    Offset(core.depth), XtRCallProc, (XtPointer) _XtShellDepth},
-	{ XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
+	{ XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
 	    Offset(core.colormap), XtRCallProc, (XtPointer) _XtShellColormap},
 	{ XtNancestorSensitive, XtCSensitive, XtRBoolean, sizeof(Boolean),
 	    Offset(core.ancestor_sensitive), XtRCallProc,
@@ -252,7 +252,7 @@ static XtResource wmResources[]=
 {
 	{ XtNtitle, XtCTitle, XtRString, sizeof(String),
 	    Offset(wm.title), XtRString, NULL},
-	{ XtNtitleEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
+	{ XtNtitleEncoding, XtCTitleEncoding, XtRAtom, sizeof(Atom),
 	    Offset(wm.title_encoding), XtRImmediate, (XtPointer)XA_STRING},
 	{ XtNwmTimeout, XtCWmTimeout, XtRInt, sizeof(int),
 	    Offset(wm.wm_timeout), XtRImmediate,(XtPointer)DEFAULT_WM_TIMEOUT},
@@ -310,10 +310,10 @@ static XtResource wmResources[]=
 	    Offset(wm.wm_hints.icon_pixmap), XtRPixmap, NULL},
 	{ XtNiconWindow, XtCIconWindow, XtRWindow, sizeof(Window),
 	    Offset(wm.wm_hints.icon_window), XtRWindow,   (XtPointer) NULL},
-	{ XtNiconX, XtNiconX, XtRInt, sizeof(int),
+	{ XtNiconX, XtCIconX, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_x),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
-	{ XtNiconY, XtNiconY, XtRInt, sizeof(int),
+	{ XtNiconY, XtCIconY, XtRInt, sizeof(int),
 	    Offset(wm.wm_hints.icon_y),
 	    XtRImmediate, (XtPointer)XtUnspecifiedShellInt},
 	{ XtNiconMask, XtCIconMask, XtRBitmap, sizeof(Pixmap),
@@ -465,7 +465,7 @@ static XtResource topLevelResources[]=
 {
 	{ XtNiconName, XtCIconName, XtRString, sizeof(String),
 	    Offset(topLevel.icon_name), XtRString, (XtPointer) NULL},
-	{ XtNiconNameEncoding, XtCEncoding, XtRAtom, sizeof(Atom),
+	{ XtNiconNameEncoding, XtCIconNameEncoding, XtRAtom, sizeof(Atom),
 	    Offset(topLevel.icon_name_encoding), XtRImmediate,
 	    (XtPointer)XA_STRING},
 	{ XtNiconic, XtCIconic, XtRBoolean, sizeof(Boolean),
@@ -543,7 +543,7 @@ static XtResource applicationResources[]=
 {
 	{ XtNargc, XtCArgc, XtRInt, sizeof(int),
 	    Offset(application.argc), XtRImmediate, (XtPointer)0}, 
-	{ XtNargv, XtCArgv, XtRPointer, sizeof(String*),
+	{ XtNargv, XtCArgv, XtRStringArray, sizeof(String*),
 	    Offset(application.argv), XtRPointer, (XtPointer) NULL}
 };
 
@@ -660,6 +660,7 @@ static void _SetWMSizeHints(w)
     if (size_hints == NULL) _XtAllocError("XAllocSizeHints");
     ComputeWMSizeHints(w, size_hints);
     XSetWMNormalHints(XtDisplay((Widget)w), XtWindow((Widget)w), size_hints);
+    XFree((char*)size_hints);
 }
 
 static ShellClassExtension _FindClassExtension(widget_class)
