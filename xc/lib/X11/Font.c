@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFont.c,v 11.25 88/08/11 14:32:10 jim Exp $ */
+/* $XConsortium: XFont.c,v 11.26 88/09/06 16:05:50 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -20,8 +20,17 @@ XFontStruct *XLoadQueryFont(dpy, name)
     GetReq(OpenFont, req);
     nbytes = req->nbytes  = name ? strlen(name) : 0;
     req->fid = fid = XAllocID(dpy);
+#ifdef WORD64
+    /* 
+     * Pad to 64 bit boundary so NoOp is not generated, which would
+     * mess up the dpy->request sequence number
+     */
+    req->length = (((req->length << 2) + nbytes + 7) & ~7) >> 2;
+    Data (dpy, name, (req->length << 2) - SIZEOF(xOpenFontReq));
+#else
     req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);
+#endif
     dpy->request--;
     font_result = (_XQueryFont(dpy, fid));
     dpy->request++;
