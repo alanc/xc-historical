@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.103 93/09/15 15:09:30 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.104 93/09/18 18:18:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -207,13 +207,11 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 
 	if (! applName && !(applName = getenv("RESOURCE_NAME"))) {
 	    if (*argc > 0 && argv[0] && *argv[0]) {
-		char *ptr = strchr(argv[0],
 #ifdef WIN32
-				   '\\'
+		char *ptr = strchr(argv[0], '\\');
 #else
-				   '/'
+		char *ptr = strchr(argv[0], '/');
 #endif
-				   );
 		if (ptr) applName = ++ptr;
 		else applName = argv[0];
 	    } else
