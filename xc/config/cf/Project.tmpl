@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.145 92/05/10 11:30:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.146 92/05/26 11:50:07 eswu Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -51,10 +51,10 @@ XCOMM $XConsortium: Project.tmpl,v 1.145 92/05/10 11:30:56 rws Exp $
 #define BuildXTrapLib		NO
 #endif
 #ifndef BuildScreenSaverExt
-#define BuildScreenSaverExt	YES
+#define BuildScreenSaverExt	NO	/* not released yet */
 #endif
 #ifndef BuildScreenSaverLib
-#define BuildScreenSaverLib	YES
+#define BuildScreenSaverLib	NO	/* not released yet */
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
