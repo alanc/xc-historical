@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.6 88/07/05 16:39:33 jim Exp $";
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.7 88/09/06 17:51:52 jim Exp $";
 #endif
 
 #include <dbm.h>
@@ -104,9 +104,9 @@ main(argc, argv)
 		name[i] = tolower (name[i]);
 	}
 	key.dsize = n;
-	rgb.red = red << 8;
-	rgb.green = green << 8;
-	rgb.blue = blue << 8;
+	rgb.red = (red * 65535) / 255;
+	rgb.green = (green * 65535) / 255;
+	rgb.blue = (blue * 65535) / 255;
 	if (store (key, content)) {
 	    fprintf (stderr, "store of %s failed\n", name);
 	    fflush (stderr);
