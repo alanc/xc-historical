@@ -1,4 +1,4 @@
-/* $XConsortium: imDefFlt.c,v 1.3 94/01/20 18:03:48 rws Exp $ */
+/* $XConsortium: imDefFlt.c,v 1.4 94/03/26 16:57:39 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -326,7 +326,7 @@ _XimRegisterFilter(ic)
     Xic		 ic;
 {
     _XimRegisterKeyPressFilter(ic);
-    if (IS_FORWARD_EVENT(ic, KeyRelease))
+    if (IS_FORWARD_EVENT(ic, KeyReleaseMask))
 	_XimRegisterKeyReleaseFilter(ic);
     return;
 }
@@ -346,7 +346,7 @@ Public void
 _XimReregisterFilter(ic)
     Xic		 ic;
 {
-    if (IS_FORWARD_EVENT(ic, KeyRelease))
+    if (IS_FORWARD_EVENT(ic, KeyReleaseMask))
 	_XimRegisterKeyReleaseFilter(ic);
     else
 	_XimUnregisterKeyReleaseFilter(ic);
