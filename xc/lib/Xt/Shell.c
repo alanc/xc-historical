@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.5 88/02/02 16:26:29 swick Locked $";
+static char rcsid[] = "$Header: Shell.c,v 1.6 88/02/03 14:58:14 swick Locked $";
 #endif lint
 
 /*
@@ -512,7 +512,7 @@ static void Initialize(req, new)
         } else	w->shell.client_specified = FALSE;
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
-		FALSE, EventHandler, (Opaque) NULL);
+		FALSE, EventHandler, (caddr_t) NULL);
 }
 
 /* ARGSUSED */
@@ -766,7 +766,7 @@ static void _popup_set_prop(w)
 /* ARGSUSED */
 static void EventHandler(wid, closure, event)
 	Widget wid;
-	Opaque closure;
+	caddr_t closure;
 	XEvent *event;
 {
 	register ShellWidget w = (ShellWidget) wid;
