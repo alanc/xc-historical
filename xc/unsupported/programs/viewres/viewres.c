@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.36 90/02/12 18:36:45 jim Exp $
+ * $XConsortium: viewres.c,v 1.37 90/02/13 11:52:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -697,12 +697,16 @@ main (argc, argv)
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
 #undef MAKE_SELECT
 
+    dummy = XtCreateManagedWidget ("pannerbox", boxWidgetClass, pane,
+				   NULL, ZERO);
 
     XtSetArg (args[0], XtNcallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) panner_callback;
     callback_rec[0].closure = (caddr_t) NULL;
-    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, pane,
-					  args, ONE);
+    XtSetArg (args[1], XtNallowResize, TRUE);
+    XtSetArg (args[2], XtNresize, TRUE);
+    pannerWidget = XtCreateManagedWidget ("panner", pannerWidgetClass, dummy,
+					  args, THREE);
 
     XtSetArg (args[0], XtNnotifyCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) viewport_callback;
@@ -727,6 +731,9 @@ main (argc, argv)
     XtSetArg (args[2], XtNsliderWidth, width);
     XtSetArg (args[3], XtNsliderHeight, height);
     XtSetValues (pannerWidget, args, FOUR);
+
+    XtSetArg (args[0], XtNresize, FALSE);
+    XtSetValues (pannerWidget, args, ONE);
 
     XtMapWidget (toplevel);
     XtAppMainLoop (app_con);

@@ -1,12 +1,20 @@
 *Viewport.allowHoriz: true
 *Viewport.allowVert: true
+*Viewport.usePanner: true
 *allowShellResize: true
 *buttonbox*ShapeStyle: oval
 *Tree*ShapeStyle: rectangle
 *Tree*Toggle*BorderWidth: 0
-*Tree*Box.BorderWidth: 0
-*Tree*Box.HSpace: 0
-*Tree*Box.VSpace: 0
+*Viewport*Box.BorderWidth: 0
+*Viewport*Box.HSpace: 0
+*Viewport*Box.VSpace: 0
+*Paned*allowResize: true
+*Panner.height: 50
+*Panner.width: 200
+*Panner.canvasWidth: 800
+*Panner.canvasHeight: 500
+*Panner.sliderWidth: 800
+*Panner.sliderHeight: 500
 
 *Tree*List*Font: -adobe-helvetica-medium-r-normal--*-80-*-*-*-*-iso*-*
 
