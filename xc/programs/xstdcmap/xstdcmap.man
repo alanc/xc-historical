@@ -47,8 +47,9 @@ This option indicates that the RGB_BLUE_MAP should be defined.
 This option indicates that the RGB_DEFAULT_MAP should be defined.
 .TP 8
 .B \-delete \fImap\fP
-This option specifies that a standard colormap property should be removed.
-\fImap\P may be one of: default, best, red, green, blue, or gray.
+This option specifies that a specific standard colormap property, or
+all such properties, should be removed.
+\fImap\P may be one of: default, best, red, green, blue, gray, or all.
 .TP 8
 .B \-display \fIdisplay\fP
 This option specifies the host and display to use; see \fIX(1)\fP.
