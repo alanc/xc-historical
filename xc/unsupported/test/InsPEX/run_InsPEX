@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-# $XConsortium: run_InsPEX,v 5.2 91/02/16 10:04:50 rws Exp $
+# $XConsortium: run_InsPEX,v 5.3 91/02/18 19:57:01 hersh Exp $
 #
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 
@@ -46,39 +46,13 @@ setenv DISPLAY localhost:0.0
 ##setenv I_CLIENT_SIDE 1
 
 # PEXLIBDIR, PEXINCDIR - directories containing the PEX includes and libs.
-setenv PEXLIBDIR $PEXHOME/lib/PEX
-setenv PEXINCDIR $XINCDIR/extensions
+setenv PEXLIBDIR `cd $PEXHOME/lib/PEX; pwd`
+setenv PEXINCDIR $XINCDIR
 # SET the location of the api support files to override the default location
 # default location is where the files are installed by a 'make install'
 setenv PEXAPIDIR `cd $PEXHOME/lib/PEX/lib; pwd`
 
 setenv INSPEXHOME $cwd
-
-# kill running server if already running one
-setenv SERVER_RESTART_CMD "cd $INSPEXHOME; startpex; sleep 5"
-set SERVER_PROC=`\ps ax | sed "/egrep $SNAME/d" | \egrep $SNAME | tail -1`
-if ( $#SERVER_PROC >= 1 ) then
-#	A server is running.  Kill it.
-	echo "run_InsPEX attempting to abort currently running server for testing."
-	echo "run_InsPEX attempting to abort currently running server for testing." >& /dev/console
-	echo "The server (PID=$SERVER_PROC[1]) will be killed in 30 seconds."
-	echo "The server (PID=$SERVER_PROC[1]) will be killed in 30 seconds." >& /dev/console
-	sleep 30
-	kill $SERVER_PROC[1]
-	sleep 15
-#	Check to see that server has stopped
-	set SERVER_PROC=`\ps ax | sed "/egrep $SNAME/d" | \egrep $SNAME | tail -1`
-	if ( $#SERVER_PROC >= 1 ) then
-#		A server is still running.  Abort testing
-		echo "Unable to kill the currently running server.  Aborting InsPEX test run."
-		exit 1
-	endif
-endif
-
-# Start up a server
-echo "run_InsPEX attempting to start new server for testing."
-echo $SERVER_RESTART_CMD
-echo $SERVER_RESTART_CMD | sh -s
 
 # prepare destination test result area
 mkdir $INSPEXDEST >& /dev/null
