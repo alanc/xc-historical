@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -215,7 +215,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 #endif
 
 #ifndef BinDir
-#define BinDir $(DESTDIR)/usr/bin/X11
+#define BinDir /usr/bin/X11
 #endif
 #ifndef BuildIncRoot
 #define BuildIncRoot $(TOP)
@@ -236,7 +236,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 #define FontDir $(LIBDIR)/fonts
 #endif
 #ifndef AdmDir
-#define AdmDir $(DESTDIR)/usr/adm
+#define AdmDir /usr/adm
 #endif
 #ifndef XinitDir
 #define XinitDir $(LIBDIR)/xinit
@@ -251,7 +251,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 #define TwmDir $(LIBDIR)/twm
 #endif
 #ifndef ManPath
-#define ManPath Concat($(DESTDIR),ManDirectoryRoot)
+#define ManPath ManDirectoryRoot
 #endif
 #ifndef ManSourcePath
 #define ManSourcePath $(MANPATH)/man
@@ -390,7 +390,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.100 91/02/23 20:10:08 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
