@@ -99,7 +99,7 @@ There are currently 3 ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
 operating system you are running and on whether or not you use other window
 systems in addition to X.
-.TP 4
+.TP 8
 .B "\fIxdm\fP (the X Display Manager)"
 If you want to always have X running on your display, your site administrator
 can set your machine up to use the X Display Manager \fIxdm\fP.  This program
@@ -115,7 +115,7 @@ default, if you have an file named \fI.xsession\fP in your home directory,
 your initial clients (such as terminal emulators, clocks, a window manager,
 user settings for things like the background, the speed of the pointer, etc.).
 Your site administrator can provide details.
-.TP 4
+.TP 8
 .B "\fIxterm \-L\fP (started from \fI/etc/init\fP)"
 Some versions of UNIX that are derived from 4.3bsd support starting the window
 system and an initial \fIxterm\fP window from the system terminal line
@@ -124,7 +124,7 @@ window requesting your username and password.  However, this window will become
 your primary window and is not configurable on a per-user basis.
 Sites using this method should switch to \fIxdm\fP as \fIxterm -L\fP may not be
 supported in future releases.
-.TP 4
+.TP 8
 .B "\fIxinit\fP (run manually from the shell)"
 Sites that support more than one window system might choose to use the
 \fIxinit\fP program for starting X manually.  If this is true for your 
@@ -140,20 +140,21 @@ script, this gives substantial flexibility at the expense of a human
 nice interface.  For this reason, \fIxinit\fP is not intended for end users.
 .SH "SPECIFYING A DISPLAY NAME"
 .PP
-To distinguish one display on a network from another, each X server has a
-name of the form:
+From the user's prospective, every X server has a \fIdisplay name\fP of the
+form:
 .sp
 .ce 1
 \fIhostname:displaynumber.screennumber\fP
 .sp
-Names like this are called \fIdisplay names\fP, and contain the following
-information:
-.TP 4
+This information is used by the application to determine how it should
+connect to the server and which screen it should use by default
+(on displays with multiple monitors):
+.TP 8
 .I hostname
 The \fIhostname\fP specifies the name of the machine to which the display is
 connected.  If the hostname is not given, the most efficient way of 
-communicating to a server on the same machine will be assumed.
-.TP 4
+communicating to a server on the same machine will be used.
+.TP 8
 .I displaynumber
 The phrase "display" is usually used to refer to collection of monitors that
 share a common keyboard and pointer (mouse, tablet, etc.).  Most workstations
@@ -164,12 +165,12 @@ one person can be doing graphics work at once.  To avoid confusion, each
 display on a machine is assigned a \fIdisplay number\fP (starting with 0)
 when the X server for that display is started.  The display number must always
 be given in a display name.
-.TP 4
+.TP 8
 .I screennumber
 Some displays share a single keyboard and pointer among two or more monitors.
 Since each monitor has its own set of windows, each screen is assigned a
 \fIscreen number\fP (starting with 0) when the X server for that display is
-started.  If the screen number is not given, then screen 0 will be asssumed.
+started.  If the screen number is not given, then screen 0 will be used.
 .PP
 On Unix systems, the default display name for X programs to use is stored 
 in your DISPLAY environment variable.  This variable is set automatically
@@ -203,7 +204,7 @@ and can, therefore, have serveral different display names.
 The \fIhostname\fP part of the display name determines type of channel
 (also called a transport layer) to be used.  The sample servers from MIT
 support the following types of connections:
-.TP 4
+.TP 8
 .B TCP\/IP
 .br
 The hostname part of the display name should be the server machine's
@@ -211,12 +212,12 @@ IP address name.  Full Internet names (e.g., expo.lcs.mit.edu),
 abbreviated names (e.g., expo), and IP addresses (e.g., 18.30.0.212)
 are allowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
 \fIhydra:0.1\fP.
-.TP 4
+.TP 8
 .B "Unix domain sockets"
 .br
 The hostname part of the display name should be the string "unix" (in lower
 case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
-.TP 4
+.TP 8
 .B DECnet
 .br
 The hostname part of the display name should be the server machine's 
@@ -229,39 +230,71 @@ applications don't have to be restricted to a particular size or location
 on the screen.
 Although the layout of windows on a display is controlled
 by the window manager that the user is running, most X programs accept
-a command line argument that is treated as the prefered size and location
-for this particular application's window.
+a command line argument of the form \fB-geometry \fIWIDTHxHEIGHT+XOFF+YOFF\fR
+for specifying a prefered size and location for this application's main
+window.
 .PP
-This argument, usually given as ``-geometry WxH+X+Y,'' specifies that
-the window should have a width of W and height of H (usually measured in
-pixels or characters, depending on the application),
-and the upper left corner X pixels to the right and Y pixels below the
-upper left corner of the screen (origin (0,0)).  ``WxH'' can be omitted
-to obtain the default application size, or ``+X+Y'' can be omitted
-to obtain the default application position (which is usually then left up
-to the window manager or user to choose).
-The X and Y values may be negative to
-position the window off the screen.  In addition, if minus signs are used
-instead of plus signs (e.g. WxH-X-Y), then (X,Y) represents the location
-of the lower right hand corner of the window relative to the lower right
-hand corner of the screen.
+The \fIWIDTH\fP and \fIHEIGHT\fP parts of the geometry specification are
+usually measured in either pixels or characters, depending on the application.
+The \fIXOFF\fP and \fIYOFF\fP parts are measured in pixels and are used to
+specify the distance of the window from the left or right and top and bottom
+edges of the screen, respectively.  Both types of offsets are measured from the
+indicated edge of the screen to the corresponding edge of the window.  The X
+offset may be specified in the following ways:
+.TP 8
+.I +XOFF
+The left edge of the window is to be \fIXOFF\fP pixels in from the
+left edge of the screen (i.e. the X coordinate of the window will be at
+\fIXOFF\fP).  \fIXOFF\fP may be negative, in which case the window's left edge 
+will be off the screen.
+.TP 8
+.I -XOFF
+The right edge of the window is to be \fIXOFF\fP pixels in from the
+right edge of the screen (i.e. the X coordinate of the window will be at
+\fIXOFF\fP).  \fIXOFF\fP may be negative, in which case the window's right
+edge will be off the screen.
 .PP
-By combining plus and minus signs, the window may be place relative to any
-of the four corners of the screen.  For example:
-.TP 4
-.I "xclock -geometry 555\fRx\fI333+11+22"
-This will request a clock 555 pixels wide and 333 pixels tall, with the
-upper left corner located at (11,22).
-.TP 4
-.I "xload -geometry 300\fRx\fI200-0+0"
-This will request a load average monitor measuring 300 by 200 pixels in the 
-upper right hand corner of the screen.
-.TP 4
-.I "xbiff -geometry 48\fRx\fI48--5--10"
-This will request a mail box monitor measuring 48 by 48 pixels whose 
-lower right and corner is 5 pixel off the right edge and the screen 
-and 10 pixels off the bottom edge.
+The Y offset has similar meanings:
+.TP 8
+.I +YOFF
+The top edge of the window is to be \fIYOFF\fP pixels below the
+top edge of the screen (i.e. the Y coordinate of the window will be at
+\fIYOFF\fP).  \fIYOFF\fP may be negative, in which case the window's top edge 
+will be off the screen.
+.TP 8
+.I -YOFF
+The bottom edge of the window is to be \fIYOFF\fP pixels above the
+bottom edge of the screen (i.e. the Y coordinate of the window will be at
+\fIYOFF\fP).  \fIYOFF\fP may be negative, in which case the window's bottom
+edge will be off the screen.
 .PP
+Offsets must be given as pairs; in other words, in order to specify either
+\fIXOFF\fP or \fIYOFF\fP both must be present.
+.PP
+The upper left hand corner of the screen is +0+0; the upper right is -0+0;
+the lower right is -0-0; and the lower left is +0-0.  The command
+.sp
+.nf
+        xterm -fn 6x10 -geometry 80x24+30+200
+.fi
+.sp
+will place a terminal emulator
+roughly in the center of the screen.  The following three commands will start
+up a load average monitor, a mailbox, and a clock in the upper right hand
+corner such that they all line up nicely:
+.sp
+.nf
+        xclock -geometry 48x48-0+0 &
+        xload -geometry 48x48-96+0 &
+        xbiff -geometry 48x48-48+0 &
+.fi
+.PP
+The geometry specification should be thought of hint, indicating the 
+prefered size for the window.  Window managers are free to ignore any or
+all of the specification.  Some window managers, such as \fIuwm\fP will
+assume default values for any information that isn't given; others might
+require that the user provide the information interactively (by drawing
+out a region on the screen with the pointer, for example).
 .SH "COMMAND LINE ARGUMENTS"
 Most X programs attempt to use a common set of names for their command line
 arguments.
@@ -401,24 +434,104 @@ By combining class and instance specifications, application preferences
 can be set quickly and easily.  Users of color displays will frequently
 want to set Background and Foreground classes to particular defaults.
 Specific color instances such as text cursors can then be overridden
-without having to define all of the related resources.
+without having to define all of the related resources.  For example,
+.sp
+.nf
+        bitmap*Dashed:  off
+        XTerm*cursorColor:  gold
+        XTerm*multiScroll:  on
+        XTerm*jumpScroll:  on
+        XTerm*reverseWrap:  on
+        XTerm*curses:  on
+        XTerm*Font:  6x10
+        XTerm*scrollBar: on
+        XTerm*scrollbar*thickness: 5
+        XTerm*multiClickTime: 500
+        XTerm*charClass:  33:48,37:48,45-47:48,64:48
+        XTerm*cutNewline: off
+        XTerm*cutToBeginningOfLine: off
+        XTerm*titeInhibit:  on
+        XTerm*ttyModes:  intr ^c erase ^? kill ^u
+        XLoad*Background: gold
+        XLoad*Foreground: red
+        XLoad*highlight: black
+        XLoad*borderWidth: 0
+        emacs*Geometry:  80x65-0-0
+        emacs*Background:  #5b7686
+        emacs*Foreground:  white
+        emacs*Cursor:  white
+        emacs*BorderColor:  white
+        emacs*Font:  6x10
+        xmag*geometry: -0-0
+        xmag*borderColor:  white
+        uwm*bordercolor: black
+        uwm*Foreground: #f00
+        uwm*Background: #ede7e2
+        uwm*borderwidth: 0
+        uwm*iborderwidth: 0
+        uwm*mborderwidth: 1
+.fi
 .PP
+If these resources were stored in a file called \fI.Xresources\fP in your home
+directory, they could be loaded into the server using the following command:
+.sp
+.nf
+        %  xrdb -merge $HOME/.Xresources
+.fi
+.sp
+This adds these resources to any that have already been loaded.  This is 
+frequently how user-friendly startup scripts merge user-specific defaults
+into any site-wide defaults.
+.SH EXAMPLES
+Here are examples of some commonly used programs.  See the
+particular manual pages for details:
+.sp
+.nf
+        %  xrdb -load $HOME/.Xresources
+        %  xset fp+ /usr/local/lib/X11/otherfonts
+        %  xmodmap $HOME/.keymap.km
+        %  xsetroot -solid '#888' 
+        %  xset b 100 400 c 50 s 1800 r on
+        %  xset q
+        %  uwm 
+        %  xclock -geometry 48x48-0+0 -bg blue -fg white
+        %  xeyes -geometry 48x48-48+0
+        %  xlsfonts '*helvetica*'
+        %  xlswins -l
+        %  xwininfo -root
+        %  xdpyinfo -display joesworkstation:0
+        %  xhost -joesworkstation
+        %  xrefresh
+        %  xwd | xwud
+        %  bitmap companylogo.bm 32x32
+        %  xcalc -bg blue -fg magenta
+        %  xterm -geometry 80x66-0-0 -name myxterm $*
+.fi
+.SH DIAGNOSTICS
 When a named resource is unavailable (for example, a color named
 chartrusse or a font named teeneyweeney), normally no error message
 will be printed; whether or not useful results ensue is dependent
 on the particular application.  If you wish to see error messages
 (for example, if an application is failing for an unknown reason),
-you may specify the value ``on'' for the resource named
-``StringConversionWarnings.''  If you want
-such warnings for all applications, specify ``*StringConversionWarnings:on''
-to the resource manager.  If you want warnings only for a single
-application named ``zowie'', specify ``zowie*StringConversionWarnings:on''
-to the resource manager.
-.SH DIAGNOSTICS
+you may specify the value \fIon\fP for the resource named
+\fIStringConversionWarnings\fP.  To see always see these error messages,
+make sure that the following declaration is part of the resources that you
+load using \fIxrdb\fP:
+.sp
+.nf
+        *StringConversionWarnings: on
+.fi
+.sp
+If you want warnings only for a single, puts its name before the asterisk:
+.sp
+.nf
+        xterm*StringConversionWarnings: on
+.fi
+.PP
 The default error handler uses the Resource Manager to build diagnostic
 messages when error conditions arise.  The default error database is
-stored in the file XErrorDB in the directory specified by the LIBDIR
-configuration parameter (/usr/lib/X11 in the standard distribution).  If
+stored in the file \fIXErrorDB\fP in the directory specified by the LIBDIR
+configuration parameter (\fI/usr/lib/X11\fP in the standard distribution).  If
 this file is not installed, error messages will tend to be somewhat cryptic.
 .SH BUGS
 If you encounter a \fBrepeatable\fP bug, please contact your site 
@@ -434,8 +547,10 @@ xdpr(1), xpr(1), xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1),
 resize(1), xterm(1), xwd(1), xwininfo(1), xwud(1),
 Xapollo(1), Xqdss(1), Xqvss(1), Xsun(1), XmacII(1), Xplx(1), bdftosnf(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5),
-.I "Xlib \- C Language X Interface,"
-.I "X Toolkit Intrinsics - C Language X Interface"
+.I "Xlib \- C Language X Interface\fR,\fP"
+.I "X Toolkit Intrinsics - C Language X Interface\fR,\fP"
+and
+.I "Using and Specifying X Resources"
 .SH COPYRIGHT
 The following copyright and permission notice outlines the rights and
 restrictions covering most parts of the standard distribution of the X Window
