@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.3 92/04/06 18:18:23 keith Exp $ */
+/* $XConsortium: cfbinit.c,v 1.4 93/07/10 11:32:30 rws Exp $ */
 /***********************************************************
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -57,7 +57,7 @@ SOFTWARE.
 #include "mfb.h"
 
 extern int wsScreenPrivateIndex;
-extern int lastEventTime;
+extern CARD32 lastEventTime;
 extern int defaultColorVisualClass;
 void wsQueryBestSize();
 Bool wsRealizeCursor();
