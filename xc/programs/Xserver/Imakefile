@@ -196,7 +196,7 @@ target::								@@\
 Real/**/target:								@@\
 	@subdirs=`ls -d $(SERVERSUBDIRS) | sort -u`; \			@@\
 	for i in $$subdirs; do \					@@\
-		echo "target/**/ing $$i"; \				@@\
+		echo "target""ing $$i"; \				@@\
 		(cd $$i ; $(MAKE) $(MFLAGS) target \			@@\
 			LINT=$(LINT) DESTDIR=$(DESTDIR) ); \		@@\
 	done
