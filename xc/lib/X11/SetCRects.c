@@ -1,4 +1,4 @@
-/* $XConsortium: XSetCRects.c,v 11.19 91/01/06 11:47:53 rws Exp $ */
+/* $XConsortium: XSetCRects.c,v 11.20 92/12/31 15:36:02 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -42,7 +42,7 @@ _XSetClipRectangles (dpy, gc, clip_x_origin, clip_y_origin, rectangles, n,
     int ordering;
 {
     register xSetClipRectanglesReq *req;
-    register long nbytes;
+    register long len;
     unsigned long dirty;
     register _XExtension *ext;
 
@@ -51,10 +51,11 @@ _XSetClipRectangles (dpy, gc, clip_x_origin, clip_y_origin, rectangles, n,
     req->xOrigin = gc->values.clip_x_origin = clip_x_origin;
     req->yOrigin = gc->values.clip_y_origin = clip_y_origin;
     req->ordering = ordering;
-    req->length += n * (SIZEOF(xRectangle)/4);
+    len = ((long)n) << 1;
+    SetReqLen(req, len, 1);
+    len <<= 2;
+    Data16 (dpy, (short *) rectangles, len);
     gc->rects = 1;
-    nbytes = (long)n * SIZEOF(xRectangle);
-    Data16 (dpy, (short *) rectangles, nbytes);
     dirty = gc->dirty & ~(GCClipMask | GCClipXOrigin | GCClipYOrigin);
     gc->dirty = GCClipMask | GCClipXOrigin | GCClipYOrigin;
     /* call out to any extensions interested */
