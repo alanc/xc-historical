@@ -1,4 +1,4 @@
-/* $XConsortium: miPick.c,v 5.1 91/02/16 09:56:00 rws Exp $ */
+/* $XConsortium: miPick.c,v 5.2 91/10/01 02:29:03 hersh Exp $ */
 
 
 /***********************************************************
@@ -491,7 +491,11 @@ UpdatePickMeasure(pPM, size, pInput)
 
 	    EndStructure(pwks->pRend);
 	}
-	if (pos) pos = pos->next;
+	if (pos)
+	    if (pos = pos->next) {
+	    	pstr = pos->pstruct;
+	    	num_els = MISTR_NUM_EL((miStructPtr) pstr->deviceData);
+		}
 	if ((err != Success) || (trav_state.exec_str_flag == ES_POP))
 	    /* pop after a successful pick */
 	    break;
