@@ -15,6 +15,7 @@ AllTarget(parsetest)
 
 NormalProgramTarget(transtestc,$(OBJS) transtestc.o,NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(transtests,$(OBJS) transtests.o,NullParameter,NullParameter,NullParameter)
+CenterProgramTarget(transtests,transtests.c $(SRCS),transtests.o $(OBJS),NullParameter,NullParameter)
 NormalProgramTarget(displaytest,displaytest.o,NullParameter,-lX11,NullParameter)
 NormalProgramTarget(bindanytest,$(OBJS) bindanytest.o,NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(parsetest,$(OBJS) parsetest.o,NullParameter,NullParameter,NullParameter)
