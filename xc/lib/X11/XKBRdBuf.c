@@ -99,7 +99,7 @@ _XkbCopyData32(wire,to,num_words)
 #endif
 #ifdef WORD64
 int
-_XkbCopyData32(from,to,num_words)
+_XkbCopyData32(from,lp,num_words)
     int *		from;
     long *		lp;
     int			num_words;
@@ -111,12 +111,12 @@ long maskw, i, bits;
     lpack = (long *)from;
     bits = 32;
 
-    for (i=0;i<nwords;i++) {
+    for (i=0;i<num_words;i++) {
 	maskw = mask32 << bits;
 	*lp++ = (*lpack & maskw) >> bits;
 	bits = bits ^ 32;
 	if (bits)
-	    lpack++:
+	    lpack++;
     }
     return 1;
 }

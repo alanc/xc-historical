@@ -367,15 +367,19 @@ SendSetMap(dpy,xkb,req,pChanges)
 {
 xkbSetMapReq tmp;
 int szMods;
+CARD16 totalSyms,totalActs;
 
     req->length+= _XkbSizeKeyTypes(xkb,req->firstType,req->nTypes)/4;
     req->length+= _XkbSizeKeySyms(xkb,req->firstKeySym,req->nKeySyms,
-						    &req->totalSyms)/4;
+						    	&totalSyms)/4;
     req->length+= _XkbSizeKeyActions(xkb,req->firstKeyAction,req->nKeyActions,
-						    &req->totalActions)/4;
+						    	&totalActions)/4;
     req->length+= _XkbSizeKeyBehaviors(xkb,req,pChanges)/4;
-    req->length+= (szMods=_XkbSizeVirtualMods(xkb,req->virtualMods))/4;
+    szMods= _XkbSizeVirtualMods(xkb,req->virtualMods);
+    req->length+= szMods/4;
     req->length+= _XkbSizeKeyExplicit(xkb,req,pChanges)/4;
+    req->totalSyms= totalSyms;
+    req->totalActs= totalActs;
 
     tmp= *req;
     if ( tmp.nTypes>0 )
