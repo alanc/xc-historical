@@ -341,6 +341,8 @@
 
 (deftype card29 () '(unsigned-byte 29))
 
+(deftype card24 () '(unsigned-byte 24))
+
 (deftype int32 () '(signed-byte 32))
 
 (deftype card16 () '(unsigned-byte 16))
@@ -350,6 +352,8 @@
 (deftype card8 () '(unsigned-byte 8))
 
 (deftype int8 () '(signed-byte 8))
+
+(deftype card4 () '(unsigned-byte 4))
 
 (deftype real (&optional (min '*) (max '*))
   (labels ((convert (limit floatp)
