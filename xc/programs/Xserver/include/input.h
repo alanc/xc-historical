@@ -1,4 +1,3 @@
-/* $Header$ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -117,7 +116,7 @@ extern void CloseDownDevices();
 extern int InitAndStartDevices();
 extern int NumMotionEvents();
 
-extern void WriteEventToClient();
+extern void WriteEventsToClient();
 extern int EventSelectForWindow();
 extern int EventSupressForWindow();
 
