@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.17 91/01/06 13:32:51 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.18 91/01/09 20:11:55 gildea Exp $ */
 
 /*
 
@@ -23,6 +23,10 @@ without express or implied warranty.
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include "VarargsI.h"
+
+#if (defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE)
+#define XtToolkitInitialize _XtToolkitInitialize
+#endif /* (SUNSHLIB || AIXSHLIB) && SHAREDCODE */
 
 extern Widget _XtCreateWidget();
 extern Widget _XtAppCreateShell();
