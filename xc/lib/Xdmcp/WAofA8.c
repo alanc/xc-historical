@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: WAofA8.c,v 1.1 89/09/14 17:11:25 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,4 +40,5 @@ XdmcpWriteARRAYofARRAY8 (buffer, array)
     for (i = 0; i < array->length; i++)
 	if (!XdmcpWriteARRAY8 (buffer, &array->data[i]))
 	    return FALSE;
+    return TRUE;
 }
