@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.19 87/10/28 13:58:51 rws Locked $ */
+/* $Header: dispatch.c,v 1.20 87/11/05 15:27:25 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -415,7 +415,8 @@ ProcDestroyWindow(client)
     pWin = (WindowPtr)LookupWindow(stuff->id, client);
     if (!pWin)
         return(BadWindow);
-    FreeResource(stuff->id, RC_NONE);
+    if (pWin->parent)
+	FreeResource(stuff->id, RC_NONE);
     return(client->noClientException);
 }
 
