@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbfillsp.c,v 1.28 87/08/31 16:34:28 toddb Locked $ */
+/* $Header: mfbfillsp.c,v 1.29 87/09/07 19:08:34 toddb Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -820,9 +820,12 @@ int fSorted;
     tileWidth = pTile->width;
 
     /* this replaces rotating the tile. Instead we just adjust the offset
-     * at which we start grabbing bits from the tile */
-    xSrc += pGC->patOrg.x;
-    ySrc += pGC->patOrg.y;
+     * at which we start grabbing bits from the tile.
+     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
+     * so that iline and rem always stay within the tile bounds.
+     */
+    xSrc += (pGC->patOrg.x % tileWidth) - tileWidth;
+    ySrc += (pGC->patOrg.y % pTile->height) - pTile->height;
 
     while (n--)
     {
@@ -979,9 +982,12 @@ int fSorted;
     tileWidth = pTile->width;
 
     /* this replaces rotating the stipple.  Instead, we just adjust the offset
-     * at which we start grabbing bits from the stipple */
-    xSrc += pGC->patOrg.x;
-    ySrc += pGC->patOrg.y;
+     * at which we start grabbing bits from the stipple.
+     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
+     * so that iline and rem always stay within the tile bounds.
+     */
+    xSrc += (pGC->patOrg.x % tileWidth) - tileWidth;
+    ySrc += (pGC->patOrg.y % pTile->height) - pTile->height;
     while (n--)
     {
 	iline = (ppt->y - ySrc) % pTile->height;
