@@ -3,8 +3,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 
 all::
 
-depend:
-
 #if ExpandManNames
 InstallManPageLong(XShape,$(MANDIR),XShapeQueryExtension)
 InstallManPageAliases(XShapeQueryExtension,$(MANDIR),XShapeQueryVersion XShapeCombineRegion XShapeCombineRectangles XShapeCombineMask XShapeCombineShape XShapeOffsetShape XShapeQueryExtents XShapeSelectInput XShapeInputSelected XShapeGetRectangles)

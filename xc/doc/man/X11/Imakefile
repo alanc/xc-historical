@@ -3,8 +3,6 @@ MANSUFFIX = $(LIBMANSUFFIX)
 
 all::
 
-depend:
-
 #if ExpandManNames
 InstallManPageLong(AllPlanes,$(MANDIR),AllPlanes)
 InstallManPageAliases(AllPlanes,$(MANDIR),BlackPixel WhitePixel ConnectionNumber DefaultColormap DefaultDepth XListDepths DefaultGC DefaultRootWindow DefaultScreenOfDisplay DefaultScreen DefaultVisual DisplayCells DisplayPlanes DisplayString XMaxRequestSize LastKnownRequestProcessed NextRequest ProtocolVersion ProtocolRevision QLength RootWindow ScreenCount ScreenOfDisplay ServerVendor VendorRelease)
