@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.56 91/10/22 18:24:44 eswu Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.57 92/05/15 13:56:09 keith Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -1023,8 +1023,9 @@ char * string;
       local_str = XtMalloc((src->ascii_src.length + 1) *sizeof(unsigned char));
       if (src->ascii_src.length != 0) {
 	fseek(file, 0L, 0);
-	if ( fread(local_str, sizeof(unsigned char),
-		   src->ascii_src.length, file) != src->ascii_src.length ) 
+	src->ascii_src.length = fread(local_str, sizeof(unsigned char),
+				      src->ascii_src.length, file);
+	if (src->ascii_src.length <= 0)
 	  XtErrorMsg("readError", "asciiSourceCreate", "XawError",
 		     "fread returned error.", NULL, NULL);
       }
