@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.9 94/05/14 15:40:04 rws Exp $ */
+/* $XConsortium: imDefIc.c,v 1.10 94/07/06 14:46:49 kaleb Exp kaleb $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -1074,7 +1074,7 @@ _XimCommitedMbString(im, ic, buf)
 	(void)memcpy(str, info->string, info->string_len);
 	str += info->string_len;
     }
-    (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
+    (void)memcpy(str, (char *)&buf_s[1], buf_s[0]);
     commit[len] = '\0';
 
     new_len = im->methods->ctstombs((XIM)im, commit, len, NULL, 0, &status);
@@ -1192,7 +1192,7 @@ _XimCommitedWcString(im, ic, buf)
 	(void)memcpy(str, info->string, info->string_len);
 	str += info->string_len;
     }
-    (void)memcpy(str, (char *)&buf_s[1], (int)&buf_s[0]);
+    (void)memcpy(str, (char *)&buf_s[1], buf_s[0]);
     commit[len] = '\0';
 
     new_len = im->methods->ctstowcs((XIM)im, commit, len, NULL, 0, &status);
