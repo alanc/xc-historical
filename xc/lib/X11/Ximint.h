@@ -1,4 +1,4 @@
-/* $XConsortium: Ximint.h,v 1.7 94/05/14 15:38:50 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.8 94/07/06 14:46:42 kaleb Exp kaleb $ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -1120,7 +1120,7 @@ extern Bool _XimEncodeSavedIMATTRIBUTE(
     int			*idx,
     char		*buf,
     int			 size,
-    int			 ret_len,
+    int			*ret_len,
     XPointer		 top,
     unsigned long	 mode
 #endif
