@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.114 88/02/14 18:41:21 swick Exp $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.115 88/02/26 12:40:28 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -268,11 +268,10 @@ Widget XtNameToWidget(root, name)
     Widget root;
     String name;
 {
-    XrmName	names[100];
-
+    XrmName	names[1000];
     XrmStringToNameList(name, names);
-    if (names[0] != root->core.xrm_name) return NULL;
-    return NameListToWidget(root, &names[1]);
+    if (names[0] == NULLQUARK) return NULL;
+    return NameListToWidget(root, names);
 } /* XtNameToWidget */
 
 void _XtInherit()
