@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: spinfo.c,v 1.3 91/05/11 09:58:53 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -189,12 +189,6 @@ compute_sp_bounds(spf, pinfo, flags)
 	tmpchar.rightSideBearing = bbox.xmax;
 	tmpchar.characterWidth = (int) (pix_width + 0.5);	/* round */
 	tmpchar.attributes = 0;
-	/* XXX kludge to handle space */
-	if (bbox.xmin == 0 && bbox.ymin == 0 &&
-		bbox.xmax == 0 && bbox.ymax == 0 && width) {
-	    tmpchar.rightSideBearing = 1;
-	    tmpchar.ascent = 1;
-	}
 	adjust_min_max(&minchar, &maxchar, &tmpchar);
 
 	total_width += pix_width;
