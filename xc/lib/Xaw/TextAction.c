@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.1 89/07/18 15:38:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.2 89/07/18 19:12:06 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -50,8 +50,8 @@ void _XawTextSetField();
  */
 
 char * _XawTextGetText();
-void _XawTextForceBuildLineTable(), _XawTextAlterSelection();
-void _XawTextSetNewSelection(), _XawTextCheckResize();
+void _XawTextBuildLineTable(), _XawTextAlterSelection(), _XawTextScroll();
+void _XawTextSetSelection(), _XawTextCheckResize(), _XawTextExecuteUpdate();
 Atom * _XawTextSelectionList();
 
 static void
@@ -330,6 +330,7 @@ XEvent *event;
   Move((TextWidget) w, event, XawsdLeft, XawstEOL, FALSE);
 }
 
+
 static void
 MoveLine(ctx, event, dir)
 TextWidget ctx;
@@ -488,8 +489,8 @@ Boolean	kill;
     return;
   }
   ctx->text.insertPos = from;
+  ctx->text.showposition = TRUE; 
   XawTextUnsetSelection((Widget)ctx);
-  ctx->text.showposition = TRUE;
 }
 
 
@@ -746,9 +747,7 @@ Cardinal *num_params;
 				XawstWhiteSpace, XawsdLeft, 1, FALSE);
   r = (*ctx->text.source->Scan)(ctx->text.source, l, XawstWhiteSpace, 
 				XawsdRight, 1, FALSE);
-  _XawTextSetNewSelection(ctx, l, r,
-			  _XawTextSelectionList(ctx, params, *num_params),
-			  *num_params);
+  _XawTextSetSelection(ctx, l, r, params, *num_params);
   EndAction(ctx);
 }
 
@@ -762,9 +761,7 @@ Cardinal *num_params;
   TextWidget ctx = (TextWidget) w;
 
   StartAction(ctx, event);
-  _XawTextSetNewSelection(ctx, (XawTextPosition) 0, ctx->text.lastPos,
-			  _XawTextSelectionList(ctx, params, *num_params),
-			  *num_params);
+  _XawTextSetSelection(ctx,zeroPosition,ctx->text.lastPos,params,*num_params);
   EndAction(ctx);
 }
 
@@ -858,17 +855,14 @@ Cardinal *num_params;
  *
  ************************************************************/
 
+/* ARGSUSED */
 static void 
 RedrawDisplay(w, event)
 Widget w;
 XEvent *event;
 {
-  TextWidget ctx = (TextWidget) w;
-
-  StartAction(ctx, event);
-  _XawTextForceBuildLineTable(ctx);
-  DisplayTextWindow((Widget)ctx);
-  EndAction(ctx);
+  XawTextDisableRedisplay(w);	/* A hack, but is remarkably efficient. */
+  XawTextEnableRedisplay(w);
 }
 
 /*ARGSUSED*/
@@ -907,19 +901,16 @@ AutoFill(ctx)
 TextWidget ctx;
 {
   int (*FindPosition)() = ctx->text.sink->FindPosition;
-  int width, height, x, i, line_num;
+  int width, height, x, line_num;
   XawTextPosition ret_pos;
   XawTextBlock text;
 
-  if ( ! ((ctx->text.options & wordBreak) && (ctx->text.mult == 1)) )
+  if ( ! ((ctx->text.options & autoFill) && (ctx->text.mult == 1)) )
     return;
 
-  for ( i = 0; i < ctx->text.lt.lines ; i++) {
-    if ( ctx->text.lt.info[i].position < ctx->text.insertPos )
-      line_num = i;
-    else
+  for ( line_num = 0; line_num < ctx->text.lt.lines ; line_num++)
+    if ( ctx->text.lt.info[line_num].position >= ctx->text.insertPos )
       break;
-  }
 
   x = ctx->text.lt.info[line_num].x;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
@@ -961,7 +952,7 @@ TextWidget ctx;
   ctx->text.lt.info[line_num + 1].endX = x + width;
   
   if (ret_pos != ctx->text.lt.info[line_num + 2].position)
-    _XawTextForceBuildLineTable(ctx);
+    _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
 }
 
 static void
@@ -997,12 +988,11 @@ XEvent *event;
     ctx->text.insertPos = 
       (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 				XawstPositions, XawsdRight, text.length, TRUE);
+    AutoFill(ctx);
     XawTextUnsetSelection((Widget)ctx);
   }
   else 
     XBell(XtDisplay(ctx), 50);
-
-  AutoFill(ctx);
 
   XtFree(text.ptr);
   EndAction(ctx);
@@ -1299,7 +1289,7 @@ XawTextPosition from, to;
 
   to = StripOutOldCRs(ctx, from, to);
   InsertNewCRs(ctx, from, to);
-  _XawTextForceBuildLineTable(ctx);
+  _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
 }
 
 /*	Function Name: FromParagraph.

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.34 89/07/16 16:24:10 kit Exp $
+* $XConsortium: TextP.h,v 1.35 89/07/18 15:38:54 kit Exp $
 */
 
 
@@ -40,6 +40,12 @@ SOFTWARE.
  *
  ****************************************************************/
 #define MAXCUT	30000	/* Maximum number of characters that can be cut. */
+
+#define abs(x)	(((x) < 0) ? (-(x)) : (x))
+
+#define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XawstAll, XawsdRight, 1, TRUE)
+
+#define zeroPosition ((XawTextPosition) 0)
 
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;
