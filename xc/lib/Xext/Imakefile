@@ -1,4 +1,4 @@
-# $Header: Imakefile,v 1.2 87/09/03 12:23:15 toddb Locked $
+# $Header: Imakefile,v 1.3 87/09/05 17:04:35 rws Locked $
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
            SRCS = XFillZoids.c XBezier.c
            OBJS = XFillZoids.o XBezier.o
@@ -20,7 +20,7 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(Xext,$(OBJS))
 LintLibraryTarget(Xext,$(SRCS))
 InstallLibrary(Xext,$(USRLIBDIR))
-InstallLintLibrary(Xext,$(USRLIBDIR))
+InstallLintLibrary(Xext,$(LINTLIBDIR))
 
 #if ProfileLibXext
 ProfiledLibraryTarget(Xext,$(OBJS))
