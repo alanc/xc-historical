@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.1 93/09/17 13:31:50 rws Exp $ */
+/* $XConsortium: lcUTF.c,v 1.2 93/09/18 15:18:41 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -913,7 +913,7 @@ char *s;
 size_t n;
 #endif
 {
-	uchar *us;
+	unsigned char *us;
 	int c0, c1, c2, c3, c4, c5;
 	unsigned long wc;
 
@@ -922,7 +922,7 @@ size_t n;
 
 	if(n < 1)
 		goto badlen;
-	us = (uchar*)s;
+	us = (unsigned char*)s;
 	c0 = us[0];
 	if(c0 >= T3) {
 		if(n < 3)
