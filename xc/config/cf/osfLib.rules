@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.rules,v 1.7 93/09/05 18:44:25 rws Exp $
+XCOMM $XConsortium: osfLib.rules,v 1.8 93/09/11 17:57:54 rws Exp $
 
 /*
  * OSF/1 shared library rules
@@ -23,7 +23,11 @@ XCOMM $XConsortium: osfLib.rules,v 1.7 93/09/05 18:44:25 rws Exp $
 #define ShLibIncludeFile <osfLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
+#if ModernOSF1
+#define SharedLibraryLoadFlags -shared -no_archive -rpath $(USRLIBDIR)
+#else
 #define SharedLibraryLoadFlags -shared -no_archive
+#endif
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags /**/
@@ -49,6 +53,18 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #define	InstallSharedLibraryData(libname,rev,dest)
 #endif /* InstallSharedLibraryData */
 
+#ifndef PackageName(libname)
+#if ModernOSF1
+#define PackageName(libname) /**/
+#else
+#define PackageName(libname) -package libname
+#endif
+#endif
+#if ThreadedX && ModernOSF1
+#define BaseShLibReqs -lc_r -lc
+#else
+#define BaseShLibReqs -lc
+#endif
 
 /*
  * SharedLibraryTarget - generate rules to create a shared library;
@@ -62,7 +78,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) -package $@ -soname $@ solist $(REQUIREDLIBS) -lc) @@\
+	(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) PackageName($@) -soname $@ solist $(REQUIREDLIBS) BaseShLibReqs) @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
@@ -78,7 +94,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	$(LD) -o $@~ $(SHLIBLDFLAGS) -package $@ -soname $@ solist $(REQUIREDLIBS) -lc @@\
+	$(LD) -o $@~ $(SHLIBLDFLAGS) PackageName($@) -soname $@ solist $(REQUIREDLIBS) BaseShLibReqs @@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
