@@ -100,21 +100,39 @@ cfbResolveColor(pred, pgreen, pblue, pVisual)
 
     if ((pVisual->class == PseudoColor) || (pVisual->class == DirectColor))
     {
+	/* rescale to rgb bits */
 	*pred = ((*pred >> shift) * 65535) / lim;
 	*pgreen = ((*pgreen >> shift) * 65535) / lim;
 	*pblue = ((*pblue >> shift) * 65535) / lim;
     }
-    else if ((pVisual->class == GrayScale) || (pVisual->class == StaticGray))
+    else if (pVisual->class == GrayScale)
     {
+	/* rescale to gray then rgb bits */
 	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
+	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
+    }
+    else if (pVisual->class == StaticGray)
+    {
+	unsigned limg = pVisual->ColormapEntries - 1;
+	/* rescale to gray then [0..limg] then [0..65535] then rgb bits */
+	*pred = (30L * *pred + 59L * *pgreen + 11L * *pblue) / 100;
+	*pred = ((((*pred * (limg + 1))) >> 16) * 65535) / limg;
 	*pblue = *pgreen = *pred = ((*pred >> shift) * 65535) / lim;
     }
     else
     {
-	*pred = ((*pred >> shift) * 65535) / lim;
-	*pgreen = ((*pgreen >> shift) * 65535) / lim;
-	lim = pVisual->nplanes - (2 * pVisual->bitsPerRGBValue);
-	*pgreen = ((*pgreen >> (16 - lim)) * 65535) / ((1 << lim) - 1);
+	unsigned limr, limg, limb;
+
+	limr = pVisual->redMask >> pVisual->offsetRed;
+	limg = pVisual->greenMask >> pVisual->offsetGreen;
+	limb = pVisual->blueMask >> pVisual->offsetBlue;
+	/* rescale to [0..limN] then [0..65535] then rgb bits */
+	*pred = ((((((*pred * (limr + 1)) >> 16) *
+		    65535) / limr) >> shift) * 65535) / lim;
+	*pgreen = ((((((*pgreen * (limg + 1)) >> 16) *
+		      65535) / limg) >> shift) * 65535) / lim;
+	*pblue = ((((((*pblue * (limb + 1)) >> 16) *
+		     65535) / limb) >> shift) * 65535) / lim;
     }
 }
 
@@ -124,47 +142,58 @@ cfbInitializeColormap(pmap)
 {
     register unsigned i;
     register VisualPtr pVisual;
-    unsigned lim;
+    unsigned lim, max, shift;
 
     pVisual = pmap->pVisual;
+    lim = (1 << pVisual->bitsPerRGBValue) - 1;
+    shift = 16 - pVisual->bitsPerRGBValue;
+    max = pVisual->ColormapEntries - 1;
     if (pVisual->class == TrueColor)
     {
-	lim = (1 << pVisual->bitsPerRGBValue) - 1;
-	for(i = 0; i <= lim; i++)
+	unsigned limr, limg, limb;
+
+	limr = pVisual->redMask >> pVisual->offsetRed;
+	limg = pVisual->greenMask >> pVisual->offsetGreen;
+	limb = pVisual->blueMask >> pVisual->offsetBlue;
+	for(i = 0; i <= max; i++)
 	{
-	    pmap->red[i].co.local.red = (i * 65535) / lim;
-	    pmap->green[i].co.local.green = pmap->red[i].co.local.red;
+	    /* rescale to [0..65535] then rgb bits */
+	    pmap->red[i].co.local.red =
+		((((i * 65535) / limr) >> shift) * 65535) / lim;
+	    pmap->green[i].co.local.green =
+		((((i * 65535) / limg) >> shift) * 65535) / lim;
+	    pmap->blue[i].co.local.blue =
+		((((i * 65535) / limb) >> shift) * 65535) / lim;
 	}
-	lim = (1 << (pVisual->nplanes - (2 * pVisual->bitsPerRGBValue))) - 1;
-	for(i = 0; i <= lim; i++)
-	    pmap->blue[i].co.local.blue = (i * 65535) / lim;
     }
     else if (pVisual->class == StaticColor)
     {
-	unsigned limrg, limb;
+	unsigned limr, limg, limb;
 
-	lim = pVisual->ColormapEntries - 1;
-	limrg = (1 << pVisual->bitsPerRGBValue) - 1;
-	limb = (1 << (pVisual->nplanes - (2 * pVisual->bitsPerRGBValue))) - 1;
-	for(i = 0; i <= lim; i++)
+	limr = pVisual->redMask >> pVisual->offsetRed;
+	limg = pVisual->greenMask >> pVisual->offsetGreen;
+	limb = pVisual->blueMask >> pVisual->offsetBlue;
+	for(i = 0; i <= max; i++)
 	{
-	    pmap->red[i].co.local.red = (((i & pVisual->redMask) >>
-					  pVisual->offsetRed) * 65535) /
-					    limrg;
-	    pmap->red[i].co.local.green = (((i & pVisual->greenMask) >>
-					    pVisual->offsetGreen) * 65535) /
-					      limrg;
-	    pmap->red[i].co.local.blue = (((i & pVisual->blueMask) >>
-					   pVisual->offsetBlue) * 65535) /
-					     limb;
+	    /* rescale to [0..65535] then rgb bits */
+	    pmap->red[i].co.local.red =
+		((((((i & pVisual->redMask) >> pVisual->offsetRed)
+		    * 65535) / limr) >> shift) * 65535) / lim;
+	    pmap->red[i].co.local.green =
+		((((((i & pVisual->greenMask) >> pVisual->offsetGreen)
+		    * 65535) / limg) >> shift) * 65535) / lim;
+	    pmap->red[i].co.local.blue =
+		((((((i & pVisual->blueMask) >> pVisual->offsetBlue)
+		    * 65535) / limb) >> shift) * 65535) / lim;
 	}
     }
     else if (pVisual->class == StaticGray)
     {
-	lim = pVisual->ColormapEntries - 1;
-	for(i = 0; i <= lim; i++)
+	for(i = 0; i <= max; i++)
 	{
-	    pmap->red[i].co.local.red = (i * 65535) / lim;
+	    /* rescale to [0..65535] then rgb bits */
+	    pmap->red[i].co.local.red = ((((i * 65535) / max) >> shift)
+					 * 65535) / lim;
 	    pmap->red[i].co.local.green = pmap->red[i].co.local.red;
 	    pmap->red[i].co.local.blue = pmap->red[i].co.local.red;
 	}
