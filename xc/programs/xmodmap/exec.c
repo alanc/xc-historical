@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: exec.c,v 1.7 88/10/08 14:18:17 jim Exp $
+ * $XConsortium: exec.c,v 1.8 88/10/08 15:15:00 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  * Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
@@ -257,7 +257,7 @@ PrintPointerMap (fp)
 
     count = XGetPointerMapping (dpy, pmap, 256);
 
-    fprintf (fp, "There are %d pointer buttons defined.\n\n");
+    fprintf (fp, "There are %d pointer buttons defined.\n\n", count);
     fprintf (fp, "    Physical        Button\n");
     fprintf (fp, "     Button          Code\n");
 /*               "      ###            ###\n"               */
