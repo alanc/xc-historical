@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.95 91/05/04 18:57:42 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.96 91/05/04 19:06:02 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -483,8 +483,9 @@ static void Tekparse()
 			/* only line types */
 			if((c &= LINEMASK) != screen->cur.linetype) {
 				if(nplot > 0)
-					TekFlush();
-				screen->cur.linetype = c;
+				    TekFlush();
+				if (c <= TEKNUMLINES)
+				    screen->cur.linetype = c;
 			}
 			Tparsestate = curstate;
 			break;
