@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.14 91/01/09 17:46:10 gildea Exp $
+ * $XConsortium: widgets.c,v 1.15 91/07/08 10:32:20 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -156,29 +156,21 @@ Widget parent;
 				  NULL, ZERO);
     XtAddCallback(entry, XtNcallback, SendTree, (XtPointer) FALSE);
 
-    entry = XtCreateManagedWidget("showClientWidget", smeBSBObjectClass, menu,
-				  NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, FindWidget, NULL);
+    entry = XtCreateManagedWidget("dumpTreeToFile", smeBSBObjectClass, menu,
+				    NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, DumpTreeToFile, NULL);
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
+    entry= XtCreateManagedWidget("getResourceList", smeBSBObjectClass, menu,
+				 NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, GetResourceList, NULL);
+
 #ifdef SET_VALUES_POPUP    
     entry = XtCreateManagedWidget("setValues", smeBSBObjectClass, menu,
 				    NULL, ZERO);
     XtAddCallback(entry, XtNcallback, InitSetValues, NULL);
 #endif /* SET_VALUES_POPUP */
-
-    entry = XtCreateManagedWidget("dumpTreeToFile", smeBSBObjectClass, menu,
-				    NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, DumpTreeToFile, NULL);
-
-    entry= XtCreateManagedWidget("flashActiveWidgets", smeBSBObjectClass, menu,
-				 NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, FlashActiveWidgets, NULL);
-
-    entry= XtCreateManagedWidget("getResourceList", smeBSBObjectClass, menu,
-				 NULL, ZERO);
-    XtAddCallback(entry, XtNcallback, GetResourceList, NULL);
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
@@ -199,6 +191,8 @@ Widget parent;
 #define ACTIVATE 1
 #define LABEL 2
 #define LINE 3
+#define FIND 4
+#define FLASH 5
 
 struct tree_ops_menu {
     char * name;
@@ -213,6 +207,7 @@ Widget parent;
     Widget menu, button, entry;
     int i, number;
     static struct tree_ops_menu tree_menu[] = {
+	{ "showClientWidget", FIND, (XtPointer) NULL },
         { "selectAll", SELECT, (XtPointer) SelectAll },
 	{ "unselectAll", SELECT, (XtPointer) SelectNone },
 	{ "invertAll", SELECT, (XtPointer) SelectInvert },
@@ -225,7 +220,9 @@ Widget parent;
         { "showWidgetNames", LABEL, (XtPointer) NameLabel },
         { "showClassNames", LABEL, (XtPointer) ClassLabel },
         { "showWidgetIDs", LABEL, (XtPointer) IDLabel},
-        { "showWidgetWindows", LABEL, (XtPointer) WindowLabel}
+        { "showWidgetWindows", LABEL, (XtPointer) WindowLabel },
+        { "line", LINE, (XtPointer) NULL },
+	{ "flashActiveWidgets", FLASH, (XtPointer) NULL }
     };
 
     button = XtCreateManagedWidget("treeCommands", menuButtonWidgetClass,
@@ -248,6 +245,12 @@ Widget parent;
 	case LINE:
 	    func = NULL;
 	    class = smeLineObjectClass;
+	    break;
+	case FIND:
+	    func = FindWidget;
+	    break;
+	case FLASH:
+	    func = FlashActiveWidgets;
 	    break;
 	default:
 	    continue;
@@ -730,8 +733,10 @@ WNode * node;
     res_box->value_wid = XtCreateManagedWidget("valueText", 
 					       asciiTextWidgetClass, 
 					       form, args, num_args);
+#ifdef notdef
     XtAddCallback(XawTextGetSource(res_box->value_wid), XtNcallback,
 		  SetResourceString, (XtPointer) node);
+#endif
 }
 
 /*	Function Name: PopupOnNode
