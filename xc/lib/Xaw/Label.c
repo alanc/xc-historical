@@ -1,4 +1,4 @@
-#ifndef lint
+ifndef lint
 static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #endif lint
 
@@ -59,6 +59,10 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #define XtRjustify		"Justify"
 
 static Resource resources[] = {
+    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+         Offset(Widget,core.width), XtRString, "0"},
+    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+         Offset(Widget,core.height), XtRString, "0"},
     {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
 	Offset(LabelWidget, label.foreground), XrmRString, "Black"},
     {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
@@ -73,17 +77,20 @@ static Resource resources[] = {
 	Offset(LabelWidget, label.internalHeight),XrmRString, "2"},
 };
 
-extern void Initialize();
-extern void Realize();
-extern void Resize();
-extern void Redisplay();
-extern void SetValues();
+static void Initialize();
+static void Realize();
+static void Resize();
+static void Redisplay();
+static void SetValues();
+static void ClassInitialize();
 
 LabelWidgetClassData labelWidgetClassData = {
 /* core fields */	
     /* superclass	*/	(WidgetClass) &widgetClassData,
     /* class_name	*/	"Label",
     /* size		*/	sizeof(LabelWidgetClassData),
+    /* class init proc  */      ClassInitialize,
+    /* class init'ed    */	FALSE,
     /* initialize	*/	Initialize,
     /* realize		*/	Realize,
     /* actions		*/	NULL,
@@ -106,7 +113,7 @@ LabelWidgetClassData labelWidgetClassData = {
  *
  ****************************************************************/
 
-extern void CvtStringToJustify();
+static void CvtStringToJustify();
 
 static XrmQuark	XrmQEleft;
 static XrmQuark	XrmQEcenter;
@@ -120,7 +127,7 @@ static void ClassInitialize(w)
     XrmQEcenter = XrmAtomToQuark("center");
     XrmQEright  = XrmAtomToQuark("right");
 
-    XtRegisterTypeConverter(XrmRString, XtRJustify, CvtStringToJustify);
+    XrmRegisterTypeConverter(XrmRString, XtRJustify, CvtStringToJustify);
 } /* ClassInitialize */
 
 static void CvtStringToJustify(display, fromVal, toVal)
@@ -176,8 +183,7 @@ static void GetGC(lw)
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
 
-    lw->label.gc = XtGetGC(XtDisplay(lw), XtWindow(lw),
-    	GCForeground | GCFont, &values);
+    lw->label.gc = XtGetGC(lw, GCForeground | GCFont, &values);
 }
 
 static void Initialize(w)
@@ -207,7 +213,7 @@ static void Initialize(w)
 } /* Initialize */
 
 
-void Realize(w, valueMask, attributes)
+static void Realize(w, valueMask, attributes)
     register Widget w;
     Mask valueMask;
     XSetWindowAttributes *attributes;
@@ -273,7 +279,7 @@ static void Resize(lw)
  * Set specified arguments into widget
  */
 
-void SetValues(old, new)
+static void SetValues(old, new)
     Widget old, new;
 {
     LabelWidget oldlw = (LabelWidget) old;
