@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.27 90/12/28 09:26:18 rws Exp $
+ * $XConsortium: Xos.h,v 1.28 90/12/28 11:08:55 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
 
 #ifndef _XOS_H_
 #define _XOS_H_
-
-#include <X11/Xdefs.h>
 
 #ifdef _POSIX_SOURCE
 

@@ -1,7 +1,6 @@
 /*
- * $XConsortium: main.c,v 1.40 89/12/16 21:03:37 rws Exp $
+ * $XConsortium: main.c,v 1.41 90/12/26 11:29:32 rws Exp $
  */
-#include <X11/Xdefs.h>
 #include "def.h"
 #ifdef hpux
 #define sigvec sigvector
