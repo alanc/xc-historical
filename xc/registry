@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.81 93/04/27 10:56:11 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.82 93/04/27 11:45:04 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -334,6 +334,7 @@ Value	Name					Reference
 1	DECnet					[23]
 2	Chaos					[23]
 128	Netname					[57]
+129	Kerberos5Principal			[94]
 
 7. PROPERTY NAMES
 
