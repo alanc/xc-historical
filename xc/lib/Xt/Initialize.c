@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.196 91/07/09 14:55:50 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.197 91/07/12 12:35:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -808,6 +808,8 @@ ArgList args_in;
     Widget root;
     Arg args[3], *merged_args;
     Cardinal num = 0;
+    
+    XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
     
     dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
 		     argc_in_out, &argv_in_out, fallback_resources);

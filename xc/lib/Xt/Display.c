@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.79 91/07/12 12:34:12 rws Exp $ */
+/* $XConsortium: Display.c,v 1.80 91/07/12 13:16:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -218,8 +218,6 @@ String **argv_in_out, * fallback_resources;
     int i;
     Display *dpy;
 
-    XtToolkitInitialize();
-    
 /*
  * Save away argv and argc so we can set the properties later 
  */

@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.20 91/05/04 17:47:24 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.21 91/07/12 12:36:46 rws Exp $ */
 
 /*
 
@@ -306,6 +306,8 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     int count = 0;
     XtTypedArgList typed_args;
 
+    XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
+    
     dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
 		     argc_in_out, &argv_in_out, fallback_resources);
 
