@@ -1,89 +1,85 @@
-/**********************************************************************************
- * TreeP.h: Private header file for the Tree widget
-  *         From:
-  *                   The X Window System, 
-  *            Programming and Applications with Xt
-  *                   OSF/Motif Edition
-  *         by
-  *                Douglas Young
-  *              Prentice Hall, 1990
-  *
-  *                 Example described on pages: 397-419
-  *
-  *
-  *  Copyright 1989 by Prentice Hall
-  *  All Rights Reserved
-  *
-  * This code is based on the OSF/Motif widget set and the X Window System
-  *
-  * Permission to use, copy, modify, and distribute this software for 
-  * any purpose and without fee is hereby granted, provided that the above
-  * copyright notice appear in all copies and that both the copyright notice
-  * and this permission notice appear in supporting documentation.
-  *
-  * Prentice Hall and the author disclaim all warranties with regard to 
-  * this software, including all implied warranties of merchantability and fitness.
-  * In no event shall Prentice Hall or the author be liable for any special,
-  * indirect or cosequential damages or any damages whatsoever resulting from 
-  * loss of use, data or profits, whether in an action of contract, negligence 
-  * or other tortious action, arising out of or in connection with the use 
-  * or performance of this software.
-  *
-  * Open Software Foundation is a trademark of The Open Software Foundation, Inc.
-  * OSF is a trademark of Open Software Foundation, Inc.
-  * OSF/Motif is a trademark of Open Software Foundation, Inc.
-  * Motif is a trademark of Open Software Foundation, Inc.
-  * DEC is a registered trademark of Digital Equipment Corporation
-  * HP is a registered trademark of the Hewlett Packard Company
-  * DIGITAL is a registered trademark of Digital Equipment Corporation
-  * X Window System is a trademark of the Massachusetts Institute of Technology
-  **********************************************************************************/
+/*
+ * $XConsortium: Tree.c,v 1.6 90/02/02 11:36:44 jim Exp $
+ *
+ * Copyright 1990 Massachusetts Institute of Technology
+ * Copyright 1989 Prentice Hall
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose and without fee is hereby granted, provided that the above
+ * copyright notice appear in all copies and that both the copyright notice
+ * and this permission notice appear in supporting documentation.
+ * 
+ * M.I.T., Prentice Hall and the authors disclaim all warranties with regard
+ * to this software, including all implied warranties of merchantability and
+ * fitness.  In no event shall M.I.T., Prentice Hall or the authors be liable
+ * for any special, indirect or cosequential damages or any damages whatsoever
+ * resulting from loss of use, data or profits, whether in an action of
+ * contract, negligence or other tortious action, arising out of or in
+ * connection with the use or performance of this software.
+ * 
+ * Authors:  Jim Fulton, MIT X Consortium,
+ *           based on a version by Douglas Young, Prentice Hall
+ * 
+ * This widget is based on the Tree widget described on pages 397-419 of
+ * Douglas Young's book "The X Window System, Programming and Applications 
+ * with Xt OSF/Motif Edition."  The layout code has been rewritten to use
+ * additional blank space to make the structure of the graph easier to see
+ * as well as to support vertical trees.
+ */
 
 
-#ifndef TREEP_H
-#define TREEP_H
+#ifndef _XawTreeP_h
+#define _XawTreeP_h
+
+/* #include <X11/Xaw/Tree.h> */
+#include "Tree.h"
+
 typedef struct _TreeClassPart {
-    int         ignore;
+    int ignore;
 } TreeClassPart;
 
 typedef struct _TreeClassRec {
-    CoreClassPart       core_class;
-    CompositeClassPart  composite_class;
+    CoreClassPart core_class;
+    CompositeClassPart composite_class;
     ConstraintClassPart constraint_class;
-    TreeClassPart     tree_class;
+    TreeClassPart tree_class;
 } TreeClassRec;
 
 extern TreeClassRec treeClassRec;
 
 typedef struct {
-    Dimension      h_min_space;
-    Dimension      v_min_space;
-    Dimension      line_width;
-    Pixel          foreground;
-    GC             gc;
-    Widget         tree_root;
-    Dimension      *largest;
-    int            n_largest;
-    Boolean        horiz;
+    /* fields available through resources */
+    Dimension h_min_space;		/* hSpace/HSpace */
+    Dimension v_min_space;		/* vSpace/VSpace */
+    Dimension line_width;		/* lineWidth/LineWidth */
+    Pixel foreground;			/* foreground/Foreground */
+    XtOrientation orientation;		/* orientation/Orientation */
+    /* private fields */
+    GC gc;				/* used to draw lines */
+    Widget tree_root;			/* hidden root off all children */
+    Dimension *largest;			/* list of largest per depth */
+    int n_largest;			/* number of elements in largest */
 } TreePart;
 
 
 typedef struct _TreeRec {
-    CorePart        core;
-    CompositePart   composite;
-    ConstraintPart  constraint;
-    TreePart      tree;
+    CorePart core;
+    CompositePart composite;
+    ConstraintPart constraint;
+    TreePart tree;
 }  TreeRec;
 
 
-
+/*
+ * structure attached to all children
+ */
 typedef struct _TreeConstraintsPart {
-  Widget        super_node;
-  WidgetList    sub_nodes;
-  int           n_sub_nodes;
-  int           max_sub_nodes;
-  Dimension     bbwidth, bbheight;
-  Position      x, y;
+  Widget parent;
+  WidgetList children;
+  int n_children;
+  int max_children;
+  Dimension bbwidth, bbheight;
+  Position x, y;
 } TreeConstraintsPart;
 
 typedef struct _TreeConstraintsRec {
@@ -91,12 +87,16 @@ typedef struct _TreeConstraintsRec {
 } TreeConstraintsRec, *TreeConstraints;
 
 
+/*
+ * useful macros
+ */
+
 #define TREE_CONSTRAINT(w) \
                    ((TreeConstraints)((w)->core.constraints))
 
-#define INITIAL_TREE_DEPTH 10
+#define INITIAL_TREE_DEPTH 10		/* for allocating largest array */
 
-#endif TREEP_H
+#endif /* _XawTreeP_h */
 
 
 

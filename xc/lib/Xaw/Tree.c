@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.5 90/02/02 09:23:34 jim Exp $
+ * $XConsortium: Tree.c,v 1.6 90/02/02 11:36:44 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -27,15 +27,17 @@
  * as well as to support vertical trees.
  */
 
-#include	  <X11/Intrinsic.h>
-#include	  <X11/IntrinsicP.h>
-#include	  <X11/StringDefs.h>
-#include	  <X11/CoreP.h>
-#include  	<X11/CompositeP.h>
-#include	  <X11/ConstrainP.h>
-#include	  "Tree.h"
-#include	  "TreeP.h"
-#define   MAX(a,b) ((a) > (b) ? (a) : (b))
+#include <X11/Intrinsic.h>
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <X11/CoreP.h>
+#include <X11/CompositeP.h>
+#include <X11/ConstrainP.h>
+#include <X11/Xmu/Converters.h>
+#include "TreeP.h"
+
+#define MAXIMUM(a,b) ((a) > (b) ? (a) : (b))
+#define IsHorizontal(tw) ((tw)->tree.orientation == XtorientHorizontal)
 
 static void             Initialize();
 static void             ConstraintInitialize();
@@ -52,29 +54,39 @@ static void             Redisplay();
 static void             set_positions();
 static void             initialize_dimensions();
 
+/*
+ * resources of the tree itself
+ */
 static XtResource resources[] = {
-    { XtNhorizontalSpace, XtCSpace, XtRDimension, sizeof (Dimension),
+    { XtNhSpace, XtCHSpace, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.h_min_space), XtRString, "20" },
-    { XtNverticalSpace, XtCSpace, XtRDimension, sizeof (Dimension),
+    { XtNvSpace, XtCVSpace, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.v_min_space), XtRString, "6" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
 	XtOffset(TreeWidget, tree.foreground), XtRString, "Black"},
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.line_width), XtRString, "0" },
+    { XtNorientation, XtCOrientation, XtROrientation, sizeof (XtOrientation),
+	XtOffset(TreeWidget, tree.orientation), XtRImmediate,
+	(caddr_t) XtorientHorizontal },
 };
 
+
+/*
+ * resources that are attached to all children of the tree
+ */
 static XtResource treeConstraintResources[] = {
- {XtNsuperNode, XtCSuperNode, XtRPointer, sizeof(Widget),
-   XtOffset(TreeConstraints, tree.super_node),
-   XtRPointer, NULL},
+    { XtNparent, XtCParent, XtRPointer, sizeof (Widget),
+	XtOffset(TreeConstraints, tree.parent), XtRPointer, NULL},
 };
+
 
 TreeClassRec treeClassRec = {
   {
     /* core_class fields  */
     (WidgetClass) &constraintClassRec,/* superclass         */
     "Tree",                           /* class_name         */
-    sizeof(TreeRec),                /* widget_size        */
+    sizeof(TreeRec),                  /* widget_size        */
     NULL,                             /* class_init         */
     NULL,                             /* class_part_init    */
     FALSE,                            /* class_inited       */	
@@ -171,7 +183,6 @@ static void Initialize(request, new)
   new->tree.n_largest = 0;
   initialize_dimensions (&new->tree.largest, &new->tree.n_largest, 
 			 INITIAL_TREE_DEPTH);
-  new->tree.horiz = TRUE;
 } 
 
 static void ConstraintInitialize(request, new)
@@ -182,17 +193,17 @@ static void ConstraintInitialize(request, new)
   /*
    * Initialize the widget to have no sub-nodes.
    */
-  tree_const->tree.n_sub_nodes = 0;
-  tree_const->tree.max_sub_nodes = 0;
-  tree_const->tree.sub_nodes = (WidgetList) NULL;
+  tree_const->tree.n_children = 0;
+  tree_const->tree.max_children = 0;
+  tree_const->tree.children = (WidgetList) NULL;
   tree_const->tree.x = tree_const->tree.y = 0; 
   /*
    * If this widget has a super-node, add it to that 
    * widget' sub-nodes list. Otherwise make it a sub-node of 
    * the tree_root widget.
    */
-  if(tree_const->tree.super_node)
-    insert_new_node(tree_const->tree.super_node, new);
+  if(tree_const->tree.parent)
+    insert_new_node(tree_const->tree.parent, new);
   else
     if(tw->tree.tree_root)
       insert_new_node(tw->tree.tree_root, new);
@@ -238,16 +249,16 @@ static Boolean ConstraintSetValues(current, request, new)
  TreeConstraints current_const = TREE_CONSTRAINT(current);
  TreeWidget tw = (TreeWidget) new->core.parent;
  /*
-  * If the super_node field has changed, remove the widget
-  * from the old widget's sub_nodes list and add it to the
+  * If the parent field has changed, remove the widget
+  * from the old widget's children list and add it to the
   * new one.
   */
- if(current_const->tree.super_node !=
-                                  newconst->tree.super_node){
-   if(current_const->tree.super_node)
-     delete_node(current_const->tree.super_node, new);
-   if(newconst->tree.super_node)
-     insert_new_node(newconst->tree.super_node, new);
+ if(current_const->tree.parent !=
+                                  newconst->tree.parent){
+   if(current_const->tree.parent)
+     delete_node(current_const->tree.parent, new);
+   if(newconst->tree.parent)
+     insert_new_node(newconst->tree.parent, new);
    /*
     * If the Tree widget has been realized, 
     * compute new layout.
@@ -258,66 +269,66 @@ static Boolean ConstraintSetValues(current, request, new)
   return (False);
 }
 
-static void insert_new_node(super_node, node)
-     Widget super_node, node;
+static void insert_new_node(parent, node)
+     Widget parent, node;
 {
-  TreeConstraints super_const = TREE_CONSTRAINT(super_node);
+  TreeConstraints super_const = TREE_CONSTRAINT(parent);
   TreeConstraints node_const = TREE_CONSTRAINT(node);
-  int nindex = super_const->tree.n_sub_nodes;
+  int nindex = super_const->tree.n_children;
   
-  node_const->tree.super_node = super_node;
+  node_const->tree.parent = parent;
   /*
-   * If there isn't more room in the sub_nodes array, 
+   * If there isn't more room in the children array, 
    * allocate additional space.
    */  
-  if(super_const->tree.n_sub_nodes ==
-                             super_const->tree.max_sub_nodes){
-    super_const->tree.max_sub_nodes += 
-                    (super_const->tree.max_sub_nodes / 2) + 2;
-    super_const->tree.sub_nodes = 
-     (WidgetList) XtRealloc(super_const->tree.sub_nodes, 
-                           (super_const->tree.max_sub_nodes) *
+  if(super_const->tree.n_children ==
+                             super_const->tree.max_children){
+    super_const->tree.max_children += 
+                    (super_const->tree.max_children / 2) + 2;
+    super_const->tree.children = 
+     (WidgetList) XtRealloc(super_const->tree.children, 
+                           (super_const->tree.max_children) *
                             sizeof(Widget));
   } 
   /*
    * Add the sub_node in the next available slot and 
    * increment the counter.
    */
-  super_const->tree.sub_nodes[nindex] = node;
-  super_const->tree.n_sub_nodes++;
+  super_const->tree.children[nindex] = node;
+  super_const->tree.n_children++;
 }
 
-static void delete_node(super_node, node)
-    Widget  super_node, node;
+static void delete_node(parent, node)
+    Widget  parent, node;
 {
   TreeConstraints node_const = TREE_CONSTRAINT(node);
   TreeConstraints super_const;
   int             pos, i;
   /*
-   * Make sure the super_node exists.
+   * Make sure the parent exists.
    */
-  if(!super_node) return;  
+  if(!parent) return;  
   
-  super_const = TREE_CONSTRAINT(super_node);
+  super_const = TREE_CONSTRAINT(parent);
   /*
-   * Find the sub_node on its super_node's list.
+   * Find the sub_node on its parent's list.
    */
-  for (pos = 0; pos < super_const->tree.n_sub_nodes; pos++)
-    if (super_const->tree.sub_nodes[pos] == node)
+  for (pos = 0; pos < super_const->tree.n_children; pos++)
+    if (super_const->tree.children[pos] == node)
       break;
-  if (pos == super_const->tree.n_sub_nodes) return;
+  if (pos == super_const->tree.n_children) return;
   /*
-   * Decrement the number of sub_nodes
+   * Decrement the number of children
    */  
-  super_const->tree.n_sub_nodes--;
+  super_const->tree.n_children--;
   /*
    * Fill in the gap left by the sub_node.
    * Zero the last slot for good luck.
    */
-  for (i = pos; i < super_const->tree.n_sub_nodes; i++) 
-    super_const->tree.sub_nodes[i] = 
-                            super_const->tree.sub_nodes[i+1];
- super_const->tree.sub_nodes[super_const->tree.n_sub_nodes]=0;
+  for (i = pos; i < super_const->tree.n_children; i++) 
+    super_const->tree.children[i] = 
+                            super_const->tree.children[i+1];
+ super_const->tree.children[super_const->tree.n_children]=0;
 }
 
 static void ConstraintDestroy(w) 
@@ -329,11 +340,11 @@ static void ConstraintDestroy(w)
   * Remove the widget from its parent's sub-nodes list and
   * make all this widget's sub-nodes sub-nodes of the parent.
   */
-  if(tree_const->tree.super_node) { 
-    delete_node(tree_const->tree.super_node, w);
-    for(i=0;i< tree_const->tree.n_sub_nodes; i++)
-      insert_new_node(tree_const->tree.super_node, 
-                      tree_const->tree.sub_nodes[i]);
+  if(tree_const->tree.parent) { 
+    delete_node(tree_const->tree.parent, w);
+    for(i=0;i< tree_const->tree.n_children; i++)
+      insert_new_node(tree_const->tree.parent, 
+                      tree_const->tree.children[i]);
   }
   new_layout(w->core.parent);
 }
@@ -391,19 +402,19 @@ static void Redisplay (w, event, region)
      tree_const = TREE_CONSTRAINT(child);
      /*
       * Draw a line between the right edge of each widget
-      * and the left edge of each of its sub_nodes. Don't
+      * and the left edge of each of its children. Don't
       * draw lines from the fake tree_root.
       */
      if(child != w->tree.tree_root && 
-        tree_const->tree.n_sub_nodes)
-       for (j = 0; j < tree_const->tree.n_sub_nodes; j++)
+        tree_const->tree.n_children)
+       for (j = 0; j < tree_const->tree.n_children; j++)
          XDrawLine(XtDisplay(w), XtWindow(w), 
                    w->tree.gc,
                    child->core.x + child->core.width, 
                    child->core.y + child->core.height / 2,
-                   tree_const->tree.sub_nodes[j]->core.x,
-                   tree_const->tree.sub_nodes[j]->core.y + 
-                tree_const->tree.sub_nodes[j]->core.height/2);
+                   tree_const->tree.children[j]->core.x,
+                   tree_const->tree.children[j]->core.y + 
+                tree_const->tree.children[j]->core.height/2);
     }
 }
 
@@ -430,10 +441,10 @@ static void set_positions(tw, w, level)
   if(tw->core.width < tree_const->tree.x + w->core.width ||
      tw->core.height < tree_const->tree.y + w->core.height){
     result = 
-      XtMakeResizeRequest(tw, MAX(tw->core.width, 
+      XtMakeResizeRequest(tw, MAXIMUM(tw->core.width, 
                                   tree_const->tree.x + 
                                   w->core.width),
-                              MAX(tw->core.height, 
+                              MAXIMUM(tw->core.height, 
                                   tree_const->tree.y + 
                                   w->core.height),
                           &replyWidth, &replyHeight);
@@ -445,10 +456,10 @@ static void set_positions(tw, w, level)
                              NULL, NULL);
   }
  /*
-  * Set the positions of all sub_nodes.
+  * Set the positions of all children.
   */
-  for(i=0; i< tree_const->tree.n_sub_nodes;i++)
-    set_positions(tw, tree_const->tree.sub_nodes[i], level+1);
+  for(i=0; i< tree_const->tree.n_children;i++)
+    set_positions(tw, tree_const->tree.children[i], level+1);
   }
 }
 
@@ -482,7 +493,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
 {
     TreeConstraints tc = TREE_CONSTRAINT(w);  /* info attached to all kids */
     register int i;
-    Bool horiz = (Bool) tree->tree.horiz;
+    Bool horiz = IsHorizontal (tree);
     Dimension newwidth, newheight;
 
     /*
@@ -503,7 +514,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
     tc->tree.bbwidth = w->core.width;
     tc->tree.bbheight = w->core.height;
 
-    if (tc->tree.n_sub_nodes == 0) return;
+    if (tc->tree.n_children == 0) return;
 
     /*
      * Figure the size of the opposite dimension (vertical if tree is 
@@ -512,8 +523,8 @@ static void compute_bounding_box_subtree (tree, w, depth)
      */
     newwidth = 0;
     newheight = 0;
-    for (i = 0; i < tc->tree.n_sub_nodes; i++) {
-	Widget child = tc->tree.sub_nodes[i];
+    for (i = 0; i < tc->tree.n_children; i++) {
+	Widget child = tc->tree.children[i];
 	TreeConstraints cc = TREE_CONSTRAINT(child);
 	    
 	compute_bounding_box_subtree (tree, child, depth + 1);
@@ -532,7 +543,7 @@ static void compute_bounding_box_subtree (tree, w, depth)
      * Add a little bit of padding to make parallel subtrees stand out a
      * little bit.  Make sure to do similar adjustments in second pass.
      */
-    if (tc->tree.n_sub_nodes > 1) {
+    if (tc->tree.n_children > 1) {
 	if (horiz) {
 	    newheight += tree->tree.v_min_space;
 	} else {
@@ -567,9 +578,9 @@ static void arrange_subtree (tree, w, depth, x, y)
     TreeConstraints firstcc, lastcc;
     register int i;
     int newx, newy;
-    Bool horiz = (Bool) (tree->tree.horiz);
+    Bool horiz = IsHorizontal (tree);
 
-    if (tc->tree.n_sub_nodes > 1) {
+    if (tc->tree.n_children > 1) {
 	if (horiz) {
 	    y += tree->tree.v_min_space / 2;
 	} else {
@@ -582,7 +593,7 @@ static void arrange_subtree (tree, w, depth, x, y)
     /*
      * If no children, then just lay out where requested.
      */
-    if (tc->tree.n_sub_nodes == 0) return;
+    if (tc->tree.n_children == 0) return;
 
 
     /*
@@ -599,8 +610,8 @@ static void arrange_subtree (tree, w, depth, x, y)
 	if (depth > 0) newy += tree->tree.v_min_space;
     }
 
-    for (i = 0; i < tc->tree.n_sub_nodes; i++) {
-	Widget child = tc->tree.sub_nodes[i];
+    for (i = 0; i < tc->tree.n_children; i++) {
+	Widget child = tc->tree.children[i];
 	TreeConstraints cc = TREE_CONSTRAINT(child);
 
 	arrange_subtree (tree, child, depth + 1, newx, newy);
@@ -614,8 +625,8 @@ static void arrange_subtree (tree, w, depth, x, y)
     /*
      * now layout parent between first and last children
      */
-    firstcc = TREE_CONSTRAINT (tc->tree.sub_nodes[0]);
-    lastcc = TREE_CONSTRAINT (tc->tree.sub_nodes[tc->tree.n_sub_nodes-1]);
+    firstcc = TREE_CONSTRAINT (tc->tree.children[0]);
+    lastcc = TREE_CONSTRAINT (tc->tree.children[tc->tree.n_children-1]);
 	
     if (horiz) {
 	tc->tree.x = x;

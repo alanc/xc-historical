@@ -1,60 +1,79 @@
-/**********************************************************************************
- * Tree.h: Public header file for the Tree widget
-  *         From:
-  *                   The X Window System, 
-  *            Programming and Applications with Xt
-  *                   OSF/Motif Edition
-  *         by
-  *                Douglas Young
-  *              Prentice Hall, 1990
-  *
-  *                 Example described on pages: 397-419
-  *
-  *
-  *  Copyright 1989 by Prentice Hall
-  *  All Rights Reserved
-  *
-  * This code is based on the OSF/Motif widget set and the X Window System
-  *
-  * Permission to use, copy, modify, and distribute this software for 
-  * any purpose and without fee is hereby granted, provided that the above
-  * copyright notice appear in all copies and that both the copyright notice
-  * and this permission notice appear in supporting documentation.
-  *
-  * Prentice Hall and the author disclaim all warranties with regard to 
-  * this software, including all implied warranties of merchantability and fitness.
-  * In no event shall Prentice Hall or the author be liable for any special,
-  * indirect or cosequential damages or any damages whatsoever resulting from 
-  * loss of use, data or profits, whether in an action of contract, negligence 
-  * or other tortious action, arising out of or in connection with the use 
-  * or performance of this software.
-  *
-  * Open Software Foundation is a trademark of The Open Software Foundation, Inc.
-  * OSF is a trademark of Open Software Foundation, Inc.
-  * OSF/Motif is a trademark of Open Software Foundation, Inc.
-  * Motif is a trademark of Open Software Foundation, Inc.
-  * DEC is a registered trademark of Digital Equipment Corporation
-  * HP is a registered trademark of the Hewlett Packard Company
-  * DIGITAL is a registered trademark of Digital Equipment Corporation
-  * X Window System is a trademark of the Massachusetts Institute of Technology
-  **********************************************************************************/
+/*
+ * $XConsortium: Tree.c,v 1.6 90/02/02 11:36:44 jim Exp $
+ *
+ * Copyright 1990 Massachusetts Institute of Technology
+ * Copyright 1989 Prentice Hall
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose and without fee is hereby granted, provided that the above
+ * copyright notice appear in all copies and that both the copyright notice
+ * and this permission notice appear in supporting documentation.
+ * 
+ * M.I.T., Prentice Hall and the authors disclaim all warranties with regard
+ * to this software, including all implied warranties of merchantability and
+ * fitness.  In no event shall M.I.T., Prentice Hall or the authors be liable
+ * for any special, indirect or cosequential damages or any damages whatsoever
+ * resulting from loss of use, data or profits, whether in an action of
+ * contract, negligence or other tortious action, arising out of or in
+ * connection with the use or performance of this software.
+ * 
+ * Authors:  Jim Fulton, MIT X Consortium,
+ *           based on a version by Douglas Young, Prentice Hall
+ * 
+ * This widget is based on the Tree widget described on pages 397-419 of
+ * Douglas Young's book "The X Window System, Programming and Applications 
+ * with Xt OSF/Motif Edition."  The layout code has been rewritten to use
+ * additional blank space to make the structure of the graph easier to see
+ * as well as to support vertical trees.
+ */
 
 
+#ifndef _XawTree_h
+#define _XawTree_h
 
-#ifndef TREE_H
-#define TREE_H
+/******************************************************************************
+ * 
+ * Tree Widget (subclass of ConstraintClass)
+ * 
+ ******************************************************************************
+ * 
+ * Parameters:
+ * 
+ *  Name                Class              Type            Default
+ *  ----                -----              ----            -------
+ * 
+ *  background          Background         Pixel           XtDefaultBackground
+ *  foreground          Foreground         Pixel           XtDefaultForeground
+ *  hSpace              HSpace             Dimension       20
+ *  lineWidth           LineWidth          Dimension       0
+ *  orientation         Orientation        XtOrientation   XtorientHorizontal
+ *  vSpace              VSpace             Dimension       6
+ * 
+ * 
+ * Constraint Resources attached to children:
+ * 
+ *  parent              Parent             Widget          NULL
+ * 
+ * 
+ *****************************************************************************/
 
-extern WidgetClass  treeWidgetClass;
+                                        /* new instance field names */
+#define XtNhSpace "hSpace"
+#define XtNlineWidth "lineWidth"
+#define XtNparent "parent"
+#define XtNvSpace "vSpace"
+
+                                        /* new class field names */
+#define XtCHSpace "HSpace"
+#define XtCLineWidth "LineWidth"
+#define XtCParent "Parent"
+#define XtCVSpace "VSpace"
+
+
+                                        /* external declarations */
+extern WidgetClass treeWidgetClass;
 
 typedef struct _TreeClassRec *TreeWidgetClass;
 typedef struct _TreeRec      *TreeWidget;
 
-#define XtNhorizontalSpace    "horizontalSpace"
-#define XtNverticalSpace      "verticalSpace"
-#define XtNlineWidth          "lineWidth"
-#define XtCLineWidth          "LineWidth"
-#define XtCPad                "Pad"
-#define XtNsuperNode          "superNode"
-#define XtCSuperNode          "SuperNode"
-
-#endif TREE_H
+#endif /* _XawTree_h */
