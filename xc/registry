@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.51 91/10/05 14:08:21 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.52 91/11/21 14:52:14 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -16,6 +16,7 @@ Name						Reference
 "DG"						[48]
 "ES"						[75]
 "FXD"						[55]
+"FUJITSU"					[87]
 "IBM"						[33]
 "ICS"						[31]
 "ILA"						[62]
@@ -220,12 +221,13 @@ String						Reference
 "Crucible"					[30]
 "Data General Corporation"			[48]
 "Evans & Sutherland"				[75]
+"FUJITSU LIMITED"				[87]
 "International Business Machines"		[33]
 "Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
 "OMRON Corporation"				[45]
-"PFU Limited"					[32]
+"PFU LIMITED"					[32]
 "Silicon Graphics Computer Systems"		[6]
 "Snitily Graphics Consulting Services"		[83]
 "Sony Corporation"				[37]
@@ -258,12 +260,15 @@ Name						Reference
 "ESLayersExtension"				[75]
 "ESCursorAttrExtension"				[75]
 "ESPickExtension"				[75]
+"FUJITSU-VX-VideoControl"			[87]
+"FUJITSU-VX-DeviceControl"			[87]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
 "NCD-SIE"					[66]
 "ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
+"PFU-GAOpAttr"					[32]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
 "SGI-MISCELLANEOUS"				[6]
@@ -442,6 +447,7 @@ Name						Reference
 "Bitstream"					[25]
 "DEC"						[27]
 "eands"						[75]
+"fujitsu"					[87]
 "FujiXerox"					[64]
 "IBM"						[33]
 "MISC"						[8]
@@ -702,6 +708,7 @@ Name						Reference
 ----						---------
 "Acorn"						[49]
 "CRAB"						[84]
+"FUJITSU"					[87]
 "HDS"						[70]
 "TD"						[63]
 "MIT"						[8]
@@ -718,6 +725,7 @@ Name						Reference
 	internal representation scheme
 "DEC.DTSCS.1990-2"				[54]
 	DEC Taiwan Supplemental Character Set
+"fujitsu.u90x03"				[87]
 "ILA"						[62]
 	registry prefix
 "omron_UDC"					[45]
@@ -748,6 +756,7 @@ Value	Name					Reference
 12	Network Computing Devices		[66]
 13	ShoGraphics, Inc.			[85]
 14	Tektronix, Inc.				[86]
+15	FUJITSU LIMITED				[87]
 
 
 REFERENCES
@@ -854,12 +863,10 @@ REFERENCES
 	163 Harvard Street
 	Cambridge, MA  02139
 
-[32]	Ichiroh INAMI
-	Software Sec. #2
-	OS Engineering Div.
+[32]	Kyou Katoh
 	PFU LIMITED
-	1984-1, Tsuruma 19-Gou, Machida-Shi,
-	Tokyo 194, JAPAN
+	687-1 Tsuruma 7 Gou Machida-shi
+	Tokyo 194, Japan
 
 [33]	Jeanne K. Smith
 	D46/996    3500
@@ -1146,7 +1153,12 @@ REFERENCES
 	1890 N. Shoreline Blvd.
 	Mountain View, CA 94043
 
-[85]	Michael F. Cripps
+[86]	Michael F. Cripps
 	Tektronix, Inc
 	P.O Boc 1000 MS 60-850
 	Wilsonville, OR 97070-1000
+
+[87]	Kyou Katoh
+	FUJITSU LIMITED
+	1015 Kamikodanaka Nakahara-ku
+	Kawasaki 221, Japan
