@@ -226,7 +226,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 		else
 		{
 		    Expand (RROP_SOLID_MASK (pdst, leftMask); pdst++;,
-			    ,
+			    ;,
 			    1)
 		}
 	    }
@@ -234,14 +234,14 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	    {
 		if (rightMask)
 		{
-		    Expand (,
+		    Expand (;,
 			    RROP_SOLID_MASK (pdst, rightMask);,
 			    0)
 		}
 		else
 		{
-		    Expand (,
-			    ,
+		    Expand (;,
+			    ;,
 			    0)
 		}
 	    }

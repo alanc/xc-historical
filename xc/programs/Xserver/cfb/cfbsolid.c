@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.2 90/11/19 17:29:27 keith Exp $
+ * $XConsortium: cfbsolid.c,v 1.3 91/04/10 11:42:11 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -170,20 +170,20 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 		else	/* left mask and no right mask */
 		{
 		    Expand(RROP_SOLID_MASK (pdst, leftMask); pdst++;,
-			   , 1)
+			   ;, 1)
 		}
 	    }
 	    else
 	    {
 		if (rightMask)	/* no left mask and right mask */
 		{
-		    Expand(,
+		    Expand(;,
 			   RROP_SOLID_MASK (pdst, rightMask);, 0)
 		}
 		else	/* no left mask and no right mask */
 		{
-		    Expand(,
-			    , 0)
+		    Expand(;,
+			    ;, 0)
 		}
 	    }
 	}
