@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.20 88/10/20 19:59:28 keith Exp $ */
+/* $XConsortium: mibstore.c,v 1.21 89/01/11 10:38:17 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2405,13 +2405,18 @@ miFreeBackingStore(pWin)
     if (pBackingStore != (MIBackingStorePtr)NULL)
     {
 	FreeGC(pBackingStore->pgcBlt);
-	if (pBackingStore->pBackingPixmap)
-	    miDestroyBSPixmap (pWin);
+	miDestroyBSPixmap (pWin);
 
 	(* pScreen->RegionDestroy)(pBackingStore->pSavedRegion);
 	Xfree((pointer)pBackingStore);
 	
 	pWin->devBackingStore = (pointer)NULL;
+    }
+    if (pWin->backStorage)
+    {
+	(*pScreen->RegionDestroy) (pWin->backStorage->obscured);
+	Xfree((pointer)pWin->backStorage);
+	pWin->backStorage = NULL;
     }
 }
 
@@ -2544,8 +2549,7 @@ miSaveAreas(pWin)
     {
 	pBackingStore->viewable = pWin->viewable;
 	(* pScreen->RegionEmpty) (pBackingStore->pSavedRegion);
-	if (pBackingStore->pBackingPixmap)
-	    miDestroyBSPixmap (pWin);
+	miDestroyBSPixmap (pWin);
 	return;
     }
 
@@ -2703,8 +2707,7 @@ miRestoreAreas(pWin)
 
 	if (!(*pScreen->RegionNotEmpty) (prgnSaved))
 	{
-	    if (pBackingStore->pBackingPixmap)
-		miDestroyBSPixmap (pWin);
+	    miDestroyBSPixmap (pWin);
 	}
     }
     else if ((pBackingStore->status == StatusVirtual) ||
