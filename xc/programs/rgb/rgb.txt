@@ -289,12 +289,12 @@
 238 238 175		MediumGoldenrod2
 205 205 151		MediumGoldenrod3
 139 139 103		MediumGoldenrod4
-245 245 224		light yellow
-245 245 224		LightYellow
-245 245 224		LightYellow1
-230 230 209		LightYellow2
-205 205 180		LightYellow3
-160 160 122		LightYellow4
+245 245 220		light yellow
+250 250 210		LightYellow
+250 250 200		LightYellow1
+230 230 180		LightYellow2
+205 205 160		LightYellow3
+180 180 122		LightYellow4
 245 222 179		wheat
 255 231 186		wheat1
 238 216 174		wheat2
@@ -330,11 +330,11 @@
 238 118  33		Chocolate2
 205 102  29		Chocolate3
 139  69  19		Chocolate4
-245 160 122		light salmon
-245 160 122		LightSalmon
-245 160 122		LightSalmon1
-230 149 114		LightSalmon2
-205 129  98		LightSalmon3
+245 160 100		light salmon
+245 160  95		LightSalmon
+245 140  90		LightSalmon1
+230 130  85		LightSalmon2
+205 110  80		LightSalmon3
 139  87  66		LightSalmon4
 255 140 105		salmon
 255 140 105		salmon1
@@ -400,15 +400,15 @@
 238  18 137		pink2
 205  16 118		pink3
 139  10  80		pink4
-245  90 167		light pink
-245  90 167		LightPink
-245  90 167		LightPink1
-230  84 156		LightPink2
+245  90 160		light pink
+245  90 160		LightPink
+245  90 156		LightPink1
+230  84 146		LightPink2
 205  72 134		LightPink3
 159  49  91		LightPink4
 245 170 200		pale pink
 245 170 200		PalePink
-245 170 200		PalePink1
+245 170 190		PalePink1
 230 159 187		PalePink2
 205 137 161		PalePink3
 159  93 109		PalePink4
