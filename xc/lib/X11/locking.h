@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.6 93/07/22 13:29:20 gildea Exp $
+ * $XConsortium: locking.h,v 1.7 93/08/22 18:20:00 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -29,82 +29,9 @@
 #ifndef _X_locking_H_
 #define _X_locking_H_
 
-#ifdef CTHREADS
-#include <cthreads.h>
-typedef cthread_t xthread_t;
-typedef condition_t xcondition_t;
-typedef mutex_t xmutex_t;
-#define xthread_self() cthread_self()
-#define xthread_init() cthread_init()
-#define xmutex_malloc() (xmutex_t)Xmalloc(sizeof(struct mutex))
-#define xmutex_init(m) mutex_init(m)
-#define xmutex_clear(m) mutex_clear(m)
-#define xmutex_lock(m) mutex_lock(m)
-#define xmutex_unlock(m) mutex_unlock(m)
-#define xcondition_malloc() (xcondition_t)Xmalloc(sizeof(struct condition))
-#define xcondition_init(cv) condition_init(cv)
-#define xcondition_clear(cv) condition_clear(cv)
-#define xcondition_wait(cv,m) condition_wait(cv,m)
-#define xcondition_signal(cv) condition_signal(cv)
-#define xcondition_broadcast(cv) condition_broadcast(cv)
-#else
-#ifdef sun
-#include <thread.h>
-typedef thread_t xthread_t;
-typedef cond_t *xcondition_t;
-typedef mutex_t *xmutex_t;
-#define xthread_self() thr_self()
-#define xmutex_malloc() (xmutex_t)Xmalloc(sizeof(mutex_t))
-#define xmutex_init(m) mutex_init(m,USYNC_THREAD,0)
-#define xmutex_clear(m) mutex_destroy(m)
-#define xmutex_lock(m) mutex_lock(m)
-#define xmutex_unlock(m) mutex_unlock(m)
-#define xcondition_malloc() (xcondition_t)Xmalloc(sizeof(cond_t))
-#define xcondition_init(cv) cond_init(cv,USYNC_THREAD,0)
-#define xcondition_clear(cv) cond_destroy(cv)
-#define xcondition_wait(cv,m) cond_wait(cv,m)
-#define xcondition_signal(cv) cond_signal(cv)
-#define xcondition_broadcast(cv) cond_broadcast(cv)
-#else
-#include <pthread.h>
-typedef pthread_t xthread_t;
-typedef pthread_cond_t *xcondition_t;
-typedef pthread_mutex_t *xmutex_t;
-#define xthread_self() pthread_self()
-#define xmutex_malloc() (xmutex_t)Xmalloc(sizeof(pthread_mutex_t))
-#define xmutex_init(m) pthread_mutex_init(m, pthread_mutexattr_default)
-#define xmutex_clear(m) pthread_mutex_destroy(m)
-#define xmutex_lock(m) pthread_mutex_lock(m)
-#define xmutex_unlock(m) pthread_mutex_unlock(m)
-#define xcondition_malloc() (xcondition_t)Xmalloc(sizeof(pthread_cond_t))
-#define xcondition_init(c) pthread_cond_init(c, pthread_condattr_default)
-#define xcondition_clear(c) pthread_cond_destroy(c)
-#define xcondition_wait(c,m) pthread_cond_wait(c,m)
-#define xcondition_signal(c) pthread_cond_signal(c)
-#define xcondition_broadcast(c) pthread_cond_broadcast(c)
-#ifdef _DECTHREADS_
-extern xthread_t _X_no_thread_id;
-#define xthread_have_id(id) !pthread_equal(id, _X_no_thread_id)
-#define xthread_clear_id(id) id = _X_no_thread_id
-#define xthread_equal(id1,id2) pthread_equal(id1, id2)
-#endif
-#endif
-#endif
-#ifndef xcondition_free
-#define xcondition_free(c) Xfree((char *)c)
-#endif
-#ifndef xmutex_free
-#define xmutex_free(m) Xfree((char *)m)
-#endif
-#ifndef xthread_have_id
-#define xthread_have_id(id) id
-#endif
-#ifndef xthread_clear_id
-#define xthread_clear_id(id) id = 0
-#endif
-#ifndef xthread_equal
-#define xthread_equal(id1,id2) id1 == id2
-#endif
+#define xmalloc(s) Xmalloc(s)
+#define xfree(s) Xfree(s)
+#include <X11/Xthreads.h>
 
 struct _XCVList {
     xcondition_t cv;
