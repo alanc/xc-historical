@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 91/12/28 14:57:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 93/09/04 17:26:26 rws Exp $
 #include <Server.tmpl>
 
 XCOMM
@@ -27,6 +27,3 @@ lintlib:
 NormalLibraryTarget(dec,$(OBJS))
 DependTarget()
 InstallManPage(Xdec,$(MANDIR))
-
-saber_src:
-	#load $(CFLAGS) $(SRCS)

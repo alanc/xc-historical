@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.19 93/08/06 15:35:23 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 5.20 93/09/04 17:36:15 rws Exp $
 #include <Server.tmpl>
 
 #if defined(SparcArchitecture)
@@ -81,8 +81,5 @@ InstallManPage(Xsun,$(MANDIR))
 #ifndef i386Architecture
 InstallManPageAliases(Xsun,$(MANDIR),XsunMono)
 #endif
-
-saber_src:
-	#load $(CFLAGS) $(SRCS1)
 
 DependTarget()

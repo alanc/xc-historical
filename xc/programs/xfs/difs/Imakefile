@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.11 92/06/01 14:05:26 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 93/09/04 17:45:22 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 
@@ -16,10 +16,6 @@ FONTDEFINES = -DFONT_PCF -DFONT_FS -DFONT_SPEEDO
 #ifdef DefaultFSConfigFile
 DEFAULTCONFIGFILE = DefaultFSConfigFile
      CONFIGDEFINES = -DDEFAULT_CONFIG_FILE=\"$(DEFAULTCONFIGFILE)\"
-#if HasSaberC
-/* Saber doesn't handle quotes correctly */
-SABERCONFIGDEFINES = -DDEFAULT_CONFIG_FILE=\\\"$(DEFAULTCONFIGFILE)\\\"
-#endif
 #endif
 
 
@@ -29,7 +25,5 @@ NormalLibraryTarget(difs,$(OBJS))
 DependTarget()
 
 SpecialObjectRule(main.o,$(ICONFIGFILES),$(CONFIGDEFINES))
-SaberLoadTarget(saber,main.c,NullParameter,$(ALLDEFINES) $(SABERCONFIGDEFINES))
-
 SpecialCObjectRule(initfonts,$(ICONFIGFILES),$(FONTDEFINES))
 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.63 92/09/16 13:16:34 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.64 93/07/06 09:19:05 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -101,7 +101,6 @@ NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
 #if BuildChooser
 SpecialCObjectRule(chooser, $(ICONFIGFILES), $(SOCK_DEFINES))
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
-SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3),NullParameter)
 InstallProgram(chooser,$(XDMDIR))
 InstallAppDefaults(Chooser)
 #endif
