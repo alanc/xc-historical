@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.12 90/02/09 14:59:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.13 90/04/03 16:10:39 swick Exp $";
 #endif
 
 /********************************************************
@@ -286,7 +286,7 @@ static Widget 	FindKeyDestination(widget, event,
 			  IsAnyGrab(devGrabType) && 
 			  (devGrab->ownerEvents)
 #else
-			  (!event->type == KeyPress)
+			  (event->type != KeyPress)
 #endif /* OWNER_EVENTS_FIX */
 			  )
 			dspWidget = focusWidget;
@@ -694,9 +694,7 @@ static void QueryEventMask(widget, client_data, event, cont)
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(ancestor, FALSE);
     Widget target = pwi->queryEventDescendant;
 
-    /* This is non-standard hackery for broken Motif mis-use only;
-     * focus can go to non-widget
-     */
+    /* use of 'target' is non-standard hackery; allows focus to non-widget */
     if (pwi && (pwi->focusKid == target)) {
 	XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(ancestor));
 	AddFocusHandler(ancestor, target, pwi, pdi, (EventMask)0);
