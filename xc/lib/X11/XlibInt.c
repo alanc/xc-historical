@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.171 93/08/13 19:53:22 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.172 93/08/14 19:22:57 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -27,6 +27,11 @@ without express or implied warranty.
 #include "Xlibnet.h"
 #include <X11/Xos.h>
 #include <stdio.h>
+#ifdef WIN32
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#undef EINTR
+#define EINTR WSAEINTR
+#endif
 
 #ifdef XTHREADS
 #include "locking.h"
@@ -63,18 +68,25 @@ void (*_XUnlockMutex_fn)() = NULL;
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
  */
-#ifdef WSAEWOULDBLOCK
-#define ETEST(err) (err == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+#ifdef WIN32
+#define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
 #else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
-#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
 #else
 #ifdef EAGAIN
-#define ETEST(err) (err == EAGAIN)
+#define ETEST() (errno == EAGAIN)
 #else
-#define ETEST(err) (err == EWOULDBLOCK)
+#define ETEST() (errno == EWOULDBLOCK)
 #endif
 #endif
+#endif
+#ifdef WIN32
+#define ECHECK(err) (WSAGetLastError() == err)
+#define ESET(val) WSASetLastError(val)
+#else
+#define ECHECK(err) (errno == err)
+#define ESET(val) errno = val
 #endif
 
 #ifdef LACHMAN
@@ -216,7 +228,7 @@ _XWaitForWritable(dpy
 	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
 #endif
 #endif
-	    if (nfound < 0 && errno != EINTR)
+	    if (nfound < 0 && !ECHECK(EINTR))
 		_XIOError(dpy);
 	} while (nfound <= 0);
 
@@ -309,7 +321,7 @@ _XWaitForReadable(dpy)
 #endif
 #endif
 	LockDisplay(dpy);
-	if (result == -1 && errno != EINTR) _XIOError(dpy);
+	if (result == -1 && !ECHECK(EINTR)) _XIOError(dpy);
     } while (result <= 0);
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
@@ -360,20 +372,20 @@ static _XFlushInt (dpy, cv)
 	 * and size decremented as buffer is written out.
 	 */
 	while (size) {
-	    errno = 0;
+	    ESET(0);
 	    write_stat = WriteToServer(dpy->fd, bufindex, (int) todo);
 	    if (write_stat >= 0) {
 		size -= write_stat;
 		todo = size;
 		bufindex += write_stat;
-	    } else if (ETEST(errno)) {
+	    } else if (ETEST()) {
 #ifdef XTHREADS
 		_XWaitForWritable(dpy, cv);
 #else
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
-	    } else if (errno == 0) {
+	    } else if (ECHECK(0)) {
 #ifdef XTHREADS
 		_XWaitForWritable(dpy, cv);
 #else
@@ -381,7 +393,7 @@ static _XFlushInt (dpy, cv)
 #endif
 #endif
 #ifdef EMSGSIZE
-	    } else if (errno == EMSGSIZE) {
+	    } else if (ECHECK(EMSGSIZE)) {
 		if (todo > 1) 
 		    todo >>= 1;
 		else {
@@ -392,7 +404,7 @@ static _XFlushInt (dpy, cv)
 #endif
 		}
 #endif
-	    } else if (errno != EINTR) {
+	    } else if (!ECHECK(EINTR)) {
 		/* Write failed! */
 		/* errno set by write system call. */
 		_XIOError(dpy);
@@ -499,7 +511,7 @@ _XEventsQueued (dpy, mode)
 		    if (!pend)
 			pend = SIZEOF(xReply);
 		}
-		else if (pend < 0 && errno != EINTR)
+		else if (pend < 0 && !ECHECK(EINTR))
 		    _XIOError(dpy);
 	    }
 	}
@@ -727,7 +739,7 @@ _XRead (dpy, data, size)
 #endif
 
 	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
-	errno = 0;
+	ESET(0);
 	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
 		!= size) {
 
@@ -735,24 +747,24 @@ _XRead (dpy, data, size)
 		    size -= bytes_read;
 		    data += bytes_read;
 		    }
-		else if (ETEST(errno)) {
+		else if (ETEST()) {
 		    _XWaitForReadable(dpy);
-		    errno = 0;
+		    ESET(0);
 		}
 #ifdef SUNSYSV
-		else if (errno == 0) {
+		else if (ECHECK(0)) {
 		    _XWaitForReadable(dpy);
 		}
 #endif
 		else if (bytes_read == 0) {
 		    /* Read failed because of end of file! */
-		    errno = EPIPE;
+		    ESET(EPIPE);
 		    _XIOError(dpy);
 		    }
 
 		else  /* bytes_read is less than 0; presumably -1 */ {
 		    /* If it's a system call interrupt, it's not an error. */
-		    if (errno != EINTR)
+		    if (!ECHECK(EINTR))
 		    	_XIOError(dpy);
 		    }
 	    	 }
@@ -918,7 +930,7 @@ _XReadPad (dpy, data, size)
 #ifdef XTHREADS
 	original_size = size;
 #endif
-	errno = 0;
+	ESET(0);
 	while ((bytes_read = ReadvFromServer (dpy->fd, iov, 2)) != size) {
 
 	    if (bytes_read > 0) {
@@ -931,24 +943,24 @@ _XReadPad (dpy, data, size)
 	    	else
 	    	    iov[0].iov_base += bytes_read;
 	    	}
-	    else if (ETEST(errno)) {
+	    else if (ETEST()) {
 		_XWaitForReadable(dpy);
-		errno = 0;
+		ESET(0);
 	    }
 #ifdef SUNSYSV
-	    else if (errno == 0) {
+	    else if (ECHECK(0)) {
 		_XWaitForReadable(dpy);
 	    }
 #endif
 	    else if (bytes_read == 0) {
 		/* Read failed because of end of file! */
-		errno = EPIPE;
+		ESET(EPIPE);
 		_XIOError(dpy);
 		}
 	    
 	    else  /* bytes_read is less than 0; presumably -1 */ {
 		/* If it's a system call interrupt, it's not an error. */
-		if (errno != EINTR)
+		if (!ECHECK(EINTR))
 		    _XIOError(dpy);
 		}
 	    }
@@ -1031,19 +1043,19 @@ _XSend (dpy, data, size)
 	    InsertIOV (data, size)
 	    InsertIOV (pad, padsize)
     
-	    errno = 0;
+	    ESET(0);
 	    if ((len = WritevToServer(dpy->fd, iov, i)) >= 0) {
 		skip += len;
 		total -= len;
 		todo = total;
-	    } else if (ETEST(errno)) {
+	    } else if (ETEST()) {
 #ifdef XTHREADS
 		_XWaitForWritable(dpy, NULL);
 #else
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
-	    } else if (errno == 0) {
+	    } else if (ECHECK(0)) {
 #ifdef XTHREADS
 		_XWaitForWritable(dpy, NULL);
 #else
@@ -1051,7 +1063,7 @@ _XSend (dpy, data, size)
 #endif
 #endif
 #ifdef EMSGSIZE
-	    } else if (errno == EMSGSIZE) {
+	    } else if (ECHECK(EMSGSIZE)) {
 		if (todo > 1) 
 		  todo >>= 1;
 		else {
@@ -1062,7 +1074,7 @@ _XSend (dpy, data, size)
 #endif /* XTHREADS*/
 		}
 #endif
-	    } else if (errno != EINTR) {
+	    } else if (!ECHECK(EINTR)) {
 		_XIOError(dpy);
 	    }
 	}
@@ -1400,7 +1412,7 @@ _XEnq (dpy, event)
 	else if ((qelt = 
 	    (_XQEvent *) Xmalloc((unsigned)sizeof(_XQEvent))) == NULL) {
 		/* Malloc call failed! */
-		errno = ENOMEM;
+		ESET(ENOMEM);
 		_XIOError(dpy);
 	}
 	qelt->next = NULL;
@@ -1870,14 +1882,19 @@ static char *_SysErrorMsg (n)
 _XDefaultIOError (dpy)
 	Display *dpy;
 {
-	if (errno == EPIPE) {
+	if (ECHECK(EPIPE)) {
 	    (void) fprintf (stderr,
 	"X connection to %s broken (explicit kill or server shutdown).\r\n",
 			    DisplayString (dpy));
 	} else {
 	    (void) fprintf (stderr, 
 			"XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
-			errno, _SysErrorMsg (errno), DisplayString (dpy));
+#ifdef WIN32
+			WSAGetLastError(), strerror(WSAGetLastError()),
+#else
+			errno, _SysErrorMsg (errno),
+#endif
+			DisplayString (dpy));
 	    (void) fprintf (stderr, 
 	 "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
 			NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy),
@@ -2416,7 +2433,7 @@ int iovcnt;
     int i, len, total;
     char *base;
 
-    errno = 0;
+    ESET(0);
     for (i=0, total=0;  i<iovcnt;  i++, iov++) {
 	len = iov->iov_len;
 	base = iov->iov_base;
@@ -2425,7 +2442,7 @@ int iovcnt;
 	    nbytes = ReadFromServer(fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
-	    errno = 0;
+	    ESET(0);
 	    len   -= nbytes;
 	    total += nbytes;
 	    base  += nbytes;
@@ -2446,7 +2463,7 @@ int _XWriteV (fd, iov, iovcnt)
     int i, len, total;
     char *base;
 
-    errno = 0;
+    ESET(0);
     for (i=0, total=0;  i<iovcnt;  i++, iov++) {
 	len = iov->iov_len;
 	base = iov->iov_base;
@@ -2455,7 +2472,7 @@ int _XWriteV (fd, iov, iovcnt)
 	    nbytes = WriteToServer(fd, base, len);
 	    if (nbytes < 0 && total == 0)  return -1;
 	    if (nbytes <= 0)  return total;
-	    errno = 0;
+	    ESET(0);
 	    len   -= nbytes;
 	    total += nbytes;
 	    base  += nbytes;
@@ -2525,21 +2542,21 @@ _XReadV (fd, v, n)
 
 	if (n <= 0 || n > 16)
 	{
-		errno = EINVAL;
+		ESET(EINVAL);
 		return (-1);
 	}
 	for (i = 0; i < n; ++i)
 	{
 		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
 		{
-			errno = EINVAL;
+			ESET(EINVAL);
 			return (-1);
 		}
 		size += len;
 	}
 	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
 	{
-		errno = EINVAL;
+		ESET(EINVAL);
 		return (-1);
 	}
 	if((rc = (*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)(fd, buf, size,
@@ -2569,14 +2586,14 @@ _XWriteV (fd, v, n)
 
 	if (n <= 0 || n > 16)
 	{
-		errno = EINVAL;
+		ESET(EINVAL);
 		return (-1);
 	}
 	for (i = 0; i < n; ++i)
 	{
 		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
 		{
-			errno = EINVAL;
+			ESET(EINVAL);
 			return (-1);
 		}
 		size += len;
@@ -2584,7 +2601,7 @@ _XWriteV (fd, v, n)
 
 	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
 	{
-		errno = EINVAL;
+		ESET(EINVAL);
 		return (-1);
 	}
 	for (i = 0, p = buf; i < n; ++i)
