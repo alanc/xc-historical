@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.10 1994/09/23 10:09:14 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -75,14 +76,18 @@ ScrnInfoRec mach8InfoRec = {
     mach8SwitchMode,	/* Bool (* SwitchMode)() */
     mach8PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,                 /* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },              /* OFlagSet options */
     {0, },              /* OFlagSet clockOptions */
     {0, },              /* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
+    NULL,	       	/* char *ramdac */
+    0,			/* int dacSpeed */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -92,14 +97,20 @@ ScrnInfoRec mach8InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
+    NULL,	       	/* DisplayModePtr pModes */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "Mach8",            /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     mach8ValidTokens,	/* int *validTokens */
     MACH8_PATCHLEVEL,	/* char *patchlevel */
+    0,			/* int IObase */
+    0,			/* int PALbase */
+    0,			/* int COPbase */
+    0,			/* int POSbase */
+    0,			/* int instance */
 };
 
 short mach8alu[16] = {
@@ -227,6 +238,7 @@ mach8Probe()
     DisplayModePtr pMode, pEnd, pmaxX = NULL, pmaxY = NULL;
     int            maxX, maxY;
     OFlagSet       validOptions;
+    int            tx, ty;
 
     mach8InfoRec.maxClock = mach8MaxClock;
 
@@ -235,7 +247,7 @@ mach8Probe()
 
     if (mach8InfoRec.chipset) {
 	if (StrCaseCmp(mach8InfoRec.chipset, "mach8")) {
-	    ErrorF("Chipset specified in Xconfig is not \"mach8\" (%s)!\n",
+	    ErrorF("Chipset specified in XF86Config is not \"mach8\" (%s)!\n",
 		   mach8InfoRec.chipset);
 	    return(FALSE);
 	}
@@ -403,29 +415,59 @@ mach8Probe()
     }
 
     maxX = maxY = -1;
-    pMode = pEnd = mach8InfoRec.modes;
+    pMode = mach8InfoRec.modes;
+    if (pMode == NULL) {
+        ErrorF("No modes supplied in XF86Config\n");
+        return(FALSE);
+    }
+    pEnd = NULL;
+    tx = mach8InfoRec.virtualX;
+    ty = mach8InfoRec.virtualY;
     do {
-        if (!xf86LookupMode(pMode, &mach8InfoRec))
-	    return(FALSE);
-  
-        if (pMode->HDisplay * pMode->VDisplay > memavail)
-        {
-            ErrorF("%s: Too little memory for mode %s\n", mach8InfoRec.name,
-                   pMode->name);
-            return(FALSE);
-        }
-  
-        if (pMode->HDisplay > maxX)
-        {
-            maxX = pMode->HDisplay;
-            pmaxX = pMode;
-        }
-        if (pMode->VDisplay > maxY)
-        {
-            maxY = pMode->VDisplay;
-            pmaxY = pMode;
-        }
-        pMode = pMode->next;
+	  DisplayModePtr pModeSv;
+	  /*
+	   * xf86LookupMode returns FALSE if it ran into an invalid
+	   * parameter
+	   */
+	  if(xf86LookupMode(pMode, &mach8InfoRec) == FALSE) {
+		pModeSv=pMode->next;
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->HDisplay * pMode->VDisplay > memavail) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Too little memory for mode %s\n", 
+			XCONFIG_PROBED, mach8InfoRec.name, pMode->name);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
+	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
+		     ((ty > 0) && (pMode->VDisplay > ty))) {
+		pModeSv=pMode->next;
+		ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+			XCONFIG_PROBED, mach8InfoRec.name,
+			pMode->HDisplay, pMode->VDisplay, tx, ty);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
+	  } else {
+		/*
+		 * Successfully looked up this mode.  If pEnd isn't 
+		 * initialized, set it to this mode.
+		 */
+		if(pEnd == (DisplayModePtr) NULL)
+			pEnd = pMode;
+
+		if (pMode->HDisplay > maxX)
+		{
+			maxX = pMode->HDisplay;
+			pmaxX = pMode;
+		}
+		if (pMode->VDisplay > maxY)
+		{
+			maxY = pMode->VDisplay;
+			pmaxY = pMode;
+		}
+
+		pMode = pMode->next;
+	  }
     } while (pMode != pEnd);
   
     mach8InfoRec.virtualX = max(maxX, mach8InfoRec.virtualX);
@@ -452,7 +494,7 @@ mach8Probe()
 
     if (mach8InfoRec.virtualX > 1024)
     {
-        ErrorF("%s: Virtual width must be no greater than 1024\n");
+        ErrorF("%s: Virtual width must be no greater than 1024\n",mach8InfoRec.name);
         return(FALSE);
     }
     if ( mach8InfoRec.virtualX * mach8InfoRec.virtualY > memavail)

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32cmap.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cmap.c,v 3.0 1994/09/11 00:48:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -37,7 +38,6 @@
 #include "compiler.h"
 
 #include "mach32.h"
-#include "regmach32.h"
 
 #define NOMAPYET        (ColormapPtr) 0
 

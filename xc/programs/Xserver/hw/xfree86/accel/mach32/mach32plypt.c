@@ -1,4 +1,5 @@
-/* $XConsortium: mach32plypt.c,v 1.1 94/03/28 21:08:59 dpw Exp $ */
+/* $XConsortium: mach32plypt.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32plypt.c,v 3.2 1994/09/11 00:49:04 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,8 +53,8 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "regionstr.h"
 #include "scrnintstr.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 #define isClipped(c,ul,lr)  ((((c) - (ul)) | ((lr) - (c))) & ClipMask)
@@ -77,12 +78,6 @@ mach32PolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int		    off;
     cfbPrivGCPtr    devPriv;
     xPoint	    *pptPrev;
-
-    if (!xf86VTSema)
-    {
-	cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit);
-	return;
-    }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     if (pGC->alu == GXnoop)

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32mem.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32mem.c,v 3.1 1994/09/07 16:19:52 dawes Exp $ */
 /*
  * Copyright 1993 ATI
  *
@@ -375,7 +376,8 @@ MyPixel Colour;
     /*
      * Set up the engine to paint to the screen.
      */
-    WaitQueue(8);
+    WaitQueue(9);  
+    outw(WRT_MASK, 0x0FFFF);
     outw(DP_CONFIG, FG_COLOR_SRC_FG | DRAW | READ_WRITE);
     outw(ALU_FG_FN, MIX_FN_PAINT);
     outw(FRGD_COLOR, Colour);

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8fc.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fc.c,v 3.1 1994/08/01 12:11:12 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -61,7 +62,7 @@ unsigned char mach8cachemaskswapped[ 8 ] = { 0x02, 0x04, 0x08, 0x10,
 /*
  * Move the glyphs to the screen using the GE.
  */
-__inline__ static void
+static void
 Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
      int   x, y, count;
      unsigned char *chars;
@@ -81,22 +82,19 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       short xoff;
 
       pci = fentry->pci[*chars];
-
       if (pci != NULL) {
-
 	 gHeight = GLYPHHEIGHTPIXELS(pci);
 	 if (gHeight) {
-
 	    if (*chars / 32 != blocki) {
 	       bitMapBlockPtr block;
 
 	       blocki = *chars / 32;
 	       if( ( block = fentry->fblock[blocki] ) == NULL) {
-		  WaitQueue(8);
 		  /*
 		   * Reset the GE context to a known state before
 		   * calling the xf86loadfontblock function.
 		   */
+		  WaitQueue(8);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | 0);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | 1023);
@@ -107,21 +105,19 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];
-		  WaitQueue(4);
 		  /*
 		   * Restore the GE context.
 		   */
+		  WaitQueue(9);
 		  outw(MULTIFUNC_CNTL, SCISSORS_L | (short)pBox->x1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_T | (short)pBox->y1);
 		  outw(MULTIFUNC_CNTL, SCISSORS_R | (short)(pBox->x2 - 1));
 		  outw(MULTIFUNC_CNTL, SCISSORS_B | (short)(pBox->y2 - 1));
-		  WaitQueue(5);
 		  outw(FRGD_COLOR, (short)pGC->fgPixel);
 		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
 		  outw(FRGD_MIX, FSS_FRGDCOL | mach8alu[pGC->alu]);
 		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
 		  outw(WRT_MASK, (short)pGC->planemask);
-		  outw(RD_MASK, pmsk);
 		  height = width = pmsk = 0; /* Invalidate register caches. */
 	       }
 	       WaitQueue(2);
@@ -129,7 +125,7 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	       /*
 		* Is the readmask altered ?
 		*/
-	       if( !pmsk || mach8cachemaskswapped[block->id] != pmsk ) {
+	       if( mach8cachemaskswapped[block->id] != pmsk ) {
 		 pmsk = mach8cachemaskswapped[block->id];
 		 outw(RD_MASK, pmsk);
 	       }
@@ -145,16 +141,16 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 	    /*
 	     * Need to update width register ?
 	     */
-	    if( !width || (short)(GLYPHWIDTHPIXELS(pci) - 1) != width) {
-	      width = (short)(GLYPHWIDTHPIXELS(pci) - 1);
-	      outw(MAJ_AXIS_PCNT, width);
+	    if( (short)(GLYPHWIDTHPIXELS(pci)) != width) {
+	      width = (short)(GLYPHWIDTHPIXELS(pci));
+	      outw(MAJ_AXIS_PCNT, width - 1);
 	    }
 	    /*
 	     * How about the height register ?
 	     */
-	    if( !height || (short)(gHeight - 1) != height ) {
-	      height = (short)(gHeight - 1);
-	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height);
+	    if( (short)(gHeight) != height ) {
+	      height = (short)(gHeight);
+	      outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | height - 1);
 	    }
 	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
 	 }
@@ -162,7 +158,6 @@ Domach8CPolyText8(x, y, count, chars, fentry, pGC, pBox)
       }
    }
 
-   return;
 }
 
 /*

@@ -1,5 +1,6 @@
 /*
- * $XConsortium: mipsCursor.c,v 1.2 91/07/18 22:58:13 keith Exp $
+ * $XConsortium: mach32curs.c,v 1.1 94/10/05 13:31:19 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.1 1994/09/11 00:48:48 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -51,7 +52,6 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 typedef struct _Mach32CursPriv {
     unsigned short data[MACH32_CURSBYTES/2]; /* cursor definition */
@@ -325,10 +325,10 @@ mach32MoveCursor(pScr, x, y)
 
     if (!xf86VTSema)
 	return;
-    
+
     x -= xhot + mach32InfoRec.frameX0;
     y -= yhot + mach32InfoRec.frameY0;
-    
+
     xoff = (x < 0) ? -x : (x & 1);
     x += xoff;
     
@@ -350,6 +350,7 @@ mach32MoveCursor(pScr, x, y)
 	       y <= mach32InfoRec.frameY1 - mach32InfoRec.frameY0 &&
 	       xoff < MACH32_CURSMAX && yoff < MACH32_CURSMAX);
     if (enabled) {
+	WaitQueue(6);
 	outw(HORZ_CURSOR_POSN, x);
 	outw(VERT_CURSOR_POSN, y);
 	
@@ -359,8 +360,10 @@ mach32MoveCursor(pScr, x, y)
 	if (!mach32CursLastEnabled)
 	    outw(CURSOR_OFFSET_HI, 0x8000 | (mach32CursorOffset >> 18));
     }
-    else if (mach32CursLastEnabled)
+    else if (mach32CursLastEnabled) {
+	WaitQueue(1);
 	outw(CURSOR_OFFSET_HI, 0);
+    }
 
     mach32CursLastEnabled = enabled;
 }
@@ -385,6 +388,7 @@ mach32RecolorCursor(pScr, pCurs, displayed)
   ColormapPtr	pmap;
   xColorItem	sourceColor;
   xColorItem	maskColor;
+  VisualPtr	pVisual;
 
   mach32GetInstalledColormaps(pScr, &pmap);
 
@@ -396,14 +400,29 @@ mach32RecolorCursor(pScr, pCurs, displayed)
   maskColor.green = pCurs->backGreen;
   maskColor.blue = pCurs->backBlue;
 
-  FakeAllocColor(pmap, &sourceColor);
-  FakeAllocColor(pmap, &maskColor);
+  if (pScr->rootDepth > 8) {
+    /* assume that the root visual is TrueColor or DirectColor */
+    for(pVisual = pScr->visuals; pVisual->vid != pScr->rootVisual; pVisual++)
+	;
+    (*pScr->ResolveColor)(&maskColor.red, &maskColor.green, &maskColor.blue, pVisual);
+    (*pScr->ResolveColor)(&sourceColor.red, &sourceColor.green, &sourceColor.blue, pVisual);
+    WaitQueue(4);
+    outb(CURSOR_COLOR_0, maskColor.blue);
+    outw(EXT_CURSOR_COLOR_0, (maskColor.red << 8) | (maskColor.green & 0xff));
+    outb(CURSOR_COLOR_1, sourceColor.blue);
+    outw(EXT_CURSOR_COLOR_1, (sourceColor.red << 8) | (sourceColor.green & 0xff));
+  } else {
+    FakeAllocColor(pmap, &sourceColor);
+    FakeAllocColor(pmap, &maskColor);
 
-  FakeFreeColor(pmap, sourceColor.pixel);
-  FakeFreeColor(pmap, maskColor.pixel);
+    FakeFreeColor(pmap, sourceColor.pixel);
+    FakeFreeColor(pmap, maskColor.pixel);
   
-  outb(CURSOR_COLOR_0, maskColor.pixel);
-  outb(CURSOR_COLOR_1, sourceColor.pixel);
+    WaitQueue(2);
+    outb(CURSOR_COLOR_0, maskColor.pixel);
+    outb(CURSOR_COLOR_1, sourceColor.pixel);
+  }
+  WaitIdleEmpty();
   checkCursorColor = FALSE;
 }
 
@@ -453,6 +472,7 @@ mach32QueryBestSize(class, pwidth, pheight, pScr)
 void
 mach32CursorOff()
 {
+  WaitQueue(1);
   outw(CURSOR_OFFSET_HI, 0);
   mach32CursLastEnabled = 0;
 }

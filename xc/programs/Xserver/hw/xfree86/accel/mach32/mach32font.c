@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32font.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32font.c,v 3.1 1994/08/31 06:19:43 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -23,6 +24,7 @@
  *
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
+ * Modified for the new cache by Mike Bernson (mike@mbsun.mlb.org)
  */
 
 
@@ -50,7 +52,6 @@ mach32UnrealizeFont(pScreen, font)
     ScreenPtr	pScreen;
     FontPtr	font;
 {
-    if (xf86VTSema)
-	mach32UnCacheFont8(font);
+    xf86UnCacheFont8(font);
     return mfbUnrealizeFont(pScreen, font);
 }

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8fcach.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.2 1994/09/07 15:50:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -20,13 +21,6 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
- *
- * Modified to use a dynamic font cache.
- * Accelerated text display when no font cache is available added.
- * Now using a linked list to store the CacheFont8Rec structs instead
- * of a pointer array.
- * Hans Nasten. (nasten@everyware.se)
  */
 
 
@@ -52,40 +46,59 @@
 #include "xf86_Config.h"
 extern Bool xf86Verbose;
 
+#define ALIGNMENT 8
+#define N_PLANES 8
+#define PIXMAP_WIDTH 64
+
 void
 mach8FontCache8Init()
 {
-    int first = 1;
+    static int first = 1;
     int x, y, w, h;
     unsigned int BitPlane;
     CachePool FontPool;
 
-    x = ( mach8InfoRec.virtualX < 1024 ? 0 : 256 );
+    x = PIXMAP_WIDTH;
     y = mach8InfoRec.virtualY;
-    w = ( mach8InfoRec.virtualX < 1024 ? mach8InfoRec.virtualX : 768 );
-    h = 1024 - mach8InfoRec.virtualY;
-    if( w > 0 && h > 0 ) {
+    w = ( mach8InfoRec.videoRam > 512 ? 1024 - x : mach8InfoRec.virtualX - x );
+    h = ( mach8InfoRec.videoRam > 512 ? 1024 - y :
+		  (mach8InfoRec.videoRam * 1024) / mach8InfoRec.virtualX - y );
+    if( h >= PIXMAP_WIDTH && first ) {
+      mach8InitFrect( 0, y, PIXMAP_WIDTH );
+      ErrorF( "%s %s: Using a single %dx%d area for expanding pixmaps\n",
+	      XCONFIG_PROBED, mach8InfoRec.name, PIXMAP_WIDTH, PIXMAP_WIDTH );
+    }
+    else if( first )
+      ErrorF( "%s %s: No pixmap expanding area available\n",
+	      XCONFIG_PROBED, mach8InfoRec.name );
+
+    /*
+     * Don't allow a font cache if we don't have room for at least
+     * 2 complete 6x13 fonts.
+     */
+    if( w >= 6*32 && h >= 2*13 ) {
       if( first ) {
-        FontPool = xf86CreateCachePool( 8 );
-        for( BitPlane = 0; BitPlane < 7; BitPlane++ )
+        FontPool = xf86CreateCachePool( ALIGNMENT );
+        for( BitPlane = 0; BitPlane < N_PLANES; BitPlane++ )
 	  xf86AddToCachePool( FontPool, x, y, w, h, BitPlane );
 
-        xf86InitFontCache( FontPool, w, h, mach8ImageOpStipple, mach8alu );
-        xf86InitText( mach8GlyphWrite, mach8NoCPolyText,
-		      mach8NoCImageText );
-
-        ErrorF( "%s %s: Using %dx%d at %dx%d aligned %d as font cache\n",
+        xf86InitFontCache( FontPool, w, h, mach8FontOpStipple );
+        xf86InitText( mach8GlyphWrite, mach8NoCPolyText, mach8NoCImageText );
+        ErrorF( "%s %s: Using %d planes of %dx%d at %dx%d aligned %d as font cache\n",
 	        XCONFIG_PROBED, mach8InfoRec.name,
-	        w, h, x, y, 8 );
-        first = 0;
+		N_PLANES, w, h, x, y, ALIGNMENT );
       }
       else
         xf86ReleaseFontCache();
     }
     else if( first ) {
+      /*
+       * Crash and burn if the cached glyph write function gets called.
+       */
+      xf86InitText( NULL, mach8NoCPolyText, mach8NoCImageText );
       ErrorF( "%s %s: No font cache available\n",
 	      XCONFIG_PROBED, mach8InfoRec.name );
-      first = 1;
     }
+    first = 0;
 
 }

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8.h,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.1 1994/07/24 11:46:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -559,7 +560,7 @@ void mach8GetImage(
     int,
     unsigned int,
     unsigned long,
-    pointer 
+    char * 
 #endif
 );
 
@@ -687,6 +688,13 @@ void mach8RealImageFill(
     int,
     short,
     short 
+#endif
+);
+void mach8InitFrect(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int
 #endif
 );
 #endif /* MACH8_H */

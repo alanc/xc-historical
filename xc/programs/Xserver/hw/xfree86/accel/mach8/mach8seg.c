@@ -1,4 +1,5 @@
-/* $XConsortium: mach8seg.c,v 1.1 94/03/28 21:12:48 dpw Exp $ */
+/* $XConsortium: mach8seg.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8seg.c,v 3.0 1994/06/06 06:46:45 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -227,7 +228,7 @@ mach8Segment(pDrawable, pGC, nseg, pSeg)
                         continue;
                     }
                     if (axis == X_AXIS)
-                        len = abs(new_y2 - new_x1);
+                        len = abs(new_x2 - new_x1);
                     else
                         len = abs(new_y2 - new_y1);
    
@@ -522,7 +523,7 @@ mach8Segment(pDrawable, pGC, nseg, pSeg)
                             continue;
                         }
                         if (axis == X_AXIS)
-                            len = abs(new_y2 - new_x1);
+                            len = abs(new_x2 - new_x1);
                         else
                             len = abs(new_y2 - new_y1);
    

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8im.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.2 1994/09/11 00:50:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -407,23 +408,18 @@ mach8ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 #endif /* ASM_IMAGE */
 
 void
-mach8ImageOpStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
-		  fgPixel, bgPixel, alu, planemask )
+mach8FontOpStipple(x, y, w, h, psrc, pwidth, id )
     int			x;
     int			y;
     int			w;
     int			h;
     unsigned char	*psrc;
-    int			pw, ph, pox, poy;
     int			pwidth;
-    int			fgPixel;
-    int			bgPixel;
-    short		alu;
-    short		planemask;
+    Pixel		id;
 {
 
-    (mach8ImageStippleFunc)(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
-		      fgPixel, bgPixel, alu, planemask, 1 );
+    (mach8ImageStippleFunc)(x, y, w, h, psrc, pwidth, w, h, x, y,
+		      ~0, 0, mach8alu[GXcopy], 1 << id, 1 );
 }
 
 

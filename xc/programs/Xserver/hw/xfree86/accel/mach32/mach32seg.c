@@ -1,4 +1,5 @@
-/* $XConsortium: mach32seg.c,v 1.1 94/03/28 21:09:19 dpw Exp $ */
+/* $XConsortium: mach32seg.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32seg.c,v 3.1 1994/09/11 00:49:07 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -68,7 +69,6 @@ Modified for the Mach32 by Kevin E. Maritn (martin@cs.unc.edu)
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 void
@@ -105,12 +105,6 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
     register int x1, x2;
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
-
-    if (!xf86VTSema)
-    {
-	cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
-	return;
-    }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     cclip = devPriv->pCompositeClip;
@@ -398,9 +392,8 @@ mach32Segment(pDrawable, pGC, nseg, pSeg)
 	} /* sloped line */
     } /* while (nline--) */
 
-    WaitQueue(2);
+    WaitQueue(1);
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }

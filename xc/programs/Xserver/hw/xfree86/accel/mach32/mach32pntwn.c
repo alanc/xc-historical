@@ -1,4 +1,5 @@
-/* $XConsortium: mach32pntwn.c,v 1.1 94/03/28 21:09:06 dpw Exp $ */
+/* $XConsortium: mach32pntwn.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.2 1994/09/11 00:49:05 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -62,9 +63,9 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
-#include "regmach32.h"
 
 extern void miPaintWindow();
 
@@ -75,19 +76,25 @@ mach32PaintWindow(pWin, pRegion, what)
     int		what;
 {
     register cfbPrivWin	*pPrivWin;
+    void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
 
     if (!mach32Use4MbAperture)
     {
 	miPaintWindow(pWin, pRegion, what);
 	return;
     }
-    else if (!xf86VTSema)
-    {
-	cfbPaintWindow(pWin, pRegion, what);
-	return;
-    }
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    switch (pWin->drawable.bitsPerPixel) {
+    case 8:
+	pcfbFillBoxTile32 = cfbFillBoxTile32;
+	pcfbFillBoxTileOdd = cfbFillBoxTileOdd;
+	break;
+    case 16:
+	pcfbFillBoxTile32 = cfb16FillBoxTile32;
+	pcfbFillBoxTileOdd = cfb16FillBoxTileOdd;
+	break;
+    }
 
     switch (what) {
     case PW_BACKGROUND:
@@ -104,7 +111,7 @@ mach32PaintWindow(pWin, pRegion, what)
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 	    {
-		cfbFillBoxTile32 ((DrawablePtr)pWin,
+		(*pcfbFillBoxTile32) ((DrawablePtr)pWin,
 				  (int)REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion),
 				  pPrivWin->pRotatedBackground);
@@ -112,7 +119,7 @@ mach32PaintWindow(pWin, pRegion, what)
 	    }
 	    else
 	    {
-		cfbFillBoxTileOdd ((DrawablePtr)pWin,
+		(*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
 				   (int)REGION_NUM_RECTS(pRegion),
 				   REGION_RECTS(pRegion),
 				   pWin->background.pixmap,
@@ -139,15 +146,16 @@ mach32PaintWindow(pWin, pRegion, what)
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    cfbFillBoxTile32 ((DrawablePtr)pWin,
+	    (*pcfbFillBoxTile32) ((DrawablePtr)pWin,
 			      (int)REGION_NUM_RECTS(pRegion),
 			      REGION_RECTS(pRegion),
 			      pPrivWin->pRotatedBorder);
 	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width >= PPW/2)
+	else if (pWin->border.pixmap->drawable.width >=
+	    /* PPW/2 */ 16 / pWin->drawable.bitsPerPixel)
 	{
-	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
+	    (*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,

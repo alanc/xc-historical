@@ -1,4 +1,5 @@
-/* $XConsortium: mach32line.c,v 1.1 94/03/28 21:08:40 dpw Exp $ */
+/* $XConsortium: mach32line.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32line.c,v 3.1 1994/09/11 00:49:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -41,14 +42,14 @@ supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  
 
-DIGITAL AND KEVIN E. MARTIN AND RICKARD E. FAITH AND CRAIG E. GROESCHEL
-DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL OR
-KEVIN E. MARTIN OR RICKARD E. FAITH OR CRAIG E. GROESCHEL BE LIABLE FOR ANY
-SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
-FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
+DIGITAL, KEVIN E. MARTIN, RICKARD E. FAITH, AND CRAIG E. GROESCHEL DISCLAIM ALL
+WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL DIGITAL OR KEVIN E. MARTIN OR
+RICKARD E. FAITH OR CRAIG E. GROESCHEL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
 
 Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
@@ -71,7 +72,6 @@ mach32Line1Rect by Craig E. Groeschel (craig@adikia.sccsi.com),
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#include "regmach32.h"
 #include "mach32.h"
 
 void
@@ -114,16 +114,6 @@ mach32Line(pDrawable, pGC, mode, npt, pptInit)
     register int x1, x2;
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
-
-    if (!xf86VTSema)
-    {
-#ifdef ONE_RECT
-	cfb8LineSS1Rect(pDrawable, pGC, mode, npt, pptInit);
-#else
-	cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-#endif
-	return;
-    }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
     cclip = devPriv->pCompositeClip;

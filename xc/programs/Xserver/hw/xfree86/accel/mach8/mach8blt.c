@@ -1,4 +1,5 @@
-/* $XConsortium: mach8blt.c,v 1.1 94/03/28 21:10:15 dpw Exp $ */
+/* $XConsortium: mach8blt.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8blt.c,v 3.1 1994/06/06 06:46:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -42,7 +43,7 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 
-/* $XConsortium: mach8blt.c,v 1.1 94/03/28 21:10:15 dpw Exp $ */
+/* $XConsortium: mach8blt.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -520,7 +521,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
 	GCPtr pGC1;
 
 	pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						       width, height, 1);
+						       pSrcDrawable->width,
+						       pSrcDrawable->height, 1);
 	if (!pBitmap)
 	    return(NULL);
 	pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -530,7 +532,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
 	}
 	ValidateGC((DrawablePtr)pBitmap, pGC1);
 	(void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			 width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			 width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+        FreeScratchGC(pGC1);
 	pSrcDrawable = (DrawablePtr)pBitmap;
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
  	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
@@ -552,10 +555,11 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	mach8CopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		      0, 0);
+ 	mach8CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
+		      width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
+        FreeScratchGC(pGC1);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
  	return(retval);
     } else if (((pSrcDrawable->type == DRAWABLE_WINDOW) && 
@@ -661,6 +665,8 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
             (*pGC->pScreen->RegionUninit) (&rgnDst);
          if (freeSrcClip)
             (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
          return NULL;
       }
    }
@@ -862,5 +868,7 @@ mach8CopyPlane(pSrcDrawable, pDstDrawable,
    (*pGC->pScreen->RegionUninit) (&rgnDst);
    if (freeSrcClip)
       (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+   if (pBitmap)
+      (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
    return prgnExposed;
 }

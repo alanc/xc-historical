@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32gtimg.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.2 1994/07/24 11:43:32 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -31,10 +32,12 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
 #include "mach32.h"
 
 extern void mfbGetImage();
+extern void miGetImage();
 
 void
 mach32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
@@ -42,7 +45,7 @@ mach32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
      int         sx, sy, w, h;
      unsigned int format;
      unsigned long planeMask;
-     pointer     pdstLine;
+     char     *pdstLine;
 {
    int width;
 
@@ -57,7 +60,13 @@ mach32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 
    if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
    {
-      cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+      switch (pDrawable->bitsPerPixel) {
+      case 8:
+         cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 16:
+         cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+      }
       return;
    }
 

@@ -1,14 +1,15 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8cache.h,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8cache.h,v 3.2 1994/09/07 15:50:07 dawes Exp $ */
 void mach8GlyphWrite(
 #if NeedFunctionPrototypes
     int /*x*/,
     int /*y*/,
     int /*count*/,
-    int /*numRects*/,
     unsigned char */*chars*/,
     CacheFont8Ptr /*fentry*/,
     GCPtr /*pGC*/,
-    BoxPtr /*pBox*/
+    BoxPtr /*pBox*/,
+    int /*numRects*/
 #endif
 );
 
@@ -44,26 +45,19 @@ void mach8CacheMoveBlock(
     int /*dsty*/,
     int /*h*/,
     int /*len*/,
-    unsigned int /*bitplane*/
+    unsigned int /*id*/
 #endif
 );
 
 
-void mach8ImageOpStipple(
+void mach8FontOpStipple(
 #if NeedFunctionPrototypes
     int /*x*/,
     int /*y*/,
     int /*w*/,
     int /*h*/,
     unsigned char */*psrc*/,
-    int /*pw*/,
-    int /*ph*/,
-    int /*pox*/,
-    int /*poy*/,
     int /*pwidth*/,
-    int /*fgPixel*/,
-    int /*bgPixel*/,
-    short /*alu*/,
-    short /*planemask*/
+    Pixel /*id*/
 #endif
 );

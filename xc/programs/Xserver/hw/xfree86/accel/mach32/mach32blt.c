@@ -1,4 +1,5 @@
-/* $XConsortium: mach32blt.c,v 1.1 94/03/28 21:06:55 dpw Exp $ */
+/* $XConsortium: mach32blt.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32blt.c,v 3.4 1994/09/11 00:48:45 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -55,14 +56,13 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include	"regionstr.h"
 #include	"mi.h"
 #include	"cfb.h"
+#include	"cfb16.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 
-#include	"regmach32.h"
 #include	"mach32.h"
 
-void mach32FindOrdering();
 extern RegionPtr cfbBitBlt();
 
 RegionPtr
@@ -91,10 +91,16 @@ mach32CopyArea(pSrcDrawable, pDstDrawable,
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
 
-    if (!xf86VTSema || (pSrcDrawable->type != DRAWABLE_WINDOW &&
+    if ((pSrcDrawable->type != DRAWABLE_WINDOW &&
 			pDstDrawable->type != DRAWABLE_WINDOW))
-	return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-			   srcx, srcy, width, height, dstx, dsty);
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+	case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	}
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -562,12 +568,19 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
    int   fastClip = 0;          /* for fast clipping with pixmap source */
    int   fastExpose = 0;        /* for fast exposures with pixmap source */
 
-    if (!xf86VTSema || mach32Use4MbAperture ||
+/* cfb16CopyPlane is S-L-O-W; don't use it unless we have to */
+    if ((mach32Use4MbAperture && mach32InfoRec.bitsPerPixel == 8) ||
       ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
        (pDstDrawable->type != DRAWABLE_WINDOW)))
     {
-	return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+	case 8:
+	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
 			    srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 16:
+	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	}
     }
 
     if ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
@@ -581,7 +594,8 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
 	GCPtr pGC1;
 
 	pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						       width, height, 1);
+                                                       pSrcDrawable->width,
+                                                       pSrcDrawable->height, 1);
 	if (!pBitmap)
 	    return(NULL);
 	pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -591,8 +605,9 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
 	}
 	ValidateGC((DrawablePtr)pBitmap, pGC1);
 	(void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			  width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
-	 pSrcDrawable = (DrawablePtr)pBitmap;
+			 width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+        FreeScratchGC(pGC1);
+	pSrcDrawable = (DrawablePtr)pBitmap;
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
  	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
 	/*
@@ -613,10 +628,11 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	mach32CopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		       0, 0);
+ 	mach32CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
+		       width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
+        FreeScratchGC(pGC1);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
  	return(retval);
     } else if (((pSrcDrawable->type == DRAWABLE_WINDOW) && 
@@ -722,6 +738,8 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
             (*pGC->pScreen->RegionUninit) (&rgnDst);
          if (freeSrcClip)
             (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
          return NULL;
       }
    }
@@ -808,8 +826,12 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
 
          WaitQueue(6);
          outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
-         outw(RD_MASK, (unsigned short) (((bitPlane & 0x7f) << 1)
+/* For IBM-only mono reads, RD_MASK is rotated left 1 bit. */
+	 if (mach32InfoRec.bitsPerPixel == 8)
+             outw(RD_MASK, (unsigned short) (((bitPlane & 0x7f) << 1)
                                        | ((bitPlane & 0x80) >> 7)));
+	 else
+	     outw(RD_MASK, (unsigned short) bitPlane);
          outw(WRT_MASK, pGC->planemask);
          outw(FRGD_COLOR, (short)pGC->fgPixel);
          outw(BKGD_COLOR, (short)pGC->bgPixel);
@@ -922,6 +944,8 @@ mach32CopyPlane(pSrcDrawable, pDstDrawable,
    (*pGC->pScreen->RegionUninit) (&rgnDst);
    if (freeSrcClip)
       (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+   if (pBitmap)
+      (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
    return prgnExposed;
 }
 

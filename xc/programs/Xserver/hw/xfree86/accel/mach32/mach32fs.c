@@ -1,4 +1,5 @@
-/* $XConsortium: mach32fs.c,v 1.1 94/03/28 21:07:57 dpw Exp $ */
+/* $XConsortium: mach32fs.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fs.c,v 3.5 1994/09/11 00:48:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -101,8 +102,8 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 
 #include "cfb.h"
+#include "cfb16.h"
 
-#include "regmach32.h"
 #include "mach32.h"
 
 void
@@ -117,35 +118,31 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int n;                      /* number of spans to fill */
     register DDXPointPtr ppt;   /* pointer to list of start points */
     register int *pwidth;       /* pointer to list of n widths */
-
-    if (!xf86VTSema)
-    {
-	cfbSolidSpansGeneral(pDrawable, pGC,
-			     nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
 		ErrorF("should call mfbSolidFillSpans\n");
-                break;
-            case 8:
+		break;
+	    case 8:
+	    case 16:
 		ErrorF("should call cfbSolidFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -177,8 +174,8 @@ mach32SolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
     outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -197,35 +194,31 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->tile.pixmap;
-
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalTileFS(pDrawable, pGC,
-			   nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbTiledFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbTiledFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbTiledFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbTiledFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -248,36 +241,17 @@ mach32TiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#if PIXPRIV
-    if (mach32CacheTile(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		(mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageFill(pPix->slot,
-				 ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				 mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    (mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
-			     pPix->devPrivate.ptr, pixWidth,
-			     width, height, xrot, yrot,
-			     mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	(mach32ImageFillFunc)(ppt->x, ppt->y, *pwidth, 1,
+			      pPix->devPrivate.ptr, pixWidth,
+			      width, height, xrot, yrot,
+			      mach32alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -296,35 +270,31 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
-
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC,
-			      nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbStippleFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbStippleFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbStippleFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbStippleFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -347,38 +317,17 @@ mach32StipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach32CacheStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				   pPix->devPrivate.ptr, pixWidth,
-				   width, height,
-				   xrot, yrot, pGC->fgPixel,
-				   mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageStipple(pPix->slot,
-				    ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				    pGC->fgPixel,
-				    mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
-				pPix->devPrivate.ptr, pixWidth, width, height,
-				xrot, yrot, pGC->fgPixel,
-				mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	mach32ImageStipple(ppt->x, ppt->y, *pwidth, 1,
+			   pPix->devPrivate.ptr, pixWidth, width, height,
+			   xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			   mach32alu[pGC->alu], pGC->planemask, 0);
+	ppt++;
+	pwidth++;
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }
@@ -397,35 +346,31 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *pwidth;       /* pointer to list of n widths */
     int xrot, yrot, width, height, pixWidth;
     PixmapPtr pPix = pGC->stipple;
-
-    if (!xf86VTSema)
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC,
-			      nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
+    DDXPointPtr initPpt;
+    int *initPwidth;
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
-        switch (pDrawable->depth) {
-            case 1:
-                ErrorF("should call mfbOpStippleFillSpans\n");
-                break;
-            case 8:
-                ErrorF("should call cfbOpStippleFillSpans\n");
-                break;
-            default:
-                ErrorF("Unsupported pixmap depth\n");
-                break;
-        }
-        return;
+	switch (pDrawable->bitsPerPixel) {
+	    case 1:
+		ErrorF("should call mfbOpStippleFillSpans\n");
+		break;
+	    case 8:
+	    case 16:
+		ErrorF("should call cfbOpStippleFillSpans\n");
+		break;
+	    default:
+		ErrorF("Unsupported pixmap depth\n");
+		break;
+	}
+	return;
     }
 
     if (!(pGC->planemask))
         return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-    pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
-    ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    initPpt = ppt = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!ppt || !pwidth)
     {
         if (ppt) DEALLOCATE_LOCAL(ppt);
@@ -448,39 +393,18 @@ mach32OStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     height = pPix->drawable.height;
     pixWidth = PixmapBytePad(width, pPix->drawable.depth);
 
-#ifdef PIXPRIV
-    if (mach32CacheOpStipple(pPix)) {
-	while (n--) {
-	    if (*pwidth < 50)
-		mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				     pPix->devPrivate.ptr, pixWidth,
-				     width, height,
-				     xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				     mach32alu[pGC->alu], pGC->planemask);
-	    else
-		mach32CImageOpStipple(pPix->slot,
-				      ppt->x, ppt->y, *pwidth, 1, xrot, yrot,
-				      pGC->fgPixel, pGC->bgPixel,
-				      mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
-    } else
-#endif
-    {
-	while (n--) {
-	    mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height,
-				  xrot, yrot, pGC->fgPixel, pGC->bgPixel,
-				  mach32alu[pGC->alu], pGC->planemask);
-	    ppt++;
-	    pwidth++;
-    	}
+    while (n--) {
+	mach32ImageOpStipple(ppt->x, ppt->y, *pwidth, 1,
+			     pPix->devPrivate.ptr, pixWidth,
+			     width, height,
+			     xrot, yrot, pGC->fgPixel, pGC->bgPixel,
+			     mach32alu[pGC->alu], pGC->planemask);
+	ppt++;
+	pwidth++;
     }
 
-    DEALLOCATE_LOCAL(ppt);
-    DEALLOCATE_LOCAL(pwidth);
+    DEALLOCATE_LOCAL(initPpt);
+    DEALLOCATE_LOCAL(initPwidth);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
 }

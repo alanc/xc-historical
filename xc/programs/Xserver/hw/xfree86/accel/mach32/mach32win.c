@@ -1,4 +1,5 @@
-/* $XConsortium: mach32win.c,v 1.1 94/03/28 21:09:37 dpw Exp $ */
+/* $XConsortium: mach32win.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32win.c,v 3.3 1994/09/11 00:49:10 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -61,12 +62,12 @@ Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
 
 #include "mach32.h"
-#include "regmach32.h"
 
 void 
 mach32CopyWindow(pWin, ptOldOrg, prgnSrc)
@@ -81,12 +82,6 @@ mach32CopyWindow(pWin, ptOldOrg, prgnSrc)
     short direction = 0;
     unsigned int *ordering;
     GC dummyGC;
-
-    if (!xf86VTSema)
-    {
-	cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
-	return;
-    }
 
     dummyGC.subWindowMode = ~IncludeInferiors;
 
@@ -110,7 +105,9 @@ mach32CopyWindow(pWin, ptOldOrg, prgnSrc)
 	return;
     }
 
-    mach32FindOrdering(pWin, pWin, &dummyGC, nbox, pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x, pWin->drawable.y, ordering);
+    mach32FindOrdering(&pWin->drawable, &pWin->drawable, &dummyGC, nbox,
+		       pboxOrig, ptOldOrg.x, ptOldOrg.y, pWin->drawable.x,
+		       pWin->drawable.y, ordering);
 
     WaitQueue(3);
     outw(FRGD_MIX, FSS_BITBLT | MIX_SRC);

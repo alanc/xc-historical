@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32.h,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.5 1994/09/11 00:48:42 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -49,6 +50,12 @@
 #include "windowstr.h"
 #include "misc.h"
 #include "xf86.h"
+#include "regionstr.h"
+#include "xf86_OSlib.h"
+#include "xf86bcache.h"
+#include "xf86fcache.h"
+#include "xf86Procs.h"
+
 #include "regionstr.h"
 #include "regmach32.h"
 
@@ -169,6 +176,11 @@ void mach32RestoreColor0(
 #endif
 );
 /* mach32gc.c */
+void mach32InitGC(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 Bool mach32CreateGC(
 #if NeedFunctionPrototypes
     register GCPtr pGC
@@ -285,7 +297,7 @@ void mach32InitAperture(
 );
 void mach32SetRamdac(
 #if NeedFunctionPrototypes
-    int clock
+    unsigned short *clock
 #endif
 );
 void mach32InitDisplay(
@@ -321,9 +333,11 @@ void mach32ImageStipple(
     int ph,
     int pox,
     int poy,
-    int fgPixel,
-    int alu,
-    int planemask
+    Pixel fgPixel,
+    Pixel bgPixel,
+    short alu,
+    Pixel planemask,
+    int   opaque
 #endif
 );
 void mach32ImageOpStipple(
@@ -338,10 +352,21 @@ void mach32ImageOpStipple(
     int ph,
     int pox,
     int poy,
-    int fgPixel,
-    int bgPixel,
-    int alu,
-    int planemask
+    Pixel fgPixel,
+    Pixel bgPixel,
+    short alu,
+    Pixel planemask
+#endif
+);
+void mach32FontOpStipple(
+#if NeedFunctionPrototypes
+    int x,
+    int y,
+    int w,
+    int h,
+    unsigned char *psrc,
+    int pwidth,
+    Pixel id
 #endif
 );
 /* mach32bstor.c */
@@ -467,44 +492,26 @@ void mach32PolyFillRect(
 #endif
 );
 /* mach32text.c */
-int mach32PolyText8(
+int mach32NoCPolyText(
 #if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    char *chars
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    int,
+    char *,
+    Bool
 #endif
 );
-int mach32PolyText16(
+int mach32NoCImageText(
 #if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    unsigned short *chars
-#endif
-);
-void mach32ImageText8(
-#if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    char *chars
-#endif
-);
-void mach32ImageText16(
-#if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    unsigned short *chars
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    int,
+    char *,
+    Bool
 #endif
 );
 /* mach32font.c */
@@ -523,40 +530,58 @@ Bool mach32UnrealizeFont(
 /* mach32fcach.c */
 void mach32FontCache8Init(
 #if NeedFunctionPrototypes
-    int x,
-    int y
+    void
 #endif
 );
-void mach32UnCacheFont8(
+void mach32GlyphWrite(
 #if NeedFunctionPrototypes
-    FontPtr font
+    int,
+    int,
+    int,
+    unsigned char *,
+    CacheFont8Ptr,
+    GCPtr,
+    BoxPtr,
+    int
 #endif
 );
-int mach32CacheFont8(
+void mach32GlyphWrite(
 #if NeedFunctionPrototypes
-    FontPtr font
+    int,
+    int,
+    int,
+    unsigned char *,
+    CacheFont8Ptr,
+    GCPtr,
+    BoxPtr,
+    int
 #endif
 );
-int mach32CPolyText8(
+/* mach32bc.c */
+
+void mach32CacheMoveBlock(
 #if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    unsigned char *chars,
-    int plane
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    int /*h*/,
+    int /*len*/,
+    unsigned int /*bitplane*/
 #endif
 );
-void mach32CImageText8(
+
+
+/* mach32bcach.c */
+void mach32CacheMoveBlock(
 #if NeedFunctionPrototypes
-    DrawablePtr pDraw,
-    GCPtr pGC,
-    int x,
-    int y,
-    int count,
-    unsigned char *chars,
-    int plane
+    int,
+    int,
+    int,
+    int,
+    int,
+    int,
+    unsigned int
 #endif
 );
 /* mach32pntwn.c */
@@ -685,7 +710,7 @@ void mach32GetImage(
     int h,
     unsigned int format,
     unsigned long planeMask,
-    pointer pdstLine
+    char * pdstLine
 #endif
 );
 /* mach32mem.c */

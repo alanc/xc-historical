@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: regmach32.h,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.2 1994/06/01 03:18:22 dawes Exp $ */
 /* regmach32.h
  *
  * Written by Jake Richter
@@ -66,6 +67,7 @@
 #define	DESTX_DIASTP		0x8ee8
 #define	ERR_TERM		0x92e8
 #define	MAJ_AXIS_PCNT		0x96e8
+#define BRES_COUNT		0x96ee
 #define	GP_STAT			0x9ae8
 #define	GE_STAT			GP_STAT
 #define	CMD			0x9ae8
@@ -287,6 +289,8 @@
 #define ROM_ADDR_1		0x52ee
 #define READ_SRC_X		0xdaee
 #define CHIP_ID			0xfaee
+#define EXT_CURSOR_COLOR_0	0x3aee
+#define EXT_CURSOR_COLOR_1	0x3eee
 #define EXT_FIFO_STATUS		0x9aee
 #define EXT_GE_CONFIG		0x7aee
 #define R_EXT_GE_CONFIG		0x8eee
@@ -481,15 +485,19 @@ typedef struct {
 /* Wait until GP is idle and queue is empty */
 #define	WaitIdleEmpty() { while (inw(GP_STAT) & (GPBUSY | 1)); }
 
+#ifdef NO_PROBEWAIT_PROBLEM
 /*
  * This version is for use in mach8Probe() to prevent a server hang if
- * there is no 8514/A-style chip present
+ * there is no ATI chip present
  */
 #define	ProbeWaitIdleEmpty() { int i; \
 			       for (i = 0; i < 100000; i++) \
 			          if (!(inw(GP_STAT) & (GPBUSY | 1))) \
 				     break; \
 			     }
+#else
+#define ProbeWaitIdleEmpty WaitIdleEmpty
+#endif
 
 #define SKIP_2(_v) ((((_v)<<1)&0xfff8)|((_v)&0x3)|(((_v)&0x80)>>5))
 

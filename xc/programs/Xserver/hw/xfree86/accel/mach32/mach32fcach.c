@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32fcach.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32fcach.c,v 3.6 1994/09/11 00:48:53 dawes Exp $ */
 /*
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -24,6 +25,7 @@
  * Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
  * Modified for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Dynamic cache allocation added by Rickard E. Faith (faith@cs.unc.edu)
+ * Modified by Mike Bernson (mike@mbsun.mlb.org) for mach32 from s3 version
  */
 
 
@@ -32,374 +34,250 @@
 #include	"Xproto.h"
 #include	"cfb.h"
 #include	"misc.h"
+#include        "xf86.h"
 #include	"windowstr.h"
 #include	"gcstruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
-#include	"regmach32.h"
 #include	"mach32.h"
+#include        "xf86bcache.h"
+#include	"xf86fcache.h"
+#include	"xf86text.h"
 
 #define XCONFIG_FLAGS_ONLY
-#include "xf86_Config.h"
+#include        "xf86_Config.h"
+
+static unsigned long mach32FontAge;
+#define NEXT_FONT_AGE  ++mach32FontAge
 
 extern Bool xf86Verbose;
 
-#define MAX_FONTS      	16	/* For static structure */
-#define FC_MAX_WIDTH	24
-#define FC_MAX_HEIGHT	32
+#define ALIGNMENT 8
+#define PIXMAP_WIDTH 64
 
-typedef struct {
-    FontPtr		font;
-    unsigned int	lru;
-    CharInfoPtr		pci[256];
-    int                 x, y;
-} CacheFont8Rec;
+unsigned short mach32cachemask[16] = { 0x01, 0x02, 0x04, 0x08,
+				       0x10, 0x20, 0x40, 0x80,
+				       0x100, 0x200, 0x400, 0x800,
+				       0x1000, 0x2000, 0x4000, 0x8000
+};
 
-CacheFont8Rec	mach32FontCache[MAX_FONTS];
-static int      NumFonts;
-short		mach32ReadMask[8] = { 2, 4, 8, 16, 32, 64, 128, 1 };
+unsigned short mach32cachemaskswapped8[8] = { 0x02, 0x04, 0x08, 0x10, 
+					      0x20, 0x40, 0x80, 0x01
+};
 
-extern void QueryGlyphExtents();
+unsigned short *mach32cachereadmask;
 
 void
-mach32FontCache8Init(x,y)
-    int x, y;
+mach32FontCache8Init()
 {
-    int        i;
-    int        free_ram    = mach32InfoRec.videoRam * 1024 - x * y;
-    int        lines       = free_ram / y;
-    int        cache_sets;
-    static int initialized = 0;
+   static int first = TRUE;
+   int free_ram;
+   int x, y, w, h;
+   int BitPlane;
+   CachePool FontPool;
 
-    if (!initialized) {
-       ++initialized;
-				/* 8514 can't access lines > 1535 */
-       if (y + lines > 1535)
-	     lines = 1536 - y;
-       if (lines < 0)
-	     lines = 0;
-    
-       cache_sets = lines / 256;
-       if (cache_sets > MAX_FONTS / 8)
-	     cache_sets = MAX_FONTS / 8;
-       
-       NumFonts = 8 * cache_sets;
-       
-       if (xf86Verbose)
-	     ErrorF("%s %s: Font cache: %d fonts\n", XCONFIG_PROBED,
-		    mach32InfoRec.name, NumFonts );
-    }
+   /* free_ram accounts for the cursor space */
+   free_ram = mach32InfoRec.videoRam * 1024 -
+	(mach32InfoRec.virtualX * mach32InfoRec.virtualY * 
+	(mach32InfoRec.bitsPerPixel / 8));
+   x = 0;
+   y = mach32InfoRec.virtualY;
+   h = free_ram / (mach32InfoRec.virtualX * (mach32InfoRec.bitsPerPixel / 8));
+   w = mach32InfoRec.virtualX - PIXMAP_WIDTH;
 
-    for (i = 0; i < NumFonts; i++) {
-	mach32FontCache[i].font = (FontPtr)0;
-	mach32FontCache[i].lru = 0xffffffff;
-	mach32FontCache[i].x = 256;
-	mach32FontCache[i].y = y + 256 * (i >> 3);
-    }
+   if (mach32InfoRec.bitsPerPixel == 8) {
+      mach32cachereadmask = mach32cachemaskswapped8;
+   } else {
+      mach32cachereadmask = mach32cachemask;
+   }
+   /* Note, mach32InfoRec.virtual is always >= 1024 */
+   if (h < PIXMAP_WIDTH) {
+      w = mach32InfoRec.virtualX;
+      ErrorF("%s %s: No pixmap expanding area available\n",
+	     XCONFIG_PROBED, mach32InfoRec.name);
+   } else {
+	 if (first) {
+	    mach32InitFrect(w, y, PIXMAP_WIDTH);
+	    ErrorF("%s %s: Using a single %dx%d area for expanding pixmaps\n",
+		   XCONFIG_PROBED, mach32InfoRec.name, PIXMAP_WIDTH,
+		   PIXMAP_WIDTH);
+	 }
+   }
+
+   /*
+    * Don't allow a font cache if we don't have room for at least
+    * 2 mcomplete 6x13 fonts.
+    */
+   if (w >= 6*32 && h >= 2*13) {
+      if (first)  {
+         FontPool = xf86CreateCachePool(ALIGNMENT);
+         for (BitPlane = mach32InfoRec.bitsPerPixel-1; BitPlane >= 0;
+	      BitPlane--) {
+            xf86AddToCachePool(FontPool, x, y, w, h, BitPlane);
+	 }
+
+         xf86InitFontCache(FontPool, w, h, mach32FontOpStipple);
+         xf86InitText(mach32GlyphWrite, mach32NoCPolyText, mach32NoCImageText );
+         ErrorF("%s %s: Using %d planes of %dx%d at (%d,%d) aligned %d as font cache\n",
+                XCONFIG_PROBED, mach32InfoRec.name,
+                mach32InfoRec.bitsPerPixel, w, h, x, y, ALIGNMENT);
+      }
+      else {
+        xf86ReleaseFontCache();
+      }
+   } else if (first) {
+
+      /*
+       * Crash and burn if the cached glyph write function gets called.
+       */
+      xf86InitText(NULL, mach32NoCPolyText, mach32NoCImageText);
+      ErrorF("%s %s: No font cache available\n",
+              XCONFIG_PROBED, mach32InfoRec.name);
+   }
+   first = 0;
+   return;
 }
 
-#if 0
-int
-mach32IsCached(font)
-    FontPtr font;
+static __inline__ void
+Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox)
+     int   x, y, count;
+     unsigned char *chars;
+     CacheFont8Ptr fentry;
+     GCPtr pGC;
+     BoxPtr pBox;
 {
-    int i;
+   int   gHeight;
+   int   w = fentry->w;
+   int blocki = 255;
+   unsigned short height = 0;
+   unsigned short width = 0;
+   Pixel pmsk = 0;
 
-    for (i = 0; i < NumFonts; i++)
-	if (mach32FontCache[i].font == font)
-	    return i;
-}
-#endif
+   for (;count > 0; count--, chars++) {
+      CharInfoPtr pci;
+      short xoff;
 
-void
-mach32UnCacheFont8(font)
-    FontPtr font;
-{
-    int i;
+      pci = fentry->pci[(int)*chars];
 
-    if (!xf86VTSema)
-	return;
+      if (pci != NULL) {
 
-    for (i = 0; i < NumFonts; i++)
-	if (mach32FontCache[i].font == font) {
-	    mach32FontCache[i].font = (FontPtr)0;
-	    mach32FontCache[i].lru = 0xffffffff;
-	    return;
-	}
-}
+	 gHeight = GLYPHHEIGHTPIXELS(pci);
+	 if (gHeight) {
 
-int
-mach32CacheFont8(font)
-    FontPtr font;
-{
-    int i, j, c;
-    int ret = -1;
-    unsigned long n;
-    unsigned char chr;
-    int width, height;
-    int nbyLine;
-    unsigned char *pb, *pbits;
-    CharInfoPtr pci;
-    unsigned char *pglyph;
-    int gWidth, gHeight;
-    int nbyGlyphWidth;
-    int nbyPadGlyph;
+	    if ((int) (*chars / 32) != blocki) {
+	       bitMapBlockPtr block;
+	       
+	       blocki = (int) (*chars / 32);
+	       block = fentry->fblock[blocki];
+	       if (block == NULL) {
+		  /*
+		   * Reset the GE context to a known state before calling
+		   * the xf86loadfontblock function.
+		   */
+		  WaitQueue(9);
+		  outw(EXT_SCISSOR_T, 0);
+		  outw(EXT_SCISSOR_L, 0);
+		  outw(EXT_SCISSOR_R, mach32MaxX); 
+		  outw(EXT_SCISSOR_B, mach32MaxY);
+		  outw(RD_MASK, 0xFFFF);
+		  outw(WRT_MASK, 0xFFFF);
+		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+                  outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+                  outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
+		  xf86loadFontBlock(fentry, blocki);
+		  block = fentry->fblock[blocki];		  
 
-    for (i = 0; i < NumFonts; i++)
-	if (mach32FontCache[i].font == font)
-	    ret = i;
+		  /*
+		   * Restore the GE context.
+		   */
+		  WaitQueue(9);
+		  outw(EXT_SCISSOR_L, (short)pBox->x1);
+		  outw(EXT_SCISSOR_T, (short)pBox->y1);
+		  outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+		  outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
+		  outw(FRGD_COLOR, (short)pGC->fgPixel);
+		  outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+		  outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
+		  outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+		  outw(WRT_MASK, pGC->planemask);
+		  height = width = pmsk = 0;
+	       }
+	       WaitQueue(2);
+	       outw(CUR_Y, (short)block->y);	       
 
-    width = FONTMAXBOUNDS(font,rightSideBearing) -
-	    FONTMINBOUNDS(font,leftSideBearing);
-    height = FONTMAXBOUNDS(font,ascent) + FONTMAXBOUNDS(font,descent);
-
-    if ((ret == -1) && (width <= FC_MAX_WIDTH) && (height <= FC_MAX_HEIGHT) &&
-	(FONTFIRSTROW(font) == 0) && (FONTLASTROW(font) == 0) &&
-	(FONTLASTCOL(font) < 256)) {
-       
-        int mach32FC_X, mach32FC_Y;
-	
-	ret = 0;
-	for (i = 1; i < NumFonts; i++)
-	    if (mach32FontCache[i].lru > mach32FontCache[ret].lru)
-		ret = i;
-
-	nbyLine = PixmapBytePad(width, 1);
-	pbits = (unsigned char *)ALLOCATE_LOCAL(height*nbyLine);
-	if (!pbits) {
-	    return -1;
-	}
-
-	mach32FontCache[ret].font = font;
-	mach32FontCache[ret].lru = 0;
-	mach32FC_X = mach32FontCache[ret].x;
-	mach32FC_Y = mach32FontCache[ret].y;
-
-	for (c = 0; c < 256; c++) {
-	    chr = (unsigned char)c;
-	    GetGlyphs(font, 1, &chr, Linear8Bit, &n, &pci);
-	    if (n == 0) {
-		mach32FontCache[ret].pci[c] = NULL;
-	    } else {
-		mach32FontCache[ret].pci[c] = pci;
-		pglyph = FONTGLYPHBITS(pglyphBase, pci);
-		gWidth = GLYPHWIDTHPIXELS(pci);
-		gHeight = GLYPHHEIGHTPIXELS(pci);
-		if (gWidth && gHeight) {
-		    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
-		    nbyPadGlyph = PixmapBytePad(gWidth, 1);
-		    
-		    if (nbyGlyphWidth == nbyPadGlyph
-#if GLYPHPADBYTES != 4
-			&& (((int) pglyph) & 3) == 0
-#endif
-			) {
-			pb = pglyph;
-		    } else {
-			for (i = 0, pb = pbits;
-			     i < gHeight;
-			     i++, pb = pbits+(i*nbyPadGlyph))
-			    for (j = 0; j < nbyGlyphWidth; j++)
-				*pb++ = *pglyph++;
-			pb = pbits;
-		    }
-		    mach32ImageOpStipple(mach32FC_X+(c%32)*FC_MAX_WIDTH,
-					  mach32FC_Y+(c/32)*FC_MAX_HEIGHT,
-					  gWidth, gHeight,
-					  pb, nbyGlyphWidth, gWidth, gHeight,
-					  mach32FC_X+(c%32)*FC_MAX_WIDTH,
-					  mach32FC_Y+(c/32)*FC_MAX_HEIGHT,
-					  0xff, 0, mach32alu[GXcopy],
-					  (1 << (ret & 0x07)));
-		}
+	       /*
+		* Is the readmask altered
+		*/
+	       if (mach32cachereadmask[block->id] != pmsk) {
+		  pmsk = mach32cachereadmask[block->id];
+	       	  outw(RD_MASK, (unsigned short)pmsk);		  	       
+	       }
+	       xoff = block->x;
+	       block->lru = NEXT_FONT_AGE;
 	    }
-	}
-    }
 
-    return ret;
-}
+	    WaitQueue(6);
+	    outw(CUR_X, (short) (xoff + (*chars & 0x1f) * w));
 
-int
-mach32CPolyText8(pDraw, pGC, x, y, count, chars, plane)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    int x;
-    int y;
-    int count;
-    unsigned char *chars;
-    int plane;
-{
-    int		i;
-    BoxPtr	pBox;
-    int		numRects;
-    RegionPtr	pRegion;
-    int		yBand;
-    int		maxAscent, maxDescent;
-    int		minLeftBearing;
-    FontPtr	pfont = pGC->font;
-    int		xorig;
-    CharInfoPtr	pci;
-    CacheFont8Rec *mach32FCP = &(mach32FontCache[plane]);
-    int         mach32FC_X = mach32FCP->x;
-    int         mach32FC_Y = mach32FCP->y;
-    int         ret_x;
+	    outw(DESTX_DIASTP,
+		  (short)(x + pci->metrics.leftSideBearing));
+	    outw(DESTY_AXSTP, (short)(y - pci->metrics.ascent));
 
-    /*
-     * If miPolyText8() is to be believed, the returned new X value is
-     * completely independent of what happens during rendering.
-     */
-    ret_x = x;
-    for (i = 0; i < count; i++)
-	ret_x += mach32FCP->pci[(int)chars[i]] ?
-		 mach32FCP->pci[(int)chars[i]]->metrics.characterWidth : 0;
-
-    for (i = 0; i < NumFonts; i++)
-	if (i != plane && mach32FontCache[i].lru != 0xffffffff)
-	    mach32FontCache[i].lru++;
-
-    x += pDraw->x;
-    y += pDraw->y;
-
-    maxAscent = FONTMAXBOUNDS(pfont,ascent);
-    maxDescent = FONTMAXBOUNDS(pfont,descent);
-    minLeftBearing = FONTMINBOUNDS(pfont,leftSideBearing);
-
-    pRegion = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
-
-    pBox = REGION_RECTS(pRegion);
-    numRects = REGION_NUM_RECTS (pRegion);
-    while (numRects && pBox->y2 <= y - maxAscent)
-    {
-	++pBox;
-	--numRects;
-    }
-    if (!numRects || pBox->y1 >= y + maxDescent)
-	return ret_x;
-    yBand = pBox->y1;
-    while (numRects && pBox->y1 == yBand && pBox->x2 <= x + minLeftBearing)
-    {
-	++pBox;
-	--numRects;
-    }
-    if (!numRects)
-	return ret_x;
-
-    WaitQueue(6);
-    outw(FRGD_COLOR, (short)pGC->fgPixel);
-    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
-    outw(RD_MASK, mach32ReadMask[plane & 0x07]);
-    outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
-    outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
-    outw(WRT_MASK, (short)pGC->planemask);
-
-    for (xorig = x; --numRects >= 0; ++pBox, x = xorig) {
-	WaitQueue(4);
-	outw(EXT_SCISSOR_L, (short)pBox->x1);
-	outw(EXT_SCISSOR_T, (short)pBox->y1);
-	outw(EXT_SCISSOR_R, (short)(pBox->x2-1));
-	outw(EXT_SCISSOR_B, (short)(pBox->y2-1));
-
-	for (i = 0; i < count; i++) {
-	    pci = mach32FCP->pci[(int)chars[i]];
-
-	    if (pci != NULL) {
-		if (GLYPHHEIGHTPIXELS(pci) && GLYPHWIDTHPIXELS(pci)) {
-		    WaitQueue(7);
-		    outw(CUR_X, (short)(mach32FC_X +
-					(((int)chars[i])%32) * FC_MAX_WIDTH));
-		    outw(CUR_Y, (short)(mach32FC_Y +
-				        (((int)chars[i])/32) * FC_MAX_HEIGHT));
-		    outw(DESTX_DIASTP,
-			 (short)(x + pci->metrics.leftSideBearing));
-		    outw(DESTY_AXSTP, (short)(y - pci->metrics.ascent));
-		    outw(MAJ_AXIS_PCNT, (short)(GLYPHWIDTHPIXELS(pci)-1));
-		    outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT |
-		          (short)(GLYPHHEIGHTPIXELS(pci)-1));
-		    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
-		}
-		x += pci->metrics.characterWidth;
+	    if (!width || (short)(GLYPHWIDTHPIXELS(pci)) != width) {
+	       width = (short)(GLYPHWIDTHPIXELS(pci));
+	       outw(MAJ_AXIS_PCNT, (short)(width - 1));
 	    }
-	}
-    }
-
-    WaitQueue(8);
-    outw(EXT_SCISSOR_L, 0);
-    outw(EXT_SCISSOR_T, 0);
-    outw(EXT_SCISSOR_R, mach32MaxX);
-    outw(EXT_SCISSOR_B, mach32MaxY);
-    outw(RD_MASK, 0xff);
-    outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-    outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-    outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
-
-    WaitIdleEmpty(); /* Make sure that all commands have finished */
-
-    return ret_x;
+	    if (!height || (short)(gHeight) != height) {
+	       height = (short)(gHeight);
+	       outw(MULTIFUNC_CNTL, MIN_AXIS_PCNT | (short)(height - 1));
+	    }
+	    outw(CMD, CMD_BITBLT | INC_X | INC_Y | DRAW | PLANAR | WRTDATA);
+	 }
+	 x += pci->metrics.characterWidth;
+      }
+   }
 }
 
-
-void
-mach32CImageText8(pDraw, pGC, x, y, count, chars, plane)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    int x;
-    int y;
-    int count;
-    unsigned char *chars;
-    int plane;
+/*
+ * Set the hardware scissors to match the clipping rectables and 
+ * call the glyph output routine.
+ */
+void 
+mach32GlyphWrite(x, y, count, chars, fentry, pGC, pBox, numRects)
+     int   x, y, count;
+     unsigned char *chars;
+     CacheFont8Ptr fentry;
+     GCPtr pGC;
+     BoxPtr pBox;
 {
-    ExtentInfoRec info;		/* used by QueryGlyphExtents() */
-    XID gcvals[3];
-    int oldAlu, oldFS;
-    unsigned long oldFG;
-    xRectangle backrect;
-    CharInfoPtr *ppci;
-    unsigned long n;
+   WaitQueue(5);
+   outw(FRGD_COLOR, (short)pGC->fgPixel);
+   outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_EXPBLT | COLCMPOP_F);
+   outw(FRGD_MIX, FSS_FRGDCOL | mach32alu[pGC->alu]);
+   outw(BKGD_MIX, BSS_BKGDCOL | MIX_DST);
+   outw(WRT_MASK, pGC->planemask);
 
-    if(!(ppci = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
-	return;
 
-    GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      Linear8Bit, &n, ppci);
+   for (; --numRects >= 0; ++pBox) {
+      WaitQueue(4);
+      outw(EXT_SCISSOR_L, (short)pBox->x1);
+      outw(EXT_SCISSOR_T, (short)pBox->y1);
+      outw(EXT_SCISSOR_R, (short)(pBox->x2 - 1));
+      outw(EXT_SCISSOR_B, (short)(pBox->y2 - 1));
 
-    QueryGlyphExtents(pGC->font, ppci, n, &info);
+      Domach32CPolyText8(x, y, count, chars, fentry, pGC, pBox);
+   }
 
-    DEALLOCATE_LOCAL(ppci);
+   WaitQueue(9);
+   outw(EXT_SCISSOR_T, 0);
+   outw(EXT_SCISSOR_L, 0);
+   outw(EXT_SCISSOR_R, mach32MaxX);
+   outw(EXT_SCISSOR_B, mach32MaxY);
+   outw(RD_MASK, 0xFFFF);
+   outw(WRT_MASK, 0xFFFF);
+   outw(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
+   outw(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
+   outw(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
-    if (info.overallWidth >= 0)
-    {
-    	backrect.x = x;
-    	backrect.width = info.overallWidth;
-    }
-    else
-    {
-	backrect.x = x + info.overallWidth;
-	backrect.width = -info.overallWidth;
-    }
-    backrect.y = y - FONTASCENT(pGC->font);
-    backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
-
-    oldAlu = pGC->alu;
-    oldFG = pGC->fgPixel;
-    oldFS = pGC->fillStyle;
-
-    /* fill in the background */
-    gcvals[0] = GXcopy;
-    gcvals[1] = pGC->bgPixel;
-    gcvals[2] = FillSolid;
-    DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
-    ValidateGC(pDraw, pGC);
-    (*pGC->ops->PolyFillRect)(pDraw, pGC, 1, &backrect);
-
-    /* put down the glyphs */
-    gcvals[0] = oldFG;
-    DoChangeGC(pGC, GCForeground, gcvals, 0);
-    ValidateGC(pDraw, pGC);
-    (void)mach32CPolyText8(pDraw, pGC, x, y, count, chars, plane);
-
-    /* put all the toys away when done playing */
-    gcvals[0] = oldAlu;
-    gcvals[1] = oldFG;
-    gcvals[2] = oldFS;
-    DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
+   return;
 }

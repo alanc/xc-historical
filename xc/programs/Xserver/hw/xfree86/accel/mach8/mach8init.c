@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8init.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8init.c,v 3.1 1994/09/23 10:09:16 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -42,7 +43,7 @@ static short LUTInited = -1;
 
 /* mach8calcvmode--
  *      Calculate Mach8 register values from display specifications
- *      from the Xconfig file.
+ *      from the XF86Config file.
  */
 
 void
@@ -208,15 +209,6 @@ mach8Init(vmdef)
 
     /* Get board status information */
     i = inw(SUBSYS_STAT);
-
-    /* Check if monitor capable of 1024x768 is attached.
-     * If not, print error message and abort.
-     * In this case, we want an IBM 8514 compatible monitor.
-     */
-    if ((i & MONITORID_MASK) != MONITORID_8514) {
-	mach8CleanUp();
-	FatalError("Attached monitor doesn't report 8514 ID !\n");
-    }
 
     /* Determine the pixel depth of the board.  Then, based on depth,
      * set the memory control register use the appropriate CAS (VRAM
