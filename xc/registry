@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.15 90/12/06 10:51:17 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.16 91/01/21 11:48:03 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -403,7 +403,7 @@ Name						Reference
 "Apple"						[22]
 "Bitstream"					[25]
 "DEC"						[27]
-"Fuji Xerox"					[64]
+"FujiXerox"					[64]
 "IBM"						[33]
 "MISC"						[8]
 "Panasonic"					[52]
