@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.6 93/08/08 13:42:34 rws Exp $
+ * $XConsortium: cfbmap.h,v 1.7 93/12/13 17:22:11 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -73,7 +73,6 @@ cfb can not hack PSZ yet
 #define cfbBresD NAME(BresD)
 #define cfbBresS NAME(BresS)
 #define cfbChangeWindowAttributes NAME(ChangeWindowAttributes)
-#define cfbClipPoint NAME(ClipPoint)
 #define cfbCloseScreen NAME(CloseScreen)
 #define cfbCopyArea NAME(CopyArea)
 #define cfbCopyImagePlane NAME(CopyImagePlane)

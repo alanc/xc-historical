@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.59 93/12/13 17:21:59 dpw Exp $ */
+/* $XConsortium: cfbgc.c,v 5.60 94/01/21 22:07:09 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -592,7 +592,9 @@ cfbValidateGC(pGC, changes, pDrawable)
 		if (pGC->fillStyle == FillSolid)
 		{
 #if defined(PIXEL_ADDR) && !defined(NO_ONE_RECT)
-		    if (devPriv->oneRect)
+		    if (devPriv->oneRect &&
+			((pDrawable->x >= pGC->pScreen->width - 32768) &&
+			 (pDrawable->y >= pGC->pScreen->height - 32768)))
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
 			pGC->ops->PolySegment = cfb8SegmentSS1Rect;

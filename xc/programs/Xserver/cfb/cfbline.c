@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.20 93/09/13 09:35:12 dpw Exp $ */
+/* $XConsortium: cfbline.c,v 1.21 93/12/13 17:22:09 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include "cfb.h"
 #include "cfbmskbits.h"
+#include "miline.h"
 
 /* single-pixel lines on a color frame buffer
 
@@ -62,36 +63,6 @@ outsideness, and a method similar to Pike's layers for doing the
 actual clipping.
 
 */
-
-#define OUTCODES(result, x, y, pbox) \
-    if (x < pbox->x1) \
-	result |= OUT_LEFT; \
-    else if (x >= pbox->x2) \
-	result |= OUT_RIGHT; \
-    if (y < pbox->y1) \
-	result |= OUT_ABOVE; \
-    else if (y >= pbox->y2) \
-	result |= OUT_BELOW;
-
-/*
-#define SignTimes(sign, n) ((sign) * ((int)(n)))
-*/
-
-#define SignTimes(sign, n) \
-    ( ((sign)<0) ? -(n) : (n) )
-
-#define SWAPINT(i, j) \
-{  register int _t = i; \
-   i = j; \
-   j = _t; \
-}
-
-#define SWAPPT(i, j) \
-{  register DDXPointRec _t; \
-   _t = i; \
-   i = j; \
-   j = _t; \
-}
 
 void
 #ifdef POLYSEGMENT
@@ -184,7 +155,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	y2 = ppt->y + yorg;
 #endif
 
-	if (x1 == x2)
+	if (x1 == x2)  /* vertical line */
 	{
 	    /* make the line go top to bottom of screen, keeping
 	       endpoint semantics
@@ -238,7 +209,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    y2 = ppt->y + yorg;
 #endif
 	}
-	else if (y1 == y2)
+	else if (y1 == y2)  /* horizontal line */
 	{
 	    /* force line from left to right, keeping
 	       endpoint semantics
@@ -328,14 +299,15 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
-
-	    }
+		FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
+ 	    }
 	    else
 	    {
 		axis = Y_AXIS;
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
+		FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
 	    }
 
 	    /* we have bresenham parameters and two points.
@@ -370,68 +342,49 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		}
 		else
 		{
-	    	    /*
-	     	     * let the mfb helper routine do our work;
-	     	     * better than duplicating code...
-	     	     */
-	    	    BoxRec box;
-    	    	    DDXPointRec pt1Copy;	/* clipped start point */
-    	    	    DDXPointRec pt2Copy;	/* clipped end point */
-    	    	    int err;			/* modified bresenham error term */
-    	    	    int clip1, clip2;		/* clippedness of the endpoints */
-    	    	
-    	    	    int clipdx, clipdy;		/* difference between clipped and
-				       	       	   unclipped start point */
-		    DDXPointRec	pt1;
-    	    	
-    	
-	    	    pt1.x = pt1Copy.x = x1;
-		    pt1.y = pt1Copy.y = y1;
-	    	    pt2Copy.x = x2;
-		    pt2Copy.y = y2;
-	    	    box.x1 = pbox->x1;
-	    	    box.y1 = pbox->y1;
-	    	    box.x2 = pbox->x2-1;
-	    	    box.y2 = pbox->y2-1;
-	    	    clip1 = 0;
-	    	    clip2 = 0;
-    	
-		    if (mfbClipLine (pbox, box,
-				     &pt1, &pt1Copy, &pt2Copy, 
-				     adx, ady, signdx, signdy, axis,
-				     &clip1, &clip2) == 1)
+		    int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
+		    int clip1 = 0, clip2 = 0;
+		    int clipdx, clipdy;
+		    int err;
+		    
+		    if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
+				       pbox->y2-1,
+				       &new_x1, &new_y1, &new_x2, &new_y2,
+				       adx, ady, &clip1, &clip2, axis,
+				       (signdx == signdy), oc1, oc2) == -1)
 		    {
-		    	if (axis == X_AXIS)
-			    len = abs(pt2Copy.x - pt1Copy.x);
-		    	else
-			    len = abs(pt2Copy.y - pt1Copy.y);
-    
+			pbox++;
+			continue;
+		    }
+
+		    if (axis == X_AXIS)
+			len = abs(new_x2 - new_x1);
+		    else
+			len = abs(new_y2 - new_y1);
 #ifdef POLYSEGMENT
-		    	if (clip2 != 0 || pGC->capStyle != CapNotLast)
-			    len++;
+		    if (clip2 != 0 || pGC->capStyle != CapNotLast)
+			len++;
 #else
-		    	len += (clip2 != 0);
+		    len += (clip2 != 0);
 #endif
-		    	if (len)
-		    	{
-			    /* unwind bresenham error term to first point */
-			    if (clip1)
-			    {
-			    	clipdx = abs(pt1Copy.x - x1);
-			    	clipdy = abs(pt1Copy.y - y1);
-			    	if (axis == X_AXIS)
-				    err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
-			    	else
-				    err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
-			    }
+		    if (len)
+		    {
+			/* unwind bresenham error term to first point */
+			if (clip1)
+			{
+			    clipdx = abs(new_x1 - x1);
+			    clipdy = abs(new_y1 - y1);
+			    if (axis == X_AXIS)
+				err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
 			    else
-			    	err = e;
-			    cfbBresS   
-				     (alu, and, xor,
-				      addrl, nlwidth,
-				      signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
-				      err, e1, e2, len);
-		    	}
+				err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
+			}
+			else
+			    err = e;
+			    cfbBresS(alu, and, xor,
+				     addrl, nlwidth,
+				     signdx, signdy, axis, new_x1, new_y1,
+				     err, e1, e2, len);
 		    }
 		    pbox++;
 		}
@@ -595,12 +548,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	y2 = ppt->y + yorg;
 #endif
 
-	adx = x2 - x1;
-	ady = y2 - y1;
-	signdx = sign(adx);
-	signdy = sign(ady);
-	adx = abs(adx);
-	ady = abs(ady);
+	AbsDeltaAndSign(x2, x1, adx, signdx);
+	AbsDeltaAndSign(y2, y1, ady, signdy);
 
 	if (adx > ady)
 	{
@@ -609,6 +558,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (adx << 1);
 	    e = e1 - adx;
 	    unclippedlen = adx;
+	    FIXUP_X_MAJOR_ERROR(e, signdx, signdy);
 	}
 	else
 	{
@@ -617,6 +567,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    e2 = e1 - (ady << 1);
 	    e = e1 - ady;
 	    unclippedlen = ady;
+	    FIXUP_Y_MAJOR_ERROR(e, signdx, signdy);
 	}
 
 	/* we have bresenham parameters and two points.
@@ -659,82 +610,67 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 	    }
 	    else /* have to clip */
 	    {
-		/*
-		 * let the mfb helper routine do our work;
-		 * better than duplicating code...
-		 */
-		BoxRec box;
-		DDXPointRec pt1Copy;	/* clipped start point */
-		DDXPointRec pt2Copy;	/* clipped end point */
-		int err;			/* modified bresenham error term */
-		int clip1, clip2;		/* clippedness of the endpoints */
-	    
-		int clipdx, clipdy;		/* difference between clipped and
-					       unclipped start point */
-		DDXPointRec	pt1;
-    
-		pt1.x = pt1Copy.x = x1;
-		pt1.y = pt1Copy.y = y1;
-		pt2Copy.x = x2;
-		pt2Copy.y = y2;
-		box.x1 = pbox->x1;
-		box.y1 = pbox->y1;
-		box.x2 = pbox->x2-1;
-		box.y2 = pbox->y2-1;
-		clip1 = 0;
-		clip2 = 0;
-    
-		if (mfbClipLine (pbox, box,
-				       &pt1, &pt1Copy, &pt2Copy, 
-				       adx, ady, signdx, signdy, axis,
-				       &clip1, &clip2) == 1)
+		int new_x1 = x1, new_y1 = y1, new_x2 = x2, new_y2 = y2;
+		int clip1 = 0, clip2 = 0;
+		int clipdx, clipdy;
+		int err;
+		int dashIndexTmp, dashOffsetTmp;
+		
+		if (miZeroClipLine(pbox->x1, pbox->y1, pbox->x2-1,
+				   pbox->y2-1,
+				   &new_x1, &new_y1, &new_x2, &new_y2,
+				   adx, ady, &clip1, &clip2, axis,
+				   (signdx == signdy), oc1, oc2) == -1)
 		{
+		    pbox++;
+		    continue;
+		}
+
+		dashIndexTmp = dashIndex;
+		dashOffsetTmp = dashOffset;
+
+		if (clip1)
+		{
+		    int dlen;
     
-		    dashIndexTmp = dashIndex;
-		    dashOffsetTmp = dashOffset;
+		    if (axis == X_AXIS)
+			dlen = abs(new_x1 - x1);
+		    else
+			dlen = abs(new_y1 - y1);
+		    miStepDash (dlen, &dashIndexTmp, pDash,
+				numInDashList, &dashOffsetTmp);
+		}
+		
+		if (axis == X_AXIS)
+		    len = abs(new_x2 - new_x1);
+		else
+		    len = abs(new_y2 - new_y1);
+#ifdef POLYSEGMENT
+		if (clip2 != 0 || pGC->capStyle != CapNotLast)
+		    len++;
+#else
+		len += (clip2 != 0);
+#endif
+		if (len)
+		{
+		    /* unwind bresenham error term to first point */
 		    if (clip1)
 		    {
-		    	int dlen;
-    
-		    	if (axis == X_AXIS)
-			    dlen = abs(pt1Copy.x - x1);
-		    	else
-			    dlen = abs(pt1Copy.y - y1);
-		    	miStepDash (dlen, &dashIndexTmp, pDash,
-				    numInDashList, &dashOffsetTmp);
+			clipdx = abs(new_x1 - x1);
+			clipdy = abs(new_y1 - y1);
+			if (axis == X_AXIS)
+			    err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
+			else
+			    err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
 		    }
-		    if (axis == X_AXIS)
-		    	len = abs(pt2Copy.x - pt1Copy.x);
 		    else
-		    	len = abs(pt2Copy.y - pt1Copy.y);
-    
-#ifdef POLYSEGMENT
-		    if (clip2 != 0 || pGC->capStyle != CapNotLast)
-		    	len++;
-#else
-		    len += (clip2 != 0);
-#endif
-		    if (len)
-		    {
-		    	/* unwind bresenham error term to first point */
-		    	if (clip1)
-		    	{
-			    clipdx = abs(pt1Copy.x - x1);
-			    clipdy = abs(pt1Copy.y - y1);
-			    if (axis == X_AXIS)
-			    	err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
-			    else
-			    	err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
-		    	}
-		    	else
-			    err = e;
-		    	cfbBresD (rrops,
-			      	  &dashIndexTmp, pDash, numInDashList,
-			      	  &dashOffsetTmp, isDoubleDash,
-			      	  addrl, nlwidth,
-			      	  signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
-			      	  err, e1, e2, len);
-		    }
+			err = e;
+		    cfbBresD (rrops,
+			      &dashIndexTmp, pDash, numInDashList,
+			      &dashOffsetTmp, isDoubleDash,
+			      addrl, nlwidth,
+			      signdx, signdy, axis, new_x1, new_y1,
+			      err, e1, e2, len);
 		}
 		pbox++;
 	    }

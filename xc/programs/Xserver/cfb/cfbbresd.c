@@ -21,14 +21,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.13 93/01/29 12:30:19 rws Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.14 93/12/13 17:21:49 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
+#include "miline.h"
 
 /* Dashed bresenham line */
 
+void
 cfbBresD(rrops,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
@@ -146,7 +148,7 @@ cfbBresD(rrops,
 	    NextDash
 	}
     }
-#else
+#else /* !PIXEL_ADDR */
     {
     	register unsigned long	tmp;
 	unsigned long		startbit, bit;

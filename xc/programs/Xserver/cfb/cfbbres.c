@@ -21,12 +21,13 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.12 93/09/21 08:55:25 dpw Exp $ */
+/* $XConsortium: cfbbres.c,v 1.13 93/12/13 17:21:47 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "servermd.h"
+#include "miline.h"
 
 /* Solid bresenham line */
 /* NOTES
@@ -34,7 +35,8 @@ SOFTWARE.
 */
 
 void
-cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
+cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1,
+	 e2, len)
     int		    rop;
     unsigned long   and, xor;
     unsigned long   *addrl;		/* pointer to base of bitmap */
@@ -94,7 +96,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2,
 #undef body
 	*addrp = xor;
     }
-    else
+    else /* not GXcopy */
     {
 	while(len--)
 	{ 
@@ -108,7 +110,7 @@ cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2,
 	    addrp += signdx;
 	}
     }
-#else
+#else /* !PIXEL_ADDR */
     register unsigned long   tmp, bit;
     unsigned long leftbit, rightbit;
 

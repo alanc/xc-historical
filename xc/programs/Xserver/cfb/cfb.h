@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.33 94/01/12 17:55:49 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.34 94/01/21 22:07:28 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -153,7 +153,12 @@ extern int cfb8LineSS1RectCopy(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    DDXPointPtr /*pptInit*/
+    DDXPointPtr /*pptInit*/,
+    DDXPointPtr /*pptInitOrig*/,
+    int * /*x1p*/,
+    int * /*y1p*/,
+    int * /*x2p*/,
+    int * /*y2p*/
 #endif
 );
 
@@ -164,18 +169,6 @@ extern void cfb8LineSS1Rect(
     int /*mode*/,
     int /*npt*/,
     DDXPointPtr /*pptInit*/
-#endif
-);
-
-extern int cfbClipPoint(
-#if NeedFunctionPrototypes
-    int /*oc*/,
-    int * /*xp*/,
-    int * /*yp*/,
-    int /*dx*/,
-    int /*dy*/,
-    BoxPtr /*boxp*/,
-    Bool /*first*/
 #endif
 );
 
@@ -199,7 +192,13 @@ extern int cfb8LineSS1RectPreviousCopy(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    DDXPointPtr /*pptInit*/
+    DDXPointPtr /*pptInit*/,
+    DDXPointPtr /*pptInitOrig*/,
+    int * /*x1p*/,
+    int * /*y1p*/,
+    int * /*x2p*/,
+    int * /*y2p*/
+
 #endif
 );
 /* cfb8lineG.c */
@@ -210,7 +209,12 @@ extern int cfb8LineSS1RectGeneral(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    DDXPointPtr /*pptInit*/
+    DDXPointPtr /*pptInit*/,
+    DDXPointPtr /*pptInitOrig*/,
+    int * /*x1p*/,
+    int * /*y1p*/,
+    int * /*x2p*/,
+    int * /*y2p*/
 #endif
 );
 
@@ -234,7 +238,12 @@ extern int cfb8LineSS1RectXor(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    DDXPointPtr /*pptInit*/
+    DDXPointPtr /*pptInit*/,
+    DDXPointPtr /*pptInitOrig*/,
+    int * /*x1p*/,
+    int * /*y1p*/,
+    int * /*x2p*/,
+    int * /*y2p*/
 #endif
 );
 
@@ -447,7 +456,7 @@ extern void cfbBresS(
 );
 /* cfbbresd.c */
 
-extern int cfbBresD(
+extern void cfbBresD(
 #if NeedFunctionPrototypes
     cfbRRopPtr /*rrops*/,
     int * /*pdashIndex*/,
