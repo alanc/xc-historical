@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.27 93/09/22 20:01:23 rws Exp $ */
+/* $XConsortium: xdmcp.c,v 1.28 93/09/23 17:13:49 rws Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -893,7 +893,7 @@ get_xdmcp_sock()
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	XdmcpWarning("UDP socket creation failed");
 #ifdef SO_BROADCAST
-    else if (setsockopt(xdmcpSocket, SOL_SOCKET, SO_BROADCAST, &soopts,
+    else if (setsockopt(xdmcpSocket, SOL_SOCKET, SO_BROADCAST, (char *)&soopts,
 	sizeof(soopts)) < 0)
 	    XdmcpWarning("UDP set broadcast socket-option failed");
 #endif /* SO_BROADCAST */
