@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.97 89/07/21 21:40:10 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.98 89/07/24 10:39:27 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -48,11 +48,7 @@ extern int errno, sys_nerr;
 extern char* sys_errlist[];
 
 #define BIGNUM ((Dimension)32023)
-#ifdef UTEK
-# define MULTI_CLICK_TIME 5000	/* Brain Damaged server. */
-#else
-# define MULTI_CLICK_TIME 500
-#endif
+#define MULTI_CLICK_TIME 500L
 
 #define IsValidLine(ctx, num) (((num) == 0) || \
 			       (ctx)->text.lt.info[(num)].position != 0)
@@ -928,6 +924,7 @@ LoseSelection(w, selection)
 Widget w;
 Atom *selection;
 {
+
   TextWidget ctx = (TextWidget) w;
   register Atom* atomP;
   register int i;
@@ -937,7 +934,7 @@ Atom *selection;
   atomP = ctx->text.s.selections;
   for (i = 0 ; i < ctx->text.s.atom_count; i++, atomP++)
     if ( (*selection == *atomP) || 
-	(GetCutBufferNumber(*atomP) == NOT_A_CUT_BUFFER) )
+	(GetCutBufferNumber(*atomP) != NOT_A_CUT_BUFFER) )/* is a cut buffer */
       *atomP = (Atom)0;
 
   while (ctx->text.s.atom_count &&
@@ -1199,7 +1196,7 @@ Boolean motion;
   if (motion)
     newType = ctx->text.s.type;
   else {
-    if ( ((int) abs(time - ctx->text.lasttime) < MULTI_CLICK_TIME) &&
+    if ( (abs((long) time - (long) ctx->text.lasttime) < MULTI_CLICK_TIME) &&
 	 ((pos >= ctx->text.s.left) && (pos <= ctx->text.s.right))) {
       sarray = ctx->text.sarray;
       for (;*sarray != XawselectNull && *sarray != ctx->text.s.type; sarray++);
@@ -2018,13 +2015,17 @@ XawTextUnsetSelection(w)
 Widget w;
 {
   register TextWidget ctx = (TextWidget)w;
-  int i = ctx->text.s.atom_count;
 
-  while (i > 0) {
-    Atom sel = ctx->text.s.selections[--i];
-    if ( (sel != (Atom) 0) && (GetCutBufferNumber(sel) == NOT_A_CUT_BUFFER) ) {
-      XtDisownSelection(w, sel);
-      LoseSelection(w, &sel); /* in case it wasn't just called */
+  while (ctx->text.s.atom_count != 0) {
+    Atom sel = ctx->text.s.selections[ctx->text.s.atom_count - 1];
+    if ( sel != (Atom) 0 ) {
+/*
+ * As selections are lost the atom_count will decrement.
+ */
+      if (GetCutBufferNumber(sel) == NOT_A_CUT_BUFFER)
+	XtDisownSelection(w, sel);
+      LoseSelection(w, &sel); /* In case this is a cut buffer, or 
+				 XtDisownSelection failed to call us. */
     }
   }
 }
