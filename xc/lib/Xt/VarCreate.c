@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.27 93/08/27 16:29:55 kaleb Exp $ */
+/* $XConsortium: VarCreate.c,v 1.28 93/10/06 17:41:19 kaleb Exp $ */
 
 /*
 
@@ -295,7 +295,7 @@ void XtVaSetSubvalues(base, resources, num_resources, va_alist)
 
 #if NeedVarargsPrototypes
 Widget
-_XtVaAppInitialize(
+_XtVaOpenApplication(
     XtAppContext *app_context_return,
     _Xconst char* application_class,
     XrmOptionDescList options,
@@ -303,12 +303,13 @@ _XtVaAppInitialize(
     int *argc_in_out,
     String *argv_in_out,
     String *fallback_resources,
+    WidgetClass widget_class,
     va_list var_args)
 #else
-/*VARARGS7*/
-Widget _XtVaAppInitialize(app_context_return, application_class, options,
-			  num_options, argc_in_out, argv_in_out,
-			  fallback_resources, var_args)
+/*VARARGS8*/
+Widget _XtVaOpenApplication(app_context_return, application_class, options,
+			    num_options, argc_in_out, argv_in_out,
+			    fallback_resources, widget_class, var_args)
     XtAppContext *app_context_return;
     char *application_class;
     XrmOptionDescList options;
@@ -316,6 +317,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     int *argc_in_out;
     String *argv_in_out;
     String *fallback_resources;
+    WidgetClass widget_class;
     va_list var_args;
 #endif
 {
@@ -357,7 +359,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 
     root =
 	XtVaAppCreateShell( NULL, application_class, 
-			    applicationShellWidgetClass, dpy,
+			    widget_class, dpy,
 			    XtNscreen, (XtArgVal)DefaultScreenOfDisplay(dpy),
 			    XtNargc, (XtArgVal)saved_argc,
 			    XtNargv, (XtArgVal)argv_in_out,
@@ -372,12 +374,79 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     return(root);
 }
 
+#if NeedVarargsPrototypes
+Widget
+_XtVaAppInitialize(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    int *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    va_list var_args)
+#else
+/*VARARGS7*/
+Widget _XtVaAppInitialize(app_context_return, application_class, options,
+			  num_options, argc_in_out, argv_in_out,
+			  fallback_resources, var_args)
+    XtAppContext *app_context_return;
+    char *application_class;
+    XrmOptionDescList options;
+    Cardinal num_options;
+    int *argc_in_out;
+    String *argv_in_out;
+    String *fallback_resources;
+    va_list var_args;
+#endif
+{
+    return _XtVaOpenApplication(app_context_return, application_class,
+				options, num_options,
+				argc_in_out, argv_in_out, fallback_resources,
+				applicationShellWidgetClass, var_args);
+}
+
 #if !((defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE))
 
 /*
  * If not used as a shared library, we still need a front end to 
- * _XtVaAppInitialize.
+ * _XtVaOpenApplication and to _XtVaAppInitialize.
  */
+
+#if NeedVarargsPrototypes
+Widget
+XtVaOpenApplication(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    int *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    WidgetClass widget_class,
+    ...)
+#else
+Widget XtVaOpenApplication(app_context_return, application_class, options,
+			 num_options, argc_in_out, argv_in_out,
+			 fallback_resources, widget_class, va_alist)
+    XtAppContext *app_context_return;
+    String application_class;
+    XrmOptionDescList options;
+    Cardinal num_options;
+    int *argc_in_out;
+    String *argv_in_out;
+    String *fallback_resources;
+    WidgetClass widget_class;
+    va_dcl
+#endif
+{
+    va_list	var;
+
+    Va_start(var, fallback_resources);    
+    return _XtVaOpenApplication(app_context_return, (String)application_class,
+				options, num_options, argc_in_out, argv_in_out,
+				fallback_resources, widget_class, var);
+}
 
 #if NeedVarargsPrototypes
 Widget
@@ -407,9 +476,10 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
     va_list	var;
 
     Va_start(var, fallback_resources);    
-    return _XtVaAppInitialize(app_context_return, (String)application_class,
-			      options, num_options, argc_in_out, argv_in_out,
-			      fallback_resources, var);
+    return _XtVaOpenApplication(app_context_return, (String)application_class,
+				options, num_options, argc_in_out, argv_in_out,
+				fallback_resources,
+				applicationShellWidgetClass, var);
 }
 
 #endif /* !((SUNSHLIB || AIXSHLIB) && SHAREDCODE) */
