@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.10 88/07/19 18:06:49 toddb Exp $ */
+/* $Header: osdep.h,v 1.11 88/07/20 17:21:22 toddb Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -150,5 +150,4 @@ typedef struct _osComm {
     int count;
 } OsCommRec, *OsCommPtr;
 
-void FlushAllOutput();
-void FlushIfCriticalOutputPending();
+void Notice();
