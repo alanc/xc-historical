@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.17 90/02/05 18:20:09 jim Exp $
+ * $XConsortium: viewres.c,v 1.18 90/02/05 21:46:14 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,6 +41,13 @@
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
 #include "defs.h"
+
+#define INSERT_NODE(node,i) \
+  selected_list.elements[(node)->selection_index = (i)] = (node)
+
+#define REMOVE_NODE(node) \
+  selected_list.elements[node->selection_index] = NULL; \
+  node->selection_index = (-1)
 
 char *ProgramName;
 
@@ -138,6 +145,24 @@ static void usage ()
     exit (1);
 }
 
+
+static void variable_labeltype_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+    set_labeltype_menu ((Boolean) closure, True);
+}
+
+static void horizontal_orientation_callback (gw, closure, data)
+    Widget gw;
+    caddr_t closure;			/* TRUE or FALSE */
+    caddr_t data;
+{
+    set_orientation_menu ((Boolean) closure, True);
+}
+
+
 static void initialize_widgetnode_list (listp, sizep, n)
     WidgetNode ***listp;
     int *sizep;
@@ -161,47 +186,39 @@ static void initialize_widgetnode_list (listp, sizep, n)
 }
 
 
-
-static void variable_labeltype_callback (gw, closure, data)
-    Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
+static int copydown (start)
+    int start;
 {
-    set_labeltype_menu ((Boolean) closure, True);
+    WidgetNode **src = &selected_list.elements[start];
+    WidgetNode **dst = src;
+    int skips = 0;
+
+    for (; start < selected_list.n_elements; start++, src++) {
+	if (*src) *dst++ = *src;
+	else skips++;
+    }
+    return skips;
 }
-
-static void horizontal_orientation_callback (gw, closure, data)
-    Widget gw;
-    caddr_t closure;			/* TRUE or FALSE */
-    caddr_t data;
-{
-    set_orientation_menu ((Boolean) closure, True);
-}
-
-
-static Boolean add_allowed = TRUE;
-static Boolean remove_allowed = TRUE;
 
 static void add_to_selected_list (node, updatewidget)
     WidgetNode *node;
     Boolean updatewidget;
 {
-    if (!add_allowed) return;
+    if (node->selection_index >= 0) return;  /* already on list */
 
     if (selected_list.n_elements >= selected_list.max_elements) {
 	initialize_widgetnode_list (&selected_list.elements,
 				    &selected_list.max_elements, 
 				    (selected_list.max_elements * 3) / 2);
     }
-    selected_list.elements[selected_list.n_elements++] = node;
+    INSERT_NODE (node, selected_list.n_elements);
+    selected_list.n_elements++;
+
     if (updatewidget) {
-	Widget w = (Widget) node->data;
 	Arg args[1];
 
 	XtSetArg (args[0], XtNstate, TRUE);
-	add_allowed = FALSE;
-	XtSetValues (w, args, ONE);
-	add_allowed = TRUE;
+	XtSetValues (node->instance, args, ONE);
     }
 }
 
@@ -209,32 +226,27 @@ static Boolean remove_from_selected_list (node, updatewidget)
     WidgetNode *node;
     Boolean updatewidget;
 {
-    int i;
+    int i, skips;
     WidgetNode **wn;
 
-    if (!remove_allowed) return FALSE;
+    if ((i = node->selection_index) < 0) return FALSE;
 
-    for (i = 0; i < selected_list.n_elements; i++) {
-	if (selected_list.elements[i] == node) break;
-    }
-    if (i == selected_list.n_elements) return FALSE;
+    REMOVE_NODE (node);
 
     /* copy down */
     if (selected_list.n_elements > 1) {
-	for (wn = &selected_list.elements[i++]; i < selected_list.n_elements; 
-	     i++, wn++) {
-	    wn[0] = wn[1];
-	}
+	skips = copydown (i);
+    } else {
+	skips = 1;
     }
-    selected_list.n_elements--;
+    selected_list.n_elements -= skips;
+
     if (updatewidget) {
-	Widget w = (Widget) node->data;
+	Widget w = node->instance;
 	Arg args[1];
 
 	XtSetArg (args[0], XtNstate, FALSE);
-	remove_allowed = FALSE;
 	XtSetValues (w, args, ONE);
-	remove_allowed = TRUE;
     }
 }
 
@@ -245,14 +257,15 @@ static void select_callback (gw, closure, data)
 {
     Arg args[1];
     int i;
+    WidgetNode *node;
 
     switch ((int) closure) {
       case SELECT_NOTHING:		/* clear selection_list */
-	remove_allowed = FALSE;
 	XtSetArg (args[0], XtNstate, FALSE);
 	for (i = 0; i < selected_list.n_elements; i++) {
-	    XtSetValues ((Widget) selected_list.elements[i]->data, args, ONE);
-	    selected_list.elements[i] = NULL;
+	    register WidgetNode *p = selected_list.elements[i];
+	    REMOVE_NODE (p);
+	    XtSetValues (p->instance, args, ONE);
 	}
 	selected_list.n_elements = 0;
 	break;
@@ -265,15 +278,11 @@ static void select_callback (gw, closure, data)
 					nwidgets);
 	}
 	XtSetArg (args[0], XtNstate, TRUE);
-	add_allowed = FALSE;
-	for (i = 0; i < nwidgets; i++) {
-	    Widget w = (Widget) widget_list[i].data;
-
-	    XtSetValues (w, args, ONE);
-	    selected_list.elements[i] = &widget_list[i];
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
+	    INSERT_NODE (node, i);
+	    XtSetValues (node->instance, args, ONE);
 	}
 	selected_list.n_elements = nwidgets;
-	add_allowed = TRUE;
 	break;
       case SELECT_WITH_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
 	break;
@@ -551,7 +560,7 @@ static void build_tree (node, tree, super)
 
     callback_rec[0].closure = (caddr_t) node;
     w = XtCreateManagedWidget (node->label, toggleWidgetClass, tree, args, n);
-    node->data = (char *) w;
+    node->instance = w;
 
     /*
      * recursively build the rest of the tree
@@ -567,13 +576,12 @@ static void set_node_labels (node, depth)
     int depth;
 {
     Arg args[1];
-    Widget w = (Widget) node->data;
     WidgetNode *child;
 
     if (!node) return;
     XtSetArg (args[0], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node)));
-    XtSetValues (w, args, ONE);
+    XtSetValues (node->instance, args, ONE);
 
     for (child = node->children; child; child = child->siblings) {
 	set_node_labels (child, depth + 1);
