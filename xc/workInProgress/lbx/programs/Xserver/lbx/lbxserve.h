@@ -1,5 +1,6 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
- * $NCDId: @(#)lbxserve.h,v 1.7 1994/01/19 22:30:52 lemke Exp $
+ * $NCDId: @(#)lbxserve.h,v 1.8 1994/02/09 00:18:05 lemke Exp $
  * $NCDOr: lbxserve.h,v 1.1 1993/12/06 18:47:18 keithp Exp $
  *
  * Copyright 1992 Network Computing Devices
@@ -33,40 +34,42 @@ typedef struct _LbxClient   *LbxClientPtr;
 typedef struct _LbxProxy    *LbxProxyPtr;
 
 typedef struct _LbxClient {
-    int		    index;
-    ClientPtr	    client;
-    LbxProxyPtr	    proxy;
-    unsigned long   reply_remaining;
-    Bool	    awaiting_setup;
-    Bool	    needs_output_switch;
-    Bool	    input_blocked;
-    Bool	    reading_pending;
-    int		    reqs_pending;
-    int		    (*readRequest)();
-    int		    (*writeToClient)();
-} LbxClientRec;
+    int         index;
+    ClientPtr   client;
+    LbxProxyPtr proxy;
+    unsigned long reply_remaining;
+    Bool        awaiting_setup;
+    Bool        needs_output_switch;
+    Bool        input_blocked;
+    Bool        reading_pending;
+    int         reqs_pending;
+    int         (*readRequest) ();
+    int         (*writeToClient) ();
+}           LbxClientRec;
 
 typedef struct _LbxProxy {
-    LbxProxyPtr	    next;
+    LbxProxyPtr next;
     /* this array is indexed by lbx proxy index */
-    LbxClientPtr    lbxClients[MAX_LBX_CLIENTS];
-    LbxClientPtr    curRecv, curSend, curDix;
-    int		    fd;
-    int		    pid;	/* proxy ID */
-    int		    numClients;
-    int		    switchEventRemaining;
-    int		    deltaEventRemaining;
-    Bool	    aborted;
-    int		    (*read)();
-    int		    (*writev)();
-    void	    *lzwHandle;
-    Bool	    nocompression;
-    LBXDeltasRec    indeltas;
-    LBXDeltasRec    outdeltas;
-    unsigned char   *tempDeltaBuf;
-    unsigned char   *outputDeltaPtr;
-    unsigned char   *tempEventBuf;
-} LbxProxyRec;
+    LbxClientPtr lbxClients[MAX_LBX_CLIENTS];
+    LbxClientPtr curRecv,
+                curSend,
+                curDix;
+    int         fd;
+    int         pid;		/* proxy ID */
+    int         numClients;
+    int         switchEventRemaining;
+    int         deltaEventRemaining;
+    Bool        aborted;
+    int         (*read) ();
+    int         (*writev) ();
+    void       *lzwHandle;
+    Bool        nocompression;
+    LBXDeltasRec indeltas;
+    LBXDeltasRec outdeltas;
+    unsigned char *tempDeltaBuf;
+    unsigned char *outputDeltaPtr;
+    unsigned char *tempEventBuf;
+}           LbxProxyRec;
 
 /* This array is indexed by server client index, not lbx proxy index */
 
@@ -76,3 +79,5 @@ extern LbxClientPtr	lbxClients[MAXCLIENTS];
 #define LbxProxy(client)    (LbxClient(client)->proxy)
 #define LbxMaybeProxy(client)	(LbxClient(client) ? LbxProxy(client) : 0)
 #define	LbxProxyID(client)  (LbxProxy(client)->pid)
+
+extern void	LbxDixInit();

@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -19,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxtags.c,v 1.2 1994/02/02 02:03:29 lemke Exp $
+ * $NCDId: @(#)lbxtags.c,v 1.3 1994/02/11 00:10:07 lemke Exp $
  */
 
 #include "X.h"
@@ -119,7 +120,7 @@ void
 TagDeleteTag(tid)
     XID         tid;
 {
-    FreeResource(tid, TagResType);
+    FreeResource(tid, 0);
 }
 
 TagData

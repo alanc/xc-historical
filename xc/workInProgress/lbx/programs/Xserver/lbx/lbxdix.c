@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -19,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.7 1994/02/02 02:06:06 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.11 1994/02/11 00:10:55 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -39,6 +40,8 @@
 #include "resource.h"
 #include "inputstr.h"
 #include "servermd.h"
+#include "dixfontstr.h"
+#include "gcstruct.h"
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 #include "lbxserve.h"
@@ -47,9 +50,19 @@
 
 extern void CopySwap32Write();
 extern int (*ProcVector[256])();
+extern void (*ReplySwapVector[256]) ();
 
 /* XXX should be per-proxy */
 static int  motion_allowed_events = 0;
+
+static int	lbx_font_private;
+
+void
+LbxDixInit()
+{
+    TagInit();
+    lbx_font_private = AllocateFontPrivateIndex();
+}
 
 void
 LbxAllowMotion(client, num)
@@ -179,7 +192,7 @@ LbxFlushModifierMapTag()
 
     if (modifier_map_tag) {
 	TagDeleteTag(modifier_map_tag);
-	LbxSendInvalidateTagToProxies(modifier_map_tag);
+	LbxSendInvalidateTagToProxies(modifier_map_tag, LbxTagTypeModmap);
 	modifier_map_tag = 0;
     }
 }
@@ -272,11 +285,123 @@ LbxFlushKeyboardMapTag()
 
     if (keyboard_map_tag) {
 	TagDeleteTag(keyboard_map_tag);
-	LbxSendInvalidateTagToProxies(keyboard_map_tag);
+	LbxSendInvalidateTagToProxies(keyboard_map_tag, LbxTagTypeKeymap);
 	keyboard_map_tag = 0;
     }
 }
 
+int
+LbxQueryFont(client)
+    ClientPtr	client;
+{
+    xQueryFontReply *reply;
+    xLbxQueryFontReply lbxrep;
+    FontPtr     pFont;
+    register GC *pGC;
+    Bool        queried_info = FALSE;
+    Bool        send_data = FALSE;
+    Bool        free_reply = FALSE;
+    int         rlength = 0;
+    TagData     td;
+    XID         tid;
+
+    REQUEST(xLbxQueryFontReq);
+
+    REQUEST_SIZE_MATCH(xLbxQueryFontReq);
+
+    client->errorValue = stuff->fid;	/* EITHER font or gc */
+    pFont = (FontPtr) LookupIDByType(stuff->fid, RT_FONT);
+    if (!pFont) {
+	/* can't use VERIFY_GC because it might return BadGC */
+	pGC = (GC *) LookupIDByType(stuff->fid, RT_GC);
+	if (!pGC || !pGC->font) {	/* catch a non-existent builtin font */
+	    client->errorValue = stuff->fid;
+	    return (BadFont);	/* procotol spec says only error is BadFont */
+	}
+	pFont = pGC->font;
+    }
+    /* get tag (if any) */
+    td = (TagData) FontGetPrivate(pFont, lbx_font_private);
+
+    if (!td) {
+	xCharInfo  *pmax = FONTINKMAX(pFont);
+	xCharInfo  *pmin = FONTINKMIN(pFont);
+	int         nprotoxcistructs;
+
+	nprotoxcistructs = (
+			  pmax->rightSideBearing == pmin->rightSideBearing &&
+			    pmax->leftSideBearing == pmin->leftSideBearing &&
+			    pmax->descent == pmin->descent &&
+			    pmax->ascent == pmin->ascent &&
+			    pmax->characterWidth == pmin->characterWidth) ?
+	    0 : N2dChars(pFont);
+
+	rlength = sizeof(xQueryFontReply) +
+	    FONTINFONPROPS(FONTCHARSET(pFont)) * sizeof(xFontProp) +
+	    nprotoxcistructs * sizeof(xCharInfo);
+	reply = (xQueryFontReply *) xalloc(rlength);
+	if (!reply) {
+	    return (BadAlloc);
+	}
+	queried_info = TRUE;
+	send_data = TRUE;
+	QueryFont(pFont, reply, nprotoxcistructs);
+    } else {			/* just get data from tag */
+	reply = (xQueryFontReply *) td->tdata;
+	rlength = td->size;
+    }
+
+    if (!td) {
+	/* data allocation is done when font is first queried */
+	tid = TagNewTag();
+	if (TagSaveTag(tid, LbxTagTypeFont, rlength, (pointer) reply)) {
+	    td = TagGetTag(tid);
+	    FontSetPrivate(pFont, lbx_font_private, (pointer) td);
+	} else {		/* can't save it for later, so be sure to
+				 * clean up */
+	    free_reply = TRUE;
+	}
+    }
+    if (td) {
+	TagMarkProxy(td->tid, LbxProxyID(client));
+	lbxrep.tag = td->tid;
+    } else {
+	lbxrep.tag = 0;
+	send_data = TRUE;
+    }
+
+    lbxrep.type = X_Reply;
+    lbxrep.sequenceNumber = client->sequence;
+    if (send_data)
+	lbxrep.length = rlength >> 2;
+    else
+	lbxrep.length = 0;
+
+    WriteToClient(client, sizeof(xLbxQueryFontReply), (char *) &lbxrep);
+/* XXX swapping nastiness here -- if this swaps stuff, the stashed copy
+ * gets munged...
+ */
+    if (send_data)
+	WriteReplyToClient(client, rlength, reply);
+    if (free_reply)
+	xfree(reply);
+    return (client->noClientException);
+}
+
+void
+LbxFreeFontTag(pfont)
+    FontPtr	pfont;
+{
+    TagData	td;
+
+    td = (TagData) FontGetPrivate(pfont, lbx_font_private);
+    if (td) {
+	LbxSendInvalidateTagToProxies(td->tid, LbxTagTypeFont);
+        TagDeleteTag(td->tid);
+    }
+}
+
+int
 LbxQueryTag(client, tag)
     ClientPtr   client;
     XID         tag;
@@ -315,9 +440,10 @@ LbxInvalidateTag(client, tag)
     return client->noClientException;
 }
 
-LbxSendInvalidateTag(client, tag)
+LbxSendInvalidateTag(client, tag, tagtype)
     ClientPtr	client;
     XID         tag;
+    int		tagtype;
 {
     xLbxEvent   ev;
     int         n;
@@ -327,7 +453,8 @@ LbxSendInvalidateTag(client, tag)
     ev.lbxType = LbxInvalidateTagEvent;
     ev.sequenceNumber = client->sequence;
     ev.client = client->index;
-    ev.detail = tag;
+    ev.detail1 = tag;
+    ev.detail2 = tagtype;
 
     if (client->swapped) {
 	swaps(&ev.sequenceNumber, n);
@@ -338,8 +465,9 @@ LbxSendInvalidateTag(client, tag)
 }
 
 
-LbxSendInvalidateTagToProxies(tag)
+LbxSendInvalidateTagToProxies(tag, tagtype)
     XID		tag;
+    int		tagtype;
 {
     LbxProxyPtr	proxy;
     int		i;
@@ -351,7 +479,8 @@ LbxSendInvalidateTagToProxies(tag)
     while (proxy) {
 	/* find some client of the proxy to use */
 	if (client = proxy->lbxClients[LbxMasterClientIndex]->client) {
-	    LbxSendInvalidateTag(client, tag);
+	    LbxSendInvalidateTag(client, tag, tagtype);
+            TagClearProxy(tag, LbxProxyID(client));
 	}
 	proxy = proxy->next;
     }
@@ -367,206 +496,16 @@ LbxFlushTags(proxy)
 	TagClearProxy(modifier_map_tag, proxy->pid);
     if (keyboard_map_tag)
 	TagClearProxy(keyboard_map_tag, proxy->pid);
+    /* XXX flush all font tags -- how? */
+    /* without this, a proxy re-connect will confuse things slightly -- the
+     * proxy will need to do QueryTag to get in sync on font data & global
+     * props
+     */
 }
 
-int
-LbxDecodePoly(client, xreqtype, decode_rtn)
-    register ClientPtr  client;
-    CARD8		xreqtype;
-    int			(*decode_rtn)();
+/* when server resets, need to reset global tags */
+LbxResetTags()
 {
-    REQUEST(xLbxPolyPointReq);
-    char		*in;
-    char		*inend;
-    xPolyPointReq	*xreq;
-    int			len;
-    int			retval;
-
-    len = (stuff->length << 2) - sz_xLbxPolyPointReq;
-    if ((xreq = (xPolyPointReq *) 
-	    xalloc(sizeof(xPolyPointReq) + (len << 1))) == NULL)
-	return BadAlloc;
-    in = (char *)stuff + sz_xLbxPolyPointReq;
-    len = (*decode_rtn)(in, in + len - stuff->padBytes, &xreq[1]);
-    xreq->reqType = xreqtype;
-    xreq->coordMode = 1;
-    xreq->drawable = stuff->drawable;
-    xreq->gc = stuff->gc;
-    client->req_len = xreq->length = (sizeof(xPolyPointReq) + len) >> 2;
-    client->requestBuffer = (char *)xreq;
-
-    retval = (*ProcVector[xreqtype])(client);
-    xfree(xreq);
-    return retval;
-}
-
-int
-LbxDecodeFillPoly(client)
-    register ClientPtr  client;
-{
-    REQUEST(xLbxFillPolyReq);
-    char		*in;
-    char		*inend;
-    xFillPolyReq	*xreq;
-    int			len;
-    int			retval;
-
-    len = (stuff->length << 2) - sz_xLbxFillPolyReq;
-    if ((xreq = (xFillPolyReq *) 
-	    xalloc(sizeof(xFillPolyReq) + (len << 1))) == NULL)
-	return BadAlloc;
-    in = (char *)stuff + sz_xLbxFillPolyReq;
-    len = LbxDecodePoints(in, in + len - stuff->padBytes, &xreq[1]);
-    xreq->reqType = X_FillPoly;
-    xreq->drawable = stuff->drawable;
-    xreq->gc = stuff->gc;
-    xreq->shape = stuff->shape;
-    xreq->coordMode = 1;
-    client->req_len = xreq->length = (sizeof(xFillPolyReq) + len) >> 2;
-    client->requestBuffer = (char *)xreq;
-
-    retval = (*ProcVector[X_FillPoly])(client);
-    xfree(xreq);
-    return retval;
-}
-
-/*
- * Routines for decoding line drawing requests
- */
-
-#define DECODE_SHORT(in, val) \
-    if ((*(in) & 0xf0) != 0x80) \
-        (val) = (short)*(in)++; \
-    else { \
-	(val) = ((short)(*(in) & 0x0f) << 8) | (unsigned char)*((in) + 1); \
-	if (*(in) & 0x08) (val) |= 0xf000; \
-	(in) += 2; \
-    }
-
-#define DECODE_USHORT(in, val) \
-    if ((*(in) & 0xf0) != 0xf0) \
-	(val) = (unsigned short)*(in)++; \
-    else { \
-	(val) = ((short)(*(in) & 0x0f) << 8) | (unsigned char)*((in) + 1); \
-	(in) += 2; \
-    }
-
-#define DECODE_ANGLE(in, val) \
-    if ((*(in) & 0xf0) == 0x80) \
-	(val) = (((short)(*(in)++ & 0x0f) - 4) * 45) << 7; \
-    else { \
-	(val) = ((short)*(in) << 8) | (unsigned char)*((in) + 1); \
-	(in) += 2; \
-    }
-
-int
-LbxDecodePoints(in, inend, out)
-    register char  *in;
-    char	   *inend;
-    register short *out;
-{
-    char	   *start_out = (char *)out;
-
-    while (in < inend) {
-	DECODE_SHORT(in, *out);
-	out++;
-	DECODE_SHORT(in, *out);
-	out++;
-    }
-    return ((char *)out - start_out);
-}
-
-int
-LbxDecodeSegment(in, inend, out)
-    register char  *in;
-    char	   *inend;
-    register short *out;
-{
-    register short diff;
-    short	   last_x = 0;
-    short	   last_y = 0;
-    char	   *start_out = (char *)out;
-
-    while (in < inend) {
-	DECODE_SHORT(in, diff);
-	*out = last_x + diff;
-	last_x += diff;
-	out++;
-	DECODE_SHORT(in, diff);
-	*out = last_y + diff;
-	last_y += diff;
-	out++;
-
-	DECODE_SHORT(in, diff);
-	*out = last_x + diff;
-	out++;
-	DECODE_SHORT(in, diff);
-	*out = last_y + diff;
-	out++;
-    }
-    return ((char *)out - start_out);
-}
-
-int
-LbxDecodeRectangle(in, inend, out)
-    register char  *in;
-    char	   *inend;
-    register short *out;
-{
-    register short diff;
-    unsigned short len;
-    short	   last_x = 0;
-    short	   last_y = 0;
-    char	   *start_out = (char *)out;
-
-    while (in < inend) {
-	DECODE_SHORT(in, diff);
-	*out = last_x + diff;
-	last_x += diff;
-	out++;
-	DECODE_SHORT(in, diff);
-	*out = last_y + diff;
-	last_y += diff;
-	out++;
-
-	DECODE_USHORT(in, *(unsigned short *)out);
-	out++;
-	DECODE_USHORT(in, *(unsigned short *)out);
-	out++;
-    }
-    return ((char *)out - start_out);
-}
-
-int
-LbxDecodeArc(in, inend, out)
-    register char  *in;
-    char	   *inend;
-    register short *out;
-{
-    register short diff;
-    short	   last_x = 0;
-    short	   last_y = 0;
-    char	   *start_out = (char *)out;
-
-    while (in < inend) {
-	DECODE_SHORT(in, diff);
-	*out = last_x + diff;
-	last_x += diff;
-	out++;
-	DECODE_SHORT(in, diff);
-	*out = last_y + diff;
-	last_y += diff;
-	out++;
-
-	DECODE_USHORT(in, *(unsigned short *)out);
-	out++;
-	DECODE_USHORT(in, *(unsigned short *)out);
-	out++;
-
-	DECODE_ANGLE(in, *out);
-	out++;
-	DECODE_ANGLE(in, *out);
-	out++;
-    }
-    return ((char *)out - start_out);
+    modifier_map_tag = 0;
+    keyboard_map_tag = 0;
 }

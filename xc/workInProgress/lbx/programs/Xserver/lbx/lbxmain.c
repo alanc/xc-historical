@@ -1,5 +1,5 @@
 /*
- * $NCDId: @(#)lbxmain.c,v 1.18 1994/02/02 18:37:28 lemke Exp $
+ * $NCDId: @(#)lbxmain.c,v 1.25 1994/02/18 03:08:56 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -120,6 +120,7 @@ LbxExtensionInit()
 	LbxEventCode = extEntry->eventBase;
 	BadLbxClientCode = extEntry->errorBase;
 	EventSwapVector[LbxEventCode] = SLbxEvent;
+        LbxDixInit();
     }
 }
 
@@ -128,6 +129,7 @@ static void
 LbxResetProc (extEntry)
 ExtensionEntry	*extEntry;
 {
+   LbxResetTags();
 }
 
 void
@@ -247,7 +249,7 @@ LbxMakeContiguous (proxy, iov, num, contlen)
 	if ((contlen -= len) == 0)
 	    break;
     }
-    return proxy->tempDeltaBuf;
+    return (char *) proxy->tempDeltaBuf;
 }
 
 static void
@@ -371,7 +373,7 @@ LbxWritev (connection, iov, num)
     if (proxy->deltaEventRemaining) {
 	struct iovec	v;
 	v.iov_len = proxy->deltaEventRemaining;
-	v.iov_base = proxy->outputDeltaPtr;
+	v.iov_base = (char *) proxy->outputDeltaPtr;
 	done = (*proxy->writev) (connection, &v, 1);
 	if (done < 0)
 	    return -1;
@@ -522,6 +524,10 @@ LbxCheckCompressInput (dummy1, dummy2)
 
 extern int  NewOutputPending;
 
+#ifdef NCD
+#define	OSTimePtr	pointer
+#endif
+
 void
 LbxBlockHandler (data, timeout, readmask)
     pointer data;
@@ -551,6 +557,7 @@ LbxIsClientBlocked (client)
     return FALSE;
 }
 
+void
 LbxSwitchRecv (proxy, lbxClient)
     LbxProxyPtr		proxy;
     LbxClientPtr	lbxClient;
@@ -562,6 +569,8 @@ LbxSwitchRecv (proxy, lbxClient)
     {
 	DBG(DBG_CLIENT, (stderr, "switching to dispose input\n"));
 	lbxClient = proxy->lbxClients[0];
+        if (!lbxClient)
+            return;
     }
     client = lbxClient->client;
     DBG (DBG_SWITCH, (stderr, "switching input to client %d\n", lbxClient->index));
@@ -580,7 +589,7 @@ LbxWaitForUnblocked (client, closure)
 {
     LbxClientPtr    lbxClient;
     LbxProxyPtr	    proxy;
-    
+
     if (!LbxIsClientBlocked (client))
     {
 	lbxClient = LbxClient(client);
@@ -642,7 +651,7 @@ LbxReadRequestFromClient (client)
 	    else if (MINOROP(client) == X_LbxDelta) {
 		ret = ProcLbxDelta (client);
 		DBG(DBG_DELTA, (stderr, "delta decompressed msg %d, len = %d\n",
-				*((unsigned *) client->requestBuffer), ret));
+		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret));
 	    }
 	    cacheable = FALSE; /* not caching any LBX requests for now */
 	}
@@ -655,7 +664,7 @@ LbxReadRequestFromClient (client)
 		--lbxClient->reqs_pending;
 	    else if (cacheable) {
 		DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
-				*((unsigned *) client->requestBuffer), ret,
+		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret,
 				proxy->indeltas.nextDelta));
 		LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
 	    }
@@ -663,7 +672,7 @@ LbxReadRequestFromClient (client)
 	}
 	if (cacheable) {
 	    DBG(DBG_DELTA, (stderr, "caching msg %d, len = %d, index = %d\n",
-			    *((unsigned *) client->requestBuffer), ret,
+		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret,
 			    proxy->indeltas.nextDelta));
 	    LBXAddDeltaIn(&proxy->indeltas, client->requestBuffer, ret);
 	}
@@ -827,19 +836,10 @@ ProcLbxQueryVersion(client)
     return (client->noClientException);
 }
 
-/*  This is rather bogus.  Since we are going to assign a function
- *  pointer to writev below, we have to declare it.  There seems to be
- *  no portable way to do this.  If you just declare it, some compilers
- *  will complain.  If you include unistd.h, you may or may not get it,
- *  and there's no way to tell.  It's not defined by Posix, so you
- *  can't reliably use X_NOT_POSIX to conditionally include something vs.
- *  declaring it yourself.  So, we introduce a new function whose sole job is
- *  to call writev.  This way writev itself doesn't have to be predeclared.
- */
 int Writev(fd, iov, iovcnt)
-     int fd;
-     struct iovec *iov;
-     int iovcnt;
+int fd;
+struct iovec *iov;
+int iovcnt;
 {
     return writev(fd, iov, iovcnt);
 }
@@ -889,6 +889,11 @@ ProcLbxStartProxy(client)
 	    return BadAlloc;
 	}
     }
+#ifndef NCD
+    MakeClientGrabImpervious(client);	/* proxy needs to be grab-proof */
+#else
+    AddGrabproofClient(client);	/* proxy needs to be grab-proof */
+#endif
     if ((proxy->tempEventBuf = (unsigned char *)
 		xalloc (max(MAXDELTASIZE, sizeof (xLbxEvent)))) == NULL) {
 	LbxFreeProxy(proxy);
@@ -1018,10 +1023,10 @@ ProcLbxNewClient(client)
     newClient = AllocNewConnection (ClientTransportObject(client),
 				    ClientConnectionNumber (client), 
 				    LbxRead, LbxWritev, LbxCloseClient);
-    if (proxy->lzwHandle)
-	StartOutputCompression (newClient, LbxCompressOn, LbxCompressOff);
     if (!newClient)
 	return BadAlloc;
+    if (proxy->lzwHandle)
+	StartOutputCompression (newClient, LbxCompressOn, LbxCompressOff);
     if (!LbxInitClient (proxy, newClient, c))
     {
 	CloseDownClient (newClient);
@@ -1135,6 +1140,40 @@ ProcLbxGetKeyboardMapping(client)
     REQUEST(xLbxGetKeyboardMappingReq);
 
     return LbxGetKeyboardMapping(client);
+}
+
+ProcLbxQueryFont(client)
+    ClientPtr	client;
+{
+    REQUEST(xLbxQueryFontReq);
+
+    return LbxQueryFont(client);
+}
+
+ProcLbxChangeProperty(client)
+    ClientPtr	client;
+{
+    REQUEST(xLbxChangePropertyReq);
+
+    return LbxChangeProperty(client);
+}
+
+ProcLbxGetProperty(client)
+    ClientPtr	client;
+{
+    REQUEST(xLbxGetPropertyReq);
+
+    return LbxGetProperty(client);
+}
+
+ProcLbxPropertyData(client)
+    ClientPtr	client;
+{
+    REQUEST(xLbxPropertyDataReq);
+
+    client->sequence--;		/* not a counted request */
+
+    return LbxPropertyData(client);	/* better not give any errors */
 }
 
 ProcLbxQueryTag(client)
@@ -1262,6 +1301,14 @@ ProcLbxDispatch (client)
 	return ProcLbxPolyFillRectangle (client);
     case X_LbxPolyFillArc:
 	return ProcLbxPolyFillArc (client);
+    case X_LbxQueryFont:
+	return ProcLbxQueryFont (client);
+    case X_LbxChangeProperty:
+	return ProcLbxChangeProperty (client);
+    case X_LbxGetProperty:
+	return ProcLbxGetProperty (client);
+    case X_LbxPropertyData:
+	return ProcLbxPropertyData (client);
     default:
 	return BadRequest;
     }
