@@ -430,7 +430,9 @@ Display_Stats_Info(window)
 
   rx = win_attributes.x;
   ry = win_attributes.y;
-  (void) XTranslateCoordinates (dpy, window, win_attributes.root, 0, 0,
+  (void) XTranslateCoordinates (dpy, window, win_attributes.root, 
+				-win_attributes.border_width,
+				-win_attributes.border_width,
 				&rx, &ry, &dummywin);
 				
   xright = (dw - rx - win_attributes.border_width * 2 -
