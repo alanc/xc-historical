@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.26 89/04/10 11:50:37 converse Exp $";
+static char rcs_id[] = "$XConsortium: pick.c,v 2.27 89/05/11 19:24:32 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -408,10 +408,11 @@ static void ExecOK(w, closure, call_data)
     char *fromdate = row1->wlist[1]->ptr;
     char *todate = row1->wlist[3]->ptr;
     char *datefield = row1->wlist[5]->ptr;
-    short removeoldmsgs = *(XawToggleGetCurrent(row2->wlist[1]->widget));
+    short removeoldmsgs = *((short*)XawToggleGetCurrent(row2->wlist[1]->widget));
     char str[1000];
     int i, found;
     char *folderpath;
+    int cmd_status;
 
     DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
     if (strcmp(toseq, "all") == 0) {
@@ -463,10 +464,10 @@ static void ExecOK(w, closure, call_data)
 	    (void) fprintf(stderr, "%s ", argv[i]);
 	(void) fprintf(stderr, "\n");
     }
-    (void) DoCommand(argv, (char *) NULL, "/dev/null");
+    cmd_status = DoCommand(argv, (char*)NULL, (char*)NULL);
     TocReloadSeqLists(toc);
     TocChangeViewedSeq(toc, TocGetSeqNamed(toc, toseq));
-    DestroyScrn(pick->scrn);
+    if (cmd_status == 0 /*succeeded*/) DestroyScrn(pick->scrn);
     for (i=0 ; i<argvsize ; i++) XtFree((char *) argv[i]);
     XtFree((char *) argv);
 }
