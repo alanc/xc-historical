@@ -1,4 +1,4 @@
-/* $XConsortium: point.c,v 1.3 93/10/27 21:52:39 rws Exp $ */
+/* $XConsortium: point.c,v 1.4 93/10/30 16:25:56 rws Exp $ */
 
 /**** module point.c ****/
 /******************************************************************************
@@ -459,7 +459,7 @@ int InitTriplePoint(xp, p, reps)
 				rect.width = ( ( TriplePointParms * )p->ts )->width;
 				rect.height = ( ( TriplePointParms * )p->ts )->height;
 
-				if ( ( XIERoi = GetXIERoi( xp, p, rect, 1 ) ) 
+				if ( ( XIERoi = GetXIERoi( xp, p, &rect, 1 ) ) 
 					== ( XieRoi ) NULL )
 				{
 					reps = 0;
