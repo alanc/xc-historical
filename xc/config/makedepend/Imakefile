@@ -28,6 +28,8 @@
 
 #endif
 
+all:: makedepend
+
 SingleProgramTarget(makedepend,$(OBJS),,)
 
 cpy.c: cpy.y yylex.c
