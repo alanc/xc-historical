@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.7 91/02/04 19:18:51 gildea Exp $
+ * $XConsortium: xdmauth.c,v 1.8 91/07/24 00:07:05 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,7 +30,6 @@
 
 static char	auth_name[256];
 static int	auth_name_len;
-#define AUTH_DATA_LEN	16
 
 XdmPrintDataHex (s, a, l)
     char	    *s;
@@ -41,7 +40,7 @@ XdmPrintDataHex (s, a, l)
 
     Debug ("%s", s);
     for (i = 0; i < l; i++)
-	Debug (" %2x", a[i]);
+	Debug (" %02x", a[i] & 0xff);
     Debug ("\n");
 }
 
@@ -73,10 +72,20 @@ XdmInitAuth (name_len, name)
     bcopy (name, auth_name, name_len);
 }
 
+/*
+ * Generate authorization for XDM-AUTHORIZATION-1 
+ *
+ * When being used with XDMCP, 8 bytes are generated for the session key
+ * (sigma), as the random number (rho) is already shared between xdm and
+ * the server.  Otherwise, we'll prepend a random number to pass in the file
+ * between xdm and the server (16 bytes total)
+ */
+
 Xauth *
-XdmGetAuth (namelen, name)
+XdmGetAuthHelper (namelen, name, includeRho)
     unsigned short  namelen;
     char	    *name;
+    int	    includeRho;
 {
     Xauth   *new;
     new = (Xauth *) malloc (sizeof (Xauth));
@@ -88,8 +97,12 @@ XdmGetAuth (namelen, name)
     new->address = 0;
     new->number_length = 0;
     new->number = 0;
+    if (includeRho)
+	new->data_length = 16;
+    else
+	new->data_length = 8;
 
-    new->data = (char *) malloc (AUTH_DATA_LEN);
+    new->data = (char *) malloc (new->data_length);
     if (!new->data)
     {
 	free ((char *) new);
@@ -104,11 +117,22 @@ XdmGetAuth (namelen, name)
     }
     bcopy (name, (char *)new->name, namelen);
     new->name_length = namelen;
-    GenerateAuthorization ((char *)new->data, AUTH_DATA_LEN);
-    ((char *)new->data)[8] = '\0';
-    new->data_length = AUTH_DATA_LEN;
+    GenerateAuthorization ((char *)new->data, new->data_length);
+    /*
+     * set the first byte of the session key to zero as it
+     * is a DES key and only uses 56 bits
+     */
+    ((char *)new->data)[new->data_length - 8] = '\0';
     XdmPrintDataHex ("Local server auth", (char *)new->data, new->data_length);
     return new;
+}
+
+Xauth *
+XdmGetAuth (namelen, name)
+    unsigned short  namelen;
+    char	    *name;
+{
+    return XdmGetAuthHelper (namelen, name, TRUE);
 }
 
 #ifdef XDMCP
@@ -122,7 +146,7 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
 
     if (pdpy->fileAuthorization && pdpy->xdmcpAuthorization)
 	return;
-    xdmcpauth = XdmGetAuth (authorizationNameLen, authorizationName);
+    xdmcpauth = XdmGetAuthHelper (authorizationNameLen, authorizationName, FALSE);
     if (!xdmcpauth)
 	return;
     fileauth = (Xauth *) malloc (sizeof (Xauth));
@@ -131,6 +155,7 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
 	XauDisposeAuth(xdmcpauth);
 	return;
     }
+    /* build the file auth from the XDMCP auth */
     *fileauth = *xdmcpauth;
     fileauth->name = malloc (xdmcpauth->name_length);
     fileauth->data = malloc (16);
@@ -145,11 +170,17 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
 	free ((char *) fileauth);
 	return;
     }
+    /*
+     * for the file authorization, prepend the random number (rho)
+     * which is simply the number we've been passing back and
+     * forth via XDMCP
+     */
     bcopy (xdmcpauth->name, fileauth->name, xdmcpauth->name_length);
     bcopy (pdpy->authenticationData.data, fileauth->data, 8);
     bcopy (xdmcpauth->data, fileauth->data + 8, 8);
     XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
     XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
+    /* encrypt the session key for its trip back to the server */
     XdmcpWrap (xdmcpauth->data, &pdpy->key, xdmcpauth->data, 8);
     pdpy->fileAuthorization = fileauth;
     pdpy->xdmcpAuthorization = xdmcpauth;
