@@ -77,8 +77,6 @@
 
 (in-package 'xlib :use '(lisp))
 
-(pushnew :xlib *features*)
-
 (export '(
 	  *version*
 	  card32
@@ -278,6 +276,8 @@
 	  make-state-mask
 	  make-state-keys
 	  ))
+
+(pushnew :xlib *features*)
 
 (defparameter *version* "MIT R4 Beta 10/89")
 
