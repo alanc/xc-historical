@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.1 89/04/03 17:23:03 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.2 89/05/02 21:25:50 kit Exp $";
 
                         All Rights Reserved
 
@@ -121,6 +121,7 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtNcolumnWidth          "columnWidth"
 #define XtNleftBitmap           "leftBitmap"
 #define XtNleftMargin		"leftMargin"
+#define XtNpopupOnEntry         "popupOnEntry"
 #define XtNresize		"resize"
 #define XtNrightBitmap          "rightBitmap"
 #define XtNrightMargin          "rightMargin"
@@ -136,6 +137,7 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtCColumnWidth          "ColumnWidth"
 #define XtCHorizontalMargins    "HorizontalMargins"
 #define XtCLeftBitmap           "LeftBitmap"
+#define XtCPopupOnEntry         "PopupOnEntry"
 #define XtCResize		"Resize"
 #define XtCRightBitmap          "RightBitmap"
 #define XtCRowHeight            "RowHeight"
@@ -170,7 +172,7 @@ caddr_t data;
 */
   
 /*      Function Name: XawSimpleMenuAddEntry
- *      Description: Adds an item to the menu.
+ *      Description:  Adds an item to the menu.
  *      Arguments: w - the menu widget
  *                 name - name of new menu item.
  *                 args - the argument list.
@@ -187,9 +189,9 @@ Cardinal num_args;
 */
 
 /*      Function Name: XawSimpleMenuRemoveEntry
- *      Description: Adds an item to the menu.
+ *      Description: removes and entry from the menu.
  *      Arguments: w - the menu widget
- *                 name - name of new menu item.
+ *                 name - name of the menu item to remove.
  *      Returns: none.
  */
 
@@ -199,16 +201,33 @@ Widget w;
 char * name;
 */
 
-/*      Function Name: XawSimpleMenuUpdateEntry
- *      Description: Adds an item to the menu.
+/*      Function Name: XawSimpleMenuSetEntryValues
+ *      Description: Sets the values for an entry's resources.
  *      Arguments: w - the menu widget
- *                 name - name of new menu item.
+ *                 name - name of menu item.
  *                 args - the argument list.
  *                 num_args -  number of arguments.
  *      Returns: none.
  */
 
 void XawSimpleMenuSetEntryValues(/* w, name , args, num_args */);
+/*
+Widget w;
+char * name;
+ArgList args;
+Cardinal num_args;
+*/
+  
+/*      Function Name: XawSimpleMenuGetEntryValues
+ *      Description: Gets the current values for an entry.
+ *      Arguments: w - the menu widget
+ *                 name - name of menu item.
+ *                 args - the argument list. (name/address pairs)
+ *                 num_args -  number of arguments.
+ *      Returns: none.
+ */
+
+void XawSimpleMenuGetEntryValues(/* w, name , args, num_args */);
 /*
 Widget w;
 char * name;

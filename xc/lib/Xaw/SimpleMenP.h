@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: Label.c,v 1.64 89/03/16 12:58:17 swick Exp $";
+ "$XConsortium: SimpleMenuP.h,v 1.1 89/04/03 17:23:04 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -86,6 +86,8 @@ typedef struct _SimpleMenuPart {
 
   Cursor       cursor;		/* The menu's cursor. */
   String       label;		/* label the menu will display. */
+  String       popup_entry;	/* The entry to position the cursor on for
+				   when using XawPositionSimpleMenu. */
   Pixel	       foreground;	/* foreground color for label. */
   XFontStruct  *font;		/* font to display all text. */
   Dimension    left_margin;	/* margins on each side of menu entries. */

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.4 89/05/02 21:09:03 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.6 89/05/03 16:29:38 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -71,6 +71,8 @@ static XtResource menu_resources[] = {
      offset(foreground), XtRString, "XtDefaultForeground"},
   {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
      offset(font),XtRString, "XtDefaultFont"},
+  {XtNpopupOnEntry,  XtCPopupOnEntry, XtRString, sizeof(String),
+     offset(popup_entry), XtRString, NULL},
 };  
 #undef offset
 
@@ -111,7 +113,7 @@ static Boolean SetValues(), SetValuesHook();
  * Action Routine Definitions
  */
 
-static void Highlight(), Unhighlight(), Notify();
+static void Highlight(), Unhighlight(), Notify(), PositionMenuAction();
 
 /* 
  * Private Function Definitions.
@@ -123,6 +125,7 @@ static void SetEntryInfo(), ChangeEntryInfo(), CreateGCs(), DestroyGCs();
 static Dimension GetMenuWidth(), GetMenuHeight();
 static MenuEntry * GetEventEntry(), * GetMenuEntry();
 static void XawCvtStringToMenuType(), MaybeCopyCallbacks();
+static void AddPositionAction(), PositionMenu();
 
 static XtActionsRec actionsList[] =
 {
@@ -199,6 +202,7 @@ ClassInitialize()
 {
   XtAddConverter( XtRString, XtRSimpleMenuType, XawCvtStringToMenuType,
 		 NULL, (Cardinal) 0 );
+  XmuAddInitializer( AddPositionAction, NULL);
 }
 
 /*      Function Name: Scream
@@ -231,6 +235,8 @@ Initialize(request, new)
 Widget request, new;
 {
   SimpleMenuWidget smw = (SimpleMenuWidget) new;
+
+  XmuCallInitializers(XtWidgetToApplicationContext(new));
 
 /*
  * If top or bottom margins are zero then use vertical_space.
@@ -510,9 +516,192 @@ Cardinal *num_args;
   return(FALSE);
 }
 
+/*	Function Name: AddPositionAction
+ *	Description: Adds the XawPositionSimpleMenu action to the global
+ *                   action list for this appcon.
+ *	Arguments: app_con - the application context for this app.
+ *                 data - NOT USED.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+static void
+AddPositionAction(app_con, data)
+XtAppContext app_con;
+caddr_t data;
+{
+  static XtActionsRec pos_action[] = {
+    { "XawPositionSimpleMenu", PositionMenuAction },
+  };
+
+  XtAppAddActions(app_con, pos_action, XtNumber(pos_action));
+}
+
+/*	Function Name: FindMenu
+ *	Description: Find the menu give a name and reference widget.
+ *	Arguments: widget - reference widget.
+ *                 name   - the menu widget's name.
+ *	Returns: the menu widget or NULL.
+ */
+
+static Widget 
+FindMenu(widget, name)
+Widget widget;
+String name;
+{
+  register Widget w, menu;
+
+  for ( w = widget ; w != NULL ; w = XtParent(w) )
+    if ( (menu = XtNameToWidget(w, name)) != NULL )
+     return(menu);
+  return(NULL);
+}
+
+/*	Function Name: PositionMenu
+ *	Description: Places the menu
+ *	Arguments: w - the simple menu widget.
+ *                 location - a pointer the the position or NULL.
+ *	Returns: none.
+ */
+
+static void
+PositionMenu(w, location)
+Widget w;
+XPoint * location;
+{
+  SimpleMenuWidget smw = (SimpleMenuWidget) w;
+  XPoint t_point;
+  Arg arglist[2];
+  Cardinal num_args = 0;
+  Position x, y;
+
+  if (location == NULL) {
+    Window junk1, junk2;
+    int root_x, root_y, junkX, junkY;
+
+    location = &t_point;
+    if (XQueryPointer(XtDisplay(w), XtWindow(w), &junk1, &junk2, 
+		      &root_x, &root_y, &junkX, &junkY) == FALSE) {
+      char error_buf[BUFSIZ];
+      sprintf(error_buf, "%s %s", "Xaw - SimpleMenuWidget:",
+	      "Could not find location of mouse pointer");
+      XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+      return;
+    }
+    location->x = (short) root_x;
+    location->y = (short) root_y;
+  }
+
+/*
+ * The width will not be correct unless it is realized.
+ */
+
+  if (!XtIsRealized(w)) XtRealizeWidget(w);
+
+  x = (Position) location->x - (Position) w->core.width/2;
+
+  y = (Position) location->y - (Position) smw->simple_menu.top_margin;
+  y -= (Position) smw->simple_menu.row_height/2;
+  
+  if (smw->simple_menu.popup_entry != NULL) {
+    int i = 0;
+    MenuEntry * temp;
+    Boolean found_it;
+
+    for ( temp = smw->simple_menu.entries ; temp != NULL ;
+	 temp = temp->next, i++)
+      if ( streq(temp->name, smw->simple_menu.popup_entry) ) {
+	found_it = TRUE;
+	break;
+      }
+
+    if (found_it) {
+      if (smw->simple_menu.label != NULL)
+	y -= (Position) (smw->simple_menu.row_height + 
+			 smw->simple_menu.vertical_space);
+      y -= (Position) ( i * (smw->simple_menu.row_height +
+			     smw->simple_menu.vertical_space));
+    }
+  }
+  
+  XtSetArg(arglist[num_args], XtNx, x); num_args++;
+  XtSetArg(arglist[num_args], XtNy, y); num_args++;
+  XtSetValues(w, arglist, num_args);
+}
+  
 /************************************************************
  *
- * Action Routines.
+ * Global Action Routines.
+ * 
+ * These actions routines have been added to the application's
+ * global action list. 
+ * 
+ ************************************************************/
+
+/*      Function Name: PositionMenuAction
+ *      Description: Positions the simple menu widget.
+ *      Arguments: w - a widget (no the simple menu widget.)
+ *                 event - the event that caused this action.
+ *                 params, num_params - parameters passed to the routine.
+ *                                      we expect the name of the menu here.
+ *      Returns: none
+ */
+
+/* ARGSUSED */
+static void
+PositionMenuAction(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{ 
+  Widget menu;
+  XPoint loc;
+
+  if (*num_params != 1) {
+    char error_buf[BUFSIZ];
+    sprintf(error_buf, "%s %s",
+	    "Xaw - SimpleMenuWidget: position menu action expects only one",
+	    "parameter which is the name of the menu.");
+    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+    return;
+  }
+
+  if ( (menu = FindMenu(w, params[0])) == NULL) {
+    char error_buf[BUFSIZ];
+    sprintf(error_buf, "%s '%s'",
+	    "Xaw - SimpleMenuWidget: could not find menu named: ", params[0]);
+    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+    return;
+  }
+  
+  switch (event->type) {
+  case ButtonPress:
+  case ButtonRelease:
+    loc.x = event->xbutton.x_root;
+    loc.y = event->xbutton.y_root;
+    PositionMenu(menu, &loc);
+    break;
+  case EnterNotify:
+  case LeaveNotify:
+    loc.x = event->xcrossing.x_root;
+    loc.y = event->xcrossing.y_root;
+    PositionMenu(menu, &loc);
+    break;
+  case MotionNotify:
+    loc.x = event->xmotion.x_root;
+    loc.y = event->xmotion.y_root;
+    PositionMenu(menu, &loc);
+    break;
+  default:
+    PositionMenu(menu, NULL);
+    break;
+  }
+}  
+
+/************************************************************
+ *
+ * Widget Action Routines.
  * 
  ************************************************************/
 
@@ -701,11 +890,11 @@ Cardinal num_args;
     CalculateNewSize(w);
   RefreshEntry(w, NULL, XawErefreshAll);
 }
-  
+ 
 /*      Function Name: XawSimpleMenuRemoveEntry
- *      Description: Adds an item to the menu.
+ *      Description: removes and entry from the menu.
  *      Arguments: w - the menu widget
- *                 name - name of new menu item.
+ *                 name - name of the menu item to remove.
  *      Returns: none.
  */
 
@@ -721,9 +910,9 @@ char * name;
 }
   
 /*      Function Name: XawSimpleMenuSetEntryValues
- *      Description: Adds an item to the menu.
+ *      Description: Sets the values for an entry's resources.
  *      Arguments: w - the menu widget
- *                 name - name of new menu item.
+ *                 name - name of menu item.
  *                 args - the argument list.
  *                 num_args -  number of arguments.
  *      Returns: none.
@@ -751,9 +940,9 @@ Cardinal num_args;
 
   
 /*      Function Name: XawSimpleMenuGetEntryValues
- *      Description: gets the current values for an entry.
+ *      Description: Gets the current values for an entry.
  *      Arguments: w - the menu widget
- *                 name - name of new menu item.
+ *                 name - name of menu item.
  *                 args - the argument list. (name/address pairs)
  *                 num_args -  number of arguments.
  *      Returns: none.
