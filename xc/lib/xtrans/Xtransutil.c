@@ -38,7 +38,7 @@ Xtransaddr	*addrp;
 
     switch( *familyp )
     {
-#if defined(TCPCONN)
+#if defined(AF_INET)
     case AF_INET:
     {
 	/*
@@ -78,7 +78,7 @@ Xtransaddr	*addrp;
 	}
 	break;
     }
-#endif /* TCPCONN */
+#endif /* AF_INET */
 #if defined(DNETCONN)
     case AF_DECnet:
     {
@@ -93,13 +93,13 @@ Xtransaddr	*addrp;
 	break;
     }
 #endif /* DNETCONN */
-#if defined(UNIXCONN)
+#if defined(AF_UNIX)
     case AF_UNIX:
     {
 	*familyp=FamilyLocal;
 	break;
     }
-#endif /* UNIXCONN */
+#endif /* AF_UNIX */
     default:
 	PRMSG(1,"TRANS(ConvertFamily) Unknown family type %d\n",
 	      *familyp, 0,0 );
@@ -160,14 +160,14 @@ Xtransaddr	*addr;
     char 	*networkId = NULL;
 
 
-    if (TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf)) < 0)
+    if (gethostname (hostnamebuf, sizeof (hostnamebuf)) < 0)
     {
 	return (NULL);
     }
 
     switch (family)
     {
-#ifdef UNIXCONN
+#ifdef AF_UNIX
     case AF_UNIX:
     {
 	struct sockaddr_un *saddr = (struct sockaddr_un *) addr;
@@ -177,7 +177,7 @@ Xtransaddr	*addr;
 	break;
     }
 #endif
-#ifdef TCPCONN
+#ifdef AF_INET
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) addr;
@@ -209,11 +209,29 @@ Xtransaddr	*addr;
     return (networkId);
 }
 
+#include <setjmp.h>
+static jmp_buf env;
 
-#include <arpa/nameser.h>
-#include <resolv.h>
+#ifdef SIGALRM
+Bool nameserver_timedout = False;
 
-static ns_inaddrtohostname ();
+static 
+#ifdef SIGNALRETURNSINT
+int
+#else
+void
+#endif
+nameserver_lost(sig)
+{
+  nameserver_timedout = True;
+  longjmp (env, -1);
+  /* NOTREACHED */
+#ifdef SIGNALRETURNSINT
+  return -1;				/* for picky compilers */
+#endif
+}
+#endif /* SIGALARM */
+
 
 char *
 TRANS(GetPeerNetworkId) (family, peer_addrlen, peer_addr)
@@ -225,39 +243,76 @@ Xtransaddr	*peer_addr;
 {
     char	*hostname;
     char	*networkId = NULL;
-    char	addr[256], prefix[10];
-
-    addr[0] = '\0';
+    char	addrbuf[256], prefix[10];
+    char	*addr = NULL;
 
     switch (family)
     {
     case AF_UNSPEC:
-#ifdef UNIXCONN
+#ifdef AF_UNIX
     case AF_UNIX:
-#endif
     {
-	char hostnamebuf[256];
-
 	strcpy (prefix, "local/");
-	if (TRANS(GetHostname) (hostnamebuf, sizeof (hostnamebuf)) == 0)
-	    strcpy (addr, hostnamebuf);
+	if (gethostname (addrbuf, sizeof (addrbuf)) == 0)
+	    addr = addrbuf;
 	break;
     }
-#ifdef TCPCONN
+#endif /* AF_UNIX */
+
+#ifdef AF_INET
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
+	struct hostent *hp = NULL;
+#ifndef WIN32
+ 	char *inet_ntoa();
+#endif
+
 	strcpy (prefix, "tcp/");
-	ns_inaddrtohostname (&saddr->sin_addr, addr, sizeof (addr));
+
+#ifdef SIGALRM
+	/*
+	 * gethostbyaddr can take a LONG time if the host does not exist.
+	 * Assume that if it does not respond in NAMESERVER_TIMEOUT seconds
+	 * that something is wrong and do not make the user wait.
+	 * gethostbyaddr will continue after a signal, so we have to
+	 * jump out of it. 
+	 */
+
+	nameserver_timedout = False;
+	signal (SIGALRM, nameserver_lost);
+	alarm (4);
+	if (setjmp(env) == 0) {
+#endif
+	    hp = gethostbyaddr ((char *) &saddr->sin_addr,
+		sizeof (saddr->sin_addr), AF_INET);
+#ifdef SIGALRM
+	}
+	alarm (0);
+#endif
+	if (hp)
+	  addr = hp->h_name;
+	else
+	  addr = inet_ntoa (saddr->sin_addr);
 	break;
     }
-#endif
+#endif /* AF_INET */
+
 #ifdef DNETCONN
     case AF_DECnet:
     {
 	struct sockaddr_dn *saddr = (struct sockaddr_dn *) peer_addr;
+	struct nodeent *np;
+
 	strcpy (prefix, "decnet/");
-	sprintf (addr, "%s", dnet_ntoa (&saddr->sdn_add));
+
+	if (np = getnodebyaddr(saddr->sdn_add.a_addr,
+	    saddr->sdn_add.a_len, AF_DECnet)) {
+	    sprintf(addrbuf, "%s:", np->n_name);
+	} else {
+	    sprintf(addrbuf, "%s:", dnet_htoa(&saddr->sdn_add));
+	}
+	addr = addrbuf;
 	break;
     }
 #endif
@@ -268,122 +323,10 @@ Xtransaddr	*peer_addr;
 
     hostname = (char *) malloc (strlen (prefix) + strlen (addr) + 1);
     strcpy (hostname, prefix);
-    strcat (hostname, addr);
+    if (addr)
+	strcat (hostname, addr);
 
     return (hostname);
-}
-
-/*
- * Get a host name from an Internet address.
- * Thanks to Keith Packard for this code.
- */
-
-#define DATA_LEN 4096
-
-struct ns_answer {
-	u_short	type;
-	u_short	class;
-	u_short	len;
-	u_char	data[DATA_LEN];
-};
-
-static
-hostorderheader (h)
-	HEADER	*h;
-{
-	h->id = ntohs(h->id);
-	h->qdcount = ntohs(h->qdcount);
-	h->ancount = ntohs(h->ancount);
-	h->nscount = ntohs(h->nscount);
-	h->arcount = ntohs(h->arcount);
-}
-
-static
-do_query (type, class, string, answers, max)
-	int			type, class;
-	char			*string;
-	struct ns_answer	*answers;
-	int			max;
-{
-	int		i;
-	int		msglen, anslen;
-	u_char		msg[PACKETSZ];
-	u_char		ans[PACKETSZ];
-	HEADER		*h;
-	u_char		*a, *eom;
-	int		len;
-
-	msglen = res_mkquery (QUERY, string, class, type,
-			   (char *) 0, 0, (char *) 0,
-			   msg, sizeof msg);
-	anslen = res_send(msg, msglen, ans, sizeof ans);
-	if (anslen < sizeof (HEADER))
-		return 0;
-	h = (HEADER *) ans;
-	hostorderheader(h);
-	a = ans + sizeof (HEADER);
-	eom = ans + anslen;
-	/* skip query stuff */
-	if (h->qdcount)
-	{
-		for (i = 0; i < h->qdcount; i++)
-		{
-			len = dn_skipname(a, eom);
-			if (len < 0)
-				return 0;
-			a += len;
-			a += 2;	/* type */
-			a += 2;	/* class */
-		}
-	}
-	for (i = 0; i < h->ancount && i < max; i++)
-	{
-		len = dn_skipname (a, eom);
-		if (len < 0)
-			return 0;
-		a += len;
-		GETSHORT (answers[i].type, a);	/* type */
-		GETSHORT (answers[i].class, a);	/* class */
-		a += 4;				/* ttl */
-		GETSHORT (len, a);		/* dlen */
-		if (len > DATA_LEN)
-			len = DATA_LEN;
-		bcopy (a, answers[i].data, len);
-		answers[i].len = len;
-	}
-	return i;
-}
-
-static
-ns_inaddrtohostname (addr,name,max)
-	struct in_addr	*addr;
-	char		*name;
-	int		max;
-{
-	struct ns_answer	answer;
-	char			addrstring[256];
-	u_char			*a;
-	int			ret;
-	int			l;
-
-	a = (u_char *) addr;
-	sprintf (addrstring, "%d.%d.%d.%d.IN-ADDR.ARPA",
-	    a[3], a[2], a[1], a[0]);
-	ret = do_query (T_PTR, C_IN, addrstring, &answer, 1);
-	if (ret <= 0)
-		return 0;
-	if (answer.type != T_PTR || answer.class != C_IN ||
-	    answer.len > max)
-		return 0;
-	a = (u_char *) answer.data;
-	while (l = *a++) {
-		while (l--)
-			*name++ = (char) *a++;
-		if (*a)
-			*name++ = '.';
-	}
-	*name = '\0';
-	return 1;
 }
 
 #endif /* ICE */
