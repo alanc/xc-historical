@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.4 89/10/31 17:12:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.5 90/03/07 15:26:20 jim Exp $";
 #endif 
 
 /*
@@ -37,6 +37,7 @@ static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.4 89/10/31 17:12:19 kit Exp 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
+#include <X11/Xaw/TextI.h>
 #include <X11/Xaw/TextSrcP.h>
 #include <X11/Xmu/CharSet.h>
 
@@ -345,11 +346,16 @@ XrmValuePtr	toVal;
  */
 
 XawTextPosition
+#if NeedFunctionPrototypes
+XawTextSourceRead(Widget w, XawTextPosition pos, XawTextBlock *text,
+		  int length)
+#else
 XawTextSourceRead(w, pos, text, length)
 Widget w;
 XawTextPosition pos;
 XawTextBlock *text;	
-int length;		
+int length;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
@@ -365,11 +371,16 @@ int length;
  */
 
 /*ARGSUSED*/
-int 
+int
+#if NeedFunctionPrototypes
+XawTextSourceReplace (Widget w, XawTextPosition startPos, 
+		      XawTextPosition endPos, XawTextBlock *text)
+#else
 XawTextSourceReplace (w, startPos, endPos, text)
 Widget w;
 XawTextPosition startPos, endPos;
 XawTextBlock *text;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
@@ -391,6 +402,10 @@ XawTextBlock *text;
  */
 
 XawTextPosition
+#if NeedFunctionPrototypes
+XawTextSourceScan(Widget w, XawTextPosition position, XawTextScanType type,
+		  XawTextScanDirection dir, int count, Boolean include)
+#else
 XawTextSourceScan(w, position, type, dir, count, include)
 Widget                w;
 XawTextPosition       position;
@@ -398,6 +413,7 @@ XawTextScanType       type;
 XawTextScanDirection  dir;
 int     	      count;
 Boolean	              include;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
@@ -415,11 +431,16 @@ Boolean	              include;
  */
 
 XawTextPosition 
+#if NeedFunctionPrototypes
+XawTextSourceSearch(Widget w, XawTextPosition position, 
+		    XawTextScanDirection dir, XawTextBlock *text)
+#else
 XawTextSourceSearch(w, position, dir, text)
 Widget                w;
 XawTextPosition       position;
 XawTextScanDirection  dir;
 XawTextBlock *        text;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
@@ -439,6 +460,11 @@ XawTextBlock *        text;
  */
 
 Boolean
+#if NeedFunctionPrototypes
+XawTextSourceConvertSelection(Widget w, Atom *selection, Atom *target, 
+			      Atom *type, caddr_t *value,
+			      unsigned long *length, int *format)
+#else
 XawTextSourceConvertSelection(w, selection, 
 			      target, type, value, length, format)
 Widget w;
@@ -446,6 +472,7 @@ Atom * selection, * target, * type;
 caddr_t * value;
 unsigned long * length;
 int * format;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 
@@ -462,10 +489,15 @@ int * format;
  */
 
 void
+#if NeedFunctionPrototypes
+XawTextSourceSetSelection(Widget w, XawTextPosition left, 
+			  XawTextPosition right, Atom selection)
+#else
 XawTextSourceSetSelection(w, left, right, selection)
 Widget w;
 XawTextPosition left, right;
 Atom selection;
+#endif
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 

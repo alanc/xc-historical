@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.4 89/10/04 13:56:01 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.5 89/10/05 13:17:30 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,6 +34,7 @@
 #ifndef _XawAsciiSrc_h
 #define _XawAsciiSrc_h
 
+#include <X11/Xaw/TextI.h>
 #include <X11/Xaw/TextSrc.h>
 
 /* Resources:
@@ -92,10 +93,11 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
  *	Returns: none.
  */
 
-void XawAsciiSourceFreeString(/* w */);
-/*
-Widget w;
-*/
+extern void XawAsciiSourceFreeString(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 /*	Function Name: XawAsciiSave
  *	Description: Saves all the pieces into a file or string as required.
@@ -103,10 +105,11 @@ Widget w;
  *	Returns: TRUE if the save was successful.
  */
 
-Boolean XawAsciiSave(/* w */);
-/*
-Widget w;
-*/
+extern Boolean XawAsciiSave(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 /*	Function Name: XawAsciiSaveAsFile
  *	Description: Save the current buffer as a file.
@@ -115,11 +118,12 @@ Widget w;
  *	Returns: True if the save was sucessful.
  */
 
-Boolean XawAsciiSaveAsFile(/* w, name */);
-/*
-Widget w;
-String name;
-*/
+extern Boolean XawAsciiSaveAsFile(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    String		/* name */
+#endif 
+);
 
 /*	Function Name: XawAsciiSourceChanged
  *	Description: Returns true if the source has changed since last saved.
@@ -127,10 +131,11 @@ String name;
  *	Returns: a Boolean (see description).
  */
 
-Boolean XawAsciiSourceChanged(/* w */);
-/*
-Widget w;
-*/
+extern Boolean XawAsciiSourceChanged(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
 #ifdef XAW_BC
 /*************************************************************
@@ -157,12 +162,14 @@ Widget w;
  *	Returns: a pointer to the new text source.
  */
 
-Widget XawStringSourceCreate(/* parent, args, num_args */);
-/*
-Widget parent;
-ArgList args;
-Cardinal num_args;
-*/
+extern Widget XawStringSourceCreate(
+#if NeedFunctionPrototypes
+    Widget		/* parent */,
+    ArgList		/* args */,
+    Cardinal		/* num_args */
+#endif
+);
+
 #endif /* ASCII_STRING */
 
 #ifdef ASCII_DISK
@@ -173,12 +180,14 @@ Cardinal num_args;
  *	Returns: a pointer to the new text source.
  */
 
-Widget XawDiskSourceCreate(/* parent, args, num_args */);
-/*
-Widget parent;
-ArgList args;
-Cardinal num_args;
-*/
+extern Widget XawDiskSourceCreate(
+#if NeedFunctionPrototypes
+    Widget		/* parent */,
+    ArgList		/* args */,
+    Cardinal 		/* num_args */
+#endif
+);
+
 #endif /* ASCII_DISK */
 #endif /* XAW_BC */
 /*

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.32 89/10/19 15:01:11 kit Exp $
+* $XConsortium: Text.h,v 1.33 90/03/16 16:24:03 converse Exp $
 */
 
 
@@ -30,6 +30,7 @@ SOFTWARE.
 #ifndef _XawText_h
 #define _XawText_h
 
+#include <X11/Xaw/TextI.h>
 #include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextSrc.h>
 
@@ -123,28 +124,6 @@ extern WidgetClass textWidgetClass;
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
 
-/* other stuff */
-
-typedef enum { XawtextScrollNever,
-	       XawtextScrollWhenNeeded, XawtextScrollAlways} XawTextScrollMode;
-
-typedef enum { XawtextWrapNever, 
-	       XawtextWrapLine, XawtextWrapWord} XawTextWrapMode;
-
-typedef enum { XawtextResizeNever, XawtextResizeWidth,
-	       XawtextResizeHeight, XawtextResizeBoth} XawTextResizeMode;
-
-typedef enum {XawsdLeft, XawsdRight} XawTextScanDirection;
-typedef enum {XawtextRead, XawtextAppend, XawtextEdit} XawTextEditType;
-typedef enum {XawselectNull, XawselectPosition, XawselectChar, XawselectWord,
-    XawselectLine, XawselectParagraph, XawselectAll} XawTextSelectType;
-
-typedef struct {
-    int  firstPos;
-    int  length;
-    char *ptr;
-    Atom format;
-    } XawTextBlock, *XawTextBlockPtr; 
 #ifdef XAW_BC
 /************************************************************
  *
@@ -216,75 +195,140 @@ typedef long XtTextPosition;
 #define XtStringSourceCreate       XawStringSourceCreate
 #define XtStringSourceDestroy      XawStringSourceDestroy
 
-extern void XawTextChangeOptions(); /* w, options */
-    /* Widget        w;		*/
-    /* int    options; */
+extern void XawTextChangeOptions(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    int			/* options */
+#endif
+);
 
-extern int XawTextGetOptions(); /* w */
-    /* Widget        w;		*/
+extern int XawTextGetOptions(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextSetLastPos(); /* w, lastPos */
-    /* Widget        w;		*/
-    /* XawTextPosition lastPos;  */
+extern void XawTextSetLastPos(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* lastPos */
+#endif
+);
 
 /*************************************************************/
 #endif /* XAW_BC */
 
-extern void XawTextDisplay(); /* w */
-    /* Widget w; */
+extern void XawTextDisplay(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+); 
 
-extern void XawTextEnableRedisplay(); /* w */
-    /* Widget w; */
+extern void XawTextEnableRedisplay(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextDisableRedisplay(); /* w */
-    /* Widget w; */
+extern void XawTextDisableRedisplay(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextSetSelectionArray(); /* w, sarray */
-    /* Widget        w;		*/
-    /* SelectionType *sarray;   */
+extern void XawTextSetSelectionArray(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextSelectType*	/* sarray */
+#endif
+);
 
-extern void XawTextGetSelectionPos(); /* dpy, w, left, right */
-    /* Widget        w;		*/
-    /* XawTextPosition *left, *right;    */
+extern void XawTextGetSelectionPos(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition*	/* begin_return */,
+    XawTextPosition*	/* end_return */
+#endif
+);
 
-extern void XawTextSetSource(); /* dpy, w, source, startPos */
-    /* Widget         w;	    */
-    /* XawTextSource   source;       */
-    /* XawTextPosition startPos;     */
+extern void XawTextSetSource(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Widget		/* source */,
+    XawTextPosition	/* position */
+#endif
+);
 
-extern int XawTextReplace(); /* w, startPos, endPos, text */
-    /* Widget        w;		*/
-    /* XawTextPosition   startPos, endPos; */
-    /* XawTextBlock      *text; */
+extern int XawTextReplace(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* start */,
+    XawTextPosition	/* end */,
+    XawTextBlock*	/* text */
+#endif
+);
 
-extern XawTextPosition XawTextTopPosition(); /* w */
-    /* Widget        w;		*/
+extern XawTextPosition XawTextTopPosition(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextSetInsertionPoint(); /*  w, position */
-    /* Widget        w;		*/
-    /* XawTextPosition position; */
+extern void XawTextSetInsertionPoint(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* position */
+#endif
+);
 
-extern XawTextPosition XawTextGetInsertionPoint(); /* w */
-    /* Widget        w;		*/
+extern XawTextPosition XawTextGetInsertionPoint(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextUnsetSelection(); /* w */
-    /* Widget        w;		*/
+extern void XawTextUnsetSelection(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern void XawTextSetSelection(); /* w, left, right */
-    /* Widget        w;		*/
-    /* XawTextPosition left, right; */
+extern void XawTextSetSelection(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* left */,
+    XawTextPosition	/* right */
+#endif
+);
 
-extern void XawTextInvalidate(); /* w, from, to */
-    /* Widget        w;		*/
-    /* XawTextPosition from, to; */
+extern void XawTextInvalidate(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* from */,
+    XawTextPosition	/* to */
+#endif
+);
 
-extern Widget XawTextGetSource() ; /* w */
-    /* Widget        w;		*/
+extern Widget XawTextGetSource(
+#if NeedFunctionPrototypes
+    Widget		/* w */
+#endif
+);
 
-extern XawTextPosition XawTextSearch() ; /* w, dir, text */
-    /* Widget        w;		 */
-    /* XawTextScanDirection dir; */
-    /* XawTextBlock      *text;  */
+extern XawTextPosition XawTextSearch(
+#if NeedFunctionPrototypes
+    Widget			/* w */,
+    XawTextScanDirection	/* dir */,
+    XawTextBlock*		/* text */
+#endif
+);
+
+extern void XawTextDisplayCaret(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Boolean		/* visible */
+#endif
+);
 
 /*
  * For R3 compatability only. 

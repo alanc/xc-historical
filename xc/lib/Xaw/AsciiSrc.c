@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.34 90/04/24 16:35:11 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.35 90/04/26 15:56:08 converse Exp $";
 #endif 
 
 /*
@@ -726,8 +726,12 @@ Widget w;
  */
 
 void
+#if NeedFunctionPrototypes
+XawAsciiSourceFreeString(Widget w)
+#else
 XawAsciiSourceFreeString(w)
 Widget w;
+#endif
 {
   AsciiSrcObject src = (AsciiSrcObject) w;
 
@@ -744,8 +748,12 @@ Widget w;
  */
 
 Boolean
+#if NeedFunctionPrototypes
+XawAsciiSave(Widget w)
+#else
 XawAsciiSave(w)
 Widget w;
+#endif
 {
   AsciiSrcObject src = (AsciiSrcObject) w;
 
@@ -791,9 +799,13 @@ Widget w;
  */
 
 Boolean
+#if NeedFunctionPrototypes
+XawAsciiSaveAsFile(Widget w, String name)
+#else
 XawAsciiSaveAsFile(w, name)
 Widget w;
 String name;
+#endif
 {
   AsciiSrcObject src = (AsciiSrcObject) w;
   String string;
@@ -813,8 +825,12 @@ String name;
  */
 
 Boolean 
+#if NeedFunctionPrototypes
+XawAsciiSourceChanged(Widget w)
+#else
 XawAsciiSourceChanged(w)
 Widget w;
+#endif
 {
   return( ((AsciiSrcObject) w)->ascii_src.changes );
 }

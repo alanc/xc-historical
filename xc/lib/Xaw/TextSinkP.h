@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSinkP.h,v 1.2 89/09/13 15:06:55 kit Exp $
+* $XConsortium: TextSinkP.h,v 1.3 89/10/04 13:56:59 kit Exp $
 */
 
 
@@ -42,9 +42,9 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/ObjectP.h>
-#include <X11/Xaw/TextSink.h>
 #include <X11/Xaw/TextP.h>	/* This source works with the Text widget. */
 #include <X11/Xaw/TextSrcP.h>	/* This source works with the Text Source. */
+#include <X11/Xaw/TextSink.h>
 
 /************************************************************
  *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSink.h,v 1.3 89/11/01 17:33:17 kit Exp $
+ * $XConsortium: AsciiSink.h,v 1.4 90/01/10 16:48:48 kit Exp $
  */
 
 /***********************************************************
@@ -74,10 +74,13 @@ typedef struct _AsciiSinkRec      *AsciiSinkObject;
 #define XawTextSink Widget
 #define XtTextSink XawTextSink
 
-extern XawTextSink XawAsciiSinkCreate(); /* parent, args, num_args */
-    /* Widget parent;		*/
-    /* ArgList args;		*/
-    /* Cardinal num_args;	*/
+extern XawTextSink XawAsciiSinkCreate(
+#if NeedFunctionPrototypes
+    Widget		/* parent */,
+    ArgList		/* args	*/,
+    Cardinal		/* num_args */
+#endif
+);
 
 #define XawAsciiSinkDestroy XtDestroyWidget
 

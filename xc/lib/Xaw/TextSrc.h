@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.3 89/10/04 13:56:11 kit Exp $
+ * $XConsortium: TextSrc.h,v 1.4 89/10/31 17:12:42 kit Exp $
  */
 
 /***********************************************************
@@ -59,8 +59,6 @@ typedef enum {XawsmTextSelect, XawsmTextExtend} XawTextSelectionMode;
 typedef enum {XawactionStart, XawactionAdjust, XawactionEnd}
     XawTextSelectionAction;
 
-typedef long XawTextPosition;
-
 /*
  * Error Conditions:
  */
@@ -83,13 +81,14 @@ typedef long XawTextPosition;
  *	Returns: The number of characters read into the buffer.
  */
 
-XawTextPosition XawTextSourceRead(/* w, pos, text, length */);
-/*
-Widget w;
-XawTextPosition pos;
-XawTextBlock *text;	
-int length;		
-*/
+extern XawTextPosition XawTextSourceRead(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* pos */,
+    XawTextBlock*	/* text_return */,
+    int			/* length */
+#endif
+);
 
 /*	Function Name: XawTextSourceReplace.
  *	Description: Replaces a block of text with new text.
@@ -99,12 +98,14 @@ int length;
  *	Returns: XawEditError or XawEditDone.
  */
 
-int XawTextSourceReplace (/* w, startPos, endPos, text */);
-/*
-Widget w;
-XawTextPosition startPos, endPos;
-XawTextBlock *text;
-*/
+extern int XawTextSourceReplace (
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* start */,
+    XawTextPosition	/* end */,
+    XawTextBlock*	/* text */
+#endif
+);
 
 /*	Function Name: XawTextSourceScan
  *	Description: Scans the text source for the number and type
@@ -120,15 +121,16 @@ XawTextBlock *text;
  *
  */
 
-XawTextPosition XawTextSourceScan(/* w, position, type, dir, count, include*/);
-/*
-Widget                w;
-XawTextPosition       position;
-XawTextScanType       type;
-XawTextScanDirection  dir;
-int     	      count;
-Boolean	              include;
-*/
+extern XawTextPosition XawTextSourceScan(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* position */,
+    XawTextScanType	/* type */,
+    XawTextScanDirection /* dir */,
+    int			/* count */,
+    Boolean		/* include */
+#endif
+);
 
 /*	Function Name: XawTextSourceSearch
  *	Description: Searchs the text source for the text block passed
@@ -140,13 +142,14 @@ Boolean	              include;
  *               XawTextSearchError.
  */
 
-XawTextPosition XawTextSourceSearch(/* w, position, dir, text */);
-/*
-Widget                w;
-XawTextPosition       position;
-XawTextScanDirection  dir;
-XawTextBlock *        text;
-*/
+extern XawTextPosition XawTextSourceSearch(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* position */,
+    XawTextScanDirection /* dir */,
+    XawTextBlock*	/* text */
+#endif
+);
 
 /*	Function Name: XawTextSourceConvertSelection
  *	Description: Dummy selection converter.
@@ -160,15 +163,17 @@ XawTextBlock *        text;
  *
  */
 
-Boolean XawTextSourceConvertSelection(/* w, selection, target, 
-					 type, value, length, format */);
-/*
-Widget w;
-Atom * selection, * target, * type;
-caddr_t * value;
-unsigned long * length;
-int * format;
-*/
+extern Boolean XawTextSourceConvertSelection(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    Atom*		/* selection */,
+    Atom*		/* target */,
+    Atom*		/* type */,
+    caddr_t*		/* value_return */,
+    unsigned long*	/* length_return */,
+    int*		/* format_return */
+#endif
+);
 
 /*	Function Name: XawTextSourceSetSelection
  *	Description: allows special setting of the selection.
@@ -178,12 +183,14 @@ int * format;
  *	Returns: none
  */
 
-void XawTextSourceSetSelection(/* w, left, right, selection */);
-/*
-Widget w;
-XawTextPosition left, right;
-Atom selection;
-*/
+extern void XawTextSourceSetSelection(
+#if NeedFunctionPrototypes
+    Widget		/* w */,
+    XawTextPosition	/* start */,
+    XawTextPosition	/* end */,
+    Atom		/* selection */
+#endif
+);
 
 #ifdef XAW_BC
 /*************************************************************
