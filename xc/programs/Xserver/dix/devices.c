@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.36 94/01/30 14:22:56 rws Exp $ */
+/* $XConsortium: devices.c,v 5.37 94/01/30 23:41:53 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -726,6 +726,7 @@ SendMappingNotify(request, firstKeyCode, count)
 #endif
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
+    {
 #ifdef XRECORD
 	if (RecordedEvents[MappingNotify])
 	    XRecordEvent(clients[i], &event);
@@ -740,6 +741,7 @@ SendMappingNotify(request, firstKeyCode, count)
 	    event.u.u.sequenceNumber = clients[i]->sequence;
             WriteEventsToClient(clients[i], 1, &event);
 	}
+    }
 }
 
 /*
