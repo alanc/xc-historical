@@ -3,70 +3,140 @@
 xset - X window system user setup program
 .SH SYNOPSIS
 .B xset
-[-display \fIhost\fP:\fIdisplay\fP] option ...
+[-display \fIhost\fP:\fIdisplay\fP]
+[-b] [b on/off] [b [\fIvolume\fP [\fIpitch\fP [\fIduration\fP]]]
+[-c] [c on/off] [c [\fIvolume\fP]]
+[fp \fIpath\fP[,\fIpath\fP[,...]]] [fp default]
+[[-]led [\fIinteger\fP]] [led on/off]
+[m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
+[p \fIpixel\fP \fIcolor\fP]
+[[-]r] [r on/off]
+[s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank] [s on/off] [s default]
+[q]
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
-the \fBb\fP option controls bell volume, pitch and duration,
-The \fBc\fP option controls key click,
-the \fBfp\fP option sets the font path,
-the \fBled\fP option controls the keyboard LEDs,
-the \fBm\fP option controls the mouse parameters,
-the \fBp\fP option controls pixel color values,
-the \fBr\fP option controls the auto repeat,
-the \fBs\fP option lets you set the screen saver parameters,
-and the \fBq\fP option gives you information on the current settings.
-Most of these can be preceded with a \fB-\fP to disable the feature,
-or followed by \fBon\fP or \fBoff\fP if you prefer.  They can also be
-given with no further specifications, to reset the system defaults.
-For example: ``xset c on'' turns on keyclick;
-``xset -r'' would turn off autorepeat;
-``xset b'' sets the bell volume, pitch and duration to the defaults.
+.SH OPTIONS
 .PP
-The bell option accepts up to three numerical parameters.  If none are
-given, the system defaults will be used.  If only one is given, the
+.TP 8
+.B \-display \fIhost\fP:\fIdpy\fP
+Normally,
+.I xset
+gets the host and display number to use from the environment
+variable ''DISPLAY''. One can, however, specify them explicitly. The
+.I host
+specifies which machine to create the window on, and the
+.I dpy
+argument specifies the display number.
+.PP
+.TP 8
+.B b
+the \fBb\fP option controls bell volume, pitch and duration.
+This option accepts up to three numerical parameters, a preceding
+dash(-), or a 'on/off' flag.  If no parameters are
+given, or the 'on' flag is used, the system defaults will be used.
+If the dash or 'off' are given, the bell will be turned
+off.
+If only one numerical parameter is given, the
 bell volume will be set to that value, as a percentage of its maximum.
-Likewise, the second parameter specifies the bell pitch, in hertz, and
-the third one specifies the duration in milliseconds.  Note that not
+Likewise, the second numerical
+parameter specifies the bell pitch, in hertz, and
+the third numerical parameter
+specifies the duration in milliseconds.  Note that not
 all hardware can vary the bell characteristics.  The X server will set
 the characteristics of the bell as closely as it can to the user's
 specifications.
 .PP
-The keyclick option also takes an optional value from 0 to 100 to
-indicate volume, as a percentage of maximum.  The X server will set
+.TP 8
+.B c
+The \fBc\fP option controls key click.
+This option can take an optional value, a preceding dash(-),
+or an 'on/off' flag.
+If no parameter or the 'on' flag is given, the system defaults
+will be used. If the dash or 'off' flag is used, keyclick will be
+disabled.
+If a value from 0 to 100 is given, it is used to
+indicate volume, as a percentage of the maximum.
+The X server will set
 the volume to the nearest value that the hardware can support.
 .PP
-The font path option should be followed by a comma-separated list of
-(operating system dependent) directories.  To restore the default
+.TP 8
+.B fp
+The \fBfp\fP option sets the font path.
+It must be followed by a comma-separated list of
+directories or the flag 'default'.
+The indicated path will be used to find fonts for clients.
+To restore the default
 font path, use \fBfp default\fP.
 .PP
-The LED controls are for turning on or off one or all of the LEDs.
+.TP 8
+.B led
+The \fBled\fP option controls the keyboard LEDs.
+This controls the turning on or off of one or all of the LEDs.
+It accepts an optional integer, a preceding dash(-) or an 'on/off' flag.
+If no parameter or the 'on' flag is given, all LEDs are turned on.
+If a preceding dash or the flag 'off' is given, all LEDs are turned off.
+If a value between 1 and 32 is given, that LED will be turned on or off
+depending on the existance of a preceding dash.
 A common LED which can be controlled is the ``Caps Lock'' LED.  ``xset
 led 3'' would turn led #3 on.  ``xset -led 3'' would turn it off.
 The particular LED values may refer to different LEDs on different
-hardware.  Omitting the LED number in these commands would turn all of
-the LEDs on or off, respectively.
+hardware.
 .PP
-The parameters for the mouse are ``acceleration'' and ``threshold''.
-The mouse, or whatever pointer the machine is connected to, will go
-``acceleration'' times as fast when it travels more than ``threshold''
+.TP 8
+.B m
+The \fBm\fP option controls the mouse parameters.
+The parameters for the mouse are `acceleration' and `threshold'.
+The mouse, or whatever pointer the machine is connected to,
+will go `acceleration' times as fast when it travels more than `threshold'
 pixels in a short time.  This way, the mouse can be used for precise
 alignment when it is moved slowly, yet it can be set to travel across
 the screen in a flick of the wrist when desired.  One or both
-parameters for the ``m'' option can be omitted, but if only one is
+parameters for the 
+.B m
+option can be omitted, but if only one is
 given, it will be interpreted as the acceleration.
+If no parameters or the flag 'default' is used, the system defaults will
+be set.
 .PP
-The parameters for a pixel are the color map entry number in decimal,
-and a color specification.  The root window colors can be changed by
-altering entries 0 and 1.  The map entry must not be a read-only color,
+.TP 8
+.B p
+The \fBp\fP option controls pixel color values.
+The parameters are the color map entry number in decimal,
+and a color specification.  The root background colors may be changed
+on some servers by altering the entries for BlackPixel and WhitePixel.
+Although these are often 0 and 1, they need not be.  Also, a server may
+choose to allocate those colors privately, in which case an error will
+be generated.  The map entry must not be a read-only color,
 or an error will result.
 .PP
-The parameters for the screen saver function determines how long the
-server must be inactive for screen saving to go on, and the period
-to change the background pattern to avoid burn in.
-The arguments are specified in seconds.  ``xset s blank'' sets the
+.TP 8
+.B r
+The \fBr\fP option controls the autorepeat.
+If a preceding dash or the 'off' flag is used, autorepeat will be disabled.
+If no parameters or the 'on' flag is used, autorepeat will be enabled.
+.PP
+.TP 8
+.B s
+The \fBs\fP option lets you set the screen saver parameters.
+This option accepts up to two numerical parameters, a 'blank/noblank'
+flag, an 'on/off' flag, or the 'default' flag.
+If no parameters or the 'default' flag is used, the system will be set
+to its default screen saver characteristics.
+The 'on/off' flags simply turn the screen saver functions on or off.
+The 'blank' flag sets the
 preference to blank the video (if the hardware can do so) rather than
-display a background pattern.  ``xset s noblank'' sets the
+display a background pattern, while 'noblank' sets the
 preference to display a pattern rather than blank the video.
+The length and period
+parameters for the screen saver function determines how long the
+server must be inactive for screen saving to activate, and the period
+to change the background pattern to avoid burn in.
+The arguments are specified in seconds.
+If only one numerical parameter is given, it will be used for the length.
+.PP
+.TP 8
+.B q
+The \fBq\fP option gives you information on the current settings.
 .PP
 These settings will be reset to default values when you log out.
 .PP
