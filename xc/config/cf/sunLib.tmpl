@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.12 91/11/17 16:56:10 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.13 91/12/18 16:28:07 rws Exp $
 
 /*
  * SunOS shared library template
@@ -47,15 +47,10 @@ PICFLAGS = PositionIndependentCFlags
 #if SharedLibXmu
 /* Sun shared libraries are deficient in link semantics */
         DEPXMULIB = _UseCat($(USRLIBDIR),$(XMUSRC),/libXmu.sa.$(SOXMUREV))
-#if HasGcc /* gcc does not know how to pass on -assert */
-           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
-#else
        XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
-           XMULIB = $(XMULIBONLY) -assert nodefinitions
-
-#ifndef XawClientLibs
+           XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu -L$(TOOLKITSRC))
+#if !defined(UseInstalled) && !defined(XawClientLibs)
 #define XawClientLibs $(XAWLIB) $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
-#endif
 #endif
 #endif
 #if SharedOldLibX
