@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.57 90/12/13 15:51:35 rws Exp $ */
+/* $XConsortium: Display.c,v 1.58 90/12/28 16:52:40 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -381,7 +381,7 @@ void _XtDestroyAppContexts()
 XrmDatabase XtDatabase(dpy)
 	Display *dpy;
 {
-    return (XrmDatabase) dpy -> db;
+    return XrmGetDatabase(dpy);
 }
 
 PerDisplayTablePtr _XtperDisplayList = NULL;
