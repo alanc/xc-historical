@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium: xon.sh,v 1.8 92/08/17 13:57:21 rws Exp mor $
+# $XConsortium: xon.sh,v 1.9 94/10/04 20:37:58 mor Exp gildea $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in
@@ -30,7 +30,7 @@ case $DISPLAY in
 :*)
 	fullname=`hostname`
 	hostname=`echo $fullname | sed 's/\..*$//'`
-	if [ $hostname = $target -o $fullname = $target ]; then
+	if [ $hostname = $target ] || [ $fullname = $target ]; then
 		DISPLAY=$DISPLAY
 		rcmd="sh -c"
 	else

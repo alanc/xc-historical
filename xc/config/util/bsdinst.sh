@@ -3,7 +3,7 @@
 #
 # This accepts bsd-style install arguments and makes the appropriate calls
 # to the System V install.
-#
+# $XConsortium$
 
 flags=""
 dst=""
@@ -100,7 +100,7 @@ fi
 
 srcbase=`basename $src`
 
-if [ "$src" != "$srcbase" -a "$src" != "./$srcbase" ] 
+if [ "$src" != "$srcbase" ] && [ "$src" != "./$srcbase" ] 
 then
 	cp $src /tmp/$srcbase
 	src=$srcbase

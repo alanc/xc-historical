@@ -1,5 +1,5 @@
 #! /bin/sh
-#$XConsortium: Xmark.sh,v 1.4 93/04/12 20:10:46 rws Exp $
+#$XConsortium: Xmark.sh,v 1.5 93/04/23 18:28:44 rws Exp gildea $
 #XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################
@@ -101,7 +101,7 @@ LC1=`grep trep "$1" | wc -l`
 LC2=441		# Number of test without Shared Memory Transport
 LC3=447		# Number of test with Shared Memory Transport
 
-if [ "$LC1" -ne "$LC2" -a "$LC1" -ne "$LC3" ]
+if [ "$LC1" -ne "$LC2" ] && [ "$LC1" -ne "$LC3" ]
 then
     echo "WARNING: datafile contains $LC1, not "$LC2" or "$LC3" 'trep' results;" >& 2
     if [ "$LC1" -gt "$LC2" ]
