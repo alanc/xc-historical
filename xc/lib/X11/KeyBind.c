@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.73 93/09/29 20:29:01 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.74 93/11/05 11:13:02 kaleb Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -23,6 +23,7 @@ without express or implied warranty.
 #define XK_LATIN2
 #define XK_LATIN3
 #define XK_LATIN4
+#define XK_CYRILLIC
 #include <X11/keysymdef.h>
 #include <stdio.h>
 
@@ -340,6 +341,19 @@ XConvertCase(sym, lower, upper)
 	else if (sym >= XK_amacron && sym <= XK_umacron)
 	    *upper -= (XK_amacron - XK_Amacron);
 	break;
+#endif
+#ifdef XK_CYRILLIC
+    case 6:
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Serbian_DJE && sym <= XK_Serbian_DZE)
+	    *lower -= (XK_Serbian_DJE - XK_Serbian_dje);
+	else if (sym >= XK_Serbian_dje && sym <= XK_Serbian_dze)
+	    *upper += (XK_Serbian_DJE - XK_Serbian_dje);
+	else if (sym >= XK_Cyrillic_YU && sym <= XK_Cyrillic_HARDSIGN)
+	    *lower -= (XK_Cyrillic_YU - XK_Cyrillic_yu);
+	else if (sym >= XK_Cyrillic_yu && sym <= XK_Cyrillic_hardsign)
+	    *upper += (XK_Cyrillic_YU - XK_Cyrillic_yu);
+        break;
 #endif
     }
 }
