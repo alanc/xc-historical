@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.h,v 1.1 92/02/13 16:08:34 keith Exp $
+ * $XConsortium: saver.h,v 1.2 92/02/28 17:50:37 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -38,6 +38,7 @@
 #define ScreenSaverOff		0
 #define ScreenSaverOn		1
 #define ScreenSaverCycle	2
+#define ScreenSaverDisabled	3
 
 #define ScreenSaverBlanked	0
 #define ScreenSaverInternal	1
@@ -45,7 +46,5 @@
 
 #define ScreenSaverNotify	0
 #define ScreenSaverNumberEvents	1
-
-#define ScreenSaverDisabled	(0xffffffff)
 
 #endif /* _SAVER_H_ */
