@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.106 93/07/10 19:09:05 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.107 93/07/11 13:34:44 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -223,7 +223,7 @@ extern void (*_XUnlockMutex_fn)(
 #define LockMutex()		if (_XLockMutex_fn) (*_XLockMutex_fn)()
 #define UnlockMutex()		if (_XUnlockMutex_fn) (*_XUnlockMutex_fn)()
 
-#ifdef XTHREADS_WARN
+#if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
 #else
