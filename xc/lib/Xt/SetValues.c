@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.13 91/05/02 16:11:33 swick Exp $ */
+/* $XConsortium: SetValues.c,v 1.14 92/05/19 14:55:12 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -228,23 +228,23 @@ void XtSetValues(w, args, num_args)
 		(CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
 		for ( ; num_args != 0; num_args--, args++) {
 		    if (! (geoReq.request_mode & CWX) &&
-			strcmp(XtNx, args) == 0) {
+			strcmp(XtNx, args->name) == 0) {
 			geoReq.x = w->core.x;
 			geoReq.request_mode |= CWX;
 		    } else if (! (geoReq.request_mode & CWY) &&
-			       strcmp(XtNy, args) == 0) {
+			       strcmp(XtNy, args->name) == 0) {
 			geoReq.y = w->core.y;
 			geoReq.request_mode |= CWY;
 		    } else if (! (geoReq.request_mode & CWWidth) &&
-			       strcmp(XtNwidth, args) == 0) {
+			       strcmp(XtNwidth, args->name) == 0) {
 			geoReq.width = w->core.width;
 			geoReq.request_mode |= CWWidth;
 		    } else if (! (geoReq.request_mode & CWHeight) &&
-			       strcmp(XtNheight, args) == 0) {
+			       strcmp(XtNheight, args->name) == 0) {
 			geoReq.height = w->core.height;
 			geoReq.request_mode |= CWHeight;
 		    } else if (! (geoReq.request_mode & CWBorderWidth) &&
-			       strcmp(XtNborderWidth, args) == 0) {
+			       strcmp(XtNborderWidth, args->name) == 0) {
 			geoReq.border_width = w->core.border_width;
 			geoReq.request_mode |= CWBorderWidth;
 		    }
