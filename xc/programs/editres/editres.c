@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.6 92/03/02 16:52:01 dave Exp $
+ * $XConsortium: editres.c,v 1.14 92/03/20 18:11:51 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -148,7 +148,6 @@ XtAppContext app_con;
 char *call;
 {
     XtDestroyApplicationContext(app_con);
-    fprintf( stderr, "Usage: %s [ -vspace <value> ] [ -hspace <value> ]\n",
-	    call);
+    fprintf(stderr, "Usage: %s\n", call);
     exit(1);
 }
