@@ -1,4 +1,4 @@
-/* $XConsortium: XWrBitF.c,v 1.9 91/02/01 16:34:58 gildea Exp $ */
+/* $XConsortium: XWrBitF.c,v 1.10 91/11/21 19:39:47 rws Exp $ */
 /* Copyright, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -124,7 +124,7 @@ int XWriteBitmapFile(display, filename, bitmap, width, height, x_hot, y_hot)
   }
 
   /* Print out the data itself */
-  fprintf(stream, "static char %s_bits[] = {", name);
+  fprintf(stream, "static unsigned char %s_bits[] = {", name);
   for (byte=0, ptr=data; byte<size; byte++, ptr++) {
     if (!byte)
       fprintf(stream, "\n   ");
