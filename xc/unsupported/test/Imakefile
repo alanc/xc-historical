@@ -1,10 +1,9 @@
-# $Header: Imakefile,v 1.4 87/09/03 12:43:51 toddb Locked $
+# $Header: Imakefile,v 1.5 87/09/13 22:04:30 toddb Exp $
    ZOIDSRCS = zoidtest.c
    ZOIDOBJS = zoidtest.o
  BEZIERSRCS = beziertest.c
  BEZIEROBJS = beziertest.o
    INCLUDES = -I$(TOP) -I$(TOP)/include -I../include
-CDEBUGFLAGS = -g
 
 all: zoidtest beziertest
 
