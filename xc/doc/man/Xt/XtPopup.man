@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw XtCallback-None XtCallback-Nonexclusive XtCallback-Exclusive wid-get
+.hw XtPopup-Spring-Loaded XtCallback-None XtCallback-Nonexclusive XtCallback-Exclusive wid-get
 .na
 .de Ds
 .nf
@@ -99,13 +99,17 @@
 .ny0
 .TH XtPopup 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtPopup, XtCallbackNone, XtCallbackNonexclusive, XtCallbackExclusive \- map a pop-up
+XtPopup, XtPopupSpringLoaded, XtCallbackNone, XtCallbackNonexclusive, XtCallbackExclusive \- map a pop-up
 .SH SYNTAX
 void XtPopup(\fIpopup_shell\fP, \fIgrab_kind\fP)
 .br
       Widget \fIpopup_shell\fP;
 .br
       XtGrabKind \fIgrab_kind\fP;
+.LP
+void XtPopupSpringLoaded(\fIpopup_shell\fP)
+.br
+      Widget \fIpopup_shell\fP;
 .LP
 void XtCallbackNone(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP)
 .br
@@ -189,6 +193,19 @@ with popup_shell specified.
 Calls
 .ZN XMapWindow 
 with popup_shell specified.
+.LP
+The
+.ZN XtPopupSpringLoaded
+function performs exactly as
+.ZN XtPopup
+except that it sets the shell \fIspring_loaded\fP field to
+.ZN True
+and always calls
+.ZN XtAddGrab
+with \fIexclusive\fP
+.ZN True
+and \fIspring_loaded\fP
+.ZN True .
 .LP
 The
 .ZN XtCallbackNone ,
