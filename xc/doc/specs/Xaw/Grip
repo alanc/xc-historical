@@ -113,22 +113,22 @@ parameters to the \fBGripAction\fP routine.
 .LP
 The \fBGripAction\fP routine executes the callbacks on the
 \fBcallback\fP list, passing as \fIcall_data\fP a pointer to a
-\fBGripCallData\fP structure, defined in the Grip widget's application
+\fBXawGripCallData\fP structure, defined in the Grip widget's application
 header file.
 .LP
 .Ds 0
 .TA .5i 2.25i
 .ta .5i 2.25i
-.IN "GripCallData" "" "@DEF@"
-.IN "GripCallDataRec" "" "@DEF@"
+.IN "XawGripCallData" "" "@DEF@"
+.IN "XawGripCallDataRec" "" "@DEF@"
 .sp
-typedef struct _GripCallData {
+typedef struct _XawGripCallData {
 	XEvent *event;
 	String *params;
 	Cardinal num_params;
-} GripCallDataRec, *GripCallData;
-.IN "GripCallDataRec" ""
-.IN "GripCallData" ""
+} XawGripCallDataRec, *XawGripCallData;
+.IN "XawGripCallDataRec" ""
+.IN "XawGripCallData" ""
 .sp
 .De
 .LP
