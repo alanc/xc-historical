@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.15 88/10/12 20:13:54 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.16 88/10/13 16:38:57 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1357,7 +1357,7 @@ miBSCopyPlane (pSrc, pDst, pGC, srcx, srcy, w, h, dstx, dsty, plane)
 		bdstx += dx;
 		bw -= dx;
 	    }
-	    dy = bdsty - pExtents->y1;
+	    dy = pExtents->y1 - bdsty;
 	    if (dy > 0)
 	    {
 		bsrcy += dy;
