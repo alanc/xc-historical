@@ -1,7 +1,7 @@
 /*
  * MIT-MAGIC-COOKIE-1 authorization scheme
  *
- * $XConsortium: $
+ * $XConsortium: mitauth.c,v 1.1 88/12/08 16:39:51 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,12 +34,14 @@ XID	id;
 {
     struct auth	*new;
 
-    new = (struct auth *) Xalloc (sizeof (struct auth));
+    new = (struct auth *) xalloc (sizeof (struct auth));
     if (!new)
 	return 0;
-    new->data = (char *) Xalloc ((unsigned) data_length);
-    if (!new->data)
+    new->data = (char *) xalloc ((unsigned) data_length);
+    if (!new->data) {
+	xfree(new);
 	return 0;
+    }
     new->next = mit_auth;
     mit_auth = new;
     bcopy (data, new->data, (int) data_length);
@@ -70,8 +72,8 @@ MitResetCookie ()
 
     for (auth = mit_auth; auth; auth=next) {
 	next = auth->next;
-	Xfree (auth->data);
-	Xfree (auth);
+	xfree (auth->data);
+	xfree (auth);
     }
     mit_auth = 0;
 }
@@ -123,8 +125,8 @@ char	*data;
 		prev->next = auth->next;
 	    else
 		mit_auth = auth->next;
-	    Xfree (auth->data);
-	    Xfree (auth);
+	    xfree (auth->data);
+	    xfree (auth);
 	    return 1;
 	}
     }

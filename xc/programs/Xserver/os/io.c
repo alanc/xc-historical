@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.51 89/01/16 14:00:26 rws Exp $ */
+/* $XConsortium: io.c,v 1.52 89/01/16 17:13:04 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -143,9 +143,16 @@ ReadRequestFromClient(client, status, oldbuf)
 		bcopy(oc->input.bufptr, oc->input.buffer, gotnow);
 	    if (needed > oc->input.size)
 	    {
+		char *ibuf;
+
+		ibuf = (char *)xrealloc(oc->input.buffer, needed);
+		if (!ibuf)
+		{
+		    *status = -1;
+		    YieldControlAndReturnNull();
+		}
 		oc->input.size = needed;
-		oc->input.buffer = (char *)xrealloc(oc->input.buffer,
-						    oc->input.size);
+		oc->input.buffer = ibuf;
 	    }
 	    oc->input.bufptr = oc->input.buffer;
 	    oc->input.bufcnt = gotnow;
@@ -166,10 +173,15 @@ ReadRequestFromClient(client, status, oldbuf)
 	if ((oc->input.size > BUFWATERMARK) &&
 	    (oc->input.bufcnt < BUFSIZE) && (needed < BUFSIZE))
 	{
-	    oc->input.size = BUFSIZE;
-	    oc->input.buffer = (char *)xrealloc(oc->input.buffer,
-						oc->input.size);
-	    oc->input.bufptr = oc->input.buffer + oc->input.bufcnt - gotnow;
+	    char *ibuf;
+
+	    ibuf = (char *)xrealloc(oc->input.buffer, BUFSIZE);
+	    if (ibuf)
+	    {
+		oc->input.size = BUFSIZE;
+		oc->input.buffer = ibuf;
+		oc->input.bufptr = ibuf + oc->input.bufcnt - gotnow;
+	    }
 	}
 	request = (xReq *)oc->input.bufptr;
 	if ((gotnow < sizeof(xReq)) ||
@@ -211,6 +223,7 @@ ReadRequestFromClient(client, status, oldbuf)
  *
  **********************/
 
+Bool
 InsertFakeRequest(client, data, count)
     ClientPtr client;
     char *data;
@@ -225,9 +238,14 @@ InsertFakeRequest(client, data, count)
     gotnow = oc->input.bufcnt + oc->input.buffer - oc->input.bufptr;
     if ((gotnow + count) > oc->input.size)
     {
+	char *ibuf;
+
+	ibuf = (char *)xrealloc(oc->input.buffer, gotnow + count);
+	if (!ibuf)
+	    return(FALSE);
 	oc->input.size = gotnow + count;
-	oc->input.buffer = (char *)xrealloc(oc->input.buffer, oc->input.size);
-	oc->input.bufptr = oc->input.buffer + oc->input.bufcnt - gotnow;
+	oc->input.buffer = ibuf;
+	oc->input.bufptr = ibuf + oc->input.bufcnt - gotnow;
     }
     moveup = count - (oc->input.bufptr - oc->input.buffer);
     if (moveup > 0)
@@ -246,6 +264,7 @@ InsertFakeRequest(client, data, count)
 	BITSET(ClientsWithInput, fd);
     else
 	YieldControlNoInput();
+    return(TRUE);
 }
 
 /*****************************************************************
@@ -289,7 +308,7 @@ static int padlength[4] = {0, 3, 2, 1};
  *
  **********************/
 
-int
+static int
 FlushClient(who, oc, extraBuf, extraCount)
     ClientPtr who;
     OsCommPtr oc;
@@ -349,18 +368,9 @@ FlushClient(who, oc, extraBuf, extraCount)
 	}
 	else if (errno != EWOULDBLOCK)
         {
-#ifdef notdef
-	    if (errno != EBADF)
-		ErrorF("Closing connection %d because write failed\n",
-			connection);
-		/* this close will cause the select in WaitForSomething
-		   to return that the connection is dead, so we can actually
-		   clean up after the client.  We can't clean up here,
-		   because the we're in the middle of doing something
-		   and will probably screw up some data strucutres */
-#endif
 	    close(connection);
             MarkClientException(who);
+	    oc->output.count = 0;
 	    return(-1);
 	}
 
@@ -390,29 +400,19 @@ FlushClient(who, oc, extraBuf, extraCount)
 
 	if (notWritten > oc->output.size)
 	{
-	    /* allocate at least enough to contain it plus one
-	       OutputBufferSize */
-	    oc->output.size = notWritten + OutputBufferSize;
-	    oc->output.buf = (unsigned char *)xrealloc(oc->output.buf,
-						       oc->output.size);
-	    if (oc->output.buf == NULL)
+	    unsigned char *obuf;
+
+	    obuf = (unsigned char *)xrealloc(oc->output.buf,
+					     notWritten + OutputBufferSize);
+	    if (!obuf)
 	    {
-	outOfMem:
-#ifdef notdef
-		ErrorF("Closing connection %d because out of memory\n",
-			connection);
-		/* this close will cause the select in WaitForSomething
-		   to return that the connection is dead, so we can actually
-		   clean up after the client.  We can't clean up here,
-		   because the we're in the middle of doing something
-		   and will probably screw up some data strucutres */
-#endif
 		close(connection);
 		MarkClientException(who);
 		oc->output.count = 0;
-		oc->output.size = 0;
 		return(-1);
 	    }
+	    oc->output.size = notWritten + OutputBufferSize;
+	    oc->output.buf = obuf;
 	}
 
 	/* If the amount written extended into the padBuffer, then the
@@ -431,11 +431,14 @@ FlushClient(who, oc, extraBuf, extraCount)
     oc->output.count = 0;
     if (oc->output.size > OutputBufferSize)
     {
-	oc->output.size = OutputBufferSize;
-	oc->output.buf = (unsigned char *)xrealloc(oc->output.buf,
-						   OutputBufferSize);
-	if (oc->output.buf == NULL) /* nearly impossible */
-	    goto outOfMem;
+	unsigned char *obuf;
+
+	obuf = (unsigned char *)xrealloc(oc->output.buf, OutputBufferSize);
+	if (obuf)
+	{
+	    oc->output.size = OutputBufferSize;
+	    oc->output.buf = obuf;
+	}
     }
     return extraCount; /* return only the amount explicitly requested */
 }
