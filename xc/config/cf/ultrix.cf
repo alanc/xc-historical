@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.54 93/09/13 19:46:29 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.55 93/09/15 09:56:13 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -29,6 +29,7 @@ XCOMM operating system:  OSName
 #ifdef MipsArchitecture
 #if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 2)
 #define XdecServer YES
+#define ServerExtraDefines -DDDXTIME
 /* Even under ultrix 4.2, the compiler miscompiles some alloca calls */
 #define AllocateLocalDefines /* -DINCLUDE_ALLOCA_H */
 #else

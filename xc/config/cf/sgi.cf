@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.29 93/08/19 14:43:10 kaleb Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.30 93/09/06 15:21:04 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -72,6 +72,7 @@ XCOMM operating system:  OSName
 #define DefaultSystemPath /usr/sbin:/usr/bsd:/bin:/etc:/usr/bin:/usr/etc:$(BINDIR)
 
 #define BuildServer             NO
+#define ServerExtraDefines -DDDXTIME
 
 /* Changed to a single shell command for pmake/smake */
 /*
