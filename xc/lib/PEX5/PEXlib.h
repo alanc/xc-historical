@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.8 92/08/10 16:00:17 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.9 92/08/26 13:05:12 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -101,7 +101,6 @@ typedef int             PEXOCRequestType;
 typedef unsigned short  PEXShapeHint;
 typedef unsigned char   PEXSwitch;
 typedef unsigned short  PEXTableIndex;
-typedef unsigned short  PEXTableType;
 typedef unsigned short  PEXTypeOrTableIndex;
 
 #if NeedFunctionPrototypes
@@ -1011,14 +1010,7 @@ typedef struct {
     PEXColorType        color_type;
     unsigned short      row_count;
     unsigned short      col_count;
-    PEXPointer          colors;  /* pointer to 2D array of colors of type: */
-                                 /* PEXColorRGB,
-                                    PEXColorHSV,
-                                    PEXColorHLS,
-                                    PEXColorCIE,
-                                    PEXColorRGB8,
-                                    PEXColorRGB16,
-                                    or short (for PEXColorIndexed) */
+    PEXArrayOfColor     colors;  /* pointer to 2D array of colors */
 } PEXPatternEntry;
 
 typedef PEXColorSpecifier       PEXColorEntry;
