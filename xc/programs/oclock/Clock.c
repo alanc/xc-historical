@@ -29,8 +29,6 @@ static XtResource resources[] = {
 	offset(hour), XtRString, XtDefaultForeground},
     {XtNjewel, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset(jewel), XtRString, XtDefaultForeground},
-    {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
     {XtNborderSize, XtCBorderSize, XtRFloat, sizeof (float),

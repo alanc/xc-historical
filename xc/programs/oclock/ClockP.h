@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ClockP.h,v 1.5 89/07/21 13:44:45 jim Exp $
+ * $XConsortium: ClockP.h,v 1.6 90/04/30 13:52:00 keith Exp $
  */
 
 #ifndef _ClockP_h
@@ -25,7 +25,6 @@ typedef struct {
 #endif
 /* start of graph stuff */
 	int		backing_store;	/* backing store variety */
-	Boolean		reverse_video;	/* swap fg and bg pixels */
 #ifdef SHAPE
 	Boolean		shape_window;	/* use SetWindowShapeMask */
 	Boolean		transparent;	/* make window transparent */

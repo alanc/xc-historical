@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.h,v 1.4 89/07/21 13:44:44 jim Exp $
+ * $XConsortium: Clock.h,v 1.5 90/04/30 13:52:13 keith Exp $
  */
 
 #ifndef _XtClock_h
@@ -22,7 +22,6 @@
  hour		     Foreground		Pixel		Black
  height		     Height		int		120
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- reverseVideo	     ReverseVideo	Boolean		False
  width		     Width		int		120
  x		     Position		int		0
  y		     Position		int		0
