@@ -1,5 +1,6 @@
-LOCAL_LIBRARIES = $(XLIB)
-           SRCS = xfd.c wsimple.c
-           OBJS = xfd.o wsimple.o
+CDEBUGFLAGS = -g
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+           SRCS = xfd.c fontgrid.c 
+           OBJS = xfd.o fontgrid.o 
 
 ComplexProgramTarget(xfd)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xfd.c,v 1.2 89/06/02 17:40:24 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,9 +40,12 @@
 char *ProgramName;
 
 static XrmOptionDescRec xfd_options[] = {
-{"-bf",		"bottomFont",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-fn",		"*grid.font",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-bf",		"*bottomFont",	XrmoptionSepArg,	(caddr_t) NULL },
 {"-start",	"*startChar",	XrmoptionSepArg, 	(caddr_t) NULL },
-{"-verbose",	"verbose",	XrmoptionNoArg,		(caddr_t) "on" },
+{"-box",	"*grid.boxChars", XrmoptionNoArg,	(caddr_t) "on" },
+{"-bc",		"*grid.boxColor", XrmoptionSepArg, 	(caddr_t) NULL },
+{"-verbose",	"*verbose",	XrmoptionNoArg,		(caddr_t) "on" },
 };
 
 static struct resources {
@@ -63,11 +66,11 @@ static void do_quit(), do_next(), do_prev();
 
 static XtActionsRec xfd_actions[] = {
   { "Quit", do_quit },
-  { "Next", do_next },
   { "Prev", do_prev },
+  { "Next", do_next },
 };
 
-static char *button_list[] = { "quit", "next", "prev", NULL };
+static char *button_list[] = { "quit", "prev", "next", NULL };
 
 
 usage()
@@ -111,9 +114,11 @@ main (argc, argv)
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
 
+#ifdef notdef
     /* font name */
     toplabel = XtCreateManagedWidget ("title", labelWidgetClass, pane, 
 				      NULL, ZERO);
+#endif
 
     /* button box */
     box = XtCreateManagedWidget ("box", boxWidgetClass, pane, NULL, ZERO);
@@ -139,8 +144,10 @@ main (argc, argv)
     XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
     XtSetArg (av[i], XtNleft, XtChainLeft); i++;
     XtSetArg (av[i], XtNright, XtChainRight); i++;
+/*
     XtSetArg (av[i], XtNwidth, DEFAULT_DRAWING_WIDTH); i++;
     XtSetArg (av[i], XtNheight, DEFAULT_DRAWING_HEIGHT); i++;
+ */
     XtSetArg (av[i], XtNcallback, cb); i++;
     grid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form, av, i);
 
@@ -162,23 +169,22 @@ static void GotCharacter (w, closure, data)
     XFontStruct *fs = p->thefont;
     unsigned n = ((((unsigned) p->thechar.byte1) << 8) |
 		  ((unsigned) p->thechar.byte2));
-    XCharStruct *pc;
+    int direction, fontascent, fontdescent;
+    XCharStruct metrics;
+
+    XTextExtents16 (fs, &p->thechar, 1, &direction, &fontascent, &fontdescent,
+		    &metrics);
 
     /*
      * XXX - display in a text widget, along with perchar info
      */
-    if (fs->per_char) {
-	pc = fs->per_char + ((p->thechar.byte2 - fs->min_char_or_byte2) *
-			     (p->thechar.byte1 - fs->min_byte1));
-    } else {
-	pc = &fs->max_bounds;
-    }
-
-    printf ("Got character %u, 0x%02x%02x (%d, %d)\n", n,
+    printf ("Character %u, 0x%02x%02x (%d, %d); font ascent %d, descent %d\n",
+	    n, fontascent, fontdescent,
 	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
-    printf ("width %d, left %d, right %d, ascent %d, descent %d\n",
-	    pc->width, pc->lbearing, pc->rbearing, pc->ascent, pc->descent);
+    printf ("    width %d, left %d, right %d, ascent %d, descent %d\n",
+	    metrics.width, metrics.lbearing, metrics.rbearing,
+	    metrics.ascent, metrics.descent);
 
     return;
 }
@@ -232,20 +238,21 @@ static void do_quit (w, event, params, num_params)
     exit (0);
 }
 
-static void do_next (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
-{
-    /* goto next page */
-}
-
 static void do_prev (w, event, params, num_params)
     Widget w;
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
-    /* goto prev page */
+    printf ("goto prev page\n");
 }
+
+static void do_next (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    printf ("goto next page\n");
+}
+

@@ -1,10 +1,11 @@
 #ifndef _FontGrid_h_
 #define _FontGrid_h_
 
+typedef struct _FontGridRec *FontGridWidget;
 extern WidgetClass fontgridWidgetClass;
 
-#define XtNboxCharacters "boxCharacters"
-#define XtCBoxCharacters "BoxCharacters"
+#define XtNboxChars "boxChars"
+#define XtCBoxChars "BoxChars"
 
 #define XtNboxColor "boxColor"
 #define XtCBoxColor "BoxColor"
@@ -14,6 +15,9 @@ extern WidgetClass fontgridWidgetClass;
 
 #define XtNinternalPad "internalPad"
 #define XtCInternalPad "InternalPad"
+
+#define XtNgridWidth "gridWidth"
+#define XtCGridWidth "GridWidth"
 
 typedef struct _FontGridCharRec {
     XFontStruct *	thefont;

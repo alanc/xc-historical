@@ -20,6 +20,7 @@ typedef struct _FontGridPart {
     XtCallbackList	callbacks;	/* for notifying caller */
     int			internal_pad;	/* extra padding inside grid */
     int			start_char;	/* first character of grid */
+    int			grid_width;	/* width of grid lines */
     /* private data */
     GC			text_gc;	/* printing text */
     GC			box_gc;		/* for box_chars */
@@ -30,6 +31,6 @@ typedef struct _FontGridRec {
     CorePart		core;
     SimplePart		simple;
     FontGridPart	fontgrid;
-} FontGridRec, *FontGridPtr;
+} FontGridRec;
 
 #endif /* _FontGridP_h_ */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontgrid.c,v 1.1 89/06/02 17:40:21 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,44 +30,48 @@
 #include <X11/SimpleP.h>
 #include "fontgridP.h"
 
-#define CellWidth(fs) ((fs) ? (fs)->max_bounds.width : 0)
-#define CellHeight(fs) ((fs) ? ((fs)->ascent + (fs)->descent) : 0)
+#define CellWidth(fgw) (((fgw)->fontgrid.text_font->max_bounds.width) + \
+			((fgw)->fontgrid.internal_pad * 2))
+#define CellHeight(fgw) ((fgw)->fontgrid.text_font->ascent + \
+			 (fgw)->fontgrid.text_font->descent + \
+			 ((fgw)->fontgrid.internal_pad * 2))
 
 #define Bell(w) XBell(XtDisplay(w), 50)
 
 
+static void Initialize(), Realize(), Redisplay(), Notify();
+static void paint_grid();
+static Boolean SetValues();
 
-static char defaultTranslations[] = 
-  "<ButtonPress>:  notify()";
-
-static void Notify();
-
-static XtActionsRec actions_list[] = {
-    { "notify",		Notify },
-};
 
 static XtResource resources[] = {
-#define offset(field) XtOffset(FontGridPtr, fontgrid.field)
+#define offset(field) XtOffset(FontGridWidget, fontgrid.field)
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
 	offset(text_font), XtRString, (caddr_t) NULL },
     { XtNfirstChar, XtCFirstChar, XtRInt, sizeof(int),
 	offset(start_char), XtRString, (caddr_t) "0" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
-    { XtNboxCharacters, XtCBoxCharacters, XtRBoolean, sizeof(Boolean),
+    { XtNboxChars, XtCBoxChars, XtRBoolean, sizeof(Boolean),
 	offset(box_chars), XtRString, (caddr_t) "FALSE" },
     { XtNboxColor, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(box_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
     { XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
 	offset(callbacks), XtRCallback, (caddr_t) NULL },
     { XtNinternalPad, XtCInternalPad, XtRInt, sizeof(int),
-	offset(internal_pad), XtRString, (caddr_t) "2" },
+	offset(internal_pad), XtRString, (caddr_t) "4" },
+    { XtNgridWidth, XtCGridWidth, XtRInt, sizeof(int),
+	offset(grid_width), XtRString, (caddr_t) "1" },
 #undef offset
 };
 
 
-static void Realize(), Redisplay();
-static Boolean SetValues();
+static char defaultTranslations[] = 
+  "<ButtonPress>:  notify()";
+
+static XtActionsRec actions_list[] = {
+    { "notify",		Notify },
+};
 
 FontGridClassRec fontgridClassRec = {
   { /* core fields */
@@ -77,7 +81,7 @@ FontGridClassRec fontgridClassRec = {
     /* class_initialize         */      NULL,
     /* class_part_initialize    */      NULL,
     /* class_inited             */      FALSE,
-    /* initialize               */      NULL,
+    /* initialize               */      Initialize,
     /* initialize_hook          */      NULL,
     /* realize                  */      Realize,
     /* actions                  */      actions_list,
@@ -110,40 +114,94 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 
 static GC get_gc (fgw, fore)
-    FontGridPtr fgw;
+    FontGridWidget fgw;
     Pixel fore;
 {
     XtGCMask mask;
     XGCValues gcv;
 
-    mask = (GCForeground | GCBackground | GCFunction);
+    mask = (GCForeground | GCBackground | GCFunction | GCFont);
     gcv.foreground = fore;
     gcv.background = fgw->core.background_pixel;
     gcv.function = GXcopy;
+    gcv.font = fgw->fontgrid.text_font->fid;
+    if (fgw->fontgrid.grid_width > 0) {
+	mask |= GCLineWidth;
+	gcv.line_width = ((fgw->fontgrid.grid_width < 2) ? 0 : 
+			  fgw->fontgrid.grid_width);
+    }
     return (XtGetGC ((Widget) fgw, mask, &gcv));
 }
 
+
+static void Initialize (request, new)
+    Widget request, new;
+{
+    FontGridWidget newfg = (FontGridWidget) new;
+
+    newfg->fontgrid.cell_width = CellWidth (newfg);
+    newfg->fontgrid.cell_height = CellHeight (newfg);
+
+    if (newfg->core.width == 0)
+      newfg->core.width = (newfg->fontgrid.cell_width * 16 +
+			   newfg->fontgrid.grid_width);
+    if (newfg->core.height == 0)
+      newfg->core.height = (newfg->fontgrid.cell_height * 16 +
+			    newfg->fontgrid.grid_width);
+
+    return;
+}
 
 static void Realize (gw, valueMask, attributes)
     Widget gw;
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-    FontGridPtr fgw = (FontGridPtr) gw;
+    FontGridWidget fgw = (FontGridWidget) gw;
     FontGridPart *p = &fgw->fontgrid;
 
     p->text_gc = get_gc (fgw, p->foreground_pixel);
     p->box_gc = get_gc (fgw, p->box_pixel);
-    p->cell_width = CellWidth (p->text_font);
-    p->cell_height = CellHeight (p->text_font);
 
     (*(XtSuperclass(gw)->core_class.realize)) (gw, valueMask, attributes);
     return;
 }
 
 
+
+/* ARGSUSED */
+static void Redisplay (gw, event, region)
+    Widget gw;
+    XEvent *event;
+    Region region;
+{
+    FontGridWidget fgw = (FontGridWidget) gw;
+    XRectangle rect;			/* bounding rect for region */
+    int left, right, top, bottom;	/* which cells were damaged */
+    int cw, ch;				/* cell size */
+
+    if (!fgw->fontgrid.text_font) {
+	Bell (gw);
+	return;
+    }
+
+    /*
+     * compute the left, right, top, and bottom cells that were damaged
+     */
+    XClipBox (region, &rect);
+    cw = fgw->fontgrid.cell_width;
+    ch = fgw->fontgrid.cell_height;
+    if ((left = (((int) rect.x) / cw)) < 0) left = 0;
+    right = (((int) (rect.x + rect.width - 1)) / cw);
+    if ((top = (((int) rect.y) / ch)) < 0) top = 0;
+    bottom = (((int) (rect.y + rect.height - 1)) / ch);
+
+    paint_grid (fgw, left, top, right - left + 1, bottom - top + 1);
+}
+
+
 static void paint_grid (fgw, col, row, ncols, nrows)
-    FontGridPtr fgw;			/* widget in which to draw */
+    FontGridWidget fgw;			/* widget in which to draw */
     int col, row;			/* where to start */
     int ncols, nrows;			/* number of cells */
 {
@@ -155,21 +213,36 @@ static void paint_grid (fgw, col, row, ncols, nrows)
     int ch = p->cell_height;
     int trows = fgw->core.width / cw;
     int tcols = fgw->core.height / ch;
-    GC gc = p->text_gc;
     int x1, y1, x2, y2, x, y;
+    unsigned maxn = ((p->text_font->max_byte1 << 8) |
+		     p->text_font->max_char_or_byte2);
+    unsigned n, prevn;
+    int startx;
+
+    if (col + ncols >= tcols) {
+	ncols = tcols - col;
+	if (ncols < 1) return;
+    }
+
+    if (row + nrows >= trows) {
+	nrows = trows - row;
+	if (nrows < 1) return;
+    }
 
     /*
      * paint the grid lines for the indicated rows 
      */
-    x1 = col * cw;
-    y1 = row * ch;
-    x2 = x1 + ncols * cw;
-    y2 = y1 + nrows * ch;
-    for (i = 0, x = x1; i <= ncols; i++, x += cw) {
-	XDrawLine (dpy, wind, gc, x, y1, x, y2);
-    }
-    for (i = 0, y = y1; i <= nrows; i++, y += ch) {
-	XDrawLine (dpy, wind, gc, x1, y, x2, y);
+    if (p->grid_width > 0) {
+	x1 = col * cw;
+	y1 = row * ch;
+	x2 = x1 + ncols * cw;
+	y2 = y1 + nrows * ch;
+	for (i = 0, x = x1; i <= ncols; i++, x += cw) {
+	    XDrawLine (dpy, wind, p->box_gc, x, y1, x, y2);
+	}
+	for (i = 0, y = y1; i <= nrows; i++, y += ch) {
+	    XDrawLine (dpy, wind, p->box_gc, x1, y, x2, y);
+	}
     }
 
 	
@@ -178,69 +251,55 @@ static void paint_grid (fgw, col, row, ncols, nrows)
      * fonts.  Store the high eight bits in byte1 and the low eight bits in 
      * byte2.
      */
-    for (j = 0, y = row * ch; j < nrows; j++, y += ch) {
-	for (i = 0, x = col * cw; i < ncols; i++, x += cw) {
-	    unsigned n = (p->start_char + (i + col) +
-			  (row + j) * tcols);
+    prevn = p->start_char + col + row * tcols;
+    startx = col * cw + p->internal_pad;
+    for (j = 0, y = row * ch + p->internal_pad + p->text_font->ascent;
+	 j < nrows; j++, y += ch) {
+	n = prevn;
+	for (i = 0, x = startx; i < ncols; i++, x += cw) {
 	    XChar2b thechar;
+
+	    if (n > maxn) goto done;	/* no break out of nested */
+
 	    thechar.byte1 = (n >> 8);	/* high eight bits */
 	    thechar.byte2 = (n & 255);	/* low eight bits */
-	    XDrawImageString16 (dpy, wind, gc,
-				x + p->internal_pad,
-				y + p->internal_pad + p->text_font->ascent,
-				&thechar, 1);
 	    if (p->box_chars) {
+		XCharStruct metrics;
+		int direction, fontascent, fontdescent;
+
 		/*
-		 * draw a rectangle around the ink boundary
+		 * XXX - extract info directly....
 		 */
+		XTextExtents16 (p->text_font, &thechar, 1, &direction,
+				&fontascent, &fontdescent, &metrics);
+
+		XDrawRectangle (dpy, wind, p->box_gc,
+				x, y - p->text_font->ascent, 
+				metrics.width, fontascent + fontdescent);
 	    }
+	    XDrawString16 (dpy, wind, p->text_gc, x, y, &thechar, 1);
+	    n++;
 	}
+	prevn += tcols;
     }
 
+  done:
     return;
-}
-
-
-/* ARGSUSED */
-static void Redisplay (gw, event, region)
-    Widget gw;
-    XEvent *event;
-    Region region;
-{
-    FontGridPtr fgw = (FontGridPtr) gw;
-    XRectangle rect;			/* bounding rect for region */
-    int cx, cy, cw, ch;			/* cell location and size */
-    int ncols, nrows;			/* number of cells to repaint */
-
-    if (!fgw->fontgrid.text_font) {
-	Bell (gw);
-	return;
-    }
-
-    XClipBox (region, &rect);
-    cw = fgw->fontgrid.cell_width;
-    ch = fgw->fontgrid.cell_height;
-    if ((cx = rect.x / cw) < 0) cx = 0;
-    if ((cy = rect.y / ch) < 0) cy = 0;
-    ncols = (int) (((unsigned) rect.width) / (unsigned) cw);
-    nrows = (int) (((unsigned) rect.height) / (unsigned) ch);
-
-    paint_grid (fgw, cx, cy, ncols, nrows);
 }
 
 
 static Boolean SetValues (current, request, new)
     Widget current, request, new;
 {
-    FontGridPtr curfg = (FontGridPtr) current;
-    FontGridPtr reqfg = (FontGridPtr) request;
-    FontGridPtr newfg = (FontGridPtr) new;
+    FontGridWidget curfg = (FontGridWidget) current;
+    FontGridWidget reqfg = (FontGridWidget) request;
+    FontGridWidget newfg = (FontGridWidget) new;
     Boolean redisplay = FALSE;
 
     if (curfg->fontgrid.text_font != newfg->fontgrid.text_font ||
 	curfg->fontgrid.internal_pad != newfg->fontgrid.internal_pad) {
-	newfg->fontgrid.cell_width = CellWidth (newfg->fontgrid.text_font);
-	newfg->fontgrid.cell_height = CellHeight (newfg->fontgrid.text_font);
+	newfg->fontgrid.cell_width = CellWidth (newfg);
+	newfg->fontgrid.cell_height = CellHeight (newfg);
 	redisplay = TRUE;
     }
 
@@ -268,10 +327,13 @@ static void Notify (gw, event, params, nparams)
     String *params;
     Cardinal *nparams;
 {
-    FontGridPtr fgw = (FontGridPtr) gw;
+    FontGridWidget fgw = (FontGridWidget) gw;
     int x, y;				/* where the event happened */
     FontGridCharRec rec;		/* callback data */
 
+    /*
+     * only allow events with (x,y)
+     */
     switch (event->type) {
       case KeyPress:
       case KeyRelease:
@@ -292,6 +354,9 @@ static void Notify (gw, event, params, nparams)
 	return;
     }
 
+    /*
+     * compute the callback data
+     */
     {
 	int cw = fgw->fontgrid.cell_width, ch = fgw->fontgrid.cell_height;
         int tcols = fgw->core.height / ch;

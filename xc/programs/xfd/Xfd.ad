@@ -1,0 +1,15 @@
+Xfd*internalBorderWidth: 0
+Xfd*showGrip: false
+
+Xfd*grid.borderWidth: 0
+
+Xfd*quit.Label: Quit
+Xfd*prev.Label: Prev
+Xfd*next.Label: Next
+
+Xfd*quit.Translations:  #override \
+		<Btn1Up>: Quit() unset()
+Xfd*next.Translations:  #override \
+		<Btn1Up>: Next() unset()
+Xfd*prev.Translations:  #override \
+		<Btn1Up>: Prev() unset()
