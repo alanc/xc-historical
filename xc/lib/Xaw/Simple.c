@@ -1,11 +1,11 @@
 #ifndef lint
-static char rcsid[] = "$Header: Simple.c,v 1.1 88/01/28 07:50:22 swick Locked $";
+static char rcsid[] = "$Header: Simple.c,v 1.3 88/01/28 12:46:53 swick Locked $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
+#include "IntrinsicP.h"
 #include <X/copyright.h>
-#include <X/Intrinsic.h>
 #include <X/Atoms.h>
 #include "SimpleP.h"
 
@@ -16,52 +16,62 @@ static Pixmap defaultPixmap = NULL;
 
 static XtResource resources[] = {
 #define offset(field) XtOffset(SimpleWidget, simple.field)
-  {XtNcursor, XtCCursor, XrmRCursor, sizeof(Cursor),
-     offset(cursor), XrmRCursor, (caddr_t)&defaultCursor},
-  {XtNinsensitiveBorder, XtCInsensitive, XrmRPixmap, sizeof(Pixmap),
-     offset(insensitive_border), XrmRPixmap, (caddr_t)&defaultPixmap}
+  {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
+     offset(cursor), XtRCursor, (caddr_t)&defaultCursor},
+  {XtNinsensitiveBorder, XtCInsensitive, XtRPixmap, sizeof(Pixmap),
+     offset(insensitive_border), XtRPixmap, (caddr_t)&defaultPixmap}
 #undef offset
 };
 
-static void ClassInitialize(), Realize();
+static void ClassPartInitialize(), Realize();
 static Boolean SetValues(), ChangeSensitive();
 
 SimpleClassRec simpleClassRec = {
   { /* core fields */
-    /* superclass       */      (WidgetClass) &widgetClassRec,
-    /* class_name       */      "Simple",
-    /* widget_size      */      sizeof(SimpleRec),
-    /* class_initialize */      ClassInitialize,
-    /* class_inited     */      FALSE,
-    /* initialize       */      NULL,
-    /* realize          */      Realize,
-    /* actions          */      NULL,
-    /* num_actions      */      0,
-    /* resources        */      resources,
-    /* num_ resource    */      XtNumber(resources),
-    /* xrm_class        */      NULLQUARK,
-    /* compress_motion  */      TRUE,
-    /* compress_exposure*/      TRUE,
-    /* visible_interest */      FALSE,
-    /* destroy          */      NULL,
-    /* resize           */      NULL,
-    /* expose           */      NULL,
-    /* set_values       */      SetValues,
-    /* accept_focus     */      NULL,
-    /* callback_private */      NULL,
-    /* reserved_private */      NULL
+    /* superclass		*/	(WidgetClass) &widgetClassRec,
+    /* class_name		*/	"Simple",
+    /* widget_size		*/	sizeof(SimpleRec),
+    /* class_initialize		*/	NULL,
+    /* class_part_initialize	*/	ClassPartInitialize,
+    /* class_inited		*/	FALSE,
+    /* initialize		*/	NULL,
+    /* initialize_hook		*/	NULL,
+    /* realize			*/	Realize,
+    /* actions			*/	NULL,
+    /* num_actions		*/	0,
+    /* resources		*/	resources,
+    /* num_resources		*/	XtNumber(resources),
+    /* xrm_class		*/	NULLQUARK,
+    /* compress_motion		*/	TRUE,
+    /* compress_exposure	*/	TRUE,
+    /* compress_enterleave	*/	TRUE,
+    /* visible_interest		*/	FALSE,
+    /* destroy			*/	NULL,
+    /* resize			*/	NULL,
+    /* expose			*/	NULL,
+    /* set_values		*/	SetValues,
+    /* set_values_hook		*/	NULL,
+    /* set_values_almost	*/	XtInheritSetValuesAlmost,
+    /* get_values_hook		*/	NULL,
+    /* accept_focus		*/	NULL,
+    /* version			*/	XtVersion,
+    /* callback_private		*/	NULL,
+    /* tm_table			*/	NULL
   },
   { /* simple fields */
-    /* change_sensitive */	ChangeSensitive
+    /* change_sensitive		*/	ChangeSensitive
   }
 };
 
 WidgetClass simpleWidgetClass = (WidgetClass)&simpleClassRec;
 
-static void ClassInitialize()
+static void ClassPartInitialize(class)
+    WidgetClass class;
 {
-    extern void _XtCvtStringToCursor();
-    XrmRegisterTypeConverter(XrmRString, XtRCursor, _XtCvtStringToCursor);
+    register SimpleWidgetClass c = (SimpleWidgetClass)class;
+
+    if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
+	c->simple_class.change_sensitive = ChangeSensitive;
 }
 
 
@@ -100,9 +110,8 @@ static void Realize(w, valueMask, attributes)
 
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     if ((current->core.sensitive != new->core.sensitive ||
 	 current->core.ancestor_sensitive != new->core.ancestor_sensitive))
