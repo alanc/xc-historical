@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.39 91/01/27 13:01:00 keith Exp $ */
+/* $XConsortium: cursor.c,v 1.40 91/02/14 19:35:34 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -224,7 +224,7 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 	    register long n;
 	    register unsigned char *bits;
 
-	    n = PixmapBytePad(cm.width, 1)*(long)cm.height;
+	    n = BitmapBytePad(cm.width)*(long)cm.height;
 	    bits = mskbits = (unsigned char *)xalloc(n);
 	    if (!bits)
 		return BadAlloc;
