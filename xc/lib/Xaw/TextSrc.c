@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.2 89/10/04 13:56:04 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.3 89/10/09 16:21:10 jim Exp $";
 #endif 
 
 /*
@@ -253,9 +253,9 @@ static Boolean
 ConvertSelection(w, selection, target, type, value, length, format)
 Widget w;
 Atom * selection, * target, * type;
-caddr_t value;
-unsigned long length;
-int format;
+caddr_t * value;
+unsigned long * length;
+int * format;
 {
   return(FALSE);
 }
@@ -392,9 +392,9 @@ XawTextSourceConvertSelection(w, selection,
 			      target, type, value, length, format)
 Widget w;
 Atom * selection, * target, * type;
-caddr_t value;
-unsigned long length;
-int format;
+caddr_t * value;
+unsigned long * length;
+int * format;
 {
   TextSrcObjectClass class = (TextSrcObjectClass) w->core.widget_class;
 

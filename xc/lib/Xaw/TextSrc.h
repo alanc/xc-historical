@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSrc.h,v 1.2 89/09/06 17:30:25 kit Exp $
+ * $XConsortium: TextSrc.h,v 1.3 89/10/04 13:56:11 kit Exp $
  */
 
 /***********************************************************
@@ -165,9 +165,9 @@ Boolean XawTextSourceConvertSelection(/* w, selection, target,
 /*
 Widget w;
 Atom * selection, * target, * type;
-caddr_t value;
-unsigned long length;
-int format;
+caddr_t * value;
+unsigned long * length;
+int * format;
 */
 
 /*	Function Name: XawTextSourceSetSelection
