@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.9 92/08/22 14:37:02 rws Exp $
+ * $XConsortium: cppsetup.c,v 1.10 92/08/24 16:31:40 gildea Exp $
  */
 #include "def.h"
 
@@ -166,6 +166,7 @@ _my_eval_defined (ip, var, len)
 	return 0;
 }
 
+#define isvarfirstletter(ccc) (isalpha(ccc) || (ccc) == '_')
 
 static int
 _my_eval_variable (ip, var, len)
@@ -173,12 +174,19 @@ _my_eval_variable (ip, var, len)
     const char *var;
     int len;
 {
-    struct symtab *s = _lookup_variable (ip, var, len);
+    struct symtab *s;
 
+    s = _lookup_variable (ip, var, len);
     if (!s)
 	return 0;
+    do {
+	var = s->s_value;
+	if (!isvarfirstletter(*var))
+	    break;
+	s = _lookup_variable (ip, var, strlen(var));
+    } while (s);
 
-    return atoi(s->s_value);
+    return atoi(var);
 }
 
 
