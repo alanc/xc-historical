@@ -1,4 +1,4 @@
-! $XConsortium$
+! $XConsortium: XErrorDB,v 1.15 92/08/10 18:59:38 mor Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -358,3 +358,5 @@ XlibMessage.X3D-PEX.14: Resource id in failed request 0x%lx
 XRequest.XTEST.0: X_XTestGetVersion
 XRequest.XTEST.1: X_XTestCompareCursor
 XRequest.XTEST.2: X_XTestFakeInput
+! BIG-REQUESTS extension
+XRequest.BIG-REQUESTS.0: X_BigReqEnable
