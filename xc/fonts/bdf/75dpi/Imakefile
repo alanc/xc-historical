@@ -276,5 +276,6 @@ FontTarget(lutRS24)
 
 
 InstallFonts($(FONTINSTDIR))
+InstallFontAliases($(FONTINSTDIR))
 
 depend::
