@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.8 89/12/02 15:20:43 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.9 90/05/18 10:58:38 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -959,56 +959,11 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	if (dev == inputInfo.pointer ||
 	    dev == inputInfo.keyboard)
 	    continue;
-
-	/* Deactivate any grabs performed on this window, before making
-	   any input focus changes.
-           Deactivating a device grab should cause focus events. */
-
-	if (dev->grab && (dev->grab->window == pWin))
-	    (*dev->DeactivateGrab)(dev);
-
-	/* If the focus window is a root window (ie. has no parent) 
-	   then don't delete the focus from it. */
-    
-	if ((pWin == dev->focus->win) && (pWin->parent != NullWindow))
-	    {
-	    int focusEventMode = NotifyNormal;
-
- 	    /* If a grab is in progress, then alter the mode of focus events. */
-
-	    if (dev->grab)
-		focusEventMode = NotifyWhileGrabbed;
-
-	    switch (dev->focus->revert)
-		{
-		case RevertToNone:
-		    DoFocusEvents(dev, pWin, NoneWin, focusEventMode);
-		    dev->focus->win = NoneWin;
-		    dev->focus->traceGood = 0;
-		    break;
-		case RevertToParent:
-		    parent = pWin;
-		    do
-			{
-			parent = parent->parent;
-			dev->focus->traceGood--;
-			} while (!parent->realized);
-		    DoFocusEvents(dev, pWin, parent, focusEventMode);
-		    dev->focus->win = parent;
-		    dev->focus->revert = RevertToNone;
-		    break;
-		case RevertToPointerRoot:
-		    DoFocusEvents(dev, pWin, PointerRootWin, focusEventMode);
-		    dev->focus->win = PointerRootWin;
-		    dev->focus->traceGood = 0;
-		    break;
-		}
-	    }
-
-	if (dev->valuator)
-	    if (dev->valuator->motionHintWindow == pWin)
-		dev->valuator->motionHintWindow = NullWindow;
+	DeleteDeviceFromAnyExtEvents(pWin, dev);
 	}
+
+    for (dev=inputInfo.off_devices; dev; dev=dev->next)
+	DeleteDeviceFromAnyExtEvents(pWin, dev);
 
     if (freeResources)
 	while (wOtherInputMasks(pWin))
@@ -1016,6 +971,62 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	    ic = wOtherInputMasks(pWin)->inputClients;
 	    FreeResource(ic->resource, RT_NONE);
 	    }
+    }
+
+DeleteDeviceFromAnyExtEvents(pWin, dev)
+    WindowPtr		pWin;
+    DeviceIntPtr	dev;
+    {
+    WindowPtr		parent;
+
+    /* Deactivate any grabs performed on this window, before making
+	any input focus changes.
+        Deactivating a device grab should cause focus events. */
+
+    if (dev->grab && (dev->grab->window == pWin))
+	(*dev->DeactivateGrab)(dev);
+
+    /* If the focus window is a root window (ie. has no parent) 
+	then don't delete the focus from it. */
+    
+    if ((pWin == dev->focus->win) && (pWin->parent != NullWindow))
+	{
+	int focusEventMode = NotifyNormal;
+
+ 	/* If a grab is in progress, then alter the mode of focus events. */
+
+	if (dev->grab)
+	    focusEventMode = NotifyWhileGrabbed;
+
+	switch (dev->focus->revert)
+	    {
+	    case RevertToNone:
+		DoFocusEvents(dev, pWin, NoneWin, focusEventMode);
+		dev->focus->win = NoneWin;
+		dev->focus->traceGood = 0;
+		break;
+	    case RevertToParent:
+		parent = pWin;
+		do
+		    {
+		    parent = parent->parent;
+		    dev->focus->traceGood--;
+		    } while (!parent->realized);
+		DoFocusEvents(dev, pWin, parent, focusEventMode);
+		dev->focus->win = parent;
+		dev->focus->revert = RevertToNone;
+		break;
+	    case RevertToPointerRoot:
+		DoFocusEvents(dev, pWin, PointerRootWin, focusEventMode);
+		dev->focus->win = PointerRootWin;
+		dev->focus->traceGood = 0;
+		break;
+	    }
+	}
+
+    if (dev->valuator)
+	if (dev->valuator->motionHintWindow == pWin)
+	    dev->valuator->motionHintWindow = NullWindow;
     }
 
 int
