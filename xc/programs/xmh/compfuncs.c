@@ -1,5 +1,5 @@
 /*
- * $XConsortium: compfuncs.c,v 2.16 89/09/27 19:14:58 converse Exp $
+ * $XConsortium: compfuncs.c,v 2.17 89/10/06 15:02:26 converse Exp $
  *
  *
  * 		      COPYRIGHT 1987, 1989
@@ -112,14 +112,16 @@ void XmhSave(w, event, params, num_params)
 /* Utility routine; creates a composition screen containing a forward message
    of the messages in the given msglist. */
 
-CreateForward(mlist)
+CreateForward(mlist, params, num_params)
   MsgList mlist;
+  String *params;
+  Cardinal num_params;
 {
     Scrn scrn;
     Msg msg;
     scrn = NewCompScrn();
     msg = TocMakeNewMsg(DraftsFolder);
-    MsgLoadForward(scrn, msg, mlist);
+    MsgLoadForward(scrn, msg, mlist, params, num_params);
     MsgSetTemporary(msg);
     MsgSetScrnForComp(msg, scrn);
     MapScrn(scrn);
