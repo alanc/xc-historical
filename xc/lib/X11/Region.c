@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.25 89/11/19 14:03:11 rws Exp $ */
+/* $XConsortium: XRegion.c,v 11.26 89/12/06 17:20:38 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -212,7 +212,6 @@ XDestroyRegion( r )
    added by raymond
 */
 
-void
 XOffsetRegion(pRegion, x, y)
     register Region pRegion;
     register int x;
