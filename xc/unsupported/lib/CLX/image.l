@@ -101,15 +101,20 @@
 
 (defun set-image-property (image name value) (setf (getf (image-plist image) name) value))
 
+(defvar *empty-data-x* (make-sequence '(array card8 (*)) 0))
+(proclaim '(type (array card8 (*)) *empty-data-x*))
+(defvar *empty-data-z* (make-array '(0 0) :element-type 'bit))
+(proclaim '(type pixarray *empty-data-z*))
+
 (defstruct (image-x (:include image))
   ;; Use this format for shoveling image data
   ;; Private structure. Accessors for these NOT exported.
   (format :z-pixmap :type (member :bitmap :xy-pixmap :z-pixmap))
   (bytes-per-line 0 :type card16)
-  (bits-per-pixel 0 :type (member 1 4 8 16 24 32))
+  (bits-per-pixel 1 :type (member 1 4 8 16 24 32))
   (bit-lsb-first-p nil :type boolean)		; Bit order
   (byte-lsb-first-p nil :type boolean)		; Byte order
-  (data '#() :type (array card8 (*))))		; row-major
+  (data *empty-data-x* :type (array card8 (*)))); row-major
 
 (defstruct (image-xy (:include image))
   ;; Public structure
@@ -119,8 +124,8 @@
 (defstruct (image-z (:include image))
   ;; Public structure
   ;; Use this format for image processing
-  (bits-per-pixel 0 :type (member 1 4 8 16 24 32))
-  (pixarray '#() :type pixarray))
+  (bits-per-pixel 1 :type (member 1 4 8 16 24 32))
+  (pixarray *empty-data-z* :type pixarray))
 
 (defun create-image (&key width height
 		     depth data plist name x-hot y-hot
