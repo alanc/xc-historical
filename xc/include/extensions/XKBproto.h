@@ -740,7 +740,11 @@ typedef struct _xkbSetDebuggingFlagsReply {
     CARD32	length B32;
     CARD16	currentFlags B16;
     CARD16	pad1 B16;
-    CARD32	pad[5] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbSetDebuggingFlagsReply;
 #define	sz_xkbSetDebuggingFlagsReply	32
 
@@ -756,9 +760,13 @@ typedef struct _xkbAnyEvent {
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+    CARD32	pad7 B32;
 } xkbAnyEvent;
-#define	sz_xkbAnyEvent;
+#define	sz_xkbAnyEvent 32
 
 typedef	struct _xkbStateNotify {
     BYTE	type;
@@ -780,7 +788,8 @@ typedef	struct _xkbStateNotify {
     CARD8	requestMajor;
     CARD8	requestMinor;
     CARD16	changed B16;
-    CARD32	pad[2] B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
 } xkbStateNotify;
 #define	sz_xkbStateNotify	32
 
@@ -800,10 +809,11 @@ typedef	struct _xkbMapNotify {
     CARD8	nKeyActions;
     KeyCode	firstKeyBehavior;
     CARD8	nKeyBehaviors;
-    CARD16	virtualMods;
+    CARD16	virtualMods B16;
     KeyCode	firstKeyExplicit;
     CARD8	nKeyExplicit;
-    CARD32	pad[2] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
 } xkbMapNotify;
 #define	sz_xkbMapNotify	32
 
@@ -837,7 +847,8 @@ typedef struct _xkbIndicatorNotify {
     CARD32	stateChanged B32;
     CARD32	state B32;
     CARD32	mapChanged B32;
-    CARD32	pad3[2] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbIndicatorNotify;
 #define	sz_xkbIndicatorNotify	32
 
@@ -854,7 +865,8 @@ typedef struct _xkbBellNotify {
     CARD16	duration B16;
     Atom	name B32;
     Window	window B32;
-    CARD32	pad[2] B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
 } xkbBellNotify;
 #define	sz_xkbBellNotify	32
 
@@ -869,7 +881,10 @@ typedef struct _xkbSlowKeyNotify {
     CARD8	pad1;
     CARD16	delay B16;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbSlowKeyNotify;
 #define	sz_xkbSlowKeyNotify	32
 
@@ -908,7 +923,9 @@ typedef struct _xkbCompatMapNotify {
     CARD16	nSI B16;
     CARD16	nTotalSI B16;
     CARD16	pad1 B16;
-    CARD32	pad2[3] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbCompatMapNotify;
 #define sz_xkbCompatMapNotify	32
 
@@ -921,7 +938,11 @@ typedef struct _xkbAlternateSymsNotify {
     CARD8	altSymsID;
     KeyCode	firstKey;
     CARD8	nKeys;
-    CARD32	pad2[5] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbAlternateSymsNotify;
 #define	sz_xkbAlternateSymsNotify	32
 
@@ -934,9 +955,10 @@ typedef struct _xkbActionMessage {
     KeyCode	keycode;
     BOOL	press;
     BOOL	keyEventFollows;
-    CARD8	message[6];
-    CARD16	pad1 B16;
-    CARD32	pad2[3] B32;
+    CARD8	message[8];
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
 } xkbActionMessage;
 #define	sz_xkbActionMessage		32
 
