@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.201 93/10/08 14:47:30 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.202 93/10/11 09:56:49 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -533,20 +533,20 @@ SharedDSLibReferences(XMU,Xmu,$(XMUSRC),SOXMUREV,SharedXmuRev)
 UnsharedLibReferences(XMU,Xmu,$(XMUSRC))
 #endif
 
-#ifndef SharedOldLibX
-#define SharedOldLibX HasSharedLibraries
+#ifndef SharedOldX
+#define SharedOldX HasSharedLibraries
 #endif
-#ifndef NormalOldLibX
-#define NormalOldLibX (!SharedOldLibX | ForceNormalLib)
+#ifndef NormalOldX
+#define NormalOldX (!SharedOldX | ForceNormalLib)
 #endif
-#ifndef DebugOldLibX
-#define DebugOldLibX		NO	/* debugged old X library */
+#ifndef DebugOldX
+#define DebugOldX		NO	/* debugged old X library */
 #endif
-#ifndef ProfileOldLibX
-#define ProfileOldLibX		NO	/* profiled old X library */
+#ifndef ProfileOldX
+#define ProfileOldX		NO	/* profiled old X library */
 #endif
        OLDXLIBSRC = $(LIBSRC)/oldX
-#if SharedOldLibX
+#if SharedOldX
 #ifndef SharedOldXRev
 #define SharedOldXRev 5.0
 #endif
@@ -599,46 +599,46 @@ SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 UnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC))
 #endif
 
-#ifndef SharedLibXinput
-#define SharedLibXinput HasSharedLibraries
+#ifndef SharedLibXi
+#define SharedLibXi HasSharedLibraries
 #endif
-#ifndef NormalLibXinput
-#define NormalLibXinput (!SharedLibXinput | ForceNormalLib)
+#ifndef NormalLibXi
+#define NormalLibXi (!SharedLibXi | ForceNormalLib)
 #endif
-#ifndef DebugLibXinput
-#define DebugLibXinput		NO	/* debugged Xi library */
+#ifndef DebugLibXi
+#define DebugLibXi		NO	/* debugged Xi library */
 #endif
-#ifndef ProfileLibXinput
-#define ProfileLibXinput	NO	/* profiled Xi library */
+#ifndef ProfileLibXi
+#define ProfileLibXi		NO	/* profiled Xi library */
 #endif
          XILIBSRC = $(LIBSRC)/Xi
-#if SharedLibXinput
-#ifndef SharedXinputRev
-#define SharedXinputRev 5.0
+#if SharedLibXi
+#ifndef SharedXiRev
+#define SharedXiRev 5.0
 #endif
-SharedLibReferences(XI,Xi,$(XILIBSRC),SOXINPUTREV,SharedXinputRev)
+SharedLibReferences(XI,Xi,$(XILIBSRC),SOXINPUTREV,SharedXiRev)
 #else
 UnsharedLibReferences(XI,Xi,$(XILIBSRC))
 #endif
 
-#ifndef SharedLibXTest
-#define SharedLibXTest HasSharedLibraries
+#ifndef SharedLibXtst
+#define SharedLibXtst HasSharedLibraries
 #endif
-#ifndef NormalLibXTest
-#define NormalLibXTest (!SharedLibXTest | ForceNormalLib)
+#ifndef NormalLibXtst
+#define NormalLibXtst (!SharedLibXtst | ForceNormalLib)
 #endif
-#ifndef DebugLibXTest
-#define DebugLibXTest		NO	/* debugged Xtst library */
+#ifndef DebugLibXtst
+#define DebugLibXtst		NO	/* debugged Xtst library */
 #endif
-#ifndef ProfileLibXTest
-#define ProfileLibXTest		NO	/* profiled Xtst library */
+#ifndef ProfileLibXtst
+#define ProfileLibXtst		NO	/* profiled Xtst library */
 #endif
       XTESTLIBSRC = $(LIBSRC)/Xtst
-#if SharedLibXTest
-#ifndef SharedXTestRev
-#define SharedXTestRev 1.0
+#if SharedLibXtst
+#ifndef SharedXtstRev
+#define SharedXtstRev 1.0
 #endif
-SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXTestRev)
+SharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC),SOXTESTREV,SharedXtstRev)
 #else
 UnsharedLibReferences(XTEST,Xtst,$(XTESTLIBSRC))
 #endif
