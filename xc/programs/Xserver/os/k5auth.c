@@ -1,7 +1,7 @@
 /*
  * Kerberos V5 authentication scheme
  *
- * $XConsortium: k5auth.c,v 1.4 93/09/30 15:24:38 gildea Exp $
+ * $XConsortium: k5auth.c,v 1.5 94/01/14 19:09:33 gildea Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -44,7 +44,6 @@
 #include "Xauth.h"
 
 extern int (*k5_Vector[256])();
-extern int (*InitialVector[3])();
 extern int SendConnSetup();
 extern char *display;		/* need this to generate rcache name */
 
@@ -214,6 +213,7 @@ XID K5Check(data_length, data, client)
     WriteToClient(client, tlen, outbuf);
     free(outbuf);
     client->requestVector = k5_Vector; /* hack in our dispatch vector */
+    client->clientState = ClientStateAuthenticating;
     if (ccname)
     {
 	((OsCommPtr)client->osPrivate)->authstate.srvcreds = (pointer)creds; /* save tgt creds */
@@ -274,7 +274,6 @@ int k5_stage1(client)
 
     if (((OsCommPtr)client->osPrivate)->authstate.stageno != 1)
     {
-	client->requestVector = InitialVector;
 	if (creds)
 	    krb5_free_creds(creds);
 	return(SendConnSetup(client, "expected Krb5 stage1 packet"));
@@ -283,7 +282,6 @@ int k5_stage1(client)
     if (getpeername(((OsCommPtr)client->osPrivate)->fd,
 		    &cli_net_addr, &addrlen) == -1)
     {
-	client->requestVector = InitialVector;
 	if (creds)
 	    krb5_free_creds(creds);
 	return(SendConnSetup(client, "Krb5 stage1: getpeername failed"));
@@ -297,7 +295,6 @@ int k5_stage1(client)
 	krb5_os_localaddr(&localaddrs);
 	if (!localaddrs || !localaddrs[0])
 	{
-	    client->requestVector = InitialVector;
 	    if (creds)
 		krb5_free_creds(creds);
 	    return(SendConnSetup(client, "Krb5 failed to get localaddrs"));
@@ -327,7 +324,6 @@ int k5_stage1(client)
 	    break;
 #endif
 	default:
-	    client->requestVector = InitialVector;
 	    if (localaddrs)
 		krb5_free_addresses(localaddrs);
 	    if (creds)
@@ -339,7 +335,6 @@ int k5_stage1(client)
     }
     if ((rcache = (krb5_rcache)malloc(sizeof(*rcache))) == NULL)
     {
-	client->requestVector = InitialVector;
 	if (localaddrs)
 	    krb5_free_addresses(localaddrs);
 	if (creds)
@@ -350,7 +345,6 @@ int k5_stage1(client)
 	rc_type = "dfl";
     if (retval = krb5_rc_resolve_type(&rcache, rc_type))
     {
-	client->requestVector = InitialVector;
 	if (localaddrs)
 	    krb5_free_addresses(localaddrs);
 	if (creds)
@@ -363,7 +357,6 @@ int k5_stage1(client)
     if ((cachename = (char *)malloc(strlen(rc_base) + strlen(display) + 1))
 	== NULL)
     {
-	client->requestVector = InitialVector;
 	if (localaddrs)
 	    krb5_free_addresses(localaddrs);
 	if (creds)
@@ -375,7 +368,6 @@ int k5_stage1(client)
     strcat(cachename, display);
     if (retval = krb5_rc_resolve(rcache, cachename))
     {
-	client->requestVector = InitialVector;
 	if (localaddrs)
 	    krb5_free_addresses(localaddrs);
 	if (creds)
@@ -392,14 +384,12 @@ int k5_stage1(client)
 	extern krb5_deltat krb5_clockskew;
 	if (retval = krb5_rc_initialize(rcache, krb5_clockskew))
 	{
-	    client->requestVector = InitialVector;
 	    if (localaddrs)
 		krb5_free_addresses(localaddrs);
 	    if (creds)
 		krb5_free_creds(creds);
 	    if (retval2 = krb5_rc_close(rcache))
 	    {
-		client->requestVector = InitialVector;
 		strcpy(kerror, "krb5_rc_close failed: ");
 		strncat(kerror, error_message(retval2), 238);
 		return(SendConnSetup(client, kerror));
@@ -433,7 +423,6 @@ int k5_stage1(client)
     }
     else
     {
-	client->requestVector = InitialVector;
 	if (localaddrs)
 	    krb5_free_addresses(localaddrs);
 	return(SendConnSetup(client, "Krb5: neither srvcreds nor ktname set"));
@@ -444,7 +433,6 @@ int k5_stage1(client)
     {
 	if (retval2 = krb5_rc_close(rcache))
 	{
-	    client->requestVector = InitialVector;
 	    strcpy(kerror, "krb5_rc_close failed (2): ");
 	    strncat(kerror, error_message(retval2), 230);
 	    return(SendConnSetup(client, kerror));
@@ -453,7 +441,6 @@ int k5_stage1(client)
     }
     if (retval)
     {
-	client->requestVector = InitialVector;
 	strcpy(kerror, "Krb5: Bad application request: ");
 	strncat(kerror, error_message(retval), 224);
 	return(SendConnSetup(client, kerror));
@@ -463,7 +450,6 @@ int k5_stage1(client)
     if (XauKrb5Encode(cprinc, &buf))
     {
 	krb5_free_tkt_authent(authdat);
-	client->requestVector = InitialVector;
 	return(SendConnSetup(client, "XauKrb5Encode bombed"));
     }
     /*
@@ -485,7 +471,6 @@ int k5_stage1(client)
 	    if (retval = krb5_us_timeofday(&ctime, &cusec))
 	    {
 		krb5_free_tkt_authent(authdat);
-		client->requestVector = InitialVector;
 		strcpy(kerror, "error in krb5_us_timeofday: ");
 		strncat(kerror, error_message(retval), 234);
 		return(SendConnSetup(client, kerror));
@@ -497,7 +482,6 @@ int k5_stage1(client)
 	    if (retval = krb5_mk_rep(&rep, skey, &buf))
 	    {
 		krb5_free_tkt_authent(authdat);
-		client->requestVector = InitialVector;
 		strcpy(kerror, "error in krb5_mk_rep: ");
 		strncat(kerror, error_message(retval), 238);
 		return(SendConnSetup(client, kerror));
@@ -528,7 +512,6 @@ int k5_stage1(client)
 	char *kname;
 	
 	krb5_free_tkt_authent(authdat);
-	client->requestVector = InitialVector;
 	free(buf.data);
 	retval = krb5_unparse_name(cprinc, &kname);
 	if (retval == 0)
@@ -563,7 +546,6 @@ int k5_stage3(client)
 
     if (((OsCommPtr)client->osPrivate)->authstate.stageno != 3)
     {
-	client->requestVector = InitialVector;
 	return(SendConnSetup(client, "expected Krb5 stage3 packet"));
     }
     else
@@ -573,7 +555,6 @@ int k5_stage3(client)
 k5_bad(client)
     register ClientPtr client;
 {
-    client->requestVector = InitialVector;
     if (((OsCommPtr)client->osPrivate)->authstate.srvcreds)
 	krb5_free_creds((krb5_creds *)((OsCommPtr)client->osPrivate)->authstate.srvcreds);
     sprintf(kerror, "unrecognized Krb5 auth packet %d, expecting %d",
