@@ -1,4 +1,16 @@
-! $XConsortium: XErrorDB,v 1.23 94/01/30 15:48:51 rws Exp $
+! $XConsortium: XErrorDB,v 1.24 94/02/03 18:51:06 rws Exp $
+! Copyright 1993 Massachusetts Institute of Technology
+!
+! Permission to use, copy, modify, distribute, and sell this software and
+! its documentation for any purpose is hereby granted without fee, provided
+! that the above copyright notice appear in all copies and that both that
+! copyright notice and this permission notice appear in supporting
+! documentation, and that the name of M.I.T. not be used in advertising or
+! publicity pertaining to distribution of the software without specific,
+! written prior permission.  M.I.T. makes no representations about the
+! suitability of this software for any purpose.  It is provided "as is"
+! without express or implied warranty.
+!
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
