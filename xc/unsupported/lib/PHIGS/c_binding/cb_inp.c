@@ -1,4 +1,4 @@
-/* $XConsortium: cb_inp.c,v 5.2 91/07/12 19:50:30 hersh Exp $ */
+/* $XConsortium: cb_inp.c,v 5.3 91/07/15 14:20:58 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1107,26 +1107,21 @@ loc_data_rec_ok( cph, pet, rec, dt, ddt )
     Wst_defloc			*ddt;
 {
     int		status = 0;
-    Pint	err;
+    Pint	err = 0;
 
     switch ( pet ) {
 	case 1:
 	case 2:
 	case 3:
 	    /* No data */
-	    status = !0;
-	    break;
+	    return !0;
 
 	default:
 	    /* Shouldn't get here, pet should be verified before calling. */
-	     err = ERR260;
-	    break;
+	    ERR_REPORT( cph->erh, ERR260);
+	    return 0;
     }
 
-    if ( !status ) {
-	ERR_REPORT( cph->erh, err);
-    }
-    return status;
 }
 
 static void
@@ -1403,10 +1398,13 @@ val_data_rec_ok( cph, pet, rec, ddt, init )
 {
     int			status = 1;
 
+    /* This is a placeholder for vendor code, commented to make picky 
+       compilers happy
     switch ( pet ) {
 	default:
 	    break;
     }
+    */
 
     if ( !status ) {
 	ERR_REPORT( cph->erh, ERR260);
@@ -1720,10 +1718,13 @@ pick_data_rec_ok( cph, pet, rec, dt, ddt, func_id )
     Ppoint3	*aper;
     */
 
+    /* This is a placeholder for vendor code, commented to make picky 
+       compilers happy
     switch ( pet ) {
 	default:
 	    break;
     }
+    */
 
     if ( !status ) {
 	ERR_REPORT( cph->erh, ERR260);
@@ -1845,10 +1846,13 @@ string_data_ok( cph, pet, rec, init_length, ddt )
 {
     int		status = 1;
 
+    /* This is a placeholder for vendor code, commented to make picky 
+       compilers happy
     switch ( pet ) {
 	default:
 	    break;
     }
+    */
 
     if ( !status ) {
 	ERR_REPORT( cph->erh, ERR260);
@@ -2646,7 +2650,7 @@ pinq_pick_st3( ws, dev, type, store, err, op_mode, echo_switch, filter,
 	*path_order = state->order;
 	*filter = &((_Pstore *)store)->data.pick_data3.filter;
 	*init_pick = &((_Pstore *)store)->data.pick_data3.init_pick;
-	copy_pick_data( ((_Pstore *)store), err, state, init_pick, filter );
+	copy_pick_data( ((_Pstore *)store), err, state, *init_pick, *filter );
 	if ( !*err ) {
 	    *pick_data = &((_Pstore *)store)->data.pick_data3.drec;
 	    /* Copy the data record. */
@@ -2689,7 +2693,7 @@ pinq_pick_st( ws, dev, type, store, err, op_mode, echo_switch, filter,
 	*path_order = state->order;
 	*filter = &((_Pstore *)store)->data.pick_data.filter;
 	*init_pick = &((_Pstore *)store)->data.pick_data.init_pick;
-	copy_pick_data( ((_Pstore *)store), err, state, init_pick, filter );
+	copy_pick_data( ((_Pstore *)store), err, state, *init_pick, *filter );
 	if ( !*err ) {
 	    *pick_data = &((_Pstore *)store)->data.pick_data.drec;
 	    /* Copy the data record. */
