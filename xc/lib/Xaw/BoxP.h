@@ -1,5 +1,5 @@
 /*
-* $Header: BoxP.h,v 1.3 87/12/09 09:08:53 swick Exp $
+* $Header: BoxP.h,v 1.4 88/01/22 20:21:53 swick Locked $
 */
 
 /*
@@ -29,14 +29,16 @@
  * 
  */
 
-#ifndef _XtBoxPrivate_h
-#define _XtBoxPrivate_h
+#ifndef _BoxP_h
+#define _BoxP_h
 
 /***********************************************************************
  *
  * Box Widget Private Data
  *
  ***********************************************************************/
+
+#include <X/Box.h>
 
 /* New fields for the Box widget class record */
 typedef struct {int empty;} BoxClassPart;
@@ -68,6 +70,4 @@ typedef struct _BoxRec {
     BoxPart 	    box;
 } BoxRec;
 
-#endif _XtBoxPrivate_h
-
-
+#endif _BoxP_h
