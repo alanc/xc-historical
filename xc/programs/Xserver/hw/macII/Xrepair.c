@@ -45,6 +45,7 @@ static struct termio d_tio = {
 main()
 {
 	int fd; int line;
+	int iarg;
 	struct strioctl s;
 	char buff[FMNAMESZ+1];
 
@@ -62,6 +63,11 @@ main()
 
 	    ioctl(fd, I_FLUSH, FLUSHRW); 
     
+	    iarg = 0;
+	    if (ioctl(fd, FIONBIO, &iarg) < 0) {
+		printf("Failed to FIONBIO.\r\n");
+	    }
+
 	    s.ic_len = 0;
 	    s.ic_cmd = VIDEO_NOMOUSE;
 	    ioctl(fd, I_STR, &s);
