@@ -173,3 +173,22 @@ WaitForSomething(pClientsReady)
     }
     return nready;
 }
+
+#if (MSKCNT > 4)
+#ifdef ANYSET
+#undef ANYSET
+#endif
+/*
+ * This is a macro if MSKCNT <= 4
+ */
+ANYSET(src)
+    long	*src;
+{
+    int i;
+
+    for (i=0; i<MSKCNT; i++)
+	if (src[ i ])
+	    return (1);
+    return (0);
+}
+#endif
