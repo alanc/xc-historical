@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.2 88/10/14 17:50:33 jim Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.3 88/10/17 12:38:17 swick Exp $";
 #endif	lint
 
 #include <stdio.h>
@@ -36,6 +36,12 @@ static XtResource resources[] = {
        XtOffset(struct _app_resources*, buffer), XtRImmediate, (caddr_t)0},
 };
 
+typedef struct {
+    Widget button;
+    Boolean is_on;
+} ButtonState;
+
+static ButtonState state;
 
 Syntax(call)
 	char *call;
@@ -151,12 +157,31 @@ static Boolean ConvertSelection(w, selection, target,
 }
 
 
+static void SetButton(state, on)
+    ButtonState *state;
+    Boolean on;
+{
+    if (state->is_on != on) {
+	Arg args[2];
+	Pixel fg, bg;
+	XtSetArg( args[0], XtNforeground, &fg );
+	XtSetArg( args[1], XtNbackground, &bg );
+	XtGetValues( state->button, args, TWO );
+	args[0].value = (XtArgVal)bg;
+	args[1].value = (XtArgVal)fg;
+	XtSetValues( state->button, args, TWO );
+	state->is_on = on;
+    }
+}
+
+
 static void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
     XtFree( app_resources.value );
     app_resources.value = NULL;
+    SetButton(&state, False);
 }
 
 
@@ -185,15 +210,16 @@ static void GetSelection(w, closure, callData)
 /* ARGSUSED */
 static void GetBuffer(w, closure, callData)
     Widget w;
-    caddr_t closure;		/* unused */
+    caddr_t closure;
     caddr_t callData;		/* unused */
 {
     XtFree( app_resources.value );
     app_resources.value =
 	XFetchBuffer(XtDisplay(w), &app_resources.length, app_resources.buffer);
     if (app_resources.value != NULL) {
-	XtOwnSelection(w, app_resources.selection, CurrentTime,
-		       ConvertSelection, LoseSelection, NULL);
+	if (XtOwnSelection(w, app_resources.selection, CurrentTime,
+			   ConvertSelection, LoseSelection, NULL))
+	    SetButton((ButtonState*)closure, True);
     }
 }
 
@@ -242,8 +268,10 @@ void main(argc, argv)
 
     button =
 	XtCreateManagedWidget("cut-sel", commandWidgetClass, box, NULL, ZERO);
-	XtAddCallback( button, XtNcallback, GetBuffer, NULL );
-    
+	XtAddCallback( button, XtNcallback, GetBuffer, (caddr_t)&state );
+ 	state.button = button;
+	state.is_on = False;
+   
     XtRealizeWidget(shell);
     XtMainLoop();
 }
