@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.144 90/04/24 09:28:44 jim Exp $
+ * $XConsortium: add_window.c,v 1.146 90/09/21 12:00:44 converse Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.144 90/04/24 09:28:44 jim Exp $";
+"$XConsortium: add_window.c,v 1.146 90/09/21 12:00:44 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -202,29 +202,30 @@ IconMgr *iconp;
     namelen = strlen (tmp_win->name);
 
     tmp_win->highlight = Scr->Highlight && 
-	(!(short)LookInList(Scr->NoHighlight, tmp_win->full_name, 
+	(!(short)(int) LookInList(Scr->NoHighlight, tmp_win->full_name, 
 	    &tmp_win->class));
 
     tmp_win->stackmode = Scr->StackMode &&
-	(!(short)LookInList(Scr->NoStackModeL, tmp_win->full_name, 
+	(!(short)(int) LookInList(Scr->NoStackModeL, tmp_win->full_name, 
 	    &tmp_win->class));
 
     tmp_win->titlehighlight = Scr->TitleHighlight && 
-	(!(short)LookInList(Scr->NoTitleHighlight, tmp_win->full_name, 
+	(!(short)(int) LookInList(Scr->NoTitleHighlight, tmp_win->full_name, 
 	    &tmp_win->class));
 
-    tmp_win->auto_raise = (short)LookInList(Scr->AutoRaise, tmp_win->full_name,
+    tmp_win->auto_raise = (short)(int) LookInList(Scr->AutoRaise, 
+						  tmp_win->full_name,
 					    &tmp_win->class);
     if (tmp_win->auto_raise) Scr->NumAutoRaises++;
     tmp_win->iconify_by_unmapping = Scr->IconifyByUnmapping;
     if (Scr->IconifyByUnmapping)
     {
 	tmp_win->iconify_by_unmapping = iconm ? FALSE :
-	    !(short)LookInList(Scr->DontIconify, tmp_win->full_name,
+	    !(short)(int) LookInList(Scr->DontIconify, tmp_win->full_name,
 		&tmp_win->class);
     }
     tmp_win->iconify_by_unmapping |= 
-	(short)LookInList(Scr->IconifyByUn, tmp_win->full_name,
+	(short)(int) LookInList(Scr->IconifyByUn, tmp_win->full_name,
 	    &tmp_win->class);
 
     if (LookInList(Scr->WindowRingL, tmp_win->full_name, &tmp_win->class)) {
