@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 5.3 92/01/30 13:43:04 keith Exp $ */
+/* $XConsortium: mipointrst.h,v 5.4 92/01/30 19:21:32 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -35,6 +35,7 @@ typedef struct {
     CursorPtr		    pCursor;    /* current cursor */
     CursorPtr		    pSpriteCursor;/* cursor on screen */
     BoxRec		    limits;	/* current constraints */
+    Bool		    confined;	/* pointer can't change screens */
     int			    x, y;	/* hot spot location */
     int			    devx, devy;	/* sprite position */
     DevicePtr		    pPointer;   /* pointer device structure */

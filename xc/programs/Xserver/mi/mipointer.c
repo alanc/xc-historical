@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.17 92/01/30 13:43:01 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.18 92/01/30 19:21:30 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -114,6 +114,7 @@ miPointerInitialize (pScreen, spriteFuncs, screenFuncs, waitForUpdate)
     miPointer.limits.x2 = 32767;
     miPointer.limits.y1 = 0;
     miPointer.limits.y2 = 32767;
+    miPointer.confined = FALSE;
     miPointer.x = 0;
     miPointer.y = 0;
     miPointer.history_start = miPointer.history_end = 0;
@@ -179,6 +180,7 @@ miPointerConstrainCursor (pScreen, pBox)
     BoxPtr	pBox;
 {
     miPointer.limits = *pBox;
+    miPointer.confined = PointerConfinedToScreen();
 }
 
 /*ARGSUSED*/
@@ -387,13 +389,7 @@ miPointerAbsoluteCursor (x, y, time)
     if (x < 0 || x >= pScreen->width || y < 0 || y >= pScreen->height)
     {
 	pScreenPriv = GetScreenPrivate (pScreen);
-	/*
-	 * if the pointer is not confined to the current screen,
-	 * allow the device to adjust the position.  Note -
-	 * this code assumes that DIX allows us to call
-	 * this function at signal time; true for now at least...
-	 */
-	if (!PointerConfinedToScreen())
+	if (!miPointer.confined)
 	{
 	    newScreen = pScreen;
 	    (*pScreenPriv->screenFuncs->CursorOffScreen) (&newScreen, &x, &y);
