@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.16 93/11/11 17:45:19 kaleb Exp $
+ * $XConsortium: locking.c,v 1.17 93/11/15 11:18:16 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -98,10 +98,10 @@ static void _XUnlockMutex(lip)
 }
 
 static void _XCreateMutex(lip)
-    LockInfoPtr* lib;
+    LockInfoPtr lip;
 {
-    (*lip)->lock = xmutex_malloc();
-    if ((*lip)->lock) xmutex_init(&lip->lock);
+    lip->lock = xmutex_malloc();
+    if (lip->lock) xmutex_init(lip->lock);
 }
 
 #ifdef XTHREADS_WARN

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.125 93/11/11 17:45:13 kaleb Exp $ */
+/* $XConsortium: Xlibint.h,v 11.126 93/11/15 11:18:12 kaleb Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -217,7 +217,7 @@ typedef struct _LockInfoRec *LockInfoPtr;
 /* in XlibInt.c */
 extern void (*_XCreateMutex_fn)(
 #if NeedFunctionPrototypes
-    LockInfoPtr* /* lock */
+    LockInfoPtr /* lock */
 #endif
 );
 extern void (*_XLockMutex_fn)(
