@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.1 88/02/10 13:08:16 jim Exp $
+ *	$Header: scrollbar.c,v 1.2 88/02/12 18:06:39 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,7 +41,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.1 88/02/10 13:08:16 jim Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.2 88/02/12 18:06:39 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -129,8 +129,6 @@ static Widget CreateScrollBar(xw, x, y, height)
 	extern char *calloc();
 
 	static Arg argList[] = {
-	   {XtNbackground,	(XtArgVal) 0},
-	   {XtNborder,		(XtArgVal) 0},
 	   {XtNx,		(XtArgVal) 0},
 	   {XtNy,		(XtArgVal) 0},
 	   {XtNheight,		(XtArgVal) 0},
@@ -140,12 +138,10 @@ static Widget CreateScrollBar(xw, x, y, height)
 	   {XtNwidth,		(XtArgVal) SCROLLBARWIDTH-1},
 	};   
 
-	argList[0].value = (XtArgVal) xw->core.background_pixel;
-	argList[1].value = (XtArgVal) xw->core.border_pixel;
-	argList[2].value = (XtArgVal) x;
-	argList[3].value = (XtArgVal) y;
-	argList[4].value = (XtArgVal) height;
-	argList[5].value = (XtArgVal) xw->misc.re_verse;
+	argList[0].value = (XtArgVal) x;
+	argList[1].value = (XtArgVal) y;
+	argList[2].value = (XtArgVal) height;
+	argList[3].value = (XtArgVal) xw->misc.re_verse;
 
 
 	scrollWidget = XtCreateWidget("scrollbar", scrollbarWidgetClass, 
