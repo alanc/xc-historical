@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.37 88/02/06 15:31:34 jim Locked $ */
+/* $Header: XKeyBind.c,v 11.38 88/02/07 11:56:07 jim Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -89,19 +89,27 @@ XRefreshKeyboardMapping(event)
 {
      extern void XFreeModifiermap();
 
-     LockDisplay(event->display);
-     /* XXX should really only refresh what is necessary, for now, make
-	initialize test fail */
-     if(event->request == MappingKeyboard) 
+     if(event->request == MappingKeyboard) {
+	/* XXX should really only refresh what is necessary
+	 * for now, make initialize test fail
+	 */
+	    LockDisplay(event->display);
 	    if (event->display->keysyms != NULL) {
 	         Xfree ((char *)event->display->keysyms);
 	         event->display->keysyms = NULL;
 	    }
-     if(event->request == MappingModifier) {
-	    XFreeModifiermap(event->display->modifiermap);
-	    event->display->keysyms = NULL;/* XXX - looks like astorage leak */
+	    UnlockDisplay(event->display);
      }
-     UnlockDisplay(event->display);
+     if(event->request == MappingModifier) {
+	    LockDisplay(event->display);
+	    if (event->display->modifiermap != NULL) {
+		XFreeModifiermap(event->display->modifiermap);
+		event->display->modifiermap = NULL;
+	    }
+	    UnlockDisplay(event->display);
+	    /* go ahead and get it now, since initialize test may not fail */
+	    event->display->modifiermap = XGetModifierMapping(event->display);
+     }
 }
 static InitTranslationList()
 {
@@ -116,28 +124,41 @@ int XUseKeymap(filename)
   /* not yet implemented */
 }
 
-/* XXX not sure locking is race free here */
 static Initialize(dpy)
 Display *dpy;
 {
-    register KeySym *bd;
-    int nbd;
+    register KeySym *keysyms, *sym, *old, *endp, *temp;
+    int per, n;
 
     if (trans == NULL) InitTranslationList();
     /* 
      * lets go get the keysyms from the server.
      */
     if (dpy->keysyms == NULL) {
-	dpy->keysyms = XGetKeyboardMapping (dpy, (KeyCode) dpy->min_keycode,
-	dpy->max_keycode - dpy->min_keycode + 1, &dpy->keysyms_per_keycode);
-	LockDisplay(dpy);
-	nbd = (dpy->max_keycode - dpy->min_keycode + 1) * dpy->keysyms_per_keycode;
-	for (bd = dpy->keysyms; bd < (dpy->keysyms + nbd); bd += 2) {
-	if ((*(bd + 1) == NoSymbol) && (*bd >= XK_A) && (*bd <= XK_Z)) {
-	    *(bd + 1) = *bd;
-	    *bd += 0x20;
+	n = dpy->max_keycode - dpy->min_keycode + 1;
+	keysyms = XGetKeyboardMapping (dpy, (KeyCode) dpy->min_keycode,
+				       n, &per);
+	/* need at least two per keycode, to have room for case conversion */
+	if (per == 1) {
+	    temp = (KeySym *) Xmalloc((unsigned)(n * sizeof(KeySym) * 2));
+	    for (sym = temp, old = keysyms, endp = keysyms + n; old < endp;) {
+		*sym++ = *old++;
+	        *sym++ = NoSymbol;
 	    }
+	    Xfree((char *)keysyms);
+	    keysyms = temp;
+	    per = 2;
+	    n <<= 1;
 	}
+	for (sym = keysyms, endp = keysyms + n*per; sym < endp; sym += per) {
+	  if ((*(sym + 1) == NoSymbol) && (*sym >= XK_A) && (*sym <= XK_Z)) {
+	      *(sym + 1) = *sym;
+	      *sym += (XK_a - XK_A);
+	      }
+ 	}
+	LockDisplay(dpy);
+	dpy->keysyms = keysyms;
+	dpy->keysyms_per_keycode = per;
 	UnlockDisplay(dpy);
     }
     if (dpy->modifiermap == NULL) {
