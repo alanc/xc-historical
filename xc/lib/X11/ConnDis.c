@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.58 89/10/04 15:01:37 keith Exp $
+ * $XConsortium: XConnDis.c,v 11.59 89/10/08 14:28:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,8 +36,6 @@
 #ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
 #define X_CONNECTION_RETRIES 5
 #endif
-
-extern char *getenv();
 
 #ifdef DNETCONN
 static int MakeDECnetConnection();
@@ -104,7 +102,6 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int (*connfunc)();			/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
-    int retries = X_CONNECTION_RETRIES;
 
     p = display_name;
 
@@ -264,10 +261,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
      * being a server listening at all, which is why we have to not retry
      * too many times).
      */
-    if ((p = getenv ("XCONNECTRETRIES")) != NULL) {
-	retries = atoi (p);
-    }
-    if ((fd = (*connfunc) (phostname, idisplay, retries,
+    if ((fd = (*connfunc) (phostname, idisplay, X_CONNECTION_RETRIES,
 			   familyp, saddrlenp, saddrp)) < 0)
       goto bad;
 
