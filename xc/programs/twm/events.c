@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.170 91/01/05 15:06:19 dave Exp $
+ * $XConsortium: events.c,v 1.171 91/01/08 17:48:06 dave Exp $
  *
  * twm event handling
  *
  * 17-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[]=
-"$XConsortium: events.c,v 1.170 91/01/05 15:06:19 dave Exp $";
-#endif
 
 #include <stdio.h>
 #include "twm.h"
@@ -1205,7 +1200,7 @@ HandleDestroyNotify()
     if (Tmp_win->gray) XFreePixmap (dpy, Tmp_win->gray);
 
     XDestroyWindow(dpy, Tmp_win->frame);
-    if (Tmp_win->icon_w) {
+    if (Tmp_win->icon_w && !Tmp_win->icon_not_ours) {
 	XDestroyWindow(dpy, Tmp_win->icon_w);
 	IconDown (Tmp_win);
     }
@@ -1801,12 +1796,17 @@ HandleButtonPress()
 	}
 	else if (Event.xany.window == Tmp_win->frame) 
 	{
-	    /* since button grab for window context is now the frame,
-             * not the window (see GrabButtons() in add_window.c),
-	     * we need to figure out where the pointer exactly is
-	     * before assigning Context.
+	    /* since we now place a button grab on the frame instead
+             * of the window, (see GrabButtons() in add_window.c), we
+             * need to figure out where the pointer exactly is before
+             * assigning Context.  If the pointer is on the application
+             * window we will change the event structure to look as if
+             * it came from the application window.
 	     */
-	    if (Event.xbutton.subwindow == Tmp_win->w) Context = C_WINDOW;
+	    if (Event.xbutton.subwindow == Tmp_win->w) {
+	      Event.xbutton.window = Tmp_win->w;
+	      Context = C_WINDOW;
+	    }
             else Context = C_FRAME;
 	}
 	else if (Tmp_win->list &&

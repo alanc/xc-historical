@@ -28,18 +28,13 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.168 90/12/18 17:19:56 dave Exp $
+ * $XConsortium: menus.c,v 1.169 91/01/05 13:20:08 dave Exp $
  *
  * twm menu code
  *
  * 17-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-
-#if !defined(lint) && !defined(SABER)
-static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.168 90/12/18 17:19:56 dave Exp $";
-#endif
 
 #include <stdio.h>
 #include <signal.h>
@@ -1133,9 +1128,9 @@ FindMenuRoot(name)
 
 
 
-static Bool belongs_to_twm_window (t, w)
+static Bool belongs_to_twm_window (t, w, sub)
     register TwmWindow *t;
-    register Window w;
+    register Window w, sub;
 {
     if (!t) return False;
 
