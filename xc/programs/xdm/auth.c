@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.24 90/09/29 09:56:46 rws Exp $
+ * $XConsortium: auth.c,v 1.25 90/09/29 16:17:58 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -46,7 +46,6 @@
 #endif
 # include    <X11/X.h>
 
-extern void	exit (), bcopy (), free ();
 extern char	*mktemp ();
 
 extern int	MitInitAuth ();
