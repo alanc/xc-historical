@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.5 92/11/10 18:59:41 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.6 92/11/17 17:28:28 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -162,6 +162,10 @@ pexPickOneReq           *strmPtr;
     err = EndPickOne(prend, pPEXBuffer, &(reply->numPickElRefs),
 		     &(reply->pickStatus), &(reply->betterPick));
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
+    err = EndPicking(prend);
+    if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
+
     {
 	reply->length = LWORDS(pPEXBuffer->dataSize);
 	WritePEXBufferReply(pexPickOneReply);
