@@ -1,9 +1,10 @@
-.TH XWININFO 1 "16 June 1987" "X Version 11"
+.TH XWININFO 1 "1 July 1987" "X Version 11"
 .SH NAME
 xwininfo - X Window System window information summarizer.
 .SH SYNOPSIS
 .B "xwininfo"
-[ -help ] [ -id \fIid\fP ] [ -root ] [ -int ] [ -tree ] [ -stats ]
+[ -help ] [ -id \fIid\fP ] [ -root ] [ -name \fIname\fP ] [ -int ]
+[ -tree ] [ -stats ]
 [ -bits ] [ -events ] [ -size ] [ -wm  ] [ \fIhost\fP:\fIdisplay\fP ]
 .SH DESCRIPTION
 .PP
@@ -15,7 +16,10 @@ If no options are choosen, -stats is assumed.
 .PP
 The  user has the option of selecting the target window with
 the mouse (by clicking any mouse button in the desired window)  or  by
-specifying its' window id on the command line with the \fB-id\fP argument.
+specifying its window id on the command line with the \fB-id\fP argument.
+In addition, if it is easier, instead of specifying
+the window by its id number, the \fB-name\fP argument may be used to specify
+which window is desired by name.
 There is also a special \fB-root\fP argument to quickly obtain information
 on X's root window.
 .PP
@@ -50,6 +54,12 @@ command  line rather than using the mouse to select the target window.
 This is very useful in  debugging  X  applications  where  the  target
 window is not mapped to the screen or where the use of the mouse might
 be impossible or interfere with the application.
+.PP
+.TP 8
+.B "-name \fIname\fP"
+This argument allows the user to specify that the window named \fIname\fP
+is the target window on the command line rather than using the mouse to
+select the target window.
 .PP
 .TP 8
 .B "-root"
