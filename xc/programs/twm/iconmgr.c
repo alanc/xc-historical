@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.22 89/05/05 17:10:18 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.23 89/05/25 14:04:00 jim Exp $
  *
  * Icon Manager routines
  *
@@ -177,6 +177,8 @@ int dir;
     int row_inc, col_inc;
     int got_it;
 
+    if (!Active) return;
+
     cur_row = Active->row;
     cur_col = Active->col;
     ip = Active->iconmgr;
@@ -257,8 +259,19 @@ int dir;
     }
 
     /* raise the frame so the icon manager is visible */
-    XRaiseWindow(dpy, ip->twm_win->frame);
-    XWarpPointer(dpy, None, tmp->icon, 0,0,0,0, 5, 5);
+    if (ip->twm_win->mapped) {
+	XRaiseWindow(dpy, ip->twm_win->frame);
+	XWarpPointer(dpy, None, tmp->icon, 0,0,0,0, 5, 5);
+    } else {
+	if (tmp->twm->title_height) {
+	    int x = (TitleBarX + tmp->twm->name_width + Scr->TitlePadding);
+	    XWarpPointer (dpy, None, tmp->twm->title_w, 0, 0, 0, 0,
+			  x + (tmp->twm->attr.width - TitleBarX - x) / 2,
+			  Scr->TitleHeight / 4);
+	} else {
+	    XWarpPointer (dpy, None, tmp->twm->w, 0, 0, 0, 0, 5, 5);
+	}
+    }
 }
 
 /***********************************************************************
