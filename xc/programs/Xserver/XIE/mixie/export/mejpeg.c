@@ -148,8 +148,7 @@ int InitializeEPhotoJPEGBaseline(flo,ped)
 {
   ePhotoDefPtr pvt = (ePhotoDefPtr)ped->elemPvt;
 
-  return( common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber,
-							pvt->encodeLen) );
+  return( common_init(flo,ped,pvt->encodeParms,pvt->encodeNumber) );
 }
 /*------------------------------------------------------------------------
 ---------------------------- initialize peTex . . . ----------------------
@@ -181,6 +180,7 @@ static int common_init(flo,ped,tec,encodeTechnique)
      floDefPtr flo;
      peDefPtr  ped;
      xieTecEncodeJPEGBaseline *tec;
+     CARD16    encodeTechnique;
 {
   peTexPtr pet = ped->peTex;
   eTecEncodeJPEGBaselineDefPtr pedpvt=(eTecEncodeJPEGBaselineDefPtr) 

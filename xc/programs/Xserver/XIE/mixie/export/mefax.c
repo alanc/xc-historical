@@ -183,7 +183,7 @@ static int common_init(flo,ped,tec,encodeTechnique)
 floDefPtr flo;
 peDefPtr  ped;
 char *tec;
-int encodeTechnique;
+CARD16 encodeTechnique;
 {
 peTexPtr pet = ped->peTex;
 faxPvtPtr texpvt=(faxPvtPtr) pet->private;
