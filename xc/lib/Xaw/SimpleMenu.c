@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.33 90/04/26 17:35:35 converse Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.34 90/04/30 17:04:26 converse Exp $";
 #endif 
 
 /*
@@ -1105,7 +1105,8 @@ caddr_t junk, garbage;
      */
     
     XChangeActivePointerGrab(XtDisplay(w), ButtonPressMask|ButtonReleaseMask,
-			     smw->simple_menu.cursor, CurrentTime);
+			     smw->simple_menu.cursor, 
+			     XtLastTimestampProcessed(XtDisplay(w)));
 }
 
 /*      Function Name: MakeSetValuesRequest
