@@ -1,13 +1,13 @@
 SRCS =	 cfbgc.c cfbwindow.c cfbmisc.c \
-	 cfbpntwin.c maskbits.c cfbpixmap.c cfbbitblt.c \
+	 cfbpntwin.c cfbmaskbits.c cfbpixmap.c cfbbitblt.c \
 	 cfbfillsp.c cfbsetsp.c cfbscrinit.c \
 	 cfbgetsp.c cfbutils.c \
 	 cfbcmap.c cfboldmfb.c
 
-OBJS = cfbgc.o cfbwindow.o cfbmisc.o \
+OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 	 cfbgetsp.o cfbutils.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o \
-	 cfbpntwin.o maskbits.o cfbpixmap.o cfbbitblt.o \
+	 cfbpntwin.o cfbmaskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfboldmfb.o
 
 CDEBUGFLAGS = -g
