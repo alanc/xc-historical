@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ws.c,v 5.3 91/07/12 19:54:04 hersh Exp $ */
+/* $XConsortium: cb_ws.c,v 5.4 92/12/23 10:34:21 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -740,8 +740,10 @@ pset_hlhsr_mode( ws, mode)
 
     if (wsinfo = phg_cb_ws_open(phg_cur_cph, ws, Pfn_set_hlhsr_mode)) {
 	dt = &((Wst*)wsinfo->wstype)->desc_tbl.phigs_dt;
-	if (dt->ws_category == PCAT_MI) {
-	    ERR_REPORT(phg_cur_cph->erh, ERR57);
+	if (!(dt->ws_category == PCAT_OUT ||
+	      dt->ws_category == PCAT_OUTIN ||
+	      dt->ws_category == PCAT_MO)) {
+	    ERR_REPORT(phg_cur_cph->erh, ERR59);
 
 	} 
 	for (i = 0; i < dt->num_hlhsr_modes; i ++) {
