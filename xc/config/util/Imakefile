@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/09/29 21:15:12 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/02/10 16:48:27 rws Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
@@ -28,6 +28,4 @@ InstallNamedProg(makedepend,makedepend,$(BINDIR))
 #if SystemV || SystemV4
 InstallNamedProg(bsdinst.sh,bsdinst,$(BINDIR))
 #endif
-
-install.man::
-
+InstallNamedProg(mergelib,mergelib,$(BINDIR))
