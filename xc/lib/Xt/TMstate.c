@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 6.38 88/01/29 16:42:27 asente Exp $";
+static char rcsid[] = "$Header: TMstate.c,v 1.39 88/02/02 08:45:51 swick Locked $";
 #endif lint
 /*LINTLIBRARY*/
 
@@ -29,13 +29,13 @@ static char rcsid[] = "$Header: TMstate.c,v 6.38 88/01/29 16:42:27 asente Exp $"
  *              manager.
  */
 
-#include "Xlib.h"
-#include <strings.h>
-#include "Atoms.h"
+#include <X/Xlib.h>
+#include <X/Xos.h>
+#include <X/Atoms.h>
 #include <stdio.h>
 #include "IntrinsicI.h"
 #include "TMprivate.h"
-#include "Convert.h"
+#include <X/Convert.h>
 
 
 #define StringToAction(string)	((XtAction) StringToQuark(string))
