@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.56 93/08/09 17:13:17 kaleb Exp $ */
+/* $XConsortium: Core.c,v 1.57 93/08/27 16:27:15 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -186,6 +186,7 @@ static void CoreClassPartInitialize(wc)
 
     register WidgetClass super = wc->core_class.superclass;
 
+    LOCK_PROCESS;
     if (wc->core_class.realize == XtInheritRealize) {
 	wc->core_class.realize = super->core_class.realize;
     }
@@ -219,6 +220,7 @@ static void CoreClassPartInitialize(wc)
         wc->core_class.actions = (XtActionList) _XtInitializeActionData(
 	    wc->core_class.actions, wc->core_class.num_actions, inPlace);
     }
+    UNLOCK_PROCESS;
 }
 /* ARGSUSED */
 static void CoreInitialize(requested_widget, new_widget, args, num_args)
