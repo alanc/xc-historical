@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_attr.c,v 1.2 92/05/20 20:34:00 mor Exp $ */
+/* $XConsortium: pl_oc_attr.c,v 1.3 92/05/26 16:21:06 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -811,7 +811,7 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXCoord2D	*ref_point;
 
 {
-    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPatternRefPoint,
+    PEXAddSimpleOC (display, resource_id, req_type, PEXOCPatternAttributes2D,
 	sizeof (PEXCoord2D), ref_point);
 }
 
@@ -1328,7 +1328,7 @@ INPUT PEXPSCData	*pscData;
     else if (pscType == PEXPSCMCLevelCurves || pscType == PEXPSCWCLevelCurves)
     {
 	lenofData = NUMWORDS (sizeof (pexPSC_LevelCurves) +
-		(pscData->level_curves.count * sizeof (PEXCoord)));
+		(pscData->level_curves.count * sizeof (float)));
     }
 
     PEXInitOC (display, resource_id, req_type, PEXOCParaSurfCharacteristics,
@@ -1363,7 +1363,7 @@ INPUT PEXPSCData	*pscData;
 		(char *) pscData);
 
 	    PEXCopyBytesToOC (display,
-		pscData->level_curves.count * sizeof (PEXCoord),
+		pscData->level_curves.count * sizeof (float),
 		(char *) (pscData->level_curves.parameters));
 	}
     }
