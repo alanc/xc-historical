@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.29 91/05/10 16:57:37 gildea Exp $
+ *	$XConsortium: screen.c,v 1.30 91/08/22 16:27:13 gildea Exp $
  */
 
 /*
@@ -485,7 +485,7 @@ ScreenResize (screen, width, height, flags)
 	int rows, cols;
 	int border = 2 * screen->border;
 	int move_down_by;
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	struct ttysize ts;
 #endif	/* TIOCSSIZE */
@@ -579,7 +579,7 @@ ScreenResize (screen, width, height, flags)
 	screen->fullVwin.fullheight = height;
 	screen->fullVwin.fullwidth = width;
 	ResizeSelection (screen, rows, cols);
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	/* Set tty's idea of window size */
 	ts.ts_lines = rows;

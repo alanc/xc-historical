@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.26 91/07/15 12:10:27 rws Exp $
+ *	$XConsortium: resize.c,v 1.27 91/07/23 11:11:19 rws Exp $
  */
 
 /*
@@ -130,7 +130,7 @@ char *getsize[EMULATIONS] = {
 	"\0337\033[r\033[999;999H\033[6n",
 	"\033[18t",
 };
-#ifndef sun
+#if !defined(sun) || defined(SVR4)
 #ifdef TIOCSWINSZ
 char *getwsize[EMULATIONS] = {	/* size in pixels */
 	0,
@@ -159,7 +159,7 @@ char *size[EMULATIONS] = {
 char sunname[] = "sunsize";
 int tty;
 FILE *ttyfp;
-#ifndef sun
+#if !defined(sun) || defined(SVR4)
 #ifdef TIOCSWINSZ
 char *wsize[EMULATIONS] = {
 	0,
@@ -195,7 +195,7 @@ main (argc, argv)
 	char newtc [1024];
 #endif /* USE_TERMCAP */
 	char buf[BUFSIZ];
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCSSIZE
 	struct ttysize ts;
 #endif	/* TIOCSSIZE */
@@ -335,7 +335,7 @@ main (argc, argv)
 	}
 	if(restore[emu])
 		write(tty, restore[emu], strlen(restore[emu]));
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #ifdef TIOCGSIZE
 	/* finally, set the tty's window size */
 	if (ioctl (tty, TIOCGSIZE, &ts) != -1) {
