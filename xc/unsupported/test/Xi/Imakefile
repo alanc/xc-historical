@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.10 91/02/17 16:05:32 rws Exp $
+# $XConsortium: Imakefile,v 1.11 91/02/18 10:25:03 rws Exp $
 
    LOCLIBS = $(XILIB) $(XLIB)
    DEPLIBS = $(DEPXILIB) $(DEPXLIB)
@@ -6,10 +6,10 @@
 
 all: xtouch xprotoerrors xlist xselinput xsendev
 
-NormalProgramTarget(xtouch,XTouch.o,$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xprotoerrors,XPErrors.o,$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xlist,XList.o,$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xselinput,XSelInput.o,$(DEPLIBS),$(LOCLIBS),)
-NormalProgramTarget(xsendev,XSendEv.o,$(DEPLIBS),$(LOCLIBS),)
+NormalProgramTarget(xtouch,XTouch.o,$(DEPLIBS),$(LOCLIBS), /**/)
+NormalProgramTarget(xprotoerrors,XPErrors.o,$(DEPLIBS),$(LOCLIBS), /**/)
+NormalProgramTarget(xlist,XList.o,$(DEPLIBS),$(LOCLIBS), /**/)
+NormalProgramTarget(xselinput,XSelInput.o,$(DEPLIBS),$(LOCLIBS), /**/)
+NormalProgramTarget(xsendev,XSendEv.o,$(DEPLIBS),$(LOCLIBS), /**/)
 
 DependTarget()
