@@ -1,6 +1,6 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.107 88/02/08 08:44:34 swick Exp $";
-#endif lint
+static char rcsid[] = "$Header: Initialize.c,v 1.108 88/02/11 13:49:30 rws Exp $";
+#endif
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -438,11 +438,13 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	XtApplicationName = XrmAtomToName( name );
 	XtApplicationClass = XrmAtomToClass( classname );
 	DO_Initialize();
+#ifndef XAPPLOADDIR
 #ifndef VMS
 #define XAPPLOADDIR  "/usr/lib/X/app-defaults/"
 #else
 #define XAPPLOADDIR  "SYS$LIBRARY:"
-#endif VMS
+#endif /* VMS */
+#endif /* XAPPLOADDIR */
 	(void) strcpy(filename, XAPPLOADDIR);
 	(void) strcat(filename, classname);
 
