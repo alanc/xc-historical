@@ -204,12 +204,12 @@ static void GetgrayGC(lw)
 	&values);
 }
 
-static void Initialize(w, args, num_args)
- Widget w;
+static void Initialize(request, new, args, num_args)
+ Widget request, new;
  ArgList args;
  Cardinal num_args;
 {
-    LabelWidget lw = (LabelWidget) w;
+    LabelWidget lw = (LabelWidget) new;
 
     if (lw->label.label == NULL) {
 	unsigned int	len = strlen(lw->core.name);
@@ -317,10 +317,12 @@ static void Resize(w)
  * Set specified arguments into widget
  */
 
-static Boolean SetValues(old, new)
-    Widget old, new;
+static Boolean SetValues(current, request, new, last)
+    Widget current, request, new;
+    Boolean last;
 {
-    LabelWidget oldlw = (LabelWidget) old;
+    LabelWidget curlw = (LabelWidget) current;
+    LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
     XtWidgetGeometry	reqGeo;
 
@@ -329,9 +331,9 @@ static Boolean SetValues(old, new)
 	newlw->label.label = newlw->core.name;
     }
 
-    if ((oldlw->label.label != newlw->label.label)
-	|| (oldlw->label.font != newlw->label.font)
-	|| (oldlw->label.justify != newlw->label.justify)) {
+    if ((curlw->label.label != newlw->label.label)
+	|| (curlw->label.font != newlw->label.font)
+	|| (curlw->label.justify != newlw->label.justify)) {
 
 	SetTextWidthAndHeight(newlw);
 
@@ -342,78 +344,77 @@ static Boolean SetValues(old, new)
     /* should make the user set width and height to 0 when they set the */
     /* label if they want the label to recompute size based on the new */
     /* label? */
-    if (oldlw->label.label != newlw->label.label) {
+    if (curlw->label.label != newlw->label.label) {
         if (newlw->label.label != NULL) {
 	    newlw->label.label = strcpy(
 	        XtMalloc((unsigned) newlw->label.label_len + 1),
 		newlw->label.label);
 	}
-	XtFree ((char *) oldlw->label.label);
+	XtFree ((char *) curlw->label.label);
     }
 
     /* calculate the window size */
-    if (oldlw->core.width == newlw->core.width)
+    if (curlw->core.width == newlw->core.width)
 	newlw->core.width =
 	    newlw->label.label_width +2*newlw->label.internal_width;
 
-    if (oldlw->core.height == newlw->core.height)
+    if (curlw->core.height == newlw->core.height)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
 
     reqGeo.request_mode = NULL;
 
-    if (oldlw->core.x != newlw->core.x) {
+    if (curlw->core.x != newlw->core.x) {
 	reqGeo.request_mode |= CWX;
 	reqGeo.x = newlw->core.x;
     }
-    if (oldlw->core.y != newlw->core.y) {
+    if (curlw->core.y != newlw->core.y) {
 	reqGeo.request_mode |= CWY;
 	reqGeo.y = newlw->core.y;
     }
-    if (oldlw->core.width != newlw->core.width) {
+    if (curlw->core.width != newlw->core.width) {
 	reqGeo.request_mode |= CWWidth;
 	reqGeo.width = newlw->core.width;
     }
-    if (oldlw->core.height != newlw->core.height) {
+    if (curlw->core.height != newlw->core.height) {
 	reqGeo.request_mode |= CWHeight;
 	reqGeo.height = newlw->core.height;
     }
-    if (oldlw->core.border_width != newlw->core.border_width) {
+    if (curlw->core.border_width != newlw->core.border_width) {
 	reqGeo.request_mode |= CWBorderWidth;
 	reqGeo.border_width = newlw->core.border_width;
     }
 
     if (reqGeo.request_mode != NULL) {
-	/* this will automatically call "Resize" if it succeeds */
 	if (XtMakeGeometryRequest(
-		(Widget)newlw,
+		(Widget)curlw,
 		&reqGeo,
 		(XtWidgetGeometry *)NULL) != XtGeometryYes) {
 	    /* punt, undo requested change */
-	    newlw->core.x = oldlw->core.x;
-	    newlw->core.y = oldlw->core.y;
-	    newlw->core.width = oldlw->core.width;
-	    newlw->core.height = oldlw->core.height;
-	    newlw->core.border_width = oldlw->core.border_width;
+	    newlw->core.x = curlw->core.x;
+	    newlw->core.y = curlw->core.y;
+	    newlw->core.width = curlw->core.width;
+	    newlw->core.height = curlw->core.height;
+	    newlw->core.border_width = curlw->core.border_width;
 	}
     }
 
-    if (newlw->core.depth != oldlw->core.depth) {
+    if (newlw->core.depth != curlw->core.depth) {
 	XtWarning("SetValues: Attempt to change existing widget depth.");
-	newlw->core.depth = oldlw->core.depth;
+	newlw->core.depth = curlw->core.depth;
     }
 
-    if ((oldlw->core.background_pixel != newlw->core.background_pixel)
-	|| (oldlw->core.border_pixel != newlw->core.border_pixel)) {
+    if ((curlw->core.background_pixel != newlw->core.background_pixel)
+	|| (curlw->core.border_pixel != newlw->core.border_pixel)) {
 
 	Mask valueMask = 0;
 	XSetWindowAttributes attributes;
 
-	if (oldlw->core.background_pixel != newlw->core.background_pixel) {
+	if (curlw->core.background_pixel != newlw->core.background_pixel) {
 	    valueMask |= CWBackPixel;
 	    attributes.background_pixel = newlw->core.background_pixel;
 	}
-	if (oldlw->core.border_pixel != newlw->core.border_pixel) {
+	if (curlw->core.border_pixel != newlw->core.border_pixel) {
 	    valueMask |= CWBorderPixel;
 	    attributes.border_pixel = newlw->core.border_pixel;
 	}
@@ -421,25 +422,22 @@ static Boolean SetValues(old, new)
 	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
     }
 
-    if (oldlw->core.sensitive != newlw->core.sensitive) {
+    if (curlw->core.sensitive != newlw->core.sensitive) {
 	XtWarning("Setting Label sensitivity not implemented.");
     }
 
-    if (oldlw->label.foreground != newlw->label.foreground
-	|| oldlw->label.font->fid != newlw->label.font->fid) {
+    if (curlw->label.foreground != newlw->label.foreground
+	|| curlw->label.font->fid != newlw->label.font->fid) {
 
-	XtDestroyGC(oldlw->label.normal_GC);
+	XtDestroyGC(curlw->label.normal_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }
 
-    if ((oldlw->label.internal_width != newlw->label.internal_width)
-        || (oldlw->label.internal_height != newlw->label.internal_height)) {
+    if ((curlw->label.internal_width != newlw->label.internal_width)
+        || (curlw->label.internal_height != newlw->label.internal_height)) {
 	Resize((Widget)newlw);
     }
-
-    XClearWindow(XtDisplay(oldlw), XtWindow(oldlw));
-    *oldlw = *newlw;
 
     return( True );		/* want Redisplay */
 }
