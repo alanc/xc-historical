@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.2 91/02/18 11:11:44 rws Exp $ */
+/* $XConsortium: phigsmon.c,v 5.3 91/03/28 17:10:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -205,6 +205,10 @@ set_up( s, es)
 	    tcph->data.monitor.cmd_timeout.it_interval.tv_usec =
 		CPR_CMD_TIMEOUT;
 
+#if defined(hpux) && defined(FIOSNBIO)
+	    fdflags = 1;
+	    ioctl (s, FIOSNBIO, &fdflags);
+#else
 	    fdflags = fcntl( s, F_GETFL, 0);
 #ifdef O_NONBLOCK
 	    fdflags |= O_NONBLOCK;
@@ -212,7 +216,7 @@ set_up( s, es)
 	    fdflags |= FNDELAY;
 #endif
 	    fcntl( s, F_SETFL, fdflags);
-
+#endif
 	    if ( getenv( "PEX_SI_API_SYNC" ) )
 		tcph->flags.err_sync = 1;
 
