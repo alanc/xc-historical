@@ -26,7 +26,7 @@
  *		Public include file for the LibTest test interface tool
  *
  *	REVISION
- *		$Header: LibTest.h,v 1.2 90/11/13 13:23:24 alt Exp $
+ *		$Header: LibTest.h,v 1.1 91/05/07 02:00:21 alt Exp $
  */
 #ifndef LIBTEST_H
 #define LIBTEST_H
