@@ -3,7 +3,7 @@
 ico \- animate an icosahedron or other polyhedron
 .SH SYNOPSIS
 .B ico
-[-display host:dpy] [-geometry geom]
+[-display display] [-geometry geometry]
 [-r] [-d pattern] [-i] [-dbl] [-faces] [-noedges]
 [-sleep n] [-obj object] [-objhelp] [-colors color-list]
 .SH DESCRIPTION
@@ -68,6 +68,8 @@ simply do a 'make depend'.
 This will recreate the file allobjs.h, which lists all of the objXXX.h
 files.
 Doing a 'make' after this will rebuild ico with the new object information.
+.SH "SEE ALSO"
+X(1)
 .SH BUGS
 .LP
 A separate color cell is allocated for each name in the -colors list,

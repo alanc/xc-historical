@@ -37,6 +37,8 @@ control bar causes puzzle to exit.
 Clicking in the tiled region moves the empty spot to that
 location if the region you click in is in the same row or column as the
 empty slot. 
+.SH "SEE ALSO"
+X(1)
 .SH BUGS
 The picture option should work on a wider variety of screens.
 .SH COPYRIGHT
