@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.69 89/01/10 14:59:59 rws Exp $ */
+/* $XConsortium: utils.c,v 1.71 89/03/18 13:49:34 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -49,7 +49,18 @@ void ddxUseMsg();
 
 extern char *sbrk();
 
+#ifdef DEBUG
+#ifndef SPECIAL_MALLOC
+#define MEMBUG
+#endif
+#endif
+
+#ifdef MEMBUG
 pointer minfree = NULL;
+static void CheckNode();
+#endif
+
+Bool Must_have_memory = FALSE;
 
 int ErrorfOn = 1;
 int MessagefOn = 0;
@@ -195,8 +206,10 @@ char	*argv[];
 {
     int i, skip;
 
+#ifdef MEMBUG
     if (!minfree)
 	minfree = (pointer)sbrk(0);
+#endif
     defaultKeyboardControl.autoRepeat = TRUE;
 
     for ( i = 1; i < argc; i++ )
@@ -373,14 +386,6 @@ char	*argv[];
 }
 
 #ifndef SPECIAL_MALLOC
-/*
- * malloc wrap-around, to take care of the "no memory" case, since
- * it would be difficult in many places to "back out" on failure.
- */
-/* DEBUG replaced by MEMBUG so that turning it on effects only this file */
-#ifdef DEBUG
-#define MEMBUG
-#endif
 
 #ifdef MEMBUG
 #define FIRSTMAGIC 0x11aaaa11
@@ -407,83 +412,78 @@ Xalloc (amount)
     char		*malloc();
     register pointer  ptr;
 	
-    if(amount == 0)
-	return( (unsigned long *)NULL);
-#ifdef MEMBUG
+    if(!amount)
+	return (unsigned long *)NULL;
     /* aligned extra on long word boundary */
-    amount = (amount + 3) & ~3;  
-    if (ptr =  (pointer) malloc(amount + 12))
+    amount = (amount + 3) & ~3;
+#ifdef MEMBUG
+    if (ptr = (pointer)malloc(amount + 12))
     {
         *(unsigned long *)ptr = FIRSTMAGIC;
         *((unsigned long *)(ptr + 4)) = amount;
         *((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
-	return (unsigned long *) (ptr + 8);
+	return (unsigned long *)(ptr + 8);
     }
 #else
-    /* aligned extra on long word boundary */
-    amount = (amount + 3) & ~3;  
-    if (ptr = (pointer) malloc(amount))
-	return ((unsigned long *)ptr);
-#endif /* MEMBUG */
-    FatalError("Out of memory in Xalloc\n");
-    /* NOTREACHED */
+    if (ptr = (pointer)malloc(amount))
+	return (unsigned long *)ptr;
+#endif
+    if (Must_have_memory)
+	FatalError("Out of memory");
+    return (unsigned long *)NULL;
 }
 
 /*****************
  * Xrealloc
- *     realloc wrap-around, to take care of the "no memory" case, since
- *     it would be difficult in many places to "back out" on failure.
  *****************/
 
 unsigned long *
 Xrealloc (ptr, amount)
-register pointer ptr;
-unsigned long amount;
+    register pointer ptr;
+    unsigned long amount;
 {
     char *malloc();
     char *realloc();
 
-    amount = (amount + 3) & ~3;  
+#ifdef MEMBUG
+    if (!amount)
+    {
+	Xfree(ptr);
+	return (unsigned long *)NULL;
+    }
+    amount = (amount + 3) & ~3;
     if (ptr)
     {
-#ifndef macII
-        if (ptr < minfree)
-        {
-	    ErrorF("Xrealloc: trying to free static storage\n");
-	    /* Force a core dump */
-	    AbortServer();
-	}
-#endif
-#ifdef MEMBUG
-	if (!CheckNode(ptr - 8))
-	    AbortServer();
-	ptr = (pointer) realloc ((ptr - 8), amount + 12);
-#else
-        ptr = (pointer) realloc (ptr, amount);
-#endif /* MEMBUG */
+	CheckNode(ptr);
+	ptr = (pointer)realloc((ptr - 8), amount + 12);
     }
     else
-    {
-#ifdef MEMBUG
-	ptr =  (pointer) malloc (amount + 12);
-#else
-	ptr =  (pointer) malloc (amount);
-#endif 
-    }
-#ifdef MEMBUG
+	ptr = (pointer)malloc(amount + 12);
     if (ptr)
     {
         *(unsigned long *)ptr = FIRSTMAGIC;
 	*((unsigned long *)(ptr + 4)) = amount;
 	*((unsigned long *)(ptr + 8 + amount)) = SECONDMAGIC;
-	return ((unsigned long *) (ptr + 8));
+	return (unsigned long *) (ptr + 8);
     }
 #else
-    if (ptr || !amount)
-        return((unsigned long *)ptr);
-#endif /* MEMBUG */
-    FatalError ("Out of memory in Xrealloc\n");
-    /*NOTREACHED*/
+    if (!amount)
+    {
+	if (ptr)
+	    free(ptr);
+	return (unsigned long *)NULL;
+    }
+    amount = (amount + 3) & ~3;
+    if (ptr)
+        ptr = (pointer)realloc(ptr, amount);
+    else
+	ptr = (pointer)malloc(amount);
+    if (ptr)
+        return (unsigned long *)ptr;
+#endif
+    if (Must_have_memory)
+	FatalError("Out of memory");
+    return (unsigned long *)NULL;
 }
                     
 /*****************
@@ -495,39 +495,37 @@ void
 Xfree(ptr)
     register pointer ptr;
 {
-    if (ptr == (pointer) NULL)
-	return;
 #ifdef MEMBUG
-    if (ptr < minfree)
-	ErrorF("Xfree: trying to free static storage\n");
-    else if (CheckNode(ptr - 8))
+    if (ptr)
     {
+	CheckNode(ptr);
         *(unsigned long *)(ptr - 8) = FREEDMAGIC;
 	free(ptr - 8); 
     }
 #else
-    if (ptr >= minfree)
-        free(ptr); 
-#endif /* MEMBUG */
+    if (ptr)
+	free(ptr); 
+#endif
 }
 
 #ifdef MEMBUG
-static Bool
+static void
 CheckNode(ptr)
     pointer ptr;
 {
     unsigned long    amount;
 
+    if (ptr < minfree)
+	FatalError("Trying to free static storage");
+    ptr -= 8;
+    if (ptr < minfree)
+	FatalError("Trying to free static storage");
     amount = *((unsigned long *)(ptr + 4));
     if (*((unsigned long *) ptr) == FREEDMAGIC)
-    {
-        ErrorF("Freeing something already freed!\n");
-	return FALSE;
-    }
+	FatalError("Freeing something already freed");
     if( *((unsigned long *) ptr) != FIRSTMAGIC ||
         *((unsigned long *) (ptr + amount + 8)) != SECONDMAGIC)
-	FatalError("Heap bug!\n");
-    return TRUE;
+	FatalError("Freeing a garbage object");
 }
-#endif /* MEMBUG */
+#endif
 #endif /* SPECIAL_MALLOC */
