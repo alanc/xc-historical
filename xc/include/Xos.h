@@ -35,20 +35,21 @@
  * the BSD-style index() and rindex() in application code, so any systems that
  * don't provide them need to have #defines here.  Unfortunately, we can't
  * use #if defined() here since makedepend will get confused.
+ *
+ * The list of systems that currently needs System V stings includes:
+ *
+ *	hpux
+ * 	macII
+ *	CRAY
  */
 
 #ifdef SYSV
 #define SYSV_STRINGS
 #endif /* SYSV */
 
-#ifdef macII
+#ifdef macII				/* since it doesn't define SYSV */
 #define SYSV_STRINGS
 #endif /* macII */
-
-#ifdef CRAY
-#define SYSV_STRINGS
-#endif /* CRAY */
-
 
 #ifdef SYSV_STRINGS
 #include <string.h>
