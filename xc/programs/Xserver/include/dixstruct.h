@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.10 87/12/30 19:48:56 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.11 88/09/06 15:47:57 jim Exp $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -65,6 +65,7 @@ typedef struct _Client {
     int requestLog[MAX_REQUEST_LOG];
     int requestLogIndex;
     pointer screenPrivate[MAXSCREENS];
+    int (**requestVector)();
 } ClientRec;
 
 extern TimeStamp currentTime;
