@@ -184,8 +184,8 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->UnrealizeFont = mfbUnrealizeFont;
     pScreen->CloseScreen = cfbCloseScreen;
     pScreen->QueryBestSize = mfbQueryBestSize;
-    pScreen->GetImage = miGetImage;
-    pScreen->GetSpans = cfbGetSpans;	/* XXX */
+    pScreen->GetImage = cfbGetImage;
+    pScreen->GetSpans = cfbGetSpans;
     pScreen->CreateGC = cfbCreateGC;
     pScreen->CreatePixmap = cfbCreatePixmap;
     pScreen->DestroyPixmap = cfbDestroyPixmap;
