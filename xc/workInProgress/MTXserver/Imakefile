@@ -53,8 +53,12 @@
 #define	XibmServer /* as nothing */
 #endif
 
-# for now, don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XHPServer
+#ifndef XndxServer
+#define	XndxServer /* as nothing */
+#endif
+
+# don't split this across lines, because imake will keep a trailing slash
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -155,6 +159,16 @@ APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
+
+#
+# ndx server
+#
+NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/ndx os/4.2bsd
+NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o
+NDXLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+XndxDIRS = $(NDXDIRS)
+
+ServerTarget(Xndx,$(EXTDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SYSLIBS))
 
 #
 # other, necessary targets
