@@ -4,7 +4,7 @@
  * xwininfo.c	- MIT Project Athena, X Window system window
  *		  information utility.
  *
- * $XConsortium: xwininfo.c,v 1.51 91/05/11 21:48:09 gildea Exp $
+ * $XConsortium: xwininfo.c,v 1.52 91/05/11 22:32:49 gildea Exp $
  *
  *	This program will report all relevant information
  *	about a specific window.
@@ -103,8 +103,6 @@ void scale_init()
   bmm = xmm + ymm;
 }
 
-double drem();
-
 #define MILE (5280*12)
 #define YARD (3*12)
 #define FOOT (12)
@@ -118,32 +116,46 @@ char *nscale(n, np, nmm, nbuf)
     sprintf(nbuf+strlen(nbuf), " (");
   }
   if(metric) {
-    sprintf(nbuf+strlen(nbuf),"%.2f mm%s", ((float) n)*nmm/np, english?"; ":"");
+    sprintf(nbuf+strlen(nbuf),"%.2f mm%s", ((double) n)*nmm/np, english?"; ":"");
   }
   if(english) {
-    float in;
+    double inch_frac;
+    Bool printed_anything = False;
     int mi, yar, ft, inr;
-    in = ((float) n)*(nmm/25.4)/np;
-    inr = (int)in;
+
+    inch_frac = ((double) n)*(nmm/25.4)/np;
+    inr = (int)inch_frac;
+    inch_frac -= (double)inr;
     if(inr>=MILE) {
       mi = inr/MILE;
       inr %= MILE;
-      sprintf(nbuf+strlen(nbuf), "%d %s(?!?), ",
+      sprintf(nbuf+strlen(nbuf), "%d %s(?!?)",
 	      mi, (mi==1)?"mile":"miles");
+      printed_anything = True;
     }
     if(inr>=YARD) {
       yar = inr/YARD;
       inr %= YARD;
-      sprintf(nbuf+strlen(nbuf), "%d %s, ",
+      if (printed_anything)
+	  sprintf(nbuf+strlen(nbuf), ", ");
+      sprintf(nbuf+strlen(nbuf), "%d %s",
 	      yar, (yar==1)?"yard":"yards");
+      printed_anything = True;
     }
     if(inr>=FOOT) {
       ft = inr/FOOT;
       inr  %= FOOT;
-      sprintf(nbuf+strlen(nbuf), "%d %s, ",
+      if (printed_anything)
+	  sprintf(nbuf+strlen(nbuf), ", ");
+      sprintf(nbuf+strlen(nbuf), "%d %s",
 	      ft, (ft==1)?"foot":"feet");
+      printed_anything = True;
     }
-    sprintf(nbuf+strlen(nbuf), "%.2f inches", in);
+    if (!printed_anything || inch_frac != 0.0 || inr != 0) {
+      if (printed_anything)
+	  sprintf(nbuf+strlen(nbuf), ", ");
+      sprintf(nbuf+strlen(nbuf), "%.2f inches", inr+inch_frac);
+    }
   }
   if (english || metric) strcat (nbuf, ")");
   return(nbuf);
