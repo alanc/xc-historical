@@ -1,4 +1,4 @@
-/* $XConsortium: osdep.h,v 1.5 93/09/20 18:08:54 hersh Exp $ */
+/* $XConsortium: osdep.h,v 1.6 94/01/31 12:42:46 mor Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -33,17 +33,44 @@
 #define	BUFWATERMARK	8192
 #define	MAXBUFSIZE	(1 << 18)
 
-#if NOFILE <= 128		/* 128 is value of MAXCLIENTS */
-#define	MAXSOCKS	(NOFILE - 1)
+#ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
 #else
-#define	MAXSOCKS	128
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
 #endif
 
-#define	mskcnt	((MAXSOCKS + 31) / 32)	/* size of bit array */
+#ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 128
+#else
+#include <sys/param.h>
+#ifndef OPEN_MAX
+#if defined(NOFILE) && !defined(NOFILES_MAX)
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
+#endif
+#endif
+
+#if OPEN_MAX <= 128		/* 128 is value of MAXCLIENTS */
+#define MAXSOCKS (OPEN_MAX - 1)
+#else
+#define MAXSOCKS 128
+#endif
 
 #ifndef NULL
 #define NULL 0
 #endif
+
+#define	mskcnt ((MAXSOCKS + 31) / 32)	/* size of bit array */
 
 #if (mskcnt==1)
 #define BITMASK(i) (1 << (i))
