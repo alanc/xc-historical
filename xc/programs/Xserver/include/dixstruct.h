@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.29 94/02/04 15:35:35 dpw Exp $ */
+/* $XConsortium: dixstruct.h,v 1.31 94/03/18 17:20:06 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -95,11 +95,6 @@ typedef struct _Client {
     unsigned short xkbClientFlags;
     unsigned short mapNotifyMask;
 #endif
-#ifdef XTHREADS
-    unsigned	long serialNumber;	/* for validateGC */
-    pointer	msgBuffer;
-    pointer	pConflict;
-#endif /* XTHREADS */
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.57 94/01/18 19:38:20 rws Exp $ */
+/* $XConsortium: os.h,v 1.59 94/03/18 17:20:06 dpw Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -135,21 +135,11 @@ extern int WaitForSomething(
 #endif
 );
 
-#ifndef XTHREADS
 extern int ReadRequestFromClient(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
-#else
-extern int ReadRequestFromClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*client*/,
-    int /*gotnow*/,
-    int /*needed*/
-#endif
-);
-#endif /* !XTHREADS */
 
 extern Bool InsertFakeRequest(
 #if NeedFunctionPrototypes
@@ -638,4 +628,3 @@ extern int ddxProcessArgument(
 );
 
 #endif /* OS_H */
-

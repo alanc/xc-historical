@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.76 94/02/20 10:38:33 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.78 94/03/18 17:20:06 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -125,46 +125,11 @@ SOFTWARE.
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
 
-/* MTX changes the way reply structures are declared to minimize #ifdef's */
-#ifdef XTHREADS
-
-#define REPLY_DECL(_type,_name)				\
-	PooledMessagePtr msg;				\
-	_type *_name = GetReplyMessage(_type, &msg)
-
-#define MTX_REP_CHECK_RETURN(_name,_error_value)	\
-	if (!_name)					\
-		return _error_value
-
-#else /* XTHREADS */
-
-#define REPLY_DECL(_type,_name)				\
-	_type _reply_buf_, *_name = &_reply_buf_
-
-#define MTX_REP_CHECK_RETURN(_name,_error_value)	/* nothing */
-
-#endif /* XTHREADS */
-
-/* MTX cannot use local memory for data of global message pool */
-#ifdef XTHREADS
-#define MTX_LOCAL_ALLOC xalloc
-#define MTX_LOCAL_FREE xfree
-#else /* XTHREADS */
-#define MTX_LOCAL_ALLOC ALLOCATE_LOCAL
-#define MTX_LOCAL_FREE DEALLOCATE_LOCAL
-#endif /* XTHREADS */
-
-#ifdef XTHREADS
-/* MTX assumes routines that call WriteReplyToClient have local variable msg */
-#define WriteReplyToClient(pClient, size, pReply) \
-    SendReplyToClient(pClient, msg);
-#else
 #define WriteReplyToClient(pClient, size, pReply) \
    if ((pClient)->swapped) \
       (*ReplySwapVector[((xReq *)(pClient)->requestBuffer)->reqType]) \
            (pClient, (int)(size), pReply); \
       else (void) WriteToClient(pClient, (int)(size), (char *)(pReply));
-#endif
 
 #define WriteSwappedDataToClient(pClient, size, pbuf) \
    if ((pClient)->swapped) \
