@@ -1,4 +1,4 @@
-/* $XConsortium: XIproto.h,v 1.4 89/12/12 16:36:16 jim Exp $ */
+/* $XConsortium: XIproto.h,v 1.5 90/05/18 10:57:45 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,10 +58,12 @@ typedef struct  _XExtEventInfo
     BYTE	word;
     } XExtEventInfo;
 
+typedef unsigned char *Pointer;
+
 struct tmask
     {
     Mask	mask;
-    BOOL	select;
+    Pointer     dev;
     };
 
 /*********************************************************
