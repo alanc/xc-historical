@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.13 89/12/11 21:46:11 keith Exp $
+ * $XConsortium: xclipboard.c,v 1.14 89/12/12 14:06:15 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.13 89/12/11 21:46:11 keith Exp $ */
+/* $XConsortium: xclipboard.c,v 1.14 89/12/12 14:06:15 rws Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -203,7 +203,7 @@ DeleteCurrentClip ()
 	    RestoreClip (text, currentClip);
 	else
 	{
-	    EraseCurrentClip ();
+	    EraseTextWidget ();
 	}
 	set_button_state ();
     }
@@ -231,9 +231,12 @@ NewCurrentClipContents (data, len)
 
     if (!currentClip && TextLength (text))
 	currentClip = NewClip (text, (ClipPtr) 0);
-    newCurrent = NewClip (text, currentClip);
     if (currentClip)
 	SaveClip (text, currentClip);
+    /* append new clips at the end */
+    while (currentClip && currentClip->next)
+	currentClip = currentClip->next;
+    newCurrent = NewClip (text, currentClip);
     
     currentClip = newCurrent;
 
@@ -246,11 +249,11 @@ NewCurrentClipContents (data, len)
     set_button_state ();
 }
 
-EraseCurrentClip()
+EraseTextWidget ()
 {
     XawTextBlock block;
 
-    block.ptr = NULL;
+    block.ptr = "";
     block.length = 0;
     block.firstPos = 0;
     block.format = FMT8BIT;
