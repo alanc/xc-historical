@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.6 90/04/03 17:11:55 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.7 90/04/04 11:28:32 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -138,6 +138,7 @@ void XtSetValues(w, args, num_args)
     XtWidgetGeometry geoReq, geoReply;
     WidgetClass     wc = XtClass(w);
     ConstraintWidgetClass cwc;
+    Boolean	    hasConstraints;
 
     if ((args == NULL) && (num_args != 0)) {
         XtAppErrorMsg(XtWidgetToApplicationContext(w),
@@ -160,10 +161,15 @@ void XtSetValues(w, args, num_args)
 
     bcopy ((char *) w, (char *) reqw, (int) widgetSize);
 
-    if (w->core.constraints != NULL) {
-	/* Allocate and copy current constraints into oldw */
+    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
+    hasConstraints = (!XtIsShell(w) && XtIsConstraint(XtParent(w)));
+    if (hasConstraints) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
 	constraintSize = cwc->constraint_class.constraint_size;
+    } else constraintSize = 0;
+	
+    if (constraintSize) {
+	/* Allocate and copy current constraints into oldw */
 	oldw->core.constraints = XtStackAlloc(constraintSize, oldcCache);
 	reqw->core.constraints = XtStackAlloc(constraintSize, reqcCache);
 	bcopy((char *) w->core.constraints, 
@@ -179,7 +185,7 @@ void XtSetValues(w, args, num_args)
 
     /* Inform widget of changes, then inform parent of changes */
     redisplay = CallSetValues (wc, oldw, reqw, w, args, num_args);
-    if (w->core.constraints != NULL) {
+    if (hasConstraints) {
 	redisplay |= CallConstraintSetValues(cwc, oldw, reqw, w, args, num_args);
     }
 
@@ -266,10 +272,9 @@ void XtSetValues(w, args, num_args)
 
 
     /* Free dynamic storage */
-    if (w->core.constraints != NULL) {
+    if (constraintSize) {
         XtStackFree(oldw->core.constraints, oldcCache);
-        XtStackFree(reqw->core.constraints,
-        reqcCache);
+        XtStackFree(reqw->core.constraints, reqcCache);
     }
     XtStackFree((XtPointer)oldw, oldwCache);
     XtStackFree((XtPointer)reqw, reqwCache);

@@ -1,6 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.25 90/04/04 11:27:43 swick Exp $";
-/* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.26 90/06/21 16:25:14 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -79,8 +78,9 @@ static void Phase2Destroy(widget)
     register ConstraintWidgetClass  cwClass;
 
     /* Call constraint destroy procedures */
-    if (widget->core.parent != NULL && widget->core.constraints != NULL) {
-	cwClass = (ConstraintWidgetClass)widget->core.parent->core.widget_class;
+    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
+    if (!XtIsShell(widget) && XtIsConstraint(XtParent(widget))) {
+	cwClass = (ConstraintWidgetClass)XtParent(widget)->core.widget_class;
 	for (;;) {
 	    if (cwClass->constraint_class.destroy != NULL)
 		(*(cwClass->constraint_class.destroy)) (widget);
