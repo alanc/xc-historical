@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.24 92/08/21 19:21:52 rws Exp $ */
+/* $XConsortium: devices.c,v 5.25 93/02/06 13:29:08 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1255,7 +1255,8 @@ ProcBell(client)
         newpercent = base + newpercent;
     else
     	newpercent = base - newpercent + stuff->percent;
-    (*keybd->kbdfeed->BellProc)(newpercent, keybd);
+    (*keybd->kbdfeed->BellProc)(newpercent, keybd,
+				(pointer) &keybd->kbdfeed->ctrl, 0);
     return Success;
 } 
 
