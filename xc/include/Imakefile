@@ -89,7 +89,7 @@ IMPORTSXAW = \
 
 IMPORTS = $(IMPORTSTOP) $(IMPORTSXAW)
 
-SUBIMPORTS = \
+IMPORTSEXT = \
 	$(EXTENSIONSRC)/include/zoid.h \
 	$(EXTENSIONSRC)/include/bezier.h \
 	$(EXTENSIONSRC)/include/shape.h \
@@ -102,45 +102,8 @@ all:: $(IMPORTSTOP)
 	@-(list=`echo $(IMPORTSTOP) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	$(LN) $(IMPORTSTOP) .
 
-all:: $(IMPORTSXAW) Xaw
-	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd Xaw; $(RM) $$list)
-	@for i in $(IMPORTSXAW); do \
-		(set -x; cd Xaw; $(LN) ../$$i .); \
-	done
-
-all:: $(SUBIMPORTS) extensions
-	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd extensions; $(RM) $$list)
-	@for i in $(SUBIMPORTS); do \
-		(set -x; cd extensions; $(LN) ../$$i .); \
-	done
-
-MakeDirectories(extensions,extensions)
-MakeDirectories(Xaw,Xaw)
-
-MakeDirectories(install, $(INCDIR))
-
-MakeSubdirs($(SUBDIRS))
-
-InstallMultiple($(EXPORTS),$(INCDIR))
-
-clean::
-	@-(list=`echo $(IMPORTSTOP) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
-
-clean::
-	@-(if [ -d Xaw ]; then \
-		list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd Xaw; $(RM) $$list; else exit 0; fi)
-
-clean::
-	@-(if [ -d extensions ]; then \
-		list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
-		set -x; cd extensions; $(RM) $$list; else exit 0; fi)
-
-depend:
-	@echo "skipping make depend in ./X11"
-
+MakeSubincludesForBuild(all,Xaw,$(IMPORTSXAW))
+MakeSubincludesForBuild(all,extensions,$(IMPORTSEXT))
 
 #if InstallOldXawLinks
 /*
@@ -155,5 +118,18 @@ all::
 clean::
 	@-(list=`echo $(IMPORTSXAW) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 #endif
+
+
+
+MakeDirectories(install, $(INCDIR))
+InstallMultiple($(EXPORTS),$(INCDIR))
+MakeSubdirs($(SUBDIRS))
+
+
+clean::
+	@-(list=`echo $(IMPORTSTOP) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
+
+depend:
+	@echo "skipping make depend in ./X11"
 
 
