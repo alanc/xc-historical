@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.26 88/09/12 14:19:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.27 88/09/26 12:52:22 swick Exp $";
 #endif lint
 
 
@@ -674,6 +674,13 @@ static Boolean DoLayout(w, width, height)
 	    geometry.width = Min(w->core.width, width);
 	if (((ViewportWidget)w)->viewport.allowvert)
 	    geometry.height = Min(w->core.height, height);
+    } else {
+	/* This is the Realize call; we'll inherit a w&h iff none currently */
+	if (w->core.width != 0) {
+	    if (w->core.height != 0) return False;
+	    geometry.width = w->core.width;
+	}
+	if (w->core.height != 0) geometry.height = w->core.height;
     }
     if ((result = XtMakeGeometryRequest(w, &geometry, &geometry))
 	== XtGeometryAlmost)
