@@ -19,6 +19,7 @@
 #define SharedCodeDef -DSHAREDCODE
 #define SharedLibraryDef -DATTSHAREDLIB
 #define NeedFunctionPrototypes	YES
+#define NeedWidePrototypes	NO
 #endif
 
 /* Extra libraries provide : yp, sysV malloc & shared libc */
