@@ -211,22 +211,29 @@ typedef struct {
 
 /* Macros which handle a coordinate in a single register */
 
-#if IMAGE_BYTE_ORDER == MSBFirst
-#define intToCoord(i,x,y)   (((x) = ((i) / 65536)), ((y) = (int) ((short) (i))))
-#define coordToInt(x,y)	(((x) << 16) | (y))
-#define intToX(i)	((i) / 65536)
-#define intToY(i)	((int) ((short) i))
-#else
-#define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = ((i) / 65536)))
-#define coordToInt(x,y)	(((y) << 16) | (x))
-#define intToX(i)	((int) ((short) (i)))
-#define intToY(i)	((i) / 65536)
-#endif
-
-/*
- * MIPSCO compiler does horrible things when given register declarations
+/* Most compilers will convert divide by 65536 into a shift, if signed
+ * shifts exist.  If your machine does arithmetic shifts and your compiler
+ * can't get it right, add to this line.
  */
 
-#ifdef mips
-#define register
+/* mips compiler - what a joke - it CSEs the 65536 constant into a reg
+ * forcing as to use div instead of shift.  Let's be explicit.
+ */
+
+#if defined(mips) || defined(sparc)
+#define GetHighWord(x) (((int) (x)) >> 16)
+#else
+#define GetHighWord(x) (((int) (x)) / 65536)
+#endif
+
+#if IMAGE_BYTE_ORDER == MSBFirst
+#define intToCoord(i,x,y)   (((x) = GetHighWord(i)), ((y) = (int) ((short) (i))))
+#define coordToInt(x,y)	(((x) << 16) | (y))
+#define intToX(i)	(GetHighWord(i))
+#define intToY(i)	((int) ((short) i))
+#else
+#define intToCoord(i,x,y)   (((x) = (int) ((short) (i))), ((y) = GetHighWord(i)))
+#define coordToInt(x,y)	(((y) << 16) | (x))
+#define intToX(i)	((int) ((short) (i)))
+#define intToY(i)	(GetHighWord(i))
 #endif
