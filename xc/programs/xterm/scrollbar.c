@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.36 90/06/06 15:06:56 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.37 91/01/06 12:48:33 rws Exp $
  */
 
 /*
@@ -40,8 +40,6 @@
 #include "data.h"
 #include "error.h"
 #include "menu.h"
-
-extern void bcopy();
 
 /* Event handlers */
 

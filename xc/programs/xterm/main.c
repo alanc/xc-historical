@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.160 91/01/06 12:47:45 rws Exp $ */
+/* $XConsortium: main.c,v 1.161 91/01/08 21:19:58 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -171,7 +171,6 @@ extern char *getenv();
 extern char *strindex ();
 extern void exit();
 extern void sleep();
-extern void bcopy();
 extern long lseek();
 extern void HandlePopupMenu();
 

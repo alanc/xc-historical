@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.130 91/01/06 12:47:12 rws Exp $
+ * $XConsortium: charproc.c,v 1.131 91/01/06 21:05:07 rws Exp $
  */
 
 
@@ -67,7 +67,7 @@
 #endif
 
 extern Widget toplevel;
-extern void exit(), bcopy();
+extern void exit();
 static void VTallocbuf();
 
 #define	DEFAULT		-1

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: cursor.c,v 1.8 90/06/06 09:18:31 jim Exp $
+ *	$XConsortium: cursor.c,v 1.9 91/01/06 12:47:27 rws Exp $
  */
 
 /*
@@ -32,8 +32,6 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include "ptyx.h"
-
-extern void bcopy();
 
 static void _CheckSelection(screen)
 register TScreen *screen;

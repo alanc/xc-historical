@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.19 90/06/08 14:15:40 jim Exp $
+ *	$XConsortium: screen.c,v 1.20 91/01/06 12:48:27 rws Exp $
  */
 
 /*
@@ -40,7 +40,6 @@
 #endif
 
 extern Char *calloc(), *malloc(), *realloc();
-extern void bcopy();
 extern void free();
 
 ScrnBuf Allocate (nrow, ncol, addr)
