@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.12 91/10/21 14:31:27 eswu Exp $ */
+/* $XConsortium: shm.c,v 1.13 91/11/09 16:19:41 keith Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -478,11 +478,7 @@ ProcShmGetImage(client)
 	client->errorValue = stuff->format;
         return(BadValue);
     }
-    if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
-    {
-	client->errorValue = stuff->drawable;
-	return (BadDrawable);
-    }
+    VERIFY_DRAWABLE(pDraw, stuff->drawable, client);
     VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
     if (pDraw->type == DRAWABLE_WINDOW)
     {
@@ -614,11 +610,7 @@ ProcShmCreatePixmap(client)
     if (!sharedPixmaps)
 	return BadImplementation;
     LEGAL_NEW_RESOURCE(stuff->pid, client);
-    if (!(pDraw = LOOKUP_DRAWABLE(stuff->drawable, client)))
-    {        /* can be inputonly */
-        if (!(pDraw = (DrawablePtr)LookupWindow(stuff->drawable, client))) 
-            return (BadDrawable);
-    }
+    VERIFY_GEOMETRABLE(pDraw, stuff->drawable, client);
     VERIFY_SHMPTR(stuff->shmseg, stuff->offset, TRUE, shmdesc, client);
     if (!stuff->width || !stuff->height)
     {
