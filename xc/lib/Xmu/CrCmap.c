@@ -1,4 +1,4 @@
-/* $XConsortium: CrCmap.c,v 1.1 89/05/19 14:35:28 converse Exp $
+/* $XConsortium: CrCmap.c,v 1.2 89/05/24 11:05:36 converse Exp $
  *
  * CreateCmap.c - given a standard colormap description, make the map.
  * 
@@ -80,23 +80,42 @@ Status XmuCreateColormap(dpy, colormap)
     vinfo_mask = VisualIDMask;
     if ((vinfo = XGetVisualInfo(dpy, vinfo_mask, &vinfo_template, &n)) == NULL)
 	return 0;
-    
-    /* As I understand it, there may be multiple visuals with identical
-     * visual id's at different depths.  Arbitrarily, use the deepest one.
+
+    /* A visual id may be valid on multiple screens.  Also, there may 
+     * be multiple visuals with identical visual ids at different depths.  
+     * If the colormap is the Default Colormap, use the Default Visual.
+     * Otherwise, arbitrarily, use the deepest visual.
      */
     vpointer = vinfo;
     if (n > 1)
     {
 	register int	i;
-	unsigned int	maxdepth = 0;
-	XVisualInfo	*v;
-	for (i=0; i < n; i++, vinfo++)
-	    if (vinfo->depth > maxdepth)
-	    {
-		maxdepth = vinfo->depth;
-		v = vinfo;
+	register int	screen_number;
+	Bool 		def_cmap;
+
+	def_cmap = False;
+	for (screen_number = ScreenCount(dpy); --screen_number >= 0; )
+	    if (colormap->colormap == DefaultColormap(dpy, screen_number)) {
+		def_cmap = True;
+		break;
 	    }
-	vinfo = v;
+
+	if (def_cmap) {
+	    for (i=0; i < n; i++, vinfo++) {
+		if (vinfo->visual == DefaultVisual(dpy, screen_number))
+			break;
+	    }
+	} else {
+	    unsigned int	maxdepth = 0;
+	    XVisualInfo		*v;
+
+	    for (i=0; i < n; i++, vinfo++)
+		if (vinfo->depth > maxdepth) {
+		    maxdepth = vinfo->depth;
+		    v = vinfo;
+		}
+	    vinfo = v;
+	}
     }
 
     if (vinfo->class == PseudoColor || vinfo->class == DirectColor ||
