@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XClDisplay.c,v 11.19 88/09/06 16:10:14 jim Exp $ */
+/* $XConsortium: XClDisplay.c,v 11.20 88/09/30 14:02:55 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
@@ -8,7 +8,10 @@
 extern Display *_XHeadOfDisplayList;
 /* 
  * XCloseDisplay - XSync the connection to the X Server, close the connection,
- * and free all associated storage.
+ * and free all associated storage.  This is the only routine that can be
+ * called from or after an IOError handler, so the lower levels need to be able
+ * to deal with broken connections.  Extension close procs should only free
+ * memory and must be careful about the types of requests they generate.
  */
 
 XCloseDisplay (dpy)
@@ -20,6 +23,7 @@ XCloseDisplay (dpy)
 	register Display *cp = _XHeadOfDisplayList;
 	extern void _XFreeQ();
 
+	dpy->flags |= XlibDisplayClosing;
 	for (i = 0; i < dpy->nscreens; i++) {
 		register Screen *sp = &dpy->screens[i];
 		XFreeGC (dpy, sp->default_gc);

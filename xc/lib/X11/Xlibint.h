@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.69 89/06/15 11:52:37 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.70 89/06/16 17:08:20 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -44,8 +44,10 @@
 extern int errno;			/* Internal system error number. */
 extern void bcopy();
 
-extern (*_XIOErrorFunction)();		/* X system error reporting routine. */
-extern (*_XErrorFunction)();		/* X_Error event reporting routine. */
+extern int _XError();			/* prepare to upcall user handler */
+extern int _XIOError();			/* prepare to upcall user handler */
+extern int (*_XIOErrorFunction)();	/* X system error reporting routine. */
+extern int (*_XErrorFunction)();	/* X_Error event reporting routine. */
 extern char *_XAllocScratch();		/* fast memory allocator */
 extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
@@ -61,6 +63,12 @@ extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 #ifndef CURSORFONT
 #define CURSORFONT "cursor"		/* standard cursor fonts */
 #endif
+
+/*
+ * display flags
+ */
+#define XlibDisplayIOError	(1L << 0)
+#define XlibDisplayClosing	(1L << 1)
 
 /*
  * X Protocol packetizing macros.

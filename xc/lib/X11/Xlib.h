@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 1.1 89/06/14 10:54:21 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.158 89/06/15 11:52:28 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -511,11 +511,15 @@ typedef struct _XDisplay {
 	 * ICCCM information, version 1
 	 */
 	struct _DisplayAtoms *atoms;
-	struct {			/* for XReconfigureWMWindow */
+	struct {		   /* for XReconfigureWMWindow */
 	    long sequence_number;
 	    int (*old_handler)();
 	    Bool succeeded;
 	} reconfigure_wm_window;
+	/*
+	 * additional connection info
+	 */
+	unsigned long flags;	   /* internal connection flags */
 } Display;
 
 #ifndef _XEVENT_

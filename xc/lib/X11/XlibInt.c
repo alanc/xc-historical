@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.109 89/06/16 17:58:48 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.110 89/07/13 15:20:53 jim Exp $
  */
 
 #include "copyright.h"
@@ -65,6 +65,8 @@ _XFlush (dpy)
 	register int write_stat;
 	register char *bufindex;
 
+	if (dpy->flags & XlibDisplayIOError) return;
+
 	size = todo = dpy->bufptr - dpy->buffer;
 	bufindex = dpy->bufptr = dpy->buffer;
 	/*
@@ -97,7 +99,7 @@ _XFlush (dpy)
 	    } else if (errno != EINTR) {
 		/* Write failed! */
 		/* errno set by write system call. */
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	    }
 	}
 	dpy->last_req = (char *)&_dummy_request;
@@ -119,8 +121,9 @@ _XEventsQueued (dpy, mode)
 	    if (dpy->qlen)
 		return(dpy->qlen);
 	}
+	if (dpy->flags & XlibDisplayIOError) return(dpy->qlen);
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
-	    (*_XIOErrorFunction)(dpy);
+	    _XIOError(dpy);
 	if ((len = pend) < SIZEOF(xReply))
 	    return(dpy->qlen);	/* _XFlush can enqueue events */
 	else if (len > BUFSIZE)
@@ -155,7 +158,7 @@ _XReadEvents(dpy)
 	do {
 	    /* find out how much data can be read */
 	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
-	    	(*_XIOErrorFunction)(dpy);
+	    	_XIOError(dpy);
 	    pend = pend_not_register;
 
 	    /* must read at least one xEvent; if none is pending, then
@@ -203,7 +206,7 @@ _XRead (dpy, data, size)
 {
 	register long bytes_read;
 
-	if (size == 0) return;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
 	errno = 0;
 	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
 		!= size) {
@@ -226,13 +229,13 @@ _XRead (dpy, data, size)
 		else if (bytes_read == 0) {
 		    /* Read failed because of end of file! */
 		    errno = EPIPE;
-		    (*_XIOErrorFunction)(dpy);
+		    _XIOError(dpy);
 		    }
 
 		else  /* bytes_read is less than 0; presumably -1 */ {
 		    /* If it's a system call interrupt, it's not an error. */
 		    if (errno != EINTR)
-		    	(*_XIOErrorFunction)(dpy);
+		    	_XIOError(dpy);
 		    }
 	    	 }
 }
@@ -371,7 +374,7 @@ _XReadPad (dpy, data, size)
 	struct iovec iov[2];
 	char pad[3];
 
-	if (size == 0) return;
+	if ((dpy->flags & XlibDisplayIOError) || size == 0) return;
 	iov[0].iov_len = (int)size;
 	iov[0].iov_base = data;
 	/* 
@@ -417,13 +420,13 @@ _XReadPad (dpy, data, size)
 	    else if (bytes_read == 0) {
 		/* Read failed because of end of file! */
 		errno = EPIPE;
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 		}
 	    
 	    else  /* bytes_read is less than 0; presumably -1 */ {
 		/* If it's a system call interrupt, it's not an error. */
 		if (errno != EINTR)
-		    (*_XIOErrorFunction)(dpy);
+		    _XIOError(dpy);
 		}
 	    }
 
@@ -448,6 +451,8 @@ _XSend (dpy, data, size)
 	long padsize = padlength[size & 3];
 	long total = dpybufsize + size + padsize;
 	long todo = total;
+
+	if (dpy->flags & XlibDisplayIOError) return;
 
 	/*
 	 * There are 3 pieces that may need to be written out:
@@ -522,7 +527,7 @@ _XSend (dpy, data, size)
 		  _XWaitForWritable(dpy);
 #endif
 	    } else if (errno != EINTR) {
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	    }
 	}
 
@@ -600,6 +605,8 @@ Status _XReply (dpy, rep, extra, discard)
      */
     unsigned long cur_request = dpy->request;
 
+    if (dpy->flags & XlibDisplayIOError) return (0);
+
     _XFlush(dpy);
     while (1) {
 	_XRead(dpy, (char *)rep, (long)SIZEOF(xReply));
@@ -641,7 +648,7 @@ Status _XReply (dpy, rep, extra, discard)
 		 */
 		_XRead (dpy, NEXTPTR(rep,xReply),
 			((long) rep->generic.length) << 2);
-		(*_XIOErrorFunction) (dpy);
+		_XIOError (dpy);
 		return (0);
 
     	    case X_Error:
@@ -748,7 +755,7 @@ _XEnq (dpy, event)
 	    (_XQEvent *) Xmalloc((unsigned)sizeof(_XQEvent))) == NULL) {
 		/* Malloc call failed! */
 		errno = ENOMEM;
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	}
 	qelt->next = NULL;
 	/* go call through display to find proper event reformatter */
@@ -1180,11 +1187,14 @@ static char *_SysErrorMsg (n)
     return (s ? s : "no such error");
 }
 
+
 /*
- * _XIOError - Default fatal system error reporting routine.  Called when
- * an X internal system error is encountered.
+ * _XDefaultIOError - Default fatal system error reporting routine.  Called 
+ * when an X internal system error is encountered.  Note that the Xlib manual
+ * specifies that this routine will print an error message and then exit.
+ * People who don't like it should install their own error handler.
  */
-_XIOError (dpy)
+_XDefaultIOError (dpy)
 	Display *dpy;
 {
 	(void) fprintf (stderr, 
@@ -1203,34 +1213,7 @@ _XIOError (dpy)
 	exit (1);
 }
 
-/*
- * _XError - Default non-fatal error reporting routine.  Called when an
- * X_Error packet is encountered in the input stream.
- */
-int _XError (dpy, rep)
-    Display *dpy;
-    xError *rep;
-{
-    XErrorEvent event;
-    /* 
-     * X_Error packet encountered!  We need to unpack the error before
-     * giving it to the user.
-     */
 
-    event.display = dpy;
-    event.type = X_Error;
-    event.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
-    event.resourceid = rep->resourceID;
-    event.error_code = rep->errorCode;
-    event.request_code = rep->majorCode;
-    event.minor_code = rep->minorCode;
-    if (_XErrorFunction != NULL) {
-      	return ((*_XErrorFunction)(dpy, &event));
-      }
-    exit(1);
-    /*NOTREACHED*/
-}
-    
 int _XPrintDefaultError (dpy, event, fp)
     Display *dpy;
     XErrorEvent *event;
@@ -1294,6 +1277,49 @@ int _XDefaultError(dpy, event)
     exit(1);
     /*NOTREACHED*/
 }
+
+
+/*
+ * _XError - prepare to upcall user protocol error handler
+ */
+int _XError (dpy, rep)
+    Display *dpy;
+    xError *rep;
+{
+    XErrorEvent event;
+    /* 
+     * X_Error packet encountered!  We need to unpack the error before
+     * giving it to the user.
+     */
+
+    event.display = dpy;
+    event.type = X_Error;
+    event.serial = _XSetLastRequestRead(dpy, (xGenericReply *)rep);
+    event.resourceid = rep->resourceID;
+    event.error_code = rep->errorCode;
+    event.request_code = rep->majorCode;
+    event.minor_code = rep->minorCode;
+    if (_XErrorFunction != NULL) {
+      	return ((*_XErrorFunction)(dpy, &event));	/* upcall */
+    } else {
+	return _XDefaultError(dpy, &event);
+    }
+}
+    
+/*
+ * _XIOError - prepare to upcall user connection error handler
+ */
+int _XIOError (dpy)
+    Display *dpy;
+{
+    dpy->flags |= XlibDisplayIOError;
+    if (_XIOErrorFunction != NULL) {
+	return ((*_XIOErrorFunction)(dpy));		/* upcall */
+    } else {
+	return _XDefaultIOError(dpy);
+    }
+}
+
 
 /*
  * This routine can be used to (cheaply) get some memory within a single

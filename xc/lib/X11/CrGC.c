@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrGC.c,v 11.28 88/09/06 16:05:46 jim Exp $ */
+/* $XConsortium: XCrGC.c,v 11.29 89/06/14 14:21:56 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -43,9 +43,9 @@ GC XCreateGC (dpy, d, valuemask, values)
 
     LockDisplay(dpy);
     if ((gc = (GC)Xmalloc (sizeof(struct _XGC))) == NULL) {
-        errno = ENOMEM;
-	(*_XIOErrorFunction)(dpy);
 	UnlockDisplay(dpy);
+        errno = ENOMEM;
+	_XIOError(dpy);
 	return (NULL);
     }
     gc->rects = 0;

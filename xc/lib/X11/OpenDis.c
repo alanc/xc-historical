@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 1.1 89/06/20 18:58:29 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.87 89/06/21 10:13:19 jim Exp $
  */
 
 #include "copyright.h"
@@ -317,6 +317,7 @@ Display *XOpenDisplay (display)
 	dpy->resource_shift	= ffs(dpy->resource_mask) - 1;
 	dpy->db 		= (struct _XrmHashBucketRec *)NULL;
 	dpy->cursor_font	= None;
+	dpy->flags		= 0;
 /* 
  * Initialize pointers to NULL so that XFreeDisplayStructure will
  * work if we run out of memory

@@ -1,11 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XErrHndlr.c,v 1.2 89/03/10 17:32:13 jim Exp $ */
+/* $XConsortium: XErrHndlr.c,v 11.11 89/03/28 18:14:19 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 extern int _XDefaultError();
+extern int _XDefaultIOError();
 /* 
  * XErrorHandler - This procedure sets the X non-fatal error handler
  * (_XErrorFunction) to be the specified routine.  If NULL is passed in
@@ -43,7 +44,7 @@ int (*XSetIOErrorHandler(handler))()
 	_XIOErrorFunction = handler;
     }
     else {
-	_XIOErrorFunction = _XIOError;
+	_XIOErrorFunction = _XDefaultIOError;
     }
 
     return oldhandler;

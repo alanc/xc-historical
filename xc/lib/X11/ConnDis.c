@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.52 89/06/22 14:10:54 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.53 89/06/22 14:23:35 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -665,7 +665,7 @@ _XWaitForWritable(dpy)
 	do {
 	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
 	    if (nfound < 0 && errno != EINTR)
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	} while (nfound <= 0);
 
 	if (ANYSET(r_mask)) {
@@ -676,7 +676,7 @@ _XWaitForWritable(dpy)
 
 	    /* find out how much data can be read */
 	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
-		(*_XIOErrorFunction)(dpy);
+		_XIOError(dpy);
 	    pend = pend_not_register;
 
 	    /* must read at least one xEvent; if none is pending, then
@@ -717,7 +717,7 @@ _XWaitForReadable(dpy)
     do {
 	BITSET(r_mask, dpy->fd);
 	result = select(dpy->fd + 1, r_mask, NULL, NULL, NULL);
-	if (result == -1 && errno != EINTR) (*_XIOErrorFunction)(dpy);
+	if (result == -1 && errno != EINTR) _XIOError(dpy);
     } while (result <= 0);
 }
 
