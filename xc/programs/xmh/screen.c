@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.19 88/02/22 21:42:05 swick Exp $";
+static char rcs_id[] = "$Header: screen.c,v 2.20 88/02/23 20:07:36 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -188,6 +188,8 @@ Scrn scrn;
     scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 8, "viewButtons");
 
+    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
+
     buttonbox = scrn->folderbuttons;
     BBoxStopUpdate(buttonbox);
     for (i=0 ; i<numFolders ; i++)
@@ -270,9 +272,8 @@ Scrn scrn;
     scrn->viewlabel = CreateTitleBar(scrn, 0);
     scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
+    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
     FillViewButtons(scrn);
-    XtRealizeWidget(scrn->parent);
-    BBoxLockSize(scrn->viewbuttons);
 }
 
 
@@ -282,11 +283,9 @@ Scrn scrn;
     scrn->viewlabel = CreateTitleBar(scrn, 0);
     scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0 /* %%% wordBreak */);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
+    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
     FillCompButtons(scrn);
-    XtRealizeWidget(scrn->parent);
-    BBoxLockSize(scrn->viewbuttons);
 }
-
 
 
 /* Create a scrn of the given type. */
@@ -332,11 +331,13 @@ ScrnKind kind;
 	case STcomp:		MakeComp(scrn);	break;
     }
 
-    DEBUG("Realizing...")
-    XtRealizeWidget(scrn->parent);
-    DEBUG(" done.\n")
-    XDefineCursor( theDisplay, XtWindow(scrn->parent),
-		   XtGetCursor( theDisplay, XC_left_ptr ) );
+    if (kind != STpick) {
+	DEBUG("Realizing...")
+	XtRealizeWidget(scrn->parent);
+	DEBUG(" done.\n")
+	XDefineCursor( theDisplay, XtWindow(scrn->parent),
+		       XtGetCursor( theDisplay, XC_left_ptr ) );
+    }
     scrn->mapped = (numScrns == 1);
     return scrn;
 }
