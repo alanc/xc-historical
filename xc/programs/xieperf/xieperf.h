@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.1 93/07/19 13:04:28 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.2 93/07/19 14:42:24 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -148,7 +148,9 @@ typedef struct _XIEgeo {
 #define	IsColor24( x ) ( x & CAPA_COLOR_24 ? 1 : 0 )
 #define IsTripleBand( x ) ( x & CAPA_TRIPLE_BAND ) ? 1 : 0 )
 
-#define IsFaxImage( x ) ( x == xieValDecodeG42D ? 1 : 0 )
+#define IsFaxImage( x ) ( x == xieValDecodeG42D   ||          \
+                          x == xieValDecodeG32D   ||            \
+                          x == xieValDecodeG31D )
 
 /* protocol subset masks */
 
@@ -186,7 +188,7 @@ typedef struct _Parms {
     int		immediate;	/* XXX True or False */
     XIEfile 	finfo;	
     unsigned short description;
-    XieDataClass class;
+    XieDataClass data_class;
     XieDecodeTechnique decode; 
     XieConstrainTechnique constrain;
     int		clamp;
