@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.42 94/01/01 18:35:49 rws Exp $
+ * $XConsortium: util.c,v 2.43 94/03/28 14:53:49 gildea Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -32,15 +32,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include <X11/cursorfont.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#define Time_t long
-extern Time_t time ();
-#else
-#include <time.h>
-#define Time_t time_t
-#endif
 
 #ifndef abs
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
@@ -305,11 +296,6 @@ LastModifyDate(file)
     struct stat buf;
     if (stat(file, &buf)) return -1;
     return buf.st_mtime;
-}
-
-CurrentDate()
-{
-    return time((Time_t*)0);
 }
 
 GetFileLength(file)
