@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 2.13 88/08/22 13:12:44 swick Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.14 88/08/26 13:26:47 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -357,9 +357,9 @@ Scrn scrn;
     nscrn = CreateNewScrn(STpick);
     AddPick(nscrn, toc, TocViewedSequence(toc)->name, toseq);
     DEBUG("Realizing Pick...")
-    XtRealizeWidget(scrn->parent);
+    XtRealizeWidget(nscrn->parent);
     DEBUG(" done.\n")
-    XDefineCursor( theDisplay, XtWindow(scrn->parent),
+    XDefineCursor( theDisplay, XtWindow(nscrn->parent),
 		   app_resources.cursor );
     MapScrn(nscrn);
 }
