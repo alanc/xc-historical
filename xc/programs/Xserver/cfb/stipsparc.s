@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplemips.s,v 1.5 90/12/01 11:28:57 keith Exp $
+ * $XConsortium: stipplesparc.s,v 1.1 90/12/01 15:24:53 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -91,7 +91,7 @@ _stipplestack:
 	or	sbase,%lo(CaseBegin),sbase
 
 	mov	4,lshift			/* compute offset within */
-	sub	shift, lshift, lshift		/*  stipple of remaining bits */
+	sub	lshift, shift, lshift		/*  stipple of remaining bits */
 #ifndef LITTLE_ENDIAN
 	inc	28-CASE_SIZE, shift		/* first shift for MSB */
 #else
@@ -114,7 +114,6 @@ ForEachLine:
 	BitsL	bits, lshift, bits		/* set remaining bits */
 
 ForEachBits:
-	add	atemp, 4, atemp
 	FourBits(stemp, bits)			/* compute jump for */
 	sll	stemp, CASE_SIZE, stemp		/*  these four bits */
 	jmp	sbase+stemp			/*  ... */
