@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.25 89/11/17 18:43:14 keith Exp $
+ * $XConsortium: resource.c,v 1.26 89/12/06 19:38:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,6 +38,8 @@ int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
+int	lockfPidFile;
+int	flockPidFile;
 char	*remoteAuthDir;
 int	autoRescan;
 int	removeDomainname;
@@ -113,6 +115,10 @@ struct dmResources {
 				"true",
 "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				"",
+"lockfPidFile",	"LockFPidFile",	DM_BOOL,	(char **) &lockfPidFile,
+				"true",
+"flockPidFile",	"FlockPidFile",	DM_BOOL,	(char **) &flockPidFile,
+				"false",
 "remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
 				DEF_REMOTE_AUTH_DIR,
 "autoRescan",	"AutoRescan",	DM_BOOL,	(char **) &autoRescan,
@@ -165,6 +171,8 @@ struct displayResources {
 				DEF_SYSTEM_SHELL,
 "failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
 				DEF_FAILSAFE_CLIENT,
+"grabServer",	"GrabServer",	DM_BOOL,	boffset(grabServer),
+				"true",
 "grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
 				"3",
 "authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
@@ -211,7 +219,7 @@ GetResource (name, class, valueType, valuep, default_value)
 	string = default_value;
 	len = strlen (string);
     }
-    Debug ("resource %s value %s\n", name, string);
+    Debug ("%s/%s value %s\n", name, class, string);
     switch (valueType) {
     case DM_STRING:
 	new_string = malloc ((unsigned) (len+1));
@@ -338,35 +346,42 @@ LoadDMResources ()
 	}
 }
 
+static
+CleanUpName (src, dst, len)
+char	*src, *dst;
+int	len;
+{
+    while (*src) {
+	if (--len <= 0)
+		break;
+	switch (*src)
+	{
+	case ':':
+	case '.':
+	    *dst++ = '_';
+	    break;
+	default:
+	    *dst++ = *src;
+	}
+	++src;
+    }
+    *dst = '\0';
+}
+
 LoadDisplayResources (d)
 struct display	*d;
 {
 	int	i;
 	char	name[1024], class[1024];
-	char	nocolon[512];
-	char	*colon, *dot, *className;
+	char	dpyName[512], dpyClass[512];
 
-	colon = d->name;
-	dot = nocolon;
-	i = 0;
-	while (*colon) {
-		if (++i >= sizeof (nocolon))
-			break;
-		if (*colon == ':')
-			*dot++ = '.';
-		else
-			*dot++ = *colon;
-		++colon;
-	}
-	*dot = '\0';
-	className = d->class;
-	if (!d->class)
-		className = nocolon;
+	CleanUpName (d->name, dpyName, sizeof (dpyName));
+	CleanUpName (d->class ? d->class : d->name, dpyClass, sizeof (dpyClass));
 	for (i = 0; i < NUM_DISPLAY_RESOURCES; i++) {
 		sprintf (name, "DisplayManager.%s.%s", 
-			nocolon, DisplayResources[i].name);
+			dpyName, DisplayResources[i].name);
 		sprintf (class, "DisplayManager.%s.%s",
-			className, DisplayResources[i].class);
+			dpyClass, DisplayResources[i].class);
 		GetResource (name, class, DisplayResources[i].type,
 			      (char **) (((char *) d) + DisplayResources[i].offset),
 			      DisplayResources[i].default_value);
