@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.13 88/03/16 09:50:32 rws Exp $ */
+/* $Header: osinit.c,v 1.14 88/07/01 17:10:10 xguest Locked $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
@@ -60,7 +60,14 @@ OsInit()
 	    fclose(stdout);
 	    sprintf (fname, ADMPATH, display);
 	    freopen (fname, "a+", stderr);
+#ifdef macII
+	    {
+	    static char buf[BUFSIZ];
+	    setvbuf (stderr, buf, _IOLBF, BUFSIZ);
+	    }
+#else
 	    setlinebuf(stderr);
+#endif
 	    time (&t);
 	    fprintf (stderr, "start %s", ctime(&t));
 	}
