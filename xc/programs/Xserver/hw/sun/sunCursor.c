@@ -68,6 +68,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
  * 
  */
 
+#define NEED_EVENTS
 #include    "sun.h"
 #include    <windowstr.h>
 #include    <regionstr.h>
@@ -406,13 +407,16 @@ sunUnrealizeCursor (pScreen, pCursor)
  *-----------------------------------------------------------------------
  */
 Bool
-sunSetCursorPosition (pScreen, hotX, hotY)
+sunSetCursorPosition (pScreen, hotX, hotY, generateEvent)
     ScreenPtr	  pScreen;  	/* New screen for the cursor */
     unsigned int  hotX;	    	/* New absolute X coordinate for the cursor */
     unsigned int  hotY;	    	/* New absolute Y coordinate for the cursor */
+    Bool	  generateEvent;/* whether we generate a motion event */
 {
     DevicePtr	  pDev;
     PtrPrivPtr	  pptrPriv;
+    xEvent	  motion;
+    extern int	sunSigIO;
 
     if (currentCursor)
 	sunDisplayCursor (pScreen, currentCursor);
@@ -424,6 +428,17 @@ sunSetCursorPosition (pScreen, hotX, hotY)
     pptrPriv->pScreen = pScreen;
     pptrPriv->x = hotX;
     pptrPriv->y = hotY;
+
+    if (generateEvent)
+    {
+	if (sunSigIO)
+	    ProcessInputEvents();
+	motion.u.keyButtonPointer.rootX = hotX;
+	motion.u.keyButtonPointer.rootY = hotY;
+	motion.u.keyButtonPointer.time = lastEventTime;
+	motion.u.u.type = MotionNotify;
+	(*pDev->processInputProc) (&motion, pDev);
+    }
     return TRUE;
 }
 
@@ -470,11 +485,9 @@ sunCursorLimits (pScreen, pCursor, pHotBox, pResultBox)
  */
 /* ARGSUSED */
 Bool
-sunDisplayCursor (pScreen, pCursor, hotX, hotY)
+sunDisplayCursor (pScreen, pCursor)
     ScreenPtr	  pScreen;  	/* Screen on which to display cursor */
     CursorPtr	  pCursor;  	/* Cursor to display */
-    int		  hotX;
-    int 	  hotY;
 {
     DevicePtr		  pDev;
 
