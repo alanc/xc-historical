@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.91 90/09/11 14:32:26 keith Exp $ */
+/* $XConsortium: utils.c,v 1.92 90/09/15 12:19:36 keith Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -50,7 +50,9 @@ extern int monitorResolution;
 
 void ddxUseMsg();
 
+#ifndef SVR4
 extern char *sbrk();
+#endif
 
 #ifdef DEBUG
 #ifndef SPECIAL_MALLOC
