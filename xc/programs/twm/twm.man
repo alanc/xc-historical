@@ -1001,6 +1001,11 @@ that matches \fIstring\fP.
 .IP "\fBf.warptoiconmgr\fP" 8
 This function warps the pointer to the icon manager entry 
 which matches associated with the window that the pointer is currently in.
+.IP "\fBf.warptoscreen\fP \fIstring\fP" 8
+This function warps the pointer to the indicated screen.  Screens are specified
+by number (e.g. "0" or "1"), relative to the current screen (i.e. "next" or
+"prev"), or the most recently visited screen ("back").  The keywords "next"
+and "back" will wrap and will ignore any unmanaged screens.
 .IP "\fBf.winrefresh\fP" 8
 This function is similar to the \fBf.refresh\fP function, but 
 allows you to refresh a single window.
