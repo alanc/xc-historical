@@ -2,9 +2,9 @@
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
  */
 
-#define OSName            Ultrix-32 3.0
+#define OSName            Ultrix-32 3.1
 #define OSMajorVersion    3
-#define OSMinorVersion    0
+#define OSMinorVersion    1
 #define SystemV NO
 #define HasVoidSignalReturn YES
 #define HasPutenv YES
@@ -19,7 +19,8 @@
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
 #define HasSaberC YES
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP -DNOSTDHDRS -DX11R4
-#define HasGcc YES	/* if you have gcc -- very useful for server */
+/* gcc is *VERY USEFUL*, especially for the server; GET it */
+/* #define HasGcc YES */
 #endif
 
 #ifdef MipsArchitecture
@@ -29,17 +30,7 @@
 #define DefaultCCOptions -Wf,-XNh2000 -Olimit 2000
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP
 
-/*
- * XXX - temporary hack for Keith since he has a wimpy disk.
- */
-#define BuildExamples NO
 #endif
 
-#if HasGcc
-#define ServerCcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
-#define CcCmd cc
-#define ServerCCOptions /* */
-#endif
-
-/**/# platform:  $XConsortium: ultrix.cf,v 1.18 89/11/14 08:29:46 rws Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.19 89/11/26 17:35:18 keith Exp $
 /**/# operating system:  OSName
