@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 94/12/12 19:52:37 mor Exp mor $
+XCOMM $XConsortium: Imakefile,v 1.15 94/12/16 17:34:40 mor Exp mor $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture
@@ -17,11 +17,11 @@ XCOMM $XConsortium: Imakefile,v 1.14 94/12/12 19:52:37 mor Exp mor $
 LOCAL_LIBRARIES = XawClientLibs
 
            SRCS1 = auth.c choose.c info.c list.c lock.c log.c \
-		   mainwin.c misc.c printhex.c prop.c remote.c \
+		   mainwin.c misc.c popup.c printhex.c prop.c remote.c \
 		   restart.c save.c saveutil.c signals.c xsm.c xtwatch.c
                    
            OBJS1 = auth.o choose.o info.o list.o lock.o log.o \
-		   mainwin.o misc.o printhex.o prop.o remote.o \
+		   mainwin.o misc.o popup.o printhex.o prop.o remote.o \
 	           restart.o save.o saveutil.o signals.o xsm.o xtwatch.o
 
           PROGS1 = xsm
