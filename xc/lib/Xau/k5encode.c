@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: k5encode.c,v 1.1 93/09/26 15:42:06 gildea Exp $ */
 /*
  * functions to encode/decode Kerberos V5 principals
  * into something that can be reasonable spewed over
@@ -11,6 +11,10 @@
  */
 
 #include <krb5/krb5.h>
+/* 9/93: krb5.h leaks some symbols */
+#undef BITS32
+#undef xfree
+
 #include <X11/X.h>
 #include <X11/Xos.h>
 #include <X11/Xmd.h>
