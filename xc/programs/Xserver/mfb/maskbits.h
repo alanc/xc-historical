@@ -22,12 +22,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.26 91/07/09 19:44:24 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.27 92/12/23 17:33:39 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
+#ifndef PixelType
 #define PixelType unsigned int
+#endif
 extern PixelType starttab[];
 extern PixelType endtab[];
 extern PixelType partmasks[32][32];
@@ -194,7 +196,9 @@ getshiftedleftbits(psrc, offset, w, dst)
 #define PLST	31
 #define PIM	0x1f
 #define PWSH	5
+#ifndef PSZ
 #define PSZ	1
+#endif
 #define PMSK	0x01
 #define BitLeft(b,s)	SCRLEFT(b,s)
 #define BitRight(b,s)	SCRRIGHT(b,s)
