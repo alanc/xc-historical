@@ -33,7 +33,7 @@ want to implement alternative application programming interfaces.
 This chapter is a brief introduction to widget programming.  The
 examples provided use the Athena widgets, though most of the concepts
 will apply to all widget sets.  Although there are several programming
-interfaces to the \*(tk, but only one is described here.  A full
+interfaces to the \*(tk, only one is described here.  A full
 description of the programming interface is provided in the document
 \fI\*(xT\fP.
 .NH 2
@@ -412,7 +412,7 @@ Standard Widget Manipulation Functions
 .LP
 After a widget has been created, a client can interact with that
 widget by calling one of the standard widget manipulation routines
-provide by the \*(xI, or a widget class-specific manipulation routine.
+provided by the \*(xI, or a widget class-specific manipulation routine.
 .LP
 The \*(xI provide generic routines to give the application programmer
 access to a set of standard widget functions.  The common widget
@@ -496,7 +496,7 @@ important to batch updates so that the minimum amount of visible window
 reconfiguration is performed.
 .LP
 For further information about these functions,
-see the \fI\*(xI\fP.
+see the \fI\*(xT\fP.
 .NH 3
 Destroying Widgets
 .LP
@@ -578,7 +578,7 @@ modified after the widget instance has been created or realized.
 No notification is given if any part of a \fBXtSetValues\fP request is
 ignored. 
 .LP
-For further information about these functions, see the \fI\*(xI\fP.
+For further information about these functions, see the \fI\*(xT\fP.
 .IN "XtGetValues" "" ""
 .IN "XtSetValues" "" ""
 .NT
@@ -717,7 +717,7 @@ in your application programs.
 This header file automatically includes
 .Pn < X11/Xlib.h >,
 so all Xlib functions also are defined.
-I may also be necessary to include \fB< X11/StringDefs.h >\fP when setting
+It may also be necessary to include \fB< X11/StringDefs.h >\fP when setting
 up argument lists, as many of the XtN\fIsomething\fP definitions are
 only defined in this file.
 .IP 2. 5
@@ -943,7 +943,7 @@ you may use any of the four approaches discussed in this section.
 Each resource name has a global symbol associated with it.  This
 global symbol has the form XtN\fIresource name\fP.  For example, the
 symbol for ``foreground'' is \fBXtNforeground\fP. For further information,
-see the \fI\*(xI\fP.
+see the \fI\*(xT\fP.
 .LP
 Argument are specified by using the following structure:
 .IN "ArgList" "" "@DEF@"
