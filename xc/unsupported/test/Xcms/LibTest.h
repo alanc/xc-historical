@@ -26,7 +26,7 @@
  *		Public include file for the LibTest test interface tool
  *
  *	REVISION
- *		$Header: LibTest.h,v 1.1 91/05/07 02:00:21 alt Exp $
+ *		$Header: LibTest.h,v 1.2 91/07/31 22:46:40 keith Exp $
  */
 #ifndef LIBTEST_H
 #define LIBTEST_H
@@ -36,6 +36,9 @@
  */
 #ifndef	GLOBAL
 #  define	GLOBAL
+#endif
+#ifndef STRSIZ
+#  define STRSIZ 512
 #endif
 
 /*
