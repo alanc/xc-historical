@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.182 91/04/15 11:12:46 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.183 91/04/30 12:26:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,16 +48,18 @@ extern char *getenv();
 
 extern void _XtConvertInitialize();
 
-#if defined(SUNSHLIB) && defined(SHAREDCODE)
+#if (defined(SUNSHLIB) || defined(AIXSHLIB)) && defined(SHAREDCODE)
 /*
  * If used as a shared library, generate code under a different name so that
  * the stub routines in sharedlib.c get loaded into the application binary.
  */
+#ifdef SUNSHLIB
 #define _XtInherit __XtInherit
+#endif
 #define XtToolkitInitialize _XtToolkitInitialize
 #define XtAppInitialize _XtAppInitialize
 #define XtInitialize _XtInitialize
-#endif /* SUNSHLIB && SHAREDCODE */
+#endif /* (SUNSHLIB || AIXSHLIB) && SHAREDCODE */
 
 /*
  * hpux
