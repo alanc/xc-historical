@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.24 89/01/03 11:05:18 jim Exp $
+ * $XConsortium: process.c,v 1.25 89/01/03 11:39:56 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1339,7 +1339,7 @@ static int do_extract (inputfilename, lineno, argc, argv)
 
     if (!ed.fp) {
 	fprintf (stderr, 
-		 "No matches found, authority file \"%s\" not written.\n",
+		 "No matches found, authority file \"%s\" not written\n",
 		 ed.filename);
     } else {
 	if (verbose) {
@@ -1387,7 +1387,7 @@ static int do_add (inputfilename, lineno, argc, argv)
     if (len < 0) {
 	prefix (inputfilename, lineno);
 	fprintf (stderr,
-		 "hexkey contains odd or non-hexidecimal characters\n");
+		 "key contains odd number of or non-hex characters\n");
 	return 1;
     }
 
@@ -1476,7 +1476,7 @@ static int do_remove (inputfilename, lineno, argc, argv)
 
     errors = iterdpy (inputfilename, lineno, 1, argc, argv,
 		      remove_entry, NULL, (char *) &nremoved);
-    if (verbose) printf ("%d entries removed.\n", nremoved);
+    if (verbose) printf ("%d entries removed\n", nremoved);
     return errors;
 }
 
