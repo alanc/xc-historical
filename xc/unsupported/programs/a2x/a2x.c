@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.32 92/03/26 13:02:49 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.34 92/04/02 19:24:16 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -61,6 +61,7 @@ released automatically at next button or non-modifier key.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h> /* Sun needs it */
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
@@ -165,6 +166,7 @@ quit(val)
     exit(val);
 }
 
+/*ARGSUSED*/
 void
 catch(sig)
 int	sig;
@@ -384,7 +386,7 @@ parse_keysym(buf, len)
     KeySym sym;
     char *endptr;
 
-    if ((*buf == 'F' && len > 3) ||
+    if ((*buf == 'F' && len <= 3) ||
 	!(sym = strtoul(buf, &endptr, 16)) || *endptr)
 	sym = XStringToKeysym(buf);
     if (!sym)
@@ -412,8 +414,6 @@ void
 do_button(button)
     int button;
 {
-    int phys_button;
-    
     if (button < 1 || button > 255)
 	return;
     button = button_map[button];
@@ -531,7 +531,7 @@ find_closest(dir, rootx, rooty, parent, pwa, input,
 	wa.x += pwa->x;
 	wa.y += pwa->y;
 	if (recurse &&
-	    find_closest(dir, rootx, rooty, children[i], &wa,
+	    find_closest(dir, rootx, rooty, children[i], &wa, input,
 	    		 bestx, besty, best_dist, recurse)) {
 	    found = True;
 	    continue;
@@ -572,7 +572,7 @@ find_closest(dir, rootx, rooty, parent, pwa, input,
     }
     if (children)
 	XFree((XPointer)children);
-    return True;
+    return found;
 }
 
 void
@@ -631,7 +631,7 @@ do_jump(buf)
 	wa.height = HeightOfScreen(ScreenOfDisplay(dpy, screen));
     }
     best_dist = 0x7fffffff;
-    if (find_closest(dir, rootx, rooty, root, &wa, input
+    if (find_closest(dir, rootx, rooty, root, &wa, input,
 		     &bestx, &besty, &best_dist, widget))
 	generate_warp(screen, bestx, besty);
 }
@@ -1056,7 +1056,7 @@ main(argc, argv)
     int argc;
     char **argv;
 {
-    int n, i, j;
+    int n, i;
     int eventb, errorb, vmajor, vminor;
     struct termios term;
     Bool noecho = True;
@@ -1134,7 +1134,7 @@ main(argc, argv)
 	oldioerror = XSetIOErrorHandler(ioerror);
 	olderror = XSetErrorHandler(error);
     }
-    reset_mapping(dpy);
+    reset_mapping();
     Xmask = 1 << ConnectionNumber(dpy);
     maxfd = ConnectionNumber(dpy) + 1;
     while (1) {
@@ -1159,7 +1159,7 @@ main(argc, argv)
 		XNextEvent(dpy, &ev);
 		if (ev.type == MappingNotify) {
 		    XRefreshKeyboardMapping(&ev.xmapping);
-		    reset_mapping(dpy);
+		    reset_mapping();
 		}
 	    }
 	}
