@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.57 89/11/22 15:38:18 jim Exp $
+ * $XConsortium: resize.c,v 1.58 89/11/27 14:20:09 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.57 89/11/22 15:38:18 jim Exp $";
+"$XConsortium: resize.c,v 1.58 89/11/27 14:20:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -427,9 +427,7 @@ EndResize()
         dragHeight != tmp_win->frame_height)
             tmp_win->zoomed = ZOOM_NONE;
 
-    SetupWindow (tmp_win,
-		 dragx - 2 * tmp_win->frame_bw,
-		 dragy - 2 * tmp_win->frame_bw,
+    SetupWindow (tmp_win, dragx - tmp_win->frame_bw, dragy - tmp_win->frame_bw,
 		 dragWidth, dragHeight, -1);
 
     if (tmp_win->iconmgr)
