@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.14 88/01/22 14:59:22 swick Locked $";
+static char rcs_id[] = "$Header: bbox.c,v 2.14 88/01/22 14:59:22 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -59,6 +59,7 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
     static Arg arglist[] = {
 /*	{XtNallowVert, True}, */ /* is set by BBoxLockSize() */
 	{XtNskipAdjust, True},
+	{XtNallowResize, True},	/* is disabled by BBoxLockSize() */
     };
     int width;
     ButtonBox buttonbox;
@@ -335,12 +336,16 @@ void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
     static Arg args[] = {
-	{XtNallowVert, True}
+	{XtNmax, NULL},		/* first 3 are for VPaned */
+	{XtNmin, 5},
+	{XtNallowResize, False},
+	{XtNallowVert, True},	/* for Viewport */
     };
 
-    XtSetValues(buttonbox->outer, args, XtNumber(args));
+    XtBoxDoLayout(buttonbox->inner);
     buttonbox->maxheight = GetHeight(buttonbox->inner);
-    XtPanedSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
+    args[0].value = (XtArgVal)buttonbox->maxheight;
+    XtSetValues(buttonbox->outer, args, XtNumber(args));
 }
 
 
