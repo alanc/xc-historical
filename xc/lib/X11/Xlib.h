@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.165 89/12/09 13:45:08 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.166 89/12/09 18:54:58 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -49,7 +49,11 @@ extern "C" {					/* for C++ V2.0 */
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
+#ifdef WIDEPROTO
+#define NeedWidePrototypes 1
+#else
 #define NeedWidePrototypes 0
+#endif
 #endif
 
 #define Bool int
