@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.55 88/02/14 14:53:25 rws Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.56 88/02/21 12:38:10 swick Exp $";
 #endif lint
 
 /*
@@ -522,16 +522,25 @@ void XtDispatchEvent (event)
     register    GrabList gl;
 
 #define ShouldDispatch \
-    (   (grabType == pass) \
-     || (widget->core.sensitive && widget->core.ancestor_sensitive))
+    (widget->core.sensitive && widget->core.ancestor_sensitive)
 
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
-    if (widget == NULL) return;
-
     /* Lint complains about &grabType not matching the declaration.
        Don't bother trying to fix it, it won't work */
 
     ConvertTypeToMask(event->xany.type, &mask, &grabType);
+
+    if (widget == NULL) {
+	if (grabType != remap) return;
+	/* event occurred in a non-widget window, but we've promised
+	   also to dispatch it to the nearest spring_loaded widget */
+	for (gl = grabList; gl != NULL; gl = gl->next) {
+	    if (gl->spring_loaded) {
+		DispatchEvent(event, gl->widget, mask);
+		return;
+	    }
+	}
+    }
 
     if (grabType == pass) {
 	DispatchEvent(event, widget, mask);
