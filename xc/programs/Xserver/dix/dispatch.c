@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.0 89/06/09 14:58:40 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.1 89/06/21 15:19:07 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2739,7 +2739,7 @@ ProcCreateCursor( client)
     register PixmapPtr 	msk;
     unsigned char *	srcbits;
     unsigned char *	mskbits;
-    long		width, height;
+    unsigned short	width, height;
     long		n;
     CursorMetricRec cm;
 
@@ -2814,19 +2814,11 @@ ProcCreateCursor( client)
     return BadAlloc;
 }
 
-/*
- * protocol requires positioning of glyphs so hot-spots are coincident	XXX
- */
 int
 ProcCreateGlyphCursor( client)
     register ClientPtr client;
 {
-    FontPtr  sourcefont;
-    FontPtr  maskfont;
-    unsigned char   *srcbits;
-    unsigned char   *mskbits;
     CursorPtr pCursor;
-    CursorMetricRec cm;
     int res;
 
     REQUEST(xCreateGlyphCursorReq);
@@ -2834,64 +2826,16 @@ ProcCreateGlyphCursor( client)
     REQUEST_SIZE_MATCH(xCreateGlyphCursorReq);
     LEGAL_NEW_RESOURCE(stuff->cid, client);
 
-    sourcefont = (FontPtr) LookupID(stuff->source, RT_FONT, RC_CORE);
-    maskfont = (FontPtr) LookupID(stuff->mask, RT_FONT, RC_CORE);
-
-    if (sourcefont == (FontPtr) NULL)
-    {
-	client->errorValue = stuff->source;
-	return(BadFont);
-    }
-    if (!CursorMetricsFromGlyph(sourcefont, stuff->sourceChar, &cm))
-    {
-	client->errorValue = stuff->sourceChar;
-	return BadValue;
-    }
-    if (maskfont == (FontPtr) NULL)
-    {
-	register long n;
-	register unsigned char *bits;
-
-	if (stuff->mask != None)
-	{
-	    client->errorValue = stuff->mask;
-	    return(BadFont);
-	}
-	n = PixmapBytePad(cm.width, 1)*cm.height;
-	bits = mskbits = (unsigned char *)xalloc(n);
-	if (!bits)
-	    return BadAlloc;
-	while (--n >= 0)
-	    *bits++ = ~0;
-    }
-    else
-    {
-	if (!CursorMetricsFromGlyph(maskfont, stuff->maskChar, &cm))
-	{
-	    client->errorValue = stuff->maskChar;
-	    return BadValue;
-	}
-	if (res = ServerBitsFromGlyph(stuff->mask, 
-				      maskfont, stuff->maskChar,
-				      &cm, &mskbits))
-	    return res;
-    }
-    if (res = ServerBitsFromGlyph(stuff->source, 
-				  sourcefont, stuff->sourceChar,
-				  &cm, &srcbits))
-    {
-	xfree(mskbits);
+    res = AllocGlyphCursor(stuff->source, stuff->sourceChar,
+			   stuff->mask, stuff->maskChar,
+			   stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
+			   stuff->backRed, stuff->backGreen, stuff->backBlue,
+			   &pCursor, client);
+    if (res != Success)
 	return res;
-    }
-
-    pCursor = AllocCursor(srcbits, mskbits, &cm,
-	    stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
-	    stuff->backRed, stuff->backGreen, stuff->backBlue);
-
-    if (pCursor &&
-	AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
+    if (AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
 		    RC_CORE))
-	    return client->noClientException;
+	return client->noClientException;
     return BadAlloc;
 }
 
