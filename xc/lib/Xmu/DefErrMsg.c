@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DefErrMsg.c,v 1.6 90/06/15 14:52:09 rws Exp $
+ * $XConsortium: DefErrMsg.c,v 1.7 90/12/09 17:58:54 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 	sprintf(number, "%d", event->request_code);
 	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, BUFSIZ);
     } else {
-	/* XXX need an Xlib interface for this */
+	/* XXX this is non-portable */
 	for (ext = dpy->ext_procs;
 	     ext && (ext->codes.major_opcode != event->request_code);
 	     ext = ext->next)
@@ -68,6 +68,13 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 	fputs("\n  ", fp);
     }
     if (event->error_code >= 128) {
+	/* let extensions try to print the values */
+	/* XXX this is non-portable code */
+	for (ext = dpy->ext_procs; ext; ext = ext->next) {
+	    if (ext->error_values)
+		(*ext->error_values)(dpy, event, fp);
+	}
+	/* the rest is a fallback, providing a simple default */
 	/* kludge, try to find the extension that caused it */
 	buffer[0] = '\0';
 	for (ext = dpy->ext_procs; ext; ext = ext->next) {
@@ -82,7 +89,7 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 		    event->error_code - ext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
-	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, BUFSIZ);
+	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
 	if (*mesg) {
 	    (void) fprintf(fp, mesg, event->resourceid);
 	    fputs("\n  ", fp);
