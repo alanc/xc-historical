@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.58 88/07/06 11:18:37 rws Exp $ */
+/* $Header: mibitblt.c,v 1.59 88/07/20 14:18:25 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -66,22 +66,8 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     			xMin, xMax, yMin, yMax;
     unsigned int	*ordering;
 
-    /* clip the left and top edges of the source */
-    if (xIn < 0)
-    {
-        widthSrc += xIn;
-        srcx = 0;
-    }
-    else
-	srcx = xIn;
-    if (yIn < 0)
-    {
-        heightSrc += yIn;
-        srcy = 0;
-    }
-    else
-	srcy = yIn;
-
+    srcx = xIn;
+    srcy = yIn;
 
     /* If the destination isn't realized, this is easy */
     if (pDstDrawable->type == DRAWABLE_WINDOW &&
@@ -284,6 +270,7 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     unsigned char	*pCharsOut;
     CARD16		*pShortsOut;
     CARD32		*pLongsOut;
+    int			delta;
 
     depth = pDraw->depth;
     if(pDraw->type != DRAWABLE_PIXMAP)
@@ -318,6 +305,8 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 	}
 	else
 	{
+	    delta = (widthInBytes / (BITMAP_SCANLINE_UNIT / 8)) -
+			(w / BITMAP_SCANLINE_UNIT);
 	    k = 0;
 	    for(j = 0; j < w; j++)
 	    {
@@ -377,7 +366,12 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
 		}
 	        Xfree(pline);
 	    }
-
+	    if (BITMAP_SCANLINE_UNIT == 8)
+		pCharsOut += delta;
+	    else if (BITMAP_SCANLINE_UNIT == 16)
+		pShortsOut += delta;
+	    else
+		pLongsOut += delta;
 	}
     }
     return(result);    
@@ -576,29 +570,16 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
     BoxRec 		box;
     RegionPtr		prgnSrc;
 
-
-
-    /* clip the left and top edges of the source */
-    if (srcx < 0)
-    {
-        width += srcx;
-        srcx = 0;
-    }
-    if (srcy < 0)
-    {
-        height += srcy;
-        srcy = 0;
-    }
-
     /* incorporate the source clip */
 
     if (pSrcDrawable->type != DRAWABLE_PIXMAP)
     {
-        box.x1 = ((WindowPtr)pSrcDrawable)->absCorner.x;
-        box.y1 = ((WindowPtr)pSrcDrawable)->absCorner.y;
+        box.x1 = srcx + ((WindowPtr)pSrcDrawable)->absCorner.x;
+        box.y1 = srcy + ((WindowPtr)pSrcDrawable)->absCorner.y;
         box.x2 = box.x1 + width;
         box.y2 = box.y1 + height;
         prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+	/* clip to visible drawable */
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
 	    RegionPtr prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
@@ -611,24 +592,45 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 	    (*pGC->pScreen->Intersect)
 		(prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
 	}
-	(*pGC->pScreen->TranslateRegion)(prgnSrc,
-			-((WindowPtr)pSrcDrawable)->absCorner.x,
-			-((WindowPtr)pSrcDrawable)->absCorner.y);
+	(*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
     }
     else
     {
-        box.x1 = 0;
-        box.y1 = 0;
-        box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-        box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+        box.x1 = srcx;
+        box.y1 = srcy;
+        box.x2 = box.x1 + width;
+        box.y2 = box.y1 + height;
+	/* clip to visible drawable */
+	if (box.x1 < 0)
+	    box.x1 = 0;
+	if (box.y1 < 0)
+	    box.y1 = 0;
+	if (box.x2 > ((PixmapPtr)pSrcDrawable)->width)
+	    box.x2 = ((PixmapPtr)pSrcDrawable)->width;
+	if (box.y2 > ((PixmapPtr)pSrcDrawable)->height)
+	    box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	if (box.x1 > box.x2)
+	    box.x2 = box.x1;
+	if (box.y1 > box.y2)
+	    box.y2 = box.y1;
         prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+	(*pGC->pScreen->TranslateRegion)(prgnSrc, -srcx, -srcy);
     }
 
-    /* note that we convert the plane mask bitPlane into a plane number */
-    ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1, srcx, srcy,
-   		       width, height, (unsigned long *) NULL);
-    miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
-                      width, height, dstx, dsty);
+    box = *(*pGC->pScreen->RegionExtents)(prgnSrc);
+    if ((box.x2 > box.x1) && (box.y2 > box.y1))
+    {
+	/* minimize the size of the data extracted */
+	(*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
+	/* note that we convert the plane mask bitPlane into a plane number */
+	ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1,
+			   srcx + box.x1, srcy + box.y1,
+			   box.x2 - box.x1, box.y2 - box.y1,
+			   (unsigned long *) NULL);
+	miOpqStipDrawable(pDstDrawable, pGC, prgnSrc, ptile, 0,
+			  box.x2 - box.x1, box.y2 - box.y1,
+			  dstx + box.x1, dsty + box.y1);
+    }
     miHandleExposures(pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
 		      width, height, dstx, dsty, bitPlane);
     Xfree(ptile);
