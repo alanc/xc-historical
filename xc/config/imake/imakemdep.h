@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.5 89/11/13 11:48:33 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.6 89/11/13 18:49:11 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -18,6 +18,10 @@
 #endif
 
 #ifdef macII
+#define imake_ccflags "-DSYSV"
+#endif
+
+#ifdef stellar
 #define imake_ccflags "-DSYSV"
 #endif
 
@@ -169,6 +173,9 @@ struct symtab	predefs[] = {
 #endif
 #ifdef ultrix
 	{"ultrix", "1"},
+#endif
+#ifdef stellar
+	{"stellar", "1"},
 #endif
 #ifdef mc68000
 	{"mc68000", "1"},
