@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.3 91/01/10 17:42:45 rws Exp $ */
+/* $XConsortium: TMaction.c,v 1.4 91/01/30 19:48:13 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -51,23 +51,28 @@ typedef struct _CompiledAction{
 ? (((TMClassCache)wc->core_class.actions)->actions) \
 : NULL)
 
-static CompiledActionTable CompileActionTable(actions, count, copy)
+static CompiledActionTable CompileActionTable(actions, count, stat, perm)
     register struct _XtActionsRec *actions;
-    register Cardinal count;
-    Boolean copy;	/* if True, copy before compiling in place */
+    register Cardinal count;	/* may be 0 */
+    Boolean stat;	/* if False, copy before compiling in place */
+    Boolean perm;	/* if False, use XrmStringToQuark */
 {
     CompiledActionTable cActions = (CompiledActionTable)actions;
     register int i;
 
-    if (copy) {
+    if (! stat) {
 	cActions = (CompiledActionTable) XtMalloc(count * 
 						  sizeof(CompiledAction));
 	for (i=0; i < count; i++)
 	    cActions[i].proc = actions[i].proc;
     }
 
-    for (i=0; i<count; i++)
-	cActions[i].signature = XrmPermStringToQuark(actions[i].string);
+    if (perm)
+	for (i=0; i<count; i++)
+	    cActions[i].signature = XrmPermStringToQuark(actions[i].string);
+    else
+	for (i=0; i<count; i++)
+	    cActions[i].signature = XrmStringToQuark(actions[i].string);
 
     return cActions;
 }
@@ -297,7 +302,7 @@ XtPointer _XtInitializeActionData(actions, count)
     TMClassCache	classCache;
 
     classCache = XtNew(TMClassCacheRec);
-    classCache->actions = CompileActionTable(actions, count, False);
+    classCache->actions = CompileActionTable(actions, count, True, True);
     classCache->bindCache = NULL;
     return (XtPointer)classCache;
 }
@@ -637,7 +642,7 @@ void XtAppAddActions(app, actions, num_actions)
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
-    rec->table = CompileActionTable(actions, num_actions, True);
+    rec->table = CompileActionTable(actions, num_actions, False, False);
     rec->count = num_actions;
 }
 
@@ -758,7 +763,8 @@ void _XtActionInitialize(app)
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
-    rec->table = CompileActionTable(tmActions, XtNumber(tmActions), True);
+    rec->table = CompileActionTable(tmActions, XtNumber(tmActions), False,
+				    True);
     rec->count = XtNumber(tmActions);
 }
 
