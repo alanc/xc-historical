@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.138 93/06/24 12:58:04 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.139 93/07/09 15:47:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1087,6 +1087,7 @@ Boolean XtDispatchEvent (event)
     if (_XtSafeToDestroy(app)) {
 	if (_XtAppDestroyCount != 0) _XtDestroyAppContexts();
 	if (_XtDpyDestroyCount != 0) _XtCloseDisplays();
+	if (app->free_bindings) _XtDoFreeBindings(app);
     }
     
     return (was_dispatched != XtDidNothing);
