@@ -736,3 +736,17 @@
 252 252 252 		grey99
 255 255 255 		gray100
 255 255 255 		grey100
+169 169 169		dark grey
+169 169 169		DarkGrey
+169 169 169		dark gray
+169 169 169		DarkGray
+0     0 139		dark blue
+0     0 139		DarkBlue
+0   139 139		dark cyan
+0   139 139		DarkCyan
+139   0 139		dark magenta
+139   0 139		DarkMagenta
+139   0   0		dark red
+139   0   0		DarkRed
+144 238 144		light green
+144 238 144		LightGreen
