@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.81 89/07/18 17:15:43 jim Exp $
+ * $XConsortium: events.c,v 1.82 89/07/26 11:02:21 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.81 89/07/18 17:15:43 jim Exp $";
+"$XConsortium: events.c,v 1.82 89/07/26 11:02:21 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -70,10 +70,7 @@ int DragY;
 int DragWidth;
 int DragHeight;
 
-#ifdef TWM_EVENT_HACK
 static int enter_flag;
-static Atom twmRaisingWindowAtom;
-#endif
 
 ScreenInfo *FindScreenInfo();
 int ButtonPressed = -1;
@@ -102,10 +99,7 @@ InitEvents()
 
     ResizeWindow = NULL;
     DragWindow = NULL;
-#ifdef TWM_EVENT_HACK
     enter_flag = FALSE;
-    twmRaisingWindowAtom = XInternAtom(dpy, "TWM_RAISING_WINDOW", False);
-#endif
 
     for (i = 0; i < MAX_X_EVENT; i++)
 	EventHandler[i] = HandleUnknown;
@@ -667,15 +661,6 @@ HandleClientMessage()
     fprintf(stderr, "ClientMessage = 0x%x\n", Event.xclient.message_type);
 #endif
 
-#ifdef TWM_EVENT_HACK
-    if (Event.xclient.message_type == twmRaisingWindowAtom)
-    {
-#ifdef DEBUG_EVENTS
-	fprintf(stderr, "TWM_RAISING_WINDOW message client received.\n");
-#endif
-	enter_flag = FALSE;
-    } else
-#endif
     if (Event.xclient.message_type == _XA_WM_CHANGE_STATE)
     {
 #ifdef DEBUG_EVENTS
@@ -1189,14 +1174,7 @@ HandleButtonRelease()
 	DragWindow = NULL;
 	ConstMove = FALSE;
 
-#ifdef TWM_EVENT_HACK
 	enter_flag = TRUE;
-	client_event.type = ClientMessage;
-	client_event.xclient.window = Tmp_win->frame;
-	client_event.xclient.message_type = twmRaisingWindowAtom;
-	client_event.xclient.format = 32;
-	XSendEvent(dpy, Tmp_win->frame, False, 0, &client_event);
-#endif
     }
 
     if (ResizeWindow != NULL)
@@ -1535,20 +1513,11 @@ HandleEnterNotify()
 		XInstallColormap(dpy, Tmp_win->attr.colormap);
 	    }
 	}
-#ifdef TWM_EVENT_HACK
 	if (enter_flag == FALSE && Tmp_win->auto_raise)
 	{
-	    XEvent client_event;
-
 	    XRaiseWindow(dpy, Tmp_win->frame);
 	    enter_flag = TRUE;
-	    client_event.type = ClientMessage;
-	    client_event.xclient.window = Tmp_win->frame;
-	    client_event.xclient.message_type = twmRaisingWindowAtom;
-	    client_event.xclient.format = 32;
-	    XSendEvent(dpy, Tmp_win->frame, False, 0, &client_event);
 	}
-#endif
 	return;
     }
 
