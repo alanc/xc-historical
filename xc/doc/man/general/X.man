@@ -822,8 +822,7 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 .SH TRADEMARKS
 .PP
-UNIX is a trademark of AT&T Bell Laboratories.
-OPEN LOOK is a trademark of AT&T.
+UNIX and OPEN LOOK are trademarks of AT&T.
 X Window System is a trademark of MIT.
 .SH AUTHORS
 .PP
