@@ -353,6 +353,7 @@ sunScreenAllocate (pScreen)
 	return FALSE;
 
     pScreen->devPrivates[sunScreenIndex].ptr = (pointer) pPrivate;
+    return TRUE;
 }
 
 Bool
