@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: NextEvent.c,v 1.46 88/08/31 10:23:47 swick Exp $";
-/* $oHeader: NextEvent.c,v 1.3 88/08/19 13:59:40 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: NextEvent.c,v 1.49 88/09/04 12:20:53 swick Exp $";
+/* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -177,7 +178,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 				}
 			    }
 			} else {
-				XtErrorMsg("communicationError","select",
+				XtAppErrorMsg(app, "communicationError","select",
                                         "XtToolkitError","Select failed",
                                          (String *)NULL, (Cardinal *)NULL);
 			}
@@ -379,7 +380,7 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	    app->selectEqueue[source] = sptr;
 	    FD_SET(source, &app->fds.emask);
 	} else
-	  XtErrorMsg("invalidParameter","xtAddInput","XtToolkitError",
+	  XtAppErrorMsg(app, "invalidParameter","xtAddInput","XtToolkitError",
                   "invalid condition passed to XtAddInput",
                    (String *)NULL, (Cardinal *)NULL);
 	sptr->ie_proc = proc;
@@ -461,7 +462,7 @@ void XtRemoveInput( id )
 		}
 	    
 	}
-	XtWarningMsg("invalidProcedure","inputHandler","XtToolkitError",
+	XtAppWarningMsg(app, "invalidProcedure","inputHandler","XtToolkitError",
                    "XtRemoveInput: Input handler not found",
 		   (String *)NULL, (Cardinal *)NULL);
 	app->fds.count++;	/* Didn't remove it after all */
