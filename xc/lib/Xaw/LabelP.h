@@ -1,5 +1,5 @@
 /*
-* $Header: LabelP.h,v 1.11 88/01/28 07:53:41 swick Locked $
+* $Header: LabelP.h,v 1.12 88/02/05 17:18:34 swick Locked $
 */
 
 /*
@@ -39,7 +39,6 @@
  ***********************************************************************/
 
 #include <X/Label.h>
-#include "CoreP.h"
 #include "SimpleP.h"
 
 #define XtRjustify		"Justify"
