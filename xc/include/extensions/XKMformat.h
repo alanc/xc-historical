@@ -111,4 +111,17 @@ typedef struct _xkmKeySymMapDesc {
 } xkmKeySymMapDesc;
 #define sz_xkmKeySymMapDesc	4
 
+#define	XkmIndicatorUnbound	0
+typedef struct _xkmIndicatorMapDesc {
+	CARD8		indicator;
+	CARD8		flags;
+	CARD8		which_mods;
+	CARD8		real_mods;
+	CARD16		vmods;
+	CARD8		which_groups;
+	CARD8		groups;
+	CARD32		ctrls;
+} xkmIndicatorMapDesc;
+#define sz_xkmIndicatorMapDesc	12
+
 #endif /* XKMFORMAT_H */
