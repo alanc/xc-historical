@@ -1,4 +1,3 @@
-/* $Header: sunKbd.c,v 1.1 87/08/08 14:23:09 toddb Locked $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.

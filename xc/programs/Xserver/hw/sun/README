@@ -1,6 +1,5 @@
-/* $Header$ */
 
-	Sun X11 Beta-1 drivers -  8 July 1987
+	Sun X11 Beta-2 drivers -  23 July 1987
 
 A joint production of:
 
@@ -16,18 +15,19 @@ the following configurations:
 
 	Sun/2		bw2	cg2/3/5
 	Sun/3		bw2	cg2/3/4/5
+	Sun/4		bw2
+
+The following configurations are NOT supported:
+
+	Sun/1		bw1	cg1	(requires separate port)
+	Sun/2			gp	(use /dev/cgtwo0)
+	Sun/3			gp	(use /dev/cgtwo0)
+	Sun/4			cg2	(we're working on it)
 
 The drivers are completely untuned, and have inferior performance.  The code
 is lint-free.  It installs and runs on these configurations under SunOS 3.2
 and 3.4.  However, we must stress that it is completely unsupported, and if
 you have problems installing or using it you are on your own.
-
-As of July 8,
--   This code works for both monochrome and color configurations.
--   The server prints "CloseFont: couldn't find font to close 0" several
-    times, with apparently no ill effect
--   wm will hang and not respond to events after some use
-
 
 Things to check before building:
 
@@ -41,6 +41,10 @@ Things to check before building:
 4)	Change the server/ddx makefile to build the subdirectories:
 
 	mfb mi sun
+
+5)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
+	The non-portable zoids have worse performance than portable zoids
+	but prove that the extension mechanism works for output.
 
 all: Xsun
 

@@ -1,4 +1,3 @@
-/* $Header: sunCursor.c,v 1.1 87/08/08 14:21:40 toddb Locked $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...

@@ -100,11 +100,22 @@ SigIOHandler(sig, code, scp)
     isItTimeToYield++;
 }
 
+/*
+ * ZOIDS should only ever be defined if SUN_WINDOWS is also defined.
+ */
+#ifdef ZOIDS
+sunFbDataRec sunFbData[] = {
+    sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,	0, 0,
+    sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,	0, 0,
+    sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,	0, 0,
+};
+#else  ZOIDS
 sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,
     sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,
     sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,
 };
+#endif ZOIDS
 
 /*
  * NUMSCREENS is the number of supported frame buffers (i.e. the number of

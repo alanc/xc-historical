@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 1.2 87/08/08 14:20:51 toddb Locked $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 1.2 87/03/24 14:57:14 deboor Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -30,11 +30,9 @@
 #include    <sun/fbio.h>
 
 /*
- * Configure to run on top of SunWindows.  If you don't,  you don't
- * need the -lsunwindow -lpixrect in the server Makefile.  Defining
- * this doesn't mean it won't run outside SunWindows.
+ * SUN_WINDOWS is now defined (or not) by the Makefile
+ * variable $(SUNWINDOWSFLAGS) in server/Makefile.
  */
-#define	SUN_WINDOWS	1
 
 #ifdef SUN_WINDOWS
 #include    <varargs.h>
@@ -65,14 +63,18 @@
 #include    "cursor.h"
 #include    "pixmapstr.h"
 #include    "pixmap.h"
+#include    "windowstr.h"
 #include    "gc.h"
 #include    "gcstruct.h"
-#include    "region.h"
+#include    "regionstr.h"
 #include    "colormap.h"
 #include    "miscstruct.h"
 #include    "dix.h"
 #include    "mfb.h"
 #include    "mi.h"
+#ifdef ZOIDS
+#include    "zoid.h"
+#endif ZOIDS
 
 /*
  * MAXEVENTS is the maximum number of events the mouse and keyboard functions
@@ -183,6 +185,7 @@ typedef struct crPrivate {
  *	    	  	been mapped in.
  *	parent	  	set true if the frame buffer is actually a SunWindows
  *	    	  	window.
+ *	fbPriv	  	Data private to the frame buffer type.
  */
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */
@@ -199,6 +202,7 @@ typedef struct {
     Bool		parent;	    /* TRUE if fd is a SunWindows window */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
     struct fbtype 	info;	    /* Frame buffer characteristics */
+    pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
 
 /*
@@ -211,10 +215,17 @@ typedef enum {
 	neverProbed, probedAndSucceeded, probedAndFailed
 } SunProbeStatus;
 
+/*
+ * ZOIDS should only ever be defined if SUN_WINDOWS is defined.
+ */
 typedef struct _sunFbDataRec {
     Bool    (*probeProc)();	/* probe procedure for this fb */
     char    *devName;		/* device filename */
     SunProbeStatus probeStatus;	/* TRUE if fb has been probed successfully */
+#ifdef ZOIDS
+    Pixrect *pr;		/* set for bwtwo's only */
+    Pixrect *scratch_pr;	/* set for bwtwo's only */
+#endif ZOIDS
 } sunFbDataRec;
 
 extern sunFbDataRec sunFbData[];
@@ -260,6 +271,19 @@ extern Bool	  screenSaved;		/* True is screen is being saved */
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 extern void	ErrorF();
+
+/*
+ * Sun specific extensions:
+ *	trapezoids
+ */
+#ifdef ZOIDS
+extern void	  sunBW2SolidXZoids();
+extern void	  sunBW2SolidYZoids();
+extern void	  sunBW2TiledXZoids();
+extern void	  sunBW2TiledYZoids();
+extern void	  sunBW2StipXZoids();
+extern void	  sunBW2StipYZoids();
+#endif ZOIDS
 
 /*-
  * TVTOMILLI(tv)
