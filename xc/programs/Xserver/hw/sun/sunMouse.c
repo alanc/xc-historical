@@ -550,11 +550,9 @@ sunMouseProcessEventSunWin(pMouse,se)
     register int	  	bmask;	/* Temporary button mask */
     register PtrPrivPtr		pPriv;	/* Private data for pointer */
     register SunMsPrivPtr	pSunPriv; /* Private data for mouse */
+    short			x, y;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
-    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
-
-    xE.u.keyButtonPointer.time = TVTOMILLI(event_time(se));
 
     switch (event_id(se)) {
         case MS_LEFT:
@@ -567,6 +565,8 @@ sunMouseProcessEventSunWin(pMouse,se)
 	     *
 	     * Mouse buttons start at 1.
 	     */
+	    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
+	    xE.u.keyButtonPointer.time = TVTOMILLI(event_time(se));
 	    xE.u.u.detail = (event_id(se) - MS_LEFT) + 1;
 	    bmask = 1 << xE.u.u.detail;
 	    if (win_inputnegevent(se)) {
@@ -584,33 +584,32 @@ sunMouseProcessEventSunWin(pMouse,se)
 		    return;
 		}
 	    }
+	    miPointerPosition (screenInfo.screens[0],
+	        &xE.u.keyButtonPointer.rootX, &xE.u.keyButtonPointer.rootY);
+            (* pMouse->processInputProc) (&xE, pMouse, 1);
     	    break;
         case LOC_MOVE:
-	    xE.u.u.type = MotionNotify;
-	    xE.u.u.detail = 0;
-	    pPriv->x = event_x(se);
-	    pPriv->y = event_y(se);
-	    if (!sunConstrainXY (&pPriv->x, &pPriv->y)) {
-		return;
-	    }
-	    sunMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	    if ((pPriv->x != event_x(se)) || (pPriv->y != event_y(se))) {
-		/*
-		 * We constrained the pointer motion.  Tell the pointer
-		 * where it really needs to be.
-		 */
-		win_setmouseposition(windowFd, pPriv->x, pPriv->y);
-	    }
+	    /*
+	     * Tell mi to go ahead and generate the event.
+	     */
+	    miPointerMoveCursor(screenInfo.screens[0], event_x(se),
+		event_y(se), TRUE);
+
+	    /*
+	     * Find out if the mouse got constrained. If it did
+	     * then we have to tell SunWindows about it.
+	     */
+	    miPointerPosition (screenInfo.screens[0], &x, &y);
+	    if (x != event_x(se) || y != event_y(se))
+	        /*
+                 * Tell SunWindows that X is constraining the mouse
+                 * cursor so that the server and SunWindows stay in sync.
+	         */
+	        win_setmouseposition(windowFd, x, y);
 	    break;
 	default:
 	    FatalError ("sunMouseProcessEventSunWin: unrecognized id\n");
 	    break;
     }
-
-    xE.u.keyButtonPointer.rootX = event_x(se);
-    xE.u.keyButtonPointer.rootY = event_y(se);
-
-    (* pMouse->processInputProc) (&xE, pMouse, 1);
-
 }
 #endif SUN_WINDOWS
