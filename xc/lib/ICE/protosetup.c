@@ -1,4 +1,4 @@
-/* $XConsortium: protosetup.c,v 1.1 93/08/17 18:59:01 mor Exp $ */
+/* $XConsortium: protosetup.c,v 1.1 93/08/19 18:25:31 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -131,8 +131,9 @@ char 	*errorStringRet;
      * Process messages until we get a Protocol Reply.
      */
 
-    replyWait.opcode_of_request = ICE_ProtocolSetup;
     replyWait.sequence_of_request = setup_sequence;
+    replyWait.major_opcode_of_request = 0;
+    replyWait.minor_opcode_of_request = ICE_ProtocolSetup;
     replyWait.reply = (IcePointer) &reply;
 
     iceConn->protosetup_to_you = (_IceProtoSetupToYouInfo *) malloc (
