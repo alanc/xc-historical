@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.4 91/06/06 14:13:25 rws Exp $
+/**/# platform:  $XConsortium: Mips.cf,v 1.5 91/07/05 15:45:50 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -25,7 +25,7 @@
 #define MakeEnv -e
 #define SystemV NO
 
-#define DefaultCCOptions -systype bsd43 -Olimit 2000 -Wf,-XNd8400,-XNp12000
+#define DefaultCCOptions -signed -systype bsd43 -Olimit 2000 -Wf,-XNd8400,-XNp12000
 #define StandardDefines -DMips -DBSD43
 #define ExtraLibraries -lmld
 #define LintLibFlag -C
@@ -36,6 +36,7 @@
 #define MakeCmd make MakeEnv
 #define DoRanlibCmd 0
 #define BuildPex NO
+#define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
 /*****************************************************************************
  *                                                                           *
