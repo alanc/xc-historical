@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.20 88/07/12 16:43:21 jim Exp $
+ *	$XConsortium: misc.c,v 1.21 88/08/31 18:46:36 rws Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.20 88/07/12 16:43:21 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.21 88/08/31 18:46:36 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -114,10 +114,29 @@ void HandleStringEvent(w, event, params, nparams)
     register TScreen *screen = &term->screen;
 
 #ifdef ACTIVEWINDOWINPUTONLY
-    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
+    if (w != (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) return;
 #endif
-      if (*nparams == 1)
+
+    if (*nparams != 1) return;
+
+    if ((*params)[0] == '0' && (*params)[1] == 'x' && (*params)[2] != '\0') {
+	char c, *p, hexval[2];
+	hexval[0] = hexval[1] = 0;
+	for (p = *params+2; (c = *p); p++) {
+	    hexval[0] *= 16;
+	    if (isupper(c)) c = tolower(c);
+	    if (c >= '0' && c <= '9')
+		hexval[0] += c - '0';
+	    else if (c >= 'a' && c <= 'f')
+		hexval[0] += c - 'a' + 10;
+	    else break;
+	}
+	if (c == '\0')
+	    StringInput (screen, hexval);
+    }
+    else {
 	StringInput (screen, *params);
+    }
 }
 
 /*ARGSUSED*/
