@@ -1,4 +1,4 @@
-/* $XConsortium: XlcUTF.h,v 1.1 93/09/17 13:31:56 rws Exp $ */
+/* $XConsortium: XlcUTF.h,v 1.2 93/09/19 09:16:31 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -200,51 +200,50 @@ typedef struct _StateRec {
 
 #define MAX_UTF_CHARSET	(sizeof(default_utf_data)/sizeof(XlcUTFDataRec))
 
-enum discriminate1
-{
-	Char1	= Runeself,	Rune1	= Runeself,
-	Char21	= 0xA1,		Rune21	= 0x0100,
-	Char22	= 0xF6,		Rune22	= 0x4016,
-	Char3	= 0xFC,		Rune3	= 0x10000,	/* really 0x38E2E */
-	Esc	= 0xBE,		Bad	= Runeerror
-};
+#define Char1 Runeself
+#define Rune1 Runeself
+#define Char21 0xA1
+#define Rune21 0x0100
+#define Char22 0xF6
+#define Rune22 0x4016
+#define Char3 0xFC
+#define Rune3 0x10000	/* really 0x38E2E */
+#define Esc 0xBE
+#define Bad Runeerror
 
-enum discriminate2
-{
-	T1	= 0x00,
-	Tx	= 0x80,
-	T2	= 0xC0,
-	T3	= 0xE0,
-	T4	= 0xF0,
-	T5	= 0xF8,
-	T6	= 0xFC,
+#define T1	0x00
+#define	Tx	0x80
+#define T2	0xC0
+#define T3	0xE0
+#define T4	0xF0
+#define T5	0xF8
+#define T6	0xFC
 
-	Bit1	= 7,
-	Bitx	= 6,
-	Bit2	= 5,
-	Bit3	= 4,
-	Bit4	= 3,
-	Bit5	= 2,
-	Bit6	= 2,
+#define Bit1	7
+#define Bitx	6
+#define Bit2	5
+#define Bit3	4
+#define Bit4	3
+#define Bit5	2
+#define Bit6	2
 
-	Mask1	= (1<<Bit1)-1,
-	Maskx	= (1<<Bitx)-1,
-	Mask2	= (1<<Bit2)-1,
-	Mask3	= (1<<Bit3)-1,
-	Mask4	= (1<<Bit4)-1,
-	Mask5	= (1<<Bit5)-1,
-	Mask6	= (1<<Bit6)-1,
+#define Mask1	(1<<Bit1)-1
+#define Maskx	(1<<Bitx)-1
+#define Mask2	(1<<Bit2)-1
+#define Mask3	(1<<Bit3)-1
+#define Mask4	(1<<Bit4)-1
+#define Mask5	(1<<Bit5)-1
+#define Mask6	(1<<Bit6)-1
 
-	Wchar1	= (1<<Bit1)-1,
-	Wchar2	= (1<<(Bit2+Bitx))-1,
-	Wchar3	= (1<<(Bit3+2*Bitx))-1,
-	Wchar4	= (1<<(Bit4+3*Bitx))-1,
-	Wchar5	= (1<<(Bit5+4*Bitx))-1
+#define Wchar1	(1<<Bit1)-1
+#define Wchar2	(1<<(Bit2+Bitx))-1
+#define Wchar3	(1<<(Bit3+2*Bitx))-1
+#define Wchar4	(1<<(Bit4+3*Bitx))-1
+#define Wchar5	(1<<(Bit5+4*Bitx))-1
 
 #ifndef	EILSEQ
-       ,EILSEQ  = 123
+#define EILSEQ  123
 #endif
-};
 
 #define J2S(_h, _l) { \
         /* lower: 21-7e >> 40-9d,9e-fb >> 40-7e,(skip 7f),80-fc */ \
