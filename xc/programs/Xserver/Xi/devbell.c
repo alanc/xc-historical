@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $Header: xdevbell.c,v 1.2 90/10/01 10:54:55 root ic1C-80 $ */
+/* $Header: xdevbell.c,v 1.1 91/01/24 16:24:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -76,6 +76,8 @@ ProcXDeviceBell (client)
     BellFeedbackPtr b;
     int base;
     int newpercent;
+    CARD8 class;
+    pointer ctrl;
     void (*proc)();
 
     REQUEST(xDeviceBellReq);
@@ -98,7 +100,7 @@ ProcXDeviceBell (client)
     if (stuff->feedbackclass == KbdFeedbackClass)
 	{
 	for (k=dev->kbdfeed; k; k=k->next)
-	    if (k->id == stuff->feedbackid)
+	    if (k->ctrl.id == stuff->feedbackid)
 		break;
 	if (!k)
 	    {
@@ -108,11 +110,13 @@ ProcXDeviceBell (client)
 	    }
 	base = k->ctrl.bell;
 	proc = k->BellProc;
+	ctrl = (pointer) &(k->ctrl);
+	class = KbdFeedbackClass;
 	}
     else if (stuff->feedbackclass == BellFeedbackClass)
 	{
 	for (b=dev->bell; b; b=b->next)
-	    if (b->id == stuff->feedbackid)
+	    if (b->ctrl.id == stuff->feedbackid)
 		break;
 	if (!b)
 	    {
@@ -122,6 +126,8 @@ ProcXDeviceBell (client)
 	    }
 	base = b->ctrl.percent;
 	proc = b->BellProc;
+	ctrl = (pointer) &(b->ctrl);
+	class = BellFeedbackClass;
 	}
     else
 	{
@@ -134,7 +140,7 @@ ProcXDeviceBell (client)
         newpercent = base + newpercent;
     else
     	newpercent = base - newpercent + stuff->percent;
-    (*proc)(newpercent, dev);
+    (*proc)(newpercent, dev, ctrl, class);
 
     return Success;
     }

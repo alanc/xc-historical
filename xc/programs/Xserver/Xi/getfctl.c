@@ -1,4 +1,4 @@
-/* $Header: xgetfctl.c,v 1.3 91/01/18 15:34:49 gms Exp $ */
+/* $Header: xgetfctl.c,v 1.12 91/01/24 17:03:38 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -191,7 +191,7 @@ CopySwapKbdFeedback (client, k, buf)
     k2 = (xKbdFeedbackState *) *buf;
     k2->class = KbdFeedbackClass;
     k2->length = sizeof (xKbdFeedbackState);
-    k2->id = k->id;
+    k2->id = k->ctrl.id;
     k2->click = k->ctrl.click;
     k2->percent = k->ctrl.bell;
     k2->pitch = k->ctrl.bell_pitch;
@@ -229,7 +229,7 @@ CopySwapPtrFeedback (client, p, buf)
     p2 = (xPtrFeedbackState *) *buf;
     p2->class = PtrFeedbackClass;
     p2->length = sizeof (xPtrFeedbackState);
-    p2->id = p->id;
+    p2->id = p->ctrl.id;
     p2->accelNum = p->ctrl.num;
     p2->accelDenom = p->ctrl.den;
     p2->threshold = p->ctrl.threshold;
@@ -261,7 +261,7 @@ CopySwapIntegerFeedback (client, i, buf)
     i2 = (xIntegerFeedbackState *) *buf;
     i2->class = IntegerFeedbackClass;
     i2->length = sizeof (xIntegerFeedbackState);
-    i2->id = i->id;
+    i2->id = i->ctrl.id;
     i2->resolution = i->ctrl.resolution;
     i2->min_value = i->ctrl.min_value;
     i2->max_value = i->ctrl.max_value;
@@ -296,7 +296,7 @@ CopySwapStringFeedback (client, s, buf)
     s2->class = StringFeedbackClass;
     s2->length = sizeof (xStringFeedbackState) + 
         s->ctrl.num_symbols_supported * sizeof (KeySym);
-    s2->id = s->id;
+    s2->id = s->ctrl.id;
     s2->max_symbols = s->ctrl.max_symbols;
     s2->num_syms_supported = s->ctrl.num_symbols_supported;
     *buf += sizeof (xStringFeedbackState);
@@ -335,7 +335,7 @@ CopySwapLedFeedback (client, l, buf)
     l2 = (xLedFeedbackState *) *buf;
     l2->class = LedFeedbackClass;
     l2->length = sizeof (xLedFeedbackState);
-    l2->id = l->id;
+    l2->id = l->ctrl.id;
     l2->led_values = l->ctrl.led_values;
     l2->led_mask = l->ctrl.led_mask;
     if (client->swapped)
@@ -365,7 +365,7 @@ CopySwapBellFeedback (client, b, buf)
     b2 = (xBellFeedbackState *) *buf;
     b2->class = BellFeedbackClass;
     b2->length = sizeof (xBellFeedbackState);
-    b2->id = b->id;
+    b2->id = b->ctrl.id;
     b2->percent = b->ctrl.percent;
     b2->pitch = b->ctrl.pitch;
     b2->duration = b->ctrl.duration;

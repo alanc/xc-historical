@@ -1,4 +1,4 @@
-/* $Header: xchgfctl.c,v 1.11 91/01/24 17:03:17 rws Exp $ */
+/* $Header: xchgfctl.c,v 1.12 91/05/05 18:30:43 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -103,7 +103,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (k=dev->kbdfeed; k; k=k->next)
-		if (k->id == ((xKbdFeedbackCtl *) &stuff[1])->id)
+		if (k->ctrl.id == ((xKbdFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangeKbdFeedback (client, dev, stuff->mask, k, &stuff[1]);
 		    return Success;
@@ -117,7 +117,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (p=dev->ptrfeed; p; p=p->next)
-		if (p->id == ((xPtrFeedbackCtl *) &stuff[1])->id)
+		if (p->ctrl.id == ((xPtrFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangePtrFeedback (client, dev, stuff->mask, p, &stuff[1]);
 		    return Success;
@@ -138,7 +138,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (s=dev->stringfeed; s; s=s->next)
-		if (s->id == ((xStringFeedbackCtl *) &stuff[1])->id)
+		if (s->ctrl.id == ((xStringFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangeStringFeedback (client, dev, stuff->mask,s,&stuff[1]);
 		    return Success;
@@ -153,7 +153,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (i=dev->intfeed; i; i=i->next)
-		if (i->id == ((xIntegerFeedbackCtl *) &stuff[1])->id)
+		if (i->ctrl.id == ((xIntegerFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangeIntegerFeedback (client, dev,stuff->mask,i,&stuff[1]);
 		    return Success;
@@ -167,7 +167,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (l=dev->leds; l; l=l->next)
-		if (l->id == ((xLedFeedbackCtl *) &stuff[1])->id)
+		if (l->ctrl.id == ((xLedFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangeLedFeedback (client, dev, stuff->mask, l, &stuff[1]);
 		    return Success;
@@ -181,7 +181,7 @@ ProcXChangeFeedbackControl(client)
 		return Success;
 		}
 	    for (b=dev->bell; b; b=b->next)
-		if (b->id == ((xBellFeedbackCtl *) &stuff[1])->id)
+		if (b->ctrl.id == ((xBellFeedbackCtl *) &stuff[1])->id)
 		    {
 		    ChangeBellFeedback (client, dev, stuff->mask, b, &stuff[1]);
 		    return Success;
