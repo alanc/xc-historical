@@ -1,4 +1,4 @@
-/* $XConsortium: pdither.c,v 1.3 93/11/06 15:54:30 rws Exp $ */
+/* $XConsortium: pdither.c,v 1.4 94/01/12 19:54:51 rws Exp $ */
 /**** module pdither.c ****/
 /******************************************************************************
 				NOTICE
@@ -96,7 +96,6 @@ Bool		PrepPDitherOrdered();
  *  routines internal to this module
  */
 static Bool	PrepPDither();
-static Bool	CopyPDitherStandard();
 static Bool	PrepPDitherStandard();
 
 /*
