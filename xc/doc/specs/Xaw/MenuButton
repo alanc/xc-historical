@@ -1,4 +1,4 @@
-.\" $XConsortium: MenuButton,v 1.19 94/04/14 18:16:59 kaleb Exp $
+.\" $XConsortium: MenuButton,v 1.20 94/05/01 19:21:12 gildea Exp $
 .NH 2
 MenuButton Widget
 .XS
@@ -111,7 +111,7 @@ _
 .Cr
 .Cu
 .Cn
-.De
+.Dp
 .Dc
 .Lf
 .Ls
