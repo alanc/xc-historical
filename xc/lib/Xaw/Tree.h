@@ -51,6 +51,8 @@ typedef struct _TreeRec      *TreeWidget;
 
 #define XtNhorizontalSpace    "horizontalSpace"
 #define XtNverticalSpace      "verticalSpace"
+#define XtNlineWidth          "lineWidth"
+#define XtCLineWidth          "LineWidth"
 #define XtCPad                "Pad"
 #define XtNsuperNode          "superNode"
 #define XtCSuperNode          "SuperNode"

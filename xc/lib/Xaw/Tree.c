@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.4 90/02/01 18:29:07 jim Exp $
+ * $XConsortium: Tree.c,v 1.5 90/02/02 09:23:34 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -53,12 +53,14 @@ static void             set_positions();
 static void             initialize_dimensions();
 
 static XtResource resources[] = {
- {XtNhorizontalSpace,XtCSpace,XtRDimension,sizeof(Dimension),
-   XtOffset(TreeWidget, tree.h_min_space), XtRString,"20" },
- {XtNverticalSpace,XtCSpace, XtRDimension,sizeof (Dimension),
-   XtOffset(TreeWidget, tree.v_min_space), XtRString,"10"  },
- {XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
-  XtOffset(TreeWidget, tree.foreground), XtRString,"Black"},
+    { XtNhorizontalSpace, XtCSpace, XtRDimension, sizeof (Dimension),
+	XtOffset(TreeWidget, tree.h_min_space), XtRString, "20" },
+    { XtNverticalSpace, XtCSpace, XtRDimension, sizeof (Dimension),
+	XtOffset(TreeWidget, tree.v_min_space), XtRString, "6" },
+    { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
+	XtOffset(TreeWidget, tree.foreground), XtRString, "Black"},
+    { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
+	XtOffset(TreeWidget, tree.line_width), XtRString, "0" },
 };
 
 static XtResource treeConstraintResources[] = {
@@ -149,6 +151,10 @@ static void Initialize(request, new)
   valueMask = GCForeground | GCBackground;
   values.foreground = new->tree.foreground;
   values.background = new->core.background_pixel;
+  if (new->tree.line_width != 0) {
+      valueMask |= GCLineWidth;
+      values.line_width = new->tree.line_width;
+  }
   new->tree.gc = XtGetGC (new, valueMask, &values);  
   /*
    * Create the hidden root widget.

@@ -58,6 +58,7 @@ extern TreeClassRec treeClassRec;
 typedef struct {
     Dimension      h_min_space;
     Dimension      v_min_space;
+    Dimension      line_width;
     Pixel          foreground;
     GC             gc;
     Widget         tree_root;
