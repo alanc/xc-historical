@@ -2,6 +2,7 @@
 #include BandAidCompiler
 #endif
 
+DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c commands.c util.c

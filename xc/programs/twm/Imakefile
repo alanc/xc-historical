@@ -15,6 +15,7 @@
 #endif
 
        PROGRAMS = twm
+        DEPLIBS = $(DEPEXTENSIONLIB) $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d

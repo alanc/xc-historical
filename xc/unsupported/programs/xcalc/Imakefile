@@ -6,6 +6,7 @@
         DEFINES = -DIEEE
 #endif /* MacIIArchitecture */
 
+DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = actions.c math.c xcalc.c 

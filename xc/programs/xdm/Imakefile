@@ -10,6 +10,7 @@
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(XDMCONFIGDIR)
 
+DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(TOP)/lib/Xau/libXau.a
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(TOP)/lib/Xau/libXau.a
           SRCS1 = auth.c buf.c daemon.c display.c displaylist.c dm.c error.c \
 		  file.c greet.c pseudoreset.c resource.c \

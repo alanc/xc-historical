@@ -1,3 +1,4 @@
+        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
   SYS_LIBRARIES = -lm
 #ifdef MacIIArchitecture

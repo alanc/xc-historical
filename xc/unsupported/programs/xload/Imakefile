@@ -1,4 +1,5 @@
        INCLUDES = -I$(TOP) -I$(TOP)/X11
+        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = xload.c
            OBJS = xload.o

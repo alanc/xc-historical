@@ -1,4 +1,5 @@
         DEFINES = ConnectionFlags -DBINDIR=\"$(BINDIR)\"
+        DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
