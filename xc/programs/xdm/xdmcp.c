@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.1 91/07/15 15:59:03 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.2 91/07/16 22:19:52 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -267,6 +267,81 @@ ClientAddress (from, addr, port, type)
     addr->length = length;
 
     *type = family;
+}
+
+static char *
+NetworkAddressToName(connectionType, connectionAddress, displayNumber)
+    CARD16	connectionType;
+    ARRAY8Ptr   connectionAddress;
+    CARD16	displayNumber;
+{
+    switch (connectionType)
+    {
+    case FamilyInternet:
+	{
+	    CARD8		*data;
+	    struct hostent	*hostent;
+	    char		*name;
+	    char		*localhost, *localHostname();
+
+	    data = connectionAddress->data;
+	    hostent = gethostbyaddr (data,
+				     connectionAddress->length, AF_INET);
+
+	    localhost = localHostname ();
+
+	    if (hostent)
+	    {
+		if (!strcmp (localhost, hostent->h_name))
+		{
+		    if (!getString (name, 10))
+			return 0;
+		    sprintf (name, ":%d", displayNumber);
+		}
+		else
+		{
+		    if (removeDomainname)
+		    {
+		    	char    *localDot, *remoteDot;
+    
+			/* check for a common domain name.  This
+			 * could reduce names by recognising common
+			 * super-domain names as well, but I don't think
+			 * this is as useful, and will confuse more
+			 * people
+ 			 */
+		    	if ((localDot = index (localhost, '.')) &&
+		            (remoteDot = index (hostent->h_name, '.')))
+			{
+			    /* smash the name in place; it won't
+			     * be needed later.
+			     */
+			    if (!strcmp (localDot+1, remoteDot+1))
+				*remoteDot = '\0';
+			}
+		    }
+
+		    if (!getString (name, strlen (hostent->h_name) + 10))
+			return 0;
+		    sprintf (name, "%s:%d", hostent->h_name, displayNumber);
+		}
+	    }
+	    else
+	    {
+		if (!getString (name, 25))
+		    return 0;
+		sprintf(name, "%d.%d.%d.%d:%d",
+			data[0], data[1], data[2], data[3], displayNumber);
+	    }
+	    return name;
+	}
+#ifdef DNET
+    case FamilyDECnet:
+	return NULL;
+#endif /* DNET */
+    default:
+	return NULL;
+    }
 }
 
 indirect_respond (from, fromlen, length)
@@ -767,8 +842,6 @@ manage (from, fromlen, length)
 	}
 	else
 	{
-	    char	*NetworkAddressToName ();
-
 	    name = NetworkAddressToName (pdpy->connectionType,
 					 &pdpy->connectionAddress,
 					 pdpy->displayNumber);
@@ -980,81 +1053,6 @@ NetworkAddressToHostname (connectionType, connectionAddress)
 	break;
     }
     return name;
-}
-
-char *
-NetworkAddressToName(connectionType, connectionAddress, displayNumber)
-    CARD16	connectionType;
-    ARRAY8Ptr   connectionAddress;
-    CARD16	displayNumber;
-{
-    switch (connectionType)
-    {
-    case FamilyInternet:
-	{
-	    CARD8		*data;
-	    struct hostent	*hostent;
-	    char		*name;
-	    char		*localhost, *localHostname();
-
-	    data = connectionAddress->data;
-	    hostent = gethostbyaddr (data,
-				     connectionAddress->length, AF_INET);
-
-	    localhost = localHostname ();
-
-	    if (hostent)
-	    {
-		if (!strcmp (localhost, hostent->h_name))
-		{
-		    if (!getString (name, 10))
-			return 0;
-		    sprintf (name, ":%d", displayNumber);
-		}
-		else
-		{
-		    if (removeDomainname)
-		    {
-		    	char    *localDot, *remoteDot;
-    
-			/* check for a common domain name.  This
-			 * could reduce names by recognising common
-			 * super-domain names as well, but I don't think
-			 * this is as useful, and will confuse more
-			 * people
- 			 */
-		    	if ((localDot = index (localhost, '.')) &&
-		            (remoteDot = index (hostent->h_name, '.')))
-			{
-			    /* smash the name in place; it won't
-			     * be needed later.
-			     */
-			    if (!strcmp (localDot+1, remoteDot+1))
-				*remoteDot = '\0';
-			}
-		    }
-
-		    if (!getString (name, strlen (hostent->h_name) + 10))
-			return 0;
-		    sprintf (name, "%s:%d", hostent->h_name, displayNumber);
-		}
-	    }
-	    else
-	    {
-		if (!getString (name, 25))
-		    return 0;
-		sprintf(name, "%d.%d.%d.%d:%d",
-			data[0], data[1], data[2], data[3], displayNumber);
-	    }
-	    return name;
-	}
-#ifdef DNET
-    case FamilyDECnet:
-	return NULL;
-#endif /* DNET */
-    default:
-	return NULL;
-    }
 }
 
 static
