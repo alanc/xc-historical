@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.15 94/12/08 21:35:31 gildea Exp kaleb $
+ * $XConsortium: sessreg.c,v 1.16 95/01/25 16:02:40 kaleb Exp kaleb $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -53,7 +53,7 @@
 # include	<stdio.h>
 # include	<utmp.h>
 
-#ifdef SYSV
+#if defined(SYSV) || defined(CSRG_BASED)
 #define NO_LASTLOG
 #endif
 
