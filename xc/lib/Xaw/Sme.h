@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: MenuEntry.h,v 1.1 89/09/28 16:41:30 kit Exp $";
+ "$XConsortium: MenuEntry.h,v 1.1 89/09/28 16:44:50 kit Exp $";
 
                         All Rights Reserved
 

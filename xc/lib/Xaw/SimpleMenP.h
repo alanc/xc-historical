@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpleMenP.h,v 1.8 89/09/28 16:41:12 kit Exp $";
+ "$XConsortium: SimpleMenP.h,v 1.8 89/09/28 16:44:35 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.

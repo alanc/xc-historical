@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.1 89/09/28 16:41:28 kit Exp $";
+static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.1 89/09/28 16:44:46 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -42,6 +42,7 @@ SOFTWARE.
 
 #include <X11/Xmu/Drawing.h>
 
+#include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/BSBMenuEnP.h>
 #include <X11/Xaw/Cardinals.h>
 
@@ -145,7 +146,6 @@ WidgetClass bSBMenuEntryObjectClass = (WidgetClass) &bSBMenuEntryClassRec;
  *      Description: Initializes the simple menu widget
  *      Arguments: request - the widget requested by the argument list.
  *                 new     - the new widget with both resource and non
-
  *                           resource values.
  *      Returns: none.
  */
@@ -159,8 +159,6 @@ Widget request, new;
 
     if (entry->bsb_entry.label == NULL) 
 	entry->bsb_entry.label = XtName(new);
-
-    entry->bsb_entry.set = FALSE;
 
     GetDefaultSize(new, &(entry->rectangle.width), &(entry->rectangle.height));
     CreateGCs(new);
@@ -202,17 +200,9 @@ Region region;
     font_descent = entry->bsb_entry.font->max_bounds.descent;
 
     y_loc = entry->rectangle.y;
-
-#ifdef notdef
-  case XawMenuSeparator:
-    y_temp = y_loc + height / 2;
-    XDrawLine(XtDisplay(w), XtWindow(w), entry->bsb_entry.norm_gc,
-	      0, y_temp, width, y_temp);
-    break;
-#endif
     
     if (XtIsSensitive(w) && XtIsSensitive( XtParent(w) ) ) {
-	if ( entry->bsb_entry.set ) {
+	if ( w == XawSimpleMenuGetActiveEntry(XtParent(w)) ) {
 	    XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w), 
 			   entry->bsb_entry.norm_gc, 0, y_loc,
 			   (unsigned int) entry->rectangle.width,
@@ -277,12 +267,26 @@ Widget current, request, new;
 	ret_val = TRUE;
     }
 
-    if (ret_val) {
-	RectObj entry = (RectObj) new;
-	GetDefaultSize(new, &(entry->rectangle.width),
-		       &(entry->rectangle.height) );
+    if (ret_val && XtIsRealized(new) ) {
+	Dimension width, height;
+	
+	GetDefaultSize(new, &width, &height);
+	switch (XtMakeResizeRequest(new, width, height, &width, &height)) {
+
+	case XtGeometryAlmost:	/* Fall through. */
+	    (void) XtMakeResizeRequest(new, width, height, &width, &height);
+	case XtGeometryYes:	/* Fall through. */
+	    XClearArea(XtDisplayOfObject(new), XtWindowOfObject(new),
+		       (int) entry->rectangle.x, (int) entry->rectangle.y,
+		       (unsigned int) entry->rectangle.width,
+		       (unsigned int) entry->rectangle.height, FALSE);
+	    Redisplay(new, (XEvent *) NULL, (Region) NULL);
+	case XtGeometryNo:	/* Fall through. */
+	default:
+	    break;
+	}
     }
-    return(ret_val);
+    return(FALSE);
 }
 
 /*	Function Name: QueryGeometry.
@@ -452,15 +456,14 @@ Boolean is_left;
     unsigned int depth, bw;
     Window root;
     int x, y;
+    unsigned int width, height;
     char buf[BUFSIZ];
     
     if (is_left) {
 	if (entry->bsb_entry.left_bitmap != None) {
 	    if (!XGetGeometry(XtDisplayOfObject(w), 
-			      entry->bsb_entry.left_bitmap, &root, &x, &y,
-			      &(entry->bsb_entry.left_bitmap_width), 
-			      &(entry->bsb_entry.left_bitmap_height), 
-			      &bw, &depth)) {
+			      entry->bsb_entry.left_bitmap, &root, 
+			      &x, &y, &width, &height, &bw, &depth)) {
 		sprintf(buf, "BSBMenuEntry Object: %s %s \"%s\".", "Could not",
 			"get Left Bitmap geometry information for menu entry ",
 			XtName(w));
@@ -472,14 +475,14 @@ Boolean is_left;
 			XtName(w), " is not one bit deep.");
 		XtAppError(XtWidgetToApplicationContext(w), buf);
 	    }
+	    entry->bsb_entry.left_bitmap_width = (Dimension) width; 
+	    entry->bsb_entry.left_bitmap_height = (Dimension) height;
 	}
     }
     else if (entry->bsb_entry.right_bitmap != None) {
 	if (!XGetGeometry(XtDisplayOfObject(w),
-			  entry->bsb_entry.right_bitmap, &root, &x, &y, 
-			  &(entry->bsb_entry.right_bitmap_width), 
-			  &(entry->bsb_entry.right_bitmap_height),
-			  &bw, &depth)) {
+			  entry->bsb_entry.right_bitmap, &root,
+			  &x, &y, &width, &height, &bw, &depth)) {
 	    sprintf(buf, "BSBMenuEntry Object: %s %s \"%s\".", "Could not",
 		    "get Right Bitmap geometry information for menu entry ",
 		    XtName(w));
@@ -491,6 +494,8 @@ Boolean is_left;
 		    " is not one bit deep.");
 	    XtAppError(XtWidgetToApplicationContext(w), buf);
 	}
+	entry->bsb_entry.right_bitmap_width = (Dimension) width; 
+	entry->bsb_entry.right_bitmap_height = (Dimension) height;
     }
 }      
 

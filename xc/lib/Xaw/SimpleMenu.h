@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.13 89/09/28 16:41:25 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.13 89/09/28 16:44:43 kit Exp $";
 
                         All Rights Reserved
 
@@ -116,6 +116,30 @@ void
 XawSimpleMenuAddGlobalActions(/* app_con */);
 /*
 XtAppContext app_con;
+*/
+ 
+/*	Function Name: XawSimpleMenuGetActiveEntry
+ *	Description: Gets the currently active (set) entry.
+ *	Arguments: w - the smw widget.
+ *	Returns: the currently set entry or NULL if none is set.
+ */
+
+Widget
+XawSimpleMenuGetActiveEntry( /* w */);
+/*
+Widget w;
+*/
+
+/*	Function Name: XawSimpleMenuClearActiveEntry
+ *	Description: Unsets the currently active (set) entry.
+ *	Arguments: w - the smw widget.
+ *	Returns: none.
+ */
+
+void
+XawSimpleMenuClearActiveEntry(/* w */);
+/*
+Widget w;
 */
 
 #endif /* _SimpleMenu_h */

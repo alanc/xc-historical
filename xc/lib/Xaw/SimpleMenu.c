@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.22 89/09/28 16:41:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.22 89/09/28 16:44:37 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -305,6 +305,8 @@ Region region;
      */
 
     ForAllChildren(smw, entry) {
+	if (!XtIsManaged ( (Widget) *entry)) continue;
+
 	if (region != NULL) 
 	    switch(XRectInRegion(region, (int) (*entry)->rectangle.x,
 				 (int) (*entry)->rectangle.y,
@@ -391,9 +393,10 @@ Widget w;
 
     if ( !XtIsRealized(w) ) return;
 
-    ForAllChildren(smw, entry)	/* reset width of all entries. */
-	(*entry)->rectangle.width = smw->core.width;
-
+    ForAllChildren(smw, entry) 	/* reset width of all entries. */
+	if (XtIsManaged( (Widget) *entry))
+	    (*entry)->rectangle.width = smw->core.width;
+    
     Redisplay(w, (XEvent *) NULL, (Region) NULL);
 }
 
@@ -716,10 +719,17 @@ Cardinal * num_params;
     if ( !XtIsSensitive(w) ) return;
     
     entry = GetEventEntry(w, event);
+
     if (entry == smw->simple_menu.entry_set) return;
 
     Unhighlight(w, event, params, num_params);  
+
     if (entry == NULL) return;
+
+    if ( !XtIsSensitive( (Widget) entry)) {
+	smw->simple_menu.entry_set = NULL;
+	return;
+    }
 
     smw->simple_menu.entry_set = entry;
     class = (MenuEntryObjectClass) entry->object.widget_class;
@@ -747,7 +757,7 @@ Cardinal * num_params;
     MenuEntryObject entry = smw->simple_menu.entry_set;
     MenuEntryObjectClass class;
     
-    if ( entry == NULL) return;
+    if ( (entry == NULL) || !XtIsSensitive((Widget) entry) ) return;
 
     class = (MenuEntryObjectClass) entry->object.widget_class;
     (class->menu_entry_class.notify)( (Widget) entry );
@@ -771,6 +781,37 @@ XtAppContext app_con;
 {
     XtInitializeWidgetClass(simpleMenuWidgetClass);
     XmuCallInitializers( app_con );
+} 
+
+ 
+/*	Function Name: XawSimpleMenuGetActiveEntry
+ *	Description: Gets the currently active (set) entry.
+ *	Arguments: w - the smw widget.
+ *	Returns: the currently set entry or NULL if none is set.
+ */
+
+Widget
+XawSimpleMenuGetActiveEntry(w)
+Widget w;
+{
+    SimpleMenuWidget smw = (SimpleMenuWidget) w;
+
+    return( (Widget) smw->simple_menu.entry_set);
+} 
+
+/*	Function Name: XawSimpleMenuClearActiveEntry
+ *	Description: Unsets the currently active (set) entry.
+ *	Arguments: w - the smw widget.
+ *	Returns: none.
+ */
+
+void
+XawSimpleMenuClearActiveEntry(w)
+Widget w;
+{
+    SimpleMenuWidget smw = (SimpleMenuWidget) w;
+
+    smw->simple_menu.entry_set = NULL;
 } 
 
 /************************************************************
@@ -809,7 +850,8 @@ Widget w;
     }
 
     XtSetArg(args[0], XtNlabel, smw->simple_menu.label_string);
-    smw->simple_menu.label = (MenuEntryObject) XtCreateWidget("menuLabel", 
+    smw->simple_menu.label = (MenuEntryObject) 
+	                      XtCreateManagedWidget("menuLabel", 
 					    smw->simple_menu.label_class, w,
 					    args, ONE);
 
@@ -865,6 +907,8 @@ Dimension *width_ret, *height_ret;
 	if (do_layout) {
 	    height = smw->simple_menu.top_margin;
 	    ForAllChildren(smw, entry) {
+		if (!XtIsManaged( (Widget) *entry)) continue;
+
 		if ( (smw->simple_menu.row_height != 0) && 
 		    (*entry != smw->simple_menu.label) ) 
 		    (*entry)->rectangle.height = smw->simple_menu.row_height;
@@ -888,7 +932,8 @@ Dimension *width_ret, *height_ret;
 
     if (do_layout) {
 	ForAllChildren(smw, entry)
-	    (*entry)->rectangle.width = width;
+	    if (XtIsManaged( (Widget) *entry)) 
+		(*entry)->rectangle.width = width;
 
 	if (smw->shell.allow_shell_resize || !XtIsRealized((Widget) smw) ) 
 	    MakeSetValuesRequest(w, width, height);
@@ -1106,6 +1151,8 @@ Widget w, w_ent;
 
     ForAllChildren(smw, entry) {
 	XtWidgetGeometry preferred;
+
+	if (!XtIsManaged( (Widget) *entry)) continue;
 	
 	if (*entry != cur_entry) {
 	    XtQueryGeometry(*entry, NULL, &preferred);
@@ -1146,7 +1193,8 @@ Widget w;
     
     if (smw->simple_menu.row_height == 0) 
 	ForAllChildren(smw, entry) 
-	    height += (*entry)->rectangle.height;
+	    if (XtIsManaged ((Widget) *entry)) 
+		height += (*entry)->rectangle.height;
     else 
 	height += smw->simple_menu.row_height * smw->composite.num_children;
 	
@@ -1194,13 +1242,16 @@ XEvent * event;
 	(y_loc >= smw->core.height) )
 	return(NULL);
     
-    ForAllChildren(smw, entry)
+    ForAllChildren(smw, entry) {
+	if (!XtIsManaged ((Widget) *entry)) continue;
+
 	if ( ((*entry)->rectangle.y < y_loc) &&
 	    ((*entry)->rectangle.y + (*entry)->rectangle.height > y_loc) )
 	    if ( *entry == smw->simple_menu.label )
 		return(NULL);	/* cannot select the label. */
 	    else
 		return(*entry);
+    }
     
     return(NULL);
 }

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.1 89/09/28 16:41:29 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.1 89/09/28 16:44:49 kit Exp $";
 #endif 
 
 /***********************************************************

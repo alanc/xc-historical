@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuEntryP.h,v 1.1 89/09/28 16:41:31 kit Exp $
+* $XConsortium: MenuEntryP.h,v 1.1 89/09/28 16:44:51 kit Exp $
 */
 
 

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BSBMenuEnP.h,v 1.1 89/09/28 16:44:13 kit Exp $
+* $XConsortium: BSBMenuEnP.h,v 1.1 89/09/28 16:44:46 kit Exp $
 */
 
 
@@ -76,7 +76,6 @@ typedef struct {
 
 /* private resources. */
 
-    Boolean set;		/* Is this entry set? */
     GC norm_gc;			/* noral color gc. */
     GC rev_gc;			/* reverse color gc. */
     GC norm_gray_gc;		/* Normal color (grayed out) gc. */

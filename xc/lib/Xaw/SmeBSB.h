@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: BSBMenuEnt.h,v 1.1 89/09/28 16:41:29 kit Exp $";
+ "$XConsortium: BSBMenuEnt.h,v 1.1 89/09/28 16:44:48 kit Exp $";
 
                         All Rights Reserved
 
