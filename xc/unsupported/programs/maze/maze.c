@@ -86,15 +86,8 @@
 #define	DEF_W	        636
 #define	DEF_H	        456
 char *defgeo = "636x456+10+10";
-  
-#ifdef SYSV
-#define random rand
-#define srandom srand
-#endif
 
-extern long random();
-
-#define	get_random(x)	(random() % (x))
+#define	get_random(x)	(rand() % (x))
   
 static int logo_x, logo_y;
 
@@ -215,7 +208,7 @@ main(argc,argv)                                               /* main module */
   XSetStipple (dpy, cgc, gray);
   XSetFillStyle (dpy, cgc, FillOpaqueStippled);
   
-  if  (!(logo_map = XCreateBitmapFromData(dpy, win, logo_bits,
+  if  (!(logo_map = XCreateBitmapFromData(dpy, win, (char *)logo_bits,
 					  logo_width, logo_height))) {
     fprintf(stderr, "Can't create logo pixmap\n");
     exit (1);
@@ -231,7 +224,7 @@ main(argc,argv)                                               /* main module */
   XSetStandardProperties(dpy, win, "Xmaze", "Xmaze", logo_map,
 			 argv, argc, &size_hints);
   XMapWindow(dpy, win);
-  srandom(getpid());
+  srand(getpid());
 
   while (1) {                            /* primary execution loop [ rhess ] */
     if (check_events()) continue ;
@@ -725,7 +718,7 @@ solve_maze()                             /* solve it with graphical feedback */
     else if ( ! (maze[path[i].x][path[i].y] & 
 		 (WALL_TOP >> path[i].dir))  && 
 	     ( (i == 0) || ( (path[i].dir != 
-			      (path[i-1].dir+2)%4) ) ) ) {
+			      (int)(path[i-1].dir+2)%4) ) ) ) {
       enter_square(i);
       i++;
       if ( maze[path[i].x][path[i].y] & START_SQUARE ) {
