@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.3 92/06/28 20:57:19 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.4 92/07/14 09:32:39 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -41,7 +41,7 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.3 92/06/28 20:57:19 rws Exp $
 #ifndef SharedPexRev
 #define SharedPexRev 1.0
 #endif
-#define SharedPexReqs $(XLIBONLY)
+#define SharedPexReqs $(XLIBONLY) -lm
 
 SHLIBLDFLAGS = SharedLibraryLoadFlags
 PICFLAGS = PositionIndependentCFlags
