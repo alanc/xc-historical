@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.32 88/08/24 21:05:34 jim Exp $ */
+/* $Header: XConnDis.c,v 11.33 88/08/31 15:48:12 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -339,15 +339,16 @@ _XWaitForWritable(dpy)
 	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    /* watch out for alignment on large architectures.... */
-	    for (ev = (xEvent *) buf; pend > 0; INCPTR(ev,xEvent),
-		 pend -= SIZEOF(xEvent)) 
-	    {
+
+	    /* no space between comma and type or else macro will die */
+	    STARTITERATE (ev,xEvent, buf, (pend > 0),
+			  (pend -= SIZEOF(xEvent))) {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
 		else		/* it's an event packet; enqueue it */
 		    _XEnq (dpy, ev);
 	    }
+	    ENDITERATE
 	}
 	if (ANYSET(w_mask))
 	    return;

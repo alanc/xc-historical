@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.58 88/08/15 17:09:33 jim Exp $ */
+/* $Header: Xlibint.h,v 11.59 88/08/26 18:25:32 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -277,11 +277,22 @@ extern void Data();
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { dpy->bufptr -= 4; Data32 (dpy, (char *) &(srcvar), 4); }
 
+#define STARTITERATE(tpvar,type,start,endcond,decr) \
+  { register char *cpvar; \
+  for (cpvar = (char *) start; endcond; cpvar = NEXTPTR(cpvar,type), decr) { \
+    type dummy; bcopy (cpvar, (char *) &dummy, SIZEOF(type)); \
+    tpvar = (type *) cpvar;
+#define ENDITERATE }}
+
 #else
 
 /* srcvar must be a variable for large architecture version */
 #define OneDataCard32(dpy,dstaddr,srcvar) \
   { *(unsigned long *)(dstaddr) = (srcvar); }
+
+#define STARTITERATE(tpvar,type,start,endcond,decr) \
+  for (tpvar = (type *) start; endcond; tpvar++, decr) {
+#define ENDITERATE }
 
 #endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
 

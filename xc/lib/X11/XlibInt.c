@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.80 88/08/27 11:39:58 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.81 88/08/30 15:47:12 jim Exp $";
 #endif
 
 /*
@@ -148,13 +148,15 @@ _XEventsQueued (dpy, mode)
 	len /= SIZEOF(xReply);
 	pend = len * SIZEOF(xReply);
 	_XRead (dpy, buf, (long) pend);
-	/* watch out for word alignment on large architectures.... */
-	for (rep = (xReply *) buf; len > 0; INCPTR(rep,xReply), len--) {
+
+	/* no space between comma and type or else macro will die */
+	STARTITERATE (rep,xReply, buf, (len > 0), len--) {
 	    if (rep->generic.type == X_Error)
 		_XError(dpy, (xError *)rep);
 	    else   /* must be an event packet */
 		_XEnq(dpy, (xEvent *) rep);
 	}
+	ENDITERATE
 	return(dpy->qlen);
 }
 
@@ -197,13 +199,16 @@ _XReadEvents(dpy)
 	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    for (ev = (xEvent *) buf; pend > 0;
-		 INCPTR(ev,xEvent), pend -= SIZEOF(xEvent)) {
+
+	    /* no space between comma and type or else macro will die */
+	    STARTITERATE (ev,xEvent, buf, (pend > 0),
+			  pend -= SIZEOF(xEvent)) {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
 		else  /* it's an event packet; enqueue it */
 		    _XEnq (dpy, ev);
 	    }
+	    ENDITERATE
 	} while (dpy->head == NULL);
 }
 
@@ -586,14 +591,12 @@ Status _XReply (dpy, rep, extra, discard)
 		     * Read the extra data into storage immediately following
 		     * the GenericReply structure. 
 		     */
-		    _XRead (dpy, (char *) NEXTPTR(rep,xReply),
-			    ((long)extra) << 2);
+		    _XRead (dpy, NEXTPTR(rep,xReply), ((long)extra) << 2);
 		    return (1);
 		    }
 		if (extra < rep->generic.length) {
 		    /* Actual reply is longer than "extra" */
-		    _XRead (dpy, (char *) NEXTPTR(rep,xReply),
-			    ((long)extra) << 2);
+		    _XRead (dpy, NEXTPTR(rep,xReply), ((long)extra) << 2);
 		    if (discard)
 		        _EatData (dpy, rep->generic.length - extra);
 		    return (1);
@@ -603,7 +606,7 @@ Status _XReply (dpy, rep, extra, discard)
 		 * read a reply that's shorter than we expected.  This is an 
 		 * error,  but we still need to figure out how to handle it...
 		 */
-		_XRead (dpy, (char *) NEXTPTR(rep,xReply),
+		_XRead (dpy, NEXTPTR(rep,xReply),
 			((long) rep->generic.length) << 2);
 		(*_XIOErrorFunction) (dpy);
 		return (0);
