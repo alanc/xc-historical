@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wstx_ini.c,v 5.1 91/02/16 09:50:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -834,19 +834,19 @@ phg_wst_destroy( wst )
 	free( (char *)wst );
 }
 
-#ifdef CAT4
-#undef CAT4
+#ifdef CAT2
+#undef CAT2
 #endif
 
-#ifdef __STDC__
-#define CAT4(a,b,c,d) a##b##c##d
+#if __STDC__
+#define CAT2(a,b) a##b
 #else
-#define CAT4(a,b,c,d) a/**/b/**/c/**/d
+#define CAT2(a,b) a/**/b
 #endif
 
 #define NEW_POINTER(_b,_o,_t) \
-    (CAT4(dst_,_b,->,_o) = (_t *) \
-	(dst->buffer + (((caddr_t)(CAT4(src_,_b,->,_o))) - src->buffer)))
+    (CAT2(dst_,_b)->_o = (_t *) \
+	(dst->buffer + (((caddr_t)(CAT2(src_,_b)->_o)) - src->buffer)))
 
 void
 phg_wst_copy_buf_pointers( src, dst )
@@ -933,4 +933,4 @@ abort:
     dst->buffer = NULL;
     return 0;
 }
-#undef CAT4
+#undef CAT2
