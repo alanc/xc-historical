@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.50 89/04/13 15:48:26 jim Exp $
+ * $XConsortium: menus.c,v 1.51 89/05/02 09:49:01 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.50 89/04/13 15:48:26 jim Exp $";
+"$XConsortium: menus.c,v 1.51 89/05/02 09:49:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1316,9 +1316,14 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    int done;
 
 	    done = FALSE;
-	    while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask,
+	    while (XCheckMaskEvent(dpy, ButtonPressMask | ButtonReleaseMask |
+					EnterWindowMask | LeaveWindowMask,
 		&Event))
 	    {
+		/* throw away enter and leave events until release */
+		if (Event.xany.type == EnterNotify ||
+		    Event.xany.type == LeaveNotify) continue; 
+
 		if (XFindContext(dpy, Event.xany.window,
 		    TwmContext,&Tmp_win) == XCNOENT)
 		    Tmp_win = NULL;
