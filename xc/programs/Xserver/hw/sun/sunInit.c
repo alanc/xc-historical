@@ -131,6 +131,32 @@ static PixmapFormatRec	formats[] = {
 
 /*-
  *-----------------------------------------------------------------------
+ * NonBlockConsoleOff --
+ *	Turn non-blocking mode on the console off, so you don't get logged
+ *	out when the server exits.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	None.
+ *
+ *-----------------------------------------------------------------------
+ */
+/*ARGSUSED*/
+static
+NonBlockConsoleOff(arg)
+    char	*arg;
+{
+    register int i;
+
+    i = fcntl(2, F_GETFL, 0);
+    if (i >= 0)
+	(void) fcntl(2, F_SETFL, i & ~FNDELAY);
+}
+
+/*-
+ *-----------------------------------------------------------------------
  * InitOutput --
  *	Initialize screenInfo for all actually accessible framebuffers.
  *	The
@@ -152,6 +178,7 @@ InitOutput(pScreenInfo, argc, argv)
     int     	  i, index, ac = argc;
     char	  **av = argv;
     int		  nonBlockConsole = 1;
+    static int	  setup_on_exit = 0;
 
     while (ac--) {
 	if (!strcmp(*av,"-debug")) {
@@ -165,9 +192,19 @@ InitOutput(pScreenInfo, argc, argv)
      *	excess of error messages to hang the server in
      *	deadlock.  So.......
      */
-    if (nonBlockConsole && (fcntl(2, F_SETFL, O_NDELAY) < 0)) {
-	perror("fcntl");
-	ErrorF("InitOutput: can't put stderr in non-block mode\n");
+    if (nonBlockConsole) {
+	if (!setup_on_exit) {
+	    if (on_exit(NonBlockConsoleOff, (char *)0))
+		ErrorF("InitOutput: can't register NBIO exit handler\n");
+	    setup_on_exit = 1;
+	}
+	i = fcntl(2, F_GETFL, 0);
+	if (i >= 0)
+	    i = fcntl(2, F_SETFL, i | FNDELAY);
+	if (i < 0) {
+	    perror("fcntl");
+	    ErrorF("InitOutput: can't put stderr in non-block mode\n");
+	}
     }
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
     pScreenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
