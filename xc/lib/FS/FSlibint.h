@@ -62,7 +62,7 @@ extern void	_FSEatData();
 #ifdef WORD64
 #define WORD64ALIGN if ((long)svr->bufptr >> 61) {\
            svr->last_req = svr->bufptr;\
-           *(svr->bufptr)   = X_NoOperation;\
+           *(svr->bufptr)   = FS_Noop;\
            *(svr->bufptr+1) =  0;\
            *(svr->bufptr+2) =  0;\
            *(svr->bufptr+3) =  1;\
