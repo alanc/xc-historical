@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.14 93/09/23 12:42:08 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.15 93/09/23 14:40:00 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -240,7 +240,7 @@ OUTPUT char		*error_string;
 
     END_REQUEST_HEADER (GetExtensionInfo, pBuf, req);
 
-    if (_XReply (display,  &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -423,7 +423,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 	srcEnumType++;
     }
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -451,7 +451,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pstartrep, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pstartrep, rep.length << 2);
 
 
     /*
@@ -564,6 +564,7 @@ OUTPUT PEXEnumTypeDesc		**enumInfoReturn;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pstartrep, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -622,7 +623,7 @@ OUTPUT PEXImpDepConstant	**constantsReturn;
 
     STORE_LISTOF_CARD16 (numNames, names, pBuf);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -762,7 +763,7 @@ OUTPUT PEXRenderingTarget	**targets;
 
     END_REQUEST_HEADER (MatchRenderingTargets, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -778,7 +779,7 @@ OUTPUT PEXRenderingTarget	**targets;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -805,6 +806,7 @@ OUTPUT PEXRenderingTarget	**targets;
 	matchRec++;
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.9 93/02/23 14:41:11 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.10 93/09/23 14:40:05 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -208,7 +208,7 @@ INPUT unsigned long	*valueMask;
 
     END_REQUEST_HEADER (GetWorkstationAttributes, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -220,7 +220,7 @@ INPUT unsigned long	*valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -433,6 +433,7 @@ INPUT unsigned long	*valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -478,7 +479,7 @@ INPUT PEXWorkstationDynamics	*dynamics;
 
     END_REQUEST_HEADER (GetWorkstationDynamics, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -566,7 +567,7 @@ OUTPUT PEXViewRep	*curViewReturn;
     END_REQUEST_HEADER (GetWorkstationViewRep, pBuf, req);
 
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -580,7 +581,7 @@ OUTPUT PEXViewRep	*curViewReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -614,6 +615,7 @@ OUTPUT PEXViewRep	*curViewReturn;
     EXTRACT_LISTOF_FLOAT32 (16, pBuf, curViewReturn->view.mapping,
         fpConvert, fpFormat);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -660,7 +662,7 @@ OUTPUT PEXWorkstation	**wksReturn;
 
     END_REQUEST_HEADER (GetWorkstationPostings, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -1248,7 +1250,7 @@ OUTPUT PEXCoord			**wc_points_return;
 
     STORE_LISTOF_DEVCOORD (dc_count, dc_points, pBuf, fpConvert, fpFormat);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -1330,7 +1332,7 @@ OUTPUT PEXDeviceCoord		**dc_points_return;
 
     STORE_LISTOF_COORD3D (wc_count, wc_points, pBuf, fpConvert, fpFormat);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.8 93/02/23 14:41:07 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.9 93/09/23 14:40:01 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -207,7 +207,7 @@ OUTPUT PEXStructureInfo		*info_return;
 
     END_REQUEST_HEADER (GetStructureInfo, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xTrue) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xTrue) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -283,7 +283,7 @@ OUTPUT PEXElementInfo	**infoReturn;
 
     END_REQUEST_HEADER (GetElementInfo, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -352,7 +352,7 @@ OUTPUT unsigned long	*numStructuresReturn;
 
     END_REQUEST_HEADER (GetStructuresInNetwork, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -425,7 +425,7 @@ OUTPUT unsigned long	*numPathsReturn;
 
     END_REQUEST_HEADER (GetAncestors, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -440,7 +440,7 @@ OUTPUT unsigned long	*numPathsReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -463,6 +463,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	pStrucPath[i].elements = pElemRef;
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -517,7 +518,7 @@ OUTPUT unsigned long	*numPathsReturn;
 
     END_REQUEST_HEADER (GetDescendants, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -532,7 +533,7 @@ OUTPUT unsigned long	*numPathsReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -555,6 +556,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	pStrucPath[i].elements = pElemRef;
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -618,7 +620,7 @@ OUTPUT char		**ocsReturn;
 
     END_REQUEST_HEADER (FetchElements, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -636,10 +638,12 @@ OUTPUT char		**ocsReturn;
 	 * specified by the application.
 	 */
 
-	XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+	XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 	oc_data = PEXDecodeOCs (server_float_format, rep.numElements,
             rep.length << 2, pBuf);
+
+	FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
 	*ocsReturn = PEXEncodeOCs (float_format, rep.numElements,
             oc_data, sizeReturn);
@@ -768,7 +772,7 @@ INPUT PEXOCRequestType	reqType;
 
     END_REQUEST_HEADER (FetchElements, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -812,10 +816,12 @@ INPUT PEXOCRequestType	reqType;
 	 * Floating point conversion necessary.
 	 */
 
-	XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+	XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 	oc_data = PEXDecodeOCs (float_format, rep.numElements,
             rep.length << 2, pBuf);
+
+	FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
 	pBuf = PEXEncodeOCs (dstDisplayInfo->fpFormat, rep.numElements,
             oc_data, &oc_size);
@@ -1025,7 +1031,7 @@ OUTPUT unsigned long	*offsetReturn;
     pBuf += ((numIncl & 1) * SIZEOF (CARD16));
     STORE_LISTOF_CARD16 (numExcl, exclList, pBuf);
 
-    if (_XReply (display, &rep, 0, xTrue) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xTrue) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.8 93/02/23 14:40:40 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.9 93/09/23 14:39:45 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -151,7 +151,7 @@ INPUT PEXFont		font;
 
     END_REQUEST_HEADER (QueryFont, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -163,7 +163,7 @@ INPUT PEXFont		font;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -179,6 +179,7 @@ INPUT PEXFont		font;
 
     EXTRACT_LISTOF_FONTPROP (fontInfo->count, pBuf, fontInfo->props);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -230,7 +231,7 @@ OUTPUT unsigned long	*countReturn;
 
     Data (display, pattern, req->numChars);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -245,7 +246,7 @@ OUTPUT unsigned long	*countReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -256,6 +257,7 @@ OUTPUT unsigned long	*countReturn;
 
     EXTRACT_LISTOF_STRING (rep.numStrings, pBuf, names);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -311,7 +313,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
 
     Data (display, (char *) pattern, req->numChars);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -326,7 +328,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -357,6 +359,7 @@ OUTPUT PEXFontInfo	**fontInfoReturn;
         EXTRACT_LISTOF_FONTPROP (pInfoRet->count, pBuf, pInfoRet->props);
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -457,7 +460,7 @@ INPUT PEXStringData		*text;
 	Data (display, text[i].ch, text[i].length);
     }
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -469,7 +472,7 @@ INPUT PEXStringData		*text;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -480,6 +483,8 @@ INPUT PEXStringData		*text;
 	(unsigned) (count * sizeof (PEXTextExtent)));
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
+
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -610,7 +615,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Get a reply.
      */
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -622,7 +627,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -634,6 +639,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
     EXTRACT_LISTOF_EXTENT_INFO (count, pBuf, textExtents, fpConvert, fpFormat)
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

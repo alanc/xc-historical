@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.9 93/02/23 14:41:00 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.10 93/09/23 14:39:54 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -242,7 +242,7 @@ INPUT unsigned long		*valueMask;
 
     END_REQUEST_HEADER (GetPipelineContext, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -254,7 +254,7 @@ INPUT unsigned long		*valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -680,6 +680,7 @@ INPUT unsigned long		*valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

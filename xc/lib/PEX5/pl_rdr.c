@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.7 93/02/23 14:41:03 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.8 93/09/23 14:39:58 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -193,7 +193,7 @@ INPUT unsigned long		valueMask;
 
     END_REQUEST_HEADER (GetRendererAttributes, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -205,7 +205,7 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -405,6 +405,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -453,7 +454,7 @@ OUTPUT unsigned long		*attributesReturn;
 
     END_REQUEST_HEADER (GetRendererDynamics, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);

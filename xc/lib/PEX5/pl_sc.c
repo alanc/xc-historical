@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.8 93/02/23 14:41:04 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.9 93/09/23 14:39:59 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -242,7 +242,7 @@ INPUT unsigned long	valueMask;
 
     END_REQUEST_HEADER (GetSearchContext, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
   	PEXSyncHandle (display);
@@ -254,7 +254,7 @@ INPUT unsigned long	valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -329,6 +329,7 @@ INPUT unsigned long	valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -439,7 +440,7 @@ OUTPUT PEXStructurePath		**path_return;
 
     END_REQUEST_HEADER (SearchNetwork, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);

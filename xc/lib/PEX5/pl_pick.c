@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.9 93/09/23 14:39:56 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.10 94/03/30 12:17:19 rws Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -183,7 +183,7 @@ INPUT unsigned long		valueMask;
 
     END_REQUEST_HEADER (GetPickMeasure, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -195,7 +195,7 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -234,6 +234,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -343,7 +344,7 @@ INPUT unsigned long		valueMask;
 
     END_REQUEST_HEADER (GetPickDevice, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -355,7 +356,7 @@ INPUT unsigned long		valueMask;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -431,6 +432,7 @@ INPUT unsigned long		valueMask;
 	}
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -732,7 +734,7 @@ OUTPUT int			*undetectable_return;
 
     END_REQUEST_HEADER (EndPickOne, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -834,7 +836,7 @@ OUTPUT int			*undetectable_return;
     STORE_PICK_RECORD (pick_device_type, rec_size,
 	pick_record, pBuf, fpConvert, fpFormat);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -985,7 +987,7 @@ OUTPUT unsigned long	*count_return;
 
     END_REQUEST_HEADER (EndPickAll, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -1002,7 +1004,7 @@ OUTPUT unsigned long	*count_return;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -1044,6 +1046,7 @@ OUTPUT unsigned long	*count_return;
 	pElemRef += numElements;
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -1120,7 +1123,7 @@ OUTPUT unsigned long	*count_return;
     STORE_PICK_RECORD (pick_device_type, rec_size,
 	pick_record, pBuf, fpConvert, fpFormat);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
@@ -1137,7 +1140,7 @@ OUTPUT unsigned long	*count_return;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -1179,6 +1182,7 @@ OUTPUT unsigned long	*count_return;
 	pElemRef += numElements;
     }
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.9 93/02/23 14:40:46 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.10 93/09/23 14:39:47 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -203,7 +203,7 @@ INPUT PEXTableInfo	*info;
 
     END_REQUEST_HEADER (GetTableInfo, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xTrue) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xTrue) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -269,7 +269,7 @@ OUTPUT PEXPointer	*entriesReturn;
 
     END_REQUEST_HEADER (GetPredefinedEntries, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -282,7 +282,7 @@ OUTPUT PEXPointer	*entriesReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -292,6 +292,7 @@ OUTPUT PEXPointer	*entriesReturn;
     *entriesReturn = _PEXRepackLUTEntries (pBuf, (int) rep.numEntries,
 	type, fpConvert, fpFormat);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -339,7 +340,7 @@ OUTPUT PEXTableIndex	**indicesReturn;
 
     END_REQUEST_HEADER (GetDefinedIndices, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -416,7 +417,7 @@ OUTPUT int		*table_type_return;
 
     END_REQUEST_HEADER (GetTableEntry, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -431,7 +432,7 @@ OUTPUT int		*table_type_return;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -441,6 +442,7 @@ OUTPUT int		*table_type_return;
     entryReturn = _PEXRepackLUTEntries (pBuf, 1,
 	(int) rep.tableType, fpConvert, fpFormat);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
@@ -497,7 +499,7 @@ OUTPUT PEXPointer	*entriesReturn;
 
     END_REQUEST_HEADER (GetTableEntries, pBuf, req);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
 	UnlockDisplay (display);
 	PEXSyncHandle (display);
@@ -512,7 +514,7 @@ OUTPUT PEXPointer	*entriesReturn;
      * Read the reply data into a scratch buffer.
      */
 
-    XREAD_INTO_SCRATCH (display, pBuf, (long) (rep.length << 2));
+    XREAD_INTO_SCRATCH (display, pBuf, rep.length << 2);
 
 
     /*
@@ -522,6 +524,7 @@ OUTPUT PEXPointer	*entriesReturn;
     *entriesReturn = _PEXRepackLUTEntries (pBuf, (int) rep.numEntries,
 	(int) rep.tableType, fpConvert, fpFormat);
 
+    FINISH_WITH_SCRATCH (display, pBuf, rep.length << 2);
 
     /*
      * Done, so unlock and check for synchronous-ness.
