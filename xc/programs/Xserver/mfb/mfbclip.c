@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 1.17 88/09/06 14:53:28 jim Exp $ */
+/* $XConsortium: mfbclip.c,v 1.18 89/03/21 15:08:20 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -120,7 +120,7 @@ mfbPixmapToRegion(pPix)
 	    /* Process final partial word on line */
 	    base = (pw - pwLineStart) * 32;
 	    w = *pw++;
-	    for(ib = 0; ib < width &0x1F; ib++)
+	    for(ib = 0; ib < (width & 0x1F); ib++)
 	    {
 	        /* If the Screen left most bit of the word is set, we're
 		 * starting a box */
