@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RdBitF.c,v 1.6 89/12/12 18:43:10 jim Exp $
+ * $XConsortium: RdBitF.c,v 1.7 90/12/19 18:15:40 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -233,6 +233,7 @@ int XmuReadBitmapData (fstream, width, height, datap, x_hot, y_hot)
 		*ptr=value;
 	    }
 	}
+	break;
     }					/* end while */
 
     if (data == NULL) {
