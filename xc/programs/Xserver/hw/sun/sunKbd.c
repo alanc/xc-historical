@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.43 94/04/07 18:38:33 erik Exp $ */
+/* $XConsortium: sunKbd.c,v 5.44 94/04/17 20:29:41 erik Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -46,7 +46,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Sunkeysym.h"
 
 #define SUN_LED_MASK	0x0f
-#define MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
+#define MIN_KEYCODE	7	/* necessary to avoid the mouse buttons */
 #define MAX_KEYCODE	255	/* limited by the protocol */
 #ifndef KB_SUN4 
 #define KB_SUN4		4
