@@ -1,4 +1,15 @@
-.\" $XConsortium: xdpyinfo.man,v 1.12 93/08/02 11:13:49 gildea Exp $
+.\" $XConsortium: xdpyinfo.man,v 1.13 94/04/11 14:27:36 gildea Exp $
+.\" Copyright 1988, 1989 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XDPYINFO 1 "Release 6" "X Version 11"
 .SH NAME
 xdpyinfo \- display information utility for X
@@ -148,9 +159,5 @@ screen #1:
 To get the default host, display number, and screen.
 .SH "SEE ALSO"
 X(1), xwininfo(1), xprop(1), xrdb(1)
-.SH COPYRIGHT
-Copyright 1988, 1989, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
