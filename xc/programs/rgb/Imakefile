@@ -13,7 +13,7 @@
      PROGRAMS = rgb showrgb
     DATAFILES = rgb.pag rgb.dir
       DATADEP = rgb.dir		/* just want one run of rgb */
-#ifndef SGIArchitecture
+#if !(defined(SGIArchitecture) || SystemV4)
        DBMLIB = -ldbm
 #endif
 #if defined(SparcArchitecture) && HasGcc
