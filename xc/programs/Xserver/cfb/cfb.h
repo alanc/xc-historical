@@ -102,6 +102,7 @@ extern int cfbListInstalledColormaps();
 #endif
 extern void cfbResolveColor();
 extern Bool cfbInitializeColormap();
+extern Bool cfbCreateDefColormap();
 
 /*
    private filed of pixmap
