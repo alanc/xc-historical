@@ -1,4 +1,4 @@
-/* $XConsortium: flo.c,v 1.1 93/10/26 09:58:02 rws Exp $ */
+/* $XConsortium: flo.c,v 1.2 93/10/26 14:09:52 rws Exp $ */
 /**** module flo.c ****/
 /******************************************************************************
 				NOTICE
@@ -361,7 +361,7 @@ void SendClientData(flo,ped,data,bytes,swapUnits,state)
     case  1:
       break;
     case  2:
-       SwapShorts((CARD16*)data,bytes>>1);
+       SwapShorts((short*)data,bytes>>1);
       break;
     case  4:
     case  8:
