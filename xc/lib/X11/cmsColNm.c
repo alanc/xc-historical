@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.19 91/06/27 10:52:25 dave Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.20 91/07/09 14:18:53 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -249,7 +249,8 @@ _XcmsParseColorString(ccc, color_string, pColor)
     XcmsColorSpace	*pColorSpace;
     char		string_lowered_64[64];
     char		*string_lowered;
-    int			len, maxlen;
+    int			len;
+    int			res;
 
     if (ccc == NULL) {
 	return(0);
@@ -260,24 +261,27 @@ _XcmsParseColorString(ccc, color_string, pColor)
      */
     if ((len = strlen(color_string)) > 63) {
 	string_lowered = (char *) Xmalloc(len+1);
-	maxlen = len;
     } else {
 	string_lowered = string_lowered_64;
-	maxlen = 63;
     }
 
     _XcmsCopyISOLatin1Lowered((char *)string_lowered, (char *)color_string);
 
     if (*string_lowered == '#') {
 	if ((pColorSpace = _XcmsColorSpaceOfString(ccc, "rgb:")) != NULL) {
-	    return((*pColorSpace->parseString)(string_lowered, pColor));
+	    res = (*pColorSpace->parseString)(string_lowered, pColor);
+	    if (len > 63) Xfree(string_lowered);
+	    return res;
 	}
     }
 
     if ((pColorSpace = _XcmsColorSpaceOfString(ccc, string_lowered)) != NULL) {
-	return((*pColorSpace->parseString)(string_lowered, pColor));
+	res = (*pColorSpace->parseString)(string_lowered, pColor);
+	if (len > 63) Xfree(string_lowered);
+	return res;
     }
 
+    if (len > 63) Xfree(string_lowered);
     return(0);
 }
 
@@ -441,7 +445,6 @@ _XcmsLookupColorName(ccc, name, pColor)
     char		name_lowered_64[64];
     char		*name_lowered;
     register int	i, j, left, right;
-    int			maxlen;
     int			len;
     char		*tmpName;
     XcmsPair		*pair;
@@ -472,10 +475,8 @@ _XcmsLookupColorName(ccc, name, pColor)
 Retry:
     if ((len = strlen(tmpName)) > 63) {
 	name_lowered = (char *) Xmalloc(len+1);
-	maxlen = len;
     } else {
 	name_lowered = name_lowered_64;
-	maxlen = 63;
     }
 
     _XcmsCopyISOLatin1Lowered((char *)name_lowered, (char *)tmpName);
@@ -504,6 +505,7 @@ Retry:
 	    break;
 	}
     }
+    if (len > 63) Xfree(name_lowered);
 
     if (left > right) {
 	if (retval == 2) {
