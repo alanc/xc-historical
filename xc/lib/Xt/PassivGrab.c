@@ -177,7 +177,7 @@ static void FreeGrab(pGrab)
     XtServerGrabPtr pGrab;
 {
     if (pGrab->modifiersDetail.pMask != NULL)
-      XtFree((char *)pGrab->modifiersDetail.pMask);
+      XtFree((XtPointer)pGrab->modifiersDetail.pMask);
     
     if (pGrab->detail.pMask != NULL)
       XtFree((XtPointer)pGrab->detail.pMask);
