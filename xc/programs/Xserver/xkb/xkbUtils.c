@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.5 93/09/28 21:28:48 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.6 93/09/28 22:11:51 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -758,7 +758,7 @@ KeySym	core[4];
 	else if (IsKeypadKey(newSyms[0])&&IsKeypadKey(newSyms[1]))
 	     map->ktIndex= KT_KEYPAD_KEY;
 	else map->ktIndex= KT_2LEVEL_KEY;
-	map->groupInfo= XkbSetGroupInfo(map->groupInfo,nGroups);
+	map->groupInfo = XkbSetNumGroups(map->groupInfo,nGroups);
     }
     if (pMN->changed&XkbKeySymsMask) {
 	CARD8 oldLast,newLast;
