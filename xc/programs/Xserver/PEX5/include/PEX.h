@@ -1,4 +1,4 @@
-/* $XConsortium: PEX.h,v 5.6 92/03/04 14:07:57 hersh Exp $ */
+/* $XConsortium: PEX.h,v 5.7 92/03/09 18:18:43 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -47,6 +47,7 @@ SOFTWARE.
 #define PEXCompleteImplementation	0
 #define PEXImmediateModeOnly		1
 #define PEXPhigsWksOnly			2
+#define PEXStructureModeOnly		4
 
 /* Resources */
 #define PEXAlreadyFreed         1
