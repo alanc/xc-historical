@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.44 91/12/19 14:15:53 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.45 91/12/19 18:36:43 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -42,7 +42,7 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     int srcx, srcy;
     int width, height;
     int dstx, dsty;
-    int	(*doBitBlt)();
+    void (*doBitBlt)();
     unsigned long bitPlane;
 {
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
@@ -281,11 +281,12 @@ cfbBitBlt (pSrcDrawable, pDstDrawable,
     return prgnExposed;
 }
 
-extern int  cfbDoBitbltCopy();
-extern int  cfbDoBitbltXor();
-extern int  cfbDoBitbltOr();
-extern int  cfbDoBitbltGeneral();
+extern void cfbDoBitbltCopy();
+extern void cfbDoBitbltXor();
+extern void cfbDoBitbltOr();
+extern void cfbDoBitbltGeneral();
 
+void
 cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
@@ -293,7 +294,7 @@ cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DDXPointPtr	    pptSrc;
     unsigned long   planemask;
 {
-    int	(*blt)() = cfbDoBitbltGeneral;
+    void (*blt)() = cfbDoBitbltGeneral;
     if ((planemask & PMSK) == PMSK) {
 	switch (alu) {
 	case GXcopy:
@@ -307,7 +308,7 @@ cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    break;
 	}
     }
-    return (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
+    (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
 }
 
 RegionPtr
@@ -320,7 +321,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     int width, height;
     int dstx, dsty;
 {
-    int	(*doBitBlt) ();
+    void (*doBitBlt) ();
     
     doBitBlt = cfbDoBitbltCopy;
     if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
@@ -343,30 +344,45 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 }
 
 #if PSZ == 8
-
+void
 cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
-    DrawablePtr pSrcDrawable;
-    DrawablePtr pDstDrawable;
-    int	rop;
-    unsigned long planemask;
-    RegionPtr prgnDst;
-    DDXPointPtr pptSrc;
-    unsigned long   bitPlane;
+    DrawablePtr pSrcDrawable;	/* must be a bitmap */
+    DrawablePtr pDstDrawable;	/* must be depth 8 drawable */
+    int	rop;		/* not used; caller must call cfb8CheckOpaqueStipple
+			 * beforehand to get cfb8StippleRRop set correctly */
+    unsigned long planemask;	/* to apply to destination writes */
+    RegionPtr prgnDst;		/* region in destination to draw to;
+				 * screen relative coords. if dest is a window;
+				 * drawable relative if dest is a pixmap */
+    DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
+				 * must be one point for each box in prgnDst */
+    unsigned long   bitPlane;	/* not used; assumed always to be 1 */
 {
-    int	srcx, srcy, dstx, dsty, width, height;
-    int xoffSrc, xoffDst;
-    unsigned long *psrcBase, *pdstBase;
-    int	widthSrc, widthDst;
-    unsigned long *psrcLine, *pdstLine;
-    register unsigned long *psrc, *pdst;
-    register unsigned long bits, tmp;
-    register int leftShift, rightShift;
-    unsigned long startmask, endmask;
-    register int nl, nlMiddle;
-    int firstoff, secondoff;
-    unsigned long    src;
-    int nbox;
-    BoxPtr  pbox;
+    int	srcx, srcy;	/* upper left corner of box being copied in source */
+    int dstx, dsty;	/* upper left corner of box being copied in dest */
+    int width, height;	/* in pixels, unpadded, of box being copied */
+    int xoffSrc; /* bit # in leftmost word of row from which copying starts */
+    int xoffDst; /* byte # in leftmost word of row from which copying starts */
+    unsigned long *psrcBase, *pdstBase; /* start of drawable's pixel data */
+    int	widthSrc;    /* # of groups of 32 pixels (1 bit/pixel) in src bitmap*/
+    int widthDst;    /* # of groups of 4 pixels (8 bits/pixel) in dst */
+    unsigned long *psrcLine, *pdstLine; /* steps a row at a time thru src/dst; 
+					 * may point into middle of row */
+    register unsigned long *psrc, *pdst; /* steps within the row */
+    register unsigned long bits, tmp;	 /* bits from source */
+    register int leftShift;
+    register int rightShift;
+    unsigned long startmask;		/* left edge pixel mask */
+    unsigned long endmask;		/* right edge pixel mask */
+    register int nlMiddle;   /* number of words in middle of the row to draw */
+    register int nl;
+    int firstoff;
+    int secondoff;
+    unsigned long src;
+    int nbox;		/* number of boxes in region to copy */
+    BoxPtr  pbox;	/* steps thru boxes in region */
+    int pixelsRemainingOnRightEdge; /* # pixels to be drawn on a row after
+				     * the main "middle" loop */
 
     cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
 
@@ -384,20 +400,31 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	height = pbox->y2 - pbox->y1;
 	pbox++;
 	pptSrc++;
+
+	/* (srcx >> 5) divides by 32 to get the number of words.  (32 pixels
+	 * per word in the source since it is a bitmap.) */
 	psrcLine = psrcBase + srcy * widthSrc + (srcx >> 5);
+
+	/* (dstx >> 2) divides by 4 to get the number of words.  (4 pixels
+	 * per word in the destination since it is an 8bpp drawable.) */
 	pdstLine = pdstBase + dsty * widthDst + (dstx >> 2);
-	xoffSrc = srcx & 0x1f;
-	xoffDst = dstx & 0x3;
-	if (xoffDst + width < 4)
-	{
+
+	xoffSrc = srcx & 0x1f; /* mod 32 finds starting bit in src */
+	xoffDst = dstx & 0x3;  /* mod 4 finds starting byte in dst */
+
+	/* compute startmask, endmask, nlMiddle */
+
+	if (xoffDst + width < 4) /* XXX should this be '<= 4' ? */
+	{ /* the copy only affects one word per row in destination */
 	    maskpartialbits(dstx, width, startmask);
-	    endmask = 0;
-	    nlMiddle = 0;
+	    endmask = 0;  /* nothing on right edge */
+	    nlMiddle = 0; /* nothing in middle */
 	}
 	else
-	{
+	{ /* the copy will affect multiple words per row in destination */
 	    maskbits(dstx, width, startmask, endmask, nlMiddle);
 	}
+
 	/*
 	 * compute constants for the first four bits to be
 	 * copied.  This avoids troubles with partial first
@@ -411,16 +438,23 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    if (xoffDst)
 	    {
 	    	srcx += (4-xoffDst);
-	    	dstx += (4-xoffDst);
 	    	xoffSrc = srcx & 0x1f;
 	    }
 	}
 	leftShift = xoffSrc;
 	rightShift = 32 - leftShift;
+
+	pixelsRemainingOnRightEdge = (nlMiddle & 7) + ((dstx + width) & 3);
+
+	/* setup is done; now let's move some bits */
+
+	/* caller must call cfb8CheckOpaqueStipple before this function
+	 * to set cfb8StippleRRop! */
+
 	if (cfb8StippleRRop == GXcopy)
 	{
 	    while (height--)
-	    {
+	    { /* one iteration of this loop copies one row */
 	    	psrc = psrcLine;
 	    	pdst = pdstLine;
 	    	psrcLine += widthSrc;
@@ -444,7 +478,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 				tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
-		    *pdst = *pdst & ~startmask | GetFourPixels(tmp) & startmask;
+		    *pdst = (*pdst & ~startmask) | (GetFourPixels(tmp) & startmask);
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
@@ -496,14 +530,14 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    StoreBits(6,tmp);	Step(tmp);
 		    StoreBits(7,tmp);   EndStep (pdst,8);
 	    	}
-	    	if (nl || endmask)
+
+		/* do rest of middle and partial word on right edge */
+
+	    	if (pixelsRemainingOnRightEdge)
 	    	{
 		    tmp = BitLeft(bits, leftShift);
-		    /*
-		     * better condition needed -- mustn't run
-		     * off the end of the source...
-		     */
-		    if (rightShift != 32)
+
+		    if (pixelsRemainingOnRightEdge > rightShift)
 		    {
 		    	bits = *psrc++;
 		    	tmp |= BitRight (bits, rightShift);
@@ -527,19 +561,22 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 			StoreBitsPlain(-1,tmp);	Step(tmp);
 		    }
 		    if (endmask)
-		    	*pdst = *pdst & ~endmask | GetFourPixels(tmp) & endmask;
+		    	*pdst = (*pdst & ~endmask) | (GetFourPixels(tmp) & endmask);
 	    	}
 	    }
 	}
-	else
+	else /* cfb8StippleRRop != GXcopy */
 	{
 	    while (height--)
-	    {
+	    { /* one iteration of this loop copies one row */
 	    	psrc = psrcLine;
 	    	pdst = pdstLine;
 	    	psrcLine += widthSrc;
 	    	pdstLine += widthDst;
 	    	bits = *psrc++;
+
+		/* do partial word on left edge */
+
 	    	if (startmask)
 	    	{
 		    if (firstoff < 0)
@@ -558,6 +595,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    *pdst = MaskRRopPixels (*pdst, src, startmask);
 		    pdst++;
 	    	}
+
+		/* do middle of row */
+
 	    	nl = nlMiddle;
 		while (nl >= 8)
 		{
@@ -575,16 +615,16 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 		    StoreRopBits(6,tmp);	Step(tmp);
 		    StoreRopBits(7,tmp);	EndStep(pdst,8);
 		}
-	    	if (nl || endmask)
+
+		/* do rest of middle and partial word on right edge */
+
+	    	if (pixelsRemainingOnRightEdge)
 	    	{
 		    tmp = BitLeft(bits, leftShift);
-		    /*
-		     * better condition needed -- mustn't run
-		     * off the end of the source...
-		     */
-		    if (rightShift != 32)
+
+		    if (pixelsRemainingOnRightEdge > rightShift)
 		    {
-		    	bits = *psrc++;
+		    	bits = *psrc++; /* XXX purify abr here */
 		    	tmp |= BitRight (bits, rightShift);
 		    }
 		    while (nl--)
@@ -600,9 +640,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 			*pdst = MaskRRopPixels (*pdst, src, endmask);
 		    }
 	    	}
-	    }
-	}
-    }
+	    } /* end copy one row */
+	} /* end alu is non-copy-mode case */
+    } /* end iteration over region boxes */
 }
 
 #endif
@@ -622,7 +662,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 {
     RegionPtr	ret;
     extern RegionPtr    miHandleExposures();
-    int		(*doBitBlt)();
+    void		(*doBitBlt)();
 
 #if PSZ == 8
     extern cfbCopyPlane8to1();
@@ -661,7 +701,6 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	PixmapPtr	pBitmap;
 	ScreenPtr	pScreen = pSrcDrawable->pScreen;
 	GCPtr		pGC1;
-	unsigned long	fg, bg;
 
 	pBitmap = (*pScreen->CreatePixmap) (pScreen, width, height, 1);
 	if (!pBitmap)
