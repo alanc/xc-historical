@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.14 91/07/22 15:45:52 rws Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.15 91/07/25 01:06:00 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -191,9 +191,6 @@ typedef struct {
 #define XCMS_COS(x)		_XcmsCosine(x)
 #define XCMS_CUBEROOT(x)	_XcmsCubeRoot(x)
 #define XCMS_FABS(x)		((x) < 0.0 ? -(x) : (x))
-#define XCMS_MOD(x)		_XcmsModulo(x)
-#define XCMS_MODF(x)		_XcmsModuloF(x)
-#define XCMS_POLY(x)		_XcmsPolynomial(x)
 #define XCMS_SIN(x)		_XcmsSine(x)
 #define XCMS_SQRT(x)		_XcmsSquareRoot(x)
 #define XCMS_TAN(x)		(XCMS_SIN(x) / XCMS_COS(x))
@@ -202,18 +199,12 @@ typedef struct {
 double _XcmsArcTangent(double a);
 double _XcmsCosine(double a);
 double _XcmsCubeRoot(double a);
-double _XcmsModulo(double a, double b);
-double _XcmsModuloF(double a, double b);
-double _XcmsPolynomial(int a, double b, double c);
 double _XcmsSine(double a);
 double _XcmsSquareRoot(double a);
 #else
 double _XcmsArcTangent();
 double _XcmsCosine();
 double _XcmsCubeRoot();
-double _XcmsModulo();
-double _XcmsModuloF();
-double _XcmsPolynomial();
 double _XcmsSine();
 double _XcmsSquareRoot();
 #endif
