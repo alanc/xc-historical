@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.2 88/09/06 17:48:10 jim Exp $
+ * $XConsortium: man.c,v 1.3 89/01/06 18:42:14 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -307,7 +307,7 @@ Boolean standard;
  *                   directories, then closes the directory.
  *	Arguments:  local_manual - a pointer to a manual pages structure.
  *                  path - the path to this directory.
- *	Returns: FALSE if directory could not be opened.
+ *	Returns: none.
  */
 
 static void
@@ -343,6 +343,7 @@ char * path;
     local_manual->entries[nentries++] = StrAlloc(full_name);
   }
   local_manual->nentries = nentries;
+  closedir(dir);
 }
 
 /*	Function Name: SortAndRemove
