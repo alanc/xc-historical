@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.13 92/01/25 17:19:45 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.14 92/04/03 13:23:43 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -90,7 +90,8 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
 { \
     int _i_ = (((key) - (pd)->min_keycode + modmix[(mod) & 0xff]) & \
 	       (TMKEYCACHESIZE-1)); \
-    if ((ctx)->keycache.keycode[_i_] == (key) && \
+    if ((key) != 0 && /* Xlib XIM composed input */ \
+	(ctx)->keycache.keycode[_i_] == (key) && \
 	(ctx)->keycache.modifiers[_i_] == (mod)) { \
 	mod_ret = (ctx)->keycache.modifiers_return; \
 	sym_ret = (ctx)->keycache.keysym[_i_]; \
