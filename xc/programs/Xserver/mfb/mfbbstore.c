@@ -58,6 +58,8 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     
     pPtsInit =
 	(DDXPointPtr)ALLOCATE_LOCAL(prgnSave->numRects * sizeof(DDXPointRec));
+    if (!pPtsInit)
+	return;
     
     pBox = prgnSave->rects;
     pPt = pPtsInit;
@@ -79,6 +81,8 @@ mfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 		GXcopy,
 		prgnSave,
 		pPtsInit);
+
+    DEALLOCATE_LOCAL(pPtsInit);
 }
 
 /*-
@@ -115,6 +119,8 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     
     pPtsInit =
 	(DDXPointPtr)ALLOCATE_LOCAL(prgnRestore->numRects*sizeof(DDXPointRec));
+    if (!pPtsInit)
+	return;
     
     pBox = prgnRestore->rects;
     pPt = pPtsInit;
@@ -136,7 +142,6 @@ mfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
 		GXcopy,
 		prgnRestore,
 		pPtsInit);
+
+    DEALLOCATE_LOCAL(pPtsInit);
 }
-
-
-
