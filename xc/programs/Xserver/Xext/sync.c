@@ -1,4 +1,4 @@
-/* $XConsortium: sync.c,v 1.3 93/09/05 10:49:25 rws Exp $ */
+/* $XConsortium: sync.c,v 1.4 93/09/18 13:49:54 dpw Exp $ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -2197,7 +2197,7 @@ static XSyncValue *pnext_time;
 static void ServertimeBlockHandler(env, wt, LastSelectMask)
 pointer env;
 struct timeval **wt;
-long *LastSelectMask;
+pointer LastSelectMask;
 {
     XSyncValue delay;
     unsigned long timeout;
@@ -2227,7 +2227,7 @@ long *LastSelectMask;
 static void ServertimeWakeupHandler(env, rc, LastSelectMask)
 pointer env;
 int rc;
-long *LastSelectMask;
+pointer LastSelectMask;
 {
     if (pnext_time)
     {

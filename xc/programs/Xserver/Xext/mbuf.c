@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.17 93/07/08 14:41:23 rws Exp $ */
+/* $XConsortium: mbuf.c,v 1.18 93/07/12 09:38:27 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -1222,7 +1222,7 @@ static void
 MultibufferBlockHandler (data, wt, LastSelectMask)
     pointer	    data;		/* unused */
     struct timeval  **wt;		/* wait time */
-    long	    *LastSelectMask;	/* unused */
+    pointer	    LastSelectMask;	/* unused */
 {
     DisplayRequestPtr	    pReq, pNext;
     unsigned long	    newdelay, olddelay;
@@ -1265,7 +1265,7 @@ static void
 MultibufferWakeupHandler (data, i, LastSelectMask)
     pointer	    data;
     int		    i;
-    long	    *LastSelectMask;
+    pointer	    LastSelectMask;
 {
     DisplayRequestPtr	pReq, pNext;
 

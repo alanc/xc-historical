@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sleepuntil.c,v 1.1 92/02/24 19:02:27 keith Exp $
+ * $XConsortium: sleepuntil.c,v 1.2 93/07/08 14:46:19 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -145,8 +145,8 @@ SertafiedDelete (value, id)
 static void
 SertafiedBlockHandler (data, wt, LastSelectMask)
     pointer	    data;		/* unused */
-    pointer	    wt;			/* wait time */
-    long	    *LastSelectMask;
+    OSTimePtr	    wt;			/* wait time */
+    pointer	    LastSelectMask;
 {
     SertafiedPtr	    pReq, pNext;
     unsigned long	    newdelay, olddelay;
@@ -176,7 +176,7 @@ static void
 SertafiedWakeupHandler (data, i, LastSelectMask)
     pointer	    data;
     int		    i;
-    long	    *LastSelectMask;
+    pointer	    LastSelectMask;
 {
     SertafiedPtr	pReq, pNext;
     TimeStamp		now;
