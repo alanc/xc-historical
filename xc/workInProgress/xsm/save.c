@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.5 94/08/02 20:33:23 gildea Exp mor $ */
+/* $XConsortium: save.c,v 1.6 94/08/10 15:09:54 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -28,11 +28,8 @@ in this Software without prior written authorization from the X Consortium.
 #include "xsm.h"
 #include "saveutil.h"
 
-#define SAVE_NONE -1
-
 
 static int saveTypeData[] = {
-	SAVE_NONE,
 	SmSaveLocal,
 	SmSaveGlobal,
 	SmSaveBoth
@@ -43,47 +40,6 @@ static int interactStyleData[] = {
 	SmInteractStyleErrors,
 	SmInteractStyleAny
 };
-
-static Bool interactDisabled = False;
-
-
-
-static void
-SaveTypeNoneToggleXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    if (!interactDisabled)
-    {
-	XtSetSensitive (interactStyleLabel, 0);
-	XtSetSensitive (interactStyleNone, 0);
-	XtSetSensitive (interactStyleErrors, 0);
-	XtSetSensitive (interactStyleAny, 0);
-	interactDisabled = True;
-    }
-}
-
-
-static void
-SaveTypeOtherToggleXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
-    if (interactDisabled)
-    {
-	XtSetSensitive (interactStyleLabel, 1);
-	XtSetSensitive (interactStyleNone, 1);
-	XtSetSensitive (interactStyleErrors, 1);
-	XtSetSensitive (interactStyleAny, 1);
-	interactDisabled = False;
-    }
-}
 
 
 
@@ -117,9 +73,7 @@ XtPointer 	callData;
     ptr = XawToggleGetCurrent (interactStyleNone /* just 1 of the group */);
     interactStyle = *((int *) ptr);
 
-    if (saveType == SAVE_NONE)
-	goto finish_up;
-    else if (saveType == SmSaveLocal)
+    if (saveType == SmSaveLocal)
 	_saveType = "Local";
     else if (saveType == SmSaveGlobal)
 	_saveType = "Global";
@@ -286,39 +240,12 @@ XtPointer 	callData;
 	WriteSave (sm_id);
     }
 
- finish_up:
-
     if (wantShutdown && shutdownCancelled)
     {
 	shutdownCancelled = False;
     }
     else if (wantShutdown)
     {
-	if (saveType == SAVE_NONE)
-	{
-	    /*
-	     * For any client that was not restarted by the session
-	     * manager (previous ID was NULL), if we did not issue a
-	     * checkpoint to this client, remove the client's checkpoint
-	     * file using the discard command.
-	     */
-
-	    for (client = ClientList; client; client = client->next)
-	    {
-		if (!client->running)
-		    continue;
-
-		if (!client->restarted &&
-		    !client->userIssuedCheckpoint &&
-		     client->discardCommand)
-		{
-		    system (client->discardCommand);
-		    XtFree (client->discardCommand);
-		    client->discardCommand = NULL;
-		}
-	    }
-	}
-
 	shutdownInProgress = True;
 
 	for (client = ClientList; client; client = client->next)
@@ -374,7 +301,7 @@ XtPointer 	callData;
 
 Widget
 AddToggle (widgetName, parent, state, radioGroup, radioData,
-    fromHoriz, fromVert, top, bottom)
+    fromHoriz, fromVert)
 
 char 		*widgetName;
 Widget 		parent;
@@ -383,8 +310,6 @@ Widget 		radioGroup;
 XtPointer 	radioData;
 Widget 		fromHoriz;
 Widget 		fromVert;
-int		top;
-int		bottom;
 
 {
     Widget toggle;
@@ -396,8 +321,6 @@ int		bottom;
         XtNradioData, radioData,
         XtNfromHoriz, fromHoriz,
         XtNfromVert, fromVert,
-        XtNtop, top,
-	XtNbottom, bottom,
         NULL);
 
     return (toggle);
@@ -428,58 +351,35 @@ create_save_popup ()
         XtNborderWidth, 0,
 	NULL);
 
-    saveTypeNone = AddToggle (
-	"saveTypeNone", 			/* widgetName */
+    saveTypeLocal = AddToggle (
+	"saveTypeLocal", 			/* widgetName */
 	saveForm,				/* parent */
 	0,					/* state */
         NULL,					/* radioGroup */
         (XtPointer) &saveTypeData[0],		/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        NULL,					/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
-    );
-
-    saveTypeLocal = AddToggle (
-	"saveTypeLocal", 			/* widgetName */
-	saveForm,				/* parent */
-	0,					/* state */
-        saveTypeNone,				/* radioGroup */
-        (XtPointer) &saveTypeData[1],		/* radioData */
-        saveTypeNone,				/* fromHoriz */
-        NULL,					/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        NULL					/* fromVert */
     );
 
     saveTypeGlobal = AddToggle (
 	"saveTypeGlobal", 			/* widgetName */
 	saveForm,				/* parent */
 	0,					/* state */
-        saveTypeNone,				/* radioGroup */
-        (XtPointer) &saveTypeData[2],		/* radioData */
+        saveTypeLocal,				/* radioGroup */
+        (XtPointer) &saveTypeData[1],		/* radioData */
         saveTypeLocal,				/* fromHoriz */
-        NULL,					/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        NULL					/* fromVert */
     );
 
     saveTypeBoth = AddToggle (
 	"saveTypeBoth", 			/* widgetName */
 	saveForm,				/* parent */
 	1,					/* state */
-        saveTypeNone,				/* radioGroup */
-        (XtPointer) &saveTypeData[3],		/* radioData */
+        saveTypeLocal,				/* radioGroup */
+        (XtPointer) &saveTypeData[2],		/* radioData */
         saveTypeGlobal,				/* fromHoriz */
-        NULL,					/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        NULL					/* fromVert */
     );
-
-    XtAddCallback (saveTypeNone, XtNcallback, SaveTypeNoneToggleXtProc, 0);
-    XtAddCallback (saveTypeLocal, XtNcallback, SaveTypeOtherToggleXtProc, 0);
-    XtAddCallback (saveTypeGlobal, XtNcallback, SaveTypeOtherToggleXtProc, 0);
-    XtAddCallback (saveTypeBoth, XtNcallback, SaveTypeOtherToggleXtProc, 0);
 
 
     interactStyleLabel = XtVaCreateManagedWidget (
@@ -496,9 +396,7 @@ create_save_popup ()
         NULL,					/* radioGroup */
         (XtPointer) &interactStyleData[0],	/* radioData */
         saveTypeLabel,				/* fromHoriz */
-        saveTypeLabel,				/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        saveTypeLabel				/* fromVert */
     );
 
     interactStyleErrors = AddToggle (
@@ -508,9 +406,7 @@ create_save_popup ()
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[1],	/* radioData */
         interactStyleNone,			/* fromHoriz */
-        saveTypeLabel,				/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        saveTypeLabel				/* fromVert */
     );
 
     interactStyleAny = AddToggle (
@@ -520,14 +416,13 @@ create_save_popup ()
         interactStyleNone,			/* radioGroup */
         (XtPointer) &interactStyleData[2],	/* radioData */
         interactStyleErrors,			/* fromHoriz */
-        saveTypeLabel,				/* fromVert */
-	XawRubber,				/* top */
-	XawRubber				/* bottom */
+        saveTypeLabel				/* fromVert */
     );
 
 
     saveOkButton = XtVaCreateManagedWidget (
 	"saveOkButton",	commandWidgetClass, saveForm,
+	XtNresizable, True,
         XtNfromHoriz, NULL,
         XtNfromVert, interactStyleLabel,
         XtNvertDistance, 30,
@@ -562,7 +457,7 @@ PopupSaveDialog ()
     XtSetSensitive (clientPropPopup, 0);
 
     XawToggleSetCurrent (saveTypeBoth,
-	(XtPointer) &saveTypeData[3]);
+	(XtPointer) &saveTypeData[2]);
     XawToggleSetCurrent (interactStyleAny,
 	(XtPointer) &interactStyleData[2]);
 
@@ -570,31 +465,9 @@ PopupSaveDialog ()
 	XtNtitle, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
 
-    if (wantShutdown)
-    {
-	XtManageChild (saveTypeNone);
-
-	XtVaSetValues (saveTypeLocal,
-            XtNfromHoriz, saveTypeNone,
-	    NULL);
-    }
-    else
-    {
-	XtUnmanageChild (saveTypeNone);
-
-	XtVaSetValues (saveTypeLocal,
-            XtNfromHoriz, saveTypeLabel,
-	    NULL);
-    }
-
-    if (interactDisabled)
-    {
-	XtSetSensitive (interactStyleLabel, 1);
-	XtSetSensitive (interactStyleNone, 1);
-	XtSetSensitive (interactStyleErrors, 1);
-	XtSetSensitive (interactStyleAny, 1);
-	interactDisabled = False;
-    }
+    XtVaSetValues (saveOkButton,
+	XtNlabel, wantShutdown ? "Shutdown" : "Checkpoint",
+	NULL);
 
     XtPopup (savePopup, XtGrabNone);
 }
@@ -626,7 +499,7 @@ XtPointer 	callData;
 
 
 void
-ShutdownXtProc (w, client_data, callData)
+ShutdownSaveXtProc (w, client_data, callData)
 
 Widget		w;
 XtPointer 	client_data;
@@ -642,5 +515,52 @@ XtPointer 	callData;
     {
 	wantShutdown = True;
 	PopupSaveDialog ();
+    }
+}
+
+
+
+void
+ShutdownDontSaveXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    /*
+     * For any client that was not restarted by the session
+     * manager (previous ID was NULL), if we did not issue a
+     * checkpoint to this client, remove the client's checkpoint
+     * file using the discard command.
+     */
+
+    ClientRec *client;
+
+    for (client = ClientList; client; client = client->next)
+    {
+	if (!client->running)
+	    continue;
+
+	if (!client->restarted &&
+	    !client->userIssuedCheckpoint &&
+	    client->discardCommand)
+	{
+	    system (client->discardCommand);
+	    XtFree (client->discardCommand);
+	    client->discardCommand = NULL;
+	}
+    }
+
+    shutdownInProgress = True;
+
+    for (client = ClientList; client; client = client->next)
+    {
+	if (!client->running)
+	    continue;
+
+	SmsDie (client->smsConn);
+	if (verbose)
+	    printf ("Client Id = %s, sent DIE\n", client->clientId);
     }
 }
