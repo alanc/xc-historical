@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: atom.c,v 1.27 89/03/23 08:49:16 rws Exp $ */
+/* $XConsortium: atom.c,v 1.28 89/08/02 09:10:50 rws Exp $ */
 
 #include "X.h"
 #include "Xatom.h"
@@ -123,6 +123,7 @@ MakeAtom(string, len, makeit)
 	return None;
 }
 
+Bool
 ValidAtom(atom)
     Atom atom;
 {
@@ -139,11 +140,38 @@ NameForAtom(atom)
     return node->string;
 }
 
+void
 AtomError()
 {
     FatalError("initializing atoms");
 }
 
+void
+FreeAtom(patom)
+    NodePtr patom;
+{
+    if(patom->left)
+	FreeAtom(patom->left);
+    if(patom->right)
+	FreeAtom(patom->right);
+    if (patom->a > XA_LAST_PREDEFINED)
+	xfree(patom->string);
+    xfree(patom);
+}
+
+void
+FreeAllAtoms()
+{
+    if(atomRoot == (NodePtr)NULL)
+	return;
+    FreeAtom(atomRoot);
+    atomRoot = (NodePtr)NULL;
+    xfree(nodeTable);
+    nodeTable = (NodePtr *)NULL;
+    lastAtom = None;
+}
+
+void
 InitAtoms()
 {
     FreeAllAtoms();
@@ -157,26 +185,4 @@ InitAtoms()
 	AtomError ();
 }
 
-FreeAllAtoms()
-{
-    if(atomRoot == (NodePtr)NULL)
-	return;
-    FreeAtom(atomRoot);
-    atomRoot = (NodePtr)NULL;
-    xfree(nodeTable);
-    nodeTable = (NodePtr *)NULL;
-    lastAtom = None;
-}
-
-FreeAtom(patom)
-    NodePtr patom;
-{
-    if(patom->left)
-	FreeAtom(patom->left);
-    if(patom->right)
-	FreeAtom(patom->right);
-    if (patom->a > XA_LAST_PREDEFINED)
-	xfree(patom->string);
-    xfree(patom);
-}
     
