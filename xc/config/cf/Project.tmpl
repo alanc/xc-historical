@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.16 89/05/10 14:02:31 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.17 89/05/10 15:23:43 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -219,7 +219,15 @@
 #ifndef DependCmd
 #define DependCmd $(DEPENDSRC)/makedepend
 #endif
-
+#ifndef HasSunOSSharedLibraries
+#define HasSunOSSharedLibraries NO
+#endif
+#ifndef SharedXlib
+#define SharedXlib NO
+#endif
+#ifndef SharedXlibRev
+#define SharedXlibRev 4.0
+#endif
 
 #if NeedBerklibInXlib
 #define BandAidLibraryNeeded		YES
@@ -237,7 +245,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.16 89/05/10 14:02:31 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.17 89/05/10 15:23:43 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -264,7 +272,9 @@ Berklib.c: sysV/Berklib.c					@@\
            MANDIR = ManDir		/* man pages for commands */
         LIBMANDIR = LibmanDir		/* man pages for library routines */
       XAPPLOADDIR = XAppLoadDir		/* application default resources */
-
+#if HasSunOSSharedLibraries && SharedXlib
+        SOXLIBREV = SharedXlibRev
+#endif
           FCFLAGS = FontCompilerFlags
 
      INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
@@ -315,15 +325,37 @@ Berklib.c: sysV/Berklib.c					@@\
 #else
 #define dirtouse(a,b) b
 #endif
-     EXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
-         XAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
-             XLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
-           XMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.a
-          OLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
-         XTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
-           XAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
+#if HasSunOSSharedLibraries && SharedXlib
+          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV)
+#else
+          DEPXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/libX11.a
+#endif
+  DEPEXTENSIONLIB = dirtouse($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
+      DEPXAUTHLIB = dirtouse($(USRLIBDIR),$(XAUTHSRC))/libXau.a
+        DEPXMULIB = dirtouse($(USRLIBDIR),$(XMUSRC))/libXmu.a
+       DEPOLDXLIB = dirtouse($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
+      DEPXTOOLLIB = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
+        DEPXAWLIB = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
+
+#if HasSunOSSharedLibraries && SharedXlib && !UseInstalled
+             XLIB = -lX11
+#else
+             XLIB = $(DEPXLIB)
+#endif
+     EXTENSIONLIB = $(DEPEXTENSIONLIB)
+         XAUTHLIB = $(DEPXAUTHLIB)
+           XMULIB = $(DEPXMULIB)
+          OLDXLIB = $(DEPOLDXLIB)
+         XTOOLLIB = $(DEPXTOOLLIB)
+           XAWLIB = $(DEPXAWLIB)
+
          LINTXLIB = dirtouse($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
           LINTXMU = dirtouse($(USRLIBDIR),$(XMUSRC))/llib-lXmu.ln
         LINTXTOOL = dirtouse($(USRLIBDIR),$(TOOLKITSRC))/llib-lXt.ln
           LINTXAW = dirtouse($(USRLIBDIR),$(AWIDGETSRC))/llib-lXaw.ln
 #undef dirtouse
+
+/*
+ * Individual libraries should override this
+ */
+ DEPEND_LIBRARIES = $(XAWLIB) $(XMULIB) (XTOOLLIB) $(EXTENSIONLIB) $(XLIB)

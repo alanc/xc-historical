@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.28 89/05/10 15:39:24 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.29 89/05/10 16:03:21 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -17,6 +17,7 @@
  *     	ComplexProgramTarget_3                   (program,locallib,syslib)
  *     	ServerTarget                     (server,subdirs,objects,libs,syslibs)
  *     	InstallLibrary                           (libname,dest)
+ *     	InstallSharedLibrary                     (libname,rev,dest)
  *     	InstallLibraryAlias                      (libname,alias,dest)
  *     	InstallLintLibrary                       (libname,dest)
  *     	InstallManPageLong                       (file,destdir,dest)
@@ -48,6 +49,7 @@
  *     	SpecialDebuggedObjectRule                (objs,depends,options)
  *     	SpecialDebuggedAndProfiledObjectRule     (objs,depends,options)
  *     	NormalLibraryTarget                      (libname,objlist)
+ *      NormalSharedLibraryTarget                (libname,rev,objlist)
  *     	NormalLibraryTarget2                     (libname,objlist1,objlist2)
  *     	ProfiledLibraryTarget                    (libname,objlist)
  *     	DebuggedLibraryTarget                    (libname,objlist)
@@ -161,7 +163,7 @@ ComplexProgramTarget(program)
 									@@\
 AllTarget(program)							@@\
 									@@\
-program: $(OBJS) $(LOCAL_LIBRARIES)					@@\
+program: $(OBJS) $(DEPLIBS)						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS) $(LOCAL_LIBRARIES) $(LDFLAGS) $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -195,7 +197,7 @@ clean::									@@\
 									@@\
 AllTarget($(PROGRAMS))							@@\
 									@@\
-program: $(OBJS1) locallib						@@\
+program: $(OBJS1) $(DEPLIBS1)						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS1) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -224,7 +226,7 @@ clean::									@@\
  */
 #ifndef ComplexProgramTarget_2
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
-program: $(OBJS2) locallib						@@\
+program: $(OBJS2) $(DEPLIBS2)						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS2) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -243,7 +245,7 @@ InstallManPage(program,$(MANDIR))
  */
 #ifndef ComplexProgramTarget_3
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
-program: $(OBJS3) locallib						@@\
+program: $(OBJS3) $(DEPLIBS3)						@@\
 	$(RM) $@							@@\
 	$(CC) -o $@ $(OBJS3) locallib $(LDFLAGS) syslib $(EXTRA_LOAD_FLAGS) @@\
 									@@\
@@ -283,6 +285,15 @@ install:: lib/**/libname.a						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.a dest		@@\
 	$(RANLIB) $(RANLIBINSTFLAGS) dest/lib/**/libname.a
 #endif /* InstallLibrary */
+
+/*
+ * InstallSharedLibrary - generate rules to install the shared library.
+ */
+#ifndef InstallSharedLibrary
+#define	InstallSharedLibrary(libname,rev,dest)				@@\
+install:: lib/**/libname.so.rev						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest
+#endif /* InstallSharedLibrary */
 
 
 /*
@@ -543,7 +554,15 @@ Makefile:: imakefile $(ICONFIGFILES)					@@\
 		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
 		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
 	else exit 0; fi							@@\
+	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags	@@\
+									@@\
+forceMakefile::								@@\
+	-@if [ -f Makefile ]; then \					@@\
+		echo "$(RM) Makefile.bak; $(MV) Makefile Makefile.bak"; \ @@\
+		$(RM) Makefile.bak; $(MV) Makefile Makefile.bak; \	@@\
+	else exit 0; fi							@@\
 	$(IMAKE_CMD) -DTOPDIR=$(TOP) -DCURDIR=$(CURRENT_DIR) imakeflags
+
 #endif /* BuildMakefileTarget */
 
 
@@ -700,6 +719,27 @@ lib/**/libname.a: objlist						@@\
 	$(RANLIB) $@
 #endif /* NormalLibraryTarget */
 
+
+/*
+ * NormalSharedLibraryTarget - generate rules to create a shared library
+ */
+#ifndef NormalSharedLibraryTarget
+#if HasSunOSSharedLibraries
+#define NormalSharedLibraryTarget(libname,rev,objlist)			@@\
+AllTarget(lib/**/libname.so.rev)					@@\
+									@@\
+lib/**/libname.so.rev:  objlist						@@\
+	$(RM) $@							@@\
+	$(LD) -o $@ -assert pure-text objlist				@@\
+									@@\
+clean::									@@\
+	$(RM) lib/**/libname.so.rev					@@\
+
+#else
+#define NormalSharedLibraryTarget(libname,rev,objlist)			@@\
+NormalLibraryTarget(libname,objlist)
+#endif /* HasSunOSSharedLibraries */
+#endif /* NormalSharedLibraryTarget */
 
 /*
  * NormalLibraryTarget2 - generate rules to create a library in two steps.

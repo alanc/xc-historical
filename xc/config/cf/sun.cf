@@ -14,6 +14,11 @@
 #define SystemV           NO
 #define HasPutenv YES
 
+#if OSMajorVersion >= 4
+#define HasSunOSSharedLibraries YES
+#define SharedXlib YES
+#endif
+
 #if OSMajorVersion <= 3
 #define SignalReturnProcType int
 #else
@@ -41,7 +46,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.16 89/05/15 13:53:59 rws Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.17 89/05/15 13:55:38 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
