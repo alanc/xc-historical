@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.18 91/01/09 20:11:55 gildea Exp $ */
+/* $XConsortium: VarCreate.c,v 1.19 91/05/03 15:32:23 rws Exp $ */
 
 /*
 
@@ -288,7 +288,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
 			  num_options, argc_in_out, argv_in_out,
 			  fallback_resources, var_args)
     XtAppContext *app_context_return;
-    _Xconst char *application_class;
+    char *application_class;
     XrmOptionDescList options;
     Cardinal num_options;
     int *argc_in_out;
