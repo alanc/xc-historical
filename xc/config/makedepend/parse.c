@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.17 91/03/19 14:20:14 rws Exp $
+ * $XConsortium: parse.c,v 1.18 91/03/27 16:21:25 gildea Exp $
  */
 #include "def.h"
 
@@ -107,16 +107,16 @@ find_includes(filep, file, file_red, recursion, failOK)
 		case -1:
 			warning("%s", file_red->i_file);
 			if (file_red != file)
-			    warning(" (reading %s)", file->i_file);
-			warning(", line %d: unknown directive == \"%s\"\n",
-			    filep->f_line, line);
+			    warning1(" (reading %s)", file->i_file);
+			warning1(", line %d: unknown directive == \"%s\"\n",
+				 filep->f_line, line);
 			break;
 		case -2:
 			warning("%s", file_red->i_file);
 			if (file_red != file)
-			    warning(" (reading %s)", file->i_file);
-			warning(", line %d: incomplete include == \"%s\"\n",
-			    filep->f_line, line);
+			    warning1(" (reading %s)", file->i_file);
+			warning1(", line %d: incomplete include == \"%s\"\n",
+				 filep->f_line, line);
 			break;
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pr.c,v 1.9 89/12/12 12:44:26 jim Exp $
+ * $XConsortium: pr.c,v 1.10 91/03/19 14:20:18 rws Exp $
  */
 #include "def.h"
 
@@ -31,7 +31,7 @@ add_include(file, file_red, include, dot, failOK)
 				file_red->i_file, file->i_file);
 		else
 			warning("%s: ", file->i_file);
-		warning("cannot find include file \"%s\"\n", include);
+		warning1("cannot find include file \"%s\"\n", include);
 		show_where_not = TRUE;
 		newfile = inc_path(file->i_file, include, dot);
 		show_where_not = FALSE;

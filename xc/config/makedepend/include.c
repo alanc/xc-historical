@@ -1,5 +1,5 @@
 /*
- * $XConsortium: include.c,v 1.9 91/02/20 19:42:28 rws Exp $
+ * $XConsortium: include.c,v 1.10 91/04/05 17:15:12 rws Exp $
  */
 #include "def.h"
 
@@ -41,7 +41,7 @@ struct inclist *inc_path(file, include, dot)
 			found = TRUE;
 		}
 		else if (show_where_not)
-			warning("\tnot in %s\n", include);
+			warning1("\tnot in %s\n", include);
 	}
 
 	/*
@@ -65,7 +65,7 @@ struct inclist *inc_path(file, include, dot)
 			found = TRUE;
 		}
 		else if (show_where_not)
-			warning("\tnot in %s\n", path);
+			warning1("\tnot in %s\n", path);
 	}
 
 	/*
@@ -82,7 +82,7 @@ struct inclist *inc_path(file, include, dot)
 				break;
 			}
 			else if (show_where_not)
-				warning("\tnot in %s\n", path);
+				warning1("\tnot in %s\n", path);
 		}
 
 	if (!found)
@@ -243,9 +243,9 @@ included_by(ip, newfile)
 				/* and is not a .c file */
 				warning("%s includes %s more than once!\n",
 					ip->i_file, newfile->i_file);
-				warning("Already have\n");
+				warning1("Already have\n");
 				for (i=0; i<ip->i_listlen; i++)
-					warning("\t%s\n", ip->i_list[i]->i_file);
+					warning1("\t%s\n", ip->i_list[i]->i_file);
 			    }
 			    return;
 			}
