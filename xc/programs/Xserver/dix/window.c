@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.60 91/04/07 17:30:38 keith Exp $ */
+/* $XConsortium: window.c,v 5.61 91/04/09 20:30:00 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -140,6 +140,7 @@ static int deltaSaveUndersViewable = 0;
  * CheckSubSaveUnder --
  *	Check all the inferiors of a window for coverage by saveUnder
  *	windows. Called from ChangeSaveUnder and CheckSaveUnder.
+ *	This code is very inefficient.
  *
  * Results:
  *	TRUE if any windows need to have backing-store removed.
@@ -158,7 +159,8 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
     register WindowPtr	pChild;	    	/* Current child */
     register ScreenPtr 	pScreen;    	/* Screen to use */
     RegionRec	  	SubRegion; 	/* Area of children obscured */
-    Bool		res = FALSE;
+    Bool		res = FALSE;	/* result */
+    Bool		subInited=FALSE;/* SubRegion initialized */
 
     pScreen = pParent->drawable.pScreen;
     if (pChild = pParent->firstChild)
@@ -171,8 +173,6 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 	    if (pChild->viewable && pChild->saveUnder)
 		(* pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
 	
-	(*pScreen->RegionInit)(&SubRegion, NullBox, 0);
-
 	/*
 	 * check region below and including first changed window
 	 */
@@ -188,44 +188,54 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 
 		if (pChild->firstChild)
 		{
+		    if (!subInited)
+		    {
+			(*pScreen->RegionInit)(&SubRegion, NullBox, 0);
+			subInited = TRUE;
+		    }
 		    (* pScreen->RegionCopy) (&SubRegion, pRegion);
 		    res |= CheckSubSaveUnder(pChild, pChild->firstChild,
 					     &SubRegion);
 		}
 		else
+		{
 		    res |= CheckSubSaveUnder(pChild, pChild->firstChild,
 					     pRegion);
+		}
 
 		if (pChild->saveUnder)
 		    (* pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
 	    }
 	}
 
-	 (* pScreen->RegionUninit) (&SubRegion);
+	if (subInited)
+	    (* pScreen->RegionUninit) (&SubRegion);
     }
 
     /*
-     * Never, ever, turn on backing store for save-unders
-     * on the root window
+     * Check the state of this window.  DIX save unders are
+     * enabled for viewable windows with some client expressing
+     * exposure interest and which intersect the save under region
      */
 
-    if (!pParent->parent)
-	return res;
-
-    switch ((*pScreen->RectIn) (pRegion,
-				(*pScreen->RegionExtents)(&pParent->borderSize)))
+    if (pParent->viewable && 
+	((pParent->eventMask | wOtherEventMasks(pParent)) & ExposureMask) &&
+	(*pScreen->RectIn) (pRegion, (*pScreen->RegionExtents)
+					(&pParent->borderSize)) != rgnOUT)
     {
-    case rgnOUT:
-	pParent->DIXsaveUnder = FALSE;
-	res = TRUE;
-	break;
-    default:
-	if (!(pParent->DIXsaveUnder))
+	if (!pParent->DIXsaveUnder)
 	{
 	    pParent->DIXsaveUnder = TRUE;
 	    (* pScreen->ChangeWindowAttributes) (pParent, CWBackingStore);
 	}
-	break;
+    }
+    else
+    {
+	if (pParent->DIXsaveUnder)
+	{
+	    res = TRUE;
+	    pParent->DIXsaveUnder = FALSE;
+	}
     }
     return res;
 }
@@ -251,9 +261,9 @@ CheckSaveUnder (pWin)
     RegionRec	rgn;    	/* Extent of siblings with saveUnder */
     Bool	res;
 
-    numSaveUndersViewable += deltaSaveUndersViewable;
     if (!deltaSaveUndersViewable && !numSaveUndersViewable)
 	return FALSE;
+    numSaveUndersViewable += deltaSaveUndersViewable;
     deltaSaveUndersViewable = 0;
     (* pWin->drawable.pScreen->RegionInit) (&rgn, NullBox, 1);
     res = CheckSubSaveUnder (pWin->parent, pWin->nextSib, &rgn);
@@ -286,9 +296,9 @@ ChangeSaveUnder(pWin, first)
     register ScreenPtr pScreen;
     Bool	res;
 
-    numSaveUndersViewable += deltaSaveUndersViewable;
     if (!deltaSaveUndersViewable && !numSaveUndersViewable)
 	return FALSE;
+    numSaveUndersViewable += deltaSaveUndersViewable;
     deltaSaveUndersViewable = 0;
     pScreen = pWin->drawable.pScreen;
     (* pScreen->RegionInit) (&rgn, NullBox, 1);
