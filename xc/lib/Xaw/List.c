@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.12 89/02/14 14:06:55 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.12 89/02/14 14:19:17 kit Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -734,7 +734,7 @@ Cardinal *num_params;
  */
 
     ret_value.string = lw->list.list[item];
-    ret_value.index = item;
+    ret_value.list_index = item;
     
     XtCallCallbacks( w, XtNcallback, (caddr_t) &ret_value);
 }
@@ -943,11 +943,11 @@ Widget w;
     if (ret_val == NULL)
       XtError("Could not allocate memory in XtListShowCurrent.");
     
-    ret_val->index = lw->list.highlight;
-    if (ret_val->index == XT_LIST_NONE)
+    ret_val->list_index = lw->list.highlight;
+    if (ret_val->list_index == XT_LIST_NONE)
       ret_val->string = "";
     else
-      ret_val->string = lw->list.list[ ret_val->index ];
+      ret_val->string = lw->list.list[ ret_val->list_index ];
 
     return(ret_val);
 }

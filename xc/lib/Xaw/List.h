@@ -7,9 +7,9 @@
  *	By:		Chris D. Peterson
  *                      MIT - Project Athena
  *
- *      $Author: swick $
+ *      $Author: jim $
  *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.9 88/10/23 13:59:59 swick Exp $
+ *      $XConsortium: List.h,v 1.10 89/03/30 16:05:36 jim Exp $
  *	
  *
  */
@@ -141,7 +141,7 @@ typedef struct _ListRec      *ListWidget;
 
 typedef struct _XtListReturnStruct {
   String string;
-  int index;
+  int list_index;
 } XtListReturnStruct;
 
 /******************************************************************
