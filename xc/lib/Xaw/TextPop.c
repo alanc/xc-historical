@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.12 90/07/03 16:17:37 kit Exp $ */
+/* $XConsortium: TextPop.c,v 1.13 91/01/02 11:40:14 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -776,7 +776,7 @@ struct SearchAndReplace * search;
   text.firstPos = 0;
   text.format = FMT8BIT;
   
-  dir = (XawTextScanDirection)(int) (XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) ((caddr_t)XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
   
   pos = XawTextSearch( tw, dir, &text);
@@ -906,7 +906,7 @@ Boolean once_only, show_current;
   replace.firstPos = 0;
   replace.format = FMT8BIT;
     
-  dir = (XawTextScanDirection)(int) (XawToggleGetCurrent(search->left_toggle) -
+  dir = (XawTextScanDirection)(int) ((caddr_t)XawToggleGetCurrent(search->left_toggle) -
 				R_OFFSET);
 
   while (TRUE) {
