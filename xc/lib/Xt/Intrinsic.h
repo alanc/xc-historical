@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.191 94/01/21 17:33:30 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.192 94/02/04 21:38:38 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2892,6 +2892,17 @@ extern Boolean XtCvtStringToRestartStyle(
 #define XtCvtStringToPosition XtCvtStringToShort
 
 extern Boolean XtCvtStringToShort(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+extern Boolean XtCvtStringToStringArray(
 #if NeedFunctionPrototypes
     Display*	/* dpy */,
     XrmValuePtr /* args */,	/* none */
