@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.149 93/09/04 16:31:21 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.150 93/09/04 19:00:11 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -639,7 +639,7 @@ SRCS3 = \
 	QuCol.c \
 	QuCols.c \
 	SetCCC.c \
-	SetGet.c \
+	SetGetCols.c \
 	StCol.c \
 	StCols.c \
 	XcmsTrig.c \
@@ -716,7 +716,7 @@ OBJS3 = \
 	QuCol.o \
 	QuCols.o \
 	SetCCC.o \
-	SetGet.o \
+	SetGetCols.o \
 	StCol.o \
 	StCols.o \
 	XcmsTrig.o \
@@ -778,11 +778,11 @@ LCSYMSRCS = \
 	XwcTextPrp.c
 
 LCSRCS = \
-	XSetLocale.c \
+	SetLocale.c \
 	$(LCSYMSRCS)
 
 LCOBJS = \
-	XSetLocale.o \
+	SetLocale.o \
 	ProtoFlt.o \
 	XCnvCTToWC.o \
 	XCnvMBToCT.o \
@@ -924,11 +924,11 @@ LCSYMSRCS = \
 	Ximpint.c
 
 LCSRCS = \
-	XSetLocale.c \
+	SetLocale.c \
 	$(LCSYMSRCS)
 
 LCOBJS = \
-	XSetLocale.o \
+	SetLocale.o \
 	XimpCT.o \
 	XimpCallbk.o \
 	XimpConv.o \
