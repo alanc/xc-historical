@@ -1096,7 +1096,8 @@ GetWords (argi, argc, argv, wordsp, nump)
     return count;
 }
 
-int atox (s)
+static int
+atox (s)
     char    *s;
 {
     int     v, c;
