@@ -398,7 +398,7 @@ genericarc_test(fill)
   XSync(X.dpy,0);
   totaltime = end_timer();
 
-  sprintf(buf,"God only knows how many pixels in %.3f seconds.",
+  sprintf(buf,"An uncounted number of pixels in %.3f seconds.",
 	  (double)totaltime/1000000.);
   show_result(buf);
 
@@ -518,7 +518,7 @@ run_test()
     case PolyText8:     polytext8_test();          break;
     case ImageText8:    imagetext8_test();         break;
     case PutImage:      putimage_test();           break;
-    default: fprintf(stderr,"That test don't exist yet.\n");
+    default: fprintf(stderr,"That test doesn't exist yet.\n");
     }
 }
 
