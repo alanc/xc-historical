@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.120 91/01/09 17:13:49 rws Exp $
+ * $XConsortium: twm.c,v 1.121 91/01/18 17:26:15 dave Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -226,6 +226,12 @@ main(argc, argv, environ)
 
     /* for simplicity, always allocate NumScreens ScreenInfo struct pointers */
     ScreenList = (ScreenInfo **) calloc (NumScreens, sizeof (ScreenInfo *));
+    if (ScreenList == NULL)
+    {
+	fprintf (stderr, "%s: Unable to allocate memory for screen list, exiting.\n",
+		 ProgramName);
+	exit (1);
+    }
     numManaged = 0;
     PreviousScreen = DefaultScreen(dpy);
     FirstScreen = TRUE;
@@ -259,6 +265,12 @@ main(argc, argv, environ)
 	/* Note:  ScreenInfo struct is calloc'ed to initialize to zero. */
 	Scr = ScreenList[scrnum] = 
 	    (ScreenInfo *) calloc(1, sizeof(ScreenInfo));
+  	if (Scr == NULL)
+  	{
+  	    fprintf (stderr, "%s: unable to allocate memory for ScreenInfo structure for screen %d.\n",
+  		     ProgramName, scrnum);
+  	    continue;
+  	}
 
 	/* initialize list pointers, remember to put an initialization
 	 * in InitVariables also
