@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.10 88/08/30 17:07:21 keith Exp $ */
+/* $Header: mibstore.c,v 1.11 88/09/01 19:11:02 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -646,9 +646,17 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
     XID		gcval[4];
     xRectangle	*pRect;
     BoxPtr	pBox;
+    WindowPtr	pWin;
 
     if (tile == (PixmapPtr) None)
 	return;
+    pWin = 0;
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+	pWin = (WindowPtr) pDrawable;
+	if (pWin->backingStore == NotUseful || !pWin->backStorage)
+	    pWin = 0;
+    }
     i = 0;
     gcmask = 0;
     if (tile == use_pixel)
@@ -690,6 +698,9 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
     if (gcmask)
 	DoChangeGC (pGC, gcmask, gcval, 1);
 
+    if (pWin)
+	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeVisBack);
+
     if (pDrawable->serialNumber != pGC->serialNumber)
 	ValidateGC (pDrawable, pGC);
 
@@ -704,6 +715,8 @@ miBSFillVirtualBits (pDrawable, pGC, pRgn, x, y, pixel, tile, use_pixel)
     }
     pRect -= pRgn->numRects;
     (*pGC->PolyFillRect) (pDrawable, pGC, pRgn->numRects, pRect);
+    if (pWin)
+	(*pWin->backStorage->DrawGuarantee) (pWin, pGC, GuaranteeNothing);
     DEALLOCATE_LOCAL (pRect);
 }
 
@@ -3433,6 +3446,8 @@ miExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     register int  	i;
     register int  	dx, dy;
 
+    if (!(*pGC->pScreen->RegionNotEmpty) (prgnExposed))
+	return;
     pBackingStore = (MIBackingStorePtr)pSrc->devBackingStore;
     
     if (pBackingStore->status == StatusNoPixmap)
