@@ -28,6 +28,8 @@
 #ifndef _tocinternal_h
 #define _tocinternal_h
 
+#include "TextP.h" /* %%% */
+
 typedef enum {
     unknown, valid, invalid
 } ValidType;
@@ -36,7 +38,7 @@ typedef struct _MsgRec {
     Toc		toc;		/* Which toc this message is in. */
     Toc		desttoc;	/* Folder to copy or move to (NULL if none) */
     FateType	fate;		/* What will be done to this message */
-    DwtTextPosition position;	/* Position in the scanfile for this msg. */
+    XtTextPosition position;	/* Position in the scanfile for this msg. */
     int		length;		/* #/chars for this msg's entry in scanfile. */
     char	*buf;		/* The scanline for this message. */
     int		msgid;		/* Message id for this message. */
@@ -46,10 +48,10 @@ typedef struct _MsgRec {
 				   it is no longer visible. */
     Scrn	*scrn;		/* Scrns showing this message (if any) */
     Cardinal	num_scrns;	/* How many scrns are currently showing msg. */
-    DwtTextSource source;	/* Source (if any) containing this msg. */
+    XtTextSource source;	/* Source (if any) containing this msg. */
     short	reapable;	/* True iff we don't need to keep this
 				   composition around. */
-    DwtTextPosition startPos;	/* Where to start the insertion point. */
+    XtTextPosition startPos;	/* Where to start the insertion point. */
 } MsgRec;
 
 typedef struct _TocRec {
@@ -64,11 +66,11 @@ typedef struct _TocRec {
    int		numsequences;	/* #/sequences defined for this folder. */
    Sequence	*seqlist;	/* Array of pointers to sequences. */
    Sequence 	viewedseq;	/* Seq currently shown (NULL == all msgs) */
-   DwtTextSource source;	/* Source for the file containing info. */
+   XtTextSource source;		/* Source for the file containing info. */
    TextWidget	*widgets;	/* Array of widgets displaying this source. */
    int		numwidgets;	/* Number of entries in above. */
    Boolean	hasselection;	/* Whether we own the selection. */
-   DwtTextPosition left, right; /* Left and right extents of selection. */
+   XtTextPosition left, right;	/* Left and right extents of selection. */
    int		length;		/* #/chars in the scanfile. */
    int		origlength;	/* Original #/chars in the scanfile. */
    int		lastPos;	/* Last legal position */

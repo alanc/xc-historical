@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tsource.c,v 1.8 87/12/29 12:43:30 swick Exp $";
+static char rcs_id[] = "$Header: tsource.c,v 1.9 88/01/19 14:43:33 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -152,23 +152,26 @@ TextWidget widget;
 }
 
 
-static XtTextPosition Read(source, position, lastPos, block)
+static XtTextPosition Read(source, position, block, length)
   XtTextSource source;
-  XtTextPosition position, lastPos;
+  XtTextPosition position;
   XtTextBlock *block;
+  int length;
 {
     Toc toc = (Toc) source->data;
     Msg msg;
     int count;
-    int maxRead = lastPos - position;
+
     if (position < toc->lastPos) {
+        block->firstPos = position;
 	msg = MsgFromPosition(toc, position, XtsdRight);
 	block->ptr = msg->buf + (position - msg->position);
 	count = msg->length - (position - msg->position);
-	block->length = (count < maxRead) ? count : maxRead;
+	block->length = (count < length) ? count : length;
 	position += block->length;
     }
     else {
+        block->firstPos = 0;
 	block->length = 0;
 	block->ptr = "";
     }
@@ -347,6 +350,7 @@ XtTextSource TSourceCreate(toc)
     source->Scan = Scan;
     source->GetSelection = GetSelection;
     source->SetSelection = SetSelection;
+    source->edit_mode = XttextRead;
     toc->numwidgets = 0;
     toc->widgets = XtNew(TextWidget);
     toc->hasselection = FALSE;
