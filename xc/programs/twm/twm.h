@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.82 94/08/25 20:52:11 mor Exp mor $
+ * $XConsortium: twm.h,v 1.83 94/09/14 18:20:02 mor Exp mor $
  *
  * twm include file
  *
@@ -289,7 +289,6 @@ typedef struct TwmWindow
     short iconify_by_unmapping;	/* unmap window to iconify it */
     short iconmgr;		/* this is an icon manager window */
     short transient;		/* this is a transient window */
-    short nameChanged;		/* did WM_NAME ever change? */
     Window transientfor;	/* window contained in XA_XM_TRANSIENT_FOR */
     short titlehighlight;	/* should I highlight the title bar */
     struct IconMgr *iconmgrp;	/* pointer to it if this is an icon manager */
@@ -308,6 +307,14 @@ typedef struct TwmWindow
 	Bool cursor_valid;
 	int curs_x, curs_y;
     } ring;
+
+    Bool nameChanged;	/* did WM_NAME ever change? */
+
+    /* did the user ever change the width/height? {yes, no, or unknown} */
+
+    Bool widthEverChangedByUser;
+    Bool heightEverChangedByUser;
+
 } TwmWindow;
 
 
@@ -323,9 +330,11 @@ typedef struct TWMWinConfigEntry
     char **wm_command;
     short x, y;
     unsigned short width, height;
+    short icon_x, icon_y;
     Bool iconified;
     Bool icon_info_present;
-    short icon_x, icon_y;
+    Bool width_ever_changed_by_user;
+    Bool height_ever_changed_by_user;
 } TWMWinConfigEntry;
 
 

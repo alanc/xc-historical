@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.80 91/05/11 17:35:42 dave Exp $
+ * $XConsortium: resize.c,v 1.81 94/04/17 20:38:21 dave Exp mor $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -900,6 +900,12 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
 	
 	XConfigureWindow(dpy, tmp_win->title_w, xwcm, &xwc);
     }
+
+    if (tmp_win->attr.width != w)
+	tmp_win->widthEverChangedByUser = True;
+
+    if (tmp_win->attr.height != (h - tmp_win->title_height))
+	tmp_win->heightEverChangedByUser = True;
 
     tmp_win->attr.width = w;
     tmp_win->attr.height = h - tmp_win->title_height;
