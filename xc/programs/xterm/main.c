@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.162 91/01/09 16:52:17 rws Exp $ */
+/* $XConsortium: main.c,v 1.163 91/01/24 19:31:59 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -47,12 +47,19 @@ SOFTWARE.
 
 #ifdef SVR4			/* SVR4 is (approx) a superset of SVR3 */
 #define SYSV
+#define USE_SYSV_UTMP
 #endif
 
 #ifdef SYSV /* was att */
 #define USE_USG_PTYS
 #else
 #define USE_HANDSHAKE
+#endif
+
+#if defined(SYSV) && !defined(SVR4)
+/* older SYSV systems cannot ignore SIGHUP.
+   Shell hangs, or you get extra shells, or something like that */
+#define USE_SYSV_SIGHUP
 #endif
 
 #include <sys/ioctl.h>
@@ -159,6 +166,7 @@ int	Ptyfd;
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <signal.h>
 #ifdef SIGTSTP
 #include <sys/wait.h>
 #ifdef hpux
@@ -288,6 +296,7 @@ struct _xttymodes {
 };
 
 #ifdef USE_SYSV_UTMP
+#ifndef SVR4			/* otherwise declared in utmp.h */
 extern struct utmp *getutent();
 extern struct utmp *getutid();
 extern struct utmp *getutline();
@@ -295,6 +304,7 @@ extern void pututline();
 extern void setutent();
 extern void endutent();
 extern void utmpname();
+#endif /* !SVR4 */
 
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
@@ -307,10 +317,11 @@ static char etc_utmp[] = UTMP_FILENAME;
 #ifdef LASTLOG
 static char etc_lastlog[] = LASTLOG_FILENAME;
 #endif 
+#endif	/* USE_SYSV_UTMP */
+
 #ifdef WTMP
 static char etc_wtmp[] = WTMP_FILENAME;
 #endif
-#endif	/* USE_SYSV_UTMP */
 
 /*
  * Some people with 4.3bsd /bin/login seem to like to use login -p -f user
@@ -997,7 +1008,7 @@ char *name;
 	return((cp = rindex(name, '/')) ? cp + 1 : name);
 }
 
-/* This function opens up a pty master and stuffs it's value into pty.
+/* This function opens up a pty master and stuffs its value into pty.
  * If it finds one, it returns a value of 0.  If it does not find one,
  * it returns a value of !0.  This routine is designed to be re-entrant,
  * so that if a pty master is found and later, we find that the slave
@@ -1249,6 +1260,7 @@ spawn ()
 	int fd;			/* for /etc/wtmp */
 #endif	/* USE_SYSV_TERMIO */
 	char **envnew;		/* new environment */
+	int envsize;		/* elements in new environment */
 	char buf[32];
 	char *TermName = NULL;
 	int ldisc = 0;
@@ -1486,6 +1498,9 @@ spawn ()
 #endif
 #ifdef USE_SYSV_TERMIO
 		char numbuf[12];
+#if defined(UTMP) && defined(USE_SYSV_UTMP)
+		char *ptyname;
+#endif
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef USE_HANDSHAKE
@@ -1504,7 +1519,7 @@ spawn ()
 		if (!getenv("CONSEM") && ioctl (ptyfd, I_PUSH, "consem") < 0) {
 		    SysError (3);
 		}
-#endif
+#endif /* SVR4 */
 		if (ioctl (ptyfd, I_PUSH, "ldterm") < 0) {
 		    SysError (4);
 		}
@@ -1512,7 +1527,7 @@ spawn ()
 		if (ioctl (ptyfd, I_PUSH, "ttcompat") < 0) {
 		    SysError (5);
 		}
-#endif	/* SVR4 */
+#endif /* SVR4 */
 		tty = ptyfd;
 		close (screen->respond);
 #ifdef TIOCSWINSZ
@@ -1785,7 +1800,7 @@ spawn ()
 		}
 
 		signal (SIGCHLD, SIG_DFL);
-#ifdef SYSV
+#ifdef USE_SYSV_SIGHUP
 		/* watch out for extra shells (I don't understand either) */
 		signal (SIGHUP, SIG_DFL);
 #else
@@ -1797,17 +1812,23 @@ spawn ()
 		signal (SIGTERM, SIG_DFL);
 
 		/* copy the environment before Setenving */
-		for (i = 0 ; environ [i] != NULL ; i++) ;
-		/*
-		 * The `4' (`5' for SYSV) is the number of Setenv()
-		 * calls which may add a new entry to the environment.
-		 * The `1' is for the NULL terminating entry.
-		 */
+		for (i = 0 ; environ [i] != NULL ; i++)
+		    ;
+		/* compute number of Setenv() calls below */
+		envsize = 1;	/* (NULL terminating entry) */
+		envsize += 3;	/* TERM, WINDOWID, DISPLAY */
+#ifdef UTMP
+		envsize += 1;   /* LOGNAME */
+#endif /* UTMP */
 #ifdef USE_SYSV_ENVVARS
-		envnew = (char **) calloc ((unsigned) i + (5 + 1), sizeof(char *));
-#else
-		envnew = (char **) calloc ((unsigned) i + (4 + 1), sizeof(char *));
+		envsize += 2;	/* COLUMNS, LINES */
+#ifdef UTMP
+		envsize += 2;   /* HOME, SHELL */
+#endif /* UTMP */
+#else /* USE_SYSV_ENVVARS */
+		envsize += 1;	/* TERMCAP */
 #endif /* USE_SYSV_ENVVARS */
+		envnew = (char **) calloc ((unsigned) i + envsize, sizeof(char *));
 		bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
@@ -1852,6 +1873,9 @@ spawn ()
 #endif /* USE_SYSV_PGRP */
 
 #ifdef UTMP
+		pw = getpwuid(screen->uid);
+		if (pw && pw->pw_name)
+		    Setenv ("LOGNAME=", pw->pw_name); /* for POSIX */
 #ifdef USE_SYSV_UTMP
 		/* Set up our utmp entry now.  We need to do it here
 		** for the following reasons:
@@ -1862,28 +1886,34 @@ spawn ()
 		**   - We need to do it before we go and change our
 		**     user and group id's.
 		*/
+#ifdef CRAY
+#define PTYCHARLEN 4
+#else
+#define PTYCHARLEN 2
+#endif
 
 		(void) setutent ();
 		/* set up entry to search for */
-		(void) strncpy(utmp.ut_id,ttydev + strlen(ttydev) - 2,
-		 sizeof (utmp.ut_id));
+		ptyname = ttydev;
+		(void) strncpy(utmp.ut_id,ptyname + strlen(ptyname)-PTYCHARLEN,
+			       sizeof (utmp.ut_id));
 		utmp.ut_type = DEAD_PROCESS;
 
 		/* position to entry in utmp file */
 		(void) getutid(&utmp);
 
 		/* set up the new entry */
-		pw = getpwuid(screen->uid);
 		utmp.ut_type = USER_PROCESS;
 		utmp.ut_exit.e_exit = 2;
 		(void) strncpy(utmp.ut_user,
 			       (pw && pw->pw_name) ? pw->pw_name : "????",
 			       sizeof(utmp.ut_user));
 		    
-		(void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - 2,
+		(void)strncpy(utmp.ut_id, ptyname + strlen(ptyname)-PTYCHARLEN,
 			sizeof(utmp.ut_id));
 		(void) strncpy (utmp.ut_line,
-			ttydev + strlen("/dev/"), sizeof (utmp.ut_line));
+			ptyname + strlen("/dev/"), sizeof (utmp.ut_line));
+
 #ifdef HAS_UTMP_UT_HOST
 		(void) strncpy(utmp.ut_host, DisplayString(screen->display),
 			       sizeof(utmp.ut_host));
@@ -1895,8 +1925,15 @@ spawn ()
 		utmp.ut_time = time ((long *) 0);
 
 		/* write out the entry */
-		if (!resource.utmpInhibit) (void) pututline(&utmp);
-
+		if (!resource.utmpInhibit)
+		    (void) pututline(&utmp);
+#ifdef WTMP
+		if ( term->misc.login_shell &&
+		     (i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
+		    write(i, (char *)&utmp, sizeof(struct utmp));
+		    close(i);
+		}
+#endif
 		/* close the file */
 		(void) endutent();
 
@@ -1907,8 +1944,7 @@ spawn ()
 		tslot = ttyslot();
 		added_utmp_entry = False;
 		{
-			if ((pw = getpwuid(screen->uid)) &&
-			    !resource.utmpInhibit &&
+			if (pw && !resource.utmpInhibit &&
 			    (i = open(etc_utmp, O_WRONLY)) >= 0) {
 				bzero((char *)&utmp, sizeof(struct utmp));
 				(void) strncpy(utmp.ut_line,
@@ -1931,7 +1967,7 @@ spawn ()
 				(i = open(etc_wtmp, O_WRONLY|O_APPEND)) >= 0) {
 				    write(i, (char *)&utmp,
 					sizeof(struct utmp));
-				close(i);
+				    close(i);
 				}
 #endif /* WTMP */
 #ifdef LASTLOG
@@ -2028,6 +2064,14 @@ spawn ()
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
+#ifdef UTMP
+		if (pw) {	/* SVR4 doesn't provide these */
+		    if (!getenv("HOME"))
+			Setenv("HOME=", pw->pw_dir);
+		    if (!getenv("SHELL"))
+			Setenv("SHELL=", pw->pw_shell);
+		}
+#endif /* UTMP */
 #else
 		if(!screen->TekEmu) {
 		    strcpy (termcap, newtc);
@@ -2070,7 +2114,7 @@ spawn ()
 			 *command_to_exec);
 		} 
 
-#ifdef SYSV
+#ifdef USE_SYSV_SIGHUP
 		/* fix pts sh hanging around */
 		signal (SIGHUP, SIG_DFL);
 #endif
@@ -2187,7 +2231,7 @@ spawn ()
 	 * still in parent (xterm process)
 	 */
 
-#ifdef SYSV
+#ifdef USE_SYSV_SIGHUP
 	/* hung sh problem? */
 	signal (SIGHUP, SIG_DFL);
 #else
@@ -2238,7 +2282,8 @@ spawn ()
 	return;
 }							/* end spawn */
 
-SIGNAL_T Exit(n)
+SIGNAL_T
+Exit(n)
 	int n;
 {
 	register TScreen *screen = &term->screen;
@@ -2247,23 +2292,24 @@ SIGNAL_T Exit(n)
 #ifdef USE_SYSV_UTMP
 	struct utmp utmp;
 	struct utmp *utptr;
+	char *ptyname;
 #ifdef WTMP
 	int fd;			/* for /etc/wtmp */
 #endif
 	/* cleanup the utmp entry we forged earlier */
-	if (!resource.utmpInhibit && added_utmp_entry) {
-#ifdef CRAY
-#define PTYCHARLEN 4
-#else
-#define PTYCHARLEN 2
-#endif
+	if (!resource.utmpInhibit
+#ifdef USE_HANDSHAKE		/* without handshake, no way to know */
+	    && added_utmp_entry
+#endif /* USE_HANDSHAKE */
+	    ) {
+	    ptyname = ttydev;
 	    utmp.ut_type = USER_PROCESS;
-	    (void) strncpy(utmp.ut_id, ttydev + strlen(ttydev) - PTYCHARLEN,
-		    sizeof(utmp.ut_id));
+	    (void) strncpy(utmp.ut_id, ptyname + strlen(ptyname) - PTYCHARLEN,
+			   sizeof(utmp.ut_id));
 	    (void) setutent();
 	    utptr = getutid(&utmp);
 	    /* write it out only if it exists, and the pid's match */
-	    if (utptr && (utptr->ut_pid = screen->pid)) {
+	    if (utptr && (utptr->ut_pid == screen->pid)) {
 		    utptr->ut_type = DEAD_PROCESS;
 		    utptr->ut_time = time((long *) 0);
 		    (void) pututline(utptr);
@@ -2291,7 +2337,7 @@ SIGNAL_T Exit(n)
 #ifdef WTMP
 		if (term->misc.login_shell &&
 		    (i = open(etc_wtmp, O_WRONLY | O_APPEND)) >= 0) {
-			(void) strncpy(utmp.ut_line, ttydev +
+			(void) strncpy(utmp.ut_line, ptyname +
 			    sizeof("/dev"), sizeof (utmp.ut_line));
 			time(&utmp.ut_time);
 			write(i, (char *)&utmp, sizeof(struct utmp));
