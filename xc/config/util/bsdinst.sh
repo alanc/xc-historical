@@ -87,6 +87,10 @@ fi
 rm -f $dst/$srcbase
 (cd $srcdir ; install -f $dst $flags $src)
 
+if [ x$dostrip = xstrip ]
+then
+	strip $dst/$srcbase
+fi
 
 # and clean up
 
