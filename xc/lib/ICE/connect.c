@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.2 93/08/19 10:23:39 mor Exp $ */
+/* $XConsortium: connect.c,v 1.1 93/08/19 18:25:22 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -377,7 +377,7 @@ char **actualConnectionRet;
 	    fd = _MakeConnection ("Unix", 0, pathname,
 	        ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
 
-	    if (fd >= 0 && fd < OPEN_MAX)
+	    if (fd >= 0)
 	    {
 		madeConnection = 1;
 
@@ -412,7 +412,7 @@ char **actualConnectionRet;
 	    fd = _MakeConnection ("TCP", hostname, portnum,
 	        ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
 
-	    if (fd >= 0 && fd < OPEN_MAX)
+	    if (fd >= 0)
 		madeConnection = 1;
 #endif
 	}
@@ -440,7 +440,7 @@ char **actualConnectionRet;
 	    fd = _MakeConnection ("DECnet", peerbuf, objname,
 		ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
 
-	    if (fd >= 0 && fd < OPEN_MAX)
+	    if (fd >= 0)
 		madeConnection = 1;
 #endif
 	}
