@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.52 89/09/24 15:39:53 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.53 90/05/15 18:37:20 keith Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1533,6 +1533,11 @@ NextRect: ;
     return TRUE;
 }
 
+/* XXX truncates regions to 14 bits to avoid overflow when added
+ * to a reasonable window origin.  This, along with all 16 bit
+ * representation issues, is still a "bug"
+ */
+
 RegionPtr
 miRectsToRegion(nrects, prect, ctype)
     int			nrects;
@@ -1540,46 +1545,72 @@ miRectsToRegion(nrects, prect, ctype)
     int			ctype;
 {
     register RegionPtr	pRgn;
+    register RegDataPtr	pData;
     register BoxPtr	pBox;
     register int        i;
+    int			x1, y1, x2, y2;
 
     pRgn = miRegionCreate(NullBox, 0);
     if (!nrects)
 	return pRgn;
     if (nrects == 1)
     {
-	pRgn->extents.x1 = prect->x;
-	pRgn->extents.y1 = prect->y;
-	pRgn->extents.x2 = prect->x + (int) prect->width;
-	pRgn->extents.y2 = prect->y + (int) prect->height;
-	pRgn->data = (RegDataPtr)NULL;
+	x1 = prect->x;
+	y1 = prect->y;
+	if ((x2 = x1 + (int) prect->width) > MAXSHORT / 2)
+	    x2 = MAXSHORT / 2;
+	if ((y2 = y1 + (int) prect->height) > MAXSHORT / 2)
+	    y2 = MAXSHORT / 2;
+	if (x1 != x2 && y1 != y2)
+	{
+	    pRgn->extents.x1 = x1;
+	    pRgn->extents.y1 = y1;
+	    pRgn->extents.x2 = x2;
+	    pRgn->extents.y2 = y2;
+	    pRgn->data = (RegDataPtr)NULL;
+	}
 	return pRgn;
     }
     Must_have_memory = TRUE; /* XXX */
-    pRgn->data = xallocData(nrects);
+    pData = xallocData(nrects);
+    pBox = (BoxPtr) (pData + 1);
     Must_have_memory = FALSE; /* XXX */
-    pRgn->data->size = nrects;
-    pRgn->data->numRects = nrects;
-    for (i = nrects, pBox = REGION_BOXPTR(pRgn); --i >= 0; prect++)
+    for (i = nrects; --i >= 0; prect++)
     {
-	pBox->x1 = prect->x;
-	pBox->y1 = prect->y;
-	pBox->x2 = prect->x + (int)prect->width;
-	pBox->y2 = prect->y + (int)prect->height;
-	if ((pBox->x2 <= pBox->x1) || (pBox->y2 <= pBox->y1))
-	    pRgn->data->numRects--;
-	else
+	x1 = prect->x;
+	y1 = prect->y;
+	if ((x2 = x1 + (int) prect->width) > MAXSHORT / 2)
+	    x2 = MAXSHORT / 2;
+	if ((y2 = y1 + (int) prect->height) > MAXSHORT / 2)
+	    y2 = MAXSHORT / 2;
+	if (x1 != x2 && y1 != y2)
+	{
+	    pBox->x1 = x1;
+	    pBox->y1 = y1;
+	    pBox->x2 = x2;
+	    pBox->y2 = y2;
 	    pBox++;
+	}
     }
-    if (ctype != CT_YXBANDED)
+    if (pBox != (BoxPtr) (pData + 1))
     {
-	Bool overlap; /* result ignored */
-	pRgn->extents.x1 = pRgn->extents.x2 = 0;
-	miRegionValidate(pRgn, &overlap);
+	pData->size = nrects;
+	pData->numRects = pBox - (BoxPtr) (pData + 1);
+    	pRgn->data = pData;
+    	if (ctype != CT_YXBANDED)
+    	{
+	    Bool overlap; /* result ignored */
+	    pRgn->extents.x1 = pRgn->extents.x2 = 0;
+	    miRegionValidate(pRgn, &overlap);
+    	}
+    	else
+	    miSetExtents(pRgn);
+    	good(pRgn);
     }
     else
-	miSetExtents(pRgn);
-    good(pRgn);
+    {
+	xfree (pData);
+    }
     return pRgn;
 }
 
@@ -1962,14 +1993,14 @@ miTranslateRegion(pReg, x, y)
 	for (pbox = REGION_BOXPTR(pReg); nbox--; pbox++)
 	{
 	    pbox->x1 += x;
-	    pbox->x2 += x;
 	    pbox->y1 += y;
+	    pbox->x2 += x;
 	    pbox->y2 += y;
 	}
     }
     pReg->extents.x1 += x;
-    pReg->extents.x2 += x;
     pReg->extents.y1 += y;
+    pReg->extents.x2 += x;
     pReg->extents.y2 += y;
 }
 
