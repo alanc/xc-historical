@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.9 88/11/17 19:13:42 keith Exp $
+ * $XConsortium: session.c,v 1.10 88/11/23 17:00:22 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -180,13 +180,17 @@ int			*pidp;
 	int	pid;
 
 	SetUserAuthorization (d, verify);
-	Debug ("StartSession %s: ", verify->argv[0]);
-	for (f = verify->argv; *f; f++)
-		Debug ("%s ", *f);
-	Debug ("; ");
-	for (f = verify->userEnviron; *f; f++)
-		Debug ("%s ", *f);
-	Debug ("\n");
+	if (verify->argv) {
+		Debug ("StartSession %s: ", verify->argv[0]);
+		for (f = verify->argv; *f; f++)
+			Debug ("%s ", *f);
+		Debug ("; ");
+	}
+	if (verify->userEnviron) {
+		for (f = verify->userEnviron; *f; f++)
+			Debug ("%s ", *f);
+		Debug ("\n");
+	}
 	switch (pid = fork ()) {
 	case 0:
 		CloseOnFork ();
@@ -206,10 +210,14 @@ int			*pidp;
 					  home, getEnv (verify->userEnviron, "USER"));
 				chdir ("/");
 			}
-		Debug ("executing session %s\n", verify->argv[0]);
-		execve (verify->argv[0], verify->argv, verify->userEnviron);
-		LogError ("Session execution failed %s\n", verify->argv[0]);
-		Debug ("exec failed\n");
+		if (verify->argv) {
+			Debug ("executing session %s\n", verify->argv[0]);
+			execve (verify->argv[0], verify->argv, verify->userEnviron);
+			LogError ("Session execution failed %s\n", verify->argv[0]);
+			Debug ("exec failed\n");
+		} else {
+			LogError ("Session has no command/arguments\n");
+		}
 		failsafeArgv[0] = d->failsafeClient;
 		failsafeArgv[1] = 0;
 		execve (failsafeArgv[0], failsafeArgv, verify->userEnviron);

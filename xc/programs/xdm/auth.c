@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.2 88/11/29 14:56:14 keith Exp $
+ * $XConsortium: auth.c,v 1.3 88/12/05 17:32:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,7 +80,10 @@ struct display	*d;
 	    dup2 (pipeout[1], 1);
 	    close (pipeout[1]);
 	}
-	execv (argv[0], argv);
+	if (!argv)
+	    LogError ("authGen: no arguments");
+	else
+	    execv (argv[0], argv);
 	exit (1);
     case -1:
 	close (pipein[0]);
@@ -284,11 +287,14 @@ char	*address, *number;
 	if (checkAddr (family, address_length, address, number_length, number))
 		return;
 	new = (struct addrList *) malloc (sizeof (struct addrList));
-	if (!new)
+	if (!new) {
+		LogOutOfMem ("saveAddr");
 		return;
+	}
 	if ((new->address_length = address_length) > 0) {
 		new->address = malloc (address_length);
 		if (!new->address) {
+			LogOutOfMem ("saveAddr");
 			free (new);
 			return;
 		}
@@ -298,6 +304,7 @@ char	*address, *number;
 	if ((new->number_length = number_length) > 0) {
 		new->number = malloc (number_length);
 		if (!new->number) {
+			LogOutOfMem ("saveAddr");
 			free (new->address);
 			free (new);
 			return;
@@ -539,6 +546,7 @@ char	*name;
 		if (auth->number) {
 			strcpy (auth->number, colon);
 		} else {
+			LogOutOfMem ("writeLocalAuth");
 			auth->number_length = 0;
 		}
 	}

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.5 88/10/15 19:09:58 keith Exp $
+ * $XConsortium: error.c,v 1.6 88/11/14 12:29:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -58,6 +58,15 @@ int	arg1, arg2, arg3, arg4, arg5;
 	LogError ("panic: ");
 	LogError (fmt, arg1, arg2, arg3, arg4, arg5);
 	exit (1);
+}
+
+LogOutOfMem (fmt, arg1, arg2, arg3, arg4, arg5)
+char	*fmt;
+int	arg1, arg2, arg3, arg4, arg5;
+{
+	fprintf (stderr, "xdm: out of memory in routine ");
+	fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5);
+	fflush (stderr);
 }
 
 Panic (mesg)

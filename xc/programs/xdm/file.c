@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: file.c,v 1.5 88/10/20 17:36:54 keith Exp $
+ * $XConsortium: file.c,v 1.6 88/10/22 21:49:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ int		numAcceptable;
 char		*sockaddr;
 {
 	int		c;
-	char		**args;
+	char		**args, **newargs;
 	struct display	*d;
 	DisplayType	type;
 	char		word[1024];
@@ -70,6 +70,10 @@ char		*sockaddr;
 		return c;
 acceptable:;
 		d = NewDisplay (word);
+		if (!d) {
+			LogOutOfMem ("ReadDisplay");
+			goto skipLine;
+		}
 		Debug ("new display %s\n", d->name);
 		d->displayType = type;
 		d->state = NewEntry;
@@ -81,19 +85,36 @@ acceptable:;
 #endif
 		i = 0;
 		args = (char **) malloc (sizeof (char *));
-		if (!args)
-			LogPanic ("out of memory\n");
+		if (!args) {
+			LogOutOfMem ("ReadDisplay");
+			d->argv = 0;
+			goto skipLine;
+		}
 		while (c != EOB && c != '\n') {
 			c = readWord (file, word, sizeof (word));
 			if (word[0] != '\0') {
-				args[i] = strcpy (malloc (strlen (word) + 1), word);
+				args[i] = malloc (strlen (word) + 1);
+				if (!args[i]) {
+					LogOutOfMem ("ReadDisplay");
+					break;
+				}
+				strcpy (args[i], word);
+				newargs = (char **) 
+				    malloc ((i+2) * sizeof (char **));
+				if (!newargs) {
+					LogOutOfMem ("ReadDisplay");
+					break;
+				}
+				bcopy ((char *) args, (char *) newargs,
+				       (i+1) * sizeof (char **));
+				free (args);
+				args = newargs;
 				i++;
-				args = (char **) 
-				    realloc ((char *) args, (i+1) * sizeof (char **));
 			}
 		}
 		args[i] = 0;
 		d->argv = args;
+skipLine:	;
 		while (c != EOB && c != '\n')
 			c = readWord (file, word, sizeof (word));
 	}

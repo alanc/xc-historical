@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.6 88/11/23 17:00:00 keith Exp $
+ * $XConsortium: displaylist.c,v 1.7 88/12/14 17:36:30 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -92,12 +92,17 @@ char	*name;
 	struct display	*d;
 
 	d = (struct display *) malloc (sizeof (struct display));
-	if (!d)
-		LogPanic ("out of memory\n");
+	if (!d) {
+		LogOutOfMem ("NewDisplay");
+		return 0;
+	}
 	d->next = displays;
 	d->name = strcpy (malloc (strlen (name) + 1), name);
-	if (!d->name)
-		LogPanic ("out of memory\n");
+	if (!d->name) {
+		LogOutOfMem ("NewDisplay");
+		free (d);
+		return 0;
+	}
 	d->argv = 0;
 	d->status = notRunning;
 	d->pid = -1;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.11 88/11/17 17:04:15 keith Exp $
+ * $XConsortium: Login.c,v 1.12 88/11/23 16:53:34 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -502,11 +502,14 @@ SetSessionArgument (ctx, event, params, num_params)
     RemoveFail (ctx);
     if (ctx->login.sessionArg)
 	XtFree (ctx->login.sessionArg);
+    ctx->login.sessionArg = 0;
     if (*num_params > 0) {
 	ctx->login.sessionArg = XtMalloc (strlen (params[0]) + 1);
-	strcpy (ctx->login.sessionArg, params[0]);
-    } else
-    	ctx->login.sessionArg = 0;
+	if (ctx->login.sessionArg)
+	    strcpy (ctx->login.sessionArg, params[0]);
+	else
+	    LogOutOfMem ("set session argument");
+    }
 }
 
 static void

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.12 88/12/05 15:24:40 keith Exp $
+ * $XConsortium: resource.c,v 1.14 88/12/14 17:36:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -166,7 +166,8 @@ char	*default_value;
 {
 	char	*type;
 	XrmValue	value;
-	char	*string, *strncpy (), *malloc ();
+	char	*string, *new_string, *strncpy (), *malloc ();
+	char	str_buf[50];
 	int	len;
 
 	if (DmResourceDB && XrmGetResource (DmResourceDB,
@@ -179,28 +180,35 @@ char	*default_value;
 		string = default_value;
 		len = strlen (string);
 	}
-	string = strncpy (malloc (len+1), string, len);
-	string[len] = '\0';
 	Debug ("resource %s value %s\n", name, string);
 	switch (valueType) {
 	case DM_STRING:
-		*(valuep) = string;
+		new_string = malloc (len+1);
+		if (!new_string) {
+			LogOutOfMem ("GetResource");
+			return;
+		}
+		strncpy (new_string, string, len);
+		new_string[len] = '\0';
+		*(valuep) = new_string;
 		break;
 	case DM_INT:
-		*((int *) valuep) = atoi (string);
-		free (string);
+		strncpy (str_buf, string, sizeof (str_buf));
+		str_buf[sizeof (str_buf)-1] = '\0';
+		*((int *) valuep) = atoi (str_buf);
 		break;
 	case DM_BOOL:
-		XmuCopyISOLatin1Lowered (string, string);
-		if (!strcmp (string, "true") ||
-		    !strcmp (string, "on") ||
-		    !strcmp (string, "yes"))
+		strncpy (str_buf, string, sizeof (str_buf));
+		str_buf[sizeof (str_buf)-1] = '\0';
+		XmuCopyISOLatin1Lowered (str_buf, str_buf);
+		if (!strcmp (str_buf, "true") ||
+		    !strcmp (str_buf, "on") ||
+		    !strcmp (str_buf, "yes"))
 			*((int *) valuep) = 1;
-		else if (!strcmp (string, "false") ||
-			 !strcmp (string, "off") ||
-			 !strcmp (string, "no"))
+		else if (!strcmp (str_buf, "false") ||
+			 !strcmp (str_buf, "off") ||
+			 !strcmp (str_buf, "no"))
 			*((int *) valuep) = 0;
-		free (string);
 		break;
 	}
 }

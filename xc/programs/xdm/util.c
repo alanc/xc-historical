@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.6 88/11/17 19:13:52 keith Exp $
+ * $XConsortium: util.c,v 1.1 88/11/23 17:00:28 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,6 +39,10 @@ char	*value;
 	char	*result, *malloc ();
 
 	result = malloc (strlen (name) + strlen (value) + 2);
+	if (!result) {
+		LogOutOfMem ("makeEnv");
+		return 0;
+	}
 	sprintf (result, "%s=%s", name, value);
 	return result;
 }
@@ -66,19 +70,25 @@ setEnv (e, name, value)
 	char	*value;
 {
 	char	**new, **old;
+	char	*newe;
 	int	envsize;
 	int	i;
 	int	l;
 	char	*malloc (), *realloc ();
 
 	l = strlen (name);
+	newe = makeEnv (name, value);
+	if (!newe) {
+		LogOutOfMem ("setEnv");
+		return e;
+	}
 	if (e) {
 		for (old = e; *old; old++)
 			if (strlen (*old) > l && !strncmp (*old, name, l) && (*old)[l] == '=')
 				break;
 		if (*old) {
 			free (*old);
-			*old = makeEnv (name, value);
+			*old = newe;
 			return e;
 		}
 		envsize = old - e;
@@ -87,7 +97,12 @@ setEnv (e, name, value)
 		envsize = 0;
 		new = (char **) malloc (2 * sizeof (char *));
 	}
-	new[envsize] = makeEnv (name, value);
+	if (!new) {
+		LogOutOfMem ("setEnv");
+		free (newe);
+		return e;
+	}
+	new[envsize] = newe;
 	new[envsize+1] = 0;
 	return new;
 }
@@ -108,14 +123,28 @@ char	*string;
 	i = 0;
 	while (argv && argv[i])
 		++i;
-	if (!argv)
+	if (!argv) {
 		argv = (char **) malloc (sizeof (char *));
+		if (!argv) {
+			LogOutOfMem ("parseArgs");
+			return 0;
+		}
+	}
 	word = string;
 	for (;;) {
 		if (!*string || isblank (*string)) {
 			if (word != string) {
 				argv = (char **) realloc ((char *) argv, (i + 2) * sizeof (char *));
-				argv[i] = strncpy (malloc (string - word + 1), word, string-word);
+				save = malloc (string - word + 1);
+				if (!argv || !save) {
+					LogOutOfMem ("parseArgs");
+					if (argv)
+						free ((char *) argv);
+					if (save)
+						free (save);
+					return 0;
+				}
+				argv[i] = strncpy (save, word, string-word);
 				argv[i][string-word] = '\0';
 				i++;
 			}
