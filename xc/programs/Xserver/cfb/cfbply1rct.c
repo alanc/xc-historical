@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfbply1rct.c,v 1.1 91/03/11 14:58:09 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -34,7 +34,6 @@
 
 #include "cfb.h"
 #include "cfbmskbits.h"
-#define SHARED_IDCACHE
 #include "cfbrrop.h"
 
 #if IMAGE_BYTE_ORDER == MSBFirst
