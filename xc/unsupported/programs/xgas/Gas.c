@@ -1,4 +1,4 @@
-/* $XConsortium: XGas.c,v 1.1 91/04/18 09:46:37 dave Exp $ */
+/* $XConsortium: Gas.c,v 1.1 91/04/18 09:48:25 dave Exp $ */
 
 /* Copyright	Massachusetts Institute of Technology	1987, 1988
  *
@@ -23,7 +23,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include "XGasP.h"
+#include "GasP.h"
 
 static XtResource resources[] = {
 #define offset(field) XtOffset(GasWidget, gas.field)
