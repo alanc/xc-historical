@@ -1,4 +1,4 @@
-.TH MAKEDEPEND 1 "June 15, 1988"
+.TH MAKEDEPEND 1 "26 October 1988" "X Version 11"
 .UC 4
 .SH NAME
 makedepend \- create dependencies in makefiles
@@ -301,4 +301,4 @@ But once
 arrives at a list of dependencies for a file,
 it is cast in concrete.
 .SH AUTHOR
-Todd Brunhoff; Tektronix, inc. and Project Athena, MIT.
+Todd Brunhoff, Tektronix, Inc. and MIT Project Athena
