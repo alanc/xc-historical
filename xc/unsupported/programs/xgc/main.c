@@ -17,7 +17,6 @@
 
 #include "xgc.h"
 #include "tile"
-#include "parse.h"
 #include "main.h"
 
 void fill_up_commandform();
@@ -30,6 +29,7 @@ extern void read_from_keyboard();
 extern void toggle_recordbutton();
 void set_foreground_and_background();
 extern ChoiceDesc *create_choice();
+extern void choose_defaults();
 extern void line_up_labels();
 extern Widget create_text_choice();
 extern void create_planemask_choice();
@@ -40,19 +40,18 @@ extern void GC_change_background();
 extern void GC_change_font();
 extern void close_file_if_recording();
 
-XStuff X;
+XStuff X;			/* GC stuff plus some global variables */
 char resultstring[80] = "";
-Boolean recording = FALSE;
-FILE *recordfile;
-
-XtAppContext appcontext;
+Boolean recording = FALSE;	/* Whether we're recording into a file */
+XtAppContext appcontext;	/* To make Xt happy */
 
 static Widget bigdaddy;		/* the top level widget */
        Widget topform;		/* form surrounding the whole thing */
        Widget GCform;		/* form in which you choose the GC */
 static Widget Testform;		/* form in which you choose the test */
        Widget testchoiceform;   /* form inside that */
-  ChoiceDesc *testchoicedesc;
+  ChoiceDesc *testchoicedesc;	/* record of what widgets are in the
+				   test choice form */
 static Widget commandform;	/* form with run, quit, clear, etc. */
        Widget test;		/* where the test is run */
        Widget result;           /* where the results are displayed */
@@ -78,7 +77,14 @@ static Widget backgroundchoice;	/* form for choosing background */
        Widget backgroundtext;	/* text widget within that */
 static Widget percentchoice;	/* form for choosing percentage of test */
 
-void main(argc,argv)
+/* main(argc.argv)
+** ---------------
+** Initializes the toolkit, initializes data, puts up the widgets,
+** starts the event loop.
+*/
+
+void
+main(argc,argv)
      int argc;
      char **argv;
 {
@@ -115,7 +121,9 @@ void main(argc,argv)
     {XtNborderWidth, (XtArgVal) 0}
   };
 
-  int i;
+  int i;			/* counter */
+
+  /* Initialize toolkit stuff */
 
   XtToolkitInitialize();
   appcontext = XtCreateApplicationContext();
@@ -124,9 +132,15 @@ void main(argc,argv)
   bigdaddy = XtAppCreateShell(NULL, "Xgc", applicationShellWidgetClass,
 			      X.dpy, NULL, 0);
 
+  /* Initialize GC stuff */
+
   X.scr = DefaultScreenOfDisplay(X.dpy);
   X.gc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
   X.miscgc = XCreateGC(X.dpy,RootWindowOfScreen(X.scr),0,(XGCValues *) NULL);
+
+  /* Find out what the foreground & background are, and update the GC
+  ** accordingly */
+
   set_foreground_and_background();
 
   topform = XtCreateManagedWidget("topform",formWidgetClass,bigdaddy,
@@ -135,14 +149,16 @@ void main(argc,argv)
   GCform = XtCreateManagedWidget("GCform",formWidgetClass,topform,
 				NULL,0);
 
-  /* create all the GCchoices widgets */
+  /* create all the GCchoices forms */
+
   for (i=0;i<NUMCHOICES;++i) {
     if (i==0)			/* on top */
       gcchoiceargs[0].value = (XtArgVal) NULL;
     else			/* under the last one */
       gcchoiceargs[0].value = (XtArgVal) GCchoices[i-1];
 
-    GCchoices[i] = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+    GCchoices[i] = XtCreateManagedWidget(Everything[i]->choice.text,
+					 formWidgetClass,GCform,
 					 gcchoiceargs,XtNumber(gcchoiceargs));
 
     /* now fill up that form */
@@ -151,45 +167,45 @@ void main(argc,argv)
 
   /* put the planemask choice under the bottom GC choice */
   gcchoiceargs[0].value = (XtArgVal) GCchoices[NUMCHOICES-1];
-  planemaskchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  planemaskchoice = XtCreateManagedWidget("planemask",formWidgetClass,GCform,
 				  gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
   create_planemask_choice(planemaskchoice);
 
   /* put the dashlist choice under the planemask choice */
   gcchoiceargs[0].value = (XtArgVal) planemaskchoice;
-  dashlistchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  dashlistchoice = XtCreateManagedWidget("dashlist",formWidgetClass,GCform,
 				  gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
   create_dashlist_choice(dashlistchoice);
 
   /* put the linewidth choice under the dashlist choice */
   gcchoiceargs[0].value = (XtArgVal) dashlistchoice;
-  linewidthchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  linewidthchoice = XtCreateManagedWidget("linewidth",formWidgetClass,GCform,
 				  gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
   linewidthtext = create_text_choice(linewidthchoice,TLineWidth,2,30);
 
   /* put the font choice under the linewidth choice */
   gcchoiceargs[0].value = (XtArgVal) linewidthchoice;
-  fontchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  fontchoice = XtCreateManagedWidget("font",formWidgetClass,GCform,
 				     gcchoiceargs,XtNumber(gcchoiceargs));
   /* fill it up */
   fonttext = create_text_choice(fontchoice,TFont,80,300);
 
   gcchoiceargs[0].value = (XtArgVal) fontchoice;
-  foregroundchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  foregroundchoice = XtCreateManagedWidget("foreground",formWidgetClass,GCform,
 				   gcchoiceargs,XtNumber(gcchoiceargs));
   foregroundtext = create_text_choice(foregroundchoice,TForeground,4,50);
 
   gcchoiceargs[1].value = (XtArgVal) foregroundchoice;
-  backgroundchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  backgroundchoice = XtCreateManagedWidget("background",formWidgetClass,GCform,
 				   gcchoiceargs,XtNumber(gcchoiceargs));
   backgroundtext = create_text_choice(backgroundchoice,TBackground,4,50);
   
   gcchoiceargs[1].value = (XtArgVal) NULL;
   gcchoiceargs[0].value = (XtArgVal) foregroundchoice;
-  percentchoice = XtCreateManagedWidget("Choice",formWidgetClass,GCform,
+  percentchoice = XtCreateManagedWidget("testpercent",formWidgetClass,GCform,
 				 gcchoiceargs,XtNumber(gcchoiceargs));
   X.percent = 1.0;
   create_testfrac_choice(percentchoice,&X.percent);
@@ -211,6 +227,8 @@ void main(argc,argv)
   commandform = XtCreateManagedWidget("commandform",formWidgetClass,topform,
 			      commandformargs,XtNumber(commandformargs));
 
+  /* Put the appropriate command buttons in the command form */
+
   fill_up_commandform(commandform);
 
   testargs[2].value = (XtArgVal) GCform;    /* to the right of */
@@ -223,7 +241,11 @@ void main(argc,argv)
   result = XtCreateManagedWidget("result",asciiStringWidgetClass,topform,
 				 resultargs,XtNumber(resultargs));
 
+  /* Now realize all the widgets */
+
   XtRealizeWidget(bigdaddy);
+
+  /* Now do things we couldn't do until we had a window available */
 
   X.win = XtWindow(test);
   X.tile = XCreatePixmapFromBitmapData(X.dpy,X.win,tile_bits,tile_width,
@@ -245,29 +267,37 @@ void main(argc,argv)
   choose_defaults(GCdescs,(int)XtNumber(GCdescs));
   choose_defaults(&testchoicedesc,1);
   
+  /* Loop forever, dealing with events */
+
   XtAppMainLoop(appcontext);
 }
 
-static void fill_up_commandform(w)
+/* fill_up_commandform(w)
+** ----------------------
+** Put the appropriate command buttons in the command form (w).
+*/
+
+static void
+fill_up_commandform(w)
      Widget w;
 {
-  static XtCallbackRec runcallbacklist[] = { /* called by the runbutton */
+  static XtCallbackRec runcallbacklist[] = {
     {(XtCallbackProc) run_test,  NULL},
     {NULL,                       NULL}
   };
 
-  static XtCallbackRec quitcallbacklist[] = { /* called by quitbutton */
+  static XtCallbackRec quitcallbacklist[] = {
     {(XtCallbackProc) quit,      NULL},
     {NULL,                       NULL}
   };
 
-  static XtCallbackRec clearcallbacklist[] = { /* called by clearbutton */
+  static XtCallbackRec clearcallbacklist[] = {
     {(XtCallbackProc) clear_test_window,    NULL},
     {(XtCallbackProc) clear_result_window,  NULL},
     {NULL,                                  NULL}
   };
 
-  static XtCallbackRec playbackcallbacklist[] = { 
+  static XtCallbackRec playbackcallbacklist[] = {
     {(XtCallbackProc) start_playback,       NULL},
     {NULL,                                  NULL}
   };
@@ -277,7 +307,7 @@ static void fill_up_commandform(w)
     {NULL,                                  NULL}
   };
 
-  static XtCallbackRec recordcallbacklist[] = {	/* called by recordbutton */
+  static XtCallbackRec recordcallbacklist[] = {
     {(XtCallbackProc) toggle_recordbutton,  NULL},
     {NULL,                                  NULL}
   };
@@ -305,12 +335,12 @@ static void fill_up_commandform(w)
 
   static Arg keyinputargs[] = {
     {XtNcallback,     (XtArgVal) NULL},
-    {XtNfromVert,    (XtArgVal) NULL}
+    {XtNfromVert,    (XtArgVal) NULL} /* put it under playbackbutton */
   };
 
   static Arg quitargs[] = {
     {XtNcallback,    (XtArgVal) NULL},
-    {XtNfromVert,    (XtArgVal) NULL}, /* put it under playbackbutton */
+    {XtNfromVert,    (XtArgVal) NULL}, /* put it under keyinputbutton */
     {XtNvertDistance,(XtArgVal) 10}
   };
 
@@ -350,23 +380,44 @@ static void fill_up_commandform(w)
 ** Leave the program nicely.
 */
 
-static void quit()
+static void
+quit()
 {
   close_file_if_recording();
   exit(0);
 }
 
-static void clear_test_window()
+/* clear_test_window()
+** -------------------
+** Clear the test window.
+*/
+
+static void
+clear_test_window()
 {
   XClearWindow(X.dpy,XtWindow(test));
 }
 
-static void clear_result_window()
+/* clear_result_window()
+** ---------------------
+** Clear the result window.
+*/
+
+static void
+clear_result_window()
 {
   XClearWindow(X.dpy,XtWindow(result));
 }
 
-static void set_foreground_and_background()
+/* set_foreground_and_background()
+** -------------------------------
+** Finds the user-specified foreground and background by querying
+** the resource manager, and sets state accordingly.  Also specifies
+** the initial font for text tests.
+*/
+
+static void
+set_foreground_and_background()
 {
   static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
