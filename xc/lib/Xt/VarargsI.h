@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.12 91/03/23 11:25:21 rws Exp $ */
+/* $XConsortium: VarargsI.h,v 1.13 91/03/26 08:34:31 rws Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -20,33 +20,6 @@ without express or implied warranty.
 
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 
- 
-#ifdef __HIGHC__
-#ifndef _STDARG_H
-#define _STDARG_H
-
-typedef char *va_list;
-
-/* Amount of space required in an argument list for an arg of type TYPE.
-   TYPE may alternatively be an expression whose type is used.  */
-
-#define __va_rounded_size(TYPE)  \
-  (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
-
-#define va_start(AP, LASTARG)                                           \
- (AP = ((char *) &(LASTARG) + __va_rounded_size (LASTARG)))
-
-#define va_end(AP)
-
-#define va_arg(AP, TYPE)                                                \
- (AP += __va_rounded_size (TYPE),                                       \
-  *((TYPE *) (AP - __va_rounded_size (TYPE))))
-
-#endif /* _STDARG_H */
-
-#define Va_start(a,b) va_start(a,b)
-
-#else /* !__HIGHC__ */
 
 #if NeedVarargsPrototypes
 # include <stdarg.h>
@@ -55,8 +28,6 @@ typedef char *va_list;
 # include <varargs.h>
 # define Va_start(a,b) va_start(a)
 #endif
-
-#endif /* __HIGHC__ */
 
 typedef struct _XtTypedArg {
     String      name;
