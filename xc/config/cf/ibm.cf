@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.17 91/01/08 12:22:08 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.19 91/04/17 09:18:40 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -29,9 +29,16 @@ XCOMM operating system:  OSName
 #define LnCmd			ln -s
 #define HasSockets		YES
 #define LdCombineFlags		-r
+#define ExecableScripts		YES
 #define Malloc0ReturnsNull	YES
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
-#define BuildServer		NO
+#define BuildServer		YES
+#define BuildPex		NO
+#define StandardDefines         -DSYSV -DAIXV3
+#define XibmServer 		Xibm
+#define ibmIncludeSKYWAY	YES
+#define OPERATING_SYSTEM 	AIX /* directory name under server/ddx/ibm/ */
+#include <ibmLib.rules>
 
 #else
 
