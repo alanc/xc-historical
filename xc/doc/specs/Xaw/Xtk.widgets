@@ -4297,10 +4297,10 @@ Whether
 .PN XtMapWidget
 is automatic
 T}
-XtNmaximumLength	int	256	Maximum number of input characters
+XtNmaximumLength	int	0	Length of value buffer
 XtNsensitive	Boolean	True	Whether widget receives input
 XtNtranslations	TranslationTable	None	Event-to-action translations
-XtNvalue	char*	NULL	Pointer to default string
+XtNvalue	char*	NULL	Pointer to input value string
 XtNwidth	Dimension	computed at create	Width of dialog
 XtNx	Position	NULL	x position of dialog
 XtNy	Position	NULL	y position of dialog
@@ -4345,7 +4345,12 @@ Specifies the widget ID of the Dialog box.
 .LP
 If a string was specified in the
 .PN XtNvalue
-resource, Dialog will store the input directly into the string.
+resource, Dialog will store the input directly into the string and will
+display any initial value in the string.  The initial value may be used
+as a default value for the user input.
+.LP
+If no value resource is specified for the Dialog widget, the text user
+input area is not displayed.
 .LP
 .sp
 .IN "Dialog widget" "removing children"
