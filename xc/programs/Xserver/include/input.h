@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.16 94/02/23 15:47:26 dpw Exp $ */
+/* $XConsortium: input.h,v 1.17 94/04/17 20:25:46 frob Exp $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium
@@ -447,6 +447,24 @@ extern void ProcessKeyboardEvent(
     int /*count*/
 #endif
 );
+
+#ifdef XKB
+extern void CoreProcessPointerEvent(
+#if NeedFunctionPrototypes
+    xEventPtr /*xE*/,
+    DeviceIntPtr /*mouse*/,
+    int /*count*/
+#endif
+);
+
+extern void CoreProcessKeyboardEvent(
+#if NeedFunctionPrototypes
+    xEventPtr /*xE*/,
+    DeviceIntPtr /*keybd*/,
+    int /*count*/
+#endif
+);
+#endif
 
 extern Bool LegalModifier(
 #if NeedFunctionPrototypes

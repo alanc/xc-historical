@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.7 93/09/28 20:14:46 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.11 94/04/08 15:07:52 erik Exp dpw $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -189,6 +189,7 @@ typedef struct _XkbSrvInfo {
 extern int	XkbEventBase;
 extern int	XkbComputeAutoRepeat;
 extern int	XkbDisableLockActions;
+extern Bool	noXkbExtension;
 
 #ifdef DEBUG
 extern CARD16	xkbDebugFlags;

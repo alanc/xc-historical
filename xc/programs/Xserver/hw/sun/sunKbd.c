@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.45 1994/05/11 17:09:00 kaleb Exp kaleb $ */
+/* $XConsortium: sunKbd.c,v 5.46 94/08/05 19:07:08 kaleb Exp dpw $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -52,10 +52,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define KB_SUN4		4
 #endif
 
-#ifndef XKB
 #define AUTOREPEAT_INITIATE	200
 #define AUTOREPEAT_DELAY	50
-#endif
 
 #define tvminus(tv, tv1, tv2)   /* tv = tv1 - tv2 */ \
 		if ((tv1).tv_usec < (tv2).tv_usec) { \
@@ -76,18 +74,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 extern KeySymsRec sunKeySyms[];
 extern SunModmapRec* sunModMaps[];
 
-#ifndef XKB
 long	  	  sunAutoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
 long	  	  sunAutoRepeatDelay = 1000 * AUTOREPEAT_DELAY;
-#endif
 
-#ifndef XKB
 static int		autoRepeatKeyDown = 0;
 static int		autoRepeatReady;
 static int		autoRepeatFirst;
 static struct timeval	autoRepeatLastKeyDownTv;
 static struct timeval	autoRepeatDeltaTv;
-#endif
 
 void sunKbdWait()
 {
@@ -254,7 +248,6 @@ static void EnqueueEvent (xE)
 #endif
 }
 
-#ifndef XKB
 
 #define XLED_NUM_LOCK    0x1
 #define XLED_COMPOSE     0x4
@@ -315,14 +308,15 @@ static void pseudoKey(device, down, keycode)
 	}
     }
 }
-#endif
 
 static void DoLEDs(device, ctrl, pPriv)
     DeviceIntPtr    device;	    /* Keyboard to alter */
     KeybdCtrl* ctrl;
     sunKbdPrivPtr pPriv; 
 {
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if ((ctrl->leds & XLED_CAPS_LOCK) && !(pPriv->leds & XLED_CAPS_LOCK))
 	    pseudoKey(device, TRUE,
 		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
@@ -354,6 +348,8 @@ static void DoLEDs(device, ctrl, pPriv)
     if (!(ctrl->leds & XLED_COMPOSE) && (pPriv->leds & XLED_COMPOSE))
 	    pseudoKey(device, FALSE,
 		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+#ifdef XKB
+    }
 #endif
     pPriv->leds = ctrl->leds & 0x0f;
     SetLights (ctrl, pPriv->fd);
@@ -424,6 +420,7 @@ int sunKbdProc (device, what)
     DevicePtr pKeyboard = (DevicePtr) device;
     sunKbdPrivPtr pPriv;
     KeybdCtrl*	ctrl = &device->kbdfeed->ctrl;
+    extern int XkbDfltRepeatDelay, XkbDfltRepeatInterval;
 
     static CARD8 *workingModMap = NULL;
     static KeySymsRec *workingKeySyms;
@@ -460,10 +457,15 @@ int sunKbdProc (device, what)
 	(void) memset ((void *) defaultKeyboardControl.autoRepeats,
 			~0, sizeof defaultKeyboardControl.autoRepeats);
 
-#ifndef XKB
-	autoRepeatKeyDown = 0;
+#ifdef XKB
+	if (noXkbExtension) {
+	    sunAutoRepeatInitiate = XkbDfltRepeatDelay * 1000;
+	    sunAutoRepeatDelay = XkbDfltRepeatInterval * 1000;
 #endif
-
+	autoRepeatKeyDown = 0;
+#ifdef XKB
+	}
+#endif
 	pKeyboard->devicePrivate = (pointer)&sunKbdPriv;
 	pKeyboard->on = FALSE;
 
@@ -558,7 +560,6 @@ Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
  *
  *-----------------------------------------------------------------------
  */
-#ifndef XKB
 static xEvent	autoRepeatEvent;
 static int	composeCount;
 
@@ -635,8 +636,6 @@ static Bool DoSpecialKeys(device, xE, fe)
     return FALSE;
 }
 
-#endif
-
 #if NeedFunctionPrototypes
 void sunKbdEnqueueEvent (
     DeviceIntPtr  device,
@@ -654,7 +653,9 @@ void sunKbdEnqueueEvent (device, fe)
     keycode = (fe->id & 0x7f) + MIN_KEYCODE;
 
     keyModifiers = device->key->modifierMap[keycode];
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (keycode == autoRepeatEvent.u.u.detail))) {
 	/*
@@ -662,18 +663,23 @@ void sunKbdEnqueueEvent (device, fe)
 	 */
 	autoRepeatKeyDown = 0;
     }
+#ifdef XKB
+    }
 #endif
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = keycode;
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if (DoSpecialKeys(device, &xE, fe))
 	return;
+#ifdef XKB
+    }
 #endif /* ! XKB */
     mieqEnqueue (&xE);
 }
 
-#ifndef XKB
 void sunEnqueueAutoRepeat ()
 {
     int	delta;
@@ -718,7 +724,6 @@ void sunEnqueueAutoRepeat ()
     tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
 		    autoRepeatDeltaTv);
 }
-#endif /* ! XKB */
 
 /*-
  *-----------------------------------------------------------------------
@@ -813,7 +818,6 @@ Bool LegalModifier(key, pDev)
     return TRUE;
 }
 
-#ifndef XKB
 /*ARGSUSED*/
 void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
     int nscreen;
@@ -868,5 +872,3 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	autoRepeatReady = 0;
     }
 }
-#endif /* ! XKB */
-

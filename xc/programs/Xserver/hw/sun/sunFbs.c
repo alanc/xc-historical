@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.6 93/12/13 18:24:01 dpw Exp $ */
+/* $XConsortium: sunFbs.c,v 1.7 94/04/17 20:29:37 dpw Exp dpw $ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium
@@ -206,18 +206,18 @@ Bool sunScreenInit (pScreen)
 #endif
 {
     SetupScreen(pScreen);
-#ifndef XKB
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-#endif
     extern miPointerScreenFuncRec   sunPointerScreenFuncs;
 
     pPrivate->installedMap = 0;
     pPrivate->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = closeScreen;
     pScreen->SaveScreen = sunSaveScreen;
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     /*
      *	Block/Unblock handlers
      */
@@ -229,6 +229,8 @@ Bool sunScreenInit (pScreen)
     if (pScreen == autoRepeatScreen) {
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
+    }
+#ifdef XKB
     }
 #endif
     if (!sunCursorInitialize (pScreen))
