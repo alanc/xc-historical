@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XCrGC.c,v 11.19 87/09/08 12:52:17 newman Locked $ */
+/* $Header: XCrGC.c,v 11.20 87/09/08 14:30:38 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -299,7 +299,7 @@ _XFlushGCCache(dpy, gc)
         _XGenerateGCList (dpy, gc, (xReq *) req);
 	ext = dpy->ext_procs;
 	while (ext) {		/* call out to any extensions interested */
-		if (ext->copy_GC != NULL) (*ext->copy_GC)(dpy, gc, &ext->codes);
+		if (ext->flush_GC != NULL) (*ext->flush_GC)(dpy, gc, &ext->codes);
 		ext = ext->next;
 	}    
     }
