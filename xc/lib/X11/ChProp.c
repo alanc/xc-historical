@@ -1,4 +1,4 @@
-/* $XConsortium: XChProp.c,v 11.22 91/01/06 11:44:22 rws Exp $ */
+/* $XConsortium: XChProp.c,v 11.23 91/12/19 14:56:42 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -55,26 +55,26 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
 
     switch (req->format) {
       case 8:
-	len = req->length + (((long)nelements + 3)>>2);
-	if (len <= 65535) {
-	    req->length = len;
+	len = ((long)nelements + 3)>>2;
+	if (dpy->bigreq_size || req->length + len <= 65535) {
+	    SetReqLen(req, len, len);
 	    Data (dpy, (char *)data, nelements);
 	} /* else force BadLength */
         break;
  
       case 16:
-	len = req->length + (((long)nelements + 1)>>1);
-	if (len <= 65535) {
-	    req->length = len;
+	len = ((long)nelements + 1)>>1;
+	if (dpy->bigreq_size || req->length + len <= 65535) {
+	    SetReqLen(req, len, len);
 	    len = (long)nelements << 1;
 	    Data16 (dpy, (short *) data, len);
 	} /* else force BadLength */
 	break;
 
       case 32:
-	len = req->length + (long)nelements;
-	if (len <= 65535) {
-	    req->length = len;
+	len = nelements;
+	if (dpy->bigreq_size || req->length + len <= 65535) {
+	    SetReqLen(req, len, len);
 	    len = (long)nelements << 2;
 	    Data32 (dpy, (long *) data, len);
 	} /* else force BadLength */
