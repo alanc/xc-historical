@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH MAKEDEPEND 1 "Release 5" "X Version 11"
 .UC 4
 .SH NAME
@@ -10,6 +11,8 @@ makedepend \- create dependencies in makefiles
 .B \-Dname
 ] [
 .B \-Iincludedir
+] [
+.B \-Yincludedir
 ] [
 .B \-a
 ] [
@@ -146,7 +149,14 @@ a
 directive.
 By default,
 .B makedepend
-only searches /usr/include.
+only searches the standard include directories (usually /usr/include
+and possibly a compiler-dependent directory).
+.TP 5
+.B \-Yincludedir
+Replace all of the standard include directories with the single specified
+include directory; you can omit the
+.I includedir
+to simply prevent searching the standard include directories.
 .TP 5
 .B \-a
 Append the dependencies to the end of the file instead of replacing them. 

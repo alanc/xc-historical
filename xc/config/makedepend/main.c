@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.58 92/06/01 19:59:25 rws Exp $
+ * $XConsortium: main.c,v 1.59 92/08/22 11:44:43 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -98,6 +98,7 @@ main(argc, argv)
 	struct filepointer	*filecontent;
 	struct symtab *psymp = predefs;
 	char *endmarker = NULL;
+	char *defincdir = NULL;
 
 	ProgramName = argv[0];
 
@@ -143,6 +144,9 @@ main(argc, argv)
 				*(incp-1) = *(++argv);
 				argc--;
 			}
+			break;
+		case 'Y':
+			defincdir = argv[0]+2;
 			break;
 		/* do not use if endmarker processing */
 		case 'a':
@@ -216,19 +220,25 @@ main(argc, argv)
 			warning("ignoring option %s\n", argv[0]);
 		}
 	}
+	if (!defincdir) {
 #ifdef PREINCDIR
-	if (incp >= includedirs + MAXDIRS)
-	    fatal("Too many -I flags.\n");
-	*incp++ = PREINCDIR;
+	    if (incp >= includedirs + MAXDIRS)
+		fatal("Too many -I flags.\n");
+	    *incp++ = PREINCDIR;
 #endif
-	if (incp >= includedirs + MAXDIRS)
-	    fatal("Too many -I flags.\n");
-	*incp++ = INCLUDEDIR;
+	    if (incp >= includedirs + MAXDIRS)
+		fatal("Too many -I flags.\n");
+	    *incp++ = INCLUDEDIR;
 #ifdef POSTINCDIR
-	if (incp >= includedirs + MAXDIRS)
-	    fatal("Too many -I flags.\n");
-	*incp++ = POSTINCDIR;
+	    if (incp >= includedirs + MAXDIRS)
+		fatal("Too many -I flags.\n");
+	    *incp++ = POSTINCDIR;
 #endif
+	} else if (*defincdir) {
+	    if (incp >= includedirs + MAXDIRS)
+		fatal("Too many -I flags.\n");
+	    *incp++ = defincdir;
+	}
 
 	redirect(startat, makefile);
 
