@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.172 94/04/01 20:52:40 kaleb Exp $ */
+/* $XConsortium: TMstate.c,v 1.173 94/04/17 20:14:56 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -589,8 +589,6 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
     Widget		bindWidget;
 
     bindWidget = accelWidget ? accelWidget : w;
-    if (!XtIsSensitive(bindWidget))
-      return;
 
     actionHookList = XtWidgetToApplicationContext(w)->action_hook_list;
 

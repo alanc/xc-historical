@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.167 94/04/01 12:27:02 converse Exp $ */
+/* $XConsortium: Event.c,v 1.168 94/04/17 20:14:01 converse Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1409,8 +1409,14 @@ Boolean _XtDefaultDispatcher(event)
 	else was_dispatched = XFilterEvent(event, None);
     }
     else if (grabType == pass) {
-	was_dispatched = (XFilterEvent(event, XtWindow(widget))
-			  || XtDispatchEventToWidget(widget, event));
+	if (event->type == LeaveNotify || 
+	    event->type == FocusIn ||
+	    event->type == FocusOut) {
+		if (XtIsSensitive (widget))
+		    was_dispatched = (XFilterEvent(event, XtWindow(widget)) || 
+				      XtDispatchEventToWidget(widget, event));
+	    } else was_dispatched = (XFilterEvent(event, XtWindow(widget)) || 
+				     XtDispatchEventToWidget(widget, event));
     } 
     else if (grabType == ignore) {
 	if ((grabList == NULL || _XtOnGrabList(widget, grabList))
