@@ -6,7 +6,6 @@
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
-	Atoms.h \
 	Cardinals.h \
 	Composite.h \
 	CompositeP.h \
@@ -21,6 +20,7 @@ HEADERS = \
 	Quarks.h \
 	Shell.h \
 	ShellP.h \
+	StringDefs.h \
 	TM.h \
 	Vendor.h \
 	VendorP.h
@@ -79,6 +79,12 @@ OBJS = \
 	TMstate.o \
 	Vendor.o
 
+all:: Atoms.h
+
+Atoms.h: StringDefs.h
+	$(RM) Atoms.h
+	$(LN) StringDefs.h Atoms.h
+
 #if DebugLibXt && ProfileLibXt
 DebuggedAndProfiledLibraryObjectRule()
 #else
@@ -114,3 +120,6 @@ InstallMultiple($(HEADERS),$(INCDIR))
 DependTarget()
 
 NormalLintTarget($(SRCS))
+
+clean::
+	$(RM) Atoms.h
