@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.5 89/07/18 18:03:25 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.6 89/07/19 09:30:40 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -74,7 +74,7 @@ static GCOps	whiteTECopyOps = {
 	miImageText16,
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -98,7 +98,7 @@ static GCOps	blackTECopyOps = {
 	miImageText16,
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -122,7 +122,7 @@ static GCOps	invertWhiteTECopyOps = {
 	miImageText16,
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -146,7 +146,7 @@ static GCOps	invertBlackTECopyOps = {
 	miImageText16,
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -170,7 +170,7 @@ static GCOps	whiteCopyOps = {
 	miImageText16,
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -194,7 +194,7 @@ static GCOps	blackCopyOps = {
 	miImageText16,
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -218,7 +218,7 @@ static GCOps	invertWhiteCopyOps = {
 	miImageText16,
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 };
 
@@ -242,7 +242,7 @@ static GCOps	invertBlackCopyOps = {
 	miImageText16,
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
-	mfbPushPixels,
+	mfbSolidPP,
 	miMiter,
 
 };
@@ -895,11 +895,13 @@ mfbValidateGC(pGC, changes, pDrawable)
 
     if (new_fill)
     {
-	/* install a suitable fillspans */
+	/* install a suitable fillspans and pushpixels */
+	pGC->ops->PushPixels = mfbPushPixels;
 	if ((pGC->fillStyle == FillSolid) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     (pGC->fgPixel == pGC->bgPixel)))
 	{
+	    pGC->ops->PushPixels = mfbSolidPP;
 	    switch(devPriv->rop)
 	    {
 	      case RROP_WHITE:
