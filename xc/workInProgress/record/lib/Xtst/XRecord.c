@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  *
- * $XConsortium: XRecord.c,v 1.5 94/02/04 14:48:10 rws Exp $
+ * $XConsortium: XRecord.c,v 1.6 94/02/05 14:16:43 rws Exp $
  */
 
 #include <stdio.h>
@@ -52,7 +52,7 @@ static char *xrecord_error_list[] = {
     "BadConfiguration (Invalid configuration)",
 };
 
-XEXT_GENERATE_FIND_DISPLAY (find_display, xrecord_info,
+static XEXT_GENERATE_FIND_DISPLAY (find_display, xrecord_info,
 	xrecord_extension_name, &xrecord_extension_hooks, XRecordNumErrors, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xrecord_info)
