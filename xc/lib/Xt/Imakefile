@@ -1,6 +1,9 @@
 #include BandAidCompiler
 
-    STD_DEFINES = LibraryDefines
+#if AlignedReferencesOnly
+  ALIGN_DEFINES = -DALIGNED
+#endif
+    STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     APP_DEFINES = -DXAPPLOADDIR=\"$(XAPPLOADDIR)$(PATHSEP)\"
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
