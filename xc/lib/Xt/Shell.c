@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.105 91/06/20 18:02:44 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.106 91/06/27 16:35:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1052,9 +1052,9 @@ static void EvaluateWMHints(w)
 	else
 	    hintp->flags |= IconPositionHint;
 
-	if (hintp->icon_pixmap != NULL) hintp->flags |= IconPixmapHint;
-	if (hintp->icon_mask != NULL)   hintp->flags |= IconMaskHint;
-	if (hintp->icon_window != NULL) hintp->flags |= IconWindowHint;
+	if (hintp->icon_pixmap != None) hintp->flags |= IconPixmapHint;
+	if (hintp->icon_mask != None)   hintp->flags |= IconMaskHint;
+	if (hintp->icon_window != None) hintp->flags |= IconWindowHint;
 
 	if (hintp->window_group == XtUnspecifiedWindow) {
 	    if(w->core.parent) {
