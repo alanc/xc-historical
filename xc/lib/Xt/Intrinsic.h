@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.76 88/02/26 12:40:57 swick Exp $
+* $Header: Intrinsic.h,v 1.77 88/05/02 17:05:53 swick Exp $
 */
 
 /***********************************************************
@@ -45,7 +45,14 @@ SOFTWARE.
 #endif
 
 #define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
+#define XtOffset(type,field) \
+        ((unsigned int) (((caddr_t) (&(((type)NULL)->field))) - \
+                         ((caddr_t) NULL)))
+#ifdef notdef
+/* the following breaks on compilers that refuse to cast caddr_t to int */
 #define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
+#endif /* notdef */
+
 
 typedef char *String;
 typedef struct _WidgetRec *Widget;
