@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.108 93/07/12 11:53:37 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.109 93/09/07 21:33:15 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -106,6 +106,7 @@ struct _XDisplay
 	Font cursor_font;	   /* for XCreateFontCursor */
 	struct _XDisplayAtoms *atoms; /* for XInternAtom */
 	unsigned int mode_switch;  /* keyboard group modifiers */
+	unsigned int num_lock;  /* keyboard numlock modifiers */
 	struct _XContextDB *context_db; /* context database */
 	Bool (**error_vec)();      /* vector for wire to error */
 	/*
