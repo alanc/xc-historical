@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.10 91/01/11 13:32:14 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.11 91/04/02 11:18:54 rws Exp $ */
 
 /*
  * These are routines found in BSD but not on all other systems.  The core
@@ -31,7 +31,7 @@
 
 #include <X11/Xosdefs.h>
 
-#if __STDC__ && defined(X_NOT_STDC_ENV)
+#if (__STDC__ && defined(X_NOT_STDC_ENV)) || defined(SVR4) || defined(hpux)
 
 #include <string.h>
 
@@ -39,47 +39,21 @@ void bcopy (b1, b2, length)
     register char *b1, *b2;
     register int length;
 {
-    memmove((void *)b2, (void *)b1, (size_t)length);
+    memmove(b2, b1, (size_t)length);
 }
 
 int bcmp (b1, b2, length)
     register char *b1, *b2;
     register int length;
 {
-    return memcmp((void *)b1, (void *)b2, (size_t)length);
+    return memcmp(b1, b2, (size_t)length);
 }
 
 void bzero (b, length)
     register char *b;
     register int length;
 {
-    memset((void *)b, 0, (size_t)length);
-}
-
-#else
-#if defined(SVR4) || defined(hpux)
-
-#include <string.h>
-
-void bcopy (b1, b2, length)
-    register char *b1, *b2;
-    register int length;
-{
-    memmove(b2, b1, length);
-}
-
-int bcmp (b1, b2, length)
-    register char *b1, *b2;
-    register int length;
-{
-    return memcmp(b1, b2, length);
-}
-
-bzero (b, length)
-    register char *b;
-    register int length;
-{
-    memset(b, 0, length);
+    memset(b, 0, (size_t)length);
 }
 
 #else
@@ -137,7 +111,6 @@ void bzero (b, length)
 	*b++ = '\0';
 }
 
-#endif
 #endif
 #endif
 #endif /* WANT_BFUNCS */
