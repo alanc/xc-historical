@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 93/12/06 18:39:10 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 93/12/07 16:40:02 mor Exp $
 
 #define DoNormalLib NormalLibICE
 #define DoSharedLib SharedLibICE
@@ -7,6 +7,8 @@ XCOMM $XConsortium: Imakefile,v 1.9 93/12/06 18:39:10 mor Exp $
 #define LibName ICE
 #define SoRev SOICEREV
 #define IncSubdir ICE
+
+DEFINES = -DICE
 
 #if (SystemV || SystemV4) && !HasSockets
 CONN_DEFINES = -DTCPCONN
@@ -18,6 +20,8 @@ CONN_DEFINES = ConnectionFlags
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
+DEPEND_DEFINES = $(TRANS_INCLUDES) $(CONN_DEFINES)
+
 HEADERS = ICE.h \
           ICEproto.h \
           ICElib.h \
@@ -26,7 +30,6 @@ HEADERS = ICE.h \
 SRCS = accept.c \
        authutil.c \
        connect.c \
-       connutil.c \
        error.c \
        getauth.c \
        iceauth.c \
@@ -40,12 +43,12 @@ SRCS = accept.c \
        replywait.c \
        setauth.c \
        shutdown.c \
+       transport.c \
        watch.c
 
 OBJS = accept.o \
        authutil.o \
        connect.o \
-       connutil.o \
        error.o \
        getauth.o \
        iceauth.o \
@@ -59,13 +62,12 @@ OBJS = accept.o \
        replywait.o \
        setauth.o \
        shutdown.o \
+       transport.o \
        watch.o
 
 #include <Library.tmpl>
 
-SpecialCLibObjectRule(connect,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(listen,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(misc,$(ICONFIGFILES),$(CONN_DEFINES))
-SpecialCLibObjectRule(connutil,$(ICONFIGFILES),$(CONN_DEFINES) $(SOCK_DEFINES))
+SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 
 DependTarget()
