@@ -360,7 +360,8 @@
 (proclaim '(type buffer-longs *empty-longs*))
 )
 
-(defstruct (reply-buffer (:conc-name reply-) (:constructor make-reply-buffer-internal))
+(defstruct (reply-buffer (:conc-name reply-) (:constructor make-reply-buffer-internal)
+			 (:copier nil) (:predicate nil))
   (size 0 :type array-index)			;Buffer size
   ;; Byte (8 bit) input buffer
   (ibuf8 *empty-bytes* :type buffer-bytes)
@@ -397,7 +398,7 @@
 			  (let ((lisp-pkg (find-package 'lisp)))
 			    (and (find-symbol (string 'defclass) lisp-pkg)
 				 lisp-pkg)))))
-    (if #+Genera t #-Genera clos-package
+    (if clos-package
 	(let ((constructor t)
 	      (constructor-args t)
 	      (include nil)
@@ -421,14 +422,14 @@
 		   (intern (apply #'concatenate 'simple-string
 				  (mapcar #'symbol-name symbols))
 			   *package*))
-		 (kintern (name)
-		   (intern name (find-package 'keyword)))
-		 (closintern (name)
-		   (intern name clos-package)))
+		 (kintern (symbol)
+		   (intern (symbol-name symbol) (find-package 'keyword)))
+		 (closintern (symbol)
+		   (intern (symbol-name symbol) clos-package)))
 	    (when (eq constructor t)
 	      (setf constructor (cintern 'make- name)))
 	    (when (eq copier t)
-	      (setf copier (cintern 'copy name)))
+	      (setf copier (cintern 'copy- name)))
 	    (when (eq predicate t)
 	      (setf predicate (cintern name '-p)))
 	    (when include
@@ -452,7 +453,7 @@
 		 ,(cond #-Genera
 			(clos-package
 			 `(within-definition (,name def-clx-class)
-			    (,(closintern (string 'defclass))
+			    (,(closintern 'defclass)
 			     ,name ,(and include `(,include))
 			     (,@(map 'list
 				     #'(lambda (slot-name slot-initform slot-type)
@@ -463,30 +464,33 @@
 							(or (eq constructor-args t)
 							    (member slot-name
 								    constructor-args)))
-					       `(:initarg ,(kintern (symbol-name slot-name))))
+					       `(:initarg ,(kintern slot-name)))
 					   ))
 				     slot-names slot-initforms slot-types)))
 			    ,(when constructor
 			       (if (eq constructor-args t)
 				   `(defun ,constructor (&rest args)
-				      (apply #',(closintern (string
-							     'make-instance))
+				      (apply #',(closintern 'make-instance)
 					     ',name args))
 				   `(defun ,constructor ,constructor-args
-				      (,(closintern (string 'make-instance)) ',name
+				      (,(closintern 'make-instance) ',name
 				       ,@(mapcan #'(lambda (slot-name)
 						     (and (member slot-name slot-names)
-							  `(,(kintern (symbol-name slot-name))
-							    ,slot-name)))
+							  `(,(kintern slot-name) ,slot-name)))
 						 constructor-args)))))
 			    ,(when predicate
 			       `(defun ,predicate (object)
 				  (typep object ',name)))
 			    ,(when copier
-			       (error ":COPIER not supported."))
+			       `(,(closintern 'defmethod) ,copier ((.object. ,name))
+				 (,(closintern 'with-slots) ,slot-names .object.
+				  (,(closintern 'make-instance) ',name
+				   ,@(mapcan #'(lambda (slot-name)
+						 `(,(kintern slot-name) ,slot-name))
+					     slot-names)))))
 			    ,(when print-function
-			       `(,(closintern (string 'defmethod))
-				 ,(closintern (string 'print-object))
+			       `(,(closintern 'defmethod)
+				 ,(closintern 'print-object)
 				 ((object ,name) stream)
 				 (,print-function object stream 0)))))
 
@@ -499,6 +503,7 @@
 						`(,slot-name ,slot-initform))
 					    slot-names slot-initforms))
 				    ,(and include `(,include))
+			      :initable-instance-variables
 			      :locatable-instance-variables
 			      :readable-instance-variables
 			      :writable-instance-variables
@@ -535,8 +540,7 @@
 ;; Overlapping (displaced) arrays are provided for byte
 ;; half-word and word access on both input and output.
 ;;
-(def-clx-class (buffer (:constructor nil)
-		       (:copier nil))
+(def-clx-class (buffer (:constructor nil) (:copier nil) (:predicate nil))
   ;; Lock for multi-processing systems
   (lock (make-process-lock "CLX Buffer Lock"))
   #-excl (output-stream nil :type (or null stream))
@@ -591,26 +595,38 @@
 ;;-----------------------------------------------------------------------------
 
 #-lispm
-(defun print-object (object stream &optional function)
-  (princ "#<" stream)
-  (prin1 (type-of object) stream)
-  (when function
-    (princ " " stream)
-    (funcall function object stream))
-  #+lcl3.0
-  (let ((*print-base* 16))
-    (princ " " stream)
-    (princ (sys:%pointer object) stream))
-  (princ ">" stream))
-
-#-lispm
 (defmacro printing-object ((object stream) &body body)
-  `(print-object
-     ,object ,stream
-     ,@(and body `(#'(lambda (,object ,stream) ,@body)))))
+  `(let ((.object. ,object)
+	 (.stream. ,stream))
+     (princ "#<" .stream.)
+     (prin1 (type-of .object.) .stream.)
+     ,@(when body
+	 `((princ " " .stream.)
+	   ,@body))
+     #+lcl3.0
+     (let ((*print-base* 16))
+       (princ " " .stream.)
+       (princ (sys:%pointer .object.) .stream.))
+     (princ ">" .stream.)))
 
 #+lispm
 (defmacro printing-object ((object stream) &body body)
   `(si:printing-random-object (,object ,stream :typep)
      ,@body))
 
+
+;;-----------------------------------------------------------------------------
+;; Image stuff
+;;-----------------------------------------------------------------------------
+
+(defconstant *image-bit-lsb-first-p*
+	     #+clx-little-endian t
+	     #-clx-little-endian nil)
+
+(defconstant *image-byte-lsb-first-p*
+	     #+clx-little-endian t
+	     #-clx-little-endian nil)
+
+(defconstant *image-unit* 32)
+
+(defconstant *image-pad* 32)

@@ -44,7 +44,8 @@
 ;; The C version of this uses a 64 entry hash table at each entry.
 ;; Small hash tables lose in Lisp, so we do linear searches on lists.
 
-(defstruct (resource-database (:copier nil) (:print-function print-resource)
+(defstruct (resource-database (:copier nil) (:predicate nil)
+			      (:print-function print-resource-database)
 			      (:constructor make-resource-database-internal)
 			      #+explorer (:callable-constructors nil)
 			      )
@@ -53,6 +54,15 @@
   (tight nil :type list) ;; List of resource-database
   (loose nil :type list) ;; List of resource-database
   )
+
+(defun print-resource-database (database stream depth)
+  (declare (type resource-database database)
+	   (ignore depth))
+  (printing-object (database stream)
+    (princ (resource-database-name database) stream)
+    (when (resource-database-value database)
+      (princ " " stream)
+      (prin1 (resource-database-value database) stream))))
 
 ;; The value slot of the top-level resource-database structure is used for a
 ;; time-stamp.
@@ -73,16 +83,6 @@
 	  (if (= timestamp most-positive-fixnum)
 	      most-negative-fixnum
 	    (1+ timestamp)))))
-
-;; Without this, resources take forever to print...
-(defun print-resource (database stream depth)
-  (declare (type resource-database database))
-  (declare (ignore depth))
-  (printing-object (database stream)
-    (princ (resource-database-name database) stream)
-    (when (resource-database-value database)
-      (princ " " stream)
-      (prin1 (resource-database-value database) stream))))
 
 ;; DEBUG FUNCTION  (not exported)
 (defun print-db (entry &optional (level 0) type)
@@ -250,7 +250,6 @@
 
 (defun get-entry (tight loose names classes &aux result)
   (declare (type list tight loose names classes))
-  (declare (inline resource-key))
   (let ((name (car names))
 	(class (car classes)))
     (declare (type symbol name class))
@@ -511,7 +510,7 @@
 	  (when i ;; else blank line
 	    (case (char string i)
 	      (#\! nil)  ;; Comment - skip
-	      (#.(int-char 0) nil) ;; terminator for C strings - skip
+	      (#.(card8->char 0) nil) ;; terminator for C strings - skip
 	      (#\#       ;; Include
 	       (setq term (position '(#\tab #\space) string :test #'char-memq
 				    :start i :end end))

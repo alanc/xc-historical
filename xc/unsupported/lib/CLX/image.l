@@ -51,6 +51,13 @@
 	  bitmap-image
 	  image-pixmap))
 
+(def-clx-class (image (:constructor nil) (:copier nil) (:predicate nil))
+  ;; Public structure
+  (width 0 :type card16 :read-only t)
+  (height 0 :type card16 :read-only t)
+  (depth 1 :type card8 :read-only t)
+  (plist nil :type list))
+
 ;; Image-Plist accessors:
 (defmacro image-name (image) `(getf (image-plist ,image) :name))
 (defmacro image-x-hot (image) `(getf (image-plist ,image) :x-hot))
@@ -60,7 +67,8 @@
 (defmacro image-green-mask (image) `(getf (image-plist ,image) :green-mask))
 
 (defun print-image (image stream depth)
-  (declare (ignore depth))
+  (declare (type image image)
+	   (ignore depth))
   (printing-object (image stream)
     (when (image-name image)
       (princ (image-name image) stream)
@@ -71,20 +79,13 @@
     (princ "x" stream)
     (prin1 (image-depth image) stream)))
 
-(defstruct (image (:constructor nil) (:copier nil))
-  ;; Public structure
-  (width 0 :type card16 :read-only t)
-  (height 0 :type card16 :read-only t)
-  (depth 1 :type card8 :read-only t)
-  (plist nil :type list))
-
 (defconstant *empty-data-x* #.(make-sequence '(array card8 (*)) 0))
 
 (defconstant *empty-data-z*
 	     #.(make-array '(0 0) :element-type 'pixarray-1-element-type))
 
-(defstruct (image-x (:include image) (:copier nil)
-		    (:print-function print-image))
+(def-clx-class (image-x (:include image) (:copier nil)
+			(:print-function print-image))
   ;; Use this format for shoveling image data
   ;; Private structure. Accessors for these NOT exported.
   (format :z-pixmap :type (member :bitmap :xy-pixmap :z-pixmap))
@@ -97,14 +98,14 @@
   (pad *image-pad* :type (member 8 16 32))			; Scanline pad
   (left-pad 0 :type card8))					; Left pad
 
-(defstruct (image-xy (:include image) (:copier nil)
-		     (:print-function print-image))
+(def-clx-class (image-xy (:include image) (:copier nil)
+			 (:print-function print-image))
   ;; Public structure
   ;; Use this format for image processing
   (bitmap-list nil :type list)) ;; list of bitmaps
 
-(defstruct (image-z (:include image) (:copier nil)
-		    (:print-function print-image))
+(def-clx-class (image-z (:include image) (:copier nil)
+			(:print-function print-image))
   ;; Public structure
   ;; Use this format for image processing
   (bits-per-pixel 1 :type (member 1 4 8 16 24 32))

@@ -2162,21 +2162,6 @@
 (deftype bitmap ()
   'pixarray-1)
 
-(defconstant *image-bit-lsb-first-p*
-	     #+clx-little-endian t
-	     #-clx-little-endian nil)
-
-(defconstant *image-byte-lsb-first-p*
-	     #+clx-little-endian t
-	     #-clx-little-endian nil)
-
-;;; All known lisps running CLX work best with image unit and pad being 32
-;;; bits.
-
-(defconstant *image-unit* 32)
-
-(defconstant *image-pad* 32)	     
-
 ;;; These are used to read and write pixels from and to CARD8s.
 
 ;;; READ-IMAGE-LOAD-BYTE is used to extract 1 and 4 bit pixels from CARD8s.
@@ -2473,6 +2458,36 @@
 		(aref buffer-bbuf (index+ i 1)))))))
   t)
 
+#+Genera
+(defun fast-read-pixarray-24 (buffer-bbuf index array x y width height 
+			      padded-bytes-per-line)
+  (declare (type buffer-bytes buffer-bbuf)
+	   (type pixarray-24 array)
+	   (type card16 width height)
+	   (type array-index index padded-bytes-per-line))
+  #.(declare-buffun)
+  (with-vector (buffer-bbuf buffer-bytes)
+    (do* ((array array)
+	  (start (index+ index
+			 (index* y padded-bytes-per-line)
+			 (index* x 3))
+		 (index+ start padded-bytes-per-line))
+	  (y 0 (index1+ y)))
+	 ((index>= y height))
+      (declare (sys:array-register-1d array)
+	       (type array-index start y))
+      (do* ((end (index+ start (index* width 3)))
+	    (i start (index+ i 3))
+	    (x (array-row-major-index array y 0) (index1+ x)))
+	   ((index>= i end))
+	(declare (type array-index end i x))
+	(setf (sys:%1d-aref array x)
+	      (read-image-assemble-bytes
+		(aref buffer-bbuf (index+ i 0))
+		(aref buffer-bbuf (index+ i 1))
+		(aref buffer-bbuf (index+ i 2)))))))
+  t)
+
 #+lcl3.0
 (defun fast-read-pixarray-24 (buffer-bbuf index array x y width height 
 			      padded-bytes-per-line)
@@ -2566,14 +2581,17 @@
 	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
 	 (sys:bitblt boole-1 width height a x y pixarray 0 0))
 	t))
+    #+Genera
+    (when (= bits-per-pixel 24)
+      (fast-read-pixarray-24
+	bbuf boffset pixarray x y width height padded-bytes-per-line))
     #+lcl3.0
     (funcall
       (ecase bits-per-pixel 
 	(1 #'fast-read-pixarray-1) (4 #'fast-read-pixarray-4)
 	(8 #'fast-read-pixarray-8) (16 #'fast-read-pixarray-16)
 	(24 #'fast-read-pixarray-24) (32 #'fast-read-pixarray-32))
-      bbuf boffset pixarray x y width height padded-bytes-per-line
-      bits-per-pixel)
+      bbuf boffset pixarray x y width height padded-bytes-per-line)
     ))
 
 ;;; FAST-WRITE-PIXARRAY - copy part of a pixarray into an array of CARD8s
@@ -2735,6 +2753,38 @@
 		(write-image-load-byte 8 pixel 16))))))
   t)
 
+#+Genera
+(defun fast-write-pixarray-24 (buffer-bbuf index array x y width height
+			       padded-bytes-per-line)
+  (declare (type buffer-bytes buffer-bbuf)
+	   (type pixarray-24 array)
+	   (type int16 x y)
+	   (type card16 width height)
+	   (type array-index index padded-bytes-per-line))
+  #.(declare-buffun)
+  (with-vector (buffer-bbuf buffer-bytes)
+    (do* ((array array)
+	  (h 0 (index1+ h))
+	  (y y (index1+ y))
+	  (start index (index+ start padded-bytes-per-line)))
+	 ((index>= h height))
+      (declare (sys:array-register-1d array)
+	       (type array-index y start))
+      (do* ((end (index+ start (index* width 3)))
+	    (i start (index+ i 3))
+	    (x (array-row-major-index array y x) (index1+ x)))
+	   ((index>= i end))
+	(declare (type array-index end i x))
+	(let ((pixel (sys:%1d-aref array x)))
+	  (declare (type pixarray-24-element-type pixel))
+	  (setf (aref buffer-bbuf (index+ i 0))
+		(write-image-load-byte 0 pixel 24))
+	  (setf (aref buffer-bbuf (index+ i 1))
+		(write-image-load-byte 8 pixel 24))
+	  (setf (aref buffer-bbuf (index+ i 2))
+		(write-image-load-byte 16 pixel 24))))))
+  t)
+
 #+lcl3.0
 (defun fast-write-pixarray-24 (buffer-bbuf index array x y width height
 			       padded-bytes-per-line)
@@ -2831,14 +2881,17 @@
 	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
 	 (sys:bitblt boole-1 width height pixarray x y a 0 0))
 	t))
+    #+Genera
+    (when (= bits-per-pixel 24)
+      (fast-write-pixarray-24
+	bbuf boffset pixarray x y width height padded-bytes-per-line))
     #+lcl3.0
     (funcall
       (ecase bits-per-pixel 
 	(1 #'fast-write-pixarray-1) (4 #'fast-write-pixarray-4)
 	(8 #'fast-write-pixarray-8) (16 #'fast-write-pixarray-16)
 	(24 #'fast-write-pixarray-24) (32 #'fast-write-pixarray-32))
-      bbuf boffset pixarray x y width height padded-bytes-per-line
-      bits-per-pixel)
+      bbuf boffset pixarray x y width height padded-bytes-per-line)
     ))
 
 ;;; FAST-COPY-PIXARRAY - copy part of a pixarray into another
@@ -2863,6 +2916,23 @@
 		 (zerop (index-mod copy-padded-bits-per-line 32)))
 	(sys:bitblt boole-1 width height pixarray x y copy 0 0)
 	t))
+    #+Genera
+    (let ((src pixarray)
+	  (dest copy))
+      (declare (sys:array-register-1d src dest))
+      (do* ((dst-y 0 (index1+ dst-y))
+	    (src-y y (index1+ src-y)))
+	   ((index>= dst-y height))
+	(declare (type card16 dst-y src-y))
+	(do* ((dst-idx (array-row-major-index copy dst-y 0)
+		       (index1+ dst-idx))
+	      (dst-end (index+ dst-idx width))
+	      (src-idx (array-row-major-index pixarray src-y x)
+		       (index1+ src-idx)))
+	     ((index>= dst-idx dst-end))
+	  (declare (type array-index dst-idx src-idx dst-end))
+	  (setf (sys:%1d-aref dest dst-idx)
+		(sys:%1d-aref src src-idx)))))
     #+lcl3.0
     (macrolet
       ((copy (element-type)

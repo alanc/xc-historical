@@ -199,11 +199,11 @@
 
 (defmacro with-event-queue ((display &key timeout) &body body)
   ;; exclusive access to event queue
-  (macrolet ((with-event-queue ((display &key timeout) &body body)
-	       ;; Speedup hack for lexically nested with-event-queues
-	       `(progn ,display ,@(and timeout `(,timeout)) ,@body)))
-    (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
-      `(let (,@(unless (eq disp display) `((,disp ,display))))
+  (let ((disp (if (or (symbolp display) (constantp display)) display '.display.)))
+    `(macrolet ((with-event-queue ((display &key timeout) &body body)
+		  ;; Speedup hack for lexically nested with-event-queues
+		  `(progn ,display ,@(and timeout `(,timeout)) ,@body)))
+       (let (,@(unless (eq disp display) `((,disp ,display))))
 	 (holding-lock ((display-event-lock ,disp) ,disp "CLX Event Lock"
 			,@(and timeout `(:timeout ,timeout)))
 	   ,@body)))))

@@ -93,8 +93,6 @@
 ;; Keysym-mappings are a list of the form (object translate lowercase modifiers mask)
 ;; With the following accessor macros. Everything after OBJECT is optional.
 
-(eval-when (eval compile) ;; Not needed at run-time
-
 (defmacro keysym-mapping-object (keysym-mapping)
   ;; Parameter to translate
   `(first ,keysym-mapping))
@@ -120,8 +118,6 @@
   ;; keysyms and state-mask-keys specifying which modifiers to look at
   ;; (i.e.  modifiers not specified are don't-cares)
   `(fifth ,keysym-mapping))
-
-) ;; end eval-when
 
 (defvar *default-keysym-translate-mask*
 	(the (or (member :modifiers) mask16 list)	; (list (or keysym state-mask-key))

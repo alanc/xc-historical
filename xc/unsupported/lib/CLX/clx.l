@@ -281,7 +281,7 @@
 
 (pushnew :xlib *features*)
 
-(defparameter *version* "MIT R4 Beta 2 11/89")
+(defparameter *version* "MIT R4 Beta 3 11/89")
 
 (defparameter *protocol-major-version* 11.)
 (defparameter *protocol-minor-version* 0)
@@ -393,20 +393,21 @@
 ; Note that we are explicitly using a different spectrum representation
 ; than what is actually transmitted in the protocol.
 
+(def-clx-class (color (:constructor make-color-internal (red green blue))
+		      (:copier nil) (:print-function print-color))
+  (red 0.0 :type rgb-val)
+  (green 0.0 :type rgb-val)
+  (blue 0.0 :type rgb-val))
+
 (defun print-color (color stream depth)
-  (declare (ignore depth))
+  (declare (type color color)
+	   (ignore depth))
   (printing-object (color stream)
     (prin1 (color-red color) stream)
     (princ " " stream)
     (prin1 (color-green color) stream)
     (princ " " stream)
     (prin1 (color-blue color) stream)))
-
-(def-clx-class (color (:constructor make-color-internal (red green blue))
-		      (:copier nil) (:print-function print-color))
-  (red 0.0 :type rgb-val)
-  (green 0.0 :type rgb-val)
-  (blue 0.0 :type rgb-val))
 
 (defun make-color (&key (red 1.0) (green 1.0) (blue 1.0) &allow-other-keys)
   (declare (type rgb-val red green blue))
@@ -418,30 +419,18 @@
   (declare (values red green blue))
   (values (color-red color) (color-green color) (color-blue color)))
 
-(defstruct bitmap-format
+(def-clx-class (bitmap-format (:copier nil))
   (unit 8 :type (member 8 16 32))
   (pad 8 :type (member 8 16 32))
   (lsb-first-p nil :type boolean))
 
-(defstruct pixmap-format
+(def-clx-class (pixmap-format (:copier nil))
   (depth 0 :type image-depth)
   (bits-per-pixel 8 :type (member 1 4 8 16 24 32))
   (scanline-pad 8 :type (member 8 16 32)))
 
 (defparameter *atom-cache-size* 200)
 (defparameter *resource-id-map-size* 500)
-
-(defun print-display (display stream depth)
-  (declare (ignore depth))
-  (printing-object (display stream)
-    (princ (display-host display) stream)
-    (princ " " stream)
-    (princ (display-display display) stream)
-    (princ " (" stream)
-    (princ (display-vendor-name display) stream)
-    (princ " R" stream)
-    (prin1 (display-release-number display) stream)
-    (princ ")" stream)))
 
 (def-clx-class (display (:include buffer)
 			(:constructor make-display-internal)
@@ -528,18 +517,32 @@
     (list (gensym) (gensym)) :type cons)
   )
 
-;;(deftype drawable () '(or window pixmap))
+(defun print-display (display stream depth)
+  (declare (type display display)
+	   (ignore depth))
+  (printing-object (display stream)
+    (princ (display-host display) stream)
+    (princ " " stream)
+    (princ (display-display display) stream)
+    (princ " (" stream)
+    (princ (display-vendor-name display) stream)
+    (princ " R" stream)
+    (prin1 (display-release-number display) stream)
+    (princ ")" stream)))
 
-(defun print-drawable (drawable stream depth)
-  (declare (ignore depth))
-  (printing-object (drawable stream)
-    (prin1 (drawable-id drawable) stream)))
+;;(deftype drawable () '(or window pixmap))
 
 (def-clx-class (drawable (:copier nil) (:print-function print-drawable))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   (plist nil :type list)			; Extension hook
   )
+
+(defun print-drawable (drawable stream depth)
+  (declare (type drawable drawable)
+	   (ignore depth))
+  (printing-object (drawable stream)
+    (prin1 (drawable-id drawable) stream)))
 
 (def-clx-class (window (:include drawable) (:copier nil)
 		       (:print-function print-drawable))
@@ -549,17 +552,7 @@
 		       (:print-function print-drawable))
   )
 
-(defun print-visual-info (visual-info stream depth)
-  (declare (ignore depth))
-  (printing-object (visual-info stream)
-    (prin1 (visual-info-id visual-info) stream)
-    (princ " " stream)
-    (prin1 (visual-info-bits-per-rgb visual-info) stream)
-    (princ "-bit " stream)
-    (princ (visual-info-class visual-info) stream)))
-
-(defstruct (visual-info (:copier nil) (:predicate nil)
-			(:print-function print-visual-info))
+(def-clx-class (visual-info (:copier nil) (:print-function print-visual-info))
   (id 0 :type resource-id)
   (class :static-gray :type (member :static-gray :static-color :true-color
 				    :gray-scale :pseudo-color :direct-color))
@@ -571,13 +564,15 @@
   (plist nil :type list)			; Extension hook
   )
 
-(defun print-colormap (colormap stream depth)
-  (declare (ignore depth))
-  (printing-object (colormap stream)
-    (prin1 (colormap-id colormap) stream)
-    (when (colormap-visual-info colormap)
-      (princ " " stream)
-      (princ (visual-info-class (colormap-visual-info colormap)) stream))))
+(defun print-visual-info (visual-info stream depth)
+  (declare (type visual-info visual-info)
+	   (ignore depth))
+  (printing-object (visual-info stream)
+    (prin1 (visual-info-id visual-info) stream)
+    (princ " " stream)
+    (prin1 (visual-info-bits-per-rgb visual-info) stream)
+    (princ "-bit " stream)
+    (princ (visual-info-class visual-info) stream)))
 
 (def-clx-class (colormap (:copier nil) (:print-function print-colormap))
   (id 0 :type resource-id)
@@ -585,15 +580,25 @@
   (visual-info nil :type (or null visual-info))
   )
 
-(defun print-cursor (cursor stream depth)
-  (declare (ignore depth))
-  (printing-object (cursor stream)
-    (prin1 (cursor-id cursor) stream)))
+(defun print-colormap (colormap stream depth)
+  (declare (type colormap colormap)
+	   (ignore depth))
+  (printing-object (colormap stream)
+    (prin1 (colormap-id colormap) stream)
+    (when (colormap-visual-info colormap)
+      (princ " " stream)
+      (princ (visual-info-class (colormap-visual-info colormap)) stream))))
 
 (def-clx-class (cursor (:copier nil) (:print-function print-colormap))
   (id 0 :type resource-id)
   (display nil :type (or null display))
   )
+
+(defun print-cursor (cursor stream depth)
+  (declare (type cursor cursor)
+	   (ignore depth))
+  (printing-object (cursor stream)
+    (prin1 (cursor-id cursor) stream)))
 
 ; Atoms are accepted as strings or symbols, and are always returned as keywords.
 ; Protocol-level integer atom ids are hidden, using a cache in the display object.
@@ -674,11 +679,6 @@
 
 (deftype gcontext-state () 'simple-vector)
 
-(defun print-gcontext (gcontext stream depth)
-  (declare (ignore depth))
-  (printing-object (gcontext stream)
-    (prin1 (gcontext-id gcontext) stream)))
-
 (def-clx-class (gcontext (:copier nil) (:print-function print-gcontext))
   ;; The accessors convert to CLX data types.
   (id 0 :type resource-id)
@@ -690,6 +690,12 @@
   (plist nil :type list)			; Extension hook
   (next nil #-explorer :type #-explorer (or null gcontext))
   )
+
+(defun print-gcontext (gcontext stream depth)
+  (declare (type gcontext gcontext)
+	   (ignore depth))
+  (printing-object (gcontext stream)
+    (prin1 (gcontext-id gcontext) stream)))
 
 (defconstant *event-mask-vector*
 	     '#(:key-press :key-release :button-press :button-release
@@ -794,20 +800,7 @@
 	   ,boole-nor ,boole-eqv ,boole-c2 ,boole-orc2
 	   ,boole-c1 ,boole-orc1 ,boole-nand ,boole-set))
 
-(defun print-screen (screen stream depth)
-  (declare (ignore depth))
-  (printing-object (screen stream)
-    (prin1 (screen-width screen) stream)
-    (princ "x" stream)
-    (prin1 (screen-height screen) stream)
-    (princ "x" stream)
-    (prin1 (screen-root-depth screen) stream)
-    (when (screen-root-visual-info screen)
-      (princ " " stream)
-      (princ (visual-info-class (screen-root-visual-info screen)) stream))))
-
-(defstruct (screen (:copier nil) (:predicate nil)
-		   (:print-function print-screen))
+(def-clx-class (screen (:copier nil) (:print-function print-screen))
   (root nil :type (or null window))
   (width 0 :type card16)
   (height 0 :type card16)
@@ -827,6 +820,19 @@
   (plist nil :type list)			; Extension hook
   )
 
+(defun print-screen (screen stream depth)
+  (declare (type screen screen)
+	   (ignore depth))
+  (printing-object (screen stream)
+    (prin1 (screen-width screen) stream)
+    (princ "x" stream)
+    (prin1 (screen-height screen) stream)
+    (princ "x" stream)
+    (prin1 (screen-root-depth screen) stream)
+    (when (screen-root-visual-info screen)
+      (princ " " stream)
+      (princ (visual-info-class (screen-root-visual-info screen)) stream))))
+
 (defun screen-root-visual (screen)
   (declare (type screen screen)
 	   (values resource-id))
@@ -835,7 +841,7 @@
 ;; The list contains alternating keywords and integers.
 (deftype font-props () 'list)
 
-(defstruct font-info
+(def-clx-class (font-info (:copier nil) (:predicate nil))
   (direction :left-to-right :type draw-direction)
   (min-char 0 :type card16)   ;; First character in font
   (max-char 0 :type card16)   ;; Last character in font
@@ -851,16 +857,6 @@
   (descent 0 :type int16)
   (properties nil :type font-props))
 
-(defun print-font (font stream depth)
-  (declare (ignore depth))
-  (printing-object (font stream)
-    (if (font-name font)
-	(princ (font-name font) stream)
-      (princ '|(gcontext)| stream))
-    (when (font-id-internal font)
-      (princ " " stream)
-      (prin1 (font-id font) stream))))
-
 (def-clx-class (font (:constructor make-font-internal) (:copier nil)
 		     (:print-function print-font))
   (id-internal nil :type (or null resource-id)) ;; NIL when not opened
@@ -873,7 +869,18 @@
   (plist nil :type list)			; Extension hook
   )
 
-(proclaim '(inline font-id font-font-info font-char-infos make-font))
+(defun print-font (font stream depth)
+  (declare (type font font)
+	   (ignore depth))
+  (printing-object (font stream)
+    (if (font-name font)
+	(princ (font-name font) stream)
+      (princ '|(gcontext)| stream))
+    (when (font-id-internal font)
+      (princ " " stream)
+      (prin1 (font-id font) stream))))
+
+(proclaim '(inline font-font-info font-char-infos make-font))
 
 (defun font-id (font)
   ;; Get font-id, opening font if needed

@@ -126,7 +126,7 @@
 			     :result-type 'string :transform #'card8->char)))
     (declare (type (or null string) value))
     (when value
-      (let* ((name-len (position #.(int-char 0) (the string value)))
+      (let* ((name-len (position #.(card8->char 0) (the string value)))
 	     (name (subseq (the string value) 0 name-len))
 	     (class (subseq (the string value) (1+ name-len) (1- (length value)))))
 	(values (and (plusp (length name)) name)
@@ -138,9 +138,9 @@
   (set-string-property window :WM_CLASS
 		       (concatenate 'string
 				    (string (or resource-name ""))
-				    #.(make-string 1 :initial-element (int-char 0))
+				    #.(make-string 1 :initial-element (card8->char 0))
 				    (string (or resource-class ""))
-				    #.(make-string 1 :initial-element (int-char 0))))
+				    #.(make-string 1 :initial-element (card8->char 0))))
   (values))
 
 (defun wm-command (window)
@@ -155,7 +155,7 @@
 	(end 0)
 	(len (length command-string)))
        ((>= start len) (nreverse command))
-    (setq end (position #.(int-char 0) command-string :start start))
+    (setq end (position #.(card8->char 0) command-string :start start))
     (push (subseq command-string start end) command)))
 
 (defsetf wm-command set-wm-command)
@@ -179,13 +179,13 @@
 			       #+ti (ticl:*print-structure* t))
 			   (dolist (c command)
 			     (prin1 c stream)
-			     (write-char #.(int-char 0) stream)))))
+			     (write-char #.(card8->char 0) stream)))))
   command)
 
 ;;-----------------------------------------------------------------------------
 ;; WM_HINTS
 
-(defstruct wm-hints
+(def-clx-class (wm-hints)
   (input nil :type (or null (member :off :on)))
   (initial-state nil :type (or null (member :dont-care :normal :zoom :iconic :inactive)))
   (icon-pixmap nil :type (or null pixmap))
@@ -296,7 +296,7 @@
 ;;-----------------------------------------------------------------------------
 ;; WM_SIZE_HINTS
 
-(defstruct wm-size-hints
+(def-clx-class (wm-size-hints)
   ;; Defaulted T to put the burden of remembering these on widget programmers.
   (user-specified-position-p nil :type boolean) ;; True when user specified x y
   (user-specified-size-p nil :type boolean)     ;; True when user specified width height
@@ -659,7 +659,7 @@
 ;;-----------------------------------------------------------------------------
 ;; Colormaps
 
-(defstruct standard-colormap
+(def-clx-class (standard-colormap (:copier nil) (:predicate nil))
   (colormap nil :type (or null colormap))
   (base-pixel 0 :type pixel)
   (max-color nil :type (or null color))
