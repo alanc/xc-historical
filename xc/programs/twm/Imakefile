@@ -42,9 +42,10 @@
 LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d
-       SHAPEDEF = -DSHAPE
-        DEFINES = -DSIGPROCTYPE=SignalReturnProcType $(SHAPEDEF) $(PUTENVDEF)
-#       DEFINES = -DNOFOCUS
+#    OPTIONSDEF = -DNOFOCUS
+     OPTIONSDEF = -DSHAPE -DMAKE_THREED
+     SIGPROCDEF = -DSIGPROCTYPE=SignalReturnProcType
+        DEFINES = $(SIGPROCDEF) $(OPTIONSDEF) $(PUTENVDEF)
 
 SRCS1=	add_window.c gc.c list.c twm.c parse.c\
         menus.c events.c resize.c util.c version.c iconmgr.c\
