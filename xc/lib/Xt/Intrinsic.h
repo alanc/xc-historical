@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.104 89/09/26 17:59:40 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.105 89/09/28 11:40:07 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -60,7 +60,6 @@ typedef struct _XtActionsRec *XtActionList;
 typedef struct _XtEventRec *XtEventTable;
 typedef struct _XtBoundAccActionRec *XtBoundAccActions;
 
-typedef unsigned long	*Opaque;
 typedef struct _XtAppStruct *XtAppContext;
 typedef unsigned long	XtValueMask;
 typedef unsigned long	XtIntervalId;
@@ -96,14 +95,21 @@ typedef int		XtCacheType;
  * ArgLists rely heavily on the above typedef.
  *
  ****************************************************************/
+#ifdef CRAY
+typedef long		Boolean;
+typedef char*		XtArgVal;
+#else
 typedef char		Boolean;
+typedef long		XtArgVal;
+#endif
+
 typedef unsigned int	Cardinal;
 typedef unsigned short	Dimension;  /* Size in pixels			*/
 typedef short		Position;   /* Offset from 0 coordinate		*/
-typedef long		XtArgVal;
 typedef unsigned char	XtEnum;
 typedef char*		XtPointer;
 
+typedef XtPointer	Opaque;
 
 #include "Core.h"
 #include "Composite.h"
@@ -1058,11 +1064,25 @@ typedef struct _XtResource {
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
 
-#define XtOffsetOf(s_type,field) \
-	((Cardinal) (((char *) (&(((s_type*)NULL)->field))) - ((char *) NULL)))
+#ifdef CRAY
+#ifdef CRAY2
+
+#define XtOffset(p_type,field) \
+	(sizeof(int)*((unsigned int)&(((p_type)NULL)->field)))
+
+#else	/* !CRAY2 */
+
+#define XtOffset(p_type,field) ((unsigned int)&(((p_type)NULL)->field))
+
+#endif	/* !CRAY2 */
+#else	/* !CRAY */
 
 #define XtOffset(p_type,field) \
 	((Cardinal) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))
+
+#endif /* !CRAY */
+
+#define XtOffsetOf(s_type,field) XtOffset(s_type*,field)
 
 #ifdef notdef
 /* this doesn't work on picky compilers */
