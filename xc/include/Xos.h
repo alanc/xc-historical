@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.21 89/12/02 14:59:50 jim Exp $
+ * $XConsortium: Xos.h,v 1.22 89/12/12 12:10:18 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -86,6 +86,7 @@
 #if defined(sgi) || defined(CRAY2) || defined(stellar)
 #include <sys/time.h>				/* SYSV sys/time.h */
 #ifdef CRAY2
+#include <time.h>
 #define __TIMEVAL__
 #endif
 #else
