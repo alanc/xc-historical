@@ -32,7 +32,7 @@
 #define QB 16
 #define WB 32
 #define SALT '#'
-#if pdp11 | vax | ns16000 | mc68000
+#if pdp11 | vax | ns16000 | mc68000 | ibm032
 #define COFF 128
 #else
 #define COFF 0
