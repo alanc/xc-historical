@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.29 93/07/28 19:04:17 rws Exp $
+$XConsortium: README,v 1.30 93/09/04 16:07:02 rws Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!
@@ -123,7 +123,7 @@ Project.tmpl provides defaults for the following variables:
 	ConnectionFlags		-D's for supported transports
 	ContribDir		location of user-contributed sources
 	DebugLibPex		boolean for building libPEX5_g.a
-	DebugLibX		boolean for building libX11_g.a
+	DebugLibX11		boolean for building libX11_g.a
 	DebugLibXau		boolean for building libXau_g
 	DebugLibXaw		boolean for building libXaw_g
 	DebugLibXdmcp		boolean for building libXdmcp_g
@@ -169,7 +169,7 @@ Project.tmpl provides defaults for the following variables:
 	NlsDir			directory in which to install nls files
 	NormalLibPex		boolean for building libPEX5.a
 	NormalLibPhigs		boolean for building libphigs.a
-	NormalLibX		boolean for building libX11.a
+	NormalLibX11		boolean for building libX11.a
 	NormalLibXau		boolean for building libXau.a
 	NormalLibXaw		boolean for building libXaw.a
 	NormalLibXdmcp		boolean for building libXdmcp.a
@@ -190,7 +190,7 @@ Project.tmpl provides defaults for the following variables:
 	PhigsInclude		include directory for phigs clients
 	PrimaryScreenResolution	resolution of default server screen
 	ProfileLibPex		boolean for building libPEX5_p
-	ProfileLibX		boolean for building libX11_p
+	ProfileLibX11		boolean for building libX11_p
 	ProfileLibXau		boolean for buidling libXau_p
 	ProfileLibXaw		boolean for building libXaw_p
 	ProfileLibXdmcp		boolean for building libXdmcp_p
@@ -208,7 +208,7 @@ Project.tmpl provides defaults for the following variables:
 	ServerOSDefines		OS -D's for server
 	SharedLibPex		boolean for making sharable libPEX5
 	SharedLibPhigs		boolean for making sharable libphigs
-	SharedLibX		boolean for making sharable libX11
+	SharedLibX11		boolean for making sharable libX11
 	SharedLibXau		boolean for making sharable libXau
 	SharedLibXaw		boolean for making sharable libXaw
 	SharedLibXdmcp		boolean for making sharable libXdmcp
