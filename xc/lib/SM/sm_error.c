@@ -1,4 +1,4 @@
-/* $XConsortium: sm_error.c,v 1.3 93/09/22 17:59:41 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.4 93/09/24 15:54:06 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -68,6 +68,8 @@ SmPointer 	values;
 	    str = "";
 	}
 
+    fprintf (stderr, "\n");
+
     fprintf (stderr, "XSMP error:  Offending minor opcode    = %d (%s)\n",
 	offendingMinorOpcode, str);
 
@@ -115,9 +117,7 @@ SmPointer 	values;
     }
 
     fprintf (stderr, "\n");
-
-    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
-	exit (1);
+    exit (1);
 }
 
 
@@ -160,6 +160,8 @@ SmPointer 	values;
 	default:
 	    str = "";
 	}
+
+    fprintf (stderr, "\n");
 
     fprintf (stderr, "XSMP error:  Offending minor opcode    = %d (%s)\n",
 	offendingMinorOpcode, str);
@@ -208,9 +210,7 @@ SmPointer 	values;
     }
 
     fprintf (stderr, "\n");
-
-    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
-	exit (1);
+    exit (1);
 }
 
 
