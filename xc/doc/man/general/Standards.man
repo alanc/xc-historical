@@ -1,25 +1,25 @@
-.\" $XConsortium: Standards.man,v 1.8 93/02/25 16:46:19 rws Exp $
-.TH XSTANDARDS 1 "Release 6"  "X Version 11"
+.\" $XConsortium: Standards.man,v 1.9 94/04/11 14:25:39 gildea Exp $
+.TH XSTANDARDS 1 "Release 6" "X Version 11"
 .SH NAME
-X Standards \- MIT X Consortium Standards
+X Standards \- X Consortium Standards
 .SH SYNOPSIS
-The major goal of the MIT X Consortium is to promote cooperation within the
+The major goal of the X Consortium is to promote cooperation within the
 computer industry in the creation of standard software interfaces at all layers
 in the X Window System environment.  The status of various standards, and
-the software in the X11R5 distribution, is explained below.
+the software in the X11R6 distribution, is explained below.
 .SH STANDARDS
-The following documents are MIT X Consortium standards:
+The following documents are X Consortium standards:
 .nf
 
 X Window System Protocol
 X Version 11, Release 5
 Robert W. Scheifler
 
-Xlib - C Language X Interface
+Xlib \- C Language X Interface
 X Version 11, Release 5
 James Gettys, Robert W. Scheifler, Ron Newman
 
-X Toolkit Intrinsics - C Language Interface
+X Toolkit Intrinsics \- C Language Interface
 X Version 11, Release 5
 Joel McCormack, Paul Asente, Ralph R. Swick
 
@@ -28,9 +28,9 @@ Version 2.1
 X Version 11, Release 5
 
 Inter-Client Communication Conventions Manual
-Version 1.1
+Version 2.0
 X Version 11, Release 5
-David Rosenthal
+David Rosenthal, Stuart W. Marks
 
 Compound Text Encoding
 Version 1.1
@@ -38,9 +38,8 @@ X Version 11, Release 5
 Robert W. Scheifler
 
 X Logical Font Description Conventions
-Version 1.4
-X Version 11, Release 5
-Jim Flowers
+Version 1.5
+Jim Flowers, Stephen Gildea
 
 X Display Manager Control Protocol
 Version 1.0
@@ -73,18 +72,50 @@ Cheryl Huntington (architect), Paula Womack (editor)
 PEXlib Specification and C Language Binding
 Version 5.1
 Jeff Stevenson
+
+Inter-Client Exchange (ICE) Protocol
+Version 1.0
+Robert Scheifler
+
+Inter-Client Exchange (ICE) Library
+Version 1.0
+Ralph Mor
+
+X Session Management Protocol
+Version 1.0
+Mike Wexler
+
+X Session Management Library
+Version 1.0
+Ralph Mor
+
+The Input Method Protocol
+Version 1.0
+Masahiko Narita, Hideki Hiura
+
+X Synchronization Extension
+Version 3.0
+Tim Glauert, Dave Carver, Jim Gettys, David P. Wiggins
+
+X Image Extension, Protocol Reference Manual
+Version 5.0
+Bob Shelley
 .fi
 .SH "DRAFT STANDARDS"
-The following documents are currently draft standards of the MIT X Consortium.
+The following documents are currently draft standards of the X Consortium.
 .nf
 
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
 Version 3.2
 Jeffrey Friedberg, Larry Seiler, Jeff Vroom
 
-X Image Extension, Protocol Reference Manual
-Version 4.12
+X Image Extension, Libary Reference Manual
+Version 4.14
 Bob Shelley
+
+PEX Protocol Specification
+Version 5.2
+Cheryl Huntington (architect), Paula Womack (editor)
 .fi
 
 .SH "INCLUDE FILES"
@@ -150,13 +181,13 @@ The following include file is part of the Multi-Buffering draft standard.
 .fi
 
 .SH "NON STANDARDS"
-The X11R5 distribution contains \fIsample\fP implementations, not
+The X11R6 distribution contains \fIsample\fP implementations, not
 \fIreference\fP implementations.  Although much of the code is believed
 to be correct, the code should be assumed to be in error wherever it
 conflicts with the specification.
 .PP
-The only MIT X Consortium standards are the ones listed above.
-No other documents, include files, or software in X11R5 carry special
+The only X Consortium standards are the ones listed above.
+No other documents, include files, or software in X11R6 carry special
 status within the X Consortium.  For example, none of the following
 are standards:
 internal interfaces of the sample server;
@@ -167,8 +198,8 @@ the Xmu library;
 the Xau library;
 CLX, the Common Lisp interface to X;
 the RGB database;
-the fonts distributed with X11R5;
-the applications distributed with X11R5;
+the fonts distributed with X11R6;
+the applications distributed with X11R6;
 the include files <X11/XWDFile.h>, <X11/Xfuncproto.h>, <X11/Xfuncs.h>,
 <X11/Xosdefs.h>, and <X11/Xos.h>;
 the bitmap files in <X11/bitmaps>.
