@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.76 89/03/03 09:44:10 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.77 89/03/06 13:51:09 jim Exp $
  */
 
 #include "copyright.h"
@@ -541,15 +541,19 @@ Display *XOpenDisplay (display)
 	    int actual_format;
 	    unsigned long nitems;
 	    unsigned long leftover;
-	    if (XGetWindowProperty(dpy, RootWindow(dpy, 0), 
-		XA_RESOURCE_MANAGER, 0L, 100000000L, False, XA_STRING,
-		&actual_type, &actual_format, &nitems, &leftover, 
-		(unsigned char **) &dpy->xdefaults) != Success) {
-			dpy->xdefaults = (char *) NULL;
-	    } else if ((actual_type != XA_STRING) ||  (actual_format != 8)) {
-		if (dpy->xdefaults != NULL) {
-		    Xfree (dpy->xdefaults);
-		    dpy->xdefaults = (char *) NULL;
+	    char *xdef = NULL;
+
+	    if (XGetWindowProperty (dpy, RootWindow(dpy, 0), 
+	    			    XA_RESOURCE_MANAGER, 0L, 100000000L, False,
+				    XA_STRING, &actual_type, &actual_format, 
+				    &nitems, &leftover, 
+				    (unsigned char **) &xdef) == Success) {
+		if ((actual_type == XA_STRING) && (actual_format == 8)) {
+		    LockDisplay (dpy);
+		    dpy->xdefaults = xdef;
+		    UnlockDisplay (dpy);
+		} else if (xdef) {
+		    Xfree (xdef);
 		}
 	    }
 	}
