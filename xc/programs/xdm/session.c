@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.69 94/03/31 22:34:51 gildea Exp $
+ * $XConsortium: session.c,v 1.70 94/04/01 16:42:56 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -456,10 +456,13 @@ SessionExit (d, status, removeAuth)
 			 error_message(code));
 	    else {
 		code = krb5_cc_destroy(ccache);
-		if (code)
-		    LogError("%s while destroying Krb5 credentials cache\n",
-			     error_message(code));
-		else
+		if (code) {
+		    if (code == KRB5_FCC_NOFILE) {
+			Debug ("No Kerberos ccache file found to destroy\n");
+		    } else
+			LogError("%s while destroying Krb5 credentials cache\n",
+				 error_message(code));
+		} else
 		    Debug ("Kerberos ccache destroyed\n");
 		krb5_cc_close(ccache);
 	    }
