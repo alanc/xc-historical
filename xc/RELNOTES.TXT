@@ -155,7 +155,6 @@ The general layout under xc/ is now as follows:
 
 config/             config files, imake, makedepend, build utilities
 doc/                all documentation other than per-program manual pages
-
 fonts/              BDF, Speedo, Type1 fonts
 include/            include files shared by multiple directories
 lib/                all libraries
@@ -198,7 +197,6 @@ xc/util/compress.
 
 There is no longer a top-level extensions directory.  Extension libraries
 are now under xc/lib/, server extension code is under
-
 xc/programs/Xserver/Xext/, and extension header files are under
 xc/include/extensions/.
 
@@ -248,7 +246,6 @@ XUSERFILESEARCHPATH default
           $HOME/%N%C
           $HOME/%L/%N
           $HOME/%l/%N
-
           $HOME/%N
 
 XKEYSYMDB default
@@ -296,34 +293,49 @@ across a network, or as a CD-ROM.
 If you are unpacking tar files, you will need about 150 megabytes to hold
 the xc/ part.
 
-3.1.1.  Unpacking the FTP Distribution
+3.1.1.  Unpacking a Compressed FTP Distribution
 
-If you have obtained compressed and split tar files over the network, create
-a directory to hold the sources and untar everything into that directory:
+If you have obtained compressed tar files over the network, create a direc-
+tory to hold the sources and cd into it:
 
      mkdir sourcedir
      cd sourcedir
 
-Then for each tar file under xc:
+Then for each tar file xc-*.tar.Z, execute this:
+
+     zcat ftp-dir/xc-N.tar.Z | tar xpf -
+
+For each tar file contrib-*.tar.Z, execute this:
+
+     zcat ftp-dir/contrib-N.tar.Z | tar xpf -
+
+3.1.2.  Unpacking a Split Compressed FTP Distribution
+
+If you have obtained compressed and split tar files over the network, create
+a directory to hold the sources:
+
+     mkdir sourcedir
+
+Then for each directory xc-*:
 
      cd ftp-dir/xc-N
      cat xc-N.?? | uncompress | (cd sourcedir; tar xpf -)
 
-For each tar file under contrib, execute this:
+For each directory contrib-*, execute this:
 
      cd ftp-dir/contrib-N
      cat contrib-N.?? | uncompress | (cd sourcedir; tar xpf -)
 
-3.1.2.  Unpacking the tape Distribution
+3.1.3.  Unpacking the Tape Distribution
 
 If you have obtained a tape, create a directory to hold the sources and
-untar everything from that directory:
+untar everything into that directory:
 
      mkdir sourcedir
      cd sourcedir
-     tar xpf tar-file-or-tape-device
+     tar xpf tape-device
 
-3.1.3.  Using the CD-ROM
+3.1.4.  Using the CD-ROM
 
 If you have obtained a CD-ROM, you don't have to do anything to unpack it.
 However, you will have to create a symbolic link tree to build X.  See the
@@ -337,7 +349,6 @@ top of each patch, but don't do any make commands.  Then continue here.
 3.3.  Symbolic Link Trees
 
 If you expect to build the distribution on more than one machine using a
-
 shared source tree, or you are building from CD-ROM, or you just want to
 keep the source tree pure, you may want to use the program
 xc/config/util/lndir.c to create a symbolic link tree on each build machine.
@@ -423,6 +434,7 @@ InstallServerSetUID
      Some systems require the X server to run as root to access the devices
      it needs.  If you are on such a system and will not be using xdm, you
      can set this variable to YES to install the X server setuid to root.
+
      Note that the X server has not been analyzed by the X Consortium for
      security in such an installation; talk to your system manager before
      setting this variable.
@@ -580,7 +592,6 @@ minfo entry with the tic utility.
 Since each xterm will need a separate pseudoterminal, you need a reasonable
 number of them for normal execution.  You probably will want at least 32 on
 a small, multiuser system.  On most systems, each pty has two devices, a
-
 master and a slave, which are usually named /dev/tty[pqrstu][0-f] and
 /dev/pty[pqrstu][0-f].  If you don't have at least the "p" and "q" sets con-
 figured (try typing "ls /dev/?ty??"), you should have your system adminis-
@@ -629,7 +640,6 @@ the command:
 The keysyms reported by keys on the numeric keypad have also changed since
 X11R5; if you find that OpenWindows applications do not respond to keypad
 keys and cursor control keys when using the R6 server, you can remap the
-
 keypad to generate R5 style keysyms using the following xmodmap commands:
 
      keysym Pause = F21
@@ -661,8 +671,9 @@ do.  Thus the procedure here is only an overview of the types of commands
 that might be necessary to rebuild X after changing it.
 
 If you are building from CD-ROM, apply the patches to the symbolic link
-tree.  The links to changed files will be replaced with a local file con-
-taining the new contents.
+tree.  The links to changed files will be replaced with a local file
+
+containing the new contents.
 
 If only source files are changed, you should be able to rebuild just by
 going to the xc directory in your build tree and typing:
@@ -727,7 +738,6 @@ described in its own section below.
      X Logical Font Descriptions (update)
      SYNC extension
      XTEST extension
-
      PEX 5.1 Protocol (released after R5)
      PEXlib (released after R5)
      BIG-REQUESTS extension
@@ -757,6 +767,7 @@ Huffman DCT encoding as defined by ISO/IEC DIS 10918-1, "Digital Compression
 and Coding of Continuous-tone Still Images, Part 1: Requirements and guide-
 lines", and was chosen as a basis for our implementation of JPEG compression
 and decompression primarily because the IJG's design goals matched ours for
+
 the implementation of the XIE SI: achieve portability and flexibility with-
 out sacrificing performance.  Less than half of the files distributed by the
 IJG have been incorporated into the XIE SI.  The IJG's software is made
@@ -774,7 +785,6 @@ The circumstances under which the window manager is required to send syn-
 thetic ConfigureNotify events have been clarified to ensure that any Config-
 ureWindow request issued by the client will result in a ConfigureNotify
 event, either from the server or from the window manager.  We have also
-
 added advice about how a client should inspect events so as to minimize the
 number of situations where it is necessary to use the TranslateCoordinates
 request.
@@ -806,6 +816,7 @@ provide services to other clients.  Version 2.0 also specifies that window
 managers should hold a manager selection.  At present, the only service
 defined for window managers is to report the ICCCM version number to which
 the window manager complies.  Now that this facility is in place, additional
+
 services can be added in the future.
 
 4.3.3.  Resource Sharing
@@ -852,6 +863,7 @@ A simple session manager, xsm is included in xc/workInProgress/xsm.
 A new protocol, rstart, greatly simplifies the task of starting applications
 on remote machines.  It is built upon already existing remote execution pro-
 tocols such as rsh.  The most important feature that it adds is the ability
+
 to pass environment variables and authentication data to the applications
 being started.
 
@@ -925,7 +937,6 @@ Transport Layer
      There are several kinds of transports for connection between the IM
      library and the IM Server.  The IM Protocol is independent of a spe-
      cific transport layer protocol, and the sample implementation has a
-
      mechanism to permit an IM Server to define the transports which the IM
      Server is willing to use.  The sample implementation supports transport
      over the X protocol, TCP/IP and DECnet.
@@ -1252,6 +1263,7 @@ removed from the implementation.  See the Xaw manual for details.
 4.19.2.  Command, Label, List, MenuButton, Repeater, SmeBSB, and Toggle
 
 Two new resources have been added, XtNinternational and XtNfontSet.  If
+
 XtNinternational is set to True the widget displays its text using the spec-
 ified fontset.  See the Xaw manual for details.
 
@@ -1269,7 +1281,6 @@ ever it was understood that vendors who intended to commercialize it would
 dispose of portions of it, often fairly substantial ones.  It was therefore
 understood that functionality most likely to be disposed of by them might be
 neglected in the development of a Sample Implementation.  As PEX is now a
-
 fairly mature standard distributed by most if not all major vendors, and the
 standard itself has evolved from the 5.0 protocol level to the 5.1 protocol
 level, the X Consortium and its supporting vendors have recognized a need to
@@ -1322,7 +1333,6 @@ Other functionality not complete in this release is:
      Backface Attributes and Distinguish Flag
      Font sharing between clients
      Patterns, Hatches and associated attributes
-
      Transparency
      Depth Cueing for Markers
 
@@ -1451,9 +1461,10 @@ os/WaitFor.c.  This interface is used by XKB, but we haven't tried to use it
 anywhere else (such as Xext/sleepuntil.c) yet.
 
 Redundant code for GC funcs was moved from cfbgc.c and mfbgc.c to migc.c.
-This file also contains a few utility functions such as miComputeComposite-
-Clip, which replaces the chunk of code that used to appear near the top of
-most versions of ValidateGC.
+This file also contains a few utility functions such as
+
+miComputeCompositeClip, which replaces the chunk of code that used to appear
+near the top of most versions of ValidateGC.
 
 The cfb code can now be compiled multiple times to provide support for mul-
 tiple depths in the same server, e.g., 8, 12, and 24.  See Imakefile and
@@ -1503,6 +1514,7 @@ ties that had previously been duplicated in a number of places.
 4.25.1.  Xnest
 
 A new server, Xnest, uses Xlib to implement ddx rendering.  See
+
 xc/programs/Xserver/hw/xnest.  Xnest lets you run an X server in a window on
 another X server.  Uses include testing dix and extensions, debugging client
 protocol errors, debugging grabs, and testing interactive programs in a
@@ -1521,7 +1533,6 @@ buffer file as its input.
 
 Sun ddx
      Expanded device probe table finds multiple frame buffers of the same
-
      type.  Expanded keymap tables provide support for European and Asian
      keyboards.  Added per-key autorepeat support.  Considerable cleanup and
      duplicate code eliminated.  Deletion of SunView support.  GX source
@@ -1549,6 +1560,7 @@ xc/config/util/mkshadow/, a replacement for lndir.
 
 We have dropped support for the following libraries and programs and have
 moved them to contrib: CLX library, PHIGS library, MacFS, auto_box,
+
 beach_ball, gpc, ico, listres, maze, puzzle, showfont, viewres, xbiff,
 xcalc, xditview, xedit, xev, xeyes, xfontsel, xgas, xgc, xload, xman, and
 xpr.
@@ -1615,9 +1627,8 @@ Many bugs have not been fixed yet.
 
 4.33.  xset
 
-The screen saver control option has two new sub-options to immediately
-
-activate or deactivate the screen saver: xset s activate and xset s reset.
+The screen saver control option has two new sub-options to immediately acti-
+vate or deactivate the screen saver: xset s activate and xset s reset.
 
 4.34.  X Test Suite
 
@@ -1693,6 +1704,7 @@ guage.
 Fresco has been built with the following platforms and C++ compilers:
 
      SPARCstation     SunOS 4.1.3  CenterLine C++
+
      SPARCstation     Solaris 2.3  CenterLine C++ (requires v2.0.6)
      SPARCstation     Solaris 2.3  SPARCCompiler C++ v4.0
      HP 9000/700      HPUX 9.0.1   CenterLine C++
@@ -1819,7 +1831,6 @@ protocol and arbitrary X extension protocol.
 A version of the extension is included in xc/workInProgress/record.  The
 implementation does not quite match the version 1.2 draft specification, but
 the spec is going to change anyway; the version 1.3 draft is in
-
 xc/doc/specs/Xext/record.ms.  The GetConfig request is not fully imple-
 mented.  A test program is in contrib/test/record.
 
@@ -1868,7 +1879,6 @@ get the MTXserver sources back into a state where they can be compiled.
 
 We've changed our sources to stop using the BSD function names index,
 rindex, bcopy, bcmp; we now use strchr, strrchr, memcpy/memmove, and memcmp.
-
 We still use the name bzero (because there is no BSD equivalent for the gen-
 eral case of memset) but it is translated to memset via a #define in
 <X11/Xfuncs.h>.  The BSD function names are still supported in <X11/Xos.h>
@@ -1964,7 +1974,6 @@ Xlib internationalization
      Hideki Hiura (SunSoft) and Masahiko Narita (Fujitsu).  The principal
      authors of Xlib specification Chapter 13 are Hideki Hiura (SunSoft) and
      Shigeru Yamada (Fujitsu OSSI).  The principal producers of the sample
-
      implementation of the internationalization facilities are Jeffrey
      Bloomfield (Fujitsu OSSI), Takashi Fujiwara (Fujitsu), Hideki Hiura
      (SunSoft), Yoshio Horiuchi (IBM), Makoto Inada (Digital), Hiromu Inukai
@@ -1988,6 +1997,7 @@ Xt Intrinsics
      research; Larry Cable (SunSoft), object allocation and change managed
      set; Vania Joloboff; Courtney Loomis (Hewlett-Packard Company); and
      Daniel Dardailler.  The following people at Georgia Tech contributed
+
      the extensions for disability access: Keith Edwards, Susan Liebeskind,
      Beth Mynatt, and Tom Rodriguez.
 

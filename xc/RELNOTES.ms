@@ -372,37 +372,52 @@ tape or across a network, or as a CD-ROM.
 If you are unpacking tar files, you will need about 150 megabytes to
 hold the \fBxc/\fP part.
 
-.nH 3 "Unpacking the FTP Distribution"
+.nH 3 "Unpacking a Compressed FTP Distribution"
 
-If you have obtained compressed and split tar files over the network,
-create a directory to hold the sources and untar everything into that
-directory:
-
+If you have obtained compressed tar files over the network,
+create a directory to hold the sources and \fIcd\fP into it:
 .ID
 mkdir \fIsourcedir\fP
 cd \fIsourcedir\fP
 .DE
-Then for each tar file under \fBxc\fP:
+Then for each tar file \fBxc\-*.tar.Z\fP, execute this:
 .ID
-cd \fIftp-dir\fP/xc-\fIN\fP
-cat xc-\fIN\fP.?? | uncompress | (cd \fIsourcedir\fP\|; tar xpf\0\-\|)
+zcat\0\fIftp-dir\fP/xc\-\fIN\fP.tar.Z | tar xpf\0\-
 .DE
 .LP
-For each tar file under \fBcontrib\fP, execute this:
+For each tar file \fBcontrib\-*.tar.Z\fP, execute this:
 .ID
-cd \fIftp-dir\fP/contrib-\fIN\fP
-cat contrib-\fIN\fP.?? | uncompress | (cd \fIsourcedir\fP\|; tar xpf\0\-\|)
+zcat\0\fIftp-dir\fP/contrib\-\fIN\fP.tar.Z | tar xpf\0\-
 .DE
 
-.nH 3 "Unpacking the tape Distribution"
+.nH 3 "Unpacking a Split Compressed FTP Distribution"
+
+If you have obtained compressed and split tar files over the network,
+create a directory to hold the sources:
+.ID
+mkdir \fIsourcedir\fP
+.DE
+Then for each directory \fBxc\-*\fP:
+.ID
+cd \fIftp-dir\fP/xc\-\fIN\fP
+cat xc\-\fIN\fP.?? | uncompress | (cd \fIsourcedir\fP\|; tar xpf\0\-\|)
+.DE
+.LP
+For each directory \fBcontrib\-*\fP, execute this:
+.ID
+cd \fIftp-dir\fP/contrib\-\fIN\fP
+cat contrib\-\fIN\fP.?? | uncompress | (cd \fIsourcedir\fP\|; tar xpf\0\-\|)
+.DE
+
+.nH 3 "Unpacking the Tape Distribution"
 
 If you have obtained a tape,
-create a directory to hold the sources and untar everything from that
+create a directory to hold the sources and untar everything into that
 directory:
 .ID
 mkdir \fIsourcedir\fP
 cd \fIsourcedir\fP
-tar xpf \fItar-file-or-tape-device\fP
+tar xpf \fItape-device\fP
 .DE
 
 .nH 3 "Using the CD-ROM"
