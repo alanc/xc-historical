@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.24 92/09/17 19:46:37 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.25 92/09/29 10:47:15 rws Exp $
 .de Ds
 .RS
 .nf
@@ -79,16 +79,20 @@ pointer motion, so the WarpPointer protocol request is used instead.
 The Imakefile for \fBa2x\fP comes configured to use only XTEST, but you can
 configure it to compile in support for any or all of the extensions; \fBa2x\fP
 will automatically choose whichever extension is supported by the display.  If
-you use different displays supporting different extensions, you will probably
-want to compile more than one extension into \fBa2x\fP.  At the top of the
-Imakefile are #define's for BuildWithXTest, BuildWithXTrap, and
-BuildWithXTestExt1; simply comment out the ones you don't want, and
-uncomment the ones you do want.
+you dynamically switch among different displays supporting different
+extensions, you will probably want to compile more than one extension into
+\fBa2x\fP.  At the top of the Imakefile are #define's for BuildWithXTest,
+BuildWithXTrap, and BuildWithXTestExt1; simply comment out the ones you don't
+want, and uncomment the ones you do want.
 .LP
 The documentation provided here is for using DragonDictate and \fBa2x\fP solely
 for work under X; the assumption is that you do not use DragonDictate with
 programs on the PC.  If you use DragonDictate with programs on the PC, you may
 need to create dcom files for switching between PC and X use.
+.LP
+A small mailing list of \fBa2x\fP users exists, to keep people abreast of
+any new developments.  The mailing list is a2x-users@expo.lcs.mit.edu;
+send requests to join to a2x-users-request@expo.lcs.mit.edu.
 .LP
 There are two ways to run DragonDictate: directly under DOS, and under
 DESQview/X.  Running directly under DOS is described here; running under
