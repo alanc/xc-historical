@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.32 93/09/22 22:00:48 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.33 93/09/25 13:32:52 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -267,9 +267,6 @@ extern Xstream _XsStream[];
 #define ReadFromServer(dpy, data, size) read((dpy), (data), (size))
 #define WriteToServer(dpy, bufind, size) write((dpy), (bufind), (size))
 
-#endif /* STREAMSCONN */
-
-
 #ifndef USL_COMPAT
 #if !defined(USG) || defined(MOTOROLA) || defined(uniosu)
 #if !(defined(SYSV) && defined(SYSV386))
@@ -278,6 +275,8 @@ extern Xstream _XsStream[];
 #define _XWriteV writev
 #endif
 #endif /* !USL_COMPAT */
+
+#endif /* STREAMSCONN */
 
 #else /* not WIN32 */
 
