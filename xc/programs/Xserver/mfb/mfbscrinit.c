@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 1.55 88/08/30 17:06:36 keith Exp $ */
+/* $XConsortium: mfbscrinit.c,v 1.56 88/09/06 14:53:58 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -37,7 +37,7 @@ SOFTWARE.
 #include "servermd.h"
 
 /*ARGSUSED*/
-static int
+static
 mfbFreeVisual(p, id)
     pointer p;
     int id;
