@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.25 87/09/01 07:06:11 swick Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.26 87/09/07 16:03:26 rws Locked $";
 #endif
 
 /*%
@@ -222,20 +222,26 @@ Window_Dump(window, out)
     if (debug) outl("xwd: Constructing and dumping file header.\n");
     header.header_size = header_size;
     header.file_version = XWD_FILE_VERSION;
-    header.display_type = 0; /* DisplayType(dpy, screen);  [obsolete] */
-    header.display_planes = DisplayPlanes(dpy, screen);
     header.pixmap_format = format;
+    header.pixmap_depth = image->depth;
+    header.pixmap_width = image->width;
+    header.pixmap_height = image->height;
+    header.xoffset = image->xoffset;
+    header.byte_order = image->byte_order;
+    header.bitmap_unit = image->bitmap_unit;
+    header.bitmap_bit_order = image->bitmap_bit_order;
+    header.bitmap_pad = image->bitmap_pad;
+    header.bits_per_pixel = image->bits_per_pixel;
+    header.bytes_per_line = image->bytes_per_line;
+    header.red_mask = image->red_mask;
+    header.green_mask = image->green_mask;
+    header.blue_mask = image->blue_mask;
     header.window_width = win_info.width;
     header.window_height = win_info.height;
     if (nobdrs) {
-      header.pixmap_width = win_info.width;
-      header.pixmap_height = win_info.height;
       header.window_x = win_info.x + win_info.border_width;
       header.window_y = win_info.y + win_info.border_width;
-    }
-    else {
-      header.pixmap_width = win_info.width + (win_info.border_width << 1);
-      header.pixmap_height = win_info.height + (win_info.border_width << 1);
+    } else {
       header.window_x = win_info.x;
       header.window_y = win_info.y;
     }
@@ -259,7 +265,7 @@ Window_Dump(window, out)
 
     /*
      *    This copying of the bit stream (data) to a file is to be replaced
-     *  by an X server call which hasn't been written yet.  It is not clear
+     *  by an Xlib call which hasn't been written yet.  It is not clear
      *  what other functions of xwd will be taken over by this (as yet)
      *  non-existant X function.
      */
@@ -317,13 +323,6 @@ Error(string)
 /*
  * Determine the pixmap size.
  */
-#ifdef OLD_JUNK
-#define UBPS (sizeof(short)/2) /* useful bytes per short */
-#define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
-#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
-#define BZPixmapSize(width, height) ((width) * (height))
-#define WZPixmapSize(width, height) (((width) * (height)) << 1)
-#endif
 
 int Image_Size(image)
      XImage *image;
@@ -332,41 +331,6 @@ int Image_Size(image)
       return(image->bytes_per_line * image->height * image->depth);
 
     return(image->bytes_per_line * image->height);
-
-#ifdef OLD_JUNK
-	int buffer_size;
-	int width, height;
-
-	width = image->width;
-	height = image->height;
-
-	if (format == XYBitmap)
-	  buffer_size = BitmapSize(width, height);
-
-#ifdef COLOR
-
-	else if (format == XYPixmap) {
-	    buffer_size = XYPixmapSize(width, height,
-				       DisplayPlanes(dpy, screen));
-	    if (debug)
-	      outl("xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
-	}
-	else if (DisplayPlanes(dpy, screen) < 9) {
-	    buffer_size = BZPixmapSize(width, height);
-	    if (debug)
-	      outl("xwd: Pixmap in byte ZFormat, size %d bytes.\n",
-		   buffer_size);
-	}
-	else {
-	    buffer_size = WZPixmapSize(width, height);
-	    if (debug)
-	      outl("xwd: Pixmap in word ZFormat, size %d bytes.\n",
-		   buffer_size);
-    }
-#endif
-
-	return(buffer_size);
-#endif
 }
 
 

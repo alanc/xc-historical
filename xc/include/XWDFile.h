@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $Header: XWDFile.h,v 1.3 87/06/11 12:38:19 toddb Locked $ */
+/* $Header: XWDFile.h,v 1.4 87/07/16 22:55:35 rws Locked $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
@@ -14,16 +14,25 @@
  *              18-Nov-86  - version 6 for saving/restoring color maps
  */
 
-#define XWD_FILE_VERSION 6  /* Changing to 7 %%*/
+#define XWD_FILE_VERSION 7
 
 typedef struct _xwd_file_header {
 	int header_size;	/* Size of the entire file header (bytes). */
 	int file_version;	/* XWD_FILE_VERSION */
-	int display_type;	/* Display type. */
-	int display_planes;	/* Number of display planes. */
 	int pixmap_format;	/* Pixmap format. */
+	int pixmap_depth;	/* Pixmap depth. */
 	int pixmap_width;	/* Pixmap width. */
 	int pixmap_height;	/* Pixmap height. */
+	int xoffset;            /* Bitmap x offset. */
+	int byte_order;         /* MSBFirst, LSBFirst */
+	int bitmap_unit;        /* Bitmap unit. */
+	int bitmap_bit_order;   /* MSBFirst, LSBFirst */
+	int bitmap_pad;         /* Bitmap scanline pad. */
+	int bits_per_pixel;     /* Bits per pixel. */
+	int bytes_per_line;     /* Bytes per scanline. */
+	int red_mask;           /* Z red mask. */
+	int green_mask;         /* Z green mask. */
+	int blue_mask;          /* Z blue mask. */
 	short window_width;	/* Window width. */
 	short window_height;	/* Window height. */
 	short window_x;		/* Window upper left X coordinate. */
