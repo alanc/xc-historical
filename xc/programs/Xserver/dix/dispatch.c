@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.95 89/06/09 14:55:07 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.0 89/06/09 14:58:40 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1053,7 +1053,7 @@ ProcTranslateCoords(client)
 		 * is made to see if the point is inside
 		 * borderSize
 		 */
-		&& (wBoundingShape(pWin) ||
+		&& (!wBoundingShape(pWin) ||
 		    (*pWin->drawable.pScreen->PointInRegion)
 			    (pWin->borderSize, x, y, &box))
 #endif
