@@ -1,6 +1,6 @@
-/* $XConsortium: lbxserve.h,v 1.3 94/03/27 13:12:41 dpw Exp mor $ */
+/* $XConsortium: lbxserve.h,v 1.4 94/11/08 20:25:30 mor Exp mor $ */
 /*
- * $NCDId: @(#)lbxserve.h,v 1.11 1994/03/24 01:30:14 dct Exp $
+ * $NCDId: @(#)lbxserve.h,v 1.17 1994/11/18 20:32:38 lemke Exp $
  * $NCDOr: lbxserve.h,v 1.1 1993/12/06 18:47:18 keithp Exp $
  *
  * Copyright 1992 Network Computing Devices
@@ -27,6 +27,8 @@
 
 /* XXX only handles one LBX connection right now */
 #include "lbxdeltastr.h"
+#define _XLBX_SERVER_
+#include "lbxstr.h"
 
 #define MAX_LBX_CLIENTS	MAXCLIENTS
 
@@ -43,9 +45,13 @@ typedef struct _LbxClient {
     Bool        input_blocked;
     Bool        reading_pending;
     int         reqs_pending;
+    int		bytes_in_reply;
+    Bool	ignored;
     int         (*readRequest) ();
     int         (*writeToClient) ();
     int         (*uncompressedWriteToClient) ();
+    Drawable	drawableCache[GFX_CACHE_SIZE];
+    GContext	gcontextCache[GFX_CACHE_SIZE];
 }           LbxClientRec;
 
 typedef struct _LbxProxy {
@@ -64,8 +70,9 @@ typedef struct _LbxProxy {
     int		grabClient;
     int         (*read) ();
     int         (*writev) ();
-    void       *lzwHandle;
+    pointer	compHandle;
     Bool        nocompression;
+    Bool        dosquishing;
     LBXDeltasRec indeltas;
     LBXDeltasRec outdeltas;
     unsigned char *tempDeltaBuf;

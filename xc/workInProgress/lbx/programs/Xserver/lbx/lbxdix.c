@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.5 94/03/17 19:45:11 dpw Exp $ */
+/* $XConsortium: lbxdix.c,v 1.6 94/03/27 13:10:46 dpw Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.23 1994/03/24 17:54:27 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.24 1994/09/23 20:51:28 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -902,7 +902,7 @@ LbxQueryTagData(client, owner_pid, tag, tagtype, infop)
 	    /* don't do others yet (ever?) */
 	    break;
 	}
-	AttendClient(client);
+	LbxAttendClient(client);
 	return;
     }
     /* save the info and the client being stalled */
@@ -964,7 +964,7 @@ LbxTagData(client, tag, len, data)
 	/* wake up stalled clients */
 	cp = *stqp->stalled_clients;
 	while (stqp->num_stalled--) {
-	    AttendClient(cp);
+	    LbxAttendClient(cp);
 	    cp++;
 	}
 	LbxRemoveQTag(tag);

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.5 94/03/17 19:45:29 dpw Exp $ */
+/* $XConsortium: lbxprop.c,v 1.6 94/03/27 13:17:07 dpw Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxprop.c,v 1.11 1994/03/24 17:54:36 lemke Exp $
+ * $NCDId: @(#)lbxprop.c,v 1.12 1994/09/23 20:51:51 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -61,13 +61,13 @@ LbxStallPropRequest(client, pProp)
     PropertyPtr pProp;
 {
     LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);
-    ResetCurrentRequest(client);
+    LbxResetCurrentRequest(client);
     client->sequence--;
 
 /* XXX this won't work too well went done to a proxy client.
  * need finer grain of control
  */
-    IgnoreClient(client);
+    LbxIgnoreClient(client);
 }
 
 int
@@ -421,7 +421,7 @@ LbxGetProperty(client)
 		    reply.length = 0;
 		reply.nItems = len / (pProp->format / 8);
 		reply.propertyType = pProp->type;
-                reply.tag = pProp->tag_id;
+		reply.tag = pProp->tag_id;
 
 		if (stuff->delete && (reply.bytesAfter == 0)) {
 		    LbxFlushPropertyTag(tid);

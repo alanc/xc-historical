@@ -1,6 +1,6 @@
-/* $XConsortium: lbxmain.c,v 1.12 94/09/13 17:14:27 mor Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.13 94/11/08 20:27:37 mor Exp mor $ */
 /*
- * $NCDId: @(#)lbxmain.c,v 1.45 1994/03/24 17:54:24 lemke Exp $
+ * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -45,6 +45,7 @@
 #define _XLBX_SERVER_
 #include "lbxstr.h"
 #include "lbxserve.h"
+#include "lbxsrvopts.h"
 #include "Xfuncproto.h"
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
@@ -190,6 +191,8 @@ LbxComputeReplyLen(lbxClient, buf)
     LbxClientPtr    lbxClient;
     char	*buf;
 {
+    LbxProxyPtr	    proxy = lbxClient->proxy;
+
     if (lbxClient->awaiting_setup)
     {
 	xConnSetupPrefix	*csp = (xConnSetupPrefix *) buf;
@@ -197,7 +200,7 @@ LbxComputeReplyLen(lbxClient, buf)
 	int			n;
 	if (lbxClient->client->swapped) {
 	    swaps(&len, n);
-	}
+        }
 	lbxClient->reply_remaining = 8 + (len << 2);
 	DBG(DBG_LEN, (stderr, "%d setup bytes remaining\n", lbxClient->reply_remaining));
     }
@@ -205,13 +208,13 @@ LbxComputeReplyLen(lbxClient, buf)
     {
 	xReply    *reply = (xReply *) buf;
 
-	lbxClient->reply_remaining = 32;
+	lbxClient->reply_remaining = LbxEventLength(proxy, (xEvent *) buf);
 	if (reply->generic.type == X_Reply) {
 	    int   len = reply->generic.length;
 	    int	  n;
 	    if (lbxClient->client->swapped) {
 		swapl(&len, n);
-	    }
+            }
 	    lbxClient->reply_remaining += len << 2;
 	}
 	DBG (DBG_LEN, (stderr, "%d reply bytes remaining\n", lbxClient->reply_remaining));
@@ -548,7 +551,7 @@ LbxFlushCompress ()
     LbxProxyPtr	    proxy;
 
     for (proxy = proxyList; proxy; proxy = proxy->next) {
-	if (proxy->lzwHandle) {
+	if (proxy->compHandle) {
 	    if (LzwFlush (proxy->fd) != 0) {
 		/* Assume we're write blocked.  What if it's a real error -
 		   leave it for the OS layer to figure out? */
@@ -575,7 +578,7 @@ LbxCheckCompressInput (dummy1, dummy2)
 	return TRUE;
 
     for (proxy = proxyList; proxy; proxy = proxy->next) {
-	if (proxy->lzwHandle) {
+	if (proxy->compHandle) {
 	    if (LzwInputAvail (proxy->fd))
 		AvailableClientInput (proxy->lbxClients[0]->client);
 	}
@@ -593,7 +596,7 @@ extern int  NewOutputPending;
 void
 LbxBlockHandler (data, timeout, readmask)
     pointer data;
-    OSTimePtr timeout;
+    OSTimePtr	 timeout;
     pointer readmask;
 {
     if (lbxAnyOutputPending)
@@ -615,10 +618,36 @@ LbxIsClientBlocked (client)
     LbxProxyPtr		proxy = LbxProxy(client);
     LbxClientPtr	lbxClient = LbxClient(client);
     
+    if (lbxClient->ignored)
+    	return TRUE;
     if (GrabInProgress && client->index != GrabInProgress &&
         lbxClient != proxy->lbxClients[0])
 	return TRUE;
     return FALSE;
+}
+
+void
+LbxIgnoreClient(client)
+    ClientPtr	client;
+{
+    LbxClientPtr lbxClient = LbxClient(client);
+
+    if (lbxClient)
+	lbxClient->ignored = TRUE;
+    else
+	IgnoreClient(client);
+}
+
+void
+LbxAttendClient(client)
+    ClientPtr	client;
+{
+    LbxClientPtr lbxClient = LbxClient(client);
+
+    if (lbxClient)
+	lbxClient->ignored = FALSE;
+    else
+	AttendClient(client);
 }
 
 void
@@ -744,6 +773,46 @@ LbxCheckServerGrabs (client)
 #define MAJOROP(client) ((xReq *)client->requestBuffer)->reqType
 #define MINOROP(client) ((xReq *)client->requestBuffer)->data
 
+static Bool lbxCacheable[] = {
+	FALSE,	/* LbxQueryVersion	  0 */
+	FALSE,	/* LbxStartProxy	  1 */
+	TRUE,	/* LbxStopProxy		  2 */
+	FALSE,	/* LbxSwitch		  3 */
+	FALSE,	/* LbxNewClient		  4 */
+	TRUE,	/* LbxCloseClient	  5 */
+	TRUE,	/* LbxModifySequence	  6 */
+	FALSE,	/* LbxAllowMotion	  7 */
+	TRUE,	/* LbxIncrementPixel	  8 */
+	FALSE,	/* LbxDelta		  9 */
+	TRUE,	/* LbxGetModifierMapping 10 */
+	TRUE,	/* LbxQueryTag		 11 */
+	TRUE,	/* LbxInvalidateTag	 12 */
+	TRUE,	/* LbxPolyPoint		 13 */
+	TRUE,	/* LbxPolyLine		 14 */
+	TRUE,	/* LbxPolySegment	 15 */
+	TRUE,	/* LbxPolyRectangle	 16 */
+	TRUE,	/* LbxPolyArc		 17 */
+	TRUE,	/* LbxFillPoly		 18 */
+	TRUE,	/* LbxPolyFillRectangle	 19 */
+	TRUE,	/* LbxPolyFillArc	 20 */
+	TRUE,	/* LbxGetKeyboardMapping 21 */
+	TRUE,	/* LbxQueryFont		 22 */
+	TRUE,	/* LbxChangeProperty	 23 */
+	TRUE,	/* LbxGetProperty	 24 */
+	TRUE,	/* LbxTagData		 25 */
+	TRUE,	/* LbxCopyArea		 26 */
+	TRUE,	/* LbxCopyPlane		 27 */
+	TRUE,	/* LbxPolyText8		 28 */
+	TRUE,	/* LbxPolyText16	 29 */
+	TRUE,	/* LbxImageText8	 30 */
+	TRUE,	/* LbxImageText16	 31 */
+	FALSE,	/* LbxQueryExtension	 32 */
+	FALSE,	/* LbxPutImage		 33 */
+	FALSE,	/* LbxGetImage		 34 */
+};
+
+#define NUM(a)	(sizeof (a) / sizeof (a[0]))
+
 int
 LbxReadRequestFromClient (client)
     ClientPtr	client;
@@ -767,7 +836,7 @@ LbxReadRequestFromClient (client)
 	    return 0;
 	}
 	else {
-	    ret = (*lbxClient->readRequest) (client);
+	    ret = LBXReadRequestFromClient (client);
 	    if (ret <= 0) {
 		lbxClient->reading_pending = FALSE;
 	        DBG (DBG_BLOCK, (stderr, "ending reading_pending for client %d\n", lbxClient->index));
@@ -783,7 +852,7 @@ LbxReadRequestFromClient (client)
     {
 	Bool		cacheable;
 
-	ret = (*lbxClient->readRequest) (masterClient);
+	ret = LBXReadRequestFromClient (masterClient);
 	DBG (DBG_READ_REQ, (stderr, "Real readRequest returns %d\n", ret));
 	if (ret <= 0)
 	    return ret;
@@ -793,6 +862,9 @@ LbxReadRequestFromClient (client)
 
 	cacheable = TRUE;
 	if (MAJOROP(client) == LbxReqCode) {
+	    /* Check to see if this request is delta cached */
+	    if (MINOROP(client) < NUM(lbxCacheable))
+		cacheable = lbxCacheable[MINOROP(client)];
 	    if (MINOROP(client) == X_LbxSwitch)
 	    {
 		/* Switch is sent by proxy */
@@ -808,7 +880,6 @@ LbxReadRequestFromClient (client)
 		DBG(DBG_DELTA, (stderr, "delta decompressed msg %d, len = %d\n",
 		    (unsigned) ((unsigned char *)client->requestBuffer)[0], ret));
 	    }
-	    cacheable = FALSE; /* not caching any LBX requests for now */
 	}
 
 	if (cacheable && DELTA_CACHEABLE(&proxy->indeltas, ret)) {
@@ -849,21 +920,130 @@ LbxReadRequestFromClient (client)
     }
 }
 
+/*
+ * have to copy data off into pending buffer 
+ */
+void
+LbxResetCurrentRequest(client)
+    ClientPtr	client;
+{
+    LbxClientPtr lbxClient = LbxClient(client);
+    LbxProxyPtr proxy;
+    xReq       *req = (xReq *) client->requestBuffer;
+
+    if (lbxClient) {
+	proxy = lbxClient->proxy;
+	AppendFakeRequest(client, client->requestBuffer, req->length * 4);
+
+	++proxy->curRecv->reqs_pending;
+	if (!proxy->curRecv->input_blocked) {
+	    proxy->curRecv->input_blocked = TRUE;
+	    QueueWorkProc(LbxWaitForUnblocked, proxy->curRecv->client, NULL);
+	}
+    } else {
+	ResetCurrentRequest(client);
+    }
+}
+
+/* ARGSUSED */
+static int
+LbxWriteEventToClient(client, ev)
+    ClientPtr	client;
+    xEvent	*ev;
+{
+    LbxClientPtr lbxClient = LbxClient(client);
+    LbxProxyPtr proxy = lbxClient->proxy;
+    int         len = sizeof(xEvent);
+    char        evbuf[32];
+    char       *bp = (char *) ev;
+
+    /* see if this is extraneous motion */
+    if (LbxThrottleMotionEvents(client, ev)) {
+	lbxClient->bytes_in_reply -= sizeof(xEvent);
+	return Success;
+    }
+    if (proxy->dosquishing) {
+	len = LbxSquishEvent(proxy, ev, evbuf);
+	bp = evbuf;
+    }
+    lbxClient->bytes_in_reply -= sizeof(xEvent);
+    lbxAnyOutputPending = TRUE;
+    return (*lbxClient->writeToClient) (client, len, bp);
+}
+
+/* determine how much data is being sent by server */
+/* these are real lengths, not LBX lengths */
+static int
+reply_length(lbxClient, buf, len)
+    LbxClientPtr	lbxClient;
+    char	*buf;
+{
+    xReply     *rep = (xReply *) buf;
+    char        n;
+
+    if (rep->generic.type != X_Reply) {
+	return len;		/* catch the multiple-event case */
+    }
+    if (lbxClient->awaiting_setup) {
+	CARD16      slen = ((xConnSetupPrefix *) buf)->length;
+
+	if (lbxClient->client->swapped) {
+	    swaps(&slen, n)
+	}
+	return (2 + slen) << 2;
+    } else {
+	CARD32      slen = rep->generic.length;
+
+	if (lbxClient->client->swapped) {
+	    swapl(&slen, n)
+	}
+	return (8 + slen) << 2;
+    }
+}
+
+/*
+ * assumes that only events & errors might be grouped.  if anything
+ * is somehow sending multiple replies in one WriteToClient() (which
+ * shouldn't be legal) this will break
+ */
 int
 LbxWriteToClient (client, len, buf)
     ClientPtr	client;
     int		len;
     char	*buf;
 {
-    LbxClientPtr    lbxClient = LbxClient(client);
+    LbxClientPtr lbxClient = LbxClient(client);
+    xReply     *rep = (xReply *) buf;
+    int         rlen = len,
+                i,
+                num;
+    if (!len)
+	return Success;
 
-    /* see if this is extraneous motion */
-    /* XXX will this handle mutiple events at the same time? */
-    if ((len == sizeof(xEvent)) && 
-	LbxThrottleMotionEvents(client, (xEvent *) buf)) 
-    {
+    /*
+     * make sure we look at the start of a reply/event before trying to play
+     * with it
+     */
+    if (lbxClient->bytes_in_reply == 0) {
+	lbxClient->bytes_in_reply = reply_length(lbxClient, buf, len);
+
+	/* catch any events (or errors) that can be tossed or squished */
+	/* may be a whole mess of them, so break them up */
+	if (rep->generic.type != X_Reply) {
+	    num = len / 32;
+	    for (i = 0; i < num; i++, buf += 32) {
+		(void) LbxWriteEventToClient(client, (xEvent *) buf);
+	    }
 	    return Success;
+	}
+    } else {
+	/*
+	 * round length, since that's what reply len did, and extra reply is
+	 * often not a word-multiple
+	 */
+	rlen = ((len + 3) >> 2) << 2;
     }
+    lbxClient->bytes_in_reply -= rlen;
     lbxAnyOutputPending = TRUE;
     return (*lbxClient->writeToClient) (client, len, buf);
 }
@@ -907,15 +1087,19 @@ LbxInitClient (proxy, client, index)
     lbxClient->input_blocked = FALSE;
     lbxClient->reading_pending = FALSE;
     lbxClient->reqs_pending = 0;
+    lbxClient->bytes_in_reply = 0;
+    lbxClient->ignored = FALSE;
     lbxClient->writeToClient = client->public.writeToClient;
     lbxClient->uncompressedWriteToClient = client->public.uncompressedWriteToClient;
     lbxClient->readRequest = client->public.readRequest;
+    bzero (lbxClient->drawableCache, sizeof (lbxClient->drawableCache));
+    bzero (lbxClient->gcontextCache, sizeof (lbxClient->gcontextCache));
     lbxClients[client->index] = lbxClient;
     proxy->lbxClients[index] = lbxClient;
     proxy->numClients++;
     client->public.writeToClient = LbxWriteToClient;
-    client->public.uncompressedWriteToClient = LbxUncompressedWriteToClient;
     client->public.readRequest = LbxReadRequestFromClient;
+    client->public.uncompressedWriteToClient = LbxUncompressedWriteToClient;
 #ifdef notused
     client->public.requestLength = LbxRequestLength;
 #endif
@@ -947,7 +1131,6 @@ LbxFreeClient (client)
     proxy->lbxClients[lbxClient->index] = 0;
     lbxClients[client->index] = 0;
     client->public.writeToClient = lbxClient->writeToClient;
-    client->public.uncompressedWriteToClient = lbxClient->uncompressedWriteToClient;
     client->public.readRequest = lbxClient->readRequest;
     xfree (lbxClient);
 }
@@ -964,8 +1147,8 @@ LbxFreeProxy (proxy)
 	xfree(proxy->tempDeltaBuf);
     if (proxy->tempEventBuf)
 	xfree(proxy->tempEventBuf);
-    if (proxy->lzwHandle)
-	LzwFree(proxy->lzwHandle);
+    if (proxy->compHandle)
+	LzwFree(proxy->compHandle);
     for (p = &proxyList; *p; p = &(*p)->next) {
 	if (*p == proxy) {
 	    *p = proxy->next;
@@ -992,7 +1175,7 @@ LbxShutdownProxy (proxy)
 	}
     }
     LbxFlushTags(proxy);
-    if (proxy->lzwHandle)
+    if (proxy->compHandle)
 	--lbxCompressWorkProcCount;
     LbxFreeProxy(proxy);
     if (!--lbxBlockHandlerCount)
@@ -1066,9 +1249,9 @@ ProcLbxQueryVersion(client)
 }
 
 int Writev(fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
+    int	fd;
+    struct iovec *iov;
+    int iovcnt;
 {
     return writev(fd, iov, iovcnt);
 }
@@ -1080,11 +1263,10 @@ ProcLbxStartProxy(client)
     REQUEST(xLbxStartProxyReq);
     LbxProxyPtr	    proxy;
     LbxClientPtr    lbxClient;
-    short	    deltaN;
-    short	    deltaMaxLen;
-    int		    comptype;
-    int		    maxbits;
-    xLbxStartReply  rep;
+    int		    reqlen;
+    int		    replylen;
+    xLbxStartReply  *replybuf;
+    LbxNegOptsRec   negopt;
     register int    n;
 
     REQUEST_AT_LEAST_SIZE(xLbxStartProxyReq);
@@ -1099,21 +1281,58 @@ ProcLbxStartProxy(client)
     				 * MAX_NUM_PROXIES */
     proxyList = proxy;
 
-    deltaN = stuff->deltaN;
-    deltaMaxLen = stuff->deltaMaxLen;
-    comptype = stuff->comptype;
-    if (LBXInitDeltaCache(&proxy->indeltas, deltaN, deltaMaxLen) < 0 ||
-	LBXInitDeltaCache(&proxy->outdeltas, deltaN, deltaMaxLen) < 0) {
+    /*
+     * Don't know exactly how big the reply will be, but it won't be
+     * bigger than the request
+     */
+    reqlen = stuff->length << 2;
+    replybuf = (xLbxStartReply *) xalloc(max(reqlen, sz_xLbxStartReply));
+    if (!replybuf) {
 	LbxFreeProxy(proxy);
 	return BadAlloc;
     }
-    if (deltaN && deltaMaxLen) {
-	if ((proxy->tempDeltaBuf = (unsigned char *)xalloc (deltaMaxLen))
-		== NULL) {
+
+    LbxOptionInit(&negopt);
+
+    replylen = LbxOptionParse(&negopt,
+			      &stuff[1],
+			      reqlen - sz_xLbxStartProxyReq,
+			      &replybuf->optDataStart);
+    if (replylen < 0) {
+	/*
+	 * Didn't understand option format, so we'll just end up
+	 * using the defaults.  Set nopts so that the proxy will
+	 * be informed that we rejected the options because of
+	 * decoding problems.
+	 */
+	LbxOptionInit(&negopt);
+	negopt.nopts = 0xff;
+	replylen = 0;
+    }
+
+    if (LBXInitDeltaCache(&proxy->indeltas, negopt.proxyDeltaN,
+			  negopt.proxyDeltaMaxLen) < 0
+			||
+	LBXInitDeltaCache(&proxy->outdeltas, negopt.serverDeltaN,
+			  negopt.serverDeltaMaxLen) < 0) {
+	LbxFreeProxy(proxy);
+	xfree(replybuf);
+	return BadAlloc;
+    }
+
+    n = 0;
+    if (negopt.proxyDeltaN)
+	n = negopt.proxyDeltaMaxLen;
+    if (negopt.serverDeltaN && negopt.serverDeltaMaxLen > n)
+	n = negopt.serverDeltaMaxLen;
+    if (n) {
+	if ((proxy->tempDeltaBuf = (unsigned char *)xalloc (n)) == NULL) {
 	    LbxFreeProxy(proxy);
+	    xfree(replybuf);
 	    return BadAlloc;
 	}
     }
+
 #ifndef NCD
     MakeClientGrabImpervious(client);	/* proxy needs to be grab-proof */
 #else
@@ -1122,49 +1341,48 @@ ProcLbxStartProxy(client)
     if ((proxy->tempEventBuf = (unsigned char *)
 		xalloc (max(MAXDELTASIZE, sizeof (xLbxEvent)))) == NULL) {
 	LbxFreeProxy(proxy);
+	xfree(replybuf);
 	return BadAlloc;
     }
     proxy->fd = ClientConnectionNumber(client);
-    if (comptype == LbxCompressLZW) {
-	maxbits = *(CARD32 *)(stuff + 1);
-	if (client->swapped) {
-	    swapl(&maxbits, n);
-	}
-	if ((proxy->lzwHandle = (void *)LzwInit(proxy->fd, maxbits)) == NULL) {
+    if (negopt.streamCompInit) {
+	proxy->compHandle =
+	    (*negopt.streamCompInit)(proxy->fd, negopt.streamCompArg);
+	if (proxy->compHandle == NULL) {
 	    LbxFreeProxy(proxy);
+	    xfree(replybuf);
 	    return BadAlloc;
 	}
     }
     if (!LbxInitClient (proxy, client, 0))
     {
 	LbxFreeProxy(proxy);
+	xfree(replybuf);
 	return BadAlloc;
     }
+    proxy->dosquishing = negopt.squish;
 
     /* send reply */
-    rep.type = X_Reply;
-    rep.sequenceNumber = client->sequence;
-    rep.length = 0;
-    rep.deltaN = stuff->deltaN;
-    rep.deltaMaxLen = stuff->deltaMaxLen;
-    rep.comptype = stuff->comptype;
-    if (proxy->lzwHandle)
-	rep.length += 1;
+    replybuf->type = X_Reply;
+    replybuf->nOpts = negopt.nopts;
+    replybuf->sequenceNumber = client->sequence;
+    replylen += sz_xLbxStartReplyHdr;
+    if (replylen < sz_xLbxStartReply)
+	replylen = sz_xLbxStartReply;
+    replybuf->length = (replylen - sz_xLbxStartReply + 3) >> 2;
     if (client->swapped) {
-	swaps(&rep.sequenceNumber, n);
-	swapl(&rep.length, n);
-	swaps(&rep.deltaN, n);
-	swaps(&rep.deltaMaxLen, n);
-	swapl(&rep.comptype, n);
+	swaps(&replybuf->sequenceNumber, n);
+	swapl(&replybuf->length, n);
     }
     lbxClient = LbxClient(client);
-    (*lbxClient->writeToClient) (client, sizeof (xLbxStartReply), (char *)&rep);
-    if (proxy->lzwHandle)
-	(*lbxClient->writeToClient) 
-	    (client, sizeof (CARD32), (char *)(stuff + 1));
+    (*lbxClient->writeToClient) (client, replylen, (char *)replybuf);
     FlushAllOutput();	/* what if entire reply doesn't get out here????? */
+#ifndef NDEBUG
+    if (PendingClientOutput(client))
+	fprintf(stderr, "Warning! StartProxy reply not transmitted\n");
+#endif
 
-    if (proxy->lzwHandle) {
+    if (proxy->compHandle) {
 	int  len = client->req_len << 2;
 	int  left = BytesInClientBuffer (client);
 	char *extra = ((char *) stuff) + len;
@@ -1187,11 +1405,12 @@ ProcLbxStartProxy(client)
     lbxClient->awaiting_setup = FALSE;
     if (!lbxBlockHandlerCount++)
 	RegisterBlockAndWakeupHandlers(LbxBlockHandler, LbxWakeupHandler, NULL);
-    if (proxy->lzwHandle) {
+    if (proxy->compHandle) {
 	if (!lbxCompressWorkProcCount++)
 	    QueueWorkProc (LbxCheckCompressInput, NULL, NULL);
     }
 
+    xfree(replybuf);
     return Success;
 }
 
@@ -1244,7 +1463,7 @@ ProcLbxNewClient(client)
     int		    c;
     int		    len;
     char	    *setupbuf;
-  
+
     if (stuff->client >= MAX_LBX_CLIENTS || 
 	!proxy || proxy->lbxClients[stuff->client])
 	return BadLbxClientCode;
@@ -1254,17 +1473,20 @@ ProcLbxNewClient(client)
     len = (stuff->length << 2) - sizeof(xLbxNewClientReq);
     setupbuf = (char *)xalloc (len);
     if (!setupbuf)
-      return BadAlloc;
+	return BadAlloc;
     bcopy ((char *)&stuff[1], setupbuf, len);
 
-    newClient = AllocNewConnection (ClientTransportObject(client),
+    newClient = AllocNewConnection (
+#ifndef NCD	/* R6-ism */
+    ClientTransportObject(client),
+#endif
 				    ClientConnectionNumber (client), 
 				    LbxRead, LbxWritev, LbxCloseClient);
     if (!newClient)
 	return BadAlloc;
     if (((xLbxConnClientPrefix *)setupbuf)->useTag)
 	newClient->requestVector = LbxInitialVector;
-    if (proxy->lzwHandle)
+    if (proxy->compHandle)
 	StartOutputCompression (newClient, LbxCompressOn, LbxCompressOff);
     if (!LbxInitClient (proxy, newClient, c))
     {
@@ -1517,6 +1739,46 @@ ProcLbxPolyFillArc(client)
 }
 
 int
+ProcLbxCopyArea (client)
+    register ClientPtr	client;
+{
+    return LbxDecodeCopyArea(client);
+}
+
+int
+ProcLbxCopyPlane (client)
+    register ClientPtr	client;
+{
+    return LbxDecodeCopyPlane(client);
+}
+
+
+int
+ProcLbxPolyText (client)
+    register ClientPtr	client;
+{
+    return LbxDecodePolyText(client);
+}
+
+int
+ProcLbxImageText (client)
+    register ClientPtr	client;
+{
+    return LbxDecodeImageText(client);
+}
+
+int
+ProcLbxQueryExtension(client)
+    ClientPtr	client;
+{
+    REQUEST(xLbxQueryExtensionReq);
+    char	*ename;
+
+    ename = (char *) &stuff[1];
+    return LbxQueryExtension(client, ename, stuff->nbytes);
+}
+
+int
 ProcLbxPutImage(client)
     register ClientPtr	client;
 {
@@ -1589,6 +1851,18 @@ ProcLbxDispatch (client)
 	return ProcLbxGetProperty (client);
     case X_LbxTagData:
 	return ProcLbxTagData (client);
+    case X_LbxCopyArea:
+	return ProcLbxCopyArea (client);
+    case X_LbxCopyPlane:
+	return ProcLbxCopyPlane (client);
+    case X_LbxPolyText8:
+    case X_LbxPolyText16:
+	return ProcLbxPolyText (client);
+    case X_LbxImageText8:
+    case X_LbxImageText16:
+	return ProcLbxImageText (client);
+    case X_LbxQueryExtension:
+	return ProcLbxQueryExtension (client);
     case X_LbxPutImage:
 	return ProcLbxPutImage (client);
     case X_LbxGetImage:
