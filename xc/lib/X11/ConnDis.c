@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.102 93/09/26 15:40:57 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.103 93/09/29 19:13:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,7 +50,7 @@
 #ifdef DNETCONN
 static int MakeDECnetConnection();
 #endif
-#ifdef UNIXCONN
+#if defined(UNIXCONN) && !defined(LOCALCONN)
 static int MakeUNIXSocketConnection();
 #endif
 #ifdef TCPCONN
@@ -58,6 +58,17 @@ static int MakeTCPConnection();
 #endif
 #ifdef STREAMSCONN
 extern int _XMakeStreamsConnection();
+#endif
+#ifdef LOCALCONN
+#include <sys/utsname.h>
+#ifdef SVR4
+#include <sys/stream.h>
+#include <sys/stropts.h>
+#ifdef TCPCONN
+#include <arpa/inet.h>
+#endif
+#endif /* SVR4 */
+static int MakeLOCALConnection();
 #endif
 
 static void GetAuthorization();
@@ -117,6 +128,9 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int (*connfunc)();			/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
+#ifdef LOCALCONN
+    struct utsname sys;
+#endif
 
     p = display_name;
 
@@ -134,7 +148,12 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	phostname = copystring (lastp, p - lastp);
 	if (!phostname) goto bad;	/* no memory */
     }
-
+#ifdef LOCALCONN
+    /* check if phostname == localnodename */
+    if (uname(&sys) >= 0 &&
+	!strncmp(phostname, sys.nodename, strlen(sys.nodename)))
+	phostname = "unix";
+#endif
 
     /*
      * Step 2, see if this is a DECnet address by looking for the optional
@@ -217,7 +236,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 #endif
 #endif
 
-#ifdef UNIXCONN
+#if defined(UNIXCONN) && !defined(LOCALCONN)
     /*
      * Now that the defaults have been established, see if we have any 
      * special names that we have to override:
@@ -239,14 +258,25 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     else if (strcmp (phostname, "unix") == 0) {
 	connfunc = MakeUNIXSocketConnection;
     }
-#endif
+#endif /* UNIXCONN && !LOCALCONN */
+
+#ifdef LOCALCONN
+#define LOCALCONNECTION (!phostname || !strcmp(phostname, "unix"))
+    /*
+     *     :N         =>
+     *     unix:N     =>   use a local connection method (see below)
+     */
+    if (LOCALCONNECTION)
+	connfunc = MakeLOCALConnection;
+#endif /* LOCALCONN */
+
     if (!connfunc)
 	goto bad;
 
-
-#ifdef UNIXCONN
+#if defined(UNIXCONN) && !defined(LOCALCONN)
 #define LOCALCONNECTION (!phostname || connfunc == MakeUNIXSocketConnection)
-#else
+#endif
+#ifndef LOCALCONNECTION
 #define LOCALCONNECTION (!phostname)
 #endif
 
@@ -435,7 +465,7 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 #endif /* DNETCONN */
 
 
-#ifdef UNIXCONN
+#if defined(UNIXCONN) && !defined(LOCALCONN)
 #include <sys/un.h>
 
 /*ARGSUSED*/
@@ -688,6 +718,548 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 #undef INVALID_INETADDR
 #endif /* TCPCONN */
 
+#ifdef LOCALCONN
+/*
+ * This code amply demonstrates why vendors need to talk to each other
+ * earlier rather than later.
+ *
+ * The following is an amalgamation of various local connection
+ * methods as used on PC-UNIX boxes.  It uses the environment
+ * variable XLOCAL to define a preferred sequence of connection
+ * methods to use.  Failing that, it tries its own sequence.
+ * Failing all local connection methods, it will use TCP/IP.
+ *
+ * Pay special attention to the primary and alternate
+ * nodes used by the ISC and UNIX connection methods.
+ *
+ * If compiled with -DXLOCAL_VERBOSE, the environment variable
+ * XLOCAL_VERBOSE may be set to enable connection-related information
+ * messages printed to stderr.
+ *
+ * EXAMPLE:
+ *	setenv XLOCAL ISC:NAMED:SCO:PTS:UNIX
+ *	setenv XLOCAL_VERBOSE 1
+ *
+ * VALID OPTIONS: (the first option for each is the recommended usage)
+ *
+ *	ISC_STREAMS	= { ISC | SP }
+ *	SCO_STREAMS	= { SCO | XSIGHT }
+ *	NAMED_STREAMS	= { NAMED | USL }
+ *	PTS_STREAMS	= { PTS | ATT }
+ *	UNIX_SOCKETS	= { UNIX | UNIXSOCKET | UNIXDOMAIN }
+ *	TCP/IP		= { TCP }
+ *	(if TCP is specified, no further local methods will be tried)
+ *
+ * COMPILATION SWITCHES:
+ *	-DTCPCONN	= enables TCP connections.
+ *	-DUNIXCONN	= enables UNIX domain sockets.
+ *	-DLOCALCONN	= enables ATT pts connections,
+ *			      uses slightly different UNIX domain code,
+ *			      also is a prerequisite for the following two...
+ *	-DSVR4		= enables NAMED pipes.
+ *	-DSVR4_ACP	= enables ISC and SCO streams for SVR4 systems.
+ *
+ */
+  
+#include <signal.h>
+  
+#ifdef SVR4
+#define XLOCAL_NAMED
+#define X_NAMED_PATH	"/dev/X/Nserver."
+#endif
+
+#if !defined(SVR4) || defined(SVR4_ACP)
+#define XLOCAL_ISC
+#define XLOCAL_SCO
+#include <sys/stream.h>
+#include <sys/stropts.h>
+#define X_ISC_DEVPATH	"/dev/X/ISCCONN/X"
+#define X_ISC_PATH	"/tmp/.X11-unix/X"
+#define X_SCO_PATH	"/dev/X"
+#define DEV_SPX		"/dev/spx"
+#endif
+
+#ifdef unix
+#define XLOCAL_PTS
+#define X_PTS_PATH "/dev/X/server."
+extern char *ptsname();
+extern int grantpt(), unlockpt();
+#endif
+
+#ifdef UNIXCONN
+#define XLOCAL_UNIX
+#include <sys/un.h>
+#define X_UNIX_DEVPATH "/dev/X/UNIXCON/X"
+#endif
+
+#ifndef XLOCAL_VERBOSE
+#define XLOCAL_MSG(x)   /* as nothing */
+#else
+static void xlocalMsg();
+#define XLOCAL_MSG(x)   xlocalMsg x;
+#endif
+
+#if defined(XLOCAL_SCO) || defined(XLOCAL_PTS)
+/* dummy signal handler */
+/*ARGSUSED*/
+static void
+_dummy(sig)
+  int sig;
+{
+}
+#endif
+
+#ifdef XLOCAL_VERBOSE
+/*PRINTFLIKE1*/
+static void
+xlocalMsg(lvl,str,a,b,c,d,e,f,g,h)
+  int lvl;
+  char *str;
+  int a,b,c,d,e,f,g,h;
+{
+    static int xlocalMsgLvl = -2;
+
+    if (xlocalMsgLvl == -2) {
+	char *tmp, *getenv();
+        if ((tmp = getenv("XLOCAL_VERBOSE")) != NULL) {
+	    xlocalMsgLvl = atoi(tmp);
+	} else {
+	    xlocalMsgLvl = -1;
+	}
+    }
+
+    if (xlocalMsgLvl >= lvl) {
+	(void) fprintf(stderr,"Xlib: XLOCAL - ");
+	(void) fprintf(stderr,str,a,b,c,d,e,f,g,h);
+    }
+}
+#endif /* XLOCAL_VERBOSE */
+
+#include <sys/stat.h>
+#include <sys/inode.h>
+
+#ifdef XLOCAL_NAMED
+/*
+ * AT&T's named pipe connection (SVR4)
+ * XLOCAL = NAMED or USL
+ */
+/*ARGSUSED*/
+static int
+MakeLocalNAMEDConnection(idisplay,retries)
+  int idisplay;
+  int retries;
+{
+    int fd;
+    char server_path[64];
+    struct stat filestat;
+    extern int isastream();
+    struct strrecvfd str;
+
+    (void) sprintf(server_path,"%s%d",X_NAMED_PATH, idisplay);
+    XLOCAL_MSG((1,"XLOCAL_NAMED trying [%s]\n",server_path));
+
+    if (stat(server_path, &filestat) != -1) {
+	if ((filestat.st_mode & IFMT) == IFIFO) {
+	    if ((fd = open(server_path, O_RDWR)) >= 0) {
+#ifdef I_BIGPIPE
+		if( ioctl( fd, I_BIGPIPE, &str ) != -1 )
+		    XLOCAL_MSG((1,"I_BIGPIPE option succeeded for XLOCAL_NAMED\n"));
+#endif /* I_BIGPIPE */
+		if (isastream(fd) > 0) {
+		    XLOCAL_MSG((1,"XLOCAL_NAMED [%s] succeeded\n",
+			      server_path));
+		    return(fd);
+		}
+		(void) close(fd);
+	    }
+	} else {
+	    XLOCAL_MSG((1,"XLOCAL_NAMED non-pipe node.\n"));
+	}
+    }
+    XLOCAL_MSG((1,"XLOCAL_NAMED failed\n"));
+    return(-1);
+}
+#endif /* XLOCAL_NAMED */
+
+#ifdef XLOCAL_ISC
+/*
+ * ISC local connection (/dev/spx)
+ * XLOCAL = ISC or SP
+ */
+/*ARGSUSED*/
+static int
+MakeLocalISCConnection(idisplay,retries)
+  int idisplay;
+  int retries;
+{
+    int fd,fds,server;
+    char server_path[64];
+    struct strfdinsert buf;
+    long temp;
+    o_mode_t spmode;
+    struct stat filestat;
+
+    fd = fds = server = -1;
+
+    if (stat(DEV_SPX, &filestat) == -1) {
+	XLOCAL_MSG((1,"XLOCAL_ISC no sp driver or spx node.\n"));
+	return(-1);
+    }
+    spmode = (filestat.st_mode & IFMT);
+
+    (void) sprintf(server_path,"%s%d", X_ISC_DEVPATH, idisplay);
+    XLOCAL_MSG((1,"XLOCAL_ISC trying [%s]\n",server_path));
+    if (stat(server_path, &filestat) != -1) {
+	if ((filestat.st_mode & IFMT) == spmode) {
+	    if ((server = open(server_path, O_RDWR)) != -1) {
+		XLOCAL_MSG((1,"SP_STREAMS opened [%s]\n",server_path));
+	    }
+	}
+    }
+
+    if (server == -1) {
+	(void) sprintf(server_path,"%s%d", X_ISC_PATH, idisplay);
+	XLOCAL_MSG((1,"XLOCAL_ISC trying [%s]\n",server_path));
+	if (stat(server_path, &filestat) != -1) {
+	    if ((filestat.st_mode & IFMT) == spmode) {
+		if ((server = open(server_path, O_RDWR)) != -1) {
+		    XLOCAL_MSG((1,"XLOCAL_ISC opened [%s]\n",server_path));
+		}
+	    }
+	}
+    }
+
+    if (server >= 0) {
+	if ((fds = open(DEV_SPX, O_RDWR)) >= 0 &&
+	    (fd  = open(DEV_SPX, O_RDWR)) >= 0) {
+	
+	    /* make a STREAMS-pipe */
+	    buf.databuf.maxlen = -1;
+	    buf.databuf.len = -1;
+	    buf.databuf.buf = NULL;
+	    buf.ctlbuf.maxlen = sizeof(long);
+	    buf.ctlbuf.len = sizeof(long);
+	    buf.ctlbuf.buf = (caddr_t)&temp;
+	    buf.offset = 0;
+	    buf.fildes = fd;
+	    buf.flags = 0;
+	
+	    if (ioctl(fds, I_FDINSERT, &buf) != -1 &&
+		ioctl(server, I_SENDFD, fds) != -1) {
+		(void) close(fds); 
+		(void) close(server);
+		XLOCAL_MSG((1,"XLOCAL_ISC [%s] succeeded\n",server_path));
+		return (fd);
+	    }
+	}
+	(void) close(server);
+	if (fds != -1)
+	  (void) close(fds);
+	if (fd != -1)
+	  (void) close(fd);
+    }
+    XLOCAL_MSG((1,"XLOCAL_ISC failed\n"));
+    return(-1);
+}
+#endif /* XLOCAL_ISC */
+
+#ifdef XLOCAL_SCO
+/*
+ * SCO's local connection (XSIGHT version)
+ * XLOCAL = SCO or XSIGHT
+ */
+/*ARGSUSED*/
+static int
+MakeLocalSCOConnection(idisplay,retries)
+  int idisplay;
+  int retries;
+{
+    int fd,server,fl,ret;
+    char server_path[64];
+    struct strbuf ctlbuf;
+    unsigned alarm_time;
+    void (*savef)();
+    long temp;
+    extern int getmsg(), putmsg();
+
+    (void) sprintf(server_path,"%s%1dR", X_SCO_PATH, idisplay);
+    XLOCAL_MSG((1,"SCO_STREAMS trying [%s]\n",server_path));
+
+    if ((server = open(server_path, O_RDWR)) >= 0) {
+	if ((fd = open(DEV_SPX, O_RDWR)) >= 0) {
+	
+	    (void) write(server, &server, 1);
+	    ctlbuf.len = 0;
+	    ctlbuf.maxlen = sizeof(long);
+	    ctlbuf.buf = (caddr_t)&temp;
+	    fl = 0;
+	
+	    savef = signal(SIGALRM, _dummy);
+	    alarm_time = alarm(10);
+	
+	    ret = getmsg(server, &ctlbuf, 0, &fl);
+
+	    (void) alarm(alarm_time);
+	    (void) signal(SIGALRM, savef);
+	    
+	    if (ret >= 0) {
+		/* The msg we got via getmsg is the result of an 
+		 * I_FDINSERT, so if we do a putmsg with whatever
+		 * we recieved, we're doing another I_FDINSERT ...
+		 */
+		(void) putmsg(fd, &ctlbuf, 0, 0);
+		(void) fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NDELAY);
+
+		(void) close(server);
+		XLOCAL_MSG((1,"SCO_STREAMS [%s] succeeded\n",server_path));
+		return(fd);
+	    }
+	    (void) close(fd);
+	}
+	(void) close(server);
+    }
+    XLOCAL_MSG((1,"SCO_STREAMS failed\n"));
+    return(-1);
+}
+#endif /* XLOCAL_SCO */
+
+#ifdef XLOCAL_PTS
+/*
+ * AT&T's local connection (SVR3&SVR4)
+ * XLOCAL = PTS or ATT
+ */
+/*ARGSUSED*/
+static int
+MakeLocalPTSConnection(idisplay,retries)
+  int idisplay;
+  int retries;
+{
+    int fd,server,ret;
+    char server_path[64];
+    char rbuf[64], *slave;
+    void (*savef)();
+    long temp;
+    unsigned alarm_time;
+
+    (void) sprintf(server_path,"%s%d", X_PTS_PATH, idisplay);
+    XLOCAL_MSG((1,"PTS_STREAMS trying [%s]\n",server_path));
+
+    if ((server = open (server_path, O_RDWR)) >= 0) {
+	if ((fd = open("/dev/ptmx", O_RDWR)) >= 0) {
+
+	    (void) grantpt(fd);
+	    (void) unlockpt(fd);
+	    slave = ptsname(fd); /* get name */
+
+	    /*
+	     * write slave name to server
+	     */
+	    temp = strlen(slave);
+	    rbuf[0] = temp;
+	    (void) sprintf(&rbuf[1], slave);
+	    (void) write(server, rbuf, temp+1);
+
+	    /*
+	     * wait for server to respond
+	     */
+	    savef = signal(SIGALRM, _dummy);
+	    alarm_time = alarm (30);
+
+	    ret = read(fd, rbuf, 1);
+
+	    (void) alarm(alarm_time);
+	    (void) signal(SIGALRM, savef);
+	
+	    if (ret == 1) {
+		(void) close(server);
+		XLOCAL_MSG((1,"PTS_STREAMS [%s] succeeded\n",server_path));
+		return(fd);
+	    }
+	    (void) close(fd);
+	}
+	(void) close(server);
+    }
+    XLOCAL_MSG((1,"PTS_STREAMS [%s] failed\n",server_path));
+    return(-1);
+}
+#endif /* XLOCAL_PTS */
+
+#ifdef XLOCAL_UNIX
+/*
+ * UNIX or UNIXDOMAIN connections
+ */
+static int
+MakeLocalUNIXDOMAINConnection(idisplay, retries)
+  int idisplay;
+  int retries;
+{
+    struct sockaddr_un unaddr;	/* UNIX socket data block */
+    struct sockaddr *addr;	/* generic socket pointer */
+    int addrlen;		/* length of addr */
+    int fd;			/* socket file descriptor */
+    struct stat filestat;
+    int olderrno;
+
+    unaddr.sun_family = AF_UNIX;
+    (void) sprintf (unaddr.sun_path, "%s%d", X_UNIX_DEVPATH, idisplay);
+    XLOCAL_MSG((1,"UNIX_SOCKET trying [%s]\n",unaddr.sun_path));
+    if (stat(unaddr.sun_path, &filestat) == -1) {
+	(void) sprintf (unaddr.sun_path, "%s%d", X_UNIX_PATH, idisplay);
+	XLOCAL_MSG((1,"UNIX_SOCKET trying [%s]\n",unaddr.sun_path));
+	if (stat(unaddr.sun_path, &filestat) == -1) {
+	    XLOCAL_MSG((1,"UNIX_SOCKET failed\n"));
+	    return(-1);
+	}
+    }
+
+    addr = (struct sockaddr *) &unaddr;
+#ifdef SUN_LEN
+    addrlen = SUN_LEN (&unaddr);
+#else
+    addrlen = strlen(unaddr.sun_path) + sizeof(unaddr.sun_family);
+#endif
+
+    /*
+     * Open the network connection.
+     */
+    do {
+	if ((fd = socket ((int) addr->sa_family, SOCK_STREAM, 0)) < 0) {
+	    olderrno = errno;
+	    break;
+	}
+
+	if (connect (fd, addr, addrlen) >= 0) {
+	    /* Don't need to get auth info since we're local */
+	    XLOCAL_MSG((1,"UNIX_SOCKET [%s] succeeded\n",unaddr.sun_path));
+	    return(fd);
+	}
+
+	olderrno = errno;
+	(void) close(fd);
+	if (olderrno != ENOENT || retries <= 0) {
+	    break;
+	}
+	(void) sleep (1);
+    } while (retries-- > 0);
+
+    errno = olderrno;
+    XLOCAL_MSG((1,"UNIX_SOCKET failed\n"));
+    return(-1);
+}
+#endif /* XLOCAL_UNIX */
+
+typedef struct {
+    char *name;
+    int (*connFn)();
+} xlocalListRec, *xlocalListPtr;
+
+#define PRIMARY_END	"PRIMARY_END"
+
+static xlocalListRec xlocalList[] = {
+    /**** PRIMARY METHODS ****/
+#ifdef XLOCAL_NAMED
+    { "NAMED",	MakeLocalNAMEDConnection, },
+#endif
+#ifdef XLOCAL_ISC
+    { "ISC",	MakeLocalISCConnection, },
+#endif
+#ifdef XLOCAL_SCO
+    { "SCO",	MakeLocalSCOConnection, },
+#endif
+#ifdef XLOCAL_PTS
+    { "PTS",	MakeLocalPTSConnection, },
+#endif
+#ifdef XLOCAL_UNIX
+    { "UNIX",	MakeLocalUNIXDOMAINConnection, },
+#endif
+    { PRIMARY_END, NULL, },
+    /**** ALTERNATE NAMES FOR ABOVE METHOD ****/
+#ifdef XLOCAL_NAMED
+    { "USL",	MakeLocalNAMEDConnection, },
+#endif
+#ifdef XLOCAL_ISC
+    { "SP",	MakeLocalISCConnection, },
+#endif
+#ifdef XLOCAL_SCO
+    { "XSIGHT",	MakeLocalSCOConnection, },
+#endif
+#ifdef XLOCAL_PTS
+    { "ATT",	MakeLocalPTSConnection, },
+#endif
+#ifdef XLOCAL_UNIX
+    { "UNIXSOCKET", MakeLocalUNIXDOMAINConnection, },
+    { "UNIXDOMAIN", MakeLocalUNIXDOMAINConnection, },
+#endif
+    { NULL, NULL, },
+};
+
+#define WHITE	" :\t\n\r"
+
+static int
+MakeLOCALConnection (phostname, idisplay, retries,
+		     familyp, saddrlenp, saddrp)
+  char *phostname;
+  int idisplay;
+  int retries;
+  int *familyp;			/* RETURN */
+  int *saddrlenp;		/* RETURN */
+  char **saddrp;		/* RETURN */
+{
+    int ret;
+    char *name,*nameList,*envNameList;
+    xlocalListRec *xlocal;
+
+    if ((envNameList = getenv("XLOCAL")) != NULL) {
+	XLOCAL_MSG((0,"Method list=[%s]\n",envNameList));
+	nameList = copystring(envNameList, strlen(envNameList));
+	name = strtok(nameList,WHITE);
+	while (name) {
+	    XLOCAL_MSG((1,"[%s] lookup...\n",name));
+	    if (!strncmp(name,"TCP",3))
+	      goto do_tcpip;
+	    for (xlocal = xlocalList; xlocal->name; ++xlocal) {
+		if (!strcmp(PRIMARY_END,xlocal->name))
+		  continue;
+		if (!strcmp(name,xlocal->name)) {
+		    XLOCAL_MSG((1,"[%s] found it, try to connect...\n",name));
+		    if ((ret = (*xlocal->connFn)(idisplay,retries)) != -1) {
+			XLOCAL_MSG((0,"[%s] success (%d)! \n",name,ret));
+			Xfree(nameList);
+			return(ret);
+		    }
+		    XLOCAL_MSG((0,"[%s] connect failure\n",name));
+		}
+	    }
+	    name = strtok(NULL,WHITE);
+	}
+	XLOCAL_MSG((0,"Method list exhausted.\n"));
+	Xfree(nameList);
+    } else {
+	XLOCAL_MSG((0,"No XLOCAL in environment.\n"));
+    }
+
+    XLOCAL_MSG((0,"Starting automatic list...\n"));
+    for (xlocal = xlocalList; xlocal->name; ++xlocal) {
+	if (!strcmp(PRIMARY_END,xlocal->name))
+	  break;
+	XLOCAL_MSG((1,"[%s] try to connect...\n",xlocal->name));
+	if ((ret = (*xlocal->connFn)(idisplay,retries)) != -1) {
+	    XLOCAL_MSG((0,"[%s] success (%d)! \n",xlocal->name,ret));
+	    return(ret);
+	}
+	XLOCAL_MSG((0,"[%s] connect failure\n",xlocal->name));
+    }
+  do_tcpip:
+    XLOCAL_MSG((1,"Unable to connect locally.\n"));
+#ifdef TCPCONN
+    XLOCAL_MSG((0,"Fallback to TCP/IP...\n"));
+    return(MakeTCPConnection(phostname, idisplay, retries,
+			     familyp, saddrlenp, saddrp));
+#else
+    return (-1);
+#endif
+}
+#endif /* LOCALCONN */
 
 
 /*****************************************************************************
@@ -771,7 +1343,11 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 	ioctl(dpy->fd, FIONBIO, &arg);
     }
 #else
+#ifdef FNDELAY
     (void) fcntl (dpy->fd, F_SETFL, FNDELAY);
+#else
+    (void) fcntl (dpy->fd, F_SETFL, O_NDELAY);
+#endif
 #endif
 #endif
 #endif
