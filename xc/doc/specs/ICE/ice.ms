@@ -82,9 +82,9 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Protocol\fP\s-2
 .sp
-Public Review Draft Update 1
+Public Review Draft Update 2
 .sp
-March 28, 1994
+April 6, 1994
 .sp
 X Consortium Draft Standard
 .AU
@@ -156,8 +156,12 @@ Inter-Client Exchange
 (ICE) protocol provides a generic framework for building protocols on top of
 reliable, byte-stream transport connections.  It provides basic mechanisms
 for setting up and shutting down connections, for performing authentication,
-for negotiating versions and extensions, and for reporting errors.  The
+for negotiating
+.mc |
+versions,
+and for reporting errors.  The
 protocols running within an ICE connection are referred to here as
+.mc
 .I subprotocols.
 ICE provides facilities for each subprotocol to do its own version
 negotiation, authentication, and error reporting.  In addition, if two
@@ -172,7 +176,11 @@ the parties will decide which is the \*Qoriginating\*U party and which is
 the \*Qanswering\*U party.  The negotiation will also need to provide the
 originating party with a name or address of the answering party.  Examples
 of mechanisms by which parties can make themselves known to each other are
-the X selection mechanism and environment variables.
+the X selection mechanism, environment
+.mc |
+variables, and shared files.
+.br
+.mc
 .LP
 The originating party first determines whether there is an existing ICE
 connection between the two parties.  If there is, it can re-use the existing
@@ -219,7 +227,11 @@ the subprotocol, independently of authentication for the connection.
 Subprotocol authentication is optional.  If there is no subprotocol
 authentication, the answering party responds with a
 .PN ProtocolReply
-message, giving the ICE major opcode that it has assigned.
+message, giving the ICE major opcode that it has assigned
+.mc |
+for the subprotocol.
+.br
+.mc
 .LP
 Subprotocols are authenticated independently of each other, because they may
 have differing security requirements.  If there is authentication for this
@@ -515,8 +527,12 @@ STRING
 (See note)
 .Ma "Expected errors"
 .PN NoVersion ,
+.mc |
+.PN SetupFailed ,
+.mc
 .PN NoAuthentication ,
 .PN AuthenticationRejected ,
+.Mc
 .PN AuthenticationFailed .
 .Me
 The party that initiates the connection
@@ -603,7 +619,10 @@ Any protocol-specific data that might be required is also sent.
 .PN ProtocolReply .
 .Ma "Expected errors"
 .PN AuthenticationRejected ,
-.PN AuthenticationFailed .
+.PN AuthenticationFailed ,
+.mc |
+.PN SetupFailed .
+.mc
 .Me
 This message is sent in response to an
 .PN AuthenticationRequired
@@ -689,7 +708,11 @@ LISTofSTRING
 .Ma "Expected errors"
 .PN UnknownProtocol ,
 .PN NoVersion ,
+.mc |
+.PN SetupFailed ,
+.mc
 .PN NoAuthentication ,
+.Mc
 .PN AuthenticationRejected ,
 .PN AuthenticationFailed .
 .Me
@@ -929,6 +952,43 @@ None of the authentication protocols offered are available.
 (none)
 .Me
 None of the protocol versions offered are available.
+.\" .Ms SetupFailed
+.sM
+.na
+.mc |
+.PN SetupFailed
+.RS
+.Mf offending-minor-opcode
+.PN ConnectionSetup ,
+.PN ProtocolSetup ,
+.PN AuthenticationReply
+.Mf severity
+.PN ConnectionSetup
+\(->
+.PN FatalToConnection
+.Mc
+.PN ProtocolSetup
+\(->
+.PN FatalToProtocol
+.Mc
+.PN AuthenticationReply
+\(->
+.PN FatalToConnection
+if authenticating a connection, otherwise
+.PN FatalToProtocol
+.Mf values
+STRING reason
+.br
+.mc
+.Me
+.mc |
+The sending side is unable to accept the
+new connection or new protocol for a reason other than authentication
+failure.  Typically this error will be a result of inability to allocate
+additional resources on the sending side.  The reason field will give a
+human-interpretable message providing further detail on the type of failure.
+.br
+.mc
 .Ms AuthenticationRejected
 .Mf offending-minor-opcode
 .PN AuthenticationReply ,
@@ -938,10 +998,15 @@ None of the protocol versions offered are available.
 .Mf severity
 .PN FatalToProtocol
 .Mf values
-STRING Reason
+STRING reason
 .Me
 Authentication rejected.  The peer has failed to properly
 authenticate itself.
+.mc |
+The reason field will give a human-interpretable message
+providing further detail.
+.br
+.mc
 .Ms AuthenticationFailed
 .Mf offending-minor-opcode
 .PN AuthenticationReply ,
@@ -951,7 +1016,7 @@ authenticate itself.
 .Mf severity
 .PN FatalToProtocol
 .Mf values
-STRING Reason
+STRING reason
 .Me
 Authentication failed.
 .PN AuthenticationFailed
@@ -960,6 +1025,11 @@ does not imply that the authentication was rejected, as
 does.  Instead it means that the sender was unable to complete
 the authentication for some other reason.  (For instance, it
 may have been unable to contact an authentication server.)
+.mc |
+The reason field will give a human-interpretable message
+providing further detail.
+.br
+.mc
 .Ms ProtocolDuplicate
 .Mf offending-minor-opcode
 .PN ProtocolSetup
@@ -967,7 +1037,7 @@ may have been unable to contact an authentication server.)
 .PN FatalToProtocol
 (but see note)
 .Mf values
-STRING Protocol Name
+STRING protocol name
 .Me
 The protocol name was already registered.  This is fatal to
 the \*Qnew\*U protocol being set up by
@@ -980,7 +1050,7 @@ but it does not affect the existing registration.
 .PN FatalToProtocol
 (but see note)
 .Mf values
-CARD8 Opcode
+CARD8 opcode
 .Me
 The major opcode specified was already registered.  This is
 fatal to the \*Qnew\*U protocol being set up by
@@ -1468,11 +1538,14 @@ _
 BadMajor	0
 NoAuthentication	1
 NoVersion	2
-AuthenticationRejected	3
-AuthenticationFailed	4
-ProtocolDuplicate	5
-MajorOpcodeDuplicate	6
-UnknownProtocol	7
+.mc |
+SetupFailed	3
+AuthenticationRejected	4
+AuthenticationFailed	5
+ProtocolDuplicate	6
+MajorOpcodeDuplicate	7
+UnknownProtocol	8
+.mc
 .sp 6p
 _
 .TE
