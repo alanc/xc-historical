@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.3 93/09/12 14:28:58 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.4 93/09/12 16:22:40 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -43,7 +43,7 @@ SmsCallbacks 	*callbacks;
 
 	if ((_SmsOpcode = IceRegisterForProtocolReply ("XSMP",
 	    vendor, release, _SmVersionCount, _SmsVersions,
-	    _SmsProtocolSetupNotifyCB, _SmAuthCount, _SmsAuthRecs)) < 0)
+	    _SmsProtocolSetupNotifyCB, _SmAuthCount, _SmsAuthRecs, NULL)) < 0)
 	{
 	   return (0);
 	}
