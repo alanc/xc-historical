@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.85 90/07/31 10:46:51 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.86 90/08/20 15:24:02 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -128,7 +128,7 @@ static void QueueTimerEvent(app, ptr)
  * has not already been enqueued.
  *
  *
- * _XtWaitForSomething( ignoreTimers, ignoreInputs, ignoreEvents,
+ * _XtwaitForSomething( ignoreTimers, ignoreInputs, ignoreEvents,
  *			block, howlong, appContext)
  * Boolean ignoreTimers;     (Don't return if a timer would fire
  *				Also implies forget timers exist)
@@ -230,7 +230,9 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			 */
 			if (errno == EINTR) {
 			    errno = 0;  /* errno is not self reseting */
-			    if(block && wait_time_ptr != NULL) {
+			    if (block) {
+				if (wait_time_ptr == NULL) /*howlong == NULL*/
+				    continue;
 				(void)gettimeofday (&new_time, &cur_timezone);
 				FIXUP_TIMEVAL(new_time);
 				TIMEDELTA(time_spent, new_time, cur_time);
