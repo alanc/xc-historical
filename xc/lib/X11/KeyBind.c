@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.40 88/06/20 11:29:10 rws Exp $ */
+/* $Header: XKeyBind.c,v 11.42 88/09/02 09:21:06 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -266,6 +266,7 @@ int XLookupString (event, buffer, nbytes, keysym, status)
 	          symbol = usymbol;
      }
      /* then apply Caps, as protocol suggests*/
+     /* XXX this should really work for all character sets */
      if ((event->state & LockMask) && (dpy->lock_meaning == XK_Caps_Lock)) {
 	    if (symbol >= XK_a && symbol <= XK_z)
 	          symbol -= (XK_a - XK_A);
@@ -288,18 +289,23 @@ int XLookupString (event, buffer, nbytes, keysym, status)
 		|| IsModifierKey(symbol)   || IsCursorKey(symbol)
 		|| IsPFKey (symbol)      || IsFunctionKey(symbol)
 		|| IsMiscFunctionKey(symbol)
-		|| (symbol == XK_Multi_key) || (symbol == XK_Kanji))  return 0;
-	    if (symbol == XK_KP_Space)
-	       c = XK_space & 0xFF; /* patch encoding botch */
-	    /* if X keysym, convert to ascii by grabbing low 7 bits */
-	    if (hiBytes == 0xFF) c &= 0x7F;
-	    /* only apply Control key if it makes sense, else ignore it */
-	    if (event->state & ControlMask) {
-	        if ((c >= '@' && c <= '\177') || c == ' ') c &= 0x1F;
-		else if (c == '2') c = '\000';
-		else if (c >= '3' && c <= '7') c -= ('3' - '\033');
-		else if (c == '8') c = '\177';
-		else if (c == '/') c = '_' & 0x1F;
+		|| (symbol == XK_Multi_key) || (symbol == XK_Kanji)) {
+#ifndef LKUPSTR8BIT
+		return 0;
+#endif
+	    } else {
+		if (symbol == XK_KP_Space)
+		   c = XK_space & 0xFF; /* patch encoding botch */
+		/* if X keysym, convert to ascii by grabbing low 7 bits */
+		if (hiBytes == 0xFF) c &= 0x7F;
+		/* only apply Control key if it makes sense, else ignore it */
+		if (event->state & ControlMask) {
+		    if ((c >= '@' && c <= '\177') || c == ' ') c &= 0x1F;
+		    else if (c == '2') c = '\000';
+		    else if (c >= '3' && c <= '7') c -= ('3' - '\033');
+		    else if (c == '8') c = '\177';
+		    else if (c == '/') c = '_' & 0x1F;
+		}
 	    }
 	    buf[0] = c;
      	    length = 1;
