@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.83 90/09/07 15:43:28 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.84 91/03/13 20:09:08 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -1101,7 +1101,7 @@ typedef struct {
             CARD32 pad00 B32;
 	    Window event B32, window B32;
 	    INT16 x B16, y B16;
-	    CARD32 pad1, pad2, pad3, pad4;
+	    CARD32 pad1 B32, pad2 B32, pad3 B32, pad4 B32;
 	} gravity;
 	struct {
             CARD32 pad00 B32;
