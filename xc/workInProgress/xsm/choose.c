@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.7 94/07/15 15:02:38 mor Exp $ */
+/* $XConsortium: choose.c,v 1.8 94/07/18 15:08:17 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -173,7 +173,60 @@ ChooseSession ()
 	XtNforeground, save_message_background,
 	NULL);
 
+
+    /*
+     * Set the input focus to the choose window and direct all keyboard
+     * events to the list widget.  This way, the user can make selections
+     * using the keyboard.  Note that when the choose menu comes up, the
+     * window manager should not be running yet.  So, it is safe for us to
+     * set input focus.
+     */
+
     XtPopup (chooseSessionPopup, XtGrabNone);
+
+    XtSetKeyboardFocus (chooseSessionPopup, chooseSessionListWidget);
+
+    XSetInputFocus (XtDisplay (topLevel), XtWindow (chooseSessionPopup),
+	RevertToNone, CurrentTime);
+
+    XSync (XtDisplay (topLevel), 0);
+}
+
+
+
+static void
+ChooseSessionUp (w, event, params, numParams)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *numParams;
+
+{
+    XawListReturnStruct *current;
+    
+    current = XawListShowCurrent (chooseSessionListWidget);
+    if (current->list_index > 0)
+	XawListHighlight (chooseSessionListWidget, current->list_index - 1);
+    XtFree ((char *) current);
+}
+
+
+static void
+ChooseSessionDown (w, event, params, numParams)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *numParams;
+
+{
+    XawListReturnStruct *current;
+    
+    current = XawListShowCurrent (chooseSessionListWidget);
+    if (current->list_index < sessionNameCount - 1)
+	XawListHighlight (chooseSessionListWidget, current->list_index + 1);
+    XtFree ((char *) current);
 }
 
 
@@ -361,6 +414,11 @@ void
 create_choose_session_popup ()
 
 {
+    XtActionsRec choose_actions[] = {
+        {"ChooseSessionUp", ChooseSessionUp},
+        {"ChooseSessionDown", ChooseSessionDown}
+    };
+
     /*
      * Pop up for choosing session at startup
      */
@@ -440,6 +498,8 @@ create_choose_session_popup ()
 
     XtAddCallback (chooseSessionCancelButton, XtNcallback,
 	ChooseSessionCancelXtProc, 0);
+
+    XtAppAddActions (appContext, choose_actions, XtNumber (choose_actions));
 
     XtInstallAllAccelerators (chooseSessionListWidget, chooseSessionPopup);
 }
