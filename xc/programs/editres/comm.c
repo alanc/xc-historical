@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: comm.c,v 1.17 91/01/09 17:44:21 gildea Exp $ */
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  * 
@@ -18,13 +18,14 @@
  * being edited.
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definitions. */
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>	/* For crosshair cursor. */
 #include <X11/Xproto.h>
+#include <X11/Xos.h>		/* for XtNewString */
 
+#include <stdio.h>
 #include <X11/Xmu/Error.h>
 
 #include "editresP.h"
