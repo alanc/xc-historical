@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.62 94/08/11 18:58:27 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.63 94/08/17 19:25:02 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -517,13 +517,16 @@ Bool	  freeProps;
 	ListFreeAll (client->props);
     }
 
-    free (client->clientId);		/* malloc'd by SMlib */
-    free (client->clientHostname);
+    if (client->clientId)
+	free (client->clientId);		/* malloc'd by SMlib */
+    if (client->clientHostname)
+	free (client->clientHostname);		/* malloc'd by SMlib */
 
     if (client->discardCommand)
 	XtFree (client->discardCommand);
     if (client->saveDiscardCommand)
 	XtFree (client->saveDiscardCommand);
+
     XtFree ((char *) client);
 }
 
@@ -1092,47 +1095,38 @@ IoErrorHandler (ice_conn)
 IceConn 	ice_conn;
 
 {
-    if (ListCount (RunningList) == 0)
+    List *cl;
+    int found = 0;
+
+    if (verbose)
+    {
+	printf ("IO error on connection (fd = %d)\n",
+	    IceConnectionNumber (ice_conn));
+	printf ("\n");
+    }
+
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+    {
+	ClientRec *client = (ClientRec *) cl->thing;
+
+	if (client->ice_conn == ice_conn)
+	{
+	    CloseDownClient (client);
+	    found = 1;
+	    break;
+	}
+    }
+	 
+    if (!found)
     {
 	/*
-	 * The client must have disconnected before the ICE connection
-	 * became valid.  Example: ICE authentication failed.
+	 * The client must have disconnected before it was added
+	 * to the session manager's running list (i.e. before the
+	 * NewClientProc callback was invoked).
 	 */
 
 	IceSetShutdownNegotiation (ice_conn, False);
 	IceCloseConnection (ice_conn);
-    }
-    else
-    {
-	ClientRec *client;
-	List *cl;
-
-	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
-	{
-	    ClientRec *temp = (ClientRec *) cl->thing;
-
-	    if (temp->ice_conn == ice_conn)
-	    {
-		client = temp;
-		break;
-	    }
-	}
-	 
-	if (!client)
-	{
-	    fprintf (stderr,
-	"Internal error found in IO error handler - couldn't find ice_conn\n");
-	    exit (1);
-	}
-
-	if (verbose)
-	{
-	    printf ("IO error on connection (fd = %d)\n",
-		IceConnectionNumber (ice_conn));
-	    printf ("\n");
-	}
-
-	CloseDownClient (client);
     }
 
 
