@@ -1,4 +1,4 @@
-/* $XConsortium: miBldXform.c,v 5.1 91/02/16 09:55:43 rws Exp $ */
+/* $XConsortium: miBldXform.c,v 5.2 91/05/01 14:42:33 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -559,6 +559,12 @@ pddc->Dynamic->clipFlags = viewbundle->entry.clipFlags;
     miMatMult ( pddc->Dynamic->wc_to_cc_xform,
 		pddc->Dynamic->wc_to_npc_xform, 
 		pddc->Dynamic->npc_to_cc_xform);
+    /*
+     * Compute the composite mc -> wc, i.e. Modelling to World
+     */
+    miMatMult(  pddc->Dynamic->mc_to_wc_xform,
+                pddc->Dynamic->pPCAttr->localMat,
+                pddc->Dynamic->pPCAttr->globalMat);
 
     /*
      * Compute the composite mc -> npc, i.em Modelling to NPC
