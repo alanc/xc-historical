@@ -24,7 +24,9 @@
 #include <sys/signal.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#if 0
 #include <sys/ptms.h> /* Maybe for SVR4 only?? */
+#endif
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
@@ -37,6 +39,7 @@
  * for the address format. This will simplify the code in other places like
  * The X Server.
  */
+#include <sys/socket.h>
 #include <sys/un.h>
 
 /*
@@ -45,7 +48,9 @@
 
 /* Type Not Supported */
 static int
-TRANS(Fail)(XtransConnInfo *ciptr, char *port)
+TRANS(Fail)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 return -1;
 }
@@ -78,29 +83,33 @@ int sig;
  * ICS and SCO are only defined for X11 since they are there for
  * backwards binary compatability only.
  */
-#define ISCDEVNODENAME "/dev/X/ICSCONN/X%s"
-#define ISCNODENAME "/tmp/.X11-unix/X%s"
-#define SCONODENAME "/dev/X/%1sR"
+#define X_ISC_DIR	"/dev/X"
+#define ISCDEVNODENAME	"/dev/X/ICSCONN/X%s"
+#define ISCTMPNODENAME	"/tmp/.X11-unix/X%s"
+#define SCORNODENAME	"/dev/X/%1sR"
+#define SCOSNODENAME	"/dev/X/%1sS"
 #endif
-#if defined(FS) || defined(FONT)
+#if defined(FS)
 /*
  * USL has already defined something here. We need to check with them
  * and see if their choice is usable here.
  */
-#define PTSNODENAME "/dev/X/fontserver."
-#define NAMEDNODENAME "/dev/X/Nfontserver."
+#define PTSNODENAME	"/dev/X/fontserver."
+#define NAMEDNODENAME	"/dev/X/Nfontserver."
 #endif
 #if defined(ICE)
-#define PTSNODENAME "/dev/X/ICE."
-#define NAMEDNODENAME "/dev/X/NICE."
+#define PTSNODENAME	"/dev/X/ICE."
+#define NAMEDNODENAME	"/dev/X/NICE."
 #endif
 #if defined(TEST)
-#define PTSNODENAME "/dev/X/transtest."
-#define NAMEDNODENAME "/dev/X/Ntranstest."
+#define PTSNODENAME	"/dev/X/transtest."
+#define NAMEDNODENAME	"/dev/X/Ntranstest."
 #endif
 
 static int
-TRANS(PTSOpenClient)(XtransConnInfo *ciptr, char *port)
+TRANS(PTSOpenClient)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 int			fd,server,exitval,alarm_time,ret;
 char			server_path[64];
@@ -259,7 +268,9 @@ return(fd);
 }
 
 static int
-TRANS(PTSOpenServer)(XtransConnInfo *ciptr, char *port)
+TRANS(PTSOpenServer)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 int fd, server;
 char server_path[64], *slave;
@@ -354,7 +365,9 @@ return fd;
 }
 
 static int
-TRANS(PTSAccept)(XtransConnInfo *ciptr, int fd)
+TRANS(PTSAccept)(ciptr, newciptr)
+XtransConnInfo	ciptr;
+XtransConnInfo	newciptr;
 {
 int		newfd;
 int		in;
@@ -362,9 +375,9 @@ unsigned char	length;
 char		buf[256];
 struct	sockaddr_un	*sunaddr;
 
-PRMSG(2,"TRANS(PTSAccept)(%d)\n",fd,0,0);
+PRMSG(2,"TRANS(PTSAccept)(%x->%d)\n",ciptr,ciptr->fd,0);
 
-if( (in=read(fd,&length,1)) <= 0 ){
+if( (in=read(ciptr->fd,&length,1)) <= 0 ){
 	if( !in ) {
 		PRMSG(1,
 		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
@@ -377,7 +390,7 @@ if( (in=read(fd,&length,1)) <= 0 ){
 	return -1;
 	}
 
-if( (in=read(fd,buf,length)) <= 0 ){
+if( (in=read(ciptr->fd,buf,length)) <= 0 ){
 	if( !in ) {
 		PRMSG(1,
 		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
@@ -403,10 +416,21 @@ write(newfd,"1",1);
  * Everything looks good: fill in the XtransConnInfo structure.
  */
 
-ciptr->peeraddrlen=sizeof(struct sockaddr_un);
-if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL ) {
+newciptr->addrlen=ciptr->addrlen;
+if( (newciptr->addr=(char *)malloc(newciptr->addrlen)) == NULL ) {
 	PRMSG(1,"TRANS(PTSAccept)() failed to allocate memory for peer addr\n",
 									0,0,0);
+	close(newfd);
+	return -1;
+	}
+
+memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
+
+newciptr->peeraddrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(newciptr->peeraddrlen)) == NULL ) {
+	PRMSG(1,"TRANS(PTSAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	free(newciptr->addr);
 	close(newfd);
 	return -1;
 	}
@@ -417,8 +441,7 @@ strcpy(sunaddr->sun_path,buf);
 sunaddr->sun_len=strlen(sunaddr->sun_path);
 #endif
 
-ciptr->peeraddr=(char *)sunaddr;
-
+newciptr->peeraddr=(char *)sunaddr;
 
 return newfd;
 }
@@ -426,7 +449,9 @@ return newfd;
 #ifdef SVR4
 /* NAMED */
 static int
-TRANS(NAMEDOpenClient)(XtransConnInfo *ciptr, char *port)
+TRANS(NAMEDOpenClient)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 int			fd;
 char			server_path[64];
@@ -518,7 +543,10 @@ ciptr->peeraddr=(char *)sunaddr;
 return(fd);
 }
 
-TRANS(NAMEDOpenServer)(XtransConnInfo *ciptr, char *port)
+static int
+TRANS(NAMEDOpenServer)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 int			fd, pipefd[2];
 char			server_path[64];
@@ -624,47 +652,366 @@ return(pipefd[1]);
 }
 
 static int
-TRANS(NAMEDAccept)(XtransConnInfo *ciptr, int fd)
+TRANS(NAMEDAccept)(ciptr, newciptr)
+XtransConnInfo	ciptr;
+XtransConnInfo	newciptr;
 {
 struct strrecvfd str;
 
-PRMSG(2,"TRANS(NAMEDAccept)(%d)\n", fd, 0,0 );
+PRMSG(2,"TRANS(NAMEDAccept)(%x->%d)\n", ciptr, ciptr->fd, 0 );
 
-if( ioctl(fd, I_RECVFD, &str ) < 0 ) {
+if( ioctl(ciptr->fd, I_RECVFD, &str ) < 0 ) {
 	PRMSG(1, "ioctl(I_RECVFD) failed, errno=%d\n", errno, 0,0 );
 	return(-1);
 	}
+
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+newciptr->addrlen=ciptr->addrlen;
+if( (newciptr->addr=(char *)malloc(newciptr->addrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(NAMEDAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(str.fd);
+	return -1;
+	}
+
+memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
+
+newciptr->peeraddrlen=newciptr->addrlen;
+if( (newciptr->peeraddr=(char *)malloc(newciptr->peeraddrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(NAMEDAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	free(newciptr->addr);
+	close(str.fd);
+	return -1;
+	}
+
+memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
 
 return str.fd;
 }
 #endif /* SVR4 */
 
-/* ISC */
+/*
+ * connect_spipe is used by both the SCO and ISC connection types.
+ */
 static int
-TRANS(ISCOpenClient)(XtransConnInfo *ciptr, char *port)
+connect_spipe(fd1, fd2)
+int	fd1, fd2;
 {
+long temp;
+struct strfdinsert sbuf;
+
+sbuf.databuf.maxlen = -1;
+sbuf.databuf.len = -1;
+sbuf.databuf.buf = NULL;
+sbuf.ctlbuf.maxlen = sizeof(long);
+sbuf.ctlbuf.len = sizeof(long);
+sbuf.ctlbuf.buf = (caddr_t)&temp;
+sbuf.offset = 0;
+sbuf.fildes = fd2;
+sbuf.flags = 0;
+
+if( ioctl(fd1, I_FDINSERT, &sbuf) < 0 )
+	return(-1);
+
+return(0);
+}
+
+/*
+ * connect_spipe is used by both the SCO and ISC connection types.
+ */
+static int
+named_spipe(fd, path)
+int	fd;
+char	*path;
+{
+int oldUmask, ret;
+struct stat sbuf;
+
+oldUmask = umask(0);
+
+(void) fstat(fd, &sbuf);
+ret = mknod(path, 0020666, sbuf.st_rdev);
+
+umask(oldUmask);
+
+if (ret < 0) {
+	ret = -1;
+} else {
+	ret = fd;
+}
+
+return(ret);
+}
+
+
+/* ISC */
+
+static int
+TRANS(ISCOpenClient)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
+{
+int	fd,fds,server;
+char	server_path[64];
+char	server_dev_path[64];
+struct strfdinsert buf;
+long	temp;
+o_mode_t spmode;
+struct stat filestat;
+struct sockaddr_un	*sunaddr;
+
 PRMSG(2,"TRANS(ICSOpenClient)(%s)\n", port, 0,0 );
 
+#if !defined(ISCDEVNODENAME)
+PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
 return -1;
+#else
+(void) sprintf(server_path, ISCTMPNODENAME, port);
+(void) sprintf(server_dev_path, ISCDEVNODENAME, port);
+#endif /* !ISCDEVNODE */
+
+fd = fds = server = -1;
+
+if (stat(DEV_SPX, &filestat) == -1) {
+	PRMSG(1, "stat(%s) failed, errno=%d\n", DEV_SPX, errno, 0 );
+	return(-1);
+	}
+
+spmode = (filestat.st_mode & S_IFMT);
+
+if (stat(server_path, &filestat) != -1) {
+	if ((filestat.st_mode & S_IFMT) == spmode) {
+		if ((server = open(server_path, O_RDWR)) < 0) {
+			PRMSG(1,"TRANS(ICSOpenClient): failed to open %s\n",
+							server_path, 0,0 );
+		}
+	}
+}
+
+if (server < 0) {
+	/* try the alternate path */
+	if (stat(server_dev_path, &filestat) != -1) {
+		if ((filestat.st_mode & S_IFMT) == spmode) {
+			if ((server = open(server_dev_path, O_RDWR)) < 0) {
+			PRMSG(1,"TRANS(ICSOpenClient): failed to open %s\n",
+							server_dev_path, 0,0 );
+			}
+		}
+	}
+}
+
+if (server < 0) {
+	PRMSG(1,"TRANS(ICSOpenClient): can't open either device %s or %s\n",
+					server_path, server_dev_path, 0 );
+	return -1;
+}
+
+if ((fds = open(DEV_SPX, O_RDWR)) < 0 ||
+    (fd  = open(DEV_SPX, O_RDWR)) < 0) {
+	/* Failed to open all of the devices */
+	PRMSG(1,"TRANS(ICSOpenClient): can't open %s\n", DEV_SPX, 0,0 );
+	(void) close(server);
+	if (fds != -1)
+		(void) close(fds);
+	if (fd != -1)
+		(void) close(fd);
+	return -1;
+}
+
+/* make a STREAMS-pipe */
+
+buf.databuf.maxlen = -1;
+buf.databuf.len = -1;
+buf.databuf.buf = NULL;
+buf.ctlbuf.maxlen = sizeof(long);
+buf.ctlbuf.len = sizeof(long);
+buf.ctlbuf.buf = (caddr_t)&temp;
+buf.offset = 0;
+buf.fildes = fd;
+buf.flags = 0;
+
+if (ioctl(fds, I_FDINSERT, &buf) < 0 ||
+    ioctl(server, I_SENDFD, fds) < 0) {
+	PRMSG(1,"TRANS(ICSOpenClient): ioctl(I_FDINSERT or I_SENDFD) failed\n",
+								0,0,0 );
+	(void) close(server);
+	(void) close(fds);
+	(void) close(fd);
+	return -1;
+}
+
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+ciptr->family=AF_UNIX;
+ciptr->addrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
+	PRMSG(1,"TRANS(NAMEDOpenClient)() failed to allocate memory for addr\n",
+									0,0,0);
+	close(fd);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,server_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->addr=(char *)sunaddr;
+
+ciptr->peeraddrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+	{
+	PRMSG(1,
+	   "TRANS(NAMEDOpenClient)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(fd);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,server_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->peeraddr=(char *)sunaddr;
+
+return (fd);
 }
 
 static int
-TRANS(ISCOpenServer)(XtransConnInfo *ciptr, char *port)
+TRANS(ISCOpenServer)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
+int	fd = -1,fds = -1;
+char	server_path[64],server_unix_path[64];
+struct sockaddr_un	*sunaddr;
+
 PRMSG(2,"TRANS(ISCOpenServer)(%s)\n", port, 0,0 );
+
+#if !defined(ISCDEVNODENAME)
+PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
 return -1;
+#else
+(void) sprintf(server_path, ISCDEVNODENAME, port);
+(void) sprintf(server_unix_path, ISCTMPNODENAME, port);
+
+mkdir(X_STREAMS_DIR, 0777); /* "/dev/X" */
+chmod(X_STREAMS_DIR, 0777);
+mkdir(X_ISC_DIR, 0777); /* "/dev/X/ISCCONN" */
+chmod(X_ISC_DIR, 0777);
+#endif /* !ISCDEVNODE */
+
+unlink(server_path);
+
+if( ((fds=open(DEV_SPX, O_RDWR)) < 0) ||
+    ((fd =open(DEV_SPX, O_RDWR)) < 0)) {
+	PRMSG(1,"TRANS(ISCOpenServer): failed to open %s\n", DEV_SPX, 0,0 );
+	return -1;
+}
+
+if( (connect_spipe(fds, fd) < 0) ||
+    (named_spipe(fds, server_path) < 0)) {
+	PRMSG(1,"TRANS(ISCOpenServer): failed connect pipes\n", 0,0,0 );
+	close(fd);
+	close(fds);
+	return -1;
+}
+
+#if !defined(UNIXCONN)
+/*
+ * If the UNIX Domain socket transport is now being used, then link this
+ * device to the path /tmp/.X11-unix/X path.
+ */
+mkdir(X_UNIX_DIR, 0777); /* "/tmp/.X11-unix/X" */
+chmod(X_UNIX_DIR, 0777);
+
+unlink(server_unix_path);
+
+#ifdef SVR4
+/* we prefer symbolic links because hard links can't cross file systems */
+if( symlink(server_path, server_unix_path) < 0 )
+	PRMSG(1,"TRANS(ISCOpenServer): failed to link %s to %s\n",
+					server_path, server_unix_path, 0 );
+	/*
+	 * Don't make this failure fatal since the listener 
+	 * is already established, and this just for compatability
+	 */
+#else
+if( link(server_path, server_unix_path) < 0 )
+	PRMSG(1,"TRANS(ISCOpenServer): failed to link %s to %s\n",
+					server_path, server_unix_path, 0 );
+	/*
+	 * Don't make this failure fatal since the listener 
+	 * is already established, and this just for compatability
+	 */
+#endif /* SVR4 */
+#endif /* !UNIXCONN */
+ 
+return fd;
 }
 
 static int
-TRANS(ISCAccept)(XtransConnInfo *ciptr, int fd)
+TRANS(ISCAccept)(ciptr, newciptr)
+XtransConnInfo	ciptr;
+XtransConnInfo	newciptr;
 {
-PRMSG(2,"TRANS(ISCAccept)(%d)\n", fd, 0,0 );
-return -1;
+struct strrecvfd str;
+
+PRMSG(2,"TRANS(ISCAccept)(%d)\n", ciptr->fd, 0,0 );
+
+while (ioctl(ciptr->fd, I_RECVFD, &str) < 0) {
+	if (errno != EAGAIN) {
+		PRMSG(1,"TRANS(ISCAccept): Can't read fildes", 0,0,0 );
+		return(-1);
+	}
+}
+
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+newciptr->addrlen=ciptr->addrlen;
+if( (newciptr->addr=(char *)malloc(newciptr->addrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(ISCAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(str.fd);
+	return -1;
+	}
+
+memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
+
+newciptr->peeraddrlen=newciptr->addrlen;
+if( (newciptr->peeraddr=(char *)malloc(newciptr->peeraddrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(ISCAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	free(newciptr->addr);
+	close(str.fd);
+	return -1;
+	}
+
+memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
+
+return(str.fd);
 }
 
 /* SCO */
 static int
-TRANS(SCOOpenClient)(XtransConnInfo *ciptr, char *port)
+TRANS(SCOOpenClient)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
 int		fd, server, fl, ret;
 char		server_path[64];
@@ -672,15 +1019,16 @@ struct strbuf	ctlbuf;
 unsigned long	alarm_time;
 void		(*savef)();
 long		temp;
+struct sockaddr_un	*sunaddr;
 extern int	getmsg(), putmsg();
 
 PRMSG(2,"TRANS(SCOOpenClient)(%s)\n", port, 0,0 );
 
-#if !defined(SCONODENAME)
+#if !defined(SCORNODENAME)
 PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
 return -1;
 #else
-(void) sprintf(server_path, SCONODENAME, port);
+(void) sprintf(server_path, SCORNODENAME, port);
 #endif
 
 if ((server = open(server_path, O_RDWR)) < 0) {
@@ -723,21 +1071,186 @@ if (ret < 0) {
 (void) fcntl(fd,F_SETFL,fcntl(fd,F_GETFL,0)|O_NDELAY);
 
 (void) close(server);
+
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+ciptr->family=AF_UNIX;
+ciptr->addrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
+	PRMSG(1,"TRANS(SCOOpenClient)() failed to allocate memory for addr\n",
+									0,0,0);
+	close(fd);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,server_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->addr=(char *)sunaddr;
+
+ciptr->peeraddrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+	{
+	PRMSG(1,
+	   "TRANS(SCOOpenClient)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(fd);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,server_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->peeraddr=(char *)sunaddr;
+
 return(fd);
 }
 
 static int
-TRANS(SCOOpenServer)(XtransConnInfo *ciptr, char *port)
+TRANS(SCOOpenServer)(ciptr, port)
+XtransConnInfo	ciptr;
+char		*port;
 {
+char		serverR_path[64];
+char		serverS_path[64];
+int	fdr = -1;
+int	fds = -1;
+struct sockaddr_un	*sunaddr;
+
 PRMSG(2,"TRANS(SCOOpenServer)(%s)\n", port, 0,0 );
+
+#if !defined(SCORNODENAME)
+PRMSG(1,"Protocol is not supported by a SCO connection\n", 0,0,0);
 return -1;
+#else
+(void) sprintf(serverR_path, SCORNODENAME, port);
+(void) sprintf(serverS_path, SCOSNODENAME, port);
+#endif /* SCORNODENAME */
+
+unlink(serverR_path);
+unlink(serverS_path);
+
+if ((fds = open(DEV_SPX, O_RDWR)) < 0 ||
+    (fdr = open(DEV_SPX, O_RDWR)) < 0 ) {
+	PRMSG(2,"TRANS(SCOOpenServer) failed to open %s\n", DEV_SPX, 0,0 );
+	return -1;
+}
+
+if (connect_spipe(fds, fdr) != -1 &&
+    named_spipe(fds, serverS_path) != -1 &&
+    named_spipe(fdr, serverR_path) != -1) {
+	PRMSG(2,"TRANS(SCOOpenServer) connect pipes\n", 0,0,0 );
+	close(fds);
+	close(fdr);
+	return -1;
+}
+	
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+ciptr->family=AF_UNIX;
+ciptr->addrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->addrlen)) == NULL ) {
+	PRMSG(1,"TRANS(SCOOpenClient)() failed to allocate memory for addr\n",
+									0,0,0);
+	close(fds);
+	close(fdr);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,serverS_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->addr=(char *)sunaddr;
+
+ciptr->peeraddrlen=sizeof(struct sockaddr_un);
+if( (sunaddr=(struct sockaddr_un *)malloc(ciptr->peeraddrlen)) == NULL )
+	{
+	PRMSG(1,
+	   "TRANS(SCOOpenClient)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(fds);
+	close(fdr);
+	return -1;
+	}
+
+sunaddr->sun_family=AF_UNIX;
+strcpy(sunaddr->sun_path,serverR_path);
+#ifdef BSD44SOCKETS
+sunaddr->sun_len=strlen(sunaddr->sun_path);
+#endif
+
+ciptr->peeraddr=(char *)sunaddr;
+
+return(fds);
 }
 
 static int
-TRANS(SCOAccept)(XtransConnInfo *ciptr, int fd)
+TRANS(SCOAccept)(ciptr, newciptr)
+XtransConnInfo	ciptr;
+XtransConnInfo	newciptr;
 {
-PRMSG(2,"TRANS(SCOAccept)(%d)\n", fd, 0,0 );
-return -1;
+char	c;
+int	fd;
+
+PRMSG(2,"TRANS(SCOAccept)(%d)\n", ciptr->fd, 0,0 );
+
+if (read(ciptr->fd, &c, 1) < 0) {
+	PRMSG(1,"TRANS(SCOAccept): can't read from client",0,0,0);
+	return(-1);
+}
+
+if( (fd = open(DEV_SPX, O_RDWR)) < 0 ) {
+	PRMSG(1,"TRANS(SCOAccept)(): can't open \"%s\"",DEV_SPX, 0,0 );
+	return(-1);
+}
+
+if (connect_spipe(ciptr->fd, fd) < 0) {
+	PRMSG(1,"TRANS(SCOAccept)(): can't connect pipes", 0,0,0 );
+	(void) close(fd);
+	return(-1);
+}
+
+/*
+ * Everything looks good: fill in the XtransConnInfo structure.
+ */
+
+newciptr->addrlen=ciptr->addrlen;
+if( (newciptr->addr=(char *)malloc(newciptr->addrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(SCOAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	close(fd);
+	return -1;
+	}
+
+memcpy(newciptr->addr,ciptr->addr,newciptr->addrlen);
+
+newciptr->peeraddrlen=newciptr->addrlen;
+if( (newciptr->peeraddr=(char *)malloc(newciptr->peeraddrlen)) == NULL ) {
+	PRMSG(1,
+	"TRANS(SCOAccept)() failed to allocate memory for peer addr\n",
+									0,0,0);
+	free(newciptr->addr);
+	close(fd);
+	return -1;
+	}
+
+memcpy(newciptr->peeraddr,newciptr->addr,newciptr->peeraddrlen);
+
+return(fd);
 }
 
 /*
@@ -747,11 +1260,11 @@ return -1;
 
 typedef struct _LOCALtrans2dev {
 	char	*transname;
-	int	(*devcotsopenclient)(XtransConnInfo *,char * /*port*/);
-	int	(*devcotsopenserver)(XtransConnInfo *,char * /*port*/);
-	int	(*devcltsopenclient)(XtransConnInfo *,char * /*port*/);
-	int	(*devcltsopenserver)(XtransConnInfo *,char * /*port*/);
-	int	(*devaccept)(XtransConnInfo *,int /*fd*/);
+	int	(*devcotsopenclient)(XtransConnInfo ,char * /*port*/);
+	int	(*devcotsopenserver)(XtransConnInfo ,char * /*port*/);
+	int	(*devcltsopenclient)(XtransConnInfo ,char * /*port*/);
+	int	(*devcltsopenserver)(XtransConnInfo ,char * /*port*/);
+	int	(*devaccept)(XtransConnInfo,XtransConnInfo);
 	} LOCALtrans2dev;
 
 static LOCALtrans2dev LOCALtrans2devtab[] = {
@@ -784,7 +1297,7 @@ PRMSG(3,"TRANS(LocalInitTransports)(%s)\n", protocol, 0,0 );
 
 if( strcmp(protocol,"local") && strcmp(protocol,"LOCAL") )
 {
-	workingXLOCAL=freeXLOCAL=malloc (strlen (protocol) + 1);
+	workingXLOCAL=freeXLOCAL=(char *)malloc (strlen (protocol) + 1);
 	if (workingXLOCAL)
 	    strcpy (workingXLOCAL, protocol);
     }
@@ -792,7 +1305,7 @@ else {
 	XLOCAL=(char *)getenv("XLOCAL");
 	if(XLOCAL==NULL)
 		XLOCAL="UNIX:PTS:NAMED:ISC:SCO";
-	workingXLOCAL=freeXLOCAL=malloc (strlen (XLOCAL) + 1);
+	workingXLOCAL=freeXLOCAL=(char *)malloc (strlen (XLOCAL) + 1);
 	if (workingXLOCAL)
 	    strcpy (workingXLOCAL, XLOCAL);
 	}
@@ -832,7 +1345,6 @@ while(1)
 		 */
 		strncpy(typebuf,typetocheck,TYPEBUFSIZE);
 		for(j=0;j<TYPEBUFSIZE;j++)
-		    if (isupper(typebuf[j]))
 			typebuf[j]=tolower(typebuf[j]);
 
 		/* Now, see if they match */
@@ -844,12 +1356,12 @@ while(1)
 return NULL;
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenClient)(int type, char *protocol, char *host, char *port)
 {
 int	fd=-1;
 LOCALtrans2dev *transptr;
-XtransConnInfo *ciptr;
+XtransConnInfo ciptr;
 
 PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
 
@@ -865,10 +1377,10 @@ PRMSG(3,"TRANS(LocalOpenClient)()\n", 0,0,0 );
  */
 #endif /* X11 */
 
-if( (ciptr=(XtransConnInfo *)calloc(1,sizeof(XtransConnInfo))) == NULL )
+if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	{
 	PRMSG(1,"TRANS(LocalOpenClient)() calloc(1,%d) failed\n",
-					sizeof(XtransConnInfo),0,0 );
+					sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
 	}
 
@@ -915,11 +1427,11 @@ ciptr->priv=(char *)transptr;
 return ciptr;
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenServer)(int type, char *protocol, char *host, char *port)
 {
 int	i,fd=-1;
-XtransConnInfo *ciptr;
+XtransConnInfo ciptr;
 
 PRMSG(2,"TRANS(LocalOpenServer)(%d,%s,%s)\n", type, protocol, port);
 
@@ -932,10 +1444,10 @@ PRMSG(2,"TRANS(LocalOpenServer)(%d,%s,%s)\n", type, protocol, port);
  */
 #endif /* X11 */
 
-if( (ciptr=(XtransConnInfo *)calloc(1,sizeof(XtransConnInfo))) == NULL )
+if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 	{
 	PRMSG(1,"TRANS(LocalOpenServer)() calloc(1,%d) failed\n",
-					sizeof(XtransConnInfo),0,0 );
+					sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
 	}
 
@@ -963,6 +1475,7 @@ for(i=1;i<NUMTRANSPORTS;i++)
        	    }
 	if( ciptr->fd >= 0 ) {
 		ciptr->priv=(char *)&LOCALtrans2devtab[i];
+		ciptr->flags=1;
 		return ciptr;
 		}
        	}
@@ -975,7 +1488,7 @@ return NULL;
  * This is the Local implementation of the X Transport service layer
  */
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenCOTSClient)(Xtransport *thistrans, char *protocol, char *host, char *port)
 {
 PRMSG(2,"TRANS(LocalOpenCOTSClient)(%s,%s,%s)\n",protocol,host,port);
@@ -983,7 +1496,7 @@ PRMSG(2,"TRANS(LocalOpenCOTSClient)(%s,%s,%s)\n",protocol,host,port);
 return TRANS(LocalOpenClient)(XTRANS_OPEN_COTS_CLIENT, protocol, host, port);
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenCOTSServer)(Xtransport *thistrans, char *protocol, char *host, char *port)
 {
 PRMSG(2,"TRANS(LocalOpenCOTSServer)(%s,%s,%s)\n",protocol,host,port);
@@ -991,7 +1504,7 @@ PRMSG(2,"TRANS(LocalOpenCOTSServer)(%s,%s,%s)\n",protocol,host,port);
 return TRANS(LocalOpenServer)(XTRANS_OPEN_COTS_SERVER, protocol, host, port);
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenCLTSClient)(Xtransport *thistrans, char *protocol, char *host, char *port)
 {
 PRMSG(2,"TRANS(LocalOpenCLTSClient)(%s,%s,%s)\n",protocol,host,port);
@@ -999,7 +1512,7 @@ PRMSG(2,"TRANS(LocalOpenCLTSClient)(%s,%s,%s)\n",protocol,host,port);
 return TRANS(LocalOpenClient)(XTRANS_OPEN_CLTS_CLIENT, protocol, host, port);
 }
 
-static XtransConnInfo *
+static XtransConnInfo
 TRANS(LocalOpenCLTSServer)(Xtransport *thistrans, char *protocol, char *host, char *port)
 {
 PRMSG(2,"TRANS(LocalOpenCLTSServer)(%s,%s,%s)\n",protocol,host,port);
@@ -1008,39 +1521,39 @@ return TRANS(LocalOpenServer)(XTRANS_OPEN_CLTS_SERVER, protocol, host, port);
 }
 
 static
-TRANS(LocalSetOption)(XtransConnInfo *ciptr, int fd, int option, int arg)
+TRANS(LocalSetOption)(XtransConnInfo ciptr, int option, int arg)
 {
-PRMSG(2,"TRANS(LocalSetOption)(%d,%d,%d)\n",fd,option,arg);
+PRMSG(2,"TRANS(LocalSetOption)(%d,%d,%d)\n",ciptr->fd,option,arg);
 
 return -1;
 }
 
 static
-TRANS(LocalCreateListener)(XtransConnInfo *ciptr, int fd, char *port)
+TRANS(LocalCreateListener)(XtransConnInfo ciptr, char *port)
 {
-PRMSG(2,"TRANS(LocalCreateListener)(%x,%d,%s)\n",ciptr,fd,port);
+PRMSG(2,"TRANS(LocalCreateListener)(%x->%d,%s)\n",ciptr,ciptr->fd,port);
 
 return 0;
 }
 
-static XtransConnInfo *
-TRANS(LocalAccept)(XtransConnInfo *ciptr, int fd)
+static XtransConnInfo
+TRANS(LocalAccept)(XtransConnInfo ciptr)
 {
-XtransConnInfo	*newciptr;
+XtransConnInfo	newciptr;
 LOCALtrans2dev	*transptr;
 
-PRMSG(2,"TRANS(LocalAccept)(%x,%d)\n", ciptr, fd,0);
+PRMSG(2,"TRANS(LocalAccept)(%x->%d)\n", ciptr, ciptr->fd,0);
 
-transptr=(XtransConnInfo *)ciptr->priv;
+transptr=(LOCALtrans2dev *)ciptr->priv;
 
-if( (newciptr=(XtransConnInfo *)calloc(1,sizeof(XtransConnInfo))) == NULL )
+if( (newciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo)))==NULL )
 	{
 	PRMSG(1,"TRANS(LocalAccept)() calloc(1,%d) failed\n",
-					sizeof(XtransConnInfo),0,0 );
+					sizeof(struct _XtransConnInfo),0,0 );
 	return NULL;
 	}
 
-newciptr->fd=transptr->devaccept(ciptr,fd);
+newciptr->fd=transptr->devaccept(ciptr,newciptr);
 
 if( newciptr->fd < 0 )
 	{
@@ -1054,76 +1567,92 @@ return newciptr;
 }
 
 static
-TRANS(LocalConnect)(XtransConnInfo *ciptr, int fd, char *host, char *port)
+TRANS(LocalConnect)(XtransConnInfo ciptr, char *host, char *port)
 {
-PRMSG(2,"TRANS(LocalConnect)(%x,%d,%s)\n", ciptr, fd, port);
+PRMSG(2,"TRANS(LocalConnect)(%x->%d,%s)\n", ciptr, ciptr->fd, port);
 
 return 0;
 }
 
 static int
-TRANS(LocalBytesReadable)(XtransConnInfo *ciptr, int fd, BytesReadable_t *pend )
+TRANS(LocalBytesReadable)(XtransConnInfo ciptr, BytesReadable_t *pend )
 {
-PRMSG(2,"TRANS(LocalBytesReadable)(%x,%d,%x)\n", ciptr, fd, pend);
+PRMSG(2,"TRANS(LocalBytesReadable)(%x->%d,%x)\n", ciptr, ciptr->fd, pend);
 
-return ioctl(fd, FIONREAD, (char *)pend);
+return ioctl(ciptr->fd, FIONREAD, (char *)pend);
 }
 
 static int
-TRANS(LocalRead)(XtransConnInfo *ciptr, int fd, char *buf, int size)
+TRANS(LocalRead)(XtransConnInfo ciptr, char *buf, int size)
 {
-PRMSG(2,"TRANS(LocalRead)(%d,%x,%d)\n", fd, buf, size );
+PRMSG(2,"TRANS(LocalRead)(%d,%x,%d)\n", ciptr->fd, buf, size );
 
-return read(fd,buf,size);
+return read(ciptr->fd,buf,size);
 }
 
 static int
-TRANS(LocalWrite)(XtransConnInfo *ciptr, int fd, char *buf, int size)
+TRANS(LocalWrite)(XtransConnInfo ciptr, char *buf, int size)
 {
-PRMSG(2,"TRANS(LocalWrite)(%d,%x,%d)\n", fd, buf, size );
+PRMSG(2,"TRANS(LocalWrite)(%d,%x,%d)\n", ciptr->fd, buf, size );
 
-return write(fd,buf,size);
+return write(ciptr->fd,buf,size);
 }
 
 static int
-TRANS(LocalReadv)(XtransConnInfo *ciptr, int fd, struct iovec *buf, int size)
+TRANS(LocalReadv)(XtransConnInfo ciptr, struct iovec *buf, int size)
 {
-PRMSG(2,"TRANS(LocalReadv)(%d,%x,%d)\n", fd, buf, size );
+PRMSG(2,"TRANS(LocalReadv)(%d,%x,%d)\n", ciptr->fd, buf, size );
 
-return READV(fd,buf,size);
+return READV(ciptr,buf,size);
 }
 
 static int
-TRANS(LocalWritev)(XtransConnInfo *ciptr, int fd, struct iovec *buf, int size)
+TRANS(LocalWritev)(XtransConnInfo ciptr, struct iovec *buf, int size)
 {
-PRMSG(2,"TRANS(LocalWritev)(%d,%x,%d)\n", fd, buf, size );
+PRMSG(2,"TRANS(LocalWritev)(%d,%x,%d)\n", ciptr->fd, buf, size );
 
-return WRITEV(fd,buf,size);
+return WRITEV(ciptr,buf,size);
 }
 
 static int
-TRANS(LocalDisconnect)(XtransConnInfo *ciptr, int fd)
+TRANS(LocalDisconnect)(XtransConnInfo ciptr)
 {
-PRMSG(2,"TRANS(LocalDisconnect)(%x,%d)\n", ciptr, fd, 0);
+PRMSG(2,"TRANS(LocalDisconnect)(%x->%d)\n", ciptr, ciptr->fd, 0);
 
 return 0;
 }
 
 static int
-TRANS(LocalClose)(XtransConnInfo *ciptr, int fd)
+TRANS(LocalClose)(XtransConnInfo ciptr)
 {
-PRMSG(2,"TRANS(LocalClose)(%x,%d)\n", ciptr, fd ,0);
+struct sockaddr_un      *sockname=(struct sockaddr_un *) ciptr->addr;
+char    path[200]; /* > sizeof sun_path +1 */
+int	ret;
 
-return close(fd);
+PRMSG(2,"TRANS(LocalClose)(%x->%d)\n", ciptr, ciptr->fd ,0);
+
+ret=close(ciptr->fd);
+
+if(ciptr->flags
+   && sockname
+   && sockname->sun_family == AF_UNIX
+     && sockname->sun_path[0] )
+	{
+	strncpy(path,sockname->sun_path,
+			ciptr->addrlen-sizeof(sockname->sun_family));
+	unlink(path);
+	}
+
+return ret;
 }
 
 static
-TRANS(LocalNameToAddr)(XtransConnInfo *ciptr, int fd /*???what else???*/ )
+TRANS(LocalNameToAddr)(XtransConnInfo ciptr /*???what else???*/ )
 {
 }
 
 static
-TRANS(LocalAddrToName)(XtransConnInfo *ciptr, int fd /*???what else???*/ )
+TRANS(LocalAddrToName)(XtransConnInfo ciptr /*???what else???*/ )
 {
 }
 
