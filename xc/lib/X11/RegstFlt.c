@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.3 91/02/16 12:25:10 rws Exp $
+ * $XConsortium: XRegstFlt.c,v 1.4 91/02/19 19:38:38 rws Exp $
  */
 
  /*
@@ -32,6 +32,18 @@
 #include "Xlibint.h"
 #include "Xi18nint.h"
 
+static void
+_XFreeIMFilters(display)
+    Display *display;
+{
+    register XFilterEventList fl;
+
+    while (fl = display->im_filters) {
+	display->im_filters = fl->next;
+	Xfree((char *)fl);
+    }
+}
+
 /*
  * Register a filter with the filter machinery.
  */
@@ -57,8 +69,8 @@ XRegisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
     LockDisplay(display);
     rec->next = display->im_filters;
     display->im_filters = rec;
+    display->free_funcs->im_filters = _XFreeIMFilters;
     UnlockDisplay(display);
-    return;
 }
 
 void
@@ -69,7 +81,6 @@ XUnregisterFilter(display, window, filter, client_data)
     XIMValue client_data;
 {
     register XFilterEventList	*prev, fl;
-    XFilterEventRec		*rec;
 
     for (prev = &display->im_filters; fl = *prev; prev = &fl->next) {
 	if (fl->window == window &&
@@ -79,5 +90,4 @@ XUnregisterFilter(display, window, filter, client_data)
 	    break;
 	}
     }
-    return;
 }
