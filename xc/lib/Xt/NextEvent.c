@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.96 90/12/28 15:47:35 gildea Exp $ */
+/* $XConsortium: NextEvent.c,v 1.98 90/12/29 12:15:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -955,6 +955,6 @@ Boolean XtAppPeekEvent(app, event)
 	}
 	event->xany.type = 0;	/* Something else must be ready */
 	event->xany.display = NULL;
-	event->xany.window = NULL;
+	event->xany.window = 0;
 	return FALSE;
 }	
