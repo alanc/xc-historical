@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Encrypt.c,v 1.6 91/07/23 21:20:19 keith Exp $
+ * $XConsortium: Wrap.c,v 1.7 91/07/23 22:28:15 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,7 +54,7 @@ XdmcpWrap (input, wrapper, output, bytes)
     auth_wrapper_schedule	schedule;
 
     _XdmcpWrapperToOddParity (wrapper, expand_wrapper);
-    _XdmcpAuthSetup (wrapper, schedule);
+    _XdmcpAuthSetup (expand_wrapper, schedule);
     for (j = 0; j < bytes; j += 8)
     {
 	len = 8;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Decrypt.c,v 1.6 91/07/23 21:20:20 keith Exp $
+ * $XConsortium: Unwrap.c,v 1.7 91/07/23 22:28:13 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ XdmcpUnwrap (input, wrapper, output, bytes)
     auth_wrapper_schedule	schedule;
 
     _XdmcpWrapperToOddParity (wrapper, expand_wrapper);
-    _XdmcpAuthSetup ((unsigned char *) wrapper, schedule);
+    _XdmcpAuthSetup (expand_wrapper, schedule);
 
     k = 0;
     for (j = 0; j < bytes; j += 8)
