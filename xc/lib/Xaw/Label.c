@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.42 88/02/14 20:51:00 swick Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.43 88/02/26 09:19:22 swick Exp $";
 #endif lint
 
 
@@ -109,6 +109,7 @@ LabelClassRec labelClassRec = {
     /* version			*/	XtVersion,
     /* callback_private   	*/	NULL,
     /* tm_table		   	*/	NULL,
+    /* query_geometry		*/	NULL,
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.27 88/02/22 21:49:06 swick Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.28 88/02/24 16:00:03 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -146,6 +146,7 @@ static ScrollbarClassRec scrollbarClassRec = {
     /* version          */	XtVersion,
     /* callback_private */      NULL,
     /* tm_table         */      defaultTranslations,
+    /* query_geometry	*/	NULL,
 };
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
