@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.3 91/05/04 23:16:57 keith Exp $ */
+/* $XConsortium: convReq.c,v 5.4 91/05/09 18:56:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -717,7 +717,7 @@ pexChangeNameSetReq	*strmPtr;
     SWAP_NAMESET (strmPtr->ns);
     SWAP_CARD16 (strmPtr->action);
 
-    num = (int)(strmPtr->length - sizeof(pexChangeNameSetReq));
+    num = (int)(strmPtr->length - (sizeof(pexChangeNameSetReq)/sizeof(CARD32)));
     for (i=0, pn=(pexName *)(strmPtr+1); i<num; i++, pn++)
 	SWAP_NAME ((*pn));
 
