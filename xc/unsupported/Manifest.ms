@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.4 94/06/13 15:14:42 gildea Exp $
+.\" $XConsortium: Manifest.ms,v 1.5 94/06/13 15:52:51 gildea Exp $
 .\" #! troff -ms
 .nr PS 11
 .if n \{
@@ -253,7 +253,7 @@ xrunclient	launch an X client
 xscreensaver-1.22	run graphics hacks after the user has been idle for a while
 xsession-1.1	session manager for the X Window System
 xterm_color	diffs to make xterm handle color changes in text
-youbin-1.9	mail arrival notification service
+youbin-2.2	mail arrival notification service
 .fi
 
 .DH 1 test
