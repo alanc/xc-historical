@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH XLSCLIENTS 1 "Release 5" "X Version 11"
 .SH NAME
 xlsclients - list client applications running on a display
@@ -9,7 +10,7 @@ xlsclients - list client applications running on a display
 .I Xlsclients
 is a utility for listing information about the client applications 
 running on a display.  It may be used to generate scripts representing
-a snapshot of the the user's current session.
+a snapshot of the user's current session.
 .SH OPTIONS
 .TP 8
 .B \-display \fIdisplayname\fP
@@ -20,9 +21,9 @@ This option indicates that clients on all screens should be listed.  By
 default, only those clients on the default screen are listed.
 .TP 8
 .B \-l
-This option indicates that a long listing showing the window name, icon name,
+List in long format, giving the window name, icon name,
 and class hints in addition to the machine name and command string shown in
-the default listing.
+the default format.
 .TP 8
 .B \-m \fImaxcmdlen\fP
 This option specifies the maximum number of characters in a command to 
