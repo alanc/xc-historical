@@ -1,5 +1,5 @@
 INSTALLFLAGS = $(INSTINCFLAGS)
-SRCS = \
+HEADERS = \
 	1x1 \
 	2x2 \
 	black \
@@ -72,10 +72,10 @@ SRCS = \
 
 all::
 
-BuildIncludes($(SRCS),bitmaps,..)
+BuildIncludes($(HEADERS),bitmaps,..)
 
 MakeDirectories(install,$(INCDIR)/bitmaps)
-InstallMultiple($(SRCS),$(INCDIR)/bitmaps)
+InstallMultiple($(HEADERS),$(INCDIR)/bitmaps)
 
 depend::
 
