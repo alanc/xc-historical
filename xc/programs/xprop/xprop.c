@@ -407,12 +407,22 @@ char *Format_Signed(word)
   return(_formatting_buffer2);
 }
 
+int ignore_errors (dpy, ev)
+    Display *dpy;
+    XErrorEvent *ev;
+{
+    return 0;
+}
+
 char *Format_Atom(atom)
      Atom atom;
 {
   char *name;
+  int (*handler)();
 
+  handler = XSetErrorHandler (ignore_errors);
   name=XGetAtomName(dpy, atom);
+  XSetErrorHandler(handler);
   if (!name)
     sprintf(_formatting_buffer, "undefined atom # 0x%lx", atom);
   else
