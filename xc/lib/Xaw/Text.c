@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.77 88/10/25 00:14:46 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.78 88/12/13 09:21:03 swick Exp $";
 #endif
 
 
@@ -3028,6 +3028,55 @@ static void InsertFile(w, event)
    EndAction(ctx);
 }
 
+/*ARGSUSED*/
+static void InsertString(w, event, params, paramCount)
+   Widget w;
+   XEvent *event;
+   String *params;
+   Cardinal *paramCount;
+{
+   TextWidget ctx = (TextWidget)w;
+   char strbuf[STRBUFSIZE];
+   int     keycode;
+   XtTextBlock text;
+   int	   i;
+   int (*Scan)() = ctx->text.source->Scan;
+   text.firstPos = 0;
+   StartAction(ctx, event);
+   for (i = *paramCount; i; i--, params++) {
+      unsigned char hexval;
+      if ((*params)[0] == '0' && (*params)[1] == 'x' && (*params)[2] != '\0') {
+	  char c, *p;
+	  hexval = 0;
+	  for (p = *params+2; (c = *p); p++) {
+	      hexval *= 16;
+	      if (c >= '0' && c <= '9')
+		  hexval += c - '0';
+	      else if (c >= 'a' && c <= 'f')
+		  hexval += c - 'a' + 10;
+	      else if (c >= 'A' && c <= 'F')
+		  hexval += c - 'A' + 10;
+	      else break;
+	  }
+	  if (c == '\0') {
+	      text.ptr = (char*)&hexval;
+	      text.length = 1;
+	  } else text.length = strlen(text.ptr = *params);
+      } else text.length = strlen(text.ptr = *params);
+      if (text.length == 0) continue;
+      if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
+	  XBell(XtDisplay(ctx), 50);
+	  EndAction(ctx);
+	  return;
+      }
+      ctx->text.insertPos =
+	  (*Scan)(ctx->text.source, ctx->text.insertPos,
+		  XtstPositions, XtsdRight, text.length, TRUE);
+   }
+   XtTextUnsetSelection((Widget)ctx);
+   EndAction(ctx);
+}
+
 /* Actions Table */
 
 XtActionsRec textActionsTable [] = {
@@ -3081,6 +3130,7 @@ XtActionsRec textActionsTable [] = {
   {"redraw-display", 		RedrawDisplay},
   {"insert-file", 		InsertFile},
   {"insert-char", 		InsertChar},
+  {"insert-string",		InsertString},
   {"focus-in", 	 	        TextFocusIn},
   {"focus-out", 		TextFocusOut},
 };
