@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.1 93/09/03 13:25:11 mor Exp $ */
+/* $XConsortium: globals.h,v 1.2 93/09/08 20:21:13 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -51,8 +51,8 @@ IceACLauthRec _SmsAuthRecs[] = {
 		    {"SM-AUTH-TEST-1", _SmACLauth1proc},
 		    {"SM-AUTH-TEST-2", _SmACLauth2proc}};
 
-SmcCallbacks	_SmcCallbacks;
-SmsCallbacks	_SmsCallbacks;
+SmsNewClientProc _SmsNewClientProc;
+SmPointer	 _SmsNewClientData;
 
 SmcErrorHandler _SmcErrorHandler = _SmcDefaultErrorHandler;
 SmsErrorHandler _SmsErrorHandler = _SmsDefaultErrorHandler;
