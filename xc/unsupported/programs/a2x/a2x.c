@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.108 93/02/01 18:31:48 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.109 93/02/02 09:19:23 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1158,7 +1158,8 @@ matches(w, rec, getcw)
 	if (getcw)
 	    w = XmuClientWindow(dpy, w);
 	ok = ((getcw && match_class(w, rec, XA_WM_CLASS)) ||
-	      match_class(w, rec, MIT_OBJ_CLASS));
+	      match_class(w, rec, MIT_OBJ_CLASS) ||
+	      (!getcw && match_class(w, rec, XA_WM_CLASS)));
 	break;
     default:
 	ok = True;
