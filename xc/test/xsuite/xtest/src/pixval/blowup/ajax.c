@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: ajax.c,v 1.14 92/06/11 15:55:00 rws Exp $
  */
 
 #include	"stdlib.h"
@@ -364,11 +364,16 @@ unsigned int bitmap_pad; /* debugging only */
 		images[i++] = ximage;
 	
 		/* now next one */
-		if (fgets(buf, 512, fp) == NULL) {
+		do {
+			if (fgets(buf, 512, fp) == NULL) {
+				XDestroyImage(images[i-1]);
+				return 0;
+			}
+		} while (buf[0] == '!');
+		if (sscanf(buf, "%d %d %d", &Width, &Height, &depth) < 3) {
 			XDestroyImage(images[i-1]);
 			return 0;
 		}
-		sscanf(buf, "%d %d %d", &Width, &Height, &depth); /* XXX */
 		ximage = XCreateImage(disp,visual,depth,ZPixmap,0,NULL,
 			Width, Height, bitmap_pad=32/* 8/16/32 */,0); /** XXX **/
 		if (ximage == NULL) {
