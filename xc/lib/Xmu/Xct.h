@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.1 89/05/09 08:35:35 rws Exp $
+ * $XConsortium: Xct.h,v 1.0 89/05/09 08:36:35 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -78,17 +78,16 @@ typedef unsigned long XctFlags;
 
 /* This is the return type for XctNextItem. */
 typedef enum {
-    XctSegment,
-    XctC0Segment,
-    XctGLSegment,
-    XctC1Segment,
-    XctGRSegment,
-    XctExtendedSegment,
-    XctExtension,
-    XctHorizontal,
-    XctEndOfText,
-    XctSyntaxError,
-    XctError
+    XctSegment,		/* used when XctSingleSetSegments is not requested */
+    XctC0Segment,	/* used when XctSingleSetSegments is requested */
+    XctGLSegment,	/* used when XctSingleSetSegments is requested */
+    XctC1Segment,	/* used when XctSingleSetSegments is requested */
+    XctGRSegment,	/* used when XctSingleSetSegments is requested */
+    XctExtendedSegment,	/* an extended segment */
+    XctExtension,	/* used when XctProvideExtensions is requested */
+    XctHorizontal,	/* horizontal direction or depth change */
+    XctEndOfText,	/* end of text string */
+    XctError		/* syntactic or semantic error */
 } XctResult;
 
 typedef struct _XctRec {
