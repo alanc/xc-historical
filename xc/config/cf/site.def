@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.16 88/10/12 10:30:24 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.1 89/01/10 18:15:24 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -34,3 +34,6 @@
  * place site-specific definitions here
  */
 
+#ifndef ExtensionDefines
+#define ExtensionDefines -DSHAPE
+#endif
