@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.133 94/08/10 19:51:41 mor Exp mor $
+ * $XConsortium: twm.c,v 1.134 94/12/27 19:18:18 mor Exp mor $
  *
  * twm - "Tom's Window Manager"
  *
@@ -577,7 +577,7 @@ main(argc, argv, environ)
 	exit (1);
     }
 
-    ConnectToSessionManager (client_id);
+    (void) ConnectToSessionManager (client_id);
 
     RestartPreviousState = False;
     HandlingEvents = TRUE;

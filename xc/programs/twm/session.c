@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.14 94/11/30 16:19:04 mor Exp mor $ */
+/* $XConsortium: session.c,v 1.15 94/12/27 19:20:31 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -972,6 +972,7 @@ XtInputId	*id;
 
 
 
+void
 ConnectToSessionManager (previous_id)
 
 char *previous_id;
