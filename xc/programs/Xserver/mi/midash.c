@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 5.2 89/09/04 16:31:24 rws Exp $ */
+/* $XConsortium: midash.c,v 5.3 89/09/14 19:14:48 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -249,6 +249,7 @@ int *pnsegMax;			/* size (in segments) of list so far */
     return(*ppseg+(nseg-1));
 }
 
+void
 miStepDash (dist, pDashIndex, pDash, numInDashList, pDashOffset)
     int dist;			/* distance to step */
     int *pDashIndex;		/* current dash */

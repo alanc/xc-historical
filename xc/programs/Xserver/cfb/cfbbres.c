@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.10 91/07/10 14:53:48 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.11 91/12/19 14:16:00 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -33,6 +33,7 @@ SOFTWARE.
    e2 is used less often than e1, so it's not in a register
 */
 
+void
 cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
     int		    rop;
     unsigned long   and, xor;

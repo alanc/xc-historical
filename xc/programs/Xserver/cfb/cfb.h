@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.28 93/09/13 09:35:14 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.29 93/09/20 20:08:19 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -419,7 +419,7 @@ extern void cfbDoBitbltXor(
 );
 /* cfbbres.c */
 
-extern int cfbBresS(
+extern void cfbBresS(
 #if NeedFunctionPrototypes
     int /*rop*/,
     unsigned long /*and*/,
