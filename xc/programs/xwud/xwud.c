@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.40 91/01/22 18:39:09 gildea Exp $ */
+/* $XConsortium: xwud.c,v 1.41 91/02/02 17:42:27 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -474,6 +474,7 @@ main(argc, argv)
     }
 
     attributes.background_pixel = gc_val.background;
+    attributes.border_pixel = gc_val.background;
     attributes.bit_gravity = NorthWestGravity;
     attributes.event_mask = ButtonPressMask|ButtonReleaseMask|KeyPressMask|
 			    ExposureMask;
@@ -504,7 +505,7 @@ main(argc, argv)
     image_win = XCreateWindow(dpy, RootWindow(dpy, screen),
 			      hints.x, hints.y, hints.width, hints.height,
 			      0, vinfo.depth, InputOutput, vinfo.visual,
-			      CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
+			      CWBorderPixel|CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
 			      &attributes);
 
     /* Setup for ICCCM delete window. */
