@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.18 91/02/17 16:15:25 converse Exp $ */
+/* $XConsortium: StripChart.c,v 1.19 91/03/08 14:16:01 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -168,9 +168,6 @@ static void Initialize (greq, gnew)
 					XtWidgetToApplicationContext(gnew),
 					w->strip_chart.update * MS_PER_SEC, 
 					draw_it, (XtPointer) gnew);
-    else
-        w->strip_chart.interval_id = NULL;
-
     CreateGC(w, (unsigned int) ALL_GCS);
 
     w->strip_chart.scale = w->strip_chart.min_scale;
@@ -185,9 +182,10 @@ static void Destroy (gw)
 {
      StripChartWidget w = (StripChartWidget)gw;
 
-     if (w->strip_chart.interval_id != NULL) 
+     if (w->strip_chart.update > 0)
          XtRemoveTimeOut (w->strip_chart.interval_id);
-
+     if (w->strip_chart.points)
+	 XtFree((char *) w->strip_chart.points);
      DestroyGC(w, (unsigned int) ALL_GCS);
 }
 
@@ -420,21 +418,27 @@ static Boolean SetValues (current, request, new)
     unsigned int new_gc = NO_GCS;
 
     if (w->strip_chart.update != old->strip_chart.update) {
-	XtRemoveTimeOut (old->strip_chart.interval_id);
-	w->strip_chart.interval_id =
-	    XtAppAddTimeOut(XtWidgetToApplicationContext(new),
-			    w->strip_chart.update * MS_PER_SEC,
-			    draw_it, (XtPointer)w);
+	if (old->strip_chart.update > 0)
+	    XtRemoveTimeOut (old->strip_chart.interval_id);
+	if (w->strip_chart.update > 0)
+	    w->strip_chart.interval_id =
+		XtAppAddTimeOut(XtWidgetToApplicationContext(new),
+				w->strip_chart.update * MS_PER_SEC,
+				draw_it, (XtPointer)w);
     }
 
     if ( w->strip_chart.min_scale > (int) ((w->strip_chart.max_value) + 1) )
       ret_val = TRUE;
      
-    if ( w->strip_chart.fgpixel != old->strip_chart.fgpixel )
+    if ( w->strip_chart.fgpixel != old->strip_chart.fgpixel ) {
       new_gc |= FOREGROUND;
+      ret_val = True;
+    }
     
-    if ( w->strip_chart.hipixel != old->strip_chart.hipixel )
+    if ( w->strip_chart.hipixel != old->strip_chart.hipixel ) {
       new_gc |= HIGHLIGHT;
+      ret_val = True;
+    }
     
     DestroyGC(old, new_gc);
     CreateGC(w, new_gc);
