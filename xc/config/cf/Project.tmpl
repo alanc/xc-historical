@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.148 92/05/29 17:59:12 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.149 92/06/01 19:39:56 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -394,6 +394,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.148 92/05/29 17:59:12 rws Exp $
 #endif
 #ifndef XtErrorPrefix
 #define XtErrorPrefix /* as empty string */
+#endif
+#ifndef XtExtraDefines
+#define XtExtraDefines /* as empty string */
 #endif
 #ifndef XtWarningPrefix
 #define XtWarningPrefix /* as empty string */
