@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.171 91/07/05 09:52:54 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.172 91/07/19 23:20:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -158,6 +158,8 @@ typedef void*		XtPointer;
 typedef char*		XtPointer;
 #endif
 
+/* The type Opaque is NOT part of the Xt standard, do NOT use it. */
+/* (It remains here only for backward compatibility.) */
 typedef XtPointer	Opaque;
 
 #include <X11/Core.h>
@@ -2694,7 +2696,16 @@ extern Boolean XtCvtIntToColor(
 
 #define XtCvtIntToDimension XtCvtIntToShort
 
-/* XtCvtIntToFloat not registered */
+extern Boolean XtCvtIntToFloat(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
 
 extern Boolean XtCvtIntToFont(
 #if NeedFunctionPrototypes
@@ -2742,8 +2753,16 @@ extern Boolean XtCvtIntToShort(
 #endif
 );
 
-/* XtCvtIntToUnsignedChar not registered */
-
+extern Boolean XtCvtIntToUnsignedChar(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,	/* none */
+    Cardinal*   /* num_args */,	
+    XrmValuePtr	/* fromVal */,
+    XrmValuePtr	/* toVal */,
+    XtPointer*	/* closure_ret */
+#endif
+);
 
 /* Color converter */
 
