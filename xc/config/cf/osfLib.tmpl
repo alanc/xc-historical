@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.15 93/10/11 12:40:21 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.16 94/01/18 14:59:12 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -10,9 +10,9 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.15 93/10/11 12:40:21 rws Exp $
 #define SharedOldXReqs $(LDPRELIB) $(XLIBONLY)
 
 #if ThreadedX && ModernOSF1
-#define SharedXtReqs $(LDPRELIB) $(XLIBONLY) -lpthreads -lmach
+#define SharedXtReqs $(LDPRELIB) $(XLIBONLY) $(SMLIB) $(ICELIB) -lpthreads -lmach
 #else
-#define SharedXtReqs $(LDPRELIB) $(XLIBONLY)
+#define SharedXtReqs $(LDPRELIB) $(XLIBONLY) $(SMLIB) $(ICELIB)
 #endif
 #define SharedXawReqs $(LDPRELIB) $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
 #define SharedXmuReqs $(LDPRELIB) $(XTOOLLIB) $(XLIB)
