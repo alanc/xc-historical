@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.21 93/10/06 17:31:44 kaleb Exp $ */
+/* $XConsortium: Object.c,v 1.23 94/03/31 15:37:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -156,19 +156,58 @@ static void ConstructCallbackOffsets(widgetClass)
     objectClass->object_class.callback_private = (XtPointer) newTable;
 }
 
+static void InheritObjectExtensionMethods(widget_class)
+    WidgetClass widget_class;
+{
+    ObjectClass oc = (ObjectClass) widget_class;
+    ObjectClassExtension ext, super_ext = NULL;
+
+    ext = (ObjectClassExtension)
+	XtGetClassExtension(widget_class,
+			    XtOffsetOf(ObjectClassPart, extension),
+			    NULLQUARK, XtObjectExtensionVersion, 
+			    sizeof(ObjectClassExtensionRec));
+
+    if (oc->object_class.superclass)
+	super_ext = (ObjectClassExtension)
+	    XtGetClassExtension(oc->object_class.superclass,
+				XtOffsetOf(ObjectClassPart, extension),
+				NULLQUARK, XtObjectExtensionVersion, 
+				sizeof(ObjectClassExtensionRec));
+    if (ext) {
+	if (ext->allocate == XtInheritAllocate)
+	    ext->allocate = (super_ext ? super_ext->allocate : NULL);
+	if (ext->deallocate == XtInheritDeallocate)
+	    ext->deallocate = (super_ext ? super_ext->deallocate : NULL);
+    } else if (super_ext) {
+	/* Be careful to inherit only what is appropriate */
+	ext = (ObjectClassExtension) 
+	    XtCalloc(1, sizeof(ObjectClassExtensionRec));
+	ext->next_extension = oc->object_class.extension;
+	ext->record_type = NULLQUARK;
+	ext->version = XtObjectExtensionVersion;
+	ext->record_size = sizeof(ObjectClassExtensionRec);
+	ext->allocate = super_ext->allocate;
+	ext->deallocate = super_ext->deallocate;
+	oc->object_class.extension = (XtPointer) ext;
+    }
+}
+
 static void ObjectClassPartInitialize(wc)
     register WidgetClass wc;
 {
    ObjectClass oc = (ObjectClass)wc;
 
-    oc->object_class.xrm_class = XrmPermStringToQuark(oc->object_class.class_name);
+   oc->object_class.xrm_class =
+       XrmPermStringToQuark(oc->object_class.class_name);
 
-    if (oc->object_class.resources)
-	_XtCompileResourceList(oc->object_class.resources,
-			       oc->object_class.num_resources);
+   if (oc->object_class.resources)
+       _XtCompileResourceList(oc->object_class.resources,
+			      oc->object_class.num_resources);
 
-    ConstructCallbackOffsets(wc);
-    _XtResourceDependencies(wc);
+   ConstructCallbackOffsets(wc);
+   _XtResourceDependencies(wc);
+   InheritObjectExtensionMethods(wc);
 }
 
 
