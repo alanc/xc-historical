@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_css.c,v 5.5 91/10/01 03:00:02 hersh Exp $ */
+/* $XConsortium: cpa_css.c,v 5.6 92/02/03 16:32:05 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1082,7 +1082,8 @@ phg_cpa_inc_spa_search( cph, cp_args, ret, css_srvr )
     card32_p = (CARD32 *)(pex_dist + 1);
     *card32_p = (CARD32)args->ceiling;
     card32_p++;
-    *card32_p = (CARD32)PEX_CONV_FROM_Pclip(args->mclip_flag);
+    *card32_p = (args->mclip_flag == PIND_CLIP) ?
+	(CARD32) PEXClip : (CARD32) PEXNoClip;
 
     /* Convert the start path. */
     card32_p++;
