@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.8 90/12/08 17:29:24 dmatic Exp $
+ * $XConsortium: Bitmap.h,v 1.9 91/01/04 13:22:42 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -57,7 +57,7 @@
  y		     Position		Position	320
  xHot                XHot               Position        NotSet
  yHot                YHot               Position        NotSet
- distance            Distance           Dimension       16
+ margin              Margin             Dimension       16
  grid                Grid               Boolean         True
  gridTolerance       GridTolerance      Dimension       8
  dashed              Dashed             Boolean         True
@@ -101,7 +101,7 @@
 #define XtNmouseForeground "mouseForeground"
 #define XtNmouseBackground "mouseBackground"
 #define XtNframe "frame"
-#define XtNdistance "distance"
+#define XtNmargin "margin"
 #define XtNproportional "proportional"
 
 #define XtCBitmapResource "BitmapResource"
@@ -127,7 +127,7 @@
 #define XtCFilename "Filename"
 #define XtCBasename "Basename"
 #define XtCFrame "Frame"
-#define XtCDistance "Distance"
+#define XtCMargin "Margin"
 #define XtCProportional "Proportional"
 
 #define XtRButtonFunction "ButtonFunction"
