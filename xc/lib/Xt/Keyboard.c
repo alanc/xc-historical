@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.8 89/12/14 20:29:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.9 89/12/15 10:07:23 swick Exp $";
 #endif
 
 /********************************************************
@@ -581,6 +581,7 @@ static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
     XtPerWidgetInput	psi;
     Widget		shell;
     EventMask	 	eventMask;
+    Widget		target;
 
     /*
      * we are having this handler server double duty as the
@@ -595,18 +596,21 @@ static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
      * shell borders are not occluded by the child, they're occluded
      * by reparenting window managers. !!!
      */
-    eventMask = XtBuildEventMask(descendant) & (KeyPressMask | KeyReleaseMask);
+    target = descendant ? _GetWindowedAncestor(descendant) : NULL;
+    eventMask = XtBuildEventMask(target) & (KeyPressMask | KeyReleaseMask);
     eventMask |= FocusChangeMask | EnterWindowMask | LeaveWindowMask;
 
-    oldEventMask &= KeyPressMask | KeyReleaseMask;
-    oldEventMask |= FocusChangeMask | EnterWindowMask | LeaveWindowMask;
+    if (oldEventMask) {
+	oldEventMask &= KeyPressMask | KeyReleaseMask;
+	oldEventMask |= FocusChangeMask | EnterWindowMask | LeaveWindowMask;
 
-    if (oldEventMask & ~eventMask)
-	XtRemoveEventHandler(widget, (oldEventMask & ~eventMask), 
-			     False, _XtHandleFocus, (XtPointer)pwi);
+	if (oldEventMask != eventMask)
+	    XtRemoveEventHandler(widget, (oldEventMask & ~eventMask), 
+				 False, _XtHandleFocus, (XtPointer)pwi);
+    }
 
-    if (~oldEventMask & eventMask)
-	XtAddEventHandler(widget, (~oldEventMask & eventMask), False, 
+    if (oldEventMask != eventMask)
+	XtAddEventHandler(widget, eventMask, False, 
 			  _XtHandleFocus, (XtPointer)pwi);
 
     if (!pwi->haveFocus) {
@@ -652,14 +656,13 @@ static void AddFocusHandler(widget, descendant, pwi, pdi, oldEventMask)
 	     * is a focus candidate, then see if it is a
 	     * descendant of the focus path
 	     */
-	    if (maybe && (FindFocusWidget(w, pdi) == w))
-	      pwi->haveFocus = TRUE;
-
+	    if (maybe && (InActiveSubtree(w, pdi)))
+		pwi->haveFocus = TRUE;
 	}
     }
     if (pwi->haveFocus) {
 	  pdi->focusWidget = NULL; /* invalidate the cache */
-	  _XtSendFocusEvent(descendant, FocusIn);
+	  _XtSendFocusEvent(target, FocusIn);
     }
 }
 
@@ -678,9 +681,14 @@ static void QueryEventMask(widget, client_data, event, cont)
      */
     Widget ancestor = (Widget)client_data;
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(ancestor, FALSE);
-    if (pwi && pwi->focusKid == widget) {
-	XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-	AddFocusHandler(ancestor, widget, pwi, pdi, (EventMask)0);
+    Widget target = pwi->queryEventDescendant;
+
+    /* This is non-standard hackery for broken Motif mis-use only;
+     * focus can go to non-widget
+     */
+    if (pwi && (pwi->focusKid == target)) {
+	XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(ancestor));
+	AddFocusHandler(ancestor, target, pwi, pdi, (EventMask)0);
     }
     XtRemoveEventHandler(widget, XtAllEvents, True,
 			 QueryEventMask, client_data);
@@ -704,9 +712,10 @@ void XtSetKeyboardFocus(widget, descendant)
     XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
     XtPerWidgetInput pwi = _XtGetPerWidgetInput(widget, TRUE);
     Widget oldDesc = pwi->focusKid;
+    Widget oldTarget, target;
     
-    if ((descendant != (Widget)None) && ! XtIsWidget(descendant))
-	descendant = _XtWindowedAncestor(descendant);
+    target = descendant ? _GetWindowedAncestor(descendant) : NULL;
+    oldTarget = oldDesc ? _GetWindowedAncestor(oldDesc) : NULL;
     
     if (descendant != oldDesc) {
 	
@@ -720,18 +729,22 @@ void XtSetKeyboardFocus(widget, descendant)
 	    if (!oldDesc->core.being_destroyed) {
 		XtRemoveCallback (oldDesc, XtNdestroyCallback, 
 				  FocusDestroyCallback, (XtPointer) widget);
-		if (pwi->haveFocus) {
-		    _XtSendFocusEvent( oldDesc, FocusOut);
-		}
+	    }
+
+	    if (!oldTarget->core.being_destroyed) {
 		if (pwi->map_handler_added) {
-		    XtRemoveEventHandler(descendant, XtAllEvents, True,
+		    XtRemoveEventHandler(oldTarget, XtAllEvents, True,
 					 QueryEventMask, (XtPointer)widget);
 		    pwi->map_handler_added = FALSE;
+		}
+		if (pwi->haveFocus) {
+		    _XtSendFocusEvent( oldTarget, FocusOut);
 		}
 	    }
 	    else if (pwi->map_handler_added) {
 		pwi->map_handler_added = FALSE;
 	    }
+
 	    /*
 	     * If there was a forward path then remove the handler if
 	     * the path is being set to null and it isn't a shell.
@@ -750,11 +763,12 @@ void XtSetKeyboardFocus(widget, descendant)
 			   FocusDestroyCallback, (XtPointer) widget);
 
 	    AddFocusHandler(widget, descendant, pwi, pdi,
-			    oldDesc ? XtBuildEventMask(oldDesc) : 0);
-	    if (! XtIsRealized(descendant)) {
-		XtAddEventHandler(descendant, (EventMask)StructureNotifyMask,
+			    oldTarget ? XtBuildEventMask(oldTarget) : 0);
+	    if (! XtIsRealized(target)) {
+		XtAddEventHandler(target, (EventMask)StructureNotifyMask,
 				  False, QueryEventMask, (XtPointer)widget);
 		pwi->map_handler_added = TRUE;
+		pwi->queryEventDescendant = descendant;
 	    }
 	}
     }
