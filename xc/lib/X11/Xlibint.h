@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: Xlibint.h,v 11.39 87/06/24 11:31:39 swick Locked $ */
+/* $Header: Xlibint.h,v 11.40 87/06/24 11:32:42 newman Locked $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -50,27 +50,50 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *
  */
 
+#ifdef __STDC__
 #define GetReq(name, req) \
-	if ((dpy->bufptr + sizeof(x/**/name/**/Req)) > dpy->bufmax)\
+	if ((dpy->bufptr + sizeof(*req)) > dpy->bufmax)\
+		_XFlush(dpy);\
+	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
+	req->reqType = X_##name;\
+	req->length = (sizeof(*req))>>2;\
+	dpy->bufptr += sizeof(*req);\
+	dpy->request++
+
+#else  /* non-ANSI C uses empty comment instead of "##" for token concatenation */
+#define GetReq(name, req) \
+	if ((dpy->bufptr + sizeof(*req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
-	req->length = (sizeof(x/**/name/**/Req))>>2;\
-	dpy->bufptr += sizeof(x/**/name/**/Req);\
+	req->length = (sizeof(*req))>>2;\
+	dpy->bufptr += sizeof(*req);\
 	dpy->request++
+#endif
 
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
 
+#ifdef __STDC__
 #define GetReqExtra(name, n, req) \
-	if ((dpy->bufptr + sizeof(x/**/name/**/Req) + n) > dpy->bufmax)\
+	if ((dpy->bufptr + sizeof(*req) + n) > dpy->bufmax)\
+		_XFlush(dpy);\
+	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
+	req->reqType = X_##name;\
+	req->length = (sizeof(*req) + n)>>2;\
+	dpy->bufptr += sizeof(*req) + n;\
+	dpy->request++
+#else
+#define GetReqExtra(name, n, req) \
+	if ((dpy->bufptr + sizeof(*req) + n) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
-	req->length = (sizeof(x/**/name/**/Req) + n)>>2;\
-	dpy->bufptr += sizeof(x/**/name/**/Req) + n;\
+	req->length = (sizeof(*req) + n)>>2;\
+	dpy->bufptr += sizeof(*req) + n;\
 	dpy->request++
+#endif
 
 /*
  * GetResReq is for those requests that have a resource ID 
@@ -78,6 +101,17 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * "rid" is the name of the resource. 
  */
 
+#ifdef __STDC__
+#define GetResReq(name, rid, req) \
+	if ((dpy->bufptr + sizeof(xResourceReq)) > dpy->bufmax)\
+	    _XFlush(dpy);\
+	req = (xResourceReq *) (dpy->last_req = dpy->bufptr);\
+	req->reqType = X_##name;\
+	req->length = 2;\
+	req->id = (rid);\
+	dpy->bufptr += sizeof(xResourceReq);\
+	dpy->request++
+#else
 #define GetResReq(name, rid, req) \
 	if ((dpy->bufptr + sizeof(xResourceReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
@@ -87,12 +121,22 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 	req->id = (rid);\
 	dpy->bufptr += sizeof(xResourceReq);\
 	dpy->request++
+#endif
 
 /*
  * GetEmptyReq is for those requests that have no arguments
  * at all. 
  */
-
+#ifdef __STDC__
+#define GetEmptyReq(name, req) \
+	if ((dpy->bufptr + sizeof(xReq)) > dpy->bufmax)\
+	    _XFlush(dpy);\
+	req = (xReq *) (dpy->last_req = dpy->bufptr);\
+	req->reqType = X_##name;\
+	req->length = 1;\
+	dpy->bufptr += sizeof(xReq);\
+	dpy->request++
+#else
 #define GetEmptyReq(name, req) \
 	if ((dpy->bufptr + sizeof(xReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
@@ -101,6 +145,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 	req->length = 1;\
 	dpy->bufptr += sizeof(xReq);\
 	dpy->request++
+#endif
 
 #define SyncHandle() \
 	if (dpy->synchandler) (*dpy->synchandler)(dpy)
