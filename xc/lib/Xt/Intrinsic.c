@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.186 94/01/11 12:33:23 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.187 94/01/14 17:56:15 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1032,29 +1032,61 @@ static char *ExtractLocaleName(lang)
     String	lang;
 {
 
-#ifdef hpux	 /* hpux-specific parsing of the locale string */
+#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix)
+#ifdef hpux
+#define SKIPCOUNT 2
+#define STARTCHAR ':'
+#define ENDCHAR ';'
+#else
+#ifdef ultrix
+#define SKIPCOUNT 2
+#define STARTCHAR '\001'
+#define ENDCHAR '\001'
+#else
+#if defined(__osf__) || defined(AIXV3)
+#define STARTCHAR ' '
+#define ENDCHAR ' '
+#else
+#if !defined(sun) || defined(SVR4)
+#define STARTCHAR '/'
+#endif
+#define ENDCHAR '/'
+#endif
+#endif
+#endif
 #define MAXLOCALE       64      /* buffer size of locale name */
 
     char           *start;
     char           *end;
     int             len;
+#ifdef SKIPCOUNT
+    int		    n;
+#endif
     static char     buf[MAXLOCALE];
 
-    /*  If lang has a substring ":<category>;", extract <category>
-     *  from the first such occurrence as the locale name.
-     */
-
     start = lang;
-    if (start = strchr (lang, ':')) {
+#ifdef SKIPCOUNT
+    for (n = SKIPCOUNT;
+	 --n >= 0 && start && (start = strchr (start, STARTCHAR));
+	 start++)
+	;
+#endif
+#ifdef STARTCHAR
+    if (start && (start = strchr (start, STARTCHAR))) {
+#endif
         start++;
-        if (end = strchr (start, ';')) {
+        if (end = strchr (start, ENDCHAR)) {
             len = end - start;
             strncpy(buf, start, len);
             *(buf + len) = '\0';
             lang = buf;
+#ifdef STARTCHAR
       }
+#endif
     }
-#endif	/* hpux */
+#undef STARTCHAR
+#undef ENDCHAR
+#endif
 
     return lang;
 }
