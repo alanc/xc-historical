@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFontInfo.c,v 11.16 89/11/08 17:03:21 converse Exp $ */
+/* $XConsortium: XFontInfo.c,v 11.17 89/12/11 19:09:10 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -44,8 +44,8 @@ XFontStruct **info;	/* RETURN */
 		      ((SIZEOF(xListFontsWithInfoReply) - 
 			SIZEOF(xGenericReply)) >> 2), xFalse)) {
 	    for (j=(i-1); (j >= 0); j--) {
-		Xfree(flist[i]);
-		if (finfo[i].properties) Xfree((char *) finfo[i].properties);
+		Xfree(flist[j]);
+		if (finfo[j].properties) Xfree((char *) finfo[j].properties);
 	    }
 	    if (flist) Xfree((char *) flist);
 	    if (finfo) Xfree((char *) finfo);
@@ -69,9 +69,9 @@ XFontStruct **info;	/* RETURN */
 		if ((! tmp_finfo) || (! tmp_flist)) {
 		    /* free all the memory that we allocated */
 		    for (j=(i-1); (j >= 0); j--) {
-			Xfree(flist[i]);
-			if (finfo[i].properties)
-			    Xfree((char *) finfo[i].properties);
+			Xfree(flist[j]);
+			if (finfo[j].properties)
+			    Xfree((char *) finfo[j].properties);
 		    }
 		    if (tmp_flist) Xfree((char *) tmp_flist);
 		    else Xfree((char *) flist);
@@ -165,8 +165,8 @@ XFontStruct **info;	/* RETURN */
   badmem:
     /* Free all memory allocated by this function. */
     for (j=(i-1); (j >= 0); j--) {
-	Xfree(flist[i]);
-	if (finfo[i].properties) Xfree((char *) finfo[i].properties);
+	Xfree(flist[j]);
+	if (finfo[j].properties) Xfree((char *) finfo[j].properties);
     }
     if (flist) Xfree((char *) flist);
     if (finfo) Xfree((char *) finfo);
