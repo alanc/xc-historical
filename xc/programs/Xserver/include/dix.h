@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.74 94/02/04 10:41:02 rws Exp $ */
+/* $XConsortium: dix.h,v 1.75 94/02/04 15:35:39 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -185,10 +185,9 @@ typedef struct _ClientPublic {
     int             (*readRequest)();
 } ClientPublicRec, *ClientPublicPtr;
 
-#define WriteToClient(client,buf,len)   ((((ClientPublicPtr) client)->writeToClient)(client,buf,len))
-#define ReadRequestFromClient(client)   (((ClientPublicPtr) client)->readRequest(client))
-#define RequestLength(r,client,g,p)           (*((ClientPublicPtr) client)->requestLength) (r,client,g,p)
-
+#define WriteToClient(client,buf,len)   (((client)->public.writeToClient)(client,buf,len))
+#define ReadRequestFromClient(client)   ((client)->public.readRequest(client))
+#define RequestLength(r,client,g,p)           (*(client)->public.requestLength) (r,client,g,p)
 #endif /* LBX */
 
 typedef struct _WorkQueue	*WorkQueuePtr;

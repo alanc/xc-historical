@@ -1,4 +1,4 @@
-/* $XConsortium: propertyst.h,v 1.2 88/09/06 15:49:12 jim Exp $ */
+/* $XConsortium: propertyst.h,v 1.3 93/07/12 09:44:48 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,6 +37,14 @@ typedef struct _Property {
 	short		format;     /* format of data for swapping - 8,16,32 */
 	long		size;       /* size of data in (format/8) bytes */
 	pointer         data;       /* private to client */
+#ifdef LBX
+	/*  If space is at a premium and binary compatibility is not
+	 *  an issue, you may want to put the owner_pid next to format
+	 *  so that the two shorts pack together without padding.
+	 */
+  	short		owner_pid;	/* proxy that has the data */
+  	XID		tag_id;
+#endif
 } PropertyRec;
 
 #endif /* PROPERTYSTRUCT_H */

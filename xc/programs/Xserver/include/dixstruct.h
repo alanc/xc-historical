@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.28 94/02/04 10:41:51 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.29 94/02/04 15:35:35 dpw Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -56,9 +56,6 @@ typedef enum {ClientStateInitial,
 	      ClientStateGone} ClientState;
 
 typedef struct _Client {
-#ifdef LBX
-    ClientPublicRec public;  /* XXX move to end or use a devPrivate */
-#endif
     int         index;
     Mask        clientAsMask;
     pointer     requestBuffer;
@@ -103,13 +100,14 @@ typedef struct _Client {
     pointer	msgBuffer;
     pointer	pConflict;
 #endif /* XTHREADS */
-#ifdef LBX
-    int         lbxIndex;
-#endif
 
 #ifdef DEBUG
     unsigned char requestLog[MAX_REQUEST_LOG];
     int         requestLogIndex;
+#endif
+#ifdef LBX
+    ClientPublicRec public;
+    int         lbxIndex;
 #endif
 }           ClientRec;
 
