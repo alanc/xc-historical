@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.7 91/04/26 18:57:28 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.8 91/04/28 14:07:25 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -27,6 +27,9 @@ SOFTWARE.
 
 #define XK_MISCELLANY
 #define XK_LATIN1
+#define XK_LATIN2
+#define XK_LATIN3
+#define XK_LATIN4
 
 #include "IntrinsicI.h"
 #include <X11/keysymdef.h>
@@ -527,9 +530,61 @@ void _XtConvertCase(dpy, sym, lower, upper)
 	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
 	    *upper -= (XK_oslash - XK_Ooblique);
 	break;
-    default:
-	/* XXX do all other sets */
+#ifdef XK_LATIN2
+      case 1:
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym == XK_Aogonek)
+	    *lower = XK_aogonek;
+	else if (sym >= XK_Lstroke && sym <= XK_Zabovedot)
+	    *lower += (XK_lstroke - XK_Lstroke);
+	else if (sym == XK_aogonek)
+	    *upper = XK_Aogonek;
+	else if (sym >= XK_lstroke && sym <= XK_sacute)
+	    *upper -= (XK_lstroke - XK_Lstroke);
+	else if (sym >= XK_scaron && sym <= XK_zacute)
+	    *upper -= (XK_scaron - XK_Scaron);
+	else if (sym >= XK_zcaron && sym <= XK_zabovedot)
+	    *upper -= (XK_zcaron - XK_Zcaron);
+	else if (sym <= XK_Racute && sym <= XK_Tcedilla)
+	    *lower += (XK_racute - XK_Racute);
+	else if (sym <= XK_racute && sym <= XK_tcedilla)
+	    *upper -= (XK_racute - XK_Racute);
 	break;
+#endif
+#ifdef XK_LATIN3
+      case 2:
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Hstroke && sym <= XK_Hcircumflex)
+	    *lower += (XK_hstroke - XK_Hstroke);
+	else if (sym >= XK_Gbreve && sym <= XK_Jcircumflex)
+	    *lower += (XK_gbreve - XK_Gbreve);
+	else if (sym >= XK_hstroke && sym <= XK_hcircumflex)
+	    *upper -= (XK_hstroke - XK_Hstroke);
+	else if (sym >= XK_gbreve && sym <= XK_jcircumflex)
+	    *upper -= (XK_gbreve - XK_Gbreve);
+	else if (sym >= XK_Cabovedot && sym <= XK_Scircumflex)
+	    *lower += (XK_cabovedot - XK_Cabovedot);
+	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
+	    *lower += (XK_cabovedot - XK_Cabovedot);
+	break;
+#endif
+#ifdef XK_LATIN4
+      case 3:
+	/* Assume the KeySym is a legal value (ignore discontinuities) */
+	if (sym >= XK_Rcedilla && sym <= XK_Tslash)
+	    *lower += (XK_rcedilla - XK_Rcedilla);
+	else if (sym >= XK_rcedilla && sym <= XK_tslash)
+	    *upper -= (XK_rcedilla - XK_Rcedilla);
+	else if (sym == XK_ENG)
+	    *lower = XK_eng;
+	else if (sym == XK_eng)
+	    *upper = XK_ENG;
+	else if (sym >= XK_Amacron && sym <= XK_Umacron)
+	    *lower += (XK_amacron - XK_Amacron);
+	else if (sym >= XK_amacron && sym <= XK_umacron)
+	    *upper -= (XK_amacron - XK_Amacron);
+	break;
+#endif
     }
 }
 
