@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.113 94/01/18 17:29:18 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.114 94/01/28 23:29:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -961,79 +961,79 @@ GetAuthorization(trans_conn, family, saddr, saddrlen, idisplay,
      */
     if (auth_namelen == 19 && !strncmp (auth_name, "XDM-AUTHORIZATION-1", 19))
     {
-	int     j;
+	int i, j;
 	Time_t  now;
+	int family, addrlen;
+	Xtransaddr *addr = NULL;
+
 	for (j = 0; j < 8; j++)
 	    xdmcp_data[j] = auth_data[j];
+
+	_X11TransGetMyAddr(trans_conn, &family, &addrlen, &addr);
+
+	switch( family )
 	{
-	    int addrlen;
-	    int family;
-	    int i;
-	    Xtransaddr	*addr;
-	    _X11TransGetMyAddr(trans_conn, &family, &addrlen, &addr);
-	    /*
-	     * Is this really adequate? This needs to be well
-	     * tested to see if it can handle doing things in a
-	     * transport idependant way.
-	     */
-	    switch( family )
-		{
 #ifdef AF_INET
-		case AF_INET:
-			/*
-			 * addr will contain a sockaddr_in with all
-			 * of the members already in network byte order.
-			 */
-			{
-			for(i=4; i<8; i++)	/* do sin_addr */
-				xdmcp_data[j++] = ((char *)addr)[i];
-			for(i=2; i<4; i++)	/* do sin_port */
-				xdmcp_data[j++] = ((char *)addr)[i];
-			}
-			break;
+	case AF_INET:
+	{
+	    /*
+	     * addr will contain a sockaddr_in with all
+	     * of the members already in network byte order.
+	     */
+
+	    for(i=4; i<8; i++)	/* do sin_addr */
+		xdmcp_data[j++] = ((char *)addr)[i];
+	    for(i=2; i<4; i++)	/* do sin_port */
+		xdmcp_data[j++] = ((char *)addr)[i];
+	    break;
+	}
 #endif /* AF_INET */
 #ifdef AF_UNIX
-		case AF_UNIX:
-			/*
-			 * We don't use the sockaddr_un for this encoding.
-			 * Instead, we create a sockaddr_in filled with
-			 * a decreasing counter for the address, and the
-			 * pid for the port.
-			 */
-			{
-			static unsigned long    unix_addr = 0xFFFFFFFF;
-			unsigned long	the_addr;
-			unsigned short	the_port;
+	case AF_UNIX:
+	{
+	    /*
+	     * We don't use the sockaddr_un for this encoding.
+	     * Instead, we create a sockaddr_in filled with
+	     * a decreasing counter for the address, and the
+	     * pid for the port.
+	     */
 
-			_XLockMutex(_Xglobal_lock);
-			the_addr = unix_addr--;
-			_XUnlockMutex(_Xglobal_lock);
-			the_port = getpid ();
+	    static unsigned long    unix_addr = 0xFFFFFFFF;
+	    unsigned long	the_addr;
+	    unsigned short	the_port;
+	    
+	    _XLockMutex(_Xglobal_lock);
+	    the_addr = unix_addr--;
+	    _XUnlockMutex(_Xglobal_lock);
+	    the_port = getpid ();
 
-			xdmcp_data[j++] = (the_addr >> 24) & 0xFF;
-			xdmcp_data[j++] = (the_addr >> 16) & 0xFF;
-			xdmcp_data[j++] = (the_addr >>  8) & 0xFF;
-			xdmcp_data[j++] = (the_addr >>  0) & 0xFF;
-			xdmcp_data[j++] = (the_port >>  8) & 0xFF;
-			xdmcp_data[j++] = (the_port >>  0) & 0xFF;
-			}
-			break;
+	    xdmcp_data[j++] = (the_addr >> 24) & 0xFF;
+	    xdmcp_data[j++] = (the_addr >> 16) & 0xFF;
+	    xdmcp_data[j++] = (the_addr >>  8) & 0xFF;
+	    xdmcp_data[j++] = (the_addr >>  0) & 0xFF;
+	    xdmcp_data[j++] = (the_port >>  8) & 0xFF;
+	    xdmcp_data[j++] = (the_port >>  0) & 0xFF;
+	    break;
+	}
 #endif /* AF_UNIX */
 #ifdef AF_DECnet
-		case AF_DECnet:
-			/*
-			 * What is the defined encoding for this?
-			 */
-			break;
+	case AF_DECnet:
+	    /*
+	     * What is the defined encoding for this?
+	     */
+	    break;
 #endif /* AF_DECnet */
-		default:
-			/*
-			 * Need to return some kind of errro status here.
-			 * maybe a NULL auth??
-			 */
-			break;
-		}
-	}
+	default:
+	    /*
+	     * Need to return some kind of errro status here.
+	     * maybe a NULL auth??
+	     */
+	    break;
+	} /* switch */
+
+	if (addr)
+	    free ((char *) addr);
+
 	time (&now);
 	xdmcp_data[j++] = (now >> 24) & 0xFF;
 	xdmcp_data[j++] = (now >> 16) & 0xFF;
