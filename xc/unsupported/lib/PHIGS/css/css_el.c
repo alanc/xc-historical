@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css_el.c,v 5.1 91/02/16 09:50:48 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,11 +24,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifdef SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+#include <X11/Xos.h>
 #include "phg.h"
 #include "css.h"
 #include "css_priv.h"
