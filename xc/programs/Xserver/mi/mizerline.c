@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mizerline.c,v 1.3 87/06/15 01:11:22 sue Exp $ */
+/* $Header: mizerline.c,v 1.3 87/09/11 07:20:38 toddb Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -220,7 +220,8 @@ DDXPointRec *pptInit;	/* points in the polyline */
 
     if ((pgc->capStyle != CapNotLast) &&
 	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y)))
+	 (ppt->y != pptInit->y) ||
+	 (ppt == pptInit + 1)))
     {
 	int width = 1;
 	(*pgc->FillSpans)(dst, pgc, 1, ppt, &width, TRUE);
