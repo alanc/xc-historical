@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.4 88/01/19 09:02:34 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.7 88/01/19 15:27:18 swick Locked $";
 #endif lint
 
 /*
@@ -55,7 +55,7 @@ static XtResource resources[] = {
 #undef offset
 
 static void Initialize(), Realize(), Resize(), ChangeManaged();
-static Boolean SetValues();
+static Boolean SetValues(), DoLayout();
 static XtGeometryResult GeometryManager();
 
 ViewportClassRec viewportClassRec = {
@@ -280,6 +280,7 @@ static void ChangeManaged(widget)
     }
 
     if (child != w->viewport.child) {
+	w->viewport.child = child;
 	if (child) {
 	    XtResizeWidget( child, child->core.width,
 			    child->core.height, (Dimension)0 );
@@ -291,9 +292,11 @@ static void ChangeManaged(widget)
 				 (Position)0, (Position)0 );
 		XtMapWidget( child );
 	    }
+	    /* %%% DoLayout should be FormClass method */
+	    if (DoLayout( widget, child->core.width, child->core.height ))
+		(*widget->core.widget_class->core_class.resize)( widget );
 	    /* %%% do we need to hide this child from Form?  */
 	}
-	w->viewport.child = child;
     }
 
 #ifdef notdef
@@ -543,50 +546,25 @@ static XtGeometryResult GeometryManager(child, request, reply)
 
     allowed = *request;
     result = XtGeometryYes;
-    resized = False;
 
-    if (!XtIsRealized((Widget)w) &&
-	XtMakeGeometryRequest((Widget)w, request, &allowed)
-	 == XtGeometryAlmost) {
-	XtMakeGeometryRequest((Widget)w, &allowed, NULL);
-    }
+    /* %%% DoLayout should be a FormClass method */
+    resized = DoLayout( (Widget)w,
+		        (rWidth ? request->width : w->core.width),
+		        (rHeight ? request->height : w->core.height) );
 
-    if ((!w->viewport.allowhoriz && rWidth) ||
-	(!w->viewport.allowvert && rHeight)) {
-	myrequest.request_mode = CWWidth | CWHeight;
-	myrequest.width = rWidth ?
-	      (w->viewport.allowhoriz ?
-		  Min(w->core.width, request->width) : request->width)
-	    : w->core.width;
-	myrequest.height = rHeight ?
-	      (w->viewport.allowvert ?
-		  Min(w->core.height, request->height) : request->height)
-	    : w->core.height;
-	if (w->core.width != myrequest.width ||
-	    w->core.height != myrequest.height) {
-	    result = XtMakeGeometryRequest((Widget)w, &myrequest, &allowed);
-	    if (result == XtGeometryYes)
-		resized = True;
-	    else {
-		if (result == XtGeometryNo) {
-		    if (w->viewport.allowhoriz)
-			allowed.width = Max(w->core.width, request->width);
-		    else
-			allowed.width = w->core.width;
-		    if (w->viewport.allowvert)
-			allowed.height = Max(w->core.height, request->height);
-		    else
-			allowed.height = w->core.height;
-		}
-		if ((rWidth && allowed.width != request->width) ||
-		    (rHeight && allowed.height != request->height)) {
-		    *reply = allowed;
-		    result = XtGeometryAlmost;
-		}
-	    }
+    if (rWidth && w->core.width != request->width) {
+	if (!w->viewport.allowhoriz) {
+	    allowed.width = w->core.width;
+	    result = XtGeometryAlmost;
 	}
     }
-
+    if (rHeight && w->core.height != request->height) {
+	if (!w->viewport.allowvert) {
+	    allowed.height = w->core.height;
+	    result = XtGeometryAlmost;
+	}
+    }
+    *reply = allowed;
     if (result == XtGeometryYes) {
 	Boolean needs_horiz = False, needs_vert = False;
 	if (rWidth)  child->core.width = request->width;
@@ -614,8 +592,34 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	    if (ans == XtGeometryYes)
 		resized = True;
 	}
-	if (resized) (*w->core.widget_class->core_class.resize)( (Widget)w );
     }
 
+    if (resized) (*w->core.widget_class->core_class.resize)( (Widget)w );
     return result;
+}
+
+
+/* %%% DoLayout should be a FormClass method */
+static Boolean DoLayout(w, width, height)
+    Widget w;
+    Dimension width, height;
+{
+    XtWidgetGeometry geometry;
+    XtGeometryResult result;
+
+    geometry.request_mode = CWWidth | CWHeight;
+    geometry.width = width;
+    geometry.height = height;
+
+    if (XtIsRealized(w)) {
+	if (((ViewportWidget)w)->viewport.allowhoriz)
+	    geometry.width = Min(w->core.width, width);
+	if (((ViewportWidget)w)->viewport.allowvert)
+	    geometry.height = Min(w->core.height, height);
+    }
+    if ((result = XtMakeGeometryRequest(w, &geometry, &geometry))
+	== XtGeometryAlmost)
+	result = XtMakeGeometryRequest(w, &geometry, NULL);
+
+    return (result == XtGeometryYes);
 }
