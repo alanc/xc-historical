@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.55 91/12/17 18:49:05 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.56 91/12/18 09:44:44 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -449,6 +449,7 @@ Name						Reference
 "AIX"						[33]
 "Apple"						[22]
 "Bitstream"					[25]
+"Cognition"					[89]
 "DEC"						[27]
 "eands"						[75]
 "fujitsu"					[87]
@@ -1173,3 +1174,8 @@ REFERENCES
 	Rational
 	12 Mountain Rock Ln.
 	Norfolk, MA 02056
+
+[89]	Hal Berman
+	Cognition Corporation
+	755 Middlesex Turnpike
+	Billerica, MA 01821
