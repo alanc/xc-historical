@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1info.c,v 1.6 91/10/10 11:19:35 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -320,7 +320,7 @@ ComputeStdProps(pInfo, Vals, Filename, Fontname)
          case COPYRIGHTPROP:
             *is_str = TRUE;
             QueryFontLib(Filename, "Notice", &infostrP, &rc);
-            if (rc) {
+            if (rc || !infostrP) {
                 infostrP = "Copyright Notice not available";
             }
             pp->value = MakeAtom(infostrP, strlen(infostrP), TRUE);
