@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.6 90/12/10 15:45:56 keith Exp $
+ * $XConsortium: daemon.c,v 1.7 91/01/31 22:03:05 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -62,6 +62,7 @@ BecomeDaemon ()
     close (1);
     close (2);
 
+#ifndef SYSV386
     if ((i = open ("/dev/tty", O_RDWR)) >= 0) {	/* did open succeed? */
 #if (defined(SYSV) || defined(SVR4)) && defined(TIOCTTY)
 	int zero = 0;
@@ -71,6 +72,7 @@ BecomeDaemon ()
 #endif
 	(void) close (i);
     }
+#endif /* !SYSV386 */
 
     /*
      * Set up the standard file descriptors.
