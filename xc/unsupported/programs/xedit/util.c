@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.7 88/02/23 21:06:14 rws Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.8 88/09/06 17:34:30 jim Exp $";
 #endif
 
 /*
@@ -47,10 +47,9 @@ Widget makeCommandButton(box, name, function)
   char *name;
   XtCallbackProc function;
 {
-  static XtCallbackRec callbackList[] = { {NULL, NULL}, {NULL, NULL} };
-  static Arg arg[] = { {XtNcallback,(XtArgVal)callbackList} };
-    callbackList[0].callback = function;
-    return (XtCreateManagedWidget(name, commandWidgetClass, box, arg, 1));
+    Widget w = XtCreateManagedWidget(name, commandWidgetClass, box, NULL, 0);
+    XtAddCallback(w, XtNcallback, function, NULL);
+    return w;
 }
 
 
