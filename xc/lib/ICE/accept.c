@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.7 93/09/10 14:10:06 mor Exp $ */
+/* $XConsortium: accept.c,v 1.8 93/09/12 14:18:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -312,20 +312,13 @@ int fd;
     IceFlush (iceConn);
 
 
-    /*
-     * Notify the watch procedures that an iceConn was opened.
-     */
-
     if (_IceWatchProcs)
     {
-	_IceWatchProc *watchProc = _IceWatchProcs;
+	/*
+	 * Notify the watch procedures that an iceConn was opened.
+	 */
 
-	while (watchProc)
-	{
-	    (*watchProc->watch_proc) (iceConn,
-		watchProc->client_data, True, &iceConn->watch_data);
-	    watchProc = watchProc->next;
-	}
+	_IceConnectionOpened (iceConn);
     }
 
     return (iceConn);
