@@ -189,10 +189,8 @@ static void
 init_atoms(dpy)
 Display *dpy;
 {
-/* |||
 	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
 	XtTimerExpired = XInternAtom(dpy, "XtTimerExpired", False);
-*/
 }
 
 /*

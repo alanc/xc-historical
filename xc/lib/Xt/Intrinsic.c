@@ -15,8 +15,12 @@ static Resource resources[] = {
          Offset(Widget,core.width), XtRString, "1"},
     {XtNheight, XtCHeight, XrmRInt, sizeof(int),
          Offset(Widget,core.height), XtRString, "1"},
+/* default depth should be "InheritFromParent", and we should have a */
+/* string to depth type converter, but it needs the widget to be able */
+/* to find the parent's depth... right now, we kludge it and check for */
+/* a depth of 0 in XtCreateWidget. Gross. */
     {XtNdepth, XtCDepth,XrmRInt,sizeof(int),
-         Offset(Widget,core.depth), XtRString, "1"},
+         Offset(Widget,core.depth), XtRString, "0"},
     {XtNbackground,XtCBackground,XrmRPixel,sizeof(Pixel),
          Offset(Widget,core.background_pixel), XtRString, "White"},
     {XtNborderWidth, XtCBorderWidth,XrmRInt, sizeof(int),
@@ -128,7 +132,10 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
                ((CompositeWidget)widget)->composite.num_managed_children = 0;
                 ((CompositeWidget)widget)->composite.children = NULL;
                 }
-    XtGetResources(widget,args,argCount);
+   XtGetResources(widget,args,argCount);
+   if (widget->core.depth == 0)
+    /* ||| gross kludge! fix this!!! */
+	widget->core.depth = XtScreen(widget)->root_depth;
    widgetClass->coreClass.initialize();
    return (widget);
 }
@@ -203,7 +210,10 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
 		((CompositeWidget)widget)->composite.num_managed_children = 0;
 		((CompositeWidget)widget)->composite.children = NULL;
                 }
-    XtGetResources(widget,args,argCount);    
+    XtGetResources(widget,args,argCount);
+    if (widget->core.depth == 0)
+    /* ||| gross kludge! fix this!!! */
+	widget->core.depth = widget->core.parent->core.depth;
     DefineTranslation(widget);
     widgetClass->coreClass.initialize();
     if (widget->core.widget_class->coreClass.expose != NULL)
