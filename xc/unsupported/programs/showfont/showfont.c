@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.3 91/09/07 13:18:49 keith Exp $ */
+/* $XConsortium: showfont.c,v 1.5 91/09/07 13:32:20 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -20,9 +20,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)showfont.c	4.1	91/05/02
- *
  */
 #include	<stdio.h>
 #include	<ctype.h>
@@ -151,13 +148,13 @@ main(argc, argv)
 	show_info(fid, &hdr, &first, &last);
 	if (first_ch != 0 &&
 		(first_ch >= (first.low + (first.high << 8)))) {
-	    first.low = first_ch % 0xff;
+	    first.low = first_ch & 0xff;
 	    first.high = first_ch >> 8;
 	    show_all = False;
 	}
 	if (end_ch != ~0 &&
 		(end_ch <= (last.low + (last.high << 8)))) {
-	    last.low = end_ch % 0xff;
+	    last.low = end_ch & 0xff;
 	    last.high = end_ch >> 8;
 	    show_all = False;
 	}
@@ -255,7 +252,7 @@ show_glyphs(fid, hdr, show_all, first, last)
 	}
 
 	if (offsets[ch].length == 0) {
-	    printf ("Non existant character\n");
+	    printf ("Nonexistent character\n");
 	    continue;
 	}
 	bpr = GLWIDTHBYTESPADDED(charwidth, scanpad);
