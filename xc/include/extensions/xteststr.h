@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.6 92/12/17 11:44:22 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.7 93/02/02 14:36:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -14,6 +14,13 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 
 */
+
+#ifndef _XTESTSTR_H_
+#define _XTESTSTR_H_
+
+#define Window CARD32
+#define Time CARD32
+#define Cursor CARD32
 
 #define XTestCurrentCursor ((Cursor)1)
 
@@ -95,3 +102,9 @@ typedef struct {
     CARD8	pad2;
 } xXTestGrabControlReq;
 #define sz_xXTestGrabControlReq 8
+
+#undef Window
+#undef Time
+#undef Cursor
+
+#endif /* _XTESTSTR_H_ */
