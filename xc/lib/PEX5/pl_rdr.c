@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.13 92/05/07 23:29:13 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.1 92/05/08 15:13:44 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -381,7 +381,7 @@ OUTPUT unsigned long		*attributesReturn;
         UnlockDisplay (display);
         PEXSyncHandle (display);
 	*tablesReturn = *namesetsReturn = *attributesReturn = 0;
-        return (Failure);            /* return an error */
+        return (0);	            /* return an error */
     }
 
     *tablesReturn = rep.tables;
@@ -396,7 +396,7 @@ OUTPUT unsigned long		*attributesReturn;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (Success);
+    return (1);
 }
 
 
