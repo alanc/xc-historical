@@ -1,0 +1,7 @@
+        DEPLIBS = $(DEPXTOOLLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
+           SRCS = dumpres.c 
+           OBJS = dumpres.o 
+
+ComplexProgramTarget(dumpres)
+
