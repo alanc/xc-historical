@@ -1140,7 +1140,7 @@
      (with-event-queue (.display. ,@(and timeout `(:timeout .timeout.)))
        (multiple-value-bind (.progv-vars. .progv-vals.
 			     .current-event-symbol. .current-event-discarded-p-symbol.)
-	   (event-loop-setup display)
+	   (event-loop-setup .display.)
 	 (declare (type list .progv-vars. .progv-vals.)
 		  (type symbol .current-event-symbol. .current-event-discarded-p-symbol.))
 	 (progv .progv-vars. .progv-vals.
