@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xdisplay.cxx,v 1.4 94/04/01 16:48:40 matt Exp $
+ * $XConsortium: Xdisplay.cxx,v 1.5 94/04/07 11:29:27 matt Exp $
  */
 
 /*
@@ -1420,7 +1420,7 @@ Boolean ScreenImpl::find_layer(StyleValueRef a, long& layer) {
 	if (a->read_string(v._out())) {
 	    CharStringBuffer buf(v);
 	    const char* p = buf.string();
-	    if (strcasecmp(p, "true") == 0 || strcasecmp(p, "yes") == 0) {
+	    if (strcasecmp("true", p) == 0 || strcasecmp("yes", p) == 0) {
 		layer = 0;
 		b = true;
 	    }
