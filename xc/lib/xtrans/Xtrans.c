@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.c,v 1.21 94/03/31 17:35:13 mor Exp $ */
+/* $XConsortium: Xtrans.c,v 1.22 94/04/17 20:22:59 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1227,10 +1227,10 @@ int 		iovcnt;
 
 #endif /* CRAY */
 
-#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__)
+#if (defined(SYSV) && defined(SYSV386)) || defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 /*
- * SYSV/386 and WIN32 do not have readv so we emulate
+ * emulate readv
  */
 
 static int TRANS(ReadV) (ciptr, iov, iovcnt)
@@ -1261,12 +1261,12 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* SYSV && SYSV386 || WIN32 || __sxg__ */
+#endif /* SYSV && SYSV386 || WIN32 || __sxg__ || SCO */
 
-#if defined(WIN32) || defined(__sxg__)
+#if defined(WIN32) || defined(__sxg__) || defined(SCO)
 
 /*
- * WIN32 does not have readv so we emulate
+ * emulate writev
  */
 
 static int TRANS(WriteV) (ciptr, iov, iovcnt)
@@ -1297,7 +1297,7 @@ int 		iovcnt;
     return total;
 }
 
-#endif /* WIN32 || __sxg__ */
+#endif /* WIN32 || __sxg__ || SCO */
 
 
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4)
