@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.13 91/07/19 18:40:38 rws Exp $
+ * $XConsortium: gethost.c,v 1.14 91/07/26 19:54:39 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,12 @@
 #define TCPCONN
 #endif
 
+#ifdef WIN32
+#define _X86_ _M_IX86
+#include <windows.h>
+#include <winsock.h>
+#define EPROTOTYPE WSAEPROTOTYPE
+#endif
 #include "xauth.h"
 #include <X11/X.h>
 #include <signal.h>
@@ -38,6 +44,7 @@
 #include <sys/types.h>
 #define __TYPES__
 #endif
+#ifndef WIN32
 #ifndef STREAMSCONN
 #include <sys/socket.h>
 #include <netdb.h>
@@ -50,6 +57,7 @@
 #endif /* !SVR4 */
 #endif /* SYSV386 */
 #endif /* !STREAMSCONN */
+#endif /* !WIN32 */
 #include <errno.h>
 extern int errno;			/* for stupid errno.h files */
 #ifdef DNETCONN
@@ -88,7 +96,9 @@ char *get_hostname (auth)
     Xauth *auth;
 {
     struct hostent *hp = NULL;
+#ifndef WIN32
     char *inet_ntoa();
+#endif
 #ifdef DNETCONN
     struct nodeent *np;
     static char nodeaddr[16];
@@ -105,12 +115,16 @@ char *get_hostname (auth)
 	   jump out of it. 
 	   */
 	nameserver_timedout = False;
+#ifdef SIGALRM
 	signal (SIGALRM, nameserver_lost);
 	alarm (4);
+#endif
 	if (setjmp(env) == 0) {
 	    hp = gethostbyaddr (auth->address, auth->address_length, AF_INET);
 	}
+#ifdef SIGALRM
 	alarm (0);
+#endif
 	if (hp)
 	  return (hp->h_name);
 	else

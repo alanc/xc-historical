@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.41 92/01/22 23:39:12 gildea Exp $
+ * $XConsortium: process.c,v 1.42 92/02/18 18:05:00 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -618,7 +618,9 @@ static void register_signals ()
 {
     signal (SIGINT, catchsig);
     signal (SIGTERM, catchsig);
+#ifdef SIGHUP
     signal (SIGHUP, catchsig);
+#endif
     return;
 }
 
@@ -693,7 +695,7 @@ int auth_initialize (authfilename)
 
     original_umask = umask (0077);	/* disallow non-owner access */
 
-    authfp = fopen (authfilename, "r");
+    authfp = fopen (authfilename, "rb");
     if (!authfp) {
 	int olderrno = errno;
 
@@ -742,7 +744,7 @@ static int write_auth_file (tmpnam)
     strcpy (tmpnam, xauth_filename);
     strcat (tmpnam, "-n");		/* for new */
     (void) unlink (tmpnam);
-    fp = fopen (tmpnam, "w");		/* umask is still set to 0077 */
+    fp = fopen (tmpnam, "wb");		/* umask is still set to 0077 */
     if (!fp) {
 	fprintf (stderr, "%s:  unable to open tmp file \"%s\"\n",
 		 ProgramName, tmpnam);
@@ -931,7 +933,9 @@ static int extract_entry (inputfilename, lineno, auth, data)
     struct _extract_data *ed = (struct _extract_data *) data;
 
     if (!ed->fp) {
-	ed->fp = open_file (&ed->filename, "w", &ed->used_stdout,
+	ed->fp = open_file (&ed->filename,
+			    ed->numeric ? "w" : "wb",
+			    &ed->used_stdout,
 			    inputfilename, lineno, ed->cmd);
 	if (!ed->fp) {
 	    prefix (inputfilename, lineno);
@@ -1277,7 +1281,9 @@ static int do_merge (inputfilename, lineno, argc, argv)
 	FILE *fp;
 	Bool used_stdin = False;
 
-	fp = open_file (&filename, "r", &used_stdin, inputfilename, lineno,
+	fp = open_file (&filename,
+			numeric ? "r" : "rb",
+			&used_stdin, inputfilename, lineno,
 			argv[0]);
 	if (!fp) {
 	    errors++;
