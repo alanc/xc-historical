@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.71 93/09/25 10:37:14 rws Exp $ */
+/* $XConsortium: Convert.c,v 1.72 93/10/06 17:02:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -52,6 +52,7 @@ typedef struct _ConverterRec {
     unsigned short	num_args;
     unsigned int	do_ref_count:1;
     unsigned int	new_style:1;
+    unsigned int	global:1;
     char		cache_type;
 } ConverterRec;
 
@@ -84,7 +85,7 @@ void _XtSetDefaultConverterTable(table)
 	       _XtTableAddConverter(*table, rec->from, rec->to, rec->converter,
 				    ConvertArgs(rec), rec->num_args,
 				    rec->new_style, cache_type,
-				    rec->destructor);
+				    rec->destructor, True);
 	    }
   	}
     }
@@ -153,11 +154,11 @@ void _XtTableAddConverter(
     Cardinal		num_args,
     _XtBoolean		new_style,
     XtCacheType		cache_type,
-    XtDestructor	destructor
-    )
+    XtDestructor	destructor,
+    _XtBoolean		global)
 #else    			  
 void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, 
-			  num_args, new_style, cache_type, destructor)
+			  num_args, new_style, cache_type, destructor, global)
     ConverterTable	table;
     XrmRepresentation   from_type, to_type;
     XtTypeConverter	converter;
@@ -166,6 +167,7 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args,
     Boolean		new_style;
     XtCacheType		cache_type;
     XtDestructor	destructor;
+    Boolean		global;
 #endif
 {
     register ConverterPtr	*pp;
@@ -190,6 +192,7 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args,
     p->converter    = converter;
     p->destructor   = destructor;
     p->num_args     = num_args;	
+    p->global       = global;
     args = ConvertArgs(p);
     while (num_args--)
 	*args++ = *convert_args++;
@@ -241,11 +244,11 @@ void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, c
     }
     _XtTableAddConverter(process->globalConverterTable, from, to,
 			 converter, convert_args,
-			 num_args, True, cache_type, destructor);
+			 num_args, True, cache_type, destructor, True);
     while (app) {
 	_XtTableAddConverter(app->converterTable, from, to,
 			     converter, convert_args,
-			     num_args, True, cache_type, destructor);
+			     num_args, True, cache_type, destructor, True);
 	app = app->next;
     }
     UNLOCK_PROCESS;
@@ -273,15 +276,13 @@ void XtAppSetTypeConverter(app, from_type, to_type, converter, convert_args, num
     XtDestructor	destructor;
 #endif
 {
-    LOCK_APP(app);
     LOCK_PROCESS;
     _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
         XrmStringToRepresentation(to_type),
 	converter, convert_args, num_args,
-	True, cache_type, destructor);
+	True, cache_type, destructor, False);
     UNLOCK_PROCESS;
-    UNLOCK_APP(app);
 }
 
 /* old interface */
@@ -318,11 +319,12 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     }
     _XtTableAddConverter(process->globalConverterTable, from, to,
 			 (XtTypeConverter)converter, convert_args, num_args,
-			 False, XtCacheAll, (XtDestructor)NULL);
+			 False, XtCacheAll, (XtDestructor)NULL, True);
     while (app) {
 	_XtTableAddConverter(app->converterTable, from, to,
 			     (XtTypeConverter)converter, convert_args,
-			     num_args, False, XtCacheAll, (XtDestructor)NULL);
+			     num_args, False, XtCacheAll, (XtDestructor)NULL, 
+			     True);
 	app = app->next;
     }
     UNLOCK_PROCESS;
@@ -347,15 +349,13 @@ void XtAppAddConverter(app, from_type, to_type, converter, convert_args, num_arg
     Cardinal		num_args;
 #endif
 {
-    LOCK_APP(app);
     LOCK_PROCESS;
     _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
         XrmStringToRepresentation(to_type),
 	(XtTypeConverter)converter, convert_args, num_args,
-	False, XtCacheAll, (XtDestructor)NULL);
+	False, XtCacheAll, (XtDestructor)NULL, False);
     UNLOCK_PROCESS;
-    UNLOCK_APP(app);
 }
 
 static CachePtr
@@ -443,7 +443,52 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     return p;
 }
 
-static void _XtFreeCacheRec();
+static void FreeCacheRec(app, p, prev)
+    XtAppContext app;
+    CachePtr p;
+    CachePtr *prev;
+{
+    LOCK_PROCESS;
+    if (p->has_ext) {
+	if (CEXT(p)->destructor) {
+	    Cardinal num_args = p->num_args;
+	    XrmValue *args = NULL;
+	    XrmValue toc;
+	    if (num_args)
+		args = CARGS(p);
+	    toc.size = p->to.size;
+	    if (p->to_is_value)
+		toc.addr = (XPointer)&p->to.addr;
+	    else
+		toc.addr = p->to.addr;
+	    (*CEXT(p)->destructor) (app, &toc, CEXT(p)->closure, args,
+				    &num_args);
+	}
+	*(CEXT(p)->prev) = p->next;
+	if (p->next && p->next->has_ext)
+	    CEXT(p->next)->prev = CEXT(p)->prev;
+    } else {
+	*prev = p->next;
+	if (p->next && p->next->has_ext)
+	    CEXT(p->next)->prev = prev;
+    }
+    if (p->must_be_freed) {
+	register int i;
+	if (!p->from_is_value)
+	    XtFree(p->from.addr);
+	if (i = p->num_args) {
+	    XrmValue *pargs = CARGS(p);
+	    while (i--)
+		XtFree(pargs[i].addr);
+	}
+	if (!p->to_is_value)
+	    XtFree(p->to.addr);
+	XtFree((char*)p);
+    }
+    /* else on private heap; will free entire heap later */
+    UNLOCK_PROCESS;
+}
+
 
 void _XtCacheFlushTag(app, tag)
     XtAppContext app;
@@ -458,7 +503,7 @@ void _XtCacheFlushTag(app, tag)
 	prev = &cacheHashTable[i];
 	while (rec = *prev) {
 	    if (rec->tag == tag)
-		_XtFreeCacheRec(app, rec, prev);
+		FreeCacheRec(app, rec, prev);
 	    else
 		prev = &rec->next;
 	}
@@ -695,7 +740,7 @@ static ConverterPtr GetConverterEntry( app, converter )
 
 
 static Boolean
-_XtCallConverter(dpy, converter,
+CallConverter(dpy, converter,
 		 args, num_args, from, to, cache_ref_return, cP)
     Display*	    dpy;
     XtTypeConverter converter;
@@ -813,6 +858,8 @@ _XtCallConverter(dpy, converter,
 	}
 	else if (cP->cache_type == XtCacheByDisplay)
 	    heap = &_XtGetPerDisplay(dpy)->heap;
+	else if (cP->global)
+	    heap = &globalHeap;
 	else
 	    heap = &XtDisplayToApplicationContext(dpy)->heap;
 
@@ -843,7 +890,7 @@ XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
 
     LOCK_APP(app);
     cP = GetConverterEntry( app, converter );
-    retval = _XtCallConverter(dpy, converter, args, num_args, from, to, 
+    retval = CallConverter(dpy, converter, args, num_args, from, to, 
 			    cache_ref_return, cP);
     UNLOCK_APP(app);
     return retval;
@@ -878,7 +925,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 	    } else args = NULL;
 	    if (p->new_style) {
 		retval =
-		    _XtCallConverter(XtDisplayOfObject(widget),
+		    CallConverter(XtDisplayOfObject(widget),
 				     p->converter, args, num_args,
 				     from, to, cache_ref_return, p);
 	    }
@@ -1047,52 +1094,6 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
     return True;
 }
 
-static void _XtFreeCacheRec(app, p, prev)
-    XtAppContext app;
-    CachePtr p;
-    CachePtr *prev;
-{
-    LOCK_PROCESS;
-    if (p->has_ext) {
-	if (CEXT(p)->destructor) {
-	    Cardinal num_args = p->num_args;
-	    XrmValue *args = NULL;
-	    XrmValue toc;
-	    if (num_args)
-		args = CARGS(p);
-	    toc.size = p->to.size;
-	    if (p->to_is_value)
-		toc.addr = (XPointer)&p->to.addr;
-	    else
-		toc.addr = p->to.addr;
-	    (*CEXT(p)->destructor) (app, &toc, CEXT(p)->closure, args,
-				    &num_args);
-	}
-	*(CEXT(p)->prev) = p->next;
-	if (p->next && p->next->has_ext)
-	    CEXT(p->next)->prev = CEXT(p)->prev;
-    } else {
-	*prev = p->next;
-	if (p->next && p->next->has_ext)
-	    CEXT(p->next)->prev = prev;
-    }
-    if (p->must_be_freed) {
-	register int i;
-	if (!p->from_is_value)
-	    XtFree(p->from.addr);
-	if (i = p->num_args) {
-	    XrmValue *pargs = CARGS(p);
-	    while (i--)
-		XtFree(pargs[i].addr);
-	}
-	if (!p->to_is_value)
-	    XtFree(p->to.addr);
-	XtFree((char*)p);
-    }
-    /* else on private heap; will free entire heap later */
-    UNLOCK_PROCESS;
-}
-
 void XtAppReleaseCacheRefs(app, refs)
     XtAppContext app;
     XtCacheRef *refs;
@@ -1104,7 +1105,7 @@ void XtAppReleaseCacheRefs(app, refs)
     LOCK_PROCESS;
     for (r = (CachePtr*)refs; p = *r; r++) {
 	if (p->is_refcounted && --(CEXT(p)->ref_count) == 0) {
-	    _XtFreeCacheRec(app, p, NULL);
+	    FreeCacheRec(app, p, NULL);
 	}
     }
     UNLOCK_PROCESS;
