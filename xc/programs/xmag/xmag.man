@@ -1,0 +1,68 @@
+.TH XMAG 1 "28 January 1991" "X Version 11"
+.SH NAME
+xmag \- magnify parts of the screen.
+
+.SH SYNOPSIS
+xmag [-freq dynamicfreq] [-mag magfactor] [-source geom] [-z] [-toolkitoption ...]
+.SH DESCRIPTION
+The xmag program allows you to magnify portions of the screen.  If no 
+explicit region is specified, a square with the pointer in the upper left 
+corner is displayed indicating the area to be enlarged.  The area can be 
+dagged out to the desired size after a button was pressed.  Once a region has 
+been selected, a window is popped up showing a blown up version of the region 
+in which each pixel in the source image is represented by a small square of 
+the same color.  Pressing Button1 on the pointer in the enlargement window 
+shows a small pixel information window displaying the position and RGB value
+of the pixel under the pointer until the button is released.  Moving into the 
+snall window or outside the enlarged image will popdown the pixel window.  
+Pressing Button3 in the enlarged image window will triger another area 
+selection process.  Pressing ``Q'' or ``^C'' in the enlargement window 
+exits the program.
+.SH WIDGETS
+Xmag uses the X Toolkit Intrinsics and the Athena Widget Set.
+The main part of the toplevel is Scale widget described below.  
+For more information, see the Athena Widget Set documentation.
+Below is the widget structure of the xmag application.
+aIndentation indicates hierarchical  structure.  The widget class
+name is given first, followed by the widget instance name.
+.sp
+.nf
+	Xmag xmag
+		Scale scale
+		TransientShell labelShell
+			Lable label
+.fi
+.SH OPTIONS
+.TP 4
+.B\-freq\fI dynamicfreq\fP
+Frequency of drawing dynamic outline of the region to be selected.
+The default value is 16.  Higher values will make the outline flicker less 
+but they will make the server spend more time on drawing the outline.
+.TP 4
+.B\-magx\fI magfactor\fP
+.B\-magy\fI magfactor\fP
+.B\-mag\fI magfactor\fP
+This option specifies a float factor by which the source
+region is to be enlarged.  The default magnification is 5.0.  The
+magnification factor cna be changed dynamically by resizing the window
+or specified in the widgert resources for x and y separately.
+.TP 4
+.B\-source\fI geom\fP
+This option specifies the size and/or location of the source region 
+on the screen.  By default, a 64x64 square is provided for the user to select 
+an area of the screen.
+.TP 4
+.B\-z\
+This option indicates that the server should be grabbed during the 
+dynamics and the call to XGetImage.  This is useful for ensuring that clients 
+don't change their state as a result of entering or leaving them with the 
+pointer.
+.SH COPYRIGHT
+Copyright 1991, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH SEE ALSO
+X(1), xwd(1)
+.SH AUTHOR
+Davor Matic and David Sternlicht, MIT X Consortium.
+

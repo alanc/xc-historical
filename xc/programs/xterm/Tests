@@ -1,0 +1,30 @@
+Tests for xterm:
+
+If system supports window size (i.e., some combination of SIGWINCH,
+TIOCSSIZE, TIOCSWINSZ), start a full-screen program (e.g., Emacs,
+Jove, vi) and resize the xterm window.  The program must immediately
+update its screen image for the new size.
+
+If compiled with -DUTMP, starting a new xterm should create a new utmp
+entry.  ("who" will show this info.)  Exiting xterm should remove the
+entry.  Killing the xterm window (or other unnatural exit) should also
+remove the entry.
+
+Process group stuff should be correct.
+
+Should work without access to /dev/tty, say started from an xdm
+started from a boot-time script.
+
+If "xterm -help" offers the -C option, it should work.
+
+echo "test" > /dev/tty
+
+vi with lines that wrap.
+
+Exec'ing things other than shells.
+
+Another thing that has caused problems in the past is process groups,
+especially w.r.t. signal propagation to the child.
+
+
+Please add to this list if you find xterm failing in some way.

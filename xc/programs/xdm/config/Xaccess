@@ -1,0 +1,21 @@
+#
+# Access control file for XDMCP connections
+#
+# Entries in this file are in one of two forms; either
+#
+# 	pattern		host-list
+#
+# or
+#
+#	pattern
+#
+# The first form direct xdm to forward indirect queries from hosts matching
+# the specified pattern to the indicated list of hosts.  The second form
+# directs xdm to respond to other itself.
+#
+# By default, we'll allow any terminal using XDMCP to get a login window
+#
+
+*.lcs.mit.edu	CHOOSER BROADCAST
+
+*
