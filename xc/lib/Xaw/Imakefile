@@ -25,6 +25,7 @@ HEADERS = \
 	CommandP.h \
 	Dialog.h \
 	DialogP.h \
+	EditRes.h \
 	Form.h \
 	FormP.h \
 	Grip.h \
@@ -89,6 +90,7 @@ SRCS = \
 	Clock.c \
 	Command.c \
 	Dialog.c \
+	EditResCom.c \
 	Form.c \
 	Grip.c \
 	Label.c \
@@ -127,6 +129,7 @@ OBJS = \
 	Clock.o \
 	Command.o \
 	Dialog.o \
+	EditResCom.o \
 	Form.o \
 	Grip.o \
 	Label.o \
