@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\"
 .\"
 .\"  This macro puts the section numbers, labels, and page numbers out
@@ -16,7 +17,6 @@
 .tm .Ed \\n%
 ..
 
-.mc |
 .de AP
 .\"
 .\"  This indents section heading of level two or greater.
@@ -27,7 +27,6 @@
 ..
 
 
-.mc
 .de Ao
 .PN \\$1
 .\"
@@ -171,15 +170,11 @@ coordinates, and the \fIz\fP-coordinate is always assumed to be zero.
 ..
 
 .de Pn
-.mc *
-.mc
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
 
 .de PN
-.mc *
-.mc
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -194,10 +189,8 @@ coordinates, and the \fIz\fP-coordinate is always assumed to be zero.
 .vs 12
 .nr VS 12
 .ad l
-.mc |
 .EH '\s+2\fBPEX\ Protocol\ Encoding\fP''\fBPEX\ V5.1\ 31-August-1992\fP\s-2'
 .OH '\s+2\fBPEX\ V5.1\ 31-August-1992\fP''\fBPEX\ Protocol\ Encoding\fP\s-2'
-.mc
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
 .nr % 1
@@ -221,7 +214,6 @@ Randi Rost of Digital Equipment Corp. took over the job of editing this
 document in January of 1989, and performed this task until April of
 1990.  During this time, Randi was responsible for five separate
 revisions of the document.
-.mc |
 .LP
 We owe a major debt to the PEX architecture team which met frequently
 between June, 1987 and August, 1991:
@@ -231,7 +223,6 @@ Dave Gorgen, Tom Gross, and Jeff Stevenson of Hewlett-Packard Company;
 David Plunkett of Solbourne Computer;
 Jan Hardenbergh of Stardent Computer, Inc.;
 and Marty Hess, and Jim Van Loo of Sun Microsystems.
-.mc
 .bp
 
 .AC "PEX Protocol Specification" 1
@@ -246,7 +237,6 @@ X3D-PEX and PEX are trademarks of the
 Massachusetts Institute of Technology
 .FE
 
-.mc |
 .AC "Request Processing" 2
 .LP
 Workstation regeneration and requests which process output commands
@@ -256,15 +246,12 @@ guaranteed for each individual output command primitive, excluding
 Execute Structure, GSE, GDP 3D, and GDP 2D.  Also, requests and output
 commands will be executed in sequential order for a given connection.
 
-.mc
 .AC "Protocol Format" 2
 .LP
 
 .AC "Request Format" 3
 .LP
-.mc |
 Requests are listed in section 2.8 and in section 4 through the end of the
-.mc
 document.  Output Commands are described in section 3.
 
 .AC "Reply Format" 3
@@ -273,15 +260,11 @@ Replies are listed after the request.
 
 .AC "Error Format" 3
 .LP
-.mc |
 See section 2.5.7 for the encoding of particular errors.
-.mc
 
 .AC "Event Format" 3
 .LP
-.mc |
 See section 2.6 for the encoding of events.
-.mc
 
 .AC "Syntax" 2
 .LP
@@ -456,9 +439,7 @@ of a 4\(mu4 transformation matrix that indicates the
 translation in the X direction is the fourth element sent.
 .LP
 The following compound types appear in the rest of the encoding document.
-.mc |
 For a complete list of types refer to the protocol document.
-.mc
 If a variable is given which computes the length of a compound type (e.g.,
 the equation for d in OPT_DATA), that variable may be used later to express
 the length of a request or reply (e.g. the \fBTriangleStrip\fP output
@@ -532,7 +513,6 @@ COORD_4D
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 DC_HIT_BOX_DATA
 	2	INT16		x
 	2	INT16		y
@@ -543,7 +523,6 @@ DC_HIT_BOX_DATA
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc
 DEVICE_COORD
 	2	INT16		x
 	2	INT16		y
@@ -583,7 +562,6 @@ ELEMENT_REF
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 ENUM_DESC
 	2	INT16		index
 	2	n		string length 
@@ -595,7 +573,6 @@ ENUM_DESC
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc
 EXTENT_INFO
 	\fIfp\fP	FLOAT		lower left x
 	\fIfp\fP	FLOAT		lower left y
@@ -721,7 +698,6 @@ NAME_SET_PAIR
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 NPC_SUBVOLUME
 	\fIfp\fP	FLOAT		min x
 	\fIfp\fP	FLOAT		min y
@@ -735,7 +711,6 @@ NPC_SUBVOLUME
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc
 OPT_DATA
 	(maximum size, some fields may be missing, see below)
 	sc = ((color type == Indexed)||(color type == RGBInt8)) ? 1 : ((color type == RGBInt16) ? 2 : 3*\fIfp\fP/4)
@@ -771,7 +746,6 @@ PICK_ELEMENT_REF
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 PICK_RECORD
 	n = ((pick type == NPC_HitVolume) ? (6*\fIfp\fP/4) : (1+\fIfp\fP/4) )
 	2	INT16		pick type
@@ -798,13 +772,10 @@ RENDERER_TARGET
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc
 STRING
 	2	n		length
 	n	LISTofCARD8		string
-.mc |
 	p			unused, p=pad(n+2)
-.mc
 .De
 .LP
 .Ds 0
@@ -953,9 +924,7 @@ VERTEX
 	1	0	Error
 	1	\fIBEC\fR+6	code
 	2	CARD16	sequence number
-.mc |
 	4	CARD32	index of bad path element
-.mc
 	2	CARD16	minor opcode
 	1	CARD8	major opcode
 	21		unused
@@ -1086,7 +1055,6 @@ ID of a resource that has already been freed will return the value
 
 .AC "Events" 2
 .LP
-.mc |
 \fIBEC\fR is the base event code for the extension, as returned by
 \fBQueryExtension\fP.
 .LP
@@ -1102,17 +1070,14 @@ ID of a resource that has already been freed will return the value
 	24		unused
 .De
 .LP
-.mc
 
 .AC "Padding" 2
 .LP
 The contents of pad bytes is explicitly left undefined.
 In some cases, the length of a field is followed by its type
 which is shorter than the stated length of the field (e.g., "distinguish 4
-.mc |
 CARD8").  In these cases, the value is placed in the least significant
 bits of the word and the entire word is byte swapped.
-.mc
 
 .AC "Extension Information" 2
 .LP
@@ -1187,11 +1152,9 @@ bits of the word and the entire word is byte swapped.
 		25	TrimCurveApproxMethod
 		26	RenderingColorModel
 		27	ParametricSurfaceCharacteristics
-.mc |
 		28	Escape
 		29	PickOneMethod
 		30	PickAllMethod
-.mc
 	p		unused, p=pad(2n)
 .De
 .Ds 0
@@ -1202,19 +1165,12 @@ bits of the word and the entire word is byte swapped.
 	1	1		Reply
 	1			unused
 	2	CARD16		sequence number
-.mc |
 	4	m/4		reply length
 	4	n		number of lists
-.mc
 	20			unused
-.mc |
 	m	LISTofENUM_DATA		types
-.mc
 .De
-.mc *
-.mc
 .LP
-.mc |
 The contents of ENUM_DATA depends on \fIitem_mask\fP.
 If \fIitem_mask\fP = 0 then only the counts are returned
 and ENUM_DATA is a CARD32.
@@ -1225,7 +1181,6 @@ and ENUM_DATA is a LISTofSTRING.
 If \fIitem_mask\fP = 3 then the indices and mnemonics are
 returned and ENUM_DATA is a LISTofENUM_DESC.
 .LP
-.mc
 .Ds 0
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
@@ -1238,9 +1193,7 @@ returned and ENUM_DATA is a LISTofENUM_DESC.
 	2			unused
 	4	CARD32		example drawable ID
 	4	n		number of names
-.mc |
 	2n	LISTofCONSTANT_NAME		names
-.mc
 	p			unused, p=pad(2n)
 .De
 .LP
@@ -1311,13 +1264,10 @@ ChromaticityWhiteU, ChromaticityWhiteV,\fP and
 	ChromaticityWhiteU			31
 	ChromaticityWhiteV			32
 	LuminanceWhite			33
-.mc |
 	MaxHitsEventSupported			34
 		0	False
 		1	True
-.mc
 .De
-.mc |
 .LP
 .Ds 0
 .TA .2i 1i 2i 3.1i
@@ -1389,7 +1339,6 @@ ChromaticityWhiteU, ChromaticityWhiteV,\fP and
 .LP
 See the appendix for the encoding of registered escapes.
 .LP
-.mc
 .bp
 
 .AC "Output Commands" 1
@@ -2276,9 +2225,7 @@ are implemenation dependent.
 .R
 .Ao ParametricSurfaceCharacteristics 3
 	2	72		output command number
-.mc |
 	2	2+(n+p)/4		output command length
-.mc
 	2	INT16		characteristics
 		1	None
 		2	implementation dependent
@@ -2286,10 +2233,8 @@ are implemenation dependent.
 		4	MC_LevelCurves
 		5	WC_LevelCurves
 	2	n		length of data, bytes
-.mc |
 	n	LISTofCARD8		data
 	p			unused, p=pad(n)
-.mc
 .De
 .sp 1
 The data records for the registered parametric surface characteristics
@@ -2337,9 +2282,7 @@ Type 4, MC_LevelCurves:
 	\fIfp\fP	FLOAT		MC direction vector z
 	2	t		number of intersections
 	2			unused
-.mc |
 	t*\fIfp\fP	FLOAT		intersection parameters
-.mc
 .De
 .LP
 .Ds 0
@@ -2355,9 +2298,7 @@ Type 5, WC_LevelCurves:
 	\fIfp\fP	FLOAT		WC direction vector z
 	2	t		number of intersections
 	2			unused
-.mc |
 	t*\fIfp\fP	FLOAT		intersection parameters
-.mc
 .De
 .LP
 .Ds 0
@@ -2367,9 +2308,7 @@ Type 5, WC_LevelCurves:
 .Ao AddNamesToNameSet 3
 	2	73		output command number
 	2	1+n		output command length
-.mc |
 	4n	LISTofCARD32		list of names (length implicit)
-.mc
 .De
 .LP
 .Ds 0
@@ -2379,9 +2318,7 @@ Type 5, WC_LevelCurves:
 .Ao RemoveNamesFromNameSet 3
 	2	74		output command number
 	2	1+n		output command length
-.mc |
 	4n	LISTofCARD32		list of names (length implicit)
-.mc
 .De
 .LP
 .Ds 0
@@ -2860,9 +2797,7 @@ Type 5, WC_LevelCurves:
 	\fIfp\fP	FLOAT		point3 z
 	4	CARD32		dx
 	4	CARD32		dy (let q = dx * dy)
-.mc |
 	2q	LISTofCARD16		color indices
-.mc
 	p			unused, p=pad(2q)
 .De
 .LP
@@ -2879,9 +2814,7 @@ Type 5, WC_LevelCurves:
 	\fIfp\fP	FLOAT		point2 y
 	4	CARD32		dx
 	4	CARD32		dy (let s = dx * dy)
-.mc |
 	2s	LISTofCARD16		color indices
-.mc
 	p			unused, p=pad(2s)
 .De
 .LP
@@ -2938,7 +2871,6 @@ Type 5, WC_LevelCurves:
 	d	LISTofCARD8		data
 	q			unused, q=pad(d)
 .De
-.mc |
 .LP
 .Ds 0
 .TA .2i 1i 2i 3.1i
@@ -2948,7 +2880,6 @@ Type 5, WC_LevelCurves:
 	2	104		output command number
 	2	1		output command length
 .De
-.mc
 .bp
 
 .AC "Lookup Tables" 1
@@ -2997,9 +2928,7 @@ TextBundle (8+2*\fIfp\fP+4*n)
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 InteriorBundle (36+12*\fIfp\fP+4*(n+n1+n2+n3))
-.mc
 	2	INT16		interior style
 	2	CARD16 | INT16		interior style index
 	2	INT16		reflection model
@@ -3018,18 +2947,14 @@ InteriorBundle (36+12*\fIfp\fP+4*(n+n1+n2+n3))
 	\fIfp\fP	FLOAT		reflection attribute specular coefficient
 	\fIfp\fP	FLOAT		reflection attribute specular concentration
 	\fIfp\fP	FLOAT		reflection attribute transmission coefficient
-.mc |
 	4+4*n1	COLOR_SPECIFIER	reflection attribute specular color
 	4+4*n2	COLOR_SPECIFIER	bf surface color
-.mc
 	\fIfp\fP	FLOAT		bf reflection attribute ambient coefficient
 	\fIfp\fP	FLOAT		bf reflection attribute diffuse coefficient
 	\fIfp\fP	FLOAT		bf reflection attribute specular coefficient
 	\fIfp\fP	FLOAT		bf reflection attribute specular concentration
 	\fIfp\fP	FLOAT		bf reflection attribute transmission coefficient
-.mc |
 	4+4*n3	COLOR_SPECIFIER	bf reflection attribute specular color
-.mc
 .De
 .LP
 .Ds 0
@@ -3581,16 +3506,12 @@ ASF flags bits:
 .De
 
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
-.mc *
-.mc
 .Ds 0
 .TA 2i 2.3i 2.9i 3.6i 4.2i
 .ta 2i 2.3i 2.9i 3.6i 4.2i
@@ -3733,9 +3654,7 @@ model_clip_volume		4+6*\fIfp\fP*n
 view_index		4	CARD16
 light_state		4+2n+p
 		4	n		number of lights in active list
-.mc |
 		2n	LISTofCARD16	indices of active lights
-.mc
 		p			unused, p=pad(2n)
 depth_cue_index		4	CARD16
 asf_enables		4	CARD32		(see note below)
@@ -3878,7 +3797,6 @@ R_BITMASK
 	#x00100000	NPC_subvolume
 	#x00200000	viewport
 	#x00400000	clip_list
-.mc |
 	#x00800000	pick_inclusion
 	#x01000000	pick_exclusion
 	#x02000000	pick_start_path
@@ -3886,14 +3804,11 @@ R_BITMASK
 	#x08000000	clear_I
 	#x10000000	clear_Z
 	#x20000000	echo_mode
-.mc
 .De
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
@@ -3926,9 +3841,7 @@ invisibility_exclusion		4	CARD32
 renderer_state		4	CARD16
 			0	Idle
 			1	Rendering
-.mc |
 			2 	Picking
-.mc
 HLHSR_mode		4	INT16
 NPC_subvolume		6*\fIfp\fP
 		\fIfp\fP	FLOAT		min x
@@ -3951,7 +3864,6 @@ viewport		12+2*\fIfp\fP
 clip_list		4+8n
 		4	n		number of device rectangles
 		8n	LISTofDEVICE_RECT
-.mc |
 pick_inclusion		4	CARD32
 pick_exclusion		4	CARD32
 pick_start_path		4+8n
@@ -3968,7 +3880,6 @@ echo_mode		4	CARD16
 			0 NoEcho
 			1 Echo
 			2 UnEcho
-.mc
 
 .AC "Renderer Resource Management" 2
 .LP
@@ -4091,22 +4002,16 @@ echo_mode		4	CARD16
 	4			namesets
 		#x00000001	DynHighlightNameset
 		#x00000002	DynInvisibilityNameset
-.mc |
 		#x00000004	DynPickNameset
-.mc
 		#x00010000	DynHighlightNamesetContents
 		#x00020000	DynInvisibilityNamesetContents
-.mc |
 		#x00040000	DynPickNamesetContents
-.mc
 	4			attributes
 		#x00000001	DynHLHSRMode
 		#x00000002	DynNPCSubvolume
 		#x00000004	DynViewport
 		#x00000008	DynClipList
-.mc |
 		#x00000010	DynEchoMode
-.mc
 	12			unused
 .De
 
@@ -4184,7 +4089,6 @@ echo_mode		4	CARD16
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc |
 .PN PEXRenderElements
 	1	CARD8		opcode (X11 assigned)
 	1	97		PEX opcode
@@ -4222,7 +4126,6 @@ echo_mode		4	CARD16
 .TA .2i 1i 2i 3.1i
 .ta .2i 1i 2i 3.1i
 .R
-.mc
 .PN PEXRenderNetwork
 	1	CARD8		opcode (X11 assigned)
 	1	29		PEX opcode
@@ -4233,7 +4136,6 @@ echo_mode		4	CARD16
 .De
 .bp
 
-.mc |
 .AC "Renderer Picking" 1
 .LP
 
@@ -4432,7 +4334,6 @@ echo_mode		4	CARD16
 .De
 .bp
 
-.mc
 .AC "Structures" 1
 .LP
 
@@ -4507,9 +4408,7 @@ echo_mode		4	CARD16
 	2			unused
 	4	CARD32		element pointer
 	4	CARD32		number of elements
-.mc |
 	4	CARD32		total length
-.mc
 	2			has references
 		0	False
 		1	True
@@ -4988,11 +4887,9 @@ SC_BITMASK
 	#x0040	inverted_list
 .De
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
@@ -5264,11 +5161,9 @@ Second CARD32:
 	#x00000002	cur_buffer_mode
 .De
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
@@ -5783,9 +5678,7 @@ The following constants are used for the reply fields above:
 .De
 .bp
 
-.mc |
 .AC "Workstation Picking" 1
-.mc
 .LP
 .Ds 0
 .TA .2i 1i
@@ -5803,11 +5696,9 @@ P_BITMASK
 	#x0100	echo_switch
 .De
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
@@ -5893,9 +5784,7 @@ echo_switch		4	CARD16
 	n	LISTofVALUE		item list (let n be the size of the list, in bytes.)
 .De
 
-.mc |
 .AC "Pick Measure" 2
-.mc
 .LP
 .Ds 0
 .TA .2i 1i 2i 3.1i
@@ -5921,8 +5810,6 @@ echo_switch		4	CARD16
 	2	2		request length
 	4	CARD32		pick measure ID
 .De
-.mc *
-.mc
 .LP
 .Ds 0
 .TA .2i 1i
@@ -5933,11 +5820,9 @@ PM_BITMASK
 	#x0002	picked_prim
 .De
 .LP
-.mc |
 Note that entries in the list are all padded to a multiple of 4 bytes.  
 If values appear which could be encoded in less space, it is assumed 
 that they will be placed in the least significant bits of the word.  
-.mc
 If a component has sub-fields, the sizes, types and interpretations of the
 sub-fields are on subsequent lines.
 .LP
@@ -6169,8 +6054,6 @@ Pick Device 2, NPC_HitVolume:
 		3	HalignRight
 	4	CARD32		number of strings
 	q	LISTofLISTofMONO_ENCODING		strings
-.mc *
-.mc
 .De
 .Ds 0
 .TA .2i 1i 2i 3.1i
@@ -6183,7 +6066,6 @@ Pick Device 2, NPC_HitVolume:
 	4	6n		reply length
 	24			unused
 	6*\fIfp\fP*n	LISTofEXTENT_INFO		extents (length implicit)
-.mc |
 .De
 .bp
 
@@ -6207,5 +6089,4 @@ Pick Device 2, NPC_HitVolume:
 	2			unused
 	4	CARD32		renderer ID
 	4+4n	COLOR_SPECIFIER		color
-.mc
 .De
