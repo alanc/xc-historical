@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.94 89/12/12 18:17:05 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.95 90/09/13 18:22:17 keith Exp $
  */
 
 #include "copyright.h"
@@ -14,7 +14,6 @@
 #include "Xatom.h"
 
 extern int _Xdebug;
-extern Display *_XHeadOfDisplayList;
 
 #ifndef lint
 static int lock;	/* get rid of ifdefs when locking implemented */
@@ -361,7 +360,6 @@ Display *XOpenDisplay (display)
  * We succeeded at authorization, so let us move the data into
  * the display structure.
  */
-	dpy->next		= (Display *) NULL;
 	dpy->proto_major_version= prefix.majorVersion;
 	dpy->proto_minor_version= prefix.minorVersion;
 	dpy->release 		= u.setup->release;
@@ -416,6 +414,8 @@ Display *XOpenDisplay (display)
 	dpy->vendor = NULL;
 	dpy->buffer = NULL;
 	dpy->atoms = NULL;
+	dpy->error_vec = NULL;
+	dpy->context_db = NULL;
 
 /*
  * now extract the vendor string...  String must be null terminated,
@@ -565,13 +565,14 @@ Display *XOpenDisplay (display)
 	/* Set up the input event queue and input event queue parameters. */
 	dpy->head = dpy->tail = NULL;
 	dpy->qlen = 0;
- 
-	/* set all the cached ICCCM atoms to None, fill in as needed */
-	if (!(dpy->atoms = ((struct _DisplayAtoms *) 
-			   Xcalloc (1, sizeof (struct _DisplayAtoms))))) {
+
+	/* Set up free-function record */
+	if ((dpy->free_funcs = (_XFreeFuncRec *)Xcalloc(1,
+							sizeof(_XFreeFuncRec)))
+	    == NULL) {
 	    OutOfMemory (dpy, setup);
-	    UnlockMutex (&lock);
-	    return (NULL);
+	    UnlockMutex(&lock);
+	    return(NULL);
 	}
 
 /*
@@ -611,12 +612,6 @@ Display *XOpenDisplay (display)
  * forced synchronize
  */
 	(void) XSynchronize(dpy, _Xdebug);
-/*
- * chain this stucture onto global list.
- */
-	dpy->next = _XHeadOfDisplayList;
-	_XHeadOfDisplayList = dpy;
-
 
 /*
  * and done mucking with the display
@@ -727,15 +722,19 @@ _XFreeDisplayStructure(dpy)
         if (dpy->buffer)
 	   Xfree (dpy->buffer);
 	if (dpy->atoms)
-	   Xfree ((char *) dpy->atoms);
+	    (*dpy->free_funcs->atoms)(dpy);
 	if (dpy->keysyms)
 	   Xfree ((char *) dpy->keysyms);
 	if (dpy->modifiermap)
-	   XFreeModifiermap(dpy->modifiermap);
+	   (*dpy->free_funcs->modifiermap)(dpy->modifiermap);
 	if (dpy->xdefaults)
 	   Xfree (dpy->xdefaults);
 	if (dpy->key_bindings)
-	   _XFreeKeyBindings(dpy);
+	   (*dpy->free_funcs->key_bindings)(dpy);
+	if (dpy->error_vec)
+	    Xfree ((char *)dpy->error_vec);
+	if (dpy->context_db)
+	   (*dpy->free_funcs->context_db)(dpy);
 
 	while (dpy->ext_procs) {
 	    _XExtension *ext = dpy->ext_procs;
@@ -746,7 +745,7 @@ _XFreeDisplayStructure(dpy)
 	}
 
 	_XFreeExtData (dpy->ext_data);
-        
+	Xfree ((char *)dpy->free_funcs);
+
 	Xfree ((char *)dpy);
 }
-
