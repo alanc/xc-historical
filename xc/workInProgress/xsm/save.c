@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.9 94/08/17 20:04:43 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.10 94/08/25 17:33:48 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -41,15 +41,10 @@ static int interactStyleData[] = {
 	SmInteractStyleAny
 };
 
+void SetSaveSensitivity ();
+
 
 
-/*
- * NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!
- *
- * This save yourself code must be re-written.  A new client may try to
- * connect in the middle of this routine.
- */
-
 static void
 SaveOkXtProc (w, client_data, callData)
 
@@ -93,122 +88,107 @@ XtPointer 	callData;
     else
 	_interactStyle = "Any";
 
-    XtSetSensitive (savePopup, 0);
+    SetSaveSensitivity (False);
 
     saveInProgress = True;
-    saveDoneCount = 0;
-    interactCount = 0;
-    phase2RequestCount = 0;
+    shutdownCancelled = False;
+    saveWaitCount = 0;
 
     for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
 	client = (ClientRec *) cl->thing;
 
-	client->wantsPhase2 = False;
-
 	SmsSaveYourself (client->smsConn,
 	    saveType, wantShutdown, interactStyle, fast);
 
-	if (verbose) {
+	ListAddLast (WaitForSaveDoneList, client);
+	saveWaitCount++;
+
+	client->userIssuedCheckpoint = True;
+
+	if (verbose)
+	{
 	    printf ("Client Id = %s, sent SAVE YOURSELF [", client->clientId);
 	    printf ("Save Type = %s, Shutdown = %s, ", _saveType, _shutdown);
 	    printf ("Interact Style = %s, Fast = False]\n", _interactStyle);
 	}
     }
 
-    if (!wantShutdown)
+    if (verbose)
     {
-	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
-	{
-	    client = (ClientRec *) cl->thing;
-	    client->userIssuedCheckpoint = True;
-	}
-    }
-
-    if (verbose) {
 	printf ("\n");
 	printf ("Sent SAVE YOURSELF to all clients.  Waiting for\n");
 	printf ("SAVE YOURSELF DONE, INTERACT REQUEST, or\n");
 	printf ("SAVE YOURSELF PHASE 2 REQUEST from each client.\n");
 	printf ("\n");
     }
+}
 
-    while (saveDoneCount + interactCount + phase2RequestCount < numClients) {
-	XtAppProcessEvent (appContext, XtIMAll);
-    }
 
-    if (verbose) {
-	printf ("\n");
-	printf ("Received %d SAVE YOURSELF DONEs, %d INTERACT REQUESTS\n",
-		saveDoneCount, interactCount);
-	printf ("	%d SAVE YOURSELF PHASE 2 REQUESTS\n",
-		phase2RequestCount);
-    }
+
+void
+LetClientInteract (cl)
 
-    if (interactCount == 0 &&
-	(saveDoneCount + phase2RequestCount) != numClients) {
-	if (verbose) {
-	    printf ("\n");
-	    printf ("INTERNAL ERROR IN XSM!  EXITING!\n");
-	}
-	exit (1);
-    }
+List *cl;
 
-    if (interactCount > 0) {
-	
-	if (verbose)
-	    printf ("\n");
+{
+    ClientRec *client = (ClientRec *) cl->thing;
 
-	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
-	{
-	    client = (ClientRec *) cl->thing;
+    SmsInteract (client->smsConn);
 
-	    if (shutdownCancelled) {
-		break;
-	    }
-	    else if (client->interactPending) {
-		SmsInteract (client->smsConn);
-		if (verbose) {
-		    printf ("Client Id = %s, sent INTERACT\n",
-			    client->clientId);
-		}
-		while (client->interactPending) {
-		    XtAppProcessEvent (appContext, XtIMAll);
-		}
-	    }
-	}
-
-	if (verbose) {
-	    if (shutdownCancelled)
-		printf ("\nThe shutdown was cancelled by a user\n\n");
-	    else
-		printf ("\nDone interacting with all clients\n\n");
-	}
-    }
-
-    if (!shutdownCancelled)
-    {
-	while ((saveDoneCount + phase2RequestCount) < numClients)
-	    XtAppProcessEvent (appContext, XtIMAll);
-
-	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
-	{
-	    client = (ClientRec *) cl->thing;
-
-	    if (client->wantsPhase2)
-	    {
-		SmsSaveYourselfPhase2 (client->smsConn);
-		client->wantsPhase2 = False;
-	    }
-	}
-    }
-
-    while (saveDoneCount < numClients)
-	XtAppProcessEvent (appContext, XtIMAll);
+    ListSearchAndFreeOne (WaitForInteractList, client);
 
     if (verbose)
-	printf ("\nAll clients issued SAVE YOURSELF DONE\n\n");
+    {
+	printf ("Client Id = %s, sent INTERACT\n", client->clientId);
+    }
+}
 
+
+
+void
+StartPhase2 ()
+
+{
+    List *cl;
+
+    if (verbose)
+    {
+	printf ("\n");
+	printf ("Starting PHASE 2 of SAVE YOURSELF\n");
+	printf ("\n");
+    }
+
+    for (cl = ListFirst (WaitForPhase2List); cl; cl = ListNext (cl))
+    {
+	ClientRec *client = (ClientRec *) cl->thing;
+
+	SmsSaveYourselfPhase2 (client->smsConn);
+
+	if (verbose)
+	{
+	    printf ("Client Id = %s, sent SAVE YOURSELF PHASE 2",
+		client->clientId);
+	}
+    }
+
+    ListFreeAllButHead (WaitForPhase2List);
+}
+
+
+void
+FinishUpSave ()
+
+{
+    ClientRec	*client;
+    List	*cl;
+
+    if (verbose)
+    {
+	printf ("\n");
+	printf ("All clients issued SAVE YOURSELF DONE\n");
+	printf ("\n");
+    }
 
     saveInProgress = False;
 
@@ -257,8 +237,11 @@ XtPointer 	callData;
 	    client = (ClientRec *) cl->thing;
 
 	    SmsDie (client->smsConn);
+
 	    if (verbose)
+	    {
 		printf ("Client Id = %s, sent DIE\n", client->clientId);
+	    }
 	}
     }
     else
@@ -268,9 +251,12 @@ XtPointer 	callData;
 	    client = (ClientRec *) cl->thing;
 
 	    SmsSaveComplete (client->smsConn);
+
 	    if (verbose)
+	    {
 		printf ("Client Id = %s, sent SAVE COMPLETE\n",
 		    client->clientId);
+	    }
 	}
     }
 
@@ -280,7 +266,7 @@ XtPointer 	callData;
 
 	if (naming_session)
 	{
-	    XtSetSensitive (savePopup, 1);
+	    SetSaveSensitivity (True);
 	    XtPopup (nameSessionPopup, XtGrabNone);
 	}
 	else
@@ -302,7 +288,7 @@ XtPointer 	callData;
 
     if (naming_session)
     {
-	XtSetSensitive (savePopup, 1);
+	SetSaveSensitivity (True);
 	XtPopup (nameSessionPopup, XtGrabNone);
     }
     else
@@ -315,7 +301,7 @@ XtPointer 	callData;
  * Add toggle button
  */
 
-Widget
+static Widget
 AddToggle (widgetName, parent, state, radioGroup, radioData,
     fromHoriz, fromVert)
 
@@ -340,6 +326,37 @@ Widget 		fromVert;
         NULL);
 
     return (toggle);
+}
+
+
+
+void
+SetSaveSensitivity (on)
+
+Bool on;
+
+{
+    XtSetSensitive (savePopup, on);
+
+#if 0
+    /*
+     * When we turn of sensitivity in the save dialog, we want to keep
+     * the cancel button sensitive (so the user can cancel in case of
+     * a problem).  Unfortunately, we can not turn off the sensitivity on
+     * the save popup, and then just turn on sensitivity for the cancel
+     * button.  We must do each widget individually.
+     */
+
+    XtSetSensitive (saveTypeLabel, on);
+    XtSetSensitive (saveTypeGlobal, on);
+    XtSetSensitive (saveTypeLocal, on);
+    XtSetSensitive (saveTypeBoth, on);
+    XtSetSensitive (interactStyleLabel, on);
+    XtSetSensitive (interactStyleNone, on);
+    XtSetSensitive (interactStyleErrors, on);
+    XtSetSensitive (interactStyleAny, on);
+    XtSetSensitive (saveOkButton, on);
+#endif
 }
 
 
@@ -598,7 +615,10 @@ XtPointer 	callData;
 	client = (ClientRec *) cl->thing;
 
 	SmsDie (client->smsConn);
+
 	if (verbose)
+	{
 	    printf ("Client Id = %s, sent DIE\n", client->clientId);
+	}
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.63 94/08/17 19:25:02 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.64 94/08/19 17:18:03 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -197,6 +197,15 @@ char **argv;
 
     RestartImmedList = ListInit();
     if(!RestartImmedList) nomem();
+
+    WaitForSaveDoneList = ListInit();
+    if (!WaitForSaveDoneList) nomem();
+
+    WaitForInteractList = ListInit();
+    if (!WaitForInteractList) nomem();
+
+    WaitForPhase2List = ListInit();
+    if (!WaitForPhase2List) nomem();
 
 
     /*
@@ -623,7 +632,10 @@ char 		*previousId;
 
 	if (!found_match)
 	{
-	    /* previous id was bogus, return bad status */
+	    /*
+	     * previous-id was bogus: return bad status and the client
+	     * should re-register with a NULL previous-id
+	     */
 
 	    free (previousId);
 	    return (0);
@@ -636,7 +648,8 @@ char 		*previousId;
 
     SmsRegisterClientReply (smsConn, id);
 
-    if (verbose) {
+    if (verbose)
+    {
 	printf (
 	"On IceConn fd = %d, sent REGISTER CLIENT REPLY [Client Id = %s]\n",
 	IceConnectionNumber (client->ice_conn), id);
@@ -647,10 +660,13 @@ char 		*previousId;
     client->clientHostname = SmsClientHostName (smsConn);
     client->restarted = (previousId != NULL);
 
-    if (send_save) {
-	SmsSaveYourself(smsConn, SmSaveLocal, False, SmInteractStyleNone,
-			False);
-    } else if (client_info_visible) {
+    if (send_save)
+    {
+	SmsSaveYourself (smsConn, SmSaveLocal,
+	    False, SmInteractStyleNone, False);
+    }
+    else if (client_info_visible)
+    {
 	/* We already have all required client info */
 
 	UpdateClientList ();
@@ -658,6 +674,16 @@ char 		*previousId;
     }
 
     return (1);
+}
+
+
+
+static Bool
+OkToEnterInteractPhase ()
+
+{
+    return ((ListCount (WaitForInteractList) +
+	ListCount (WaitForPhase2List)) == ListCount (WaitForSaveDoneList));
 }
 
 
@@ -672,7 +698,8 @@ int		dialogType;
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    if (verbose) {
+    if (verbose)
+    {
 	printf ("Client Id = %s, received INTERACT REQUEST [Dialog Type = ",
 		client->clientId);
 	if (dialogType == SmDialogError)
@@ -683,8 +710,12 @@ int		dialogType;
 	    printf ("Error in SMlib: should have checked for bad value]\n");
     }
 
-    client->interactPending = True;
-    interactCount++;
+    ListAddLast (WaitForInteractList, client);
+
+    if (OkToEnterInteractPhase ())
+    {
+	LetClientInteract (ListFirst (WaitForInteractList));
+    }
 }
 
 
@@ -697,27 +728,63 @@ InteractDoneProc (smsConn, managerData, cancelShutdown)
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    List	*pl;
+    List	*cl;
 
-    if (verbose) {
+    if (verbose)
+    {
 	printf (
 	"Client Id = %s, received INTERACT DONE [Cancel Shutdown = %s]\n",
 	client->clientId, cancelShutdown ? "True" : "False");
     }
 
-    client->interactPending = False;
+    if (cancelShutdown)
+    {
+	ListFreeAllButHead (WaitForInteractList);
+	ListFreeAllButHead (WaitForPhase2List);
+    }
 
-    if (cancelShutdown && !shutdownCancelled) {
+    if (cancelShutdown)
+    {
+	if (shutdownCancelled)
+	{
+	    /* Shutdown was already cancelled */
+	    return;
+	}
+
 	shutdownCancelled = True;
 
-	for (pl = ListFirst (RunningList); pl; pl = ListNext (pl))
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
-	    client = (ClientRec *) pl->thing;
+	    client = (ClientRec *) cl->thing;
 
 	    SmsShutdownCancelled (client->smsConn);
+
 	    if (verbose) 
+	    {
 		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
 			client->clientId);
+	    }
+	}
+    }
+    else
+    {
+	if ((cl = ListFirst (WaitForInteractList)) != NULL)
+	{
+	    LetClientInteract (cl);
+	}
+	else
+	{
+	    if (verbose)
+	    {
+		printf ("\n");
+		printf ("Done interacting with all clients.\n");
+		printf ("\n");
+	    }
+
+	    if (ListCount (WaitForPhase2List) > 0)
+	    {
+		StartPhase2 ();
+	    }
 	}
     }
 }
@@ -743,6 +810,15 @@ Bool        global;
 
 
 
+static Bool
+OkToEnterPhase2 ()
+
+{
+    return (ListCount (WaitForPhase2List) == ListCount (WaitForSaveDoneList));
+}
+
+
+
 void
 SaveYourselfPhase2ReqProc (smsConn, managerData)
 
@@ -752,7 +828,8 @@ SmPointer   managerData;
 {
     ClientRec	*client = (ClientRec *) managerData;
 
-    if (verbose) {
+    if (verbose)
+    {
 	printf ("Client Id = %s, received SAVE YOURSELF PHASE 2 REQUEST\n",
 	    client->clientId);
     }
@@ -767,10 +844,18 @@ SmPointer   managerData;
 	 
 	SmsSaveYourselfPhase2 (client->smsConn);
     }
-    else if (!client->wantsPhase2)
+    else
     {
-	client->wantsPhase2 = True;
-	phase2RequestCount++;
+	ListAddLast (WaitForPhase2List, client);
+
+	if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
+	{
+	    LetClientInteract (ListFirst (WaitForInteractList));
+	}
+	else if (OkToEnterPhase2 ())
+	{
+	    StartPhase2 ();
+	}
     }
 }
 
@@ -786,13 +871,26 @@ SaveYourselfDoneProc (smsConn, managerData, success)
     ClientRec	*client = (ClientRec *) managerData;
 
     if (verbose) 
+    {
 	printf("Client Id = %s, received SAVE YOURSELF DONE [Success = %s]\n",
 	       client->clientId, success ? "True" : "False");
+    }
 
-    if (shutdownCancelled && client->interactPending)
-	client->interactPending = False;
+    if (!ListSearchAndFreeOne (WaitForSaveDoneList, client))
+	return;
 
-    saveDoneCount++;
+    if (ListCount (WaitForSaveDoneList) == 0)
+    {
+	FinishUpSave ();
+    }
+    else if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
+    {
+	LetClientInteract (ListFirst (WaitForInteractList));
+    }
+    else if (ListCount (WaitForPhase2List) > 0 && OkToEnterPhase2 ())
+    {
+	StartPhase2 ();
+    }
 }
 
 
@@ -853,11 +951,9 @@ ClientRec *client;
 	FreeClient (client, True /* free props */);
     }
 
-    numClients--;
-
     if (shutdownInProgress)
     {
-	if (numClients == 0)
+	if (ListCount (RunningList) == 0)
 	    EndSession ();
     }
     else if (client_info_visible)
@@ -866,7 +962,7 @@ ClientRec *client;
 
 	if (current_client_selected == index_deleted)
 	{
-	    if (current_client_selected == numClients)
+	    if (current_client_selected == ListCount (RunningList))
 		current_client_selected--;
 
 	    if (current_client_selected >= 0)
@@ -950,15 +1046,12 @@ char 		**failureReasonRet;
     newClient->clientHostname = NULL;
     newClient->restarted = False; /* wait till RegisterClient for true value */
     newClient->userIssuedCheckpoint = False;
-    newClient->interactPending = False;
-    newClient->wantsPhase2 = False;
     newClient->props = ListInit ();
     newClient->discardCommand = NULL;
     newClient->saveDiscardCommand = NULL;
     newClient->restartHint = SmRestartIfRunning;
 
     ListAddLast (RunningList, newClient);
-    numClients++;
 
     if (verbose) {
 	printf("On IceConn fd = %d, client set up session mngmt protocol\n\n",
@@ -1074,7 +1167,7 @@ Bool on;
 
 {
     XtSetSensitive (mainWindow, on);
-    XtSetSensitive (savePopup, on);
+    SetSaveSensitivity (on);
     XtSetSensitive (clientInfoPopup, on);
     XtSetSensitive (clientPropPopup, on);
 
