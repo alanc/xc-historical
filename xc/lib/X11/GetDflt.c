@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: XGetDflt.c,v 1.5 88/02/03 23:53:56 swick Exp $";
+static char rcsid[] = "$Header: XGetDflt.c,v 1.6 88/02/10 18:04:52 rws Exp $";
 #endif lint
 
 /*
@@ -25,13 +25,42 @@ static char rcsid[] = "$Header: XGetDflt.c,v 1.5 88/02/03 23:53:56 swick Exp $";
  * SOFTWARE.
  */
 
+#include <pwd.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include <Xresource.h>
 
-#define XOPTIONFILE "/.Xdefaults"  /* name in home directory of options file */
+static char *GetHomeDir (dest)
+	char *dest;
+{
+	int uid;
+	extern char *getenv();
+	extern int getuid();
+	extern struct passwd *getpwuid();
+	struct passwd *pw;
+	register char *ptr;
+
+	if((ptr = getenv("HOME")) != NULL) {
+		(void) strcpy(dest, ptr);
+
+	} else {
+		if((ptr = getenv("USER")) != NULL) {
+			pw = getpwnam(ptr);
+		} else {
+			uid = getuid();
+			pw = getpwuid(uid);
+		}
+		if (pw) {
+			(void) strcpy(dest, pw->pw_dir);
+		} else {
+		        *dest = '\0';
+		}
+	}
+	return dest;
+}
+
 
 static XrmDatabase InitDefaults (dpy)
     Display *dpy;			/* display for defaults.... */
@@ -40,23 +69,46 @@ static XrmDatabase InitDefaults (dpy)
     XrmDatabase xdb = NULL;
     char fname[BUFSIZ];                 /* longer than any conceivable size */
     char *getenv();
-    char *home = getenv("HOME");
-
-    /*
-     * attempt to generate user's file name
-     */
-    fname[0] = '\0';
-    if (home != NULL) {
-	strcpy (fname, home);
-	strcat (fname, XOPTIONFILE);
-	}
+    char *xenv;
 
     XrmInitialize();
 
+    /*
+     * See lib/Xtk/Initialize.c
+     *
+     * First, get the defaults from the server; if none, then load from
+     * ~/.Xdefaults.  Next, if there is an XENVIRONMENT environment variable,
+     * then load that file.
+     */
+
+    if (dpy->xdefaults == NULL) {
+	fname[0] = '\0';
+	(void) GetHomeDir (fname);
+	(void) strcat (fname, "/.Xdefaults");
+	xdb = XrmGetFileDatabase (fname);
+    } else {
+	xdb = XrmGetStringDatabase(dpy->xdefaults);
+    }
+
+    if ((xenv = getenv ("XENVIRONMENT")) == NULL) {
+	int len;
+	fname[0] = '\0';
+	(void) GetHomeDir (fname);
+	(void) strcat (fname, "/.Xdefaults-");
+	len = strlen (fname);
+	gethostname (fname+len, BUFSIZ-len);
+	xenv = fname;
+    }
+    userdb = XrmGetFileDatabase (xenv);
+    XrmMergeDatabases (userdb, &xdb);
+    return (xdb);
+
+#ifdef old
     if (fname[0] != '\0') userdb =  XrmGetFileDatabase(fname);
     xdb = XrmGetStringDatabase(dpy->xdefaults);
     XrmMergeDatabases(userdb, &xdb);
     return xdb;
+#endif
 }
 
 char *XGetDefault(dpy, prog, name)
