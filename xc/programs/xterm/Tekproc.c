@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.92 91/04/15 17:54:07 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.93 91/04/16 17:06:18 converse Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -237,7 +237,7 @@ static int getpoint();
 static int Tinput();
 void TekExpose();
 
-WidgetClassRec tekClassRec = {
+static WidgetClassRec tekClassRec = {
   {
 /* core_class fields */	
     /* superclass	  */	(WidgetClass) &widgetClassRec,
@@ -278,7 +278,7 @@ WidgetClassRec tekClassRec = {
 
 static Boolean Tfailed = FALSE;
 
-Widget tekshellwidget;
+static Widget tekshellwidget;
 
 static TekWidget CreateTekWidget ()
 {
@@ -308,7 +308,7 @@ int TekInit ()
     return (0);
 }
 
-Tekparse()
+static void Tekparse()
 {
 	register TScreen *screen = &term->screen;
 	register int c, x, y;
@@ -1075,7 +1075,6 @@ TekRun()
 		Exit(ERROR_TINIT);
 	}
 	if(!screen->Tshow) {
-	    XtRealizeWidget (tekWidget->core.parent);
 	    set_tek_visibility (TRUE);
 	} 
 	update_vttekmode();
