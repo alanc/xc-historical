@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.43 92/02/24 17:42:20 converse Exp $ */
+/* $XConsortium: TranslateI.h,v 1.44 92/12/22 16:54:38 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -469,8 +469,8 @@ extern void _XtBindActions(
 
 extern Boolean _XtComputeLateBindings(
 #if NeedFunctionPrototypes
+    Display*		/* dpy */,
     LateBindingsPtr	/* lateModifiers */,
-    TMEventPtr		/* eventSeq */,
     Modifiers*		/* computed */,
     Modifiers*		/* computedMask */
 #endif
