@@ -108,10 +108,19 @@ then
 	rmcmd="rm -f /tmp/$srcbase"
 fi
 
-# do the actual install (remove destination since SysV install doesn't)
+# do the actual install
 
-rm -f $dst/$srcbase
-(cd $srcdir ; install -f $dst $flags $src)
+if [ -f /usr/sbin/install ]
+then
+	installcmd=/usr/sbin/install
+elif [ -f /etc/install ]
+then
+	installcmd=/etc/install
+else
+	installcmd=install
+fi
+
+(cd $srcdir ; $installcmd -f $dst $flags $src)
 
 if [ x$dostrip = xstrip ]
 then
