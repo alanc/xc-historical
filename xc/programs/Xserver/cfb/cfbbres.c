@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.5 89/10/03 20:03:23 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.6 89/10/04 16:23:20 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -77,7 +77,6 @@ int len;	/* length of line */
     	if (rop == GXcopy)
     	{
 	    --len;
-#ifdef LARGE_INSTRUCTION_CACHE
 #define body {\
 	    	*addrb = pix; \
 	    	addrb += signdx; \
@@ -88,6 +87,7 @@ int len;	/* length of line */
 		    e += e3; \
 	    	} \
 	    }
+#ifdef LARGE_INSTRUCTION_CACHE
 	    while (len >= 16)
 	    {
 		body body body body
@@ -104,18 +104,17 @@ int len;	/* length of line */
 	    case  3: body case  2: body case  1: body
 	    }
 #else
-	    while (len--)
- 	    {
-	    	*addrb = pix;
-	    	addrb += signdx;
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += nlwidth;
-		    e += e3;
-	    	}
+	    while (len >= 4)
+	    {
+		body body body body
+		len -= 4;
+	    }
+	    switch (len)
+	    {
+	    case  3: body case  2: body case  1: body
 	    }
 #endif
+#undef body
 	    *addrb = pix;
     	}
     	else
