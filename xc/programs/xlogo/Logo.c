@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.20 91/01/06 16:08:36 rws Exp $ */
+/* $XConsortium: Logo.c,v 1.21 91/02/17 15:15:32 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -25,7 +25,7 @@ without express or implied warranty.
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         XtOffsetOf(LogoRec,logo.fgpixel), XtRString,
-       (XtPointer) "XtDefaultForeground"},
+       (XtPointer) XtDefaultForeground},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
        XtOffsetOf(LogoRec,logo.shape_window), XtRImmediate, 
        (XtPointer) FALSE},
