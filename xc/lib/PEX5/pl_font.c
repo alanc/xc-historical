@@ -1,4 +1,4 @@
-/* $XConsortium: pl_font.c,v 1.5 92/08/26 13:05:22 mor Exp $ */
+/* $XConsortium: pl_font.c,v 1.6 92/09/09 14:07:35 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -479,6 +479,7 @@ INPUT PEXStringData		*text;
 	textExtent->upper_right = *(PEXCoord2D *) ch;
 	ch += sizeof (PEXCoord2D);
 	textExtent->concat_point = *(PEXCoord2D *) ch;
+	ch += sizeof (PEXCoord2D);
     }
 
 
@@ -546,12 +547,13 @@ INPUT PEXListOfEncodedText    	*encoded_text;
      * Update the request length header.
      */
 
-    req->length += count * (LENOF (CARD32) + LENOF (pexMonoEncoding));
+    req->length += (count * LENOF (CARD32));
     for (i = 0; i < count; i++)
     {
 	string = encoded_text[i].encoded_text;
 	for (j = 0; j < (int) encoded_text[i].count; j++, string++)
 	{
+	    req->length += LENOF (pexMonoEncoding);
 	    if (string->character_set_width == PEXCSLong) 
 		req->length += string->length;
 	    else if (string->character_set_width == PEXCSShort) 
@@ -568,13 +570,15 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 
     for (i = 0; i < count; i++)
     {
+	unsigned long numEncodings = encoded_text[i].count;
 	string = encoded_text[i].encoded_text;
 
-	Data (display, (char *) &encoded_text[i].count, sizeof (CARD32));
-	Data (display, (char *) string, sizeof (pexMonoEncoding));
+	Data (display, (char *) &numEncodings, sizeof (CARD32));
 
-	for (j = 0; j < (int) encoded_text[i].count; j++, string++)
+	for (j = 0; j < (int) numEncodings; j++, string++)
 	{
+	    Data (display, (char *) string, sizeof (pexMonoEncoding));
+
 	    if (string->character_set_width == PEXCSLong) 
 	    {
 		Data (display, string->ch, string->length * sizeof (long));
@@ -626,6 +630,7 @@ INPUT PEXListOfEncodedText    	*encoded_text;
 	textExtent->upper_right = *(PEXCoord2D *) ch;
 	ch += sizeof (PEXCoord2D);
 	textExtent->concat_point = *(PEXCoord2D *) ch;
+	ch += sizeof (PEXCoord2D);
     }
 
 
