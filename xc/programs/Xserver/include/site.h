@@ -29,8 +29,14 @@ SOFTWARE.
  * on the server command line or in the environment, and only those variables
  */
 
+#ifndef COMPILEDDEFAULTFONTPATH
+#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/"
+#endif
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursor"
+#ifndef RGB_DB
+#define RGB_DB			"/usr/lib/X11/rgb"
+#endif
 #define DEFAULT_TIMEOUT		60	/* seconds */
 #define DEFAULT_KEYBOARD_CLICK 	0
 #define DEFAULT_BELL		50
