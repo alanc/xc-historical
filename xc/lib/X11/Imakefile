@@ -353,7 +353,6 @@ LCOBJS = \
 	XIMKeyBind.o \
 	XIMProto.o \
 	XIMQueue.o \
-	XIMUtil.o \
 	XInitCT.o \
 	XOpenIM.o \
 	XParseCT.o \
