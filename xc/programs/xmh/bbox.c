@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: bbox.c,v 2.19 88/09/16 13:31:14 swick Exp $";
+static char rcs_id[] = "$XConsortium: bbox.c,v 2.20 89/04/10 11:51:00 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -50,9 +50,8 @@ Button button;
 /* Create a new button box.  The widget for it will be a child of the given
    scrn's widget, and it will be added to the scrn's pane. */
 
-ButtonBox BBoxRadioCreate(scrn, position, name, radio)
+ButtonBox BBoxRadioCreate(scrn, name, radio)
   Scrn scrn;
-  int position;			/* Position to put it in the pane. */
   char *name;			/* Name of the buttonbox widget. */
   Bool radio;			/* True if this is a radio buttonbox */
 {
@@ -64,7 +63,6 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 
     buttonbox = XtNew(ButtonBoxRec);
     bzero((char *)buttonbox, sizeof(ButtonBoxRec));
-    buttonbox->updatemode = TRUE;
     buttonbox->scrn = scrn;
     buttonbox->outer =
 	XtCreateManagedWidget(name, viewportWidgetClass, scrn->widget,
@@ -83,12 +81,11 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 
 /* Create a new buttonbox which does not manage radio buttons. */
 
-ButtonBox BBoxCreate(scrn, position, name)
+ButtonBox BBoxCreate(scrn, name)
   Scrn scrn;
-  int position;
   char *name;
 {
-    return BBoxRadioCreate(scrn, position, name, False);
+    return BBoxRadioCreate(scrn, name, False);
 }
 
 
@@ -112,53 +109,20 @@ ButtonBox buttonbox;
 }
 
 
-
-/* Some buttons have been added to the buttonbox structure; go and actually
-   add the button widgets to the buttonbox widget.  (It is much more
-   efficient to add several buttons at once rather than one at a time.) */
-
-static ProcessAddedButtons(buttonbox)
-ButtonBox buttonbox;
-{
-    int i;
-    WidgetList widgetlist, ptr;
-    Button button;
-    if (buttonbox->updatemode == FALSE) {
-	buttonbox->needsadding = TRUE;
-	return;
-    }
-    ptr = widgetlist = (WidgetList)
-	XtMalloc((unsigned)sizeof(Widget) * (buttonbox->numbuttons + 1));
-    for (i=0 ; i<buttonbox->numbuttons ; i++) {
-	button = buttonbox->button[i]; /* %%% position? */
-	if (button->needsadding) {
-	    *ptr++ = button->widget;
-	    button->needsadding = FALSE;
-	}
-    }
-    if (ptr != widgetlist)
-	XtManageChildren(widgetlist, (Cardinal) (ptr-widgetlist));
-    XtFree((char *) widgetlist);
-    buttonbox->needsadding = FALSE;
-}
-
-
-
 /* Create a new button, and add it to a buttonbox. */
 
-void BBoxAddButton(buttonbox, name, func, position, enabled, extra)
+void BBoxAddButton(buttonbox, name, func, position, enabled)
 ButtonBox buttonbox;
 char *name;			/* Name of button. */
 void (*func)();			/* Func to call when button pressed. */
 int position;			/* Position to put button in box. */
 int enabled;			/* Whether button is initially enabled. */
-char **extra;			/* Extra translation bindings. */
 {
     extern void DoButtonPress();
     Button button;
     int i;
     static XtCallbackRec callback[] = { {DoButtonPress, NULL}, {NULL, NULL} };
-    Arg arglist[2];
+    Arg arglist[3];
 
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
     buttonbox->numbuttons++;
@@ -174,6 +138,10 @@ char **extra;			/* Extra translation bindings. */
     button->name = MallocACopy(name);
 
     i = 0;
+    if (!enabled)
+    {
+	XtSetArg(arglist[i], XtNsensitive, False);		i++;
+    }
     if (buttonbox->radio)
     {
 	Widget	radio_group = NULL;
@@ -186,25 +154,19 @@ char **extra;			/* Extra translation bindings. */
     }
     else
     {
-	XtSetArg(arglist[0], XtNcallback, callback);		i++;
+	XtSetArg(arglist[i], XtNcallback, callback);		i++;
     }
-    button->widget = XtCreateWidget(name, (buttonbox->radio) 
+    button->widget = XtCreateManagedWidget(name, (buttonbox->radio) 
 				    ? toggleWidgetClass
 				    : commandWidgetClass,
-				    buttonbox->inner, arglist, i);
+				    buttonbox->inner, arglist, (Cardinal)i);
 
     if (buttonbox->radio)
 	XtOverrideTranslations(button->widget,
 			       XtParseTranslationTable
 			       ("<Btn1Down>,<Btn1Up>:set()\n"));
 
-/*    if (extra) XtAugmentTranslations(button->widget,
-				     XtParseTranslationTable(extra));*/
     button->func = func;
-    button->needsadding = TRUE;
-    button->enabled = TRUE;
-    if (!enabled) BBoxDisable(button);
-    ProcessAddedButtons(buttonbox);
 }
 
 
@@ -243,7 +205,7 @@ Button button;
 	    
 
 
-/* Enable or disable the given command button widget. */
+/* Enable or disable the given button widget. */
 
 static void SendEnableMsg(widget, value)
 Widget widget;
@@ -261,10 +223,7 @@ int value;			/* TRUE for enable, FALSE for disable. */
 void BBoxEnable(button)
 Button button;
 {
-    if (!button->enabled) {
-	button->enabled = TRUE;
-	SendEnableMsg(button->widget, TRUE);
-    }
+    SendEnableMsg(button->widget, TRUE);
 }
 
 
@@ -274,10 +233,7 @@ Button button;
 void BBoxDisable(button)
 Button button;
 {
-    if (button->enabled) {
-	button->enabled = FALSE;
-	SendEnableMsg(button->widget, FALSE);
-    }
+    SendEnableMsg(button->widget, FALSE);
 }
 
 
@@ -324,32 +280,6 @@ Button button;
 {
     return button->name;
 }
-
-
-
-/* The client calls this routine before doing massive updates to a buttonbox.
-   It then must call BBoxStartUpdate when it's finished.  This allows us to
-   optimize things.  Right now, the only optimization performed is to batch
-   together requests to add buttons to a buttonbox. */
-
-void BBoxStopUpdate(buttonbox)
-ButtonBox buttonbox;
-{
-    buttonbox->updatemode = FALSE;
-}
-
-
-
-/* The client has finished its massive updates; go and handle any batched
-   requests. */
-
-void BBoxStartUpdate(buttonbox)
-ButtonBox buttonbox;
-{
-    buttonbox->updatemode = TRUE;
-    if (buttonbox->needsadding) ProcessAddedButtons(buttonbox);
-}
-
 
 
 /* Set the minimum and maximum size for a bbox so that it cannot be resized
