@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.20 91/05/28 11:05:45 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.21 91/05/28 11:41:07 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -1111,9 +1111,6 @@ Boolean italic, bold;
   XFontStruct * font;
 
   if (italic) {
-    if (bold) 
-      XtAppError(XtWidgetToApplicationContext(w),
-		 "SBLW: cannot be both bold and italic.");
     gc = sblw->scroll.italic_gc;
     font = sblw->scroll.italic_font;
   }
