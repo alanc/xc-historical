@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.180 89/04/05 13:30:40 rws Exp $ */
+/* $XConsortium: events.c,v 1.181 89/04/05 13:55:18 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1290,7 +1290,7 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
  
 	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
 
-	    (void) TryClientEvents(grab->client, xE, 1, grab->eventMask, 
+	    (void) TryClientEvents(grab->client, xE, 1, filters[xE->u.u.type],
 				   filters[xE->u.u.type],  grab);
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
