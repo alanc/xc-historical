@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.20 91/02/13 11:29:19 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.21 91/02/19 14:32:43 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -69,7 +69,7 @@
  *     descriptor onto another, define such a mechanism here (if you don't
  *     already fall under the existing category(ies).
  */
-#if defined(SYSV) && !defined(CRAY)
+#if defined(SYSV) && !defined(CRAY) && !defined(umips)
 #define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : (close(fd2), \
 					       fcntl(fd1, F_DUPFD, fd2)))
 #endif
@@ -154,6 +154,17 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef luna
 	"-Dluna",	/* OMRON luna 68K and 88K */
 	"-DXCOMM=\\#",
+#endif
+#ifdef umips            /* Actual MIPS, Inc. machines, not just mips CPU */
+        "-Dumips",
+        "-Dmips",
+        "-Dhost_mips",
+#ifdef SYSTYPE_BSD43
+        "-DSYSTYPE_BSD43",
+#endif
+#ifdef SYSTYPE_SYSV
+        "-DSYSTYPE_SYSV",
+#endif
 #endif
 };
 #else /* else MAKEDEPEND */
