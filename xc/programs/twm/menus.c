@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.96 89/08/15 11:10:51 jim Exp $
+ * $XConsortium: menus.c,v 1.97 89/08/15 11:41:46 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.96 89/08/15 11:10:51 jim Exp $";
+"$XConsortium: menus.c,v 1.97 89/08/15 11:41:46 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2287,10 +2287,21 @@ TwmWindow *t;
     int i, n, twidth, width, height;
     int x, y, wwidth, wheight, bw, depth;
     Window junk;
+    int px, py, dummy;
+    unsigned udummy;
 
     XGetGeometry(dpy, t->w, &JunkRoot, &JunkX, &JunkY,
 	&wwidth, &wheight, &bw, &depth);
     XTranslateCoordinates(dpy, t->w, Scr->Root, JunkX, JunkY, &x, &y, &junk);
+    if (XQueryPointer (dpy, Scr->Root, &JunkRoot, &JunkChild, &px, &py,
+		       &dummy, &dummy, &udummy)) {
+	px -= wwidth / 2;
+	py -= wheight / 3;
+	if (px < 0) px = 0;
+	if (py < 0) py = 0;
+    } else {
+	px = py = 0;
+    }
 
     n = 0;
     strcpy(Info[n++], Version);
@@ -2314,7 +2325,7 @@ TwmWindow *t;
 	    width = twidth;
     }
     if (InfoLines) XUnmapWindow(dpy, Scr->InfoWindow);
-    XResizeWindow(dpy, Scr->InfoWindow, width+10, height);
+    XMoveResizeWindow(dpy, Scr->InfoWindow, px, py, width+10, height);
     XMapRaised(dpy, Scr->InfoWindow);
     InfoLines = n;
 }
