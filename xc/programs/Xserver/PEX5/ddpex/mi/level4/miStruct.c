@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.2 91/07/01 08:41:33 rws Exp $ */
+/* $XConsortium: miStruct.c,v 5.3 91/12/26 18:03:59 hersh Exp $ */
 
 
 /***********************************************************
@@ -907,16 +907,23 @@ copy_list_to_buf(pathPart, depth, pNumLists, pBuffer, pPath, which)
 	*pb++ = depth;
 	pref = (ddElementRef *) pPath->pList;
 	if (which == MI_DESCENDANTS) {
-		pref += (pathPart == PEXTopPart) ? 0 :
-			pPath->numObj - depth;
-
-		mibcopy(pref, pb, listsize);
+		if (pathPart == PEXTopPart)
+			mibcopy(pref, pb, listsize);
+		else {
+			pbref = (ddElementRef *) pb;
+			pref += pPath->numObj - 1;
+			while (depth--)
+				*pbref++ = *pref--;
+		}
 	} else {
-		pref += ((pathPart == PEXTopPart) ? pPath->numObj - 1 :
-			 depth - 1);
-		pbref = (ddElementRef *) pb;
-		while (depth--)
-			*pbref++ = *pref--;
+		if (pathPart == PEXBottomPart)
+			mibcopy(pref, pb, listsize);
+		else {
+			pbref = (ddElementRef *) pb;
+			pref += pPath->numObj - 1;
+			while (depth--)
+				*pbref++ = *pref--;
+		}
 	}
 	(*pNumLists)++;
 	pBuffer->pBuf += listsize + 4;
@@ -956,7 +963,7 @@ get_ancestors(pStruct, pathPart, depth, pNumLists, pBuffer, pPath)
     if (!num || ((pathPart==PEXBottomPart) && depth && (pPath->numObj==depth))) {
 	if (	(pathPart == PEXTopPart) && depth && (pPath->numObj > depth)
 	     && !path_unique(	pathPart, depth, pNumLists, pBuffer, pPath, 
-				MI_DESCENDANTS))
+				MI_ANCESTORS))
 
 	    /*
 	     * if path is top first and has to be truncated to depth, don't 
