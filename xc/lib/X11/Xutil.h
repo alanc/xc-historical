@@ -1,4 +1,4 @@
-/* $Header: Xutil.h,v 11.36 87/09/01 15:11:13 newman Locked $ */
+/* $Header: Xutil.h,v 11.37 87/09/03 17:19:43 rws Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -183,9 +183,9 @@ typedef struct {
   int screen;
   int depth;
   int class;
-  int red_mask;
-  int green_mask;
-  int blue_mask;
+  unsigned long red_mask;
+  unsigned long green_mask;
+  unsigned long blue_mask;
   int colormap_size;
   int bits_per_rgb;
 } XVisualInfo;
