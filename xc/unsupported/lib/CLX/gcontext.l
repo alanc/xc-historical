@@ -162,7 +162,7 @@
 
 (defun allocate-temp-gcontext ()
   (or (atomic-pop *temp-gcontext-cache*)
-      (make-gcontext)))
+      (make-gcontext :local-state '#() :server-state '#())))
 
 (defun deallocate-temp-gcontext (gc)
   (atomic-push gc *temp-gcontext-cache*))
