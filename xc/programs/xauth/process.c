@@ -609,7 +609,7 @@ static _signal_t catchsig (sig)
     if (sig > 0) signal (sig, die);	/* re-establish signal handler */
 #endif
     if (verbose && xauth_modified) printf ("\r\n");
-    die ();
+    die (sig);
     /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
     return -1;				/* for picky compilers */
