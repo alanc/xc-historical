@@ -20,12 +20,12 @@ that contains a text label or bitmap image.  When the mouse pointer
 is on the button, it becomes highlighted by drawing a
 rectangle around its perimeter.  This highlighting indicates that the button
 is ready for selection.  When the left mouse button is pressed the Command  
-widget becomes set, indicating that is has been selected.  When the
+widget becomes set, indicating that it has been selected.  When the
 mouse button is released the \fBnotify\fP action will be invoked, calling all
-callback functions on Command widget's \fBcallback\fP list.  If the
+callback functions on the Command widget's \fBcallback\fP list.  If the
 mouse pointer is moved out of the widget before the left button is released
 the widget is reset, and releasing the mouse button has no effect.
-This behavoir allows the user one final chance to back out of an action.
+This behavior allows the user one final chance to back out of an action.
 .LP
 When creating a Command widget instance, 
 the following resources are retrieved from the argument list
@@ -93,11 +93,11 @@ insensitive if either it or any of its ancestors is insensitive.
 This resource should not be changed with \fBXtSetValues\fP.  It may,
 however, be queried.
 .IP background 1.5i
-An index into this widget's colormap specifing the background color of the
+An index into this widget's colormap specifying the background color of the
 widget's window.
 .IP backgroundPixmap 1.5i
 The background pixmap of this widget.  If this resource is set to
-anything other than \fBXtUnspecifiedPixmap\fP the pixmap specified will be
+anything other than \fBXtUnspecifiedPixmap\fP, the pixmap specified will be
 used instead of the background color.
 .IP bitmap 1.5i
 A bitmap to display instead of a label.  The default size of the
@@ -106,11 +106,11 @@ internal width and height.  The resource converter for this resource
 converts a filename into a bitmap.  See \fBConverting Bitmaps\fP for
 details on the string to bitmap conversion.  If this bitmap is one bit
 deep then the 1's will be rendered in the foreground color, and the
-0's in the background color.  Supported is also provided to copy this
+0's in the background color.  Support is also provided to copy this
 pixmap directly into the window with \fBXCopyArea\fP if \fBbitmap\fP
 has a depth greater than 1.
 .IP borderColor 1.5i
-An index into this widget's colormap specifing the border color of the
+An index into this widget's colormap specifying the border color of the
 widget's window.
 .IP borderPixmap 1.5i
 The border pixmap of this widget.  If this resource is set to
@@ -123,12 +123,12 @@ A list of routines to be called when the notify action is invoked.
 .IP colormap 1.5i
 The colormap that this widget wants for its window.
 .IP \fBcornerRoundPercent\fP 1.5i
-When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used this
+When a \fBShapeStyle\fP of \fBroundedRectangle\fP is used, this
 resource controls the radius of the rounded corder.  The radius of the
 rounded corders is specified as a percentage of the length of the
 shortest side of the widget.  This must be a positive value.
 .IP cursor 1.5i
-The cursor that will be displayed as the mouse pointer, whenever the mouse
+The cursor that will be displayed as the mouse pointer whenever the mouse
 pointer is in this widget.
 .IP depth 1.5i
 The depth of this widget's window.
@@ -174,15 +174,15 @@ Specifies whether the Command widget should attempt to resize to its
 preferred dimensions whenever its resources are modified with
 \fBXtSetValues\fP.  This
 attempt at a resize is subject to the dictates of the parent of this
-widget which is free to resize the MenuButton reguardless of the state
+widget, which is free to resize the MenuButton reguardless of the state
 of this resource. 
 .IP \fBshapeStyle\fP 1.5i
-Non rectangular Command buttons may be created using this resource.  Non
-rectangular buttons may only be used on a server that supports the
+Non-rectangular Command buttons may be created using this resource.
+Non-rectangular buttons may only be used on a server that supports the
 \fBShape Extension\fP.  The Command widget currently supports the following 
 shapes: \fBXmuShapeRectangle\fP,
 \fBXmuShapeOval\fP, \fBXmuShapeEllipse\fP, and \fBXmuShapeRoundedRectangle\fP.
-A resource conveter is registered to convert the following string
+A resource converter is registered to convert the following string
 values to shape styles: \fBrectangle\fP, \fBoval\fP, \fPellipse\fP,
 \fBroundedRectangle\fP. 
 .IP screen 1.5i
@@ -237,7 +237,7 @@ or \fBbackground\fP ) that matches the interior color of the
 Command widget.  
 .IP \fBset\fP(\|) 1.5i
 Enters the \fIset\fP state, in which \fBnotify\fP is possible.  This
-action causes the botton to display its interior in the
+action causes the button to display its interior in the
 \fBforeground\fP color.  The label or bitmap is displayed in the
 \fBbackground\fP color. 
 .IP \fBunset\fP(\|) 1.5i
