@@ -1,6 +1,6 @@
-/* $XConsortium: dispatch.c,v 1.73 89/01/05 09:04:17 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.74 89/01/05 09:26:15 rws Exp $ */
 /************************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
@@ -70,12 +70,14 @@ static long *checkForInput[2];
 extern Bool clientsDoomed;
 extern int connBlockScreenStart;
 
+extern int (* InitialVector[3]) ();
 extern int (* ProcVector[256]) ();
 extern int (* SwappedProcVector[256]) ();
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
 extern void Swap32Write(), SLHostsExtend(), SQColorsExtend(), WriteSConnectionInfo();
 extern void WriteSConnSetupPrefix();
+extern char *ClientAuthorized();
 static void KillAllClients();
 static void DeleteClientFromAnySelections();
 
@@ -2984,13 +2986,11 @@ ProcKillClient(client)
   
     clientIndex = CLIENT_ID(stuff->id);
 
-    if (clientIndex && pResource)
+    if (clientIndex && pResource && clients[clientIndex] &&
+	(clients[clientIndex]->requestVector != InitialVector))
     {
 	myIndex = client->index;
-    	if (clients[clientIndex])
- 	{
-	    CloseDownClient(clients[clientIndex]);
-	}
+	CloseDownClient(clients[clientIndex]);
 	if (myIndex == clientIndex)
 	{
 	    /* force yield and return Success, so that Dispatch()
@@ -3001,7 +3001,7 @@ ProcKillClient(client)
 	}
 	return (client->noClientException);
     }
-    else   /* can't kill client 0, which is server */
+    else
     {
 	client->errorValue = stuff->id;
 	return (BadValue);
@@ -3138,7 +3138,6 @@ void
 CloseDownClient(client)
     register ClientPtr client;
 {
-    register int i;
       /* ungrab server if grabbing client dies */
     if (grabbingClient &&  (onlyClient == client))
     {
@@ -3155,9 +3154,10 @@ CloseDownClient(client)
         FreeClientResources(client);
 	nextFreeClientID = client->index;
 	clients[client->index] = NullClient;
-        xfree(client);
-	if(--nClients == 0)
+	if ((client->requestVector != InitialVector) &&
+	    (--nClients == 0))
 	    clientsDoomed = TRUE;
+        xfree(client);
     }
             /* really kill resources this time */
     else if (client->clientGone)
@@ -3211,18 +3211,19 @@ CloseDownRetainedResources()
 }
 
 /************************
- * int NextAvailableClient(swapped)
+ * int NextAvailableClient(ospriv)
  *
  * OS dependent portion can't assign client id's because of CloseDownModes.
  * Returns NULL if there are no free clients.
  *************************/
 
 ClientPtr
-NextAvailableClient(swapped)
-    int swapped;
+NextAvailableClient(ospriv)
+    pointer ospriv;
 {
     register int i;
     register ClientPtr client;
+    xReq data;
 
     i = nextFreeClientID;
     while (clients[i])
@@ -3258,23 +3259,89 @@ NextAvailableClient(swapped)
     client->saveSet = (pointer *)NULL;
     client->noClientException = Success;
     client->requestLogIndex = 0;
-    client->swapped = swapped;
-    client->requestVector = swapped ? SwappedProcVector : ProcVector;
-    nClients++;
+    client->requestVector = InitialVector;
+    client->osPrivate = ospriv;
+    client->swapped = FALSE;
     InitClientResources(client);
-
+    data.reqType = 1;
+    data.length = (sz_xReq + sz_xConnClientPrefix) >> 2;
+    InsertFakeRequest(client, (char *)&data, sz_xReq);
     return(client);
 }
 
-SendConnectionSetupInfo(client)
-    ClientPtr client;
+int
+ProcInitialConnection(client)
+    register ClientPtr client;
 {
+    REQUEST(xReq);
+    register xConnClientPrefix *prefix;
+    int whichbyte = 1;
+
+    prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
+    if ((prefix->byteOrder != 'l') && (prefix->byteOrder != 'B'))
+	return (client->noClientException = -1);
+    if (((*(char *) &whichbyte) && (prefix->byteOrder == 'B')) ||
+	(!(*(char *) &whichbyte) && (prefix->byteOrder == 'l')))
+    {
+	client->swapped = TRUE;
+	SwapConnClientPrefix(prefix);
+    }
+    stuff->reqType = 2;
+    stuff->length += ((prefix->nbytesAuthProto + 3) >> 2) +
+		     ((prefix->nbytesAuthString + 3) >> 2);
+    if (client->swapped)
+    {
+	swaps(&stuff->length, whichbyte);
+    }
+    ResetCurrentRequest(client);
+    return (client->noClientException);
+}
+
+int
+ProcEstablishConnection(client)
+    register ClientPtr client;
+{
+    char *reason, *auth_proto, *auth_string;
+    register xConnClientPrefix *prefix;
     register xWindowRoot *root;
     register int i;
+    REQUEST(xReq);
 
+    prefix = (xConnClientPrefix *)((char *)stuff + sz_xReq);
+    auth_proto = (char *)prefix + sz_xConnClientPrefix;
+    auth_string = auth_proto + ((prefix->nbytesAuthProto + 3) & ~3);
+    if ((prefix->majorVersion != X_PROTOCOL) ||
+	(prefix->minorVersion != X_PROTOCOL_REVISION))
+	reason = "Protocol version mismatch";
+    else
+	reason = ClientAuthorized(client, prefix->nbytesAuthProto, auth_proto,
+				  prefix->nbytesAuthString, auth_string);
+    if (reason)
+    {
+	xConnSetupPrefix csp;
+	char pad[3];
+
+	csp.success = xFalse;
+	csp.lengthReason = strlen(reason);
+	csp.length = (csp.lengthReason + 3) >> 2;
+	csp.majorVersion = X_PROTOCOL;
+	csp.minorVersion = X_PROTOCOL_REVISION;
+	if (client->swapped)
+	    WriteSConnSetupPrefix(client, &csp);
+	else
+	    (void)WriteToClient(client, sz_xConnSetupPrefix, (char *) &csp);
+        (void)WriteToClient(client, csp.lengthReason, reason);
+	if (csp.lengthReason & 3)
+	    (void)WriteToClient(client, 4 - (csp.lengthReason & 3), pad);
+	return (client->noClientException = -1);
+    }
+
+    nClients++;
+    client->requestVector = client->swapped ? SwappedProcVector : ProcVector;
+    client->sequence = 0;
     ((xConnSetup *)ConnectionInfo)->ridBase = client->clientAsMask;
     ((xConnSetup *)ConnectionInfo)->ridMask = 0xfffff;
-        /* fill in the "currentInputMask" */
+    /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(ConnectionInfo + connBlockScreenStart);
     for (i=0; i<screenInfo.numScreens; i++) 
     {
@@ -3291,16 +3358,20 @@ SendConnectionSetupInfo(client)
 	root = (xWindowRoot *)pDepth;
     }
 
-    if (client->swapped) {
+    if (client->swapped)
+    {
 	WriteSConnSetupPrefix(client, &connSetupPrefix);
-        WriteSConnectionInfo(client, connSetupPrefix.length << 2, ConnectionInfo);
-	}
-    else {
-        (void)WriteToClient(client, sizeof(xConnSetupPrefix),
-				(char *) &connSetupPrefix);
-        (void)WriteToClient(client, connSetupPrefix.length << 2,
-				ConnectionInfo);
-	}
+	WriteSConnectionInfo(client, connSetupPrefix.length << 2,
+			     ConnectionInfo);
+    }
+    else
+    {
+	(void)WriteToClient(client, sizeof(xConnSetupPrefix),
+			    (char *) &connSetupPrefix);
+	(void)WriteToClient(client, connSetupPrefix.length << 2,
+			    ConnectionInfo);
+    }
+    return (client->noClientException);
 }
 
 /*****************
