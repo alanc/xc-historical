@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xim_comp.c,v 1.1 94/01/29 15:55:53 rws Exp $ */
 /*
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
  *
@@ -326,4 +326,23 @@ Bool xim_compare(pe,pa)
 		}
 	}
 	return((errcnt == 0));
+}
+
+int xim_wsneq(s1,s2,cnt)
+	wchar_t *s1;
+	wchar_t *s2;
+	int cnt;
+{
+	int i;
+
+	for(i=0;i<cnt;i++)
+	{
+		if(*s1 != *s2)
+			return 0;
+		if(!*s1)
+			return 1;
+		s1++;
+		s2++;
+	}
+	return 1;
 }
