@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 5.3 89/07/12 17:15:37 keith Exp $ */
+/* $XConsortium: scrnintstr.h,v 5.4 89/07/17 17:22:08 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,15 +41,14 @@ typedef struct _PixmapFormat {
     
 typedef struct _Visual {
     unsigned long	vid;
-    short		screen;
     short		class;
-    unsigned long	redMask, greenMask, blueMask;
-    int			offsetRed, offsetGreen, offsetBlue;
     short		bitsPerRGBValue;
     short		ColormapEntries;
     short		nplanes;/* = log2 (ColormapEntries). This does not
 				 * imply that the screen has this many planes.
 				 * it may have more or fewer */
+    unsigned long	redMask, greenMask, blueMask;
+    int			offsetRed, offsetGreen, offsetBlue;
   } VisualRec;
 
 typedef struct _Depth {
@@ -84,6 +83,10 @@ typedef struct _Screen {
     pointer		devPrivate;
     short       	numVisuals;
     VisualPtr		visuals;
+    unsigned		*WindowPrivateSizes;
+    unsigned		totalWindowSize;
+    unsigned		*GCPrivateSizes;
+    unsigned		totalGCSize;
 
     /* Random screen procedures */
 
@@ -203,4 +206,8 @@ typedef struct _ScreenInfo {
 } ScreenInfo;
 
 extern ScreenInfo screenInfo;
+
+extern int AllocateWindowPrivateIndex(), AllocateGCPrivateIndex();
+extern void AllocateWindowPrivate(), AllocateGCPrivate();
+
 #endif /* SCREENINTSTRUCT_H */
