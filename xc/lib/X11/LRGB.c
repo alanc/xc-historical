@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.16 91/07/22 18:24:42 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.18 91/07/23 19:33:55 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1187,8 +1187,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 
     while (mid != last) {
 	last = mid;
-	mid = lo + ((int)((((int)hi - (int)lo) / nKeyPtrSize) / 2) *
-		nKeyPtrSize);
+	mid = lo + (((unsigned)(hi - lo) / nKeyPtrSize) / 2) * nKeyPtrSize;
 	result = compar (key, mid);
 	if (result == 0) {
 
