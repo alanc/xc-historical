@@ -29,10 +29,28 @@ SOFTWARE.
  * on the server command line or in the environment, and only those variables
  */
 
-#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/"   /* trailing '/' !! */
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursor"
-#define RGB_DB			"/usr/lib/X11/rgb"
 #define DEFAULT_TIMEOUT		60	/* seconds */
+#define DEFAULT_KEYBOARD_CLICK 	0
+#define DEFAULT_BELL		50
+#define DEFAULT_BELL_PITCH	400
+#define DEFAULT_BELL_DURATION	100
+#define DEFAULT_AUTOREPEAT	FALSE
+#define DEFAULT_AUTOREPEATS	{\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0,\
+	0, 0, 0, 0, 0, 0, 0, 0 }
+#define DEFAULT_LEDS		0x0        /* all off */
+
+#define DEFAULT_PTR_NUMERATOR	2
+#define DEFAULT_PTR_DENOMINATOR	1
+#define DEFAULT_PTR_THRESHOLD	4
+
+#define DEFAULT_SCREEN_SAVER_TIME (10 * (60 * 1000))
+#define DEFAULT_SCREEN_SAVER_INTERVAL (10 * (60 * 1000))
+#define DEFAULT_SCREEN_SAVER_BLANKING DefaultBlanking
+#define DEFAULT_SCREEN_SAVER_EXPOSURES DefaultExposures
 
 #endif SITE_H
