@@ -17,13 +17,23 @@
 			   GCClipXOrigin | GCClipYOrigin | GCDashOffset | \
 			   GCArcMode)
 
+/*ARGSUSED*/
 Status XGetGCValues (dpy, gc, valuemask, values)
     Display *dpy;
     GC gc;
     unsigned long valuemask;
     XGCValues *values;
 {
-    if ((valuemask & ValidGCValuesBits) != valuemask) return False;
+    if (valuemask == ValidGCValuesBits) {
+	char dashes = values->dashes;
+	Pixmap clip_mask = values->clip_mask;
+	*values = gc->values;
+	values->dashes = dashes;
+	values->clip_mask = clip_mask;
+	return True;
+    }
+
+    if (valuemask & ~ValidGCValuesBits) return False;
 
     if (valuemask & GCFunction)
       values->function = gc->values.function;
