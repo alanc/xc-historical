@@ -1,4 +1,4 @@
-/* $XConsortium: pixmap.h,v 5.0 89/06/09 15:00:34 keith Exp $ */
+/* $XConsortium: pixmap.h,v 5.1 89/06/09 17:54:32 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -35,10 +35,6 @@ SOFTWARE.
 #define PW_BORDER 1
 
 #define NullPixmap ((PixmapPtr)0)
-#define IS_VALID_PIXMAP(pPixmap) (\
-    ((pPixmap != (PixmapPtr)None) \
-	&& (pPixmap != (PixmapPtr)USE_BORDER_PIXEL) \
-	&& (pPixmap != (PixmapPtr)ParentRelative))? TRUE : FALSE)
 
 typedef struct _Drawable *DrawablePtr;	
 typedef struct _Pixmap *PixmapPtr;
@@ -47,5 +43,11 @@ typedef union _PixUnion {
     PixmapPtr		pixmap;
     unsigned long	pixel;
 } PixUnion;
+
+#define SamePixUnion(a,b,isPixel)\
+    ((isPixel) ? (a).pixel == (b).pixel : (a).pixmap == (b).pixmap)
+
+#define EqualPixUnion(as, a, bs, b)				\
+    ((as) == (bs) && (SamePixUnion (a, b, as)))
 
 #endif /* PIXMAP_H */

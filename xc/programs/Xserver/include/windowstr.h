@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.0 89/06/09 15:00:38 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.1 89/06/09 17:52:46 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -67,16 +67,13 @@ typedef struct _Validate {
     DDXPointRec		oldAbsCorner;
 } ValidateRec;
 
-#define SamePixUnion(a,b,isPixel)\
-    ((isPixel) ? (a).pixel == (b).pixel : (a).pixmap == (b).pixmap)
-
 #define SameBackground(as, a, bs, b)				\
     ((as) == (bs) && ((as) == None ||				\
 		      (as) == ParentRelative ||			\
  		      SamePixUnion(a,b,as == BackgroundPixel)))
 
 #define SameBorder(as, a, bs, b)				\
-    ((as) == (bs) && (SamePixUnion (a, b, as)))
+    EqualPixUnion(as, a, bs, b)
 
 typedef struct _WindowFuncs {
     void	(* PaintWindowBackground)();
