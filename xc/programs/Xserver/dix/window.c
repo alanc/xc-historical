@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.225 89/03/09 19:39:13 keith Exp $ */
+/* $XConsortium: window.c,v 1.226 89/03/11 16:53:03 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3688,10 +3688,8 @@ TileScreenSaver(i)
     mskbits = (unsigned char *)xalloc( PixmapBytePad(32, 1)*16); 
     if (!srcbits || !mskbits)
     {
-	if (srcbits)
-	    xfree(srcbits);
-	if (mskbits)
-	    xfree(mskbits);
+	xfree(srcbits);
+	xfree(mskbits);
     }
     else
     {
