@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.19 91/05/28 13:42:45 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.20 91/05/29 10:46:20 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1866,12 +1866,10 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     Pixel	*ppixFirst;	/* First of the client's new pixels */
 {
     Pixel	*pptr, *cptr;
-    Pixel	basemask;	/* bits not used in any mask */
     int		npix, z, npixClientNew, npixShared;
-    Pixel	base, bits;
+    Pixel	basemask, base, bits, common, pmask;
     SHAREDCOLOR *pshared, **ppshared, **psharedList;
 
-    basemask = ~(rmask | gmask | bmask);
     npixClientNew = c << (r + g + b);
     npixShared = (c << r) + (c << g) + (c << b);
     psharedList = (SHAREDCOLOR **)ALLOCATE_LOCAL(npixShared *
@@ -1890,6 +1888,8 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     }
     for(pptr = ppix, npix = c; --npix >= 0; pptr++)
     {
+	basemask = ~(gmask | bmask);
+	common = *pptr & basemask;
 	if (rmask)
 	{
 	    bits = 0;
@@ -1900,8 +1900,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		pshared->refcnt = 1 << (g + b);
 		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-			((*cptr & rmask) == ((*pptr | bits) & rmask)))
+		    if ((*cptr & basemask) == (common | bits))
 		    {
 			pmap->red[*cptr].fShared = TRUE;
 			pmap->red[*cptr].co.shco.red = pshared;
@@ -1910,6 +1909,21 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		GetNextBitsOrBreak(bits, rmask, base);
 	    }
 	}
+	else
+	{
+	    pshared = *ppshared++;
+	    pshared->refcnt = 1 << (g + b);
+	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    {
+		if ((*cptr & basemask) == common)
+		{
+		    pmap->red[*cptr].fShared = TRUE;
+		    pmap->red[*cptr].co.shco.red = pshared;
+		}
+	    }
+	}
+	basemask = ~(rmask | bmask);
+	common = *pptr & basemask;
 	if (gmask)
 	{
 	    bits = 0;
@@ -1920,8 +1934,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		pshared->refcnt = 1 << (r + b);
 		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-			((*cptr & gmask) == ((*pptr | bits) & gmask)))
+		    if ((*cptr & basemask) == (common | bits))
 		    {
 			pmap->red[*cptr].co.shco.green = pshared;
 		    }
@@ -1929,6 +1942,20 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		GetNextBitsOrBreak(bits, gmask, base);
 	    }
 	}
+	else
+	{
+	    pshared = *ppshared++;
+	    pshared->refcnt = 1 << (g + b);
+	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    {
+		if ((*cptr & basemask) == common)
+		{
+		    pmap->red[*cptr].co.shco.green = pshared;
+		}
+	    }
+	}
+	basemask = ~(rmask | gmask);
+	common = *pptr & basemask;
 	if (bmask)
 	{
 	    bits = 0;
@@ -1939,13 +1966,24 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		pshared->refcnt = 1 << (r + g);
 		for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 		{
-		    if (((*cptr & basemask) == ((*pptr | bits) & basemask)) &&
-			((*cptr & bmask) == ((*pptr | bits) & bmask)))
+		    if ((*cptr & basemask) == (common | bits))
 		    {
 			pmap->red[*cptr].co.shco.blue = pshared;
 		    }
 		}
 		GetNextBitsOrBreak(bits, bmask, base);
+	    }
+	}
+	else
+	{
+	    pshared = *ppshared++;
+	    pshared->refcnt = 1 << (g + b);
+	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
+	    {
+		if ((*cptr & basemask) == common)
+		{
+		    pmap->red[*cptr].co.shco.blue = pshared;
+		}
 	    }
 	}
     }
