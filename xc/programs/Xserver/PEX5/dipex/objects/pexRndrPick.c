@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.4 92/10/05 17:01:16 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.5 92/11/10 18:59:41 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -82,6 +82,7 @@ pexBeginPickOneReq      *strmPtr;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ONE;
+    prend->pickstr.server = DD_CLIENT;
 
     err = ChangePseudoPickMeasure (prend, pr);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
@@ -144,6 +145,7 @@ pexPickOneReq           *strmPtr;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ONE;
+    prend->pickstr.server = DD_SERVER;
 
     err = ChangePseudoPickMeasure (prend, pr);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
@@ -189,6 +191,7 @@ pexBeginPickAllReq      *strmPtr;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ALL;
+    prend->pickstr.server = DD_CLIENT;
     prend->pickstr.send_event = strmPtr->sendEvent;
     prend->pickstr.max_hits = strmPtr->pickMaxHits;
     prend->pickstr.client = cntxtPtr->client;
@@ -251,6 +254,7 @@ pexPickAllReq           *strmPtr;
 
     prend->pickstr.pick_method = strmPtr->method;
     prend->pickstr.state = DD_PICK_ALL;
+    prend->pickstr.server = DD_SERVER;
     prend->pickstr.max_hits = strmPtr->pickMaxHits;
 
     err = ChangePseudoPickMeasure (prend, pr);

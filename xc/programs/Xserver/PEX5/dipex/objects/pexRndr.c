@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.14 92/11/09 18:48:29 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.15 92/11/10 18:58:33 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -201,6 +201,8 @@ pexCreateRendererReq    *strmPtr;
 
     ADDRESOURCE(fakepm, PEXPickType, prend->pickstr.pseudoPM);
 
+    /* create listoflist for doing Pick All */
+    prend->pickstr.list = puCreateList(DD_LIST_OF_LIST);
 
     /* create a phony structure to pack OCs into 
        for doing immediate mode renderer picking
@@ -457,11 +459,19 @@ FreeRenderer (prend, id)
 ddRendererStr *prend;
 pexRenderer id;
 {
+    ddPickPath 	*strpp;
+
     if (prend) {
 	DeleteDDContext(prend->pDDContext);
 
 	puDeleteList(prend->clipList);
 	puDeleteList(prend->curPath);
+	puDeleteList(prend->pickStartPath);
+	puDeleteList(prend->pickstr.list);
+	strpp = (ddPickPath *)(prend->pickstr.fakeStrlist)->pList;
+	FreeResource((strpp[0].structure)->id, RT_NONE);
+	puDeleteList(prend->pickstr.fakeStrlist);
+	puDeleteList(prend->pickstr.sIDlist);
 	Xfree((pointer)prend);
     }
 
