@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.60 88/10/21 15:15:39 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.61 88/10/21 15:58:15 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -193,7 +193,9 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     register int		i;
-    double			xMin, xMax, yMin, yMax, yOrg, xOrg, dx, dy;
+    int				xMin, xMax, yMin, yMax;
+    int				dx, dy;
+    int				xOrg, yOrg;
     double			helperDx, helperDy;
     int				ifirst, count, width;
     Bool			fTricky;
@@ -224,13 +226,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    fTricky = FALSE;
 	    pDrawTo = pDraw;
 	    pGCTo = pGC;
-	    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW)) {
-		xOrg = (double) ((WindowPtr)pDraw)->absCorner.x;
-		yOrg = (double) ((WindowPtr)pDraw)->absCorner.y;
-	    } else {
-	    	xOrg = 0;
-		yOrg = 0;
-	    }
 	    break;
 	  default:
 	    fTricky = TRUE;
@@ -242,8 +237,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    {
 		xMin = min (xMin, parcs[i].x);
 		yMin = min (yMin, parcs[i].y);
-		xMax = max (xMax, parcs[i].x + parcs[i].width);
-		yMax = max (yMax, parcs[i].y + parcs[i].height);
+		xMax = max (xMax, (parcs[i].x + (int) parcs[i].width));
+		yMax = max (yMax, (parcs[i].y + (int) parcs[i].height));
 	    }
 
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
@@ -255,10 +250,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    gcvals[GCValsJoinStyle] = pGC->joinStyle;
 	    DoChangeGC(pGCTo, GCValsMask, gcvals, 0);
     
-    	    xOrg = xMin - ((double) width + 1)/2;
-	    yOrg = yMin - ((double) width + 1)/2;
-	    dx = xMax - xMin + ((double) width) + 1;
-	    dy = yMax - yMin + ((double) width) + 1;
+    	    xOrg = xMin - (width + 1)/2;
+	    yOrg = yMin - (width + 1)/2;
+	    dx = (xMax - xMin) + width + 1;
+	    dy = (yMax - yMin) + width + 1;
 	    for(i = 0; i < narcs; i++)
 	    {
 		parcs[i].x -= xOrg;
@@ -303,13 +298,13 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    if (iphase == 1) {
 		gcvals[0] = bg;
 		gcvals[1] = fg;
-		DoChangeGC (pGCTo, GCForeground|GCBackground, gcvals, 0);
-		ValidateGC (pDrawTo, pGCTo);
+		DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+		ValidateGC (pDraw, pGC);
 	    } else if (pGC->lineStyle == LineDoubleDash) {
 		gcvals[0] = fg;
 		gcvals[1] = bg;
-		DoChangeGC (pGCTo, GCForeground|GCBackground, gcvals, 0);
-		ValidateGC (pDrawTo, pGCTo);
+		DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+		ValidateGC (pDraw, pGC);
 	    }
 	    for (i = 0; i < polyArcs[iphase].narcs; i++) {
 		miArcDataPtr	arcData;
@@ -362,8 +357,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 			++join[iphase];
 		    }
 		    if (fTricky) {
-		    	(*pGC->PushPixels) (pGC, pDrawTo, pDraw, (int) dx,
-					    (int) dy, (int) xOrg, (int) yOrg);
+		    	(*pGC->PushPixels) (pGC, pDrawTo, pDraw, dx,
+					    dy, xOrg, yOrg);
 			miClearDrawable ((DrawablePtr) pDrawTo, pGCTo);
 		    }
 		}
