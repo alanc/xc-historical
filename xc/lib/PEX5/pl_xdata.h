@@ -1,4 +1,4 @@
-/* $XConsortium: pl_xdata.h,v 1.2 94/03/30 16:51:32 rws Exp $ */
+/* $XConsortium: pl_xdata.h,v 1.3 94/03/31 19:18:13 rws Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -192,12 +192,12 @@ without express or implied warranty.
 #define XREAD_LISTOF_PICKELEMREF(_display, _count, _pList) \
 { \
     char *_pBuf, *_pBufSave; \
-    XREAD_INTO_SCRATCH (_display, _pBufSave,
+    XREAD_INTO_SCRATCH (_display, _pBufSave, \
 	_count * SIZEOF (pexPickElementRef)); \
     _pBuf = _pBufSave; \
     EXTRACT_LISTOF_PICKELEMREF (_count, _pBuf, _pList); \
-    FINISH_WITH_SCRATCH (_display, _pBufSave,
-	_count * SIZEOF (pexPickElementInfo)); \
+    FINISH_WITH_SCRATCH (_display, _pBufSave, \
+	_count * SIZEOF (pexPickElementRef)); \
 }
 
 #endif /* WORD64 */
