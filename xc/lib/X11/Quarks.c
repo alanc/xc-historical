@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.20 90/06/05 13:55:41 kit Exp $
+ * $XConsortium: Quarks.c,v 1.22 90/10/07 20:30:22 rws Exp $
  */
 
 /***********************************************************
@@ -29,16 +29,36 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 
-extern void bcopy();
-
+#define USEPERMALLOC
 
 typedef unsigned long Signature;
+typedef unsigned long Entry;
 
 static XrmQuark nextQuark = 1;	/* next available quark number */
-static XrmString *quarkToStringTable = NULL;
-static int maxQuarks = 0;	/* max names in current quarkToStringTable */
-#define QUARKQUANTUM 600;	/* how much to extend quarkToStringTable by */
+static unsigned long quarkMask = 0;
+static Entry zero = 0;
+static Entry *quarkTable = &zero; /* crock */
+static unsigned long quarkRehash;
+static XrmString **stringTable = NULL;
+static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 
+#define QUANTUMSHIFT	8
+#define QUANTUMMASK	((1<<QUANTUMSHIFT)-1)
+#define CHUNKPER	8
+#define CHUNKMASK	((CHUNKPER<<QUANTUMSHIFT)-1)
+
+#ifndef USEPERMALLOC
+#define PERMSTRING	0x80000000L
+#endif
+#define LARGEQUARK	0x40000000L
+#define QUARKSHIFT	16
+#define QUARKMASK	((LARGEQUARK-1)>>QUARKSHIFT)
+#define SIGMASK		((1L<<QUARKSHIFT)-1)
+
+#define HASH(sig) ((sig) & quarkMask)
+#define REHASHVAL(sig) ((((sig) % quarkRehash) + 2) | 1)
+#define REHASH(idx,rehash) idx = ((idx + rehash) & quarkMask)
+#define NAME(q) stringTable[(q)>>QUANTUMSHIFT][(q)&QUANTUMMASK]
 
 /* Permanent memory allocation */
 
@@ -73,97 +93,155 @@ char *Xpermalloc(length)
     return(ret);
 }
 
-
-typedef struct _NodeRec *Node;
-typedef struct _NodeRec {
-    Node 	next;
-    Signature	sig;
-    XrmQuark	quark;
-    XrmString	name;
-} NodeRec;
-
-#define HASHTABLESIZE 1021	/* A prime has table size. */
-static Node nodeTable[HASHTABLESIZE];
-
-static int XrmAllocMoreQuarkToStringTable()
+static Bool
+ExpandQuarkTable()
 {
-    unsigned	size;
-    XrmString *newTable;
+    unsigned long oldmask, newmask;
+    register char c, *s;
+    register Entry *oldentries, *entries;
+    register Entry entry;
+    register int oldidx, newidx, rehash;
+    Signature sig;
+    XrmQuark q;
 
-    /* Return 1 on success, 0 on failure. */
-
-    maxQuarks += QUARKQUANTUM;
-    size = (unsigned) maxQuarks * sizeof(XrmString);
-
-    if (! quarkToStringTable) {
-	if (! (quarkToStringTable = (XrmString *) Xmalloc(size))) 
-	    return 0;
-    }
+    oldentries = quarkTable;
+    if (oldmask = quarkMask)
+	newmask = (oldmask << 1) + 1;
     else {
-	if (! (newTable = (XrmString *) Xrealloc((char *) quarkToStringTable,
-						 size))) {
-	    maxQuarks -= QUARKQUANTUM;
-	    return 0;
-	}
-	quarkToStringTable = newTable;
+	stringTable = (XrmString **)Xmalloc(sizeof(XrmString *) * CHUNKPER);
+	if (!stringTable)
+	    return False;
+	stringTable[0] = (XrmString *)Xmalloc(sizeof(XrmString) *
+					      (QUANTUMMASK+1));
+	if (!stringTable[0])
+	    return False;
+	newmask = 0x1ff;
     }
-    return 1;
+    entries = (Entry *)Xmalloc(sizeof(Entry) * (newmask + 1));
+    if (!entries)
+	return False;
+    bzero((char *)entries, sizeof(Entry) * (newmask + 1));
+    quarkTable = entries;
+    quarkMask = newmask;
+    quarkRehash = quarkMask - 2;
+    for (oldidx = 0; oldidx <= oldmask; oldidx++) {
+	if (entry = oldentries[oldidx]) {
+	    if (entry & LARGEQUARK)
+		q = entry & (LARGEQUARK-1);
+	    else
+		q = (entry >> QUARKSHIFT) & QUARKMASK;
+	    for (sig = 0, s = NAME(q); c = *s++; )
+		sig = (sig << 1) + c;
+	    newidx = HASH(sig);
+	    if (entries[newidx]) {
+		rehash = REHASHVAL(sig);
+		do {
+		    newidx = REHASH(newidx, rehash);
+		} while (entries[newidx]);
+	    }
+	    entries[newidx] = entry;
+	}
+    }
+    if (oldmask)
+	Xfree((char *)oldentries);
+    return True;
 }
 
 #if NeedFunctionPrototypes
 XrmQuark _XrmInternalStringToQuark(
-    register const char *name, register int len, register Signature sig)
+    register const char *name, register int len, register Signature sig,
+    Bool permstring)
 #else
-XrmQuark _XrmInternalStringToQuark(name, len, sig)
+XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
     register XrmString name;
     register int len;
     register Signature sig;
+    Bool permstring;
 #endif
 {
-    register char *tname, *tnch;
+    register XrmQuark q;
+    register Entry entry;
+    register int idx, rehash;
     register int i;
-    register Node	np;
-    	     Node	*hashp;
+    register char *s1, *s2;
+    XrmString **new;
 
-    if (name == NULL)
+    if (!len)
 	return (NULLQUARK);
-
-    /* Look for string in hash table */
-
-    hashp = &nodeTable[sig % HASHTABLESIZE];
-    for (np = *hashp; np != NULL; np = np->next) {
-	if (np->sig == sig) {	                /* Inline a string compare. */
-	    for (i = len, tname = (char *)np->name, tnch = (char *)name; 
-		 (--i >= 0) && (*tname++ == *tnch++) ;) {}
-	    if (i < 0)		/* all characters matched. */
-		return np->quark;
+    rehash = 0;
+    idx = HASH(sig);
+    while (entry = quarkTable[idx]) {
+	if (entry & LARGEQUARK)
+	    q = entry & (LARGEQUARK-1);
+	else {
+	    if ((entry - sig) & SIGMASK)
+		goto nomatch;
+	    q = (entry >> QUARKSHIFT) & QUARKMASK;
 	}
+	for (i = len, s1 = (char *)name, s2 = NAME(q); --i >= 0; ) {
+	    if (*s1++ != *s2++)
+		goto nomatch;
+	}
+	if (*s2) {
+nomatch:    if (!rehash)
+		rehash = REHASHVAL(sig);
+	    idx = REHASH(idx, rehash);
+	    continue;
+	}
+#ifndef USEPERMALLOC
+	if (permstring && !(entry & PERMSTRING)) {
+	    Xfree(NAME(q));
+	    NAME(q) = (char *)name;
+	}
+#endif
+	return q;
     }
-	
-    if ((! (np = (Node) Xpermalloc((unsigned int) sizeof(NodeRec)))) ||
-	(! (np->name = Xpermalloc((unsigned int) len + 1))))
+    if (nextUniq == nextQuark)
 	return NULLQUARK;
-    np->next = *hashp;
-    np->sig = sig;
-
-    /*
-     * Inline a strncpy(). 
-     */
-
-    tname = (char *)name;
-    tnch = np->name;
-    for (i = len; i != 0; i--, tname++, tnch++)
-	*tnch = *tname;
-    *tnch = '\0';
-
-    np->quark = nextQuark;
-    if ((nextQuark >= maxQuarks) && (! XrmAllocMoreQuarkToStringTable()))
+    if ((nextQuark + (nextQuark >> 2)) > quarkMask) {
+	if (!ExpandQuarkTable())
 	    return NULLQUARK;
-
-    *hashp = np;
-    quarkToStringTable[nextQuark] = np->name;
-    ++nextQuark;
-    return np->quark;
+	return _XrmInternalStringToQuark(name, len, sig, permstring);
+    }
+    q = nextQuark;
+    if (!(q & QUANTUMMASK)) {
+	if (!(q & CHUNKMASK)) {
+	    if (!(new = (XrmString **)Xrealloc((char *)stringTable,
+					       sizeof(XrmString *) *
+					       ((q >> QUANTUMSHIFT) +
+						CHUNKPER))))
+		return NULLQUARK;
+	    stringTable = new;
+	}
+	if (!(stringTable[q >> QUANTUMSHIFT] =
+	      (XrmString *)Xmalloc(sizeof(XrmString) * (QUANTUMMASK+1))))
+	    return NULLQUARK;
+    }
+    if (!permstring) {
+	s2 = (char *)name;
+#ifdef USEPERMALLOC
+	name = Xpermalloc(len+1);
+#else
+	name = Xmalloc(len+1);
+#endif
+	if (!name)
+	    return NULLQUARK;
+	for (i = len, s1 = (char *)name; --i >= 0; )
+	    *s1++ = *s2++;
+	*s1++ = '\0';
+    }
+    NAME(q) = (char *)name;
+    if (q <= QUARKMASK)
+	entry = (q << QUARKSHIFT) | (sig & SIGMASK);
+    else
+	entry = q | LARGEQUARK;
+#ifndef USEPERMALLOC
+    if (permstring)
+	entry |= PERMSTRING;
+#endif
+    quarkTable[idx] = entry;
+    nextQuark++;
+    return q;
 }
 
 #if NeedFunctionPrototypes
@@ -178,33 +256,91 @@ XrmQuark XrmStringToQuark(name)
     register int i = 0;
     register Signature sig = 0;
 
-    if (name == NULL)
+    if (!name)
 	return (NULLQUARK);
-
-    tname = (char *)name;
-    for ( ; (c = *tname++) != '\0'; i++)
+    
+    for (tname = (char *)name; c = *tname++; i++)
 	sig = (sig << 1) + c;
 
-    return(_XrmInternalStringToQuark(name, i, sig));
+    return _XrmInternalStringToQuark(name, i, sig, False);
+}
+
+#if NeedFunctionPrototypes
+XrmQuark XrmPermStringToQuark(
+    const char *name)
+#else
+XrmQuark XrmPermStringToQuark(name)
+    XrmString name;
+#endif
+{
+    register char c, *tname;
+    register int i = 0;
+    register Signature sig = 0;
+
+    if (!name)
+	return (NULLQUARK);
+
+    for (tname = (char *)name; c = *tname++; i++)
+	sig = (sig << 1) + c;
+
+    return _XrmInternalStringToQuark(name, i, sig, True);
 }
 
 XrmQuark XrmUniqueQuark()
 {
-    XrmQuark quark;
-
-    quark = nextQuark;
-    if ((nextQuark >= maxQuarks) && (! XrmAllocMoreQuarkToStringTable()))
-	    return NULLQUARK;
-    quarkToStringTable[nextQuark] = NULLSTRING;
-    ++nextQuark;
-    return (quark);
+    if (nextUniq == nextQuark)
+	return NULLQUARK;
+    return nextUniq--;
 }
-
 
 XrmString XrmQuarkToString(quark)
     XrmQuark quark;
 {
+#ifndef USEPERMALLOC
+    char *name;
+    register Entry entry;
+    register char c, *s1, *s2;
+    register int i, idx;
+    int len, rehash;
+    Signature sig;
+    XrmQuark q;
+#endif
+
     if (quark <= 0 || quark >= nextQuark)
     	return NULLSTRING;
-    return quarkToStringTable[quark];
+#ifdef USEPERMALLOC
+    return NAME(quark);
+#else
+    /* If the string is not permanent, we need to mark it permanent, so
+     * that it will not get freed out from under the application */
+    name = NAME(quark);
+    sig = 0;
+    len = 0;
+    for (s1 = name; c = *s1++; len++)
+	sig = (sig << 1) + c;
+    rehash = 0;
+    idx = HASH(sig);
+    while (entry = quarkTable[idx]) {
+	if (entry & LARGEQUARK)
+	    q = entry & (LARGEQUARK-1);
+	else {
+	    if ((entry - sig) & SIGMASK)
+		goto notit;
+	    q = (entry >> QUARKSHIFT) & QUARKMASK;
+	}
+	for (i = len, s1 = name, s2 = NAME(q); --i >= 0; ) {
+	    if (*s1++ != *s2++)
+		goto notit;
+	}
+	if (*s2) {
+notit:	    if (!rehash)
+		rehash = REHASHVAL(sig);
+	    idx = REHASH(idx, rehash);
+	    continue;
+	}
+	quarkTable[idx] = entry | PERMSTRING;
+	break;
+    }
+    return name;
+#endif
 }
