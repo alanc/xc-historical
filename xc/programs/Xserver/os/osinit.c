@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.47 94/02/23 15:49:43 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp kaleb $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -79,6 +79,8 @@ int limitStackSpace = -1;
 #ifdef RLIMIT_NOFILE
 int limitNoFile = -1;
 #endif
+
+Bool OsDelayInitColors = FALSE;
 
 void
 OsInit()
@@ -183,5 +185,5 @@ OsInit()
     OsVendorInit();
 #endif
     OsInitAllocator();
-    OsInitColors();
+    if (!OsDelayInitColors) OsInitColors();
 }
