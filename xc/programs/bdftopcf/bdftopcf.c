@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bdftopcf.c,v 1.5 91/09/07 11:56:42 keith Exp $
+ * $XConsortium: bdftopcf.c,v 1.6 93/09/12 17:49:28 rws Exp $
  * 
  * Copyright 1991 by the Massachusetts Institute of Technology
  *
@@ -15,13 +15,13 @@
  *
  * The X Window System is a Trademark of MIT.
  */
-#include    <X11/X.h>
-#include    <X11/Xproto.h>
-#include    "fontmisc.h"
-#include    "fontstruct.h"
-#include    "fontfileio.h"
-#include    <stdio.h>
-#include    <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xproto.h>
+#include "fontmisc.h"
+#include "fontstruct.h"
+#include "fntfilio.h"
+#include <stdio.h>
+#include <X11/Xos.h>
 
 main (argc, argv)
     char    **argv;
