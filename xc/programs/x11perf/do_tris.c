@@ -22,6 +22,7 @@ SOFTWARE.
 ******************************************************************************/
 
 #include "x11perf.h"
+#include "bitmaps.h"
 
 #define NUM_POINTS 3   /* 3 points to a triangle */
 static XPoint *points;
@@ -78,6 +79,9 @@ int InitTriangles(xp, p, reps)
 	    }
 	}
     }
+
+    SetFillStyle(xp, p);
+
     return reps;
 }
 
