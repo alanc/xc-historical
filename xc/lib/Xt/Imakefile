@@ -2,15 +2,10 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
     STD_DEFINES = LibraryDefines
-/*    CDEBUGFLAGS = LibraryCDebugFlags */
-    CDEBUGFLAGS = -g
+    CDEBUGFLAGS = LibraryCDebugFlags
         SUBDIRS = clients
        INCLUDES = -I. -I$(XRMSRC) -I$(XLIBSRC) -I$(TOP) -I$(TOP)/X11
-#if BigEndianArchitecture == YES
-        DEFINES = -DLIBDIR=\"$(LIBDIR)\" -DBIGENDIAN
-#else
         DEFINES = -DLIBDIR=\"$(LIBDIR)\"
-#endif
    INSTALLFLAGS = -m 0644
        LINTLIBS = ../X/llib-lX.ln
 
