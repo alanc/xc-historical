@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.155 90/12/14 09:25:41 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.156 90/12/21 16:27:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -685,7 +685,7 @@ static Boolean Resolve(source, len, sub, num, buf, collapse)
     char *buf;		/* Where to put the resolved string; */
     char collapse;	/* Character to collapse */
 {
-    register int bytesLeft = MAXPATHLEN;
+    register int bytesLeft = PATH_MAX;
     register char* bp = buf;
 #ifndef DONT_COLLAPSE
     Boolean atBeginning = TRUE;
@@ -784,8 +784,8 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     int len;
     Boolean firstTime = TRUE;
 
-    buf = buf1 = XtMalloc((unsigned)MAXPATHLEN);
-    buf2 = XtMalloc((unsigned)MAXPATHLEN);
+    buf = buf1 = XtMalloc((unsigned)PATH_MAX);
+    buf2 = XtMalloc((unsigned)PATH_MAX);
 
     if (predicate == NULL) predicate = TestFile;
 

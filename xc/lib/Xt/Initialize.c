@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.167 90/12/21 16:43:09 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.168 90/12/22 09:02:30 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -229,7 +229,7 @@ static void CombineAppUserDefaults(dpy, pdb)
 
     if ((path = getenv("XUSERFILESEARCHPATH")) == NULL) {
 	char *old_path;
-	char homedir[MAXPATHLEN];
+	char homedir[PATH_MAX];
 	XtGetRootDirName(homedir);
 	if ((old_path = getenv("XAPPLRESDIR")) == NULL) {
 	    char *path_default = "%s/%%L/%%N%%C:%s/%%l/%%N%%C:%s/%%N%%C:%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
@@ -268,7 +268,7 @@ static XrmDatabase GetUserDefaults(dpy)
 	if (dpy_defaults != NULL) {
 	    rdb = XrmGetStringDatabase(dpy_defaults);
 	} else {
-	    char filename[MAXPATHLEN];
+	    char filename[PATH_MAX];
 	    (void) XtGetRootDirName(filename);
 	    (void) strcat(filename, ".Xdefaults");
 	    rdb = XrmGetFileDatabase(filename);
@@ -282,7 +282,7 @@ static void CombineEnvironmentDefaults(pdb)
 {
 	XrmDatabase rdb;
 	extern char *getenv();
-	char	filenamebuf[MAXPATHLEN];
+	char	filenamebuf[PATH_MAX];
 	char	*filename;
 
 	if ((filename = getenv("XENVIRONMENT")) == NULL) {
@@ -290,7 +290,7 @@ static void CombineEnvironmentDefaults(pdb)
 	    (void) XtGetRootDirName(filename = filenamebuf);
 	    (void) strcat(filename, ".Xdefaults-");
 	    len = strlen(filename);
-	    (void) _XtGetHostname (filename+len, MAXPATHLEN-len);
+	    (void) _XtGetHostname (filename+len, PATH_MAX-len);
 	}
 
 	(void)XrmCombineFileDatabase(filename, pdb, False);
