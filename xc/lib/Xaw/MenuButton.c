@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.1 89/04/20 16:23:44 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.2 89/05/02 21:17:54 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -224,8 +224,8 @@ Cardinal * num_params;
 /*
  *  What a crock *** CDP 5/2/89 ... 
  *
- * But it is the only way that I can get menu popup to work well
- * with menu popdown.
+ * But it is the only way that I can get these menus to work correctly and
+ * come down with MenuPopdown.
  */
 
   {
@@ -236,6 +236,6 @@ Cardinal * num_params;
     shell_widget->shell.spring_loaded = TRUE;
   }
 
-  XtMapWidget(menu);
+  XMapRaised(XtDisplay(menu), XtWindow(menu));
 }
 
