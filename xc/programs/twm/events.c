@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.1 94/06/14 20:10:46 mor Exp $
+ * $XConsortium: events.c,v 1.188 94/07/06 16:16:32 mor Exp $
  *
  * twm event handling
  *
@@ -1295,6 +1295,9 @@ HandleDestroyNotify()
     if (Tmp_win->titlebuttons)					/* 10 */
       free ((char *) Tmp_win->titlebuttons);
     remove_window_from_ring (Tmp_win);				/* 11 */
+
+    if (UnHighLight_win == Tmp_win)
+	UnHighLight_win = NULL;
 
     free((char *)Tmp_win);
 }
