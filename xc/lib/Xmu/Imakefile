@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.71 91/07/16 22:50:36 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.72 91/07/30 15:29:17 rws Exp $
 XCOMM
 XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
@@ -177,7 +177,7 @@ InstallLibrary(Xmu_p,$(USRLIBDIR))
 #endif
 #if DoDebugLib
 DebuggedLibraryTarget(Xmu,$(OBJS))
-InstallLibrary(Xmu_g,$(USRLIBDIR))
+InstallLibrary(Xmu_d,$(USRLIBDIR))
 #endif
 
 LintLibraryTarget(Xmu,$(SRCS))

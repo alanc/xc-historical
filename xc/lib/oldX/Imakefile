@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.20 91/07/16 22:43:15 gildea Exp $
 #define DoNormalLib NormalOldLibX
 #define DoSharedLib SharedOldLibX
 #define DoDebugLib DebugOldLibX
@@ -46,7 +46,7 @@ InstallLibrary(oldX_p,$(USRLIBDIR))
 #endif
 #if DoDebugLib
 DebuggedLibraryTarget(oldX,$(OBJS))
-InstallLibrary(oldX_g,$(USRLIBDIR))
+InstallLibrary(oldX_d,$(USRLIBDIR))
 #endif
 
 LintLibraryTarget(oldX,*.c)

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.17 91/07/16 20:50:28 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.18 91/07/23 22:28:05 keith Exp $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp
@@ -119,7 +119,7 @@ InstallLibrary(Xdmcp_p,$(USRLIBDIR))
 #endif
 #if DoDebugLib
 DebuggedLibraryTarget(Xdmcp,$(OBJS))
-InstallLibrary(Xdmcp_g,$(USRLIBDIR))
+InstallLibrary(Xdmcp_d,$(USRLIBDIR))
 #endif
 
 LintLibraryTarget(Xdmcp,$(SRCS))

@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.77 91/07/17 00:42:21 gildea Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoDebugLib DebugLibXaw
@@ -192,7 +192,7 @@ InstallLibrary(Xaw_p,$(USRLIBDIR))
 #endif
 #if DoDebugLib
 DebuggedLibraryTarget(Xaw,$(OBJS))
-InstallLibrary(Xaw_g,$(USRLIBDIR))
+InstallLibrary(Xaw_d,$(USRLIBDIR))
 #endif
 
 LintLibraryTarget(Xaw,$(SRCS))
