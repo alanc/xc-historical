@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.56 91/02/01 16:34:39 gildea Exp $ */
+/* $XConsortium: XPutImage.c,v 11.57 91/02/02 16:48:08 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,7 +13,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
+#include <X11/Xlibint.h>
 #include <stdio.h>
 
 #if __STDC__
@@ -96,7 +96,7 @@ static unsigned char Const _reverse_nibs[0x100] = {
 };
 
 
-_Reverse_Bytes (bpt, nb)
+_XReverse_Bytes (bpt, nb)
     register unsigned char *bpt;
     register int nb;
 {

@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.41 91/01/06 11:46:33 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.42 91/04/01 17:51:06 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,8 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include "Xlibint.h"
-#include "Xutil.h"
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
 #include <stdio.h>
 
 #if __STDC__
@@ -143,7 +143,7 @@ static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
 	    }
 	}
 	if (bitorder == MSBFirst) {
-	    _Reverse_Bytes (bpt, nb);
+	    _XReverse_Bytes (bpt, nb);
 	}
 }
 
