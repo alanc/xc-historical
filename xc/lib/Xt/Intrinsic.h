@@ -77,12 +77,22 @@ typedef unsigned long   EventMask;
 typedef unsigned long   Pixel;	    /* Index into colormap	      */
 typedef int		Position;   /* Offset from 0 coordinate	      */
 typedef int	Dimension;  /* Size in pixels		      */
-typedef void (*WidgetProc)(); /* widget */
+
+typedef void (*WidgetProc)();
+     /* Widget widget */
+
 typedef void (*SetValuesProc)();
+     /* Widget widget; */
+     /* Widget new_values; */
 
 typedef void (*WidgetExposeProc)();
     /* Widget    widget; */
     /* XEvent    *event; */
+
+typedef void (*RealizeProc) ();
+    /* Widget	widget; */
+    /* ValueMask mask;  */
+    /* XSetWindowAttributes *attributes; */
 
 typedef void (*WidgetChildrenProc)();
     /* WidgetList children; */
@@ -151,6 +161,13 @@ typedef char *XtArgVal;
  } WidgetData, *Widget;
 
 typedef Widget *WidgetList;
+
+/* Some macros to get frequently used components of a widget */
+
+#define XtDisplay(w) (w->core.screen->display)
+#define XtScreen(w) (w->core.screen)
+#define XtWindow(w) (w->core.window)
+
 /******************************************************************
  *
  * Core Class Structure. Widgets, regardless of their class, will have
@@ -165,7 +182,7 @@ typedef Widget *WidgetList;
         String         class_name;    
         Cardinal       size;          /* size for pickling */
         WidgetProc     initialize;    /* create a widget of this class */
-        WidgetProc     realize;       /* realize a widget of this class */
+        RealizeProc     realize;       /* realize a widget of this class */
 	struct _XtActionsRec *actions;       /* tokens to widget semantics bindings */
         struct _Resource *resources;     /* resources for this class */
         Cardinal       num_resource;  /* number of resources in class list */
@@ -184,7 +201,7 @@ typedef struct _WidgetClassData {
  } WidgetClassData, *WidgetClass;
 
 extern WidgetClassData widgetClassData;
-WidgetClass widgetClass = &widgetClassData;
+#define widgetClass (&widgetClassData)
 
 /*********************************************************************
  *
@@ -328,10 +345,9 @@ extern Display *XtInitialize();
     /* XrmOptionsDescRec    options; */
     /* Cardinal             opt_count; */
     /* char               **argv;  */
-    /* Cardinal             argc; */
+    /* Cardinal            *argc; */  /* returns count of args not processed */
     /* XrmName              name; */
     /* XrmClass             class; */
-    /* XrmResourceDatabase  rdb; */
     /* Widget              *root; */ /*returns top-level application widget */
 
 /****************************************************************
