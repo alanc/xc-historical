@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/11/08 11:30:06 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 93/11/27 14:05:01 rws Exp $
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
@@ -25,6 +25,11 @@ SOCK_DEFINES = -DBSD44SOCKETS
 #ifdef SVR4Architecture
 /* <arpa/nameser.h> is broken */
 OS_DEFINES = -Di386
+#endif
+
+#ifdef SparcArchitecture
+/* <arpa/nameser.h> is broken on Solaris 2.3 */
+OS_DEFINES = -Dsparc
 #endif
 
 MGR_DEFINES = $(CONN_DEFINES) $(OS_DEFINES)
