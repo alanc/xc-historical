@@ -1,4 +1,4 @@
-/* $XConsortium: xsetmode.c,v 1.5 90/05/18 11:42:58 rws Exp $ */
+/* $Header: xsetmode.c,v 1.2 90/09/05 12:46:02 gms ic1C-80 $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -92,7 +92,10 @@ ProcXSetDeviceMode(client)
     if (rep.status != Success)
 	SendErrorToClient(client, IReqCode, X_SetDeviceMode, 0, rep.status);
     else
+	{
+  	dev->valuator->mode = stuff->mode;
 	WriteReplyToClient (client, sizeof (xSetDeviceModeReply), &rep);
+	}
 
     return Success;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfctl.c,v 1.9 90/05/18 15:30:08 rws Exp $ */
+/* $Header: xgetfctl.c,v 1.2 90/11/13 13:21:39 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -335,6 +335,7 @@ CopySwapLedFeedback (client, l, buf)
     l2->length = sizeof (xLedFeedbackState);
     l2->id = l->id;
     l2->led_values = l->ctrl.led_values;
+    l2->led_mask = l->ctrl.led_mask;
     if (client->swapped)
 	{
 	swapl(&l2->length,n);
