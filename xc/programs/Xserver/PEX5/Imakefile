@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.7 91/07/24 16:46:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.8 91/07/24 16:55:34 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -27,9 +27,8 @@ XCOMM PERFORMANCE OF THIS SOFTWARE.
 
 #define IHaveSubdirs
 
-#ifndef PassCDebugFlags
-#define PassCDebugFlags
-#endif
+#undef PassCDebugFlags
+#define PassCDebugFlags 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
 
 #ifndef PexDipexCDebugFlags
 #define PexDipexCDebugFlags ServerCDebugFlags 
