@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.13 89/12/11 14:57:40 kit Exp $";
+static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.14 90/11/03 14:37:21 converse Exp $";
 #endif /* lint */
 
 /*
@@ -51,7 +51,7 @@ static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.13 89/12/11 14:57:40 kit 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/MenuButtoP.h>
 
-static void Realize();
+static void ClassInitialize();
 static void PopupMenu();
 
 #define superclass ((CommandWidgetClass)&commandClassRec)
@@ -87,12 +87,12 @@ MenuButtonClassRec menuButtonClassRec = {
     (WidgetClass) superclass,		/* superclass		  */	
     "MenuButton",			/* class_name		  */
     sizeof(MenuButtonRec),       	/* size			  */
-    XawInitializeWidgetSet,		/* class_initialize	  */
+    ClassInitialize,			/* class_initialize	  */
     NULL,				/* class_part_initialize  */
     FALSE,				/* class_inited		  */
     NULL,				/* initialize		  */
     NULL,				/* initialize_hook	  */
-    Realize,         			/* realize		  */
+    XtInheritRealize,			/* realize		  */
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
@@ -140,22 +140,13 @@ WidgetClass menuButtonWidgetClass = (WidgetClass) &menuButtonClassRec;
  *
  ****************************************************************/
 
-/* ARGSUSED */
-static void 
-Realize(w, mask, attrs)
-Widget w;
-Mask *mask;
-XSetWindowAttributes *attrs;
+static void ClassInitialize()
 {
-  (*superclass->core_class.realize) (w, mask, attrs);
+    XawInitializeWidgetSet();
+    XtRegisterGrabAction(PopupMenu, True, ButtonPressMask | ButtonReleaseMask,
+			 GrabModeAsync, GrabModeAsync);
+}
 
-  /* We have a window now. Register a grab. */
-
-  XGrabButton( XtDisplay(w), AnyButton, AnyModifier, XtWindow(w),
-	       TRUE, ButtonPressMask|ButtonReleaseMask,
-	       GrabModeAsync, GrabModeAsync, None, None );
-} 
-  
 /* ARGSUSED */
 static void
 PopupMenu(w, event, params, num_params)
