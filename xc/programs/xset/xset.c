@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.49 89/05/16 13:58:53 kit Exp $ 
+ * $XConsortium: xset.c,v 1.50 89/07/16 15:47:55 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.49 89/05/16 13:58:53 kit Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.50 89/07/16 15:47:55 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -640,7 +640,7 @@ int numpixels;
   int scr = DefaultScreen (dpy);
   Visual *visual = DefaultVisual (dpy, scr);
   Colormap cmap = DefaultColormap (dpy, scr);
-  int max_cells = DisplayCells(dpy, scr);
+  unsigned long max_cells = DisplayCells(dpy, scr);
   XVisualInfo viproto, *vip;
   int nvisuals = 0;
   char *visual_type = NULL;
@@ -657,16 +657,18 @@ int numpixels;
   switch (vip->class) {
       case GrayScale:
       case PseudoColor:
+	break;
+      case TrueColor:
+	visual_type = "TrueColor";
+	/* fall through */
       case DirectColor:
+	max_cells *= max_cells * max_cells;
 	break;
       case StaticGray:
 	visual_type = "StaticGray";
 	break;
       case StaticColor:
 	visual_type = "StaticColor";
-	break;
-      case TrueColor:
-	visual_type = "TrueColor";
 	break;
       default:
 	fprintf (stderr, "%s:  unknown visual class type %d\n",
