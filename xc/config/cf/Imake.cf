@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.8 94/02/04 21:37:43 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.9 94/02/05 15:53:55 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -131,12 +131,16 @@ XCOMM $XConsortium: Imake.cf,v 1.8 94/02/04 21:37:43 rws Exp $
 #define MacIIArchitecture
 #endif /* macII */
 
-#ifdef CRAY
+#ifdef _CRAY
 #define MacroIncludeFile <cray.cf>
 #define MacroFile cray.cf
 #undef cray
+#undef CRAY
+#undef CRAY1
+#undef CRAY2
+#undef YMP
 #define CrayArchitecture
-#endif /* CRAY */
+#endif /* _CRAY */
 
 #ifdef sgi
 #define MacroIncludeFile <sgi.cf>
