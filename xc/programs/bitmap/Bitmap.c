@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.23 91/01/13 18:01:59 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.24 91/01/15 13:33:38 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -114,7 +114,7 @@ static XtResource resources[] = {
 void BWDebug();
 void BWChangeNotify();
 void BWSetChanged();
-void BWTerminate();
+void BWAbort();
 void BWUp();
 void BWDown();
 void BWLeft();
@@ -141,7 +141,7 @@ static XtActionsRec actions[] =
 {"unmark",             BWTUnmark},
 {"paste",              BWTPaste},
 {"bw-debug",           BWDebug},
-{"terminate",          BWTerminate},
+{"abort",              BWAbort},
 {"store-to-buffer",    BWStoreToBuffer},
 {"change-notify",      BWChangeNotify},
 {"set-changed",        BWSetChanged},
@@ -169,7 +169,7 @@ static char translations[] =
  Ctrl<BtnDown>:    paste()\n\
  Ctrl<Key>l:       redraw()\n\
  <Key>d:           bw-debug()\n\
- <Key>t:           terminate()\n\
+ <Key>a:           abort()\n\
  <Key>Up:          store-to-buffer()\
                    up()\
                    change-notify()\
