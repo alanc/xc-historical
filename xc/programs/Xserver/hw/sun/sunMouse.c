@@ -53,7 +53,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include    "sun.h"
 
-Bool ActiveZaphod = TRUE;
+Bool sunActiveZaphod = TRUE;
 
 static Bool sunCursorOffScreen();
 static void sunCrossScreen();
@@ -355,14 +355,16 @@ sunCursorOffScreen (pScreen, x, y)
     int		*x, *y;
 {
     int	    index, ret = FALSE;
+    extern Bool PointerConfinedToScreen();
 
+    if (PointerConfinedToScreen()) return TRUE;
     /*
      * Active Zaphod implementation:
      *    increment or decrement the current screen
      *    if the x is to the right or the left of
      *    the current screen.
      */
-    if (ActiveZaphod &&
+    if (sunActiveZaphod &&
 	screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0)) {
 	index = (*pScreen)->myNum;
 	if (*x < 0) {
