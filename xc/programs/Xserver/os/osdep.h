@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.22 91/02/22 12:11:09 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.23 91/02/23 12:02:35 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -31,7 +31,11 @@ SOFTWARE.
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 18)
+#ifdef AIXV3 /* Limit size of bit array for AIXV3 as NOFILE = 2000! */
+#define MAXSOCKS 128
+#else
 #define MAXSOCKS (NOFILE - 1)
+#endif
 #define mskcnt ((MAXSOCKS + 31) / 32)	/* size of bit array */
 
 #if (mskcnt==1)
