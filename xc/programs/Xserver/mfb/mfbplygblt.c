@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbplygblt.c,v 1.15 87/08/30 22:30:07 drewry Exp $ */
+/* $Header: mfbplygblt.c,v 1.15 87/09/01 16:53:00 toddb Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -274,15 +274,8 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
 	nbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
 
-	/* HACK ALERT
-	   since we continue out of the loop below so often, it
-	   is easier to increment pbox at the  top than at the end.
-	   don't try this at home.
-	*/
-	pbox--;
-	while(nbox--)
+	for (; --nbox >= 0; pbox++)
 	{
-	    pbox++;
 	    clip.x1 = max(bbox.x1, pbox->x1);
 	    clip.y1 = max(bbox.y1, pbox->y1);
 	    clip.x2 = min(bbox.x2, pbox->x2);
