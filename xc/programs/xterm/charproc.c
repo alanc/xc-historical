@@ -1,6 +1,6 @@
 /*
- * $Source$
- * $Header: charproc.c,v 1.9 88/02/16 17:40:03 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xterm.new/RCS/charproc.c,v $
+ * $Header: charproc.c,v 1.10 88/02/16 17:48:09 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.9 88/02/16 17:40:03 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.10 88/02/16 17:48:09 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2096,7 +2096,7 @@ static int tmarginbell;
 static int tscrollbar;
 static int tscrollkey;
 static int tscrollinput;
-static int tshow;
+static Boolean tshow;
 
 Menu *setupmenu(menu)
 register Menu **menu;
