@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.107 91/02/02 17:20:12 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.108 91/02/05 13:40:38 dave Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -320,7 +320,8 @@ Display *XOpenDisplay (display)
 	    	}
 	    	else
 	    	{
-		    addr = 0xFFFFFFFF;
+		    static unsigned long	unix_addr = 0xFFFFFFFF;
+		    addr = unix_addr--;
 		    port = getpid ();
 	    	}
 	    	encrypted_data[j++] = (addr >> 24) & 0xFF;
