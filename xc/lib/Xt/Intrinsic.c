@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.122 88/09/22 16:04:29 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.123 89/06/08 16:40:23 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif lint
 
@@ -34,7 +34,7 @@ SOFTWARE.
 
 
 #ifdef DEBUG
-Boolean _XtIdentifyWindows = False;
+int _XtIdentifyWindows = False;
 #endif
 
 static void SetAncestorSensitive();
@@ -202,14 +202,13 @@ static void RealizeWidget(widget)
                   (String *)NULL, (Cardinal *)NULL);
 	else (*realize) (widget, &value_mask, &values);
 	window = XtWindow(widget);
-
-	_XtRegisterAsyncHandlers(widget);
-	_XtRegisterGrabs(widget,&widget->core.tm);
-	_XtRegisterWindow (window, widget);
 #ifdef DEBUG
 	if (_XtIdentifyWindows)
 	    XStoreName( XtDisplay(widget), window, widget->core.name );
 #endif
+	_XtRegisterAsyncHandlers(widget);
+	_XtRegisterGrabs(widget,&widget->core.tm);
+	_XtRegisterWindow (window, widget);
     } else {
 	/* No window associated with object, look up parent chain */
 	Widget parent;
