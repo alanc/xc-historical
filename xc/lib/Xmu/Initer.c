@@ -1,5 +1,5 @@
-static char rcsid[] =
-	"$XConsortium: Initer.c,v 1.1 89/05/08 14:19:04 kit Exp $";
+/* static char rcsid[] =
+	"$XConsortium: Initer.c,v 1.2 89/12/10 10:30:32 rws Exp $"; */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology

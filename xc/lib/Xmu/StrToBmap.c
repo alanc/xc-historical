@@ -1,6 +1,4 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.8 89/08/18 13:03:38 jim Exp $";
-#endif /* lint */
+/* static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.9 89/10/09 16:25:32 jim Exp $"; */
 
 
 /***********************************************************

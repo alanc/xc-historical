@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: XDrawLogo.c,v 1.8 89/05/11 01:07:16 kit Exp $";
-#endif
+/* static char Xrcsid[] = "$XConsortium: DrawLogo.c,v 1.1 89/05/11 14:01:55 kit Exp $"; */
 
 #include <X11/Xlib.h>  
 

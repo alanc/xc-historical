@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.3 89/07/21 15:54:14 jim Exp $";
-#endif /* lint */
+/* static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.4 89/12/10 10:29:25 rws Exp $"; */
 
 
 /***********************************************************

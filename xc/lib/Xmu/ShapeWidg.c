@@ -1,5 +1,5 @@
-static char rcsid[] =
-	"$XConsortium: ShapeWidg.c,v 1.2 89/10/08 13:42:38 rws Exp $";
+/* static char rcsid[] =
+	"$XConsortium: ShapeWidg.c,v 1.3 90/01/20 15:16:56 rws Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology

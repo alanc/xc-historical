@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: StrToWidg.c,v 1.2 89/03/30 17:07:26 jim Exp $";
-#endif /* lint */
+/* static char Xrcsid[] = "$XConsortium: StrToWidg.c,v 1.3 89/09/22 12:11:59 keith Exp $"; */
 
 /* Copyright 1988 Massachusetts Institute of Technology, Cambridge, Massachusetts.
  *

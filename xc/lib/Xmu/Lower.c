@@ -1,5 +1,5 @@
-static char rcsid[] =
-	"$XConsortium: Lower.c,v 1.2 89/09/22 15:33:15 jim Exp $";
+/* static char rcsid[] =
+	"$XConsortium: Lower.c,v 1.3 89/11/11 16:31:07 jim Exp $"; */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
