@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.24 89/10/07 14:59:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.25 89/12/02 15:14:44 jim Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -35,7 +35,9 @@ static char Xrcsid[] = "$XConsortium: commands.c,v 1.24 89/10/07 14:59:41 kit Ex
 
 extern Widget textwindow, labelwindow, filenamewindow;
 
-static Boolean double_click = FALSE;
+void ResetSourceChanged();
+
+static Boolean double_click = FALSE, source_changed = FALSE;
 
 /*	Function Name: AddDoubleClickCallback(w)
  *	Description: Adds a callback that will reset the double_click flag
@@ -83,9 +85,9 @@ caddr_t junk, garbage;
 void
 DoQuit()
 {
-  if( double_click || !XawAsciiSourceChanged(XawTextGetSource(textwindow)) ) {
+  if( double_click || !source_changed ) 
     exit(0); 
-  } 
+
   XeditPrintf("Unsaved changes. Save them, or press Quit again.\n");
   Feep();
   double_click = TRUE;
@@ -127,12 +129,6 @@ DoSave()
     return;
   }
   
-  if( !XawAsciiSourceChanged(XawTextGetSource(textwindow)) ) {
-    XeditPrintf("Save:  no changes to save -- nothing saved\n");
-    Feep();
-    return;
-  }
-  
   if (app_resources.enableBackups) {
     char backup_file[BUFSIZ];
     makeBackupName(backup_file, filename);
@@ -149,8 +145,10 @@ DoSave()
       sprintf(buf, "File %s could not be opened for writing.\n", filename);
       break;
   case WRITE_OK:
-      if ( XawAsciiSaveAsFile(XawTextGetSource(textwindow), filename) ) 
+      if ( XawAsciiSaveAsFile(XawTextGetSource(textwindow), filename) ) {
 	  sprintf(buf, "Saved file:  %s\n", filename);
+	  ResetSourceChanged(textwindow);
+      }
       else 
 	  sprintf(buf, "Error saving file:  %s\n",  filename);
       break;
@@ -170,8 +168,7 @@ DoLoad()
     String filename = GetString(filenamewindow);
     char buf[BUFSIZ], label_buf[BUFSIZ];
 
-    if ( XawAsciiSourceChanged(XawTextGetSource(textwindow)) &&
-	 !double_click) {
+    if ( source_changed && !double_click) {
 	XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
 	Feep();
 	double_click = TRUE;
@@ -187,7 +184,7 @@ DoLoad()
 	case NO_READ:
 	    if (exists)
 		sprintf(buf, "File %s, %s", filename,
-			"exists, and could not opened for reading.\n");
+			"exists, and could not be opened for reading.\n");
 	    else
 		sprintf(buf, "File %s %s %s",  filename, "does not exist, and",
 			"the directory could not be opened for writing.\n");
@@ -226,9 +223,44 @@ DoLoad()
 	num_args = 0;
 	XtSetArg(args[num_args], XtNlabel, label_buf); num_args++;
 	XtSetValues( labelwindow, args, num_args);
+	ResetSourceChanged(textwindow);
 	return;
     }
 
     XeditPrintf("Load: No file specified.\n");
     Feep();
+}
+
+/*	Function Name: SourceChanged
+ *	Description: A callback routine called when the source has changed.
+ *	Arguments: w - the text source that has changed.
+ *                 junk, garbage - *** UNUSED ***.
+ *	Returns: none.
+ */
+
+static void
+SourceChanged(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    XtRemoveCallback(w, XtNcallback, SourceChanged, NULL);
+    source_changed = TRUE;
+}
+
+/*	Function Name: ResetSourceChanged.
+ *	Description: Sets the source changed to FALSE, and
+ *                   registers a callback to set it to TRUE when
+ *                   the source has changed.
+ *	Arguments: widget - widget to register the callback on.
+ *	Returns: none.
+ */
+
+void
+ResetSourceChanged(widget)
+Widget widget;
+{
+    Arg args[1];
+
+    XtAddCallback(XawTextGetSource(widget), XtNcallback, SourceChanged, NULL);
+    source_changed = FALSE;
 }

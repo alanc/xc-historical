@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: xedit.c,v 1.21 89/08/31 13:16:52 kit Exp $";
+static char Xrcsid[] = "$XConsortium: xedit.c,v 1.22 89/10/07 14:59:45 kit Exp $";
 #endif /* lint && SABER */
  
 /*
@@ -30,6 +30,8 @@ static char Xrcsid[] = "$XConsortium: xedit.c,v 1.21 89/08/31 13:16:52 kit Exp $
 #include "xedit.h"
 
 Widget textwindow, messwidget, labelwindow, filenamewindow;
+
+void ResetSourceChanged();
 
 Display *CurDpy;
 
@@ -136,6 +138,8 @@ char * filename;
 
   if (filename != NULL)
       DoLoad();
+  else
+      ResetSourceChanged(textwindow);
 }
 
 /*	Function Name: Feep
