@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.12 93/10/06 17:20:26 kaleb Exp $ */
+/* $XConsortium: GetValues.c,v 1.13 94/04/17 20:14:09 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -217,9 +217,9 @@ void XtGetValues(w, args, num_args)
     }
 
     /* Get constraint values if necessary */
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
     /* constraints may be NULL if constraint_size==0 */
-    if (!XtIsShell(w) && XtIsConstraint(XtParent(w)) && w->core.constraints) {
+    if (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)) && 
+	w->core.constraints) {
 	ConstraintWidgetClass cwc
 	    = (ConstraintWidgetClass) XtClass(XtParent(w));
 	LOCK_PROCESS;
@@ -232,7 +232,7 @@ void XtGetValues(w, args, num_args)
     CallGetValuesHook(wc, w, args, num_args);
 
     /* Notify constraint get_values if necessary */
-    if (!XtIsShell(w) && XtIsConstraint(XtParent(w)))
+    if (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)))
 	CallConstraintGetValuesHook(XtClass(XtParent(w)), w, args,num_args);
     UNLOCK_APP(app);
 } /* XtGetValues */

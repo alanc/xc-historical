@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.49 94/04/01 20:50:07 kaleb Exp $ */
+/* $XConsortium: Destroy.c,v 1.50 94/04/17 20:13:57 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -127,9 +127,7 @@ static void Phase2Destroy(widget)
     ObjectClassExtension	    ext;
 
     /* Call constraint destroy procedures */
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    if ((!XtIsShell(widget) && !_XtIsHookObject(widget)) && 
-	XtIsConstraint(XtParent(widget))) {
+    if (XtParent(widget) != NULL && !XtIsShell(widget) && XtIsConstraint(XtParent(widget))) {
 	LOCK_PROCESS;
 	cwClass = (ConstraintWidgetClass)XtParent(widget)->core.widget_class;
 	UNLOCK_PROCESS;

@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.20 94/04/01 20:52:34 kaleb Exp $ */
+/* $XConsortium: SetValues.c,v 1.21 94/04/17 20:14:45 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -223,8 +223,7 @@ void XtSetValues(w, args, num_args)
 
     (void) memmove ((char *) reqw, (char *) w, (int) widgetSize);
 
-    /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    hasConstraints = (!XtIsShell(w) && XtIsConstraint(XtParent(w)));
+    hasConstraints = (XtParent(w) != NULL && !XtIsShell(w) && XtIsConstraint(XtParent(w)));
 
     /* Some widget sets apparently do ugly things by freeing the
      * constraints on some children, thus the extra test here */
