@@ -1,11 +1,11 @@
-# $Header$
-     HEADERS = zoid.h
+# $Header: Imakefile,v 1.1 87/09/02 02:21:07 toddb Locked $
+     HEADERS = zoid.h bezier.h
 INSTALLFLAGS = -m 0444
 
 all:
-	@echo "all: skipping zoid"
+	@echo "all: skipping extensions/include"
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
 depend:
-	@echo "depend: skipping include"
+	@echo "depend: skipping extensions/include"

@@ -1,15 +1,15 @@
-# $Header$
+# $Header: Imakefile,v 1.1 87/09/02 02:21:13 toddb Locked $
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-           SRCS = XFillZoids.c
-           OBJS = XFillZoids.o
+           SRCS = XFillZoids.c XPolyBeziers.c
+           OBJS = XFillZoids.o XPolyBeziers.o
 
-#if DebugLibXZoid && ProfileLibXZoid
+#if DebugLibXext && ProfileLibXext
 DebuggedAndProfiledLibraryObjectRule()
 #else
-# if DebugLibXZoid
+# if DebugLibXext
 DebuggedLibraryObjectRule()
 # else
-#  if ProfileLibXZoid
+#  if ProfileLibXext
 ProfiledLibraryObjectRule()
 #  else
 NormalLibraryObjectRule()
@@ -17,18 +17,18 @@ NormalLibraryObjectRule()
 # endif
 #endif
 
-NormalLibraryTarget(XZoid,$(OBJS))
-LintLibraryTarget(XZoid,$(SRCS))
-InstallLibrary(XZoid,$(USRLIBDIR))
-InstallLintLibrary(XZoid,$(USRLIBDIR))
+NormalLibraryTarget(Xext,$(OBJS))
+LintLibraryTarget(Xext,$(SRCS))
+InstallLibrary(Xext,$(USRLIBDIR))
+InstallLintLibrary(Xext,$(USRLIBDIR))
 
-#if ProfileLibXZoid
-ProfiledLibraryTarget(XZoid,$(OBJS))
-InstallLibrary(XZoid_p,$(USRLIBDIR))
+#if ProfileLibXext
+ProfiledLibraryTarget(Xext,$(OBJS))
+InstallLibrary(Xext_p,$(USRLIBDIR))
 #endif
 
-#if DebugLibXZoid
-DebuggedLibraryTarget(XZoid,$(OBJS))
+#if DebugLibXext
+DebuggedLibraryTarget(Xext,$(OBJS))
 #endif
 
 DependTarget()

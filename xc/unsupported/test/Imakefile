@@ -1,9 +1,12 @@
-# $Header: Imakefile,v 1.1 87/09/02 02:21:26 toddb Locked $
-       SRCS = zoidclient.c
-       OBJS = zoidclient.o
+# $Header: Imakefile,v 1.2 87/09/02 17:10:43 toddb Locked $
+   ZOIDSRCS = zoidtest.c
+   ZOIDOBJS = zoidtest.o
+ BEZIERSRCS = beziertest.c
+ BEZIEROBJS = beziertest.o
    INCLUDES = -I$(TOP)  -I../include
 CDEBUGFLAGS = -g
 
-SingleProgramTarget(zoidclient,$(OBJS),$(ZOIDLIB) $(XLIB),)
+SingleProgramTarget(zoidtest,$(ZOIDOBJS),$(EXTENSIONLIB) $(XLIB),)
+SingleProgramTarget(beziertest,$(BEZIEROBJS),$(EXTENSIONLIB) $(XLIB),)
 
 DependTarget()
