@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.142 90/03/07 11:06:09 jim Exp $
+ * $XConsortium: menus.c,v 1.143 90/03/12 16:07:34 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.142 90/03/07 11:06:09 jim Exp $";
+"$XConsortium: menus.c,v 1.143 90/03/12 16:07:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2109,7 +2109,7 @@ TwmWindow *tmp_win;
 		    XUnmapWindow(dpy, t->icon_w);
 		    IconDown (t);
 		}
-		XUnmapWindow(dpy, t->list->icon);
+		if (t->list) XUnmapWindow(dpy, t->list->icon);
 		t->icon = FALSE;
 		t->icon_on = FALSE;
 	    }
@@ -2215,7 +2215,7 @@ int def_x, def_y;
 		    Scr->Focus = NULL;
 		    Scr->FocusRoot = TRUE;
 		}
-		XMapWindow(dpy, t->list->icon);
+		if (t->list) XMapWindow(dpy, t->list->icon);
 		t->icon = TRUE;
 		t->icon_on = FALSE;
 	    }
