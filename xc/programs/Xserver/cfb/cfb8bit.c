@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.8 92/07/30 10:24:26 rws Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.9 93/12/13 17:21:28 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -370,15 +370,17 @@ cfb8ComputeClipMasks32 (pBox, numRects, x, y, w, h, clips)
 	return rgnIN;
     }
     ch = 0;
-    while (ch < h && y + ch < pBox->y1)
-    {
-	partOUT = TRUE;
-	clips[ch++] = 0;
-    }
     while (numRects && pBox->y1 < y + h)
     {
 	yBand = pBox->y1;
 	yBandBot = pBox->y2;
+ 	while (ch < h && y + ch < yBand)
+ 	{
+ 	    partOUT = TRUE;
+ 	    clips[ch++] = 0;
+ 	}
+ 	if (ch >= h)
+ 	    break;
     	while (numRects && pBox->y1 == yBand && pBox->x2 <= x)
     	{
 	    --numRects;
