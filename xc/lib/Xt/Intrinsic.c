@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.32 87/09/13 18:27:57 newman Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.33 87/09/13 21:13:25 newman Exp $";
 #endif lint
 
 /*
@@ -177,18 +177,18 @@ void ClassInit(widgetClass)
     return;
 }
 
-static void RecurseInitialize (widget, newWidget, args, num_args, class)
-    Widget widget;
+static void RecurseInitialize (reqWidget, newWidget, args, num_args, class)
+    Widget reqWidget;
     Widget newWidget;
     ArgList args;
     Cardinal num_args;
     WidgetClass class;
 {
     if (class->core_class.superclass)
-       	RecurseInitialize (widget, newWidget, args, num_args, 
+       	RecurseInitialize (reqWidget, newWidget, args, num_args, 
            class->core_class.superclass);
     if (class->core_class.initialize)
-       	(*class->core_class.initialize) (widget, newWidget, args, num_args);
+       	(*class->core_class.initialize) (reqWidget, newWidget, args, num_args);
 }
 
 Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
@@ -198,7 +198,7 @@ Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
     ArgList args;
     Cardinal num_args;
 {
-    Widget widget, newWidget;
+    Widget widget, reqWidget;
     unsigned widget_size;
     if(!(widgetClass->core_class.class_inited))
 	 ClassInit(widgetClass);
@@ -229,11 +229,10 @@ Widget TopLevelCreate(name,widgetClass,screen,args,num_args)
     if (widget->core.depth == 0)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = XtScreen(widget)->root_depth;
-    newWidget = (Widget)XtMalloc(widget_size);
-    bcopy ((char *) widget, (char *) newWidget, widget_size);
-    RecurseInitialize (widget, newWidget, args, num_args, widgetClass);
-    bcopy ((char *) newWidget, (char *) widget, widget_size);
-    XtFree ((char *) newWidget);
+    reqWidget = (Widget)XtMalloc(widget_size);
+    bcopy ((char *) widget, (char *) reqWidget, widget_size);
+    RecurseInitialize (reqWidget, widget, args, num_args, widgetClass);
+    XtFree ((char *) reqWidget);
 
     return (widget);
 }
@@ -301,7 +300,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     Cardinal    num_args;
 
 {
-    Widget    widget, newWidget;
+    Widget    widget, reqWidget;
     unsigned widget_size;
     if (widgetClass == NULL || parent == NULL || ! XtIsComposite(parent))  {
 			XtError("invalid parameters to XtCreateWidget");
@@ -339,11 +338,10 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
     /* ||| gross kludge! fix this!!! */
 	widget->core.depth = widget->core.parent->core.depth;
     DefineTranslation(widget);
-    newWidget = (Widget)XtMalloc(widget_size);
-    bcopy ((char *) widget, (char *) newWidget, widget_size);
-    RecurseInitialize (widget, newWidget, args, num_args, widgetClass);
-    bcopy ((char *) newWidget, (char *) widget, widget_size);
-    XtFree ((char *) newWidget);
+    reqWidget = (Widget)XtMalloc(widget_size);
+    bcopy ((char *) widget, (char *) reqWidget, widget_size);
+    RecurseInitialize (reqWidget, widget, args, num_args, widgetClass);
+    XtFree ((char *) reqWidget);
     ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
     	->composite_class.insert_child(widget, args, num_args);
     return (widget);
