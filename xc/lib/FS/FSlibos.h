@@ -176,8 +176,12 @@
 		      { int cri;			\
 		      for (cri=0; cri<MSKCNT; cri++)	\
 		          dst[cri] &= ~b1[cri];  }
+#if (MSKCNT==8)
+#define _FSANYSET(src) (src[0] || src[1] || src[2] || src[3] || \
+			src[4] || src[5] || src[6] || src[7])
+#endif
 /*
- * If MSKCNT>4, then _FSANYSET is a routine defined in FSlibInt.c.
+ * If MSKCNT>4 and not 8, then _FSANYSET is a routine defined in FSlibInt.c.
  *
  * #define _FSANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
