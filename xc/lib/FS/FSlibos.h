@@ -12,7 +12,8 @@
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
 
-#ifdef att
+#ifdef STREAMSCONN
+#ifdef SYSV
 /*
  * UNIX System V Release 3.2
  */
@@ -20,27 +21,52 @@
 #define BytesReadable(fd,ptr) (_FSBytesReadable ((fd), (ptr)))
 #define MALLOC_0_RETURNS_NULL
 #include <sys/ioctl.h>
-#include <sys/param.h>
-#define MAXSOCKS (NOFILES_MAX)
-#define MSKCNT ((MAXSOCKS + 31) / 32)
+#endif /* SYSV */
+#ifdef SVR4
+/*
+ * TLI (Streams-based) networking
+ */
+#define BytesReadable(fd,ptr) (_FSBytesReadable ((fd), (ptr)))
+#include <sys/uio.h>		/* define struct iovec */
 
-#else
+#endif /* SVR4 */
+#else /* not STREAMSCONN */
 /*
  * 4.2BSD-based systems
  */
 #include <netinet/in.h>
 #include <sys/ioctl.h>
+#include <netdb.h>
+#include <sys/uio.h>		/* needed for FSlibInt.c */
 #ifdef SVR4
 #include <sys/filio.h>
 #endif
-#include <netdb.h>
-#include <sys/uio.h>		/* needed for FSlibInt.c */
-#include <sys/param.h>		/* needed for FSConnDis.c */
 
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
-#define MSKCNT ((NOFILE + 31) / 32)	/* size of bit array */
-#endif				/* att else bsdish */
 
+#endif /* STREAMSCONN else */
+
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef OPEN_MAX
+#include <sys/param.h>
+#ifdef NOFILE
+#ifdef AIXV3 /* Limit size of array to 128 on AIXV3 as NOFILE = 2000! */
+#define OPEN_MAX 128
+#else  /* AIXV3 */
+#define OPEN_MAX NOFILE
+#endif /* AIXV3 */
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
 
 /* Utek leaves kernel macros around in include files (bleah) */
 
@@ -50,8 +76,9 @@
 
 #ifdef CRAY
 #define WORD64
-#define MALLOC_0_RETURNS_NULL
 #endif
+
+#define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -74,7 +101,7 @@
 #define MASKANDSETBITS(dst, b1, b2) dst[0] = (b1[0] & b2[0])
 #define ORBITS(dst, b1, b2) dst[0] = (b1[0] | b2[0])
 #define UNSETBITS(dst, b1) (dst[0] &= ~b1[0])
-#define ANYSET(src) (src[0])
+#define _FSANYSET(src) (src[0])
 #endif
 
 #if (MSKCNT==2)
@@ -89,7 +116,7 @@
 #define UNSETBITS(dst, b1) {\
                       dst[0] &= ~b1[0]; \
                       dst[1] &= ~b1[1]; }
-#define ANYSET(src) (src[0] || src[1])
+#define _FSANYSET(src) (src[0] || src[1])
 #endif
 
 #if (MSKCNT==3)
@@ -108,7 +135,7 @@
                       dst[0] &= ~b1[0]; \
                       dst[1] &= ~b1[1]; \
                       dst[2] &= ~b1[2]; }
-#define ANYSET(src) (src[0] || src[1] || src[2])
+#define _FSANYSET(src) (src[0] || src[1] || src[2])
 #endif
 
 #if (MSKCNT==4)
@@ -130,7 +157,7 @@
                       dst[1] &= ~b1[1]; \
                       dst[2] &= ~b1[2]; \
                       dst[3] &= ~b1[3]
-#define ANYSET(src) (src[0] || src[1] || src[2] || src[3])
+#define _FSANYSET(src) (src[0] || src[1] || src[2] || src[3])
 #endif
 
 #if (MSKCNT>4)
@@ -150,9 +177,9 @@
 		      for (cri=0; cri<MSKCNT; cri++)	\
 		          dst[cri] &= ~b1[cri];  }
 /*
- * If MSKCNT>4, then ANYSET is a routine defined in FSlibInt.c.
+ * If MSKCNT>4, then _FSANYSET is a routine defined in FSlibInt.c.
  *
- * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
+ * #define _FSANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
 #endif
 
@@ -215,7 +242,7 @@ char *malloc(), *realloc(), *calloc();
 
 #ifdef USG
 
-#if !defined(CRAY) && !defined(umips)
+#if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA)
 struct iovec {
     caddr_t     iov_base;
     int         iov_len;
@@ -261,17 +288,12 @@ extern FSstream _FSsStream[];
 #endif				/* STREAMSCONN */
 
 
-#ifndef USG
+#if !defined(USG) || defined(MOTOROLA)
 #define _FSReadV readv
 #define _FSWriteV writev
 #endif
 
 #define ReadvFromServer(svr, iov, iovcnt) _FSReadV((svr), (iov), (iovcnt))
 #define WritevToServer(svr, iov, iovcnt) _FSWriteV((svr), (iov), (iovcnt))
-
-#ifndef sgi
-extern char *index();
-
-#endif
 
 #define SearchString(string, char) index((string), (char))
