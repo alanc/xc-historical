@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.142 93/08/11 14:06:39 kaleb Exp $ */
+/* $XConsortium: Event.c,v 1.144 93/08/12 20:28:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -746,7 +746,7 @@ static void CompressExposures();
 #define XtDidDispatch	True
 #define XtDidFilter	2
 
-static Boolean DispatchEvent(event, widget, mask, pd)
+static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
     register XEvent    *event;
     Widget    widget;
     EventMask mask;
@@ -857,9 +857,9 @@ Boolean XtDispatchEventToWidget(widget, event)
     XEvent* event;
 #endif
 {
-    return (DispatchEvent(event, widget,
-			  _XtConvertTypeToMask(event->xany.type),
-			  _XtGetPerDisplay(event->xany.display))
+    return (_XtDispatchEventToWidget(event, widget,
+				     _XtConvertTypeToMask(event->xany.type),
+				     _XtGetPerDisplay(event->xany.display))
 	    ? True : False);
 }
 
@@ -1117,13 +1117,15 @@ static Widget LookupSpringLoaded(grabList)
     return NULL;
 }
 
-static Boolean DefaultDispatcher(event, widget, mask, pd)
+static Boolean DispatchEvent(event, widget, mask, pd)
     XEvent* event;
     Widget widget;
     EventMask mask;
     XtPerDisplay pd;
 {
-    if (XFilterEvent(event, XtWindow(widget))) return XtDidFilter;
+    if (XFilterEvent(event, XtWindow(widget)))
+	return XtDidFilter;
+
     if (mask == EnterWindowMask &&
 	    widget->core.widget_class->core_class.compress_enterleave) {
 	if (XPending(event->xcrossing.display)) {
@@ -1156,7 +1158,7 @@ static Boolean DefaultDispatcher(event, widget, mask, pd)
 	}
     }
 
-    return DispatchEvent(event, widget, mask, pd);
+    return _XtDispatchEventToWidget(event, widget, mask, pd);
 }
 
 typedef enum _GrabType {pass, ignore, remap} GrabType;
@@ -1168,27 +1170,31 @@ static Boolean DecideToDispatch(event)
     EventMask   mask;
     GrabType    grabType;
     Widget	dspWidget;
-    Time	time = 0;
     XtPerDisplay pd;
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
 
-    pd = _XtGetPerDisplay(event->xany.display);
-    
     mask = _XtConvertTypeToMask(event->xany.type);
+    /* the default dispatcher discards all extension events */
+    if (mask == 0) return XtDidNothing;
+
+    widget = XtWindowToWidget (event->xany.display, event->xany.window);
+    pd = _XtGetPerDisplay(event->xany.display);
+    pdi = _XtGetPerDisplayInput(event->xany.display);
+    grabList = *_XtGetGrabList(pdi);
 
     grabType = pass;
     switch (event->xany.type & 0x7f) {
 
       case KeyPress:
-      case KeyRelease:		grabType = remap; time = event->xkey.time;
+      case KeyRelease:		grabType = remap;
 				break;
 
       case ButtonPress:
-      case ButtonRelease:	grabType = remap; time = event->xbutton.time;
+      case ButtonRelease:	grabType = remap;
 				break;
 
-      case MotionNotify:	grabType = ignore; time = event->xmotion.time;
+      case MotionNotify:	grabType = ignore;
 #define XKnownButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
                        Button4MotionMask|Button5MotionMask)
 	                        mask |= (event->xmotion.state & XKnownButtons);
@@ -1196,27 +1202,9 @@ static Boolean DecideToDispatch(event)
 				break;
 
       case EnterNotify:
-				grabType = ignore; /* fall through */
-      case LeaveNotify:		time = event->xcrossing.time; break;
-
-      case PropertyNotify:	time = event->xproperty.time; break;
-
-      case SelectionClear:	time = event->xselectionclear.time; break;
+				grabType = ignore;
+	                        break;
     }
-
-    pd->last_event = *event;
-
-    if (time) pd->last_timestamp = time;
-
-    if (pd->dispatcher_list) {
-	XtEventDispatchProc d;
-	if (d = pd->dispatcher_list[event->xany.type & 0x7f])
-	    return (*d)(event);
-    }
-
-    pdi = _XtGetPerDisplayInput(event->xany.display);
-    grabList = *_XtGetGrabList(pdi);
-    widget = XtWindowToWidget (event->xany.display, event->xany.window);
 
     if (widget == NULL) {
 	if (grabType != remap)
@@ -1224,18 +1212,18 @@ static Boolean DecideToDispatch(event)
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
 	else if ((widget = LookupSpringLoaded(grabList)) != NULL)
-	    return DefaultDispatcher(event, widget, mask, pd);
+	    return DispatchEvent(event, widget, mask, pd);
 	return XFilterEvent(event, None);
     }
 
     switch(grabType) {
 	case pass:
-	    return DefaultDispatcher(event, widget, mask, pd);
+	    return DispatchEvent(event, widget, mask, pd);
 
 	case ignore:
 	    if ((grabList == NULL || _XtOnGrabList(widget,grabList))
 		&& XtIsSensitive(widget)) {
-		return DefaultDispatcher(event, widget, mask, pd);
+		return DispatchEvent(event, widget, mask, pd);
 	    }
 	    return XtDidNothing;
 
@@ -1251,11 +1239,11 @@ static Boolean DecideToDispatch(event)
 		if ((grabList == NULL || 
 		     _XtOnGrabList(dspWidget, grabList)) &&
 		    XtIsSensitive(dspWidget)) {
-		    was_dispatched = DefaultDispatcher(event, dspWidget,
-						       mask, pd);
+		    was_dispatched = DispatchEvent(event, dspWidget,
+						   mask, pd);
 		    if (was_dispatched & XtDidFilter)
 			return was_dispatched;
-		} 
+		}
 		else _XtUngrabBadGrabs(event, widget, mask, pdi);
 		
 		/* Also dispatch to nearest accessible spring_loaded. */
@@ -1263,8 +1251,8 @@ static Boolean DecideToDispatch(event)
 		grabList = *_XtGetGrabList(pdi);
 		widget = LookupSpringLoaded(grabList);
 		if (widget != NULL && widget != dspWidget) {
-		    was_dispatched |= DefaultDispatcher(event, widget,
-							mask, pd);
+		    was_dispatched |= DispatchEvent(event, widget,
+						    mask, pd);
 		}
 		
 		return was_dispatched;
@@ -1281,18 +1269,37 @@ Boolean XtDispatchEvent (event)
     XtAppContext app = XtDisplayToApplicationContext(event->xany.display);
     int dispatch_level = ++app->dispatch_level;
     int starting_count = app->destroy_count;
+    XtPerDisplay pd = _XtGetPerDisplay(event->xany.display);
+    Time	time = 0;
+    XtEventDispatchProc dispatch;
     void _XtRefreshMapping();
 
-    if (event->xany.type == MappingNotify)
-	_XtRefreshMapping(event, True);
+    switch (event->xany.type & 0x7f) {
+      case KeyPress:
+      case KeyRelease:	   time = event->xkey.time;		break;
+      case ButtonPress:
+      case ButtonRelease:  time = event->xbutton.time;		break;
+      case MotionNotify:   time = event->xmotion.time;		break;
+      case EnterNotify:
+      case LeaveNotify:	   time = event->xcrossing.time;	break;
+      case PropertyNotify: time = event->xproperty.time;	break;
+      case SelectionClear: time = event->xselectionclear.time;	break;
+
+      case MappingNotify:  _XtRefreshMapping(event, True);	break;
+    }
+    if (time) pd->last_timestamp = time;
+    pd->last_event = *event;
+
+    dispatch = DecideToDispatch;
+    if (pd->dispatcher_list)
+	dispatch = pd->dispatcher_list[event->xany.type & 0x7f];
+    was_dispatched = (*dispatch)(event);
 
     /*
      * To make recursive XtDispatchEvent work, we need to do phase 2 destroys
      * only on those widgets destroyed by this particular dispatch.
      *
      */
-
-    was_dispatched = DecideToDispatch(event);
 
     if (app->destroy_count > starting_count)
 	_XtDoPhase2Destroy(app, dispatch_level);
@@ -1506,7 +1513,7 @@ void _XtSendFocusEvent(child, type)
 	event.window = XtWindow(child);
 	event.mode = NotifyNormal;
 	event.detail = NotifyAncestor;
-	DefaultDispatcher((XEvent*)&event, child, _XtConvertTypeToMask(type),
+	DispatchEvent((XEvent*)&event, child, _XtConvertTypeToMask(type),
 			  _XtGetPerDisplay(dpy));
     }
 }
@@ -1534,6 +1541,7 @@ XtEventDispatchProc XtSetEventDispatcher(dpy, event_type, proc)
 {
     XtEventDispatchProc *list;
     XtEventDispatchProc old_proc = NULL;
+    XtEventDispatchProc DefaultDispatcher = DecideToDispatch;
     register XtPerDisplay pd;
 
     if (event_type > 0x7f) return (XtEventDispatchProc) DefaultDispatcher;
