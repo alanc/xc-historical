@@ -1,3 +1,4 @@
+// $XConsortium: basic,v 1.3 94/04/08 15:54:51 erik Exp $
 xkb_keycodes "ibmpc"
 
 minimum= 15;

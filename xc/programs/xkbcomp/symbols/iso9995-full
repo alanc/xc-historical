@@ -1,3 +1,4 @@
+// $XConsortium: basic,v 1.3 94/04/08 15:54:51 erik Exp $
 xkb_symbols	"iso9995-full"
 
 // Defines the special modifier keys specified by 9995 part 3
