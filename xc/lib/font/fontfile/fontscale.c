@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.4 91/07/16 20:14:22 keith Exp $
+ * $XConsortium: fontscale.c,v 1.5 91/07/17 14:29:58 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -121,19 +121,19 @@ FontFileCompleteXLFD (vals, def)
 #define Close(a,b,d)  ((b) - (d) <= (a) && (a) <= (b) + (d))
 
     if (vals->point > 0 && vals->y > 0) {
-	best = (vals->point * vals->y * 10) / 7227;
+	best = (vals->point * vals->y * 10 + 7227/2) / 7227;
 	if (vals->pixel <= 0)
 	    vals->pixel = best;
 	else if (!Close(vals->pixel, best, 1))
 	    return FALSE;
     } else if (vals->pixel > 0 && vals->y > 0) {
-	best = (vals->pixel * 7227) / (vals->y * 10);
+	best = (vals->pixel * 7227 + vals->y*5) / (vals->y * 10);
 	if (vals->point <= 0)
 	    vals->point = best;
 	else if (!Close(vals->point, best, 1))
 	    return FALSE;
     } else if (vals->point > 0 && vals->pixel > 0) {
-	best = (vals->pixel * 7227) / (vals->point * 10);
+	best = (vals->pixel * 7227 + vals->point*5) / (vals->point * 10);
 	if (vals->y <= 0)
 	    vals->y = best;
 	else if (!Close(vals->y, best, 1))
@@ -146,10 +146,10 @@ FontFileCompleteXLFD (vals, def)
 	    if (!vals->y)
 		vals->point = 0;
 	    else
-		vals->point = (vals->pixel * 7227) / (vals->y * 10);
+		vals->point = (vals->pixel * 7227 + vals->y*5) / (vals->y * 10);
 	}
 	else if (vals->point > 0)
-	    vals->pixel = (vals->point * vals->y * 10) / 7227;
+	    vals->pixel = (vals->point * vals->y * 10 + 7227/2) / 7227;
 	else {
 	    vals->point = def->point;
 	    vals->pixel = def->pixel;
