@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.19 90/06/04 14:58:58 kit Exp $
+ * $XConsortium: Quarks.c,v 1.20 90/06/05 13:55:41 kit Exp $
  */
 
 /***********************************************************
@@ -133,7 +133,7 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig)
     hashp = &nodeTable[sig % HASHTABLESIZE];
     for (np = *hashp; np != NULL; np = np->next) {
 	if (np->sig == sig) {	                /* Inline a string compare. */
-	    for (i = len, tname = np->name, tnch = name; 
+	    for (i = len, tname = (char *)np->name, tnch = (char *)name; 
 		 (--i >= 0) && (*tname++ == *tnch++) ;) {}
 	    if (i < 0)		/* all characters matched. */
 		return np->quark;
@@ -150,7 +150,7 @@ XrmQuark _XrmInternalStringToQuark(name, len, sig)
      * Inline a strncpy(). 
      */
 
-    tname = name;
+    tname = (char *)name;
     tnch = np->name;
     for (i = len; i != 0; i--, tname++, tnch++)
 	*tnch = *tname;
@@ -181,7 +181,7 @@ XrmQuark XrmStringToQuark(name)
     if (name == NULL)
 	return (NULLQUARK);
 
-    tname = name;
+    tname = (char *)name;
     for ( ; (c = *tname++) != '\0'; i++)
 	sig = (sig << 1) + c;
 
