@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.14 93/09/11 16:18:05 rws Exp $ */
+/* $XConsortium: CallbackI.h,v 1.15 94/01/18 19:34:44 converse Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,11 +92,11 @@ extern void _XtRemoveCallback(
 #endif
 );
 
-extern void _XtCallConditionalCallbackList(
+extern void _XtPeekCallback(
 #if NeedFunctionPrototypes
     Widget			/* widget */,
     XtCallbackList		/* callbacks */,
-    XtPointer			/* call_data */,
-    _XtConditionProc		/* cond_proc */
+    XtCallbackProc *		/* callback */,
+    XtPointer *			/* closure */
 #endif
 );
