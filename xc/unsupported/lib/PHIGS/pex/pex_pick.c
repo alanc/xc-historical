@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pex_pick.c,v 5.1 91/02/16 09:49:56 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,24 +27,113 @@ SOFTWARE.
 /*
  *   PEX Picking functions:
  *
- *   Section 11.1 -- Pick Device Descriptors
+ *   SECTION 7 -- RENDERER PICKING
+ *
+ *   Section 7.1 -- Pick One
+ *	PEXBeginPickOne()
+ *	PEXEndPickOne()
+ *
+ *   SECTION 12 -- WORKSTATION PICKING
+ *
+ *   Section 12.1 -- Pick Device Descriptors
  *	PEXGetPickDevice()	    
  *	PEXChangePickDevice()	    
  *
- *   Section 11.2 -- Pick Measure Resource Management 
+ *   Section 12.2 -- Pick Measure
  *	PEXCreatePickMeasure()	    
  *	PEXDeletePickMeasure()	    -- access via macro in phigspex.h
- *
- *   Section 11.3 -- Pick Measure Inquiry
  *	PEXGetPickMeasure()	    
- *
- *   Section 11.4 -- Pick Operations
  *	PEXUpdatePickMeasure()	    
  *
  */
 
 #include "pex_priv.h"
 
+
+
+/*
+ * Section 7.1 -- Pick One
+ */
+
+int PEXBeginPickOne (display, rdr_id, drawable, struct_id, method,
+	pickrec_bytes, pickrec)
+
+Display		*display;
+pexRenderer	rdr_id;
+Drawable	drawable;
+CARD32		struct_id;
+int		method;
+CARD32		pickrec_bytes;
+CARD8		pickrec[];
+
+{
+    int				status = 0;
+    Pex_srvr_info		*srvr;
+    pexBeginPickOneReq		*req;
+    Pex_data_vec		vec[1];
+
+    if (srvr = PexEntryCheck (display, 1)) {
+	LOCK_DISPLAY (display);
+	vec[0].size = pickrec_bytes;
+	vec[0].padding = PADDING (vec[0].size);
+	vec[0].data = (char *) pickrec;
+	PEX_VAR_REQUEST (BeginPickOne, display, PEX_OPCODE (srvr),
+		vec[0].size + vec[0].padding, req);
+	PEX_FP_FORMAT (req->fpFormat);
+	req->method = method;
+	req->rdr = rdr_id;
+	req->drawable = drawable;
+	req->sid = struct_id;
+	PEX_LOAD_VAR_REQUEST_DATA (display, 1, vec);
+	status = 1;
+	UNLOCK_DISPLAY (display);
+    }
+    PEX_SYNC_HANDLE (display);
+    return status;
+}
+
+
+int PEXEndPickOne (display, rdr_id, better_pick, elements, num_elements)
+
+Display			*display;
+pexRenderer		rdr_id;
+int			*better_pick;
+pexPickElementRef	**elements;
+int			*num_elements;
+
+{
+    int				status = 0;
+    unsigned			size;
+    Pex_srvr_info		*srvr;
+    pexEndPickOneReq	    	*req;
+    pexEndPickOneReply		reply;
+    
+    if (srvr = PexEntryCheck (display, 1)) {
+	LOCK_DISPLAY (display);
+	PEX_REQUEST (EndPickOne, display, PEX_OPCODE (srvr), req);
+	req->rdr = rdr_id;
+	
+	status = _XReply (display, (xReply *) &reply, 0, xFalse);
+	if (status) {
+	    *better_pick = reply.betterPick;
+	    *num_elements = reply.numPickElRefs;
+	    if ((size = reply.length * sizeof(CARD32)) > 0) {
+		if (*elements = (pexPickElementRef *) PEX_SCRATCH (srvr, size))
+		    _XRead (display, (char *) *elements, (long) size);
+		else {
+		    status = 0;
+		    PexClearReply (display, reply.length);
+		}
+	    }
+	}
+	UNLOCK_DISPLAY (display);
+    }
+    PEX_SYNC_HANDLE (display);
+    return status;    
+}
+
+
+
 /*
  * Section 11.1 -- Pick Device Descriptors
  */
