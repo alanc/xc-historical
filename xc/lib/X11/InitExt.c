@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.16 88/09/06 16:08:44 jim Exp $ */
+/* $XConsortium: XInitExt.c,v 11.17 88/10/22 11:15:09 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -28,7 +28,9 @@ XExtCodes *XInitExtension (dpy, name)
 	ext = (_XExtension *) Xcalloc (1, sizeof (_XExtension));
 	codes.extension = dpy->ext_number++;
 	ext->codes = codes;
-	
+	ext->name = Xmalloc((unsigned)strlen(name) + 1);
+	strcpy(ext->name, name);
+
 	/* chain it onto the display list */
 	ext->next = dpy->ext_procs;
 	dpy->ext_procs = ext;
