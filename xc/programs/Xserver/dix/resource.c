@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.80 90/03/27 18:15:33 rws Exp $ */
+/* $XConsortium: resource.c,v 1.81 90/09/13 09:38:02 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -58,6 +58,8 @@ extern void HandleSaveSet();
 extern void FlushClientCaches();
 static void RebuildTable();
 
+#define SERVER_MINID 32
+
 #define INITBUCKETS 64
 #define INITHASHSIZE 6
 #define MAXHASHSIZE 11
@@ -76,6 +78,7 @@ typedef struct _ClientResource {
     int		buckets;
     int		hashsize;	/* log(2)(buckets) */
     XID		fakeID;
+    XID		endFakeID;
     XID		expectID;
 } ClientResourceRec;
 
@@ -171,7 +174,8 @@ InitClientResources(client)
      * clients, we can start from zero, with SERVER_BIT set.
      */
     clientTable[i].fakeID = client->clientAsMask |
-			    (client->index ? SERVER_BIT : 32);
+			    (client->index ? SERVER_BIT : SERVER_MINID);
+    clientTable[i].endFakeID = (clientTable[i].fakeID | RESOURCE_ID_MASK) + 1;
     clientTable[i].expectID = client->clientAsMask;
     for (j=0; j<INITBUCKETS; j++) 
     {
@@ -204,11 +208,60 @@ Hash(client, id)
     return -1;
 }
 
+static XID
+AvailableID(client, id, maxid, goodid)
+    register int client;
+    register XID id, maxid, goodid;
+{
+    register ResourcePtr res;
+
+    if ((goodid >= id) && (goodid <= maxid))
+	return goodid;
+    for (; id <= maxid; id++)
+    {
+	res = clientTable[client].resources[Hash(client, id)];
+	while (res && (res->id != id))
+	    res = res->next;
+	if (!res)
+	    return id;
+    }
+    return 0;
+}
+
 XID
 FakeClientID(client)
     register int client;
 {
-    return (clientTable[client].fakeID++);
+    register XID id, maxid;
+    register ResourcePtr *resp;
+    register ResourcePtr res;
+    register int i;
+    XID goodid;
+
+    id = clientTable[client].fakeID++;
+    if (id != clientTable[client].endFakeID)
+	return id;
+    id = ((Mask)client << CLIENTOFFSET) | (client ? SERVER_BIT : SERVER_MINID);
+    maxid = id | RESOURCE_ID_MASK;
+    goodid = 0;
+    for (resp = clientTable[client].resources, i = clientTable[client].buckets;
+	 --i >= 0;)
+    {
+	for (res = *resp++; res; res = res->next)
+	{
+	    if ((res->id < id) || (res->id > maxid))
+		continue;
+	    if (((res->id - id) >= (maxid - res->id)) ?
+		(goodid = AvailableID(client, id, res->id - 1, goodid)) :
+		!(goodid = AvailableID(client, res->id + 1, maxid, goodid)))
+		maxid = res->id - 1;
+	    else
+		id = res->id + 1;
+	}
+    }
+    clientTable[client].fakeID = id + 1;
+    clientTable[client].endFakeID = maxid + 1;
+    return id;
 }
 
 Bool
