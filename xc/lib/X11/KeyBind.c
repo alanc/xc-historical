@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.56 89/12/09 21:24:26 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.56 89/12/09 22:17:34 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -70,7 +70,7 @@ KeyCodetoKeySym(dpy, keycode, col)
 KeySym
 XKeycodeToKeysym(Display *dpy,
 #if NeedWidePrototypes
-		 int kc,
+		 unsigned int kc,
 #else
 		 KeyCode kc,
 #endif

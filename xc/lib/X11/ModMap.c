@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XModMap.c,v 11.8 89/11/08 17:07:24 converse Exp $ */
+/* $XConsortium: XModMap.c,v 11.9 89/12/09 21:24:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -99,7 +99,7 @@ XFreeModifiermap(map)
 XModifierKeymap *
 XInsertModifiermapEntry(XModifierKeymap *map,
 #if NeedWidePrototypes
-			int keycode,
+			unsigned int keycode,
 #else
 			KeyCode keycode,
 #endif
@@ -149,7 +149,7 @@ XInsertModifiermapEntry(map, keycode, modifier)
 XModifierKeymap *
 XDeleteModifiermapEntry(XModifierKeymap *map,
 #if NeedWidePrototypes
-			int keycode,
+			unsigned int keycode,
 #else
 			KeyCode keycode,
 #endif

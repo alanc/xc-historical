@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.168 89/12/09 20:53:41 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.169 89/12/09 21:18:24 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1090,7 +1090,7 @@ extern XModifierKeymap *XDeleteModifiermapEntry(
 #if NeedFunctionPrototypes
     XModifierKeymap*	/* modmap */,
 #if NeedWidePrototypes
-    int			/* keycode_entry */,
+    unsigned int	/* keycode_entry */,
 #else
     KeyCode		/* keycode_entry */,
 #endif
@@ -1108,7 +1108,7 @@ extern XModifierKeymap	*XInsertModifiermapEntry(
 #if NeedFunctionPrototypes
     XModifierKeymap*	/* modmap */,
 #if NeedWidePrototypes
-    int			/* keycode_entry */,
+    unsigned int	/* keycode_entry */,
 #else
     KeyCode		/* keycode_entry */,
 #endif
@@ -1417,7 +1417,7 @@ extern KeySym XKeycodeToKeysym(
 #if NeedFunctionPrototypes
     Display*		/* display */,
 #if NeedWidePrototypes
-    int			/* keycode */,
+    unsigned int	/* keycode */,
 #else
     KeyCode		/* keycode */,
 #endif
@@ -1434,7 +1434,7 @@ extern KeySym *XGetKeyboardMapping(
 #if NeedFunctionPrototypes
     Display*		/* display */,
 #if NeedWidePrototypes
-    int			/* first_keycode */,
+    unsigned int	/* first_keycode */,
 #else
     KeyCode		/* first_keycode */,
 #endif
