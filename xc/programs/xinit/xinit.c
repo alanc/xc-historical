@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.39 89/12/13 13:49:47 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.40 89/12/13 13:52:38 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -37,8 +37,12 @@ char **newenviron = NULL;
 char *bindir = BINDIR;
 char *server_names[] = {
 #ifdef vax				/* Digital */
-    "Xqvss       Digital monochrome display on Microvax II or III series",
-    "Xqdss       Digital color display on Microvax II or III series",
+    "Xqvss       Digital monochrome display on Microvax or VAXstation",
+    "Xqdss       Digital color display on Microvax of VAXstation",
+#endif
+#if defined(ultrix) && defined(mips)
+    "Xmfbpmax    Digital monochrome display on DECstation 3100",
+    "Xcfbpmax    Digital color display on DECstation 3100",
 #endif
 #ifdef sun				/* Sun */
     "Xsun        Sun monochrome and color displays on Sun 2, 3, or 4 series",
@@ -56,10 +60,7 @@ char *server_names[] = {
     "XmacII      Apple monochrome display on Macintosh II",
 #endif
 #ifdef M4310				/* Tektronix Pegasus */
-    "Xpeg        Tektronix Pegasus display on 4310",
-#endif
-#if defined(vax) || defined(sun)	/* Parallax */
-    "Xplx        Parallax color and video graphics controller",
+    "Xpeg        Tektronix Pegasus display on 431x series",
 #endif
     NULL};
 
