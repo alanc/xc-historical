@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xrm.c,v 1.19 88/09/19 13:56:07 jim Exp $
  */
 
 /***********************************************************
@@ -680,11 +680,14 @@ static void PutLineResources(pdb, get_line, closure)
 	char *obuf = pbuf;						   \
 	if (pbuf == buf) {						   \
 	    int osize = pbuf_size;					   \
-	    pbuf = Xmalloc(pbuf_size *= 2);				   \
+	    pbuf_size *= 2;						   \
+	    pbuf = Xmalloc(pbuf_size);					   \
 	    bcopy(buf, pbuf, osize);					   \
 	}								   \
-	else								   \
-	    pbuf = Xrealloc(pbuf, pbuf_size *= 2);			   \
+	else {								   \
+	    pbuf_size *= 2;						   \
+	    pbuf = Xrealloc(pbuf, pbuf_size);				   \
+	}								   \
 	s = pbuf + (s - obuf);						   \
 	ts = pbuf + (ts - obuf);					   \
 	nameStr = pbuf + (nameStr - obuf);				   \
