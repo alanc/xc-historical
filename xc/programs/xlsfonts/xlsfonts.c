@@ -242,7 +242,7 @@ show_fonts()
 				index = j * lines_per_column + i;
 				if (index >= font_cnt)
 					break;
-				printf("%*-s", max_width, font_list[ index ]);
+				printf("%-*s", max_width, font_list[ index ]);
 			}
 			printf("\n");
 		}
