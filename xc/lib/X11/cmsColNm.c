@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.6 91/02/12 16:12:33 dave Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.7 91/02/17 16:09:19 rws Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -472,17 +472,16 @@ Retry:
     return(0);
 }
 
-#ifndef XRESOLVEPATHNAME
 
 /*
  *	NAME
- *		XResolvePathname
+ *		resolvePathname
  *
  *	SYNOPSIS
  */
 /* ARGSUSED */
 static char *
-XResolvePathname(dpy, type, filename, suffix, root, path, substitutions,
+resolvePathname(dpy, type, filename, suffix, root, path, substitutions,
 	num_substitutions, predicate, fp, mode)
     Display *dpy;
     char *type, *filename, *suffix, *root;
@@ -638,8 +637,6 @@ XResolvePathname(dpy, type, filename, suffix, root, path, substitutions,
     strcpy(pathname_ret, pathname);
     return(pathname_ret);
 }
-#endif /* XRESOLVEPATHNAME */
-
 
 
 /************************************************************************
@@ -732,7 +729,7 @@ _XcmsResolveColorString(pCCC, color_string, pColor_exact_return, result_format)
     /*
      * a. Build path to the proper national XCMS.txt.
      */
-    filename_ret = XResolvePathname(
+    filename_ret = resolvePathname(
 	    pCCC->dpy,	/* display */
 	    XCMS_COLORNAMEDB_TYPE,	/* type */
 	    XCMS_COLORNAMEDB_FILENAME,	/* filename */
