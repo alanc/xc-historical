@@ -6,7 +6,7 @@
 .ds xC Inter-Client Communication Conventions Manual
 .ds Rn 3
 .ds Vn 2.2
-.hw wid-get
+.hw XtDisplay-Of-Object XtScreen-Of-Object XtWindow-Of-Object wid-get
 .na
 .de Ds
 .nf
@@ -99,40 +99,56 @@
 .ny0
 .TH XtDisplay 3Xt "Release 6" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtDisplay, XtParent, XtScreen, XtWindow \- obtain window information about a widget
+XtDisplay, XtDisplayOfObject, XtScreen, XtScreenOfObject, XtWindow, XtWindowOfObject \- obtain window information about a widget
 .SH SYNTAX
 Display *XtDisplay(\fIw\fP)
 .br
       Widget \fIw\fP;
 .LP
-Widget XtParent(\fIw\fP)
+Display *XtDisplayOfObject(\fIobject\fP)
 .br
-     Widget \fIw\fP;
+      Widget \fIobject\fP;
 .LP
 Screen *XtScreen(\fIw\fP)
 .br
       Widget \fIw\fP;
 .LP
+Screen *XtScreenOfObject(\fIobject\fP)
+.br
+      Widget \fIobject\fP;
+.LP
 Window XtWindow(\fIw\fP)
 .br
       Widget \fIw\fP;
+.LP
+Window XtWindowOfObject(\fIobject\fP)
+.br
+      Widget \fIobject\fP;
 .SH ARGUMENTS
 .IP \fIw\fP 1i
+Specifies the widget.
+.LP
+.IP \fIobject\fP 1i
 Specifies the widget.
 .SH DESCRIPTION
 .ZN XtDisplay
 returns the display pointer for the specified widget.
 .LP
-.ZN XtParent
-returns the parent widget for the specified widget.
+.ZN XtDisplayOfObject
+returns the display pointer for the specified object.
 .LP
 .ZN XtScreen
 returns the screen pointer for the specified widget.
 .LP
+.ZN XtScreenOfObject
+returns the screen pointer for the specified object.
+.LP
 .ZN XtWindow
 returns the window of the specified widget.
+.LP
+.ZN XtWindowOfObject
+returns the window of the specified object.
 .SH "SEE ALSO"
-XtClass(3Xt)
 .br
 \fI\*(xT\fP
 .br
