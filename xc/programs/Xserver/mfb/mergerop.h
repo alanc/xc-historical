@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.1 90/02/22 18:48:56 keith Exp $
+ * $XConsortium: mergerop.h,v 1.2 90/03/01 16:33:58 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,7 +38,7 @@ extern mergeRopRec	mergeRopBits[16];
 
 #define DeclareMergeRop(register) register unsigned long   _ca1, _cx1, _ca2, _cx2;
 
-#ifdef PFILL	/* cfb */
+#if PPW != 32	/* cfb */
 #define InitializeMergeRop(alu,pm) {\
     unsigned long   _pm; \
     mergeRopPtr  _bits; \
@@ -49,7 +49,9 @@ extern mergeRopRec	mergeRopBits[16];
     _ca2 = _bits->ca2 &  _pm; \
     _cx2 = _bits->cx2 &  _pm; \
 }
-#else		/* mfb */
+#endif
+
+#if PPW == 32	/* mfb */
 #define InitializeMergeRop(alu,pm) {\
     mergeRopPtr  _bits; \
     _bits = &mergeRopBits[alu]; \
