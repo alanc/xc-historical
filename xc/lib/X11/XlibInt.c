@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.218 94/03/26 20:01:24 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.219 94/03/29 10:51:13 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1498,7 +1498,7 @@ void _XAllocIDs(dpy, ids, count)
 	id += dpy->resource_base;
 	for (i = 0; i < count; i++) {
 	    ids[i] = id;
-	    id += dpy->resource_shift;
+	    id += (1 << dpy->resource_shift);
 	    dpy->resource_id++;
 	}
 	return;
@@ -1515,7 +1515,7 @@ void _XAllocIDs(dpy, ids, count)
 	    for (i = 0; i < grep.count; i++) {
 		id = (ids[i] - dpy->resource_base) >> dpy->resource_shift;
 		if (id >= dpy->resource_id)
-		    dpy->resource_id = id + dpy->resource_shift;
+		    dpy->resource_id = id;
 	    }
 	    if (id >= dpy->resource_max) {
 		if (!(dpy->flags & XlibDisplayPrivSync)) {
