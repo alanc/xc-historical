@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.37 91/05/05 18:59:45 rws Exp $ */
+/* $XConsortium: events.c,v 5.38 91/05/09 15:35:26 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -529,6 +529,7 @@ static void
 PlayReleasedEvents()
 {
     register QdEventPtr *prev, qe;
+    register DeviceIntPtr dev;
 
     prev = &syncEvents.pending;
     while (qe = *prev)
@@ -545,8 +546,9 @@ PlayReleasedEvents()
 	    (*qe->device->public.processInputProc)(qe->event, qe->device,
 						   qe->evcount);
 	    xfree(qe);
-	    if (inputInfo.pointer->sync.frozen &&
-		inputInfo.keyboard->sync.frozen)
+	    for (dev = inputInfo.devices; dev->sync.frozen; dev = dev->next)
+		;
+	    if (!dev)
 		break;
 	    /* Playing the event may have unfrozen another device. */
 	    /* So to play it safe, restart at the head of the queue */
