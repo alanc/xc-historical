@@ -537,8 +537,12 @@ static void Initialize (greq, gnew)
     w->login.failUp = 0;
     if (w->core.width == 0)
 	w->core.width = max (GREET_W(w), FAIL_W(w)) + PAD_X(w);
-    if (w->core.height == 0)
-	w->core.height = FAIL_Y(w) + PAD_Y(w);
+    if (w->core.height == 0) {
+	int fy = FAIL_Y(w);
+	int pady = PAD_Y(w);
+
+	w->core.height = fy + pady;	/* for stupid compilers */
+    }
     if (w->core.x == -1)
 	w->core.x = (WidthOfScreen (XtScreen (w)) - w->core.width) / 2;
     if (w->core.y == -1)
