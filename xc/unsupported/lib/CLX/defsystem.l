@@ -354,8 +354,9 @@
 		      (obj  (merge-pathnames o-filename binary-path))
 		      (args (list "-c" (namestring src)
 				  "-o" (namestring obj)
-				  "-DUNIXCONN"
-				  #+hp "-DSYSV")))
+				  #+mips "-G 0"
+				  #+hp "-DSYSV"
+				  #-(and mips sgi) "-DUNIXCONN")))
 		 (format t ";;; cc~{ ~A~}~%" args)
 		 (unless
 		   (zerop 
