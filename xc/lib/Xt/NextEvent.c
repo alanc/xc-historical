@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: NextEvent.c,v 1.25 87/11/01 16:42:57 swick Locked $";
+static char rcsid[] = "$Header: NextEvent.c,v 1.26 87/11/18 08:39:15 swick Locked $";
 #endif lint
 
 /*
@@ -34,9 +34,6 @@ static char rcsid[] = "$Header: NextEvent.c,v 1.25 87/11/01 16:42:57 swick Locke
 #include Xlib
 #endif
 #include "Intrinsic.h"
-#ifndef VMS
-#include <nlist.h>
-#endif
 #ifndef VMS
 #include <sys/time.h>
 #else
