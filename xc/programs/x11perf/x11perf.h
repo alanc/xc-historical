@@ -41,6 +41,8 @@ extern Test test[];
 extern int subs[];
 extern Window root;
 
+extern int fgPixel, bgPixel;
+
 #define ForEachTest(x) for (x = 0; test[x].option != NULL; x++)
 
-extern void CreatePerfStuff(/* dpy, width, height, &w, &whitegc, &blackgc */);
+extern void CreatePerfStuff(/* dpy, width, height, &w, &bggc, &fggc */);
