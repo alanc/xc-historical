@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.47 93/09/03 13:19:45 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.48 93/09/05 10:51:00 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3221,6 +3221,7 @@ void InitClient(client, i, ospriv)
     client->osPrivate = ospriv;
     client->swapped = FALSE;
     client->big_requests = FALSE;
+    client->priority = 0;
 }
 
 /************************
