@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.101 91/07/03 14:08:07 keith Exp $ */
+/* $XConsortium: utils.c,v 1.102 91/07/03 14:10:50 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -29,6 +29,9 @@ SOFTWARE.
 #include "input.h"
 #include "opaque.h"
 #include <signal.h>
+#if !defined(SYSV) || defined(macII) || defined(sgi) || defined(hpux)
+#include <sys/resource.h>
+#endif
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
@@ -47,8 +50,14 @@ extern Bool disableSaveUnders;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
-#ifndef SYSV
-extern int limitDataSpace, limitStackSpace;
+#ifdef RLIMIT_DATA
+extern int limitDataSpace;
+#endif
+#ifdef RLIMIT_STACK
+extern int limitStackSpace;
+#endif
+#ifdef RLIMIT_NOFILE
+extern int limitNoFile;
 #endif
 extern int defaultColorVisualClass;
 extern long ScreenSaverTime;		/* for forcing reset */
@@ -168,8 +177,13 @@ void UseMsg()
     ErrorF("-fp string             default font path\n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-I                     ignore all remaining arguments\n");
-#ifndef SYSV
+#ifdef RLIMIT_DATA
     ErrorF("-ld int                limit data space to N Kb\n");
+#endif
+#ifdef RLIMIT_NOFILE
+    ErrorF("-lf int                limit number of open files to N\n");
+#endif
+#ifdef RLIMIT_STACK
     ErrorF("-ls int                limit stack space to N Kb\n");
 #endif
 #ifndef NOLOGOHACK
@@ -322,7 +336,7 @@ char	*argv[];
 	    UseMsg();
 	    exit(0);
 	}
-#ifndef SYSV
+#ifdef RLIMIT_DATA
 	else if ( strcmp( argv[i], "-ld") == 0)
 	{
 	    if(++i < argc)
@@ -334,6 +348,17 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#endif
+#ifdef RLIMIT_NOFILE
+	else if ( strcmp( argv[i], "-lf") == 0)
+	{
+	    if(++i < argc)
+	        limitNoFile = atoi(argv[i]);
+	    else
+		UseMsg();
+	}
+#endif
+#ifdef RLIMIT_STACK
 	else if ( strcmp( argv[i], "-ls") == 0)
 	{
 	    if(++i < argc)
