@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.33 91/04/02 19:28:31 gildea Exp $
+ * $XConsortium: externs.h,v 2.34 91/07/05 15:15:26 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -77,6 +77,7 @@ extern Widget   CreateFileSource	(/* Widget, String, Boolean */);
 
 	/* from popup.c */
 
+extern void	PopupInit	(/* XtAppContext */);
 extern void	DestroyPopup	(/* Widget, XtPointer, XtPointer */);
 extern void	PopupPrompt	(/* Widget, String, XtCallbackProc */);
 extern void	PopupConfirm	(/* Widget, String, XtCallbackList, ... */);
