@@ -159,7 +159,11 @@ OBJS = \
 	Varargs.o \
 	Vendor.o
 
+#if SharedDataSeparation
+UNSHAREDOBJS = StringDefs.o sharedlib.o
+#else
 UNSHAREDOBJS = sharedlib.o
+#endif
 
 LibraryObjectRule()
 
