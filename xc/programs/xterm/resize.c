@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $
+ *	$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -39,6 +39,10 @@ static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 ji
 #include <ctype.h>
 #include <sys/ioctl.h>
 
+#ifdef APOLLO_SR9
+#define CANT_OPEN_DEV_TTY
+#endif
+
 #ifdef macII
 #define USE_SYSV_TERMIO
 #undef SYSV				/* pretend to be bsd */
@@ -71,7 +75,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.6 89/01/18 16:26:01 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -179,6 +183,10 @@ char **argv;
 #endif	/* sun */
 	char *getenv();
 	int onintr();
+#ifdef CANT_OPEN_DEV_TTY
+	char *name_of_tty;
+	extern char *ttyname();
+#endif
 
 	if(ptr = rindex(myname = argv[0], '/'))
 		myname = ptr + 1;
@@ -235,9 +243,16 @@ char **argv;
 			Usage();	/* Never returns */
 	} else if(argc != 0)
 		Usage();	/* Never returns */
-	if((ttyfp = fopen("/dev/tty", "r+")) == NULL) {
-		fprintf(stderr, "%s: Can't open /dev/tty\n", myname);
-		exit(1);
+
+#ifdef CANT_OPEN_DEV_TTY
+	if ((name_of_tty = ttyname(fileno(stderr))) == NULL) 
+#endif
+	  name_of_tty = "/dev/tty";
+
+	if ((ttyfp = fopen (name_of_tty, "r+")) == NULL) {
+	    fprintf (stderr, "%s:  can't open terminal %s\n",
+		     myname, name_of_tty);
+	    exit (1);
 	}
 	tty = fileno(ttyfp);
 #ifdef USE_TERMCAP
