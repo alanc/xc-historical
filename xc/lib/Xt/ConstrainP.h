@@ -1,4 +1,4 @@
-/* $XConsortium: ConstrainP.h,v 1.11 89/06/16 18:08:56 jim Exp $ */
+/* $XConsortium: ConstrainP.h,v 1.12 89/09/12 16:46:59 swick Exp $ */
 /* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -27,6 +27,7 @@ SOFTWARE.
 #ifndef _XtConstraintP_h
 #define _XtConstraintP_h
 
+#include "Constraint.h"
 
 typedef struct _ConstraintPart {
     XtPointer   mumble;		/* No new fields, keep C compiler happy */
@@ -48,6 +49,14 @@ typedef struct _ConstraintClassPart {
     XtPointer	    extension;		/* pointer to extension record      */
 } ConstraintClassPart;
 
+typedef struct {
+    XtPointer next_extension;	/* 1st 4 mandated for all extension records */
+    XrmQuark record_type;	/* NULLQUARK; on ConstraintClassPart */
+    long version;		/* must be XtConstraintExtensionVersion */
+    Cardinal record_size;	/* sizeof(ConstraintClassExtensionRec) */
+    XtArgsProc get_values_hook;
+} ConstraintClassExtensionRec, *ConstraintClassExtension;
+
 typedef struct _ConstraintClassRec {
     CoreClassPart       core_class;
     CompositeClassPart  composite_class;
@@ -55,6 +64,8 @@ typedef struct _ConstraintClassRec {
 } ConstraintClassRec;
 
 externalref ConstraintClassRec constraintClassRec;
+
+#define XtConstraintExtensionVersion 1L
 
 #endif /* _XtConstraintP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
