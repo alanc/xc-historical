@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: dixstruct.h,v 1.7 87/09/11 07:49:48 toddb Exp $ */
+/* $Header: dixstruct.h,v 1.8 87/12/30 17:54:43 rws Locked $ */
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
 
@@ -51,7 +51,7 @@ typedef struct _Client {
     pointer osPrivate;			/* for OS layer, including scheduler */
     Bool swapped;
     void (* pSwapReplyFunc)();		
-    int	errorValue;
+    CARD32	errorValue;
     int sequence;
     int closeDownMode;
     int clientGone;
