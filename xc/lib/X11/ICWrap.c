@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XICWrap.c,v 11.1 91/04/01 18:13:55 gildea Exp $
+ * $XConsortium: XICWrap.c,v 11.1 91/04/06 13:18:45 rws Exp $
  */
 
 /*
@@ -41,6 +41,57 @@
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Xvarargs.h"
+
+/*
+ * Compile the resource list. (XIMResourceList ---> XIMrmResourceList)
+ */
+void
+_XIMCompileResourceList(res, num_res)
+    register XIMResourceList res;
+    unsigned int num_res;
+{
+    register unsigned int count;
+
+#define	xrmres	((XIMrmResourceList) res)
+
+    for (count = 0; count < num_res; res++, count++) {
+	xrmres->xrm_name = XrmPermStringToQuark(res->resource_name);
+	xrmres->xrm_size = res->resource_size;
+	xrmres->xrm_offset = -res->resource_offset - 1;
+	xrmres->mask = res->mask;
+    }
+#undef	xrmres
+}
+
+void
+_XCopyToArg(src, dst, size)
+    XPointer src;
+    XPointer *dst;
+    register unsigned int size;
+{
+    if (!*dst) {
+	union {
+	    long	longval;
+	    short	shortval;
+	    char	charval;
+	    char*	charptr;
+	    XPointer	ptr;
+	} u;
+	if (size <= sizeof(XPointer)) {
+	    bcopy((char *)src, (char *)&u, (int)size);
+	    if (size == sizeof(long))	       *dst = (XPointer)u.longval;
+	    else if (size == sizeof(short))    *dst = (XPointer)u.shortval;
+	    else if (size == sizeof(char))     *dst = (XPointer)u.charval;
+	    else if (size == sizeof(char*))    *dst = (XPointer)u.charptr;
+	    else if (size == sizeof(XPointer)) *dst = (XPointer)u.ptr;
+	    else bcopy( (char*)src, (char*)dst, (int)size );
+	} else {
+	    bcopy( (char*)src, (char*)dst, (int)size );
+	}
+    } else {
+	bcopy( (char*)src, (char*)*dst, (int)size );
+    }
+}
 
 static int
 _XIMNestedListToNestedList(nlist, list)
@@ -159,10 +210,10 @@ XVaCreateNestedList(dummy, va_alist)
 }
 
 #if NeedVarargsPrototypes
-Status
+char *
 XGetIMValues(XIM im, ...)
 #else				/* NeedVarargsPrototypes */
-Status
+char *
 XGetIMValues(im, va_alist)
     XIM im;
     va_dcl
@@ -171,7 +222,7 @@ XGetIMValues(im, va_alist)
     va_list var;
     int     total_count;
     XIMArg *args;
-    Status  s;
+    char   *ret;
 
     /*
      * so count the stuff dangling here
@@ -189,11 +240,11 @@ XGetIMValues(im, va_alist)
     /*
      * and do it
      */
-    s = (*im->methods->get_values) (im, args);
+    ret = (*im->methods->get_values) (im, args);
 
     va_end(var);
 
-    return s;
+    return ret;
 }
 
 /*
@@ -232,9 +283,9 @@ XCreateIC(im, va_alist)
     /*
      * and do it
      */
-    ic = (XIC) (*im->core.create_ic) (im, args);
+    ic = (XIC) (*im->methods->create_ic) (im, args);
 
-    (*ic->core.im->methods->add_ic) (im, ic);
+    (*im->methods->add_ic) (im, ic);
 
     va_end(var);
 
