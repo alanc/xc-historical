@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.7 92/04/30 14:50:28 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.8 92/08/12 15:22:53 hersh Exp $ */
 
 
 /***********************************************************
@@ -1281,6 +1281,9 @@ BeginPicking(pRend, pPM)
 
     pRend->render_mode = MI_REND_PICKING;
 
+    /* create listoflist for doing Pick All */
+    pRend->pickstr.list = puCreateList(DD_LIST_OF_LIST);
+
     /*
      * Reinitialize level 1 procedure jump table for PICKING !
      */
@@ -1362,6 +1365,12 @@ EndPicking(pRend)
 #ifdef DDTEST
     ErrorF( " EndPicking\n");
 #endif
+
+    /* get rid of listoflist for Pick All
+       this assumes the individual pick paths lists that this
+       pointed to have already been deleted by the EndPickAll routine 
+    */
+    puDeleteList(pRend->pickstr.list);
 
     pRend->state = PEXIdle;
 
