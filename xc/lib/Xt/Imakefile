@@ -47,6 +47,7 @@ SRCS = \
 	Cascade.c \
 	Clock.c \
 	Command.c \
+	Conversion.c \
 	Cursors.c \
 	Dialog.c \
 	DiskSrc.c \
@@ -65,6 +66,7 @@ SRCS = \
 	Popup.c \
 	Resources.c \
 	Scroll.c \
+	Simple.c \
 	StringSrc.c \
 	Text.c \
 	TMparse.c \
@@ -81,6 +83,7 @@ OBJS = \
 	Cascade.o \
 	Clock.o \
 	Command.o \
+	Conversion.o \
 	Cursors.o \
 	Dialog.o \
 	DiskSrc.o \
@@ -99,6 +102,7 @@ OBJS = \
 	Popup.o \
 	Resources.o \
 	Scroll.o \
+	Simple.o \
 	StringSrc.o \
 	Text.o \
 	TMparse.o \
