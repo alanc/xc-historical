@@ -1,6 +1,6 @@
-/* $Header$ */
+/* $Header: Imakefile,v 1.1 88/01/22 15:42:51 bennett Exp $ */
 LOCAL_LIBRARIES = $(XLIB)
-SRCS = puzzle.c main.c VEGview.c Vvcolor.c pmap.c
-OBJS = puzzle.o main.o VEGview.o Vvcolor.o pmap.o
+SRCS = puzzle.c main.c picture.c
+OBJS = puzzle.o main.o picture.o
 
 ComplexProgramTarget(puzzle)
