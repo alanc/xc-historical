@@ -1,4 +1,4 @@
-/* $XConsortium: XGetImage.c,v 11.26 91/01/06 11:46:07 rws Exp $ */
+/* $XConsortium: XGetImage.c,v 11.27 91/01/26 14:08:52 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -54,7 +54,8 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 	req->planeMask = plane_mask;
 	req->format = format;
 	
-	if (_XReply (dpy, (xReply *) &rep, 0, xFalse) == 0) {
+	if (_XReply (dpy, (xReply *) &rep, 0, xFalse) == 0 ||
+	    rep.length == 0) {
 		UnlockDisplay(dpy);
 		SyncHandle();
 		return (XImage *)NULL;
@@ -79,6 +80,8 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 		 rep.depth, ZPixmap, 0, data, width, height,
 		  _XGetScanlinePad(dpy, (int) rep.depth), 0);
 
+	if (!image)
+	    Xfree(data);
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return (image);
@@ -91,7 +94,7 @@ XImage *XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
      int x, y;
      unsigned int width, height;
      unsigned long plane_mask;
-     int format;	/* either XYFormat or ZFormat */
+     int format;	/* either XYPixmap or ZPixmap */
      XImage *dest_image;
      int dest_x, dest_y;
 {
