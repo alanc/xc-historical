@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.2 91/05/31 16:06:50 keith Exp $ */
+/* $XConsortium: init.c,v 1.3 91/07/08 11:16:26 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -50,7 +50,7 @@ extern void wsChangePointerControl();
 extern KeybdCtrl defaultKeyboardControl;
 ws_event_queue	*queue;
 
-#define NUMFORMATS 3
+#define NUMFORMATS 2
 static	PixmapFormatRec formats[] = {
 	{1, 1, BITMAP_SCANLINE_PAD},     /* 1 bit deep */
 	{8, 8, BITMAP_SCANLINE_PAD},     /* 8-bit deep */
