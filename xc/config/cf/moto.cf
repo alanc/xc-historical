@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: moto.cf,v 1.6 91/06/10 10:19:57 rws Exp $
+XCOMM platform:  $XConsortium: moto.cf,v 1.7 91/07/05 13:02:18 rws Exp $
 
 #if defined(MotoR3Architecture)
 
@@ -7,12 +7,13 @@ XCOMM platform:  $XConsortium: moto.cf,v 1.6 91/06/10 10:19:57 rws Exp $
 #define OSMinorVersion         2
 
 #define SystemV                YES
-#define StandardDefines        -DSYSV -DUSG
+#define StandardDefines        -DSYSV -DUSG -DMOTOROLA
 #define Malloc0ReturnsNull     YES
 #define LnCmd                  ln -s
 #define HasSockets             YES
 #define BuildServer            NO
 #define MotifBC                YES
+#define UseCCMakeDepend        YES
 
 #define DefaultUserPath   	:/bin:/usr/bin:$(BINDIR)
 #define DefaultSystemPath 	/etc:/bin:/usr/bin:$(BINDIR)
