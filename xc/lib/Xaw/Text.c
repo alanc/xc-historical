@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.25 88/02/05 23:16:06 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.26 88/02/06 15:10:28 swick Locked $";
 #endif lint
 
 /*
@@ -32,7 +32,6 @@ static char rcsid[] = "$Header: Text.c,v 1.25 88/02/05 23:16:06 swick Locked $";
 #include <X/Dialog.h>
 #include <X/Scroll.h>
 #include <X/Shell.h>
-#include <X/Popup.h>
 #include <X/Atoms.h>
 #include <X/Xos.h>
 #include "TextP.h"
@@ -44,14 +43,11 @@ extern void LowerCase();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
 
-#define DEFAULTVALUE ~0
-
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
 #define min(x,y)	((x) < (y) ? (x) : (y))
 #define max(x,y)	((x) > (y) ? (x) : (y))
 #define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XtstAll, XtsdRight, 1, TRUE)
 
-#define  yMargin 2
 #define zeroPosition ((XtTextPosition) 0)
 
 static void BuildLineTable ();
@@ -76,7 +72,7 @@ static XtTextSelectType defaultSelectTypes[] = {
 static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
 extern char defaultTextTranslations[];	/* fwd ref */
 static int defWidth = 100;
-static int defHeight = DEFAULTVALUE;
+static int defHeight = DEFAULT_TEXT_HEIGHT;
 static int defZero = 0;
 static int defMargin = 10;
 static int defLeftMargin = 2;
@@ -174,7 +170,7 @@ static void Initialize(request, new)
     if (!FMT8BIT)
         FMT8BIT = XInternAtom(XtDisplay(new), "FMT8BIT", False);
 
-    if (ctx->core.height == DEFAULTVALUE) {
+    if (ctx->core.height == DEFAULT_TEXT_HEIGHT) {
         ctx->core.height = (2*yMargin) + 2;
         if (ctx->text.sink)
 	    ctx->core.height += (*ctx->text.sink->MaxHeight)(new, 1);
