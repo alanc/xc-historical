@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.4 91/12/26 17:59:11 hersh Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.5 92/05/07 17:06:46 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1272,7 +1272,10 @@ OC_PARSER_FUNC_HEADER(PolylineSet)
 	EXTRACT_CARD32(numPoints, ptr);
 	ptr += CountVertexData(	ptr, pPoly->colourType, numPoints,
 				pPoly->vertexAttribs); }
-    vertexSize = ptr - (ddPointer)(pPoly+1);
+
+    vertexSize = ptr - (ddPointer)(pPoly+1) -
+        pPoly->numLists * sizeof(CARD32);
+
     GET_DD_STORAGE( ddPoly, miListHeader,
 		    (sizeof(miListHeader) + vertexSize
 		    + pPoly->numLists * sizeof(listofddPoint)));
