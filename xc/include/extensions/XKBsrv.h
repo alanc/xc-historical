@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.1 93/09/26 21:12:21 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.2 93/09/26 23:46:10 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -365,7 +365,7 @@ extern	int XKBRemoveResourceClient(
 
 extern	void DDXUpdateIndicators(
 #if NeedFunctionPrototypes
-	DevicePtr	/* keybd */,
+	DeviceIntPtr	/* keybd */,
 	CARD32		/* oldState */,
 	CARD32		/* newState */
 #endif
