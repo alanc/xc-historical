@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.22 91/07/15 22:01:15 keith Exp $
+ * $XConsortium: verify.c,v 1.23 91/07/18 20:38:50 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -115,7 +115,8 @@ struct verify_info	*verify;
 	if (!argv)
 		argv = parseArgs (argv, "xsession");
 	verify->argv = argv;
-	verify->userEnviron = userEnv (d, greet->name, home, shell);
+	verify->userEnviron = userEnv (d, p->pw_uid == 0,
+				       greet->name, home, shell);
 	Debug ("user environment:\n");
 	printEnv (verify->userEnviron);
 	verify->systemEnviron = systemEnv (d, greet->name, home);
@@ -143,8 +144,9 @@ defaultEnv ()
 }
 
 char **
-userEnv (d, user, home, shell)
+userEnv (d, useSystemPath, user, home, shell)
 struct display	*d;
+int	useSystemPath;
 char	*user, *home, *shell;
 {
     char	**env;
@@ -155,7 +157,7 @@ char	*user, *home, *shell;
     env = setEnv (env, "DISPLAY", d->name);
     env = setEnv (env, "HOME", home);
     env = setEnv (env, "USER", user);
-    env = setEnv (env, "PATH", d->userPath);
+    env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
     env = setEnv (env, "SHELL", shell);
     for (envvar = envvars; *envvar; envvar++)
     {
