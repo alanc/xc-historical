@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.104 91/06/26 14:05:03 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.105 91/07/05 15:05:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -119,10 +119,9 @@ static void QueueTimerEvent(app, ptr)
 }
 
 /* 
- * Ultrix routine to block in the toolkit.  This should be the only call to 
- * select..
+ * Routine to block in the toolkit.  This should be the only call to select.
  *
- * This routine returns when there is something to be done
+ * This routine returns when there is something to be done.
  *
  * Before calling this with ignoreInputs==False, app->outstandingQueue should
  * be checked; this routine will not verify that an alternate input source
@@ -180,7 +179,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
 	Fd_set rmaskfd, wmaskfd, emaskfd;
-	static Fd_set zero = { 0 };
+	static Fd_set zero_fd = { 0 };
 	int nfound, i, d, last_d_with_no_events = -1;
 #ifdef DEBUG_SELECT
 	int loop_count = -1;
@@ -223,9 +222,9 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			wmaskfd = app->fds.wmask;
 			emaskfd = app->fds.emask;
 		} else {
-			rmaskfd = zero;
-			wmaskfd = zero;
-			emaskfd = zero;
+			rmaskfd = zero_fd;
+			wmaskfd = zero_fd;
+			emaskfd = zero_fd;
 		}
 		if (!ignoreEvents) {
 		    for (d = 0; d < app->count; d++) {
