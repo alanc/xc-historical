@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: ArgList.c,v 1.16 88/09/06 16:26:47 jim Exp $";
+static char Xrcsid[] = "$XConsortium: ArgList.c,v 1.17 89/06/16 19:33:55 jim Exp $";
 /* $oHeader: ArgList.c,v 1.2 88/08/18 15:34:52 asente Exp $ */
 #endif /* lint */
 
@@ -30,17 +30,6 @@ SOFTWARE.
 #include	<X11/Xlib.h>
 #include	<stdio.h>
 #include	"IntrinsicI.h"
-
-#ifndef lint
-static void PrintArgList(args, num_args)
-    ArgList	args;
-    int num_args;
-{
-    for (; --num_args >= 0; args++) {
-	(void) printf("name: %s, value: 0x%x\n", args->name, args->value);
-    }
-}
-#endif
 
 /*
  * This routine merges two arglists. It does NOT check for duplicate entries.
