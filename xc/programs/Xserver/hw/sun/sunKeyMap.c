@@ -476,7 +476,7 @@ KeySymsRec sunKeySyms[] = {
     Sun2Map,		1,	0x7a,	2,
     Sun3Map,		1,	0x7a,	2,
 #ifdef KB_SUN4
-    Sun4Map,		1,	0x7a,	2,
+    Sun4Map,		1,	0x7d,	2,
 #endif
 };
 
