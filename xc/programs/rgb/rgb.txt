@@ -6,6 +6,8 @@
 253 245 230		OldLace
 250 240 230		linen
 250 235 215		antique white
+250 240 230		ghost white
+250 240 230		GhostWhite
 250 235 215		AntiqueWhite
 255 239 213		papaya whip
 255 239 213		PapayaWhip
@@ -129,22 +131,22 @@
   0 178 238		DeepSkyBlue2
   0 154 205		DeepSkyBlue3
   0 104 139		DeepSkyBlue4
-135 206 255		sky blue
-135 206 255		SkyBlue
-135 206 255		SkyBlue1
-126 192 238		SkyBlue2
-108 166 205		SkyBlue3
+135 206 235		sky blue
+135 206 235		SkyBlue
+135 206 235		SkyBlue1
+126 192 218		SkyBlue2
+108 166 195		SkyBlue3
  74 112 139		SkyBlue4
-176 226 255		light blue
-176 226 255		LightBlue
-176 226 255		LightBlue1
-164 211 238		LightBlue2
-141 182 205		LightBlue3
+176 226 230		light blue
+176 226 230		LightBlue
+176 226 230		LightBlue1
+164 211 222		LightBlue2
+141 182 195		LightBlue3
  96 123 139		LightBlue4
 176 196 222		light steel blue
 176 196 222		LightSteelBlue
-202 225 255		LightSteelBlue1
-188 210 238		LightSteelBlue2
+202 225 225		LightSteelBlue1
+188 210 218		LightSteelBlue2
 162 181 205		LightSteelBlue3
 110 123 139		LightSteelBlue4
  95 159 159		cadet blue
