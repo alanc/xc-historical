@@ -18,8 +18,6 @@
 
 #define XapolloServer     Xapollo
 
-#define CppCmd            /usr/lib/cpp
-
             PAS = /com/pas
 
 #define HasVoidSignalReturn NO
@@ -31,10 +29,6 @@
 /*****************************************************************************
  *			  Platform-specific parameters                       *
  *****************************************************************************/
-
-#if OSMajorVersion >= 10
-#define HasNdbm YES
-#endif
 
 #if (OSMajorVersion == 10) && (! CppFullANSISupport)
 #define DefaultCCOptions -U__STDC__ -D_PROTOTYPES
