@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: verimage.c,v 1.15+fix 92/06/11 15:44:26 rws Exp $
  */
 
 #include	"stdio.h"
@@ -24,6 +24,8 @@
 #include	"tet_api.h"
 #include	"xtestlib.h"
 #include	"pixval.h"
+
+#define	BUF_LEN	512
 
 extern	int 	tet_thistest;
 extern	struct	tet_testlist tet_testlist[];
@@ -49,7 +51,7 @@ int 	ic;
 unsigned int width, height;
 long depth;
 long	imdepth;
-char	buf[64];
+char	buf[BUF_LEN];
 char	name[128];
 static	int lasttest;
 static	int lastvinf;
@@ -125,7 +127,7 @@ extern	int CurVinf;
 	initfpos = ftell(fp);
 
 	do {
-	    if (fgets(buf, 512, fp) == NULL)
+	    if (fgets(buf, BUF_LEN, fp) == NULL)
 		goto badformat;
 	} while (buf[0] == '!');
 	if (sscanf(buf, "%d %d %d", &width, &height, &imdepth) < 3) {
@@ -158,7 +160,7 @@ badformat:
 
 	x = y = 0;
 
-	while (fgets(buf, 512, fp) != NULL) {
+	while (fgets(buf, BUF_LEN, fp) != NULL) {
 		if (strchr(buf, ',') != NULL) {
 			if (sscanf(buf, "%x,%x", &count, &pix) < 2)
 			    goto badformat;
@@ -194,7 +196,7 @@ ok:
 	/*
 	 * Make this separate routine XXX
 	 */
-	char	buf[512];
+	char	buf[BUF_LEN];
 	char	errfile[64];
 	long	newpos;
 	int 	n;
@@ -212,9 +214,9 @@ ok:
 		} else {
 			fseek(fp, initfpos, 0);
 			for (n = newpos-initfpos; n > 0; ) {
-				fread(buf, 1, (n>512)? 512: n, fp);
-				fwrite(buf, 1, (n>512)? 512: n, errfp);
-				n -= 512;
+				fread(buf, 1, (n>BUF_LEN)? BUF_LEN: n, fp);
+				fwrite(buf, 1, (n>BUF_LEN)? BUF_LEN: n, errfp);
+				n -= BUF_LEN;
 			}
 			report("Pixel check failed. See file %s for results", errfile);
 			Errnum++;
