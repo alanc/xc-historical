@@ -18,12 +18,14 @@ plbpex \- picture level benchmark program
 .B plbpex [-options] verb_file_name(s)
 
 .SH DESCRIPTION
-.I plbpex is used to view PEX graphics in the GPC (Graphics Performance
-Characterization) suite.  To run it, you must be in the objects subdirectory,
-and you must have write permission in that directory because the program will 
-be creating and writing to an error file.  Type:
+Plbpex is used to view PEX graphics in the GPC, or Graphics Performance
+Characterization suite.  To run it, you must be in the same directory as
+a verb command, or vrb file.  Some of these are located in the directories
+demos/gpc/objects, tests, and benchmarks. You must have write permission in
+that directory because the program will be creating and writing to an 
+error file.  Type:
 
-	host% ../plbpex [-display geometry bd bg bw hlsr buff] filename
+host% ../plbpex [-display geometry bd bg bw hlsr buff] filename
 
 The filenme must be one of the .vrb files located in the objects directory.
 
@@ -34,13 +36,20 @@ The filenme must be one of the .vrb files located in the objects directory.
     -bg color                      background color
     -bw pixels                     border width
     -hlhsr mode                    one of the following:
-                            NONE ZBUFF PAINTERS SCANLINE LINE
+                   NONE ZBUFF PAINTERS SCANLINE LINE
     -buff mode                     one of the following:
                                        SINGLE DOUBLE
     -h                             this message
 
 .SH "SEE ALSO"
 .PP
-PEX-SI User Guide 
+PEX-SI User Guide in doc/extensions/PEX/SI/User_Guide
+
+.SH BUGS
+plbpex currently crashes when twm is running.
+.LP
+-hlhsr does nothing.
+
 .SH COPYRIGHT
 Copyright 1991, Massachusetts Institute of Technology.
+
