@@ -1,13 +1,13 @@
 /* 
- * $Header$ 
- * $Locker$ 
+ * $Header: xset.c,v 1.1 87/05/07 16:31:50 dkk Locked $ 
+ * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.2 87/05/07 16:26:13 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.1 87/05/07 16:31:50 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -18,6 +18,7 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.2 87/05/07 16:26:13 dkk Locked 
 #include <netdb.h>
 #include <netinet/in.h>
 #include <strings.h>
+#include <ctype.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -43,6 +44,7 @@ char **argv;
  *  These are for XSetScreenSaver:
  */
 	int prefer_blank, allow_exp, timeout, interval;
+	int repeat = -1;
 	int dosaver = 0;
 	int pixels[512];
 	caddr_t colors[512];
@@ -160,8 +162,8 @@ char **argv;
 		else if (strcmp(arg, "s") == 0 || strcmp(arg, "saver") == 0 ||
 		    strcmp(arg, "v") == 0 || strcmp(arg, "video") == 0) {
 			timeout = 10;
-			cycle = 60;
-			video = *arg == 's' ? 1 : 0;
+			interval = 60;
+			prefer_blank = *arg == 's' ? 1 : 0;
 			dosaver = TRUE;
 			if (i >= argc)
 				break;
@@ -176,18 +178,16 @@ char **argv;
 					break;
 				arg = argv[i];
 				if (*arg >= '0' && *arg <= '9') {
-					cycle = atoi(arg);
+					interval = atoi(arg);
 					i++;
 				}
 			}
 		} 
 		else if (strcmp(arg, "-r") == 0 || strcmp(arg, "-repeat") == 0) {
 			repeat = FALSE;
-			dorepeat = TRUE;
 		} 
 		else if (strcmp(arg, "r") == 0 || strcmp(arg, "repeat") == 0) {
 			repeat = TRUE;
-			dorepeat = TRUE;
 			if (i >= argc)
 				break;
 			arg = argv[i];
@@ -197,21 +197,23 @@ char **argv;
 			else if (strcmp(arg, "off") == 0) {
 				repeat = FALSE;
 				i++;
-			}
+ 			}
 		} 
-		else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
+
+/*		else if (strcmp(arg, "p") == 0 || strcmp(arg, "pixel") == 0) {
 			if (i + 1 >= argc)
 				usage(argv[0]);
-			arg = argv[i];
+ *			arg = argv[i];
 			if (*arg >= '0' && *arg <= '9')
 				pixels[numpixels] = atoi(arg);
-			else
+ *			else
 				usage(argv[0]);
 			i++;
-			colors[numpixels] = argv[i];
+ *			colors[numpixels] = argv[i];
 			i++;
 			numpixels++;
-		} 
+ *		} 
+ */
 		else if (index(arg, ':')) {
 			disp = arg;
 		} 
@@ -230,25 +232,33 @@ char **argv;
 	}
 
 	XChangeKeyboardControl(dpy, value_mask, &values);
-	if (doclick) XKeyClickControl(click);
-	if (dolock) {
-		if (lock)  XLockToggle();
-		else XLockUpDown();
-	}
-	if (dorepeat) {
-		if (repeat) XAutoRepeatOn();
-		else XAutoRepeatOff();
-	}
-	if (dobell) XFeepControl(bell);
-	if (domouse) XMouseControl(acc, thresh);
+/*
+ *      OBSOLETE -- TO BE DELETED
+ *	if (doclick) XKeyClickControl(click);
+ *	if (dolock) {
+ *		if (lock)  XLockToggle();
+ *		else XLockUpDown();
+ *	}
+ */
+	if (repeat == TRUE)
+	        XAutoRepeatOn(dpy);
+	else if (repeat == FALSE)
+		XAutoRepeatOff(dpy);
+/*
+ *     OBSOLETE -- DELETE
+ *	if (dobell) XFeepControl(bell);
+ *	if (domouse) XMouseControl(acc, thresh);
+ */
 /*
  *    The following function sets the ScreenSaver parameters to their
  *  pre-xset values; so if they aren't specified in xset, they don't
  *  get changed.
  */
-	XGetScreenSaver(dpy, &timout, &interval, &prefer_blank, &allow_exp);
+	XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 
-	if (dosaver) XScreenSaver(timeout, cycle, video);
+	if (dosaver) XSetScreenSaver(dpy, timeout, interval, 
+				     prefer_blank, allow_exp);
+
 	screen = DefaultScreen(dpy);
 	if (DisplayCells(dpy, screen) >= 2) {
 		while (--numpixels >= 0) {
