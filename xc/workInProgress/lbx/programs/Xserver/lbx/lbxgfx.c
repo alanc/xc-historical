@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.3 94/03/27 13:15:58 dpw Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.4 94/09/12 20:28:06 mor Exp mor $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -249,9 +249,11 @@ LbxDecodeArc(in, inend, out)
 
 int
 LbxDecodePutImage (client)
-    register ClientPtr  client;
+
+register ClientPtr  client;
+
 {
-    REQUEST(xLbxPutImageReq);
+    REQUEST		(xLbxPutImageReq);
     char		*in;
     xPutImageReq	*xreq;
     int			len;
@@ -266,7 +268,7 @@ LbxDecodePutImage (client)
     if ((xreq = (xPutImageReq *) xalloc (stuff->xLength << 2)) == NULL)
 	return BadAlloc;
 
-    in = (char *)stuff + sz_xLbxPutImageReq;
+    in = (char *) stuff + sz_xLbxPutImageReq;
 
     if (stuff->compressionMethod == LbxImageCompressFaxG42D)
     {
