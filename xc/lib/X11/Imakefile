@@ -15,6 +15,8 @@
    CONN_DEFINES = ConnectionFlags
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
+     CMS_DEFINES = -DLIBDIR=\"$(LIBDIR)\"
+     NLS_DEFINES = -DXNLSPATHDEFAULT=\"$(NLSDIR)\"
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c 
@@ -380,6 +382,8 @@ SpecialSharedAndDebuggedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedAndDebuggedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialSharedAndDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedAndDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialSharedAndDebuggedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialSharedAndDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 SharedLibraryObjectRule()
@@ -391,6 +395,8 @@ SpecialSharedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialSharedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialSharedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialSharedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialSharedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialSharedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # endif
 #else
@@ -404,6 +410,8 @@ SpecialDebuggedAndProfiledObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialDebuggedAndProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialDebuggedAndProfiledObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialDebuggedAndProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 #  if DebugLibX
@@ -416,6 +424,8 @@ SpecialDebuggedObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialDebuggedObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialDebuggedObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialDebuggedObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialDebuggedObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialDebuggedObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  else
 #   if ProfileLibX
@@ -428,6 +438,8 @@ SpecialProfiledObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialProfiledObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialProfiledObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialProfiledObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialProfiledObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialProfiledObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialProfiledObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #   else
 NormalLibraryObjectRule()
@@ -439,6 +451,8 @@ SpecialObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(Encrypt.o,$(ICONFIGFILES),$(DESDEFS))
 SpecialObjectRule(Xstreams.o,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialObjectRule(XlibInt.o,$(ICONFIGFILES),$(CONN_DEFINES))
+SpecialObjectRule(XcmsColNm.o,$(ICONFIGFILES),$(CMS_DEFINES))
+SpecialObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))
 SpecialObjectRule(globals.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #if defined(ApolloArchitecture) && CCompilerMajorVersion <= 6 && CCompilerMinorVersion < 8
 SpecialObjectRule(XInitExt.o,/**/,-U__STDC__)
