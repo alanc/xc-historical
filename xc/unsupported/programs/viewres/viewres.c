@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.62 90/04/13 17:31:54 jim Exp $
+ * $XConsortium: viewres.c,v 1.63 90/05/03 14:26:20 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -262,11 +262,14 @@ static void initialize_widgetnode_list (listp, sizep, n)
         *listp = (XmuWidgetNode **) XtRealloc ((char *) *listp,
 					       (unsigned int) 
 					       (n * sizeof(XmuWidgetNode **)));
-        *sizep = ((*listp) ? n : 0);
-        if (!*listp) return;
+	if (!*listp) {
+	    *sizep = 0;
+	    return;
+	}
+	for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l =
+	  (XmuWidgetNode *) NULL;
+	*sizep = n;
     }
-    for (i = *sizep, l = (*listp) + i; i < n; i++, l++) *l =
-      (XmuWidgetNode *) NULL;
     return;
 }
 
