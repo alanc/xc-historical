@@ -306,7 +306,7 @@ void HardwareSync(xp)
      */
     XImage *image;
 
-    image = XGetImage(xp->d, xp->w, 1, 1, 1, 1, ~0, ZPixmap);
+    image = XGetImage(xp->d, xp->w, WIDTH-1, HEIGHT-1, 1, 1, ~0, ZPixmap);
     XDestroyImage(image);
 }
 
@@ -434,8 +434,8 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 	(*test->cleanup) (xp, &test->parms);
 	DestroyClipWindows(xp, test->clips);
 
-	if (reps > test->parms.reps) {
-	    /* The test can't do as many reps as we asked for.  Give up */
+	if (reps != test->parms.reps) {
+	    /* The test can't do the number of reps as we asked for.  Give up */
 	    *usecperobj = 
 		usecs / (double)(test->parms.reps * test->parms.objects);
 	    return True;
