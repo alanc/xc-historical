@@ -67,7 +67,7 @@ static void Initialize(), Realize(), Destroy();
 static void Redisplay(), Resize ();
 static Boolean SetValues();
 static int repaint_window();
-static int draw_it ();
+static void draw_it ();
 
 static void ClassInitialize();
 
@@ -315,9 +315,9 @@ static void computePupils (mouse, pupils)
 }
 
 /* ARGSUSED */
-static int draw_it(client_data, id)
-     caddr_t client_data;
-     XtIntervalId id;		/* unused */
+static void draw_it(client_data, id)
+     XtPointer client_data;
+     XtIntervalId *id;		/* unused */
 {
         EyesWidget	w = (EyesWidget)client_data;
 	Window		rep_root, rep_child;
