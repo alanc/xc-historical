@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.29 94/03/27 16:23:57 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.30 94/03/27 16:26:58 rws Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -25,12 +25,12 @@ XCOMM operating system:  OSName
 #define InstallCmd installbsd
 #if OSMinorVersion > 0
 #define ModernOSF1		YES
-#define ThreadedX		YES
 #else
 #define ModernOSF1		NO
 #define ShLibDir /usr/shlib
 #define SharedLibPex		NO  /* losing, no shared -lm */
 #endif
+#define ThreadedX		ModernOSF1
 
 #if ThreadedX
 #define ThreadsLibraries -lpthreads -lmach -lc_r
