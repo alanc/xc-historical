@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.3 89/10/28 22:38:09 keith Exp $
+ * $XConsortium: miwideline.c,v 1.4 89/10/29 11:30:51 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -643,22 +643,17 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
     	l = ((double) lw) / 2.0;
     	L = hypot ((double) dx, (double) dy);
 
-	if (projectLeft)
-	{
-	    projectXoff = dx / L * l;
-	    projectYoff = dy / L * l;
-	}
-	else
-	{
-	    projectXoff = 0;
-	    projectYoff = 0;
-	}
-
 	r = l / L;
 
 	/* coord of upper bound at integral y */
 	ya = -r * dx;
 	xa = r * dy;
+
+	if (projectLeft | projectRight)
+	{
+	    projectXoff = -ya;
+	    projectYoff = xa;
+	}
 
     	/* xa * dy - ya * dx */
 	k = l * L;
@@ -668,8 +663,12 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	rightFace->xa = -xa;
 	rightFace->ya = -ya;
 
-	righty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
-			    k, dx, dy, x1, y1, 0, &right);
+	if (projectLeft)
+	    righty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
+				      k, dx, dy, x1, y1, 0, &right);
+	else
+	    righty = miPolyBuildEdge (xa, ya,
+				      k, dx, dy, x1, y1, 0, &right);
 
 	/* coord of lower bound at integral y */
 	ya = -ya;
@@ -678,40 +677,43 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	/* xa * dy - ya * dx */
 	k = - k;
 
-	lefty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
-			   k, dx, dy, x1, y1, 1, &left);
+	if (projectLeft)
+	    lefty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
+				     k, dx, dy, x1, y1, 1, &left);
+	else
+	    lefty = miPolyBuildEdge (xa, ya,
+				     k, dx, dy, x1, y1, 1, &left);
 
 	/* coord of top face at integral y */
 
-	ya = -r * dx * signdx;
-	xa = r * dy * signdx;
+	if (signdx > 0)
+	{
+	    ya = -ya;
+	    xa = -xa;
+	}
 
-	k = 0;
 	if (projectLeft)
 	{
-	    k = (xa - projectXoff) * dx + (ya - projectYoff) * dy;
-	    xa -= projectXoff;
-	    ya -= projectYoff;
+	    double xap = xa - projectXoff;
+	    double yap = ya - projectYoff;
+	    topy = miPolyBuildEdge (xap, yap, xap * dx + yap * dy,
+				    -dy, dx, x1, y1, dx > 0, &top);
 	}
-
-	topy = miPolyBuildEdge (xa, ya, k, -dy, dx, x1, y1, dx > 0, &top);
+	else
+	    topy = miPolyBuildEdge (xa, ya, 0.0, -dy, dx, x1, y1, dx > 0, &top);
 
 	/* coord of bottom face at integral y */
-	ya = -r * dx * signdx;
-	xa = r * dy * signdx;
 
-	k = 0;
 	if (projectRight)
 	{
-	    projectXoff = dx / L * l;
-	    projectYoff = dy / L * l;
-	    k = (xa + projectXoff) * dx + (ya + projectYoff) * dy;
-	    xa += projectXoff;
-	    ya += projectYoff;
+	    double xap = xa + projectXoff;
+	    double yap = ya + projectYoff;
+	    bottomy = miPolyBuildEdge (xap, yap, xap * dx + yap * dy,
+				       -dy, dx, x2, y2, dx < 0, &bottom);
 	}
-
-	bottomy = miPolyBuildEdge (xa, ya,
-			     k, -dy, dx, x2, y2, dx < 0, &bottom);
+	else
+	    bottomy = miPolyBuildEdge (xa, ya,
+				       0.0, -dy, dx, x2, y2, dx < 0, &bottom);
 
 	if (dx < 0)
 	{
