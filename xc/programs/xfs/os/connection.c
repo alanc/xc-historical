@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.22 92/11/24 11:32:47 rws Exp $ */
+/* $XConsortium: connection.c,v 1.23 93/09/20 18:08:49 hersh Exp $ */
 /*
  * handles connections
  */
@@ -47,24 +47,13 @@
  * THIS SOFTWARE.
  */
 
-/* sorry, streams support not here yet */
-#ifdef STREAMSCONN
-#undef STREAMSCONN
-#define TCPCONN
-#endif
-
-#include	<X11/Xos.h>
+#include	<X11/Xtrans.h>
 #include	<stdio.h>
 #include	<errno.h>
 #include	<sys/param.h>
 #include	<sys/socket.h>
 #include	<sys/uio.h>
 #include	<signal.h>
-
-#ifdef TCPCONN
-#include	<netinet/in.h>
-#include	<netinet/tcp.h>
-#endif
 
 #include	"FS.h"
 #include	"FSproto.h"
@@ -74,10 +63,6 @@
 #include	"osstruct.h"
 #include	"servermd.h"
 
-#if defined(SO_DONTLINGER) && defined(SO_LINGER)
-#undef SO_DONTLINGER
-#endif
-
 #ifdef X_NOT_STDC_ENV
 extern int errno;
 #endif
@@ -85,8 +70,6 @@ extern int errno;
 
 int         ListenPort = DEFAULT_FS_PORT;   /* port to listen on */
 int         lastfdesc;
-
-extern int  ListenSock;
 
 long        WellKnownConnections;
 long        AllSockets[mskcnt];
@@ -102,6 +85,10 @@ Bool        NewOutputPending;
 Bool        AnyClientsWriteBlocked;
 
 int         ConnectionTranslation[MAXSOCKS];
+
+XtransConnInfo 	*ListenTransConns = NULL;
+int	       	*ListenTransFds = NULL;
+int		ListenTransCount;
 
 extern ClientPtr NextAvailableClient();
 
@@ -122,86 +109,38 @@ static void error_conn_max();
 static void close_fd();
 
 
-#ifdef	TCPCONN
-static int
-open_tcp_socket()
+static XtransConnInfo
+lookup_trans_conn (fd)
+
+int fd;
+
 {
-    struct sockaddr_in insock;
-    int         request;
-    int         retry;
-
-#ifndef SO_DONTLINGER
-
-#ifdef SO_LINGER
-    static int  linger[2] = {0, 0};
-
-#endif				/* SO_LINGER */
-
-#endif				/* SO_DONTLINGER */
-
-    if ((request = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-	Error("Creating TCP socket");
-	return -1;
-    }
-
-#ifdef SO_REUSEADDR
+    if (ListenTransFds)
     {
-	int         one = 1;
-
-	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
-    }
-#endif				/* SO_REUSEADDR */
-
-    bzero((char *) &insock, sizeof(insock));
-#ifdef BSD44SOCKETS
-    insock.sin_len = sizeof(insock);
-#endif
-    insock.sin_family = AF_INET;
-    insock.sin_port = htons((unsigned short) (ListenPort));
-    insock.sin_addr.s_addr = htonl(INADDR_ANY);
-    retry = 20;
-    while (bind(request, (struct sockaddr *) & insock, sizeof(insock))) {
-	if (--retry == 0) {
-	    Error("Binding TCP socket");
-	    close(request);
-	    return -1;
-	}
-
-#ifdef SO_REUSEADDR
-	sleep(1);
-#else
-	sleep(10);
-#endif				/* SO_REUSEADDR */
+	int i;
+	for (i = 0; i < ListenTransCount; i++)
+	    if (ListenTransFds[i] == fd)
+		return ListenTransConns[i];
     }
 
-#ifdef SO_DONTLINGER
-    if (setsockopt(request, SOL_SOCKET, SO_DONTLINGER, (char *) NULL, 0))
-	Error("Setting TCP SO_DONTLINGER");
-#else
-
-#ifdef SO_LINGER
-    if (setsockopt(request, SOL_SOCKET, SO_LINGER,
-		   (char *) linger, sizeof(linger)))
-	Error("Setting TCP SO_LINGER");
-#endif				/* SO_LINGER */
-
-#endif				/* SO_DONTLINGER */
-
-    if (listen(request, 5)) {
-	Error("TCP listening");
-	close(request);
-	return -1;
-    }
-    ListenSock = request;
-    return request;
+    return (NULL);
 }
-
-#endif				/* TCPCONN */
 
 StopListening()
 {
-    BITCLEAR(AllSockets, ListenSock);
-    close(ListenSock);
+    int i;
+
+    for (i = 0; i < ListenTransCount; i++)
+    {
+	BITCLEAR (AllSockets, ListenTransFds[i]);
+	_FONTTransClose (ListenTransConns[i]);
+    }
+
+    free ((char *) ListenTransFds);
+    free ((char *) ListenTransConns);
+
+    ListenTransFds = NULL;
+    ListenTransConns = NULL;
 }
 
 /*
@@ -235,10 +174,23 @@ CreateSockets(oldsock)
     }
     WellKnownConnections = 0;
 
-#ifdef TCPCONN
     if (oldsock >= 0) {		/* must be forked, and have a different socket
 				 * to listen to */
-#ifdef NOTDEf
+
+	    FatalError("Cannot re-establish the listening socket");
+	    return;
+#if 0
+/*
+ * This is currently broken!
+ *
+ * The problem is that the new process does not have the transport
+ * objects for these fds.  The xtrans lib needs some kind of function
+ * which takes an fd and transport type and creates a transport object.
+ *
+ * Plus, now that we support multiple transports, we should check for
+ * a list of fds, not just the single oldsock variable.
+ */
+
 	if (listen(oldsock, 5)) {
 	    Error("TCP listening");
 	    close(oldsock);
@@ -249,11 +201,26 @@ CreateSockets(oldsock)
 	NoticeF("Reusing existing file descriptor %d\n", oldsock);
 	WellKnownConnections |= (1L << oldsock);
     } else {
-	if ((request = open_tcp_socket()) != -1) {
-	    WellKnownConnections |= (1L << request);
+	char port[20];
+	int partial;
+
+	sprintf (port, "%d", ListenPort);
+
+	if ((_FONTTransMakeAllCOTSServerListeners (port, &partial,
+	    &ListenTransCount, &ListenTransConns) >= 0) &&
+	    (ListenTransCount >= 1))
+	{
+	    ListenTransFds = (int *) malloc (ListenTransCount * sizeof (int));
+
+	    for (i = 0; i < ListenTransCount; i++)
+	    {
+		int fd = _FONTTransGetConnectionNumber (ListenTransConns[i]);
+
+		ListenTransFds[i] = fd;
+		WellKnownConnections |= (1L << fd);
+	    }
 	}
     }
-#endif				/* TCPCONN */
 
     if (WellKnownConnections == 0)
 	FatalError("Cannot establish any listening sockets");
@@ -291,18 +258,6 @@ MakeNewConnections()
     ClientPtr   client;
     OsCommPtr   oc;
 
-#ifdef TCP_NODELAY
-    union {
-	struct sockaddr sa;
-
-#ifdef TCPCONN
-	struct sockaddr_in in;
-#endif				/* TCPCONN */
-    }           from;
-    int         fromlen;
-
-#endif				/* TCP_NODELAY */
-
     readyconnections = (LastSelectMask[0] & WellKnownConnections);
     if (!readyconnections)
 	return;
@@ -319,58 +274,32 @@ MakeNewConnections()
     }
 
     while (readyconnections) {
+	XtransConnInfo trans_conn, new_trans_conn;
+
 	curconn = ffs(readyconnections) - 1;
 	readyconnections &= ~(1 << curconn);
-	if ((newconn = accept(curconn, (struct sockaddr *) NULL,
-			      (int *) NULL)) < 0)
+
+	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
 
-#ifdef TCP_NODELAY
-	fromlen = sizeof(from);
-	if (!getpeername(newconn, &from.sa, &fromlen)) {
-	    if (fromlen && (from.sa.sa_family == AF_INET)) {
-		int         mi = 1;
+	if ((new_trans_conn = _FONTTransAccept (trans_conn)) == NULL)
+	    continue;
 
-		setsockopt(newconn, IPPROTO_TCP, TCP_NODELAY,
-			   (char *) &mi, sizeof(int));
-	    }
-	}
-#endif				/* TCP_NODELAY */
+	newconn = _FONTTransGetConnectionNumber (new_trans_conn);
 
-	/* ultrix reads hang on Unix sockets, hpux reads fail */
-
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3))
-	(void) fcntl(newconn, F_SETFL, O_NONBLOCK);
-#else
-#ifdef FIOSNBIO
-	{
-	    int         arg = 1;
-
-	    ioctl(newconn, FIOSNBIO, &arg);
-	}
-#else
-#if defined(AIXV3) && defined(FIONBIO)
-	{
-	    int arg;
-	    arg = 1;
-	    ioctl(newconn, FIONBIO, &arg);
-	}
-#else
-	(void) fcntl(newconn, F_SETFL, FNDELAY);
-#endif
-#endif
-#endif
+	_FONTTransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
 
 	oc = (OsCommPtr) fsalloc(sizeof(OsCommRec));
 	if (!oc) {
 	    fsfree(oc);
-	    error_conn_max(newconn);
-	    close(newconn);
+	    error_conn_max(new_trans_conn);
+	    _FONTTransClose(new_trans_conn);
 	    continue;
 	}
 	BITSET(AllClients, newconn);
 	BITSET(AllSockets, newconn);
 	oc->fd = newconn;
+	oc->trans_conn = new_trans_conn;
 	oc->input = (ConnectionInputPtr) NULL;
 	oc->output = (ConnectionOutputPtr) NULL;
 	oc->conn_time = connect_time;
@@ -379,7 +308,7 @@ MakeNewConnections()
 		(client = NextAvailableClient((pointer) oc))) {
 	    ConnectionTranslation[newconn] = client->index;
 	} else {
-	    error_conn_max(newconn);
+	    error_conn_max(new_trans_conn);
 	    close_fd(oc);
 	}
     }
@@ -388,9 +317,12 @@ MakeNewConnections()
 #define	NOROOM	"Maximum number of clients reached"
 
 static void
-error_conn_max(fd)
-    int         fd;
+error_conn_max(trans_conn)
+
+XtransConnInfo trans_conn;
+
 {
+    int fd = _FONTTransGetConnectionNumber (trans_conn);
     fsConnSetup conn;
     char        pad[3];
     char        byteOrder = 0;
@@ -406,7 +338,7 @@ error_conn_max(fd)
     BITSET(mask, fd);
     (void) select(fd + 1, (int *) mask, (int *) NULL, (int *) NULL, &waittime);
     /* try to read the byteorder of the connection */
-    (void) read(fd, &byteOrder, 1);
+    (void) _FONTTransRead(trans_conn, &byteOrder, 1);
     if ((byteOrder == 'l') || (byteOrder == 'B')) {
 	int         num_alts;
 	AlternateServerPtr altservers,
@@ -434,15 +366,19 @@ error_conn_max(fd)
 	    conn.minor_version = lswaps(conn.minor_version);
 	    conn.alternate_len = lswaps(conn.alternate_len);
 	}
-	(void) write(fd, (char *) &conn, SIZEOF(fsConnSetup));
+	(void) _FONTTransWrite(trans_conn,
+	    (char *) &conn, SIZEOF(fsConnSetup));
 	/* dump alternates */
 	for (i = 0, as = altservers; i < num_alts; i++, as++) {
-	    (void) write(fd, (char *) as, 2);	/* XXX */
-	    (void) write(fd, (char *) as->name, as->namelen);
+	    (void) _FONTTransWrite(trans_conn,
+		(char *) as, 2);  /* XXX */
+	    (void) _FONTTransWrite(trans_conn,
+		(char *) as->name, as->namelen);
 	    altlen = 2 + as->namelen;
 	    /* pad it */
 	    if (altlen & 3)
-		(void) write(fd, (char *) pad, ((4 - (altlen & 3)) & 3));
+		(void) _FONTTransWrite(trans_conn,
+		(char *) pad, ((4 - (altlen & 3)) & 3));
 	}
 	if (num_alts)
 	    fsfree((char *) altservers);
@@ -455,7 +391,8 @@ close_fd(oc)
 {
     int         fd = oc->fd;
 
-    close(fd);
+    if (oc->trans_conn)
+	_FONTTransClose(oc->trans_conn);
     FreeOsBuffers(oc);
     BITCLEAR(AllSockets, fd);
     BITCLEAR(AllClients, fd);
