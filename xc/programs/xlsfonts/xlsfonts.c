@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.31 90/03/28 11:34:09 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.32 91/06/24 11:09:12 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xos.h>
 #include <stdio.h>
 #include "dsimple.h"
 

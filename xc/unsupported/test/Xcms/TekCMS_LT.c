@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.7 91/05/31 19:14:10 rws Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.8 92/06/28 11:27:02 rws Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -57,6 +57,7 @@
 #include <X11/Xlib.h>
 #include <sys/stat.h>
 #include <X11/Xcms.h>
+#include <X11/Xos.h>
 
 #ifdef AUTOHEADER
 #  include "TestInit.ah"
