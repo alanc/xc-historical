@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.39 88/07/13 10:47:41 jim Exp $
+ * $XHeader: charproc.c,v 1.40 88/07/13 11:04:08 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.39 88/07/13 10:47:41 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.40 88/07/13 11:04:08 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2366,7 +2366,8 @@ int full;
 
 
 #ifdef MODEMENU
-#define	MMENU_SCROLL		0
+#define	MMENU_SCROLLBAR		0
+#define	MMENU_SCROLL		(MMENU_SCROLLBAR+1)
 #define	MMENU_VIDEO		(MMENU_SCROLL+1)
 #define	MMENU_WRAP		(MMENU_VIDEO+1)
 #define	MMENU_REVERSEWRAP	(MMENU_WRAP+1)
@@ -2374,8 +2375,7 @@ int full;
 #define	MMENU_CURSOR		(MMENU_NLM+1)
 #define	MMENU_PAD		(MMENU_CURSOR+1)
 #define	MMENU_REPEAT		(MMENU_PAD+1)
-#define	MMENU_SCROLLBAR		(MMENU_REPEAT+1)
-#define	MMENU_SCROLLKEY		(MMENU_SCROLLBAR+1)
+#define	MMENU_SCROLLKEY		(MMENU_REPEAT+1)
 #define	MMENU_SCROLLINPUT	(MMENU_SCROLLKEY+1)
 #define	MMENU_C132		(MMENU_SCROLLINPUT+1)
 #define	MMENU_CURSES		(MMENU_C132+1)
@@ -2389,6 +2389,7 @@ int full;
 #define	MMENU_HIDEVT		(MMENU_TEKMODE+1)
 
 static char *vtext[] = {
+	"Scrollbar",
 	"Jump Scroll",
 	"Reverse Video",
 	"Auto Wraparound",
@@ -2397,7 +2398,6 @@ static char *vtext[] = {
 	"Application Cursor Mode",
 	"Application Keypad Mode",
 	"Auto Repeat",
-	"Scrollbar",
 	"Scroll to bottom on key press",
 	"Scroll to bottom on tty output",
 	"Allow 80/132 switching",
