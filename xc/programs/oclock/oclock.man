@@ -48,7 +48,7 @@ fit the outline of the clock.
 causes the clock to consist only of the jewel, the hands, and the border.
 .SH COLORS
 If you would like your clock to be viewable in color, include the following 
-in your resource database:
+in the #ifdef COLOR section you read with xrdb:
 .sp 1
 *customization:                 -color
 .sp 1
