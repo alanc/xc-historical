@@ -338,7 +338,7 @@
 139  87  66		LightSalmon4
 255 140 105		salmon
 255 140 105		salmon1
-238 130  98		salmon3
+238 130  98		salmon2
 205 112  84		salmon3
 139  76  57		salmon4
 244 164  96		sandy brown
