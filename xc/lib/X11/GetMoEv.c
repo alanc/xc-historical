@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetMoEv.c,v 11.14 88/09/06 16:08:08 jim Exp $ */
+/* $XConsortium: XGetMoEv.c,v 11.15 89/03/27 11:35:35 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -33,9 +33,7 @@ XTimeCoord *XGetMotionEvents(dpy, w, start, stop, nEvents)
     tc = (XTimeCoord *) Xmalloc (
 		(unsigned)(nbytes = (long)rep.nEvents * sizeof (XTimeCoord)));
     if (!tc) {
-	/* XXX this is wrong!!  we need to read and throw away the data
-           somehow.  Probably we should try to malloc less space and repeatedly
-           read the events into the smaller space.... */
+	_XEatData (dpy, nbytes);		/* throw it away */
 	*nEvents = 0;
 	UnlockDisplay(dpy);
         SyncHandle();
