@@ -1,7 +1,7 @@
 #ifndef PEX_H
 #define PEX_H
 
-/* $XConsortium: PEX.h,v 1.5 92/07/16 11:13:30 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.6 92/08/26 13:04:56 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -377,10 +377,10 @@
 #define PEXETMEscapeSetEchoColor        "SetEchoColor"
 
 /* pick one methods */
-#define PEXPickLast                     0
-#define PEXPickClosestZ                 1
-#define PEXPickVisibleAny               2
-#define PEXPickVisibleClosest           3
+#define PEXPickLast                     1
+#define PEXPickClosestZ                 2
+#define PEXPickVisibleAny               3
+#define PEXPickVisibleClosest           4
 
 /* pick one method mnemonics */
 #define PEXETMPickLast                  "Last"
@@ -389,8 +389,8 @@
 #define PEXETMPickVisibleClosest        "VisibleClosest"
 
 /* pick all methods */
-#define PEXPickAllAll                   0
-#define PEXPickAllVisible               1
+#define PEXPickAllAll                   1
+#define PEXPickAllVisible               2
 
 /* pick all method mnemonics */
 #define PEXETMPickAllAll                "All"
