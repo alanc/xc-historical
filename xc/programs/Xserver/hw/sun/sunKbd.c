@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.9 91/11/14 13:57:03 keith Exp $ */
+/* $XConsortium: sunKbd.c,v 5.14 91/11/15 18:28:39 gildea Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -438,6 +438,7 @@ sunKbdCtrl (pKeyboard, ctrl)
     {
     	int kbdClickCmd;
 
+	pPriv->ctrl->click = ctrl->click;
 	kbdClickCmd = pPriv->ctrl->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
     	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) < 0)
  	    ErrorF("Failed to set keyclick");
