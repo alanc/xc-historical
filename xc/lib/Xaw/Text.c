@@ -223,10 +223,11 @@ static void Realize( w, valueMask, attributes )
  * position is immediately preceded by an eol graphic, then the insert cursor
  * is displayed at the beginning of the next line.
 */
-static void InsertCursor (ctx, state)
-  TextWidget ctx;
+static void InsertCursor (w, state)
+  Widget w;
   XtTextInsertState state;
 {
+    TextWidget ctx = (TextWidget)w;
     Position x, y;
     int dy, line, visible;
     XtTextBlock text;
@@ -251,7 +252,7 @@ static void InsertCursor (ctx, state)
     }
     y += dy;
     if (visible)
-	(*ctx->text.sink->InsertCursor)(ctx, x, y, state);
+	(*ctx->text.sink->InsertCursor)(w, x, y, state);
 }
 
 
@@ -357,7 +358,7 @@ static XtTextPosition PositionForXY (ctx, x, y)
  * This routine maps a source position in to the corresponding line number
  * of the text that is displayed in the window.
 */
-int LineForPosition (ctx, position)
+static int LineForPosition (ctx, position)
   TextWidget ctx;
   XtTextPosition position;
   /* it is illegal to call this routine unless there is a valid line table!*/
@@ -395,7 +396,7 @@ static int LineAndXYForPosition (ctx, pos, line, x, y)
 	*y = ctx->text.lt.info[*line].y;
 	*x = ctx->text.lt.info[*line].x;
 	linePos = ctx->text.lt.info[*line].position;
-	(*ctx->text.sink->FindDistance)(ctx, linePos,
+	(*ctx->text.sink->FindDistance)((Widget)ctx, linePos,
                                      *x, pos, &realW, &endPos, &realH);
 	*x = *x + realW;
     }
@@ -642,21 +643,22 @@ int _XtTextSetNewSelection(ctx, left, right)
  * then inserts, at pos1, the text that was passed. As a side effect it
  * "invalidates" that portion of the displayed text (if any).
 */
-int ReplaceText (ctx, pos1, pos2, text)
-  TextWidget ctx;
+int ReplaceText (w, pos1, pos2, text)
+  Widget w;
   XtTextPosition pos1, pos2;
   XtTextBlock *text;
 
  /* it is illegal to call this routine unless there is a valid line table!*/
 {
+    TextWidget ctx = (TextWidget)w;
     int i, line1, line2, visible, delta, error;
     Position x, y;
     Dimension realW, realH, width;
     XtTextPosition startPos, endPos, updateFrom;
 
     /* the insertPos may not always be set to the right spot in XttextAppend */
-    if ((pos1 == ctx->text.insertPos) && 
-        ((*ctx->text.source->EditType)(ctx->text.source) == XttextAppend)) {
+    if ((pos1 == ctx->text.insertPos) &&
+	(ctx->text.source->edit_mode == XttextAppend)) {
       ctx->text.insertPos = GETLASTPOS;
       pos2 = pos2 - pos1 + ctx->text.insertPos;
       pos1 = ctx->text.insertPos;
@@ -742,11 +744,12 @@ int ReplaceText (ctx, pos1, pos2, text)
  * In the event that this span contains highlighted text for the selection, 
  * only that portion will be displayed highlighted.
  */
-static void DisplayText(ctx, pos1, pos2)
-  TextWidget ctx;
+static void DisplayText(w, pos1, pos2)
+  Widget w;
   XtTextPosition pos1, pos2;
-  /* it is illegal to call this routine unless there is a valid line table!*/
+  /* it is illegal to call this routine unless there is a valid line table! */
 {
+    TextWidget ctx = (TextWidget)w;
     Position x, y;
     Dimension height;
     int line, i, visible;
@@ -768,8 +771,8 @@ static void DisplayText(ctx, pos1, pos2)
 	    endPos = pos2;
 	if (endPos > startPos) {
 	    if (x == ctx->text.leftmargin)
-                (*ctx->text.sink->ClearToBackground)(ctx,
-	             0, y, ctx->text.leftmargin, height);
+                (*ctx->text.sink->ClearToBackground)
+		    (w, 0, y, ctx->text.leftmargin, height);
 	    if (startPos >= ctx->text.s.right || endPos <= ctx->text.s.left) {
 		(*ctx->text.sink->Display)(ctx, x, y,
 			startPos, endPos, FALSE);
@@ -952,11 +955,12 @@ static void ExtendSelection (ctx, position, motion)
 
 /*
  * Clear the window to background color.
-*/
-static ClearWindow (ctx)
-  TextWidget ctx;
+ */
+static ClearWindow (w)
+  Widget w;
 {
-    (*ctx->text.sink->ClearToBackground)(ctx, 0, 0, ctx->core.width, ctx->core.height);
+    (*((TextWidget)w)->text.sink->
+     ClearToBackground)	(w, 0, 0, w->core.width, w->core.height);
 }
 
 
@@ -2276,7 +2280,7 @@ static void InsertFile(ctx, event)
     static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
 
    StartAction(ctx, event);
-    if ((*ctx->text.source->EditType)(ctx->text.source) != XttextEdit) {
+    if (ctx->text.source->edit_mode != XttextEdit) {
 	XBell(XtDisplay(ctx), 50);
 	EndAction(ctx);
 	return;
