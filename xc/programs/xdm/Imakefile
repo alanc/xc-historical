@@ -1,13 +1,13 @@
-XCOMM $XConsortium: Imakefile,v 1.54 91/07/19 21:37:11 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.55 91/07/20 14:53:10 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 #define BuildChooser !SystemV
 
-#if HasDESLibrary
-DES_DEFINES = -DHASDES
-DESOBJS = xdmauth.o
-DESSRCS = xdmauth.c
+#if HasXdmAuth
+XDMAUTH_DEFINES = -DHASXDMAUTH
+XDMAUTHOBJS = xdmauth.o
+XDMAUTHSRCS = xdmauth.c
 #endif
 
 #if HasSecureRPC
@@ -33,12 +33,12 @@ LOCAL_LIBRARIES = XawClientLibs $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
 		  greet.c netaddr.c reset.c resource.c protodpy.c policy.c \
 		  session.c socket.c streams.c util.c verify.c xdmcp.c \
 		  Login.c mitauth.c \
-		  cryptokey.c access.c choose.c $(DESSRCS) $(RPCSRCS)
+		  genauth.c access.c choose.c $(XDMAUTHSRCS) $(RPCSRCS)
           OBJS1 = auth.o daemon.o server.o dpylist.o dm.o error.o file.o \
 		  greet.o netaddr.o reset.o resource.o protodpy.o policy.o \
 		  session.o socket.o streams.o util.o verify.o xdmcp.o \
 		  Login.o mitauth.o \
-		  cryptokey.o access.o choose.o $(DESOBJS) $(RPCOBJS)
+		  genauth.o access.o choose.o $(XDMAUTHOBJS) $(RPCOBJS)
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
 #if BuildChooser
@@ -59,7 +59,7 @@ LOCAL_LIBRARIES = XawClientLibs $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB)
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
-		$(SIGNAL_DEFINES) $(DES_DEFINES) $(RPC_DEFINES) $(PWD_DEFINES) \
+		$(SIGNAL_DEFINES) $(XDMAUTH_DEFINES) $(RPC_DEFINES) $(PWD_DEFINES) \
 		ConnectionFlags \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
@@ -98,7 +98,7 @@ InstallProgram(chooser,$(XDMDIR))
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
-# these files depend on HASDES
+# these files depend on HASXDMAUTH
 auth.o policy.o: $(ICONFIGFILES)
 
 #ifdef IHaveSubdirs

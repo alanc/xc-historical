@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.7 90/11/19 17:34:43 keith Exp $
+ * $XConsortium: mitauth.c,v 1.8 91/05/12 20:11:06 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
 /*
  * mitauth
  *
- * generate cryptographically secure authorization keys
+ * generate authorization keys
  * for MIT-MAGIC-COOKIE-1 type authorization
  */
 
@@ -73,7 +73,7 @@ MitGetAuth (namelen, name)
     }
     bcopy (name, (char *)new->name, namelen);
     new->name_length = namelen;
-    GenerateCryptoKey (new->data, AUTH_DATA_LEN);
+    GenerateAuthorization (new->data, AUTH_DATA_LEN);
     new->data_length = AUTH_DATA_LEN;
     return new;
 }

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.42 91/07/15 15:58:58 gildea Exp $
+ * $XConsortium: auth.c,v 1.43 91/07/18 18:38:40 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -70,7 +70,7 @@
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
 
-#ifdef HASDES
+#ifdef HASXDMAUTH
 extern int	XdmInitAuth ();
 extern Xauth	*XdmGetAuth ();
 #ifdef XDMCP
@@ -98,7 +98,7 @@ static struct AuthProtocol AuthProtocols[] = {
 { (unsigned short) 18,	"MIT-MAGIC-COOKIE-1",
     MitInitAuth, MitGetAuth, NULL
 },
-#ifdef HASDES
+#ifdef HASXDMAUTH
 { (unsigned short) 19,	"XDM-AUTHORIZATION-1",
     XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth,
 },

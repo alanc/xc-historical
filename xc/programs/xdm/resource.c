@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.42 91/07/18 21:03:52 rws Exp $
+ * $XConsortium: resource.c,v 1.43 91/07/19 21:38:03 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -81,7 +81,7 @@ char	*randomFile;
 #define DEF_CHOOSER "/usr/lib/X11/xdm/chooser"
 #endif
 #ifndef DEF_AUTH_NAME
-#ifdef HASDES
+#ifdef HASXDMAUTH
 #define DEF_AUTH_NAME	"XDM-AUTHORIZATION-1 MIT-MAGIC-COOKIE-1"
 #else
 #define DEF_AUTH_NAME	"MIT-MAGIC-COOKIE-1"

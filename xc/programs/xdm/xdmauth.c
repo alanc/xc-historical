@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmauth.c,v 1.6 90/11/19 17:34:50 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.7 91/02/04 19:18:51 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,13 +21,12 @@
 /*
  * xdmauth
  *
- * generate cryptographically secure authorization keys
- * for XDM-AUTHORIZATION-1
+ * generate authorization data for XDM-AUTHORIZATION-1 as per XDMCP spec
  */
 
 #include "dm.h"
 
-#ifdef HASDES			/* entire file */
+#ifdef HASXDMAUTH
 
 static char	auth_name[256];
 static int	auth_name_len;
@@ -74,13 +73,6 @@ XdmInitAuth (name_len, name)
     bcopy (name, auth_name, name_len);
 }
 
-/*
- * Generate the encryption key and session ID when not using XDMCP.
- * The first 8 bytes are the salt, to perturb the encryption.  The
- * second 8 bytes are the per-session encryption key, used to
- * encrypt and decrypt the data sent during connection setup.
- */
-
 Xauth *
 XdmGetAuth (namelen, name)
     unsigned short  namelen;
@@ -112,11 +104,7 @@ XdmGetAuth (namelen, name)
     }
     bcopy (name, (char *)new->name, namelen);
     new->name_length = namelen;
-    GenerateCryptoKey ((char *)new->data, AUTH_DATA_LEN);
-    /*
-     * The encryption key is only 56 bits long, not 64.  XDM-AUTHORIZATION-1
-     * requires that the first byte of the key be zero.
-     */
+    GenerateAuthorization ((char *)new->data, AUTH_DATA_LEN);
     ((char *)new->data)[8] = '\0';
     new->data_length = AUTH_DATA_LEN;
     XdmPrintDataHex ("Local server auth", (char *)new->data, new->data_length);
@@ -162,7 +150,7 @@ XdmGetXdmcpAuth (pdpy,authorizationNameLen, authorizationName)
     bcopy (xdmcpauth->data, fileauth->data + 8, 8);
     XdmPrintDataHex ("Accept packet auth", xdmcpauth->data, xdmcpauth->data_length);
     XdmPrintDataHex ("Auth file auth", fileauth->data, fileauth->data_length);
-    XdmcpEncrypt (xdmcpauth->data, &pdpy->key, xdmcpauth->data, 8);
+    XdmcpWrap (xdmcpauth->data, &pdpy->key, xdmcpauth->data, 8);
     pdpy->fileAuthorization = fileauth;
     pdpy->xdmcpAuthorization = xdmcpauth;
 }
@@ -249,17 +237,17 @@ XdmCheckAuthentication (pdpy, displayID, authenticationName, authenticationData)
 	return FALSE;
     if (authenticationData->length != 8)
 	return FALSE;
-    XdmcpDecrypt (authenticationData->data, &pdpy->key,
+    XdmcpUnwrap (authenticationData->data, &pdpy->key,
 		  authenticationData->data, 8);
     XdmPrintArray8Hex ("Request packet auth", authenticationData);
     if (!XdmcpCopyARRAY8(authenticationData, &pdpy->authenticationData))
 	return FALSE;
     incoming = (XdmAuthKeyPtr) authenticationData->data;
     XdmcpIncrementKey (incoming);
-    XdmcpEncrypt (authenticationData->data, &pdpy->key,
+    XdmcpWrap (authenticationData->data, &pdpy->key,
 		  authenticationData->data, 8);
     return TRUE;
 }
 
 #endif /* XDMCP */
-#endif /* HASDES (covering the entire file) */
+#endif /* HASXDMAUTH (covering the entire file) */

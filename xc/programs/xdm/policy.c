@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.8 91/02/04 19:18:16 gildea Exp $
+ * $XConsortium: policy.c,v 1.9 91/05/06 23:53:50 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@ typedef struct _XdmAuth {
 } XdmAuthRec, *XdmAuthPtr;
 
 static XdmAuthRec auth[] = {
-#ifdef HASDES
+#ifdef HASXDMAUTH
 { {(CARD16) 20, (CARD8 *) "XDM-AUTHENTICATION-1"},
   {(CARD16) 19, (CARD8 *) "XDM-AUTHORIZATION-1"},
 },
@@ -70,7 +70,7 @@ CheckAuthentication (pdpy, displayID, name, data)
     struct protoDisplay	*pdpy;
     ARRAY8Ptr		displayID, name, data;
 {
-#ifdef HASDES
+#ifdef HASXDMAUTH
     if (name->length && !strncmp ((char *)name->data, "XDM-AUTHENTICATION-1", 20))
 	return XdmCheckAuthentication (pdpy, displayID, name, data);
 #endif

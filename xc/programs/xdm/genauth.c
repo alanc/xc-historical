@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.6 90/11/19 17:34:48 keith Exp $
+ * $XConsortium: cryptokey.c,v 1.7 91/01/09 17:31:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,17 +22,15 @@
 # include   <X11/Xos.h>
 # include   "dm.h"
 
-/*
- * crypto key.  Generate cryptographically secure random numbers
- */
-
 static unsigned char	key[8];
 
-#ifdef HASDES
-# define USE_XDMCP_DES
+#ifdef HASXDMAUTH
 
-typedef unsigned char des_cblock[8];	/* crypto-block size */
-typedef struct des_ks_struct { des_cblock _; } des_key_schedule[16];
+typedef unsigned char auth_cblock[8];	/* block size */
+
+typedef struct auth_ks_struct { auth_cblock _; } auth_wrapper_schedule[16];
+
+extern void _XdmcpWrapperToOddParity();
 
 static
 longtochars (l, c)
@@ -76,7 +74,7 @@ long	sum[2];
 }
 
 static
-InitCryptoKey ()
+InitXdmcpWrapper ()
 {
     long	    sum[2];
     unsigned char   tmpkey[8];
@@ -88,12 +86,12 @@ InitCryptoKey ()
     longtochars (sum[0], tmpkey+0);
     longtochars (sum[1], tmpkey+4);
     tmpkey[0] = 0;
-    XdmcpKeyToOddParityKey (tmpkey, key);
+    _XdmcpWrapperToOddParity (tmpkey, key);
 }
 
 #endif
 
-GenerateCryptoKey (auth, len)
+GenerateAuthorization (auth, len)
 char	*auth;
 int	len;
 {
@@ -115,26 +113,26 @@ int	len;
 	ldata[1] = getpid ();
     }
 #endif
-#ifdef USE_XDMCP_DES
+#ifdef HASXDMAUTH
     {
     	int		    bit;
     	int		    i;
-	des_key_schedule    schedule;
+	auth_wrapper_schedule    schedule;
 	unsigned char	    data[8];
-	static int	    cryptoInited;
+	static int	    xdmcpAuthInited;
     
 	longtochars (ldata[0], data+0);
 	longtochars (ldata[1], data+4);
-	if (!cryptoInited)
+	if (!xdmcpAuthInited)
 	{
-	    InitCryptoKey();
-	    cryptoInited = 1;
+	    InitXdmcpWrapper ();
+	    xdmcpAuthInited = 1;
 	}
-	des_set_key (key, schedule);
+	_XdmcpAuthSetup (key, schedule);
     	for (i = 0; i < len; i++) {
 	    auth[i] = 0;
 	    for (bit = 1; bit < 256; bit <<= 1) {
-	    	des_ecb_encrypt (data, data, schedule, 1);
+	    	_XdmcpAuthDoIt (data, data, schedule, 1);
 	    	if (data[0] + data[1] & 0x4)
 		    auth[i] |= bit;
 	    }
