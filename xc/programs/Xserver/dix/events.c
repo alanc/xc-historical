@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.104 87/09/02 03:48:45 toddb Locked $ */
+/* $Header: events.c,v 1.105 87/09/03 10:18:39 newman Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -748,6 +748,8 @@ DeliverEventsToWindow(pWin, pEvents, count, filter, grab)
             else 
     	        pEvents->u.u.detail = NotifyHint;
 	}
+	else
+            pEvents->u.u.detail = NotifyNormal;
         lastWasMotion = TRUE;
 	filter = Motion_Filter(keyButtonState);
     }
