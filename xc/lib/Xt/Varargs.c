@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.4 89/11/10 17:41:00 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.6 89/11/13 12:39:02 swick Exp $";
 #endif
 /*
 
@@ -57,16 +57,11 @@ _XtCountNestedList(avlist, total_count, typed_count)
  *    and the count of the number of those attributes that are typed.
  *    The list is counted recursively.
  */
-#if IncludePrototypes
-void
-_XtCountVaList(va_list var, int *total_count, int *typed_count)
-#else
 void
 _XtCountVaList(var, total_count, typed_count)
     va_list     var;
     int         *total_count;
     int         *typed_count;
-#endif
 {
     String          attr;
     
@@ -141,13 +136,9 @@ XtVarArgsList XtVaCreateArgsList(unused, va_alist)
 }
 
 
-#if IncludePrototypes
-XtTypedArgList _XtVaCreateTypedArgList(va_list var, int count)
-#else
 XtTypedArgList _XtVaCreateTypedArgList(var, count)
     va_list    	    var;     
     register int    count;
-#endif
 {
     String	    attr;
     XtTypedArgList  avlist;
@@ -289,10 +280,6 @@ _XtNestedArgtoArg(widget, avlist, args, resources, num_resources)
  *    equivalent ArgList and count. _XtVaToArgList() handles nested 
  *    lists and typed arguments. 
  */
-#if IncludePrototypes
-void
-_XtVaToArgList(Widget widget, va_list var, int max_count, ArgList *args_return, Cardinal *num_args_return)
-#else
 void
 _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
     Widget		widget;
@@ -300,7 +287,6 @@ _XtVaToArgList(widget, var, max_count, args_return, num_args_return)
     int			max_count;
     ArgList		*args_return;
     Cardinal		*num_args_return;
-#endif
 {
     String		attr;
     int			count = 0;
@@ -393,17 +379,12 @@ static int _XtNestedArgtoTypedArg(args, avlist)
  *    lists.
  *    Note: _XtVaToTypedArgList() does not do type conversions.
  */
-#if IncludePrototypes
-void
-_XtVaToTypedArgList(va_list var, int max_count, XtTypedArgList *args_return, Cardinal *num_args_return)
-#else
 void
 _XtVaToTypedArgList(var, max_count, args_return, num_args_return)
     va_list             var;
     int			max_count;
     XtTypedArgList   	*args_return;
     Cardinal            *num_args_return;
-#endif
 {
     XtTypedArgList	args = NULL;
     String              attr;
