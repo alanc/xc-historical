@@ -339,7 +339,7 @@ be modified with \fBXtSetValues\fP.
 Do not modify this resource.  While setting this resource will
 work, it can cause unexpected behavior.  When this symbol appears
 there is another preferred interface proveded by the \*(tk.
-.IP R .i5
+.IP R .5i
 This resource is READ-ONLY, and may not be modified. 
 .LP
 After the resource table is a detailed description of every resource
