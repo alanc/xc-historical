@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.1 93/08/17 18:58:54 mor Exp $ */
+/* $XConsortium: error.c,v 1.1 93/08/19 18:25:24 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -452,6 +452,9 @@ IcePointer	data;
 	default:
 	    break;
     }
+
+    if (severity == IceFatalToProtocol || severity == IceFatalToConnection)
+	exit (1);
 }
 
 
