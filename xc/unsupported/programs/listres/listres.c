@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.28 90/04/30 16:56:29 converse Exp $
+ * $XConsortium: listres.c,v 1.29 91/01/09 18:11:38 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -237,13 +237,14 @@ main (argc, argv)
     char **argv;
 {
     int i;
+    XtAppContext appcon;
     XmuWidgetNode *topnode;
     Widget toplevel, container;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize (NULL, "Listres", Options, XtNumber (Options),
-			     (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize (&appcon, "Listres", Options, XtNumber(Options),
+				&argc, argv, NULL, NULL, 0);
     container = XtCreateWidget ("dummy", widgetClass, toplevel, NULL, ZERO);
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
