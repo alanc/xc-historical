@@ -1,4 +1,4 @@
-	DEFINES = -DXAW_BC
+	DEFINES = 
            SRCS = dashlist.c planemask.c getfilename.c tests.c text.c \
 		  choice.c main.c interpret.c record.c testfrac.c
       OTHERSRCS = gram.y lex.l
