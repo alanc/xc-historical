@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.111 87/11/05 09:14:33 rws Locked $ */
+/* $Header: events.c,v 1.112 87/11/05 11:13:59 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2445,6 +2445,7 @@ InitPointerDeviceStruct(device, map, mapLength, motionProc, controlProc)
     mouse->u.ptr.autoReleaseGrab = FALSE;
     if (mouse == inputInfo.pointer)
 	SetPointerStateMasks(mouse);
+    (*mouse->u.ptr.CtrlProc)(mouse, &mouse->u.ptr.ctrl);
 }
 
 void
@@ -2592,8 +2593,8 @@ InitKeyboardDeviceStruct(device, pKeySyms, pModifiers,
     {
 	SetKeyboardStateMasks(keybd);
 	SetKeySymsMap(pKeySyms);
-	(*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);  
     }
+    (*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);  
 }
 
 void
