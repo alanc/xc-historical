@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsStCol.c,v 1.3 91/02/12 16:13:47 dave Exp $" */
+/* $XConsortium: XcmsStCol.c,v 1.4 91/05/13 23:29:23 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -73,7 +73,7 @@ XcmsStoreColor(dpy, colormap, pColor_in)
 {
     XcmsColor tmpColor;
 
-    bcopy((char *)pColor_in, (char *)&tmpColor, (unsigned) sizeof(XcmsColor));
+    tmpColor = *pColor_in;
     return(_XcmsSetGetColors (XStoreColor, dpy, colormap,
-	    pColor_in, 1, XcmsRGBFormat, (Bool *) NULL));
+			      &tmpColor, 1, XcmsRGBFormat, (Bool *) NULL));
 }
