@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.140 94/03/30 11:30:21 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.141 94/03/30 16:01:04 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -725,13 +725,7 @@ typedef struct _XExten {	/* private to extension mechanism */
 _XFUNCPROTOBEGIN
 
 #ifdef DataRoutineIsProcedure
-extern void Data(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    _Xconst char*	/* data */,
-    long		/* len */
-#endif
-);
+extern void Data();
 #endif
 extern int _XError(
 #if NeedFunctionPrototypes
