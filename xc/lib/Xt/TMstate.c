@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.133 91/02/03 15:09:37 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.134 91/02/05 19:11:14 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -35,8 +35,6 @@ SOFTWARE.
 #ifndef TM_NO_MATCH
 #define TM_NO_MATCH (-2)
 #endif /* TM_NO_MATCH */
-
-Boolean _XtCallConverter();
 
 /* forward definitions */
 static StatePtr NewState();
@@ -1547,8 +1545,6 @@ static XtTranslations MergeThem(dest, first, second)
     XtTranslations	first, second;
 {
     XtCacheRef 		cache_ref;
-    ConverterTable 	table;
-    ConverterPtr	 	cP;
     static XrmQuark 	from_type, to_type;
     static Boolean 	initialized = FALSE;
     XrmValue 		from, to;
@@ -1567,12 +1563,8 @@ static XtTranslations MergeThem(dest, first, second)
     to.size = sizeof(XtTranslations);
     convert_rec.old = first;
     convert_rec.new = second;
-    table = XtWidgetToApplicationContext(dest)->converterTable;
-    cP = table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
-    
-    if (! _XtCallConverter( XtDisplay(dest), _XtCvtMergeTranslations,
-			   (XrmValuePtr)NULL, (Cardinal)0, &from, &to,
-			   &cache_ref, cP ))
+
+    if (! _XtConvert(dest, from_type, &from, to_type, &to, &cache_ref))
       return(NULL);
     if (cache_ref != NULL) {
 	XtAddCallback(dest, XtNdestroyCallback,
