@@ -20,16 +20,18 @@ extern void InitValGC();
 extern void DoValGC();
 extern void EndValGC();
 
-extern void InitSmallSegs();
-extern void InitMedSegs();
-extern void InitSegs();
+extern void InitSegs1();
+extern void InitSegs10();
+extern void InitSegs100();
+extern void InitSegs500();
 extern void DoSegs();
 extern void EndSegs();
 
-extern void InitSmallLines();
-extern void InitMedLines();
-extern void InitLines();
-extern void InitDashedLines();
+extern void InitLines1();
+extern void InitLines10();
+extern void InitLines100();
+extern void InitLines500();
+extern void InitDashedLines100();
 extern void DoLines();
 extern void EndLines();
 
@@ -164,36 +166,42 @@ Test test[] = {
   {"-bigtilerects", "50x50 4x4 Tiled Rectangle",
 		InitRects, DoRects, NullProc, EndRects, False, False,
 		{50, POLY/10, 50, NULL, NULL, FillTiled}},
-  {"-smallsegs", "1-pixel line segment",
-		InitSmallSegs, DoSegs, NullProc, EndSegs, False, False,
+  {"-segs1", "1-pixel line segment",
+		InitSegs1, DoSegs, NullProc, EndSegs, False, False,
 		{100, POLY, 0}},
-  {"-medsegs", "10-pixel line segemnt",
-		InitMedSegs, DoSegs, NullProc, EndSegs, False, False,
+  {"-segs10", "10-pixel line segment",
+		InitSegs10, DoSegs, NullProc, EndSegs, False, False,
 		{100, POLY, 0}},
-  {"-segs", "Line segment",
-		InitSegs, DoSegs, NullProc, EndSegs, False, False,
+  {"-segs100", "100-pixel line segment",
+		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
+		{50, POLY, 0}},
+  {"-segs500", "500-pixel line segment",
+		InitSegs500, DoSegs, NullProc, EndSegs, False, False,
 		{10, POLY, 0}},
-  {"-smalllines", "1-pixel line",
-		InitSmallLines, DoLines, NullProc, EndLines, False, False,
+  {"-segs100c1", "100-pixel line segment (1 occluding window)",
+		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
+		{50, POLY, 1}},
+  {"-segs100c2", "100-pixel line segment (2 occluding windows)",
+		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
+		{50, POLY, 2}},
+  {"-segs100c3", "100-pixel line segment (3 occluding windows)",
+		InitSegs100, DoSegs, NullProc, EndSegs, False, False,
+		{50, POLY, 3}},
+  {"-lines1", "1-pixel line",
+		InitLines1, DoLines, NullProc, EndLines, False, False,
 		{100, POLY, 0}},
-  {"-medlines", "10-pixel line",
-		InitMedLines, DoLines, NullProc, EndLines, False, False,
+  {"-lines10", "10-pixel line",
+		InitLines10, DoLines, NullProc, EndLines, False, False,
 		{100, POLY, 0}},
-  {"-lines", "Line",
-		InitLines, DoLines, NullProc, EndLines, False, False,
-		{20, POLY, 0}},
-  {"-lines1", "Line (1 occluding window)",
-		InitLines, DoLines, NullProc, EndLines, False, False,
-		{20, POLY, 1}},
-  {"-lines2", "Line (2 occluding windows)",
-		InitLines, DoLines, NullProc, EndLines, False, False,
-		{20, POLY, 2}},
-  {"-lines3", "Line (3 occluding windows)",
-		InitLines, DoLines, NullProc, EndLines, False, False,
-		{20, POLY, 3}},
-  {"-dlines", "Dashed line",
-		InitDashedLines, DoLines, NullProc, EndLines, False, False,
-		{10, 20, 0}},
+  {"-lines100", "100-pixel line",
+		InitLines100, DoLines, NullProc, EndLines, False, False,
+		{50, POLY, 0}},
+  {"-lines500", "500-pixel line",
+		InitLines500, DoLines, NullProc, EndLines, False, False,
+		{10, POLY, 0}},
+  {"-dlines", "100-pixel dashed line",
+		InitDashedLines100, DoLines, NullProc, EndLines, False, False,
+		{10, POLY, 0}},
   {"-smallcircles", "1-pixel circle",
 		InitSmallCircles, DoArcs, NullProc, EndArcs, False, False,
 		{10, POLY, 0}},
