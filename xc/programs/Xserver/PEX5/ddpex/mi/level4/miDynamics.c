@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miDynamics.c,v 5.1 91/02/16 09:56:13 rws Exp $ */
 
 
 /***********************************************************
@@ -61,7 +61,7 @@ miDealWithDynamics(dynamic, pwksToLookAt)
 
 	wksPtr = (miWksPtr) ((*pWKS)->deviceData);
 
-	if (!wksPtr) break;		/* workstation has been freed */
+	if (!wksPtr) continue;		/* workstation has been freed */
 
 	switch (wksPtr->displayUpdate) {
 	    case PEXVisualizeEach:
