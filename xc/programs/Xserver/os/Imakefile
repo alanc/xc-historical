@@ -38,20 +38,30 @@ DESOBJS =
 DESSCRS =
 #endif
 
+#if HasSecureRPC
+RPCDEFS = -DSECURE_RPC
+RPCOBJS = rpcauth.o
+RPCSRCS = rpcauth.c
+#else
+RPCDEFS =
+RPCOBJS =
+RPCSRCS =
+#endif
+
 BOOTSTRAPCFLAGS = 
            SRCS = WaitFor.c access.c connection.c io.c oscolor.c \
                   osinit.c utils.c auth.c mitauth.c $(FONTSRCS) $(DESSRCS) \
- 		  xdmcp.c decompress.c OtherSources
+ 		  $(RPCSRCS) xdmcp.c decompress.c OtherSources
            OBJS = WaitFor.o access.o connection.o io.o oscolor.o \
                   osinit.o utils.o auth.o mitauth.o $(FONTOBJS) $(DESOBJS) \
- 		  xdmcp.o decompress.o OtherObjects
+ 		  $(RPCOBJS) xdmcp.o decompress.o OtherObjects
 #if SpecialMalloc
      OS_DEFINES = -DSPECIAL_MALLOC
 #else
      OS_DEFINES =
 #endif /* SpecialMalloc */
     DBM_DEFINES = NdbmDefines
-        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS)
+        DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS)
        INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
        LINTLIBS = ../../dix/llib-ldix.ln
