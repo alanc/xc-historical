@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.141 95/05/10 15:21:19 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.142 95/05/23 14:31:40 matt Exp gildea $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -277,7 +277,7 @@ XCOMM operating system:  OSName
 #endif
 #else	/* OSMajorVersion >= 5*/
 #ifndef DefaultCCOptions
-#define DefaultCCOptions -Xc
+#define DefaultCCOptions -Xa
 #endif
 #endif	
 #endif	

@@ -1,4 +1,4 @@
-/* $XConsortium: bsd_io.c,v 1.2 95/01/06 20:58:16 kaleb Exp kaleb $ */
+/* $XConsortium: bsd_io.c,v 1.3 95/01/16 13:17:58 kaleb Exp gildea $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.2 1995/01/10 10:28:47 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
@@ -128,12 +128,8 @@ int xf86GetKbdLeds()
 	return(leds);
 }
 
-#if __STDC__
-void xf86SetKbdRepeat(char rad)
-#else
 void xf86SetKbdRepeat(rad)
 char rad;
-#endif
 {
 	switch (xf86Info.consType) {
 

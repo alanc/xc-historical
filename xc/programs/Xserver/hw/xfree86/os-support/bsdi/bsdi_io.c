@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bsdi_io.c,v 1.1 94/03/28 21:28:32 dpw Exp gildea $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -62,12 +62,8 @@ int xf86GetKbdLeds()
 	return(0);
 }
 
-#if __STDC__
-void xf86SetKbdRepeat(char rad)
-#else
 void xf86SetKbdRepeat(rad)
 char rad;
-#endif
 {
 	return;
 }

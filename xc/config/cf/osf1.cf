@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.47 95/02/21 21:36:15 gildea Exp gildea $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.48 95/04/24 19:33:49 gildea Exp gildea $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -109,10 +109,10 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef MipsArchitecture
-#define DefaultCCOptions	-Xc
+#define DefaultCCOptions	-Xa
 #define XdecServer YES
 #define ServerOSDefines -DDDXTIME
-#define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
+#define PexCCOptions -Xa -Wf,-XNp15000,-XNd15000
 #define NormalLibObjCompile(options) $(RM) $@ $*.os \			@@\
 	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
 	&& $(LD) $(LDSTRIPFLAGS) -r $@ -o $*.os \			@@\
