@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: commands.c,v 1.12 88/02/23 21:06:00 rws Exp $";
+static char rcs_id[] = "$Header: commands.c,v 1.13 88/07/21 13:41:20 jim Exp $";
 #endif
 
 /*
@@ -38,7 +38,7 @@ DoQuit()
 {
     if((lastChangeNumber == PSchanges(source)) ||
        (quitChangeNumber == PSchanges(source))){
-        exit();
+        exit(0);
     } else {    
         XeditPrintf("\nUnsaved changes. Save them, or press Quit again.");
         Feep();
