@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.177 94/02/06 15:31:42 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.178 94/03/30 12:06:38 gildea Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -70,7 +70,6 @@ EXTRA_LIBRARIES = /**/
         DEFINES = $(MALLOC_DEFINES) $(LIB_DEFINES)
    OPEN_DEFINES = -I$(EXTINCSRC) $(K5INCL) $(K5DEFS)
  DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES)
-   INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
            SRCS = $(SRCS1) $(SRCS2) $(SRCS3) /* try *.c if you have trouble */
@@ -931,7 +930,7 @@ MAKEKEYS = ./makekeys
 
 ks_tables.h: $(INCLUDESRC)/keysymdef.h util/makekeys.c
 	RemoveFiles($@ ProgramTargetName(makekeys) makekeys.Osuf)
-	-LinkRule(makekeys,$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
+	-HostLinkRule(makekeys,$(CFLAGS) $(LOCAL_LDFLAGS),util/makekeys.c,$(LDLIBS))
 	RunProgram(MAKEKEYS,< $(INCLUDESRC)/keysymdef.h > ks_tables_h)
 	$(MV) ks_tables_h $@
 	RemoveFiles(ProgramTargetName(makekeys) makekeys.Osuf ks_tables_h)
