@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.1 91/01/09 19:21:32 converse Exp $ */
+/* $XConsortium: GetValues.c,v 1.1 91/05/11 20:40:15 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -31,7 +31,7 @@ SOFTWARE.
 extern void _XtCopyToArg();
 extern XrmResourceList* _XtCreateIndirectionTable();
 
-static void GetValues(base, res, num_resources, args, num_args)
+static int GetValues(base, res, num_resources, args, num_args)
   char*			base;		/* Base address to fetch values from */
   XrmResourceList*      res;		/* The current resource values.      */
   register Cardinal	num_resources;	/* number of items in resources      */
@@ -42,10 +42,14 @@ static void GetValues(base, res, num_resources, args, num_args)
     register int 		i;
     register XrmName		argName;
     register XrmResourceList*   xrmres;
+    int				translation_arg_num = -1;
     static XrmQuark QCallback = NULLQUARK;
+    static XrmQuark QTranslationTable = NULLQUARK;
 
-    if (QCallback == NULLQUARK)
+    if (QCallback == NULLQUARK) {
 	QCallback = XrmPermStringToQuark(XtRCallback);
+	QTranslationTable = XrmPermStringToQuark(XtRTranslationTable);
+    }
 
     /* Resource lists should be in compiled form already  */
 
@@ -66,6 +70,8 @@ static void GetValues(base, res, num_resources, args, num_args)
 			      (char*)&callback, &arg->value,
 			      (*xrmres)->xrm_size);
 		}
+		else if ((*xrmres)->xrm_type == QTranslationTable)
+		    translation_arg_num = (int) (arg - args);
 		else {
 		    _XtCopyToArg(
 			      base - (*xrmres)->xrm_offset - 1,
@@ -76,6 +82,7 @@ static void GetValues(base, res, num_resources, args, num_args)
 	    }
 	}
     }
+    return translation_arg_num;
 } /* GetValues */
 
 static void CallGetValuesHook(widget_class, w, args, num_args)
@@ -138,6 +145,7 @@ void XtGetValues(w, args, num_args)
     register Cardinal num_args;
 {
     WidgetClass wc = XtClass(w);
+    int targ;
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
@@ -148,8 +156,13 @@ void XtGetValues(w, args, num_args)
     }
 
     /* Get widget values */
-    GetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
+    targ = GetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
+    if (targ != -1 && XtIsWidget(w)) {
+	XtTranslations translations = _XtGetTranslationValue(w);
+	_XtCopyToArg((char*)&translations, &args[targ].value,
+		     sizeof(XtTranslations));
+    }
 
     /* Get constraint values if necessary */
     /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
