@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.160 93/09/04 22:08:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.161 93/09/12 20:32:56 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -60,14 +60,10 @@ XCOMM $XConsortium: Imakefile,v 1.160 93/09/04 22:08:17 rws Exp $
              MI = mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(DEPFONTLIB)
-#if SystemV4 && X386Server
-        SYSLIBS = MathLibrary /usr/ucblib/libucb.a
-#else
 #if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture)
         SYSLIBS = MathLibrary
 #else
         SYSLIBS = MathLibrary DBMLibrary
-#endif
 #endif
            CBRT = mi/cbrt.o
 
@@ -154,11 +150,6 @@ ALL1 = Xmips
 #define realServer
 #endif
 
-#if X386Server
-ALL1 = X386
-#define realServer
-#endif
-
 #if XnonServer
 ALL1 = Xnon
 #endif
@@ -170,6 +161,11 @@ ALL1 = Xiris
 
 #if XhpServer
 ALL1 = Xhp
+#define realServer
+#endif
+
+#if XsvgaServer
+ALL1 = Xsvga
 #define realServer
 #endif
 
@@ -384,23 +380,6 @@ ServerTarget(Xmips,$(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
 #endif /* XmipsServer */
 
 
-#if X386Server
-XCOMM
-XCOMM X386 server
-XCOMM
-SUBDIRS0 = MFBSubdirs hw/x386
-X386DIRS = $(SUBDIRS0) $(DEPDIRS)
-X386OBJS = hw/x386/x386Init.o
-#ifdef i386SVR3Architecture
-X386SYSLIBS = $(CBRT) $(BSDEMUL)
-#endif
-X386LIBS = hw/x386/libx386.a hw/x386/vga/libvga.a hw/x386/drivers/libdrivers.a hw/x386/cfb.banked/libcfb.a MFBLibs $(X386SYSLIBS)
-
-INSTPGMFLAGS = $(INSTUIDFLAGS)     /* server must be suid root  */
-ServerTarget(X386,$(X386DIRS),$(X386OBJS),$(X386LIBS),$(SYSLIBS))
-#endif /* X386Server */
-
-
 #if XirisServer
 XCOMM
 XCOMM SGI Iris Server
@@ -435,6 +414,18 @@ HPLIBS = CFB32Libs
 HPSYSLIBS = $(CBRT) $(SYSLIBS) /usr/lib/libdbm.a -ldld
 ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
+
+#if XsvgaServer
+XCOMM
+XCOMM SVGA CFB Server
+XCOMM
+SUBDIRS0 = CFB8Subdirs ddx/svga
+SVGASUBDIRS = $(SUBDIRS0)
+SVGAOBJS = ddx/svga/svga.o
+SVGALIBS = CFB8Libs
+SVGASYSLIBS = $(CBRT) -lm -lmalloc
+ServerTarget(Xsvga,$(SVGASUBDIRS),$(SVGAOBJS),$(SVGALIBS),$(SVGASYSLIBS))
+#endif	/* XsvgaServer */
 
 #if XnestServer
 #ifndef realServer
