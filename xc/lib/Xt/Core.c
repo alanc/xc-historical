@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.52 91/05/09 21:51:43 converse Exp $ */
+/* $XConsortium: Core.c,v 1.53 91/05/10 12:42:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,7 +29,7 @@ SOFTWARE.
 #include "IntrinsicP.h"
 #include "EventI.h"
 #include "TranslateI.h"
-
+#include "ResourceI.h"
 #include "RectObj.h"
 #include "RectObjP.h"
 #include "StringDefs.h"
@@ -42,18 +42,19 @@ SOFTWARE.
 
 externaldef(xtinherittranslations) int _XtInheritTranslations = 0;
 extern String XtCXtToolkitError; /* from IntrinsicI.h */
+static void XtCopyScreen();
 
 static XtResource resources[] = {
     {XtNscreen, XtCScreen, XtRScreen, sizeof(Screen*),
       XtOffsetOf(CoreRec,core.screen), XtRCallProc, (XtPointer)XtCopyScreen},
-/*XtCopyFromParent does not work for screen because the Display
+/*_XtCopyFromParent does not work for screen because the Display
 parameter is not passed through to the XtRCallProc routines */
     {XtNdepth, XtCDepth, XtRInt,sizeof(int),
          XtOffsetOf(CoreRec,core.depth),
-	 XtRCallProc, (XtPointer)XtCopyFromParent},
+	 XtRCallProc, (XtPointer)_XtCopyFromParent},
     {XtNcolormap, XtCColormap, XtRColormap, sizeof(Colormap),
 	 XtOffsetOf(CoreRec,core.colormap),
-	 XtRCallProc,(XtPointer)XtCopyFromParent},
+	 XtRCallProc,(XtPointer)_XtCopyFromParent},
     {XtNbackground, XtCBackground, XtRPixel,sizeof(Pixel),
          XtOffsetOf(CoreRec,core.background_pixel),
 	 XtRString, (XtPointer)"XtDefaultBackground"},
@@ -161,6 +162,16 @@ externaldef(widgetclassrec) WidgetClassRec widgetClassRec = {
 externaldef (WidgetClass) WidgetClass widgetClass = &widgetClassRec;
 
 externaldef (WidgetClass) WidgetClass coreWidgetClass = &widgetClassRec;
+
+
+/*ARGSUSED*/
+static void XtCopyScreen(widget, offset, value)
+    Widget      widget;
+    int		offset;
+    XrmValue    *value;
+{
+    value->addr = (XPointer)(&widget->core.screen);
+}
 
 /*
  * Start of Core methods
