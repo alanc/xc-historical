@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.58 93/08/14 13:10:11 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.59 93/08/15 17:12:01 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -13,6 +13,14 @@
  *     These will be passed to the compile along with the contents of the
  *     make variable BOOTSTRAPCFLAGS.
  */
+#ifdef hpux
+#ifdef hp9000s800
+#define imake_ccflags "-DSYSV"
+#else
+#define imake_ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
+#endif
+#endif
+
 #if defined(macII) || defined(_AUX_SOURCE)
 #define imake_ccflags "-DmacII -DSYSV"
 #endif
