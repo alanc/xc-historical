@@ -22,11 +22,15 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.27 88/09/04 11:36:13 jim Exp $ */
+/* $XConsortium: os.h,v 1.28 88/09/06 15:49:02 jim Exp $ */
 
 #ifndef OS_H
 #define OS_H
 #include "misc.h"
+
+#ifdef INCLUDE_ALLOCA_H
+#include <alloca.h>
+#endif
 
 #define NullFID ((FID) 0)
 
