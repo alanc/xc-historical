@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfbpush8.c,v 1.1 89/07/28 12:51:27 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -62,7 +62,7 @@ cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
                 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnPART:
-	miPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
+	mfbPushPixels(pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg);
       case rgnOUT:
 	return;
     }
