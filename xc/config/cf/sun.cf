@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.122 94/04/01 20:20:44 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.123 94/04/02 08:42:47 kaleb Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -81,6 +81,16 @@ XCOMM operating system:  OSName
 #endif
 #endif
 
+/*
+ * If you say you have the CenterLine C compiler, we assume that clcc
+ * is somewhere in your default path.
+ */
+
+#if HasCenterLineC
+#ifndef CcCmd
+#define CcCmd clcc
+#endif
+#endif
 
 #if OSMajorVersion < 4 || (OSMajorVersion == 4 && OSMinorVersion < 1)
 /* We do not guarantee this will work */
@@ -212,9 +222,13 @@ XCOMM operating system:  OSName
 #endif
 #if HasCenterLineC
 #ifndef DefaultCCOptions
-#define DefaultCCOptions -ansi
+#define DefaultCCOptions -traditional -w1
 #endif
-#endif 
+#if OSMinorVersion <= 3 && !defined(XawI18nDefines)
+/* Cannot use wctype.h under Solaris 2.3 in non-ansi mode: fixed in 2.4? */
+#define XawI18nDefines -DHAS_ISW_FUNCS -DUSE_XWCHAR_STRING
+#endif	
+#endif	
 #endif	/* OSMajorVersion */
 #endif	/* Sun3Architecture */
 
