@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.46 94/07/08 11:30:49 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.47 94/07/08 14:06:06 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -191,6 +191,7 @@ char **argv;
 
     success = GetSessionNames (&sessionNameCount, &sessionNames);
 
+    found = 0;
     if (success && session_name)
     {
 	for (i = 0; i < sessionNameCount; i++)
@@ -481,6 +482,7 @@ char 		*previousId;
     ClientRec	*client = (ClientRec *) managerData;
     char 	*id;
     List	*cl;
+    int		send_save = 1;
 
     if (verbose) {
 	printf (
@@ -514,13 +516,19 @@ char 		*previousId;
 	    if(!strcmp(((PendingClient *)cl->thing)->clientId, previousId)) {
 		SetInitialProperties(client, (PendingClient *)cl->thing);
 		ListFreeOne(cl);
+		send_save = 0;
 		break;
 	    }
 	}
 	free (previousId);
-    } else {
+    }
+
+    if (send_save) {
 	SmsSaveYourself(smsConn, SmSaveLocal, False, SmInteractStyleNone,
 			False);
+    } else if (client_info_visible) {
+	/* We already have all required client info */
+	UpdateClientList ();
     }
 
     return (1);
