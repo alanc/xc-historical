@@ -6,13 +6,23 @@
 
 HEADERS = \
 	Atoms.h \
-	Cardinal.h \
+	Cardinals.h \
+	Composite.h \
+	CompositeP.h \
+	Constraint.h \
+	ConstraintP.h \
 	Convert.h \
+	Core.h \
+	CoreP.h \
 	Intrinsic.h \
+	IntrinsicP.h \
 	Misc.h \
+	Quarks.h \
 	Shell.h \
-	TopLevel.h \
-	TM.h
+	ShellP.h \
+	TM.h \
+	Vendor.h \
+	VendorP.h
 
 SRCS = \
 	Alloc.c \

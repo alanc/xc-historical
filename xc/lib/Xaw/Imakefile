@@ -6,18 +6,35 @@
 
 HEADERS = \
 	AsciiText.h \
+	AsciiTextP.h \
 	Box.h \
+	BoxP.h \
+	Cascade.h \
+	CascadeP.h \
 	Clock.h \
+	ClockP.h \
 	Command.h \
+	CommandP.h \
 	Dialog.h \
+	DialogP.h \
 	Form.h \
+	FormP.h \
 	Grip.h \
+	GripP.h \
 	Label.h \
+	LabelP.h \
 	Load.h \
+	LoadP.h \
 	Scroll.h \
+	ScrollP.h \
+	Simple.h \
+	SimpleP.h \
 	Text.h \
+	TextP.h \
+	VPaned.h \
+	VPanedP.h \
 	Viewport.h \
-	VPaned.h
+	ViewportP.h
 
 SRCS = \
 	AsciiSink.c \
