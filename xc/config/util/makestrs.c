@@ -1,4 +1,4 @@
-/* $XConsortium: makestrs.c,v 11.6 91/05/01 14:29:38 rws Exp $ */
+/* $XConsortium: makestrs.c,v 1.1 91/05/04 16:48:48 rws Exp $ */
 /*
 Copyright 1991 by the Massachusetts Institute of Technology
 
@@ -83,6 +83,12 @@ FlushRecs(header)
 	fprintf(header, "#define Xt%s \"%s\"\n", rec->left, rec->right);
     }
     fprintf(header, "#else\n");
+    fprintf(header, "#if __STDC__\n");
+    fprintf(header, "#define _XtConst_ const\n");
+    fprintf(header, "#else\n");
+    fprintf(header, "#define _XtConst_ /**/\n");
+    fprintf(header, "#endif\n");
+    fprintf(header, "extern _XtConst char %s[];\n", global);
     for (rec = recs; rec; rec = rec->next) {
 	fprintf(header, "#ifndef Xt%s\n", rec->left);
 #ifdef ARRAYPERSTR
@@ -93,6 +99,7 @@ FlushRecs(header)
 #endif
 	fprintf(header, "#endif\n");
     }
+    fprintf(header, "#undef _XtConst_\n");
     fprintf(header, "#endif\n");
     while (rec = recs) {
 	recs = rec->next;
