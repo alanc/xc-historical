@@ -14,7 +14,6 @@
  */
 
 # include	<stdio.h>
-# include	<local/error.h>
 # include	<X11/Xos.h>
 # include	<utmp.h>
 
