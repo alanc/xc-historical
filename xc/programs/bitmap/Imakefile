@@ -20,17 +20,34 @@
 #  Created:   January 28, 1990.
 #
 
+BUTTONPICTURES = \
+	Dashes \
+	Down \
+	Excl \
+	FlipHoriz \
+	FlipVert \
+	Fold \
+	Left \
+	Right \
+	RotateLeft \
+	RotateRight \
+	Stipple \
+	Term \
+	Up
+
         DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
         DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
-           SRCS = BitEdit.c CutAndPaste.c Graphics.c ReqMach.c Bitmap.c \
+           SRCS = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \
                   Dialog.c Handlers.c 
 
-           OBJS = BitEdit.o CutAndPaste.o Graphics.o ReqMach.o Bitmap.o \
+           OBJS = BitEdit.o CutPaste.o Graphics.o ReqMach.o Bitmap.o \
                   Dialog.o Handlers.o 
 
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
+
 ComplexProgramTarget(bitmap)
 InstallAppDefaults(Bitmap)
+InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
