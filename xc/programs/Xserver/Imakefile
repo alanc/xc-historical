@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.126 91/07/17 00:43:21 gildea Exp $
 /*
  * Server Master Makefile
  */
@@ -40,9 +40,6 @@ XCOMM $XConsortium$
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
-#if SystemV4 && !HasSockets
-EXTRA_LIBRARIES = -lsocket -lnsl
-#endif
 #if SystemV4 && X386Server
         SYSLIBS = -lm /usr/ucblib/libucb.a
 #else
