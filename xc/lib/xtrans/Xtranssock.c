@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.28 94/06/02 10:32:16 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -330,17 +330,8 @@ int type;
 
 {
     XtransConnInfo	ciptr;
-#ifdef WIN32
-    static WSADATA wsadata;
-#endif /* WIN32 */
 
     PRMSG (3,"TRANS(SocketOpen) (%d,%d)\n", i, type, 0);
-
-#ifdef WIN32
-    if (Sockettrans2devtab[i].family == AF_INET &&
-	!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
-	return NULL;
-#endif /* WIN32 */
 
     if ((ciptr = (XtransConnInfo) calloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)

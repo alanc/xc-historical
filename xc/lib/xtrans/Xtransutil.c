@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransutil.c,v 1.16 94/05/02 11:13:42 mor Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.17 94/05/19 11:00:07 mor Exp mor $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -425,6 +425,21 @@ XtransConnInfo  ciptr;
 }
 
 #endif /* ICE_t */
+
+
+#if defined(WIN32) && (defined(TCPCONN) || defined(DNETCONN))
+int
+TRANS(WSAStartup) ()
+{
+    static WSADATA wsadata;
+
+    PRMSG (2,"TRANS(WSAStartup)()\n", 0, 0, 0);
+
+    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+        return 1;
+    return 0;
+}
+#endif
 
 
 static int
