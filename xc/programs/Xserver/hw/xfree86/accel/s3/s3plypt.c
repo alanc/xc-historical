@@ -1,4 +1,4 @@
-/* $XConsortium: s3plypt.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3plypt.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.2 1994/08/20 07:34:22 dawes Exp $ */
 /************************************************************
 
@@ -37,7 +37,6 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: s3plypt.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
