@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Simple.h,v 1.4 88/09/06 09:46:42 swick Exp $ */
+/* $XConsortium: Simple.h,v 1.5 88/09/06 16:42:22 jim Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _Simple_h
@@ -16,18 +16,18 @@
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
  destroyCallback     Callback		Pointer		NULL
- height		     Height		int		0
+ height		     Height		Dimension	0
  insensitiveBorder   Insensitive	Pixmap		Gray
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  sensitive	     Sensitive		Boolean		True
- width		     Width		int		0
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	0
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 

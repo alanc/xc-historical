@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.14 88/09/06 16:42:32 jim Exp $
+* $XConsortium: Text.h,v 1.15 88/09/19 15:45:37 swick Exp $
 */
 
 
@@ -40,17 +40,17 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		XtDefaultBackground
+ border		     BorderColor	Pixel		XtDefaultForeground
+ borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  dialogHOffset	     Margin		int		10
  dialogVOffset	     Margin		int		10
  displayPosition     TextPosition	int		0
  editType	     EditType		XtTextEditType	XttextRead
- height		     Height		int		font height
+ height		     Height		Dimension	font height
  insertPosition	     TextPosition	int		0
- leftMargin	     Margin		int		2
+ leftMargin	     Margin		Dimension	2
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  selectTypes	     SelectTypes	Pointer		(internal)
  selection	     Selection		Pointer		empty selection
@@ -58,7 +58,7 @@ SOFTWARE.
  textOptions	     TextOptions	int		0
  textSink	     TextSink		Pointer		(none)
  textSource	     TextSource		Pointer		(none)
- width		     Width		int		100
+ width		     Width		Dimension	100
  x		     Position		int		0
  y		     Position		int		0
 
