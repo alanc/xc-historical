@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.62 88/02/26 19:48:04 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.63 88/02/26 20:25:28 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -848,7 +848,7 @@ static void HandleFocus(widget, client_data, event)
 static void AddForwardingHandler(widget, descendant)
     Widget widget, descendant;
 {
-    Window win, root, child;
+    Window root, child;
     int root_x, root_y, win_x, win_y;
     unsigned int mask;
     EventMask eventMask;
