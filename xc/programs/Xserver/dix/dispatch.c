@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.51 88/06/27 19:35:04 rws Exp $ */
+/* $Header: dispatch.c,v 1.52 88/06/30 19:47:14 keith Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1844,7 +1844,9 @@ ProcGetImage(client)
     }
     if(pDraw->type == DRAWABLE_WINDOW)
     {
-      if( /* check for being on screen */
+      if( /* check for being viewable */
+	 !((WindowPtr) pDraw)->realized ||
+	  /* check for being on screen */
          ((WindowPtr) pDraw)->absCorner.x + stuff->x < 0 ||
          ((WindowPtr) pDraw)->absCorner.x + stuff->x + (int)stuff->width >
              pDraw->pScreen->width ||
