@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.64 88/09/29 17:20:57 jim Exp $ */
+/* $XConsortium: utils.c,v 1.65 88/10/13 19:33:33 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -34,6 +34,8 @@ extern long defaultScreenSaverTime;	/* for parsing command line */
 extern long defaultScreenSaverInterval;
 extern int defaultScreenSaverBlanking;
 extern int defaultBackingStore;
+extern Bool disableBackingStore;
+extern Bool disableSaveUnders;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
@@ -149,6 +151,7 @@ void UseMsg()
 {
     ErrorF("use: X [:<display>] [option]\n");
     ErrorF("-a #                   mouse acceleration (pixels)\n");
+    ErrorF("-bs                    disable any backing store support\n");
     ErrorF("-c                     turns off key-click\n");
     ErrorF("c #                    key-click volume (0-8)\n");
     ErrorF("-co string             color database file\n");
@@ -166,6 +169,7 @@ void UseMsg()
     ErrorF("-x string              loads named extension at init time \n");
     ErrorF("-help                  prints message with these options\n");
     ErrorF("-s #                   screen-saver timeout (seconds)\n");
+    ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
     ErrorF("-to #                  connection time out\n");
     ErrorF("v                      video blanking for screen-saver\n");
@@ -213,6 +217,8 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-bs") == 0)
+	    disableBackingStore = TRUE;
 	else if ( strcmp( argv[i], "c") == 0)
 	{
 	    if(++i < argc)
@@ -308,6 +314,8 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-su") == 0)
+	    disableSaveUnders = TRUE;
 	else if ( strcmp( argv[i], "-t") == 0)
 	{
 	    if(++i < argc)
