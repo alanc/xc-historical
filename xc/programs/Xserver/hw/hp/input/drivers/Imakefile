@@ -6,6 +6,20 @@ XCOMM $XConsortium: Imakefile,v 1.4 93/09/06 15:25:54 rws Exp $
 #include <Library.tmpl>
 #include <Server.tmpl>
 
+#define HPSharedLibraryTarget(libname,rev,solist,down,up)			@@\
+AllTarget(libname.sl)							@@\
+									@@\
+libname.sl:  solist							@@\
+	$(RM) $@~							@@\
+	(cd down; $(LD) -o up/$@~ -b solist)		@@\
+	$(RM) $@ 							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) libname.sl
+
+PICFLAGS = +z
+
 HP7LC2KSRCS =		hp7lc2k.c
 HP7LC2MSRCS =		hp7lc2m.c
 
@@ -23,8 +37,8 @@ all::
 DRVRLIBDIR = $(LIBDIR)/extensions
 
 LibraryObjectRule()
-SharedLibraryTarget(hp7lc2k,,$(HP7LC2KOBJS),.,.)
-SharedLibraryTarget(hp7lc2m,,$(HP7LC2MOBJS),.,.)
+HPSharedLibraryTarget(hp7lc2k,,$(HP7LC2KOBJS),.,.)
+HPSharedLibraryTarget(hp7lc2m,,$(HP7LC2MOBJS),.,.)
 
 install::
 	(chmod a-w $(HP7LC2KSHLIB))
