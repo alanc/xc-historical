@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.49 90/08/23 14:44:25 swick Exp $ */
+/* $XConsortium: Display.c,v 1.50 90/08/31 08:15:10 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -216,6 +216,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 {
 	XtPerDisplay pd;
 	static XtPerDisplay NewPerDisplay();
+	extern void _XtAllocWWTable();
 
 	XtAddToAppContext(dpy, app);
 
@@ -260,6 +261,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->pdi.activatingKey = 0;
 	pd->pdi.keyboard.grabType = XtNoServerGrab;
 	pd->pdi.pointer.grabType  = XtNoServerGrab;
+	_XtAllocWWTable(pd);
 
 	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
 			     num_urs, argc, argv);
@@ -518,7 +520,7 @@ static void CloseDisplay(dpy)
 	xtpd = &(pd->perDpy);
 
         if (xtpd != NULL) {
-	    extern void _XtGClistFree();
+	    extern void _XtGClistFree(), _XtFreeWWTable();
 	    if (xtpd->destroy_callbacks != NULL) {
 		_XtCallCallbacks(&xtpd->destroy_callbacks, (XtPointer)xtpd);
 		_XtRemoveAllCallbacks(&xtpd->destroy_callbacks);
@@ -545,6 +547,7 @@ static void CloseDisplay(dpy)
 	    }
 	    XtFree((char*)xtpd->pdi.trace);
 	    _XtHeapFree(&xtpd->heap);
+	    _XtFreeWWTable(xtpd);
         }
 	XtFree((char*)pd);
 	XrmDestroyDatabase(dpy->db);
