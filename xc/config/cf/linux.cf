@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.1 94/03/29 15:34:46 gildea Exp $
+XCOMM platform:  $XConsortium: linux.cf,v 1.2 94/03/31 11:37:30 gildea Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -34,7 +34,6 @@ XCOMM platform:  $XConsortium: linux.cf,v 1.1 94/03/29 15:34:46 gildea Exp $
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 
-#define BuildFresco		NO
 #define BuildXKB		YES
 #define BuildXKBlib		YES
 #define BuildLBX		YES
