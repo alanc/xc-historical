@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.5 89/11/05 15:15:12 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.6 89/11/24 18:07:50 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -35,8 +35,7 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     xArc *arc;
     register int rop;
 {
-    int iscircle;
-    int x, y, e, ex;
+    int x, y, e;
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
     register int slw;
     miFillArcRec info;
@@ -66,21 +65,13 @@ mfbFillEllipseSolid(pDraw, arc, rop)
     addrlb = addrlt;
     addrlt += nlwidth * (yorg - y);
     addrlb += nlwidth * (yorg + y + dy);
-    iscircle = (arc->width == arc->height);
     while (y)
     {
 	addrlt += nlwidth;
 	addrlb -= nlwidth;
-	if (iscircle)
-	{
-	    MIFILLCIRCSTEP(slw);
-	}
-	else
-	{
-	    MIFILLELLSTEP(slw);
-	    if (!slw)
-		continue;
-	}
+	MIFILLARCSTEP(slw);
+	if (!slw)
+	    continue;
 	xpos = xorg - x;
 	addrl = addrlt + (xpos >> 5);
 	if (((xpos & 0x1f) + slw) < 32)
@@ -239,11 +230,10 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     register int *addrl;
     register int n;
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e, ex;
+    register int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
-    int iscircle;
     int *addrlt, *addrlb;
     int nlwidth;
     int width;
@@ -264,7 +254,6 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
-    iscircle = (arc->width == arc->height);
     xorg += pDraw->x;
     yorg += pDraw->y;
     addrlb = addrlt;
@@ -276,14 +265,7 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     {
 	addrlt += nlwidth;
 	addrlb -= nlwidth;
-	if (iscircle)
-	{
-	    MIFILLCIRCSTEP(slw);
-	}
-	else
-	{
-	    MIFILLELLSTEP(slw);
-	}
+	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);
 	if (miFillSliceUpper(slice))

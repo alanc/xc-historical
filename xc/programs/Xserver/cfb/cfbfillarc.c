@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.8 89/11/24 18:10:58 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.9 90/01/31 12:31:19 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -43,8 +43,7 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
     GCPtr pGC;
     xArc *arc;
 {
-    int iscircle;
-    STUPID int x, y, e, ex;
+    STUPID int x, y, e;
     STUPID int yk, xk, ym, xm, dx, dy, xorg, yorg;
     miFillArcRec info;
     int *addrlt, *addrlb;
@@ -76,21 +75,13 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
     addrlb = addrlt;
     addrlt += nlwidth * (yorg - y);
     addrlb += nlwidth * (yorg + y + dy);
-    iscircle = (arc->width == arc->height);
     while (y)
     {
 	addrlt += nlwidth;
 	addrlb -= nlwidth;
-	if (iscircle)
-	{
-	    MIFILLCIRCSTEP(slw);
-	}
-	else
-	{
-	    MIFILLELLSTEP(slw);
-	    if (!slw)
-		continue;
-	}
+	MIFILLARCSTEP(slw);
+	if (!slw)
+	    continue;
 	xpos = xorg - x;
 	addrl = addrlt + (xpos >> PWSH);
 	if (((xpos & PIM) + slw) <= PPW)
@@ -183,11 +174,10 @@ RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
     xArc *arc;
 {
     int yk, xk, ym, xm, dx, dy, xorg, yorg, slw;
-    register int x, y, e, ex;
+    register int x, y, e;
     miFillArcRec info;
     miArcSliceRec slice;
     int xl, xr, xc;
-    int iscircle;
     int *addrlt, *addrlb;
     register int *addrl;
     register int n;
@@ -211,7 +201,6 @@ RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
-    iscircle = (arc->width == arc->height);
     xorg += pDraw->x;
     yorg += pDraw->y;
     addrlb = addrlt;
@@ -223,14 +212,7 @@ RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
     {
 	addrlt += nlwidth;
 	addrlb -= nlwidth;
-	if (iscircle)
-	{
-	    MIFILLCIRCSTEP(slw);
-	}
-	else
-	{
-	    MIFILLELLSTEP(slw);
-	}
+	MIFILLARCSTEP(slw);
 	MIARCSLICESTEP(slice.edge1);
 	MIARCSLICESTEP(slice.edge2);
 	if (miFillSliceUpper(slice))
