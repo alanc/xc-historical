@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ar_ops.c,v 5.1 91/02/16 09:47:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,12 +34,16 @@ SOFTWARE.
 #include <fcntl.h>
 #endif SYSV
 
-#ifdef SYSV
 /* parameters for LSEEK */
+#ifndef L_SET
 #define  L_SET       0  /* absolute offset */
+#endif
+#ifndef L_INCR
 #define  L_INCR      1  /* relative to current offset */
+#endif
+#ifndef L_XTND
 #define  L_XTND      2  /* relative to end of file */
-#endif /* SYSV */
+#endif
 
 static CARD32 ar_int_pad = 0x55555555;
 
