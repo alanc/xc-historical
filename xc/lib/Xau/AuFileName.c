@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuFileName.c,v 1.1 88/11/22 15:27:20 jim Exp $
+ * $XConsortium: AuFileName.c,v 1.2 91/01/08 15:09:00 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,23 +27,35 @@ XauFileName ()
     char    *strcat (), *strcpy ();
     static char	*buf;
     static int	bsize;
+#ifdef WIN32
+    char    dir[128];
+#endif
     int	    size;
 
-    if (name = getenv ("XAUTHORITY")) {
+    if (name = getenv ("XAUTHORITY"))
 	return name;
-    } else if (name = getenv ("HOME")) {
-	size = strlen (name) + strlen(".Xauthority") + 2;
-	if (size > bsize) {
-	    if (buf)
-		free (buf);
-	    buf = malloc ((unsigned) size);
-	    if (!buf)
-		return 0;
-	    bsize = size;
+    name = getenv ("HOME");
+    if (!name) {
+#ifdef WIN32
+	(void) strcpy (dir, "/users/");
+	if (name = getenv("USERNAME")) {
+	    (void) strcat (dir, name);
+	    name = dir;
 	}
-	strcpy (buf, name);
-	strcat (buf, "/.Xauthority" + (name[1] == '\0' ? 1 : 0));
-	return buf;
+	if (!name)
+#endif
+	return 0;
     }
-    return 0;
+    size = strlen (name) + strlen(".Xauthority") + 2;
+    if (size > bsize) {
+	if (buf)
+	    free (buf);
+	buf = malloc ((unsigned) size);
+	if (!buf)
+	    return 0;
+	bsize = size;
+    }
+    strcpy (buf, name);
+    strcat (buf, "/.Xauthority" + (name[1] == '\0' ? 1 : 0));
+    return buf;
 }
