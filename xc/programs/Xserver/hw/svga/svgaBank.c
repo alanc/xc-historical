@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.1 93/09/18 16:08:29 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.2 93/09/18 17:59:55 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -835,7 +835,7 @@ svgaBankCopyArea(
 )
 {
   int           cx1, cy1, cx2, cy2, ccx1, ccy1, ccx2, ccy2;
-  int           ns, nd, dx, dy, xorg, yorg, edge;
+  int           ns, nd, dx, dy, xorg, yorg;
   int           nBox, nBoxClipSrc, nBoxClipDst, nQueue;
   BoxPtr        pBox, pBoxClipSrc, pBoxClipDst;
   BoxRec        fastBox;
