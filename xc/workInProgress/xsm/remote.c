@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.12 94/12/16 17:30:22 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.13 94/12/27 17:59:13 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -57,6 +57,7 @@ char	*non_local_session_env;
     FILE *fp;
     int	 pipefd[2];
     extern char **environ;
+    char msg[256];
     int  i;
 
     if (strcmp (restart_protocol, "rstart-rsh") != 0)
@@ -79,7 +80,8 @@ char	*non_local_session_env;
 
     if (pipe (pipefd) < 0)
     {
-	perror ("pipe error");
+	sprintf (msg, "pipe() error during remote start of %s", program);
+	perror (msg);
     }
     else
     {
@@ -87,7 +89,8 @@ char	*non_local_session_env;
 	{
 	case -1:
 
-	    perror("fork");
+	    sprintf (msg, "fork() error during remote start of %s", program);
+	    perror (msg);
 	    break;
 
 	case 0:		/* kid */
@@ -99,7 +102,10 @@ char	*non_local_session_env;
 
 	    execlp (RSHCMD, restart_machine, "rstartd", (char *) 0);
 
-	    perror("Failed to start remote client with rstart protocol");
+	    sprintf (msg,
+	        "execlp() of rstartd failed for remote start of %s", program);
+	    perror (msg);
+
 	    _exit(255);
 
 	default:		/* parent */

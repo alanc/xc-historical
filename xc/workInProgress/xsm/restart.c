@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.22 94/12/16 17:28:08 mor Exp mor $ */
+/* $XConsortium: restart.c,v 1.23 94/12/29 16:28:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -271,13 +271,15 @@ int flag;
 
 		switch(fork()) {
 		case -1:
-		    perror("fork");
+		    sprintf (logtext, "Can't fork() %s", program);
+		    perror (logtext);
 		    break;
 		case 0:		/* kid */
 		    chdir(cwd);
 		    if(env) environ = env;
 		    execvp(program, args);
-		    perror("execve");
+		    sprintf (logtext, "Can't execve() %s", program);
+		    perror (logtext);
 		    _exit(255);
 		default:	/* parent */
 		    break;
@@ -447,15 +449,19 @@ Bool useSavedState;
 	     * The client is being cloned on the local machine.
 	     */
 
+	    char msg[256];
+
 	    switch(fork()) {
 	    case -1:
-		perror("fork");
+		sprintf (msg, "Can't fork() %s", program);
+		perror (msg);
 		break;
 	    case 0:		/* kid */
 		chdir(cwd);
 		if(env) environ = env;
 		execvp(program, args);
-		perror("execve");
+		sprintf (msg, "Can't execve() %s", program);
+		perror (msg);
 		_exit(255);
 	    default:	/* parent */
 		break;
