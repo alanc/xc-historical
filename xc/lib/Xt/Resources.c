@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.109 93/08/18 11:24:55 kaleb Exp $ */
+/* $XConsortium: Resources.c,v 1.110 93/08/27 16:29:35 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -125,6 +125,9 @@ void _XtCopyFromArg(src, dst, size)
     else {
 	union {
 	    long	longval;
+#ifdef LONG64
+	    int		intval;
+#endif
 	    short	shortval;
 	    char	charval;
 	    char*	charptr;
@@ -132,6 +135,9 @@ void _XtCopyFromArg(src, dst, size)
 	} u;
 	char *p = (char*)&u;
 	if	(size == sizeof(long))	    u.longval = (long)src;
+#ifdef LONG64
+	else if (size == sizeof(int))	    u.intval = (int)src;
+#endif
 	else if (size == sizeof(short))	    u.shortval = (short)src;
 	else if (size == sizeof(char))	    u.charval = (char)src;
 	else if (size == sizeof(XtPointer)) u.ptr = (XtPointer)src;
@@ -153,6 +159,9 @@ void _XtCopyToArg(src, dst, size)
 	 */
 	union {
 	    long	longval;
+#ifdef LONG64
+	    int		intval;
+#endif
 	    short	shortval;
 	    char	charval;
 	    char*	charptr;
@@ -161,6 +170,9 @@ void _XtCopyToArg(src, dst, size)
 	if (size <= sizeof(XtArgVal)) {
 	    bcopy( (char*)src, (char*)&u, (int)size );
 	    if	    (size == sizeof(long)) 	*dst = (XtArgVal)u.longval;
+#ifdef LONG64
+	    else if (size == sizeof(int))	*dst = (XtArgVal)u.intval;
+#endif
 	    else if (size == sizeof(short))	*dst = (XtArgVal)u.shortval;
 	    else if (size == sizeof(char))	*dst = (XtArgVal)u.charval;
 	    else if (size == sizeof(char*))	*dst = (XtArgVal)u.charptr;
