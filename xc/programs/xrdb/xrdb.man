@@ -74,8 +74,11 @@ A symbol is defined for each protocol extension supported by the server.
 Each extension string name is turned into a legal identifier.
 For example, "X3D-PEX" becomes EXT_X3D_PEX.
 .TP 8
+.B NUM_SCREENS=num
+the total number of screens.
+.TP 8
 .B SCREEN_NUM=num
-the number of the screen (from zero).
+the number of the current screen (from zero).
 .TP 8
 .B BITS_PER_RGB=num
 the number of significant bits in an RGB color specification.  This is the

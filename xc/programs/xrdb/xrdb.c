@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.56 92/09/11 17:14:49 rws Exp $
+ * $XConsortium: xrdb.c,v 11.57 92/09/11 17:57:35 rws Exp $
  */
 
 /*
@@ -403,6 +403,7 @@ DoDisplayDefines(display, defs, host)
     AddDefQ(defs, "VENDOR", ServerVendor(display));
     AddDefTok(defs, "VNDR_", ServerVendor(display));
     AddNum(defs, "RELEASE", VendorRelease(display));
+    AddNum(defs, "NUM_SCREENS", ScreenCount(display));
     extnames = XListExtensions(display, &nexts);
     while (--nexts >= 0)
 	AddDefTok(defs, "EXT_", extnames[nexts]);
