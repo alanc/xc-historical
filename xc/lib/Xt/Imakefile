@@ -158,6 +158,9 @@ LibraryObjectRule()
 SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialLibObjectRule(Alloc.o,,$(ALLOC_DEFINES))
+#if DoSharedLib
+SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+#endif
 
 #if DoSharedLib
 #if DoNormalLib

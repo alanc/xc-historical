@@ -141,6 +141,13 @@ LibraryObjectRule()
 
 SpecialLibObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
 SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
+#if DoSharedLib
+depend:: xtsharedlib.c
+xtsharedlib.c: $(TOOLKITSRC)/sharedlib.c
+	$(RM) $@
+	$(LN) $? $@
+SpecialObjectRule(sharedlib.o,,$(SHLIBDEF) -I$(TOOLKITSRC))
+#endif
 
 #if DoSharedLib
 #if DoNormalLib
@@ -148,11 +155,6 @@ SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(Xmu,$(SOXMUREV),$(OBJS),.,.)
 #endif
-SpecialLibObjectRule(sharedlib.o,,-I$(TOOLKITSRC))
-depend:: xtsharedlib.c
-xtsharedlib.c: $(TOOLKITSRC)/sharedlib.c
-	$(RM) $@
-	$(LN) $? $@
 SharedLibraryDataTarget(Xmu,$(SOXMUREV),$(UNSHAREDOBJS))
 InstallSharedLibrary(Xmu,$(SOXMUREV),$(USRLIBDIR))
 InstallSharedLibraryData(Xmu,$(SOXMUREV),$(USRLIBDIR))
