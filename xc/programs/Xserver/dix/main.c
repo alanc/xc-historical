@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.137 88/06/03 13:52:48 matt Exp $ */
+/* $Header: main.c,v 1.138 88/07/29 12:15:52 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -213,10 +213,7 @@ main(argc, argv)
 	    CreateRootWindow(i);
 	}
         DefineInitialRootWindow(&WindowTable[0]);
-	if(!looping)
-	{
-	    CreateConnectionBlock();
-	}
+	CreateConnectionBlock();
 
 	Dispatch();
 
@@ -239,6 +236,7 @@ main(argc, argv)
 
 	ResetHosts(display);
         xfree(clients);
+	xfree(ConnectionInfo);
 
 	looping = 1;
     }
