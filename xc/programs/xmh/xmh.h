@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 1.12 87/09/11 08:18:39 rws Locked $";
+ *	rcs_id[] = "$Header: xmh.h,v 1.8 88/01/19 14:45:39 swick Exp $";
  */
 
 /*
@@ -30,29 +30,27 @@
 #ifndef _xmh_h
 #define _xmh_h
 #include <stdio.h>
-#ifdef X10
-#include <strings.h>
-#else
-#include <Xos.h>
-#endif
-#include <Xlib.h>
+#include <X/Xlib.h>
+#include <X/Xos.h>
+#include <X/Xutil.h>
+#include <X/cursorfont.h>
 
-#ifdef X11
-#include <Xutil.h>
-#include <cursorfont.h>
-#endif
-
-#include <Intrinsic.h>
-#include <Atoms.h>
-#include <ButtonBox.h>
-#include <Command.h>
-#include <Dialog.h>
-#include <Form.h>
-#include <Label.h>
-#include <Scroll.h>
-#include <Text.h>
-#include <VPane.h>
-#include <TextDisp.h>
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/AsciiText.h>
+#include <X/ButtonBox.h>
+#include <X/Command.h>
+#include <X/Dialog.h>
+#include <X/Form.h>
+#include <X/Label.h>
+#include <X/Scroll.h>
+#include <X/Shell.h>
+#include <X/Viewport.h>
+#ifdef notdef
+#include <X/TextSrc.h>
+#include <X/Input.h>
+#endif /* notdef */
+#include <X/VPaned.h>
 
 #define DELETEABORTED	-1
 #define MARKPOS		4
@@ -60,10 +58,21 @@
 #define xMargin 2
 #define yMargin 2
 
+#define DEBUG(msg) \
+	if (debug) {(void)fprintf(stderr, msg); (void)fflush(stderr);}
+
+#define DEBUG1(msg, arg) \
+	if (debug) {(void)fprintf(stderr, msg, arg); (void)fflush(stderr);}
+
+#define DEBUG2(msg, arg1, arg2) \
+	if (debug) {(void)fprintf(stderr,msg,arg1,arg2); (void)fflush(stderr);}
+
 typedef int * dp;		/* For debugging. */
 
+typedef FILE* FILEPTR;
+
 typedef struct _ButtonRec *Button;
-typedef struct _ButtonBoxRec *ButtonBox;
+typedef struct _XmhButtonBoxRec *ButtonBox;
 typedef struct _TocRec *Toc;
 typedef struct _MsgRec *Msg;
 typedef struct _PickRec *Pick;
@@ -80,27 +89,24 @@ typedef enum {
 } ScrnKind;
 
 typedef struct _ScrnRec {
-   Window	window;		/* Window containing the scrn */
+   Widget	parent;		/* The parent widget of the scrn */
+   Widget	widget;		/* The pane widget for the scrn */
    int		mapped;		/* TRUE only if we've mapped this screen. */
    ScrnKind	kind;		/* What kind of scrn we have. */
    ButtonBox	folderbuttons;	/* Folder buttons. */
    Button	curfolder;	/* Which is the current folder. */
    ButtonBox	mainbuttons;	/* Main xmh control buttons. */
-   Window	toclabel;	/* Toc titlebar. */
-   Window	tocwindow;	/* Toc text. */
+   Widget	toclabel;	/* Toc titlebar. */
+   Widget	tocwidget;	/* Toc text. */
    ButtonBox	tocbuttons;	/* Toc control buttons. */
    ButtonBox 	seqbuttons;	/* Sequence buttons. */
    Button	curseq;		/* Which is the current sequence. */
-   Window	viewlabel;	/* View titlebar. */
-   Window	viewwindow;	/* View window. */
+   Widget	viewlabel;	/* View titlebar. */
+   Widget	viewwidget;	/* View text. */
    ButtonBox 	viewbuttons;	/* View control buttons. */
    Toc		toc;		/* The table of contents. */
-   XtTextSink	*tocsink;	/* Sink used to display the toc. */
    Msg		msg;		/* The message being viewed. */
    Pick		pick;		/* Pick in this screen. */
-#ifdef X11
-   XWMHints	hints;		/* Record of hints to window manager. */
-#endif  /* X11 */
 } ScrnRec, *Scrn;
 
 
@@ -124,4 +130,4 @@ typedef struct {
 #include "msg.h"
 #include "toc.h"
 
-#endif /* _xmh_h */
+#endif _xmh_h
