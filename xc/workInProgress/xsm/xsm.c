@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.60 94/08/10 15:32:51 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.61 94/08/10 19:45:43 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -1061,8 +1061,7 @@ ClientRec *client;
 		ShowHint (clientListRecs[current_client_selected]);
 		if (client_prop_visible)
 		{
-		    DisplayProps (clientListRecs[current_client_selected],
-			clientListNames[current_client_selected]);
+		    DisplayProps (clientListRecs[current_client_selected]);
 		}
 	    }
 	}
@@ -1145,7 +1144,7 @@ SmProp 		**props;
     else if (client_prop_visible && clientListRecs &&
 	clientListRecs[current_client_selected] == client)
     {
-	DisplayProps (client, clientListNames[current_client_selected]);
+	DisplayProps (client);
     }
 }
 
