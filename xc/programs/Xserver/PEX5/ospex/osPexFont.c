@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: osPexFont.c,v 5.1 91/02/16 09:57:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -36,7 +36,6 @@ SOFTWARE.
 extern void CopyISOLatin1Lowered();
 extern int get_lowered_truncated_entry();
 
-int FontFileRead();
 void ClosePEXFontFile();
 void SetPEXFontFilePtr();
 
@@ -281,9 +280,9 @@ get_stroke(stroke, fp)
     
 	/* for each subpath of the character definition ... */
 	
-	if (FontFileRead((char *) &spath->numPoints,
-		    sizeof(spath->numPoints), 1, fp) != 1 ||
-	    FontFileRead((char *) &closed, sizeof(closed), 1, fp) != 1)
+	if (fread((char *) &spath->numPoints,
+		  sizeof(spath->numPoints), 1, fp) != 1 ||
+	    fread((char *) &closed, sizeof(closed), 1, fp) != 1)
 	    return -1;
 
 	if (spath->numPoints <= 0)
@@ -294,8 +293,8 @@ get_stroke(stroke, fp)
 	if (!(spath->pts.p2Dpt = (ddCoord2D *) Xalloc((unsigned long)(spath->maxData))))
 	    return -1;
 	    
-	if (FontFileRead((char *)spath->pts.p2Dpt, sizeof(ddCoord2D), 
-		    spath->numPoints, fp) != spath->numPoints)
+	if (fread((char *)spath->pts.p2Dpt, sizeof(ddCoord2D), 
+		  spath->numPoints, fp) != spath->numPoints)
 	    return -1;
 	    
 	stroke->n_vertices += spath->numPoints;
@@ -369,7 +368,7 @@ LoadPEXFontFile(length, fontname, pFont)
      */
 
     tblptr = 0;
-    if (FontFileRead((char *) &header, sizeof(header), 1, fp) != 1) {
+    if (fread((char *) &header, sizeof(header), 1, fp) != 1) {
 	(void) ClosePEXFontFile(fp);
 	return (PEXERR(PEXFontError)); }
     
@@ -391,8 +390,8 @@ LoadPEXFontFile(length, fontname, pFont)
 	    (void) ClosePEXFontFile(fp);
 	    return (BadAlloc); }
 
-	if (FontFileRead(   (char *) properties, sizeof(Property), 
-			    header.num_props, fp) != header.num_props) {
+	if (fread((char *) properties, sizeof(Property), 
+		  header.num_props, fp) != header.num_props) {
 	    Xfree((char *) properties);
 	    (void) ClosePEXFontFile(fp);
 	    return (PEXERR(PEXFontError)); }
@@ -446,7 +445,7 @@ LoadPEXFontFile(length, fontname, pFont)
 	(void) ClosePEXFontFile(fp);
 	return (BadAlloc); }
     
-    if (FontFileRead((char *) table, sizeof(Dispatch), font->num_ch, fp)
+    if (fread((char *) table, sizeof(Dispatch), font->num_ch, fp)
 	    != font->num_ch) {
 	Xfree((char *) table);
 	(void) ClosePEXFontFile(fp);
@@ -493,12 +492,12 @@ LoadPEXFontFile(length, fontname, pFont)
 	    (void) SetPEXFontFilePtr(fp, tblptr->offset);
 
 	    /* read in the type, number of subpaths, and n_vertices fields */
-	    if (    (FontFileRead(  &((*ch_font)->type),
-				    sizeof(Font_path_type), 1, fp)	!= 1) 
-		||  (FontFileRead(  &((*ch_font)->strokes.numLists),
-				    sizeof(ddULONG),1,fp)		!= 1)
-		||  (FontFileRead(  &((*ch_font)->n_vertices),
-				    sizeof(ddULONG), 1, fp)		!= 1) )
+	    if (    (fread(&((*ch_font)->type),
+			   sizeof(Font_path_type), 1, fp) != 1) 
+		||  (fread(&((*ch_font)->strokes.numLists),
+			   sizeof(ddULONG),1,fp) != 1)
+		||  (fread(&((*ch_font)->n_vertices),
+			   sizeof(ddULONG), 1, fp) != 1) )
 		{		  
 		    err = PEXERR(PEXFontError);
 		    goto disaster;
