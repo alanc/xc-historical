@@ -2,7 +2,7 @@
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
  * XDM-AUTHORIZATION-1 (client authorization) protocols
  *
- * $XConsortium: xdmauth.c,v 1.2 89/12/15 20:10:17 keith Exp $
+ * $XConsortium: xdmauth.c,v 1.3 90/11/07 18:02:08 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -114,7 +114,7 @@ XdmAuthenticationInit (cookie, cookie_len)
     int	    cookie_len;
 {
     bzero (privateKey.data, 8);
-    if (!strncmp (cookie, "0x", 2) || !strcmp (cookie, "0X", 2))
+    if (!strncmp (cookie, "0x", 2) || !strncmp (cookie, "0X", 2))
     {
 	if (cookie_len > 2 + 2 * 8)
 	    cookie_len = 2 + 2 * 8;
