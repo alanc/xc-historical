@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.41 89/12/15 11:20:56 swick Exp $";
+    "$XConsortium: Selection.c,v 1.42 89/12/15 13:44:35 swick Exp $";
 #endif
 
 /***********************************************************
@@ -128,7 +128,7 @@ Display *dpy;
  }
  propCount = sarray->propCount++;
  sarray->list = (SelectionProp) XtRealloc((XtPointer)sarray->list, 
-  		(unsigned) ((propCount+1)*sizeof(SelectionPropRec)));
+  		(unsigned)(sarray->propCount*sizeof(SelectionPropRec)));
  (void) sprintf(propname, "%s%d", "_XT_SELECTION_", propCount);
  sarray->list[propCount].prop = XInternAtom(dpy, propname, FALSE);
  sarray->list[propCount].avail = FALSE;
@@ -336,24 +336,19 @@ XtIntervalId   *id;
 	(*ctx->owner_cancel)(ctx->widget, &ctx->selection, 
 			     &req->target, (XtRequestId*)&req,
 			     ctx->owner_closure);
-    }
-    if (ctx->notify == NULL)
-	XtFree((XtPointer)req->value);
-    else {
-	/* the requestor hasn't deleted the property, but
-	 * the owner needs to free the value.
-	 */
-
-	if (ctx->incremental) {
-	    /* ...and the pre-fetched value, if any */
-	    int count = ((req->anySent && req->bytelength) ? 2 : 1);
-	    while (count--) {
+    } else {
+	if (ctx->notify == NULL)
+	    XtFree((XtPointer)req->value);
+	else {
+	    /* the requestor hasn't deleted the property, but
+	     * the owner needs to free the value.
+	     */
+	    if (ctx->incremental)
 		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target, 
 			       (XtRequestId*)&req, ctx->owner_closure);
-	    }
+	    else
+		(*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
 	}
-	else
-	    (*ctx->notify)(ctx->widget, &ctx->selection, &req->target);
     }
 
     RemoveHandler(ctx->dpy, req->requestor, req->widget,
@@ -423,11 +418,7 @@ XEvent *ev;
 		AllSent(req);
 	     else {
 		unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
-		if (ctx->notify && req->anySent)
-		    (*ctx->notify)(ctx->widget, &ctx->selection, &req->target,
-				   (XtRequestId*)&req, ctx->owner_closure);
     		SendIncrement(req);
-		req->anySent = TRUE;
 		(*ctx->convert)(ctx->widget, &ctx->selection, &req->target, 
 			    &req->type, &req->value, 
 			    &req->bytelength, &req->format,
@@ -475,7 +466,6 @@ int format;
 	req->target = target;
 	req->widget = widget;
 	req->allSent = FALSE;
-	req->anySent = FALSE;
 #ifndef DEBUG_WO_TIMERS
 	{
 	XtAppContext app = XtWidgetToApplicationContext(widget);
@@ -910,7 +900,7 @@ XEvent *ev;
       } else {
           if ((BYTELENGTH(length,info->format)+info->offset) 
 			> info->bytelength) {
-  	    info->value = (char *)XtRealloc((char *) info->value, 
+  	    info->value = (char *)XtRealloc((XtPointer) info->value, 
 					 (unsigned) (info->bytelength *= 2));
           }
           bcopy(value, &info->value[info->offset], 
@@ -1108,7 +1098,7 @@ XEvent *ev;
                     FreeSelectionProperty(XtDisplay(widget), p->property);
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
 	    } else if (p->target == ctx->prop_list->incremental_atom) {
-		CallBackInfo newinfo = (CallBackInfo) XtNew(CallBackInfoRec);
+		CallBackInfo newinfo = XtNew(CallBackInfoRec);
 		newinfo->callback = info->callback;
 		newinfo->req_closure = (XtPointer *)XtNew(XtPointer);
 		*newinfo->req_closure = *c;
@@ -1203,11 +1193,6 @@ Boolean incremental;
 			 /* should owner be notified on end-of-piece?
 			  * Spec is unclear, but non-local transfers don't.
 			  */
-			 if (ctx->notify) 
-			     (*ctx->notify)(ctx->widget, &selection, &target, 
-					    (XtRequestId*)&req,
-					    ctx->owner_closure);
-			 value = NULL;
 			 (*ctx->convert)(ctx->widget, &selection, &target,
 					 &resulttype, &value, &length, &format,
 					 &size, ctx->owner_closure,
@@ -1221,10 +1206,6 @@ Boolean incremental;
 		    total = XtRealloc(total, 
 			    (unsigned) (totallength += bytelength));
 		    bcopy(value, &total[totallength-bytelength], bytelength);
-		    if (ctx->notify) 
-			(*ctx->notify)(ctx->widget, &selection, &target, 
-				       (XtRequestId*)&req, ctx->owner_closure);
-		    else XtFree(value);
 		    (*ctx->convert)(ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,
 			    &size, ctx->owner_closure, (XtRequestId*)&req);
@@ -1234,7 +1215,11 @@ Boolean incremental;
 		  (*callback)(widget, closure, &selection, &resulttype, 
 		    total,  &totallength, &format);
 	      }
-         }
+	      if (ctx->notify) 
+		  (*ctx->notify)(ctx->widget, &selection, &target, 
+				 (XtRequestId*)&req, ctx->owner_closure);
+	      else XtFree(value);
+	  }
 	} else { /* not incremental owner */
 	  if (!(*ctx->convert)(ctx->widget, &selection, &target, 
 			     &resulttype, &value, &length, &format)) {
@@ -1431,7 +1416,7 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 
     if (req == NULL) {
 	/* non-incremental owner; only one request can be
-	 * outstanding at a time, so its safe to keep ptr in ctx */
+	 * outstanding at a time, so it's safe to keep ptr in ctx */
 	req = ctx->req;
     }
 
