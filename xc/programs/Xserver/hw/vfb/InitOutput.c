@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.12 94/07/28 16:10:06 dpw Exp dpw $ */
+/* $XConsortium: InitOutput.c,v 1.13 94/08/02 15:43:46 dpw Exp ray $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -765,13 +765,19 @@ vfbWriteXWDFileHeader(pScreen)
 
     pXWDHeader->pixmap_format = ZPixmap;
     pXWDHeader->pixmap_depth = pvfb->depth;
-    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->width;
     pXWDHeader->pixmap_height = pXWDHeader->window_height = pvfb->height;
     pXWDHeader->xoffset = 0;
     pXWDHeader->byte_order = IMAGE_BYTE_ORDER;
-    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT;
     pXWDHeader->bitmap_bit_order = BITMAP_BIT_ORDER;
+#ifndef INTERNAL_VS_EXTERNAL_PADDING
+    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->width;
+    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT;
     pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD;
+#else
+    pXWDHeader->pixmap_width = pXWDHeader->window_width = pvfb->paddedWidth;
+    pXWDHeader->bitmap_unit = BITMAP_SCANLINE_UNIT_PROTO;
+    pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD_PROTO;
+#endif
     pXWDHeader->bits_per_pixel = pvfb->bitsPerPixel;
     pXWDHeader->bytes_per_line = pvfb->paddedWidth;
     pXWDHeader->ncolors = pvfb->ncolors;
