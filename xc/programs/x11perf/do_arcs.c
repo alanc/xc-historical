@@ -130,22 +130,38 @@ int InitSlicePartCircles(xp, p, reps)
     return reps;
 }
 
-
-int InitWideCircles(xp, p, reps)
+static void
+GenerateWideCircles (xp, p, partialArcs)
     XParms  xp;
     Parms   p;
-    int     reps;
+    Bool    partialArcs;
 {
-    int size;
+    int	    size;
 
-    (void)InitCircles(xp, p, reps);
+    GenerateCircles(xp, p, partialArcs);
 
     size = p->special;
     XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
 	LineSolid, CapRound, JoinRound);
     XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
 	LineSolid, CapRound, JoinRound);
+}
 
+int InitWideCircles(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateWideCircles (xp, p, False);
+    return reps;
+}
+ 
+int InitPartWideCircles(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateWideCircles (xp, p, True);
     return reps;
 }
  
@@ -346,21 +362,38 @@ int InitSlicePartEllipses(xp, p, reps)
 }
 
 
-int InitWideEllipses(xp, p, reps)
+static void
+GenerateWideEllipses (xp, p, partialArcs)
     XParms  xp;
     Parms   p;
-    int     reps;
+    Bool    partialArcs;
 {
     int size;
 
-    (void)InitEllipses(xp, p, reps);
-
+    GenerateEllipses (xp, p, partialArcs);
     size = p->special;
     XSetLineAttributes(xp->d, xp->bggc, (int) ((size + 9) / 10),
 	LineSolid, CapRound, JoinRound);
     XSetLineAttributes(xp->d, xp->fggc, (int) ((size + 9) / 10),
 	LineSolid, CapRound, JoinRound);
 
+}
+
+int InitWideEllipses(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateWideEllipses(xp, p, False);
+    return reps;
+}
+ 
+int InitPartWideEllipses(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    GenerateWideEllipses(xp, p, True);
     return reps;
 }
  
