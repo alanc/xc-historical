@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.74 89/12/15 18:17:54 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.75 89/12/15 19:07:39 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.74 89/12/15 18:17:54 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.75 89/12/15 19:07:39 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -166,8 +166,8 @@ extern void HandleCreateMenu();
 static char defaultTranslations[] = "\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()\n\
- Ctrl ~Meta<Btn1Down>:          create-menu(mainMenu) XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
- Ctrl ~Meta <Btn2Down>:         create-menu(tekMenu) XawPositionSimpleMenu(tekMenu) MenuPopup(tekMenu) \n\
+ Ctrl ~Meta<Btn1Down>:          popup-menu(mainMenu) \n\
+ Ctrl ~Meta <Btn2Down>:         popup-menu(tekMenu) \n\
  Shift ~Meta<Btn1Down>:         gin-press(L) \n\
        ~Meta<Btn1Down>:         gin-press(l) \n\
  Shift ~Meta<Btn2Down>:         gin-press(M) \n\
