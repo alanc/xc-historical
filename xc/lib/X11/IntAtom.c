@@ -1,4 +1,4 @@
-/* $XConsortium: XIntAtom.c,v 11.13 89/12/11 19:09:36 rws Exp $ */
+/* $XConsortium: XIntAtom.c,v 11.14 90/12/09 16:33:41 rws Exp $ */
 /*
 
 Copyright 1986, 1990 by the Massachusetts Institute of Technology
@@ -20,10 +20,15 @@ without express or implied warranty.
 
 #define TABLESIZE 64
 
+typedef struct _Entry {
+    unsigned long sig;
+    Atom atom;
+} EntryRec, *Entry;
+
+#define EntryName(e) ((char *)(e+1))
+
 typedef struct _XDisplayAtoms {
-    char *name[TABLESIZE];
-    unsigned long sig[TABLESIZE];
-    Atom atom[TABLESIZE];
+    Entry table[TABLESIZE];
 } AtomTable;
 
 #define HASH(sig) ((sig) & (TABLESIZE-1))
@@ -34,16 +39,16 @@ static void
 _XFreeAtomTable(dpy)
     Display *dpy;
 {
-    register AtomTable *atoms;
+    register Entry *table;
     register int i;
-    register char *s;
+    register Entry e;
 
-    if (atoms = dpy->atoms) {
+    if (table = dpy->atoms->table) {
 	for (i = TABLESIZE; --i >= 0; ) {
-	    if (s = atoms->name[i])
-		Xfree(s);
+	    if (e = *table++)
+		Xfree((char *)e);
 	}
-	Xfree((char *)atoms);
+	Xfree((char *)dpy->atoms);
     }
 }
 
@@ -63,6 +68,7 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     register char *s1, c, *s2;
     register unsigned long sig;
     register int idx, i;
+    Entry e, oe;
     int n, firstidx, rehash;
     xInternAtomReply rep;
     xInternAtomReq *req;
@@ -79,14 +85,14 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     n = s1 - (char *)name - 1;
     if (atoms) {
 	firstidx = idx = HASH(sig);
-	while (s2 = atoms->name[idx]) {
-	    if (atoms->sig[idx] == sig) {
-	    	for (i = n, s1 = (char *)name; --i >= 0; ) {
+	while (e = atoms->table[idx]) {
+	    if (e->sig == sig) {
+	    	for (i = n, s1 = (char *)name, s2 = EntryName(e); --i >= 0; ) {
 		    if (*s1++ != *s2++)
 		    	goto nomatch;
 	    	}
 	    	if (!*s2) {
-		    rep.atom = atoms->atom[idx];
+		    rep.atom = e->atom;
 		    UnlockDisplay(dpy);
 		    return rep.atom;
 	    	}
@@ -110,14 +116,14 @@ nomatch:    if (idx == firstidx)
 	rep.atom = None;
     } else if (atoms) {
 	/* store it in the cache */
-	s1 = Xmalloc(n + 1);
-	if (s1) {
-	    strcpy(s1, name);
-	    if (s2 = atoms->name[idx])
-		Xfree(s2);
-	    atoms->name[idx] = s1;
-	    atoms->atom[idx] = rep.atom;
-	    atoms->sig[idx] = sig;
+	e = (Entry)Xmalloc(sizeof(EntryRec) + n + 1);
+	if (e) {
+	    e->sig = sig;
+	    e->atom = rep.atom;
+	    strcpy(EntryName(e), name);
+	    if (oe = atoms->table[idx])
+		Xfree((char *)oe);
+	    atoms->table[idx] = e;
 	}
     }
     UnlockDisplay(dpy);
