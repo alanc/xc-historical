@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.91 87/09/03 02:57:50 toddb Locked $ */
+/* $Header: gc.c,v 1.92 87/09/03 09:46:17 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -758,7 +758,6 @@ CreateDefaultStipple(screenNum)
     int screenNum;
 {
     register ScreenPtr pScreen;
-    DepthPtr pDepth;
     int tmpval[3];
     xRectangle rect;
     int w, h;
