@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.41 94/04/18 14:04:24 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.42 94/04/18 16:43:24 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -1439,7 +1439,7 @@ Requests
 delim %%
 .EN
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateWindow" "" "@DEF@"
 .PN CreateWindow
 .in +.2i
@@ -1473,8 +1473,8 @@ Errors:
 .PN Pixmap , 
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates an unmapped window and assigns the identifier wid to it.
 .LP
@@ -1944,7 +1944,7 @@ undefined effect on the window state.
 The server might or might not make a copy of the pixmap.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeWindowAttributes" "" "@DEF@"
 .PN ChangeWindowAttributes
 .in +.2i
@@ -1963,8 +1963,8 @@ Errors:
 .PN Pixmap , 
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The value-mask and value-list specify which attributes are to be changed.
 The values and restrictions are the same as for 
@@ -2032,7 +2032,7 @@ If an error is generated,
 a subset of the attributes may have been altered.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetWindowAttributes" "" "@DEF@"
 .PN GetWindowAttributes
 .in +.2i
@@ -2082,8 +2082,8 @@ override-redirect: BOOL
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current attributes of the window.
 A window is 
@@ -2094,7 +2094,7 @@ by clients.
 Your-event-mask is the event mask selected by the querying client.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "DestroyWindow" "" "@DEF@"
 .PN DestroyWindow
 .in +.2i
@@ -2103,8 +2103,8 @@ Your-event-mask is the event mask selected by the querying client.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the argument window is mapped, 
 an 
@@ -2128,7 +2128,7 @@ If the window is a root window,
 this request has no effect.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "DestroySubwindows" "" "@DEF@"
 .PN DestroySubwindows
 .in +.2i
@@ -2137,15 +2137,15 @@ this request has no effect.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request performs a
 .PN DestroyWindow 
 request on all children of the window, in bottom-to-top stacking order.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeSaveSet" "" "@DEF@"
 .PN ChangeSaveSet
 .in +.2i
@@ -2160,9 +2160,9 @@ Errors:
 .PN Match , 
 .PN Value ,
 .PN Window
-.\" End marker code here
-.LP
 .in -.2i
+.eM
+.LP
 This request adds or removes the specified window from the client's 
 save-set.
 The window must have been created by some other client (or a 
@@ -2175,7 +2175,7 @@ When windows are destroyed,
 the server automatically removes them from the save-set.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ReparentWindow" "" "@DEF@"
 .PN ReparentWindow
 .in +.2i
@@ -2187,8 +2187,8 @@ the server automatically removes them from the save-set.
 Errors: 
 .PN Match ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the window is mapped, 
 an 
@@ -2233,7 +2233,7 @@ The window has a
 background, and the new parent is not the same depth as the window.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "MapWindow" "" "@DEF@"
 .PN MapWindow
 .in +.2i
@@ -2242,8 +2242,8 @@ background, and the new parent is not the same depth as the window.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the window is already mapped, this request has no effect.
 .LP
@@ -2271,7 +2271,7 @@ Otherwise, only visible regions may be reported.
 Similar tiling and exposure take place for any newly viewable inferiors.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "MapSubwindows" "" "@DEF@"
 .PN MapSubwindows
 .in +.2i
@@ -2280,8 +2280,8 @@ Similar tiling and exposure take place for any newly viewable inferiors.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request performs a 
 .PN MapWindow 
@@ -2289,7 +2289,7 @@ request on all unmapped children of the window,
 in top-to-bottom stacking order.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UnmapWindow" "" "@DEF@"
 .PN UnmapWindow
 .in +.2i
@@ -2298,8 +2298,8 @@ in top-to-bottom stacking order.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the window is already unmapped, this request has no effect.
 Otherwise, the window is unmapped, and an 
@@ -2308,7 +2308,7 @@ event is generated.
 Normal exposure processing on formerly obscured windows is performed.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UnmapSubwindows" "" "@DEF@"
 .PN UnmapSubwindows
 .in +.2i
@@ -2317,8 +2317,8 @@ Normal exposure processing on formerly obscured windows is performed.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request performs an 
 .PN UnmapWindow 
@@ -2326,7 +2326,7 @@ request on all mapped children of the window,
 in bottom-to-top stacking order.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ConfigureWindow" "" "@DEF@"
 .PN ConfigureWindow
 .in +.2i
@@ -2341,8 +2341,8 @@ Errors:
 .PN Match , 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the configuration of the window.
 The value-mask and value-list specify which values are to be given.
@@ -2674,7 +2674,7 @@ the other arguments to the request), not to its initial geometry.
 Attempts to configure a root window have no effect.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CirculateWindow" "" "@DEF@"
 .PN CirculateWindow
 .in +.2i
@@ -2688,8 +2688,8 @@ Attempts to configure a root window have no effect.
 Errors: 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If some other client has selected 
 .PN SubstructureRedirect 
@@ -2713,7 +2713,7 @@ the bottom of the stack.
 Exposure processing is performed on formerly obscured windows.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetGeometry" "" "@DEF@"
 .PN GetGeometry
 .in +.2i
@@ -2734,8 +2734,8 @@ width, height, border-width: CARD16
 .LP
 Errors: 
 .PN Drawable
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the root and current geometry of the drawable.
 The depth is the number of bits per pixel for the object.
@@ -2750,7 +2750,7 @@ It is legal to pass an
 window as a drawable to this request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryTree" "" "@DEF@"
 .PN QueryTree
 .in +.2i
@@ -2770,14 +2770,14 @@ children: LISTofWINDOW
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the root, the parent, and the children of the window.
 The children are listed in bottom-to-top stacking order.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "InternAtom" "" "@DEF@"
 .PN InternAtom
 .in +.2i
@@ -2796,8 +2796,8 @@ atom: ATOM or
 Errors:
 .PN Alloc ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the atom for the given name.
 If only-if-exists is 
@@ -2810,7 +2810,7 @@ The lifetime of an atom is not tied to the interning client.
 Atoms remain defined until server reset (see section 10).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetAtomName" "" "@DEF@"
 .PN GetAtomName
 .in +.2i
@@ -2825,13 +2825,13 @@ name: STRING8
 .LP
 Errors: 
 .PN Atom
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the name for the given atom.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeProperty" "" "@DEF@"
 .PN ChangeProperty
 .in +.2i
@@ -2855,8 +2855,8 @@ Errors:
 .PN Match , 
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request alters the property for the specified window.
 The type is uninterpreted by the server.
@@ -2894,7 +2894,7 @@ or until server reset (see section 10).
 The maximum size of a property is server-dependent and may vary dynamically.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "DeleteProperty" "" "@DEF@"
 .PN DeleteProperty
 .in +.2i
@@ -2906,8 +2906,8 @@ The maximum size of a property is server-dependent and may vary dynamically.
 Errors: 
 .PN Atom ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the property from the specified window 
 if the property exists and generates a 
@@ -2915,7 +2915,7 @@ if the property exists and generates a
 event on the window unless the property does not exist.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetProperty" "" "@DEF@"
 .PN GetProperty
 .in +.2i
@@ -2948,8 +2948,8 @@ Errors:
 .PN Atom , 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the specified property does not exist for the specified window, 
 then the return type is 
@@ -2996,7 +2996,7 @@ and a
 event is generated on the window.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "RotateProperties" "" "@DEF@"
 .PN RotateProperties
 .in +.2i
@@ -3011,8 +3011,8 @@ Errors:
 .PN Atom , 
 .PN Match ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the property names in the list are viewed as being numbered starting
 from zero, and there are N property names in the list, 
@@ -3038,7 +3038,7 @@ or
 error is generated, no properties are changed.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListProperties" "" "@DEF@"
 .PN ListProperties
 .in +.2i
@@ -3053,13 +3053,13 @@ atoms: LISTofATOM
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the atoms of properties currently defined on the window.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetSelectionOwner" "" "@DEF@"
 .PN SetSelectionOwner
 .in +.2i
@@ -3075,8 +3075,8 @@ This request returns the atoms of properties currently defined on the window.
 Errors: 
 .PN Atom , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the owner, owner window, 
 and last-change time of the specified selection.
@@ -3121,7 +3121,7 @@ events.
 Selections are global to the server.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetSelectionOwner" "" "@DEF@"
 .PN GetSelectionOwner
 .in +.2i
@@ -3137,8 +3137,8 @@ owner: WINDOW or
 .IP
 Errors: 
 .PN Atom
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current owner window of the specified selection, 
 if any.
@@ -3147,7 +3147,7 @@ If
 is returned, then there is no owner for the selection.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ConvertSelection" "" "@DEF@"
 .PN ConvertSelection
 .in +.2i
@@ -3165,8 +3165,8 @@ is returned, then there is no owner for the selection.
 Errors: 
 .PN Atom , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the specified selection has an owner, 
 the server sends a
@@ -3180,7 +3180,7 @@ event to the requestor with property
 The arguments are passed on unchanged in either of the events.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SendEvent" "" "@DEF@"
 .PN SendEvent
 .in +.2i
@@ -3199,8 +3199,8 @@ or
 Errors: 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If 
 .PN PointerWindow 
@@ -3249,7 +3249,7 @@ and to set the sequence number in the event correctly.
 Active grabs are ignored for this request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GrabPointer" "" "@DEF@"
 .PN GrabPointer
 .in +.2i
@@ -3288,8 +3288,8 @@ Errors:
 .PN Cursor , 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request actively grabs control of the pointer.
 Further pointer events are only reported to the grabbing client.
@@ -3379,15 +3379,15 @@ Otherwise, the last-pointer-grab time is set to the specified time, with
 replaced by the current server time.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UngrabPointer" "" "@DEF@"
 .PN UngrabPointer
 .in +.2i
 .LP
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request releases the pointer if this client has it actively grabbed (from
 either 
@@ -3412,7 +3412,7 @@ or if window reconfiguration causes the confine-to window to lie
 completely outside the boundaries of the root window.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GrabButton" "" "@DEF@"
 .PN GrabButton
 .in +.2i
@@ -3444,8 +3444,8 @@ Errors:
 .PN Cursor , 
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request establishes a passive grab.
 In the future,
@@ -3506,7 +3506,7 @@ error is generated if there is a conflicting grab for any combination.
 The request has no effect on an active grab.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UngrabButton" "" "@DEF@"
 .PN UngrabButton
 .in +.2i
@@ -3522,8 +3522,8 @@ The request has no effect on an active grab.
 Errors: 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request releases the passive button/key combination 
 on the specified window if it was grabbed by this client.
@@ -3537,7 +3537,7 @@ is equivalent to issuing the request for all possible buttons.
 The request has no effect on an active grab.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeActivePointerGrab" "" "@DEF@"
 .PN ChangeActivePointerGrab
 .in +.2i
@@ -3553,8 +3553,8 @@ The request has no effect on an active grab.
 Errors: 
 .PN Cursor ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the specified dynamic parameters if the pointer is 
 actively grabbed by the client and the specified time is no earlier than the
@@ -3566,7 +3566,7 @@ with
 .PN GrabButton .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GrabKeyboard" "" "@DEF@"
 .PN GrabKeyboard
 .in +.2i
@@ -3596,8 +3596,8 @@ status:
 Errors: 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request actively grabs control of the keyboard.
 Further key events are reported only to the grabbing client.
@@ -3670,15 +3670,15 @@ Otherwise, the last-keyboard-grab time is set to the specified time with
 replaced by the current server time.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UngrabKeyboard" "" "@DEF@"
 .PN UngrabKeyboard
 .in +.2i
 .LP
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request releases the keyboard if this client has it actively grabbed 
 (as a result of either 
@@ -3701,7 +3701,7 @@ is performed automatically if the event window for an active keyboard grab
 becomes not viewable.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GrabKey" "" "@DEF@"
 .PN GrabKey
 .in +.2i
@@ -3724,8 +3724,8 @@ Errors:
 .PN Access ,
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request establishes a passive grab on the keyboard.
 In the future,
@@ -3788,7 +3788,7 @@ and an
 error is generated if there is a conflicting grab for any combination.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UngrabKey" "" "@DEF@"
 .PN UngrabKey
 .in +.2i
@@ -3804,8 +3804,8 @@ error is generated if there is a conflicting grab for any combination.
 Errors: 
 .PN Value ,
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request releases the key combination on the specified window 
 if it was grabbed by this client.
@@ -3819,7 +3819,7 @@ is equivalent to issuing the request for all possible keycodes.
 This request has no effect on an active grab.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "AllowEvents" "" "@DEF@"
 .PN AllowEvents
 .in +.2i
@@ -3841,8 +3841,8 @@ This request has no effect on an active grab.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request releases some queued events if the client has caused a device to
 freeze.
@@ -3996,25 +3996,25 @@ If a device is frozen twice by a single client, then a single
 releases both.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GrabServer" "" "@DEF@"
 .PN GrabServer
-.\" End marker code here
+.eM
 .LP
 This request disables processing of requests and close-downs on all 
 connections other than the one this request arrived on.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UngrabServer" "" "@DEF@"
 .PN UngrabServer
-.\" End marker code here
+.eM
 .LP
 This request restarts processing of requests and close-downs 
 on other connections.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryPointer" "" "@DEF@"
 .PN QueryPointer
 .in +.2i
@@ -4038,8 +4038,8 @@ mask: SETofKEYBUTMASK
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The root window the pointer is logically on and the pointer coordinates
 relative to the root's origin are returned.
@@ -4060,7 +4060,7 @@ Note that the logical state of a device (as seen by means of the protocol)
 may lag the physical state if device event processing is frozen.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetMotionEvents" "" "@DEF@"
 .PN GetMotionEvents
 .in +.2i
@@ -4086,8 +4086,8 @@ TIMECOORD:	[x, y: INT16
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns all events in the motion history buffer that fall 
 between the specified start and stop times (inclusive) 
@@ -4101,7 +4101,7 @@ If the stop time is in the future, it is equivalent to specifying
 .PN CurrentTime .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "TranslateCoordinates" "" "@DEF@"
 .PN TranslateCoordinates
 .in +.2i
@@ -4123,8 +4123,8 @@ dst-x, dst-y: INT16
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The src-x and src-y coordinates are taken relative to src-window's
 origin and are returned as dst-x and dst-y coordinates relative to
@@ -4137,7 +4137,7 @@ If the coordinates are contained in a mapped child of dst-window,
 then that child is returned.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "WarpPointer" "" "@DEF@"
 .PN WarpPointer
 .in +.2i
@@ -4156,8 +4156,8 @@ then that child is returned.
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If dst-window is 
 .PN None , 
@@ -4186,7 +4186,7 @@ This request will generate events just as if the user had instantaneously
 moved the pointer.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetInputFocus" "" "@DEF@"
 .PN SetInputFocus
 .in +.2i
@@ -4208,8 +4208,8 @@ Errors:
 .PN Match ,
 .PN Value , 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the input focus and the last-focus-change time.
 The request has no effect if the specified time is earlier than the current
@@ -4268,7 +4268,7 @@ events are generated,
 but the last-focus-change time is not affected.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetInputFocus" "" "@DEF@"
 .PN GetInputFocus
 .LP
@@ -4284,13 +4284,13 @@ revert-to:
 .Pn { Parent , 
 .PN PointerRoot , 
 .PN None }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current focus state.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryKeymap" "" "@DEF@"
 .PN QueryKeymap
 .LP
@@ -4298,8 +4298,8 @@ This request returns the current focus state.
 .in +.2i
 .LP
 keys: LISTofCARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns a bit vector for the logical state of the keyboard.
 Each bit set to 1 indicates that the corresponding key is currently pressed.
@@ -4310,7 +4310,7 @@ Note that the logical state of a device (as seen by means of the protocol)
 may lag the physical state if device event processing is frozen.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "OpenFont" "" "@DEF@"
 .PN OpenFont
 .in +.2i
@@ -4323,8 +4323,8 @@ Errors:
 .PN Alloc ,
 .PN IDChoice , 
 .PN Name
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request loads the specified font, if necessary, 
 and associates identifier fid with it.
@@ -4343,7 +4343,7 @@ Fonts are not associated with a particular screen
 and can be stored as a component of any graphics context.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CloseFont" "" "@DEF@"
 .PN CloseFont
 .in +.2i
@@ -4352,14 +4352,14 @@ and can be stored as a component of any graphics context.
 .LP
 Errors: 
 .PN Font
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the association between the resource ID and the font.
 The font itself will be freed when no other resource references it.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryFont" "" "@DEF@"
 .PN QueryFont
 .in +.2i
@@ -4406,8 +4406,8 @@ CHARINFO:	[left-side-bearing: INT16
 .LP
 Errors: 
 .PN Font
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns logical information about a font.
 If a gcontext is given for font,
@@ -4538,7 +4538,7 @@ The interpretation of the per-character attributes field is
 server-dependent.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryTextExtents" "" "@DEF@"
 .PN QueryTextExtents
 .in +.2i
@@ -4571,8 +4571,8 @@ overall-right: INT32
 .LP
 Errors: 
 .PN Font
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the logical extents of the specified string of characters 
 in the specified font.
@@ -4603,7 +4603,7 @@ If the font has no defined default-char,
 then undefined characters in the string are also ignored.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListFonts" "" "@DEF@"
 .PN ListFonts
 .in +.2i
@@ -4617,8 +4617,8 @@ then undefined characters in the string are also ignored.
 .in +.2i
 .LP
 names: LISTofSTRING8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns a list
 of available font names (as controlled by the font search path; see
@@ -4635,7 +4635,7 @@ of characters.
 The returned names are in lowercase.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListFontsWithInfo" "" "@DEF@"
 .PN ListFontsWithInfo
 .in +.2i
@@ -4658,8 +4658,8 @@ where:
 .LP
 FONTINFO: <same type definition as in 
 .PN QueryFont >
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request is similar to
 .PN ListFonts , 
@@ -4678,7 +4678,7 @@ a reply with a zero-length name is sent to indicate the end of the reply
 sequence.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetFontPath" "" "@DEF@"
 .PN SetFontPath
 .in +.2i
@@ -4687,8 +4687,8 @@ sequence.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request defines the search path for font lookup.
 There is only one search path per server, not one per client.
@@ -4706,7 +4706,7 @@ for which there currently are no explicit resource IDs allocated.
 The meaning of an error from this request is system specific.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetFontPath" "" "@DEF@"
 .PN GetFontPath
 .LP
@@ -4714,13 +4714,13 @@ The meaning of an error from this request is system specific.
 .in +.2i
 .LP
 path: LISTofSTRING8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current search path for fonts.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreatePixmap" "" "@DEF@"
 .PN CreatePixmap
 .in +.2i
@@ -4738,8 +4738,8 @@ Errors:
 .PN Drawable , 
 .PN IDChoice , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates a pixmap and assigns the identifier pid to it.
 The width and height must be nonzero (or a 
@@ -4756,7 +4756,7 @@ It is legal to pass an
 window as a drawable to this request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FreePixmap" "" "@DEF@"
 .PN FreePixmap
 .in +.2i
@@ -4765,14 +4765,14 @@ window as a drawable to this request.
 .LP
 Errors: 
 .PN Pixmap
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the association between the resource ID and the pixmap.
 The pixmap storage will be freed when no other resource references it.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateGC" "" "@DEF@"
 .PN CreateGC
 .in +.2i
@@ -4793,8 +4793,8 @@ Errors:
 .PN Match , 
 .PN Pixmap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates a graphics context 
 and assigns the identifier cid to it.
@@ -5654,7 +5654,7 @@ identical state as significantly more expensive than making minor
 changes to a single gcontext.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeGC" "" "@DEF@"
 .PN ChangeGC
 .in +.2i
@@ -5672,8 +5672,8 @@ Errors:
 .PN Match , 
 .PN Pixmap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes components in gc.
 The value-mask and value-list specify which components are to be changed.
@@ -5693,7 +5693,7 @@ If an error is generated,
 a subset of the components may have been altered.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CopyGC" "" "@DEF@"
 .PN CopyGC
 .in +.2i
@@ -5707,8 +5707,8 @@ Errors:
 .PN GContext , 
 .PN Match , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request copies components from src-gc to dst-gc.
 The value-mask specifies which components to copy, as for 
@@ -5718,7 +5718,7 @@ The two gcontexts must have the same root and the same depth (or a
 error results).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetDashes" "" "@DEF@"
 .PN SetDashes
 .in +.2i
@@ -5733,8 +5733,8 @@ Errors:
 .PN Alloc ,
 .PN GContext , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request sets dash-offset and dashes in gc for dashed line styles.
 Dashes cannot be empty (or a 
@@ -5790,7 +5790,7 @@ if and only if the point lies inside the clipping region and the point
 would be included in the dash when drawn unclipped.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetClipRectangles" "" "@DEF@"
 .PN SetClipRectangles
 .in +.2i
@@ -5812,8 +5812,8 @@ Errors:
 .PN GContext , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes clip-mask in gc to the specified list of rectangles 
 and sets the clip origin.
@@ -5859,7 +5859,7 @@ all rectangles that include that scanline have identical Y origins and Y
 extents.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FreeGC" "" "@DEF@"
 .PN FreeGC
 .in +.2i
@@ -5868,14 +5868,14 @@ extents.
 .LP
 Errors: 
 .PN GContext
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the association between the resource ID and the gcontext 
 and destroys the gcontext.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ClearArea" "" "@DEF@"
 .PN ClearArea
 .in +.2i
@@ -5892,8 +5892,8 @@ Errors:
 .PN Match ,
 .PN Value , 
 .PN Window 
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The x and y coordinates are relative to the window's origin
 and specify the upper-left corner of the rectangle.
@@ -5922,7 +5922,7 @@ error to use an
 window in this request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CopyArea" "" "@DEF@"
 .PN CopyArea
 .in +.2i
@@ -5941,8 +5941,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request combines the specified rectangle of src-drawable with the 
 specified rectangle of dst-drawable.
@@ -5986,7 +5986,7 @@ GC components: function, plane-mask, subwindow-mode,
 graphics-exposures, clip-x-origin, clip-y-origin, clip-mask
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CopyPlane" "" "@DEF@"
 .PN CopyPlane
 .in +.2i
@@ -6008,8 +6008,8 @@ Errors:
 .PN GContext , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The src-drawable must have the same root as dst-drawable (or a 
 .PN Match 
@@ -6035,7 +6035,7 @@ subwindow-mode, graphics-exposures, clip-x-origin, clip-y-origin,
 clip-mask
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyPoint" "" "@DEF@"
 .PN PolyPoint
 .in +.2i
@@ -6055,8 +6055,8 @@ Errors:
 .PN GContext , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request combines the foreground pixel in gc with the pixel 
 at each point in the drawable.
@@ -6070,7 +6070,7 @@ GC components: function, plane-mask, foreground, subwindow-mode,
 clip-x-origin, clip-y-origin, clip-mask
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyLine" "" "@DEF@"
 .PN PolyLine
 .in +.2i
@@ -6090,8 +6090,8 @@ Errors:
 .PN GContext , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request draws lines between each pair of points (point[i], point[i+1]).
 The lines are drawn in the order listed.
@@ -6128,7 +6128,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolySegment" "" "@DEF@"
 .PN PolySegment
 .in +.2i
@@ -6147,8 +6147,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 For each segment, 
 this request draws a line between [x1, y1] and [x2, y2].
@@ -6167,7 +6167,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyRectangle" "" "@DEF@"
 .PN PolyRectangle
 .in +.2i
@@ -6182,8 +6182,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request draws the outlines of the specified rectangles, as if a five-point
 .PN PolyLine 
@@ -6210,7 +6210,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyArc" "" "@DEF@"
 .PN PolyArc
 .in +.2i
@@ -6225,8 +6225,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request draws circular or elliptical arcs.
 Each arc is specified by a rectangle and two angles.
@@ -6339,7 +6339,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin, dash-offset, dashes
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FillPoly" "" "@DEF@"
 .PN FillPoly
 .in +.2i
@@ -6364,8 +6364,8 @@ Errors:
 .PN GContext , 
 .PN Match , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request fills the region closed by the specified path.
 The path is closed automatically if the last point in the list does not 
@@ -6415,7 +6415,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyFillRectangle" "" "@DEF@"
 .PN PolyFillRectangle
 .in +.2i
@@ -6430,8 +6430,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request fills the specified rectangles, as if a four-point 
 .PN FillPoly 
@@ -6456,7 +6456,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyFillArc" "" "@DEF@"
 .PN PolyFillArc
 .in +.2i
@@ -6471,8 +6471,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 For each arc, 
 this request fills the region closed by the infinitely thin path
@@ -6520,7 +6520,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PutImage" "" "@DEF@"
 .PN PutImage
 .in +.2i
@@ -6549,8 +6549,8 @@ Errors:
 .PN GContext , 
 .PN Match , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request combines an image with a rectangle of the drawable.
 The dst-x and dst-y coordinates are relative to the drawable's origin.
@@ -6603,7 +6603,7 @@ clip-y-origin, clip-mask
 GC mode-dependent components: foreground, background
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetImage" "" "@DEF@"
 .PN GetImage
 .in +.2i
@@ -6635,8 +6635,8 @@ Errors:
 .PN Drawable , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the contents of the given rectangle of the drawable in the
 given format.
@@ -6689,7 +6689,7 @@ graphics-related requests.
 It is intended specifically for rudimentary hardcopy support.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyText8" "" "@DEF@"
 .PN PolyText8
 .in +.2i
@@ -6717,8 +6717,8 @@ Errors:
 .PN Font ,
 .PN GContext , 
 .PN Match 
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The x and y coordinates are relative to the drawable's origin 
 and specify the baseline starting position (the initial character origin).
@@ -6750,7 +6750,7 @@ GC mode-dependent components: foreground, background, tile, stipple,
 tile-stipple-x-origin, tile-stipple-y-origin
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PolyText16" "" "@DEF@"
 .PN PolyText16
 .in +.2i
@@ -6778,8 +6778,8 @@ Errors:
 .PN Font ,
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request is similar to
 .PN PolyText8 , 
@@ -6790,7 +6790,7 @@ has been transmitted most-significant byte first (that is, byte1 of the
 CHAR2B is taken as the most-significant byte).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ImageText8" "" "@DEF@"
 .PN ImageText8
 .in +.2i
@@ -6807,8 +6807,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The x and y coordinates are relative to the drawable's origin 
 and specify the baseline starting position (the initial character origin).
@@ -6848,7 +6848,7 @@ GC components: plane-mask, foreground, background, font,
 subwindow-mode, clip-x-origin, clip-y-origin, clip-mask
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ImageText16" "" "@DEF@"
 .PN ImageText16
 .in +.2i
@@ -6865,8 +6865,8 @@ Errors:
 .PN Drawable , 
 .PN GContext , 
 .PN Match
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request is similar to
 .PN ImageText8 , 
@@ -6877,7 +6877,7 @@ has been transmitted most-significant byte first (that is, byte1 of the
 CHAR2B is taken as the most-significant byte).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateColormap" "" "@DEF@"
 .PN CreateColormap
 .in +.2i
@@ -6898,8 +6898,8 @@ Errors:
 .PN Match , 
 .PN Value , 
 .PN Window 
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates a colormap of the specified visual type for the screen 
 on which the window resides and associates the identifier mid with it.
@@ -6958,7 +6958,7 @@ in all cases, none of these entries can be freed with
 .PN FreeColors .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FreeColormap" "" "@DEF@"
 .PN FreeColormap
 .in +.2i
@@ -6967,8 +6967,8 @@ in all cases, none of these entries can be freed with
 .LP
 Errors: 
 .PN Colormap
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the association between the resource ID and the colormap
 and frees the colormap storage.
@@ -6991,7 +6991,7 @@ The protocol does not define the colors displayed for a window with a colormap o
 This request has no effect on a default colormap for a screen.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CopyColormapAndFree" "" "@DEF@"
 .PN CopyColormapAndFree
 .in +.2i
@@ -7002,8 +7002,8 @@ Errors:
 .PN Alloc ,
 .PN Colormap , 
 .PN IDChoice
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates a colormap of the same visual type 
 and for the same screen as src-cmap, 
@@ -7034,7 +7034,7 @@ or
 and that have not been freed since they were allocated.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "InstallColormap" "" "@DEF@"
 .PN InstallColormap
 .in +.2i
@@ -7043,8 +7043,8 @@ and that have not been freed since they were allocated.
 .LP
 Errors: 
 .PN Colormap
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request makes this colormap an installed map for its screen.
 All windows associated with this colormap immediately display with true colors.
@@ -7084,7 +7084,7 @@ Initially the default colormap for a screen is installed (but is not in
 the required list).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UninstallColormap" "" "@DEF@"
 .PN UninstallColormap
 .in +.2i
@@ -7093,8 +7093,8 @@ the required list).
 .LP
 Errors: 
 .PN Colormap
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If cmap is on the required list for its screen (see 
 .PN InstallColormap 
@@ -7116,7 +7116,7 @@ the request, a
 event is generated on every window having that colormap as an attribute.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListInstalledColormaps" "" "@DEF@"
 .PN ListInstalledColormaps
 .in +.2i
@@ -7131,8 +7131,8 @@ cmaps: LISTofCOLORMAP
 .LP
 Errors: 
 .PN Window
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns a list of the currently installed colormaps for the 
 screen of the specified window.
@@ -7142,7 +7142,7 @@ and there is no explicit indication of the required list (see
 request).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "AllocColor" "" "@DEF@"
 .PN AllocColor
 .in +.2i
@@ -7162,8 +7162,8 @@ red, green, blue: CARD16
 Errors: 
 .PN Alloc ,
 .PN Colormap 
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request allocates a read-only colormap entry corresponding to the closest 
 RGB values provided by the hardware.
@@ -7172,7 +7172,7 @@ Multiple clients requesting the same effective RGB values can be assigned
 the same read-only entry, allowing entries to be shared.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "AllocNamedColor" "" "@DEF@"
 .PN AllocNamedColor
 .in +.2i
@@ -7195,8 +7195,8 @@ Errors:
 .PN Alloc ,
 .PN Colormap , 
 .PN Name
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request looks up the named color with respect to the screen associated 
 with the colormap.
@@ -7209,7 +7209,7 @@ The exact RGB values specify the true values for the color,
 and the visual values specify the values actually used in the colormap.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "AllocColorCells" "" "@DEF@"
 .PN AllocColorCells
 .in +.2i
@@ -7230,8 +7230,8 @@ Errors:
 .PN Alloc ,
 .PN Colormap , 
 .PN Value
-.\" Start marker code here
 .in -.2i
+.eM
 .LP
 The number of colors must be positive, 
 and the number of planes must be nonnegative (or a 
@@ -7263,7 +7263,7 @@ and three contiguous sets of bits (one within each pixel subfield) for
 The RGB values of the allocated entries are undefined.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "AllocColorPlanes" "" "@DEF@"
 .PN AllocColorPlanes
 .in +.2i
@@ -7286,8 +7286,8 @@ Errors:
 .PN Alloc ,
 .PN Colormap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The number of colors must be positive, 
 and the reds, greens, and blues must be nonnegative (or a 
@@ -7322,7 +7322,7 @@ the pixel is decomposed according to the masks and the
 corresponding independent entries are updated.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FreeColors" "" "@DEF@"
 .PN FreeColors
 .in +.2i
@@ -7337,8 +7337,8 @@ Errors:
 .PN Access , 
 .PN Colormap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The plane-mask should not have any bits in common with any of the
 pixels.
@@ -7379,7 +7379,7 @@ If more than one pixel is in error,
 it is arbitrary as to which pixel is reported.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "StoreColors" "" "@DEF@"
 .PN StoreColors
 .in +.2i
@@ -7402,8 +7402,8 @@ Errors:
 .PN Access , 
 .PN Colormap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the colormap entries of the specified pixels.
 The do-red, do-green, and do-blue fields indicate which components 
@@ -7423,7 +7423,7 @@ If more than one pixel is in error,
 it is arbitrary as to which pixel is reported.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "StoreNamedColor" "" "@DEF@"
 .PN StoreNamedColor
 .in +.2i
@@ -7441,8 +7441,8 @@ Errors:
 .PN Colormap ,
 .PN Name , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request looks up the named color with respect to the screen associated 
 with cmap and then does a 
@@ -7458,7 +7458,7 @@ errors are the same as in
 .PN StoreColors .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryColors" "" "@DEF@"
 .PN QueryColors
 .in +.2i
@@ -7481,8 +7481,8 @@ RGB: [red, green, blue: CARD16]
 Errors: 
 .PN Colormap , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the hardware-specific color values stored in cmap for
 the specified pixels.
@@ -7494,7 +7494,7 @@ If more than one pixel is in error,
 it is arbitrary as to which pixel is reported.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "LookupColor" "" "@DEF@"
 .PN LookupColor
 .in +.2i
@@ -7514,8 +7514,8 @@ visual-red, visual-green, visual-blue: CARD16
 Errors: 
 .PN Colormap , 
 .PN Name
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request looks up the string name of a color with respect to the screen
 associated with cmap and returns both the exact color values and
@@ -7525,7 +7525,7 @@ The name should use the ISO Latin-1 encoding,
 and uppercase and lowercase do not matter.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateCursor" "" "@DEF@"
 .PN CreateCursor
 .in +.2i
@@ -7548,8 +7548,8 @@ Errors:
 .PN IDChoice , 
 .PN Match , 
 .PN Pixmap
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request creates a cursor and associates identifier cid with it.
 The foreground and background RGB values must be specified, 
@@ -7589,7 +7589,7 @@ on the cursor.
 The server might or might not make a copy of the pixmap.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateGlyphCursor" "" "@DEF@"
 .PN CreateGlyphCursor
 .in +.2i
@@ -7612,8 +7612,8 @@ Errors:
 .PN Font , 
 .PN IDChoice , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request is similar to 
 .PN CreateCursor , 
@@ -7643,7 +7643,7 @@ The fonts can be freed immediately if no further explicit references to
 them are to be made.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FreeCursor" "" "@DEF@"
 .PN FreeCursor
 .in +.2i
@@ -7652,14 +7652,14 @@ them are to be made.
 .LP
 Errors: 
 .PN Cursor
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request deletes the association between the resource ID and the cursor.
 The cursor storage will be freed when no other resource references it.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "RecolorCursor" "" "@DEF@"
 .PN RecolorCursor
 .in +.2i
@@ -7672,15 +7672,15 @@ The cursor storage will be freed when no other resource references it.
 .LP
 Errors: 
 .PN Cursor
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request changes the color of a cursor.
 If the cursor is being displayed on a screen, 
 the change is visible immediately.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryBestSize" "" "@DEF@"
 .PN QueryBestSize
 .in +.2i
@@ -7704,8 +7704,8 @@ Errors:
 .PN Drawable , 
 .PN Match ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the best size that is closest to the argument size.
 For
@@ -7737,7 +7737,7 @@ or
 error results).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "QueryExtension" "" "@DEF@"
 .PN QueryExtension
 .in +.2i
@@ -7755,8 +7755,8 @@ major-opcode: CARD8
 first-event: CARD8
 .br
 first-error: CARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request determines if the named extension is present.
 If so, 
@@ -7776,7 +7776,7 @@ The extension name should use the ISO Latin-1 encoding,
 and uppercase and lowercase matter.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListExtensions" "" "@DEF@"
 .PN ListExtensions
 .LP
@@ -7784,12 +7784,12 @@ and uppercase and lowercase matter.
 .in +.2i
 .LP
 names: LISTofSTRING8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns a list of all extensions supported by the server.
 .LP
-.\" Start marker code here
+.sM
 .IN "SetModifierMapping" "" "@DEF@"
 .PN SetModifierMapping
 .in +.2i
@@ -7810,8 +7810,8 @@ status:
 Errors: 
 .PN Alloc ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request specifies the keycodes (if any) of the keys to be used as 
 modifiers.
@@ -7867,7 +7867,7 @@ event on a
 status.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetModifierMapping" "" "@DEF@"
 .PN GetModifierMapping
 .LP
@@ -7877,8 +7877,8 @@ status.
 keycodes-per-modifier: CARD8
 .br
 keycodes: LISTofKEYCODE
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the keycodes of the keys being used as modifiers.
 The number of keycodes in the list is 8*keycodes-per-modifier.
@@ -7902,7 +7902,7 @@ the use of the corresponding modifier has been disabled.
 The order of keycodes within each set is chosen arbitrarily by the server.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeKeyboardMapping" "" "@DEF@"
 .PN ChangeKeyboardMapping
 .in +.2i
@@ -7916,8 +7916,8 @@ The order of keycodes within each set is chosen arbitrarily by the server.
 Errors: 
 .PN Alloc ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request defines the symbols for the specified number of keycodes, 
 starting with the specified keycode.
@@ -7962,7 +7962,7 @@ There is no requirement that the server interpret this mapping;
 it is merely stored for reading and writing by clients (see section 5).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetKeyboardMapping" "" "@DEF@"
 .PN GetKeyboardMapping
 .in +.2i
@@ -7981,8 +7981,8 @@ keysyms: LISTofKEYSYM
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the symbols for the specified number of keycodes, 
 starting with the specified keycode.
@@ -8017,7 +8017,7 @@ A special KEYSYM value of
 is used to fill in unused elements for individual keycodes.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeKeyboardControl" "" "@DEF@"
 .PN ChangeKeyboardControl
 .in +.2i
@@ -8029,8 +8029,8 @@ is used to fill in unused elements for individual keycodes.
 Errors: 
 .PN Match , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request controls various aspects of the keyboard.
 The value-mask and value-list specify which controls are to be changed.
@@ -8165,7 +8165,7 @@ If an error is generated,
 a subset of the controls may have been altered.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetKeyboardControl" "" "@DEF@"
 .PN GetKeyboardControl
 .LP
@@ -8187,8 +8187,8 @@ global-auto-repeat:
 .PN Off }
 .br
 auto-repeats: LISTofCARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current control values for the keyboard.
 For the LEDs, 
@@ -8201,7 +8201,7 @@ Byte N (from 0) contains the bits for keys 8N to 8N + 7,
 with the least-significant bit in the byte representing key 8N.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "Bell" "" "@DEF@"
 .PN Bell
 .in +.2i
@@ -8210,8 +8210,8 @@ with the least-significant bit in the byte representing key 8N.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request rings the bell on the keyboard at a volume relative to the 
 base volume for the keyboard, if possible.
@@ -8229,7 +8229,7 @@ base + [(base * percent) / 100]
 .DE
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetPointerMapping" "" "@DEF@"
 .PN SetPointerMapping
 .in +.2i
@@ -8246,8 +8246,8 @@ status:
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request sets the mapping of the pointer.
 Elements of the list are indexed starting from one.
@@ -8277,7 +8277,7 @@ event on a
 status.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetPointerMapping" "" "@DEF@"
 .PN GetPointerMapping
 .LP
@@ -8285,8 +8285,8 @@ status.
 .in +.2i
 .LP
 map: LISTofCARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current mapping of the pointer.
 Elements of the list are indexed starting from one.
@@ -8295,7 +8295,7 @@ The length of the list indicates the number of physical buttons.
 The nominal mapping for a pointer is the identity mapping: map[i]=i.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangePointerControl" "" "@DEF@"
 .PN ChangePointerControl
 .in +.2i
@@ -8308,8 +8308,8 @@ The nominal mapping for a pointer is the identity mapping: map[i]=i.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request defines how the pointer moves.
 The acceleration is a multiplier for movement expressed as a fraction.
@@ -8324,7 +8324,7 @@ Other negative values generate a
 error, as does a zero value for acceleration-denominator.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetPointerControl" "" "@DEF@"
 .PN GetPointerControl
 .LP
@@ -8334,13 +8334,13 @@ error, as does a zero value for acceleration-denominator.
 acceleration-numerator, acceleration-denominator: CARD16
 .br
 threshold: CARD16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current acceleration and threshold for the pointer.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetScreenSaver" "" "@DEF@"
 .PN SetScreenSaver
 .in +.2i
@@ -8359,8 +8359,8 @@ This request returns the current acceleration and threshold for the pointer.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The timeout and interval are specified in seconds; 
 setting a value to \-1 restores the default.
@@ -8398,7 +8398,7 @@ tiling the screen with the root window background tile,
 randomly reorigined periodically.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GetScreenSaver" "" "@DEF@"
 .PN GetScreenSaver
 .LP
@@ -8414,13 +8414,13 @@ prefer-blanking:
 allow-exposures: 
 .Pn { Yes , 
 .PN No }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the current screen-saver control values.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ForceScreenSaver" "" "@DEF@"
 .PN ForceScreenSaver
 .in +.2i
@@ -8431,8 +8431,8 @@ This request returns the current screen-saver control values.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If the mode is 
 .PN Activate 
@@ -8447,7 +8447,7 @@ and the activation timer is reset to its initial state
 as if device input had just been received.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ChangeHosts" "" "@DEF@"
 .PN ChangeHosts
 .in +.2i
@@ -8461,8 +8461,8 @@ as if device input had just been received.
 Errors: 
 .PN Access , 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request adds or removes the specified host from the access control list.
 When the access control mechanism is enabled and a client attempts to
@@ -8516,7 +8516,7 @@ and the subnet number is always the second byte.
 The server performs no automatic swapping on the address bytes.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ListHosts" "" "@DEF@"
 .PN ListHosts
 .LP
@@ -8528,8 +8528,8 @@ mode:
 .PN Disabled }
 .br
 hosts: LISTofHOST
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request returns the hosts on the access control list 
 and whether use of the list at connection setup is currently 
@@ -8538,7 +8538,7 @@ enabled or disabled.
 Each HOST is padded to a multiple of four bytes.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetAccessControl" "" "@DEF@"
 .PN SetAccessControl
 .in +.2i
@@ -8550,8 +8550,8 @@ Each HOST is padded to a multiple of four bytes.
 Errors: 
 .PN Access ,
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request enables or disables the use of the access control list 
 at connection setups.
@@ -8563,7 +8563,7 @@ to execute this request (or an
 error results).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SetCloseDownMode" "" "@DEF@"
 .PN SetCloseDownMode
 .in +.2i
@@ -8575,8 +8575,8 @@ error results).
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This request defines what will happen to the client's resources 
 at connection close.
@@ -8586,7 +8586,7 @@ mode.
 The meaning of the close-down mode is described in section 10.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "KillClient" "" "@DEF@"
 .PN KillClient
 .in +.2i
@@ -8596,8 +8596,8 @@ The meaning of the close-down mode is described in section 10.
 .LP
 Errors: 
 .PN Value
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If a valid resource is specified, 
 .PN KillClient 
@@ -8615,10 +8615,10 @@ then the resources of all clients that have terminated in
 are destroyed.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "NoOperation" "" "@DEF@"
 .PN NoOperation
-.\" End marker code here
+.eM
 .LP
 This request has no arguments and no results, 
 but the request length field
@@ -8782,7 +8782,7 @@ and
 can both be used to modify the active grab.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "KeyPress" "" "@DEF@"
 .PN KeyPress
 .br
@@ -8813,8 +8813,8 @@ can both be used to modify the active grab.
 \fIstate\fP\^: SETofKEYBUTMASK
 .br
 \fItime\fP\^: TIMESTAMP
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 These events are generated either when a key or button logically changes state
 or when the pointer logically moves.
@@ -8921,7 +8921,7 @@ or
 request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "EnterNotify" "" "@DEF@"
 .PN EnterNotify
 .br
@@ -8955,8 +8955,8 @@ request.
 \fIstate\fP\^: SETofKEYBUTMASK
 .br
 \fItime\fP\^: TIMESTAMP
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 If pointer motion or window hierarchy change causes the pointer to be
 in a different window than before, 
@@ -9156,7 +9156,7 @@ and the current pointer position is used as both the initial
 and final positions for the events.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "FocusIn" "" "@DEF@"
 .PN FocusIn
 .br
@@ -9183,8 +9183,8 @@ and final positions for the events.
 \ \ \ \ \ \ \ \ \ \ \ 
 .PN PointerRoot , 
 .PN None }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 These events are generated when the input focus changes 
 and are reported to clients selecting 
@@ -9483,14 +9483,14 @@ are generated (as for
 above) as if the focus were to change from G to F.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "KeymapNotify" "" "@DEF@"
 .PN KeymapNotify
 .in +.2i
 .LP
 \fIkeys\fP\^: LISTofCARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 The value is a bit vector as described in 
 .PN QueryKeymap .
@@ -9502,7 +9502,7 @@ and
 .PN FocusIn .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "Expose" "" "@DEF@"
 .PN Expose
 .in +.2i
@@ -9512,8 +9512,8 @@ and
 \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP\^: CARD16
 .br
 \fIcount\fP\^: CARD16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN Exposure 
@@ -9580,7 +9580,7 @@ and
 events is not constrained.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GraphicsExposure" "" "@DEF@"
 .PN GraphicsExposure
 .in +.2i
@@ -9594,8 +9594,8 @@ events is not constrained.
 \fImajor-opcode\fP\^: CARD8
 .br
 \fIminor-opcode\fP\^: CARD16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to a client using a graphics context 
 with graphics-exposures selected 
@@ -9624,7 +9624,7 @@ or
 and minor-opcode is always zero.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "NoExposure" "" "@DEF@"
 .PN NoExposure
 .in +.2i
@@ -9634,8 +9634,8 @@ and minor-opcode is always zero.
 \fImajor-opcode\fP\^: CARD8
 .br
 \fIminor-opcode:\fP\^ CARD16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to a client using a graphics context
 with graphics-exposures selected 
@@ -9654,7 +9654,7 @@ or
 and the minor-opcode is always zero.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "VisibilityNotify" "" "@DEF@"
 .PN VisibilityNotify
 .in +.2i
@@ -9665,8 +9665,8 @@ and the minor-opcode is always zero.
 .Pn { Unobscured , 
 .PN PartiallyObscured , 
 .PN FullyObscured }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN VisibilityChange 
@@ -9725,7 +9725,7 @@ and
 events is not constrained.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CreateNotify" "" "@DEF@"
 .PN CreateNotify
 .in +.2i
@@ -9737,8 +9737,8 @@ events is not constrained.
 \fIwidth\fP, \fIheight\fP, \fIborder-width\fP\^: CARD16
 .br
 \fIoverride-redirect\fP\^: BOOL
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN SubstructureNotify 
@@ -9749,14 +9749,14 @@ The arguments are as in the
 request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "DestroyNotify" "" "@DEF@"
 .PN DestroyNotify
 .in +.2i
 .LP
 \fIevent\fP, \fIwindow\fP\^: WINDOW
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN StructureNotify 
@@ -9777,7 +9777,7 @@ The ordering among siblings and across subhierarchies is not
 otherwise constrained.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "UnmapNotify" "" "@DEF@"
 .PN UnmapNotify
 .in +.2i
@@ -9785,8 +9785,8 @@ otherwise constrained.
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIfrom-configure\fP\^: BOOL
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN StructureNotify 
@@ -9803,7 +9803,7 @@ when the window itself had a win-gravity of
 .PN Unmap .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "MapNotify" "" "@DEF@"
 .PN MapNotify
 .in +.2i
@@ -9811,8 +9811,8 @@ when the window itself had a win-gravity of
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIoverride-redirect\fP\^: BOOL
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN StructureNotify 
@@ -9825,14 +9825,14 @@ and the window is the window that is mapped.
 The override-redirect flag is from the window's attribute.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "MapRequest" "" "@DEF@"
 .PN MapRequest
 .in +.2i
 .LP
 \fIparent\fP, \fIwindow\fP\^: WINDOW
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the client selecting 
 .PN SubstructureRedirect 
@@ -9842,7 +9842,7 @@ request is issued on an unmapped window with an override-redirect attribute of
 .PN False .
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ReparentNotify" "" "@DEF@"
 .PN ReparentNotify
 .in +.2i
@@ -9852,8 +9852,8 @@ request is issued on an unmapped window with an override-redirect attribute of
 \fIx\fP, \fIy\fP\^: INT16
 .br
 \fIoverride-redirect\fP\^: BOOL
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN SubstructureNotify 
@@ -9869,7 +9869,7 @@ and specify the position of the upper-left outer corner of the window.
 The override-redirect flag is from the window's attribute.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ConfigureNotify" "" "@DEF@"
 .PN ConfigureNotify
 .in +.2i
@@ -9884,8 +9884,8 @@ The override-redirect flag is from the window's attribute.
 .PN None
 .br
 \fIoverride-redirect\fP\^: BOOL
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN StructureNotify 
@@ -9907,7 +9907,7 @@ Otherwise, the window is immediately on top of the specified sibling.
 The override-redirect flag is from the window's attribute.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "GravityNotify" "" "@DEF@"
 .PN GravityNotify
 .in +.2i
@@ -9915,8 +9915,8 @@ The override-redirect flag is from the window's attribute.
 \fIevent\fP, \fIwindow\fP\^: WINDOW
 .br
 \fIx\fP, \fIy\fP\^: INT16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN SubstructureNotify 
@@ -9931,7 +9931,7 @@ The x and y coordinates are relative to the new parent's origin
 and specify the position of the upper-left outer corner of the window.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ResizeRequest" "" "@DEF@"
 .PN ResizeRequest
 .in +.2i
@@ -9939,8 +9939,8 @@ and specify the position of the upper-left outer corner of the window.
 \fIwindow\fP\^: WINDOW
 .br
 \fIwidth\fP, \fIheight\fP\^: CARD16
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the client selecting 
 .PN ResizeRedirect 
@@ -9951,7 +9951,7 @@ of the window.
 The width and height are the requested inside size, not including the border.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ConfigureRequest" "" "@DEF@"
 .PN ConfigureRequest
 .in +.2i
@@ -9973,8 +9973,8 @@ The width and height are the requested inside size, not including the border.
 .PN Opposite }
 .br
 \fIvalue-mask\fP\^: BITMASK
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the client selecting 
 .PN SubstructureRedirect 
@@ -9993,7 +9993,7 @@ and
 (respectively) if not given in the request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CirculateNotify" "" "@DEF@"
 .PN CirculateNotify
 .in +.2i
@@ -10003,8 +10003,8 @@ and
 \fIplace\fP\^: 
 .Pn { Top , 
 .PN Bottom }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN StructureNotify 
@@ -10022,7 +10022,7 @@ the window is now on top of all siblings.
 Otherwise, it is below all siblings.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "CirculateRequest" "" "@DEF@"
 .PN CirculateRequest
 .in +.2i
@@ -10032,8 +10032,8 @@ Otherwise, it is below all siblings.
 \fIplace\fP: 
 .Pn { Top , 
 .PN Bottom }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the client selecting 
 .PN SubstructureRedirect 
@@ -10044,7 +10044,7 @@ The window specifies the window to be restacked,
 and the place specifies what the new position in the stacking order should be.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "PropertyNotify" "" "@DEF@"
 .PN PropertyNotify
 .in +.2i
@@ -10058,8 +10058,8 @@ and the place specifies what the new position in the stacking order should be.
 .PN Deleted }
 .br
 \fItime\fP\^: TIMESTAMP
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN PropertyChange 
@@ -10085,7 +10085,7 @@ or
 The timestamp indicates the server time when the property was changed.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SelectionClear" "" "@DEF@"
 .PN SelectionClear
 .in +.2i
@@ -10095,8 +10095,8 @@ The timestamp indicates the server time when the property was changed.
 \fIselection\fP\^: ATOM
 .br
 \fItime\fP\^: TIMESTAMP
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the current owner of a selection
 and is generated when a new owner is being defined by means of 
@@ -10107,7 +10107,7 @@ The owner argument is the window that was specified by the current owner in its
 request.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SelectionRequest" "" "@DEF@"
 .PN SelectionRequest
 .in +.2i
@@ -10125,8 +10125,8 @@ request.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to the owner of a selection 
 and is generated when a client issues a 
@@ -10147,7 +10147,7 @@ A complete specification for using selections is given in the X Consortium
 standard \fIInter-Client Communication Conventions Manual\fP.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "SelectionNotify" "" "@DEF@"
 .PN SelectionNotify
 .in +.2i
@@ -10161,8 +10161,8 @@ standard \fIInter-Client Communication Conventions Manual\fP.
 .br
 \fItime\fP\^: TIMESTAMP or 
 .PN CurrentTime
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is generated by the server in response to a 
 .PN ConvertSelection 
@@ -10176,7 +10176,7 @@ or when a selection conversion could not be performed (indicated with property
 .PN None ).
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ColormapNotify" "" "@DEF@"
 .PN ColormapNotify
 .in +.2i
@@ -10191,8 +10191,8 @@ or when a selection conversion could not be performed (indicated with property
 \fIstate\fP\^: 
 .Pn { Installed , 
 .PN Uninstalled }
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is reported to clients selecting 
 .PN ColormapChange 
@@ -10207,7 +10207,7 @@ In either case,
 the state indicates whether the colormap is currently installed.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "MappingNotify" "" "@DEF@"
 .PN MappingNotify
 .in +.2i
@@ -10218,8 +10218,8 @@ the state indicates whether the colormap is currently installed.
 .PN Pointer }
 .br
 \fIfirst-keycode\fP, \fIcount\fP\^: CARD8
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is sent to all clients.
 There is no mechanism to express disinterest in this event.
@@ -10239,7 +10239,7 @@ If the detail is
 then first-keycode and count indicate the range of altered keycodes.
 .sp
 .LP
-.\" Start marker code here
+.sM
 .IN "ClientMessage" "" "@DEF@"
 .PN ClientMessage
 .in +.2i
@@ -10251,8 +10251,8 @@ then first-keycode and count indicate the range of altered keycodes.
 \fIformat\fP\^: {8, 16, 32}
 .br
 \fIdata\fP\^: LISTofINT8 or LISTofINT16 or LISTofINT32
-.\" End marker code here
 .in -.2i
+.eM
 .LP
 This event is only generated by clients using 
 .PN SendEvent .
