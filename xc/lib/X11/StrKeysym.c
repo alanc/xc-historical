@@ -1,11 +1,17 @@
-/* $XConsortium: XStrKeysym.c,v 11.3 89/11/28 12:29:14 rws Exp $ */
+/* $XConsortium: XStrKeysym.c,v 11.4 89/12/11 19:10:34 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 
-static struct ks_info {
-    char	*ks_name;
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
+static Const struct ks_info {
+    Const char	*ks_name;
     KeySym	ks_val;
 } keySymInfo[] = {
 #include	"ks_names.h"
@@ -85,7 +91,7 @@ char *XKeysymToString(ks)
 
     for (i = 0; i < ((sizeof keySymInfo)/(sizeof keySymInfo[0])); i++) {
 	if (ks == keySymInfo[i].ks_val)
-	    return (keySymInfo[i].ks_name);
+	    return ((char *)(keySymInfo[i].ks_name));
     }
     if (!initialized)
 	_XInitKeysymDB();
