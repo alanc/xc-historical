@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 1.1 89/06/20 18:55:13 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.48 89/06/21 10:12:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -296,9 +296,9 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
     *dpynump = idisplay;
     *screenp = iscreen;
-    if (phostname) free (phostname);
-    if (pdpynum) free (pdpynum);
-    if (pscrnum) free (pscrnum);
+    if (phostname) Xfree (phostname);
+    if (pdpynum) Xfree (pdpynum);
+    if (pscrnum) Xfree (pscrnum);
     return fd;
 
 
@@ -308,13 +308,13 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
   bad:
     if (fd >= 0) (void) close (fd);
     if (*saddrp) {
-	free (*saddrp);
+	Xfree (*saddrp);
 	*saddrp = NULL;
     }
     *saddrlenp = 0;
-    if (phostname) free (phostname);
-    if (pdpynum) free (pdpynum);
-    if (pscrnum) free (pscrnum);
+    if (phostname) Xfree (phostname);
+    if (pdpynum) Xfree (pdpynum);
+    if (pscrnum) Xfree (pscrnum);
     return -1;
 
 }
