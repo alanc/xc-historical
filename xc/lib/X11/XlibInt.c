@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.188 93/09/25 13:44:37 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.189 93/09/26 20:18:01 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -92,11 +92,16 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ESET(val) errno = val
 #endif
 
-#ifdef LACHMAN
+#if defined(LOCALCONN) || defined(LACHMAN)
 #ifdef EMSGSIZE
-#undef EMSGSIZE
+#define ESZTEST() (ECHECK(EMSGSIZE) || ECHECK(ERANGE))
+#else
+#define ESZTEST() ECHECK(ERANGE)
 #endif
-#define EMSGSIZE ERANGE
+#else
+#ifdef EMSGSIZE
+#define ESZTEST() ECHECK(EMSGSIZE)
+#endif
 #endif
 
 #ifdef MUSTCOPY
@@ -282,7 +287,7 @@ _XWaitForWritable(dpy
 	    } ENDITERATE
 	}
 #ifdef USE_POLL
-	if (filedes.revents & POLLOUT)
+	if (filedes.revents & (POLLOUT|POLLHUP))
 #else
 	if (GETBIT(w_mask, dpy->fd))
 #endif
@@ -405,7 +410,7 @@ _XWaitForReadable(dpy)
 	if (result <= 0)
 	    continue;
 #ifdef USE_POLL
-	if (filedes[0].revents & POLLIN)
+	if (filedes[0].revents & (POLLIN|POLLHUP))
 	    break;
 	if (!dpy->in_process_conni) {
 	    int i;
@@ -502,8 +507,8 @@ static _XFlushInt (dpy, cv)
 		_XWaitForWritable(dpy);
 #endif
 #endif
-#ifdef EMSGSIZE
-	    } else if (ECHECK(EMSGSIZE)) {
+#ifdef ESZTEST
+	    } else if (ESZTEST()) {
 		if (todo > 1) 
 		    todo >>= 1;
 		else {
@@ -1216,8 +1221,8 @@ _XSend (dpy, data, size)
 		_XWaitForWritable(dpy);
 #endif
 #endif
-#ifdef EMSGSIZE
-	    } else if (ECHECK(EMSGSIZE)) {
+#ifdef ESZTEST
+	    } else if (ESZTEST()) {
 		if (todo > 1) 
 		  todo >>= 1;
 		else {
