@@ -2,7 +2,7 @@
 Text Widget
 .LP
 .XS
-\*(SN Text Widget
+	Text Widget
 .XE
 .IN "Text widget" "" "@DEF@"
 .LP
@@ -10,9 +10,13 @@ Text Widget
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/Text.h>
+.IN "Text.h" ""
 Class Header file	<X11/Xaw/TextP.h>
+.IN "TextP.h" ""
 Class		textWidgetClass
+.IN "textWidgetClass" ""
 Class Name	Text
+.IN "Text widget" "class name"
 Superclass	Simple
 .De
 .sp 1
@@ -23,6 +27,9 @@ mediator between the source and sink.
 .LP
 This section lists the resources that are actually part of the 
 Text widget, and explains the functionality provided by each.
+.NH 3
+Resources
+.IN "Text widget" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -100,7 +107,7 @@ _
 .Mm
 .Tz Bold
 .Sc
-.Ts
+.Ts Bold
 .St Bold
 .Se
 .To Bold

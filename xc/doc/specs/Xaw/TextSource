@@ -2,7 +2,7 @@
 TextSrc Object
 .LP
 .XS
-\*(SN TextSrc Object
+	TextSrc Object
 .XE
 .IN "TextSrc object" "" "@DEF@"
 .IN "TextSrc" "" "@DEF@"
@@ -11,9 +11,13 @@ TextSrc Object
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/TextSrc.h>
+.IN "TextSrc.h" ""
 Class Header file	<X11/Xaw/TextSrcP.h>
+.IN "TextSrcP.h" ""
 Class		textSrcObjectClass
+.IN "textSrcObjectClass" ""
 Class Name	TextSrc
+.IN "TextScr object" "class name"
 Superclass	Object
 .sp 1
 .LP
@@ -57,15 +61,14 @@ _
 Subclassing the TextSrc
 .IN "TextSrc object" "Subclassing" "@DEF@"
 .LP
-The only purpose of the TextSrc Object is to be subclassed.  It
-contains the minimum set of class methods that all text sources must have.
-All class methods of the TextSrc must be defined, as the Text
-widget uses them all.  While all may be inherited, the direct
-descendant of TextSrc \fBmust specify\fP some of them as TextSrc
-does not contain enough information to be a valid text source by itself.
-Do not try to use the TextSrc as a valid source for the Text
-widget, it is not intended to be used as a source by itself and bad
-things will probably happen. 
+The only purpose of the TextSrc Object is to be subclassed.  It contains
+the minimum set of class methods that all text sources must have.  All
+class methods of the TextSrc must be defined, as the Text widget uses
+them all.  While all may be inherited, the direct descendant of TextSrc
+\fBmust\fP specify some of them as TextSrc does not contain enough
+information to be a valid text source by itself.  Do not try to use the
+TextSrc as a valid source for the Text widget; it is not intended to be
+used as a source by itself and bad things will probably happen.
 .ps 9
 .nr PS 9
 .vs 11
@@ -82,11 +85,23 @@ _
 .R
 .sp 3p
 Read	XtInheritRead	XawTextSourceRead	yes
+.IN "XtInheritRead" ""
+.IN "XawTextSourceRead" ""
 Replace	XtInheritReplace	XawTextSourceReplace	no
+.IN "XtInheritReplace" ""
+.IN "XawTextSourceReplace" ""
 Scan	XtInheritScan	XawTextSourceScan	yes
+.IN "XtInheritScan" ""
+.IN "XawTextSourceScan" ""
 Search	XtInheritSearch	XawTextSourceSearch	no
+.IN "XtInheritSearch" ""
+.IN "XawTextSourceSearch" ""
 SetSelection	XtInheritSetSelection	XawTextSourceSetSelection	no
+.IN "XtInheritSetSelection" ""
+.IN "XawTextSourceSetSelection" ""
 ConvertSelection	XtInheritConvertSelection	XawTextSourceConvertSelection	no
+.IN "XtInheritConvertSelection" ""
+.IN "XawTextSourceConvertSelection" ""
 _
 .TE
 .ps 11
@@ -124,13 +139,14 @@ text buffer.  The function is not required to return \fIlength\fP
 characters if that many characters are in the file, it may break at
 any point that is convenient to the internal structure of the
 source.  It may take several calls to \fBRead\fP before the desired
-portion of the text buffer is fully retreived.
+portion of the text buffer is fully retrieved.
 .NH 4
 Replacing Text.
 .LP
 To replace or edit the text in a text buffer use the \fBReplace\fP function:
 .FD 0
 XawTextPosition Replace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
+.IN "TextSrc" "Replace" @DEF@
 .br
 Widget \fIw\fP;
 .br
@@ -151,11 +167,14 @@ Specifies the text to be added to the text source.
 .LP
 This function can return any of the following values:
 .IP \fBXawEditDone\fP 1.25i
+.IN "XawEditDone" ""
 The text replacement was successful.
 .IP \fBXawPositionError\fP 1.25i
+.IN "XawPositionError" ""
 The edit mode is \fBXawtextAppend\fP and \fIstart\fP is not the last
 character of the source.
 .IP \fBXawEditError\fP 1.25i
+.IN "XawEditError" ""
 Either the Source was read-only or the range to be deleted is larger
 than the length of the Source. 
 .LP
@@ -173,6 +192,7 @@ To search the text source for one of the predefined boundary types use
 the \fBScan\fP function:
 .FD 0
 XawTextPosition Scan(\fIw\fP, \fIposition\fP, \fItype\fP, \fIdir\fP, \fIcount\fP, \fIinclude\fP)
+.IN "TextSrc" "Scan" @DEF@
 .br
 Widget \fIw\fP;
 .br
@@ -191,16 +211,24 @@ Specifies the TextSrc object.
 .IP \fIposition\fP 1i
 Specifies the position to begin scanning the source.
 .IP \fItype\fP 1i
-Specifies the type of boundary to scan for, may be one of: \fBXawstPosition\fP,
-\fBXawstWhiteSpace\fP, \fBXawstEOL\fP, \fBXawstParagraph\fP, \fBXawstAll\fP.
-The exact meaning of these boundries is left up to the individual text source.
+Specifies the type of boundary to scan for, may be one of:
+\fBXawstPosition\fP, \fBXawstWhiteSpace\fP, \fBXawstEOL\fP,
+.IN "XawstPosition" ""
+.IN "XawstWhiteSpace" ""
+.IN "XawstEOL" ""
+\fBXawstParagraph\fP, \fBXawstAll\fP.  The exact meaning of these
+.IN "XawstParagraph" ""
+.IN "XawstAll" ""
+boundaries is left up to the individual text source.
 .IP \fIdir\fP 1i
 Specifies the direction to scan, may be either \fBXawsdLeft\fP to search
+.IN "XawsdLeft" ""
 backward, or \fBXawsdRight\fP to search forward.
+.IN "XawsdRight" ""
 .IP \fIcount\fP 1i
-Specifies the number of boundries to scan for.
+Specifies the number of boundaries to scan for.
 .IP \fIinclude\fP 1i
-Specifies whether the boundry itself should be included in the scan.
+Specifies whether the boundary itself should be included in the scan.
 .LP
 The \fBScan\fP function returns the position in the text source of the desired
 boundary.  It is expected to return a valid address for
@@ -213,6 +241,7 @@ Searching through a TextSrc
 To search for a particular string use the \fBSearch\fP function.
 .FD 0
 XawTextPosition Search(\fIw\fP, \fIposition\fP, \fIdir\fP, \fItext\fP)
+.IN "TextSrc" "Search" @DEF@
 .br
 Widget \fIw\fP;
 .br
@@ -228,7 +257,9 @@ Specifies the TextSrc object.
 Specifies the position to begin the search.
 .IP \fIdir\fP 1i
 Specifies the direction to search, may be either \fBXawsdLeft\fP to search
+.IN "XawsdLeft" ""
 backward, or \fBXawsdRight\fP to search forward.
+.IN "XawsdRight" ""
 .IP \fItext\fP 1i
 Specifies a text block containing the text to search for.
 .LP
@@ -237,15 +268,18 @@ match for the string in the text block.  If a match is found in the
 direction specified, then the character location of the first character
 in the string is returned.  If no text was found then
 \fBXawTextSearchError\fP is returned.
+.IN "XawTextSearchError" ""
 .NH 4
 Text Selections
 .LP
-While many selection types are handled by the Text
-widget text sources may selection types unknown to the Text widget.  When a selection
-conversion is requested by the X server the Text widget will first
-call the \fBConvertSelection\fP function, to attempt the selection conversion.
+While many selection types are handled by the Text widget, text sources
+may have selection types unknown to the Text widget.  When a selection
+conversion is requested by the X server the Text widget will first call
+the \fBConvertSelection\fP function, to attempt the selection
+conversion.
 .FD 0
 Boolean ConvertSelections(\fIw\fP, \fIselection\fP, \fItarget\fP, \fItype\fP, \fIvalue_return\fP, \fIlength_return\fP, \fIformat_return\fP)
+.IN "Text widget" "ConvertSelection" @DEF@
 .br
 Widget \fIw\fP;
 .br
@@ -263,7 +297,7 @@ Specifies the TextSrc object.
 Specifies the type of selection that was requested (e.g. \fBPRIMARY\fP).
 .IP \fItarget\fP 1i
 Specifies the type of the selection that has been requested, which
-indicates the desired information about the seletion (e.g. Filename,
+indicates the desired information about the selection (e.g. Filename,
 Text, Window).
 .IP \fItype\fP 1i
 Specifies a pointer to the atom into which the property type of the converted
@@ -292,6 +326,7 @@ should define a \fBSetSelection\fP procedure:
 .FD 0
 void SetSelection(\fIw\fP, \fIstart\fP, \fIend\fP, \fIselection\fP)
 Widget \fIw\fP;
+.IN "SetSelection" "" @DEF@
 .br
 XawTextPosition \fIstart\fP, \fIend\fP;
 .br

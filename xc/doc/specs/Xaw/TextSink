@@ -2,7 +2,7 @@
 TextSink Object
 .LP
 .XS
-\*(SN TextSink Object
+	TextSink Object
 .XE
 .IN "TextSink object" "" "@DEF@"
 .LP
@@ -10,21 +10,26 @@ TextSink Object
 .TA 2.0i
 .ta 2.0i
 Application Header file	<X11/Xaw/TextSink.h>
+.IN "TextSink.h" ""
 Class Header file	<X11/Xaw/TextSinkP.h>
+.IN "TextSinkP.h" ""
 Class		textSinkObjectClass
+.IN "textSinkObjectClass" ""
 Class Name	TextSink
+.IN "TextSink object" "class name"
 Superclass	Object
 .sp 1
 .LP
 The TextSink object is the root object for all text sinks.  Any new text
-sink objects should be subclasses of the TextSink Object.  The
-TextSink Class contains all methods the Text widget expects a text
-sink to export.
+sink objects should be subclasses of the TextSink Object.  The TextSink
+Class contains all methods that the Text widget expects a text sink to
+export.
 .LP
-Since all text sinks will have some resources in common the TextSink
+Since all text sinks will have some resources in common, the TextSink
 defines a few new resources.
 .De
-.LP
+.NH 3
+Resources
 .IN "AsciiSink object" "resources"
 .ps 9
 .nr PS 9
@@ -44,7 +49,7 @@ _
 background	Background	Pixel		XtDefaultBackground
 destroyCallback	Callback	XtCallbackList		NULL
 font	Font	XFontStruct*		XtDefaultFont
-foreground	Foreground	Pixel		XtDefaultForground
+foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
 .TE
@@ -84,15 +89,35 @@ _
 .R
 .sp 3p
 DisplayText	XtInheritDisplayText	XawTextSinkDisplayText	yes
+.IN "XtInheritDisplayText" ""
+.IN "XawTextSinkDisplayText" ""
 InsertCursor	XtInheritInsertCursor	XawTextSinkInsertCursor	yes
+.IN "XtInheritInsertCursor" ""
+.IN "XawTextSinkInsertCursor" ""
 ClearToBackground	XtInheritClearToBackground	XawTextSinkClearToBackground	no
+.IN "XtInheritClearToBackground" ""
+.IN "XawTextSinkClearToBackground" ""
 FindPosition	XtInheritFindPosition	XawTextSinkFindPosition	yes
+.IN "XtInheritFindPosition" ""
+.IN "XawTextSinkFindPosition" ""
 FindDistance	XtInheritFindDistance	XawTextSinkFindDistance	yes
+.IN "XtInheritFindDistance" ""
+.IN "XawTextSinkFindDistance" ""
 Resolve	XtInheritResolve	XawTextSinkResolve	yes
+.IN "XtInheritResolve" ""
+.IN "XawTextSinkResolve" ""
 MaxLines	XtInheritMaxLines	XawTextSinkMaxLines	no
+.IN "XtInheritMaxLines" ""
+.IN "XawTextSinkMaxLines" ""
 MaxHeight	XtInheritMaxHeight	XawTextSinkMaxHeight	no
+.IN "XtInheritMaxHeight" ""
+.IN "XawTextSinkMaxHeight" ""
 SetTabs	XtInheritSetTabs	XawTextSinkSetTabs	no
+.IN "XtInheritSetTabs" ""
+.IN "XawTextSinkSetTabs" ""
 GetCursorBounds	XtInheritGetCursorBounds	XawTextSinkGetCursorBounds	yes
+.IN "XtInheritGetCursorBounds" ""
+.IN "XawTextSinkGetCursorBounds" ""
 _
 .TE
 .ps 11
@@ -104,7 +129,6 @@ Displaying Text
 .LP
 To display a section of the text buffer contained in the text source
 use the function \fBDisplayText\fP:
-
 .IN "TextSink" "DisplayText" "@DEF@"
 .FD 0
 void DisplayText(\fIw\fP, \fIx\fP, \fIy\fP, \fIpos1\fP, \fIpos2\fP, \fIhighlight\fP)
@@ -132,20 +156,20 @@ to be printed.
 .IP \fIhighlight\fP 1i
 Specifies whether or not to paint the text region highlighted.
 .LP
-The Text widget will only pass one line at a time to the text sink so this
-function does not need to know how to line feed the text.  It is
-acceptable for this function to just ignore Carrige Returns.  \fIx\fP
-and \fIy\fP denote the upper left hand corner of the first character
-to be displayed.  
+The Text widget will only pass one line at a time to the text sink, so
+this function does not need to know how to line feed the text.  It is
+acceptable for this function to just ignore Carriage Returns.  \fIx\fP
+and \fIy\fP denote the upper left hand corner of the first character to
+be displayed.
 .NH 4
 Displaying the Insert Point
 .LP
 The function that controls the display of the text cursor is
 \fBInsertCursor\fP.  This function will be called whenever the text
-widget desires to change the state of, or move the insert point.  
-.IN "TextSink" "InsertCursor" "@DEF@"
+widget desires to change the state of, or move the insert point.
 .FD 0
 void InsertCursor(\fIw\fP, \fIx\fP, \fIy\fP, \fIstate\fP)
+.IN "TextSink" "InsertCursor" "@DEF@"
 .br
       Widget \fIw\fP;
 .br
@@ -167,11 +191,12 @@ Specifies the state of the cursor, may be one of \fBXawisOn\fP or
 .NH 4
 Clearing Portions of the Text window
 .LP
-To clear a portion of the Text window to its background color the Text
+To clear a portion of the Text window to its background color, the Text
 widget will call \fBClearToBackground\fP.  The TextSink object already
 defines this function as calling \fBXClearArea\fP on the region passed.
 This behavior will be used if you specify
 \fBXtInheritClearToBackground\fP for this method.
+.IN "XtInheritClearToBackground" ""
 .IN "TextSink" "ClearToBackground" "@DEF@"
 .FD 0
 void ClearToBackground(\fIw\fP, \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP)
@@ -229,17 +254,16 @@ Specifies the distance, in pixels, from the reference position to the
 desired character position.
 .IP \fIstopAtWordBreak\fP 1.25i
 Specifies whether or not the position that is returned should be forced
-to be on a word boundry.
+to be on a word boundary.
 .IP \fIpos_return\fP 1.25i
-Returns the character position that corresponds to the
-location that has been specified, or the work break immediately to the
-left of the position if \fIstopAtWordBreak\fP is \fBTrue\fP.
+Returns the character position that corresponds to the location that has
+been specified, or the work break immediately to the left of the
+position if \fIstopAtWordBreak\fP is \fBTrue\fP.
 .IP \fIwidth_return\fP 1.25i
-Returns the actual distance between \fIfromPos\fP
-and \fIpos_return\fI.
+Returns the actual distance between \fIfromPos\fP and \fIpos_return\fI.
 .IP \fIheight_return\fP 1.25i
-Returns the maxium height of the text between
-\fIfromPos\fP and \fIpos_return\fI.
+Returns the maximum height of the text between \fIfromPos\fP and
+\fIpos_return\fI.
 .LP
 This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.
@@ -280,6 +304,7 @@ This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.  This is a more convenient
 interface to the \fBFindPosition\fP function, and provides a subset of its
 functionality.
+.IN "FindPosition" ""
 .NH 4
 Finding the Distance Between two Text Positions
 .LP
@@ -313,23 +338,23 @@ Specifies the text buffer position, in characters, of the second position.
 Return the actual distance between \fIfromPos\fP
 and \fIpos_return\fI.
 .IP \fIresPos\fP 1i
-Returns the character position that corresponds to the
-actual character position used for \fItoPos\fP in the calculations.  This
-may be differnt than \fItoPos\fP, for example if \fIfromPos\fP and
-\fItoPos\fP are on different lines in the file.
+Returns the character position that corresponds to the actual character
+position used for \fItoPos\fP in the calculations.  This may be
+different than \fItoPos\fP, for example if \fIfromPos\fP and \fItoPos\fP
+are on different lines in the file.
 .IP \fIheight_return\fP 1i 
-Returns the maxium height of the text between
-\fIfromPos\fP and \fIpos_return\fP.
+Returns the maximum height of the text between \fIfromPos\fP and
+\fIpos_return\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The Text
 widget will only call it one line at a time.
 .NH 4
 Finding the Size of the Drawing area
 .LP
-To find the maximum number of characters lines that will fit into the
-current Text widget use the function \fBMaxLines\fP.  The TextSink
-already defines this function to compute the maximum number if lines by
-using the height of \fBfont\fP.
+To find the maximum number of lines that will fit into the current Text
+widget, use the function \fBMaxLines\fP.  The TextSink already defines
+this function to compute the maximum number of lines by using the height
+of \fBfont\fP.
 .IN "TextSink" "MaxLines" "@DEF@"
 .FD 0
 int MaxLines(\fIw\fP, \fIheight\fP)
@@ -341,12 +366,12 @@ int MaxLines(\fIw\fP, \fIheight\fP)
 .IP \fIw\fP 1i
 Specifies the TextSink object.
 .IP \fIheight\fP 1i
-Spectifies the height of the current drawing area.
+Specifies the height of the current drawing area.
 .LP
 Returns the maximum number of lines that will fit in \fIheight\fP.
 .LP
 .sp
-To find the height required for a give number of text lines use
+To find the height required for a given number of text lines, use
 the function \fBMaxHeight\fP.  The TextSink already defines this
 function to compute the maximum height of the window by using the
 height of \fBfont\fP. 
@@ -367,10 +392,10 @@ Returns the height that will be taken up by the number of lines passed.
 .NH 4
 Setting the Tab Stops
 .LP
-To set the tab stops for a text sink use the \fBSetTabs\fP
-function.  The TextSink already defines this function to set the tab
-x location in pixels to be the number of characters times the figure width
-of \fBfont\fP.
+To set the tab stops for a text sink use the \fBSetTabs\fP function.
+The TextSink already defines this function to set the tab x location in
+pixels to be the number of characters times the figure width of
+\fBfont\fP.
 .IN "TextSink" "SetTabs" "@DEF@"
 .FD 0
 void SetTabs(\fIw\fP, \fItab_count\fP, \fItabs\fP)
