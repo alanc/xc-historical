@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.9 89/08/30 19:20:07 kit Exp $
+ * $XConsortium: main.c,v 1.10 89/09/18 17:52:43 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -52,7 +52,9 @@ static XtResource my_resources[] = {
   {"searchEntryCursor", XtCCursor, XtRCursor, sizeof(Cursor),
      Offset(cursors.search_entry), XtRString, SEARCH_ENTRY_CURSOR},
   {"pointerColor", XtCForeground, XtRPixel, sizeof(Pixel),
-     Offset(cursors.color), XtRString, "XtDefaultForeground"},
+     Offset(cursors.fg_color), XtRString, "XtDefaultForeground"},
+  {"pointerColorBackground", XtCBackground, XtRPixel, sizeof(Pixel),
+     Offset(cursors.bg_color), XtRString, "XtDefaultBackground"},
   {"help", XtCBoolean, XtRBoolean, sizeof(Boolean),
      Offset(show_help_syntax), XtRImmediate, FALSE},
   {"helpFile", XtCFile, XtRString, sizeof(char *),

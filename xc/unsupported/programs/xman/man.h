@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.14 89/08/30 19:20:06 kit Exp $
+ * $XConsortium: man.h,v 1.15 89/10/03 15:57:57 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -75,7 +75,8 @@ typedef struct _XmanCursors {
     manpage,			/* The cursor for the Manpage. */
     search_entry;		/* The cursor for the text widget in the
 				   search box.*/
-  Pixel color;			/* foreground color of cursors. */
+  Pixel fg_color;		/* foreground color of cursors. */
+  Pixel bg_color;		/* background color of cursors. */
 } XmanCursors;
 
 typedef struct _ManPageWidgets {

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.15 89/08/30 18:24:34 kit Exp $
+ * $XConsortium: misc.c,v 1.16 89/08/30 18:53:05 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -423,12 +423,11 @@ Cursor cursor;
     return;
   }
 
-  XtSetArg( args[num_args], XtNbackground, &bg); num_args++;
   XtSetArg( args[num_args], XtNcolormap, &c_map); num_args++;
   XtGetValues( w, args, num_args);
 
-  colors[0].pixel = resources.cursors.color;
-  colors[1].pixel = bg;
+  colors[0].pixel = resources.cursors.fg_color;
+  colors[1].pixel = resources.cursors.bg_color;
 
   XQueryColors (XtDisplay(w), c_map, colors, 2);
   XRecolorCursor(XtDisplay(w), cursor, colors, colors+1);
