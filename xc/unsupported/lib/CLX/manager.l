@@ -218,7 +218,7 @@
 	  (hints (make-wm-hints)))
       (declare (type card32 flags)
 	       (type wm-hints hints))
-      (SETF (wm-hints-flags hints) flags)
+      (setf (wm-hints-flags hints) flags)
       (compiler-let ((*buffer* 'display))
 	(when (logbitp input-hint flags)
 	  (setf (wm-hints-input hints) (decode-type (member :off :on) (aref vector 1))))
@@ -235,7 +235,7 @@
 		(wm-hints-icon-y hints) (aref vector 6)))
 	(when (logbitp icon-mask-hint flags)
 	  (setf (wm-hints-icon-mask hints) (decode-type pixmap (aref vector 7))))
-	(when (logbitp window-group-hint flags)
+	(when (and (logbitp window-group-hint flags) (> (length vector) 7))
 	  (setf (wm-hints-window-group hints) (aref vector 8)))
 	hints))))
 
