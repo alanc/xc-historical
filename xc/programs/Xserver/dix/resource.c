@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.71 89/03/11 16:47:44 rws Exp $ */
+/* $XConsortium: resource.c,v 1.72 89/03/12 14:06:39 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -95,7 +95,7 @@ CreateNewResourceType()
     return lastResourceType;
 }
 
-short
+unsigned short
 CreateNewResourceClass()
 {
     return ++lastResourceClass;
