@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.39 93/09/04 17:16:33 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.40 93/09/04 19:40:53 rws Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -6,8 +6,9 @@ XCOMM $XConsortium: Imakefile,v 5.39 93/09/04 17:16:33 rws Exp $
 #endif
 
 #if PixelSize == 8
-PSZSRCS = cfb8cppl.c cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c
-PSZOBJS = cfb8cppl.o cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o
+/* cfb8cppl.c MUST come last to avoid confusing makedepend */
+PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c cfb8cppl.c
+PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o cfb8cppl.o
 #ifdef MipsArchitecture
 STIPPLESRC = stipmips.s stipmipste.s
 STIPPLEOBJ = stipmips.o stipmipste.o
