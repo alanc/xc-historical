@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: misc.c,v 1.1 94/02/22 14:33:49 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -14,7 +14,7 @@ M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 ******************************************************************************/
 
-#include <stdio.h>
+#include "xsm.h"
 
 
 #ifdef NOPUTENV
