@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.215 88/10/08 16:49:47 rws Exp $ */
+/* $XConsortium: window.c,v 1.216 88/10/08 17:05:42 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1696,7 +1696,8 @@ MoveWindow(pWin, x, y, pNextSib)
 	}
 #endif /* DO_SAVE_UNDERS */
     } 
-    WindowsRestructured();
+    if (pWin->realized)
+	WindowsRestructured ();
 }
 
 static void
@@ -2130,7 +2131,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	}
 #endif /* DO_SAVE_UNDERS */
     }
-    WindowsRestructured ();
+    if (pWin->realized)
+	WindowsRestructured ();
 }
 
 /* Keeps the same inside(!) origin */
@@ -2196,7 +2198,8 @@ ChangeBorderWidth(pWin, width)
 	}
 #endif /* DO_SAVE_UNDERS */
     }
-    WindowsRestructured ();
+    if (pWin->realized)
+	WindowsRestructured ();
 }
 
 
@@ -2474,8 +2477,9 @@ ReflectStackChange(pWin, pSib)
 	    DoChangeSaveUnder(pFirstChange);
 	}
 #endif /* DO_SAVE_UNDERS */
-	WindowsRestructured ();
     }
+    if (pWin->realized)
+	WindowsRestructured ();
 }
 
 /*****
@@ -3227,7 +3231,8 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
 	pWin->backingStore &= ~SAVE_UNDER_BIT;
 #endif /* DO_SAVE_UNDERS */
     }        
-    WindowsRestructured ();
+    if (wasRealized)
+	WindowsRestructured ();
     return(Success);
 }
 
@@ -3313,7 +3318,8 @@ UnmapSubwindows(pWin, sendExposures)
 	}
 #endif /* DO_SAVE_UNDERS */
     }
-    WindowsRestructured ();
+    if (wasRealized)
+	WindowsRestructured ();
 }
 
 
