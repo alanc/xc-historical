@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.8 92/08/06 22:56:00 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.9 92/08/26 13:06:12 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -569,8 +569,8 @@ INPUT PEXListOfVertex	*polylines;
 
     for (i = 0; i < numPolylines; i++)
     {
-	if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-	    *pData = polylines[i].count;  
+	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+	*pData = polylines[i].count;  
 
 	PEXCopyWordsToOC (display, polylines[i].count * lenofVertex, 
 	    (char *) polylines[i].vertices.no_data);
@@ -809,8 +809,8 @@ INPUT PEXArrayOfVertex	vertices;
     if (facetAttributes)
         PEXCopyWordsToOC (display, lenofFacetData, (char *) facetData);
 
-    if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-	*pData = numVertices;
+    pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+    *pData = numVertices;
 
     PEXCopyWordsToOC (display, lenofVertex * numVertices,
 	(char *) vertices.no_data);
@@ -876,8 +876,8 @@ INPUT PEXListOfCoord	*vertices;
 
     for (i = 0; i < numFillAreas; i++)
     {
-	if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-	    *pData = vertices[i].count;
+	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+	*pData = vertices[i].count;
 
 	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord), 
 	    (char *) vertices[i].points);
@@ -944,8 +944,8 @@ INPUT PEXListOfCoord2D	*vertices;
 
     for (i = 0; i < numFillAreas; i++)
     {
-	if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-    	    *pData = vertices[i].count;  
+	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+	*pData = vertices[i].count;  
 
 	PEXCopyWordsToOC (display, vertices[i].count * LENOF (PEXCoord2D), 
 	   (char *) vertices[i].points);
@@ -1038,8 +1038,8 @@ INPUT PEXListOfVertex	*vertices;
 
     for (j = 0; j < numFillAreas; j++)
     {
-	if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-	    *pData = vertices[j].count; 
+	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+	*pData = vertices[j].count; 
 
 	PEXCopyWordsToOC (display, vertices[j].count * lenofVertex,
 	    (char *) vertices[j].vertices.no_data);
@@ -1165,13 +1165,13 @@ INPUT PEXConnectivityData	*connectivity;
 
     for (i = 0 ; i < numFillAreaSets; i++)
     {
-	if (pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16)))
-	    *pData = count = pConnectivity->count;
+	pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16));
+	*pData = count = pConnectivity->count;
 
 	for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
 	{
-	    if (pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16)))
-		*pData = pList->count;
+	    pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16));
+	    *pData = pList->count;
 
 	    PEXCopyBytesToOC (display, pList->count * sizeof (CARD16),
 		(char *) pList->shorts);
@@ -1180,7 +1180,8 @@ INPUT PEXConnectivityData	*connectivity;
 	pConnectivity++;
     }
 
-    PEXGetOCAddr (display, PAD (cbytes));
+    if (PAD (cbytes))
+	PEXGetOCAddr (display, PAD (cbytes));
 
     PEXFinishOC (display);
     PEXSyncHandle (display);
@@ -1440,8 +1441,8 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 
     for (i = 0, ptrimLoop = trimLoops; i < numTrimLoops; i++, ptrimLoop++)
     {
-	if (pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32)))
-	    *pData = count = ptrimLoop->count;
+	pData = (CARD32 *) PEXGetOCAddr (display, sizeof (CARD32));
+	*pData = count = ptrimLoop->count;
 
 	ptrimCurve = ptrimLoop->curves;
 
@@ -1453,19 +1454,18 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
 
 	    thisLength = ptrimCurve->order + ptrimCurve->count;
 
-	    if (pTCHead = (pexTrimCurve *)
-		PEXGetOCAddr (display, sizeof (pexTrimCurve)))
-	    {
-		pTCHead->visibility = (pexSwitch) ptrimCurve->visibility;
-		pTCHead->order = (CARD16) ptrimCurve->order;
-		pTCHead->type = (pexCoordType) ptrimCurve->rationality;
-		pTCHead->approxMethod = (INT16) ptrimCurve->approx_method;
-		pTCHead->tolerance = (float) ptrimCurve->tolerance;
-		pTCHead->tMin = (float) ptrimCurve->tmin;
-		pTCHead->tMax = (float) ptrimCurve->tmax;
-		pTCHead->numKnots = thisLength;
-		pTCHead->numCoord = ptrimCurve->count;
-	    }
+	    pTCHead = (pexTrimCurve *)
+		PEXGetOCAddr (display, sizeof (pexTrimCurve));
+
+	    pTCHead->visibility = (pexSwitch) ptrimCurve->visibility;
+	    pTCHead->order = (CARD16) ptrimCurve->order;
+	    pTCHead->type = (pexCoordType) ptrimCurve->rationality;
+	    pTCHead->approxMethod = (INT16) ptrimCurve->approx_method;
+	    pTCHead->tolerance = (float) ptrimCurve->tolerance;
+	    pTCHead->tMin = (float) ptrimCurve->tmin;
+	    pTCHead->tMax = (float) ptrimCurve->tmax;
+	    pTCHead->numKnots = thisLength;
+	    pTCHead->numCoord = ptrimCurve->count;
 
 
 	    /*

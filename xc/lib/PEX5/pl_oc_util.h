@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.5 92/07/16 11:23:25 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.6 92/08/26 13:06:17 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -408,14 +408,13 @@ SOFTWARE.
 { \
     pexMonoEncoding *_pMonoEncoding; \
 \
-    if (_pMonoEncoding = (pexMonoEncoding *) PEXGetOCAddr (_display, \
-	sizeof (pexMonoEncoding))) \
-    { \
-        _pMonoEncoding->characterSet = (INT16) 1; \
-        _pMonoEncoding->characterSetWidth = (CARD8) PEXCSByte; \
-        _pMonoEncoding->encodingState = 0;   \
-        _pMonoEncoding->numChars = (CARD16) (_count); \
-    } \
+    _pMonoEncoding = (pexMonoEncoding *) PEXGetOCAddr (_display, \
+	sizeof (pexMonoEncoding)); \
+\
+    _pMonoEncoding->characterSet = (INT16) 1; \
+    _pMonoEncoding->characterSetWidth = (CARD8) PEXCSByte; \
+    _pMonoEncoding->encodingState = 0;   \
+    _pMonoEncoding->numChars = (CARD16) (_count); \
 \
     _PEXCopyPaddedBytesToOC (_display, _count, _string); \
 }
