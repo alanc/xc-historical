@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetHints.c,v 11.26 89/11/08 17:06:46 converse Exp $ */
+/* $XConsortium: XGetHints.c,v 11.27 89/12/12 20:18:53 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -225,7 +225,7 @@ Status XGetCommand (dpy, w, argvp, argcp)
     /*
      * ignore final <NUL> if present since UNIX WM_COMMAND is nul-terminated
      */
-    if (tp.value[tp.nitems - 1] == '\0') tp.nitems--;
+    if (tp.nitems && (tp.value[tp.nitems - 1] == '\0')) tp.nitems--;
 
 
     /*
