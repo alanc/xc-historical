@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.23 87/07/31 17:31:23 newman Locked $ */
+/* $Header: extension.c,v 1.3 87/08/14 12:19:30 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -53,7 +53,7 @@ ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 ExtensionEntry *extensions = (ExtensionEntry *)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
-extern int (* ReplySwapVector[256]) ();
+extern void (* ReplySwapVector[256]) ();
 
 int lastEvent = EXTENSION_EVENT_BASE;
 int lastError = FirstExtensionError;
@@ -196,7 +196,7 @@ ProcListExtensions(client)
     WriteReplyToClient(client, sizeof(xListExtensionsReply), &reply);
     if (reply.length)
     {
-        WriteReplyToClient(client, reply.length << 2, buffer);
+        WriteToClient(client, reply.length << 2, buffer);
 	DEALLOCATE_LOCAL(buffer);
     }
     return(client->noClientException);
