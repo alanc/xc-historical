@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.180 93/09/18 18:18:30 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.181 93/09/27 14:49:24 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -691,18 +691,6 @@ Boolean XtIsSensitive(object)
 	retval = object->core.sensitive && object->core.ancestor_sensitive;
     else
 	retval = False;
-    UNLOCK_APP(app);
-    return retval;
-}
-
-Boolean XtIsBeingDestroyed(object)
-	Widget	object;
-{
-    Boolean retval;
-    WIDGET_TO_APPCON(object);
-
-    LOCK_APP(app);
-    retval = object->core.being_destroyed;
     UNLOCK_APP(app);
     return retval;
 }
