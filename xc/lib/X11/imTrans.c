@@ -1,8 +1,8 @@
-/* $XConsortium: imTrans.c,v 1.2 94/02/05 00:51:53 rws Exp $ */
+/* $XConsortium: imTrans.c,v 1.3 94/03/18 11:29:37 mor Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -121,7 +121,7 @@ _XimTransShutdown(im)
 
 Public Bool
 #if NeedFunctionPrototypes
-_XimTransIntrCallback(
+_XimTransRegisterDispatcher(
     Xim				 im,
     Bool			 (*callback)(
 #if NeedNestedPrototypes
@@ -130,7 +130,7 @@ _XimTransIntrCallback(
 					     ),
     XPointer			 call_data)
 #else
-_XimTransIntrCallback(im, callback, call_data)
+_XimTransRegisterDispatcher(im, callback, call_data)
     Xim				 im;
     Bool			 (*callback)();
     XPointer			 call_data;
@@ -168,9 +168,9 @@ _XimFreeTransIntrCallback(im)
 
 Public Bool
 #if NeedFunctionPrototypes
-_XimTransIntrCallbackCheck(Xim im, INT16 len, XPointer data)
+_XimTransCallDispatcher(Xim im, INT16 len, XPointer data)
 #else
-_XimTransIntrCallbackCheck(im, len, data)
+_XimTransCallDispatcher(im, len, data)
     Xim				 im;
     INT16			 len;
     XPointer			 data;
@@ -198,7 +198,7 @@ _XimTransFilterWaitEvent(d, w, ev, arg)
     TransSpecRec	*spec = (TransSpecRec *)im->private.proto.spec;
 
     spec->is_putback  = False;
-    return _XimFilterWaitEvent(im, (XPointer)NULL);
+    return _XimFilterWaitEvent(im);
 }
 
 
@@ -230,9 +230,9 @@ _XimTransInternalConnection(d, fd, arg)
 
 Public Bool
 #if NeedFunctionPrototypes
-_XimTransSend(Xim im, INT16 len, XPointer data)
+_XimTransWrite(Xim im, INT16 len, XPointer data)
 #else
-_XimTransSend(im, len, data)
+_XimTransWrite(im, len, data)
     Xim			 im;
     INT16		 len;
     XPointer		 data;
@@ -253,28 +253,18 @@ _XimTransSend(im, len, data)
 
 
 Public Bool
-_XimTransRecv(im, recv_buf, recv_point, min_len, buf_len, ret_len, arg)
+_XimTransRead(im, recv_buf, buf_len, ret_len)
     Xim			 im;
     XPointer		 recv_buf;
-    int			 recv_point;
-    int			 min_len;
     int			 buf_len;
     int			*ret_len;
-    XPointer		 arg;
 {
     TransSpecRec	*spec = (TransSpecRec *)im->private.proto.spec;
     int			 len;
 
-    if ((min_len > buf_len) ||  (recv_point > buf_len))
+    if ((len = _XimXTransRead(spec->trans_conn, recv_buf, buf_len)) <= 0)
 	return False;
-
-    while(recv_point < min_len) {
-	if ((len = _XimXTransRead(spec->trans_conn, &recv_buf[recv_point],
-						(buf_len - recv_point))) <= 0)
-	    return False;
-	recv_point += len;
-    }
-    *ret_len = recv_point;
+    *ret_len = len;
     return True;
 }
 
@@ -313,11 +303,11 @@ _XimTransConf(im, address)
     im->private.proto.spec     = (XPointer)spec;
     im->private.proto.connect  = _XimTransConnect;
     im->private.proto.shutdown = _XimTransShutdown;
-    im->private.proto.send     = _XimTransSend;
-    im->private.proto.recv     = _XimTransRecv;
+    im->private.proto.write    = _XimTransWrite;
+    im->private.proto.read     = _XimTransRead;
     im->private.proto.flush    = _XimTransFlush;
-    im->private.proto.intr_cb  = _XimTransIntrCallback;
-    im->private.proto.check_cb = _XimTransIntrCallbackCheck;
+    im->private.proto.register_dispatcher = _XimTransRegisterDispatcher;
+    im->private.proto.call_dispatcher = _XimTransCallDispatcher;
 
     return True;
 }

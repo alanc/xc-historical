@@ -1,7 +1,7 @@
-/* $XConsortium: imThaiIc.c,v 1.1 93/09/17 13:28:14 rws Exp $ */
+/* $XConsortium: imThaiIc.c,v 1.2 94/01/20 18:05:39 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992, 1993 by FUJITSU LIMITED
+          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -40,17 +40,84 @@ THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 
-Private void		_XimThaiDestroyIC( );
-Private void		_XimThaiSetFocus( );
-Private void		_XimThaiUnSetFocus( );
-Private char *		_XimThaiMbReset( );
-Private wchar_t *	_XimThaiWcReset( );
-extern char *		_XimLocalSetICValues( );
-extern char *		_XimLocalGetICValues( );
-extern int		_XimLocalMbLookupString( );
-extern int		_XimLocalWcLookupString( );
-extern Bool		_XimThaiFilter( );
-extern char *		_XimSetICValueData( );
+Private void
+_XimThaiUnSetFocus(xic)
+    XIC	 xic;
+{
+    Xic  ic = (Xic)xic;
+    ((Xim)ic->core.im)->private.local.current_ic = (XIC)NULL;
+
+    if (ic->core.focus_window)
+	_XUnregisterFilter(ic->core.im->core.display, ic->core.focus_window,
+			_XimThaiFilter, (XPointer)ic);
+    return;
+}
+
+Private void
+_XimThaiDestroyIC(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
+	_XimThaiUnSetFocus(ic);
+    }
+    if(ic->private.local.ic_resources) {
+	Xfree(ic->private.local.ic_resources);
+    }
+
+    Xfree(ic->private.local.context->mb);
+    Xfree(ic->private.local.context->wc);
+    Xfree(ic->private.local.context);
+    Xfree(ic->private.local.composed->mb);
+    Xfree(ic->private.local.composed->wc);
+    Xfree(ic->private.local.composed);
+    return;
+}
+
+Private void
+_XimThaiSetFocus(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    XIC	 current_ic = ((Xim)ic->core.im)->private.local.current_ic;
+
+    if (current_ic == (XIC)ic)
+	return;
+
+    if (current_ic != (XIC)NULL) {
+	_XimThaiUnSetFocus(current_ic);
+    }
+    ((Xim)ic->core.im)->private.local.current_ic = (XIC)ic;
+
+    if (ic->core.focus_window)
+	_XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
+			KeyPress, KeyPress, _XimThaiFilter, (XPointer)ic);
+    return;
+}
+
+Private char *
+_XimThaiMbReset(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    ic->private.local.thai.comp_state = 0;
+    ic->private.local.thai.keysym = 0;
+    ic->private.local.composed->mb[0] = '\0';
+    ic->private.local.composed->wc[0] = 0;
+    return((char *)NULL);
+}
+
+Private wchar_t *
+_XimThaiWcReset(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    ic->private.local.thai.comp_state = 0;
+    ic->private.local.thai.keysym = 0;
+    ic->private.local.composed->mb[0] = '\0';
+    ic->private.local.composed->wc[0] = 0;
+    return((wchar_t *)NULL);
+}
 
 Private XICMethodsRec Thai_ic_methods = {
     _XimThaiDestroyIC, 	/* destroy */
@@ -117,24 +184,25 @@ _XimThaiCreateIC(im, values)
 
     bzero((char *)&ic_values, sizeof(XimDefICValues));
     if(_XimCheckLocalInputStyle(ic, (XPointer)&ic_values, values,
-					 im->core.styles) == False) {
+				 im->core.styles, res, num) == False) {
 	goto Set_Error;
     }
 
     _XimSetICMode(res, num, ic_values.input_style);
 
-    if(_XimSetICValueData(ic, (XPointer)&ic_values, values, XIM_CREATEIC)) {
+    if(_XimSetICValueData(ic, (XPointer)&ic_values,
+			ic->private.local.ic_resources,
+			ic->private.local.ic_num_resources,
+			values, XIM_CREATEIC, True)) {
 	goto Set_Error;
     }
-    if(_XimSetICDefaults(ic,
-			 (XPointer)&ic_values, XIM_SETICDEFAULTS) == False) {
+    if(_XimSetICDefaults(ic, (XPointer)&ic_values,
+				XIM_SETICDEFAULTS, res, num) == False) {
 	goto Set_Error;
     }
     ic_values.filter_events = KeyPressMask;
     _XimSetCurrentICValues(ic, &ic_values);
 
-    _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
-			   KeyPress, KeyPress, _XimThaiFilter, (XPointer)ic);
     return ((XIC)ic);
 
 Set_Error :
@@ -143,78 +211,4 @@ Set_Error :
     }
     Xfree(ic);
     return((XIC)NULL);
-}
-
-Private void
-_XimThaiDestroyIC(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
-	_XimThaiUnSetFocus(ic);
-    }
-    if(ic->private.local.ic_resources) {
-	Xfree(ic->private.local.ic_resources);
-    }
-
-    Xfree(ic->private.local.context->mb);
-    Xfree(ic->private.local.context->wc);
-    Xfree(ic->private.local.context);
-    Xfree(ic->private.local.composed->mb);
-    Xfree(ic->private.local.composed->wc);
-    Xfree(ic->private.local.composed);
-    return;
-}
-
-Private void
-_XimThaiSetFocus(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    XIC	 current_ic = ((Xim)ic->core.im)->private.local.current_ic;
-
-    if (current_ic != (XIC)NULL) {
-	_XimThaiUnSetFocus(current_ic);
-    }
-    ((Xim)ic->core.im)->private.local.current_ic = (XIC)ic;
-
-    _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
-			KeyPress, KeyPress, _XimThaiFilter, (XPointer)ic);
-    return;
-}
-
-Private void
-_XimThaiUnSetFocus(xic)
-    XIC	 xic;
-{
-    Xic  ic = (Xic)xic;
-    ((Xim)ic->core.im)->private.local.current_ic = (XIC)NULL;
-
-    _XUnregisterFilter(ic->core.im->core.display, ic->core.focus_window,
-			_XimThaiFilter, (XPointer)ic);
-    return;
-}
-
-Private char *
-_XimThaiMbReset(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    ic->private.local.thai.comp_state = 0;
-    ic->private.local.thai.keysym = 0;
-    ic->private.local.composed->mb[0] = '\0';
-    ic->private.local.composed->wc[0] = 0;
-    return((char *)NULL);
-}
-
-Private wchar_t *
-_XimThaiWcReset(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    ic->private.local.thai.comp_state = 0;
-    ic->private.local.thai.keysym = 0;
-    ic->private.local.composed->mb[0] = '\0';
-    ic->private.local.composed->wc[0] = 0;
-    return((wchar_t *)NULL);
 }

@@ -1,7 +1,7 @@
-/* $XConsortium: imDefLkup.c,v 1.6 94/01/20 18:04:08 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.7 94/02/08 10:09:27 rws Exp $ */
 /******************************************************************
 
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -100,12 +100,12 @@ _XimSetEventMaskCallback(xim, len, data, call_data)
     Xic		 ic;
 
     if (imid == im->private.proto.imid) {
-	if (ic = _XimICOfXICID(im, icid)) {
+	if (icid) {
+	    ic = _XimICOfXICID(im, icid);
 	    _XimProcICSetEventMask(ic, (XPointer)&buf_s[2]);
 	} else {
 	    _XimProcIMSetEventMask(im, (XPointer)&buf_s[2]);
 	}
-	Xfree(data);
 	return True;
     }
     return False;
@@ -156,7 +156,10 @@ _XimSync(im, ic)
     CARD8	 buf[BUFSIZE];
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    XPointer	 reply;
+    char	 reply[BUFSIZE];
+    XPointer	 preply;
+    int		 buf_size;
+    int		 ret_code;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
     buf_s[1] = ic->private.proto.icid;		/* icid */
@@ -165,18 +168,39 @@ _XimSync(im, ic)
 	+ sizeof(CARD16);			/* sizeof icid */
 
     _XimSetHeader((XPointer)buf, XIM_SYNC, 0, &len);
-    if (!(_XimSend(im, len, (XPointer)buf)))
+    if (!(_XimWrite(im, len, (XPointer)buf)))
 	return False;
     _XimFlush(im);
-    if (!(_XimRecv(im, &len, &reply, _XimSyncCheck, (XPointer)ic)))
-	return False;
-    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
-    if (*((CARD8 *)reply) == XIM_ERROR) {
-	_XimProcError(im, 0, (XPointer)&buf_s[3]);
-	Xfree(reply);
+    buf_size = BUFSIZE;
+    ret_code = _XimRead(im, &len, (XPointer)reply, buf_size,
+					_XimSyncCheck, (XPointer)ic);
+    if(ret_code == XIM_TRUE) {
+	preply = reply;
+    } else if(ret_code == XIM_OVERFLOW) {
+	if(len <= 0) {
+	    preply = reply;
+	} else {
+	    buf_size = len;
+	    preply = (XPointer)Xmalloc(len);
+	    ret_code = _XimRead(im, &len, preply, buf_size,
+					_XimSyncCheck, (XPointer)ic);
+	    if(ret_code != XIM_TRUE) {
+		Xfree(preply);
+		return False;
+	    }
+	}
+    } else {
 	return False;
     }
-    Xfree(reply);
+    buf_s = (CARD16 *)((char *)preply + XIM_HEADER_SIZE);
+    if (*((CARD8 *)preply) == XIM_ERROR) {
+	_XimProcError(im, 0, (XPointer)&buf_s[3]);
+	if(reply != preply)
+	    Xfree(preply);
+	return False;
+    }
+    if(reply != preply)
+	Xfree(preply);
     return True;
 }
 
@@ -196,7 +220,7 @@ _XimProcSyncReply(im, ic)
 	+ sizeof(CARD16);			/* sizeof icid */
 
     _XimSetHeader((XPointer)buf, XIM_SYNC_REPLY, 0, &len);
-    if (!(_XimSend(im, len, (XPointer)buf)))
+    if (!(_XimWrite(im, len, (XPointer)buf)))
 	return False;
     _XimFlush(im);
     return True;
@@ -236,7 +260,6 @@ _XimSyncCallback(xim, len, data, call_data)
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
 	(void)_XimProcSyncReply(im, ic);
-	Xfree(data);
 	return True;
     }
     return False;
@@ -263,7 +286,10 @@ _XimForwardEventCore(ic, ev, sync)
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
-    XPointer	 reply;
+    char	 reply[BUFSIZE];
+    XPointer	 preply;
+    int		 buf_size;
+    int		 ret_code;
     INT16	 len;
 
     if (!(len = _XimSetEventToWire(ev, (xEvent *)&buf_s[4])))
@@ -282,20 +308,41 @@ _XimForwardEventCore(ic, ev, sync)
 	 + sizeof(CARD16);			/* sizeof serila number */
 
     _XimSetHeader((XPointer)buf, XIM_FORWARD_EVENT, 0, &len);
-    if (!(_XimSend(im, len, (XPointer)buf)))
+    if (!(_XimWrite(im, len, (XPointer)buf)))
 	return False;
     _XimFlush(im);
 
     if (sync) {
-	if (!(_XimRecv(im, &len, &reply, _XimSyncCheck, (XPointer)ic)))
-	    return False;
-	buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
-	if (*((CARD8 *)reply) == XIM_ERROR) {
-	    _XimProcError(im, 0, (XPointer)&buf_s[3]);
-	    Xfree(reply);
+	buf_size = BUFSIZE;
+	ret_code = _XimRead(im, &len, (XPointer)reply, buf_size,
+					_XimSyncCheck, (XPointer)ic);
+	if(ret_code == XIM_TRUE) {
+	    preply = reply;
+	} else if(ret_code == XIM_OVERFLOW) {
+	    if(len <= 0) {
+		preply = reply;
+	    } else {
+		buf_size = len;
+		preply = (XPointer)Xmalloc(len);
+		ret_code = _XimRead(im, &len, preply, buf_size,
+					_XimSyncCheck, (XPointer)ic);
+		if(ret_code != XIM_TRUE) {
+		    Xfree(preply);
+		    return False;
+		}
+	    }
+	} else {
 	    return False;
 	}
-	Xfree(reply);
+	buf_s = (CARD16 *)((char *)preply + XIM_HEADER_SIZE);
+	if (*((CARD8 *)preply) == XIM_ERROR) {
+	    _XimProcError(im, 0, (XPointer)&buf_s[3]);
+	    if(reply != preply)
+		Xfree(preply);
+	    return False;
+	}
+	if(reply != preply)
+	    Xfree(preply);
     }
     return True;
 }
@@ -377,7 +424,6 @@ _XimForwardEventCallback(xim, len, data, call_data)
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
 	(void)_XimForwardEventRecv(im, ic, (XPointer)&buf_s[2]);
-	Xfree(data);
 	return True;
     }
     return False;
@@ -406,8 +452,8 @@ _XimRegisterTriggerkey(im, buf)
 	_XimError(im, 0, XIM_BadAlloc, (INT16)0, (CARD16)0, (char *)NULL);
 	return False;
     }
-    memcpy((char *)key, (char *)buf, len);
-    im->private.proto.im_onkeylist	     = key;
+    memcpy((char *)key, (char *)buf_l, len);
+    im->private.proto.im_onkeylist = key;
 
     MARK_DYNAMIC_EVENT_FLOW(im);
 
@@ -424,7 +470,7 @@ _XimRegisterTriggerkey(im, buf)
 	return False;
     }
 
-    memcpy((char *)key, (char *)buf, len);
+    memcpy((char *)key, (char *)buf_l, len);
     im->private.proto.im_offkeylist = key;
 
     return True;
@@ -451,7 +497,6 @@ _XimRegisterTriggerKeysCallback(xim, len, data, call_data)
 
     if (imid == im->private.proto.imid) {
 	(void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
-	Xfree(data);
 	return True;
     }
     return False;
@@ -517,7 +562,10 @@ _XimTriggerNotify(im, ic, mode, idx)
     CARD8	 buf[BUFSIZE];
     CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     CARD32	*buf_l = (CARD32 *)&buf[XIM_HEADER_SIZE];
-    XPointer	 reply;
+    char	 reply[BUFSIZE];
+    XPointer	 preply;
+    int		 buf_size;
+    int		 ret_code;
     INT16	 len;
     EVENTMASK	 mask = _XimGetWindowEventmask(ic);
 
@@ -534,18 +582,39 @@ _XimTriggerNotify(im, ic, mode, idx)
 	+ sizeof(EVENTMASK);		/* sizeof select-event-mask */
 
     _XimSetHeader((XPointer)buf, XIM_TRIGGER_NOTIFY, 0, &len);
-    if (!(_XimSend(im, len, (XPointer)buf)))
+    if (!(_XimWrite(im, len, (XPointer)buf)))
 	return False;
     _XimFlush(im);
-    if (!(_XimRecv(im, &len, &reply, _XimTriggerNotifyCheck, (XPointer)ic)))
-	return False;
-    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
-    if (*((CARD8 *)reply) == XIM_ERROR) {
-	_XimProcError(im, 0, (XPointer)&buf_s[3]);
-	Xfree(reply);
+    buf_size = BUFSIZE;
+    ret_code = _XimRead(im, &len, (XPointer)reply, buf_size,
+				_XimTriggerNotifyCheck, (XPointer)ic);
+    if(ret_code == XIM_TRUE) {
+	preply = reply;
+    } else if(ret_code == XIM_OVERFLOW) {
+	if(len <= 0) {
+	    preply = reply;
+	} else {
+	    buf_size = len;
+	    preply = (XPointer)Xmalloc(len);
+	    ret_code = _XimRead(im, &len, (XPointer)reply, buf_size,
+				_XimTriggerNotifyCheck, (XPointer)ic);
+	    if(ret_code != XIM_TRUE) {
+		Xfree(preply);
+		return False;
+	    }
+	}
+    } else {
 	return False;
     }
-    Xfree(reply);
+    buf_s = (CARD16 *)((char *)preply + XIM_HEADER_SIZE);
+    if (*((CARD8 *)preply) == XIM_ERROR) {
+	_XimProcError(im, 0, (XPointer)&buf_s[3]);
+	if(reply != preply)
+	    Xfree(preply);
+	return False;
+    }
+    if(reply != preply)
+	Xfree(preply);
     return True;
 }
 
@@ -737,7 +806,6 @@ _XimCommitCallback(xim, len, data, call_data)
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
 	(void)_XimCommitRecv(im, ic, (XPointer)&buf_s[2]);
-	Xfree(data);
 	return True;
     }
     return False;
@@ -749,9 +817,6 @@ _XimProcError(im, ic, data)
     Xic		 ic;
     XPointer	 data;
 {
-    /*
-     * Not yet
-     */
     return;
 }
 
@@ -788,7 +853,6 @@ _XimErrorCallback(xim, len, data, call_data)
 	    return False;
     }
     _XimProcError(im, ic, (XPointer)&buf_s[3]);
-    Xfree(data);
 
     return True;
 }
@@ -830,7 +894,7 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 	 + sizeof(CARD16);		/* sizeof type */
 
     _XimSetHeader((XPointer)buf, XIM_ERROR, 0, &len);
-    if (!(_XimSend(im, len, (XPointer)buf)))
+    if (!(_XimWrite(im, len, (XPointer)buf)))
 	return False;
     _XimFlush(im);
     return True;

@@ -1,6 +1,7 @@
-/* $XConsortium: imCallbk.c,v 1.2 94/01/23 16:42:35 kaleb Exp $ */
+/* $XConsortium: imCallbk.c,v 1.3 94/02/08 10:09:51 rws Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1994 by FUJITSU LIMITED
 
                         All Rights Reserved
 
@@ -8,20 +9,24 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+supporting documentation, and that the names of Digital or MIT
+, and that the name of FUJITSU LIMITED not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  
 
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
+DIGITAL AND FUJITSU LIMITED DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+IN NO EVENT SHALL DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+OF THIS SOFTWARE.
 
   Author: Hiroyuki Miyamoto  Digital Equipment Corporation
                              miyamoto@jrd.dec.com
+  Modifier: Takashi Fujiwara FUJITSU LIMITED
+			     fujiwara@a80.tech.yk.fujitsu.co.jp
+				
 ***********************************************************************/
 
 #include "Xlibint.h"
@@ -73,9 +78,9 @@ typedef XimCbStatus (*XimCb)(
 #define PACKET_TO_ICID(p) (*(XICID*)((CARD8*)(p) + XIM_HEADER_SIZE + sz_XIMID))
 
 #define _XimWriteData(im,len,data) \
-    (im->private.proto.send((im),(len),(XPointer)(data)))
-#define _XimReadData(im,len,data,pred,arg) \
-    (im->private.proto.recv((im),&(len),&(data),(pred),(arg)))
+    (im->private.proto.write((im),(len),(XPointer)(data)))
+#define _XimReadData(im,buf,buf_len,len) \
+    (im->private.proto.read((im),(XPointer)(buf),(buf_len),&(len)))
 #define _XimFlushData(im) im->private.proto.flush((im))
 
 #if NeedFunctionPrototypes
@@ -174,7 +179,6 @@ _XimProcessPendingCallbacks(ic)
 						  pcbq->proto, 
 						  pcbq->proto_len);
 	ic->private.proto.pend_cb_que = pcbq->next;
-	Xfree(pcbq->proto);	/* free memory of the protocol */
 	Xfree(pcbq);		/* free memory of XimPendingCallback */
     }
 }
@@ -302,7 +306,6 @@ _XimCbDispatch(xim, len, data, call_data)
       case XimCbSuccess:
       case XimCbNoCallback:
       case XimCbError:
-	Xfree(data);		/* free memory for the protocol */
       case XimCbQueued:
 	return(True);
 	break;
@@ -479,8 +482,8 @@ _XimPreeditStartCallback(im, ic, proto, len)
     /* send a reply
      */
     {
-	CARD8 buf[XIM_HEADER_SIZE + sz_ximPreeditStartReply];
-	INT16 buf_len = sz_ximPreeditStartReply;
+	CARD8 buf[sz_ximPacketHeader + sz_ximPreeditStartReply];
+	INT16 buf_len = sz_XIMID + sz_XICID + sz_ximPreeditStartReply;
 	int p;
 
 	_XimSetHeader((XPointer)buf, XIM_PREEDIT_START_REPLY, 0, &buf_len);
@@ -595,11 +598,16 @@ _read_text_from_packet(im, buf, text)
 					(wchar_t*)NULL, 0, 
 					&s); /* CT? HM */
 	    if (s != XLookupNone) {
-		if (text->string.multi_byte = (char*)Xmalloc(text->length)) {
-		    (void)_Ximctstombs(im, 
-				       tmp_buf, tmp_len, 
-				       text->string.multi_byte, text->length, 
-				       &s);
+		if (text->string.multi_byte
+		    = (char*)Xmalloc(text->length * MB_CUR_MAX)) {
+			int tmp;
+			tmp = _Ximctstombs(im,
+					   tmp_buf, tmp_len, 
+					   text->string.multi_byte, text->length, 
+					   &s);
+			text->string.multi_byte
+			  = (char*)Xrealloc(text->string.multi_byte, tmp+1);
+			text->string.multi_byte[tmp] = '\0';
 		}
 	    }
 
@@ -607,18 +615,19 @@ _read_text_from_packet(im, buf, text)
 	}
 	buf += tmp_len;
 
-	buf += XIM_PAD(sz_CARD16 + (int)text->length); /* pad */
+	buf += XIM_PAD(sz_CARD16 + tmp_len); /* pad */
     }
 
     /* feedback part
      */
     if (status & 0x00000002) /* "no feedback" bit on */ {
-	/* nothing to do */;
+	text->feedback = (XIMFeedback*)NULL;
     }
     else {
 	int i, j;
 
 	i = (int)*(CARD16*)buf; buf += sz_CARD16;
+	buf += sz_CARD16; /* skip `unused' */
 	text->feedback = (XIMFeedback*)Xmalloc(i);
 	j = 0;
 	while (i > 0) {
@@ -733,8 +742,8 @@ _XimPreeditCaretCallback(im, ic, proto, len)
     /* Send a reply
      */
     {
-	CARD8 buf[XIM_HEADER_SIZE + sz_ximPreeditCaretReply];
-	INT16 len = sz_ximPreeditCaretReply;
+	CARD8 buf[sz_ximPacketHeader + sz_ximPreeditCaretReply];
+	INT16 len = sz_XIMID + sz_XICID + sz_ximPreeditCaretReply;
 	int p;
 
 	_XimSetHeader((XPointer)buf, XIM_PREEDIT_CARET_REPLY, 0, &len);

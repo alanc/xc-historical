@@ -1,7 +1,7 @@
-/* $XConsortium: XimintL.h,v 1.1 93/09/17 13:33:19 rws Exp $ */
+/* $XConsortium: XimintL.h,v 1.2 94/01/20 18:02:56 rws Exp $ */
 /******************************************************************
 
-          Copyright 1991, 1992, 1993 by FUJITSU LIMITED
+          Copyright 1991, 1992, 1993, 1994 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -50,6 +50,7 @@ typedef struct _DefTree {
     KeySym           keysym;		/* leaf only */
     char            *mb;
     wchar_t         *wc;		/* make from mb */
+    KeySym           ks;
 } DefTree;
 
 typedef struct _XimLocalPrivateRec {

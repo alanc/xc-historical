@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.15 93/09/18 10:28:49 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.16 94/01/20 18:03:26 rws Exp $
  */
 
 /*
@@ -8,29 +8,29 @@
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
- * Copyright 1993 by the Sony Corporation
- * Copyright 1993 by the FUJITSU LIMITED
+ * Copyright 1993, 1994 by the Sony Corporation
+ * Copyright 1993, 1994 by the FUJITSU LIMITED
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of OMRON, NTT Software, NTT, Open
- * Software Foundation and M.I.T. not be used in advertising or 
- * publicity pertaining to distribution of the software without specific, 
+ * Software Foundation, M.I.T. and Sony Corporation not be used in advertising
+ * or publicity pertaining to distribution of the software without specific, 
  * written prior permission. OMRON, NTT Software, NTT, Open Software
- * Foundation and M.I.T. make no representations about the suitability of this
- * software for any purpose.  It is provided "as is" without express or
- * implied warranty.
+ * Foundation, M.I.T. and Sony Corporation  make no representations about the 
+ * suitability of this software for any purpose.  It is provided "as is" 
+ * without express or implied warranty.
  *
- * OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATION AND M.I.T. 
- * DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING 
+ * OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATION, M.I.T. AND SONY 
+ * CORPORATION DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING 
  * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT 
- * SHALL OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATIONN OR M.I.T. BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * SHALL OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATIONN, M.I.T. OR SONY 
+ * CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT 
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  *	Authors: Li Yuhong		OMRON Corporation
  *		 Tatsuya Kato		NTT Software Corporation
@@ -651,6 +651,11 @@ typedef struct {
 	XIM, XIMArg*
 #endif
 	);
+    int (*lookup_string)(
+#if NeedFunctionPrototypes
+	XKeyEvent*, char*, int, KeySym*, XComposeStatus*
+#endif
+	);
 } XIMMethodsRec, *XIMMethods;
 
 /*
@@ -665,9 +670,8 @@ typedef struct {
     char *		res_name;
     char *		res_class;
 
-    XIMExtensionsList	*extensions;
-    XIMOptionsList	*options;
-    XIMICAttributesList	*icattributes;
+    XIMValuesList	*im_values_list;
+    XIMValuesList	*ic_values_list;
     XIMStyles		*styles;
     XIMCallback		 destroy_callback;
     char *		im_name;		/* XIMMODIFIER name */
@@ -675,6 +679,7 @@ typedef struct {
     unsigned int	im_num_resources;
     XIMResourceList	ic_resources;		/* compiled IC resource list */
     unsigned int	ic_num_resources;
+    Bool		visible_position;
 } XIMCoreRec, *XIMCore;
 
 

@@ -1,7 +1,7 @@
-/* $XConsortium: imDefFlt.c,v 1.2 93/09/18 09:32:36 rws Exp $ */
+/* $XConsortium: imDefFlt.c,v 1.3 94/01/20 18:03:48 rws Exp $ */
 /******************************************************************
 
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -50,7 +50,7 @@ _XimTriggerCheck(im, ev, len, keylist)
 				 + sizeof(CARD32)   /* sizeof modifier */
 				 + sizeof(CARD32);  /* sizeof modifier mask */
 
-    XLookupString(ev, buf, BUFSIZE, &keysym, NULL);
+    im->methods->lookup_string(ev, buf, BUFSIZE, &keysym, NULL);
     if (!keysym)
 	return -1;
 
@@ -145,25 +145,42 @@ _XimProtoKeypressFilter(ic, ev)
 	UNMARK_FABLICATED(ic);
 	return NOTFILTERD;
     }
+
     if (IS_NEGLECT_EVENT(ic, KeyPressMask))
 	return FILTERD;
-    if (IS_IC_CONNECTED(ic)) {
-	if (!IS_FORWARD_EVENT(ic, KeyPressMask)) {
-	    if (_XimOnKeysCheck(ic, ev))
-		return FILTERD;
+
+#ifdef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic)) {
+	if (IS_CONNECTABLE(im)) {
+	    if (_XimConnectServer(im)) {
+		if (!_XimReCreateIC(ic)) {
+		    _XimDelayModeSetAttr(im);
+		    return NOTFILTERD;
+		}
+	    } else {
+		return NOTFILTERD;
+	    }
+	} else {
 	    return NOTFILTERD;
 	}
-	if (_XimOffKeysCheck(ic, ev))
-	    return FILTERD;
-	return _XimForwardEvent(ic, (XEvent *)ev,
-					IS_SYNCHRONOUS_EVENT(ic, KeyPressMask));
-
-    } else if (IS_RECONNECTABLE(im)) {
-	/* 
-	 * Not yet
-	 */
-	return FILTERD;
     }
+#else
+    if (!IS_IC_CONNECTED(ic))
+	return NOTFILTERD;
+#endif /* XIM_CONNECTABLE */
+
+    if (!IS_FORWARD_EVENT(ic, KeyPressMask)) {
+	if (_XimOnKeysCheck(ic, ev))
+	    return FILTERD;
+	return NOTFILTERD;
+    }
+    if (_XimOffKeysCheck(ic, ev))
+	return FILTERD;
+
+    if (_XimForwardEvent(ic, (XEvent *)ev,
+				IS_SYNCHRONOUS_EVENT(ic, KeyPressMask)))
+	return FILTERD;
+
     return NOTFILTERD;
 }
 
@@ -184,25 +201,47 @@ _XimProtoKeyreleaseFilter( ic, ev )
 {
     Xim		im = (Xim)ic->core.im;
 
+    if (IS_FABLICATED(ic)) {
+	_XimPendingFilter(ic);
+	UNMARK_FABLICATED(ic);
+	return NOTFILTERD;
+    }
+
     if (IS_NEGLECT_EVENT(ic, KeyReleaseMask))
 	return FILTERD;
-    if (IS_IC_CONNECTED(ic)) {
-	if (!IS_FORWARD_EVENT(ic, KeyReleaseMask)) {
-	    if (_XimOnKeysCheck(ic, ev))
-		return FILTERD;
+
+#ifdef XIM_CONNECTABLE
+    if (!IS_IC_CONNECTED(ic)) {
+	if (IS_CONNECTABLE(im)) {
+	    if (_XimConnectServer(im)) {
+		if (!_XimReCreateIC(ic)) {
+		    _XimDelayModeSetAttr(im);
+		    return NOTFILTERD;
+		}
+	    } else {
+		return NOTFILTERD;
+	    }
+	} else {
 	    return NOTFILTERD;
 	}
-	if (_XimOffKeysCheck(ic, ev))
-	    return FILTERD;
-	return _XimForwardEvent(ic, (XEvent *)ev,
-					IS_SYNCHRONOUS_EVENT(ic, KeyPressMask));
-
-    } else if (IS_RECONNECTABLE(im)) {
-	/* 
-	 * Not yet
-	 */
-	return FILTERD;
     }
+#else
+    if (!IS_IC_CONNECTED(ic))
+	return NOTFILTERD;
+#endif /* XIM_CONNECTABLE */
+
+    if (!IS_FORWARD_EVENT(ic, KeyReleaseMask)) {
+	if (_XimOnKeysCheck(ic, ev))
+	    return FILTERD;
+	return NOTFILTERD;
+    }
+    if (_XimOffKeysCheck(ic, ev))
+	    return FILTERD;
+
+    if (_XimForwardEvent(ic, (XEvent *)ev,
+				IS_SYNCHRONOUS_EVENT(ic, KeyPressMask)))
+	return FILTERD;
+
     return NOTFILTERD;
 }
 
@@ -296,6 +335,8 @@ Public void
 _XimUnregisterFilter(ic)
     Xic		 ic;
 {
+    Xim		 im = (Xim)ic->core.im;
+
     _XimUnregisterKeyPressFilter(ic);
     _XimUnregisterKeyReleaseFilter(ic);
     return;
@@ -324,6 +365,12 @@ _XimFilterServerDestroy (d, w, ev, client_data)
 
     if (ev->type == DestroyNotify) {
 	UNMARK_SERVER_CONNECTED(im);
+#ifdef XIM_CONNECTABLE
+	if (!IS_SERVER_CONNECTED(im) && IS_RECONNECTABLE(im)) {
+	    _XimServerReconectableDestroy();
+	    return True;
+	}
+#endif /* XIM_CONNECTABLE */
 	_XimServerDestroy();
     }
     return True;
@@ -363,3 +410,4 @@ _XimUnregisterServerFilter(im)
     }
     return;
 }
+

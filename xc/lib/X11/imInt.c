@@ -1,7 +1,7 @@
-/* $XConsortium: imInt.c,v 1.1 93/09/17 13:29:37 rws Exp $ */
+/* $XConsortium: imInt.c,v 1.2 94/01/20 18:04:42 rws Exp $ */
 /******************************************************************
 
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -113,6 +113,34 @@ _XimServerDestroy()
     _XimCurrentIMlist  = (Xim *)NULL;
     return;
 }
+
+#ifdef XIM_CONNECTABLE
+Public void
+_XimServerReconectableDestroy()
+{
+    register int  i;
+    Xim		  im;
+    XIC		  ic;
+
+    for(i = 0; i < _XimCurrentIMcount; i++) {
+	if(!(im = _XimCurrentIMlist[i]))
+	    continue;
+
+	if (im->core.destroy_callback.callback)
+	    (*im->core.destroy_callback.callback)(im,
+			im->core.destroy_callback.client_data, NULL);
+	for (ic = im->core.ic_chain; ic; ic = ic->core.next) {
+	    if (ic->core.destroy_callback.callback) {
+		(*ic->core.destroy_callback.callback)(ic,
+			ic->core.destroy_callback.client_data, NULL);
+	    }
+	}
+	_XimResetIMInstantiateCallback( im );
+	(void)im->methods->close((XIM)im);
+    }
+    return;
+}
+#endif /* XIM_CONNECTABLE */
 
 Private char	*
 _XimStrstr(src, dest)

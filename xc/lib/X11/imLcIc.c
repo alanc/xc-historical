@@ -1,7 +1,7 @@
-/* $XConsortium: imLcIc.c,v 1.1 93/09/17 13:26:59 rws Exp $ */
+/* $XConsortium: imLcIc.c,v 1.2 94/01/20 18:04:56 rws Exp $ */
 /******************************************************************
 
-                Copyright 1992,1993 by FUJITSU LIMITED
+                Copyright 1992,1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -34,17 +34,73 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 
-Private void		_XimLocalDestroyIC( );
-Private void		_XimLocalSetFocus( );
-Private void		_XimLocalUnSetFocus( );
-Private char *		_XimLocalMbReset( );
-Private wchar_t *	_XimLocalWcReset( );
-extern char *		_XimLocalSetICValues( );
-extern char *		_XimLocalGetICValues( );
-extern int		_XimLocalMbLookupString( );
-extern int		_XimLocalWcLookupString( );
-extern Bool		_XimLocalFilter( );
-extern char *		_XimSetICValueData( );
+Private void
+_XimLocalUnSetFocus(xic)
+    XIC	 xic;
+{
+    Xic  ic = (Xic)xic;
+    ((Xim)ic->core.im)->private.local.current_ic = (XIC)NULL;
+
+    if (ic->core.focus_window)
+	_XUnregisterFilter(ic->core.im->core.display,
+			ic->core.focus_window, _XimLocalFilter, (XPointer)ic);
+    return;
+}
+
+Private void
+_XimLocalDestroyIC(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
+	_XimLocalUnSetFocus(ic);
+    }
+    if(ic->private.local.ic_resources)
+	Xfree(ic->private.local.ic_resources);
+    return;
+}
+
+Private void
+_XimLocalSetFocus(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    XIC	 current_ic = ((Xim)ic->core.im)->private.local.current_ic;
+
+    if (current_ic == (XIC)ic)
+	return;
+
+    if (current_ic != (XIC)NULL) {
+	_XimLocalUnSetFocus(current_ic);
+    }
+    ((Xim)ic->core.im)->private.local.current_ic = (XIC)ic;
+
+    if (ic->core.focus_window)
+	_XRegisterFilterByType(ic->core.im->core.display,
+			ic->core.focus_window, KeyPress, KeyPress,
+			_XimLocalFilter, (XPointer)ic);
+    return;
+}
+
+Private char *
+_XimLocalMbReset(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    ic->private.local.composed = (DefTree *)NULL;
+    ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
+    return((char *)NULL);
+}
+
+Private wchar_t *
+_XimLocalWcReset(xic)
+    XIC	 xic;
+{
+    Xic	 ic = (Xic)xic;
+    ic->private.local.composed = (DefTree *)NULL;
+    ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
+    return((wchar_t *)NULL);
+}
 
 Private XICMethodsRec Local_ic_methods = {
     _XimLocalDestroyIC, 	/* destroy */
@@ -90,23 +146,25 @@ _XimLocalCreateIC(im, values)
 
     bzero((char *)&ic_values, sizeof(XimDefICValues));
     if(_XimCheckLocalInputStyle(ic, (XPointer)&ic_values, values,
-					 im->core.styles) == False) {
+				 im->core.styles, res, num) == False) {
 	goto Set_Error;
     }
 
     _XimSetICMode(res, num, ic_values.input_style);
 
-    if(_XimSetICValueData(ic, (XPointer)&ic_values, values, XIM_CREATEIC)) {
+    if(_XimSetICValueData(ic, (XPointer)&ic_values,
+			ic->private.local.ic_resources,
+			ic->private.local.ic_num_resources,
+			values, XIM_CREATEIC, True)) {
 	goto Set_Error;
     }
-    if(_XimSetICDefaults(ic, (XPointer)&ic_values, XIM_SETICDEFAULTS) == False) {
+    if(_XimSetICDefaults(ic, (XPointer)&ic_values,
+				XIM_SETICDEFAULTS, res, num) == False) {
 	goto Set_Error;
     }
     ic_values.filter_events = KeyPressMask;
     _XimSetCurrentICValues(ic, &ic_values);
 
-    _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
-			   KeyPress, KeyPress, _XimLocalFilter, (XPointer)ic);
     return((XIC)ic);
 
 Set_Error :
@@ -115,66 +173,4 @@ Set_Error :
     }
     Xfree(ic);
     return((XIC)NULL);
-}
-
-Private void
-_XimLocalDestroyIC(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    if(((Xim)ic->core.im)->private.local.current_ic == (XIC)ic) {
-	_XimLocalUnSetFocus(ic);
-    }
-    if(ic->private.local.ic_resources)
-	Xfree(ic->private.local.ic_resources);
-    return;
-}
-
-Private void
-_XimLocalSetFocus(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    XIC	 current_ic = ((Xim)ic->core.im)->private.local.current_ic;
-
-    if (current_ic != (XIC)NULL) {
-	_XimLocalUnSetFocus(current_ic);
-    }
-    ((Xim)ic->core.im)->private.local.current_ic = (XIC)ic;
-
-    _XRegisterFilterByType(ic->core.im->core.display, ic->core.focus_window,
-			KeyPress, KeyPress, _XimLocalFilter, (XPointer)ic);
-    return;
-}
-
-Private void
-_XimLocalUnSetFocus(xic)
-    XIC	 xic;
-{
-    Xic  ic = (Xic)xic;
-    ((Xim)ic->core.im)->private.local.current_ic = (XIC)NULL;
-
-    _XUnregisterFilter(ic->core.im->core.display, ic->core.focus_window,
-			_XimLocalFilter, (XPointer)ic);
-    return;
-}
-
-Private char *
-_XimLocalMbReset(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    ic->private.local.composed = (DefTree *)NULL;
-    ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
-    return((char *)NULL);
-}
-
-Private wchar_t *
-_XimLocalWcReset(xic)
-    XIC	 xic;
-{
-    Xic	 ic = (Xic)xic;
-    ic->private.local.composed = (DefTree *)NULL;
-    ic->private.local.context  = ((Xim)ic->core.im)->private.local.top;
-    return((wchar_t *)NULL);
 }

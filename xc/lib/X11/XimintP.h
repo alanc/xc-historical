@@ -1,20 +1,21 @@
-/* $XConsortium: XimintP.h,v 1.4 94/01/20 18:03:01 rws Exp $ */
+/* $XConsortium: XimintP.h,v 1.5 94/02/09 11:34:02 mor Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
-           Copyright 1992, 1993 by FUJITSU LIMITED
-           Copyright 1993       by Sony Corporation
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
+           Copyright 1993, 1994       by Sony Corporation
 
-Permission to use, copy, modify, distribute, and sell this software
-and its documentation for any purpose is hereby granted without fee,
-provided that the above copyright notice appear in all copies and
-that both that copyright notice and this permission notice appear
-in supporting documentation, and that the name of Sun Microsystems, Inc.
-and FUJITSU LIMITED not be used in advertising or publicity pertaining to
-distribution of the software without specific, written prior permission.
-Sun Microsystems, Inc. FUJITSU LIMITED and Sony Corporation makes no
-representations about the suitability of this software for any purpose.
-It is provided "as is" without express or implied warranty.
+Permission to use, copy, modify, distribute, and sell this software and
+its documentation for any purpose is hereby granted without fee, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of Sun Microsystems, Inc., FUJITSU
+LIMITED and Sony Corporation not be used in advertising or publicity
+pertaining to distribution of the software without specific, written
+prior permission.  Sun Microsystems, Inc., FUJITSU LIMITED and Sony
+Corporation makes no representations about the suitability of this
+software for any purpose.  It is provided "as is" without express or
+implied warranty. 
 
 Sun Microsystems Inc. ,FUJITSU LIMITED AND SONY CORPORATION DISCLAIMS ALL
 WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES
@@ -62,37 +63,37 @@ typedef struct _XimProtoIntrRec {
  */
 typedef Bool (*XimTransConnectProc)(
 #if NeedFunctionPrototypes
-				 Xim
+	 Xim
 #endif
 );
 typedef Bool (*XimTransShutdownProc)(
 #if NeedFunctionPrototypes
-				  Xim
+	 Xim
 #endif
 );
-typedef Bool (*XimTransSendProc)(
+typedef Bool (*XimTransWriteProc)(
 #if NeedFunctionPrototypes
-			      Xim, INT16, XPointer
+	 Xim, INT16, XPointer
 #endif
 );
-typedef Bool (*XimTransRecvProc)(
+typedef Bool (*XimTransReadProc)(
 #if NeedFunctionPrototypes
-			      Xim, XPointer, int, int, int, int *, XPointer
+	 Xim, XPointer, int, int *
 #endif
 );
 typedef void (*XimTransFlushProc)(
 #if NeedFunctionPrototypes
-				  Xim
+	 Xim
 #endif
 );
-typedef Bool (*XimTransIntrProc)(
+typedef Bool (*XimTransRegDispatcher)(
 #if NeedNestedPrototypes
-		      Xim, Bool (*)(Xim, INT16, XPointer, XPointer), XPointer
+	 Xim, Bool (*)(Xim, INT16, XPointer, XPointer), XPointer
 #endif
 );
-typedef Bool (*XimTransIntrCheckProc)(
+typedef Bool (*XimTransCallDispatcher)(
 #if NeedFunctionPrototypes
-				   Xim, INT16, XPointer
+	 Xim, INT16, XPointer
 #endif
 );
 
@@ -100,80 +101,61 @@ typedef Bool (*XimTransIntrCheckProc)(
  * private part of IM
  */
 typedef struct _XimProtoPrivateRec {
-    Window 		 im_window;		/* XIM_SERVERS ATOM  */
-    XIMID 		 imid;
-    XIMStyles		*default_styles; 	/* for delay binding */
-    CARD32		*im_onkeylist;		/* LISTofTriggerKey  */
-    CARD32		*im_offkeylist;		/* LISTofTriggerKey  */
-    BITMASK32 		 flag;			/* IMS Mode          */
+    Window			 im_window;
+    XIMID			 imid;
+    CARD16			 unused;
+    XIMStyles			*default_styles;
+    CARD32			*im_onkeylist;
+    CARD32			*im_offkeylist;
+    BITMASK32			 flag;
 
-    BITMASK32		 registed_filter_event; /* registed filter mask */
-    EVENTMASK		 forward_event_mask;	/* default forward event */
-    EVENTMASK		 synchronous_event_mask;/* default sync event */
+    BITMASK32			 registed_filter_event;
+    EVENTMASK			 forward_event_mask;
+    EVENTMASK			 synchronous_event_mask;
 
-    char		*im_attribute_name;
-    XimProtoIntrRec	*intrproto;
-    XIMResourceList	 im_inner_resources;
-    unsigned int	 im_num_inner_resources;
-    XIMResourceList	 ic_inner_resources;
-    unsigned int	 ic_num_inner_resources;
-    char		*hold_data;
-    int			 hold_data_len;
-    char		*locale_name;
+    XimProtoIntrRec		*intrproto;
+    XIMResourceList		 im_inner_resources;
+    unsigned int		 im_num_inner_resources;
+    XIMResourceList		 ic_inner_resources;
+    unsigned int		 ic_num_inner_resources;
+    char			*hold_data;
+    int				 hold_data_len;
+    char			*locale_name;
+    CARD16			 protocol_major_version;
+    CARD16			 protocol_minor_version;
+    XrmQuark			*saved_imvalues;
+    int				 num_saved_imvalues;
 
-    XlcConv		 ctom_conv;
-    XlcConv		 ctow_conv;
+    XlcConv			 ctom_conv;
+    XlcConv			 ctow_conv;
 
     /*
      * transport specific
      */
-    XimTransConnectProc	 connect;
-    XimTransShutdownProc shutdown;
-    XimTransSendProc	 send;
-    XimTransRecvProc	 recv;
-    XimTransFlushProc	 flush;
-    XimTransIntrProc	 intr_cb;
-    XimTransIntrCheckProc check_cb;
-    XPointer	         spec;
+    XimTransConnectProc		 connect;
+    XimTransShutdownProc	 shutdown;
+    XimTransWriteProc		 write;
+    XimTransReadProc		 read;
+    XimTransFlushProc		 flush;
+    XimTransRegDispatcher	 register_dispatcher;
+    XimTransCallDispatcher	 call_dispatcher;
+    XPointer			 spec;
 } XimProtoPrivateRec;
 
 /*
  * bit mask for the flag of XIMPrivateRec
  */
-#define DELAYBINDABLE		(1L << 0)
-#define RECONNECTABLE		(1L << 1)
-#define RESTARTABLE		(1L << 2)
-#define SERVER_CONNECTED	(1L << 3)
-#define	DYNAMIC_EVENT_FLOW	(1L << 4)
-#define	USE_AUTHORIZATION_FUNC	(1L << 5)
+#define SERVER_CONNECTED	(1L)
+#define	DYNAMIC_EVENT_FLOW	(1L << 1)
+#define	USE_AUTHORIZATION_FUNC	(1L << 2)
+#ifdef XIM_CONNECTABLE
+#define DELAYBINDABLE		(1L << 3)
+#define RECONNECTABLE		(1L << 4)
+#endif /* XIM_CONNECTABLE */
 
 /*
  * macro for the flag of XIMPrivateRec
  */
-#define IS_DELAYBINDABLE(im) \
-		(((Xim)im)->private.proto.flag & DELAYBINDABLE)
-#define MARK_DELAYBINDABLE(im) \
-		(((Xim)im)->private.proto.flag |= DELAYBINDABLE)
-
-#define IS_RECONNECTABLE(im) \
-		(((Xim)im)->private.proto.flag & RECONNECTABLE)
-#define MARK_RECONNECTABLE(im) \
-		(((Xim)im)->private.proto.flag |= RECONNECTABLE)
-
-#define IS_RESTARTABLE(im) \
-		(((Xim)im)->private.proto.flag & RESTARTABLE)
-#define MARK_RESTARTABLE(im) \
-		(((Xim)im)->private.proto.flag |= RESTARTABLE)
-
-#define IS_CONNECTABLE(im) \
-    (((Xim)im)->private.proto.flag & (DELAYBINDABLE|RECONNECTABLE|RESTARTABLE))
-#define MAKE_CONNECTABLE(im) \
-    (((Xim)im)->private.proto.flag |= (DELAYBINDABLE|RECONNECTABLE|RESTARTABLE))
-
-#define IS_UNCONNECTABLE(im) (!(IS_CONNECTABLE(im)))
-#define MAKE_UNCONNECTABLE(im) \
-(((Xim)im)->private.proto.flag &=  ~(DELAYBINDABLE|RECONNECTABLE|RESTARTABLE))
-
 #define IS_SERVER_CONNECTED(im) \
 		((((Xim)im))->private.proto.flag & SERVER_CONNECTED)
 #define MARK_SERVER_CONNECTED(im) \
@@ -190,6 +172,23 @@ typedef struct _XimProtoPrivateRec {
 		(((Xim)im)->private.proto.flag & USE_AUTHORIZATION_FUNC)
 #define	MARK_USE_AUTHORIZATION_FUNC(im) \
 		(((Xim)im)->private.proto.flag |= USE_AUTHORIZATION_FUNC)
+
+#ifdef XIM_CONNECTABLE
+#define IS_DELAYBINDABLE(im) \
+		(((Xim)im)->private.proto.flag & DELAYBINDABLE)
+#define MARK_DELAYBINDABLE(im) \
+		(((Xim)im)->private.proto.flag |= DELAYBINDABLE)
+
+#define IS_RECONNECTABLE(im) \
+		(((Xim)im)->private.proto.flag & RECONNECTABLE)
+#define MARK_RECONNECTABLE(im) \
+		(((Xim)im)->private.proto.flag |= RECONNECTABLE)
+
+#define IS_CONNECTABLE(im) \
+    (((Xim)im)->private.proto.flag & (DELAYBINDABLE|RECONNECTABLE))
+#define UNMAKE_CONNECTABLE(im) \
+    (((Xim)im)->private.proto.flag &= ~(DELAYBINDABLE|RECONNECTABLE))
+#endif /* XIM_CONNECTABLE */
 
 /*
  * bit mask for the register_filter_event of XIMPrivateRec/XICPrivateRec
@@ -221,6 +220,7 @@ typedef struct _XimPendingCallback {
  */
 typedef struct _XicProtoPrivateRec {
     XICID	         icid;			/* ICID		*/
+    CARD16		 dmy;
     BITMASK32		 flag;			/* Input Mode	*/
 
     BITMASK32		 registed_filter_event; /* registed filter mask */
@@ -240,31 +240,28 @@ typedef struct _XicProtoPrivateRec {
     unsigned int	 ic_num_resources;
     XIMResourceList	 ic_inner_resources;
     unsigned int	 ic_num_inner_resources;
+    XrmQuark		*saved_icvalues;
+    int			 num_saved_icvalues;
     XimPendingCallback	 pend_cb_que;
     Bool		 waitCallback;
 } XicProtoPrivateRec ;
 
 /*
- * macro for the icid of XimProtoPrivateRec
- */
-#define IS_IC_CONNECTED(ic)       (((Xic)ic)->private.proto.icid)
-
-/*
  * bit mask for the flag of XICPrivateRec
  */
-#define BEING_PREEDITED    (1L)
-#define FABLICATED         (1L<<1)
-#define	NEED_SYNC_REPLY    (1L<<2)
+#define IC_CONNECTED		(1L)
+#define FABLICATED		(1L << 1)
+#define	NEED_SYNC_REPLY		(1L << 2)
 
 /*
  * macro for the flag of XICPrivateRec
  */
-#define IS_BEING_PREEDITED(ic) \
-		(((Xic)ic)->private.proto.flag & BEING_PREEDITED)
-#define MARK_BEING_PREEDITED(ic) \
-		(((Xic)ic)->private.proto.flag |= BEING_PREEDITED)
-#define UNMARK_BEING_PREEDITED(ic) \
-		(((Xic)ic)->private.proto.flag &= ~BEING_PREEDITED)
+#define	IS_IC_CONNECTED(ic) \
+		(((Xic)ic)->private.proto.flag & IC_CONNECTED)
+#define	MARK_IC_CONNECTED(ic) \
+		(((Xic)ic)->private.proto.flag |= IC_CONNECTED)
+#define	UNMARK_IC_CONNECTED(ic) \
+		(((Xic)ic)->private.proto.flag &= ~IC_CONNECTED)
 
 #define IS_FABLICATED(ic) \
 		(((Xic)ic)->private.proto.flag & FABLICATED)

@@ -1,7 +1,7 @@
-/* $XConsortium: imLcGIc.c,v 1.1 93/09/17 13:26:52 rws Exp $ */
+/* $XConsortium: imLcGIc.c,v 1.2 94/01/20 18:04:51 rws Exp $ */
 /******************************************************************
 
-                Copyright 1992,1993 by FUJITSU LIMITED
+                Copyright 1992,1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -32,64 +32,17 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 
-Private char *
-_XimGetICValueData(ic, top, values, mode)
-    Xic			 ic;
-    XPointer		 top;
-    XIMArg		*values;
-    unsigned long	 mode;
-{
-    register  XIMArg	*p;
-    XIMResourceList	 res;
-    char		*name;
-    int			 check;
-    XrmQuark		 pre_quark;
-    XrmQuark		 sts_quark;
-
-    pre_quark = XrmStringToQuark(XNPreeditAttributes);
-    sts_quark = XrmStringToQuark(XNStatusAttributes);
-
-    for(p = values; p->name != NULL; p++) {
-	if((res = _XimGetICResourceListRec(ic, p->name))
-						== (XIMResourceList)NULL) {
-	    return(p->name);
-	}
-	if(res->xrm_name == pre_quark) {
-	    if(name = _XimGetICValueData(ic,
-			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
-			(XIMArg *)p->value, (mode | XIM_PREEDIT_ATTR))) {
-		return(name);
-	    }
-	} else if(res->xrm_name == sts_quark) {
-	    if(name = _XimGetICValueData(ic,
-			(XPointer)(&((XimDefICValues *)top)->status_attr),
-			(XIMArg *)p->value, (mode | XIM_STATUS_ATTR))) {
-		return(name);
-	    }
-	} else {
-	    check = _XimCheckICMode(res, mode);
-	    if(check == XIM_CHECK_INVALID) {
-		continue;
-	    } else if(check == XIM_CHECK_ERROR) {
-		return(p->name);
-	    }
-
-	    if(_XimEncodeLocalICAttr(res, top, p->value, mode) == False) {
-		return(p->name);
-	    }
-	}
-    }
-    return(NULL);
-}
-
 Public char *
-_XimLocalGetICValues(ic, values)
-    Xic			 ic;
+_XimLocalGetICValues(xic, values)
+    XIC			 xic;
     XIMArg		*values;
 {
+    Xic			 ic = (Xic)xic;
     XimDefICValues	 ic_values;
 
     _XimGetCurrentICValues(ic, &ic_values);
     return(_XimGetICValueData(ic, (XPointer)&ic_values,
-						 values, XIM_GETICVALUES));
+				ic->private.local.ic_resources,
+				ic->private.local.ic_num_resources,
+				values, XIM_GETICVALUES));
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: imLcPrs.c,v 1.3 93/09/18 13:15:18 rws Exp $ */
+/* $XConsortium: imLcPrs.c,v 1.4 94/01/20 18:05:11 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.
@@ -304,7 +304,7 @@ parseline(fp, top)
     unsigned modifier_mask;
     unsigned modifier;
     unsigned tmp;
-    KeySym keysym;
+    KeySym keysym = NoSymbol;
     DefTree *p;
     Bool exclam, tilde;
     KeySym rhs_keysym;
@@ -463,6 +463,7 @@ parseline(fp, top)
 	    p->next          = *top;
 	    p->mb            = NULL;
 	    p->wc            = NULL;
+	    p->ks            = NoSymbol;
 	    *top = p;
 	    top = &p->succession;
 	}
@@ -474,6 +475,7 @@ parseline(fp, top)
     if( p->wc != NULL )
 	Xfree( p->wc );
     p->wc = rhs_string_wc;
+    p->ks = rhs_keysym;
     return(n);
 error:
     while (token != ENDOFLINE && token != ENDOFFILE) {

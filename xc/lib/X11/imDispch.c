@@ -1,7 +1,7 @@
-/* $XConsortium: imDispch.c,v 1.2 93/09/18 10:14:26 rws Exp $ */
+/* $XConsortium: imDispch.c,v 1.3 94/01/20 18:04:16 rws Exp $ */
 /******************************************************************
 
-                Copyright 1993 by FUJITSU LIMITED
+                Copyright 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -116,7 +116,7 @@ Public Bool
 _XimDispatchInit(im)
     Xim		 im;
 {
-    if (_XimIntrCallback(im, _XimTransportIntr, (XPointer)im))
+    if (_XimRegisterDispatcher(im, _XimTransportIntr, (XPointer)im))
 	return True;
     return False;
 }

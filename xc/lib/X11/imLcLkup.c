@@ -1,8 +1,8 @@
-/* $XConsortium: imLcLkup.c,v 1.3 93/09/18 13:14:43 rws Exp $ */
+/* $XConsortium: imLcLkup.c,v 1.4 94/01/20 18:05:06 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
-              Copyright 1992 by FUJITSU LIMITED
+              Copyright 1992, 1994  by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -40,44 +40,16 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 
-extern int _Xwcslen(
-#if NeedFunctionPrototypes
-    wchar_t	*wstr
-#endif
-);
-
-extern int _XimLookupMBText(
-#if NeedFunctionPrototypes
-    Xic			 ic,
-    XKeyEvent		*event,
-    unsigned char	*buffer,
-    int			 nbytes,
-    KeySym		*keysym,
-    XComposeStatus	*status
-#endif
-);
-
-extern int _XimLookupWCText(
-#if NeedFunctionPrototypes
-    Xic			 ic,
-    XKeyEvent		*event,
-    wchar_t		*buffer,
-    int			 nbytes,
-    KeySym		*keysym,
-    XComposeStatus	*status
-#endif
-);
-
-
-int
-_XimLocalMbLookupString(ic, ev, buffer, bytes, keysym, status)
-    Xic		 ic;
+Public int
+_XimLocalMbLookupString(xic, ev, buffer, bytes, keysym, status)
+    XIC		 xic;
     XKeyEvent	*ev;
     char	*buffer;
     int		 bytes;
     KeySym	 *keysym;
     Status	 *status;
 {
+    Xic		 ic = (Xic)xic;
     int		 ret;
 
     if(ev->type != KeyPress) {
@@ -91,8 +63,20 @@ _XimLocalMbLookupString(ic, ev, buffer, bytes, keysym, status)
 	    return(ret);
 	}
 	memcpy(buffer, ic->private.local.composed->mb, ret);
-	if(keysym) *keysym = NoSymbol;
-	if(status) *status = XLookupChars;
+	if(keysym) *keysym = ic->private.local.composed->ks;
+	if (ret > 0) {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupChars;
+	    } else {
+		if(status) *status = XLookupChars;
+	    }
+	} else {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupKeySym;
+	    } else {
+		if(status) *status = XLookupNone;
+	    }
+	}
 	return (ret);
     } else { /* Throughed Event */
 	ret = _XimLookupMBText(ic, ev, (unsigned char *)buffer, bytes, keysym,
@@ -114,15 +98,16 @@ _XimLocalMbLookupString(ic, ev, buffer, bytes, keysym, status)
     return (ret);
 }
 
-int
-_XimLocalWcLookupString(ic, ev, buffer, wlen, keysym, status)
-    Xic		 ic;
+Public int
+_XimLocalWcLookupString(xic, ev, buffer, wlen, keysym, status)
+    XIC		  xic;
     XKeyEvent	 *ev;
     wchar_t	 *buffer;
     int		  wlen;
     KeySym	 *keysym;
     Status	 *status;
 {
+    Xic		 ic = (Xic)xic;
     int		 ret;
 
     if(ev->type != KeyPress) {
@@ -137,8 +122,20 @@ _XimLocalWcLookupString(ic, ev, buffer, wlen, keysym, status)
 	}
 	memcpy((char *)buffer, (char *)ic->private.local.composed->wc,
 	       ret * sizeof(wchar_t));
-	if(keysym) *keysym = NoSymbol;
-	if(status) *status = XLookupChars;
+	if(keysym) *keysym = ic->private.local.composed->ks;
+	if (ret > 0) {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupChars;
+	    } else {
+		if(status) *status = XLookupChars;
+	    }
+	} else {
+	    if(keysym && *keysym != NoSymbol) {
+		if(status) *status = XLookupKeySym;
+	    } else {
+		if(status) *status = XLookupNone;
+	    }
+	}
 	return (ret);
     } else { /* Throughed Event */
 	ret = _XimLookupWCText(ic, ev, buffer, wlen, keysym, NULL);
@@ -158,4 +155,3 @@ _XimLocalWcLookupString(ic, ev, buffer, wlen, keysym, status)
     }
     return (ret);
 }
-

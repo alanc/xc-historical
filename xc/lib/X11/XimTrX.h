@@ -1,8 +1,8 @@
-/* $XConsortium: XimTrX.h,v 1.1 93/09/17 13:29:24 rws Exp $ */
+/* $XConsortium: XimTrX.h,v 1.2 94/01/20 18:02:39 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -46,13 +46,22 @@ typedef struct _XIntrCallbackRec {
 
 typedef struct _XSpecRec {
     XIntrCallbackPtr	 intr_cb;
-    Atom		 improtocolid;
     Atom		 imconnectid;
+    Atom		 improtocolid;
+    Atom		 immoredataid;
     Window		 lib_connect_wid;
     Window		 ims_connect_wid;
+    XPointer		 ev;
+    CARD32		 major_code;
+    CARD32		 minor_code;
+    CARD32		 BoundarySize;
 } XSpecRec;
 
 #define _XIM_PROTOCOL		"_XIM_PROTOCOL"
 #define _XIM_XCONNECT		"_XIM_XCONNECT"
+#define _XIM_MOREDATA		"_XIM_MOREDATA"
+
+#define MAJOR_TRANSPORT_VERSION         0
+#define MINOR_TRANSPORT_VERSION         0
 
 #endif /* _XIMTRX_H */

@@ -1,8 +1,8 @@
-/* $XConsortium: XimTrInt.h,v 1.2 94/01/20 18:02:33 rws Exp $ */
+/* $XConsortium: XimTrInt.h,v 1.3 94/02/03 17:50:29 mor Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
-	      Copyright 1993 by FUJITSU LIMITED
+	      Copyright 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -38,7 +38,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 typedef struct {
     char	*transportname;
-    int		 namelen;
     Bool	 (*config)(
 #if NeedFunctionPrototypes
 			Xim,

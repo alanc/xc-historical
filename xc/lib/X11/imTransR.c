@@ -1,8 +1,8 @@
-/* $XConsortium: imTransR.c,v 1.3 94/01/20 18:06:09 rws Exp $ */
+/* $XConsortium: imTransR.c,v 1.4 94/02/03 17:49:55 mor Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
-              Copyright 1992, 1993 by FUJITSU LIMITED
+              Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -35,21 +35,21 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Ximint.h"
 
 Public TransportSW _XimTransportRec[] = {
-    "X",          1, _XimXConf,  /* 1st entry must be X. 
+    "X",          _XimXConf,  /* 1st entry must be X. 
 					This will be a fallback */
 #ifdef TCPCONN
-    "tcp",        3, _XimTransConf, /* use X transport lib */
+    "tcp",        _XimTransConf, /* use X transport lib */
 #endif /* TCPCONN */
 #ifdef UNIXCONN
-    "local",      5, _XimTransConf, /* use X transport lib */
+    "local",      _XimTransConf, /* use X transport lib */
 #endif /* UNIXCONN */
 #ifdef DNETCONN
-    "decnet",     6, _XimTransConf, /* use X transport lib */
+    "decnet",     _XimTransConf, /* use X transport lib */
 #endif /* DNETCONN */
 #ifdef STREAMSCONN
-    "streams",    7, _XimTransConf, /* use X transport lib */
+    "streams",    _XimTransConf, /* use X transport lib */
 #endif /* STREAMSCONN */
-    (char *)NULL, 0, (Bool (*)())NULL,
+    (char *)NULL, (Bool (*)())NULL,
 };
 
 Public Bool
@@ -68,177 +68,160 @@ _XimShutdown(im)
 
 Public Bool
 #if NeedFunctionPrototypes
-_XimSend(Xim im, INT16 len, XPointer data)
+_XimWrite(Xim im, INT16 len, XPointer data)
 #else
-_XimSend(im, len, data)
+_XimWrite(im, len, data)
     Xim		 im;
     INT16	 len;
     XPointer	 data;
 #endif
 {
-    return im->private.proto.send(im, len, data);
+    return im->private.proto.write(im, len, data);
 }
 
-Private Bool
-_CheckProtocolData(im, recv_buf, recv_len, packet, packet_size)
+Private int
+_CheckProtocolData(im, recv_buf)
     Xim		  im;
     char	 *recv_buf;
-    int		  recv_len;
-    char	**packet;
-    int		 *packet_size;
 {
-    INT16	 data_len;
-    char	*buf;
-    int		 len;
+    int		 data_len;
 
-    data_len = *((CARD16 *)recv_buf + 1) + XIM_HEADER_SIZE;
-
-    if (recv_len < data_len) {
-	*packet = (char *)NULL;
-	*packet_size = (int)data_len;
-	return True;
-    }
-    if (!(buf = (char *)Xmalloc(data_len)))
-	return False;
-    (void)memcpy(buf, recv_buf, data_len);
-    *packet = buf;
-    *packet_size = data_len;
-    for (;data_len < recv_len; data_len++) {
-	if (recv_buf[data_len])
-	    break;
-    }
-    len = recv_len - data_len;
-    if (len > 0) {
-	if (!(buf = (char *)Xmalloc(len)))
-	    return False;
-	(void)memcpy(buf, &recv_buf[data_len], len);
-	im->private.proto.hold_data = buf;
-	im->private.proto.hold_data_len = len;
-    }
-    return True;
+    data_len = (int)(*((CARD16 *)recv_buf + 1) + XIM_HEADER_SIZE);
+    return data_len;
 }
 
-Private Bool
-_XimReadData(im, len, data, arg)
+Private int
+_XimReadData(im, len, buf, buf_size)
     Xim		 im;
     INT16	*len;
-    XPointer	*data;
-    XPointer	 arg;
+    XPointer	 buf;
+    int		 buf_size;
 {
-    char	 buf[BUFSIZE];
-    char	*recv_buf;
-    char	*alloc_buf = (char *)NULL;
+    char	*hold_buf;
     char	*tmp;
-    int		 recv_point;
-    int		 min_len;
-    int		 buf_len;
-    int		 ret_len;
+    int		 data_len;
     int		 packet_size;
-    char	*packet;
+    int		 ret_len;
+    register int i;
 
-    bzero(buf, sizeof(buf));
-    recv_buf = buf;
-    recv_point = 0;
-    min_len = XIM_HEADER_SIZE;
-    buf_len = BUFSIZE;
-
-    if (im->private.proto.hold_data) {
-	ret_len = im->private.proto.hold_data_len;
-	if (ret_len > BUFSIZE) {
-	    if (!(alloc_buf = (char *)Xmalloc(ret_len)))
-		return False;
-	    recv_buf = alloc_buf;
-	    bzero(recv_buf, ret_len);
-	    buf_len = ret_len;
-	}
-	recv_point = ret_len;
-	(void)memcpy(recv_buf, im->private.proto.hold_data, ret_len);
-	Xfree(im->private.proto.hold_data);
-	im->private.proto.hold_data = NULL;
-	im->private.proto.hold_data_len = 0;
-	if (ret_len >= XIM_HEADER_SIZE) {
-	    if (!(_CheckProtocolData(im, recv_buf, ret_len,
-					 	&packet, &packet_size))) {
-		if (alloc_buf)
-		    Xfree(alloc_buf);
-		return False;
-	    }
-	    if (packet) {
-		*len = (INT16)packet_size;
-		*data = (XPointer)packet;
-		if (alloc_buf)
-		    Xfree(alloc_buf);
-	 	return True;
-	    }
-	    if (packet_size > buf_len) {
-		if (!(tmp = (char *)Xmalloc(packet_size))) {
-		    if (alloc_buf)
-			Xfree(alloc_buf);
-		    return False;
-		}
-		(void)memcpy(tmp, recv_buf, ret_len);
-		recv_buf = tmp;
-		if (alloc_buf)
-		    Xfree(alloc_buf);
-		alloc_buf = tmp;
-		buf_len = packet_size;
-	    }
-	    min_len = packet_size;
-	}
+    if (buf_size < XIM_HEADER_SIZE) {
+	*len = (INT16)XIM_HEADER_SIZE;
+	return XIM_OVERFLOW;
     }
 
-    for (;;) {
-	if (!(im->private.proto.recv(im, (XPointer)recv_buf, recv_point,
-					min_len, buf_len, &ret_len, arg))) {
-	    if (alloc_buf)
-		Xfree(alloc_buf);
-	    return False;
-	}
-	if (!(_CheckProtocolData(im, recv_buf, ret_len,
-					 	&packet, &packet_size))) {
-	    if (alloc_buf)
-		Xfree(alloc_buf);
-	    return False;
-	}
-	if (packet)
-	    break;
-	if (packet_size > buf_len) {
-	    if (!(tmp = (char *)Xmalloc(packet_size))) {
-		if (alloc_buf)
-		    Xfree(alloc_buf);
-		return False;
+    bzero(buf, buf_size);
+    packet_size = 0;
+    data_len = 0;
+
+    if (hold_buf = im->private.proto.hold_data) {
+	data_len = im->private.proto.hold_data_len;
+	if (data_len >= XIM_HEADER_SIZE) {
+	    packet_size = _CheckProtocolData(im, hold_buf, data_len);
+	    if (packet_size > buf_size) {
+		*len = (INT16)packet_size;
+		return XIM_OVERFLOW;
 	    }
-	    (void)memcpy(tmp, recv_buf, ret_len);
-	    recv_buf = tmp;
-	    if (alloc_buf)
-		Xfree(alloc_buf);
-	    alloc_buf = tmp;
-	    buf_len = packet_size;
+	    if (packet_size <= data_len) {
+		memcpy(buf, hold_buf, packet_size);
+		for (i = packet_size; i < data_len; i++) {
+		    if (hold_buf[i])
+			break;
+		}
+		data_len -= i;
+
+		if (data_len) {
+		    if (!(tmp = (char *)Xmalloc(data_len))) {
+			return XIM_FALSE;
+		    }
+		    memcpy(tmp, &hold_buf[i], data_len);
+		    im->private.proto.hold_data = tmp;
+		    im->private.proto.hold_data_len = data_len;
+		} else {
+		    im->private.proto.hold_data = 0;
+		    im->private.proto.hold_data_len = 0;
+		}
+		Xfree(hold_buf);
+		*len = (INT16)packet_size;
+		return XIM_TRUE;
+	    }
 	}
-	recv_point = ret_len;
-	min_len = packet_size;
+	memcpy(buf, hold_buf, data_len);
+	buf_size -= data_len;
+	Xfree(hold_buf);
+	im->private.proto.hold_data = 0;
+	im->private.proto.hold_data_len = 0;
+    }
+
+    if (!packet_size) {
+	while (data_len < XIM_HEADER_SIZE) {
+	    if (!(im->private.proto.read(im,
+			(XPointer)&buf[data_len], buf_size, &ret_len))) {
+		return XIM_FALSE;
+	    }
+	    data_len += ret_len;
+	    buf_size -= ret_len;
+	}
+	packet_size = _CheckProtocolData(im, buf, data_len);
+    }
+
+    if (packet_size > buf_size) {
+	if (!(tmp = (char *)Xmalloc(data_len))) {
+	    return XIM_FALSE;
+	}
+	memcpy(tmp, buf, data_len);
+	bzero(buf, data_len);
+	im->private.proto.hold_data = tmp;
+	im->private.proto.hold_data_len = data_len;
+	*len = (INT16)packet_size;
+	return XIM_OVERFLOW;
+    }
+
+    while (data_len < packet_size) {
+	if (!(im->private.proto.read(im,
+			(XPointer)&buf[data_len], buf_size, &ret_len))) {
+	    return XIM_FALSE;
+	}
+	data_len += ret_len;
+	buf_size -= ret_len;
+    }
+
+    for (i = packet_size; i < data_len; i++) {
+	if (buf[i])
+	    break;
+    }
+    data_len -= i;
+
+    if (data_len) {
+	if (!(tmp = (char *)Xmalloc(data_len))) {
+	    return XIM_FALSE;
+	}
+	memcpy(tmp, &buf[i], data_len);
+	bzero(&buf[i], data_len);
+	im->private.proto.hold_data = tmp;
+	im->private.proto.hold_data_len = data_len;
+    } else {
+	im->private.proto.hold_data = 0;
+	im->private.proto.hold_data_len = 0;
     }
     *len = (INT16)packet_size;
-    *data = (XPointer)packet;
-    if (alloc_buf)
-	Xfree(alloc_buf);
-    return True;
+    return XIM_TRUE;
 }
 
 Private Bool
-_XimIntrCallbackCheck(im, len, data)
+_XimCallDispatcher(im, len, data)
     Xim		 im;
     INT16	 len;
     XPointer	 data;
 {
-    return im->private.proto.check_cb(im, len, data);
+    return im->private.proto.call_dispatcher(im, len, data);
 }
 
-Public Bool
-_XimRecv(im, len, data, predicate, arg)
+Public int
+_XimRead(im, len, buf, buf_size, predicate, arg)
     Xim		 im;
     INT16	*len;
-    XPointer	*data;
+    XPointer	 buf;
+    int		 buf_size;
     Bool	 (*predicate)(
 #if NeedNestedPrototypes
 			      Xim, INT16, XPointer, XPointer
@@ -247,25 +230,25 @@ _XimRecv(im, len, data, predicate, arg)
     XPointer	 arg;
 {
     INT16	 read_len;
-    XPointer	 read_buf;
+    int		 ret_code;
 
     for (;;) {
-	if (!(_XimReadData(im, &read_len, &read_buf, (XPointer)NULL)))
-	    return False;
-	if ((*predicate)(im, read_len, read_buf, arg))
+	ret_code = _XimReadData(im, &read_len, buf, buf_size);
+	if(ret_code != XIM_TRUE) {
+	    return ret_code;
+	}
+	if ((*predicate)(im, read_len, buf, arg))
 	    break;
-	if (_XimIntrCallbackCheck(im, read_len, read_buf))
+	if (_XimCallDispatcher(im, read_len, buf))
 	    continue;
 	_XimError(im, 0, XIM_BadProtocol, (INT16)0, (CARD16)0, (char *)NULL);
-	Xfree(read_buf);
     }
     *len = read_len;
-    *data = read_buf;
     return True;
 }
 
 Public Bool
-_XimIntrCallback(im, callback, call_data)
+_XimRegisterDispatcher(im, callback, call_data)
     Xim		 im;
     Bool	 (*callback)(
 #if NeedNestedPrototypes
@@ -274,7 +257,7 @@ _XimIntrCallback(im, callback, call_data)
 			     );
     XPointer	 call_data;
 {
-    return im->private.proto.intr_cb(im, callback, call_data);
+    return im->private.proto.register_dispatcher(im, callback, call_data);
 }
 
 Public void
@@ -286,18 +269,42 @@ _XimFlush(im)
 }
 
 Public Bool
-_XimFilterWaitEvent(im, arg)
+_XimFilterWaitEvent(im)
     Xim		 im;
-    XPointer	 arg;
 {
     INT16	 read_len;
-    XPointer	 read_buf;
+    char	 reply[BUFSIZE];
+    XPointer	 preply;
+    int		 buf_size;
+    int		 ret_code;
 
-    if (!(_XimReadData(im, &read_len, &read_buf, arg)))
+    buf_size = BUFSIZE;
+    ret_code = _XimReadData(im, &read_len, (XPointer)reply, buf_size);
+    if(ret_code == XIM_TRUE) {
+	preply = reply;
+    } else if(ret_code == XIM_OVERFLOW) {
+	if(read_len <= 0) {
+	    preply = reply;
+	} else {
+	    buf_size = (int)read_len;
+	    preply = (XPointer)Xmalloc(buf_size);
+	    ret_code = _XimReadData(im, &read_len, preply, buf_size);
+	    if(ret_code != XIM_TRUE) {
+		if (preply != reply)
+		    Xfree(preply);
+		return False;
+	    }
+	}
+    } else {
 	return False;
-    if (_XimIntrCallbackCheck(im, read_len, read_buf))
+    }
+    if (_XimCallDispatcher(im, read_len, preply)) {
+	if(reply != preply)
+	    Xfree(preply);
 	return True;
+    }
     _XimError(im, 0, XIM_BadProtocol, (INT16)0, (CARD16)0, (char *)NULL);
-    Xfree(read_buf);
+    if(reply != preply)
+	Xfree(preply);
     return True;
 }

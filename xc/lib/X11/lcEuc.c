@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.6 94/01/20 18:06:38 rws Exp $ */
+/* $XConsortium: lcEuc.c,v 1.7 94/01/23 16:37:40 kaleb Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -27,18 +27,17 @@ OF THIS SOFTWARE.
 
     Authors: Shigeru Yamada 		(yamada@ossi.com)
              Jeffrey Bloomfield		(jeffb@ossi.com)
+             Yoshiyuki Segawa		(segawa@ossi.com)
 
 *****************************************************************/
 
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 
-
 #include <ctype.h>
 #ifdef WIN32
 #define isascii __isascii
 #endif
-
 
 #define CS0     codesets[0]             /* Codeset 0 - 7-bit ASCII      */
 #define CS1     codesets[1]             /* Codeset 1 - Kanji            */
@@ -47,6 +46,12 @@ OF THIS SOFTWARE.
 
 #define SS2	0x8e	/* Single-shift char: CS2 */
 #define SS3	0x8f    /* Single-shift char: CS3 */
+
+#define ASCII_CODESET   0
+#define KANJI_CODESET   1
+#define KANA_CODESET    2
+#define USERDEF_CODESET 3
+#define MAX_CODESETS  
 
 #define GR	0x80	/* begins right-side (non-ascii) region */
 #define GL	0x7f    /* ends left-side (ascii) region        */
@@ -64,6 +69,17 @@ typedef unsigned int	Uint;
 static CodeSet GetCodeSetFromCharSet();
 static CodeSet wc_codeset();
 
+#define BADCHAR(min_ch, c)  (BIT8OFF(c) < (char)min_ch && BIT8OFF(c) != 0x0 && \
+			     BIT8OFF(c) != '\t' && BIT8OFF(c) != '\n' && \
+			     BIT8OFF(c) != 0x1b)
+
+/*
+ * Notes:
+ * 1. Defining FORCE_INDIRECT_CONVERTER (see _XlcEucLoader())
+ *    forces indirect (charset) conversions (e.g. wcstocs()<->cstombs()).
+ * 2. Using direct converters (e.g. mbstowcs()) decreases conversion
+ *    times by 20-40% (depends on specific converter used).
+ */
 
 static int
 euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
@@ -100,6 +116,7 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
     wchar_t *outbuf_base = outbufptr;
 
     CodeSet *codesets = XLC_GENERIC(lcd, codeset_list); 
+    int codeset_num = XLC_GENERIC(lcd, codeset_num);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
 
 
@@ -111,6 +128,11 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 	ch = *inbufptr++;
 
 	if (isleftside(ch)) {				/* CS0 */
+            if (ASCII_CODESET >= codeset_num) {
+		unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    if( cs0flg == True) {
 		new_char = True;
 		cs0flg = False;
@@ -121,6 +143,11 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 	else if (ch == SS2) {				/* CS2 */
+	    if (KANA_CODESET >= codeset_num) {
+		unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    if (sshift == True || cs1flg == True) {
 		cs1flg = False;
 		unconv_num++;
@@ -135,6 +162,11 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 	}
 	else if (ch == SS3) {				/* CS3 */
+	    if (USERDEF_CODESET >= codeset_num) {
+		unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    if (sshift == True || cs1flg == True) {
 		cs1flg = False;
 		unconv_num++;
@@ -151,6 +183,11 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    continue;
 
 	} else {					/* CS1 */
+	    if (KANJI_CODESET >= codeset_num) {
+		unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    if (sshift == False) {
 		length = CS1->length;
 		if (*from_left < 1)
@@ -163,7 +200,7 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 	    (*from_left)--;
 	}
 
-	if (new_char) {			/* begin new character */
+	if (new_char) {				/* begin new character */
 	    chr_len = length;
 	    shift_mult = length - 1;
 	    new_char = False;
@@ -191,12 +228,10 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
     if (cs0flg == True || cs1flg == True)	/* error check on last char */
 	unconv_num++;
 
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0) {
+    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
         *to_left = (*to_left) - num_conv;
-        return unconv_num;
-    }
 
-    return -1;
+    return unconv_num;
 }
 
 
@@ -217,6 +252,7 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
     register length;
     Uchar tmp;
     int num_conv;
+    int unconv_num = 0;
 
     XLCd lcd = (XLCd)conv->state;
     CodeSet codeset;
@@ -232,15 +268,17 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
 	wch = *inbufptr++;
 
-	if (!(codeset = wc_codeset(lcd, wch)))
-	    return -1;
+	if (!(codeset = wc_codeset(lcd, wch))) {
+	    unconv_num++;
+	    (*from_left)--;
+	    continue;
+	}
+
+	length = codeset->length;
+	wch ^= (wchar_t)codeset->wc_encoding;
 
 	if (codeset->parse_info)	/* put out SS2 or SS3 */
 	    *outbufptr++ = *codeset->parse_info->encoding;
-
-	length = codeset->length;
-
-	wch ^= (wchar_t)codeset->wc_encoding;
 
 	do {
 	    length--;
@@ -255,12 +293,10 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 
     *to = (XPointer)outbufptr;
 
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0) {
+    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
 	*to_left -= num_conv;
-	return 0;
-    }
 
-    return -1;
+    return unconv_num;
 }
 
 
@@ -277,34 +313,53 @@ euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
     XLCd lcd = (XLCd)conv->state;
     XlcCharSet charset;
     CodeSet *codesets = XLC_GENERIC(lcd, codeset_list);
+    int codeset_num = XLC_GENERIC(lcd, codeset_num);
     int length;
+    int unconv_num = 0;
+    int min_ch = 0;
     register char *src = *from, *dst = *to;
 
 
-    if (dst) {
-	if (isleftside(*src)) { 			/* 7-bit (CS0) */
-   	    charset = *CS0->charset_list;
-	}
-	else if ((Uchar)*src == SS2) {			/* half-kana (CS2) */
-	    charset = *CS2->charset_list;
-	    src++;
-	    (*from_left)--;
-	}
-	else if ((Uchar)*src == SS3) {			/* user-def */
-	    charset = *CS3->charset_list;
-	    src++;
-	    (*from_left)--;
-	}
-	else  { 					/* Kanji (CS1) */
-	    charset = *CS1->charset_list;
-	}
-
-	if(*from_left < charset->char_size || *to_left < charset->char_size)
+    if (isleftside(*src)) { 			/* 7-bit (CS0) */
+	if (ASCII_CODESET >= codeset_num)
 	    return -1;
+	charset = *CS0->charset_list;
+    }
+    else if ((Uchar)*src == SS2) {		/* half-kana (CS2) */
+	if (KANA_CODESET >= codeset_num)
+	    return -1;
+	charset = *CS2->charset_list;
+	src++;
+	(*from_left)--;
+    }
+    else if ((Uchar)*src == SS3) {		/* user-def */
+	if (USERDEF_CODESET >= codeset_num)
+	    return -1;
+	charset = *CS3->charset_list;
+	src++;
+	(*from_left)--;
+    }
+    else  { 					/* Kanji (CS1) */
+	if (KANJI_CODESET >= codeset_num)
+	    return -1;
+	charset = *CS1->charset_list;
+    }
 
-	length = charset->char_size;
-	do {
-	    switch (charset->side) {
+    if(*from_left < charset->char_size || *to_left < charset->char_size)
+	return -1;
+
+    min_ch = 0x20;
+    if (charset->set_size == 94)
+	if (length > 1 || charset->side == XlcGR)
+	    min_ch = 0x21;
+
+    length = charset->char_size;
+    do {
+	if(BADCHAR(min_ch, *src)) {
+	    unconv_num++;
+	    break;
+	}
+	switch (charset->side) {
 	    case XlcGL:
 		*dst++ = BIT8OFF(*src++);
 		break;
@@ -315,18 +370,20 @@ euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
 		*dst++ = *src++;
 		break;
 	    }
-	} while (--length);
+    } while (--length);
 
-	*to = dst;
-	*from = src;
-	*from_left -= charset->char_size;
-	*to_left -= charset->char_size;
-      } 
+    if (unconv_num)
+	src += charset->char_size - length;
+
+    *to = dst;
+    *from = src;
+    *from_left -= charset->char_size;
+    *to_left -= charset->char_size;
 
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = charset;
 
-    return 0;
+    return unconv_num;
 }
 
 
@@ -408,11 +465,13 @@ euc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     register length;
     CodeSet codeset;
     Ulong wc_encoding;
+    int unconv_num = 0;
     int wcstr_len = *from_left, buf_len = *to_left;
 
 
     if (!(codeset = wc_codeset(lcd, *wcptr)))
 	return -1;
+
     wc_encoding = codeset->wc_encoding;
 
     if (wcstr_len < buf_len / codeset->length)
@@ -475,8 +534,8 @@ euc_cstombs(conv, from, from_left, to, to_left, args, num_args)
     
     if (!(codeset = GetCodeSetFromCharSet(lcd, (XlcCharSet) args[0])))
 	return -1;
-    cvt_length = 0;
 
+    cvt_length = 0;
     csstr_len /= codeset->length;
     buf_len /= codeset->length;
 
@@ -632,11 +691,6 @@ create_conv(lcd, methods)
  *
  */
 
-#define BADCHAR(min_ch, c)  (BIT8OFF(c) < (char)min_ch && BIT8OFF(c) != 0x0 && \
-			     BIT8OFF(c) != '\t' && BIT8OFF(c) != '\n' && \
-			     BIT8OFF(c) != 0x1b)
-
-
 typedef struct _CTDataRec {
     int side;
     int length;
@@ -647,6 +701,7 @@ typedef struct _CTDataRec {
     int ct_encoding_len;
     int set_size;
     Uchar min_ch;
+    Uchar ct_type;
 } CTDataRec, *CTData;
 
 typedef struct _StateRec {
@@ -655,19 +710,40 @@ typedef struct _StateRec {
     CTData charset;
 } StateRec, *State;
 
-static CTDataRec ctdata[] = /* data for direct CT converters */
+static enum { CT_STD, CT_NSTD, CT_DIR, CT_EXT0, CT_EXT1, CT_EXT2, CT_VER }
+                ct_types;
+
+static CTDataRec ctdata[] =
 {
-    { XlcGL, 1, "ISO8859-1:GL",       0, 0, "\033(B" , 3, 0, 0 },
-    { XlcGR, 1, "ISO8859-1:GR",       0, 0, "\033-A" , 3, 0, 0 },
-    { XlcGL, 1, "JISX0201.1976-0:GL", 0, 0, "\033(J" , 3, 0, 0 },
-    { XlcGR, 1, "JISX0201.1976-0:GR", 0, 0, "\033)I" , 3, 0, 0 },
-    { XlcGL, 2, "JISX0208.1983-0:GL", 0, 0, "\033$(B", 4, 0, 0 },
-    { XlcGR, 2, "JISX0208.1983-0:GR", 0, 0, "\033$)B", 4, 0, 0 },
-    { XlcGL, 2, "JISX0212.1990-0:GL", 0, 0, "\033$(D", 4, 0, 0 },
-    { XlcGR, 2, "JISX0212.1990-0:GR", 0, 0, "\033$)D", 4, 0, 0 },
+  { XlcGL,      1, "ISO8859-1:GL",       0, 0, "\033(B"   ,  3, 0, 0, CT_STD  },
+  { XlcGR,      1, "ISO8859-1:GR",       0, 0, "\033-A"   ,  3, 0, 0, CT_STD  },
+  { XlcGL,      1, "JISX0201.1976-0:GL", 0, 0, "\033(J"   ,  3, 0, 0, CT_STD  },
+  { XlcGR,      1, "JISX0201.1976-0:GR", 0, 0, "\033)I"   ,  3, 0, 0, CT_STD  },
+  { XlcGL,      2, "JISX0208.1983-0:GL", 0, 0, "\033$(B"  ,  4, 0, 0, CT_STD  },
+  { XlcGR,      2, "JISX0208.1983-0:GR", 0, 0, "\033$)B"  ,  4, 0, 0, CT_STD  },
+  { XlcGL,      2, "JISX0212.1990-0:GL", 0, 0, "\033$(D"  ,  4, 0, 0, CT_STD  },
+  { XlcGR,      2, "JISX0212.1990-0:GR", 0, 0, "\033$)D"  ,  4, 0, 0, CT_STD  },
+  { XlcUnknown, 0, "Ignore-Ext-Status?", 0, 0, "\033#"    ,  2, 0, 0, CT_VER  },
+  { XlcUnknown, 0, "NonStd-?-OctetChar", 0, 0, "\033%/0"  ,  4, 0, 0, CT_NSTD },
+  { XlcUnknown, 1, "NonStd-1-OctetChar", 0, 0, "\033%/1"  ,  4, 0, 0, CT_NSTD },
+  { XlcUnknown, 2, "NonStd-2-OctetChar", 0, 0, "\033%/2"  ,  4, 0, 0, CT_NSTD },
+  { XlcUnknown, 3, "NonStd-3-OctetChar", 0, 0, "\033%/3"  ,  4, 0, 0, CT_NSTD },
+  { XlcUnknown, 4, "NonStd-4-OctetChar", 0, 0, "\033%/4"  ,  4, 0, 0, CT_NSTD },
+  { XlcUnknown, 0, "Extension-2"       , 0, 0, "\033%/"   ,  3, 0, 0, CT_EXT2 },
+  { XlcUnknown, 0, "Extension-0"       , 0, 0, "\033"     ,  1, 0, 0, CT_EXT0 },
+  { XlcUnknown, 0, "Begin-L-to-R-Text",  0, 0, "\2331]"   ,  3, 0, 0, CT_DIR  },
+  { XlcUnknown, 0, "Begin-R-to-L-Text",  0, 0, "\2332]"   ,  3, 0, 0, CT_DIR  },
+  { XlcUnknown, 0, "End-Of-String",      0, 0, "\233]"    ,  2, 0, 0, CT_DIR  },
+  { XlcUnknown, 0, "Extension-1"       , 0, 0, "\233"     ,  1, 0, 0, CT_EXT1 },
 };
 
-CTData ctd_endp = ctdata + ((sizeof(ctdata) / sizeof(CTDataRec))) - 1;
+/* Note on above table:  euc_ctstombs() and euc_ctstowcs() parser depends on
+ * certain table entries occuring in decreasing string length--
+ *   1.  CT_EXT2 and CT_EXT0 entries must occur after CT_NSTD entries.
+ *   2.  CT_DIR and CT_EXT1 entries must occur after CT_DIR entries.
+ */
+
+static CTData ctd_endp = ctdata + ((sizeof(ctdata) / sizeof(CTDataRec))) - 1;
 static CTData ctdptr[sizeof(ctdata) / sizeof(CTDataRec)];
 static enum { Ascii, Kanji, Kana, Userdef } cs_nums;
 
@@ -675,7 +751,6 @@ static enum { Ascii, Kanji, Kana, Userdef } cs_nums;
 /*
  * initCTptr(): Set ctdptr[] to point at ctdata[], indexed by codeset_num.
  */
-
 static void
 initCTptr(lcd)
     XLCd lcd;
@@ -687,6 +762,8 @@ initCTptr(lcd)
     CodeSet codeset;
     XlcCharSet charset;
     CTData ctdp = ctdata;
+
+    ctdptr[Ascii] = &ctdata[0];		/* failsafe */
 
     for (i = 0; i < num_codesets; i++) {
 
@@ -706,7 +783,7 @@ initCTptr(lcd)
 		    ctdptr[codeset->cs_num]->wc_encoding = codeset->wc_encoding;
 
 		    ctdptr[codeset->cs_num]->set_size =
-		      codeset->charset_list[0]->set_size;
+		      charset->set_size;
 
 		    ctdptr[codeset->cs_num]->min_ch =
 		      charset->set_size == 94 &&
@@ -724,6 +801,10 @@ initCTptr(lcd)
     }
 }
 
+
+#define SKIP_I(str)     while (*(str) >= 0x20 && *(str) <=  0x2f) (str)++;
+#define SKIP_P(str)     while (*(str) >= 0x30 && *(str) <=  0x3f) (str)++;
+
 static int
 euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
@@ -737,10 +818,14 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
     XLCd lcd = (XLCd)conv->state;
     Ulong wc_shift_bits = XLC_GENERIC(lcd, wc_shift_bits);
     register XPointer inbufptr = *from;
+    XPointer inbuf_base;
     register wchar_t *outbufptr = (wchar_t *) *to;
     wchar_t *outbuf_base = outbufptr;
     register clen, length;
     int num_conv;
+    int unconv_num = 0;
+    unsigned int ct_seglen = 0;
+    Uchar ct_type = 0;
     register shift_mult;
     wchar_t wc_tmp;
     wchar_t wch;
@@ -748,26 +833,70 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
     CTData ctdp = ctdata;
 
 
-
     if (*from_left > *to_left)
 	*from_left = *to_left;
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
-	if (*inbufptr == '\033') {
+	if (*inbufptr == '\033' || *inbufptr == (char)'\233') {
 	    for (ctdp = ctdata; ctdp <= ctd_endp ; ctdp++) {
 
 		if(!strncmp(inbufptr, ctdp->ct_encoding, ctdp->ct_encoding_len))
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len;
-		    length = ctdp->length;
+		    if (ctdp->length)
+			length = ctdp->length;
+		    ct_type = ctdp->ct_type;
 		    break;
 		}
 	    }
 
 	    if (ctdp > ctd_endp) 	/* failed to match CT sequence */
-		return -1;
+		unconv_num++;
+	}
+
+/* The following code insures that non-standard encodings, direction, extension,
+ * and version strings are ignored; subject to change in future.
+ */
+	switch (ct_type) {
+	case CT_STD:
+	    ct_type = 0;
+	    break;
+	case CT_EXT2:
+	    inbufptr++;
+	    (*from_left)--;
+	case CT_NSTD:
+	    ct_seglen = (BIT8OFF(*inbufptr) << 7) + BIT8OFF(*(inbufptr+1)) + 2;
+	    inbufptr += ct_seglen;
+	    (*from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_EXT0:
+	    inbuf_base = inbufptr;
+	    SKIP_I(inbufptr);
+	    inbufptr++;
+	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
+	    *(from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_EXT1:
+	    inbuf_base = inbufptr;
+	    SKIP_P(inbufptr);
+	    SKIP_I(inbufptr);
+	    inbufptr++;
+	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
+	    *(from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_DIR:
+	    ct_type = 0;
+	    continue;
+	case CT_VER:
+	    ct_type = 0;
+	    inbufptr += 2;
+	    *(from_left) -= 2;
+	    continue;
 	}
 
 	wc_encoding = (ctdp == ctdptr[Kana] && isleftside(*inbufptr)) ?
@@ -788,12 +917,11 @@ euc_ctstowcs(conv, from, from_left, to, to_left, args, num_args)
 
     *to = (XPointer)outbufptr;
 
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0) {
+    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
 	(*to_left) -= num_conv;
-	return 0;
-    }
 
-    return -1;
+    return unconv_num;
+
 }
 
 
@@ -819,6 +947,7 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
     XPointer ct_base = ctptr;
     wchar_t  wch;
     register length;
+    register unconv_num = 0;
     Uchar tmp;
     Uchar t1 = 0, t2;
     int num_conv;
@@ -829,7 +958,6 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
     CodeSet codeset;
     Ulong wc_encoding_mask = XLC_GENERIC(lcd, wc_encode_mask);
     Ulong wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
-
 
 
 /* Initial State: */
@@ -843,8 +971,11 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 
 	wch = *inbufptr++;
 
-	if (!(codeset = wc_codeset(lcd, wch)))
-	    return -1;
+	if (!(codeset = wc_codeset(lcd, wch))) {
+	    unconv_num++;
+	    (*from_left)--;
+	    continue;
+	}
 
 	charset = ctdptr[codeset->cs_num];
 
@@ -855,13 +986,16 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 	     (charset->side == XlcGL && charset != ct_state.GL_charset) ) {
 
 	    ct_len -= ctdptr[codeset->cs_num]->ct_encoding_len;
-	    if (ct_len < 0)
-		return -1;
+
+	    if (ct_len < 0) {
+		unconv_num++;
+		break;
+	    }
+
 	    if (ctptr) {
 		strcpy(ctptr, ctdptr[codeset->cs_num]->ct_encoding);
 		ctptr += ctdptr[codeset->cs_num]->ct_encoding_len;
 	    }
-
 	}
 
 	if (charset->side == XlcGR)
@@ -875,8 +1009,10 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 	    tmp = wch>>(wchar_t)( (Ulong)length * wc_shift);
 
 	    if (kana) {
-		if (BADCHAR(charset->min_ch, (char)tmp))
+		if (BADCHAR(charset->min_ch, (char)tmp)) {
+		    unconv_num++;
 		    break;
+		}
 		*ctptr++ = (char)BIT8ON(tmp);
 	    }
 
@@ -885,15 +1021,19 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 
 	    else if (byte2 && (kanji || userdef)) {
 		if (BADCHAR(charset->min_ch, (char)t1) ||
-		  BADCHAR(charset->min_ch, (char)tmp))
+		  BADCHAR(charset->min_ch, (char)tmp)) {
+		    unconv_num++;
 		    break;
+		}
 		*ctptr++ = (char)t1;
 		*ctptr++ = (char)tmp;
 	    }
 
 	    else {
-		if (BADCHAR(charset->min_ch, (char)tmp))
+		if (BADCHAR(charset->min_ch, (char)tmp)) {
+		    unconv_num++;
 		    break;
+		}
 		*ctptr++ = (char)tmp;
 	    }
 
@@ -904,13 +1044,10 @@ euc_wcstocts(conv, from, from_left, to, to_left, args, num_args)
 
     *to = (XPointer)ctptr;
 
-
-    if ((num_conv = (int)(ctptr - ct_base)) > 0) {
+    if ((num_conv = (int)(ctptr - ct_base)) > 0)
 	(*to_left) -= num_conv;
-	return 0;
-    }
 
-    return -1;
+    return unconv_num;
 }
 #undef byte1
 #undef byte2
@@ -936,11 +1073,14 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 {
     register XPointer inbufptr = *from;
     register XPointer outbufptr = *to;
+    XPointer inbuf_base;
     XPointer outbuf_base = outbufptr;
     register clen, length;
+    int unconv_num = 0;
     int num_conv;
+    unsigned int ct_seglen = 0;
+    Uchar ct_type = 0;
     CTData ctdp = &ctdata[0];	/* default */
-
 
 
     if (*from_left > *to_left)
@@ -948,7 +1088,7 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 
     for (length = ctdata[Ascii].length; *from_left > 0; (*from_left) -= length)
     {
-	if (*inbufptr == '\033') {
+	if (*inbufptr == '\033' || *inbufptr == (char)'\233') {
 
 	    for (ctdp = ctdata; ctdp <= ctd_endp ; ctdp++) {
 
@@ -956,12 +1096,57 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 		{
 		    inbufptr += ctdp->ct_encoding_len;
 		    (*from_left) -= ctdp->ct_encoding_len - 1;
-		    length = ctdp->length;
+		    if (ctdp->length)
+			length = ctdp->length;
+		    ct_type = ctdp->ct_type;
 		    break;
 		}
 	    }
 	    if (ctdp > ctd_endp) 	/* failed to match CT sequence */
-		return -1;
+		unconv_num++;
+	}
+
+/* The following code insures that non-standard encodings, direction, extension,
+ * and version strings are ignored; subject to change in future.
+ */
+	switch (ct_type) {
+	case CT_STD:
+	    ct_type = 0;
+	    break;
+	case CT_EXT2:
+	    inbufptr++;
+	    (*from_left)--;
+	case CT_NSTD:
+	    ct_seglen = (BIT8OFF(*inbufptr) << 7) + BIT8OFF(*(inbufptr+1)) + 2;
+	    inbufptr += ct_seglen;
+	    (*from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_EXT0:
+	    inbuf_base = inbufptr;
+	    SKIP_I(inbufptr);
+	    inbufptr++;
+	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
+	    *(from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_EXT1:
+	    inbuf_base = inbufptr;
+	    SKIP_P(inbufptr);
+	    SKIP_I(inbufptr);
+	    inbufptr++;
+	    ct_seglen = (unsigned)(inbufptr - inbuf_base);
+	    *(from_left) -= ct_seglen;
+	    ct_type = 0;
+	    continue;
+	case CT_DIR:
+	    ct_type = 0;
+	    continue;
+	case CT_VER:
+	    ct_type = 0;
+	    inbufptr += 2;
+	    *(from_left) -= 2;
+	    continue;
 	}
 
 	clen = length;
@@ -982,12 +1167,11 @@ euc_ctstombs(conv, from, from_left, to, to_left, args, num_args)
 
     *to = outbufptr;
 
-    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0) {
+    if ((num_conv = (int)(outbufptr - outbuf_base)) > 0)
 	(*to_left) -= num_conv;
-	return 0;
-    }
 
-    return -1;
+    return unconv_num;
+
 }
 #undef byte1
 #undef kana
@@ -1016,6 +1200,8 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 
     StateRec ct_state;
     CTData charset;
+    XLCd lcd = (XLCd) conv->state;
+    int codeset_num = XLC_GENERIC(lcd, codeset_num);
 
 
 /* Initial State: */
@@ -1029,22 +1215,42 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
     for (;*from_left > 0; (*from_left) -= length) {
 
 	if (isleftside(*inbufptr)) {		/* 7-bit (CS0) */
+	    if (ASCII_CODESET >= codeset_num) {
+	      	unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    cs_num = Ascii;
 	    charset = ctdptr[Ascii];
 	}
 	else if ((Uchar)*inbufptr == SS2) {	/* Kana */
+	    if (KANA_CODESET >= codeset_num) {
+	      	unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    cs_num = Kana;
 	    charset = ctdptr[Kana];
 	    inbufptr++;
 	    (*from_left)--;
 	}
 	else if ((Uchar)*inbufptr == SS3) {	/* Userdef */
+	    if (USERDEF_CODESET >= codeset_num) {
+	      	unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    cs_num = Userdef;
 	    charset = ctdptr[Userdef];
 	    inbufptr++;
 	    (*from_left)--;
 	}
 	else {
+	    if (KANJI_CODESET >= codeset_num) {
+	      	unconv_num++;
+		(*from_left)--;
+		continue;
+	    }
 	    cs_num = Kanji;
 	    charset = ctdptr[Kanji];
 	}
@@ -1058,8 +1264,10 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 	     (charset->side == XlcGL && charset != ct_state.GL_charset) ) {
 
 	    ct_len -= ctdptr[cs_num]->ct_encoding_len;
-	    if (ct_len < 0)
-		return -1;
+	    if (ct_len < 0) {
+		unconv_num++;
+		break;
+	    }
 	
 	    if (ctptr) {
 		strcpy(ctptr, ctdptr[cs_num]->ct_encoding);
@@ -1081,15 +1289,11 @@ euc_mbstocts(conv, from, from_left, to, to_left, args, num_args)
 
     *to = (XPointer)ctptr;
 
-    if ((num_conv = (int)(ctptr - ct_base)) > 0) {
+    if ((num_conv = (int)(ctptr - ct_base)) > 0)
 	(*to_left) -= num_conv;
-        return unconv_num;
-    }
+    return unconv_num;
 
-    return -1;
 }
-
-#undef BADCHAR
 
 
 static void
@@ -1237,7 +1441,8 @@ _XlcEucLoader(name)
     if (lcd == NULL)
 	return lcd;
 
-    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "Euc"))) {
+
+    if ((_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "euc"))) {
 	_XlcDestroyLC(lcd);
 	return (XLCd) NULL;
     }

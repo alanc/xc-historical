@@ -1,8 +1,8 @@
-/* $XConsortium: imConv.c,v 1.3 93/09/18 12:33:34 rws Exp $ */
+/* $XConsortium: imConv.c,v 1.4 94/01/20 18:03:43 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.
-	      Copyright 1993 by FUJITSU LIMITED
+	      Copyright 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -35,7 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include <stdio.h>
 #include "Xlibint.h"
-#include "Xutil.h"
 #include "Xlcint.h"
 #include "Ximint.h"
 
@@ -142,8 +141,10 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     int i;
     unsigned char c;
     Status	dummy;
+    Xim	im = (Xim)ic->core.im;
 
-    count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
+    count = im->methods->lookup_string(event, (char *)buffer,
+						nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);
@@ -196,8 +197,10 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     int i;
     unsigned char c;
     Status	dummy;
+    Xim	im = (Xim)ic->core.im;
 
-    count = XLookupString(event, (char *)look, nbytes, &symbol, status);
+    count = im->methods->lookup_string(event, (char *)look,
+						nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);

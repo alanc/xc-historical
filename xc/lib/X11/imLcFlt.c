@@ -1,8 +1,8 @@
-/* $XConsortium: imLcFlt.c,v 1.1 93/09/17 13:26:46 rws Exp $ */
+/* $XConsortium: imLcFlt.c,v 1.2 94/01/20 18:04:47 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.
-              Copyright 1992 by FUJITSU LIMITED
+              Copyright 1992, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -44,6 +44,7 @@ _XimLocalFilter(d, w, ev, client_data)
     XPointer	 client_data;
 {
     Xic		 ic = (Xic)client_data;
+    Xim		 im = (Xim)ic->core.im;
     KeySym	 keysym;
     static char	 buf[256];
     DefTree	*p;
@@ -53,7 +54,8 @@ _XimLocalFilter(d, w, ev, client_data)
        || (((Xim)ic->core.im)->private.local.top == (DefTree *)NULL) )
 	return(False);
 
-    (void)XLookupString((XKeyEvent *)ev, buf, sizeof(buf), &keysym, NULL);
+    im->methods->lookup_string((XKeyEvent *)ev, buf,
+						sizeof(buf), &keysym, NULL);
 
     if(IsModifierKey(keysym))
 	return (False);

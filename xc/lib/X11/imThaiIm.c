@@ -1,7 +1,7 @@
-/* $XConsortium: imThaiIm.c,v 1.1 93/09/17 13:28:21 rws Exp $ */
+/* $XConsortium: imThaiIm.c,v 1.2 94/01/20 18:05:44 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992, 1993 by FUJITSU LIMITED
+          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -43,21 +43,13 @@ THIS SOFTWARE.
 #include "XlcPublic.h"
 #include "Ximint.h"
 
-Public  Status		_XimThaiCloseIM( );
-extern  XIC		_XimThaiCreateIC( );
-
 Private XIMMethodsRec      Xim_im_thai_methods = {
     _XimThaiCloseIM,           /* close */
     _XimLocalSetIMValues,      /* set_values */
     _XimLocalGetIMValues,      /* get_values */
     _XimThaiCreateIC,          /* create_ic */
+    XLookupString		/* lookup_string */
 };
-
-extern Bool _XimLocalProcessingResource(
-#if NeedFunctionPrototypes
-    Xim	im
-#endif
-);
 
 #define THAI_LANGUAGE_NAME 	"th"
 
@@ -93,7 +85,8 @@ _XimThaiOpenIM(im)
     _XimSetIMMode(im->core.im_resources, im->core.im_num_resources);
 
     _XimGetCurrentIMValues(im, &im_values);
-    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values) == False) {
+    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values,
+		im->core.im_resources, im->core.im_num_resources) == False) {
 	goto Open_Error;
     }
     _XimSetCurrentIMValues(im, &im_values);
@@ -109,14 +102,11 @@ Open_Error :
     if (im->core.ic_resources) {
 	Xfree(im->core.ic_resources);
     }
-    if (im->core.extensions) {
-	Xfree(im->core.extensions);
+    if (im->core.im_values_list) {
+	Xfree(im->core.im_values_list);
     }
-    if (im->core.options) {
-	Xfree(im->core.options);
-    }
-    if (im->core.icattributes) {
-	Xfree(im->core.icattributes);
+    if (im->core.ic_values_list) {
+	Xfree(im->core.ic_values_list);
     }
     if (im->core.styles) {
 	Xfree(im->core.styles);
@@ -132,12 +122,10 @@ _XimThaiIMFree(im)
 	Xfree(im->core.im_resources);
     if(im->core.ic_resources)
 	Xfree(im->core.ic_resources);
-    if(im->core.extensions)
-	Xfree(im->core.extensions);
-    if(im->core.options)
-	Xfree(im->core.options);
-    if(im->core.icattributes)
-	Xfree(im->core.icattributes);
+    if(im->core.im_values_list)
+	Xfree(im->core.im_values_list);
+    if(im->core.ic_values_list)
+	Xfree(im->core.ic_values_list);
     if(im->core.styles)
 	Xfree(im->core.styles);
     if(im->core.res_name)
@@ -155,9 +143,15 @@ _XimThaiCloseIM(xim)
 {
     Xim		im = (Xim)xim;
     XIC		ic;
+    XIC		next;
 
-    while(ic = im->core.ic_chain)
-	XDestroyIC(ic);
+    ic = im->core.ic_chain;
+    while (ic) {
+	(*ic->methods->destroy) (ic);
+	next = ic->core.next;
+	Xfree ((char *) ic);
+	ic = next;
+    }
     _XimThaiIMFree(im);
     return(True);
 }

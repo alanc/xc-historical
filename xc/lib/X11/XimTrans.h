@@ -1,8 +1,8 @@
-/* $XConsortium: XimTrans.h,v 1.1 94/02/03 18:03:03 mor Exp $ */
+/* $XConsortium: XimTrans.h,v 1.2 94/02/09 11:33:41 mor Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
-           Copyright 1992, 1993 by FUJITSU LIMITED
+           Copyright 1992, 1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -101,7 +101,7 @@ extern void _XimTransInternalConnection(
 #endif
 );
 
-extern Bool _XimTransSend(
+extern Bool _XimTransWrite(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
@@ -109,15 +109,12 @@ extern Bool _XimTransSend(
 #endif
 );
 
-extern Bool _XimTransRecv(
+extern Bool _XimTransRead(
 #if NeedFunctionPrototypes
     Xim		 im,
     XPointer	 recv_buf,
-    int		 recv_point,
-    int		 min_len,
     int		 buf_len,
-    int		*ret_len,
-    XPointer	 arg
+    int		*ret_len
 #endif
 );
 

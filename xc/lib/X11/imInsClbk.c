@@ -1,7 +1,7 @@
-/* $XConsortium: imInsClbk.c,v 1.1 93/09/17 13:33:32 rws Exp $ */
+/* $XConsortium: imInsClbk.c,v 1.2 94/01/20 18:04:36 rws Exp $ */
 /******************************************************************
 
-           Copyright 1993 by Sony Corporation
+           Copyright 1993, 1994 by Sony Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.231 94/01/20 17:44:52 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.233 94/03/25 19:02:15 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1169,6 +1169,7 @@ typedef struct {
 #define XNResourceName "resourceName"
 #define XNResourceClass "resourceClass"
 #define XNGeometryCallback "geometryCallback"
+#define XNDestroyCallback "destroyCallback"
 #define XNFilterEvents "filterEvents"
 #define XNPreeditStartCallback "preeditStartCallback"
 #define XNPreeditDoneCallback "preeditDoneCallback"
@@ -1190,11 +1191,11 @@ typedef struct {
 #define XNFontSet "fontSet"
 #define XNLineSpace "lineSpace"
 #define XNCursor "cursor"
-#define XNDestroyCallback "destroyCallback"
-#define XNPreeditStateNotifyCallback "preeditStateNotifyCallback"
-#define XNQueryExtensionsList "queryExtensionsList"
-#define XNQueryFunctionsList "queryFunctionsList"
-#define XNQueryICAttributesList "queryICAttributesList"
+
+#define XNQueryIMValuesList "queryIMValuesList"
+#define XNQueryICValuesList "queryICValuesList"
+#define XNVisiblePosition "visiblePosition"
+#define XNR6PreeditCallback "r6PreeditCallback"
 #define XNStringConversionCallback "stringConversionCallback"
 #define XNStringConversion "stringConversion"
 #define XNResetState "resetState"
@@ -1245,6 +1246,7 @@ typedef struct _XIMText {
 
 typedef	unsigned long	 XIMPreeditState;
 
+#define	XIMPreeditUnKnown	0L
 #define	XIMPreeditEnable	1L
 #define	XIMPreeditDisable	(1L<<1)
 
@@ -1361,29 +1363,10 @@ typedef	unsigned long	 XIMHotKeyState;
 #define	XIMHotKeyStateON	(0x0001L)
 #define	XIMHotKeyStateOFF	(0x0002L)
 
-typedef unsigned char	*XIMExtensions;
-
-typedef struct _XIMExtensionsList {
-    unsigned short	 count_extensions;
-    XIMExtensions	*supported_extensions;
-} XIMExtensionsList;
-
-typedef unsigned char *XIMOptions;
-
-#define	XIMStringConversionCallback	"stringConversionCallback"
-#define	XIMHotKeyOperation		"hotKeyOperation"
-
-typedef struct _XIMOptionsList {
-    unsigned short	 count_options;
-    XIMOptions		*supported_options;
-} XIMOptionsList;
-
-typedef	char	*XIMICAttributes;
-
-typedef	struct _XIMICAttributesList {
-    unsigned short	 count_icattributes;
-    XIMICAttributes	*supported_icattributes;
-} XIMICAttributesList;
+typedef struct {
+    unsigned short count_values;
+    char **supported_values;
+} XIMValuesList;
 
 _XFUNCPROTOBEGIN
 

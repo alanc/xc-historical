@@ -1,7 +1,7 @@
-/* $XConsortium: imRm.c,v 1.1 93/09/17 13:27:39 rws Exp $ */
+/* $XConsortium: imRm.c,v 1.2 94/01/20 18:05:20 rws Exp $ */
 /******************************************************************
 
-	  Copyright 1990, 1991, 1992,1993 by FUJITSU LIMITED
+	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED
 
 Permission to use, copy, modify, distribute, and sell this software
 and its documentation for any purpose is hereby granted without fee,
@@ -50,19 +50,19 @@ typedef struct _XimValueOffsetInfo {
 	struct _XimValueOffsetInfo *, XPointer, XPointer, unsigned long
 #endif
 			 );
-    Bool		 (*decode)(
+    Bool		 (*encode)(
 #if NeedFunctionPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
 #endif
 			 );
-    Bool		 (*encode)(
+    Bool		 (*decode)(
 #if NeedFunctionPrototypes
 	struct _XimValueOffsetInfo *, XPointer, XPointer
 #endif
 			 );
 } XimValueOffsetInfoRec, *XimValueOffsetInfo;
 
-Private void
+void
 _XimGetResourceName(im, res_name, res_class)
     Xim		 im;
     char	*res_name;
@@ -84,6 +84,17 @@ _XimGetResourceName(im, res_name, res_class)
     strcat(res_class, "Xim.");
 }
 
+Private Bool
+_XimCheckBool(str)
+    char	*str;
+{
+    if(!strcmp(str, "True") || !strcmp(str, "true") ||
+       !strcmp(str, "Yes")  || !strcmp(str, "yes")  ||
+       !strcmp(str, "ON")   || !strcmp(str, "on"))
+	return(True);
+    return(False);
+}
+
 Public Bool
 _XimLocalProcessingResource(im)
     Xim		 im;
@@ -93,24 +104,124 @@ _XimLocalProcessingResource(im)
     char	*str_type;
     XrmValue	 value;
 
+    if (!im->core.rdb)
+	return(False);
+
     _XimGetResourceName(im, res_name, res_class);
     strcat(res_name, "localProcessing");
     strcat(res_class, "LocalProcessing");
-    if(XrmGetResource(im->core.rdb, res_name, res_class,
-		      &str_type, &value) == True) { 
-	if(strcmp(value.addr, "True") == 0 || 
-	   strcmp(value.addr, "true") == 0 || 
-	   strcmp(value.addr, "Yes") == 0 || 
-	   strcmp(value.addr, "yes") == 0 || 
-	   strcmp(value.addr, "ON") == 0 || 
-	   strcmp(value.addr, "on") == 0) {
+    bzero(&value, sizeof(XrmValue));
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(_XimCheckBool(value.addr))
 	    return(True);
-	}
     }
     return(False);
 }
 
-static XIMICAttributes supported_local_icattributes[] = {
+#ifdef XIM_CONNECTABLE
+Public void
+_XimSetProtoResource(im)
+    Xim		 im;
+{
+    char	 xim_res_name[256];
+    char	 xim_res_class[256];
+    char	 res_name[256];
+    char	 res_class[256];
+    char	*str_type;
+    XrmValue	 value;
+    XIMStyle	 preedit_style = 0;
+    XIMStyle	 status_style = 0;
+    XIMStyles	*imstyles;
+
+    if (!im->core.rdb)
+	return;
+
+    _XimGetResourceName(im, xim_res_name, xim_res_class);
+
+    sprintf(res_name, "%s%s", xim_res_name, "useAuth");
+    sprintf(res_class, "%s%s", xim_res_class, "UseAuth");
+    bzero(&value, sizeof(XrmValue));
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(_XimCheckBool(value.addr)) {
+	    MARK_USE_AUTHORIZATION_FUNC(im);
+	}
+    }
+
+    sprintf(res_name, "%s%s", xim_res_name, "delaybinding");
+    sprintf(res_class, "%s%s", xim_res_class, "Delaybinding");
+    bzero(&value, sizeof(XrmValue));
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(_XimCheckBool(value.addr)) {
+	    MARK_DELAYBINDABLE(im);
+	}
+    }
+
+    sprintf(res_name, "%s%s", xim_res_name, "reconnect");
+    sprintf(res_class, "%s%s", xim_res_class, "Reconnect");
+    bzero(&value, sizeof(XrmValue));
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(_XimCheckBool(value.addr)) {
+	    MARK_RECONNECTABLE(im);
+	}
+    }
+
+    if(!IS_CONNECTABLE(im))
+	return;
+
+    sprintf(res_name, "%s%s", xim_res_name, "preeditDefaultStyle");
+    sprintf(res_class, "%s%s", xim_res_class, "PreeditDefaultStyle");
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(!strcmp(value.addr, "XIMPreeditArea"))
+	    preedit_style = XIMPreeditArea;
+	else if(!strcmp(value.addr, "XIMPreeditCallbacks"))
+	    preedit_style = XIMPreeditCallbacks;
+	else if(!strcmp(value.addr, "XIMPreeditPosition"))
+	    preedit_style = XIMPreeditPosition;
+	else if(!strcmp(value.addr, "XIMPreeditNothing"))
+	    preedit_style = XIMPreeditNothing;
+	else if(!strcmp(value.addr, "XIMPreeditNone"))
+	    preedit_style = XIMPreeditNone;
+    }
+    if(!preedit_style)
+	preedit_style = XIMPreeditNothing;
+
+    sprintf(res_name, "%s%s", xim_res_name, "statusDefaultStyle");
+    sprintf(res_class, "%s%s", xim_res_class, "StatusDefaultStyle");
+    if(XrmGetResource(im->core.rdb, res_name, res_class, &str_type, &value)) {
+	if(!strcmp(value.addr, "XIMStatusArea"))
+	    status_style = XIMStatusArea;
+	else if(!strcmp(value.addr, "XIMStatusCallbacks"))
+	    status_style = XIMStatusCallbacks;
+	else if(!strcmp(value.addr, "XIMStatusNothing"))
+	    status_style = XIMStatusNothing;
+	else if(!strcmp(value.addr, "XIMStatusNone"))
+	    status_style = XIMStatusNone;
+    }
+    if(!status_style)
+	status_style = XIMStatusNothing;
+
+    if(!(imstyles = (XIMStyles *)Xmalloc(sizeof(XIMStyles) + sizeof(XIMStyle))))
+	return;
+    imstyles->count_styles = 1;
+    imstyles->supported_styles =
+			(XIMStyle *)((char *)imstyles + sizeof(XIMStyles));
+    imstyles->supported_styles[0] = preedit_style | status_style;
+    im->private.proto.default_styles = imstyles;
+}
+#endif /* XIM_CONNECTABLE */
+
+static char *supported_local_im_values_list[] = {
+    XNQueryInputStyle,
+    XNResourceName,
+    XNResourceClass,
+    XNDestroyCallback,
+    XNQueryIMValuesList,
+    XNQueryICValuesList,
+    XNVisiblePosition,
+    (char *)NULL
+};
+
+static char *supported_local_ic_values_list[] = {
     XNInputStyle,
     XNClientWindow,
     XNFocusWindow,
@@ -146,7 +257,7 @@ static XIMICAttributes supported_local_icattributes[] = {
     XNStatusDoneCallback,
     XNStatusDrawCallback,
     XNPreeditState,
-    (XIMICAttributes)NULL			/* dummy */
+    (char *)NULL
 };
 
 static XIMStyle supported_local_styles[] = {
@@ -167,11 +278,11 @@ _XimDefaultStyles(info, top, parm, mode)
     register int	  i;
     unsigned int	  n;
     int			  len;
-    char		 *tmp;
+    XPointer		  tmp;
 
     n = XIMNumber(supported_local_styles) - 1;
     len = sizeof(XIMStyles) + sizeof(XIMStyle) * n;
-    if((tmp = (char *)Xmalloc(len)) == (char *)NULL) {
+    if(!(tmp = (XPointer)Xmalloc(len))) {
 	return(False);
     }
     bzero(tmp, len);
@@ -179,7 +290,8 @@ _XimDefaultStyles(info, top, parm, mode)
     styles = (XIMStyles *)tmp;
     if (n > 0) {
 	styles->count_styles = (unsigned short)n;
-	styles->supported_styles = (XIMStyle *)(tmp + sizeof(XIMStyles));
+	styles->supported_styles =
+				(XIMStyle *)((char *)tmp + sizeof(XIMStyles));
 	for(i = 0; i < n; i++) {
 	    styles->supported_styles[i] = supported_local_styles[i];
 	}
@@ -187,6 +299,94 @@ _XimDefaultStyles(info, top, parm, mode)
 
     out = (XIMStyles **)((char *)top + info->offset);
     *out = styles;
+    return(True);
+}
+
+Private  Bool
+_XimDefaultIMValues(info, top, parm, mode)
+    XimValueOffsetInfo	  info;
+    XPointer	 	  top;
+    XPointer	 	  parm;			/* unused */
+    unsigned long	  mode;			/* unused */
+{
+    XIMValuesList	 *values_list;
+    XIMValuesList	**out;
+    register int	  i;
+    unsigned int	  n;
+    int			  len;
+    XPointer		  tmp;
+
+    n = XIMNumber(supported_local_im_values_list) - 1;
+    len = sizeof(XIMValuesList) + sizeof(char **) * n;
+    if(!(tmp = (XPointer)Xmalloc(len))) {
+	return(False);
+    }
+    bzero(tmp, len);
+
+    values_list = (XIMValuesList *)tmp;
+    if (n > 0) {
+	values_list->count_values = (unsigned short)n;
+	values_list->supported_values
+			 = (char **)((char *)tmp + sizeof(XIMValuesList));
+	for(i = 0; i < n; i++) {
+	    values_list->supported_values[i]
+				 = supported_local_im_values_list[i];
+	}
+    }
+
+    out = (XIMValuesList **)((char *)top + info->offset);
+    *out = values_list;
+    return(True);
+}
+
+Private  Bool
+_XimDefaultICValues(info, top, parm, mode)
+    XimValueOffsetInfo	  info;
+    XPointer	 	  top;
+    XPointer	 	  parm;			/* unused */
+    unsigned long	  mode;			/* unused */
+{
+    XIMValuesList	 *values_list;
+    XIMValuesList	**out;
+    register int	  i;
+    unsigned int	  n;
+    int			  len;
+    XPointer		  tmp;
+
+    n = XIMNumber(supported_local_ic_values_list) - 1;
+    len = sizeof(XIMValuesList) + sizeof(char **) * n;
+    if(!(tmp = (XPointer)Xmalloc(len))) {
+	return(False);
+    }
+    bzero(tmp, len);
+
+    values_list = (XIMValuesList *)tmp;
+    if (n > 0) {
+	values_list->count_values = (unsigned short)n;
+	values_list->supported_values
+			 = (char **)((char *)tmp + sizeof(XIMValuesList));
+	for(i = 0; i < n; i++) {
+	    values_list->supported_values[i]
+				 = supported_local_ic_values_list[i];
+	}
+    }
+
+    out = (XIMValuesList **)((char *)top + info->offset);
+    *out = values_list;
+    return(True);
+}
+
+Private  Bool
+_XimDefaultVisiblePos(info, top, parm, mode)
+    XimValueOffsetInfo	  info;
+    XPointer	 	  top;
+    XPointer	 	  parm;			/* unused */
+    unsigned long	  mode;			/* unused */
+{
+    Bool		*out;
+
+    out = (Bool *)((char *)top + info->offset);
+    *out = False;
     return(True);
 }
 
@@ -226,7 +426,7 @@ _XimDefaultResName(info, top, parm, mode)
 	return(True);
     }
     len = strlen(im->core.res_name);
-    if((name = (char *)Xmalloc(len + 1)) == (char *)NULL) {
+    if(!(name = (char *)Xmalloc(len + 1))) {
 	return(False);
     }
     (void)strcpy(name, im->core.res_name);
@@ -254,7 +454,7 @@ _XimDefaultResClass(info, top, parm, mode)
 	return(True);
     }
     len = strlen(im->core.res_class);
-    if((class = (char *)Xmalloc(len + 1)) == (char *)NULL) {
+    if(!(class = (char *)Xmalloc(len + 1))) {
 	return(False);
     }
     (void)strcpy(class, im->core.res_class);
@@ -539,7 +739,7 @@ _XimDefaultNest(info, top, parm, mode)
 }
 
 Private  Bool
-_XimDecodeCallback(info, top, val)
+_XimEncodeCallback(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -552,7 +752,7 @@ _XimDecodeCallback(info, top, val)
 }
 
 Private  Bool
-_XimDecodeString(info, top, val)
+_XimEncodeString(info, top, val)
     XimValueOffsetInfo	  info;
     XPointer	 	  top;
     XPointer	 	  val;
@@ -565,7 +765,7 @@ _XimDecodeString(info, top, val)
 	return(False);
     }
     len = strlen((char *)val);
-    if((string = (char *)Xmalloc(len + 1)) == (char *)NULL) {
+    if(!(string = (char *)Xmalloc(len + 1))) {
 	return(False);
     }
     (void)strcpy(string, (char *)val);
@@ -580,7 +780,7 @@ _XimDecodeString(info, top, val)
 }
 
 Private  Bool
-_XimDecodeStyle(info, top, val)
+_XimEncodeStyle(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -593,7 +793,7 @@ _XimDecodeStyle(info, top, val)
 }
 
 Private  Bool
-_XimDecodeWindow(info, top, val)
+_XimEncodeWindow(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -606,7 +806,7 @@ _XimDecodeWindow(info, top, val)
 }
 
 Private  Bool
-_XimDecodeStringConv(info, top, val)
+_XimEncodeStringConv(info, top, val)
     XimValueOffsetInfo		 info;
     XPointer		 	 top;
     XPointer		 	 val;
@@ -620,7 +820,7 @@ _XimDecodeStringConv(info, top, val)
 }
 
 Private  Bool
-_XimDecodeResetState(info, top, val)
+_XimEncodeResetState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -633,7 +833,7 @@ _XimDecodeResetState(info, top, val)
 }
 
 Private  Bool
-_XimDecodeResetReturn(info, top, val)
+_XimEncodeResetReturn(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -646,7 +846,7 @@ _XimDecodeResetReturn(info, top, val)
 }
 
 Private  Bool
-_XimDecodeHotKey(info, top, val)
+_XimEncodeHotKey(info, top, val)
     XimValueOffsetInfo	  info;
     XPointer	 	  top;
     XPointer	 	  val;
@@ -655,7 +855,7 @@ _XimDecodeHotKey(info, top, val)
     XIMHotKeyTriggers	**out;
     XIMHotKeyTriggers	 *key_list;
     XIMHotKeyTrigger	 *key;
-    char		 *tmp;
+    XPointer		  tmp;
     int			  num;
     int			  len;
     register int	  i;
@@ -669,12 +869,12 @@ _XimDecodeHotKey(info, top, val)
     }
 
     len = sizeof(XIMHotKeyTriggers) + sizeof(XIMHotKeyTrigger) * num;
-    if((tmp = (char *)Xmalloc(len)) == (char *)NULL) {
+    if(!(tmp = (XPointer)Xmalloc(len))) {
 	return(False);
     }
 
     key_list = (XIMHotKeyTriggers *)tmp;
-    key = (XIMHotKeyTrigger *)(tmp + sizeof(XIMHotKeyTriggers));
+    key = (XIMHotKeyTrigger *)((char *)tmp + sizeof(XIMHotKeyTriggers));
 
     for(i = 0; i < num; i++) {
 	key[i] = hotkey->key[i];
@@ -689,7 +889,7 @@ _XimDecodeHotKey(info, top, val)
 }
 
 Private  Bool
-_XimDecodeHotKetState(info, top, val)
+_XimEncodeHotKetState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -702,7 +902,7 @@ _XimDecodeHotKetState(info, top, val)
 }
 
 Private  Bool
-_XimDecodeRectangle(info, top, val)
+_XimEncodeRectangle(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -715,7 +915,7 @@ _XimDecodeRectangle(info, top, val)
 }
 
 Private  Bool
-_XimDecodeSpot(info, top, val)
+_XimEncodeSpot(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -728,7 +928,7 @@ _XimDecodeSpot(info, top, val)
 }
 
 Private  Bool
-_XimDecodeColormap(info, top, val)
+_XimEncodeColormap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -741,7 +941,7 @@ _XimDecodeColormap(info, top, val)
 }
 
 Private  Bool
-_XimDecodeStdColormap(info, top, val)
+_XimEncodeStdColormap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -754,7 +954,7 @@ _XimDecodeStdColormap(info, top, val)
 }
 
 Private  Bool
-_XimDecodeLong(info, top, val)
+_XimEncodeLong(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -767,7 +967,7 @@ _XimDecodeLong(info, top, val)
 }
 
 Private  Bool
-_XimDecodeBgPixmap(info, top, val)
+_XimEncodeBgPixmap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -780,7 +980,7 @@ _XimDecodeBgPixmap(info, top, val)
 }
 
 Private  Bool
-_XimDecodeFontSet(info, top, val)
+_XimEncodeFontSet(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -793,7 +993,7 @@ _XimDecodeFontSet(info, top, val)
 }
 
 Private  Bool
-_XimDecodeLineSpace(info, top, val)
+_XimEncodeLineSpace(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -806,7 +1006,7 @@ _XimDecodeLineSpace(info, top, val)
 }
 
 Private  Bool
-_XimDecodeCursor(info, top, val)
+_XimEncodeCursor(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -819,7 +1019,7 @@ _XimDecodeCursor(info, top, val)
 }
 
 Private  Bool
-_XimDecodePreeditState(info, top, val)
+_XimEncodePreeditState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -832,7 +1032,7 @@ _XimDecodePreeditState(info, top, val)
 }
 
 Private  Bool
-_XimDecodeNest(info, top, val)
+_XimEncodeNest(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -841,7 +1041,7 @@ _XimDecodeNest(info, top, val)
 }
 
 Private  Bool
-_XimEncodeStyles(info, top, val)
+_XimDecodeStyles(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -851,7 +1051,7 @@ _XimEncodeStyles(info, top, val)
     register int	 i;
     unsigned int	 num;
     int			 len;
-    char		*tmp;
+    XPointer		 tmp;
 
     if(val == (XPointer)NULL) {
 	return(False);
@@ -861,7 +1061,7 @@ _XimEncodeStyles(info, top, val)
     num = styles->count_styles;
 
     len = sizeof(XIMStyles) + sizeof(XIMStyle) * num;
-    if((tmp = (char *)Xmalloc(len)) == (char *)NULL) {
+    if(!(tmp = (XPointer)Xmalloc(len))) {
 	return(False);
     }
     bzero(tmp, len);
@@ -869,7 +1069,7 @@ _XimEncodeStyles(info, top, val)
     out = (XIMStyles *)tmp;
     if(num >0) {
 	out->count_styles = (unsigned short)num;
-	out->supported_styles = (XIMStyle *)(tmp + sizeof(XIMStyles));
+	out->supported_styles = (XIMStyle *)((char *)tmp + sizeof(XIMStyles));
     
 	for(i = 0; i < num; i++) {
 	    out->supported_styles[i] = styles->supported_styles[i];
@@ -880,7 +1080,46 @@ _XimEncodeStyles(info, top, val)
 }
 
 Private  Bool
-_XimEncodeCallback(info, top, val)
+_XimDecodeValues(info, top, val)
+    XimValueOffsetInfo	 info;
+    XPointer	 	 top;
+    XPointer	 	 val;
+{
+    XIMValuesList	*values_list;
+    XIMValuesList	*out;
+    register int	 i;
+    unsigned int	 num;
+    int			 len;
+    XPointer		 tmp;
+
+    if(val == (XPointer)NULL) {
+	return(False);
+    }
+
+    values_list = *((XIMValuesList **)((char *)top + info->offset));
+    num = values_list->count_values;
+
+    len = sizeof(XIMValuesList) + sizeof(char **) * num;
+    if(!(tmp = (char *)Xmalloc(len))) {
+	return(False);
+    }
+    bzero(tmp, len);
+
+    out = (XIMValuesList *)tmp;
+    if(num) {
+	out->count_values = (unsigned short)num;
+	out->supported_values = (char **)((char *)tmp + sizeof(XIMValuesList));
+    
+	for(i = 0; i < num; i++) {
+	    out->supported_values[i] = values_list->supported_values[i];
+	}
+    }
+    *((XIMValuesList **)val) = out;
+    return(True);
+}
+
+Private  Bool
+_XimDecodeCallback(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -889,7 +1128,7 @@ _XimEncodeCallback(info, top, val)
     XIMCallback		*callback;
 
     in = (XIMCallback *)((char *)top + info->offset);
-    if(callback = (XIMCallback *)Xmalloc(sizeof(XIMCallback))) {
+    if(!(callback = (XIMCallback *)Xmalloc(sizeof(XIMCallback)))) {
 	return(False);
     }
     callback->client_data = in->client_data;
@@ -900,7 +1139,7 @@ _XimEncodeCallback(info, top, val)
 }
 
 Private  Bool
-_XimEncodeString(info, top, val)
+_XimDecodeString(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -913,7 +1152,7 @@ _XimEncodeString(info, top, val)
     if(in != (char *)NULL) {
 	len = strlen(in);
     }
-    if((string = (char *)Xmalloc(len + 1)) == (char *)NULL) {
+    if(!(string = (char *)Xmalloc(len + 1))) {
 	return(False);
     }
     if(in != (char *)NULL) {
@@ -925,7 +1164,20 @@ _XimEncodeString(info, top, val)
 }
 
 Private  Bool
-_XimEncodeStyle(info, top, val)
+_XimDecodeBool(info, top, val)
+    XimValueOffsetInfo	 info;
+    XPointer	 	 top;
+    XPointer	 	 val;
+{
+    Bool		*in;
+
+    in = (Bool *)((char *)top + info->offset);
+    *((Bool *)val) = *in;
+    return(True);
+}
+
+Private  Bool
+_XimDecodeStyle(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -938,7 +1190,7 @@ _XimEncodeStyle(info, top, val)
 }
 
 Private  Bool
-_XimEncodeWindow(info, top, val)
+_XimDecodeWindow(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -951,7 +1203,7 @@ _XimEncodeWindow(info, top, val)
 }
 
 Private  Bool
-_XimEncodeStringConv(info, top, val)
+_XimDecodeStringConv(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -963,7 +1215,7 @@ _XimEncodeStringConv(info, top, val)
 }
 
 Private  Bool
-_XimEncodeResetState(info, top, val)
+_XimDecodeResetState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -976,7 +1228,7 @@ _XimEncodeResetState(info, top, val)
 }
 
 Private  Bool
-_XimEncodeResetReturn(info, top, val)
+_XimDecodeResetReturn(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -989,7 +1241,7 @@ _XimEncodeResetReturn(info, top, val)
 }
 
 Private  Bool
-_XimEncodeHotKey(info, top, val)
+_XimDecodeHotKey(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -997,7 +1249,7 @@ _XimEncodeHotKey(info, top, val)
     XIMHotKeyTriggers	*in;
     XIMHotKeyTriggers	*hotkey;
     XIMHotKeyTrigger	*key;
-    char		*tmp;
+    XPointer		 tmp;
     int			 num;
     int			 len;
     register int	 i;
@@ -1005,12 +1257,12 @@ _XimEncodeHotKey(info, top, val)
     in = *((XIMHotKeyTriggers **)((char *)top + info->offset));
     num = in->num_hot_key;
     len = sizeof(XIMHotKeyTriggers) + sizeof(XIMHotKeyTrigger) * num;
-    if((tmp = (char *)Xmalloc(len)) == (char *)NULL) {
+    if(!(tmp = (XPointer)Xmalloc(len))) {
 	return(False);
     }
 
     hotkey = (XIMHotKeyTriggers *)tmp;
-    key = (XIMHotKeyTrigger *)(tmp + sizeof(XIMHotKeyTriggers));
+    key = (XIMHotKeyTrigger *)((char *)tmp + sizeof(XIMHotKeyTriggers));
 
     for(i = 0; i < num; i++) {
 	key[i] = in->key[i];
@@ -1023,7 +1275,7 @@ _XimEncodeHotKey(info, top, val)
 }
 
 Private  Bool
-_XimEncodeHotKetState(info, top, val)
+_XimDecodeHotKetState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1036,7 +1288,7 @@ _XimEncodeHotKetState(info, top, val)
 }
 
 Private  Bool
-_XimEncodeRectangle(info, top, val)
+_XimDecodeRectangle(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1045,8 +1297,7 @@ _XimEncodeRectangle(info, top, val)
     XRectangle		*rect;
 
     in = (XRectangle *)((char *)top + info->offset);
-    if((rect = (XRectangle *)Xmalloc(sizeof(XRectangle)))
-						 == (XRectangle *)NULL) {
+    if(!(rect = (XRectangle *)Xmalloc(sizeof(XRectangle)))) {
 	return(False);
     }
     *rect = *in;
@@ -1055,7 +1306,7 @@ _XimEncodeRectangle(info, top, val)
 }
 
 Private  Bool
-_XimEncodeSpot(info, top, val)
+_XimDecodeSpot(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1064,7 +1315,7 @@ _XimEncodeSpot(info, top, val)
     XPoint		*spot;
 
     in = (XPoint *)((char *)top + info->offset);
-    if((spot = (XPoint *)Xmalloc(sizeof(XPoint))) == (XPoint *)NULL) {
+    if(!(spot = (XPoint *)Xmalloc(sizeof(XPoint)))) {
 	return(False);
     }
     *spot = *in;
@@ -1073,7 +1324,7 @@ _XimEncodeSpot(info, top, val)
 }
 
 Private  Bool
-_XimEncodeColormap(info, top, val)
+_XimDecodeColormap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1086,7 +1337,7 @@ _XimEncodeColormap(info, top, val)
 }
 
 Private  Bool
-_XimEncodeStdColormap(info, top, val)
+_XimDecodeStdColormap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1099,7 +1350,7 @@ _XimEncodeStdColormap(info, top, val)
 }
 
 Private  Bool
-_XimEncodeLong(info, top, val)
+_XimDecodeLong(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1112,7 +1363,7 @@ _XimEncodeLong(info, top, val)
 }
 
 Private  Bool
-_XimEncodeBgPixmap(info, top, val)
+_XimDecodeBgPixmap(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1125,7 +1376,7 @@ _XimEncodeBgPixmap(info, top, val)
 }
 
 Private  Bool
-_XimEncodeFontSet(info, top, val)
+_XimDecodeFontSet(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1138,7 +1389,7 @@ _XimEncodeFontSet(info, top, val)
 }
 
 Private  Bool
-_XimEncodeLineSpace(info, top, val)
+_XimDecodeLineSpace(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1151,7 +1402,7 @@ _XimEncodeLineSpace(info, top, val)
 }
 
 Private  Bool
-_XimEncodeCursor(info, top, val)
+_XimDecodeCursor(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1164,7 +1415,7 @@ _XimEncodeCursor(info, top, val)
 }
 
 Private  Bool
-_XimEncodePreeditState(info, top, val)
+_XimDecodePreeditState(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1177,7 +1428,7 @@ _XimEncodePreeditState(info, top, val)
 }
 
 Private  Bool
-_XimEncodeNest(info, top, val)
+_XimDecodeNest(info, top, val)
     XimValueOffsetInfo	 info;
     XPointer	 	 top;
     XPointer	 	 val;
@@ -1186,274 +1437,292 @@ _XimEncodeNest(info, top, val)
 }
 
 static	XIMResource	im_resources[] = {
-    {XNQueryInputStyle,		   XimType_XIMStyles,		0, 0, 0},
-    {XNDestroyCallback,		   0,				0, 0, 0},
-    {XNResourceName,		   XimType_STRING8,		0, 0, 0},
-    {XNResourceClass,		   XimType_STRING8,		0, 0, 0}
+    {XNQueryInputStyle,		   0, XimType_XIMStyles,	0, 0, 0},
+    {XNDestroyCallback,		   0,  0,			0, 0, 0},
+    {XNResourceName,		   0, XimType_STRING8,		0, 0, 0},
+    {XNResourceClass,		   0, XimType_STRING8,		0, 0, 0},
+    {XNQueryIMValuesList,	   0, 0,			0, 0, 0},
+    {XNQueryICValuesList,	   0, 0,			0, 0, 0},
+    {XNVisiblePosition,		   0, 0,			0, 0, 0}
 };
 
 static	XIMResource	im_inner_resources[] = {
-    {XNDestroyCallback,		   0,				0, 0, 0},
-    {XNResourceName,		   XimType_STRING8,		0, 0, 0},
-    {XNResourceClass,		   XimType_STRING8,		0, 0, 0}
+    {XNDestroyCallback,		   0, 0,			0, 0, 0},
+    {XNResourceName,		   0, XimType_STRING8,		0, 0, 0},
+    {XNResourceClass,		   0, XimType_STRING8,		0, 0, 0},
+    {XNQueryIMValuesList,	   0, 0,			0, 0, 0},
+    {XNQueryICValuesList,	   0, 0,			0, 0, 0},
+    {XNVisiblePosition,		   0, 0,			0, 0, 0}
 };
 
 static	XIMResource	ic_resources[] = {
-    {XNInputStyle,		   XimType_CARD32,		0, 0, 0},
-    {XNClientWindow,		   XimType_Window,		0, 0, 0},
-    {XNFocusWindow,		   XimType_Window,		0, 0, 0},
-    {XNResourceName,		   XimType_STRING8,		0, 0, 0},
-    {XNResourceClass,		   XimType_STRING8,		0, 0, 0},
-    {XNGeometryCallback,	   0,				0, 0, 0},
-    {XNFilterEvents,		   XimType_CARD32,		0, 0, 0},
-    {XNDestroyCallback,		   0,				0, 0, 0},
-    {XNStringConversionCallback,   0,				0, 0, 0},
-    {XNStringConversion,	   XimType_XIMStringConversion,	0, 0, 0},
-    {XNResetState,		   0,				0, 0, 0},
-    {XNResetReturn,		   0,				0, 0, 0},
-    {XNHotKey,			   XimType_XIMHotKeyTriggers,	0, 0, 0},
-    {XNHotKeyState,		   XimType_XIMHotKeyState, 	0, 0, 0},
-    {XNPreeditAttributes,	   XimType_NEST,		0, 0, 0},
-    {XNStatusAttributes,	   XimType_NEST,		0, 0, 0},
-    {XNArea,			   XimType_XRectangle,		0, 0, 0},
-    {XNAreaNeeded,		   XimType_XRectangle,		0, 0, 0},
-    {XNSpotLocation,		   XimType_XPoint,		0, 0, 0},
-    {XNColormap,		   XimType_CARD32,		0, 0, 0},
-    {XNStdColormap,		   XimType_CARD32,		0, 0, 0},
-    {XNForeground,		   XimType_CARD32,		0, 0, 0},
-    {XNBackground,		   XimType_CARD32,		0, 0, 0},
-    {XNBackgroundPixmap,	   XimType_CARD32,		0, 0, 0},
-    {XNFontSet,			   XimType_XFontSet,		0, 0, 0},
-    {XNLineSpace,		   XimType_CARD32,		0, 0, 0},
-    {XNCursor,			   XimType_CARD32,		0, 0, 0},
-    {XNPreeditStartCallback,	   0,				0, 0, 0},
-    {XNPreeditDoneCallback,	   0,				0, 0, 0},
-    {XNPreeditDrawCallback,	   0,				0, 0, 0},
-    {XNPreeditCaretCallback,	   0,				0, 0, 0},
-    {XNStatusStartCallback,	   0,				0, 0, 0},
-    {XNStatusDoneCallback,	   0,				0, 0, 0},
-    {XNStatusDrawCallback,	   0,				0, 0, 0},
-    {XNPreeditState,		   0,				0, 0, 0}
+    {XNInputStyle,		   0, XimType_CARD32,		0, 0, 0},
+    {XNClientWindow,		   0, XimType_Window,		0, 0, 0},
+    {XNFocusWindow,		   0, XimType_Window,		0, 0, 0},
+    {XNResourceName,		   0, XimType_STRING8,		0, 0, 0},
+    {XNResourceClass,		   0, XimType_STRING8,		0, 0, 0},
+    {XNGeometryCallback,	   0, 0,			0, 0, 0},
+    {XNFilterEvents,		   0, XimType_CARD32,		0, 0, 0},
+    {XNDestroyCallback,		   0, 0,			0, 0, 0},
+    {XNStringConversionCallback,   0, 0,			0, 0, 0},
+    {XNStringConversion,	   0, XimType_XIMStringConversion,0, 0, 0},
+    {XNResetState,		   0, 0,			0, 0, 0},
+    {XNResetReturn,		   0, 0,			0, 0, 0},
+    {XNHotKey,			   0, XimType_XIMHotKeyTriggers,0, 0, 0},
+    {XNHotKeyState,		   0, XimType_XIMHotKeyState, 	0, 0, 0},
+    {XNPreeditAttributes,	   0, XimType_NEST,		0, 0, 0},
+    {XNStatusAttributes,	   0, XimType_NEST,		0, 0, 0},
+    {XNArea,			   0, XimType_XRectangle,	0, 0, 0},
+    {XNAreaNeeded,		   0, XimType_XRectangle,	0, 0, 0},
+    {XNSpotLocation,		   0, XimType_XPoint,		0, 0, 0},
+    {XNColormap,		   0, XimType_CARD32,		0, 0, 0},
+    {XNStdColormap,		   0, XimType_CARD32,		0, 0, 0},
+    {XNForeground,		   0, XimType_CARD32,		0, 0, 0},
+    {XNBackground,		   0, XimType_CARD32,		0, 0, 0},
+    {XNBackgroundPixmap,	   0, XimType_CARD32,		0, 0, 0},
+    {XNFontSet,			   0, XimType_XFontSet,		0, 0, 0},
+    {XNLineSpace,		   0, XimType_CARD32,		0, 0, 0},
+    {XNCursor,			   0, XimType_CARD32,		0, 0, 0},
+    {XNPreeditStartCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditDoneCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditDrawCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditCaretCallback,	   0, 0,			0, 0, 0},
+    {XNStatusStartCallback,	   0, 0,			0, 0, 0},
+    {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
+    {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditState,		   0, 0,			0, 0, 0}
 };
 
 static	XIMResource	ic_inner_resources[] = {
-    {XNResourceName,		   XimType_STRING8,		0, 0, 0},
-    {XNResourceClass,		   XimType_STRING8,		0, 0, 0},
-    {XNGeometryCallback,	   0,				0, 0, 0},
-    {XNDestroyCallback,		   0,				0, 0, 0},
-    {XNStringConversionCallback,   0,				0, 0, 0},
-    {XNResetReturn,		   0,				0, 0, 0},
-    {XNPreeditStartCallback,	   0,				0, 0, 0},
-    {XNPreeditDoneCallback,	   0,				0, 0, 0},
-    {XNPreeditDrawCallback,	   0,				0, 0, 0},
-    {XNPreeditCaretCallback,	   0,				0, 0, 0},
-    {XNStatusStartCallback,	   0,				0, 0, 0},
-    {XNStatusDoneCallback,	   0,				0, 0, 0},
-    {XNStatusDrawCallback,	   0,				0, 0, 0},
+    {XNResourceName,		   0, XimType_STRING8,		0, 0, 0},
+    {XNResourceClass,		   0, XimType_STRING8,		0, 0, 0},
+    {XNGeometryCallback,	   0, 0,			0, 0, 0},
+    {XNDestroyCallback,		   0, 0,			0, 0, 0},
+    {XNStringConversionCallback,   0, 0,			0, 0, 0},
+    {XNResetReturn,		   0, 0,			0, 0, 0},
+    {XNPreeditStartCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditDoneCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditDrawCallback,	   0, 0,			0, 0, 0},
+    {XNPreeditCaretCallback,	   0, 0,			0, 0, 0},
+    {XNStatusStartCallback,	   0, 0,			0, 0, 0},
+    {XNStatusDoneCallback,	   0, 0,			0, 0, 0},
+    {XNStatusDrawCallback,	   0, 0,			0, 0, 0},
 };
 
 static XimValueOffsetInfoRec im_attr_info[] = {
     {XNQueryInputStyle,		 0,
 	XOffsetOf(XimDefIMValues, styles),
-	_XimDefaultStyles,	 NULL,			_XimEncodeStyles},
+	_XimDefaultStyles,	 NULL,			_XimDecodeStyles},
 
     {XNDestroyCallback,		 0,
 	XOffsetOf(XimDefIMValues, destroy_callback),
-	NULL,		 	 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,		 	 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNResourceName,		 0,
 	XOffsetOf(XimDefIMValues, res_name),
-	NULL,		 	 _XimDecodeString,	_XimEncodeString},
+	NULL,		 	 _XimEncodeString,	_XimDecodeString},
 
     {XNResourceClass,		 0,
 	XOffsetOf(XimDefIMValues, res_class),
-	NULL,		 	 _XimDecodeString,	_XimEncodeString}
+	NULL,		 	 _XimEncodeString,	_XimDecodeString},
+
+    {XNQueryIMValuesList,		 0,
+	XOffsetOf(XimDefIMValues, im_values_list),
+	_XimDefaultIMValues,	 NULL,			_XimDecodeValues},
+
+    {XNQueryICValuesList,		 0,
+	XOffsetOf(XimDefIMValues, ic_values_list),
+	_XimDefaultICValues,	 NULL,			_XimDecodeValues},
+
+    {XNVisiblePosition,			 0,
+	XOffsetOf(XimDefIMValues, visible_position),
+	_XimDefaultVisiblePos,	 NULL,			_XimDecodeBool}
 };
 
 static XimValueOffsetInfoRec ic_attr_info[] = {
     {XNInputStyle,		 0,
 	XOffsetOf(XimDefICValues, input_style),
-	NULL,			 _XimDecodeStyle,	_XimEncodeStyle},
+	NULL,			 _XimEncodeStyle,	_XimDecodeStyle},
 
     {XNClientWindow,		 0,
 	XOffsetOf(XimDefICValues, client_window),
-	NULL,			 _XimDecodeWindow,	_XimEncodeWindow},
+	NULL,			 _XimEncodeWindow,	_XimDecodeWindow},
 
     {XNFocusWindow,		 0,
 	XOffsetOf(XimDefICValues, focus_window),
-	_XimDefaultFocusWindow,  _XimDecodeWindow,	_XimEncodeWindow},
+	_XimDefaultFocusWindow,  _XimEncodeWindow,	_XimDecodeWindow},
 
     {XNResourceName,		 0,
 	XOffsetOf(XimDefICValues, res_name),
-	_XimDefaultResName,	 _XimDecodeString,	_XimEncodeString},
+	_XimDefaultResName,	 _XimEncodeString,	_XimDecodeString},
 
     {XNResourceClass,		 0,
 	XOffsetOf(XimDefICValues, res_class),
-	_XimDefaultResClass,	 _XimDecodeString,	_XimEncodeString},
+	_XimDefaultResClass,	 _XimEncodeString,	_XimDecodeString},
 
     {XNGeometryCallback,	 0,
 	XOffsetOf(XimDefICValues, geometry_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNFilterEvents,		 0,
 	XOffsetOf(XimDefICValues, filter_events),
-	NULL,			 NULL,			_XimEncodeLong},
+	NULL,			 NULL,			_XimDecodeLong},
 
     {XNDestroyCallback,		 0,
 	XOffsetOf(XimDefICValues, destroy_callback),
-	_XimDefaultDestroyCB,	 _XimDecodeCallback,	_XimEncodeCallback},
+	_XimDefaultDestroyCB,	 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNStringConversionCallback, 0,
 	XOffsetOf(XimDefICValues, string_conversion_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNStringConversion,	 0,
 	XOffsetOf(XimDefICValues, string_conversion),
-	NULL,			 _XimDecodeStringConv,	_XimEncodeStringConv},
+	NULL,			 _XimEncodeStringConv,	_XimDecodeStringConv},
 
     {XNResetState,		 0,
 	XOffsetOf(XimDefICValues, reset_state),
-	_XimDefaultResetState,	 _XimDecodeResetState,	_XimEncodeResetState},
+	_XimDefaultResetState,	 _XimEncodeResetState,	_XimDecodeResetState},
 
     {XNResetReturn,		 0,
 	XOffsetOf(XimDefICValues, reset_return),
-	_XimDefaultResetReturn,	 _XimDecodeResetReturn,	_XimEncodeResetReturn},
+	_XimDefaultResetReturn,	 _XimEncodeResetReturn,	_XimDecodeResetReturn},
 
     {XNHotKey,			 0,
 	XOffsetOf(XimDefICValues, hotkey),
-	NULL,			 _XimDecodeHotKey,	_XimEncodeHotKey},
+	NULL,			 _XimEncodeHotKey,	_XimDecodeHotKey},
 
     {XNHotKeyState,		 0,
 	XOffsetOf(XimDefICValues, hotkey_state),
-	_XimDefaultHotKeyState,	 _XimDecodeHotKetState,	_XimEncodeHotKetState},
+	_XimDefaultHotKeyState,	 _XimEncodeHotKetState,	_XimDecodeHotKetState},
 
     {XNPreeditAttributes,	 0,
 	XOffsetOf(XimDefICValues, preedit_attr),
-	_XimDefaultNest,	 _XimDecodeNest,	_XimEncodeNest},
+	_XimDefaultNest,	 _XimEncodeNest,	_XimDecodeNest},
 
     {XNStatusAttributes,	 0,
 	XOffsetOf(XimDefICValues, status_attr),
-	_XimDefaultNest,	 _XimDecodeNest,	_XimEncodeNest},
+	_XimDefaultNest,	 _XimEncodeNest,	_XimDecodeNest},
 };
 
 static XimValueOffsetInfoRec ic_pre_attr_info[] = {
     {XNArea,			 0,
 	XOffsetOf(ICPreeditAttributes, area),
-	_XimDefaultArea,	 _XimDecodeRectangle,	_XimEncodeRectangle},
+	_XimDefaultArea,	 _XimEncodeRectangle,	_XimDecodeRectangle},
 
     {XNAreaNeeded,		 0,
 	XOffsetOf(ICPreeditAttributes, area_needed),
-	NULL,			 _XimDecodeRectangle,	_XimEncodeRectangle},
+	NULL,			 _XimEncodeRectangle,	_XimDecodeRectangle},
 
     {XNSpotLocation,		 0,
 	XOffsetOf(ICPreeditAttributes, spot_location),
-	NULL,			 _XimDecodeSpot,	_XimEncodeSpot},
+	NULL,			 _XimEncodeSpot,	_XimDecodeSpot},
 
     {XNColormap,		 0,
 	XOffsetOf(ICPreeditAttributes, colormap),
-	_XimDefaultColormap,	 _XimDecodeColormap,	_XimEncodeColormap},
+	_XimDefaultColormap,	 _XimEncodeColormap,	_XimDecodeColormap},
 
     {XNStdColormap,		 0,
 	XOffsetOf(ICPreeditAttributes, std_colormap),
-	_XimDefaultStdColormap,	 _XimDecodeStdColormap,	_XimEncodeStdColormap},
+	_XimDefaultStdColormap,	 _XimEncodeStdColormap,	_XimDecodeStdColormap},
 
     {XNForeground,		 0,
 	XOffsetOf(ICPreeditAttributes, foreground),
-	_XimDefaultFg,		 _XimDecodeLong,	_XimEncodeLong},
+	_XimDefaultFg,		 _XimEncodeLong,	_XimDecodeLong},
 
     {XNBackground,		 0,
 	XOffsetOf(ICPreeditAttributes, background),
-	_XimDefaultBg,		 _XimDecodeLong,	_XimEncodeLong},
+	_XimDefaultBg,		 _XimEncodeLong,	_XimDecodeLong},
 
     {XNBackgroundPixmap,	 0,
 	XOffsetOf(ICPreeditAttributes, background_pixmap),
-	_XimDefaultBgPixmap, 	 _XimDecodeBgPixmap,	_XimEncodeBgPixmap},
+	_XimDefaultBgPixmap, 	 _XimEncodeBgPixmap,	_XimDecodeBgPixmap},
 
     {XNFontSet,			 0,
 	XOffsetOf(ICPreeditAttributes, fontset),
-	_XimDefaultFontSet,	 _XimDecodeFontSet,	_XimEncodeFontSet},
+	_XimDefaultFontSet,	 _XimEncodeFontSet,	_XimDecodeFontSet},
 
     {XNLineSpace,		 0,
 	XOffsetOf(ICPreeditAttributes, line_spacing),
-	_XimDefaultLineSpace,	 _XimDecodeLineSpace,	_XimEncodeLineSpace},
+	_XimDefaultLineSpace,	 _XimEncodeLineSpace,	_XimDecodeLineSpace},
 
     {XNCursor,			 0,
 	XOffsetOf(ICPreeditAttributes, cursor),
-	_XimDefaultCursor,	 _XimDecodeCursor,	_XimEncodeCursor},
+	_XimDefaultCursor,	 _XimEncodeCursor,	_XimDecodeCursor},
 
     {XNPreeditStartCallback,	 0,
 	XOffsetOf(ICPreeditAttributes, start_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNPreeditDoneCallback,	 0,
 	XOffsetOf(ICPreeditAttributes, done_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNPreeditDrawCallback,	 0,
 	XOffsetOf(ICPreeditAttributes, draw_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNPreeditCaretCallback,	 0,
 	XOffsetOf(ICPreeditAttributes, caret_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNPreeditState,		 0,
 	XOffsetOf(ICPreeditAttributes, preedit_state),
-	_XimDefaultPreeditState, _XimDecodePreeditState,_XimEncodePreeditState}
+	_XimDefaultPreeditState, _XimEncodePreeditState,_XimDecodePreeditState}
 };
 
 static XimValueOffsetInfoRec ic_sts_attr_info[] = {
     {XNArea,			 0,
 	XOffsetOf(ICStatusAttributes, area),
-	_XimDefaultArea,	 _XimDecodeRectangle,	_XimEncodeRectangle},
+	_XimDefaultArea,	 _XimEncodeRectangle,	_XimDecodeRectangle},
 
     {XNAreaNeeded,		 0,
 	XOffsetOf(ICStatusAttributes, area_needed),
-	NULL,			 _XimDecodeRectangle,	_XimEncodeRectangle},
+	NULL,			 _XimEncodeRectangle,	_XimDecodeRectangle},
 
     {XNColormap,		 0,
 	XOffsetOf(ICStatusAttributes, colormap),
-	_XimDefaultColormap,	 _XimDecodeColormap,	_XimEncodeColormap},
+	_XimDefaultColormap,	 _XimEncodeColormap,	_XimDecodeColormap},
 
     {XNStdColormap,		 0,
 	XOffsetOf(ICStatusAttributes, std_colormap),
-	_XimDefaultStdColormap,	 _XimDecodeStdColormap,	_XimEncodeStdColormap},
+	_XimDefaultStdColormap,	 _XimEncodeStdColormap,	_XimDecodeStdColormap},
 
     {XNForeground,		 0,
 	XOffsetOf(ICStatusAttributes, foreground),
-	_XimDefaultFg,		 _XimDecodeLong,	_XimEncodeLong},
+	_XimDefaultFg,		 _XimEncodeLong,	_XimDecodeLong},
 
     {XNBackground,		 0,
 	XOffsetOf(ICStatusAttributes, background),
-	_XimDefaultBg,		 _XimDecodeLong,	_XimEncodeLong},
+	_XimDefaultBg,		 _XimEncodeLong,	_XimDecodeLong},
 
     {XNBackgroundPixmap,	 0,
 	XOffsetOf(ICStatusAttributes, background_pixmap),
-	_XimDefaultBgPixmap, 	 _XimDecodeBgPixmap,	_XimEncodeBgPixmap},
+	_XimDefaultBgPixmap, 	 _XimEncodeBgPixmap,	_XimDecodeBgPixmap},
 
     {XNFontSet,			 0,
 	XOffsetOf(ICStatusAttributes, fontset),
-	_XimDefaultFontSet,	 _XimDecodeFontSet,	_XimEncodeFontSet},
+	_XimDefaultFontSet,	 _XimEncodeFontSet,	_XimDecodeFontSet},
 
     {XNLineSpace,		 0,
 	XOffsetOf(ICStatusAttributes, line_spacing),
-	_XimDefaultLineSpace,	 _XimDecodeLineSpace,	_XimEncodeLineSpace},
+	_XimDefaultLineSpace,	 _XimEncodeLineSpace,	_XimDecodeLineSpace},
 
     {XNCursor,			 0,
 	XOffsetOf(ICStatusAttributes, cursor),
-	_XimDefaultCursor,	 _XimDecodeCursor,	_XimEncodeCursor},
+	_XimDefaultCursor,	 _XimEncodeCursor,	_XimDecodeCursor},
 
     {XNStatusStartCallback,	 0,
 	XOffsetOf(ICStatusAttributes, start_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNStatusDoneCallback,	 0,
 	XOffsetOf(ICStatusAttributes, done_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback},
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback},
 
     {XNStatusDrawCallback,	 0,
 	XOffsetOf(ICStatusAttributes, draw_callback),
-	NULL,			 _XimDecodeCallback,	_XimEncodeCallback}
+	NULL,			 _XimEncodeCallback,	_XimDecodeCallback}
 };
 
 typedef struct _XimIMMode {
@@ -1470,7 +1739,13 @@ static XimIMMode	im_mode[] = {
     {XNResourceName,		0,
 		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_SET | XIM_MODE_IM_GET)},
     {XNResourceClass,		0,
-		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_SET | XIM_MODE_IM_GET)}
+		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_SET | XIM_MODE_IM_GET)},
+    {XNQueryIMValuesList,		0,
+		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_GET)},
+    {XNQueryICValuesList,		0,
+		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_GET)},
+    {XNVisiblePosition,			0,
+		(XIM_MODE_IM_DEFAULT | XIM_MODE_IM_GET)}
 };
 
 typedef struct _XimICMode {
@@ -1842,18 +2117,19 @@ static XimICMode	ic_mode[] = {
 
 Private Bool
 _XimSetResourceList(res_list, list_num, resource, num_resource, id)
-    XIMResourceList	*res_list;
-    unsigned int	*list_num;
-    XIMResourceList	 resource;
-    unsigned int	 num_resource;
-    unsigned short	 id;
+    XIMResourceList	 *res_list;
+    unsigned int	 *list_num;
+    XIMResourceList	  resource;
+    unsigned int	  num_resource;
+    unsigned short	  id;
 {
-    register int	 i;
-    int			 len;
-    XIMResourceList	 res;
+    register int	  i;
+    int			  len;
+    XIMResourceList	  res;
+    char		**values;
 
     len = sizeof(XIMResource) * num_resource;
-    if((res = (XIMResourceList)Xmalloc(len)) == (XIMResourceList)NULL) {
+    if(!(res = (XIMResourceList)Xmalloc(len))) {
 	return(False);
     }
     bzero((char *)res, len);
@@ -1926,14 +2202,13 @@ _XimCheckCreateICValues(res_list, list_num)
     XIMResourceList	 res_list;
     unsigned int	 list_num;
 {
-    if(_XimGetResourceListRecByMode(res_list, list_num,
-			XIM_MODE_IC_CREATE) == (XIMResourceList)NULL) {
+    if (!_XimGetResourceListRecByMode(res_list, list_num, XIM_MODE_IC_CREATE)) {
 	return True;
     }
     return False;
 }
 
-Private XIMResourceList
+Public XIMResourceList
 _XimGetResourceListRecByQuark(res_list, list_num, quark)
     XIMResourceList	 res_list;
     unsigned int	 list_num;
@@ -1961,22 +2236,64 @@ _XimGetResourceListRec(res_list, list_num, name)
     return(_XimGetResourceListRecByQuark(res_list, list_num, quark));
 }
 
-Public XIMResourceList
-_XimGetIMResourceListRec(im, name)
-    Xim		 im;
-    char	*name;
+Public char *
+_XimSetIMValueData(im, top, values, res_list, list_num)
+    Xim			 im;
+    XPointer		 top;
+    XIMArg		*values;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
 {
-    return(_XimGetResourceListRec(im->core.im_resources,
-				im->core.im_num_resources, name));
+    register XIMArg	*p;
+    XIMResourceList	 res;
+    int			 check;
+
+    for(p = values; p->name != NULL; p++) {
+	if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
+	    return(p->value);
+	}
+	check = _XimCheckIMMode(res, XIM_SETIMVALUES);	
+	if(check == XIM_CHECK_INVALID) {
+	    continue;
+	} else if (check == XIM_CHECK_ERROR) {
+	    return(p->value);
+	}
+	    
+	if(!_XimEncodeLocalIMAttr(res, top, p->value)) {
+	    return(p->value);
+	}
+    }
+    return(NULL);
 }
 
-Public XIMResourceList
-_XimGetICResourceListRec(ic, name)
-    Xic		 ic;
-    char	*name;
+Public char *
+_XimGetIMValueData(im, top, values, res_list, list_num)
+    Xim			 im;
+    XPointer		 top;
+    XIMArg		*values;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
 {
-    return(_XimGetResourceListRec(ic->private.local.ic_resources,
-				ic->private.local.ic_num_resources, name));
+    register XIMArg	*p;
+    XIMResourceList	 res;
+    int			 check;
+
+    for(p = values; p->name != NULL; p++) {
+	if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
+	    return(p->value);
+	}
+	check = _XimCheckIMMode(res, XIM_GETIMVALUES);	
+	if(check == XIM_CHECK_INVALID) {
+	    continue;
+	} else if (check == XIM_CHECK_ERROR) {
+	    return(p->value);
+	}
+	    
+	if(!_XimDecodeLocalIMAttr(res, top, p->value)) {
+	    return(p->value);
+	}
+    }
+    return(NULL);
 }
 
 Public void
@@ -1989,8 +2306,8 @@ _XimSetIMMode(res_list, list_num)
     register int	i;
 
     for(i = 0; i < n; i++) {
-	if((res = _XimGetResourceListRecByQuark(res_list,
-			list_num, im_mode[i].quark)) == (XIMResourceList)NULL) {
+	if(!(res = _XimGetResourceListRecByQuark(res_list,
+						list_num, im_mode[i].quark))) {
 	    continue;
 	}
 	res->mode = im_mode[i].mode;
@@ -2082,8 +2399,8 @@ _XimSetICMode(res_list, list_num, style)
     }
 
     for(i = 0; i < n; i++) {
-	if((res = _XimGetResourceListRecByQuark(res_list,
-			list_num, ic_mode[i].quark)) == (XIMResourceList)NULL) {
+	if(!(res = _XimGetResourceListRecByQuark(res_list,
+						list_num, ic_mode[i].quark))) {
 	    continue;
 	}
 	res->mode = ( (*(unsigned short *)((char *)&ic_mode[i] + pre_offset))
@@ -2283,9 +2600,11 @@ Public int
 }
 
 Public Bool
-_XimSetLocalIMDefaults(im, top)
+_XimSetLocalIMDefaults(im, top, res_list, list_num)
     Xim			 im;
     XPointer		 top;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
 {
     XimValueOffsetInfo	 info;
     unsigned int	 num;
@@ -2297,9 +2616,7 @@ _XimSetLocalIMDefaults(im, top)
     num  = XIMNumber(im_attr_info);
 
     for(i = 0; i < num; i++) {
-	if((res = _XimGetResourceListRecByQuark(
-				(XIMResourceList)im->core.im_resources,
-				im->core.im_num_resources,
+	if((res = _XimGetResourceListRecByQuark( res_list, list_num,
 				info[i].quark)) == (XIMResourceList)NULL) { 
 	    return(False);
 	}
@@ -2314,7 +2631,7 @@ _XimSetLocalIMDefaults(im, top)
 	if(!info[i].defaults) {
 	    continue;
 	}
-	if(info[i].defaults(&info[i], top, (XPointer)NULL, 0) == False) {
+	if(!(info[i].defaults(&info[i], top, (XPointer)NULL, 0))) {
 	    return(False);
 	}
     }
@@ -2322,10 +2639,12 @@ _XimSetLocalIMDefaults(im, top)
 }
 
 Public Bool
-_XimSetICDefaults(ic, top, mode)
+_XimSetICDefaults(ic, top, mode, res_list, list_num)
     Xic			 ic;
     XPointer		 top;
     unsigned long	 mode;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
 {
     unsigned int	 num;
     XimValueOffsetInfo	 info;
@@ -2351,22 +2670,18 @@ _XimSetICDefaults(ic, top, mode)
 
     for(i = 0; i < num; i++) {
 	if(info[i].quark == pre_quark) {
-	    if(_XimSetICDefaults(ic,
-			(XPointer)((char *)top + info[i].offset),
-			(mode | XIM_PREEDIT_ATTR) == False)) {
+	    if(!_XimSetICDefaults(ic, (XPointer)((char *)top + info[i].offset),
+			(mode | XIM_PREEDIT_ATTR), res_list, list_num)) {
 		return(False);
 	    }
 	} else if (info[i].quark == sts_quark) {
-	    if(_XimSetICDefaults(ic,
-			(XPointer)((char *)top + info[i].offset),
-			(mode | XIM_STATUS_ATTR) == False)) {
+	    if(!_XimSetICDefaults(ic, (XPointer)((char *)top + info[i].offset),
+			(mode | XIM_STATUS_ATTR), res_list, list_num)) {
 		return(False);
 	    }
 	} else {
-	    if((res = _XimGetResourceListRecByQuark(
-			ic->private.local.ic_resources,
-			ic->private.local.ic_num_resources,
-			info[i].quark)) == (XIMResourceList)NULL) {
+	    if(!(res = _XimGetResourceListRecByQuark(res_list, list_num,
+							info[i].quark))) {
 		return(False);
 	    }
 
@@ -2380,12 +2695,256 @@ _XimSetICDefaults(ic, top, mode)
 	    if (!info[i].defaults) {
 		continue;
 	    }
-	    if (info[i].defaults(&info[i], top, (XPointer)ic, mode) == False) {
+	    if (!(info[i].defaults(&info[i], top, (XPointer)ic, mode))) {
 		return(False);
 	    }
 	}
     }
     return(True);
+}
+
+Private Bool
+_XimEncodeAttr(info, num, res, top, val)
+    XimValueOffsetInfo	 info;
+    unsigned int	 num;
+    XIMResourceList	 res;
+    XPointer		 top;
+    XPointer		 val;
+{
+    register int	 i;
+
+    for(i = 0; i < num; i++ ) {
+	if(info[i].quark == res->xrm_name) {
+	    if(!info[i].encode) {
+		return(False);
+	    }
+	    return(info[i].encode(&info[i], top, val));
+	}
+    }
+    return(False);
+}
+
+Public Bool
+_XimEncodeLocalIMAttr(res, top, val)
+    XIMResourceList	 res;
+    XPointer		 top;
+    XPointer		 val;
+{
+    return(_XimEncodeAttr(im_attr_info, XIMNumber(im_attr_info),
+					res, top, val));
+}
+
+Public Bool
+_XimEncodeLocalICAttr(ic, res, top, arg, mode)
+    Xic			 ic;
+    XIMResourceList	 res;
+    XPointer		 top;
+    XIMArg		*arg;
+    unsigned long	 mode;
+{
+    unsigned int	 num;
+    XimValueOffsetInfo	 info;
+
+    if(mode & XIM_PREEDIT_ATTR) {
+	info = ic_pre_attr_info;
+	num  = XIMNumber(ic_pre_attr_info);
+    } else if(mode & XIM_STATUS_ATTR) {
+	info = ic_sts_attr_info;
+	num  = XIMNumber(ic_sts_attr_info);
+    } else {
+	info = ic_attr_info;
+	num  = XIMNumber(ic_attr_info);
+    }
+
+    return(_XimEncodeAttr(info, num, res, top, arg->value));
+}
+
+Private Bool
+_XimEncodeLocalTopValue(ic, res, val, flag)
+    Xic			 ic;
+    XIMResourceList	 res;
+    XPointer		 val;
+    Bool		 flag;
+{
+    XIMArg		*p = (XIMArg *)val;
+
+    if (res->xrm_name == XrmStringToQuark(XNClientWindow)) {
+	ic->core.client_window = (Window)p->value;
+	if (ic->core.focus_window == (Window)0)
+	    ic->core.focus_window = ic->core.client_window;
+	if (flag) {
+	    _XRegisterFilterByType(ic->core.im->core.display,
+			ic->core.focus_window,
+			KeyPress, KeyPress, _XimLocalFilter, (XPointer)ic);
+	}
+    } else if (res->xrm_name == XrmStringToQuark(XNFocusWindow)) {
+	if (ic->core.client_window) {
+	    if (flag) {
+	        _XUnregisterFilter(ic->core.im->core.display,
+			ic->core.focus_window, _XimLocalFilter, (XPointer)ic);
+	    }
+	    ic->core.focus_window = (Window)p->value;
+	    if (flag) {
+	        _XRegisterFilterByType(ic->core.im->core.display,
+			ic->core.focus_window, KeyPress, KeyPress,
+			_XimLocalFilter, (XPointer)ic);
+	    }
+	} else
+	    ic->core.focus_window = (Window)p->value;
+    }
+    return True;
+}
+
+Private Bool
+_XimEncodeLocalPreeditValue(ic, res, val)
+    Xic			 ic;
+    XIMResourceList	 res;
+    XPointer		 val;
+{
+    XIMArg		*p = (XIMArg *)val;
+
+    if (res->xrm_name == XrmStringToQuark(XNStdColormap)) {
+	XStandardColormap	*colormap_ret;
+	int			 count;
+
+	if (!(XGetRGBColormaps(ic->core.im->core.display,
+				ic->core.focus_window, &colormap_ret,
+				&count, (Atom)p->value)))
+	    return False;
+    }
+    return True;
+}
+
+Private Bool
+_XimEncodeLocalStatusValue(ic, res, val)
+    Xic			 ic;
+    XIMResourceList	 res;
+    XPointer		 val;
+{
+    XIMArg		*p = (XIMArg *)val;
+
+    if (res->xrm_name == XrmStringToQuark(XNStdColormap)) {
+	XStandardColormap	*colormap_ret;
+	int			 count;
+
+	if (!(XGetRGBColormaps(ic->core.im->core.display,
+				ic->core.focus_window, &colormap_ret,
+				&count, (Atom)p->value)))
+	    return False;
+    }
+    return True;
+}
+
+Public char *
+_XimSetICValueData(ic, top, res_list, list_num, values, mode, flag)
+    Xic			 ic;
+    XPointer		 top;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
+    XIMArg		*values;
+    unsigned long	 mode;
+    Bool		 flag;
+{
+    register  XIMArg	*p;
+    XIMResourceList	 res;
+    char		*name;
+    int			 check;
+    XrmQuark		 pre_quark;
+    XrmQuark		 sts_quark;
+
+    pre_quark = XrmStringToQuark(XNPreeditAttributes);
+    sts_quark = XrmStringToQuark(XNStatusAttributes);
+
+    for(p = values; p->name != NULL; p++) {
+	if((res = _XimGetResourceListRec(res_list, list_num,
+					p->name)) == (XIMResourceList)NULL) {
+	    return(p->name);
+	}
+	if(res->xrm_name == pre_quark) {
+	    if(name = _XimSetICValueData(ic,
+			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
+			res_list, list_num, (XIMArg *)p->value,
+			(mode | XIM_PREEDIT_ATTR), flag)) {
+		return(name);
+	    }
+	} else if(res->xrm_name == sts_quark) {
+	    if(name = _XimSetICValueData(ic,
+			(XPointer)(&((XimDefICValues *)top)->status_attr),
+			res_list, list_num, (XIMArg *)p->value,
+			(mode | XIM_STATUS_ATTR), flag)) {
+		return(name);
+	    }
+	} else {
+	    check = _XimCheckICMode(res, mode);
+	    if(check == XIM_CHECK_INVALID) {
+		continue;
+	    } else if(check == XIM_CHECK_ERROR) {
+		return(p->name);
+	    }
+
+	    if(mode & XIM_PREEDIT_ATTR) {
+		if (!_XimEncodeLocalPreeditValue(ic, res, p))
+	    	    return False;
+    	    } else if(mode & XIM_STATUS_ATTR) {
+		if (!_XimEncodeLocalStatusValue(ic, res, p))
+	    	    return False;
+    	    } else {
+		if (!_XimEncodeLocalTopValue(ic, res, p, flag))
+	    	    return False;
+    	    }
+	    if(_XimEncodeLocalICAttr(ic, res, top, p, mode) == False) {
+		return(p->name);
+	    }
+	}
+    }
+    return(NULL);
+}
+
+Private Bool
+_XimCheckInputStyle(styles, style)
+    XIMStyles		*styles;
+    XIMStyle		 style;
+{
+    int			 num = styles->count_styles;
+    register int	 i;
+
+    for(i = 0; i < num; i++) {
+	if(styles->supported_styles[i] == style) {
+	    return(True);
+	}
+    }
+    return(False);
+}
+
+Public Bool
+_XimCheckLocalInputStyle(ic, top, values, styles, res_list, list_num)
+    Xic			 ic;
+    XPointer		 top;
+    XIMArg		*values;
+    XIMStyles		*styles;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
+{
+    XrmQuark		 quark = XrmStringToQuark(XNInputStyle);
+    register XIMArg	*p;
+    XIMResourceList	 res;
+
+    for(p = values; p && p->name != NULL; p++) {
+	if(quark == XrmStringToQuark(p->name)) {
+	    if(!(res = _XimGetResourceListRec(res_list, list_num, p->name))) {
+		return(False);
+	    }
+	    if(!_XimEncodeLocalICAttr(ic, res, top, p, 0)) {
+		return(False);
+	    }
+	    if (_XimCheckInputStyle(styles,
+			((XimDefICValues *)top)->input_style)) {
+		return(True);
+	    }
+	    return(False);
+	}
+    }
+    return(False);
 }
 
 Private Bool
@@ -2403,7 +2962,7 @@ _XimDecodeAttr(info, num, res, top, val)
 	    if(!info[i].decode) {
 		return(False);
 	    }
-	    return(info[i].decode(&info[i], top, val));
+	    return(info[i].decode(&info[i], top, val)); 
 	}
     }
     return(False);
@@ -2443,98 +3002,58 @@ _XimDecodeLocalICAttr(res, top, val, mode)
     return(_XimDecodeAttr(info, num, res, top, val));
 }
 
-Public Bool
-_XimCheckLocalInputStyle(ic, top, values, styles)
+Public char *
+_XimGetICValueData(ic, top, res_list, list_num, values, mode)
     Xic			 ic;
     XPointer		 top;
+    XIMResourceList	 res_list;
+    unsigned int	 list_num;
     XIMArg		*values;
-    XIMStyles		*styles;
-{
-    XrmQuark		 quark = XrmStringToQuark(XNInputStyle);
-    register XIMArg	*p;
-    XIMResourceList	 res;
-    unsigned int	 num;
-    register int	 i;
-
-    if (styles) {
-	num = styles->count_styles;
-    } else {
-	return(False);
-    }
-    for(p = values; p && p->name != NULL; p++) {
-	if(quark == XrmStringToQuark(p->name)) {
-	    if((res = _XimGetICResourceListRec(ic, p->name))
-						 == (XIMResourceList)NULL) {
-		return(False);
-	    }
-	    if(_XimDecodeLocalICAttr(res, top, p->value, 0) == False) {
-		return(False);
-	    }
-	    for(i = 0; i < num; i++) {
-		if(styles->supported_styles[i]
-			 == ((XimDefICValues *)top)->input_style) {
-		    return(True);
-		}
-	    }
-	    return(False);
-	}
-    }
-    return(False);
-}
-
-Private Bool
-_XimEncodeAttr(info, num, res, top, val)
-    XimValueOffsetInfo	 info;
-    unsigned int	 num;
-    XIMResourceList	 res;
-    XPointer		 top;
-    XPointer		 val;
-{
-    register int	 i;
-
-    for(i = 0; i < num; i++ ) {
-	if(info[i].quark == res->xrm_name) {
-	    if(!info[i].encode) {
-		return(False);
-	    }
-	    return(info[i].encode(&info[i], top, val)); 
-	}
-    }
-    return(False);
-}
-
-Public Bool
-_XimEncodeLocalIMAttr(res, top, val)
-    XIMResourceList	 res;
-    XPointer		 top;
-    XPointer		 val;
-{
-    return(_XimEncodeAttr(im_attr_info, XIMNumber(im_attr_info),
-					res, top, val));
-}
-
-Public Bool
-_XimEncodeLocalICAttr(res, top, val, mode)
-    XIMResourceList	 res;
-    XPointer		 top;
-    XPointer		 val;
     unsigned long	 mode;
 {
-    unsigned int	 num;
-    XimValueOffsetInfo	 info;
+    register  XIMArg	*p;
+    XIMResourceList	 res;
+    char		*name;
+    int			 check;
+    XrmQuark		 pre_quark;
+    XrmQuark		 sts_quark;
 
-    if(mode & XIM_PREEDIT_ATTR) {
-	info = ic_pre_attr_info;
-	num  = XIMNumber(ic_pre_attr_info);
-    } else if(mode & XIM_STATUS_ATTR) {
-	info = ic_sts_attr_info;
-	num  = XIMNumber(ic_sts_attr_info);
-    } else {
-	info = ic_attr_info;
-	num  = XIMNumber(ic_attr_info);
+    pre_quark = XrmStringToQuark(XNPreeditAttributes);
+    sts_quark = XrmStringToQuark(XNStatusAttributes);
+
+    for(p = values; p->name != NULL; p++) {
+	if((res = _XimGetResourceListRec(res_list, list_num,
+					p->name)) == (XIMResourceList)NULL) {
+	    return(p->name);
+	}
+	if(res->xrm_name == pre_quark) {
+	    if(name = _XimGetICValueData(ic,
+			(XPointer)(&((XimDefICValues *)top)->preedit_attr),
+			res_list, list_num, (XIMArg *)p->value,
+			(mode | XIM_PREEDIT_ATTR))) {
+		return(name);
+	    }
+	} else if(res->xrm_name == sts_quark) {
+	    if(name = _XimGetICValueData(ic,
+			(XPointer)(&((XimDefICValues *)top)->status_attr),
+			res_list, list_num, (XIMArg *)p->value,
+			(mode | XIM_STATUS_ATTR))) {
+		return(name);
+	    }
+	} else {
+	    check = _XimCheckICMode(res, mode);
+	    if(check == XIM_CHECK_INVALID) {
+		continue;
+	    } else if(check == XIM_CHECK_ERROR) {
+		return(p->name);
+	    }
+
+	    if(_XimDecodeLocalICAttr(res, top, p->value, mode) == False) {
+		return(p->name);
+	    }
+	}
     }
-
-    return(_XimEncodeAttr(info, num, res, top, val));
+    return(NULL);
 }
 
 Public void
@@ -2545,12 +3064,12 @@ _XimGetCurrentIMValues(im, im_values)
     bzero((char *)im_values, sizeof(XimDefIMValues));
 
     im_values->styles		= im->core.styles;
-    im_values->extensions	= im->core.extensions;
-    im_values->options		= im->core.options;
-    im_values->icattributes	= im->core.icattributes;
+    im_values->im_values_list	= im->core.im_values_list;
+    im_values->ic_values_list	= im->core.ic_values_list;
     im_values->destroy_callback = im->core.destroy_callback;
     im_values->res_name		= im->core.res_name;
     im_values->res_class	= im->core.res_class;
+    im_values->visible_position	= im->core.visible_position;
     return;
 }
 
@@ -2560,12 +3079,12 @@ _XimSetCurrentIMValues(im, im_values)
     XimDefIMValues	*im_values;
 {
     im->core.styles		= im_values->styles;
-    im->core.extensions		= im_values->extensions;
-    im->core.options		= im_values->options;
-    im->core.icattributes	= im_values->icattributes;
+    im->core.im_values_list	= im_values->im_values_list;
+    im->core.ic_values_list	= im_values->ic_values_list;
     im->core.destroy_callback	= im_values->destroy_callback;
     im->core.res_name		= im_values->res_name;
     im->core.res_class		= im_values->res_class;
+    im->core.visible_position	= im_values->visible_position;
     return;
 }
 
@@ -2605,7 +3124,8 @@ _XimSetCurrentICValues(ic, ic_values)
 {
     ic->core.input_style	= ic_values->input_style;
     ic->core.client_window	= ic_values->client_window;
-    ic->core.focus_window	= ic_values->focus_window;
+    if (ic_values->focus_window)
+	ic->core.focus_window	= ic_values->focus_window;
     ic->core.filter_events	= ic_values->filter_events;
     ic->core.geometry_callback	= ic_values->geometry_callback;
     ic->core.res_name		= ic_values->res_name;

@@ -1,30 +1,31 @@
 /*
- * $XConsortium: IMWrap.c,v 11.7 93/09/24 10:27:45 rws Exp $
+ * $XConsortium: IMWrap.c,v 11.8 94/01/20 18:02:05 rws Exp $
  */
 
 /*
  * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
- * Copyright 1993 by the Sony Corporation
+ * Copyright 1993, 1994 by the Sony Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Open Software Foundation and M.I.T.
- * not be used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.  Open Software
- * Foundation and M.I.T. make no representations about the suitability of this
- * software for any purpose.  It is provided "as is" without express or
- * implied warranty.
+ * documentation, and that the names of Open Software Foundation, M.I.T. and
+ * Sony Corporation not be used in advertising or publicity pertaining to 
+ * distribution of the software without specific, written prior permission.  
+ * Open Software Foundation, M.I.T. and Sony Corporation make no 
+ * representations about the suitability of this software for any purpose.  
+ * It is provided "as is" without express or implied warranty.
  *
- * OPEN SOFTWARE FOUNDATION AND M.I.T. DISCLAIM ALL WARRANTIES WITH REGARD TO
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS, IN NO EVENT SHALL OPEN SOFTWARE FOUNDATIONN OR M.I.T. BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES 
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * OPEN SOFTWARE FOUNDATION, M.I.T. AND SONY CORPORATION DISCLAIM ALL
+ * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL OPEN
+ * SOFTWARE FOUNDATIONN, M.I.T. OR SONY CORPORATION BE LIABLE FOR ANY SPECIAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE. 
  * 
  *		 M. Collins		OSF  
  *               Makoto Wakamatsu       Sony Corporation

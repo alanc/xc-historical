@@ -1,7 +1,7 @@
-/* $XConsortium: imLcIm.c,v 1.3 93/09/24 12:00:41 rws Exp $ */
+/* $XConsortium: imLcIm.c,v 1.4 94/01/20 18:05:01 rws Exp $ */
 /******************************************************************
 
-          Copyright 1992, 1993 by FUJITSU LIMITED
+          Copyright 1992, 1993, 1994 by FUJITSU LIMITED
           Copyright 1993 by Digital Equipment Corporation
 
 Permission to use, copy, modify, distribute, and sell this software
@@ -56,8 +56,10 @@ _XimCheckIfLocalProcessing(im)
     if(strcmp(im->core.im_name, "") == 0) {
 	name = _XlcFileName(im->core.lcd, COMPOSE_FILE);
 	if (name != (char *)NULL) {
+	    fp = fopen(name, "r");
 	    Xfree(name);
-	    return(True);
+	    if (fp != (FILE *)NULL)
+		return(True);
 	}
 	if(im->core.rdb != NULL)
 	    return(_XimLocalProcessingResource(im));
@@ -90,12 +92,10 @@ _XimLocalIMFree(im)
 	Xfree(im->core.im_resources);
     if(im->core.ic_resources)
 	Xfree(im->core.ic_resources);
-    if(im->core.extensions)
-	Xfree(im->core.extensions);
-    if(im->core.options)
-	Xfree(im->core.options);
-    if(im->core.icattributes)
-	Xfree(im->core.icattributes);
+    if(im->core.im_values_list)
+	Xfree(im->core.im_values_list);
+    if(im->core.ic_values_list)
+	Xfree(im->core.ic_values_list);
     if(im->core.styles)
 	Xfree(im->core.styles);
     if(im->core.res_name)
@@ -113,41 +113,18 @@ _XimLocalCloseIM(xim)
 {
     Xim		im = (Xim)xim;
     XIC		ic;
+    XIC		next;
 
-    while(ic = im->core.ic_chain)
-	XDestroyIC(ic);
+    ic = im->core.ic_chain;
+    while (ic) {
+	(*ic->methods->destroy) (ic);
+	next = ic->core.next;
+	Xfree ((char *) ic);
+	ic = next;
+    }
     _XimLocalIMFree(im);
     _XimDestroyIMStructureList(im);
     return(True);
-}
-
-Private char *
-_XimGetIMValueData(im, top, values)
-    Xim			 im;
-    XPointer		 top;
-    XIMArg		*values;
-{
-    register XIMArg	*p;
-    XIMResourceList	 res;
-    int			 check;
-
-    for(p = values; p->name != NULL; p++) {
-	if((res = _XimGetIMResourceListRec(im, p->name))
-						 == (XIMResourceList)NULL) {
-	    return(p->value);
-	}
-	check = _XimCheckIMMode(res, XIM_GETIMVALUES);	
-	if(check == XIM_CHECK_INVALID) {
-	    continue;
-	} else if (check == XIM_CHECK_ERROR) {
-	    return(p->value);
-	}
-	    
-	if(_XimEncodeLocalIMAttr(res, top, p->value) == False) {
-	    return(p->value);
-	}
-    }
-    return(NULL);
 }
 
 Public char *
@@ -159,36 +136,8 @@ _XimLocalGetIMValues(xim, values)
     XimDefIMValues	 im_values;
 
     _XimGetCurrentIMValues(im, &im_values);
-    return(_XimGetIMValueData(im, (XPointer)&im_values, values));
-}
-
-Private char *
-_XimSetIMValueData(im, top, values)
-    Xim			 im;
-    XPointer		 top;
-    XIMArg		*values;
-{
-    register XIMArg	*p;
-    XIMResourceList	 res;
-    int			 check;
-
-    for(p = values; p->name != NULL; p++) {
-	if((res = _XimGetIMResourceListRec(im, p->name))
-						 == (XIMResourceList)NULL) {
-	    return(p->value);
-	}
-	check = _XimCheckIMMode(res, XIM_SETIMVALUES);	
-	if(check == XIM_CHECK_INVALID) {
-	    continue;
-	} else if (check == XIM_CHECK_ERROR) {
-	    return(p->value);
-	}
-	    
-	if(_XimDecodeLocalIMAttr(res, top, p->value) == False) {
-	    return(p->value);
-	}
-    }
-    return(NULL);
+    return(_XimGetIMValueData(im, (XPointer)&im_values, values,
+			im->core.im_resources, im->core.im_num_resources));
 }
 
 Public char *
@@ -201,7 +150,8 @@ _XimLocalSetIMValues(xim, values)
     char		*name = (char *)NULL;
 
     _XimGetCurrentIMValues(im, &im_values);
-    name = _XimSetIMValueData(im, (XPointer)&im_values, values);
+    name = _XimSetIMValueData(im, (XPointer)&im_values, values,
+		im->core.im_resources, im->core.im_num_resources);
     _XimSetCurrentIMValues(im, &im_values);
     return(name);
 }
@@ -229,6 +179,7 @@ Private XIMMethodsRec      Xim_im_local_methods = {
     _XimLocalSetIMValues,       /* set_values */
     _XimLocalGetIMValues,       /* get_values */
     _XimLocalCreateIC,          /* create_ic */
+    XLookupString		/* lookup_string */
 };
 
 Public Bool
@@ -250,7 +201,8 @@ _XimLocalOpenIM(im)
     _XimSetIMMode(im->core.im_resources, im->core.im_num_resources);
 
     _XimGetCurrentIMValues(im, &im_values);
-    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values) == False) {
+    if(_XimSetLocalIMDefaults(im, (XPointer)&im_values,
+		im->core.im_resources, im->core.im_num_resources) == False) {
 	goto Open_Error;
     }
     _XimSetCurrentIMValues(im, &im_values);
@@ -268,14 +220,11 @@ Open_Error :
     if (im->core.ic_resources) {
 	Xfree(im->core.ic_resources);
     }
-    if (im->core.extensions) {
-	Xfree(im->core.extensions);
+    if (im->core.im_values_list) {
+	Xfree(im->core.im_values_list);
     }
-    if (im->core.options) {
-	Xfree(im->core.options);
-    }
-    if (im->core.icattributes) {
-	Xfree(im->core.icattributes);
+    if (im->core.ic_values_list) {
+	Xfree(im->core.ic_values_list);
     }
     if (im->core.styles) {
 	Xfree(im->core.styles);
