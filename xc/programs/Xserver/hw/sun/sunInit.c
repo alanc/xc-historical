@@ -317,8 +317,20 @@ sunScreenInit (pScreen)
 
     miDCInitialize (pScreen, &sunPointerCursorFuncs);
 
+#ifdef SUN_WINDOWS
+    /*
+     * We need to wrap one of the cursor functions so that
+     * we can keep the SunWindows cursor position in sync
+     * with X. We still call the mi version to do the real
+     * work.
+     */
+    realSetCursorPosition = pScreen->SetCursorPosition;
+    pScreen->SetCursorPosition = sunSetCursorPosition;
+#endif
+
     return TRUE;
 }
+
 
 extern char *getenv();
 
@@ -617,8 +629,8 @@ badfb:
 	 * That's why this fcntl is in the conditional compilation section.
 	 */
 
-	if (fcntl(winFd, F_SETFL, O_NDELAY) < 0) {
-	    ErrorF("Can't set O_NDELAY on %s\n",name);
+	if (fcntl(winFd, F_SETFL, FNDELAY|FASYNC) < 0) {
+	    ErrorF("Can't set FNDELAY|FASYNC on %s\n",name);
 	    perror("sunOpenFrameBuffer");
 	    (void) close(winFd);
 	    return (-1);
