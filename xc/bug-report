@@ -1,17 +1,12 @@
-******************************************************************************* 
-*                                                                             *
-*          Please remove this header and send ONE bug per message to          *
-*                                                                             *
-*                           xbugs@expo.lcs.mit.edu                            *
-*                                                                             *
-*******************************************************************************
+			  X Window System Bug Report
+			    xbugs@expo.lcs.mit.edu
 
 
 VERSION:
-	X Window System, Version 11, Release 2
+	X Window System, Version 11, Release 3
 
 CLIENT MACHINE and OPERATING SYSTEM:
-	[e.g. Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.0, ...]
+	[e.g. Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.4, ...]
 
 DISPLAY:
 	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
@@ -28,11 +23,8 @@ SYNOPSIS:
 DESCRIPTION:
 	[Detailed description.]
 
-REPEAT-BY:
+REPEAT BY:
 	[What you did to get the error; include test program if appropriate.]
 
-FILES:
-	[List source files involved, if possible.]
-
 FIX:
-	[Preferred, but not necessary.]
+	[Preferred, but not necessary.  Please send context diffs (diff -c).]
