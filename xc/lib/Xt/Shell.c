@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.39 88/09/06 09:52:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.40 88/09/06 16:29:02 jim Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1326,7 +1326,8 @@ Cardinal mask;
 
 	if (mask == 0) return TRUE;
 
-	if (!w->shell.override_redirect) {
+	if (!w->shell.override_redirect &&
+		mask & (CWX | CWY | CWWidth | CWHeight | CWBorderWidth)) {
 	    XSetNormalHints(XtDisplay(w), XtWindow(w), hintp);
 	}
 
