@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.27 94/02/08 20:24:54 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.28 94/03/21 16:22:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -119,6 +119,8 @@ SOFTWARE.
 #define XtCWmTimeout "WmTimeout"
 #define XtNwaitForWm "waitforwm"
 #define XtCWaitForWm "Waitforwm"
+#define XtNwaitforwm "waitforwm"
+#define XtCWaitforwm "Waitforwm"
 #define XtNclientLeader "clientLeader"
 #define XtCClientLeader "ClientLeader"
 #define XtNwindowRole "windowRole"
@@ -127,34 +129,33 @@ SOFTWARE.
 #define XtCVisible "Visible"
 #define XtNcancelCallback "cancelCallback"
 #define XtNcloneCommand "cloneCommand"
+#define XtCCloneCommand "CloneCommand"
 #define XtNconnection "connection"
+#define XtCConnection "Connection"
 #define XtNcurrentDirectory "currentDirectory"
+#define XtCCurrentDirectory "CurrentDirectory"
 #define XtNdieCallback "dieCallback"
 #define XtNdiscardCommand "discardCommand"
+#define XtCDiscardCommand "DiscardCommand"
 #define XtNenvironment "environment"
+#define XtCEnvironment "Environment"
 #define XtNinteractCallback "interactCallback"
 #define XtNjoinSession "joinSession"
-#define XtNprogramPath "programPath"
-#define XtNresignCommand "resignCommand"
-#define XtNrestartCommand "restartCommand"
-#define XtNrestartStyle "restartStyle"
-#define XtNsaveCallback "saveCallback"
-#define XtNsessionID "sessionID"
-#define XtNshutdownCommand "shutdownCommand"
-#define XtCCloneCommand "CloneCommand"
-#define XtCConnection "Connection"
-#define XtCCurrentDirectory "CurrentDirectory"
-#define XtCDiscardCommand "DiscardCommand"
-#define XtCEnvironment "Environment"
 #define XtCJoinSession "JoinSession"
+#define XtNprogramPath "programPath"
 #define XtCProgramPath "ProgramPath"
+#define XtNresignCommand "resignCommand"
 #define XtCResignCommand "ResignCommand"
+#define XtNrestartCommand "restartCommand"
 #define XtCRestartCommand "RestartCommand"
+#define XtNrestartStyle "restartStyle"
 #define XtCRestartStyle "RestartStyle"
+#define XtNsaveCallback "saveCallback"
+#define XtNsaveCompleteCallback "saveCompleteCallback"
+#define XtNsessionID "sessionID"
 #define XtCSessionID "SessionID"
+#define XtNshutdownCommand "shutdownCommand"
 #define XtCShutdownCommand "ShutdownCommand"
-#define XtRRestartStyle "RestartStyle"
-#define XtRSmcConn "SmcConn"
 #else
 #if __STDC__
 #define _XtConst_ const
@@ -393,113 +394,116 @@ extern _XtConst_ char XtShellStrings[];
 #ifndef XtCWaitForWm
 #define XtCWaitForWm ((char*)&XtShellStrings[783])
 #endif
+#ifndef XtNwaitforwm
+#define XtNwaitforwm ((char*)&XtShellStrings[793])
+#endif
+#ifndef XtCWaitforwm
+#define XtCWaitforwm ((char*)&XtShellStrings[803])
+#endif
 #ifndef XtNclientLeader
-#define XtNclientLeader ((char*)&XtShellStrings[793])
+#define XtNclientLeader ((char*)&XtShellStrings[813])
 #endif
 #ifndef XtCClientLeader
-#define XtCClientLeader ((char*)&XtShellStrings[806])
+#define XtCClientLeader ((char*)&XtShellStrings[826])
 #endif
 #ifndef XtNwindowRole
-#define XtNwindowRole ((char*)&XtShellStrings[819])
+#define XtNwindowRole ((char*)&XtShellStrings[839])
 #endif
 #ifndef XtCWindowRole
-#define XtCWindowRole ((char*)&XtShellStrings[830])
+#define XtCWindowRole ((char*)&XtShellStrings[850])
 #endif
 #ifndef XtNvisible
-#define XtNvisible ((char*)&XtShellStrings[841])
+#define XtNvisible ((char*)&XtShellStrings[861])
 #endif
 #ifndef XtCVisible
-#define XtCVisible ((char*)&XtShellStrings[849])
+#define XtCVisible ((char*)&XtShellStrings[869])
 #endif
 #ifndef XtNcancelCallback
-#define XtNcancelCallback ((char*)&XtShellStrings[857])
+#define XtNcancelCallback ((char*)&XtShellStrings[877])
 #endif
 #ifndef XtNcloneCommand
-#define XtNcloneCommand ((char*)&XtShellStrings[872])
-#endif
-#ifndef XtNconnection
-#define XtNconnection ((char*)&XtShellStrings[885])
-#endif
-#ifndef XtNcurrentDirectory
-#define XtNcurrentDirectory ((char*)&XtShellStrings[896])
-#endif
-#ifndef XtNdieCallback
-#define XtNdieCallback ((char*)&XtShellStrings[913])
-#endif
-#ifndef XtNdiscardCommand
-#define XtNdiscardCommand ((char*)&XtShellStrings[925])
-#endif
-#ifndef XtNenvironment
-#define XtNenvironment ((char*)&XtShellStrings[940])
-#endif
-#ifndef XtNinteractCallback
-#define XtNinteractCallback ((char*)&XtShellStrings[952])
-#endif
-#ifndef XtNjoinSession
-#define XtNjoinSession ((char*)&XtShellStrings[969])
-#endif
-#ifndef XtNprogramPath
-#define XtNprogramPath ((char*)&XtShellStrings[981])
-#endif
-#ifndef XtNresignCommand
-#define XtNresignCommand ((char*)&XtShellStrings[993])
-#endif
-#ifndef XtNrestartCommand
-#define XtNrestartCommand ((char*)&XtShellStrings[1007])
-#endif
-#ifndef XtNrestartStyle
-#define XtNrestartStyle ((char*)&XtShellStrings[1022])
-#endif
-#ifndef XtNsaveCallback
-#define XtNsaveCallback ((char*)&XtShellStrings[1035])
-#endif
-#ifndef XtNsessionID
-#define XtNsessionID ((char*)&XtShellStrings[1048])
-#endif
-#ifndef XtNshutdownCommand
-#define XtNshutdownCommand ((char*)&XtShellStrings[1058])
+#define XtNcloneCommand ((char*)&XtShellStrings[892])
 #endif
 #ifndef XtCCloneCommand
-#define XtCCloneCommand ((char*)&XtShellStrings[1074])
+#define XtCCloneCommand ((char*)&XtShellStrings[905])
+#endif
+#ifndef XtNconnection
+#define XtNconnection ((char*)&XtShellStrings[918])
 #endif
 #ifndef XtCConnection
-#define XtCConnection ((char*)&XtShellStrings[1087])
+#define XtCConnection ((char*)&XtShellStrings[929])
+#endif
+#ifndef XtNcurrentDirectory
+#define XtNcurrentDirectory ((char*)&XtShellStrings[940])
 #endif
 #ifndef XtCCurrentDirectory
-#define XtCCurrentDirectory ((char*)&XtShellStrings[1098])
+#define XtCCurrentDirectory ((char*)&XtShellStrings[957])
+#endif
+#ifndef XtNdieCallback
+#define XtNdieCallback ((char*)&XtShellStrings[974])
+#endif
+#ifndef XtNdiscardCommand
+#define XtNdiscardCommand ((char*)&XtShellStrings[986])
 #endif
 #ifndef XtCDiscardCommand
-#define XtCDiscardCommand ((char*)&XtShellStrings[1115])
+#define XtCDiscardCommand ((char*)&XtShellStrings[1001])
+#endif
+#ifndef XtNenvironment
+#define XtNenvironment ((char*)&XtShellStrings[1016])
 #endif
 #ifndef XtCEnvironment
-#define XtCEnvironment ((char*)&XtShellStrings[1130])
+#define XtCEnvironment ((char*)&XtShellStrings[1028])
+#endif
+#ifndef XtNinteractCallback
+#define XtNinteractCallback ((char*)&XtShellStrings[1040])
+#endif
+#ifndef XtNjoinSession
+#define XtNjoinSession ((char*)&XtShellStrings[1057])
 #endif
 #ifndef XtCJoinSession
-#define XtCJoinSession ((char*)&XtShellStrings[1142])
+#define XtCJoinSession ((char*)&XtShellStrings[1069])
+#endif
+#ifndef XtNprogramPath
+#define XtNprogramPath ((char*)&XtShellStrings[1081])
 #endif
 #ifndef XtCProgramPath
-#define XtCProgramPath ((char*)&XtShellStrings[1154])
+#define XtCProgramPath ((char*)&XtShellStrings[1093])
+#endif
+#ifndef XtNresignCommand
+#define XtNresignCommand ((char*)&XtShellStrings[1105])
 #endif
 #ifndef XtCResignCommand
-#define XtCResignCommand ((char*)&XtShellStrings[1166])
+#define XtCResignCommand ((char*)&XtShellStrings[1119])
+#endif
+#ifndef XtNrestartCommand
+#define XtNrestartCommand ((char*)&XtShellStrings[1133])
 #endif
 #ifndef XtCRestartCommand
-#define XtCRestartCommand ((char*)&XtShellStrings[1180])
+#define XtCRestartCommand ((char*)&XtShellStrings[1148])
+#endif
+#ifndef XtNrestartStyle
+#define XtNrestartStyle ((char*)&XtShellStrings[1163])
 #endif
 #ifndef XtCRestartStyle
-#define XtCRestartStyle ((char*)&XtShellStrings[1195])
+#define XtCRestartStyle ((char*)&XtShellStrings[1176])
+#endif
+#ifndef XtNsaveCallback
+#define XtNsaveCallback ((char*)&XtShellStrings[1189])
+#endif
+#ifndef XtNsaveCompleteCallback
+#define XtNsaveCompleteCallback ((char*)&XtShellStrings[1202])
+#endif
+#ifndef XtNsessionID
+#define XtNsessionID ((char*)&XtShellStrings[1223])
 #endif
 #ifndef XtCSessionID
-#define XtCSessionID ((char*)&XtShellStrings[1208])
+#define XtCSessionID ((char*)&XtShellStrings[1233])
+#endif
+#ifndef XtNshutdownCommand
+#define XtNshutdownCommand ((char*)&XtShellStrings[1243])
 #endif
 #ifndef XtCShutdownCommand
-#define XtCShutdownCommand ((char*)&XtShellStrings[1218])
-#endif
-#ifndef XtRRestartStyle
-#define XtRRestartStyle ((char*)&XtShellStrings[1234])
-#endif
-#ifndef XtRSmcConn
-#define XtRSmcConn ((char*)&XtShellStrings[1247])
+#define XtCShutdownCommand ((char*)&XtShellStrings[1259])
 #endif
 #undef _XtConst_
 #endif
