@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.17 89/01/29 14:15:03 rws Exp $
+ * $XConsortium: resource.c,v 1.18 89/04/06 13:39:24 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,7 @@
 # include "dm.h"
 # include <X11/Xlib.h>
 # include <X11/Xresource.h>
+# include <X11/Xmu/CharSet.h>
 
 /* XtOffset() hack for ibmrt BandAidCompiler */
 
