@@ -1,5 +1,4 @@
-.TH PUZZLE 6 "1 March 1988" "X Version 11"
-.UC 4
+.TH PUZZLE 1 "1 March 1988" "X Version 11"
 .SH NAME
 puzzle \- X-window V11 15-puzzle game
 .SH SYNOPSIS
@@ -7,25 +6,28 @@ puzzle \- X-window V11 15-puzzle game
 [-option ...]
 .SH OPTIONS
 .TP 8
-.B \-display \fIhost\fP:\fIdpy\fP
-This option specifies the host and display to contact.
+.B \-display \fIdisplay\fP
+This option specifies the display to use; see \fIX(1)\fP.
 .TP 8
-.B \-geometry \fIgeom\fP
-This option specifies the size and position of the puzzle window.
+.B \-geometry \fIgeometry\fP
+This option specifies the size and position of the puzzle window;
+see \fIX(1)\fP.
 .TP 8
 .B \-size \fIWIDTH\fPx\fIHEIGHT\fP
 This option specifies the size of the puzzle in squares.
 .TP 8
 .B \-speed \fInum\fP
-This option specifies the speed in tiles per second of for moving tiles
+This option specifies the speed in tiles per second for moving tiles
 around.
 .TP 8
 .B \-picture \fIfilename\fP
 This option specifies an image file containing the picture to use on the
-tiles.  Try ``mandrill.cm.''
+tiles.  Try ``mandrill.cm.''  This only works on 8-bit pseudo-color
+screens.
 .TP 8
 .B \-colormap
-This option indicates that the program should create its own colormap.
+This option indicates that the program should create its own colormap
+for the picture option.
 .SH DESCRIPTION
 .I Puzzle
 with no arguments plays a 4x4 15-puzzle.  The control bar has two boxes in
@@ -35,9 +37,9 @@ control bar causes puzzle to exit.
 Clicking in the tiled region moves the empty spot to that
 location if the region you click in is in the same row or column as the
 empty slot. 
+.SH BUGS
+The picture option should work on a wider variety of screens.
 .SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
+Copyright 1988, Don Bennett.
 .SH AUTHOR
 Don Bennett, HP Labs
