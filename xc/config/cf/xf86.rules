@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xf86.rules,v 1.4 94/12/01 16:11:37 kaleb Exp kaleb $
+XCOMM $XConsortium: xf86.rules,v 1.5 95/01/09 19:23:11 kaleb Exp kaleb $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
@@ -12,8 +12,6 @@ XCOMM $XConsortium: xf86.rules,v 1.4 94/12/01 16:11:37 kaleb Exp kaleb $
 
 #ifndef AssembleObject
 #define AssembleObject(flags) CPPOnlyAsm($*,flags)			@@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | \		@@\
-		grep -v '^\#' > $*.i					@@\
 	$(AS) -o $*.o $*.i						@@\
 	RemoveFile($*.i)
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.8 94/12/05 17:19:52 kaleb Exp kaleb $
+XCOMM $XConsortium: svr4.cf,v 1.9 95/01/05 19:41:26 kaleb Exp kaleb $
 /*
  * A default OS name
  */
@@ -105,7 +105,7 @@ XCOMM $XConsortium: svr4.cf,v 1.8 94/12/05 17:19:52 kaleb Exp kaleb $
 #endif
 #endif
 #ifndef ServerOSDefines
-#define ServerOSDefines XFree86ServerOSDefines -DDDXTIME
+#define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
 #endif
 #endif
 
@@ -133,4 +133,5 @@ XCOMM $XConsortium: svr4.cf,v 1.8 94/12/05 17:19:52 kaleb Exp kaleb $
 #ifdef i386Architecture
 #include <xfree86.cf>
 #endif
+
 #include <sv4Lib.rules>
