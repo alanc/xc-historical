@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.9 89/11/21 15:31:14 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.10 90/03/21 13:45:00 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -136,6 +136,8 @@ typedef unsigned char	*glyphPointer;
 #endif
 
 #ifdef USE_LEFTBITS
+extern long endtab[];
+
 #define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
 
 #define Get1Bits(ch,dst)    glyphbits (ch, widthGlyph, glyphMask, dst); \
@@ -147,7 +149,7 @@ typedef unsigned char	*glyphPointer;
 #define WGetBitsL   Get1Bits(leftChar,c); \
 		    c = BitLeft (c, lshift);
 #define WGetBits1S  Get1Bits (char1, c) \
-		    c = BitRight (c, xoff1); \
+		    c = BitRight (c, xoff1);
 #define WGetBits1L  WGetBitsL Get1Bits (char1, tmpSrc) \
 		    c |= BitRight (tmpSrc, xoff1);
 #define WGetBits1U  Get1Bits (char1, c)
