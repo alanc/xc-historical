@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.12 94/02/04 17:07:23 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.13 94/02/08 12:29:51 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -44,7 +44,7 @@ typedef struct _fontProp {
 static fontProp fontNamePropTable[] = {
     "FOUNDRY", 0, atom,
     "FAMILY_NAME", 0, atom,
-    "WEIGHT_NAME", 0, truncate_atom,
+    "WEIGHT_NAME", 0, atom,
     "SLANT", 0, atom,
     "SETWIDTH_NAME", 0, atom,
     "ADD_STYLE_NAME", 0, atom,
@@ -348,8 +348,7 @@ sp_compute_props(spf, fontname, pinfo, sWidth)
 	case truncate_atom:
 	    *is_str = TRUE;
 	    for (ptr3 = ptr1; *ptr3; ptr3++)
-		if (*ptr3 == '=' || *ptr3 == '-' ||
-		    *ptr3 == '+' || *ptr3 == '~')
+		if (*ptr3 == '[')
 		    break;
 	    pp->value = MakeAtom(ptr1, ptr3 - ptr1, TRUE);
 	    break;
