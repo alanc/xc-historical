@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.1 93/09/03 13:24:55 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.2 93/09/08 20:28:53 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -169,10 +169,29 @@ extern int	        _SmAuthCount;
 extern IceOCLauthRec	_SmcAuthRecs[];
 extern IceACLauthRec	_SmsAuthRecs[];
 
-extern SmcCallbacks 	_SmcCallbacks;
-extern SmsCallbacks 	_SmsCallbacks;
+extern SmsNewClientProc	_SmsNewClientProc;
+extern SmPointer	_SmsNewClientData;
 
 extern SmcErrorHandler _SmcErrorHandler;
 extern SmsErrorHandler _SmsErrorHandler;
+
+
+extern void
+_SmcErrorBadState (
+#if NeedFunctionPrototypes
+    IceConn	/* iceConn */,
+    int		/* offendingMinor */,
+    int		/* severity */
+#endif
+);
+
+extern void
+_SmsErrorBadState (
+#if NeedFunctionPrototypes
+    IceConn	/* iceConn */,
+    int		/* offendingMinor */,
+    int		/* severity */
+#endif
+);
 
 #endif /* SMLIBINT */
