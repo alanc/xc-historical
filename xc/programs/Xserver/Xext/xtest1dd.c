@@ -1,5 +1,5 @@
 /*
- *	File: xtestext1dd.c
+ *	File: xtest1dd.c
  *
  *	This file contains the device dependent parts of the input
  *	synthesis extension.
@@ -43,7 +43,7 @@ University of California.
 #include "Xmd.h"
 #include "Xproto.h"
 #define  XTestSERVER_SIDE
-#include "extensions/xtestext1.h"	
+#include "xtestext1.h"	
 /*
  * the following include files are specific to HP's implementation
  * of the extension.  Your implementation may vary.  If you don't
@@ -152,56 +152,57 @@ struct {
 	 * the action
 	 */
 	CARD32	delay_time;
-}			action_array[ACTION_ARRAY_SIZE];
+}action_array[ACTION_ARRAY_SIZE];
+
 /*
  * write index for input action array
  */
-int			write_index = 0;
+static int			write_index = 0;
 /*
  * read index for input action array
  */
-int			read_index = 0;
+static int			read_index = 0;
 /*
  * this is where the input actions are accumulated until they are sent
  * to a client (in a wire event)
  */
-xTestInputActionEvent	input_action_packet;
+static xTestInputActionEvent	input_action_packet;
 /*
  * holds the index (in bytes) into the input actions buffer in the
  * current input action event
  */
-int 			packet_index;
+static int 			packet_index;
 /*
  * set to 1 when the input action event is full and needs to be sent to the 
  * client
  */
-int			input_action_event_full = 0;
+static int			input_action_event_full = 0;
 /*
  * logical x position of the mouse during input action gathering
  */
-short			fmousex;
+static short			fmousex;
 /*
  * logical y position of the mouse during input action gathering
  */
-short			fmousey;
+static short			fmousey;
 /*
  * logical x position of the mouse during input action playback
  */
-short			mx;
+static short			mx;
 /*
  * logical y position of the mouse during input action playback
  */
-short			my;
+static short			my;
 /*
  * logical x position of the mouse while we are reading fake input actions
  * from the client and putting them into the fake input action array
  */
-short			pmousex;
+static short			pmousex;
 /*
  * logical y position of the mouse while we are reading fake input actions
  * from the client and putting them into the fake input action array
  */
-short			pmousey;
+static short			pmousey;
 /*
  * The playback_on flag is set to 1 while there are input actions in the 
  * input action array.  It is set to 0 when the server has received all of
@@ -211,12 +212,12 @@ int			playback_on = 0;
 /*
  * identity of the client using XTestGetInput to get user input actions
  */
-ClientPtr 		current_client;
+ClientPtr 		current_xtest_client;
 /*
  * if 1 send multiple input actions per XTestInputAction event;
  * if 0 send one input action per XTestInputAction event
  */
-char			packed_mode;
+static char			packed_mode;
 /*
  * identity of the client using the XTestFakeInput function to send some
  * fake input actions to the server
@@ -227,55 +228,55 @@ ClientPtr		playback_client = NULL;
  * request.  Set back to 0 when all of the input actions have been sent
  * to the server.
  */
-int			acknowledge = 0;
+static int			acknowledge = 0;
 /*
  * The server's idea of the current time is saved in these variables when
  * a XTestFakeInput request is received.  It is restored when all fake input
  * actions are sent to the server or when the playback client disconnects.
  */
-int			saved_sec;
-int			saved_usec;
+static int			saved_sec;
+static int			saved_usec;
 /*
  * Set to 1 when there is a valid time in saved_sec and saved_usec.
  */
-int			time_saved = 0;
+static int			time_saved = 0;
 /*
  * holds the extension's notion of what the current time is while it is 
  * sending input actions to a client
  */
-struct timeval		current_time;
+static struct timeval		current_time;
 /*
  * holds the time when the extension should place the next fake input action
  * into the server's normal events queue
  */
-struct timeval		play_time;
+static struct timeval		play_time;
 /*
  * set to 1 when play_time is first set, cleared to 0 when the
  * client using the extension disconnects, or when XTestReset is called
  */
-char			play_clock = 0;
+static char			play_clock = 0;
 /*
  * holds the amount of time left until the next input action from the
  * input action array can be sent to the server
  */
-struct timeval		rtime;
+static struct timeval		rtime;
 /*
  * Set to 1 after the extension is done waiting for the correct time delay
  * for an input action to be sent to the server.  Remains a 1 until the time
  * delay for the next input action is computed.  Then set to 0 if the
  * extension has to wait for the correct time delay.
  */
-int			go_for_next = 1;
+static int			go_for_next = 1;
 /*
  * needed to restore waitime if playback is to be aborted
  */
-struct timeval		*restorewait;
+static struct timeval		*restorewait;
 /*
  * tmon special command key
  *
- * also referenced in x_hil.c
+ * also referenced in device layer
  */
-u_char			command_key = COMMAND_KEY;
+u_char			xtest_command_key = COMMAND_KEY;
 
 /***************************************************************
  * function declarations
@@ -283,13 +284,13 @@ u_char			command_key = COMMAND_KEY;
 
 void	flush_input_actions();
 void	XTestStealJumpData();
-void	parse_key_fake();
-void	parse_motion_fake();
-void	parse_jump_fake();
-void	parse_delay_fake();
-void	send_ack();
-void	start_play_clock();
-void	compute_action_time();
+static void	parse_key_fake();
+static void	parse_motion_fake();
+static void	parse_jump_fake();
+static void	parse_delay_fake();
+static void	send_ack();
+static void	start_play_clock();
+static void	compute_action_time();
 
 void	ProcessInputEvents();
 /*
@@ -298,8 +299,9 @@ void	ProcessInputEvents();
  */
 void	WriteEventsToClient();
 
-CARD16	check_time_event();
-CARD32	current_ms();
+static CARD16	check_time_event();
+static CARD32	current_ms();
+static int	there_is_room();
 
 /******************************************************************************
  *
@@ -374,7 +376,7 @@ CARD32		mode;
 	/*
 	 * keep track of which client is getting input actions
 	 */
-	current_client = client;
+	current_xtest_client = client;
 	/*
 	 * find out what time it is
 	 */
@@ -404,10 +406,6 @@ flush_input_actions()
 	 */
 	int			i;
 
-#ifdef	DUALTCP
-	register swaptype	n;
-#endif
-
 	if (packet_index == 0)
 	{
 		/*
@@ -427,22 +425,14 @@ flush_input_actions()
 	}
 	rep = (char *) (&input_action_packet);
 
-#ifdef	DUALTCP
-	if (swapped[current_client])
-	{
-		pswapl (rep, 0);
-		pswapl (rep, 2);
-	}
-#endif  DUALTCP
-
 	/*
 	 * set the serial number of the input action event
 	 */
-	input_action_packet.sequenceNumber = current_client->sequence;
+	input_action_packet.sequenceNumber = current_xtest_client->sequence;
 	/*
 	 * send the input action event to the client
 	 */
-	WriteEventsToClient(current_client, 1, (xEvent *) rep);
+	WriteEventsToClient(current_xtest_client, 1, (xEvent *) rep);
 	/*
 	 * re-initialize the input action event
 	 */
@@ -536,7 +526,7 @@ int	dev_type;
  *	Returns the number of milliseconds from the passed-in time to the
  *	current time, and then updates the passed-in time to the current time.
  */
-CARD32
+static CARD32
 current_ms(otime)
 struct timeval	*otime;
 {	
@@ -582,7 +572,7 @@ struct timeval	*otime;
  *	If time delta is > XTestSHORT_DELAY_TIME then insert a time event
  *	and return 0; else return the delay time.
  */
-CARD16
+static CARD16
 check_time_event()
 {
 	CARD32		tstamp;
@@ -657,7 +647,7 @@ check_time_event()
  *	of the size actsize bytes.  Returns 1 if there is space, 0 otherwise.
  *
  */
-int
+static int
 there_is_room(actsize)
 /*
  * the number of bytes of space needed
@@ -683,7 +673,7 @@ int	actsize;
  *
  *	This is implementation-dependent.  Your implementation may vary.
  */
-void
+static void
 put_fkey(dev_type, keycode, keystate, mousex, mousey)
 /*
  * which device supposedly performed the action
@@ -788,7 +778,7 @@ int	mousey;
  *
  *	This is implementation-dependent.  Your implementation may vary.
  */
-void
+static void
 jump_fake_mouse(jx, jy, dev_type)
 /*
  * the x and y position to move the mouse to
@@ -1062,7 +1052,7 @@ short	locy;
  *	XTestProcessInputAction routine will be called to take input actions
  *	from the input action array and send them to the server to be handled.
  */
-void
+static void
 parse_fake_input(client, req)
 /*
  * which client did the XTestFakeInput request
@@ -1197,7 +1187,7 @@ char		*req;
  *	Copy the fake key input action from its packed form into the array of
  *	pending input events.
  */
-void
+static void
 parse_key_fake(fkey)
 XTestKeyInfo	*fkey;
 {	
@@ -1218,7 +1208,7 @@ XTestKeyInfo	*fkey;
  *	Copy the fake motion input action from its packed form into the array of
  *	pending input events.
  */
-void
+static void
 parse_motion_fake(fmotion)
 XTestMotionInfo	*fmotion;
 {	
@@ -1260,7 +1250,7 @@ XTestMotionInfo	*fmotion;
  *	Copy the fake jump input action from its packed form into the array of
  *	pending input events.
  */
-void
+static void
 parse_jump_fake(fjump)
 XTestJumpInfo	*fjump;
 {
@@ -1283,7 +1273,7 @@ XTestJumpInfo	*fjump;
  *	Copy the fake delay input action from its packed form into the array of
  *	pending input events.
  */
-void
+static void
 parse_delay_fake(tevent)
 XTestDelayInfo	*tevent;
 {
@@ -1485,7 +1475,7 @@ struct timeval	*waittime;
  *
  *	send an xTestFakeAck event to the client
  */
-void
+static void
 send_ack(client)
 ClientPtr	client;
 {
@@ -1505,7 +1495,7 @@ ClientPtr	client;
  *
  *	start the clock for play back.
  */
-void
+static void
 start_play_clock()
 {
 	/*
@@ -1528,7 +1518,7 @@ start_play_clock()
  *	into the server's input queue.  Fill the rtime structure with values
  *	for the delta until the time for the next input action.
  */
-void
+static void
 compute_action_time(rtime)
 struct timeval	*rtime;
 {
@@ -1611,7 +1601,7 @@ struct timeval	*rtime;
  *	server's input queue.  If the time is already up, reset play_time to
  *	the current time.
  */
-int
+static int
 find_residual_time(rtime)
 struct timeval	*rtime;
 {
@@ -1753,7 +1743,7 @@ abort_play_back()
 	 * there are no valid clients using this extension
 	 */
 	playback_client = (ClientPtr) NULL;
-	current_client = (ClientPtr) NULL;
+	current_xtest_client = (ClientPtr) NULL;
 }
 
 /******************************************************************************
