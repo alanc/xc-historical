@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.5 89/11/14 10:10:17 swick Exp $
+* $XConsortium: Xtos.h,v 1.6 89/12/19 08:23:59 swick Exp $
 */
 
 /***********************************************************
@@ -46,6 +46,11 @@ SOFTWARE.
 # else
 #  define MISSING_STDARG_H
 # endif
+#endif /* __HIGHC__ */
+
+#ifdef apollo
+# define MISSING_STDARG_H
+#endif
 
 # ifdef MISSING_STDARG_H
 
@@ -72,8 +77,6 @@ typedef char *va_list;
 #endif /* _STDARG_H */
 
 # endif /* MissingStdargH */
-#endif /* __HIGHC__ */
-
 
 /* stolen from server/include/os.h */
 #ifndef NO_ALLOCA
