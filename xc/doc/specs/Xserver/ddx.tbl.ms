@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.29 91/04/07 16:53:46 keith Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.30 91/04/23 15:59:09 keith Exp $
 .EF 'Porting Layer Definition'- % -'April 22, 1991'
 .OF 'Porting Layer Definition'- % -'April 22, 1991'
 .EH '''
@@ -23,7 +23,7 @@ Bob Scheifler
 .AI
 Massachusetts Institute of Technology
 .sp
-Revised for Release 4 and Release 5beta by
+Revised for Release 4 and Release 5 by
 .AU
 Keith Packard
 .AI
