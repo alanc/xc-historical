@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XQuTextExt.c,v 11.15 89/12/11 20:56:40 rws Exp $ */
+/* $XConsortium: XQuTextExt.c,v 11.16 90/12/12 09:19:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986, 1987	*/
 
 #define NEED_REPLIES
@@ -59,8 +59,8 @@ XQueryTextExtents (dpy, fid, string, nchars, dir, font_ascent, font_descent,
     *dir = rep.drawDirection;
     *font_ascent = cvtINT16toInt (rep.fontAscent);
     *font_descent = cvtINT16toInt (rep.fontDescent);
-    overall->ascent = (short) cvtINT16toInt (rep.overallAscent);
-    overall->descent = (short) cvtINT16toInt (rep.overallDescent);
+    overall->ascent = (short) cvtINT16toShort (rep.overallAscent);
+    overall->descent = (short) cvtINT16toShort (rep.overallDescent);
     /* XXX bogus - we're throwing away information!!! */
     overall->width  = (short) cvtINT32toInt (rep.overallWidth);
     overall->lbearing = (short) cvtINT32toInt (rep.overallLeft);

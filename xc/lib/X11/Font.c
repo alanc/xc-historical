@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XFont.c,v 11.34 89/12/11 19:09:07 rws Exp $ */
+/* $XConsortium: XFont.c,v 11.35 90/12/12 09:17:43 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -119,19 +119,19 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
 	xCharInfo *xcip;
 
 	xcip = (xCharInfo *) &reply.minBounds;
-	fs->min_bounds.lbearing = cvtINT16toInt(xcip->leftSideBearing);
-	fs->min_bounds.rbearing = cvtINT16toInt(xcip->rightSideBearing);
-	fs->min_bounds.width = cvtINT16toInt(xcip->characterWidth);
-	fs->min_bounds.ascent = cvtINT16toInt(xcip->ascent);
-	fs->min_bounds.descent = cvtINT16toInt(xcip->descent);
+	fs->min_bounds.lbearing = cvtINT16toShort(xcip->leftSideBearing);
+	fs->min_bounds.rbearing = cvtINT16toShort(xcip->rightSideBearing);
+	fs->min_bounds.width = cvtINT16toShort(xcip->characterWidth);
+	fs->min_bounds.ascent = cvtINT16toShort(xcip->ascent);
+	fs->min_bounds.descent = cvtINT16toShort(xcip->descent);
 	fs->min_bounds.attributes = xcip->attributes;
 
 	xcip = (xCharInfo *) &reply.maxBounds;
-	fs->max_bounds.lbearing = cvtINT16toInt(xcip->leftSideBearing);
-	fs->max_bounds.rbearing =  cvtINT16toInt(xcip->rightSideBearing);
-	fs->max_bounds.width =  cvtINT16toInt(xcip->characterWidth);
-	fs->max_bounds.ascent =  cvtINT16toInt(xcip->ascent);
-	fs->max_bounds.descent =  cvtINT16toInt(xcip->descent);
+	fs->max_bounds.lbearing = cvtINT16toShort(xcip->leftSideBearing);
+	fs->max_bounds.rbearing =  cvtINT16toShort(xcip->rightSideBearing);
+	fs->max_bounds.width =  cvtINT16toShort(xcip->characterWidth);
+	fs->max_bounds.ascent =  cvtINT16toShort(xcip->ascent);
+	fs->max_bounds.descent =  cvtINT16toShort(xcip->descent);
 	fs->max_bounds.attributes = xcip->attributes;
     }
 #else
@@ -183,11 +183,11 @@ static int _XQueryFont (dpy, fid, xfs)	/* Internal-only entry point */
 		xCharInfo xcip;
 
 		_XRead(dpy, &xcip, SIZEOF(xCharInfo));
-		cs->lbearing = cvtINT16toInt(xcip.leftSideBearing);
-		cs->rbearing = cvtINT16toInt(xcip.rightSideBearing);
-		cs->width =  cvtINT16toInt(xcip.characterWidth);
-		cs->ascent =  cvtINT16toInt(xcip.ascent);
-		cs->descent =  cvtINT16toInt(xcip.descent);
+		cs->lbearing = cvtINT16toShort(xcip.leftSideBearing);
+		cs->rbearing = cvtINT16toShort(xcip.rightSideBearing);
+		cs->width =  cvtINT16toShort(xcip.characterWidth);
+		cs->ascent =  cvtINT16toShort(xcip.ascent);
+		cs->descent =  cvtINT16toShort(xcip.descent);
 		cs->attributes = xcip.attributes;
 	    }
 	}
