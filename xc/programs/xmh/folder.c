@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: folder.c,v 2.1 87/12/18 08:32:15 swick Locked $";
+static char rcs_id[] = "$Header: folder.c,v 2.2 88/01/25 20:10:13 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -54,8 +54,9 @@ Scrn scrn;
 	    if (TocConfirmCataclysm(toc))
 		return;
 	}
-	if (MsgSetScrnForce((Msg) NULL, scrn))
+/*	if (MsgSetScrn((Msg) NULL, scrn))
 	    return;
+*/
 /*	for (i = 0; i < numFolders; i++) {
 	    toc = folderList[i];
 	    if (toc->scanfile && toc->curmsg)
