@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.6 89/03/11 13:21:55 rws Exp $ */
+/* $XConsortium: resource.h,v 1.7 89/03/23 19:09:55 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -58,7 +58,6 @@ SOFTWARE.
 #define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))	/* hi 12 bits */
 #define SERVER_BIT		0x80000			/* 20th bit reserved */
 #define SERVER_BIT_SHIFT	19			/* 20th bit reserved */
-#define FAKE_CLIENT_ID(c, i) FakeClientID(c)
 
 /* Invalid resource id */
 #define INVALID	(0)
