@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.20 89/08/04 08:28:13 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.21 90/03/19 18:09:04 keith Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -31,11 +31,7 @@ SOFTWARE.
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 18)
-#if (NOFILE <= 128) /* 128 is value of MAXCLIENTS in dix layer */
 #define MAXSOCKS (NOFILE - 1)
-#else
-#define MAXSOCKS 128
-#endif
 #define mskcnt ((MAXSOCKS + 31) / 32)	/* size of bit array */
 
 #if (mskcnt==1)
@@ -129,8 +125,12 @@ SOFTWARE.
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
 		          dst[cri] &= ~b1[cri];  }
+#if (mskcnt==8)
+#define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || \
+		     src[4] || src[5] || src[6] || src[7])
+#endif
 /*
- * If mskcnt>4, then ANYSET is a routine defined in WaitFor.c.
+ * If mskcnt>4 and not 8, then ANYSET is a routine defined in WaitFor.c.
  *
  * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
