@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.23 89/06/05 17:31:45 rws Exp $
+ * $XConsortium: Xrm.c,v 1.24 89/06/08 18:00:08 swick Exp $
  */
 
 /***********************************************************
@@ -737,7 +737,14 @@ static void PutLineResources(pdb, get_line, closure)
 	s = (char *)(*get_line)(pbuf, pbuf_size, closure);
 	if (s == NULL) break;
 
-	/* Scan to start of resource name/class specification */
+	/*
+	 * Scan to start of resource name/class specification
+	 *
+	 * Comments are indicated by an exclamation mark in column 0 only.  The
+	 * check for sharp sign after optional white space is in violation of 
+	 * the spec, but is there for compatibility (for now).
+	 */
+	if (*s == '!') continue;
 	for (; ((ch = *s) != '\n') && isspace(ch); s++) {};
 	if ((ch == '\0') || (ch == '\n') || (ch == '#')) continue;
     
@@ -778,6 +785,15 @@ static void PutLineResources(pdb, get_line, closure)
 			if ((char *)(*get_line)(s, pbuf_size - (s-pbuf), closure) == NULL)
 			    break;
 			s--;
+		    } else if (isascii(s[0]) && isdigit(s[0]) &&
+			       isascii(s[1]) && isdigit(s[1]) &&
+			       isascii(s[2]) && isdigit(s[2])) {
+			register unsigned char *uts = (unsigned char *) ts;
+			*uts = (unsigned char) ((s[0] - '0') * 0100 + 
+						(s[1] - '0') * 010 +
+						(s[0] - '0'));
+			ts++;
+			s += 3;
 		    } else if (*s != '\0') {
 			*ts = *s;
 			ts++;
