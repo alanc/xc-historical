@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.165 91/04/11 12:02:10 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.166 91/04/11 12:10:52 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -673,11 +673,11 @@ static Boolean TestFile(path)
 
     return (access(path, R_OK) == 0 &&		/* exists and is readable */
 	    stat(path, &status) == 0 &&		/* get the status */
-#ifdef _POSIX_SOURCE
+#ifndef X_NOT_POSIX
 	    S_ISDIR(status.st_mode) == 0);	/* not a directory */
 #else
 	    (status.st_mode & S_IFDIR) == 0);	/* not a directory */
-#endif /* _POSIX_SOURCE else */
+#endif /* X_NOT_POSIX else */
 #endif /* VMS */
 }
 
