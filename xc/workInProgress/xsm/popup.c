@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: popup.c,v 1.1 94/12/27 18:53:17 mor Exp mor $ */
 
 /*
 
@@ -132,7 +132,7 @@ String delAction;
 
 	popup_border <<= 1;
 
-	if (popup_x + popup_width + popup_border >
+	if ((int) (popup_x + popup_width + popup_border) >
 	    WidthOfScreen (XtScreen (topLevel)))
 	{
 	    popup_x = WidthOfScreen (XtScreen (topLevel)) -
@@ -141,7 +141,7 @@ String delAction;
 	    repos = 1;
 	}
 
-	if (popup_y + popup_height + popup_border >
+	if ((int) (popup_y + popup_height + popup_border) >
 	    HeightOfScreen (XtScreen (topLevel)))
 	{
 	    popup_y = HeightOfScreen (XtScreen (topLevel)) -
