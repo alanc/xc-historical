@@ -11,7 +11,7 @@
    INSTALLFLAGS = -m 4755
        INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
 
-ComplexProgramTarget_1(xterm,$(XTOOLLIB) $(XLIB),-ltermcap)
+ComplexProgramTarget_1(xterm,$(XAWLIB) $(XTOOLLIB) $(XLIB),-ltermcap)
 
 SingleProgramTarget(resize,$(OBJS2),,-lc -ltermcap)
 
