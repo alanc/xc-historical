@@ -1,4 +1,4 @@
-static char*id="$XConsortium: xmessage.c,v 1.3 94/04/17 20:45:57 gildea Exp $";
+static char*id="$XConsortium: xmessage.c,v 1.4 94/06/03 15:58:35 gildea Exp gildea $";
 /*
 
 Copyright (c) 1988, 1991, 1994  X Consortium
@@ -351,9 +351,9 @@ position_near_center(shell)
 
 /* ARGSUSED */
 static void
-time_out(client_data, id)
+time_out(client_data, iid)
     XtPointer client_data;
-    XtIntervalId *id;
+    XtIntervalId *iid;
 {
     exit(0);
 }
