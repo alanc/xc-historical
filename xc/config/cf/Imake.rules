@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.87 91/02/22 17:32:14 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.88 91/02/22 17:37:09 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -138,7 +138,7 @@ Concat(osaber_,program):						@@\
 #ifndef RemoveTargetProgram
 #if RemoveTargetProgramByMoving
 #define RemoveTargetProgram(program) \
-$(RM) program; if [ -f program ]; then $(MV) program Concat(program,~); fi
+if [ -f program ]; then $(RM) Concat(program,~); $(MV) program Concat(program,~); fi
 #else
 #define RemoveTargetProgram(program) $(RM) program
 #endif
