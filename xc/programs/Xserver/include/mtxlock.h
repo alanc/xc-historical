@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.4 93/11/16 20:48:37 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.6 93/12/03 01:21:41 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -236,8 +236,7 @@
 #ifdef MTX
 #define MTX_UNLOCK_TWO_DRAWABLES_AND_GC UNLOCK_TWO_DRAWABLES_AND_GC
 #else
-#define MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, 		\
-				        srcID, dstID, gcID, client) 	\
+#define MTX_UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client) 	\
 	    /* nothing */
 #endif
 
