@@ -147,7 +147,7 @@ XProtoError.14: BadIDChoice (invalid resource ID chosen for this connection)
 XProtoError.15: BadName (named color or font does not exist)
 XProtoError.16: BadLength (poly request too large or internal Xlib length error)
 XProtoError.17: BadImplementation (server does not implement operation)
-! Multi-Buffering extension
+! Multi-Buffering extension, a draft X Consortium standard
 XRequest.Multi-Buffering.0: X_MbufGetBufferVersion
 XRequest.Multi-Buffering.1: X_MbufCreateImageBuffers
 XRequest.Multi-Buffering.2: X_MbufDestroyImageBuffers
@@ -159,6 +159,7 @@ XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
 XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
 XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
 XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
+XlibMessage.Multi-Buffering.0: Buffer id in failed request 0x%lx
 ! SHAPE extension, an X Consortium standard
 XRequest.SHAPE.0: X_ShapeQueryVersion
 XRequest.SHAPE.1: X_ShapeRectangles
@@ -169,7 +170,7 @@ XRequest.SHAPE.5: X_ShapeQueryExtents
 XRequest.SHAPE.6: X_ShapeSelectInput
 XRequest.SHAPE.7: X_ShapeInputSelected
 XRequest.SHAPE.8: X_ShapeGetRectangles
-! Input extension, not (yet) an X Consortium standard
+! Input extension, a draft X Consortium standard
 XRequest.XInputExtension.1:X_GetExtensionVersion
 XRequest.XInputExtension.2:X_ListInputDevices
 XRequest.XInputExtension.3:X_OpenDevice
@@ -209,6 +210,7 @@ XRequest.MIT-SHM.3: X_ShmPutImage
 XRequest.MIT-SHM.4: X_ShmGetImage
 XRequest.MIT-SHM.5: X_ShmCreatePixmap
 XProtoError.MIT-SHM.0: BadShmSeg (invalid shared segment parameter)
+XlibMessage.MIT-SHM.0: Segment id in failed request 0x%lx
 ! MIT-SUNDRY-NONSTANDARD extension, definitely not an X Consortium standard
 XRequest.MIT-SUNDRY-NONSTANDARD.0: X_MITSetBugMode
 XRequest.MIT-SUNDRY-NONSTANDARD.1: X_MITGetBugMode
