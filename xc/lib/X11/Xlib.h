@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.176 89/12/11 10:54:19 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.177 89/12/12 11:50:10 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -25,10 +25,10 @@
 #ifndef _XLIB_H_
 #define _XLIB_H_
 
-#if defined(USG)
+#ifdef USG
 #ifndef __TYPES__
-#define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
+#define __TYPES__
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>

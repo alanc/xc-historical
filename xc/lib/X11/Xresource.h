@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.24 89/12/11 18:17:00 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.25 89/12/12 11:50:08 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,10 +45,10 @@ SOFTWARE.
  *
  ****************************************************************/
 
-#if defined(USG)
+#ifdef USG
 #ifndef __TYPES__
-#define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
+#define __TYPES__
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
