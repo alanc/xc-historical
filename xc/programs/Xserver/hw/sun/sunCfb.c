@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.5 93/10/29 17:40:21 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.7 93/12/13 18:23:58 dpw Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -209,14 +209,13 @@ static void CGScreenInit (pScreen)
     ScreenPtr	pScreen;
 {
 #ifndef STATIC_COLOR /* { */
-    extern Bool	FlipPixels;
     SetupScreen (pScreen);
     pScreen->InstallColormap = CGInstallColormap;
     pScreen->UninstallColormap = CGUninstallColormap;
     pScreen->ListInstalledColormaps = CGListInstalledColormaps;
     pScreen->StoreColors = CGStoreColors;
     pPrivate->UpdateColormap = CGUpdateColormap;
-    if (FlipPixels)
+    if (sunFlipPixels)
     {
 	pScreen->whitePixel = 1;
 	pScreen->blackPixel = 0;

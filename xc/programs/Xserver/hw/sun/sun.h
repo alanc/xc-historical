@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.33 93/12/13 11:40:15 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.34 94/01/21 18:44:56 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -239,7 +239,7 @@ typedef Bool (*sunFbInitProc)(
 #endif
 );
 
-typedef struct _sunFbDataRec {
+typedef struct {
     sunFbInitProc	init;	/* init procedure for this fb */
     char*		name;	/* /usr/include/fbio names */
 } sunFbDataRec;
@@ -252,6 +252,9 @@ extern long		sunAutoRepeatDelay;
 extern sunFbDataRec	sunFbData[];
 extern fbFd		sunFbs[];
 extern Bool		sunSwapLkeys;
+extern Bool		sunFlipPixels;
+extern Bool		sunActiveZaphod;
+extern Bool		sunFbInfo;
 extern int		sunScreenIndex;
 extern int*		sunProtected;
 

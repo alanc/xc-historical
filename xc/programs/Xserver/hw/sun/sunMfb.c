@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunMfb.c,v 1.1 93/08/08 18:01:47 kaleb Exp $ */
+/* $XConsortium: sunMfb.c,v 1.2 93/09/26 10:04:59 rws Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -96,8 +96,13 @@ Bool sunBW2Init (screen, pScreen, argc, argv)
     char	    **argv;   	/* The arguments themselves. Don't change! */
 {
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
-    pScreen->whitePixel = 0;
-    pScreen->blackPixel = 1;
+    if (sunFlipPixels) {
+	pScreen->whitePixel = 1;
+	pScreen->blackPixel = 0;
+    } else {
+	pScreen->whitePixel = 0;
+	pScreen->blackPixel = 1;
+    }
     return sunInitCommon (screen, pScreen, (off_t) 0,
 	mfbScreenInit, NULL,
 	mfbCreateDefColormap, sunSaveScreen, 0);

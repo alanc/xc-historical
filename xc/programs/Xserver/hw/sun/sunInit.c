@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.45 93/12/13 12:10:34 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.46 94/01/21 18:45:29 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -125,8 +125,8 @@ static Bool	sunDevsInited = FALSE;
 Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 #endif
 Bool sunSwapLkeys = FALSE;
-Bool FlipPixels = FALSE;
-Bool FbInfo = FALSE;
+Bool sunFlipPixels = FALSE;
+Bool sunFbInfo = FALSE;
 int sunKbdFd = -1, sunPtrFd = -1;
 
 /*
@@ -282,14 +282,14 @@ static int OpenFrameBuffer(device, screen)
 		    if (sunFbData[fbattr->emu_types[_i]].init) {
 			sunFbs[screen].info.fb_type = fbattr->emu_types[_i];
 			ret = TRUE;
-			if (FbInfo)
+			if (sunFbInfo)
 			    ErrorF ("%s is emulating a %s\n", device,
 				sunFbData[fbattr->fbtype.fb_type].name);
 			break;
 		    }
 		}
 	    }
-	    if (FbInfo) 
+	    if (sunFbInfo) 
 		ErrorF ("%s is really a %s\n", device, 
 		    sunFbData[fbattr ? fbattr->fbtype.fb_type : sunFbs[screen].info.fb_type].name);
 	}

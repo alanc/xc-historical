@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.19 93/11/12 16:38:21 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.20 93/11/16 10:15:57 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -188,9 +188,6 @@ ddxProcessArgument (argc, argv, i)
     int	i;
 {
     extern void UseMsg();
-    extern Bool ActiveZaphod;
-    extern Bool FlipPixels;
-    extern Bool FbInfo;
 
 #ifndef XKB
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
@@ -223,15 +220,15 @@ ddxProcessArgument (argc, argv, i)
 	return 1;
     }
     if (strcmp (argv[i], "-zaphod") == 0) {	/* -zaphod */
-	ActiveZaphod = FALSE;
+	sunActiveZaphod = FALSE;
 	return 1;
     }
     if (strcmp (argv[i], "-flipPixels") == 0) {	/* -flipPixels */
-	FlipPixels = TRUE;
+	sunFlipPixels = TRUE;
 	return 1;
     }
     if (strcmp (argv[i], "-fbinfo") == 0) {	/* -fbinfo */
-	FbInfo = TRUE;
+	sunFbInfo = TRUE;
 	return 1;
     }
     if (strcmp (argv[i], "-kbd") == 0) {	/* -kbd */
