@@ -92,33 +92,53 @@
 	    (format t "  duplicate at ~s" db))))
       )))
 
+;;
+;; If this is true, resource symbols will be compared in a case-insensitive
+;; manner, and converting a resource string to a keyword will uppercaseify it.
+;;
+(defparameter *uppercase-resource-symbols* nil)
+
 (defun resource-key (stringable)
   ;; Ensure STRINGABLE is a keyword.
   (declare (type stringable stringable))
-  (if (symbolp stringable)
+  (etypecase stringable
+    (symbol
       (if (keywordp (the symbol stringable))
 	  stringable
-	(kintern (symbol-name (the symbol stringable))))
-    (kintern (#-excl string-upcase
-	      #+excl correct-case
-	      (the string stringable)))))
+	  (kintern (symbol-name (the symbol stringable)))))
+    (string
+      (if *uppercase-resource-symbols*
+	  (setq stringable (#-allegro string-upcase #+allegro correct-case
+			    (the string stringable))))
+      (kintern (the string stringable)))))
 
 (defun stringable-equal (a b)
   ;; Compare two stringables.
   ;; Ignore case when comparing to a symbol.
   (declare (type stringable a b))
   (declare (values boolean))
-  (if (symbolp a)
-      (if (symbolp b)
+  (etypecase a
+    (string
+      (etypecase b
+	(string
+	  (string= (the string a) (the string b)))
+	(symbol
+	  (if *uppercase-resource-symbols*
+	      (string-equal (the string a)
+			    (the string (symbol-name (the symbol b))))
+	      (string= (the string a)
+		       (the string (symbol-name (the symbol b))))))))
+    (symbol
+      (etypecase b
+	(string
+	  (if *uppercase-resource-symbols*
+	      (string-equal (the string (symbol-name (the symbol a)))
+			    (the string b))
+	      (string= (the string (symbol-name (the symbol a)))
+		       (the string b))))
+	(symbol
 	  (string= (the string (symbol-name (the symbol a)))
-		   (the string (symbol-name (the symbol b))))
-	(string-equal (the string (symbol-name (the symbol a)))
-		      (the string b)))
-    (if (symbolp b)
-	(string-equal (the string a)
-		      (the string (symbol-name (the symbol b))))
-      (string= (the string a)
-	       (the string b)))))
+		   (the string (symbol-name (the symbol b)))))))))
 
 
 ;;;-----------------------------------------------------------------------------
@@ -435,7 +455,7 @@
 
 (defun char-memq (key char)
   ;; Used as a test function for POSITION
-  (declare (type string-char char))
+  (declare (type base-char char))
   (member char key))
 
 (defmacro resource-with-open-file ((stream pathname &rest options) &body body)
@@ -447,8 +467,8 @@
 	    (,streamp (streamp pathname))
 	    (,stream (if ,streamp pathname (open ,pathname ,@options))))
        (unwind-protect
-	   (progn
-	     ,@body
+	   (multiple-value-prog1
+	     (progn ,@body)
 	     (setq ,abortp nil))
 	 (unless ,streamp
 	   (close stream :abort ,abortp))))))
