@@ -1,4 +1,4 @@
-/* $XConsortium: extension.h,v 1.4 88/09/06 15:48:25 jim Exp $ */
+/* $XConsortium: extension.h,v 1.5 89/07/03 19:47:55 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,11 +29,11 @@ SOFTWARE.
     if ((client->lastDrawableID != drawID) || (client->lastGCID != gcID))\
     {\
         if (client->lastDrawableID != drawID)\
-    	    pDraw = (DrawablePtr)LookupID(drawID, RT_DRAWABLE, RC_CORE);\
+    	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
         else\
 	    pDraw = client->lastDrawable;\
         if (client->lastGCID != gcID)\
-	    pGC = (GC *)LookupID(gcID, RT_GC, RC_CORE);\
+	    pGC = (GC *)LookupIDByType(gcID, RT_GC);\
         else\
             pGC = client->lastGC;\
 	if (pDraw && pGC)\

@@ -1,6 +1,6 @@
-/* $XConsortium: resource.h,v 1.7 89/03/23 19:09:55 rws Exp $ */
+/* $XConsortium: resource.h,v 1.8 89/07/03 14:57:21 rws Exp $ */
 /***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
+Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
@@ -30,26 +30,29 @@ SOFTWARE.
  * STUFF FOR RESOURCES 
  *****************************************************************/
 
-/* types for Resource routines */
-
-#define RT_COLORMAP         1<<0
-#define RT_FONT             1<<1
-#define RT_CURSOR           1<<2
-#define RT_PIXMAP           1<<3
-#define RT_WINDOW           1<<4
-#define RT_DRAWABLE	    (RT_WINDOW | RT_PIXMAP)
-#define RT_GC               1<<5
-#define RT_FAKE		    1<<6
-#define RT_VISUALID         1<<7
-#define RT_CMAPENTRY        1<<8
-#define RT_LASTPREDEF	    RT_CMAPENTRY
-#define RT_ANY		    0xFFFF
-
 /* classes for Resource routines */
 
-#define RC_CORE		    0
-#define RC_NONE		    1
-#define RC_LASTPREDEF	    RC_NONE
+typedef unsigned long RESTYPE;
+
+#define RC_VANILLA	((RESTYPE)0)
+#define RC_CACHED	((RESTYPE)1<<31)
+#define RC_DRAWABLE	((RESTYPE)1<<30)
+#define RC_LASTPREDEF	RC_DRAWABLE
+#define RC_ANY		(~(RESTYPE)0)
+
+/* types for Resource routines */
+
+#define RT_WINDOW	((RESTYPE)1|RC_CACHED|RC_DRAWABLE)
+#define RT_PIXMAP	((RESTYPE)2|RC_CACHED|RC_DRAWABLE)
+#define RT_GC		((RESTYPE)3|RC_CACHED)
+#define RT_FONT		((RESTYPE)4)
+#define RT_CURSOR	((RESTYPE)5)
+#define RT_COLORMAP	((RESTYPE)6)
+#define RT_CMAPENTRY	((RESTYPE)7)
+#define RT_OTHERCLIENT	((RESTYPE)8)
+#define RT_PASSIVEGRAB	((RESTYPE)9)
+#define RT_LASTPREDEF	RT_PASSIVEGRAB
+#define RT_NONE		0
 
 /* bits and fields within a resource id */
 #define CLIENTOFFSET 20					/* client field */
@@ -64,13 +67,14 @@ SOFTWARE.
 
 #define BAD_RESOURCE 0xe0000000
 
-unsigned short CreateNewResourceType();
-unsigned short CreateNewResourceClass();
+RESTYPE CreateNewResourceType();
+RESTYPE CreateNewResourceClass();
 unsigned long FakeClientID();
 Bool AddResource();
 void FreeResource();
 void FreeClientResources();
 Bool LegalNewID();
-pointer LookupID();
+pointer LookupIDByType();
+pointer LookupIDByClass();
 
 #endif /* RESOURCE_H */
