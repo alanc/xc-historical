@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.65 89/03/11 16:54:13 rws Exp $ */
+/* $XConsortium: property.c,v 1.66 89/03/13 07:39:10 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -213,7 +213,7 @@ ProcChangeProperty(client)
         pProp->format = format;
         pProp->data = data;
 	if (len)
-	    bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);
+	    bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
 	pProp->size = len;
         pProp->next = pWin->userProps;
         pWin->userProps = pProp;
@@ -237,7 +237,8 @@ ProcChangeProperty(client)
 		return(BadAlloc);
             pProp->data = data;
 	    if (len)
-		bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);    
+		bcopy((char *)&stuff[1], (char *)data,
+		      (int)(len * sizeInBytes));
 	    pProp->size = len;
     	    pProp->type = stuff->type;
 	    pProp->format = stuff->format;
@@ -255,7 +256,7 @@ ProcChangeProperty(client)
             pProp->data = data;
 	    bcopy((char *)&stuff[1],
 		  &((char *)data)[pProp->size * sizeInBytes], 
-		  len * sizeInBytes);
+		  (int)(len * sizeInBytes));
             pProp->size += len;
 	}
         else if (mode == PropModePrepend)
@@ -264,8 +265,8 @@ ProcChangeProperty(client)
 	    if (!data)
 		return(BadAlloc);
 	    bcopy((char *)pProp->data, &((char *)data)[len * sizeInBytes], 
-		  pProp->size * sizeInBytes);
-            bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);
+		  (int)(pProp->size * sizeInBytes));
+            bcopy((char *)&stuff[1], (char *)data, (int)(len * sizeInBytes));
 	    xfree(pProp->data);
             pProp->data = data;
             pProp->size += len;

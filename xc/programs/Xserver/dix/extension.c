@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.43 88/09/06 15:41:03 jim Exp $ */
+/* $XConsortium: extension.c,v 1.44 89/03/11 16:48:14 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -172,7 +172,8 @@ ProcQueryExtension(client)
         for (i=0; i<NumExtensions; i++)
 	{
             if ((strlen(extensions[i]->name) == stuff->nbytes) &&
-                 !strncmp((char *)&stuff[1], extensions[i]->name, stuff->nbytes))
+                 !strncmp((char *)&stuff[1], extensions[i]->name,
+			  (int)stuff->nbytes))
                  break;
 	}
         if (i == NumExtensions)

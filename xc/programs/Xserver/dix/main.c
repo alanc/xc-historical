@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.150 89/03/20 11:51:13 rws Exp $ */
+/* $XConsortium: main.c,v 1.152 89/03/23 09:15:11 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -64,6 +64,7 @@ extern Bool InitClientResources();
 static Bool CreateConnectionBlock();
 extern Bool CreateGCperDepthArray();
 extern Bool CreateDefaultStipple();
+extern void ResetWellKnownConnections();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
@@ -310,7 +311,7 @@ CreateConnectionBlock()
     sizesofar = sizeof(xConnSetup);
     pBuf = ConnectionInfo + sizeof(xConnSetup);
 
-    bcopy(VENDOR_STRING, pBuf, setup.nbytesVendor);
+    bcopy(VENDOR_STRING, pBuf, (int)setup.nbytesVendor);
     sizesofar += setup.nbytesVendor;
     pBuf += setup.nbytesVendor;
     i = padlength[setup.nbytesVendor & 3];
