@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.118 91/07/25 12:36:52 rws Exp $ */
+/* $XConsortium: Shell.c,v 1.120 91/12/06 16:06:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -116,6 +116,7 @@ static void ClassPartInitialize(), Initialize();
 static void Realize();
 static void Resize();
 static Boolean SetValues();
+static void GetValuesHook();
 static void ChangeManaged(); /* XXX */
 static XtGeometryResult GeometryManager(), RootGeometryManager();
 static void Destroy();
@@ -154,7 +155,7 @@ externaldef(shellclassrec) ShellClassRec shellClassRec = {
     /* set_values	  */	SetValues,
     /* set_values_hook	  */	NULL,			
     /* set_values_almost  */	XtInheritSetValuesAlmost,  
-    /* get_values_hook	  */	NULL,			
+    /* get_values_hook	  */	GetValuesHook,
     /* accept_focus	  */	NULL,
     /* intrinsics version */	XtVersion,
     /* callback offsets	  */	NULL,
@@ -2063,6 +2064,32 @@ void _XtShellGetCoordinates( widget, x, y)
     *y = w->core.y;
 }
 
+static void GetValuesHook(widget, args, num_args)
+    Widget	widget;
+    ArgList	args;
+    Cardinal*	num_args;
+{
+    ShellWidget w = (ShellWidget) widget;
+    extern void _XtCopyToArg();
+
+    /* x and y resource values may be invalid after a shell resize */
+    if (! (w->shell.client_specified & _XtShellPositionValid)) {
+	Cardinal	n;
+	Position	x, y;
+
+	for (n = *num_args; n; n--, args++) {
+	    if (strcmp(XtNx, args->name) == 0) {
+		 if (! (w->shell.client_specified & _XtShellPositionValid))
+		     _XtShellGetCoordinates(widget, &x, &y);
+		_XtCopyToArg((char *) &x, &args->value, sizeof(Position));
+	    } else if (strcmp(XtNy, args->name) == 0) {
+		 if (! (w->shell.client_specified & _XtShellPositionValid))
+		     _XtShellGetCoordinates(widget, &x, &y);
+		_XtCopyToArg((char *) &y, &args->value, sizeof(Position));
+	    }
+	}
+    }
+}
 
 static void ApplicationShellInsertChild(widget)
     Widget widget;
