@@ -38,28 +38,12 @@
 #define XtNhSpace		"hSpace"
 #define XtNvSpace		"vSpace"
 
-/* New fields for the ButtonBox widget record */
-typedef struct {
-    Dimension   h_space, v_space;
-} ButtonBox;
+/* Class record constants */
 
-/* New fields for the ButtonBox widget class record */
-typedef struct {
-     int mumble;
-    /* No new procedures */
-} ButtonBoxClass;
+extern WidgetClass buttonBoxWidgetClass;
 
-/* Full class record declaration */
-typedef struct {
-    CoreClass       core_class;
-    CompositeClass  composite_class;
-    ButtonBoxClass  button_box_class;
-} ButtonBoxWidgetClassData;
-
-/* Class record constant */
-
-extern ButtonBoxWidgetClassData buttonBoxClassData;
-#define buttonBoxWidgetClass    (&buttonBoxClassData)
+typedef struct _ButtonBoxClassRec *ButtonBoxWidgetClass;
+typedef struct _ButtonBoxRec      *ButtonBoxWidget;
 
 #endif _XtButtonBox_h
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -29,31 +29,18 @@ static char *sccsid = "@(#)ButtonBox.c	1.14	2/26/87";
 /* 
  * ButtonBox.c - Button box composite widget
  * 
- * Author:	Charles Haynes
+ * Author:	Joel McCormack
  * 		Digital Equipment Corporation
  * 		Western Research Laboratory
- * Date:	Sat Jan 24 1987
+ * Date:	Mon Aug 31 1987
  *
- * Converted to classing toolkit on 25 Aug 1987 by Joel McCormack
  */
 
-#include	"/usr/src/x11/include/Xlib.h"
 #include	"Intrinsic.h"
 #include	"ButtonBox.h"
+#include	"ButtonBoxPrivate.h"
 #include	"Atoms.h"
 #include	"Misc.h"
-
-/****************************************************************
- *
- * Full instance record declaration
- *
- ****************************************************************/
-
-typedef	struct {
-    Core	core;
-    Composite	composite;
-    ButtonBox	button_box;
-} ButtonBoxWidgetData, *ButtonBoxWidget;
 
 /****************************************************************
  *
@@ -80,31 +67,43 @@ static void Resize();
 static void SetValues();
 static XtGeometryReturnCode GeometryManager();
 static void ChangeManaged();
+static void ClassInitialize();
 
-ButtonBoxWidgetClassData buttonBoxWidgetClassData = {
-    /* superclass         */    (WidgetClass) &compositeWidgetClassData,
+ButtonBoxClassRec buttonBoxClassRec = {
+  {
+    /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "ButtonBox",
-    /* size               */    sizeof(ButtonBoxWidgetData),
+    /* size               */    sizeof(ButtonBoxRec),
+    /* class_initialize   */    ClassInitialize,
+    /* class_inited       */	FALSE,
     /* initialize         */    Initialize,
     /* realize            */    Realize,
     /* actions            */    NULL,
+    /* num_actions	  */	0,
     /* resources          */    resources,
     /* resource_count     */    XtNumber(resources),
-    /* xrm_extra          */    NULL,
     /* xrm_class          */    NULLQUARK,
+    /* compress_motion	  */	TRUE,
+    /* compress_exposure  */	TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    Resize,
     /* expose             */    NULL,
     /* set_values         */    SetValues,
-    /* accept_focus       */    NULL,
+    /* accept_focus       */    NULL
+  },{
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
+    /* insert_child	  */	NULL,	/* Inherit from superclass */
+    /* delete_child	  */	NULL,	/* Inherit from superclass */
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
-
+  },{
+    /* mumble		  */	0	/* Make C compiler happy   */
+  }
 };
 
+WidgetClass buttonBoxWidgetClass = (WidgetClass)&buttonBoxClassRec;
 
 
 /****************************************************************
@@ -112,6 +111,21 @@ ButtonBoxWidgetClassData buttonBoxWidgetClassData = {
  * Private Routines
  *
  ****************************************************************/
+
+static void ClassInitialize()
+{
+    CompositeWidgetClass superclass;
+    ButtonBoxWidgetClass myclass;
+
+    myclass = (ButtonBoxWidgetClass) buttonBoxWidgetClass;
+    superclass = (CompositeWidgetClass) myclass->core_class.superclass;
+
+    /* Inherit insert_child and delete_child from Composite */
+    myclass->composite_class.insert_child =
+        superclass->composite_class.insert_child;
+    myclass->composite_class.delete_child =
+        superclass->composite_class.delete_child;
+}
 
 /*
  *
@@ -156,7 +170,7 @@ static DoLayout(bbw, width, height, replyWidth, replyHeight, position)
 		lw = h_space;
 	    }
 	    if (position && (lw != widget->core.x || h != widget->core.y)) {
-		XMoveWidget(bbw->composite.children[i], lw, h);
+		XtMoveWidget(bbw->composite.children[i], lw, h);
 	    }
 	    lw += bw;
 	    bh = widget->core.height + 2*widget->core.border_width;
@@ -313,8 +327,7 @@ static void ChangeManaged(bbw)
     Resize(bbw);
 }
 
-void Initialize(bbw)
-ButtonBoxWidget bbw;
+static void Initialize(bbw) ButtonBoxWidget bbw;
 {
 /* ||| What are consequences of letting height, width be 0? If okay, then
        Initialize can be NULL */
@@ -329,7 +342,7 @@ ButtonBoxWidget bbw;
 
 /* ||| Should Realize just return a modified mask and attributes?  Or will some
    of the other parameters change from class to class? */
-void Realize(w, valueMask, attributes)
+static void Realize(w, valueMask, attributes)
     register Widget w;
     Mask valueMask;
     XSetWindowAttributes *attributes;
@@ -338,10 +351,11 @@ void Realize(w, valueMask, attributes)
     valueMask |= CWBitGravity;
     
     w->core.window =
-	  XCreateWindow(w->core.display, w->core.parent, w->core.x, w->core.y,
-			w->core.width, w->core.height, w->core.border_width,
-			0, InputOutput, (Visual *)CopyFromParent,
-			valueMask, attributes);
+	XCreateWindow(XtDisplay(w), XtWindow(w->core.parent),
+	w->core.x, w->core.y, w->core.width, w->core.height,
+	w->core.border_width, w->core.depth,
+	InputOutput, (Visual *)CopyFromParent,
+	valueMask, attributes);
 } /* Realize */
 
 /*
@@ -350,7 +364,7 @@ void Realize(w, valueMask, attributes)
  *
  */
 
-void SetValues (old, new)
+static void SetValues (old, new)
     ButtonBoxWidget old, new;
 {
     /* ||| Old code completely bogus, need background, etc., then
