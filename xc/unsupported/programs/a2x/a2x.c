@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.109 93/02/02 09:19:23 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.110 93/02/19 15:48:48 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -2462,10 +2462,12 @@ process(buf, n, len)
 			bcopy(buf + j + 1, buf + j - 1, n - j - 1);
 			n -= 2;
 			j -= 2;
+			if (j == i) /* abort */
+			    break;
 		    }
 		    continue;
 		}
-		switch (buf[j]) {
+		switch (buf[i]) {
 		case '\003': /* control c */
 		    do_key(control, 0);
 		    break;
