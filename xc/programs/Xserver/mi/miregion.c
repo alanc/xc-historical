@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miregion.c,v 1.26 87/09/03 11:43:03 toddb Locked $ */
+/* $Header: miregion.c,v 1.27 87/09/03 13:25:15 rws Locked $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -1452,126 +1452,73 @@ int
 miClipSpans(prgnDst, ppt, pwidth, nspans, pptNew, pwidthNew, fSorted)
     RegionPtr		prgnDst;
     register DDXPointPtr ppt;
-    int		       *pwidth;
+    register int       *pwidth;
     int			nspans;
     register DDXPointPtr pptNew;
     int		       *pwidthNew;
     int			fSorted;
 {
-    register BoxPtr 	pbox, pboxLast, pboxTest;
+    register BoxPtr 	pbox, pboxLast;
+    BoxPtr		pboxTest;
     register DDXPointPtr pptLast;
-    int			xStart, xEnd;
     int			yMax;
     int			*pwidthNewThatWeWerePassed;	/* the vengeance
 							   of Xerox! */
 
     pptLast = ppt + nspans;
 
-    pbox =  prgnDst->rects;
-    pboxLast = pbox + prgnDst->numRects;
+    pboxTest = prgnDst->rects;
+    pboxLast = pboxTest + prgnDst->numRects;
     yMax = prgnDst->extents.y2;
     pwidthNewThatWeWerePassed = pwidthNew;
 
-    if(fSorted)
+    for (; ppt < pptLast; ppt++, pwidth++)
     {
-    /* scan lines sorted in ascending order. Because they are sorted, we
-     * don't have to check each scanline against each clip box.  We can be
-     * sure that this scanline only has to be clipped to boxes at or after the
-     * beginning of this y-band 
-     */
-	pboxTest = pbox;
-	while(ppt < pptLast)
+	if(fSorted)
 	{
-	    pbox = pboxTest;
 	    if(ppt->y >= yMax)
 		break;
-	    while(pbox < pboxLast)
-	    {
-		if(*pwidth == 0)
-		{
-		    /* Null span */
-		    break;
-		}
-		else if(pbox->y1 > ppt->y)
-		{
-		    /* scanline is before clip box */
-		    break;
-		}
-		else if(pbox->y2 <= ppt->y)
-		{
-		    /* clip box is before scanline */
-		    pboxTest = ++pbox;
-		    continue;
-		}
-		else if(pbox->x1 > ppt->x + *pwidth) 
-		{
-		    /* clip box is to right of scanline */
-		    break;
-		}
-		else if(pbox->x2 <= ppt->x)
-		{
-		    /* scanline is to right of clip box */
-		    pbox++;
-		    continue;
-		}
-
-		/* at least some of the scanline is in the current clip box */
-		xStart = max(pbox->x1, ppt->x);
-		xEnd = min(ppt->x + *pwidth, pbox->x2);
-		pptNew->x = xStart;
-		pptNew++->y = ppt->y;
-		*pwidthNew++ = xEnd - xStart;
-
-		if(ppt->x + *pwidth <= pbox->x2)
-		{
-		    /* End of the line, as it were */
-		    break;
-		}
-		else
-		    pbox++;
-	    }
-	    /* We've tried this span against every box; it must be outside them
-	     * all.  move on to the next span */
-	    ppt++;
-	    pwidth++;
+	    pbox = pboxTest;
 	}
-    }
-    else
-    {
-    /* scan lines not sorted. We must clip each line against all the boxes */
-	while(ppt < pptLast)
+	else
 	{
-	    if(ppt->y >= 0 && ppt->y < yMax)
+	    if(ppt->y >= yMax)
+		continue;
+	    pbox = prgnDst->rects;
+	}
+	if(*pwidth == 0)
+	    continue;
+	while(pbox < pboxLast)
+	{
+	    if(pbox->y1 > ppt->y)
 	    {
-		
-		for(pbox = prgnDst->rects; pbox< pboxLast; pbox++)
-		{
-		    if(pbox->y1 > ppt->y)
-		    {
-			/* rest of clip region is above this scanline,
-			 * skip it */
-			break;
-		    }
-		    if(pbox->y2 <= ppt->y)
-		    {
-			/* clip box is below scanline */
-			pbox++;
-			break;
-		    }
-		    if(pbox->x1 <= ppt->x + *pwidth &&
-		       pbox->x2 > ppt->x)
-		    {
-			xStart = max(pbox->x1, ppt->x);
-			xEnd = min(pbox->x2, ppt->x + *pwidth);
-			pptNew->x = xStart;
-			pptNew++->y = ppt->y;
-			*pwidthNew++ = xEnd - xStart;
-		    }
-
-		}
+		/* scanline is before clip box */
+		break;
 	    }
-	ppt++;
-	pwidth++;
+	    if(pbox->y2 <= ppt->y)
+	    {
+		/* clip box is before scanline */
+		pboxTest = ++pbox;
+		continue;
+	    }
+	    if(pbox->x1 >= ppt->x + *pwidth) 
+	    {
+		/* clip box is to right of scanline */
+		break;
+	    }
+	    if(pbox->x2 <= ppt->x)
+	    {
+		/* scanline is to right of clip box */
+		pbox++;
+		continue;
+	    }
+
+	    /* at least some of the scanline is in the current clip box */
+	    pptNew->x = max(pbox->x1, ppt->x);
+	    pptNew->y = ppt->y;
+	    *pwidthNew++ = min(ppt->x + *pwidth, pbox->x2) - pptNew->x;
+	    pptNew++;
+	    pbox++;
 	}
     }
     return (pwidthNew - pwidthNewThatWeWerePassed);
