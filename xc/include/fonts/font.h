@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: font.h,v 1.5 91/05/13 16:45:48 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,5 +92,14 @@ extern void CopyCharInfo();
 extern int  FontToFSError();
 
 extern FontResolutionPtr GetClientResolution();
+
+typedef struct _FontPatternCache    *FontPatternCachePtr;
+
+extern FontPatternCachePtr  MakeFontPatternCache ();
+extern void		    FreeFontPatternCache ();
+extern void		    EmtpyFontPatternCache ();
+extern void		    CacheFontPattern ();
+extern FontPtr		    FindCachedFontPattern ();
+extern void		    RemoveCachedFontPattern ();
 
 #endif				/* FONT_H */
