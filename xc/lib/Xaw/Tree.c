@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.14 90/02/02 18:54:40 jim Exp $
+ * $XConsortium: Tree.c,v 1.15 90/02/02 18:59:58 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -56,17 +56,22 @@ static void             set_positions();
 static void             initialize_dimensions();
 static GC               get_tree_gc();
 static void             set_tree_size();
+static XtGeometryResult	QueryGeometry();
 
 /*
  * resources of the tree itself
  */
 static XtResource resources[] = {
+    { XtNautoReconfigure, XtCAutoReconfigure, XtRBoolean, sizeof (Boolean),
+	XtOffset(TreeWidget, tree.auto_reconfigure), XtRImmediate,
+	(caddr_t) FALSE },
     { XtNhSpace, XtCHSpace, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.hpad), XtRString, "0" },
     { XtNvSpace, XtCVSpace, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.vpad), XtRString, "0" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
-	XtOffset(TreeWidget, tree.foreground), XtRString, "Black"},
+	XtOffset(TreeWidget, tree.foreground), XtRString,
+	"XtDefaultForeground"},
     { XtNlineWidth, XtCLineWidth, XtRDimension, sizeof (Dimension),
 	XtOffset(TreeWidget, tree.line_width), XtRString, "0" },
     { XtNorientation, XtCOrientation, XtROrientation, sizeof (XtOrientation),
@@ -116,7 +121,7 @@ TreeClassRec treeClassRec = {
     XtVersion,                        /* version            */	
     NULL,                             /* callback_private   */
     NULL,                             /* tm_table           */
-    NULL,                             /* query_geometry     */	
+    QueryGeometry,                    /* query_geometry     */	
     NULL,                             /* display_accelerator*/
     NULL,                             /* extension          */
   },
@@ -255,8 +260,10 @@ static Boolean SetValues (current, request, new)
     return redraw;
 }
 
-static Boolean ConstraintSetValues(current, request, new)
+static Boolean ConstraintSetValues(current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
  TreeConstraints newc = TREE_CONSTRAINT(new);
  TreeConstraints curc = TREE_CONSTRAINT(current);
@@ -383,11 +390,7 @@ static XtGeometryResult GeometryManager(w, request, reply)
  if (request->request_mode & CWBorderWidth)
    w->core.border_width = request->border_width;
 
- /*
-  * If we wanted, we could relayout here every time.  However, there should
-  * definitely be a resource to turn it off so that massive changes can be
-  * at once.
-  */
+ if (tw->tree.auto_reconfigure) new_layout (tw);
  return (XtGeometryYes);
 }
 
@@ -753,6 +756,28 @@ static void set_tree_size (tw, width, height)
     if (result == XtGeometryAlmost)
       XtMakeResizeRequest (tw, replyWidth, replyHeight, NULL, NULL);
     return;
+}
+
+static XtGeometryResult QueryGeometry (w, intended, preferred)
+    Widget w;
+    XtWidgetGeometry *intended, *preferred;
+{
+    register TreeWidget tw = (TreeWidget) w;
+
+    preferred->request_mode = (CWWidth | CWHeight);
+    preferred->width = tw->tree.maxwidth;
+    preferred->height = tw->tree.maxheight;
+
+    if (((intended->request_mode & (CWWidth | CWHeight)) ==
+	 (CWWidth | CWHeight)) &&
+	intended->width == preferred->width &&
+	intended->height == preferred->height)
+      return XtGeometryYes;
+    else if (preferred->width == w->core.width &&
+             preferred->height == w->core.height)
+      return XtGeometryNo;
+    else
+      return XtGeometryAlmost;
 }
 
 

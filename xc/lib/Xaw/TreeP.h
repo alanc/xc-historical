@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TreeP.h,v 1.7 90/02/02 14:32:54 jim Exp $
+ * $XConsortium: TreeP.h,v 1.8 90/02/02 18:45:54 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -54,6 +54,7 @@ typedef struct {
     Dimension line_width;		/* lineWidth/LineWidth */
     Pixel foreground;			/* foreground/Foreground */
     XtOrientation orientation;		/* orientation/Orientation */
+    Boolean auto_reconfigure;		/* autoReconfigure/AutoReconfigure */
     /* private fields */
     GC gc;				/* used to draw lines */
     Widget tree_root;			/* hidden root off all children */

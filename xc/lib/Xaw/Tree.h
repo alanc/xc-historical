@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.3 90/02/02 12:12:07 jim Exp $
+ * $XConsortium: Tree.h,v 1.4 90/02/02 17:58:57 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -42,6 +42,7 @@
  *  Name                Class              Type            Default
  *  ----                -----              ----            -------
  * 
+ *  autoReconfigure     AutoReconfigure    Boolean         FALSE
  *  background          Background         Pixel           XtDefaultBackground
  *  foreground          Foreground         Pixel           XtDefaultForeground
  *  hSpace              HSpace             Dimension       20
@@ -58,12 +59,14 @@
  *****************************************************************************/
 
                                         /* new instance field names */
+#define XtNautoReconfigure "autoReconfigure"
 #define XtNhSpace "hSpace"
 #define XtNlineWidth "lineWidth"
 #define XtNparent "parent"
 #define XtNvSpace "vSpace"
 
                                         /* new class field names */
+#define XtCAutoReconfigure "AutoReconfigure"
 #define XtCHSpace "HSpace"
 #define XtCLineWidth "LineWidth"
 #define XtCParent "Parent"
