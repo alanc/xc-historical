@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.63 92/10/20 18:34:56 rws Exp $ 
+ * $XConsortium: xset.c,v 1.64 92/11/29 14:40:43 rws Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.63 92/10/20 18:34:56 rws Exp $ */
+/* $XConsortium: xset.c,v 1.64 92/11/29 14:40:43 rws Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -970,24 +970,28 @@ int local_xerror (dpy, rep)
     Display *dpy;
     XErrorEvent *rep;
 {
-    char *errname = NULL;
-
-    if (rep->request_code == X_StoreColors) {
+    if (rep->request_code == X_SetFontPath && rep->error_code == BadValue) {
+	fprintf(stderr,
+		"%s:  bad font path element (#%d), possible causes are:\n",
+		progName, rep->resourceid);
+	fprintf(stderr,"    Directory does not exist or has wrong permissions\n");
+	fprintf(stderr,"    Directory missing fonts.dir\n");
+	fprintf(stderr,"    Incorrect font server address or syntax\n");
+    } else if (rep->request_code == X_StoreColors) {
 	switch (rep->error_code) {
 	  case BadAccess:
-	    errname = "BadAccess, pixel not allocated read/write";
+	    fprintf(stderr,
+		    "%s:  pixel not allocated read/write\n", progName);
 	    break;
 	  case BadValue:
-	    errname = "BadValue, invalid pixel number";
+	    fprintf(stderr,
+		    "%s:  cannot store in pixel 0x%lx, invalid pixel number\n",
+		    progName, rep->resourceid);
 	    break;
+	default:
+	    XmuPrintDefaultErrorMessage (dpy, rep, stderr);
 	}
-    }
-
-    if (errname) {
-	fprintf (stderr, "%s:  error in storing color:  %s\n",
-		 progName, errname);
-    } else {
+    } else
 	XmuPrintDefaultErrorMessage (dpy, rep, stderr);
-    }
     return (0);
 }
