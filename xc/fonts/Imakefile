@@ -2,7 +2,8 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
              FC = compiler/fc
-         SUBDIRS= compiler bdf
+      MKFONTDIR = mkfontdir/mkfontdir
+        SUBDIRS = compiler mkfontdir
         HEADERS = cursorfont.h
    INSTALLFLAGS = $(INSTINCFLAGS)
 
@@ -22,7 +23,7 @@ InstallMultiple($(HEADERS),$(INCDIR))
 install:: fonts
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
 	cd snf; \
-	for i in *.snf$(ZSUFFIX); do \
+	for i in *.snf$(ZSUFFIX) fonts.dir fonts.alias; do \
 		(set -x; $(INSTALL) -c $(INSTALLFLAGS) $$i $(FONTDIR)); \
 	done
 
@@ -30,18 +31,27 @@ install:: fonts
 # The following rule finds all the BDF files, creates a new makefile to
 # compile the changed ones into SNF files, then runs that.
 
-fonts: bdf snf
-	$(MAKE) snf/Makefile
-	cd snf; $(MAKE) -f Makefile
+fonts: snf snf/Makefile FRC
+	cd snf; $(MAKE)
 
 snf/Makefile: bdf Makefile
 	@echo "Building $@"; \
 	$(RM) $@; \
 	echo "# This makefile is created automagically by ../Makefile" > $@; \
 	echo 'FC=../$(FC)' >> $@; \
+	echo 'RM=$(RM)' >> $@; \
+	echo 'LN=$(LN)' >> $@; \
+	echo 'MKFONTDIR=../$(MKFONTDIR)' >> $@; \
 	echo 'ZSUFFIX=$(ZSUFFIX)' >> $@; \
 	echo 'COMPRESS=$(COMPRESS)' >> $@; \
-	echo 'all: \'	>> $@; \
+	echo 'all: fonts fonts.dir fonts.alias' >> $@; \
+	echo 'fonts.dir: fonts' >> $@; \
+	echo '	$$(RM) $$@' >> $@; \
+	echo '	$$(MKFONTDIR) .' >> $@; \
+	echo 'fonts.alias: ../bdf/fonts.alias' >> $@; \
+	echo '	$$(RM) $$@' >> $@; \
+	echo '	$$(LN) ../bdf/fonts.alias $$@' >> $@; \
+	echo 'fonts: \'	>> $@; \
 	(cd bdf;$(LS) *.bdf) \
 	| sed -e 's/\(.*\).bdf$$/\1.snf$$(ZSUFFIX) \\/' -e '$$s/..$$//' >> $@; \
 	echo >> $@; \
