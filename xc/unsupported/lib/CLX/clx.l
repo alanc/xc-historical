@@ -502,7 +502,7 @@
   (trace-history)				; Hook for debug trace
   (plist)					; hook for extension to hang data
   ;; These slots are used to manage multi-process input.
-  (input-in-progress nil :type (member t nil))	; T if some process is reading from the stream.
+  (input-in-progress nil)			; Some process reading from the stream.
 						; Updated with CONDITIONAL-STORE.
   (pending-commands nil)			; Threaded list of PENDING-COMMAND objects 
 						; for all commands awaiting replies.
