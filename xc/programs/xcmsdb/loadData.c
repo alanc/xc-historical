@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.7 91/05/14 15:49:10 rws Exp $ */
+/* $XConsortium: loadData.c,v 1.8 91/07/22 14:58:03 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -62,9 +62,6 @@ extern char *strchr();
 #else
 char *calloc();
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *calloc();
-#endif /* macII */
 
 /* extern int LINEAR_RGB_FreeSCCData(); /* /* XXX Xlib internal */
 

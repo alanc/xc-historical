@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.12 93/08/20 16:15:23 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.13 93/08/22 12:09:25 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -265,9 +265,6 @@ void exit();
 #include <strings.h>
 #endif
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc(), *calloc();
-#endif /* macII */
 
 /*
  * The following definitions can be used for locking requests in multi-threaded

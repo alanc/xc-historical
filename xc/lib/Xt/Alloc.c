@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.49 93/09/11 16:08:39 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.50 93/09/13 20:56:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,9 +38,6 @@ SOFTWARE.
 #else
 char *malloc(), *realloc(), *calloc();
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc(), *calloc();
-#endif /* macII */
 
 #ifdef MALLOC_0_RETURNS_NULL
 #define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))

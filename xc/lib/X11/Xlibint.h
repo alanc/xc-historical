@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.115 93/09/15 18:07:24 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.116 93/09/17 10:49:26 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -183,9 +183,6 @@ void exit();
 #include <strings.h>
 #endif
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc(), *calloc();
-#endif /* macII */
 
 /*
  * The following definitions can be used for locking requests in multi-threaded

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.53 93/03/10 09:51:06 rws Exp $
+ * $XConsortium: dm.h,v 1.54 93/09/13 19:08:41 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -308,9 +308,6 @@ extern char		*localHostname ();
 #else
 char *malloc(), *realloc();
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc();
-#endif /* macII */
 
 #if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
 #define SIGVAL int
