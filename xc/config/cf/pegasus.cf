@@ -29,14 +29,14 @@
 #define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.8 89/10/08 19:09:09 jim Exp $
+/**/# platform:  $XConsortium: pegasus.cf,v 1.9 89/10/10 14:27:27 jim Exp $
 /**/# operating system:  OSName
 
 /*
  * platform-specific definitions 
  */
 
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
 
 #define ServerCDebugFlags -O -g
 #define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return

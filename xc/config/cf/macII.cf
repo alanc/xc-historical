@@ -17,7 +17,7 @@
 #define HasGcc            YES	/* the server *really* needs this; see site.def */
 
 #undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMITSHM
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
 
 #define XmacIIServer      XmacII
 #define BuildServer YES
@@ -31,7 +31,7 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.12 89/08/31 17:46:41 keith Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.13 89/09/06 15:23:52 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

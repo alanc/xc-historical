@@ -25,7 +25,7 @@
 #define HasVoidSignalReturn NO
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.13 89/10/10 14:27:24 jim Exp $
+/**/# platform:  $XConsortium: apollo.cf,v 1.14 89/10/10 14:42:02 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -47,7 +47,7 @@
 
 #define miOptChoices -DAVOID_GLYPHBLT -DNEED_OLD_MFB_MASKS
 
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
 
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP miOptChoices OSReleaseDefines
 #define FontDefines	-DFONT_SNF -DFONT_BDF

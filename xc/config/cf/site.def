@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.13 89/10/10 14:26:37 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.14 89/10/10 18:55:18 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -59,9 +59,9 @@
 
 #ifndef ExtensionDefines
 #if SystemV
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITSHM -DMITMISC
 #else
-#define ExtensionDefines -DSHAPE -DMULTIBUFFER
+#define ExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC
 #endif
 #endif
 

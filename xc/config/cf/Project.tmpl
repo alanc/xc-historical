@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.41 89/10/09 17:00:40 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.42 89/10/09 17:27:21 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -122,7 +122,7 @@
 #define FontDefines -DFONT_SNF -DFONT_BDF -DCOMPRESSED_FONTS
 #endif
 #ifndef ExtensionDefines
-#define ExtensionDefines /* as nothing or perhaps -DZOID -DBEZIER */
+#define ExtensionDefines /* check site.def for defaults */
 #endif
 #ifndef ServerCDebugFlags
 #define ServerCDebugFlags OptimizedCDebugFlags
@@ -309,7 +309,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.41 89/10/09 17:00:40 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.42 89/10/09 17:27:21 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level

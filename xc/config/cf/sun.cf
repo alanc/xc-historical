@@ -48,7 +48,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.30 89/10/08 19:09:10 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.31 89/10/10 14:27:21 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
@@ -72,7 +72,7 @@
 #define AllocateLocalDefines /**/
 #endif
 
-#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER
+#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC
 
 #define ServerDefines -DXDMCP SunWindowsDefines ExtensionDefines AllocateLocalDefines
 

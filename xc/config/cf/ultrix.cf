@@ -11,7 +11,7 @@
 #define HasBsearch YES
 
 #undef ExtensionDefines
-#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER
+#define ExtensionDefines -DSHAPE -DMITSHM -DMULTIBUFFER -DMITMISC
 
 #ifdef VaxArchitecture
 #define XqvssServer Xqvss
@@ -29,5 +29,5 @@
 #define ServerDefines StandardDefines ExtensionDefines -DXDMCP
 #endif
 
-/**/# platform:  $XConsortium: ultrix.cf,v 1.14 89/10/08 11:11:01 keith Exp $
+/**/# platform:  $XConsortium: ultrix.cf,v 1.15 89/10/10 14:27:23 jim Exp $
 /**/# operating system:  OSName
