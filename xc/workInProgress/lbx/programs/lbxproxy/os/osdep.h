@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.1 94/02/17 15:29:33 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.2 94/02/20 10:56:15 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -210,10 +210,6 @@ typedef struct _osComm {
     int fd;
     ConnectionInputPtr input;
     ConnectionOutputPtr output;
-#ifdef LBX
-    ConnectionOutputPtr ofirst;
-    ConnectionOutputPtr olast;
-#endif
     XID	auth_id;		/* authorization id */
 #ifdef K5AUTH
     k5_state	authstate;	/* state of setup auth conversation */
@@ -221,6 +217,8 @@ typedef struct _osComm {
     CARD32 conn_time;		/* timestamp if not established, else 0  */
     struct _XtransConnInfo *trans_conn; /* transport connection object */
 #ifdef LBX
+    ConnectionOutputPtr ofirst;
+    ConnectionOutputPtr olast;
     void (*Close) ();
     int  (*Writev) ();
     int  (*Read) ();
