@@ -1,4 +1,3 @@
-/* $XConsortium $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32polypnt.c,v 3.1 1994/11/22 02:38:15 dawes Exp $ */
 /************************************************************
 
@@ -27,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.17 94/04/17 20:28:57 dpw Exp $ */
+/* $XConsortium: w32polypnt.c,v 1.1 94/12/27 10:52:22 kaleb Exp kaleb $ */
 
 #include "X.h"
 #include "gcstruct.h"
