@@ -1,4 +1,4 @@
-/* $XConsortium: ut_ntfy.c,v 5.5 91/07/10 09:23:18 rws Exp $ */
+/* $XConsortium: ut_ntfy.c,v 5.6 91/08/22 19:51:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -260,12 +260,14 @@ static void
 sig_dispatcher(signal_num)
 int		     signal_num;
 {
-    register	 notify_list	*curr;
+    register	 notify_list	*curr, *tmp;
 	
     curr = notify_list_array[signal_num - 1];	
     while (curr) {
-	(*curr->sig_handler)(curr->client_id, signal_num);
-	curr = curr->next;
+	/* curr can get corrupted, so save the next value */
+	tmp = curr->next;
+	(*curr->sig_handler)(curr->client_id, signal_num, 0);
+	curr = tmp;
     }
 #if defined(SYSV) || defined(SVR4)
     /* Have to reinstall the signal handler. */
