@@ -1,0 +1,5 @@
+XCOMM $XConsortium: Imakefile,v 1.0 91/12/19 18:24:00 keith Exp $
+#define PixelSize	16
+#define LinkDirectory ../cfb
+
+#include "../cfb/Imakefile"
