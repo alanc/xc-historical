@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.123 93/09/02 19:56:14 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.124 93/09/03 08:17:47 dpw Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -36,11 +36,7 @@ SOFTWARE.
 
 /* lifted from Xt/VarargsI.h */
 #if NeedVarargsPrototypes
-# include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
+#include <stdarg.h>
 #endif
 
 extern char *display;
@@ -736,7 +732,7 @@ AuditF(
 	ErrorF("AUDIT: %s: %d %s: ", autime, getpid(), s);
     }
 #if NeedVarargsPrototypes
-    Va_start(args, f);
+    va_start(args, f);
     VErrorF(f, args);
     va_end(args);
 #else
@@ -760,7 +756,7 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 #endif
     ErrorF("\nFatal server error:\n");
 #if NeedVarargsPrototypes
-    Va_start(args, f);
+    va_start(args, f);
     VErrorF(f, args);
     va_end(args);
 #else
@@ -801,7 +797,7 @@ ErrorF(
 {
 #if NeedVarargsPrototypes
     va_list args;
-    Va_start(args, f);
+    va_start(args, f);
     VErrorF(f, args);
     va_end(args);
 #else
