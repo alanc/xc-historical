@@ -37,21 +37,14 @@ University of California.
 #define	NEED_REPLIES
 
 #include <stdio.h>
-#include <time.h>
-#include <sys/types.h>
+#include "Xos.h"
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
+#include "misc.h"
+#include "dixstruct.h"
 #define  XTestSERVER_SIDE
 #include "xtestext1.h"	
-/*
- * the following include files are specific to HP's implementation
- * of the extension.  Your implementation may vary.  If you don't
- * include "sun.h" you may need to include "misc.h" and "dix.h".
- */
-#include "sun.h"
-#include "x11_hildef.h"
-#include "hildef.h"
 
 /***************************************************************
  * defines
@@ -61,33 +54,6 @@ University of California.
  * the size of the fake input action array
  */
 #define ACTION_ARRAY_SIZE	100
-/*
- * To use the test monitor program (called tmon) efficiently, it is
- * desirable to have the extension be able to recognize a special "trigger"
- * key.  If the extension did not do this, tmon would have to have the
- * extension send all keyboard user input actions exclusively to tmon,
- * only to have tmon send them right back if they were not the command key.
- *
- * If the extension can recognize the command key, then tmon can let the
- * extension handle keyboard user input actions normally until the command
- * key is pressed (and released), and only then have the extension start
- * sending keyboard user input actions exclusively to tmon.
- *
- * Any key on the keyboard can be used for this command key.  It is most
- * convenient if it is a low-frequency key.  If you want to generate a
- * normal occurrance of this key to a client, just hit it twice.  Tmon
- * will recognize the first occurrance of the key, take control of the input
- * actions, and wait for certain keys.  If it sees another occurrance of the
- * command key, it will send one occurrance of the command key to the
- * extension, and go back to waiting.
- *
- * tmon special command key (currently set to the left-most unmarked key
- * above the numeric pad on HP keyboards)
- *
- * This is specific to HP's implementation of the server.
- * Your implementation may vary.
- */
-#define	COMMAND_KEY		0x2d
 
 /***************************************************************
  * externals
@@ -107,14 +73,8 @@ extern int			XTestFakeAckType;
  * used in the WriteReplyToClient macro
  */
 extern void			(* ReplySwapVector[256]) ();
-/*
- * The following externs are specific to HP's implementation
- * of the extension.  Your implementation may vary.
- */
-extern PtrPrivRec		*other_p[];
-extern HPInputDevice		l_devs[];
-extern int			lastEventTime;
-extern xEvent			xE;
+
+extern int			exclusive_steal;
 
 /***************************************************************
  * variables
@@ -274,9 +234,29 @@ static struct timeval		*restorewait;
 /*
  * tmon special command key
  *
- * also referenced in device layer
+ * To use the test monitor program (called tmon) efficiently, it is
+ * desirable to have the extension be able to recognize a special "trigger"
+ * key.  If the extension did not do this, tmon would have to have the
+ * extension send all keyboard user input actions exclusively to tmon,
+ * only to have tmon send them right back if they were not the command key.
+ *
+ * If the extension can recognize the command key, then tmon can let the
+ * extension handle keyboard user input actions normally until the command
+ * key is pressed (and released), and only then have the extension start
+ * sending keyboard user input actions exclusively to tmon.
+ *
+ * Any key on the keyboard can be used for this command key.  It is most
+ * convenient if it is a low-frequency key.  If you want to generate a
+ * normal occurrance of this key to a client, just hit it twice.  Tmon
+ * will recognize the first occurrance of the key, take control of the input
+ * actions, and wait for certain keys.  If it sees another occurrance of the
+ * command key, it will send one occurrance of the command key to the
+ * extension, and go back to waiting.
+ *
+ * set and also referenced in device layer
+ * XXX there should be a way to set this through the protocol
  */
-u_char			xtest_command_key = COMMAND_KEY;
+KeyCode			xtest_command_key = 0;
 
 /***************************************************************
  * function declarations
@@ -284,6 +264,10 @@ u_char			xtest_command_key = COMMAND_KEY;
 
 void	flush_input_actions();
 void	XTestStealJumpData();
+void	XTestGenerateEvent();
+void	XTestGetPointerPos();
+void	XTestJumpPointer();
+
 static void	parse_key_fake();
 static void	parse_motion_fake();
 static void	parse_jump_fake();
@@ -371,8 +355,7 @@ CARD32		mode;
 	/*
 	 * keep track of where the mouse is
 	 */
-	fmousex = other_p[XPOINTER]->x;
-	fmousey = other_p[XPOINTER]->y;
+	XTestGetPointerPos(&fmousex, &fmousey);
 	/*
 	 * keep track of which client is getting input actions
 	 */
@@ -667,159 +650,6 @@ int	actsize;
 
 /******************************************************************************
  *
- *	put_fkey
- *
- *	Send a key/button input action to the server to be processed.
- *
- *	This is implementation-dependent.  Your implementation may vary.
- */
-static void
-put_fkey(dev_type, keycode, keystate, mousex, mousey)
-/*
- * which device supposedly performed the action
- */
-int	dev_type;
-/*
- * which key/button moved
- */
-int	keycode;
-/*
- * whether the key/button was up or down
- */
-int	keystate;
-/*
- * the x and y position of the locator when the action happenned
- */
-int	mousex;
-int	mousey;
-{
-	struct dev_info		hil_info;
-	PtrPrivRec		*tmp_ptr;
-
-	/*
-	 * the server expects to have the x and y position of the locator
-	 * when the action happened placed in other_p[XPOINTER]
-	 */
-	if (dev_type == MOUSE)
-	{
-		hil_info.hil_dev = &l_devs[XPOINTER];
-		other_p[XPOINTER]->x = mousex;
-		other_p[XPOINTER]->y = mousey;
-		tmp_ptr = other_p[XPOINTER];
-	}
-	else
-	{
-		hil_info.hil_dev = &l_devs[XKEYBOARD];
-		other_p[XKEYBOARD]->x = mousex;
-		other_p[XKEYBOARD]->y = mousey;
-		tmp_ptr = other_p[XKEYBOARD];
-	}
-	/*
-	 * convert the keystate back into server-dependent state values
-	 */
-	if (keycode < 8 )
-	{
-		/*
-		 * if keycode < 8, this is really a button. 
-		 */
-		if (keystate == XTestKEY_UP)
-		{
-			keystate = ButtonRelease;
-		}
-		else
-		{
-			keystate = ButtonPress;
-		}
-	}
-	else
-	{
-		if (keystate == XTestKEY_UP)
-		{
-			keystate = KeyRelease;
-		}
-		else
-		{
-			keystate = KeyPress;
-		}
-	}
-	/*
-	 * Tell the server to process all of the events in its input queue.
-	 * This makes sure that there is room in the server's input queue
-	 * for a key/button input event.
-	 */
-	ProcessInputEvents();
-	/*
-	 * set the last event time so that the screen saver code will
-	 * think that a key has been pressed
-	 */
-	lastEventTime = GetTimeInMillis();
-	/*
-	 * put a key/button input action into the servers input event queue
-	 */
-	put_keyevent(keycode,
-		     keystate,
-		     0,
-		     dev_type,
-		     tmp_ptr,
-		     &hil_info);
-	/*
-	 * Tell the server to process all of the events in its input queue.
-	 * This makes sure that key/button event we just put in the queue
-	 * is processed immediately.
-	 */
-	ProcessInputEvents();
-}
-
-/******************************************************************************
- *
- *	jump_fake_mouse
- *
- *	Tell the server to move the mouse.
- *
- *	This is implementation-dependent.  Your implementation may vary.
- */
-static void
-jump_fake_mouse(jx, jy, dev_type)
-/*
- * the x and y position to move the mouse to
- */
-int	jx;
-int	jy;
-/*
- * which device is supposed to move (ignored)
- */
-int	dev_type;
-{
-	struct dev_info		hil_info;
-
-	/*
-	 * set the last event time so that the screen saver code will
-	 * think that the mouse has been moved
-	 */
-	lastEventTime = GetTimeInMillis();
-	/*
-	 * tell the server where the mouse is being moved to
-	 */
-	other_p[XPOINTER]->x = jx;
-	other_p[XPOINTER]->y = jy;
-	hil_info.hil_dev = &l_devs[XPOINTER];
-	/*
-	 * move the mouse
-	 */
-	move_mouse(&hil_info, other_p[XPOINTER]);
-	/*
-	 * tell the server to process the motion event that we just
-	 * specified in the move_mouse routine
-	 */
-	if ( xE.u.u.type == MotionNotify )
-	{
-		(* hpOther[XPOINTER]->processInputProc) (&xE, hpOther[XPOINTER]);
-		xE.u.u.type = 0;
-	}
-}
-
-/******************************************************************************
- *
  *	XTestStealMotionData
  *
  *	Put motion information from the locator into an input action.
@@ -942,9 +772,8 @@ short	my;
  *
  * 	Place this key data in the input_action_packet.
  *
- *	called from x_hil.c
  */
-void
+Bool
 XTestStealKeyData(keycode, keystate, dev_type, locx, locy)
 /*
  * which key/button moved
@@ -972,6 +801,7 @@ short	locy;
 	 * time delta from previous event
 	 */
 	CARD16			tchar;
+	char		keytrans;
 
 	/*
 	 * update the logical position of the locator if the physical position
@@ -1007,11 +837,11 @@ short	locy;
 	kp->header = XTestPackDeviceID(dev_type);
 	if ((keystate == KeyRelease) || (keystate == ButtonRelease))
 	{
-		keystate = XTestKEY_UP;
+		keytrans = XTestKEY_UP;
 	}
 	else if ((keystate == KeyPress) || (keystate == ButtonPress))
 	{
-		keystate = XTestKEY_DOWN;
+		keytrans = XTestKEY_DOWN;
 	}
 	else
 	{
@@ -1019,7 +849,7 @@ short	locy;
 		       XTestEXTENSION_NAME,
 		       keystate);
 	}
-	kp->header = kp->header | keystate | XTestKEY_ACTION;
+	kp->header = kp->header | keytrans | XTestKEY_ACTION;
 	/*
 	 * set the keycode in the input action
 	 */
@@ -1036,11 +866,18 @@ short	locy;
 	 * if the command key has been released or input actions are not
 	 * packed, send the input action event to the client
 	 */
- 	if(((keycode == COMMAND_KEY) && (keystate == XTestKEY_UP)) ||
+ 	if(((keycode == xtest_command_key) && (keystate == KeyRelease)) ||
 	   (packed_mode != XTestPACKED_ACTIONS))
 	{	
 		flush_input_actions();
 	}
+	/* return TRUE if the event should be passed on to DIX */
+	if (exclusive_steal)
+		return ((keystate == KeyRelease) &&
+			(keycode = xtest_command_key));
+	else
+		return ((keystate != KeyRelease) ||
+			(keycode != xtest_command_key));
 }
 
 /******************************************************************************
@@ -1052,7 +889,7 @@ short	locy;
  *	XTestProcessInputAction routine will be called to take input actions
  *	from the input action array and send them to the server to be handled.
  */
-static void
+void
 parse_fake_input(client, req)
 /*
  * which client did the XTestFakeInput request
@@ -1121,21 +958,25 @@ char		*req;
 		switch (action_type)
 		{ 
 		case XTestKEY_ACTION:
-			parse_key_fake(&(request->action_list[parse_index]));
+			parse_key_fake((XTestKeyInfo *)
+				       &(request->action_list[parse_index]));
 			parse_index = parse_index + sizeof(XTestKeyInfo);
 			break;
 		case XTestMOTION_ACTION:
-			parse_motion_fake(&(request->action_list[parse_index]));
+			parse_motion_fake((XTestMotionInfo *)
+					  &(request->action_list[parse_index]));
 			parse_index = parse_index + sizeof(XTestMotionInfo);
 			break;
 		case XTestJUMP_ACTION:
-			parse_jump_fake(&(request->action_list[parse_index]));
+			parse_jump_fake((XTestJumpInfo *)
+					&(request->action_list[parse_index]));
 			parse_index = parse_index + sizeof(XTestJumpInfo);
 			break;
 		case XTestDELAY_ACTION:
 			if (dev_type == XTestDELAY_DEVICE_ID)
 			{ 
-				parse_delay_fake(&(request->action_list[parse_index]));
+				parse_delay_fake((XTestDelayInfo *)
+						 &(request->action_list[parse_index]));
 				parse_index = parse_index +
 					      sizeof(XTestDelayInfo);
 			}
@@ -1294,11 +1135,6 @@ XTestComputeWaitTime(waittime)
 struct timeval	*waittime;
 {	
 	/*
-	 * used with find_residual_time, but ignored
-	 */
-	int	delay_flag;
-
-	/*
 	 * The playback_on flag is set to 1 in parse_fake_input.  It is set to
 	 * 0 in XTestProcessInputAction if the server has replayed all input
 	 * actions.
@@ -1338,7 +1174,7 @@ struct timeval	*waittime;
 			 * else just find out how much more time to wait
 			 * on the current input action
 			 */
-			delay_flag = find_residual_time(&rtime);
+			(void)find_residual_time(&rtime);
 		}
 		waittime->tv_sec = rtime.tv_sec;
 		waittime->tv_usec = rtime.tv_usec;
@@ -1352,7 +1188,6 @@ struct timeval	*waittime;
  *	If there are any input actions in the input action array,
  *	then take one out and process it.
  *
- *	This is implementation-dependent.  Your implementation may vary.
  */
 int
 XTestProcessInputAction(readable, waittime)
@@ -1424,19 +1259,23 @@ struct timeval	*waittime;
 			 */
 			if (action_array[read_index].type == XTestJUMP_ACTION)
 			{	
-				jump_fake_mouse(action_array[read_index].x, 
-					        action_array[read_index].y, 
-					        action_array[read_index].device);
+				XTestJumpPointer(
+					action_array[read_index].x, 
+					action_array[read_index].y, 
+					action_array[read_index].device);
 				mx = action_array[read_index].x;
 				my = action_array[read_index].y;
 			}
 			if (action_array[read_index].type == XTestKEY_ACTION)
 			{
-			put_fkey(action_array[read_index].device, 
+			ProcessInputEvents();
+			XTestGenerateEvent(
+				 action_array[read_index].device, 
 				 action_array[read_index].keycode, 
 				 action_array[read_index].keystate,
 				 mx,
 				 my);
+			ProcessInputEvents();
 			}
 			read_index++;
 			/*
