@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.27 93/09/17 11:32:14 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.28 93/09/28 23:55:32 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -328,10 +328,14 @@ dst::									@@\
 	@echo sorry, unable to make $@
 
 #define CppFileTarget(dst,src,defs,deplist)				@@\
+XFAKEVAR = X								@@\
 dst::  src deplist							@@\
 	RemoveFile($@)							@@\
-	$(PREPROCESSCMD) src @<< >$@					@@\
-	defs -DXCOMM="#"						@@\
+	$(PREPROCESSCMD) -I. <<CppTmpFile.c @<< >$@			@@\
+	XCOMM define $(XFAKEVAR)COMM XCOMM				@@\
+	XCOMM include <src>						@@\
+<<									@@\
+	defs								@@\
 <<									@@\
 									@@\
 clean::									@@\
