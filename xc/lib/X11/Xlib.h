@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.218 92/01/30 10:23:22 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.219 93/02/15 11:13:18 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1584,6 +1584,26 @@ extern unsigned long XDisplayMotionBufferSize(
 extern VisualID XVisualIDFromVisual(
 #if NeedFunctionPrototypes
     Visual*		/* visual */
+#endif
+);
+
+/* multithread routines */
+
+extern Status XInitThreads(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Status XLockDisplay(
+#if NeedFunctionPrototypes
+    Display*		/* display */
+#endif
+);
+
+extern Status XUnlockDisplay(
+#if NeedFunctionPrototypes
+    Display*		/* display */
 #endif
 );
 
