@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.71 88/07/08 16:09:20 rws Exp $ */
+/* $Header: connection.c,v 1.72 88/07/19 18:06:44 toddb Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -90,6 +90,7 @@ long ClientsWithInput[mskcnt];	/* clients with FULL requests in buffer */
 long ClientsWriteBlocked[mskcnt];/* clients who cannot receive output */
 long OutputPending[mskcnt];	/* clients with reply/event data ready to go */
 long MaxClients = MAXSOCKS ;
+long OutputBufferSize = BUFSIZ; /* output buffer size (must be > 0) */
 long NConnBitArrays = mskcnt;
 long FirstClient;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
@@ -546,8 +547,9 @@ ErrorF("Didn't make connection: Out of file descriptors for connections\n");
 			   ConnectionTranslation[newconn] = next;
 			   priv =  (OsComm)Xalloc(sizeof(OsCommRec));
 			   priv->fd = newconn;
-			   priv->buf = (unsigned char *)Xalloc(BUFSIZ);
-			   priv->bufsize = BUFSIZ;
+			   priv->buf = (unsigned char *)
+					Xalloc(OutputBufferSize);
+			   priv->bufsize = OutputBufferSize;
 			   priv->count = 0;
 			   next->osPrivate = (pointer)priv;
 		        }
