@@ -1,4 +1,4 @@
-/* $XConsortium: svgaIo.c,v 1.1 93/09/18 16:08:22 rws Exp $ */
+/* $XConsortium: svgaIo.c,v 1.2 93/09/18 18:16:02 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -31,9 +31,6 @@
 #include "inputstr.h"
 #include <sys/kd.h>
 
-extern void GiveUp();
-extern DevicePtr LookupPointerDevice();
-extern DevicePtr LookupKeyboardDevice();
 extern void mieqProcessInputEvents();
 extern void mieqEnqueue();
 

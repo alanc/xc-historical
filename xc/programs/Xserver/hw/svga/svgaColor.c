@@ -1,4 +1,4 @@
-/* $XConsortium: svgaColor.c,v 1.1 93/09/18 16:08:56 rws Exp $ */
+/* $XConsortium: svgaColor.c,v 1.2 93/09/18 18:01:08 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -33,8 +33,6 @@
  * of reading the plain rgb.txt and create the database online while starting
  * the server ?? As result we would have fewer disk accesses ...
  */
-
-extern void CopyISOLatin1Lowered();
 
 #define HASHSIZE 511
 

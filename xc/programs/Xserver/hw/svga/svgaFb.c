@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: svgaFb.c,v 1.1 93/09/18 16:08:02 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -40,14 +40,9 @@
 
 extern miBSFuncRec svgaBankBSFuncRec;
 
-extern int cfbExpandDirectColors();
-extern Bool cfbInitVisuals();
-extern Bool cfbSetupScreen();
 extern Bool miInitializeBackingStore();
 extern Bool miDCInitialize();
 extern Bool miScreenInit();
-extern int QueryColors();
-extern int AllocColor();
 
 static Bool ScreenIsSaved = FALSE;
 static ColormapPtr pInstalledMap;

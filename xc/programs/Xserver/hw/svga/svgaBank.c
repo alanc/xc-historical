@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.3 93/09/19 09:43:59 rws Exp $ */
+/* $XConsortium: svgaBank.c,v 1.4 93/09/20 12:00:25 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -43,8 +43,6 @@
  * code for the DEC TX board.
  */
 
-extern int AllocateScreenPrivateIndex();
-extern GCPtr CreateScratchGC();
 extern void QueryGlyphExtents();
 extern WindowPtr *WindowTable;
 
