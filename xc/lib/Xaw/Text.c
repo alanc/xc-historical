@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.168 91/03/06 16:14:11 converse Exp $ */
+/* $XConsortium: Text.c,v 1.169 91/03/10 18:41:08 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2608,9 +2608,6 @@ Widget w;
 {
   TextWidget ctx = (TextWidget)w;
 
-  if (ctx->text.file_insert != NULL)
-    XtDestroyWidget(ctx->text.file_insert);
- 
   DestroyHScrollBar(ctx);
   DestroyVScrollBar(ctx);
 
