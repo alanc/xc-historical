@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: colormap.c,v 1.72 88/07/06 10:54:08 rws Exp $ */
+/* $Header: colormap.c,v 1.73 88/07/27 11:23:21 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -719,20 +719,20 @@ FindColor (pmap, pentFirst, size, prgb, pPixel, channel, client, comp)
     	    if ((*comp) (pent, prgb))
 	    {
     	        pent->refcnt++;
+		*pPixel = pixel;
 		switch(channel)
 		{
 		  case REDMAP:
-		    pixel  <<= pmap->pVisual->offsetRed;
+		    *pPixel <<= pmap->pVisual->offsetRed;
 		  case PSEUDOMAP:
 		    break;
 		  case GREENMAP:
-		    pixel  <<= pmap->pVisual->offsetGreen;
+		    *pPixel <<= pmap->pVisual->offsetGreen;
 		    break;
 		  case BLUEMAP:
-		    pixel  <<= pmap->pVisual->offsetBlue;
+		    *pPixel <<= pmap->pVisual->offsetBlue;
 		    break;
 		}
-		*pPixel = pixel;
 		goto gotit;
     	    }
         }
