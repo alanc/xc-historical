@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.201 92/04/30 12:34:34 keith Exp $";
+static char *rid="$XConsortium: main.c,v 1.202 92/08/05 12:52:06 rws Exp $";
 #endif /* lint */
 
 /*
@@ -55,6 +55,10 @@ SOFTWARE.
 #include <X11/Xaw/SimpleMenu.h>
 #include <pwd.h>
 #include <ctype.h>
+
+#if defined(sun) && defined(SVR4)
+#undef sun
+#endif
 
 #ifdef att
 #define ATT
