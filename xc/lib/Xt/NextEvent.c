@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: NextEvent.c,v 1.50 88/09/04 15:08:48 swick Exp $";
+    "$XConsortium: NextEvent.c,v 1.51 88/09/04 18:41:07 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -141,18 +141,15 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, block, howlong, app)
 		} 
 		if( !ignoreInputs ) {
 			rmaskfd = app->fds.rmask;
-			for (d = 0; d < app->count; d++) {
-			    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
-			}
 			wmaskfd = app->fds.wmask;
 			emaskfd = app->fds.emask;
 		} else {
 			rmaskfd = zero;
 			wmaskfd = zero;
 			emaskfd = zero;
-			for (d = 0; d < app->count; d++) {
-			    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
-			}
+		}
+		for (d = 0; d < app->count; d++) {
+		    FD_SET (ConnectionNumber(app->list[d]), &rmaskfd);
 		}
 		nfound = select (app->fds.nfds, (int *) &rmaskfd,
 			(int *) &wmaskfd, (int *) &emaskfd, wait_time_ptr);
@@ -564,7 +561,7 @@ void XtAppNextEvent(app, event)
 	for (i = 1; i <= app->count; i++) {
 	    d = (i + app->last) % app->count;
 	    if (d == 0) DoOtherSources(app);
-	    if (XPending(app->list[d]) ) {
+	    if (XEventsQueued(app->list[d], QueuedAfterFlush) > 0) {
 		XNextEvent(app->list[d], event);
 		app->last = d;
 		if (event->xany.type == MappingNotify)
@@ -577,7 +574,7 @@ void XtAppNextEvent(app, event)
 	if (CallWorkProc(app)) continue;
 
 	d = _XtwaitForSomething(FALSE, FALSE, TRUE,
-		(unsigned long *) NULL, app);
+				(unsigned long *) NULL, app);
 
 	if (d != -1) {
 	    XNextEvent (app->list[d], event);
@@ -642,7 +639,7 @@ void XtAppProcessEvent(app, mask)
 	    if (mask & XtIMXEvent) {
 		for (i = 1; i <= app->count; i++) {
 		    d = (i + app->last) % app->count;
-		    if (XPending(app->list[d]) ) {
+		    if (XEventsQueued(app->list[d], QueuedAfterFlush) ) {
 			XNextEvent(app->list[d], &event);
 			app->last = d;
 			if (event.xany.type == MappingNotify)
@@ -658,8 +655,8 @@ void XtAppProcessEvent(app, mask)
 	    if (CallWorkProc(app)) continue;
 
 	    d = _XtwaitForSomething(FALSE, FALSE, TRUE,
-		    (unsigned long *) NULL, app);
-	
+				    (unsigned long *) NULL, app);
+	    
 	    if (d != -1) {
 		XNextEvent(app->list[d], &event);
 		app->last = d;
@@ -690,7 +687,7 @@ XtInputMask XtAppPending(app)
  * Check for pending X events
  */
 	for (d = 0; d < app->count; d++) {
-	    if (XPending(app->list[d])) {
+	    if (XEventsQueued(app->list[d], QueuedAfterFlush)) {
 		ret |= XtIMXEvent;
 		break;
 	    }
@@ -758,7 +755,7 @@ Boolean XtAppPeekEvent(app, event)
 	    for (i = 1; i <= app->count; i++) {
 		d = (i + app->last) % app->count;
 		if (d == 0) foundCall = PeekOtherSources(app);
-		if (XPending(app->list[d]) ) {
+		if (XEventsQueued(app->list[d], QueuedAfterFlush) ) {
 		    XPeekEvent(app->list[d], event);
 		    app->last = (d == 0 ? app->count : d) - 1;
 		    return TRUE;
