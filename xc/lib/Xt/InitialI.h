@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.55 91/05/04 13:23:56 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.56 91/05/17 16:53:44 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -311,7 +311,6 @@ extern void _XtDisplayInitialize(
     Display*		/* dpy */,
     XtPerDisplay	/* pd */,
     String		/* name */,
-    String		/* classname */,
     XrmOptionDescRec*	/* urlist */,
     Cardinal 		/* num_urs */,
     int*		/* argc */,
