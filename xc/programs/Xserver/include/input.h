@@ -58,8 +58,9 @@ typedef void (*ProcessInputProc)();
 
 typedef struct _DeviceRec {
     pointer	devicePrivate;
-    ProcessInputProc processInputProc;
-    ProcessInputProc realInputProc;
+    ProcessInputProc processInputProc;	/* current */
+    ProcessInputProc realInputProc;	/* deliver */
+    ProcessInputProc enqueueInputProc;	/* enqueue */
     Bool	on;			/* used by DDX to keep state */
 } DeviceRec, *DevicePtr;
 
