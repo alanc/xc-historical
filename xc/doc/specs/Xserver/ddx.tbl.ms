@@ -3172,6 +3172,50 @@ the window, which is used to save doomed areas if the window is moved
 underneath its parent as a result of bitgravity.  The returned region
 represents occluded areas of the window for which the backing store
 contents are invalid.
+.nf
+
+	void pScreen->ExposeCopy(pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
+		WindowPtr pSrc;
+		DrawablePtr pDst;
+		GCPtr pGC;
+		RegionPtr prgnExposed;
+		int srcx;
+		int srcy;
+		int dstx;
+		int dsty;
+		unsigned long plane;
+
+.fi
+Copies a region from the backing store of pSrc to pDst.
+.nf
+
+	RegionPtr pScreen->ClearBackingStore(pWindow, x, y, w, h, generateExposures)
+		WindowPtr pWindow;
+		int x;
+		int y;
+		int w;
+		int h;
+		Bool generateExposures;
+
+.fi
+Clear the given area of the backing pixmap with the background of
+the window.  If generateExposures is TRUE, generate
+exposure events for the area. Note that if the area has any
+part outside the saved portions of the window, we do not allow the
+count in the expose events to be 0, since there will be more
+expose events to come.
+.nf
+
+	void pScreen->DrawGuarantee(pWindow, pGC, guarantee)
+		WindowPtr pWindow;
+		GCPtr pGC;
+		int guarantee;
+
+.fi
+This informs the backing store layer that you are about to validate
+a gc with a window, and that subsequent output to the window
+is (or is not) guaranteed to be already clipped to the visible
+regions of the window.
 
 .NH 4
 Screen Operations for Multi-Layered Framebuffers
