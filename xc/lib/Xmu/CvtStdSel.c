@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.17 90/12/20 15:03:56 converse Exp $
+/* $XConsortium: CvtStdSel.c,v 1.18 90/12/26 16:28:46 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -27,12 +27,12 @@
  *	XmuConvertStandardSelection()	return a known selection
  */
 
-#ifdef att
+#ifdef SYSVNET
 #include <interlan/il_types.h>
 #define __TYPES__		/* prevent #including <sys/types.h> in Xlib.h */
 #include <interlan/netdb.h>
 #include <interlan/socket.h>
-#endif /* att */
+#endif /* SYSVNET */
 
 #include <X11/IntrinsicP.h>
 #include <X11/Xatom.h>
@@ -40,7 +40,7 @@
 #include <X11/ShellP.h>
 #include <stdio.h>
 
-#ifndef att
+#ifndef SYSVNET
 #include <netdb.h>
 #include <sys/socket.h>
 #endif
