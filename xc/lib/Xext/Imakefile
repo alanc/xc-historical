@@ -1,13 +1,11 @@
-/* $XConsortium: Imakefile,v 1.14 89/09/18 19:15:01 keith Exp $ */
+/* $XConsortium: Imakefile,v 1.15 89/10/03 17:26:59 jim Exp $ */
   STD_DEFINES = LibraryDefines ExtensionDefines
   CDEBUGFLAGS = LibraryCDebugFlags
      INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-         SRCS = globals.c extutil.c XMultibuf.c \
-		XFillZoids.c XBezier.c XPlxVideo.c XTestExt1.c \
-		XShape.c XShm.c XBuffer.c
-         OBJS = globals.o extutil.o XMultibuf.o \
-		XFillZoids.o XBezier.o XPlxVideo.o XTestExt1.o \
-		XShape.o XShm.o XBuffer.o
+         SRCS = globals.c extutil.c XMultibuf.c XShape.c XShm.c  \
+		XPlxVideo.c XTestExt1.c
+         OBJS = globals.o extutil.o XMultibuf.o XShape.o XShm.o \
+		XPlxVideo.o XTestExt1.o 
      LINTLIBS = $(LINTXLIB)
 
 #if DebugLibXext && ProfileLibXext
