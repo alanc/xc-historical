@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: nextvinf.c,v 1.7 92/06/11 15:46:09 rws Exp $
  */
 
 /*
@@ -204,9 +204,15 @@ int 	type;
 {
 XVisualInfo	*vp;
 Drawable	d;
+int		ret;
 
 	resetvinf(type);
-	nextvinf(&vp);
+	do
+		ret = nextvinf(&vp);
+	while (ret && vp->visual != DefaultVisual(disp, DefaultScreen(disp)));
+
+	if (!ret)
+		trace("--- WARNING - nextvinf did not find default visual");
 
 	d = makewin(disp, vp);
 
