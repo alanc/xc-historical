@@ -12,7 +12,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.7 92/06/29 18:18:25 rws Exp $
+# $XConsortium: Makefile,v 1.1 94/01/30 10:20:23 rws Exp $
 #
 
 #
@@ -54,84 +54,82 @@ ALLTESTS=Tests
 
 # XXX misc.o is missing
 TESTOFILES=\
-allwdvcevn.o \
-chngdvccnt.o \
-chngdvcdnt.o \
-chngfdbckc.o \
-chngkybrdd.o \
-chngpntrdv.o \
-chngdvckym.o \
-clsdvc.o \
-dvcbll.o \
-gtdvcmdfrm.o \
-gtfdbckcnt.o \
-gtextnsnvr.o \
-grbdvc.o \
-grbdvcbttn.o \
-grbdvcky.o \
-gtdvcbttnm.o \
-gtdvccntrl.o \
-gtdvcfcs.o \
-gtdvcmtnev.o \
-gtdvcdntpr.o \
-gtdvckympp.o \
-gtslctdext.o \
-lstinptdvc.o \
-mscllns.o \
-opndvc.o \
-qrydvcstt.o \
-stdvcvltrs.o \
-stdvcbttnm.o \
-stdvcfcs.o \
-stdvcmdfrm.o \
-stdvcmd.o \
-slctextnsn.o \
-sndextnsne.o \
-ungrbdvc.o \
-ungrbdvcbt.o \
-ungrbdvcky.o
+alldvevnts.o \
+chgdvctl.o \
+chgdvprop.o \
+chgfctl.o \
+chgkbd.o \
+chgptr.o \
+chngdvkmap.o \
+closdev.o \
+dvbell.o \
+getdvmmap.o \
+getfctl.o \
+getvers.o \
+grbdev.o \
+grbdvbtn.o \
+grbdvky.o \
+gtbtnmppn.o \
+gtdvctl.o \
+gtdvfcs.o \
+gtdvmtnevnts.o \
+gtdvprop.o \
+gtkeymppn.o \
+gtslctexevnt.o \
+listdev.o \
+opendev.o \
+qrydvstat.o \
+setdval.o \
+setdvbmap.o \
+setdvfcs.o \
+setdvmmap.o \
+setdvmode.o \
+slctexevnt.o \
+sndextevnt.o \
+ungrbdev.o \
+ungrbdvbtn.o \
+ungrbdvky.o
 
 LINKOFILE=linktbl.o
 OFILES = $(TESTOFILES) $(LINKOFILE)
 
 # XXX misc is missing
 DIRLIST=\
-allwdvcevn \
-chngdvccnt \
-chngdvcdnt \
-chngfdbckc \
-chngkybrdd \
-chngpntrdv \
-chngdvckym \
-clsdvc \
-dvcbll \
-gtdvcmdfrm \
-gtfdbckcnt \
-gtextnsnvr \
-grbdvc \
-grbdvcbttn \
-grbdvcky \
-gtdvcbttnm \
-gtdvccntrl \
-gtdvcfcs \
-gtdvcmtnev \
-gtdvcdntpr \
-gtdvckympp \
-gtslctdext \
-lstinptdvc \
-mscllns \
-opndvc \
-qrydvcstt \
-stdvcvltrs \
-stdvcbttnm \
-stdvcfcs \
-stdvcmdfrm \
-stdvcmd \
-slctextnsn \
-sndextnsne \
-ungrbdvc \
-ungrbdvcbt \
-ungrbdvcky
+alldvevnts \
+chgdvctl \
+chgdvprop \
+chgfctl \
+chgkbd \
+chgptr \
+chngdvkmap \
+closdev \
+dvbell \
+getdvmmap \
+getfctl \
+getvers \
+grbdev \
+grbdvbtn \
+grbdvky \
+gtbtnmppn \
+gtdvctl \
+gtdvfcs \
+gtdvmtnevnts \
+gtdvprop \
+gtkeymppn \
+gtslctexevnt \
+listdev \
+opendev \
+qrydvstat \
+setdval \
+setdvbmap \
+setdvfcs \
+setdvmmap \
+setdvmode \
+slctexevnt \
+sndextevnt \
+ungrbdev \
+ungrbdvbtn \
+ungrbdvky
 
 all: subdirs test
 
