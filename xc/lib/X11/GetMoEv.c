@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetMoEv.c,v 11.15 89/03/27 11:35:35 jim Exp $ */
+/* $XConsortium: XGetMoEv.c,v 11.16 89/03/27 12:05:27 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -49,8 +49,8 @@ XTimeCoord *XGetMotionEvents(dpy, w, start, stop, nEvents)
 	for (i = rep.nEvents, tcptr = tc; i > 0; i--, tcptr++) {
 	    _XRead (dpy, (char *) &xtc, nbytes);
 	    tcptr->time = xtc.time;
-	    tcptr->x    = cvtINT16ToInt (xtc.x);
-	    tcptr->y    = cvtINT16ToInt (xtc.y);
+	    tcptr->x    = cvtINT16toInt (xtc.x);
+	    tcptr->y    = cvtINT16toInt (xtc.y);
 	}
     }
 
