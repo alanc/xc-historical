@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_fill.c,v 5.1 91/02/16 09:47:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -86,9 +86,8 @@ pfill_area(point_list)
 
 /* FILL AREA SET 3 */
 void
-pfill_area_set3(num_sets, sets)
-Pint		num_sets;	/* number of sets of points     */
-Ppoint_list3	*sets;		/* array of sets        */
+pfill_area_set3(point_list_list)
+Ppoint_list_list3	*point_list_list;	/* list of 3d point lists */
 {
     Phg_args		cp_args;
     Phg_el_data		ed;
@@ -101,20 +100,21 @@ Ppoint_list3	*sets;		/* array of sets        */
 	    ERR_REPORT(phg_cur_cph->erh, ERR5);
 
 	} else {
-	    if ( num_sets < 0 ) {
+	    if ( point_list_list->num_point_lists < 0 ) {
 		ERR_REPORT( phg_cur_cph->erh, ERRN150);
 
 	    } else {
 		args->el_type = PELEM_FILL_AREA_SET3;
-		ed.fa_set3.num_sets = num_sets;
-		ed.fa_set3.sets = sets;
+		ed.fa_set3.num_sets = point_list_list->num_point_lists;
+		ed.fa_set3.sets = point_list_list->point_lists;
 		ed.fa_set3.total_pts = 0;
-		for ( i = 0; i < num_sets; i++ ) {
-		    if ( sets[i].num_points < 0 ) {
+		for ( i = 0; i < point_list_list->num_point_lists; i++ ) {
+		    if ( point_list_list->point_lists[i].num_points < 0 ) {
 			ERR_REPORT(phg_cur_cph->erh, ERRN150);
 			return;
 		    } else
-			ed.fa_set3.total_pts += sets[i].num_points;
+			ed.fa_set3.total_pts += 
+			    point_list_list->point_lists[i].num_points;
 		}
 		if ( CB_BUILD_OC(args->el_type, &ed, &args->pex_oc) )
 		    CP_FUNC(phg_cur_cph, CP_FUNC_OP_ADD_EL, &cp_args, NULL);
@@ -199,9 +199,8 @@ Pfacet_vdata_list3	*vdata;         /* facet vertex data list */
 
 /* FILL AREA SET */
 void
-pfill_area_set(num_sets, sets)
-Pint		num_sets;	/* number of sets of points     */
-Ppoint_list	*sets;		/* array of sets        */
+pfill_area_set(point_list_list)
+Ppoint_list_list	*point_list_list;	/* list of 2d point lists */
 {
     Phg_args		cp_args;
     Phg_el_data		ed;
@@ -214,20 +213,21 @@ Ppoint_list	*sets;		/* array of sets        */
 	    ERR_REPORT(phg_cur_cph->erh, ERR5);
 
 	} else {
-	    if ( num_sets < 0 ) {
+	    if ( point_list_list->num_point_lists < 0 ) {
 		ERR_REPORT( phg_cur_cph->erh, ERRN150);
 
 	    } else {
 		args->el_type = PELEM_FILL_AREA_SET;
-		ed.fa_set.num_sets = num_sets;
-		ed.fa_set.sets = sets;
+		ed.fa_set.num_sets = point_list_list->num_point_lists;
+		ed.fa_set.sets = point_list_list->point_lists;
 		ed.fa_set.total_pts = 0;
-		for ( i = 0; i < num_sets; i++ ) {
-		    if ( sets[i].num_points < 0 ) {
+		for ( i = 0; i < point_list_list->num_point_lists; i++ ) {
+		    if ( point_list_list->point_lists[i].num_points < 0 ) {
 			ERR_REPORT(phg_cur_cph->erh, ERRN150);
 			return;
 		    } else
-			ed.fa_set.total_pts += sets[i].num_points;
+			ed.fa_set.total_pts += 
+			    point_list_list->point_lists[i].num_points;
 		}
 		if ( CB_BUILD_OC(args->el_type, &ed, &args->pex_oc) )
 		    CP_FUNC(phg_cur_cph, CP_FUNC_OP_ADD_EL, &cp_args, NULL);

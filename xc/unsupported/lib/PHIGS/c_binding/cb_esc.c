@@ -1,4 +1,4 @@
-/* $XConsortium: cb_esc.c,v 5.1 91/02/16 09:47:43 rws Exp $ */
+/* $XConsortium: cb_esc.c,v 5.2 91/04/04 17:05:17 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -45,35 +45,33 @@ esc_u1( cph, in )
 }
 
 static void
-esc_u2( cph, in, store, out )
+esc_u2( cph, in, store )
     Cp_handle		cph;
     Pescape_in_data	*in;
-    Pstore		store;
-    Pescape_out_data	*out;
+    _Pstore		*store;
 {
     Phg_args		args;
     Phg_ret		ret;
     int			size;
-    
+   
+#define OUT store->data.escape_out_data.escape_out_u2
+ 
     if (phg_cb_ws_open(cph, in->escape_in_u2.ws_id, Pfn_escape)) {
 	args.data.idata = in->escape_in_u2.ws_id;
 	CP_FUNC( cph, CP_FUNC_OP_XX_INQ_DPY_AND_DRAWABLE, &args, &ret );
-	if ( !(out->escape_out_u2.err_ind = ret.err) ) {
-	    out->escape_out_u2.display = ret.data.dpy_and_drawable.display;
-	    out->escape_out_u2.drawable_id =
-		ret.data.dpy_and_drawable.drawable_id;
-	    out->escape_out_u2.input_overlay_id =
-		ret.data.dpy_and_drawable.overlay_id;
+	if ( !(OUT.err_ind = ret.err) ) {
+	    OUT.display = ret.data.dpy_and_drawable.display;
+	    OUT.drawable_id = ret.data.dpy_and_drawable.drawable_id;
+	    OUT.input_overlay_id = ret.data.dpy_and_drawable.overlay_id;
 	    size = strlen( ret.data.dpy_and_drawable.display_name ) + 1;
-	    if ( CB_STORE_SPACE( store, size,
-		    &out->escape_out_u2.err_ind ) ) {
-		out->escape_out_u2.display_name = store->buf;
-		strcpy( out->escape_out_u2.display_name,
+	    if ( CB_STORE_SPACE( store, size, &OUT.err_ind ) ) {
+		OUT.display_name = store->buf;
+		strcpy( OUT.display_name,
 		    ret.data.dpy_and_drawable.display_name );
 	    }
 	}
     }
-    
+#undef OUT
 }
 
 static void
@@ -90,20 +88,23 @@ esc_u3( cph, in )
 }
 
 static void
-esc_u4( cph, in, out )
+esc_u4( cph, in, store )
     Cp_handle		cph;
     Pescape_in_data	*in;
-    Pescape_out_data	*out;
+    _Pstore		*store;
 {
     Phg_args		cp_args;
     Phg_ret		ret;
     Psl_ws_info		*wsinfo;
     Wst_phigs_dt	*dt;
+    Pint		size;
+
+#define OUT store->data.escape_out_data.escape_out_u4
 
     register Phg_args_drawable_pick	*args = &cp_args.data.drawable_pick;
 
-    out->escape_out_u4.status = PIN_STATUS_NO_IN;
-    out->escape_out_u4.pick.depth = 0;
+    OUT.status = PIN_STATUS_NO_IN;
+    OUT.pick.depth = 0;
 
     if ( !(wsinfo = phg_cb_ws_open(cph, in->escape_in_u2.ws_id, Pfn_escape)) )
 	return;
@@ -130,26 +131,34 @@ esc_u4( cph, in, out )
 	ERR_FLUSH( phg_cur_cph->erh);
 
     } else {
-	out->escape_out_u4.status = ret.data.drawable_pick.status;
-	if ( out->escape_out_u4.status == PIN_STATUS_OK ) {
-	    out->escape_out_u4.pick.depth =
-		MIN(in->escape_in_u4.depth, ret.data.drawable_pick.pick.depth);
-	    /* Assumes the output array is allocated by the application. */
-	    bcopy( (char *)ret.data.drawable_pick.pick.path_list,
-				(char *)out->escape_out_u4.pick.path_list,
-				out->escape_out_u4.pick.depth * sizeof(Ppick_path_elem) );
+	OUT.status = ret.data.drawable_pick.status;
+	if ( OUT.status == PIN_STATUS_OK ) {
+	    OUT.pick.depth = MIN(in->escape_in_u4.depth,
+		    		 ret.data.drawable_pick.pick.depth);
+	    size = OUT.pick.depth * sizeof(Ppick_path_elem);
+	    if ( CB_STORE_SPACE( store, size, &ret.err ) ) {
+		OUT.pick.path_list = (Ppick_path_elem *)store->buf;
+	        bcopy( (char *)ret.data.drawable_pick.pick.path_list,
+		       (char *)OUT.pick.path_list, size );
+	    } else {
+		ERR_REPORT( cph->erh, ret.err );
+	    }
 	}
     }
+#undef OUT
 }
 
 static void
-esc_u5( cph, in, out )
+esc_u5( cph, in, store )
     Cp_handle		cph;
     Pescape_in_data	*in;
-    Pescape_out_data	*out;
+    _Pstore		*store;
 {
     Phg_args		cp_args;
     Phg_ret		ret;
+    Pint		size;
+
+#define OUT store->data.escape_out_data.escape_out_u5
 
     register Phg_args_map_points	*args = &cp_args.data.map_points;
 
@@ -163,18 +172,22 @@ esc_u5( cph, in, out )
     if ( ret.err ) {
 	/* Report errors immediately so user doesn't try to read garbage.  */
 	ERR_FLUSH( phg_cur_cph->erh);
-	out->escape_out_u5.points.num_points = 0;
+	OUT.points.num_points = 0;
     } else {
-	out->escape_out_u5.view_index = ret.data.map_points.view_index;
-	out->escape_out_u5.points.num_points =
-	    ret.data.map_points.points.num_points;
-	if ( out->escape_out_u5.points.num_points > 0 ) {
-	    /* Assumes the output array is allocated by the application. */
-	    bcopy( (char *)ret.data.map_points.points.points,
-				(char *)out->escape_out_u5.points.points,
-				ret.data.map_points.points.num_points * sizeof(Ppoint3) );
+	OUT.view_index = ret.data.map_points.view_index;
+	OUT.points.num_points = ret.data.map_points.points.num_points;
+	if ( OUT.points.num_points > 0 ) {
+	    size = OUT.points.num_points * sizeof(Ppoint3);
+	    if ( CB_STORE_SPACE( store, size, &ret.err ) ) {
+		OUT.points.points = (Ppoint3 *)store->buf;
+	    	bcopy( (char *)ret.data.map_points.points.points,
+		       (char *)OUT.points.points, size );
+	    } else {
+		ERR_REPORT( cph->erh, ret.err);
+	    }
 	}
     }
+#undef OUT
 }
 
 static void
@@ -213,8 +226,8 @@ void
 pescape( func_id, in, store, out )
     Pint        	func_id;	/* escape function identifier	*/
     Pescape_in_data	*in;		/* input data for the function	*/
-    Pstore		store;
-    Pescape_out_data	*out;		/* OUT output data of the function */
+    Pstore		store;		/* handle to Store object	*/
+    Pescape_out_data	**out;		/* OUT output data of the function */
 {
     switch ( func_id) {
 	case PUESC_ERRSYNC:
@@ -222,7 +235,8 @@ pescape( func_id, in, store, out )
 	    break;
 
 	case PUESC_DPYINFO:
-	    esc_u2( phg_cur_cph, in, store, out );
+	    esc_u2( phg_cur_cph, in, (_Pstore *)store );
+	    *out = &((_Pstore *)store)->data.escape_out_data;
 	    break;
 
 	case PUESC_IGNORE_DC_ERRORS:
@@ -230,11 +244,13 @@ pescape( func_id, in, store, out )
 	    break;
 
 	case PUESC_DRAWABLE_POINT_TO_PICK:
-	    esc_u4( phg_cur_cph, in, out );
+	    esc_u4( phg_cur_cph, in, (_Pstore *)store );
+	    *out = &((_Pstore *)store)->data.escape_out_data;
 	    break;
 
 	case PUESC_DRAWABLE_POINTS_TO_WC:
-	    esc_u5( phg_cur_cph, in, out );
+	    esc_u5( phg_cur_cph, in, (_Pstore *)store );
+	    *out = &((_Pstore *)store)->data.escape_out_data;
 	    break;
 
 	case PUESC_REDRAW_REGIONS:
