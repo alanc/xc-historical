@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.30 89/07/24 10:26:20 rws Exp $ */
+/* $XConsortium: window.c,v 5.31 89/08/03 09:39:37 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1082,6 +1082,8 @@ CrushTree(pWin)
 	    if (pChild = pSib)
 		break;
 	    pChild = pParent;
+	    pChild->firstChild = NullWindow;
+	    pChild->lastChild = NullWindow;
 	    if (pChild == pWin)
 		return;
 	}
