@@ -13,6 +13,7 @@
 
 #if defined(__GNUC__) && defined(mc68020)
 #define STUPID volatile
+#define REARRANGE
 #else
 #define STUPID
 #endif
@@ -43,7 +44,7 @@ RROP_NAME(cfb8SegmentSS1Rect) (pDrawable, pGC, nseg, pSegInit)
     DrawablePtr	pDrawable;
     GCPtr	pGC;
     int		nseg;
-    register xSegment	*pSegInit;
+    xSegment	*pSegInit;
 #else
 RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
@@ -61,21 +62,25 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
     BoxPtr	    extents;
-    int		    len;
     int		    capStyle;
     int		    oc1;
     STUPID int	    oc2;
+#ifndef REARRANGE
+    char	    *addrb;
+    int		    adx, ady;
+    int		    e, e1, e3, len;
+    int		    stepx, stepy;
+    RROP_DECLARE
+#endif
+
 #ifndef POLYSEGMENT
     DDXPointPtr	    ppt;
 #else
     xSegment	    *pSeg;
 #endif
-#ifdef PLENTIFUL_REGISTERS
-    RROP_DECLARE
-#endif
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-#ifdef PLENTIFUL_REGISTERS
+#ifndef REARRANGE
     RROP_FETCH_GCPRIV(devPriv);
 #endif
     capStyle = pGC->capStyle;
@@ -139,58 +144,70 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	if (oc1 & oc2)
 	    continue;
 	if (oc1 | oc2)
-	    break;
 	{
-	    register int e, e1, e3, len;
-	    register int stepx, stepy;
-	    
-	    {
-		int adx, ady;
-    	
-	    	stepx = 1;
-	    	if ((adx = x2 - x1) < 0)
-	    	{
-	    	    adx = -adx;
-	    	    stepx = -1;
-	    	}
-	    	stepy = nwidth;
-	    	if ((ady = y2 - y1) < 0)
-	    	{
-	    	    ady = -ady;
-	    	    stepy = -nwidth;
-	    	}
-	    	if (adx <= ady)
-	    	{
-	    	    int	t;
-	    	    t = adx;
-	    	    adx = ady;
-	    	    ady = t;
-    	
-	    	    t = stepy;
-	    	    stepy = stepx;
-	    	    stepx = t;
-	    	}
-	    	e1 = ady << 1;
-	    	e3 = - (adx << 1);
-	    	e = - adx;
-	    	len = adx;
-	    }
 #ifdef POLYSEGMENT
-	    if (capStyle == CapNotLast)
+	    return pSeg - pSegInit;
 #else
-	    if (npt || capStyle == CapNotLast)
-#endif
-		--len;
+	    if (mode == CoordModePrevious)
 	    {
-		register char	*addrb;
-#ifndef PLENTIFUL_REGISTERS
-		RROP_DECLARE
+		ppt[-1].x = x1 - pDrawable->x;
+		ppt[-1].y = y1 - pDrawable->y;
+		ppt[0].x = x2 - pDrawable->x;
+		ppt[0].y = y2 - pDrawable->y;
+	    }
+	    return ppt - pptInit;
+#endif
+	}
+#ifdef REARRANGE
+	{
+	register int e, e1, e3, len;
+	register int stepx, stepy;
+	int adx, ady;
 #endif
 
-#ifndef PLENTIFUL_REGISTERS
-		RROP_FETCH_GCPRIV(devPriv);
+	stepx = 1;
+	if ((adx = x2 - x1) < 0)
+	{
+	    adx = -adx;
+	    stepx = -1;
+	}
+	stepy = nwidth;
+	if ((ady = y2 - y1) < 0)
+	{
+	    ady = -ady;
+	    stepy = -nwidth;
+	}
+	if (adx <= ady)
+	{
+	    int	t;
+	    t = adx;
+	    adx = ady;
+	    ady = t;
+
+	    t = stepy;
+	    stepy = stepx;
+	    stepx = t;
+	}
+	e1 = ady << 1;
+	e3 = - (adx << 1);
+	e = - adx;
+	len = adx;
+
+#ifdef POLYSEGMENT
+	if (capStyle == CapNotLast)
+#else
+/*	if (npt || capStyle == CapNotLast) */
 #endif
-		addrb = addr + (y1 * nwidth) + x1;
+	    --len;
+#ifdef REARRANGE
+	{
+	register char	*addrb;
+	RROP_DECLARE
+
+	RROP_FETCH_GCPRIV(devPriv);
+#endif
+
+	addrb = addr + (y1 * nwidth) + x1;
 
 #define body {\
 	    RROP_SOLID(addrb); \
@@ -200,48 +217,36 @@ RROP_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    { \
 		addrb += stepy; \
 		e += e3; \
-	    } \
-	}
+	     } \
+}
 
 #ifdef LARGE_INSTRUCTION_CACHE
-	    	while ((len -= 4) >= 0)
-	    	{
-	    	    body body body body
-	    	}
-	    	switch (len)
-	    	{
-	    	case  -1: body case -2: body case -3: body
-	    	}
-#else
-		while ((len -= 2) >= 0)
-		{
-		    body body
-		}
-		if (len & 1)
-		    body;
-#endif
-		RROP_SOLID(addrb);
-	    }
-	}
-
-#undef body
-    }
-#ifdef POLYSEGMENT
-    if (nseg >= 0)
-	return pSeg - pSegInit;
-#else
-    if (npt >= 0)
-    {
-	if (mode == CoordModePrevious)
+	while (len >= 4)
 	{
-	    ppt[-1].x = x1 - pDrawable->x;
-	    ppt[-1].y = y1 - pDrawable->y;
-	    ppt[0].x = x2 - pDrawable->x;
-	    ppt[0].y = y2 - pDrawable->y;
+	    body body body body
+	    len -= 4;
 	}
-	return ppt - pptInit;
-    }
+	switch (len)
+	{
+	case  3: body case 2: body case 1: body
+	}
+#else
+	while ((len -= 2) >= 0)
+	{
+	    body body
+	}
+	if (len & 1)
+	    body;
 #endif
+	RROP_SOLID(addrb);
+#undef body
+
+#ifdef REARRANGE
+	}
+	}
+#endif
+
+    }
     return -1;
 }
 
