@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.0 89/06/09 14:58:55 keith Exp $ */
+/* $XConsortium: events.c,v 5.1 89/06/21 15:43:57 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -416,8 +416,8 @@ ChangeToCursor(cursor)
 {
     if (cursor != sprite.current)
     {
-	if ((sprite.current->xhot != cursor->xhot) ||
-		(sprite.current->yhot != cursor->yhot))
+	if ((sprite.current->bits->xhot != cursor->bits->xhot) ||
+		(sprite.current->bits->yhot != cursor->bits->yhot))
 	    CheckPhysLimits(cursor, FALSE, (ScreenPtr)NULL);
 	(*sprite.hotPhys.pScreen->DisplayCursor) (sprite.hotPhys.pScreen,
 						  cursor);
