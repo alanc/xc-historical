@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sync.h,v 1.4 94/02/06 20:08:14 rws Exp $ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -27,7 +27,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #ifndef _SYNC_H_
 #define _SYNC_H_
 
-#define SYNCNAME "SYNC"
+#define SYNC_NAME "SYNC"
 
 #define SYNC_MAJOR_VERSION	3
 #define SYNC_MINOR_VERSION	0

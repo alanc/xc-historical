@@ -1,4 +1,4 @@
-/* $XConsortium: XSync.c,v 1.4 93/09/09 14:06:24 rws Exp $ */
+/* $XConsortium: XSync.c,v 1.5 94/02/09 11:27:56 dpw Exp $ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -34,7 +34,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 static XExtensionInfo _sync_info_data;
 static XExtensionInfo *sync_info = &_sync_info_data;
-static char    *sync_extension_name = SYNCNAME;
+static char    *sync_extension_name = SYNC_NAME;
 
 #define SyncCheckExtension(dpy,i,val) \
 		XextCheckExtension(dpy, i, sync_extension_name, val)

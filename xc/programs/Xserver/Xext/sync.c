@@ -1,4 +1,4 @@
-/* $XConsortium: sync.c,v 1.5 93/09/20 20:17:55 dpw Exp $ */
+/* $XConsortium: sync.c,v 1.7 94/02/09 11:26:50 dpw Exp $ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -2140,7 +2140,7 @@ SyncExtensionInit()
 
     if (RTCounter == 0 || RTAwait == 0 || RTAlarm == 0 ||
 	RTAlarmClient == 0 ||
-	(extEntry = AddExtension(SYNCNAME,
+	(extEntry = AddExtension(SYNC_NAME,
 				 XSyncNumberEvents, XSyncNumberErrors,
 				 ProcSyncDispatch, SProcSyncDispatch,
 				 SyncResetProc,
