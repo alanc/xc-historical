@@ -1,4 +1,4 @@
-.\" Use tbl and -ms and macros.t
+.\" Use tbl, eqn, -ms, and macros.t
 .EH ''''
 .OH ''''
 .EF ''''
@@ -158,7 +158,7 @@ Session manager
 .IP \(bu 5
 Manipulation of shared resources
 .IP \(bu 5
-Resource database
+Device color characterization
 .LP
 This document proposes suitable conventions without attempting to enforce 
 any particular user interface.
@@ -344,7 +344,7 @@ T}
 .sp 6p
 _
 .TE
-.NH
+.NH 1
 Peer-to-Peer Communication by Means of Selections
 .XS
 \*(SN Peer-to-Peer Communication by Means of Selections
@@ -1208,9 +1208,9 @@ NAME	TEXT	(see section 4.1.2.1)
 CLIENT_WINDOW	WINDOW	T{
 A top-level window of the owner
 T}
-DELETE	\fIany\fP	(see section 2.6.3.1)
-INSERT_SELECTION	\fIany\fP	(see section 2.6.3.2)
-INSERT_PROPERTY	\fIany\fP	(see section 2.6.3.3)
+DELETE	NULL	(see section 2.6.3.1)
+INSERT_SELECTION	NULL	(see section 2.6.3.2)
+INSERT_PROPERTY	NULL	(see section 2.6.3.3)
 .sp 6p
 _
 .TE
@@ -1291,8 +1291,11 @@ the entries in a MULTIPLE property must be processed in the order
 that they appear in the property.
 .LP
 In general,
-targets with side effects will return no information 
-(that is, they will return a zero-length property of arbitrary type).
+targets with side effects will return no information,
+that is, they will return a zero-length property of type NULL.
+(Type NULL means the result of
+.PN InternAtom
+on the string "NULL", not the value zero.)
 In all cases,
 the requested side effect must be performed before the conversion is accepted.
 If the requested side effect cannot be performed,
@@ -1300,7 +1303,7 @@ the corresponding conversion request must be refused.
 .NT Conventions
 .IP 1. 5
 Targets with side effects should return no information
-(that is, they should have a zero-length property of arbitrary type).
+(that is, they should have a zero-length property of type NULL).
 .IP 2. 5
 The side effect of a target must be performed before the conversion is accepted.
 .IP 3. 5
@@ -1326,7 +1329,7 @@ DELETE
 When the owner of a selection receives a request to convert it to DELETE,
 it should delete the corresponding selection
 (whatever doing so means for its internal data structures)
-and return a zero-length property of arbitrary type if the deletion was successful.
+and return a zero-length property of type NULL if the deletion was successful.
 .NH 4
 INSERT_SELECTION
 .XS
@@ -1401,7 +1404,7 @@ _
 .TH
 .R
 STRING	8	Null
-COMPOUND_TEXT	32	Null
+COMPOUND_TEXT	8	Null
 ATOM	32	Fixed-size
 ATOM_PAIR	32	Fixed-size
 BITMAP	32	Fixed-size
@@ -3274,15 +3277,6 @@ for treating the windows in a group.
 At present, 
 there is no way for a client to request a group, 
 as opposed to an individual, operation.
-.if 0 \{
-.NH 3
-XXX - Overview of Client Actions
-.XS
-\*(SN XXX - Overview of Client Actions
-.XE
-.IP
-<XXX - insert overview here>
-\}
 .NH 2
 Client Responses to Window Manager Actions
 .XS
@@ -3786,7 +3780,7 @@ WM_TRANSIENT_FOR	WINDOW	32	4.1.2.6
 .sp 6p
 _
 .TE
-.NH
+.NH 1
 Client to Session Manager Communication
 .XS
 \*(SN Client to Session Manager Communication
@@ -4152,7 +4146,7 @@ WM_STATE	WM_STATE	32	5.1.1.3
 .sp 6p
 _
 .TE
-.NH
+.NH 1
 Manipulation of Shared Resources
 .XS
 \*(SN Manipulation of Shared Resource
@@ -4569,18 +4563,223 @@ and
 .PN SetModifierMapping
 pair in these transactions atomic.
 .NH 1
-Resource Manager Conventions
+Device Color Characterization
 .XS
-\*(SN Resource Manager Conventions
+\*(SN Device Color Characterization
 .XE
 .LP
-This section has yet to be generated.
-.if 0 \{
-.IP
-<XXX - I haven't started this part yet>
-.IP
-<XXX - xrdb>
-\}
+.EQ
+delim @@
+define oc % "\\fR{\\fP" %
+define cc % "\\fR}\\fP" %
+.EN
+The X protocol provides explicit RGB values
+which are used to directly drive a monitor, and color names.  RGB values
+provide a mechanism for accessing the full capabilities of the display
+device, but at the expense of having the color perceived by the user remain
+unknowable through the protocol.  Color names were originally designed to
+provide access to a device-independent color database by having the server
+vendor tune the definitions of the colors in that textual database.
+Unfortunately, this still does not provide the client anyway of using
+an existing device-independent color, nor for the client to get
+device-independent color information back about colors which it has selected.
+.LP
+Furthermore, the client must be able to discover which set of colors are
+displayable by the device (the device gamut), both to allow colors to be
+intelligently modified to fit within the device capabilities (gamut
+compression) and to enable the user interface to display a representation of
+the reachable color space to the user (gamut display).
+.LP
+So, a system is needed which will provide full access to
+device-independent color spaces for X clients.  This system should use a
+standard mechanism for naming the colors, be able to provide names for
+existing colors, and provide means by which unreachable colors can be
+modified to fall within the device gamut.
+.LP
+We are fortunate in this area to have a seminal work, the 1931 CIE color
+standard, which is nearly universally agreed upon as adequate for describing
+colors on CRT devices.  This standard uses a tri-stimulus model called CIE
+XYZ in which each perceivable color is specified as a triplet of numbers.
+Other appropriate device independent color models do exist, but most of them
+are directly traceable back to this original work.
+.LP
+X device color characterization
+provides device-independent color spaces to X clients.  It does this by
+providing the barest possible amount of information to the client which
+allows the client to construct a mapping between CIE XYZ and the regular X
+RGB color descriptions.
+.LP
+Device color characterization is defined by
+the name and contents of two window properties which,
+together, permit converting between CIE XYZ space and
+linear RGB device space (such as standard CRTs).
+Linear RGB devices require just two
+pieces of information to completely characterize them:
+.RS
+.LP
+A 3x3 matrix @M@ (and it's inverse, @M sup -1@) which convert between XYZ
+and RGB intensity (@RGB sub intensity@):
+.EQ
+	RGB sub intensity ~ = ~ M ~ times ~ XYZ
+.EN C
+.EQ
+	XYZ ~ = ~ M sup -1 ~ times ~ RGB sub intensity
+.EN
+.LP
+A way of mapping between RGB intensity and RGB protocol value.  XDCCC
+supports three mechanisms which will be outlined below.
+.RE
+.LP
+If other device types are eventually necessary, additional
+properties will be required to describe them.
+.NH 2
+XYZ \*(dA RGB Conversion Matrices
+.XS
+\*(SN XYZ \*(dA RGB Conversion Matrices
+.XE
+.LP
+Because of the limited dynamic range of both XYZ and RGB intensity,
+these matrices will be encoded using a fixed point representation of a
+32-bit 2s complement number scaled by @2 sup 27@, giving a range of @-16@ to
+@16 - epsilon@, where @epsilon ~ = ~ 2 sup -37@.
+.LP
+These matrices will be packed into an 18 element list of 32 bit values,
+XYZ \*(fA RGB matrix first, in row major order and stored in the
+"XDCCC_LINEAR_RGB_MATRICES" properties (format = 32) on the root window of
+each screen, using values appropriate for that screen.
+.LP
+This will be encoded as:
+.TS
+center;
+c s s
+c c c
+l l l.
+XDCCC_LINEAR_RGB_MATRICES property contents
+_
+Field	Type	Comments
+@M sub 0,0@	INT32	Interpreted as a fixed point number @-16 <= x < 16@
+@M sub 0,1@	INT32	
+\&...
+@M sub 3,3@	INT32	
+@{M sup -1} sub 0,0@	INT32	
+@{M sup -1} sub 0,1@	INT32	
+\&...
+@{M sup -1} sub 3,3@	INT32	
+.TE
+.NH 2
+Intensity \*(dA RGB value Conversion
+.XS
+\*(SN Intensity \*(dA RGB value Conversion
+.XE
+.LP
+XDCCC provides two representations for describing the conversion
+between RGB intensity and the actual X protocol RGB values:
+.RS
+0	RGB value/RGB intensity level pairs
+.br
+1	RGB intensity ramp
+.RE
+.LP
+In both cases, the relevant data will be stored in the
+"XDCCC_LINEAR_RGB_CORRECTION" properties on the root window of each screen,
+using values appropriate for that screen, in whatever format provides
+adequate resolution.  Each property can consist of multiple entries
+concatenated together, if different visuals for the screen require different
+conversion data.  A entry with a VisualID of 0 specifies data for all
+visuals of the screen that are not otherwise explicitly listed.
+.LP
+The first representation is an array of RGB value/intensity level pairs, with
+the RGB values in strictly increasing order.  When converting, the client must
+linearly interpolate between adjacent entries in the table to compute the
+desired value.  This is to allow the server to perform gamma correction
+itself and encode that fact in a short 2 element correction table.  The
+intensity will be encoded as an unsigned number to be interpreted as a value
+between 0 and 1 (inclusive).  The precision of this value will depend on the
+format of the property in which it is stored (8, 16 or 32 bits).  For 16 and
+32 bit formats, the RGB value will simply be the value stored in the
+property.  When stored in 8-bit format, the RGB value can be computed from
+the value in the property by:
+.EQ
+	RGB sub value ~ = ~ { Property ~ Value ~ times ~ 65535 } over 255
+.EN
+.LP
+Because the three electron guns in the device may not be exactly alike in
+response characteristics, it is necessary to allow for three separate
+tables, one each for red, green and blue.  So, each table will be preceded
+by the number of entries in that table, and the set of tables will be
+preceded by the number of tables.
+When 3 tables are provided, they will be in red, green, blue order.
+.LP
+This will be encoded as:
+.TS
+center;
+c s s
+c c c
+l l l.
+XDCCC_LINEAR_RGB_CORRECTION property contents for type 0 correction
+_
+\fIField\fP	\fIType\fP	\fIComments\fP
+VisualID0	CARD	Most significant portion of VisualID
+VisualID1	CARD	(exists iff property format is 8)
+VisualID2	CARD	(exists iff property format is 8)
+VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
+type	CARD	0 for this type of correction
+count	CARD	number of tables following (either 1 or 3)
+length	CARD	number of pairs following in this table
+value	CARD	X Protocol RGB value
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength\fP pairs of value/intensity values
+length-g	CARD	number of pairs following in this table (iff \fIcount\fP is 3)
+value	CARD	X Protocol RGB value
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength-g\fP pairs of value/intensity values
+length-b	CARD	number of pairs following in this table (iff \fIcount\fP is 3)
+value	CARD	X Protocol RGB value
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength-b\fP pairs of value/intensity values
+.TE
+.LP
+Note that the VisualID is stored in 4, 2, or 1 pieces, depending on whether
+the property format is 8, 16, or 32, respectively.  The VisualID is always
+stored most-significant piece first.
+.LP
+The second representation is a simple array of intensities for a linear subset
+of RGB values.  The expected size of this table is the bits-per-rgb-value of
+the screen, but it can be any length.  This is similar to the first mechanism,
+except that the RGB value numbers are implicitly defined by the index in the
+array (indices start at 0):
+.EQ
+	RGB sub value = { Array ~ Index ~ times ~ 65535 } over { Array ~ Size }
+.EN
+When converting, the client may linearly interpolate between entries in this
+table.  The intensity values will be encoded just as in the first
+representation.
+.LP
+This will be encoded as:
+.TS
+center;
+c s s
+c c c
+l l l.
+XDCCC_LINEAR_RGB_CORRECTION property contents for type 1 correction
+_
+\fIField\fP	\fIType\fP	\fIComments\fP
+VisualID0	CARD	Most significant portion of VisualID
+VisualID1	CARD	(exists iff property format is 8)
+VisualID2	CARD	(exists iff property format is 8)
+VisualID3	CARD	Least significant (exists iff property format is 8 or 16)
+type	CARD	1 for this type of correction
+count	CARD	number of tables following (either 1 or 3)
+length	CARD	number of elements following in this table
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength\fP intensity elements
+length-g	CARD	number of elements following in this table (iff \fIcount\fP is 3)
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength-g\fP intensity elements
+length-b	CARD	number of elements following in this table (iff \fIcount\fP is 3)
+intensity	CARD	Interpret as a number 0 <= intensity <= 1
+\&...	...	Total of \fIlength-b\fP intensity elements
+.TE
 .NH 1
 Conclusion
 .XS
@@ -4590,16 +4789,10 @@ Conclusion
 This document provides the protocol-level specification of the minimal
 conventions needed to ensure that X Version 11 clients can 
 interoperate properly.
-Further documents are required:
-.IP \(bu 5
-A \fIWindow and Session Manager Conventions Manual\fP to cover these
+A further document is required, specifically
+a \fIWindow and Session Manager Conventions Manual\fP to cover these
 convention from the opposite point of view and to add extra conventions
 of interest to window and session manager implementors.
-.IP \(bu 5
-A addendum to \fIXlib \- C Language X Interface\fP that would cover 
-the additional routines that are needed to ensure that adhering 
-to these conventions is convenient for the C programmer (for example,
-.PN XIconify ).
 .bp
 \&
 .sp 1
