@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.21 91/03/20 12:00:38 gildea Exp $
+ * $XConsortium: xdpyinfo.c,v 1.22 91/09/14 15:39:11 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -211,6 +211,7 @@ print_screen_info (dpy, scr)
     static char *yes = "YES", *no = "NO", *when = "WHEN MAPPED";
     double xres, yres;
     int ndepths = 0, *depths = NULL;
+    unsigned int width, height;
 
 
     /*
@@ -260,6 +261,12 @@ print_screen_info (dpy, scr)
 	    (DoesBackingStore (s) == NotUseful) ? no :
 	    ((DoesBackingStore (s) == Always) ? yes : when),
 	    DoesSaveUnders (s) ? yes : no);
+    XQueryBestSize (dpy, CursorShape, RootWindow (dpy, scr), 65535, 65535,
+		    &width, &height);
+    if (width == 65535 && height == 65535)
+	printf ("  largest cursor:    unlimited\n");
+    else
+	printf ("  largest cursor:    %dx%d\n", width, height);
     printf ("  current input event mask:    0x%lx\n", EventMaskOfScreen (s));
     (void) print_event_mask (eventbuf, 79, 4, EventMaskOfScreen (s));
 		      
