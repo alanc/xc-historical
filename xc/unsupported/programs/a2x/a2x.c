@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.103 92/10/03 15:07:45 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.104 92/11/03 16:22:13 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -453,7 +453,7 @@ xtrap_clean_up()
 void
 usage()
 {
-    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
+    printf("%s: [-d <display>] [-c] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>] [-p]\n",
 	   progname);
     exit(1);
 }
