@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Destroy.c,v 1.7 88/02/15 10:29:18 swick Exp $";
+static char rcsid[] = "$Header: Destroy.c,v 1.8 88/02/26 12:37:27 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -62,7 +62,7 @@ static void Phase2Callbacks(widget)
     Widget    widget;
 {
     _XtCallCallbacks(
-	&(CallbackList)(widget->core.destroy_callbacks), (caddr_t) NULL);
+	(CallbackList*)&(widget->core.destroy_callbacks), (caddr_t) NULL);
 } /* Phase2Callbacks */
 
 static void Phase2Destroy(widget)
