@@ -1,4 +1,4 @@
-/* $XConsortium: blend.c,v 1.2 93/10/26 10:05:33 rws Exp $ */
+/* $XConsortium: blend.c,v 1.3 93/10/27 21:51:54 rws Exp $ */
 
 /**** module blend.c ****/
 /******************************************************************************
@@ -53,7 +53,7 @@ terms and conditions:
 
 static XieRoi XIERoi;
 static XiePhotomap alpha;
-static XIEimage *image1, *image2, *image3;
+static XIEimage *image1, *image2;
 static XiePhotomap XIEPhotomap1, XIEPhotomap2, XIEPhotomap3;
 
 static XieLTriplet levels;
