@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.2 94/01/29 18:12:34 rws Exp $ */
+/* $XConsortium: record.c,v 1.3 94/01/30 15:58:11 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -813,7 +813,7 @@ ProcRecordGetConfig(client)
     rep.hdr.length      	= (sizeof(xRecordGetConfigReply) - sizeof(xGenericReply)) >> 2;
     rep.record_state.enabled = pConfig->enabled;
  
-    memset(&(rep.record_state.intercepted), 0L, sizeof(XRecordFlags));
+    bzero((char *)&(rep.record_state.intercepted), sizeof(XRecordFlags));
     (void)memcpy(&rep.record_state.intercepted, &pConfig->flags, sizeof(XRecordFlags) ); 
 #ifdef VERBOSE
     ErrorF("%s:  Config '0x%lx' intercept: '0x%lx' Events: %d %d  Errors: %d %d  Core: %d %d %d %d\n", 
