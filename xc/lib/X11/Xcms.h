@@ -1,24 +1,27 @@
-/* $XConsortium: Xcms.h,v 1.11 91/01/27 00:31:39 alt Exp $ */
+/* $XConsortium: Xcms.h,v 1.11 91/01/27 00:31:39 alt Exp  */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	DESCRIPTION
@@ -30,13 +33,13 @@
     /*
      * XCMS Status Values
      */
-#define XCMS_FAILURE			0
-#define XCMS_SUCCESS			1
-#define XCMS_SUCCESS_WITH_COMPRESSION	2
+#define XcmsFailure			0
+#define XcmsSuccess			1
+#define XcmsSuccessWithCompression	2
 
     /*
      * Color Space Format ID's
-     *    Color Space ID's are of XcmsSpecFmt type, which is an
+     *    Color Space ID's are of XcmsColorFormat type, which is an
      *    unsigned short (16 bits).  
      *
      *    bit 15 (most significant bit):
@@ -47,40 +50,30 @@
      *	    0 == Registered with X Consortium
      *	    1 == Unregistered
      */
-#define XCMS_UNDEFINED_FORMAT	(XcmsSpecFmt)0x00000000
-#define XCMS_CIEXYZ_FORMAT	(XcmsSpecFmt)0x00000001
-#define XCMS_CIEuvY_FORMAT	(XcmsSpecFmt)0x00000002
-#define XCMS_CIExyY_FORMAT	(XcmsSpecFmt)0x00000003
-#define XCMS_CIELab_FORMAT	(XcmsSpecFmt)0x00000004
-#define XCMS_CIELuv_FORMAT	(XcmsSpecFmt)0x00000005
-#define XCMS_TekHVC_FORMAT	(XcmsSpecFmt)0x00000006
-#define XCMS_RGB_FORMAT		(XcmsSpecFmt)0x80000000
-#define XCMS_RGBi_FORMAT	(XcmsSpecFmt)0x80000001
+#define XcmsUndefinedFormat	(XcmsColorFormat)0x00000000
+#define XcmsCIEXYZFormat	(XcmsColorFormat)0x00000001
+#define XcmsCIEuvYFormat	(XcmsColorFormat)0x00000002
+#define XcmsCIExyYFormat	(XcmsColorFormat)0x00000003
+#define XcmsCIELabFormat	(XcmsColorFormat)0x00000004
+#define XcmsCIELuvFormat	(XcmsColorFormat)0x00000005
+#define XcmsTekHVCFormat	(XcmsColorFormat)0x00000006
+#define XcmsRGBFormat		(XcmsColorFormat)0x80000000
+#define XcmsRGBiFormat		(XcmsColorFormat)0x80000001
 
     /*
      * State of XcmsPerScrnInfo
      */
-#define XCMS_INIT_NONE		0x00	/* no initialization attempted */
-#define XCMS_INIT_SUCCESS		0x01	/* initialization successful */
-#define XCMS_INIT_DEFAULT		0xff	/* initialization failed */
+#define XcmsInitNone		0x00	/* no initialization attempted */
+#define XcmsInitSuccess		0x01	/* initialization successful */
+#define XcmsInitDefault		0xff	/* initialization failed */
 
-#define XcmsDisplay(ccc)		((ccc)->dpy)
-#define XcmsScreenNumber(ccc)		((ccc)->screen_number)
-#define XcmsVisual(ccc)			((ccc)->visual)
-#define XcmsClientWhitePt(ccc)		((ccc)->clientWhitePt)
-#define XcmsScreenWhitePt(ccc)		((ccc)->pPerScrnInfo->screenWhitePt)
-#define XcmsGamutCompFunc(ccc)		((ccc)->gamutCompFunc)
-#define XcmsGamutCompClientData(ccc)	((ccc)->gamutCompClientData)
-#define XcmsWhitePtAdjFunc(ccc)		((ccc)->WhitePtAdjFunc)
-#define XcmsWhitePtAdjClientData(ccc)	((ccc)->WhitePtAdjClientData)
-#define XcmsSetClientWhitePt(ccc,wp)	((ccc)->clientWhitePt = wp)
-#define XcmsSetGamutCompFunc(ccc,f)	((ccc)->gamutCompFunc = f)
-#define XcmsSetGamutCompClientData(ccc,d)	((ccc)->gamutCompClientData = d)
-#define XcmsSetWhitePtAdjFunc(ccc,f)	((ccc)->WhitePtAdjFunc = f)
-#define XcmsSetWhitePtAdjClientData(ccc,d)	((ccc)->WhitePtAdjClientData = d)
+#define DisplayOfCCC(ccc)		((ccc)->dpy)
+#define ScreenNumberOfCCC(ccc)		((ccc)->screenNumber)
+#define VisualOfCCC(ccc)		((ccc)->visual)
+#define ClientWhitePointOfCCC(ccc)	((ccc)->clientWhitePt)
+#define ScreenWhitePointOfCCC(ccc)	((ccc)->pPerScrnInfo->screenWhitePt)
 
-
-typedef unsigned int XcmsSpecFmt;	/* Color Space Format ID */
+typedef unsigned int XcmsColorFormat;	/* Color Space Format ID */
 
 typedef double XcmsFloat;
 
@@ -117,8 +110,8 @@ typedef struct {
      * CIE u'v'Y
      */
 typedef struct {
-    XcmsFloat u;		/* 0.0 - 1.0 */
-    XcmsFloat v;		/* 0.0 - 1.0 */
+    XcmsFloat u_prime;		/* 0.0 - 1.0 */
+    XcmsFloat v_prime;		/* 0.0 - 1.0 */
     XcmsFloat Y;		/* 0.0 - 1.0 */
 } XcmsCIEuvY;
 
@@ -135,18 +128,18 @@ typedef struct {
      * CIE L*a*b*
      */
 typedef struct {
-    XcmsFloat L;		/* 0.0 - 1.0 */
-    XcmsFloat a;
-    XcmsFloat b;
+    XcmsFloat L_star;		/* 0.0 - 100.0 */
+    XcmsFloat a_star;
+    XcmsFloat b_star;
 } XcmsCIELab;
 
     /*
      * CIE L*u*v*
      */
 typedef struct {
-    XcmsFloat L;		/* 0.0 - 1.0 */
-    XcmsFloat u;
-    XcmsFloat v;
+    XcmsFloat L_star;		/* 0.0 - 100.0 */
+    XcmsFloat u_star;
+    XcmsFloat v_star;
 } XcmsCIELuv;
 
     /*
@@ -185,7 +178,7 @@ typedef struct {
 	XcmsPad Pad;
     } spec;			/* the color specification	*/
     unsigned long pixel;	/* pixel value (as needed)	*/
-    XcmsSpecFmt	format;		/* the specification format	*/
+    XcmsColorFormat	format;		/* the specification format	*/
 } XcmsColor;
 
     /*
@@ -194,11 +187,11 @@ typedef struct {
 
 typedef struct _XcmsPerScrnInfo {
     XcmsColor	screenWhitePt;	/* Screen White point */
-    caddr_t	pSCCFuncSet;	/* pointer to Screen Color Characterization */
+    XPointer	functionSet;	/* pointer to Screen Color Characterization */
 				/*      Function Set structure		*/
-    caddr_t	pSCCData;	/* pointer to corresponding Screen Color*/
+    XPointer	screenData;	/* pointer to corresponding Screen Color*/
 				/*	Characterization Data		*/
-    unsigned char state;	/* XCMS_INIT_NONE, XCMS_INIT_SUCCESS, XCMS_INIT_DEFAULT */
+    unsigned char state;	/* XcmsInitNone, XcmsInitSuccess, XcmsInitDefault */
     char	pad[3];
 } XcmsPerScrnInfo;
 
@@ -207,23 +200,32 @@ typedef struct _XcmsPerScrnInfo {
      */
 typedef struct _XcmsCCC {
     Display	*dpy;			/* X Display */
-    int		screen_number;		/* X Screen Number */
+    int		screenNumber;		/* X screen number */
     Visual	*visual;		/* X Visual */
     XcmsColor	clientWhitePt;		/* Client White Point */
-    XcmsFuncPtr	gamutCompFunc;		/* Gamut Compression Function */
-    caddr_t	gamutCompClientData;	/* Gamut Comp Func Client Data */
-    XcmsFuncPtr	whitePtAdjFunc;		/* White Point Adjustment Function */
-    caddr_t	whitePtAdjClientData;	/* White Pt Adj Func Client Data */
+    XcmsFuncPtr	gamutCompProc;		/* Gamut Compression Function */
+    XPointer	gamutCompClientData;	/* Gamut Comp Func Client Data */
+    XcmsFuncPtr	whitePtAdjProc;		/* White Point Adjustment Function */
+    XPointer	whitePtAdjClientData;	/* White Pt Adj Func Client Data */
     XcmsPerScrnInfo *pPerScrnInfo;	/* pointer to per screen information */
 					/*  associated with the above display */
-					/*  screen_number */
-} XcmsCCC;
+					/*  screenNumber */
+} XcmsCCCRec, *XcmsCCC;
+
+    /*
+     * Callback typedefs
+     */
+typedef Status (*XcmsCompressionProc)();	/* Gamut Compression Proc */
+typedef Status (*XcmsWhiteAdjustProc)();	/* White Point Adjustment Proc */
+typedef int (*XcmsParseStringProc)();	/* Color String Parsing Proc */
+typedef int (*XcmsConversionProc)();	/* Color Conversion Proc */
+typedef Status (*XcmsScreenInitProc)();	/* Screen Initialization Proc */
 
     /*
      * Function List Pointer -- pointer to an array of function pointers.
      *    The end of list is indicated by a NULL pointer.
      */
-typedef XcmsFuncPtr *XcmsFuncListPtr;
+typedef XcmsConversionProc *XcmsFuncListPtr;
 
     /*
      * Color Space -- per Color Space related data (Device-Independent
@@ -231,8 +233,9 @@ typedef XcmsFuncPtr *XcmsFuncListPtr;
      */
 typedef struct _XcmsColorSpace {
     char *prefix;		/* Prefix of string format.		*/
-    XcmsSpecFmt id;		/* Format ID number.			*/
-    XcmsFuncPtr parseString;	/* String format parsing function	*/
+    XcmsColorFormat id;		/* Format ID number.			*/
+    XcmsParseStringProc parseString;
+				/* String format parsing function	*/
     XcmsFuncListPtr to_CIEXYZ;	/* Pointer to an array of function 	*/
 				/*   pointers such that when the	*/
 				/*   functions are executed in sequence	*/
@@ -278,7 +281,7 @@ extern Status XcmsAllocColor (
     Display*		/* dpy */,
     Colormap		/* colormap */,
     XcmsColor*		/* color_in_out */,
-    XcmsSpecFmt		/* result_format */
+    XcmsColorFormat		/* result_format */
 #endif
 );
 
@@ -289,11 +292,11 @@ extern Status XcmsAllocNamedColor (
     _Xconst char*	/* color_string */,
     XcmsColor*		/* color_scrn_return */,
     XcmsColor*		/* color_exact_return */,
-    XcmsSpecFmt		/* result_format */
+    XcmsColorFormat		/* result_format */
 #endif
 );
 
-extern XcmsCCC *XcmsCCCofColormap (
+extern XcmsCCC XcmsCCCOfColormap (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Colormap		/* colormap */
@@ -302,37 +305,37 @@ extern XcmsCCC *XcmsCCCofColormap (
 
 extern Status XcmsConvertColors (
 #if NeedFunctionPrototypes
-    XcmsCCC*		/* pCCC */,
+    XcmsCCC		/* ccc */,
     XcmsColor*		/* colorArry_in_out */,
     unsigned int	/* nColors */,
-    XcmsSpecFmt		/* targetFormat */,
+    XcmsColorFormat		/* targetFormat */,
     Bool*		/* compArry_return */
 #endif
 );
 
-extern XcmsCCC *XcmsCreateCCC (
+extern XcmsCCC XcmsCreateCCC (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    int			/* screen_number */,
+    int			/* screenNumber */,
     Visual*		/* visual */,
     XcmsColor*		/* clientWhitePt */,
-    XcmsFuncPtr	        /* gamutCompFunc */,
-    caddr_t		/* gamutCompClientData */,
-    XcmsFuncPtr 	/* whitePtAdjFunc */,
-    caddr_t		/* whitePtAdjClientData */
+    XcmsFuncPtr	        /* gamutCompProc */,
+    XPointer		/* gamutCompClientData */,
+    XcmsFuncPtr 	/* whitePtAdjProc */,
+    XPointer		/* whitePtAdjClientData */
 #endif
 );
 
-extern XcmsCCC *XcmsDefaultCCC (
+extern XcmsCCC XcmsDefaultCCC (
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    int			/* screen_number */
+    int			/* screenNumber */
 #endif
 );
 
 extern void XcmsFreeCCC (
 #if NeedFunctionPrototypes
-    XcmsCCC*		/* pCCC */
+    XcmsCCC		/* ccc */
 #endif
 );
 
@@ -343,7 +346,7 @@ extern Status XcmsLookupColor (
     _Xconst char*	/* color_string */,
     XcmsColor*		/* pColor_exact_in_out */,
     XcmsColor*		/* pColor_scrn_in_out */,
-    XcmsSpecFmt		/* result_format */
+    XcmsColorFormat		/* result_format */
 #endif
 );
 
@@ -352,7 +355,7 @@ extern Status XcmsQueryColor (
     Display*		/* dpy */,
     Colormap		/* colormap */,
     XcmsColor*		/* pColor_in_out */,
-    XcmsSpecFmt		/* result_format */
+    XcmsColorFormat		/* result_format */
 #endif
 );
 
@@ -362,7 +365,7 @@ extern Status XcmsQueryColors (
     Colormap		/* colormap */,
     XcmsColor*		/* colorArry_in_out */,
     unsigned int	/* nColors */,
-    XcmsSpecFmt		/* result_format */
+    XcmsColorFormat		/* result_format */
 #endif
 );
 
@@ -384,27 +387,27 @@ extern Status XcmsStoreColors (
 #endif
 );
 
-extern XcmsSpecFmt XcmsIDofPrefix (
+extern XcmsColorFormat XcmsFormatOfPrefix (
 #if NeedFunctionPrototypes
     char*		/* prefix */
 #endif
 );
 
-extern char *XcmsPrefixOfID (
+extern char *XcmsPrefixOfFormat (
 #if NeedFunctionPrototypes
-    XcmsSpecFmt		/* id */
+    XcmsColorFormat		/* id */
 #endif
 );
 
-extern Status XcmsAddDIColorSpace (
+extern Status XcmsAddColorSpace (
 #if NeedFunctionPrototypes
     XcmsColorSpace*	/* pColorSpace */
 #endif
 );
 
-extern Status XcmsAddSCCFuncSet (
+extern Status XcmsAddFunctionSett (
 #if NeedFunctionPrototypes
-    XcmsSCCFuncSet*	/* pSCCFuncSet */
+    XcmsSCCFuncSet*	/* functionSet */
 #endif
 );
 

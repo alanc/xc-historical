@@ -1,24 +1,27 @@
 /* $XConsortium: Xcmsint.h,v 1.7 91/02/17 15:41:29 rws Exp $ */
 
 /*
- * (c) Copyright 1990 1991 Tektronix Inc.
+ * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
  * 	All Rights Reserved
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the name of Tektronix not be used
- * in advertising or publicity pertaining to distribution of the software
- * without specific, written prior permission.
- *
- * Tektronix disclaims all warranties with regard to this software, including
- * all implied warranties of merchantability and fitness, in no event shall
- * Tektronix be liable for any special, indirect or consequential damages or
- * any damages whatsoever resulting from loss of use, data or profits,
- * whether in an action of contract, negligence or other tortious action,
- * arising out of or in connection with the use or performance of this
- * software.
+ * 
+ * This file is a component of an X Window System-specific implementation
+ * of Xcms based on the TekColor Color Management System.  Permission is
+ * hereby granted to use, copy, modify, sell, and otherwise distribute this
+ * software and its documentation for any purpose and without fee, provided
+ * that this copyright, permission, and disclaimer notice is reproduced in
+ * all copies of this software and in supporting documentation.  TekColor
+ * is a trademark of Tektronix, Inc.
+ * 
+ * Tektronix makes no representation about the suitability of this software
+ * for any purpose.  It is provided "as is" and with all faults.
+ * 
+ * TEKTRONIX DISCLAIMS ALL WARRANTIES APPLICABLE TO THIS SOFTWARE,
+ * INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE.  IN NO EVENT SHALL TEKTRONIX BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
  *
  *
  *	DESCRIPTION
@@ -48,7 +51,7 @@
 #define	XCMS_COLORNAMEDB_SUFFIX		".txt"
 
 	/*
-	 * Color Space ID's are of XcmsSpecFmt type, which is an
+	 * Color Space ID's are of XcmsColorFormat type, which is an
 	 *	unsigned short (16 bits).  
 	 *
 	 *	bit 15 (most significant bit):
@@ -59,14 +62,14 @@
          *          0 == Registered with X Consortium
          *          1 == Unregistered
          */
-#define       XCMS_DD_ID(id)          ((id) & (XcmsSpecFmt)0x80000000)
-#define       XCMS_DI_ID(id)          (!((id) & (XcmsSpecFmt)0x80000000))
-#define       XCMS_REG_ID(id)         ((id) & (XcmsSpecFmt)0x40000000)
-#define       XCMS_UNREG_ID(id)       (!((id) & (XcmsSpecFmt)0x40000000))
-#define       XCMS_FIRST_REG_DI_ID    (XcmsSpecFmt)0x00000001
-#define       XCMS_FIRST_UNREG_DI_ID  (XcmsSpecFmt)0x40000000
-#define       XCMS_FIRST_REG_DD_ID    (XcmsSpecFmt)0x80000000
-#define       XCMS_FIRST_UNREG_DD_ID  (XcmsSpecFmt)0xc0000000
+#define       XCMS_DD_ID(id)          ((id) & (XcmsColorFormat)0x80000000)
+#define       XCMS_DI_ID(id)          (!((id) & (XcmsColorFormat)0x80000000))
+#define       XCMS_REG_ID(id)         ((id) & (XcmsColorFormat)0x40000000)
+#define       XCMS_UNREG_ID(id)       (!((id) & (XcmsColorFormat)0x40000000))
+#define       XCMS_FIRST_REG_DI_ID    (XcmsColorFormat)0x00000001
+#define       XCMS_FIRST_UNREG_DI_ID  (XcmsColorFormat)0x40000000
+#define       XCMS_FIRST_REG_DD_ID    (XcmsColorFormat)0x80000000
+#define       XCMS_FIRST_UNREG_DD_ID  (XcmsColorFormat)0xc0000000
 
 /*
  *	TYPEDEFS
@@ -85,7 +88,7 @@ typedef struct _XcmsCmapRec {
     Display *dpy;
     Window windowID;
     Visual *visual;
-    struct _XcmsCCC *pCCC;
+    struct _XcmsCCC *ccc;
     struct _XcmsCmapRec *pNext;
 } XcmsCmapRec;
 
@@ -95,7 +98,7 @@ typedef struct _XcmsCmapRec {
      */
 typedef struct _XcmsRegColorSpaceEntry {
     char *prefix;	/* Color Space prefix (e.g., "CIEXYZ:") */
-    XcmsSpecFmt id;	/* Color Space ID (e.g., XCMS_CIEXYZ_FORMAT) */
+    XcmsColorFormat id;	/* Color Space ID (e.g., XcmsCIEXYZFormat) */
 } XcmsRegColorSpaceEntry;
 
 
@@ -104,7 +107,7 @@ typedef struct _XcmsRegColorSpaceEntry {
      */
 typedef struct _XcmsPerDpyInfo {
 
-    XcmsCCC *paDefaultCCC; /* based on default visual of screen */
+    XcmsCCC paDefaultCCC; /* based on default visual of screen */
 	    /*
 	     * Pointer to an array of XcmsCCC structures, one for
 	     * each screen.
@@ -133,8 +136,10 @@ typedef struct _IntensityTbl {
  *	DEFINES
  */
 
+#ifdef GRAY
 #define XDCCC_SCREENWHITEPT_ATOM_NAME	"XDCCC_GRAY_SCREENWHITEPOINT"
 #define XDCCC_GRAY_CORRECT_ATOM_NAME	"XDCCC_GRAY_CORRECTION"
+#endif /* GRAY */
 
 #ifndef _ConversionValues
 typedef struct _ConversionValues {
@@ -142,9 +147,11 @@ typedef struct _ConversionValues {
 } ConversionValues;
 #endif
 
+#ifdef GRAY
 typedef struct {
     IntensityTbl *IntensityTbl;
 } GRAY_SCCData;
+#endif /* GRAY */
 
 /*
  *	DEFINES
