@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.98 91/05/10 07:25:38 jap Exp $ */
+/* $XConsortium: utils.c,v 1.99 91/05/30 07:24:21 jap Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -407,6 +407,11 @@ char	*argv[];
 	    extern unsigned long MemoryValidate;
 	    MemoryValidate = 1;
 	}
+	else if ( strcmp ( argv[i], "neverFreeMemory") == 0)
+	{
+	    extern unsigned long MemoryNeverFree;
+	    MemoryNeverFree = 1;
+	}
 #endif
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
@@ -465,6 +470,8 @@ char	*argv[];
 #define FIRSTMAGIC 0x11aaaa11
 #define SECONDMAGIC 0x22aaaa22
 #define FREEDMAGIC  0x33aaaa33
+#define BLANKMAGIC  0x44aaaa44
+#define ALLOCMAGIC  0x55aaaa55
 
 typedef struct _MallocHeader	*MallocHeaderPtr;
 
@@ -482,10 +489,13 @@ typedef struct _MallocTrailer {
 
 unsigned long	MemoryAllocTime;
 unsigned long	MemoryAllocBreakpoint = ~0;
+unsigned long	MemoryFreeBreakpoint = ~0;
 unsigned long	MemoryActive = 0;
 unsigned long	MemoryValidate;
+unsigned long	MemoryNeverFree;
 
 MallocHeaderPtr	MemoryInUse;
+MallocHeaderPtr	MemoryFreed;
 
 #define request(amount)	((amount) + sizeof (MallocHeaderRec) + sizeof (MallocTrailerRec))
 #define Header(ptr)	((MallocHeaderPtr) (((char *) ptr) - sizeof (MallocHeaderRec)))
@@ -528,6 +538,42 @@ ValidateAllActiveMemory ()
     	if(head->magic != FIRSTMAGIC || tail->magic != SECONDMAGIC)
 	    FatalError("Garbage object on active list");
     }
+    for (head = MemoryFreed; head; head = head->next)
+    {
+	tail = (MallocTrailerPtr) (((char *) (head + 1)) + head->amount);
+	if (head->magic != FREEDMAGIC || tail->magic != FREEDMAGIC)
+	    FatalError("Non free data on free list");
+	if (!CheckMemoryContents (head, BLANKMAGIC))
+	    FatalError("Freed data reused");
+    }
+}
+
+FillMemoryContents (head, value)
+    MallocHeaderPtr head;
+    long	    value;
+{
+    int		    count;
+    long	    *store;
+
+    count = head->amount / sizeof (long);
+    store = (long *) (head + 1);
+    while (count--)
+	*store++ = value;
+}
+
+CheckMemoryContents (head, value)
+    MallocHeaderPtr head;
+    long	    value;
+{
+    int		    count;
+    long	    *check;
+
+    count = head->amount / sizeof (long);
+    check = (long *) (head + 1);
+    while (count--)
+	if (*check++ != value)
+	    return FALSE;
+    return TRUE;
 }
 
 #endif
@@ -562,7 +608,12 @@ Xalloc (amount)
 	((random() % MEM_FAIL_SCALE) < Memory_fail))
 	return (unsigned long *)NULL;
     if (ptr = (pointer)malloc(request(amount)))
-	return SetupBlock (ptr, amount);
+    {
+	unsigned long	*ret;
+	ret = SetupBlock (ptr, amount);
+	FillMemoryContents ((MallocHeaderPtr) ptr, ALLOCMAGIC);
+	return ret;
+    }
 #else
     if (ptr = (pointer)malloc(amount))
 	return (unsigned long *)ptr;
@@ -601,27 +652,29 @@ Xrealloc (ptr, amount)
     char *realloc();
 
 #ifdef MEMBUG
-    if (MemoryValidate)
-	ValidateAllActiveMemory ();
-    if ((long)amount <= 0)
-    {
-	if (!amount)
-	    Xfree(ptr);
-	return (unsigned long *)NULL;
-    }
-    if (!Must_have_memory && Memory_fail &&
-	((random() % MEM_FAIL_SCALE) < Memory_fail))
-	return (unsigned long *)NULL;
-    amount = (amount + 3) & ~3;
     if (ptr)
     {
+    	if (MemoryValidate)
+	    ValidateAllActiveMemory ();
+    	if ((long)amount <= 0)
+    	{
+	    if (!amount)
+	    	Xfree(ptr);
+	    return (unsigned long *)NULL;
+    	}
+    	if (!Must_have_memory && Memory_fail &&
+	    ((random() % MEM_FAIL_SCALE) < Memory_fail))
+	    return (unsigned long *)NULL;
+    	amount = (amount + 3) & ~3;
 	CheckNode(ptr);
 	ptr = (pointer)realloc((char *) Header (ptr), request(amount));
+	if (ptr)
+	    return SetupBlock (ptr, amount);
     }
     else
-	ptr = (pointer)malloc(request(amount));
-    if (ptr)
-	return SetupBlock (ptr, amount);
+    {
+	return Xalloc (amount);
+    }
 #else
     if ((long)amount <= 0)
     {
@@ -656,12 +709,25 @@ Xfree(ptr)
 	ValidateAllActiveMemory ();
     if (ptr)
     {
-	MallocHeaderPtr	head;
+	MallocHeaderPtr	    head;
+	MallocTrailerPtr    trail;
 
 	CheckNode(ptr);
 	head = Header(ptr);
+	trail = Trailer(ptr);
+	if (head->time == MemoryFreeBreakpoint)
+	    head->magic = FIRSTMAGIC;
 	head->magic = FREEDMAGIC;
-	free ((char *) head);
+	trail->magic = FREEDMAGIC;
+	FillMemoryContents (head, BLANKMAGIC);
+	if (MemoryNeverFree)
+	{
+	    head->prev = 0;
+	    head->next = MemoryFreed;
+	    MemoryFreed = head;
+	}
+	else
+	    free ((char *) head);
     }
 #else
     if (ptr)
