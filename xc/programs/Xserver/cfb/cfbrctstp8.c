@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstip8.c,v 1.5 89/09/14 17:04:50 rws Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.6 89/09/19 15:36:34 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -167,7 +167,7 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     unsigned long endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
     register int nlw;			/* loop version of nlwMiddle */
-    unsigned long *dstLine;
+    unsigned long *dstBand, *dstLine;
     register unsigned long *dst;	/* pointer to bits we're writing */
     int y;				/* current scan line */
     int srcy;				/* current stipple position */
@@ -178,6 +178,11 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     unsigned long   mask;
     int		  firstStart, lastStop;
     int		    i, maxi;
+    int		    verticalReps;
+    int		    verticalShrink;
+    int		    verticalIncr;
+    int		    v;
+    int		    nl;
 
     fg = PFILL (fg);
 
@@ -202,7 +207,7 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     	w = pBox->x2 - pBox->x1;
     	h = pBox->y2 - pBox->y1;
     	y = pBox->y1;
-    	dstLine = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~31) >> PWSH);
+    	dstBand = pbits + (pBox->y1 * nlwDst) + ((pBox->x1 & ~31) >> PWSH);
 	if (((pBox->x1 & PIM) + w) <= PPW)
 	{
 	    maskpartialbits(pBox->x1, w, startmask);
@@ -219,36 +224,61 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
 	maxi = 8;
 	if (maxi > nlwDst)
 	    maxi = nlwDst;
-    	while (h--)
+	verticalReps = h / stippleHeight;
+	verticalShrink = h - (verticalReps * stippleHeight);
+	verticalReps = verticalReps + 1;
+	verticalIncr = nlwDst * stippleHeight;
+    	while (h)
     	{
+	    if (verticalShrink-- == 0)
+		verticalReps--;
+	    h -= verticalReps;
 	    bits = psrc[srcy];
 	    for (i = 0; i < maxi; i++)
 	    {
 	    	mask = cfb8PixelMasks[GetFourBits (bits)];
 		pixels = fg & mask;
-	    	dst = dstLine + i;
+	    	dstLine = dstBand + i;
 	    	nlw = nlwMiddle;
 	    	if (i < firstStart)
 	    	{
-		    dst += 8;
+		    dstLine += 8;
 		    nlw--;
 	    	}
 	    	else if (i == firstStart && startmask)
 	    	{
-		    
-		    *dst = (*dst & ~(mask&startmask)) |
-			    (pixels & startmask);
-		    dst += 8;
+		    v = verticalReps;
+		    dst = dstLine;
+		    while (v--)
+		    {
+		    	*dst = (*dst & ~(mask&startmask)) |
+			    	(pixels & startmask);
+			dst += verticalIncr;
+		    }
+		    dstLine += 8;
 		    nlw--;
 	    	}
 	    	if (i > lastStop || i == lastStop && endmask)
 		    nlw--;
-#ifdef AVOID_SCREEN_READ
+		v = verticalReps;
+
+#ifdef AVOID_MEMORY_READ
 #define BitLoop(body) \
-    while (nlw--) {\
-	body \
-	dst += 8; \
-    }
+   while (v--) { \
+    	dst = dstLine; \
+	nl = nlw; \
+    	while (nl--) {\
+    	    body \
+    	    dst += 8; \
+    	} \
+    	dstLine += verticalIncr;\
+    	if (i == lastStop && endmask) \
+    	{ \
+    	    *dst = (*dst & ~(mask &endmask)) | \
+	    	    (pixels & endmask); \
+    	} \
+   }
+
 #if (BITMAP_BIT_ORDER == MSBFirst)
 		switch (GetFourBits(bits)) {
 	    	case 0:
@@ -367,18 +397,27 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
 	    	}
 #endif
 #else
-	    	while (nlw--)
-	    	{
-		    *dst = (*dst & ~mask) | pixels;
-		    dst += 8;
-	    	}
+		while (v--)
+		{
+		    dst = dstLine;
+		    nl = nlw;
+	    	    while (nl--)
+	    	    {
+		    	*dst = (*dst & ~mask) | pixels;
+		    	dst += 8;
+	    	    }
+	    	    if (i == lastStop && endmask)
+		    {
+		    	
+		    	*dst = (*dst & ~(mask &endmask)) |
+			    	(pixels & endmask);
+		    }
+		    dstLine += verticalIncr;
+		}
 #endif
-	    	if (i == lastStop && endmask)
-		    *dst = (*dst & ~(mask &endmask)) |
-			    (pixels & endmask);
 	    	NextFourBits (bits);
 	    }
-	    dstLine += nlwDst;
+	    dstBand += nlwDst;
 	    srcy++;
 	    if (srcy == stippleHeight)
 	    	srcy = 0;
