@@ -1,23 +1,23 @@
-#include    "fmalloc.h"
-
 static char    *foo, *bar, *bletch;
 static char    *glorf[100];
+
+extern char *malloc ();
 
 main ()
 {
     int	    i;
 
-    foo = fmalloc (1000);
-    bar = fmalloc (2000);
-    bletch = fmalloc (3000);
+    foo = malloc (1000);
+    bar = malloc (2000);
+    bletch = malloc (3000);
     for (i = 0; i < 100; i++)
-	glorf[i] = fmalloc (i * 200);
+	glorf[i] = malloc (i * 200);
     for (i = 0; i < 100; i++) {
-	ffree (glorf[i]);
+	free (glorf[i]);
 	glorf[i] = 0;
     }
-    ffree (foo);
-    ffree (bletch);
+    free (foo);
+    free (bletch);
     bletch = 0;
     *foo = 'a';
     bar = 0;
