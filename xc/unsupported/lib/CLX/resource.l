@@ -508,8 +508,7 @@
 	      (#\#       ;; Include
 	       (setq term (position '(#\tab #\space) string :test #'char-memq
 				    :start i :end end))
-	       (if (not (string-equal string "#INCLUDE" :start1 i :end1 term))
-		   (format t "~%Resource File error. Ignoring: ~a" string)
+	       (when (string-equal string "#INCLUDE" :start1 i :end1 term) 
 		 (let ((path (merge-pathnames
 			       (subseq string (1+ term)) (truename stream))))
 		   (read-resources database path

@@ -91,3 +91,6 @@ o The image putting, getting, and copying code has been sped up a bit for lispm,
 
 o The lcl3.0 io code has been sped up a bit by using read-array instead of
   fast-read-byte.
+
+o READ-RESOURCES now handles any lines that start with # and don't start with
+  #include as comments.
