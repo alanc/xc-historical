@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.34 94/04/11 19:16:55 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.35 94/04/12 14:48:18 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -138,7 +138,7 @@ Unused bytes in a request are not required to be zero.
 Major opcodes 128 through 255 are reserved for extensions.
 Extensions are intended to contain multiple requests, 
 so extension requests typically have an additional minor opcode encoded 
-in the ``spare'' data byte in the request header.
+in the second data byte in the request header.
 However, the placement and interpretation of this minor opcode and of all
 other fields in extension requests are not defined by the core protocol.
 Every request on a given connection is implicitly assigned a sequence number, 
@@ -531,7 +531,7 @@ T}
 The [x,y] coordinates of a RECTANGLE specify the upper-left corner.
 .LP
 The primary interpretation of large characters in a STRING16 is that they
-are composed of two bytes used to index a 2-D matrix;
+are composed of two bytes used to index a two-dimensional matrix;
 hence, the use of CHAR2B rather than CARD16.
 This corresponds to the JIS/ISO method of indexing 2-byte characters.
 It is expected that most large fonts will be defined with 2-byte 
@@ -584,7 +584,7 @@ T}	T{
 An attempt is made to grab a key/button combination already grabbed by another
 client.
 .sp 6p
-An attempt is made to free a colormap entry not allocated by the client,
+An attempt is made to free a colormap entry not allocated by the client
 or to free an entry in a colormap that was created with all entries writable.
 .sp 6p
 An attempt is made to store into a read-only or an unallocated colormap entry.
@@ -778,32 +778,40 @@ The mapping between keys and keycodes cannot be changed using the
 protocol.
 .LP
 A KEYSYM is an encoding of a symbol on the cap of a key.
-The set of defined KEYSYMs include the character sets Latin 1, Latin 2, 
-Latin 3, Latin 4, Kana, Arabic, Cyrillic, Greek, Tech, Special, Publish, APL, 
-and Hebrew as well as a set of symbols common on keyboards (Return, Help, Tab,
+The set of defined KEYSYMs include the character sets Latin-1, Latin-2, 
+Latin-3, Latin-4, Kana, Arabic, Cyrillic, Greek, Tech, Special, Publish, APL, 
+Hebrew, Thai, and Korean as well as a set of symbols common on keyboards
+(Return, Help, Tab, 
 and so on).
 KEYSYMs with the most-significant bit (of the 29 bits) set are reserved 
 as vendor-specific.
 .LP
 A list of KEYSYMs is associated with each KEYCODE.
 The list is intended to convey the set of symbols on the corresponding key.
-If the list (ignoring trailing NoSymbol entries) is a single KEYSYM ``\fIK\fP'',
+If the list (ignoring trailing
+.PN NoSymbol 
+entries) is a single KEYSYM ``\fIK\fP'',
 then the list is treated as if it were 
 the list ``\fIK\fP NoSymbol \fIK\fP NoSymbol''.
 If the list (ignoring trailing NoSymbol entries) is a pair of KEYSYMs
 ``\fIK1 K2\fP'', then the list is treated as if it were the list
 ``\fIK1 K2 K1 K2\fP''. 
-If the list (ignoring trailing NoSymbol entries) is 
+If the list (ignoring trailing
+.PN NoSymbol 
+entries) is 
 a triple of KEYSYMs ``\fIK1 K2 K3\fP'',
 then the list is treated as if it were the list ``\fIK1 K2 K3\fP NoSymbol''.
 When an explicit ``void'' element is desired in the list,
-the value VoidSymbol can be used.
+the value
+.PN VoidSymbol 
+can be used.
 .LP
 The first four elements of the list are split into two groups of KEYSYMs.
 Group 1 contains the first and second KEYSYMs, Group 2 contains the third and
 fourth KEYSYMs.
 Within each group, 
-if the second element of the group is NoSymbol,
+if the second element of the group is
+.PN NoSymbol , 
 then the group should be treated as if the second element were the
 same as the first element, except when the first element is an alphabetic
 KEYSYM ``\fIK\fP'' for which both lowercase and uppercase forms are defined.
@@ -817,20 +825,35 @@ event make use of only the Group 1 and Group 2 KEYSYMs; no interpretation of
 other KEYSYMs in the list is defined.  The modifier state determines which 
 group to use.  Switching between groups is controlled by the KEYSYM named
 MODE SWITCH, by attaching that KEYSYM to some KEYCODE and attaching that
-KEYCODE to any one of the modifiers Mod1 through Mod5.  This modifier is
+KEYCODE to any one of the modifiers
+.PN Mod1 
+through
+.PN Mod5 . 
+This modifier is
 called the ``group modifier.''  For any KEYCODE, Group 1 is used when the
 group modifier is off, and Group 2 is used when the group modifier is on.
 .LP
 The Lock modifier is interpreted as CapsLock when the KEYSYM named CAPS
-LOCK is attached to some KEYCODE and that KEYCODE is attached to the Lock
-modifier.  The Lock modifier is interpreted as ShiftLock when the KEYSYM
+LOCK is attached to some KEYCODE and that KEYCODE is attached to the
+.PN Lock 
+modifier.  The
+.PN Lock 
+modifier is interpreted as ShiftLock when the KEYSYM
 named SHIFT LOCK is attached to some KEYCODE and that KEYCODE is attached
-to the Lock modifier.  If the Lock modifier could be interpreted as both
+to the
+.PN Lock 
+modifier.  If the
+.PN Lock 
+modifier could be interpreted as both
 CapsLock and ShiftLock, the CapsLock interpretation is used.
 .LP
 The operation of ``keypad'' keys is controlled by the KEYSYM named NUM LOCK,
 by attaching that KEYSYM to some KEYCODE and attaching that KEYCODE to any
-one of the modifiers Mod1 through Mod5.  This modifier is called the
+one of the modifiers
+.PN Mod1 
+through
+.PN Mod5 . 
+This modifier is called the
 ``numlock modifier.''  The standard KEYSYMs with the prefix KEYPAD in their
 name are called ``keypad'' KEYSYMs; these are KEYSYMS with numeric value in
 the hexadecimal range #xFF80 to #xFFBD inclusive.  In addition,
@@ -841,23 +864,43 @@ Within a group, the choice of KEYSYM is determined by applying the first
 rule that is satisfied from the following list:
 .IP \(bu 5
 The numlock modifier is on and the second KEYSYM is a keypad KEYSYM.  In
-this case, if the Shift modifier is on, or if the Lock modifier is on and
+this case, if the
+.PN Shift 
+modifier is on, or if the
+.PN Lock 
+modifier is on and
 is interpreted as ShiftLock, then the first KEYSYM is used, otherwise the
 second KEYSYM is used.
 .IP \(bu 5
-The Shift and Lock modifiers are both off.  In this case, the first
+The
+.PN Shift 
+and
+.PN Lock 
+modifiers are both off.  In this case, the first
 KEYSYM is used.
-The Shift modifier is off, and the Lock modifier is on and is
+The
+.PN Shift 
+modifier is off, and the
+.PN Lock 
+modifier is on and is
 interpreted as CapsLock.  In this case, the first KEYSYM is used, but if
 that KEYSYM is lowercase alphabetic, then the corresponding uppercase
 KEYSYM is used instead.
 .IP \(bu 5
-The Shift modifier is on, and the Lock modifier is on and is interpreted
+The
+.PN Shift 
+modifier is on, and the
+.PN Lock 
+modifier is on and is interpreted
 as CapsLock.  In this case, the second KEYSYM is used, but if that KEYSYM
 is lowercase alphabetic, then the corresponding uppercase KEYSYM is used
 instead.
 .IP \(bu 5
-The Shift modifier is on, or the Lock modifier is on and is interpreted
+The
+.PN Shift 
+modifier is on, or the
+.PN Lock 
+modifier is on and is interpreted
 as ShiftLock, or both.  In this case, the second KEYSYM is used.
 .LP
 The mapping between KEYCODEs and KEYSYMs is not used directly by the server;
@@ -1470,14 +1513,14 @@ and
 windows act identically in other respects\-properties,
 grabs, input control, and so on.
 .LP
-The coordinate system has the X axis horizontal and the Y axis vertical, 
-with the origin [0, 0] at the upper left.
+The coordinate system has the X axis horizontal and the Y axis vertical
+with the origin [0, 0] at the upper-left corner.
 Coordinates are integral,
 in terms of pixels,
 and coincide with pixel centers.
 Each window and pixmap has its own coordinate system.
 For a window, 
-the origin is inside the border at the inside upper left.
+the origin is inside the border at the inside, upper-left corner.
 .LP
 The x and y coordinates
 for the window are relative to the parent's origin
@@ -2169,7 +2212,7 @@ The new parent is not on the same screen as the old parent.
 The new parent is the window itself or an inferior of the window.
 .IP \(bu 5
 The new parent is
-.PN InputOnly 
+.PN InputOnly , 
 and the window is not.
 .IP \(bu 5
 The window has a 
@@ -5053,7 +5096,7 @@ to implement such a model.
 Real or fixed point arithmetic is recommended for computing the corners of the 
 line endpoints for lines greater than one pixel in width.
 .LP
-Thin lines (zero line-width) are ``one pixel wide'' lines drawn using an
+Thin lines (zero line-width) are nominally one pixel wide lines drawn using an
 unspecified, device-dependent algorithm.
 There are only two constraints on this algorithm.
 First, if a line is drawn unclipped from [x1,y1] to [x2,y2] 
@@ -5095,7 +5138,9 @@ T{
 T}	T{
 The full path of the line is drawn, 
 but the even dashes are filled differently than the odd dashes 
-(see fill-style), with Butt cap-style used where even and odd dashes meet.
+(see fill-style), with
+.PN Butt 
+cap-style used where even and odd dashes meet.
 T}
 .sp 6p
 T{
@@ -5172,7 +5217,7 @@ T{
 T}	T{
 The result is
 .PN Butt 
-endpoint styles, and then the triangular ``notch'' is filled.
+endpoint styles, and then the triangular notch is filled.
 T}
 .TE
 .LP
@@ -5249,9 +5294,10 @@ However, if the total path consists of (or is reduced to) a single point
 joined with itself, 
 the effect is the same as when the cap-style is applied at both endpoints.
 .LP
-The tile/stipple represents an infinite 2D plane, with the tile/stipple
+The tile/stipple represents an infinite two-dimensional plane
+with the tile/stipple
 replicated in all dimensions.  When that plane is superimposed on
-the drawable for use in a graphics operation, the upper left corner
+the drawable for use in a graphics operation, the upper-left corner
 of some instance of the tile/stipple is at the coordinates within
 the drawable specified by the tile/stipple origin.
 The tile/stipple and clip origins are interpreted relative to the
@@ -6876,7 +6922,7 @@ and clients can allocate entries.
 .LP
 If alloc is 
 .PN All , 
-then the entire colormap is ``allocated'' writable.
+then the entire colormap is allocated writable.
 The initial values of all allocated entries are undefined.
 For 
 .PN GrayScale 
