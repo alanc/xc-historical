@@ -3,42 +3,42 @@
 #   xgas: Copyright 1990 Larry Medwin: @(#)Gas	1.10 2/9/90
 ########################################################
 #
-XGas*font:			9x15
+*font:			9x15
 #
 #
 # Constraints
 #
-XGas*lab.height:		300
-XGas*lab.width:			300
-XGas*Scrollbar.height:		300
+*lab.height:		300
+*lab.width:			300
+*Scrollbar.height:		300
 #
 # Special Options
 #
-XGas*timestepSize:		3
-XGas*delay:			30
-XGas*randomBounce:		0.2
-XGas*equilibrium:		0.5
-XGas*maxMolecules:		50
+*timestepSize:		3
+*delay:			30
+*randomBounce:		0.2
+*equilibrium:		0.5
+*maxMolecules:		50
 #
 #
-XGas*help.label:		help
-XGas*run.label:			run
-XGas*pause.label:		pause
-XGas*step.label:		step
-XGas*quit.label:		quit
+*help.label:		help
+*run.label:			run
+*pause.label:		pause
+*step.label:		step
+*quit.label:		quit
 #
-XGas*helpText*font:		fixed
-XGas*helpText.fromVert:		helpQuick
-XGas*helpText.height:		450
-XGas*helpText.width:		475
-XGas*helpText.bottom:		chainBottom
-XGas*helpText.left:		chainLeft
-XGas*helpText.right:		chainRight
-XGas*helpText.top:		chainTop
-XGas*helpText.scrollVertical:	always
-XGas*helpText*resize:		width
+*helpText*font:		fixed
+*helpText.fromVert:		helpQuick
+*helpText.height:		450
+*helpText.width:		475
+*helpText.bottom:		chainBottom
+*helpText.left:		chainLeft
+*helpText.right:		chainRight
+*helpText.top:		chainTop
+*helpText.scrollVertical:	always
+*helpText*resize:		width
 #
-XGas*helpQuick.label:		quick
-XGas*helpMan.label:		man
-XGas*helpDoc.label:		doc
-XGas*helpQuit.label:		quit
+*helpQuick.label:		quick
+*helpMan.label:		man
+*helpDoc.label:		doc
+*helpQuit.label:		quit
