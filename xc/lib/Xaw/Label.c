@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.72 89/10/09 16:20:17 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.73 89/10/09 16:51:38 jim Exp $";
 #endif /* lint */
 
 
@@ -40,6 +40,9 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LabelP.h>
+
+
+#define MULTI_LINE_LABEL 32767
 
 /****************************************************************
  *
@@ -145,6 +148,7 @@ static void SetTextWidthAndHeight(lw)
     LabelWidget lw;
 {
     register XFontStruct	*fs = lw->label.font;
+    char *nl;
 
     if (lw->label.pixmap != None) {
 	Window root;
@@ -159,10 +163,32 @@ static void SetTextWidthAndHeight(lw)
 	}
     }
 
-    lw->label.label_len = XtStrlen(lw->label.label);
     lw->label.label_height = fs->max_bounds.ascent + fs->max_bounds.descent;
-    lw->label.label_width = XTextWidth(
-	fs, lw->label.label, (int) lw->label.label_len);
+    if (lw->label.label == NULL) {
+	lw->label.label_len = 0;
+	lw->label.label_width = 0;
+    }
+    else if ((nl = index(lw->label.label, '\n')) != NULL) {
+	char *label;
+	lw->label.label_len = MULTI_LINE_LABEL;
+	lw->label.label_width = 0;
+	for (label = lw->label.label; nl != NULL; nl = index(label, '\n')) {
+	    int width = XTextWidth(fs, label, (int)(nl - label));
+	    if (width > lw->label.label_width) lw->label.label_width = width;
+	    label = nl + 1;
+	    if (*label)
+		lw->label.label_height +=
+		    fs->max_bounds.ascent + fs->max_bounds.descent;
+	}
+	if (*label) {
+	    int width = XTextWidth(fs, label, strlen(label));
+	    if (width > lw->label.label_width) lw->label.label_width = width;
+	}
+    } else {
+	lw->label.label_len = strlen(lw->label.label);
+	lw->label.label_width =
+	    XTextWidth(fs, lw->label.label, (int) lw->label.label_len);
+    }
 }
 
 static void GetnormalGC(lw)
@@ -252,10 +278,24 @@ static void Redisplay(w, event, region)
    if (region != NULL) XSetRegion(XtDisplay(w), gc, region);
 #endif /*notdef*/
    if (lw->label.pixmap == None) {
-       XDrawString(
-		   XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
-		   lw->label.label_y + lw->label.font->max_bounds.ascent,
-		   lw->label.label, (int) lw->label.label_len);
+       int len = lw->label.label_len;
+       char *label = lw->label.label;
+       Position y = lw->label.label_y + lw->label.font->max_bounds.ascent;
+       if (len == MULTI_LINE_LABEL) {
+	   char *nl;
+	   while ((nl = index(label, '\n')) != NULL) {
+	       XDrawString(
+			   XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
+			   y, label, (int)(nl - label));
+	       y += lw->label.font->max_bounds.ascent + lw->label.font->max_bounds.descent;
+	       label = nl + 1;
+	   }
+	   len = strlen(label);
+       }
+       if (len)
+	   XDrawString(
+		       XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
+		       y, label, len);
    } else if (lw->label.label_len == 1) { /* depth */
        XCopyPlane(
 		  XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
