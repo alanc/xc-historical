@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.212 94/02/20 15:36:59 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.213 94/02/23 21:38:37 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -54,11 +54,11 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define DisplayLockWait(d) if ((d)->lock && (d)->lock->lock_wait) \
     (*(d)->lock->lock_wait)(d)
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-#define InternalLockDisplay(d) if ((d)->lock) \
-    (*(d)->lock->internal_lock_display)(d,__FILE__,__LINE__)
+#define InternalLockDisplay(d,wskip) if ((d)->lock) \
+    (*(d)->lock->internal_lock_display)(d,wskip,__FILE__,__LINE__)
 #else
-#define InternalLockDisplay(d) if ((d)->lock) \
-    (*(d)->lock->internal_lock_display)(d)
+#define InternalLockDisplay(d,wskip) if ((d)->lock) \
+    (*(d)->lock->internal_lock_display)(d,wskip)
 #endif
 
 #else /* XTHREADS else */
@@ -66,7 +66,7 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define UnlockNextReplyReader(d)   
 #define UnlockNextEventReader(d,c)
 #define DisplayLockWait(d)
-#define InternalLockDisplay(d)
+#define InternalLockDisplay(d,wskip)
 
 #endif /* XTHREADS else */ 
 
@@ -242,7 +242,7 @@ _XWaitForWritable(dpy
 	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
 #endif
 #endif
-	    InternalLockDisplay(dpy);
+	    InternalLockDisplay(dpy, cv != NULL);
 	    if (nfound < 0 && !ECHECK(EINTR))
 		_XIOError(dpy);
 	} while (nfound <= 0);
@@ -455,7 +455,7 @@ _XWaitForReadable(dpy)
 	result = select(highest_fd + 1, r_mask, NULL, NULL, NULL);
 #endif
 #endif
-	InternalLockDisplay(dpy);
+	InternalLockDisplay(dpy, dpy->flags & XlibDisplayReply);
 	if (result == -1 && !ECHECK(EINTR)) _XIOError(dpy);
 	if (result <= 0)
 	    continue;
@@ -1023,8 +1023,10 @@ _XRead (dpy, data, size)
        if (dpy->lock && dpy->lock->reply_bytes_left > 0)
        {
            dpy->lock->reply_bytes_left -= original_size;
-           if (dpy->lock->reply_bytes_left == 0)
+           if (dpy->lock->reply_bytes_left == 0) {
+	       dpy->flags &= ~XlibDisplayReply;
                UnlockNextReplyReader(dpy);
+	   }
        }
 #endif /* XTHREADS*/
 	return 0;
@@ -1240,8 +1242,10 @@ _XReadPad (dpy, data, size)
        if (dpy->lock && dpy->lock->reply_bytes_left > 0)
        {
            dpy->lock->reply_bytes_left -= original_size;
-           if (dpy->lock->reply_bytes_left == 0)
+           if (dpy->lock->reply_bytes_left == 0) {
+	       dpy->flags &= ~XlibDisplayReply;
                UnlockNextReplyReader(dpy);
+	   }
        }
 #endif /* XTHREADS*/
 	return 0;
@@ -1536,7 +1540,6 @@ _XReply (dpy, rep, extra, discard)
 	   XThread_Self(), cvl);
 #endif
 
-    dpy->flags |= XlibDisplayReply;
     _XFlushInt(dpy, cvl ? cvl->cv : NULL);
     /* if it is not our turn to read a reply off the wire,
      * wait til we're at head of list.  if there is an event waiter,
@@ -1548,6 +1551,7 @@ _XReply (dpy, rep, extra, discard)
 	(!dpy->lock->reply_was_read && dpy->lock->event_awaiters))) {
 	ConditionWait(dpy, cvl->cv);
     }
+    dpy->flags |= XlibDisplayReply;
 #else /* XTHREADS else */
     _XFlush(dpy);
 #endif
@@ -1590,7 +1594,6 @@ _XReply (dpy, rep, extra, discard)
 			    _XEatData(dpy, (rep->generic.length - extra) << 2);
 		    }
 #ifdef XTHREADS
-		    dpy->flags &= ~XlibDisplayReply;
 		    if (dpy->lock) {
 			if (discard) {
 			    dpy->lock->reply_bytes_left = 0;
@@ -1599,9 +1602,11 @@ _XReply (dpy, rep, extra, discard)
 				(rep->generic.length - extra) << 2;
 			}
 			if (dpy->lock->reply_bytes_left == 0) {
+			    dpy->flags &= ~XlibDisplayReply;
 			    UnlockNextReplyReader(dpy);
 			}
-		    }
+		    } else
+			dpy->flags &= ~XlibDisplayReply;
 #endif
 		    return 1;
 		}
