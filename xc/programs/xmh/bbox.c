@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.9 88/01/07 16:50:16 swick Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.10 88/01/07 16:52:26 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -111,7 +111,6 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
 */
     buttonbox->numbuttons = 0;
     buttonbox->button = (Button *) XtMalloc((unsigned) 1);
-    XtManageChild((Widget) buttonbox->outer);
     buttonbox->maxheight = 5;
     buttonbox->radio = radio;
     if (radio) *radio = NULL;
