@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.63 91/07/18 21:31:05 rws Exp $
+ * $XConsortium: dm.c,v 1.64 91/07/31 16:55:01 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -67,6 +67,8 @@ static SIGVAL	StopAll (), RescanNotify ();
 void		StopDisplay ();
 static void	RestartDisplay ();
 
+int nofork_session = 0;
+
 #ifndef NOXDMTITLE
 static char *Title;
 static int TitleLen;
@@ -106,6 +108,8 @@ char	**argv;
     }
     if (debugLevel == 0 && daemonMode)
 	BecomeOrphan ();
+    if (debugLevel >= 10)
+	nofork_session = 1;
     /* SUPPRESS 560 */
     if (oldpid = StorePid ())
     {
@@ -118,7 +122,8 @@ char	**argv;
     }
     if (debugLevel == 0 && daemonMode)
 	BecomeDaemon ();
-    InitErrorLog ();
+    if (debugLevel == 0)
+	InitErrorLog ();
 #ifdef XDMCP
     CreateWellKnownSockets ();
 #else
@@ -562,11 +567,17 @@ struct display	*d;
 	if (d->authorizations)
 	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
     }
-    switch (pid = fork ())
+    if (!nofork_session)
+	pid = fork ();
+    else
+	pid = 0;
+    switch (pid)
     {
     case 0:
-	CleanUpChild ();
-	(void) Signal (SIGPIPE, SIG_IGN);
+	if (!nofork_session) {
+	    CleanUpChild ();
+	    (void) Signal (SIGPIPE, SIG_IGN);
+	}
 	LoadSessionResources (d);
 	SetAuthorization (d);
 	if (!WaitForServer (d))
