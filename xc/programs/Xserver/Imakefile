@@ -113,12 +113,11 @@ ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLI
 #
 # other, necessary targets
 #
-clean::
-	rm -f $(ALLPOSSIBLE)
-
 CleanSubdirs($(SUBDIRS))
 TagSubdirs($(SUBDIRS))
 MakefileSubdirs($(SUBDIRS))
+InstallMultiple($(ALL),$(BINDIR))
+MakeLintLibSubdirs($(SERVERDIRS))
 
 #
 # Gad, but I wish this wasn't so complicated.  All this because
@@ -143,19 +142,10 @@ $(EXTDIR) $(SUBDIRS): FRC
 	@cd $@ ; echo "making $@"; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
-install:: $(ALL)
-	@for i in $(ALL); do \
-		$(INSTALL) -c $(INSTALLFLAGS) $$i $(BINDIR)
-	done
-
-FRC:
-
 lint:
 	lint dix/?*.ln os/4.2bsd/?*.ln ddx/mi/?*.ln ddx/mfb/?*.ln > lint.out
 
-lintlibs:
-	echo "This will take a while"
-	for i in dix $(SERVERDIRS); do \
-		(cd $$i ; echo " -- making lintlib in $$i"; \
-		$(MAKE) $(MFLAGS) lintlib) \
-	done
+clean::
+	rm -f $(ALLPOSSIBLE)
+
+FRC:
