@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.12 89/07/31 17:48:45 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.13 89/07/31 19:01:16 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -64,11 +64,11 @@ extern void	    mfbPushPixels(), cfbPushPixels8();
 static GCOps	cfbTEOps = {
     cfbSolidFS,
     cfbSetSpans,
-    miPutImage,
+    cfbPutImage,
     cfbCopyArea,
     miCopyPlane,
     miPolyPoint,
-    miZeroLine,
+    cfbLineSS,
     miPolySegment,
     miPolyRectangle,
     miPolyArc,
@@ -94,11 +94,11 @@ static GCOps	cfbTEOps = {
 static GCOps	cfbNonTEOps = {
     cfbSolidFS,
     cfbSetSpans,
-    miPutImage,
+    cfbPutImage,
     cfbCopyArea,
     miCopyPlane,
     miPolyPoint,
-    miZeroLine,
+    cfbLineSS,
     miPolySegment,
     miPolyRectangle,
     miPolyArc,
@@ -428,7 +428,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    new_fillspans = TRUE;
 	    new_fillrct = TRUE;
 	    break;
-	    break;
 
 	case GCStipple:
 	    if (pGC->stipple)
@@ -445,6 +444,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    new_fillspans = TRUE;
+	    new_fillrct = TRUE;
 	    break;
 
 	case GCTileStipXOrigin:
@@ -510,6 +510,21 @@ cfbValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    break;
+#if (PPW == 4)
+	case FillStippled:
+	case FillOpaqueStippled:
+	    {
+		int width = pGC->stipple->drawable.width;
+
+		if ((width <= 32) && !(width & (width - 1)))
+		{
+		    mfbCopyRotatePixmap(pGC->stipple,
+					&devPriv->pRotatedPixmap, xrot, yrot);
+		    new_pix = TRUE;
+		}
+	    }
+	    break;
+#endif
 	}
 	if (!new_pix && devPriv->pRotatedPixmap)
 	{
@@ -543,16 +558,27 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_line)
     {
-	if (pGC->lineStyle == LineSolid)
+	switch (pGC->lineStyle)
 	{
+	case LineSolid:
 	    if(pGC->lineWidth == 0)
-		pGC->ops->Polylines = miZeroLine;
+	    {
+		if ((pGC->planemask & PMSK) == PMSK || pGC->alu == GXinvert)
+		    pGC->ops->Polylines = cfbLineSS;
+		else
+		    pGC->ops->Polylines = miZeroLine;
+	    }
 	    else
 		pGC->ops->Polylines = miWideLine;
+	    break;
+	case LineOnOffDash:
+	case LineDoubleDash:
+	    if (pGC->lineWidth == 0 && (pGC->planemask & PMSK) == PMSK)
+		pGC->ops->Polylines = cfbDashLine;
+	    else
+		pGC->ops->Polylines = miWideDash;
+	    break;
 	}
-	else
-	    pGC->ops->Polylines = miWideDash;
-
 	switch(pGC->joinStyle)
 	{
 	  case JoinMiter:
@@ -641,6 +667,10 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    break;
 	case FillTiled:
+#if (PPW == 4)
+	case FillStippled:
+	case FillOpaqueStippled:
+#endif
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK &&
 	        devPriv->pRotatedPixmap)
 	    {
