@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.43 90/09/14 17:51:36 keith Exp $
+ * $XConsortium: dm.c,v 1.44 90/12/03 17:46:26 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,7 +87,7 @@ char	**argv;
 	exit (1);
     }
     if (debugLevel == 0 && daemonMode)
-	    BecomeDaemon ();
+	BecomeOrphan ();
     /* SUPPRESS 560 */
     if (oldpid = StorePid ())
     {
@@ -98,6 +98,8 @@ char	**argv;
 		 pidFile, oldpid);
 	exit (1);
     }
+    if (debugLevel == 0 && daemonMode)
+	BecomeDaemon ();
     InitErrorLog ();
     CreateWellKnownSockets ();
     (void) signal (SIGTERM, StopAll);
