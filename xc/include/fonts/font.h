@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.10 93/08/24 18:49:31 gildea Exp $ */
+/* $XConsortium: font.h,v 1.11 93/10/12 11:53:16 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -98,8 +98,6 @@ typedef int DrawDirection;
 #define CACHE_ALL_GLYPHS 2
 #define DEFAULT_GLYPH_CACHING_MODE CACHING_OFF
 extern int glyphCachingMode;
-
-typedef char *closure;
 
 extern int StartListFontsWithInfo(
 #if NeedFunctionPrototypes
