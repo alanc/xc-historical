@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.9 87/12/08 10:53:43 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.10 87/12/08 11:08:22 swick Locked $";
 #endif lint
 
 /*
@@ -339,14 +339,20 @@ static Boolean SetValues( current, request, desired, last )
     ScrollbarWidget w = (ScrollbarWidget) current;
     ScrollbarWidget rw = (ScrollbarWidget) request;
     ScrollbarWidget dw = (ScrollbarWidget) desired;
-    short thumbmoved, redraw;
+    Boolean redraw;
 
-    thumbmoved = redraw = FALSE;
+    redraw = FALSE;
+
+    if (XtSetValuesGeometryRequest( current, desired, (XtWidgetGeometry*)NULL )
+		== XtGeometryYes)
+        /* no need to Resize() here, as ForgetGravity and Redisplay()
+	 * will take care of what needs to be done. */
+        redraw = TRUE;
 
     /* Core make take care of the following... we'll have to see */
     if (w->core.border_pixel != dw->core.border_pixel) {
 	if (w->core.border_width != 0)
-	    XSetWindowBorder( XtDisplay(w), XtWindow(w), w->core.border_pixel );
+	    XSetWindowBorder(XtDisplay(w), XtWindow(w), w->core.border_pixel);
     }
 
     if (w->scrollbar.foreground != rw->scrollbar.foreground ||
@@ -355,39 +361,25 @@ static Boolean SetValues( current, request, desired, last )
 
     if (w->scrollbar.top != dw->scrollbar.top ||
         w->scrollbar.shown != dw->scrollbar.shown)
-	thumbmoved = TRUE;
+	redraw = TRUE;
 
-    if (redraw)
-	w->scrollbar.topLoc = -1000;
-
-#ifdef notdef
-    if (last)
-        XtSetValuesGeometryRequest( current, desired, (XtWidgetGeometry*)NULL);
-#endif
-
-    return( redraw || thumbmoved );
+    return( redraw );
 }
 
 /* ARGSUSED */
-static void Resize( gw, geometry )
+static void Resize( gw )
    Widget gw;
-   XtWidgetGeometry geometry;
 {
-    ScrollbarWidget w = (ScrollbarWidget) gw;
-
-    FillArea( w, w->scrollbar.topLoc, 
-	      w->scrollbar.topLoc + w->scrollbar.shownLength, 0 );
-
-    w->scrollbar.topLoc = -1000; /* Forces entire thumb to be painted. */
-    PaintThumb( w );
-    
+    /* ForgetGravity has taken care of background, but thumb may
+     * have to move as a result of the new size. */
+    Redisplay( gw, (XEvent*)NULL );
 }
 
 
 /* ARGSUSED */
 static void Redisplay( gw, event )
    Widget gw;
-   XEvent *event;
+   XEvent *event;		/* NULL if called from Resize() */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
