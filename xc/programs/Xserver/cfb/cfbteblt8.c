@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.18 92/05/04 16:34:02 rws Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.19 93/09/13 09:35:06 dpw Exp $ */
 
 #if PSZ == 8
 
@@ -310,7 +310,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     int 	xInit, yInit;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char *pglyphBase;	/* start of array of glyphs */
+    pointer	pglyphBase;	/* start of array of glyphs */
 {
     register unsigned long  c;
     register unsigned long  *dst;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbigblt8.c,v 1.5 91/12/19 14:16:31 keith Exp $
+ * $XConsortium: cfbigblt8.c,v 1.6 93/07/12 09:31:52 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -44,7 +44,7 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int		    x, y;
     unsigned int    nglyph;
     CharInfoPtr	    *ppci;
-    char	    *pglyphBase;
+    pointer	    pglyphBase;
 {
     ExtentInfoRec info;		/* used by QueryGlyphExtents() */
     xRectangle backrect;

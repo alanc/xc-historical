@@ -126,15 +126,16 @@ cfbSetScanline(y, xOrigin, xStart, xEnd, psrc, alu, pdstBase, widthDst, planemas
  * on a word boundary.
  */ 
 void
-cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
+cfbSetSpans(pDrawable, pGC, pcharsrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    unsigned int	*psrc;
+    char		*pcharsrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
     int			fSorted;
 {
+    unsigned int	*psrc = (unsigned int *)pcharsrc;
     unsigned long	*pdstBase;	/* start of dst bitmap */
     int 		widthDst;	/* width of bitmap in words */
     register BoxPtr 	pbox, pboxLast, pboxTest;

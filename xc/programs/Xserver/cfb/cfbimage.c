@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.12 93/07/12 16:28:32 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.13 93/09/13 09:35:05 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -105,7 +105,7 @@ cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     int		sx, sy, w, h;
     unsigned int format;
     unsigned long planeMask;
-    pointer	pdstLine;
+    char	*pdstLine;
 {
     BoxRec box;
     DDXPointRec ptSrc;

@@ -1,4 +1,4 @@
-/* $XConsortium: cfbgetsp.c,v 5.10 92/02/11 15:04:21 keith Exp $ */
+/* $XConsortium: cfbgetsp.c,v 5.11 93/09/13 09:34:44 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -43,14 +43,15 @@ SOFTWARE.
  * out to an integral number of words.
  */
 void
-cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
+cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart)
     DrawablePtr		pDrawable;	/* drawable from which to get bits */
     int			wMax;		/* largest value of all *pwidths */
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
-    unsigned int	*pdstStart;	/* where to put the bits */
+    char		*pchardstStart; /* where to put the bits */
 {
+    unsigned int	*pdstStart = (unsigned int *)pchardstStart;	
     register unsigned long	*pdst;		/* where to put the bits */
     register unsigned long	*psrc;		/* where to get the bits */
     register unsigned long	tmpSrc;		/* scratch buffer for bits */
@@ -67,7 +68,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 
     switch (pDrawable->bitsPerPixel) {
 	case 1:
-	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
 	    return;
 	case PSZ:
 	    break;
