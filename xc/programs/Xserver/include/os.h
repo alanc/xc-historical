@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.50 93/09/23 16:46:49 rws Exp $ */
+/* $XConsortium: os.h,v 1.51 93/09/24 12:17:42 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -342,6 +342,19 @@ extern void Xfree(
 extern int OsInitAllocator(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+typedef SIGVAL (*OsSigHandlerPtr)(
+#if NeedFunctionPrototypes
+    int /* sig */
+#endif
+);
+
+extern OsSigHandlerPtr OsSignal(
+#if NeedFunctionPrototypes
+    int /* sig */,
+    OsSigHandlerPtr /* handler */
 #endif
 );
 

@@ -21,14 +21,20 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.129 93/09/23 17:06:44 rws Exp $ */
+/* $XConsortium: utils.c,v 1.130 93/09/23 17:42:01 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
-#include <signal.h>
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+# include   <signal.h>
+#else
+#define _POSIX_SOURCE
+# include   <signal.h>
+#undef _POSIX_SOURCE
+#endif
 #ifndef SYSV
 #include <sys/resource.h>
 #endif
@@ -105,6 +111,26 @@ Bool Must_have_memory = FALSE;
 
 char *dev_tty_from_init = NULL;		/* since we need to parse it anyway */
 
+OsSigHandlerPtr
+OsSignal(sig, handler)
+    int sig;
+    OsSigHandlerPtr handler;
+{
+#ifdef X_NOT_POSIX
+    return signal(sig, handler);
+#else
+    struct sigaction act, oact;
+
+    sigemptyset(&act.sa_mask);
+    if (handler != SIG_IGN)
+	sigaddset(&act.sa_mask, sig);
+    act.sa_flags = 0;
+    act.sa_handler = handler;
+    sigaction(sig, &act, &oact);
+    return oact.sa_handler;
+#endif
+}
+
 /* Force connections to close on SIGHUP from init */
 
 /*ARGSUSED*/
@@ -119,7 +145,7 @@ AutoResetServer (sig)
     exit (0);
 #endif
 #ifdef SYSV
-    signal (SIGHUP, AutoResetServer);
+    OsSignal (SIGHUP, AutoResetServer);
 #endif
 }
 
