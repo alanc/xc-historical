@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/01/31 11:14:52 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/02/01 18:12:03 mor Exp $
 
 #define DoNormalLib NormalLibSM
 #define DoSharedLib SharedLibSM
@@ -20,8 +20,7 @@ CONN_DEFINES = ConnectionFlags -DICE_t
 
 HEADERS = SM.h \
           SMproto.h \
-          SMlib.h \
-          SMlibint.h
+          SMlib.h
 
 SRCS = sm_client.c \
        sm_genid.c \
