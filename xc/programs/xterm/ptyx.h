@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.18 88/10/07 14:12:29 swick Exp $
+ *	$XConsortium: ptyx.h,v 1.19 88/11/16 13:41:34 rws Exp $
  */
 
 #include <X11/copyright.h>
@@ -220,6 +220,7 @@ typedef struct {
 	int		select;		/* xterm selected		*/
 	Boolean		visualbell;	/* visual bell mode		*/
 	int		logging;	/* logging mode			*/
+	Boolean		allowSendEvents;/* SendEvent mode		*/
 	Boolean		grabbedKbd;	/* keyboard is grabbed		*/
 	int		logfd;		/* file descriptor of log	*/
 	char		*logfile;	/* log file name		*/
