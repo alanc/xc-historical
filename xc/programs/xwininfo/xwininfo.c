@@ -65,7 +65,7 @@ usage()
     fprintf (stderr,
 	"    -metric              print out sizes in metric units\n");
     fprintf (stderr,
-	"    -all                 -tree, status, -bits, -events, -size, -wm\n");
+	"    -all                 -tree, -stats, -bits, -events, -size, -wm\n");
     fprintf (stderr,
 	"\n");
     exit (1);
