@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.28 88/10/18 13:12:54 swick Exp $
+* $XConsortium: TextP.h,v 1.29 89/03/30 16:06:01 jim Exp $
 */
 
 
@@ -102,6 +102,7 @@ typedef struct _TextPart {
     int			options;	     /* wordbreak, scroll, etc. */
     int			dialog_horiz_offset; /* position for popup dialog */
     int			dialog_vert_offset;  /* position for popup dialog */
+    Boolean		display_caret;	     /* insertion pt visible iff T */
     /* private state */
     XtTextLineTable	lt;
     XtTextScanDirection extendDir;
