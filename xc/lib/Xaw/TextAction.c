@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.36 91/01/02 11:43:55 gildea Exp $ */
+/* $XConsortium: TextAction.c,v 1.37 91/03/04 18:53:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -786,10 +786,14 @@ Cardinal *n;
   *ptr = '\0';
 
   text.length = strlen(text.ptr);
-  if (LocalInsertNewLine(ctx, event)) return;
+  if (LocalInsertNewLine(ctx, event)) {
+      XtFree(text.ptr);
+      return;
+  }
   text.firstPos = 0;
   if (_XawTextReplace(ctx,ctx->text.insertPos, ctx->text.insertPos, &text)) {
     XBell(XtDisplay(ctx), 50);
+    XtFree(text.ptr);
     EndAction(ctx);
     return;
   }
