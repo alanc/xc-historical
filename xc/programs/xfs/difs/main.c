@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.11 93/09/20 18:10:41 hersh Exp $ */
+/* $XConsortium: main.c,v 1.12 94/02/09 16:20:29 gildea Exp $ */
 /*
  * Font server main routine
  */
@@ -76,8 +76,10 @@ main(argc, argv)
      * do this first thing, to get any options that only take effect at
      * startup time.  it is erad again each time the server resets
      */
-    if (ReadConfigFile(configfilename) != FSSuccess)
-	FatalError("couldn't parse config file\n");
+    if (ReadConfigFile(configfilename) != FSSuccess) {
+	ErrorF("fatal: couldn't read config file\n");
+	exit(1);
+    }
 
     while (1) {
 	serverGeneration++;
@@ -134,7 +136,7 @@ main(argc, argv)
 	fsfree(ConnectionInfo);
 	/* note that we're parsing it again, for each time the server resets */
 	if (ReadConfigFile(configfilename) != FSSuccess)
-	    FatalError("couldn't parse config file\n");
+	    FatalError("couldn't read config file\n");
     }
 
     CloseErrors();
