@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.h,v 1.5 93/07/27 14:31:47 rws Exp $ */
+/* $XConsortium: xieperf.h,v 1.6 93/08/19 09:40:27 rws Exp $ */
 
 /**** module xieperf.h ****/
 /******************************************************************************
@@ -55,6 +55,7 @@ terms and conditions:
 #include <decw$include/Xlib.h>
 #include <decw$include/Xutil.h>
 #endif
+#include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/extensions/XIElib.h>
 
