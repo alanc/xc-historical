@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.29 94/04/01 14:53:22 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.30 94/04/08 15:39:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -125,8 +125,8 @@ SOFTWARE.
 #define XtCClientLeader "ClientLeader"
 #define XtNwindowRole "windowRole"
 #define XtCWindowRole "WindowRole"
-#define XtNvisible "visible"
-#define XtCVisible "Visible"
+#define XtNurgency "urgency"
+#define XtCUrgency "Urgency"
 #define XtNcancelCallback "cancelCallback"
 #define XtNcloneCommand "cloneCommand"
 #define XtCCloneCommand "CloneCommand"
@@ -413,11 +413,11 @@ extern _XtConst_ char XtShellStrings[];
 #ifndef XtCWindowRole
 #define XtCWindowRole ((char*)&XtShellStrings[850])
 #endif
-#ifndef XtNvisible
-#define XtNvisible ((char*)&XtShellStrings[861])
+#ifndef XtNurgency
+#define XtNurgency ((char*)&XtShellStrings[861])
 #endif
-#ifndef XtCVisible
-#define XtCVisible ((char*)&XtShellStrings[869])
+#ifndef XtCUrgency
+#define XtCUrgency ((char*)&XtShellStrings[869])
 #endif
 #ifndef XtNcancelCallback
 #define XtNcancelCallback ((char*)&XtShellStrings[877])
