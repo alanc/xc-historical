@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.79 89/12/12 12:13:42 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.80 90/03/26 12:12:44 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -32,6 +32,16 @@
 #endif /* CRAY */
 
 #include <X11/Xlib.h>		/* get NeedFunctionPrototypes defs */
+
+#ifndef _XEVENT_
+/*
+ * _QEvent datatype for use in input queueing.
+ */
+typedef struct _XSQEvent {
+    struct _XSQEvent *next;
+    XEvent event;
+} _XQEvent;
+#endif
 
 #if NeedFunctionPrototypes	/* prototypes require event type definitions */
 #define NEED_EVENTS
@@ -390,6 +400,35 @@ extern void Data();
 
 #endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
 
+/*
+ * This structure is private to the library.
+ */
+typedef struct _XFreeFuncs {
+    void (*atoms)();		/* _XFreeAtomTable */
+    int (*modifiermap)();	/* XFreeModifierMap */
+    void (*key_bindings)();	/* _XFreeKeyBindings */
+    void (*context_db)();	/* _XFreeContextDB */
+} _XFreeFuncRec;
+
+/*
+ * This structure is private to the library.
+ */
+typedef struct _XExten {	/* private to extension mechanism */
+	struct _XExten *next;	/* next in list */
+	XExtCodes codes;	/* public information, all extension told */
+	int (*create_GC)();	/* routine to call when GC created */
+	int (*copy_GC)();	/* routine to call when GC copied */
+	int (*flush_GC)();	/* routine to call when GC flushed */
+	int (*free_GC)();	/* routine to call when GC freed */
+	int (*create_Font)();	/* routine to call when Font created */
+	int (*free_Font)();	/* routine to call when Font freed */
+	int (*close_display)();	/* routine to call when connection closed */
+	int (*error)();		/* who to call when an error occurs */
+        char *(*error_string)();  /* routine to supply error string */
+	char *name;		/* name of this extension */
+	void (*error_values)(); /* routine to supply error values */
+} _XExtension;
+
 
 /* extension hooks */
 
@@ -531,6 +570,21 @@ extern char* (*XESetErrorString(
 #endif
 );
 
+extern void (*XESetPrintErrorValues (
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    void (*)( Display*			/* display */,
+	      XErrorEvent*		/* ev */,
+	      void*			/* fp */
+	     )		/* proc */
+#endif
+))(
+#if NeedFunctionPrototypes
+    Display*, XErrorEvent*, void*
+#endif
+);
+
 extern int (*XESetWireToEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -558,6 +612,21 @@ extern Status (*XESetEventToWire(
 ))(
 #if NeedFunctionPrototypes
     Display*, XEvent*, xEvent*
+#endif
+);
+
+extern Status (*XESetWireToError(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* error_number */,
+    Bool (*) ( Display*			/* display */,
+	       XErrorEvent*		/* he */,
+	       xError*			/* we */
+            )		/* proc */   
+#endif
+))(
+#if NeedFunctionPrototypes
+    Display*, XErrorEvent*, xError*
 #endif
 );
 
