@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.14 89/09/11 17:18:22 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.15 89/09/13 14:42:05 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1125,6 +1125,7 @@ TextWidget ctx;
 XawTextPosition from, to;
 {
   XawTextPosition startPos, endPos, eop_begin, eop_end;
+  Widget src = ctx->text.source;
   XawTextBlock text;
   char *buf;
 
@@ -1138,25 +1139,24 @@ XawTextPosition from, to;
 
   eop_begin = eop_end = startPos = endPos = from;
   while (TRUE) {
-    endPos=SrcScan(ctx->text.source, startPos, XawstEOL, XawsdRight, 1, FALSE);
+    endPos=SrcScan(src, startPos, XawstEOL, XawsdRight, 1, FALSE);
+    endPos=SrcScan(src, endPos, XawstWhiteSpace, XawsdLeft, 1, FALSE);
+    endPos=SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 1, FALSE);
+
     if (endPos >= to)
       break;
 
     if (endPos >= eop_begin) {
       startPos = eop_end;
-      eop_begin = SrcScan(ctx->text.source, startPos, XawstParagraph,
-			  XawsdRight, 1, FALSE);
-      eop_end = SrcScan(ctx->text.source, startPos, XawstParagraph,
-			XawsdRight, 1, TRUE);
+      eop_begin = SrcScan(src, startPos, XawstParagraph, XawsdRight, 1, FALSE);
+      eop_end = SrcScan(src, startPos, XawstParagraph, XawsdRight, 1, TRUE);
     }
     else {
       XawTextPosition periodPos, next_word;
       int i, len, start;
 
-      periodPos= SrcScan(ctx->text.source, endPos, 
-			 XawstPositions, XawsdLeft, 1, TRUE);
-      next_word = SrcScan(ctx->text.source, endPos, XawstWhiteSpace,
-			  XawsdRight, 1, FALSE);
+      periodPos= SrcScan(src, endPos, XawstPositions, XawsdLeft, 1, TRUE);
+      next_word = SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 1, FALSE);
 
       len = next_word - periodPos;
 
@@ -1170,7 +1170,7 @@ XawTextPosition from, to;
       }
 
       /*
-       * Remove all spaces following the CR. 
+       * Remove all extra spaces. 
        */
 
       for (i = 1 ; i < len; i++) 
@@ -1180,7 +1180,7 @@ XawTextPosition from, to;
       XtFree(buf);
 
       to -= i - text.length;
-      startPos = SrcScan(ctx->text.source, periodPos,
+      startPos = SrcScan(src, periodPos,
 			 XawstPositions, XawsdRight, i + start, TRUE);
       _XawTextReplace(ctx, endPos, startPos, &text);
 	startPos -= i - text.length;
