@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.215 94/01/20 18:26:00 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.216 94/02/04 21:29:49 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -120,7 +120,7 @@ static XrmOptionDescRec Const opTable[] = {
 {"-title",	".title",	XrmoptionSepArg,	(XtPointer) NULL},
 {"-xnllanguage",".xnlLanguage",	XrmoptionSepArg,	(XtPointer) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(XtPointer) NULL},
-{"-xtsessionID","*sessionID",	XrmoptionSepArg,	(XtPointer) NULL},
+{"-xtsessionID",".sessionID",	XrmoptionSepArg,	(XtPointer) NULL},
 };
 
 
