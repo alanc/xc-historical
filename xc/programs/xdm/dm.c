@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.34 89/12/19 16:56:09 rws Exp $
+ * $XConsortium: dm.c,v 1.35 90/02/07 15:02:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,10 @@
 # include	<stdio.h>
 # include	<X11/Xos.h>
 # include	<sys/signal.h>
+#ifndef sigmask
+#define sigmask(m)  (1 << ((m - 1)))
+#endif
+
 # include	<sys/stat.h>
 # include	<errno.h>
 # include	<varargs.h>
@@ -55,11 +59,14 @@ main (argc, argv)
 int	argc;
 char	**argv;
 {
-    int	oldpid;
+    int	oldpid, oldumask;
 #ifndef SYSV
     static SIGVAL	ChildNotify ();
 #endif
 
+    /* make sure at least world write access is disabled */
+    if (((oldumask = umask(022)) & 002) == 002)
+	(void) umask (oldumask);
 #ifndef NOXDMTITLE
     Title = argv[0];
     TitleLen = (argv[argc - 1] + strlen(argv[argc - 1])) - Title;
@@ -170,7 +177,7 @@ ScanServers ()
     }
     else
     {
-	ParseDisplay (lineBuf, acceptableTypes, NumTypes);
+	ParseDisplay (servers, acceptableTypes, NumTypes);
     }
 }
 
