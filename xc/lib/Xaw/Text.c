@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.96 89/07/21 19:56:54 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.97 89/07/21 21:40:10 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -871,8 +871,8 @@ int *format;
     long * temp;
     
     temp = (long *) XtMalloc(2 * sizeof(long));
-    temp[1] = (long) (ctx->text.s.left + 1);
-    temp[2] = ctx->text.s.right;
+    temp[0] = (long) (ctx->text.s.left + 1);
+    temp[1] = ctx->text.s.right;
     *value = (caddr_t) temp;
     *type = XA_SPAN(d);
     *length = 2L;
