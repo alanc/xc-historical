@@ -1,0 +1,8 @@
+#!/bin/csh -f
+
+if ( $TERM == "dialup" || $TERM == "network" ) then
+setenv TERM vt100
+unsetenv TERMCAP
+endif
+clear
+a2x
