@@ -366,7 +366,7 @@ int fSorted;
 			pdst++;
 		}
 		else
-#endif notdef
+#endif /* notdef */
 		if(((rem & PIM) + w) <= PPW)
 		{
 		    getbits(psrc, (rem & PIM), w, tmpSrc);
@@ -447,7 +447,7 @@ int fSorted;
     PixmapPtr	pStipple;	/* pointer to stipple we want to fill with */
     int		w, width,  x, xrem, xSrc, ySrc;
     unsigned int tmpSrc, tmpDst1, tmpDst2;
-    int 	stwidth, stippleWidth, *psrcS, rop;
+    int 	stwidth, stippleWidth, *psrcS, rop, stiprop;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     unsigned int fgfill, bgfill;
@@ -480,7 +480,21 @@ int fSorted;
     n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
-    rop = ((cfbPrivGC *)(pGC->devPriv))->rop;
+    rop = pGC->alu;
+    if (pGC->fillStyle == FillStippled) {
+	switch (rop) {
+	    case GXand:
+	    case GXcopy:
+	    case GXnoop:
+	    case GXor:
+	    case GXequiv:
+		stiprop = rop;
+		break;
+	    default:
+		stiprop = rop;
+		rop = GXcopy;
+	}
+    }
     fgfill = PFILL(pGC->fgPixel);
     bgfill = PFILL(pGC->bgPixel);
 
@@ -545,8 +559,9 @@ int fSorted;
 	    width = *pwidth;
 	    while(width > 0)
 	    {
-	        int xtemp;
+	        int xtemp, tmpx;
 		unsigned int *ptemp;
+		int *pdsttmp;
 		/*
 		 *  Do a stripe through the stipple & destination w pixels
 		 *  wide.  w is not more than:
@@ -568,6 +583,8 @@ int fSorted;
 
 	        xtemp = (xrem & 0x1f);
 	        ptemp = (unsigned int *)(psrcS + (xrem >> 5));
+		tmpx = x & PIM;
+		pdsttmp = pdst + (x>>PWSH);
 		switch ( pGC->fillStyle ) {
 		    case FillOpaqueStippled:
 			getstipplepixels(ptemp, xtemp, w, 0, &bgfill, &tmpDst1);
@@ -575,25 +592,18 @@ int fSorted;
 			break;
 		    case FillStippled:
 			/* Fill tmpSrc with the source pixels */
-			tmpSrc = *(pdst + (x >> PWSH));
+			getbits(pdsttmp, tmpx, w, tmpSrc);
 			getstipplepixels(ptemp, xtemp, w, 0, &tmpSrc, &tmpDst1);
-			getstipplepixels(ptemp, xtemp, w, 1, &fgfill, &tmpDst2);
+			if (rop != stiprop) {
+			    putbitsrop(fgfill, 0, w, &tmpSrc, pGC->planemask, stiprop);
+			} else {
+			    tmpSrc = fgfill;
+			}
+			getstipplepixels(ptemp, xtemp, w, 1, &tmpSrc, &tmpDst2);
 			break;
 		}
-#ifdef notdef
-		putbitsrop(tmpDst1 | tmpDst2, x & PIM, w, pdst + (x>>PWSH), 
-		    pGC->planemask, rop);
-#else
-		{
-		    /*
-		     * Ultrix cc hasn't enough expression stack to compile
-		     * these values in the putbitsrop call.  (MIT:yba)
-		     */
-		    int tmpDst = tmpDst1 | tmpDst2, tmpx = x & PIM;
-		    int * pdsttmp = pdst + (x>>PWSH);
-		    putbitsrop(tmpDst, tmpx, w, pdsttmp, pGC->planemask, rop);
-		}
-#endif notdef
+		tmpDst2 |= tmpDst1;
+		putbitsrop(tmpDst2, tmpx, w, pdsttmp, pGC->planemask, rop);
 		x += w;
 		width -= w;
 	    }
