@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XHeader$
+ * $XHeader: xkill.c,v 1.1 88/07/14 19:43:22 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,27 +22,51 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#include <ctype.h>
 
+Display *dpy = NULL;
 char *ProgramName;
 
 XID parse_id(), get_window_id();
+int parse_button();
+
+Exit (code)
+    int code;
+{
+    if (dpy) {
+	XCloseDisplay (dpy);
+    }
+    exit (code);
+}
 
 usage ()
 {
-    fprintf (stderr, "usage:  %s [-display displayname] [-id resource]\n",
+    static char *options[] = {
+"where options include:",
+"    -display displayname    X server to contact",
+"    -id resource            resource whose client is to be killed",
+"    -button number          specific button to be pressed to select window",
+"",
+NULL};
+    char **cpp;
+
+    fprintf (stderr, "usage:  %s [-option ...]\n",
 	     ProgramName);
-    fprintf (stderr, "\n");
-    exit (1);
+    for (cpp = options; *cpp; cpp++) {
+	fprintf (stderr, "%s\n", *cpp);
+    }
+    Exit (1);
 }
 
 main (argc, argv)
     int argc;
     char *argv[];
 {
-    Display *dpy;
-    char *displayname = NULL;
-    XID id = None;
-    int i;
+    int i;				/* iterator, temp variable */
+    char *displayname = NULL;		/* name of server to contact */
+    XID id = None;			/* resource to kill */
+    char *button_name = NULL;		/* name of button for window select */
+    int button;				/* button number or negative for all */
 
     ProgramName = argv[0];
 
@@ -59,6 +83,10 @@ main (argc, argv)
 		if (++i >= argc) usage ();
 		id = parse_id (argv[i]);
 		continue;
+	      case 'b':			/* -button number */
+		if (++i >= argc) usage ();
+		button_name = argv[i];
+		continue;
 	      default:
 		usage ();
 	    }
@@ -71,11 +99,43 @@ main (argc, argv)
     if (!dpy) {
 	fprintf (stderr, "%s:  unable to open display \"%s\"\n",
 		 ProgramName, XDisplayName (displayname));
-	exit (1);
+	Exit (1);
     }
 
+    /*
+     * if no id was given, we need to choose a window
+     */
+
     if (id == None) {
-	id = get_window_id (dpy);
+	if (!button_name)
+	  button_name = XGetDefault (dpy, ProgramName, "Button");
+
+	if (!button_name)
+	  button = -1;
+	else if (!parse_button (button_name, &button)) {
+	    fprintf (stderr, "%s:  invalid button specification \"%s\"\n",
+		     ProgramName, button_name);
+	    Exit (1);
+	}
+
+	if (button >= 0) {
+	    unsigned char pointer_map[256];	 /* 8 bits of pointer num */
+	    int count, j;
+	    unsigned int ub = (unsigned int) button;
+
+	    /* check to make sure button is valid */
+	    count = XGetPointerMapping (dpy, pointer_map, 256);
+	    for (j = 0; j < count; j++) {
+		if (ub == (unsigned int) pointer_map[j]) break;
+	    }
+	    if (j == count) {
+		fprintf (stderr,
+	 "%s:  no button number %u in pointer map, can't select window\n",
+			 ProgramName, ub);
+		Exit (1);
+	    }
+	}
+	id = get_window_id (dpy, button);
     }
 
     if (id != None) {
@@ -85,8 +145,38 @@ main (argc, argv)
 	XSync (dpy, 0);
     }
 
-    XCloseDisplay (dpy);
-    exit (0);
+    Exit (0);
+}
+
+int parse_button (s, buttonp)
+    register char *s;
+    int *buttonp;
+{
+    register char *cp;
+
+    /* lower case name */
+    for (cp = s; *cp; cp++) {
+	if (isascii (*cp) && isupper (*cp)) {
+#ifdef _tolower
+	    *cp = _tolower (*cp);
+#else
+	    *cp = tolower (*cp);
+#endif /* _tolower */
+	}
+    }
+
+    if (strcmp (s, "all") == 0 || strcmp (s, "any") == 0) {
+	*buttonp = -1;
+	return (1);
+    }
+
+    /* check for non-numeric input */
+    for (cp = s; *cp; cp++) {
+	if (!(isascii (*cp) && isdigit (*cp))) return (0);  /* bogus name */
+    }
+
+    *buttonp = atoi (s);
+    return (1);
 }
 
 
@@ -104,43 +194,66 @@ XID parse_id (s)
     return (retval);
 }
 
-XID get_window_id (dpy)
+XID get_window_id (dpy, button)
     Display *dpy;
+    int button;
 {
-    Status status;
-    XEvent event;
-    Cursor cursor;
-    int screen;
-    Window root;
+    int screen;			/* the default screen number */
+    Cursor cursor;		/* cursor to use when selecting */
+    Window root;		/* the current root */
+    Window retwin = None;	/* the window that got selected */
+    int retbutton = -1;		/* button used to select window */
+    int pressed = 0;		/* count of number of buttons pressed */
+
+#define MASK (ButtonPressMask | ButtonReleaseMask)
 
     screen = DefaultScreen (dpy);
     root = RootWindow (dpy, screen);
-    cursor = XCreateFontCursor (dpy, XC_pirate);
+    cursor = XCreateFontCursor (dpy, XC_draped_box);
     if (cursor == None) {
 	fprintf (stderr, "%s:  unable to create selection cursor\n",
 		 ProgramName);
-	XCloseDisplay (dpy);
-	exit (1);
+	Exit (1);
     }
 
-    printf ("Select a window whose client you wish to kill....\n");
+    printf ("Select with ");
+    if (button == -1)
+      printf ("any button");
+    else
+      printf ("button %d", button);
+    printf (" the window whose client you wish to kill....\n");
     XSync (dpy, 0);			/* give xterm a chance */
 
-    status = XGrabPointer (dpy, root, False,
-			   (ButtonPressMask | ButtonReleaseMask),
-			   GrabModeSync, GrabModeAsync, None, cursor,
-			   CurrentTime);
-    if (status != GrabSuccess) {
+    if (XGrabPointer (dpy, root, False, MASK, GrabModeSync, GrabModeAsync, 
+    		      None, cursor, CurrentTime) != GrabSuccess) {
 	fprintf (stderr, "%s:  unable to grab cursor\n", ProgramName);
-	XCloseDisplay (dpy);
-	exit (1);
+	Exit (1);
     }
-    XAllowEvents (dpy, SyncPointer, CurrentTime);
-    XWindowEvent (dpy, root, (ButtonPressMask | ButtonReleaseMask), &event);
+
+    /* from dsimple.c in xwininfo */
+    while (retwin == None || pressed != 0) {
+	XEvent event;
+
+	XAllowEvents (dpy, SyncPointer, CurrentTime);
+	XWindowEvent (dpy, root, MASK, &event);
+	switch (event.type) {
+	  case ButtonPress:
+	    if (retwin == None) {
+		retwin = event.xbutton.subwindow;
+		retbutton = event.xbutton.button;
+	    }
+	    pressed++;
+	    continue;
+	  case ButtonRelease:
+	    if (pressed > 0) pressed--;
+	    continue;
+	}					/* end switch */
+    }						/* end for */
+
     XUngrabPointer (dpy, CurrentTime);
     XFreeCursor (dpy, cursor);
     XSync (dpy, 0);
 
-    return (event.xbutton.subwindow);
+    return ((button == -1 || retbutton == button) ? retwin : None);
 }
 
