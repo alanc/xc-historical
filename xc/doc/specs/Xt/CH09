@@ -1,6 +1,6 @@
-.\" $XConsortium: CH09,v 1.8 91/08/26 13:36:17 swick Exp $
+.\" $XConsortium: CH09,v 1.9 92/11/16 17:45:32 converse Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -912,6 +912,7 @@ Predefined Resource Converters
 The \*(xI define all the representations used in the 
 Object,
 RectObj,
+Session,
 Core, 
 Composite, 
 Constraint, 
@@ -991,6 +992,11 @@ T}	T{
 .PN XtCvtStringToFontStruct
 T}	Display*
 T{
+.PN XtRGravity
+T}	T{
+.PN XtCvtStringToGravity
+T}
+T{
 .PN XtRInitialState
 T}	T{
 .PN XtCvtStringToInitialState
@@ -1011,6 +1017,11 @@ T{
 .PN XtRPosition
 T}	T{
 .PN XtCvtStringToPosition
+T}
+T{
+.PN XtRRestartStyle
+T}	T{
+.PN XtCvtStringToRestartStyle
 T}
 T{
 .PN XtRShort
@@ -1120,6 +1131,43 @@ a conversion argument list that extracts the current process
 locale at the time the converter is invoked.   This ensures
 that the converter is invoked again if the same conversion
 is required in a different locale.
+.LP
+The String-to-Gravity conversion accepts string values which are the
+names of window and bit gravities and their corresponding integer names,
+as defined in \*(xL;
+.PN ForgetGravity ,
+.PN UnmapGravity ,
+.PN 0 ,
+.PN NorthWestGravity ,
+.PN 1 ,
+.PN NorthGravity ,
+.PN 2 ,
+.PN NorthEastGravity ,
+.PN 3 ,
+.PN WestGravity ,
+.PN 4 ,
+.PN CenterGravity ,
+.PN 5 ,
+.PN EastGravity ,
+.PN 6 ,
+.PN SouthWestGravity ,
+.PN 7 ,
+.PN SouthGravity , 
+.PN 8 , 
+.PN SouthEastGravity , 
+.PN 9 ,
+.PN StaticGravity ,
+and 
+.PN 10 .
+Alphabetic case is not significant in the conversion.
+.LP
+.LP
+The String-to-RestartStyle conversion accepts the values 
+.PN RestartIfRunning ,
+.PN RestartAnyway ,
+and
+.PN RestartImmediately
+as defined by the X Session Management Protocol.
 .LP
 The String-to-InitialState conversion accepts the values
 .PN NormalState

@@ -1,6 +1,6 @@
-.\" $XConsortium: CH01,v 1.7 91/08/27 09:59:12 swick Exp $
+.\" $XConsortium: CH01,v 1.8 92/11/16 17:41:41 converse Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -455,8 +455,8 @@ CorePart Default Values
 \*(SN CorePart Default Values
 .XE
 .LP
-The default values for the Core fields, which are filled in from the
-resource lists and by the initialize procedures, are
+The default values for the Core fields, which are filled in by the \*(xI,
+from the resource lists, and by the initialize procedures, are
 .LP
 .TS
 lw(1.5i) lw(4.25i) .
@@ -623,6 +623,7 @@ typedef struct {
 	long version;	See Section 1.6.12
 	Cardinal record_size;	See Section 1.6.12
 	Boolean accepts_objects;	See Chapter 3
+	Boolean allows_change_managed_set;	See Chapter 3
 } CompositeClassExtensionRec, *CompositeClassExtension;
 .De
 .LP
@@ -1839,6 +1840,10 @@ In all widget classes:	\fIclass_name\fP
 	\fItm_table\fP
 .br
 	\fIversion\fP
+.br
+	\fIallocate\fP
+.br
+	\fIdealloate\fP
 .sp
 In Composite widget classes:	\fIgeometry_manager\fP
 .br
@@ -1849,6 +1854,8 @@ In Composite widget classes:	\fIgeometry_manager\fP
 	\fIdelete_child\fP
 .br
 	\fIaccepts_objects\fP
+.br
+	\fIallows_change_managed_set\fP
 .sp
 In Constraint widget classes:	\fIconstraint_size\fP
 .sp

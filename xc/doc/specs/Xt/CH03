@@ -1,6 +1,6 @@
-.\" $XConsortium: CH03,v 1.7 91/08/26 13:29:01 swick Exp $
+.\" $XConsortium: CH03,v 1.8 91/08/27 10:00:40 swick Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -73,8 +73,9 @@ Children are added to and removed from their parent's managed set by using
 .PN XtManageChild ,
 .PN XtManageChildren ,
 .PN XtUnmanageChild ,
-and
 .PN XtUnmanageChildren ,
+and
+.PN XtChangeManagedSet ,
 which notify the parent to recalculate the physical layout of its children
 by calling the parent's change_managed procedure.
 The 
@@ -462,26 +463,26 @@ The
 .PN XtUnmanageChildren
 function performs the following:
 .IP \(bu 5
+Returns immediately if the common parent is being destroyed.
+.IP \(bu 5
 Issues an error if the children do not all have the same parent
 or if the parent is not a subclass of 
 .PN compositeWidgetClass .
 .IP \(bu 5
-Returns immediately if the common parent is being destroyed;
-otherwise, for each unique child on the list, 
+For each unique child on the list, 
 .PN XtUnmanageChildren
-performs the following:
+ignores the child if it is unmanaged; otherwise it performs the following:
 .RS
 .IP \- 5
-Ignores the child if it already is unmanaged or is being destroyed,
-and marks it if not.
+Marks the child as unmanaged.
 .IP \- 5
-If the child is realized,
+If the child is realized and the \fImap_when_managed\fP field is
+.PN True ,
 it makes it nonvisible by unmapping it.
 .RE
 .IP \(bu 5
-Calls the change_managed routine of the widgets' parent
-after all children have been marked
-if the parent is realized.
+If the parent is realized and if any children have been marked as unmanaged,
+calls the change_managed routine of the widgets' parent.
 .LP
 .PN XtUnmanageChildren
 does not destroy the child widgets.
@@ -514,6 +515,216 @@ These functions are low-level routines that are used by generic
 composite widget building routines.
 In addition, composite widgets can provide widget-specific,
 high-level convenience procedures.
+
+.NH 3
+Bundling Changes to the Managed Set
+.XS
+\fB\*(SN Bundling Changes to the Managed Set\fP
+.XE
+.LP
+In some circumstances it is desirable for a Composite widget class to
+extended the semantics for change_managed.  In particular, some
+Composite widgets may wish to allow their managed set to have entries
+added and removed, or to have the geometries of a number of
+children modified, simultaneously, resulting in a single invocation of
+the change_managed method.
+.LP
+For a Composite widget class to enable these extended semantics for its
+change_managed procedure it must specify a
+.PN CompositeClassExtension
+as described in section 1.4.2.1 and set the \fIallows_change_managed_set\fP
+field to
+.PN True .
+.LP
+If a 
+.PN CompositeClassExtension
+record exists for a given Composite widget
+class, and if the \fIallows_change_managed_set\fP field is
+.PN True ,
+then the change_managed method for that Composite Class and its
+subclasses shall assume that, in addition to the normal
+change_managed semantics, invocation may occur as a result of a call to
+.PN XtChangeManagedSet
+in order to:
+.IP \(bu 5
+Simultaneously add and remove children from the managed set.
+.IP \(bu 5 
+Apply changes in the geometries of a subset of children from the
+managed set, by marking the subset as unmanaged, calling a client
+supplied procedure to alter the geometries of that subset, and
+then subsequently marking that subset as managed again.
+.IP \(bu 5
+Combine both of the operations above.
+.LP
+If no
+.PN CompositeClassExtension
+exists, or the \fIallows_change_managed_set\fP field is
+.PN False ,
+then the change_managed procedure semantics are unmodified, however
+.PN XtChangeMangedSet
+shall continue to behave as specified, albeit resulting in additional
+suboptimal invocations of the change_managed procedure.
+.sp
+.LP
+To modify the list of widgets in the geometry-managed (and hence
+displayable) subset of their composite parent, use
+.PN XtChangeManagedSet .
+.IN "XtChangeManagedSet" "" "@DEF@"
+.FD 0
+void XtChangeManagedSet(\fImanage_children\fP, \fInum_manage_children\fP,
+                        \fIunmanage_children\fP, \fInum_unmanage_children\fP,
+                        \fIpost_unmanage_pre_manage_hook\fP, \fIclient_data\fP)
+.br
+      WidgetList \fImanage_children\fP;
+.br
+      Cardinal \fInum_manage_children\fP;
+.br
+      WidgetList \fIunmanage_children\fP;
+.br
+      Cardinal \fInum_unmanage_children\fP;
+.br
+      XtChangeManagedProc \fIpost_unmanage_pre_manage_hook\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fImanage_children\fP 1i
+Specifies the list of widget children to add to the managed set.
+.IP \fInum_managed_children\fP 1i
+Specifies the number of entries in the manage_children list.
+.IP \fIunmange_children\fP 1i
+Specifies the list of widget children to remove from the managed set.
+.IP \fInum_unmanage_children\fP 1i
+Specifies the number of entries in the unmanage_children list.
+.IP \fIpost_unmanage_pre_manage_hook\fP 1i
+Specifies the post unmanage, pre manage	hook procedure to invoke.
+.IP \fIclient_data\fP 1i
+Specifies client data to be passed to the pre manage hook procedure.
+.LP
+The 
+.PN XtChangeManagedSet
+function performs the following:
+.IP \(bu 5
+Issues an error if the widgets specified in the \fImanage_children\fP and
+the \fIunmanage_children\fP lists do not all have the same parent, or if
+that parent is not a subclass of compositeWidgetClass.
+.IP \(bu 5
+Returns immediately if the common parent is being destroyed.
+.IP \(bu 5
+If no 
+.PN CompositeClassExtension
+is defined, or a
+.PN CompositeClassExtension
+is defined but with a \fIallows_change_managed_set\fP field with a value of
+.PN False ,
+and
+.PN XtChangeManagedSet
+was invoked with a non-NULL \fIpost_unmanage_pre_manage_hook\fP procedure then
+.PN XtChangeManagedSet
+performs the following:
+.RS
+.IP \- 5
+Calls
+.PN XtUnmanageChildren
+(\fIunmanage_children\fP, \fInum_unmanage_children\fP).
+.IP \- 5
+Calls the \fIpost_unmanage_pre_manage_hook\fP specified.
+.IP \- 5
+Calls
+.PN XtManageChildren
+(\fImanage_children\fP, \fInum_manage_children\fP).
+then returns immediately.
+.RE
+.IP \(bu 5
+Otherwise, if a
+.PN CompositeClassExtension
+is defined, with a \fIallows_change_managed_set\fP field with a value of
+.PN True ,
+or if no
+.PN CompositeClassExtension
+is defined, and
+.PN XtChangeManagedSet
+was invoked with a NULL \fIpost_unmanage_pre_manage_hook\fP procedure,
+then the following is performed:
+.RS
+.IP \- 5
+For each child on the \fIunmanage_children\fP list; if the child is
+already unamanged or is being destroyed it is ignored, otherwise
+it is marked as being unmanaged and if it is realized it is made
+nonvisble by being unmapped.
+.IP \- 5
+If the \fIpost_unmanage_pre_manage_hook\fP procedure is non NULL then it
+is invoked as specified.
+.IP \- 5
+For each child on the \fImanage_children\fP list; if the child is already
+managed or it is being destroyed it is ignored, otherwise it is 
+marked as managed.
+.RE
+.IP \(bu 5
+If the parent is realized and after all children have been marked,
+the change_managed method of the parent is invoked and subsequently 
+some of the newly managed children are made viewable by:
+.RS
+.IP \- 5
+Calling
+.PN XtRealizeWidget
+on each previously unmanaged child that is unrealized.
+.IP \- 5
+Mapping each previously unmanaged child that has \fImap_when_managed\fP
+.PN True .
+.RE
+.sp
+.LP
+The \fIpost_unmanage_pre_manage_hook\fP is of type
+.PN XtChangeManagedProc
+.IN "XtChangeManagedProc" "" "@DEF"
+.FD 0
+typedef void (XtChangeManagedProc*)(Widget, WidgetList, Cardinal, WidgetList,
+                                    Cardinal, XtPointer);
+.br
+      Widget \fIcomposite_parent\fP;
+.br
+      WidgetList \fImanage_children\fP;
+.br
+      Cardinal \fInum_manage_children\fP;
+.br
+      WidgetList \fIunmange_children\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIcomposite_parent\fP 1.5i
+Passes the composite parent whose managed set is being altered.
+.IP \fImanage_children\fP 1.5i
+Passes the list of widget children about to be added to the managed set.
+.IP \fInum_manage_children\fP 1.5i
+Passes the number of entries in the \fImanage_children\fP list.
+.IP \fIunmanage_children\fP 1.5i
+Specifies the list of widget children just removed from the managed set.
+.IP \fInum_unmanage_children\fP 1.5i
+Specifies the number of entries in the \fIunmanage_children\fP list.
+.IP \fIclient_data\fP 1.5i
+Specifies client data passed to the caller of this function.
+.LP
+The \fIpost_unmanage_pre_manage_hook\fP procedure is called from 
+.PN XtChangeManagedSet
+between the processing of the \fIunmanage_children\fP and
+the \fImanage_children\fP lists to enable the caller of 
+.PN XtChangeManagedSet
+to apply changes to a set of a managed children that would normally
+result in changes in the geometries of those children,
+to optimise the re-layout of those children by replacing multiple
+calls to the geometry_manager of their composite parent with
+a single call to the change_managed procedure of their parent.
+.LP
+This optimisation is achieved by taking advantage of the semantics of
+geometry requests issued by unmanaged children being automatically
+granted by the \*(xI without invocation of their parent's geometry_manager.
+.LP
+In order to preserve this optimisation, \fIpost_unmanage_pre_manage_hook\fP
+procedures are discouraged from modifying the state of sub widgets of
+the composite_parent that are members, or inferiors of members, of
+the managed_set of the composite parent at the time of calling
+the \fIpost_unmanage_pre_manage\fP hook procedure from
+.PN XtChangeManagedSet .
 
 .NH 3
 Determining If a Widget Is Managed

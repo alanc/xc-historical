@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH12,v 1.4 91/07/31 20:24:45 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -142,6 +142,27 @@ typedef struct _ObjectClassPart {
 } ObjectClassPart;
 .De
 .LP
+The extension record defined for
+.PN ObjectClassPart
+with a \fIrecord_type\fP equal to 
+.PN \s-1NULLQUARK\s+1
+is
+.PN ObjectClassExtensionRec .
+
+.IN "ObjectClassExtensionRec" "" "@DEF@"
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	XtPointer next_extension;	See Section 1.6.12
+	XrmQuark record_type;	See Section 1.6.12
+	long version;	See Section 1.6.12
+	Cardinal record_size;	See Section 1.6.12
+	XtAllocateProc allocate;	See Section 2.5.5.
+	XtDeallocateProc deallocate;	See Section 2.8.4.
+} ObjectClassExtensionRec, *ObjectClassExtension;
+.De
+.LP
 The prototypical
 .PN ObjectClass
 consists of just the
@@ -181,6 +202,11 @@ and
 and the opaque variable
 .PN objectClass
 are defined for generic actions on objects.
+The symbolic constant for the
+.PN ObjectClassExtension
+version identifier is
+.PN XtObjectExtensionVersion
+(see Section 1.6.12).
 .PN Intrinsic.h
 uses an incomplete structure definition to ensure that the
 compiler catches attempts to access private data:

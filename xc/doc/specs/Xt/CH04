@@ -1,6 +1,6 @@
-.\" $XConsortium: CH04,v 1.7 91/08/26 20:16:23 swick Exp $
+.\" $XConsortium: CH04,v 1.8 91/08/27 10:01:11 swick Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -501,6 +501,9 @@ typedef struct {
 	XWMHints wm_hints;
 	int base_width, base_height, win_gravity;
 	Atom title_encoding;
+	Widget client_leader;
+	String window_role;
+	Boolean visible;
 } WMShellPart;
 
 typedef struct {
@@ -532,6 +535,7 @@ typedef struct {
 	XrmClass xrm_class;
 	int argc;
 	char **argv;
+	Widget session;
 } ApplicationShellPart;
 .De
 .KE
@@ -673,6 +677,7 @@ _
 .sp 6p
 XtNbaseHeight	XtCBaseHeight	XtRInt
 XtNbaseWidth	XtCBaseWidth	XtRInt
+XtNclientLeader	XtCClientLeader	XtRWidget
 XtNheightInc	XtCHeightInc	XtRInt
 XtNiconMask	XtCIconMask	XtRBitmap
 XtNiconPixmap	XtCIconPixmap	XtRBitmap
@@ -694,9 +699,11 @@ XtNtitleEncoding	XtCTitleEncoding	XtRAtom
 XtNtransient	XtCTransient	XtRBoolean
 XtNwaitForWm	XtCWaitForWm	XtRBoolean
 XtNwidthInc	XtCWidthInc	XtRInt
-XtNwinGravity	XtCWinGravity	XtRInt
+XtNwindowRole	XtCWindowRole	XtRString
+XtNwinGravity	XtCWinGravity	XtRGravity
 XtNwindowGroup	XtCWindowGroup	XtRWindow
 XtNwmTimeout	XtCWmTimeout	XtRInt
+XtNvisible	XtCVisible	XtRBoolean
 .sp 6p
 _
 .TE
@@ -757,6 +764,7 @@ _
 .sp 6p
 XtNargc	XtCArgc	XtRInt
 XtNargv	XtCArgv	XtRStringArray
+XtNsession	XtCSession	XtRWidget
 .sp 6p
 _
 .TE
@@ -937,6 +945,11 @@ base_width	\fBXtUnspecifiedShellInt\fP
 base_height	\fBXtUnspecifiedShellInt\fP
 win_gravity	\fBXtUnspecifiedShellInt\fP
 title_encoding	See text
+client_leader	NULL
+window_role	NULL
+visible	T{
+.PN False
+T}
 .sp 6p
 _
 .TE
@@ -976,6 +989,35 @@ property
 will be stored on the shell window with a value as specified below.
 The interpretation of this property is specific to the window manager
 under which the application is run; see the \fI\*(xC\fP for more details.
+.LP
+The realize and set_values procedures of WMShell store the 
+.PN \s-1WM_CLIENT_LEADER\s+1
+property on the shell window.
+When \fIclient_leader\fP is not NULL, the
+.PN \s-1WM_CLIENT_LEADER\s+1
+property will be created with the value of the window of the
+client leader widget.
+When \fIclient_leader\fP is NULL and the shell widget has a NULL parent,
+the widget's window is used as the value of the
+.PN \s-1WM_CLIENT_LEADER\s+1
+property.
+When \fIclient_leader\fP is NULL and the shell widget has a non-NULL parent,
+the
+.PN \s-1WM_CLIENT_LEADER\s+1
+property will be created with the same value as
+the closest realized shell ancestor when one is found.
+.LP
+When the value of \fIwindow_role\fP is not NULL, the
+.PN \s-1WM_WINDOW_ROLE\s+1
+property will be stored on the shell's window with the value of the resource.
+This property is used by a window manager while checkpointing session
+state to distinguish the windows of a session participant.  If the
+property is not present the window manager will use the contents of
+.PN \s-1WM_CLASS\s+1
+and
+.PN \s-1WM_NAME\s+1
+to distinguish between windows of a session participant.
+.LP
 All other resources specify fields in the window manager hints
 and the window manager size hints.
 The realize and set_values procedures of
@@ -1134,6 +1176,7 @@ _
 .sp 6p
 argc	0
 argv	NULL
+session	NULL
 .sp 6p
 _
 .TE
@@ -1142,4 +1185,11 @@ The \fIargc\fP and \fIargv\fP fields are used to initialize
 the standard property
 .PN \s-1WM_COMMAND\s+1 .
 See the \fI\*(xC\fP for more information.
+.LP
+The realize and set_values procedures of ApplicationShell store the
+.PN \s-1SM_ID\s+1
+property on the shell window when the session resource is not NULL.
+The property is created with the value of the \fIsession_id\fP field
+of the session widget.
+
 .bp

@@ -1,6 +1,6 @@
-.\" $XConsortium: appC,v 1.7 91/08/26 14:37:45 swick Exp $
+.\" $XConsortium: appC,v 1.8 92/11/16 17:46:55 converse Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -85,6 +85,7 @@ without application contexts, the following routines exist:
 .PN XtPending ,
 .PN XtAddInput ,
 .PN XtAddTimeOut ,
+.PN XtAddSignal ,
 .PN XtAddWorkProc ,
 .PN XtCreateApplicationShell ,
 .PN XtAddActions ,
@@ -300,6 +301,25 @@ This routine has been replaced by
 .PN XtAppAddTimeOut .
 .PN XtInitialize
 must be called before using this routine.
+.sp
+.IN "XtAddSignal" "" "@DEF@"
+.FD 0
+XtSignalId XtAddSignal(\fIproc\fP, \fIclient_data\fP)
+.br
+      XtSignalCallbackProc \fIproc\fP;
+.br
+      XtPointer \fIclient_data\fP;
+.FN
+.IP \fIproc\fP 1i
+Specifies a procedure to call after being notified of a signal.
+.IP \fIclient_data\fP 1i
+Specifies the parameter to be passed to \fIproc\fP when it is called.
+.LP
+This is a convenience function for old-style clients that would like
+to take advantage of safe signal handling.   See 
+.PN XtAppAddSignal
+for a description of the facility.
+
 .sp
 .IN "XtAddWorkProc" "" "@DEF@"
 .FD 0

@@ -1,6 +1,6 @@
-.\" $XConsortium: CH13,v 1.4 91/07/31 20:24:48 swick Exp $
+.\" $XConsortium: CH13,v 1.5 91/08/26 13:41:42 swick Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -482,5 +482,21 @@ were changed from
 .PN Cardinal *
 to int* to conform to pre-existing convention and avoid otherwise
 annoying typecasting in ANSI C environments.
+
+.NH 2
+Release 5 to Release 6 Compatibility
+.XS
+\fB\*(SN Release 5 to Release 6 Compatibility\fP
+.XE
+.LP
+New fields have been added to the
+.PN WMShellPart
+and the
+.PN ApplicationShellPart
+data structures.
+These additions allow cooperative communication at the \*(tk level
+with workspace managers and session managers.
+This change will break binary compatibility for instances
+of subclasses of WMShell.
 
 .bp

@@ -1,6 +1,6 @@
-.\" $XConsortium: CH02,v 1.12 92/11/16 17:43:21 converse Exp $
+.\" $XConsortium: CH02,v 1.13 93/07/27 15:48:50 converse Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -110,7 +110,9 @@ Initializing the \*(tk
 .LP
 Before an application can call any \*(xI function
 other than
-.PN XtSetLanguageProc ,
+.PN XtSetLanguageProc 
+and 
+.PN XtToolkitThreadInitialize ,
 it must initialize the \*(xI by using
 .IP \(bu 5
 .PN XtToolkitInitialize ,
@@ -170,9 +172,15 @@ To initialize the \*(xI internals, use
 void XtToolkitInitialize()
 .FN
 .LP
-The semantics of calling
+If
 .PN XtToolkitInitialize
-more than once are undefined.
+was previously called, it returns immediately.
+When
+.PN XtToolkitThreadInitialize
+is called before
+.PN XtToolkitInitialize ,
+the latter is protected against
+simultaneous activation by multiple threads.
 .sp
 .LP
 To create an application context, use
@@ -202,8 +210,7 @@ Specifies the application context.
 .LP
 The
 .PN XtDestroyApplicationContext
-function destroys the specified application context as soon as it is safe 
-to do so.
+function destroys the specified application context.
 If called from within an event dispatch (for example, in a callback procedure),
 .PN XtDestroyApplicationContext
 does not destroy the application context until the dispatch is complete.
@@ -394,6 +401,10 @@ final component of \fIargv\fP[0], if specified.  If \fIargv\fP[0] does not exist
 is the empty string, the application name is ``main''.
 .PN XtOpenDisplay
 returns the newly opened display or NULL if it failed.
+.LP
+Please refer to Section 15.2.1 for information regarding the use of
+.PN XtOpenDisplay
+in multiple threads.
 .sp
 .LP
 To close a display and remove it from an application context, use
@@ -421,6 +432,10 @@ if they are to continue executing after closing the display;
 otherwise, they should call
 .PN XtDestroyApplicationContext
 or just exit.
+.LP
+Please refer to Section 15.2.1 for information regarding the use of 
+.PN XtCloseDisplay
+in multiple threads.
 
 .NH 2
 Establishing the Locale
@@ -949,6 +964,7 @@ _
 \-title	.title	SepArg	next argument
 \-xnllanguage	.xnlLanguage	SepArg	next argument
 \-xrm	next argument	ResArg	next argument
+\-xtsessionID	.xtsessionID	SepArg	next argument
 .sp 6p
 _
 .TE
@@ -997,6 +1013,11 @@ you can start it up as
 .Ds
 xmh \-xrm 'xmh*Command.background: red'
 .DE
+.LP
+The value of the xtsessionID resource specifies an identification
+previously assigned to this client by the session manager.  When a 
+session object is created, this identification will be used as the
+default value of the XtNsessionID resource of the session object.
 .LP
 When it parses the command line,
 .PN XtDisplayInitialize
@@ -1392,15 +1413,23 @@ record is
 .PN XtCreateWidget
 issues a fatal error; see Section 3.1 and Chapter 12.
 .IP \(bu 5
-Allocates memory for the widget instance.
-.IP \(bu 5
-If the parent is a member of the class
+If the specified class contains an extension record in the object class
+part extension field with \fIrecord_type\fP
+.PN \s-1NULLQUARK\s+1
+and the \fIallocate\fP field is not NULL,
+the procedure is invoked to allocate memory
+for the widget instance.  If the parent is a member of the class
 .PN constraintWidgetClass ,
-allocates memory for the parent's constraints
-and stores the address of this memory into the \fIconstraints\fP field.
+the procedure also allocates memory for the
+parent's constraints and stores the address of this memory into the
+\fIconstraints\fP field.  If no allocate procedure is found, the \*(xI
+allocate memory for the widget and when applicable the constraints,
+and initializes the \fIconstraints\fP field.
 .IP \(bu 5
 Initializes the Core nonresource data fields
-(for example, \fIparent\fP and \fIvisible\fP).
+\fIself\fP, \fIparent\fP, \fIwidget_class\fP, \fIbeing_destroyed\fP,
+\fIname\fP, \fImanaged\fP, \fIwindow\fP, \fIvisible\fP,
+\fIpopup_list\fP, and \fInum_popups\fP. 
 .IP \(bu 5
 Initializes the resource fields (for example, \fIbackground_pixel\fP)
 by using the
@@ -1778,6 +1807,148 @@ procedure is identical in function to
 with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list,
 as described
 in Section 2.5.1.
+
+.NH 3
+Widget Instance Allocation: the allocate Procedure
+.XS
+\*(SN Widget Instance Allocation: the allocate Procedure
+.XE
+.IN "Widget Allocation"
+.LP
+A widget class may optionally provide an instance allocation procedure
+in the
+.PN ObjectClassExtension
+record.
+.LP
+When the call to create a widget includes a varargs list containing
+.PN 
+XtVaTypedArg ,
+these arguments will be passed to the allocation procedure in an
+.PN XtTypedArgList .
+.IN "XtTypedArgList "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	String name;
+	String type;
+	XtArgVal value;
+	int size;
+} XtTypedArg, *XtTypedArgList;
+.De
+.LP
+The allocate procedure pointer in the
+.PN ObjectClassExtension
+record is of type
+.PN XtAllocateProc .
+.IN "XtAllocateProc" "" "@DEF@"
+.FD 0
+typedef void (*XtAllocateProc)(WidgetClass, WidgetClass, Cardinal, Widget,
+                               ArgList, Cardinal, XtTypedArgList, Cardinal,
+                               Widget*, XtPointer*);
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      WidgetClass \fIconstraint_class\fP;
+.br
+      Cardinal \fImore_bytes\fP;
+.br
+      Widget \fIparent\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.br
+      XtTypedArgList \fItyped_args\fP,
+.br
+      Cardinal \fInum_typed_args\fP;
+.br
+      Widget *\fInew_return\fP;
+.br
+      XtPointer *\fImore_bytes_return\fP;
+.FN
+.IP \fIwidget_class\fP 1i
+Specifies the widget class of the instance to allocate.
+.IP \fIconstraint_class\fP 1i
+Specifies the constraint widget class of the parent of normal
+(geometry managed) children.
+.IP \fImore_bytes\fP 1i
+Specifies the number of auxiliary bytes of memory to allocate.
+.IP \fIparent\fP 1i
+Specifies the parent widget, or NULL if there is no parent.
+.IP \fIargs\fP 1i
+Specifies the argument list as given in the call to create the widget.
+.IP \fInum_args\fP 1i
+Specifies the list of arguments.
+.IP \fItyped_args\fP 1i
+Specifies the list of typed arguments given in the call to create the widget.
+.IP \fInum_typed_args\fP 1i
+Specifies the number of typed arguments.
+.IP \fInew_return\fP 1i
+Returns a pointer to the newly allocated instance, or NULL in case of error.
+.IP \fImore_bytes_return\fP 1i
+Returns the auxiliary memory if it was requested, or NULL
+if requested and an error occurred; otherwise, unchanged.
+.LP
+When creating an instance of a widget class through the invocation of one of:
+.sp
+.IP
+.PN XtCreateWidget ,
+.PN XtVaCreateWidget
+.IP
+.PN XtCreateManagedWidget ,
+.PN XtVaCreateManagedWidget
+.IP
+.PN XtCreatePopupShell ,
+.PN XtVaCreatePopupShell
+.IP
+.PN XtAppCreateShell ,
+.PN XtVaAppCreateShell
+.IP
+.PN XtCreateApplicationShell
+.IP
+.PN XtAppInitialize ,
+.PN XtVaAppInitialize ,
+or
+.PN XtInitialize
+.LP
+At widget allocation time, if an extension record with \fIrecord_type\fP
+equal to 
+.PN \s-1NULLQUARK\s+1
+is located through the object class part extension field
+and the \fIallocate\fP field is not NULL, the 
+.PN XtAllocateProc
+will be invoked to allocate memory for the widget.  If no
+.PN XtAllocateProc
+is found, the \*(xI will allocate memory for the widget.
+.LP
+An 
+.PN XtAllocateProc
+peforms the following:
+.IP \(bu 5
+Allocates memory for the widget instance and returns it in \fInew_return\fP.
+The memory must be at least \fIwc->core_class.widget_size\fP bytes in length,
+double word aligned.
+.IP \(bu 5
+Initializes the \fIcore.constraints\fP field in the instance record to NULL
+or to point to a constraint record.  If the \fIconstraint_widget_class\fP
+parameter is not NULL, the procedure allocates memory for the
+constraint record.  The memory must be at least as many bytes as
+specified by the \fIconstraint_size\fP field in the 
+\fIconstraint_widget_class\fP, and double word aligned.  
+.IP \(bu 5
+If \fImore_bytes\fP is not 0, then the address of a block of memory
+at least \fImore_bytes\fP in size, double word aligned, must be
+returned in the \fImore_bytes_return\fP parameter,
+or NULL to indicate an error.
+.LP
+A class allocation procedure which envelopes the allocation procedure of a
+superclass must rely on the enveloped procedure to perform the instance
+and constraint allocation.  A class allocation procedure which implements
+private algorithms that require reliable initialization of non-resource
+instance fields should restrict the initialization to fields in their own
+class's part of the instance record.
 
 .NH 3
 Widget Instance Initialization: the initialize Procedure
@@ -2586,10 +2757,6 @@ In phase 2,
 performs the following on each entry in the destroy list in the order
 specified:
 .IP \(bu 5
-Calls the destroy callback procedures registered on the widget 
-and all normal and pop-up descendants in postorder (it calls child
-callbacks before parent callbacks).
-.IP \(bu 5
 If the widget is not a pop-up child and the widget's parent is a subclass of 
 .PN composite\%WidgetClass ,
 and if the parent is not being destroyed, 
@@ -2597,6 +2764,16 @@ it calls
 .PN XtUnmanageChild 
 on the widget and then calls the widget's parent's delete_child procedure
 (see Section 3.3).
+.IP \(bu 5
+Calls the destroy callback procedures registered on the widget 
+and all normal and pop-up descendants in postorder (it calls child
+callbacks before parent callbacks).
+.LP
+The 
+.PN XtDestroyWidget
+function then makes second traversal of the widget and all normal
+and pop-up descendants to perform the following three items on each
+widget in postorder:
 .IP \(bu 5
 If the widget is not a pop-up child and the widget's parent is a subclass of
 .PN constraint\%WidgetClass ,
@@ -2609,28 +2786,28 @@ until finally it calls the
 destroy procedure for
 .PN constraintWidgetClass .
 .IP \(bu 5
-Calls the destroy procedures
-for the widget and all normal and pop-up descendants
-in postorder.
-For each such widget,
-it calls the
+Calls the
 .PN CoreClassPart
 destroy procedure declared in the widget class,
 then the destroy procedure declared in its superclass,
 until finally it calls the destroy procedure declared in the Object
-class record.
+class record.  Callback lists are deallocated.
+.IP \(bu 5
+If the widget class Object class part contains an 
+.PN ObjectClassExtension
+record with the record_type
+.PN \s-1NULLQUARK\s+1
+and the \fIdeallocate\fP field is not NULL,
+calls the deallocate procedure to deallocate the instance and if one
+exists, the constraint record.  Otherwise, the \*(xI will deallocate
+the widget instance record and if one exists, the constraint record.
 .IP \(bu 5
 Calls
 .PN XDestroyWindow
 if the specified widget is realized (that is, has an X window).
 The server recursively destroys all normal descendant windows.
-.IP \(bu 5
-Recursively descends the tree and destroys the windows for all
-realized pop-up descendants,
-deallocates all pop-up descendants, constraint
-records, callback lists, and if the widget's class is a subclass of 
-.PN compositeWidgetClass , 
-children.
+(Windows of realized pop-up Shell children, and their
+descendants, are destroyed by a shell class destroy procedure.)
 
 .NH 3
 Adding and Removing Destroy Callbacks
@@ -2766,6 +2943,48 @@ and not storage allocated by any of its superclasses.
 If a parent does not need to deallocate any constraint storage,
 the constraint destroy procedure entry
 in its class record can be NULL.
+
+.NH 3
+Widget Instance Deallocation: the deallocate Procedure
+.XS
+\*(SN Widget Instance Deallocation: the deallocate Procedure
+.XE
+.LP
+The deallocate procedure pointer in the
+.PN ObjectClassExtension
+record is of type
+.PN XtDeallocateProc .
+.IN "XtDeallocateProc" "" "@DEF@"
+.FD 0
+typedef void (*XtDeallocateProc)(Widget, XtPointer);
+.br
+      Widget \fIwidget\fP;
+.br
+      XtPointer \fImore_bytes\fP;
+.FN
+.IP \fIwidget\fP 1i
+Specifies the widget being destroyed.
+.IP \fImore_bytes\fP 1i
+Specifies the auxiliary memory received from the corresponding allocator
+along with the widget, or NULL.
+.LP
+When a widget is destroyed, if an
+.PN ObjectClassExtension
+record exists in the Object part of the widget class record with type
+.PN \s-1NULLQUARK\s+1
+and the \fIdeallocate\fP field is not NULL, the
+.PN XtDeallocateProc
+will be called.
+The responsibilites of the deallocate method are to deallocate the
+memory specified by \fImore_bytes\fP if it is not NULL,
+to deallocate the constraints record as specified by the
+widget's \fIcore.constraints\fP field if it is
+not NULL, and the widget instance itself.  
+.LP
+If no
+.PN XtDeallocateProc
+is found, it is assumed that the \*(xI
+originally allocated the memory an is responsible for freeing it.
 
 .NH 2
 Exiting from an Application

@@ -1,6 +1,6 @@
-.\" $XConsortium: CH11,v 1.9 92/11/16 17:46:10 converse Exp $
+.\" $XConsortium: CH11,v 1.10 93/01/28 11:36:45 converse Exp $
 .\"
-.\" Copyright 1985, 1986, 1987, 1988, 1991
+.\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
 .\" and Digital Equipment Corporation, Maynard, Massachusetts.
 .\"
@@ -52,6 +52,12 @@ Handle errors.
 Set the WM_COLORMAP_WINDOWS property.
 .IP \(bu 5
 Locate files by name with string substitutions.
+.IP \(bu 5
+Locate a widget class extension record.
+.IP \(bu 5
+Register callback functions for external agents.
+.IP \(bu 5
+Locate all the displays of an application context.
 
 .NH 2
 Determining the Number of Elements in an Array
@@ -1597,6 +1603,308 @@ for the specified display,
 .PN XtLastTimestampProcessed
 returns zero.
 
+.NH 3
+Retrieving the Most Recent Event
+.XS
+\*(SN Retrieving the Most Recent Event
+.XE
+.LP
+To retrieve the event from the most recent call to
+.PN XtDispatchEvent
+for a specific display, use
+.PN XtGetLastEventProcessed .
+.IN "XtGetLastEventProcessed" "" "@DEF@"
+.FD 0
+XEvent *XtLastEventProcessed(\fIdisplay\fP)
+.br
+      Display *\fIdisplay\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies the display connection from which to retrieve the event.
+.LP
+Returns the last event passed to
+.PN XtDispatchEvent
+for the specified display.  Returns NULL if there is no such event.
+The client must not modify the contents of the returned event.
+
+.NH 3
+Setting and Retrieving Selection Target Parameters
+.XS
+\*(SN Setting and Retrieving Selection Target Parameters
+.XE
+.LP
+To specify target parameters for a selection request with a single target,
+use
+.PN XtSetSelectionParameters .
+.IN "XtSetSelectionParameters" "" "@DEF@"
+.FD 0
+void XtSetSelectionParameters(\fIrequestor\fP, \fIselection\fP, \fItype\fP, \
+\fIvalue\fP, \fIlength\fP, \fIformat\fP)
+.br
+      Widget \fIrequestor\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Atom \fItype\fP;
+.br
+      XtPointer \fIvalue\fP;
+.br
+      unsigned long \fIlength\fP;
+.br
+      int \fIformat\fP;
+.FN
+.IP \fIrequestor\fP 1i
+Specifies the widget making the request.  \*(cI
+.IP \fIselection\fP 1i
+Specifies the atom that names the selection.
+.IP \fItype\fP 1i
+Specifies the type of the property in which the parameters will be passed.
+.IP \fIvalue\fP 1i
+Specifies a pointer to the parameters.
+.IP \fIlength\fP 1i
+Specifies the number of elements containing data in \fIvalue\fP,
+each element of a size indicated by \fIformat\fP.
+.IP \fIformat\fP 1i
+Specifies the size in bits of the data in the elements of \fIvalue\fP.
+.LP
+The specified parameters will be copied and stored in a new property 
+of the specified type and format on the requestor's window.  To initiate
+a selection request with a target and these parameters, a subsequent
+call to 
+.PN XtGetSelectionValue
+or to
+.PN XtGetSelectionValueIncremental
+specifying the same requestor widget and selection atom will generate a
+.PN ConvertSelection
+request referring to the property containing the parameters.  If 
+.PN XtSetSelectionParameters
+is called more than once with the same widget and selection without
+a call to specify a request, the most recently specified parameters
+are used in the subsequent request.
+.LP
+The possible values of \fIformat\fP may be 8, 16, or 32.  If the format is 8,
+the elements of \fIvalue\fP are assumed to be sizeof(char);
+if 16, sizeof(short); if 32, sizeof(long).
+.LP
+To generate a MULTIPLE
+target request with parameters for any of the multiple targets of the
+selection request, precede individual calls to
+.PN XtGetSelectionValue
+and
+.PN XtGetSelectionValueIncremental
+with corresponding individual calls to
+.PN XtSetSelectionParameters ,
+and enclose these all within 
+.PN XtCreateSelectionRequest
+and
+.PN XtSendSelectionRequest.  
+.PN XtGetSelectionValues
+and
+.PN XtGetSelectionValuesIncremental
+cannot be used to make selection requests with parameterized targets.
+.sp
+.LP
+To retrieve any target parameters needed to perform a selection conversion,
+the selection owner calls 
+.PN XtGetSelectionParameters .
+.IN "XtGetSelectionParameters" "" "@DEF@"
+.FD 0
+void XtGetSelectionParameters(\fIowner\fP, \fIselection\fP, \
+\fIrequest_id\fP, \fItype_return\fP,
+                              \fIvalue_return\fP, \fIlength_return\fP, \
+\fIformat_return\fP)
+.br
+      Widget \fIowner\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      XtRequestId \fIrequest_id\fP;
+.br
+      Atom *\fItype_return\fP;
+.br
+      XtPointer *\fIvalue_return\fP;
+.br
+      unsigned long *\fIlength_return\fP;
+.br
+      int *\fIformat_return\fP;
+.FN
+.IP \fIowner\fP 1i
+Specifies the widget that owns the specified selection.
+.IP \fIselection\fP 1i
+Specifies the selection being processed.
+.IP \fIrequest_id\fP 1i
+Specifies the requestor id in the case of incremental selections,
+or NULL in the case of atomic transfers.
+.IP \fItype_return\fP 1i
+Specifies a pointer to an atom in which the property type
+of the parameters will be stored.
+.IP \fIvalue_return\fP 1i
+Specifies a pointer into which a pointer to the parameters are to be stored.
+A NULL will be stored if no parameters accompany the request.
+.IP \fIlength_return\fP 1i
+Specifies a pointer into which the number of data elements
+in \fIvalue_return\fP of size indicated by \fIformat_return\fP will be stored.
+.IP \fIformat_return\fP 1i
+Specifies a pointer into which the size in bits of the parameter data
+in the elements of \fIvalue\fP will be stored.
+.LP
+.PN XtGetSelectionParameter
+may only be called from within an
+.PN XtConvertSelectionProc
+or from within the first call to an 
+.PN XtConvertSelectionIncrProc
+with a new request_id.
+
+.NH 3
+Generating MULTIPLE Requests
+.XS
+\*(SN Generating MULTIPLE Requests
+.XE
+.LP
+To have the \*(xI bundle multiple selection conversion requests into
+a single request using a MULTIPLE target, use 
+.PN XtCreateSelectionRequest
+and
+.PN XtSendSelectionRequest .
+.FD 0
+void XtCreateSelectionRequest(\fIrequestor\fP, \fIselection\fP)
+.br
+      Widget \fIrequestor\fP;
+.br
+      Atom \fIselection\fP;
+.FN
+.IP \fIrequestor\fP 1i
+Specifies the widget making the request.  \*(cI
+.IP \fIselection\fP 1i
+Specifies the particular selection desired.
+.LP
+When 
+.PN XtCreateSelectionRequest
+is called, subsequent calls to 
+.PN XtGetSelectionValue
+and 
+.PN XtGetSelectionValueIncremental
+with the
+requestor and selection as specified to 
+.PN XtCreateSelectionRequest
+will be bundled into a sinqle selection conversion request with
+multiple targets.  The request is actually initiated by calling 
+.PN XtSendSelectionRequest .
+.sp
+.FD 0
+void XtSendSelectionRequest(\fIrequestor\fP, \fIselection\fP, \fItime\fP)
+.br
+      Widget \fIrequestor\fP;
+.br
+      Atom \fIselection\fP;
+.br
+      Time \fItime\fP;
+.FN
+.IP \fIrequestor\fP 1i
+Specifies the widget making the request.  \*(cI
+.IP \fIselection\fP 1i
+Specifies the particular selection desired.
+.IP \fItime\fP 1i
+The time parameters from the intervening requests queued are ignored.
+.LP
+When 
+.PN XtSendSelectionRequest
+is called with a value of \fIrequestor\fP and \fIselection\fP matching
+a previous call to 
+.PN XtCreateSelectionRequest ,
+a selection conversion request is actually sent to the selection owner.
+If a single target request is queued, that request is made.
+If multiple targets are queued, they must all have the same timestamp,
+and are bundled into a single request with a target of MULTIPLE
+using the specified timestamp.
+As the conversions are made, the callbacks associated with each
+.PN XtGetSelectionValue
+and 
+.PN XtGetSelectionValueIncremental
+are invoked in turn.
+.LP
+Multi-threaded applications should lock the application context before
+calling
+.PN XtCreateSelectionRequest
+and release the lock after calling
+.PN XtSendSelectionRequest
+to insure that the thread assembling the request is safe from interference
+by another thread assembling a different request naming the same widget
+and selection.
+.sp
+.LP
+To relinguish the composition of a MULTIPLE request, use 
+.PN XtCancelSelectionRequest .
+.IN "XtCancelSelectionRequest" "" "@DEF@"
+.FD 0
+void XtCancelSelectionRequest(\fIrequestor\fP, \fIselection\fP)
+.br
+      Widget \fIrequestor\fP;
+.br
+      Atom \fIselection\fP;
+.FN
+.IP \fIrequestor\fP 1i
+Specifies the widget making the request.  \*(cI
+.IP \fIselection\fP 1i
+Specifies the particular selection desired.
+.LP
+When
+.PN XtCancelSelectionRequest
+is called, any requests queued since the last call to
+.PN XtCreateSelectionRequest
+for the same widget and selection are discarded
+and any resources reserved are cleaned up.
+A subsequent call to
+.PN XtSendSelectionRequest
+will not result in any request being made.
+Subsequent calls to
+.PN XtGetSelectionValue ,
+.PN XtGetSelectionValues ,
+.PN XtGetSelectionValueIncremental
+or
+.PN XtGetSelectionValuesIncremental
+will not be deferred.
+
+.NH 3
+Selection Property Names
+.XS
+\*(SN Selection Property Names
+.XE
+.LP
+The \*(xI maintain a local cache of property atoms per client.  Clients
+that need to obtain temporary atoms to name properties (for example,
+for parameters which contain the id's of properties in which
+additional properties are stored) can use 
+.PN XtReservePropertyAtom
+and
+.PN XtReleasePropertyAtom
+to reserve and release them.
+.sp
+.FD 0
+Atom XtReservePropertyAtom(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget for which a request involving the property will be
+made.  \*(cI
+.LP
+This function returns an atom that may be used for properties in
+conjunction with conversion requests from widget \fIw\fP.
+The atom returned will be unique for the display of the widget passed.
+.sp
+.FD 0
+void XtReleasePropertyAtom(\fIw\fP, \fIatom\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Atom \fIatom\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget used to reserve the atom.
+.IP \fIatom\fP 1i
+The atom whose reservation is to be released.
+
 .NH 2
 Merging Exposure Events into a Region
 .XS
@@ -1714,12 +2022,17 @@ Widget XtWindowToWidget(\fIdisplay\fP, \fIwindow\fP)
 .IP \fIdisplay\fP 1i
 Specifies the display on which the window is defined.
 .IP \fIwindow\fP 1i
-Specifies the window for which you want the widget.
+Specifies the drawable for which you want the widget.
 .LP
-If there is a realized widget whose window is the specified \fIwindow\fP on
+If there is a realized widget whose window is the specified drawable on
 the specified \fIdisplay\fP,
 .PN XtWindowToWidget
-returns that widget; otherwise, it returns NULL.
+returns that widget.
+If not and if the drawable has been associated with a widget through
+.PN XtRegisterDrawable ,
+.PN XtWindowToWidget
+returns the widget associated with the drawable.  In other cases it
+returns NULL.
 
 .NH 2
 Handling Errors
@@ -2396,6 +2709,8 @@ The codeset part of the display's language string.
 .IP %C 5
 The customization string retrieved from the resource
 database associated with \fIdisplay\fP.
+.IP %D 5
+The value of the implementation-specific default path.
 .LP
 If a path is passed to
 .PN XtResolvePathname ,
@@ -2453,6 +2768,17 @@ file is not there, it will be looked for in /usr/lib/X11.  The \fItype\fP
 parameter is used as a subdirectory of the language directory or of
 /usr/lib/X11, and \fIsuffix\fP is appended to the file name.
 .LP
+The %D substitution allows the addition of path
+elements to the implementation-specific default path, typically to
+allow additional directories to be searched without preventing
+resources in the system directories from being found.  For example, a
+user installing resource files under a directory called ``ourdir''
+might set
+.PN \s-1XFILESEARCHPATH\s+1
+to
+.IP
+%D:ourdir/%T/%N%C:ourdir/%T/%N
+.LP
 The customization string is obtained by querying the resource database
 currently associated with the display (the database returned by
 .PN XrmGetDatabase )
@@ -2465,4 +2791,344 @@ If no value is specified in the database, the empty string is used.
 It is the responsibility of the caller to free the returned string using
 .PN XtFree
 when it is no longer needed.
+
+.NH 2
+Locating a Class Extension Record
+.XS
+\*(SN Locating a Class Extension Record
+.XE
+.LP
+The \*(xI provide a utility function for widget writers to locate a
+particular class extension record in a linked list, given a widget class
+and the offset of the \fIextension\fP field in the class record.
+.LP
+To locate a class extension record, use
+.PN XtGetClassExtension .
+.IN "XtGetClassExtension" "" "@DEF@"
+.FD 0
+XtPointer XtGetClassExtension(\fIobject_class\fP, \fIbyte_offset\fP, \
+\fItype\fP, \fIversion\fP, \fIrecord_size\fP);
+.br
+      WidgetClass \fIobject_class\fP;
+.br
+      Cardinal \fIbyte_offset\fP;
+.br
+      XrmQuark \fItype\fP;
+.br
+      long \fIversion\fP;
+.br
+      Cardinal \fIrecord_size\fP;
+.FN
+.IP \fIwidget_class\fP 1i
+Specifies the widget class containing the extension list to be searched.
+.IP \fIbyte_offset\fP 1i
+Specifies the offset in bytes from the base of the
+widget class of the extension field to be searched.
+.IP \fItype\fP 1i
+Specifies the name of the class extension to be located.
+.IP \fIversion\fP 1i
+Specifies the minimum acceptable version of the class
+extension required for a match.
+.IP \fIrecord_size\fP 1i
+Specifies the minimum acceptable length of the class
+extension record required for a match, or 0.
+.LP
+The list of extension records at the specified offset in the specified
+widget class will be searched for a match on the specified type,
+a version greater than or equal to the specified version, and a record
+size greater than or equal the specified record_size if it is nonzero.
+.PN XtGetClassExtension
+returns a pointer to a matching extension record
+or NULL if no match is found.  The returned extension record is owned by
+the widget class and must not be modified or freed by the caller, 
+except possibly to be modified by the widget class owner.
+
+.NH 2
+Hooks for External Agents
+.XS
+\fB\*(SN Hooks for External Agents\fP
+.XE
+.LP
+Hooks are places in the \*(xI where an application can
+register functions which will be called at a particular control point.
+The purpose of these registered functions is seen as
+providing notification of an "\*(tk event" to an external agent.
+An example of an "\*(tk event" is widget creation.
+An example of an external agent is an interactive resource editor.
+.LP
+To retrieve the hook registration widget, use
+.PN XtHooksOfDisplay
+after
+.PN XtDisplayInitialize
+has been called to open the X display.
+.IN "XtHooksOfDisplay" "" "@DEF@"
+.FD 0
+Widget XtHooksOfDisplay(\fIdisplay\fP)
+.br
+      Display *\fIdisplay\fP;
+.FN
+.IP \fIdisplay\fP 1i
+Specifies the desired display.
+.LP
+The class of this object is a private, implementation-dependent,
+subclass of
+.PN Object .
+The hook object has no parent.
+The resources of this object are the callback lists for hooks,
+and the read-only resources for getting a list of parentless shells.
+All of the callback lists are initially empty.
+.LP
+The following procedures can be used on this object:
+.sp
+.IP
+.PN XtAddCallback ,
+.PN XtAddCallbacks ,
+.PN XtRemoveCallback ,
+.PN XtRemoveCallbacks ,
+.PN XtRemoveAllCallbacks ,
+.PN XtCallCallbacks ,
+.PN XtHasCallbacks ,
+.PN XtCallCallbackList
+.IP
+.PN XtClass ,
+.PN XtSuperclass ,
+.PN XtIsSubclass ,
+.PN XtCheckSubclass ,
+.PN XtIsObject ,
+.PN XtIsRectObj ,
+.PN XtIsWidget ,
+.PN XtIsComposite ,
+.PN XtIsConstraint ,
+.PN XtIsShell ,
+.PN XtIsOverrideShell ,
+.PN XtIsWMShell ,
+.PN XtIsVendorShell ,
+.PN XtIsTransientShell ,
+.PN XtIsToplevelShell ,
+.PN XtIsApplicationShell
+.IP
+.PN XtWidgetToApplicationContext
+.IP
+.PN XtParent ,
+.PN XtDisplayOfObject ,
+.PN XtScreenOfObject
+.IP
+.PN XtName
+.IP
+.PN XtSetValues ,
+.PN XtGetValues ,
+.PN XtVaSetValues ,
+.PN XtVaGetValues
+.sp
+.LP
+
+.NH 3
+Hook Object Resources
+.XS
+\fB\*(SN Hook Object Resources\fP
+.XE
+.LP
+The resource names, classes, and representation types that are specified
+in the hook object resource list are
+.TS
+lw(1.5i) lw(1.5i) lw(2.5i) .
+_
+.sp 6p
+Name	Class	Representation
+.sp 6p
+_
+.sp 6p
+XtNcreateHook	XtCCallback	XtRCallback
+XtNchangeHook	XtCCallback	XtRCallback
+XtNconfigureHook	XtCCallback	XtRCallback
+XtNgeometryHook	XtCCallback	XtRCallback
+XtNdestroyHook	XtCCallback	XtRCallback
+XtNshells	XtCReadOnly	XtRWidgetList
+XtNnumShells	XtCReadOnly	XtRCardinal
+.sp 6p
+_
+.TE
+.LP
+Descriptions of each of these resources:
+.LP
+The XtNcreateHook callback list will be called immediately before
+returning from:
+.PN XtCreateWidget ,
+.PN XtCreateManagedWidget ,
+.PN XtCreatePopupShell ,
+.PN XtAppCreateShell ,
+and their corresponding varargs versions.
+.LP
+The \fPcall_data parameter\fP is type
+.PN XtCreateHookData .
+.IN "XtCreateHookData" "" "@DEF@"
+.sp
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	Widget   widget;
+	ArgList  args;
+	Cardinal num_args;
+} XtCreateHookDataRec, *XtCreateHookData;
+.De
+.LP
+The XtNchangeHook callback list will be called from:
+.IP
+.PN XtSetValues ,
+.PN XtVaSetValues
+.IP
+.PN XtManageChild ,
+.PN XtManageChildren ,
+.PN XtUnmanageChild ,
+.PN XtUnmanageChildren
+.IP
+.PN XtRealizeWidget ,
+.PN XtUnrealizeWidget
+.IP
+.PN XtAddCallback ,
+.PN XtRemoveCallback ,
+.PN XtAddCallbacks, 
+.PN XtRemoveCallbacks ,
+.PN XtRemoveAllCallbacks
+.IP
+.PN XtAugmentTranslations ,
+.PN XtOverrideTranslations ,
+.PN XtUninstallTranslations
+.IP
+.PN XtSetKeyboardFocus ,
+.PN XtSetWMColormapWindows
+.IP
+.PN XtSetMappedWhenManaged ,
+.PN XtMapWidget ,
+.PN XtUnmapWidget
+.IP
+.PN XtPopup ,
+.PN XtPopupSpringLoaded ,
+.PN XtPopdown
+.LP
+[The precise points of hook invocation will be described in the final
+specification. -- ed.]
+.sp
+.LP
+The \fIcall_data\fP parameter is type
+.PN XtChangeHookData .
+.IN "XtChangeHookData" "" "@DFEF@"
+.sp
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+typedef struct {
+	Widget  old;		/* before the change occurs or NULL */
+	Widget  widget;		/* being changed */
+	ArgList args;		/* passed to the function or pseudo names */
+	Cardinal num_args;
+} XtChangeHookDataRec, *XtChangeHookData;
+.De
+.LP
+A widget set which exports interfaces which change application state
+without employing the \*(xI library should invoke the change hook
+itself.  This is done by:
+.sp
+.Ds 0
+XtCallCallbacks(XtHooksOfDisplay(dpy), XtNchangeHook, call_data);
+.De
+.sp
+.LP
+The XtNconfigureHook callback list will be called from
+.IP
+.PN XtMoveWidget ,
+.PN XtResizeWidget ,
+and
+.PN XtConfigureWidget
+.LP
+once before, and once after the configuration occurs.
+.LP
+The \fIcall_data\fP parameter is type
+.PN XtConfigureHookData.
+.IN "XtConfigureHookData" "" "@DEF@"
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	Widget widget;	/* being configured */
+	XtGeometryMask changeMask;
+	XWindowChanges changes;	/* change being made */
+	Boolean pending;	/* true if configuration is pending */
+} XtConfigureHookDataRec, *XtConfigureHookData;
+.De
+.sp
+.LP
+The XtNgeometryHook callback list will be called from 
+.PN XtMakeGeometryRequest
+and
+.PN XtMakeResizeRequest
+once before and once after geometry negotiation occurs.
+[ The precise points of hook invocation will be described in the final
+specification. -- ed. ]
+.LP
+The \fIcall_data\fP parameter is type
+.PN XtGeometryHookData .
+.IN "XtGeometryHookData" "" "@DFEF@"
+.LP
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	Widget widget;	/* the widget making the request */
+	XtWidgetGeometry *request;	/* the request being made */
+	XtWidgetGeometry *reply;	/* if (!pending) the reply to the request */
+	XtGeometryResult result;	/* if (!pending) the result of the request */
+	Boolean pending	/* true if negotiation is pending */
+} XtGeometryHookDataRec, *XtGeometryHookData;
+.De
+.sp
+.LP
+The XtNdestroyHook callback list will be called when phase one destroy
+is complete.  The \fIcall_data parameter\fP is type 
+.PN XtDestroyHookData .
+.IN "XtDestroyHookData" "" "@DFEF@"
+.sp
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	Widget widget;	/* the widget in phase 1 destroy */
+} XtDestroyHookDataRec, *XtDestroyHookData;
+.De
+.sp
+.LP
+The XtNshells and XtnumShells are read-only resources which report a
+list of the parentless shell widgets associated with a display.
+
+.NH 3
+Querying Open Displays
+.XS
+\fB\*(SN Querying Open Displays\fP
+.XE
+.LP
+To retrieve a list of the X displays associated with an application context,
+use
+.PN XtGetDisplays .
+.IN "XtGetDisplays" "" "@DEF@"
+.LP
+.FD 0
+void XtGetDisplays(\fIapp_context\fP, \fIdpy_return\fP, \fInum_dpy_return\fP)
+.br
+      XtAppContext \fIapp_context\fP;
+.br
+      Display ***\fIdpy_return\fP;
+.br
+      Cardinal *\fInum_dpy_return\fP;
+.FN
+.IP \fIapp_context\fP 1i
+Specifies the application.
+.IP \fIdpy_return\fP 1i
+Returns a list of open X display connections in the specified application
+context.
+.IP \fInum_dpy_return\fP 1i
+Returns the count of open X display connections in \fIdpy_return\fP.
+.LP
+To free the list of displays, use
+.PN XtFree .
 .bp
