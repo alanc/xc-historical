@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.9 88/01/19 14:27:05 swick Exp $";
+static char rcs_id[] = "$Header: init.c,v 1.10 88/01/25 13:53:43 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -36,7 +36,7 @@ extern char* _XLowerCase();
 
 static XtResource resources[] = {
     {"debug", "Debug", XrmRBoolean, sizeof(Boolean),
-	 (Cardinal)&debug, XrmRString, "on"},
+	 (Cardinal)&debug, XrmRString, "off"},
     {"tempdir", "tempDir", XrmRString, sizeof(char *),
 	 (Cardinal)&tempDir, XrmRString, "/tmp"},
     {"mhpath", "MhPath", XrmRString, sizeof(char *),
