@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.23 89/11/22 18:47:00 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.24 90/03/16 17:13:50 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -48,25 +48,6 @@ static char rcsid[] =
 #include    "windowstr.h"
 #include    "mi.h"
 #include    "regionstr.h"
-
-static void	(*clipNotify)() = 0;
-
-/*
- * miClipNotify --
- *	Hook to let DDX request notification when the clipList of
- *	a window is recomputed.
- *
- *	clipNotify is expected to be a function receiving three arguments,
- *	a window, and an x and y offset -- the amount the window has
- *	been moved.
- */
-
-void
-miClipNotify (func)
-void	(*func)();
-{
-	clipNotify = func;
-}
 
 #ifdef SHAPE
 /*
@@ -257,8 +238,8 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 			(* pScreen->TranslateRegion) (&pChild->clipList,
 						      dx, dy);
 			pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-			if (clipNotify)
-			    (* clipNotify) (pChild, dx, dy);
+			if (pScreen->ClipNotify)
+			    (* pScreen->ClipNotify) (pChild, dx, dy);
 
 		    }
 		    if (pChild->valdata)
@@ -429,8 +410,8 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 
     pParent->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
-    if (clipNotify)
-	(* clipNotify) (pParent, dx, dy);
+    if (pScreen->ClipNotify)
+	(* pScreen->ClipNotify) (pParent, dx, dy);
 }
 
 static void
