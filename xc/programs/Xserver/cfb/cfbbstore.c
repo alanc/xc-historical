@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.4 89/09/14 17:04:20 rws Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 5.5 90/03/10 15:48:40 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "cfb.h"
@@ -58,6 +58,8 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
     register int	i;
+    ScreenPtr		pScreen = pPixmap->drawable.pScreen;
+    PixmapPtr		pScrPix;
     
     i = REGION_NUM_RECTS(prgnSave);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec));
@@ -73,12 +75,14 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 	pBox++;
     }
 
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    pScrPix = (PixmapPtr) pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
+#else
+    pScrPix = (PixmapPtr) pScreen->devPrivate;
+#endif
 
-    cfbDoBitbltCopy((DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
-		(DrawablePtr)pPixmap,
-		GXcopy,
-		prgnSave,
-		pPtsInit, ~0L);
+    cfbDoBitbltCopy((DrawablePtr) pScrPix, (DrawablePtr)pPixmap,
+		    GXcopy, prgnSave, pPtsInit, ~0L);
 
     DEALLOCATE_LOCAL (pPtsInit);
 }
@@ -114,6 +118,8 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
     DDXPointPtr		pPtsInit;
     register BoxPtr	pBox;
     register int	i;
+    ScreenPtr		pScreen = pPixmap->drawable.pScreen;
+    PixmapPtr		pScrPix;
     
     i = REGION_NUM_RECTS(prgnRestore);
     pPtsInit = (DDXPointPtr)ALLOCATE_LOCAL(i*sizeof(DDXPointRec));
@@ -129,11 +135,14 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
 	pBox++;
     }
 
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    pScrPix = (PixmapPtr) pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
+#else
+    pScrPix = (PixmapPtr) pScreen->devPrivate;
+#endif
 
-    cfbDoBitbltCopy((DrawablePtr)pPixmap,
-		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
-		GXcopy,
-		prgnRestore,
-		pPtsInit, ~0L);
+    cfbDoBitbltCopy((DrawablePtr)pPixmap, (DrawablePtr) pScrPix,
+		    GXcopy, prgnRestore, pPtsInit, ~0L);
+
     DEALLOCATE_LOCAL (pPtsInit);
 }
