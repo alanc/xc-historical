@@ -107,6 +107,6 @@ extern int NumMotionEvents();
 
 extern void WriteEventsToClient();
 extern int EventSelectForWindow();
-extern int EventSupressForWindow();
+extern int EventSuppressForWindow();
 
 #endif /* INPUT_H */
