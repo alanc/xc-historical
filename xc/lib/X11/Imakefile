@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.172 94/02/03 17:59:11 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.173 94/02/03 18:47:36 rws Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -27,8 +27,8 @@ XBSDLIB = /**/
 #endif
 #if BuildXKBlib
     XKB_DEFINES = -DXKB
-        XKBSRCS = XKB.c XKBBind.c XKBCvt.c XKBGeom.c
-        XKBOBJS = XKB.o XKBBind.o XKBCvt.o XKBGeom.o
+        XKBSRCS = XKB.c XKBBind.c XKBCvt.c XKBGeom.c XKBUse.c
+        XKBOBJS = XKB.o XKBBind.o XKBCvt.o XKBGeom.o XKBUse.o
 #endif
 #if HasSecureRPC
         RPCDEFS = -DSECURE_RPC
