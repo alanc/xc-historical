@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.111 89/11/13 11:58:49 jim Exp $
+ * $XConsortium: charproc.c,v 1.112 89/11/14 18:58:31 jim Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.111 89/11/13 11:58:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.112 89/11/14 18:58:31 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -185,9 +185,7 @@ extern void HandleScrollForward();
 extern void HandleScrollBack();
 extern void HandleCreateMenu();
 extern void HandleSetFont();
-extern void HandleSetSelectedFont();
-extern void HandleSetMenuFont();
-extern void set_vt_font();
+extern void SetVTFont();
 
 /*
  * NOTE: VTInitialize zeros out the entire ".screen" component of the 
@@ -204,6 +202,7 @@ static  int	defaultSaveLines   = SAVELINES;
 static	int	defaultScrollLines = SCROLLLINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
+static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
 
 static char defaultTranslations[] =
 "\
@@ -235,16 +234,13 @@ static XtActionsRec actionsList[] = {
     { "insert-eight-bit", HandleEightBitKeyPressed },
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
-/*  { "mode-menu",	  HandleModeMenu },     */
     { "secure",		  HandleSecure },
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
     { "select-end",	  HandleSelectEnd },
     { "select-cursor-start",	  HandleKeyboardSelectStart },
     { "select-cursor-end",	  HandleKeyboardSelectEnd },
-    { "set-font",	  HandleSetFont },
-    { "set-menu-font",	  HandleSetMenuFont },
-    { "set-selected-font",HandleSetSelectedFont },
+    { "set-vt-font",	  HandleSetFont },
     { "start-extend",	  HandleStartExtend },
     { "start-cursor-extend",	  HandleKeyboardStartExtend },
     { "string",		  HandleStringEvent },
@@ -2074,12 +2070,12 @@ XSetWindowAttributes *values;
 
 	screen->menu_font_names[fontMenu_fontdefault] = term->misc.f_n;
 	screen->fnt_norm = screen->fnt_bold = NULL;
-	if (!try_new_font(screen, term->misc.f_n, term->misc.f_b, False, 0)) {
+	if (!LoadNewFont(screen, term->misc.f_n, term->misc.f_b, False, 0)) {
 	    if (XmuCompareISOLatin1(term->misc.f_n, "fixed") != 0) {
 		fprintf (stderr, 
 		     "%s:  unable to open font \"%s\", trying \"fixed\"....\n",
 		     xterm_name, term->misc.f_n);
-		(void) try_new_font (screen, "fixed", NULL, False, 0);
+		(void) LoadNewFont (screen, "fixed", NULL, False, 0);
 		screen->menu_font_names[fontMenu_fontdefault] = "fixed";
 	    }
 	}
@@ -2581,31 +2577,6 @@ static void HandleIgnore(w, event, params, param_count)
 
 
 /* ARGSUSED */
-void HandleSetFont(w, event, params, param_count)
-    Widget w;
-    XEvent *event;		/* unused */
-    String *params;		/* unused */
-    Cardinal *param_count;	/* unused */
-{
-    int didit = 0;
-
-    switch (*param_count) {
-      case 1:
-	didit = try_new_font (&term->screen, params[0], NULL, True, 
-			      fontMenu_fontescape);
-	break;
-      case 2:
-	didit = try_new_font (&term->screen, params[0], params[1], True, 
-			      fontMenu_fontescape);
-	break;
-      default:
-	Bell();			/* want to ring twice */
-    }
-	
-    if (!didit) Bell();
-}
-
-/* ARGSUSED */
 void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     Widget w;
     XtPointer client_data;
@@ -2615,34 +2586,19 @@ void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
     int *format;
 {
     if (*type != XA_STRING || *format != 8) { Bell(); return; }
-    if (!try_new_font(&term->screen, value, NULL, True, fontMenu_fontescape))
+    if (!LoadNewFont(&term->screen, value, NULL, True, fontMenu_fontescape))
 	Bell();
 }
 
-static void got_font_selection (w, client_data, selection, type, value,
-				length, format)
-    Widget w;
-    XtPointer client_data;
-    Atom *selection, *type;
-    XtPointer value;
-    unsigned long *length;
-    int *format;
-{
-    if (*type != XA_STRING || *format != 8) return;
-    if (term->screen.menu_font_names[fontMenu_fontsel]) {
-	free (term->screen.menu_font_names[fontMenu_fontsel]);
-    }
-    term->screen.menu_font_names[fontMenu_fontsel] = value;
-}
-
-static void find_font_selection (atom_name, func)
+void FindFontSelection (atom_name, justprobe)
     char *atom_name;
-    void (*func)();
+    Bool justprobe;
 {
     static AtomPtr *atoms;
     static int atomCount = 0;
     AtomPtr *pAtom;
     int a;
+    Atom target;
 
     if (!atom_name) atom_name = "PRIMARY_FONT";
 
@@ -2654,45 +2610,32 @@ static void find_font_selection (atom_name, func)
 	*(pAtom = &atoms[atomCount++]) = XmuMakeAtom(atom_name);
     }
 
-#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(term), *pAtom)
-
-    XtGetSelectionValue(term, XA_PRIMARY_FONT, XA_STRING, func,
-			NULL, XtLastTimestampProcessed(XtDisplay(term)));
+    target = XmuInternAtom(XtDisplay(term), *pAtom);
+    if (justprobe) {
+	term->screen.menu_font_names[fontMenu_fontsel] = 
+	  XGetSelectionOwner(XtDisplay(term), target) ? _Font_Selected_ : NULL;
+    } else {
+	XtGetSelectionValue(term, target, XA_STRING,
+			    DoSetSelectedFont, NULL,
+			    XtLastTimestampProcessed(XtDisplay(term)));
+    }
+    return;
 }
 
 
 /* ARGSUSED */
-void HandleSetSelectedFont(w, event, params, param_count)
-    Widget w;
-    XEvent *event;		/* unused */
-    String *params;		/* unused */
-    Cardinal *param_count;	/* unused */
-{
-    find_font_selection ((*param_count == 1 ? params[0] : NULL),
-			 DoSetSelectedFont);
-}
-
-get_selected_font ()
-{
-    find_font_selection (NULL, got_font_selection);
-}
-
-
-/* ARGSUSED */
-void HandleSetMenuFont(w, event, params, param_count)
+void HandleSetFont(w, event, params, param_count)
     Widget w;
     XEvent *event;		/* unused */
     String *params;		/* unused */
     Cardinal *param_count;	/* unused */
 {
     int fontnum;
+    char *name = NULL;
 
-    switch (*param_count) {
-      case 0:
+    if (*param_count == 0) {
 	fontnum = fontMenu_fontdefault;
-	break;
-
-      case 1:
+    } else {
 	switch (params[0][0]) {
 	  case 'd': case 'D': case '0':
 	    fontnum = fontMenu_fontdefault; break;
@@ -2705,47 +2648,45 @@ void HandleSetMenuFont(w, event, params, param_count)
 	  case '4':
 	    fontnum = fontMenu_font4; break;
 	  case 'e': case 'E':
+	    if (*param_count > 1) name = params[1];
 	    fontnum = fontMenu_fontescape; break;
 	  case 's': case 'S':
+	    if (*param_count > 1) name = params[1];
 	    fontnum = fontMenu_fontsel; break;
 	  default:
 	    Bell();
 	    return;
 	}
-	break;
-
-      default:
-	Bell();
-	return;
     }
 
-    set_vt_font (fontnum, True);
+    SetVTFont (fontnum, True, name);
 }
 
 
-void set_vt_font (i, doresize)
+void SetVTFont (i, doresize, name)
     int i;
     Bool doresize;
+    char *name;
 {
     TScreen *screen = &term->screen;
-    char *name;
 
     if (i < 0 || i >= NMENUFONTS) {
 	Bell();
 	return;
     }
-    name = screen->menu_font_names[i];
-    if (i == fontMenu_fontsel) {	/* pretend that is an escape */
-	i = fontMenu_fontescape;
+    if (i == fontMenu_fontsel) {	/* go get the selection */
+	FindFontSelection (name, False);
+	return;
     }
-    if (!try_new_font(screen, name, NULL, doresize, i)) {
+    if (!name) name = screen->menu_font_names[i];
+    if (!LoadNewFont(screen, name, NULL, doresize, i)) {
 	Bell();
     }
     return;
 }
 
 
-int try_new_font (screen, nfontname, bfontname, doresize, fontnum)
+int LoadNewFont (screen, nfontname, bfontname, doresize, fontnum)
     TScreen *screen;
     char *nfontname, *bfontname;
     Bool doresize;

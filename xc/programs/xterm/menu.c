@@ -169,7 +169,7 @@ void HandleCreateMenu (w, event, params, param_count)
 				 (screen->menu_font_names[fontMenu_fontescape]
 				  ? TRUE : FALSE));
 	    }
-	    get_selected_font ();
+	    FindFontSelection (NULL, True);
 	    set_sensitivity (screen->fontMenu,
 			     fontMenuEntries[fontMenu_fontsel].widget,
 			     (screen->menu_font_names[fontMenu_fontsel]
@@ -652,7 +652,7 @@ static void do_vtfont (gw, closure, data)
 
     for (i = 0; i < NMENUFONTS; i++) {
 	if (strcmp (entryname, fontMenuEntries[i].name) == 0) {
-	    set_vt_font (i, True);
+	    SetVTFont (i, True, NULL);
 	    return;
 	}
     }

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.54 89/10/30 14:50:35 jim Exp $
+ *	$XConsortium: misc.c,v 1.55 89/11/13 11:58:55 jim Exp $
  */
 
 
@@ -58,7 +58,7 @@ static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.54 89/10/30 14:50:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.55 89/11/13 11:58:55 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -563,9 +563,7 @@ int (*func)();
 		break;
 
 	case 50:
-		if (!try_new_font(screen,buf,NULL,True,fontMenu_fontescape)) {
-		    Bell();
-		}
+		SetVTFont (fontMenu_fontescape, True, buf);
 		break;
 
 	/*
