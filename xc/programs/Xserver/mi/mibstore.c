@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.3 89/06/16 16:56:24 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.4 89/06/16 18:02:50 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,7 +34,7 @@ implied warranty.
 #include "dixfontstr.h"
 #include "dixstruct.h"		/* For requestingClient */
 #include "mi.h"
-#include "mibstorestr.h"
+#include "mibstorest.h"
 
 /*-
  * NOTES ON USAGE:
