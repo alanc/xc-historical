@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.91 89/10/05 18:31:32 jim Exp $
+ * $XConsortium: add_window.c,v 1.92 89/10/27 14:01:03 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.91 89/10/05 18:31:32 jim Exp $";
+"$XConsortium: add_window.c,v 1.92 89/10/27 14:01:03 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -365,14 +365,10 @@ IconMgr *iconp;
 		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
 			    tmp_win->frame_bw, tmp_win->title_height);
 
-		if (XCheckTypedEvent(dpy, ButtonPress, &event))
+		if (XCheckMaskEvent(dpy, ButtonPressMask, &event))
 		{
-		    XEvent junk;
-
 		    AddingX = event.xbutton.x_root;
 		    AddingY = event.xbutton.y_root;
-		    if (!Scr->AutoRelativeResize)
-		      XMaskEvent(dpy, ButtonReleaseMask, &junk);
 		    break;
 		}
 	    }
@@ -421,7 +417,7 @@ IconMgr *iconp;
 			lasty = AddingY;
 		    }
 
-		    if (XCheckTypedEvent(dpy, ButtonRelease, &event))
+		    if (XCheckMaskEvent(dpy, ButtonReleaseMask, &event))
 		    {
 			AddEndResize(tmp_win);
 			break;
@@ -443,6 +439,10 @@ IconMgr *iconp;
 
 		/* includes any border */
 		ConstrainSize (tmp_win, &AddingW, &AddingH);
+	    }
+	    else
+	    {
+		XMaskEvent(dpy, ButtonReleaseMask, &event);
 	    }
 
 	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
