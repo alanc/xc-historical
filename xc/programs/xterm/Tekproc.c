@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.86 91/02/05 20:07:37 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.87 91/02/17 17:15:33 dave Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -564,8 +564,9 @@ Tekparse()
 			if(screen->TekGIN)
 				TekGINoff();
 			TCursorDown();
-			if (!TekRefresh && (screen->display->qlen > 0 ||
-					    GetBytesAvailable (screen->display->fd) > 0))
+			if (!TekRefresh &&
+			    (QLength(screen->display) > 0 ||
+			     GetBytesAvailable (ConnectionNumber(screen->display)) > 0))
 			  xevents();
 			break;
 
@@ -1047,9 +1048,9 @@ register int x, y;
 	cplot[3] = 040 | ((y >> SHIFTHI) & FIVEBITS);
 	cplot[4] = 040 | ((y >> SHIFTLO) & FIVEBITS);
 	if(cplot[0] = status)
-		write (pty, cplot, 5);
+		v_write(pty, cplot, 5);
 	else
-		write (pty, &cplot[1], 4);
+		v_write(pty, &cplot[1], 4);
 }
 
 TekRun()
@@ -1499,10 +1500,12 @@ void TekSimulatePageButton (reset)
 }
 
 
+/* write copy of screen to a file */
+
 TekCopy()
 {
 	register TekLink *Tp;
-	register int fd;
+	register int tekcopyfd;
 	register TScreen *screen = &term->screen;
 	register struct tm *tp;
 	long l;
@@ -1521,19 +1524,19 @@ TekCopy()
 		Bell();
 		return;
 	}
-	if((fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
+	if((tekcopyfd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
 		Bell();
 		return;
 	}
 	chown(buf, screen->uid, screen->gid);
 	sprintf(buf, "\033%c\033%c", screen->page.fontsize + '8',
 	 screen->page.linetype + '`');
-	write(fd, buf, 4);
+	write(tekcopyfd, buf, 4);
 	Tp = &Tek0; 
 	do
-		write(fd, (char *)Tp->data, Tp->count);
+		write(tekcopyfd, (char *)Tp->data, Tp->count);
 	while(Tp = Tp->next);
-	close(fd);
+	close(tekcopyfd);
 }
 
 
