@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: basestat.c,v 5.1 91/02/16 10:06:47 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -800,7 +800,7 @@ BIF_All *entity;
 	    break;
 	}
 	highlight = entity->surfaceproperties.props.specular_exp;
-	transparency = entity->surfaceproperties.props.transpar_coef;
+	transparency = 0.0;
 
 	next_label = BBS_PSAP + 1;
 	if (traverser_state->nrs_state)  fxclns();
@@ -1819,8 +1819,7 @@ BIF_All *entity;
       break;
     }
     highlight 	 = (float)entity->surfaceproperties.props.specular_exp;
-    transparency = 
-      (float)entity->surfaceproperties.props.transpar_coef;
+    transparency = 0.0;
 
     next_label = BBS_FPBFP + 1;
     if (traverser_state->nrs_state)  fxclns();

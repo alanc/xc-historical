@@ -1,4 +1,4 @@
-/* $XConsortium: bifbuild.c,v 5.1 91/02/16 10:06:52 rws Exp $ */
+/* $XConsortium: bifbuild.c,v 5.2 91/07/12 18:05:16 hersh Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -580,7 +580,6 @@ int bif_surfprop(ambient, diffuse, specular, c1, c2, c3,
     temp_ent.surfaceproperties.props.specular_colr.val.general.y = c2;
     temp_ent.surfaceproperties.props.specular_colr.val.general.z = c3;
     temp_ent.surfaceproperties.props.specular_exp = highlight;
-    temp_ent.surfaceproperties.props.transpar_coef = transparency;
     
     ent = new_generic(&temp_ent,ent_size,SURFACE_PROPERTIES,
 		      do_surfaceproperties);
@@ -608,8 +607,6 @@ int bif_surfprop(ambient, diffuse, specular, c1, c2, c3,
 	    temp_ent.surfaceproperties.props.specular_colr.val.general.z);
     fprintf(stderr,"bifbuild pset_refl_props highlight = %f\n",
 	    temp_ent.surfaceproperties.props.specular_exp);
-    fprintf(stderr,"bifbuild pset_refl_props transparency = %f\n",
-	    temp_ent.surfaceproperties.props.transpar_coef);
 #endif /* TEST_PRINT */
     
     
@@ -669,7 +666,6 @@ int bif_bkfprop(ambient, diffuse, specular, c1, c2, c3,
     temp_ent.surfaceproperties.props.specular_colr.val.general.y = c2;
     temp_ent.surfaceproperties.props.specular_colr.val.general.z = c3;
     temp_ent.surfaceproperties.props.specular_exp = highlight;
-    temp_ent.surfaceproperties.props.transpar_coef = transparency;
     
     ent = new_generic(&temp_ent,ent_size,BACKFACE_PROPERTIES,
 		      do_backfaceproperties);
