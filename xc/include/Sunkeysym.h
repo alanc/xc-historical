@@ -1,4 +1,4 @@
-/* $XConsortium: Sunkeysym.h,v 1.1 91/06/19 12:03:42 rws Exp $ */
+/* $XConsortium: Sunkeysym.h,v 1.2 92/03/03 17:46:14 rws Exp $ */
 
 /************************************************************
 Copyright 1991 by Sun Microsystems, Inc. Mountain View, CA.
@@ -77,3 +77,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define SunXK_Open		0x1005FF73
 #define SunXK_Paste		0x1005FF74
 #define SunXK_Cut		0x1005FF75
+
+/*
+ * define something, until Sun tells us what they ought to be!
+ */
+#define SunXK_AudioMute		0x1005FF76
+#define SunXK_VideoDegauss	0x1005FF77
+#define SunXK_AudioLower	0x1005FF78
+#define SunXK_VideoLower	0x1005FF79
+#define SunXK_AudioRaise	0x1005FF7A
+#define SunXK_VideoRaise	0x1005FF7B
+#define SunXK_PowerSwitch	0x1005FF7C
