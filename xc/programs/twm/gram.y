@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.43 89/06/09 14:13:20 jim Exp $
+ * $XConsortium: gram.y,v 1.44 89/06/09 16:59:32 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.43 89/06/09 14:13:20 jim Exp $";
+"$XConsortium: gram.y,v 1.44 89/06/09 16:59:32 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -540,7 +540,7 @@ iconm_entries	: /* Empty */
 
 iconm_entry	: string string number	{ if (Scr->FirstTime)
 					    AddToList(list, $1,
-						AllocateIconManager($1, "",
+						AllocateIconManager($1, NULL,
 							$2,$3));
 					}
 		| string string string number
