@@ -634,15 +634,15 @@ int fSorted;
 		tmpSrc = *(pdst + (x >> PWSH));
 		switch ( pGC->fillStyle ) {
 		    case FillOpaqueStippled:
-			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 0, 
+			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 0, 
 			    &bgfill, &tmpDst1);
-			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 1,
+			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 1,
 			    &fgfill, &tmpDst2);
 			break;
 		    case FillStippled:
-			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 0,
+			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 0,
 			    &tmpSrc, &tmpDst1);
-			getstipplepixels(psrcS + (xrem>>5), (x&0x1f), w, 1,
+			getstipplepixels(psrcS + (xrem>>5), (xrem&0x1f), w, 1,
 			    &fgfill, &tmpDst2);
 			break;
 		}
