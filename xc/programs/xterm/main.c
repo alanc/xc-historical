@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.128 89/10/09 16:49:31 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.129 89/10/27 12:18:06 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -100,6 +100,11 @@ SOFTWARE.
 #include <lastlog.h>
 #endif
 #include <sys/param.h>	/* for NOFILE */
+
+#ifdef  PUCC_PTYD
+#include <local/openpty.h>
+int	Ptyfd;
+#endif /* PUCC_PTYD */
 
 #ifndef UTMP_FILENAME
 #define UTMP_FILENAME "/etc/utmp"
@@ -1168,12 +1173,28 @@ spawn ()
 			tty = -1;
 		}
 
+#ifdef 	PUCC_PTYD
+		if(-1 == (screen->respond = openrpty(ttydev, ptydev,
+				(resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN),
+				getuid(), XDisplayString(screen->display)))) {
+#else /* not PUCC_PTYD */
 		if (get_pty (&screen->respond)) {
+#endif /* PUCC_PTYD */
 			/*  no ptys! */
 			(void) fprintf(stderr, "%s: no available ptys\n",
 				       xterm_name);
 			exit (ERROR_PTYS);
 		}
+#ifdef PUCC_PTYD
+		  else {
+			/*
+			 *  set the fd of the master in a global var so
+			 *  we can undo all this on exit
+			 *
+			 */
+			Ptyfd = screen->respond;
+		  }
+#endif PUCC_PTYD
 	}
 
 	/* avoid double MapWindow requests */
@@ -2061,6 +2082,9 @@ static reapchild ()
 	}
 #endif	/* defined(USE_SYSV_SIGNALS) && !defined(JOBCONTROL) */
 
+#ifdef PUCC_PTYD
+		closepty(ttydev, ptydev, (resource.utmpInhibit ?  OPTY_NOP : OPTY_LOGIN), Ptyfd);
+#endif /* PUCC_PTYD */
 
 	if (pid != term->screen.pid) {
 #ifdef USE_SYSV_SIGNALS

@@ -17,12 +17,25 @@
  * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
  * handle overlapping copies before using it.
  */
-#ifdef SetTtyGroup
-#define TtyDef -DUSE_TTY_GROUP
-#else
-#define TtyDef /**/
+#ifdef SetTtyGroup			/* turn on in config/machine.cf */
+   TTYGROUPDEF = -DUSE_TTY_GROUP
 #endif
-   MAIN_DEFINES = -DUTMP TtyDef
+/*
+ *	[PUCC = Purdue University Computer Center]
+ *	If you use PUCC's ptyd, add "-DPUCC_PTYD" to the DEFINES
+ *	and dink the -DUTMP (also don't define WTMP or LASTLOG - since
+ *	ptyd does all that logging for you)  You will need to add
+ *	the right library load line (we use -lpucc) to the 
+ *	ComplexProgramTarget (right next to -ltermcap)
+ */
+#ifdef UsePUCCPtyd			/* turn on in config/site.def */
+    PUCCPTYDDEF = -DPUCC_PTYD		/* does not need to be setuid */
+         PTYLIB = -lpucc
+#else
+   INSTALLFLAGS = $(INSTUIDFLAGS)
+#endif
+
+   MAIN_DEFINES = -DUTMP $(TTYGROUPDEF) $(PUCCPTYDDEF)
 
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
@@ -33,11 +46,10 @@
           SRCS2 = resize.c
           OBJS2 = resize.o
        PROGRAMS = resize xterm
-   INSTALLFLAGS = $(INSTUIDFLAGS)
        DEPLIBS1 = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
        DEPLIBS2 = 
 
-ComplexProgramTarget_1(xterm,$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),-ltermcap)
+ComplexProgramTarget_1(xterm,$(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB),-ltermcap $(PTYLIB))
 SpecialObjectRule(main.o,,$(MAIN_DEFINES))
 
 SingleProgramTarget(resize,$(OBJS2),,-ltermcap)
