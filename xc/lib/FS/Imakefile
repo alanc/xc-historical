@@ -1,4 +1,4 @@
-INCLUDES = -I. -I../include
+INCLUDES = -I. -I../include -I$(FONTSRC)/include
 
 SRCS =	FSlibInt.c FSOpenServ.c  FSClServ.c FSConnServ.c FSServName.c	\
 	FSSynchro.c FSErrDis.c FSSync.c FSFlush.c 	\

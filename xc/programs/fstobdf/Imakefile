@@ -1,4 +1,4 @@
-       INCLUDES = -I../../include
+       INCLUDES = -I../../include -I../../lib -I$(FONTSRC)/include
 LOCAL_LIBRARIES = ../../lib/libFS.a
   SYS_LIBRARIES = -lX11
 
