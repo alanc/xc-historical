@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.8 94/07/05 11:24:52 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.9 94/07/05 12:35:24 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -40,15 +40,13 @@ Window root;
 
 Atom wmProtocolsAtom;
 Atom wmSaveYourselfAtom;
-Atom wmTransientForAtom;
+Atom wmStateAtom;
 Atom smClientIdAtom;
 
 typedef struct {
-    Window frame;
     Window window;
-    Bool mapped;
-    Bool has_save_yourself;
-    Bool waiting_for_update;
+    Bool waiting_for_required_props;
+    Bool got_wm_state;
     SmcConn smc_conn;
     XtInputId input_id;
     char *client_id;
@@ -56,6 +54,8 @@ typedef struct {
     int wm_command_count;
     XClassHint class;
     char *wm_name;
+    Bool has_save_yourself;
+    Bool waiting_for_update;
 } WinInfo;
 
 typedef struct ProxyFileEntry
@@ -76,7 +76,7 @@ Bool debug = 0;
 SmcConn proxy_smcConn;
 XtInputId proxy_iceInputId;
 
-WinInfo win_list[100];
+WinInfo win_list[256];
 int win_count = 0;
 int proxy_count = 0;
 int die_count = 0;
@@ -454,24 +454,6 @@ Window window;
 
 
 Bool
-GetWmCommand (window, argv_ret, argc_ret)
-
-Window window;
-char ***argv_ret;
-int *argc_ret;
-
-{
-    *argv_ret = NULL;
-
-    if (!XGetCommand (disp, window, argv_ret, argc_ret))
-	return (0);
-
-    return (*argc_ret > 0 && argv_ret);
-}
-
-
-
-Bool
 HasXSMPsupport (window)
 
 Window window;
@@ -494,86 +476,59 @@ Window window;
 
 
 
-Bool
-HasTransientFor (window)
-
-Window window;
-
-{
-    Window window_ret;
-
-    return (XGetTransientForHint (disp, window, &window_ret) != 0);
-}
-
-
-
 void FinishSaveYourself (winInfo)
 
 WinInfo *winInfo;
 
 {
-    if (winInfo->wm_command)
+    SmProp prop1, prop2, prop3, prop4, *props[4];
+    SmPropValue prop3val, prop4val;
+    char userId[20];
+    int i;
+
+    prop1.name = SmRestartCommand;
+    prop1.type = SmLISTofARRAY8;
+    prop1.num_vals = winInfo->wm_command_count;
+    
+    prop1.vals = (SmPropValue *) malloc (
+	winInfo->wm_command_count * sizeof (SmPropValue));
+    
+    for (i = 0; i < winInfo->wm_command_count; i++)
     {
-	XFreeStringList (winInfo->wm_command);
-	winInfo->wm_command = NULL;
+	prop1.vals[i].value = (SmPointer) winInfo->wm_command[i];
+	prop1.vals[i].length = strlen (winInfo->wm_command[i]) + 1;
     }
-
-    if (!GetWmCommand (winInfo->window,
-	&winInfo->wm_command, &winInfo->wm_command_count))
-    {
-	SmcSaveYourselfDone (winInfo->smc_conn, False);
-    }
-    else
-    {
-	SmProp prop1, prop2, prop3, prop4, *props[4];
-	SmPropValue prop3val, prop4val;
-	char userId[20];
-	int i;
-
-	prop1.name = SmRestartCommand;
-	prop1.type = SmLISTofARRAY8;
-	prop1.num_vals = winInfo->wm_command_count;
-
-	prop1.vals = (SmPropValue *) malloc (
-	    winInfo->wm_command_count * sizeof (SmPropValue));
-
-	for (i = 0; i < winInfo->wm_command_count; i++)
-	{
-	    prop1.vals[i].value = (SmPointer) winInfo->wm_command[i];
-	    prop1.vals[i].length = strlen (winInfo->wm_command[i]) + 1;
-	}
-
-	prop2.name = SmCloneCommand;
-	prop2.type = SmLISTofARRAY8;
-	prop2.num_vals = winInfo->wm_command_count;
-	prop2.vals = prop1.vals;
-
-	prop3.name = SmProgram;
-	prop3.type = SmARRAY8;
-	prop3.num_vals = 1;
-	prop3.vals = &prop3val;
-	prop3val.value = winInfo->wm_command[0];
-	prop3val.length = strlen (winInfo->wm_command[0]) + 1;
-
-	sprintf (userId, "%d", getuid());
-	prop4.name = SmUserID;
-	prop4.type = SmARRAY8;
-	prop4.num_vals = 1;
-	prop4.vals = &prop4val;
-	prop4val.value = (SmPointer) userId;
-	prop4val.length = strlen (userId);
-
-	props[0] = &prop1;
-	props[1] = &prop2;
-	props[2] = &prop3;
-	props[3] = &prop4;
-
-	SmcSetProperties (winInfo->smc_conn, 4, props);
-
-	free (prop1.vals);
-
-	SmcSaveYourselfDone (winInfo->smc_conn, True);
-    }
+    
+    prop2.name = SmCloneCommand;
+    prop2.type = SmLISTofARRAY8;
+    prop2.num_vals = winInfo->wm_command_count;
+    prop2.vals = prop1.vals;
+    
+    prop3.name = SmProgram;
+    prop3.type = SmARRAY8;
+    prop3.num_vals = 1;
+    prop3.vals = &prop3val;
+    prop3val.value = winInfo->wm_command[0];
+    prop3val.length = strlen (winInfo->wm_command[0]) + 1;
+    
+    sprintf (userId, "%d", getuid());
+    prop4.name = SmUserID;
+    prop4.type = SmARRAY8;
+    prop4.num_vals = 1;
+    prop4.vals = &prop4val;
+    prop4val.value = (SmPointer) userId;
+    prop4val.length = strlen (userId);
+    
+    props[0] = &prop1;
+    props[1] = &prop2;
+    props[2] = &prop3;
+    props[3] = &prop4;
+    
+    SmcSetProperties (winInfo->smc_conn, 4, props);
+    
+    free (prop1.vals);
+    
+    SmcSaveYourselfDone (winInfo->smc_conn, True);
 }
 
 
@@ -600,11 +555,6 @@ Bool fast;
 	XClientMessageEvent saveYourselfMessage;
 
 
-	/* Look for changes in WM_COMMAND property */
-
-	XSelectInput (disp, winInfo->window, PropertyChangeMask);	
-
-
 	/* Send WM_SAVE_YOURSELF */
 
 	saveYourselfMessage.type = ClientMessage;
@@ -629,8 +579,6 @@ Bool fast;
 	}
 	else
 	{
-	    XSelectInput (disp, winInfo->window, NoEventMask);
-
 	    if (debug)
 	    {
 		printf ("Failed to send SAVE YOURSELF to 0x%x\n",
@@ -786,97 +734,110 @@ WinInfo *winInfo;
 
 
 
-AddNewWindow (window, client_window)
+int
+AddNewWindow (window)
 
 Window window;
-Window client_window;
 
 {
-    Bool has_xsmp_support, has_save_yourself;
-    Bool has_wm_command, has_transient_for;
+    int i;
 
-    has_xsmp_support = HasXSMPsupport (client_window);
-    has_save_yourself = HasSaveYourself (client_window);
-    has_wm_command = GetWmCommand (client_window,
-	&win_list[win_count].wm_command,
-	&win_list[win_count].wm_command_count);
-    has_transient_for = HasTransientFor (client_window);
+    for (i = 0; i < win_count; i++)
+    {
+	if (win_list[i].window == window)
+	    return -1;
+    }
 
-    win_list[win_count].frame = window;
-    win_list[win_count].window = client_window;
-    win_list[win_count].has_save_yourself = has_save_yourself;
-    win_list[win_count].waiting_for_update = 0;
-
+    win_list[win_count].window = window;
+    win_list[win_count].smc_conn = NULL;
+    win_list[win_count].waiting_for_required_props = 1;
+    win_list[win_count].got_wm_state = 0;
+    win_list[win_count].client_id = NULL;
+    win_list[win_count].wm_command = NULL;
+    win_list[win_count].wm_command_count = 0;
     win_list[win_count].class.res_name = NULL;
     win_list[win_count].class.res_class = NULL;
     win_list[win_count].wm_name = NULL;
+    win_list[win_count].has_save_yourself = 0;
+    win_list[win_count].waiting_for_update = 0;
     
-    if (!has_xsmp_support && !has_transient_for &&
-	(has_save_yourself || has_wm_command))
-    {
-	XFetchName (disp, client_window, &win_list[win_count].wm_name);
-	XGetClassHint (disp, client_window, &win_list[win_count].class);
-	
-	ConnectClientToSM (&win_list[win_count]);
-    }
-    else
-    {
-	win_list[win_count].smc_conn = NULL;
-	win_list[win_count].client_id = NULL;
-    }
-
-    if (debug)
-    {
-	printf ("Added window\n");
-	printf ("    frame = 0x%x\n", window);
-	printf ("    window = 0x%x\n", client_window);
-	printf ("    has SM_CLIENT_ID = %d\n", has_xsmp_support);
-	printf ("    has WM_SAVE_YOURSELF = %d\n", has_save_yourself);
-	printf ("    has WM_COMMAND = %d\n", has_wm_command);
-	printf ("    has WM_TRANSIENT_FOR = %d\n", has_transient_for);
-	printf ("\n");
-    }
-
     win_count++;
-}
 
+    return (win_count - 1);
+}
 
 
 
 void
-HandleMap (event, map)
+HandleCreate (event)
 
-XMapEvent *event;
-Bool map;
+XCreateWindowEvent *event;
 
 {
-    Window client_window;
-    int i, has_frame;
+    Atom actual_type;
+    int actual_format;
+    unsigned long nitems, bytesafter;
+    unsigned long *datap = NULL;
 
-    client_window = XmuClientWindow (disp, event->window);
+    /*
+     * Add the new window
+     */
 
-    for (i = 0; i < win_count; i++)
+    int index;
+
+    if ((index = AddNewWindow (event->window)) < 0)
+	return;
+
+
+    /*
+     * Select for Property Notify on the window
+     */
+
+    XSelectInput (disp, event->window, PropertyChangeMask);	
+
+
+    /*
+     * There might be a race condition because a property might
+     * have already changed right after the CreateNotify.  To get
+     * around this, we must check for all properties now.
+     */
+
+    XFetchName (disp, event->window, &win_list[index].wm_name);
+
+    XGetCommand (disp, event->window,
+	&win_list[index].wm_command,
+	&win_list[index].wm_command_count);
+
+    XGetClassHint (disp, event->window, &win_list[index].class);
+
+    if (XGetWindowProperty (disp, event->window, wmStateAtom,
+	0L, 2L, False, wmStateAtom,
+	&actual_type, &actual_format, &nitems, &bytesafter,
+	(unsigned char **) &datap) && datap)
     {
-	has_frame = win_list[i].frame != win_list[i].window;
+	if (nitems > 0)
+	    win_list[index].got_wm_state = 1;
 
-	if (!has_frame && client_window != event->window &&
-	    win_list[i].window == client_window)
-	{
-	    win_list[i].frame = event->window;
-	}
-
-	if (win_list[i].frame == event->window ||
-	    win_list[i].window == event->window)
-	{
-	    win_list[i].mapped = map;
-	    break;
-	}
+	if (datap)
+	    XFree ((char *) datap);
     }
 
-    if (i >= win_count)
+    if (win_list[index].got_wm_state &&
+	win_list[index].wm_name != NULL &&
+	win_list[index].wm_command != NULL &&
+	win_list[index].wm_command_count > 0 &&
+	win_list[index].class.res_name != NULL &
+	win_list[index].class.res_class != NULL)
     {
-	win_list[win_count].mapped = map;
-	AddNewWindow (event->window, client_window);
+	win_list[index].waiting_for_required_props = 0;
+
+	if (!HasXSMPsupport (event->window))
+	{
+	    win_list[index].has_save_yourself =
+		HasSaveYourself (event->window);
+
+	    ConnectClientToSM (&win_list[index]);
+	}
     }
 }
 
@@ -892,8 +853,7 @@ XDestroyWindowEvent *event;
 
     for (i = 0; i < win_count; i++)
     {
-	if (win_list[i].frame == event->window ||
-	    win_list[i].window == event->window)
+	if (win_list[i].window == event->window)
 	{
 	    if (win_list[i].smc_conn)
 	    {
@@ -904,8 +864,8 @@ XDestroyWindowEvent *event;
 
 	    if (debug)
 	    {
-		printf ("Removed window (frame = 0x%x, window = 0x%x)\n",
-		    win_list[i].frame, win_list[i].window);
+		printf ("Removed window (window = 0x%x)\n",
+		    win_list[i].window);
 		printf ("\n");
 	    }
 
@@ -944,29 +904,93 @@ XPropertyEvent *event;
     Window window = event->window;
     int i;
 
-    if (event->atom != XA_WM_COMMAND)
+    if (event->atom != XA_WM_NAME && event->atom != XA_WM_COMMAND &&
+	event->atom != XA_WM_CLASS && event->atom != wmStateAtom)
+    {
+	/*
+	 * We are only interested in WM_NAME, WM_COMMAND,
+	 * WM_STATE, and WM_CLASS.
+	 */
+
 	return;
+    }
 
     for (i = 0; i < win_count; i++)
+	if (win_list[i].window == window)
+	    break;
+
+    if (i < win_count)
     {
-	if (win_list[i].window == window && win_list[i].waiting_for_update)
+	if (event->atom == XA_WM_NAME)
 	{
-	    if (debug)
+	    if (win_list[i].wm_name)
 	    {
-		printf ("Received Prop Notify on 0x%x\n", win_list[i].window);
-		printf ("\n");
+		XFree (win_list[i].wm_name);
+		win_list[i].wm_name = NULL;
 	    }
 
-	    /* We are no longer waiting for the update */
+	    XFetchName (disp, window, &win_list[i].wm_name);
+	}
+	else if (event->atom == XA_WM_COMMAND)
+	{
+	    if (win_list[i].wm_command)
+	    {
+		XFreeStringList (win_list[i].wm_command);
+		win_list[i].wm_command = NULL;
+		win_list[i].wm_command_count = 0;
+	    }
 
-	    win_list[i].waiting_for_update = 0;
-	    XSelectInput (disp, win_list[i].window, NoEventMask);
+	    XGetCommand (disp, window,
+		&win_list[i].wm_command,
+		&win_list[i].wm_command_count);
 
+	    if (win_list[i].waiting_for_update)
+	    {
+		/* Finish off the Save Yourself */
 
-	    /* Finish off the Save Yourself */
+		win_list[i].waiting_for_update = 0;
+		FinishSaveYourself (&win_list[i]);
+	    }
+	}
+	else if (event->atom == XA_WM_CLASS)
+	{
+	    if (win_list[i].class.res_name)
+	    {
+		XFree (win_list[i].class.res_name);
+		win_list[i].class.res_name = NULL;
+	    }
 
-	    FinishSaveYourself (&win_list[i]);
-	    break;
+	    if (win_list[i].class.res_class)
+	    {
+		XFree (win_list[i].class.res_class);
+		win_list[i].class.res_class = NULL;
+	    }
+
+	    XGetClassHint (disp, window, &win_list[i].class);
+	}
+	else if (event->atom == wmStateAtom)
+	{
+	    win_list[i].got_wm_state = 1;
+	}
+
+	if (win_list[i].waiting_for_required_props)
+	{
+	    if (win_list[i].got_wm_state &&
+		win_list[i].wm_name != NULL &&
+		win_list[i].wm_command != NULL &&
+		win_list[i].wm_command_count > 0 &&
+		win_list[i].class.res_name != NULL &
+		win_list[i].class.res_class != NULL)
+	    {
+		win_list[i].waiting_for_required_props = 0;
+		
+		if (!HasXSMPsupport (window))
+		{
+		    win_list[i].has_save_yourself = HasSaveYourself (window);
+
+		    ConnectClientToSM (&win_list[i]);
+		}
+	    }
 	}
     }
 }
@@ -1183,6 +1207,7 @@ CheckFirst ()
 {
     Window dontCare1, dontCare2, *children, client_window;
     unsigned int nchildren, i;
+    XCreateWindowEvent event;
 
     XGrabServer (disp);
     XSync (disp, 0);
@@ -1191,8 +1216,16 @@ CheckFirst ()
 
     for (i = 0; i < nchildren; i++)
     {
+	event.window = children[i];
+	HandleCreate (&event);
+
 	client_window = XmuClientWindow (disp, children[i]);
-	AddNewWindow (children[i], client_window);
+
+	if (client_window != children[i])
+	{
+	    event.window = client_window;
+	    HandleCreate (&event);
+	}
     }
     
     XUngrabServer (disp);
@@ -1242,12 +1275,12 @@ char **argv;
 
     root = DefaultRootWindow (disp);
 
-    XSelectInput (disp, root, SubstructureNotifyMask);
-
     wmProtocolsAtom = XInternAtom (disp, "WM_PROTOCOLS", False);
     wmSaveYourselfAtom = XInternAtom (disp, "WM_SAVE_YOURSELF", False);
-    wmTransientForAtom = XInternAtom (disp, "WM_TRANSIENT_FOR", False);
+    wmStateAtom = XInternAtom (disp, "WM_STATE", False);
     smClientIdAtom = XInternAtom (disp, "SM_CLIENT_ID", False);
+
+    XSelectInput (disp, root, SubstructureNotifyMask | PropertyChangeMask);
 
     CheckFirst ();
 
@@ -1259,14 +1292,8 @@ char **argv;
 
 	switch (event.type)
 	{
-	case MapNotify:
-	    HandleMap (&event.xmap, 1);
-	    break;
-
-	case UnmapNotify:
-#if 0
-	    HandleMap (&event.xunmap, 0);
-#endif
+	case CreateNotify:
+	    HandleCreate (&event.xcreatewindow);
 	    break;
 
 	case DestroyNotify:
