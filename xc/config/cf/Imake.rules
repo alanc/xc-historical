@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.135 93/07/13 11:27:54 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.136 93/07/14 10:53:21 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -24,6 +24,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.135 93/07/13 11:27:54 rws Exp $
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
+ * LinkRule			(program,options,objects,libraries)
  * NormalProgramTarget		(program,objects,deplibs,locallibs,syslibs)
  * SetUIDProgramTarget		(program,objects,deplibs,locallibs,syslibs)
  * SingleProgramTarget		(program,objects,locallibs,syslibs)
@@ -281,6 +282,14 @@ includes::								@@\
 #endif /* BuildIncludes */
 
 /*
+ * LinkRule - link a program
+ */
+#ifndef LinkRule
+#define LinkRule(program,options,objects,libraries) \
+$(CCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
+#endif /* LinkRule */
+
+/*
  * NormalProgramTarget - generate rules to compile and link the indicated 
  * program; since it does not use any default object files, it may be used for
  * multiple programs in the same Imakefile.
@@ -289,7 +298,7 @@ includes::								@@\
 #define	NormalProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
 program: objects deplibs						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCLINK) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule($@,$(LDOPTIONS),objects,locallibs $(LDLIBS) syslibs)	@@\
 									@@\
 PurifyProgramTarget(program,objects deplibs,objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 									@@\
@@ -341,7 +350,7 @@ AllTarget(program)							@@\
 									@@\
 program: $(OBJS) $(DEPLIBS)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCLINK) -o $@ $(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule($@,$(LDOPTIONS),$(OBJS),$(LOCAL_LIBRARIES) $(LDLIBS))	@@\
 									@@\
 SaberProgramTarget(program,$(SRCS),$(OBJS),$(LOCAL_LIBRARIES),NullParameter) @@\
 PurifyProgramTarget(program,$(OBJS) $(DEPLIBS),$(OBJS) $(LDOPTIONS) $(LOCAL_LIBRARIES) $(LDLIBS) $(EXTRA_LOAD_FLAGS)) @@\
@@ -372,7 +381,7 @@ AllTarget($(PROGRAMS))							@@\
 									@@\
 program: $(OBJS1) $(DEPLIBS1)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCLINK) -o $@ $(LDOPTIONS) $(OBJS1) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule($@,$(LDOPTIONS),$(OBJS1),locallib $(LDLIBS) syslib)	@@\
 									@@\
 InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))					@@\
@@ -398,7 +407,7 @@ clean::									@@\
 #define	ComplexProgramTarget_2(program,locallib,syslib)			@@\
 program: $(OBJS2) $(DEPLIBS2)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCLINK) -o $@ $(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule($@,$(LDOPTIONS),$(OBJS2),locallib $(LDLIBS) syslib)	@@\
 									@@\
 SaberProgramTarget(program,$(SRCS2),$(OBJS2),locallib,syslib)		@@\
 PurifyProgramTarget(program,$(OBJS2) $(DEPLIBS2),$(LDOPTIONS) $(OBJS2) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
@@ -418,7 +427,7 @@ InstallManPage(program,$(MANDIR))
 #define	ComplexProgramTarget_3(program,locallib,syslib)			@@\
 program: $(OBJS3) $(DEPLIBS3)						@@\
 	RemoveTargetProgram($@)						@@\
-	$(CCLINK) -o $@ $(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule($@,$(LDOPTIONS),$(OBJS3),locallib $(LDLIBS) syslib)	@@\
 									@@\
 SaberProgramTarget(program,$(SRCS3),$(OBJS3),locallib,syslib)		@@\
 PurifyProgramTarget(program,$(OBJS3) $(DEPLIBS3),$(LDOPTIONS) $(OBJS3) locallib $(LDLIBS) syslib $(EXTRA_LOAD_FLAGS)) @@\
@@ -435,12 +444,12 @@ InstallManPage(program,$(MANDIR))
 server: subdirs objects libs						@@\
 	-@if [ -f server ]; then set -x; \				@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CCLINK) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 Concat(load,server):							@@\
 	-@if [ -f server ]; then set -x; \				@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
-	$(CCLINK) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	LinkRule(server,$(CDEBUGFLAGS) $(CCOPTIONS),objects,libs $(EXTRA_LIBRARIES) syslibs) @@\
 									@@\
 PurifyProgramTarget(server,subdirs objects libs,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)) @@\
 PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS))
