@@ -286,7 +286,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* KERNEL_LOAD_VARIABLE */
 
 #ifdef macII
-static struct var v;
+struct var v;
 static int pad[2];	/* This padding is needed if xload compiled on */
 			/* a/ux 1.1 is executed on a/ux 1.0, because */
 			/* the var structure had too much padding in 1.0, */

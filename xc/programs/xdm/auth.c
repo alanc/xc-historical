@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.15 89/11/18 12:42:15 rws Exp $
+ * $XConsortium: auth.c,v 1.16 89/12/13 15:24:56 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -454,8 +454,6 @@ ConvertAddr (saddr, len, addr)
         *len = sizeof (struct in_addr);
         *addr = (char *) &(((struct sockaddr_in *) saddr)->sin_addr);
         return (AF_INET);
-#else
-	break;
 #endif
 
 #ifdef DNETCONN
@@ -463,8 +461,6 @@ ConvertAddr (saddr, len, addr)
         *len = sizeof (struct dn_naddr);
         *addr = (char *) &(((struct sockaddr_dn *) saddr)->sdn_add);
         return (AF_DECnet);
-#else
-	break;
 #endif
       default:
         break;
@@ -580,7 +576,7 @@ setAuthNumber (auth, name)
     char    *name;
 {
     char	*colon, *malloc ();
-    char	*dot;
+    char	*dot, *number;
 
     Debug ("setAuthNumber %s\n", name);
     colon = rindex (name, ':');
@@ -590,15 +586,16 @@ setAuthNumber (auth, name)
 	    auth->number_length = dot - colon;
 	else
 	    auth->number_length = strlen (colon);
-	auth->number = malloc (auth->number_length + 1);
-	if (auth->number) {
-	    strncpy (auth->number, colon, auth->number_length);
-	    auth->number[auth->number_length] = '\0';
+	number = malloc (auth->number_length + 1);
+	if (number) {
+	    strncpy (number, colon, auth->number_length);
+	    number[auth->number_length] = '\0';
 	} else {
 	    LogOutOfMem ("setAuthNumber");
 	    auth->number_length = 0;
 	}
-	Debug ("setAuthNumber: %s\n", auth->number);
+	auth->number = number;
+	Debug ("setAuthNumber: %s\n", number);
     }
 }
 
