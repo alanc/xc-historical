@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.13 93/09/23 14:39:21 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.14 94/03/18 10:37:33 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -212,9 +212,11 @@ typedef struct PEXDisplayInfo
  */
 
 #define XREAD_INTO_SCRATCH(_display, _pBuf, _numBytes) \
-    _pBuf = (char *) _XAllocScratch (_display, (unsigned long) (_numBytes)); \
+    _pBuf = (char *) _XAllocTemp (_display, (unsigned long) (_numBytes)); \
     _XRead (_display, _pBuf, (long) (_numBytes));
 
+#define FINISH_WITH_SCRATCH(_display, _pBuf, _numBytes) \
+    _XFreeTemp (_display, _pBuf, (unsigned long) (_numBytes));
 
 
 /* -------------------------------------------------------------------------
