@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.89 91/02/13 11:22:08 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -320,7 +320,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.89 91/02/13 11:22:08 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -436,9 +436,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.88 91/02/13 11:12:55 rws Exp $
 #endif
 #endif
 
-#ifdef ShLibIncludeFile
-#include ShLibIncludeFile
+#ifndef ShLibIncludeFile
+#define ShLibIncludeFile <noop.rules>
 #endif
+
+#include ShLibIncludeFile
 
 #if HasSharedLibraries
         SOXLIBREV = SharedXlibRev
