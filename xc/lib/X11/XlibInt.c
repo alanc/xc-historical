@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.52 87/07/23 15:14:40 ham Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.52 87/08/10 13:25:32 newman Locked $";
 #endif
 
 /*
@@ -298,8 +298,16 @@ Status _XReply (dpy, rep, extra, discard)
 			   "can't grab" failures */
 			switch ((int)err->errorCode) {
 			case BadName:
-				if (err->majorCode != X_OpenFont)
-					break;
+				switch (err->majorCode)
+				   case X_OpenFont:
+				   case X_LookupColor:
+				   case X_AllocNamedColor:
+					return (0);
+				break;
+			case BadFont:
+				if (err->majorCode == X_QueryFont)
+				        return (0);
+				break;
 			case BadAlloc:
 			case BadAccess:
 				return (0);
