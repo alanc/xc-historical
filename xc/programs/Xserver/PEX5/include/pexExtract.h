@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.5 91/09/12 15:11:31 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.6 91/10/01 02:51:20 hersh Exp $ */
 
 
 /***********************************************************
@@ -315,7 +315,7 @@ SOFTWARE.
 
 #define PACK_LISTOF_STRUCT(num,data_type,srcPtr,dstPtr){\
     bcopy(  (char *)(srcPtr), (char *)(dstPtr),		\
-	    ((*((int *)&(num)) * sizeof(data_type))));	\
+	    (int)(num * sizeof(data_type)));	\
     SKIP_STRUCT(dstPtr, num, data_type); }
 /*
 	Other useful macros
