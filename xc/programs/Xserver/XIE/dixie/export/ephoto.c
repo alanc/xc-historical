@@ -1,4 +1,4 @@
-/* $XConsortium: ephoto.c,v 1.3 93/11/06 15:49:44 rws Exp $ */
+/* $XConsortium: ephoto.c,v 1.4 94/01/12 19:48:20 rws Exp $ */
 /**** module ephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -187,9 +187,9 @@ static Bool PrepEPhoto(flo,ped)
 {
   xieFloExportPhotomap *raw = (xieFloExportPhotomap *)ped->elemRaw;
   ePhotoDefPtr          pvt = (ePhotoDefPtr)ped->elemPvt;
-  xieBoolProc        scPrep = (xieBoolProc)NULL;
   inFloPtr              inf = &ped->inFloLst[SRCtag];
   outFloPtr             dst = &ped->outFlo;
+  xieBoolProc        scPrep;
   CARD32 b;
 
   /* find the photomap resource and bind it to our flo
@@ -215,6 +215,7 @@ static Bool PrepEPhoto(flo,ped)
     dst->bands = inf->bands = src->bands;
     /* dst->bands will be 1 if we encode TripleBand interleaved BandByPixel */
     }
+    scPrep = (xieBoolProc)NULL;
   }
 
   /* do technique-specific preparations
