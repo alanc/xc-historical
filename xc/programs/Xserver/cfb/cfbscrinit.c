@@ -145,6 +145,8 @@ cfbScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->maxInstalledCmaps = 1;
     pScreen->backingStoreSupport = Always;
     pScreen->saveUnderSupport = NotUseful;
+    /* let CreateDefColormap do whatever it wants */ 
+    pScreen->blackPixel = pScreen->whitePixel = (Pixel) 0;
 
     /* cursmin and cursmax are device specific */
 
