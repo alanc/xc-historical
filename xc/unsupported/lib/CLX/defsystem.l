@@ -16,7 +16,7 @@
 ;;; express or implied warranty.
 ;;;
 
-(lisp:in-package 'xlib :use '(lisp))
+(lisp:in-package :xlib :use '(:lisp))
 
 #-lispm
 (export '(
@@ -166,10 +166,11 @@
 (defvar *foreign-libraries* '("-lc")) ; '("-lresolv" "-lc") for some sites
 
 #+lucid
-(defun clx-foreign-files ()
+(defun clx-foreign-files (binary-path)
 
   ;; apply a patch to 2.0 systems
-  #-(or lcl3.0 vax) (load "make-sequence-patch")
+  #-(or lcl3.0 vax)
+  (load (merge-pathnames "make-sequence-patch" binary-path))
 
   ;; Link lisp to the C function connect_to_server
   #+(and apollo (not lcl3.0))
@@ -190,9 +191,11 @@
 
   ;; Load the definition of connect_to_server
   #+apollo
-  (lucid::load-foreign-file "socket" :preserve-pathname t)
+  (lucid::load-foreign-file (merge-pathnames "socket" binary-path)
+			    :preserve-pathname t)
   #-apollo
-  (lucid::load-foreign-files '("socket.o") *foreign-libraries*))
+  (lucid::load-foreign-files (list (merge-pathnames "socket.o" binary-path))
+			     *foreign-libraries*))
 
 
 ;; socket interface for kcl
@@ -236,10 +239,7 @@
 
 ;;; compilation notes
 ;;;   lucid2.0/hp9000
-;;;     load foreign files uses connected directory instead of 
-;;;       *default-pathname-defaults* so cd to binary directory and
-;;;       (compile-clx "../*.lisp" "./") 
-;;;     must uudecode the file
+;;;     must uudecode the file make-sequence-patch.uu
 
 #-lispm
 (defun compile-clx (&optional
@@ -274,9 +274,16 @@
 
     (format t ";;; Default paths: ~s ~s~%" source-path binary-path)
 
-    ;; Make sure we're using the lucid production compiler 
-    #+(and lcl3.0 (not clx-debugging))
-    (proclaim '(optimize (speed 3) (compilation-speed 0)))
+    ;; In lucid make sure we're using the compiler in production mode.
+    #+lcl3.0
+    (progn
+      #-pqc 
+      (cerror "Go ahead anyway."
+	      "Lucid's production mode compiler must be loaded to compile CLX.")
+      (proclaim '(optimize (speed 3)
+			   (safety 1)
+			   (space 0)
+			   (compilation-speed 0))))
 
     (flet ((compile-and-load (filename)
 	     (let ((source (merge-pathnames filename source-path))
@@ -318,10 +325,8 @@
 	       (declare (ignore iostream estream pid))
 	       (if (/= 0 exitstatus)
 		   (error "Exit status of socket.c compile is ~d" exitstatus)))))
-	 (let ((*default-pathname-defaults* binary-path))
-	   (declare (special *default-pathname-defaults*))
-	   (format t ";;; Loading foreign files~%")
-	   (clx-foreign-files)))
+	 (format t ";;; Loading foreign files~%")
+	 (clx-foreign-files binary-path))
 
        #+kcl
        (progn
@@ -384,34 +389,37 @@
 #-lispm
 (defun load-clx (&optional (pathname-defaults "")
 		 &key (macros-p nil))
-  ;; Try to keep *default-pathname-defaults* as an absolute pathname.
-  (let ((*default-pathname-defaults* (merge-pathnames pathname-defaults)))
-    (declare (special *default-pathname-defaults*))
 
-    #+lucid
-    (clx-foreign-files)
+  (let ((binary-path (merge-pathnames pathname-defaults)))
 
-    #+kcl
-    (kcl-socket-init pathname-defaults)
+    (flet ((load-binary (filename)
+	     (let ((binary (merge-pathnames filename binary-path)))
+	       (load binary))))
 
-    (load "depdefs")
-    (load "clx")
-    (load "dependent")
-    (when macros-p
-      (load "macros")
-      (load "bufmac"))
-    (load "buffer")
-    (load "display")
-    (load "gcontext")
-    (load "input")
-    (load "requests")
-    (load "fonts")
-    (load "graphics")
-    (load "text")
-    (load "attributes")
-    (load "translate")
-    (load "keysyms")
-    (load "manager")
-    (load "image")
-    (load "resource")
-    ))
+      #+lucid
+      (clx-foreign-files binary-path)
+
+      #+kcl
+      (kcl-socket-init binary-path)
+
+      (load-binary "depdefs")
+      (load-binary "clx")
+      (load-binary "dependent")
+      (when macros-p
+	(load-binary "macros")
+	(load-binary "bufmac"))
+      (load-binary "buffer")
+      (load-binary "display")
+      (load-binary "gcontext")
+      (load-binary "input")
+      (load-binary "requests")
+      (load-binary "fonts")
+      (load-binary "graphics")
+      (load-binary "text")
+      (load-binary "attributes")
+      (load-binary "translate")
+      (load-binary "keysyms")
+      (load-binary "manager")
+      (load-binary "image")
+      (load-binary "resource")
+      )))
