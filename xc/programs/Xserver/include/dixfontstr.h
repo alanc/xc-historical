@@ -1,4 +1,4 @@
-/* $Header: dixfontstr.h,v 1.1 87/09/11 07:50:43 rws Locked $ */
+/* $Header: dixfontstr.h,v 1.2 88/01/02 17:09:14 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,6 +30,10 @@ SOFTWARE.
 #include "font.h"
 #include "misc.h"
 
+extern FontPtr	FontFileLoad(/* name, length */); /* implemented in OS layer */
+extern Bool	FontFilePropLoad(/* name, length, *font, fi, *props */);
+extern void	FontUnload(/* font */);
+
 typedef struct _DIXFontProp {
     ATOM	name;
     INT32	value;	/* assumes ATOM is not larger than INT32 */
@@ -44,21 +48,17 @@ typedef struct _Font {
     DIXFontProp	*pFP;
     CharInfoPtr	pCI;
     char	*pGlyphs;
-    int		lenpname;
-    char	*pathname;	/* pathname of file from which font was read */
-    struct _Font *next;		/* linked list of opened fonts */
-    int		refcnt;		/* free storage when this goes to 0 */
+    pointer	osPrivate;
+    int		fileType;		/* tag for OS layer */
+    int		refcnt;			/* free storage when this goes to 0 */
     pointer	devPriv[MAXSCREENS];	/* information private to screen */
 } FontRec;
 
 
-/*
- * all the following are in fonts.c
- */
+/* in dixfont.c */
 extern FontPtr	OpenFont();
 extern Bool	SetDefaultFont();
 extern int	CloseFont();
-extern FontPtr	ReadNFont();
 extern Bool	DescribeFont();
 extern void	ServerBitmapFromGlyph();
 extern Bool	CursorMetricsFromGlyph();
