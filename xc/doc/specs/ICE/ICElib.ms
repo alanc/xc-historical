@@ -956,7 +956,7 @@ The list of authentication data entries.
 Each entry has associated with it a protocol name (eg. "ICE" for ICE
 connection setup authentication, "XSMP" for session management
 authentication), a network ID for the "accepting" client, an authentication
-name (eg. ICE-MAGIC-COOKIE-1), and authentication data.  The ICE library
+name (eg. MIT-MAGIC-COOKIE-1), and authentication data.  The ICE library
 will merge these entries with previously set entries, based on the
 (protocol_name, address, auth_name) tuple.
 .LP
@@ -2120,9 +2120,8 @@ if necessary (see below).
 .sM
 .FD 0
 IceSendData\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(char *) data\fP\^)
-IceSendData16\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(short *) data\fP\^)
-IceSendData32\^(\^\fIice_conn\fP, \fIbytes\fP\^, \fI(long *) data\fP\^)
 .FN
+.bp
 .IP \fIice_conn\fP 1i
 A valid ICE connection object.
 .IP \fIbytes\fP 1i
@@ -2134,11 +2133,7 @@ The data to send.
 .PN IceSendData
 bypasses copying the data to the ICE output buffer
 and sends the data directly.  If necessary, the ICE output buffer
-is first flushed.  If
-.PN IceSendData16
-is used, the data is a list of 16 bit quantities.  If
-.PN IceSendData32
-is used, the data is a list of 32 bit quantities.
+is first flushed.
 .LP
 .sp 0.5
 .sM
@@ -2628,6 +2623,9 @@ The basic operations on the .ICEauthority file are : get file name, lock,
 unlock, read entry, write entry, and search for entry.  These are fairly
 low level operations, and it is expected that a program like "iceauth" would
 exist to add, remove, and display entries in the file.
+.LP
+In order to use these utility functions, the \fI<X11/ICE/ICEutil.h>\fP\^
+header file must be included.
 .LP
 An entry in the .ICEauthority is defined by the following data structure:
 .LP
