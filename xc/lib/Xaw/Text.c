@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.33 88/02/18 13:32:40 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.34 88/02/26 10:08:26 swick Exp $";
 #endif
 
 
@@ -2635,6 +2635,7 @@ TextClassRec textClassRec = {
     /* version          */	XtVersion,
     /* callback_private */      NULL,
     /* tm_table         */      defaultTextTranslations,
+    /* query_geometry   */	XtInheritQueryGeometry,
   },
   { /* text fields */
     /* empty            */	0
