@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.4 89/12/06 20:38:19 rws Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.5 90/05/18 11:23:21 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -44,7 +44,7 @@ XFeedbackState
     int				*num_feedbacks;
     {
     int	size = 0;
-    int	nbytes, i, j;
+    int	nbytes, i;
     XFeedbackState *Feedback;
     xFeedbackState *f = NULL;
     xFeedbackState *sav = NULL;
@@ -96,7 +96,12 @@ XFeedbackState
 		    size += sizeof (XIntegerFeedbackState);
 		    break;
 		case StringFeedbackClass:
-		    size += sizeof (XStringFeedbackState);
+		    {
+		    xStringFeedbackState *strf = (xStringFeedbackState *) f;
+
+		    size += sizeof (XStringFeedbackState) + 
+			(strf->num_syms_supported * sizeof (KeySym));
+		    }
 		    break;
 		case LedFeedbackClass:
 		    size += sizeof (XLedFeedbackState);
@@ -182,10 +187,14 @@ XFeedbackState
 		    S = (XStringFeedbackState *) Feedback;
 
 		    S->class = s->class;
-		    S->length = sizeof (XStringFeedbackState);
+		    S->length = sizeof (XStringFeedbackState) + 
+			(s->num_syms_supported * sizeof (KeySym));
 		    S->max_symbols = s->max_symbols;
 		    S->num_syms_supported = s->num_syms_supported;
 		    f = (xFeedbackState *) ((char *) f + f->length);
+		    S->syms_supported = (KeySym *) (S+1);
+		    bcopy ((char *) (s+1), (char *) S->syms_supported,
+			(S->num_syms_supported * sizeof (KeySym)));
 		    break;
 		    }
 		case LedFeedbackClass:
