@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.28 91/07/20 13:24:12 rws Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.29 91/07/28 22:39:58 rws Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.1.5
@@ -33,8 +33,9 @@ XCOMM operating system:  OSName
 #define LdCombineFlags		-r
 #define ExecableScripts		YES
 #define Malloc0ReturnsNull	YES
+#define CcCmd			xlc /* Use XL C compiler in ANSI mode */
 #define CppCmd			/usr/lpp/X11/Xamples/util/cpp/cpp
-#define StandardDefines         -DSYSV -DAIXV3
+#define StandardDefines         -DSYSV -DAIXV3 -D_ALL_SOURCE
 #define ExpandManNames		YES
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES
