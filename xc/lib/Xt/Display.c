@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.53 90/11/05 15:49:27 converse Exp $ */
+/* $XConsortium: Display.c,v 1.54 90/12/03 16:30:49 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -543,8 +543,8 @@ static void CloseDisplay(dpy)
 	    _XtFreeWWTable(xtpd);
         }
 	XtFree((char*)pd);
-	XrmDestroyDatabase(dpy->db);
-	dpy->db = NULL;
+	XrmDestroyDatabase(XrmGetDatabase(dpy));
+	XrmSetDatabase(dpy, (XrmDatabase)NULL);
 	XCloseDisplay(dpy);
 }
 

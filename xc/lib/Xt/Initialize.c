@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.159 90/11/30 18:31:55 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.160 90/12/11 12:02:15 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -313,33 +313,33 @@ static XrmDatabase GetFallbackResourceDatabase(dpy)
 	return(db);
 }
 
-static void GetInitialResourceDatabase(dpy, user_db)
+static XrmDatabase GetInitialResourceDatabase(dpy, user_db)
 	Display *dpy;
         XrmDatabase user_db;
 {
 	XrmDatabase rdb;
-
-	/* make sure a db exists, since XtDatabase() must return one */
-	/* ||| note: versions of Xlib before R4 return NULL.  Since
-	   there's no other way to create an empty database that worked
-	   in R3 and since the circumstances are likely rare, and since
-	   there's an easy user work-around, we'll just punt. */
-	/* ||| Xt shouldn't be using dpy->db. */
-	dpy->db = XrmGetStringDatabase( "" );
+	XrmDatabase db = NULL;
 
 	if ( (rdb = GetAppSystemDefaults(dpy)) != NULL) 
-	    XrmMergeDatabases(rdb, &(dpy->db));
+	    XrmMergeDatabases(rdb, &db);
 	else if ( (rdb = GetFallbackResourceDatabase(dpy)) != NULL )
-	    XrmMergeDatabases(rdb, &(dpy->db));
+	    XrmMergeDatabases(rdb, &db);
 	
 	if ( (rdb = GetAppUserDefaults(dpy)) != NULL )
-	    XrmMergeDatabases(rdb, &(dpy->db));
+	    XrmMergeDatabases(rdb, &db);
 
 	if ( user_db != NULL ) 
-	    XrmMergeDatabases(user_db, &(dpy->db));
+	    XrmMergeDatabases(user_db, &db);
 
 	if ( (rdb = GetEnvironmentDefaults()) != NULL )
-	    XrmMergeDatabases(rdb, &(dpy->db));
+	    XrmMergeDatabases(rdb, &db);
+
+	if (db == NULL)
+	    db = XrmGetStringDatabase("");
+
+	XrmSetDatabase(dpy, db);
+
+	return db;
 }
 
 
@@ -474,6 +474,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	Cardinal num_options;
 	XrmDatabase cmd_db = NULL;
 	XrmDatabase user_db = GetUserDefaults(dpy);
+	XrmDatabase db;
 	XrmName name_list[2];
 	XrmClass class_list[2];
 	XrmHashTable* search_list;
@@ -544,11 +545,11 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	    DEALLOCATE_LOCAL(u_search_list);
 	}
 
-	GetInitialResourceDatabase(dpy, user_db);
+	db = GetInitialResourceDatabase(dpy, user_db);
 	if (cmd_db != NULL) {
-	    XrmMergeDatabases(cmd_db, &dpy->db);
+	    XrmMergeDatabases(cmd_db, &db);
 	}
-	while (!XrmQGetSearchList(dpy->db, name_list, class_list,
+	while (!XrmQGetSearchList(db, name_list, class_list,
 				  search_list, search_list_size)) {
 	    XrmHashTable* old = search_list;
 	    Cardinal size = (search_list_size*=2)*sizeof(XrmHashTable);

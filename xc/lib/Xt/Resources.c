@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.89 90/09/21 12:07:00 swick Exp $ */
+/* $XConsortium: Resources.c,v 1.90 90/11/30 18:31:47 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -478,6 +478,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     Boolean	    persistent_resources = True;
     Boolean	    found_persistence = False;
     int		    num_typed_args = *pNumTypedArgs;
+    XrmDatabase     db;
 
     if ((args == NULL) && (num_args != 0)) {
     	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
@@ -559,7 +560,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     /* Ask resource manager for a list of database levels that we can
        do a single-level search on each resource */
 
-    status = XrmQGetSearchList(dpy->db, names, classes,
+    db = XrmGetDatabase(dpy);
+    status = XrmQGetSearchList(db, names, classes,
 			       searchList, searchListSize);
 
     if (!status) {
@@ -568,7 +570,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 	    searchList = (XrmHashTable*)
 		XtRealloc((char*)searchList,
 			  sizeof(XrmHashTable) * (searchListSize *= 2));
-	    status = XrmQGetSearchList(dpy->db, names, classes,
+	    status = XrmQGetSearchList(db, names, classes,
 				       searchList, searchListSize);
 	} while (!status);
     }
