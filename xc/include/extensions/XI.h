@@ -1,4 +1,4 @@
-/* $XConsortium: XI.h,v 1.8 89/10/12 16:57:48 gms Exp $ */
+/* $XConsortium: XI.h,v 1.1 89/10/13 17:10:49 jim Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -111,26 +111,24 @@ SOFTWARE.
 #define DvAccelDenom            (1L << 1)
 #define DvThreshold             (1L << 2)
 
-#define DvKeyClickPercent       (1L << 0)
-#define DvKey		        (1L << 1)
-#define DvAutoRepeatMode        (1L << 2)
+#define DvKeyClickPercent	(1L<<0)
+#define DvPercent		(1L<<1)
+#define DvPitch			(1L<<2)
+#define DvDuration		(1L<<3)
+#define DvLed			(1L<<4)
+#define DvLedMode		(1L<<5)
+#define DvKey			(1L<<6)
+#define DvAutoRepeatMode	(1L<<7)
 
-#define DvLed     		(1L<<0)
-#define DvLedMode   		(1L<<1)
+#define DvString                (1L << 0)
+
+#define DvInteger               (1L << 0)
 
 #define Relative                0
 #define Absolute                1
 
 #define AddToList               0
 #define DeleteFromList          1
-
-#define DvString                (1L << 0)
-
-#define DvInteger               (1L << 0)
-
-#define DvPercent               (1L << 0)
-#define DvPitch                 (1L << 1)
-#define DvDuration              (1L << 2)
 
 #define KeyClass  		0
 #define ButtonClass  		1
