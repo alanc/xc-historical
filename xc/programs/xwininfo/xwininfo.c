@@ -250,7 +250,7 @@ Display_Stats_Info(window)
 						   _window_classes));
   printf("         ==> Window Map State: %s\n",
 	 Lookup(win_attributes.map_state, _map_states));
-  printf("         ==> Locations:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
+  printf("         ==> Corners:  +%d+%d  -%d+%d  -%d-%d  +%d-%d\n",
 	 win_attributes.x, win_attributes.y, xright, win_attributes.y, 
 	 xright, ybelow, win_attributes.x, ybelow);
 }
