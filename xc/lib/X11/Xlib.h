@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.222 93/07/05 11:24:39 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.223 93/09/13 10:11:11 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
 #ifndef _XLIB_H_
 #define _XLIB_H_
 
-#define XlibSpecificationRelease 5
+#define XlibSpecificationRelease 6
 
 #ifdef USG
 #ifndef __TYPES__
