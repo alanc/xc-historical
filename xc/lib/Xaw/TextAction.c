@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.42 91/07/16 16:48:39 converse Exp $ */
+/* $XConsortium: TextAction.c,v 1.43 91/07/23 12:23:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -77,26 +77,49 @@ XEvent *event;
     case ButtonPress:
     case ButtonRelease:
       ctx->text.time = event->xbutton.time;
-      ctx->text.ev_x = event->xbutton.x;
-      ctx->text.ev_y = event->xbutton.y;
       break;
     case KeyPress:
     case KeyRelease:
       ctx->text.time = event->xkey.time;
-      ctx->text.ev_x = event->xkey.x;
-      ctx->text.ev_y = event->xkey.y;
       break;
     case MotionNotify:
       ctx->text.time = event->xmotion.time;
-      ctx->text.ev_x = event->xmotion.x;
-      ctx->text.ev_y = event->xmotion.y;
       break;
     case EnterNotify:
     case LeaveNotify:
       ctx->text.time = event->xcrossing.time;
-      ctx->text.ev_x = event->xcrossing.x;
-      ctx->text.ev_y = event->xcrossing.y;
     }
+  }
+}
+
+static void
+NotePosition(ctx, event)
+TextWidget ctx;
+XEvent *event;
+{
+  switch (event->type) {
+  case ButtonPress:
+  case ButtonRelease:
+    ctx->text.ev_x = event->xbutton.x;
+    ctx->text.ev_y = event->xbutton.y;
+    break;
+  case KeyPress:
+  case KeyRelease:
+    {
+	XRectangle cursor;
+	XawTextSinkGetCursorBounds(ctx->text.sink, &cursor);
+	ctx->text.ev_x = cursor.x + cursor.width / 2;;
+	ctx->text.ev_y = cursor.y + cursor.height / 2;;
+    }
+    break;
+  case MotionNotify:
+    ctx->text.ev_x = event->xmotion.x;
+    ctx->text.ev_y = event->xmotion.y;
+    break;
+  case EnterNotify:
+  case LeaveNotify:
+    ctx->text.ev_x = event->xcrossing.x;
+    ctx->text.ev_y = event->xcrossing.y;
   }
 }
 
@@ -848,6 +871,7 @@ String *params;		/* unused */
 Cardinal *num_params;	/* unused */
 {
   StartAction(ctx, event);
+  NotePosition(ctx, event);
   _XawTextAlterSelection(ctx, mode, action, params, num_params);
   EndAction(ctx);
 }
