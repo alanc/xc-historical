@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.223 94/11/21 18:24:54 kaleb Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.224 94/12/06 16:10:21 kaleb Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -1165,7 +1165,7 @@ char **argv;
 		i = open ("xterm.debug.log", O_WRONLY | O_TRUNC, 0666);
 	}
 	if(i >= 0) {
-#if defined(USE_SYSV_TERMIO) && !defined(SVR4)
+#if defined(USE_SYSV_TERMIO) && !defined(SVR4) && !defined(linux)
 		/* SYSV has another pointer which should be part of the
 		** FILE structure but is actually a seperate array.
 		*/
@@ -1180,7 +1180,11 @@ char **argv;
 #endif
 		_bufend(stderr) = old_bufend;
 #else	/* USE_SYSV_TERMIO */
+#ifndef linux
 		stderr->_file = i;
+#else
+		setfileno(stderr, i);
+#endif
 #endif	/* USE_SYSV_TERMIO */
 
 		/* mark this file as close on exec */
@@ -1661,6 +1665,11 @@ spawn ()
 	screen->uid = getuid();
 	screen->gid = getgid();
 
+#ifdef linux
+	bzero(termcap, sizeof termcap);
+	bzero(newtc, sizeof newtc);
+#endif
+
 #ifdef SIGTTOU
 	/* so that TIOCSWINSZ || TIOCSIZE doesn't block */
 	signal(SIGTTOU,SIG_IGN);
@@ -2087,7 +2096,7 @@ spawn ()
 		 */
 		{
 #ifdef USE_SYSV_TERMIO
-#if defined(umips) || defined(CRAY)
+#if defined(umips) || defined(CRAY) || defined(linux)
 		    /* If the control tty had its modes screwed around with,
 		       eg. by lineedit in the shell, or emacs, etc. then tio
 		       will have bad values.  Let's just get termio from the
