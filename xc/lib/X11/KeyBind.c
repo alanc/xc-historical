@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.39 88/04/09 18:10:03 rws Exp $ */
+/* $Header: XKeyBind.c,v 11.40 88/06/20 11:29:10 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -79,7 +79,7 @@ KeySym XLookupKeysym(event, col)
 {
      if (event->display->keysyms == NULL)
          Initialize(event->display);
-     return (KeycodeToKeysym(event->display, event->keycode, col));
+     return (KeyCodetoKeySym(event->display, event->keycode, col));
 }
 
 static
@@ -103,7 +103,7 @@ InitModMap(dpy)
     /* Lock modifiers are in the second row of the matrix */
     for (i = map->max_keypermod; i < 2*map->max_keypermod; i++) {
         for (j = 0; j < dpy->keysyms_per_keycode; j++) {
-	    sym = KeycodeToKeysym(dpy, map->modifiermap[i], j);
+	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
 	    if (sym == XK_Caps_Lock) {
 		dpy->lock_meaning = XK_Caps_Lock;
 		break;
@@ -256,16 +256,15 @@ int XLookupString (event, buffer, nbytes, keysym, status)
      if (dpy->keysyms == NULL)
          Initialize(dpy);
 
-     symbol =  KeycodeToKeysym(dpy, event->keycode, 0);
+     symbol = KeyCodetoKeySym(dpy, event->keycode, 0);
 
      /* apply Shift first */
      if ((event->state & ShiftMask) ||
 	 ((event->state & LockMask) && (dpy->lock_meaning == XK_Shift_Lock))) {
-	     usymbol =  KeycodeToKeysym(dpy, event->keycode, 1);
+	     usymbol = KeyCodetoKeySym(dpy, event->keycode, 1);
 	     if (usymbol != NoSymbol)
 	          symbol = usymbol;
      }
-
      /* then apply Caps, as protocol suggests*/
      if ((event->state & LockMask) && (dpy->lock_meaning == XK_Caps_Lock)) {
 	    if (symbol >= XK_a && symbol <= XK_z)
