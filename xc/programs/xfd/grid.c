@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.6 89/06/07 17:03:32 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.7 89/06/07 17:04:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-#include <X11/SimpleP.h>
+#include <X11/Xaw/SimpleP.h>
 #include <X11/Xmu/Xmu.h>
 #include "fontgridP.h"
 
