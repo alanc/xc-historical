@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.2 88/01/30 11:28:44 rws Exp $ */
+        DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
 SRCS = puzzle.c main.c picture.c
 OBJS = puzzle.o main.o picture.o

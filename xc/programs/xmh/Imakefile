@@ -3,6 +3,7 @@
 #endif
 
        INCLUDES = -I$(TOP) -I$(AWIDGETSRC) -I$(TOOLKITSRC)
+        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
            SRCS = bbox.c button.c command.c compfuncs.c \

@@ -1,3 +1,5 @@
-DEFINES = -DCPP="\"$(CPP)\""
+        DEFINES = -DCPP="\"$(CPP)\""
+        DEPLIBS = $(XLIB)
 LOCAL_LIBRARIES = $(XLIB)
+
 SimpleProgramTarget(xrdb)
