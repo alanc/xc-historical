@@ -1,4 +1,4 @@
-/* $XConsortium: pexSwap.h,v 5.2 91/02/17 12:28:49 rws Exp $ */
+/* $XConsortium: pexSwap.h,v 5.3 91/07/01 16:19:41 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,9 +34,9 @@ SOFTWARE.
 
 #include <X11/extensions/PEXErr.h>
 
-typedef PEXFLOAT	    (*ConvFunction)();
-typedef CARD16	    (*SwapShortFunction)();
-typedef CARD32	    (*SwapLongFunction)();
+typedef void	    (*ConvFunction)();
+typedef void	    (*SwapShortFunction)();
+typedef void	    (*SwapLongFunction)();
 typedef ErrorCode   (*OCFunction)();
 
 typedef struct {
@@ -45,10 +45,10 @@ typedef struct {
     ConvFunction	ConvertFLOAT;
 } pexSwap;
 
-extern CARD16 SwapCARD16();
-extern CARD32 SwapCARD32();
-extern PEXFLOAT  SwapFLOAT();
-extern PEXFLOAT  ConvertFLOAT();
+extern void SwapCARD16();
+extern void SwapCARD32();
+extern void  SwapFLOAT();
+extern void  ConvertFLOAT();
 
 
 #endif
