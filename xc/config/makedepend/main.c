@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.73 93/08/18 12:08:37 rws Exp $
+ * $XConsortium: main.c,v 1.74 93/08/18 14:42:42 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -386,13 +386,13 @@ struct filepointer *getfile(file)
 		return(content);
 	}
 	fstat(fd, &st);
-	content->f_len = st.st_size+1;
-	content->f_base = (char *)malloc(content->f_len);
+	content->f_base = (char *)malloc(st.st_size+1);
 	if (content->f_base == NULL)
 		fatalerr("cannot allocate mem\n");
-	if (read(fd, content->f_base, st.st_size) < 0)
+	if ((st.st_size = read(fd, content->f_base, st.st_size)) < 0)
 		fatalerr("failed to read %s\n", file);
 	close(fd);
+	content->f_len = st.st_size+1;
 	content->f_p = content->f_base;
 	content->f_end = content->f_base + st.st_size;
 	*content->f_end = '\0';
