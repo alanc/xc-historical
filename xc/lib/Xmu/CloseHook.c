@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.c,v 1.1 89/03/31 16:32:43 jim Exp $
+ * $XConsortium: CloseHook.c,v 1.2 89/04/07 14:15:39 jim Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -48,7 +48,7 @@
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
-#include <X11/Xmu.h>
+#include <X11/Xmu/Xmu.h>
 
 
 /*
