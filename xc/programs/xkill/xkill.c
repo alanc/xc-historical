@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.12 89/05/11 18:36:31 kit Exp $
+ * $XConsortium: xkill.c,v 1.13 89/07/16 16:01:09 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -175,17 +175,18 @@ main (argc, argv)
 		button = (int) ((unsigned int) pointer_map[0]);
 	    }
 	}
-	id = get_window_id (dpy, screenno, button,
-			    "the window whose client you wish to kill");
-	if (id == RootWindow(dpy,screenno)) id = None;
-	else if (!top) {
-	    Window root;
-	    int dummy;
+	if (id = get_window_id (dpy, screenno, button,
+				"the window whose client you wish to kill")) {
+	    if (id == RootWindow(dpy,screenno)) id = None;
+	    else if (!top) {
+		Window root;
+		int dummy;
 
-	    if (XGetGeometry (dpy, id, &root, &dummy, &dummy,
-			      &dummy, &dummy, &dummy, &dummy) &&
-		id != root)
-	      id = XmuClientWindow(dpy, id);
+		if (XGetGeometry (dpy, id, &root, &dummy, &dummy,
+				  &dummy, &dummy, &dummy, &dummy) &&
+		    id != root)
+		  id = XmuClientWindow(dpy, id);
+	    }
 	}
     }
 
