@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.rules,v 1.4 91/03/23 16:43:34 rws Exp $
+XCOMM $XConsortium: sunLib.rules,v 1.5 91/03/24 17:21:32 rws Exp $
 
 /*
  * SunOS shared library rules
@@ -32,6 +32,7 @@ XCOMM $XConsortium: sunLib.rules,v 1.4 91/03/23 16:43:34 rws Exp $
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
 install:: Concat(lib,libname.so.rev) 					@@\
+	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 
 #endif /* InstallSharedLibrary */
@@ -42,6 +43,7 @@ install:: Concat(lib,libname.so.rev) 					@@\
 #ifndef InstallSharedLibraryData
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
 install:: Concat(lib,libname.sa.rev)					@@\
+	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) $(DESTDIR)dest @@\
 	RanLibrary($(RANLIBINSTFLAGS) Concat($(DESTDIR)dest/lib,libname.sa.rev))
 
