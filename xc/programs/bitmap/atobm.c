@@ -1,7 +1,7 @@
 /*
  * atobm - ascii to bitmap filter
  *
- * $XConsortium: atobm.c,v 1.4 88/10/13 14:34:04 jim Exp $
+ * $XConsortium: atobm.c,v 1.1 91/02/18 10:49:58 dave Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -196,6 +196,7 @@ doit (fp, filename, chars, xhot, yhot, name)
 	lineno++;
 	if (fgets (buf, sizeof buf, fp) == NULL) break;
 
+	cp = buf;
 	if (removespace) {
 	    for (cp = buf; *cp && isascii(*cp) && isspace(*cp); cp++) ;
 	}
