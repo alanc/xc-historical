@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.33 88/07/20 15:35:44 jim Exp $
+ * $Header: Tekproc.c,v 1.34 88/07/28 17:28:00 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -113,7 +113,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.33 88/07/20 15:35:44 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.34 88/07/28 17:28:00 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -942,15 +942,15 @@ TekEnqMouse(c)
 int c;
 {
 	register TScreen *screen = &term->screen;
-	int mousex, mousey, winx, winy;
+	int mousex, mousey, rootx, rooty;
 	unsigned int mask; /* XQueryPointer */
 	Window root, subw;
 
 	XQueryPointer(
 	    screen->display, TWindow(screen), 
 	    &root, &subw,
+	    &rootx, &rooty,
 	    &mousex, &mousey,
-	    &winx, &winy,
 	    &mask);
 	if((mousex = (mousex - screen->border) / TekScale(screen)) < 0)
 		mousex = 0;
