@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.6 89/12/19 08:23:59 swick Exp $
+* $XConsortium: Xtos.h,v 1.7 90/12/27 09:58:37 rws Exp $
 */
 
 /***********************************************************
@@ -38,46 +38,6 @@ SOFTWARE.
 #define MAXPATHLEN PATH_MAX
 #endif
 
-#ifdef __HIGHC__
-# ifdef MissingStdargH
-#  if MissingStdargH
-#   define MISSING_STDARG_H
-#  endif
-# else
-#  define MISSING_STDARG_H
-# endif
-#endif /* __HIGHC__ */
-
-#ifdef apollo
-# define MISSING_STDARG_H
-#endif
-
-# ifdef MISSING_STDARG_H
-
-#ifndef _STDARG_H
-#define _STDARG_H
-
-typedef char *va_list;
-
-/* Amount of space required in an argument list for an arg of type TYPE.
-   TYPE may alternatively be an expression whose type is used.  */
-
-#define __va_rounded_size(TYPE)  \
-  (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
-
-#define va_start(AP, LASTARG)                                           \
- (AP = ((char *) &(LASTARG) + __va_rounded_size (LASTARG)))
-
-#define va_end(AP)
-
-#define va_arg(AP, TYPE)                                                \
- (AP += __va_rounded_size (TYPE),                                       \
-  *((TYPE *) (AP - __va_rounded_size (TYPE))))
-
-#endif /* _STDARG_H */
-
-# endif /* MissingStdargH */
-
 /* stolen from server/include/os.h */
 #ifndef NO_ALLOCA
 /*
@@ -107,9 +67,9 @@ pragma on(alloca);
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else /* ! __GNUC__ */
 /*
- * warning: mips alloca is unsuitable in the server, do not use.
+ * warning: mips alloca is unsuitable, do not use.
  */
-#if defined(vax) || defined(sun)
+#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix it here.
@@ -117,7 +77,7 @@ pragma on(alloca);
 char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
-#endif /* vax or sun */
+#endif /* who does alloca */
 #endif /* __GNUC__ */
 
 #endif /* NO_ALLOCA */
