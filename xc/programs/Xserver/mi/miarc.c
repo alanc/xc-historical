@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.33 91/06/15 15:14:19 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.34 91/06/15 18:48:03 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -324,12 +324,12 @@ correspond to the inner and outer boundaries.
 
 typedef struct {
     short lx, lw, rx, rw;
-    char lowrdx; /* takes care of assymetry of inside edge, upper/lower */
 } miArcSpan;
 
 typedef struct {
     miArcSpan *spans;
-    int count, k;
+    int count1, count2, k;
+    char top, bot, hole;
 } miArcSpanData;
 
 typedef struct {
@@ -390,8 +390,6 @@ miComputeCircleSpans(lw, parc, spdata)
     int inxk, inyk, inxm, inym;
 
     doinner = -lw;
-    if (!doinner)
-	doinner = -1;
     slw = parc->width - doinner;
     y = parc->height >> 1;
     dy = parc->height & 1;
@@ -400,35 +398,44 @@ miComputeCircleSpans(lw, parc, spdata)
     inslw = parc->width + doinner;
     if (inslw > 0)
     {
+	spdata->hole = spdata->top;
 	MIWIDEARCSETUP(inx, iny, dy, inslw, ine, inxk, inxm, inyk, inym);
-    } else
-	doinner--;
+    }
+    else
+    {
+	spdata->hole = FALSE;
+	doinner = -y;
+    }
+    spdata->count1 = -doinner - spdata->top;
+    spdata->count2 = y + doinner;
     span = spdata->spans;
     while (y)
     {
 	MIFILLARCSTEP(slw);
-	if (++doinner > 0)
-	{
-	    MIFILLINARCSTEP(inslw);
-	    span->lx = dy - x;
-	    span->lw = x - inx;
-	    span->rx = dy - inx + inslw;
-	    span->rw = inx - x + slw - inslw;
-	    span->lowrdx = !miFillInArcLower(inslw);
+	span->lx = dy - x;
+	if (++doinner <= 0)
+ 	{
+	    span->lw = slw;
 	}
 	else
 	{
-	    span->lx = dy - x;
-	    span->lw = slw;
-	    span->rw = -1;
+	    MIFILLINARCSTEP(inslw);
+	    span->lw = x - inx;
+	    span->rx = dy - inx + inslw;
+	    span->rw = inx - x + slw - inslw;
 	}
 	span++;
     }
-    spdata->count = span - spdata->spans;
-    if (!(lw & 1) && !dy)
-	spdata->count--;
-    if (!dy)
-	spdata->count--;
+    if (spdata->bot)
+    {
+	if (spdata->count2)
+	    spdata->count2--;
+	else
+	{
+	    span[-1].rw = 0;
+	    spdata->count1--;
+	}
+    }
 }
 
 static void
@@ -438,7 +445,6 @@ miComputeEllipseSpans(lw, parc, spdata)
     miArcSpanData *spdata;
 {
     register miArcSpan *span;
-    miArcSpan *basespan;
     double w, h, r, xorg;
     double Hs, Hf, WH, K, Vk, Nk, Fk, Vr, N, Nc, Z, rs;
     double A, T, b, d, x, y, t, inx, outx, hepp, hepm;
@@ -463,14 +469,19 @@ miComputeEllipseSpans(lw, parc, spdata)
 	xorg = .5;
     else
 	xorg = 0.0;
-    if (!(lw & 1) && !(parc->width & 1)) {
+    if (spdata->top)
+    {
 	span->lx = 0;
 	span->lw = 1;
-	span->rx = -1;
 	span++;
     }
-    basespan = span;
-    for (; K > 0.0; K -= 1.0, span++) {
+    spdata->count1 = 0;
+    spdata->count2 = 0;
+    spdata->hole = (spdata->top &&
+		    parc->height * lw <= parc->width * parc->width &&
+		    lw < parc->height);
+    for (; K > 0.0; K -= 1.0)
+    {
 	N = (K * K + Nk) / 6.0;
 	Nc = N * N * N;
 	Vr = Vk * K;
@@ -479,7 +490,8 @@ miComputeEllipseSpans(lw, parc, spdata)
 	if (d < 0.0) {
 	    d = Nc;
 	    b = N;
-	    if (b < 0.0 == t < 0.0) {
+	    if (b < 0.0 == t < 0.0)
+	    {
 		b = -b;
 		d = -d;
 	    }
@@ -488,7 +500,9 @@ miComputeEllipseSpans(lw, parc, spdata)
 		flip = 2;
 	    else
 		flip = 1;
-	} else {
+	}
+	else
+	{
 	    d = Vr * sqrt(d);
 	    Z = N + cbrt(t + d) + cbrt(t - d);
 	    flip = 0;
@@ -499,10 +513,12 @@ miComputeEllipseSpans(lw, parc, spdata)
 	solution = FALSE;
 	b = -A + K;
 	d = b * b - 4 * (Z + T);
-	if (d >= 0) {
+	if (d >= 0)
+	{
 	    d = sqrt(d);
 	    y = (b + d) / 2;
-	    if ((y >= 0.0) && (y < hepp)) {
+	    if ((y >= 0.0) && (y < hepp))
+	    {
 		solution = TRUE;
 		if (y > hepm)
 		    y = h;
@@ -527,7 +543,8 @@ miComputeEllipseSpans(lw, parc, spdata)
 	if (d >= 0) {
 	    d = sqrt(d);
 	    y = (b + d) / 2;
-	    if (y < hepp) {
+	    if (y < hepp)
+	    {
 		if (y > hepm)
 		    y = h;
 		t = y / h;
@@ -536,7 +553,8 @@ miComputeEllipseSpans(lw, parc, spdata)
 		inx = x - sqrt(rs - (t * t));
 	    }
 	    y = (b - d) / 2;
-	    if (y >= 0.0) {
+	    if (y >= 0.0)
+	    {
 		if (y > hepm)
 		    y = h;
 		t = y / h;
@@ -549,23 +567,23 @@ miComputeEllipseSpans(lw, parc, spdata)
 		    outx = x + t;
 	    }
 	}
+	span->lx = ICEIL(xorg - outx);
 	if (inx <= 0.0)
 	{
-	    span->lx = ICEIL(xorg - outx);
+	    spdata->count1++;
 	    span->lw = ICEIL(xorg + outx) - span->lx;
-	    span->rw = -1;
 	}
 	else
 	{
-	    span->lx = ICEIL(xorg - outx);
+	    spdata->count2++;
 	    span->lw = ICEIL(xorg - inx) - span->lx;
 	    span->rx = ICEIL(xorg + inx);
 	    span->rw = ICEIL(xorg + outx) - span->rx;
-	    span->lowrdx = 0;
 	}
+	span++;
     }
-    spdata->count = span - basespan;
-    if (!(parc->height & 1)) {
+    if (spdata->bot)
+    {
 	outx = w + r;
 	if (r >= h)
 	    inx = 0.0;
@@ -573,19 +591,27 @@ miComputeEllipseSpans(lw, parc, spdata)
 	    inx = w * sqrt(1 + Nk / Hs) - sqrt(rs + Nk);
 	else
 	    inx = w - r;
+	span->lx = ICEIL(xorg - outx);
 	if (inx <= 0.0)
 	{
-	    span->lx = ICEIL(xorg - outx);
 	    span->lw = ICEIL(xorg + outx) - span->lx;
-	    span->rw = -1;
+	    span->rw = 0;
 	}
 	else
 	{
-	    span->lx = ICEIL(xorg - outx);
 	    span->lw = ICEIL(xorg - inx) - span->lx;
 	    span->rx = ICEIL(xorg + inx);
 	    span->rw = ICEIL(xorg + outx) - span->rx;
 	}
+    }
+    if (spdata->hole)
+    {
+	span = &spdata->spans[spdata->count1];
+	span->lw = -span->lx;
+	span->rx = 1;
+	span->rw = span->lw;
+	spdata->count1--;
+	spdata->count2++;
     }
 }
 
@@ -653,6 +679,8 @@ miComputeWideEllipse(lw, parc, mustFree)
 	spdata->spans = (miArcSpan *)(spdata + 1);
 	spdata->k = k;
     }
+    spdata->top = !(lw & 1) && !(parc->width & 1);
+    spdata->bot = !(parc->height & 1);
     lruent->lrustamp = ++lrustamp;
     lruent->lw = lw;
     lruent->width = parc->width;
@@ -678,93 +706,99 @@ miFillWideEllipse(pDraw, pGC, parc)
     miArcSpanData *spdata;
     Bool mustFree;
     register miArcSpan *span;
-    register int xorg, yorg;
-    int dy, lw;
-    register int k, n;
+    register int xorg, yorgu, yorgl;
+    register int n;
 
-    lw = pGC->lineWidth;
-    if (!lw)
-	lw = 1;
-    dy = parc->height + lw;
-    points = (DDXPointPtr)ALLOCATE_LOCAL((sizeof(DDXPointRec) * 2) * dy);
-    if (!points)
-	return;
-    widths = (int *)ALLOCATE_LOCAL((sizeof(int) * 2) * dy);
+    yorgu = parc->height + pGC->lineWidth;
+    n = (sizeof(int) * 2) * yorgu;
+    widths = (int *)ALLOCATE_LOCAL(n + (sizeof(DDXPointRec) * 2) * yorgu);
     if (!widths)
-    {
-	DEALLOCATE_LOCAL(points);
 	return;
-    }
+    points = (DDXPointPtr)((char *)widths + n);
     spdata = miComputeWideEllipse(pGC->lineWidth, parc, &mustFree);
     if (!spdata)
     {
 	DEALLOCATE_LOCAL(widths);
-	DEALLOCATE_LOCAL(points);
 	return;
     }
     pts = points;
     wids = widths;
     span = spdata->spans;
     xorg = parc->x + (parc->width >> 1);
-    yorg = parc->y + (parc->height >> 1);
-    dy = parc->height & 1;
+    yorgu = parc->y + (parc->height >> 1);
+    yorgl = yorgu + (parc->height & 1);
     if (pGC->miTranslate)
     {
 	xorg += pDraw->x;
-	yorg += pDraw->y;
+	yorgu += pDraw->y;
+	yorgl += pDraw->y;
     }
-    k = spdata->k;
-    if (!(lw & 1) && !(parc->width & 1)) {
+    yorgu -= spdata->k;
+    yorgl += spdata->k;
+    if (spdata->top)
+    {
 	pts->x = xorg;
-	pts->y = yorg - k - 1;
+	pts->y = yorgu - 1;
 	pts++;
 	*wids++ = 1;
 	span++;
     }
-    for (n = spdata->count; --n >= 0; k--, span++)
+    for (n = spdata->count1; --n >= 0; )
     {
-	if (span->rw < 0)
-	{
-	    pts[0].x = xorg + span->lx;
-	    pts[0].y = yorg - k;
-	    wids[0] = span->lw;
-	    pts[1].x = pts[0].x;
-	    pts[1].y = yorg + k + dy;
-	    wids[1] = wids[0];
-	    pts += 2;
-	    wids += 2;
-	}
-	else
-	{
-	    pts[0].x = xorg + span->lx;
-	    pts[0].y = yorg - k;
-	    wids[0] = span->lw;
-	    pts[1].x = xorg + span->rx;
-	    pts[1].y = pts[0].y;
-	    wids[1] = span->rw;
-	    pts[2].x = pts[0].x;
-	    pts[2].y = yorg + k + dy;
-	    wids[2] = wids[0];
-	    pts[3].x = pts[1].x - span->lowrdx;
-	    pts[3].y = pts[2].y;
-	    wids[3] = wids[1] + span->lowrdx;
-	    pts += 4;
-	    wids += 4;
-	}
+	pts[0].x = xorg + span->lx;
+	pts[0].y = yorgu;
+	wids[0] = span->lw;
+	pts[1].x = pts[0].x;
+	pts[1].y = yorgl;
+	wids[1] = wids[0];
+	yorgu++;
+	yorgl--;
+	pts += 2;
+	wids += 2;
+	span++;
     }
-    if (!(parc->height & 1)) {
-	if (span->rw < 0)
+    if (spdata->hole)
+    {
+	pts[0].x = xorg;
+	pts[0].y = yorgl;
+	wids[0] = 1;
+	pts++;
+	wids++;
+    }
+    for (n = spdata->count2; --n >= 0; )
+    {
+	pts[0].x = xorg + span->lx;
+	pts[0].y = yorgu;
+	wids[0] = span->lw;
+	pts[1].x = xorg + span->rx;
+	pts[1].y = pts[0].y;
+	wids[1] = span->rw;
+	pts[2].x = pts[0].x;
+	pts[2].y = yorgl;
+	wids[2] = wids[0];
+	pts[3].x = pts[1].x;
+	pts[3].y = pts[2].y;
+	wids[3] = wids[1];
+	yorgu++;
+	yorgl--;
+	pts += 4;
+	wids += 4;
+	span++;
+    }
+    if (spdata->bot)
+    {
+	if (!span->rw)
 	{
 	    pts[0].x = xorg + span->lx;
-	    pts[0].y = yorg;
+	    pts[0].y = yorgu;
 	    wids[0] = span->lw;
 	    pts++;
 	    wids++;
-	}
+	}	
 	else
 	{
 	    pts[0].x = xorg + span->lx;
-	    pts[0].y = yorg;
+	    pts[0].y = yorgu;
 	    wids[0] = span->lw;
 	    pts[1].x = xorg + span->rx;
 	    pts[1].y = pts[0].y;
@@ -778,7 +812,6 @@ miFillWideEllipse(pDraw, pGC, parc)
     (*pGC->ops->FillSpans)(pDraw, pGC, pts - points, points, widths, FALSE);
 
     DEALLOCATE_LOCAL(widths);
-    DEALLOCATE_LOCAL(points);
 }
 
 /*
