@@ -1,4 +1,4 @@
-/* $XConsortium: XChKeyCon.c,v 11.10 88/09/06 16:04:31 jim Exp $ */
+/* $XConsortium: XChKeyCon.c,v 11.11 91/01/06 11:44:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -20,7 +20,7 @@ XChangeKeyboardControl(dpy, mask, value_list)
     unsigned long mask;
     XKeyboardControl *value_list;
 {
-    unsigned long values[7];
+    unsigned long values[8];
     register unsigned long *value = values;
     long nvalues;
     register xChangeKeyboardControlReq *req;
