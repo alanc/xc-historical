@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.10 91/07/31 01:08:59 keith Exp $ */
+/* $XConsortium: spglyph.c,v 1.11 92/04/15 16:12:09 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -292,6 +292,10 @@ build_all_sp_bitmaps(pfont, format, fmask)
     ret = CheckFSFormat(format, fmask,
 			&bit_order, &byte_order, &scan, &glyph, &image);
 
+    pfont->bit = bit_order;
+    pfont->byte = byte_order;
+    pfont->glyph = glyph;
+    pfont->scan = scan;
     if (ret != Successful)
 	return BadFontFormat;
 
