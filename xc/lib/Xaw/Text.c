@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.35 88/02/26 12:23:52 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.36 88/02/26 14:18:35 swick Exp $";
 #endif
 
 
@@ -83,6 +83,8 @@ static int defLeftMargin = 2;
 static XtResource resources[] = {
     {XtNwidth, XtCWidth, XtRInt, sizeof(int),
         offset(core.width), XtRInt, (caddr_t)&defWidth},
+    {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
+	offset(simple.cursor), XtRString, "xterm"},
     {XtNheight, XtCHeight, XtRInt, sizeof(int),
         offset(core.height), XtRInt, (caddr_t)&defHeight},
     {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
@@ -230,8 +232,8 @@ static void Realize( w, valueMask, attributes )
    *valueMask |= CWBitGravity;
    attributes->bit_gravity = NorthWestGravity;
 
-   XtCreateWindow( w, (unsigned)InputOutput, (Visual *)CopyFromParent,
-		   *valueMask, attributes);
+   (*textClassRec.core_class.superclass->core_class.realize)
+       (w, valueMask, attributes);
 
    if (ctx->text.sbar) {
        XtRealizeWidget(ctx->text.sbar);
@@ -1009,8 +1011,9 @@ static void ExtendSelection (ctx, position, motion)
 static ClearWindow (w)
   Widget w;
 {
-    (*((TextWidget)w)->text.sink->
-     ClearToBackground)	(w, 0, 0, w->core.width, w->core.height);
+    if (XtIsRealized(w))
+	(*((TextWidget)w)->text.sink->
+	 ClearToBackground)	(w, 0, 0, w->core.width, w->core.height);
 }
 
 
@@ -2609,7 +2612,7 @@ char defaultTextTranslations[] =
 
 TextClassRec textClassRec = {
   { /* core fields */
-    /* superclass       */      (WidgetClass) &widgetClassRec,
+    /* superclass       */      (WidgetClass) &simpleClassRec,
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(TextRec),
     /* class_initialize */      ClassInitialize,
