@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.1 92/01/25 16:33:33 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -17,6 +17,7 @@ without express or implied warranty.
 
 #define X_XTestGetVersion	0
 #define X_XTestCompareCursor	1
+#define X_XTestFakeInput	2
 
 #define XTestNumberEvents	0
 
@@ -76,3 +77,21 @@ typedef struct {
     CARD32	pad5 B32;
 } xXTestCompareCursorReply;
 #define sz_xXTestCompareCursorReply 32
+
+/* used only on the client side */
+typedef struct {
+    CARD8	reqType;	/* always XTestReqCode */
+    CARD8	xtReqType;	/* always X_XTestFakeInput */
+    CARD16	length B16;
+    BYTE	type;
+    BYTE	detail;
+    CARD16	pad0 B16;
+    Time	time B32;
+    Window	root B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    INT16	rootX B16, rootY B16;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+} xXTestFakeInputReq;
+#define sz_xXTestFakeInputReq 36
