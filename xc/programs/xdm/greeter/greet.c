@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.37 94/03/31 22:35:05 gildea Exp $
+ * $XConsortium: greet.c,v 1.38 94/04/01 16:43:03 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -169,7 +169,7 @@ InitGreet (d)
 		    applicationShellWidgetClass, dpy, arglist, i);
 
     i = 0;
-    XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
+    XtSetArg (arglist[i], XtNnotifyDone, (XtPointer)GreetDone); i++;
     if (!d->authorize || d->authorizations || !d->authComplain)
     {
 	XtSetArg (arglist[i], XtNsecureSession, True); i++;
