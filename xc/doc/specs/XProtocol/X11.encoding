@@ -1542,7 +1542,7 @@ VISUALTYPE
 		0	None
 	4	CURSOR		cursor
 		0	None
-	4	TIMESTAMP		timestamp
+	4	TIMESTAMP		time
 		0	CurrentTime
 .De
 .Ds 0
@@ -1708,7 +1708,7 @@ VISUALTYPE
 .PN UngrabKey
 	1	34		opcode
 	1	KEYCODE			key
-		0		AnyKey
+		0	AnyKey
 	2	3		request length
 	4	WINDOW		grab-window
 	2	SETofKEYMASK		modifiers
@@ -1729,6 +1729,8 @@ VISUALTYPE
 		3	AsyncKeyboard
 		4	SyncKeyboard
 		5	ReplayKeyboard
+		6	AsyncBoth
+		7	SyncBoth
 	2	2		request length
 	4	TIMESTAMP		time
 		0	CurrentTime
@@ -1862,6 +1864,7 @@ VISUALTYPE
 	4	WINDOW		src-window
 		0	None
 	4	WINDOW		dst-window
+		0	None
 	2	INT16		src-x
 	2	INT16		src-y
 	2	CARD16		src-width
@@ -3244,7 +3247,7 @@ VISUALTYPE
 	2	CARD16		sequence number
 	4	nm		reply length (m = count field from the request)
 	24			unused
-	4nm			keysyms
+	4nm	LISTofKEYSYM	keysyms
 .De
 .LP
 .Ds 0
@@ -3312,7 +3315,7 @@ VISUALTYPE
 	2	CARD16		bell-pitch
 	2	CARD16		bell-duration
 	2			unused
-	32			auto-repeats
+	32	LISTofCARD8	auto-repeats
 .De
 .LP
 .Ds 0
