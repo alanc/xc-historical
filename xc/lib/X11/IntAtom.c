@@ -27,6 +27,8 @@ typedef struct _Entry {
     Atom atom;
 } EntryRec, *Entry;
 
+#define RESERVED ((Entry) 1)
+
 #define EntryName(e) ((char *)(e+1))
 
 typedef struct _XDisplayAtoms {
@@ -48,7 +50,7 @@ _XFreeAtomTable(dpy)
     if (dpy->atoms) {
 	table = dpy->atoms->table;
 	for (i = TABLESIZE; --i >= 0; ) {
-	    if (e = *table++)
+	    if ((e = *table++) && (e != RESERVED))
 		Xfree((char *)e);
 	}
 	Xfree((char *)dpy->atoms);
@@ -72,8 +74,6 @@ Atom _XInternAtom(dpy, name, onlyIfExists, psig, pidx, pn)
     int n, firstidx, rehash;
     xInternAtomReq *req;
 
-    if (!name)
-	name = "";
     /* look in the cache first */
     if (!(atoms = dpy->atoms)) {
 	dpy->atoms = atoms = (AtomTable *)Xcalloc(1, sizeof(AtomTable));
@@ -81,12 +81,12 @@ Atom _XInternAtom(dpy, name, onlyIfExists, psig, pidx, pn)
     }
     sig = 0;
     for (s1 = (char *)name; c = *s1++; )
-	sig = (sig << 1) + c;
+	sig += c;
     n = s1 - (char *)name - 1;
     if (atoms) {
 	firstidx = idx = HASH(sig);
 	while (e = atoms->table[idx]) {
-	    if (e->sig == sig) {
+	    if (e != RESERVED && e->sig == sig) {
 	    	for (i = n, s1 = (char *)name, s2 = EntryName(e); --i >= 0; ) {
 		    if (*s1++ != *s2++)
 		    	goto nomatch;
@@ -103,15 +103,15 @@ nomatch:    if (idx == firstidx)
     }
     *psig = sig;
     *pidx = idx;
+    if (atoms && !atoms->table[idx])
+	atoms->table[idx] = RESERVED; /* reserve slot */
     *pn = n;
     /* not found, go to the server */
     GetReq(InternAtom, req);
     req->nbytes = n;
     req->onlyIfExists = onlyIfExists;
     req->length += (n+3)>>2;
-    _XSend (dpy, name, n);
-    	/* use _XSend instead of Data, since the following _XReply
-           will always flush the buffer anyway */
+    Data(dpy, name, n);
     return None;
 }
 
@@ -139,7 +139,7 @@ _XUpdateAtomCache(dpy, name, atom, sig, idx, n)
     }
     if (!sig) {
 	for (s1 = (char *)name; c = *s1++; )
-	    sig = (sig << 1) + c;
+	    sig += c;
 	n = s1 - (char *)name - 1;
 	if (idx < 0) {
 	    firstidx = idx = HASH(sig);
@@ -156,7 +156,7 @@ _XUpdateAtomCache(dpy, name, atom, sig, idx, n)
 	e->sig = sig;
 	e->atom = atom;
 	strcpy(EntryName(e), name);
-	if (oe = dpy->atoms->table[idx])
+	if ((oe = dpy->atoms->table[idx]) && (oe != RESERVED))
 	    Xfree((char *)oe);
 	dpy->atoms->table[idx] = e;
     }
@@ -179,11 +179,15 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     int idx, n;
     xInternAtomReply rep;
 
+    if (!name)
+	name = "";
     LockDisplay(dpy);
     if (atom = _XInternAtom(dpy, name, onlyIfExists, &sig, &idx, &n)) {
 	UnlockDisplay(dpy);
 	return atom;
     }
+    if (dpy->atoms && dpy->atoms->table[idx] == RESERVED)
+	dpy->atoms->table[idx] = NULL; /* unreserve slot */
     if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
 	if (atom = rep.atom)
 	    _XUpdateAtomCache(dpy, name, atom, sig, idx, n);
@@ -250,7 +254,7 @@ XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
     Bool onlyIfExists;
     Atom *atoms_return;
 {
-    int i, idx, n;
+    int i, idx, n, tidx;
     unsigned long sig;
     _XAsyncHandler async;
     _XIntAtomState async_state;
@@ -276,6 +280,16 @@ XInternAtoms (dpy, names, count, onlyIfExists, atoms_return)
 	}
     }
     if (missed >= 0) {
+        if (dpy->atoms) {
+	    /* unreserve anything we just reserved */
+	    for (i = 0; i < count; i++) {
+		if (atoms_return[i] & 0x80000000) {
+		    tidx = ~atoms_return[i];
+		    if (dpy->atoms->table[tidx] == RESERVED)
+			dpy->atoms->table[tidx] = NULL;
+		}
+	    }
+        }
 	if (_XReply (dpy, (xReply *)&rep, 0, xTrue)) {
 	    if (atoms_return[missed] = rep.atom)
 		_XUpdateAtomCache(dpy, names[missed], rep.atom, sig, idx, n);
