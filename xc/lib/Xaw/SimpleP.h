@@ -1,7 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: SimpleP.h,v 1.5 88/09/04 12:33:31 swick Exp $ */
-/* $Header: SimpleP.h,v 1.5 88/09/04 12:33:31 swick Exp $ */
+/* $XConsortium: SimpleP.h,v 1.6 88/09/06 09:46:44 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _SimpleP_h

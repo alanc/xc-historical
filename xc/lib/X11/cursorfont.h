@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $XConsortium: cursorfont.h,v 1.1 87/09/11 07:56:26 toddb Exp $ */
 #define XC_num_glyphs 154
 #define XC_X_cursor 0
 #define XC_arrow 2

@@ -1,6 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.6 88/09/06 09:56:50 swick Exp $";
-static char rcsid[] = "$Header: Logo.c,v 1.6 88/09/06 09:56:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.7 88/09/06 10:26:08 swick Exp $";
 #endif
 
 /*

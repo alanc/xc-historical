@@ -1,5 +1,4 @@
-/* $XConsortium: Form.h,v 1.12 88/09/04 12:32:02 swick Exp $ */
-/* $Header: Form.h,v 1.12 88/09/04 12:32:02 swick Exp $ */
+/* $XConsortium: Form.h,v 1.13 88/09/06 09:44:47 swick Exp $ */
 
 
 /***********************************************************

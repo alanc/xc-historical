@@ -1,6 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.13 88/09/05 18:28:36 rws Exp $
-* $Header: Command.h,v 1.13 88/09/05 18:28:36 rws Exp $
+* $XConsortium: Command.h,v 1.14 88/09/06 09:44:31 swick Exp $
 */
 
 

@@ -1,5 +1,4 @@
-/* $XConsortium: FormP.h,v 1.10 88/09/04 12:32:05 swick Exp $ */
-/* $Header: FormP.h,v 1.10 88/09/04 12:32:05 swick Exp $ */
+/* $XConsortium: FormP.h,v 1.11 88/09/06 09:44:50 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 

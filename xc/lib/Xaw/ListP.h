@@ -8,10 +8,9 @@
  *                      MIT - Project Athena
  *
  *      $Source: /usr/expo/X/src/lib/Xaw/RCS/ListP.h,v $
- *      $Author: rws $
+ *      $Author: swick $
  *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.5 88/09/05 18:21:54 rws Exp $
- *      $Header: ListP.h,v 1.5 88/09/05 18:21:54 rws Exp $
+ *      $XConsortium: ListP.h,v 1.6 88/09/06 09:45:54 swick Exp $
  *	
  */
 

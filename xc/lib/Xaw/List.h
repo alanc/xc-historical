@@ -10,8 +10,7 @@
  *      $Source: /usr/expo/X/src/lib/Xaw/RCS/List.h,v $
  *      $Author: swick $
  *      $oHeader: List.h,v 1.4 88/08/30 16:36:53 kit Exp $
- *      $XConsortium: List.h,v 1.5 88/09/05 11:52:47 swick Exp $
- *      $Header: List.h,v 1.5 88/09/05 11:52:47 swick Exp $
+ *      $XConsortium: List.h,v 1.6 88/09/06 09:45:47 swick Exp $
  *	
  *
  */

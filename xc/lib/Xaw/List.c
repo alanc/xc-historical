@@ -1,6 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.5 88/09/05 11:52:29 swick Exp $";
-  static char rcs_id[] = "$Header: List.c,v 1.5 88/09/05 11:52:29 swick Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.6 88/09/06 09:56:31 swick Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -15,7 +14,6 @@
  *
  *      $Source: /usr/expo/X/src/lib/Xaw/RCS/List.c,v $
  *      $Author: swick $
- *      $Header: List.c,v 1.5 88/09/05 11:52:29 swick Exp $
  *	
  */
 

@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.23 88/08/18 18:38:11 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.24 88/08/29 17:13:32 rws Exp $";
 #endif
  
 #include <signal.h>

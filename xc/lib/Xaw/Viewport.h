@@ -1,6 +1,5 @@
 /*
- * $XConsortium: Viewport.h,v 1.4 88/09/04 12:34:20 swick Exp $
- * $Header: Viewport.h,v 1.4 88/09/04 12:34:20 swick Exp $
+ * $XConsortium: Viewport.h,v 1.5 88/09/06 09:47:05 swick Exp $
  * Public definitions for Viewport widget
  */
 

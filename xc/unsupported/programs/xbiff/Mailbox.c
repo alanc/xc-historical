@@ -1,6 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.10 88/09/04 12:38:21 swick Exp $
- * $Header: Mailbox.c,v 1.10 88/09/04 12:38:21 swick Exp $
+ * $XConsortium: Mailbox.c,v 1.11 88/09/06 09:57:05 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: ViewportP.h,v 1.6 88/09/04 12:34:24 swick Exp $
- * $Header: ViewportP.h,v 1.6 88/09/04 12:34:24 swick Exp $
+ * $XConsortium: ViewportP.h,v 1.7 88/09/06 09:47:13 swick Exp $
  * Private declarations for ViewportWidgetClass
  */
 

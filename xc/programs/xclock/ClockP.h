@@ -1,6 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.14 88/09/04 12:31:08 swick Exp $
-* $Header: ClockP.h,v 1.14 88/09/04 12:31:08 swick Exp $
+* $XConsortium: ClockP.h,v 1.15 88/09/06 09:44:28 swick Exp $
 */
 
 

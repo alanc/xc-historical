@@ -1,6 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.2 88/09/04 12:32:53 swick Exp $
-* $Header: LogoP.h,v 1.2 88/09/04 12:32:53 swick Exp $
+* $XConsortium: LogoP.h,v 1.3 88/09/06 09:46:13 swick Exp $
 */
 
 /*

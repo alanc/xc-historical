@@ -1,6 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.18 88/09/04 12:33:54 swick Exp $
-* $Header: TextP.h,v 1.18 88/09/04 12:33:54 swick Exp $
+* $XConsortium: TextP.h,v 1.19 88/09/06 09:46:48 swick Exp $
 */
 
 

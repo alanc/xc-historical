@@ -1,5 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.8 88/09/04 12:31:43 swick Exp $ */
-/* $Header: Dialog.h,v 1.8 88/09/04 12:31:43 swick Exp $ */
+/* $XConsortium: Dialog.h,v 1.9 88/09/06 09:44:40 swick Exp $ */
 
 
 /***********************************************************
