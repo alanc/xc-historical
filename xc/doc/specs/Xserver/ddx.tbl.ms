@@ -1,4 +1,4 @@
-.\" $Header: ddx.doc.tbl.ms,v 1.5 87/09/15 08:17:39 swick Exp $
+.\" $Header: ddx.doc.tbl.ms,v 1.6 88/02/24 15:27:13 rws Exp $
 .EF 'Porting Layer Definition'- % -'September 12, 1987'
 .OF 'Porting Layer Definition'- % -'September 12, 1987'
 .EH '''
@@ -1335,14 +1335,14 @@ Each element of this array is a list of codes for glyphs that are on that key.
 There is no limit to the number of glyphs that can be on a key.
 .LP
 The sample server sets up the keycode and modifier maps in 
-server/ddx/lk201/lk201.c.  This is the map passed to the routine
+server/ddx/dec/lk201/lk201.c.  This is the map passed to the routine
 InitKeyboardDeviceStruct().   Once the map is set up, DIX keeps and
-maintains the client's changes to it.  See also server/ddx/lk201/keynames.h
-for the association between lk201 keys and the keysyms in include/keysym.h.
+maintains the client's changes to it.  See also server/ddx/dec/lk201/keynames.h
+for the association between lk201 keys and the keysyms in X11/keysym.h.
 
 The X protocol defines standard keycap glyph markings to indicate the 
 symbol(s) printed on
-each keycap. (See include/keysym.h)
+each keycap. (See X11/keysym.h)
 
 For instance, one of the Apple Macintosh keyboards has keys numbered from 0 to 58.
 Key 0 has on it the glyph "A."  Key 1 has on it the glyph "S."
@@ -1385,11 +1385,11 @@ over it to the lowercase d with a caron (upside-down circumflex).
 There are diphthongs like ae and oe,
 the German sharp S, and the Icelandic letter "eth," 
 all in uppercase and lowercase.
-These are all defined in include/keysym.h.
+These are all defined in X11/keysym.h.
 
 Legal modifier keys must generate both up and down transitions.  When 
 a client tries to change a modifier key (for instance, to make "A" the
-"Control" key), DIX calls the following routine (in server/ddx/lk201/lk201.c)
+"Control" key), DIX calls the following routine (in server/ddx/dec/lk201/lk201.c)
 .nf
 
 	Bool LegalModifier(key)
@@ -1694,7 +1694,7 @@ RectIn returns one of the defined constants
 rgnIN, rgnOUT, or rgnPART, depending upon whether the box is entirely
 inside the region, entirely outside of the region, or partly in and partly out of 
 the region.
-These constants are defined in include/region.h.
+These constants are defined in server/include/region.h.
 .nf
 
 	Bool pScreen->PointInRegion(pRegion, x, y, pBox)
@@ -2504,7 +2504,7 @@ the font into some other format.  The DDX layer can also put information
 in the devPrivate storage.
 .nf
 
-	Bool pScreen-> RealizeFont(pScr, pFont)
+	Bool pScreen->RealizeFont(pScr, pFont)
 		ScreenPtr pScr;
 		FontPtr pFont;
 
@@ -4191,6 +4191,7 @@ dix	portable to all systems; do not attempt to rewrite (server/dix)
 4.2	written for 4.2/4.3bsd Unix or equivalent (server/os/4.2bsd)
 mfb	routine provided in server/ddx/mfb
 mi	routine provided in server/ddx/mi
+snf	routine provided in server/ddx/snf
 hd	hardware dependent (example in server/ddx/dec/qvss)
 none	not implemented in sample implementation
 .TE
@@ -4209,6 +4210,7 @@ ChangeClip	mi	GC
 ChangeGC	mfb	GCInterest
 ChangeWindowAttributes	mfb	Screen
 ClearToBackground	mfb	Window
+CloseFont	snf
 CloseScreen	hd
 ConstrainCursor	hd	Screen
 CopyArea	mi, mfb	GC
@@ -4222,6 +4224,7 @@ CreateWellKnowSockets	4.2
 CreateWindow	mfb	Screen
 CursorLimits	hd	Screen
 DEALLOCATE_LOCAL	4.2
+DescribeFont	snf
 DestroyClip	mi	GC
 DestroyGC	mfb	GCInterest
 DestroyPixmap	mfb	Screen
@@ -4236,6 +4239,7 @@ FiOpenForRead	4.2
 FiRead	4.2
 FreeFontRecord	4.2
 GetFontPath	4.2
+GetGlyphs	snf
 .TE
 .bp
 .TS
@@ -4263,6 +4267,7 @@ LineHelper	mi	GC
 ListInstalledColormaps	mfb	Screen
 LookupKeyboardDevice	dix	
 LookupPointerDevice	dix	
+OpenFont	snf
 OsInit	4.2	
 PaintWindowBackground	mi,mfb	Window
 PaintWindowBorder	mi,mfb	Window
@@ -4283,6 +4288,9 @@ ProcessInputEvents	hd
 PushPixels	mi,mfb	GC
 PutImage	mi,mfb	GC
 QueryBestSize	hd	Screen
+QueryFont	snf
+QueryGlyphExtents	snf
+QueryTextExtents	snf
 ReadRequestFromClient	4.2	
 RealizeCursor	hd	Screen
 RealizeFont	mfb	Screen
@@ -4313,6 +4321,7 @@ RestoreAreas	none	BackingStore
 SaveDoomedAreas	none	BackingStore
 SaveScreen	mfb	Screen
 SetCursorPosition	hd	Screen
+SetDefaultFont	snf
 SetDefaultFontPath	4.2
 SetFontPath	4.2
 SetInputCheck	dix	
