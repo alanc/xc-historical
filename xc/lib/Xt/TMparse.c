@@ -363,6 +363,21 @@ static char * ScanAlphanumeric(str)
     return str;
 }
 
+static char * ScanIdent(str)
+    char *str;
+{
+    str = ScanAlphanumeric(str);
+    while (
+        ('A' <= *str && *str <= 'Z')
+	|| ('a' <= *str && *str <= 'z')
+	|| ('0' <= *str && *str <= '9')
+	|| (*str == '-')
+	|| (*str == '_')
+	|| (*str == '$')
+	) str++;
+    return str;
+}
+
 static char * ScanWhitespace(str)
     char *str;
 {
@@ -656,7 +671,7 @@ static char * ParseActionProc(str, actionProcP, actionProcNameP)
     char *start = str;
     char procName[100];
 
-    str = ScanAlphanumeric(str);
+    str = ScanIdent(str);
     (void) strncpy(procName, start, str-start);
     procName[str-start] = '\0';
 
