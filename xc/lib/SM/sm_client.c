@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.11 93/09/28 10:37:34 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.12 93/09/28 17:08:14 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -224,16 +224,16 @@ char 		*errorStringRet;
 
 
 void
-SmcCloseConnection (smcConn, locale, count, reasonMsgs)
+SmcCloseConnection (smcConn, count, reasonMsgs)
 
 SmcConn smcConn;
-char	*locale;
 int	count;
 char    **reasonMsgs;
 
 {
     IceConn	iceConn = smcConn->iceConn;
     int		i;
+    char	*locale;
 
     if (IceCheckShutdownNegotiation (iceConn) == True)
     {
@@ -241,8 +241,7 @@ char    **reasonMsgs;
 	char 			*pData;
 	int			extra;
 
-	if (locale == NULL || *locale == '\0')
-	    locale = setlocale (LC_ALL, NULL);
+	locale = setlocale (LC_CTYPE, NULL);
 
 	extra = 8 + ARRAY8_BYTES (strlen (locale));
 
@@ -306,6 +305,39 @@ char    **reasonMsgs;
 	}
 
 	free ((char *) smcConn);
+    }
+}
+
+
+
+void
+SmcModifyCallbacks (smcConn, mask, callbacks)
+
+SmcConn    	smcConn;
+unsigned long 	mask;
+SmcCallbacks	*callbacks;
+
+{
+    if (mask & SmcSaveYourselfProcMask)
+    {
+	smcConn->callbacks.save_yourself.callback =
+	    callbacks->save_yourself.callback;
+	smcConn->callbacks.save_yourself.client_data =
+	    callbacks->save_yourself.client_data;
+    }
+
+    if (mask & SmcDieProcMask)
+    {
+	smcConn->callbacks.die.callback = callbacks->die.callback;
+	smcConn->callbacks.die.client_data = callbacks->die.client_data;
+    }
+
+    if (mask & SmcShutdownCancelledProcMask)
+    {
+	smcConn->callbacks.shutdown_cancelled.callback =
+	    callbacks->shutdown_cancelled.callback;
+	smcConn->callbacks.shutdown_cancelled.client_data =
+	    callbacks->shutdown_cancelled.client_data;
     }
 }
 

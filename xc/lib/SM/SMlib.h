@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.8 93/09/27 21:07:39 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.9 93/09/28 10:36:16 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -122,6 +122,11 @@ typedef struct {
     } shutdown_cancelled;
 
 } SmcCallbacks;
+
+#define SmcSaveYourselfProcMask		1
+#define SmcDieProcMask			2
+#define SmcShutdownCancelledProcMask	4
+#define SmcAllProcMask			(1+2+4)
 
 
 /*
@@ -438,9 +443,16 @@ extern SmcConn SmcOpenConnection (
 extern void SmcCloseConnection (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
-    char *		/* locale */,
     int			/* count */,
     char **		/* reasonMsgs */
+#endif
+);
+
+extern void SmcModifyCallbacks (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    unsigned long	/* mask */,
+    SmcCallbacks *	/* callbacks */
 #endif
 );
 
@@ -528,6 +540,12 @@ extern Status SmsInitialize (
     SmPointer		/* managerData */,
     int			/* errorLength */,
     char *		/* errorStringRet */
+#endif
+);
+
+extern char *SmsClientHostName (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
 #endif
 );
 
