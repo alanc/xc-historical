@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.1 93/08/25 19:19:54 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.2 93/08/25 22:51:09 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -74,6 +74,63 @@ typedef mutex_t *xmutex_t;
 #define xcondition_signal(cv) cond_signal(cv)
 #define xcondition_broadcast(cv) cond_broadcast(cv)
 #else
+#ifdef WIN32
+#include <windows.h>
+typedef struct _xthread_t {
+    HANDLE sem;
+    struct _xthread_t *next;
+} *xthread_t;
+typedef struct _xcondition_t {
+    CRITICAL_SECTION cs;
+    xthread_t waiters;
+} *xcondition_t;
+typedef CRITICAL_SECTION *xmutex_t;
+extern xthread_t _Xthread_self();
+xthread_self() _Xthread_self()
+#define xthread_fork(func,closure) { \
+    DWORD _tmptid; \
+    CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, (LPVOID)closure, 0, \
+		 &_tmptid); \
+}
+#define xmutex_malloc() (xmutex_t)xmalloc(sizeof(CRITICAL_SECTION))
+#define xmutex_init(m) InitializeCriticalSection(m)
+#define xmutex_clear(m) DeleteCriticalSection(m)
+#define xmutex_lock(m) EnterCriticalSection(m)
+#define xmutex_unlock(m) LeaveCriticalSection(m)
+#define xcondition_malloc() (xcondition_t)xmalloc(sizeof(struct _xcondition_t))
+#define xcondition_init(cv) { \
+    InitializeCriticalSection(&cv->cs); \
+    cv->waiters = NULL; \
+}
+#define xcondition_clear(cv) DeleteCriticalSection(&cv->cs)
+#define xcondition_wait(cv,m) { \
+    xthread_t _tmpthr; \
+    _tmpthr = xthread_self(); \
+    EnterCriticalSection(&cv->cs); \
+    _tmpthr->next = cv->waiters; \
+    cv->waiters = _tmpthr; \
+    LeaveCriticalSection(&cv->cs); \
+    LeaveCriticalSection(m); \
+    WaitForSingleObject(_tmpthr->sem, INFINITE); \
+    EnterCriticalSection(m); \
+}
+#define xcondition_signal(cv) { \
+    EnterCriticalSection(&cv->cs); \
+    if (cv->waiters) {
+        ReleaseSemaphore(cv->waiters->sem, 1, NULL);
+	cv->waiters = cv->waiters->next;
+    }
+    LeaveCriticalSection(&cv->cs); \
+}
+#define xcondition_broadcast(cv) { \
+    xthread_t _tmpthr; \
+    EnterCriticalSection(&cv->cs); \
+    for (_tmpthr = cv->waiters; _tmpthr; _tmpthr = _tmpthr->next) \
+	ReleaseSemaphore(_tmpthr->sem, 1, NULL); \
+    cv->waiters = NULL;
+    LeaveCriticalSection(&cv->cs); \
+}
+#else
 #include <pthread.h>
 typedef pthread_t xthread_t;
 typedef pthread_cond_t *xcondition_t;
@@ -97,9 +154,10 @@ static xthread_t _X_no_thread_id;
 #define xthread_have_id(id) !pthread_equal(id, _X_no_thread_id)
 #define xthread_clear_id(id) id = _X_no_thread_id
 #define xthread_equal(id1,id2) pthread_equal(id1, id2)
-#endif
-#endif
-#endif
+#endif /* _DECTHREADS_ */
+#endif /* WIN32 */
+#endif /* sun */
+#endif /* CTHREADS */
 #ifndef xcondition_free
 #define xcondition_free(c) xfree((char *)c)
 #endif
