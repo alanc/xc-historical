@@ -1,4 +1,15 @@
-.\" $XConsortium: xterm.man,v 1.74 93/02/25 19:32:10 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.75 94/04/11 14:26:20 gildea Exp $
+.\" Copyright 1989 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XTERM 1 "Release 6" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
@@ -1598,10 +1609,6 @@ widgets that don't know about each other.  Ideally, you'd like to be able to
 pick and choose emulator widgets and stick them into a single control widget.
 .PP
 There needs to be a dialog box to allow entry of the Tek COPY file name.
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Far too many people, including:
 .sp

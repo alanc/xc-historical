@@ -1,4 +1,15 @@
-.\" $XConsortium: xwud.man,v 1.13 93/08/02 11:13:28 gildea Exp $
+.\" $XConsortium: xwud.man,v 1.14 94/04/11 14:27:04 gildea Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XWUD 1 "Release 6" "X Version 11"
 .SH NAME
 xwud - image displayer for X
@@ -114,10 +125,6 @@ To get default display.
 X Window Dump File format definition file.
 .SH SEE ALSO
 xwd(1), xpr(1), xstdcmap(1), X(1)
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Bob Scheifler, MIT X Consortium
 

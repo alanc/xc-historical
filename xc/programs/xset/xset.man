@@ -1,4 +1,15 @@
-.\" $XConsortium: xset.man,v 1.24 92/10/20 18:32:31 rws Exp $
+.\" $XConsortium: xset.man,v 1.25 94/04/11 14:26:51 gildea Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XSET 1 "Release 6" "X Version 11"
 .SH NAME
 xset - user preference utility for X
@@ -185,10 +196,6 @@ Note that not all X implementations are guaranteed to honor all of these
 options.
 .SH "SEE ALSO"
 X(1), Xserver(1), xmodmap(1), xrdb(1), xsetroot(1)
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Bob Scheifler, MIT Laboratory for Computer Science
 .br
