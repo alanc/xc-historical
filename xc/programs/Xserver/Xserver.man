@@ -134,6 +134,12 @@ The default value is zero, making the stack size as large as possible.  A value
 of \-1 leaves the stack space limit unchanged.  This option is not available in
 all operating systems.
 .TP 8
+.B \-lf \fIfiles\fP
+sets the number-of-open-files limit of the server to the specified number.
+The default value is zero, making the limit as large as possible.  A value
+of \-1 leaves the limit unchanged.  This option is not available in
+all operating systems.
+.TP 8
 .B \-logo
 turns on the X Window System logo display in the screen-saver.
 There is currently no way to change this from a client.
