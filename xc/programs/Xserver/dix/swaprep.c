@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.20 87/07/23 17:30:13 ham Exp $ */
+/* $Header: swaprep.c,v 1.20 87/08/01 13:32:03 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -67,7 +67,9 @@ Swap32Write(pClient, size, pbuf)
 
     size >>= 2;
     for(i = 0; i < size; i++)
+    {
 	swapl(&pbuf[i], n);
+    }
     WriteToClient(pClient, size << 2, pbuf);
     pClient->pSwapReplyFunc = (void (*) ())NULL;
 }
@@ -82,7 +84,9 @@ Swap16Write(pClient, size, pbuf)
 
     size >>= 1;
     for(i = 0; i < size; i++)
+    {
 	swaps(&pbuf[i], n);
+    }
     WriteToClient(pClient, size << 1, pbuf);
     pClient->pSwapReplyFunc = (void (*) ())NULL;
 }
@@ -411,9 +415,9 @@ SQueryTextExtentsReply(pClient, size, pRep)
     swaps(&pRep->fontDescent, n);
     swaps(&pRep->overallAscent, n);
     swaps(&pRep->overallDescent, n);
-    swaps(&pRep->overallWidth, n);
-    swaps(&pRep->overallLeft, n);
-    swaps(&pRep->overallRight, n);
+    swapl(&pRep->overallWidth, n);
+    swapl(&pRep->overallLeft, n);
+    swapl(&pRep->overallRight, n);
     WriteToClient(pClient, size, pRep);
     pClient->pSwapReplyFunc = (void (*) ()) NULL;
 }
@@ -490,7 +494,7 @@ SListInstalledColormapsReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
-    swapl(&pRep->nColormaps, n);
+    swaps(&pRep->nColormaps, n);
     WriteToClient(pClient, size, pRep);
     pClient->pSwapReplyFunc = Swap32Write;
 }
@@ -807,25 +811,26 @@ SKeyButtonPtrEvent(pClient, size, pEvent)
     pEventT->u.u.type = pEvent->u.u.type;
     pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    pEventT->u.keyButtonPointer.time =
     cpswapl(pEvent->u.keyButtonPointer.time,
         pEventT->u.keyButtonPointer.time);
     cpswapl(pEvent->u.keyButtonPointer.root,
         pEventT->u.keyButtonPointer.root);
-    cpswapl(pEvent->u.keyButtonPointer.root,
+    cpswapl(pEvent->u.keyButtonPointer.event,
         pEventT->u.keyButtonPointer.event);
     cpswapl(pEvent->u.keyButtonPointer.child,
         pEventT->u.keyButtonPointer.child);
     cpswaps(pEvent->u.keyButtonPointer.rootX,
         pEventT->u.keyButtonPointer.rootX);
     cpswaps(pEvent->u.keyButtonPointer.rootY,
-	pEvent->u.keyButtonPointer.rootY);
+	pEventT->u.keyButtonPointer.rootY);
     cpswaps(pEvent->u.keyButtonPointer.eventX,
         pEventT->u.keyButtonPointer.eventX);
     cpswaps(pEvent->u.keyButtonPointer.eventY,
-        pEvent->u.keyButtonPointer.eventY);
+        pEventT->u.keyButtonPointer.eventY);
     cpswaps(pEvent->u.keyButtonPointer.state,
-        pEvent->u.keyButtonPointer.state);
+        pEventT->u.keyButtonPointer.state);
+    pEventT->u.keyButtonPointer.sameScreen = 
+	pEvent->u.keyButtonPointer.sameScreen;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
     
@@ -851,6 +856,8 @@ SEnterLeaveEvent(pClient, size, pEvent)
     cpswaps(pEvent->u.enterLeave.eventX, pEventT->u.enterLeave.eventX);
     cpswaps(pEvent->u.enterLeave.eventY, pEventT->u.enterLeave.eventY);
     cpswaps(pEvent->u.enterLeave.state, pEventT->u.enterLeave.state);
+    pEventT->u.enterLeave.mode = pEvent->u.enterLeave.mode;
+    pEventT->u.enterLeave.flags = pEvent->u.enterLeave.flags;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -867,6 +874,7 @@ SFocusEvent(pClient, size, pEvent)
     pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.focus.window, pEventT->u.focus.window);
+    pEventT->u.focus.mode = pEvent->u.focus.mode;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -881,14 +889,13 @@ SExposeEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.expose.window, pEventT->u.expose.window);
     cpswaps(pEvent->u.expose.x, pEventT->u.expose.x);
     cpswaps(pEvent->u.expose.y, pEventT->u.expose.y);
     cpswaps(pEvent->u.expose.width, pEventT->u.expose.width);
     cpswaps(pEvent->u.expose.height, pEventT->u.expose.height);
-    cpswaps(pEvent->u.graphicsExposure.count, pEventT->u.expose.count);
+    cpswaps(pEvent->u.expose.count, pEventT->u.expose.count);
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -903,7 +910,6 @@ SGraphicsExposureEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.graphicsExposure.drawable,
         pEventT->u.graphicsExposure.drawable);
@@ -918,7 +924,9 @@ SGraphicsExposureEvent(pClient, size, pEvent)
     cpswaps(pEvent->u.graphicsExposure.minorEvent,
         pEventT->u.graphicsExposure.minorEvent);
     cpswaps(pEvent->u.graphicsExposure.count,
-	pEventT->u.graphicsExposure.count);	
+	pEventT->u.graphicsExposure.count);
+    pEventT->u.graphicsExposure.majorEvent = 
+    	pEvent->u.graphicsExposure.majorEvent;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -933,10 +941,10 @@ SNoExposureEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.noExposure.drawable, pEventT->u.noExposure.drawable);
     cpswaps(pEvent->u.noExposure.minorEvent, pEventT->u.noExposure.minorEvent);
+    pEventT->u.noExposure.majorEvent = pEvent->u.noExposure.majorEvent;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -951,9 +959,9 @@ SVisibilityEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.visibility.window, pEventT->u.visibility.window);
+    pEventT->u.visibility.state = pEvent->u.visibility.state;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -968,7 +976,6 @@ SCreateNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.createNotify.window, pEventT->u.createNotify.window);
     cpswapl(pEvent->u.createNotify.parent, pEventT->u.createNotify.parent);
@@ -978,6 +985,7 @@ SCreateNotifyEvent(pClient, size, pEvent)
     cpswaps(pEvent->u.createNotify.height, pEventT->u.createNotify.height);
     cpswaps(pEvent->u.createNotify.borderWidth,
         pEventT->u.createNotify.borderWidth);
+    pEventT->u.createNotify.override = pEvent->u.createNotify.override;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -992,8 +1000,8 @@ SDestroyNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.destroyNotify.event, pEventT->u.destroyNotify.event);
     cpswapl(pEvent->u.destroyNotify.window, pEventT->u.destroyNotify.window);
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
@@ -1009,9 +1017,11 @@ SUnmapNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.unmapNotify.event, pEventT->u.unmapNotify.event);
     cpswapl(pEvent->u.unmapNotify.window, pEventT->u.unmapNotify.window);
+    pEventT->u.unmapNotify.fromConfigure = pEvent->u.unmapNotify.fromConfigure;
+    DEALLOCATE_LOCAL(pEventT);
 }
 
 void
@@ -1024,9 +1034,10 @@ SMapNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.mapNotify.event, pEventT->u.mapNotify.event);
     cpswapl(pEvent->u.mapNotify.window, pEventT->u.mapNotify.window);
+    pEventT->u.mapNotify.override = pEvent->u.mapNotify.override;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1041,8 +1052,8 @@ SMapRequestEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.mapRequest.parent, pEventT->u.mapRequest.parent);
     cpswapl(pEvent->u.mapRequest.window, pEventT->u.mapRequest.window);
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
@@ -1058,12 +1069,13 @@ SReparentEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.reparent.event, pEventT->u.reparent.event);
     cpswapl(pEvent->u.reparent.window, pEventT->u.reparent.window);
     cpswapl(pEvent->u.reparent.parent, pEventT->u.reparent.parent);
     cpswaps(pEvent->u.reparent.x, pEventT->u.reparent.x);
     cpswaps(pEvent->u.reparent.y, pEventT->u.reparent.y);
+    pEventT->u.reparent.override = pEvent->u.reparent.override;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1078,8 +1090,9 @@ SConfigureNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.configureNotify.event,
+        pEventT->u.configureNotify.event);
     cpswapl(pEvent->u.configureNotify.window,
         pEventT->u.configureNotify.window);
     cpswapl(pEvent->u.configureNotify.aboveSibling,
@@ -1091,6 +1104,7 @@ SConfigureNotifyEvent(pClient, size, pEvent)
         pEventT->u.configureNotify.height);
     cpswaps(pEvent->u.configureNotify.borderWidth,
         pEventT->u.configureNotify.borderWidth);
+    pEventT->u.configureNotify.override = pEvent->u.configureNotify.override;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1106,6 +1120,8 @@ SConfigureRequestEvent(pClient, size, pEvent)
     pEventT->u.u.type = pEvent->u.u.type;
     pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.configureRequest.parent,
+        pEventT->u.configureRequest.parent);
     cpswapl(pEvent->u.configureRequest.window,
         pEventT->u.configureRequest.window);
     cpswapl(pEvent->u.configureRequest.sibling,
@@ -1135,8 +1151,8 @@ SGravityEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.gravity.event, pEventT->u.gravity.event);
     cpswapl(pEvent->u.gravity.window, pEventT->u.gravity.window);
     cpswaps(pEvent->u.gravity.x, pEventT->u.gravity.x);
     cpswaps(pEvent->u.gravity.y, pEventT->u.gravity.y);
@@ -1154,7 +1170,6 @@ SResizeRequestEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.resizeRequest.window, pEventT->u.resizeRequest.window);
     cpswaps(pEvent->u.resizeRequest.width, pEventT->u.resizeRequest.width);
@@ -1175,8 +1190,10 @@ SCirculateEvent(pClient, size, pEvent)
     pEventT->u.u.type = pEvent->u.u.type;
     pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    cpswapl(pEvent->u.circulate.event, pEventT->u.circulate.event);
     cpswapl(pEvent->u.circulate.window, pEventT->u.circulate.window);
     cpswapl(pEvent->u.circulate.parent, pEventT->u.circulate.parent);
+    pEventT->u.circulate.place = pEvent->u.circulate.place;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1191,11 +1208,11 @@ SPropertyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.property.window, pEventT->u.property.window);
     cpswapl(pEvent->u.property.atom, pEventT->u.property.atom);
     cpswapl(pEvent->u.property.time, pEventT->u.property.time);
+    pEventT->u.property.state = pEvent->u.property.state;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1210,7 +1227,6 @@ SSelectionClearEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.selectionClear.time, pEventT->u.selectionClear.time);
     cpswapl(pEvent->u.selectionClear.window, pEventT->u.selectionClear.window);
@@ -1229,7 +1245,6 @@ SSelectionRequestEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.selectionRequest.time, pEventT->u.selectionRequest.time);
     cpswapl(pEvent->u.selectionRequest.owner,
@@ -1256,7 +1271,6 @@ SSelectionNotifyEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.selectionNotify.time, pEventT->u.selectionNotify.time);
     cpswapl(pEvent->u.selectionNotify.requestor,
@@ -1281,10 +1295,11 @@ SColormapEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
     cpswapl(pEvent->u.colormap.window, pEventT->u.colormap.window);
     cpswapl(pEvent->u.colormap.colormap, pEventT->u.colormap.colormap);
+    pEventT->u.colormap.new = pEvent->u.colormap.new;
+    pEventT->u.colormap.state = pEvent->u.colormap.state;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1299,8 +1314,11 @@ SMappingEvent(pClient, size, pEvent)
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
+    pEventT->u.mappingNotify.request = pEvent->u.mappingNotify.request;
+    pEventT->u.mappingNotify.firstKeyCode =
+	pEvent->u.mappingNotify.firstKeyCode;
+    pEventT->u.mappingNotify.count = pEvent->u.mappingNotify.count;
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1312,17 +1330,54 @@ SClientMessageEvent(pClient, size, pEvent)
     xEvent	*pEvent;
 {
     xEvent	*pEventT;
-    int		i;
 
     pEventT = (xEvent *) ALLOCATE_LOCAL(sizeof(xEvent));
     pEventT->u.u.type = pEvent->u.u.type;
-    pEventT->u.u.detail = pEvent->u.u.detail;
+    pEventT->u.u.detail = pEvent->u.u.detail;  /* actually format */
     cpswaps(pEvent->u.u.sequenceNumber, pEventT->u.u.sequenceNumber);
-    cpswapl(pEvent->u.clientMessage.window, 
-	    pEventT->u.clientMessage.window);
+    cpswapl(pEvent->u.clientMessage.window, pEventT->u.clientMessage.window);
     cpswapl(pEvent->u.clientMessage.u.l.type, 
 	    pEventT->u.clientMessage.u.l.type);
-
+    switch (pEvent->u.u.detail) {
+       case 8:
+          bcopy(pEvent->u.clientMessage.u.b.bytes,
+		pEventT->u.clientMessage.u.b.bytes, 20);
+	  break;
+       case 16:
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts0,
+	     pEventT->u.clientMessage.u.s.shorts0);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts1,
+	     pEventT->u.clientMessage.u.s.shorts1);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts2,
+	     pEventT->u.clientMessage.u.s.shorts2);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts3,
+	     pEventT->u.clientMessage.u.s.shorts3);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts4,
+	     pEventT->u.clientMessage.u.s.shorts4);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts5,
+	     pEventT->u.clientMessage.u.s.shorts5);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts6,
+	     pEventT->u.clientMessage.u.s.shorts6);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts7,
+	     pEventT->u.clientMessage.u.s.shorts7);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts8,
+	     pEventT->u.clientMessage.u.s.shorts8);
+	  cpswaps(pEvent->u.clientMessage.u.s.shorts9,
+	     pEventT->u.clientMessage.u.s.shorts9);
+	  break;
+       case 32:
+	  cpswaps(pEvent->u.clientMessage.u.l.longs0,
+	     pEventT->u.clientMessage.u.l.longs0);
+	  cpswaps(pEvent->u.clientMessage.u.l.longs1,
+	     pEventT->u.clientMessage.u.l.longs1);
+	  cpswaps(pEvent->u.clientMessage.u.l.longs2,
+	     pEventT->u.clientMessage.u.l.longs2);
+	  cpswaps(pEvent->u.clientMessage.u.l.longs3,
+	     pEventT->u.clientMessage.u.l.longs3);
+	  cpswaps(pEvent->u.clientMessage.u.l.longs4,
+	     pEventT->u.clientMessage.u.l.longs4);
+	  break;
+       }
     WriteToClient(pClient, size, pEventT);
     DEALLOCATE_LOCAL(pEventT);
 }
@@ -1346,12 +1401,19 @@ WriteSConnectionInfo(pClient, size, pInfo)
     ScreenPtr	pScreen;
     DepthPtr	pDepth;
     char	*pInfoT, *pInfoTBase;
+    xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
 
     pInfoT = pInfoTBase = (char *) ALLOCATE_LOCAL(size);
 
     SwapConnSetup(pInfo, pInfoT);
     pInfo += sizeof(xConnSetup);
     pInfoT += sizeof(xConnSetup);
+
+    /* Copy the vendor string */
+    i = (pConnSetup->nbytesVendor + 3) & ~3;
+    bcopy(pInfo, pInfoT, i);
+    pInfo += i;
+    pInfoT += i;
 
     /* The Pixmap formats don't need to be swapped, just copied. */
     i = sizeof(xPixmapFormat) * screenInfo.numPixmapFormats;
