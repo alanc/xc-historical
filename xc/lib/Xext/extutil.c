@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.11 91/11/09 15:41:23 keith Exp $
+ * $XConsortium: extutil.c,v 1.12 93/08/17 18:08:19 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,8 +45,8 @@
 
 #include <stdio.h>
 #include "Xlibint.h"
-#include "../include/Xext.h"
-#include "../include/extutil.h"
+#include "Xext.h"
+#include "extutil.h"
 
 
 /*
