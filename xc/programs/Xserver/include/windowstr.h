@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 5.7 89/07/12 17:15:17 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.8 89/07/13 17:21:04 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -46,6 +46,7 @@ typedef union _Validate {
 	DDXPointRec	oldAbsCorner;	/* old window position */
 	RegionPtr	borderVisible;	/* visible region of border, */
 					/* non-null when size changes */
+	Bool		shrunk;		/* an inside dimension has shrunk */
     } before;
     struct AfterValidate {
 	RegionRec	exposed;	/* exposed regions, absolute pos */
