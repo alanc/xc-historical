@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.17 91/01/06 13:32:28 rws Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.18 91/05/24 12:42:35 swick Exp $ */
 
 /********************************************************
 
@@ -27,7 +27,6 @@ SOFTWARE.
 ********************************************************/
 
 #include "IntrinsicI.h"
-#include <X11/Xatom.h>
 #include "StringDefs.h"
 #include "PassivGraI.h"
 
