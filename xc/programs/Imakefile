@@ -2,11 +2,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 #ifndef CrayArchitecture
-#ifdef ATTArchitecture
-OTHERSUBDIRS = xhost
-#else
 OTHERSUBDIRS = xdm xhost
-#endif
 #endif
 
 SUBDIRS = \
