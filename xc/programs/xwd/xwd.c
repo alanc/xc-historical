@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.57 92/07/31 10:12:20 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.58 92/07/31 11:42:35 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -114,7 +114,7 @@ main(argc, argv)
 	  usage();
 	if (!strcmp(argv[i], "-out")) {
 	    if (++i >= argc) usage();
-	    if (!(out_file = fopen(argv[i], "w")))
+	    if (!(out_file = fopen(argv[i], "wb")))
 	      Error("Can't open output file as specified.");
 	    standard_out = False;
 	    continue;
@@ -142,6 +142,10 @@ main(argc, argv)
 	}
 	usage();
     }
+#ifdef WIN32
+    if (standard_out)
+	_setmode(fileno(out_file), _O_BINARY);
+#endif
     
     /*
      * Let the user select the target window.
