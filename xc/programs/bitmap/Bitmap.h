@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.h,v 1.2 90/03/30 06:19:57 dmatic Exp $
+ * $XConsortium: Bitmap.h,v 1.3 90/03/30 06:24:16 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
