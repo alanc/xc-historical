@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.217 94/02/08 20:21:01 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.218 94/02/10 17:52:52 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,6 +66,7 @@ extern void _XtConvertInitialize();
  * the stub routines in sharedlib.c get loaded into the application binary.
  */
 #define XtToolkitInitialize _XtToolkitInitialize
+#define XtOpenApplication _XtOpenApplication
 #define XtAppInitialize _XtAppInitialize
 #define XtInitialize _XtInitialize
 #endif /* (SUNSHLIB || AIXSHLIB) && SHAREDCODE */
@@ -905,20 +906,61 @@ String *specification_list;
     UNLOCK_APP(app_context);
 }
 
-/*	Function Name: XtAppInitialize
- *	Description: A convience routine for Initializing the toolkit.
- *	Arguments: app_context_return - The application context of the
- *                                      application
- *                 application_class  - The class of the application.
- *                 options            - The option list.
- *                 num_options        - The number of options in the above list
- *                 argc_in_out, argv_in_out - number and list of command line
- *                                            arguments.
- *                 fallback_resource  - The fallback list of resources.
- *                 args, num_args     - Arguements to use when creating the 
- *                                      shell widget.
- *	Returns: The shell widget.
- */
+	
+#if NeedFunctionPrototypes
+Widget XtOpenApplication(XtAppContext *app_context_return,
+			 _Xconst char *application_class,
+			 XrmOptionDescRec *options, Cardinal num_options,
+			 int *argc_in_out, String *argv_in_out,
+			 String *fallback_resources, WidgetClass widget_class,
+			 ArgList args_in, Cardinal num_args_in)
+#else
+Widget XtOpenApplication(app_context_return, application_class,
+			 options, num_options, argc_in_out, argv_in_out,
+			 fallback_resources, widget_class,
+			 args_in, num_args_in)
+    XtAppContext *app_context_return;
+    String application_class;
+    XrmOptionDescRec *options;
+    Cardinal num_options, num_args_in;
+    int *argc_in_out;
+    String *argv_in_out, *fallback_resources;
+    WidgetClass widget_class;
+    ArgList args_in;
+#endif
+{
+    XtAppContext app_con;
+    Display * dpy;
+    register int saved_argc = *argc_in_out;
+    Widget root;
+    Arg args[3], *merged_args;
+    Cardinal num = 0;
+    
+    XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
+    
+    dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
+		     argc_in_out, &argv_in_out, fallback_resources);
+
+    LOCK_APP(app_con);
+    XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;
+    XtSetArg(args[num], XtNargc, saved_argc);	                 num++;
+    XtSetArg(args[num], XtNargv, argv_in_out);	                 num++;
+
+    merged_args = XtMergeArgLists(args_in, num_args_in, args, num);
+    num += num_args_in;
+
+    root = XtAppCreateShell(NULL, application_class, widget_class, dpy,
+			    merged_args, num);
+    
+    if (app_context_return)
+	*app_context_return = app_con;
+
+    XtFree((XtPointer)merged_args);
+    XtFree((XtPointer)argv_in_out);
+    UNLOCK_APP(app_con);
+    return root;
+}
+
 	
 #if NeedFunctionPrototypes
 Widget
@@ -947,48 +989,14 @@ String *argv_in_out, * fallback_resources;
 ArgList args_in;
 #endif
 {
-    XtAppContext app_con;
-    Display * dpy;
-    register int saved_argc = *argc_in_out;
-    Widget root;
-    Arg args[3], *merged_args;
-    Cardinal num = 0;
-    
-    XtToolkitInitialize(); /* cannot be moved into _XtAppInit */
-    
-    dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
-		     argc_in_out, &argv_in_out, fallback_resources);
-
-    LOCK_APP(app_con);
-    XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;
-    XtSetArg(args[num], XtNargc, saved_argc);	                 num++;
-    XtSetArg(args[num], XtNargv, argv_in_out);	                 num++;
-
-    merged_args = XtMergeArgLists(args_in, num_args_in, args, num);
-    num += num_args_in;
-
-    root = XtAppCreateShell(NULL, application_class, 
-			    applicationShellWidgetClass,dpy, merged_args, num);
-    
-    if (app_context_return)
-	*app_context_return = app_con;
-
-    XtFree((XtPointer)merged_args);
-    XtFree((XtPointer)argv_in_out);
-    UNLOCK_APP(app_con);
-    return root;
+    return XtOpenApplication(app_context_return, application_class,
+			     options, num_options, 
+			     argc_in_out, argv_in_out, fallback_resources,
+			     applicationShellWidgetClass,
+			     args_in, num_args_in);
 }
 
-/*	Function Name: XtInitialize
- *	Description: This function can be used to initialize the toolkit.
- *		     It is obsolete; XtAppInitialize is more useful.
- *	Arguments: name - ** UNUSED **
- *                 classname - name of the application class.
- *                 options, num_options - the command line option info.
- *                 argc, argc - the command line args from main().
- *	Returns: a shell widget.
- */
-	
+
 /*ARGSUSED*/
 #if NeedFunctionPrototypes
 Widget 
