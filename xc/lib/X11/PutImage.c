@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.32 87/09/01 15:04:16 toddb Exp $ */
+/* $Header: XPutImage.c,v 11.33 87/09/09 13:14:27 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -308,7 +308,7 @@ char _reverse_byte[0x100] = {
 };
 
 
-static _swapbits (b, n)
+_swapbits (b, n)
 	register unsigned char *b;
 	register long n;
 {
