@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 2.12 88/02/24 09:14:08 swick Exp $";
+static char rcs_id[] = "$Header: command.c,v 2.13 88/07/21 14:17:02 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -28,6 +28,7 @@ static char rcs_id[] = "$Header: command.c,v 2.12 88/02/24 09:14:08 swick Exp $"
 
 /* command.c -- interface to exec mh commands. */
 
+#include <X11/Xos.h>
 #include "xmh.h"
 #include <sys/stat.h>
 #include <sys/signal.h>
