@@ -1,4 +1,4 @@
-/* $XConsortium: XGetHints.c,v 11.32 91/02/01 16:34:19 gildea Exp $ */
+/* $XConsortium: XGetHints.c,v 11.33 91/07/21 00:02:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -181,8 +181,6 @@ Status XGetIconSizes (dpy, w, size_list, count)
 	if (! (hp = hints = (XIconSize *) 
 	  Xcalloc ((unsigned) nitems, (unsigned) sizeof(XIconSize)))) {
 	    if (prop) Xfree ((char *) prop);
-	    UnlockDisplay(dpy);
-	    SyncHandle();
 	    return 0;
 	}
 
