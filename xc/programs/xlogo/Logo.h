@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Logo.h,v 1.9 89/05/11 01:05:50 kit Exp $
+* $XConsortium: Logo.h,v 1.10 90/04/17 18:02:44 jim Exp $
 */
 
 /*
@@ -25,14 +25,13 @@ without express or implied warranty.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		Pixel		White
+ background	     Background		Pixel		XtDefaultBackground
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
- foreground	     Foreground		Pixel		Black
+ foreground	     Foreground		Pixel		XtDefaultForeground
  height		     Height		Dimension	100
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- reverseVideo	     ReverseVideo	Boolean		False
  shapeWindow	     ShapeWindow	Boolean		False
  width		     Width		Dimension	100
  x		     Position		Position	0

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.7 90/04/11 17:11:29 jim Exp $
+* $XConsortium: LogoP.h,v 1.8 90/04/17 18:02:45 jim Exp $
 */
 
 /*
@@ -26,7 +26,6 @@ without express or implied warranty.
 
 typedef struct {
 	 Pixel	 fgpixel;
-	 Boolean reverse_video;
 	 GC	 foreGC;
 	 GC	 backGC;
 	 Boolean shape_window;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.16 90/04/18 11:37:20 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.17 90/04/20 17:24:41 jim Exp $";
 #endif
 
 /*
@@ -30,9 +30,6 @@ static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         XtOffset(LogoWidget,logo.fgpixel), XtRString,
        (XtPointer) "XtDefaultForeground"},
-    {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	XtOffset(LogoWidget,logo.reverse_video), XtRImmediate,
-       (XtPointer) FALSE},
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
        XtOffset(LogoWidget,logo.shape_window), XtRImmediate, 
        (XtPointer) FALSE},
@@ -197,16 +194,6 @@ static void Initialize (request, new)
     Widget request, new;
 {
     LogoWidget w = (LogoWidget)new;
-
-    if (w->logo.reverse_video) {
-	Pixel fg = w->logo.fgpixel;
-	Pixel bg = w->core.background_pixel;
-
-	if (w->core.border_pixel == fg)
-	    w->core.border_pixel = bg;
-	w->logo.fgpixel = bg;
-	w->core.background_pixel = fg;
-    }
 
     if (w->core.width < 1) w->core.width = 100;
     if (w->core.height < 1) w->core.height = 100;
