@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CutAndPaste.c,v 1.2 91/01/10 18:15:59 dave Exp $
+ * $XConsortium: CutPaste.c,v 1.1 91/01/22 14:45:27 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

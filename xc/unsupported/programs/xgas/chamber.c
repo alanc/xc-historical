@@ -175,8 +175,8 @@ static void getLabDimensions( w, data)
     data->scale.y = (int) ( hPix / hMM);
 
     /* Get dimensions of Chamber in mm */
-    data->widthMM = data->width / data->scale.x;
-    data->heightMM = data->height / data->scale.y;
+    data->widthMM = (float)data->width / (float)data->scale.x;
+    data->heightMM = (float)data->height / (float)data->scale.y;
 }
 
 /*

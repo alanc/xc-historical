@@ -203,7 +203,7 @@ main( argc, argv )
 
   /* Tell wm about icon */
   icon = XCreateBitmapFromData( XtDisplay(frame),
-	       XtWindow(frame), xgas_bits, xgas_width, xgas_height);
+	       XtWindow(frame), (char *)xgas_bits, xgas_width, xgas_height);
   XtSetArg( wargs[0], XtNiconPixmap, icon);
   XtSetValues( toplevel, wargs, 1);
 	   

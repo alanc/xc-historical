@@ -1,4 +1,4 @@
-char doc[]="\
+char doc1[]="\
 \n\
 \n\
 \n\
@@ -110,7 +110,8 @@ char doc[]="\
           the lab area.  The scrollbar is used to set the temperature,\n\
           which is displayed in the label below it.  Also below the\n\
           lab is the clock display, which reports the simulated time.\n\
-\n\
+";
+char doc2[]="\
           The other shell is a help popup.  It contains a text widget\n\
           which can scroll through the man page, quick-help (a list of\n\
           the mouse button actions), and this document.\n\
@@ -158,6 +159,8 @@ char doc[]="\
           2.2.  The Data Structures\n\
 \n\
           There are two main data structures: the molecules and the\n\
+";
+char doc3[]="\
           chamber (boxes).  These are defined in the \"gas.h\" header\n\
           file.\n\
 \n\
@@ -207,6 +210,8 @@ char doc[]="\
           this case, the \"collide\" routine is called; otherwise the\n\
           \"inertia\" routine is called.  Note that knowing the time of\n\
           the next collision allows the timestep routines to ignore\n\
+";
+char doc4[]="\
           the walls until the collision actually occurs.\n\
 \n\
           The inertia routine just solves for the molecule's location\n\
@@ -241,6 +246,8 @@ char doc[]="\
           (every \"delay\" milliseconds, using the X resources) via the\n\
           timeout mechanism.  The intrinsics call XtAddTimeOut causes\n\
           a callback to be called after a given delay.  In \"run\" mode,\n\
+";
+char doc5[]="\
           XtAddTimeOut is automatically called at the end of each\n\
           timestep.  Switching to \"pause\" mode removes this callback\n\
           using XtRemoveTimeOut.  In \"pause\" mode, the \"step\" button\n\
@@ -289,6 +296,8 @@ char doc[]="\
 \n\
           A better solution was to compute the trajectories using\n\
           integer arithmetic.  The endpoints (collision positions) of\n\
+";
+char doc6[]="\
           each trajectory are integer locations on the walls.  The\n\
           actual coefficients of the trajectory and the time until the\n\
           next collision are floating point numbers, but they are\n\
@@ -338,31 +347,33 @@ char doc[]="\
 \n\
               ____________________________________________________\n\
 \n\
-              \#\n\
-              \#   timestepSize in microseconds\n\
+              #\n\
+              #   timestepSize in microseconds\n\
               XGas*timestepSize:               3.0\n\
-              \#\n\
-              \# delay in milliseconds\n\
-              \#   Real time between timestep computations.\n\
-              \#   This doesn't overload my XR4 server running on a Sun 3/110.\n\
+              #\n\
+              # delay in milliseconds\n\
+              #   Real time between timestep computations.\n\
+              #   This doesn't overload my XR4 server running on a Sun 3/110.\n\
               XGas*delay:                      30\n\
-              \#\n\
-              \# randomBounce\n\
-              \#   0.0:    Angle of reflection equals angle of incidence.\n\
-              \#   1.0:    The two angles are unrelated.\n\
+              #\n\
+              # randomBounce\n\
+              #   0.0:    Angle of reflection equals angle of incidence.\n\
+              #   1.0:    The two angles are unrelated.\n\
               XGas*randomBounce:               0.2\n\
-              \#\n\
-              \#   0.0:    No kinetic energy is exchanged with the wall\n\
-              \#             during a collision\n\
-              \#   1.0:    The molecule emerges with a kinetic energy\n\
-              \#             corresponding to the wall temperature.\n\
+              #\n\
+              #   0.0:    No kinetic energy is exchanged with the wall\n\
+              #             during a collision\n\
+              #   1.0:    The molecule emerges with a kinetic energy\n\
+              #             corresponding to the wall temperature.\n\
               XGas*equilibrium:                0.9\n\
-              \#\n\
-              \#   maxMolecules\n\
-              \#           maximum number of molecules that can be created\n\
-              \#             with the mouse\n\
+              #\n\
+              #   maxMolecules\n\
+              #           maximum number of molecules that can be created\n\
+              #             with the mouse\n\
               XGas*maxMolecules:               100\n\
-              \#\n\
+              #\n\
+";
+char doc7[]="\
 \n\
               ____________________________________________________\n\
 \n\

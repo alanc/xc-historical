@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.10 91/03/27 18:22:57 dave Exp $
+ * $XConsortium: Scale.c,v 1.11 91/04/02 11:40:56 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

@@ -14,7 +14,9 @@
 			Ctrl<Key>c:close()\n\
 			<Key>space:replace()\n\
 			<Btn2Up>:replace()\n\
-			<Btn3Up>:replace()          
+                        <Btn3Down>:request-selection()\n\
+                        <Btn3Up>:grab-selection()
+
 *close.accelerators:#augment\
 			<Key>q:set()notify()unset()\n\
 			Ctrl<Key>c:set()notify()unset()

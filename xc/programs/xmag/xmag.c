@@ -935,6 +935,7 @@ RedoOldScale(data)
   n=0;
   XtSetArg(wargs[n], XtNvisual, &oldVis); n++;
   XtSetArg(wargs[n], XtNdepth, &oldDepth); n++;
+  XtSetArg(wargs[n], XtNcolormap, &oldCmap); n++;
   XtGetValues(data->scaleInstance, wargs, n);  
   if (oldVis == data->win_info.visual && oldDepth == data->win_info.depth
       && oldCmap == data->win_info.colormap) {

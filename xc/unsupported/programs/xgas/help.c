@@ -8,7 +8,7 @@
 #include <X11/Shell.h>
 extern char quick[];
 extern char man[];
-extern char doc[];
+extern char doc1[], doc2[], doc3[], doc4[], doc5[], doc6[], doc7[];
 
 /* static to allow show_text callback to set its args. */
 static Widget helpText;
@@ -54,7 +54,8 @@ createHelpWidgets( parent )
 				topLevelShellWidgetClass, parent,
 				 NULL);
   /* Now add callback for help button */
-  XtAddCallback(parent, XtNcallback, help_callback, (XtPointer)helpShell);
+  XtAddCallback(parent, XtNcallback, (XtCallbackProc)help_callback,
+		(XtPointer)helpShell);
   
   /* HELP FRAME */
   helpFrame = XtVaCreateManagedWidget("helpFrame",
@@ -65,7 +66,8 @@ createHelpWidgets( parent )
   helpQuit = XtVaCreateManagedWidget("helpQuit", commandWidgetClass,
 			helpFrame,
 			NULL);
-  XtAddCallback(helpQuit, XtNcallback, pop_down, (XtPointer)helpShell);
+  XtAddCallback(helpQuit, XtNcallback, (XtCallbackProc)pop_down, 
+		(XtPointer)helpShell);
 
   /* HELP COMMAND BUTTON: QUICK */
   helpQuick = XtVaCreateManagedWidget("helpQuick", commandWidgetClass,
@@ -73,19 +75,22 @@ createHelpWidgets( parent )
 			XtNfromHoriz, (XtPointer)helpQuit,
 			XtNhorizDistance, 100,
 			NULL);
-  XtAddCallback(helpQuick, XtNcallback, show_text, (char*)quick);
+  XtAddCallback(helpQuick, XtNcallback, (XtCallbackProc)show_text, 
+		(char*)quick);
   
   /* HELP COMMAND BUTTON: MAN */
   helpMan = XtVaCreateManagedWidget("helpMan", commandWidgetClass, helpFrame,
 			XtNfromHoriz, (XtPointer)helpQuick,
 			NULL);
-  XtAddCallback(helpMan, XtNcallback, show_text, (char*)man);
+  XtAddCallback(helpMan, XtNcallback, (XtCallbackProc)show_text, (char*)man);
   
   /* HELP COMMAND BUTTON: DOC */
   helpDoc = XtVaCreateManagedWidget("helpDoc", commandWidgetClass, helpFrame,
 			XtNfromHoriz, (XtPointer)helpMan,
 			NULL);
-  XtAddCallback(helpDoc, XtNcallback, show_text, (char*)doc);
+  XtAddCallback(helpDoc, XtNcallback, (XtCallbackProc)show_text, 
+		(char*)strcat(doc1, strcat(doc2, strcat(doc3, strcat(doc4,
+			 strcat(doc5, strcat(doc6, doc7)))))));
   
   /* HELP TEXT */
   helpText = XtVaCreateManagedWidget("helpText",

@@ -28,7 +28,10 @@
 #define MAXTEMP 500		/* degrees K */
 #define INITTEMP 300            /* initial value */
 #define SMALL 1.0e-10		/* effectively zero */
-#define TWO_PI 2.0 * M_PI
+#define TWO_PI 2.0 * 3.14159265358979323846
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923
+#endif
 
 typedef struct _Coord {
     int x, y;
@@ -118,10 +121,10 @@ typedef struct _labData {
 
 /* Forward references */
 /* in dynamics.c: */
-	void inertia();
-	void collide();
-	double hit();
-	double hitHole();
+	static void inertia();
+	static void collide();
+	static double hit();
+	static double hitHole();
 	void findNextCollision();
 	void dynamics();
 	void doTimestep();
@@ -134,8 +137,8 @@ typedef struct _labData {
 	void labResize();
 	void labExpose();
 	void addMolecules();
-	void initWall();
-	void getLabDimensions();
+	static void initWall();
+	static void getLabDimensions();
 	void changeTemp();
 	float vEquilibrium();
 	float frand();
