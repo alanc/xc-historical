@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.104 94/10/07 20:00:23 rws Exp rws $ */
+/* $XConsortium: registry,v 1.105 94/12/13 21:02:07 rws Exp rws $ */
 
 				  X Registry
 
@@ -70,6 +70,7 @@ Name						Reference
 "ORL"						[65]
 "OSF"						[7]
 "Panasonic"					[52]
+"PERITEK"					[116]
 "PFU"						[32]
 "RATIONAL"					[88]
 "SGCS"						[83]
@@ -319,6 +320,7 @@ String						Reference
 "MIT X Consortium"				[8]
 "Network Computing Devices Inc."		[66]
 "OMRON Corporation"				[45]
+"Peritek Corporation"				[116]
 "PFU LIMITED"					[32]
 "Silicon Graphics Computer Systems"		[6]
 "Snitily Graphics Consulting Services"		[83]
@@ -900,6 +902,7 @@ Name						Reference
 "TD"						[63]
 "MIT"						[8]
 "NCD"						[66]
+"PERITEK"					[116]
 "WYSE"						[68]
 
 
@@ -1527,3 +1530,8 @@ REFERENCES
 	X/software
 	Marktstrasse 8, D-87730
 	Groenenbach, Germany
+
+[116]	Bob Schulman
+	Peritek Corp.
+	5550 Redwood Road
+	Oakland, CA 94619
