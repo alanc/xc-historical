@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.38 91/08/16 16:28:25 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.39 91/08/20 14:01:27 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -47,7 +47,7 @@ XCOMM site:  $XConsortium: site.def,v 1.38 91/08/16 16:28:25 rws Exp $
 
 #if defined(SunArchitecture) && defined(mc68000)
 #undef  LibraryCCOptions
-#define LibraryCCOptions -f68881 -pipe
+#define SharedLibraryCCOptions -f68881 -pipe
 #endif
 
 #define XmanLocalSearchPath /usr/local/man
