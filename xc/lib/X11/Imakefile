@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.169 94/01/20 17:54:28 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.170 94/01/21 16:38:58 gildea Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -58,8 +58,11 @@ XBSDLIB = /**/
          K5INCL = Krb5Includes
          K5DEFS = Krb5Defines
 #endif
+#if NeedLibInsideFlag
+    LIB_DEFINES = -D_XLIBINT_
+#endif
 
-        DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
+        DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES) $(LIB_DEFINES)
    OPEN_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES) $(K5INCL) $(K5DEFS)
  DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
