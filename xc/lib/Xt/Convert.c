@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.27 89/09/26 10:53:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.28 89/10/03 16:26:00 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -432,7 +432,12 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	    break;
 
 	case XtBaseOffset:
+#ifdef CRAY1
+	    args[i].addr =
+		(XtPointer)((int)widget + (int)convert_args[i].address_id);
+#else
 	    args[i].addr = (XtPointer)widget + (int)convert_args[i].address_id;
+#endif
 	    break;
 
 	case XtWidgetBaseOffset:
@@ -469,7 +474,11 @@ static void ComputeArgs(widget, convert_args, num_args, args)
                      params,&num_params);
 		offset = 0;
 	    }
+#ifdef CRAY1
+	    args[i].addr = (XtPointer)((int)widget + offset);
+#else
 	    args[i].addr = (XtPointer)widget + offset;
+#endif
 	    break;
 	} /* switch */
     } /* for */
