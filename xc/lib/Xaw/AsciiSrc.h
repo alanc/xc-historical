@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.11 91/02/20 17:57:18 converse Exp $
+ * $XConsortium: AsciiSrc.h,v 1.12 91/07/22 18:34:39 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@
 #define _XawAsciiSrc_h
 
 #include <X11/Xaw/TextSrc.h>
+#include <X11/Xfuncproto.h>
 
 /* Resources:
 
