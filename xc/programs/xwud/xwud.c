@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.28 89/05/03 11:15:34 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.29 89/05/20 10:51:23 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -239,6 +239,7 @@ main(argc, argv)
 	buffer += in_image.bytes_per_line * in_image.height *
 		  (in_image.depth - (plane + 1));
 	in_image.depth = 1;
+	ncolors = 0;
     }
     if (in_image.depth == 1) {
 	in_image.format = XYBitmap;
@@ -430,16 +431,22 @@ main(argc, argv)
     }
 
     if (out_image->depth == 1) {
-	gc_val.foreground = BlackPixel (dpy, screen);
-	gc_val.background = WhitePixel (dpy, screen); 
 	if (fgname &&
 	    XParseColor(dpy, colormap, fgname, &color) &&
 	    XAllocColor(dpy, colormap, &color))
 	    gc_val.foreground = color.pixel;
+	else if (ncolors && XAllocColor(dpy, colormap, &colors[1]))
+	    gc_val.foreground = colors[1].pixel;
+	else
+	    gc_val.foreground = BlackPixel (dpy, screen);
 	if (bgname &&
 	    XParseColor(dpy, colormap, bgname, &color) &&
 	    XAllocColor(dpy, colormap, &color))
 	    gc_val.background = color.pixel;
+	else if (ncolors && XAllocColor(dpy, colormap, &colors[0]))
+	    gc_val.background = colors[0].pixel;
+	else
+	    gc_val.background = WhitePixel (dpy, screen);
 	if (inverse) {
 	    unsigned long tmp;
 	    tmp = gc_val.foreground;
