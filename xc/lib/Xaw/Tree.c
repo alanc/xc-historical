@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.9 90/02/02 14:51:29 jim Exp $
+ * $XConsortium: Tree.c,v 1.10 90/02/02 15:07:30 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -728,7 +728,6 @@ static void new_layout (tw)
     if (XtIsRealized (tw)) {
 	XClearArea (XtDisplay(tw), XtWindow(tw), 0, 0, 0, 0, True);
     }
-
 }
 
 static GC get_tree_gc (w)
@@ -745,4 +744,18 @@ static GC get_tree_gc (w)
     }
 
     return XtGetGC (w, valuemask, &values);
+}
+
+
+
+/*****************************************************************************
+ *                                                                           *
+ * 				Public Routines                              *
+ *                                                                           *
+ *****************************************************************************/
+
+void XawTreeForceLayout (tree)
+    TreeWidget tree;
+{
+    new_layout (tree);
 }
