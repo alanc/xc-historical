@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.2 92/05/11 13:12:33 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.3 92/05/20 20:51:36 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -723,10 +723,7 @@ OUTPUT PEXPCAttributes			*ppca;
     ppca->model_clip_volume.half_spaces = NULL;
     ppca->light_state.count = 0;
     ppca->light_state.indices = NULL;
-    ppca->para_surf_char.psc.level_curves.count = 0;
-    ppca->para_surf_char.psc.level_curves.parameters = NULL;
-    ppca->para_surf_char.psc.imp_dep.length = 0;
-    ppca->para_surf_char.psc.imp_dep.data = NULL;
+    ppca->para_surf_char.type = 0;
 
 
     /*
