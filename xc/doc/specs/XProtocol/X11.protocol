@@ -9921,7 +9921,8 @@ For a given connection to the server,
 a client can block while reading from the connection 
 but should undertake to read (events and errors) when writing would block.
 Failure on the part of a client to obey this rule could result
-in a deadlocked connection, although deadlock is probably unlikely unless either
+in a deadlocked connection, 
+although deadlock is probably unlikely unless either
 the transport layer has very little buffering or the client attempts to
 send large numbers of requests without ever reading replies or checking for
 errors and events.
@@ -9939,10 +9940,10 @@ In addition, the effect of any other cause (for example, activation of a grab,
 pointer motion) that can generate multiple events must effectively generate 
 (and queue) all required events indivisibly with respect to all other causes 
 and requests.
-.XS 83
+.XS 82
 Appendix A \- KEYSYM Encoding
 .XE
-.XS 100
+.XS 99
 Appendix B \- Protocol Encoding
 .XE
 .TC
