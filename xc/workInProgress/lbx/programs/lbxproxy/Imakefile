@@ -1,0 +1,28 @@
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/17 00:47:39 gildea Exp $
+         XAULIB = -lXau
+       XDMCPLIB = -lXdmcp
+             OS = $(SERVERSRC)/os/libos.a $(XAULIB) $(XDMCPLIB)
+         LZWLIB	= $(EXTENSIONSRC)/lbxcommon/lzw/liblzw.a
+       DELTALIB = $(EXTENSIONSRC)/lbxcommon/delta/libdelta.a
+LOCAL_LIBRARIES = $(EXTENSIONSRC)/lib/libXext.a $(XLIB) $(OS) $(LZWLIB) \
+		  $(DELTALIB)
+CDEBUGFLAGS = -g
+DEFINES=-DDEBUG  -DINCLUDE_ALLOCA_H
+INCLUDESRC = /usr/include/X11
+INCLUDES = \
+	-I$(EXTENSIONSRC)/lbxcommon/delta \
+	-I$(EXTENSIONSRC)/include \
+	-I$(EXTENSIONSRC)/include/lbx \
+	-I$(INCLUDESRC) \
+	-I$(SERVERSRC)/include
+
+    SRCS = main.c dispatch.c wire.c globals.c \
+		utils.c stubs.c tables.c init.c \
+		cache.c colormap.c lbxfuncs.c reqtype.c \
+                resource.c tags.c atomcache.c
+    OBJS = main.o dispatch.o wire.o globals.o \
+		utils.o stubs.o tables.o init.o \
+		cache.o colormap.o lbxfuncs.o reqtype.o \
+                resource.o tags.o atomcache.o
+	
+ComplexProgramTarget(lbx)
