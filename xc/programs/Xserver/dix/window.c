@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.153 87/08/06 14:21:58 toddb Locked $ */
+/* $Header: window.c,v 1.154 87/08/09 15:48:51 swick Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1182,10 +1182,17 @@ fixChildrenWinSize(pWin)
 }
 
 static void
-MoveWindowInStack(pWin, pNextSib)
+MoveWindowInStack(pWin, pNextSib, above)
     WindowPtr pWin, pNextSib;
+    int above;
 {
     WindowPtr pParent = pWin->parent;
+
+    if (above != Above)	{	/* then must be Below */
+        if (pNextSib)		/* so transform to an Above */
+	    pNextSib = pNextSib->nextSib;
+        above = Above;		/* note: (*,NULL) is always (Above,NULL); */
+    }
 
     if (pWin->nextSib != pNextSib)
     {
@@ -1298,13 +1305,9 @@ MoveWindow(pWin, x, y, pNextSib, above)
         (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
     (* pScreen->PositionWindow)(pWin,pWin->absCorner.x, pWin->absCorner.y);
-    if (!pNextSib || (above == Above))
-        MoveWindowInStack(pWin, pNextSib);
-    else
-    {
-        MoveWindowInStack(pNextSib, pWin);
-        windowToValidate = pNextSib;
-    }
+
+    MoveWindowInStack(pWin, pNextSib, above);
+/*  windowToValidate = pNextSib; */
 
     fixChildrenWinSize(pWin);
     if (WasMapped) 
@@ -1549,10 +1552,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
     /* let the hardware adjust background and border pixmaps, if any */
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
 
-    if (!pSib || (above == Above))
-        MoveWindowInStack(pWin, pSib);
-    else
-        MoveWindowInStack(pSib, pWin);
+    MoveWindowInStack(pWin, pSib, above);
 
     if (WasMapped) 
     {
@@ -1948,10 +1948,9 @@ ReflectStackChange(pWin, pSib, above)
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
         anyMarked = MarkChildren(pParent, box, FALSE);
     }
-    if (!pSib || (above == Above))
-        MoveWindowInStack(pWin, pSib);
-    else
-        MoveWindowInStack(pSib, pWin);
+
+    MoveWindowInStack(pWin, pSib, above);
+
     if (doValidation)
     {
         (* pWin->drawable.pScreen->ValidateTree)(pParent, 
@@ -2045,6 +2044,8 @@ ConfigureWindow(pWin, mask, vlist, client)
                 return(BadWindow);
             if (pSib->parent != pWin->parent)
 		return(BadMatch);
+	    if (pSib == pWin)
+	        return(BadMatch);
 	    break;
           case CWStackMode:
 	    GET_CARD8(CWStackMode, smode);
