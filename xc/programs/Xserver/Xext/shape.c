@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.12 89/05/19 08:54:44 rws Exp $ */
+/* $XConsortium: shape.c,v 5.0 89/06/09 15:10:47 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -45,8 +45,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "shapestr.h"
 #include "regionstr.h"
 #include "gcstruct.h"
-
-extern void SwapShorts();
 
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
@@ -81,21 +79,23 @@ void
 ShapeExtensionInit()
 {
     ExtensionEntry *extEntry, *AddExtension();
-    int ProcShapeDispatch(), SProcShapeDispatch();
-    void  ShapeResetProc();
+    static int ProcShapeDispatch(), SProcShapeDispatch();
+    static void  ShapeResetProc(), SShapeNotifyEvent();
 
     extEntry = AddExtension(SHAPENAME, ShapeNumberEvents, 0, ProcShapeDispatch,
-			    SProcShapeDispatch, ShapeResetProc);
+			    SProcShapeDispatch, ShapeResetProc,
+			    StandardMinorOpcode);
     if (extEntry)
     {
 	ShapeReqCode = (unsigned char)extEntry->base;
 	ShapeEventBase = extEntry->eventBase;
 	ShapeResourceClass = CreateNewResourceClass ();
+	EventSwapVector[ShapeEventBase] = SShapeNotifyEvent;
     }
 }
 
 /*ARGSUSED*/
-void
+static void
 ShapeResetProc (extEntry)
 ExtensionEntry	*extEntry;
 {
@@ -224,7 +224,7 @@ CreateClipShape (pWin)
     return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
-
+static int
 ProcShapeQueryVersion (client)
     register ClientPtr	client;
 {
@@ -318,6 +318,7 @@ ProcShapeRectangles (client)
  * ProcShapeMask
  **************/
 
+static int
 ProcShapeMask (client)
     register ClientPtr client;
 {
@@ -376,7 +377,7 @@ ProcShapeMask (client)
  * ProcShapeCombine
  ************/
 
-static
+static int
 ProcShapeCombine (client)
     register ClientPtr client;
 {
@@ -456,7 +457,7 @@ ProcShapeCombine (client)
  * ProcShapeOffset
  *************/
 
-static
+static int
 ProcShapeOffset (client)
     register ClientPtr client;
 {
@@ -697,6 +698,7 @@ ProcShapeSelectInput (client)
  * deliver the event
  */
 
+static
 SendShapeNotify (pWin, which)
     WindowPtr	pWin;
     int		which;
@@ -740,6 +742,8 @@ SendShapeNotify (pWin, which)
     }
     for (pShapeEvent = *pHead; pShapeEvent; pShapeEvent = pShapeEvent->next) {
 	client = pShapeEvent->client;
+	if (client == serverClient || client->clientGone)
+	    continue;
 	se.type = ShapeNotify + ShapeEventBase;
 	se.kind = which;
 	se.window = pWin->drawable.id;
@@ -750,17 +754,7 @@ SendShapeNotify (pWin, which)
 	se.height = extents.y2 - extents.y1;
 	se.time = currentTime.milliseconds;
 	se.shaped = shaped;
-	if (client->swapped) {
-	    swapl (&se.window, n);
-	    swaps (&se.sequenceNumber, n);
-	    swaps (&se.x, n);
-	    swaps (&se.y, n);
-	    swaps (&se.width, n);
-	    swaps (&se.height, n);
-	    swapl (&se.time, n);
-	}
-	if (client != serverClient && !client->clientGone)
-	    (void) WriteToClient (client, sizeof (xEvent), (char *) &se);
+	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
 }
 
@@ -879,7 +873,7 @@ ProcShapeGetRectangles (client)
     return client->noClientException;
 }
 
-int
+static int
 ProcShapeDispatch (client)
     register ClientPtr	client;
 {
@@ -904,20 +898,25 @@ ProcShapeDispatch (client)
     case X_ShapeGetRectangles:
 	return ProcShapeGetRectangles (client);
     default:
-	SendErrorToClient (client, ShapeReqCode, stuff->data, (XID)0,
-			   BadRequest);
 	return BadRequest;
     }
 }
 
-/* Macros needed for byte-swapping, copied from swapreq.c.  Really
-   should be in a header file somewhere. */
-
-#define LengthRestS(stuff) \
-    ((stuff->length << 1)  - (sizeof(*stuff) >> 1))
-
-#define SwapRestS(stuff) \
-    SwapShorts((short *)(stuff + 1), (unsigned long)LengthRestS(stuff))
+static void
+SShapeNotifyEvent(from, to)
+    xShapeNotifyEvent *from, *to;
+{
+    to->type = from->type;
+    to->kind = from->kind;
+    cpswapl (from->window, to->window);
+    cpswaps (from->sequenceNumber, to->sequenceNumber);
+    cpswaps (from->x, to->x);
+    cpswaps (from->y, to->y);
+    cpswaps (from->width, to->width);
+    cpswaps (from->height, to->height);
+    cpswapl (from->time, to->time);
+    to->shaped = from->shaped;
+}
 
 static int
 SProcShapeQueryVersion (client)
@@ -1037,7 +1036,7 @@ SProcShapeGetRectangles (client)
     return ProcShapeGetRectangles (client);
 }
 
-int
+static int
 SProcShapeDispatch (client)
     register ClientPtr	client;
 {
@@ -1062,8 +1061,6 @@ SProcShapeDispatch (client)
     case X_ShapeGetRectangles:
 	return SProcShapeGetRectangles (client);
     default:
-	SendErrorToClient (client, ShapeReqCode, stuff->data, (XID)0,
-			   BadRequest);
 	return BadRequest;
     }
 }
