@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.67 91/07/17 21:29:40 converse Exp $
+ * $XConsortium: init.c,v 2.68 91/07/18 21:01:38 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -130,7 +130,7 @@ static XtResource resources[] = {
     {"newMailBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
 	 Offset(flag_up), XtRString, (XtPointer)"black6"},
     {"noMailBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
-	 Offset(flag_down), XtRString, (XtPointer)"blank6"},
+	 Offset(flag_down), XtRString, (XtPointer)"box6"},
 
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 Offset(cursor), XtRString, "left_ptr"},
