@@ -11,3 +11,4 @@ SRCS = oclock.c Clock.c transform.c
 OBJS = oclock.o Clock.o transform.o
 
 ComplexProgramTarget(oclock)
+InstallAppDefaultsLong(Clock-col,Clock-color)
