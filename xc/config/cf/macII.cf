@@ -17,7 +17,10 @@
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
 
-/**/# platform:  $XConsortium: macII.cf,v 1.5 89/01/27 11:08:45 jim Exp $
+#define ServerDefines StandardDefines ExtensionDefines -DPURDUE
+
+
+/**/# platform:  $XConsortium: macII.cf,v 1.6 89/02/22 16:51:36 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
