@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.84 89/03/24 18:36:27 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.85 89/04/07 11:32:16 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -1932,6 +1932,10 @@ StoreColors (pmap, count, defs)
 	    {
 		pmap->red[pix].co.local.red = pdef->red;
 	    }
+	    else
+	    {
+		pdef->red = pmap->red[pix].co.local.red;
+	    }
 
 	    pix = (pdef->pixel & pVisual->greenMask) >> pVisual->offsetGreen;
 	    if (pix >= pVisual->ColormapEntries )
@@ -1949,6 +1953,10 @@ StoreColors (pmap, count, defs)
 	    {
 		pmap->green[pix].co.local.green = pdef->green;
 	    }
+	    else
+	    {
+		pdef->green = pmap->green[pix].co.local.green;
+	    }
 
 	    pix = (pdef->pixel & pVisual->blueMask) >> pVisual->offsetBlue;
 	    if (pix >= pVisual->ColormapEntries )
@@ -1965,6 +1973,10 @@ StoreColors (pmap, count, defs)
 	    else if (pdef->flags & DoBlue)
 	    {
 		pmap->blue[pix].co.local.blue = pdef->blue;
+	    }
+	    else
+	    {
+		pdef->blue = pmap->blue[pix].co.local.blue;
 	    }
 	    /* If this is an o.k. entry, then it gets added to the list
 	     * to be sent to the hardware.  If not, skip it.  Once we've
@@ -2025,6 +2037,13 @@ StoreColors (pmap, count, defs)
 		else
 		    pent->co.local.red = pdef->red;
 	    }
+	    else
+	    {
+		if(pent->fShared)
+		    pdef->red = pent->co.shco.red->color;
+		else
+		    pdef->red = pent->co.local.red;
+	    }
 	    if(pdef->flags & DoGreen)
 	    {
 		if(pent->fShared)
@@ -2036,6 +2055,13 @@ StoreColors (pmap, count, defs)
 		else
 		    pent->co.local.green = pdef->green;
 	    }
+	    else
+	    {
+		if(pent->fShared)
+		    pdef->green = pent->co.shco.green->color;
+		else
+		    pdef->green = pent->co.local.green;
+	    }
 	    if(pdef->flags & DoBlue)
 	    {
 		if(pent->fShared)
@@ -2046,6 +2072,13 @@ StoreColors (pmap, count, defs)
 		}
 		else
 		    pent->co.local.blue = pdef->blue;
+	    }
+	    else
+	    {
+		if(pent->fShared)
+		    pdef->blue = pent->co.shco.blue->color;
+		else
+		    pdef->blue = pent->co.local.blue;
 	    }
 
 	    if(!ok)
