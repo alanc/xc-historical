@@ -84,10 +84,10 @@
    (:fasload depdefs clx dependent macros bufmac buffer))
   (:compile-load gcontext
    (:fasload depdefs clx dependent macros bufmac buffer display))
-  (:compile-load requests
-   (:fasload depdefs clx dependent macros bufmac buffer display))
   (:compile-load input
    (:fasload depdefs clx dependent macros bufmac buffer display))
+  (:compile-load requests
+   (:fasload depdefs clx dependent macros bufmac buffer display input))
   (:compile-load fonts
    (:fasload depdefs clx dependent macros bufmac buffer display))
   (:compile-load graphics
@@ -145,10 +145,10 @@
 	   (:uses-definitions-from dependent macros bufmac buffer))
   (:module gcontext ("gcontext")
 	   (:uses-definitions-from dependent macros bufmac display))
-  (:module requests ("requests")
-	   (:uses-definitions-from dependent macros bufmac display))
   (:module input ("input")
 	   (:uses-definitions-from dependent macros bufmac display))
+  (:module requests ("requests")
+	   (:uses-definitions-from dependent macros bufmac display input))
   (:module fonts ("fonts")
 	   (:uses-definitions-from dependent macros bufmac display))
   (:module graphics ("graphics")
@@ -353,8 +353,8 @@
        (compile-and-load "buffer")
        (compile-and-load "display")
        (compile-and-load "gcontext")
-       (compile-and-load "requests")
        (compile-and-load "input")
+       (compile-and-load "requests")
        (compile-and-load "fonts")
        (compile-and-load "graphics")
        (compile-and-load "text")
@@ -408,8 +408,8 @@
     (load "buffer")
     (load "display")
     (load "gcontext")
-    (load "requests")
     (load "input")
+    (load "requests")
     (load "fonts")
     (load "graphics")
     (load "text")
