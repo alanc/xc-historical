@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.29 89/10/05 17:26:12 swick Exp $
+ * $XConsortium: Xrm.c,v 1.30 89/11/14 16:20:16 converse Exp $
  */
 
 /***********************************************************
@@ -70,7 +70,7 @@ extern void bzero();
 
 XrmQuark    XrmQString;
 
-typedef	void (*DBEnumProc)();
+typedef	Bool (*DBEnumProc)();
 
 #define HASHSIZE	64
 #define HASHMASK	63
@@ -438,7 +438,7 @@ static char *getstring(buf, nchars, dp)
 	return buf;
 }
 
-static void Enum(db, bindings, quarks, count, proc, closure)
+static Bool Enum(db, bindings, quarks, count, proc, closure)
     XrmHashBucket   db;
     XrmBindingList  bindings;
     XrmQuarkList    quarks;
@@ -460,24 +460,27 @@ static void Enum(db, bindings, quarks, count, proc, closure)
 	    bucket = table[i];						    \
 	    while (bucket != NULL) {					    \
 		quarks[count] = bucket->quark;				    \
-	    	Enum(bucket, bindings, quarks, count+1, proc, closure);     \
+		if (Enum(bucket, bindings, quarks, count+1, proc, closure)) \
+		   return True;						    \
 		bucket = bucket->next;					    \
 	    }								    \
 	}								    \
     }									    \
 } /* EnumTable */
 
-    if (db == NULL) return;
+    if (db == NULL) return False;
     EnumTable(XrmBindTightly);
     EnumTable(XrmBindLoosely);
 
     quarks[count] = NULLQUARK;
     if (db->value.addr != NULL) {
-	(*proc)(bindings, quarks, db->type, &(db->value), closure);
+	if ((*proc)(bindings, quarks, db->type, &(db->value), closure))
+	    return True;
     }
+    return False;
 }
 
-static void EnumerateDatabase(db, proc, closure)
+static Bool EnumerateDatabase(db, proc, closure)
     XrmHashBucket   db;
     caddr_t     closure;
     DBEnumProc      proc;
@@ -485,7 +488,7 @@ static void EnumerateDatabase(db, proc, closure)
     XrmBinding  bindings[100];
     XrmQuark	quarks[100];
    
-    Enum(db, bindings, quarks, (unsigned)0, proc, closure);
+    return Enum(db, bindings, quarks, (unsigned)0, proc, closure);
 }
 
 static void PrintBindingQuarkList(bindings, quarks, stream)
@@ -506,7 +509,7 @@ static void PrintBindingQuarkList(bindings, quarks, stream)
     }
 }
 
-static void DumpEntry(bindings, quarks, type, value, stream)
+static Bool DumpEntry(bindings, quarks, type, value, stream)
     XrmBindingList      bindings;
     XrmQuarkList	quarks;
     XrmRepresentation   type;
@@ -555,6 +558,7 @@ static void DumpEntry(bindings, quarks, type, value, stream)
            (void) fprintf(stream, ":\t%s\n", value->addr);
         }
      }
+    return False;
 }
 
 static void Merge(new, old)
@@ -1014,7 +1018,7 @@ void XrmPutFileDatabase(db, fileName)
     FILE	*file;
     
     if ((file = fopen(fileName, "w")) == NULL) return;
-    EnumerateDatabase(db, DumpEntry, (caddr_t) file);
+    (void)EnumerateDatabase(db, DumpEntry, (caddr_t) file);
     fclose(file);
 }
 
@@ -1105,3 +1109,41 @@ void XrmDestroyDatabase(rdb)
     }
     Xfree(rdb);
 } /* XrmDestroyDatabase */
+
+typedef struct _GRNData {
+    char *name;
+    XrmRepresentation type;
+    XrmValuePtr value;
+} GRNData;
+
+/*ARGSUSED*/
+static Bool SameValue(bindings, quarks, type, value, data)
+    XrmBindingList      bindings;
+    XrmQuarkList	quarks;
+    XrmRepresentation   type;
+    XrmValuePtr		value;
+    GRNData		*data;
+{
+    if ((type == data->type) && (value->size == data->value->size) &&
+	!strncmp((char *)value->addr, (char *)data->value->addr, value->size))
+    {
+	data->name = XrmQuarkToString(*quarks); /* XXX */
+	return True;
+    }
+    return False;
+} /* SameValue */
+
+/* Gross internal hack */
+char *_XrmGetResourceName(rdb, type_str, pValue)
+    XrmDatabase rdb;
+    XrmString type_str;
+    XrmValuePtr pValue;
+{
+    GRNData data;
+    data.name = (char *)NULL;
+    data.type = XrmStringToQuark(type_str);
+    data.value = pValue;
+
+    (void)EnumerateDatabase(rdb, SameValue, (caddr_t)&data);
+    return data.name;
+} /* _XrmGetResourceName */
