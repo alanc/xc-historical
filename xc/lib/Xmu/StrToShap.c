@@ -1,4 +1,4 @@
-/* $XConsortium: StrToShap.c,v 1.2 90/07/15 16:19:02 rws Exp $ */
+/* $XConsortium: StrToShap.c,v 1.3 90/12/20 13:36:01 converse Exp $ */
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -32,9 +32,9 @@
 	    else {						\
 		static type static_val;				\
 		static_val = (value);				\
-		toVal->size = sizeof(type);			\
 		toVal->addr = (XtPointer)&static_val;		\
 	    }							\
+	    toVal->size = sizeof(type);				\
 	    return True;					\
 	}
 
