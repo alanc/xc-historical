@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.12 94/02/18 20:03:40 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.13 94/02/21 09:57:58 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -211,7 +211,7 @@ static void DieResponse(appShell, client_data, call_data)
     ApplicationData ad = (ApplicationData) client_data;
 
     if (appResources.verbose)
-	printf ("Client Id %s, received DIE\n", ad->smcid);
+	printf("Client Id %s, received DIE or user said Quit\n", ad->smcid);
     XtDestroyApplicationContext(XtWidgetToApplicationContext(appShell));
     exit(0);
 }
@@ -301,6 +301,10 @@ static void Quit(w, client_data, call_data)
     reasonMsg[0] = "Quit Reason 1";
     reasonMsg[1] = "Quit Reason 2";
 
+    /* A well-behaved client closes the session connection before exiting */
+    XtVaSetValues (ad->appShell, XtNjoinSession, False, NULL);
+
+    /* Do the exactly the same thing we'd do if we just received a Die */
     XtCallCallbacks(ad->appShell, XtNdieCallback, NULL);
 }
 
@@ -466,9 +470,7 @@ main(argc, argv)
 			      Resources, XtNumber(Resources), NULL, 0);
 
     CreateMainInterface(ad);
-
     XtRealizeWidget(ad->appShell);
-
     CreateInteractDialog(ad);
 
     if (appResources.verbose) {
