@@ -89,7 +89,7 @@ stipplesparcte.o: stipplesparcte.s
 
 ObjectFromSpecialSource(cfbseg,cfbline,-DPOLYSEGMENT)
 ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
-SpecialObjectRule(cfbglblt8.o,,$(STIPPLEDEF))
+SpecialObjectRule(cfbglblt8.o,$(NOTDEF),$(STIPPLEDEF))
 
 ObjectFromSpecialSource(cfbfillarcC,cfbfillarc,-DRROP=GXcopy)
 ObjectFromSpecialSource(cfbfillarcG,cfbfillarc,-DRROP=GXset)
