@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 1.1 89/06/14 10:54:24 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.69 89/06/15 11:52:37 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -32,8 +32,8 @@
 
 #include "Xlib.h"
 #include <X11/Xproto.h>
-#include "Xlibos.h"
 #include <errno.h>
+#include "Xlibos.h"
 
 #ifndef NULL
 #define NULL 0
