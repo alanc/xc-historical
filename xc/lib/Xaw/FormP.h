@@ -1,4 +1,4 @@
-/* $Header: FormP.h,v 1.5 88/02/01 12:03:03 swick Locked $ */
+/* $Header: FormP.h,v 1.6 88/02/05 23:08:15 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 /* Form widget private definitions */
@@ -6,8 +6,8 @@
 #ifndef _FormP_h
 #define _FormP_h
 
-#include <X/Form.h>
-#include "ConstraintP.h"
+#include <X11/Form.h>
+#include <X11/ConstraintP.h>
 
 #define XtREdgeType		"EdgeType"
 

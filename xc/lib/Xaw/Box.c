@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Box.c,v 1.24 88/02/05 21:09:40 swick Exp $";
+static char rcsid[] = "$Header: Box.c,v 1.25 88/02/11 17:19:37 rws Exp $";
 #endif lint
 
 /*
@@ -29,10 +29,10 @@ static char rcsid[] = "$Header: Box.c,v 1.24 88/02/05 21:09:40 swick Exp $";
  * 
  */
 
-#include	"IntrinsicP.h"
-#include	<X/Atoms.h>
-#include	<X/Misc.h>
-#include	"BoxP.h"
+#include	<X11/IntrinsicP.h>
+#include	<X11/Atoms.h>
+#include	<X11/Misc.h>
+#include	<X11/BoxP.h>
 
 /****************************************************************
  *

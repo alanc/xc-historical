@@ -1,13 +1,13 @@
 /*
- * $Header: ViewportP.h,v 1.1 88/01/12 14:50:17 swick Locked $
+ * $Header: ViewportP.h,v 1.2 88/01/28 09:32:48 swick Exp $
  * Private declarations for ViewportWidgetClass
  */
 
 #ifndef _ViewportP_h
 #define _ViewportP_h
 
-#include <X/Viewport.h>
-#include "FormP.h"
+#include <X11/Viewport.h>
+#include <X11FormP.h>
 
 typedef struct {int empty;} ViewportClassPart;
 

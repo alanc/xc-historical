@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.23 88/01/22 09:53:57 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.24 88/02/04 20:23:53 swick Exp $";
 #endif lint
 
 /*
@@ -25,11 +25,11 @@ static char rcsid[] = "$Header: Clock.c,v 1.23 88/01/22 09:53:57 swick Locked $"
  * SOFTWARE.
  */
 
-#include <X/Xos.h>
-#include <X/Xlib.h>
-#include <X/Atoms.h>
-#include "IntrinsicP.h"
-#include "ClockP.h"
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
+#include <X11/Atoms.h>
+#include <X11/IntrinsicP.h>
+#include <X11/ClockP.h>
 
 extern long time();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();

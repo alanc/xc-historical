@@ -1,6 +1,6 @@
-#include <X/copyright.h>
+#include <X11/copyright.h>
 
-/* $Header: AsciiText.h,v 1.3 88/01/27 15:42:31 swick Locked $ */
+/* $Header: AsciiText.h,v 1.4 88/02/05 23:09:10 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _AsciiText_h
@@ -39,7 +39,7 @@
 */
 
 
-#include <X/Text.h>		/* AsciiText is a subclass of Text */
+#include <X11/Text.h>		/* AsciiText is a subclass of Text */
 
 #define XtNstring		"string"
 #define XtNfile			"file"

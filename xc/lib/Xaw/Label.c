@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.39 88/02/10 09:57:53 rws Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.40 88/02/14 12:04:47 rws Exp $";
 #endif lint
 
 /*
@@ -31,12 +31,12 @@ static char rcsid[] = "$Header: Label.c,v 1.39 88/02/10 09:57:53 rws Exp $";
 
 #define XtStrlen(s)		((s) ? strlen(s) : 0)
 
-#include "IntrinsicP.h"
+#include <X11/IntrinsicP.h>
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include <ctype.h>
-#include <X/Atoms.h>
-#include "LabelP.h"
+#include <X11/Atoms.h>
+#include <X11/LabelP.h>
 
 /****************************************************************
  *

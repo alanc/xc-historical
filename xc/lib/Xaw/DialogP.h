@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: DialogP.h,v 1.3 88/01/29 10:50:44 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 /* Private definitions for Dialog widget */
@@ -6,8 +6,8 @@
 #ifndef _DialogP_h
 #define _DialogP_h
 
-#include <X/Dialog.h>
-#include "FormP.h"
+#include <X11/Dialog.h>
+#include <X11/FormP.h>
 
 typedef struct {int empty;} DialogClassPart;
 

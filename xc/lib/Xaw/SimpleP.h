@@ -1,13 +1,13 @@
 #include <X/copyright.h>
 
-/* $Header: SimpleP.h,v 1.1 88/01/28 07:50:59 swick Locked $ */
+/* $Header: SimpleP.h,v 1.2 88/02/05 21:29:12 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
 
-#include <X/Simple.h>
-#include "CoreP.h"
+#include <X11/Simple.h>
+#include <X11/CoreP.h>
 
 typedef struct {
     Boolean	(*change_sensitive)(/* widget */);

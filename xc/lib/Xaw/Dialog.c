@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.6 88/01/25 13:37:02 swick Locked $";
+static char rcsid[] = "$Header: Dialog.c,v 1.7 88/02/05 23:17:44 swick Exp $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -29,15 +29,15 @@ static char rcsid[] = "$Header: Dialog.c,v 1.6 88/01/25 13:37:02 swick Locked $"
    than just directly making your own form. */
 
 
-#include <X/Xlib.h>
-#include <X/Xos.h>
-#include "IntrinsicP.h"
-#include <X/Misc.h>
-#include <X/Atoms.h>
-#include <X/AsciiText.h>
-#include <X/Command.h>
-#include <X/Label.h>
-#include "DialogP.h"
+#include <X11/Xlib.h>
+#include <X11/Xos.h>
+#include <X11/IntrinsicP.h>
+#include <X11/Misc.h>
+#include <X11/Atoms.h>
+#include <X11/AsciiText.h>
+#include <X11/Command.h>
+#include <X11/Label.h>
+#include <X11/DialogP.h>
 
 
 XtResource resources[] = {

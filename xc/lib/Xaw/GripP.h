@@ -1,5 +1,5 @@
 /*
-* $Header: GripP.h,v 1.4 88/01/22 20:30:17 swick Locked $
+* $Header: GripP.h,v 1.5 88/02/05 23:05:51 swick Exp $
 */
 
 /*
@@ -32,8 +32,8 @@
 #ifndef _XtGripP_h
 #define _XtGripP_h
 
-#include <X/Grip.h>
-#include "SimpleP.h"
+#include <X11/Grip.h>
+#include <X11/SimpleP.h>
 
 /*****************************************************************************
  *

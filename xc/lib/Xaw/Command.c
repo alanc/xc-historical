@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.29 88/01/28 07:55:01 swick Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.30 88/02/05 19:10:43 swick Exp $";
 #endif lint
 
 /*
@@ -36,11 +36,11 @@ static char rcsid[] = "$Header: Command.c,v 1.29 88/01/28 07:55:01 swick Locked 
      one of the substructures of the WidgetRec.  */
 
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include <ctype.h>
-#include <X/Atoms.h>
-#include "IntrinsicP.h"
-#include "CommandP.h"
+#include <X11/Atoms.h>
+#include <X11/IntrinsicP.h>
+#include <X11/CommandP.h>
 #include "CommandI.h"
 
 /****************************************************************

@@ -1,5 +1,5 @@
 /*
-* $Header: ClockP.h,v 1.7 88/02/03 20:00:08 swick Exp $
+* $Header: ClockP.h,v 1.8 88/02/04 20:24:42 swick Exp $
 */
 
 /*
@@ -27,8 +27,8 @@
 #ifndef _XtClockP_h
 #define _XtClockP_h
 
-#include <X/Clock.h>
-#include "CoreP.h"
+#include <X11/Clock.h>
+#include <X11/CoreP.h>
 
 #define SEG_BUFF_SIZE		128
 

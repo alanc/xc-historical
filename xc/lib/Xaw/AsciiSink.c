@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.8 87/12/29 08:20:48 swick Locked $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.9 88/02/05 23:14:14 swick Exp $";
 #endif lint
 
 /*
@@ -24,13 +24,13 @@ static char rcsid[] = "$Header: AsciiSink.c,v 1.8 87/12/29 08:20:48 swick Locked
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#include <X/Xlib.h>
-#include <X/Xutil.h>
-#include <X/Xatom.h>
-#include "IntrinsicP.h"
-#include <X/Atoms.h>
-#include <X/Text.h>
-#include "TextP.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+#include <X11/IntrinsicP.h>
+#include <X11/Atoms.h>
+#include <X11/Text.h>
+#include <X11/TextP.h>
 
 #define GETLASTPOS (*source->Scan)(source, 0, XtstAll, XtsdRight, 1, TRUE)
 /* Private Ascii TextSink Definitions */

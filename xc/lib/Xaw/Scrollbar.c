@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.24 88/02/11 17:23:25 rws Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.25 88/02/14 12:03:52 rws Exp $";
 #endif lint
 
 /*
@@ -28,10 +28,10 @@ static char rcsid[] = "$Header: Scroll.c,v 1.24 88/02/11 17:23:25 rws Exp $";
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */
 
-#include "IntrinsicP.h"
-#include <X/Xresource.h>
-#include <X/Atoms.h>
-#include "ScrollP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/Xresource.h>
+#include <X11/Atoms.h>
+#include <X11/ScrollP.h>
 
 /* Private definitions. */
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Grip.c,v 1.10 88/02/05 23:14:55 swick Locked $";
+static char rcsid[] = "$Header: Grip.c,v 1.11 88/02/06 14:57:04 swick Exp $";
 #endif lint
 
 /*
@@ -30,9 +30,9 @@ static char rcsid[] = "$Header: Grip.c,v 1.10 88/02/05 23:14:55 swick Locked $";
  */
 
 
-#include "IntrinsicP.h"
-#include <X/Atoms.h>
-#include "GripP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/Atoms.h>
+#include <X11/GripP.h>
 
 static int defDim = 8;
 static int defBorder = 0;

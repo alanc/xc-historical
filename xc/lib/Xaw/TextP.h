@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.11 88/02/05 23:06:46 swick Locked $
+* $Header: TextP.h,v 1.12 88/02/08 15:09:52 swick Exp $
 */
 
 /*
@@ -28,7 +28,7 @@
 #define _XtTextP_h
 
 
-#include <X/Text.h>
+#include <X11/Text.h>
 #include "CoreP.h"
 
 /****************************************************************

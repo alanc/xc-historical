@@ -1,13 +1,13 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.6 88/02/08 15:10:54 swick Locked $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.7 88/02/08 17:48:51 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
-#include <X/copyright.h>
-#include "IntrinsicP.h"
-#include "Atoms.h"
-#include "AsciiTextP.h"
+#include <X11/copyright.h>
+#include <X11/IntrinsicP.h>
+#include <X11/Atoms.h>
+#include <X11/AsciiTextP.h>
 
 /* from Text.c */
 

@@ -1,13 +1,13 @@
-#include <X/copyright.h>
+#include <X11/copyright.h>
 
-/* $Header: AsciiTextP.h,v 1.1 87/12/23 16:43:02 swick Locked $ */
+/* $Header: AsciiTextP.h,v 1.2 88/02/05 23:09:28 swick Exp $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _AsciiTextP_h
 #define _AsciiTextP_h
 
-#include <X/AsciiText.h>
-#include "TextP.h"		/* AsciiText is a subclass of Text */
+#include <X11/AsciiText.h>
+#include <X11/TextP.h>	/* AsciiText is a subclass of Text */
 
 extern XtActionsRec textActionsTable[];
 extern Cardinal textActionsTableCount;

@@ -1,4 +1,4 @@
-/* $Header: Dialog.h,v 1.3 88/01/07 17:26:15 swick Locked $ */
+/* $Header: Dialog.h,v 1.4 88/01/22 11:15:24 swick Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  * 
@@ -52,7 +52,7 @@
 */
 
 
-#include <X/Form.h>
+#include <X11/Form.h>
 
 #define XtNgrabFocus	"grabFocus"
 #define XtCGrabFocus	"GrabFocus"

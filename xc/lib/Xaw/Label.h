@@ -1,5 +1,5 @@
 /*
-* $Header: Label.h,v 1.9 88/01/22 11:12:14 swick Locked $
+* $Header: Label.h,v 1.10 88/01/28 07:52:52 swick Exp $
 */
 
 /*
@@ -34,7 +34,7 @@
  *
  ***********************************************************************/
 
-#include <X/Simple.h>
+#include <X11/Simple.h>
 
 /* Resources:
 

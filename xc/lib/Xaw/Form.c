@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Form.c,v 1.9 88/02/05 23:15:16 swick Locked $";
+static char rcsid[] = "$Header: Form.c,v 1.11 88/02/06 13:13:47 swick Exp $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -23,9 +23,9 @@ static char rcsid[] = "$Header: Form.c,v 1.9 88/02/05 23:15:16 swick Locked $";
  * SOFTWARE.
  */
 
-#include "IntrinsicP.h"
-#include <X/Atoms.h>
-#include "FormP.h"
+#include <X11/IntrinsicP.h>
+#include <X11/Atoms.h>
+#include <X11/FormP.h>
 
 /* Private Definitions */
 

@@ -1,5 +1,5 @@
 /*
-* $Header: Command.h,v 1.8 88/01/28 07:56:44 swick Locked $
+* $Header: Command.h,v 1.9 88/02/01 09:39:29 swick Exp $
 */
 
 /*
@@ -33,7 +33,7 @@
  *
  ***********************************************************************/
 
-#include <X/Label.h>
+#include <X11/Label.h>
 
 /* Resources:
 

@@ -1,4 +1,4 @@
-/* $Header: Form.h,v 1.6 88/02/01 12:02:33 swick Locked $ */
+/* $Header: Form.h,v 1.7 88/02/05 23:07:59 swick Exp $ */
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -25,7 +25,7 @@
 #ifndef _Form_h
 #define _Form_h
 
-#include <X/Constraint.h>
+#include <X11/Constraint.h>
 
 /***********************************************************************
  *

@@ -1,5 +1,5 @@
 /*
-* $Header: BoxP.h,v 1.5 88/01/29 11:44:07 swick Locked $
+* $Header: BoxP.h,v 1.6 88/02/05 21:10:35 swick Exp $
 */
 
 /*
@@ -38,8 +38,8 @@
  *
  ***********************************************************************/
 
-#include <X/Box.h>
-#include "CompositeP.h"
+#include <X11/Box.h>
+#include <X11/CompositeP.h>
 
 /* New fields for the Box widget class record */
 typedef struct {int empty;} BoxClassPart;

@@ -1,5 +1,5 @@
 /*
-* $Header: CommandP.h,v 1.12 87/12/01 15:36:36 swick Locked $
+* $Header: CommandP.h,v 1.13 88/01/28 07:57:44 swick Exp $
 */
 
 /*
@@ -35,8 +35,8 @@
 #ifndef _XtCommandP_h
 #define _XtCommandP_h
 
-#include <X/Command.h>
-#include "LabelP.h"
+#include <X11/Command.h>
+#include <X11/LabelP.h>
 
 /***********************************************************************
  *
