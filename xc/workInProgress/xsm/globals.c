@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.1 94/07/08 14:06:50 mor Exp $ */
+/* $XConsortium: globals.c,v 1.2 94/07/15 10:01:08 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -37,7 +37,7 @@ jmp_buf		JumpHere;
 
 Bool		verbose = 0;
 
-char		*sm_id;
+char		*sm_id = NULL;
 
 char		*session_name = NULL;
 
@@ -64,7 +64,13 @@ Widget			    chooseSessionLabel;
 
 Widget			    chooseSessionListWidget;
 
-Widget			    chooseSessionOkButton;
+Widget			    chooseSessionMessageLabel;
+
+Widget			    chooseSessionLoadButton;
+
+Widget			    chooseSessionDeleteButton;
+
+Widget			    chooseSessionFailSafeButton;
 
 Widget			    chooseSessionCancelButton;
 
