@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.181 91/07/24 18:53:12 converse Exp $ */
+/* $XConsortium: Text.c,v 1.182 91/07/24 22:56:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1775,8 +1775,7 @@ XawTextBlock *text;
     }
   }
 
-  updateFrom = SrcScan(src, pos1, XawstWhiteSpace, XawsdLeft, 1, TRUE);
-  updateFrom = SrcScan(src, updateFrom, XawstPositions, XawsdLeft, 1, TRUE);
+  updateFrom = SrcScan(src, pos1, XawstWhiteSpace, XawsdLeft, 1, FALSE);
   updateFrom = Max(updateFrom, ctx->text.lt.top);
 
   line1 = LineForPosition(ctx, updateFrom);
