@@ -308,7 +308,7 @@ char **names, **cons_names;
     res_box = (ResourceBoxInfo *) XtMalloc(sizeof(ResourceBoxInfo));
     node->resources->res_box = res_box;
 
-    res_box->shell = XtCreatePopupShell("resourceBox", 
+    res_box->shell = XtCreatePopupShell(RESOURCE_BOX,
 					transientShellWidgetClass,
 					node->widget, NULL, ZERO);
     XtAddCallback(res_box->shell, XtNdestroyCallback,

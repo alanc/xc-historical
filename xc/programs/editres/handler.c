@@ -252,7 +252,12 @@ XtPointer junk, garbage;
 
     node = global_tree_info->active_nodes[0];
     if (node->resources != NULL) {
-	CreateResourceBox(node);
+	char * errors = NULL;
+	CreateResourceBox(node, &errors);
+	if (errors != NULL) {
+	    SetMessage(global_screen_data.info_label, errors);
+	    XtFree(errors);
+	}
 	return;
     }
 
@@ -520,6 +525,9 @@ Widget w;
 XtPointer shell_ptr, junk;
 {
     Widget shell = (Widget) shell_ptr;
+
+    if (streq(XtName(shell), RESOURCE_BOX))
+	global_resource_box_up = FALSE;
 
     XtPopdown(shell);
     XtDestroyWidget(shell);

@@ -445,7 +445,7 @@ XtPointer client_data, junk;
 
     if (XFindContext(XtDisplay(dialog), (Window) dialog, file_dialog_context,
 		     &file_info_ptr) == XCNOENT) {
-	SetMessage(global_screen_data.info_label,
+	SetMessage(global_screen_data.info_label,	
 		   "Error while trying to find Context\nAborting...");	
     }
 
@@ -529,9 +529,10 @@ Event * event;
 
 	if (node->resources != NULL) 
 	    FreeResources(node->resources);
+
 	if (!get_event->info[i].error) {
 	    node->resources = ParseResources(get_event->info + i, &errors);
-	    CreateResourceBox(node);
+	    CreateResourceBox(node, &errors);
 	}
 	else {
 	    AddString(&errors, get_event->info[i].message);
@@ -545,17 +546,26 @@ Event * event;
 /*	Function Name: CreateResourceBox
  *	Description: Creates a resource box for the widget specified.
  *	Arguments: node - the node of the widget in question.
+ *                 errors - an error string.
  *	Returns: none.
  */
 
 void
-CreateResourceBox(node)
+CreateResourceBox(node, errors)
 WNode * node;
+char ** errors;
 {
     void CreateResourceBoxWidgets();
     WidgetResources * resources = node->resources;
     char ** names, ** cons_names;
     int i;
+
+    if (global_resource_box_up) {
+	AddString(errors, "Only one Resource Box can be active at a time.");
+	return;
+    }
+    else
+	global_resource_box_up = TRUE;
 
     if (resources->num_normal > 0) {
 	names = (char **) XtMalloc(sizeof(char *) *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.5 90/06/25 18:09:19 kit Exp $
+ * $XConsortium: editres.c,v 1.6 90/06/28 12:10:36 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,6 +40,7 @@ int global_error_code;
 unsigned long global_serial_num;
 int (*global_old_error_handler)();
 
+Boolean global_resource_box_up = FALSE;
 TreeInfo *global_tree_info = NULL;
 CurrentClient global_client;
 ScreenData global_screen_data;
