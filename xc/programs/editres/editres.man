@@ -41,10 +41,10 @@ inform you of this fact in the message area after a few seconds delay.
 Once you have a widget tree you may now select any of the other menu
 options. The effect of each of these is described below.  
 .SH COMMANDS
-.IP "Send Widget Tree" 8
+.IP "Get Widget Tree" 8
 Allows the user to click on any client that speaks the editres
 protocol and receive its widget tree.
-.IP "Refresh Widget Tree" 
+.IP "Refresh Current Widget Tree" 
 Editres only knows about the widgets that exist at the present time.
 Many applications create and destroy widgets "on-the-fly".  Selecting
 this menu item will cause editres to ask the application to resend its
