@@ -28,7 +28,7 @@
 #define BuildServer            YES
 #define NeedBerklib            BuildServer
 
-XCOMM platform:  $XConsortium: hp.cf,v 1.29 91/01/10 18:39:26 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.30 91/02/23 22:39:50 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -42,7 +42,7 @@ XCOMM operating system:  OSName
  * the malloc in libmalloc returns null on malloc of 0.
  */
 /* #define ServerMallocLib      YES	*//* use -lmalloc for server */
-/* take out -DMALLOC_0_RETURNS_NULL if you have ServerMallocLib NO */
+/* #define Malloc0ReturnsNull   YES     */
 
 #define UNCOMPRESSPATH          /usr/bin/uncompress
 
