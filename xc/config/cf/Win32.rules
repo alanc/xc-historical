@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.19 93/09/09 11:58:38 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.20 93/09/09 18:53:57 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -125,9 +125,11 @@ ProgramTargetHelper(program,SRCS3,OBJS3,DEPLIBS3,locallib,syslib)
 	-@if exist file $(MV) file file.bak
 
 #define InstallMultipleDestFlags(step,list,dest,flags)			@@\
+XVARdef0 = $(DESTDIR)dest						@@\
+									@@\
 step:: list								@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	-@for %%i in (list) do $(INSTALL) -c flags %%i $(DESTDIR)dest)
+	MakeDir($(XVARuse0:/=\))					@@\
+	!$(INSTALL) $** $(XVARuse0:/=\)
 
 #define	CleanTarget()							@@\
 clean::									@@\
@@ -311,3 +313,29 @@ clean::									@@\
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::									@@\
 	@echo sorry, unable to make $@
+
+#define InstallSimple(thing,dest,name)					@@\
+XVARdef0 = $(DESTDIR)dest						@@\
+									@@\
+install:: thing								@@\
+	MakeDir($(XVARuse0:/=\))					@@\
+	$(INSTALL) thing $(XVARuse0:/=\)name
+
+
+#define InstallProgramWithFlags(program,dest,flags)			@@\
+InstallSimple(ProgramTargetName(program),dest,NullParameter)
+
+#define	InstallLibrary(libname,dest)					@@\
+InstallSimple(LibraryTargetName(libname),dest,NullParameter)
+
+#define	InstallNamedNonExec(srcname,dstname,dest)			@@\
+InstallSimple(srcname,dest,dstname)
+
+#define	InstallNonExecFile(file,dest)					@@\
+InstallSimple(file,dest,NullParameter)
+
+#define	InstallScript(program,dest) /**/
+
+#define	InstallNamedProg(srcname,dstname,dest)				@@\
+install:: srcname							@@\
+	@echo sorry, unable to make srcname
