@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.5 93/10/27 21:52:15 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.6 93/10/28 11:51:52 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -307,7 +307,7 @@ int InitExportClientLUT(xp, p, reps)
 	{
 		for ( i = 0; i < lutSize; i++ )
 		{
-			lut[ i ] = ( 1 << xp->vinfo.depth ) - i;
+			lut[ i ] = ( 1 << xp->vinfo.depth ) - i - 1;
 		}
 		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) ==
 			( XieLut ) NULL )
