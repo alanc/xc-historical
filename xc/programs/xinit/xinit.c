@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.11 88/04/11 13:54:56 rws Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.12 88/07/01 14:55:46 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -19,11 +19,13 @@ static char *rcsid_xinit_c = "$Header: xinit.c,v 11.11 88/04/11 13:54:56 rws Exp
 #include <sys/utsname.h>
 #endif
 
-#ifdef SYSV
-#ifndef hpux
+#ifdef macII
 #define vfork() fork()
-#endif /* hpux */
-#endif /* SYSV */
+#endif /* macII */
+
+#if defined(SYSV) && !defined(hpux)
+#define vfork() fork()
+#endif /* SYSV and not hpux */
 
 #define	TRUE		1
 #define	FALSE		0
