@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetMoEv.c,v 11.13 87/09/11 08:04:16 toddb Exp $ */
+/* $XConsortium: XGetMoEv.c,v 11.14 88/09/06 16:08:08 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -41,10 +41,20 @@ XTimeCoord *XGetMotionEvents(dpy, w, start, stop, nEvents)
         SyncHandle();
 	return (NULL);
 	}
-    _XRead (dpy, (char *) tc, nbytes);
-    /* XXX need to do something different if short isn't 16-bits, or long
-       isn't 32-bits, since in that case XTimeCoord won't be the same as
-       protocol structure */
+
+    nbytes = SIZEOF (xTimecoord);
+    {
+	register XTimeCoord *tcptr;
+	register int i;
+	xTimecoord xtc;
+
+	for (i = rep.nEvents, tcptr = tc; i > 0; i--, tcptr++) {
+	    _XRead (dpy, (char *) &xtc, nbytes);
+	    tcptr->time = xtc.time;
+	    tcptr->x    = cvtINT16ToInt (xtc.x);
+	    tcptr->y    = cvtINT16ToInt (xtc.y);
+	}
+    }
 
     UnlockDisplay(dpy);
     SyncHandle();
