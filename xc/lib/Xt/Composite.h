@@ -1,5 +1,5 @@
-/* $XConsortium: Composite.h,v 1.9 89/06/16 18:08:53 jim Exp $ */
-/* $oHeader: Composite.h,v 1.2 asente Exp $ */
+/* $XConsortium: Composite.h,v 1.10 89/12/12 20:08:44 swick Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,39 +29,35 @@ SOFTWARE.
 
 typedef struct _CompositeClassRec *CompositeWidgetClass;
 
-#ifdef __cplusplus			/* do not leave open across includes */
-extern "C" {					/* for C++ V2.0 */
-#endif
+_XFUNCPROTOBEGIN
 
 extern void XtManageChildren(
 #if NeedFunctionPrototypes
     WidgetList 		/* children */,
     Cardinal 		/* num_children */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtManageChild(
 #if NeedFunctionPrototypes
     Widget 		/* child */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUnmanageChildren(
 #if NeedFunctionPrototypes
     WidgetList 		/* children */,
     Cardinal 		/* num_children */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUnmanageChild(
 #if NeedFunctionPrototypes
     Widget 		/* child */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
-#ifdef __cplusplus
-}						/* for C++ V2.0 */
-#endif
+_XFUNCPROTOEND
 
 #ifndef COMPOSITE
 externalref WidgetClass compositeWidgetClass;
