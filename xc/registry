@@ -16,6 +16,7 @@ Name						Reference
 "MOTIF"						[7]
 "OMRON"						[45]
 "OSF"						[7]
+"Panasonic"					[52]
 "PFU"						[32]
 "SGI"						[6]
 "SONY"						[37]
@@ -161,6 +162,7 @@ String						Reference
 "Crucible"					[30]
 "Data General Corporation"			[48]
 "International Business Machines"		[33]
+"Matsushita Electric Industrial Co., Ltd."	[52]
 "MIT X Consortium"				[8]
 "OMRON TATEISI ELECTRONICS CO."			[45]
 "PFU Limited"					[32]
@@ -188,6 +190,7 @@ Name						Reference
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
+"PanasonicDosEmulatorExtension"			[52]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
 "SGI-MISCELLANEOUS"				[6]
@@ -359,6 +362,7 @@ Name						Reference
 "DEC"						[27]
 "IBM"						[33]
 "MISC"						[8]
+"Panasonic"					[52]
 "Sony"						[37]
 
 14. FONT CHARSET (REGISTRY AND ENCODING) NAMES
@@ -777,4 +781,10 @@ REFERENCES
 	Digital Equipment Corporation ZKO 3-3/T13
 	110 Spitbrook Rd.
 	Nashua, NH 03062-2698
+
+[52]	Takayuki Kageyama
+	Computer Division
+	Information Equipment Sector
+	Matsushita Electric Industrial Co., Ltd.
+	1006, Kadoma, Osaka, 571 Japan
 Sumitomo Electric Workstation Corp.	[77]
