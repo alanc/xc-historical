@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.61 90/04/13 16:39:25 jim Exp $
+ * $XConsortium: viewres.c,v 1.62 90/04/13 17:31:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -861,7 +861,7 @@ main (argc, argv)
     Widget toplevel, pane, box, dummy, porthole, panner, form;
     XtAppContext app_con;
     Arg args[6];
-    Dimension width, height;
+    Dimension canvasWidth, canvasHeight, sliderWidth, sliderHeight;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtGravity grav;
     int i;
@@ -1008,13 +1008,19 @@ main (argc, argv)
      * size the panner appropriately.
      */
     XtRealizeWidget (toplevel);
-    XtSetArg (args[0], XtNwidth, &width);
-    XtSetArg (args[1], XtNheight, &height);
+
+    XtSetArg (args[0], XtNwidth, &canvasWidth);
+    XtSetArg (args[1], XtNheight, &canvasHeight);
     XtGetValues (treeWidget, args, TWO);
-    XtSetArg (args[0], XtNcanvasWidth, width);
-    XtSetArg (args[1], XtNcanvasHeight, height);
-    XtSetArg (args[2], XtNsliderWidth, width);
-    XtSetArg (args[3], XtNsliderHeight, height);
+
+    XtSetArg (args[0], XtNwidth, &sliderWidth);
+    XtSetArg (args[1], XtNheight, &sliderHeight);
+    XtGetValues (porthole, args, TWO);
+
+    XtSetArg (args[0], XtNcanvasWidth, canvasWidth);
+    XtSetArg (args[1], XtNcanvasHeight, canvasHeight);
+    XtSetArg (args[2], XtNsliderWidth, sliderWidth);
+    XtSetArg (args[3], XtNsliderHeight, sliderHeight);
     XtSetValues (panner, args, FOUR);
 
     XRaiseWindow (XtDisplay(panner), XtWindow(panner));
