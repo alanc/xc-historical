@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.61 90/05/08 15:16:02 converse Exp $ */
+/* $XConsortium: Viewport.c,v 1.62 91/01/02 12:04:08 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,20 +37,20 @@ static Boolean GetGeometry();
 
 static void ComputeWithForceBars();
 
-#define offset(field) XtOffset(ViewportWidget,viewport.field)
+#define offset(field) XtOffsetOf(ViewportRec, viewport.field)
 static XtResource resources[] = {
     {XtNforceBars, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(forcebars), XtRImmediate, (caddr_t)False},
+	 offset(forcebars), XtRImmediate, (XtPointer)False},
     {XtNallowHoriz, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(allowhoriz), XtRImmediate, (caddr_t)False},
+	 offset(allowhoriz), XtRImmediate, (XtPointer)False},
     {XtNallowVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(allowvert), XtRImmediate, (caddr_t)False},
+	 offset(allowvert), XtRImmediate, (XtPointer)False},
     {XtNuseBottom, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(usebottom), XtRImmediate, (caddr_t)False},
+	 offset(usebottom), XtRImmediate, (XtPointer)False},
     {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(useright), XtRImmediate, (caddr_t)False},
+	 offset(useright), XtRImmediate, (XtPointer)False},
     {XtNreportCallback, XtCReportCallback, XtRCallback, sizeof(XtPointer),
-	 offset(report_callbacks), XtRImmediate, (caddr_t) NULL},
+	 offset(report_callbacks), XtRImmediate, (XtPointer) NULL},
 };
 #undef offset
 
@@ -156,8 +156,8 @@ static Widget CreateScrollbar(w, horizontal)
     bar = XtCreateWidget( (horizontal ? "horizontal" : "vertical"),
 			  scrollbarWidgetClass, (Widget)w,
 			  barArgs, XtNumber(barArgs) );
-    XtAddCallback( bar, XtNscrollProc, ScrollUpDownProc, (caddr_t)w );
-    XtAddCallback( bar, XtNjumpProc, ThumbProc, (caddr_t)w );
+    XtAddCallback( bar, XtNscrollProc, ScrollUpDownProc, (XtPointer)w );
+    XtAddCallback( bar, XtNjumpProc, ThumbProc, (XtPointer)w );
 
     if (horizontal) {
 	w->viewport.horiz_bar = bar;
@@ -408,7 +408,7 @@ static void SendReport (w, changed)
 	rep.canvas_width = child->core.width;
 	rep.canvas_height = child->core.height;
 	XtCallCallbackList ((Widget) w, w->viewport.report_callbacks,
-			    (caddr_t) &rep);
+			    (XtPointer) &rep);
     }
 }
 
@@ -736,8 +736,8 @@ static Boolean Layout(w, width, height)
 
 static void ScrollUpDownProc(widget, closure, call_data)
     Widget widget;
-    caddr_t closure;
-    caddr_t call_data;
+    XtPointer closure;
+    XtPointer call_data;
 {
     ViewportWidget w = (ViewportWidget)closure;
     register Widget child = w->viewport.child;
@@ -755,7 +755,7 @@ static void ScrollUpDownProc(widget, closure, call_data)
 /* ARGSUSED */
 static void ThumbProc(widget, closure, percent)
     Widget widget;
-    caddr_t closure;
+    XtPointer closure;
     float *percent;
 {
     ViewportWidget w = (ViewportWidget)closure;
