@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.38 89/12/11 19:09:02 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.39 90/06/15 11:38:55 rws Exp $
  */
 
 /***********************************************************
@@ -35,11 +35,17 @@ SOFTWARE.
 #define ERRORDB "/usr/lib/X11/XErrorDB"
 #endif
 
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 /*
  * descriptions of errors in Section 4 of Protocol doc (pp. 350-351); more
  * verbose descriptions are given in the error database
  */
-static char *_XErrorList[] = {
+static Const char * Const _XErrorList[] = {
     /* No error	*/		"no error",
     /* BadRequest */		"BadRequest",
     /* BadValue	*/		"BadValue",
