@@ -329,15 +329,19 @@ _FSConnectServer(server_name, expanded_name)
      * writing in the library.
      */
 
+    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
+#else
 #ifdef FIOSNBIO
     {
-	int         arg = 1;
-
-	ioctl(fd, FIOSNBIO, &arg);
+	int arg = 1;
+	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl(fd, F_SETFL, FNDELAY);
-#endif				/* FIOSNBIO */
+    (void) fcntl (fd, F_SETFL, FNDELAY);
+#endif
+#endif
 
     /*
      * Return the id if the connection succeeded. Rebuild the expanded spec
