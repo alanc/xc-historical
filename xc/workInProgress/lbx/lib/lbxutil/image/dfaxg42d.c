@@ -1,4 +1,4 @@
-/* $XConsortium: dfaxg42d.c,v 1.1 94/11/08 19:54:54 mor Exp mor $ */
+/* $XConsortium: dfaxg42d.c,v 1.2 94/11/17 14:52:15 mor Exp mor $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.
@@ -47,7 +47,7 @@ fetchByte (inbuf)
 unsigned char **inbuf;
 
 {
-    unsigned char byte = NoBitRevTable[**inbuf];
+    unsigned char byte = **inbuf;
     (*inbuf)++;
     return (byte);
 }
@@ -393,11 +393,12 @@ int image_bytes;
 int pixels_per_line;
 
 {
-    int bytes_per_scanline = (int) (0.5 + (float) pixels_per_line / 8.0);
+    int bytes_per_scanline = ROUNDUP ((float) pixels_per_line / 8.0);
     int padded_bytes_per_scanline = (bytes_per_scanline % 4) ?
         bytes_per_scanline + (4 - bytes_per_scanline % 4) : bytes_per_scanline;
     unsigned char *refline, *refptr;
     unsigned char *outbuf_start = outbuf;
+    int bytes_left = image_bytes;
     int i;
 
     refline = (unsigned char *) malloc (bytes_per_scanline + 1);
@@ -411,7 +412,7 @@ int pixels_per_line;
     sp_bit = 0;
     sp_data = 0;
 
-    while (image_bytes > 0)
+    while (bytes_left > 0)
     {
 	if (!DecodeFaxG42D (&inbuf, refptr, pixels_per_line, outbuf))
 	    return (0);
@@ -419,10 +420,12 @@ int pixels_per_line;
 	memcpy (refptr, outbuf, bytes_per_scanline);
 
 	outbuf += padded_bytes_per_scanline;
-	image_bytes -= padded_bytes_per_scanline;
+	bytes_left -= padded_bytes_per_scanline;
     }
 
     free ((char *) refline);
+
+    LbxReverseBits (outbuf_start, image_bytes);
 
     return (outbuf - outbuf_start);
 }
