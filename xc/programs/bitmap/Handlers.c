@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Handlers.c,v 1.4 90/12/08 17:29:47 dmatic Exp $
+ * $XConsortium: Handlers.c,v 1.5 90/12/12 17:19:02 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,6 @@
 
 
 
-#include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Converters.h>

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.4 90/11/06 16:49:03 dave Exp $
+ * $XConsortium: ReqMach.c,v 1.5 90/12/08 17:29:54 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,6 @@
 
 
 
-#include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Converters.h>

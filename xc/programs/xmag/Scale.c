@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.1 90/12/06 20:39:51 dave Exp $
+ * $XConsortium: Scale.c,v 1.2 90/12/10 19:26:56 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,7 +28,6 @@
 #include <ctype.h>
 #include <string.h> 
 #include <math.h>
-#include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>

@@ -1,5 +1,3 @@
-#include <X11/copyright.h>
-
 /*
  * XPR - process xwd(1) files for the LN03 or LA100 printer
  *
@@ -45,7 +43,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.46 90/01/11 10:48:34 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.47 90/07/20 06:49:11 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
