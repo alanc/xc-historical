@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:02:34 gildea Exp $
 SRCS = \
 	../util/macros.t \
 	strings.mit \
@@ -8,7 +8,8 @@ SRCS = \
 	appB \
 	appC \
 	appD \
-	appE
+	appE \
+	postproc
 
 ISRCS = intr.idxmac.t ../util/indexmacros.t
 
