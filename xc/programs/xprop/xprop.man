@@ -3,11 +3,13 @@
 xprop - property displayer for X
 .SH SYNOPSIS
 .B "xprop"
-[-help] [-grammar] [-id \fIid\fP] [-root] [-name \fIname\fP] 
+[-help] [-grammar] [-id \fIid\fP] [-root] [-name \fIname\fP]
 [-frame]
 [-font \fIfont\fP]
 [-display \fIdisplay\fP]
-[-len \fIn\fP] [-notype] [-fs \fIfile\fP] 
+[-len \fIn\fP] [-notype] [-fs \fIfile\fP]
+[-remove \fIproperty-name\fP]
+[-spy]
 [-f \fIatom\fP \fIformat\fP [\fIdformat\fP]]*
 [\fIformat\fP [\fIdformat\fP] \fIatom\fP]*
 .SH SUMMARY
@@ -82,6 +84,10 @@ any) instead of looking for the client window.
 .TP 8
 .B "-remove \fIproperty-name\fP"
 Specifies the name of a property to be removed from the indicated window.
+.PP
+.TP 8
+.B "-spy"
+Examine window properties forever, looking for property change events.
 .PP
 .TP 8
 .B "-f \fIname\fP \fIformat\fP [\fIdformat\fP]"
