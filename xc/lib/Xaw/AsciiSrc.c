@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.12 89/07/17 19:38:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.13 89/07/18 16:01:19 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -81,7 +81,7 @@ static XtResource resources[] = {
 };
 
 static XtResource sourceResources[] = {
-    {XtNeditType, XtCEditType, XtREditMode, sizeof(int), 
+    {XtNeditType, XtCEditType, XtREditMode, sizeof(XawTextEditType), 
         XtOffset(XawTextSource, edit_mode), XtRString, "read"},
 };
 
