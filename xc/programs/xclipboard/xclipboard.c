@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.10 89/12/08 16:43:01 kit Exp $
+ * $XConsortium: xclipboard.c,v 1.11 89/12/11 20:35:52 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.10 89/12/08 16:43:01 kit Exp $ */
+/* $XConsortium: xclipboard.c,v 1.11 89/12/11 20:35:52 keith Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -43,6 +43,198 @@
 #define Text    asciiTextWidgetClass
 
 #define INFINITY 10000000	/* pretty big, huh? */
+
+typedef struct _Clip {
+    struct _Clip    *next, *prev;
+    char	    *clip;
+    int		    avail;
+} ClipRec, *ClipPtr;
+
+extern char *malloc ();
+
+SaveClip (w, clip)
+    Widget  w;
+    ClipPtr clip;
+{
+    Arg	    args[1];
+    char    *data;
+    int	    len;
+    Widget  source;
+
+    source = XawTextGetSource (w);
+    XtSetArg (args[0], XtNstring, &data);
+    XtGetValues (source, args, 1);
+    len = strlen (data);
+    if (len >= clip->avail)
+    {
+	if (clip->clip)
+	    free (clip->clip);
+	clip->clip = malloc (len + 1);
+	if (!clip->clip)
+	    clip->avail = 0;
+	else
+	    clip->avail = len + 1;
+    }
+    if (clip->avail)
+    {
+	strcpy (clip->clip, data);
+    }
+}
+
+RestoreClip (w, clip)
+    Widget  w;
+    ClipPtr clip;
+{
+    Arg	    args[1];
+    int	    len;
+    Widget  source;
+
+    source = XawTextGetSource (w);
+    XtSetArg (args[0], XtNstring, clip->clip);
+    XtSetValues (source, args, 1);
+}
+
+ClipPtr
+NewClip (w, old)
+    Widget  w;
+    ClipPtr old;
+{
+    ClipPtr newClip;
+
+    newClip = (ClipPtr) malloc (sizeof (ClipRec));
+    if (!newClip)
+	return;
+    newClip->clip = 0;
+    newClip->avail = 0;
+    newClip->prev = old;
+    newClip->next = NULL;
+    if (old)
+    {
+	newClip->next = old->next;
+	old->next = newClip;
+    }
+    return newClip;
+}
+
+DeleteClip (w, clip)
+    Widget  w;
+    ClipPtr clip;
+{
+    if (clip->prev)
+	clip->prev->next = clip->next;
+    if (clip->next)
+	clip->next->prev = clip->prev;
+    if (clip->clip)
+	free (clip->clip);
+    free ((char *) clip);
+}
+
+static ClipPtr	currentClip;
+static Widget	text;
+
+static void
+NextCurrentClip ()
+{
+    if (currentClip && currentClip->next)
+    {
+	SaveClip (text, currentClip);
+	currentClip = currentClip->next;
+	RestoreClip (text, currentClip);
+    }
+}
+
+static void
+PrevCurrentClip ()
+{
+    if (currentClip && currentClip->prev)
+    {
+	SaveClip (text, currentClip);
+	currentClip = currentClip->prev;
+	RestoreClip (text, currentClip);
+    }
+}
+
+static void
+DeleteCurrentClip ()
+{
+    ClipPtr newCurrent;
+    if (currentClip)
+    {
+	if (currentClip->prev)
+	{
+	    newCurrent = currentClip->prev;
+	}
+	else
+	{
+	    newCurrent = currentClip->next;
+	}
+	DeleteClip (text, currentClip);
+	currentClip = newCurrent;
+	if (currentClip)
+	    RestoreClip (text, currentClip);
+	else
+	{
+	    EraseCurrentClip ();
+	}
+    }
+}
+
+static void
+Quit ()
+{
+    XtCloseDisplay  (XtDisplay (text));
+    exit (0);
+}
+
+static void
+NewCurrentClip ()
+{
+    NewCurrentClipContents ("", 0);
+}
+
+NewCurrentClipContents (data, len)
+    char    *data;
+    int	    len;
+{
+    XawTextBlock textBlock;
+    ClipPtr newCurrent;
+
+    if (!currentClip && TextLength (text))
+	currentClip = NewClip (text, (ClipPtr) 0);
+    newCurrent = NewClip (text, currentClip);
+    if (currentClip)
+	SaveClip (text, currentClip);
+    
+    currentClip = newCurrent;
+
+    textBlock.ptr = data;
+    textBlock.firstPos = 0;
+    textBlock.length = len;
+    textBlock.format = FMT8BIT;
+    if (XawTextReplace(text, 0, TextLength (text), &textBlock))
+	XBell( XtDisplay(text), 0);
+}
+
+EraseCurrentClip()
+{
+    XawTextBlock block;
+
+    block.ptr = NULL;
+    block.length = 0;
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+
+    XawTextReplace(text, 0, INFINITY, &block);
+    /* If this fails, too bad. */
+}
+
+XtActionsRec xclipboard_actions[] = {
+    "NewClip", NewCurrentClip,
+    "NextClip",	NextCurrentClip,
+    "PrevClip", PrevCurrentClip,
+    "DeleteClip", DeleteCurrentClip,
+    "Quit", Quit,
+};
 
 static XrmOptionDescRec table[] = {
     {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
@@ -70,22 +262,12 @@ caddr_t value;
 unsigned long *length;
 int *format;
 {
-    XawTextBlock text;
-    Arg args[1];
-    XawTextPosition last;
-
     if (*type == 0 /*XT_CONVERT_FAIL*/ || *length == 0) {
 	XBell( XtDisplay(w), 0 );
 	return;
     }
     
-    text.ptr = (char*)value;
-    text.firstPos = 0;
-    text.length = *length;
-    text.format = FMT8BIT;
-
-    if (XawTextReplace(w, 0, TextLength (w), &text))
-	XBell( XtDisplay(w), 0);
+    NewCurrentClipContents ((char *) value, *length);
 
     XtOwnSelection(w, XA_CLIPBOARD(XtDisplay(w)), CurrentTime,
 		   ConvertSelection, LoseSelection, NULL);
@@ -180,39 +362,12 @@ static Boolean ConvertSelection(w, selection, target,
     return False;
 }
 
-
 static void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
     XtGetSelectionValue(w, *selection, XA_STRING, InsertClipboard,
 			NULL, CurrentTime);
-}
-
-static void 
-Erase(w, client_data, call_data)
-Widget w;
-caddr_t client_data, call_data;
-{
-    Widget text = (Widget) client_data;
-    XawTextBlock block;
-
-    block.ptr = NULL;
-    block.length = 0;
-    block.firstPos = 0;
-    block.format = FMT8BIT;
-
-    XawTextReplace(text, 0, INFINITY, &block);
-    /* If this fails, too bad. */
-}
-
-static void 
-Quit(w, client_data, call_data)
-Widget w;
-caddr_t client_data, call_data;
-{
-    XtCloseDisplay( XtDisplay(w) );
-    exit( 0 );
 }
 
 /*ARGSUSED*/
@@ -241,12 +396,13 @@ int argc;
 char **argv;
 {
     Arg args[2];
-    Widget top, parent, quit, save, erase, text;
+    Widget top, parent, quit, delete, new, next, prev;
     Atom manager;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
 			  &argc, argv);
 
+    XtAddActions (xclipboard_actions, XtNumber (xclipboard_actions));
     /* CLIPBOARD_MANAGER is a non-standard mechanism */
     manager = XInternAtom(XtDisplay(top), "CLIPBOARD_MANAGER", False);
     if (XGetSelectionOwner(XtDisplay(top), manager))
@@ -254,14 +410,14 @@ char **argv;
 
     parent = XtCreateManagedWidget("form", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
-    erase = XtCreateManagedWidget("erase", Command, parent, NULL, ZERO);
+    delete = XtCreateManagedWidget("delete", Command, parent, NULL, ZERO);
+    new = XtCreateManagedWidget("new", Command, parent, NULL, ZERO);
+    next = XtCreateManagedWidget("next", Command, parent, NULL, ZERO);
+    prev = XtCreateManagedWidget("prev", Command, parent, NULL, ZERO);
 
     XtSetArg(args[0], XtNtype, XawAsciiString);
     XtSetArg(args[1], XtNeditType, XawtextEdit);
     text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
-
-    XtAddCallback(quit, XtNcallback, Quit, NULL);
-    XtAddCallback(erase, XtNcallback, Erase, text);
 
     XtRealizeWidget(top);
 

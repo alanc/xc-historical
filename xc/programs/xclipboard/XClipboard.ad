@@ -3,13 +3,39 @@ XClipboard*quit.top: 			ChainTop
 XClipboard*quit.bottom: 		ChainTop
 XClipboard*quit.left: 			ChainLeft
 XClipboard*quit.right: 			ChainLeft
+XClipboard*quit.translations:		#override<BtnUp>:Quit() unset()
 
-XClipboard*erase.label: 		Erase
-XClipboard*erase.fromHoriz: 		quit
-XClipboard*erase.top: 			ChainTop
-XClipboard*erase.bottom:		ChainTop
-XClipboard*erase.left:			ChainLeft
-XClipboard*erase.right:			ChainLeft
+XClipboard*delete.label: 		Delete
+XClipboard*delete.fromHoriz: 		quit
+XClipboard*delete.top: 			ChainTop
+XClipboard*delete.bottom:		ChainTop
+XClipboard*delete.left:			ChainLeft
+XClipboard*delete.right:		ChainLeft
+XClipboard*delete.translations:		#override<BtnUp>:DeleteClip() unset()
+
+XClipboard*new.label: 			New
+XClipboard*new.fromHoriz: 		delete
+XClipboard*new.top: 			ChainTop
+XClipboard*new.bottom:			ChainTop
+XClipboard*new.left:			ChainLeft
+XClipboard*new.right:			ChainLeft
+XClipboard*new.translations:		#override<BtnUp>:NewClip() unset()
+
+XClipboard*next.label: 			Next
+XClipboard*next.fromHoriz: 		new
+XClipboard*next.top: 			ChainTop
+XClipboard*next.bottom:			ChainTop
+XClipboard*next.left:			ChainLeft
+XClipboard*next.right:			ChainLeft
+XClipboard*next.translations:		#override<BtnUp>:NextClip() unset()
+
+XClipboard*prev.label: 			Previous
+XClipboard*prev.fromHoriz: 		next
+XClipboard*prev.top: 			ChainTop
+XClipboard*prev.bottom:			ChainTop
+XClipboard*prev.left:			ChainLeft
+XClipboard*prev.right:			ChainLeft
+XClipboard*prev.translations:		#override<BtnUp>:PrevClip() unset()
 
 XClipboard*text.scrollVertical:  	WhenNeeded
 XClipboard*text.scrollHorizontal:  	WhenNeeded
@@ -22,3 +48,4 @@ XClipboard*text.left: 			ChainLeft
 XClipboard*text.right: 			ChainRight
 XClipboard*text.width:			300
 
+XClipboard.geometry:			300x200
