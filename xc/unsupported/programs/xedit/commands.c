@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: commands.c,v 1.26 89/12/07 19:20:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: commands.c,v 1.27 89/12/10 17:08:26 rws Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -103,7 +103,7 @@ String buf, filename;
   return (buf);
 }
   
-#ifdef USG
+#if (defined(USG) && !defined(CRAY))
 int rename (from, to)
     char *from, *to;
 {
