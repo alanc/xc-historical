@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sleepuntil.c,v 1.2 93/07/08 14:46:19 rws Exp $
+ * $XConsortium: sleepuntil.c,v 1.3 93/09/20 20:17:12 dpw Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -46,7 +46,7 @@ static SertafiedPtr pPending;
 static RESTYPE	    SertafiedResType;
 static Bool	    BlockHandlerRegistered;
 static int	    SertafiedGeneration;
-static void	    WachetAuf();
+static void	    ClientAwaken();
 static int	    SertafiedDelete();
 static void	    SertafiedBlockHandler();
 static void	    SertafiedWakeupHandler();
@@ -89,7 +89,7 @@ ClientSleepUntil (client, revive, notifyFunc, closure)
     if (!AddResource (pRequest->id, SertafiedResType, (pointer) pRequest))
 	return FALSE;
     if (!notifyFunc)
-	notifyFunc = WachetAuf;
+	notifyFunc = ClientAwaken;
     pRequest->notifyFunc = notifyFunc;
     /* Insert into time-ordered queue, with earliest activation time coming first. */
     pPrev = 0;
@@ -109,7 +109,7 @@ ClientSleepUntil (client, revive, notifyFunc, closure)
 }
 
 static void
-WachetAuf (client, closure)
+ClientAwaken (client, closure)
     ClientPtr	client;
     pointer	closure;
 {
@@ -127,7 +127,7 @@ SertafiedDelete (value, id)
     SertafiedPtr	pReq, pPrev;
 
     pPrev = 0;
-    for (pReq = pPending; pReq; pReq = pReq->next)
+    for (pReq = pPending; pReq; pPrev = pReq, pReq = pReq->next)
 	if (pReq == pRequest)
 	{
 	    if (pPrev)
@@ -164,6 +164,12 @@ SertafiedBlockHandler (data, wt, LastSelectMask)
 	if (CompareTimeStamps (pReq->revive, now) == LATER)
 	    break;
 	FreeResource (pReq->id, RT_NONE);
+
+ 	/* AttendClient() may have been called via the resource delete
+ 	 * function so a client may have input to be processed and so
+ 	 *  set delay to 0 to prevent blocking in WaitForSomething().
+ 	 */
+ 	AdjustWaitForDelay (wt, 0);
     }
     pReq = pPending;
     if (!pReq)
