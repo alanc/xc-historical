@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.205 94/02/08 15:28:31 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.206 94/02/08 15:55:15 matt Exp $
 XCOMM
 
 /*
@@ -279,15 +279,18 @@ _NULLCMD_ = @ echo -n
 #ifndef LintlibDir
 #define LintlibDir $(USRLIBDIR)/lint
 #endif
+#ifndef SystemManDirectory
+#if SystemV4
+#define SystemManDirectory /usr/share/man
+#else
+#define SystemManDirectory /usr/man
+#endif
+#endif
 #ifndef ManDirectoryRoot
 #ifdef ProjectRoot
 #define ManDirectoryRoot Concat(ProjectRoot,/man)
 #else
-#if SystemV4
-#define ManDirectoryRoot /usr/share/man
-#else
-#define ManDirectoryRoot /usr/man
-#endif
+#define ManDirectoryRoot SystemManDirectory
 #endif
 #endif
 #ifndef ManPath
