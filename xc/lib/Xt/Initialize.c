@@ -142,7 +142,7 @@ TopLevelClassRec topLevelClassRec = {
     /* initialize         */    Initialize,
     /* realize            */    Realize,
     /* actions            */    NULL,
-    /*                    */    0,
+    /* num_actions        */    0,
     /* resources          */    resources,
     /* resource_count     */	XtNumber(resources),
     /* xrm_class          */    NULLQUARK,
@@ -157,6 +157,7 @@ TopLevelClassRec topLevelClassRec = {
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
     /* insert_child	  */	InsertChild,
+    /* delete_child	  */	CompositeDeleteChild,
     /* move_focus_to_next */    NULL,
     /* move_focus_to_prev */    NULL
 };
@@ -336,17 +337,16 @@ XSetWindowAttributes *attr;
 		wmhints.flags |=  IconWindowHint;
 		wmhints.icon_window = w->top.icon_window;
 	}
-	XSetWMHints( dpy, win, &wmhints);
+	XSetWMHints(dpy, win, &wmhints);
 /* |||
 	XSetHostName(dpy, win, hostname);
 	XSetClass(dpy, win, w->top.classname);/* And w->core.name XXX*/
 
-	w->top.hints.x - w->core.x;
-	w->top.hints.y - w->core.y;
+	w->top.hints.x = w->core.x;
+	w->top.hints.y = w->core.y;
 	w->top.hints.width = w->core.width;
 	w->top.hints.height = w->core.height;
 	XSetNormalHints(dpy, win, w->top.hints);
-	XSetWMHints(dpy, win, wmhints);
 }
 
 static void
@@ -490,7 +490,7 @@ WidgetGeometry *reply;
 	return(XtgeometryNo);
 }
 
-Setvalues(old,new)
+static void SetValues(old,new)
 Widget *old, *new;
 {
 	XWMHints wmhints, *oldhints;

@@ -75,7 +75,7 @@ static void CopyToArg(src, dst, size)
 
 }
 
-void PrintResourceList(list, count)
+static void PrintResourceList(list, count)
     register ResourceList list;
     register int count;
 {
@@ -129,7 +129,7 @@ typedef struct {
     caddr_t	xrm_default_addr; /* Default resource address		*/
 } XrmResource, *XrmResourceList;
 
-XrmCompileResourceList(resources, resourceCount)
+static XrmCompileResourceList(resources, resourceCount)
     register ResourceList resources;
     	     Cardinal	  resourceCount;
 {
@@ -152,7 +152,7 @@ XrmCompileResourceList(resources, resourceCount)
 
 /* ||| References to display should be references to screen */
 
-void XrmGetResources(
+static void XrmGetResources(
     dpy, base, names, classes, length, resources, resourceCount, args, argCount)
 
     Display	  *dpy;		   /* The widget's display connection	  */
@@ -291,7 +291,7 @@ void XrmGetResources(
     }
 }
 
-void GetResources(widgetClass, w, names, classes, length, args, argCount)
+static void GetResources(widgetClass, w, names, classes, length, args, argCount)
     WidgetClass	  widgetClass;
     Widget	  w;
     XrmNameList	  names;
@@ -363,7 +363,7 @@ void XtGetSubresources
 }
 
 
-void XrmGetValues(base, resources, resourceCount, args, argCount)
+static void XrmGetValues(base, resources, resourceCount, args, argCount)
   caddr_t		base;		/* Base address to fetch values from */
   register ResourceList resources;	/* The current resource values.      */
   register Cardinal	resourceCount;	/* number of items in resources      */
@@ -395,7 +395,7 @@ void XrmGetValues(base, resources, resourceCount, args, argCount)
     }
 }
 
-void GetValues(widgetClass, w, args, argCount)
+static void GetValues(widgetClass, w, args, argCount)
     WidgetClass	  widgetClass;
     Widget	  w;
     ArgList	  args;
@@ -425,7 +425,7 @@ void XtGetValues(w, args, argCount)
     GetValues(w->core.widget_class, w, args, argCount);
 } /* XtGetValues */
  
-void XrmSetValues(base, resources, resourceCount, args, argCount)
+static void XrmSetValues(base, resources, resourceCount, args, argCount)
   caddr_t		base;		/* Base address to write values to   */
   register ResourceList resources;	/* The current resource values.      */
   register Cardinal	resourceCount;	/* number of items in resources      */
@@ -457,7 +457,7 @@ void XrmSetValues(base, resources, resourceCount, args, argCount)
     }
 } /* XrmSetValues */
 
-void SetValues(widgetClass, w, args, argCount)
+static void SetValues(widgetClass, w, args, argCount)
     WidgetClass	  widgetClass;
     Widget	  w;
     ArgList	  args;
@@ -469,17 +469,19 @@ void SetValues(widgetClass, w, args, argCount)
     }
     /* Then for this class */
     XrmSetValues((caddr_t) w,
-        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
+        widgetClass->core_class.resources,
+	widgetClass->core_class.num_resources,
 	args, argCount);
 } /* SetValues */
 
 void XtSetValues(w, args, argCount)
-    	 	Widget	  w;
-    		ArgList	  args;
-    		Cardinal  argCount;
+    Widget   w;
+    ArgList  args;
+    Cardinal argCount;
 {
     Widget	newWidget;
     Cardinal	widgetSize;
+    SetValuesProc setValues;
 
     if (argCount == 0) return;
     if ((args == NULL) && (argCount != 0)) {
@@ -493,10 +495,15 @@ void XtSetValues(w, args, argCount)
     bcopy((char *) w, (char *) newWidget, (int) widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
-    GetValues(w->core.widget_class, newWidget, args, argCount);
+    SetValues(w->core.widget_class, newWidget, args, argCount);
 
     /* Inform widget of changes and deallocate newWidget */
-    w->core.widget_class->core_class.set_values(w, newWidget);
+    setValues = w->core.widget_class->core_class.set_values;
+    if (setValues == (SetValuesProc) NULL) {
+        XtError("set_values procedure cannot be NULL");
+    } else {
+    	(*setValues)(w, newWidget);
+    }
     XtFree(newWidget);
 } /* XtSetValues */
  

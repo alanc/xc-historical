@@ -30,11 +30,13 @@ static Resource resources[] = {
     {XtNsensitive,XtCSensitive,XrmRBoolean, sizeof(Boolean),
          Offset(Widget,core.sensitive),XtRString,"TRUE"}
     };
-extern void CoreDestroy();
-extern void SetValues ();
+static void CoreDestroy();
+static void CoreSetValues ();
 
 CompositeWidgetClass compositeWidgetClass = &compositeClassRec;
 ConstraintWidgetClass constraintWidgetClass = &constraintClassRec;
+
+/* ||| Should have defaults for Inherit from superclass to work */
 
 WidgetClassRec widgetClassRec = {
          (WidgetClass)NULL,	/*superclass pointer*/
@@ -54,15 +56,17 @@ WidgetClassRec widgetClassRec = {
           FALSE,		/*visible_interest*/
           CoreDestroy,		/*destroy proc*/
           (WidgetProc) NULL,	 /*resize*/
-          (WidgetExposeProc)NULL, /*expose*/
-          SetValues,		/*set_values*/
+          (ExposeProc)NULL, /*expose*/
+          CoreSetValues,		/*set_values*/
           (WidgetProc)NULL      /*accept_focus*/
 };
 
 extern void CompositeInsertChild();
+extern void CompositeDeleteChild();
 static void CompositeDestroy();
 
-CompositeClassRec compositeClassRec = {
+ConstraintClassRec constraintClassRec = {
+    {
          (WidgetClass)&widgetClassRec,	/*superclass pointer*/
          "Composite",		/*class_name*/
           sizeof(CompositeRec),   /*size of core data record*/
@@ -80,21 +84,59 @@ CompositeClassRec compositeClassRec = {
           FALSE,		/*visible_interest*/
           (WidgetProc) CompositeDestroy,	/*destroy proc*/
           (WidgetProc) NULL,	 /*resize*/
-          (WidgetExposeProc)NULL, /*expose*/
+          (ExposeProc)NULL, /*expose*/
           NULL,			/*set_values*/
           (WidgetProc)NULL,      /*accept_focus*/
-	  (XtGeometryHandler) NULL,	/* geometry_manager */
-	  (WidgetProc) NULL,
-	  CompositeInsertChild,
-	  (WidgetProc) NULL,
-	  (WidgetProc) NULL,
+    },{
+	(XtGeometryHandler) NULL,	/* geometry_manager */
+	(WidgetProc) NULL,
+	CompositeInsertChild,
+	CompositeDeleteChild,
+	(WidgetProc) NULL,
+	(WidgetProc) NULL,
+    },{
+	NULL,
+	0
+    }
+};
+
+CompositeClassRec compositeClassRec = {
+    {
+         (WidgetClass)&widgetClassRec,	/*superclass pointer*/
+         "Composite",		/*class_name*/
+          sizeof(CompositeRec),   /*size of core data record*/
+	  (WidgetProc)NULL,     /* class initializer routine */
+	  FALSE,		/* not init'ed */
+          (WidgetProc)NULL,	/* Instance Initializer routine*/
+          (WidgetProc)NULL,	/*Realize*/
+          NULL,			/*actions*/
+          0,                    /*number of actions*/
+          NULL,			/*resource list*/
+          0,			/*resource_count*/
+          NULLQUARK,		/*xrm_class*/
+          FALSE,                /*compress motion*/
+          TRUE,                 /*compress expose*/
+          FALSE,		/*visible_interest*/
+          (WidgetProc) CompositeDestroy,	/*destroy proc*/
+          (WidgetProc) NULL,	 /*resize*/
+          (ExposeProc)NULL, /*expose*/
+          NULL,			/*set_values*/
+          (WidgetProc)NULL,      /*accept_focus*/
+    },{
+	(XtGeometryHandler) NULL,	/* geometry_manager */
+	(WidgetProc) NULL,
+	CompositeInsertChild,
+	CompositeDeleteChild,
+	(WidgetProc) NULL,
+	(WidgetProc) NULL,
+    }
 };
 
 void ClassInit(widgetClass)
     WidgetClass widgetClass;
 {
     if ((widgetClass->core_class.superclass != NULL) 
-            && (!(widgetClass->core_class.superclass-> core_class.class_inited)))
+           && (!(widgetClass->core_class.superclass-> core_class.class_inited)))
  	ClassInit(widgetClass->core_class.superclass);
     if (widgetClass->core_class.class_initialize != NULL)
        widgetClass->core_class.class_initialize();
@@ -116,6 +158,7 @@ Widget TopLevelCreate(name,widgetClass,screen,args,argCount)
     widget->core.widget_class = widgetClass;
     widget->core.parent = NULL;
     widget->core.screen = screen;
+    widget->core.managed = FALSE;
     widget->core.visible = TRUE;
     widget->core.background_pixmap = (Pixmap) NULL;
     widget->core.border_pixmap = (Pixmap) NULL;
@@ -172,6 +215,28 @@ void CompositeInsertChild(w)
     cw->composite.num_children++;
 }
 
+void CompositeDeleteChild(w)
+    Widget	w;
+{
+    Cardinal	    position;
+    Cardinal	    i;
+    CompositeWidget cw;
+
+    cw = (CompositeWidget) w->core.parent;
+
+    for (position = 0; position < cw->composite.num_children; position++) {
+        if (cw->composite.children[position] = w) {
+	    break;
+	}
+    }
+
+    /* Ripple children down one space from "position" */
+    cw->composite.num_children--;
+    for (i = position; i < cw->composite.num_children; i++) {
+        cw->composite.children[i] = cw->composite.children[i+1];
+    }
+}
+
 Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     char *name;	
     WidgetClass   widgetClass;
@@ -186,6 +251,9 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
 			XtError("invalid parameters to XtCreateWidget");
 			return;
 			}
+    if (! (widgetClass->core_class.class_inited))
+	ClassInit(widgetClass);
+
     widget = (Widget)XtMalloc(widgetClass->core_class.size); 
     widget->core.window = (Window) NULL;
     widget->core.name = (char *)strcpy(XtMalloc(strlen(name)+1), name);
@@ -203,12 +271,12 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     widget->core.translations = NULL;
     widget->core.destroy_callbacks = NULL;
     widget->core.being_destroyed = parent -> core.being_destroyed;
-    if(!(widget->core.widget_class->core_class.class_inited))
-	 ClassInit(widgetClass);
+    /* ||| Should be in CompositeInitialize */
     if (XtIsSubClass (widget,compositeWidgetClass)) {
 		((CompositeWidget)widget)->composite.num_children = 0;
 		((CompositeWidget)widget)->composite.num_managed_children = 0;
 		((CompositeWidget)widget)->composite.children = NULL;
+		((CompositeWidget)widget)->composite.num_slots = 0;
                 }
     XtGetResources(widget,args,argCount);
     if (widget->core.depth == 0)
@@ -221,9 +289,11 @@ Widget XtCreateWidget(name,widgetClass,parent,args,argCount)
     if (widget->core.widget_class->core_class.visible_interest) 
        widget->core.event_mask |= VisibilityChangeMask;
 
-    ((CompositeWidgetClass)(widget->core.parent->core.widget_class))->composite_class.insert_child(widget);
+    ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
+    	->composite_class.insert_child(widget);
     return (widget);
 }
+
 void FillInParameters(widget,valuemask,values)
     Widget  widget;
     ValueMask *valuemask;
@@ -450,7 +520,7 @@ void DestroyChildren (widget)
     widget-> core.being_destroyed = TRUE;
     if (XtIsSubClass (widget,compositeWidgetClass))
         for (i= ((CompositeWidget)widget)->composite.num_children; i != 0; --i)
-                   DestroyChildren (((CompositeWidget)widget)->composite.children[i-1]);
+            DestroyChildren (((CompositeWidget)widget)->composite.children[i-1]);
     return;
 }
 
@@ -487,10 +557,16 @@ void Phase2ChildrenDestroy(widget)
 void XtPhase2Destroy (widget)
     Widget    widget;
 {
-    if (widget->core.parent != NULL) XtCompositeRemoveChild(widget);
+    if (widget->core.parent != NULL) {
+	XtCompositeRemoveChild(widget);
+	((CompositeWidgetClass) widget->core.parent->core.widget_class)
+		->composite_class.delete_child(widget);
+    }
+
     XtCallCallbacks(widget->core.destroy_callbacks);
     Phase2ChildrenCallbacks(widget);
     Phase2ChildrenDestroy(widget);
+    /* ||| All this shit needs to check procs for NULL before calling */
     ClassToSuperclass(widget,destroy())
     if (widget->core.window != NULL) XDestroyWindow(widget->core.window);
     return;
@@ -501,12 +577,20 @@ void XtDestroyWidget (widget)
     Widget    widget;
 
 {
+    if (widget->core.being_destroyed) return;
+
     DestroyChildren(widget);
     XtAddCallback( DestroyList, XtPhase2Destroy, widget, NULL);
 
 }
 
-void CoreDestroy (widget)
+static void CoreDestroy (widget)
     Widget    widget;
 {
+/* ||| */
+}
+
+static void CoreSetValues()
+{
+/* ||| */
 }
