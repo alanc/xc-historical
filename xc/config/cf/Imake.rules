@@ -1,5 +1,5 @@
 /**/###########################################################################
-/**/# rules:  $XConsortium: Imake.rules,v 1.71 88/10/23 22:46:34 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.1 89/01/10 18:15:15 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -177,12 +177,16 @@ install:: program.script						@@\
 /*
  * Install multiple programs under a specific step in the build
  */
-#define InstallMultipleDest(step,list,dest)				@@\
+#define InstallMultipleDestFlags(step,list,dest,flags)			@@\
 step:: list								@@\
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \			@@\
 	for i in list; do \						@@\
-		(set -x; $(INSTALL) -c $(INSTALLFLAGS) $$i dest); \	@@\
+		(set -x; $(INSTALL) -c flags $$i dest); \		@@\
 	done
+
+
+#define InstallMultipleDest(step,list,dest)				@@\
+InstallMultipleDest(step,list,dest,$(INSTALLFLAGS)
 
 /*
  * Install multiple programs
@@ -190,6 +194,8 @@ step:: list								@@\
 #define	InstallMultiple(list,dest)					@@\
 InstallMultipleDest(install,list,dest)
 
+#define InstallMultipleFlags(list,dest,flags)				@@\
+InstallMultipleDestFlags(install,list,dest,flags)
 
 /*
  * Install multiple manual pages
