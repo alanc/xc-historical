@@ -1,4 +1,25 @@
-/* $XConsortium: Dvi.c,v 1.11 90/12/02 18:17:35 keith Exp $ */
+/* $XConsortium: Dvi.c,v 1.12 91/01/10 17:00:00 gildea Exp $ */
+/*
+ * Copyright 1991 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
 
 /*
  * Dvi.c - Dvi display widget
@@ -51,7 +72,7 @@ S	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
 S2	-*-symbol-medium-r-normal--*-*-*-*-*-*-adobe-fontspecific\n\
 ";
 
-#define offset(field) XtOffset(DviWidget, field)
+#define offset(field) XtOffsetOf(DviRec, field)
 
 # define MY_WIDTH(dw)	(dw->dvi.device_resolution * 9)
 # define MY_HEIGHT(dw)	(dw->dvi.device_resolution * 11)
@@ -60,21 +81,21 @@ static XtResource resources[] = {
 	{XtNfontMap, XtCFontMap, XtRString, sizeof (char *),
 	 offset(dvi.font_map_string), XtRString, default_font_map},
 	{XtNforeground, XtCForeground, XtRPixel, sizeof (unsigned long),
-	 offset(dvi.foreground), XtRString, "black"},
+	 offset(dvi.foreground), XtRString, XtDefaultForeground},
 	{XtNpageNumber, XtCPageNumber, XtRInt, sizeof (int),
-	 offset(dvi.requested_page), XtRString, "1"},
+	 offset(dvi.requested_page), XtRImmediate, (XtPointer) 1},
 	{XtNlastPageNumber, XtCLastPageNumber, XtRInt, sizeof (int),
-	 offset (dvi.last_page), XtRString, "0"},
+	 offset (dvi.last_page), XtRImmediate, (XtPointer) 0},
 	{XtNfile, XtCFile, XtRFile, sizeof (FILE *),
 	 offset (dvi.file), XtRFile, (char *) 0},
 	{XtNseek, XtCSeek, XtRBoolean, sizeof (Boolean),
-	 offset(dvi.seek), XtRString, "false"},
+	 offset(dvi.seek), XtRImmediate, (XtPointer) False},
 	{XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-	 offset(dvi.default_font), XtRString, "xtdefaultfont"},
+	 offset(dvi.default_font), XtRString, XtDefaultFont},
 	{XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
 	 offset(dvi.backing_store), XtRString, "default"},
 	{XtNnoPolyText, XtCNoPolyText, XtRBoolean, sizeof (Boolean),
-	 offset(dvi.noPolyText), XtRString, "false"},
+	 offset(dvi.noPolyText), XtRImmediate, (XtPointer) False},
 };
 
 #undef offset
