@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.16 89/06/12 15:32:20 jim Exp $
+ * $XConsortium: util.c,v 1.17 89/06/12 16:01:27 jim Exp $
  *
  * utility routines for twm
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.16 89/06/12 15:32:20 jim Exp $";
+"$XConsortium: util.c,v 1.17 89/06/12 16:01:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -57,16 +57,16 @@ int HotX, HotY;
  *	y	    - upper left y coordinate
  *	width	    - the width of the rectangle
  *	height	    - the height of the rectangle
- *      bw          - border width
+ *      bw          - the border width of the frame
  *      th          - title height
  *
  ***********************************************************************
  */
 
-void
-MoveOutline(root, x, y, width, height, bw, th)
+/* ARGSUSED */
+void MoveOutline(root, x, y, width, height, bw, th)
     Window root;
-    int x, y, width, height;
+    int x, y, width, height, bw, th;
 {
     static int	lastx = 0;
     static int	lasty = 0;
@@ -74,13 +74,13 @@ MoveOutline(root, x, y, width, height, bw, th)
     static int	lastHeight = 0;
     static int	lastBW = 0;
     static int	lastTH = 0;
-    int		xl, xr, yt, yb;
-    int		xthird, ythird, yinner;
+    int		xl, xr, yt, yb, xinnerl, xinnerr, yinnert, yinnerb;
+    int		xthird, ythird;
     XSegment	outline[18];
     register XSegment	*r;
 
     if (x == lastx && y == lasty && width == lastWidth && height == lastHeight
-	&& bw == lastBW && th == lastTH)
+	&& lastBW == bw && th == lastTH)
 	return;
     
     r = outline;
@@ -88,13 +88,16 @@ MoveOutline(root, x, y, width, height, bw, th)
 #define DRAWIT() \
     if (lastWidth || lastHeight)			\
     {							\
-	yinner = (lastBW + lastTH);			\
-	xthird = lastWidth/3;				\
-	ythird = (lastHeight - yinner)/3;		\
 	xl = lastx;					\
 	xr = lastx + lastWidth - 1;			\
 	yt = lasty;					\
 	yb = lasty + lastHeight - 1;			\
+	xinnerl = xl + lastBW;				\
+	xinnerr = xr - lastBW;				\
+	yinnert = yt + lastTH + lastBW;			\
+	yinnerb = yb - lastBW;				\
+	xthird = (xinnerr - xinnerl) / 3;		\
+	ythird = (yinnerb - yinnert) / 3;		\
 							\
 	r->x1 = xl;					\
 	r->y1 = yt;					\
@@ -120,33 +123,33 @@ MoveOutline(root, x, y, width, height, bw, th)
 	r->y2 = yb;					\
 	r++;						\
 							\
-	r->x1 = xl + xthird;				\
-	r->y1 = yt + yinner;				\
+	r->x1 = xinnerl + xthird;			\
+	r->y1 = yinnert;				\
 	r->x2 = r->x1;					\
-	r->y2 = yb;					\
+	r->y2 = yinnerb;				\
 	r++;						\
 							\
-	r->x1 = xl + (2 * xthird);			\
-	r->y1 = yt + yinner;				\
+	r->x1 = xinnerl + (2 * xthird);			\
+	r->y1 = yinnert;				\
 	r->x2 = r->x1;					\
-	r->y2 = yb;					\
+	r->y2 = yinnerb;				\
 	r++;						\
 							\
-	r->x1 = xl;					\
-	r->y1 = yt + yinner + ythird;			\
-	r->x2 = xr;					\
+	r->x1 = xinnerl;				\
+	r->y1 = yinnert + ythird;			\
+	r->x2 = xinnerr;				\
 	r->y2 = r->y1;					\
 	r++;						\
 							\
-	r->x1 = xl;					\
-	r->y1 = yt + yinner + (2 * ythird);		\
-	r->x2 = xr;					\
+	r->x1 = xinnerl;				\
+	r->y1 = yinnert + (2 * ythird);			\
+	r->x2 = xinnerr;				\
 	r->y2 = r->y1;					\
 	r++;						\
 							\
 	if (lastTH != 0) {				\
 	    r->x1 = xl;					\
-	    r->y1 = yt + yinner;			\
+	    r->y1 = yt + lastTH;			\
 	    r->x2 = xr;					\
 	    r->y2 = r->y1;				\
 	    r++;					\
