@@ -1,5 +1,5 @@
-.\\"$Header: xpr.man,v 1.1 87/06/23 14:49:31 dkk Exp $
-.\\"$Locker:  $
+.\\"$Header: xpr.man,v 1.2 87/10/13 11:43:25 rws Locked $
+.\\"$Locker: rws $
 .TH XPR 1 "14 October 1986" "X Version 10"
 .SH NAME
 xpr \- print X window dump
@@ -30,6 +30,8 @@ xpr \- print X window dump
 .B \-landscape
 ] [
 .B \-portrait
+] [
+.B \-rv
 ] [
 .B \-compact
 ] [
@@ -99,6 +101,8 @@ the paper.
 Forces the window to be printed in portrait mode.  By default
 a window is printed such that its longest side follows the long side of
 the paper.
+.IP "\fB\-rv\fP"
+Forces the window to be printed in reverse video.
 .IP "\fB\-compact\fP"
 Uses simple run-length encoding for compact representation of windows
 with lots of white pixels.
