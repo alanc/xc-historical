@@ -1,4 +1,4 @@
-/* $XConsortium: window.h,v 1.2 88/02/04 11:20:02 rws Exp $ */
+/* $XConsortium: window.h,v 1.3 88/09/06 15:48:19 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,15 +28,6 @@ SOFTWARE.
 #define TOTALLY_OBSCURED 0
 #define UNOBSCURED 1
 #define OBSCURED 2
-
-#define HANDLE_EXPOSURES         TRUE
-#define DONT_HANDLE_EXPOSURES    FALSE
-
-#define SEND_NOTIFICATION         TRUE
-#define DONT_SEND_NOTIFICATION    FALSE
-
-#define BITS_AVAILABLE         TRUE
-#define BITS_DISCARDED         FALSE
 
 #define VisibilityNotViewable	3
 
