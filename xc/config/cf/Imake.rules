@@ -1,11 +1,11 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.69 90/05/04 16:03:04 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.70 90/05/04 16:57:30 keith Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
  *
- * Warning, when defining rules: make sure you don't include both a trailing
+ * Warning, when defining rules: make sure you do not include both a trailing
  * backslash and double ampersand backslash or else you will get an extra
  * backslash in the Makefile.
  * 
@@ -96,6 +96,9 @@
  *      FontTarget                               (basename)
  *      CompressedFontTarget                     (basename)
  *      AllTarget                                (depends)
+ * The following are in Imake.tmpl:
+ *	Concat                                   (a,b)
+ *	Concat3                                  (a,b,c)
  * 
  * 
  * The general linking for building programs is:
@@ -107,8 +110,6 @@
  * and EXTRA comes with syslibs from the LDLIBS
  */
 
-
-
 /*
  * SaberProgramTarget - generate rules to make Saber-C read in sources and
  * objects.
@@ -116,10 +117,10 @@
 #ifndef SaberProgramTarget
 #if HasSaberC
 #define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
-saber_/**/program:							@@\
+Concat(saber_,program):							@@\
 	#load $(ALLDEFINES) srclist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs @@\
 									@@\
-osaber_/**/program:							@@\
+Concat(osaber_,program):						@@\
 	#load $(ALLDEFINES) objlist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs
 
 #else
@@ -130,7 +131,7 @@ osaber_/**/program:							@@\
 #ifndef RemoveTargetProgram
 #if RemoveTargetProgramByMoving
 #define RemoveTargetProgram(program) \
-$(RM) program; if [ -f program ]; then $(MV) program program/**/~; fi
+$(RM) program; if [ -f program ]; then $(MV) program Concat(program,~); fi
 #else
 #define RemoveTargetProgram(program) $(RM) program
 #endif
@@ -163,8 +164,8 @@ clean::									@@\
 
 
 /*
- * SingleProgramTarget - obsolete version of NormalProgramTarget that doesn't have
- * deplibs.
+ * SingleProgramTarget - obsolete version of NormalProgramTarget that does
+ * not have deplibs.
  */
 #ifndef SingleProgramTarget
 #define	SingleProgramTarget(program,objects,locallibs,syslibs)		@@\
@@ -294,7 +295,7 @@ server: subdirs objects libs						@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS) @@\
 									@@\
-load/**/server:								@@\
+Concat(load,server):							@@\
 	-@if [ -f server ]; then echo "	$(MV) server server.bak"; \	@@\
 		$(MV) server server.bak; else exit 0; fi		@@\
 	$(CC) $(CDEBUGFLAGS) $(CCOPTIONS) -o server objects libs $(EXTRA_LIBRARIES) syslibs $(EXTRA_LOAD_FLAGS)
@@ -308,9 +309,9 @@ load/**/server:								@@\
  */
 #ifndef InstallLibrary
 #define	InstallLibrary(libname,dest)					@@\
-install:: lib/**/libname.a						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.a dest		@@\
-	$(RANLIB) $(RANLIBINSTFLAGS) dest/lib/**/libname.a
+install:: Concat(lib,libname.a)						@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) dest	@@\
+	$(RANLIB) $(RANLIBINSTFLAGS) Concat(dest/lib,libname.a)
 #endif /* InstallLibrary */
 
 /*
@@ -327,8 +328,8 @@ install::  fromlib							@@\
  */
 #ifndef InstallSharedLibrary
 #define	InstallSharedLibrary(libname,rev,dest)				@@\
-install:: lib/**/libname.so.rev 					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.so.rev dest	@@\
+install:: Concat(lib,libname.so.rev) 					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.so.rev) dest	@@\
 
 #endif /* InstallSharedLibrary */
 
@@ -337,8 +338,8 @@ install:: lib/**/libname.so.rev 					@@\
  */
 #ifndef InstallSharedLibraryData
 #define	InstallSharedLibraryData(libname,rev,dest)			@@\
-install:: lib/**/libname.sa.rev						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) lib/**/libname.sa.rev dest
+install:: Concat(lib,libname.sa.rev)					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.sa.rev) dest
 
 #endif /* InstallSharedLibraryData */
 
@@ -350,7 +351,7 @@ install:: lib/**/libname.sa.rev						@@\
 #ifndef InstallLibraryAlias
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
 install::								@@\
-	-(cd dest; $(LN) lib/**/libname.a lib/**/alias.a)
+	-(cd dest; $(LN) Concat(lib,libname.a) Concat(lib,alias.a))
 #endif /* InstallLibraryAlias */
 
 
@@ -359,8 +360,8 @@ install::								@@\
  */
 #ifndef InstallLintLibrary
 #define	InstallLintLibrary(libname,dest)				@@\
-install.ln:: llib-l/**/libname.ln					@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) llib-l/**/libname.ln dest
+install.ln:: Concat(llib-l,libname.ln)					@@\
+	$(INSTALL) -c $(INSTLIBFLAGS) Concat(llib-l,libname.ln) dest
 #endif /* InstallLintLibrary */
 
 
@@ -877,9 +878,9 @@ objs:	depends								@@\
  */
 #ifndef NormalLibraryTarget
 #define	NormalLibraryTarget(libname,objlist)				@@\
-AllTarget(lib/**/libname.a)						@@\
+AllTarget(Concat(lib,libname.a))					@@\
 									@@\
-lib/**/libname.a: objlist						@@\
+Concat(lib,libname.a): objlist						@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist						@@\
 	$(RANLIB) $@
@@ -888,40 +889,40 @@ lib/**/libname.a: objlist						@@\
 
 /*
  * NormalSharedLibraryTarget - generate rules to create a shared library;
- * build it into a different name so that the we don't hose people by having
+ * build it into a different name so that the we do not hose people by having
  * the library gone for long periods.
  */
 #ifndef NormalSharedLibraryTarget
 #define NormalSharedLibraryTarget(libname,rev,solist)			@@\
-AllTarget(lib/**/libname.so.rev)					@@\
+AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
-lib/**/libname.so.rev:  solist						@@\
+Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
 	(cd shared; $(LD) -o ../$@~ -assert pure-text solist)		@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 									@@\
 clean::									@@\
-	$(RM) lib/**/libname.so.rev
+	$(RM) Concat(lib,libname.so.rev)
 
 #endif
 
 /*
  * NormalSharedLibraryDataTarget - generate rules to create shlib data file;
- * build it into a different name so that the we don't hose people by having
+ * build it into a different name so that the we do not hose people by having
  * the library gone for long periods.
  */
 #ifndef NormalSharedLibraryDataTarget
 #define NormalSharedLibraryDataTarget(libname,rev,salist)		@@\
-AllTarget(lib/**/libname.sa.rev)					@@\
+AllTarget(Concat(lib,libname.sa.rev))					@@\
 									@@\
-lib/**/libname.sa.rev:  salist						@@\
+Concat(lib,libname.sa.rev):  salist					@@\
 	$(RM) $@							@@\
 	$(AR) $@ salist							@@\
 	$(RANLIB) $@							@@\
 									@@\
 clean::									@@\
-	$(RM) lib/**/libname.sa.rev
+	$(RM) Concat(lib,libname.sa.rev)
 
 #endif /* NormalSharedLibraryTarget */
 
@@ -935,9 +936,9 @@ clean::									@@\
  */
 #ifndef NormalLibraryTarget2
 #define	NormalLibraryTarget2(libname,objlist1,objlist2)			@@\
-AllTarget(lib/**/libname.a)						@@\
+AllTarget(Concat(lib,libname.a))					@@\
 									@@\
-lib/**/libname.a: objlist1 objlist2					@@\
+Concat(lib,libname.a): objlist1 objlist2				@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist1						@@\
 	$(AR) $@ objlist2						@@\
@@ -950,9 +951,9 @@ lib/**/libname.a: objlist1 objlist2					@@\
  */
 #ifndef ProfiledLibraryTarget
 #define	ProfiledLibraryTarget(libname,objlist)				@@\
-AllTarget(lib/**/libname/**/_p.a)					@@\
+AllTarget(Concat3(lib,libname,_p.a)					@@\
 									@@\
-lib/**/libname/**/_p.a: objlist						@@\
+Concat3(lib,libname,_p.a): objlist					@@\
 	$(RM) $@							@@\
 	cd profiled; $(AR) ../$@ objlist				@@\
 	$(RANLIB) $@
@@ -965,9 +966,9 @@ lib/**/libname/**/_p.a: objlist						@@\
  */
 #ifndef DebuggedLibraryTarget
 #define	DebuggedLibraryTarget(libname,objlist)				@@\
-AllTarget(lib/**/libname/**/_d.a)					@@\
+AllTarget(Concat3(lib,libname,_d.a))					@@\
 									@@\
-lib/**/libname/**/_d.a: objlist						@@\
+Concat3(lib,libname,_d.a): objlist					@@\
 	$(RM) $@							@@\
 	cd debugger; $(AR) ../$@ objlist				@@\
 	$(RANLIB) $@
@@ -980,11 +981,11 @@ lib/**/libname/**/_d.a: objlist						@@\
  */
 #ifndef AliasedLibraryTarget
 #define	AliasedLibraryTarget(libname,alias)				@@\
-AllTarget(lib/**/alias.a)						@@\
+AllTarget(Concat(lib,alias.a))						@@\
 									@@\
-lib/**/alias.a: lib/**/libname.a					@@\
+Concat(lib,alias.a): Concat(lib,libname.a)				@@\
 	$(RM) $@							@@\
-	$(LN) lib/**/libname.a $@
+	$(LN) Concat(lib,libname.a) $@
 #endif /* AliasedLibraryTarget */
 
 
@@ -1008,9 +1009,9 @@ objname.o: objlist							@@\
  */
 #ifndef ProfiledRelocatableTarget
 #define	ProfiledRelocatableTarget(objname,objlist)			@@\
-AllTarget(objname/**/_p.o)						@@\
+AllTarget(Concat(objname,_p.o))						@@\
 									@@\
-objname/**/_p.o: objlist						@@\
+Concat(objname,_p.o): objlist						@@\
 	$(RM) $@							@@\
 	$(LD) -X -r objlist -o $@
 
@@ -1023,9 +1024,9 @@ objname/**/_p.o: objlist						@@\
  */
 #ifndef DebuggedRelocatableTarget
 #define	DebuggedRelocatableTarget(objname,objlist)			@@\
-AllTarget(objname/**/_d.o)						@@\
+AllTarget(Concat(objname,_d.o))						@@\
 									@@\
-objname/**/_d.o: objlist						@@\
+Concat(objname,_d.o): objlist						@@\
 	$(RM) $@							@@\
 	$(LD) -X -r objlist -o $@
 
@@ -1038,11 +1039,11 @@ objname/**/_d.o: objlist						@@\
  */
 #ifndef LintLibraryTarget
 #define	LintLibraryTarget(libname,srclist)				@@\
-lintlib:: llib-l/**/libname.ln						@@\
+lintlib:: Concat(llib-l,libname.ln)					@@\
 									@@\
-llib-l/**/libname.ln: srclist						@@\
+Concat(llib-l,libname.ln): srclist					@@\
 	$(RM) $@							@@\
-	$(LINT) $(LINTLIBFLAG)/**/libname $(LINTFLAGS) srclist
+	$(LINT) Concat($(LINTLIBFLAG),libname) $(LINTFLAGS) srclist
 #endif /* LintLibraryTarget */
 
 
@@ -1227,7 +1228,7 @@ MakeLintSubdirs(dirs,lintlib,lintlib)
 /*
  * MakeMakeSubdirs - generate rules to recursively recreate Makefiles as part
  * of the specified step in the build.  If $(TOP) is set to an absolute path, 
- * don't prepend the ../ prefix.  This makes running things outside of the 
+ * do not prepend the ../ prefix.  This makes running things outside of the 
  * source tree to be much easier.
  */
 #ifndef MakeMakeSubdirs
