@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: MenuButton.c,v 1.14 90/11/03 14:37:21 converse Exp $";
-#endif /* lint */
+/* $XConsortium: MenuButton.c,v 1.15 90/11/05 16:33:50 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology

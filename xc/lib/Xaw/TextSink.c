@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSink.c,v 1.11 90/04/30 17:46:19 converse Exp $";
-#endif 
+/* $XConsortium: TextSink.c,v 1.12 90/05/08 15:14:07 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology

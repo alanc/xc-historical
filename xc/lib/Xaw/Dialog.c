@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.41 90/11/28 13:42:20 converse Exp $";
-#endif /* lint */
+/* $XConsortium: Dialog.c,v 1.42 90/12/12 15:37:15 rws Exp $ */
 
 
 /***********************************************************

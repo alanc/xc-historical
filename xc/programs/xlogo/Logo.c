@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.18 90/10/22 14:45:53 converse Exp $";
-#endif
+/* $XConsortium: Logo.c,v 1.19 90/12/01 13:00:18 rws Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology

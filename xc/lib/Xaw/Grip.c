@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Grip.c,v 1.26 89/10/09 16:20:10 jim Exp $";
-#endif /* lint */
+/* $XConsortium: Grip.c,v 1.27 89/12/08 12:35:56 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

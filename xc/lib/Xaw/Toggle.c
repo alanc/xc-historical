@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.18 90/11/01 16:31:35 converse Exp $";
-#endif /* lint */
+/* $XConsortium: Toggle.c,v 1.19 90/11/01 17:57:43 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
