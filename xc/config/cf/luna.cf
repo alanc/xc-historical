@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.29 94/04/01 18:48:32 erik Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.30 94/04/01 19:59:08 kaleb Exp kaleb $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -29,6 +29,7 @@ XCOMM operating system:  OSName
 #define HasCThreads		YES
 #define Malloc0ReturnsNull	HasCThreads    /* -lthreads fails, -lc works */
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
+#define BootstrapCFlags		-DUSE_CC_E -DNFS_STDOUT_BUG
 
 #define ThreadsLibraries -lthreads -lmach
 
