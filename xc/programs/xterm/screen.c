@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.28 91/05/06 17:12:16 gildea Exp $
+ *	$XConsortium: screen.c,v 1.29 91/05/10 16:57:37 gildea Exp $
  */
 
 /*
@@ -638,7 +638,7 @@ register int length;		/* length of string */
 	attrs = screen->buf[2 * row + 1] + col;
 	value &= mask;	/* make sure we only change the bits allowed by mask*/
 	while(length-- > 0) {
-		*attrs &= mask;		/* clear the bits */
+		*attrs &= ~mask;	/* clear the bits */
 		*attrs |= value;	/* copy in the new values */
 		attrs++;
 	}
