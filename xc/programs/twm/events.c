@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.183 91/10/21 14:32:04 eswu Exp $
+ * $XConsortium: events.c,v 1.184 92/04/29 14:45:16 dave Exp $
  *
  * twm event handling
  *
@@ -553,6 +553,8 @@ HandleVisibilityNotify()
  ***********************************************************************
  */
 
+int MovedFromKeyPress = False;
+
 void
 HandleKeyPress()
 {
@@ -593,8 +595,11 @@ HandleKeyPress()
 	    /* weed out the functions that don't make sense to execute
 	     * from a key press 
 	     */
-	    if (key->func == F_MOVE || key->func == F_RESIZE)
+	    if (key->func == F_RESIZE)
 		return;
+            /* special case for F_MOVE/F_FORCEMOVE activated from a keypress */
+            if (key->func == F_MOVE || key->func == F_FORCEMOVE)
+                MovedFromKeyPress = True;
 
 	    if (key->cont != C_NAME)
 	    {

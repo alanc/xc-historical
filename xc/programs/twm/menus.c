@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.187 91/10/21 14:31:57 eswu Exp $
+ * $XConsortium: menus.c,v 1.188 92/04/24 13:18:03 dave Exp $
  *
  * twm menu code
  *
@@ -1335,6 +1335,8 @@ WarpThere(t)
     return false;
 }
 
+extern int MovedFromKeyPress;
+
 int
 ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int func;
@@ -1715,15 +1717,15 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	    /* test to see if we have a second button press to abort move */
-	    if (!menuFromFrameOrWindowOrTitlebar)
-	      if (Event.type == ButtonPress && DragWindow != None) {
-		if (Scr->OpaqueMove)
-		  XMoveWindow (dpy, DragWindow, origDragX, origDragY);
-		else
-		  MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
-		DragWindow = None;
-	      }
-
+	    if (!menuFromFrameOrWindowOrTitlebar &&  !MovedFromKeyPress) {
+	        if (Event.type == ButtonPress && DragWindow != None) {
+		    if (Scr->OpaqueMove)
+		      XMoveWindow (dpy, DragWindow, origDragX, origDragY);
+		    else
+		        MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+		    DragWindow = None;
+                }
+	    }
 	    if (fromtitlebar && Event.type == ButtonPress) {
 		fromtitlebar = False;
 		CurrentDragX = origX = Event.xbutton.x_root;
@@ -1877,6 +1879,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 
 	}
+        MovedFromKeyPress = False;
+
 
 	if (!Scr->OpaqueMove && DragWindow == None)
 	    UninstallRootColormap();
