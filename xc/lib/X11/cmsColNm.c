@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.23 91/11/05 13:47:37 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.24 91/11/06 17:55:19 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -1014,9 +1014,11 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
 			ScreenWhitePointOfCCC(ccc), result_format,
 			pColor_exact_return, 1, (Bool *)NULL));
 	    } else {
-		if (_XcmsDIConvertColors(ccc, pColor_exact_return,
-			&dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
-		    return(XcmsFailure);
+		if (pColor_exact_return->format != XcmsCIEXYZFormat) {
+		    if (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			    &dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
+			return(XcmsFailure);
+		    }
 		}
 		return (_XcmsDDConvertColors(ccc, pColor_exact_return, 1,
 			result_format, (Bool *)NULL));
@@ -1025,20 +1027,54 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
 	    /*
 	     * Target format is Device-Independent
 	     *	Therefore, DI --> DI conversion
-	     *
-	     * Since DI->DI, we don't apply WhiteAdjustProc.
 	     */
-	    if (_XcmsEqualWhitePts(ccc,
+	    if (ccc->whitePtAdjProc && !_XcmsEqualWhitePts(ccc,
 		    &dbWhitePt, pClientWhitePt)) {
-		return (_XcmsDIConvertColors(ccc, pColor_exact_return,
-			&dbWhitePt, 1, result_format));
-	    } else {
-		if (_XcmsDIConvertColors(ccc, pColor_exact_return,
-			&dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
-		    return(XcmsFailure);
+		/*
+		 * The calling routine wants to resolve this color
+		 * in terms if it's white point (i.e. Client White Point).
+		 * Therefore, apply white adjustment for the displacement
+		 * between dbWhitePt to clientWhitePt.
+		 */
+		return((*ccc->whitePtAdjProc)(ccc, &dbWhitePt,
+			pClientWhitePt, result_format,
+			pColor_exact_return, 1, (Bool *)NULL));
+	    } else if (_XcmsEqualWhitePts(ccc,
+		    &dbWhitePt, pClientWhitePt)) {
+		/*
+		 * Can use either dbWhitePt or pClientWhitePt to
+		 * convert to the result_format.
+		 */
+		if (pColor_exact_return->format == result_format) {
+		    return(XcmsSuccess);
+		} else {
+		    return (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			    &dbWhitePt, 1, result_format));
 		}
-		return(_XcmsDIConvertColors(ccc, pColor_exact_return,
-			pClientWhitePt, 1, result_format));
+	    } else {
+		/*
+		 * Need to convert to a white point independent color
+		 * space (let's choose CIEXYZ) then convert to the
+		 * target color space.  Why? Lets assume that
+		 * pColor_exact_return->format and result format
+		 * are white point dependent format (e.g., CIELUV, CIELAB,
+		 * TekHVC ... same or any combination). If so, we'll
+		 * need to convert the color with dbWhitePt to an absolute
+		 * spec (i.e.  non-white point dependent) then convert that
+		 * absolute value with clientWhitePt to the result_format.
+		 */
+		if (pColor_exact_return->format != XcmsCIEXYZFormat) {
+		    if (_XcmsDIConvertColors(ccc, pColor_exact_return,
+			    &dbWhitePt, 1, XcmsCIEXYZFormat) == XcmsFailure) {
+			return(XcmsFailure);
+		    }
+		}
+		if (result_format == XcmsCIEXYZFormat) {
+		    return(XcmsSuccess);
+		} else {
+		    return(_XcmsDIConvertColors(ccc, pColor_exact_return,
+			    pClientWhitePt, 1, result_format));
+		}
 	    }
 	}
     }
