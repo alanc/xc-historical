@@ -237,7 +237,7 @@ if( (ciptr=(XtransConnInfo)calloc(1,sizeof(struct _XtransConnInfo))) == NULL )
 if( (ciptr->fd=socket( Sockettrans2devtab[i].family, type,
 				Sockettrans2devtab[i].protocol )) < 0
 #ifndef WIN32
-#if (defined(X11) && !defined(USE_POLL)) || defined(FS) || defined(FONT)
+#if (defined(X11_t) && !defined(USE_POLL)) || defined(FS_t) || defined(FONT_t)
 	|| ciptr->fd >= OPEN_MAX
 #endif
 #endif
@@ -500,7 +500,7 @@ char	portbuf[PORTBUFSIZE];
 
 PRMSG(2, "TRANS(SocketINETCreateListener)(%s)\n", port, 0,0 );
 
-#ifdef X11
+#ifdef X11_t
 /*
  * X has a well known port, that is transport dependent. It is easier
  * to handle it here, than try and come up with a transport independent
@@ -508,24 +508,13 @@ PRMSG(2, "TRANS(SocketINETCreateListener)(%s)\n", port, 0,0 );
  *
  * The port that is passed here is really a string containing the idisplay
  * from ConnectDisplay().
- *
- * Xlib may be calling this for either X11 or IM. Assume that
- * if port < IP_RESERVE, then is is a display number. Otherwise, it is a
- * regular port number for IM.
  */
 
 if (is_numeric (port))
 {
     tmpport = (short) atoi (port);
 
-#if 0
-    if( tmpport < 1024 ) /* IP_RESERVED */
-#endif
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
-#if 0
-    else
-	strncpy(portbuf,port,PORTBUFSIZE);
-#endif
+    sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
 }
 else
     strncpy(portbuf,port,PORTBUFSIZE);
@@ -589,39 +578,48 @@ return 0;
 
 #ifdef hpux
 
-#if defined(X11)
+#if defined(X11_t)
 #define UNIX_PATH "/usr/spool/sockets/X11/"
 #define UNIX_DIR "/usr/spool/sockets/X11"
 #define OLD_UNIX_PATH "/tmp/.X11-unix/X"
-#endif /* X11 */
-#if defined(FS) || defined(FONT)
+#endif /* X11_t */
+#if defined(XIM_t)
+#define UNIX_PATH "/usr/spool/sockets/XIM/"
+#define UNIX_DIR "/usr/spool/sockets/XIM"
+#define OLD_UNIX_PATH "/tmp/.XIM-unix/XIM"
+#endif /* XIM_t */
+#if defined(FS_t) || defined(FONT_t)
 #define UNIX_PATH "/usr/spool/sockets/fontserv/"
 #define UNIX_DIR "/usr/spool/sockets/fontserv"
-#endif /* FS || FONT */
-#if defined(ICE)
+#endif /* FS_t || FONT_t */
+#if defined(ICE_t)
 #define UNIX_PATH "/usr/spool/sockets/ICE/"
 #define UNIX_DIR "/usr/spool/sockets/ICE"
-#endif /* ICE */
-#if defined(TEST)
+#endif /* ICE_t */
+#if defined(TEST_t)
 #define UNIX_PATH "/usr/spool/sockets/xtrans_test/"
 #define UNIX_DIR "/usr/spool/sockets/xtrans_test"
 #endif
 
 #else /* !hpux */
 
-#if defined(X11)
+#if defined(X11_t)
 #define UNIX_PATH "/tmp/.X11-unix/X"
 #define UNIX_DIR "/tmp/.X11-unix"
-#endif /* X11 */
-#if defined(FS) || defined(FONT)
+#endif /* X11_t */
+#if defined(XIM_t)
+#define UNIX_PATH "/tmp/.XIM-unix/XIM"
+#define UNIX_DIR "/tmp/.XIM-unix"
+#endif /* XIM_t */
+#if defined(FS_t) || defined(FONT_t)
 #define UNIX_PATH "/tmp/.font-unix/fs"
 #define UNIX_DIR "/tmp/.font-unix"
-#endif /* FS || FONT */
-#if defined(ICE)
+#endif /* FS_t || FONT_t */
+#if defined(ICE_t)
 #define UNIX_PATH "/tmp/.ICE-unix/"
 #define UNIX_DIR "/tmp/.ICE-unix"
-#endif /* ICE */
-#if defined(TEST)
+#endif /* ICE_t */
+#if defined(TEST_t)
 #define UNIX_PATH "/tmp/.Test-unix/test"
 #define UNIX_DIR "/tmp/.Test-unix"
 #endif
@@ -860,7 +858,7 @@ if (!host)
 	host = hostnamebuf;
 }
 
-#ifdef X11
+#ifdef X11_t
 /*
  * X has a well known port, that is transport dependent. It is easier
  * to handle it here, than try and come up with a transport independent
@@ -868,24 +866,13 @@ if (!host)
  *
  * The port that is passed here is really a string containing the idisplay
  * from ConnectDisplay().
- *
- * Xlib may be calling this for either X11 or IM. Assume that
- * if port < IP_RESERVE, then is is a display number. Otherwise, it is a
- * regular port number for IM.
  */
 
 if (is_numeric (port))
 {
     tmpport = (short) atoi (port);
 
-#if 0
-    if( tmpport < 1024 ) /* IP_RESERVED */
-#endif
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
-#if 0
-    else
-	strncpy(portbuf,port,PORTBUFSIZE);
-#endif
+    sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
 }
 else
 #endif
@@ -1033,7 +1020,7 @@ char *port;
 struct	sockaddr_un	sockname;
 int			namelen;
 
-#if defined(hpux) && defined(X11)
+#if defined(hpux) && defined(X11_t)
 struct	sockaddr_un	old_sockname;
 int			old_namelen;
 #endif
@@ -1068,7 +1055,7 @@ namelen = strlen(sockname.sun_path) + sizeof(sockname.sun_family);
 #endif
 
 
-#if defined(hpux) && defined(X11)
+#if defined(hpux) && defined(X11_t)
 /*
  * This is gross, but it was in Xlib
  */
@@ -1091,7 +1078,7 @@ if( connect(ciptr->fd,(struct sockaddr *)&sockname, namelen) < 0 )
     int olderrno = errno;
     int connected = 0;
 
-#if defined(hpux) && defined(X11)
+#if defined(hpux) && defined(X11_t)
     if (olderrno == ENOENT)
     {
 	if (connect (ciptr->fd,
