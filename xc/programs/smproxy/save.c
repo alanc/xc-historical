@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: save.c,v 1.1 94/07/07 10:23:04 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -296,19 +296,14 @@ give_up:
 
 
 void
-ReadProxyFile ()
+ReadProxyFile (filename)
+
+char *filename;
 
 {
     FILE *proxyFile;
-    char *home, filename[128];
     ProxyFileEntry *entry;
     int done = 0;
-
-    home = (char *) getenv ("HOME");
-    if (!home)
-	home = ".";
-
-    sprintf (filename, "%s/.smproxy", home);
 
     proxyFile = fopen (filename, "rb");
     if (!proxyFile)
