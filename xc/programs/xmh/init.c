@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.49 90/11/27 18:27:31 converse Exp $
+ * $XConsortium: init.c,v 2.50 91/01/10 12:14:53 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -46,7 +46,7 @@ static Boolean static_variable;	 /* whose address is not a widget ID */
 /* This is for the check mark in the Options menu */
 #define check_width 9
 #define check_height 8
-static char check_bits[] = {
+static unsigned char check_bits[] = {
    0x00, 0x01, 0x80, 0x01, 0xc0, 0x00, 0x60, 0x00,
    0x31, 0x00, 0x1b, 0x00, 0x0e, 0x00, 0x04, 0x00
 };
@@ -420,7 +420,7 @@ char **argv;
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),
 			      RootWindowOfScreen( XtScreen(toplevel)),
-			      check_bits, check_width, check_height);
+			      (char *)check_bits, check_width, check_height);
 
     DEBUG("Making screen ... ")
 
