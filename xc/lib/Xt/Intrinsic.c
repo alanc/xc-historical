@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.111 88/02/02 19:18:50 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.112 88/02/06 10:19:33 swick Locked $";
 #endif lint
 
 /*
@@ -342,4 +342,13 @@ Widget XtParent(widget)
     Widget widget;
 {
     return (widget->core.parent);
+}
+
+
+#undef XtIsSensitive
+
+Boolean XtIsSensitive(widget)
+    Widget widget;
+{
+    return (widget->core.sensitive && widget->core.ancestor_sensitive);
 }
