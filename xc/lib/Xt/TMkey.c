@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.22 93/09/18 18:18:42 kaleb Exp $ */
+/* $XConsortium: TMkey.c,v 1.23 93/09/25 10:39:08 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -119,8 +119,6 @@ FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff)
 
 /* usual number of expected keycodes in XtKeysymToKeycodeList */
 #define KEYCODE_ARRAY_SIZE 10
-
-static void _XtConvertCase();
 
 Boolean _XtComputeLateBindings(dpy, lateModifiers, computed, computedMask)
     Display *dpy;
@@ -265,7 +263,7 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
 	    return;
 	}
     if (keysym <= 0x3ff)	/* Latin-1 start = 0, Latin-4 stop = 0x3ff */
-	_XtConvertCase(dpy, keysym, lower_return, upper_return);
+	XConvertCase(keysym, lower_return, upper_return);
     UNLOCK_APP(app);
 }
     
@@ -568,94 +566,6 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     /* XXX should now redo grabs */
     UNLOCK_APP(app);
 }
-
-/* This code should match XConvertCase (internal, sigh) in Xlib */
-/* ARGSUSED */
-static void _XtConvertCase(dpy, sym, lower, upper)
-    Display *dpy;
-    KeySym sym;
-    KeySym *lower;
-    KeySym *upper;
-{
-    *lower = sym;
-    *upper = sym;
-    switch(sym >> 8) {
-    case 0:
-	if ((sym >= XK_A) && (sym <= XK_Z))
-	    *lower += (XK_a - XK_A);
-	else if ((sym >= XK_a) && (sym <= XK_z))
-	    *upper -= (XK_a - XK_A);
-	else if ((sym >= XK_Agrave) && (sym <= XK_Odiaeresis))
-	    *lower += (XK_agrave - XK_Agrave);
-	else if ((sym >= XK_agrave) && (sym <= XK_odiaeresis))
-	    *upper -= (XK_agrave - XK_Agrave);
-	else if ((sym >= XK_Ooblique) && (sym <= XK_Thorn))
-	    *lower += (XK_oslash - XK_Ooblique);
-	else if ((sym >= XK_oslash) && (sym <= XK_thorn))
-	    *upper -= (XK_oslash - XK_Ooblique);
-	break;
-#ifdef XK_LATIN2
-      case 1:
-	/* Assume the KeySym is a legal value (ignore discontinuities) */
-	if (sym == XK_Aogonek)
-	    *lower = XK_aogonek;
-	else if (sym >= XK_Lstroke && sym <= XK_Sacute)
-	    *lower += (XK_lstroke - XK_Lstroke);
-	else if (sym >= XK_Scaron && sym <= XK_Zacute)
-	    *lower += (XK_scaron - XK_Scaron);
-	else if (sym >= XK_Zcaron && sym <= XK_Zabovedot)
-	    *lower += (XK_zcaron - XK_Zcaron);
-	else if (sym == XK_aogonek)
-	    *upper = XK_Aogonek;
-	else if (sym >= XK_lstroke && sym <= XK_sacute)
-	    *upper -= (XK_lstroke - XK_Lstroke);
-	else if (sym >= XK_scaron && sym <= XK_zacute)
-	    *upper -= (XK_scaron - XK_Scaron);
-	else if (sym >= XK_zcaron && sym <= XK_zabovedot)
-	    *upper -= (XK_zcaron - XK_Zcaron);
-	else if (sym >= XK_Racute && sym <= XK_Tcedilla)
-	    *lower += (XK_racute - XK_Racute);
-	else if (sym >= XK_racute && sym <= XK_tcedilla)
-	    *upper -= (XK_racute - XK_Racute);
-	break;
-#endif
-#ifdef XK_LATIN3
-      case 2:
-	/* Assume the KeySym is a legal value (ignore discontinuities) */
-	if (sym >= XK_Hstroke && sym <= XK_Hcircumflex)
-	    *lower += (XK_hstroke - XK_Hstroke);
-	else if (sym >= XK_Gbreve && sym <= XK_Jcircumflex)
-	    *lower += (XK_gbreve - XK_Gbreve);
-	else if (sym >= XK_hstroke && sym <= XK_hcircumflex)
-	    *upper -= (XK_hstroke - XK_Hstroke);
-	else if (sym >= XK_gbreve && sym <= XK_jcircumflex)
-	    *upper -= (XK_gbreve - XK_Gbreve);
-	else if (sym >= XK_Cabovedot && sym <= XK_Scircumflex)
-	    *lower += (XK_cabovedot - XK_Cabovedot);
-	else if (sym >= XK_cabovedot && sym <= XK_scircumflex)
-	    *upper -= (XK_cabovedot - XK_Cabovedot);
-	break;
-#endif
-#ifdef XK_LATIN4
-      case 3:
-	/* Assume the KeySym is a legal value (ignore discontinuities) */
-	if (sym >= XK_Rcedilla && sym <= XK_Tslash)
-	    *lower += (XK_rcedilla - XK_Rcedilla);
-	else if (sym >= XK_rcedilla && sym <= XK_tslash)
-	    *upper -= (XK_rcedilla - XK_Rcedilla);
-	else if (sym == XK_ENG)
-	    *lower = XK_eng;
-	else if (sym == XK_eng)
-	    *upper = XK_ENG;
-	else if (sym >= XK_Amacron && sym <= XK_Umacron)
-	    *lower += (XK_amacron - XK_Amacron);
-	else if (sym >= XK_amacron && sym <= XK_umacron)
-	    *upper -= (XK_amacron - XK_Amacron);
-	break;
-#endif
-    }
-}
-
 
 KeySym *XtGetKeysymTable(dpy, min_keycode_return, keysyms_per_keycode_return)
     Display *dpy;
