@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.20 88/10/15 16:33:22 jim Exp $
+ *	$XConsortium: button.c,v 1.21 88/10/15 16:36:18 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.20 88/10/15 16:33:22 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.21 88/10/15 16:36:18 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -1029,6 +1029,7 @@ Cardinal count;
 {
     Atom* atoms = term->screen.selection_atoms;
     int i;
+    Boolean have_selection = False;
 
     if (count > term->screen.sel_atoms_size) {
 	XtFree((char*)atoms);
@@ -1054,13 +1055,16 @@ Cardinal count;
 	    XStoreBytes( XtDisplay((Widget)term), term->screen.selection,
 			 term->screen.selection_length, buffer );
 	else if (!replyToEmacs) {
-	    XtOwnSelection( (Widget)term, atoms[i],
+	    have_selection |=
+		XtOwnSelection( (Widget)term, atoms[i],
 			    term->screen.selection_time,
 			    ConvertSelection, LoseSelection, SelectionDone );
 	}
     }
     if (!replyToEmacs)
 	term->screen.selection_count = count;
+    if (!have_selection)
+	TrackText(0, 0, 0, 0);
 }
 
 /* void */ DisownSelection(term)
