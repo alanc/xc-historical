@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.7 89/08/21 08:58:01 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.8 89/08/24 10:36:13 rws Exp $ */
 
 /*
  * Protocol requests constants and alignment values
@@ -122,7 +122,7 @@ typedef struct _ShapeQueryExtents {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeQueryExtents */
 	CARD16	length B16;
-	CARD32	window;		/* request destination id */
+	CARD32	window B32;		/* request destination id */
 } xShapeQueryExtentsReq;
 #define sz_xShapeQueryExtentsReq	8
 
@@ -150,10 +150,10 @@ typedef struct _ShapeSelectInput {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeSelectInput */
 	CARD16	length B16;
-	CARD32	window;		/* request destination id */
+	CARD32	window B32;	 /* request destination id */
 	BYTE	enable;		/* xTrue -> send events */
 	BYTE	pad1;
-	CARD16	pad2;
+	CARD16	pad2 B16;
 } xShapeSelectInputReq;
 #define sz_xShapeSelectInputReq	12
 
@@ -179,7 +179,7 @@ typedef struct _ShapeInputSelected {
 	CARD8	reqType;	/* always ShapeReqCode */
 	CARD8	shapeReqType;	/* always X_ShapeInputSelected */
 	CARD16	length B16;
-	CARD32	window;		/* request destination id */
+	CARD32	window B32;	/* request destination id */
 } xShapeInputSelectedReq;
 #define sz_xShapeInputSelectedReq 8
 
@@ -201,10 +201,10 @@ typedef struct _ShapeGetRectangles {
     CARD8   reqType;		/* always ShapeReqCode */
     CARD8   shapeReqType;	/* always X_ShapeGetRectangles */
     CARD16  length B16;
-    CARD32  window;		/* request destination id */
+    CARD32  window B32;		/* request destination id */
     CARD8   kind;		/* ShapeBounding or ShapeClip */
     CARD8   junk1;
-    CARD16  junk2;
+    CARD16  junk2 B16;
 } xShapeGetRectanglesReq;
 #define sz_xShapeGetRectanglesReq	12
 
@@ -213,7 +213,7 @@ typedef struct {
 	CARD8	ordering;	/* UnSorted, YSorted, YXSorted, YXBanded */
 	CARD16	sequenceNumber B16;
 	CARD32	length B32;		/* not zero */
-	CARD32	nrects;			/* number of rectangles */
+	CARD32	nrects B32;		/* number of rectangles */
 	CARD32 pad1 B32;
 	CARD32 pad2 B32;
 	CARD32 pad3 B32;
