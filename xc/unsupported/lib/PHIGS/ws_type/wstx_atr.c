@@ -1,4 +1,4 @@
-/* $XConsortium: wstx_atr.c,v 5.3 91/07/01 16:24:19 hersh Exp $ */
+/* $XConsortium: wstx_atr.c,v 5.4 91/07/15 15:45:34 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1219,25 +1219,6 @@ phg_wst_set_attrs( wst, avlist )
     return status;
 }
 
-#ifdef REMOVED
-caddr_t
-phg_wst_set( wst, va_alist)
-    register Wst	*wst;
-    va_dcl
-{
-    caddr_t	avlist[PHG_ATTR_STANDARD_SIZE];
-    va_list	valist;
-
-    /* only operate on UNBOUND types */
-    if ( wst->bound_status == WST_UNBOUND) {
-	va_start( valist);
-	(void)attr_make( avlist, PHG_ATTR_STANDARD_SIZE, valist);
-	va_end( valist);
-	return (phg_wst_set_attrs( wst, avlist));
-    } else
-	return NULL;
-}
-#endif
 
 Wst*
 phg_wst_create( erh, base, avlist )
