@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.185 93/09/18 14:30:20 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.186 93/09/20 20:28:52 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -243,12 +243,12 @@ _XWaitForWritable(dpy
 #endif
 	{
 	    _XAlignedBuffer buf;
-	    int pend;
-	    register int len;
+	    BytesReadable_t pend;
+	    register BytesReadable_t len;
 	    register xReply *rep;
 
 	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+	    if (BytesReadable(dpy->fd, &pend) < 0)
 		_XIOError(dpy);
 	    len = pend;
 
@@ -528,8 +528,8 @@ _XEventsQueued (dpy, mode)
     register Display *dpy;
     int mode;
 {
-	register int len;
-	int pend;
+	register BytesReadable_t len;
+	BytesReadable_t pend;
 	_XAlignedBuffer buf;
 	register xReply *rep;
 	char *read_buf;
@@ -583,7 +583,7 @@ _XEventsQueued (dpy, mode)
 	}
 #endif /* XTHREADS*/
 
-	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+	if (BytesReadable(dpy->fd, &pend) < 0)
 	    _XIOError(dpy);
 #ifdef XCONN_CHECK_FREQ
 	/* This is a crock, required because FIONREAD or equivalent is
@@ -615,7 +615,7 @@ _XEventsQueued (dpy, mode)
 	    {
 		if (pend > 0)
 		{
-		    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+		    if (BytesReadable(dpy->fd, &pend) < 0)
 			_XIOError(dpy);
 		    /* we should not get zero, if we do, force a read */
 		    if (!pend)
@@ -702,8 +702,8 @@ _XReadEvents(dpy)
 	register Display *dpy;
 {
 	_XAlignedBuffer buf;
-	int pend;
-	register int len;
+	BytesReadable_t pend;
+	register BytesReadable_t len;
 	register xReply *rep;
 	Bool not_yet_flushed = True;
 	char *read_buf;
@@ -761,7 +761,7 @@ _XReadEvents(dpy)
 #endif /* XTHREADS*/
 
 	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+	    if (BytesReadable(dpy->fd, &pend) < 0)
 	    	_XIOError(dpy);
 	    len = pend;
 

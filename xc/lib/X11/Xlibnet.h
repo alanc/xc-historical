@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.30 93/09/15 18:29:12 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.31 93/09/22 18:56:37 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -16,6 +16,12 @@ without express or implied warranty.
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
+
+#ifdef LONG64
+typedef int BytesReadable_t;
+#else
+typedef long BytesReadable_t;
+#endif
 
 #ifndef WIN32
 
@@ -62,9 +68,9 @@ without express or implied warranty.
 #include <net/errno.h>
 #endif /* _SEQUENT_ */
 #include <sys/stropts.h>
-#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
+#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (char *)(ptr))
 #else
-#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
+#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (char *)(ptr))
 #endif
 
 #endif /* STREAMSCONN else */
