@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.140 93/08/11 09:47:05 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.141 93/08/11 09:56:51 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -39,6 +39,9 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.140 93/08/11 09:47:05 rws Exp $
  * MoveToBakFile		(file)
  * RMoveToBakFile		(file)
  * RanLibrary			(args)
+ * LibraryTargetName		(libname)
+ * LibraryTargetNameSuffix	(libname,suffix)
+ * LibraryTargetNameDir		(dir,libname)
  * InstallLibrary		(libname,dest)
  * MergeIntoInstalledLibrary	(tolib,fromlib)
  * InstallLibraryAlias		(libname,alias,dest)
@@ -464,15 +467,27 @@ PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects 
 #define RanLibrary(args) /**/
 #endif
 
+#ifndef LibraryTargetName
+#define LibraryTargetName(libname) Concat(lib,libname.a)
+#endif
+
+#ifndef LibraryTargetNameSuffix
+#define LibraryTargetNameSuffix(libname,suffix) Concat3(lib,libname,suffix.a)
+#endif
+
+#ifndef LibraryTargetNameDir
+#define LibraryTargetNameDir(dir,libname) Concat(dir/lib,libname.a)
+#endif
+
 /*
  * InstallLibrary - generate rules to install the indicated library.
  */
 #ifndef InstallLibrary
 #define	InstallLibrary(libname,dest)					@@\
-install:: Concat(lib,libname.a)						@@\
+install:: LibraryTargetName(libname)					@@\
 	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c $(INSTLIBFLAGS) Concat(lib,libname.a) $(DESTDIR)dest @@\
-	RanLibrary($(RANLIBINSTFLAGS) Concat($(DESTDIR)dest/lib,libname.a))
+	$(INSTALL) -c $(INSTLIBFLAGS) LibraryTargetName(libname) $(DESTDIR)dest @@\
+	RanLibrary($(RANLIBINSTFLAGS) LibraryTargetNameDir($(DESTDIR)dest,libname))
 #endif /* InstallLibrary */
 
 /*
@@ -492,8 +507,8 @@ install::  fromlib							@@\
 #define	InstallLibraryAlias(libname,alias,dest)				@@\
 install::								@@\
 	-(cd $(DESTDIR)dest; \						@@\
-		$(RM) Concat(lib,alias.a); \				@@\
-		$(LN) Concat(lib,libname.a) Concat(lib,alias.a))
+		$(RM) LibraryTargetName(alias); \			@@\
+		$(LN) LibraryTargetName(libname) LibraryTargetName(alias))
 #endif /* InstallLibraryAlias */
 
 
@@ -1000,9 +1015,9 @@ clean::									@@\
  */
 #ifndef NormalLibraryTarget
 #define	NormalLibraryTarget(libname,objlist)				@@\
-AllTarget(Concat(lib,libname.a))					@@\
+AllTarget(LibraryTargetName(libname))					@@\
 									@@\
-Concat(lib,libname.a): objlist						@@\
+LibraryTargetName(libname): objlist					@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist						@@\
 	RanLibrary($@)
@@ -1015,9 +1030,9 @@ Concat(lib,libname.a): objlist						@@\
  */
 #ifndef NormalLibraryTarget2
 #define	NormalLibraryTarget2(libname,objlist1,objlist2)			@@\
-AllTarget(Concat(lib,libname.a))					@@\
+AllTarget(LibraryTargetName(libname))					@@\
 									@@\
-Concat(lib,libname.a): objlist1 objlist2				@@\
+LibraryTargetName(libname): objlist1 objlist2				@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist1						@@\
 	$(AR) $@ objlist2						@@\
@@ -1031,9 +1046,9 @@ Concat(lib,libname.a): objlist1 objlist2				@@\
  */
 #ifndef NormalLibraryTarget3
 #define	NormalLibraryTarget3(libname,objlist1,objlist2,objlist3)	@@\
-AllTarget(Concat(lib,libname.a))					@@\
+AllTarget(LibraryTargetName(libname))					@@\
 									@@\
-Concat(lib,libname.a): objlist1 objlist2 objlist3			@@\
+LibraryTargetName(libname): objlist1 objlist2 objlist3			@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist1						@@\
 	$(AR) $@ objlist2						@@\
@@ -1047,9 +1062,9 @@ Concat(lib,libname.a): objlist1 objlist2 objlist3			@@\
  */
 #ifndef NormalDepLibraryTarget
 #define	NormalDepLibraryTarget(libname,deplist,objlist)			@@\
-AllTarget(Concat(lib,libname.a))					@@\
+AllTarget(LibraryTargetName(libname))					@@\
 									@@\
-Concat(lib,libname.a): deplist						@@\
+LibraryTargetName(libname): deplist					@@\
 	$(RM) $@							@@\
 	$(AR) $@ objlist						@@\
 	RanLibrary($@)
@@ -1077,9 +1092,9 @@ clean::									@@\
  */
 #ifndef ProfiledLibraryTarget
 #define	ProfiledLibraryTarget(libname,objlist)				@@\
-AllTarget(Concat3(lib,libname,_p.a))					@@\
+AllTarget(LibraryTargetNameSuffix(libname,_p))				@@\
 									@@\
-Concat3(lib,libname,_p.a): objlist					@@\
+LibraryTargetNameSuffix(libname,_p): objlist				@@\
 	$(RM) $@							@@\
 	cd profiled; $(AR) ../$@ objlist				@@\
 	RanLibrary($@)
@@ -1092,9 +1107,9 @@ Concat3(lib,libname,_p.a): objlist					@@\
  */
 #ifndef DebuggedLibraryTarget
 #define	DebuggedLibraryTarget(libname,objlist)				@@\
-AllTarget(Concat3(lib,libname,_d.a))					@@\
+AllTarget(LibraryTargetNameSuffix(libname,_d))				@@\
 									@@\
-Concat3(lib,libname,_d.a): objlist					@@\
+LibraryTargetNameSuffix(libname,_d): objlist				@@\
 	$(RM) $@							@@\
 	cd debugger; $(AR) ../$@ objlist				@@\
 	RanLibrary($@)
@@ -1107,11 +1122,11 @@ Concat3(lib,libname,_d.a): objlist					@@\
  */
 #ifndef AliasedLibraryTarget
 #define	AliasedLibraryTarget(libname,alias)				@@\
-AllTarget(Concat(lib,alias.a))						@@\
+AllTarget(LibraryTargetName(alias))					@@\
 									@@\
-Concat(lib,alias.a): Concat(lib,libname.a)				@@\
+LibraryTargetName(alias): LibraryTargetName(libname)			@@\
 	$(RM) $@							@@\
-	$(LN) Concat(lib,libname.a) $@
+	$(LN) LibraryTargetName(libname) $@
 #endif /* AliasedLibraryTarget */
 
 
