@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.12 93/09/11 09:40:39 rws Exp $
+ * $XConsortium: locking.c,v 1.12 93/09/11 10:18:11 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -231,6 +231,10 @@ static void _XPopReader(dpy, list, tail)
     printf("_XPopReader called in thread %x, popping %x\n",
 	   xthread_self(), front);
 #endif
+
+    if (dpy->in_process_conni)
+	/* we never added ourself in the first place */
+	return;
 
     *list = front->next;
     if (*tail == &front->next)	/* did we free the last elt? */
@@ -468,6 +472,7 @@ Status XInitThreads()
     _XUnlockMutex_fn = _XUnlockMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
     _XFreeDisplayLock_fn = _XFreeDisplayLock;
+    _Xthread_self_fn = xthread_self;
 
 #ifdef XTHREADS_WARN
 #ifdef XTHREADS_DEBUG
