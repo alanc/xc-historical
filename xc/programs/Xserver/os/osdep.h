@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.19 89/08/03 20:25:13 rws Exp $ */
+/* $XConsortium: osdep.h,v 1.20 89/08/04 08:28:13 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -120,11 +120,11 @@ SOFTWARE.
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=0; cri<mskcnt; cri++)	\
-		          dst[cri] = (b1[cri] & b2[cri]) }
+		          dst[cri] = (b1[cri] & b2[cri]); }
 #define ORBITS(dst, b1, b2)  \
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
-		          dst[cri] = (b1[cri] | b2[cri]) }
+		          dst[cri] = (b1[cri] | b2[cri]); }
 #define UNSETBITS(dst, b1) \
 		      { int cri;			\
 		      for (cri=0; cri<mskcnt; cri++)	\
