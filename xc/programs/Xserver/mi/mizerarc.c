@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.16 89/09/15 13:15:20 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.17 89/09/17 16:52:58 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -41,6 +41,8 @@ typedef struct {
     int dashOffsetInit;
 } DashInfo;
 
+static miZeroArcPtRec oob = {65536, 65536, 0};
+
 Bool
 miZeroArcSetup(arc, info, ok360)
     register xArc *arc;
@@ -52,6 +54,7 @@ miZeroArcSetup(arc, info, ok360)
     int startseg, endseg;
     int startAngle, endAngle;
     int i, overlap;
+    miZeroArcPtRec start, end;
 
     l = arc->width & 1;
     if (arc->width == arc->height)
@@ -121,42 +124,44 @@ miZeroArcSetup(arc, info, ok360)
 	arc->width && arc->height)
     {
 	info->initialMask = 0xf;
-	info->endx = -1;
-	info->endy = -1;
+	info->end.x = -1;
+	info->end.y = -1;
 	return TRUE;
     }
     startseg = startAngle / OCTANT;
     if (!arc->height || (((startseg + 1) & 2) && arc->width))
     {
-	info->startx = Dcos((double)startAngle/64.0) * ((arc->width + 1) / 2.0);
-	if (info->startx < 0)
-	    info->startx = -info->startx;
-	info->starty = -1;
+	start.x = Dcos((double)startAngle/64.0) * ((arc->width + 1) / 2.0);
+	if (start.x < 0)
+	    start.x = -start.x;
+	start.y = -1;
     }
     else
     {
-	info->starty = Dsin((double)startAngle/64.0) * (arc->height / 2.0);
-	if (info->starty < 0)
-	    info->starty = -info->starty;
-	info->starty = info->h - info->starty;
-	info->startx = 65536;
+	start.y = Dsin((double)startAngle/64.0) * (arc->height / 2.0);
+	if (start.y < 0)
+	    start.y = -start.y;
+	start.y = info->h - start.y;
+	start.x = 65536;
     }
     endseg = endAngle / OCTANT;
     if (!arc->height || (((endseg + 1) & 2) && arc->width))
     {
-	info->endx = Dcos((double)endAngle/64.0) * ((arc->width + 1) / 2.0);
-	if (info->endx < 0)
-	    info->endx = -info->endx;
-	info->endy = -1;
+	end.x = Dcos((double)endAngle/64.0) * ((arc->width + 1) / 2.0);
+	if (end.x < 0)
+	    end.x = -end.x;
+	end.y = -1;
     }
     else
     {
-	info->endy = Dsin((double)endAngle/64.0) * (arc->height / 2.0);
-	if (info->endy < 0)
-	    info->endy = -info->endy;
-	info->endy = info->h - info->endy;
-	info->endx = 65536;
+	end.y = Dsin((double)endAngle/64.0) * (arc->height / 2.0);
+	if (end.y < 0)
+	    end.y = -end.y;
+	end.y = info->h - end.y;
+	end.x = 65536;
     }
+    info->firstx = start.x;
+    info->firsty = start.y;
     info->initialMask = 0;
     overlap = arc->angle2 && (endAngle <= startAngle);
     for (i = 0; i < 4; i++)
@@ -166,47 +171,87 @@ miZeroArcSetup(arc, info, ok360)
 	    ((i * QUADRANT <= endAngle) && ((i + 1) * QUADRANT > startAngle)))
 	    info->initialMask |= (1 << i);
     }
-    info->startMask = info->initialMask;
-    info->endMask = info->initialMask;
+    start.mask = info->initialMask;
+    end.mask = info->initialMask;
     startseg >>= 1;
     endseg >>= 1;
     overlap = overlap && (endseg == startseg);
     if (startseg & 1)
     {
-	if  (!overlap)
+	if (!overlap)
 	    info->initialMask &= ~(1 << startseg);
-	if (info->startx > info->endx || info->starty > info->endy)
-	    info->endMask &= ~(1 << startseg);
+	if (start.x > end.x || start.y > end.y)
+	    end.mask &= ~(1 << startseg);
     }
     else
     {
-	info->startMask &= ~(1 << startseg);
-	if ((info->startx < info->endx || info->starty < info->endy ||
-	    (info->startx == info->endx && info->starty == info->endy)) &&
-	    !overlap)
-	    info->endMask &= ~(1 << startseg);
+	start.mask &= ~(1 << startseg);
+	if ((start.x < end.x || start.y < end.y) && !overlap)
+	    end.mask &= ~(1 << startseg);
     }
     if (endseg & 1)
     {
-	info->endMask &= ~(1 << endseg);
-	if ((info->startx > info->endx || info->starty > info->endy) &&
-	    !overlap)
-	    info->startMask &= ~(1 << endseg);
+	end.mask &= ~(1 << endseg);
+	if ((start.x > end.x || start.y > end.y) && !overlap)
+	    start.mask &= ~(1 << endseg);
     }
     else
     {
 	if (!overlap)
 	    info->initialMask &= ~(1 << endseg);
-	if (info->startx < info->endx || info->starty < info->endy)
-	    info->startMask &= ~(1 << endseg);
+	if (start.x < end.x || start.y < end.y)
+	    start.mask &= ~(1 << endseg);
     }
-    if (!info->startx)
-	info->initialMask = info->startMask;
-    if ((info->startx == info->endx) && (info->starty == info->endy) &&
-	overlap && (startseg & 1))
-	info->endMask = info->startMask;
+    if (startseg & 1)
+    {
+	info->start = start;
+	info->end = oob;
+    }
+    else
+    {
+	info->end = start;
+	info->start = oob;
+    }
+    if (endseg & 1)
+    {
+	info->altend = end;
+	info->altstart = oob;
+    }
+    else
+    {
+	info->altstart = end;
+	info->altend = oob;
+    }
+    if (info->altstart.x < info->start.x || info->altstart.y < info->start.y)
+    {
+	miZeroArcPtRec tmp;
+ 	tmp = info->altstart;
+	info->altstart = info->start;
+	info->start = tmp;
+    }
+    if (info->altend.x < info->end.x || info->altend.y < info->end.y)
+    {
+	miZeroArcPtRec tmp;
+ 	tmp = info->altend;
+	info->altend = info->end;
+	info->end = tmp;
+    }
+    if (!info->start.x)
+    {
+	info->initialMask = info->start.mask;
+	info->start = info->altstart;
+    }
     return FALSE;
 }
+
+#define Pixelate(xval,yval) \
+    { \
+	pts->x = xval; \
+	pts->y = yval; \
+	pts++; \
+    }
+
+#define DoPix(idx,xval,yval) if (mask & (1 << idx)) Pixelate(xval, yval);
 
 DDXPointPtr
 miZeroArcPts(arc, pts)
@@ -216,8 +261,9 @@ miZeroArcPts(arc, pts)
     miZeroArcRec info;
     register int x, y, a, b, d, mask;
     register int k1, k3, dx1, dy1;
+    Bool do360;
 
-    (void)miZeroArcSetup(arc, &info, FALSE);
+    do360 = miZeroArcSetup(arc, &info, TRUE);
     x = info.x;
     y = info.y;
     k1 = info.k1;
@@ -230,113 +276,156 @@ miZeroArcPts(arc, pts)
     mask = info.initialMask;
     if (x && !(arc->width & 1))
     {
-	if (mask & 2)
-	{
-	    pts->x = info.xorgo;
-	    pts->y = info.yorg;
-	    pts++;
-	}
-	if (mask & 8)
-	{
-	    pts->x = info.xorgo;
-	    pts->y = info.yorgo;
-	    pts++;
-	}
+	DoPix(1, info.xorgo, info.yorg);
+	DoPix(3, info.xorgo, info.yorgo);
     }
-    if (!info.endx)
-	mask = info.endMask;
-    while (y < info.h)
+    if (!info.end.x)
     {
-	if (a < 0)
+	mask = info.end.mask;
+	info.end = info.altend;
+    }
+    if (do360 && (arc->width == arc->height) && !(arc->width & 1))
+    {
+	int yorgh = info.yorg + info.h;
+	int xorghp = info.xorg + info.h;
+	int xorghn = info.xorg - info.h;
+
+	while (1)
 	{
-	    dx1 = 0;
-	    dy1 = 1;
-	    k1 = info.alpha << 1;
-	    k3 = -k3;
-	    b = b + a - info.alpha;
-	    d = b - (a >> 1) - d + (k3 >> 3);
-	    a = (info.alpha - info.beta) - a;
-	}
-	if ((x == info.startx) || (y == info.starty))
-	    mask = info.startMask;
-	if ((x == info.endx) || (y == info.endy))
-	    mask = info.endMask;
-	if (mask & 1)
-	{
-	    pts->x = info.xorg + x;
-	    pts->y = info.yorg + y;
-	    pts++;
-	}
-	if (mask & 2)
-	{
-	    pts->x = info.xorgo - x;
-	    pts->y = info.yorg + y;
-	    pts++;
-	}
-	if (mask & 4)
-	{
-	    pts->x = info.xorgo - x;
-	    pts->y = info.yorgo - y;
-	    pts++;
-	}
-	if (mask & 8)
-	{
-	    pts->x = info.xorg + x;
-	    pts->y = info.yorgo - y;
-	    pts++;
-	}
-	b -= k1;
-	if (d < 0)
-	{
-	    x += dx1;
-	    y += dy1;
-	    a += k1;
-	    d += b;
-	}
-	else
-	{
+	    Pixelate(info.xorg + x, info.yorg + y);
+	    Pixelate(info.xorg - x, info.yorg + y);
+	    Pixelate(info.xorg - x, info.yorgo - y);
+	    Pixelate(info.xorg + x, info.yorgo - y);
+	    if (a < 0)
+		break;
+	    Pixelate(xorghp - y, yorgh - x);
+	    Pixelate(xorghn + y, yorgh - x);
+	    Pixelate(xorghn + y, yorgh + x);
+	    Pixelate(xorghp - y, yorgh + x);
+	    b -= k1;
 	    x++;
-	    y++;
-	    a += k3;
-	    d -= a;
+	    if (d < 0)
+	    {
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		y++;
+		a += k3;
+		d -= a;
+	    }
+	}
+	if (x > 1 && pts[-1].x == pts[-5].x && pts[-1].y == pts[-5].y)
+	    pts -= 4;
+	x = info.w;
+	y = info.h;
+    }
+    else if (do360)
+    {
+	while (y < info.h)
+	{
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    Pixelate(info.xorg + x, info.yorg + y);
+	    Pixelate(info.xorgo - x, info.yorg + y);
+	    Pixelate(info.xorgo - x, info.yorgo - y);
+	    Pixelate(info.xorg + x, info.yorgo - y);
+	    b -= k1;
+	    if (d < 0)
+	    {
+		x += dx1;
+		y += dy1;
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		x++;
+		y++;
+		a += k3;
+		d -= a;
+	    }
 	}
     }
-    if ((x == info.endx) || (y == info.endy))
-	mask = info.endMask;
+    else
+    {
+	while (y < info.h)
+	{
+	    if (a < 0)
+	    {
+		dx1 = 0;
+		dy1 = 1;
+		k1 = info.alpha << 1;
+		k3 = -k3;
+		b = b + a - info.alpha;
+		d = b - (a >> 1) - d + (k3 >> 3);
+		a = (info.alpha - info.beta) - a;
+	    }
+	    if ((x == info.start.x) || (y == info.start.y))
+	    {
+		mask = info.start.mask;
+		info.start = info.altstart;
+	    }
+	    DoPix(0, info.xorg + x, info.yorg + y);
+	    DoPix(1, info.xorgo - x, info.yorg + y);
+	    DoPix(2, info.xorgo - x, info.yorgo - y);
+	    DoPix(3, info.xorg + x, info.yorgo - y);
+	    if ((x == info.end.x) || (y == info.end.y))
+	    {
+		mask = info.end.mask;
+		info.end = info.altend;
+	    }
+	    b -= k1;
+	    if (d < 0)
+	    {
+		x += dx1;
+		y += dy1;
+		a += k1;
+		d += b;
+	    }
+	    else
+	    {
+		x++;
+		y++;
+		a += k3;
+		d -= a;
+	    }
+	}
+    }
     for (; x <= info.w; x++)
     {
-	if (mask & 1)
+	if ((x == info.start.x) || (y == info.start.y))
 	{
-	    pts->x = info.xorg + x;
-	    pts->y = info.yorg + y;
-	    pts++;
+	    mask = info.start.mask;
+	    info.start = info.altstart;
 	}
-	if (mask & 4)
-	{
-	    pts->x = info.xorgo - x;
-	    pts->y = info.yorgo - y;
-	    pts++;
-	}
+	DoPix(0, info.xorg + x, info.yorg + y);
+	DoPix(2, info.xorgo - x, info.yorgo - y);
 	if (!arc->height || (arc->height & 1))
 	{
-	    if (mask & 2)
-	    {
-		pts->x = info.xorgo - x;
-		pts->y = info.yorg + y;
-		pts++;
-	    }
-	    if (mask & 8)
-	    {
-		pts->x = info.xorg + x;
-		pts->y = info.yorgo - y;
-		pts++;
-	    }
+	    DoPix(1, info.xorgo - x, info.yorg + y);
+	    DoPix(3, info.xorg + x, info.yorgo - y);
+	}
+	if (x == info.end.x)
+	{
+	    mask = info.end.mask;
+	    info.end = info.altend;
 	}
     }
     return pts;
 }
 
-#define DoPix(idx, xval, yval) \
+#undef DoPix
+#define DoPix(idx,xval,yval) \
     if (mask & (1 << idx)) \
     { \
 	arcPts[idx]->x = xval; \
@@ -359,13 +448,9 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
     DDXPointPtr arcPts[4];
     DDXPointPtr startPts[5], endPts[5];
     int deltas[5];
-    DDXPointPtr startPt, pt, lastPt, cpt, *pts;
+    DDXPointPtr startPt, pt, lastPt, pts;
     int i, delta, ptsdelta, seg, startseg;
 
-    if (!arc->angle2)
-	return;
-    if (!arc->width && !arc->height)
-	return;
     for (i = 0; i < 4; i++)
 	arcPts[i] = points + (i * maxPts);
     (void)miZeroArcSetup(arc, &info, FALSE);
@@ -386,8 +471,11 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	DoPix(1, info.xorgo, info.yorg);
 	DoPix(3, info.xorgo, info.yorgo);
     }
-    if (!info.endx)
-	mask = info.endMask;
+    if (!info.end.x)
+    {
+	mask = info.end.mask;
+	info.end = info.altend;
+    }
     while (y < info.h)
     {
 	if (a < 0)
@@ -400,17 +488,22 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	    d = b - (a >> 1) - d + (k3 >> 3);
 	    a = (info.alpha - info.beta) - a;
 	}
-	if ((x == info.startx) || (y == info.starty))
-	{
-	    mask = info.startMask;
+	if ((x == info.firstx) || (y == info.firsty))
 	    startPt = arcPts[startseg];
+	if ((x == info.start.x) || (y == info.start.y))
+	{
+	    mask = info.start.mask;
+	    info.start = info.altstart;
 	}
-	if ((x == info.endx) || (y == info.endy))
-	    mask = info.endMask;
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(1, info.xorgo - x, info.yorg + y);
 	DoPix(2, info.xorgo - x, info.yorgo - y);
 	DoPix(3, info.xorg + x, info.yorgo - y);
+	if ((x == info.end.x) || (y == info.end.y))
+	{
+	    mask = info.end.mask;
+	    info.end = info.altend;
+	}
 	b -= k1;
 	if (d < 0)
 	{
@@ -427,20 +520,26 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	    d -= a;
 	}
     }
-    if ((x == info.startx) || (y == info.starty))
-	startPt = arcPts[startseg];
-    if ((x == info.endx) || (y == info.endy))
-	mask = info.endMask;
     for (; x <= info.w; x++)
     {
-	if (x == info.startx)
+	if ((x == info.firstx) || (y == info.firsty))
 	    startPt = arcPts[startseg];
+	if ((x == info.start.x) || (y == info.start.y))
+	{
+	    mask = info.start.mask;
+	    info.start = info.altstart;
+	}
 	DoPix(0, info.xorg + x, info.yorg + y);
 	DoPix(2, info.xorgo - x, info.yorgo - y);
 	if (!arc->height || (arc->height & 1))
 	{
 	    DoPix(1, info.xorgo - x, info.yorg + y);
 	    DoPix(3, info.xorg + x, info.yorgo - y);
+	}
+	if (x == info.end.x)
+	{
+	    mask = info.end.mask;
+	    info.end = info.altend;
 	}
     }
     for (i = 0; i < 4; i++)
@@ -534,20 +633,24 @@ miZeroArcDashPts(pGC, arc, dinfo, points, maxPts, evenPts, oddPts)
 	{
 	    if (dinfo->dashIndex & 1)
 	    {
-		pts = oddPts;
+		pts = *oddPts;
 		ptsdelta = -1;
 	    }
 	    else
 	    {
-		pts = evenPts;
+		pts = *evenPts;
 		ptsdelta = 1;
 	    }
 	    while ((pt != lastPt) && --dashRemaining >= 0)
 	    {
-		**pts = *pt;
-		*pts += ptsdelta;
+		*pts = *pt;
+		pts += ptsdelta;
 		pt += delta;
 	    }
+	    if (dinfo->dashIndex & 1)
+		*oddPts = pts;
+	    else
+		*evenPts = pts;
 	    if (dashRemaining <= 0)
 	    {
 		if (++(dinfo->dashIndex) == pGC->numInDashList)
@@ -567,7 +670,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     xArc	*parcs;
 {
     int maxPts = 0;
-    int n, maxw;
+    register int n, maxw;
     register xArc *arc;
     register int i;
     DDXPointPtr points, pts, oddPts;
