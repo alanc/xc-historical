@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.40 89/12/16 03:33:47 converse Exp $
+ * $XConsortium: pick.c,v 2.41 90/01/24 18:07:22 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -93,6 +93,8 @@ typedef struct _PickRec {
 
 
 static FormEntry CreateWidget();
+static void DeleteWidget(), AddDetailGroup();
+
 
 InitPick()
 {
@@ -226,8 +228,6 @@ static void ExecRowOr(w, closure, call_data)
     XtPointer closure;		/* FormEntry */
     XtPointer call_data;	/* unused */
 {
-    static DeleteWidget();
-
     FormEntry entry = (FormEntry)closure;
     RowList row = entry->row;
     FormBox form = row->group->form;
@@ -246,8 +246,6 @@ static void ExecGroupOr(w, closure, call_data)
     XtPointer closure;		/* FormEntry */
     XtPointer call_data;	/* unused */
 {
-    static AddDetailGroup();
-
     FormBox form = ((FormEntry)closure)->row->group->form;
 /* %%%    XUnmapWindow(theDisplay, XtWindow(form->inner)); */
     PrepareToUpdate(form);
@@ -527,7 +525,8 @@ static FormEntry CreateWidget(row, class, args, num_args)
 }
     
 
-static DeleteWidget(entry)
+static void
+DeleteWidget(entry)
   FormEntry entry;
 {
     RowList row = entry->row;
@@ -628,12 +627,14 @@ static Group AddGroup(form)
 
 
 
-static AddDetailGroup(form)
+static void
+AddDetailGroup(form)
   FormBox form;
 {
     Group group;
     RowList row;
     int     type;
+
     if (form->numgroups > 0) {
 	group = form->glist[form->numgroups - 1];
 	row = group->rlist[group->numrows - 1];
