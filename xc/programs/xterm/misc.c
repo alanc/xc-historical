@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.95 93/02/25 17:02:37 gildea Exp $
+ *	$XConsortium: misc.c,v 1.96 93/09/20 17:42:14 hersh Exp $
  */
 
 /*
@@ -612,8 +612,6 @@ register TScreen *screen;
 		if((screen->logfd = open(screen->logfile, O_WRONLY | O_APPEND,
 					 0644)) < 0)
 			return;
-		chown(screen->logfile, screen->uid, screen->gid);
-
 	}
 	screen->logstart = screen->TekEmu ? Tbptr : bptr;
 	screen->logging = TRUE;
