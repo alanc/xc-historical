@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.162 93/09/18 16:00:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.163 93/09/18 16:13:31 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -419,6 +419,7 @@ ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 XCOMM
 XCOMM SVGA CFB Server
 XCOMM
+INSTPGMFLAGS = InstPgmFlags $(INSTUIDFLAGS) /* server must be suid root  */
 SUBDIRS0 = CFB8Subdirs hw/svga
 SVGASUBDIRS = $(SUBDIRS0)
 SVGAOBJS = hw/svga/svga.o
