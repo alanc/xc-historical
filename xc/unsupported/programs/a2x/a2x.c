@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.76 92/07/02 17:25:19 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.77 92/07/03 12:18:57 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1750,7 +1750,7 @@ do_backspace()
 			  u->seq_len)) {
 		    if (curbscount < u->bscount)
 			partial = True;
-		    else
+		    else if (!curbsmatch || curbsmatch->seq_len < u->seq_len)
 			curbsmatch = u;
 		}
 	    }
