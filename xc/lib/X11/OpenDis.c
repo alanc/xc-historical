@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.125 92/01/30 10:07:13 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.126 92/11/03 18:42:50 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -239,15 +239,15 @@ Display *XOpenDisplay (display)
  */
 	_XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
 
-	if (prefix.majorVersion < X_PROTOCOL) {
+	if (prefix.majorVersion != X_PROTOCOL) {
+	    /* XXX - printing messages marks a bad programming interface */
 	    fprintf (stderr,
-       "Xlib:  warning, client built for newer rev (%d) than server (%d)!\r\n",
+     "Xlib: client uses different protocol version (%d) than server (%d)!\r\n",
 		     X_PROTOCOL, prefix.majorVersion);
-	}
-	if (prefix.minorVersion != X_PROTOCOL_REVISION) {
-	    fprintf (stderr,
-     "Xlib:  warning, client is protocol rev %d, server is rev %d!\r\n",
-		     X_PROTOCOL_REVISION, prefix.minorVersion);
+	    _XDisconnectDisplay (dpy->fd);
+	    Xfree ((char *)dpy);
+	    UnlockMutex(&lock);
+	    return(NULL);
 	}
 
 	setuplength = prefix.length << 2;
@@ -266,8 +266,8 @@ Display *XOpenDisplay (display)
 	if (prefix.success != xTrue) {
 		/* XXX - printing messages marks a bad programming interface */
 		fprintf (stderr, 
-			 "%s:  connection to \"%s\" refused by server\r\n%s:  ",
-			 "Xlib", fullname, "Xlib");
+		      "Xlib: connection to \"%s\" refused by server\r\nXlib: ",
+			 fullname);
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\r\n", sizeof(char), 2, stderr);
