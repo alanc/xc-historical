@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.140 90/01/11 09:15:39 jim Exp $
+ * $XConsortium: menus.c,v 1.141 90/03/05 16:35:24 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.140 90/01/11 09:15:39 jim Exp $";
+"$XConsortium: menus.c,v 1.141 90/03/05 16:35:24 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1773,17 +1773,28 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    len = strlen(action);
 
 	    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
-		/* match only the first portion of WINDOW the name */
-		if (!strncmp(action, t->name, len)) {
-		    if (Scr->WarpUnmapped || t->mapped) {
-			if (!t->mapped) DeIconify (t);
-			XRaiseWindow (dpy, t->frame);
-			WarpToWindow (t);
-			break;
+		if (!strncmp(action, t->name, len)) break;
+	    }
+	    if (!t) {
+		for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
+		    if (!strncmp(action, t->class.res_name, len)) break;
+		}
+		if (!t) {
+		    for (t = Scr->TwmRoot.next; t != NULL; t = t->next) {
+			if (!strncmp(action, t->class.res_class, len)) break;
 		    }
 		}
 	    }
-	    if (!t) XBell (dpy, 0);
+
+	    if (t) {
+		if (Scr->WarpUnmapped || t->mapped) {
+		    if (!t->mapped) DeIconify (t);
+		    XRaiseWindow (dpy, t->frame);
+		    WarpToWindow (t);
+		}
+	    } else {
+		XBell (dpy, 0);
+	    }
 	}
 	break;
 
