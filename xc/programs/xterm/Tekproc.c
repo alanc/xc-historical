@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.12 88/02/17 11:27:41 jim Exp $
+ * $Header: Tekproc.c,v 1.13 88/02/17 12:18:23 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.12 88/02/17 11:27:41 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.13 88/02/17 12:18:23 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1287,13 +1287,11 @@ static void TekRealize (gw, valuemaskp, values)
 				   (TEKgcFontMask|GCGraphicsExposures|
 				    GCForeground|GCBackground), &gcv);
 
-    gcv.foreground = screen->Tcursorcolor;
-    gcv.background = screen->Tbackground;
     gcv.function = GXinvert;
-    gcv.plane_mask = screen->xorplane;
+    gcv.plane_mask = screen->xorplane = (screen->Tbackground ^
+					 screen->Tcursorcolor);
     screen->TcursorGC = XCreateGC (screen->display, TWindow(screen), 
-				   (GCFunction|GCPlaneMask|GCForeground|
-				    GCBackground), &gcv);
+				   (GCFunction|GCPlaneMask), &gcv);
 
     gcv.foreground = screen->Tforeground;
     gcv.line_style = LineOnOffDash;
@@ -1377,11 +1375,9 @@ register TScreen *screen;
 	} else
 		screen->Tcursorcolor = screen->Tforeground;
 
-	gcv.foreground = screen->Tcursorcolor;
-	gcv.background = screen->Tbackground;
-	XChangeGC(screen->display, screen->TcursorGC, 
-	  GCForeground+GCBackground, &gcv);
-
+	gcv.plane_mask = screen->xorplane = (screen->Tbackground ^
+					     screen->Tcursorcolor);
+	XChangeGC (screen->display, screen->TcursorGC, GCPlaneMask, &gcv);
 	TekBackground(screen);
 }
 
