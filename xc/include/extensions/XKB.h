@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.h,v 1.3 93/09/27 23:58:32 rws Exp $ */
+/* $XConsortium: XKB.h,v 1.4 93/09/28 19:47:58 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -123,12 +123,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbAllAccessXMask	 (0x00FF)
 #define	XkbAllControlsMask	 (0xF7FF)
 
-#define	XkbUseCoreKbd	0x0100
+#define	XkbUseCoreKbd		0x0100
 #define	XkbPrivate		0x4000
 
-#define	XkbSAClearLocks	(1L << 0)
+#define	XkbSAClearLocks		(1L << 0)
 #define	XkbSALatchToLock	(1L << 1)
 #define	XkbSAGroupAbsolute	(1L << 2)
+#define XkbSASuppressLocks	(1L << 3)
 #define	XkbSAUseDfltButton	0
 
 #define	XkbSAISODfltIsGroup 	(1L << 7)
@@ -138,31 +139,31 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSAISONoAffectCtrls	(1L << 3)
 
 	/* flags values for XkbSASetPtrDflt */
-#define	XkbSASetDfltBtn		1
+#define	XkbSASetDfltBtn			1
 #define	XkbSAIncrDfltBtn		2
 
 #define	XkbSANoAction		0x0000
-#define	XkbSASetMods			0x0001
+#define	XkbSASetMods		0x0001
 #define	XkbSALatchMods		0x0002
 #define	XkbSALockMods		0x0003
 #define	XkbSASetGroup		0x0004
 #define	XkbSALatchGroup		0x0005
 #define	XkbSALockGroup		0x0006
-#define	XkbSAMovePtrBtn			0x0007
+#define	XkbSAMovePtrBtn		0x0007
 #define	XkbSAAccelPtr		0x0008
-#define	XkbSAPtrBtn			0x0009
-#define	XkbSAClickPtrBtn		0x000a
+#define	XkbSAPtrBtn		0x0009
+#define	XkbSAClickPtrBtn	0x000a
 #define	XkbSALockPtrBtn		0x000b
 #define	XkbSASetPtrDflt		0x000c
-#define	XkbSAISOLock			0x000d
+#define	XkbSAISOLock		0x000d
 #define	XkbSATerminate		0x000e
-#define	XkbSASwitchScreen		0x000f
-#define	XkbSASetControls		0x0010
-#define	XkbSALockControls		0x0011
+#define	XkbSASwitchScreen	0x000f
+#define	XkbSASetControls	0x0010
+#define	XkbSALockControls	0x0011
 
 #define	XkbDefaultKB		0x0000
 #define	XkbLockKB		0x0001
-#define	XkbRadioGroupKB	0x0002
+#define	XkbRadioGroupKB		0x0002
 
 #define	XkbNumIndicators	32
 #define	XkbNumKbdGroups	8
@@ -197,7 +198,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSI_Exactly		(4)
 
 #define	XkbIMUseBase		(1L << 0)
-#define	XkbIMUseLatched	(1L << 1)
+#define	XkbIMUseLatched		(1L << 1)
 #define	XkbIMUseLocked		(1L << 2)
 #define	XkbIMUseEffectiveLocked (1L << 3)
 #define	XkbIMUseEffective	(1L << 4)
