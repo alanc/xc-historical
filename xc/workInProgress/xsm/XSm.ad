@@ -30,7 +30,23 @@
 *shutdownOkButton.label:	OK
 *shutdownCancelButton.label:	Cancel
 
+*nameSessionDialog.label:	Warning: You are about to assign the\n\
+session a new name.\n\n\
+Make sure you are satisfied with the\n\
+state of the current session.  This\n\
+may require a checkpoint.\n\n\
+Give the session a name...
+
+*nameSessionPopup.title:	Name Session
+*nameSessionOkButton.label:	OK
+*nameSessionCancelButton.label:	Cancel
+
 *checkPointButton.Translations: #override\n\
 	<Btn1Up>:	notify() reset()\n
 *shutdownButton.Translations: #override\n\
 	<Btn1Up>:	notify() reset()\n
+*nameSessionButton.Translations: #override\n\
+	<Btn1Up>:	notify() reset()\n
+
+*nameSessionDialog.value.Translations: #override\n\
+	<Key>Return:	XsmNameSessionOk()\n
