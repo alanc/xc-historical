@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.44 91/05/16 09:41:42 rws Exp $
+ * $XConsortium: xrdb.c,v 11.45 91/05/16 09:48:17 rws Exp $
  */
 
 /*
@@ -317,7 +317,7 @@ void ReadFile(buffer, input)
     register int	bytes;
 
     buffer->used = 0;
-    while ((bytes = fread(buf, 1, BUFSIZ, input)) > 0) {
+    while (!feof(input) && (bytes = fread(buf, 1, BUFSIZ, input)) > 0) {
 	AppendToBuffer(buffer, buf, bytes);
     }
     AppendToBuffer(buffer, "", 1);
