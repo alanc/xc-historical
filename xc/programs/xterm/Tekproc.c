@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.68 89/11/17 16:56:52 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.69 89/12/03 12:00:17 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -58,16 +58,13 @@
 #include "error.h"
 #include "menu.h"
 
-#ifdef CRAY
-#include <sys/ioctl.h>
-#include <time.h>
+#if !defined(EWOULDBLOCK) && defined(EAGAIN)
+#define EWOULDBLOCK EAGAIN
 #endif
 
-#ifdef macII
-#undef FIOCLEX					/* redefined from sgtty.h */
-#undef FIONCLEX					/* redefined from sgtty.h */
-#include <sys/ioctl.h>				/* to get FIONREAD */
-#endif /* macII */
+#ifdef CRAY
+#include <time.h>
+#endif
 
 extern void exit();
 extern long time();
@@ -115,7 +112,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.68 89/11/17 16:56:52 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.69 89/12/03 12:00:17 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -582,9 +579,9 @@ Tekparse()
 			if(screen->TekGIN)
 				TekGINoff();
 			TCursorDown();
-			if(!TekRefresh && (screen->display->qlen > 0 ||
-			 (ioctl(screen->display->fd, FIONREAD, (char *)&arg), arg) > 0))
-				xevents();
+			if (!TekRefresh && (screen->display->qlen > 0 ||
+					    GetBytesAvailable (screen->display->fd) > 0))
+			  xevents();
 			break;
 
 		 case CASE_SP:

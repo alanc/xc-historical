@@ -113,7 +113,7 @@ static char check_bits[] = {
  * public interfaces
  */
 
-void HandleCreateMenu (w, event, params, param_count)
+static Bool domenu (w, event, params, param_count)
     Widget w;
     XEvent *event;              /* unused */
     String *params;             /* mainMenu, vtMenu, or tekMenu */
@@ -123,72 +123,99 @@ void HandleCreateMenu (w, event, params, param_count)
 
     if (*param_count != 1) {
 	XBell (XtDisplay(w), 0);
-    } else {
-	switch (params[0][0]) {
-	  case 'm':
-	    if (!screen->mainMenu) {
-		screen->mainMenu = create_menu (term, toplevel, "mainMenu",
-						mainMenuEntries,
-						XtNumber(mainMenuEntries));
-		update_securekbd();
-		update_allowsends();
-		update_visualbell();
-		update_logging();
-	    }
-	    break;
-	  case 'v':
-	    if (!screen->vtMenu) {
-		screen->vtMenu = create_menu (term, toplevel, "vtMenu",
-					      vtMenuEntries,
-					      XtNumber(vtMenuEntries));
-		/* and turn off the alternate screen entry */
-		set_altscreen_sensitivity (FALSE);
-		update_scrollbar();
-		update_jumpscroll();
-		update_reversevideo();
-		update_autowrap();
-		update_reversewrap();
-		update_autolinefeed();
-		update_appcursor();
-		update_appkeypad();
-		update_scrollkey();
-		update_scrollttyoutput();
-		update_allow132();
-		update_cursesemul();
-		update_marginbell();
-	    }
-	    break;
-	  case 'f':
-	    if (!screen->fontMenu) {
-		screen->fontMenu = create_menu (term, toplevel, "fontMenu",
-						fontMenuEntries,
-						NMENUFONTS);  
-		set_menu_font (True);
-		set_sensitivity (screen->fontMenu,
-				 fontMenuEntries[fontMenu_fontescape].widget,
-				 (screen->menu_font_names[fontMenu_fontescape]
-				  ? TRUE : FALSE));
-	    }
-	    FindFontSelection (NULL, True);
-	    set_sensitivity (screen->fontMenu,
-			     fontMenuEntries[fontMenu_fontsel].widget,
-			     (screen->menu_font_names[fontMenu_fontsel]
-			      ? TRUE : FALSE));
-	    break;
-	  case 't':
-	    if (!screen->tekMenu) {
-		screen->tekMenu = create_menu (term, toplevel, "tekMenu",
-					       tekMenuEntries,
-					       XtNumber(tekMenuEntries));
-		set_tekfont_menu_item (screen->cur.fontsize, TRUE);
-	    }
-	    break;
-	  default:
-	    XBell (XtDisplay(w), 0);
-	    break;
-	}
+	return False;
     }
-    return;
+
+    switch (params[0][0]) {
+      case 'm':
+	if (!screen->mainMenu) {
+	    screen->mainMenu = create_menu (term, toplevel, "mainMenu",
+					    mainMenuEntries,
+					    XtNumber(mainMenuEntries));
+	    update_securekbd();
+	    update_allowsends();
+	    update_visualbell();
+	    update_logging();
+	}
+	break;
+
+      case 'v':
+	if (!screen->vtMenu) {
+	    screen->vtMenu = create_menu (term, toplevel, "vtMenu",
+					  vtMenuEntries,
+					  XtNumber(vtMenuEntries));
+	    /* and turn off the alternate screen entry */
+	    set_altscreen_sensitivity (FALSE);
+	    update_scrollbar();
+	    update_jumpscroll();
+	    update_reversevideo();
+	    update_autowrap();
+	    update_reversewrap();
+	    update_autolinefeed();
+	    update_appcursor();
+	    update_appkeypad();
+	    update_scrollkey();
+	    update_scrollttyoutput();
+	    update_allow132();
+	    update_cursesemul();
+	    update_marginbell();
+	}
+	break;
+
+      case 'f':
+	if (!screen->fontMenu) {
+	    screen->fontMenu = create_menu (term, toplevel, "fontMenu",
+					    fontMenuEntries,
+					    NMENUFONTS);  
+	    set_menu_font (True);
+	    set_sensitivity (screen->fontMenu,
+			     fontMenuEntries[fontMenu_fontescape].widget,
+			     (screen->menu_font_names[fontMenu_fontescape]
+			      ? TRUE : FALSE));
+	}
+	FindFontSelection (NULL, True);
+	set_sensitivity (screen->fontMenu,
+			 fontMenuEntries[fontMenu_fontsel].widget,
+			 (screen->menu_font_names[fontMenu_fontsel]
+			  ? TRUE : FALSE));
+	break;
+
+      case 't':
+	if (!screen->tekMenu) {
+	    screen->tekMenu = create_menu (term, toplevel, "tekMenu",
+					   tekMenuEntries,
+					   XtNumber(tekMenuEntries));
+	    set_tekfont_menu_item (screen->cur.fontsize, TRUE);
+	}
+	break;
+
+      default:
+	XBell (XtDisplay(w), 0);
+	return False;
+    }
+
+    return True;
+}
+
+void HandleCreateMenu (w, event, params, param_count)
+    Widget w;
+    XEvent *event;              /* unused */
+    String *params;             /* mainMenu, vtMenu, or tekMenu */
+    Cardinal *param_count;      /* 0 or 1 */
+{
+    (void) domenu (w, event, params, param_count);
+}
+
+void HandlePopupMenu (w, event, params, param_count)
+    Widget w;
+    XEvent *event;              /* unused */
+    String *params;             /* mainMenu, vtMenu, or tekMenu */
+    Cardinal *param_count;      /* 0 or 1 */
+{
+    if (domenu (w, event, params, param_count)) {
+	XtCallActionProc (w, "XawPositionSimpleMenu", event, params, 1);
+	XtCallActionProc (w, "MenuPopup", event, params, 1);
+    }
 }
 
 
@@ -868,9 +895,13 @@ void HandleSendSignal(w, event, params, param_count)
 	char *name;
 	int sig;
     } signals[] = {
+#ifdef SIGTSTP
 	{ "suspend",	SIGTSTP },
 	{ "tstp",	SIGTSTP },
+#endif
+#ifdef SIGCONT
 	{ "cont",	SIGCONT },
+#endif
 	{ "int",	SIGINT },
 	{ "hup",	SIGHUP },
 	{ "term",	SIGTERM },

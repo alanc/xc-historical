@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $
+ *	$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -38,6 +38,11 @@ static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 ji
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/ioctl.h>
+
+#ifdef att
+#include <sys/stream.h>
+#include <sys/ptem.h>
+#endif
 
 #ifdef APOLLO_SR9
 #define CANT_OPEN_DEV_TTY
@@ -75,7 +80,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.9 89/03/23 09:38:09 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -444,21 +449,25 @@ register char *buf;
 char *str;
 {
 	register int i, last;
-	struct itimerval it;
 	int timeout();
+#ifndef att
+	struct itimerval it;
 
 	signal(SIGALRM, timeout);
 	bzero((char *)&it, sizeof(struct itimerval));
 	it.it_value.tv_sec = TIMEOUT;
 	setitimer(ITIMER_REAL, &it, (struct itimerval *)NULL);
+#endif
 	if((*buf++ = getc(fp)) != *str) {
 		fprintf(stderr, "%s: unknown character, exiting.\r\n", myname);
 		onintr();
 	}
 	last = str[i = strlen(str) - 1];
 	while((*buf++ = getc(fp)) != last);
+#ifndef att
 	bzero((char *)&it, sizeof(struct itimerval));
 	setitimer(ITIMER_REAL, &it, (struct itimerval *)NULL);
+#endif
 	*buf = 0;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.115 89/11/16 08:51:35 jim Exp $
+ * $XConsortium: charproc.c,v 1.116 89/11/16 09:09:24 jim Exp $
  */
 
 
@@ -35,7 +35,14 @@
 
 /* charproc.c */
 
+#ifdef att
+#ifndef STREAMSCONN
+#define STREAMSCONN
+#endif
+#endif
+
 #include <stdio.h>
+#include <X11/Xos.h>
 #ifdef umips
 #ifndef SYSTYPE_SYSV
 #include <sgtty.h>			/* umips bsd */
@@ -50,7 +57,6 @@
 #undef FIOCLEX					/* redefined from sgtty.h */
 #undef FIONCLEX					/* redefined from sgtty.h */
 #endif
-#include <sys/ioctl.h>
 #include "ptyx.h"
 #include "VTparse.h"
 #include "data.h"
@@ -60,6 +66,10 @@
 #include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
 #include "menu.h"
+
+#if !defined(EWOULDBLOCK) && defined(EAGAIN)
+#define EWOULDBLOCK EAGAIN
+#endif
 
 extern Widget toplevel;
 extern void exit(), bcopy();
@@ -143,10 +153,9 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.115 89/11/16 08:51:35 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.116 89/11/16 09:09:24 jim Exp $";
 #endif	/* lint */
 
-static long arg;
 static int nparam;
 static ANSI reply;
 static int param[NPARAM];
@@ -183,7 +192,7 @@ static void HandleIgnore();
 extern void HandleSecure();
 extern void HandleScrollForward();
 extern void HandleScrollBack();
-extern void HandleCreateMenu();
+extern void HandleCreateMenu(), HandlePopupMenu();
 extern void HandleSetFont();
 extern void SetVTFont();
 
@@ -204,6 +213,12 @@ static  int	defaultNMarginBell = N_MARGINBELL;
 static  int	defaultMultiClickTime = MULTICLICKTIME;
 static	char *	_Font_Selected_ = "yes";  /* string is arbitrary */
 
+/*
+ * Warning, the following must be kept under 1024 bytes or else some 
+ * compilers (particularly AT&T 6386 SVR3.2) will barf).  Workaround is to
+ * declare a static buffer and copy in at run time (the the Athena text widget
+ * does).  Yuck.
+ */
 static char defaultTranslations[] =
 "\
   Shift <KeyPress> Prior:	scroll-back(1,halfpage) \n\
@@ -212,13 +227,13 @@ static char defaultTranslations[] =
   Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
        ~Meta<KeyPress>: 	insert-seven-bit()	\n\
         Meta<KeyPress>: 	insert-eight-bit()	\n\
- Ctrl ~Meta<Btn1Down>:          create-menu(mainMenu) XawPositionSimpleMenu(mainMenu) MenuPopup(mainMenu) \n\
+ Ctrl ~Meta<Btn1Down>:          popup-menu(mainMenu) \n\
       ~Meta <Btn1Down>:		select-start()	\n\
       ~Meta <Btn1Motion>:	select-extend() \n\
- Ctrl ~Meta <Btn2Down>:         create-menu(vtMenu) XawPositionSimpleMenu(vtMenu) MenuPopup(vtMenu) \n\
+ Ctrl ~Meta <Btn2Down>:         popup-menu(vtMenu) \n\
 ~Ctrl ~Meta <Btn2Down>:		ignore()	\n\
 ~Ctrl ~Meta <Btn2Up>:		insert-selection(PRIMARY, CUT_BUFFER0) \n\
- Ctrl ~Meta <Btn3Down>:         create-menu(fontMenu) XawPositionSimpleMenu(fontMenu) MenuPopup(fontMenu) \n\
+ Ctrl ~Meta <Btn3Down>:         popup-menu(fontMenu) \n\
 ~Ctrl ~Meta <Btn3Down>:		start-extend()	\n\
       ~Meta <Btn3Motion>:	select-extend()	\n\
 ~Ctrl ~Meta <BtnUp>:		select-end(PRIMARY, CUT_BUFFER0) \n\
@@ -234,6 +249,7 @@ static XtActionsRec actionsList[] = {
     { "insert-eight-bit", HandleEightBitKeyPressed },
     { "insert-selection", HandleInsertSelection },
     { "keymap", 	  HandleKeymapChange },
+    { "popup-menu",	  HandlePopupMenu },
     { "secure",		  HandleSecure },
     { "select-start",	  HandleSelectStart },
     { "select-extend",	  HandleSelectExtend },
@@ -540,9 +556,9 @@ VTparse()
 			Index(screen, 1);
 			if (term->flags & LINEFEED)
 				CarriageReturn(screen);
-			if(screen->display->qlen > 0 ||
-			 (ioctl(screen->display->fd, FIONREAD, (char *) &arg), arg) > 0)
-				xevents();
+			if (screen->display->qlen > 0 ||
+			    GetBytesAvailable (screen->display->fd) > 0)
+			  xevents();
 			break;
 
 		 case CASE_TAB:
@@ -915,9 +931,9 @@ VTparse()
 		 case CASE_IND:
 			/* IND */
 			Index(screen, 1);
-			if(screen->display->qlen > 0 ||
-			 (ioctl(screen->display->fd, FIONREAD, (char *)&arg), arg) > 0)
-				xevents();
+			if (screen->display->qlen > 0 ||
+			    GetBytesAvailable (screen->display->fd) > 0)
+			  xevents();
 			parsestate = groundtable;
 			break;
 
@@ -925,9 +941,10 @@ VTparse()
 			/* NEL */
 			Index(screen, 1);
 			CarriageReturn(screen);
-			if(screen->display->qlen > 0 ||
-			 (ioctl(screen->display->fd, FIONREAD, (char *)&arg), arg) > 0)
-				xevents();
+			
+			if (screen->display->qlen > 0 ||
+			    GetBytesAvailable (screen->display->fd) > 0)
+			  xevents();
 			parsestate = groundtable;
 			break;
 
