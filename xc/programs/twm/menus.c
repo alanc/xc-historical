@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.189 92/06/11 18:12:59 dave Exp $
+ * $XConsortium: menus.c,v 1.190 93/09/02 11:11:25 dpw Exp $
  *
  * twm menu code
  *
@@ -51,6 +51,7 @@
 #include <X11/Xmu/CharSet.h>
 #include <X11/bitmaps/menu12>
 #include "version.h"
+#include <X11/extensions/sync.h>
 
 extern XEvent Event;
 

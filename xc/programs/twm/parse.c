@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.54 92/08/24 15:35:51 rws Exp $
+ * $XConsortium: parse.c,v 1.55 93/09/02 11:11:41 dpw Exp $
  *
  * parse the .twmrc file
  *
@@ -46,6 +46,7 @@
 #include "gram.h"
 #include "parse.h"
 #include <X11/Xatom.h> 
+#include <X11/extensions/sync.h>
 
 #ifndef SYSTEM_INIT_FILE
 #define SYSTEM_INIT_FILE "/usr/lib/X11/twm/system.twmrc"
@@ -843,11 +844,8 @@ int do_number_keyword (keyword, num)
 	return 1;
 
       case kwn_Priority:
-	if (HasSync)
-	{
-	    XSyncSetPriority(dpy, /*self*/ None, num);
-	}
-
+	if (HasSync) XSyncSetPriority(dpy, /*self*/ None, num);
+	return 1;
     }
 
     return 0;
