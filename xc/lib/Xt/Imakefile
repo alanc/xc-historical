@@ -13,6 +13,7 @@
    INSTALLFLAGS = -m 0644
 
 HEADERS = \
+	AsciiText.h \
 	Atoms.h \
 	ButtonBox.h \
 	Cascade.h \
@@ -38,6 +39,7 @@ SRCS = \
 	Alloc.c \
 	ArgList.c \
 	AsciiSink.c \
+	AsciiText.c \
 	ButtonBox.c \
 	Cascade.c \
 	Clock.c \
@@ -62,7 +64,6 @@ SRCS = \
 	Scroll.c \
 	StringSrc.c \
 	Text.c \
-	TextKinds.c \
 	TMparse.c \
 	TMstate.c \
 	VPane.c
@@ -71,6 +72,7 @@ OBJS = \
 	Alloc.o \
 	ArgList.o \
 	AsciiSink.o \
+	AsciiText.o \
 	ButtonBox.o \
 	Cascade.o \
 	Clock.o \
@@ -95,7 +97,6 @@ OBJS = \
 	Scroll.o \
 	StringSrc.o \
 	Text.o \
-	TextKinds.o \
 	TMparse.o \
 	TMstate.o \
 	VPane.o
