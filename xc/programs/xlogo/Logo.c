@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.23 91/03/08 14:12:51 converse Exp $ */
+/* $XConsortium: Logo.c,v 1.24 91/03/14 16:47:45 converse Exp $ */
 
 /*
 Copyright 1988 by the Massachusetts Institute of Technology
@@ -199,11 +199,11 @@ static void Destroy (gw)
 {
     LogoWidget w = (LogoWidget) gw;
     if (w->logo.foreGC) {
-	XtDestroyGC (w->logo.foreGC);
+	XtReleaseGC (gw, w->logo.foreGC);
 	w->logo.foreGC = (GC) NULL;
     }
     if (w->logo.backGC) {
-	XtDestroyGC (w->logo.backGC);
+	XtReleaseGC (gw, w->logo.backGC);
 	w->logo.backGC = (GC) NULL;
     }
 }
