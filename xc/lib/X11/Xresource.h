@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.20 89/12/09 18:54:27 rws Exp $ */
+/* $XConsortium: Xresource.h,v 1.21 89/12/09 20:53:15 jim Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -59,7 +59,7 @@ extern "C" {					/* for C++ V2.0 */
 #endif
 
 #ifndef NeedFunctionPrototypes
-#if defined(__STDC__) || defined(__cplusplus)
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0

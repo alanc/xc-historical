@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.51 89/12/09 13:45:23 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.52 89/12/09 18:54:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ extern "C" {					/* for C++ V2.0 */
 #endif
 
 #ifndef NeedFunctionPrototypes
-#if defined(__STDC__) || defined(__cplusplus)
+#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
