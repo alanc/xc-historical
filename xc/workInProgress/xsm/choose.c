@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.5 94/07/15 10:03:39 mor Exp $ */
+/* $XConsortium: choose.c,v 1.6 94/07/15 14:14:01 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -248,7 +248,7 @@ XtPointer 	callData;
     }
     else
     {
-	char command[256];
+	char filename[256];
 	char *dir;
 	int i, j;
 
@@ -264,9 +264,9 @@ XtPointer 	callData;
 		dir = ".";
 	}
 
-	sprintf (command, "rm %s/.SM-%s", dir, name);
+	sprintf (filename, "%s/.SM-%s", dir, name);
 
-	if (system (command) != -1)
+	if (remove (filename) != -1)
 	{
 	    for (i = 0; i < sessionNameCount; i++)
 	    {
