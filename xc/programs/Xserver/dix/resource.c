@@ -22,13 +22,13 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.72 89/03/12 14:06:39 rws Exp $ */
+/* $XConsortium: resource.c,v 1.73 89/03/23 19:08:51 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
  *	CreateNewResourceType, CreateNewResourceClass, InitClientResources,
  *	FakeClientID, AddResource, FreeResource, FreeClientResources,
- *	FreeAllResources, LookupID
+ *	FreeAllResources, LookupIDByType, LookupIDByClass
  */
 
 /* 
@@ -59,7 +59,6 @@ extern void HandleSaveSet();
 extern void FlushClientCaches();
 static void RebuildTable();
 
-#define CACHEDTYPES (RT_WINDOW | RT_PIXMAP | RT_GC)
 #define INITBUCKETS 64
 #define INITHASHSIZE 6
 #define MAXHASHSIZE 11
@@ -67,9 +66,7 @@ static void RebuildTable();
 typedef struct _Resource {
     struct _Resource	*next;
     XID			id;
-    int			(*DeleteFunc)();
-    unsigned short	type;
-    unsigned short	class;
+    RESTYPE		type;
     pointer		value;
 } ResourceRec, *ResourcePtr;
 #define NullResource ((ResourcePtr)NULL)
@@ -83,22 +80,43 @@ typedef struct _ClientResource {
     XID		expectID;
 } ClientResourceRec;
 
-static unsigned short lastResourceType;
-static unsigned short lastResourceClass;
+static RESTYPE lastResourceType;
+static RESTYPE lastResourceClass;
+static RESTYPE TypeMask;
 
-unsigned short
-CreateNewResourceType()
+typedef int (*DeleteType)();
+
+static DeleteType *DeleteFuncs = (DeleteType *)NULL;
+
+RESTYPE
+CreateNewResourceType(deleteFunc)
+    DeleteType deleteFunc;
 {
-    if (lastResourceType == 0x8000)	/* this is compiler dependent  XXX */
-	lastResourceType = 0;
-    lastResourceType <<= 1;
-    return lastResourceType;
+    RESTYPE next = lastResourceType + 1;
+    DeleteType *funcs;
+
+    if (next & lastResourceClass)
+	return 0;
+    funcs = (DeleteType *)xrealloc(DeleteFuncs,
+				   (next + 1) * sizeof(DeleteType));
+    if (!funcs)
+	return 0;
+    lastResourceType = next;
+    DeleteFuncs = funcs;
+    DeleteFuncs[next] = deleteFunc;
+    return next;
 }
 
-unsigned short
+RESTYPE
 CreateNewResourceClass()
 {
-    return ++lastResourceClass;
+    RESTYPE next = lastResourceClass >> 1;
+
+    if (next & lastResourceType)
+	return 0;
+    lastResourceClass = next;
+    TypeMask = next - 1;
+    return next;
 }
 
 ClientResourceRec clientTable[MAXCLIENTS];
@@ -117,8 +135,29 @@ InitClientResources(client)
  
     if (client == serverClient)
     {
+	extern int DeleteWindow(), dixDestroyPixmap(), FreeGC();
+	extern int CloseFont(), FreeCursor();
+	extern int FreeColormap(), FreeClientPixels();
+	extern int OtherClientGone(), DeletePassiveGrab();
+
 	lastResourceType = RT_LASTPREDEF;
 	lastResourceClass = RC_LASTPREDEF;
+	TypeMask = RC_LASTPREDEF - 1;
+	if (DeleteFuncs)
+	    xfree(DeleteFuncs);
+	DeleteFuncs = (DeleteType *)xalloc((lastResourceType + 1) *
+					   sizeof(DeleteType));
+	if (!DeleteFuncs)
+	    return FALSE;
+	DeleteFuncs[RT_WINDOW & TypeMask] = DeleteWindow;
+	DeleteFuncs[RT_PIXMAP & TypeMask] = dixDestroyPixmap;
+	DeleteFuncs[RT_GC & TypeMask] = FreeGC;
+	DeleteFuncs[RT_FONT & TypeMask] = CloseFont;
+	DeleteFuncs[RT_CURSOR & TypeMask] = FreeCursor;
+	DeleteFuncs[RT_COLORMAP & TypeMask] = FreeColormap;
+	DeleteFuncs[RT_CMAPENTRY & TypeMask] = FreeClientPixels;
+	DeleteFuncs[RT_OTHERCLIENT & TypeMask] = OtherClientGone;
+	DeleteFuncs[RT_PASSIVEGRAB & TypeMask] = DeletePassiveGrab;
     }
     clientTable[i = client->index].resources =
 	(ResourcePtr *)xalloc(INITBUCKETS*sizeof(ResourcePtr));
@@ -170,11 +209,10 @@ FakeClientID(client)
 }
 
 Bool
-AddResource(id, type, value, func, class)
+AddResource(id, type, value)
     XID id;
-    unsigned short type, class;
+    RESTYPE type;
     pointer value;
-    int (* func)();
 {
     int client;
     register ClientResourceRec *rrec;
@@ -184,15 +222,9 @@ AddResource(id, type, value, func, class)
     rrec = &clientTable[client];
     if (!rrec->buckets)
     {
-	ErrorF("AddResource(%x, %d, %x, %d), client=%d \n",
-		id, type, value, class, client);
+	ErrorF("AddResource(%x, %x, %x), client=%d \n",
+		id, type, value, client);
         FatalError("client not in use\n");
-    }
-    if (!func)
-    {
-	ErrorF("AddResource(%x, %d, %x, %d), client=%d \n",
-		id, type, value, class, client);
-        FatalError("No delete function given to AddResource \n");
     }
     if ((rrec->elements >= 4*rrec->buckets) &&
 	(rrec->hashsize < MAXHASHSIZE))
@@ -201,14 +233,12 @@ AddResource(id, type, value, func, class)
     res = (ResourcePtr)xalloc(sizeof(ResourceRec));
     if (!res)
     {
-	(*func)(value, id);
+	(*DeleteFuncs[type & TypeMask])(value, id);
 	return FALSE;
     }
     res->next = *head;
     res->id = id;
-    res->DeleteFunc = func;
     res->type = type;
-    res->class = class;
     res->value = value;
     *head = res;
     rrec->elements++;
@@ -268,9 +298,9 @@ RebuildTable(client)
 }
 
 void
-FreeResource(id, skipDeleteFuncClass)
+FreeResource(id, skipDeleteFuncType)
 XID id;
-int skipDeleteFuncClass;
+int skipDeleteFuncType;
 
 {
     int		cid;
@@ -290,12 +320,13 @@ int skipDeleteFuncClass;
 	{
 	    if (res->id == id)
 	    {
+		RESTYPE rtype = res->type;
 		*prev = res->next;
 		elements = --*eltptr;
-		if (res->type & CACHEDTYPES)
+		if (rtype & RC_CACHED)
 		    FlushClientCaches(res->id);
-		if (skipDeleteFuncClass != res->class)
-		    (*res->DeleteFunc) (res->value, res->id);
+		if (rtype != skipDeleteFuncType)
+		    (*DeleteFuncs[rtype & TypeMask])(res->value, res->id);
 		xfree(res);
 		if (*eltptr != elements)
 		    prev = head; /* prev may no longer be valid */
@@ -348,10 +379,11 @@ FreeClientResources(client)
 
         for (this = *head; this; this = *head)
 	{
+	    RESTYPE rtype = this->type;
 	    *head = this->next;
-	    if (this->type & CACHEDTYPES)
+	    if (rtype & RC_CACHED)
 		FlushClientCaches(this->id);
-	    (*this->DeleteFunc)(this->value, this->id);
+	    (*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
 	    xfree(this);	    
 	}
     }
@@ -377,18 +409,16 @@ LegalNewID(id, client)
 {
     return ((client->clientAsMask == CLIENT_BITS(id)) && !(id & SERVER_BIT) &&
 	    ((clientTable[client->index].expectID >= id) ||
-	     !LookupID(id, RT_ANY, RC_CORE)));
+	     !LookupIDByClass(id, RC_ANY)));
 }
 
 /*
- *  LookupID returns the value field in the resource or NULL
- *  if an illegal id was handed to it or given type doesn't match the
- *  type for this id and class.
+ *  LookupIDByType returns the object with the given id and type, else NULL.
  */ 
 pointer
-LookupID(id, rType, class)
+LookupIDByType(id, rtype)
     XID id;
-    unsigned short rType, class;
+    RESTYPE rtype;
 {
     int    cid;
     register    ResourcePtr res;
@@ -398,11 +428,31 @@ LookupID(id, rType, class)
 	res = clientTable[cid].resources[Hash(cid, id)];
 
 	for (; res; res = res->next)
-	    if ((res->id == id) && (res->class == class))
-		if (res->type & rType)
-		    return res->value;
-		else
-		    return(pointer) NULL;
+	    if ((res->id == id) && (res->type == rtype))
+		return res->value;
     }
-    return(pointer) NULL;
+    return (pointer)NULL;
+}
+
+/*
+ *  LookupIDByClass returns the object with the given id and any one of the
+ *  given classes, else NULL.
+ */ 
+pointer
+LookupIDByClass(id, classes)
+    XID id;
+    RESTYPE classes;
+{
+    int    cid;
+    register    ResourcePtr res;
+
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    {
+	res = clientTable[cid].resources[Hash(cid, id)];
+
+	for (; res; res = res->next)
+	    if ((res->id == id) && (res->type & classes))
+		return res->value;
+    }
+    return (pointer)NULL;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.0 89/06/09 14:59:23 keith Exp $ */
+/* $XConsortium: grabs.c,v 5.1 89/07/06 13:24:54 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,7 +92,7 @@ FreeGrab(pGrab)
 }
 
 /*ARGSUSED*/
-static
+int
 DeletePassiveGrab(pGrab, id)
     GrabPtr pGrab;
     XID   id;
@@ -261,8 +261,7 @@ AddPassiveGrabToList(pGrab)
     }
     pGrab->next = pGrab->window->optional->passiveGrabs;
     pGrab->window->optional->passiveGrabs = pGrab;
-    if (AddResource(pGrab->resource, RT_FAKE, (pointer)pGrab,
-		    DeletePassiveGrab, RC_CORE))
+    if (AddResource(pGrab->resource, RT_PASSIVEGRAB, (pointer)pGrab))
 	return Success;
     return BadAlloc;
 }
@@ -351,9 +350,8 @@ DeletePassiveGrabFromList(pMinuendGrab)
 		FreeGrab(pNewGrab);
 		ok = FALSE;
 	    }
-	    else if (!AddResource(pNewGrab->resource, RT_FAKE,
-				  (pointer)pNewGrab, DeletePassiveGrab,
-				  RC_CORE))
+	    else if (!AddResource(pNewGrab->resource, RT_PASSIVEGRAB,
+				  (pointer)pNewGrab))
 		ok = FALSE;
 	    else
 		adds[nadds++] = pNewGrab;
@@ -372,14 +370,14 @@ DeletePassiveGrabFromList(pMinuendGrab)
     if (!ok)
     {
 	for (i = 0; i < nadds; i++)
-	    FreeResource(adds[i]->resource, RC_NONE);
+	    FreeResource(adds[i]->resource, RT_NONE);
 	for (i = 0; i < nups; i++)
 	    xfree(details[i]);
     }
     else
     {
 	for (i = 0; i < ndels; i++)
-	    FreeResource(deletes[i]->resource, RC_NONE);
+	    FreeResource(deletes[i]->resource, RT_NONE);
 	for (i = 0; i < nadds; i++)
 	{
 	    grab = adds[i];

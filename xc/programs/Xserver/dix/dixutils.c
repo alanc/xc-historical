@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: dixutils.c,v 1.31 89/03/11 16:54:26 rws Exp $ */
+/* $XConsortium: dixutils.c,v 1.32 89/03/18 16:24:05 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -124,7 +124,7 @@ LookupWindow(rid, client)
             return ((WindowPtr) client->lastDrawable);
         return (WindowPtr) NULL;
     }
-    return (WindowPtr)LookupID(rid, RT_WINDOW, RC_CORE);
+    return (WindowPtr)LookupIDByType(rid, RT_WINDOW);
 }
 
 
@@ -139,7 +139,7 @@ LookupDrawable(rid, client)
 	return (pointer) NULL;
     if (client->lastDrawableID == rid)
 	return ((pointer) client->lastDrawable);
-    pDraw = (DrawablePtr)LookupID(rid, RT_DRAWABLE, RC_CORE);
+    pDraw = (DrawablePtr)LookupIDByClass(rid, RC_DRAWABLE);
     if (pDraw && (pDraw->type != UNDRAWABLE_WINDOW))
         return (pointer)pDraw;		
     return (pointer)NULL;

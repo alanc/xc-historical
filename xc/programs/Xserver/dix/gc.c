@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.4 89/07/12 09:39:15 rws Exp $ */
+/* $XConsortium: gc.c,v 5.5 89/07/16 11:30:43 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -191,8 +191,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		if(fPointer)
 		    pPixmap = (PixmapPtr) *pval;
 		else
-		    pPixmap = (PixmapPtr)LookupID((CARD32)*pval, 
-					      RT_PIXMAP, RC_CORE);
+		    pPixmap = (PixmapPtr)LookupIDByType((CARD32)*pval, 
+							RT_PIXMAP);
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != pGC->depth) ||
@@ -220,8 +220,8 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		if(fPointer)
 		    pPixmap = (PixmapPtr) *pval;
 		else
-		    pPixmap = (PixmapPtr)LookupID((CARD32)*pval, 
-					      RT_PIXMAP, RC_CORE);
+		    pPixmap = (PixmapPtr)LookupIDByType((CARD32)*pval, 
+							RT_PIXMAP);
 		if (pPixmap)
 		{
 		    if ((pPixmap->drawable.depth != 1) ||
@@ -260,7 +260,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		if(fPointer)
 		    pFont = (FontPtr) *pval;
 		else
-		    pFont = (FontPtr)LookupID((CARD32)*pval, RT_FONT, RC_CORE);
+		    pFont = (FontPtr)LookupIDByType((CARD32)*pval, RT_FONT);
 
 		if (pFont)
 		{
@@ -323,7 +323,7 @@ DoChangeGC(pGC, mask, pval, fPointer)
 		    if(fPointer)
 			pPixmap = (PixmapPtr) *pval;
 		    else
-		        pPixmap = (PixmapPtr)LookupID(pid, RT_PIXMAP, RC_CORE);
+		        pPixmap = (PixmapPtr)LookupIDByType(pid, RT_PIXMAP);
 		    if (pPixmap)
   		    {
 			if ((pPixmap->drawable.depth != 1) ||

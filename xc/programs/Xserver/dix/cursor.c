@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.36 89/07/09 15:38:22 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.37 89/07/10 15:32:12 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -178,8 +178,8 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
     ScreenPtr 	pscr;
     GlyphSharePtr pShare;
 
-    sourcefont = (FontPtr) LookupID(source, RT_FONT, RC_CORE);
-    maskfont = (FontPtr) LookupID(mask, RT_FONT, RC_CORE);
+    sourcefont = (FontPtr) LookupIDByType(source, RT_FONT);
+    maskfont = (FontPtr) LookupIDByType(mask, RT_FONT);
 
     if (!sourcefont)
     {
@@ -348,16 +348,14 @@ CreateRootCursor(pfilename, glyph)
 
     fontID = FakeClientID(0);
     cursorfont = OpenFont( (unsigned)strlen( pfilename), pfilename);
-    if (!cursorfont ||
-	!AddResource(fontID, RT_FONT, (pointer)cursorfont, CloseFont, RC_CORE))
+    if (!cursorfont || !AddResource(fontID, RT_FONT, (pointer)cursorfont))
 	return NullCursor;
 
     if (AllocGlyphCursor(fontID, glyph, fontID, glyph + 1,
 			 0, 0, 0, ~0, ~0, ~0, &curs, serverClient) != Success)
 	return NullCursor;
 
-    if (!AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs, FreeCursor,
-		     RC_CORE))
+    if (!AddResource(FakeClientID(0), RT_CURSOR, (pointer)curs))
 	return NullCursor;
 
     return curs;

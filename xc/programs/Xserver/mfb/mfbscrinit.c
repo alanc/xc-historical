@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.3 89/07/09 15:56:53 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.4 89/07/12 17:17:53 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -38,15 +38,6 @@ SOFTWARE.
 #include "servermd.h"
 
 extern RegionPtr mfbPixmapToRegion();
-
-/*ARGSUSED*/
-static
-mfbFreeVisual(p, id)
-    pointer p;
-    int id;
-{
-    xfree(p);
-}
 
 int mfbWindowPrivateIndex = -1, mfbGCPrivateIndex = -1;
 
@@ -202,12 +193,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	mfbGCPrivateIndex = AllocateGCPrivateIndex ();
     if (mfbWindowPrivateIndex == -1)
 	mfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
+
     miInitializeBackingStore (pScreen, &mfbBSFuncRec);
-    if (AddResource(pScreen->rootVisual, RT_VISUALID,
-		    (pointer)pVisual, mfbFreeVisual, RC_CORE))
-	return TRUE;
-    xfree(pDepth);
-    xfree(pPixmap);
-    xfree(pVids);
-    return FALSE;
+    return TRUE;
 }

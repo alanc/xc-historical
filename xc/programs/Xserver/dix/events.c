@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.3 89/07/06 13:27:37 rws Exp $ */
+/* $XConsortium: events.c,v 5.4 89/07/09 15:37:47 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1785,7 +1785,7 @@ RecalculateDeliverableEvents(pWin)
     }
 }
 
-static int
+int
 OtherClientGone(pWin, id)
     WindowPtr pWin;
     XID   id;
@@ -1858,7 +1858,7 @@ EventSelectForWindow(pWin, client, mask)
 		check = others->mask;
 		if (mask == 0)
 		{
-		    FreeResource(others->resource, RC_NONE);
+		    FreeResource(others->resource, RT_NONE);
 		    return Success;
 		}
 		else
@@ -1877,8 +1877,7 @@ EventSelectForWindow(pWin, client, mask)
 	others->resource = FakeClientID(client->index);
 	others->next = pWin->optional->otherClients;
 	pWin->optional->otherClients = others;
-	if (!AddResource(others->resource, RT_FAKE, (pointer)pWin,
-			 OtherClientGone, RC_CORE))
+	if (!AddResource(others->resource, RT_OTHERCLIENT, (pointer)pWin))
 	    return BadAlloc;
     }
 maskSet: 
@@ -2378,7 +2377,7 @@ ProcGrabPointer(client)
 	cursor = NullCursor;
     else
     {
-	cursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
+	cursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
 	if (!cursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -2449,7 +2448,7 @@ ProcChangeActivePointerGrab(client)
 	newCursor = NullCursor;
     else
     {
-	newCursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
+	newCursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
 	if (!newCursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -4018,7 +4017,7 @@ ProcGrabButton(client)
 	cursor = NullCursor;
     else
     {
-	cursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
+	cursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
 	if (!cursor)
 	{
 	    client->errorValue = stuff->cursor;
@@ -4140,9 +4139,9 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
     if (freeResources)
     {
 	while (oc = wOtherClients(pWin))
-	    FreeResource(oc->resource, RC_NONE);
+	    FreeResource(oc->resource, RT_NONE);
 	while (passive = wPassiveGrabs(pWin))
-	    FreeResource(passive->resource, RC_NONE);
+	    FreeResource(passive->resource, RT_NONE);
      }
 }
 
@@ -4194,7 +4193,7 @@ ProcRecolorCursor(client)
     REQUEST(xRecolorCursorReq);
 
     REQUEST_SIZE_MATCH(xRecolorCursorReq);
-    pCursor = (CursorPtr)LookupID(stuff->cursor, RT_CURSOR, RC_CORE);
+    pCursor = (CursorPtr)LookupIDByType(stuff->cursor, RT_CURSOR);
     if ( !pCursor) 
     {
 	client->errorValue = stuff->cursor;

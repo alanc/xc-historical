@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.0 89/06/09 14:58:30 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.1 89/06/16 16:54:23 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -39,10 +39,12 @@ extern XID clientErrorValue;
 
 static Pixel FindBestPixel();
 static void  CopyFree(), FreeCell(), FreePixels();
-static int   AllComp(), RedComp(), GreenComp(), BlueComp(), FreeClientPixels();
+static int   AllComp(), RedComp(), GreenComp(), BlueComp();
 static int   AllocDirect(), AllocPseudo(), FreeCo();
 static Bool  AllocCP(), AllocShared();
 static int   TellNoMap();
+
+int   FreeClientPixels();
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
  * (Suggestion: First read the macro, then read this explanation.
@@ -220,7 +222,7 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
 	    pmap->numPixelsBlue[client] = size;
 	}
     }
-    if (!AddResource(mid, RT_COLORMAP, (pointer)pmap, FreeColormap, RC_CORE))
+    if (!AddResource(mid, RT_COLORMAP, (pointer)pmap))
 	return (BadAlloc);
     /* If the device wants a chance to initialize the colormap in any way,
      * this is it.  In specific, if this is a Static colormap, this is the
@@ -656,8 +658,7 @@ AllocColor (pmap, pred, pgreen, pblue, pPix, client)
 	}
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-			 FreeClientPixels, RC_CORE))
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr))
 	    return (BadAlloc);
     }
     return (Success);
@@ -1138,14 +1139,14 @@ FreePixels(pmap, client)
 
 /* Free all of a client's colors and cells */
 /*ARGSUSED*/
-static
+int
 FreeClientPixels (pcr, fakeid)
     colorResource *pcr;
     XID	fakeid;
 {
     ColormapPtr pmap;
 
-    pmap = (ColormapPtr) LookupID(pcr->mid, RT_COLORMAP, RC_CORE);
+    pmap = (ColormapPtr) LookupIDByType(pcr->mid, RT_COLORMAP);
     if (pmap)
 	FreePixels(pmap, pcr->client);
     xfree(pcr);
@@ -1221,8 +1222,7 @@ AllocColorCells (client, pmap, colors, planes, contig, ppix, masks)
     {
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-			 FreeClientPixels, RC_CORE))
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr))
 	    ok = BadAlloc;
     } else if (pcr)
 	xfree(pcr);
@@ -1318,8 +1318,7 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
     {
 	pcr->mid = pmap->mid;
 	pcr->client = client;
-	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr,
-			 FreeClientPixels, RC_CORE))
+	if (!AddResource(FakeClientID(client), RT_CMAPENTRY, (pointer)pcr))
 	    ok = BadAlloc;
     } else if (pcr)
 	xfree(pcr);

@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.7 89/04/05 10:57:54 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.8 89/04/28 10:26:21 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -51,9 +51,7 @@ SetDefaultFont( defaultfontname)
     FontPtr	pf;
 
    pf = OpenFont( (unsigned)strlen( defaultfontname), defaultfontname);
-    if (!pf ||
-	!AddResource( FakeClientID(0), RT_FONT, (pointer)pf, CloseFont,
-		     RC_CORE))
+    if (!pf || !AddResource(FakeClientID(0), RT_FONT, (pointer)pf))
 	return FALSE;
     defaultFont = pf;
     return TRUE;

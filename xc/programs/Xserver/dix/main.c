@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.1 89/06/16 16:52:17 keith Exp $ */
+/* $XConsortium: main.c,v 5.2 89/07/03 18:42:33 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -380,8 +380,11 @@ CreateConnectionBlock()
 	    for(k = 0; k < pDepth->numVids; k++)
 	    {
 		vid = pDepth->vids[k];
-		pVisual = (VisualPtr) LookupID(vid, RT_VISUALID, RC_CORE);
-		visual.visualID = pVisual->vid;
+		for (pVisual = pScreen->visuals;
+		     pVisual->vid != vid;
+		     pVisual++)
+		    ;
+		visual.visualID = vid;
 		visual.class = pVisual->class;
 		visual.bitsPerRGB = pVisual->bitsPerRGBValue;
 		visual.colormapEntries = pVisual->ColormapEntries;
@@ -526,7 +529,7 @@ AddScreen(pfnInit, argc, argv)
 		return screenInfo.numScreens;
 	    FreeGCperDepth(i);
 	}
-	FreeResource(WindowTable[i]->drawable.id, RC_NONE);
+	FreeResource(WindowTable[i]->drawable.id, RT_NONE);
     }
     xfree(pScreen);
     screenInfo.numScreens--;

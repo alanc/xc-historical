@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.5 89/07/12 17:16:57 keith Exp $ */
+/* $XConsortium: miexpose.c,v 5.6 89/07/16 10:36:21 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -495,6 +495,8 @@ fPointer set true, thus we no longer need to install the background or
 border tile in the resource table.
 */
 
+static RESTYPE ResType = 0;
+static int numGCs = 0;
 static GCPtr	screenContext[MAXSCREENS];
 
 /*ARGSUSED*/
@@ -505,9 +507,11 @@ GContext id;
 {
     int i;
 
-    if (screenContext[i = pGC->pScreen->myNum] == pGC)
-	screenContext[i] = (GCPtr)NULL;
+    screenContext[pGC->pScreen->myNum] = (GCPtr)NULL;
     FreeGC (pGC, id);
+    numGCs--;
+    if (!numGCs)
+	ResType = 0;
 }
 
 
@@ -635,12 +639,15 @@ int what;
 	 */
 	if (screenContext[i] == (GCPtr)NULL)
 	{
+	    if (!ResType && !(ResType = CreateNewResourceType(tossGC)))
+		return;
 	    screenContext[i] = CreateGC((DrawablePtr)pWin, (BITS32) 0,
 					(XID *)NULL, &status);
 	    if (!screenContext[i])
 		return;
-	    if (!AddResource(FakeClientID(0), RT_GC, (pointer)screenContext[i],
-			     tossGC, RC_CORE))
+	    numGCs++;
+	    if (!AddResource(FakeClientID(0), ResType,
+			     (pointer)screenContext[i]))
 	        return;
 	}
 	pGC = screenContext[i];

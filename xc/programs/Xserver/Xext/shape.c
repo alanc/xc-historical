@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.1 89/07/03 19:46:45 rws Exp $ */
+/* $XConsortium: shape.c,v 5.2 89/07/09 15:36:32 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -46,9 +46,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "regionstr.h"
 #include "gcstruct.h"
 
+static int ShapeFreeClient(), ShapeFreeEvents();
+
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
-static unsigned short ShapeResourceClass; /* resource class for event masks */
+static RESTYPE ClientType, EventType; /* resource types for event masks */
 
 /*
  * each window has a list of clients requesting
@@ -82,14 +84,15 @@ ShapeExtensionInit()
     static int ProcShapeDispatch(), SProcShapeDispatch();
     static void  ShapeResetProc(), SShapeNotifyEvent();
 
-    extEntry = AddExtension(SHAPENAME, ShapeNumberEvents, 0, ProcShapeDispatch,
-			    SProcShapeDispatch, ShapeResetProc,
-			    StandardMinorOpcode);
-    if (extEntry)
+    ClientType = CreateNewResourceType(ShapeFreeClient);
+    EventType = CreateNewResourceType(ShapeFreeEvents);
+    if (ClientType && EventType &&
+	(extEntry = AddExtension(SHAPENAME, ShapeNumberEvents, 0,
+				 ProcShapeDispatch, SProcShapeDispatch,
+				 ShapeResetProc, StandardMinorOpcode)))
     {
 	ShapeReqCode = (unsigned char)extEntry->base;
 	ShapeEventBase = extEntry->eventBase;
-	ShapeResourceClass = CreateNewResourceClass ();
 	EventSwapVector[ShapeEventBase] = SShapeNotifyEvent;
     }
 }
@@ -311,7 +314,7 @@ ProcShapeMask (client)
     if (stuff->src == None)
 	srcRgn = 0;
     else {
-        pPixmap = (PixmapPtr) LookupID(stuff->src, RT_PIXMAP, RC_CORE);
+        pPixmap = (PixmapPtr) LookupIDByType(stuff->src, RT_PIXMAP);
         if (!pPixmap)
 	    return BadPixmap;
 	if (pPixmap->drawable.pScreen != pScreen)
@@ -521,8 +524,7 @@ ShapeFreeClient (data, id)
 
     pShapeEvent = (ShapeEventPtr) data;
     pWin = pShapeEvent->window;
-    pHead = (ShapeEventPtr *) LookupID
-			(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
+    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
     if (pHead) {
 	pPrev = 0;
 	for (pCur = *pHead; pCur && pCur != pShapeEvent; pCur=pCur->next)
@@ -546,7 +548,7 @@ ShapeFreeEvents (data, id)
     pHead = (ShapeEventPtr *) data;
     for (pCur = *pHead; pCur; pCur = pNext) {
 	pNext = pCur->next;
-	FreeResource (pCur->clientResource, ShapeResourceClass);
+	FreeResource (pCur->clientResource, EventType);
 	xfree ((pointer) pCur);
     }
     xfree ((pointer) pHead);
@@ -565,8 +567,7 @@ ProcShapeSelectInput (client)
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
-    pHead = (ShapeEventPtr *) LookupID 
-		    	(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
+    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
     switch (stuff->enable) {
     case xTrue:
 	if (pHead) {
@@ -595,9 +596,7 @@ ProcShapeSelectInput (client)
      	 */
    	clientResource = FakeClientID (client->index);
     	pNewShapeEvent->clientResource = clientResource;
-    	if (!AddResource (clientResource,
-			  RT_FAKE, (pointer)pNewShapeEvent,
-		      	  ShapeFreeClient, ShapeResourceClass))
+    	if (!AddResource (clientResource, ClientType, (pointer)pNewShapeEvent))
     	{
 	    xfree (pNewShapeEvent);
 	    return BadAlloc;
@@ -612,11 +611,9 @@ ProcShapeSelectInput (client)
     	{
 	    pHead = (ShapeEventPtr *) xalloc (sizeof (ShapeEventPtr));
 	    if (!pHead ||
-	    	!AddResource (pWin->drawable.id,
-			      RT_WINDOW, (pointer)pHead,
-			      ShapeFreeEvents, ShapeResourceClass))
+	    	!AddResource (pWin->drawable.id, EventType, (pointer)pHead))
 	    {
-	    	FreeResource (clientResource, ShapeResourceClass);
+	    	FreeResource (clientResource, ClientType);
 	    	xfree (pHead);
 	    	xfree (pNewShapeEvent);
 	    	return BadAlloc;
@@ -636,12 +633,12 @@ ProcShapeSelectInput (client)
 		pNewShapeEvent = 0;
 	    }
 	    if (pShapeEvent) {
-		FreeResource (pShapeEvent->clientResource, ShapeResourceClass);
+		FreeResource (pShapeEvent->clientResource, EventType);
 		if (pNewShapeEvent)
 		    pNewShapeEvent->next = pShapeEvent->next;
 		else
 		    *pHead = pShapeEvent->next;
-		Xfree ((pointer) pShapeEvent);
+		xfree (pShapeEvent);
 	    }
 	}
 	break;
@@ -669,8 +666,7 @@ SendShapeNotify (pWin, which)
     register int	n;
     BYTE		shaped;
 
-    pHead = (ShapeEventPtr *) LookupID
-		    (pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
+    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
     if (!pHead)
 	return;
     if (which == ShapeBounding) {
@@ -731,8 +727,7 @@ ProcShapeInputSelected (client)
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
-    pHead = (ShapeEventPtr *) LookupID 
-		    	(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
+    pHead = (ShapeEventPtr *) LookupIDByType(pWin->drawable.id, EventType);
     enabled = xFalse;
     if (pHead) {
     	for (pShapeEvent = *pHead;

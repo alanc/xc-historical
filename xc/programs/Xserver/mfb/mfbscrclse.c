@@ -1,4 +1,4 @@
-/* $XConsortium: mfbscrclse.c,v 1.4 89/06/16 16:57:57 keith Exp $ */
+/* $XConsortium: mfbscrclse.c,v 1.5 89/07/09 15:56:09 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -39,9 +39,7 @@ mfbCloseScreen(index, pScreen)
 	xfree(pScreen->allowedDepths);
     }
 
-    /*  pScreen->visuals does not need to be freed here, since it is added as
-	a resource in "mfbScreenInit" and is freed with the rest of the 
-	resources. */
+    xfree(pScreen->visuals);
 
     if(pScreen->devPrivate)
 	xfree(pScreen->devPrivate);

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.7 89/07/09 15:39:03 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.8 89/07/12 17:16:21 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -115,7 +115,7 @@ XID clientErrorValue;   /* XXX this is a kludge */
     if (client->lastGCID == rid)\
         pGC = client->lastGC;\
     else\
-	pGC = (GC *)LookupID(rid, RT_GC, RC_CORE);\
+	pGC = (GC *)LookupIDByType(rid, RT_GC);\
     if (!pGC)\
     {\
 	client->errorValue = rid;\
@@ -126,11 +126,11 @@ XID clientErrorValue;   /* XXX this is a kludge */
     if ((client->lastDrawableID != drawID) || (client->lastGCID != stuff->gc))\
     {\
         if (client->lastDrawableID != drawID)\
-    	    pDraw = (DrawablePtr)LookupID(drawID, RT_DRAWABLE, RC_CORE);\
+    	    pDraw = (DrawablePtr)LookupIDByClass(drawID, RC_DRAWABLE);\
         else\
 	    pDraw = client->lastDrawable;\
         if (client->lastGCID != stuff->gc)\
-	    pGC = (GC *)LookupID(stuff->gc, RT_GC, RC_CORE);\
+	    pGC = (GC *)LookupIDByType(stuff->gc, RT_GC);\
         else\
             pGC = client->lastGC;\
 	if (pDraw && pGC)\
@@ -382,8 +382,7 @@ ProcCreateWindow(client)
 	Mask mask = pWin->eventMask;
 
 	pWin->eventMask = 0; /* subterfuge in case AddResource fails */
-	if (!AddResource(stuff->wid, RT_WINDOW, (pointer)pWin, DeleteWindow,
-			 RC_CORE))
+	if (!AddResource(stuff->wid, RT_WINDOW, (pointer)pWin))
 	    return BadAlloc;
 	pWin->eventMask = mask;
     }
@@ -446,7 +445,7 @@ ProcDestroyWindow(client)
     if (!pWin)
         return(BadWindow);
     if (pWin->parent)
-	FreeResource(stuff->id, RC_NONE);
+	FreeResource(stuff->id, RT_NONE);
     return(client->noClientException);
 }
 
@@ -1089,8 +1088,7 @@ ProcOpenFont(client)
     LEGAL_NEW_RESOURCE(stuff->fid, client);
     if ( pFont = OpenFont( stuff->nbytes, (char *)&stuff[1]))
     {
-	if (!AddResource( stuff->fid, RT_FONT, (pointer)pFont, CloseFont,
-			 RC_CORE))
+	if (!AddResource(stuff->fid, RT_FONT, (pointer)pFont))
 	    return BadAlloc;
 	return(client->noClientException);
     }
@@ -1106,10 +1104,10 @@ ProcCloseFont(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pFont = (FontPtr)LookupID(stuff->id, RT_FONT, RC_CORE);
+    pFont = (FontPtr)LookupIDByType(stuff->id, RT_FONT);
     if ( pFont != (FontPtr)NULL)	/* id was valid */
     {
-        FreeResource( stuff->id, RC_NONE);
+        FreeResource(stuff->id, RT_NONE);
 	return(client->noClientException);
     }
     else
@@ -1130,11 +1128,11 @@ ProcQueryFont(client)
 
     REQUEST_SIZE_MATCH(xResourceReq);
     client->errorValue = stuff->id;		/* EITHER font or gc */
-    pFont = (FontPtr)LookupID(stuff->id, RT_FONT, RC_CORE);
+    pFont = (FontPtr)LookupIDByType(stuff->id, RT_FONT);
     if (!pFont)
     {
 	  /* can't use VERIFY_GC because it might return BadGC */
-	pGC = (GC *) LookupID(stuff->id, RT_GC, RC_CORE);
+	pGC = (GC *) LookupIDByType(stuff->id, RT_GC);
         if (!pGC)
 	{
 	    client->errorValue = stuff->id;
@@ -1190,10 +1188,10 @@ ProcQueryTextExtents(client)
 
     REQUEST_AT_LEAST_SIZE(xQueryTextExtentsReq);
         
-    pFont = (FontPtr)LookupID( stuff->fid, RT_FONT, RC_CORE);
+    pFont = (FontPtr)LookupIDByType(stuff->fid, RT_FONT);
     if (!pFont)
     {
-        pGC = (GC *)LookupID( stuff->fid, RT_GC, RC_CORE);
+        pGC = (GC *)LookupIDByType(stuff->fid, RT_GC);
         if (!pGC)
 	{
 	    client->errorValue = stuff->fid;
@@ -1331,7 +1329,6 @@ ProcListFontsWithInfo(client)
 }
 
 /*ARGSUSED*/
-static
 dixDestroyPixmap(pPixmap, pid)
     PixmapPtr pPixmap;
     Pixmap pid;
@@ -1380,8 +1377,7 @@ CreatePmap:
     {
 	pMap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	pMap->drawable.id = stuff->pid;
-	if (AddResource(stuff->pid, RT_PIXMAP, (pointer)pMap,
-			dixDestroyPixmap, RC_CORE))
+	if (AddResource(stuff->pid, RT_PIXMAP, (pointer)pMap))
 	    return(client->noClientException);
     }
     return (BadAlloc);
@@ -1396,10 +1392,10 @@ ProcFreePixmap(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pMap = (PixmapPtr)LookupID(stuff->id, RT_PIXMAP, RC_CORE);
+    pMap = (PixmapPtr)LookupIDByType(stuff->id, RT_PIXMAP);
     if (pMap) 
     {
-	FreeResource(stuff->id, RC_NONE);
+	FreeResource(stuff->id, RT_NONE);
 	return(client->noClientException);
     }
     else 
@@ -1434,7 +1430,7 @@ ProcCreateGC(client)
 			 (XID *) &stuff[1], &error);
     if (error != Success)
         return error;
-    if (!AddResource(stuff->gc, RT_GC, (pointer)pGC, FreeGC, RC_CORE))
+    if (!AddResource(stuff->gc, RT_GC, (pointer)pGC))
 	return (BadAlloc);
     return(client->noClientException);
 }
@@ -1554,7 +1550,7 @@ ProcFreeGC(client)
 
     REQUEST_SIZE_MATCH(xResourceReq);
     VERIFY_GC(pGC,stuff->id,client);
-    FreeResource(stuff->id, RC_NONE);
+    FreeResource(stuff->id, RT_NONE);
     return(client->noClientException);
 }
 
@@ -2112,7 +2108,7 @@ ProcPolyText(client)
 		 | ((Font)*(pElt+3)) << 8
 		 | ((Font)*(pElt+2)) << 16
 		 | ((Font)*(pElt+1)) << 24;
-	    pFont = (FontPtr)LookupID(fid, RT_FONT, RC_CORE);
+	    pFont = (FontPtr)LookupIDByType(fid, RT_FONT);
 	    if (!pFont)
 	    {
 		client->errorValue = fid;
@@ -2184,8 +2180,9 @@ ProcCreateColormap(client)
     ColormapPtr	pmap;
     Colormap	mid;
     register WindowPtr   pWin;
+    ScreenPtr pScreen;
     REQUEST(xCreateColormapReq);
-    int result;
+    int i, result;
 
     REQUEST_SIZE_MATCH(xCreateColormapReq);
 
@@ -2200,18 +2197,22 @@ ProcCreateColormap(client)
     if (!pWin)
         return(BadWindow);
 
-    pVisual = (VisualPtr)LookupID(stuff->visual, RT_VISUALID, RC_CORE);
-    if ((!pVisual) || pVisual->screen != pWin->drawable.pScreen->myNum)
+    pScreen = pWin->drawable.pScreen;
+    for (i = 0, pVisual = pScreen->visuals;
+	 i < pScreen->numVisuals;
+	 i++, pVisual++)
     {
-	client->errorValue = stuff->visual;
-	return(BadValue);
+	if (pVisual->vid != stuff->visual)
+	    continue;
+	result =  CreateColormap(mid, pScreen, pVisual, &pmap,
+				 (int)stuff->alloc, client->index);
+	if (client->noClientException != Success)
+	    return(client->noClientException);
+	else
+	    return(result);
     }
-    result =  CreateColormap(mid, pWin->drawable.pScreen,
-        pVisual, &pmap, (int)stuff->alloc, client->index);
-    if (client->noClientException != Success)
-        return(client->noClientException);
-    else
-        return(result);
+    client->errorValue = stuff->visual;
+    return(BadValue);
 }
 
 int
@@ -2222,12 +2223,12 @@ ProcFreeColormap(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pmap = (ColormapPtr )LookupID(stuff->id, RT_COLORMAP, RC_CORE);
+    pmap = (ColormapPtr )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pmap) 
     {
 	/* Freeing a default colormap is a no-op */
 	if (!(pmap->flags & IsDefault))
-	    FreeResource(stuff->id, RC_NONE);
+	    FreeResource(stuff->id, RT_NONE);
 	return (client->noClientException);
     }
     else 
@@ -2250,7 +2251,7 @@ ProcCopyColormapAndFree(client)
     REQUEST_SIZE_MATCH(xCopyColormapAndFreeReq);
     mid = stuff->mid;
     LEGAL_NEW_RESOURCE(mid, client);
-    if(pSrcMap = (ColormapPtr )LookupID(stuff->srcCmap, RT_COLORMAP, RC_CORE))
+    if(pSrcMap = (ColormapPtr )LookupIDByType(stuff->srcCmap, RT_COLORMAP))
     {
 	result = CopyColormapAndFree(mid, pSrcMap, client->index);
 	if (client->noClientException != Success)
@@ -2273,7 +2274,7 @@ ProcInstallColormap(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pcmp = (ColormapPtr  )LookupID(stuff->id, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp)
     {
         (*(pcmp->pScreen->InstallColormap)) (pcmp);
@@ -2294,7 +2295,7 @@ ProcUninstallColormap(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pcmp = (ColormapPtr )LookupID(stuff->id, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp)
     {
 	if(pcmp->mid != pcmp->pScreen->defColormap)
@@ -2353,7 +2354,7 @@ ProcAllocColor                (client)
     REQUEST(xAllocColorReq);
 
     REQUEST_SIZE_MATCH(xAllocColorReq);
-    pmap = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pmap = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pmap)
     {
 	acr.type = X_Reply;
@@ -2390,7 +2391,7 @@ ProcAllocNamedColor           (client)
     REQUEST(xAllocNamedColorReq);
 
     REQUEST_FIXED_SIZE(xAllocNamedColorReq, stuff->nbytes);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	int		retval;
@@ -2439,7 +2440,7 @@ ProcAllocColorCells           (client)
     REQUEST(xAllocColorCellsReq);
 
     REQUEST_SIZE_MATCH(xAllocColorCellsReq);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	xAllocColorCellsReply	accr;
@@ -2495,7 +2496,7 @@ ProcAllocColorPlanes(client)
     REQUEST(xAllocColorPlanesReq);
 
     REQUEST_SIZE_MATCH(xAllocColorPlanesReq);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	xAllocColorPlanesReply	acpr;
@@ -2549,7 +2550,7 @@ ProcFreeColors          (client)
     REQUEST(xFreeColorsReq);
 
     REQUEST_AT_LEAST_SIZE(xFreeColorsReq);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	int	count;
@@ -2584,7 +2585,7 @@ ProcStoreColors               (client)
     REQUEST(xStoreColorsReq);
 
     REQUEST_AT_LEAST_SIZE(xStoreColorsReq);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	int	count;
@@ -2618,7 +2619,7 @@ ProcStoreNamedColor           (client)
     REQUEST(xStoreNamedColorReq);
 
     REQUEST_FIXED_SIZE(xStoreNamedColorReq, stuff->nbytes);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	xColorItem	def;
@@ -2652,7 +2653,7 @@ ProcQueryColors(client)
     REQUEST(xQueryColorsReq);
 
     REQUEST_AT_LEAST_SIZE(xQueryColorsReq);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	int			count, retval;
@@ -2703,7 +2704,7 @@ ProcLookupColor(client)
     REQUEST(xLookupColorReq);
 
     REQUEST_FIXED_SIZE(xLookupColorReq, stuff->nbytes);
-    pcmp = (ColormapPtr )LookupID(stuff->cmap, RT_COLORMAP, RC_CORE);
+    pcmp = (ColormapPtr )LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (pcmp)
     {
 	xLookupColorReply lcr;
@@ -2753,8 +2754,8 @@ ProcCreateCursor( client)
     REQUEST_SIZE_MATCH(xCreateCursorReq);
     LEGAL_NEW_RESOURCE(stuff->cid, client);
 
-    src = (PixmapPtr)LookupID( stuff->source, RT_PIXMAP, RC_CORE);
-    msk = (PixmapPtr)LookupID( stuff->mask, RT_PIXMAP, RC_CORE);
+    src = (PixmapPtr)LookupIDByType(stuff->source, RT_PIXMAP);
+    msk = (PixmapPtr)LookupIDByType(stuff->mask, RT_PIXMAP);
     if (   src == (PixmapPtr)NULL)
     {
 	client->errorValue = stuff->source;
@@ -2811,9 +2812,7 @@ ProcCreateCursor( client)
 	    stuff->foreRed, stuff->foreGreen, stuff->foreBlue,
 	    stuff->backRed, stuff->backGreen, stuff->backBlue);
 
-    if (pCursor &&
-	AddResource( stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
-		    RC_CORE))
+    if (pCursor && AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
 	    return (client->noClientException);
     return BadAlloc;
 }
@@ -2837,8 +2836,7 @@ ProcCreateGlyphCursor( client)
 			   &pCursor, client);
     if (res != Success)
 	return res;
-    if (AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor, FreeCursor,
-		    RC_CORE))
+    if (AddResource(stuff->cid, RT_CURSOR, (pointer)pCursor))
 	return client->noClientException;
     return BadAlloc;
 }
@@ -2852,10 +2850,10 @@ ProcFreeCursor(client)
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
-    pCursor = (CursorPtr)LookupID(stuff->id, RT_CURSOR, RC_CORE);
+    pCursor = (CursorPtr)LookupIDByType(stuff->id, RT_CURSOR);
     if (pCursor) 
     {
-	FreeResource( stuff->id, RC_NONE);
+	FreeResource(stuff->id, RT_NONE);
 	return (client->noClientException);
     }
     else 
@@ -3047,7 +3045,7 @@ ProcKillClient(client)
 	CloseDownRetainedResources();
         return (client->noClientException);
     }
-    pResource = (pointer *)LookupID(stuff->id, RT_ANY, RC_CORE);
+    pResource = (pointer *)LookupIDByClass(stuff->id, RC_ANY);
   
     clientIndex = CLIENT_ID(stuff->id);
 

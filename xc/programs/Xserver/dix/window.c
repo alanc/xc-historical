@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.18 89/07/16 11:30:59 keith Exp $ */
+/* $XConsortium: window.c,v 5.19 89/07/16 11:55:00 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -636,8 +636,7 @@ CreateRootWindow(screen)
     pWin->border.pixel = pScreen->blackPixel;
     pWin->borderWidth = 0;
 
-    if (!AddResource(pWin->drawable.id, RT_WINDOW, (pointer)pWin, DeleteWindow,
-		     RC_CORE))
+    if (!AddResource(pWin->drawable.id, RT_WINDOW, (pointer)pWin))
 	return FALSE;
 
     if (disableBackingStore)
@@ -1022,7 +1021,7 @@ CrushTree(pWin)
 	    event.u.u.type = DestroyNotify;
 	    event.u.destroyNotify.window = pChild->drawable.id;
 	    DeliverEvents(pChild, &event, 1, NullWindow);		
-	    FreeResource(pChild->drawable.id, RC_CORE);
+	    FreeResource(pChild->drawable.id, RT_WINDOW);
 	    pSib = pChild->nextSib;
 	    pParent = pChild->parent;
 	    pChild->realized = FALSE;
@@ -1091,7 +1090,7 @@ DestroySubwindows(pWin, client)
      */
     UnmapSubwindows(pWin);
     while (pWin->lastChild)
-	FreeResource(pWin->lastChild->drawable.id, RC_NONE);
+	FreeResource(pWin->lastChild->drawable.id, RT_NONE);
 }
 
 /*****
@@ -1165,7 +1164,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
             else
 	    {	
-                pPixmap = (PixmapPtr)LookupID(pixID, RT_PIXMAP, RC_CORE);
+                pPixmap = (PixmapPtr)LookupIDByType(pixID, RT_PIXMAP);
                 if (pPixmap != (PixmapPtr) NULL)
 		{
                     if  ((pPixmap->drawable.depth != pWin->drawable.depth) ||
@@ -1223,7 +1222,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
 	    else
 	    {	
-		pPixmap = (PixmapPtr)LookupID(pixID, RT_PIXMAP, RC_CORE);
+		pPixmap = (PixmapPtr)LookupIDByType(pixID, RT_PIXMAP);
 		if (pPixmap)
 		{
                     if  ((pPixmap->drawable.depth != pWin->drawable.depth) ||
@@ -1392,7 +1391,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		error = BadMatch;
 		goto PatchUp;
 	    }
-	    pCmap = (ColormapPtr)LookupID(cmap, RT_COLORMAP, RC_CORE);
+	    pCmap = (ColormapPtr)LookupIDByType(cmap, RT_COLORMAP);
 	    if (!pCmap)
 	    {
 		error = BadColor;
@@ -1466,7 +1465,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
 	    else
 	    {
-	    	pCursor = (CursorPtr)LookupID(cursorID, RT_CURSOR, RC_CORE);
+	    	pCursor = (CursorPtr)LookupIDByType(cursorID, RT_CURSOR);
 	    	if (!pCursor)
 	    	{
 		    error = BadCursor;
@@ -2732,7 +2731,7 @@ ConfigureWindow(pWin, mask, vlist, client)
           case CWSibling:
 	    sibwid = (Window ) *pVlist;
 	    pVlist++;
-            pSib = (WindowPtr )LookupID(sibwid, RT_WINDOW, RC_CORE);
+            pSib = (WindowPtr )LookupIDByType(sibwid, RT_WINDOW);
             if (!pSib)
 	    {
 		client->errorValue = sibwid;
@@ -3634,7 +3633,7 @@ SaveScreens(on, mode)
 	    }
             else if (HasSaverWindow (savedScreenInfo[i].blanked))
 	    {
-    	        FreeResource(savedScreenInfo[i].wid, RC_NONE);
+    	        FreeResource(savedScreenInfo[i].wid, RT_NONE);
                 savedScreenInfo[i].pWindow = NullWindow;
 	    }
 	    continue;
@@ -3750,8 +3749,7 @@ TileScreenSaver(i, kind)
 	if (cursor)
 	{
 	    cursorID = FakeClientID(0);
-	    if (AddResource (cursorID, RT_CURSOR, (pointer) cursor, FreeCursor,
-			     RC_CORE))
+	    if (AddResource (cursorID, RT_CURSOR, (pointer) cursor))
 	    {
 	    	attributes[attri++] = cursorID;
 	    	mask |= CWCursor;
@@ -3773,8 +3771,7 @@ TileScreenSaver(i, kind)
 	return FALSE;
 
     if (!AddResource(pWin->drawable.id, RT_WINDOW,
-		     (pointer)savedScreenInfo[i].pWindow,
-		     DeleteWindow, RC_CORE))
+		     (pointer)savedScreenInfo[i].pWindow))
 	return FALSE;
 
     pWin->overrideRedirect = TRUE;
@@ -3949,7 +3946,7 @@ DrawLogo(pWin)
     else
 	fore[0] = pScreen->blackPixel;
     if ((pWin->backgroundState == BackgroundPixel) &&
-	(cmap = (ColormapPtr)LookupID(wColormap (pWin), RT_COLORMAP, RC_CORE))) {
+	(cmap = (ColormapPtr)LookupIDByType(wColormap (pWin), RT_COLORMAP))) {
 	fore[1] = pWin->background.pixel;
 	QueryColors(cmap, 2, fore, rgb);
 	if ((rgb[0].red == rgb[1].red) &&
