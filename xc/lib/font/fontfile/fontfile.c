@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.19 94/02/03 16:24:42 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.20 94/02/04 11:12:22 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -236,17 +236,81 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     if (namelen >= MAXFONTNAMELEN)
 	return AllocError;
     dir = (FontDirectoryPtr) fpe->private;
+    ranges = FontParseRanges(lowerName, &nranges);
+
+    /* Match non-scalable pattern */
     CopyISOLatin1Lowered (lowerName, name, namelen);
     lowerName[namelen] = '\0';
     tmpName.name = lowerName;
     tmpName.length = namelen;
     tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
-    if ((entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName))
-	&& entry->type == FONT_ENTRY_BITMAP)
-	goto skip_to_bitmapped_font;
-    /* Match XLFD patterns */
-    ranges = FontParseRanges(lowerName, &nranges);
+    if (!FontParseXLFDName(lowerName, &vals, FONT_XLFD_REPLACE_NONE))
+	bzero(&vals, sizeof(vals));
+    if (!(entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName)) &&
+	tmpName.ndashes == 14 &&
+	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
+    {
+        tmpName.length = strlen(lowerName);
+	entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName);
+    }
 
+    if (entry)
+    {
+	int len;
+	switch (entry->type) {
+	case FONT_ENTRY_BITMAP:
+	    bitmap = &entry->u.bitmap;
+	    if (bitmap->pFont)
+	    {
+	    	*pFont = bitmap->pFont;
+		(*pFont)->fpe = fpe;
+	    	ret = Successful;
+	    }
+	    else
+	    {
+		ret = FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format,
+					     fmask, non_cachable_font);
+		if (ret == Successful && *pFont)
+		    (*pFont)->fpe = fpe;
+	    }
+	    break;
+	case FONT_ENTRY_ALIAS:
+	    vals.nranges = nranges;
+	    vals.ranges = ranges;
+	    transfer_values_to_alias(entry->name.name, entry->name.length,
+				     entry->u.alias.resolved, aliasName, &vals);
+	    ret = FontNameAlias;
+	    break;
+	case FONT_ENTRY_BC:
+	    bc = &entry->u.bc;
+	    entry = bc->entry;
+	    ret = (*scalable->renderer->OpenScalable)
+		    (fpe, pFont, flags, entry, &bc->vals, format, fmask,
+		     non_cachable_font);
+	    if (ret == Successful && *pFont)
+		(*pFont)->fpe = fpe;
+	    break;
+	default:
+	    ret = BadFontName;
+	}
+    }
+    else
+    {
+	ret = BadFontName;
+    }
+
+    if (ret != BadFontName)
+    {
+	if (ranges) xfree(ranges);
+	return ret;
+    }
+
+    /* Match XLFD patterns */
+    CopyISOLatin1Lowered (lowerName, name, namelen);
+    lowerName[namelen] = '\0';
+    tmpName.name = lowerName;
+    tmpName.length = namelen;
+    tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
     if (!FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO) ||
 	!(tmpName.length = strlen (lowerName),
 	  entry = FontFileFindNameInScalableDir (&dir->scalable, &tmpName,
@@ -365,70 +429,13 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
 		    }
 		}
 	    }
-	    if (ret == Successful)
-	    {
-		if (ranges) xfree(ranges);
-		return ret;
-	    }
-	}
-    }
-
-    /* Match non-scalable pattern */
-    CopyISOLatin1Lowered (lowerName, name, namelen);
-    lowerName[namelen] = '\0';
-    tmpName.name = lowerName;
-    tmpName.length = namelen;
-    tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
-    if (!(entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName)) &&
-	tmpName.ndashes == 14 &&
-	FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO))
-    {
-        tmpName.length = strlen(lowerName);
-	entry = FontFileFindNameInDir (&dir->nonScalable, &tmpName);
-    }
-    if ((!entry || entry->type != FONT_ENTRY_ALIAS) && ranges)
-	xfree(ranges);
- skip_to_bitmapped_font:
-    if (entry)
-    {
-	int len;
-	switch (entry->type) {
-	case FONT_ENTRY_BITMAP:
-	    bitmap = &entry->u.bitmap;
-	    if (bitmap->pFont)
-	    {
-	    	*pFont = bitmap->pFont;
-	    	ret = Successful;
-	    }
-	    else
-	    {
-		ret = FontFileOpenBitmapNCF (fpe, pFont, flags, entry, format,
-					     fmask, non_cachable_font);
-	    }
-	    break;
-	case FONT_ENTRY_ALIAS:
-	    vals.nranges = nranges;
-	    vals.ranges = ranges;
-	    transfer_values_to_alias(entry->name.name, entry->name.length,
-				     entry->u.alias.resolved, aliasName, &vals);
-	    if (ranges) xfree(ranges);
-	    ret = FontNameAlias;
-	    break;
-	case FONT_ENTRY_BC:
-	    bc = &entry->u.bc;
-	    entry = bc->entry;
-	    ret = (*scalable->renderer->OpenScalable)
-		    (fpe, pFont, flags, entry, &bc->vals, format, fmask,
-		     non_cachable_font);
-	    break;
-	default:
-	    ret = BadFontName;
 	}
     }
     else
-    {
 	ret = BadFontName;
-    }
+
+    if (ranges)
+	xfree(ranges);
     return ret;
 }
 
@@ -512,6 +519,128 @@ FontFileGetInfoBitmap (fpe, pFontInfo, entry)
     return ret;
 }
 
+static void
+_FontFileAddScalableNames(names, scaleNames, nameptr, zeroChars, vals, ranges,
+			  nranges, max)
+    FontNamesPtr	names;
+    FontNamesPtr	scaleNames;
+    FontNamePtr		*nameptr;
+    char		*zeroChars;
+    FontScalablePtr	vals;
+    fsRange		*ranges;
+    int			nranges;
+    int			*max;
+{
+    int i;
+    FontScalableRec	zeroVals, tmpVals;
+    for (i = 0; i < scaleNames->nnames; i++)
+    {
+	char nameChars[MAXFONTNAMELEN];
+	if (!*max)
+	    return;
+	FontParseXLFDName (scaleNames->names[i], &zeroVals,
+			   FONT_XLFD_REPLACE_NONE);
+	tmpVals = *vals;
+	if (FontFileCompleteXLFD (&tmpVals, &zeroVals))
+	{
+	    --*max;
+
+	    strcpy (nameChars, scaleNames->names[i]);
+	    if ((vals->values_supplied & PIXELSIZE_MASK) ||
+		!(vals->values_supplied & PIXELSIZE_WILDCARD) ||
+		vals->y == 0)
+	    {
+		tmpVals.values_supplied =
+		    (tmpVals.values_supplied & ~PIXELSIZE_MASK) |
+		    (vals->values_supplied & PIXELSIZE_MASK);
+		tmpVals.pixel_matrix[0] = vals->pixel_matrix[0];
+		tmpVals.pixel_matrix[1] = vals->pixel_matrix[1];
+		tmpVals.pixel_matrix[2] = vals->pixel_matrix[2];
+		tmpVals.pixel_matrix[3] = vals->pixel_matrix[3];
+	    }
+	    if ((vals->values_supplied & POINTSIZE_MASK) ||
+		!(vals->values_supplied & POINTSIZE_WILDCARD) ||
+		vals->y == 0)
+	    {
+		tmpVals.values_supplied =
+		    (tmpVals.values_supplied & ~POINTSIZE_MASK) |
+		    (vals->values_supplied & POINTSIZE_MASK);
+		tmpVals.point_matrix[0] = vals->point_matrix[0];
+		tmpVals.point_matrix[1] = vals->point_matrix[1];
+		tmpVals.point_matrix[2] = vals->point_matrix[2];
+		tmpVals.point_matrix[3] = vals->point_matrix[3];
+	    }
+	    if (vals->width <= 0)
+		tmpVals.width = 0;
+	    if (vals->x == 0)
+		tmpVals.x = 0;
+	    if (vals->y == 0)
+		tmpVals.y = 0;
+	    tmpVals.ranges = ranges;
+	    tmpVals.nranges = nranges;
+	    FontParseXLFDName (nameChars, &tmpVals,
+			       FONT_XLFD_REPLACE_VALUE);
+	    /* If we're marking aliases with negative lengths, we
+	       need to concoct a valid target name to follow it.
+	       Otherwise we're done.  */
+	    if (scaleNames->length[i] >= 0)
+	    {
+		(void) AddFontNamesName (names, nameChars,
+					 strlen (nameChars));
+		/* If our original pattern matches the name from
+		   the table and that name doesn't duplicate what
+		   we just added, add the name from the table */
+		if (strcmp(nameChars, scaleNames->names[i]) &&
+		    FontFileMatchName(scaleNames->names[i],
+				      scaleNames->length[i],
+				      nameptr) &&
+		    *max)
+		{
+		    --*max;
+		    (void) AddFontNamesName (names, scaleNames->names[i],
+					     scaleNames->length[i]);
+		}
+	    }
+	    else
+	    {
+		char *aliasName;
+		vals->ranges = ranges;
+		vals->nranges = nranges;
+		if (transfer_values_to_alias(zeroChars,
+					     strlen(zeroChars),
+					     scaleNames->names[++i],
+					     &aliasName, vals))
+		{
+		    (void) AddFontNamesName (names, nameChars,
+					     strlen (nameChars));
+		    names->length[names->nnames - 1] =
+			-names->length[names->nnames - 1];
+		    (void) AddFontNamesName (names, aliasName,
+					     strlen (aliasName));
+		    /* If our original pattern matches the name from
+		       the table and that name doesn't duplicate what
+		       we just added, add the name from the table */
+		    if (strcmp(nameChars, scaleNames->names[i - 1]) &&
+			FontFileMatchName(scaleNames->names[i - 1],
+					  -scaleNames->length[i - 1],
+					  nameptr) &&
+			*max)
+		    {
+			--*max;
+			(void) AddFontNamesName (names,
+						 scaleNames->names[i - 1],
+						 -scaleNames->length[i - 1]);
+			names->length[names->nnames - 1] =
+			    -names->length[names->nnames - 1];
+			(void) AddFontNamesName (names, aliasName,
+						 strlen (aliasName));
+		    }
+		}
+	    }
+	}
+    }
+}
+
 /* ARGSUSED */
 static int
 _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
@@ -528,7 +657,7 @@ _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     FontNameRec		lowerName;
     FontNameRec		zeroName;
     FontNamesPtr	scaleNames;
-    FontScalableRec	vals, zeroVals, tmpVals;
+    FontScalableRec	vals;
     int			i;
     fsRange		*ranges;
     int			nranges;
@@ -542,129 +671,84 @@ _FontFileListFonts (client, fpe, pat, len, max, names, mark_aliases)
     lowerName.name = lowerChars;
     lowerName.length = len;
     lowerName.ndashes = FontFileCountDashes (lowerChars, len);
-    ranges = FontParseRanges(lowerChars, &nranges);
+
+    if (max <= 0) return result;
+
     /* Match XLFD patterns */
+
     strcpy (zeroChars, lowerChars);
     if (lowerName.ndashes == 14 &&
 	FontParseXLFDName (zeroChars, &vals, FONT_XLFD_REPLACE_ZERO))
     {
-	int newmax;
+	ranges = FontParseRanges(lowerChars, &nranges);
+        result = FontFileFindNamesInScalableDir (&dir->nonScalable,
+				&lowerName, max, names,
+				(FontScalablePtr)0,
+				(mark_aliases ?
+				 LIST_ALIASES_AND_TARGET_NAMES :
+				 NORMAL_ALIAS_BEHAVIOR) |
+				IGNORE_SCALABLE_ALIASES,
+				&max);
+	zeroName.name = zeroChars;
+	zeroName.length = strlen (zeroChars);
+	zeroName.ndashes = lowerName.ndashes;
+
+	/* Look for scalable names and aliases, adding scaled instances of
+	   them to the output */
+
+	/* Scalable names... */
 	scaleNames = MakeFontNamesRecord (0);
 	if (!scaleNames)
 	{
 	    if (ranges) xfree(ranges);
 	    return AllocError;
 	}
-	zeroName.name = zeroChars;
-	zeroName.length = strlen (zeroChars);
-	zeroName.ndashes = lowerName.ndashes;
 	FontFileFindNamesInScalableDir (&dir->scalable, &zeroName, max,
 					scaleNames, &vals,
 					mark_aliases ?
 					LIST_ALIASES_AND_TARGET_NAMES :
-					NORMAL_ALIAS_BEHAVIOR, &newmax);
-	/* Look for scalable aliases */
+					NORMAL_ALIAS_BEHAVIOR, (int *)0);
+	_FontFileAddScalableNames(names, scaleNames, &lowerName,
+				  zeroChars, &vals, ranges, nranges,
+				  &max);
+	FreeFontNames (scaleNames);
+
+	/* Scalable aliases... */
+	scaleNames = MakeFontNamesRecord (0);
+	if (!scaleNames)
+	{
+	    if (ranges) xfree(ranges);
+	    return AllocError;
+	}
 	FontFileFindNamesInScalableDir (&dir->nonScalable, &zeroName,
-					newmax, scaleNames, &vals,
+					max, scaleNames, &vals,
 					mark_aliases ?
 					LIST_ALIASES_AND_TARGET_NAMES :
 					NORMAL_ALIAS_BEHAVIOR, (int *)0);
-	for (i = 0; i < scaleNames->nnames; i++)
-	{
-	    char nameChars[MAXFONTNAMELEN];
-	    FontParseXLFDName (scaleNames->names[i], &zeroVals,
-			       FONT_XLFD_REPLACE_NONE);
-	    tmpVals = vals;
-	    if (FontFileCompleteXLFD (&tmpVals, &zeroVals))
-	    {
-		strcpy (nameChars, scaleNames->names[i]);
-		if ((vals.values_supplied & PIXELSIZE_MASK) ||
-		    !(vals.values_supplied & PIXELSIZE_WILDCARD) ||
-		    vals.y == 0)
-		{
-		    tmpVals.values_supplied =
-			(tmpVals.values_supplied & ~PIXELSIZE_MASK) |
-			(vals.values_supplied & PIXELSIZE_MASK);
-		    tmpVals.pixel_matrix[0] = vals.pixel_matrix[0];
-		    tmpVals.pixel_matrix[1] = vals.pixel_matrix[1];
-		    tmpVals.pixel_matrix[2] = vals.pixel_matrix[2];
-		    tmpVals.pixel_matrix[3] = vals.pixel_matrix[3];
-		}
-		if ((vals.values_supplied & POINTSIZE_MASK) ||
-		    !(vals.values_supplied & POINTSIZE_WILDCARD) ||
-		    vals.y == 0)
-		{
-		    tmpVals.values_supplied =
-			(tmpVals.values_supplied & ~POINTSIZE_MASK) |
-			(vals.values_supplied & POINTSIZE_MASK);
-		    tmpVals.point_matrix[0] = vals.point_matrix[0];
-		    tmpVals.point_matrix[1] = vals.point_matrix[1];
-		    tmpVals.point_matrix[2] = vals.point_matrix[2];
-		    tmpVals.point_matrix[3] = vals.point_matrix[3];
-		}
-		if (vals.width <= 0)
-		    tmpVals.width = 0;
-		if (vals.x == 0)
-		    tmpVals.x = 0;
-		if (vals.y == 0)
-		    tmpVals.y = 0;
-		tmpVals.ranges = ranges;
-		tmpVals.nranges = nranges;
-		FontParseXLFDName (nameChars, &tmpVals,
-				   FONT_XLFD_REPLACE_VALUE);
-		/* If we're marking aliases with negative lengths, we
-		   need to concoct a valid target name to follow it.
-		   Otherwise we're done.  */
-		if (scaleNames->length[i] >= 0)
-		    (void) AddFontNamesName (names, nameChars,
-					     strlen (nameChars));
-		else
-		{
-		    char *aliasName;
-		    vals.ranges = ranges;
-		    vals.nranges = nranges;
-		    if (transfer_values_to_alias(zeroChars,
-						 strlen(zeroChars),
-						 scaleNames->names[++i],
-						 &aliasName, &vals))
-		    {
-			(void) AddFontNamesName (names, nameChars,
-						 strlen (nameChars));
-			names->length[names->nnames - 1] =
-			    -names->length[names->nnames - 1];
-			(void) AddFontNamesName (names, aliasName,
-						 strlen (aliasName));
-		    }
-		}
-		max--;
-	    }
-	}
+	_FontFileAddScalableNames(names, scaleNames, &lowerName,
+				  zeroChars, &vals, ranges, nranges,
+				  &max);
 	FreeFontNames (scaleNames);
-	result = FontFileFindNamesInScalableDir (&dir->nonScalable,
-						 &lowerName, max, names,
-						 (FontScalablePtr)0,
-						 mark_aliases ?
-						 LIST_ALIASES_AND_TARGET_NAMES |
-						 IGNORE_SCALABLE_ALIASES :
-						 NORMAL_ALIAS_BEHAVIOR,
-						 (int *)0);
+
+	if (ranges) xfree(ranges);
     }
     else
     {
-    	FontFileFindNamesInScalableDir (&dir->scalable, &lowerName, max, names,
-					(FontScalablePtr)0,
-					mark_aliases ?
-					LIST_ALIASES_AND_TARGET_NAMES :
-					NORMAL_ALIAS_BEHAVIOR, &max);
-	result = FontFileFindNamesInScalableDir (&dir->nonScalable,
-						 &lowerName, max, names,
-						 (FontScalablePtr)0,
-						 mark_aliases ?
-						 LIST_ALIASES_AND_TARGET_NAMES :
-						 NORMAL_ALIAS_BEHAVIOR,
-						 (int *)0);
+        result = FontFileFindNamesInScalableDir (&dir->nonScalable,
+				&lowerName, max, names,
+				(FontScalablePtr)0,
+				mark_aliases ?
+				LIST_ALIASES_AND_TARGET_NAMES :
+				NORMAL_ALIAS_BEHAVIOR,
+				&max);
+	if (result == Successful)
+    	    result = FontFileFindNamesInScalableDir (&dir->scalable,
+				&lowerName, max, names,
+				(FontScalablePtr)0,
+				mark_aliases ?
+				LIST_ALIASES_AND_TARGET_NAMES :
+				NORMAL_ALIAS_BEHAVIOR, (int *)0);
     }
-    if (ranges) xfree(ranges);
     return result;
 }
 

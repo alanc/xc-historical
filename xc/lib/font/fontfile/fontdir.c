@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.17 94/02/04 17:07:09 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.18 94/02/08 12:30:00 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -511,6 +511,28 @@ FontFileFindNamesInDir(table, pat, max, names)
     return FontFileFindNamesInScalableDir(table, pat, max, names,
 					  (FontScalablePtr)0,
 					  NORMAL_ALIAS_BEHAVIOR, (int *)0);
+}
+
+Bool
+FontFileMatchName(name, length, pat)
+    char	*name;
+    int		length;
+    FontNamePtr	pat;
+{
+    /* Perform a fontfile-type name match on a single name */
+    FontTableRec table;
+    FontEntryRec entries[1];
+
+    /* Dummy up a table */
+    table.used = 1;
+    table.size = 1;
+    table.sorted = TRUE;
+    table.entries = entries;
+    entries[0].name.name = name;
+    entries[0].name.length = length;
+    entries[0].name.ndashes = FontFileCountDashes(name, length);
+
+    return FontFileFindNameInDir(&table, pat) != NULL;
 }
 
 /*
