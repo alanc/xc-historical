@@ -69,7 +69,7 @@ static char *defaultTranslation[] = {
     "<Btn1Down>:       set\n",
     "<Btn1Up>:       notify unset\n",
     "<EnterWindow>:       highlight\n",
-    "<LeaveWindow>:       unhighlight unset\n",
+    "<LeaveWindow>:       unhighlight\n",
     NULL
 };
 static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
@@ -158,13 +158,27 @@ static void Get_inverseGC(cbw)
 
     /* Set up a GC for inverse (set) state */
 
-    values.background	= ComWforeground;
-    values.foreground   = ComWbackground;
+    values.foreground   = ComWforeground;
     values.font		= ComWfont->fid;
     values.fill_style   = FillSolid;
 
     ComWinverseGC = XtGetGC((Widget)cbw,
-    	GCBackground | GCForeground | GCFont | GCFillStyle, &values);
+    	GCForeground | GCFont | GCFillStyle, &values);
+}
+
+static void Get_inverseTextGC(cbw)
+    CommandWidget cbw;
+{
+    XGCValues	values;
+
+    /* Set up a GC for inverse (set) state */
+
+    values.foreground   = ComWbackground; /* default is White */
+    values.font		= ComWfont->fid;
+    values.fill_style   = FillSolid;
+
+    ComWinverseTextGC = XtGetGC((Widget)cbw,
+    	GCForeground | GCFont | GCFillStyle, &values);
 }
 
 static void Get_highlightGC(cbw)
@@ -195,6 +209,7 @@ static void Initialize(w)
         /* The above call will set all of the label fields such as
 	   label text and internal width and height. */
     Get_inverseGC(cbw);
+    Get_inverseTextGC(cbw);
     Get_highlightGC(cbw);
       /* Start the callback list if the client specified one in
 	 the arglist */
@@ -326,12 +341,13 @@ static void Redisplay(w)
 			       CWBorderPixel,&window_attributes);
      }
 
-   if (ComWhighlighted != ComWdisplayHighlighted ||
+   if ((!ComWhighlighted && ComWdisplayHighlighted) ||
        ComWsensitive != ComWdisplaySensitive ||
        (!ComWset && ComWdisplaySet))
      XClearWindow(XtDisplay(w),XtWindow(w));
      /* Don't clear the window if the button's in a set condition;
-	instead, fill it with black to avoid flicker. */
+	instead, fill it with black to avoid flicker. (Must fil
+	with black in case it was an expose */
    else if (ComWset == ComWdisplaySet ||  (ComWset && !ComWdisplaySet))
      XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
 		    0,0,ComWwidth,ComWheight);
@@ -345,7 +361,7 @@ static void Redisplay(w)
      /* draw the string:  there are three different "styles" for it,
 	all in separate GCs */
    XDrawString(XtDisplay(w),XtWindow(w),
-	       (ComWset ?  ComWinverseGC : 
+	       (ComWset ?  ComWinverseTextGC : 
 		    (ComWsensitive ? ComWnormalGC : ComWgrayGC)),
 		ComWlabelX, ComWlabelY, ComWlabel, ComWlabelLen);
 
@@ -389,7 +405,7 @@ static void SetValues(old, new)
       {
 	if (XtCField(newcbw,background_pixel) != ComWbackground ||
 	     XtLField(newcbw,font) != ComWfont)
-	  Get_inverseGC(newcbw);
+	  Get_inverseTextGC(newcbw);
 	if (XtCBField(newcbw,highlightThickness) != ComWhighlightThickness)
 	  Get_highlightGC(newcbw);
       }
