@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.32 89/12/07 17:41:22 rws Exp $";
+static char rcs_id[] = "$XConsortium: xrdb.c,v 11.33 89/12/10 16:45:52 rws Exp $";
 #endif
 
 /*
@@ -71,7 +71,7 @@ typedef struct _Entries {
 #define INIT_BUFFER_SIZE 10000
 #define INIT_ENTRY_SIZE 500
 
-#ifdef USG
+#if defined(USG) && !defined(CRAY)
 int rename (from, to)
     char *from, *to;
 {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.34 89/10/16 12:13:01 jim Exp $
+ * $XConsortium: main.c,v 1.35 89/12/09 16:12:40 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -378,7 +378,7 @@ char *basename(file)
 	return(file);
 }
 
-#ifdef USG
+#if defined(USG) && !defined(CRAY)
 int rename (from, to)
     char *from, *to;
 {
