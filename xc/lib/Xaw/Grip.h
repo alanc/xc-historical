@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Grip.h,v 1.15 89/07/21 01:51:29 kit Exp $
+ * $XConsortium: Grip.h,v 1.16 91/07/21 18:53:27 gildea Exp $
  */
 
 /***********************************************************
@@ -63,7 +63,7 @@ SOFTWARE.
 
 #define XtNgripTranslations "gripTranslations"
 
-typedef struct {
+typedef struct _XawGripCallData {
   XEvent *event;		/* the event causing the GripAction */
   String *params;		/* the TranslationTable params */
   Cardinal num_params;		/* count of params */
