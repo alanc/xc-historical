@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.26 91/01/10 17:00:58 keith Exp $
+ * $XConsortium: greet.c,v 1.27 91/01/10 19:28:57 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -168,6 +168,7 @@ struct display	*d;
     XtDestroyWidget (toplevel);
     ClearCloseOnFork (ConnectionNumber (XtDisplay (toplevel)));
     XCloseDisplay (XtDisplay (toplevel));
+    Debug ("Greet connection closed\n");
 }
 
 Greet (d, greet)
