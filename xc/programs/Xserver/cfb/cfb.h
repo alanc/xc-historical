@@ -123,8 +123,10 @@ typedef struct {
     unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
     short		fExpose;	/* callexposure handling ? */
     short		freeCompClip;
+#ifdef CFBROTPIX
     PixmapPtr		pRotatedTile;	/* tile/stipple  rotated to align with window */
     PixmapPtr		pRotatedStipple;/* and using offsets */
+#endif
     RegionPtr		pAbsClientRegion;/* client region in screen coords */
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;

@@ -36,8 +36,10 @@ SOFTWARE.
 #include "mistruct.h"
 
 #include "cfbmskbits.h"
+#ifdef CFBROTPIX
 extern cfbXRotatePixmap();
 extern cfbYRotatePixmap();
+#endif
 extern void mfbPushPixels();
 
 Bool
@@ -113,8 +115,10 @@ cfbCreateGC(pGC)
 	    pPriv->rop = pGC->alu;
 	    pPriv->fExpose = TRUE;
 	    pGC->devPriv = (pointer) pPriv;
+#ifdef CFBROTPIX
 	    pPriv->pRotatedTile = NullPixmap;
 	    pPriv->pRotatedStipple = NullPixmap;
+#endif
 	    pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
 	    pPriv->pCompositeClip = (*pGC->pScreen->RegionCreate) (NULL, 1);
 	    pPriv->freeCompClip = REPLACE_CC;
@@ -170,10 +174,12 @@ cfbDestroyGC(pGC, pQ)
     pQ->pNextGCInterest->pLastGCInterest = pGC->pLastGCInterest;
 
     pPriv = (cfbPrivGC *)(pGC->devPriv);
+#ifdef CFBROTPIX
     if (pPriv->pRotatedTile)
 	cfbDestroyPixmap(pPriv->pRotatedTile);
     if (pPriv->pRotatedStipple)
 	cfbDestroyPixmap(pPriv->pRotatedStipple);
+#endif
     if (pPriv->freeCompClip == FREE_CC && pPriv->pCompositeClip)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     if(pPriv->pAbsClientRegion)
@@ -206,8 +212,10 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     WindowPtr   pWin;
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
+#ifdef CFBROTPIX
     int         xrot, yrot;	/* rotations for tile and stipple pattern */
     Bool        fRotate = FALSE;/* True if rotated pixmaps are needed */
+#endif
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
@@ -382,8 +390,10 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     }
     else {
 */
+#ifdef CFBROTPIX
 	yrot = 0;
 	xrot = 0;
+#endif
 /*
     }
 */
@@ -434,7 +444,9 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    if (pGC->tile == (PixmapPtr) NULL)
 		break;
 	    cfbPadPixmap(pGC->tile);
+#ifdef CFBROTPIX
 	    fRotate = TRUE;
+#endif
 	    new_fillspans = TRUE;
 	    break;
 
@@ -442,10 +454,13 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	    if (pGC->stipple == (PixmapPtr) NULL)
 		break;
 	    cfbPadPixmap(pGC->stipple);
+#ifdef CFBROTPIX
 	    fRotate = TRUE;
+#endif
 	    new_fillspans = TRUE;
 	    break;
 
+#ifdef CFBROTPIX
 	case GCTileStipXOrigin:
 	    fRotate = TRUE;
 	    break;
@@ -453,6 +468,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCTileStipYOrigin:
 	    fRotate = TRUE;
 	    break;
+#endif
 
 	case GCFont:
 	    new_text = TRUE;
@@ -570,6 +586,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
     } /* end of new_fillspans */
 
+#ifdef CFBROTPIX
     if (xrot || yrot || fRotate) {
 	/*
 	 * First destroy any previously-rotated tile/stipple
@@ -610,6 +627,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 		cfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
 	}
     }
+#endif
 }
 
 
