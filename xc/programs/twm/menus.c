@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.77 89/07/06 12:17:08 jim Exp $
+ * $XConsortium: menus.c,v 1.78 89/07/06 17:16:06 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.77 89/07/06 12:17:08 jim Exp $";
+"$XConsortium: menus.c,v 1.78 89/07/06 17:16:06 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -56,7 +56,7 @@ extern XEvent Event;
 
 char *getenv();
 
-#if defined(USG) || defined(macII)
+#if defined(SYSV) && !defined(hpux)
 #define vfork fork
 #endif
 
