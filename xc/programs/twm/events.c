@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.67 89/06/12 12:16:17 jim Exp $
+ * $XConsortium: events.c,v 1.68 89/06/12 15:32:26 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.67 89/06/12 12:16:17 jim Exp $";
+"$XConsortium: events.c,v 1.68 89/06/12 15:32:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -761,9 +761,6 @@ HandleExpose()
 		XCopyPlane(dpy, Scr->siconifyPm, Tmp_win->list->icon,
 		    Scr->NormalGC,
 		    0,0, siconify_width, siconify_height, 0, 0, 1);
-		    XDrawRectangle(dpy, Tmp_win->list->icon,
-			Scr->NormalGC, 0, 0, 
-			siconify_width-1, siconify_height-1);
 		flush_expose (Event.xany.window);
 		return;
 	    }
