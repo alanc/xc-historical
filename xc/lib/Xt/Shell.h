@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.h,v 1.25 94/02/04 17:53:28 converse Exp $ */
+/* $XConsortium: Shell.h,v 1.26 94/02/04 21:31:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -133,6 +133,8 @@ SOFTWARE.
 #define XtNdiscardCommand "discardCommand"
 #define XtNenvironment "environment"
 #define XtNinteractCallback "interactCallback"
+#define XtNjoinSession "joinSession"
+#define XtNprogramPath "programPath"
 #define XtNresignCommand "resignCommand"
 #define XtNrestartCommand "restartCommand"
 #define XtNrestartStyle "restartStyle"
@@ -144,6 +146,8 @@ SOFTWARE.
 #define XtCCurrentDirectory "CurrentDirectory"
 #define XtCDiscardCommand "DiscardCommand"
 #define XtCEnvironment "Environment"
+#define XtCJoinSession "JoinSession"
+#define XtCProgramPath "ProgramPath"
 #define XtCResignCommand "ResignCommand"
 #define XtCRestartCommand "RestartCommand"
 #define XtCRestartStyle "RestartStyle"
@@ -431,59 +435,71 @@ extern _XtConst_ char XtShellStrings[];
 #ifndef XtNinteractCallback
 #define XtNinteractCallback ((char*)&XtShellStrings[952])
 #endif
+#ifndef XtNjoinSession
+#define XtNjoinSession ((char*)&XtShellStrings[969])
+#endif
+#ifndef XtNprogramPath
+#define XtNprogramPath ((char*)&XtShellStrings[981])
+#endif
 #ifndef XtNresignCommand
-#define XtNresignCommand ((char*)&XtShellStrings[969])
+#define XtNresignCommand ((char*)&XtShellStrings[993])
 #endif
 #ifndef XtNrestartCommand
-#define XtNrestartCommand ((char*)&XtShellStrings[983])
+#define XtNrestartCommand ((char*)&XtShellStrings[1007])
 #endif
 #ifndef XtNrestartStyle
-#define XtNrestartStyle ((char*)&XtShellStrings[998])
+#define XtNrestartStyle ((char*)&XtShellStrings[1022])
 #endif
 #ifndef XtNsaveCallback
-#define XtNsaveCallback ((char*)&XtShellStrings[1011])
+#define XtNsaveCallback ((char*)&XtShellStrings[1035])
 #endif
 #ifndef XtNsessionID
-#define XtNsessionID ((char*)&XtShellStrings[1024])
+#define XtNsessionID ((char*)&XtShellStrings[1048])
 #endif
 #ifndef XtNshutdownCommand
-#define XtNshutdownCommand ((char*)&XtShellStrings[1034])
+#define XtNshutdownCommand ((char*)&XtShellStrings[1058])
 #endif
 #ifndef XtCCloneCommand
-#define XtCCloneCommand ((char*)&XtShellStrings[1050])
+#define XtCCloneCommand ((char*)&XtShellStrings[1074])
 #endif
 #ifndef XtCConnection
-#define XtCConnection ((char*)&XtShellStrings[1063])
+#define XtCConnection ((char*)&XtShellStrings[1087])
 #endif
 #ifndef XtCCurrentDirectory
-#define XtCCurrentDirectory ((char*)&XtShellStrings[1074])
+#define XtCCurrentDirectory ((char*)&XtShellStrings[1098])
 #endif
 #ifndef XtCDiscardCommand
-#define XtCDiscardCommand ((char*)&XtShellStrings[1091])
+#define XtCDiscardCommand ((char*)&XtShellStrings[1115])
 #endif
 #ifndef XtCEnvironment
-#define XtCEnvironment ((char*)&XtShellStrings[1106])
+#define XtCEnvironment ((char*)&XtShellStrings[1130])
+#endif
+#ifndef XtCJoinSession
+#define XtCJoinSession ((char*)&XtShellStrings[1142])
+#endif
+#ifndef XtCProgramPath
+#define XtCProgramPath ((char*)&XtShellStrings[1154])
 #endif
 #ifndef XtCResignCommand
-#define XtCResignCommand ((char*)&XtShellStrings[1118])
+#define XtCResignCommand ((char*)&XtShellStrings[1166])
 #endif
 #ifndef XtCRestartCommand
-#define XtCRestartCommand ((char*)&XtShellStrings[1132])
+#define XtCRestartCommand ((char*)&XtShellStrings[1180])
 #endif
 #ifndef XtCRestartStyle
-#define XtCRestartStyle ((char*)&XtShellStrings[1147])
+#define XtCRestartStyle ((char*)&XtShellStrings[1195])
 #endif
 #ifndef XtCSessionID
-#define XtCSessionID ((char*)&XtShellStrings[1160])
+#define XtCSessionID ((char*)&XtShellStrings[1208])
 #endif
 #ifndef XtCShutdownCommand
-#define XtCShutdownCommand ((char*)&XtShellStrings[1170])
+#define XtCShutdownCommand ((char*)&XtShellStrings[1218])
 #endif
 #ifndef XtRRestartStyle
-#define XtRRestartStyle ((char*)&XtShellStrings[1186])
+#define XtRRestartStyle ((char*)&XtShellStrings[1234])
 #endif
 #ifndef XtRSmcConn
-#define XtRSmcConn ((char*)&XtShellStrings[1199])
+#define XtRSmcConn ((char*)&XtShellStrings[1247])
 #endif
 #undef _XtConst_
 #endif
