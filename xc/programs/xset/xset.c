@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.65 93/09/11 14:37:55 rws Exp $ 
+ * $XConsortium: xset.c,v 1.66 93/09/20 17:53:55 hersh Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.65 93/09/11 14:37:55 rws Exp $ */
+/* $XConsortium: xset.c,v 1.66 93/09/20 17:53:55 hersh Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -119,7 +119,7 @@ for (i = 1; i < argc; ) {
       percent = 0;       /* Turn it off.          */
       i++;
     } 
-    else if (isnumber(arg, 100)) {
+    else if (is_number(arg, 100)) {
       percent = atoi(arg);  /* Set to spec. volume */
       i++;
     }
@@ -148,18 +148,18 @@ for (i = 1; i < argc; ) {
       set_bell_vol(dpy, percent);
       i++;
     } 
-    else if (isnumber(arg, 100)) {              /* If volume is given:    */
+    else if (is_number(arg, 100)) {              /* If volume is given:    */
       percent = atoi(arg);    /* set bell appropriately.*/
       set_bell_vol(dpy, percent);
       i++;
       arg = nextarg(i, argv);
 
-      if (isnumber(arg, 32767)) {               /* If pitch is given:     */
+      if (is_number(arg, 32767)) {               /* If pitch is given:     */
 	set_bell_pitch(dpy, atoi(arg));    /* set the bell.           */
 	i++;
 
 	arg = nextarg(i, argv);
-	if (isnumber(arg, 32767)) {              /* If duration is given:  */
+	if (is_number(arg, 32767)) {              /* If duration is given:  */
 	  set_bell_dur(dpy, atoi(arg));  /*  set the bell.      */
 	  i++;
 	}
@@ -234,7 +234,7 @@ for (i = 1; i < argc; ) {
 	break;
     }
     arg = nextarg(i, argv);
-    if (isnumber(arg, 32) && atoi(arg) > 0) {
+    if (is_number(arg, 32) && atoi(arg) > 0) {
       values.led = atoi(arg);
       i++;
     }
@@ -255,7 +255,7 @@ for (i = 1; i < argc; ) {
        values.led_mode = OFF;
       i++;
     }
-    else if (isnumber(arg, 32) && atoi(arg) > 0) {
+    else if (is_number(arg, 32) && atoi(arg) > 0) {
       values.led = atoi(arg);
       i++;
     }
@@ -356,7 +356,7 @@ for (i = 1; i < argc; ) {
     key = ALL;          /* None specified */
     arg = argv[i];
     if (i < argc)
-    if (isnumber(arg, 255)) {
+    if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
   } 
@@ -374,7 +374,7 @@ for (i = 1; i < argc; ) {
       auto_repeat_mode = OFF;
       i++;
     }
-    else if (isnumber(arg, 255)) {
+    else if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
   } 
@@ -417,7 +417,7 @@ exit(0);    /*  Done.  We can go home now.  */
 }
 
 
-isnumber(arg, maximum)
+is_number(arg, maximum)
 	char *arg;
 	int maximum;
 {
