@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.24 88/01/01 17:45:34 rws Exp $ */
+/* $Header: dixutils.c,v 1.25 88/02/02 11:41:23 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -154,7 +154,7 @@ AlterSaveSetForClient(client, pWin, mode)
 	numnow++;
 	client->saveSet = (pointer * )xrealloc(
 		  client->saveSet, 
-		  sizeof(int) * numnow);
+		  sizeof(pointer) * numnow);
        	client->numSaved = numnow;
 	client->saveSet[numnow - 1] = (pointer)pWin;
 	return(Success);
@@ -170,7 +170,7 @@ AlterSaveSetForClient(client, pWin, mode)
         if (numnow)
     	    client->saveSet = (pointer * )xrealloc(
 		      client->saveSet, 
-		      sizeof(int) * numnow);
+		      sizeof(pointer) * numnow);
         else
         {
             xfree(client->saveSet);
