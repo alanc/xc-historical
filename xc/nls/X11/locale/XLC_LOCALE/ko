@@ -1,0 +1,52 @@
+#define COMM #
+COMM 
+COMM  XLocale Database Sample for ko.
+COMM 
+
+COMM 
+COMM 	XLC_FONTSET category
+COMM 
+XLC_FONTSET
+COMM 	cs0 class (7 bit ASCII)
+cs0	ISO8859-1:GL
+COMM 	cs1 class 
+cs1	KSC5601.1987-0:GL
+END XLC_FONTSET
+
+COMM 
+COMM 	XLC_XLOCALE category
+COMM 
+XLC_XLOCALE
+
+encoding_name		ko.euc
+mb_cur_max		2
+state_depend_encoding	False
+#if WCHAR32
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+#else
+wc_encoding_mask	\x00008080
+wc_shift_bits		8
+#endif
+
+COMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL
+}
+
+COMM 	cs1 class
+cs1	{
+	side		GR:Default
+	length		2
+#if WCHAR32
+	wc_encoding	\x30000000
+#else
+	wc_encoding	\x00008080
+#endif
+	ct_encoding	KSC5601.1987-0:GL; KSC5601.1987-0:GR
+}
+
+END XLC_XLOCALE

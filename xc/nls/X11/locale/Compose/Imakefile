@@ -1,0 +1,16 @@
+XCOMM $XConsortium$
+#ifdef XlibI18nPath
+  XLIBI18N_PATH = XlibI18nPath
+#else
+  XLIBI18N_PATH = $(LIBDIR)/locale
+#endif
+
+       DESTNAME = Compose
+
+     LOCALE_01 = iso8859-1
+
+all::
+
+InstallNamedNonExec($(LOCALE_01),$(DESTNAME),$(XLIBI18N_PATH)/$(LOCALE_01))
+
+depend::

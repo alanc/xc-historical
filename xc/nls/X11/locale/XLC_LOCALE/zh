@@ -1,0 +1,43 @@
+#define COMM #
+COMM 
+COMM  XLocale Database Sample for zh.
+COMM 
+
+COMM 
+COMM 	XLC_FONTSET category
+COMM 
+XLC_FONTSET
+COMM 	cs0 class (7 bit ASCII)
+cs0	ISO8859-1:GL; GB2312.1980-0:GL
+COMM 	cs1 class 
+cs1	GB2312.1980-0:GL
+END XLC_FONTSET
+
+COMM 
+COMM 	XLC_XLOCALE category
+COMM 
+XLC_XLOCALE
+
+encoding_name		zh.euc
+mb_cur_max		2
+state_depend_encoding	False
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+
+COMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL
+}
+
+COMM 	cs1 class
+cs1	{
+	side		GR:Default
+	length		2
+	wc_encoding	\x30000000
+	ct_encoding	GB2312.1980-0:GL; GB2312.1980-0:GR
+}
+
+END XLC_XLOCALE

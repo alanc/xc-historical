@@ -1,0 +1,82 @@
+#define COMM #
+COMM 
+COMM  XLocale Database Sample for ja_JP.jis
+COMM 
+
+COMM 
+COMM 	XLC_FONTSET category
+COMM 
+XLC_FONTSET
+COMM 	cs0 class (7 bit ASCII)
+cs0	ISO8859-1:GL; JISX0201.1976-0:GL
+COMM 	cs1 class (Kanji)
+cs1	JISX0208.1983-0:GL; JISX0208.1983-1:GR
+COMM 	cs2 class (Half Kana)
+cs2	JISX0201.1976-0:GR
+COMM 	cs3 class (User Defined Character)
+COMM cs3	JISX0212.1990-0:GL
+END XLC_FONTSET
+
+COMM 
+COMM 	XLC_XLOCALE category
+COMM 
+XLC_XLOCALE
+
+encoding_name		ja.jis
+mb_cur_max		5
+state_depend_encoding	True
+#if WCHAR32
+wc_encoding_mask	\x30000000
+wc_shift_bits		7
+#else
+wc_encoding_mask	\x00008080
+wc_shift_bits		8
+#endif
+
+COMM 	cs0 class
+cs0	{
+	side		GL:Default
+	length		1
+	mb_encoding	<LSL> \x1b \x28 \x4a;\ 
+			<LSL> \x1b \x28 \x42
+	wc_encoding	\x00000000
+	ct_encoding	ISO8859-1:GL; JISX0201.1976-0:GL
+}
+
+COMM 	cs1 class
+cs1	{
+	side		GL
+	length		2
+	mb_encoding	<LSL> \x1b \x24 \x42;\
+			<LSL> \x1b \x24 \x40
+#if WCHAR32
+	wc_encoding	\x30000000
+#else
+	wc_encoding	\x00008080
+#endif
+	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
+			JISX0208.1983-1:GL; JISX0208.1983-1:GR
+}
+
+COMM 	cs2 class
+cs2	{
+	side		GR:Default
+	length		1
+#if WCHAR32
+	wc_encoding	\x10000000
+#else
+	wc_encoding	\x00000080
+#endif
+	ct_encoding	JISX0201.1976-0:GR
+}
+
+COMM 	cs3 class
+COMM cs3	{
+COMM 	side		GL
+COMM 	length		2
+COMM 	mb_encoding	<SS> \x8f
+COMM 	wc_encoding	\x00000000
+COMM 	ct_encoding	JISX0212.1990-0:GL
+COMM }
+
+END XLC_XLOCALE
