@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.206 94/01/16 17:00:58 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.207 94/01/17 17:41:36 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -2697,7 +2697,24 @@ int _XError (dpy, rep)
 	!(*dpy->error_vec[rep->errorCode])(dpy, &event.xerror, rep))
 	return 0;
     if (_XErrorFunction != NULL) {
-      	return ((*_XErrorFunction)(dpy, &event));	/* upcall */
+	int rtn_val;
+#ifdef XTHREADS
+	/* wouldn't need this if user lock display allowed recursion */
+	Bool we_asserted_user_level_lock = False;
+
+	if (dpy->lock && !xthread_have_id(dpy->lock->locking_thread)) {
+	    (*dpy->lock_fns->user_lock_display)(dpy);
+	    we_asserted_user_level_lock = True;
+	}
+	UnlockDisplay(dpy);
+#endif /* XTHREADS */
+	rtn_val = (*_XErrorFunction)(dpy, &event);	/* upcall */
+#ifdef XTHREADS
+	LockDisplay(dpy);
+	if (we_asserted_user_level_lock)
+	    (*dpy->lock_fns->user_unlock_display)(dpy);
+#endif /* XTHREADS */
+	return rtn_val;
     } else {
 	return _XDefaultError(dpy, &event);
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.23 94/01/16 17:00:50 gildea Exp $
+ * $XConsortium: locking.c,v 1.24 94/01/17 11:21:40 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -452,7 +452,8 @@ void _XUserUnlockDisplay(dpy)
 	/* XXX - we are not in XLockDisplay, error.  Print message? */
     }
     /* signal other threads that might be waiting in XLockDisplay */
-    xcondition_broadcast(dpy->lock->cv);
+    if (dpy->lock->cv)
+	xcondition_broadcast(dpy->lock->cv);
     /* substitute function back */
     dpy->lock_fns->lock_display = _XLockDisplay;
     dpy->lock_fns->lock_wait = NULL;
