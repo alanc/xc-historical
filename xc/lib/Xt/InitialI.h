@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.25 89/10/05 10:56:59 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.26 89/10/05 12:19:04 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -154,8 +154,12 @@ typedef struct _XtPerDisplayStruct {
     XtAppContext appContext;
     KeySym *keysyms;                   /* keycode to keysym table */
     int keysyms_per_keycode;           /* number of keysyms for each keycode */
+    int min_keycode, max_keycode;      /* range of keycodes */
     KeySym *modKeysyms;                /* keysym values for modToKeysysm */
     ModToKeysymTable *modsToKeysyms;   /* modifiers to Keysysms index table*/
+    unsigned char isModifier[32];      /* key-is-modifier-p bit table */
+    KeySym lock_meaning;	       /* Lock modifier meaning */
+    Modifiers mode_switch;	       /* keyboard group modifiers */
     Boolean being_destroyed;
     Boolean rv;			       /* reverse_video resource */
     XrmName name;		       /* resolved app name */
