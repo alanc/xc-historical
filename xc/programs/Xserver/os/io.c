@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.60 89/07/03 18:47:06 rws Exp $ */
+/* $XConsortium: io.c,v 1.61 89/07/09 16:08:48 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -35,7 +35,6 @@ SOFTWARE.
 #include "Xmd.h"
 #include <errno.h>
 #include <sys/param.h>
-#include <sys/types.h>
 #include <sys/uio.h>
 #include "X.h"
 #include "Xproto.h"
