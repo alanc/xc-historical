@@ -4,7 +4,7 @@ X - a portable, network transparent window system
 .SH SYNOPSIS
 .PP
 X is a network transparent window system developed at MIT which runs on a wide
-range of computing and graphics machines.  The standard distribution from MIT
+range of computing and graphics machines.  The core distribution from MIT
 has both client and server support for the following operating systems:
 .sp
 .in +8
@@ -99,7 +99,7 @@ There are currently 3 ways of getting the X server and an initial set of
 client applications started.  The particular method used depends on what
 operating system you are running and on whether or not you use other window
 systems in addition to X.
-.TP 8
+.TP 4
 .B "\fIxdm\fP (the X Display Manager)"
 If you want to always have X running on your display, your site administrator
 can set your machine up to use the X Display Manager \fIxdm\fP.  This program
@@ -115,7 +115,7 @@ default, if you have an file named \fI.xsession\fP in your home directory,
 your initial clients (such as terminal emulators, clocks, a window manager,
 user settings for things like the background, the speed of the pointer, etc.).
 Your site administrator can provide details.
-.TP 8
+.TP 4
 .B "\fIxterm \-L\fP (started from \fI/etc/init\fP)"
 Some versions of UNIX that are derived from 4.3bsd support starting the window
 system and an initial \fIxterm\fP window from the system terminal line
@@ -124,7 +124,7 @@ window requesting your username and password.  However, this window will become
 your primary window and is not configurable on a per-user basis.
 Sites using this method should switch to \fIxdm\fP as \fIxterm -L\fP may not be
 supported in future releases.
-.TP 8
+.TP 4
 .B "\fIxinit\fP (run manually from the shell)"
 Sites that support more than one window system might choose to use the
 \fIxinit\fP program for starting X manually.  If this is true for your 
@@ -138,62 +138,101 @@ runs another to start up any desired clients, and then waits for either to
 finish.  Since either or both of the user-specified programs may be a shell 
 script, this gives substantial flexibility at the expense of a human 
 nice interface.  For this reason, \fIxinit\fP is not intended for end users.
-.SH "DISPLAY SPECIFICATION"
+.SH "SPECIFYING A DISPLAY NAME"
 .PP
-When you first log in, the environment variable DISPLAY will be
-set to a string specifying the name of the machine on which the server is
-running, a number indicating which of possibly several servers
-to use, and possibly a number indicating the default screen of the
-server (usually this is omitted and defaults to 0).
-By convention, servers on a particular machine are numbered starting
-with zero.  The format 
-of the DISPLAY string depends on the type of communications channel used
-to contact the server.
-
-.ne 6
-The following connection protocols are supported:
-.TP 8
+To distinguish one display on a network from another, each X server has a
+name of the form:
+.sp
+.ce 1
+\fIhostname:displaynumber.screennumber\fP
+.sp
+Names like this are called \fIdisplay names\fP, and contain the following
+information:
+.TP 4
+.I hostname
+The \fIhostname\fP specifies the name of the machine to which the display is
+connected.  If the hostname is not given, the most efficient way of 
+communicating to a server on the same machine will be assumed.
+.TP 4
+.I displaynumber
+The phrase "display" is usually used to refer to collection of monitors that
+share a common keyboard and pointer (mouse, tablet, etc.).  Most workstations
+tend to only have one keyboard, and therefore, only one display.  Larger, 
+multi-user
+systems, however, will frequently have several displays so that more than
+one person can be doing graphics work at once.  To avoid confusion, each
+display on a machine is assigned a \fIdisplay number\fP (starting with 0)
+when the X server for that display is started.  The display number must always
+be given in a display name.
+.TP 4
+.I screennumber
+Some displays share a single keyboard and pointer among two or more monitors.
+Since each monitor has its own set of windows, each screen is assigned a
+\fIscreen number\fP (starting with 0) when the X server for that display is
+started.  If the screen number is not given, then screen 0 will be asssumed.
+.PP
+On Unix systems, the default display name for X programs to use is stored 
+in your DISPLAY environment variable.  This variable is set automatically
+by the \fIxterm\fP terminal emulator.  However, when you log into another
+machine on a network, you'll need to set DISPLAY by hand to point to your
+display.  For example,
+.sp
+.in +8
+.nf
+% setenv DISPLAY myws:0
+$ DISPLAY=myws:0; export DISPLAY
+.fi
+.in -8
+.PP
+Finally, most X programs accept a command line option of 
+\fB-display \fIdisplayname\fR to temporarily override the contents of
+DISPLAY.  This is most commonly used to pop windows on your neighbors screen or
+as part of a "remote shell" command to start an xterm pointing back to your
+display.  For example,
+.sp
+.in +8
+.nf
+% xeyes -display joesws:0 -geometry 1000x1000+0+0
+% rsh big xterm -display myws:0 -ls </dev/null &
+.fi
+.in -8
+.PP
+X servers usually listen for connections on a variety of different 
+communications channels (e.g. network byte-stream, shared memory, etc.) 
+and can, therefore, have serveral different display names.
+The \fIhostname\fP part of the display name determines type of channel
+(also called a transport layer) to be used.  The sample servers from MIT
+support the following types of connections:
+.TP 4
 .B TCP\/IP
 .br
-DISPLAY should be set to ``\fIhost\fP:\fIdpy\fP.\fIscreen\fP''
-where \fIhost\fP
-is the symbolic name of the machine (e.g. expo), \fIdpy\fP
-is the number of the display (usually 0), and \fIscreen\fP
-is the number of the screen.  The \fIscreen\fP and preceding period are
-optional, with the default value being zero (0).
-Full Internet 
-domain names (e.g. expo.lcs.mit.edu) are allowed for the host name.
-.TP 8
-.B "Unix domain"
+The hostname part of the display name should be the server machine's
+IP address name.  Full Internet names (e.g., expo.lcs.mit.edu),
+abbreviated names (e.g., expo), and IP addresses (e.g., 18.30.0.212)
+are allowed.  For example:  \fImyworkstation:0\fP, \fIbigmachine:1\fP, and 
+\fIhydra:0.1\fP.
+.TP 4
+.B "Unix domain sockets"
 .br
-DISPLAY should be set to ``unix:\fIdpy\fP.\fIscreen\fP'',
-where \fIdpy\fP is the display number and \fIscreen\fP is
-the screen number; \fIscreen\fP and the preceding period are
-optional, with the default value being zero (0).
-.TP 8
+The hostname part of the display name should be the string "unix" (in lower
+case letters).  For example:  \fIunix:0\fP, \fIunix:1\fP, and \fIunix:0.1\fP.
+.TP 4
 .B DECnet
 .br
-DISPLAY should be set to ``\fInodename\fP::\fIdpy\fP.\fIscreen\fP''
-where \fInodename\fP
-is the symbolic name of the machine,
-\fIdpy\fP is the display number, and \fIscreen\fP is
-the screen number; \fIscreen\fP and the preceding period are
-optional, with the default value being zero (0).
+The hostname part of the display name should be the server machine's 
+nodename followed by a colon.  For example:  \fImyws::0\fP, \fIbig::1\fP,
+and \fIhydra::0.1\fP.
 .PP
-Most programs accept a command line argument of the form 
-``-display \fIdisplay\fP'' that can be used to override the
-DISPLAY environment variable.
-.PP
-.SH GEOMETRY SPECIFICATION
+.SH "SPECIFYING WINDOW GEOMETRY"
 One of the advantages of using window systems over hardwired terminals is that 
 applications don't have to be restricted to a particular size or location
 on the screen.
 Although the layout of windows on a display is controlled
-by the window manager that the user is running, most applications accept
+by the window manager that the user is running, most X programs accept
 a command line argument that is treated as the prefered size and location
 for this particular application's window.
 .PP
-This argument, usually specified as ``-geometry WxH+X+Y,'' indicates that
+This argument, usually given as ``-geometry WxH+X+Y,'' specifies that
 the window should have a width of W and height of H (usually measured in
 pixels or characters, depending on the application),
 and the upper left corner X pixels to the right and Y pixels below the
@@ -209,21 +248,21 @@ hand corner of the screen.
 .PP
 By combining plus and minus signs, the window may be place relative to any
 of the four corners of the screen.  For example:
-.TP 8
-.I "555\fPx\fI333+11+22"
-This will request a window 555 pixels wide and 333 pixels tall, with the
+.TP 4
+.I "xclock -geometry 555\fRx\fI333+11+22"
+This will request a clock 555 pixels wide and 333 pixels tall, with the
 upper left corner located at (11,22).
-.TP 8
-.I "300\fPx\fI200-0+0"
-This will request a window measuring 300 by 200 pixels in the upper right
-hand corner of the screen.
-.TP 8
-.I "48\fPx\fI48--5--10"
-This will request a window measuring 48 by 48 pixels whose lower right
-hand corner is 5 pixel off the right edge and the screen and 10 pixels off
-the bottom edge.
+.TP 4
+.I "xload -geometry 300\fRx\fI200-0+0"
+This will request a load average monitor measuring 300 by 200 pixels in the 
+upper right hand corner of the screen.
+.TP 4
+.I "xbiff -geometry 48\fRx\fI48--5--10"
+This will request a mail box monitor measuring 48 by 48 pixels whose 
+lower right and corner is 5 pixel off the right edge and the screen 
+and 10 pixels off the bottom edge.
 .PP
-.SH COMMAND LINE ARGUMENTS
+.SH "COMMAND LINE ARGUMENTS"
 Most X programs attempt to use a common set of names for their command line
 arguments.
 The X Toolkit automatically handles the following arguments:
