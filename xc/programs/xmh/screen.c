@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.28 88/09/16 11:38:22 swick Exp $";
+    "$XConsortium: screen.c,v 2.29 88/10/18 12:03:08 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -301,9 +301,6 @@ ScrnKind kind;
     static Arg arglist[] = {
 	{XtNgeometry, NULL},
 	{XtNinput, (XtArgVal)True},
-    };
-
-
     };
 
     for (i=0 ; i<numScrns ; i++)
