@@ -51,6 +51,7 @@ SRCS = \
 	FToCback.c \
 	GrayPixmap.c \
 	Initer.c \
+	LocBitmap.c \
 	Lookup.c \
 	LookupCmap.c \
 	Lower.c \
@@ -84,6 +85,7 @@ OBJS = \
 	FToCback.o \
 	GrayPixmap.o \
 	Initer.o \
+	LocBitmap.o \
 	Lookup.o \
 	LookupCmap.o \
 	Lower.o \
