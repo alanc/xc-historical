@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium$";
+static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.1 88/09/09 14:56:38 swick Exp $";
 #endif lint
 
 
@@ -83,6 +83,18 @@ void XmuCvtStringToPixmap(args, num_args, fromVal, toVal)
               (String *)NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
+
+    if (strcmp(name, "None") == 0) {
+	pixmap = None;
+	done(&pixmap, Pixmap);
+	return;
+    }
+
+    if (strcmp(name, "ParentRelative") == 0) {
+	pixmap = ParentRelative;
+	done(&pixmap, Pixmap);
+	return;
+    }
 
     if (bitmap_file_path == NULL) {
 	XrmName xrm_name[2];
