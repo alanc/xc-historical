@@ -1,4 +1,4 @@
-/* $XConsortium: stubs.c,v 1.8 91/07/24 15:48:40 rws Exp $ */
+/* $XConsortium: stubs.c,v 1.9 94/04/17 20:33:23 rws Exp $ */
 
 /************************************************************
 
@@ -46,6 +46,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
+
+/*
+ * stubs.c -- stub routines for the X server side of the XINPUT
+ * extension.  This file is mainly to be used only as documentation.
+ * There is not much code here, and you can't get a working XINPUT
+ * server just using this.
+ * The Xvfb server uses this file so it will compile with the same
+ * object files as the real X server for a platform that has XINPUT.
+ * Xnest could do the same thing.
+ */
 
 #define	 NEED_EVENTS
 #include "X.h"
