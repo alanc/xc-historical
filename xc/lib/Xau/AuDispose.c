@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: $
+ * $XConsortium: Dispose.c,v 1.1 88/11/22 15:27:19 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,9 +24,12 @@ void
 XauDisposeAuth (auth)
 Xauth	*auth;
 {
-    auth->address ? free (auth->address) : 0;
-    auth->number ? free (auth->number) : 0;
-    auth->name ? free (auth->name) : 0;
-    auth->data ? free (auth->data) : 0;
-    free ((char *) auth);
+    if (auth) {
+	if (auth->address) (void) free (auth->address);
+	if (auth->number) (void) free (auth->number);
+	if (auth->name) (void) free (auth->name);
+	if (auth->data) (void) free (auth->data);
+	free ((char *) auth);
+    }
+    return;
 }
