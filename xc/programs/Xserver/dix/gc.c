@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.9 89/07/17 20:22:47 rws Exp $ */
+/* $XConsortium: gc.c,v 5.10 89/07/18 18:17:39 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -690,7 +690,8 @@ CopyGC(pgcSrc, pgcDst, mask)
 		    if (pgcDst->stipple)
 			(* pgcDst->pScreen->DestroyPixmap)(pgcDst->stipple);
 		    pgcDst->stipple = pgcSrc->stipple;
-    		    pgcDst->stipple->refcnt ++;
+		    if (pgcDst->stipple)
+			pgcDst->stipple->refcnt ++;
 		    break;
 		}
 	    case GCTileStipXOrigin:
