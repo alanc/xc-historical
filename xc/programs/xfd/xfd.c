@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.11 89/06/08 13:42:31 jim Exp $
+ * $XConsortium: xfd.c,v 1.12 89/06/08 14:14:33 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -60,7 +60,7 @@ static char *button_list[] = { "quit", "prev", "next", NULL };
 
 
 #define DEF_SELECT_FORMAT "character 0x%02x%02x (%d,%d)"
-#define DEF_METRICS_FORMAT "width %d, left %d, right %d, ascent %d, descent %d"
+#define DEF_METRICS_FORMAT "width %d; left %d, right %d; ascent %d, descent %d (font %d, %d)"
 #define DEF_RANGE_FORMAT "range:  0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u)"
 #define DEF_START_FORMAT "upper left:  0x%04x (%d,%d)"
 #define DEF_NOCHAR_FORMAT "no such character 0x%02x%02x (%u,%u)"
@@ -232,7 +232,7 @@ static void SelectChar (w, closure, data)
 
     sprintf (buf, xfd_resources.metrics_format,
 	     metrics.width, metrics.lbearing, metrics.rbearing,
-	     metrics.ascent, metrics.descent);
+	     metrics.ascent, metrics.descent, fontascent, fontdescent);
     XtSetValues (metricsLabel, &arg, ONE);
 
     return;
