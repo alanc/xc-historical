@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.32 94/04/13 17:23:36 gildea Exp $
+.\" $XConsortium: Consortium.man,v 1.33 94/04/15 23:05:11 rws Exp $
 .\" Copyright 1993 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -84,11 +84,13 @@ setting membership dues.  The current Directors are:
 Robert W. Scheifler, President, X Consortium
 Dr. Forest Baskett, Senior VP of R&D, Silicon Graphics Computer Systems
 Harold D. Blair, Partner, Partnerwerks
-Bruce Cleveland, Senior Director of Open Systems, Apple Computer
 Roger S. Gourd, VP and Chief of Staff, Open Software Foundation
 David Harris, Director, Adobe Systems [ex officio as Chairman, X Industry Association]
 Dr. Robin Hillyard, Chairman and Chief Technical Officer, Novasoft Systems
+Chong Lee, President, Phase X Systems, Inc.
+Don McGovern, Vice President - UNIX Systems Group, Novell, Inc.
 Therese E. Myers, President and CEO, Quarterdeck Office Systems
+Peter J. Shaw, President and CEO, AGE Logic, Inc.
 Dan N. Turner, President and CEO, Petrotechnical Open Software Corporation
 .fi
 
@@ -102,6 +104,12 @@ Cambridge MA 02142-1301
 Tel: (617) 374-1000
 Fax: (617) 374-1025
 membership@x.org
+
+To reach the X Consortium public Wide World Web server, use the URL:
+http://www.x.org/
+
+To reach the X Consortium public ftp machine, use anonymous ftp to:
+ftp.x.org
 .fi
 .SH FULL MEMBERS
 
