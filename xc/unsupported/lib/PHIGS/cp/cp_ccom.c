@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.16 91/07/19 19:20:04 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.17 91/07/25 18:46:29 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -115,30 +115,48 @@ extern char *getenv();
     ((_cph)->shm_buf->args.tail < (_cph)->shm_buf->args.buf_size \
 	? (_cph)->shm_buf->args.tail++ : -1)
 
+static int
+wait_for_write(s)
+    int s;
+{
+    unsigned long	wfd[MSKCNT];
+
+    CLEARBITS(wfd);
+    BITSET(wfd, s);
+    if (select(s+1, NULL, wfd, NULL, (struct timeval *)NULL) < 0 &&
+	errno != EINTR){
+	perror("phg_cpxc_send(select)");
+	return 0;
+    }
+    return 1;
+}
+
 int
 phg_cpxc_send( s, msg, size)
     int			s;
     register char	*msg;
     register int	size;
 {
-    register int	c, wc;
-    unsigned long	wfd[MSKCNT];
+    register int	c, wc, todo;
 
     c = 0;
-    CLEARBITS(wfd);
-    while ( c < size) {
-	if ( (wc = write( s, msg + c, size - c)) >= 0) {
+    todo = size;
+    while ( todo) {
+	if ( (wc = write( s, msg + c, todo)) >= 0) {
 	    c += wc;
-	    if ( c < size) {
-		BITSET(wfd, s);
-		if (select(s+1, NULL, wfd, NULL, (struct timeval *)NULL)
-			< 0 && errno != EINTR){
-		    perror("phg_cpxc_send(select)");
+	    todo = size - c;
+	} else if (ETEST(errno)) {
+		if (!wait_for_write(s))
 		    break;
-		}
-	    }
-	} else if (ETEST(errno) || errno == EINTR) {
+	} else if (errno == EINTR) {
 		continue;
+#ifdef EMSGSIZE
+	} else if (errno == EMSGSIZE) {
+	    if (todo > 1)
+		todo >>= 1;
+	    else if (!wait_for_write(s))
+		break;
+#endif
 	} else {
 		perror("phg_cpxc_send(write)");
 		break;
