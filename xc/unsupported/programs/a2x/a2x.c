@@ -19,24 +19,40 @@ without express or implied warranty.
 
 Syntax of magic values in the input stream:
 
-^T^B<number>^T		toggle button <number> state (press or release)
-^T^C			toggle Control key for next character
-^T^D			slow down moving mouse
-^T^G			start continuous motion (mouse or last key)
-^T^M			toggle Meta key for next character
+^T^A<kdelay> <delta> <mdelay>^T
+			autorepeat every <kdelay> seconds for keys
+			else change non-zero motion dx, dy to <delta>
+			and autorepeat every <mdelay> seconds for motion
+			<kdelay> and <mdelay> are floating point
+			zero for any value means don't change it
+^T^B<button>^T		toggle button <button> state (press or release)
+^T^C			set Control key for next character
+^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
+^T^E			exit the program
+^T^J<options>^T		jump to next closest top-level window
+	C		closest top-level window
+	D		top-level window going down
+	L		top-level window going left
+	R		top-level window going right
+	U		top-level window going up
+	c		closest widget
+	d		top-level widget going down
+	l		top-level widget going left
+	r		top-level widget going right
+	u		top-level widget going up
+	k		ignore windows that don't select for key events
+	b		ignore windows that don't select for button events
+^T^M			set Meta key for next character
+^T^P			print debugging info
 ^T^Q			quit moving (mouse or key)
-^T^S			toggle Shift key for next character
+^T^S			set Shift key for next character
 ^T^T			^T
-^T^W<screen-num> <x-pos-num> <y-pos-num>^T
-			warp to position (<x-pos-num>,<y-pos-num>) on
-			screen <screen-num> (can be -1 for current)
-^T^X<number>^T		move mouse <number> pixels horizontally
-^T^Y<number>^T		move mouse <number> pixels vertically
-^Texit^T		exit the program
-^Tdbg^T			print debugging info
-^T.a2x^T		re-read undo file
-^T<hexnumber>^T		press and release key with numeric keysym <hexnumber>
-^Tname^T		press and release key with keysym named <name>
+^T^U			re-read undo file
+^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
+			(screen can be -1 for current)
+^T<hexstring>^T		press and release key with numeric keysym <hexstring>
+			F<char> and F<char><char> are names, not numbers
+^T<keysym>^T		press and release key with keysym named <keysym>
 
 Note: if key is attached to a modifier, pressing it is temporary, will be
 released automatically at next button or non-modifier key.
@@ -59,6 +75,7 @@ released automatically at next button or non-modifier key.
 
 Display *dpy;
 unsigned char button_map[256];
+Bool button_state[256];
 unsigned short modifiers[256];
 KeyCode keycodes[256];
 unsigned short modmask[256];
@@ -70,13 +87,11 @@ KeySym last_sym = 0;
 KeyCode last_keycode_for_sym = 0;
 struct termios oldterm;
 Bool istty = False;
-Bool moving = False;
-struct timeval pointer_timeout;
-struct timeval keyboard_timeout;
+struct timeval timeout;
+struct timeval *moving_timeout = NULL;
 int moving_x = 0;
 int moving_y = 0;
 int last_keycode = 0;
-unsigned short last_tempmods = 0;
 unsigned short last_mods = 0;
 int (*olderror)();
 int (*oldioerror)();
@@ -96,6 +111,38 @@ int curbscount = 0;
 Bool in_control_seq = False;
 
 void process();
+
+/* To generate events another way, change the next four functions. */
+
+void
+generate_key(key, press)
+    int key;
+    Bool press;
+{
+    XTestFakeKeyEvent(dpy, key, press, 0);
+}
+
+void
+generate_button(button, press)
+    int button;
+    Bool press;
+{
+    XTestFakeButtonEvent(dpy, button, press, 0);
+}
+
+void
+generate_motion(dx, dy)
+    int dx, dy;
+{
+    XTestFakeRelativeMotionEvent(dpy, dx, dy, 0);
+}
+
+void
+generate_warp(screen, x, y)
+    int screen, x, y;
+{
+    XTestFakeMotionEvent(dpy, screen, x, y, 0);
+}
 
 void
 usage()
@@ -268,35 +315,35 @@ reflect_modifiers(mods)
 
     if (upmods) {
 	if (upmods & ShiftMask)
-	    XTestFakeKeyEvent(dpy, shift, False, 0);
+	    generate_key(shift, False);
 	if (upmods & ControlMask)
-	    XTestFakeKeyEvent(dpy, control, False, 0);
+	    generate_key(control, False);
 	if (upmods & Mod1Mask)
-	    XTestFakeKeyEvent(dpy, mod1, False, 0);
+	    generate_key(mod1, False);
 	if (upmods & Mod2Mask)
-	    XTestFakeKeyEvent(dpy, mod2, False, 0);
+	    generate_key(mod2, False);
 	if (upmods & Mod3Mask)
-	    XTestFakeKeyEvent(dpy, mod3, False, 0);
+	    generate_key(mod3, False);
 	if (upmods & Mod4Mask)
-	    XTestFakeKeyEvent(dpy, mod4, False, 0);
+	    generate_key(mod4, False);
 	if (upmods & Mod5Mask)
-	    XTestFakeKeyEvent(dpy, mod5, False, 0);
+	    generate_key(mod5, False);
     }
     if (downmods) {
 	if (downmods & ShiftMask)
-	    XTestFakeKeyEvent(dpy, shift, True, 0);
+	    generate_key(shift, True);
 	if (downmods & ControlMask)
-	    XTestFakeKeyEvent(dpy, control, True, 0);
+	    generate_key(control, True);
 	if (downmods & Mod1Mask)
-	    XTestFakeKeyEvent(dpy, mod1, True, 0);
+	    generate_key(mod1, True);
 	if (downmods & Mod2Mask)
-	    XTestFakeKeyEvent(dpy, mod2, True, 0);
+	    generate_key(mod2, True);
 	if (downmods & Mod3Mask)
-	    XTestFakeKeyEvent(dpy, mod3, True, 0);
+	    generate_key(mod3, True);
 	if (downmods & Mod4Mask)
-	    XTestFakeKeyEvent(dpy, mod4, True, 0);
+	    generate_key(mod4, True);
 	if (downmods & Mod5Mask)
-	    XTestFakeKeyEvent(dpy, mod5, True, 0);
+	    generate_key(mod5, True);
     }
     curmods = mods;
 }
@@ -310,18 +357,15 @@ do_key(key, mods)
     if (!key)
 	return;
     if (modmask[key]) {
-	tempmods ^= modmask[key];
+	tempmods |= modmask[key];
 	return;
     }
     reflect_modifiers(tempmods | mods);
-    XTestFakeKeyEvent(dpy, key, True, 0);
-    XTestFakeKeyEvent(dpy, key, False, 0);
-    moving = False;
+    generate_key(key, True);
+    generate_key(key, False);
+    moving_timeout = NULL;
     last_keycode = key;
-    last_mods = mods;
-    last_tempmods = tempmods;
-    moving_x = 0;
-    moving_y = 0;
+    last_mods = tempmods | mods;
     tempmods = 0;
 }
 
@@ -332,82 +376,264 @@ do_char(c)
     do_key(keycodes[c], modifiers[c]);
 }
 
-void
-do_keysym(sym)
-    KeySym sym;
+KeyCode
+parse_keysym(buf, len)
+    char *buf;
+    int len;
 {
+    KeySym sym;
+    char *endptr;
+
+    if ((*buf == 'F' && len > 3) ||
+	!(sym = strtoul(buf, &endptr, 16)) || *endptr)
+	sym = XStringToKeysym(buf);
+    if (!sym)
+	return 0;
     if (sym != last_sym) {
 	last_sym = sym;
 	last_keycode_for_sym = XKeysymToKeycode(dpy, sym);
-    }	
-    do_key(last_keycode_for_sym, 0);
+    }
+    return last_keycode_for_sym;
+}
+
+void
+do_keysym(buf, len)
+    char *buf;
+    int len;
+{
+    KeyCode key;
+
+    key = parse_keysym(buf, len);
+    if (key)
+	do_key(key, 0);
 }
 
 void
 do_button(button)
     int button;
 {
-    Window root, child;
-    int rx, ry, x, y;
-    unsigned int state;
-
-    if (button < 1 || button > 5)
+    int phys_button;
+    
+    if (button < 1 || button > 255)
 	return;
-    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rx, &ry,
-		  &x, &y, &state);
-    reflect_modifiers(tempmods);
-    XTestFakeButtonEvent(dpy, button_map[button],
-			 (state & (Button1Mask << (button - 1))) == 0, 0);
-    tempmods = 0;
+    button = button_map[button];
+    if (button) {
+	reflect_modifiers(tempmods);
+	button_state[button] = !button_state[button];
+	generate_button(button, button_state[button]);
+	tempmods = 0;
+    }
 }
 
 void
-move_pointer(dx, dy)
+do_autorepeat(buf)
+    char *buf;
+{
+    double delay, mdelay;
+    int delta;
+    char *endptr;
+
+    delay = strtod(buf, &endptr);
+    if (*endptr) {
+	delta = strtol(endptr + 1, &endptr, 10);
+	if (*endptr) {
+	    mdelay = atof(endptr + 1);
+	    if (!last_keycode) {
+		delay = mdelay;
+		if (delta) {
+		    if (moving_x < 0)
+			moving_x = -delta;
+		    else if (moving_x > 0)
+			moving_x = delta;
+			if (moving_y < 0)
+			moving_y = -delta;
+		    else if (moving_y > 0)
+			moving_y = delta;
+		}
+	    }
+	    if (delay) {
+		timeout.tv_sec = delay;
+		timeout.tv_usec = (delay - timeout.tv_sec) * 1000000;
+		moving_timeout = &timeout;
+	    }
+	}
+    }
+}
+
+void
+do_motion(buf)
+    char *buf;
+{
     int dx, dy;
-{
-    XTestFakeRelativeMotionEvent(dpy, dx, dy, 0);
+    char *endptr;
+
+    dx = strtol(buf, &endptr, 10);
+    if (*endptr) {
+	dy = atoi(endptr + 1);
+	if (!moving_timeout)
+	    generate_motion(dx, dy);
+	else if (last_keycode)
+	    moving_timeout = NULL;
+	moving_x = dx;
+	moving_y = dy;
+	last_keycode = 0;
+    }
 }
 
 void
-do_x(delta)
-    int delta;
+do_warp(buf)
+    char *buf;
 {
-    if (!moving)
-	move_pointer(delta, 0);
-    moving_x = delta;
-    moving_y = 0;
-    last_keycode = 0;
+    int screen;
+    int x;
+    char *endptr;
+
+    screen = strtol(buf, &endptr, 10);
+    if (*endptr) {
+	x = strtol(endptr + 1, &endptr, 10);
+	if (*endptr)
+	    generate_warp(screen, x, atoi(endptr + 1));
+    }
+}
+
+Bool
+find_closest(dir, rootx, rooty, parent, pwa, input,
+	     bestx, besty, best_dist, recurse)
+    char dir;
+    int rootx, rooty;
+    Window parent;
+    XWindowAttributes *pwa;
+    Mask input;
+    int *bestx, *besty;
+    long *best_dist;
+    Bool recurse;
+{
+    Window *children;
+    unsigned int nchild;
+    XWindowAttributes wa;
+    int i;
+    Bool found = False;
+    long dist;
+
+    XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
+    for (i = 0; i < nchild; i++) {
+	if (!XGetWindowAttributes(dpy, children[i], &wa))
+	    continue;
+	if (wa.map_state != IsViewable)
+	    continue;
+	if (input && !(wa.all_event_masks & input))
+	    continue;
+	if (wa.x >= pwa->width ||
+	    wa.x + wa.width + (2 * wa.border_width) <= 0 ||
+	    wa.y >= pwa->height ||
+	    wa.y + wa.height + (2 * wa.border_width) <= 0)
+	    continue;
+	wa.x += pwa->x;
+	wa.y += pwa->y;
+	if (recurse &&
+	    find_closest(dir, rootx, rooty, children[i], &wa,
+	    		 bestx, besty, best_dist, recurse)) {
+	    found = True;
+	    continue;
+	}
+	if (rootx >= wa.x &&
+	    rootx < wa.x + wa.width + (2 * wa.border_width) &&
+	    rooty >= wa.y &&
+	    rooty < wa.y + wa.height + (2 * wa.border_width))
+	    continue;
+	wa.x += wa.width/2 + wa.border_width;
+	wa.y += wa.height/2 + wa.border_width;
+	dist = ((wa.x - rootx) * (wa.x - rootx) +
+		(wa.y - rooty) * (wa.y - rooty));
+	if (dist > *best_dist)
+	    continue;
+	switch (dir) {
+	case 'U':
+	    if (wa.y >= rooty)
+		continue;
+	    break;
+	case 'D':
+	    if (wa.y <= rooty)
+		continue;
+	    break;
+	case 'R':
+	    if (wa.x <= rootx)
+	    	continue;
+	    break;
+	case 'L':
+	    if (wa.x >= rootx)
+		continue;
+	    break;
+	}
+	*bestx = wa.x;
+	*besty = wa.y;
+	*best_dist = dist;
+	found = True;
+    }
+    if (children)
+	XFree((XPointer)children);
+    return True;
 }
 
 void
-do_y(delta)
-    int delta;
+do_jump(buf)
+    char *buf;
 {
-    if (!moving)
-	move_pointer(0, delta);
-    moving_x = 0;
-    moving_y = delta;
-    last_keycode = 0;
-}
+    Window root, child;
+    int rootx, rooty;
+    XWindowAttributes wa;
+    int bestx, besty;
+    long best_dist;
+    int screen;
+    char dir;
+    Bool widget = False;
+    Mask input = KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask;
 
-void
-do_warp(screen, x, y)
-    int screen, x, y;
-{
-    XTestFakeMotionEvent(dpy, screen, x, y, 0);
-}
-
-void
-slow_down()
-{
-    if (moving_x < 0)
-	moving_x = -1;
-    else if (moving_x > 0)
-	moving_x = 1;
-    if (moving_y < 0)
-	moving_y = -1;
-    else if (moving_y > 0)
-	moving_y = 1;
+    for (; *buf; buf++) {
+	switch (*buf) {
+	case 'C':
+	case 'D':
+	case 'U':
+	case 'L':
+	case 'R':
+	    dir = *buf;
+	    widget = False;
+	    break;
+	case 'c':
+	case 'd':
+	case 'u':
+	case 'l':
+	case 'r':
+	    dir = *buf - 'a' - 'A';
+	    widget = True;
+	    break;
+	case 'k':
+	    input &= ~(KeyPressMask|KeyReleaseMask);
+	    break;
+	case 'b':
+	    input &= ~(ButtonPressMask|ButtonReleaseMask);
+	    break;
+	default:
+	    return;
+	}
+    }
+    XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &child, &rootx, &rooty,
+		  &bestx, &besty, (unsigned int *)&screen);
+    for (screen = 0; RootWindow(dpy, screen) != root; screen++)
+	;
+    if (widget) {
+	XGetWindowAttributes(dpy, child, &wa);
+	root = child;
+    } else {
+	wa.x = 0;
+	wa.y = 0;
+	wa.width = WidthOfScreen(ScreenOfDisplay(dpy, screen));
+	wa.height = HeightOfScreen(ScreenOfDisplay(dpy, screen));
+    }
+    best_dist = 0x7fffffff;
+    if (find_closest(dir, rootx, rooty, root, &wa, input
+		     &bestx, &besty, &best_dist, widget))
+	generate_warp(screen, bestx, besty);
 }
 
 void
@@ -423,7 +649,7 @@ trim_history()
 }
 
 void
-save_unit(buf, i, j)
+save_control(buf, i, j)
     char *buf;
     int i, j;
 {
@@ -448,6 +674,7 @@ undo_stroke()
 {
     char c;
     int i;
+    KeyCode key;
 
     if (!history_end) {
 	in_control_seq = False;
@@ -461,6 +688,28 @@ undo_stroke()
 	 ((history_end > 1) &&
 	  (history[history_end-2] == control_char)))) {
 	in_control_seq = True;
+    }
+    if (!in_control_seq) {
+	if (c == control_end)
+	    in_control_seq = True;
+	else if ((history_end > 1) &&
+		 (history[history_end-2] == control_char)) {
+	    in_control_seq = True;
+	    switch (c) {
+	    case '\003': /* control c */
+		if (control)
+		    tempmods &= ~modmask[control];
+		break;
+	    case '\015': /* control m */
+		if (meta)
+		    tempmods &= ~modmask[meta];
+		break;
+	    case '\023': /* control s */
+		if (shift)
+		    tempmods &= ~modmask[shift];
+		break;
+	    }
+	}
     }
     if (has_bs(c)) {
 	curbscount--;
@@ -477,6 +726,13 @@ undo_stroke()
 	for (i = history_end - 1; i >= 0; i--) {
 	    c = history[i];
 	    if (c == control_char) {
+		if (tempmods && !iscntrl(history[i+1])) {
+		    history[history_end] = '\0';
+		    key = parse_keysym(history+i+1, history_end - i - 1);
+		    if (key)
+			tempmods &= ~modmask[key];
+		    history[history_end] = control_end;
+		}
 		history_end = i;
 		in_control_seq = False;
 		break;
@@ -586,11 +842,12 @@ mark_controls(s, len)
 	else
 	    switch (s[1]) {
 	    case '\003': /* control c */
-	    case '\004': /* control d */
-	    case '\007':
+	    case '\005': /* control e */
 	    case '\015': /* control m */
+	    case '\020': /* control p */
 	    case '\021': /* control q */
 	    case '\023': /* control s */
+	    case '\025': /* control u */
 		break;
 	    default:
 		in_seq = True;
@@ -695,8 +952,6 @@ process(buf, n, len)
     int len;
 {
     int i, j;
-    KeySym sym;
-    char *endptr;
 
     for (i = 0; i < n; i++) {
 	if (len) {
@@ -739,58 +994,57 @@ process(buf, n, len)
 		case '\003': /* control c */
 		    do_key(control, 0);
 		    break;
-		case '\004': /* control d */
-		    slow_down();
-		    break;
-		case '\007':
-		    moving = True;
+		case '\005': /* control e */
+		    quit(0);
 		    break;
 		case '\015': /* control m */
 		    do_key(meta, 0);
 		    break;
+		case '\020': /* control p */
+		    debug_state();
+		    break;
 		case '\021': /* control q */
-		    moving = False;
+		    moving_timeout = NULL;
 		    break;
 		case '\023': /* control s */
 		    do_key(shift, 0);
+		    break;
+		case '\025': /* control u */
+		    get_undofile();
 		    break;
 		default:
 		    continue;
 		}
 		if (len)
-		    save_unit(buf, i - 1, j);
+		    save_control(buf, i - 1, j);
 		break;
 	    }
 	    buf[j] = '\0';
-	    if (j == i)
+	    switch (buf[i]) {
+	    case '\0': /* control t */
 		do_char(control_char);
-	    else if (buf[i] == '\002') /* control b */
-		do_button(atoi(buf+i+1));
-	    else if (buf[i] == '\027') { /* control w */
-		int screen = strtol(buf+i+1, &endptr, 10);
-		int x;
-		if (*endptr) {
-		    x = strtol(endptr + 1, &endptr, 10);
-		    if (*endptr)
-			do_warp(screen, x, atoi(endptr + 1));
-		}
-	    } else if (buf[i] == '\030') /* control x */
-		do_x(atoi(buf+i+1));
-	    else if (buf[i] == '\031') /* control y */
-		do_y(atoi(buf+i+1));
-	    else if (!strcmp(buf+i, "exit"))
-		quit(0);
-	    else if (!strcmp(buf+i, "dbg"))
-		debug_state();
-	    else if (!strcmp(buf+i, ".a2x"))
-		get_undofile();
-	    else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
-		do_keysym(sym);
-	    else if (sym = XStringToKeysym(buf+i))
-		do_keysym(sym);
+		break;
+	    case '\001': /* control a */
+		do_autorepeat(buf + i + 1);
+		break;
+	    case '\002': /* control b */
+		do_button(atoi(buf + i + 1));
+		break;
+	    case '\004': /* control d */
+		do_motion(buf + i + 1);
+		break;
+	    case '\012': /* control j */
+	    	do_jump(buf + i + 1);
+		break;
+	    case '\027': /* control w */
+		do_warp(buf + i + 1);
+		break;
+	    default:
+		do_keysym(buf + i, j - i);
+	    }
 	    if (len) {
 		buf[j] = control_char;
-		save_unit(buf, i - 1, j);
+		save_control(buf, i - 1, j);
 	    }
 	    i = j;
 	    break;
@@ -810,13 +1064,10 @@ main(argc, argv)
     char buf[1024];
     char fbuf[1024];
     XEvent ev;
+    int maxfd;
+    int Xmask;
     int mask[10];
-    struct timeval *moving_timeout;
 
-    pointer_timeout.tv_sec = 0;
-    pointer_timeout.tv_usec = 1000 * 100;
-    keyboard_timeout.tv_sec = 1;
-    keyboard_timeout.tv_usec = 0;
     bzero((char *)mask, sizeof(mask));
     for (argc--, argv++; argc > 0; argc--, argv++) {
 	if (argv[0][0] != '-')
@@ -884,31 +1135,26 @@ main(argc, argv)
 	olderror = XSetErrorHandler(error);
     }
     reset_mapping(dpy);
+    Xmask = 1 << ConnectionNumber(dpy);
+    maxfd = ConnectionNumber(dpy) + 1;
     while (1) {
 	XFlush(dpy);
-	mask[0] = 1 | (1 << ConnectionNumber(dpy));
-	if (!moving)
-	    moving_timeout = NULL;
-	else if (last_keycode)
-	    moving_timeout = &keyboard_timeout;
-	else
-	    moving_timeout = &pointer_timeout;
-	i = select(ConnectionNumber(dpy)+1, mask, NULL, NULL, moving_timeout);
+	mask[0] = 1 | Xmask;
+	i = select(maxfd, mask, NULL, NULL, moving_timeout);
 	if (i < 0)
 	    quit(1);
 	if (!i) {
 	    if (moving_timeout) {
-		if (last_keycode) {
-		    tempmods = last_tempmods;
+		if (last_keycode)
 		    do_key(last_keycode, last_mods);
-		    moving = True;
-		} else
-		    move_pointer(moving_x, moving_y);
+		else
+		    generate_motion(moving_x, moving_y);
+		moving_timeout = &timeout;
 		XFlush(dpy);
 	    }
 	    continue;
 	}
-	if (mask[0] & (1 << ConnectionNumber(dpy))) {
+	if (mask[0] & Xmask) {
 	    for (i = XEventsQueued(dpy, QueuedAfterReading); --i >= 0; ) {
 		XNextEvent(dpy, &ev);
 		if (ev.type == MappingNotify) {
