@@ -1,13 +1,22 @@
-/* $XConsortium: Imakefile,v 1.19 89/12/02 14:22:38 rws Exp $ */
+/* $XConsortium: Imakefile,v 1.20 89/12/02 14:36:41 rws Exp $ */
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
+IMAKE_DEFINES = ExtensionDefines
+
+#ifdef MITSHM
+      SHMSRCS = XShm.c
+      SHMOBJS = XShm.o
+#else
+      SHMSRCS = /* nothing */
+      SHMOBJS = /* nothing */
+#endif
   STD_DEFINES = LibraryDefines ExtensionDefines
   CDEBUGFLAGS = LibraryCDebugFlags
      INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-         SRCS = globals.c extutil.c XMultibuf.c XShape.c XShm.c  \
+         SRCS = globals.c extutil.c XMultibuf.c XShape.c $(SHMSRCS)  \
 		MITMisc.c XTestExt1.c
-         OBJS = globals.o extutil.o XMultibuf.o XShape.o XShm.o \
+         OBJS = globals.o extutil.o XMultibuf.o XShape.o $(SHMOBJS) \
 		MITMisc.o XTestExt1.o 
      LINTLIBS = $(LINTXLIB)
       SUBDIRS = xinput
