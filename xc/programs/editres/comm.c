@@ -477,12 +477,12 @@ char ** value;
 {
     char * ptr, buf[BUFSIZ];
 
-    *error = FALSE;
+    *error = NoResError;
     *value = NULL;
 
     ptr = index(string, ID_SEPARATOR);
     if (ptr == NULL) {
-	*error = TRUE;
+	*error = UnformattedResError;
 	*ident = 0;
 	sprintf(buf, ERROR_TEMPLATE, "ID");
 	*value = XtNewString(buf);
@@ -496,14 +496,14 @@ char ** value;
 
     ptr = index(string, COMMAND_SEPARATOR);
     if (ptr == NULL) {
-	*error = TRUE;
+	*error = UnformattedResError;
 	sprintf(buf, ERROR_TEMPLATE, "COMMAND");
 	*value = XtNewString(buf);
 	return(FALSE);
     }
 
     *ptr++ = '\0';
-    *error = atol(string);
+    *error = (ResourceError) atol(string);
     *value = ptr;
   
     return(TRUE);		/* parsed cleanly. */
