@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.35 88/08/14 10:42:13 keith Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.36 88/08/30 09:53:19 swick Exp $";
 #endif lint
 
 
@@ -526,9 +526,11 @@ Dimension blank_length;
 Dimension length;
 double fraction_of_a_circle;
 {
-	register double angle, cosangle, sinangle;
+	double dblank_length = (double)blank_length, dlength = (double)length;
+	double angle, cosangle, sinangle;
 	double cos();
 	double sin();
+	int cx = w->clock.centerX, cy = w->clock.centerY, x1, y1, x2, y2;
 
 	/*
 	 *  A full circle is 2 PI radians.
@@ -543,11 +545,12 @@ double fraction_of_a_circle;
 	cosangle = cos(angle);
 	sinangle = sin(angle);
 
-	SetSeg(w, 
-	       w->clock.centerX + (int)(blank_length * sinangle),
-	       w->clock.centerY - (int)(blank_length * cosangle),
-	       w->clock.centerX + (int)(length * sinangle),
-	       w->clock.centerY - (int)(length * cosangle));
+	/* break this out so that stupid compilers can cope */
+	x1 = cx + (int)(dblank_length * sinangle);
+	y1 = cy - (int)(dblank_length * cosangle);
+	x2 = cx + (int)(dlength * sinangle);
+	y2 = cy - (int)(dlength * cosangle);
+	SetSeg(w, x1, y1, x2, y2);
 }
 
 /*
