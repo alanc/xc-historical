@@ -1,4 +1,4 @@
-.\" $XConsortium: xterm.man,v 1.79 94/04/16 17:58:08 gildea Exp $
+.\" $XConsortium: xterm.man,v 1.80 94/04/17 19:01:03 rws Exp gildea $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -196,7 +196,7 @@ cursor motion package.
 .TP 8
 .B \+cu
 This option indicates that \fIxterm\fP should not work around the
-.IR more (3x)
+.IR more (1)
 bug mentioned above.
 .TP 8
 .BI \-e " program \fP[ \fIarguments \fP.\|.\|. ]\fI"
