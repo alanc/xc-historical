@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.38 91/05/03 18:08:46 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.39 91/05/24 16:33:25 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -33,47 +33,17 @@ Author: Keith Packard
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 
-extern int  cfbDoBitbltCopy();
-extern int  cfbDoBitbltXor();
-extern int  cfbDoBitbltOr();
-extern int  cfbDoBitbltGeneral();
-
-cfbDoBitblt (pSrc, pDst, alu, prgnDst, pptSrc, planemask)
-    DrawablePtr	    pSrc, pDst;
-    int		    alu;
-    RegionPtr	    prgnDst;
-    DDXPointPtr	    pptSrc;
-    unsigned long   planemask;
-{
-    int	(*blt)() = cfbDoBitbltGeneral;
-    if ((planemask & PMSK) == PMSK) {
-	switch (alu) {
-	case GXcopy:
-	    blt = cfbDoBitbltCopy;
-	    break;
-	case GXxor:
-	    blt = cfbDoBitbltXor;
-	    break;
-	case GXor:
-	    blt = cfbDoBitbltOr;
-	    break;
-	}
-    }
-    return (*blt) (pSrc, pDst, alu, prgnDst, pptSrc, planemask);
-}
-
-static int (*doBitBlt)() = cfbDoBitbltCopy;
-static unsigned long bitBltPlane = 0;
-
 RegionPtr
-cfbCopyArea(pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty)
+cfbBitBlt (pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, bitPlane)
     register DrawablePtr pSrcDrawable;
     register DrawablePtr pDstDrawable;
     GC *pGC;
     int srcx, srcy;
     int width, height;
     int dstx, dsty;
+    int	(*doBitBlt)();
+    unsigned long bitPlane;
 {
     RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
     Bool freeSrcClip = FALSE;
@@ -92,8 +62,6 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     BoxRec fastBox;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
-    int (*localDoBitBlt)();
-    unsigned long localBitBltPlane;
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -102,34 +70,10 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     origDest.x = dstx;
     origDest.y = dsty;
 
-    localDoBitBlt = doBitBlt;
-    localBitBltPlane = bitBltPlane;
-    doBitBlt = cfbDoBitbltCopy;
-    bitBltPlane = 0;
-
     if ((pSrcDrawable != pDstDrawable) &&
 	pSrcDrawable->pScreen->SourceValidate)
     {
 	(*pSrcDrawable->pScreen->SourceValidate) (pSrcDrawable, srcx, srcy, width, height);
-    }
-
-    if (localDoBitBlt == cfbDoBitbltCopy)
-    {
-	if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
-	{
-	    localDoBitBlt = cfbDoBitbltGeneral;
-	    if ((pGC->planemask & PMSK) == PMSK)
-	    {
-		switch (pGC->alu) {
-		case GXxor:
-		    localDoBitBlt = cfbDoBitbltXor;
-		    break;
-		case GXor:
-		    localDoBitBlt = cfbDoBitbltOr;
-		    break;
-		}
-	    }
-	}
     }
 
     srcx += pSrcDrawable->x;
@@ -313,7 +257,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 	    ppt->y = pbox->y1 + dy;
 	}
 
-	(*localDoBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
+	(*doBitBlt) (pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask, bitPlane);
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
@@ -329,7 +273,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 				  origSource.x, origSource.y,
 				  (int)origSource.width,
 				  (int)origSource.height,
-				  origDest.x, origDest.y, localBitBltPlane);
+				  origDest.x, origDest.y, bitPlane);
     }
     (*pGC->pScreen->RegionUninit)(&rgnDst);
     if (freeSrcClip)
@@ -337,15 +281,53 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
     return prgnExposed;
 }
 
+extern int  cfbDoBitbltCopy();
+extern int  cfbDoBitbltXor();
+extern int  cfbDoBitbltOr();
+extern int  cfbDoBitbltGeneral();
+
+RegionPtr
+cfbCopyArea(pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty)
+    register DrawablePtr pSrcDrawable;
+    register DrawablePtr pDstDrawable;
+    GC *pGC;
+    int srcx, srcy;
+    int width, height;
+    int dstx, dsty;
+{
+    int	(*doBitBlt) ();
+    
+    doBitBlt = cfbDoBitbltCopy;
+    if (pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK)
+    {
+	doBitBlt = cfbDoBitbltGeneral;
+	if ((pGC->planemask & PMSK) == PMSK)
+	{
+	    switch (pGC->alu) {
+	    case GXxor:
+		doBitBlt = cfbDoBitbltXor;
+		break;
+	    case GXor:
+		doBitBlt = cfbDoBitbltOr;
+		break;
+	    }
+	}
+    }
+    return cfbBitBlt (pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, 0);
+}
+
 #if (PPW == 4)
 
-cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
+cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
     int	rop;
     unsigned long planemask;
     RegionPtr prgnDst;
     DDXPointPtr pptSrc;
+    unsigned long   bitPlane;
 {
     int	srcx, srcy, dstx, dsty, width, height;
     int xoffSrc, xoffDst;
@@ -613,9 +595,9 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 {
     RegionPtr	ret;
     extern RegionPtr    miHandleExposures();
+    int		(*doBitBlt)();
 
 #if (PPW == 4)
-    extern unsigned long cfbCopyPlaneBitPlane;
     extern cfbCopyPlane8to1();
 
     if (pSrcDrawable->depth == 1 && pDstDrawable->depth == 8)
@@ -623,12 +605,11 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     	if (bitPlane == 1)
 	{
        	    doBitBlt = cfbCopyPlane1to8;
-	    bitBltPlane = bitPlane;
 	    cfb8CheckOpaqueStipple (pGC->alu,
 				    pGC->fgPixel, pGC->bgPixel,
 				    pGC->planemask);
-    	    ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
-	    	    pGC, srcx, srcy, width, height, dstx, dsty);
+    	    ret = cfbBitBlt (pSrcDrawable, pDstDrawable,
+	    	    pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, bitPlane);
 	}
 	else
 	    ret = miHandleExposures (pSrcDrawable, pDstDrawable,
@@ -644,11 +625,8 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC->alu = InverseAlu[pGC->alu];
     	else if (pGC->fgPixel == pGC->bgPixel)
 	    pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
-	cfbCopyPlaneBitPlane = bitPlane;
-	doBitBlt = cfbCopyPlane8to1;
-	bitBltPlane = bitPlane;
 	ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
-		    pGC, srcx, srcy, width, height, dstx, dsty);
+		    pGC, srcx, srcy, width, height, dstx, dsty, cfbCopyPlane8to1, bitPlane);
 	pGC->alu = oldalu;
     }
     else
@@ -673,20 +651,15 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	 * right thing", which GXcopy will.
 	 */
 	ValidateGC ((DrawablePtr) pBitmap, pGC1);
-	cfbCopyPlaneBitPlane = bitPlane;
-	doBitBlt = cfbCopyPlane8to1;
-	bitBltPlane = bitPlane;
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
-			    pGC1, srcx, srcy, width, height, 0, 0);
+			    pGC1, srcx, srcy, width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
 	cfb8CheckOpaqueStipple (pGC->alu,
 				pGC->fgPixel, pGC->bgPixel,
 				pGC->planemask);
-	doBitBlt = cfbCopyPlane1to8;
-	bitBltPlane = 1;
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
-			    0, 0, width, height, dstx, dsty);
+			    0, 0, width, height, dstx, dsty, cfbCopyPlane1to8, 1);
 	FreeScratchGC (pGC1);
 	(*pScreen->DestroyPixmap) (pBitmap);
 	/* compute resultant exposures */
