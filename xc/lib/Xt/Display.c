@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.26 89/09/18 17:59:11 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.27 89/09/19 09:21:21 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -259,6 +259,7 @@ XtAppContext XtCreateApplicationContext()
 	FD_ZERO(&app->fds.emask);
 	_XtHeapInit(&app->heap);
 	app->fallback_resources = NULL;
+	_XtPopupInitialize(app);
 	return app;
 }
 
