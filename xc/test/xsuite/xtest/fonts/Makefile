@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.6 92/06/30 21:06:29 rws Exp $
+# $XConsortium: Makefile,v 1.7 92/06/30 21:08:21 rws Exp $
 #
 
 ##########################################################################
@@ -91,6 +91,14 @@ comp_snf:
 	done
 	mkfontdir
 
+comp_fb:
+	@ echo "These commands are system dependent - See User Guide"
+	@ for f in $(FONTSRCS) ;\
+	do \
+		(set -x; convertfont -d . -o $$f $$f.bdf); \
+	done
+	bldfamily -d .
+
 install_pcf:
 	@ echo "These commands are system dependent - See User Guide"
 	@ if [ -d $(XTESTFONTDIR) ]; then set +x; \
@@ -110,3 +118,12 @@ install_snf:
 		(set -x; cp $$f.snf $(XTESTFONTDIR)); \
 	done
 	cp fonts.dir $(XTESTFONTDIR)
+
+install_fb:
+	@ echo "These commands are system dependent - See User Guide"
+	@ if [ -d $(XTESTFONTDIR) ]; then set +x; \
+		else (set -x; mkdir $(XTESTFONTDIR)); fi
+	@ for f in $(FONTSRCS) ;\
+	do \
+		(set -x; cp $$f.fb $$f.ff $(XTESTFONTDIR)); \
+	done
