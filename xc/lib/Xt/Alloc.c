@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.42 91/03/11 15:24:34 converse Exp $ */
+/* $XConsortium: Alloc.c,v 1.43 91/05/01 17:06:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,24 @@ SOFTWARE.
 
 #include "IntrinsicI.h"
 #undef _XBCOPYFUNC
-#include <X11/Xlibos.h>
+
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc(), *realloc(), *calloc();
+#endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc(), *calloc();
+#endif /* macII */
+#ifdef MALLOC_0_RETURNS_NULL
+#define Xmalloc(size) malloc(((size) > 0 ? (size) : 1))
+#define Xrealloc(ptr, size) realloc((ptr), ((size) > 0 ? (size) : 1))
+#define Xcalloc(nelem, elsize) calloc(((nelem) > 0 ? (nelem) : 1), (elsize))
+#else
+#define Xmalloc(size) malloc((size))
+#define Xrealloc(ptr, size) realloc((ptr), (size))
+#define Xcalloc(nelem, elsize) calloc((nelem), (elsize))
+#endif
 
 #ifdef _XNEEDBCOPYFUNC
 void _XtBCopy(b1, b2, length)
