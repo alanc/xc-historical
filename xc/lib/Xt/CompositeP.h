@@ -1,8 +1,4 @@
-/*
-* $Header: CompositeP.h,v 1.2 88/02/03 15:07:29 swick Exp $
-*/
-
-
+/* $xHeader$ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -43,9 +39,8 @@ typedef struct _CompositePart {
     WidgetList  children;	     /* array of ALL widget children	     */
     Cardinal    num_children;	     /* total number of widget children	     */
     Cardinal    num_slots;           /* number of slots in children array    */
-    Cardinal    num_mapped_children; /* count of managed and mapped children */
     XtOrderProc insert_position;     /* compute position of new child	     */
-} CompositePart;
+} CompositePart,*CompositePtr;
 
 typedef struct _CompositeRec {
     CorePart      core;
@@ -61,25 +56,22 @@ typedef struct _CompositeRec {
 typedef struct _CompositeClassPart {
     XtGeometryHandler geometry_manager;	  /* geometry manager for children   */
     XtWidgetProc      change_managed;	  /* change managed state of child   */
-    XtArgsProc	      insert_child;	  /* physically add child to parent  */
+    XtWidgetProc      insert_child;	  /* physically add child to parent  */
     XtWidgetProc      delete_child;	  /* physically remove child	     */
-    XtWidgetProc      move_focus_to_next; /* move Focus to next child	     */
-    XtWidgetProc      move_focus_to_prev; /* move Focus to previous child    */
-} CompositeClassPart;
+    caddr_t	    extension;		/* pointer to extension record      */
+} CompositeClassPart,*CompositePartPtr;
 
 typedef struct _CompositeClassRec {
      CoreClassPart      core_class;
      CompositeClassPart composite_class;
 } CompositeClassRec;
 
-globalref CompositeClassRec compositeClassRec;
+externalref CompositeClassRec compositeClassRec;
 
 #define XtInheritGeometryManager ((XtGeometryHandler) _XtInherit)
 #define XtInheritChangeManaged ((XtWidgetProc) _XtInherit)
-#define XtInheritInsertChild ((XtArgsProc) _XtInherit)
+#define XtInheritInsertChild ((XtWidgetProc) _XtInherit)
 #define XtInheritDeleteChild ((XtWidgetProc) _XtInherit)
-#define XtInheritMoveFocusToNext ((XtWidgetProc) _XtInherit)
-#define XtInheritMoveFocusToPrev ((XtWidgetProc) _XtInherit)
 
 #endif _XtCompositeP_h
 /* DON'T ADD STUFF AFTER THIS #endif */

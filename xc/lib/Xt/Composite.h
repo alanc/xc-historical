@@ -1,8 +1,4 @@
-/*
-* $Header: Composite.h,v 1.2 88/02/03 15:09:35 swick Exp $
-*/
-
-
+/* $xHeader$ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -27,14 +23,28 @@ SOFTWARE.
 
 ******************************************************************/
 
-
 #ifndef _XtComposite_h
 #define _XtComposite_h
 
 typedef struct _CompositeClassRec *CompositeWidgetClass;
 
+extern void XtManageChildren ();
+    /* WidgetList children; */
+    /* Cardinal   num_children; */
+
+extern void XtManageChild ();
+    /* Widget    child; */
+
+extern void XtUnmanageChildren ();
+    /* WidgetList children; */
+    /* Cardinal   num_children; */
+
+extern void XtUnmanageChild ();
+    /* Widget child; */
+
+
 #ifndef COMPOSITE
-globalref WidgetClass compositeWidgetClass;
+externalref WidgetClass compositeWidgetClass;
 #endif
 
 #endif _XtComposite_h

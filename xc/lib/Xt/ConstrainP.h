@@ -1,8 +1,4 @@
-/*
-* $Header: ConstrainP.h,v 1.4 88/02/14 14:52:56 rws Exp $
-*/
-
-
+/* $xHeader$ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,8 +26,6 @@ SOFTWARE.
 #ifndef _XtConstraintP_h
 #define _XtConstraintP_h
 
-#include <X11/Constraint.h>
-#include <X11/CoreP.h>
 
 typedef struct _ConstraintPart {
     caddr_t     mumble;		/* No new fields, keep C compiler happy */
@@ -50,6 +44,7 @@ typedef struct _ConstraintClassPart {
     XtInitProc initialize;            /* constraint initialization           */
     XtWidgetProc destroy;             /* constraint destroy proc             */
     XtSetValuesFunc set_values;       /* constraint set_values proc          */
+    caddr_t	    extension;		/* pointer to extension record      */
 } ConstraintClassPart;
 
 typedef struct _ConstraintClassRec {
@@ -58,7 +53,7 @@ typedef struct _ConstraintClassRec {
     ConstraintClassPart constraint_class;
 } ConstraintClassRec;
 
-globalref ConstraintClassRec constraintClassRec;
+externalref ConstraintClassRec constraintClassRec;
 
 #endif _XtConstraintP_h
 /* DON'T ADD STUFF AFTER THIS #endif */
