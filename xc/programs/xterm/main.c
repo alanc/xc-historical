@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.153 90/06/08 14:19:24 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.154 90/06/08 14:23:46 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -58,6 +58,7 @@ SOFTWARE.
 #endif
 
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 
 #ifdef SYSV
 #include <sys/termio.h>
@@ -67,7 +68,6 @@ SOFTWARE.
 #include <sys/stropts.h>		/* for I_PUSH */
 #include <poll.h>			/* for POLLIN */
 #endif
-#include <sys/stat.h>
 #define USE_SYSV_TERMIO
 #define USE_SYSV_SIGNALS
 #define	USE_SYSV_PGRP
@@ -730,7 +730,17 @@ char **argv;
 		/* NOTREACHED */
 	     case 'C':
 #ifdef TIOCCONS
-		Console = TRUE;
+		{
+		    struct stat sbuf;
+
+		    /* must be owner and have read/write permission */
+		    if (!stat("/dev/console", &sbuf) &&
+			(sbuf.st_uid == getuid()) &&
+			!access("/dev/console", R_OK|W_OK))
+			Console = TRUE;
+		    else
+			Console = FALSE;
+		}
 #endif	/* TIOCCONS */
 		continue;
 	     case 'S':
