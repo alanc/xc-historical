@@ -22,29 +22,16 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swapreq.c,v 1.21 87/07/23 17:31:28 ham Exp $ */
+/* $Header: swapreq.c,v 1.21 87/08/01 14:36:50 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xproto.h"
 #include "Xprotostr.h"
-#include "windowstr.h"
-#include "font.h"
-#include "gc.h"
-#include "os.h"
-#include "resource.h"
-#include "selection.h"
-#include "colormap.h"
+#include "misc.h"
 #include "dixstruct.h"
-#include "extension.h"
-#include "input.h"
-#include "cursor.h"
 
-extern WindowRec WindowTable[];
-extern xConnSetupPrefix connSetupPrefix;
-extern char *ConnectionInfo;
-extern char *SwappedConnInfo;
 extern int (* ProcVector[256]) ();
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
@@ -173,8 +160,8 @@ SProcInternAtom(client)
     register char n;
     REQUEST(xInternAtomReq);
     swaps(&stuff->length, n);
-    swaps(&stuff->onlyIfExists, n);
     swaps(&stuff->nbytes, n);
+    return((* ProcVector[X_InternAtom])(client));
 }
 
 int
@@ -220,10 +207,11 @@ SProcGetProperty(client)
     register char n;
     REQUEST(xGetPropertyReq);
     swaps(&stuff->length, n);
-    swaps(&stuff->delete, n);
     swapl(&stuff->window, n);
     swapl(&stuff->property, n);
     swapl(&stuff->type, n);
+    swapl(&stuff->longOffset, n);
+    swapl(&stuff->longLength, n);
     return((* ProcVector[X_GetProperty])(client));
 }
 
@@ -237,6 +225,7 @@ SProcSetSelectionOwner(client)
     swapl(&stuff->window, n);
     swapl(&stuff->selection, n);
     swapl(&stuff->time, n);
+    return((* ProcVector[X_SetSelectionOwner])(client));
 }
 
 int
@@ -559,6 +548,7 @@ SProcTranslateCoords(client)
     swapl(&stuff->dstWid, n);
     swaps(&stuff->srcX, n);
     swaps(&stuff->srcY, n);
+    return((* ProcVector[X_TranslateCoords])(client));
 }
 
 int
@@ -915,7 +905,7 @@ SProcPolyFillArc               (client)
     swapl(&stuff->drawable, n);
     swapl(&stuff->gc, n);
     SwapRestS(stuff);
-    return((* ProcVector[X_PolySegment])(client));
+    return((* ProcVector[X_PolyFillArc])(client));
 }
 
 int
@@ -948,8 +938,11 @@ SProcGetImage(client)
     swaps(&stuff->y, n);
     swaps(&stuff->width, n);
     swaps(&stuff->height, n);
+    swapl(&stuff->planeMask, n);
     return((* ProcVector[X_GetImage])(client));
 }
+
+/* ProcPolyText used for both PolyText8 and PolyText16 */
 
 int
 SProcPolyText(client)
@@ -962,11 +955,10 @@ SProcPolyText(client)
     swapl(&stuff->gc, n);
     swaps(&stuff->x, n);
     swaps(&stuff->y, n);
-    /* We don't swap the TextElt list here because it's simpler to do it as
-     * a special case in ProcPolyText.
-     */
-    return((* ProcVector[X_PolyText8])(client));
+    return((* ProcVector[stuff->reqType])(client));
 }
+
+/* ProcImageText used for both ImageText8 and ImageText16 */
 
 int
 SProcImageText(client)
@@ -979,16 +971,7 @@ SProcImageText(client)
     swapl(&stuff->gc, n);
     swaps(&stuff->x, n);
     swaps(&stuff->y, n);
-    /* Check if we're ImageText8 or ImageText16 */
-    switch(stuff->reqType)
-    {
-	case X_ImageText8:
-            return((* ProcVector[X_ImageText8])(client));
-	case X_ImageText16:
-	    SwapRestS(stuff);
-            return((* ProcVector[X_ImageText16])(client));
-    }
-    return BadValue;
+    return((* ProcVector[stuff->reqType])(client));
 }
 
 int
@@ -1137,7 +1120,7 @@ SProcLookupColor(client)
     swaps(&stuff->length, n);
     swapl(&stuff->cmap, n);
     swaps(&stuff->nbytes, n);
-    return((* ProcVector[X_GetWindowAttributes])(client));
+    return((* ProcVector[X_LookupColor])(client));
 }
 
 int
@@ -1194,8 +1177,8 @@ SProcRecolorCursor(client)
     swaps(&stuff->foreRed, n);
     swaps(&stuff->foreGreen, n);
     swaps(&stuff->foreBlue, n);
-    swaps(&stuff->foreRed, n);
-    swaps(&stuff->foreGreen, n);
+    swaps(&stuff->backRed, n);
+    swaps(&stuff->backGreen, n);
     swaps(&stuff->backBlue, n);
     return((* ProcVector[X_RecolorCursor])(client));
 }
@@ -1376,7 +1359,7 @@ SProcGetScreenSaver(client)
     register char n;
     REQUEST(xReq);
     swaps(&stuff->length, n);
-    return((* ProcVector[X_GetWindowAttributes])(client));
+    return((* ProcVector[X_GetScreenSaver])(client));
 }
 
 int
@@ -1419,6 +1402,7 @@ int SProcRotateProperties(client)
     swapl(&stuff->window, n);
     swaps(&stuff->nAtoms, n);
     swaps(&stuff->nPositions, n);
+    SwapRestL(stuff);
     return ((* ProcVector[X_RotateProperties])(client));
 }
 
@@ -1459,21 +1443,6 @@ SwapTimecoord(pCoord)
     swaps(&pCoord->y, n);
 }
 
-#ifdef ELSEWHERE
-SwapCharInfo(pInfo)
-    xCharInfo	*pInfo;
-{
-    register char n;
-
-    swaps(&pInfo->leftSideBearing, n);
-    swaps(&pInfo->rightSideBearing, n);
-    swaps(&pInfo->characterWidth, n);
-    swaps(&pInfo->ascent, n);
-    swaps(&pInfo->descent, n);
-    swaps(&pInfo->attributes, n);
-}
-#endif /* ELSEWHERE */
-
 SwapFontProp(pProp)
     xFontProp  *pProp;
 {
@@ -1492,6 +1461,7 @@ SwapRGB(prgb)
     swaps(&prgb->green, n);
     swaps(&prgb->blue, n);
 }
+
 SwapColorItem(pItem)
     xColorItem	*pItem;
 {
@@ -1502,50 +1472,6 @@ SwapColorItem(pItem)
     swaps(&pItem->green, n);
     swaps(&pItem->blue, n);
 }
-
-SwapSegment(pSeg)
-    xSegment	*pSeg;
-{
-    register char n;
-
-    swaps(&pSeg->x1, n);
-    swaps(&pSeg->y1, n);
-    swaps(&pSeg->x2, n);
-    swaps(&pSeg->y2, n);
-}
-
-SwapPoint(pPoint)
-    xPoint	*pPoint;
-{
-    register char n;
-
-    swaps(&pPoint->x, n);
-    swaps(&pPoint->y, n);
-}
-
-SwapRectangle(pRect)
-    xRectangle	*pRect;
-{
-    register char n;
-
-    swaps(&pRect->x, n);
-    swaps(&pRect->y, n);
-    swaps(&pRect->width, n);
-    swaps(&pRect->height, n);
-}
-SwapArc(pArc)
-    xArc	*pArc;
-{
-    register char n;
-
-    swaps(&pArc->x, n);
-    swaps(&pArc->y, n);
-    swaps(&pArc->width, n);
-    swaps(&pArc->height, n);
-    swaps(&pArc->angle1, n);
-    swaps(&pArc->angle2, n);
-}
-
 
 SwapConnClientPrefix(pCCP)
     xConnClientPrefix	*pCCP;
