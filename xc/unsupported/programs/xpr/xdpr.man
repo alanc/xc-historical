@@ -1,4 +1,4 @@
-.\" $XConsortium: xdpr.man,v 1.13 91/07/30 18:10:03 gildea Exp $
+.\" $XConsortium: xdpr.man,v 1.14 94/04/11 14:29:55 gildea Exp $
 .TH XDPR 1 "Release 6" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
@@ -126,7 +126,7 @@ which display to use by default.
 PRINTER
 which printer to use by default.
 .SH COPYRIGHT
-Copyright 1985, 1988, Massachusetts Institute of Technology.
+Copyright ([\d,\s]*) X Consortium
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS

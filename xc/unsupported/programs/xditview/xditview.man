@@ -1,4 +1,4 @@
-.\" $XConsortium: xditview.man,v 1.8 91/08/27 15:19:07 gildea Exp $
+.\" $XConsortium: xditview.man,v 1.9 94/04/11 14:29:40 gildea Exp $
 .TH XDITVIEW 1 "Release 6" "X Version 11"
 .SH NAME
 xditview \- display ditroff output
@@ -159,7 +159,7 @@ Portions of this program originated in
 from
 .I suntroff.  
 .SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
+Copyright ([\d,\s]*) X Consortium
 .br
 See \fIX\fP(1) for a full statement of rights and permissions.
 .SH AUTHORS

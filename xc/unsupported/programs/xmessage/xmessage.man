@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: xmessage.man,v 1.2 94/04/11 14:44:03 gildea Exp $
 .TH XMESSAGE 1 "11 April 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)
@@ -123,10 +123,7 @@ not be used with a button.
 .IR X (1),
 .IR echo (1),
 .IR cat (1)
-.SH COPYRIGHT
-Copyright 1988,1991 Massachusetts Institute of Technology.
 .br
-See \fIX\fP(1) for a full statement of rights and permissions.
 .SH AUTHORS
 Chris Peterson, MIT Project Athena 
 .br

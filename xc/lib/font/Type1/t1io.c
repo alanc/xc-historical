@@ -1,4 +1,4 @@
-/* $XConsortium: t1io.c,v 1.7 94/03/12 18:28:33 gildea Exp $ */
+/* $XConsortium: t1io.c,v 1.8 94/03/13 17:57:55 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -26,7 +26,6 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
- *
  * Author: Carol H. Thompson  IBM Almaden Research Center
  */
 /*******************************************************************

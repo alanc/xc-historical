@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: xgc.man,v 1.5 94/04/11 14:30:27 gildea Exp $
 .TH XGC 1 "Release 6" "X Version 11"
 .SH NAME
 xgc - X graphics demo
@@ -29,8 +29,6 @@ stored in the RESOURCE_MANAGER property.
 X(1)
 .SH BUGS
 This program isn't really finished yet.
-.SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS

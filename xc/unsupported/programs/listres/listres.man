@@ -1,4 +1,29 @@
-.\" $XConsortium: listres.man,v 1.6 93/08/02 11:13:53 gildea Exp $
+.\" $XConsortium: listres.man,v 1.7 94/04/11 14:29:19 gildea Exp $
+.\" Copyright (c) 1994  X Consortium
+.\" 
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\" 
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\" 
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+.\" OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+.\" ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+.\" OTHER DEALINGS IN THE SOFTWARE.
+.\" 
+.\" Except as contained in this notice, the name of the X Consortium shall
+.\" not be used in advertising or otherwise to promote the sale, use or
+.\" other dealings in this Software without prior written authorization
+.\" from the X Consortium.
 .TH LISTRES 1 "Release 6" "X Version 11"
 .SH NAME
 listres - list resources in widgets
@@ -48,7 +73,7 @@ On operating systems that do not support dynamic linking of run-time routines,
 this program must have all of its known widgets compiled in.  The sources
 provide several tools for automating this process for various widget sets.
 .SH COPYRIGHT
-Copyright 1989, Massachusetts Institute of Technology.
+Copyright ([\d,\s]*) X Consortium
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR

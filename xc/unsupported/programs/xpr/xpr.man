@@ -1,4 +1,4 @@
-.\" $XConsortium: xpr.man,v 1.20 93/08/02 11:13:15 gildea Exp $
+.\" $XConsortium: xpr.man,v 1.21 94/04/11 14:29:53 gildea Exp $
 .TH XPR 1 "Release 6" "X Version 11"
 .SH NAME
 xpr \- print an X window dump
@@ -324,8 +324,6 @@ The \fB\-slide\fP option is not supported for LaserJet printers.
 The \fB\-split\fP option is not supported for HP printers.
 
 The \fB\-gray\fP option is not supported for HP or IBM printers.
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
 .br
 Copyright 1986, Marvin Solomon and the University of Wisconsin.
 .br

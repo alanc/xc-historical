@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: plbpex.man,v 1.4 94/04/11 14:30:03 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -51,7 +51,3 @@ plbpex may crash due to color allocation problems when a window manage
 is running.
 .LP
 pex only implements hlhsr value none.
-
-.SH COPYRIGHT
-Copyright 1991, Massachusetts Institute of Technology.
-

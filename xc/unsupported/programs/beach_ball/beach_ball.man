@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: beach_ball.man,v 1.3 94/04/11 14:30:00 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -31,5 +31,3 @@ the client exiting.
 .SH "SEE ALSO"
 .PP
 PEX-SI User Guide 
-.SH COPYRIGHT
-Copyright 1991, Massachusetts Institute of Technology.

@@ -1,4 +1,4 @@
-.\" $XConsortium: resize.man,v 1.8 94/04/11 14:26:22 gildea Exp $
+.\" $XConsortium: resize.man,v 1.9 94/04/12 16:06:05 gildea Exp $
 .TH RESIZE 1 "Release 6" "X Version 11"
 .SH NAME
 resize \- set TERMCAP and terminal settings to current xterm window size
@@ -62,7 +62,7 @@ csh(1), tset(1), xterm(1)
 .SH AUTHORS
 Mark Vandevoorde (MIT-Athena), Edward Moy (Berkeley)
 .br
-Copyright (c) 1984, 1985 by Massachusetts Institute of Technology.
+Copyright (c) 1984, 1985 by X Consortium
 .br
 See
 .IR X (1)

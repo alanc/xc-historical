@@ -1,4 +1,4 @@
-/* $XConsortium: maze.c,v 1.10 91/04/03 20:32:01 gildea Exp $ */
+/* $XConsortium: maze.c,v 1.11 91/04/24 08:30:59 gildea Exp $ */
 
 /******************************************************************************
  * [ maze ] ...
@@ -22,10 +22,10 @@
  documentation for any purpose and without fee is hereby granted, 
  provided that the above copyright notice appear in all copies and that
  both that copyright notice and this permission notice appear in 
- supporting documentation, and that the names of Sun or MIT not be
+ supporting documentation, and that Sun not be
  used in advertising or publicity pertaining to distribution of the
- software without specific prior written permission. Sun and M.I.T. 
- make no representations about the suitability of this software for 
+ software without specific prior written permission. Sun 
+ makes no representations about the suitability of this software for 
  any purpose. It is provided "as is" without any express or implied warranty.
  
  SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING

@@ -1,4 +1,4 @@
-.\" $XConsortium: design.ms,v 1.4 91/08/15 12:17:40 rws Exp $
+.\" $XConsortium: design.ms,v 1.5 93/02/04 18:37:03 gildea Exp $
 .\" roff -ms
 .de Ip
 .IP \(bu 3
@@ -43,7 +43,7 @@ Copyright \(co 1991 Network Computing Devices, Inc.
 Introduction
 .PP
 The font server uses the same client/server model as X.  The basic structure
-is that of the MIT X11R5 X server, and those
+is that of the X Consortium X11R5 X server, and those
 who know that code should find the 
 .I os
 and 

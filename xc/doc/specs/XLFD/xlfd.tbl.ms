@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.36 94/04/08 17:06:49 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.37 94/04/11 18:16:12 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -43,7 +43,7 @@
 .nr PS 9
 .sp 8
 .LP
-X Window System is a trademark of M.I.T.
+\fIX Window System\fP is a trademark of X Consortium, Inc.
 .LP             
 Helvetica and Times are registered trademarks of Linotype Company.
 .LP
@@ -56,9 +56,28 @@ Bitstream Amerigo is a registered trademark of Bitstream Inc.
 .LP             
 Stone is a registered trademark of Adobe Systems Inc.
 .LP
-Copyright \(co 1988, 1994 
-Massachusetts Institute of Technology, 
-Cambridge, MA USA.
+Copyright \(co 1988, 1994 X Consortium
+.LP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
 .LP
 Copyright \(co 1988, 1989 
 Digital Equipment Corporation, Maynard MA.  All rights reserved.
@@ -67,12 +86,10 @@ Permission to use, copy, modify, and distribute this documentation
 for any purpose and without fee is hereby granted, provided 
 that the above copyright notice and this permission 
 notice appear in all copies.
-X Consortium, MIT and Digital Equipment Corporation make no representations
+Digital Equipment Corporation makes no representations
 about the 
 suitability for any purpose of the information in this document. 
 This documentation is provided as is without express or implied warranty. 
-This document is only a draft standard of the X Consortium and is therefore
-subject to change.
 .ps 11
 .nr PS 11
 .bp 1

@@ -1,4 +1,4 @@
-/* $XConsortium: do_trns.c,v 1.2 91/05/11 09:48:24 rws Exp $ */
+/* $XConsortium: do_trns.c,v 1.3 94/02/07 10:01:09 gildea Exp $ */
 
 /*
 
@@ -21,7 +21,6 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-
 
 /**************************** D O _ T R N S . C ******************************
  *                                                                           *
