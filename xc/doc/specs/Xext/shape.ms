@@ -487,6 +487,8 @@ Encoding
 Please refer to the X11 Protocol Encoding document as this document uses
 conventions established there.
 .LP
+The name of this extension is ``SHAPE''.
+.LP
 .SH
 \s+2New types\s-2
 .LP
