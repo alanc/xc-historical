@@ -75,7 +75,7 @@ Determines the area to refresh.  Not very useful.
 .TP 8
 DISPLAY - To get default host and display number.
 .SH SEE ALSO
-X(1), uwm(1), X(8)
+X(1)
 .SH BUGS
 .PP
 It should have just one default type for the background.
