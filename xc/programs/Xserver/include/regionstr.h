@@ -1,4 +1,4 @@
-/* $XConsortium: regionstr.h,v 1.2 88/07/15 16:25:38 toddb Exp $ */
+/* $XConsortium: regionstr.h,v 1.3 88/09/06 15:48:28 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -43,7 +43,7 @@ typedef struct _Region {
  */
 #define MEMCHECK(reg, rect, firstrect){\
         if ((reg)->numRects >= ((reg)->size - 1)){\
-          (firstrect) = (BoxPtr) Xrealloc \
+          (firstrect) = (BoxPtr) xrealloc \
           ((firstrect), (2 * (sizeof(BoxRec)) * ((reg)->size)));\
           (reg)->size *= 2;\
           (rect) = &(firstrect)[(reg)->numRects];\
