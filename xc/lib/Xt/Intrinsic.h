@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.128 89/12/14 15:09:20 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.129 89/12/15 13:50:06 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1976,7 +1976,7 @@ extern void XtGetConstraintResourceList(
  *
  ************************************************************/
 
-extern void XtAppSetErrorMsgHandler(
+extern XtErrorMsgHandler XtAppSetErrorMsgHandler(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
     XtErrorMsgHandler 	/* handler */
@@ -1989,7 +1989,7 @@ extern void XtSetErrorMsgHandler(
 #endif
 );
 
-extern void XtAppSetWarningMsgHandler(
+extern XtErrorMsgHandler XtAppSetWarningMsgHandler(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
     XtErrorMsgHandler 	/* handler */
@@ -2048,7 +2048,7 @@ extern void XtWarningMsg(
 #endif
 );
 
-extern void XtAppSetErrorHandler(
+extern XtErrorHandler XtAppSetErrorHandler(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
     XtErrorHandler 	/* handler */
@@ -2061,7 +2061,7 @@ extern void XtSetErrorHandler(
 #endif
 );
 
-extern void XtAppSetWarningHandler(
+extern XtErrorHandler XtAppSetWarningHandler(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
     XtErrorHandler 	/* handler */
@@ -2397,7 +2397,7 @@ extern void XtGrabKey(
     Boolean 		/* owner_events */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUngrabKey(
@@ -2405,7 +2405,7 @@ extern void XtUngrabKey(
     Widget 		/* widget */,
     KeySym 		/* keysym */,
     Modifiers	 	/* modifiers */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern int XtGrabKeyboard(
@@ -2415,14 +2415,14 @@ extern int XtGrabKeyboard(
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
     Time 		/* time */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUngrabKeyboard(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     Time 		/* time */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtGrabButton(
@@ -2436,7 +2436,7 @@ extern void XtGrabButton(
     int 		/* keyboard_mode */,
     Window 		/* confine_to */,
     Cursor 		/* cursor */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUngrabButton(
@@ -2444,7 +2444,7 @@ extern void XtUngrabButton(
     Widget 		/* widget */,
     unsigned int	/* button */,
     Modifiers	 	/* modifiers */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern int XtGrabPointer(
@@ -2457,14 +2457,22 @@ extern int XtGrabPointer(
     Window 		/* confine_to */,
     Cursor 		/* cursor */,
     Time 		/* time */
-#endif /* NeedFunctionPrototypes */
+#endif
 );
 
 extern void XtUngrabPointer(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     Time 		/* time */
-#endif /* NeedFunctionPrototypes */
+#endif
+);
+
+extern void XtGetApplicationNameAndClass(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    String*		/* name_return */,
+    String*		/* class_return */
+#endif
 );
 
 #ifdef __cplusplus
