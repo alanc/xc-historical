@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.8 90/12/09 17:52:56 rws Exp $
+ * $XConsortium: globals.c,v 1.9 90/12/11 11:47:41 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -72,50 +72,49 @@ ZEROINIT (Display *, _XHeadOfDisplayList, NULL);
 
 char _XsTypeOfStream[100] = { 0 };
 
-extern int SetupLocalStream();
-extern int ConnectLocalClient();
-extern int CallLocalServer();
-extern int ReadLocalStream();
-extern int ErrorCall();
-extern int WriteLocalStream();
-extern int CloseLocalStream(); 
-extern int SetupTliStream();
-extern int ConnectTliClient();
-extern int CallTliServer(); 
-extern int ReadTliStream(); 
-extern int WriteTliStream();
-extern int CloseTliStream();
-extern int ErrorCall(); 
+extern int _XsSetupLocalStream();
+extern int _XsConnectLocalClient();
+extern int _XsCallLocalServer();
+extern int _XsReadLocalStream();
+extern int _XsErrorCall();
+extern int _XsWriteLocalStream();
+extern int _XsCloseLocalStream(); 
+extern int _XsSetupTliStream();
+extern int _XsConnectTliClient();
+extern int _XsCallTliServer(); 
+extern int _XsReadTliStream(); 
+extern int _XsWriteTliStream();
+extern int _XsCloseTliStream();
 
 Xstream _XsStream[] = {
     { 
-	SetupLocalStream,
-	ConnectLocalClient,
-	CallLocalServer,
-	ReadLocalStream,
-	ErrorCall,
-	WriteLocalStream,
-	CloseLocalStream,
+	_XsSetupLocalStream,
+	_XsConnectLocalClient,
+	_XsCallLocalServer,
+	_XsReadLocalStream,
+	_XsErrorCall,
+	_XsWriteLocalStream,
+	_XsCloseLocalStream,
 	NULL
     },
     { 
-	SetupTliStream,
-	ConnectTliClient,
-	CallTliServer, 
-	ReadTliStream, 
-	ErrorCall, 
-	WriteTliStream,
-	CloseTliStream,
+	_XsSetupTliStream,
+	_XsConnectTliClient,
+	_XsCallTliServer, 
+	_XsReadTliStream, 
+	_XsErrorCall, 
+	_XsWriteTliStream,
+	_XsCloseTliStream,
 	NULL
     },
     { 
-	SetupTliStream,
-	ConnectTliClient,
-	CallTliServer, 
-	ReadTliStream, 
-	ErrorCall, 
-	WriteTliStream,
-	CloseTliStream,
+	_XsSetupTliStream,
+	_XsConnectTliClient,
+	_XsCallTliServer, 
+	_XsReadTliStream, 
+	_XsErrorCall, 
+	_XsWriteTliStream,
+	_XsCloseTliStream,
 	NULL
     },
     { 
