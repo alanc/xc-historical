@@ -30,3 +30,9 @@
 
 int bics_map_size = (sizeof(bics_map)/(sizeof(int) * 2));
 
+#ifdef NCD
+#include "adobe-iso.h"
+
+int         adobe_map_size = (sizeof(adobe_map) / (sizeof(int) * 2));
+
+#endif				/* NCD */
