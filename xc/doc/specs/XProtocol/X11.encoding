@@ -2658,9 +2658,9 @@ VISUALTYPE
 .ta .2i .5i 1.5i 2.5i
 .R
   TEXTITEM8
-	1	n		length of string (cannot be 255)
+	1	m		length of string (cannot be 255)
 	1	INT8		delta
-	n	STRING8		string
+	m	STRING8		string
   or
 	1	255		font-shift indicator
 	1			font byte 3 (most-significant)
@@ -2682,16 +2682,16 @@ VISUALTYPE
 	2	INT16		x
 	2	INT16		y
 	n	LISTofTEXTITEM16		items
-	p			unused, p=pad(n)  (p is always 0 or 1)
+	p			unused, p=pad(n)  (p must be 0 or 1)
 .De
 .Ds 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
 .R
   TEXTITEM16
-	1	n		number of CHAR2Bs in string (cannot be 255)
+	1	m		number of CHAR2Bs in string (cannot be 255)
 	1	INT8		delta
-	n	STRING16		string
+	m	STRING16		string
   or
 	1	255		font-shift indicator
 	1			font byte 3 (most-significant)
