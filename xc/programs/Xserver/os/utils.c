@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.114 92/05/10 17:28:56 rws Exp $ */
+/* $XConsortium: utils.c,v 1.115 92/08/21 19:55:34 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -67,6 +67,7 @@ extern int monitorResolution;
 extern Bool defeatAccessControl;
 
 Bool CoreDump;
+Bool noTestExtensions;
 
 void ddxUseMsg();
 
@@ -202,6 +203,7 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co string             color database file\n");
+    ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
     ErrorF("-f #                   bell base (0-100)\n");
     ErrorF("-fc string             cursor font\n");
@@ -223,12 +225,15 @@ void UseMsg()
     ErrorF("nologo                 disable logo in screen saver\n");
 #endif
     ErrorF("-p #                   screen-saver pattern duration (minutes)\n");
+    ErrorF("-pn                    accept failure to listen on all ports\n");
     ErrorF("-r                     turns off auto-repeat\n");
     ErrorF("r                      turns on auto-repeat \n");
     ErrorF("-s #                   screen-saver timeout (minutes)\n");
     ErrorF("-su                    disable any save under support\n");
     ErrorF("-t #                   mouse threshold (pixels)\n");
+    ErrorF("-terminate             terminate at server reset\n");
     ErrorF("-to #                  connection time out\n");
+    ErrorF("-tst                   disable testing extensions\n");
     ErrorF("ttyxx                  server started from init on /dev/ttyxx\n");
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
@@ -450,6 +455,12 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+	else if ( strcmp( argv[i], "-terminate") == 0)
+	{
+	    extern Bool terminateAtReset;
+	    
+	    terminateAtReset = TRUE;
+	}
 	else if ( strcmp( argv[i], "-to") == 0)
 	{
 	    if(++i < argc)
@@ -457,11 +468,9 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
-	else if ( strcmp( argv[i], "-terminate") == 0)
+	else if ( strcmp( argv[i], "-tst") == 0)
 	{
-	    extern Bool terminateAtReset;
-	    
-	    terminateAtReset = TRUE;
+	    noTestExtensions = TRUE;
 	}
 	else if ( strcmp( argv[i], "v") == 0)
 	    defaultScreenSaverBlanking = PreferBlanking;
