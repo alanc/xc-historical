@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.116 91/04/16 16:32:10 keith Exp $
+ * $XConsortium: XOpenDis.c,v 11.117 91/05/06 15:38:12 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -885,6 +885,8 @@ _XFreeDisplayStructure(dpy)
 	   (*dpy->free_funcs->defaultCCCs)(dpy);
 	if (dpy->cms.clientCmaps)
 	   (*dpy->free_funcs->clientCmaps)(dpy);
+	if (dpy->cms.perVisualIntensityMaps)
+	   (*dpy->free_funcs->intensityMaps)(dpy);
 	if (dpy->im_filters)
 	   (*dpy->free_funcs->im_filters)(dpy);
 
