@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.45 91/11/20 15:33:19 keith Exp $
+ * $XConsortium: miwideline.c,v 1.46 91/12/17 19:39:04 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -2013,16 +2013,16 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     Bool	    selfJoin;
     Bool	    endIsFg, startIsFg, firstIsFg = FALSE, prevIsFg;
 
-    if (pGC->lineStyle == LineDoubleDash && 
-	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
-    {
-	miWideLine (pDrawable, pGC, mode, npt, pPts);
-	return;
-    }
     /* XXX backward compatibility */
     if (pGC->lineWidth == 0)
     {
 	miZeroDashLine (pDrawable, pGC, mode, npt, pPts);
+	return;
+    }
+    if (pGC->lineStyle == LineDoubleDash && 
+	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
+    {
+	miWideLine (pDrawable, pGC, mode, npt, pPts);
 	return;
     }
     if (npt == 0)
@@ -2148,7 +2148,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    }
 	}
     }
-    /* handle crock where all points are coincedent */
+    /* handle crock where all points are coincident */
     if (!somethingDrawn && (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1)))
     {
 	/* not the same as endIsFg computation above */
@@ -2157,13 +2157,13 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	case CapRound:
 	    miLineArc (pDrawable, pGC, pixel, spanData,
 		       (LineFacePtr) NULL, (LineFacePtr) NULL,
-		       (double)x1, (double)y1,
+		       (double)x2, (double)y2,
 		       FALSE);
 	    break;
 	case CapProjecting:
-	    x2 = pGC->lineWidth;
+	    x1 = pGC->lineWidth;
 	    miFillRectPolyHelper (pDrawable, pGC, pixel, spanData,
-				  x1 - (x2 >> 1), y1 - (x2 >> 1), x2, x2);
+				  x2 - (x1 >> 1), y2 - (x1 >> 1), x1, x1);
 	    break;
 	}
     }
