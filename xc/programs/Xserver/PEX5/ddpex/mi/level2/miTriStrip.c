@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miTriStrip.c,v 5.1 91/02/16 09:55:31 rws Exp $ */
 
 
 /***********************************************************
@@ -39,7 +39,6 @@ SOFTWARE.
 
 #include <stdio.h>
 
-extern ddFLOAT  ident4x4[];
 
 /*++
  |
@@ -64,10 +63,11 @@ miTriangleStrip(pRend, pExecuteOC)
       ddpex3rtn		miConvertVertexColors();
       ddpex3rtn		miConvertFacetColors();
       ddpex3rtn         miLightTriStrip();
-      ddpex3rtn         miClipTriStrip();
-      ddpex3rtn         miCullTriStrip();
       ddpex3rtn         miRenderTriStrip();
       ddpex3rtn         ComputeMCVolume();
+      static  ddpex3rtn         miClipTriStrip();
+      static  ddpex3rtn         miCullTriStrip();
+      static  ddpex3rtn         miDepthCueTriStrip();
 
 /* Local variable definitions */
       miTriangleStripStruct	*ddTri 
@@ -78,6 +78,7 @@ miTriangleStrip(pRend, pExecuteOC)
       miListHeader      *color_list,
 			*mc_list,
 			*wc_list,
+                        *mc_clist,
                         *light_list,
                         *cc_list,
                         *clip_list,
@@ -87,7 +88,6 @@ miTriangleStrip(pRend, pExecuteOC)
 
       listofddFacet     *color_facet,
 			*mc_facet,
-                        *mc_clist,
 			*wc_facet,
                         *light_facet,
                         *cc_facet,
@@ -277,10 +277,10 @@ miTriangleStrip(pRend, pExecuteOC)
       DD_SetVertShort(out_type);
       if (DD_IsVertNormal(out_type)) VALIDATEINVTRCCTODCXFRM(pddc);
       if (status = miTransform(pddc,
-                                 cull_list, &dc_list,
-                                 pddc->Dynamic->cc_to_dc_xform,
-                                 pddc->Static.misc.inv_tr_cc_to_dc_xform,
-                                 out_type) )
+			       cull_list, &dc_list,
+			       pddc->Dynamic->cc_to_dc_xform,
+			       pddc->Static.misc.inv_tr_cc_to_dc_xform,
+			       out_type) )
           return (status);
  
       /* Transform facet normals if necessary */
@@ -1178,7 +1178,7 @@ miLightTriStrip(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 	      /* facet. Perhaps a more correct method would use that average */
 
               if (status = miApply_Lighting(pRend, pddc,
-                                          in_pt.ptr,
+                                          in_pt.p4Dpt,
                                           &(in_fct->colour),
                                           &(in_fct->normal),
                                           out_fct ))
@@ -1262,10 +1262,10 @@ miLightTriStrip(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 
 	    /* miApplyLighting works on a single point at a time */
             if (status = miApply_Lighting(pRend, pddc,
-                                            in_pt.ptr,
+                                            in_pt.p4Dpt,
                                             &(in_pt.pRgbFloatNpt4D->colour),
                                             &(in_pt.pRgbFloatNpt4D->normal),
-                                            out_pt.ptr))
+                                            out_pt.pRgbFloatClr))
 			return(status);
 
 	    /* increment pointers */ 
@@ -1895,7 +1895,7 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
      */
     if ( (!input_fct) || (input_fct->numFacets <= 0) ) {
         Calculate_TriStrip_Facet_Normal(pddc, input_vert,
-                                        0, &input_fct);
+                                        (listofddFacet *)0, &input_fct);
         return_facet_list = 0;
         *output_fct = 0;
     } else {
