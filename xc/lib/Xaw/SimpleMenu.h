@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpMenu.h,v 1.6 89/07/07 16:09:42 converse Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.7 89/07/12 13:50:17 kit Exp $";
 
                         All Rights Reserved
 
@@ -28,7 +28,7 @@ SOFTWARE.
 #define _SimpleMenu_h
 
 #include <X11/Shell.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Converters.h>
 
 /****************************************************************
  *

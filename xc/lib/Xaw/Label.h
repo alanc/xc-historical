@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Label.h,v 1.21 89/03/30 16:05:34 jim Exp $
+ * $XConsortium: Label.h,v 1.22 89/05/11 01:05:32 kit Exp $
  */
 
 /***********************************************************
@@ -36,7 +36,7 @@ SOFTWARE.
  ***********************************************************************/
 
 #include <X11/Xaw/Simple.h>
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Converters.h>
 
 /* Resources:
 

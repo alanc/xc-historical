@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.24 89/03/30 16:05:20 jim Exp $
+* $XConsortium: Clock.h,v 1.25 89/05/11 15:11:38 kit Exp $
 */
 
 
@@ -36,7 +36,7 @@ SOFTWARE.
  *
  ***********************************************************************/
 
-#include <X11/Xmu/Xmu.h>
+#include <X11/Xmu/Converters.h>
 
 /* Parameters:
 
