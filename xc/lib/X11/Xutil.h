@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.71 91/06/05 08:25:57 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.72 91/06/05 08:43:51 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -349,7 +349,7 @@ extern char *XDefaultString(
 extern int XDeleteContext(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    Window		/* w */,
+    XID			/* rid */,
     XContext		/* context */
 #endif
 );
@@ -376,7 +376,7 @@ extern XEqualRegion(
 extern int XFindContext(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    Window		/* w */,
+    XID			/* rid */,
     XContext		/* context */,
     XPointer*		/* data_return */
 #endif
@@ -576,7 +576,7 @@ extern int XRectInRegion(
 extern int XSaveContext(
 #if NeedFunctionPrototypes
     Display*		/* display */,
-    Window		/* w */,
+    XID			/* rid */,
     XContext		/* context */,
     _Xconst char*	/* data */
 #endif
