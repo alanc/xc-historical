@@ -4,10 +4,16 @@
 /**/# generate a Makefile from an Imakefile from outside the X sources.
 /**/# 
 
+usage="usage:  $0 [topdirpathname]"
+
 case $# in 
     0) ;;
-    1) topdir=-DTOPDIR=$1 ;;
-    *) echo "usage:  $0 [topdirpathname]" 1>&2; exit 1 ;;
+    1) topdir=$1 ;;
+    *) echo "$usage" 1>&2; exit 1 ;;
+esac
+
+case "$topdir" in
+    -*) echo "$usage" 1>&2; exit 1 ;;
 esac
 
 if [ -f Makefile ]; then 
