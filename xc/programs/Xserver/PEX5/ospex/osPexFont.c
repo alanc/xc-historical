@@ -1,4 +1,4 @@
-/* $XConsortium: osPexFont.c,v 5.4 91/04/04 14:50:01 gildea Exp $ */
+/* $XConsortium: osPexFont.c,v 5.5 91/05/06 11:19:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -39,7 +39,7 @@ extern char *getenv();
 #include "keysymdef.h"
 
 #ifndef PEX_DEFAULT_FONTPATH
-#define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEXfonts"
+#define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEX"
 #endif
 
 #ifndef X_NOT_POSIX
