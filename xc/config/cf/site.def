@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.54 92/05/29 18:38:31 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.55 92/06/27 21:51:54 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -113,6 +113,7 @@ clean::									@@\
 
 #ifndef SiteIConfigFiles
 #define SiteIConfigFiles $(IRULESRC)/host.def
+#define LocalConfigFiles host.def
 #endif
 
 #include <host.def>
