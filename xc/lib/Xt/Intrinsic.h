@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.193 94/02/08 20:20:28 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.194 94/02/10 18:51:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1319,6 +1319,9 @@ extern void XtRemoveBlockHook(
 #define XtIsApplicationShell(widget) \
     (_XtIsSubclassOf(widget, (WidgetClass)applicationShellWidgetClass, \
 		     (WidgetClass)topLevelShellWidgetClass, (XtEnum)0x80))
+#define XtIsSessionShell(widget) \
+    (_XtIsSubclassOf(widget, (WidgetClass)sessionShellWidgetClass, \
+		     (WidgetClass)topLevelShellWidgetClass, (XtEnum)0x80))
 
 extern void XtRealizeWidget(
 #if NeedFunctionPrototypes
@@ -1754,7 +1757,36 @@ extern void XtDisplayInitialize(
 #endif
 );
 
-extern Widget XtAppInitialize(
+extern Widget XtOpenApplication(
+#if NeedFunctionPrototypes
+    XtAppContext*	/* app_context_return */,
+    _Xconst _XtString	/* application_class */,
+    XrmOptionDescList 	/* options */,
+    Cardinal 		/* num_options */,
+    int*		/* argc_in_out */,
+    String*		/* argv_in_out */,
+    String*		/* fallback_resources */,
+    WidgetClass		/* widget_class */,
+    ArgList 		/* args */,
+    Cardinal 		/* num_args */
+#endif
+);
+
+extern Widget XtVaOpenApplication(
+#if NeedVarargsPrototypes
+    XtAppContext*	/* app_context_return */,
+    _Xconst _XtString	/* application_class */,
+    XrmOptionDescList	/* options */,
+    Cardinal		/* num_options */,
+    int*		/* argc_in_out */,
+    String*		/* argv_in_out */,
+    String*		/* fallback_resources */,
+    WidgetClass		/* widget_class */,
+    ...
+#endif
+);
+
+extern Widget XtAppInitialize( /* obsolete */
 #if NeedFunctionPrototypes
     XtAppContext*	/* app_context_return */,
     _Xconst _XtString	/* application_class */,
@@ -1768,7 +1800,7 @@ extern Widget XtAppInitialize(
 #endif
 );
 
-extern Widget XtVaAppInitialize(
+extern Widget XtVaAppInitialize( /* obsolete */
 #if NeedVarargsPrototypes
     XtAppContext*	/* app_context_return */,
     _Xconst _XtString	/* application_class */,
