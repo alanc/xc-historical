@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.4 89/03/28 14:18:22 keith Exp $ */
+/* $XConsortium: shape.c,v 1.5 89/03/28 16:40:49 keith Exp $ */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -194,7 +194,20 @@ BitmapToRegion (pScreen, pPixmap)
 }
 
 static RegionPtr
-CreateWindowShape (pWin)
+CreateBoundingShape (pWin)
+    WindowPtr	pWin;
+{
+    BoxRec	extents;
+
+    extents.x1 = -pWin->borderWidth;
+    extents.y1 = -pWin->borderWidth;
+    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
+    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
+}
+
+static RegionPtr
+CreateClipShape (pWin)
     WindowPtr	pWin;
 {
     BoxRec	extents;
@@ -206,18 +219,6 @@ CreateWindowShape (pWin)
     return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
-static RegionPtr
-CreateBorderShape (pWin)
-    WindowPtr	pWin;
-{
-    BoxRec	extents;
-
-    extents.x1 = -pWin->borderWidth;
-    extents.y1 = -pWin->borderWidth;
-    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
-    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
-    return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
-}
 
 ProcShapeQueryVersion (client)
     register ClientPtr	client;
@@ -238,7 +239,7 @@ ProcShapeQueryVersion (client)
 	swaps(&rep.majorVersion, n);
 	swaps(&rep.minorVersion, n);
     }
-    WriteToClient(client, sizeof (xShapeQueryReply), (char *)&rep);
+    WriteToClient(client, sizeof (xShapeQueryVersionReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -266,15 +267,13 @@ ProcShapeRectangles (client)
     if (!pWin)
 	return BadWindow;
     switch (stuff->destKind) {
-    case ShapeWindow:
-	destRgn = &pWin->windowShape;
-	createDefault = CreateWindowShape;
+    case ShapeBounding:
+	destRgn = &pWin->boundingShape;
+	createDefault = CreateBoundingShape;
 	break;
-    case ShapeBorder:
-	if (pWin->class == InputOnly)
-	    return BadMatch;
-	destRgn = &pWin->borderShape;
-	createDefault = CreateBorderShape;
+    case ShapeClip:
+	destRgn = &pWin->clipShape;
+	createDefault = CreateClipShape;
 	break;
     default:
 	return BadValue;
@@ -316,15 +315,13 @@ ProcShapeMask (client)
     if (!pWin)
 	return BadWindow;
     switch (stuff->destKind) {
-    case ShapeWindow:
-	destRgn = &pWin->windowShape;
-	createDefault = CreateWindowShape;
+    case ShapeBounding:
+	destRgn = &pWin->boundingShape;
+	createDefault = CreateBoundingShape;
 	break;
-    case ShapeBorder:
-	if (pWin->class == InputOnly)
-	    return BadMatch;
-	destRgn = &pWin->borderShape;
-	createDefault = CreateBorderShape;
+    case ShapeClip:
+	destRgn = &pWin->clipShape;
+	createDefault = CreateClipShape;
 	break;
     default:
 	return BadValue;
@@ -372,15 +369,13 @@ ProcShapeCombine (client)
     if (!pDestWin)
 	return BadWindow;
     switch (stuff->destKind) {
-    case ShapeWindow:
-	destRgn = &pDestWin->windowShape;
-	createDefault = CreateWindowShape;
+    case ShapeBounding:
+	destRgn = &pDestWin->boundingShape;
+	createDefault = CreateBoundingShape;
 	break;
-    case ShapeBorder:
-	if (pDestWin->class == InputOnly)
-	    return BadMatch;
-	destRgn = &pDestWin->borderShape;
-	createDefault = CreateBorderShape;
+    case ShapeClip:
+	destRgn = &pDestWin->clipShape;
+	createDefault = CreateClipShape;
 	break;
     default:
 	return BadValue;
@@ -391,15 +386,13 @@ ProcShapeCombine (client)
     if (!pSrcWin)
 	return BadWindow;
     switch (stuff->srcKind) {
-    case ShapeWindow:
-	srcRgn = pSrcWin->windowShape;
-	createSrc = CreateWindowShape;
+    case ShapeBounding:
+	srcRgn = pSrcWin->boundingShape;
+	createSrc = CreateBoundingShape;
 	break;
-    case ShapeBorder:
-	if (pSrcWin->class == InputOnly)
-	    return BadMatch;
-	srcRgn = pSrcWin->borderShape;
-	createSrc = CreateBorderShape;
+    case ShapeClip:
+	srcRgn = pSrcWin->clipShape;
+	createSrc = CreateClipShape;
 	break;
     default:
 	return BadValue;
@@ -441,13 +434,11 @@ ProcShapeOffset (client)
     if (!pWin)
 	return BadWindow;
     switch (stuff->destKind) {
-    case ShapeWindow:
-	srcRgn = pWin->windowShape;
+    case ShapeBounding:
+	srcRgn = pWin->boundingShape;
 	break;
-    case ShapeBorder:
-	if (pWin->class == InputOnly)
-	    return BadMatch;
-	srcRgn = pWin->borderShape;
+    case ShapeClip:
+	srcRgn = pWin->clipShape;
 	break;
     default:
 	return BadValue;
@@ -460,61 +451,61 @@ ProcShapeOffset (client)
 }
 
 static int
-ProcShapeQuery (client)
+ProcShapeQueryExtents (client)
     register ClientPtr	client;
 {
-    REQUEST(xShapeQueryReq);
+    REQUEST(xShapeQueryExtentsReq);
     WindowPtr		pWin;
-    xShapeQueryReply	rep;
+    xShapeQueryExtentsReply	rep;
     BoxRec		extents;
     register int	n;
 
-    REQUEST_SIZE_MATCH (xShapeQueryReq);
+    REQUEST_SIZE_MATCH (xShapeQueryExtentsReq);
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.windowShaped = (pWin->windowShape != 0);
-    rep.borderShaped = (pWin->borderShape != 0);
-    if (pWin->windowShape) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->windowShape);
-    } else {
-	extents.x1 = 0;
-	extents.y1 = 0;
-	extents.x2 = pWin->clientWinSize.width;
-	extents.y2 = pWin->clientWinSize.height;
-    }
-    rep.xWindowShape = extents.x1;
-    rep.yWindowShape = extents.y1;
-    rep.widthWindowShape = extents.x2 - extents.x1;
-    rep.heightWindowShape = extents.y2 - extents.y1;
-    if (pWin->borderShape) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->borderShape);
+    rep.boundingShaped = (pWin->boundingShape != 0);
+    rep.clipShaped = (pWin->clipShape != 0);
+    if (pWin->boundingShape) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->boundingShape);
     } else {
 	extents.x1 = -pWin->borderWidth;
 	extents.y1 = -pWin->borderWidth;
 	extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
 	extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
     }
-    rep.xBorderShape = extents.x1;
-    rep.yBorderShape = extents.y1;
-    rep.widthBorderShape = extents.x2 - extents.x1;
-    rep.heightBorderShape = extents.y2 - extents.y1;
+    rep.xBoundingShape = extents.x1;
+    rep.yBoundingShape = extents.y1;
+    rep.widthBoundingShape = extents.x2 - extents.x1;
+    rep.heightBoundingShape = extents.y2 - extents.y1;
+    if (pWin->clipShape) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->clipShape);
+    } else {
+	extents.x1 = 0;
+	extents.y1 = 0;
+	extents.x2 = pWin->clientWinSize.width;
+	extents.y2 = pWin->clientWinSize.height;
+    }
+    rep.xClipShape = extents.x1;
+    rep.yClipShape = extents.y1;
+    rep.widthClipShape = extents.x2 - extents.x1;
+    rep.heightClipShape = extents.y2 - extents.y1;
     if (client->swapped) {
     	swaps(&rep.sequenceNumber, n);
     	swapl(&rep.length, n);
-	swaps(&rep.xWindowShape, n);
-	swaps(&rep.yWindowShape, n);
-	swaps(&rep.widthWindowShape, n);
-	swaps(&rep.heightWindowShape, n);
-	swaps(&rep.xBorderShape, n);
-	swaps(&rep.yBorderShape, n);
-	swaps(&rep.widthBorderShape, n);
-	swaps(&rep.heightBorderShape, n);
+	swaps(&rep.xBoundingShape, n);
+	swaps(&rep.yBoundingShape, n);
+	swaps(&rep.widthBoundingShape, n);
+	swaps(&rep.heightBoundingShape, n);
+	swaps(&rep.xClipShape, n);
+	swaps(&rep.yClipShape, n);
+	swaps(&rep.widthClipShape, n);
+	swaps(&rep.heightClipShape, n);
     }
-    WriteToClient(client, sizeof (xShapeQueryReply), (char *)&rep);
+    WriteToClient(client, sizeof (xShapeQueryExtentsReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -679,20 +670,8 @@ SendShapeNotify (pWin, which)
 		    (pWin->wid, RT_WINDOW, ShapeResourceClass);
     if (!pHead)
 	return;
-    if (which == ShapeWindow) {
-	region = pWin->windowShape;
-	if (region) {
-	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
-	    shaped = xTrue;
-	} else {
-	    extents.x1 = 0;
-	    extents.y1 = 0;
-	    extents.x2 = pWin->clientWinSize.width;
-	    extents.y2 = pWin->clientWinSize.height;
-	    shaped = xFalse;
-	}
-    } else {
-	region = pWin->borderShape;
+    if (which == ShapeBounding) {
+	region = pWin->boundingShape;
 	if (region) {
 	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
 	    shaped = xTrue;
@@ -701,6 +680,18 @@ SendShapeNotify (pWin, which)
 	    extents.y1 = -pWin->borderWidth;
 	    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
 	    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+	    shaped = xFalse;
+	}
+    } else {
+	region = pWin->clipShape;
+	if (region) {
+	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
+	    shaped = xTrue;
+	} else {
+	    extents.x1 = 0;
+	    extents.y1 = 0;
+	    extents.x2 = pWin->clientWinSize.width;
+	    extents.y2 = pWin->clientWinSize.height;
 	    shaped = xFalse;
 	}
     }
@@ -731,6 +722,47 @@ SendShapeNotify (pWin, which)
 }
 
 static int
+ProcShapeInputSelected (client)
+    register ClientPtr	client;
+{
+    REQUEST(xShapeInputSelectedReq);
+    WindowPtr		pWin;
+    ShapeEventPtr	pShapeEvent, *pHead;
+    int			enabled;
+    xShapeInputSelectedReply	rep;
+    register int		n;
+
+    REQUEST_SIZE_MATCH (xShapeSelectInputReq);
+    pWin = LookupWindow (stuff->window, client);
+    if (!pWin)
+	return BadWindow;
+    pHead = (ShapeEventPtr *) LookupID 
+		    	(pWin->wid, RT_WINDOW, ShapeResourceClass);
+    enabled = xFalse;
+    if (pHead) {
+    	for (pShapeEvent = *pHead;
+	     pShapeEvent;
+	     pShapeEvent = pShapeEvent->next)
+    	{
+	    if (pShapeEvent->client == client) {
+	    	enabled = xTrue;
+		break;
+	    }
+    	}
+    }
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.enabled = enabled;
+    if (client->swapped) {
+	swaps (&rep.sequenceNumber, n);
+	swapl (&rep.length, n);
+    }
+    WriteToClient (client, sizeof (xShapeInputSelectedReply), (char *) &rep);
+    return (client->noClientException);
+}
+
+static int
 ProcShapeGetRectangles (client)
     register ClientPtr	client;
 {
@@ -747,11 +779,11 @@ ProcShapeGetRectangles (client)
     if (!pWin)
 	return BadWindow;
     switch (stuff->kind) {
-    case ShapeWindow:
-	region = pWin->windowShape;
+    case ShapeBounding:
+	region = pWin->boundingShape;
 	break;
-    case ShapeBorder:
-	region = pWin->borderShape;
+    case ShapeClip:
+	region = pWin->clipShape;
 	break;
     default:
 	return BadValue;
@@ -762,17 +794,17 @@ ProcShapeGetRectangles (client)
 	if (!rects)
 	    return BadAlloc;
 	switch (stuff->kind) {
-	case ShapeWindow:
-	    rects->x = 0;
-	    rects->y = 0;
-	    rects->width = pWin->clientWinSize.width;
-	    rects->height = pWin->clientWinSize.height;
-	    break;
-	case ShapeBorder:
+	case ShapeBounding:
 	    rects->x = - (int) pWin->borderWidth;
 	    rects->y = - (int) pWin->borderWidth;
 	    rects->width = pWin->clientWinSize.width + pWin->borderWidth;
 	    rects->height = pWin->clientWinSize.height + pWin->borderWidth;
+	    break;
+	case ShapeClip:
+	    rects->x = 0;
+	    rects->y = 0;
+	    rects->width = pWin->clientWinSize.width;
+	    rects->height = pWin->clientWinSize.height;
 	    break;
 	}
     } else {
@@ -809,6 +841,8 @@ ProcShapeDispatch (client)
 {
     REQUEST(xReq);
     switch (stuff->data) {
+    case X_ShapeQueryVersion:
+	return ProcShapeQueryVersion (client);
     case X_ShapeRectangles:
 	return ProcShapeRectangles (client);
     case X_ShapeMask:
@@ -817,10 +851,12 @@ ProcShapeDispatch (client)
 	return ProcShapeCombine (client);
     case X_ShapeOffset:
 	return ProcShapeOffset (client);
-    case X_ShapeQuery:
-	return ProcShapeQuery (client);
+    case X_ShapeQueryExtents:
+	return ProcShapeQueryExtents (client);
     case X_ShapeSelectInput:
 	return ProcShapeSelectInput (client);
+    case X_ShapeInputSelected:
+	return ProcShapeInputSelected (client);
     case X_ShapeGetRectangles:
 	return ProcShapeGetRectangles (client);
     default:
@@ -838,6 +874,17 @@ ProcShapeDispatch (client)
 
 #define SwapRestS(stuff) \
     SwapShorts((short *)(stuff + 1), (unsigned long)LengthRestS(stuff))
+
+static int
+SProcShapeQueryVersion (client)
+    register ClientPtr	client;
+{
+    register int    n;
+    REQUEST (xShapeQueryVersionReq);
+
+    swaps (&stuff->length, n);
+    return ProcShapeQueryVersion (client);
+}
 
 static int
 SProcShapeRectangles (client)
@@ -899,14 +946,15 @@ SProcShapeOffset (client)
 }
 
 static int
-SProcShapeQuery (client)
+SProcShapeQueryExtents (client)
     register ClientPtr	client;
 {
     register char   n;
-    REQUEST (xShapeQueryReq);
+    REQUEST (xShapeQueryExtentsReq);
 
+    swaps (&stuff->length, n);
     swapl (&stuff->window, n);
-    return ProcShapeQuery (client);
+    return ProcShapeQueryExtents (client);
 }
 
 static int
@@ -916,8 +964,21 @@ SProcShapeSelectInput (client)
     register char   n;
     REQUEST (xShapeSelectInputReq);
 
+    swaps (&stuff->length, n);
     swapl (&stuff->window, n);
     return ProcShapeSelectInput (client);
+}
+
+static int
+SProcShapeInputSelected (client)
+    register ClientPtr	client;
+{
+    register int    n;
+    REQUEST (xShapeInputSelectedReq);
+
+    swaps (&stuff->length, n);
+    swapl (&stuff->window, n);
+    return ProcShapeInputSelected (client);
 }
 
 static int
@@ -927,6 +988,7 @@ SProcShapeGetRectangles (client)
     REQUEST(xShapeGetRectanglesReq);
     register char   n;
 
+    swaps (&stuff->length, n);
     swapl (&stuff->window, n);
     return ProcShapeGetRectangles (client);
 }
@@ -937,6 +999,8 @@ SProcShapeDispatch (client)
 {
     REQUEST(xReq);
     switch (stuff->data) {
+    case X_ShapeQueryVersion:
+	return SProcShapeQueryVersion (client);
     case X_ShapeRectangles:
 	return SProcShapeRectangles (client);
     case X_ShapeMask:
@@ -945,10 +1009,12 @@ SProcShapeDispatch (client)
 	return SProcShapeCombine (client);
     case X_ShapeOffset:
 	return SProcShapeOffset (client);
-    case X_ShapeQuery:
-	return SProcShapeQuery (client);
+    case X_ShapeQueryExtents:
+	return SProcShapeQueryExtents (client);
     case X_ShapeSelectInput:
 	return SProcShapeSelectInput (client);
+    case X_ShapeInputSelected:
+	return SProcShapeInputSelected (client);
     case X_ShapeGetRectangles:
 	return SProcShapeGetRectangles (client);
     default:
@@ -957,4 +1023,3 @@ SProcShapeDispatch (client)
 	return BadRequest;
     }
 }
-

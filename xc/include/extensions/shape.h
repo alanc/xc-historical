@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.4 89/03/28 14:18:53 keith Exp $ */
+/* $XConsortium: shape.h,v 1.5 89/03/28 16:41:32 keith Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
@@ -36,9 +36,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define X_ShapeMask			2
 #define X_ShapeCombine			3
 #define X_ShapeOffset			4
-#define X_ShapeQuery			5
+#define X_ShapeQueryExtents		5
 #define X_ShapeSelectInput		6
-#define X_ShapeGetRectangles		7
+#define X_ShapeInputSelected		7
+#define X_ShapeGetRectangles		8
 
 #define ShapeSet			0
 #define ShapeUnion			1
@@ -46,8 +47,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define ShapeSubtract			3
 #define ShapeInvert			4
 
-#define ShapeWindow			0
-#define ShapeBorder			1
+#define ShapeBounding			0
+#define ShapeClip			1
 
 #define ShapeNotify			0
 
@@ -60,7 +61,7 @@ typedef struct {
     Bool send_event;	    /* true if this came frome a SendEvent request */
     Display *display;	    /* Display the event was read from */
     Window window;	    /* window of event */
-    int kind;		    /* ShapeWindow or ShapeBorder */
+    int kind;		    /* ShapeBounding or ShapeClip */
     int x, y;		    /* extents of new region */
     unsigned width, height;
     Time time;		    /* server timestamp when region changed */

@@ -1,5 +1,5 @@
 /************************************************************
-Copyright 1987 by the Massachusetts Institute of Technology
+Copyright 1989 by the Massachusetts Institute of Technology
 
                     All Rights Reserved
 
@@ -75,6 +75,8 @@ shapeCloseDisplay (dpy, codes)
 	prev->next = dpyHas->next;
     else
 	dpysHaveShape = dpyHas->next;
+    if (dpyHas == lastChecked)
+	lastChecked = (struct DpyHasShape *) NULL;
     Xfree (dpyHas);
     return 0;
 }
@@ -183,7 +185,7 @@ queryExtension (dpy)
 }
 
 Bool
-XQueryShapeExtension (dpy)
+XShapeQueryExtension (dpy)
     Display *dpy;
 {
     return CheckExtension (dpy) != 0;
@@ -227,7 +229,7 @@ XShapeQueryVersion(dpy, majorVersion, minorVersion)
     return 1;
 }
 
-XShapeRegion(dpy, dest, destKind, r, op, xOff, yOff)
+XShapeCombineRegion(dpy, dest, destKind, r, op, xOff, yOff)
 register Display    *dpy;
 Window		    dest;
 int		    destKind, op, xOff, yOff;
@@ -245,10 +247,10 @@ register REGION	    *r;
 	pr->width = pb->x2 - pb->x1;
 	pr->height = pb->y2 - pb->y1;
      }
-     XShapeRectangles (dpy, dest, destKind, xr, r->numRects, op, xOff, yOff);
+     XShapeCombineRectangles (dpy, dest, destKind, xr, r->numRects, op, xOff, yOff);
 }
 
-XShapeRectangles(dpy, dest, destKind, rectangles, n_rects, op, xOff, yOff)
+XShapeCombineRectangles(dpy, dest, destKind, rectangles, n_rects, op, xOff, yOff)
 register Display *dpy;
 XID dest;
 int op, xOff, yOff;
@@ -281,7 +283,7 @@ int n_rects;
     SyncHandle();
 }
 
-XShapeMask (dpy, dest, destKind, src, op, xOff, yOff)
+XShapeCombineMask (dpy, dest, destKind, src, op, xOff, yOff)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -308,7 +310,7 @@ int op, xOff, yOff;
     SyncHandle();
 }
 
-XShapeCombine (dpy, dest, destKind, src, srcKind, op, xOff, yOff)
+XShapeCombineShape (dpy, dest, destKind, src, srcKind, op, xOff, yOff)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -337,7 +339,7 @@ int op, xOff, yOff;
     SyncHandle();
 }
 
-XShapeOffset (dpy, dest, destKind, xOff, yOff)
+XShapeOffsetShape (dpy, dest, destKind, xOff, yOff)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -361,40 +363,41 @@ int xOff, yOff;
     SyncHandle();
 }
 
-XShapeQuery (dpy, window, wShaped, bShaped,
-		xws, yws, wws, hws, xbs, ybs, wbs, hbs)    
+XShapeQueryExtents (dpy, window,
+		bShaped, xbs, ybs, wbs, hbs,
+		cShaped, xcs, ycs, wcs, hcs)    
     register Display    *dpy;
     Window		    window;
-    int			    *wShaped, *bShaped;	    /* RETURN */
-    int			    *xws, *yws, *xbs, *ybs; /* RETURN */
-    unsigned int	    *wws, *hws, *wbs, *hbs; /* RETURN */
+    int			    *bShaped, *cShaped;	    /* RETURN */
+    int			    *xbs, *ybs, *xcs, *ycs; /* RETURN */
+    unsigned int	    *wbs, *hbs, *wcs, *hcs; /* RETURN */
 {
-    xShapeQueryReply	    rep;
-    register xShapeQueryReq *req;
+    xShapeQueryExtentsReply	    rep;
+    register xShapeQueryExtentsReq *req;
     XExtCodes	*codes;
     
     if (!(codes = CheckExtension (dpy)))
 	return;
     LockDisplay (dpy);
-    GetReq (ShapeQuery, req);
+    GetReq (ShapeQueryExtents, req);
     req->reqType = codes->major_opcode;
-    req->shapeReqType = X_ShapeQuery;
+    req->shapeReqType = X_ShapeQueryExtents;
     req->window = window;
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
 	return 0;
     }
-    *wShaped = rep.windowShaped;
-    *bShaped = rep.borderShaped;
-    *xws = cvtINT16toInt (rep.xWindowShape);
-    *yws = cvtINT16toInt (rep.yWindowShape);
-    *wws = rep.widthWindowShape;
-    *hws = rep.heightWindowShape;
-    *xbs = cvtINT16toInt (rep.xBorderShape);
-    *ybs = cvtINT16toInt (rep.yBorderShape);
-    *wbs = rep.widthBorderShape;
-    *hbs = rep.heightBorderShape;
+    *bShaped = rep.boundingShaped;
+    *cShaped = rep.clipShaped;
+    *xbs = cvtINT16toInt (rep.xBoundingShape);
+    *ybs = cvtINT16toInt (rep.yBoundingShape);
+    *wbs = rep.widthBoundingShape;
+    *hbs = rep.heightBoundingShape;
+    *xcs = cvtINT16toInt (rep.xClipShape);
+    *ycs = cvtINT16toInt (rep.yClipShape);
+    *wcs = rep.widthClipShape;
+    *hcs = rep.heightClipShape;
     UnlockDisplay (dpy);
     SyncHandle ();
     return 1;
