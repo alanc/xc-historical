@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.151 92/11/24 11:31:18 rws Exp $ */
+/* $XConsortium: connection.c,v 1.152 92/11/30 11:21:44 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -136,9 +136,11 @@ static int ParentProcess;
 
 static Bool debug_conns = FALSE;
 
-static int SavedAllClients[mskcnt];
-static int SavedAllSockets[mskcnt];
-static int SavedClientsWithInput[mskcnt];
+static long IgnoredClientsWithInput[mskcnt];
+static long GrabImperviousClients[mskcnt];
+static long SavedAllClients[mskcnt];
+static long SavedAllSockets[mskcnt];
+static long SavedClientsWithInput[mskcnt];
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
@@ -840,6 +842,7 @@ CloseDownFileDescriptor(oc)
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
     BITCLEAR(ClientsWithInput, connection);
+    BITCLEAR(GrabImperviousClients, connection);
     if (GrabInProgress)
     {
 	BITCLEAR(SavedAllSockets, connection);
@@ -951,24 +954,21 @@ OnlyListenToOneClient(client)
 
     if (! GrabInProgress)
     {
-	COPYBITS (ClientsWithInput, SavedClientsWithInput);
-        BITCLEAR (SavedClientsWithInput, connection);
-	if (GETBIT(ClientsWithInput, connection))
+	COPYBITS(ClientsWithInput, SavedClientsWithInput);
+	MASKANDSETBITS(ClientsWithInput,
+		       ClientsWithInput, GrabImperviousClients);
+	if (GETBIT(SavedClientsWithInput, connection))
 	{
-	    CLEARBITS(ClientsWithInput);	    
+	    BITCLEAR(SavedClientsWithInput, connection);
 	    BITSET(ClientsWithInput, connection);
 	}
-	else
-        {
-	    CLEARBITS(ClientsWithInput);	    
-	}
+	UNSETBITS(SavedClientsWithInput, GrabImperviousClients);
 	COPYBITS(AllSockets, SavedAllSockets);
 	COPYBITS(AllClients, SavedAllClients);
-
 	UNSETBITS(AllSockets, AllClients);
-	BITSET(AllSockets, connection);
-	CLEARBITS(AllClients);
+	MASKANDSETBITS(AllClients, AllClients, GrabImperviousClients);
 	BITSET(AllClients, connection);
+	ORBITS(AllSockets, AllSockets, AllClients);
 	GrabInProgress = client->index;
     }
 }
@@ -995,15 +995,13 @@ ListenToAllClients()
  *    Must have cooresponding call to AttendClient.
  ****************/
 
-static long IgnoredClientsWithInput[mskcnt];
-
 IgnoreClient (client)
     ClientPtr	client;
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (!GrabInProgress || GrabInProgress == client->index)
+    if (!GrabInProgress || GETBIT(AllClients, client->index))
     {
     	if (GETBIT (ClientsWithInput, connection))
 	    BITSET(IgnoredClientsWithInput, connection);
@@ -1038,7 +1036,8 @@ AttendClient (client)
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int connection = oc->fd;
 
-    if (!GrabInProgress || GrabInProgress == client->index)
+    if (!GrabInProgress || GrabInProgress == client->index ||
+	GETBIT(GrabImperviousClients, connection))
     {
     	BITSET(AllClients, connection);
     	BITSET(AllSockets, connection);
@@ -1055,10 +1054,43 @@ AttendClient (client)
     }
 }
 
+/* make client impervious to grabs; assume only executing client calls this */
+
+MakeClientGrabImpervious(client)
+    ClientPtr client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int connection = oc->fd;
+
+    BITSET(GrabImperviousClients, connection);
+}
+
+/* make client pervious to grabs; assume only executing client calls this */
+
+MakeClientGrabPervious(client)
+    ClientPtr client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    int connection = oc->fd;
+
+    BITCLEAR(GrabImperviousClients, connection);
+    if (GrabInProgress && (GrabInProgress != client->index))
+    {
+	if (GETBIT(ClientsWithInput, connection))
+	{
+	    BITSET(SavedClientsWithInput, connection);
+	    BITCLEAR(ClientsWithInput, connection);
+	}
+	BITCLEAR(AllSockets, connection);
+	BITCLEAR(AllClients, connection);
+	isItTimeToYield = TRUE;
+    }
+}
+
 #ifdef AIXV3
 
-static int grabbingClient;
-static int reallyGrabbed;
+static long pendingActiveClients[mskcnt];
+static BOOL reallyGrabbed;
 
 /****************
 * DontListenToAnybody:
@@ -1078,14 +1110,17 @@ static int reallyGrabbed;
 void
 DontListenToAnybody()
 {
-    if (!GrabInProgress) {
+    if (!GrabInProgress)
+    {
 	COPYBITS(ClientsWithInput, SavedClientsWithInput);
 	COPYBITS(AllSockets, SavedAllSockets);
 	COPYBITS(AllClients, SavedAllClients);
 	GrabInProgress = TRUE;
 	reallyGrabbed = FALSE;
-    } else {
-	grabbingClient = ((OsCommPtr)clients[GrabInProgress]->osPrivate)->fd;
+    }
+    else
+    {
+	COPYBITS(AllClients, pendingActiveClients);
 	reallyGrabbed = TRUE;
     }
     CLEARBITS(ClientsWithInput);
@@ -1097,10 +1132,13 @@ DontListenToAnybody()
 void
 PayAttentionToClientsAgain()
 {
-    if (reallyGrabbed) {
-	BITSET(AllSockets, grabbingClient);
-	BITSET(AllClients, grabbingClient);
-    } else {
+    if (reallyGrabbed)
+    {
+	ORBITS(AllSockets, AllSockets, pendingActiveClients);
+	ORBITS(AllClients, AllClients, pendingActiveClients);
+    }
+    else
+    {
 	ListenToAllClients();
     }
     reallyGrabbed = FALSE;
