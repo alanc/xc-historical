@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ParseCmd.c,v 1.21 91/01/05 16:48:16 rws Exp $
+ * $XConsortium: ParseCmd.c,v 1.22 91/02/01 16:33:19 gildea Exp $
  */
 
 /***********************************************************
@@ -80,21 +80,21 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     char		**argend;
 
 #define PutCommandResource(value_str)				\
-{								\
+    {								\
     XrmStringToBindingQuarkList(				\
 	options[i].specifier, start_bindings, start_quarks);    \
     XrmQPutStringResource(pdb, bindings, quarks, value_str);    \
-} /* PutCommandResource */
+    } /* PutCommandResource */
 
     myargc = (*argc); 
     argend = argv + myargc;
     argsave = ++argv;
 
-    /* Parse prefix into bindings and quark list */
-    XrmStringToBindingQuarkList(prefix, bindings, quarks);
-    for (start_bindings = bindings, start_quarks = quarks;
-	 *start_quarks;
-	 start_bindings++, start_quarks++) {};
+    /* Initialize bindings/quark list with prefix (typically app name). */
+    quarks[0] = XrmStringToName(prefix);
+    bindings[0] = XrmBindTightly;
+    start_quarks = &quarks[1];
+    start_bindings = &bindings[1];
 
     table_is_sorted = (myargc > 2) ? Check : DontCare;
     for (--myargc; myargc > 0; --myargc, ++argv) {
