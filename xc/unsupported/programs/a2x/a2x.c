@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.90 92/09/02 09:39:34 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.91 92/09/28 12:13:16 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -403,6 +403,23 @@ ioerror(Dpy)
 }
 
 void
+map_sym(sym, c)
+    KeySym sym;
+    char c;
+{
+    int i;
+
+    i = XKeysymToKeycode(dpy, sym);
+    if (XKeycodeToKeysym(dpy, i, 0) == sym) {
+	keycodes[c] = i;
+	modifiers[c] = 0;
+    } else if (XKeycodeToKeysym(dpy, i, 1) == sym) {
+	keycodes[c] = i;
+	modifiers[c] = ShiftMask;
+    }
+}
+
+void
 reset_mapping()
 {
     int minkey, maxkey;
@@ -425,15 +442,15 @@ reset_mapping()
     bzero((char *)keycodes, sizeof(keycodes));
     bzero((char *)modmask, sizeof(modmask));
     for (i = minkey; i <= maxkey; i++) {
-	sym = XKeycodeToKeysym(dpy, i, 0);
-	if (sym > 0 && sym < 128) {
-	    keycodes[sym] = i;
-	    modifiers[sym] = 0;
-	}
 	sym = XKeycodeToKeysym(dpy, i, 1);
 	if (sym > 0 && sym < 128) {
 	    keycodes[sym] = i;
 	    modifiers[sym] = ShiftMask;
+	}
+	sym = XKeycodeToKeysym(dpy, i, 0);
+	if (sym > 0 && sym < 128) {
+	    keycodes[sym] = i;
+	    modifiers[sym] = 0;
 	}
     }
     for (c = 0; c < 32; c++) {
@@ -443,26 +460,10 @@ reset_mapping()
 	keycodes[c] = keycodes[i];
 	modifiers[c] = modifiers[i] | ControlMask;
     }
-    c = XKeysymToKeycode(dpy, XK_Return);
-    if (c) {
-	keycodes['\r'] = c;
-	modifiers['\r'] = 0;
-    }
-    c = XKeysymToKeycode(dpy, XK_Tab);
-    if (c) {
-	keycodes['\t'] = c;
-	modifiers['\t'] = 0;
-    }
-    c = XKeysymToKeycode(dpy, XK_Escape);
-    if (c) {
-	keycodes['\033'] = c;
-	modifiers['\033'] = 0;
-    }
-    c = XKeysymToKeycode(dpy, XK_Delete);
-    if (c) {
-	keycodes[127] = c;
-	modifiers[127] = 0;
-    }
+    map_sym(XK_Return, '\r');
+    map_sym(XK_Tab, '\t');
+    map_sym(XK_Escape, '\033');
+    map_sym(XK_Delete, 127);
     mmap = XGetModifierMapping(dpy);
     j = 0;
     shift = 0;
