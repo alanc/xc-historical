@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: kyrls.m,v 1.12 92/06/11 17:22:33 rws Exp $
  */
 >>TITLE KeyRelease CH08
 >>EXTERN
@@ -48,6 +48,29 @@ int	tmp;
 	}
 	return(keyc);
 }    
+
+static unsigned int
+keystate(keyc)
+int keyc;
+{
+XModifierKeymap *map;
+unsigned int state;
+int i, j;
+
+	map = XGetModifierMapping(Dsp);
+	if (!map)
+		return(0);
+	state = 0;
+	for (i = 0; i < 8; i++) {
+		for (j = 0; j < map->max_keypermod; j++) {
+			if (map->modifiermap[(i * map->max_keypermod) + j] ==
+			    keyc)
+				state |= (ShiftMask << i);
+		}
+	}
+	XFreeModifiermap(map);
+	return(state);
+}
 >>SET startup focusstartup
 >>SET cleanup focuscleanup
 >>ASSERTION Good B 1
@@ -108,7 +131,7 @@ int		kc;
 		good.y = 0;
 		good.x_root = ptr->nx;
 		good.y_root = ptr->ny;
-		good.state = 0;
+		good.state = keystate(kc);
 		good.keycode = kc;
 		good.same_screen = True;
 
@@ -194,7 +217,7 @@ int	 		kc;
 		good.y = 0;
 		good.x_root = ptr->nx;
 		good.y_root = ptr->ny;
-		good.state = 0;
+		good.state = keystate(kc);
 		good.keycode = kc;
 		good.same_screen = True;
 	
