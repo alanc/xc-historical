@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.36 89/06/28 16:08:13 converse Exp $";
+    "$XConsortium: screen.c,v 2.37 89/06/30 15:19:25 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -84,7 +84,9 @@ Scrn scrn;
 void EnableProperButtons(scrn)
 Scrn scrn;
 {
+    static void EnableCallback();
     int value, changed, reapable;
+
     if (scrn) {
 	switch (scrn->kind) {
 	  case STtocAndView:
@@ -104,23 +106,19 @@ Scrn scrn;
 
 	  case STcomp:
 	    if (scrn->msg != NULL) {
-#ifdef notdef		  
 		changed = MsgChanged(scrn->msg);
-#else
-		changed = TRUE;
-#endif
 		reapable = MsgGetReapable(scrn->msg);
 		SetButton(scrn->viewbuttons, "send", changed || !reapable);
 		SetButton(scrn->viewbuttons, "save", changed || reapable);
 		SetButton(scrn->viewbuttons, "insert",
 			  scrn->assocmsg != NULL ? TRUE : FALSE);
-#ifdef notdef		  
+
 		if (!changed) 
-		    MsgSetCallOnChange(scrn->msg,EnableProperButtons,
+		    MsgSetCallOnChange(scrn->msg, EnableCallback,
 				       (caddr_t) scrn);
 		else 
-		    MsgClearCallOnChange(scrn->msg);
-#endif
+		    MsgSetCallOnChange(scrn->msg, NULL, NULL);
+
 	    } else {
 		SetButton(scrn->viewbuttons, "send", FALSE);
 		SetButton(scrn->viewbuttons, "save", FALSE);
@@ -131,7 +129,15 @@ Scrn scrn;
     }
 }
 
+static void
+EnableCallback(w, data, junk)
+Widget w;
+caddr_t data, junk;
+{
+  void EnableProperButtons();
 
+  EnableProperButtons( (Scrn) data);
+}  
 
 /* Create subwidgets for a toc&view window. */
 
