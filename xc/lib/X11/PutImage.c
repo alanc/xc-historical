@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.39 87/12/19 15:54:58 rws Locked $ */
+/* $Header: XPutImage.c,v 11.40 87/12/23 11:25:02 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -45,46 +45,6 @@ unsigned char _reverse_byte[0x100] = {
 	0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
-
-/* XXX _swapshort isn't used here anymore, but is used in Xlib (move it?) */
-
-_swapshort (bp, n)
-    register char *bp;
-    register long n;
-{
-    register char c;
-    register char *ep = bp + n;
-
-    while (bp < ep) {
-	c = *bp;
-	*bp = *(bp + 1);
-	bp++;
-	*bp++ = c;
-    }
-}
-
-/* XXX _swaplong isn't used in Xlib any more, but xwd/xwud use it (fix them) */
-
-_swaplong (bp, n)
-    register char *bp;
-    register long n;
-{
-    register char c;
-    register char *ep = bp + n;
-    register char *sp;
-
-    while (bp < ep) {
-	sp = bp + 3;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	sp = bp + 1;
-	c = *sp;
-	*sp = *bp;
-	*bp++ = c;
-	bp += 2;
-    }
-}
 
 /* XXX the following functions are declared int instead of void because various
  * compilers and lints complain about later intialization of SwapFunc and/or
