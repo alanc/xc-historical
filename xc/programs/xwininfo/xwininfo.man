@@ -153,6 +153,7 @@ xwininfo: Window id: 0x60000f "xterm"
   Map State: IsViewable
   Override Redirect State: no
   Corners:  +2+85  -699+85  -699-623  +2-623
+  -geometry 80x24+0+58
 
 .SH ENVIRONMENT
 .PP
@@ -163,6 +164,11 @@ To get the default host and display number.
 X(1), xprop(1)
 .SH BUGS
 Using \fB\-stats \-bits\fP shows some redundant information.
+.PP
+The -geometry string displayed is only correct if the window gravity
+hint is a corner gravity.  With CenterGravity and the edge gravities,
+a corner can only be determined to within the border width of the
+original window.  The hint necessary to make this work will be added someday.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
