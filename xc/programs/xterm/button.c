@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.45 89/11/20 13:22:09 jim Exp $
+ *	$XConsortium: button.c,v 1.46 89/12/07 20:10:32 kit Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.45 89/11/20 13:22:09 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.46 89/12/07 20:10:32 kit Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -170,7 +170,7 @@ XEvent* event;
 }
 
 
-
+/*ARGSUSED*/
 void HandleSelectExtend(w, event, params, num_params)
 Widget w;
 XEvent *event;			/* must be XMotionEvent */
@@ -203,8 +203,6 @@ String *params;			/* selections */
 Cardinal *num_params;
 Bool use_cursor_loc;
 {
-	register TScreen *screen = &((XtermWidget)w)->screen;
-
 	((XtermWidget)w)->screen.selection_time = event->xbutton.time;
 	switch (eventMode) {
 		case NORMAL :
@@ -365,8 +363,6 @@ Widget w;
 XEvent *event;			/* must be XButtonEvent* */
 int startrow, startcol;
 {
-	register TScreen *screen = &((XtermWidget)w)->screen;
-
 	if (SendMousePosition(w, event)) return;
 	SetSelectUnit(event->xbutton.time, SELECTCHAR);
 	replyToEmacs = FALSE;
@@ -686,6 +682,7 @@ register int amount;
 }
 
 
+/*ARGSUSED*/
 ResizeSelection (screen, rows, cols)
     TScreen *screen;
     int rows, cols;
@@ -941,8 +938,7 @@ register int frow, fcol, trow, tcol;
 /* Guaranteed that (frow, fcol) <= (trow, tcol) */
 {
 	register TScreen *screen = &term->screen;
-	register int i, j;
-	GC tempgc;
+	register int i;
 
 	if (frow < 0)
 	    frow = fcol = 0;
@@ -1054,11 +1050,12 @@ int *format;
 		    w, xterm->screen.selection_time, selection,
 		    target, type, (caddr_t*)&std_targets, &std_length, format
 		   );
-	*length = std_length + 4;
+	*length = std_length + 5;
 	*value = (caddr_t)XtMalloc(sizeof(Atom)*(*length));
 	targetP = *(Atom**)value;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
+	*targetP++ = XA_COMPOUND_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
 	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
@@ -1068,8 +1065,13 @@ int *format;
 	return True;
     }
 
-    if (*target == XA_STRING || *target == XA_TEXT(d)) {
-	*type = XA_STRING;
+    if (*target == XA_STRING ||
+	*target == XA_TEXT(d) ||
+	*target == XA_COMPOUND_TEXT(d)) {
+	if (*target == XA_COMPOUND_TEXT(d))
+	    *type = *target;
+	else
+	    *type = XA_STRING;
 	*value = xterm->screen.selection;
 	*length = xterm->screen.selection_length;
 	*format = 8;
@@ -1117,7 +1119,7 @@ static void LoseSelection(w, selection)
 {
     register TScreen* screen = &((XtermWidget)w)->screen;
     register Atom* atomP;
-    int i, empty;
+    int i;
     for (i = 0, atomP = screen->selection_atoms;
 	 i < screen->selection_count; i++, atomP++)
     {
@@ -1307,6 +1309,7 @@ register XButtonEvent *event;
 }
 
 
+/*ARGSUSED*/
 void HandleGINInput (w, event, param_list, nparamsp)
     Widget w;
     XEvent *event;
