@@ -1,4 +1,4 @@
-.\" $XConsortium: icccm.ms,v 1.17 94/04/16 18:21:06 rws Exp $
+.\" $XConsortium: icccm.ms,v 1.18 94/04/16 18:30:53 rws Exp $
 .\" Use tbl, eqn, -ms, and macros.t
 .\" @(#)icccm.ms	1.50	16 Apr 1994	14:13:55
 .EH ''''
@@ -75,10 +75,10 @@ without limitation the rights to use, copy, modify, merge, publish,
 distribute, sublicense, and/or sell copies of the Software, and to
 permit persons to whom the Software is furnished to do so, subject to
 the following conditions:
-
+.LP
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
-
+.LP
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -86,7 +86,7 @@ IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
-
+.LP
 Except as contained in this notice, the name of the X Consortium shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
