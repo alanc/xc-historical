@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.39 89/07/18 17:16:11 jim Exp $
+ * $XConsortium: resize.c,v 1.40 89/07/21 19:57:25 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.39 89/07/18 17:16:11 jim Exp $";
+"$XConsortium: resize.c,v 1.40 89/07/21 19:57:25 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -96,8 +96,9 @@ static void do_auto_clamp (tmp_win, evp)
 	  return;
     }
 
-    h = ((x - dragx) / (dragWidth / 3));
-    v = ((y - dragy - tmp_win->title_height) / (dragHeight / 3));
+    h = ((x - dragx) / (dragWidth < 3 ? 1 : (dragWidth / 3)));
+    v = ((y - dragy - tmp_win->title_height) / 
+	 (dragHeight < 3 ? 1 : (dragHeight / 3)));
 	
     if (h <= 0) {
 	clampLeft = 1;
