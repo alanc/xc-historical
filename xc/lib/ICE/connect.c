@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.17 93/11/22 19:07:44 mor Exp $ */
+/* $XConsortium: connect.c,v 1.18 93/11/24 15:12:45 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -192,7 +192,8 @@ char *errorStringRet;
      * the Connection Setup authentication.
      */
 
-    IceGetValidAuthIndicesFromAuthFile ("ICE", iceConn->connection_string,
+    _IceGetPoValidAuthIndices (
+	"ICE", iceConn->connection_string,
 	_IceAuthCount, _IceAuthNames, &authUsableCount, authIndices);
 
     for (i = 0; i < _IceAuthCount; i++)
