@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.20 90/02/07 16:07:43 kit Exp $
- * $Header: buttons.c,v 1.20 90/02/07 16:07:43 kit Exp $
+ * $XConsortium: buttons.c,v 1.21 90/04/25 17:28:21 converse Exp $
+ * $Header: buttons.c,v 1.21 90/04/25 17:28:21 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -42,6 +42,8 @@ ManpageGlobals * InitPsuedoGlobals();
  */
 
 #define TOPARGS 5
+
+static Atom wm_delete_window;
 
 void
 MakeTopBox()
@@ -108,6 +110,18 @@ MakeTopBox()
   SaveGlobals( (man_globals->This_Manpage = top), man_globals);
   XtMapWidget(top);
   AddCursor(top, resources.cursors.top);
+
+/*
+ * Set up ICCCM delete window.
+ */
+  wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW",
+				 False);
+  XtOverrideTranslations
+      (top, XtParseTranslationTable ("<Message>WM_PROTOCOLS: Quit()"));
+  (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
+			  &wm_delete_window, 1);
+  
+
 }
 
 /*	Function Name: CreateManpage
@@ -272,6 +286,7 @@ Boolean full_instance;
 
   mpw->manpage = XtCreateWidget(MANUALPAGE, scrollByLineWidgetClass,
 				pane, NULL, (Cardinal) 0);
+
 }
 
 /*	Function Name: StartManpage
@@ -347,6 +362,17 @@ Boolean help, page;
   XtMapWidget( man_globals->This_Manpage );
 
   AddCursor( man_globals->This_Manpage, resources.cursors.manpage);
+
+/*
+ * Set up ICCCM delete window.
+ */
+  XtOverrideTranslations
+      (man_globals->This_Manpage, 
+       XtParseTranslationTable ("<Message>WM_PROTOCOLS: RemoveThisManpage()"));
+  (void) XSetWMProtocols (XtDisplay(man_globals->This_Manpage),
+			  XtWindow(man_globals->This_Manpage),
+			  &wm_delete_window, 1);
+
 }
 
 /*      Function Name: MenuDestroy

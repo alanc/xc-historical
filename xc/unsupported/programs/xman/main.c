@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.10 89/09/18 17:52:43 kit Exp $
+ * $XConsortium: main.c,v 1.11 89/10/04 14:55:39 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -69,8 +69,7 @@ static XtResource my_resources[] = {
  * The resource that we absolutely need.
  */
 
-static char * fallback_resources[] = {
- "Xman*quitButton.translations:	#override \\n   <Btn1Up>: Quit() reset()",
+static char * fallback_resources[] = { "Xman*quitButton.translations:	#override \\n   <Btn1Up>: Quit() reset()",
  "Xman*helpButton.sensitive:                    FALSE",
  "Xman*manpageButton.sensitive:                 FALSE",
  "Xman*helpButton.Label:			Help",
