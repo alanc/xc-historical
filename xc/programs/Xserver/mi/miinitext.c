@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.28 93/10/24 11:13:34 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.30 94/02/04 15:36:11 dpw Exp $ */
 
 #include "misc.h"
 
@@ -30,6 +30,9 @@ SOFTWARE.
 #endif
 
 extern Bool noTestExtensions;
+#ifdef XKB
+extern Bool noXkbExtension;
+#endif
 
 #ifdef BEZIER
 extern void BezierExtensionInit();
@@ -147,7 +150,7 @@ InitExtensions(argc, argv)
     SyncExtensionInit();
 #endif
 #ifdef XKB
-    XkbExtensionInit();
+    if (!noXkbExtension) XkbExtensionInit();
 #endif
 #ifdef XCMISC
     XCMiscExtensionInit();
