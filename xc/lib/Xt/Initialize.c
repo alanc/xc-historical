@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.93 88/01/20 08:28:00 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.96 88/01/28 19:17:08 swick Locked $";
 #endif lint
 
 /*
@@ -60,24 +60,24 @@ static char rcsid[] = "$Header: Initialize.c,v 1.93 88/01/20 08:28:00 swick Lock
 */
 
 static XrmOptionDescRec opTable[] = {
-{"=",		XtNgeometry,	XrmoptionIsArg,		(caddr_t) NULL},
-{"-bd",		XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor",XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bg",		XtNbackground,	XrmoptionSepArg,	(caddr_t) NULL},
+{"+rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "off"},
 {"-background",	XtNbackground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		XtNborderWidth,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bd",		XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bg",		XtNbackground,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-border",	XtNborderWidth,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bordercolor",XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bw",		XtNborderWidth,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fg",		XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-foreground",	XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fn",		XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-font",	XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-foreground",	XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-geometry",	XtNgeometry,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-iconic",	XtNiconic,	XrmoptionNoArg,		(caddr_t) "on"},
-{"-rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
-{"-reverse",	XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
-{"+rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "off"},
 {"-name",	XtNname,	XrmoptionSepArg,	(caddr_t) NULL},
+{"-reverse",	XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
+{"-rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
 {"-title",	XtNtitle,	XrmoptionSepArg,	(caddr_t) NULL},
+{"=",		XtNgeometry,	XrmoptionIsArg,		(caddr_t) NULL},
 };
 
 #define min(a, b)	(((a) < (b)) ? (a) : (b))
@@ -944,16 +944,16 @@ Boolean last;
  * so that ambiguous abbreviations can be noticed.
  */
 
-static void
-MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
+void
+XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     XrmOptionDescRec *src1, *src2;
     Cardinal num_src1, num_src2;
     XrmOptionDescRec **dst;
     Cardinal *num_dst;
 {
-    XrmOptionDescRec *table, *dstP;
-    register XrmOptionDescRec *opt1, *opt2; 
-    int i1, i2, len1, len2, dst_len;
+    XrmOptionDescRec *table, *endP;
+    register XrmOptionDescRec *opt1, *opt2, *dstP, *startP; 
+    int i1, i2, len1, len2, dst_len, order;
     Boolean found;
 
     *dst = table = (XrmOptionDescRec*)
@@ -964,31 +964,42 @@ MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 	*num_dst = num_src1;
 	return;
     }
-    dstP = &table[dst_len = num_src1];
+    endP = &table[dst_len = num_src1];
     for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
 	found = False;
 	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
 	    /* have to walk the entire new table so new list is ordered */
-	    if (strcmp(opt1->option, opt2->option) == 0) {
+	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
 		*opt1 = *opt2;
 		found = True;
 		break;
 	    }
 	    len1 = strlen(opt1->option);
 	    len2 = strlen(opt2->option);
-	    if (strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
-		if (len2 < len1) { /* make sure shorter one is found first */
-		    *dstP++ = *opt1;
-		    *opt1 = *opt2;
-		    dst_len++;
-		    found = True;
-		}
-		break;		/* append to end of list */
+	    if (len1 != len2 &&
+		strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
+		/* one is abbrev of the other; make sure shorter one
+		   is found first in the table.  We'll shift the
+		   remainder of the table to try to preserve sort if
+		   src1 was sorted. */
+		startP = opt1;
+		if (len1 < len2) startP++;
+		for (dstP = endP; dstP > startP;)
+		    *dstP-- = *(dstP-1);
+		*startP = *opt2;
+		dst_len++;
+		endP++;
+		found = True;
+		break;
 	    }
+	    if (order < 0) startP = opt1+1;
 	}
-	if (!found) {
-	    *dstP++ = *opt2;
+	if (!found) {		/* insert after startP to preserve order */
+	    for (dstP = endP; dstP > startP;)
+		*dstP-- = *(dstP-1);
+	    *startP = *opt2;
 	    dst_len++;
+	    endP++;
 	}
     }
     *num_dst = dst_len;
@@ -1069,8 +1080,8 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	 */
 	displayName[0] = 0;
 
-	MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
-			   &options, &num_options );
+	XtMergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
+			     &options, &num_options );
 
 	for (i = 0; i < num_options; i++) {
 	    ComputeAbbrevLen(options[i].option, "-display",  &min_display_len);
