@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.23 90/02/26 11:49:04 jim Exp $
+ * $XConsortium: listres.c,v 1.24 90/02/26 11:50:47 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@
 #include <X11/Core.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/WidgetNode.h>
+#include <X11/Xaw/AllWidgets.h>
 
 #define widget_list XawWidgetArray  /* or motif or ol or ... */
 #define nwidgets XawWidgetCount
