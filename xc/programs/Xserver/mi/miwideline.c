@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.46 91/12/17 19:39:04 keith Exp $
+ * $XConsortium: miwideline.c,v 1.47 92/01/25 13:23:35 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1218,7 +1218,7 @@ miLineProjectingCap (pDrawable, pGC, pixel, spanData, face, isLeft, xorg, yorg, 
 				       -dy, dx, xorgi, xorgi, dx < 0, bottom);
 	    maxy = -ya + projectYoff;
 	}
-	finaly = ICEIL (maxy) + yorgi;
+	finaly = maxy + yorgi;
 	if (dx < 0)
 	{
 	    left->height = bottomy - lefty;
