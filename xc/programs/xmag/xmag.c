@@ -34,6 +34,7 @@
 #include "RootWindow.h"
 #include "Scale.h"
 #include <X11/cursorfont.h>
+#include <X11/Xmu/Error.h>
 
 #define SRCWIDTH  64
 #define SRCHEIGHT 64
@@ -173,7 +174,7 @@ static int
 Error(dpy, err)
      Display *dpy; XErrorEvent *err;
 {
-  fprintf(stderr, "Protocol Error!!!\n");
+  (void) XmuPrintDefaultErrorMessage (dpy, err, stderr);
   return 0;
 }
 
@@ -522,6 +523,7 @@ static Window
 FindWindow(x, y)
      int x, y;			/* Locatation of cursor */
 {
+  XWindowAttributes wa;
   Window findW = DefaultRootWindow(dpy), stopW, childW;
   XTranslateCoordinates(dpy, findW, findW,
 			x, y, &x, &y, &stopW);
@@ -529,6 +531,10 @@ FindWindow(x, y)
     XTranslateCoordinates(dpy, findW, stopW, 
 			  x, y, &x, &y, &childW);
     findW = stopW;
+    if (childW &&
+	XGetWindowAttributes(dpy, childW, &wa) &&
+	wa.class != InputOutput)
+	break;
     stopW = childW;
   }
   return findW;
