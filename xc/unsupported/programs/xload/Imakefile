@@ -2,5 +2,5 @@
            OBJS = xload.o
            SRCS = xload.c
 
-SingleProgramTarget(xload,$(OBJS),$(XTOOLLIB) $(XLIB),)
+SingleProgramTarget(xload,$(OBJS),$(XAWLIB) $(XTOOLLIB) $(XLIB),)
 DependTarget()

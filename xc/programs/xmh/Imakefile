@@ -1,5 +1,5 @@
-       INCLUDES = -I$(TOP) -I$(TOOLKITSRC)
-LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
+       INCLUDES = -I$(TOP) -I$(AWIDGETSRC) -I$(TOOLKITSRC)
+LOCAL_LIBRARIES = $(XAWLIB) $(XTOOLLIB) $(XLIB)
 
            SRCS = EDiskSrc.c bbox.c button.c command.c compfuncs.c \
                   folder.c icon.c init.c main.c mlist.c msg.c pick.c popup.c \
