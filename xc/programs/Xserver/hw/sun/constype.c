@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: constype.c,v 1.3 88/09/06 14:25:05 jim Exp $
  * 
  * consoletype - utility to print out string identifying Sun console type
  *
@@ -37,15 +37,26 @@ Note on coding style: the function wu_fbid is actually located in a local
 library, accounting for what otherwise might appear to be a strange coding
 style.
 */
-main()
+#include <stdio.h>
+#include <strings.h>
+
+main (argc, argv)
+    int argc;
+    char **argv;
 {
     char *wu_fbid();
-    char *consoleid = wu_fbid("/dev/fb");
-    if ( consoleid == 0 )
-	write(1, "tty", 3);
-    else
-	write(1, consoleid, 3);
-    write(1, "\n", 1);
+    int retval = -1;
+    char *consoleid = wu_fbid("/dev/fb", &retval);
+    int print_num = 0;
+
+    if (argc > 1 && strncmp (argv[1], "-num", strlen(argv[1])) == 0)
+	print_num = 1;
+
+    printf ("%s", consoleid ? consoleid : "tty");
+    if (print_num) {
+	printf (" %d", retval);
+    }
+    putchar ('\n');
 }
 #include <sys/ioctl.h>
 #include <sys/file.h>
@@ -66,21 +77,28 @@ static char *decode_fb[FBTYPE_LASTPLUSONE] = {
 	"gp2",
 	"bw3", "cg3",
 	"bw4", "cg4",
-	"nsA", "nsB", "nsC"	/* Not Sun */
+	"nsA", "nsB", "nsC", 
+#if FBTYPE_LASTPLUSONE > 12
+	"gx", "rop", "vid", 
+	"res5", "res4", "res3", "res2", "res1"
+#endif
 	};
 
 char *
-wu_fbid(fbname)
+wu_fbid(fbname, retval)
 	char *fbname;
+	int *retval;
 {
 	struct fbgattr fbattr;
 	int fd, ioctl_ret;
+	*retval = -1;
 	if ( (fd = open(fbname, O_RDWR, 0)) == -1 )
 		return(0);
 		/* FBIOGATTR fails for early frame buffer types */
 	if (ioctl_ret = ioctl(fd,FBIOGATTR,&fbattr)) {	/*success=>0(false)*/
 		ioctl_ret = ioctl(fd, FBIOGTYPE, &fbattr.fbtype);
 	}
+	*retval = fbattr.fbtype.fb_type;
 	close(fd);
 	if ( ioctl_ret == -1 )
 		return(0);
