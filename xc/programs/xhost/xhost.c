@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.20 88/08/15 18:11:17 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.21 88/08/15 18:11:56 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -269,7 +269,7 @@ XHostAddress *ha;
     alarm(0);
     if (hp)
       return (hp->h_name);
-    else return (inet_ntoa(*((int *)(ha->address))));
+    else return (inet_ntoa(*((struct in_addr *)(ha->address))));
   }
 #ifdef DNETCONN
   if (ha->family == FamilyDECnet) {
