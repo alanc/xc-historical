@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfwrite.c,v 1.1 91/05/10 12:49:49 keith Exp $
+ * $XConsortium: pcfwrite.c,v 1.2 91/05/10 15:58:16 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -208,11 +208,7 @@ static char *
 pcfNameForAtom(a)
     Atom        a;
 {
-    char       *name;
-
-    if (!(name = NameForAtom(a)))
-	name = "";
-    return name;
+    return NameForAtom(a);
 }
 
 pcfWriteFont(pFont, file)
