@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.7 91/07/12 20:18:42 hersh Exp $ */
+/* $XConsortium: cb_wst.c,v 5.8 91/08/23 17:15:53 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2784,7 +2784,7 @@ Pdcue_bundle	*bundle;	/* OUT predefined depth cue rep	*/
     } else if ( dt->ws_category == PCAT_MO ) {
 	*error_ind = ERR62;
 
-    } else if ( index > dt->out_dt.num_predefined_depth_cue_indices) {
+    } else if ( index >= dt->out_dt.num_predefined_depth_cue_indices) {
 	*error_ind = ERR102;
 
     } else if ( index < 0 ) {
@@ -3108,7 +3108,7 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
     } else if ( dt->ws_category == PCAT_MO ) {
 	*error_ind = ERR62;
 
-    } else if ( index > dt->out_dt.num_predefined_colr_mapping_indices) {
+    } else if ( index >= dt->out_dt.num_predefined_colr_mapping_indices) {
 	*error_ind = ERR102;
 
     } else if ( index < 0 ) {
