@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Dialog.h,v 1.3 90/11/01 19:34:20 dave Exp $
+ * $XConsortium: Dialog.h,v 1.4 90/12/08 17:29:37 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,17 +24,18 @@
  */
 
 
-#define Yes    16
-#define No     32
-#define Empty  0
-#define Okay   1
-#define Abort  2
-#define Cancel 4
-#define Retry  8
+/*#define None   0*/
+#define Yes    1<<1
+#define No     1<<2
+#define Maybe  1<<3  /* :-) */
+#define Okay   1<<4
+#define Abort  1<<5
+#define Cancel 1<<6
+#define Retry  1<<7
 
 typedef struct {
   Widget top_widget, shell_widget, dialog_widget;
-  int options;
+  unsigned long options;
 } _Dialog, *Dialog;
 
 typedef struct {
@@ -43,5 +44,5 @@ typedef struct {
 } DialogButton;
 
 extern Dialog CreateDialog();
-extern int PopupDialog();
+extern unsigned long PopupDialog();
 extern void PopdownDialog();
