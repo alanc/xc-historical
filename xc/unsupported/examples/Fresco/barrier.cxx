@@ -34,7 +34,6 @@ static Boolean delay(float seconds) {
 #include <X11/Fresco/OS/types.h>
 #include <sys/time.h>
 
-extern "C" int select(int, fd_set*, fd_set*, fd_set*, struct timeval*);
 
 static Boolean delay(float seconds) {
     struct timeval tv;
