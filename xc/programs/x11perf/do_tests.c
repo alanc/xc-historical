@@ -33,6 +33,15 @@ extern void InitDashedLines();
 extern void DoLines();
 extern void EndLines();
 
+extern void InitSmallCircles();
+extern void InitMedCircles();
+extern void InitCircles();
+extern void InitSmallEllipses();
+extern void InitMedEllipses();
+extern void InitEllipses();
+extern void DoArcs();
+extern void EndArcs();
+
 extern void InitDots();
 extern void DoDots();
 extern void EndDots();
@@ -179,6 +188,24 @@ Test test[] = {
   {"-lines3", "Line (3 occluding windows)",
 		InitLines, DoLines, NullProc, EndLines, False, False,
 		{10, POLY, 3}},
+  {"-smallcircles", "1-pixel circle",
+		InitSmallCircles, DoArcs, NullProc, EndArcs, False, False,
+		{10, POLY, 0}},
+  {"-medcircles", "10-pixel circle",
+		InitMedCircles, DoArcs, NullProc, EndArcs, False, False,
+		{5, POLY, 0}},
+  {"-circles", "Circles",
+		InitCircles, DoArcs, NullProc, EndArcs, False, False,
+		{2, POLY/20, 0}},
+  {"-smallellipses", "1-pixel ellipse",
+		InitSmallEllipses, DoArcs, NullProc, EndArcs, False, False,
+		{10, POLY, 0}},
+  {"-medellipses", "10-pixel ellipse",
+		InitMedEllipses, DoArcs, NullProc, EndArcs, False, False,
+		{5, POLY, 0}},
+  {"-ellipses", "Ellipses",
+		InitEllipses, DoArcs, NullProc, EndArcs, False, False,
+		{2, POLY/20, 0}},
   {"-dlines", "Dashed line",
 		InitDashedLines, DoLines, NullProc, EndLines, False, False,
 		{10, 20, 0}},
