@@ -1,4 +1,4 @@
-/* $XConsortium: wsb.c,v 5.3 91/07/12 20:26:27 hersh Exp $ */
+/* $XConsortium: wsb.c,v 5.4 91/10/01 02:55:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -773,8 +773,16 @@ phg_wsb_make_requested_current( ws )
 
     /* Other pending data */
     if ( owsb->hlhsr_mode_pending == PUPD_PEND) {
+	 CARD32     new_mode;
+
 	 owsb->cur_hlhsr_mode = owsb->req_hlhsr_mode;
 	 owsb->hlhsr_mode_pending = PUPD_NOT_PEND;
+
+	 new_mode = (CARD32)PEX_CONV_PHIGS_HLHSR_MODE(owsb->cur_hlhsr_mode);
+         (void)PEXChangeRenderer( ws->display, ws->rid,
+                                 (pexBitmask)PEXRDHlhsrMode,
+                                 (CARD32)sizeof(CARD32), (char *)&new_mode);
+
     }
 
     /* Make it all take effect. */
