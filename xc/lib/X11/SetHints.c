@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetHints.c,v 11.30 89/03/28 18:14:16 jim Exp $ */
+/* $XConsortium: XSetHints.c,v 11.31 89/06/12 16:31:00 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -229,7 +229,7 @@ XSetClassHint(dpy, w, classhint)
 	Window w;
 	XClassHint *classhint;
 {
-	char *class_string = NULL;
+	char *class_string;
 	char *s;
 	int len_nm, len_cl;
 
