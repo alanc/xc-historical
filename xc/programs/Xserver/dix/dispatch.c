@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.58 94/02/04 10:49:49 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.60 94/02/04 16:53:08 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3442,7 +3442,9 @@ InitClientPrivates(client)
     register unsigned size;
     register int i;
 
-    if (client->index)
+    if (totalClientSize == sizeof(ClientRec))
+	ppriv = (DevUnion *)NULL;
+    else if (client->index)
 	ppriv = (DevUnion *)(client + 1);
     else
     {
