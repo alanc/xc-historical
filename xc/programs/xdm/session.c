@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.44 91/02/12 15:34:03 keith Exp $
+ * $XConsortium: session.c,v 1.45 91/02/13 19:13:48 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -241,7 +241,7 @@ struct display	*d;
 LoadXloginResources (d)
 struct display	*d;
 {
-    char	*args[4];
+    char	**args, **parseArgs();
     char	**env = 0, **setEnv(), **defaultEnv();
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
@@ -249,12 +249,11 @@ struct display	*d;
 	env = setEnv (env, "DISPLAY", d->name);
 	if (d->authFile)
 	    env = setEnv (env, "XAUTHORITY", d->authFile);
-	args[0] = d->xrdb;
-	args[1] = "-load";
-	args[2] = d->resources;
-	args[3] = NULL;
+	args = parseArgs ((char **) 0, d->xrdb);
+	args = parseArgs (args, d->resources);
 	Debug ("Loading resource file: %s\n", d->resources);
 	(void) runAndWait (args, env);
+	freeArgs (args);
 	freeEnv (env);
     }
 }
@@ -501,6 +500,7 @@ char			*file;
 {
     char	**args, *args_safe[2];
     extern char	**parseArgs ();
+    int		ret;
 
     if (file && file[0]) {
 	Debug ("source %s\n", file);
@@ -511,7 +511,8 @@ char			*file;
 	    args[0] = file;
 	    args[1] = NULL;
 	}
-	return runAndWait (args, environ);
+	ret = runAndWait (args, environ);
+	freeArgs (args);
     }
     return 0;
 }
