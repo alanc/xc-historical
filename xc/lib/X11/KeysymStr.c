@@ -1,4 +1,4 @@
-/* $XConsortium: XKeysymStr.c,v 11.5 91/02/14 15:23:16 rws Exp $ */
+/* $XConsortium: XKeysymStr.c,v 11.6 91/04/08 17:10:37 rws Exp $ */
 /* Copyright 1990 Massachusetts Institute of Technology */
 
 /*
@@ -45,7 +45,7 @@ static Bool SameValue(db, bindings, quarks, type, value, data)
     XrmQuarkList	quarks;
     XrmRepresentation   *type;
     XrmValuePtr		value;
-    caddr_t		data;
+    XPointer		data;
 {
     GRNData *gd = (GRNData *)data;
 
@@ -100,13 +100,13 @@ char *XKeysymToString(ks)
 	GRNData data;
 
 	sprintf(buf, "%lX", ks);
-	resval.addr = (caddr_t)buf;
+	resval.addr = (XPointer)buf;
 	resval.size = strlen(buf) + 1;
 	data.name = (char *)NULL;
 	data.type = XrmPermStringToQuark("String");
 	data.value = &resval;
 	(void)XrmEnumerateDatabase(keysymdb, &empty, &empty, XrmEnumAllLevels,
-				   SameValue, (caddr_t)&data);
+				   SameValue, (XPointer)&data);
 	return data.name;
     }
     return ((char *) NULL);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.43 91/02/01 16:34:04 gildea Exp $
+ * $XConsortium: XErrDes.c,v 11.44 91/04/08 09:37:57 rws Exp $
  */
 
 /***********************************************************
@@ -130,9 +130,9 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 	XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
     }
     else
-	result.addr = (caddr_t)NULL;
+	result.addr = (XPointer)NULL;
     if (!result.addr) {
-	result.addr = (caddr_t) defaultp;
+	result.addr = (XPointer) defaultp;
 	result.size = strlen(defaultp) + 1;
     }
     (void) strncpy (buffer, (char *) result.addr, nbytes);

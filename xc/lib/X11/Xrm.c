@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.63 91/05/01 09:15:53 rws Exp $
+ * $XConsortium: Xrm.c,v 1.64 91/05/02 17:00:22 rws Exp $
  */
 
 /***********************************************************
@@ -104,7 +104,7 @@ typedef	Bool (*DBEnumProc)(
     XrmQuarkList	/* quarks */,
     XrmRepresentation*	/* type */,
     XrmValue*		/* value */,
-    caddr_t		/* closure */
+    XPointer		/* closure */
 #endif
 );
 
@@ -123,10 +123,10 @@ typedef struct _DEntry {
 } DEntryRec, *DEntry;
 
 /* the value is right after the structure */
-#define StringValue(ve) (caddr_t)((ve) + 1)
+#define StringValue(ve) (XPointer)((ve) + 1)
 #define RepType(ve) ((DEntry)(ve))->type
 /* the value is right after the structure */
-#define DataValue(ve) (caddr_t)(((DEntry)(ve)) + 1)
+#define DataValue(ve) (XPointer)(((DEntry)(ve)) + 1)
 #define RawValue(ve) (char *)((ve)->string ? StringValue(ve) : DataValue(ve))
 
 typedef struct _NTable {
@@ -190,7 +190,7 @@ typedef struct _SClosure {
 typedef struct _EClosure {
     XrmDatabase db;			/* the database */
     DBEnumProc proc;			/* the user proc */
-    caddr_t closure;			/* the user closure */
+    XPointer closure;			/* the user closure */
     XrmBindingList bindings;		/* binding list */
     XrmQuarkList quarks;		/* quark list */
     int mode;				/* XrmEnum<kind> */
@@ -990,7 +990,7 @@ void XrmQPutStringResource(pdb, bindings, quarks, str)
     XrmValue	value;
 
     if (!*pdb) *pdb = NewDatabase();
-    value.addr = (caddr_t) str;
+    value.addr = (XPointer) str;
     value.size = strlen(str)+1;
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
 }
@@ -1392,7 +1392,7 @@ static void GetDatabase(db, str, filename)
 
 	/* Store it in database */
 	value.size = ptr - value_str;
-	value.addr = (caddr_t) value_str;
+	value.addr = (XPointer) value_str;
 	
 	PutEntry(db, bindings, quarks, XrmQString, &value);
     }
@@ -1419,7 +1419,7 @@ void XrmPutStringResource(pdb, specifier, str)
 
     if (!*pdb) *pdb = NewDatabase();
     XrmStringToBindingQuarkList(specifier, bindings, quarks);
-    value.addr = (caddr_t) str;
+    value.addr = (XPointer) str;
     value.size = strlen(str)+1;
     PutEntry(*pdb, bindings, quarks, XrmQString, &value);
 }
@@ -1790,7 +1790,7 @@ Bool XrmEnumerateDatabase(db, names, classes, mode, proc, closure)
     XrmClassList	classes;
     int			mode;
     DBEnumProc		proc;
-    caddr_t		closure;
+    XPointer		closure;
 {
     XrmBinding  bindings[MAXDBDEPTH+2];
     XrmQuark	quarks[MAXDBDEPTH+2];
@@ -1843,7 +1843,7 @@ static Bool DumpEntry(db, bindings, quarks, type, value, data)
     XrmQuarkList	quarks;
     XrmRepresentation   *type;
     XrmValuePtr		value;
-    caddr_t		data;
+    XPointer		data;
 {
     FILE			*stream = (FILE *)data;
     register unsigned int	i;
@@ -1896,7 +1896,7 @@ void PrintTable(table, file)
 
     closure.db = (XrmDatabase)NULL;
     closure.proc = DumpEntry;
-    closure.closure = (caddr_t)file;
+    closure.closure = (XPointer)file;
     closure.bindings = bindings;
     closure.quarks = quarks;
     closure.mode = XrmEnumAllLevels;
@@ -1924,7 +1924,7 @@ void XrmPutFileDatabase(db, fileName)
     if (!db) return;
     if (!(file = fopen(fileName, "w"))) return;
     (void)XrmEnumerateDatabase(db, &empty, &empty, XrmEnumAllLevels,
-			       DumpEntry, (caddr_t) file);
+			       DumpEntry, (XPointer) file);
     fclose(file);
 }
 
@@ -2189,7 +2189,7 @@ Bool XrmQGetSearchResource(searchList, name, class, pType, pValue)
 	return True;
     }
     *pType = NULLQUARK;
-    pValue->addr = (caddr_t)NULL;
+    pValue->addr = (XPointer)NULL;
     pValue->size = 0;
     return False;
 
@@ -2374,7 +2374,7 @@ Bool XrmQGetResource(db, names, classes, pType, pValue)
 	}
     }
     *pType = NULLQUARK;
-    pValue->addr = (caddr_t)NULL;
+    pValue->addr = (XPointer)NULL;
     pValue->size = 0;
     return False;
 }
