@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.6 93/09/11 09:35:50 rws Exp $
+ * $XConsortium: Xthreads.h,v 1.7 93/09/11 11:04:08 rws Exp $
  *
  * Copyright 1993 Massachusetts Institute of Technology
  *
@@ -86,18 +86,18 @@ typedef mutex_t *xmutex_t;
 #define Status int
 #endif
 #undef BOOL
-typedef struct _xthread_t {
+typedef DWORD xthread_t;
+struct _xthread_waiter {
     HANDLE sem;
-    struct _xthread_t *next;
-} *xthread_t;
+    struct _xthread_waiter *next;
+};
 typedef struct _xcondition_t {
     CRITICAL_SECTION cs;
-    xthread_t waiters;
+    struct _xthread_waiter *waiters;
 } *xcondition_t;
 typedef CRITICAL_SECTION *xmutex_t;
 #define xthread_init() _Xthread_init()
-extern xthread_t _Xthread_self();
-#define xthread_self() _Xthread_self()
+#define xthread_self() GetCurrentThreadId()
 #define xthread_fork(func,closure) { \
     DWORD _tmptid; \
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, (LPVOID)closure, 0, \
@@ -115,9 +115,9 @@ extern xthread_t _Xthread_self();
     (cv)->waiters = NULL; \
 }
 #define xcondition_clear(cv) DeleteCriticalSection(&(cv)->cs)
+extern struct _xthread_waiter *_Xthread_self();
 #define xcondition_wait(cv,m) { \
-    xthread_t _tmpthr; \
-    _tmpthr = xthread_self(); \
+    struct _xthread_waiter *_tmpthr = _Xthread_self(); \
     EnterCriticalSection(&(cv)->cs); \
     _tmpthr->next = (cv)->waiters; \
     (cv)->waiters = _tmpthr; \
@@ -135,7 +135,7 @@ extern xthread_t _Xthread_self();
     LeaveCriticalSection(&(cv)->cs); \
 }
 #define xcondition_broadcast(cv) { \
-    xthread_t _tmpthr; \
+    struct _xthread_waiter *_tmpthr; \
     EnterCriticalSection(&(cv)->cs); \
     for (_tmpthr = (cv)->waiters; _tmpthr; _tmpthr = _tmpthr->next) \
 	ReleaseSemaphore(_tmpthr->sem, 1, NULL); \
