@@ -1,4 +1,4 @@
-! $XConsortium: XSm.ad,v 1.22 94/12/06 14:42:27 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.23 94/12/12 20:08:41 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
@@ -59,7 +59,6 @@
 
 *nameInUsePopup.title:		Warning
 *nameInUseOverwriteButton.label: Overwrite
-*nameInUseCancelButton.label:	Cancel
 
 *badSavePopup.title:		Save Failure
 *badSaveLabel.label:		The following applications did not report\n\
