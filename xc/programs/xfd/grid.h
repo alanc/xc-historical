@@ -36,6 +36,21 @@ typedef struct _FontGridCharRec {
     XChar2b		thechar;
 } FontGridCharRec;
 
-void GetFontGridCellDimensions();
+extern void GetFontGridCellDimensions(
+#if NeedFunctionPrototypes
+   Widget,
+   long *,
+   int *,
+   int *
+#endif
+);
+
+extern void GetPrevNextStates(
+#if NeedFunctionPrototypes
+    Widget,
+    Bool *,
+    Bool *
+#endif
+);
 
 #endif /* _FontGrid_h_ */
