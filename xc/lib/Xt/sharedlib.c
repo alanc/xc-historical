@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.12 91/07/23 12:22:07 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.13 91/11/08 16:32:39 gildea Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -119,7 +119,7 @@ ArgList args_in;
 			     fallback_resources, args_in, num_args_in);
 }
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
 XtVaAppInitialize(
     XtAppContext *app_context_return,
