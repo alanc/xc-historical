@@ -66,7 +66,8 @@ static void CloseAP(), NewAP(), ReplaceAP(),PopupPixelAP(), UpdatePixelAP(),
   StartRootPtrGrab(), CreateRoot(), InitCursors(), GetImage(),
   PopupNewScale(), ParseSourceGeom();
 static int numXmags = 0;
-static int srcStat, srcX, srcY, srcWidth, srcHeight;
+static int srcStat, srcX, srcY;
+static unsigned int srcWidth, srcHeight;
 
 
 
@@ -663,7 +664,8 @@ main(argc, argv)
 {
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
-			     &argc, argv, (String *) NULL, (ArgList) NULL, 0);
+			     (Cardinal *)&argc, argv, (String *) NULL,
+			     (ArgList) NULL, 0);
   dpy = XtDisplay(toplevel);
   scr = DefaultScreen(dpy);
   XtGetApplicationResources(toplevel, (XtPointer) &options, resources,
