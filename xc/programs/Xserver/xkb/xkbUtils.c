@@ -530,6 +530,64 @@ CARD32		 oldState;
     return;
 }
 
+void
+XkbCheckIndicatorMaps(xkb,which)
+    XkbSrvInfoPtr	xkb;
+    unsigned		which;
+{
+register unsigned i,bit;
+XkbIndicatorPtr	leds;
+
+    leds= xkb->desc.indicators;
+    for (i=0,bit=1;i<XkbNumIndicators;i++,bit<<=1) {
+	if (which&bit) {
+	    CARD8 which;
+	    which= (leds->maps[i].which_mods|leds->maps[i].which_groups);
+
+	    if (which&XkbIM_UseBase)
+		 xkb->iAccel.usesBase|= bit;
+	    else xkb->iAccel.usesBase&= ~bit;
+	    if (which&XkbIM_UseLatched)
+		 xkb->iAccel.usesLatched|= bit;
+	    else xkb->iAccel.usesLatched&= ~bit;
+	    if (which&XkbIM_UseLocked)
+		 xkb->iAccel.usesLocked|= bit;
+	    else xkb->iAccel.usesLocked&= ~bit;
+	    if (which&XkbIM_UseEffective)
+		 xkb->iAccel.usesEffective|= bit;
+	    else xkb->iAccel.usesEffective&= ~bit;
+	    if (which&XkbIM_UseCompat)
+		 xkb->iAccel.usesCompat|= bit;
+	    else xkb->iAccel.usesCompat&= ~bit;
+	    if (leds->maps[i].ctrls)
+		 xkb->iAccel.usesControls|= bit;
+	    else xkb->iAccel.usesControls&= ~bit;
+
+	    if (leds->maps[i].ctrls || 
+		(leds->maps[i].which_groups && leds->maps[i].groups) ||
+		(leds->maps[i].which_mods && leds->maps[i].real_mods))
+		 xkb->iAccel.haveMap|= bit;
+	    else xkb->iAccel.haveMap&= ~bit;
+	    if (leds->maps[i].vmods!=0) {
+		leds->maps[i].mask= leds->maps[i].real_mods;
+		leds->maps[i].mask|= 
+				XkbMaskForVMask(&xkb->desc,leds->maps[i].vmods);
+	    }
+	}
+    }
+    xkb->iAccel.usedComponents= 0;
+    if (xkb->iAccel.usesBase)
+	xkb->iAccel.usedComponents|= XkbModifierBaseMask|XkbGroupBaseMask;
+    if (xkb->iAccel.usesLatched)
+	xkb->iAccel.usedComponents|= XkbModifierLatchMask|XkbGroupLatchMask;
+    if (xkb->iAccel.usesLocked)
+	xkb->iAccel.usedComponents|= XkbModifierLockMask|XkbGroupLockMask;
+    if (xkb->iAccel.usesEffective)
+	xkb->iAccel.usedComponents|= XkbModifierStateMask|XkbGroupStateMask;
+    if (xkb->iAccel.usesCompat)
+	xkb->iAccel.usedComponents|= XkbCompatStateMask;
+    return;
+}
 
 #if NeedFunctionPrototypes
 void
