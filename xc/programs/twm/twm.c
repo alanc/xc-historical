@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.132 94/07/21 16:06:06 mor Exp mor $
+ * $XConsortium: twm.c,v 1.133 94/08/10 19:51:41 mor Exp mor $
  *
  * twm - "Tom's Window Manager"
  *
@@ -262,8 +262,6 @@ main(argc, argv, environ)
 
     if (restore_filename)
 	ReadWinConfigFile (restore_filename);
-
-    ConnectToSessionManager (client_id);
 
     HasShape = XShapeQueryExtension (dpy, &ShapeEventBase, &ShapeErrorBase);
     HasSync = XSyncQueryExtension(dpy,  &SyncEventBase, &SyncErrorBase);
@@ -573,13 +571,13 @@ main(argc, argv, environ)
     } /* for */
 
     if (numManaged == 0) {
-	extern SmcConn smcConn;
 	if (MultiScreen && NumScreens > 0)
 	  fprintf (stderr, "%s:  unable to find any unmanaged screens\n",
 		   ProgramName);
-	if (smcConn) SmcCloseConnection (smcConn, 0, NULL);
 	exit (1);
     }
+
+    ConnectToSessionManager (client_id);
 
     RestartPreviousState = False;
     HandlingEvents = TRUE;
