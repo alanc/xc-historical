@@ -45,6 +45,7 @@ University of California.
 #include "dixstruct.h"
 #define  XTestSERVER_SIDE
 #include "xtestext1.h"	
+#include "mtxlock.h"
 
 /***************************************************************
  * defines
@@ -1599,16 +1600,16 @@ return_input_array_size(client)
  */
 ClientPtr	client;
 {
-	xTestQueryInputSizeReply  rep;
+	REPLY_DECL(xTestQueryInputSizeReply,rep);
 
-	rep.type = X_Reply;
+	rep->type = X_Reply;
 	/*
 	 * set the serial number of the reply
 	 */
-	rep.sequenceNumber = client->sequence;
-	rep.length = 0;
-	rep.size_return = ACTION_ARRAY_SIZE;
+	rep->sequenceNumber = client->sequence;
+	rep->length = 0;
+	rep->size_return = ACTION_ARRAY_SIZE;
 	WriteReplyToClient(client,
 			   sizeof(xTestQueryInputSizeReply),
-			   (caddr_t) &rep);		
+			   (caddr_t) rep);		
 }		
