@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.14 94/12/14 16:56:52 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.15 94/12/14 20:00:58 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -27,6 +27,13 @@ in this Software without prior written authorization from the X Consortium.
 
 #include "xsm.h"
 #include "saveutil.h"
+
+#include <X11/Shell.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/List.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Toggle.h>
+#include <X11/Xaw/AsciiText.h>
 
 
 Widget savePopup;
@@ -107,7 +114,7 @@ Bool name_changed;
 		!client->userIssuedCheckpoint &&
 		client->discardCommand)
 	    {
-		system (client->discardCommand);
+		execute_system_command (client->discardCommand);
 		XtFree (client->discardCommand);
 		client->discardCommand = NULL;
 	    }
@@ -288,7 +295,7 @@ DoSave ()
 	SmsSaveYourself (client->smsConn,
 	    saveType, wantShutdown, interactStyle, fast);
 
-	ListAddLast (WaitForSaveDoneList, client);
+	ListAddLast (WaitForSaveDoneList, (char *) client);
 
 	client->userIssuedCheckpoint = True;
 	client->receivedDiscardCommand = False;
@@ -406,7 +413,7 @@ List *cl;
 
     SmsInteract (client->smsConn);
 
-    ListSearchAndFreeOne (WaitForInteractList, client);
+    ListSearchAndFreeOne (WaitForInteractList, (char *) client);
 
     if (verbose)
     {
@@ -478,7 +485,7 @@ FinishUpSave ()
 
 	if (client->discardCommand)
 	{
-	    system (client->discardCommand);
+	    execute_system_command (client->discardCommand);
 	    XtFree (client->discardCommand);
 	    client->discardCommand = NULL;
 	}
@@ -1288,7 +1295,7 @@ XtPointer 	callData;
 	    !client->userIssuedCheckpoint &&
 	    client->discardCommand)
 	{
-	    system (client->discardCommand);
+	    execute_system_command (client->discardCommand);
 	    XtFree (client->discardCommand);
 	    client->discardCommand = NULL;
 	}
