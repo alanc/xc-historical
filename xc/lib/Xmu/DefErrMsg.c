@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DefErrMsg.c,v 1.5 89/12/13 16:17:04 rws Exp $
+ * $XConsortium: DefErrMsg.c,v 1.6 90/06/15 14:52:09 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -16,7 +16,8 @@
  */
 
 #include <stdio.h>
-#include <X11/Xlib.h>
+#define NEED_EVENTS
+#include <X11/Xlibint.h>
 #include <X11/Xproto.h>
 
 /*
