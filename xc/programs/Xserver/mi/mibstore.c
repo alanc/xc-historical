@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.7 88/08/13 17:09:11 keith Exp $ */
+/* $Header: mibstore.c,v 1.8 88/08/14 11:00:17 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3447,7 +3447,7 @@ miExposeCopy (pSrc, pDst, pGC, prgnExposed, srcx, srcy, dstx, dsty, plane)
     case StatusVirtual:
     case StatusVDirty:
 	pGC = GetScratchGC (pDst->depth, pDst->pScreen);
-	miBSFillVirtualBits (pDst, pGC, tempRgn, pBox->x1, pBox->y1,
+	miBSFillVirtualBits (pDst, pGC, tempRgn, dx, dy,
 		pBackingStore->backgroundPixel, pBackingStore->backgroundTile,
 		(PixmapPtr) USE_BACKGROUND_PIXEL);
 	FreeScratchGC (pGC);
