@@ -163,7 +163,7 @@ ServerTarget(Xapollo,$(EXTDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLI
 #
 # ndx server
 #
-NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/ndx os/4.2bsd
+NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ndx os/4.2bsd
 NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o
 NDXLIBS = $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XndxDIRS = $(NDXDIRS)
