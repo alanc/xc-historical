@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.58 92/09/11 18:08:42 rws Exp $
+ * $XConsortium: xrdb.c,v 11.59 92/09/11 18:38:33 rws Exp $
  */
 
 /*
@@ -796,7 +796,8 @@ main (argc, argv)
 	    }
 	    Process(i, True, True);
 	    if (need_newline) {
-		printf("#endif\n");
+		if (oper != OPSYMBOLS)
+		    printf("#endif\n");
 		if (i+1 != ScreenCount(dpy))
 		    printf("\n");
 	    }
