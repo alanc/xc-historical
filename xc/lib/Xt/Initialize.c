@@ -71,17 +71,16 @@ static XrmOptionDescRec opTable[] = {
 {"-foreground",	XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-fn",		XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-font",	XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-ic",		XtNiconic,	XrmoptionNoArg,		(caddr_t) "on"},
+{"-geometry",	XtNgeometry,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-iconic",	XtNiconic,	XrmoptionNoArg,		(caddr_t) "on"},
 {"-rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
 {"-reverse",	XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
 {"+rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "off"},
-{"-n",		XtNname,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-name",	XtNname,	XrmoptionSepArg,	(caddr_t) NULL},
 {"-title",	XtNtitle,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-t",		XtNtitle,	XrmoptionSepArg,	(caddr_t) NULL}
 };
 
+#define min(a, b)	(((a) < (b)) ? (a) : (b))
 #define Offset(x)	(XtOffset(ShellWidget, x))
 static XtResource resources[]=
 {
@@ -977,7 +976,7 @@ MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 	    }
 	    len1 = strlen(opt1->option);
 	    len2 = strlen(opt2->option);
-	    if (strncmp(opt1->option, opt2->option, Min(len1, len2)) == 0) {
+	    if (strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
 		if (len2 < len1) { /* make sure shorter one is found first */
 		    *dstP++ = *opt1;
 		    *opt1 = *opt2;
@@ -993,6 +992,23 @@ MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 	}
     }
     *num_dst = dst_len;
+}
+
+
+static void
+ComputeAbbrevLen(string, name, len)
+    String string;		/* the variable */
+    String name;		/* the constant */
+    int *len;			/* the current ambiguous length */
+{
+    int string_len = strlen(string);
+    int name_len = strlen(name);
+    int i;
+
+    for (i=0; i<string_len && i<name_len && *string++ == *name++; i++);
+
+    if (i < name_len && i > *len)
+	*len = i;
 }
 
 
@@ -1025,6 +1041,11 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	Boolean dosync = FALSE;
 	XrmOptionDescRec *options;
 	Cardinal num_options;
+	Boolean found_display = FALSE;
+	int min_display_len = 0;
+	int min_name_len = 0;
+	int min_sync_len = 0;
+	int squish_sync = -1;
 
 	if( name == NULL) {
 	  	ptr = rindex(argv[0], '/');
@@ -1048,31 +1069,54 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	 */
 	displayName[0] = 0;
 
+	MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
+			   &options, &num_options );
+
+	for (i = 0; i < num_options; i++) {
+	    ComputeAbbrevLen(options[i].option, "-display",  &min_display_len);
+	    ComputeAbbrevLen(options[i].option, "-name",        &min_name_len);
+	    ComputeAbbrevLen(options[i].option, "-synchronous", &min_sync_len);
+	}
+
 	for(i = 1; i < *argc; i++) {
-	  if (index(argv[i], ':') != NULL) {
+	  int len = strlen(argv[i]);
+	  if (!found_display && index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
-		  if( *argc == i + 1) {
-		    (*argc)--;
-		  } else {  /* need to squish this one out of the list */
-		    squish = i;
-		  }
+		  squish = i;
 		  continue;
 	  }
-	  if(!strcmp("-name", argv[i]) || ! strcmp("-n", argv[i])) {
+	  if(len > min_display_len && !strncmp("-display", argv[i], len)) {
+	          i++;
+		  if(i == *argc) break;
+		  strncpy(displayName, argv[i], sizeof(displayName));
+		  found_display = TRUE;
+		  squish = i-1;
+		  continue;
+	  }
+	  if(len > min_name_len && !strncmp("-name", argv[i], len)) {
 		  i++;
 		  if(i == *argc) break;
 		  name = argv[i];
 		  continue;
+		  /* name doesn't get removed from arglist */
 	  }
-	  if (!strcmp("-sync", argv[i])) {
+	  if (len > min_sync_len && !strncmp("-synchronous", argv[i], len)) {
 		  dosync = TRUE;
+		  squish_sync = i;
 		  continue;
 	  }
 	}
 	if(squish != -1) {
-		(*argc)--;
+	        int offset = found_display ? 2 : 1;
+		(*argc) -= offset;
 		for(i = squish; i < *argc; i++) {
-			argv[i] = argv[i+1];
+			argv[i] = argv[i+offset];
+		}
+	}
+	if(squish_sync != -1) {
+	        (*argc)--;
+		for(i = squish_sync; i < *argc; i++) {
+		        argv[i] = argv[i+1];
 		}
 	}
 	/* Open display  */
@@ -1110,12 +1154,8 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-
-	MergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
-			   &options, &num_options );
-
 	XrmParseCommand( &XtDefaultDB, options, num_options, name, argc, argv);
-	XtFree( options );
+	XtFree( (char*)options );
 	
 	/* Resources are initialize and loaded */
 	/* I now must handle geometry specs a compond resource */
