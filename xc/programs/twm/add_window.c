@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.49 89/06/09 13:42:07 jim Exp $
+ * $XConsortium: add_window.c,v 1.50 89/06/09 16:19:14 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.49 89/06/09 13:42:07 jim Exp $";
+"$XConsortium: add_window.c,v 1.50 89/06/09 16:19:14 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -359,7 +359,8 @@ IconMgr *iconp;
 		XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
 		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
 
-		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH);
+		MoveOutline(Scr->Root, AddingX, AddingY, AddingW, AddingH,
+			    tmp_win->frame_bw, tmp_win->title_height);
 
 		if (XCheckTypedEvent(dpy, ButtonPress, &event))
 		{
@@ -422,7 +423,7 @@ IconMgr *iconp;
 		ConstrainSize (tmp_win, &AddingW, &AddingH);
 	    }
 
-	    MoveOutline(Scr->Root, 0, 0, 0, 0);
+	    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 	    XUnmapWindow(dpy, Scr->InitialWindow);
 	    XUngrabPointer(dpy, CurrentTime);
 

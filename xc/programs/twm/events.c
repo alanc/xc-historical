@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.66 89/06/12 10:47:30 jim Exp $
+ * $XConsortium: events.c,v 1.67 89/06/12 12:16:17 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.66 89/06/12 10:47:30 jim Exp $";
+"$XConsortium: events.c,v 1.67 89/06/12 12:16:17 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1086,7 +1086,7 @@ HandleButtonRelease()
     {
 	XEvent client_event;
 
-	MoveOutline(Scr->Root, 0, 0, 0, 0);
+	MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 
 	XFindContext(dpy, DragWindow, TwmContext, &Tmp_win);
 	if (DragWindow == Tmp_win->frame)
@@ -1259,7 +1259,7 @@ HandleButtonPress()
 	 * down, we need to cancel the operation we were doing
 	 */
 	Cancel = TRUE;
-	MoveOutline(Scr->Root, 0, 0, 0, 0);
+	MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 	XUnmapWindow(dpy, Scr->SizeWindow);
 	ResizeWindow = NULL;
 	DragWindow = NULL;

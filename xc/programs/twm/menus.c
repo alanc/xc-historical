@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.66 89/06/09 14:16:52 jim Exp $
+ * $XConsortium: menus.c,v 1.67 89/06/09 16:45:27 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.66 89/06/09 14:16:52 jim Exp $";
+"$XConsortium: menus.c,v 1.67 89/06/09 16:45:27 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1301,7 +1301,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	    event.xbutton.x_root-DragX-JunkBW,
 	    event.xbutton.y_root-DragY-JunkBW,
 	    DragWidth + 2 * JunkBW,
-	    DragHeight + 2 * JunkBW);
+	    DragHeight + 2 * JunkBW, JunkBw, tmp_win->title_height);
 	*/
 
 	if ((event.xbutton.time - last_time) < 400)
@@ -1361,7 +1361,7 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		}
 		if (Event.type == ButtonRelease)
 		{
-		    MoveOutline(rootw, 0, 0, 0, 0);
+		    MoveOutline(rootw, 0, 0, 0, 0, 0, 0);
 		    done = TRUE;
 		    break;
 		}
@@ -1435,7 +1435,8 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		    if (Scr->OpaqueMove)
 			XMoveWindow(dpy, DragWindow, xl, yt);
 		    else
-			MoveOutline(event.xmotion.root, xl, yt, w, h);
+			MoveOutline(event.xmotion.root, xl, yt, w, h,
+				    JunkBW, tmp_win->title_height);
 		}
 	    }
 	    else if (DragWindow != NULL)
@@ -1466,7 +1467,8 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 		if (Scr->OpaqueMove)
 		    XMoveWindow(dpy, DragWindow, xl, yt);
 		else
-		    MoveOutline(event.xmotion.root, xl, yt, w, h);
+		    MoveOutline(event.xmotion.root, xl, yt, w, h,
+				JunkBW, tmp_win->title_height);
 	    }
 
 	}

@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.20 89/06/08 17:43:00 jim Exp $
+ * $XConsortium: resize.c,v 1.21 89/06/09 10:21:39 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.20 89/06/08 17:43:00 jim Exp $";
+"$XConsortium: resize.c,v 1.21 89/06/09 10:21:39 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -262,7 +262,8 @@ TwmWindow *tmp_win;
             dragx - tmp_win->frame_bw,
             dragy - tmp_win->frame_bw,
             dragWidth + 2 * tmp_win->frame_bw,
-            dragHeight + 2 * tmp_win->frame_bw);
+            dragHeight + 2 * tmp_win->frame_bw,
+	    tmp_win->frame_bw, tmp_win->title_height);
     }
 
     DisplaySize(tmp_win, dragWidth, dragHeight);
@@ -342,7 +343,7 @@ EndResize()
 #endif
 
     XUnmapWindow(dpy, Scr->SizeWindow);
-    MoveOutline(Scr->Root, 0, 0, 0, 0);
+    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
 
     XFindContext(dpy, ResizeWindow, TwmContext, &tmp_win);
 
