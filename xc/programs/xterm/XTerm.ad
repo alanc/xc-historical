@@ -1,0 +1,52 @@
+XTerm*mainMenu.Label:  X11 xterm
+XTerm*mainMenu*securekbd*Label:  Secure Keyboard
+XTerm*mainMenu*visualbell*Label:  Visual Bell
+XTerm*mainMenu*logging*Label:  Logging
+XTerm*mainMenu*redraw*Label:  Redraw
+XTerm*mainMenu*line1*type:  separator
+XTerm*mainMenu*suspend*Label:  Suspend Program
+XTerm*mainMenu*continue*Label:  Continue Program
+XTerm*mainMenu*interrupt*Label:  Interrupt Program
+XTerm*mainMenu*hangup*Label:  Hangup Program
+XTerm*mainMenu*terminate*Label:  Terminate Program
+XTerm*mainMenu*kill*Label:  Kill Program
+XTerm*mainMenu*line2*type:  separator
+XTerm*mainMenu*quit*Label:  Quit
+
+XTerm*vtMenu.Label:  VT Modes
+XTerm*vtMenu*scrollbar*Label:  Scrollbar
+XTerm*vtMenu*jumpscroll*Label:  Jump Scroll
+XTerm*vtMenu*reversevideo*Label:  Reverse Video
+XTerm*vtMenu*autowrap*Label:  Auto Wraparound
+XTerm*vtMenu*reversewrap*Label:  Reverse Wraparound
+XTerm*vtMenu*autolinefeed*Label:  Auto Linefeed
+XTerm*vtMenu*appcursor*Label:  Application Cursor Mode
+XTerm*vtMenu*appkeypad*Label:  Application Keypad Mode
+XTerm*vtMenu*scrollinput*Label:  Scroll to bottom on key press
+XTerm*vtMenu*scrolloutput*Label:  Scroll to bottom on tty output
+XTerm*vtMenu*allow132*Label:  Allow 80/132 switching
+XTerm*vtMenu*cursesemul*Label:  Curses Emulation
+XTerm*vtMenu*marginbell*Label:  Margin Bell
+XTerm*vtMenu*tekshow*Label:  Tek Window Showing
+XTerm*vtMenu*altscreen*Label:  Alternate Screen
+XTerm*vtMenu*line1*type:  separator
+XTerm*vtMenu*softreset*Label:  Soft Reset
+XTerm*vtMenu*hardreset*Label:  Full Reset
+XTerm*vtMenu*tekmode*Label:  Select Tek Mode
+XTerm*vtMenu*vthide*Label:  Hide VT Window
+
+XTerm*tekMenu.Label:  Tek Modes
+XTerm*tekMenu*tektextsmall*Label:  Small Characters
+XTerm*tekMenu*tektextbig*Label:  Large Characters
+XTerm*tekMenu*tektext2*Label:  #2 Size Characters
+XTerm*tekMenu*tektext3*Label:  #3 Size Characters
+XTerm*tekMenu*tekpage*Label:  PAGE
+XTerm*tekMenu*tekreset*Label:  RESET
+XTerm*tekMenu*tekcopy*Label:  COPY
+XTerm*tekMenu*line1*type:  separator
+XTerm*tekMenu*vtshow*Label:  VT Window Showing
+XTerm*tekMenu*vtmode*Label:  Select VT Mode
+XTerm*tekMenu*tekhide*Label:  Hide Tek Window
+
+
+
