@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.3 91/03/28 15:42:11 rws Exp $ */
+/* $XConsortium: TMgrab.c,v 1.4 91/04/12 14:02:15 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -240,10 +240,11 @@ void XtRegisterGrabAction(action_proc, owner_events, event_mask,
 	    || actionP->event_mask != event_mask
 	    || actionP->pointer_mode != pointer_mode
 	    || actionP->keyboard_mode != keyboard_mode) {
+	    Cardinal n = 0;
 	    XtWarningMsg(
 		"argsReplaced", "xtRegisterGrabAction", XtCXtToolkitError,
-		"XtRegisterGrabAction called on same proc with different args"
-			);
+		"XtRegisterGrabAction called on same proc with different args",
+			 NULL, &n);
 	}
 #endif /*DEBUG*/
 
