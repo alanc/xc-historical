@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.55 93/09/04 18:00:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 93/09/12 21:07:19 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-SUBDIRS = lib programs
+SUBDIRS = lib programs examples
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
