@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.48 89/05/11 14:00:44 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.49 89/07/16 14:42:18 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -52,51 +52,44 @@ static char defaultTranslations[] =
 #endif
 
 static float floatZero = 0.0;
-static Dimension DEFAULTVALUE = (Dimension)~0;
 
 #define Offset(field) XtOffset(ScrollbarWidget, field)
 
 static XtResource resources[] = {
-  {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-	     Offset(core.width), XtRDimension, (caddr_t)&DEFAULTVALUE},
-  {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-	     Offset(core.height), XtRDimension, (caddr_t)&DEFAULTVALUE},
-  {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-	     Offset(core.background_pixel), XtRString, "white"},
   {XtNlength, XtCLength, XtRDimension, sizeof(Dimension),
-	     Offset(scrollbar.length), XtRString, "1"},
+       Offset(scrollbar.length), XtRImmediate, (caddr_t) 1},
   {XtNthickness, XtCThickness, XtRDimension, sizeof(Dimension),
-	     Offset(scrollbar.thickness), XtRString, "14"},
+       Offset(scrollbar.thickness), XtRImmediate, (caddr_t) 14},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
-	     Offset(scrollbar.orientation), XtRString, "vertical"},
+      Offset(scrollbar.orientation), XtRImmediate, (caddr_t) XtorientVertical},
   {XtNscrollProc, XtCCallback, XtRCallback, sizeof(caddr_t),
-	     Offset(scrollbar.scrollProc), XtRCallback, NULL},
+       Offset(scrollbar.scrollProc), XtRCallback, NULL},
   {XtNthumbProc, XtCCallback, XtRCallback, sizeof(caddr_t),
-	     Offset(scrollbar.thumbProc), XtRCallback, NULL},
+       Offset(scrollbar.thumbProc), XtRCallback, NULL},
   {XtNjumpProc, XtCCallback, XtRCallback, sizeof(caddr_t),
-	     Offset(scrollbar.jumpProc), XtRCallback, NULL},
+       Offset(scrollbar.jumpProc), XtRCallback, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
-	     Offset(scrollbar.thumb), XtRPixmap, NULL},
+       Offset(scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	     Offset(scrollbar.foreground), XtRString, "black"},
+       Offset(scrollbar.foreground), XtRString, XtDefaultForeground},
   {XtNshown, XtCShown, XtRFloat, sizeof(float),
-	     Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
-  {XtNtop, XtCTop, XtRFloat, sizeof(float),
-	     Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
+       Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
+  {XtNtopOfScrollbar, XtCTopOfScrollbar, XtRFloat, sizeof(float),
+       Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
   {XtNscrollVCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
+       Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
   {XtNscrollHCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
+       Offset(scrollbar.horCursor), XtRString, "sb_h_double_arrow"},
   {XtNscrollUCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.upCursor), XtRString, "sb_up_arrow"},
+       Offset(scrollbar.upCursor), XtRString, "sb_up_arrow"},
   {XtNscrollDCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.downCursor), XtRString, "sb_down_arrow"},
+       Offset(scrollbar.downCursor), XtRString, "sb_down_arrow"},
   {XtNscrollLCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
+       Offset(scrollbar.leftCursor), XtRString, "sb_left_arrow"},
   {XtNscrollRCursor, XtCCursor, XtRCursor, sizeof(Cursor),
-	     Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
-  {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	     Offset(scrollbar.reverse_video), XtRString, "FALSE"},
+       Offset(scrollbar.rightCursor), XtRString, "sb_right_arrow"},
+  {XtNminimumThumb, XtCMinimumThumb, XtRDimension, sizeof(Dimension),
+       Offset(scrollbar.min_thumb), XtRImmediate, (caddr_t) 7},
 };
 
 static void ClassInitialize();
@@ -160,7 +153,6 @@ ScrollbarClassRec scrollbarClassRec = {
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
 
-#define MINBARHEIGHT	7     /* How many pixels of scrollbar to always show */
 #define NoButton -1
 #define PICKLENGTH(widget, x, y) \
     ((widget->scrollbar.orientation == XtorientHorizontal) ? x : y)
@@ -257,7 +249,8 @@ static void PaintThumb( w )
     oldbot = oldtop + w->scrollbar.shownLength;
     newtop = w->scrollbar.length * w->scrollbar.top;
     newbot = newtop + (int)(w->scrollbar.length * w->scrollbar.shown);
-    if (newbot < newtop + MINBARHEIGHT) newbot = newtop + MINBARHEIGHT;
+    if (newbot < newtop + w->scrollbar.min_thumb) 
+      newbot = newtop + w->scrollbar.min_thumb;
     w->scrollbar.topLoc = newtop;
     w->scrollbar.shownLength = newbot - newtop;
 
@@ -292,14 +285,6 @@ static void Initialize( request, new )
     ScrollbarWidget w = (ScrollbarWidget) new;
     XGCValues gcValues;
 
-    if (w->scrollbar.reverse_video) {
-	Pixel fg = w->scrollbar.foreground;
-	Pixel bg = w->core.background_pixel;
-
-	w->core.background_pixel = fg;
-	w->scrollbar.foreground = bg;
-    }
-
     if (w->scrollbar.thumb == NULL) {
         w->scrollbar.thumb = XmuCreateStippledPixmap (XtScreen(w),
 						      w->scrollbar.foreground,
@@ -307,18 +292,17 @@ static void Initialize( request, new )
 						      w->core.depth);
     }
 
-    gcValues.foreground = w->scrollbar.foreground;
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
     w->scrollbar.gc = XtGetGC( new,
 			       GCForeground | GCFillStyle | GCTile,
 			       &gcValues);
 
-    if (w->core.width == DEFAULTVALUE)
+    if (w->core.width == 0)
 	w->core.width = (w->scrollbar.orientation == XtorientVertical)
 	    ? w->scrollbar.thickness : w->scrollbar.length;
 
-    if (w->core.height == DEFAULTVALUE)
+    if (w->core.height == 0)
 	w->core.height = (w->scrollbar.orientation == XtorientHorizontal)
 	    ? w->scrollbar.thickness : w->scrollbar.length;
 
@@ -359,18 +343,6 @@ static Boolean SetValues( current, request, desired )
     ScrollbarWidget dw = (ScrollbarWidget) desired;
     Boolean redraw = FALSE;
     Boolean realized = XtIsRealized (desired);
-
-    if (w->scrollbar.reverse_video != rw->scrollbar.reverse_video) {
-	Pixel fg = dw->scrollbar.foreground;
-	Pixel bg = dw->core.background_pixel;
-
-	dw->scrollbar.foreground = bg;
-	dw->core.background_pixel = fg;
-	if (realized)
-	  XSetWindowBackground (XtDisplay (desired), XtWindow (desired), 
-				dw->core.background_pixel);
-	redraw = TRUE;
-    }
 
     if (w->scrollbar.foreground != rw->scrollbar.foreground) {
 	redraw = TRUE;
@@ -429,13 +401,11 @@ static void Redisplay( gw, event, region )
 	height = w->scrollbar.shownLength;
     }
 
-    if (region == NULL ||
-	  XRectInRegion(region, x, y, width, height) != RectangleOut) {
-	if (region != NULL) XSetRegion(XtDisplay(w), w->scrollbar.gc, region);
+    if ( (region == NULL) ||
+	 (XRectInRegion(region, x, y, width, height) != RectangleOut) ) {
 	/* Forces entire thumb to be painted. */
 	w->scrollbar.topLoc = -(w->scrollbar.length + 1);
 	PaintThumb( w ); 
-	if (region != NULL) XSetClipMask(XtDisplay(w), w->scrollbar.gc, None);
     }
 }
 
