@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.92 92/09/28 17:39:51 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.93 92/09/28 17:55:48 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -424,7 +424,7 @@ map_sym(i, j)
 	    sym = 127;
 	    break;
 	}
-    if (sym < 128) {
+    if (sym < 128 && (!j || !keycodes[sym])) {
 	keycodes[sym] = i;
 	modifiers[sym] = j ? ShiftMask : 0;
     }
@@ -453,8 +453,8 @@ reset_mapping()
     bzero((char *)keycodes, sizeof(keycodes));
     bzero((char *)modmask, sizeof(modmask));
     for (i = minkey; i <= maxkey; i++) {
-	map_sym(i, 1, ShiftMask);
 	map_sym(i, 0, 0);
+	map_sym(i, 1, ShiftMask);
     }
     for (c = 0; c < 32; c++) {
 	if (!keycodes[c]) {
