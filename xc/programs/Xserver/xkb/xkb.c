@@ -1,4 +1,4 @@
-/* $XConsortium: xkb.c,v 1.2 93/09/28 00:00:11 rws Exp $ */
+/* $XConsortium: xkb.c,v 1.3 93/09/28 19:47:11 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1658,6 +1658,11 @@ ProcXkbSetIndicatorMap(client)
 	    if (from->controls)
 		 xkb->iAccel.usesControls|= bit;
 	    else xkb->iAccel.usesControls&= ~bit;
+
+	    if (from->controls || (from->whichGroups && from->groups) ||
+						(from->whichMods && from->mods))
+		 xkb->iAccel.haveMap|= bit;
+	    else xkb->iAccel.haveMap&= ~bit;
 	    from++;
 	}
     }
