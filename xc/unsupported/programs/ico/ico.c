@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.43 94/01/17 22:05:43 rws Exp $ */
+/* $XConsortium: ico.c,v 1.44 94/01/28 16:41:20 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -156,7 +156,9 @@ char *help_message[] = {
 "    -softdbl                     use software double buffering",
 "    -noedges                     don't draw wire frame edges",
 "    -faces                       draw faces",
-"    -copy                        copy multibuffer frames instead of clearing",
+"    -copy                        use multibuffer update action Copied",
+"    -untouched                   use multibuffer update action Untouched",
+"    -undefined                   use multibuffer update action Undefined",
 "    -lw number                   line width to use",
 "    -i                           invert",
 "    -sleep number                seconds to sleep in between draws",
@@ -242,6 +244,16 @@ char **argv;
 		else if (!strcmp (*argv, "-copy")) {
 #ifdef MULTIBUFFER
 			update_action = MultibufferUpdateActionCopied;
+#endif
+		}
+		else if (!strcmp (*argv, "-untouched")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionUntouched;
+#endif
+		}
+		else if (!strcmp (*argv, "-undefined")) {
+#ifdef MULTIBUFFER
+			update_action = MultibufferUpdateActionUndefined;
 #endif
 		} else if (!strcmp (*argv, "-lw"))
 			linewidth = atoi(*++argv);
