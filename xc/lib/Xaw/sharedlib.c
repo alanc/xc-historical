@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.0 91/05/03 15:33:42 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.1 91/06/29 12:40:18 rws Exp $
  * 
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -22,15 +22,12 @@
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xaw/AsciiTextP.h>
 #include <X11/Xaw/BoxP.h>
-#include <X11/Xaw/ClockP.h>
 #include <X11/Xaw/CommandP.h>
 #include <X11/Xaw/DialogP.h>
 #include <X11/Xaw/FormP.h>
 #include <X11/Xaw/GripP.h>
 #include <X11/Xaw/LabelP.h>
 #include <X11/Xaw/ListP.h>
-#include <X11/Xaw/LogoP.h>
-#include <X11/Xaw/MailboxP.h>
 #include <X11/Xaw/MenuButtoP.h>
 #include <X11/Xaw/PanedP.h>
 #include <X11/Xaw/PannerP.h>
@@ -73,9 +70,6 @@ WidgetClass asciiDiskWidgetClass = (WidgetClass)&asciiDiskClassRec;
 extern BoxClassRec boxClassRec;
 WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
 
-extern ClockClassRec clockClassRec;
-WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
-
 extern CommandClassRec commandClassRec;
 WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
 
@@ -93,12 +87,6 @@ WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;
 
 extern ListClassRec listClassRec;
 WidgetClass listWidgetClass = (WidgetClass)&listClassRec;
-
-extern LogoClassRec logoClassRec;
-WidgetClass logoWidgetClass = (WidgetClass) &logoClassRec;
-
-extern MailboxClassRec mailboxClassRec;
-WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
 
 extern MenuButtonClassRec menuButtonClassRec;
 WidgetClass menuButtonWidgetClass = (WidgetClass) &menuButtonClassRec;
