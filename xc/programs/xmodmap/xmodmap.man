@@ -21,8 +21,8 @@ xmodmap - utility for modifying keymaps in X
 .PP
 The \fIxmodmap\fP program is used to edit and display the 
 keyboard \fImodifier map\fP and \fIkeymap table\fP that are used by client 
-applications to convert event keycodes into keysyms (see Sections 7.9 and
-10.1.1 in the \fIXlib\fP manual).  It is usually run from 
+applications to convert event keycodes into keysyms (see Sections 12.7 and
+16.1 in the \fIXlib\fP manual).  It is usually run from 
 the user's session startup script to configure the keyboard according to 
 personal tastes.
 .SH OPTIONS
@@ -92,17 +92,16 @@ The list of keysyms is assigned to the indicated keycode
 (which may be specified in decimal, hex or octal and can be determined by 
 running the 
 .I xev 
-program in the examples directory).  Usually only one keysym is assigned
-to a given code.
+program in the examples directory).
 .TP 8
 .B keysym \fIKEYSYMNAME\fP = \fIKEYSYMNAME ...\fP
-The \fIKEYSYMNAME\fP on the left hand side is translated into a keycode (using
-\fBXStringToKeysym()\fP and \fBXKeysymToKeycode()\fP) used to perform the
-corresponding \fBkeycode\fP expression.  The list of keysym names may be
+The \fIKEYSYMNAME\fP on the left hand side is translated into matching keycodes
+used to perform the corresponding set of \fBkeycode\fP expressions.
+The list of keysym names may be
 found in the header file \fI<X11/keysymdef.h>\fP (without the \fIXK_\fP prefix)
 or the keysym database \fI/usr/lib/X11/XKeysymDB\fP.
-Note that if the same keysym is bound to multiple keys, the results for this
-expression are not defined.
+Note that if the same keysym is bound to multiple keys, the expression is
+executed for each matching keycode.
 .TP 8
 .B clear \fIMODIFIERNAME\fP
 This removes all entries in the modifier map for the given modifier, where 
@@ -120,12 +119,14 @@ names).  For example, ``clear Lock'' will remove
 all any keys that were bound to the shift lock modifier.
 .TP 8
 .B add \fIMODIFIERNAME\fP = \fIKEYSYMNAME ...\fP
-This adds the given keysyms to the indicated modifier map.  The keysym names
+This adds all keys containing the given keysyms to the indicated modifier map.
+The keysym names
 are evaluated after all input expressions are read to make it easy to write
 expressions to swap keys (see the EXAMPLES section).
 .TP 8
 .B remove \fIMODIFIERNAME\fP = \fIKEYSYMNAME ...\fP
-This removes the given keysyms from the indicated modifier map.  Unlike
+This removes all keys containing the given keysyms from the indicated
+modifier map.  Unlike
 .B add,
 the keysym names are evaluated as the line is read in.  This allows you to
 remove keys from a modifier without having to worry about whether or not they
