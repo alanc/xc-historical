@@ -93,7 +93,7 @@ int sig;
 #define PTSNODENAME	"/dev/X/XIM."
 #define NAMEDNODENAME	"/dev/X/NXIM."
 #endif
-#if defined(FS_t)
+#if defined(FS_t) || defined (FONT_t)
 /*
  * USL has already defined something here. We need to check with them
  * and see if their choice is usable here.
@@ -1673,7 +1673,7 @@ TRANS(LocalAddrToName)(XtransConnInfo ciptr /*???what else???*/ )
 Xtransport	TRANS(LocalFuncs) = {
 	/* Local Interface */
 	"local",
-	TRANS_ALIAS,
+	TRANS_ALIAS | TRANS_LOCAL,
 	TRANS(LocalOpenCOTSClient),
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
@@ -1697,7 +1697,7 @@ Xtransport	TRANS(LocalFuncs) = {
 Xtransport	TRANS(PTSFuncs) = {
 	/* Local Interface */
 	"pts",
-	0,
+	TRANS_LOCAL,
 	TRANS(LocalOpenCOTSClient),
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
@@ -1721,7 +1721,7 @@ Xtransport	TRANS(PTSFuncs) = {
 Xtransport	TRANS(NAMEDFuncs) = {
 	/* Local Interface */
 	"named",
-	0,
+	TRANS_LOCAL,
 	TRANS(LocalOpenCOTSClient),
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
@@ -1745,7 +1745,7 @@ Xtransport	TRANS(NAMEDFuncs) = {
 Xtransport	TRANS(ISCFuncs) = {
 	/* Local Interface */
 	"isc",
-	0,
+	TRANS_LOCAL,
 	TRANS(LocalOpenCOTSClient),
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
@@ -1768,7 +1768,7 @@ Xtransport	TRANS(ISCFuncs) = {
 Xtransport	TRANS(SCOFuncs) = {
 	/* Local Interface */
 	"sco",
-	0,
+	TRANS_LOCAL,
 	TRANS(LocalOpenCOTSClient),
 	TRANS(LocalOpenCOTSServer),
 	TRANS(LocalOpenCLTSClient),
