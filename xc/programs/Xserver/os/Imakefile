@@ -98,8 +98,10 @@ SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\")
 SpecialObjectRule(WaitFor.o, $(ICONFIGFILES), $(EXT_DEFINES))
 SpecialObjectRule(fonttype.o, $(ICONFIGFILES), $(FONT_DEFINES))
 
+#if HasSaberC
 saber_src:
-	#load $(CFLAGS) -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(EXT_DEFINES) \
+	/**/#load $(CFLAGS) -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(EXT_DEFINES) \
 		$(FONT_DEFINES) $(SRCS)
+#endif
 
 DependTarget()

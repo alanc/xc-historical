@@ -30,7 +30,9 @@ NormalLintTarget($(SRCS))
 
 SpecialObjectRule(miinitext.o, $(ICONFIGFILES), $(EXT_DEFINES))
 
+#if HasSaberC
 saber_src:
-	#load $(CFLAGS) $(EXT_DEFINES) $(SRCS)
+	/**/#load $(CFLAGS) $(EXT_DEFINES) $(SRCS)
+#endif
 
 DependTarget()
