@@ -1,11 +1,13 @@
 #ifdef HPArchitecture		/* need bcopy, bzero, bcmp stuff */
-     EXTRA_LIBS = $(XLIB)
+     BUTIL_SRCS = butil.c
+     BUTIL_OBJS = butil.o
 #else
-     EXTRA_LIBS = 
+     BUTIL_SRCS = 
+     BUTIL_OBJS = 
 #endif
-LOCAL_LIBRARIES = $(XAUTHLIB) $(EXTRA_LIBS)
-           SRCS = xauth.c gethost.c process.c parsedpy.c 
-           OBJS = xauth.o gethost.o process.o parsedpy.o 
+LOCAL_LIBRARIES = $(XAUTHLIB)
+           SRCS = xauth.c gethost.c process.c parsedpy.c $(BUTIL_SRCS) 
+           OBJS = xauth.o gethost.o process.o parsedpy.o $(BUTIL_OBJS) 
         DEFINES = ConnectionFlags
 
 ComplexProgramTarget(xauth)
