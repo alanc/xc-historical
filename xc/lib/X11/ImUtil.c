@@ -1,13 +1,12 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.31 89/01/20 17:10:51 rws Exp $ */
+/* $XConsortium: XImUtil.c,v 11.32 89/03/27 13:55:02 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 #include "Xutil.h"
 #include <stdio.h>
 
-extern unsigned char _reverse_byte[0x100]; /* found in XPutImage */
 static char _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
 static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
 
@@ -128,11 +127,7 @@ static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
 	    }
 	}
 	if (bitorder == MSBFirst) {
-	    do {
-		*bpt = _reverse_byte[*bpt];
-		bpt++;
-	    }
-	    while (--nb > 0);
+	    _Reverse_Bytes (bpt, nb);
 	}
 }
 

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XPutImage.c,v 11.47 88/10/22 18:23:45 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.48 88/12/29 09:17:51 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -10,8 +10,7 @@
 /* assumes pad is a power of 2 */
 #define ROUNDUP(nbytes, pad) (((nbytes) + ((pad) - 1)) & ~(long)((pad) - 1))
 
-/* this is used elsewhere */
-unsigned char _reverse_byte[0x100] = {
+static unsigned char _reverse_byte[0x100] = {
 	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
 	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
 	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -80,6 +79,19 @@ static unsigned char _reverse_nibs[0x100] = {
 	0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f,
 	0x8f, 0x9f, 0xaf, 0xbf, 0xcf, 0xdf, 0xef, 0xff
 };
+
+
+_Reverse_Bytes (bpt, nb)
+    register unsigned char *bpt;
+    register int nb;
+{
+    do {
+	*bpt = _reverse_byte[*bpt];
+	bpt++;
+    } while (--nb > 0);
+    return;
+}
+
 
 /* XXX the following functions are declared int instead of void because various
  * compilers and lints complain about later intialization of SwapFunc and/or
