@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.17 88/10/23 13:28:49 swick Exp $
+ * $XConsortium: Toggle.h,v 1.1 89/01/12 18:49:00 kit Exp $
  */
 
 /***********************************************************
@@ -134,8 +134,19 @@ void XtToggleSetCurrent(/* radio_group, radio_data */);
 void XtToggleUnsetCurrent( /* radio_group */);
 /* Widget radio_group; */
 
+/*
+ * These shoul d be in StringDefs.h but aren't so we will define
+ * them here if they are needed.
+ */
+
+#ifndef XtCWidget
 #define XtCWidget                "Widget"
+#endif /* XtCWidget */
+
+#ifndef XtRWidget
 #define XtRWidget                "Widget"
+#endif /* XtRWidget */
+
 #define XtNstate                 "state"
 #define XtCState                 "State"
 #define XtNradioGroup            "radioGroup"
