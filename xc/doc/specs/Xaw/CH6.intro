@@ -2,11 +2,11 @@
 \&
 .sp 1
 .ce 3
-\s+1\fBChapter 5\fP\s-1
+\s+1\fBChapter 6\fP\s-1
 
 \s+1\fBComposite and Constraint Widgets\fP\s-1
 .sp 2
-.nr H1 5
+.nr H1 6
 .nr H2 0
 .nr H3 0
 .nr H4 0
@@ -14,7 +14,7 @@
 .na
 .LP
 .XS
-Chapter 5 - Composite and Constraint Widgets
+Chapter 6 - Composite and Constraint Widgets
 .XE
 .LP
 These widgets may contain arbitrary widget children.  They implement a

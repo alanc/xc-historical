@@ -2,11 +2,11 @@
 \&
 .sp 1
 .ce 3
-\s+1\fBChapter 7\fP\s-1
+\s+1\fBChapter 4\fP\s-1
 
 \s+1\fBMenus\fP\s-1
 .sp 2
-.nr H1 7
+.nr H1 4
 .nr H2 0
 .nr H3 0
 .nr H4 0
@@ -14,7 +14,7 @@
 .na
 .LP
 .XS
-Chapter 7 - Menus
+Chapter 4 - Menus
 .XE
 .LP
 The Athena widget set provides support for single paned non-hierarchical

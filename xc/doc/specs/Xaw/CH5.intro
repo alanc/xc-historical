@@ -2,11 +2,11 @@
 \&
 .sp 1
 .ce 3
-\s+1\fBChapter 4\fP\s-1
+\s+1\fBChapter 5\fP\s-1
 
 \s+1\fBText Widgets\fP\s-1
 .sp 2
-.nr H1 4
+.nr H1 5
 .nr H2 0
 .nr H3 0
 .nr H4 0
@@ -14,7 +14,7 @@
 .na
 .LP
 .XS
-Chapter 4 - Text Widgets.
+Chapter 5 - Text Widgets.
 .XE
 .LP
 The Athena Text widget is made up of a number of different pieces.  The
