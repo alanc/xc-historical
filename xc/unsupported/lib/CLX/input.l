@@ -287,11 +287,11 @@
   (declare (type display display)
 	   (type (or integer (member nil t)) expected-size))
   (declare-values length-in-bytes)
+  (setf (display-waiting-reply-p display) t) ;; indicate awaiting reply
   (buffer-force-output display)
   (do ((sequence-error nil)
        (req-sequence (ldb (byte 16 0) (buffer-request-number display))))
       (nil) ;; forever
-    (setf (display-waiting-reply-p display) t) ;; indicate awaiting reply
     (with-input-lock (display)
       (reading-buffer-reply (display)
 	;; If waiting-reply-p is :in-buffer then the reply was read in while
