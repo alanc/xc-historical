@@ -21,6 +21,7 @@ SRCS = \
 	gray1 \
 	gray3 \
 	hlines2 \
+	hlines3 \
 	icon \
 	keyboard16 \
 	left_ptr \
