@@ -9,6 +9,7 @@
 #define HasBsearch YES
 #define HasSaberC YES
 #define HasShm YES
+#define LintLibFlag -o
 #define LintOpts -ax
 
 #ifdef VaxArchitecture
@@ -34,5 +35,5 @@
 #define ServerCCOptions /* */
 #endif
 
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.25 91/02/24 00:51:12 keith Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.26 91/03/13 18:56:14 rws Exp $
 XCOMM operating system:  OSName
