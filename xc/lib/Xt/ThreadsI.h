@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.5 93/09/18 14:57:39 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.7 93/11/22 10:59:39 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -94,7 +94,8 @@ extern void (*_XtInitAppLock)(
 #define WAIT_THREAD(app) if(app && app->wait_thread)(*app->wait_thread)(app)
 
 #define WIDGET_TO_APPCON(w) \
-    XtAppContext app = (_XtProcessLock ? XtWidgetToApplicationContext(w): 0)
+    XtAppContext app = (w && _XtProcessLock ? 
+	XtWidgetToApplicationContext(w) : NULL)
 
 #define DPY_TO_APPCON(d) \
     XtAppContext app = (_XtProcessLock ? XtDisplayToApplicationContext(d): 0)
