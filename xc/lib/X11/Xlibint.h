@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.75 89/12/09 20:55:28 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.76 89/12/09 21:13:26 jim Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -385,7 +385,11 @@ extern int (*XESetCreateGC(
 	      XExtCodes*		/* codes */
 	    )		/* proc */
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, GC, XExtCodes*
+#endif
+);
 
 extern int (*XESetCopyGC(
 #if NeedFunctionPrototypes
@@ -396,7 +400,11 @@ extern int (*XESetCopyGC(
               XExtCodes*		/* codes */
             )		/* proc */	      
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, GC, XExtCodes*
+#endif
+);
 
 extern int (*XESetFlushGC(
 #if NeedFunctionPrototypes
@@ -407,7 +415,11 @@ extern int (*XESetFlushGC(
               XExtCodes*		/* codes */
             )		/* proc */	     
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, GC, XExtCodes*
+#endif
+);
 
 extern int (*XESetFreeGC(
 #if NeedFunctionPrototypes
@@ -418,7 +430,12 @@ extern int (*XESetFreeGC(
               XExtCodes*		/* codes */
             )		/* proc */	     
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, GC, XExtCodes*
+#endif
+);
+
 extern int (*XESetCreateFont(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -428,7 +445,11 @@ extern int (*XESetCreateFont(
               XExtCodes*		/* codes */
             )		/* proc */    
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, XFontStruct*, XExtCodes*
+#endif
+);
 
 extern int (*XESetFreeFont(
 #if NeedFunctionPrototypes
@@ -439,7 +460,11 @@ extern int (*XESetFreeFont(
               XExtCodes*		/* codes */
             )		/* proc */    
 #endif
-))(); 
+))(
+#if NeedFunctionPrototypes
+    Display*, XFontStruct*, XExtCodes*
+#endif
+); 
 
 extern int (*XESetCloseDisplay(
 #if NeedFunctionPrototypes
@@ -449,7 +474,11 @@ extern int (*XESetCloseDisplay(
               XExtCodes*		/* codes */
             )		/* proc */    
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, XExtCodes*
+#endif
+);
 
 extern int (*XESetError(
 #if NeedFunctionPrototypes
@@ -461,7 +490,11 @@ extern int (*XESetError(
               int*			/* ret_code */
             )		/* proc */    
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, xError*, XExtCodes*, int*
+#endif
+);
 
 extern char* (*XESetErrorString(
 #if NeedFunctionPrototypes
@@ -474,7 +507,11 @@ extern char* (*XESetErrorString(
                 int			/* nbytes */
               )		/* proc */	       
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, int, XExtCodes*, char*, int
+#endif
+);
 
 extern int (*XESetWireToEvent(
 #if NeedFunctionPrototypes
@@ -485,7 +522,11 @@ extern int (*XESetWireToEvent(
                xEvent*			/* event */
              )		/* proc */    
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, XEvent*, xEvent*
+#endif
+);
 
 extern Status (*XESetEventToWire(
 #if NeedFunctionPrototypes
@@ -496,7 +537,11 @@ extern Status (*XESetEventToWire(
               xEvent*			/* event */
             )		/* proc */   
 #endif
-))();
+))(
+#if NeedFunctionPrototypes
+    Display*, XEvent*, xEvent*
+#endif
+);
 
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
