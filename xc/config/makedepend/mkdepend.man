@@ -1,4 +1,4 @@
-.\" $XConsortium: mkdepend.man,v 1.11 94/04/11 14:25:57 gildea Exp $
+.\" $XConsortium: mkdepend.man,v 1.12 94/04/11 16:02:50 matt Exp $
 .TH MAKEDEPEND 1 "Release 6" "X Version 11"
 .UC 4
 .SH NAME
@@ -30,11 +30,11 @@ makedepend \- create dependencies in makefiles
 ] [
 .B \-m
 ] [
-\-\ \-
+\-\^\-
 .B otheroptions
-\-\ \-
+\-\^\-
 ]
-sourcefile ...
+sourcefile .\|.\|.
 .br
 .SH DESCRIPTION
 .B Makedepend
@@ -80,15 +80,15 @@ places its output in the file named
 if it exists, otherwise
 .I Makefile.
 An alternate makefile may be specified with the
-.I -f
+.B \-f
 option.
 It first searches the makefile for
 the line
 .sp
-    # DO NOT DELETE THIS LINE -- make depend depends on it.
+    # DO NOT DELETE THIS LINE \-\^\- make depend depends on it.
 .sp
 or one provided with the
-.I -s
+.B \-s
 option,
 as a delimiter for the dependency output.
 If it finds it, it will delete everything
@@ -103,7 +103,7 @@ appearing on the command line,
 .B makedepend
 puts lines in the makefile of the form
 .sp
-     sourcefile.o: dfile ...
+     sourcefile.o:\0dfile .\|.\|.
 .sp
 Where "sourcefile.o" is the name from the command
 line with its suffix replaced with ".o",
@@ -119,10 +119,10 @@ will be used in a makefile target so that typing "make depend" will
 bring the dependencies up to date for the makefile.
 For example,
 .nf
-    SRCS = file1.c file2.c ...
-    CFLAGS = -O -DHACK -I../foobar -xyz
+    SRCS\0=\0file1.c\0file2.c\0.\|.\|.
+    CFLAGS\0=\0\-O\0\-DHACK\0\-I\^.\^.\^/foobar\0\-xyz
     depend:
-            makedepend -- $(CFLAGS) -- $(SRCS)
+            makedepend\0\-\^\-\0$(CFLAGS)\0\-\^\-\0$(SRCS)
 .fi
 .SH OPTIONS
 .B Makedepend
@@ -223,10 +223,10 @@ inclusion to be an error.  This option is provided for backward
 compatibility, and to aid in debugging problems related to multiple
 inclusion.
 .TP 5
-.B "\-\ \- options \-\ \-"
+.B "\-\^\- options \-\^\-"
 If
 .B makedepend
-encounters a double hyphen (\-\ \-) in the argument list,
+encounters a double hyphen (\-\^\-) in the argument list,
 then any unrecognized argument following it
 will be silently ignored; a second double hyphen terminates this
 special treatment.
@@ -283,7 +283,7 @@ and
 .I def2.h.
 When you run the command
 .sp
-    makedepend file1.c file2.c
+    makedepend\0file1.c\0file2.c
 .sp
 .B makedepend
 will parse
@@ -296,7 +296,7 @@ and
 .I def2.h.
 It then decides that the dependencies for this file are
 .sp
-    file1.o: header.h def1.h def2.h
+    file1.o:\0header.h\0def1.h\0def2.h
 .sp
 But when the program parses
 .I file2.c
