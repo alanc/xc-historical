@@ -13,6 +13,14 @@
 OS_NAME_DEFINES = OsNameDefines
 #endif
 
+#if HasDESLibrary
+DESDEFS = -DHASDES
+#else
+DESDEFS =
+#endif
+
+DEFINES = $(DESDEFS)
+
 HEADERS = Xdmcp.h
 
 SRCS = \
@@ -49,7 +57,13 @@ SRCS = \
 	WC16.c \
 	WC32.c \
 	Whead.c \
-	Alloc.c
+	Alloc.c \
+	CmpKey.c \
+	Encrypt.c \
+	Decrypt.c \
+	DecKey.c \
+	GenKey.c \
+	IncKey.c
 
 OBJS = \
 	A8Eq.o \
@@ -85,7 +99,13 @@ OBJS = \
 	WC16.o \
 	WC32.o \
 	Whead.o \
-	Alloc.o
+	Alloc.o \
+	CmpKey.o \
+	Encrypt.o \
+	Decrypt.o \
+	DecKey.o \
+	GenKey.o \
+	IncKey.o
 
 all::
 #if DebugLibXdmcp && ProfileLibXdmcp
@@ -116,11 +136,11 @@ InstallLibrary(Xdmcp_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xdmcp,$(OBJS))
 #endif
 
-BuildIncludes($(HEADERS),Xdmcp,..)
+BuildIncludes($(HEADERS),.,.)
 
-MakeDirectories(install,$(INCDIR)/Xdmcp)
+MakeDirectories(install,$(INCDIR))
 
-InstallMultiple($(HEADERS),$(INCDIR)/Xdmcp)
+InstallMultiple($(HEADERS),$(INCDIR))
 
 DependTarget()
 

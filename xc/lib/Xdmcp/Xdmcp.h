@@ -86,6 +86,10 @@ typedef struct _XdmcpBuffer {
     int	    count;	    /* amount of data read */
 } XdmcpBuffer, *XdmcpBufferPtr;
 
+typedef struct _XdmAuthKey {
+    BYTE    data[8];
+} XdmAuthKeyRec, *XdmAuthKeyPtr;
+
 extern int XdmcpWriteCARD8(),		XdmcpWriteCARD16();
 extern int XdmcpWriteCARD32();
 extern int XdmcpWriteARRAY8(),		XdmcpWriteARRAY16();
@@ -106,6 +110,14 @@ extern void XdmcpDisposeARRAY32(),	XdmcpDisposeARRAYofARRAY8();
 extern int XdmcpCopyARRAY8();
 
 extern int XdmcpARRAY8Equal();
+
+#ifdef HASDES
+extern void XdmcpGenerateKey();
+extern void XdmcpIncrementKey();
+extern void XdmcpDecrementKey();
+extern void XdmcpEncrypt();
+extern void XdmcpDecrypt();
+#endif
 
 #ifndef TRUE
 #define TRUE	1
