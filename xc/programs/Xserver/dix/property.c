@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.64 89/03/08 08:39:22 rws Exp $ */
+/* $XConsortium: property.c,v 1.65 89/03/11 16:54:13 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -203,7 +203,7 @@ ProcChangeProperty(client)
 	if (!pProp)
 	    return(BadAlloc);
         data = (pointer)xalloc(sizeInBytes  * len);
-	if (!data)
+	if (!data && len)
 	{
 	    xfree(pProp);
 	    return(BadAlloc);
@@ -212,7 +212,8 @@ ProcChangeProperty(client)
         pProp->type = stuff->type;
         pProp->format = format;
         pProp->data = data;
-        bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);
+	if (len)
+	    bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);
 	pProp->size = len;
         pProp->next = pWin->userProps;
         pWin->userProps = pProp;
@@ -229,17 +230,21 @@ ProcChangeProperty(client)
 	    return(BadMatch);
         if ((pProp->type != stuff->type) && (mode != PropModeReplace))
             return(BadMatch);
-				/* XXX should check length too */
         if (mode == PropModeReplace) 
         {
 	    data = (pointer)xrealloc(pProp->data, sizeInBytes * len);
-	    if (!data)
+	    if (!data && len)
 		return(BadAlloc);
             pProp->data = data;
-	    bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);    
+	    if (len)
+		bcopy((char *)&stuff[1], (char *)data, len * sizeInBytes);    
 	    pProp->size = len;
     	    pProp->type = stuff->type;
 	    pProp->format = stuff->format;
+	}
+	else if (len == 0)
+	{
+	    /* do nothing */
 	}
         else if (mode == PropModeAppend)
         {
