@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.17 87/08/18 15:31:40 jg Exp $ */
+/* $Header: XSetHints.c,v 11.18 87/08/31 01:51:24 hania Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -201,5 +201,31 @@ XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hint
 	if (phints.flags != 0) XSetWMHints(dpy, w, &phints);
 }
 
+void
+XSetTransientForHint(dpy, w, propWindow)
+	Display *dpy;
+	Window w;
+	Window propWindow;
+{
+	XChangeProperty(dpy, w, XA_WM_TRANSIENT_FOR, XA_WINDOW, 32,
+		PropModeReplace, (char *) &propWindow, 1);
+}
 
+void
+XSetClassHint(dpy, w, classhint)
+	Display *dpy;
+	Window w;
+	XClassHint *classhint;
+{
+	char *class_string = NULL;
+	int len_nm, len_cl;
 
+	len_nm = strlen(classhint->res_name);
+	len_cl = strlen(classhint->res_class);
+	class_string = Xmalloc(len_nm + len_cl + 2);
+	strcpy(class_string, classhint->res_name);
+	strcpy(class_string+strlen(classhint->res_name)+1, classhint->res_class);
+	XChangeProperty(dpy, w, XA_WM_CLASS, XA_STRING, 8,
+		PropModeReplace, class_string, len_nm+len_cl+2);
+	Xfree(class_string);
+}
