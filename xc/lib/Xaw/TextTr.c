@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.9 89/07/18 19:11:21 kit Exp $ */
+/* $XConsortium: TextTr.c,v 1.10 89/08/18 14:31:54 kit Exp $ */
 
 char *_XawDefaultTextTranslations1 =
 "\
@@ -22,7 +22,7 @@ Ctrl<Key>T:     transpose-characters() \n\
 Ctrl<Key>U:	multiply(4) \n\
 Ctrl<Key>V:	next-page() \n\
 Ctrl<Key>W:	kill-selection() \n\
-Ctrl<Key>Y:	unkill() \n\
+Ctrl<Key>Y:	insert-selection(CUT_BUFFER1) \n\
 Ctrl<Key>Z:	scroll-one-line-up() \n\
 ", *_XawDefaultTextTranslations2 = "\
 Meta<Key>B:	backward-word() \n\
@@ -31,7 +31,7 @@ Meta<Key>I:	insert-file() \n\
 Meta<Key>K:	kill-to-end-of-paragraph() \n\
 Meta<Key>Q:     form-paragraph() \n\
 Meta<Key>V:	previous-page() \n\
-Meta<Key>Y:	stuff() \n\
+Meta<Key>Y:	insert-selection(CUT_BUFFER1) \n\
 Meta<Key>Z:	scroll-one-line-down() \n\
 :Meta<Key>d:	delete-next-word() \n\
 :Meta<Key>D:	kill-word() \n\

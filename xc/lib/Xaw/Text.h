@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.30 89/09/01 14:30:05 kit Exp $
+* $XConsortium: Text.h,v 1.31 89/09/06 17:30:10 kit Exp $
 */
 
 
@@ -215,6 +215,17 @@ typedef long XtTextPosition;
 #define XtStringSourceCreate       XawStringSourceCreate
 #define XtStringSourceDestroy      XawStringSourceDestroy
 
+extern void XawTextChangeOptions(); /* w, options */
+    /* Widget        w;		*/
+    /* int    options; */
+
+extern int XawTextGetOptions(); /* w */
+    /* Widget        w;		*/
+
+extern void XawTextSetLastPos(); /* w, lastPos */
+    /* Widget        w;		*/
+    /* XawTextPosition lastPos;  */
+
 /*************************************************************/
 #endif /* XAW_BC */
 
@@ -230,10 +241,6 @@ extern void XawTextDisableRedisplay(); /* w */
 extern void XawTextSetSelectionArray(); /* w, sarray */
     /* Widget        w;		*/
     /* SelectionType *sarray;   */
-
-extern void XawTextSetLastPos(); /* w, lastPos */
-    /* Widget        w;		*/
-    /* XawTextPosition lastPos;  */
 
 extern void XawTextGetSelectionPos(); /* dpy, w, left, right */
     /* Widget        w;		*/
@@ -260,13 +267,6 @@ extern XawTextPosition XawTextGetInsertionPoint(); /* w */
     /* Widget        w;		*/
 
 extern void XawTextUnsetSelection(); /* w */
-    /* Widget        w;		*/
-
-extern void XawTextChangeOptions(); /* w, options */
-    /* Widget        w;		*/
-    /* int    options; */
-
-extern int XawTextGetOptions(); /* w */
     /* Widget        w;		*/
 
 extern void XawTextSetSelection(); /* w, left, right */

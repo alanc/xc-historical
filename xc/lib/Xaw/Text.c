@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.117 89/09/15 12:09:13 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.118 89/10/09 16:20:24 jim Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -2641,7 +2641,6 @@ int options;
   else
     ctx->text.wrap = XawtextWrapNever;
 }
-#endif /* XAW_BC */
 
 int 
 XawTextGetOptions(w)
@@ -2649,6 +2648,7 @@ Widget w;
 {
   return(((TextWidget) w)->text.options);
 }
+#endif /* XAW_BC */
 
 void
 XawTextSetSelection (w, left, right)
