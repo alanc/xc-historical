@@ -1,3 +1,13 @@
+.de Su  \" if $1 = +, this gives a superscript; $1 = - gives a subscript.  
+.       \" If 2 args, $1=super/subscripted text with post-space
+.       \" If 3 args, $2=regular text; $3=super/subscripted text w/pre-space
+.if "\\$1"+" \{\
+.       if \\n(.$=3 \\$2\v'-4p'\s-3\\$3\v'4p'\s0
+.       if \\n(.$=2 \v'-4p'\s-3\\$2\v'4p'\s0\}
+.if "\\$1"-" \{\
+.       if \\n(.$=3 \\$2\v'3p'\s-3\h'2p'\\$3\v'-3p'\s0
+.       if \\n(.$=2 \v'3p'\s-3\\$2\v'-3p'\s0\h'2p'\}
+..
 .\ "MIT header page and copyright notice
 .\" MIT page header and footers
 .ps 10
@@ -20,19 +30,16 @@
 .br
 \s+1\fBXlib Programming Manual\fP\s-1
 .sp 6
-.ce 4
+.ce 2
 \s-1Adrian Nye
-.br
-Tim O'Reilly\s+1
 .sp 6p
 \s-1O'Reilly and Associates, Inc.\s+1
 .sp 2
-.bp 
 .sp 8
-.LP
+.sp .5
 The X Window System is a trademark of MIT.
 .sp .5
-Copyright \(co 1988  O'Reilly and Associates, Inc.
+Copyright \(co 1990  O'Reilly and Associates, Inc.
 .sp .5
 Permission to use, copy, modify and distribute this documentation for any
 purpose and without fee is hereby granted, provided that the above copyright
@@ -73,678 +80,171 @@ valuable comments on earlier drafts.
 \s20\f(HBColor\fR\s10
 .sp 4
 .IP "" 6n
-A typical X application allows the user to specify
-colors for the background and border of each of its windows, colors
-for the cursor, and foreground and background colors to be set in GCs
-for drawing text and graphics.*   More complex applications (such as 
-.FS
-*The version of this chapter in our book includes a number of figures, 
-which it would have been difficult to provide on the MIT tape.
-The figures and their references have been omitted.
-.FE
-Computer Aided Design) might use color to distinguish physical or 
-logical layers.  Still more complex 
-applications, such as imaging, might use fine gradations of color to 
-represent real-world data.  Yet in discussing window attributes, and 
-how to set the foreground and background members of the GC, we have 
-spoken only of pixel values.
+.Ti "Xlib Programming Manual"
+.ds u: \o'u\(..'
+.Se "7" "Color"
+.St "Color"
+A typical X application allows the user to specify colors for the 
+background and border of each of its windows, colors for the cursor, and 
+foreground and background colors to be set in GCs for drawing text and 
+graphics.  More complex applications (such as Computer Aided Design (CAD) 
+applications) might use color to distinguish physical or logical 
+layers.  Still more complex applications, such as in imaging, might use 
+fine gradations of color to represent real-world data.  Yet in discussing 
+the background and border window attributes and how to set the foreground 
+and background members of the GC, we have spoken only of pixel values.
 .sp .5
+.\" I don't like this PP now
 How are these pixel values translated to colors?  And how must an X 
-client manage color if it is to run successfully on the wide 
-variety of display hardware available in the X environment?
+client manage color if it is to run successfully on the wide variety 
+of screen hardware available in the X environment?
 .sp .5
-Because X must support a wide variety of systems with differing
-display hardware, the Xlib color-handling mechanisms are fairly complex.  
-Even programmers who have previously written color graphics 
-applications will find there are some new concepts to learn.
+Because X must support a wide variety of systems with differing screen 
+hardware, the Xlib color-handling mechanisms are fairly complex.  Even 
+programmers who have previously written color graphics applications will 
+find there are some new concepts to learn.
 .sp .5
-This chapter starts out by describing the different types of displays that 
-an X application may run on, and the mechanisms Xlib provides for 
-determining the display type.  
-It then describes the simplest color-allocation 
+This chapter starts out by describing the different types of screens 
+that an X application may run on and the mechanisms Xlib provides for 
+determining the screen type.  It then describes the simplest color-allocation 
 mechanisms, which could be used by applications whose principal use of 
-color is for decoration.  It 
-proceeds to discuss more complex color applications, and concludes with a 
-section on writing applications that will be portable across different types of 
-color and monochrome displays.
-.sp 2
+color is for decoration.  It proceeds to discuss more complex color 
+applications and concludes with a section on writing applications that 
+will be portable across different types of color and monochrome screens.
 .IP \s+4\f(HB7.1\fR\s-4  6n
 \s+4\f(HBBasic Color Terms and Concepts\fR\s-4
-.sp 
-Most color displays on the market today are based on the RGB 
-color model.  Each pixel on the screen is actually made up of 
-three phosphors:  one red, one green, and one blue.  Each of 
-these three phosphors is sensitive to a separate electron beam.
-When all three phosphors are fully illuminated, the pixel appears white to 
-the human eye.  When all three are dark, the pixel appears black.  When the 
-illumination of each primary color varies, the three phosphors generate a 
-subtractive color that might seem surprising.  For example, equal portions of 
-red and green, with no admixture of blue, make yellow.
+.sp
+Most color screens on the market today are based on the RGB color 
+model.  Each pixel on the screen is actually made up of three 
+phosphors:  one red, one green, and one blue.  Each of these three 
+phosphors is sensitive to a separate electron beam.  When all three 
+phosphors are fully illuminated, the pixel appears white to the human 
+eye.  When all three are dark, the pixel appears black.  When the 
+illumination of each primary color varies, the three phosphors generate 
+an additive color that might seem surprising.  For example, equal 
+portions of red and green, with no admixture of blue, make yellow.  
+Most people are more familiar with subtractive color mixing, used 
+in paints, where red, yellow, and blue are the three primary colors 
+from which all other colors (except white and shades of gray) can be made.
 .sp .5
-You no doubt know that a color display uses multiple bits per pixel 
-(also referred to as multiple planes) to specify colors.   There is a 
-type of display (which we'll discuss later) in which these bits are 
-used directly to control the illumination of the red, green and blue 
-phosphors that make up each pixel.  Far more commonly, though, a 
-\fIcolormap\fP  is used to translate each 
-pixel's bit value into the visible colors you see 
+You, no doubt, know that a color screen uses multiple bits per pixel 
+(also referred to as multiple planes) to specify colors.  A \fIcolormap\fP 
+is used to translate each pixel's value into the visible colors you see 
 on the screen.
 .sp .5
-A colormap is no more than a lookup table.  Any given pixel 
-value is used as an index into this table--for example, a pixel 
-value of 16 will select the sixteenth element, or \fIcolorcell\fP.
+A colormap is no more than a lookup table stored in the server.  Any 
+given pixel value is used as an index into this table\(emfor example, a 
+pixel value of 16 will select the sixteenth element, or \fIcolorcell\fP.
 .sp .5
 On the most common type of color system, each colorcell contains 
-separate intensity values for each of the three primary colors.  
-Depending on the display hardware, these values can be 
-anywhere from 1 to 16 bits each, and are most commonly 8 bits 
-each.
-.ne 5
-A pixel value uniquely identifies a particular 
-colorcell.  Each pixel value in the visible portions of a window
-is continuously read out of display memory and looked up in the colormap. 
-The RGB values in the specified colorcell control the intensity of the three 
-primary colors and thus determine the color that is displayed on the screen.
+separate 16-bit intensity values for each of the three primary colors.  
 .sp .5
-The range of colors possible on the display is a function of the 
+As shown in Figure 1, a pixel value uniquely identifies a 
+particular colorcell.  Each pixel value in the visible portions of a 
+window is continuously read out of screen memory and looked up in the 
+colormap.  The RGB values in the specified colorcell control the intensity 
+of the three primary colors and thus determine the color that is displayed 
+at that point on the screen.
+.sp
+Note: Figure 1 "Pixel value to RGB mapping with the colormap on a color 
+screen" here.
+.sp
+The range of colors possible on the screen is a function of the 
 number of bits available in the colormap for RGB specification.  
 If eight bits is available for each primary, then the range of 
 possible colors is
+.Su + 256 3
 (about 16 million colors).
 .sp .5
 However, the number of different colors that can be displayed 
 on the screen at any one time is a function of the number of 
-planes.  A four-plane system could index
-colorcells (16 distinct colors); an eight-plane system could index
+planes.  A 4-plane system could index
+.Su + 2 4
+.hw distinct
+colorcells (16\ distinct colors); an 8-plane system could index
+.Su + 2 8
 colorcells (256 distinct colors); and a 24-plane system could index
+.Su + 2 24
 colorcells (over 16 million distinct colors).
-.sp 2
-.IP \s+4\f(HB7.2\fR\s-4  6n  
-\s+4\f(HBDifferences in Display Hardware\fR\s-4\fR
-.sp
-The description of color mapping given in the previous section was
-actually somewhat over-simplified.  There are significant differences
-in how the colormap is used on mid-range color displays, monochrome
-and gray-scale displays, and high performance color displays.
-.sp 2
-.IP \s+2\f(HB7.2.1\fR\s-2  6n  
-\s+2\f(HBMid-range Color Displays\fR\s-2
-.sp
-The most common type of color display has between 4 and 8 planes,
-and uses the colormap indexing technique described above.
-This type of display is so widespread because it provides a
-flexible color system while being moderately priced.
-The mapping of pixel values to 
-colorcells, with arbitrary RGB values stored in each colorcell, 
-allows a very large gamut of possible colors, even though a more
-limited number can be shown on the screen at any one time.
 .sp .5
-If the colormap is predefined, and cannot be modified, this type of 
-display is referred to as a \fIstatic color\fR display.   
-Realistically, a static color display is 
-unlikely to exist, since the main advantage of a read-only, predefined 
-colormap is the predictability of the mapping between
-pixel values and colors, but displays with a 
-relatively small number of simultaneous
-colors don't lend themselves to applications that use this mapping
-(such as 3-D rendering).
-.\"The way pixel values are mapped to RGB values described above
-.\"is valid for most color displays.  However, you also need to consider monochrome
-.\"and high-performance color displays.
-.sp 2
-.IP \s+2\f(HB7.2.2\fR\s-2 6n
-\s+2\f(HBMonochrome and Gray Scale\fR\s-2
-.sp
-Monochrome (black and white) displays have 
-only a single plane of display memory.  Each 
-pixel is made up of a single phosphor, which can be either on or off.
+A client attempting to use color does not \fIspecify\fP a pixel value 
+.\" (read-only or read/write) 
+and the color to be put in that cell in order to draw in a given color.  
+Instead, it requests access to a colorcell in a colormap (managed by 
+the server) and is \fIreturned\fP a pixel value.  This is called
+\fIallocating\fR a color.  When a client allocates a color, it asks 
+the server, "Which colorcell can I use?" and the server responds by 
+saying, "You can use the colorcell specified by this pixel value."  
+There are three functions that allocate colors, which are described 
+in detail and demonstrated in later sections in this chapter.
 .sp .5
-Gray scale displays are sometimes used for publishing applications, 
-since pixels made up of a single phosphor are smaller than those made 
-up of three phosphors, and the resolution is therefore better.
-A gray scale display works by looking 
-up the intensity of the pixel in the colormap, which for this display 
-type contains only a single value.  This
-controls the intensity of a single electron beam.  Gray scale can 
-be simulated on a color display by making the red, green, and blue 
-values equal in a given colorcell to determine the brightness of gray 
-pixels on the screen.
-.sp .5
-A gray scale display might have a read-only colormap, so that the gray
-levels in each cell could not be changed.
-A monochrome display is an example of this type; it is a single-plane 
-display with a two-element colormap.
-.sp 2
-.IP \s+2\f(HB7.2.3\fR\s-2 6n
-\s+2\f(HBHigh Performance Color Displays\fR\s-2
-.sp
-As memory has become cheaper, and applications more advanced,  
-workstations with up to 24 planes have become more common.    With 24 
-bits per pixel, it is possible to display many more distinct colors 
-at the same time.  This makes it possible to do smooth shading and 
-other applications that use a large number of closely-spaced colors.
-.sp .5
-The problem with so many planes is that a colormap 
-of the style used in mid-range color displays
-would be impossibly large:  it would contain over sixteen million 
-entries.  Instead, the available bits per pixel are broken down into three 
-separate colormap indices, one for each primary color.
-This approach still allows the full range of colors to be generated, but makes 
-the job of loading the colormap much more manageable.
-.sp .5
-In high-performance displays, having a read-only colormap
-makes just as much sense as having it read/write, because nearly 
-every color imaginable can be simultaneously available.
-With a read-only colormap there is a fixed relationship between the 
-pixel values used to select a color and the actual RGB values 
-generated.  This makes possible applications that want to calculate
-pixel values directly instead of having to calculate colors and then
-determine which pixel value represents that color as is necessary when
-the colormap is read/write.
-.sp .5
-In reality, most displays in this class let you use the color resources
-in either fashion.  How this is done is our next topic.
-.sp 2
-.IP \s+2\f(HB7.2.4\fR\s-2 6n  
-\s+2\f(HBHow X Manages Different Display Types\fR\s-2
-.sp
-X describes the color capabilities of the display hardware with
-a visual.  A \fIvisual\fR is actually a structure containing
-information about a way of using a particular display.
-A visual must be specified when creating a colormap or a 
-window, and the same visual must be used in creating a window as was used
-to create the colormap to be used in that window.   A window can 
-inherit its parent's visual, and since the root window is 
-created with a default visual, windows will often share this default 
-visual.  If you need to get the default visual, you can do so with the 
-\f(CWDefaultVisual\fP macro.
-.sp .5
-.ne 6
-The \f(CWVisual\fP structure is intended
-to be opaque; programs are not supposed to access its contents directly.  
-The reason for this is so that Xlib's authors have the ability to change
-the structure without breaking existing clients.
-However, the procedure used to avoid accessing its members directly is
-cumbersome, and most programmers compromise by flagging their code where
-they break the rules so that if \f(CWVisual\fP ever does change, they will
-be able to fix the code quickly.
-.sp .5
-The members of the \f(CWVisual\fP structure that are important to 
-understand are \f(CWmap_entries\fP and \f(CWclass\fP.  The other members
-are only used in advanced color handling.
-The \f(CWmap_entries\fP member specifies how many colorcells there
-are in a colormap created with this visual.  On high-performance
-color screens with the colormap composed of separate maps for
-each primary color, \f(CWmap_entries\fP is the largest of the three 
-submaps.  The \f(CWclass\fP member contains a constant specifying one of
-six different visual classes,* corresponding to the different types 
-of screen: \f(CWGrayScale\fP, \f(CWStaticGray\fP, 
-\f(CWPseudoColor\fP, \f(CWStaticColor\fP,
-\f(CWDirectColor\fP, or \f(CWTrueColor\fP.
-.FS 
-*Do not confuse \fIvisual\fR class with \fIwindow\fR class.  
-While both are represented in certain structures as the 
-\f(CWclass\fR member, and both are set when a window 
-is created and cannot be changed, they are 
-quite different.  The window 
-class is \f(CWInputOutput\fP or \f(CWInputOnly\fP.
-The visual class is only part of the 
-overall visual, which is the way color
-is represented for a window.
-.FE
-.sp .5
-As summarized in Table 7-1, the visual classes 
-distinguish between color or monochrome, whether the colormap is 
-read/write or read-only, and whether a pixel value provides a single 
-index to the colormap or is decomposed into separate indices for red, 
-green and blue values.
-.sp 
-\s-1\f(HITable 7-1.  Comparison of Visual Classes\fR\s+1
-.sp 
-.TS
-linesize(2),tab(@);
-l | l | l
-l | lp9fCW| lp9fCW.
-.sp 1p
-Colormap Type@Read/Write@Read-only
-.sp 1p
-_
-.sp 5p
-Monochrome/Gray@GrayScale@StaticGray
-Single Index for RG&B@PseudoColor@StaticColor
-Decomposed Index for RG&B@DirectColor@TrueColor
-.sp 8p
-.TE
-.IP "" 6n
-It is important to realize that a visual is not just a simple record 
-of the screen characteristics.  A visual is \fIone way\fR of 
-interpreting the color resources on a screen.  There may be several 
-valid visuals for a particular screen if the colormap is read/write.
-Several visuals of the same class may be provided, but at different
-depths.  On high-performance screens
-that we described in Section 7.2.3, it is possible to use
-the colormap as if it were read/write or as if it were read/only.
-Both methods have certain advantages and would be used for different
-applications.  There would be a separate visual for
-each of these ways of using the display hardware.  One of
-these visuals would be \f(CWTrueColor\fP and the other 
-\f(CWDirectColor\fP.  Some 24-plane 
-displays allow the screen to be treated as two separate 12-plane 
-\f(CWPseudoColor\fP visuals.  (This allows for "double-buffering," a 
-technique useful for animation, or for storing distance data to 
-simplify hidden line and plane calculations in 3-D applications.)  
-In fact, on some advanced workstations you can use a different visual 
-in each window.
-.sp .5
-A display that supports
-the \f(CWDirectColor\fP class can theoretically support any of the 
-six visual classes.  A \f(CWPseudoColor\fP display can support 
-\f(CWPseudoColor\fP, \f(CWStaticColor\fP, \f(CWGrayScale\fP, or \f(CWStaticGray\fP visuals.  A
-\f(CWGrayScale\fP display can support \f(CWGrayScale\fP or 
-\f(CWStaticGray\fP.  The three types of screen with read-only 
-colormaps can only support visuals of their own class.
-But remember that just because a 
-certain visual class can theoretically be supported by a certain 
-display hardware doesn't mean that the server implementors will
-decide to support that class.  
-.sp 2
-.IP \s+2\f(HB7.2.5\fR\s-2 6n
-\s+2\f(HBShareability vs. Changeability\fR\s-2
-.sp
-Notice that \f(CWPseudoColor\fP, \f(CWDirectColor\fP, and 
-\f(CWGrayScale\fP visuals have changeable colormaps, but
-\f(CWStaticColor\fP, \f(CWTrueColor\fP, and \f(CWStaticGray\fP have 
-immutable colormaps.  Within the
-changeable colormaps, it is possible to have both
-read-only and read/write colorcells, while in the immutable 
-colormaps, you are limited
-to only read-only cells.  
-.sp .5
-One advantage of immutable colormaps is
-that all the cells are read-only, and can be shared between clients,
-so all the cells are available to every 
-client.  Immutable colormaps make it
-possible to calculate pixel values from the 
-colors desired, since the
-mapping between pixel values and colors is predictable.
-This technique is necessary for smooth shading and 3-D rendering
-algorithms.
-The disadvantage of immutable colormaps are that there may not
-be the exact color you desire (if there are a small number of planes), 
-and you cannot change the colorcell to
-change the color of existing pixels on the screen.  To change a color, you have
-to redraw the graphics with a new pixel value.
-.sp .5
-In general, the
-advantages of changeable colormaps are that you can have both private 
-read/write
-cells and shareable read-only cells.  That is why \f(CWPseudoColor\fP and 
-\f(CWDirectColor\fP
-are the most useful visuals, when a screen supports them.
-\f(CWPseudoColor\fP and
-\f(CWDirectColor\fP allow you to decide
-whether your client really needs read/write cells, or
-whether it can use read-only cells.
-Read-only usage is preferred
-.ne 2
-since these cells can be shared by all clients, which means that the
-colormap is less likely to run out of free cells.
-.sp .5
-Try not to
-confuse the writeability of colormaps with the writeability 
-of colorcells.  A colorcell in a read/write colormap can
-be allocated read/write or read-only.  A colorcell in a 
-read-only colormap can only be allocated read-only.
-A changeable colormap could be made entirely read-only if the server 
-or window manager fills all available colorcells.  
-.sp .5
-The advantages of read/write colorcells, available only in 
-changeable colormaps, are that your program can select 
-exactly the color you want (as long as
-it is physically possible on the screen), and you can change the color
-at will, which instantly changes the visible color of everything 
-drawn with that pixel value if the colormap is currently installed.  
-Although any other client can also change the values in a read/write
-cell, it is a convention that only the client that allocated the
-cell should change its contents.  You \fIown\fR that pixel value.
-Since most clients can't be satisfied with
-having no control over their displayed colors, this pixel value
-is not shareable.
-That means that if several clients that
-use changeable colormap cells are running, all 
-.ne 4
-the cells might be used.  Then some
-client will be forced to create its own colormap, with the consequences
-described in Section 7.5.
-.sp .5
-Usually the best trade-off on a color system with a
-changeable colormap is to use the default
-colormap, which usually provides mostly read-only, shareable cells, 
-and also leaves free a few
-read/write cells for clients that require them.
-Applications
-needing read-only cells are encouraged to choose colors from the
-RGB color database, by specifying a color name
-instead of RGB values.  Using color names will maximize 
-the chance of clients
-requesting the same RGB values.  Otherwise, clients might
-waste cells by allocating very close, but not identical, RGB values
-for certain colors.
-.sp 2
-.IP \s+2\f(HB7.2.6\fR\s-2 6n
-\s+2\f(HBThe Default Visual\fR\s-2
-.sp
-A window is created with a certain visual, which
-cannot be changed.  The root window is created with a default visual
-when the server initializes.
-All windows which inherit the visual from the root window will
-use the default visual;  this includes all top-level windows created
-with \f(CWXCreateSimpleWindow\fP, and all top-level windows created
-with \f(CWXCreateWindow\fP using \f(CWCopyFromParent\fP for
-the \f(CIvisual\fP argument.
-With \f(CWXCreateSimpleWindow\fP, the visual
-is automatically inherited from the parent.
-The default visual can also be specified for a window
-using \f(CWXCreateWindow\fP and specifying
-the \f(CWDefaultVisual\fP macro as the \f(CIvisual\fP argument.
-.sp .5
-The default visual usually specifies the visual that the server 
-implementors expect most of the clients running on their machine 
-to want to use.  Therefore, most programs
-should use it unless they have color needs 
-that can't be satisfied by it.  Programs that require only a small 
-number of colors, and don't depend on the colors being exactly as 
-specified can use the default visual.
-.sp .5
-On most color systems, the default visual is
-a \f(CWPseudoColor\fP visual.  
-On black and white systems, the
-default visual class doesn't really matter, because the mere fact that
-there is only one display plane determines that a program should
-use only \f(CWBlackPixel\fP and \f(CWWhitePixel\fP for pixel values.
-.sp 2
-.IP \s+2\f(HB7.2.7\fR\s-2 6n 
-\s+2\f(HBThe Default Colormap\fR\s-2
-.sp
-Some displays support multiple hardware colormaps.  Most workstations 
-support only one.  In any case, X can manage multiple \fIvirtual 
-colormaps\fP.  If the hardware colormap is read/write, then it is 
-possible to swap virtual colormaps in and out of the hardware colormap. 
-.sp .5
-A virtual colormap is created with a call to \f(CWXCreateColormap\fP. 
-Like the call to create a window, this routine takes a visual as an 
-argument.  In order to be used with a window, a colormap must be 
-created using the same visual as the window.
-.sp .5
-.ne 2
-When the server initializes, it creates one virtual colormap called the
-default colormap, sets the colormap attribute of the root window, and
-installs this colormap.  
-.sp .5
-Each window can have its own colormap as a window attribute (see 
-Chapter 4, \fIWindow Attributes\fR,).  Because the hardware colormap is a 
-limited resource that must be shared by all clients, it should generally 
-be left to the window manager to install colormaps (although we will tell you 
-how to do this later in the chapter).  Unless they have special color needs, 
-clients should plan to use the default colormap. 
-.sp .5
-Table 7-2 shows a typical visual type for 
-the default colormap for each
-type of display hardware (color, gray scale, and monochrome) and for
-each type of hardware colormap (immutable or changeable).
-The default visual type for color servers varies widely.  It is
-likely to be \f(CWPseudoColor\fP on 4-to-8-plane systems, and
-it could be \f(CWTrueColor\fP, \f(CWDirectColor\fP, or 
-\f(CWPseudoColor\fP on high-performance systems.
-.sp 
-\s-1\f(HITable 7-2. Visual Class of Default Colormaps for Various Servers\fR\s+1
-.sp 
-.TS
-linesize(2),tab(@);
-l | c s s
-^ | l s s
-^ | l l l
-l | l | l | l.
-.sp 1p
-Hardware Colormap Type@Display Type@@
-.sp 1p
-@_@@
-.sp 1p
-@Color@Gray Scale@Monochrome
-.sp 1p
-_
-.sp 3p
-Changeable@varies@\f(CWGrayScale\fP@\f(CWGrayScale\fP
-Immutable@\f(CWStaticColor\fP@\f(CWStaticGray\fP@\f(CWStaticGray\fP
-.sp 8p
-.TE
-.IP "" 6n
-The contents of the default colormap are server-dependent.  
-For servers whose default visual is a \f(CWPseudoColor\fP visual, 
-some of the colormap cells will be initially unallocated
-cells, and some will probably be read-only sharable cells.
-Someday, the default colormap may be
-allocated with the \f(CWXA_RGB_DEFAULT_MAP\fP standard colormap 
-described in Section 7.6, but few if any servers
-or window managers do this today.
-.sp .5
-On an eight-plane color display, the default
-colormap would have read-only cells allocated with evenly distributed
-colors produced from any combination of six levels of red, six of green, and 
-six of blue.  This yields 216 colors that can be shared by all clients,
-and still leaves 40 colorcells to be allocated by clients as
-read/write, private cells.
-.sp .5
-Since the default colormap is of the same 
-visual type as the root window,
-it can be used only in windows which have the same visual as the
-root window.
-.sp .5
-Monochrome clients should use the default colormap
-and select the pixel values returned by the 
-\f(CWBlackPixel\fP and \f(CWWhitePixel\fP
-macros.  They should not normally create windows with 
-a \f(CWStaticGray\fP visual unless it is the 
-default, because having multiple virtual colormaps would cause an
-installation problem on servers with a single hardware colormap. 
-.bp
-.sp 2
-.IP \s+4\f(HB7.3\fR\s-4 6n  
-\s+4\f(HBAllocating Shared Colors\fR\s-4
-.sp
-.ne 8
-On \f(CWPseudoColor\fP, \f(CWDirectColor\fP and \f(CWGrayScale\fP displays, the colormap is 
-read-write, and clients can store their own 
-RGB values into colorcells, or even swap entire virtual colormaps in and out 
-of the hardware colormap.  
-Even when the colormap is read/write, though, the 
-server or the window manager could load a 
-default colormap with a reasonable distribution of predefined colors, 
-leaving a percentage of the colorcells free for private color storage by 
-clients that require exact colors.   The default colormap is 
-returned by the \f(CWDefaultColormap\fP macro.
-.sp .5
-Since free colorcells can quickly become a scarce resource when 
-clients store private color values, simple clients that 
-mainly use color for decoration are encouraged always to allocate 
-from the pool of predefined colors.
-.sp .5
-A client attempting to allocate a shared, read-only colorcell doesn't 
-\fIspecify\fP a pixel value in order to draw in a given color.  
-Instead, it requests a color, and is \fIreturned\fP a pixel value 
-that will point to the closest available color.   Colors can be 
-specified either as actual RGB values, 
-or as names that will be looked up in a predefined color database.  The 
-returned pixel value can be used to set the \f(CWbackground_pixel\fP or 
-\f(CWborder_pixel\fP attribute of a window, or to set the \f(CWforeground\fP or 
-\f(CWbackground\fP member of a GC, which are used by drawing requests.
-(See Chapter 4, \fIWindow Attributes\fR, and Chapter 5, \fIThe
-Graphics Context\fR, for more information.)
-.sp .5
-Read-only colorcells can be allocated with the following routines:
-.RS
-.IP "\f(CWXAllocColor\fP" 16n
-Returns the index of the colorcell (a pixel value) that contains the RGB values 
-closest to those requested.
-.RE
-.RS
-.IP "\f(CWXAllocNamedColor\fP" 16n
-.br
-Returns the index of the colorcell that contains the RGB values closest to 
-those associated with a specified color name from the ASCII color name 
-database.
-.RE
-.RS
-.IP "\f(CWXParseColor\fP" 16n
-Parses either an ASCII color name or a hexadecimal color specification into 
-RGB values that can be used with \f(CWXAllocColor\fP.
-.RE
-.sp .5
-By convention, clients should allow users to specify colors from the command 
-line or in the resource database, using either a color name or a 
-hexadecimal 
-specification.  Since \f(CWXAllocNamedColor\fP can interpret only color 
-names, the combination of \f(CWXParseColor\fP and \f(CWXAllocColor\fP is 
-preferred for clients that allocate read/write cells (where
-sharing is not an issue).  \f(CWXParseColor\fP parses both forms the 
-user may specify.
-.sp .5
-If you want to find out about the composition of the default colormap before 
-allocating colors, you can tell how many colorcells it has
-from the information in the \f(CWVisual\fP structure, or if you
-wish to respect that this is intended to be an opaque structure,
-using \f(CWXGetVisualInfo\fP or \f(CWXMatchVisualInfo\fP as
-described in Section 7.7.3.
-Using \f(CWXQueryColor\fP and \f(CWXQueryColors\fP you can find
-out what RGB values are in each colorcell.  But there is no
-way to determine whether a given cell is read-only or read/write,
-or how many cells are currently unallocated.
-.sp .5
-.Nd 2
-Applications must allocate colors by trial and error.
-The routines that allocate colorcells all have \f(CWStatus\fP return values.
-If the call to allocate colorcells returns \f(CWFalse\fP, 
-the client may modify the arguments and try again.  
-If repeated attempts fail, the client can settle 
-with \f(CWBlackPixel\fP and \f(CWWhitePixel\fP, or if
-these colors are inadequate, create a new virtual colormap
-if the screen has changeable hardware colormap,
-or if not, decide that its color needs can't be met
-and exit.  For more information, see Section 7.7.
-.sp 2
-.IP \s+2\f(HB7.3.1\fR\s-2 6n
-\s+2\f(HBThe XColor Structure\fR\s-2
-.sp
-Both \f(CWXAllocColor\fP and \f(CWXAllocNamedColor\fP (as well as other 
-functions that manipulate colorcells) take as an argument an \f(CWXColor\fP 
-structure.  This structure is used to specify the desired RGB values, 
-as well as to return the pixel value.  
-.sp .5
-The \f(CWXColor\fP structure is shown in Example 7-1.  The 
-information it contains closely matches the information
-in each cell of the colormap.
-.sp 
-\s-1\f(HIExample 7-1.  The XColor structure\fR\s+1
-.sp 
-.nf
-.ta 4.5n 2.25i
-\s-1\f(CWtypedef struct {
-	unsigned long pixel;	/* pixel value */
-	unsigned short red, green, blue;        /* RGB values */
-	char flags;	/* DoRed,  DoGreen, and/or DoBlue */
-	char pad;	/* unused; pads structure to 
-		 * even word boundary */
-} XColor;\fR\s+1
-.fi
-.sp .5
-The \f(CWpixel\fP member indicates which cell in the colormap
-is being set or is having its RGB values queried.  This member is used to set 
-the pixel value in the GC or window attributes.
-.sp .5
-The \f(CWred\fP, \f(CWgreen\fP, and \f(CWblue\fP members are 16-bit 
-values, even though many colormaps only use eight bits to specify each 
-primary color.  The server will automatically scale the values.  Full 
-brightness in a color would be a value of 65535, half-brightness would be 
-32767, and off would be 0.  
-.sp .5
-When allocating colors,
-the exact values requested and the closest available values are
-not the same in most cases, because there would have to be
-different colormap entries to cover every possible triple 
-of red, green, and blue.  Even in more reasonable cases,
-many of the nonshared colormap entries will have been taken
-by other programs.  This means that a client that requires precise
-colors should check the returned RGB values to make sure the
-values meet its specifications.
-.sp .5
-The \f(CWflags\fP member of the \f(CWXColor\fP structure is
-a bitwise OR of the symbols \f(CWDoRed\fP, \f(CWDoGreen\fP, 
-and \f(CWDoBlue\fP.  These flags are used to specify which of the red, green, 
-and blue values should be read while changing the RGB values in a 
-read/write colorcell.
-.sp 2
-.IP \s+2\f(HB7.3.2\fR\s-2 6n  
+.IP \s+2\f(HB7.1.1\fR\s-2 6n
 \s+2\f(HBThe Color Name Database\fR\s-2
-.sp
+.sp .5
 In order to simplify color specification and to promote sharing
-of colors, X provides an ASCII color name database.  
-By using names from this database, you are reasonably sure of 
-getting a color close to the one you request.    
-Server implementors will change the RGB values corresponding to
-each color name to make sure that the appropriate color
-appears on their screen.  If they haven't done this, the colors
-that appear may be off.
+of colors, X provides a color database that translates string color 
+names into RGB values.  As described above, sharing of colorcells
+can happen only if two clients allocate a read-only cell with the 
+exact same RGB values.  If both clients allocate a color specified
+by one of the 300-odd string names, there is a much better chance of 
+them selecting the exact same RGB values and thereby sharing a cell 
+than if they use one of the
+.Su + 2 48
+possible combinations of RGB values.
 .sp .5
-It is also important to note that the color names are not
-specified by the X11 protocol or Xlib.  Therefore, server implementors
-may change them, but more often they will simply add to the list.
-(Note that some servers allow users to 
-customize this file.   For more information, see Volume Three, \fIX 
-Window System User's Guide\fP.)
+Because of differences in screen hardware, the same RGB values may
+generate quite different colors on different hardware.  Therefore, 
+server implementors will change the RGB values corresponding to each 
+color name to make sure that the appropriate color appears on their 
+screen.  This is called \fIgamma correction\fR.  By using names 
+from this database, you are more sure of getting a color close to 
+the one you request.  If the server implementor has not provided a 
+gamma-corrected color database, there is no way a program can tell 
+exactly what color is being displayed even when it knows the RGB values.
 .sp .5
-Table 7-3 shows the color names and corresponding RGB values in 
-the default color database.  The text version of this database in the 
-standard distribution on a UNIX system is in 
-the file \fI/usr/lib/X11/rgb.txt\fP.  The location of this file may
-vary.  
+It is also important to note that the color names are not specified 
+by the X11 protocol or Xlib.  Therefore, server implementors may 
+change them, but more often, they will simply add to the list.  
+(Note that some servers allow users to customize this file.  
+For more information, see VOL3.)
+.sp .5
+Table 1 shows the color names and corresponding RGB values 
+in the default color database for R3.  The R4 database is much more 
+extensive.  The text 
+version of this database in the standard distribution on a UNIX-based 
+system is in the file \fI/usr/lib/X11/rgb.txt\fP.  The location of this 
+file may vary.  
 .sp .5
 The color names in the color database are strings in which each
 character uses the ISO Latin-1 encoding.  The ISO (International
-Standards Organization) encoding is used by virtually all workstations manufacturers.
-What this means is that the first 127 character codes correspond to
-7-bit ASCII, and are the normal English characters that appear on U.S.
-keyboards.  But ISO characters are 8-bit, and the characters from 
-128 to 255 are used for characters
-with accents and other variations, necessary for other western 
-languages.  
+Standards Organization) encoding is used by virtually all workstations 
+manufacturers.  What this means is that the first 127 character codes 
+correspond to 7-bit ASCII and are the normal English characters that 
+appear on U.S. keyboards.  But ISO characters are 8-bit, and the 
+characters from 128 to 255 are used for characters with accents and 
+other variations, necessary for other Western languages.  
 .sp .5
-Server vendors should be able
-to supply a color database file for each foreign language.
-The RGB values would be the same, but the names would be different.
-In the English file, the entry for green is encoded with the
-ISO character codes 103 (g), 114 (r), 101 (e), 101 (e), 110 (n).
-In German, the same entry would be for \fIgr\*(u:n\fR, encoded with
-the ISO codes 103 (g), 114 (r), 252 (\*(u:), 110 (n).
-In a workstation configured for German, this string will be just
-as easy to type as \fIgreen\fR is in English, because there will be
-a keyboard key for \fI\*(u:\fR.
+Server vendors should be able to supply a color database file for 
+each foreign language.  The RGB values would be the same, but the 
+names would be different.  In the English file, the entry for green 
+is encoded with the ISO character codes 103\ (g), 114\ (r), 101\ (e), 
+101\ (e), 110\ (n).  In German, the same entry would be for \fIgr\*(u:n\fR, 
+encoded with the ISO codes 103\ (g), 114\ (r), 252\ (\*(u:), 110\ (n).
+In a workstation configured for German, there will be an easy way to 
+type \fI\*(u:\fR.
 .sp .5
-Note that keysyms also use the ISO Latin standard (see Chapter 8,
-\fIEvents\fR).  Therefore, should you need the code for
-any character, you can get it from the 8 least significant bits of
-the keysym value for that character, listed in <\fIX11/keysymdef.h\fR>.
-.bp
-\s-1\f(HITable 7-3. The Color Database\fR\s+1
-.sp 
+Note that keysyms also use the ISO Latin standard.
+.sp
+"The R3 Color Database*"
+.sp
 .TS H
 linesize(2);
 l | l | l | l
 l | n | n | n.
-.sp 1p
-English Words	Green	Blue	Red
-.sp 1p
+English Words	Red	Green	Blue
+.sp 2p
 _
-.sp 5p
+.sp 2p
 .TH
 aquamarine	112	219	147
 black	0	0	0
@@ -781,20 +281,21 @@ light steel blue	143	143	188
 lime green	50	204	50
 magenta	255	0	255
 maroon	142	35	107
+medium aquamarine	50	204	153
+.sp 5p
+_
 .TE
-.in 3.25i
-.rt
-.sp 
+.in 2.85i
+.rt 1.295i
 .TS H
 linesize(2);
 l | l | l | l
 l | n | n | n.
-.sp 5p
-English Words	Green	Blue	Red
-.sp 1p
+English Words	Red	Green	Blue	
+.sp 2p
 _
+.sp 2p
 .TH
-medium aquamarine	50	204	153
 medium blue	50	50	204
 medium forest green	107	142	35
 medium goldenrod	234	234	173
@@ -813,6 +314,7 @@ orchid	219	112	219
 pale green	143	188	143
 pink	188	143	143
 plum	234	173	234
+purple	176	0	255               
 red	255	0	0
 salmon	111	66	66
 sea green	35	142	107
@@ -830,1592 +332,1550 @@ wheat	216	216	191
 white	252	252	252
 yellow	255	255	0
 yellow green	153	204	50
+.sp 5p
+_
 .TE
-.in 0
-.bp
-.sp 2
-.IP \s+2\f(HB7.3.3\fR\s-2 6n 
+.in -2.75i
+.sp 10p
+_______________
+.br
+.vs 10
+\s-2*Also defined are the color names "gray0" through "gray100", 
+spelled with an "e" or an "a".  "gray0" is black and "gray100" is 
+white.
+.in 0 
+.vs
+.sp .5
+.IP \s+2\f(HB7.1.2\fR\s-2 6n
 \s+2\f(HBHexadecimal Color Specification\fR\s-2
-.sp 
+.sp .5
 It is also possible to specify colors using a hexadecimal string.
-The hexadecimal form of color specification is necessary since
-you may want the user to be able to specify an exact color, not just the rough
-approximation allowed by an ASCII name.
-The hexadecimal specification must be in one of the following formats:
-.nf
-	\s-1\f(CW#RGB			(4 bits each of red, green, and blue)
-	#RRGGBB		(8 bits each of red, green, and blue)
-	#RRRGGGBBB	(12 bits each of red, green, and blue)
-	#RRRRGGGGBBBB	(16 bits each of red, green, and blue)\fR\s+1
 .sp .5
+The hexadecimal form of color specification is necessary, since you may 
+want the user to be able to specify an exact color, not just the rough
+approximation allowed by an string name.  The hexadecimal specification 
+must be in one of the following formats:
+.sp .5
+\s-1\f(CW
+.nf
+#RGB			(\fI4 bits each of red, green, and blue\fP)
+#RRGGBB		(\fI8 bits each of red, green, and blue\fP)
+#RRRGGGBBB	(\fI12 bits each of red, green, and blue\fP)
+#RRRRGGGGBBBB	(\fI16 bits each of red, green, and blue\fP)
+\fR\s0
 .fi
-Each of the letters represents a hexadecimal digit.  For example,
-\f(CW#3a7\fP and \f(CW#0003000a0007\fP are equivalent.
 .sp .5
-\f(CWXParseColor\fP returns a zero status if the color specification begins 
-with \f(CW#\fP but does not match this form, or does not begin with \f(CW#\fP and cannot be
-found in the color database.
-.sp 2
-.IP \s+2\f(HB7.3.4\fR\s-2 6n  
-\s+2\f(HBCode to Allocate Standard Colors\fR\s-2
+Each of the letters represents a hexadecimal digit.  In the shorter
+formats, the specified values are interpreted as the most significant
+bits of a 16-bit value.  For example, \f(CW#3a7\fP and 
+\f(CW#3000a0007000\fP are equivalent.
+.sp .5
+Use of hexadecimal color specifications does not preclude colorcell 
+sharing, since the user could specify the same hexadecimal value for 
+the color for two or more clients.  However, it probably tends to make
+sharing less likely, since a window manager might allocate all the
+colors in the color database as read-only cells, and then any client 
+that uses hexadecimal specifications will probably be allocating a 
+separate cell instead of sharing.
+.IP \s+4\f(HB7.2\fR\s-4  6n
+\s+4\f(HBDifferences in Display Hardware\fR\s-4
 .sp
-Example 7-2 shows code to allocate a color using a name from the 
-ASCII color name database.  The same calls would be used to parse a 
-hexadecimal color string.  (Pink could be specified in the call to 
-\f(CWXParseColor\fP as \f(CW"#6c8f8f"\fP instead of \f(CW"pink"\fP.)  
-Because 
-simple allocation of colors should work on all types of color system, the 
-program doesn't need to do any checking of the visual class.  Instead, it 
-simply needs to take into account the possibility that it might be running on 
-a black-and-white system.  It does this by testing the return values of the 
-functions used to allocate colors, and if they fail, setting a flag that will cause 
-the program to use the \f(CWBlackPixel\fP and \f(CWWhitePixel\fP macros 
-instead.
-.sp 
-\s-1\f(HIExample 7-2.  Allocating a read-only colorcell\fR\s+1
-.sp 
+The description of color mapping given in the previous section was
+actually somewhat over-simplified.  There are significant differences
+in how the colormap is used on mid-range color screens, monochrome
+and gray-scale screens, and high performance color screens.  Color 
+handling in X was designed to work with any of these hardware types.
+.sp .5
+.IP \s+2\f(HB7.2.1\fR\s-2 6n
+\s+2\f(HBMid-range Color Displays\fR\s-2
+.sp .5
+The most common type of color screen has between four and eight planes
+and uses the colormap indexing technique described above.  This type 
+of screen is so widespread because it provides a flexible color system 
+while being moderately priced.  The mapping of pixel values to colorcells, 
+with arbitrary RGB values stored in each colorcell, allows a very large 
+range of possible colors, even though a more limited number can be shown 
+.ne 2
+on the screen at any one time.
+.sp .5
+Mid-range color screens usually have only one hardware colormap.
+In other words, the pixel values in all the windows on the screen 
+are mapped to colors using the same colormap.  On most of these
+systems, however, the color in any colorcell in the hardware colormap 
+can be individually changed, and therefore, the entire colormap can 
+be replaced with a new set of values.  X provides the concept of the 
+\fIvirtual colormap\fR, so that more than one set of colorcells can 
+be maintained, even though only one of them can be in use at a time.  
+Virtual colormaps are swapped in and out of the hardware colormap by 
+the window manager.  This makes it possible for an application that 
+has special color needs to create its own virtual colormap, which 
+the window manager will load into the hardware colormap when that 
+application is in use.  However, since only one hardware colormap is
+available and all applications share it, when any one application 
+creates a new virtual colormap and the window manager installs it, 
+all other applications will screen in false colors, since the pixel
+values they use now point to cells in the other client's colormap. 
+This is acceptable, since the window manager always installs the 
+correct colormap for the application in use, but it is obviously 
+not ideal.  On high performance systems, described below, this 
+problem is solved by having multiple hardware colormaps.
+.sp .5
+.IP \s+2\f(HB7.2.2\fR\s-2 6n
+\s+2\f(HBMonochrome and Gray Scale\fR\s-2
+.sp .5
+Monochrome (black and white) screens have only a single plane of 
+screen memory.  Each pixel is made up of a single phosphor, which 
+can be either on or off.
+.sp .5
+Gray-scale screens are sometimes used for publishing applications, 
+since pixels made up of a single phosphor are smaller than those 
+made up of three phosphors and the resolution is, therefore, better.
+As shown in Figure 2, a gray-scale screen works by looking 
+up the intensity of the pixel in the colormap, which, for this screen 
+type, contains only a single value.  This controls the intensity of a 
+single electron beam.  Gray scale can be simulated on a color screen 
+by making the red, green, and blue values equal in a given colorcell 
+to determine the brightness of gray pixels on the screen.
+.sp
+Note: Figure 2 "Pixel value to RGB mapping \(em gray scale and 
+monochrome screens" here.
+.sp
+A gray-scale screen might have a read-only colormap, so that 
+the gray levels in each cell could not be changed.  A monochrome 
+screen is an example of this type; it is a single-plane screen 
+with a two-element read-only colormap.
+.sp .5
+.IP \s+2\f(HB7.2.3\fR\s-2 6n
+\s+2\f(HBHigh Performance Color Displays\fR\s-2
+.sp .5
+As memory has become cheaper and applications more advanced,  
+workstations with 24\ planes and more have become more common.  With 
+24 bits per pixel, it is possible to screen every discernable color
+at the same time.  This makes it possible to do smooth shading and 
+other applications that use a large number of closely spaced colors.
+.sp .5
+The problem with having so many planes is that a colormap of the 
+style used in mid-range color screens would be impossibly large:  it 
+would contain over 16 million entries.  Instead, the available bits 
+per pixel are broken down into three separate colormap indices, one 
+for each primary color, as shown in Figure 3.  This 
+approach still allows the full range of colors to be generated but 
+makes the job of loading the colormap much more manageable.  This 
+scheme requires three primary colormaps of only 256 entries each
+to specify all 16 million colors on a 24-plane system.
+.sp
+Note: Figure 3 "Pixel value to RGB mapping \(em high performance color 
+screens" here.
+.sp
+In high performance screens, having a read-only colormap makes just 
+as much sense as having it read/write, because nearly every color 
+imaginable can be simultaneously available.  With a read-only 
+colormap, there is a fixed relationship between the pixel values used 
+to select a color and the actual RGB values generated.  This makes 
+possible applications that want to calculate pixel values directly 
+instead of having to calculate colors and then determine which pixel 
+value represents that color, as is necessary when the colormap is read/write.
+.sp .5
+In reality, most screens in this class let you use the color resources
+in either fashion, using virtual colormaps.  There can be one read-only
+virtual colormap and one read/write virtual colormap.  However, unlike
+on mid-range color screen hardware, most high performance color systems 
+have multiple hardware colormaps, so that both virtual colormaps can be 
+installed and used at the same time.  In fact, on many of these systems, 
+each window can have its own virtual colormap installed in the hardware 
+at the same time.
+.sp .5
+.IP \s+2\f(HB7.2.4\fR\s-2 6n
+\s+2\f(HBHow X Describes Color Support with Visuals\fR\s-2
+.sp .5
+A \fIvisual\fR describes the characteristics of a virtual colormap 
+that has been or can be created for use on a particular screen.  As 
+used by Xlib, a visual is actually a pointer to a structure (of type 
+\f(CWVisual\fP) containing information about one way of using a particular 
+screen.  A visual must be specified when creating a colormap or a 
+window, and the same visual must be used in creating a window as is 
+used to create the colormap to be used in that window.
+.sp .5
+Most windows inherit their parent's visual, and windows will often 
+share the root window's visual, which is known as the default visual.  
+The default visual describes, naturally, the default colormap.  If 
+you create all your windows with \f(CWXCreateSimpleWindow\fP, you will 
+be using the default visual and colormap.
+.\"If you need to get a pointer to the default visual, you can do so 
+.\"with the \f(CWDefaultVisual\fP macro.
+.sp .5
+The \f(CWVisual\fP structure is intended to be opaque; programs 
+are not supposed to access its contents.  This is so that Xlib 
+implementors can change the structure without breaking existing 
+clients.  The procedure used to avoid accessing its members is
+not all that cumbersome but is just beginning to come into use 
+by application writers.  Up to this point, most programmers have 
+broken this rule.  We will show you only the correct method here,
+since it adds only a few lines to the application.
+.sp .5
+Even more existing applications have avoided visuals altogether and 
+used only the \f(CWDefaultDepth\fP or \f(CWDisplayPlanes\fP macros 
+to attempt to determine whether the screen is monochrome or color.
+However, this does not work in general, because it does not distinguish
+between gray-scale screens and color screens (both have more than
+one plane).  The only way to make this distinction is to get 
+information about visuals.
+.sp .5
+Remember that a visual is only one way to use color on a particular
+screen.  There may be a list of supported visuals on a screen, with 
+.hw write-ability
+each visual describing a different depth and writeability of the 
+colormap.  On a color system, there may be both monochrome and 
+color visuals available.
+.sp .5
+The correct method to get information about the visuals supported 
+on a particular screen is to use \f(CWXMatchVisualInfo\fP or 
+\f(CWXGetVisualInfo\fP.  These functions return \f(CWXVisualInfo\fP 
+structures that contain information about the available visuals and 
+are public so their fields can be safely accessed.  
+.Nd 8
+.sp .5
+The \f(CWclass\fP member of \f(CWXVisualInfo\fP contains a constant 
+specifying one of six different visual classes,* 
+.FS 
+*Do not confuse \fIvisual\fR class with \fIwindow\fR class.  While 
+both are represented in certain structures as the \f(CWclass\fR member 
+and both are set when a window is created and cannot be changed, they 
+are quite different.  The window class is \f(CWInputOutput\fP or 
+\f(CWInputOnly\fP.  The visual class is only part of the overall 
+visual, which is the way color is represented for a window.
+.FE
+corresponding to the basic ways of using a screen:  \f(CWDirectColor\fP, 
+\f(CWGrayScale\fP, \f(CWPseudoColor\fP, \f(CWStaticColor\fP,
+\f(CWStaticGray\fP, or \f(CWTrueColor\fP.
+.sp .5
+As summarized in Table 2, the visual classes distinguish between 
+color or monochrome, whether the colormap is read/write or read-only, 
+and whether a pixel value provides a single index to the colormap or 
+is decomposed into separate indices for red, green, and blue values.
+.sp
+Table 2: "Comparison of Visual Classes" 
+.sp
+.TS
+linesize(2), tab(@);
+l | l | l
+l | lp9fCW | lp9fCW.
+Colormap Type@Read/Write@Read-only
+.sp 2p
+_
+.sp 2p
+Monochrome/Gray@GrayScale@StaticGray
+Single Index for RG&B@PseudoColor@StaticColor
+Decomposed Index for RG&B@DirectColor@TrueColor
+.sp 5p
+_
+.TE
+There may be more than one way of using color on a particular screen,
+and therefore, there may be more than one supported visual.  This is 
+usually true of high-end workstations.  There are ways to search 
+through the available visuals to select the one that most closely 
+meets the needs of your application, as will be described later.
+Several visuals of the same class may be provided but at different
+depths.  On high performance screens, it is possible to create the 
+colormap as read/write or as read-only.  Both methods have certain 
+advantages and would be used for different applications.  There would 
+be a separate visual for each of these ways of using the screen hardware.  
+One of these visuals would be \f(CWTrueColor\fP class and the other 
+\f(CWDirectColor\fP class.  Some 24-plane screens allow the screen 
+to be treated as two separate 12-plane \f(CWPseudoColor\fP visuals.  
+(This allows for "double-buffering," a technique useful for animation, 
+or for storing distance data to simplify hidden line and plane 
+calculations in 3-D applications.)  In fact, on some advanced 
+workstations, you can use a different visual in each window.
+.sp .5
+
+Figure 4 schematically represents the visual classes that 
+can theoretically be supported by each type of screen hardware.  
+A screen that supports the \f(CWDirectColor\fP class can 
+theoretically support any of the six visual classes.  A screen 
+that supports the \f(CWPseudoColor\fP visual class can support 
+\f(CWGrayScale\fP, \f(CWPseudoColor\fP, \f(CWStaticColor\fP, 
+or \f(CWStaticGray\fP visual classes.  A screen that supports the 
+\f(CWGrayScale\fP visual class can also support \f(CWStaticGray\fP 
+visual classes.  The three types of screen with read-only colormaps 
+can only support visuals of their own class.  But remember that 
+just because a certain visual class can theoretically be supported 
+by a certain screen hardware does not mean that the server 
+implementors will decide to support that class.  
+.sp
+Note: Figure 4 "Hierarchy of visual classes" here.
+.sp
+.IP \s+2\f(HB7.2.5\fR\s-2 6n
+\s+2\f(HBShareability vs. Changeability\fR\s-2
+.sp .5
+Notice that \f(CWDirectColor\fP, \f(CWGrayScale\fP, and 
+\f(CWPseudoColor\fP visuals have changeable colormaps, but
+\f(CWStaticColor\fP, \f(CWStaticGray\fP, and \f(CWTrueColor\fP
+have immutable colormaps.  Within the changeable colormaps, it 
+is possible to have two types of colorcells:  read-only and read/write.
+The color in a read-only cell is set once by one client and from then
+on can be shared by any client but not changed.  A read/write cell
+can have its color changed at any time by the client that allocated 
+it but cannot be shared by other clients.  In immutable colormaps, 
+you are limited to only read-only cells.  
+.sp .5
+One advantage of immutable colormaps is that all the cells are 
+read-only and can be shared between clients, so all the cells 
+are available to every client.  Immutable colormaps also make 
+it possible to calculate pixel values from the colors desired 
+without querying the server, since the mapping between pixel 
+values and colors is predictable.  This technique is necessary 
+for smooth shading and 3-D rendering algorithms.  As you will 
+see, this is usually not possible with changeable colormaps.
+The disadvantages of immutable colormaps are that there may not
+be the exact color you desire (if there are a small number of 
+planes) and you cannot allocate read/write cells, so you cannot 
+change a colorcell to change the color of existing pixels on the 
+screen.  To change a color, you have to redraw the graphics with 
+a new pixel value.
+.sp .5
+In general, the advantage of changeable colormaps is that you 
+can have both private read/write cells and shareable read-only 
+cells.  That is why \f(CWPseudoColor\fP and \f(CWDirectColor\fP
+are the most useful visuals, when a screen supports them.
+\f(CWPseudoColor\fP and \f(CWDirectColor\fP allow you to decide
+whether your client really needs read/write cells or whether it 
+can use read-only cells.  Read-only usage is preferred, since 
+these cells can be shared by all clients, which means that the 
+colormap is less likely to run out of free cells.
+.Nd 2
+.sp .5
+Try not to confuse the writeability of colormaps with the writeability 
+of colorcells.  A colorcell in a read/write colormap can be allocated 
+read/write or read-only.  A colorcell in a read-only colormap can only 
+be allocated read-only.  A changeable colormap could be made entirely 
+read-only if the window manager or any other client allocates all 
+available colorcells read-only.  
+.sp .5
+The advantages of read/write colorcells, available only in 
+changeable colormaps, are that your program can select exactly 
+the color you want (as long as it is physically possible on the 
+screen) and you can change the color at will, which instantly 
+changes the visible color of everything drawn with that pixel 
+value if the colormap is currently installed.  Although any other 
+client can also change the values in a read/write cell, it is a 
+convention that only the client that allocated the cell should 
+change its contents.  You \fIown\fR that pixel value.  Since most 
+clients cannot be satisfied with having no control over their 
+displayed colors, this pixel value is not shareable.  That means 
+that if several clients that use read/write colorcells are running, 
+all the colorcells might be used.  Then some client will be forced 
+to create its own colormap, with the negative consequences described 
+in Section 7.7.
+.IP \s+4\f(HB7.3\fR\s-4  6n
+\s+4\f(HBAllocating Shared Colors\fR\s-4
+.sp
+Since free colorcells can quickly become a scarce resource when 
+clients store private color values, simple clients that mainly use 
+color for decoration are encouraged always to allocate read-only 
+colors, so that these colorcells can be shared by other clients 
+that allocate the same colors read-only.  
+.sp .5
+The returned pixel value can be used to set the 
+\f(CWbackground_pixel\fP or \f(CWborder_pixel\fP attribute of a window 
+or to set the \f(CWforeground\fP or \f(CWbackground\fP member of a GC, 
+which are used by drawing requests.  (See Chapters 4 and 5
+for more information.)
+.sp .5
+Read-only colorcells can be allocated with the following routines:
+.IP "\f(CWXAllocColor\fP" 22n
+Returns the index of the colorcell (a pixel value) that contains 
+the RGB values requested or that contains the closest RGB values 
+physically possible on the screen.
+.IP "\f(CWXAllocNamedColor\fP" 22n
+Returns the index of the colorcell that contains the RGB values
+associated with a specified color name from the string color name 
+database or the closest RGB values physically possible on the screen.
+.sp .5
+By convention, clients allow the user to specify colors on the command 
+line or in the resource database using a color name.  When the RGB 
+values are chosen from the color database by specifying color name 
+strings, sharing of read-only colorcells is much more likely than if 
+colors are specified as raw RGB values or using hexadecimal specifications.
+.sp .5
+\f(CWXParseColor\fP parses a color name string or a hexadecimal color 
+specification string and returns RGB values.  It can be used with 
+\f(CWXAllocColor\fP or the routines that allocate read/write cells, which 
+will be described later.  For color names, it gets the RGB values from 
+the server's color database just like \f(CWXAllocNamedColor\fP.  You may 
+have noticed that \f(CWXAllocNamedColor\fP is very similar to the 
+combination of \f(CWXParseColor\fP and \f(CWXAllocColor\fP.  The 
+difference is slight:  \f(CWXAllocNamedColor\fP can interpret color 
+names but not hexadecimal specifications\(embut hexadecimal 
+specifications are rarely made by users anyway.  The two-routine 
+combination is more often used because it allows you to separately 
+report errors in parsing the color specified and allocating the colorcell.
+.sp .5
+Using \f(CWXQueryColor\fP and \f(CWXQueryColors\fP you can find
+out what RGB values are in each colorcell.  But there is no way 
+to determine whether a given cell is read-only or read/write or 
+how many cells are currently unallocated.
+.sp .5
+A request to allocate a color may fail because there are no free
+colormap cells and, for read-only colorcells, because no existing 
+colorcell contains the closest color possible on the hardware to 
+the exact color requested.  Applications must allocate colors by 
+trial and error.  The routines that allocate colorcells all have 
+\f(CWStatus\fP return values.  If the call to allocate colorcells 
+returns \f(CWFalse\fP, the client may modify the arguments and try 
+again.  If repeated attempts fail, the client can settle with 
+\f(CWBlackPixel\fP and \f(CWWhitePixel\fP or, if these colors are 
+inadequate, create a new virtual colormap.  An application with 
+picky color needs that cannot be satisfied can simply report to 
+the user that its color needs cannot be met and exit.  
+.sp .5
+.IP \s+2\f(HB7.3.1\fR\s-2 6n
+\s+2\f(HBThe XColor Structure\fR\s-2
+.sp .5
+Both \f(CWXAllocColor\fP and \f(CWXAllocNamedColor\fP (as well as 
+other functions that manipulate colorcells) take as an argument an 
+\f(CWXColor\fP structure.  This structure is used to specify the 
+desired RGB values, as well as to return the pixel value.  
+.sp .5
+The \f(CWXColor\fP structure is shown in Example 1.  
+The information it contains closely matches the information
+in each cell of the colormap.
+.sp .5
+\s-1\f(CW
 .nf
-\f(CW#include <X11/Xlib.h>
+.ta 4.5n 3i
+typedef struct {
+    unsigned long pixel;    /* Pixel value */
+    unsigned short red, green, blue;    /* RGB values */
+    char flags;    /* DoRed,  DoGreen, and/or 
+         * DoBlue */
+    char pad;    /* Unused; pads structure 
+         * to even word boundary */
+} XColor;
+\fR\s0
+.fi
+.sp .5
+Example 1: "The XColor structure"
+.sp
+In \f(CWXAllocColor\fP and \f(CWXAllocNamedColor\fP, the 
+\f(CWpixel\fP member returns the pixel value that will be 
+used to set the foreground or background pixel value in 
+the GC or window attributes.  In \f(CWXStoreColor\fP and 
+\f(CWXQueryColor\fP, which you will see later, the \f(CWpixel\fP 
+.ne 2
+member indicates which cell in the colormap is having its color 
+set (read/write cells only) or is having its RGB values queried.  
+.sp .5
+The \f(CWred\fP, \f(CWgreen\fP, and \f(CWblue\fP members are 16-bit 
+values.  Full brightness in a color is a value of 65535, half brightness 
+is 32767, and off is 0.  (The server automatically scales these values 
+if the hardware colormap includes fewer bits for RGB values.)  
+.sp .5
+.hw DoGreen
+The \f(CWflags\fP member of the \f(CWXColor\fP structure is a bitwise 
+OR of the symbols \f(CWDoRed\fP, \f(CWDoGreen\fP, and \f(CWDoBlue\fP.  
+These flags are used to specify which of the red, green, and blue 
+values should be read while changing the RGB values in a read/write 
+colorcell.
+.sp .5
+.IP \s+2\f(HB7.3.2\fR\s-2 6n
+\s+2\f(HBCode to Allocate Read-only Colors\fR\s-2
+.sp .5
+As we have said, applications that have basic color needs should
+allocate read-only, shareable color cells.  Example 2 shows 
+code to allocate a color specified using a name from the color name 
+database.  In this case, we have simply hardcoded the color name strings.  
+In a real application, you would hardcode the default color but allow 
+user specification of the string, as is done in \fIbasecalc\fR, 
+described in Chapter 12.
+.sp .5
+This routine uses \f(CWXMatchVisualInfo\fP to determine whether
+color is supported on the screen.  If any of the four color visual 
+classes are supported, it proceeds to attempt to allocate read-only 
+colors.  Whenever anything fails or if color is not supported, the 
+routine uses black and white.  For some applications, this could be
+modified to allocate levels of gray on GrayScale visual class screens.
+.sp .5
+The code for all the examples in this chapter is in the example
+source in the directory \fI/basicwin/color/\fR.  This example
+is called \fIbasic.ro\fR.
+.sp .5
+\s-1\f(CW
+.nf
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <stdio.h>
 
 extern Display *display;
-extern int screen;
-extern unsigned long foreground_pixel, background_pixel, border_pixel;
+extern int screen_num;
+extern Screen *screen_ptr;
+extern unsigned long foreground_pixel, background_pixel, 
+        border_pixel;
+extern char *progname;
 
 #define MAX_COLORS 3
 
+/* This is just so we can print the visual class intelligibly */
+static char *visual_class[] = {
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
+};
+
 get_colors()
 {
-	int depth;
-	Visual *visual;
-	static char *name[] = {"Red", "Yellow", "Green"};
-	XColor exact_def;
-	Colormap cmap;
-	int ncolors = MAX_COLORS;
-	int colors[MAX_COLORS];
-	int i;
+    int default_depth;
+    Visual *default_visual;
+    static char *name[] = {"Red", "Yellow", "Green"};
+    XColor exact_def;
+    Colormap default_cmap;
+    int ncolors = 0;
+    int colors[MAX_COLORS];
+    int i = 5;
+    XVisualInfo visual_info;
+    
+    /* Try to allocate colors for PseudoColor, TrueColor, 
+     * DirectColor, and StaticColor; use black and white
+     * for StaticGray and GrayScale */
 
-	printf("in get colors\n");
+    default_depth = DefaultDepth(display, screen_num);
+    default_visual = DefaultVisual(display, screen_num);
+    default_cmap   = DefaultColormap(display, screen_num);
+    if (default_depth == 1) {
+        /* Must be StaticGray, use black and white */
+        border_pixel = BlackPixel(display, screen_num);
+        background_pixel = WhitePixel(display, screen_num);
+        foreground_pixel = BlackPixel(display, screen_num);
+        return(0);
+    }
 
-	depth  = DisplayPlanes(display, screen);
-	visual = DefaultVisual(display, screen);
-	cmap   = DefaultColormap(display, screen);
-	if (depth == 1)  {  /* one-plane monochrome */
-		/* Use BlackPixel and WhitePixel only. 
-		 * We must do this first if depth is 1, since
-		 * it may allocate colors successfully but 
-		 * the colors might all be black */;
-		border_pixel = BlackPixel(display, screen);
-		background_pixel = WhitePixel(display, screen);
-		foreground_pixel = BlackPixel(display, screen);
-		}
-	else {
-		for (i = 0; i < MAX_COLORS; i++) {
-		printf("allocating %s\n", name[i]);
-			if (!XParseColor (display, cmap, name[i], &exact_def)) {
-				fprintf(stderr, "basic: color name %s not in \
-						database", name[i]);
-				exit(0);
-			}
-			printf("The RGB values from the database are \
-					%d, %d, %d\n", exact_def.red, 
-					exact_def.green, exact_def.blue);
-   			if (!XAllocColor(display, cmap, &exact_def)) {
-				fprintf(stderr, "basic: all colorcells allocated \
-						and read/write\n");
-				exit(0);
-			}
-			printf("The RGB values actually allocated are \
-					%d, %d, %d\n", exact_def.red, 
-					exact_def.green, exact_def.blue);
-			colors[i] = exact_def.pixel;
-		}
+    while (!XMatchVisualInfo(display, screen_num, default_depth, 
+            /* visual class */i--, &visual_info))
+        ;
+    printf("%s: found a %s class visual at default depth.\en", 
+            progname, visual_class[++i]);
+    
+    if (i < StaticColor) { /* Color visual classes are 2 to 5 */
+        /* No color visual available at default depth;
+         * some applications might call XMatchVisualInfo
+         * here to try for a GrayScale visual if they
+         * can use gray to advantage, before giving up
+         * and using black and white */
+        border_pixel = BlackPixel(display, screen_num);
+        background_pixel = WhitePixel(display, screen_num);
+        foreground_pixel = BlackPixel(display, screen_num);
+        return(0);
+    }
 
-		printf("basic: allocated %d read/write colorcells\n", 
-				ncolors);
+    /* Otherwise, got a color visual at default depth */
 
-		border_pixel = colors[0];
-		background_pixel = colors[1];
-		foreground_pixel = colors[2];
-.EL
-	}
-}\fR
-.sp .5
+    /* The visual we found is not necessarily the default
+     * visual, and therefore it is not necessarily the one
+     * we used to create our window; however, we now know
+     * for sure that color is supported, so the following
+     * code will work (or fail in a controlled way) */
+    /* Let's check just out of curiosity: */
+    if (visual_info.visual != default_visual)
+    {
+        printf("%s: %s class visual at default depth\en", 
+                progname, visual_class[i]);
+         printf("is not default visual! Continuing anyway...\en");
+    }
+
+    for (i = 0; i < MAX_COLORS; i++) {
+        printf("allocating %s\en", name[i]);
+        if (!XParseColor (display, default_cmap, name[i], 
+                &exact_def)) {
+            fprintf(stderr, "%s: color name %s not in database", 
+                    progname, name[i]);
+            exit(0);
+        }
+        printf("The RGB values from the database are %d, %d, %d\en", 
+                exact_def.red, exact_def.green, exact_def.blue);
+           if (!XAllocColor(display, default_cmap, &exact_def)) {
+            fprintf(stderr, "%s: can't allocate color:\en", 
+                    progname);
+            fprintf(stderr, "All colorcells allocated and\en");
+            fprintf(stderr, "no matching cell found.\en");
+            exit(0);
+        }
+        printf("The RGB values actually allocated are %d, %d, %d\en", 
+                exact_def.red, exact_def.green, 
+                exact_def.blue);
+        colors[i] = exact_def.pixel;
+        ncolors++;
+    }
+
+    printf("%s: allocated %d read-only color cells\en", 
+            progname, ncolors);
+
+    border_pixel = colors[0];
+    background_pixel = colors[1];
+    foreground_pixel = colors[2];
+    return(1);
+}
+\fR\s0
 .fi
-.sp 2
-.IP \s+2\f(HB7.3.5\fR\s-2 6n
-\s+2\f(HBSpecifying Explicit RGB Values\fR\s-2
+.sp .5
+Example 2: "Allocating read-only colorcells"
 .sp
-If you are using read-only colorcells, you should most likely use
-\f(CWXParseColor\fP to convert a color name or hexadecimal string to an 
-RGB value.  However, it is also possible to specify the desired RGB 
-values explicitly.  Simply 
-declare an \f(CWXColor\fP structure, and set its \f(CWred\fP, \f(CWgreen\fP 
-and \f(CWblue\fP members to the desired RGB values.  Example 7-3 shows
-a brief code fragment that demonstrates how to allocate a color 
-using explicit RGB values:
-.sp 
-\s-1\f(HIExample 7-3.  Explicit RGB specification\fR\s+1
-.sp 
+This code begins by setting variables to the default depth, visual, 
+and colormap for later use.  If the default depth is one, then the 
+application is displaying on a monochrome screen, and black and 
+white are returned.  Then the code calls \f(CWXMatchVisualInfo\fP 
+in a loop to look for a color visual at the default depth\(emit is 
+called up to four times, until a color visual is found.  If none 
+is found, it again returns black and white, since this screen must 
+support only a \f(CWGrayScale\fP visual (at this depth, anyway).  
+Some applications may wish to allocate grays in this branch.  The 
+rest of the code loops through the list of color names to be 
+allocated, looks them up in the color database, and then allocates 
+them.  If either the lookup stage or the allocation stage fails for 
+any color, the routine prints an error and exits.  It could instead 
+simply fall back on black and white again; your choice.
+.sp .5
+As noted in the code, the visual found might not necessarily be
+the default visual.  This does not always matter, because if any 
+color visual is available, it is a good bet that the default visual
+is also color, and so colors can be allocated without doing any 
+further research.  With \f(CWXMatchVisualInfo\fP, it is difficult 
+to develop an algorithm that is guaranteed to find the default 
+visual.  This is much easier with \f(CWXGetVisualInfo\fP, which 
+returns a list of available visual structures that match a set of 
+criteria you specify.  If you pass no criteria, it simply returns 
+the entire list of available visuals.  You can then search through 
+the list matching the \f(CWvisual\fP member of the \f(CWXVisualInfo\fP 
+structures to the default visual.
+.sp .5
+The \f(CWXParseColor\fP call specifies a color name, and the RGB values
+corresponding to that name are returned from the color database in the
+passed \f(CWXColor\fP structure.  This structure is then passed to
+\f(CWXAllocColor\fP, and the pixel value allocated is returned in the
+\f(CWpixel\fP field of the structure.
+.sp .5
+The same calls would be used to parse a hexadecimal color string.  
+Pink could be specified in the call to \f(CWXParseColor\fP as 
+"\f(CW#bc8f8f\fP" instead of "\f(CWpink\fP".  But, as we have said 
+before, color names are preferred, because there is a better chance 
+that they will specify a color already allocated or later to be 
+allocated by another client.
+.sp .5
+It is also possible to specify the desired RGB values explicitly.
+This is good for default colors because it saves a call to 
+\f(CWXParseColor\fP, but on the other hand, you might not get a
+consistent color on all systems because you are bypassing the 
+gamma correction implemented through the color database.  Simply 
+declare an \f(CWXColor\fP structure and set its \f(CWred\fP, 
+\f(CWgreen\fP, and \f(CWblue\fP members to the desired RGB values.  
+Of course, these values can be specified as integers, hexadecimal 
+values, or any other way that the C language allows.  Then pass 
+this structure to \f(CWXAllocColor\fP.  But remember, as we have 
+said, it is better to use color names when allocating read-only 
+colorcells than to use any of these explicit RGB values.
+.sp .5
+.IP \s+2\f(HB7.3.3\fR\s-2 6n
+\s+2\f(HBHighlighting in Two Colors\fR\s-2
+.sp .5
+It is easy to highlight graphics on a monochrome system.  The simplest 
+way is to set the GC to the \f(CWGXxor\fP logical function and draw 
+your graphics once to draw them and again to undraw them.  You must 
+grab the server between the drawing and undrawing so that no other 
+client changes the same pixels in between (by, for example, covering 
+part of the area with another window).  On a monochrome system, this 
+always changes white to black and black to white if you set the 
+foreground in the GC to \f(CW1\fP (setting it to \f(CWBlackPixel\fP 
+or \f(CWWhitePixel\fP is not guaranteed to work on all systems, 
+because either may be \f(CW0\fP).
+.sp .5
+When drawing in \f(CWBlackPixel\fP and \f(CWWhitePixel\fP on a 
+color system, the color drawn by the \f(CWGXxor\fP operation is
+random if \f(CWBlackPixel\fP or \f(CWWhitePixel\fP are used for
+the foreground pixel value in the GC.  This is because there is 
+no restriction on which pixel value \f(CWBlackPixel\fP and 
+\f(CWWhitePixel\fP can be on a server\(emthey are not necessarily 
+\f(CW1\fP and \f(CW0\fP and not necessarily different by just 
+one bit.  For example, the pixel value drawn if the foreground 
+pixel value in the GC is \f(CWBlackPixel\fP and the pixel value 
+on the screen is \f(CWWhitePixel\fP is \f(CWBlackPixel\fP XOR 
+\f(CWWhitePixel\fP, which, unless \f(CWBlackPixel\fP and WhitePixel 
+are different by only one bit, is a third pixel value not allocated
+by this client.  The colorcell identified by this pixel value might 
+contain black, in which case the operation would not change the screen.
+.sp .5
+The solution to this problem, which works on monochrome and color 
+systems, is to set the foreground pixel value in the GC used in 
+drawing with \f(CWGXxor\fP to the exclusive OR of \f(CWBlackPixel\fP 
+and \f(CWWhitePixel\fP or by setting the logical function to 
+\f(CWGXinvert\fP and using a plane mask which is the exclusive 
+OR of \f(CWWhitePixel\fP and \f(CWBlackPixel\fP.  All applications 
+that highlight graphics drawn in \f(CWBlackPixel\fP and 
+\f(CWWhitePixel\fP on a color system should use one of these two 
+methods.  The following example illustrates how this works using 
+two arbitrarily chosen pixel values (which could be \f(CWBlackPixel\fP 
+and \f(CWWhitePixel\fP or could be any two colors).
+.sp .5
+Let's assume that we draw in two pixel values, which we will call 
+\f(CWcolor1\fP and \f(CWcolor2\fP.  The pixel values for these could be:
+.sp .5
+\s-1\f(CW
 .nf
-	\s-1\f(CWDisplay *display;
-	int screen;
-	Colormap colormap;
-	Window window;
-	XColor pink;
-
-	/* Open Display, etc. */
-
-	colormap = \f(CWDefaultColormap\fP (display, screen);
-
-	/* allocate using RGB values */
-	pink.red = 45000; pink.green = 65536; pink.blue = 65536;
-	if (XAllocColor (display, colormap, &pink) == 0)
-		/* handle failure */
-
-	/* Now you can use pink.pixel as the value for a window
-	     background or border, or to set the foreground or 
-	     background member of a GC  */\fR\s+1
+color1 = 11111111111111110000000000000000
+color2 = 00000000111111111111111100000000
+.fi
+\fR\s0
 .fi
 .sp .5
-There are several ways of specifying an explicit RGB value.  In
-Example 7-2, we use an integral value.  
-Table 7-4 shows four ways to specify pink as explicit individual RGB values.  
-.sp  
-.ne 10
-\s-1\f(HITable 7-4. Four ways to specify pink\fR\s+1
-.sp 
-.TS
-linesize(2);
-l | lp9fCW lp9fCW lp9fCW
-l | lp9fCW lp9fCW lp9fCW.
-.sp 1p
-	pink.red	pink.green	pink.blue
-.sp 1p
-_
-.sp 4p
-Integer	48128	36608	36608
-Shifted Int	(188<<8)	(143<<8)	(143<<8)
-Hexadecimal	0x6c00	0x8f00	0x8f00
-Shifted Hex	(0x6c<<8)	(0x8f<<8)	(0x8f<<8)
-.sp 8p
-.TE
-.ne 4
-As described in Section 7.3.3,
-there is also a combined hexadecimal format that can be used to
-specify colors on the command line or in the user's resource database 
-file.  In this format, pink would be \f(CW#6c8f8f\fP.  
-.ne 2
-And, as we have said, it is better to use color names
-when allocating read-only colorcells than to use any of these 
-explicit RGB values.
-.sp 2
-.IP \s+2\f(HB7.3.6\fR\s-2 6n
-\s+2\f(HBChoosing Default Colors\fR\s-2
-.sp
-Usually a client should allow the user to
-specify the preferred colors, either on the command line or in the
-resource database or both.  The resource manager (described in Chapter
-11, \fIManaging User Preferences\fR) can be used to merge these
-preferences with the defaults of the program.
-However, the client needs to have reasonable default colors in
-case the user doesn't specify any preferences.
+The pixel value we will use to draw is generated by taking the 
+exclusive OR of \f(CWcolor1\fP and \f(CWcolor2\fP:
 .sp .5
-Follow these guidelines for your application's default colors:*
+\s-1\f(CW
+color1 XOR color2 = 11111111000000001111111100000000
+\fR\s0
+.sp .5
+Now we set the \f(CWforeground\fP in the GC to this pixel value
+and the \f(CWfunction\fP in the GC to \f(CWGXxor\fP and draw.
+This changes existing pixels that contained \f(CWcolor1\fP to 
+\f(CWcolor2\fP and existing pixels that were \f(CWcolor2\fP to 
+\f(CWcolor1\fP.
+.sp .5
+\s-1\f(CW
+.nf
+foreground =               11111111000000001111111100000000
+existing pixel (color1) =  11111111111111110000000000000000
+resulting pixel (color2) = 00000000111111111111111100000000
+.fi
+\fR\s0
+.sp .5
+The other way to do this is to set the \f(CWplane_mask\fP in the
+GC to (\f(CWcolor1\fP\ \f(CW^\fP\ \f(CWcolor2\fP) and then use a 
+logical function of \f(CWGXinvert\fP.  This is equally effective.
+.sp .5
+.IP \s+2\f(HB7.3.4\fR\s-2 6n
+\s+2\f(HBChoosing Default Colors\fR\s-2
+.sp .5
+A client that uses color should allow the user to specify the 
+colors either on the command line or in the resource database, 
+or both.  The resource manager (described 
+in Chapter 11) can be used to merge these 
+preferences with the defaults of the program.  However, the 
+client needs to have reasonable default colors in case the 
+user does not specify any preferences.
+.sp .5
+Follow these guidelines for your application's default colors:*  
+.sp
 .FS 
 *Courtesy Oliver Jones, Apollo Computer.
 .FE
 .RS
 .IP \(bu 5
-Use ASCII color names for read-only colorcells if possible,
+Use string color names for read-only colorcells if possible,
 since this maximizes the chance of sharing cells.
 .IP \(bu 5
-Use colors with large contributions from two or 
-all three primary colors--they light the screen more brightly.
+Use colors with large contributions from two or all three 
+primary colors\(emthey light the screen more brightly.
 .IP \(bu 5
-Avoid shades of pure blue--the human eye is relatively insensitive to and
-unable to focus on images made of pure blue light.  Mix blue shades with
-white (white contains equal parts of all three primary colors).
+Avoid shades of pure blue\(emthe human eye is relatively 
+insensitive to and unable to focus on images made of pure blue 
+light.  Mix blue shades with white (white contains equal parts 
+of all three primary colors).
 .IP \(bu 5
-Remember that some users are color-blind.  
-Don't use the same intensity of green and 
-red for "safe" and "danger"--use colors with differing intensity.
+Remember that some users are color blind.  Do not use the same 
+intensity of green and red for "safe" and "danger"\(emuse colors 
+with differing intensity.
 .RE
 .sp 2
-.IP \s+4\f(HB7.4\fR\s-4 6n 
-\s+4\f(HBStoring Private Color\fR\s-4
+.IP \s+4\f(HB7.4\fR\s-4  6n
+\s+4\f(HBAllocating Private Colors\fR\s-4
 .sp
-On a system with a read/write colormap, a client that 
-requires exact colors can allocate read/write cells and then store 
-colors into them.
-.sp .5  
-For read/write cells the steps of allocation and
-setting of colors are separate, since the colors may be changed at will.
-The colors in the allocated colorcells are not 
-defined until they are stored.
-.sp .5
-\f(CWXAllocColorCells\fP at its simplest allows you to
-allocate read/write cells so you can change the RGB values dynamically.
-You specify as arguments \f(CIncolors\fP and \f(CInplanes\fP
-and it allocates
-pixel values.
-It returns the pixel values in two arrays, \f(CIpixels\fP and
-\f(CIplane_masks\fP, which you have to combine with OR in various
-permutations in order to calculate all the pixel values.  
-To be more precise, each plane mask has one bit for \f(CWGrayScale\fP 
-and \f(CWPseudoColor\fP, or three bits for \f(CWDirectColor\fP or
-\f(CWTrueColor\fP, and none of the masks have bits in common.
-The real
-reason for this style of arguments will become clear in Section 7.4.1.
-But to simply allocate just a few cells, you set the \f(CIncolors\fP argument to the 
-number of colorcells desired, and \f(CInplanes\fP to \f(CW0\fP, and
-all the pixel values you need will be returned in the \f(CIpixels\fP array.
-The RGB values of the allocated cells are
-set with \f(CWXStoreColor\fP, \f(CWXStoreColors\fP or 
-\f(CWXStoreNamedColor\fP.
-.sp .5
-\f(CWXAllocColorPlanes\fP, on the other hand,
-is only used when you want to be able to vary a
-primary color component of graphics already drawn without
-redrawing them.  It allocates read/write cells,
-so that a preset number of bits are reserved for each primary color.
-Primarily for \f(CWDirectColor\fP, it also
-allows you to simulate a small \f(CWDirectColor\fP colormap on a 
-\f(CWPseudoColor\fP visual, but uses up colorcells quickly.
-It treats the colormap as three separate lookup tables, allocating
-\f(CIncolors\fR \f(CW*\fP 
-.Su + \f(CW2 \f(CInreds
-\fRentries in the red lookup table, 
-\f(CIncolors\fR \f(CW*\fP 
-.Su + \f(CW2 \f(CIngreens 
-\fRentries
-in the green lookup table, and
-\f(CIncolors\fR \f(CW*\fP 
-.Su + \f(CW2 \f(CInblues 
-\fRentries
-in the blue lookup table.
-.sp .5
-The following routines are used to actually store colors into 
-read/write colorcells once they are allocated:
+In colormaps of the \f(CWPseudoColor\fP or \f(CWTrueColor\fP 
+visual classes, a client can allocate read/write cells.  
+Read/write colorcells should be allocated when: 
+.sp
 .RS
-.IP "\f(CWXStoreColor\fP"
-.br
-Changes the read/write colormap cell corresponding to the specified 
-pixel value to the hardware color that most closely matches
-the RGB values specified.*  The flags \f(CWDoRed\fP, 
-\f(CWDoGreen\fP, and \f(CWDoBlue\fP in the \f(CWXColor\fP structure 
-indicate which primary colors in the cell are to be changed.
+.IP \(bu 5
+The application draws something whose color must be changed dynamically 
+without redrawing it.  For example, in a color mixing program, the 
+palette must be drawn in colors that change frequently.  If this 
+were done with read-only colors, cells would have to be allocated 
+and freed frequently and the palette area redrawn with each new 
+color.  However, with read/write colorcells, the steps of 
+allocation and color setting are separate, so that the color of 
+an already allocated cell can be changed at will.  Anything drawn
+using the pixel value of this colorcell will change color immediately
+when the RGB values in the colorcell are changed.
+.IP \(bu 5
+The application needs to overlay graphics on top of other graphics
+in such a way that the overlayed graphics can be erased without
+disturbing the underlying graphics.  For example, in a Computer Aided 
+Design (CAD) package for chip design, it is often useful to overlay
+the various layers of a chip in different colors on the screen.  When
+one of the layers is removed, you want to avoid having to redraw all
+the underlying layers.  How to do this by allocating read/write cells
+will be described.
+.IP \(bu 5
+The system has a huge colormap, and the application needs to set a
+large number of colorcells.  The calls for manipulating read/write
+colorcells allow you to manipulate multiple cells per call, whereas
+with read-only cells, you are limited to one cell per call.
 .RE
+.sp 2
+Note that read/write colorcell allocation never works on \f(CWTrueColor\fP 
+or \f(CWStaticColor\fP visuals.  Therefore, on systems that only support 
+these visuals, an application that uses read/write colorcells cannot work.  
+Read/write colorcells should only be used when really needed.
+.sp .5
+\f(CWXAllocColorCells\fP allocates read/write colorcells.  At its 
+simplest, it allows you to allocate read/write cells so you can 
+change the RGB values dynamically.
+.sp .5
+But to simply allocate just a few cells, you set the \f(CIncolors\fP 
+argument to the number of colorcells desired and \f(CInplanes\fP to 
+\f(CW0\fP, and all the pixel values you need will be returned in the 
+\f(CIpixels\fP array.  The real reason for the \f(CInplanes\fP and 
+\f(CIplane_masks\fP arguments will become clear in Section 7.5.2.
+The RGB values of the allocated cells are set with \f(CWXStoreColor\fP, 
+\f(CWXStoreColors\fP, or \f(CWXStoreNamedColor\fP.
+.sp .5
+\f(CWXAllocColorPlanes\fP, on the other hand, is only used when you 
+want to be able to vary a primary color component of graphics already 
+drawn without redrawing them.  It allocates read/write cells, so that 
+a preset number of bits are reserved for each primary color.  Primarily 
+for \f(CWDirectColor\fP, it also allows you to simulate a small 
+\f(CWDirectColor\fP colormap on a \f(CWPseudoColor\fP visual but uses 
+up colorcells quickly.  It treats the colormap as three separate lookup 
+tables, allocating \f(CIncolors\fR\ \f(CW*\fP 
+.Su + \f(CW2\fR \f(CInreds\fR 
+entries in the red lookup table, \f(CIncolors\fR\ \f(CW*\fP 
+.Su + \f(CW2\fR \f(CIngreens\fR 
+entries in the green lookup table, and \f(CIncolors\fR\ \f(CW*\fP 
+.Su + \f(CW2\fR \f(CInblues\fR 
+entries in the blue lookup table.
+.Nd 4
+.sp .5
+The following routines are used to actually store colors into read/write 
+colorcells once they are allocated:
+.IP "\f(CWXStoreColor\fP" 22n
+Changes the read/write colormap cell corresponding to the specified 
+pixel value to the hardware color that most closely matches the RGB 
+values specified.*  
 .FS
-*Even when storing explicit RGB values, you may not get the precise color 
-you specify.  For example, if the hardware colormap only supports four bits 
-of intensity in each primary, and you specify eight-bit values, the server will 
-scale the values you provide to the closest possible equivalent on the 
-hardware.
+*Even when storing explicit RGB values, you may not get the precise 
+color you specify.  For example, if the hardware colormap supports 
+only four bits of intensity in each primary and you specify 
+eight-bit values, the server will scale the values you provide to 
+the closest possible equivalent on the hardware.
 .FE
-.RS
-.IP "\f(CWXStoreColors\fP"
-.br
+The flags \f(CWDoRed\fP, \f(CWDoGreen\fP, and \f(CWDoBlue\fP in the 
+\f(CWXColor\fP structure indicate which primary colors in the cell 
+are to be changed.
+.IP "\f(CWXStoreColors\fP" 22n
 Like \f(CWXStoreColor\fP, except it does multiple cells per call.
 Changes the read/write colormap cell corresponding to the specified 
-pixel value to the hardware color that most closely matches
-the RGB values specified.  The flags \f(CWDoRed\fP, 
-\f(CWDoGreen\fP, and \f(CWDoBlue\fP in each \f(CWXColor\fP structure
-indicate which primary colors in each cell are to be changed.
-.RE
-.RS
-.IP "\f(CWXStoreNamedColor\fP"
-.br
-Performs the same function as \f(CWStoreColor\fP,
-except that it stores the RGB values associated with
-an ASCII color name in the RGB database.  This call would 
-be useful for loading a private colormap with each of the default 
-named colors.
-.RE
-.sp 2
-.IP \s+2\f(HB7.4.1\fR\s-2 6n  
-\s+2\f(HBAllocating Read/Write Colorcells for Overlays\fR\s-2
-.sp
-\f(CWXAllocColorCells\fP allows you to nondestructively overlay
-one set of graphics over another.  The underlying graphics won't
-be visible, but they can be refreshed by simply setting or clearing
-one or more planes in the drawable.
-This technique can improve the performance of a client by reducing
-the amount of complicated graphics that have to be redrawn.
-It can be useful for highlighting text or graphics for selection.
+pixel value to the hardware color that most closely matches the RGB 
+values specified.  The flags \f(CWDoRed\fP, \f(CWDoGreen\fP, and 
+\f(CWDoBlue\fP in each \f(CWXColor\fP structure indicate which primary 
+colors in each cell are to be changed.
+.IP "\f(CWXStoreNamedColor\fP" 22n
+Performs the same function as \f(CWStoreColor\fP, except that it stores 
+the RGB values associated with a string color name in the RGB database.  
+This call would be useful for loading a private colormap with each of 
+the default named colors.
 .sp .5
-.ne 7
-The trick that allows drawing without destroying what is already
-drawn relies on the fact that we can draw in one plane of the
-drawable, changing the pixel values and therefore the color, without
-changing any another plane.  It is these other planes that contain
-the information about the drawing that was already there.
-The disadvantage of this approach is that we have to allocate more
-colorcells than we would normally need in order to
-be able to save the information already there.
-.ne 2
-Some of the colorcells will need to be loaded with duplicate RGB values.
+.IP \s+2\f(HB7.4.1\fR\s-2 6n
+\s+2\f(HBAllocating Read/Write Colorcells for Dynamic Colors\fR\s-2
 .sp .5
-To illustrate this trick, we're going to draw in one color, with the 
-background in a second color, and then draw something temporary over 
-the top with a third color.  To do this we need to allocate four 
-colorcells with \f(CWXAllocColorCells\fP.  The pixel values allocated
-will look something like this:
+As described above, the simplest use of read/write colors is to 
+allocate colorcells whose colors can by changed at any time.  
+Example 3 is analogous to the code just shown to 
+allocate read-only colors, except that it allocates read/write 
+colors instead.  Note that it calls \f(CWXAllocColorCells\fP with 
+the \f(CIncolors\fP argument set to the number of colorcells 
+desired and \f(CInplanes\fP set to zero.
 .sp .5
-.DS 3n
-\fRColor\v'1p'\h'-\w'Color'u'\l'\w'Color'u\(ul'\v'-1p'                        Important Bits\v'1p'\h'-\w'Important Bits'u'\l'\w'Important Bits'u\(ul'\v'-1p'                                               Other bits\v'1p'\h'-\w'Other bits'u'\l'\w'Other bits'u\(ul'\v'-1p'\f(CW
-
-foreground:    ----0--0------------------------  \fIall other bits don't care\fP
-
-background:    ----0--1------------------------  \fIall other bits don't care\fP
-
-highlighting:  ----1--0------------------------  \fIall other bits don't care\fP
-
-highlighting:  ----1--1------------------------  \fIall other bits don't care\fP
-.DE
-.sp .5
-The bits indicated could have been any bits, but it is significant
-that only two bits distinguish the four pixel values.
-The first pixel value is used for the foreground, and the second
-for the background.
-We draw overlays in the third pixel value, that has a \f(CW0\fP
-for the bit that distinguishes foreground and background.
-Since we don't want to erase what was drawn in the foreground and
-background pixel values, we use a plane mask to restrict the drawing
-of the highlighting pixel value to a single plane, the one where
-bits in the highlighting pixel value are set to 1.
-When the entire plane indicated by the 1 in the third and fourth
-pixel values is cleared, anything drawn in the third pixel value 
-disappears and anything that was drawn in the foreground or background 
-will reappear.  The color in the cell indicated by the fourth pixel 
-value must be the same as the color of the third for the same color 
-to appear regardless of the value of the bit set or not set in the 
-foreground and background pixel values.
-.sp .5
-\f(CWXAllocColorCells\fP doesn't return these four pixel values 
-directly.  Instead, it returns the arrays \f(CIpixels\fP and
-\f(CIplane_masks\fP that are more convenient
-for actually using the overlays than a single array of pixel values.
-(Each of these arrays has the number of members that was specified
-in the \f(CIncolors\fP and \f(CInplanes\fP arguments.)
-Both arrays consist of unsigned long 
-values like pixel values.  One array contains the plane masks of 
-the overlay planes, and the other contains the pixel values that can 
-be used for drawing independent of the overlay planes.
-Here are the values in each array when we call \f(CWXAllocColorCells\fP
-with \f(CIncolors \f(CW= 2\fR and \f(CInplanes \f(CW= 1\fR.
-.sp .5
-.DS 3n
-\fRArray Members\v'1p'\h'-\w'Array Members'u'\l'\w'Array Members'u\(ul'\v'-1p'                Significant Bits\v'1p'\h'-\w'Significant Bits'u'\l'\w'Significant Bits'u\(ul'\v'-1p'                                             Remaining Bits\v'1p'\h'-\w'Remaining Bits'u'\l'\w'Remaining Bits'u\(ul'\v'-1p'\f(CW
-
-pixels[0]      =  -----0-0------------------------  \fIall other bits don't care\fP
-pixels[1]      =  -----0-1------------------------
-
-plane_masks[0] =  -----1--------------------------  \fIall other bits 0\fR
-.DE
-.sp .5
-The two members of the \f(CIpixels\fP array are used for the 
-foreground and background. 
-The pixel values used for drawing in the highlighting
-color are composed by combining with a bitwise OR each 
-item in the \f(CIpixels\fP array with each item in the 
-\f(CIplane_masks\fP array.  In this case, the highlighting pixel 
-value is \f(CW(pixels[0] | plane_mask[0])\fP and the overwriting 
-pixel value is \f(CW(pixels[1] | plane_mask[0])\fP.
-When highlighting, the plane mask in the GC should
-be set to the OR of the members of \f(CIplane_masks\fP used to 
-make the highlighting pixel value.  In this simplest case, highlighting
-should be done with the plane mask set to \f(CWplane_mask[0]\fP.
-.sp .5
-We have been hinting at the fact that this overlay technique
-can be used with more than two colors and more than one plane.  
-\f(CIncolors\fP specifies the number of colors than can be drawn in 
-and preserved while drawing in the overlays.  \f(CInplanes\fP 
-specifies how many separate overlays you may have, or how many bits 
-of color are available in a single overlay.
-By ORing together each \f(CIpixels\fP with any combination of
-\f(CIplane_masks\fP, a total of \f(CIncolors\fR \f(CW*\fR
-.Su + \f(CW2 \f(CInplanes
-\fRcolorcells are allocated.  
-Each plane mask has one bit for \f(CWGrayScale\fP and \f(CWPseudoColor\fP, 
-or three bits for \f(CWDirectColor\fP or
-\f(CWTrueColor\fP, and none of the masks have bits in common.
-But remember that the chances of success in allocating the colorcells
-you request decreases rapidly as you request more colors and planes,
-not only because of the number of cells, but because of the special
-requirements for the significant bits in each cell.
-.sp .5
-\f(CWXAllocColorCells\fP takes a \f(CIcontig\fP argument that
-specifies whether the planes returned in \f(CIplane_masks\fP
-must be contiguous.  The \f(CIcontig\fP argument is normally set to
-\f(CWFalse\fP, specifying that the allocated planes need not be contiguous,
-because then the chances of success of the \f(CWXAllocColorCells\fP call are greater.
-There are more likely to be a number of non-contiguous planes available than the same
-number of contiguous planes.  The \f(CIcontig\fP argument may have to be
-set to \f(CWTrue\fP for imaging applications that want to be able to perform
-mathematical operations on the pixel values.  It is easier to perform operations
-by shifting bits with contiguous planes than to acheive the same effect with
-random planes. 
-.sp .5
-Your code should always have a backup plan in case you can't
-get the overlay scheme you prefer.  In most cases, the underlying
-graphics can be redrawn if the overlays that would preserve
-them cannot be allocated.
-.sp .5
-Example 7-4 demonstrates allocating the read-write cells for a 
-single overlay plane.  It allocates two \f(CIpixels\fP and 
-one \f(CIplane_masks\fP, or in other words, four read/write colorcells.
-The third and fourth are both set to the highlighting color.
-If this overlay plan fails, it allocates three colors so that
-a highlight can still be implemented even though the underlying
-graphics will have to be redrawn.  If the color allocation fails 
-completely, it uses black and white, which can be highlighted
-using the \f(CWGXxor\fP logical function to invert the color.
-.sp 
-\s-1\f(HIExample 7-4.  XAllocColorCells allocating read/write colorcells for
-overlay plane\fR\s+1
-.sp 
+\s-1\f(CW
 .nf
-\s-1\f(CW#include <X11/Xlib.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <stdio.h>
 
 extern Display *display;
-extern int screen;
-extern unsigned long foreground, background_pixel;
-extern unsigned long overlay_pixel_1, overlay_pixel_2;
-extern int overlay_plane;
+extern int screen_num;
+extern unsigned long foreground_pixel, background_pixel, 
+        border_pixel;
 
 #define MAX_COLORS 3
+
+get_colors()
+{
+    int default_depth;
+    Visual *default_visual;
+    static char *name[] = {"Red", "Yellow", "Green"};
+    XColor exact_defs[MAX_COLORS];
+    Colormap default_cmap;
+    int ncolors = MAX_COLORS;
+    int plane_masks[1];
+    int colors[MAX_COLORS];
+    int i;
+    XVisualInfo visual_info;
+    int class;
+
+    class = PseudoColor;
+    default_depth = DefaultDepth(display, screen_num);
+    default_visual = DefaultVisual(display, screen_num);
+    default_cmap   = DefaultColormap(display, screen_num);
+    if (default_depth == 1) {
+        /* Must be StaticGray, use black and white */
+        border_pixel = BlackPixel(display, screen_num);
+        background_pixel = WhitePixel(display, screen_num);
+        foreground_pixel = BlackPixel(display, screen_num);
+        return(0);
+    }
+
+    if (!XMatchVisualInfo(display, screen_num, default_depth, 
+            PseudoColor, &visual_info)) {
+        if (!XMatchVisualInfo(display, screen_num, default_depth, 
+                DirectColor, &visual_info)) {
+            /* No PseudoColor visual available at default_depth;
+              * some applications might try for a GrayScale 
+              * visual here if they can use gray to advantage, 
+              * before giving up and using black and white */
+            border_pixel = BlackPixel(display, screen_num);
+            background_pixel = WhitePixel(display, screen_num);
+            foreground_pixel = BlackPixel(display, screen_num);
+            return(0);
+        }
+    }
+
+    /* Got PseudoColor or DirectColor visual at default_depth */
+
+    /* The visual we found is not necessarily the default
+     * visual, and therefore it is not necessarily the one
+     * we used to create our window; however, we now know
+     * for sure that color is supported, so the following 
+     * code will work (or fail in a controlled way) */
+
+    /* Allocate as many cells as we can */
+    ncolors = MAX_COLORS;
+    while (1) {
+           if (XAllocColorCells (display, default_cmap, False, 
+                plane_masks, /* nplanes */0, colors, ncolors))
+            break;
+    ncolors--;
+    if (ncolors = 0)
+        fprintf(stderr, "basic: couldn't allocate read/write \
+                colors\en");
+        exit(0);
+    }
+
+    printf("basic: allocated %d read/write color cells\en", ncolors);
+
+    for (i = 0; i < ncolors; i++) {
+        if (!XParseColor (display, default_cmap, name[i], 
+                &exact_defs[i])) {
+            fprintf(stderr, "basic: color name %s not in database", 
+                    name[i]);
+            exit(0);
+        }
+
+        /* Set pixel value in struct to the allocated one */
+        exact_defs[i].pixel = colors[i];
+             exact_defs[i].flags = DoRed | DoGreen | DoBlue;
+    }
+
+    /* This sets the color of read/write cell */
+    XStoreColors (display, default_cmap, exact_defs, ncolors);
+    border_pixel = colors[0];
+    background_pixel = colors[1];
+    foreground_pixel = colors[2];
+}
+\fR\s0
+.fi
+.sp .5
+Example 3: "Allocating read/write colorcells for dynamic colors"
+.sp
+The \f(CWmain\fP that calls this \f(CWget_colors\fP function, shown 
+in Example 4 contains an \f(CWXQueryColor\fP call that 
+gets the current RGB values in the colorcell (necessary because 
+\f(CWmain\fP and \f(CWget_colors\fP are in separate source files and 
+the RGB values used in \f(CWget_colors\fP are not global variables) 
+and an \f(CWXStoreColor\fP call that changes the color of what is 
+drawn in the foreground pixel value every time you press a button 
+in the window.  In the example source, this application is in 
+the directory \fIbasicwin/color/\fR and is called \fIbasic.rw\fR.
+.sp .5
+\s-1\f(CW
+.nf
+  .
+  .
+  .
+
+void main(argc, argv)
+int argc;
+char **argv;
+{
+      .
+      .
+      .
+
+    XColor color;
+    unsigned short red, green, blue;
+      .
+      .
+      .
+    /* Open display, etc. */
+
+    color.pixel = foreground_pixel;
+    XQueryColor(display, DefaultColormap(display, screen_num), 
+            &color);
+    printf("red is %d, green is %d, blue is %d\en", color.red, 
+            color.green, color.blue);
+
+    while (1)  {
+        XNextEvent(display, &report);
+        switch  (report.type) {
+          .
+          .
+          .
+        case ButtonPress:
+            color.red += 5000;
+            color.green -= 5000;
+            color.blue += 3000;
+            printf("red is %d, green is %d, blue is %d\en", 
+                    color.red, 
+            color.green, color.blue);
+            XStoreColor(display, DefaultColormap(display, 
+                    screen_num), &color);
+            break;
+          .
+          .
+          .
+    }
+}
+\fR\s0
+.fi
+.sp .5
+Example 4: "Main of basic.rw \(em changing colors of dynamic colorcells"
+.sp
+.IP \s+2\f(HB7.4.2\fR\s-2 6n
+\s+2\f(HBAllocating Read/Write Colorcells for Overlays\fR\s-2
+.sp .5
+\f(CWXAllocColorCells\fP has another use:  it allows you to 
+nondestructively overlay one set of graphics over another.  
+The underlying graphics will not be visible where the overlay 
+is drawn, but they can be refreshed by simply setting or clearing
+one or more complete planes in the drawable.  This technique can 
+improve the performance of a client by reducing the amount of 
+complicated graphics that have to be redrawn.  It can be useful 
+for highlighting graphics for selection.  However, as noted earlier, 
+read/write colorcells can only be allocated in \f(CWPseudoColor\fP 
+and \f(CWDirectColor\fP visuals, so any application that attempts 
+to use this technique should also provide a fallback technique for 
+use on other visuals or in case of failure.
+.sp .5
+The trick that allows drawing without destroying what is already drawn 
+relies on the fact that we can draw in one plane of the drawable, 
+changing the pixel values and therefore the color, without changing 
+any other plane.  This is possible using the \f(CWplane_mask\fP 
+component of the GC.  It is these other planes that contain the 
+information about the drawing that was already there.  The 
+disadvantage of this approach is that we have to allocate more
+colorcells than we would normally need.  Some of the colorcells 
+will need to be loaded with duplicate RGB values.  Because of this 
+waste of colorcells, this technique should be used only when the 
+graphics being preserved are slow for the client or the server to redraw.
+.Nd 20
+.sp .5
+To illustrate this trick, we are going to draw in one color (the
+foreground in the GC), set the \f(CWbackground_pixel\fP attribute 
+of the window to a second color, and then draw something temporary 
+over the top with a third color.*  
+.FS
+*Note that the background of a window is redrawn by the server when
+\f(CWExpose\fP events occur, but this does not effect the process of drawing
+and removing overlays, because no \f(CWExpose\fP event will be triggered in
+this process.  In other words, even though the background color is
+set as a window attribute and drawn by the server, the response to
+other graphics drawn on top is the same as if the background were 
+drawn by the application.  The background counts as a color that
+must be preserved.
+.FE
+To do this, we need to allocate four colorcells with 
+\f(CWXAllocColorCells\fP.  The pixel values allocated
+will look something like this:
+.sp .5
+.sp .5
+\s-1\f(CW 3n
+.nf
+\fRColor\v'1p'\h'-\w'Color'u'\l'\w'Color'u\(ul'\v'-1p'                            Important Bits\v'1p'\h'-\w'Important Bits'u'\l'\w'Important Bits'u\(ul'\v'-1p'                                                               Remaining bits\v'1p'\h'-\w'Remaining bits'u'\l'\w'Remaining bits'u\(ul'\v'-1p'\f(CW
+
+foreground:    ----0--0------------------------  \fIall other bits don't matter\fP
+
+background:    ----0--1------------------------  \fIall other bits don't matter\fP
+
+highlight1:    ----1--0------------------------  \fIall other bits don't matter\fP
+
+highlight2:    ----1--1------------------------  \fIall other bits don't matter\fP
+\fR\s0
+.fi
+.sp .5
+.sp .5
+The bits indicated could have been any bits, but it is significant
+that only two bits distinguish the four pixel values.  The first 
+pixel value is used for the foreground, and the second for the 
+background.  We draw overlays in the third or fourth pixel value.
+Since we do not want to erase what was drawn in the foreground and
+background pixel values, we use a plane mask to restrict the drawing
+of the highlighting pixel value to a single plane, the one where 
+bits in the highlighting pixel values are set to 1.  When this 
+entire plane (indicated by the 1 in pixel values \f(CWhighlight1\fP 
+and \f(CWhighlight2\fP) is cleared, anything drawn in \f(CWhighlight1\fP 
+or \f(CWhighlight2\fP disappears, and anything that was drawn in the 
+foreground or background will reappear.  The color in the colorcell 
+indicated by \f(CWhighlight2\fP must be the same as the color of 
+colorcell \f(CWhighlight1\fP so that the same highlighting color 
+appears regardless of the bit already in the drawable that 
+distinguishes the foreground and background pixel values.
+.sp .5
+\f(CWXAllocColorCells\fP does not return these four pixel values 
+directly.  Instead it returns the arrays \f(CIcolors\fP and
+\f(CIplane_masks\fP that are more convenient for actually using 
+the overlays than a single array of pixel values.  (Each of these 
+arrays has the number of members that was specified in the 
+\f(CIncolors\fP and \f(CInplanes\fP arguments.)  Both arrays 
+consist of unsigned long values like pixel values.  One array 
+contains the plane masks of the overlay planes, and the other 
+contains the pixel values that can be used for drawing 
+independent of the overlay planes.  Here are the values returned 
+in each array after we call \f(CWXAllocColorCells\fP with 
+\f(CIncolors\f(CW\ =\ 2\fR and \f(CInplanes\f(CW\ =\ 1\fR.
+These values are then used to generate the pixel values shown above.
+.sp .5
+.sp .5
+\s-1\f(CW 3n
+.nf
+\fRArray Members\v'1p'\h'-\w'Array Members'u'\l'\w'Array Members'u\(ul'\v'-1p'                   Important Bits\v'1p'\h'-\w'Important Bits'u'\l'\w'Important Bits'u\(ul'\v'-1p'                                                               Remaining Bits\v'1p'\h'-\w'Remaining Bits'u'\l'\w'Remaining Bits'u\(ul'\v'-1p'\f(CW
+
+colors[0]      =  ----0--0------------------------  \fIother bits don't matter\fP
+colors[1]      =  ----0--1------------------------   
+
+plane_masks[0] =  ----1---------------------------  \fIall other bits 0\fR
+\fR\s0
+.fi
+.sp .5
+.sp .5
+The two members of the \f(CIcolors\fP array are used for the 
+foreground and background.  Pixel values \f(CWhighlight1\fP and 
+\f(CWhighlight2\fP are composed by combining with a bitwise OR 
+each item in the \f(CIcolors\fP array with each item in the 
+\f(CIplane_masks\fP array.  In this case, \f(CWhighlight1\fP
+is (\f(CIcolors\f(CW[0]\ |\ \f(CIplane_masks\f(CW[0]\fR).  The 
+\f(CWplane_mask\fP in the GC used when highlighting should be set 
+to the OR of the members of \f(CIplane_masks\fP used to make the 
+highlighting pixel value.  In this simplest case, highlighting 
+should be done with the \f(CWplane_mask\fP in the GC set to 
+\f(CIplane_masks\f(CW[0]\fR.
+.sp .5
+Note that \f(CWhighlight2\fP, generated with 
+(\f(CIcolors\f(CW[1]\ |\ \f(CIplane_masks\f(CW[0]\fR), can be 
+useful.  As mentioned earlier, \f(CWhighlight2\fP can be used 
+.hw highlight
+interchangeably with \f(CWhighlight1\fP, as long as the 
+\f(CWplane_mask\fP in the GC is set to \f(CIplane_masks\f(CW[0]\fR.  
+But \f(CWhighlight2\fP has another use.  With a GC that does not have 
+its \f(CWplane_mask\fP set to \f(CIplane_masks\f(CW[0]\fR (the GC used 
+for drawing with the foreground or background), this fourth pixel value 
+can be used for drawing in the highlighting color while wiping out 
+the underlying graphics, so that when the highlight is removed, the 
+background color appears regardless of the contents of the drawable 
+before the highlighting.
+.sp .5
+We have been hinting at the fact that this overlay technique
+can be used with more than two colors and more than one plane.  
+\f(CIncolors\fP specifies the number of colors than can be drawn
+and preserved while drawing in the overlays.  \f(CInplanes\fP 
+specifies how many separate one-color overlays you may have or how 
+many bits of color are available in a single overlay.  The pixel 
+values in the \f(CIcolors\fP array are the ones that will be 
+preserved through overlays.  By ORing together each \f(CIcolors\fP 
+with any combination of \f(CIplane_masks\fP, you get the pixel 
+values that are used for drawing the overlays.  Note, however, that 
+the plane mask of the GC used for the overlaying must be the OR of 
+the same combination of members of the \f(CIplane_masks\fP array 
+as were used to generate the pixel value.
+.sp .5
+The total number of pixel values (colorcells) allocated by 
+\f(CWXAllocColorCells\fP is \f(CIncolors\fR\ \f(CW*\fR
+.Su + \f(CW2\fR \f(CInplanes\fR 
+.\".Ns R
+.\"Remove this note if 2 ^ nplanes (superscript) appears above it.
+.\".Ne
+\&.  Note that the more planes you try to allocate, the less likely this
+request is to succeed, particularly on \f(CWPseudoColor\fP visuals.
+Therefore, if you are trying for multiple overlays or one multicolor
+overlay, this will probably work reliably only on \f(CWDirectColor\fP 
+visuals, so make sure you have a backup plan for more common systems.
+In most cases, the underlying graphics can be redrawn if the overlays 
+that would preserve them cannot be allocated.  It is also possible to 
+use backing store (which can save selective planes) or to manage your 
+own off-screen pixmaps for use in fast redrawing of complicated graphics.
+.sp .5
+\f(CWXAllocColorCells\fP takes a \f(CIcontig\fP argument that specifies 
+whether the planes returned in \f(CIplane_masks\fP must be contiguous.  
+The \f(CIcontig\fP argument is normally set to \f(CWFalse\fP, specifying 
+that the allocated planes need not be contiguous, because then the chances 
+of success of the \f(CWXAllocColorCells\fP call are greater.  There are 
+more likely to be a number of noncontiguous planes available than the same
+number of contiguous planes.  The \f(CIcontig\fP argument may have to be
+set to \f(CWTrue\fP for imaging applications that want to be able to perform
+mathematical operations on the pixel values.  It is easier to perform 
+operations by shifting bits with contiguous planes than to achieve the 
+same effect with random planes. 
+.sp .5
+Each plane mask has one bit for \f(CWGrayScale\fP and \f(CWPseudoColor\fP 
+or three bits for \f(CWDirectColor\fP or \f(CWTrueColor\fP, and none of 
+the masks have bits in common.
+.sp .5
+Example 5 demonstrates allocating the read/write cells for 
+a single overlay plane.  It implements the overlay scheme described
+above.  If this overlay plan fails, it allocates three colors so 
+that a highlight can still be implemented even though the underlying
+graphics will have to be redrawn.  If the color allocation fails 
+completely, it uses black and white, which can be highlighted
+using the \f(CWGXxor\fP logical function to invert the color,
+as described in Section\ 7.3.3.
+.sp .5
+\s-1\f(CW
+.nf
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <stdio.h>
+
+extern Display *display;
+extern int screen_num;
+extern unsigned long foreground, background_pixel, overlay_pixel_1, 
+        overlay_pixel_2;
+extern unsigned long overlay_plane_mask;
+
+#define MAX_COLORS 2
 #define MAX_PLANES 1
+#define MAX_CELLS 4       /* MAX_COLORS * 2 ^ MAX_PLANES */
 #define CANNOT_OVERLAY 0
 #define CAN_OVERLAY 1
 
 int
 get_colors()
 {
-	int depth;
-	static char *name[] = {"Red", "Yellow", "Green", "Green"};
-	XColor exact_defs[MAX_COLORS];
-	Colormap cmap;
-	int ncolors = 4;
-	int plane_masks[MAX_PLANES];
-	int colors[MAX_COLORS];
-	int i;
+    int default_depth;
+    static char *name[] = {"Red", "Yellow", "Green", "Green"};
+    XColor exact_defs[MAX_CELLS];
+    Colormap default_cmap;
+    int ncolors = 4;
+    int plane_masks[MAX_PLANES];
+    int colors[MAX_COLORS];
+    int i;
+    XVisualInfo visual_info;
+    int class;
 
-	depth = DisplayPlanes(display, screen);
-	cmap   = DefaultColormap(display, screen);
-	if (depth == 1)  {  /* one-plane monochrome */
-		/* use BlackPixel and WhitePixel only */;
-		background_pixel = WhitePixel(display, screen);
-		foreground = BlackPixel(display, screen);
-		printf("using black and white\n");
-		return(CANNOT_OVERLAY);
-	}
-	else {
-		/* allocate our colorcells */
-   		if (XAllocColorCells (display, cmap, False, plane_masks, 1, 
-				colors, 2) == 0) {
-			/* Can't get enough read/write cells to overlay.
-			 * Try at least to get three colors. */
-   			if (XAllocColorCells (display, cmap, False, plane_masks, 
-					0, colors, 3) == 0) {
-				/* Can't even get that.  Give up and
-				 * use black and white */
-				background_pixel = WhitePixel(display, screen);
-				foreground = BlackPixel(display, screen);
-				printf("using black and white\n");
-			}
-			
-			ncolors = 3;
-			printf("got only three colors\n");
-		}
-      		
-		/* allocated colorcells successfully,
-		 * now set their colors - three and four
-		 * are set to the same RGB values */
-		for (i = 0; i < ncolors; i++)
-		{
-			if (!XParseColor (display, cmap, name[i], 
-					&exact_defs[i])) {
-				fprintf(stderr, "basic: color name %s not \
-						in database", name[i]);
-				exit(0);
-			}
+    default_depth = DefaultDepth(display, screen_num);
+    default_cmap   = DefaultColormap(display, screen_num);
+    if (default_depth == 1) {
+        /* Must be StaticGray, use black and white */
+        background_pixel = WhitePixel(display, screen_num);
+        foreground = BlackPixel(display, screen_num);
+        printf("using black and white\en");
+        return(CANNOT_OVERLAY);
+    }
 
-			/* set pixel value in struct to the allocated one */
-			exact_defs[i].pixel = colors[i];
-		}
-		printf("set RGB values\n");
+    if (!XMatchVisualInfo(display, screen_num, default_depth, 
+            PseudoColor, &visual_info)) {
+        if (!XMatchVisualInfo(display, screen_num, default_depth, 
+                DirectColor, &visual_info)) {
+            /* No PseudoColor or TrueColor visual available 
+             * at default_depth; some applications might try 
+             * for a GrayScale visual here if they can use 
+             * gray to advantage, before giving up and using 
+             * black and white */
+            background_pixel = WhitePixel(display, screen_num);
+            foreground = BlackPixel(display, screen_num);
+            printf("using black and white\en");
+            return(CANNOT_OVERLAY);
+        }
+    }
 
-		/* this sets the color of read/write cell */
-		XStoreColors (display, cmap, exact_defs, ncolors);
-		printf("stored colors\n");
-		background_pixel = colors[0];
-		foreground = colors[1];
-		if (ncolors == 4) {
-			overlay_pixel_1 = colors[0] | plane_masks[0];
-			overlay_pixel_2 = colors[1] | plane_masks[0];
-			overlay_plane = plane_masks[0];
-			return(CAN_OVERLAY);
-		}
+    /* Got PseudoColor or TrueColor visual at default depth */
 
+    /* The visual we found is not necessarily the default 
+     * visual, and therefore it is not necessarily the one
+     * we used to create our window; however, we now know
+     * for sure that color is supported, so the following
+     * code will work (or fail in a controlled way) */
 
+       if (XAllocColorCells (display, default_cmap, False, plane_masks, 
+            1, colors, 2) == 0) {
+        /* Can't get enough read/write cells to overlay;
+         * try at least to get three colors */
+           if (XAllocColorCells (display, default_cmap, False, 
+                plane_masks, 0, colors, 3) == 0) {
+            /* Can't even get that; give up and use
+             * black and white */
+                       background_pixel = WhitePixel(display, 
+                            screen_num);
+                       foreground = BlackPixel(display, screen_num);
+            printf("using black and white\en");
+            return(CANNOT_OVERLAY);
+        }
+        else
+            ncolors = 3;
+    }
+          
+    /* Allocated three or four colorcells succesfully,
+     * now set their colors -- three and four are set
+     * to the same RGB values */
+    for (i = 0; i < ncolors; i++)
+    {
+        if (!XParseColor (display, default_cmap, name[i], 
+                &exact_defs[i])) {
+            fprintf(stderr, "basic: color name %s not in database", 
+                    name[i]);
+            exit(0);
+        }
+        /* This needed before calling XStoreColors */
+        exact_defs[i].flags = DoRed | DoGreen | DoBlue;
+    }
+    printf("got RGB values\en");
 
+    /* Set pixel value in struct to the allocated ones */
+    exact_defs[0].pixel = colors[0];
+    exact_defs[1].pixel = colors[1];
+    exact_defs[2].pixel = colors[0] | plane_masks[0];
+    exact_defs[3].pixel = colors[1] | plane_masks[0];
 
-		else {
-			overlay_pixel_1 = colors[2];
-			return(CANNOT_OVERLAY);
-		}
-	}
-}\fR\s+1
+    /* This sets the color of the read/write cells */
+    XStoreColors (display, default_cmap, exact_defs, ncolors);
+    printf("stored colors\en");
+
+    background_pixel = exact_defs[0].pixel;
+    foreground = exact_defs[1].pixel;
+    if (ncolors == 4) {
+        overlay_pixel_1 = exact_defs[2].pixel;
+        overlay_pixel_2 = exact_defs[3].pixel;
+        overlay_plane_mask = plane_masks[0];
+        printf("set can\en");
+        return(CAN_OVERLAY);
+    }
+    else {
+        /* This must be used as a normal color, not overlay */
+        overlay_pixel_1 = exact_defs[2].pixel;
+        printf("set can't\en");
+        return(CANNOT_OVERLAY);
+    }
+}
+\fR\s0
 .fi
-.sp 2
-.IP \s+2\f(HB7.4.2\fR\s-2 6n  
+.sp .5
+Example 5: "Using XAllocColorCells to allocate read/write colorcells for overlay plane"
+.sp
+.IP \s+2\f(HB7.4.3\fR\s-2 6n
 \s+2\f(HBUsing XAllocColorPlanes\fR\s-2
-.sp 
-\f(CWXAllocColorPlanes\fP is used when you want to be able
-to change the amount of a primary color in graphics 
-without having to redraw them.  In other words, perhaps you
-are looking at an image and would like to increase the redness of it.
-The best way to do this is to increase the amount
-of red in every pixel value.  \f(CWXAllocColorPlanes\fP would be the 
-way to allocate colors to allow this.
-It is rarely used except in imaging applications and 3-D graphics,
-and will rarely work except on 24-plane workstations.
 .sp .5
-Note that for applications like a paint mixing program, in which you
-have three bars for the three primary colors and a palette that shows the mixed
-color, you would not use \f(CWXAllocColorPlanes\fP.  
-The correct way to implement this is to allocate a single
-read/write color for the palette and to change it dynamically.
-(The primary colors should be allocated using read-only colors.)
+\f(CWXAllocColorPlanes\fP also allocates read/write colorcells 
+but in a different way than \f(CWXAllocColorCells\fP.
+\f(CWXAllocColorPlanes\fP is used when you want to be able to 
+change the amount of a primary color in graphics without having 
+to redraw them.  In other words, perhaps you are looking at an 
+image and would like to increase the redness of it.  The best 
+way to do this is to increase the amount of red in every pixel 
+value.  \f(CWXAllocColorPlanes\fP would be the way to allocate 
+colors to allow this.  It is rarely used except in imaging 
+applications and 3-D graphics and will rarely work except on 
+24-plane workstations with a \f(CWDirectColor\fP visual.
 .sp .5
-The next piece of code, Example 7-5, is similar to 
-Example 7-4, but it uses \f(CWXAllocColorPlanes\fP.  
-It is somewhat sketchy because real applications that use 
+Note that for applications like a paint mixing program, in which 
+you have three bars for the three primary colors and a palette that 
+shows the mixed color, you would not use \f(CWXAllocColorPlanes\fP.  
+The correct way to implement this is to allocate a single read/write 
+color for the palette and to change it dynamically.  (If the primary 
+colors are displayed, they should be allocated using read-only colors.)
+.sp .5
+The piece of code shown in Example 6 is similar to 
+Example 5 but it uses \f(CWXAllocColorPlanes\fP.  
+It is somewhat sketchy, because real applications that use 
 \f(CWXAllocColorPlanes\fP are complicated.
 .sp .5
-After allocating colors with \f(CWXAllocColorPlanes\fP,
-you can then use \f(CWXStoreColors\fP to set the 
-colors (the other calls for setting colors set only one cell at a 
-time).  When \f(CInred\fP, \f(CIngreen\fP, and \f(CInblue\fP
-are each \f(CW8\fP, only one call to \f(CWXAllocColorPlanes\fP and 
-one call to \f(CWXStoreColors\fP are necessary to allocate and set 
-all 16 million colors of an entire 24-plane colormap.
-.sp 
-\s-1\f(HIExample 7-5.  Using XAllocColorPlanes to allocate colorcells for
-DirectColor\fR\s+1
-.sp 
+After allocating colors with \f(CWXAllocColorPlanes\fP, you can 
+then use \f(CWXStoreColors\fP to set the colors.  When \f(CInred\fP, 
+\f(CIngreen\fP, and \f(CInblue\fP are each \f(CW8\fP, only one call 
+to \f(CWXAllocColorPlanes\fP and one call to \f(CWXStoreColors\fP 
+are necessary to allocate and set all 16\ million colors of an 
+entire 24-plane colormap.
+.Nd 10
+.sp .5
+\s-1\f(CW
 .nf
-	\s-1\f(CW#define PIXELS 256
-	Display *display;
-	int screen;
-	int contig = False;		/* non-contiguous planes */
-	unsigned long pixels[PIXELS];	/* return of pixel values */
+#define PIXELS 256
 
-	/* number of independent pixel values allocate */
-	unsigned int ncolors = PIXELS;	
-
-	XColor defs[2048];	/* PIXELS * 2^maxplanes where maxplanes
-		 * is the largest of nred, ngreen, and nblue */
-
-	/* number of planes to allocate for each primary */
-	unsigned int nreds = 3, ngreens = 3, nblues = 2;	
-
-	/* returned masks, which bits of pixel value for each primary */
-	unsigned long \f(CWred_mask\fP, \f(CWgreen_mask\fP, \f(CWblue_mask\fP;	
-
-	Colormap colormap;
-	Status status;
-
-	/* open display, etc. */
-	/* get or create large \f(CWDirectColor\fP colormap */
-
-	while (status = \f(CWXAllocColorPlanes\fP(display, colormap, 
-			contig, pixels, ncolors, nreds, ngreens, nblues, 
-			&red_mask, &green_mask, &blue_mask) == 0) {
-		{
-		/* Make contig False if it was True,
-		 * reduce value of ncolors,
-		 * reduce value of nreds, ngreens and/or nblues,
-		 * or try allocating new map,
-		 * break when you give up */
-		break;
-		}
-	if (status == 0)
-		{
-		fprintf(stderr, "%s: couldn't allocate requested colorcells", 
-				argv[0]);
-		exit(-1);
-		}
-
-	/* define desired colors in defs */
-
-	while (status = XStoreColors(display, colormap, defs, 
-			ncolors) == 0)
-		{
-		fprintf(stderr, "%s: can't store colors", argv[0]);
-		/* try to fix problem here, exit or break */
-		exit(-1);
-		}
-		
-	/* draw your shaded stuff! */\fR\s+1
-.fi
-.sp 2
-.IP \s+2\f(HB7.4.3\fR\s-2 6n  
-\s+2\f(HBHighlighting in Monochrome\fR\s-2
-.sp
-It is easy to highlight monochrome graphics.
-The simplest way is to set the GC to the \f(CWGXxor\fP logical function,
-and draw your graphics once to draw them, and again to undraw them.
-You must grab the server between the drawing and undrawing so that
-no other client change the same pixels in between.
-This can be made slightly more efficient on some servers by
-setting the foreground used in drawing to the exclusive OR of 
-\f(CWBlackPixel\fP and \f(CWWhitePixel\fP, or by setting the logical 
-function to \f(CWGXinvert\fP and using a plane mask which is the 
-exclusive OR of \f(CWWhitePixel\fP and \f(CWBlackPixel\fP.
-.sp .5
-On a color screen, these techniques will draw in
-pixel values you didn't allocate, and therefore the color may not
-necessarily contrast against the background.
-A more controlled approach is called for.
-Probably it is best to allocate a read-only color to draw in,
-or highlight using overlays as described in Section 7.4.1.
-.sp 2
-.IP \s+4\f(HB7.5\fR\s-4  6n 
-\s+4\f(HBCreating and Installing Colormap\fR\s-4
-.sp
-In discussing colormaps earlier in this chapter, we have sidestepped the 
-distinction between \fIhardware colormaps\fP and \fIvirtual colormaps\fP.
-.sp .5
-A hardware colormap is a physical register from which the display hardware 
-reads the RGB intensity values that generate the colors on the screen.  
-Most workstations have only one hardware colormap, in which case
-all windows on the screen are interpreted using the same colormap.  Some 
-high-performance workstations have multiple hardware colormaps, in which case 
-separate windows may have their own independent colormaps.
-.sp .5
-If the hardware colormap cannot be changed, it is termed \fIimmutable\fR.  
-The \f(CWStaticColor\fP, \f(CWTrueColor\fP, and \f(CWStaticGray\fP 
-visuals are the only visuals that can possibly work on systems
-that have immutable hardware colormaps.  In immutable colormaps,
-no client can allocate private colorcells
-and all RGB values are preset.
-.sp .5
-Monochrome systems normally have an immutable colormap, since it
-does little good to swap the two entries or make them both black or
-white.  Immutable colormaps are uncommon on color systems,
-but they might be present on some low-cost workstations.
-.sp .5
-.ne 3
-On most color workstations, you can write new
-values into the hardware colormap or colormaps to change that mapping.
-These hardware colormaps are termed \fIchangeable\fR. 
-The \f(CWPseudoColor\fP, 
-\f(CWDirectColor\fP, and \f(CWGrayScale\fP visuals have changeable 
-colormaps.
-.sp .5
-If you can write into the hardware colormap, you can also copy
-an entire separate colormap into the hardware colormap.
-X manages multiple colormaps by keeping a copy of each colormap
-called a virtual colormap.
-X allows any virtual colormap to be modified 
-by clients if the colormap has
-a visual that indicates it is writable.  X copies
-these colormaps into the hardware colormap as needed 
-and as instructed by the window manager or applications.  
-.sp .5
-.Nd 6
-On the most common 
-color workstations, with 4 to 8 planes, it is quite easy for
-clients that require precise colors to allocate all 
-the available colorcells.
-Virtual colormaps are one response to the realization that
-the color needs of all the clients cannot always be 
-satisfied.  When a client can't get the colorcells it
-.ne 2
-needs from the installed colormap, it can create a new one.
-.sp .5
-Note, however, that
-hardware colormaps are a limited resource that must be shared by
-all the clients using a server.  Particularly when there
-is only one hardware colormap, this resource must be carefully
-managed.  
-.sp .5
-When a virtual colormap is installed and there is only one
-hardware colormap, any colormap that is currently 
-installed in the hardware will be uninstalled (made virtual again),
-and the new colormap will be installed into the hardware.
-When the new colormap is installed,
-all the clients that used the old colormap will be displayed in
-false colors, since the pixel values in their 
-windows will be interpreted according to the new colormap.
-This is true assuming that only one hardware colormap is allowed (on all
-but high-performance workstations).
-.sp .5
-.Nd 5
-The window manager should ideally have
-the responsibility to mediate the desires of 
-all the different clients displaying
-on a screen that want to modify the colormap. 
-Unfortunately, the initial crop
-of window managers (including \fIuwm\fP) don't do this, leading to an
-unfortunate catch-22 for current applications.*
-.FS
-*According to the current conventions for interclient communication,
-it is the window manager's responsibility to install and uninstall 
-(at times of its choosing)
-the colormaps specified in the window attributes of the top-level windows.
-The colormaps specified in the window attributes of subwindows must be
-installed by the application itself, as described in the section 
-regarding colormaps in Appendix F.
-Unfortunately, most current window managers don't install colormaps yet.  
-While this is another incentive to use the default colormap that is
-usually installed anyway, your application may need to install its
-own colormap until better window managers become available.
-.FE
-.sp .5
-By now you should be getting the idea that it is much better to 
-arrange to share the default colormap with the other applications 
-than to try to create one of your own.  
-The only time when you should really need to create
-a special colormap is when you are doing smooth shading, or similar 
-applications that need many, strangely distributed colors.  But if 
-you are doing that, you will probably be resigned to the fact that 
-it will only run on a high-performance workstation.
-Since those often allow
-multiple hardware colormaps, you can create your own colormap and
-you may be able to install it without affecting other applications.
-.sp 2
-.ne 7
-.IP \s+2\f(HB7.5.1\fR\s-2 6n  
-\s+2\f(HBFunctions for Manipulating Colormaps\fR\s-2
-.sp
-The following functions should be used primarily by window 
-managers, and by applications
-only if they need a special purpose colormap.
-.sp .5
-.RS
-.IP "\f(CWXCreateColormap\fP" 10n
-.br
-Creates a virtual colormap resource, either with no 
-allocated entries, or with all 
-allocated writable, that matches the passed visual.
-If no entries are allocated, they can be allocated either
-as read/write or as read-only cells.  If all entries are allocated
-writable, the colormap is completely private, does not need to be
-allocated, but just needs its colors set with \f(CWXStoreColors\fP.
-.br
-.ne 4
-.IP "\f(CWXInstallColormap\fP"
-.br
-A window manager function to install a colormap.
-Any window using that colormap ID as an 
-attribute receives a \f(CWColormapNotify\fP event.
-Only the default colormap is initially installed.
-.IP "\f(CWXUninstallColormap\fP
-.br
-Removes a virtual colormap from the set of installed hardware colormaps.
-Sends \f(CWColormapNotify\fP event
-to windows that are using the specified map.
-.IP "\f(CWXFreeColormap\fP
-.br
-Uninstalls the specified virtual colormap and frees the resources
-associated with the colormap.
-Sends a \f(CWColormapNotify\fP event to 
-any windows that were using the colormap.
-.IP "\f(CWXListInstalledColormaps\fP
-.br
-Lists the installed colormaps.
-.IP "\f(CWXCopyColormapAndFree\fP
-.br
-Moves all the client's existing colormap entries
-to a new colormap and frees those entries of the old colormap.  This is
-used when read/write colorcell allocation fails, either
-because all the cells in the old colormap are already in use, or because
-the number of planes requested were not available.
-.IP "\f(CWXSetStandardColormap\fP
-.br
-Creates a standard
-colormap, one of \f(CWXA_RGB_DEFAULT_MAP\fP, \f(CWXA_RGB_BEST_MAP\fP, 
-\f(CWXA_RGB_RED_MAP\fP,
-\f(CWXA_RGB_GREEN_MAP\fP,
-\f(CWXA_\fP \f(CWRGB_BLUE_MAP\fR,
-or \f(CWXA_RGB_GRAY_MAP\fP.   (See Section 7.6 for
-details.)
-.IP \f(CWXGetStandardColormap\fP
-.br
-Gets a structure containing information about the
-standard colormap specified by a
-atom.  Once this is done, you can find out
-what pixel values are represented by various RGB values.
-This call does not install the colormap.
-.IP "\f(CWXSetWindowColormap\fP
-.br
-Sets the colormap attribute of a window.
-.RE
-.sp 2
-.IP \s+2\f(HB7.5.2\fR\s-2 6n  
-\s+2\f(HBThe ColormapNotify Event\fR\s-2\fR
-.sp
-\f(CWColormapNotify\fP events herald changes relating to the colormap 
-specified in the colormap attribute for a particular 
-window, or changes to the attribute itself.
-.sp .5
-If your application might be adversely affected by changes
-to the colormap, you should watch for these events and act
-accordingly.  To receive \f(CWColormapNotify\fP events, pass
-\f(CWColormapChangeMask\fP to \f(CWXSelectInput\fP.
-Example 7-6 shows the structure for the \f(CWXColormapEvent\fP.
-.sp 
-.Nd 12
-\s-1\f(HIExample 7-6.  The ColormapEvent structure\fR\s+1
-.sp 
-.nf
-.ta 4.5n 1.85i
-\f(CWtypedef struct {
-	int type;
-	unsigned long serial;   /* # of last request processed by server */
-	Bool send_event;	/* true if this came from SendEvent request */
-	Display *display;	/* display the event was read from */
-	Window window;
-	Colormap colormap;	/* Colormap or None */
-	Bool new;
-	int state;	/* ColormapInstalled, ColormapUninstalled */
-} XColormapEvent;\fR
-.fi
-.sp .5
-Here is a brief explanation of each member of the \f(CWXColormapEvent\fP structure:
-.RS
-.IP "\f(CWwindow\fP" 12n
-The window this event was selected for, whose colormap attribute
-or colormap was changed.
-.IP "\f(CWcolormap\fP"
-The colormap associated with the window,
-either a colormap ID or the constant \f(CWNone\fP.
-It will be \f(CWNone\fP only if this event was in response 
-to an \f(CWXFreeColormap\fP call.
-.IP "\f(CWnew\fP"
-\f(CWTrue\fP when the colormap attribute has been changed, or
-\f(CWFalse\fP when the colormap is installed or uninstalled.
-.IP "\f(CWstate\fP"
-Either \f(CWColormapInstalled\fP or \f(CWColormapUninstalled\fP;
-it indicates whether the colormap is installed or uninstalled.
-.RE
-.sp .5
-\f(CWXFreeColormap\fR, \f(CWXInstallColormap\fR, and 
-\f(CWXUninstallColormap\fR generate this event for windows 
-that have their colormap attribute set to the colormap that
-was affected.  From the information in the structure, you can tell 
-which of these calls generated the event, and what the current status
-of the colormap is.  The conventions for what the applications should do
-in response to each of these contingencies has not yet been determined.
-See Chapter 10, \fIInterclient Communication\fR and Appendix F, \fIProposed
-Interclient Communications\fR for additional details.
-.sp 2
-.IP \s+2\f(HB7.5.3\fR\s-2 6n  
-\s+2\f(HBThe Required Colormap List\fR\s-2
-.sp
-The X Protocol specifies that each server can specify a required list
-of colormaps, which affects what happens when other colormaps are
-installed or uninstalled.  Here is what the Protocol specification
-says about the required list (translated into Xlib terms):
-.sp 
-.nr LL 5.5i
-.in .25i
-At any time, there is a subset of the installed maps, viewed as an
-ordered list, called the required list.  The length of the required
-list is at most \f(CWmin_maps\fP, where \f(CWmin_maps\fP is a member
-of the \f(CWDisplay\fP structure.  The required list is maintained as
-follows.  When a colormap is an explicit argument to \f(CWXInstallColormap\fP,
-it is added to the head of the list, and the list is truncated at the
-tail if necessary to keep the length of the list to at most \f(CWmin_maps\fP.  When a
-colormap is an explicit argument to \f(CWXUninstallColormap\fP and it is in the
-required list, it is removed from the list.  A colormap is not added to
-the required list when it is installed implicitly by the server, and
-the server cannot implicitly uninstall a colormap that is in the
-required list.
-.in -.25i
-.nr LL 5.5i
-.sp 
-In less precise words, the \f(CWmin_maps\fP most recently installed maps
-are guaranteed to be installed.  This number will often be one; clients
-needing multiple colormaps should beware.
-.sp
-.IP \s+4\f(HB7.6\fR\s-4 6n
-\s+4\f(HBThe Standard Colormap\fR\s-4
-.sp
-X defines a set of standard colormap properties that refer to a set of 
-commonly-used colormaps.  Their purpose is to increase the sharing of
-color resources between applications.
-At this point, however, few if any servers or window 
-managers create the standard colormaps, so it is unclear if or when
-standard colormaps will begin to play a major part in the design of 
-color handling in applications.
-Applications that create their own colormaps should create standard
-colormaps if one exists that fit their needs.  Then it is possible
-that other applications creating the same standard colormap could
-cooperate without the help of a window manager.
-If your application does not create or use a custom colormap,
-you can skip this section if pressed for time.
-.sp .5
-Even though they don't exist as predefined virtual colormaps, standard 
-colormaps are useful, because applications that share these colormap 
-conventions display true colors more often, especially on displays with
-severely limited hardware colormaps. 
-.sp .5 
-Applications can also use the knowledge about
-the structure of a standard colormap to optimize the process of figuring
-out which existing pixel values correspond to required colors, and
-which colors must be allocated and set from scratch.
-One of the standard colormaps is the default colormap.
-.sp 2
-.IP \s+2\f(HB7.6.1\fR\s-2 6n  
-\s+2\f(HBThe Standard Colormap Properties\fR\s-2
-.sp
-This section describes the standard colormap properties.
-These colormaps may have
-been created by the server, or they may have to be created by the
-application.  Either way, the application can get information about them
-by calling \f(CWXGetStandardColormap\fP.  You specify an
-atom like \f(CWXA_RGB_BEST_MAP\fP and this function returns
-an \f(CWXStandardColormap\fP structure.
-.sp .5
-The following list names the atoms and describes the colormap
-associated with each one.
-.sp .5
-.RS
-.IP \f(CWXA_RGB_DEFAULT_MAP\fP 1i
-.br
-This property defines part of the system default colormap,
-as described in Section 7.2.7.  
-These colorcells are normally read-only and shareable.
-A typical allocation of the \f(CWXA_RGB_DEFAULT_MAP\fP on 8-plane displays
-is all the colors produced from any combination 
-of 6 reds, 6 greens, and 6 blues.  This gives 216 uniformly distributed
-colors, and leaves 40 for other programs or for special-purpose colors 
-for text, borders, and so on.
-A typical allocation for the \f(CWXA_RGB_DEFAULT_MAP\fP on 24-plane 
-displays
-is 64 reds, 64 greens, and 64 blues.
-This gives about one million uniformly distributed colors 
-(64 intensities of 4096 different hues) and
-leaves lots of colorcells available for other purposes.
-.IP \f(CWXA_RGB_BEST_MAP\fP 1i
-.br
-This property defines the "best" RGB colormap available on
-the display.  Of course, this is a subjective evaluation.
-Many image-processing and 3-D programs need to
-use all available colormap cells and to distribute as many
-perceptually distinct colors as possible over those cells.
-In this case there may be more green values available than
-red, and more green or red than blue.
-.sp .5
-On an 8-plane \f(CWDirectColor\fP visual, 
-\f(CWXA_RGB_BEST_MAP\fP is a 3/3/2 allocation.  
-On a 24-plane \f(CWDirectColor\fP visual, 
-\f(CWXA_RGB_BEST_MAP\fP is an 8/8/8 allocation.  
-On other displays, 
-\f(CWXA_RGB_BEST_MAP\fP is purely up to the implementor of the display.
-.IP \f(CWXA_RGB_RED_MAP\fP 1i
-.br
-.ns
-.IP \f(CWXA_RGB_GREEN_MAP\fP 1i
-.br
-.ns
-.IP \f(CWXA_RGB_BLUE_MAP\fR 1i
-.br
-These properties define all-red, all-green, and all-blue
-colormaps, respectively.  These maps are used by programs 
-that make color-separated images.  
-For example, a user might generate a full-color image 
-on an 8-plane display by rendering an image
-once with high color resolution in red, once with green, 
-and once with blue, and exposing a single frame in a camera with
-three images.
-.IP \f(CWXA_RGB_GRAY_MAP\fP 1i
-.br
-This property describes the "best" gray-scale colormap
-available on the display.  As previously mentioned, 
-only the colormap, \f(CWred_max\fP, \f(CWred_mult\fP, and 
-\f(CWbase_pixel\fP fields of the
-\f(CWXStandardColormap\fP structure are used for gray-scale colormaps.
-.RE
-.sp 2
-.IP \s+2\f(HB7.6.2\fR\s-2 6n  
-\s+2\f(HBThe XStandardColormap Structure\fR\s-2
-.sp
-.ne 4
-An application that wants to use a standard colormap must get the
-structure that contains the specification for the colormap
-using \f(CWXGetStandardColormap\fP.
-Some servers, particularly on high-performance workstations, create
-some or all of the standard colormaps when they initialize.
-If the desired colormap has already been created, it is returned in
-the \f(CWcolormap\fP member of the \f(CWXStandardColormap\fP 
-structure 
-shown in Example 7-7.  If the colormap does not yet exist,
-the \f(CWcolormap\fP member will be \f(CW0\fP.
-In that case, the application can create a colormap and allocate
-entries to match the specification in the remaining
-members of \f(CWXStandardColormap\fP.
-.sp 
-.Nd 8
-\s-1\f(HIExample 7-7.  The XStandardColormap structure\fR\s+1
-.sp 
-.nf
-\s-1\f(CWtypedef struct _XStandardColormap {
-	Colormap colormap;
-	unsigned long \f(CWred_max\fP, \f(CWgreen_max\fP, \f(CWblue_max\fP;
-	unsigned long \f(CWred_mult\fP, \f(CWgreen_mult\fP, \f(CWblue_mult\fP;
-	unsigned long \f(CWbase_pixel\fP;
-} \f(CWXStandardColormap\fP;\fR\s+1
-.fi
-.sp .5
-The members of the \f(CWXStandardColormap\fP structure are
-.ne 4
-as follows:
-.RS
-.IP \(bu 5 .4v
-The \f(CWcolormap\fR member is the ID of a colormap created by the
-\f(CWXCreateColormap\fP function or the default colormap.  This ID
-can be used to install a virtual colormap into the hardware colormap.
-.IP \(bu 5 .4v
-The \f(CWred_max\fP, \f(CWgreen_max\fP, and \f(CWblue_max\fP fields 
-give the maximum
-red, green, and blue values, respectively.  
-A typical allocation that provides 6 * 6 * 6 = 216 read-only, shareable colors 
-in a \f(CWPseudoColor\fP colormap on
-a standard 8-plane workstation is \f(CWred_max\fP = 5, 
-\f(CWgreen_max\fP = 5, and \f(CWblue_max\fP = 5.  This 
-leaves 40 cells available for special colors
-and private, non-shareable purposes.
-On a 24-plane workstation, there would be 8 bits 
-available for each color in a \f(CWTrueColor\fP visual,
-which would allow 256 shades of each primary color.
-In this case, \f(CWred_max\fP = 255, \f(CWgreen_max\fP = 
-255, and \f(CWblue_max\fP = 255.
-This map would include 256 x 256 x 256 = 16.38 million total colors.
-.IP \(bu 5 .4v
-The \f(CWred_mult\fP, \f(CWgreen_mult\fP, and \f(CWblue_mult\fP fields 
-scale each pixel subfield
-into the proper range in
-the 16-bit RGB value in the colorcell with the range 0 to 65535.
-The red pixel subfield is moved \f(CWred_mult\fP bits
-toward the most significant bit of the pixel value.
-.sp .5
-For a 3/3/2 \f(CWDirectColor\fP allocation (8 reds, 8 greens, 
-4 blues), \f(CWred_mult\fP might be 32,
-\f(CWgreen_mult\fP might be 4, and \f(CWblue_mult\fP might be 1.
-These effectively move the red value into the 
-most significant bits of the RGB value in the colorcell, the 
-green into the middle, and the blue into the least significant bits.
-.ne 4
-This arrangement is arbitrary but useful.
-For a 6-colors-each allocation, which must be \f(CWPseudoColor\fP since
-the planes can't be evenly allocated to separate primaries,
-\f(CWred_mult\fP might be 36, 
-\f(CWgreen_mult\fP might be 6, and \f(CWblue_mult\fP might be 1.
-.IP \(bu 5 .4v
-The \f(CWbase_pixel\fP field gives the base value
-that is added to the pixel value calculated 
-from the RGB values and scale factors.
-Usually, the \f(CWbase_pixel\fP is obtained from a call to the 
-\f(CWXAllocColorPlanes\fP function.  
-.RE
-.sp 2
-.IP \s+2\f(HB7.6.3\fR\s-2 6n  
-\s+2\f(HBThe 3/3/2 Standard Colormap\fR\s-2
-.sp
-Now let's look at a typical standard colormap.
-The following example describes the 3/3/2 \f(CWDirectColor\fP
-standard colormap used on eight-plane displays.
-Three planes are used for
-red, three planes for green, and two planes for blue.
-This 3/3/2 allocation allows values in the range of:
-.sp .5
-.nf
-        \f(CWred    0-7\fR    thus   \f(CWred_max\fP      =  \f(CW7\fP  
-        \f(CWgreen  0-7\fR             \f(CWgreen_max\fP =  \f(CW7\fP  
-        \f(CWblue   0-3\fR             \f(CWblue_max\fP   =  \f(CW3\fP  
-.fi
-.sp .5
-To obtain the pixel value, these RGB values must be shifted to their
-corresponding planes.  If the red value is contained in the three most
-significant planes or bits, the green values in the three next
-most significant planes or bits, and the blue value in the two least
-significant planes or bits, then the pixel can be constructed as
-follows.
-.sp .5
-.nf
-.ft CW
-
-        7  6  5  4  3  2  1  0
-        _  _  _  _  _  _  _  _
-
-        _______  _______  ____
-          red     green   blue
-
-
-        _  _  _<----------------   \f(CWred_mult\fP   = 2!"" sup 5! = 32
-        red
-
-                 _  _  _<-------   \f(CWgreen_mult\fP = 2!"" sup 2! =  4 green
-
-                          _  _<    \f(CWblue_mult\fP  = 2!"" sup 0! =  1
-.ft R
-.fi
-.sp .5
-In a \f(CWDirectColor\fP system like this, the multiples are
-equal to 2 sup \fIn\fR#, where \fIn\fR is their lowest plane or bit position.
-If the red, green, and blue were stored in a different
-order, the multiples would not be 32, 4, 1, but would still be
-calculated from the above description and formula.  The
-3/3/2 standard colormap allocation is fairly standard.
-.sp 2
-.IP \s+2\f(HB7.6.4\fR\s-2 6n  
-\s+2\f(HBInstalling a Standard Colormap\fR\s-2
-.sp
-Example 7-8 installs the \f(CWXA_RGB_BEST_MAP\fP standard colormap.  This
-example assumes a \f(CWPseudoColor\fP visual, but you should check the 
-visual class of the root window to be sure.
-.sp 
-\s-1\f(HIExample 7-8.  Code to install and use XA_RGB_BEST_MAP\fR\s+1
-.sp 
-.nf
-	\s-1\f(CWDisplay *display;
-	int screen;
-	XStandardColormap \f(CWbest_map_info\fP;	   /* structure to fill */
-	unsigned long whitepixel;	   /* computed pixel value for white */
-	Colormap colormap;
-	Window window;
-	Status status;
-	XSetWindowAttributes attrib;	   /* so we can set colormap */
-	unsigned long attribmask;
-
-	/* Open Display, etc. */
-
-	if (status = XGetStandardColormap(display, RootWindow(display, 
-			screen), &best_map_info, XA_RGB_BEST_MAP) == 0);
-		printf("%s: can't get standard colormap", argv[0]);
-
-	attrib.colormap = \f(CWbest_map_info\fP.colormap;
-
-	whitepixel = \f(CWbest_map_info\fP.base_pixel  +
-			(best_map_info.red_max * \f(CWbest_map_info\fP.red_mult) +
-			(best_map_info.green_max * \f(CWbest_map_info\fP.green_mult) +
-			(best_map_info.blue_max * \f(CWbest_map_info\fP.blue_mult);
-
-	attrib.background_pixel = whitepixel;
-
-	attribmask = CWBackPixel | CWColormap;
-
-	XChangeWindowAttributes(display, window, attribmask, &attrib);\fR\s+1
-.fi
-.sp 2
-.IP \s+2\f(HB7.6.5\fR\s-2 6n  
-\s+2\f(HBExamples of RGB to Pixel Conversion\fR\s-2
-.sp
-The standard colormaps such as \f(CWXA_RGB_BEST_MAP\fP
-are useful when you want to calculate pixel values from RGB values.  
-.sp .5
-Consider a 3-D display program that draws a smoothly shaded sphere.  
-At each pixel in the image of the sphere, 
-the program computes the intensity and color of light
-reflected to the viewer.  
-The result of each computation is a triple of red, green, and blue
-coefficients in the range 0.0 to 1.0.  
-To draw the sphere, the program needs a colormap that provides a
-large range of uniformly distributed colors.  
-The colormap must be arranged so that the program can
-convert its RGB triples into pixel values very quickly,
-because drawing the entire sphere will require many such
-conversions.  An example of one such calculation is shown in Example 
-7-9.
-.sp 
-\s-1\f(HIExample 7-9.  Calculating pixel values from floating point RGB 
-values\fR\s+1
-.sp
-.nf
-   \s-1\f(CWXStandardColormap \f(CWbest_map_info\fP;
-   float red, green, blue;
-   unsigned long pixelvalue;
-   int status;
-
-   status = XGetStandardColormap(display, RootWindow(display,
-      screen), &best_map_info, XA_RGB_BEST_MAP);
-
-   if (!status)
-      {
-      printf("%s: specified standard colormap not available", argv[0]);
-      exit(-1);
-      }
-
-   pixelvalue = \f(CWbest_map_info\fP.base_pixel +
-      ((unsigned long)(0.5 + (red * \f(CWbest_map_info\fP.red_max)) *
-           \f(CWbest_map_info\fP.red_mult) + 
-      ((unsigned long)(0.5 + (green * \f(CWbest_map_info\fP.green_max)) * 
-           \f(CWbest_map_info\fP.green_mult) +
-      ((unsigned long)(0.5 + (blue * \f(CWbest_map_info\fP.blue_max)) *
-           \f(CWbest_map_info\fP.blue_mult);\fR\s+1
-.fi
-.sp .5
-Example 7-9 demonstrated how to
-translate colors represented by real numbers between
-zero and one.  The next example, Example 7-10, demonstrates how 
-to do it for integer primary colors.
-.sp 
-\s-1\f(HIExample 7-10.  Calculating pixel values from integer RGB values\fR\s+1
-.sp 
-.nf
-	\s-1\f(CWXStandardColormap \f(CWbest_map_info\fP;
-	unsigned long red, green, blue;
-	unsigned long pixelvalue;
-	int status;
-
-	status = \f(CWXGetStandardColormap\fP(display, \f(CWRootWindow\fP(display, 
-		screen), &best_map_info, XA_RGB_BEST_MAP);
-
-	if (!status)
-		{
-		printf("%s: specified standard colormap not available", 
-				argv[0]);
-		exit(-1);
-		}
-
-	pixelvalue = \f(CWbest_map_info\fP.base_pixel +
-			(red * \f(CWbest_map_info\fP.red_mult) +
-			(green * \f(CWbest_map_info\fP.green_mult) +
-			(blue * \f(CWbest_map_info\fP.blue_mult);\fR\s+1
-.fi
-.sp .5
-For gray scale colormaps, only the \f(CWcolormap\fP, \f(CWred_max\fP, 
-\f(CWred_mult\fP, 
-and \f(CWbase_pixel\fP fields of the \f(CWXStandardColormap\fP structure 
-are defined.  The other fields are ignored.  
-Pixel values for a \f(CWStaticGray\fP or \f(CWGrayScale\fP visual 
-must be in the range \f(CWbase_pixel < \f(CWpixel_value\fP < \f(CW(red_max * red_mult) + base_pixel\fP\fR.
-To compute a gray pixel value, use the
-following expression:
-.nf
-.in 5n
-\f(CWpixel_value\fP = gray * \f(CWred_mult\fP + \f(CWbase_pixel\fP
-.in
-.sp .5
-.fi
-where:
-.sp .5
-.in 5n
-\f(CWgray\fP = the gray value you desire (0 to \f(CWred_max\fP).
-.sp .5
-\f(CWred_mult\fP = value from \f(CWXStandardColormap\fP structure
-.sp .5
-\f(CWbase_pixel\fP = the offset in the colormap.
-.sp 2
-.IP \s+4\f(HB7.7\fR\s-4 6n
-\s+4\f(HBWriting Portable Color Program\fR\s-4
-.sp
-As we've shown in previous sections, basic color allocation and storage is 
-fairly simple.  Even virtual colormaps are fairly easy to create and install.
-But because X supports so many different types of 
-equipment, you must take special care to make sure that your program will 
-run on both black-and-white and color displays, and that it makes intelligent 
-decisions about whether or not it is possible for it to run on a particular type 
-of color display.
-.sp .5
-Unless your application has special color needs, tailor 
-it to run on any type of screen.  The way to do that is 
-to determine the characteristics of the default visual, and 
-modify your application's color allocation accordingly.
-On all but high-performance
-workstations, the macros \f(CWDisplayCells\fP, \f(CWDisplayPlanes\fP, 
-\f(CWDefaultVisual\fP, \f(CWDefaultColormap\fP,
-and \f(CWDefaultDepth\fP provide you with all the information you need.
-(For more information on these macros, see Volume Two, \fIXlib Reference 
-Manual\fP.)
-.sp .5
-.ne 4
-An application with special color needs
-can determine all the types of visuals that are available
-on a screen, and then choose the best one.  
-\f(CWXMatchVisualInfo\fP and \f(CWXGetVisualInfo\fP 
-are used to get this information and select 
-one visual from those available.  How to use these routines is described in 
-Section 7.7.3.
-Some high-performance displays support more than one visual, 
-and in fact allow the applications to choose the visual and 
-depth on a window-by-window basis.  
-.sp .5
-The default visual is returned by the \f(CWDefaultVisual\fP macro.
-On color workstations with four to eight planes, this is 
-usually a \f(CWPseudoColor\fP visual, associated with
-the default colormap (whose ID is returned by 
-\f(CWDefaultColormap\fP), containing
-read-only cells corresponding to the colors in the 
-RGB database, plus a few unallocated read/write cells.
-The initial contents of the default colormap are server-dependent.
-Most programs without special color requirements can use 
-this colormap and visual without further ado.
-.sp .5
-A window is created with a depth, window 
-class, and visual class that can't
-be changed during the lifetime of the window.  If 
-\f(CWXCreateSimpleWindow\fP
-was used to create the window,  all of these are inherited from the parent.
-.sp 2
-.IP \s+2\f(HB7.7.1\fR\s-2 6n  
-\s+2\f(HBMonochrome vs. Color\fR\s-2
-.sp
-A simple color client may work
-on a monochrome workstation, simply by virtue of the 
-fact that \f(CWXAllocColor\fP returns the nearest 
-realizable color to the one you ask for,
-which on single-plane workstations will always either be
-black or white.  A problem arises if the closest colors to those 
-specified are both black or both white when they are supposed to 
-contrast.  You can avoid this by checking
-the returned pixel values to make sure they are not the same--but it is 
-probably better to code defensively, and test explicitly the number of
-planes on the screen to distinguish black and white 
-from color.
-.sp .5
-Example 7-2 takes this defensive approach to supporting color or
-monochrome.  Example 7-11 below uses a more concise
-approach.  It tests that the number of colorcells 
-is greater than 2, and if not, it sets the appropriate black 
-and white values on the spot.  It also defaults to black and white if
-either of the routines to parse or allocate colors fail.
-I had to hit a C reference manual to understand this one, not having
-seen the ? or : operators before.  If the returned value of \f(CWiscolor\fP,
-\f(CWXParseColor\fP, and \f(CWXAllocColor\fP are \f(CW1\fP, \f(CWgc.foreground\fP is set
-to \f(CWblue.pixel\fP.  If any of them are \f(CW0\fP, 
-\f(CWgc.foreground\fP is set to \f(CWBlackPixel\fP.
-.nf
-.sp 
-\s-1\f(HIExample 7-11.  A code fragment to use color or monochrome as
-appropriate\fR\s+1
-\f(CWBool iscolor;
-XColor blue;
-
-iscolor = (XDisplayCells (display, screen) > 2);
-gc.foreground = (iscolor &&
-	XParseColor (display, cmap, "blue", &blue) &&
-	XAllocColor (display, cmap, &blue))
-		? blue.pixel : BlackPixel (display, screen));\fR
-.fi
-.sp .5
-When you design an application to run on black and white workstations,
-you can easily make it run on color units (in black and white) too.  
-Use the \f(CWBlackPixel\fP and \f(CWWhitePixel\fP macros to find the 
-appropriate pixel values; never assume hardcoded values of 0 and 1.
-However, these pixel values will only result in predictably contrasting
-colors when the default colormap is installed.
-When the default colormap is not installed, you are at the mercy of the window manager,
-and your application can do nothing constructive about it.
-(It will not work to use \f(CWXAllocColor\fP to explicitly allocate cells 
-for black and white from the currently installed colormap.  This might
-temporarily get you the colors you want, but you have no control over 
-which colormap is installed, and it is even more likely to be 
-.Nd 4
-uninstalled since it is not the default colormap.
-Furthermore, you don't own that colormap, and you may break the application
-that created it.)
-.sp .5
-.Nd 6
-You should also be careful using logical functions
-in the GC other than \f(CWGXcopy\fP on color screens, since these have
-unpredictable results unless the colormap is preset or a plane mask
-is set in the GC.
-You can still use the functions like \f(CWGXinvert\fP that are
-useful on monochrome screens, but you need to limit the
-effect of the operation to a single plane with the GC's plane mask.
-.sp .5
-On a gray scale workstation, a color application should still work
-correctly.  If a \f(CWPseudoColor\fP visual is available, use 
-it.  You don't need to set the red, green and blue values to be equal, 
-but instead you can expect the resultant gray scale intensities to be 
-described by the following formula:
-.sp .5
-.nf
-.ft CW
-	intensity = (.30 * red) + (.59 * green) + (.11 * blue)
-.fi
-.ft R
-.sp .5
-If only a \f(CWGrayScale\fP visual is available, the red value only will
-be used for gray scale intensity.  
-.sp .5
-Again, it is probably safer to explicitly test the visual class, and modify 
-your color handling accordingly.
-.sp 2
-.IP \s+2\f(HB7.7.2\fR\s-2 6n  
-\s+2\f(HBFinding the Visual Class\fR\s-2
-.sp
-Example 7-12 shows a sample of code that 
-tests the default visual, and branches accordingly.
-Within each branch the application would call routines 
-to allocate colors appropriate for that visual class.
-.nf
-.sp 
-\s-1\f(HIExample 7-12.  Finding the default visual\fR\s+1
-.sp 
-\s-1\f(CWunsigned long foreground;
-unsigned long background;
 Display *display;
-int screen;
-int depth;
-Visual *visual;
+int screen_num;
+int contig = False;            /* Noncontiguous planes */
+unsigned long pixels[PIXELS];    /* Return of pixel values */
 
-/* open display, get default screen, etc. */
-	
-depth = DisplayPlanes(display, screen);
-visual =DefaultVisual(display, screen);
-if (depth == 1)  {  /* one-plane monochrome */
-	/* use BlackPixel and WhitePixel only */;
-	foreground = BlackPixel(display, screen);
-	background = WhitePixel(display, screen);
+/* Number of independent pixel values allocate */
+unsigned int ncolors = PIXELS;    
+
+/* Need PIXELS * 2 ^ maxplanes defs, where maxplanes
+ * is the largest of nred, ngreen, and nblue */
+XColor defs[2048];    
+
+/* Number of planes to allocate for each primary */
+unsigned int nreds = 3, ngreens = 3, nblues = 2;    
+
+/* Returned masks, which bits of pixel value for each primary */
+unsigned long \f(CWred_mask\fP, \f(CWgreen_mask\fP, \f(CWblue_mask\fP;    
+
+Colormap colormap;
+Status status;
+
+/* Open display, etc. */
+/* Get or create large DirectColor colormap */
+
+while (status = \f(CWXAllocColorPlanes\fP(display, colormap, 
+        contig, pixels, ncolors, nreds, ngreens, nblues, 
+        &red_mask, &green_mask, &blue_mask) == 0) {
+    /* Make contig False if it was True; reduce value of
+     * ncolors; reduce value of nreds, ngreens, and/or 
+     * nblues; or try allocating new map; break when 
+     * you give up */
+    break;
 }
-else {
-	switch (visual->class) {
-		case PseudoColor:
-			/* read/write, limited colors */
-			break;
-		case StaticColor:
-			/* read-only, limited colors */
-			break;
-		case DirectColor:
-			/* read/write, many colors */
-			break;
-		case TrueColor:
-			/* read-only, many colors */
-			break;
-		case GrayScale:
-			/* read/write, monochrome shades */
-			break;
-		case StaticGray:
-			/* read-only, monochrome shades */
-			break;
-	}
-}\fR\s+1
+if (status == 0) {
+    fprintf(stderr, "%s: couldn't allocate requested colorcells", 
+            argv[0]);
+    exit(-1);
+}
+
+/* Define desired colors in defs */
+
+while (status = XStoreColors(display, colormap, defs, 
+        ncolors) == 0) {
+    fprintf(stderr, "%s: can't store colors", argv[0]);
+    /* Try to fix problem here, exit or break */
+    exit(-1);
+}
+    
+/* Draw your shaded stuff! */
+\fR\s0
 .fi
 .sp .5
-However, this routine takes a short-cut that is not strictly correct.
-Members of the \f(CWVisual\fP structure are not supposed to be
-referenced in programs, so that changes to the \f(CWVisual\fP
-structure won't make programs nonportable.
-.bp
-.IP \s+2\f(HB7.7.3\fR\s-2 6n  
-\s+2\f(HBGetting Information about Visuals\fR\s-2
+Example 6: "Using XAllocColorPlanes to allocate colorcells for DirectColor"
 .sp
-The correct way to access the contents of a \f(CWVisual\fP structure
-is to use \f(CWXGetVisualInfo\fP or \f(CWXMatchVisualInfo\fP.
-Only programs that need to do something different depending on the
-characteristics of the available visuals need to get visual information.
-As demonstrated in Section 7.3.4, programs with simple color
-needs can simply allocate colors or use black and white based
-on the number of planes the screen has.
-The \f(CWDisplayCells\fP, \f(CWDisplayPlanes\fP, and
-\f(CWDefaultDepth\fP macros can give you a quick idea of what is 
-available on a screen without getting visual information, except that 
-you can't tell the difference between color and gray scale.
+.IP \s+4\f(HB7.5\fR\s-4  6n
+\s+4\f(HBGetting Complete Visual Information\fR\s-4
+.sp
+As mentioned earlier, some systems define more than one visual.
+The default visual might not be the most appropriate for your 
+application.  Moreover, the visual found using the technique 
+described in Section 7.4.2 using \f(CWXMatchVisualInfo\fP 
+is fine for applications with routine color needs but is not 
+necessarily the best.  As you may recall, \f(CWXMatchVisualInfo\fP 
+returns a single visual arbitrarily selected from the list that 
+matches the passed visual class and depth.  The most thorough 
+method is to get a complete list of visual information for every 
+available visual using \f(CWXGetVisualInfo\fP and then choose from these.
 .sp .5
-Applications that require a particular visual type or particular
-qualities of a certain visual type can use \f(CWXGetVisualInfo\fP to
-find the appropriate visual if it exists.
-\f(CWXGetVisualInfo\fP returns a list of visual structures that match the
-attributes specified by template and mask arguments.  The template
-is an \f(CWXVisualInfo\fP structure with members set to the required 
-values,
-and the mask indicates which members are matched with the list of
-available visuals.  \f(CWXMatchVisualInfo\fP returns a single visual that 
-matches the required visual class and depth.
+\f(CWXGetVisualInfo\fP returns a list of visual structures that match 
+the attributes specified by template and mask arguments.  The template
+is an \f(CWXVisualInfo\fP structure with members set to the required values, 
+and the mask indicates which members are matched with the list of available 
+.ne 2
+visuals.  By passing an empty template structure, you can get a complete 
+list of \f(CWXVisualInfo\fP structures.
 .sp .5
-The \f(CWXVisualInfo\fP structure returns information about the
-the available visuals.  It is used both to select a visual type
-from those available and as a source of information while
-using a particular visual.
+.IP \s+2\f(HB7.5.1\fR\s-2 6n
+\s+2\f(HBThe XVisualInfo Structure\fR\s-2
 .sp .5
-The \f(CWXVisualInfo\fP structure is shown in Example 7-13.
+The \f(CWXVisualInfo\fP structure returns information about the 
+available visuals.  It is used both to select a visual type from those 
+available and as a source of information while using a particular visual.
+.sp .5
+The \f(CWXVisualInfo\fP structure is shown in Example 7.
+.sp .5
+\s-1\f(CW
 .nf
-.sp 
-\s-1\f(HIExample 7-13.  The XVisualinfo structure\fR\s+1
-.sp 
-\s-1\f(CWtypedef struct {
-	Visual *visual;
-	VisualID visualid;
-	int screen;
-	unsigned int depth;
-	int class;
-	unsigned long \f(CWred_mask\fP;
-	unsigned long \f(CWgreen_mask\fP;
-	unsigned long \f(CWblue_mask\fP;
-	int \f(CWcolormap_size\fP;	/* same as map_entries member of Visual */
-	int \f(CWbits_per_rgb\fP;
-} \f(CWXVisualInfo\fP;\fR\s+1
+typedef struct {
+    Visual *visual;
+    VisualID visualid;
+    int screen_num;
+    unsigned int depth;
+    int class;
+    unsigned long red_mask;
+    unsigned long green_mask;
+    unsigned long blue_mask;
+    int colormap_size;      /* Same as map_entries member of Visual */
+    int bits_per_rgb;
+} XVisualInfo;
+\fR\s0
 .fi
 .sp .5
+Example 7: "The XVisualInfo structure"
+.sp
 The \f(CWvisual\fP member is a pointer to the internal \f(CWVisual\fP
-structure.  This pointer is used as the \f(CIvisual\fP argument
-of \f(CWXCreateWindow\fP and \f(CWXCreateColormap\fP. 
-.LP
+structure.  This pointer is used as the \f(CIvisual\fP argument of 
+\f(CWXCreateWindow\fP and \f(CWXCreateColormap\fP. 
+.sp .5
 The \f(CWvisualid\fP member is not normally needed by applications.
 .sp .5
 As discussed earlier, the \f(CWclass\fP member specifies whether the 
 screen is to be considered color or monochrome and changeable or 
 immutable.  The \f(CWclass\fP member can be one of the constants
-\f(CWStaticGray\fP, \f(CWGrayScale\fP, \f(CWStaticColor\fP,
-\f(CWPseudoColor\fP, \f(CWTrueColor\fP, or \f(CWDirectColor\fP.
+\f(CWDirectColor\fP, \f(CWGrayScale\fP, \f(CWPseudoColor\fP, 
+\f(CWStaticColor\fP, \f(CWStaticGray\fP, or \f(CWTrueColor\fP. 
 .sp .5
 The \f(CWred_mask\fP, \f(CWgreen_mask\fP, and \f(CWblue_mask\fP
-members are used only for the \f(CWDirectColor\fP 
-and \f(CWTrueColor\fP visual classes, 
-where there is a separate map for each primary color.  
-They define which bits of the pixel 
-value index into the colormap for each primary color.
-Each mask has one contiguous set of bits, with no bits in common
-with the other masks.  These values are zero for monochrome and most 
+members are used only for the \f(CWDirectColor\fP and 
+\f(CWTrueColor\fP visual classes, where there is a separate map 
+.hw primary
+for each primary color.  They define which bits of the pixel 
+value index into the colormap for each primary color.  Each 
+mask has one contiguous set of bits, with no bits in common with 
+the other masks.  These values are zero for monochrome and most 
 four- to eight-plane color systems.  
 .sp .5
 The \f(CWcolormap_size\fP member of the structure tells you how
-many different pixel values are valid with this visual.
-For a monochrome screen, this value is two.
-For the default visual of an eight-plane color system, this value
-is typically 254 or 256 (two colors are often reserved for the 
-cursor).  For \f(CWDirectColor\fP and 
-\f(CWTrueColor\fP, \f(CWcolormap_size\fP will be the number of
-cells for the biggest individual pixel subfield.
-The \f(CWcolormap_size\fP member is the same as \f(CWmap_entries\fP
-member of the visual structure.
+many different pixel values are valid with this visual.  For a 
+monochrome screen, this value is two.  For the default visual 
+of an eight-plane color system, this value is typically 254 or 
+256 (two colors are often reserved for the cursor).  For 
+\f(CWDirectColor\fP and \f(CWTrueColor\fP, \f(CWcolormap_size\fP 
+will be the number of cells for the biggest individual pixel 
+subfield.  The \f(CWcolormap_size\fP member is the same as the
+\f(CWmap_entries\fP member of the visual structure.
 .sp .5
 The \f(CWbits_per_rgb\fP member specifies how many bits in each of
-the Red, Green, and Blue values in a
-colorcell are used to drive the RGB gun in the display.
-For a monochrome screen, this value is one.
-For the default visual of an eight-plane color system, this value
-is typically eight.
-The pixel subfields (the red, green, and blue values in each 
-colorcell) are 16-bit unsigned short values, but only the
-highest \f(CWbits_per_rgb\fP bits are used to drive the 
-RGB gun in the screen.  This number corresponds the number of
-bits of resolution in the Digital to Analog Converter (DAC) in the 
-display hardware.
-.sp 2
-.IP \s+1\f(HB7.7.3.1\fR\s-1 6n
-\s+1\f(HBExample of Choosing a Visual\fR\s-1
-.sp
-Example 7-14 shows a routine that uses \f(CWXGetVisualInfo\fR to get 
-all the visuals of depth 8 on the current screen, as defined by the X server, 
-and then creates a colormap and window.
+the red, green, and blue values in a colorcell are used to drive the 
+RGB gun in the screen.  For a monochrome screen, this value is one.
+For the default visual of an eight-plane color system, this value is 
+typically eight.  The pixel subfields (the red, green, and blue values 
+in each colorcell) are 16-bit unsigned short values, but only the
+highest \f(CWbits_per_rgb\fP bits are used to drive the RGB gun in 
+the screen.  This number corresponds the number of bits of resolution 
+in the Digital to Analog Converter (DAC) in the screen hardware.
+.sp .5
+.IP \s+2\f(HB7.5.2\fR\s-2 6n
+\s+2\f(HBExample of Choosing a Visual\fR\s-2
+.sp .5
+Example 8 shows a routine that uses \f(CWXGetVisualInfo\fP 
+to get all the visuals of depth 8 on the current screen, as defined 
+by the X server, and then creates a colormap and window.
+.sp .5
+\s-1\f(CW
 .nf
-.sp 
-\s-1\f(HIExample 7-14.  Code to match visuals\fR\s+1
-.sp 
-\s-1\f(CW#include <X11/Xlib.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 visual()
@@ -2423,88 +1883,963 @@ visual()
 Display *display;
 Colormap colormap;
 Window window;
-int screen;
-	.
-	.
-	.
-XVisualInfo vTemplate;    /* template of the visual we want */
-XVisualInfo *visualList;  /* list of XVisualInfo structs that match */
-int visualsMatched;       /* number of visuals that match */
-	.
-	.
-	.
-/* 
- * Set up the XVisualInfo template so that it returns 
- * a list of all the visuals of depth 8 defined on the 
- * current screen by the X server 
- */
-vTemplate.screen = screen;
+XSetWindowAttributes attributes;
+unsigned long valuemask;
+int screen_num;
+    .
+    .
+    .
+XVisualInfo vTemplate;    /* Template of the visual we want */
+XVisualInfo *visualList;  /* List of XVisualInfo structs that 
+                           * match */
+int visualsMatched;       /* Number of visuals that match */
+    .
+    .
+    .
+/* Set up the XVisualInfo template so that it returns a list
+ * of all the visuals of depth 8 defined on the current screen
+ * by the X server */
+vTemplate.screen = screen_num;
 vTemplate.depth = 8; 
 visualList = XGetVisualInfo (display, VisualScreenMask | 
-		VisualDepthMask, &vTemplate, &visualsMatched);
+        VisualDepthMask, &vTemplate, &visualsMatched);
 if ( visualsMatched == 0 )
-	fatalError ("No matching visuals\en");
+    fatalError ("No matching visuals\en");
 
-/*
- * Create a colormap for a window using the first of the visuals
- * in the list ov XVisualInfo structs returned by XGetVisualInfo.
- */
-colormap = XCreateColormap (display, RootWindow(display, screen), 
-	visualList[0].visual, AllocNone);
-	.
-	.
-	.
-window = XCreateWindow (display, RootWindow(display, screen),
-	x, y, width, height, border_width, vTemplate.depth,
-	InputOutput, visualList[0].visual, mask, &attributes);
+/* Create a colormap for a window using the first of the 
+ * visuals in the list ov XVisualInfo structs returned by 
+ * XGetVisualInfo */
+colormap = XCreateColormap (display, RootWindow(display, screen_num), 
+    visualList[0].visual, AllocNone);
+
+/* Must specify colormap attribute if using nondefault visual */
+attributes.colormap = colormap;
+valuemask |= CWColormap;
+    .
+    .
+    .
+window = XCreateWindow (display, RootWindow(display, screen_num),
+    x, y, width, height, border_width, vTemplate.depth,
+    InputOutput, visualList[0].visual, valuemask, &attributes);
 XSetWindowColormap(display, window, colormap);
 
-/* All done with visual information.  Free it.  */
+/* All done with visual information; free it */
 
 XFree(visualList);
-	.
-	.
-	.
-} /* end routine */\fR\s+1
+    .
+    .
+    .
+} /* End routine */
+\fR\s0
 .fi
-.bp
-.IP \s+4\f(HB7.8\fR\s-4
-\s+4\f(HBMiscellaneous Color Handling Function\fR\s-4
+.sp .5
+Example 8: "Code to match visuals"
 .sp
-The following miscellaneous functions provide additional ways to use
-the color database, to find out the RGB values in a colormap cell, and
-to free cells that are no longer needed.
+Notice that the list of \f(CWXVisualInfo\fP structures is freed 
+with \f(CWXFree\fP after use.
+.IP \s+4\f(HB7.6\fR\s-4  6n
+\s+4\f(HBThe GrayScale Visual\fR\s-4
+.sp
+On a gray-scale workstation or a \f(CWGrayScale\fP visual on a 
+color workstation, a color application should still work correctly.  
+The only problem might be that when colors are allocated, the closest 
+physically possible colors (returned by \f(CWXAllocColor\fP) will
+result in shades of gray that provide insufficient contrast.  The 
+best way to avoid this is to explicitly check for the \f(CWStaticGray\fP
+visual.  For true bulletproof operation, it is a good idea to check 
+any user-specified colors to make sure they contrast.
+.sp .5
+The color names "gray0" through "gray100", spelled with an "e" or 
+an "a", can be used with \f(CWXParseColor\fP to get RGB values for 
+various grays.
+.sp .5
+You must set the red, green, and blue values to be equal.  Some servers 
+only use one of the values, and others combine all three according to 
+the NTSC standard that makes color television signals work on 
+black-and-white televisions:
+.sp .5
+\s-1\f(CW
+intensity = (.30 * red) + (.59 * green) + (.11 * blue)
+\fR\s0
+.fi
+.sp .5
+.Nd 3
+MIT's implementations use a least-squares algorithm that determines
+the closest RGB values in the (gray) colormap to the RGB values specified.  
+Exactly what algorithm is used is up to the server implementor.
+.IP \s+4\f(HB7.7\fR\s-4  6n
+\s+4\f(HBCreating and Installing Colormaps\fR\s-4
+.sp
+.\" remove have
+In discussing colormaps earlier in this chapter, we mentioned 
+that there are hardware colormaps and virtual colormaps, but we 
+did not discuss the ramifications of this fact.
+.sp .5
+A hardware colormap is a physical register from which the screen 
+hardware reads the RGB intensity values that generate the colors 
+on the screen.  Most workstations have only one hardware colormap, 
+in which case all windows on the screen are interpreted using the 
+same colormap.  Some high performance workstations have multiple 
+hardware colormaps, in which case separate windows may have their 
+own independent colormaps.
+.sp .5
+.\"  ATTENTION NEEDED HERE
+If the hardware colormap cannot be changed, it is termed \fIimmutable\fR.  
+Monochrome systems normally have an immutable colormap, since it does 
+little good to swap the two entries or make them both black or white.  
+Some low-cost color systems and X terminals have immutable hardware 
+colormaps.  The \f(CWStaticColor\fP, \f(CWStaticGray\fP, and 
+\f(CWTrueColor\fP visuals are the only visuals that can possibly 
+work on systems that have immutable hardware colormaps.  In immutable 
+colormaps, no client can allocate private colorcells and all RGB 
+values are preset.  On these systems, \f(CWXCreateColormap\fP succeeds, 
+but it just gives you another copy of the default colormap (or one of 
+the default colormaps if there are multiple immutable colormaps).  The 
+application should check for this when creating colormaps.
+.sp .5
+On most color workstations, you can write new values into the hardware 
+colormap or colormaps to change that mapping.  These hardware colormaps 
+are termed \fIchangeable\fR.  The \f(CWDirectColor\fP, \f(CWGrayScale\fP, 
+and \f(CWPseudoColor\fP visuals are available only on systems that have 
+changeable colormaps.
+.sp .5
+X manages multiple colormaps by keeping \fIvirtual colormaps\fR in 
+memory and installing them as instructed by the window manager.
+\fIInstalling\fR a colormap is the process of moving a virtual 
+colormap into the hardware colormap.  Only installed colormaps
+are used to determine the colors appearing on the screen.  When 
+there is only one hardware colormap and a new virtual colormap 
+is installed, the virtual colormap that was previously installed 
+becomes \fIuninstalled\fR.
+.sp .5
+Up to this point in this chapter, we have been allocating colors
+out of the default colormap, which is created and installed when 
+the server starts up.  On the most common color workstations, with 
+four to eight planes, it is quite easy for clients that require 
+precise colors to allocate all the available colorcells.  Virtual 
+colormaps are a response to this problem.  When a client cannot get 
+the colorcells it needs from the installed colormap, it can create 
+a new virtual one.  The window manager will then install this virtual 
+colormap when this application is in use.
+.sp .5
+When a virtual colormap is installed and there is only one hardware 
+colormap, all the clients that used the old colormap will be displayed 
+in false colors, since the pixel values in their windows will be 
+interpreted according to the new colormap.
+.sp .5
+When an application creates a virtual colormap, it must set the
+colormap window attribute of its top-level window so that the window 
+manager can find out what colormap to install.  By default, this 
+attribute indicates the default colormap.  If its subwindows use 
+different colormaps from the main window, there is a property that 
+can be set to tell this to the window manager, as described 
+in Chapter 10.
+.sp .5
+Several of the older window managers do not install colormaps properly.  
+Under these, an application that creates its own colormap also has to 
+install it.  However, as these window managers are revised or go out 
+of use, it becomes a hard rule that application should never install 
+their own colormaps.  This is required by the current conventions
+described in Chapter 10.
+.sp .5
+By now you should be getting the idea that it is much better to
+arrange to share the default colormap with the other applications 
+than to try to create one of your own.  The only time when you 
+should really need to create a special colormap is when you are 
+doing smooth shading or similar applications that need many 
+strangely distributed colors.  On the other hand, creating a 
+virtual colormap might be the only way to make your application 
+that has demanding color needs work on a system that provides 
+only a \f(CWPseudoColor\fP visual.  On systems with multiple 
+hardware colormaps, you can create your own colormap and have 
+it installed without affecting other applications.  You can use 
+\f(CWXListInstalledColormaps\fP to get information about how 
+many colormaps are installed into the hardware.
+.sp .5
+.IP \s+2\f(HB7.7.1\fR\s-2 6n
+\s+2\f(HBFunctions for Manipulating Colormaps\fR\s-2
+.sp .5
+The following functions should be used by applications only if 
+they need a special purpose colormap:
+.IP "\f(CWXCreateColormap\fP" 25n
+Creates a virtual colormap resource, either with no allocated 
+entries or with all allocated read/write, that matches the passed 
+visual.  If no entries are allocated, they can be allocated 
+either as read/write or as read-only cells.  If all entries are 
+allocated read/write, the colormap is completely private and just 
+needs its colors set with \f(CWXStoreColors\fP.
+.IP "\f(CWXFreeColormap\fP" 25n
+Uninstalls the specified virtual colormap and frees the resources
+associated with the colormap.  Applications are allowed to use this.
+Sends a \f(CWColormapNotify\fP event to any windows that were using 
+the colormap.
+.IP "\f(CWXListInstalledColormaps\fP" 25n
+.br
+Lists the installed colormaps.
+.IP "\f(CWXCopyColormapAndFree\fP" 25n
+.br
+Moves all the client's existing colormap entries to a new colormap 
+and frees those entries of the old colormap.  This is used when 
+colorcell allocation fails and some cells have already been allocated.  
+It saves needing to create a colormap and start from the beginning 
+allocating colors.  For applications with special color needs that 
+can't make do, they can call \f(CWXCopyColormapAndFree\fP, set their 
+colormap window attribute, and continue allocating colors in the new 
+colormap where they left off.
+.IP "\f(CWXSetWindowColormap\fP" 25n
+Sets the colormap window attribute of a window.
+.sp .5
+The following functions are use by the window manager to install and
+uninstall colormaps:
+.IP "\f(CWXInstallColormap\fP" 25n
+A function only to be used by window managers to install a 
+colormap.  Any window using that colormap ID as its colormap 
+attribute receives a \f(CWColormapNotify\fP event.
+.IP "\f(CWXUninstallColormap\fP" 25n
+A function only to be used by window managers to uninstall a 
+colormap.  Removes a virtual colormap from the set of installed 
+hardware colormaps.  On systems with only one hardware colormap, 
+the default colormap is reinstalled.  Sends \f(CWColormapNotify\fP 
+event to windows that are using the specified map.
+.sp .5
+.IP \s+2\f(HB7.7.2\fR\s-2 6n
+\s+2\f(HBThe ColormapNotify Event\fR\s-2
+.sp .5
+\f(CWColormapNotify\fP events notify an application when the 
+colormap specified in the colormap attribute for a particular
+window has been installed, uninstalled, or freed or when the 
+attribute itself has been changed.  The former is used by 
+applications, and the latter by window managers. 
+.sp .5
+If your application wants to know when your colormap is installed
+or uninstalled, it should watch for these events and act accordingly.  
+To receive \f(CWColormapNotify\fP events, pass \f(CWColormapChangeMask\fP 
+(ORed with the other masks you need) to \f(CWXSelectInput\fP.
+Example 9 shows the \f(CWXColormapEvent\fP structure.
+.sp .5
+\s-1\f(CW
+.nf
+.ta 4.5n 2i
+typedef struct {
+    int type;
+    unsigned long serial;    /* # of last request processed by server */
+    Bool send_event;    /* True if this came from SendEvent 
+         * request */
+    Display *display;    /* Display the event was read from */
+    Window window;
+    Colormap colormap;    /* Colormap or None */
+    Bool new;
+    int state;    /* ColormapInstalled, ColormapUninstalled */
+} XColormapEvent;
+\fR\s0
+.fi
+.sp .5
+Example 9: "The ColormapEvent structure"
+.sp
+.Nd 10
+Here is a brief explanation of each member of the 
+\f(CWXColormapEvent\fP structure:
+.IP "\f(CWwindow\fP" 15n
+The window for which this event was selected, whose colormap 
+attribute was changed or whose colormap specified in that 
+attribute was installed, uninstalled, or freed.
+.Nd 4
+.IP "\f(CWcolormap\fP" 15n
+The colormap associated with the window, either a colormap ID or 
+the constant \f(CWNone\fP.  It will be \f(CWNone\fP only if this 
+event was in response to an \f(CWXFreeColormap\fP call.
+.IP "\f(CWnew\fP" 15n
+\f(CWTrue\fP when the colormap attribute has been changed, or
+\f(CWFalse\fP when the colormap is installed or uninstalled.
+.IP "\f(CWstate\fP" 15n
+Either \f(CWColormapInstalled\fP or \f(CWColormapUninstalled\fP;
+it indicates whether the colormap is installed or uninstalled.
+.sp .5
+\f(CWXFreeColormap\fR, \f(CWXInstallColormap\fR, and 
+\f(CWXUninstallColormap\fR generate this event for windows that 
+have their colormap attribute set to the colormap that was affected.  
+\f(CWXSetWindowColormap\fP and \f(CWXChangeWindowAttributes\fP can 
+also generate this event.  From the information in the structure, 
+you can tell which of these calls generated the event and what 
+the current status of the colormap is.  
+See Chapter 10 in this manual and the ICCCM
+for an additional description of the conventions regarding colormaps.
+.sp .5
+.IP \s+2\f(HB7.7.3\fR\s-2 6n
+\s+2\f(HBThe Required Colormap List\fR\s-2
+.sp .5
+The X protocol specifies that each server can specify a required list
+of colormaps, which affects what happens when other colormaps are
+installed or uninstalled.  Here is what the protocol specification
+says about the required list (translated into Xlib terms):
+.QP
+At any time, there is a subset of the installed maps, viewed as an
+ordered list, called the required list.  The length of the required
+list is at most \f(CWmin_maps\fP, where \f(CWmin_maps\fP is a member
+of the \f(CWDisplay\fP structure.  The required list is maintained as
+follows.  When a colormap is an explicit argument to \f(CWXInstallColormap\fP,
+it is added to the head of the list, and the list is truncated at the
+tail if necessary to keep the length of the list to at most \f(CWmin_maps\fP.  
+When a colormap is an explicit argument to \f(CWXUninstallColormap\fP 
+and it is in the required list, it is removed from the list.  A colormap 
+is not added to the required list when it is installed implicitly by the 
+server, and the server cannot implicitly uninstall a colormap that is 
+in the required list.
+.sp .5
+In less precise words, the \f(CWmin_maps\fP most recently installed maps
+are guaranteed to be installed.  This number will often be one; clients
+needing multiple colormaps should beware.
+.IP \s+4\f(HB7.8\fR\s-4  6n
+\s+4\f(HBStandard Colormaps\fR\s-4
+.sp
+A \fIstandard colormap\fR is one in which the mapping between
+pixel values and colors is predictable.  The purpose of standard
+colormaps is to encourage sharing of entire colormaps (not just 
+individual cells) between applications that have too demanding 
+color needs to be able to allocate read-only colors out of the 
+default colormaps.
+.sp .5
+X defines a set of properties that contain information describing
+commonly used colormaps.  An application reads these properties
+by calling \f(CWXGetRGBColormaps\fP (\f(CWXGetStandardColormap\fP 
+prior to R4).  This call returns an \f(CWXStandardColormap\fP
+structure that contains enough information so that the application
+can calculate the colors in every colormap cell (or a certain range 
+within the colormap).  This structure may also include the ID of a
+colormap matching this description that was created by the window
+manager or another client.  Otherwise, the application then creates 
+a new colormap and uses this information to allocate and set the 
+colors according to the information in the property.
+.sp .5
+But how does the sharing work?  After creating this colormap, the
+application sets the ID of the created colormap into the \f(CWcolormap\fP
+field of the \f(CWXStandardColormap\fP structure and then calls
+\f(CWXSetRGBColormaps\fP (\f(CWXSetStandardColormap\fP prior to R4).
+This resets the property, so that the next time another client calls
+\f(CWXGetRGBColormaps\fP, the \f(CWcolormap\fP field of the returned
+structure will actually contain the ID of the appropriate colormap.
+.sp .5
+Therefore, although an application must have the code to create, 
+allocate, and set colors in a standard colormap, in some cases this
+code will not be executed because some other client will have already
+done the work.  After calling \f(CWXGetRGBColormaps\fP, if the 
+\f(CWcolormap\fP field is zero, the application must create the 
+colormap.  Otherwise, the \f(CWcolormap\fP field holds the ID of 
+an appropriate colormap.
+.sp .5
+When an application uses standard colormaps, two (or more) instances
+of the application can run at the same time without increasing the
+load on the system caused by creating multiple copies of the same 
+colormap.  Applications that do not use standard colormaps will end 
+up creating separate but identical colormaps.  The window manager 
+will switch these in and out of the hardware colormap whenever a 
+different instance is in use.  Although nothing on the screen will 
+change color because both the colormaps are identical, the server 
+will be performing unnecessary installing and uninstalling, and the 
+extra colormaps will waste server memory.
+.sp .5
+In some cases, the window manager or even the server will create one 
+or more standard colormaps.  This does not change how applications 
+work at all.  Applications do not care whether it was the window 
+manager, the server, or some other client that created a standard 
+colormap.
+.sp .5
+If your application does not create or use a custom colormap,
+you can skip this section if pressed for time.
+.sp .5
+Applications can also use the knowledge about a standard colormap 
+to optimize the process of figuring out which existing pixel values 
+correspond to required colors and which colors must be allocated 
+and set from scratch.
+.sp .5
+.IP \s+2\f(HB7.8.1\fR\s-2 6n
+\s+2\f(HBThe Standard Colormap Properties\fR\s-2
+.sp .5
+The standard colormap properties contain information about a few
+commonly used colormaps.  However, note that even if an application 
+creates a custom colormap unlike any of these, it should still use
+the standard property mechanism by creating its own standard 
+colormap structure.
+.sp .5
+Properties were introduced in Section 2.1.4.  For a more complete 
+description of properties, see Section 10.1.
+.sp .5
+In the call to \f(CWXGetRGBColormaps\fP (or \f(CWXGetStandardColormap\fP),
+you specify one of these atoms like \f(CWXA_RGB_BEST_MAP\fP (or, if 
+necessary, one unique to your application).
+.sp .5
+The following list names the atoms and describes the colormap
+associated with each one:
+.IP "\f(CWXA_RGB_DEFAULT_MAP\fP" 10n
+.br
+This property defines part of the system default colormap.  This 
+colormap may be initially completely unallocated, or it may contain 
+a selection of read-only colorcells with the RGB values from the 
+color database and a few unallocated cells for use by applications 
+that need read/write cells.  A typical allocation of the 
+\f(CWXA_RGB_DEFAULT_MAP\fP on eight-plane screens is all the colors 
+produced from any combination of six reds, six greens, and six blues.  
+This gives 216 uniformly distributed colors and leaves 40 for other 
+programs or for special purpose colors for text, borders, and so on.
+A typical allocation for the \f(CWXA_RGB_DEFAULT_MAP\fP on 24-plane 
+screens is 64\ reds, 64 greens, and 64 blues.  This gives about 
+one\ million uniformly distributed colors (64 intensities of 4096 
+different hues) and leaves lots of colorcells available for other purposes.
+.IP "\f(CWXA_RGB_BEST_MAP\fP" 10n
+.br
+This property defines the "best" RGB colormap available on the screen.  
+Of course, this is a subjective evaluation.  Many image-processing and 
+3-D programs need to use all available colormap cells and to distribute 
+as many perceptually distinct colors as possible over those cells.  In 
+this case, there may be more green values available than red and more 
+green or red than blue.
+.sp .5
+On an eight-plane \f(CWDirectColor\fP visual, \f(CWXA_RGB_BEST_MAP\fP 
+is usually a 3/3/2 allocation.  On a 24-plane \f(CWDirectColor\fP visual, 
+\f(CWXA_RGB_BEST_MAP\fP is usually an 8/8/8 allocation.  On other screens, 
+\f(CWXA_RGB_BEST_MAP\fP is purely up to the implementor of the server.
+.IP "\f(CWXA_RGB_RED_MAP\fP,\ \f(CWXA_RGB_GREEN_MAP\fP,\ \f(CWXA_RGB_BLUE_MAP\fP" 10n
+.br
+These properties define all-red, all-green, and all-blue colormaps, 
+respectively.  These maps are used by programs that make color-separated 
+images.  For example, a user might generate a full color image on an 
+eight-plane screen by rendering an image once with high color resolution 
+in red, once with green, and once with blue and exposing a single 
+frame in a camera with three images.
+.IP "\f(CWXA_RGB_GRAY_MAP\fP" 10n
+.br
+This property describes the "best" gray-scale colormap
+available on the screen.  
+.sp .5
+.IP \s+2\f(HB7.8.2\fR\s-2 6n
+\s+2\f(HBThe XStandardColormap Structure\fR\s-2
+.sp .5
+As described above, an application that wants to use a standard 
+colormap must get the structure that contains the specification 
+for the colormap using \f(CWXGetRGBColormaps\fP 
+(\f(CWXGetStandardColormap\fP prior to R4).  Some servers and 
+window managers, particularly on high performance workstations, 
+create some or all of the standard colormaps when they initialize.
+If the desired colormap has already been created, it is returned 
+in the \f(CWcolormap\fP member of the \f(CWXStandardColormap\fP 
+structure shown in Example 10.  If the colormap does not 
+yet exist, the \f(CWcolormap\fP member will be zero.  In that case, 
+the application can create a colormap and allocate entries to match 
+the specification in the members of \f(CWXStandardColormap\fP, 
+then call \f(CWXSetRGBColormaps\fP (\f(CWXSetStandardColormap\fP 
+prior to R4) to allow other clients to share this colormap.
+.sp .5
+\s-1\f(CW
+.nf
+typedef struct _XStandardColormap {
+    Colormap colormap;
+    unsigned long red_max, green_max, blue_max;
+    unsigned long red_mult, green_mult, blue_mult;
+    unsigned long base_pixel;
+    VisualID visualid;         /* Added in R4:  ICCCM version 1 */
+    XID killid;                /* Added in R4:  ICCCM version 1 */
+} XStandardColormap;
+\fR\s0
+.fi
+.sp .5
+Example 10: "The XStandardColormap structure"
+.sp
+The members of the \f(CWXStandardColormap\fP structure are as follows:
+.sp
 .RS
-.IP "\f(CWXLookupColor\fP" 16n
-Looks up an ASCII color name in the color database and returns 
-separate color structures containing 
-the exact RGB values specified in the database for that name
-and the closest RGB values available on the hardware.
-This function does not look at any cells in the colormap, even
-though it has a \f(CIcolormap\fP argument!  This argument 
-specifies which screen the color should be looked up on.  
-The difference between \f(CWXLookupColor\fP and \f(CWXParseColor\fP
-is that \f(CWXParseColor\fP accepts the hexadecimal
-color specification (which \f(CWXLookupColor\fP does not), while 
-\f(CWXLookupColor\fP returns the closest
-colors available on the hardware (which \f(CWXParseColor\fP does not).
-.IP "\f(CWXQueryColor\fP"
-Fills an \f(CWXColor\fP structure with the RGB values
-corresponding to the colormap cell indicated by a pixel value.
-Also sets the \f(CWflags\fP member of the structure to
-\f(CW(DoRed | \f(CWDoGreen\fP | \f(CWDoBlue)\fR.
-.IP "\f(CWXQueryColors\fR"
-Fills multiple \f(CWXColor\fP structures with the RGB values and
-flags corresponding to the colormap cells indicated by a pixel values.
-Also sets each \f(CWflags\fP member to
-\f(CW(DoRed | \f(CWDoGreen\fP | \f(CWDoBlue)\fR.
-.IP "\f(CWXFreeColors\fR"
-Frees the colormap cells associated with the given pixel
-values, and/or frees the given planes.  Since all the colorcells
-an application allocates are freed when the application exits, this
-routine is needed only when an application is finished with cells
-before it exits.  Freeing a read/write colorcell makes that cell available
-to other applications.  Freeing a read-only cell may make the cell
-unallocated, but only if no other application is sharing that cell.
+.IP \(bu 5
+The \f(CWcolormap\fR member is the ID of a colormap created by the
+\f(CWXCreateColormap\fP function or the default colormap.  This ID
+can be used to install a virtual colormap into the hardware colormap.
+.IP \(bu 5
+The \f(CWred_max\fP, \f(CWgreen_max\fP, and \f(CWblue_max\fP fields 
+give the maximum red, green, and blue values, respectively.  A 
+typical allocation that provides 
+.Su 6 3 
+=\ 216 read-only, shareable colors in a \f(CWPseudoColor\fP colormap 
+on a standard eight-plane workstation is \f(CWred_max\fP\ =\ 5, 
+\f(CWgreen_max\fP\ =\ 5, and \f(CWblue_max\fP\ =\ 5.  This leaves 
+40 cells available for special colors and private, nonshareable purposes.
+.\"On the \f(CWStellarStation\fP, 
+On a 24-plane workstation, there would be eight bits available for 
+each color in a \f(CWTrueColor\fP visual, which would allow 256 shades 
+of each primary color.  In this case, \f(CWred_max\fP\ =\ 255, 
+\f(CWgreen_max\fP\ =\ 255, and \f(CWblue_max\fP\ =\ 255.  This map 
+would include 
+.Su 256 3 
+=\ 16.38 million total colors.
+.IP \(bu 5
+The \f(CWred_mult\fP, \f(CWgreen_mult\fP, and \f(CWblue_mult\fP fields 
+scale each pixel subfield into the proper range in the 16-bit RGB value in 
+the colorcell with the range 0 to 65535.  The red pixel subfield is moved 
+\f(CWred_mult\fP bits toward the most significant bit of the pixel value.
+.sp .5
+For a 3/3/2 \f(CWDirectColor\fP allocation (eight reds, eight greens, 
+four blues), \f(CWred_mult\fP might be 32, \f(CWgreen_mult\fP might 
+be 4, and \f(CWblue_mult\fP might be 1 (as shown in Figure 5).  
+These effectively move the red value into the most significant bits 
+of the RGB value in the colorcell, the green into the middle, and the 
+blue into the least significant bits.  This arrangement is arbitrary 
+but useful.  For a six-colors-each allocation, which must be 
+\f(CWPseudoColor\fP since the planes cannot be evenly allocated to 
+separate primaries, \f(CWred_mult\fP might be 36, \f(CWgreen_mult\fP 
+might be 6, and \f(CWblue_mult\fP might be\ 1.
+.IP \(bu 5
+The \f(CWbase_pixel\fP field gives the base value that is added to 
+the pixel value calculated from the RGB values and scale factors.  
+Usually the \f(CWbase_pixel\fP is obtained from a call to the 
+\f(CWXAllocColorPlanes\fP function.  
+.IP \(bu 5
+The \f(CWvisualid\fP field is the ID of a server resource associated 
+with each visual, of type \f(CWVisualID\fP.  You will need this ID only 
+if you intend to use standard colormaps.  This field was added in R4 
+because only with this information can standard colormaps be used with 
+other than the default visual.  Prior to R4, standard colormaps were not 
+in wide use, partly because they could only be used with the default visual.
+.IP \(bu 5
+The \f(CWkillid\fP field returns a number that is used if the
+application needs to free the colormap for some reason.  If 
+\f(CWkillid\fP is greater than one, then the resources should be 
+freed by calling \f(CWXKillClient\fP with the \f(CWkillid\fP field 
+as the argument.  If \f(CWkillid\fP is one, then the resources should 
+be freed by calling \f(CWXFreeColormap\fP with the \f(CWcolormap\fP 
+field as the argument.  If \f(CWkillid\fP is zero, then no attempt 
+should be made to free the resources.
 .RE
+.sp 2
+Only the \f(CWcolormap\fP, \f(CWred_max\fP, \f(CWred_mult\fP, 
+and \f(CWbase_pixel\fP fields of the \f(CWXStandardColormap\fP 
+structure are use for \f(CWGrayScale\fP colormaps. 
+.sp .5
+.IP \s+2\f(HB7.8.3\fR\s-2 6n
+\s+2\f(HBThe 3/3/2 Standard Colormap\fR\s-2
+.sp .5
+Now let's look at a typical standard colormap.  The following example 
+describes the 3/3/2 \f(CWDirectColor\fP standard colormap used on 
+eight-plane screens.  Three planes are used for red, three planes for 
+green, and two planes for blue.  This 3/3/2 allocation allows values 
+in the range of:
+.sp .5
+\s-1\f(CW
+.nf
+red    0-7    \fR\s+1thus\s-1\fP    red_max    =  7  
+green  0-7           green_max  =  7  
+blue   0-3           blue_max   =  3  
+\fR\s0
+.fi
+.sp .5
+To obtain the pixel value, these RGB values must be shifted to their
+corresponding planes.  If the red value is contained in the three 
+most significant planes or bits, the green values in the three next
+most significant planes or bits, and the blue value in the two least
+significant planes or bits, then the pixel can be constructed as
+shown in Figure 5.
+.sp
+Note: Figure 5 "Shifting pixel subfields into pixel value" here.
+.sp
+In a \f(CWDirectColor\fP system like this, the multiples are equal to 
+.Su + 2 \fIn\fP 
+, where \fIn\fR is their lowest plane or bit position.  If the red, 
+green, and blue were stored in a different order, the multiples would 
+not be 32, 4, 1 but would still be calculated from the above description 
+and formula.  The 3/3/2 standard colormap allocation is fairly standard.
+.sp .5
+.IP \s+2\f(HB7.8.4\fR\s-2 6n
+\s+2\f(HBCreating and Using a Standard Colormap\fR\s-2
+.sp .5
+Two members were added to the \f(CWXStandardColormap\fP structure 
+in Release 4 to comply with the ICCCM (interclient communication 
+conventions, described in Chapter 10).  Because of this, there 
+are two different sets of routines that manage standard colormaps, 
+one for use with R3 (and earlier) and the other for use with R4 
+(and later).  The R3 routines will also work under R4, but an 
+application using them will not comply with current conventions.  
+The R3 routines are \f(CWXGetStandardColormap\fP and 
+\f(CWXSetStandardColormap\fP, and the R4 routines are 
+\f(CWXGetRGBColormaps\fP and \f(CWXSetRGBColormaps\fP.  The reason 
+for the plural form of the R4 routine \f(CWXGetRGBColormaps\fP is 
+that it returns a list of colormaps; it also has a \f(CIcount\fP 
+argument not present in the R3 routine.  According to the ICCCM, 
+only queries of the \f(CWXA_RGB_DEFAULT_MAP\fP standard colormap 
+can return more than one structure.
+.sp .5
+Example 11: gets information about the \f(CWXA_RGB_BEST_MAP\fP 
+standard colormap, creates it if no other client already has, calculates 
+pixel values from it, and sets the colormap window attribute of the 
+window.  Note that under R3, the created colormap can be used only 
+with windows created using the default visual, because the standard 
+colormap information under R3 does not include a visual.  This example 
+gives up and falls back on read-only colorcell allocation if the 
+standard colormap property is not defined by the server or if creating 
+a colormap returns the default colormap (which happens on systems with 
+an immutable hardware colormap).
+.Nd 10
+.sp .5
+\s-1\f(CW
+.nf
+  .
+  .
+  .
 
+#define USE_DEFAULT_COLORMAP 1
+#define USE_STANDARD_COLORMAP 0
+
+void main(argc, argv)
+int argc;
+char **argv;
+{
+    XStandardColormap best_map_info;
+    XColor *exact_defs;
+    XSetWindowAttributes attrib;
+    unsigned long attribmask;
+    int i, j, k, l;
+    int ncells;
+    XVisualInfo *vlist, vinfo_template, *v;
+    int num_vis;
+    int count;
+    Visual *visual;
+    int strategy = USE_STANDARD_COLORMAP;
+      .
+      .
+      .
+    /* Open display */
+
+    visual = DefaultVisual(display, screen_num);
+
+#ifdef X11R3
+        if (XGetStandardColormap(display, RootWindow(display,
+                        screen_num), &best_map_info,
+            XA_RGB_BEST_MAP) == 0) {
+#else /* R4 or later */
+        if (XGetRGBColormaps(display, RootWindow(display,
+                        screen_num), &best_map_info, &count, 
+            XA_RGB_BEST_MAP) == 0) {
+#endif /* X11R3 */
+                printf("%s: RGB_BEST_MAP colormap property not set.\en",
+                argv[0]);
+        /* Give up standard colormaps; use one of the 
+         * basic color strategies */
+        get_colors();
+        strategy = USE_DEFAULT_COLORMAP;
+    }
+        else if (best_map_info.colormap) {
+        /* Someone else created the map we need; make sure 
+         * it's valid, then we'll use it below */
+        if (best_map_info.red_max == 0) {
+            printf("%s: RGB_BEST_MAP colormap property is set\en", 
+                    argv[0]);
+            printf("but is missing data.\en");
+            strategy = USE_DEFAULT_COLORMAP;
+        }
+                attrib.colormap = best_map_info.colormap;
+        }
+    else if (best_map_info.visualid == 0) {
+        printf("%s: Standard colormap property is set\en", argv[0]);
+           printf("but is missing data.");
+        /* Some systems define the properties but don't 
+         * place any data in them; this is a server bug, 
+         * but we'll check for it anyway */
+        /* Fall back on a basic color strategy */
+        strategy = USE_DEFAULT_COLORMAP;
+    }
+    else {
+        /* Got information, but the described colormap 
+         * has not been created yet; create it and 
+         * allocate all cells read/write */
+
+        /* XCreateColormap requires a visual argument 
+          * (pointer to a Visual structure); however, the 
+          * XStandardColormap structure returns a VisualID, 
+         * which might not be the default visual; 
+         * Converting between these two is painful */
+        vlist = XGetVisualInfo(display, VisualNoMask, 
+                &vinfo_template, &num_vis);
+        for (v = vlist; v < vlist + num_vis; v++) {
+            if (v->visualid == best_map_info.visualid) {
+                visual = v->visual;
+                break;
+            }
+        }
+
+        best_map_info.colormap = XCreateColormap(display, 
+                RootWindow(display, screen_num), 
+                visual, AllocAll);
+
+        if (best_map_info.colormap == 
+                DefaultColormap(display, screen_num)) {
+            printf("%s: hardware colormap is immutable:\en", 
+                    argv[0]);
+            printf("cannot create new colormap.\en");
+        }
+
+        attrib.colormap = best_map_info.colormap;
+
+        ncells = best_map_info.base_pixel + 
+                ((best_map_info.red_max + 1) * 
+                   (best_map_info.green_max + 1) * 
+                (best_map_info.blue_max + 1));
+
+        exact_defs = (XColor *) calloc(sizeof(XColor), ncells); 
+
+        /* Permute the levels of red, green, and blue */
+        l = best_map_info.base_pixel;
+        for (i = 0; i < best_map_info.blue_max; i++) {
+            exact_defs[l].blue = 65536 * i / best_map_info.blue_max;
+            for (j = 0; j < best_map_info.green_max; j++) {
+                exact_defs[l].green = 65536 * j / 
+                        best_map_info.green_max;
+                for (k = 0; k < best_map_info.red_max; k++) {
+                    exact_defs[l].red = 65536 * k / 
+                            best_map_info.red_max;
+                    l++;
+                }
+            }
+        }
+
+        XStoreColors (display, best_map_info.colormap, exact_defs, 
+                ncells);
+        
+        /* If to be used in a window not created with the
+         * default visual, must create the window first and
+         * use instead of RootWindow in this call; here we
+         * assume the default visual */
+#ifdef X11R3
+        XSetStandardColormap(display, RootWindow(display, 
+                screen_num), &best_map_info, XA_RGB_BEST_MAP);
+#else /* R4 or later */
+        XSetRGBColormaps(display, RootWindow(display, screen_num), 
+                count, &best_map_info, XA_RGB_BEST_MAP);
+#endif /* X11R3 */
+    }
+
+    if (strategy == USE_STANDARD_COLORMAP) {
+        /* We must not have called get_colors above, 
+         * must be using standard colormaps strategy */
+
+        /* Note that we act like we have already allocated pixel
+          * pixel values, even though actually another client did */
+        background_pixel = best_map_info.base_pixel  +
+                (best_map_info.red_max * best_map_info.red_mult) +
+                (best_map_info.green_max * best_map_info.green_mult) +
+                (best_map_info.blue_max * best_map_info.blue_mult);
+
+        attribmask = CWBackPixel | CWColormap;
+
+        foreground_pixel = (best_map_info.green_max * 
+                best_map_info.green_mult / 2) + 
+                best_map_info.base_pixel;
+        
+        border_pixel = (best_map_info.blue_max * 
+                best_map_info.blue_mult / 2) + 
+                best_map_info.base_pixel;
+    }
+
+    /* Create opaque window */
+    win = XCreateWindow(display, RootWindow(display,screen_num), x,  
+            y, width, height, borderwidth, 
+            DefaultDepth(display, screen_num), 
+            InputOutput, visual, attribmask, &attrib);
+      .
+      .
+      .
+}
+\fR\s0
+.fi
+.sp .5
+Example 11: "Code to create and use XA_RGB_BEST_MAP"
+.sp
+.hw XGetRGB-Colormaps
+This code begins by reading the \f(CWXA_RGB_BEST_MAP\fP property 
+using the \f(CWXGetRGBColormaps\fP or \f(CWXGetStandardColormap\fP 
+call.  (The name \f(CWXGetRGBColormaps\fP suggests that the function 
+returns a description of multiple colormaps\(embut this is true only 
+for \f(CWXA_RGB_DEFAULT_MAP\fP.  Therefore, the R3 and R4 functions 
+are truly equivalent as used here.)  If one of these calls succeeds, 
+the property is defined and its contents have been placed in the 
+\f(CWbest_map_info\fP structure.  Since any other, perhaps buggy, 
+client might have set this property (like your own application while 
+you are debugging it), it is a good idea not to trust its contents 
+any more than necessary.  (Properties set on the root window remain 
+defined even after the client that set them has exited.)  The code checks 
+to make sure that the fields contain reasonable values before using them.
+.sp .5
+If the \f(CWcolormap\fP field of \f(CWbest_map_info\fP is nonzero, it 
+should be the ID of a standard colormap that another client has created.  
+Your application can immediately proceed to use the pixel values in this 
+colormap as though your application had already allocated them read-only, 
+even though in reality some other client allocated them read/write.
+.sp .5
+On the other hand, if the \f(CWcolormap\fP field is zero, your application 
+needs to create, allocate, and set the values of the standard colormap 
+itself.  You allocate the cells read/write, because this allows you to 
+explicitly set the RGB values of each pixel value.  Even though you 
+allocate the cells read/write, you should use them as if they were 
+read-only, so that other applications can share them after you reset 
+the \f(CWXA_RGB_BEST_MAP\fP property to include the new colormap ID.
+As this suggests, a read/write cell, even though described earlier as 
+being private and changeable by that one client, can be public if all 
+the applications agree not to change its RGB values.
+.sp .5
+The algorithm used to store RGB values into the cells in the colormap is
+somewhat arbitrary.  Conventions for it will probably be adopted by the 
+X Consortium when there is more interest in standard colormaps.  Any 
+algorithm is good enough to allow two instances of the same application 
+to share a colormap.  But for two different applications to share the 
+colormap, each must know exactly what RGB values the other would place 
+in the colormap if the other were run before the colormap was created.
+.sp .5
+The \f(CWXGetVisualInfo\fP call is described in Section 7.5.2.
+.sp .5
+If you pass \f(CWAllocAll\fP to \f(CWXCreateColormap\fP, you do not 
+need to make an \f(CWXAllocColorCells\fP call to allocate all the 
+cells read/write.  However, you can use \f(CWAllocAll\fP only if you 
+intend the entire colormap to be read-only to all clients.  Some 
+clients want a few cells preserved to be rewriteable for dynamically 
+changing colors.  If yours is that way, you must use \f(CWAllocNone\fP 
+and then call \f(CWXAllocColorCells\fP once to create the standard 
+portion of the colormap and again to allocate the cells your 
+application will treat as private.
+.sp .5
+Once the colormap window attribute of a window is set, the window
+manager will take care of installing the colormap.  When there is
+only one hardware colormap, the window manager usually installs an
+application's colormap when that application contains the pointer 
+(for real-estate type window managers) or is given the keyboard 
+focus (for click-to-type style window managers).
+.sp .5
+When a window manager creates a standard colormap, it can use a 
+slightly different technique to make sure that the standard colormap
+remains defined even after the window manager exits.  Assuming that it 
+has already checked to see whether some other client has created a 
+standard colormap and none has, it performs the following sequence of steps:
+.sp
+.RS
+.IP \(bu 5
+Create a new connection to the same server. 
+.IP \(bu 5
+Determine the color capabilities of the screen.  Choose a visual.
+.IP \(bu 5
+Create a colormap (not required for \f(CWXA_RGB_DEFAULT_MAP\fP).
+.IP \(bu 5
+Call \f(CWXAllocColorPlanes\fP or \f(CWXAllocColorCells\fP to 
+allocate cells in the colormap (if did not use \f(CWAllocAll\fP 
+flag when creating the colormap).
+.IP \(bu 5
+Call \f(CWXStoreColors\fP to store appropriate color values in 
+the colormap.
+.IP \(bu 5
+Fill in the descriptive fields in the \f(CWXStandardColormap\fP 
+structure, including the ID of the created colormap.
+.IP \(bu 5
+Call \f(CWXSetRGBColormaps\fP or \f(CWXSetStandardColormap\fP to set 
+the property on the root window.  Under R4, the \f(CWkillid\fP field 
+should be set to the colormap ID.
+.Nd 4
+.IP \(bu 5
+Use \f(CWXSetCloseDownMode\fR to make the resource permanent.
+.IP \(bu 5
+Close the new connection to the server.
+.RE
+.sp 2
+.IP \s+2\f(HB7.8.5\fR\s-2 6n
+\s+2\f(HBRGB-to-Pixel Conversion\fR\s-2
+.sp .5
+The standard colormaps such as \f(CWXA_RGB_BEST_MAP\fP are useful 
+when you want to calculate pixel values from RGB values.  
+.sp .5
+Consider a 3-D display program that draws a smoothly shaded sphere.  
+At each pixel in the image of the sphere, the program computes the 
+intensity and color of light reflected to the viewer.  The result 
+of each computation is a triple of red, green, and blue coefficients 
+in the range 0.0 to 1.0.  To draw the sphere, the program needs a 
+colormap that provides a large range of uniformly distributed 
+colors.  The colormap must be arranged so that the program can
+convert its RGB triples into pixel values very quickly, because 
+drawing the entire sphere will require many such conversions.  
+An example of one such calculation is shown in Example 12.  
+Example 10 demonstrated how to do this for integral RGB values.
+.sp .5
+\s-1\f(CW
+.nf
+XStandardColormap best_map_info;
+float red, green, blue;
+unsigned long pixelvalue;
+
+pixelvalue = best_map_info.base_pixel +
+   ((unsigned long)(0.5 + (red * best_map_info.red_max)) *
+        best_map_info.red_mult) + 
+   ((unsigned long)(0.5 + (green * best_map_info.green_max)) * 
+        best_map_info.green_mult) +
+   ((unsigned long)(0.5 + (blue * best_map_info.blue_max)) *
+        best_map_info.blue_mult);
+\fR\s0
+.fi
+.sp .5
+Example 12: "Calculating pixel values from floating point RGB values"
+.sp
+For gray scale colormaps, only the \f(CWcolormap\fP, 
+\f(CWred_max\fP, \f(CWred_mult\fP, and \f(CWbase_pixel\fP fields 
+of the \f(CWXStandardColormap\fP structure are defined.  The other 
+fields are ignored.  Pixel values for a \f(CWStaticGray\fP or 
+\f(CWGrayScale\fP visual must be in the range:
+.sp .5
+\s-1\f(CW
+.nf
+base_pixel <= pixel_value < (red_max * red_mult) + base_pixel
+\fR\s0
+.fi
+.sp .5
+To compute a gray pixel value, use the following expression:
+.sp .5
+\s-1\f(CW
+.nf
+pixel_value = gray * red_mult + base_pixel;
+\fR\s0
+.fi
+.sp .5
+where:
+.in +5n
+.TS
+linesize(2), tab(@);
+lfCW l l.
+gray@\=@the gray value you desire (0 to \f(CWred_max\fP)
+red_mult@\=@value from \f(CWXStandardColormap\fP structure
+base_pixel@\=@value from \f(CWXStandardColormap\fP structure
+.TE
+.in -5n
+.IP \s+4\f(HB7.9\fR\s-4  6n
+\s+4\f(HBMiscellaneous Color-handling Functions\fR\s-4
+.sp
+The following miscellaneous functions provide additional ways to 
+use the color database, to find out the RGB values in a colormap 
+cell, and to free cells that are no longer needed:
+.IP "\f(CWXLookupColor\fP" 18n
+Looks up a string color name in the color database and returns 
+separate color structures containing the exact RGB values specified 
+in the database for that name and the closest RGB values available 
+on the hardware.  This function does not look at any cells in the 
+colormap, even though it has a \f(CIcolormap\fP argument!  This 
+argument specifies which screen the color should be looked up on.  
+The difference between \f(CWXLookupColor\fP and \f(CWXParseColor\fP
+is that \f(CWXParseColor\fP accepts the hexadecimal color specification 
+(which \f(CWXLookupColor\fP does not), while \f(CWXLookupColor\fP 
+returns the closest colors available on the hardware (which 
+\f(CWXParseColor\fP does not).  \f(CWXLookupColor\fP might be 
+useful for making sure that user-specified colors are contrasting.
+.Nd 3
+.IP "\f(CWXQueryColor\fP"
+Fills an \f(CWXColor\fP structure with the RGB values corresponding to 
+the colormap cell indicated by a pixel value.  Also sets the \f(CWflags\fP 
+member of the structure to (\f(CWDoRed\ |\ DoGreen\ |\ DoBlue\fR).
+.IP "\f(CWXQueryColors\fR"
+Fills multiple \f(CWXColor\fP structures with the RGB values and flags 
+corresponding to the colormap cells indicated by a pixel values.  Also 
+sets each \f(CWflags\fP member to (\f(CWDoRed\ |\ DoGreen\ | DoBlue\fR).
+.IP "\f(CWXFreeColors\fR" 18n
+Frees the colormap cells associated with the given pixel values and/or 
+frees the given planes.  Since all the colorcells an application allocates 
+are freed when the application exits, this routine is needed only when an 
+application is finished with cells before it exits.  Freeing a read/write 
+colorcell makes that cell available to other applications.  Freeing a 
+read-only cell may make the cell unallocated, but only if no other 
+application is sharing that cell.
