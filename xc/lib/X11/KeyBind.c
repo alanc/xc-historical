@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.49 89/07/13 13:41:48 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.50 89/10/04 20:29:54 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -19,6 +19,7 @@
 
 static ComputeMaskFromKeytrans();
 static int Initialize();
+static void XConvertCase();
 
 struct XKeytrans {
 	struct XKeytrans *next;/* next on list */
@@ -32,21 +33,37 @@ struct XKeytrans {
 
 static KeySym
 KeyCodetoKeySym(dpy, keycode, col)
-     register Display *dpy;
-     KeyCode keycode;
-     int col;
+    register Display *dpy;
+    KeyCode keycode;
+    int col;
 {
-     int ind;
-     /*
-      * if keycode not defined in set, this should really be impossible.
-      * in any case, if sanity check fails, return NoSymbol.
-      */
-     if (col < 0 || col >= dpy->keysyms_per_keycode) return (NoSymbol);
-     if (keycode < dpy->min_keycode || keycode > dpy->max_keycode) 
-       return(NoSymbol);
+    register int per = dpy->keysyms_per_keycode;
+    register KeySym *syms;
+    KeySym lsym, usym;
 
-     ind = (keycode - dpy->min_keycode) * dpy->keysyms_per_keycode + col;
-     return (dpy->keysyms[ind]);
+    if ((col < 0) || ((col >= per) && (col > 3)) ||
+	(keycode < dpy->min_keycode) || (keycode > dpy->max_keycode))
+      return NoSymbol;
+
+    syms = &dpy->keysyms[(keycode - dpy->min_keycode) * per];
+    if (col < 4) {
+	if (col > 1) {
+	    while ((per > 2) && (syms[per - 1] == NoSymbol))
+		per--;
+	    if (per < 3)
+		col -= 2;
+	}
+	if ((per <= (col|1)) || (syms[col|1] == NoSymbol)) {
+	    XConvertCase(dpy, syms[col&~1], &lsym, &usym);
+	    if (!(col & 1))
+		return lsym;
+	    else if (usym == lsym)
+		return NoSymbol;
+	    else
+		return usym;
+	}
+    }
+    return syms[col];
 }
 
 KeySym
@@ -55,9 +72,9 @@ XKeycodeToKeysym(dpy, kc, col)
     KeyCode kc;
     int col;
 {
-     if (!dpy->keysyms)
-         Initialize(dpy);
-     return (KeyCodetoKeySym(dpy, kc, col));
+    if (!dpy->keysyms)
+	Initialize(dpy);
+    return KeyCodetoKeySym(dpy, kc, col);
 }
 
 KeyCode
@@ -65,31 +82,27 @@ XKeysymToKeycode(dpy, ks)
     Display *dpy;
     KeySym ks;
 {
-    int         i;
+    register int i, j;
 
      if (!dpy->keysyms)
          Initialize(dpy);
     for (i = dpy->min_keycode; i <= dpy->max_keycode; i++) {
-	int         j;
-
 	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
-	    int ind = (i - dpy->min_keycode) * dpy->keysyms_per_keycode + j;
-
-	    if (ks == dpy->keysyms[ind])
-		return (i);
+	    if (KeyCodetoKeySym(dpy, i, j) == ks)
+		return i;
 	}
     }
-    return (0);
+    return 0;
 }
 
 KeySym
 XLookupKeysym(event, col)
-     register XKeyEvent *event;
-     int col;
+    register XKeyEvent *event;
+    int col;
 {
-     if (!event->display->keysyms)
-         Initialize(event->display);
-     return (KeyCodetoKeySym(event->display, event->keycode, col));
+    if (!event->display->keysyms)
+	Initialize(event->display);
+    return KeyCodetoKeySym(event->display, event->keycode, col);
 }
 
 static
@@ -113,7 +126,7 @@ InitModMap(dpy)
     /* Lock modifiers are in the second row of the matrix */
     n = 2 * map->max_keypermod;
     for (i = map->max_keypermod; i < n; i++) {
-        for (j = 0; j < dpy->keysyms_per_keycode; j++) {
+	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
 	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
 	    if (sym == XK_Caps_Lock) {
 		dpy->lock_meaning = XK_Caps_Lock;
@@ -127,43 +140,43 @@ InitModMap(dpy)
     dpy->mode_switch = 0;
     n *= 4;
     for (i = 3*map->max_keypermod; i < n; i++) {
-        for (j = 0; j < dpy->keysyms_per_keycode; j++) {
+	for (j = 0; j < dpy->keysyms_per_keycode; j++) {
 	    sym = KeyCodetoKeySym(dpy, map->modifiermap[i], j);
 	    if (sym == XK_Mode_switch)
 		dpy->mode_switch |= 1 << (i / map->max_keypermod);
 	}
     }
     for (p = dpy->key_bindings; p; p = p->next)
-        ComputeMaskFromKeytrans(dpy, p);
+	ComputeMaskFromKeytrans(dpy, p);
     UnlockDisplay(dpy);
 }
 
 XRefreshKeyboardMapping(event)
-     register XMappingEvent *event;
+    register XMappingEvent *event;
 {
-     extern void XFreeModifiermap();
+    extern void XFreeModifiermap();
 
-     if(event->request == MappingKeyboard) {
+    if(event->request == MappingKeyboard) {
 	/* XXX should really only refresh what is necessary
 	 * for now, make initialize test fail
 	 */
-	    LockDisplay(event->display);
-	    if (event->display->keysyms) {
-	         Xfree ((char *)event->display->keysyms);
-	         event->display->keysyms = NULL;
-	    }
-	    UnlockDisplay(event->display);
-     }
-     if(event->request == MappingModifier) {
-	    LockDisplay(event->display);
-	    if (event->display->modifiermap) {
-		XFreeModifiermap(event->display->modifiermap);
-		event->display->modifiermap = NULL;
-	    }
-	    UnlockDisplay(event->display);
-	    /* go ahead and get it now, since initialize test may not fail */
-	    InitModMap(event->display);
-     }
+	LockDisplay(event->display);
+	if (event->display->keysyms) {
+	     Xfree ((char *)event->display->keysyms);
+	     event->display->keysyms = NULL;
+	}
+	UnlockDisplay(event->display);
+    }
+    if(event->request == MappingModifier) {
+	LockDisplay(event->display);
+	if (event->display->modifiermap) {
+	    XFreeModifiermap(event->display->modifiermap);
+	    event->display->modifiermap = NULL;
+	}
+	UnlockDisplay(event->display);
+	/* go ahead and get it now, since initialize test may not fail */
+	InitModMap(event->display);
+    }
 }
 
 static
@@ -345,7 +358,8 @@ XLookupString (event, buffer, nbytes, keysym, status)
 		  &modifiers, &symbol);
     if (keysym)
 	*keysym = symbol;
-    return XTranslateKeySym(event->display, symbol, event->state & ~modifiers,
+    /* arguable whether to use (event->state & ~modifiers) here */
+    return XTranslateKeySym(event->display, symbol, event->state,
 			    buffer, nbytes);
 }
 
@@ -385,7 +399,7 @@ _XFreeKeyBindings (dpy)
     register struct XKeytrans *p, *np;
 
     for (p = dpy->key_bindings; p; p = np) {
-        np = p->next;
+	np = p->next;
 	Xfree(p->string);
 	Xfree((char *)p->modifiers);
 	Xfree((char *)p);
@@ -406,8 +420,8 @@ FindKeyCode(dpy, code)
     register KeySym *k = dpy->keysyms;
     while (k < kmax) {
 	if (*k == code)
-	    return(((k - dpy->keysyms)
-		/ dpy->keysyms_per_keycode) + dpy->min_keycode);
+	    return (((k - dpy->keysyms) / dpy->keysyms_per_keycode) +
+		    dpy->min_keycode);
 	k += 1;
 	}
     return 0;
