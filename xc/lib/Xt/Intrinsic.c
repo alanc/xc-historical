@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.188 94/03/07 20:15:46 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.189 94/03/07 20:34:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1079,8 +1079,8 @@ static char *ExtractLocaleName(lang)
 #endif
 #ifdef STARTCHAR
     if (start && (start = strchr (start, STARTCHAR))) {
-#endif
         start++;
+#endif
         if (end = strchr (start, ENDCHAR)) {
             len = end - start;
             strncpy(buf, start, len);
