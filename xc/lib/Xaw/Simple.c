@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.29 91/02/17 16:03:29 converse Exp $ */
+/* $XConsortium: Simple.c,v 1.30 91/03/26 12:25:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,6 +29,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
+#include <X11/Xmu/Drawing.h>
 
 #define offset(field) XtOffsetOf(SimpleRec, simple.field)
 
@@ -140,7 +141,7 @@ static void Realize(w, valueMask, attributes)
     if (!XtIsSensitive(w)) {
 	/* change border to gray; have to remember the old one,
 	 * so XtDestroyWidget deletes the proper one */
-	if (((SimpleWidget)w)->simple.insensitive_border == NULL)
+	if (((SimpleWidget)w)->simple.insensitive_border == None)
 	    ((SimpleWidget)w)->simple.insensitive_border =
 		XmuCreateStippledPixmap(XtScreen(w),
 					w->core.border_pixel, 
@@ -247,7 +248,7 @@ static Boolean ChangeSensitive(w)
 		XSetWindowBorder( XtDisplay(w), XtWindow(w), 
 				  w->core.border_pixel );
 	else {
-	    if (((SimpleWidget)w)->simple.insensitive_border == NULL)
+	    if (((SimpleWidget)w)->simple.insensitive_border == None)
 		((SimpleWidget)w)->simple.insensitive_border =
 		    XmuCreateStippledPixmap(XtScreen(w),
 					    w->core.border_pixel, 
