@@ -11,9 +11,7 @@
 # include <X11/Xmu/Converters.h>
 # include "EyesP.h"
 # include <math.h>
-#ifdef SHAPE
 # include <X11/extensions/shape.h>
-#endif
 
 #define offset(field) XtOffset(EyesWidget,eyes.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -33,10 +31,8 @@ static XtResource resources[] = {
 	offset (reverse_video), XtRString, "FALSE"},
     {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
     	offset (backing_store), XtRString, "default"},
-#ifdef SHAPE
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
 	offset (shape_window), XtRString, "TRUE"},
-#endif
 };
 
 #undef offset
@@ -121,9 +117,7 @@ static void Initialize (greq, gnew)
     EyesWidget w = (EyesWidget)gnew;
     XtGCMask	valuemask;
     XGCValues	myXGCV;
-#ifdef SHAPE
     int shape_event_base, shape_error_base;
-#endif
 
     /*
      * set the colors if reverse video; these are the colors used:
@@ -170,14 +164,12 @@ static void Initialize (greq, gnew)
     w->eyes.pupil[0].x = w->eyes.pupil[1].x = -1000;
     w->eyes.pupil[0].y = w->eyes.pupil[1].y = -1000;
 
-#ifdef SHAPE
     if (w->eyes.shape_window && !XShapeQueryExtension (XtDisplay (w),
 						       &shape_event_base,
 						       &shape_error_base))
 	w->eyes.shape_window = False;
     w->eyes.shape_mask = 0;
     w->eyes.shapeGC = 0;
-#endif
 }
 
 static void Resize (gw)
@@ -196,7 +188,6 @@ static void Resize (gw)
  		    	w->core.height, 0,
 		    	W_MIN_X, W_MAX_X,
 		    	W_MIN_Y, W_MAX_Y);
-#ifdef SHAPE
     	if (w->eyes.shape_window) {
     	    w->eyes.shape_mask = XCreatePixmap (XtDisplay (w), XtWindow (w),
 	    	    w->core.width, w->core.height, 1);
@@ -217,7 +208,6 @@ static void Resize (gw)
 		       	       x, y, w->eyes.shape_mask, ShapeSet);
     	    XFreePixmap (XtDisplay (w), w->eyes.shape_mask);
     	}
-#endif
     }
 }
 

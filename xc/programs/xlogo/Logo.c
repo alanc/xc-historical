@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.17 90/04/20 17:24:41 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.18 90/10/22 14:45:53 converse Exp $";
 #endif
 
 /*
@@ -22,9 +22,7 @@ without express or implied warranty.
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LogoP.h>
-#ifdef SHAPE
 #include <X11/extensions/shape.h>
-#endif
 
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -105,11 +103,9 @@ static void check_shape (w)
     LogoWidget w;
 {
     if (w->logo.shape_window) {
-#ifdef SHAPE
 	int event_base, error_base;
 
 	if (!XShapeQueryExtension (XtDisplay (w), &event_base, &error_base))
-#endif
 	  w->logo.shape_window = FALSE;
     }
 }
@@ -118,7 +114,6 @@ static void check_shape (w)
 static void unset_shape (w)
     LogoWidget w;
 {
-#ifdef SHAPE
     XSetWindowAttributes attr;
     unsigned long mask;
     Display *dpy = XtDisplay ((Widget) w);
@@ -138,13 +133,11 @@ static void unset_shape (w)
     XShapeCombineMask (dpy, win, ShapeBounding, 0, 0, None, ShapeSet);
     if (!w->logo.foreGC) create_gcs (w);
     w->logo.need_shaping = w->logo.shape_window;
-#endif
 }
 
 static void set_shape (w)
     LogoWidget w;
 {
-#ifdef SHAPE
     GC ones, zeros;
     Display *dpy = XtDisplay ((Widget) w);
     Window win = XtWindow ((Widget) w);
@@ -179,7 +172,6 @@ static void set_shape (w)
     if (ones) XFreeGC (dpy, ones);
     if (zeros) XFreeGC (dpy, zeros);
     if (pm) XFreePixmap (dpy, pm);
-#endif
 }
 
 
@@ -223,29 +215,22 @@ static void Realize (gw, valuemaskp, attr)
     XtValueMask *valuemaskp;
     XSetWindowAttributes *attr;
 {
-#ifdef SHAPE
     LogoWidget w = (LogoWidget) gw;
 
     if (w->logo.shape_window) {
 	attr->background_pixel = w->logo.fgpixel;  /* going to shape */
 	*valuemaskp |= CWBackPixel;
     } else
-#endif
       create_gcs (w);
     (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
-/*
-    if (w->logo.shape_window) set_shape (w);
- */
 }
 
 static void Resize (gw)
     Widget gw;
 {
-#ifdef SHAPE
     LogoWidget w = (LogoWidget) gw;
 
     if (w->logo.shape_window) set_shape (w);
-#endif
 }
 
 /* ARGSUSED */
@@ -256,12 +241,10 @@ static void Redisplay (gw, event, region)
 {
     LogoWidget w = (LogoWidget) gw;
 
-#ifdef SHAPE
     if (w->logo.shape_window) {
 	if (w->logo.need_shaping) set_shape (w);  /* may change shape flag */
     }
     if (!w->logo.shape_window)
-#endif
       XmuDrawLogo(XtDisplay(w), XtWindow(w), w->logo.foreGC, w->logo.backGC,
 		  0, 0, (unsigned int) w->core.width,
 		  (unsigned int) w->core.height);

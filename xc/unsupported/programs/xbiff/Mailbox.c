@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.44 90/09/12 09:42:12 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.45 90/10/22 14:40:41 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -51,9 +51,7 @@ typedef union wait	waitType;
 
 #include <X11/Xmu/Converters.h>		/* for XmuCvtStringToBitmap */
 
-#ifdef SHAPE
 #include <X11/extensions/shape.h>
-#endif
 
 /*
  * The default user interface is to have the mailbox turn itself off whenever
@@ -109,10 +107,8 @@ static XtResource resources[] = {
 	offset (empty.mask), XtRBitmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flipit), XtRString, "true" },
-#ifdef SHAPE
     { XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof(Boolean),
         offset (shapeit), XtRString, "false" },
-#endif
 };
 
 #undef offset
@@ -205,22 +201,18 @@ static void Initialize (request, new)
     Widget request, new;
 {
     MailboxWidget w = (MailboxWidget) new;
-#ifdef SHAPE
     int shape_event_base, shape_error_base;
-#endif
 
     if (!w->mailbox.filename) GetMailFile (w);
 
     if (w->core.width <= 0) w->core.width = 1;
     if (w->core.height <= 0) w->core.height = 1;
 
-#ifdef SHAPE
     if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w),
 						     &shape_event_base,
 						     &shape_error_base))
       w->mailbox.shapeit = False;
     w->mailbox.shape_cache.mask = None;
-#endif
 
     w->mailbox.gc = get_mailbox_gc (w);
     w->mailbox.interval_id = (XtIntervalId) 0;
@@ -382,18 +374,14 @@ static void Realize (gw, valuemaskp, attr)
 					  &w->mailbox.full.width,
 					  &w->mailbox.full.height);
 			 
-#ifdef SHAPE
     if (w->mailbox.empty.mask == None && w->mailbox.full.mask == None)
       w->mailbox.shapeit = False;
-#endif
 
     w->mailbox.interval_id = 
 	XtAppAddTimeOut (XtWidgetToApplicationContext((Widget) w),
 			 w->mailbox.update * 1000, clock_tic, (XtPointer) w);
 
-#ifdef SHAPE
     w->mailbox.shape_cache.mask = None;
-#endif
 
     return;
 }
@@ -415,9 +403,7 @@ static void Destroy (gw)
     freepix (w->mailbox.empty.bitmap);		/* until cvter does ref cnt */
     freepix (w->mailbox.empty.mask);		/* until cvter does ref cnt */
     freepix (w->mailbox.empty.pixmap);
-#ifdef SHAPE
     freepix (w->mailbox.shape_cache.mask);
-#endif
 #undef freepix
     return;
 }
@@ -613,7 +599,6 @@ static void redraw_mailbox (w)
     XClearWindow (dpy, win);
     XCopyArea (dpy, im->pixmap, win, gc, 0, 0, im->width, im->height, x, y);
 
-#ifdef SHAPE
     /*
      * XXX - temporary hack; walk up widget tree to find top most parent (which
      * will be a shell) and mash it to have our shape.  This will be replaced
@@ -637,7 +622,6 @@ static void redraw_mailbox (w)
 	    w->mailbox.shape_cache.y = y;
 	}
     }
-#endif
 
     return;
 }

@@ -11,9 +11,7 @@
 # include <X11/Xmu/Converters.h>
 # include "ClockP.h"
 # include <math.h>
-#ifdef SHAPE
 # include <X11/extensions/shape.h>
-#endif
 
 #define offset(field) XtOffset(ClockWidget,clock.field)
 #define goffset(field) XtOffset(Widget,core.field)
@@ -35,12 +33,10 @@ static XtResource resources[] = {
 	offset (border_size), XtRString, "0.1"},
     {XtNjewelSize, XtCBorderSize, XtRFloat, sizeof (float),
 	offset (jewel_size), XtRString, "0.075"},
-#ifdef SHAPE
     {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
 	offset (shape_window), XtRString, "TRUE"},
     {XtNtransparent, XtCTransparent, XtRBoolean, sizeof (Boolean),
 	offset (transparent), XtRString, "FALSE"},
-#endif
 };
 
 #undef offset
@@ -111,19 +107,15 @@ static void Initialize (greq, gnew)
     ClockWidget w = (ClockWidget)gnew;
     XtGCMask	valuemask;
     XGCValues	myXGCV;
-#ifdef SHAPE
     int shape_event_base, shape_error_base;
-#endif
 
     valuemask = GCForeground;
 
-#ifdef SHAPE
     if (w->clock.transparent)
     {
 	;
     }
     else
-#endif
     {
     	myXGCV.foreground = w->clock.minute;
     	w->clock.minuteGC = XtGetGC(gnew, valuemask, &myXGCV);
@@ -141,7 +133,6 @@ static void Initialize (greq, gnew)
     /* wait for Realize to add the timeout */
     w->clock.interval_id = 0;
 
-#ifdef  SHAPE
     if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w), 
 							&shape_event_base, 
 							&shape_error_base))
@@ -150,7 +141,6 @@ static void Initialize (greq, gnew)
     w->clock.shapeGC = 0;
     w->clock.shape_width = 0;
     w->clock.shape_height = 0;
-#endif
     w->clock.polys_valid = 0;
 }
 
@@ -162,9 +152,7 @@ static void Resize (w)
     XWindowChanges	xwc;
     int		face_width, face_height;
     int		x, y;
-#ifdef SHAPE
     Pixmap	shape_mask;
-#endif
 
     if (!XtIsRealized((Widget) w))
 	return;
@@ -186,7 +174,6 @@ static void Resize (w)
      *  shape the windows and borders
      */
 
-#ifdef SHAPE
     if (w->clock.shape_window) {
 
 	SetTransform (&w->clock.t,
@@ -293,7 +280,6 @@ static void Resize (w)
 		    0, 0, shape_mask, ShapeSet);
 
     } else
-#endif
     {
     	/*
      	 * reconfigure the widget to split the availible
@@ -330,19 +316,15 @@ static void Realize (gw, valueMask, attrs)
      	attrs->backing_store = w->clock.backing_store;
 	*valueMask |= CWBackingStore;
     }
-#ifdef SHAPE
     if (w->clock.transparent)
     {
 	attrs->background_pixel = w->clock.minute;
 	*valueMask |= CWBackPixel;
 	*valueMask &= ~CWBackPixmap;
     }
-#endif
     XtCreateWindow( gw, (unsigned)InputOutput, (Visual *)CopyFromParent,
 		     *valueMask, attrs );
-#ifdef SHAPE
     if (!w->clock.transparent)
-#endif
 	Resize (w);
     new_time ((XtPointer) gw, 0);
 }
@@ -354,12 +336,10 @@ static void Destroy (gw)
      if (w->clock.interval_id) XtRemoveTimeOut (w->clock.interval_id);
      XtDestroyGC (w->clock.minuteGC);
      XtDestroyGC (w->clock.hourGC);
-#ifdef SHAPE
      if (w->clock.shapeGC)
 	XtDestroyGC (w->clock.shapeGC);
     if (w->clock.shape_mask)
 	XFreePixmap (XtDisplay (w), w->clock.shape_mask);
-#endif
 }
 
 /* ARGSUSED */
@@ -408,9 +388,7 @@ static void new_time (client_data, id)
 	long		now;
 	struct tm	*localtime (), *tm;
 	
-#ifdef SHAPE
 	if (!w->clock.transparent)
-#endif
 	if (w->clock.polys_valid) {
 		paint_hands (w, XtWindow (w), w->clock.eraseGC, w->clock.eraseGC);
 		check_jewel (w, XtWindow (w), w->clock.jewelGC);
@@ -431,11 +409,9 @@ static void new_time (client_data, id)
 	w->clock.interval_id = XtAddTimeOut ((60 - tm->tm_sec) * 1000, new_time,
 				client_data);
 	compute_hands (w);
-#ifdef SHAPE
 	if (w->clock.transparent)
 	    Resize (w);
 	else
-#endif
 	    paint_hands (w, XtWindow (w), w->clock.minuteGC, w->clock.hourGC);
 } /* new_time */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.h,v 1.5 90/04/30 13:52:13 keith Exp $
+ * $XConsortium: Clock.h,v 1.6 90/10/22 15:27:49 converse Exp $
  */
 
 #ifndef _XtClock_h
@@ -32,12 +32,10 @@
 #define XtNhour		"hour"
 #define XtNjewel	"jewel"
 
-#ifdef SHAPE
 #define XtNshapeWindow	"shapeWindow"
 #define XtCShapeWindow	"ShapeWindow"
 #define XtNtransparent	"transparent"
 #define XtCTransparent	"Transparent"
-#endif
 
 #define XtNjewelSize	"jewelSize"
 #define XtNborderSize	"borderSize"

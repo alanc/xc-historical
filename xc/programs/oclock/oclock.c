@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: oclock.c,v 1.9 90/04/30 13:52:09 keith Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.10 90/10/25 17:32:24 dave Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -50,11 +50,9 @@ static XrmOptionDescRec options[] = {
 {"-hour",	"*clock.hour",		XrmoptionSepArg,	NULL},
 {"-jewel",	"*clock.jewel",		XrmoptionSepArg,	NULL},
 {"-backing",	"*clock.backingStore",	XrmoptionSepArg,	NULL},
-#ifdef SHAPE
 {"-shape",	"*clock.shapeWindow",	XrmoptionNoArg,		"TRUE"},
 {"-noshape",	"*clock.shapeWindow",	XrmoptionNoArg,		"FALSE"},
 {"-transparent","*clock.transparent",	XrmoptionNoArg,		"TRUE"},
-#endif
 };
 
 void main(argc, argv)

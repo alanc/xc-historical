@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.17 90/04/11 17:03:00 jim Exp $
+ * $XConsortium: MailboxP.h,v 1.18 90/10/22 14:41:32 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,13 +47,11 @@ typedef struct {			/* new fields for mailbox widget */
 	Pixmap pixmap;			/* full depth pixmap */
 	int width, height;		/* geometry of pixmaps */
     } full, empty;
-#ifdef SHAPE
     Boolean shapeit;			/* do shape extension */
     struct {
 	Pixmap mask;
 	int x, y;
     } shape_cache;			/* last set of info */
-#endif
 } MailboxPart;
 
 typedef struct _MailboxRec {		/* full instance record */

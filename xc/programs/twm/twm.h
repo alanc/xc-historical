@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.65 90/04/30 16:56:01 converse Exp $
+ * $XConsortium: twm.h,v 1.66 90/11/15 11:39:35 dave Exp $
  *
  * twm include file
  *
@@ -41,9 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-#ifdef SHAPE
 #include <X11/extensions/shape.h>
-#endif
 
 #ifndef WithdrawnState
 #define WithdrawnState 0
@@ -267,9 +265,7 @@ typedef struct TwmWindow
     int save_frame_width;	/* width of frame */
     int save_frame_height;	/* height of frame */
     short zoomed;		/* is the window zoomed? */
-#ifdef SHAPE
     short wShaped;		/* this window has a bounding shape */
-#endif
     unsigned long protocols;	/* which protocols this window handles */
     Colormaps cmaps;		/* colormaps for this application */
     TBWindow *titlebuttons;
@@ -300,9 +296,7 @@ void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 extern char *ProgramName;
 extern Display *dpy;
 extern Window ResizeWindow;	/* the window we are resizing */
-#ifdef SHAPE
 extern int HasShape;		/* this server supports Shape extension */
-#endif
 
 extern int PreviousScreen;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.71 90/09/06 14:12:20 bugs Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.72 90/10/10 12:18:00 converse Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -42,15 +42,11 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/CommandP.h>
 
-#ifdef SHAPE
 #include <X11/Xmu/Converters.h>
-#endif
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
 
-#ifdef SHAPE
-#    define DEFAULT_SHAPE_HIGHLIGHT 32767
-#endif
+#define DEFAULT_SHAPE_HIGHLIGHT 32767
 
 /****************************************************************
  *
@@ -72,19 +68,13 @@ static XtResource resources[] = {
    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
       offset(command.callbacks), XtRCallback, (XtPointer)NULL},
    {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
-#ifndef SHAPE
-      offset(command.highlight_thickness), XtRImmediate,
-      (XtPointer)DEFAULT_HIGHLIGHT_THICKNESS },
-#else
       offset(command.highlight_thickness), XtRImmediate,
       (XtPointer) DEFAULT_SHAPE_HIGHLIGHT},
-
    {XtNshapeStyle, XtCShapeStyle, XtRShapeStyle, sizeof(int),
       offset(command.shape_style), XtRImmediate, (XtPointer)XawShapeRectangle},
    {XtNcornerRoundPercent, XtCCornerRoundPercent, 
 	XtRDimension, sizeof(Dimension),
 	offset(command.corner_round), XtRImmediate, (XtPointer) 25},
-#endif /*SHAPE*/
 };
 #undef offset
 
@@ -93,10 +83,8 @@ static void Initialize(), Redisplay(), Set(), Reset(), Notify(), Unset();
 static void Highlight(), Unhighlight(), Destroy(), PaintCommandWidget();
 static void ClassInitialize();
 
-#ifdef SHAPE
 static Boolean ShapeButton();
 static void Realize(), Resize();
-#endif /* SHAPE */
 
 #define XawCommandActions \
 { \
@@ -135,11 +123,7 @@ CommandClassRec commandClassRec = {
     FALSE,				/* class_inited		  */
     Initialize,				/* initialize		  */
     NULL,				/* initialize_hook	  */
-#ifdef SHAPE
     Realize,				/* realize		  */
-#else
-    XtInheritRealize,			/* realize		  */
-#endif /*SHAPE*/
     actionsList,			/* actions		  */
     XtNumber(actionsList),		/* num_actions		  */
     resources,				/* resources		  */
@@ -150,11 +134,7 @@ CommandClassRec commandClassRec = {
     TRUE,				/* compress_enterleave    */
     FALSE,				/* visible_interest	  */
     Destroy,				/* destroy		  */
-#ifdef SHAPE
     Resize,				/* resize		  */
-#else
-    XtInheritResize,			/* resize		  */
-#endif /* SHAPE */
     Redisplay,				/* expose		  */
     SetValues,				/* set_values		  */
     NULL,				/* set_values_hook	  */
@@ -219,7 +199,6 @@ ArgList args;			/* unused */
 Cardinal *num_args;		/* unused */
 {
   CommandWidget cbw = (CommandWidget) new;
-#ifdef SHAPE
   int shape_event_base, shape_error_base;
 
   if (cbw->command.shape_style != XawShapeRectangle
@@ -232,7 +211,6 @@ Cardinal *num_args;		/* unused */
       else
 	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
   }
-#endif /*SHAPE*/
 
   cbw->command.normal_GC = Get_GC(cbw, cbw->label.foreground, 
 				  cbw->core.background_pixel);
@@ -546,14 +524,12 @@ Widget current, request, new;
     redisplay = True;
   }
 
-#ifdef SHAPE
   if ( XtIsRealized(new)
        && oldcbw->command.shape_style != cbw->command.shape_style
        && !ShapeButton(cbw, TRUE))
   {
       cbw->command.shape_style = oldcbw->command.shape_style;
   }
-#endif /*SHAPE*/
 
   return (redisplay);
 }
@@ -561,15 +537,11 @@ Widget current, request, new;
 static void ClassInitialize()
 {
     XawInitializeWidgetSet();
-#ifdef SHAPE
     XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
 		        NULL, 0, XtCacheNone, NULL );
-#endif
 }
 
 
-
-#ifdef SHAPE
 
 static Boolean
 ShapeButton(cbw, checkRectangular)
@@ -613,4 +585,3 @@ static void Resize(w)
 
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
-#endif /*SHAPE*/

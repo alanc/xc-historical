@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.88 90/03/16 12:12:06 jim Exp $
+ * $XConsortium: gram.y,v 1.89 90/11/15 11:39:45 dave Exp $
  *
  * .twmrc command grammer
  *
@@ -461,15 +461,11 @@ win_color_entry	: string string		{ if (Scr->FirstTime &&
 		;
 
 squeeze		: SQUEEZE_TITLE { 
-#ifdef SHAPE
 				    if (HasShape) Scr->SqueezeTitle = TRUE;
-#endif
 				}
 		| SQUEEZE_TITLE { list = &Scr->SqueezeTitleL; 
-#ifdef SHAPE
 				  if (HasShape && Scr->SqueezeTitle == -1)
 				    Scr->SqueezeTitle = TRUE;
-#endif
 				}
 		  LB win_sqz_entries RB
 		| DONT_SQUEEZE_TITLE { Scr->SqueezeTitle = FALSE; }

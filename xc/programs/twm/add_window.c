@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.146 90/09/21 12:00:44 converse Exp $
+ * $XConsortium: add_window.c,v 1.146 90/09/21 13:16:51 converse Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.146 90/09/21 12:00:44 converse Exp $";
+"$XConsortium: add_window.c,v 1.146 90/09/21 13:16:51 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -243,7 +243,6 @@ IconMgr *iconp;
     tmp_win->ring.cursor_valid = False;
 
     tmp_win->squeeze_info = NULL;
-#ifdef SHAPE
     /*
      * get the squeeze information; note that this does not have to be freed
      * since it is coming from the screen list
@@ -261,7 +260,6 @@ IconMgr *iconp;
 	    }
 	}
       }
-#endif
 
     tmp_win->old_bw = tmp_win->attr.border_width;
 
@@ -722,16 +720,13 @@ IconMgr *iconp;
     attributes.do_not_propagate_mask = ButtonPressMask | ButtonReleaseMask;
     XChangeWindowAttributes (dpy, tmp_win->w, valuemask, &attributes);
 
-#ifdef SHAPE
     if (HasShape)
 	XShapeSelectInput (dpy, tmp_win->w, ShapeNotifyMask);
-#endif
 	
     if (tmp_win->title_w) {
 	XMapWindow (dpy, tmp_win->title_w);
     }
 
-#ifdef SHAPE
     if (HasShape) {
 	int xws, yws, xbs, ybs;
 	unsigned wws, hws, wbs, hbs;
@@ -743,7 +738,6 @@ IconMgr *iconp;
 			    &clipShaped, &xbs, &ybs, &wbs, &hbs);
 	tmp_win->wShaped = boundingShaped;
     }
-#endif
 
     if (!tmp_win->iconmgr)
 	XAddToSaveSet(dpy, tmp_win->w);
@@ -1093,7 +1087,6 @@ void ComputeTitleLocation (tmp)
     tmp->title_x = -tmp->frame_bw;
     tmp->title_y = -tmp->frame_bw;
 
-#ifdef SHAPE
     if (tmp->squeeze_info) {
 	register SqueezeInfo *si = tmp->squeeze_info;
 	int basex;
@@ -1136,7 +1129,6 @@ void ComputeTitleLocation (tmp)
 
 	tmp->title_x = basex - tmp->frame_bw;
     }
-#endif
 }
 
 

@@ -9,7 +9,7 @@
         DEPLIBS = $(DEPXMULIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(EXTENSIONLIB) $(XLIB)
        LINTLIBS = $(LINTXMU) $(LINTEXTENSIONLIB) $(LINTXLIB)
-        DEFINES = ExtensionDefines $(SIGNAL_DEFINES)
+        DEFINES = $(SIGNAL_DEFINES)
 
            SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
 		parse.c menus.c events.c resize.c util.c version.c iconmgr.c \

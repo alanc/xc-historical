@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.74 90/07/16 11:58:05 rws Exp $
+ * $XConsortium: resize.c,v 1.75 90/09/17 10:15:14 converse Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.74 90/07/16 11:58:05 rws Exp $";
+"$XConsortium: resize.c,v 1.75 90/09/17 10:15:14 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -653,9 +653,7 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
     XWindowChanges frame_wc, xwc;
     unsigned long frame_mask, xwcm;
     int title_width, title_height;
-#ifdef SHAPE
     int reShape;
-#endif
 
 #ifdef DEBUG
     fprintf (stderr, "SetupWindow: x=%d, y=%d, w=%d, h=%d, bw=%d\n",
@@ -690,7 +688,6 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
 
     ComputeWindowTitleOffsets (tmp_win, xwc.width, True);
 
-#ifdef SHAPE
     reShape = (tmp_win->wShaped ? TRUE : FALSE);
     if (tmp_win->squeeze_info)		/* check for title shaping */
     {
@@ -710,7 +707,6 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
 	    title_width = xwc.width;
 	}
     }
-#endif
 
     tmp_win->title_width = title_width;
     if (tmp_win->title_height) tmp_win->title_height = title_height;
@@ -765,11 +761,9 @@ void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
         XConfigureWindow(dpy, tmp_win->hilite_w, xwcm, &xwc);
     }
 
-#ifdef SHAPE
     if (HasShape && reShape) {
 	SetFrameShape (tmp_win);
     }
-#endif
 
     if (sendEvent)
     {
@@ -961,7 +955,6 @@ int flag;
     XUngrabServer (dpy);
 }
 
-#ifdef SHAPE
 SetFrameShape (tmp)
     TwmWindow *tmp;
 {
@@ -1040,7 +1033,6 @@ SetFrameShape (tmp)
 	}
     }
 }
-#endif
 
 /*
  * Squeezed Title:

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xeyes.c,v 1.8 89/07/23 11:38:03 rws Exp $";
+static char rcsid[] = "$XConsortium: xeyes.c,v 1.9 90/09/29 11:22:01 rws Exp $";
 #endif /* lint */
 
 #include <X11/Intrinsic.h>
@@ -26,9 +26,7 @@ void usage()
 "       [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n");
     fprintf(stderr,
 "       [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]");
-#ifdef SHAPE
     fprintf(stderr, " [-shape]");
-#endif
     fprintf(stderr, "\n");
     fprintf(stderr,
 "       [-outline {color}] [-center {color}] [-backing {backing-store}]\n");
@@ -39,9 +37,7 @@ static XrmOptionDescRec options[] = {
 {"-outline",	"*eyes.outline",	XrmoptionSepArg,	NULL},
 {"-center",	"*eyes.center",		XrmoptionSepArg,	NULL},
 {"-backing",	"*eyes.backingStore",	XrmoptionSepArg,	NULL},
-#ifdef SHAPE
 {"-shape",	"*eyes.shapeWindow",	XrmoptionNoArg,		"TRUE"},
-#endif
 };
 
 void main(argc, argv)

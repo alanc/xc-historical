@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.163 90/09/20 18:07:14 converse Exp $
+ * $XConsortium: events.c,v 1.164 90/10/17 11:19:19 converse Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.163 90/09/20 18:07:14 converse Exp $";
+"$XConsortium: events.c,v 1.164 90/10/17 11:19:19 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -91,10 +91,8 @@ int Cancel = FALSE;
 
 void HandleCreateNotify();
 
-#ifdef SHAPE
 void HandleShapeNotify ();
 extern int ShapeEventBase, ShapeErrorBase;
-#endif
 
 void AutoRaiseWindow (tmp)
     TwmWindow *tmp;
@@ -155,10 +153,8 @@ InitEvents()
     EventHandler[KeyPress] = HandleKeyPress;
     EventHandler[ColormapNotify] = HandleColormapNotify;
     EventHandler[VisibilityNotify] = HandleVisibilityNotify;
-#ifdef SHAPE
     if (HasShape)
 	EventHandler[ShapeEventBase+ShapeNotify] = HandleShapeNotify;
-#endif
 }
 
 
@@ -2246,7 +2242,6 @@ HandleConfigureRequest()
     SetupWindow (Tmp_win, x, y, width, height, bw);
 }
 
-#ifdef SHAPE
 /***********************************************************************
  *
  *  Procedure:
@@ -2270,7 +2265,6 @@ HandleShapeNotify ()
     Tmp_win->wShaped = sev->shaped;
     SetFrameShape (Tmp_win);
 }
-#endif
 
 /***********************************************************************
  *
