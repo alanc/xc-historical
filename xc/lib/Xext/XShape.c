@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.12 89/10/05 17:12:27 jim Exp $
+ * $XConsortium: XShape.c,v 1.13 89/10/05 17:36:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,47 +45,16 @@ static /* const */ char *shape_extension_name = SHAPENAME;
 /*
  * find_display - locate the display info block
  */
-static XExtDisplayInfo *find_display (dpy)
-    register Display *dpy;
-{
-    XExtDisplayInfo *dpyinfo;
-    static int close_display(), wire_to_event(), event_to_wire();
+static int close_display(), wire_to_event(), event_to_wire();
+static XEXT_GENERATE_FIND_DISPLAY (find_display, shape_info,
+				   shape_extension_name, close_display,
+				   wire_to_event, event_to_wire,
+				   ShapeNumberOfEvents, NULL)
 
-    if (!shape_info) {
-	shape_info = XextCreateExtension ();
-	if (!shape_info) return NULL;
-    }
-
-    dpyinfo = XextFindDisplay (shape_info, dpy);
-    if (!dpyinfo) {
-	/* create any extension data blocks */
-	dpyinfo = XextAddDisplay (shape_info, dpy, 
-				  shape_extension_name, close_display,
-				  wire_to_event, event_to_wire, 
-				  ShapeNumberOfEvents, NULL);
-    }
-
-    return dpyinfo;
-}
+static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shape_info)
 
 
-/*
- * close_display - called on XCloseDisplay, this should remove the
- * dpyinfo from the display list and clear the cached display, if necessary.
- */
-
-/*ARGSUSED*/
-static int close_display (dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
-{
-    /* get info pointer and free any extension data, if necessary */
-    return XextRemoveDisplay (shape_info, dpy);
-}
-
-
-static int
-wire_to_event (dpy, re, event)
+static int wire_to_event (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
@@ -120,8 +89,7 @@ wire_to_event (dpy, re, event)
     return 0;
 }
 
-static int
-event_to_wire (dpy, re, event)
+static int event_to_wire (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.10 89/10/05 11:27:02 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.11 89/10/05 17:17:48 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,44 +46,13 @@ static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
 /*
  * find_display - locate the display info block
  */
-static XExtDisplayInfo *find_display (dpy)
-    register Display *dpy;
-{
-    XExtDisplayInfo *dpyinfo;
-    static int close_display(), wire_to_event(), event_to_wire();
+static int close_display(), wire_to_event(), event_to_wire();
+static XEXT_GENERATE_FIND_DISPLAY (find_display, multibuf_info,
+				   multibuf_extension_name, close_display,
+				   wire_to_event, event_to_wire,
+				   MultibufferNumberOfEvents, NULL)
 
-    if (!multibuf_info) {
-	multibuf_info = XextCreateExtension ();
-	if (!multibuf_info) return NULL;
-    }
-
-    dpyinfo = XextFindDisplay (multibuf_info, dpy);
-    if (!dpyinfo) {
-	/* create any extension data blocks */
-	dpyinfo = XextAddDisplay (multibuf_info, dpy, 
-				  multibuf_extension_name, close_display,
-				  wire_to_event, event_to_wire, 
-				  MultibufferNumberOfEvents, NULL);
-    }
-
-    return dpyinfo;
-}
-
-
-/*
- * close_display - called on XCloseDisplay, this should remove the
- * dpyinfo from the display list and clear the cached display, if necessary.
- */
-
-/*ARGSUSED*/
-static int close_display (dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
-{
-    /* get info pointer and free any extension data, if necessary */
-    return XextRemoveDisplay (multibuf_info, dpy);
-}
-
+static XEXT_GENERATE_CLOSE_DISPLAY (close_display, multibuf_info)
 
 
 /*
