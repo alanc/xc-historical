@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.33 91/03/08 10:07:54 rws Exp $
+ * $XConsortium: Quarks.c,v 1.34 91/03/08 18:42:25 rws Exp $
  */
 
 /***********************************************************
@@ -123,12 +123,15 @@ char *Xpermalloc(length)
 	     (sizeof(struct {char a; unsigned long b;}) -
 	      sizeof(unsigned long) + sizeof(double))) &&
 	    !(length & (DALIGN-1)) &&
-	    (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1)))
+	    (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (DALIGN-1))) {
 	    neverFreeTableSize -= DALIGN - i;
-	else
+	    neverFreeTable += DALIGN - i;
+	} else
 #endif
-	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1))
+	    if (i = (NEVERFREETABLESIZE - neverFreeTableSize) & (WALIGN-1)) {
 		neverFreeTableSize -= WALIGN - i;
+		neverFreeTable += WALIGN - i;
+	    }
     }
     return permalloc(length);
 }
