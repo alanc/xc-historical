@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.45 94/03/08 15:15:53 gildea Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.46 94/03/08 18:47:24 matt Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -39,9 +39,18 @@ XCOMM operating system:  OSName
 
 #define CcCmd xlc
 
-#define CplusplusCmd xlC
 /*
- * Losing xlC refuses to compile files unless their names end in ".C".
+ * For IBM platforms, we must define both the location of the compiler
+ * and the location of its standard C++ library.  The library location
+ * is needed to resolve dependent library symbols when we build our own
+ * C++ shared libraries like libFresco
+ */
+
+#define CplusplusCmd xlC
+#define CplusplusLibC /usr/lpp/xlC/lib/libC.a
+
+/*
+ * IBM's xlC refuses to compile files unless their names end in ".C".
  * As an alternative to this fix, one could edit /etc/xlC.cfg
  * to change the suffix accepted by the compiler, but we prefer not 
  * requiring users to reconfigure their C++ compilers to make them work.
