@@ -193,7 +193,7 @@ case "$makefile" in
     $TMPMAKEFILE)
 	;;
     *)
-	rm -f Makefile.bak
+	rm -f $makefile.bak
 	cp $makefile $makefile.bak
 	echo "Appending dependencies to $makefile"
 	;;
@@ -204,12 +204,12 @@ esac
 /**/# can be used to delete everything from after the magic string to the end
 /**/# of the file.  Then, append a blank line again and then the dependencies.
 /**/#
-cat >> $makefile <<- END_OF_APPEND
+cat >> $makefile << END_OF_APPEND
 
 	$magic_string
 
 END_OF_APPEND
-ed $silent $makefile <<- END_OF_ED_SCRIPT
+ed $silent $makefile << END_OF_ED_SCRIPT
 /^$magic_string/+1,\$d
 w
 q
