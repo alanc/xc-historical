@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.62 92/08/22 13:04:19 rws Exp $
+ * $XConsortium: main.c,v 1.63 92/08/22 13:42:26 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -42,9 +42,9 @@ char	*directives[] = {
 #include "imakemdep.h"	/* from config sources */
 #undef MAKEDEPEND
 
-struct symtab	deflist[ MAXDEFINES ];
 struct	inclist inclist[ MAXFILES ],
-		*inclistp = inclist;
+		*inclistp = inclist,
+		maininclist;
 
 char	*filelist[ MAXFILES ];
 char	*includedirs[ MAXDIRS + 1 ];
@@ -89,7 +89,6 @@ main(argc, argv)
 	int	argc;
 	char	**argv;
 {
-	register struct symtab	*symp = deflist;
 	register char	**fp = filelist;
 	register char	**incp = includedirs;
 	register char	*p;
@@ -103,7 +102,10 @@ main(argc, argv)
 	ProgramName = argv[0];
 
 	while (psymp->s_name)
-	    *symp++ = *psymp++;
+	{
+	    define2(psymp->s_name, psymp->s_value, &maininclist);
+	    psymp++;
+	}
 	for(argc--, argv++; argc; argc--, argv++) {
 	    	/* if looking for endmarker then check before parsing */
 		if (endmarker && strcmp (endmarker, *argv) == 0) {
@@ -123,18 +125,16 @@ main(argc, argv)
 			if (endmarker[0] == '\0') endmarker = "--";
 			break;
 		case 'D':
-			symp->s_name = argv[0]+2;
-			if (*symp->s_name == '\0') {
-				symp->s_name = *(++argv);
+			if (argv[0][2] == '\0') {
+				argv++;
 				argc--;
 			}
-			for (p=symp->s_name; *p ; p++)
+			for (p=argv[0] + 2; *p ; p++)
 				if (*p == '=') {
-					*p++ = '\0';
+					*p = ' ';
 					break;
 				}
-			symp->s_value = *p == '\0' ? "1" : p;
-			symp++;
+			define(argv[0] + 2, &maininclist);
 			break;
 		case 'I':
 			if (incp >= includedirs + MAXDIRS)

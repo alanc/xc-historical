@@ -1,5 +1,5 @@
 /*
- * $XConsortium: def.h,v 1.19 92/08/22 12:37:24 rws Exp $
+ * $XConsortium: def.h,v 1.20 92/08/22 12:59:08 rws Exp $
  */
 #include <X11/Xosdefs.h>
 #include <stdio.h>
@@ -71,8 +71,8 @@ struct	inclist {
 	struct inclist	**i_list;	/* list of files it itself includes */
 	int		i_listlen;	/* length of i_list */
 	struct symtab	*i_defs;	/* symbol table for this file */
-	struct symtab	*i_lastdef;	/* last symbol defined */
-	int		i_deflen;	/* number of defines */
+	int		i_ndefs;	/* current # defines */
+	int		i_deflen;	/* amount of space in table */
 	boolean		i_defchecked;	/* whether defines have been checked */
 	boolean		i_notified;	/* whether we have revealed includes */
 	boolean		i_marked;	/* whether it's in the makefile */

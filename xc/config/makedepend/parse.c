@@ -1,10 +1,10 @@
 /*
- * $XConsortium: parse.c,v 1.21 91/05/13 10:23:47 rws Exp $
+ * $XConsortium: parse.c,v 1.22 92/08/22 13:05:05 rws Exp $
  */
 #include "def.h"
 
 extern char	*directives[];
-extern struct symtab	deflist[];
+extern struct inclist	maininclist;
 
 find_includes(filep, file, file_red, recursion, failOK)
 	struct filepointer	*filep;
@@ -48,8 +48,8 @@ find_includes(filep, file, file_red, recursion, failOK)
 			break;
 		case IFDEF:
 		case IFNDEF:
-			if ((type == IFDEF && isdefined(line, file_red))
-			 || (type == IFNDEF && !isdefined(line, file_red))) {
+			if ((type == IFDEF && isdefined(line, file_red, NULL))
+			 || (type == IFNDEF && !isdefined(line, file_red, NULL))) {
 				debug(1,(type == IFNDEF ?
 				    "line %d: %s !def'd in %s via %s%s\n" : "",
 				    filep->f_line, line,
@@ -83,22 +83,12 @@ find_includes(filep, file, file_red, recursion, failOK)
 			define(line, file);
 			break;
 		case UNDEF:
-			/*
-			 * undefine all occurances of line by killing s_name
-			 */
 			if (!*line) {
 			    warning("%s, line %d: incomplete undef == \"%s\"\n",
 				file_red->i_file, filep->f_line, line);
 			    break;
 			}
-		    {
-			struct symtab *val;
-			for(val = isdefined(line, file_red);
-			    (val && val->s_name);
-			    val = isdefined(line, file_red))
-
-			    val->s_name = "";
-		    }
+			undefine(line, file_red);
 			break;
 		case INCLUDE:
 			add_include(file, file_red, line, FALSE, failOK);
@@ -275,7 +265,7 @@ int deftype (line, filep, file_red, file, parse_it)
 
 		/* Support ANSI macro substitution */
 		{
-		    struct symtab *sym = isdefined(p, file_red);
+		    struct symtab *sym = isdefined(p, file_red, NULL);
 		    while (sym) {
 			p = sym->s_value;
 			debug(3,("%s : #includes SYMBOL %s = %s\n",
@@ -284,7 +274,7 @@ int deftype (line, filep, file_red, file, parse_it)
 			       sym -> s_value));
 			/* mark file as having included a 'soft include' */
 			file->i_included_sym = TRUE; 
-			sym = isdefined(p, file_red);
+			sym = isdefined(p, file_red, NULL);
 		    }
 		}
 
@@ -328,25 +318,28 @@ int deftype (line, filep, file_red, file, parse_it)
 	return(ret);
 }
 
-struct symtab *isdefined(symbol, file)
+struct symtab *isdefined(symbol, file, srcfile)
 	register char	*symbol;
 	struct inclist	*file;
+	struct inclist	**srcfile;
 {
 	register struct symtab	*val;
 
-	if (val = slookup(symbol, deflist)) {
+	if (val = slookup(symbol, &maininclist)) {
 		debug(1,("%s defined on command line\n", symbol));
+		if (srcfile != NULL) *srcfile = &maininclist;
 		return(val);
 	}
-	if (val = fdefined(symbol, file))
+	if (val = fdefined(symbol, file, srcfile))
 		return(val);
 	debug(1,("%s not defined in %s\n", symbol, file->i_file));
 	return(NULL);
 }
 
-struct symtab *fdefined(symbol, file)
+struct symtab *fdefined(symbol, file, srcfile)
 	register char	*symbol;
 	struct inclist	*file;
+	struct inclist	**srcfile;
 {
 	register struct inclist	**ip;
 	register struct symtab	*val;
@@ -356,30 +349,22 @@ struct symtab *fdefined(symbol, file)
 	if (file->i_defchecked)
 		return(NULL);
 	file->i_defchecked = TRUE;
-	if (val = slookup(symbol, file->i_defs))
+	if (val = slookup(symbol, file))
 		debug(1,("%s defined in %s\n", symbol, file->i_file));
 	if (val == NULL && file->i_list)
+		{
 		for (ip = file->i_list, i=0; i < file->i_listlen; i++, ip++)
-			if (val = fdefined(symbol, *ip)) {
+			if (val = fdefined(symbol, *ip, srcfile)) {
 				debug(1,("%s defined in %s\n",
 					symbol, (*ip)->i_file));
 				break;
 			}
+		}
+	else if (val != NULL && srcfile != NULL) *srcfile = file;
 	recurse_lvl--;
 	file->i_defchecked = FALSE;
 
 	return(val);
-}
-
-struct symtab *slookup(symbol, stab)
-	register char	*symbol;
-	register struct symtab	*stab;
-{
-	if (stab)
-		for (; stab->s_name; stab++)
-			if (strcmp(symbol, stab->s_name) == 0)
-				return(stab);
-	return(NULL);
 }
 
 /*
@@ -397,50 +382,153 @@ zero_value(exp, filep, file_red)
 }
 
 define(def, file)
-	register char	*def;
+	char	*def;
+	struct inclist	*file;
+{
+    char *val;
+
+    /* Separate symbol name and its value */
+    val = def;
+    while (isalnum(*val) || *val == '_')
+	val++;
+    if (*val)
+	*val++ = '\0';
+    while (*val == ' ' && *val == '\t')
+	val++;
+
+    if (!*val)
+	val = "1";
+    define2(def, val, file);
+}
+
+define2(name, val, file)
+	char	*name, *val;
+	struct inclist	*file;
+{
+    int first, last, below;
+    register struct symtab *sp = NULL, *dest;
+
+    /* Make space if it's needed */
+    if (file->i_defs == NULL)
+    {
+	file->i_defs = (struct symtab *)
+			malloc(sizeof (struct symtab) * SYMTABINC);
+	file->i_deflen = SYMTABINC;
+	file->i_ndefs = 0;
+    }
+    else if (file->i_ndefs == file->i_deflen)
+	file->i_defs = (struct symtab *)
+			realloc(file->i_defs,
+			    sizeof(struct symtab)*(file->i_deflen+=SYMTABINC));
+
+    if (file->i_defs == NULL)
+	fatal("malloc()/realloc() failure in insert_defn()\n");
+
+    below = first = 0;
+    last = file->i_ndefs - 1;
+    while (last >= first)
+    {
+	/* Fast inline binary search */
+	register char *s1;
+	register char *s2;
+	register int middle = (first + last) / 2;
+
+	/* Fast inline strchr() */
+	s1 = name;
+	s2 = file->i_defs[middle].s_name;
+	while (*s1++ == *s2++)
+	    if (s2[-1] == '\0') break;
+
+	/* If exact match, set sp and break */
+	if (*--s1 == *--s2) 
+	{
+	    sp = file->i_defs + middle;
+	    break;
+	}
+
+	/* If name > i_defs[middle] ... */
+	if (*s1 > *s2) 
+	{
+	    below = first;
+	    first = middle + 1;
+	}
+	/* else ... */
+	else
+	{
+	    below = last = middle - 1;
+	}
+    }
+
+    /* Search is done.  If we found an exact match to the symbol name,
+       just replace its s_value */
+    if (sp != NULL)
+    {
+	free(sp->s_value);
+	sp->s_value = copy(val);
+	return;
+    }
+
+    sp = file->i_defs + file->i_ndefs++;
+    dest = file->i_defs + below + 1;
+    while (sp > dest)
+    {
+	*sp = sp[-1];
+	sp--;
+    }
+    sp->s_name = copy(name);
+    sp->s_value = copy(val);
+}
+
+struct symtab *slookup(symbol, file)
+	register char	*symbol;
 	register struct inclist	*file;
 {
-	register char	*p;
-	struct symtab	*sp = file->i_lastdef++;
-	register int	i;
+	register int first = 0;
+	register int last = file->i_ndefs - 1;
 
-	/*
-	 * If we are out of space, allocate some more.
-	 */
-	if (file->i_defs == NULL
-	|| file->i_lastdef == file->i_defs + file->i_deflen) {
-		if (file->i_defs)
-			file->i_defs = (struct symtab *) realloc(file->i_defs,
-			    sizeof(struct symtab)*(file->i_deflen+SYMTABINC));
-		else
-			file->i_defs = (struct symtab *)
-				malloc(sizeof (struct symtab) * SYMTABINC);
-		i=file->i_deflen;
-		file->i_deflen += SYMTABINC;
-		while (i < file->i_deflen)
-			file->i_defs[ i++ ].s_name = NULL;
-		file->i_lastdef = file->i_defs + file->i_deflen - SYMTABINC;
-		if (sp) /* be sure we use last cell in previous group */
-			file->i_lastdef--;
-		sp = file->i_lastdef++;
+	if (file) while (last >= first)
+	{
+	    /* Fast inline binary search */
+	    register char *s1;
+	    register char *s2;
+	    register int middle = (first + last) / 2;
+
+	    /* Fast inline strchr() */
+	    s1 = symbol;
+	    s2 = file->i_defs[middle].s_name;
+	    while (*s1++ == *s2++)
+	        if (s2[-1] == '\0') break;
+
+	    /* If exact match, we're done */
+	    if (*--s1 == *--s2) 
+	    {
+	        return file->i_defs + middle;
+	    }
+
+	    /* If symbol > i_defs[middle] ... */
+	    if (*s1 > *s2) 
+	    {
+	        first = middle + 1;
+	    }
+	    /* else ... */
+	    else
+	    {
+	        last = middle - 1;
+	    }
 	}
-	else if (file->i_lastdef > file->i_defs + file->i_deflen)
-		fatal("define() botch\n");
+	return(NULL);
+}
 
-	/*
-	 * copy the symbol being defined.
-	 */
-	p = def;
-	while (isalnum(*p) || *p == '_')
-		p++;
-	if (*p)
-		*p++ = '\0';
-	sp->s_name = copy(def);
-
-	/*
-	 * And copy its value.
-	 */
-	while (*p == ' ' && *p == '\t')
-		p++;
-	sp->s_value = copy(p);
+undefine(symbol, file)
+	char	*symbol;
+	register struct inclist	*file;
+{
+	register struct symtab *ptr;
+	struct inclist *srcfile;
+	while ((ptr = isdefined(symbol, file, &srcfile)) != NULL)
+	{
+	    srcfile->i_ndefs--;
+	    for (; ptr < srcfile->i_defs + srcfile->i_ndefs; ptr++)
+		*ptr = ptr[1];
+	}
 }

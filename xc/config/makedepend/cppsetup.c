@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cppsetup.c,v 1.7 89/12/12 12:44:17 jim Exp $
+ * $XConsortium: cppsetup.c,v 1.8 92/08/22 13:04:44 rws Exp $
  */
 #include "def.h"
 
@@ -76,7 +76,7 @@ struct symtab *lookup(symbol)
 	static struct symtab    undefined;
 	struct symtab   *sp;
 
-	sp = isdefined(symbol, currentinc);
+	sp = isdefined(symbol, currentinc, NULL);
 	if (sp == NULL) {
 		sp = &undefined;
 		sp->s_value = NULL;
@@ -150,7 +150,7 @@ _lookup_variable (ip, var, len)
 
     strncpy (tmpbuf, var, len);
     tmpbuf[len] = '\0';
-    return isdefined (tmpbuf, pd->inc);
+    return isdefined (tmpbuf, pd->inc, NULL);
 }
 
 
