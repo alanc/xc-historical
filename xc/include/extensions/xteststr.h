@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.5 92/04/20 13:14:15 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.6 92/12/17 11:44:22 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -79,7 +79,9 @@ typedef struct {
     CARD32	pad2 B32;
     INT16	rootX B16, rootY B16;
     CARD32	pad3 B32;
-    CARD32	pad4 B32;
+    CARD16	pad4 B16;
+    CARD8	pad5;
+    CARD8	deviceid;
 } xXTestFakeInputReq;
 #define sz_xXTestFakeInputReq 36
 
