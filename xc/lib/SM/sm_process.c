@@ -1,5 +1,6 @@
-/* $XConsortium: sm_process.c,v 1.15 93/09/28 14:15:57 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.16 93/11/08 11:26:18 mor Exp $ */
 /******************************************************************************
+
 Copyright 1993 by the Massachusetts Institute of Technology,
 
                         All Rights Reserved
@@ -12,6 +13,8 @@ the name of M.I.T. not be used in advertising or publicity pertaining to
 distribution of the software without specific, written prior permission.
 M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>

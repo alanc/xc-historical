@@ -1,5 +1,6 @@
-/* $XConsortium: setauth.c,v 1.2 93/11/30 15:30:21 mor Exp $ */
+/* $XConsortium: getauth.c,v 1.1 93/12/06 19:06:11 mor Exp $ */
 /******************************************************************************
+
 Copyright 1993 by the Massachusetts Institute of Technology,
 
                         All Rights Reserved
@@ -12,6 +13,8 @@ the name of M.I.T. not be used in advertising or publicity pertaining to
 distribution of the software without specific, written prior permission.
 M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>

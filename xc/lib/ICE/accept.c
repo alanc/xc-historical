@@ -1,5 +1,6 @@
-/* $XConsortium: accept.c,v 1.14 93/11/24 15:08:05 mor Exp $ */
+/* $XConsortium: accept.c,v 1.15 93/11/25 14:24:45 mor Exp $ */
 /******************************************************************************
+
 Copyright 1993 by the Massachusetts Institute of Technology,
 
                         All Rights Reserved
@@ -12,6 +13,8 @@ the name of M.I.T. not be used in advertising or publicity pertaining to
 distribution of the software without specific, written prior permission.
 M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/ICE/ICElib.h>

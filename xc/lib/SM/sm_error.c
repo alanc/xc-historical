@@ -1,5 +1,6 @@
-/* $XConsortium: sm_error.c,v 1.4 93/09/24 15:54:06 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.5 93/09/27 21:07:20 mor Exp $ */
 /******************************************************************************
+
 Copyright 1993 by the Massachusetts Institute of Technology,
 
                         All Rights Reserved
@@ -12,6 +13,8 @@ the name of M.I.T. not be used in advertising or publicity pertaining to
 distribution of the software without specific, written prior permission.
 M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #include <X11/SM/SMlib.h>

@@ -1,5 +1,6 @@
-/* $XConsortium: SMlibint.h,v 1.9 93/11/08 16:35:06 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.10 93/12/06 19:58:23 mor Exp $ */
 /******************************************************************************
+
 Copyright 1993 by the Massachusetts Institute of Technology,
 
                         All Rights Reserved
@@ -12,6 +13,8 @@ the name of M.I.T. not be used in advertising or publicity pertaining to
 distribution of the software without specific, written prior permission.
 M.I.T. makes no representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Ralph Mor, X Consortium
 ******************************************************************************/
 
 #ifndef SMLIBINT_H
