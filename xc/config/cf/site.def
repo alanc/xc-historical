@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.42 91/11/10 06:19:26 jsw Exp $
+XCOMM site:  $XConsortium: site.def,v 1.43 91/11/17 17:12:41 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -30,8 +30,6 @@ XCOMM site:  $XConsortium: site.def,v 1.42 91/11/10 06:19:26 jsw Exp $
  *			Use at Your Own Risk				     *
  *                                                                           *
  *****************************************************************************/
-
-#include <host.def>
 
 #ifdef BeforeVendorCF
 
@@ -97,3 +95,9 @@ clean::									@@\
 #endif
 
 #endif /* AfterVendorCF */
+
+#ifndef SiteIConfigFiles
+#define SiteIConfigFiles $(IRULESRC)/host.def
+#endif
+
+#include <host.def>
