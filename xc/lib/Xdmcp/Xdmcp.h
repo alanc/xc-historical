@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xdmcp.h,v 1.6 91/07/14 15:44:52 gildea Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -82,9 +82,9 @@ typedef struct _XdmcpHeader {
 
 typedef struct _XdmcpBuffer {
     BYTE    *data;
-    int	    size;
-    int	    pointer;
-    int	    count;	    /* amount of data read */
+    int	    size;		/* size of buffer pointed by to data */
+    int	    pointer;		/* current index into data */
+    int	    count;		/* bytes read from network into data */
 } XdmcpBuffer, *XdmcpBufferPtr;
 
 typedef struct _XdmAuthKey {
