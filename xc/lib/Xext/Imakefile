@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXext
+#define DoSharedLib SharedLibXext
+#define DoDebugLib DebugLibXext
+#define DoProfileLib ProfileLibXext
 #include <Library.tmpl>
 
 #if BuildXInputLib || BuildPexClients
@@ -25,45 +29,40 @@
 		MITMisc.o XTestExt1.o 
      LINTLIBS = $(LINTXLIB)
 
-#if DebugLibXext && ProfileLibXext
-DebuggedAndProfiledLibraryObjectRule()
+LibraryObjectRule()
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(Xext,$(SOXEXTREV),$(OBJS),shared,..)
 #else
-# if DebugLibXext
-DebuggedLibraryObjectRule()
-# else
-#  if ProfileLibXext
-ProfiledLibraryObjectRule()
-#  else
-NormalLibraryObjectRule()
-#  endif
-# endif
+SharedLibraryTarget(Xext,$(SOXEXTREV),$(OBJS),.,.)
 #endif
-
+InstallSharedLibrary(Xext,$(SOXEXTREV),$(USRLIBDIR))
+#endif
+#if DoNormalLib
 NormalLibraryTarget(Xext,$(OBJS))
-LintLibraryTarget(Xext,$(SRCS))
 InstallLibrary(Xext,$(USRLIBDIR))
-
 #if DoInstallExtensionsIntoXlib
 MergeIntoInstalledLibrary($(USRLIBDIR)/libX11.a,libXext.a)
 #endif
-
-InstallLintLibrary(Xext,$(LINTLIBDIR))
-
-#if ProfileLibXext
+#endif
+#if DoProfileLib
 ProfiledLibraryTarget(Xext,$(OBJS))
 InstallLibrary(Xext_p,$(USRLIBDIR))
 #if DoInstallExtensionsIntoXlib
 MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_p.a,libXext_p.a)
 #endif
 #endif
-
-#if DebugLibXext
+#if DoDebugLib
 DebuggedLibraryTarget(Xext,$(OBJS))
 InstallLibrary(Xext_d,$(USRLIBDIR))
 #if DoInstallExtensionsIntoXlib
 MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_d.a,libXext_d.a)
 #endif
 #endif
+
+LintLibraryTarget(Xext,$(SRCS))
+InstallLintLibrary(Xext,$(LINTLIBDIR))
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))

@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXau
+#define DoSharedLib SharedLibXau
+#define DoDebugLib DebugLibXau
+#define DoProfileLib ProfileLibXau
 #include <Library.tmpl>
 
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -12,35 +16,23 @@ SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuGetBest.c AuLock.c \
 OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuGetBest.o AuLock.o \
 	AuRead.o AuUnlock.o AuWrite.o
 
-all::
+LibraryObjectRule()
 
-#if DebugLibXau && ProfileLibXau
-DebuggedAndProfiledLibraryObjectRule()
-#else
-# if DebugLibXau
-DebuggedLibraryObjectRule()
-# else
-#  if ProfileLibXau
-ProfiledLibraryObjectRule()
-#  else
-NormalLibraryObjectRule()
-#  endif
-# endif
-#endif
-
+#if DoNormalLib
 NormalLibraryTarget(Xau,$(OBJS))
-LintLibraryTarget(Xau,$(SRCS))
 InstallLibrary(Xau,$(USRLIBDIR))
-InstallLintLibrary(Xau,$(LINTLIBDIR))
-
-#if ProfileLibXau
+#endif
+#if DoProfileLib
 ProfiledLibraryTarget(Xau,$(OBJS))
 InstallLibrary(Xau_p,$(USRLIBDIR))
 #endif
-
-#if DebugLibXau
+#if DoDebugLib
 DebuggedLibraryTarget(Xau,$(OBJS))
+InstallLibrary(Xau_d,$(USRLIBDIR))
 #endif
+
+LintLibraryTarget(Xau,$(SRCS))
+InstallLintLibrary(Xau,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))

@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXdmcp
+#define DoSharedLib SharedLibXdmcp
+#define DoDebugLib DebugLibXdmcp
+#define DoProfileLib ProfileLibXdmcp
 #include <Library.tmpl>
 
 XCOMM
@@ -16,10 +20,6 @@ OS_NAME_DEFINES = OsNameDefines
 DESDEFS = -DHASDES
 DESSRCS = Encrypt.c Decrypt.c Crypt.c
 DESOBJS = Encrypt.o Decrypt.o Crypt.o
-#else
-DESDEFS =
-DESSRCS =
-DESOBJS =
 #endif
 
 DEFINES = $(DESDEFS)
@@ -108,34 +108,23 @@ OBJS = \
 	IncKey.o \
 	$(DESOBJS)
 
-all::
-#if DebugLibXdmcp && ProfileLibXdmcp
-DebuggedAndProfiledLibraryObjectRule()
-#else
-# if DebugLibXdmcp 
-DebuggedLibraryObjectRule()
-# else
-#  if ProfileLibXdmcp
-ProfiledLibraryObjectRule()
-#  else
-NormalLibraryObjectRule()
-#  endif
-# endif
-#endif
+LibraryObjectRule()
 
+#if DoNormalLib
 NormalLibraryTarget(Xdmcp,$(OBJS))
-LintLibraryTarget(Xdmcp,$(SRCS))
 InstallLibrary(Xdmcp,$(USRLIBDIR))
-InstallLintLibrary(Xdmcp,$(LINTLIBDIR))
-
-#if ProfileLibXdmcp 
+#endif
+#if DoProfileLib
 ProfiledLibraryTarget(Xdmcp,$(OBJS))
 InstallLibrary(Xdmcp_p,$(USRLIBDIR))
 #endif
-
-#if DebugLibXdmcp
+#if DoDebugLib
 DebuggedLibraryTarget(Xdmcp,$(OBJS))
+InstallLibrary(Xdmcp_g,$(USRLIBDIR))
 #endif
+
+LintLibraryTarget(Xdmcp,$(SRCS))
+InstallLintLibrary(Xdmcp,$(LINTLIBDIR))
 
 BuildIncludes($(HEADERS),.,.)
 

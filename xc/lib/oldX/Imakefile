@@ -1,3 +1,7 @@
+#define DoNormalLib NormalOldLibX
+#define DoSharedLib SharedOldLibX
+#define DoDebugLib DebugOldLibX
+#define DoProfileLib ProfileOldLibX
 #include <Library.tmpl>
 
        INCLUDES = -I$(INCLUDESRC) -I$(XLIBSRC)
@@ -14,50 +18,36 @@ OBJS =\
 	XLookAssoc.o \
 	XMakeAssoc.o
 
-#if SharedOldLibX
-# if DebugOldLibX
-SharedAndDebuggedLibraryObjectRule()
-# else
-SharedLibraryObjectRule()
-# endif
-#else
-# if DebugOldLibX && ProfileOldLibX
-DebuggedAndProfiledLibraryObjectRule()
-# else
-#  if DebugOldLibX
-DebuggedLibraryObjectRule()
-#  else
-#   if ProfileOldLibX
-ProfiledLibraryObjectRule()
-#   else
-NormalLibraryObjectRule()
-#   endif
-#  endif
-# endif
-#endif
+LibraryObjectRule()
 
-#if SharedOldLibX
-NormalSharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS))
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),shared,.)
+#else
+SharedLibraryTarget(oldX,$(SOOLDXREV),$(OBJS),.,.)
+#endif
 InstallSharedLibrary(oldX,$(SOOLDXREV),$(USRLIBDIR))
 #endif
+#if DoNormalLib
 NormalLibraryTarget(oldX,$(OBJS))
+InstallLibrary(oldX,$(USRLIBDIR))
+#endif
+#if DoProfileLib
+ProfiledLibraryTarget(oldX,$(OBJS))
+InstallLibrary(oldX_p,$(USRLIBDIR))
+#endif
+#if DoDebugLib
+DebuggedLibraryTarget(oldX,$(OBJS))
+InstallLibrary(oldX_g,$(USRLIBDIR))
+#endif
+
 LintLibraryTarget(oldX,*.c)
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
 
-InstallLibrary(oldX,$(USRLIBDIR))
 InstallLintLibrary(oldX,$(LINTLIBDIR))
 
-
-#if ProfileOldLibX
-ProfiledLibraryTarget(oldX,$(OBJS))
-InstallLibrary(oldX_p,$(USRLIBDIR))
-#endif
-
-#if DebugOldLibX
-DebuggedLibraryTarget(oldX,$(OBJS))
-#endif
 
 DependTarget()
 

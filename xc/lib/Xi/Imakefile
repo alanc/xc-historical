@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXinput
+#define DoSharedLib SharedLibXinput
+#define DoDebugLib DebugLibXinput
+#define DoProfileLib ProfileLibXinput
 #include <Library.tmpl>
 
 INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
@@ -108,42 +112,30 @@ LOBJS = XAllowDv.ln \
 		  XExtInt.ln 
        LINTLIBS = $(LINTXLIB) $(LINTXEXT)
 
-#if SharedLibXinput
-SharedLibraryObjectRule()
-#else
-#if DebugLibXinput && ProfileLibXinput
-DebuggedAndProfiledLibraryObjectRule()
-#else
-# if DebugLibXinput
-DebuggedLibraryObjectRule()
-# else
-#  if ProfileLibXinput
-ProfiledLibraryObjectRule()
-#  else
-NormalLibraryObjectRule()
-#  endif
-# endif
-#endif
-#endif
+LibraryObjectRule()
 
-#if SharedLibXinput
-NormalSharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS))
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),shared,..)
+#else
+SharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS),.,.)
+#endif
 InstallSharedLibrary(Xi,$(SOXINPUTREV),$(USRLIBDIR))
 #endif
-
+#if DoNormalLib
 NormalLibraryTarget(Xi,$(OBJS))
-LintLibraryTarget(Xi,$(SRCS))
 InstallLibrary(Xi,$(USRLIBDIR))
-InstallLintLibrary(Xi,$(LINTLIBDIR))
-
-#if ProfileLibXinput
+#endif
+#if DoProfileLib
 ProfiledLibraryTarget(Xi,$(OBJS))
 InstallLibrary(Xi_p,$(USRLIBDIR))
 #endif
-
-#if DebugLibXinput
+#if DoDebugLib
 DebuggedLibraryTarget(Xi,$(OBJS))
 #endif
+
+LintLibraryTarget(Xi,$(SRCS))
+InstallLintLibrary(Xi,$(LINTLIBDIR))
 
 DependTarget()
 

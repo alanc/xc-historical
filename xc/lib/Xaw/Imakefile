@@ -1,3 +1,7 @@
+#define DoNormalLib NormalLibXaw
+#define DoSharedLib SharedLibXaw
+#define DoDebugLib DebugLibXaw
+#define DoProfileLib ProfileLibXaw
 #include <Library.tmpl>
 
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -113,7 +117,14 @@ SRCS = \
 	Viewport.c \
 	XawInit.c 
 
+#if SharedDataSeparation
+UNSHAREDOBJS = AllWidgets.o
+#else
+DATAOBJS = AllWidgets.o
+#endif
+
 OBJS = \
+	$(DATAOBJS) \
 	AsciiSink.o \
 	AsciiSrc.o \
 	AsciiText.o \
@@ -151,55 +162,39 @@ OBJS = \
 	Viewport.o \
 	XawInit.o 
 
-UNSHAREDOBJS = AllWidgets.o
-
-#if SharedLibXaw
-# if DebugLibXaw
-SharedAndDebuggedLibraryObjectRule()
-# else
-SharedLibraryObjectRule()
-# endif
-#else
-# if DebugLibXaw && ProfileLibXaw
-DebuggedAndProfiledLibraryObjectRule()
-# else
-# if DebugLibXaw
-DebuggedLibraryObjectRule()
-#  else
-#   if ProfileLibXaw
-ProfiledLibraryObjectRule()
-#   else
-NormalLibraryObjectRule()
-#   endif
-#  endif
-# endif
-#endif
-
-#if SharedLibXaw
-NormalSharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS))
-NormalSharedLibraryDataTarget(Xaw,$(SOXAWREV),$(UNSHAREDOBJS))
-InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
-InstallSharedLibraryData(Xaw,$(SOXAWREV),$(USRLIBDIR))
-#endif
-
-NormalLibraryTarget(Xaw,$(OBJS) $(UNSHAREDOBJS))
-LintLibraryTarget(Xaw,$(SRCS))
-InstallLibrary(Xaw,$(USRLIBDIR))
-InstallLintLibrary(Xaw,$(LINTLIBDIR))
-
-#if ProfileLibXaw
-ProfiledLibraryTarget(Xaw,$(OBJS))
-InstallLibrary(Xaw_p,$(USRLIBDIR))
-#endif
-
-#if DebugLibXaw
-DebuggedLibraryTarget(Xaw,$(OBJS))
-#endif
+LibraryObjectRule()
 
 #if defined(CrayArchitecture) && defined(CrayUsingSCC)
 XCOMM Cray SCC optimizer is broken
-SpecialObjectRule(Paned.o,  ,-hnoopt)
+SpecialLibObjectRule(Paned.o,  ,-hnoopt)
 #endif
+
+#if DoSharedLib
+#if DoNormalLib
+SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),shared,..)
+#else
+SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),.,.)
+#endif
+SharedLibraryDataTarget(Xaw,$(SOXAWREV),$(UNSHAREDOBJS))
+InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
+InstallSharedLibraryData(Xaw,$(SOXAWREV),$(USRLIBDIR))
+#endif
+#if DoNormalLib
+NormalLibraryTarget(Xaw,$(OBJS) $(UNSHAREDOBJS))
+InstallLibrary(Xaw,$(USRLIBDIR))
+#endif
+#if DoProfileLib
+ProfiledLibraryTarget(Xaw,$(OBJS))
+InstallLibrary(Xaw_p,$(USRLIBDIR))
+#endif
+#if DoDebugLib
+DebuggedLibraryTarget(Xaw,$(OBJS))
+InstallLibrary(Xaw_g,$(USRLIBDIR))
+#endif
+
+LintLibraryTarget(Xaw,$(SRCS))
+InstallLintLibrary(Xaw,$(LINTLIBDIR))
+
 BuildIncludes($(HEADERS),Xaw,..)
 
 MakeDirectories(install,$(INCDIR)/Xaw)
