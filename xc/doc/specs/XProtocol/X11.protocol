@@ -7095,7 +7095,7 @@ For
 each mask will lie within the corresponding pixel subfield.
 By ORing together subsets of masks with pixels,
 C*%2 sup R+G+B% distinct pixels can be produced; 
-all of these are allocated by the request.
+all of these are allocated writable by the request.
 The initial RGB values of the allocated entries are undefined.
 In the colormap,
 there are only C*%2 sup R% independent red entries, 
