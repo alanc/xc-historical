@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.5 91/05/10 11:42:58 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.6 91/05/30 19:09:09 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -127,7 +127,7 @@ CursorMetricsFromGlyph( pfont, ch, cm)
     CharInfoPtr 	pci;
     int			nglyphs;
     CARD8		chs[2];
-    CARD32		encoding;
+    FontEncoding	encoding;
 
     chs[0] = ch >> 8;
     chs[1] = ch;
