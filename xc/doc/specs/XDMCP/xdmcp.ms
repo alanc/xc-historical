@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.18 91/07/28 15:48:25 rws Exp $
+.\" $XConsortium: xdmcp.ms,v 1.19 94/04/13 19:50:58 rws Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %
@@ -9,9 +9,6 @@ define cc % "\\fR}\\fP" %
 ..
 .de BT
 ..
-.fp 6 I
-.fp 7 C
-.fp 8 CB
 .ps 10
 .nr PS 10
 \&
@@ -243,9 +240,9 @@ Opcode
 .RS
 This specifies what step of the protocol this packet represents and should
 contain one of the following values (encoding provided in section below):
-\f8BroadcastQuery\fP, \f8Query\fP, \f8IndirectQuery\fP, \f8ForwardQuery\fP,
-\f8Willing\fP, \f8Unwilling\fP, \f8Request\fP, \f8Accept\fP, \f8Decline\fP,
-\f8Manage\fP, \f8Refuse\fP, \f8Failed\fP, \f8KeepAlive\fP, \f8Alive\fP.
+\fBBroadcastQuery\fP, \fBQuery\fP, \fBIndirectQuery\fP, \fBForwardQuery\fP,
+\fBWilling\fP, \fBUnwilling\fP, \fBRequest\fP, \fBAccept\fP, \fBDecline\fP,
+\fBManage\fP, \fBRefuse\fP, \fBFailed\fP, \fBKeepAlive\fP, \fBAlive\fP.
 .RE
 .LP
 Length of data in bytes
@@ -267,12 +264,12 @@ The length of the remaining data should correspond to the sum of the
 lengths of the individual remaining data items.
 .IP 3
 The
-\f7opcode\fP
+\fCopcode\fP
 should be expected (a finite state diagram is given
 in a later section).
 .IP 4
-If the packet is of type \f8Manage\fP or \f8Refuse\fP, the \f7Session ID\fP
-should match the value sent in the preceding \f8Accept\fP packet.
+If the packet is of type \fBManage\fP or \fBRefuse\fP, the \fCSession ID\fP
+should match the value sent in the preceding \fBAccept\fP packet.
 .RE
 .NH 1
 Protocol
@@ -284,63 +281,63 @@ description above.  The additional information is appended to the packet
 header in the order described without padding, and the length field is
 computed accordingly.
 .LP
-\f8Query\fP
+\fBQuery\fP
 .br
-\f8BroadcastQuery\fP
+\fBBroadcastQuery\fP
 .br
-\f8IndirectQuery\fP
+\fBIndirectQuery\fP
 .RS
 Display \(-> Manager
 .br
 Additional Fields:
 .RS
-\f7Authentication Names\fP:
+\fCAuthentication Names\fP:
 ARRAYofARRAY8
 .RS
 A list of authentication names which the display supports.  The manager will
-choose one of these and return it in the \f8Willing\fP packet.
+choose one of these and return it in the \fBWilling\fP packet.
 .RE
 .RE
 Semantics:
 .RS
-A \f8Query\fP packet is sent from the display to a specific host to ask if
+A \fBQuery\fP packet is sent from the display to a specific host to ask if
 that host is willing to provide management services to this display.  The
-host should respond with \f8Willing\fP if it is willing to service the
-display or \f8Unwilling\fP if it is not.
+host should respond with \fBWilling\fP if it is willing to service the
+display or \fBUnwilling\fP if it is not.
 .LP
-A \f8BroadcastQuery\fP packet is similar to the \f8Query\fP packet except
+A \fBBroadcastQuery\fP packet is similar to the \fBQuery\fP packet except
 that it is intended to be received by all hosts on the network (or
-sub-network).  However, unlike \f8Query\fP requests, hosts that are not
-willing to service the display should simply ignore \f8BroadcastQuery\fP
+sub-network).  However, unlike \fBQuery\fP requests, hosts that are not
+willing to service the display should simply ignore \fBBroadcastQuery\fP
 requests.
 .LP
-An \f8IndirectQuery\fP packet is sent to a well-known manager which forwards
+An \fBIndirectQuery\fP packet is sent to a well-known manager which forwards
 the request to a larger collection of secondary managers using
-\f8ForwardQuery\fP packets.  In this way, the collection of managers which
+\fBForwardQuery\fP packets.  In this way, the collection of managers which
 respond can be grouped on other than network boundaries; the use of a
 central manager reduces system administrative overhead.  The primary manager
-may also send a \f8Willing\fP packet in response to this packet.
+may also send a \fBWilling\fP packet in response to this packet.
 .LP
 Each packet type has slightly different semantics:
 .IP
-The \f8Query\fP packet is destined only for a single host.  If the display
-is instructed to \f8Query\fP multiple managers, it will send multiple
-\f8Query\fP packets.  The \f8Query\fP packet also demands a response from
-the manager, either \f8Willing\fP or \f8Unwilling\fP.
+The \fBQuery\fP packet is destined only for a single host.  If the display
+is instructed to \fBQuery\fP multiple managers, it will send multiple
+\fBQuery\fP packets.  The \fBQuery\fP packet also demands a response from
+the manager, either \fBWilling\fP or \fBUnwilling\fP.
 .IP
-The \f8BroadcastQuery\fP packet is sent to many hosts.  Each manager which
-receives this packet will not respond with an \f8Unwilling\fP packet.
+The \fBBroadcastQuery\fP packet is sent to many hosts.  Each manager which
+receives this packet will not respond with an \fBUnwilling\fP packet.
 .IP
-The \f8IndirectQuery\fP packet is sent to only one manager, with the request
+The \fBIndirectQuery\fP packet is sent to only one manager, with the request
 that the request be forwarded to a larger list of managers using
-\f8ForwardQuery\fP packets.  This list is expected to be maintained at one
+\fBForwardQuery\fP packets.  This list is expected to be maintained at one
 central site to reduce administrative overhead.  The function of this packet
-type is similar to \f8BroadcastQuery\fP except that \f8BroadcastQuery\fP is
+type is similar to \fBBroadcastQuery\fP except that \fBBroadcastQuery\fP is
 not forwarded.
 .RE
 Valid Responses:
 .RS
-\f8Willing\fP, \f8Unwilling\fP
+\fBWilling\fP, \fBUnwilling\fP
 .RE
 Problems/Solutions:
 .RS
@@ -351,8 +348,8 @@ Not all managers receive the query packet.
 .RS
 Indication:
 .RS
-none if \f8BroadcastQuery\fP or \f8IndirectQuery\fP was sent, else failure
-to receive \f8Willing\fP.
+none if \fBBroadcastQuery\fP or \fBIndirectQuery\fP was sent, else failure
+to receive \fBWilling\fP.
 .RE
 Solution:
 .RS
@@ -370,52 +367,52 @@ display will ``wakeup'' when touched by the user.
 .RE
 .RE
 .LP
-\f8ForwardQuery\fP
+\fBForwardQuery\fP
 .RS
 Primary Manager \(-> Secondary Manager
 .br
 Additional Fields:
 .RS
-\f7Client Address\fP:
+\fCClient Address\fP:
 ARRAY8
 .RS
 The network address of the client display.
 .RE
-\f7Client Port\fP:
+\fCClient Port\fP:
 ARRAY8
 .RS
 An identification of the client task on the client display.
 .RE
-\f7Authentication Names\fP:
+\fCAuthentication Names\fP:
 ARRAYofARRAY8
 .RS
-This is a duplicate of \f7Authentication Names\fP array which was received
-in the \f8IndirectQuery\fP
+This is a duplicate of \fCAuthentication Names\fP array which was received
+in the \fBIndirectQuery\fP
 packet.
 .RE
 .RE
 Semantics:
 .RS
-When primary manager receives a \f8IndirectQuery\fP packet, it is
-responsible for sending \f8ForwardQuery\fP packets to an appropriate list of
+When primary manager receives a \fBIndirectQuery\fP packet, it is
+responsible for sending \fBForwardQuery\fP packets to an appropriate list of
 managers which can provide service to the display using the same network
-type as the one the original \f8IndirectQuery\fP packet was received from.
-The \f7Client Address\fP and \f7Client Port\fP fields must contain an
+type as the one the original \fBIndirectQuery\fP packet was received from.
+The \fCClient Address\fP and \fCClient Port\fP fields must contain an
 address which the secondary manager can use to reach the display also using
-this same network.  Each secondary manager sends a \f8Willing\fP packet to
+this same network.  Each secondary manager sends a \fBWilling\fP packet to
 the display if it is willing to provide service.
 .LP
-\f8ForwardQuery\fP packets are similar to \f8BroadcastQuery\fP packets in
+\fBForwardQuery\fP packets are similar to \fBBroadcastQuery\fP packets in
 that managers which are not willing to service particular displays should
-not send a \f8Unwilling\fP packet.
+not send a \fBUnwilling\fP packet.
 .RE
 Valid Responses:
 .RS
-\f8Willing\fP
+\fBWilling\fP
 .RE
 Problems/Solutions:
 .RS
-Identical to \f8BroadcastQuery\fP
+Identical to \fBBroadcastQuery\fP
 .RE
 Timeout/Retransmission policy:
 .RS
@@ -424,32 +421,32 @@ retransmitted.
 .RE
 .RE
 .LP
-\f8Willing\fP
+\fBWilling\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Authentication Name\fP:
+\fCAuthentication Name\fP:
 ARRAY8
 .RS
 This specifies the authentication method, selected from the list offered in
-the \f8Query\fP, \f8BroadcastQuery\fP or \f8IndirectQuery\fP packet that the
-manger expects the display to use in the subsequent \f8Request\fP packet.
+the \fBQuery\fP, \fBBroadcastQuery\fP or \fBIndirectQuery\fP packet that the
+manger expects the display to use in the subsequent \fBRequest\fP packet.
 This choice should remain as constant as feasible so that displays which
-send multiple \f8Query\fP packets can use the \f7Authentication Name\fP from
-any \f8Willing\fP packet which arrives.
+send multiple \fBQuery\fP packets can use the \fCAuthentication Name\fP from
+any \fBWilling\fP packet which arrives.
 .LP
 The display is free to ignore managers which request an insufficient level
 of authentication.
 .RE
-\f7Hostname\fP:
+\fCHostname\fP:
 ARRAY8
 .RS
 A human readable string describing the host from which the packet was sent.
 The protocol specifies no interpretation of the data in this field.
 .RE
-\f7Status\fP:
+\fCStatus\fP:
 ARRAY8
 .RS
 A human readable string describing the ``status'' of the host.  This could
@@ -459,9 +456,9 @@ protocol specifies no interpretation of the data in this field.
 .RE
 Semantics:
 .RS
-A \f8Willing\fP packet is sent by managers that may service connections from
-this display.  It is sent in response to either a \f8Query\fP,
-\f8BroadcastQuery\fP or \f8ForwardQuery\fP but does not imply a commitment
+A \fBWilling\fP packet is sent by managers that may service connections from
+this display.  It is sent in response to either a \fBQuery\fP,
+\fBBroadcastQuery\fP or \fBForwardQuery\fP but does not imply a commitment
 to provide service (e.g. it may later decide that it has accepted enough
 connections already).
 .RE
@@ -469,12 +466,12 @@ Problems/Solutions:
 .RS
 Problem:
 .RS
-\f8Willing\fP not received by the display.
+\fBWilling\fP not received by the display.
 .br
 Indication:
 .RS
-none if \f8BroadcastQuery\fP or \f8IndirectQuery\fP was sent, else failure to
-receive \f8Willing\fP.
+none if \fBBroadcastQuery\fP or \fBIndirectQuery\fP was sent, else failure to
+receive \fBWilling\fP.
 .RE
 Solution:
 .RS
@@ -489,20 +486,20 @@ never be retransmitted.
 .RE
 .RE
 .LP
-\f8Unwilling\fP
+\fBUnwilling\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-The same fields as in the \f8Willing\fP packet.  The \f7Status\fP field
+The same fields as in the \fBWilling\fP packet.  The \fCStatus\fP field
 should indicate to the user a reason for the refusal of service.
 .RE
 Semantics:
 .RS
-An \f8Unwilling\fP packet is sent by managers in response to direct
-\f8Query\fP requests (as opposed to \f8BroadcastQuery\fP or
-\f8IndirectQuery\fP requests) if the manager will not accept requests for
+An \fBUnwilling\fP packet is sent by managers in response to direct
+\fBQuery\fP requests (as opposed to \fBBroadcastQuery\fP or
+\fBIndirectQuery\fP requests) if the manager will not accept requests for
 management.  This is typically sent by managers that wish to only service
 particular displays or which handle a limited number of displays at once.
 .RE
@@ -510,15 +507,15 @@ Problems/Solutions:
 .RS
 Problem:
 .RS
-\f8Unwilling\fP not received by the display.
+\fBUnwilling\fP not received by the display.
 .br
 Indication:
 .RS
-Display fails to receive \f8Unwilling\fP.
+Display fails to receive \fBUnwilling\fP.
 .RE
 Solution:
 .RS
-The display should continue to send \f8Query\fP messages until a response is
+The display should continue to send \fBQuery\fP messages until a response is
 received.
 .RE
 .RE
@@ -530,36 +527,36 @@ never be retransmitted.
 .RE
 .RE
 .LP
-\f8Request\fP
+\fBRequest\fP
 .br
 .RS
 Display \(-> Manager
 .br
 Additional Fields:
 .RS
-\f7Display Number\fP:
+\fCDisplay Number\fP:
 CARD16
 .RS
 The index of this particular server for the host on which the display is
 resident.  This value will be zero for most autonomous displays.
 .RE
-\f7Connection Types\fP:
+\fCConnection Types\fP:
 ARRAY16
 .RS
 An array indicating the stream services accepted by the display.  If the
 high-order byte in a particular entry is zero, the low-order byte
 corresponds to an X-protocol host family type.
 .RE
-\f7Connection Addresses\fP:
+\fCConnection Addresses\fP:
 ARRAYofARRAY8
 .RS
 For each connection type in the previous array, the corresponding entry in
 this array indicates the network address of the display device.
 .RE
-\f7Authentication Name\fP:
+\fCAuthentication Name\fP:
 ARRAY8
 .br
-\f7Authentication Data\fP:
+\fCAuthentication Data\fP:
 ARRAY8
 .RS
 This specifies the authentication protocol that the display expects
@@ -567,14 +564,14 @@ the manager to validate itself with.  The Authentication Data is
 expected to contain data which the manager will interpret, modify
 and use to authenticate itself.
 .RE
-\f7Authorization Names\fP:
+\fCAuthorization Names\fP:
 ARRAYofARRAY8
 .RS
 This array specifies which types of authorization the display supports.  The
 manager may decide to reject displays with which it cannot perform
 authorization.
 .RE
-\f7Manufacturer Display ID\fP:
+\fCManufacturer Display ID\fP:
 ARRAY8
 .RS
 This field can be used by the manager to determine how to decrypt the
@@ -584,16 +581,16 @@ Manufacturer Display ID Format.
 .RE
 Semantics:
 .RS
-A \f8Request\fP packet is sent by a display to a specific host to request a
+A \fBRequest\fP packet is sent by a display to a specific host to request a
 session id in preparation for a establishing a connection.  If the manager
 is willing to service a connection to this display, it should return an
-\f8Accept\fP packet with a valid session id and should be ready for a
-subsequent Manage request.  Otherwise, it should return a \f8Decline\fP
+\fBAccept\fP packet with a valid session id and should be ready for a
+subsequent Manage request.  Otherwise, it should return a \fBDecline\fP
 packet.
 .RE
 Valid Responses:
 .RS
-\f8Accept\fP, \f8Decline\fP
+\fBAccept\fP, \fBDecline\fP
 .RE
 Problems/Solutions:
 .RS
@@ -607,7 +604,7 @@ Display timeout waiting for response.
 .RE
 Solution:
 .RS
-Display resends \f8Request\fP message.
+Display resends \fBRequest\fP message.
 .RE
 .RE
 Problem:
@@ -620,11 +617,11 @@ none
 .RE
 Solution:
 .RS
-Each time a \f8Request\fP is sent, the manager sends the \f7Session ID\fP
-associated with the next session in the \f8Acknowledge\fP.  If that next
+Each time a \fBRequest\fP is sent, the manager sends the \fCSession ID\fP
+associated with the next session in the \fBAcknowledge\fP.  If that next
 session is not yet started, the manager will simply resend with the same
-\f7Session ID\fP.  If the session is in progress, the manager will reply
-with a new \f7Session ID\fP; in which case, the \f8Acknowledge\fP will be
+\fCSession ID\fP.  If the session is in progress, the manager will reply
+with a new \fCSession ID\fP; in which case, the \fBAcknowledge\fP will be
 discarded by the display.
 .RE
 .RE
@@ -636,31 +633,31 @@ than 126 seconds, give up and report an error to the user.
 .RE
 .RE
 .LP
-\f8Accept\fP
+\fBAccept\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Session ID\fP:
+\fCSession ID\fP:
 CARD32
 .RS
 This identifies the session which can be started by the manager.
 .RE
-\f7Authentication Name\fP:
+\fCAuthentication Name\fP:
 ARRAY8
 .br
-\f7Authentication Data\fP:
+\fCAuthentication Data\fP:
 ARRAY8
 .RS
 This data is sent back to the display to authenticate the manager.
 If the Authentication Data is not the value expected by the display, it
 should terminate the protocol at this point and display an error to the user.
 .RE
-\f7Authorization Name\fP:
+\fCAuthorization Name\fP:
 ARRAY8
 .br
-\f7Authorization Data\fP:
+\fCAuthorization Data\fP:
 ARRAY8
 .RS
 This data is sent to the display to indicate the type of authorization the
@@ -670,30 +667,30 @@ Manage packet is received.
 .RE
 Semantics:
 .RS
-An \f8Accept\fP packet is sent by a manager in response to a \f8Request\fP
+An \fBAccept\fP packet is sent by a manager in response to a \fBRequest\fP
 packet if the manager is willing to establish a connection for the display.
-The \f7Session ID\fP is used to identify this connection from any preceding
-ones and will be used by the display in its subsequent \f8Manage\fP packet.
-The \f7Session ID\fP is a 32 bit number which is incremented each time an
-\f8Accept\fP packet is sent as it must be reasonably unique over a long
+The \fCSession ID\fP is used to identify this connection from any preceding
+ones and will be used by the display in its subsequent \fBManage\fP packet.
+The \fCSession ID\fP is a 32 bit number which is incremented each time an
+\fBAccept\fP packet is sent as it must be reasonably unique over a long
 period of time.
 .LP
-If the authentication information is invalid, a \f8Decline\fP packet will be
-returned with an appropriate \f7Status\fP message.
+If the authentication information is invalid, a \fBDecline\fP packet will be
+returned with an appropriate \fCStatus\fP message.
 .RE
 Problems/Solutions:
 .RS
 Problem:
 .RS
-\f8Accept\fP or \f8Decline\fP not received by display.
+\fBAccept\fP or \fBDecline\fP not received by display.
 .br
 Indication:
 .RS
-Display timeout waiting for response to \f8Request\fP.
+Display timeout waiting for response to \fBRequest\fP.
 .RE
 Solution:
 .RS
-Display resends \f8Request\fP message.
+Display resends \fBRequest\fP message.
 .RE
 .RE
 Problem:
@@ -702,11 +699,11 @@ Message received out of order by display.
 .br
 Indication:
 .RS
-Display receives \f8Accept\fP after \f8Manage\fP has been sent.
+Display receives \fBAccept\fP after \fBManage\fP has been sent.
 .RE
 Solution:
 .RS
-Display discards \f8Accept\fP messages after it has sent a \f8Manage\fP
+Display discards \fBAccept\fP messages after it has sent a \fBManage\fP
 message.
 .RE
 .RE
@@ -718,40 +715,40 @@ never be retransmitted.
 .RE
 .RE
 .LP
-\f8Decline\fP
+\fBDecline\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Status\fP:
+\fCStatus\fP:
 ARRAY8
 .RS
 This is a human readable string indicating the reason for refusal of
 service.
 .RE
-\f7Authentication Name\fP:
+\fCAuthentication Name\fP:
 ARRAY8
 .br
-\f7Authentication Data\fP:
+\fCAuthentication Data\fP:
 ARRAY8
 .RS
 This data is sent back to the display to authenticate the manager.  If the
-\f7Authentication Data\fP is not the value expected by the display, it
+\fCAuthentication Data\fP is not the value expected by the display, it
 should terminate the protocol at this point and display an error to the user.
 .RE
 .RE
 Semantics:
 .RS
-A \f8Decline\fP packet is sent by a manager in response to a \f8Request\fP
+A \fBDecline\fP packet is sent by a manager in response to a \fBRequest\fP
 packet if the manager is unwilling to establish a connection for the
-display.  This is allowed even if the manager had responded \f8Willing\fP to
+display.  This is allowed even if the manager had responded \fBWilling\fP to
 a previous query.
 .RE
 Problems/Solutions:
 .RS
 same as for
-\f8Accept\fP.
+\fBAccept\fP.
 .RE
 Timeout/Retransmission policy:
 .RS
@@ -760,28 +757,28 @@ be retransmitted.
 .RE
 .RE
 .LP
-\f8Manage\fP
+\fBManage\fP
 .RS
 Display \(-> Manager
 .br
 Additional Fields:
 .RS
-\f7Session ID\fP:
+\fCSession ID\fP:
 CARD32
 .RS
 This field should contain the non-zero session id returned
 in the
-\f8Accept\fP
+\fBAccept\fP
 packet.
 .RE
-\f7Display Number\fP:
+\fCDisplay Number\fP:
 CARD16
 .RS
 This field must match the value sent in the previous
-\f8Request\fP
+\fBRequest\fP
 packet.
 .RE
-\f7Display Class\fP:
+\fCDisplay Class\fP:
 ARRAY8
 .RS
 This array specifies the class of the display.  Please refer to the section
@@ -790,28 +787,28 @@ below (Display Class Format) which discusses the format of this field.
 .RE
 Semantics:
 .RS
-A \f8Manage\fP packet is sent by a display to ask the manager to begin a
-session on the display.  If the \f7Session ID\fP is correct the manager
-should open a connection, otherwise it should respond with a \f8Refuse\fP or
-\f8Failed\fP packet, unless the \f7Session ID\fP matches a currently
+A \fBManage\fP packet is sent by a display to ask the manager to begin a
+session on the display.  If the \fCSession ID\fP is correct the manager
+should open a connection, otherwise it should respond with a \fBRefuse\fP or
+\fBFailed\fP packet, unless the \fCSession ID\fP matches a currently
 running session, or a session which has not yet successfully opened the
 display but has not given up the attempt.  In this latter case, the
-\f8Manage\fP packet should be ignored.  This will work as stream connections
+\fBManage\fP packet should be ignored.  This will work as stream connections
 give positive success indication to both halves of the stream, and positive
 failure indication to the connection initiator (which will eventually
-generate a \f8Failed\fP packet).
+generate a \fBFailed\fP packet).
 .RE
 Valid Responses:
 .RS
 X connection with correct auth info,
-\f8Refuse\fP,
-\f8Failed\fP.
+\fBRefuse\fP,
+\fBFailed\fP.
 .RE
 Problems/Solutions:
 .RS
 Problem:
 .RS
-\f8Manage\fP
+\fBManage\fP
 not received by manager.
 .br
 Indication:
@@ -821,29 +818,29 @@ Display timeout waiting for response.
 Solution:
 .RS
 Display resends
-\f8Manage\fP
+\fBManage\fP
 message.
 .RE
 .RE
 Problem:
 .RS
-\f8Manage\fP received out of order by manager.
+\fBManage\fP received out of order by manager.
 .br
 Indication:
 .RS
-session already in progress with matching \f7Session ID\fP.
+session already in progress with matching \fCSession ID\fP.
 .RE
 Solution:
 .RS
-\f8Manage\fP packet ignored.
+\fBManage\fP packet ignored.
 .RE
 Indication:
 .RS
-\f7Session ID\fP doesn't match next \f7Session ID\fP
+\fCSession ID\fP doesn't match next \fCSession ID\fP
 .RE
 Solution:
 .RS
-\f8Refuse\fP message is sent.
+\fBRefuse\fP message is sent.
 .RE
 .RE
 Problem:
@@ -856,7 +853,7 @@ open display fails.
 .RE
 Solution:
 .RS
-\f8Failed\fP message is sent including a human readable reason.
+\fBFailed\fP message is sent including a human readable reason.
 .RE
 .RE
 Problem:
@@ -866,15 +863,15 @@ because of a timeout occuring in the display.
 .br
 Indication:
 .RS
-\f8Manage\fP packet received with \f7Session ID\fP matching the session
+\fBManage\fP packet received with \fCSession ID\fP matching the session
 attempting to connect to the display.
 .RE
 Solution:
 .RS
-\f8Manage\fP packet is ignored.  As the stream connection will either
+\fBManage\fP packet is ignored.  As the stream connection will either
 succeed, which will result in an active session, or the stream will
-eventually give up hope of connecting and send a \f7Failed\fP packet, no
-response to this \f8Manage\fP packet is necessary.
+eventually give up hope of connecting and send a \fCFailed\fP packet, no
+response to this \fBManage\fP packet is necessary.
 .RE
 .RE
 .RE
@@ -885,27 +882,27 @@ than 126 seconds, give up and report an error to the user.
 .RE
 .RE
 .LP
-\f8Refuse\fP
+\fBRefuse\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Session ID\fP:
+\fCSession ID\fP:
 .RS
 This field should be set to the
-\f7Session ID\fP
+\fCSession ID\fP
 received in the
-\f8Manage\fP
+\fBManage\fP
 packet.
 .RE
 .RE
 Semantics:
 .RS
-A \f8Refuse\fP packet is sent by a manager when the \f7Session ID\fP
-received in the \f8Manage\fP packet does not match the current \f7Session
-ID\fP.  The display should assume that it received an old \f8Accept\fP
-packet and should resend its \f8Request\fP packet.
+A \fBRefuse\fP packet is sent by a manager when the \fCSession ID\fP
+received in the \fBManage\fP packet does not match the current \fCSession
+ID\fP.  The display should assume that it received an old \fBAccept\fP
+packet and should resend its \fBRequest\fP packet.
 .RE
 Problems/Solutions:
 .RS
@@ -915,11 +912,11 @@ Error message is lost.
 .br
 Indication:
 .RS
-display times out waiting for OpenDisplay, \f8Refuse\fP or \f8Failed\fP.
+display times out waiting for OpenDisplay, \fBRefuse\fP or \fBFailed\fP.
 .RE
 Solution:
 .RS
-display resends \f8Manage\fP message.
+display resends \fBManage\fP message.
 .RE
 .RE
 .RE
@@ -930,19 +927,19 @@ retransmitted.
 .RE
 .RE
 .LP
-\f8Failed\fP
+\fBFailed\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Session ID\fP:
+\fCSession ID\fP:
 CARD32
 .RS
-This field should be set to the \f7Session ID\fP received in the
-\f8Manage\fP packet.
+This field should be set to the \fCSession ID\fP received in the
+\fBManage\fP packet.
 .RE
-\f7Status\fP:
+\fCStatus\fP:
 ARRAY8
 .RS
 A human readable string indicating the reason for failure.
@@ -950,54 +947,54 @@ A human readable string indicating the reason for failure.
 .RE
 Semantics:
 .RS
-A \f8Failed\fP packet is sent by a manager when it has problems establishing
-the initial X connection in response to the \f8Manage\fP packet.
+A \fBFailed\fP packet is sent by a manager when it has problems establishing
+the initial X connection in response to the \fBManage\fP packet.
 .RE
 Problems/Solutions
 .RS
-Same as for \f8Refuse\fP.
+Same as for \fBRefuse\fP.
 .RE
 .RE
 .LP
-\f8KeepAlive\fP
+\fBKeepAlive\fP
 .RS
 Display \(-> Manager
 .br
 Additional Fields:
 .RS
-\f7Display Number\fP:
+\fCDisplay Number\fP:
 CARD16
 .RS
 Set to the display index for the display host.
 .RE
 .RE
 .RS
-\f7Session ID\fP:
+\fCSession ID\fP:
 CARD32
 .RS
-This field should be set to the \f7Session ID\fP received in the
-\f8Manage\fP packet during the negotiation for the current session.
+This field should be set to the \fCSession ID\fP received in the
+\fBManage\fP packet during the negotiation for the current session.
 .RE
 .RE
 Sematics:
 .RS
-A \f8KeepAlive\fP packet can be sent at any time during the session by a
+A \fBKeepAlive\fP packet can be sent at any time during the session by a
 display to discover if the manager is running.  The manager should respond
-with \f8Alive\fP whenever it receives this type of packet.
+with \fBAlive\fP whenever it receives this type of packet.
 .LP
 This allows the display to discover when the manager host is no longer running.
-A display is not required to send \f8KeepAlive\fP packets, and, upon lack of
-receipt of \f8Alive\fP packets, is not required to perform any specific action.
+A display is not required to send \fBKeepAlive\fP packets, and, upon lack of
+receipt of \fBAlive\fP packets, is not required to perform any specific action.
 .LP
 The expected use of this packet is to terminate an active session when the
 manager host or network link fails.  The display should keep track of the
 time since any packet has been received from the manager host and
-use \f8KeepAlive\fP packets when a substantial time has elapsed since the
+use \fBKeepAlive\fP packets when a substantial time has elapsed since the
 most recent packet.
 .RE
 Valid Responses:
 .RS
-\f8Alive\fP
+\fBAlive\fP
 .RE
 Problems/Solutions:
 .RS
@@ -1008,7 +1005,7 @@ Manager doesn't receive the packet or display doesn't receive the response.
 .RS
 Indication:
 .RS
-No \f8Alive\fP packet returned
+No \fBAlive\fP packet returned
 .RE
 Solution:
 .RS
@@ -1019,20 +1016,20 @@ assume the host is not up after no less than 30 seconds.
 .RE
 .RE
 .LP
-\f8Alive\fP
+\fBAlive\fP
 .RS
 Manager \(-> Display
 .br
 Additional Fields:
 .RS
-\f7Session Running\fP:
+\fCSession Running\fP:
 CARD8
 .RS
-This field indicates that the session indicated by \f7Session ID\fP is
+This field indicates that the session indicated by \fCSession ID\fP is
 currently active.  The value is 0 if no session is active, 1 if a session
 is active.
 .RE
-\f7Session ID\fP:
+\fCSession ID\fP:
 CARD32
 .RS
 The ID of the currently running session; if any.  When no session is active
@@ -1041,9 +1038,9 @@ this field should be zero.
 .RE
 Semantics:
 .RS
-An \f8Alive\fP packet is sent in response to a \f8KeepAlive\fP request.  If
+An \fBAlive\fP packet is sent in response to a \fBKeepAlive\fP request.  If
 a session is currently active on the display, the manager includes the
-\f7Session ID\fP in the packet.  The display can use this information to
+\fCSession ID\fP in the packet.  The display can use this information to
 determine the status of the manager.
 .RE
 .RE
@@ -1051,7 +1048,7 @@ determine the status of the manager.
 Session Termination
 .LP
 When the session is over, the initial connection with the display (the one
-which ack's the \f8Manage\fP packet) will be closed by the manager.  If only
+which ack's the \fBManage\fP packet) will be closed by the manager.  If only
 a single session was active on the display, all other connections should be
 closed by the display and the display should be reset.  If multiple sessions
 are active simultaneously, and the display can identify which connections
@@ -1060,10 +1057,10 @@ Otherwise all connections should be closed and the display reset only when
 all sessions have been terminated (i.e. all initial connections closed).
 .LP
 The session may also be terminated at any time by the display if the
-managing host no longer responds to \f8KeepAlive\fP packets.  The exact
-time-outs for sending \f8KeepAlive\fP packets is not specified in this
+managing host no longer responds to \fBKeepAlive\fP packets.  The exact
+time-outs for sending \fBKeepAlive\fP packets is not specified in this
 protocol as the trade off should not be fixed between loading an otherwise
-idle system with spurious \f8KeepAlive\fP packets and not noticing that the
+idle system with spurious \fBKeepAlive\fP packets and not noticing that the
 manager host is down for a long time.
 .NH 1
 State Diagrams
@@ -1076,184 +1073,184 @@ Display:
 
 .RS
 .LP
-\f6start\fP:
+\fIstart\fP:
 .RS
-user-requested connect to one host \(-> \f6query\fP
+user-requested connect to one host \(-> \fIquery\fP
 
 .br
-user-requested connect to some host \(-> \f6broadcast\fP
+user-requested connect to some host \(-> \fIbroadcast\fP
 
 .br
-user-requested connect to site host-list \(-> \f6indirect\fP
+user-requested connect to site host-list \(-> \fIindirect\fP
 .RE
 
 .LP
-\f6query\fP:
+\fIquery\fP:
 .RS
-Send \f8Query\fP packet
+Send \fBQuery\fP packet
 .br
-\(-> \f6collect-query\fP
+\(-> \fIcollect-query\fP
 .RE
 
 .LP
-\f6collect-query\fP:
+\fIcollect-query\fP:
 .RS
-receive \f8Willing\fP \(-> \f6start-connection\fP
+receive \fBWilling\fP \(-> \fIstart-connection\fP
 
 .br
-receive \f8Unwilling\fP \(-> \f6stop-connection\fP
+receive \fBUnwilling\fP \(-> \fIstop-connection\fP
 
 .br
-timeout \(-> \f6query\fP
+timeout \(-> \fIquery\fP
 .RE	
 
 .LP
-\f6broadcast\fP:
+\fIbroadcast\fP:
 .RS
-Send \f8BroadcastQuery\fP packet
+Send \fBBroadcastQuery\fP packet
 .br
-\(-> \f6collect-broadcast-query\fP
+\(-> \fIcollect-broadcast-query\fP
 .RE
 
 .LP
-\f6collect-broadcast-query\fP:
+\fIcollect-broadcast-query\fP:
 .RS
-receive \f8Willing\fP \(-> \f6update-broadcast-willing\fP
+receive \fBWilling\fP \(-> \fIupdate-broadcast-willing\fP
 
 .br
-user-requested connect to one host \(-> \f6start-connection\fP
+user-requested connect to one host \(-> \fIstart-connection\fP
 
 .br
-timeout \(-> \f6broadcast\fP
+timeout \(-> \fIbroadcast\fP
 .RE
 
 .LP
-\f6update-broadcast-willing\fP:
+\fIupdate-broadcast-willing\fP:
 .RS
 Add new host to the host list presented to the user.
 .br
-\(-> \f6collect-broadcast-query\fP
+\(-> \fIcollect-broadcast-query\fP
 .RE
 
 .LP
-\f6indirect\fP:
+\fIindirect\fP:
 .RS
-Send \f8IndirectQuery\fP packet
+Send \fBIndirectQuery\fP packet
 .br
-\(-> \f6collect-indirect-query\fP
+\(-> \fIcollect-indirect-query\fP
 .RE
 
 .LP
-\f6collect-indirect-query\fP:
+\fIcollect-indirect-query\fP:
 .RS
-receive \f8Willing\fP \(-> \f6update-indirect-willing\fP
+receive \fBWilling\fP \(-> \fIupdate-indirect-willing\fP
 
 .br
-user-requested connect to one host \(-> \f6start-connection\fP
+user-requested connect to one host \(-> \fIstart-connection\fP
 
 .br
-timeout \(-> \f6indirect\fP
+timeout \(-> \fIindirect\fP
 .RE
 
 .LP
-\f6update-indirect-willing\fP:
+\fIupdate-indirect-willing\fP:
 .RS
 Add new host to the host list presented to the user.
 .br
-\(-> \f6collect-indirect-query\fP
+\(-> \fIcollect-indirect-query\fP
 .RE
 
 .LP
-\f6start-connection\fP:
+\fIstart-connection\fP:
 .RS
-Send \f8Request\fP packet
+Send \fBRequest\fP packet
 .br
-\(-> \f6await-request-response\fP
+\(-> \fIawait-request-response\fP
 .RE
 
 .LP
-\f6await-request-response\fP:
+\fIawait-request-response\fP:
 .RS
-receive \f8Accept\fP \(-> \f6manage\fP
+receive \fBAccept\fP \(-> \fImanage\fP
 
 .br
-receive \f8Decline\fP \(-> \f6stop-connection\fP
+receive \fBDecline\fP \(-> \fIstop-connection\fP
 
 .br
-timeout \(-> \f6start-connection\fP
+timeout \(-> \fIstart-connection\fP
 .RE
 
 .LP
-\f6manage\fP:
+\fImanage\fP:
 .RS
-Save \f7Session ID\fP
+Save \fCSession ID\fP
 .br
-Send \f8Manage\fP packet with \f7Session ID\fP
+Send \fBManage\fP packet with \fCSession ID\fP
 .br
-\(-> \f6await-manage-response\fP
+\(-> \fIawait-manage-response\fP
 .RE	
 
 .LP
-\f6await-manage-response\fP:
+\fIawait-manage-response\fP:
 .RS
-receive XOpenDisplay: \(-> \f6run-session\fP
+receive XOpenDisplay: \(-> \fIrun-session\fP
 
 .br
-receive \f8Refuse\fP with matching \f7Session ID\fP \(-> \f6start-connection\fP
+receive \fBRefuse\fP with matching \fCSession ID\fP \(-> \fIstart-connection\fP
 
 .br
-receive \f8Failed\fP with matching \f7Session ID\fP \(-> \f6stop-connection\fP
+receive \fBFailed\fP with matching \fCSession ID\fP \(-> \fIstop-connection\fP
 
 .br
-timeout \(-> \f6manage\fP
+timeout \(-> \fImanage\fP
 .RE
 
 .LP
-\f6stop-connection\fP:
+\fIstop-connection\fP:
 .RS
 Display cause of termination to user
 .br
-\(-> \f6start\fP
+\(-> \fIstart\fP
 
 .RE	
 
-\f6run-session\fP:
+\fIrun-session\fP:
 .RS
-Decide to send \f8KeepAlive\fP packet \(-> \f6keep-alive\fP
+Decide to send \fBKeepAlive\fP packet \(-> \fIkeep-alive\fP
 
 await close of first display connection
 
 .br
-\(-> \f6reset-display\fP
+\(-> \fIreset-display\fP
 .RE	
 
 .LP
-\f6keep-alive\fP:
+\fIkeep-alive\fP:
 .RS
-send \f8KeepAlive\fP packet with current \f7Session ID\fP
+send \fBKeepAlive\fP packet with current \fCSession ID\fP
 
 .br
-\(-> \f6await-alive\fP
+\(-> \fIawait-alive\fP
 .RE
 
 .LP
-\f6await-alive\fP:
+\fIawait-alive\fP:
 .RS
-Receive \f8Alive\fP with matching \f7Session ID\fP \(-> \f6run-session\fP
+Receive \fBAlive\fP with matching \fCSession ID\fP \(-> \fIrun-session\fP
 
 .br
-Receive \f8Alive\fP with non-matching \f7Session ID\fP or
-FALSE \f7Session Running\fP \(-> \f6reset-display\fP
+Receive \fBAlive\fP with non-matching \fCSession ID\fP or
+FALSE \fCSession Running\fP \(-> \fIreset-display\fP
 
 .br
-Final Timeout without receiving \f8Alive\fP packet \(-> \f6reset-display\fP
+Final Timeout without receiving \fBAlive\fP packet \(-> \fIreset-display\fP
 
 .br
-timeout \(-> \f6keep-alive\fP
+timeout \(-> \fIkeep-alive\fP
 .RE
 
 .LP
-\f6reset-display\fP:
+\fIreset-display\fP:
 .RS
 (if possible) \(-> close all display connections associated with this session
 
@@ -1261,7 +1258,7 @@ timeout \(-> \f6keep-alive\fP
 last session \(-> close all display connections
 
 .br
-\(-> \f6start\fP
+\(-> \fIstart\fP
 .RE
 
 .RE
@@ -1270,189 +1267,189 @@ Manager:
 .RS
 
 .LP
-\f6idle\fP:
+\fIidle\fP:
 .RS
-receive \f8Query\fP \(-> \f6query-respond\fP
+receive \fBQuery\fP \(-> \fIquery-respond\fP
 
 .br
-receive \f8BroadcastQuery\fP \(-> \f6broadcast-respond\fP
+receive \fBBroadcastQuery\fP \(-> \fIbroadcast-respond\fP
 
 .br
-receive \f8IndirectQuery\fP \(-> \f6indirect-respond\fP
+receive \fBIndirectQuery\fP \(-> \fIindirect-respond\fP
 
 .br
-receive \f8ForwardQuery\fP \(-> \f6forward-respond\fP
+receive \fBForwardQuery\fP \(-> \fIforward-respond\fP
 
 .br
-receive \f8Request\fP \(-> \f6request-respond\fP
+receive \fBRequest\fP \(-> \fIrequest-respond\fP
 
 .br
-receive \f8Manage\fP \(-> \f6manage\fP
+receive \fBManage\fP \(-> \fImanage\fP
 
 .br
-an active session terminates \(-> \f6finish-session\fP
+an active session terminates \(-> \fIfinish-session\fP
 
 .br
-receive \f8KeepAlive\fP \(-> \f6send-alive\fP
+receive \fBKeepAlive\fP \(-> \fIsend-alive\fP
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE	
 
 .LP
-\f6query-respond\fP:
+\fIquery-respond\fP:
 .RS
-if willing to manage \(-> \f6send-willing\fP
+if willing to manage \(-> \fIsend-willing\fP
 
 .br
-\(-> \f6send-unwilling\fP
+\(-> \fIsend-unwilling\fP
 .RE
 
 .LP
-\f6broadcast-respond\fP:
+\fIbroadcast-respond\fP:
 .RS
-if willing to manage \(-> \f6send-willing\fP
+if willing to manage \(-> \fIsend-willing\fP
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6indirect-respond\fP:
+\fIindirect-respond\fP:
 .RS
-Send \f8ForwardQuery\fP packets to all managers on redirect list.
+Send \fBForwardQuery\fP packets to all managers on redirect list.
 .br
-if willing to manage \(-> \f6send-willing\fP
+if willing to manage \(-> \fIsend-willing\fP
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6forward-respond\fP:
+\fIforward-respond\fP:
 .RS
-Decode destination address, if willing to manage \(-> \f6send-willing\fP
+Decode destination address, if willing to manage \(-> \fIsend-willing\fP
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6send-willing\fP:
+\fIsend-willing\fP:
 .RS
-Send \f8Willing\fP packet
+Send \fBWilling\fP packet
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6send-unwilling\fP:
+\fIsend-unwilling\fP:
 .RS
-Send \f8Unwilling\fP packet
+Send \fBUnwilling\fP packet
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6request-respond\fP:
+\fIrequest-respond\fP:
 .RS
-if manager is willing to allow a session on display \(-> \f6accept-session\fP
+if manager is willing to allow a session on display \(-> \fIaccept-session\fP
 
 .br
-\(-> \f6decline-session\fP
+\(-> \fIdecline-session\fP
 .RE
 
 .LP
-\f6accept-session\fP:
+\fIaccept-session\fP:
 .RS
-Generate \f7Session ID\fP.  Save \f7Session ID\fP, display address and
+Generate \fCSession ID\fP.  Save \fCSession ID\fP, display address and
 display number somewhere
 .br
-Send \f8Accept\fP packet
+Send \fBAccept\fP packet
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE		
 
 .LP
-\f6decline-session\fP:
+\fIdecline-session\fP:
 .RS
-Send \f8Decline\fP packet
+Send \fBDecline\fP packet
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE	
 
 .LP
-\f6manage\fP:
+\fImanage\fP:
 .RS
-If \f7Session ID\fP matches saved \f7Session ID\fP \(-> \f6run-session\fP
+If \fCSession ID\fP matches saved \fCSession ID\fP \(-> \fIrun-session\fP
 .br
-If \f7Session ID\fP matches \f7Session ID\fP of session in process of
-starting up, or currently active session \(-> \f6idle\fP
+If \fCSession ID\fP matches \fCSession ID\fP of session in process of
+starting up, or currently active session \(-> \fIidle\fP
 
 .br
-\(-> \f6refuse\fP
+\(-> \fIrefuse\fP
 
 .RE	
 .LP
 
-\f6refuse\fP:
+\fIrefuse\fP:
 .RS
 Send
-\f8Refuse\fP
+\fBRefuse\fP
 packet
 .br
 \(-> 
-\f6idle\fP
+\fIidle\fP
 
 .RE	
 
 .LP
-\f6run-session\fP:
+\fIrun-session\fP:
 .RS
 Terminate any session in progress
 .br
 XOpenDisplay
 .br
 open display succeeds \(-> 
-\f6start-session\fP
+\fIstart-session\fP
 
 .br
 \(-> 
-\f6failed\fP
+\fIfailed\fP
 .RE
 
 .LP
-\f6failed\fP:
+\fIfailed\fP:
 .RS
-send \f8Failed\fP packet
+send \fBFailed\fP packet
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE	
 
 .LP
-\f6start-session\fP:
+\fIstart-session\fP:
 .RS
 Start a new session
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6finish-session\fP:
+\fIfinish-session\fP:
 .RS
 XCloseDisplay
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .LP
-\f6send-alive\fP:
+\fIsend-alive\fP:
 .RS
-Send \f8Alive\fP packet containing current status.
+Send \fBAlive\fP packet containing current status.
 
 .br
-\(-> \f6idle\fP
+\(-> \fIidle\fP
 .RE
 
 .RE
@@ -1490,11 +1487,11 @@ KeepAlive	14
 .LP
 Per packet information follows:
 .LP
-\f8Query\fP
+\fBQuery\fP
 .br
-\f8BroadcastQuery\fP
+\fBBroadcastQuery\fP
 .br
-\f8IndirectQuery\fP
+\fBIndirectQuery\fP
 .RS
 These packets are identical except for the opcode field.
 .TS
@@ -1503,16 +1500,16 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Query\fP, \f8BroadcastQuery\fP or \f8IndirectQuery\fP)
+2	CARD16	opcode (always \fBQuery\fP, \fBBroadcastQuery\fP or \fBIndirectQuery\fP)
 2	CARD16	length
-1	CARD8	number of \f7Authentication Names\fP sent (m)
-2	CARD16	length of first \f7Authentication Name\fP (m\d\s-21\s+2\u)
-m\d\s-21\s+2\u	CARD8	first \f7Authentication Name\fP
-\&...		Other \f7Authentication Names\fP
+1	CARD8	number of \fCAuthentication Names\fP sent (m)
+2	CARD16	length of first \fCAuthentication Name\fP (m\d\s-21\s+2\u)
+m\d\s-21\s+2\u	CARD8	first \fCAuthentication Name\fP
+\&...		Other \fCAuthentication Names\fP
 .TE
 .RE
 .LP
-\f8ForwardQuery\fP
+\fBForwardQuery\fP
 .RS
 .TS
 c c c
@@ -1520,20 +1517,20 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8ForwardQuery\fP)
+2	CARD16	opcode (always \fBForwardQuery\fP)
 2	CARD16	length
-2	CARD16	length of \f7Client Address\fP (m)
-m	CARD8	\f7Client Address\fP
-2	CARD16	length of \f7Client Port\fP (n)
-n	CARD8	\f7Client Port\fP
-1	CARD8	number of \f7Authentication Names\fP sent (o)
-2	CARD16	length of first \f7Authentication Name\fP (o\d\s-21\s+2\u)
-o\d\s-21\s+2\u	CARD8	first \f7Authentication Name\fP
-\&...		Other \f7Authentication Names\fP
+2	CARD16	length of \fCClient Address\fP (m)
+m	CARD8	\fCClient Address\fP
+2	CARD16	length of \fCClient Port\fP (n)
+n	CARD8	\fCClient Port\fP
+1	CARD8	number of \fCAuthentication Names\fP sent (o)
+2	CARD16	length of first \fCAuthentication Name\fP (o\d\s-21\s+2\u)
+o\d\s-21\s+2\u	CARD8	first \fCAuthentication Name\fP
+\&...		Other \fCAuthentication Names\fP
 .TE
 .RE
 .LP
-\f8Willing\fP
+\fBWilling\fP
 .RS
 .TS
 c c c
@@ -1541,18 +1538,18 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Willing\fP)
+2	CARD16	opcode (always \fBWilling\fP)
 2	CARD16	length (6 + m + n + o)
-2	CARD16	Length of \f7Authentication Name\fP (m)
-m	CARD8	\f7Authentication Name\fP
-2	CARD16	\f7Hostname\fP length (n)
-n	CARD8	\f7Hostname\fP
-2	CARD16	\f7Status\fP length (o)
-o	CARD8	\f7Status\fP
+2	CARD16	Length of \fCAuthentication Name\fP (m)
+m	CARD8	\fCAuthentication Name\fP
+2	CARD16	\fCHostname\fP length (n)
+n	CARD8	\fCHostname\fP
+2	CARD16	\fCStatus\fP length (o)
+o	CARD8	\fCStatus\fP
 .TE
 .RE
 .LP
-\f8Unwilling\fP
+\fBUnwilling\fP
 .RS
 .TS
 c c c
@@ -1560,16 +1557,16 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Unwilling\fP)
+2	CARD16	opcode (always \fBUnwilling\fP)
 2	CARD16	length (4 + m + n)
-2	CARD16	\f7Hostname\fP length (m)
-m	CARD8	\f7Hostname\fP
-2	CARD16	\f7Status\fP length (n)
-n	CARD8	\f7Status\fP
+2	CARD16	\fCHostname\fP length (m)
+m	CARD8	\fCHostname\fP
+2	CARD16	\fCStatus\fP length (n)
+n	CARD8	\fCStatus\fP
 .TE
 .RE
 .LP
-\f8Request\fP
+\fBRequest\fP
 .RS
 .TS
 c c c
@@ -1577,29 +1574,29 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Request\fP)
+2	CARD16	opcode (always \fBRequest\fP)
 2	CARD16	length
-2	CARD16	\f7Display Number\fP
-1	CARD8	Count of \f7Connection Types\fP (m)
-2 \(mu m	CARD16	\f7Connection Types\fP
-1	CARD8	Count of \f7Connection Addresses\fP (n)
-2	CARD16	Length of first \f7Connection Address\fP (n\s-2\d1\u\s+2)
-n\s-2\d1\u\s+2	CARD8	First \f7Connection Address\fP
+2	CARD16	\fCDisplay Number\fP
+1	CARD8	Count of \fCConnection Types\fP (m)
+2 \(mu m	CARD16	\fCConnection Types\fP
+1	CARD8	Count of \fCConnection Addresses\fP (n)
+2	CARD16	Length of first \fCConnection Address\fP (n\s-2\d1\u\s+2)
+n\s-2\d1\u\s+2	CARD8	First \fCConnection Address\fP
 \&...		Other connection addresses
-2	CARD16	Length of \f7Authentication Name\fP (o)
-o	CARD8	\f7Authentication Name\fP
-2	CARD16	Length of \f7Authentication Data\fP (p)
-p	CARD8	\f7Authentication Data\fP
-1	CARD8	Count of \f7Authorization Names\fP (q)
-2	CARD16	Length of first \f7Authorization Name\fP (q\s-2\d1\u\s+2)
-q\s-2\d1\u\s+2	CARD8	First \f7Authorization Name\fP
+2	CARD16	Length of \fCAuthentication Name\fP (o)
+o	CARD8	\fCAuthentication Name\fP
+2	CARD16	Length of \fCAuthentication Data\fP (p)
+p	CARD8	\fCAuthentication Data\fP
+1	CARD8	Count of \fCAuthorization Names\fP (q)
+2	CARD16	Length of first \fCAuthorization Name\fP (q\s-2\d1\u\s+2)
+q\s-2\d1\u\s+2	CARD8	First \fCAuthorization Name\fP
 \&...		Other authorization names
-2	CARD16	Length of \f7Manufacturer Display ID\fP (r)
-r	CARD8	\f7Manufacturer Display ID\fP
+2	CARD16	Length of \fCManufacturer Display ID\fP (r)
+r	CARD8	\fCManufacturer Display ID\fP
 .TE
 .RE
 .LP
-\f8Accept\fP
+\fBAccept\fP
 .RS
 .TS
 c c c
@@ -1607,21 +1604,21 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Accept\fP)
+2	CARD16	opcode (always \fBAccept\fP)
 2	CARD16	length (12 + n + m + o + p)
-4	CARD32	\f7Session ID\fP
-2	CARD16	Length of \f7Authentication Name\fP (n)
-n	CARD8	\f7Authentication Name\fP
-2	CARD16	Length of \f7Authentication Data\fP (m)
-m	CARD8	\f7Authentication Data\fP
-2	CARD16	Length of \f7Authorization Name\fP (o)
-o	CARD8	\f7Authorization Name\fP
-2	CARD16	Length of \f7Authorization Data\fP (p)
-p	CARD8	\f7Authorization Data\fP
+4	CARD32	\fCSession ID\fP
+2	CARD16	Length of \fCAuthentication Name\fP (n)
+n	CARD8	\fCAuthentication Name\fP
+2	CARD16	Length of \fCAuthentication Data\fP (m)
+m	CARD8	\fCAuthentication Data\fP
+2	CARD16	Length of \fCAuthorization Name\fP (o)
+o	CARD8	\fCAuthorization Name\fP
+2	CARD16	Length of \fCAuthorization Data\fP (p)
+p	CARD8	\fCAuthorization Data\fP
 .TE
 .RE
 .LP
-\f8Decline\fP
+\fBDecline\fP
 .RS
 .TS
 c c c
@@ -1629,18 +1626,18 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Decline\fP)
+2	CARD16	opcode (always \fBDecline\fP)
 2	CARD16	length (6 + m + n + o)
-2	CARD16	Length of \f7Status\fP (m)
-m	CARD8	\f7Status\fP
-2	CARD16	Length of \f7Authentication Name\fP (n)
-n	CARD8	\f7Authentication Name\fP
-2	CARD16	Length of \f7Authentication Data\fP (o)
-o	CARD8	\f7Authentication Data\fP
+2	CARD16	Length of \fCStatus\fP (m)
+m	CARD8	\fCStatus\fP
+2	CARD16	Length of \fCAuthentication Name\fP (n)
+n	CARD8	\fCAuthentication Name\fP
+2	CARD16	Length of \fCAuthentication Data\fP (o)
+o	CARD8	\fCAuthentication Data\fP
 .TE
 .RE
 .LP
-\f8Manage\fP
+\fBManage\fP
 .RS
 .TS
 c c c
@@ -1648,16 +1645,16 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Manage\fP)
+2	CARD16	opcode (always \fBManage\fP)
 2	CARD16	length (8 + m)
-4	CARD32	\f7Session ID\fP
-2	CARD16	\f7Display Number\fP
-2	CARD16	Length of \f7Display Class\fP (m)
-m	CARD8	\f7Display Class\fP
+4	CARD32	\fCSession ID\fP
+2	CARD16	\fCDisplay Number\fP
+2	CARD16	Length of \fCDisplay Class\fP (m)
+m	CARD8	\fCDisplay Class\fP
 .TE
 .RE
 .LP
-\f8Refuse\fP
+\fBRefuse\fP
 .RS
 .TS
 c c c
@@ -1665,13 +1662,13 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Refuse\fP)
+2	CARD16	opcode (always \fBRefuse\fP)
 2	CARD16	length (4)
-4	CARD32	\f7Session ID\fP
+4	CARD32	\fCSession ID\fP
 .TE
 .RE
 .LP
-\f8Failed\fP
+\fBFailed\fP
 .RS
 .TS
 c c c
@@ -1679,15 +1676,15 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Failed\fP)
+2	CARD16	opcode (always \fBFailed\fP)
 2	CARD16	length (6 + m)
-4	CARD32	\f7Session ID\fP
-2	CARD16	Length of \f7Status\fP (m)
-m	CARD8	\f7Status\fP
+4	CARD32	\fCSession ID\fP
+2	CARD16	Length of \fCStatus\fP (m)
+m	CARD8	\fCStatus\fP
 .TE
 .RE
 .LP
-\f8KeepAlive\fP
+\fBKeepAlive\fP
 .RS
 .TS
 c c c
@@ -1695,14 +1692,14 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8KeepAlive\fP)
+2	CARD16	opcode (always \fBKeepAlive\fP)
 2	CARD16	length (6)
-2	CARD16	\f7Display Number\fP
-4	CARD32	\f7Session ID\fP
+2	CARD16	\fCDisplay Number\fP
+4	CARD32	\fCSession ID\fP
 .TE
 .RE
 .LP
-\f8Alive\fP
+\fBAlive\fP
 .RS
 .TS
 c c c
@@ -1710,16 +1707,16 @@ c l l.
 Length	Type	Description
 _
 2	CARD16	version number (always 1)
-2	CARD16	opcode (always \f8Alive\fP)
+2	CARD16	opcode (always \fBAlive\fP)
 2	CARD16	length (5)
-1	CARD8	\f7Session Running\fP (0: not running 1: running)
-4	CARD32	\f7Session ID\fP (0: not running)
+1	CARD8	\fCSession Running\fP (0: not running 1: running)
+4	CARD32	\fCSession ID\fP (0: not running)
 .TE
 .RE
 .NH 1
 Display Class Format
 .LP
-The \f7Display Class\fP field of the \f8Manage\fP packet is used by the
+The \fCDisplay Class\fP field of the \fBManage\fP packet is used by the
 display manager to collect common sorts of
 displays into manageable groups.  This field is a string encoded of
 ISO-LATIN-1 characters in the following format:
@@ -1743,7 +1740,7 @@ Manufacturer Display ID Format
 To authenticate the manager, the display and manager will share a private
 key.  The manager, then, must be able to discover which key to use for a
 particular device.
-The \f7Manufacturer Display ID\fP field of the \f8Request\fP packet is
+The \fCManufacturer Display ID\fP field of the \fBRequest\fP packet is
 intended for this purpose.  Typically, the manager host will
 contain a map between this number and the key.  This field is intended to be
 unique per display, possibly the ethernet address of the display in the form:
@@ -1766,15 +1763,15 @@ ISO-LATIN-1 characters, excluding  { \fB-\fP,
 \&\fB.\fP, \fB*\fP, \fB?\fP, \fI<space>\fP }
 .LP
 When the display is shipped to a customer, it should include both the
-\f7Manufacturer Display ID\fP
+\fCManufacturer Display ID\fP
 and the private key in the documentation set.  This information should not
 be modifiable by the display user.
 .NH 1
 Authentication
 .LP
 In an environment where authentication is not needed, XDMCP can disable
-authentication by having the display send empty \f7Authentication Name\fP
-and \f7Authentication Data\fP fields in the \f8Request\fP packet.  In this
+authentication by having the display send empty \fCAuthentication Name\fP
+and \fCAuthentication Data\fP fields in the \fBRequest\fP packet.  In this
 case, the manager will not attempt to authenticate itself.  Other
 authentication protocols may be developed, depending on local needs.
 .LP
@@ -1832,14 +1829,14 @@ oc { D sub 2 } " " xor " " oc { D sub 1 } cc sup kappa cc sup kappa
 .EN
 .LP
 The display generates the first authentication data in the
-\f8Request\fP
+\fBRequest\fP
 packet:
 .EQ
 alpha sub roman Request mark = oc rho cc sup tau
 .EN
 .LP
 For the
-\f8Accept\fP
+\fBAccept\fP
 packet, the manager decrypts the initial message and returns
 @alpha sub roman Accept@:
 .EQ
@@ -1849,11 +1846,11 @@ rho lineup = oc alpha sub roman Request cc * sup tau
 alpha sub roman Accept lineup = oc rho + 1 cc sup tau
 .EN
 .LP
-The \f8Accept\fP packet also contains the authorization intended for use by
+The \fBAccept\fP packet also contains the authorization intended for use by
 the X server.  A description of authorization type ``XDM-AUTHORIZATION-1''
 follows:
 .LP
-The \f8Accept\fP packet contains the authorization name
+The \fBAccept\fP packet contains the authorization name
 ``XDM-AUTHORIZATION-1''.  The authorization data is the string:
 .EQ
 beta sub Accept mark = oc sigma cc sup tau
