@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_x2jet_c = "$XConsortium: x2jet.c,v 1.0 89/10/08 11:04:43 rws Exp $";
+static char *rcsid_x2jet_c = "$XConsortium: x2jet.c,v 1.1 89/10/08 12:29:36 rws Exp $";
 #endif
 
 /* -*-C-*-
@@ -109,22 +109,8 @@ static int true_scale;
 
 extern	char	*progname;
 
-void fatal_err (s)
-char * s;
-{
-  fprintf(stderr, "%s: %s\n", progname, s);
-  exit(1);
-}
-
-void fatal_err2 (s, a1, a2, a3)
-char *s;
-char *a1, *a2, *a3;
-{
-  fprintf(stderr, "%s: ", progname);
-  fprintf(stderr, s, a1, a2, a3);
-  exit(1);
-}
-
+void fatal_err();
+void fatal_err2();
 
 /* Computes the centipoint width of one printer dot. */
 #define dot_centipoints(s,d)	((7200.0 * s) / d)
@@ -1539,3 +1525,18 @@ int render;
 }
 
 
+void fatal_err (s)
+char * s;
+{
+  fprintf(stderr, "%s: %s\n", progname, s);
+  exit(1);
+}
+
+void fatal_err2 (s, a1, a2, a3)
+char *s;
+char *a1, *a2, *a3;
+{
+  fprintf(stderr, "%s: ", progname);
+  fprintf(stderr, s, a1, a2, a3);
+  exit(1);
+}
