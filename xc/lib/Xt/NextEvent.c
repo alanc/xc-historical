@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.141 94/04/02 11:03:48 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.142 94/04/17 20:14:29 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -388,12 +388,13 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
 ENDILOOP:   ;
     } /* endfor */
 #else /* }{ */
-    struct pollfd* fdlp = wf->fdlist;
+    struct pollfd* fdlp;
 
     *dpy_no = -1;
     *found_input = False;
 
     if (!ignoreEvents) {
+	fdlp = wf->fdlist;
 	for (ii = 0; ii < wf->num_dpys; ii++, fdlp++) {
 	    if (*dpy_no == -1 && fdlp->revents & (POLLIN|POLLHUP) &&
 #ifdef XTHREADS
@@ -407,6 +408,7 @@ ENDILOOP:   ;
     }
 
     if (!ignoreInputs) {
+	fdlp = &wf->fdlist[wf->num_dpys];
 	for (ii = wf->num_dpys; ii < wf->fdlistlen; ii++, fdlp++) {
 	    condition = 0;
 	    if (fdlp->revents) {
