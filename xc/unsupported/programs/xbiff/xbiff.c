@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.9 89/04/13 17:13:12 jim Exp $
+ * $XConsortium: xbiff.c,v 1.10 89/05/11 17:44:51 kit Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,7 +41,7 @@ static void Usage ()
 "    -geometry geom                 size of mailbox",
 "    -file file                     file to watch",
 "    -update seconds                how often to check for mail",
-"    -volume percentage             how load to ring the bell",
+"    -volume percentage             how loud to ring the bell",
 "    -bg color                      background color",
 "    -fg color                      foreground color",
 "    -rv                            reverse video",
