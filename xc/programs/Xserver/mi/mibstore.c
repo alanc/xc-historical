@@ -1,4 +1,4 @@
-/* $Header: mibstore.c,v 1.4 88/07/29 12:08:35 keith Exp $ */
+/* $Header: mibstore.c,v 1.5 88/08/10 13:11:46 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -568,30 +568,36 @@ miBSGetImage (pWin, pOldPixmapPtr, x, y, w, h, format, planeMask, pImage)
      * end up sending NoExpose or GraphicsExpose events.
      */
     pGC->graphicsExposures = FALSE;
-    if (!pOldPixmapPtr) {
+    if (!pOldPixmapPtr && pImage) {
 	pNewPixmapPtr = (*pScreen->CreatePixmap) (pScreen, w, h, pWin->drawable.depth);
-	pGC->fgPixel = planeMask;
-	pGC->bgPixel = 0;
-	ValidateGC ((DrawablePtr)pNewPixmapPtr, pGC);
-	(*pGC->PutImage) (pNewPixmapPtr, pGC,
+	if (pNewPixmapPtr) {
+	    pGC->fgPixel = planeMask;
+	    pGC->bgPixel = 0;
+	    ValidateGC ((DrawablePtr)pNewPixmapPtr, pGC);
+	    (*pGC->PutImage) (pNewPixmapPtr, pGC,
  		pWin->drawable.depth, 0, 0, w, h, 0,
 		(format == XYPixmap) ? XYBitmap : format, pImage);
+	}
 	pPixmapPtr = pNewPixmapPtr;
     }
     else
     {
 	pNewPixmapPtr = NullPixmap;
 	pPixmapPtr = pOldPixmapPtr;
-	ValidateGC ((DrawablePtr)pPixmapPtr, pGC);
+	if (pPixmapPtr)
+	    ValidateGC ((DrawablePtr)pPixmapPtr, pGC);
     }
 
     /*
      * translate to window-relative coordinates
      */
 
-    (* pScreen->TranslateRegion) (pRgn, -pWin->absCorner.x, -pWin->absCorner.y);
+    if (pPixmapPtr)
+    {
+	(* pScreen->TranslateRegion) (pRgn, -pWin->absCorner.x, -pWin->absCorner.y);
 
-    miBSDoGetImage (pWin, pPixmapPtr, pRgn, x, y, pGC);
+	miBSDoGetImage (pWin, pPixmapPtr, pRgn, x, y, pGC);
+    }
 
     /*
      * now we have a composite view in pNewPixmapPtr; create the resultant
@@ -2353,16 +2359,23 @@ miResizeBackingStore(pWin, dx, dy)
 					 pWin->clientWinSize.height, 
 					 pWin->drawable.depth);
 
-	ValidateGC((DrawablePtr)pNewPixmap, pGC);
-
-	if ((* pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
+	if (pNewPixmap)
 	{
-	    extents = (*pScreen->RegionExtents)(pBackingStore->pSavedRegion);
-	    (*pGC->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
-			     extents->x1, extents->y1,
-			     extents->x2 - extents->x1,
-			     extents->y2 - extents->y1,
-			     extents->x1 + dx, extents->y1 + dy);
+		ValidateGC((DrawablePtr)pNewPixmap, pGC);
+
+		if ((* pScreen->RegionNotEmpty) (pBackingStore->pSavedRegion))
+		{
+		    extents = (*pScreen->RegionExtents)(pBackingStore->pSavedRegion);
+		    (*pGC->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
+				     extents->x1, extents->y1,
+				     extents->x2 - extents->x1,
+				     extents->y2 - extents->y1,
+				     extents->x1 + dx, extents->y1 + dy);
+		}
+	}
+	else
+	{
+		pBackingStore->status = StatusNoPixmap;
 	}
 
 	(* pScreen->DestroyPixmap)(pBackingPixmap);
@@ -3014,8 +3027,8 @@ miValidateBackingStore(pDrawable, pGC, procChanges)
 
     stateChanges &= ~(GCClipXOrigin|GCClipYOrigin|GCClipMask|GCSubwindowMode);
 
-    if (pWin->backingStore == NotUseful ||
-        ((pWin->backingStore & 3) == WhenMapped && !pWin->realized))
+    if (!lift_functions && (pWin->backingStore == NotUseful ||
+        ((pWin->backingStore & 3) == WhenMapped && !pWin->realized)))
     {
 	lift_functions = TRUE;
     }
