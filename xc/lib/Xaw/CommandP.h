@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.27 89/10/03 11:33:43 swick Exp $
+* $XConsortium: CommandP.h,v 1.28 89/10/03 14:51:24 kit Exp $
 */
 
 
@@ -49,7 +49,7 @@ typedef enum {
   HighlightWhenUnset,		/* Highlight only when unset, this is
 				   to preserve current command widget 
 				   functionality. */
-  HighlightAlways,		/* Always highlight, lets the toggle widget
+  HighlightAlways		/* Always highlight, lets the toggle widget
 				   and other subclasses do the right thing. */
 } XtCommandHighlight;
 
