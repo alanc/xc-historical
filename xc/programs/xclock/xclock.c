@@ -20,16 +20,16 @@ extern void exit();
    pass over the remaining options after XtParseCommand is let loose. */
 
 static XrmOptionDescRec options[] = {
-{"-chime",	XtNchime,	XrmoptionNoArg,		"TRUE"},
-{"-hd",		XtNhand,	XrmoptionSepArg,	NULL},
-{"-hands",	XtNhand,	XrmoptionSepArg,	NULL},
-{"-hl",		XtNhigh,	XrmoptionSepArg,	NULL},
-{"-highlight",	XtNhigh,	XrmoptionSepArg,	NULL},
-{"-update",	XtNupdate,	XrmoptionSepArg,	NULL},
-{"-padding",	XtNpadding,	XrmoptionSepArg,	NULL},
-{"-d",		XtNanalog,	 XrmoptionNoArg,	"FALSE"},
-{"-digital",	XtNanalog,	 XrmoptionNoArg,	"FALSE"},
-{"-analog",	XtNanalog,	 XrmoptionNoArg,	"TRUE"},
+{"-chime",	"*clock.chime",		XrmoptionNoArg,		"TRUE"},
+{"-hd",		"*clock.hand",		XrmoptionSepArg,	NULL},
+{"-hands",	"*clock.hand",		XrmoptionSepArg,	NULL},
+{"-hl",		"*clock.high",		XrmoptionSepArg,	NULL},
+{"-highlight",	"*clock.high",		XrmoptionSepArg,	NULL},
+{"-update",	"*clock.update",	XrmoptionSepArg,	NULL},
+{"-padding",	"*clock.padding",	XrmoptionSepArg,	NULL},
+{"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
+{"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
+{"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 };
 
 
