@@ -1,14 +1,12 @@
-# $XConsortium: Imakefile,v 1.1 89/10/13 17:09:15 jim Exp $
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-    STD_DEFINES = LibraryDefines ExtensionDefines
-       INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
-           SRCS = XAllowDv.c \
+INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
+SRCS = XAllowDv.c \
 		  XChgFCtl.c \
 		  XChgKbd.c \
 		  XChgKMap.c \
 		  XChgPnt.c \
 		  XChgProp.c \
 		  XCloseDev.c \
+		  XDevBell.c \
 		  XExtToWire.c \
 		  XGetBMap.c \
 		  XGetFCtl.c \
@@ -35,13 +33,14 @@
 		  XUngrDvB.c \
 		  XUngrDvK.c \
 		  XExtInt.c 
-           OBJS = XAllowDv.o \
+OBJS = XAllowDv.o \
 		  XChgFCtl.o \
 		  XChgKbd.o \
 		  XChgKMap.o \
 		  XChgPnt.o \
 		  XChgProp.o \
 		  XCloseDev.o \
+		  XDevBell.o \
 		  XExtToWire.o \
 		  XGetBMap.o \
 		  XGetFCtl.o \
@@ -68,13 +67,14 @@
 		  XUngrDvB.o \
 		  XUngrDvK.o \
 		  XExtInt.o 
-           LOBJS = XAllowDv.ln \
+LOBJS = XAllowDv.ln \
 		  XChgFCtl.ln \
 		  XChgKbd.ln \
 		  XChgKMap.ln \
 		  XChgPnt.ln \
 		  XChgProp.ln \
 		  XCloseDev.ln \
+		  XDevBell.ln \
 		  XExtToWire.ln \
 		  XGetBMap.ln \
 		  XGetFCtl.ln \
@@ -101,34 +101,43 @@
 		  XUngrDvB.ln \
 		  XUngrDvK.ln \
 		  XExtInt.ln 
-       LINTLIBS = $(LINTXLIB)
+       LINTLIBS = $(LINTXLIB) $(LINTXEXT)
 
-#if DebugLibXext && ProfileLibXext
+#if SharedLibXinput
+SharedLibraryObjectRule()
+#else
+#if DebugLibXinput && ProfileLibXinput
 DebuggedAndProfiledLibraryObjectRule()
 #else
-# if DebugLibXext
+# if DebugLibXinput
 DebuggedLibraryObjectRule()
 # else
-#  if ProfileLibXext
+#  if ProfileLibXinput
 ProfiledLibraryObjectRule()
 #  else
 NormalLibraryObjectRule()
 #  endif
 # endif
 #endif
+#endif
 
-NormalLibraryTarget(Xinput,$(OBJS))
-LintLibraryTarget(Xinput,$(SRCS))
-InstallLibrary(Xinput,$(USRLIBDIR))
-InstallLintLibrary(Xinput,$(LINTLIBDIR))
+#if SharedLibXinput
+NormalSharedLibraryTarget(Xi,$(SOXINPUTREV),$(OBJS))
+InstallSharedLibrary(Xi,$(SOXINPUTREV),$(USRLIBDIR))
+#endif
+
+NormalLibraryTarget(Xi,$(OBJS))
+LintLibraryTarget(Xi,$(SRCS))
+InstallLibrary(Xi,$(USRLIBDIR))
+InstallLintLibrary(Xi,$(LINTLIBDIR))
 
 #if ProfileLibXinput
-ProfiledLibraryTarget(Xinput,$(OBJS))
-InstallLibrary(Xinput_p,$(USRLIBDIR))
+ProfiledLibraryTarget(Xi,$(OBJS))
+InstallLibrary(Xi_p,$(USRLIBDIR))
 #endif
 
 #if DebugLibXinput
-DebuggedLibraryTarget(Xinput,$(OBJS))
+DebuggedLibraryTarget(Xi,$(OBJS))
 #endif
 
 DependTarget()
