@@ -1,3 +1,4 @@
+/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageFill routine.
