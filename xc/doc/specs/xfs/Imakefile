@@ -1,0 +1,3 @@
+XCOMM $XConsortium$
+
+MakeSimpleDoc(design,design.ms)
