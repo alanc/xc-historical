@@ -13,7 +13,7 @@ OSDIR = os
 OSLIB = $(OSDIR)/libos.a
 DIFSDIR = difs
 DIFSLIB = $(DIFSDIR)/libdifs.a
-FONTDIR = $(FONTSRC)/lib
+FONTDIR = $(FONTSRC)/lib/font
 FONTLIB = $(FONTDIR)/libfont.a
 SYSLIBS =
 #ifdef HPArchitecture
