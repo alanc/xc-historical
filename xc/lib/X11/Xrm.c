@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: Xrm.c,v 1.41 90/07/21 17:37:08 rws Exp $
+ * $XConsortium: Xrm.c,v 1.42 90/08/29 12:56:19 rws Exp $
  */
 
 /***********************************************************
@@ -177,8 +177,8 @@ void XrmStringToQuarkList(name, quarks)
 	    if (xrm_is_tight_or_loose (bits)) {
 		if (i != 0) {
 		    /* Found a complete name */
-		    *quarks++ = _XrmInternalStringToQuark(name, 
-							  tname -name -1, sig);
+		    *quarks++ = _XrmInternalStringToQuark(name,tname -name -1,
+							  sig, False);
 		    i = 0;
 		    sig = 0;
 		}
@@ -189,7 +189,8 @@ void XrmStringToQuarkList(name, quarks)
 		i++;
 	    }
 	}
-	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig,
+					      False);
     }
     *quarks = NULLQUARK;
 }
@@ -219,8 +220,8 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 		if (i != 0) {
 		    /* Found a complete name */
 		    *bindings++ = binding;
-		    *quarks++ = _XrmInternalStringToQuark(name, 
-							  tname -name -1, sig);
+		    *quarks++ = _XrmInternalStringToQuark(name, tname -name -1,
+							  sig, False);
 
 		    i = 0;
 		    sig = 0;
@@ -237,7 +238,8 @@ void XrmStringToBindingQuarkList(name, bindings, quarks)
 	    }
 	}
 	*bindings = binding;
-	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig);
+	*quarks++ = _XrmInternalStringToQuark(name, tname - name - 1, sig,
+					      False);
     }
     *quarks = NULLQUARK;
 } /* XrmStringToBindingQuarkList */
@@ -969,8 +971,8 @@ register char * str;
 		    bits = get_next_char(c, str);
 		}
 
-		*t_quarks++ = _XrmInternalStringToQuark(buffer, 
-							ptr - buffer, sig);
+		*t_quarks++ = _XrmInternalStringToQuark(buffer, ptr - buffer,
+							sig, False);
 	    
 		if (xrm_is_separator(bits))  {
 		    if (!xrm_is_space(bits))
