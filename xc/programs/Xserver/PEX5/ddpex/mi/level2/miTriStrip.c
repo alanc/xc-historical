@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.1 91/02/16 09:55:31 rws Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.2 91/05/01 14:41:03 hersh Exp $ */
 
 
 /***********************************************************
@@ -39,6 +39,13 @@ SOFTWARE.
 
 #include <stdio.h>
 
+static ddpex3rtn	miClipTriStrip();
+static ddpex3rtn	miCullTriStrip();
+static ddpex3rtn	miDepthCueTriStrip();
+static ddpex3rtn	Complete_TriFacetList();
+static ddpex3rtn	Calculate_TriStrip_Facet_Normal();
+static ddpex3rtn	Calculate_TriStrip_Vertex_Color_and_Normal();
+static ddpex3rtn	Breakup_TriStrip();
 
 /*++
  |
@@ -65,9 +72,6 @@ miTriangleStrip(pRend, pExecuteOC)
       ddpex3rtn         miLightTriStrip();
       ddpex3rtn         miRenderTriStrip();
       ddpex3rtn         ComputeMCVolume();
-      static  ddpex3rtn         miClipTriStrip();
-      static  ddpex3rtn         miCullTriStrip();
-      static  ddpex3rtn         miDepthCueTriStrip();
 
 /* Local variable definitions */
       miTriangleStripStruct	*ddTri 
@@ -1080,11 +1084,7 @@ miLightTriStrip(pRend, pddc, input_vert, input_fct, output_vert, output_fct)
 {
 /* calls */
     ddpex3rtn           miApply_Lighting();
-    static ddpex3rtn    Complete_TriFacetList();
-    static ddpex3rtn    Calculate_TriStrip_Facet_Normal();
-    static ddpex3rtn    Calculate_TriStrip_Vertex_Color_and_Normal();
-    static ddpex3rtn    Breakup_TriStrip();
-	   ddpex3rtn    miFilterPath();
+    ddpex3rtn           miFilterPath();
  
 /* uses */
     listofddFacet               *fct_list, *broken_fct;
@@ -1727,7 +1727,6 @@ Calculate_TriStrip_Vertex_Color_and_Normal(pRend, input_vert, input_fct,
     listofddFacet       *input_fct;     /* input facet data */
     miListHeader        **output_vert;  /* output vertex data */
 {
-    static ddpex3rtn            Calculate_TriStrip_Facet_Normal();
     miDDContext         *pddc = (miDDContext *)(pRend->pDDContext); 
     miListHeader                *out_vert;
     listofddFacet               *fct_list;
@@ -1870,9 +1869,6 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
     miListHeader        **output_vert;  /* output vertex data */
     listofddFacet       **output_fct;   /* output facet data */
 {
-/* calls */
-    static ddpex3rtn    Calculate_TriStrip_Facet_Normal();
-
 /* uses */
     miListHeader                *out_vert;
     listofddPoint               *pddilist;
@@ -2053,7 +2049,6 @@ miDepthCueTriStrip(pRend, input_vert, input_fct, output_vert)
     listofddFacet       *input_fct;     /* input facet data */
     miListHeader        **output_vert;  /* output vertex data */
 {
-    static ddpex3rtn            Calculate_TriStrip_Facet_Normal();
     miDDContext         *pddc = (miDDContext *)(pRend->pDDContext);
     miListHeader                *out_vert;
     listofddFacet               *fct_list;
