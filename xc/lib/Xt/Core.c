@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.32 89/10/04 19:50:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.33 89/12/12 18:09:14 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -27,7 +27,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#define CORE
+#define _XT_CORE_C
 #include "IntrinsicP.h"
 #include "EventI.h"
 #include "TranslateI.h"
