@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.16 90/05/18 15:32:51 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.17 90/05/18 15:35:15 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -896,7 +896,7 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
 	return MappingBusy;
     } else {
 	for (i = 0; i < inputMapLen; i++) {
-	    if (inputMap[i] && !LegalModifier(inputMap[i])) {
+	    if (inputMap[i] && !LegalModifier(inputMap[i], dev)) {
 		return MappingFailed;
 	    }
 	}
