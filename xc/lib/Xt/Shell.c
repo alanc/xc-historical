@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.101 91/05/10 15:42:37 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.102 91/05/21 11:54:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -725,6 +725,16 @@ static void ClassPartInitialize(widget_class)
 static void EventHandler();
 static void _popup_set_prop();
 
+
+/*ARGSUSED*/
+static void XtCopyDefaultDepth(widget, offset, value)
+    Widget      widget;
+    int		offset;
+    XrmValue    *value;
+{
+    value->addr = (XPointer)(&DefaultDepthOfScreen(XtScreenOfObject(widget)));
+}
+
 #ifndef CRAY
 static
 #endif
@@ -734,7 +744,17 @@ void _XtShellDepth(widget,closure,value)
     XrmValue *value;
 {
    if (widget->core.parent == NULL) XtCopyDefaultDepth(widget,closure,value);
-   else XtCopyFromParent (widget,closure,value);
+   else _XtCopyFromParent (widget,closure,value);
+}
+
+
+/*ARGSUSED*/
+static void XtCopyDefaultColormap(widget, offset, value)
+    Widget      widget;
+    int		offset;
+    XrmValue    *value;
+{
+    value->addr = (XPointer)(&DefaultColormapOfScreen(XtScreenOfObject(widget)));
 }
 
 #ifndef CRAY
@@ -747,7 +767,7 @@ void _XtShellColormap(widget,closure,value)
 {
    if (widget->core.parent == NULL)
 	   XtCopyDefaultColormap(widget,closure,value);
-   else XtCopyFromParent (widget,closure,value);
+   else _XtCopyFromParent (widget,closure,value);
 }
 
 #ifndef CRAY
@@ -760,7 +780,7 @@ void _XtShellAncestorSensitive(widget,closure,value)
 {
    static Boolean true = True;
    if (widget->core.parent == NULL) value->addr = (XtPointer)(&true);
-   else XtCopyFromParent (widget,closure,value);
+   else _XtCopyFromParent (widget,closure,value);
 }
 
 /* ARGSUSED */
