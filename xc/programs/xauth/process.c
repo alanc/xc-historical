@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.31 89/12/16 20:42:08 rws Exp $
+ * $XConsortium: process.c,v 1.32 90/07/31 10:31:55 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -589,7 +589,8 @@ static Bool dieing = False;
 #define _signal_t void
 #endif
 
-static _signal_t die ()
+static _signal_t die (sig)
+    int sig;
 {
     dieing = True;
     exit (auth_finalize ());
