@@ -1,4 +1,3 @@
-       INCLUDES = -I../../
-LOCAL_LIBRARIES = ../../Xlib/libX11.a
+LOCAL_LIBRARIES = $(XLIB)
 
 SimpleProgramTarget(ico, $(BINDIR))

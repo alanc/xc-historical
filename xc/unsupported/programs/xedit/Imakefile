@@ -1,5 +1,4 @@
-       INCLUDES = -I../../
-LOCAL_LIBRARIES = ../../toolkit/libXt11.a ../../Xlib/libX11.a
+LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c EDiskSrc.c ap.c commands.c ps.c util.c
            OBJS = xedit.o EDiskSrc.o ap.o commands.o ps.o util.o

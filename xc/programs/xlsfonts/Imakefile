@@ -1,8 +1,8 @@
-       INCLUDES = -I../../ -Isimple-lib
-LOCAL_LIBRARIES = $(SLB) ../../Xlib/libX11.a
-            SLB = simple-lib/slb.a
+       INCLUDES = -I$(TOP) -Isimple-lib
+LOCAL_LIBRARIES = $(SLB) $(XLIB)
+            SLB = simple-lib/libslb.a
 
 SimpleProgramTarget(xlsfonts, $(BINDIR))
 
 $(SLB):
-	cd simple-lib; make slb.a
+	cd simple-lib; $(MAKE)
