@@ -1,9 +1,10 @@
-.TH x11perf 1 "Release 5" "X Version 11"
+.\" $XConsortium$
+.TH X11PERF 1 "Release 5" "X Version 11"
 .SH NAME
-x11perf - X11 server performance test program
+x11perf \- X11 server performance test program
 .SH SYNTAX
 .B x11perf
-[-option ...]
+[ \-option ... ]
 .SH DESCRIPTION
 The
 .I x11perf
@@ -774,8 +775,6 @@ Circulate unmapped window to top.
 There are no X defaults used by this program.
 .SH "SEE ALSO"
 X(1), xbench(1), x11perfcomp(1)
-.SH BUGS
-We hope not.
 .SH COPYRIGHT
 Copyright 1988, 1989 Digital Equipment Corporation.
 .br

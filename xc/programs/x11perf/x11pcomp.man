@@ -1,9 +1,10 @@
-.TH x11perfcomp 1 "Release 5" "X Version 11"
+.\" $XConsortium$
+.TH X11PERFCOMP 1 "Release 5" "X Version 11"
 .SH NAME
-x11perfcomp - X11 server performance comparison program
+x11perfcomp \- X11 server performance comparison program
 .SH SYNTAX
 .B x11perfcomp
-[-r | -ro] [-l label_file] files
+[ \-r | \-ro ] [ \-l label_file ] files
 .SH DESCRIPTION
 The
 .I x11perfcomp
@@ -49,8 +50,6 @@ Specifies a label file to use.
 There are no X defaults used by this program.
 .SH "SEE ALSO"
 X(1), x11perf(1)
-.SH BUGS
-We hope not.
 .SH AUTHORS
 Mark Moraes wrote the original scripts to compare servers.
 .br
