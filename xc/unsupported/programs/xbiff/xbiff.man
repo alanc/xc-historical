@@ -1,4 +1,4 @@
-.TH XBIFF 1 "1 March 1988" "X Version 11"
+.TH XBIFF 1 "7 March 1988" "X Version 11"
 .SH NAME
 xbiff - mailbox flag for X
 .SH SYNOPSIS
@@ -8,7 +8,11 @@ xbiff - mailbox flag for X
 The
 .I xbiff
 program displays a little image of a mailbox.  When there is no mail, the flag
-on the mailbox is down.  When arrives, the flag goes up and the mailbox beeps.
+on the mailbox is down.  When mail arrives, the flag goes up and the mailbox beeps.
+Pressing any mouse button in the image forces \fIxbiff\fP to remember the
+current size of the mail file as being the ``empty'' size and to lower
+the flag.
+.PP
 This program is nothing more than a wrapper around the Athena Mailbox widget.
 .SH OPTIONS
 .I Xbiff
@@ -68,6 +72,12 @@ widget in the X Toolkit.  It understands all of the core resource names and
 classes as well as:
 .PP
 .TP 8
+.B checkCommand (\fPclass\fB CheckCommand)
+Specifies a shell command to be executed to check for new mail rather than
+examining the size of \fBfile\fP.  The specified string value is used as the
+argument to a \fIsystem\fP(3) call and may therefore contain i/o redirection.
+A successful (zero) exit status should indicate that new mail is waiting.
+.TP 8
 .B file (\fPclass\fB File)
 Specifies the name of the file to monitor.  The default is to watch
 /usr/spool/mail/\fIusername\fP, where \fIusername\fP is your login name.
@@ -108,3 +118,5 @@ Copyright 1988, Massachusetts Institute of Technology.
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium
+.br
+Additional hacks by Ralph Swick, DEC/MIT Project Athena
