@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xedit.h,v 1.8 87/08/20 16:25:09 gringort Exp $";
+ *	rcs_id[] = "$Header: xedit.h,v 1.8 87/09/11 08:22:22 toddb Exp $";
  */
 
 /*
@@ -28,22 +28,28 @@
  */
 
 
+#ifdef X11
+#include <X11/Xos.h>
+#include <X11/Xlib.h>
+#endif	/* X11 */
 #include <stdio.h>
+#ifdef X10
 #include <strings.h>
+#include <sys/types.h>
 #include <sys/file.h>
+#endif	/* X10 */
 
 #ifdef X11
-#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/Xtlib.h>
 #include <X11/TextDisp.h>
-#endif X11
+#endif	/* X11 */
 
 #ifdef X10
 #include <Xlib.h>
 #include <Xtlib.h>
 #include <TextDisp.h>
-#endif X10
+#endif	/* X10 */
 
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
