@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.2 92/03/11 11:07:47 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.3 92/03/11 12:11:46 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -27,7 +27,12 @@ without express or implied warranty.
 Display *dpy;
 unsigned short modifiers[256];
 KeyCode keycodes[256];
-KeyCode shift, control;
+unsigned short modmask[256];
+unsigned short curmods = 0;
+unsigned short tempmods = 0;
+KeyCode shift, control, lock, mod1, mod2, mod3, mod4, mod5;
+KeySym last_sym = 0;
+KeyCode last_keycode = 0;
 struct termios oldterm;
 int istty = 0;
 
@@ -62,7 +67,7 @@ ioerror(Dpy)
 reset_mapping()
 {
     int minkey, maxkey;
-    register int i;
+    register int i, j;
     KeySym sym;
     register int c;
     XModifierKeymap *mmap;
@@ -70,6 +75,7 @@ reset_mapping()
     XDisplayKeycodes(dpy, &minkey, &maxkey);
     bzero((char *)modifiers, sizeof(modifiers));
     bzero((char *)keycodes, sizeof(keycodes));
+    bzero((char *)modmask, sizeof(modmask));
     for (i = minkey; i <= maxkey; i++) {
 	sym = XKeycodeToKeysym(dpy, i, 0);
 	if (sym > 0 && sym < 128) {
@@ -110,25 +116,78 @@ reset_mapping()
 	modifiers[127] = 0;
     }
     mmap = XGetModifierMapping(dpy);
-    shift = mmap->modifiermap[0];
-    control = mmap->modifiermap[2 * mmap->max_keypermod];
+    j = 0;
+    shift = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = ShiftMask;
+    j += mmap->max_keypermod; /* lock */
+    control = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = ControlMask;
+    mod1 = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod1Mask;
+    mod2 = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod2Mask;
+    mod3 = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod3Mask;
+    mod4 = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod4Mask;
+    mod5 = mmap->modifiermap[j];
+    for (i = 0; i < mmap->max_keypermod; i++, j++)
+	if (mmap->modifiermap[j]) modmask[mmap->modifiermap[j]] = Mod5Mask;
     XFreeModifiermap(mmap);
+    last_sym = 0;
 }
 
-unsigned short
-do_key(key, mods, curmods)
+do_key(key, mods)
     int key;
-    unsigned short mods, curmods;
+    unsigned short mods;
 {
 
     if (!key)
-	return curmods;
+	return;
+    if (modmask[key]) {
+	if (!(tempmods & modmask[key])) {
+	    switch (modmask[key])
+	    {
+	    case ShiftMask:
+		XTestFakeKeyEvent(dpy, shift, True, 0);
+		break;
+	    case ControlMask:
+		XTestFakeKeyEvent(dpy, control, True, 0);
+		break;
+	    case Mod1Mask:
+		XTestFakeKeyEvent(dpy, mod1, True, 0);
+		break;
+	    case Mod2Mask:
+		XTestFakeKeyEvent(dpy, mod2, True, 0);
+		break;
+	    case Mod3Mask:
+		XTestFakeKeyEvent(dpy, mod3, True, 0);
+		break;
+	    case Mod4Mask:
+		XTestFakeKeyEvent(dpy, mod4, True, 0);
+		break;
+	    case Mod5Mask:
+		XTestFakeKeyEvent(dpy, mod5, True, 0);
+		break;
+	    }
+	}
+	curmods |= modmask[key];
+	tempmods |= modmask[key];
+	return;
+    }
     if ((mods & ShiftMask) && !(curmods & ShiftMask)) {
 	XTestFakeKeyEvent(dpy, shift, True, 0);
 	curmods |= ShiftMask;
     } else if (!(mods & ShiftMask) && (curmods & ShiftMask)) {
 	XTestFakeKeyEvent(dpy, shift, False, 0);
 	curmods &= ~ShiftMask;
+	tempmods &= ~ShiftMask;
     }
     if ((mods & ControlMask) && !(curmods & ControlMask)) {
 	XTestFakeKeyEvent(dpy, control, True, 0);
@@ -136,37 +195,53 @@ do_key(key, mods, curmods)
     } else if (!(mods & ControlMask) && (curmods & ControlMask)) {
 	XTestFakeKeyEvent(dpy, control, False, 0);
 	curmods &= ~ControlMask;
+	tempmods &= ~ControlMask;
     }
     XTestFakeKeyEvent(dpy, key, True, 0);
     XTestFakeKeyEvent(dpy, key, False, 0);
-    return curmods;
+    if (tempmods) {
+	if (tempmods & ShiftMask)
+	    XTestFakeKeyEvent(dpy, shift, False, 0);
+	if (tempmods & ControlMask)
+	    XTestFakeKeyEvent(dpy, control, False, 0);
+	if (tempmods & Mod1Mask)
+	    XTestFakeKeyEvent(dpy, mod1, False, 0);
+	if (tempmods & Mod2Mask)
+	    XTestFakeKeyEvent(dpy, mod2, False, 0);
+	if (tempmods & Mod3Mask)
+	    XTestFakeKeyEvent(dpy, mod3, False, 0);
+	if (tempmods & Mod4Mask)
+	    XTestFakeKeyEvent(dpy, mod4, False, 0);
+	if (tempmods & Mod5Mask)
+	    XTestFakeKeyEvent(dpy, mod5, False, 0);
+	curmods &= ~tempmods;
+	tempmods = 0;
+    }
 }
 
-unsigned short
-dochar(c, curmods)
+dochar(c)
     int c;
-    unsigned short curmods;
 {
-    return do_key(keycodes[c], modifiers[c], curmods);
+    do_key(keycodes[c], modifiers[c]);
 }
 
-unsigned short
-do_keysym(sym, curmods)
+do_keysym(sym)
     KeySym sym;
-    unsigned short curmods;
 {
-    return do_key(XKeysymToKeycode(dpy, sym), 0, curmods);
+    if (sym != last_sym) {
+	last_sym = sym;
+	last_keycode = XKeysymToKeycode(dpy, sym);
+    }	
+    do_key(last_keycode, 0);
 }
 
-unsigned short
-quiesce(curmods)
-    unsigned short curmods;
+quiesce()
 {
     if (curmods & ControlMask)
 	XTestFakeKeyEvent(dpy, control, False, 0);
     if (curmods & ShiftMask)
 	XTestFakeKeyEvent(dpy, shift, False, 0);
-    return curmods & ~(ControlMask|ShiftMask);
+    curmods &= ~(ControlMask|ShiftMask);
 }
 
 main(argc, argv)
@@ -178,7 +253,6 @@ main(argc, argv)
     struct termios term;
     int noecho = 1;
     char *dname = NULL;
-    unsigned short mods = 0;
     char buf[1024];
     XEvent ev;
     char keysym_char = '\024'; /* control T */
@@ -242,7 +316,7 @@ main(argc, argv)
 	}
 	for (i = 0; i < n; i++) {
 	    if (buf[i] != keysym_char) {
-		mods = dochar(buf[i], mods);
+		dochar(buf[i]);
 		continue;
 	    }
 	    i++;
@@ -259,18 +333,18 @@ main(argc, argv)
 		    continue;
 		buf[j] = '\0';
 		if (j == i)
-		    mods = dochar(keysym_char, mods);
+		    dochar(keysym_char);
 		else if (!strcmp(buf+i, "exit"))
 		    quit(0);
 		else if (sym = strtoul(buf+i, NULL, 16))
-		    mods = do_keysym(sym, mods);
+		    do_keysym(sym);
 		else if (sym = XStringToKeysym(buf+i))
-		    mods = do_keysym(sym, mods);
+		    do_keysym(sym);
 		i = j;
 		break;
 	    }
 	}
-	mods = quiesce(mods);
+	quiesce();
 	XFlush(dpy);
     }
     quit(0);
