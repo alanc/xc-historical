@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.41 91/07/18 22:53:33 keith Exp $
+ * $XConsortium: miwideline.c,v 1.42 91/08/23 12:16:08 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1984,7 +1984,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     SpanDataPtr	    spanData;
     Bool	    somethingDrawn = FALSE;
     Bool	    selfJoin;
-    Bool	    endIsFg, startIsFg, firstIsFg, prevIsFg;
+    Bool	    endIsFg, startIsFg, firstIsFg = FALSE, prevIsFg;
 
     if (pGC->lineStyle == LineDoubleDash && 
 	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
