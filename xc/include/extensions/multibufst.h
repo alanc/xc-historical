@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.12 93/09/11 14:56:08 rws Exp $
+ * $XConsortium: multibufst.h,v 1.13 93/09/26 10:11:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -455,7 +455,7 @@ typedef struct _mbufScreen {
 typedef struct _mbufPixmapPriv
 {
     /* Pointers to wrapped functions */
-    Bool (* PositionWindow)();		/* pWin, x,y */
+    PositionWindowProcPtr PositionWindow;		/* pWin, x,y */
     long funcsWrapped;			/* flags which functions are wrapped */
 } mbufPixmapPrivRec, *mbufPixmapPrivPtr;
 #endif /* _MULTIBUF_PIXMAP_ */
@@ -489,12 +489,12 @@ typedef struct _mbufBufferPriv
     void (* DrawSelectPlane)();	/* pScreen, selectPlane, pRegion, bufferNum */
 
     /* Pointers to wrapped functions */
-    void (* PostValidateTree)();        /* pParent, pChild, kind */
-    void (* ClipNotify)();              /* pWin, dx, dy */
-    void (* WindowExposures)();		/* pWin, pRegion */
-    void (* CopyWindow)();              /* pWin, oldPt, pOldRegion */
-    void (* ClearToBackground)();       /* pWin, x,y,w,h, sendExpose */
-    Bool (* ChangeWindowAttributes)();	/* pWin, vmask */
+    PostValidateTreeProcPtr	PostValidateTree; /* pParent, pChild, kind */
+    ClipNotifyProcPtr		ClipNotify;       /* pWin, dx, dy */
+    WindowExposuresProcPtr	WindowExposures;  /* pWin, pRegion */
+    CopyWindowProcPtr		CopyWindow;       /* pWin, oldPt, pOldRegion */
+    ClearToBackgroundProcPtr	ClearToBackground; /* pWin, x,y,w,h, sendExpose */
+    ChangeWindowAttributesProcPtr ChangeWindowAttributes; /* pWin, vmask */
     long funcsWrapped;			/* flags which functions are wrapped */
     unsigned  inClearToBackground:1;	/* used by WindowExposure */
 } mbufBufferPrivRec, *mbufBufferPrivPtr;
