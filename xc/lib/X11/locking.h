@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.10 93/11/11 17:45:17 kaleb Exp $
+ * $XConsortium: locking.h,v 1.11 94/01/29 18:30:06 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -67,21 +67,38 @@ struct _XLockInfo {
 	xcondition_t cv;	/* wait if another thread has XLockDisplay */
 	xthread_t reading_thread; /* cache */
 	xthread_t conni_thread;	/* thread in XProcessInternalConnection */
+	xcondition_t writers;	/* wait for writable */
+	/* used only in XlibInt.c */
+	void (*pop_reader)();
+	struct _XCVList *(*push_reader)();
+	void (*condition_wait)();
+	void (*internal_lock_display)();
+	/* used in XlibInt.c and locking.c */
+	void (*condition_signal)();
+	void (*condition_broadcast)();
+	/* used in XlibInt.c and XLockDis.c */
+	void (*lock_wait)();
+	void (*user_lock_display)();
+	void (*user_unlock_display)();
 };
 
-#define UnlockNextEventReader(d,c) if ((d)->lock_fns) \
-    (*(d)->lock_fns->pop_reader)((d),(c), &(d)->lock->event_awaiters,&(d)->lock->event_awaiters_tail)
+#define UnlockNextEventReader(d,c) if ((d)->lock) \
+    (*(d)->lock->pop_reader)((d),(c), &(d)->lock->event_awaiters,&(d)->lock->event_awaiters_tail)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
-#define ConditionWait(d,c) if ((d)->lock_fns) \
-	(*(d)->lock_fns->condition_wait)((c)->cv, (d)->lock->mutex,__FILE__,__LINE__)
-#define ConditionSignal(d,c) if ((d)->lock_fns) \
-	(*(d)->lock_fns->condition_signal)((c)->cv,__FILE__,__LINE__)
+#define ConditionWait(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_wait)(c, (d)->lock->mutex,__FILE__,__LINE__)
+#define ConditionSignal(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_signal)(c,__FILE__,__LINE__)
+#define ConditionBroadcast(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_broadcast)(c,__FILE__,__LINE__)
 #else
-#define ConditionWait(d,c) if ((d)->lock_fns) \
-	(*(d)->lock_fns->condition_wait)((c)->cv, (d)->lock->mutex)
-#define ConditionSignal(d,c) if ((d)->lock_fns) \
-	(*(d)->lock_fns->condition_signal)((c)->cv)
+#define ConditionWait(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_wait)(c, (d)->lock->mutex)
+#define ConditionSignal(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_signal)(c)
+#define ConditionBroadcast(d,c) if ((d)->lock) \
+	(*(d)->lock->condition_broadcast)(c)
 #endif
 
 typedef struct _LockInfoRec {
