@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.10 91/11/07 14:53:17 gildea Exp $
+* $XConsortium: Xtos.h,v 1.11 91/11/08 17:55:15 gildea Exp $
 */
 
 /***********************************************************
@@ -35,6 +35,10 @@ SOFTWARE.
 
 #ifdef CRAY
 #define WORD64
+#endif
+
+#ifdef __alpha
+#define LONG64
 #endif
 
 /* stolen from server/include/os.h */
