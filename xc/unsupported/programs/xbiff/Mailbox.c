@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.61 93/08/18 15:11:09 rws Exp $
+ * $XConsortium: Mailbox.c,v 1.62 93/08/19 09:50:58 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,7 +73,7 @@ typedef union wait	waitType;
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
 
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/MailboxP.h>		/* for implementation mailbox stuff */
+#include "MailboxP.h"		/* for implementation mailbox stuff */
 #include <X11/Xmu/Drawing.h>
 #include <X11/extensions/shape.h>
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.16 90/04/30 16:55:34 converse Exp $
+ * $XConsortium: xbiff.c,v 1.17 91/01/10 14:25:32 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,7 +20,7 @@
 #include <X11/Xatom.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
-#include <X11/Xaw/Mailbox.h>
+#include "Mailbox.h"
 #include <X11/Xaw/Cardinals.h>
 
 extern void exit();

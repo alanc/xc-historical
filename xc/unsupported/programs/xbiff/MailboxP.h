@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MailboxP.h,v 1.19 90/12/01 13:00:31 rws Exp $
+ * $XConsortium: MailboxP.h,v 1.20 91/07/19 21:52:57 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
 #ifndef _XawMailboxP_h
 #define _XawMailboxP_h
 
-#include <X11/Xaw/Mailbox.h>
+#include "Mailbox.h"
 #include <X11/Xaw/SimpleP.h>
 
 #ifdef SYSV
