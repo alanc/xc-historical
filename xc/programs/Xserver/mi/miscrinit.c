@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.5 93/07/12 16:25:29 dpw Exp $ */
+/* $XConsortium: miscrinit.c,v 5.6 93/07/16 15:46:09 dpw Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -125,6 +125,26 @@ miCreateScreenResources(pScreen)
     return TRUE;
 }
 
+Bool
+miScreenDevPrivateInit(pScreen, width, pbits)
+    register ScreenPtr pScreen;
+    int width;
+    pointer pbits;
+{
+    miScreenInitParmsPtr pScrInitParms;
+
+    /* Stash pbits and width in a short-lived miScreenInitParmsRec attached
+     * to the screen, until CreateScreenResources can put them in the
+     * screen pixmap.
+     */
+    pScrInitParms = (miScreenInitParmsPtr)xalloc(sizeof(miScreenInitParmsRec));
+    if (!pScrInitParms)
+	return FALSE;
+    pScrInitParms->pbits = pbits;
+    pScrInitParms->width = width;
+    pScreen->devPrivate = (pointer)pScrInitParms;
+    return TRUE;
+}
 
 /*
  * If you pass in bsfuncs, then you must preinitialize the missing
@@ -149,8 +169,6 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     VisualRec *visuals;		/* supported visuals */
     miBSFuncPtr	bsfuncs;	/* backing store functions */
 {
-    miScreenInitParmsPtr pScrInitParms;
-
     pScreen->width = xsize;
     pScreen->height = ysize;
     pScreen->mmWidth = (xsize * 254) / (dpix * 10);
@@ -221,15 +239,5 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     if (bsfuncs)
 	miInitializeBackingStore (pScreen, bsfuncs);
 
-    /* Stash pbits and width in a short-lived miScreenInitParmsRec attached
-     * to the screen, until CreateScreenResources can put them in the
-     * screen pixmap.
-     */
-    pScrInitParms = (miScreenInitParmsPtr)xalloc(sizeof(miScreenInitParmsRec));
-    if (!pScrInitParms)
-	return FALSE;
-    pScrInitParms->pbits = pbits;
-    pScrInitParms->width = width;
-    pScreen->devPrivate = (pointer)pScrInitParms;
-    return TRUE;
+    return miScreenDevPrivateInit(pScreen, width, pbits);
 }
