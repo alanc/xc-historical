@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.h,v 1.6 88/09/26 11:43:47 swick Exp $ */
+/* $XConsortium: RectObj.h,v 1.7 89/06/16 18:09:14 jim Exp $ */
 /* $oHeader: RectObj.h,v 1.2 88/08/18 17:39:17 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,7 +31,7 @@ typedef struct _RectObjRec *RectObj;
 typedef struct _RectObjClassRec *RectObjClass;
 
 #ifndef RECTOBJ
-externalref RectObjClass rectObjClass;
+externalref WidgetClass rectObjClass;
 #endif
 #endif /* _XtRect_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
