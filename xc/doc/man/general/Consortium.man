@@ -1,4 +1,4 @@
-.\" $XConsortium: Consortium.man,v 1.15 91/08/15 18:16:47 rws Exp $
+.\" $XConsortium: Consortium.man,v 1.16 91/09/28 12:58:22 rws Exp $
 .TH XCONSORTIUM 1 "Release 5"  "X Version 11"
 .SH NAME
 MIT X Consortium \- MIT X Consortium information
@@ -130,6 +130,7 @@ Xerox Corporation
 .nf
 Adobe Systems Inc.
 AGE Logic, Inc.
+Aptronix, Inc.
 ASTEC, Inc.
 Athenix Corporation
 Bitstream, Inc.
