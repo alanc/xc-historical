@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css_plain.c,v 5.1 91/02/16 09:56:09 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -66,7 +66,8 @@ createCSS_Plain(pStruct, pPEXOC, ppCSSElement)
 		err = (*ParseOCTable[PEX_EL_TYPE(pPEXOC)])
 			(pPEXOC, ppCSSElement);
 	else
-		err = (*ParseOCTable[0]) (pPEXOC, ppCSSElement);
+		err = !Success;
+
 	if (err != Success)
 		return (PEXERR(PEXOutputCommandError));
 
