@@ -469,6 +469,27 @@ static void StartScroll( gw, event, params, num_params )
 }
 
 
+static void ExtractPosition( event, x, y )
+    XEvent *event;
+    int *x, *y;			/* RETURN */
+{
+    switch (event->type) {
+      case MotionNotify:
+		*x = event->xmotion.x;	 *y = event->xmotion.y;	  break;
+      case ButtonPress:
+      case ButtonRelease:
+		*x = event->xbutton.x;   *y = event->xbutton.y;   break;
+      case KeyPress:
+      case KeyRelease:
+		*x = event->xkey.x;      *y = event->xkey.y;	  break;
+      case EnterNotify:
+      case LeaveNotify:
+		*x = event->xcrossing.x; *y = event->xcrossing.y; break;
+      default:
+		*x = 0; *y = 0;
+    }
+}
+
 static void NotifyScroll( gw, event, params, num_params   )
    Widget gw;
    XEvent *event;
@@ -478,6 +499,7 @@ static void NotifyScroll( gw, event, params, num_params   )
     ScrollbarWidget w = (ScrollbarWidget) gw;
     int call_data;
     char style;
+    int x, y;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
@@ -486,8 +508,8 @@ static void NotifyScroll( gw, event, params, num_params   )
 
     switch( style ) {
         case 'P':    /* Proportional */
-        case 'p':    call_data = InRange( PICKLENGTH( w, event->xmotion.x,
-						      event->xmotion.y),
+        case 'p':    ExtractPosition( event, &x, &y );
+		     call_data = InRange( PICKLENGTH( w, x, y ),
 					  0,
 					  w->scrollbar.length); break;
 
@@ -533,10 +555,12 @@ static void MoveThumb( gw, event, params, num_params )
    Cardinal num_params;		/* unused */
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
+    Position x, y;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
-    w->scrollbar.top = FractionLoc(w, event->xmotion.x, event->xmotion.y);
+    ExtractPosition( event, &x, &y );
+    w->scrollbar.top = FractionLoc(w, x, y);
     PaintThumb(w);
     XFlush(XtDisplay(w));
 }
