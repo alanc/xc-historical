@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.1 89/09/29 14:01:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SetValues.c,v 1.2 89/12/15 20:20:18 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -129,8 +129,9 @@ void XtSetValues(w, args, num_args)
 	     Cardinal num_args;
 {
     register Widget oldw, reqw;
-    char	    oldwCache[500], reqwCache[500];
-    char	    oldcCache[100], reqcCache[100];
+    /* need to use strictest alignment rules possible in next two decls. */
+    double	    oldwCache[100], reqwCache[100];
+    double	    oldcCache[20], reqcCache[20];
     Cardinal	    widgetSize, constraintSize;
     Boolean	    redisplay, reconfigured = False;
     XtGeometryResult result;
