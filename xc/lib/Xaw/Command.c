@@ -47,13 +47,13 @@ static char rcsid[] = "$Header: Command.c,v 1.26 87/12/04 10:55:55 swick Locked 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "Intrinsic.h"
-#include "Label.h"
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/Label.h>
+#include <X/Command.h>
 #include "LabelP.h"
-#include "Command.h"
 #include "CommandP.h"
 #include "CommandI.h"
-#include "Atoms.h"
 
 /****************************************************************
  *
