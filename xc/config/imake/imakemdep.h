@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.30 91/05/14 13:24:32 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.31 91/06/08 17:58:47 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -60,8 +60,8 @@
 #  endif
 #endif 
 
-#ifdef luna
-#define imake_ccflags "-Dluna"
+#ifdef is68k
+#define imake_ccflags "-Dluna -Duniosb"
 #endif
 
 #ifdef SYSV386
@@ -169,8 +169,19 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef luna
 	"-Dluna",	/* OMRON luna 68K and 88K */
-	"-DXCOMM=\\#",
+#ifdef luna1
+	"-Dluna1",
 #endif
+#ifdef luna88k		/* need not on UniOS-Mach Vers. 1.13 */
+	"-traditional", /* for some older version            */
+#endif			/* instead of "-DXCOMM=\\#"          */
+#ifdef uniosb
+	"-Duniosb",
+#endif
+#ifdef uniosu
+	"-Duniosu",
+#endif
+#endif /* luna */
 #ifdef CRAY		/* Cray */
 	"-Ucray",
 #endif
@@ -283,9 +294,21 @@ struct symtab	predefs[] = {
 #endif
 #ifdef luna
 	{"luna", "1"},
+#ifdef luna1
+	{"luna1", "1"},
+#endif
+#ifdef luna2
+	{"luna2", "1"},
 #endif
 #ifdef luna88k
 	{"luna88k", "1"},
+#endif
+#ifdef uniosb
+	{"uniosb", "1"},
+#endif
+#ifdef uniosu
+	{"uniosu", "1"},
+#endif
 #endif
 #ifdef ieeep754
 	{"ieeep754", "1"},
