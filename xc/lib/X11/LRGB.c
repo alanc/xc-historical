@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.5 91/02/11 18:17:47 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.6 91/02/12 16:13:06 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -1320,7 +1320,5 @@ _XcmsLRGB_InitScrnDefault(dpy, screen_number, pPerScrnInfo)
     pPerScrnInfo->screenWhitePt.pixel = 0;
     pPerScrnInfo->pSCCFuncSet = (caddr_t)&LINEAR_RGB_SCCFuncSet;
     pPerScrnInfo->state = XCMS_INIT_DEFAULT;
-    fprintf(stderr, "TekCMS:  WARNING -- Unable to acquire Screen Color Characterization Data \n\t required for accurate color conversion to device space for: \n\t\tDisplay  -- %s \n\t\tScreen # -- %d \n\t Using default data.\n\n",
-	    dpy->display_name, screen_number);	
     return(1);
 }
