@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.18 88/08/29 17:23:27 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.19 88/08/29 19:21:09 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -265,11 +265,9 @@ waitforserver(serverpid)
 {
 	int	ncycles	 = 120;		/* # of cycles to wait */
 	int	cycles;			/* Wait cycle count */
-	char	display[100];		/* Display name */
 
-	strcpy(display, displayname);
 	for (cycles = 0; cycles < ncycles; cycles++) {
-		if (xd = XOpenDisplay(display)) {
+		if (xd = XOpenDisplay(displayname)) {
 			return(TRUE);
 		}
 		else {
