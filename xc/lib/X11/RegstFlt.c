@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XRegstFlt.c,v 1.2 91/02/04 12:05:52 morisaki Exp $
+ * $XConsortium: XRegstFlt.c,v 1.2 91/02/14 16:27:03 rws Exp $
  */
 
  /*
@@ -70,11 +70,9 @@ XIMValue client_data;
 }
 
 void
-XUnregisterFilter(display, window, event_mask, nonmaskable, filter, client_data)
+XUnregisterFilter(display, window, filter, client_data)
 Display *display;
 Window window;
-unsigned long event_mask;
-Bool nonmaskable;
 Bool (*filter)();
 XIMValue client_data;
 {
@@ -83,7 +81,6 @@ XIMValue client_data;
 
     for (prev = NULL, fl = filter_list; fl != NULL; prev = fl, fl = fl->next) {
 	if (fl->display == display && fl->window == window
-	    && fl->event_mask == event_mask && fl->nonmaskable == nonmaskable
 	    && fl->filter == filter && fl->client_data == client_data) {
 	    if (prev == NULL) {
 		filter_list = NULL;
