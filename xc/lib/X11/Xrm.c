@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.62 91/04/26 11:59:14 rws Exp $
+ * $XConsortium: Xrm.c,v 1.63 91/05/01 09:15:53 rws Exp $
  */
 
 /***********************************************************
@@ -1229,18 +1229,16 @@ static void GetDatabase(db, str, filename)
 	 */
 
 	for(;;) {
-	    XrmBits old_bits;
-
 	    if (is_space(bits = next_char(c, str)))
 		continue;
 	    if (c != '\\')
 		break;
-	    old_bits = bits;
 	    bits = next_char(c, str);
 	    if (c == '\n')
 		continue;
 	    str--;
-	    bits = old_bits;
+	    bits = BSLASH;
+	    c = '\\';
 	    break;
 	}
 
