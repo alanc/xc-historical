@@ -83,9 +83,7 @@ else
 
 for( i=0; i<count; i++ )
 	{
-/*
 	fprintf(stderr,"** Opening %s\n",displays[i]);
-*/
 	disp=XOpenDisplay(displays[i]);
 	if( disp == NULL )
 		{
@@ -95,11 +93,10 @@ for( i=0; i<count; i++ )
 	else
 		{
 		numpassed++;
-/*
 		fprintf(stderr,"** Successful\n");
-*/
 		XCloseDisplay(disp);
 		}
+	fprintf(stderr,"\n");
 	}
 fprintf(stderr,"Pass: %d\tFail: %d\tTotal: %d\n",
 		numpassed, numfailed, numpassed+numfailed );
