@@ -1,74 +1,8 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-             FC = bdftosnf/bdftosnf
-        FCFLAGS = -t
-      MKFONTDIR = mkfontdir/mkfontdir
-        SUBDIRS = bdftosnf mkfontdir
-        HEADERS = cursorfont.h
-   INSTALLFLAGS = $(INSTINCFLAGS)
+/* make sure that bdftosnf and mkfontdir come before bdf */
+        SUBDIRS = bdftosnf mkfontdir bdf
 
-all: $(SUBDIRS) fonts
-
-$(SUBDIRS): FRC
-	cd $@; echo building $@ ; $(MAKE) $(MFLAGS) all
-
-InstallMultiple($(HEADERS),$(INCDIR))
-
-/*
- * Yuk and XXX!  install puts these files in $(FONTDIR)/snf not in $(FONTDIR)!
- *
- * InstallMultiple(snf/?*.snf,$(FONTDIR))
- */
-
-install:: fonts
-	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
-	cd snf; \
-	for i in *.snf$(ZSUFFIX) fonts.dir fonts.alias; do \
-		(set -x; $(INSTALL) -c $(INSTALLFLAGS) $$i $(FONTDIR)); \
-	done
-
-# Gruesome hackery suggested by Bill Sommerfeld.
-# The following rule finds all the BDF files, creates a new makefile to
-# compile the changed ones into SNF files, then runs that.
-
-fonts: snf snf/Makefile FRC
-	cd snf; $(MAKE)
-
-snf/Makefile: bdf Makefile
-	@echo "Building $@"; \
-	$(RM) $@; \
-	echo "# This makefile is created automagically by ../Makefile" > $@; \
-	echo 'FC=../$(FC)' >> $@; \
-	echo 'FCFLAGS=$(FCFLAGS)' >> $@; \
-	echo 'RM=$(RM)' >> $@; \
-	echo 'LN=$(LN)' >> $@; \
-	echo 'MKFONTDIR=../$(MKFONTDIR)' >> $@; \
-	echo 'ZSUFFIX=$(ZSUFFIX)' >> $@; \
-	echo 'COMPRESS=$(COMPRESS)' >> $@; \
-	echo 'all: fonts fonts.dir fonts.alias' >> $@; \
-	echo 'fonts.dir: fonts' >> $@; \
-	echo '	$$(RM) $$@' >> $@; \
-	echo '	$$(MKFONTDIR) .' >> $@; \
-	echo 'fonts.alias: ../bdf/fonts.alias' >> $@; \
-	echo '	$$(RM) $$@' >> $@; \
-	echo '	$$(LN) ../bdf/fonts.alias $$@' >> $@; \
-	echo 'fonts: \'	>> $@; \
-	(cd bdf;$(LS) *.bdf) \
-	| sed -e 's/\(.*\).bdf$$/\1.snf$$(ZSUFFIX) \\/' -e '$$s/..$$//' >> $@; \
-	echo >> $@; \
-	(cd bdf; for i in *.bdf; do \
-	    f=`basename $$i .bdf`; \
-	    echo $$f.snf'$$(ZSUFFIX)': ../bdf/$$f.bdf '$$(FC)' >> ../$@; \
-	    echo '	$$(FC) $$(FCFLAGS)' ../bdf/$$f.bdf '$$(COMPRESS) > $$@' >> ../$@; \
-	done)
-
-snf:
-	-mkdir snf
-
+MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
-
-clean::
-	(cd snf; $(RM_CMD) Makefile fonts.dir fonts.alias *.snf$(ZSUFFIX))
-
-FRC:
