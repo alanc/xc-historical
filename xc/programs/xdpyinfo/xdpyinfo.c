@@ -1,5 +1,5 @@
 /*
- * $XHeader$
+ * $XHeader: xdpyinfo.c,v 1.3 88/07/01 15:46:23 jim Exp $
  * 
  * xconinfo - print information about X connecton
  *
@@ -25,6 +25,12 @@
 
 char *ProgramName;
 
+#ifdef DisplayPixmapFormats
+#include <warning-obsolete-code>
+#endif
+
+#define DisplayPixmapFormats(dpy) ((dpy)->nformats)
+#define DisplayPixmapDepth(dpy,i) ((dpy)->pixmap_format[i].depth)
 
 static void usage ()
 {
@@ -81,7 +87,7 @@ print_display_info (dpy)
     char dummybuf[40];
     char *cp;
     int minkeycode, maxkeycode;
-
+    int i, n;
 
     printf ("name of display:    %s\n", DisplayString (dpy));
     printf ("\n");
@@ -114,10 +120,17 @@ print_display_info (dpy)
     }
     printf ("image byte order:    %s\n", cp);
 
+    n = DisplayPixmapFormats (dpy);
+    printf ("number of supported pixmap formats:    %d\n", n);
+    printf ("supported pixmap depths:  ");
+    for (i = 0; i < n; i++) {
+	printf ("  %d", DisplayPixmapDepth (dpy, i));
+    }
+    printf ("\n");	
+
     XDisplayKeycodes (dpy, &minkeycode, &maxkeycode);
     printf ("keycode range:    minimum %d, maximum %d\n",
 	    minkeycode, maxkeycode);
-
 
     printf ("default screen number:    %d\n", DefaultScreen (dpy));
     printf ("number of screens:    %d\n", ScreenCount (dpy));
