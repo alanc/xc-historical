@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.4 88/10/04 16:19:19 swick Exp $
+/* $XConsortium: CvtStdSel.c,v 1.5 88/10/21 20:05:11 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -57,10 +57,6 @@ static char *get_os_name ()
 #endif
 	    return os_name;
 	}
-#endif
-
-#if !defined(MOTD_FILE) && !defined(NO_MOTD_FILE) && defined(unix)
-#define MOTD_FILE "/etc/motd"
 #endif
 
 #ifdef X_OS_FILE
