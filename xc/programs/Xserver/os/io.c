@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.34 87/09/07 12:22:18 toddb Locked $ */
+/* $Header: io.c,v 1.35 87/09/09 13:21:22 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -297,14 +297,14 @@ ReadRequestFromClient(who, status, oldbuf)
 static int padlength[4] = {0, 3, 2, 1};
 
 int
-WriteToClient (who, remaining, buf)
+WriteToClient (who, count, buf)
     ClientPtr who;
     char *buf;
-    int remaining;
+    int count;
 {
 #define OUTTIME 2		
     int connection = ((osPrivPtr)who->osPrivate)->fd;
-    int bytesThisTime = remaining;
+    int total;
     register int n;
     int mask[mskcnt];
     struct timeval outtime;
@@ -329,27 +329,26 @@ WriteToClient (who, remaining, buf)
 	return(-1);
     }
 
-   iov[1].iov_len = padlength[remaining & 3];
+   iov[0].iov_len = count;
+   iov[0].iov_base = buf;
+   iov[1].iov_len = padlength[count & 3];
    iov[1].iov_base = pad;
 
-    while (1) 
+    total = iov[0].iov_len + iov[1].iov_len;
+    while ((n = writev (connection, iov, 2)) != total)
     {
-        iov[0].iov_len = bytesThisTime;
-        iov[0].iov_base = buf;
-
-        if ((n = writev (connection, iov, 2)) == remaining + iov[1].iov_len)
-	   return(remaining);
         if (n > 0) 
         {
-	    buf += n;
-	    remaining -= n;
-	    if (remaining < bytesThisTime)
-		bytesThisTime = remaining;
-	}
-        else if (errno == EMSGSIZE) /* buffer to big to write in one go */
-	{
-	     bytesThisTime >>= 1;
-	     continue;
+	    total -= n;
+	    if ((iov[0].iov_len -= n) < 0)
+	    {
+	        iov[1].iov_len += iov[0].iov_len;
+		iov[1].iov_base -= iov[0].iov_len;
+		iov[0].iov_len = 0;
+	    }
+	    else
+	        iov[0].iov_base += n;
+	    continue;
 	}
 	else if (errno != EWOULDBLOCK)
         {
@@ -371,8 +370,8 @@ WriteToClient (who, remaining, buf)
 #ifdef notdef
         ErrorF("Connection %d blocked, be willing to try write once more:\n",
 		connection);
-        ErrorF("need to write: %d, have written: %d, eerno: %d\n", 
-	       remaining, n, errno);
+        ErrorF("need to write: %d, have written: %d, errno: %d\n", 
+	       total, n, errno);
 #endif
 	CLEARBITS(mask);
 	BITSET(mask, connection);
@@ -395,5 +394,6 @@ WriteToClient (who, remaining, buf)
         else
             secondTime++;
     }
+    return(count);
 }
 
