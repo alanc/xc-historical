@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.45 92/04/06 19:28:24 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.46 92/04/08 20:47:28 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -1319,7 +1319,7 @@ process(buf, n, len)
 		default:
 		    continue;
 		}
-		if (len && (i > j))
+		if (len && (i == j))
 		    save_control(buf, i - 1, j);
 		break;
 	    }
