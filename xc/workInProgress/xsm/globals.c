@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.19 94/12/12 22:44:28 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.20 94/12/13 20:34:16 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -25,6 +25,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
+#include <X11/ICE/ICEutil.h>
+
 List		*RunningList;
 List		*PendingList;
 List		*RestartAnywayList;
@@ -40,7 +42,6 @@ Bool		shutdownInProgress = False;
 Bool		phase2InProgress = False;
 Bool		saveInProgress = False;
 Bool		shutdownCancelled = False;
-jmp_buf		JumpHere;
 
 Bool		verbose = False;
 
