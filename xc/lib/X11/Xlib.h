@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.154 89/04/25 19:20:11 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.155 89/04/25 19:36:21 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1116,7 +1116,6 @@ Status XGetTextProperty(), XGetWMName(), XGetWMIconName();
 Status XGetWMClientMachine(), XGetWMCommand();
 Status XGetWMColormapWindows(), XSetWMColormapWindows();
 Status XGetWMProtocols(), XSetWMProtocols();
-Status XGetWMState(), XSetWMState();
 Status XIconifyWindow(), XWithdrawWindow();
 Status XGetCommand();
 void XSetWMProperties(), XSetWMSizeHints(), XSetWMNormalHints();

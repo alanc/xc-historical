@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.44 89/03/28 18:14:17 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.45 89/04/19 15:09:25 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -131,16 +131,6 @@ typedef struct {
     int format;				/* prop data format: 8, 16, or 32 */
     unsigned long nitems;		/* number of data items in value */
 } XTextProperty;
-
-
-typedef struct {
-    long flags;				/* see SState and SIconWindow below */
-    int state;
-    Window icon_window;
-} XWMState;
-    
-#define SState (1L << 0)
-#define SIconWindow (1L << 1)
 
 
 typedef struct {
@@ -319,6 +309,5 @@ XStandardColormap *XAllocStandardColormap ();
 XWMHints *XAllocWMHints ();
 XClassHint *XAllocClassHint ();
 XIconSize *XAllocIconSize ();
-XWMState *XAllocWMState ();
 
 #endif /* _XUTIL_H_ */
