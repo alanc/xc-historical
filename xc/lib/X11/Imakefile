@@ -355,7 +355,7 @@ OBJS3 = \
 
 #if BuildLocalIM
 LIMSRCS = XLocalIM.c
-LIMOBJS = XlocalIM.o
+LIMOBJS = XLocalIM.o
 #endif
 
 LCSRCS = \
