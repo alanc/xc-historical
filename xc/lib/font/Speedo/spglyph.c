@@ -21,17 +21,22 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * $NCDId: @(#)spglyph.c,v 4.7 1991/06/24 16:55:40 lemke Exp $
+ *
  * Author: Dave Lemke, Network Computing Devices Inc
  *
  */
 
+#include	<X11/X.h>	/* for bit order #defines */
 #include	"spint.h"
 
 #undef	CLIP_BBOX_NOISE
 
 static CurrentFontValuesRec current_font_values;
 static CurrentFontValuesPtr cfv = &current_font_values;
-static int  bit, byte, scan;
+static int  bit,
+            byte,
+            scan;
 
 unsigned long
 compute_sp_data_size(pfont, mappad, scanlinepad, start, end)
@@ -46,7 +51,7 @@ compute_sp_data_size(pfont, mappad, scanlinepad, start, end)
     int         bpr;
     SpeedoFontPtr spf = (SpeedoFontPtr) pfont->fontPrivate;
     FontInfoPtr pinfo = &pfont->info;
-    int	    firstChar;
+    int         firstChar;
 
     firstChar = spf->master->first_char_id;
 
@@ -119,10 +124,10 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
     fix15       xbit1,
                 xbit2;
 {
-    fix15       i;
-    int		nmiddle;
-    CARD32	startmask, endmask;
-    CARD32	*dst;
+    int         nmiddle;
+    CARD32      startmask,
+                endmask;
+    CARD32     *dst;
 
     if (xbit1 > cfv->bit_width) {
 
@@ -161,29 +166,24 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
  * needs testing
  */
 
-    if (xbit1 < 0)	/* XXX this is more than a little bit rude... */
+    if (xbit1 < 0)		/* XXX this is more than a little bit rude... */
 	xbit1 = 0;
 
     nmiddle = ((int) cfv->bp) & 3;
-    if (nmiddle)
-    {
+    if (nmiddle) {
 	xbit1 += nmiddle << 3;
 	xbit2 += nmiddle << 3;
-	nmiddle = 4 - nmiddle;
     }
     dst = ((CARD32 *) (((char *) cfv->bp) - nmiddle)) + (xbit1 >> 5);
     nmiddle = (xbit2 >> 5) - (xbit1 >> 5);
     xbit1 &= 31;
     xbit2 &= 31;
-    if (bit == MSBFirst)
-    {
-	startmask =   ((CARD32) ~0) >> xbit1;
-	endmask   = ~(((CARD32) ~0) >> xbit2);
-    }
-    else
-    {
-	startmask =   ((CARD32) ~0) << xbit1;
-	endmask   = ~(((CARD32) ~0) << xbit2);
+    if (bit == MSBFirst) {
+	startmask = ((CARD32) ~0) >> xbit1;
+	endmask = ~(((CARD32) ~0) >> xbit2);
+    } else {
+	startmask = ((CARD32) ~0) << xbit1;
+	endmask = ~(((CARD32) ~0) << xbit2);
     }
     if (nmiddle == 0)
 	*dst |= endmask & startmask;
@@ -206,8 +206,29 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
     fix15       ysize;
 {
     CharInfoPtr ci = &cur_spf->encoding[cfv->char_id - cur_spf->master->first_char_id];
-    int	    off_horz;
-    int	    off_vert;
+
+/*-
+ * this is set to provide better quality bitmaps.  since the Speedo
+ * sp_get_bbox() function returns an approximate (but guarenteed to contain)
+ * set of metrics, some of the bitmaps can be place poorly inside and
+ * look bad.
+ *
+ * with this set, the actual bitmap values are used instead of the bboxes.
+ * it makes things look better, but causes two possible problems:
+ *
+ * 1 - the reported min & max bounds may not correspond to the extents
+ *	reported
+ * 2 - if the extents are reported before the character is generated,
+ * 	a client could see them change.  this currently never happens,
+ *	but will when a desired enhancement (don't reneder till needed)
+ *	is made.
+ */
+
+#define	BBOX_FIXUP 1
+
+#ifdef BBOX_FIXUP
+    int         off_horz;
+    int         off_vert;
 
     off_horz = (fix15) ((xorg + 32768L) / 65536);
     off_vert = (fix15) ((yorg + 32768L) / 65536);
@@ -218,6 +239,11 @@ sp_open_bitmap(x_set_width, y_set_width, xorg, yorg, xsize, ysize)
 
     cfv->bit_width = xsize;
     cfv->bit_height = ysize;
+#else
+    cfv->bit_width = ci->metrics.rightSideBearing -
+	ci->metrics.leftSideBearing;
+    cfv->bit_height = ci->metrics.ascent + ci->metrics.descent;
+#endif
 
     assert(cfv->bp - cur_spf->bitmaps <= cur_spf->bitmap_size);
     ci->bits = (char *) cfv->bp;
@@ -229,10 +255,10 @@ void
 sp_close_bitmap()
 {
     CharInfoPtr ci = &cur_spf->encoding[cfv->char_id - cur_spf->master->first_char_id];
-    int bpr = cfv->bpr;
+    int         bpr = cfv->bpr;
 
     if (bpr == 0)
-	bpr = GLYPH_SIZE (ci, cfv->scanpad);
+	bpr = GLYPH_SIZE(ci, cfv->scanpad);
     if (!cfv->trunc)
 	finish_line(cur_spf);
     cfv->trunc = 0;
@@ -241,16 +267,15 @@ sp_close_bitmap()
 	finish_line(cur_spf);
 	cfv->last_y++;
     }
-    if (byte != bit)
-    {
+    if (byte != bit) {
 	switch (scan) {
 	case 1:
 	    break;
 	case 2:
-	    TwoByteSwap (cfv->bp, bpr * cfv->bit_height);
+	    TwoByteSwap(cfv->bp, bpr * cfv->bit_height);
 	    break;
 	case 4:
-	    FourByteSwap (cfv->bp, bpr * cfv->bit_height);
+	    FourByteSwap(cfv->bp, bpr * cfv->bit_height);
 	    break;
 	}
     }
@@ -313,8 +338,9 @@ build_all_sp_bitmaps(pfont, format, fmask)
 	if (!cfv->char_id)
 	    continue;
 	if (!sp_make_char(cfv->char_index)) {
-#ifdef DEBUG
-	    SpeedoErr("Can't make char %x\n", cfv->char_index);
+
+#ifdef DEBUG			/* can be very common with some encodings */
+	    SpeedoErr("Can't make char", cfv->char_index);
 #endif
 	}
     }
