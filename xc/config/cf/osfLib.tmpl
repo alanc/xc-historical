@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.9 93/08/23 19:46:49 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.10 93/08/25 15:26:32 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -10,5 +10,5 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.9 93/08/23 19:46:49 rws Exp $
 #define SharedXmuReqs $(XTOOLLIB) $(XLIB)
 #define SharedXextReqs $(XLIBONLY)
 #define SharedXinputReqs $(XLIB)
-#define SharedPexReqs $(XLIBONLY) -lm
+#define SharedPexReqs $(XLIBONLY) MathLibrary
 #define SharedXieReqs $(XLIBONLY)
