@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.8 89/06/07 18:06:21 jim Exp $
+ * $XConsortium: xfd.c,v 1.9 89/06/08 09:28:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -121,6 +121,10 @@ main (argc, argv)
     form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
     
     i = 0;
+    XtSetArg (av[i], XtNtop, XtChainTop); i++;
+    XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
+    XtSetArg (av[i], XtNleft, XtChainLeft); i++;
+    XtSetArg (av[i], XtNright, XtChainRight); i++;
     XtSetArg (av[i], XtNcallback, cb); i++;
     fontGrid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form,
 				      av, i);
@@ -212,7 +216,7 @@ static void change_page (page)
     /* find out what it got set to */
     arg.value = (XtArgVal) &start;
     XtGetValues (fontGrid, &arg, ONE);
-    set_page_label (start, ncols, nrows);
+    set_page_label ((unsigned int) start);
 }
 
 
@@ -284,17 +288,16 @@ static void initialize_description_labels (fs, charnum, valid)
 }
 
 
-static void set_page_label (start, ncols, nrows)
-    long start;
-    int ncols, nrows;
+static void set_page_label (start)
+    unsigned int start;
 {
     char buf[256];
-    unsigned startcol = (start & 0xff), startrow = ((start >> 8) & 0xff);
+    unsigned int startcol = (start & 0xff), startrow = ((start >> 8) & 0xff);
     Arg arg;
 
     XtSetArg (arg, XtNlabel, buf);
 
-    sprintf (buf, "Current page:  %d by %d starting at 0x%02x%02x (%d,%d).",
-	     ncols, nrows, startrow, startcol, startrow, startcol);
+    sprintf (buf, "Current page starts at 0x%04x (%d,%d).",
+	     start, startrow, startcol);
     XtSetValues (charlabel3Label, &arg, ONE);
 }

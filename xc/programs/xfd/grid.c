@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.8 89/06/08 09:23:49 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.9 89/06/08 09:28:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
 
 
 static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
-static void paint_grid();
+static void Resize(), paint_grid();
 static Boolean SetValues();
 
 
@@ -91,7 +91,7 @@ FontGridClassRec fontgridClassRec = {
     /* compress_enterleave      */      TRUE,
     /* visible_interest         */      FALSE,
     /* destroy                  */      NULL,
-    /* resize                   */      NULL,
+    /* resize                   */      Resize,
     /* expose                   */      Redisplay,
     /* set_values               */      SetValues,
     /* set_values_hook          */      NULL,
@@ -114,14 +114,14 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
  * public routine
  */
 
-void GetFontGridCellDimensions (fgw, sp, wp, hp)
+void GetFontGridCellDimensions (fgw, startp, ncolsp, nrowsp)
     FontGridWidget fgw;
-    long *sp;
-    int *wp, *hp;
+    long *startp;
+    int *ncolsp, *nrowsp;
 {
-    *sp = fgw->fontgrid.start_char;
-    *wp = fgw->fontgrid.cell_width;
-    *hp = fgw->fontgrid.cell_height;
+    *startp = fgw->fontgrid.start_char;
+    *ncolsp = fgw->fontgrid.cell_cols;
+    *nrowsp = fgw->fontgrid.cell_rows;
 }
 
 
@@ -205,13 +205,23 @@ static void Realize (gw, valueMask, attributes)
 
     p->text_gc = get_gc (fgw, p->foreground_pixel);
     p->box_gc = get_gc (fgw, p->box_pixel);
-    p->cell_cols = CellColumns (fgw);
-    p->cell_rows = CellRows (fgw);
+    Resize (gw);
 
     (*(XtSuperclass(gw)->core_class.realize)) (gw, valueMask, attributes);
     return;
 }
 
+
+
+static void Resize (gw)
+    Widget gw;
+{
+    FontGridWidget fgw = (FontGridWidget) gw;
+
+    /* recompute in case we've changed size */
+    fgw->fontgrid.cell_cols = CellColumns (fgw);
+    fgw->fontgrid.cell_rows = CellRows (fgw);
+}
 
 
 /* ARGSUSED */
@@ -224,10 +234,6 @@ static void Redisplay (gw, event, region)
     XRectangle rect;			/* bounding rect for region */
     int left, right, top, bottom;	/* which cells were damaged */
     int cw, ch;				/* cell size */
-
-    /* recompute in case we've changed size */
-    fgw->fontgrid.cell_cols = CellColumns (fgw);
-    fgw->fontgrid.cell_rows = CellRows (fgw);
 
     if (!fgw->fontgrid.text_font) {
 	Bell (gw);
@@ -390,13 +396,15 @@ static Boolean SetValues (current, request, new)
 
     if (curfg->fontgrid.start_char != newfg->fontgrid.start_char) {
 	XFontStruct *fs = newfg->fontgrid.text_font;
-	unsigned int maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
-	unsigned int page = (newfg->fontgrid.cell_cols * 
-			     newfg->fontgrid.cell_rows);
-	long lastpage = (long) ((maxn <= page) ? 0 : maxn - page);
+	long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
 
-	if (newfg->fontgrid.start_char > lastpage)
-	  newfg->fontgrid.start_char = lastpage;
+	if (newfg->fontgrid.start_char > maxn) 
+	  newfg->fontgrid.start_char = (maxn + 1 - 
+					(newfg->fontgrid.cell_cols * 
+					 newfg->fontgrid.cell_rows));
+
+	if (newfg->fontgrid.start_char < 0)
+	  newfg->fontgrid.start_char = 0;
 
 	redisplay = (curfg->fontgrid.start_char != newfg->fontgrid.start_char);
     }
