@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.82 89/12/11 10:31:01 jim Exp $
+ *	$XConsortium: Xproto.h,v 1.83 90/09/07 15:43:28 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -50,8 +50,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "Xmd.h"  
-#include "Xprotostr.h"
+#include <X11/Xmd.h>
+#include <X11/Xprotostr.h>
 
 /*
  * Define constants for the sizes of the network packets.  The sz_ prefix is
