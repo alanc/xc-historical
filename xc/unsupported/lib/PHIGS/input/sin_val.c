@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sin_val.c,v 5.1 91/02/16 09:49:48 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -52,7 +52,7 @@ set_float_arg( args, num_args, arg, val_p )
     }
 }
 
-static XtCallbackProc
+static void
 valuator_jump( w, client_data, call_data )
     Widget	w;
     XtPointer	*client_data;
@@ -153,7 +153,7 @@ enable_valuator( device )
 	XtCreateManagedWidget( "scrollbar", scrollbarWidgetClass,
 	    device->item_handle.valuator.pane, args, num_args );
     XtAddCallback( device->item_handle.valuator.scrollbar,
-	XtNjumpProc, valuator_jump, device);
+	XtNjumpProc, valuator_jump, (XtPointer)device);
 
     /* Create the high range limit label. */
     if ( data->high_label && data->high_label[0] ) {
