@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.11 89/07/11 16:38:40 keith Exp $ */
+/* $XConsortium: window.c,v 5.12 89/07/12 17:16:02 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1653,6 +1653,37 @@ MoveWindowInStack(pWin, pNextSib)
     return( pFirstChange );
 }
 
+RegionPtr
+CreateUnclippedWinSize (pWin)
+WindowPtr   pWin;
+{
+    RegionPtr	pRgn;
+    BoxRec	box;
+
+    box.x1 = pWin->drawable.x;
+    box.y1 = pWin->drawable.y;
+    box.x2 = pWin->drawable.x + pWin->drawable.width;
+    box.y2 = pWin->drawable.y + pWin->drawable.height;
+    pRgn = (*pWin->drawable.pScreen->RegionCreate) (&box, 1);
+#ifdef SHAPE
+    if (wBoundingShape (pWin) || wClipShape (pWin)) {
+        ScreenPtr	pScreen = pWin->drawable.pScreen;
+
+	(*pScreen->TranslateRegion)
+	    (pRgn, - pWin->drawable.x, - pWin->drawable.y);
+	if (wBoundingShape (pWin))
+	    (*pScreen->Intersect)
+		(pRgn, pRgn, wBoundingShape (pWin));
+	if (wClipShape (pWin))
+	    (*pScreen->Intersect)
+		(pRgn, pRgn, wClipShape (pWin));
+	(*pScreen->TranslateRegion)
+	    (pRgn, pWin->drawable.x, pWin->drawable.y);
+    }
+#endif
+    return pRgn;
+}
+
 static void
 SetWinSize (pWin)
 WindowPtr   pWin;
@@ -3223,13 +3254,17 @@ MapWindow(pWin, client)
     }
     else
     {
+	RegionRec   temp;
+
 	pWin->mapped = TRUE;
         pWin->realized = TRUE;     /* for roots */
         pWin->viewable = pWin->drawable.class == InputOutput;
     	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
-	(*pWin->drawable.pScreen->PaintWindowBackground)(pWin,
-					      &pWin->clipList, PW_BACKGROUND);
+	(* pScreen->RegionInit) (&temp, NullBox, 0);
+	(* pScreen->RegionCopy) (&temp, &pWin->clipList);
+	(*pScreen->WindowExposures) (pWin, &temp);
+	(* pScreen->RegionUninit) (&temp);
     }
 
     return(Success);
