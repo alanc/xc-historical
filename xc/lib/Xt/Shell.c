@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.100 91/05/07 12:35:06 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.101 91/05/10 15:42:37 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1185,6 +1185,8 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 
 	switch(event->type) {
 	    case ConfigureNotify:
+	        if (w->core.window != event->xconfigure.window)
+		    return;  /* in case of SubstructureNotify */
 #define NEQ(x)	( w->core.x != event->xconfigure.x )
 		if( NEQ(width) || NEQ(height) || NEQ(border_width) ) {
 			sizechanged = TRUE;
