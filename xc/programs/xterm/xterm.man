@@ -1576,7 +1576,19 @@ resize(1), X(1), pty(4), tty(4)
 \fIXterm Control Sequences\fP (in the \fIxterm\fP source directory)
 .SH BUGS
 .PP
-Variable-width fonts are not handled.
+Large pastes do not work on some systems.  This is not a bug in
+\fIxterm\fP; it is a bug in the pseudo terminal driver of those
+systems.  \fIxterm\fP feeds large pastes to the pty only as fast as the pty
+will accept data, but some pty drivers do not return enough information
+to know if the write has succeeded.
+.PP
+Many of the options are not resettable after
+.I xterm
+starts.
+.PP
+The Tek widget does not support key/button re-binding.
+.PP
+Only fixed-width, character-cell fonts are supported.
 .PP
 This program still needs to be rewritten.  It should be split into very
 modular sections, with the various emulators being completely separate
@@ -1585,12 +1597,6 @@ pick and choose emulator widgets and stick them into a single control widget.
 .PP
 There needs to be a dialog box to allow entry of log file name
 and the COPY file name.
-.PP
-Many of the options are not resettable after
-.I xterm
-starts.
-.PP
-The Tek widget does not support key/button re-binding.
 .SH COPYRIGHT
 Copyright 1989, Massachusetts Institute of Technology.
 .br
