@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.12 89/10/04 17:13:45 jim Exp $ */
+/* $XConsortium: ico.c,v 1.13 89/10/04 17:22:43 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -200,13 +200,16 @@ char **argv;
 #else
 			dblbuf = 1;
 #endif
-		else if (!strcmp(*argv, "-softdbl"))
+		else if (!strcmp(*argv, "-softdbl")) {
 			dblbuf = 1;
+			multibuf = 0;
+		}
 		else if (!strncmp(*argv, "-p", 2)) {
 			numcolors = atoi(argv[0]+2);
 			if (numcolors < 1 || numcolors > NumberPrimaries)
 			  numcolors = NumberPrimaries;
 			colornames = Primaries;
+			dofaces = 1;
 		}
 		else if (!strcmp(*argv, "-bg"))
 			background_colorname = *++argv;
