@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.96 91/02/01 09:52:25 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.97 91/02/03 18:31:12 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -37,6 +37,8 @@ static XrmClass	QBoolean, QString, QCallProc, QImmediate;
 static XrmName QinitialResourcesPersistent, QInitialResourcesPersistent;
 static XrmClass QTranslations, QTranslationTable;
 static XrmName Qtranslations, QbaseTranslations;
+static XrmName Qscreen;
+static XrmClass QScreen;
 
 #ifdef CRAY
 void Cjump();
@@ -472,11 +474,10 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     XrmHashTable    stackSearchList[SEARCHLISTLEN];
     XrmHashTable    *searchList = stackSearchList;
     unsigned int    searchListSize = SEARCHLISTLEN;
-    Bool            status;
     Boolean	    found[400];
     int		    typed[400];
     XtCacheRef	    cache_ref[400];
-    int		    cache_ref_size = 0;
+    XtCacheRef      *cache_ptr, *cache_base;
     Boolean	    persistent_resources = True;
     Boolean	    found_persistence = False;
     int		    num_typed_args = *pNumTypedArgs;
@@ -563,22 +564,79 @@ static XtCacheRef *GetResources(widget, base, names, classes,
        do a single-level search on each resource */
 
     db = _XtScreenDatabase(XtScreenOfObject(widget));
-    status = XrmQGetSearchList(db, names, classes,
-			       searchList, searchListSize);
+    while (!XrmQGetSearchList(db, names, classes,
+			      searchList, searchListSize)) {
+	if (searchList == stackSearchList)
+	    searchList = NULL;
+	searchList = (XrmHashTable*)XtRealloc((char*)searchList,
+					      sizeof(XrmHashTable) *
+					      (searchListSize *= 2));
+    }
+    
+    if (persistent_resources)
+	cache_base = NULL;
+    else
+	cache_base = cache_ref;
+    /* geez, this is an ugly mess */
+    if (XtIsShell(widget)) {
+	register XrmResourceList  *res;
+	register int		  j;
+	Screen *oldscreen = widget->core.screen;
 
-    if (!status) {
-	searchList = NULL;
-	do {
-	    searchList = (XrmHashTable*)
-		XtRealloc((char*)searchList,
-			  sizeof(XrmHashTable) * (searchListSize *= 2));
-	    status = XrmQGetSearchList(db, names, classes,
-				       searchList, searchListSize);
-	} while (!status);
+	/* look up screen resource first, since real rdb depends on it */
+	for (res = table, j = 0; j < num_resources; j++, res++) {
+	    if ((*res)->xrm_name != Qscreen)
+		continue;
+	    if (typed[j]) {
+		register XtTypedArg* arg = typed_args + typed[j] - 1;
+		XrmQuark from_type;
+		XrmValue from_val, to_val;
+		Boolean converted;
+
+		from_type = StringToQuark(arg->type);
+		from_val.size = arg->size;
+		if ((from_type == QString) || (arg->size > sizeof(XtArgVal)))
+		    from_val.addr = (caddr_t)arg->value;
+		else
+		    from_val.addr = (caddr_t)&arg->value;
+		to_val.size = sizeof(Screen*);
+		to_val.addr = (caddr_t)&widget->core.screen;
+		found[j] = _XtConvert(widget, from_type, &from_val,
+				      QScreen, &to_val, cache_base);
+		if (cache_base && *cache_base)
+		    cache_base++;
+	    }
+	    if (!found[j]) {
+		if (XrmQGetSearchResource(searchList, Qscreen, QScreen,
+				      &rawType, &value)) {
+		    if (rawType != QScreen) {
+			convValue.size = sizeof(Screen*);
+			convValue.addr = (caddr_t)&widget->core.screen;
+			(void)_XtConvert(widget, rawType, &value,
+					 QScreen, &convValue, cache_base);
+			if (cache_base && *cache_base)
+			    cache_base++;
+		    } else {
+			widget->core.screen = *((Screen **)value.addr);
+		    }
+		}
+	    }
+	    break;
+	}
+	/* now get the database to use for the rest of the resources */
+	if (widget->core.screen != oldscreen) {
+	    db = _XtScreenDatabase(widget->core.screen);
+	    while (!XrmQGetSearchList(db, names, classes,
+				      searchList, searchListSize)) {
+		if (searchList == stackSearchList)
+		    searchList = NULL;
+		searchList = (XrmHashTable*)XtRealloc((char*)searchList,
+						      sizeof(XrmHashTable) *
+						      (searchListSize *= 2));
+	    }
+	}
     }
 
-
-    
     /* go to the resource manager for those resources not found yet */
     /* if it's not in the resource database use the default value   */
 
@@ -607,6 +665,12 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    persistent_resources = *(Boolean*)value.addr;
 	    }
 	}
+	if (persistent_resources)
+	    cache_ptr = NULL;
+	else if (cache_base)
+	    cache_ptr = cache_base;
+	else
+	    cache_ptr = cache_ref;
 
 	for (res = table, j = 0; j < num_resources; j++, res++) {
 	    rx = *res;
@@ -632,9 +696,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		to_val.size = rx->xrm_size;
 		to_val.addr = base - rx->xrm_offset - 1;
 		converted = _XtConvert(widget, from_type, &from_val,
-					xrm_type, &to_val, 
-					persistent_resources ?
-					NULL : &cache_ref[cache_ref_size]);
+				       xrm_type, &to_val, cache_ptr);
 		if (converted) {
 		    char *vp;
 
@@ -667,10 +729,8 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		   found[j] = False;
 		}
 
-		if ((persistent_resources == False)
-			&& cache_ref[cache_ref_size] != NULL) {
-		    cache_ref_size++;
-		}
+		if (cache_ptr && *cache_ptr)
+		    cache_ptr++;
 	    }
 
 	    if (!found[j]) {
@@ -684,12 +744,9 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			convValue.addr = (caddr_t)(base - rx->xrm_offset - 1);
 			already_copied = have_value =
 			    _XtConvert(widget, rawType, &value,
-				       xrm_type, &convValue,
-				       persistent_resources ?
-				          NULL : &cache_ref[cache_ref_size]);
-			if ((persistent_resources == False)
-			  && cache_ref[cache_ref_size] != NULL)
-			    cache_ref_size++;
+				       xrm_type, &convValue, cache_ptr);
+			if (cache_ptr && *cache_ptr)
+			    cache_ptr++;
 		    } else have_value = True;
 		    if (have_value && rx->xrm_name == Qtranslations)
 			do_tm_hack = True;
@@ -745,13 +802,12 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			convValue.size = rx->xrm_size;
 			convValue.addr = (caddr_t)(base - rx->xrm_offset - 1);
 			already_copied =
-			    _XtConvert(widget, xrm_default_type,
-				       &value, xrm_type, &convValue,
-				       &cache_ref[cache_ref_size]);
+			    _XtConvert(widget, xrm_default_type, &value,
+				       xrm_type, &convValue, cache_ptr);
 			if (!already_copied)
 			    value.addr = NULL;
-			if (cache_ref[cache_ref_size] != NULL)
-			    cache_ref_size++;
+			if (cache_ptr && *cache_ptr)
+			    cache_ptr++;
 		    }
 		}
 		if (!already_copied) {
@@ -796,28 +852,28 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		convValue.size = sizeof(XtTranslations);
 		convValue.addr = (caddr_t)&widget->core.tm.current_state;
 		(void)_XtConvert(widget, rawType, &value,
-				 QTranslationTable, &convValue,
-				 persistent_resources ?
-				 NULL : &cache_ref[cache_ref_size]);
-		if ((persistent_resources == False)
-		  && cache_ref[cache_ref_size] != NULL)
-		    cache_ref_size++;
+				 QTranslationTable, &convValue, cache_ptr);
+		if (cache_ptr && *cache_ptr)
+		    cache_ptr++;
 	    } else {
-		XtBCopy(value.addr, &widget->core.tm.current_state,
-			sizeof(XtTranslations));
+		*((XtTranslations *)&widget->core.tm.current_state) =
+		    *((XtTranslations *)value.addr);
 	    }
 	}
     }
     if (num_typed_args != *pNumTypedArgs) *pNumTypedArgs = num_typed_args;
     if (searchList != stackSearchList) XtFree((char*)searchList);
-    if (cache_ref_size > 0) {
+    if (!cache_ptr)
+	cache_ptr = cache_base;
+    if (cache_ptr && cache_ptr != cache_ref) {
+	int cache_ref_size = cache_ptr - cache_ref;
 	XtCacheRef *refs = (XtCacheRef*)
 	    XtMalloc((unsigned)sizeof(XtCacheRef)*(cache_ref_size + 1));
 	bcopy( cache_ref, refs, sizeof(XtCacheRef)*cache_ref_size );
 	refs[cache_ref_size] = NULL;
 	return refs;
     }
-    else return (XtCacheRef*)NULL;
+    return (XtCacheRef*)NULL;
 }
 
 
@@ -1044,4 +1100,6 @@ void _XtResourceListInitialize()
     QbaseTranslations = XrmPermStringToQuark("baseTranslations");
     QTranslations = XrmPermStringToQuark(XtCTranslations);
     QTranslationTable = XrmPermStringToQuark(XtRTranslationTable);
+    Qscreen = XrmPermStringToQuark(XtNscreen);
+    QScreen = XrmPermStringToQuark(XtCScreen);
 }
