@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: EditResCom.c,v 1.2 90/02/14 14:56:38 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -30,10 +30,9 @@
 #include <X11/StringDefs.h>	/* for XtRString. */
 #include <X11/ShellP.h>		/* for Application Shell Widget class. */
 
-#include <X11/Xmu/EditRes.h>
-
 #include <X11/Xatom.h>
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/EditRes.h>
 #include <X11/Xaw/Text.h>
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
@@ -144,29 +143,6 @@ int * format;
 		     &command, &command_value))
 	ExecuteCommand(w, *selection, ident, command, command_value);
 }
-
-#ifdef notdef
-    next = (char *) value;
-    
-    while (TRUE) {
-	char command[BUFSIZ], *ptr, *cptr, *eol;
-
-	if ( (eol = index(next, '\n')) == NULL) {
-	    strcpy(command, next);
-	    ExecuteCommand(w, selection, command);
-	    return;
-	}
-	else {
-	    for (cptr = command, ptr = next; ptr != eol; ptr++, cptr++) 
-		*cptr = *ptr;
-	    
-	    *cptr = '\0';
-	    next = eol + 1;
-	    
-	    ExecuteCommand(w, selection, command);
-	}
-    }
-#endif 
 
 /*	Function Name: ParseCommand
  *	Description: Parses the command string into a command and value.
@@ -305,6 +281,8 @@ int * format_ret;
 
     *value_ret = (XtPointer) global_selection_command;
     *length_ret = strlen((String) *value_ret) + 1;
+
+    return(TRUE);
 }
 
 /*	Function Name: CommandDone
