@@ -1,3 +1,25 @@
+/************************************************************ 
+Copyright 1988 by Apple Computer, Inc, Cupertino, California
+			All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies.
+
+APPLE MAKES NO WARRANTY OR REPRESENTATION, EITHER EXPRESS,
+OR IMPLIED, WITH RESPECT TO THIS SOFTWARE, ITS QUALITY,
+PERFORMANCE, MERCHANABILITY, OR FITNESS FOR A PARTICULAR
+PURPOSE. AS A RESULT, THIS SOFTWARE IS PROVIDED "AS IS,"
+AND YOU THE USER ARE ASSUMING THE ENTIRE RISK AS TO ITS
+QUALITY AND PERFORMANCE. IN NO EVENT WILL APPLE BE LIABLE 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES RESULTING FROM ANY DEFECT IN THE SOFTWARE.
+
+THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
+AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
+IMPLIED.
+
+************************************************************/
 /*-
  * macII.h --
  *	Internal declarations for the macII ddx interface
@@ -12,7 +34,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: macII.h,v 1.7 88/06/02 18:59:32 x Locked $ SPRITE (Berkeley)"
+ *	"$Header: macII.h,v 1.8 88/06/20 21:46:20 x Locked $ SPRITE (Berkeley)"
  */
 #ifndef _MACII_H_
 #define _MACII_H_

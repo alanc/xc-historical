@@ -1,5 +1,27 @@
+/************************************************************ 
+Copyright 1988 by Apple Computer, Inc, Cupertino, California
+			All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies.
+
+APPLE MAKES NO WARRANTY OR REPRESENTATION, EITHER EXPRESS,
+OR IMPLIED, WITH RESPECT TO THIS SOFTWARE, ITS QUALITY,
+PERFORMANCE, MERCHANABILITY, OR FITNESS FOR A PARTICULAR
+PURPOSE. AS A RESULT, THIS SOFTWARE IS PROVIDED "AS IS,"
+AND YOU THE USER ARE ASSUMING THE ENTIRE RISK AS TO ITS
+QUALITY AND PERFORMANCE. IN NO EVENT WILL APPLE BE LIABLE 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES RESULTING FROM ANY DEFECT IN THE SOFTWARE.
+
+THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
+AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
+IMPLIED.
+
+************************************************************/
 /*-
- * macIIBW2.c --
+ * macIIMono.c --
  *	Functions for handling the macII video board with 1 bit/pixel.
  *
  * Copyright (c) 1987 by the Regents of the University of California
@@ -44,23 +66,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
-
-/*-
- * Copyright (c) 1987 by Sun Microsystems,  Inc.
- */
-
 #include    "macII.h"
 #include    "resource.h"
 
-
-
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2SaveScreen --
+ * macIIMonoSaveScreen --
  *	Disable the video on the frame buffer to save the screen.
  *
  * Results:
@@ -72,7 +83,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
  *-----------------------------------------------------------------------
  */
 static Bool
-macIIBW2SaveScreen (pScreen, on)
+macIIMonoSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     Bool    	  on;
 {
@@ -90,7 +101,7 @@ macIIBW2SaveScreen (pScreen, on)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2CloseScreen --
+ * macIIMonoCloseScreen --
  *	called to ensure video is enabled when server exits.
  *
  * Results:
@@ -103,7 +114,7 @@ macIIBW2SaveScreen (pScreen, on)
  */
 /*ARGSUSED*/
 Bool
-macIIBW2CloseScreen(i, pScreen)
+macIIMonoCloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
 {
@@ -112,7 +123,7 @@ macIIBW2CloseScreen(i, pScreen)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2ResolveColor --
+ * macIIMonoResolveColor --
  *	Resolve an RGB value into some sort of thing we can handle.
  *	Just looks to see if the intensity of the color is greater than
  *	1/2 and sets it to 'white' (all ones) if so and 'black' (all zeroes)
@@ -128,7 +139,7 @@ macIIBW2CloseScreen(i, pScreen)
  */
 /*ARGSUSED*/
 static void
-macIIBW2ResolveColor(pred, pgreen, pblue, pVisual)
+macIIMonoResolveColor(pred, pgreen, pblue, pVisual)
     unsigned short	*pred;
     unsigned short	*pgreen;
     unsigned short	*pblue;
@@ -148,7 +159,7 @@ macIIBW2ResolveColor(pred, pgreen, pblue, pVisual)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2CreateColormap --
+ * macIIMonoCreateColormap --
  *	create a bw colormap
  *
  * Results:
@@ -160,7 +171,7 @@ macIIBW2ResolveColor(pred, pgreen, pblue, pVisual)
  *-----------------------------------------------------------------------
  */
 void
-macIIBW2CreateColormap(pmap)
+macIIMonoCreateColormap(pmap)
     ColormapPtr	pmap;
 {
     int	red, green, blue, pix;
@@ -182,7 +193,7 @@ macIIBW2CreateColormap(pmap)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2DestroyColormap --
+ * macIIMonoDestroyColormap --
  *	destroy a bw colormap
  *
  * Results:
@@ -195,14 +206,14 @@ macIIBW2CreateColormap(pmap)
  */
 /*ARGSUSED*/
 void
-macIIBW2DestroyColormap(pmap)
+macIIMonoDestroyColormap(pmap)
     ColormapPtr	pmap;
 {
 }
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2Init --
+ * macIIMonoInit --
  *	Initialize the macII framebuffer
  *
  * Results:
@@ -216,7 +227,7 @@ macIIBW2DestroyColormap(pmap)
  */
 /*ARGSUSED*/
 Bool
-macIIBW2Init (index, pScreen, argc, argv)
+macIIMonoInit (index, pScreen, argc, argv)
     int	    	  index;    	/* The index of pScreen in the ScreenInfo */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
     int	    	  argc;	    	/* The number of the Server's arguments. */
@@ -243,10 +254,10 @@ macIIBW2Init (index, pScreen, argc, argv)
     pPixmap = (PixmapPtr)(pScreen->devPrivate);
     pPixmap->devKind =  macIIFbs[index].info.v_rowbytes;
 
-    pScreen->SaveScreen = macIIBW2SaveScreen;
-    pScreen->ResolveColor = macIIBW2ResolveColor;
-    pScreen->CreateColormap = macIIBW2CreateColormap;
-    pScreen->DestroyColormap = macIIBW2DestroyColormap;
+    pScreen->SaveScreen = macIIMonoSaveScreen;
+    pScreen->ResolveColor = macIIMonoResolveColor;
+    pScreen->CreateColormap = macIIMonoCreateColormap;
+    pScreen->DestroyColormap = macIIMonoDestroyColormap;
     pScreen->whitePixel = 0;
     pScreen->blackPixel = 1;
 
@@ -254,13 +265,13 @@ macIIBW2Init (index, pScreen, argc, argv)
 		   LookupID(pScreen->rootVisual, RT_VISUALID, RC_CORE),
 		   &pColormap, AllocNone, 0) != Success
 	|| pColormap == NULL)
-	    FatalError("Can't create colormap in macIIBW2Init()\n");
+	    FatalError("Can't create colormap in macIIMonoInit()\n");
     mfbInstallColormap(pColormap);
 
     /*
      * Enable video output...? 
      */
-    (void) macIIBW2SaveScreen(pScreen, SCREEN_SAVER_FORCER);
+    (void) macIIMonoSaveScreen(pScreen, SCREEN_SAVER_FORCER);
 
     macIIScreenInit(pScreen);
     return (TRUE);
@@ -269,7 +280,7 @@ macIIBW2Init (index, pScreen, argc, argv)
 
 /*-
  *-----------------------------------------------------------------------
- * macIIBW2Probe --
+ * macIIMonoProbe --
  *	Attempt to find and initialize a macII framebuffer
  *
  * Results:
@@ -282,7 +293,7 @@ macIIBW2Init (index, pScreen, argc, argv)
  */
 
 Bool
-macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
+macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
     ScreenInfo	  *pScreenInfo;	/* The screenInfo struct */
     int	    	  index;    	/* The index of pScreen in the ScreenInfo */
     int	    	  fbNum;    	/* Index into the macIIFbData array */
@@ -340,8 +351,8 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
      * If we've ever successfully probed this device, do the following.
      */
     oldNumScreens = pScreenInfo->numScreens;
-    i = AddScreen(macIIBW2Init, argc, argv);
-    pScreenInfo->screen[index].CloseScreen = macIIBW2CloseScreen;
+    i = AddScreen(macIIMonoInit, argc, argv);
+    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
     return (i > oldNumScreens);
 }
 

@@ -1,8 +1,30 @@
 /*-
- * macIICG4C.c --
+ * macIIColor.c --
  *	Functions to support the macII color board as a memory frame buffer.
  */
 
+/************************************************************ 
+Copyright 1988 by Apple Computer, Inc, Cupertino, California
+			All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies.
+
+APPLE MAKES NO WARRANTY OR REPRESENTATION, EITHER EXPRESS,
+OR IMPLIED, WITH RESPECT TO THIS SOFTWARE, ITS QUALITY,
+PERFORMANCE, MERCHANABILITY, OR FITNESS FOR A PARTICULAR
+PURPOSE. AS A RESULT, THIS SOFTWARE IS PROVIDED "AS IS,"
+AND YOU THE USER ARE ASSUMING THE ENTIRE RISK AS TO ITS
+QUALITY AND PERFORMANCE. IN NO EVENT WILL APPLE BE LIABLE 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES RESULTING FROM ANY DEFECT IN THE SOFTWARE.
+
+THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
+AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
+IMPLIED.
+
+************************************************************/
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -31,10 +53,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#ifndef	lint
-static char sccsid[] = "@(#)macIICG4C.c	1.4 6/1/87 Copyright 1987 Sun Micro";
-#endif
-
 #include    "macII.h"
 
 #include    "colormap.h"
@@ -53,7 +71,7 @@ static struct ColorSpec {
 }; 
 
 static void
-macIICG4CUpdateColormap(pScreen, index, count, pColorSpec)
+macIIColorUpdateColormap(pScreen, index, count, pColorSpec)
     ScreenPtr	pScreen;
     int		index, count;
     struct ColorSpec	*pColorSpec;
@@ -102,7 +120,7 @@ macIICG4CUpdateColormap(pScreen, index, count, pColorSpec)
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CSaveScreen --
+ * macIIColorSaveScreen --
  *	Preserve the color screen by turning on or off the video
  *
  * Results:
@@ -114,7 +132,7 @@ macIICG4CUpdateColormap(pScreen, index, count, pColorSpec)
  *-----------------------------------------------------------------------
  */
 static Bool
-macIICG4CSaveScreen (pScreen, on)
+macIIColorSaveScreen (pScreen, on)
     ScreenPtr	  pScreen;
     Bool    	  on;
 {
@@ -135,7 +153,7 @@ macIICG4CSaveScreen (pScreen, on)
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CCloseScreen --
+ * macIIColorCloseScreen --
  *	called to ensure video is enabled when server exits.
  *
  * Results:
@@ -148,7 +166,7 @@ macIICG4CSaveScreen (pScreen, on)
  */
 /*ARGSUSED*/
 Bool
-macIICG4CCloseScreen(i, pScreen)
+macIIColorCloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
 {
@@ -159,7 +177,7 @@ macIICG4CCloseScreen(i, pScreen)
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CInstallColormap --
+ * macIIColorInstallColormap --
  *	Install given colormap.
  *
  * Results:
@@ -172,7 +190,7 @@ macIICG4CCloseScreen(i, pScreen)
  *-----------------------------------------------------------------------
  */
 static void
-macIICG4CInstallColormap(cmap)
+macIIColorInstallColormap(cmap)
     ColormapPtr	cmap;
 {
     register int i;
@@ -200,14 +218,14 @@ macIICG4CInstallColormap(cmap)
 	pent++;
     }
     macIIFbs[cmap->pScreen->myNum].installedMap = cmap;
-    macIICG4CUpdateColormap(cmap->pScreen, 0, cmap->pVisual->ColormapEntries, 
+    macIIColorUpdateColormap(cmap->pScreen, 0, cmap->pVisual->ColormapEntries, 
 			    Map);
     WalkTree(cmap->pScreen, TellGainedMap, (char *) &(cmap->mid));
 }
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CUninstallColormap --
+ * macIIColorUninstallColormap --
  *	Uninstall given colormap.
  *
  * Results:
@@ -220,7 +238,7 @@ macIICG4CInstallColormap(cmap)
  *-----------------------------------------------------------------------
  */
 static void
-macIICG4CUninstallColormap(cmap)
+macIIColorUninstallColormap(cmap)
     ColormapPtr	cmap;
 {
     if (cmap == macIIFbs[cmap->pScreen->myNum].installedMap) {
@@ -230,16 +248,16 @@ macIICG4CUninstallColormap(cmap)
 	    ColormapPtr defMap = (ColormapPtr) LookupID(defMapID, RT_COLORMAP, RC_CORE);
 
 	    if (defMap)
-		macIICG4CInstallColormap(defMap);
+		macIIColorInstallColormap(defMap);
 	    else
-	        ErrorF("macIICG4C: Can't find default colormap\n");
+	        ErrorF("macIIColor: Can't find default colormap\n");
 	}
     }
 }
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CListInstalledColormaps --
+ * macIIColorListInstalledColormaps --
  *	Fills in the list with the IDs of the installed maps
  *
  * Results:
@@ -252,7 +270,7 @@ macIICG4CUninstallColormap(cmap)
  */
 /*ARGSUSED*/
 static int
-macIICG4CListInstalledColormaps(pScreen, pCmapList)
+macIIColorListInstalledColormaps(pScreen, pCmapList)
     ScreenPtr	pScreen;
     Colormap	*pCmapList;
 {
@@ -263,7 +281,7 @@ macIICG4CListInstalledColormaps(pScreen, pCmapList)
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CStoreColors --
+ * macIIColorStoreColors --
  *	Sets the pixels in pdefs into the specified map.
  *
  * Results:
@@ -275,7 +293,7 @@ macIICG4CListInstalledColormaps(pScreen, pCmapList)
  *-----------------------------------------------------------------------
  */
 static void
-macIICG4CStoreColors(pmap, ndef, pdefs)
+macIIColorStoreColors(pmap, ndef, pdefs)
     ColormapPtr	pmap;
     int		ndef;
     xColorItem	*pdefs;
@@ -294,7 +312,7 @@ macIICG4CStoreColors(pmap, ndef, pdefs)
 		ColorSlot.red = (pdefs->red);
 		ColorSlot.green = (pdefs->green);
 		ColorSlot.blue = (pdefs->blue);
-	 	macIICG4CUpdateColormap(pmap->pScreen,
+	 	macIIColorUpdateColormap(pmap->pScreen,
 				      index, 1, &ColorSlot);
 		pdefs++;
 	    }
@@ -302,14 +320,14 @@ macIICG4CStoreColors(pmap, ndef, pdefs)
 	break;
     case DirectColor:
     default:
-	ErrorF("macIICG4CStoreColors: bad class %d\n", pmap->class);
+	ErrorF("macIIColorStoreColors: bad class %d\n", pmap->class);
 	break;
     }
 }
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CResolvePseudoColor --
+ * macIIColorResolvePseudoColor --
  *	Adjust specified RGB values to closest values hardware can do.
  *
  * Results:
@@ -322,7 +340,7 @@ macIICG4CStoreColors(pmap, ndef, pdefs)
  */
 /*ARGSUSED*/
 static void
-macIICG4CResolvePseudoColor(pRed, pGreen, pBlue, pVisual)
+macIIColorResolvePseudoColor(pRed, pGreen, pBlue, pVisual)
     CARD16	*pRed, *pGreen, *pBlue;
     VisualPtr	pVisual;
 {
@@ -333,7 +351,7 @@ macIICG4CResolvePseudoColor(pRed, pGreen, pBlue, pVisual)
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CInit --
+ * macIIColorInit --
  *	Attempt to find and initialize a color framebuffer 
  *
  * Results:
@@ -348,7 +366,7 @@ macIICG4CResolvePseudoColor(pRed, pGreen, pBlue, pVisual)
  */
 /*ARGSUSED*/
 Bool
-macIICG4CInit (index, pScreen, argc, argv)
+macIIColorInit (index, pScreen, argc, argv)
     int	    	  index;    	/* The index of pScreen in the ScreenInfo */
     ScreenPtr	  pScreen;  	/* The Screen to initialize */
     int	    	  argc;	    	/* The number of the Server's arguments. */
@@ -374,15 +392,15 @@ macIICG4CInit (index, pScreen, argc, argv)
     pPixmap = (PixmapPtr)(pScreen->devPrivate);
     pPixmap->devKind =  macIIFbs[index].info.v_rowbytes; 
 
-    pScreen->SaveScreen =   	    	macIICG4CSaveScreen;
+    pScreen->SaveScreen =   	    	macIIColorSaveScreen;
     pScreen->RecolorCursor = 	    	macIIRecolorCursor;
 
 #ifndef STATIC_COLOR
-    pScreen->InstallColormap = macIICG4CInstallColormap;
-    pScreen->UninstallColormap = macIICG4CUninstallColormap;
-    pScreen->ListInstalledColormaps = macIICG4CListInstalledColormaps;
-    pScreen->StoreColors = macIICG4CStoreColors;
-    pScreen->ResolveColor = macIICG4CResolvePseudoColor;
+    pScreen->InstallColormap = macIIColorInstallColormap;
+    pScreen->UninstallColormap = macIIColorUninstallColormap;
+    pScreen->ListInstalledColormaps = macIIColorListInstalledColormaps;
+    pScreen->StoreColors = macIIColorStoreColors;
+    pScreen->ResolveColor = macIIColorResolvePseudoColor;
 #endif
 
     {
@@ -393,18 +411,18 @@ macIICG4CInit (index, pScreen, argc, argv)
 	if (AllocColor(cmap, &ones, &ones, &ones, &(pScreen->whitePixel), 0)
 	    || AllocColor(cmap, &zero, &zero, &zero, &(pScreen->blackPixel), 0))
 		FatalError("Can't alloc black & white pixels in cfbScreeninit\n");
-	macIICG4CInstallColormap(cmap);
+	macIIColorInstallColormap(cmap);
     }
 
 
-    macIICG4CSaveScreen( pScreen, SCREEN_SAVER_FORCER );
+    macIIColorSaveScreen( pScreen, SCREEN_SAVER_FORCER );
     macIIScreenInit (pScreen);
     return (TRUE);
 }
 
 /*-
  *-----------------------------------------------------------------------
- * macIICG4CProbe --
+ * macIIColorProbe --
  *	Attempt to find and initialize a color framebuffer. 
  *
  * Results:
@@ -416,7 +434,7 @@ macIICG4CInit (index, pScreen, argc, argv)
  *-----------------------------------------------------------------------
  */
 Bool
-macIICG4CProbe (pScreenInfo, index, fbNum, argc, argv)
+macIIColorProbe (pScreenInfo, index, fbNum, argc, argv)
     ScreenInfo	  *pScreenInfo;	/* The screenInfo struct */
     int	    	  index;    	/* The index of pScreen in the ScreenInfo */
     int	    	  fbNum;    	/* Index into the macIIFbData array */
@@ -528,8 +546,8 @@ macIICG4CProbe (pScreenInfo, index, fbNum, argc, argv)
      */
 
     oldNumScreens = pScreenInfo->numScreens;
-    i = AddScreen(macIICG4CInit, argc, argv);
-    pScreenInfo->screen[index].CloseScreen = macIICG4CCloseScreen;
+    i = AddScreen(macIIColorInit, argc, argv);
+    pScreenInfo->screen[index].CloseScreen = macIIColorCloseScreen;
 
     return (i > oldNumScreens);
 #endif

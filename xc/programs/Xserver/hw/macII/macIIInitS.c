@@ -1,3 +1,25 @@
+/************************************************************ 
+Copyright 1988 by Apple Computer, Inc, Cupertino, California
+			All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software
+for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies.
+
+APPLE MAKES NO WARRANTY OR REPRESENTATION, EITHER EXPRESS,
+OR IMPLIED, WITH RESPECT TO THIS SOFTWARE, ITS QUALITY,
+PERFORMANCE, MERCHANABILITY, OR FITNESS FOR A PARTICULAR
+PURPOSE. AS A RESULT, THIS SOFTWARE IS PROVIDED "AS IS,"
+AND YOU THE USER ARE ASSUMING THE ENTIRE RISK AS TO ITS
+QUALITY AND PERFORMANCE. IN NO EVENT WILL APPLE BE LIABLE 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES RESULTING FROM ANY DEFECT IN THE SOFTWARE.
+
+THE WARRANTY AND REMEDIES SET FORTH ABOVE ARE EXCLUSIVE
+AND IN LIEU OF ALL OTHERS, ORAL OR WRITTEN, EXPRESS OR
+IMPLIED.
+
+************************************************************/
 /*-
  * macIIInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -43,10 +65,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#ifndef	lint
-static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
-#endif
-
 #include    "macII.h"
 #include    <servermd.h>
 #include    "dixstruct.h"
@@ -56,20 +74,18 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 extern int macIIMouseProc();
 extern void macIIKbdProc();
 
-extern Bool macIIBW2Probe();
-extern Bool macIIBW2Init();
-extern Bool macIIBW2CloseScreen();
+extern Bool macIIMonoProbe();
+extern Bool macIIMonoInit();
+extern Bool macIIMonoCloseScreen();
 
-extern Bool macIICG4CInit();
-extern Bool macIICG4CCloseScreen();
+extern Bool macIIColorInit();
+extern Bool macIIColorCloseScreen();
 
 extern Bool macIISlotProbe();
 extern void ProcessInputEvents();
 
 extern void SetInputCheck();
 extern GCPtr CreateScratchGC();
-
-#define	XDEVICE	"XDEVICE"
 
 int macIISigIO = 0;	 /* For use with SetInputCheck */
 static int autoRepeatHandlersInstalled; /* FALSE each time InitOutput called */
@@ -102,6 +118,15 @@ SigIOHandler(sig, code, scp)
 }
 
 macIIFbDataRec macIIFbData[] = {
+    macIISlotProbe,  	"slot 0",	    neverProbed,
+    macIISlotProbe,  	"slot 1",	    neverProbed,
+    macIISlotProbe,  	"slot 2",	    neverProbed,
+    macIISlotProbe,  	"slot 3",	    neverProbed,
+    macIISlotProbe,  	"slot 4",	    neverProbed,
+    macIISlotProbe,  	"slot 5",	    neverProbed,
+    macIISlotProbe,  	"slot 6",	    neverProbed,
+    macIISlotProbe,  	"slot 7",	    neverProbed,
+    macIISlotProbe,  	"slot 8",	    neverProbed,
     macIISlotProbe,  	"slot 9",	    neverProbed,
     macIISlotProbe,  	"slot A",	    neverProbed,
     macIISlotProbe,  	"slot B",	    neverProbed,
@@ -115,7 +140,7 @@ macIIFbDataRec macIIFbData[] = {
      * identifying a single monochrome screen. It must be last in
      * this table!
      */
-    macIIBW2Probe, 	"/dev/console",	    neverProbed,
+     macIIMonoProbe, 	"/dev/console",	    neverProbed,
 };
 
 /*
@@ -133,8 +158,33 @@ static PixmapFormatRec	formats[] = {
 };
 #define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
 
-struct video *video_index[16];          /* how to find it by slot number */
-static struct video video[16];    	/* their attributes */
+#define NUMSLOTS 16
+struct video *video_index[NUMSLOTS];     /* how to find it by slot number */
+static struct video video[NUMSLOTS];   /* their attributes */
+
+#define NUMMODES	7		/* 1,2,4,8,16,24,32 */
+
+static struct video_mode_struct{
+	int depth[NUMMODES];
+        int mode[NUMMODES];   
+	struct video_data  info[NUMMODES];
+} video_modes[NUMSLOTS] = {
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}, {0,0,0,0,0,0,0}, {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 /*-
  *-----------------------------------------------------------------------
@@ -171,30 +221,38 @@ InitOutput(pScreenInfo, argc, argv)
 
     autoRepeatHandlersInstalled = FALSE;
 
-    signal(SIGSYS, SIG_IGN);
-
-    for (i = 0, index = 0; i < NUMSCREENS - 1; i++) {
+#define SLOT_LO 0x09
+    for (i = SLOT_LO, index = 0; i < NUMSCREENS - 1; i++) {
+#ifdef debug
 	ErrorF("Probing: %s for a video card ... ", macIIFbData[i].devName);
+#endif
 	if ((* macIIFbData[i].probeProc) (pScreenInfo, index, i, argc, argv)) {
 	    /* This display exists OK */
+#ifdef debug
 	    ErrorF("Succeded!\n");
+#endif
 	    index++;
 	} else {
 	    /* This display can't be opened */
+#ifdef debug
 	    ErrorF("none found.\n");
+#endif
 	}
     }
 
-    signal(SIGSYS, SIG_DFL);
-
     if (index == 0) {
-	ErrorF("Probing: %s ... ", macIIFbData[NUMSCREENS - 1].devName);
-	if ((* macIIFbData[NUMSCREENS - 1].probeProc) 
-	    (pScreenInfo, index, NUMSCREENS - 1, argc, argv)) {
+#ifdef debug
+	ErrorF("Probing: /dev/console ... ");
+#endif
+	if (macIIMonoProbe(pScreenInfo, index, NUMSCREENS - 1, argc, argv)) {
+#ifdef debug
 	    ErrorF("Succeded!\n");
+#endif
 	    index++;
 	} else {
+#ifdef debug
 	    ErrorF("Failed!\n");
+#endif
 	}
     }
     if (index == 0)
@@ -252,7 +310,6 @@ InitInput(argc, argv)
  *
  *-----------------------------------------------------------------------
  */
-#define SLOT_LOW 9
 Bool
 macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
     ScreenInfo	  *pScreenInfo;	/* The screenInfo struct */
@@ -264,7 +321,7 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
     int         i, oldNumScreens;
     int		depth;
     char 	*video_physaddr;
-    static char *video_virtaddr = 120 * 1024 * 1024;
+    static char *video_virtaddr = (char *)(120 * 1024 * 1024);
 
     if (macIIFbData[fbNum].probeStatus == probedAndFailed) {
 	return FALSE;
@@ -272,12 +329,12 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 
     if (macIIFbData[fbNum].probeStatus == neverProbed) {
 
-	if ((depth = video_find(SLOT_LOW + fbNum)) < 0) {
+	if ((depth = video_find(fbNum)) < 0) {
 		macIIFbData[fbNum].probeStatus = probedAndFailed;
 		return FALSE;
 	}
 
-	video_physaddr = video[SLOT_LOW + fbNum].video_base;
+	video_physaddr = video[fbNum].video_base;
 	video_virtaddr = video_virtaddr + (8 * 1024 * 1024);
 
 	/*
@@ -290,10 +347,25 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	}
 
     	macIIFbs[index].fb = (pointer)(video_virtaddr + 
-		video[SLOT_LOW + fbNum].video_data.v_baseoffset); 
+		video[fbNum].video_data.v_baseoffset); 
 
-	macIIFbs[index].fd = depth; /* XXX */
-	macIIFbs[index].info = video[SLOT_LOW + fbNum].video_data;
+	macIIFbs[index].slot = fbNum;
+	macIIFbs[index].installedMap = NULL;
+
+	/* set things up for default mode */
+	macIIFbs[index].default_depth = depth;
+        macIIFbs[index].info = video[fbNum].video_data;
+
+	/* if the board supports 8 bits, patch up a couple of things */
+	{
+	    int i;
+	    for (i = 0; i < NUMMODES; i++) {
+		if (video_modes[fbNum].depth[i] == 8) {
+		    macIIFbs[index].default_depth = 8;
+	            macIIFbs[index].info = video_modes[fbNum].info[i];
+		}
+	    }
+	}
 	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
 
     }
@@ -303,14 +375,70 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
      */
 
     oldNumScreens = pScreenInfo->numScreens;
-    switch (macIIFbs[index].fd) { /* XXX */
+    switch (macIIFbs[index].default_depth) {
 	case 1:
-    	    i = AddScreen(macIIBW2Init, argc, argv);
-    	    pScreenInfo->screen[index].CloseScreen = macIIBW2CloseScreen;
+	    macIIBlackScreen(index);
+    	    i = AddScreen(macIIMonoInit, argc, argv);
+    	    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
 	    break;
 	case 8:
-    	    i = AddScreen(macIICG4CInit, argc, argv);
-    	    pScreenInfo->screen[index].CloseScreen = macIICG4CCloseScreen;
+	    {
+	    /* poke the video board */
+		struct VDPgInfo vdp;
+		struct CntrlParam pb;
+		struct strioctl ctl; /* Streams ioctl control structure */
+		int mode_index;
+		int fd;
+
+#ifdef debug
+ErrorF("trying to goose an 8 bit board\n");
+#endif
+		ctl.ic_cmd = VIDEO_CONTROL;
+		ctl.ic_timout = -1;
+		ctl.ic_len = sizeof(pb);
+		ctl.ic_dp = (char *)&pb;
+
+	        fd = open("/dev/console", O_RDWR, 0);
+                if (fd < 0) {
+		    FatalError ("could not open /dev/console");
+	        } 
+		for (mode_index = 0; mode_index < NUMMODES; ) {
+		    if (video_modes[fbNum].depth[mode_index] == 8) {
+			break;
+		    }
+		    mode_index++;
+		}
+#ifdef debug
+ErrorF("mode_index: %d fbNum: %x mode: %x\n", mode_index, fbNum, video_modes[fbNum].mode[mode_index]);
+#endif
+		vdp.csMode = video_modes[fbNum].mode[mode_index];
+		vdp.csData = 0;
+		vdp.csPage = 0;
+		vdp.csBaseAddr = (char *) NULL;
+
+#define noQueueBit 0x0200
+#define SetMode 0x2
+		pb.qType = fbNum;
+		pb.ioTrap = noQueueBit;
+		pb.ioCmdAddr = (char *) -1;
+		pb.csCode = SetMode;
+		* (char **) pb.csParam = (char *) &vdp;
+
+		if (ioctl(fd, I_STR, &ctl) == -1) {
+			FatalError ("ioctl I_STR VIDEO_CONTROL failed");
+			(void) close (fd);
+			return (FALSE);
+		}
+		if (pb.qType != 0) {
+			FatalError ("ioctl I_STR VIDEO_CONTROL CMD failed");
+			(void) close (fd);
+			return (FALSE);
+		}
+
+	    }
+	    macIIBlackScreen(index);
+    	    i = AddScreen(macIIColorInit, argc, argv);
+    	    pScreenInfo->screen[index].CloseScreen = macIIColorCloseScreen;
 	    break;
 	default:
 	    FatalError("Encountered bogus depth: %d", macIIFbs[index].fd);
@@ -343,11 +471,6 @@ int slot;
 	vp->dce.dCtlExtDev = 0;
 	if ((depth = get_video_data(vp)) < 0)
 		return(-1);
-#ifdef notdef
-	if (get_video_driver(vp)) {
-		return(-1);
-	}
-#endif
 	vdp = &vp->video_data;
 	vp->video_mem_x = 8*vdp->v_rowbytes;
 	vp->video_mem_y = vdp->v_bottom - vdp->v_top;
@@ -424,48 +547,87 @@ register struct video *vp;
 		}
 	}
 	vp->video_def_mode = default_mode;
+#define MGC
+#ifdef MGC
+	get_video_data_new(vp);
+	{
+	int s, d;
+
+#ifdef debug
+	ErrorF("after get_video_data_new...\n");
+#endif
+	for (s = 0; s < NUMSLOTS; s++) {
+#ifdef debug
+	    ErrorF("Slot %d  ", s);
+#endif
+	    for (d = 0; d < NUMMODES; d++) {
+		if (video_modes[s].depth[d] != 0) {
+#ifdef debug
+		    ErrorF("mode for %2d bits = %2x  ",
+		       video_modes[s].depth[d], video_modes[s].mode[d]);
+#endif
+		}
+	    }
+#ifdef debug
+	    ErrorF("\n");
+#endif
+	}
+#ifdef debug
+	ErrorF("\n\n");
+#endif
+
+	}
+#endif MGC
 	return success? depth: -abs(err);
 }
 
-#ifdef notdef
-/*
-    This routine reads a Macintosh-style device driver from the slot ROM.  A
-pointer to the driver is stored in the video_driver field of the video
-structure.  If all goes well, zero gets returned.  Otherwise, a slot manager
-error is returned.
-*/
-
-static int get_video_driver(vp)
+static int get_video_data_new(vp)
 register struct video *vp;
 {
-#define sRsrc_DrvrDir	4
-#define sMacOS68000	1
-#define sMacOS68020	2
+	int depth = 1024;
+	int default_mode = 0x80;/* video modes normally default to 0x80 */
 	int err;		/* last slot manager result */
+	int success = 0;	/* assume failure */
 	struct SpBlock pb;
+	struct video_data *vd;
+	caddr_t slotModesPointer;
+	int nextMode;
+	int i;
+	int slot;
 
 	pb.spSlot = vp->dce.dCtlSlot;
-	pb.spID = vp->dce.dCtlSlotId;
+	pb.spID = 0;
+	pb.spCategory = 3;	/* catDisplay */
+	pb.spCType = 1;		/* typeVideo */
+	pb.spDrvrSW = 1;	/* drSwApple */
+	pb.spTBMask = 1;
 
-	err = slotmanager(_sRsrcInfo,&pb);
-	if (err == 0) {
-		pb.spID = sRsrc_DrvrDir;
+        slot = vp->dce.dCtlSlot;
+	err = slotmanager(_sNextTypesRsrc,&pb);
+	if (err == 0 && pb.spSlot != vp->dce.dCtlSlot)
+	    err = smNoMoresRsrcs;
+	else if (err == 0) {
+	    vp->dce.dCtlSlotId = pb.spID;
+	    slotModesPointer = pb.spsPointer;
+	    for (nextMode = 0x80, i=0; ((!err) && (i < NUMMODES)); nextMode++) {
+		pb.spID = nextMode;
+		pb.spsPointer = slotModesPointer;
 		err = slotmanager(_sFindStruct,&pb);
 		if (err == 0) {
-			pb.spID = sMacOS68020;
-			err = slotmanager(_sGetBlock,&pb);
-			if (err != 0) {
-				pb.spID = sMacOS68000;
-				err = slotmanager(_sGetBlock,&pb);
-			}
-			if (err == 0) {
-			    vp->video_driver = (caddr_t) pb.spResult;
-			}
+		    pb.spID = 1;	/* mVidParams */
+		    pb.spResult = (long *)(&video_modes[slot].info[i]);
+		    err = slotmanager(_sGetBlock,&pb);
+		    if (err == 0) {
+		        vd = (struct video_data *) pb.spResult;
+		        video_modes[slot].depth[i] = vd->v_pixelsize;
+		        video_modes[slot].mode[i] = nextMode;
+			i++;
+		    }
 		}
+	    }
 	}
-	return err;
+	return 0;
 }
-#endif
 
 /*-
  *-----------------------------------------------------------------------
@@ -513,7 +675,7 @@ short *pheight;
 }
 
 /*-
- *-----------------------------------------------------------------------
+ *-------------------------------------------------------------%---------
  * macIIScreenInit --
  *	Things which must be done for all types of frame buffers...
  *	Should be called last of all.
@@ -606,60 +768,67 @@ macIIScreenInit (pScreen)
 
 }
 
-#ifdef notdef
-extern char *getenv();
-extern char *strncpy();
-
 /*-
  *-----------------------------------------------------------------------
- * nthdev --
- *	Return the nth device in a colon-separated list of devices.
- *	n is 0-origin.
+ * macIIBlackScreen --
+ *	Fill a frame buffer with pixel 1.
  *
  * Results:
- *	A pointer to a STATIC string which is the device name.
+ *	None
  *
  * Side Effects:
- *	None.
  *
  *-----------------------------------------------------------------------
  */
-static char *
-nthdev (dList, n)
-    register char    *dList;	    /* Colon-separated device names */
-    int	    n;	  	    /* Device number wanted */
+int
+macIIBlackScreen(index)
+	int index;
 {
-    char *result;
-    static char returnstring[100];
+    fbFd *pf;
+    register unsigned char* fb;
+    register int fbinc, line, lw;
+    register unsigned int *fbt;
 
-    while (n--) {
-	while (*dList && *dList != ':') {
-	    dList++;
-	}
-    }
-    if (*dList) {
-	register char *cp = dList;
+    pf = &macIIFbs[index];
+    fb = pf->fb; /* Assumed longword aligned! */
 
-	while (*cp && *cp != ':') {
-	    cp++;
+    switch (pf->info.v_pixelsize) {
+    case 1:
+    {
+	fbinc = pf->info.v_rowbytes;
+        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+	    lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
+	    fbt = (unsigned int *)fb;
+	    do {
+		*fbt++ = 0xffffffff;
+	    } while (--lw);
+	    fb += fbinc;
 	}
-	result = returnstring;
-	strncpy (result, dList, cp - dList);
-	result[cp - dList] = '\0';
-    } else {
-	result = (char *)0;
+	break;
     }
-    return (result);
+    case 8:
+    {
+	fbinc = pf->info.v_rowbytes;
+        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+	    lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
+	    fbt = (unsigned int *)fb;
+	    do {
+		*fbt++ = 0x01010101;
+	    } while (--lw);
+	    fb += fbinc;
+	}
+	break;
+    }
+    default:
+	ErrorF("Bad depth in macIIBlackScreen.");
+	break;
+    }
 }
-#endif
 
 /*-
  *-----------------------------------------------------------------------
  * macIIOpenFrameBuffer --
- *	Open a frame buffer according to several rules. 
- *	Find the device to use by looking in the macIIFbData table,
- *	an XDEVICE envariable, a -dev switch or using /dev/console if trying
- *	to open screen 0 and all else has failed.
+ *	Open a frame buffer  through the /dev/console interface.
  *
  * Results:
  *	The fd of the framebuffer.
@@ -671,118 +840,29 @@ nthdev (dList, n)
 int
 macIIOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
     int	    	  expect;   	/* The expected type of framebuffer */
-    fbtype *pfbType; 	/* Place to store the fb info */
+    fbtype 	  *pfbType; 	/* Place to store the fb info */
     int	    	  fbNum;    	/* Index into the macIIFbData array */
     int	    	  index;    	/* Screen index */
     int	    	  argc;	    	/* Command-line arguments... */
     char	  **argv;   	/* ... */
 {
-    char       	  *name=(char *)0;
-    int           i;	    	/* Index into argument list */
     int           fd = -1;	    	/* Descriptor to device */
-    static int	  devFbUsed=FALSE;  /* true if /dev/fb has been used for a */
-    	    	  	    	    /* screen already */
-    static Bool	  inited = FALSE;
-    static char	  *xdevice; 	/* string of devices to use from environ */
-    static char	  *devsw;   	/* string of devices from args */
+    struct strioctl ctl;
 
-#ifdef notdef
-    if (!inited) {
-	xdevice = devsw = (char *)NULL;
+    fd = open("/dev/console", O_RDWR, 0);
+    if (fd < 0) {
+	return (-1);
+    } 
 
-	xdevice = getenv (XDEVICE);
-	/*
-	 * Look for an argument of the form -dev <device-string>
-	 * If such a one is found place the <device-string> in devsw.
-	 */
-	for (i = 1; i < argc; i++) {
-	    if ((strcmp(argv[i], "-dev") == 0) && (i + 1 < argc)) {
-		devsw = argv[i+1];
-		break;
-	    }
-	}
-	inited = TRUE;
+    ctl.ic_cmd = VIDEO_DATA;
+    ctl.ic_timout = -1;
+    ctl.ic_len = sizeof(fbtype);
+    ctl.ic_dp = (char *)pfbType;
+    if (ioctl(fd, I_STR, &ctl) < 0) {
+        FatalError("Failed to ioctl I_STR VIDEO_DATA.\n");
+	(void) close(fd);
+        return(!Success);
     }
-
-    /*
-     * Attempt to find a file name for the frame buffer 
-     */
-
-    /*
-     * First see if any device was given on the command line.
-     * If one was and the device is both readable and writeable,
-     * set 'name' to it, else set it to NULL.
-     */
-    if (devsw == (char *)NULL ||
-	(name = nthdev (devsw, index)) == (char *)NULL ||
-	(access (name, R_OK | W_OK) != 0) ||
-	(strcmp(name, macIIFbData[fbNum].devName) != 0)) {
-	    name = (char *)NULL;
-    }
-	    
-    /*
-     * If we still don't have a device for this screen, check the
-     * environment variable for one. If one was given, stick its
-     * path in name and check its accessibility. If it's not
-     * properly accessible, then reset the name to NULL to force the
-     * checking of the macIIFbData array.
-     */
-    if (devsw == (char *)NULL && name == (char *)NULL &&
-	xdevice != (char *)NULL &&
-	(name = nthdev(xdevice, index)) != (char *)NULL &&
-	(access (name, R_OK | W_OK) != 0)) {
-	    name = (char *)NULL;
-    }
-
-    /*
-     * Take the device given in the frame buffer description
-     * and see if it exists and is accessible. If it does/is,
-     * we will use it, as long as no other device was given.
-     */
-    if (devsw == (char *)NULL && name == (char *)NULL &&
-	access(macIIFbData[fbNum].devName, (R_OK | W_OK)) == 0) {
-	    name = macIIFbData[fbNum].devName;
-    }
-
-    /*
-     * If we still have nothing and have yet to use "/dev/console" for
-     * a screen, default the name to be "/dev/console"
-     */
-    if (devsw == (char *)NULL && name == (char *)NULL && !devFbUsed) {
-	name = "/dev/console";
-    }
-#else
-	name = "dev/console";
-#endif notdef
-
-
-    if (name) {
-	fd = open(name, O_RDWR, 0);
-        if (fd < 0) {
-	    return (-1);
-	} 
-
-        {
-		struct strioctl ctl;
-
-        	ctl.ic_cmd = VIDEO_DATA;
-		ctl.ic_timout = -1;
-        	ctl.ic_len = sizeof(fbtype);
-		ctl.ic_dp = (char *)pfbType;
-        	if (ioctl(fd, I_STR, &ctl) < 0) {
-                	FatalError("Failed to ioctl I_STR VIDEO_DATA.\n");
-			(void) close(fd);
-                	return(!Success);
-        	}
-
-	}
-    }
-
-#ifdef notdef
-    if (name && strcmp (name, "/dev/console") == 0) {
-	devFbUsed = TRUE;
-    }
-#endif
 
     return (fd);
 }
