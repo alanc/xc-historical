@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.63 88/10/23 17:07:31 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.64 88/12/06 15:26:35 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -1884,6 +1884,7 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 	double		value0, value1, valuealt;
 	double		newtonvalue, binaryvalue;
 	double		minY, maxY;
+	double		binarylimit;
 	double		(*f)();
 	
 	/*
@@ -1912,6 +1913,9 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 		return y1;
 	if (value1 > 0 == value0 > 0)
 		return -1.0;	/* an illegal value */
+	binarylimit = fabs ((value1 - value0) / 25.0);
+	if (binarylimit < BINARY_LIMIT)
+		binarylimit = BINARY_LIMIT;
 	/*
 	 * binary search for a while
 	 */
@@ -1930,8 +1934,6 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 		binaryvalue = ( binaryy + (binaryy * w2 * l) /
 			      (2 * Sqrt (x*x * h4 + y2 * w4))) - edge_y;
 
-		if (binaryvalue == 0)
-			return binaryy;
 		if (binaryvalue > 0 == value0 > 0) {
 			y0 = binaryy;
 			value0 = binaryvalue;
@@ -1939,7 +1941,9 @@ elipseY (edge_y, def, bound, acc, outer, y0, y1)
 			y1 = binaryy;
 			value1 = binaryvalue;
 		}
-	} while (fabs (value1) > BINARY_LIMIT);
+	} while (fabs (value1) > binarylimit);
+	if (binaryvalue == 0)
+		return binaryy;
 
 	/*
 	 * clean up the estimate with newtons method
@@ -1992,6 +1996,17 @@ outerX (outer_y, def, bound, acc)
 {
 	double	y;
 
+	/*
+	 * special case for circles
+	 */
+	if (def->w == def->h) {
+		double	x;
+		x = def->w + def->l/2.0;
+		x = Sqrt (x * x - outer_y * outer_y);
+		if (outer_y < 0)
+			x = -x;
+		return x;
+	}
 	if (outer_y == bound->outer.min)
 		y = bound->elipse.min;
 	if (outer_y == bound->outer.max)
@@ -2015,6 +2030,17 @@ innerXs (inner_y, def, bound, acc, innerX1p, innerX2p)
 {
 	double	x1, x2, xalt, y0, y1, altY, elipse_y1, elipse_y2;
 
+	/*
+	 * special case for circles
+	 */
+	if (def->w == def->h) {
+		x1 = def->w - def->l/2.0;
+		x1 = Sqrt (x1 * x1 - inner_y * inner_y);
+		if (inner_y < 0)
+			x1 = -x1;
+		*innerX1p = *innerX2p = x1;
+		return;
+	}
 	if (boundedLe (acc->tail_y, bound->elipse)) {
 		if (def->h > def->w) {
 			y0 = bound->elipse.min;
