@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.138 93/09/08 08:25:24 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.139 93/09/18 18:18:38 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -47,9 +47,6 @@ SOFTWARE.
  * *not* a bug.  Any subclass that assumes otherwise is broken.
  *
  ***************************************************************************/
-
-#define WM_CONFIGURE_DENIED(w) (((WMShellWidget) (w))->wm.wm_configure_denied)
-#define WM_MOVED(w) (((WMShellWidget) (w))->wm.wm_moved)
 
 #define BIGSIZE ((Dimension)32767)
 
@@ -857,20 +854,6 @@ static void WMInitialize(req, new, args, num_args)
 	}
 	w->wm.size_hints.flags = 0;
 	w->wm.wm_hints.flags = 0;
-
-	/* Find the values of the atoms, somewhere... */
-
-	for (new = new->core.parent;
-		new != NULL && !XtIsWMShell(new);
-		new = new->core.parent) {}
-	if (new == NULL) {
-	    w->wm.wm_configure_denied =
-		    XInternAtom(XtDisplay(w), "WM_CONFIGURE_DENIED", FALSE);
-	    w->wm.wm_moved = XInternAtom(XtDisplay(w), "WM_MOVED", FALSE);
-	} else {
-	    w->wm.wm_configure_denied = WM_CONFIGURE_DENIED(new);
-	    w->wm.wm_moved = WM_MOVED(new);
-	}
 }
 
 
@@ -1308,56 +1291,6 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 		}		    
 		break;
 
-	    case ClientMessage:
-		if( event->xclient.message_type == WM_CONFIGURE_DENIED(wid)
-		    && XtIsWMShell(wid)) {
-
-		    /* 
-		     * UT Oh! the window manager has come back alive
-		     * This means either I didn't wait long enough or
-		     * The WM is sick.
-		     * Query my real size and position, and adjust my child
-		     * it needs be.
-		     */
-
-		    if(wmshell->wm.wait_for_wm) {
-			XtAppWarningMsg(XtWidgetToApplicationContext(wid),
-				"communicationError","windowManager",
-                                  XtCXtToolkitError,
-                                  "Window Manager is confused",
-				  (String *)NULL, (Cardinal *)NULL);
-		    }
-		    wmshell->wm.wait_for_wm = TRUE;
-		    (void) XGetGeometry(XtDisplay(w), XtWindow(w), &tmproot,
-			    &tmpx, &tmpy, &width, &height, &border_width,
-			    &tmpdepth);
-		    (void) XTranslateCoordinates(XtDisplay(w), XtWindow(w), 
-			    tmproot, (int) tmpx, (int) tmpy,
-			    &tmp2x, &tmp2y, &tmpchild);
-		    w->core.x = tmp2x;
-		    w->core.y = tmp2y;
-		    if( width != w->core.width || height != w->core.height
-		       || border_width != w->core.border_width ) {
-			    w->core.width = width;
-			    w->core.height = height;
-			    w->core.border_width = border_width;
-			    sizechanged = TRUE;
-		    }
-
-		    break;
-		}
-		if(event->xclient.message_type == WM_MOVED(wid)) {
-		    w->core.x = event->xclient.data.s[0];
-		    w->core.y  = event->xclient.data.s[1];
-		    if (XtIsWMShell((Widget)w)) {
-			WMShellWidget wmshell = (WMShellWidget) w;
-			/* Any window manager which sends this must be 
-			   good guy.  Let's reset our flag. */
-			wmshell->wm.wait_for_wm = TRUE;
-		    }
-		}
-		break;
-
 	      case ReparentNotify:
 		if (event->xreparent.window == XtWindow(w)) {
 		   if (event->xreparent.parent !=
@@ -1647,19 +1580,9 @@ static Bool isMine(dpy, event, arg)
 	    if (event->type == ConfigureNotify) {
 		q->done = TRUE;
 		return TRUE;
-	    } else
-		/* This is draft-ICCCM stuff; here for compatibility */
-		if (event->type == ClientMessage &&
-		    (event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
-		     event->xclient.message_type == WM_MOVED(w))) {
-		    q->done = TRUE;
-		    return TRUE;
-		}
+	    } 
 	}
-	else if (event->type == ConfigureNotify ||
-		 (event->type == ClientMessage &&
-		  (event->xclient.message_type == WM_CONFIGURE_DENIED(w) ||
-		   event->xclient.message_type == WM_MOVED(w))))
+	else if (event->type == ConfigureNotify)
 	    return TRUE;	/* flush old events */
 	if (event->type == ReparentNotify
 		 && event->xreparent.window == XtWindow(w)) {
@@ -1878,17 +1801,9 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 		else w->shell.client_specified &= ~_XtShellPositionValid;
 		return XtGeometryYes;
 	    }
-	} else if (!wm ||
-		   (event.type == ClientMessage &&
-		    event.xclient.message_type == WM_CONFIGURE_DENIED(w))) {
+	} else if (!wm) {
 	    PutBackGeometry();
 	    return XtGeometryNo;
-	} else if (event.type == ClientMessage &&
-		    event.xclient.message_type == WM_MOVED(w)) {
-	    w->core.x = event.xclient.data.s[0];
-	    w->core.y = event.xclient.data.s[1];
-	    w->shell.client_specified |= _XtShellPositionValid;
-	    return XtGeometryYes;
 	} else XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
 			       "internalError", "shell", XtCXtToolkitError,
 			       "Shell's window manager interaction is broken",

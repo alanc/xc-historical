@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.29 89/10/04 12:22:48 swick Exp $
+* $XConsortium: ShellP.h,v 1.30 91/01/11 16:41:19 converse Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -166,7 +166,7 @@ typedef struct {
 	int 	    wm_timeout;
 	Boolean	    wait_for_wm;
 	Boolean	    transient;
-	Atom	    wm_configure_denied,  wm_moved;
+	Atom	    wm_configure_denied,  wm_moved; /* not used */
 	struct _OldXSizeHints {	/* pre-R4 Xlib structure */
 	    long flags;
 	    int x, y;
