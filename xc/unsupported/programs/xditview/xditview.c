@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.2 89/03/03 13:57:25 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.3 89/03/05 19:37:49 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -20,8 +20,10 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.2 89/03/03 13:57:25 keith Ex
 #include <X11/Dialog.h>
 #include <X11/Label.h>
 #include "libXdvi/Dvi.h"
-#include "xditview.bm"
-#include "xditview_mask.bm"
+#include "libXdvi/Menu.h"
+#include "xdit.bm"
+#include "xdit_mask.bm"
+#include "stdio.h"
 
 extern void exit();
 
@@ -33,6 +35,9 @@ static XrmOptionDescRec options[] = {
 {"-backingStore",   "*dvi.backingStore",    XrmoptionSepArg,	NULL},
 {"-noPolyText",	    "*dvi.noPolyText",	    XrmoptionNoArg,	"TRUE"},
 };
+
+static char	current_file_name[1024];
+static FILE	*current_file;
 
 /*
  * Report the syntax for calling xditview.
@@ -52,7 +57,23 @@ static void	NewFile ();
 static Widget	toplevel, vpaned, viewport, box, dvi;
 static Widget	nextPage, prevPage, selectPage, open, quit, page;
 
-static char	pageLabel[256] = "Page number: <none>";
+static char menuString[] = "\
+Next Page\n\
+Previous Page\n\
+Select Page\n\
+Open File\n\
+Quit\
+";
+
+static Widget	menu;
+
+#define MenuNextPage		0
+#define MenuPreviousPage	1
+#define MenuSelectPage		2
+#define MenuOpenFile		3
+#define	MenuQuit		4
+
+static char	pageLabel[256] = "Page <none>";
 
 void main(argc, argv)
     int argc;
@@ -61,16 +82,18 @@ void main(argc, argv)
     Arg		    arg;
     Pixmap	    icon_pixmap = None;
     char	    *file_name = 0;
-    static void	    commandCall();
+    static void	    commandCall(), menuCall();
     static Arg	    viewportArgs[] = {
 			{XtNallowVert, True},
 			{XtNallowHoriz, True},
 			{XtNskipAdjust, False},
-			{XtNwidth, 500},
-			{XtNheight, 700},
+			{XtNwidth, 600},    /* this one isn't right */
+			{XtNheight, 800},   /* neither is this */
+			{XtNshowGrip, False},
     };
     static Arg	    boxArgs[] = {
 			{XtNskipAdjust, True},
+			{XtNshowGrip, False},
     };
     static XtCallbackRec commandCallback[] = {
 			{ commandCall, (caddr_t) 0, },
@@ -85,6 +108,10 @@ void main(argc, argv)
     };
     static Arg	    labelArgs[] = {
 			{XtNlabel, (int) pageLabel},
+    };
+    static XtCallbackRec menuCallback[] = {
+			{ menuCall, (caddr_t) 0 },
+			{ NULL, NULL }
     };
     Arg		    topLevelArgs[2];
     int		    height;
@@ -124,6 +151,8 @@ void main(argc, argv)
 					commandArgs, XtNumber (commandArgs));
     page = XtCreateManagedWidget ("Page", labelWidgetClass, box,
 					labelArgs, XtNumber (labelArgs));
+    menu = XawMenuCreate ("menu", menuWidgetClass, toplevel, menuString,
+			    "<Btn1Down>", menuCallback);
     viewport = XtCreateManagedWidget("viewport", viewportWidgetClass, vpaned,
 				     viewportArgs, XtNumber (viewportArgs));
     dvi = XtCreateManagedWidget ("dvi", dviWidgetClass, viewport, NULL, 0);
@@ -146,7 +175,9 @@ SetPageNumber (number)
     XtSetArg (arg[0], XtNpageNumber, &actual_number);
     XtSetArg (arg[1], XtNlastPageNumber, &last_page);
     XtGetValues (dvi, arg, 2);
-    if (last_page > 0)
+    if (actual_number == 0)
+	sprintf (pageLabel, "Page <none>");
+    else if (last_page > 0)
 	sprintf (pageLabel, "Page %d of %d", actual_number, last_page);
     else
 	sprintf (pageLabel, "Page %d", actual_number);
@@ -167,15 +198,43 @@ char	*name;
 {
     Arg	    arg[2];
     char    *n, *rindex ();
+    FILE    *new_file;
+    Boolean seek = 0;
+    int	    c;
 
-    XtSetArg (arg[0], XtNfileName, name);
-    XtSetValues (dvi, arg, 1);
+    if (current_file) {
+	if (!strcmp (current_file_name, "-"))
+	    ;
+	else if (current_file_name[0] == '|')
+	    pclose (current_file);
+	else
+	    fclose (current_file);
+    }
+    if (!strcmp (name, "-"))
+	new_file = stdin;
+    else if (name[0] == '|')
+	new_file = popen (name+1, "r");
+    else {
+	new_file = fopen (name, "r");
+	seek = 1;
+    }
+    if (!new_file) {
+	/* XXX display error message */
+	return;
+    }
+    XtSetArg (arg[0], XtNfile, new_file);
+    XtSetArg (arg[1], XtNseek, seek);
+    XtSetValues (dvi, arg, 2);
     XtSetArg (arg[0], XtNtitle, name);
-    if (n = rindex (name, '/'))
-	name = n + 1;
-    XtSetArg (arg[1], XtNiconName, name);
+    if (name[0] != '/' && (n = rindex (name, '/')))
+	n = n + 1;
+    else
+	n = name;
+    XtSetArg (arg[1], XtNiconName, n);
     XtSetValues (toplevel, arg, 2);
     SelectPage ("1");
+    strcpy (current_file_name, name);
+    current_file = new_file;
 }
 
 static fileBuf[1024];
@@ -187,7 +246,7 @@ commandCall (cw, closure, data)
 {
     Arg	dviArg[1];
     int	number;
-    char *file;
+
     if (cw == nextPage) {
 	XtSetArg (dviArg[0], XtNpageNumber, &number);
 	XtGetValues (dvi, dviArg, 1);
@@ -199,10 +258,8 @@ commandCall (cw, closure, data)
     } else if (cw == selectPage) {
 	MakePrompt (cw, "Page number", SelectPage, "");
     } else if (cw == open) {
-	XtSetArg (dviArg[0], XtNfileName, &file);
-	XtGetValues (dvi, dviArg, 1);
-	if (file)
-	    strcpy (fileBuf, file);
+	if (current_file_name[0])
+	    strcpy (fileBuf, current_file_name);
 	else
 	    fileBuf[0] = '\0';
 	MakePrompt (cw, "File to open:", NewFile, fileBuf);
@@ -212,6 +269,41 @@ commandCall (cw, closure, data)
 }
 
 
+static void
+menuCall (mw, closure, data)
+    Widget  mw;
+    caddr_t closure, data;
+{
+    int	    menuItem = (int) data;
+    Arg	dviArg[1];
+    int	number;
+
+    switch (menuItem) {
+    case MenuNextPage:
+	XtSetArg (dviArg[0], XtNpageNumber, &number);
+	XtGetValues (dvi, dviArg, 1);
+	SetPageNumber (number+1);
+	break;
+    case MenuPreviousPage:
+	XtSetArg (dviArg[0], XtNpageNumber, &number);
+	XtGetValues (dvi, dviArg, 1);
+	SetPageNumber (number-1);
+	break;
+    case MenuSelectPage:
+	MakePrompt (mw, "Page number", SelectPage, "");
+	break;
+    case MenuOpenFile:
+	if (current_file_name[0])
+	    strcpy (fileBuf, current_file_name);
+	else
+	    fileBuf[0] = '\0';
+	MakePrompt (mw, "File to open:", NewFile, fileBuf);
+	break;
+    case MenuQuit:
+	exit (0);
+    }
+}
+    
 Widget	promptShell, promptDialog;
 void	(*promptfunction)();
 
