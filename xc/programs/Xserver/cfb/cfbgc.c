@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.26 89/10/20 10:25:35 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.27 89/10/20 13:15:56 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -93,7 +93,7 @@ static GCOps	cfbTEOps = {
     miPolyGlyphBlt,
     mfbPushPixels,
 #endif
-    miMiter,
+    NULL,
 };
 
 static GCOps	cfbNonTEOps = {
@@ -126,7 +126,7 @@ static GCOps	cfbNonTEOps = {
     miPolyGlyphBlt,
     mfbPushPixels,
 #endif
-    miMiter,
+    NULL,
 };
 
 static GCOps *
@@ -611,16 +611,6 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->PolySegment = cfbSegmentSD;
 	    } else
 		pGC->ops->Polylines = miWideDash;
-	    break;
-	}
-	switch(pGC->joinStyle)
-	{
-	  case JoinMiter:
-	    pGC->ops->LineHelper = miMiter;
-	    break;
-	  case JoinRound:
-	  case JoinBevel:
-	    pGC->ops->LineHelper = miNotMiter;
 	    break;
 	}
     }

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.13 89/09/10 18:04:34 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.14 89/10/20 15:04:34 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -77,7 +77,7 @@ static GCOps	whiteTECopyOps = {
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	blackTECopyOps = {
@@ -101,7 +101,7 @@ static GCOps	blackTECopyOps = {
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	whiteTEInvertOps = {
@@ -125,7 +125,7 @@ static GCOps	whiteTEInvertOps = {
 	mfbTEGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	blackTEInvertOps = {
@@ -149,7 +149,7 @@ static GCOps	blackTEInvertOps = {
 	mfbTEGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	whiteCopyOps = {
@@ -173,7 +173,7 @@ static GCOps	whiteCopyOps = {
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	blackCopyOps = {
@@ -197,7 +197,7 @@ static GCOps	blackCopyOps = {
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	whiteInvertOps = {
@@ -221,7 +221,7 @@ static GCOps	whiteInvertOps = {
 	mfbImageGlyphBltWhite,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	blackInvertOps = {
@@ -245,7 +245,7 @@ static GCOps	blackInvertOps = {
 	mfbImageGlyphBltBlack,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	whiteWhiteCopyOps = {
@@ -269,7 +269,7 @@ static GCOps	whiteWhiteCopyOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltWhite,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	blackBlackCopyOps = {
@@ -293,7 +293,7 @@ static GCOps	blackBlackCopyOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltBlack,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 static GCOps	fgEqBgInvertOps = {
@@ -317,7 +317,7 @@ static GCOps	fgEqBgInvertOps = {
 	miImageGlyphBlt,
 	mfbPolyGlyphBltInvert,
 	mfbSolidPP,
-	miMiter,
+	NULL,
 };
 
 struct commonOps {
@@ -907,17 +907,6 @@ mfbValidateGC(pGC, changes, pDrawable)
 	        pGC->ops->Polylines = miWideDash;
 		pGC->ops->PolySegment = miPolySegment;
 	    }
-	}
-
-	switch(pGC->joinStyle)
-	{
-	  case JoinMiter:
-	    pGC->ops->LineHelper = miMiter;
-	    break;
-	  case JoinRound:
-	  case JoinBevel:
-	    pGC->ops->LineHelper = miNotMiter;
-	    break;
 	}
     }
 
