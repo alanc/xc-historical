@@ -4,7 +4,7 @@ COMMENT  Copyright 1988 Bitstream, Inc., Cambridge, Massachusetts, USA
 COMMENT  Bitstream and Charter are registered trademarks of Bitstream, Inc.
 COMMENT  
 COMMENT  The names "Bitstream" and "Charter" are registered trademarks of
-COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby 
+COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby
 COMMENT  granted only in association with the images described in this file.
 COMMENT  
 COMMENT  Permission to use, copy, modify, and distribute this software and
@@ -28,7 +28,7 @@ COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 COMMENT  
 COMMENT  
 COMMENT Fontware CVTBDF v1.0
-FONT -Bitstream-Charter-Medium-R-Normal--25-240-75-75-P-141-ISO8859-1
+FONT -Bitstream-Charter-Medium-R-Normal--25-240-75-75-P-139-ISO8859-1
 SIZE 25 75 75
 FONTBOUNDINGBOX 25 30 -2 -6
 STARTPROPERTIES 22
@@ -45,7 +45,7 @@ POINT_SIZE 240
 RESOLUTION_X 75
 RESOLUTION_Y 75
 SPACING "P"
-AVERAGE_WIDTH 141
+AVERAGE_WIDTH 139
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
 COMMENT END LogicalFontDescription
@@ -58,7 +58,7 @@ FULL_NAME "Bitstream Charter Roman"
 COPYRIGHT "Copyright 1987 by Bitstream Inc. Charter Registered trademark of Bitstream Inc."
 COMMENT ****** end of font properties
 ENDPROPERTIES
-CHARS 190
+CHARS 191
 STARTCHAR space
 ENCODING 32
 SWIDTH 278 0
@@ -1499,6 +1499,20 @@ BBX 12 1 0 -6
 BITMAP
 fff0
 ENDCHAR
+STARTCHAR quoteleft
+ENCODING 96
+SWIDTH 201 0
+DWIDTH 5 0
+BBX 3 7 1 11
+BITMAP
+60
+40
+80
+80
+e0
+e0
+60
+ENDCHAR
 STARTCHAR a
 ENCODING 97
 SWIDTH 507 0
@@ -2168,6 +2182,14 @@ BBX 15 2 5 14
 BITMAP
 3f06
 c1f8
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 278 0
+DWIDTH 7 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -4482,31 +4504,5 @@ fc78
 0400
 6800
 7000
-ENDCHAR
-STARTCHAR diamond
-ENCODING -1
-SWIDTH 986 0
-DWIDTH 25 0
-BBX 15 19 5 -1
-BITMAP
-0100
-0380
-0780
-07c0
-0fe0
-1ff0
-3ff8
-3ff8
-7ffc
-fffe
-7ffc
-3ff8
-3ff8
-1ff0
-0fe0
-07c0
-0780
-0380
-0100
 ENDCHAR
 ENDFONT

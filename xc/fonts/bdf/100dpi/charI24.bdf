@@ -4,7 +4,7 @@ COMMENT  Copyright 1988 Bitstream, Inc., Cambridge, Massachusetts, USA
 COMMENT  Bitstream and Charter are registered trademarks of Bitstream, Inc.
 COMMENT  
 COMMENT  The names "Bitstream" and "Charter" are registered trademarks of
-COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby 
+COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby
 COMMENT  granted only in association with the images described in this file.
 COMMENT  
 COMMENT  Permission to use, copy, modify, and distribute this software and
@@ -28,7 +28,7 @@ COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 COMMENT  
 COMMENT  
 COMMENT Fontware CVTBDF v1.0
-FONT -Bitstream-Charter-Medium-I-Normal--33-240-100-100-P-181-ISO8859-1
+FONT -Bitstream-Charter-Medium-I-Normal--33-240-100-100-P-179-ISO8859-1
 SIZE 33 100 100
 FONTBOUNDINGBOX 37 40 -5 -8
 STARTPROPERTIES 22
@@ -45,7 +45,7 @@ POINT_SIZE 240
 RESOLUTION_X 100
 RESOLUTION_Y 100
 SPACING "P"
-AVERAGE_WIDTH 181
+AVERAGE_WIDTH 179
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
 COMMENT END LogicalFontDescription
@@ -58,7 +58,7 @@ FULL_NAME "Bitstream Charter Italic"
 COPYRIGHT "Copyright 1987 by Bitstream Inc. Charter Registered trademark of Bitstream Inc."
 COMMENT ****** end of font properties
 ENDPROPERTIES
-CHARS 190
+CHARS 191
 STARTCHAR space
 ENCODING 32
 SWIDTH 278 0
@@ -1799,6 +1799,22 @@ BITMAP
 ffff80
 ffff80
 ENDCHAR
+STARTCHAR quoteleft
+ENCODING 96
+SWIDTH 201 0
+DWIDTH 7 0
+BBX 5 9 3 14
+BITMAP
+18
+10
+20
+60
+40
+c0
+f0
+f0
+60
+ENDCHAR
 STARTCHAR a
 ENCODING 97
 SWIDTH 525 0
@@ -2626,6 +2642,14 @@ BITMAP
 3fe0c0
 60ff80
 c01f00
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 278 0
+DWIDTH 9 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -5485,37 +5509,5 @@ BITMAP
 e70000
 fe0000
 780000
-ENDCHAR
-STARTCHAR diamond
-ENCODING -1
-SWIDTH 986 0
-DWIDTH 33 0
-BBX 20 25 7 -2
-BITMAP
-004000
-006000
-00f000
-01f800
-03fc00
-03fc00
-07fe00
-0fff00
-1fff80
-3fffc0
-3fffc0
-7fffe0
-fffff0
-7fffe0
-3fffc0
-3fffc0
-1fff80
-0fff00
-07fe00
-03fc00
-03fc00
-01f800
-00f000
-006000
-004000
 ENDCHAR
 ENDFONT

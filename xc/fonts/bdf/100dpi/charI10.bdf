@@ -4,7 +4,7 @@ COMMENT  Copyright 1988 Bitstream, Inc., Cambridge, Massachusetts, USA
 COMMENT  Bitstream and Charter are registered trademarks of Bitstream, Inc.
 COMMENT  
 COMMENT  The names "Bitstream" and "Charter" are registered trademarks of
-COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby 
+COMMENT  Bitstream, Inc.  Permission to use these trademarks is hereby
 COMMENT  granted only in association with the images described in this file.
 COMMENT  
 COMMENT  Permission to use, copy, modify, and distribute this software and
@@ -28,7 +28,7 @@ COMMENT  CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 COMMENT  
 COMMENT  
 COMMENT Fontware CVTBDF v1.0
-FONT -Bitstream-Charter-Medium-I-Normal--14-100-100-100-P-77-ISO8859-1
+FONT -Bitstream-Charter-Medium-I-Normal--14-100-100-100-P-76-ISO8859-1
 SIZE 14 100 100
 FONTBOUNDINGBOX 15 17 -2 -3
 STARTPROPERTIES 22
@@ -45,7 +45,7 @@ POINT_SIZE 100
 RESOLUTION_X 100
 RESOLUTION_Y 100
 SPACING "P"
-AVERAGE_WIDTH 77
+AVERAGE_WIDTH 76
 CHARSET_REGISTRY "ISO8859"
 CHARSET_ENCODING "1"
 COMMENT END LogicalFontDescription
@@ -58,7 +58,7 @@ FULL_NAME "Bitstream Charter Italic"
 COPYRIGHT "Copyright 1987 by Bitstream Inc. Charter Registered trademark of Bitstream Inc."
 COMMENT ****** end of font properties
 ENDPROPERTIES
-CHARS 190
+CHARS 191
 STARTCHAR space
 ENCODING 32
 SWIDTH 278 0
@@ -1041,6 +1041,17 @@ BBX 7 1 0 -3
 BITMAP
 fe
 ENDCHAR
+STARTCHAR quoteleft
+ENCODING 96
+SWIDTH 201 0
+DWIDTH 3 0
+BBX 2 4 1 6
+BITMAP
+40
+80
+c0
+c0
+ENDCHAR
 STARTCHAR a
 ENCODING 97
 SWIDTH 525 0
@@ -1506,6 +1517,14 @@ BBX 9 2 3 7
 BITMAP
 3880
 cf00
+ENDCHAR
+STARTCHAR space
+ENCODING 160
+SWIDTH 278 0
+DWIDTH 4 0
+BBX 1 1 0 0
+BITMAP
+00
 ENDCHAR
 STARTCHAR exclamdown
 ENCODING 161
@@ -3111,23 +3130,5 @@ BITMAP
 1000
 a000
 c000
-ENDCHAR
-STARTCHAR diamond
-ENCODING -1
-SWIDTH 986 0
-DWIDTH 14 0
-BBX 9 11 3 -1
-BITMAP
-0800
-1c00
-3e00
-3e00
-7f00
-ff80
-7f00
-3e00
-3e00
-1c00
-0800
 ENDCHAR
 ENDFONT
