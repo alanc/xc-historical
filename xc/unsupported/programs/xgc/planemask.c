@@ -180,10 +180,10 @@ update_planemask(mask)
 
   for (i = 0; i < PlanesOfScreen(X.scr); ++i) {
     if (planemask & 1<<i) {        /* if it's set, make it look that way */
-      maskargs[0].value = True;
+      maskargs[0].value = (XtArgVal) True;
     }
     else {
-      maskargs[0].value = False;
+      maskargs[0].value = (XtArgVal) False;
     }
 
     XtSetValues(pm[i],maskargs,XtNumber(maskargs));
