@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.7 91/05/11 11:45:47 rws Exp $ */
+/* $XConsortium: dixfont.h,v 1.8 93/07/12 09:44:45 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -153,7 +153,7 @@ extern int DeleteClientFontStuff(
 
 extern int InitFonts(
 #if NeedFunctionPrototypes
-    void
+    ScreenInfo */*screenInfo*/
 #endif
 );
 
@@ -184,7 +184,8 @@ extern int RegisterFPEFunctions(
     int (*/*start_lfwi_func*/)(),
     int (*/*next_lfwi_func*/)(),
     int (*/*wakeup_func*/)(),
-    int (*/*client_died*/)()
+    int (*/*client_died*/)(),
+    int (*/*load_glyphs*/)()
 #endif
 );
 
