@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $XConsortium: XConnDis.c,v 11.37 88/11/22 16:11:00 jim Exp $ */
+/* $XConsortium: XConnDis.c,v 11.38 88/11/23 11:38:02 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -27,16 +27,17 @@
 #endif /* UNIXCONN */
 void bcopy();
 
-static get_host_name (buf, maxlen)
+static int get_host_name (buf, maxlen)
     char *buf;
     int maxlen;
 {
+    int len;
+
 #ifdef hpux
     /*
      * same host name crock as in server and xinit.
      */
     struct utsname name;
-    int len;
 
     uname (&name);
     len = strlen (name.nodename);
@@ -47,8 +48,9 @@ static get_host_name (buf, maxlen)
     buf[0] = '\0';
     (void) gethostname (buf, maxlen);
     buf [maxlen - 1] = '\0';
+    len = strlen(buf);
 #endif /* hpux */
-    return;
+    return len;
 }
 
 
@@ -188,7 +190,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 #ifdef UNIXCONN
 		;	/* Do nothing if UNIX DOMAIN. Will be handled below. */
 #else
-	        get_host_name (displaybuf, sizeof displaybuf);
+	        (void) get_host_name (displaybuf, sizeof displaybuf);
 #endif /* UNIXCONN else TCPCONN (assumed) */
 
 #ifdef DNETCONN
@@ -256,8 +258,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		{
 		    char tmpbuf[1024];
 
-		    get_host_name (tmpbuf, sizeof tmpbuf);
-		    tmp_server_addrlen = strlen (tmpbuf);
+		    tmp_server_addrlen = get_host_name (tmpbuf, sizeof tmpbuf);
 		    tmp_server_addr = Xmalloc (tmp_server_addrlen + 1);
 		    if (!tmp_server_addr) {
 			if (tmp_dpy_num) Xfree (tmp_dpy_num);
@@ -329,6 +330,7 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		/* save address information */
 		{
 		    char *cp;
+		    char tmpbuf[1024];
 #if defined(CRAY) && defined(OLDTCP)
 		    tmp_server_addrlen = sizeof(inaddr.sin_addr);
 		    cp = (char *) &inaddr.sin_addr;
@@ -336,6 +338,20 @@ int _XConnectDisplay (display_name, expanded_name, prop_name, screen_num,
 		    tmp_server_addrlen = sizeof(inaddr.sin_addr.s_addr);
 		    cp = (char *) &inaddr.sin_addr.s_addr;
 #endif /* CRAY and OLDTCP */
+		    if ((tmp_server_addrlen == 4) &&
+			(cp[0] == 127) && (cp[1] == 0) &&
+			(cp[2] == 0) && (cp[3] == 1))
+		    {
+			/*
+			 * We are special casing the BSD hack localhost address
+			 * 127.0.0.1, since this address shouldn't be copied to
+			 * other machines.  So, we convert it to FamilyLocal.
+			 * This is a hack and is not part of the protocol
+			 */
+			tmpfamily = FamilyLocal;  /* 255 */
+			tmp_server_addrlen = get_host_name (tmpbuf, sizeof tmpbuf);
+			cp = tmpbuf;
+		    }
 		    tmp_server_addr = Xmalloc (tmp_server_addrlen);
 		    if (!tmp_server_addr) {
 			(void) close (fd);
