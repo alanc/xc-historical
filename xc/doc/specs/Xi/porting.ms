@@ -18,22 +18,44 @@ George Sachs\0\0\0\0Hewlett-Packard
 .ce 0
 .bp
 \0
-.sp 34
-.ps 14
-\fB\&Notice\fR
+.sp 10
 .ps 9
 .vs 11
 .LP
-Copyright \(co 1989, 1990, 1991 by Hewlett-Packard Company, and the 
-Massachusetts Institute of Technology.
+Copyright \(co 1989, 1990, 1991 by Hewlett-Packard Company
 .LP
 Permission to use, copy, modify, and distribute this documentation for
 any purpose and without fee is hereby granted, provided that the above
 copyright notice and this permission notice appear in all copies.
-MIT and Hewlett-Packard make no representations about the suitability 
+Hewlett-Packard makes no representations about the suitability 
 for any purpose of the information in this document.  It is provided "as is" 
 without express or implied warranty.  This document is only a draft standard
-of the MIT X Consortium and is therefore subject to change.
+of the X Consortium and is therefore subject to change.
+.sp 5
+Copyright \(co 1989, 1990, 1991 X Consortium
+.LP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
+.sp 3
+\fIX Window System\fP is a trademark of X Consortium, Inc.
 .bp 1
 .EH '\fBX Input Extension Porting Document\fP''\fBX11, Release 5\fP'
 .OH '\fBX Input Extension Porting Document\fP''\fBX11, Release 5\fP'

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fonts.h,v 1.2 91/10/10 11:18:09 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
- 
+
 /* STUB */
  
 #define   CopyFont(f)     f

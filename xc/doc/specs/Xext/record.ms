@@ -1,4 +1,4 @@
-.\" $XConsortium: record.ms,v 1.1 94/04/11 22:51:03 rws Exp $
+.\" $XConsortium: record.ms,v 1.3 94/04/11 23:05:57 rws Exp $
 .\" Use tbl, -ms and macros.t
 .\" -----------------------------------------------
 .de Ip
@@ -107,8 +107,7 @@ July  1991
 \fIXTest Extension Recording Specification\fP, Yochanan Slonim, 
 Mercury Interactive, December 1992
 .FS
-1. X Window System is a trademark of the Massachusetts Institute of
-Technology.
+1. \fIX Window System\fP is a trademark of X Consortium, Inc.
 .FE
 .LP
 This document both unifies and extends the previous diverse approaches to 

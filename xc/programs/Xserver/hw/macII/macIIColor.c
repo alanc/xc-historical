@@ -35,10 +35,10 @@ software  and  its documentation for any purpose and without
 fee is hereby granted, provided that the above copyright no-
 tice  appear  in all copies and that both that copyright no-
 tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
+mentation,  and  that the name of Sun not be used in
 advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
+software  without specific prior written permission. Sun
+makes no representations about the suitability of this
 software for any purpose. It is provided "as is" without any
 express or implied warranty.
 

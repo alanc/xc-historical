@@ -5,7 +5,7 @@
 
 \s+1\fBVersion 2.1\fP\s-1
 
-MIT X Consortium Standard
+X Consortium Standard
 
 X Version 11, Release 5
 .sp 3

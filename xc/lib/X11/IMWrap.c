@@ -1,9 +1,8 @@
 /*
- * $XConsortium: IMWrap.c,v 11.8 94/01/20 18:02:05 rws Exp $
+ * $XConsortium: IMWrap.c,v 11.9 94/03/26 16:57:04 rws Exp $
  */
 
 /*
- * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993, 1994 by the Sony Corporation
  *
@@ -11,17 +10,17 @@
  * documentation for any purpose is hereby granted without fee, provided that
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the names of Open Software Foundation, M.I.T. and
+ * documentation, and that the names of Open Software Foundation and
  * Sony Corporation not be used in advertising or publicity pertaining to 
  * distribution of the software without specific, written prior permission.  
- * Open Software Foundation, M.I.T. and Sony Corporation make no 
+ * Open Software Foundation and Sony Corporation make no 
  * representations about the suitability of this software for any purpose.  
  * It is provided "as is" without express or implied warranty.
  *
- * OPEN SOFTWARE FOUNDATION, M.I.T. AND SONY CORPORATION DISCLAIM ALL
+ * OPEN SOFTWARE FOUNDATION AND SONY CORPORATION DISCLAIM ALL
  * WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL OPEN
- * SOFTWARE FOUNDATIONN, M.I.T. OR SONY CORPORATION BE LIABLE FOR ANY SPECIAL,
+ * SOFTWARE FOUNDATIONN OR SONY CORPORATION BE LIABLE FOR ANY SPECIAL,
  * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
  * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
  * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
@@ -30,6 +29,35 @@
  *		 M. Collins		OSF  
  *               Makoto Wakamatsu       Sony Corporation
  */				
+/*
+
+Copyright (c) 1991  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+
+*/
 
 #include "Xlibint.h"
 #include "Xlcint.h"

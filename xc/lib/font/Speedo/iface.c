@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: iface.c,v 1.2 91/05/11 09:49:30 rws Exp $ */
 
 /*
 
@@ -21,8 +21,6 @@ INCIDENTAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF OR IN ANY WAY CONNECTED
 WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 
 */
-
-
 
 /***************************** I F A C E . C *********************************
  *                                                                           *

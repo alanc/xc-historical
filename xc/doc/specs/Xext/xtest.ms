@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.7 92/12/17 17:29:54 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.8 94/04/11 23:11:14 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -23,18 +23,44 @@ X Consortium Standard
 \s-1Kieron Drake
 .sp 6p
 UniSoft Ltd.\s+1
+.bp
+.sp 10
 .ps 9
 .nr PS 9
 .sp 8
 .lP
-Copyright \(co 1992 by the Massachusetts Institute of Technology and UniSoft Group Ltd.
+Copyright \(co 1992 by UniSoft Group Ltd.
 .lP
 Permission to use, copy, modify, and distribute this documentation for any
 purpose and without fee is hereby granted, provided that the above copyright
-notice and this permission notice appear in all copies.  MIT and UniSoft make no
+notice and this permission notice appear in all copies.  UniSoft makes no
 representations about the suitability for any purpose of the information in
 this document.  This documentation is provided ``as is'' without express or
 implied warranty.
+.lP
+.sp 5
+Copyright \(co 1992, 1994 X Consortium
+.lP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.lP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.lP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.lP
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
 .ps 10
 .nr PS 10
 .bp 1

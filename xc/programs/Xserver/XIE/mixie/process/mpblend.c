@@ -1,9 +1,34 @@
-/* $XConsortium: mpblend.c,v 1.3 93/11/06 15:38:47 rws Exp $ */
+/* $XConsortium: mpblend.c,v 1.4 94/01/12 20:21:42 rws Exp $ */
 /**** module mpblend.c ****/
 /******************************************************************************
+
+Copyright (c) 1993, 1994  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
+
+
 				NOTICE
                               
-This software is being provided by AGE Logic, Inc. and MIT under the
+This software is being provided by AGE Logic, Inc. under the
 following license.  By obtaining, using and/or copying this software,
 you agree that you have read, understood, and will comply with these
 terms and conditions:
@@ -16,27 +41,26 @@ terms and conditions:
      the disclaimer, and that the same appears on all copies and
      derivative works of the software and documentation you make.
      
-     "Copyright 1993, 1994 by AGE Logic, Inc. and the Massachusetts
-     Institute of Technology"
+     "Copyright 1993, 1994 by AGE Logic, Inc."
      
-     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC AND MIT MAKE NO
+     THIS SOFTWARE IS PROVIDED "AS IS".  AGE LOGIC MAKES NO
      REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED.  By way of
-     example, but not limitation, AGE LOGIC AND MIT MAKE NO
+     example, but not limitation, AGE LOGIC MAKE NO
      REPRESENTATIONS OR WARRANTIES OF MERCHANTABILITY OR FITNESS
      FOR ANY PARTICULAR PURPOSE OR THAT THE SOFTWARE DOES NOT
-     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC AND MIT
+     INFRINGE THIRD-PARTY PROPRIETARY RIGHTS.  AGE LOGIC 
      SHALL BEAR NO LIABILITY FOR ANY USE OF THIS SOFTWARE.  IN NO
      EVENT SHALL EITHER PARTY BE LIABLE FOR ANY INDIRECT,
      INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS
      OF PROFITS, REVENUE, DATA OR USE, INCURRED BY EITHER PARTY OR
      ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT OR
-     BASED ON A WARRANTY, EVEN IF AGE LOGIC OR MIT OR LICENSEES
+     BASED ON A WARRANTY, EVEN IF AGE LOGIC LICENSEES
      HEREUNDER HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
      DAMAGES.
     
-     The names of AGE Logic, Inc. and MIT may not be used in
+     The name of AGE Logic, Inc. may not be used in
      advertising or publicity pertaining to this software without
-     specific, written prior permission from AGE Logic and MIT.
+     specific, written prior permission from AGE Logic.
 
      Title to this software shall at all times remain with AGE
      Logic, Inc.

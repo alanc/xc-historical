@@ -1,11 +1,37 @@
+/* $XConsortium: Xlcint.h,v 11.18 94/03/29 22:51:15 rws Exp $ */
 /*
- * $XConsortium: Xlcint.h,v 11.16 94/01/20 18:03:26 rws Exp $
- */
+
+Copyright (c) 1991  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+
+*/
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
  *                      and Nippon Telegraph and Telephone Corporation
- * Copyright 1991 by the Massachusetts Institute of Technology
  * Copyright 1991 by the Open Software Foundation
  * Copyright 1993 by the TOSHIBA Corp.
  * Copyright 1993, 1994 by the Sony Corporation
@@ -16,17 +42,17 @@
  * the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of OMRON, NTT Software, NTT, Open
- * Software Foundation, M.I.T. and Sony Corporation not be used in advertising
+ * Software Foundation, and Sony Corporation not be used in advertising
  * or publicity pertaining to distribution of the software without specific, 
  * written prior permission. OMRON, NTT Software, NTT, Open Software
- * Foundation, M.I.T. and Sony Corporation  make no representations about the 
+ * Foundation, and Sony Corporation  make no representations about the 
  * suitability of this software for any purpose.  It is provided "as is" 
  * without express or implied warranty.
  *
- * OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATION, M.I.T. AND SONY 
+ * OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATION, AND SONY 
  * CORPORATION DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING 
  * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT 
- * SHALL OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATIONN, M.I.T. OR SONY 
+ * SHALL OMRON, NTT SOFTWARE, NTT, OPEN SOFTWARE FOUNDATION, OR SONY 
  * CORPORATION BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
  * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT 

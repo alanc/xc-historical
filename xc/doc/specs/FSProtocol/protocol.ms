@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.11 93/12/28 14:31:16 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.12 94/04/13 19:23:19 rws Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -12,7 +12,7 @@
 \s+3\fBThe X Font Service Protocol\fP\s-3
 .sp
 \fBVersion 2.0\fP
-\fBMIT X Consortium Standard\fR
+\fBX Consortium Standard\fR
 .sp
 \fBX Version 11, Release 6\fR
 .sp 6
@@ -35,6 +35,29 @@ notice appear in all copies.  Network Computing Devices, Inc.
 makes no representations about the suitability for any purpose
 of the information in this document.  This documentation is
 provided ``as is'' without express or implied warranty.
+.LP
+Copyright \(co 1994 X Consortium
+.LP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
 .ps 11
 .nr PS 11
 .bp 1
@@ -51,8 +74,7 @@ Introduction
 The management of fonts in large, heterogeneous environments is one of the
 hardest aspects of using the X Window System.*
 .FS
-*X Window System is a trademark of the Massachusetts Institute of 
-Technology.
+* \fIX Window System\fP is a trademark of X Consortium, Inc.
 .FE
 Multiple formats and the lack of
 a consistent mechanism for exporting font data to all displays on a network

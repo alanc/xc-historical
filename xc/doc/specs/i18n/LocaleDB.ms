@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: LocaleDB.ms,v 1.1 94/04/08 23:39:47 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -17,19 +17,15 @@
 Yoshio Horiuchi
 .AI
 IBM Japan
-.ce 0
+.LP
+.bp
 .br
 \&
 .ps 9
 .nr PS 9
-.sp 8
+.sp 10
 .LP
-.DS C
-X Window System is a trademark of M.I.T.
-.sp
-Copyright IBM Corporation 1994
-.DE
-.sp 3
+Copyright \(co IBM Corporation 1994
 .LP
 All Rights Reserved
 .LP
@@ -49,6 +45,31 @@ ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
+.sp 5
+Copyright \(co 1994 X Consortium
+.LP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
+.sp 3
+\fIX Window System\fP is a trademark of X Consortium, Inc.
 .LP
 .bp 1
 .ps 11
@@ -382,7 +403,7 @@ The following is sample X Locale Database file.
 .sp
 .RS
 .nf
-#  $XConsortium: ja,v 1.2 93/09/17 16:29:58 rws Exp $
+#  $XConsortium: LocaleDB.ms,v 1.1 94/04/08 23:39:47 rws Exp $
 #  XLocale Database Sample for ja_JP.euc 
 # 
 

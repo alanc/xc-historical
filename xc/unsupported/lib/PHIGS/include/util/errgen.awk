@@ -1,5 +1,5 @@
 ##
-# $XConsortium: errgen.awk,v 5.2 91/02/16 09:49:25 rws Exp $
+# $XConsortium: errgen.awk,v 5.3 91/03/26 14:45:46 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -10,8 +10,8 @@
 ## documentation for any purpose and without fee is hereby granted, 
 ## provided that the above copyright notice appear in all copies and that
 ## both that copyright notice and this permission notice appear in 
-## supporting documentation, and that the names of Sun Microsystems,
-## the X Consortium, and MIT not be used in advertising or publicity 
+## supporting documentation, and that the names of Sun Microsystems
+## and the X Consortium not be used in advertising or publicity 
 ## pertaining to distribution of the software without specific, written 
 ## prior permission.  
 ## 

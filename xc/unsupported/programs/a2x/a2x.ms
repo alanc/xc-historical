@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.45 94/02/10 12:25:33 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.46 94/02/13 13:40:10 rws Exp $
 .de Ds
 .RS
 .nf
@@ -28,17 +28,6 @@ MIT X Consortium
 .nr PS 9
 .sp 10
 .LP
-Copyright \(co 1992 by the Massachusetts Institute of Technology
-.LP
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that the
-above copyright notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting documentation, and that
-the name of M.I.T. not be used in advertising or publicity pertaining to
-distribution of the software without specific, written prior permission.
-M.I.T. makes no representations about the suitability of this software for any
-purpose.  It is provided "as is" without express or implied warranty.
-.sp 5
 .nf
 DragonDictate is a trademark of Dragon Systems, Inc.
 X Window System is a trademark of the Massachusetts Institute of Technology
@@ -65,8 +54,9 @@ Digital Equipment Corp., and public versions are available for both R4 and R5.
 The XTestExtension1 extension was originally developed for an old test suite
 done by an informal group known as the X Testing Consortium; the client-side
 library and some device-independent code exists in both the R4 and R5 core
-distributions, but only a couple sample servers (HP and X386) in the MIT
-distribution supports the extension (some product servers might though).
+distributions, but only a couple sample servers (HP and X386) in the X 
+Consortium distribution supports the extension (some product servers might 
+though).
 .LP
 \fBa2x\fP was originally written for the XTEST extension, but both DEC-XTRAP
 and XTestExtension1 should also work.  The main difference as far as \fBa2x\fP

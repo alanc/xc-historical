@@ -1,25 +1,29 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mergelib.cpp,v 1.2 89/10/17 12:09:30 jim Exp $
+XCOMM $XConsortium: mergelib.cpp,v 1.3 91/08/22 11:08:08 rws Exp $
 XCOMM 
-XCOMM Copyright 1989 Massachusetts Institute of Technology
+XCOMM Copyright (c) 1989  X Consortium
 XCOMM 
-XCOMM Permission to use, copy, modify, distribute, and sell this software and its
-XCOMM documentation for any purpose is hereby granted without fee, provided that
-XCOMM the above copyright notice appear in all copies and that both that
-XCOMM copyright notice and this permission notice appear in supporting
-XCOMM documentation, and that the name of M.I.T. not be used in advertising or
-XCOMM publicity pertaining to distribution of the software without specific,
-XCOMM written prior permission.  M.I.T. makes no representations about the
-XCOMM suitability of this software for any purpose.  It is provided "as is"
-XCOMM without express or implied warranty.
+XCOMM Permission is hereby granted, free of charge, to any person obtaining a copy
+XCOMM of this software and associated documentation files (the "Software"), to deal
+XCOMM in the Software without restriction, including without limitation the rights
+XCOMM to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+XCOMM copies of the Software, and to permit persons to whom the Software is
+XCOMM furnished to do so, subject to the following conditions:
 XCOMM 
-XCOMM M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
-XCOMM IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
-XCOMM BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-XCOMM WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
-XCOMM OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
-XCOMM CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+XCOMM The above copyright notice and this permission notice shall be included in
+XCOMM all copies or substantial portions of the Software.
+XCOMM 
+XCOMM THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+XCOMM IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+XCOMM FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+XCOMM X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+XCOMM AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+XCOMM CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+XCOMM 
+XCOMM Except as contained in this notice, the name of the X Consortium shall not be
+XCOMM used in advertising or otherwise to promote the sale, use or other dealings
+XCOMM in this Software without prior written authorization from the X Consortium.
 XCOMM 
 XCOMM Author:  Jim Fulton, MIT X Consortium
 XCOMM 

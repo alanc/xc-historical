@@ -1,18 +1,31 @@
-/* $XConsortium: lndir.c,v 1.11 94/01/18 21:02:22 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.12 94/03/27 01:24:41 rws Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
-/* Copyright 1990, Massachusetts Institute of Technology
+/* 
+Copyright (c) 1990,  X Consortium
 
-   Permission to use, copy, modify, and distribute this program for any purpose
-   and without fee is hereby granted, provided that this copyright and
-   permission notice appear on all copies and supporting documentation, that
-   the name of MIT not be used in advertising or publicity pertaining to
-   distribution of this program without specific prior permission, and that
-   notice be given in supporting documentation that copying and distribution is
-   by permission of MIT.  MIT makes no representations about the suitability of
-   this software for any purpose.  It is provided "as is" without expressed or
-   implied warranty.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the X Consortium.
+
 */
 
 /* From the original /bin/sh script:

@@ -1,10 +1,38 @@
-/* $XConsortium: xpr.c,v 1.56 93/09/13 12:12:16 rws Exp $ */
+/* $XConsortium: xpr.c,v 1.57 93/12/11 17:58:15 rws Exp $ */
+/*
+
+Copyright (c) 1985  X Consortium
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+
+*/
 
 /*
  * XPR - process xwd(1) files for various printers
  *
  * Author: Michael R. Gretzinger, MIT Project Athena
- * Copyright (C) 1985, Massachusetts Institute of Technology
  *
  * Modified by Marvin Solomon, Univeristy of Wisconsin, to handle Apple
  * Laserwriter (PostScript) devices (-device ps).

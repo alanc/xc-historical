@@ -103,8 +103,7 @@ without specific,  written prior permission.  Sun Microsystems,  Inc. makes no
 representations about the suitability of the software described herein for
 any purpose.  It is provided "as is" without express or implied warranty.
 .br
-\(dg  The X Window System is a trademark of the Massachusetts Institute
-of Technology.
+\(dg  The X Window System is a trademark of the X Consortium.
 .br
 This paper was originally presented at the Summer 1988 Usenix Conference.
 There were some errors in this version,

@@ -5,13 +5,13 @@
  * its documentation for any purpose is hereby granted without fee,
  * provided that the above copyright notice appear in all copies and that
  * both that copyright notice and this permission notice appear in
- * supporting documentation, and that the names of HP, MIT, and UniSoft not be
+ * supporting documentation, and that the names of HP, and UniSoft not be
  * used in advertising or publicity pertaining to distribution of the
- * software without specific, written prior permission.  HP, MIT, and UniSoft
+ * software without specific, written prior permission.  HP and UniSoft
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: XInput.c,v 1.3 94/04/12 21:42:50 rws Exp $
  */
 #include <stdio.h>
 #include "extensions/XIproto.h"

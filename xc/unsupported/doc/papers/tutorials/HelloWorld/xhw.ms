@@ -125,8 +125,7 @@ A more correct,  ANSI C version is shown in the appendix.
 Various versions of the \*(Hw koan for Version 11 of the
 X Window System\s-2\u*\d\s0
 .FS
-The X Window System is a trademark of the Massachusetts Institute of
-Technology.
+The X Window System is a trademark of the X Consortium.
 .FE
 are examined.
 They provide a guide to writing correct programs for X11,

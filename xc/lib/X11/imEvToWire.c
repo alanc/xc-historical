@@ -1,4 +1,4 @@
-/* $XConsortium: imEvToWire.c,v 1.2 93/09/18 11:00:51 rws Exp $ */
+/* $XConsortium: imEvToWire.c,v 1.3 94/01/20 18:04:21 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 
@@ -8,7 +8,7 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, 
 provided that the above copyright notice appear in all copies and that
 both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
+supporting documentation, and that the name of Digital not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  
 

@@ -37,7 +37,7 @@
 .sp 2
 .sp 8
 .sp .5
-The X Window System is a trademark of MIT.
+The X Window System is a trademark of the X Consortium.
 .sp .5
 Copyright \(co 1990  O'Reilly and Associates, Inc.
 .sp .5
@@ -1964,7 +1964,7 @@ intensity = (.30 * red) + (.59 * green) + (.11 * blue)
 .fi
 .sp .5
 .Nd 3
-MIT's implementations use a least-squares algorithm that determines
+The X Consortium's implementations use a least-squares algorithm that determines
 the closest RGB values in the (gray) colormap to the RGB values specified.  
 Exactly what algorithm is used is up to the server implementor.
 .IP \s+4\f(HB7.7\fR\s-4  6n

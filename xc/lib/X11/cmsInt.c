@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.10 92/06/04 16:25:23 converse Exp $" */
+/* $XConsortium: cmsInt.c,v 1.11 93/09/07 21:32:59 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -34,7 +34,6 @@
  *
  *
  */
-
 
 /* #define NEED_EVENTS */
 #include <stdio.h>
