@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.18 87/10/29 00:04:08 joel BL5 $
+* $Header: Atoms.h,v 1.18 87/11/11 12:07:37 swick Locked $
 */
 
 /*
@@ -48,7 +48,6 @@
 #define XtNfont			"font"
 #define XtNforceBars		"forceBars"
 #define XtNforeground		"foreground"
-#define XtNfunction		"function"
 #define XtNheight		"height"
 #define XtNhSpace		"hSpace"
 #define XtNindex		"index"
@@ -71,7 +70,6 @@
 #define XtNname			"name"
 #define XtNnotify		"notify"
 #define XtNorientation		"orientation"
-#define XtNparameter		"parameter"
 #define XtNreverseVideo		"reverseVideo"
 #define XtNscrollProc		"scrollProc"
 #define XtNscrollDCursor	"scrollDownCursor"
@@ -125,7 +123,6 @@
 #define XtCFont			"Font"
 #define XtCForeground		"Foreground"
 #define XtCFraction		"Fraction"
-#define XtCFunction		"Function"
 #define XtCHeight		"Height"
 #define XtCHighlight		"Highlight"
 #define XtCHSpace		"HSpace"
@@ -145,7 +142,6 @@
 #define XtCOff			"Off"
 #define XtCOn			"On"
 #define XtCOrientation		"Orientation"
-#define XtCParameter		"Parameter"
 #define XtCPixmap		"Pixmap"
 #define XtCPosition		"Position"
 #define XtCScrollProc		"ScrollProc"
@@ -194,7 +190,6 @@
 #define XtRFloat		XrmRFloat
 #define XtRFont			XrmRFont
 #define XtRFontStruct		XrmRFontStruct
-#define XtRFunction		"Function"
 #define XtRJustify		"Justify"
 #define XtRGeometry		XrmRGeometry
 #define XtRInt			XrmRInt
