@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 5.5 89/07/26 12:13:44 rws Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 5.6 89/10/06 19:10:29 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -105,6 +105,9 @@ typedef struct kbPrivate {
 } KbPrivRec, *KbPrivPtr;
 
 #define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
+#ifndef KB_SUN4
+#define KB_SUN4		0x04	/* Type 4 Sun keyboard */
+#endif
 
 /*
  * Data private to any sun pointer device.
@@ -112,7 +115,7 @@ typedef struct kbPrivate {
  *	    keyboard fields of the same name.
  *	pScreen is the screen the pointer is on (only valid if it is the
  *	    main pointer device).
- *	x and y are absolute coordinates on that screen (they may be negative)
+ *	dx and dy are relative coordinates on that screen (they may be negative)
  */
 typedef struct ptrPrivate {
     int	    	  fd;	    	    	/* Descriptor to device */
@@ -207,6 +210,10 @@ extern sunFbDataRec sunFbData[];
  * Cursor functions
  */
 extern void 	  sunInitCursor();
+#ifdef SUN_WINDOWS
+extern Bool	  sunSetCursorPosition();
+extern Bool	  (*realSetCursorPosition)();
+#endif
 
 /*
  * Initialization
