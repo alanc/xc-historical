@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.51 89/10/11 11:52:25 jim Exp $
+ * $XConsortium: screen.c,v 2.52 89/11/14 17:56:15 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -195,8 +195,8 @@ Scrn scrn;
     ButtonBox		buttonbox;
     char		*name;
     static XawTextSelectType sarray[] = {XawselectLine,
-					XawselectAll,
 					XawselectPosition,
+					XawselectAll,
 					XawselectNull};
     static Arg args[] = {
 	{ XtNselectTypes,	(XtArgVal) sarray},
@@ -228,7 +228,7 @@ Scrn scrn;
     buttonbox = scrn->folderbuttons;
     for (i=0 ; i<numFolders ; i++) {
 	name = TocName(folderList[i]);
-	if (numScrns == 1 || (! IsSubfolder(name)))
+	if (! IsSubfolder(name))
 	    BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
     }
 
@@ -236,8 +236,8 @@ Scrn scrn;
 
     if (app_resources.command_button_count > 0) {
 	char	name[30];
-	if (app_resources.command_button_count > 1000)
-	    app_resources.command_button_count = 1000;
+	if (app_resources.command_button_count > 500)
+	    app_resources.command_button_count = 500;
 	for (i=1; i <= app_resources.command_button_count; i++) {
 	    sprintf(name, "button%d", i);
 	    BBoxAddButton(scrn->miscbuttons, name, commandWidgetClass, True);
@@ -397,11 +397,13 @@ void ScreenSetAssocMsg(scrn, msg)
 void DestroyScrn(scrn)
   Scrn scrn;
 {
-    XtPopdown(scrn->parent);		/* cannot popdown the first one? */
-    TocSetScrn((Toc) NULL, scrn);
-    MsgSetScrnForce((Msg) NULL, scrn);
-    scrn->mapped = FALSE;
-    lastInput.win = -1;
+    if (scrn->mapped) {
+	scrn->mapped = False;
+	XtPopdown(scrn->parent);	/* cannot popdown the first one? */
+	TocSetScrn((Toc) NULL, scrn);
+	MsgSetScrnForce((Msg) NULL, scrn);
+	lastInput.win = -1;
+    }
 }
 
 
@@ -459,7 +461,6 @@ Scrn scrn;
     int value, changed, reapable;
     Button	button;
 
-    DEBUG("EnbleProperButtons\n")
     if (scrn) {
 	switch (scrn->kind) {
 	  case STtocAndView:
