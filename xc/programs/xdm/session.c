@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.45 91/02/13 19:13:48 rws Exp $
+ * $XConsortium: session.c,v 1.46 91/02/28 09:37:43 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -513,6 +513,7 @@ char			*file;
 	}
 	ret = runAndWait (args, environ);
 	freeArgs (args);
+	return ret;
     }
     return 0;
 }
