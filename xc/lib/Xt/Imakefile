@@ -28,7 +28,6 @@ HEADERS = \
 	Quarks.h \
 	RectObj.h \
 	RectObjP.h \
-	Selection.h \
 	Shell.h \
 	ShellP.h \
 	StringDefs.h \
@@ -54,6 +53,7 @@ SRCS = \
 	Functions.c \
 	GCManager.c \
 	Geometry.c \
+	GetActKey.c \
 	Initialize.c \
 	Intrinsic.c \
 	Manage.c \
@@ -71,9 +71,11 @@ SRCS = \
 	sharedlib.c
 
 OBJS = \
+	ActionHook.o \
 	Alloc.o \
 	ArgList.o \
 	Callback.o \
+	ClickTime.o \
 	Composite.o \
 	Constraint.o \
 	Convert.o \
@@ -87,6 +89,7 @@ OBJS = \
 	Functions.o \
 	GCManager.o \
 	Geometry.o \
+	GetActKey.o \
 	Initialize.o \
 	Intrinsic.o \
 	Manage.o \
