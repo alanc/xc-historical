@@ -17,7 +17,7 @@ DISPLAY:
 	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
 AREA:
-	[e.g. Xlib, xterm, uwm, server, ...]
+	[e.g. Xlib, xterm, uwm, server, doc, config, ...]
 
 SYNOPSIS:
 	[Brief description of the problem and where it is located.]
