@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.9 91/07/05 10:56:00 rws Exp $ */
+/* $XConsortium: maskbits.c,v 1.10 91/07/09 16:11:02 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -889,10 +889,12 @@ screen position).
 is a screen posiotion.)
 */
 
+#define _1_ ((unsigned long)1)
+
 #if (BITMAP_BIT_ORDER == MSBFirst)
 unsigned int mask[] =
     {
-    LONG2CHARS( 1<<31 ), LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<29 ), 
+    LONG2CHARS( _1_<<31 ), LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<29 ), 
     LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<26 ), 
     LONG2CHARS( 1<<25 ), LONG2CHARS( 1<<24 ), LONG2CHARS( 1<<23 ), 
     LONG2CHARS( 1<<22 ), LONG2CHARS( 1<<21 ), LONG2CHARS( 1<<20 ), 
@@ -906,7 +908,7 @@ unsigned int mask[] =
     }; 
 unsigned int rmask[] = 
     {
-    0xffffffff ^ LONG2CHARS( 1<<31 ), 0xffffffff ^ LONG2CHARS( 1<<30 ), 
+    0xffffffff ^ LONG2CHARS( _1_<<31 ), 0xffffffff ^ LONG2CHARS( 1<<30 ), 
     0xffffffff ^ LONG2CHARS( 1<<29 ), 0xffffffff ^ LONG2CHARS( 1<<28), 
     0xffffffff ^ LONG2CHARS( 1<<27 ), 0xffffffff ^ LONG2CHARS( 1<<26),
     0xffffffff ^ LONG2CHARS( 1<<25 ), 0xffffffff ^ LONG2CHARS( 1<<24 ), 
@@ -936,7 +938,7 @@ unsigned int mask[] =
     LONG2CHARS( 1<<21 ), LONG2CHARS( 1<<22 ), LONG2CHARS( 1<<23),
     LONG2CHARS( 1<<24 ), LONG2CHARS( 1<<25 ), LONG2CHARS( 1<<26), 
     LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<29), 
-    LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<31 )
+    LONG2CHARS( 1<<30 ), LONG2CHARS( _1_<<31 )
     }; 
 unsigned int rmask[] = 
     {
@@ -955,10 +957,11 @@ unsigned int rmask[] =
     0xffffffff ^ LONG2CHARS( 1<<24), 0xffffffff ^ LONG2CHARS( 1<<25), 
     0xffffffff ^ LONG2CHARS( 1<<26), 0xffffffff ^ LONG2CHARS( 1<<27), 
     0xffffffff ^ LONG2CHARS( 1<<28), 0xffffffff ^ LONG2CHARS( 1<<29),
-    0xffffffff ^ LONG2CHARS( 1<<30), 0xffffffff ^ LONG2CHARS( 1<<31)
+    0xffffffff ^ LONG2CHARS( 1<<30), 0xffffffff ^ LONG2CHARS( _1_<<31)
     };
 #endif
 
+#undef _1_
 
 /*
  * Merge raster ops for full src + dest + plane mask
