@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.180 93/09/04 15:59:39 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -64,12 +64,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
 #endif
 #ifndef BuildXIE
 #define BuildXIE		YES
-#endif
-#ifndef BuildScreenSaverExt
-#define BuildScreenSaverExt	NO	/* not released yet */
-#endif
-#ifndef BuildScreenSaverLib
-#define BuildScreenSaverLib	NO	/* not released yet */
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
@@ -167,13 +161,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
 #define XInputDefines /**/
 #endif
 #endif
-#ifndef ScreenSaverDefines
-#if BuildScreenSaverExt
-#define ScreenSaverDefines -DSCREENSAVER
-#else
-#define ScreenSaverDefines /**/
-#endif
-#endif
 #ifndef XIEdefines
 #if BuildXIE
 #define XIEdefines -DXIE
@@ -182,7 +169,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.173 93/08/23 19:44:54 rws Exp $
 #endif
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DSYNC PexDefines ShmDefines XInputDefines ScreenSaverDefines XIEdefines
+#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DSYNC -DSCREENSAVER PexDefines ShmDefines XInputDefines XIEdefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
