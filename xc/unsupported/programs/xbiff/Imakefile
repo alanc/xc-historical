@@ -1,4 +1,4 @@
-       INCLUDES = -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I$(TOP)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xbiff.c
