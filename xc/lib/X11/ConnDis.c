@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.63 89/11/11 16:51:30 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.64 89/11/14 16:21:03 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -670,6 +670,7 @@ int _XDisconnectDisplay (server)
 
 {
     (void) close(server);
+    return 0;
 }
 
 
