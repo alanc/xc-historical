@@ -15,7 +15,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: SendXIReq.c,v 1.8 94/01/29 15:15:01 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -43,16 +43,16 @@
  */
 
 /*
- *	$Header: SendXIReq.c,v 1.2 93/04/13 14:42:57 gms Exp $
+ *	$Header: SendXIReq.c,v 1.8 94/01/29 15:15:01 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: SendXIReq.c,v 1.2 93/04/13 14:42:57 gms Exp $";
+static char rcsid[]="$Header: SendXIReq.c,v 1.8 94/01/29 15:15:01 rws Exp $";
 #endif
 
 #include "XstlibInt.h"
-#include "XI.h"
-#include "XIproto.h"
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XIproto.h>
 #include "DataMove.h"
 
 void _Send_XInput_Req();
