@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.7 94/02/03 18:48:37 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.8 94/02/04 21:23:17 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1521,14 +1521,14 @@ _XkbReadGetCompatMapReply(dpy,rep,xkb)
 	XkbSymInterpretRec *syms;
 	int lastSym= rep->firstSym+rep->nSyms-1;
 	if (xkb->compat->nSymInterpret==0) {
-	    syms=Xcalloc(xkb->compat->nSymInterpret,sizeof(XkbSymInterpretRec));
+	    syms=(XkbSymInterpretRec *)Xcalloc(xkb->compat->nSymInterpret,sizeof(XkbSymInterpretRec));
 	    if (!syms)
 		return False;	
 	    xkb->compat->nSymInterpret= lastSym+1;
 	    xkb->compat->symInterpret= syms;
 	}
 	else if (lastSym>=(int)xkb->compat->nSymInterpret) {
-	    syms= Xcalloc(lastSym+1,sizeof(XkbSymInterpretRec));
+	    syms= (XkbSymInterpretRec *)Xcalloc(lastSym+1,sizeof(XkbSymInterpretRec));
 	    if (!syms)
 		return False;
 	    if (xkb->compat->symInterpret) {
