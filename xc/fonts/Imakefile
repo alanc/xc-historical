@@ -21,9 +21,6 @@ InstallMultiple($(HEADERS),$(INCDIR))
  * InstallMultiple(snf/?*.snf,$(FONTDIR))
  */
 
-install::
-	-mkdir $(FONTDIR)
-
 install:: fonts
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
 	cd snf; \
