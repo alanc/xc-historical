@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsTrig.c,v 1.4 91/11/05 11:02:20 rws Exp $" */
+/* $XConsortium: cmsTrig.c,v 1.5 92/11/19 14:59:55 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -86,8 +86,12 @@ double _XcmsArcTangent();
 #define XCMS_FABS(x)		((x) < 0.0 ? -(x) : (x))
 
 /* XCMS_DMAXPOWTWO - largest power of two exactly representable as a double */
+#ifdef _CRAY
+#define XCMS_DMAXPOWTWO	((double)(1 < 47))
+#else
 #define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
 	    (1L << (XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(long) + 1))
+#endif
 
 /*
  *	LOCAL VARIABLES
