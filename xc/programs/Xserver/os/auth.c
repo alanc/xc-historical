@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.7 89/11/08 17:19:34 keith Exp $
+ * $XConsortium: auth.c,v 1.8 89/12/13 14:42:27 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -47,6 +47,14 @@ extern XID  XdmToID ();
 extern int  XdmFromID (), XdmRemoveCookie ();
 #endif
 
+#ifdef SECURE_RPC
+extern int  SecureRPCAdd();
+extern XID  SecureRPCCheck();
+extern int  SecureRPCReset();
+extern XID  SecureRPCToID();
+extern int  SecureRPCFromID(), SecureRPCRemove();
+#endif
+
 static struct protocol   protocols[] = {
 {   (unsigned short) 18,    "MIT-MAGIC-COOKIE-1",
 		MitAddCookie,	MitCheckCookie,	MitResetCookie,
@@ -56,6 +64,12 @@ static struct protocol   protocols[] = {
 {   (unsigned short) 19,    "XDM-AUTHORIZATION-1",
 		XdmAddCookie,	XdmCheckCookie,	XdmResetCookie,
 		XdmToID,	XdmFromID,	XdmRemoveCookie,
+},
+#endif
+#ifdef SECURE_RPC
+{   (unsigned short) 10,    "SECURE-RPC",
+		SecureRPCAdd,	SecureRPCCheck,	SecureRPCReset,
+		SecureRPCToID,	SecureRPCFromID,SecureRPCRemove,
 },
 #endif
 };

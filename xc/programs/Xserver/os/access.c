@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.43 89/11/12 13:12:43 rws Exp $ */
+/* $XConsortium: access.c,v 1.44 89/11/12 15:38:59 rws Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -32,6 +32,9 @@ SOFTWARE.
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#ifdef SECURE_RPC
+#include <X11/Xauth.h>
+#endif
 
 #ifdef hpux
 # include <sys/utsname.h>
@@ -497,6 +500,10 @@ AddHost (client, family, length, pAddr)
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
+#ifdef SECURE_RPC
+    if (family == FamilySecureRPC)
+	return AddNetName(family, length, pAddr);
+#endif
     unixFamily = UnixFamily(family);
     if (unixFamily < 0)
     {
@@ -565,6 +572,10 @@ RemoveHost (client, family, length, pAddr)
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
+#ifdef SECURE_RPC
+    if (family == FamilySecureRPC)
+	return RemoveNetName(family, length, pAddr);
+#endif
     unixFamily = UnixFamily(family);
     if (unixFamily < 0)
     {
