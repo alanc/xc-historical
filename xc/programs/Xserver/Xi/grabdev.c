@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdev.c,v 1.10 90/05/18 15:32:29 rws Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.11 92/11/14 10:47:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -160,6 +160,11 @@ CreateMaskFromList (client, list, count, mask, dev, req)
     for (i=0; i<count; i++, list++)
 	{
 	device = *list >> 8;
+	if (device > 255)
+	    {
+	    SendErrorToClient(client, IReqCode, req, 0, BadClass);
+	    return BadClass;
+	    }
 	tdev = LookupDeviceIntRec (device);
 	if (tdev==NULL || (dev != NULL && tdev != dev))
 	    {
