@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontaccel.c,v 1.1 91/02/22 15:42:38 keith Exp $
+ * $XConsortium: fontaccel.c,v 1.1 91/05/10 16:51:50 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/X.h>
-#include    <X11/Xproto.h>
 #include    "fontmisc.h"
 #include    "fontstruct.h"
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: atom.c,v 1.3 91/02/23 13:37:17 keith Exp $
+ * $XConsortium: atom.c,v 1.1 91/05/10 16:51:47 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -25,9 +25,6 @@
 
 /* lame atom replacement routines for font applications */
 
-#include <X11/Xos.h>
-#include <X11/X.h>
-#include <X11/Xatom.h>
 #include "fontmisc.h"
 
 typedef struct _AtomList {
@@ -209,5 +206,5 @@ NameForAtom(atom)
 {
     if (atom != None && atom <= lastAtom)
 	return reverseMap[atom]->name;
-    return NULL;
+    return 0;
 }

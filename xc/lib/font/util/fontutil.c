@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.2 91/02/22 16:58:56 rws Exp $
+ * $XConsortium: fontutil.c,v 1.1 91/05/10 16:51:52 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/X.h>
-#include    <X11/Xproto.h>
 #include    "fontmisc.h"
 #include    "fontstruct.h"
 
