@@ -236,9 +236,10 @@ sunMouseCtrl (pMouse)
  */
 /*ARGSUSED*/
 static int
-sunMouseGetMotionEvents (buff, start, stop)
+sunMouseGetMotionEvents (buff, start, stop, pScreen)
     CARD32 start, stop;
     xTimecoord *buff;
+    ScreenPtr pScreen;
 {
     return 0;
 }
