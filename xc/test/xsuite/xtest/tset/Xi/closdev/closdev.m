@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: closdev.m,v 1.6 94/01/30 11:00:51 rws Exp $
+ * $XConsortium: closdev.m,v 1.7 94/01/30 12:09:22 rws Exp $
  */
 
 >>TITLE XCloseDevice XINPUT
@@ -313,7 +313,7 @@ Verify a BadDevice error occurs.
 >>CODE
 XID baddevice, devicekeypress;
 XDeviceInfo *list;
-int ret, i, j, ndevices, revert, nfeed, mask, first, ksyms_per;
+int ret, i, j, ndevices, revert, nfeed, mask, ksyms_per;
 int nevents, mode, evcount, valuators, min, max, count=0;
 Window focus, w;
 Time time;
@@ -540,7 +540,7 @@ XAnyClassPtr any;
 	feedctl.class = KbdFeedbackClass;
 	feedctl.percent = 0;
 	mask = DvPercent;
-	XChangeFeedbackControl(display, device, mask, &feedctl);
+	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *)&feedctl);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{
@@ -553,7 +553,8 @@ XAnyClassPtr any;
 		FAIL;
 		}
 
-	XGetDeviceKeyMapping(display, device, &first, 1, &ksyms_per);
+	XDisplayKeycodes(display, &min, &max);
+	XGetDeviceKeyMapping(display, device, min, 1, &ksyms_per);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -565,7 +566,6 @@ XAnyClassPtr any;
 		FAIL;
 		}
 
-	XDisplayKeycodes(display, &min, &max);
 	XChangeDeviceKeyMapping(display, device, min, 1, &ksyms, 1);
 	XSync (display,0);
 	if (geterr() == baddevice)
@@ -654,7 +654,7 @@ XAnyClassPtr any;
 		FAIL;
 		}
 
-	XDeviceBell(display, device, 100);
+	XDeviceBell(display, device, KbdFeedbackClass, 0, 100);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{
@@ -684,7 +684,7 @@ XAnyClassPtr any;
 	dctl.num_valuators=1;
 	dctl.first_valuator=0;
 	dctl.resolutions = &valuators;
-	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, &dctl);
+	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *)&dctl);
 	XSync (display,0);
 	if (geterr() == baddevice)
 		{

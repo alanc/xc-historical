@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgptr.m,v 1.5 94/01/30 11:17:11 rws Exp $
+ * $XConsortium: chgptr.m,v 1.6 94/01/30 12:09:09 rws Exp $
  */
 >>TITLE XChangePointerDevice XINPUT
 void
@@ -181,7 +181,7 @@ fail with a BadDevice error, when the new pointer is specified.
 >>CODE
 XID baddevice, devicemotionnotify;
 XDeviceInfo *list;
-int i, ndevices, revert, nfeed, mask, first, ksyms_per, savid;
+int i, ndevices, revert, nfeed, mask, ksyms_per, savid;
 int nevents, mode, evcount, valuators, min, max, count=0;
 Window focus, w;
 Time time;
@@ -388,7 +388,7 @@ XDevice bogus;
 	feedctl.class = KbdFeedbackClass;
 	feedctl.percent = 0;
 	mask = DvPercent;
-	XChangeFeedbackControl(display, device, mask, &feedctl);
+	XChangeFeedbackControl(display, device, mask, (XFeedbackControl *)&feedctl);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -398,7 +398,8 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XGetDeviceKeyMapping(display, device, &first, 1, &ksyms_per);
+	XDisplayKeycodes(display, &min, &max);
+	XGetDeviceKeyMapping(display, device, min, 1, &ksyms_per);
 	if (geterr() == baddevice)
 		{
 		CHECK;
@@ -407,7 +408,6 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XDisplayKeycodes(display, &min, &max);
 	XChangeDeviceKeyMapping(display, device, min, 1, &ksyms, 1);
 	XSync(display,0);
 	if (geterr() == baddevice)
@@ -475,7 +475,7 @@ XDevice bogus;
 	else
 		FAIL;
 
-	XDeviceBell(display, device, 100);
+	XDeviceBell(display, device, KbdFeedbackClass, 0, 100);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
@@ -499,7 +499,7 @@ XDevice bogus;
 	dctl.num_valuators=1;
 	dctl.first_valuator=0;
 	dctl.resolutions = &valuators;
-	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, &dctl);
+	XChangeDeviceControl(display, device, DEVICE_RESOLUTION, (XDeviceControl *)&dctl);
 	XSync(display,0);
 	if (geterr() == baddevice)
 		{
