@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.9 92/11/18 21:30:13 gildea Exp $ */
+/* $XConsortium: fontinfo.c,v 1.10 93/08/24 18:49:35 gildea Exp $ */
 /*
  * font data query
  */
@@ -101,14 +101,14 @@ convert_props(pinfo, props)
 	local_offset.name.position = cur_off;
 	str = NameForAtom(pinfo->props[i].name);
 	local_offset.name.length = strlen(str);
-	bcopy(str, string_base+cur_off, local_offset.name.length);
+	memmove( string_base+cur_off, str, local_offset.name.length);
 	cur_off += local_offset.name.length;
 	if (pinfo->isStringProp[i])
 	{
 	    local_offset.value.position = cur_off;
 	    str = NameForAtom(pinfo->props[i].value);
 	    local_offset.value.length = strlen(str);
-	    bcopy(str, string_base+cur_off, local_offset.value.length);
+	    memmove( string_base+cur_off, str, local_offset.value.length);
 	    cur_off += local_offset.value.length;
 	    local_offset.type = PropTypeString;
 	} else {
@@ -116,7 +116,7 @@ convert_props(pinfo, props)
 	    local_offset.value.length = 0; /* protocol says must be zero */
 	    local_offset.type = PropTypeSigned;
 	}
-	bcopy(&local_offset, off_ptr, SIZEOF(fsPropOffset));
+	memmove( off_ptr, &local_offset, SIZEOF(fsPropOffset));
 	off_ptr += SIZEOF(fsPropOffset);
     }
 
