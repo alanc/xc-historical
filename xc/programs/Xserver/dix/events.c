@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.30 90/11/17 15:23:31 rws Exp $ */
+/* $XConsortium: events.c,v 5.31 90/11/17 15:55:08 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2267,7 +2267,7 @@ FocusEvent(dev, type, mode, detail, pWin)
     {
 	xKeymapEvent ke;
 	ke.type = KeymapNotify;
-	bcopy((char *)dev->key->down[1], (char *)&ke.map[0], 31);
+	bcopy((char *)&dev->key->down[1], (char *)&ke.map[0], 31);
 	(void)DeliverEventsToWindow(pWin, (xEvent *)&ke, 1,
 				    KeymapStateMask, NullGrab, 0);
     }
