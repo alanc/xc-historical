@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.14 92/10/21 10:11:51 rws Exp $
+ * $XConsortium: globals.c,v 1.15 93/02/08 10:54:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -78,7 +78,7 @@ ZEROINIT (Display *, _XHeadOfDisplayList, NULL);
 
 
 
-
+#if 0
 #ifdef STREAMSCONN
 
 
@@ -195,6 +195,7 @@ Xstream _XsStream[] = {
 
 
 #endif /* STREAMSCONN */
+#endif
 
 
 #ifdef XTEST1
