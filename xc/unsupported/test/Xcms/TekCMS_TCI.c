@@ -156,7 +156,7 @@ TCI(buf)
     return(0);
 #else
     PFStatus pfunc;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     char ifile[BUFSIZ], vfile[BUFSIZ], rfile[BUFSIZ];
     int i=0;
 
@@ -319,7 +319,7 @@ Cmd_ListTC(argbuf)
 #ifndef DONE
     fprintf(stderr, "ListTC not yet implemented\n");
 #else
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     FuncTableEntry	*pTCEntry;
 
     if (sscanf(argbuf, "%s", tmpstr) > 0) {

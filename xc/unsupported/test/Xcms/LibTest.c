@@ -1,4 +1,4 @@
-/* $XConsortium: LibTest.c,v 1.4 92/01/26 16:12:46 rws Exp $ */
+/* $XConsortium: LibTest.c,v 1.5 92/02/05 16:23:50 rws Exp $ */
 
 /*
  *	Copyright 1989 1990, Tektronix, Inc.
@@ -130,7 +130,7 @@ main(argc, argv)
 {
     char buf[BUFSIZ];
     PFStatus pfunc;
-    char command[BUFSIZ];
+    char command[STRSIZ];
 
     /*
      * Set global CommandArgc and CommandArgv
@@ -203,20 +203,20 @@ _XPrintDefaultError (dpy, event, fp)
  *
  */
 {
-    char buffer[BUFSIZ];
-    char mesg[BUFSIZ];
+    char buffer[STRSIZ];
+    char mesg[STRSIZ];
     char number[32];
     char *mtype = "XlibMessage";
     register _XExtension *ext = (_XExtension *)NULL;
-    XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
-    XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
+    XGetErrorText(dpy, event->error_code, buffer, STRSIZ);
+    XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, STRSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
     XGetErrorDatabaseText(dpy, mtype, "MajorCode", "Request Major code %d", 
-	mesg, BUFSIZ);
+	mesg, STRSIZ);
     (void) fprintf(fp, mesg, event->request_code);
     if (event->request_code < 128) {
 	sprintf(number, "%d", event->request_code);
-	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, BUFSIZ);
+	XGetErrorDatabaseText(dpy, "XRequest", number, "", buffer, STRSIZ);
     } else {
 	for (ext = dpy->ext_procs;
 	     ext && (ext->codes.major_opcode != event->request_code);
@@ -230,11 +230,11 @@ _XPrintDefaultError (dpy, event, fp)
     (void) fprintf(fp, " (%s)\n  ", buffer);
     if (event->request_code >= 128) {
 	XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
-			      mesg, BUFSIZ);
+			      mesg, STRSIZ);
 	(void) fprintf(fp, mesg, event->minor_code);
 	if (ext) {
 	    sprintf(mesg, "%s.%d", ext->name, event->minor_code);
-	    XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
+	    XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, STRSIZ);
 	    (void) fprintf(fp, " (%s)", buffer);
 	}
 	fputs("\n  ", fp);
@@ -245,7 +245,7 @@ _XPrintDefaultError (dpy, event, fp)
 	for (ext = dpy->ext_procs; ext; ext = ext->next) {
 	    if (ext->error_string) 
 		(*ext->error_string)(dpy, event->error_code, &ext->codes,
-				     buffer, BUFSIZ);
+				     buffer, STRSIZ);
 	    if (buffer[0])
 		break;
 	}    
@@ -254,7 +254,7 @@ _XPrintDefaultError (dpy, event, fp)
 		    event->error_code - ext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
-	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, BUFSIZ);
+	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, STRSIZ);
 	if (*mesg) {
 	    (void) fprintf(fp, mesg, event->resourceid);
 	    fputs("\n  ", fp);
@@ -271,22 +271,22 @@ _XPrintDefaultError (dpy, event, fp)
 	       (event->error_code == BadAtom)) {
 	if (event->error_code == BadValue)
 	    XGetErrorDatabaseText(dpy, mtype, "Value", "Value 0x%x",
-				  mesg, BUFSIZ);
+				  mesg, STRSIZ);
 	else if (event->error_code == BadAtom)
 	    XGetErrorDatabaseText(dpy, mtype, "AtomID", "AtomID 0x%x",
-				  mesg, BUFSIZ);
+				  mesg, STRSIZ);
 	else
 	    XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
-				  mesg, BUFSIZ);
+				  mesg, STRSIZ);
 	(void) fprintf(fp, mesg, event->resourceid);
 	fputs("\n  ", fp);
     }
     XGetErrorDatabaseText(dpy, mtype, "ErrorSerial", "Error Serial #%d", 
-	mesg, BUFSIZ);
+	mesg, STRSIZ);
     (void) fprintf(fp, mesg, event->serial);
     fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "CurrentSerial", "Current Serial #%d",
-	mesg, BUFSIZ);
+	mesg, STRSIZ);
     (void) fprintf(fp, mesg, dpy->request);
     fputs("\n", fp);
     if (event->error_code == BadImplementation) return 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.6 91/05/14 15:27:14 rws Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.7 91/05/31 19:14:10 rws Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.
@@ -136,7 +136,7 @@ Status Cmd_XSynchronize();
 typedef struct {
     Colormap cmap;
     int active;
-    char name[BUFSIZ];
+    char name[STRSIZ];
 } CmapTblEntry;
 
 CmapTblEntry CmapTbl[MAXCMAPS];
@@ -539,7 +539,7 @@ Cmd_List(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     FuncTableEntry	*pCmdEntry;
 
     tmpstr[0] = '\0';
@@ -576,7 +576,7 @@ Cmd_SetInputDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -620,7 +620,7 @@ Cmd_SetVerificationDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -664,7 +664,7 @@ Cmd_SetResultDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     struct stat statbuf;
 
     if ((sscanf(argbuf, "%s", tmpstr) < 1) || (strcmp("-help", tmpstr) == 0)) {
@@ -708,7 +708,7 @@ Cmd_GetInputDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (sscanf(argbuf, "%s", tmpstr) > 0) {
 GetInputDir_Usage:
@@ -739,7 +739,7 @@ Cmd_GetVerificationDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (sscanf(argbuf, "%s", tmpstr) > 0) {
 GetVerificationDir_Usage:
@@ -770,7 +770,7 @@ Cmd_GetResultDir(argbuf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (sscanf(argbuf, "%s", tmpstr) > 0) {
 GetResultDir_Usage:
@@ -804,7 +804,7 @@ Cmd_CreateColormap(buf)
 {
     Colormap cMap;
     int iCmap;
-    char allocStr[BUFSIZ];
+    char allocStr[STRSIZ];
 
     allocStr[0] = '\0';
 
@@ -859,7 +859,7 @@ Cmd_FreeColormap(buf)
  *
  */
 {
-    char name[BUFSIZ];
+    char name[STRSIZ];
     int i;
 
     if (!Check_init()) {
@@ -983,8 +983,8 @@ Cmd_XSynchronize(buf)
  */
 {
     Bool setting = 0;
-    char settingStr[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char settingStr[STRSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -1046,14 +1046,14 @@ Cmd_AllocColor(buf)
 {
     Colormap cmap;
     XcmsColor color;
-    char formatStr[BUFSIZ];
-    char resultFormatStr[BUFSIZ];
+    char formatStr[STRSIZ];
+    char resultFormatStr[STRSIZ];
     XcmsColorFormat result_format;
-    char cmapname[BUFSIZ];
-    char stim1[BUFSIZ];
-    char stim2[BUFSIZ];
-    char stim3[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char cmapname[STRSIZ];
+    char stim1[STRSIZ];
+    char stim2[STRSIZ];
+    char stim3[STRSIZ];
+    char tmpstr[STRSIZ];
     int nargs;
     Status retval;
 
@@ -1145,12 +1145,12 @@ Cmd_StoreColor(buf)
 {
     Colormap cmap;
     XcmsColor color;
-    char formatStr[BUFSIZ];
-    char cmapname[BUFSIZ];
-    char stim1[BUFSIZ];
-    char stim2[BUFSIZ];
-    char stim3[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char formatStr[STRSIZ];
+    char cmapname[STRSIZ];
+    char stim1[STRSIZ];
+    char stim2[STRSIZ];
+    char stim3[STRSIZ];
+    char tmpstr[STRSIZ];
     int nargs;
     Status retval;
 
@@ -1240,13 +1240,13 @@ Cmd_QueryColor(buf)
 {
     Colormap cmap;
     XcmsColor color;
-    char formatStr[BUFSIZ];
+    char formatStr[STRSIZ];
     XcmsColorFormat result_format;
-    char cmapname[BUFSIZ];
-    char stim1[BUFSIZ];
-    char stim2[BUFSIZ];
-    char stim3[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char cmapname[STRSIZ];
+    char stim1[STRSIZ];
+    char stim2[STRSIZ];
+    char stim3[STRSIZ];
+    char tmpstr[STRSIZ];
     int nargs;
     Status retval;
 
@@ -1324,10 +1324,10 @@ Cmd_QueryColors(buf)
 {
     Colormap cmap;
     XcmsColor color[MAXCOLORS];
-    char resultFormatStr[BUFSIZ];
+    char resultFormatStr[STRSIZ];
     XcmsColorFormat result_format;
-    char cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
     int begin, ncolors;
     Status retval;
 
@@ -1433,12 +1433,12 @@ Cmd_ConvertColor(buf)
  */
 {
     XcmsColor color;
-    char fromFormatStr[BUFSIZ];
-    char toFormatStr[BUFSIZ];
-    char stim1[BUFSIZ];
-    char stim2[BUFSIZ];
-    char stim3[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char fromFormatStr[STRSIZ];
+    char toFormatStr[STRSIZ];
+    char stim1[STRSIZ];
+    char stim2[STRSIZ];
+    char stim3[STRSIZ];
+    char tmpstr[STRSIZ];
     XcmsColorFormat	toFormat;
     Bool compressed;
     Status retval;
@@ -1518,9 +1518,9 @@ Cmd_LookupColor(buf)
 {
     XcmsColor scrnColor, exactColor;
     Colormap cmap;
-    char colorStr[BUFSIZ], cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
-    char resultFormatStr[BUFSIZ];
+    char colorStr[STRSIZ], cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
+    char resultFormatStr[STRSIZ];
     int nargs;
     Status retval;
     XcmsColorFormat result_format;
@@ -1601,10 +1601,10 @@ Cmd_AllocNamedColor(buf)
     XcmsColor exactColor;
     Colormap cmap;
     int nargs;
-    char colorStr[BUFSIZ], cmapname[BUFSIZ];
+    char colorStr[STRSIZ], cmapname[STRSIZ];
     XcmsColorFormat result_format;
-    char resultFormatStr[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char resultFormatStr[STRSIZ];
+    char tmpstr[STRSIZ];
     Status retval;
 
     if (!Check_init()) {
@@ -1687,7 +1687,7 @@ Cmd_MaxChroma(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -1746,7 +1746,7 @@ Cmd_MaxValue(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -1806,7 +1806,7 @@ Cmd_MaxValueSamples(buf)
 {
     XcmsColor *pHVC_return;
     XcmsFloat hue;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     int nSamples;
 
     if (!Check_init()) {
@@ -1863,7 +1863,7 @@ Cmd_MaxValueChroma(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -1919,7 +1919,7 @@ Cmd_MinValue(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -1978,7 +1978,7 @@ Cmd_AdjustValue(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     Bool compressed;
 
     if (!Check_init()) {
@@ -2051,7 +2051,7 @@ Cmd_ReduceChroma(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     Bool compressed;
 
     if (!Check_init()) {
@@ -2123,7 +2123,7 @@ Cmd_ShortestValueChroma(buf)
  */
 {
     XcmsColor HVC_return;
-    char tmpstr[BUFSIZ];
+    char tmpstr[STRSIZ];
     Bool compressed;
 
     if (!Check_init()) {
@@ -2201,8 +2201,8 @@ Cmd_PrefixOfId(buf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
-    char formatStr[BUFSIZ];
+    char tmpstr[STRSIZ];
+    char formatStr[STRSIZ];
     char *prefix;
     XcmsColorFormat formatID;
 
@@ -2259,8 +2259,8 @@ Cmd_FormatOfPrefix(buf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
-    char prefix[BUFSIZ];
+    char tmpstr[STRSIZ];
+    char prefix[STRSIZ];
     XcmsColorFormat formatID;
 
     tmpstr[0] = '\0';
@@ -2312,8 +2312,8 @@ Cmd_AddDIColorSpace(buf)
  *
  */
 {
-    char tmpstr[BUFSIZ];
-    char colorspaceStr[BUFSIZ];
+    char tmpstr[STRSIZ];
+    char colorspaceStr[STRSIZ];
     XcmsColorSpace *pSCCFuncSet = NULL;
     Status retval;
 
@@ -2375,10 +2375,10 @@ Cmd_XAllocNamedColor(buf)
     XColor hardware_def;
     XColor rgb_db_def;
     int nargs;
-    char exactFormatStr[BUFSIZ];
-    char colorStr[BUFSIZ];
-    char cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char exactFormatStr[STRSIZ];
+    char colorStr[STRSIZ];
+    char cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -2453,9 +2453,9 @@ Cmd_XLookupColor(buf)
     XColor hardware_def;
     XColor rgb_db_def;
     int nargs;
-    char colorStr[BUFSIZ];
-    char cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char colorStr[STRSIZ];
+    char cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -2526,10 +2526,10 @@ Cmd_XParseColor(buf)
     Colormap cmap;
     XColor exactSpec;
     int nargs;
-    char exactFormatStr[BUFSIZ];
-    char colorStr[BUFSIZ];
-    char cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char exactFormatStr[STRSIZ];
+    char colorStr[STRSIZ];
+    char cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
 
     if (!Check_init()) {
 	return(0);
@@ -2594,8 +2594,8 @@ Cmd_XStoreNamedColor(buf)
 {
     Colormap cmap;
     int nargs;
-    char colorStr[BUFSIZ], cmapname[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char colorStr[STRSIZ], cmapname[STRSIZ];
+    char tmpstr[STRSIZ];
     unsigned long pixel;
 
     colorStr[0] = '\0';
@@ -2666,13 +2666,13 @@ Cmd_StoreColors(buf)
     Colormap cmap;
     XcmsColor color[MAXCOLORS];
     Bool compressed[MAXCOLORS];
-    char firstFormatStr[BUFSIZ];
-    char formatStr[BUFSIZ];
-    char cmapname[BUFSIZ];
-    char stim1[BUFSIZ];
-    char stim2[BUFSIZ];
-    char stim3[BUFSIZ];
-    char tmpstr[BUFSIZ];
+    char firstFormatStr[STRSIZ];
+    char formatStr[STRSIZ];
+    char cmapname[STRSIZ];
+    char stim1[STRSIZ];
+    char stim2[STRSIZ];
+    char stim3[STRSIZ];
+    char tmpstr[STRSIZ];
     int begin;
     Status retval;
     int ncolors;
