@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChProp.c,v 11.13 88/08/10 16:08:03 jim Exp $ */
+/* $Header: XChProp.c,v 11.14 88/08/11 11:37:13 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -35,13 +35,13 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
       case 16:
 	req->length += (nelements + 1)>>1;
 	nbytes <<= 1;
-	Data16 (dpy, (char *) data, nbytes);
+	Data16 (dpy, (short *) data, nbytes);
 	break;
 
       case 32:
 	req->length += nelements;
 	nbytes <<= 2;
-	Data32 (dpy, (char *) data, nbytes);
+	Data32 (dpy, (long *) data, nbytes);
 	break;
 
       default:

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrSegs.c,v 11.8 87/09/11 08:15:31 toddb Exp $ */
+/* $Header: XDrSegs.c,v 11.9 88/08/10 16:09:10 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -22,8 +22,8 @@ XDrawSegments (dpy, d, gc, segments, nsegments)
     req->gc = gc->gid;
     req->length += nsegments<<1;
        /* each segment is 4 16-bit integers, i.e. 2*32 bits */
-    nbytes = nsegments << 3;		/* since Data16 might be macro */
-    Data16 (dpy, (char *) segments, nbytes);
+    nbytes = nsegments << 3;		/* watch out for macros... */
+    Data16 (dpy, (short *) segments, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

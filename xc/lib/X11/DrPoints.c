@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrPoints.c,v 1.8 87/09/11 08:15:24 toddb Exp $ */
+/* $Header: XDrPoints.c,v 1.9 88/08/10 16:09:13 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -25,8 +25,8 @@ XDrawPoints(dpy, d, gc, points, n_points, mode)
     /* on the VAX, each point is 2 16-bit integers */
     req->length += n_points;
 
-    nbytes = (long)n_points << 2;	/* Data16 might be a macro */
-    Data16 (dpy, (char *) points, nbytes);
+    nbytes = (long)n_points << 2;	/* watch out for macros... */
+    Data16 (dpy, (short *) points, nbytes);
 
     UnlockDisplay(dpy);
     SyncHandle();

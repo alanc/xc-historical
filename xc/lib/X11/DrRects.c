@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrRects.c,v 11.9 88/08/09 15:57:46 jim Exp $ */
+/* $Header: XDrRects.c,v 11.10 88/08/10 16:09:15 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -24,7 +24,7 @@ int n_rects;
     req->length += n_rects * (SIZEOF(xRectangle) / 4);
 
     n_rects *= SIZEOF(xRectangle);
-    Data16 (dpy, (char *) rects, n_rects);
+    Data16 (dpy, (short *) rects, n_rects);
     UnlockDisplay(dpy);
     SyncHandle();
 }

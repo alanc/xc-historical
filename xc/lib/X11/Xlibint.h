@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.49 88/08/10 16:07:44 jim Exp $ */
+/* $Header: Xlibint.h,v 11.50 88/08/11 11:20:06 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -238,10 +238,10 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * provide emulation routines for smaller architectures
  */
 #ifndef WORD64
-#define Data16(dpy, data, len) Data((dpy), (data), (len))
-#define Data32(dpy, data, len) Data((dpy), (data), (len))
-#define _XRead16(dpy, data, len) _XRead((dpy), (data), (len))
-#define _XRead32(dpy, data, len) _XRead((dpy), (data), (len))
+#define Data16(dpy, data, len) Data((dpy), (char *)(data), (len))
+#define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
+#define _XRead16(dpy, data, len) _XRead((dpy), (char *)(data), (len))
+#define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #define Pack16(f, t, n)   bcopy(f, t, n)
 #endif /* not WORD64 */
 
@@ -249,8 +249,8 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * The following isn't used anymore, but it is left in just in case.
  */
 #ifndef BIGSHORTS
-#define PackData(dpy, data, len) Data(dpy, data, len)
-#define PackShorts(f, t, n)  bcopy(f, t, n)
+#define PackData(dpy, data, len) Data(dpy, (char *)data, len)
+#define PackShorts(f, t, n)  bcopy((char *)f, (char *)t, n)
 #endif /* BIGSHORTS */
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
