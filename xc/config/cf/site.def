@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.48 92/05/10 12:01:20 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.49 92/05/11 10:21:12 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -39,6 +39,7 @@ XCOMM site:  $XConsortium: site.def,v 1.48 92/05/10 12:01:20 rws Exp $
 
 #ifdef SunArchitecture
 #define HasGcc mc68000
+#define HasGcc2 mc68000
 #endif
 
 #endif /* BeforeVendorCF */
