@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.26 91/04/09 14:39:59 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.27 91/05/11 10:24:28 rws Exp $
 
 #define OSName             UTek 4.0
 XCOMM operating system:  OSName
@@ -6,7 +6,6 @@ XCOMM operating system:  OSName
 #define OSMinorVersion     0
 
 #define HasSaberC	   YES		/* a useful program to buy... */
-#define HasBsearch	   YES
 #define HasNdbm		   YES
 #define HasVoidSignalReturn NO
 
