@@ -268,9 +268,37 @@ macIIMouseProcessEvent(pMouse,me)
 
     xE.u.keyButtonPointer.time = lastEventTime;
 
-    if((KEY_DETAIL(*me) == PSEUDO_MIDDLE)||(KEY_DETAIL(*me) == PSEUDO_RIGHT)) { 
-            xE.u.u.detail = (((KEY_DETAIL(*me) == PSEUDO_MIDDLE) ? 
-					MS_MIDDLE : MS_RIGHT) - MS_LEFT) + 1;
+    if(KEY_DETAIL(*me) == PSEUDO_MIDDLE) { 
+
+	    static int pseudo_middle_state = ButtonRelease;
+
+            xE.u.u.detail = MS_MIDDLE - MS_LEFT + 1;
+	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
+
+	    /*
+	     * Apple extended keyboard under A/UX produces two release events
+	     * each time the option key is released. The following causes second
+	     * and subsequent release events to be ignored.
+	     */
+	    if (xE.u.u.type == pseudo_middle_state) return;
+	    else pseudo_middle_state = xE.u.u.type;
+
+	    /*
+	     * If the mouse has moved, we must update any interested client
+	     * as well as DIX before sending a button event along.
+	     */
+	    if (pmacIIPriv->mouseMoved) {
+		(* pPriv->DoneEvents) (pMouse, FALSE);
+	    }
+    	    xE.u.keyButtonPointer.rootX = pPriv->x;
+    	    xE.u.keyButtonPointer.rootY = pPriv->y;
+
+    	    (* pMouse->processInputProc) (&xE, pMouse);
+	    return;
+	
+    }
+    if(KEY_DETAIL(*me) == PSEUDO_RIGHT) { 
+            xE.u.u.detail = MS_RIGHT - MS_LEFT + 1;
 	    xE.u.u.type = (KEY_UP(*me) ? ButtonRelease : ButtonPress);
 	    /*
 	     * If the mouse has moved, we must update any interested client
@@ -285,53 +313,53 @@ macIIMouseProcessEvent(pMouse,me)
     	    (* pMouse->processInputProc) (&xE, pMouse);
 	    return;
 	
-	}
-	/*
-	 * When we detect a change in the mouse coordinates, we call
-	 * the cursor module to move the cursor. It has the option of
-	 * simply removing the cursor or just shifting it a bit.
-	 * If it is removed, DIX will restore it before we goes to sleep...
-	 *
-	 * What should be done if it goes off the screen? Move to another
-	 * screen? For now, we just force the pointer to stay on the
-	 * screen...
-	 */
-	xpos = *(me + 2) & 0x7f; /* DELTA: low 7 bits */
-	if (xpos & 0x0040) xpos = xpos - 0x0080; /* 2's complement */
-	pPriv->x += MouseAccelerate (pMouse, xpos); /* type mismatch? */
-
-	ypos = *(me + 1) & 0x7f;
-	if (ypos & 0x0040) ypos = ypos - 0x0080;
-	pPriv->y += MouseAccelerate (pMouse, ypos);
-
-	if (!macIIConstrainXY (&pPriv->x, &pPriv->y)) {
-	return;
-	}
-	NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
-
-	xE.u.keyButtonPointer.rootX = pPriv->x;
-	xE.u.keyButtonPointer.rootY = pPriv->y;
-
+    }
+    /*
+     * When we detect a change in the mouse coordinates, we call
+     * the cursor module to move the cursor. It has the option of
+     * simply removing the cursor or just shifting it a bit.
+     * If it is removed, DIX will restore it before we goes to sleep...
+     *
+     * What should be done if it goes off the screen? Move to another
+     * screen? For now, we just force the pointer to stay on the
+     * screen...
+     */
+    xpos = *(me + 2) & 0x7f; /* DELTA: low 7 bits */
+    if (xpos & 0x0040) xpos = xpos - 0x0080; /* 2's complement */
+    pPriv->x += MouseAccelerate (pMouse, xpos); /* type mismatch? */
+   
+    ypos = *(me + 1) & 0x7f;
+    if (ypos & 0x0040) ypos = ypos - 0x0080;
+    pPriv->y += MouseAccelerate (pMouse, ypos);
+   
+    if (!macIIConstrainXY (&pPriv->x, &pPriv->y)) {
+    return;
+    }
+    NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
+   
+      	    xE.u.keyButtonPointer.rootX = pPriv->x;
+    xE.u.keyButtonPointer.rootY = pPriv->y;
+   
 #ifdef MACII_ALL_MOTION
-	xE.u.u.type = MotionNotify;
-	macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	(* pMouse->processInputProc) (&xE, pMouse);
+    xE.u.u.type = MotionNotify;
+    macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
+    (* pMouse->processInputProc) (&xE, pMouse);
 #else
-	pmacIIPriv->mouseMoved = TRUE;
+    pmacIIPriv->mouseMoved = TRUE;
 #endif MACII_ALL_MOTION
 
-	if (KEY_UP(*(me + 1)) != last_button) {
-	    xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
-	    xE.u.u.type = (KEY_UP(*(me + 1)) ? ButtonRelease : ButtonPress);
-	    last_button = KEY_UP(*(me + 1));
-	    /*
-	     * If the mouse has moved, we must update any interested client
-	     * as well as DIX before sending a button event along.
-	     */
-	    if (pmacIIPriv->mouseMoved) {
-		(* pPriv->DoneEvents) (pMouse, FALSE);
-	    }
-	    (* pMouse->processInputProc) (&xE, pMouse);
-	}
-}
-
+    if (KEY_UP(*(me + 1)) != last_button) {
+        xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
+        xE.u.u.type = (KEY_UP(*(me + 1)) ? ButtonRelease : ButtonPress);
+        last_button = KEY_UP(*(me + 1));
+        /*
+         * If the mouse has moved, we must update any interested client
+         * as well as DIX before sending a button event along.
+         */
+        if (pmacIIPriv->mouseMoved) {
+	    (* pPriv->DoneEvents) (pMouse, FALSE);
+        }
+        (* pMouse->processInputProc) (&xE, pMouse);
+    }
+   }
+   
