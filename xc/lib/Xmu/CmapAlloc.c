@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GetCmapAlloc.c,v 1.1 89/05/19 14:37:34 converse Exp $
+ * $XConsortium: CmapAlloc.c,v 1.2 89/05/22 17:56:55 converse Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
