@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.44 88/11/16 13:45:06 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.45 89/01/03 15:46:24 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -121,7 +121,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.44 88/11/16 13:45:06 rws Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.45 89/01/03 15:46:24 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -679,7 +679,7 @@ static void TekConfigure(w)
     register int border = 2 * screen->border;
     register double d;
 
-    XClearWindow(screen->display, TWindow(screen));
+    if (TWindow(screen)) XClearWindow(screen->display, TWindow(screen));
     TWidth(screen) = w->core.width - border;
     THeight(screen) = w->core.height - border;
     TekScale(screen) = (double)TWidth(screen) / TEKWIDTH;
