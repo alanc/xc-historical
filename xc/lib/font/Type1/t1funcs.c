@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.5 91/12/16 18:35:29 keith Exp $ */
+/* $XConsortium: t1funcs.c,v 1.6 92/02/05 21:38:42 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -55,6 +55,7 @@
  */
  
 #include    <string.h>
+#include    "X11/Xfuncs.h"
 #include    "fontfilest.h"
 #include    "FSproto.h"
 #include    "t1intf.h"
@@ -531,7 +532,6 @@ char *SYMBOL[] = {
  
 extern unsigned long *Xalloc();
 static void fill();
-static void clearmemory();
  
 /*ARGSUSED*/
 int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
@@ -588,11 +588,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                xfree(pFont);
                return AllocError;
        }
-       clearmemory(type1, sizeof(struct type1font));
+       bzero(type1, sizeof(struct type1font));
  
        /* heuristic for "maximum" size of pool we'll need: */
        size = 200000 + 120 * vals->pixel * sizeof(short);
-       if (size < 0 || NULL == (pool = xalloc(size))) {
+       if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
                xfree(type1);
                xfree(pFont);
                return AllocError;
@@ -655,11 +655,11 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
                glyphs[i].metrics.leftSideBearing  = area->xmin;
                glyphs[i].metrics.characterWidth   = NEARESTPEL(area->ending.x - area->origin.x);
                glyphs[i].metrics.rightSideBearing = w + area->xmin;
-               glyphs[i].metrics.descent          = area->ymax - NEARESTPEL(area->origin.x);
+               glyphs[i].metrics.descent          = area->ymax - NEARESTPEL(area->origin.y);
                glyphs[i].metrics.ascent           = h - glyphs[i].metrics.descent;
  
                if (h > 0 && w > 0) {
-                       clearmemory(glyphs[i].bits, size);
+                       bzero(glyphs[i].bits, size);
                        fill(glyphs[i].bits, h, paddedW, area, byte, bit, wordsize );
                }
  
@@ -823,14 +823,6 @@ void Type1CloseFont(pFont)
  
  
  
-static void clearmemory(addr, size)
-       long *addr;
-       int size;
-{
-       while (0 <= (size -= sizeof(long)))
-               *addr++ = 0;
-}
- 
 static void fill(dest, h, w, area, byte, bit, wordsize)
        register char *dest;  /* destination bitmap                           */
        int h,w;              /* dimensions of 'dest', w padded               */
@@ -957,14 +949,4 @@ Type1RegisterFontFileFunctions()
     T1InitStdProps();
     for (i=0; i < sizeof(renderers) / sizeof(FontRendererRec); i++)
             FontFileRegisterRenderer(&renderers[i]);
-}
- 
-/*
-Synonym for xalloc() so type1 scanner doesn't have to know about X stuff:
-*/
- 
-unsigned long *type1alloc(size)
-       unsigned size;
-{
-       return xalloc(size);
 }

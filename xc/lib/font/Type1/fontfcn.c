@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.4 91/10/10 11:18:03 rws Exp $ */
+/* $XConsortium: fontfcn.c,v 1.5 91/10/11 11:34:02 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -34,6 +34,7 @@
 #include "t1imager.h"
 #include "util.h"
 #include "fontfcn.h"
+#include "fontmisc.h"
  
 extern xobject Type1Char();
 /***================================================================***/
@@ -118,7 +119,7 @@ char *env;
   rcode = scan_font(FontP);
   if (rcode == SCAN_OUT_OF_MEMORY) {
     /* free the memory and start again */
-    free(vm_base);
+    xfree(vm_base);
     if (!(initFont(vm_size * 2))) {
       /* we are really out of memory */
       return(SCAN_OUT_OF_MEMORY);

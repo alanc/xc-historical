@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.7 91/07/22 22:58:57 keith Exp $
+ * $XConsortium: pcfread.c,v 1.8 92/02/11 13:16:44 eswu Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -169,7 +169,7 @@ pcfSeekToType(file, tables, ntables, type, formatp, sizep)
     for (i = 0; i < ntables; i++)
 	if (tables[i].type == type) {
 	    if (position > tables[i].offset)
-		abort ();
+		return FALSE;
 	    if (!FontFileSkip(file, tables[i].offset - position))
 		return FALSE;
 	    position = tables[i].offset;
@@ -594,6 +594,9 @@ pcfReadFontInfo(pFontInfo, file)
     int         nencoding;
     Bool	hasBDFAccelerators;
 
+    pFontInfo->isStringProp = NULL;
+    pFontInfo->props = NULL;
+
     if (!(tables = pcfReadTOC(file, &ntables)))
 	goto Bail;
 
@@ -641,6 +644,8 @@ pcfReadFontInfo(pFontInfo, file)
     xfree(tables);
     return Successful;
 Bail:
+    xfree (pFontInfo->props);
+    xfree (pFontInfo->isStringProp);
     xfree(tables);
     return AllocError;
 }

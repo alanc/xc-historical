@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1imager.h,v 1.4 91/10/10 11:19:33 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -27,15 +27,8 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#ifndef  pointer
- 
-#if __STDC__
-#define pointer void *
-#else
-#define pointer char *
-#endif
- 
-#endif
+
+#include "fontmisc.h"
  
 typedef  pointer xobject;
 typedef  pointer location;

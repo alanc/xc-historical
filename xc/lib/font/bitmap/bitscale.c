@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.8 91/07/19 23:22:29 keith Exp $
+ * $XConsortium: bitscale.c,v 1.9 91/07/22 20:46:06 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -241,13 +241,13 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, fpep)
 	    }
 	}
     }
-    if (best_scaled)
-    {
-	*best = best_scaled->vals;
-	*fpep = best_fpe;
-	*dxp = best_dx;
-	*dyp = best_dy;
-    }
+    if (!best_scaled)
+	return NULL;
+
+    *best = best_scaled->vals;
+    *fpep = best_fpe;
+    *dxp = best_dx;
+    *dyp = best_dy;
     return best_scaled->bitmap;
 }
 
@@ -1045,6 +1045,8 @@ BitmapGetInfoScalable (fpe, pFontInfo, entry, fontName, fileName, vals)
 
     propCount = ComputeScaledProperties (&scaleInfo, fontName->name, vals, dx, dy,
 					&props, &isStringProp);
+    xfree (scaleInfo.isStringProp);
+    xfree (scaleInfo.props);
     if (propCount && (!props || !isStringProp))
 	return AllocError;
 

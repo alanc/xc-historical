@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.8 91/07/22 22:58:44 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.9 91/09/07 11:59:15 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -225,8 +225,6 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	bitmapsSizes = bitmapExtra->bitmapsSizes;
 	for (i = 0; i < GLYPHPADOPTIONS; i++)
 	    bitmapsSizes[i] = 0;
-	bitmapExtra->glyphNames = 0;
-	bitmapExtra->sWidths = 0;
     } else
 	bitmapsSizes = NULL;
 
@@ -474,14 +472,7 @@ BAILOUT:
     for (i = 0; i < 256; i++)
 	if (bdfEncoding[i])
 	    xfree(bdfEncoding[i]);
-    for (i = 0; i < ndx; i++)
-	if (bitmapFont->metrics[i].bits)
-	    xfree(bitmapFont->metrics[i].bits);
-    xfree(bitmapFont->metrics);
-    if (bitmapExtra) {
-	xfree(bitmapExtra->glyphNames);
-	xfree(bitmapExtra->sWidths);
-    }
+    /* bdfFreeFontBits will clean up the rest */
     return (FALSE);
 }
 
@@ -756,6 +747,8 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     bitmapFont->encoding = 0;
     bitmapFont->pDefault = NULL;
     bitmapFont->bitmapExtra = (BitmapExtraPtr) xalloc(sizeof(BitmapExtraRec));
+    bitmapFont->bitmapExtra->glyphNames = 0;
+    bitmapFont->bitmapExtra->sWidths = 0;
 
     if (!bdfReadProperties(file, pFont, &state))
 	goto BAILOUT;
@@ -830,14 +823,22 @@ bdfFreeFontBits(pFont)
     FontPtr pFont;
 {
     BitmapFontPtr  bitmapFont;
+    BitmapExtraPtr bitmapExtra;
     int         i;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
+    bitmapExtra = (BitmapExtraPtr) bitmapFont->bitmapExtra;
     xfree(bitmapFont->ink_metrics);
     xfree(bitmapFont->encoding);
     for (i = 0; i < bitmapFont->num_chars; i++)
 	xfree(bitmapFont->metrics[i].bits);
     xfree(bitmapFont->metrics);
+    if (bitmapExtra)
+    {
+	xfree (bitmapExtra->glyphNames);
+	xfree (bitmapExtra->sWidths);
+	xfree (bitmapExtra);
+    }
     xfree(pFont->info.props);
     xfree(bitmapFont);
 }

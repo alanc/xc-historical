@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: objects.h,v 1.5 91/10/10 11:18:38 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -55,7 +55,7 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message          
 #define   abort(line)       t1_abort(line)
 #define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)
-#define   NonObjectFree(a)  free(a)
+#define   NonObjectFree(a)  xiFree(a)
 #define   Consume           t1_Consume
 #define   ArgErr(s,o,r)     t1_ArgErr(s,o,r)
 #define   TypeErr(n,o,e,r)  t1_TypeErr(n,o,e,r)

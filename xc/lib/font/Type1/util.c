@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: util.c,v 1.4 91/10/10 11:20:12 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -31,8 +31,7 @@
  
 #include <stdio.h>
 #include "util.h"
- 
-extern unsigned long *type1alloc();
+#include "fontmisc.h"
  
 static char *vm_base = NULL;  /* Start of virtual memory area */
        char *vm_next = NULL;  /* Pointer to first free byte */
@@ -45,7 +44,7 @@ static char *vm_base = NULL;  /* Start of virtual memory area */
 boolean vm_init(cnt)
 int cnt;
 {
-  vm_next = vm_base = (char *)type1alloc(cnt);
+  vm_next = vm_base = (char *)xalloc (cnt);
  
   if (vm_base != NULL) {
     vm_free = cnt;
