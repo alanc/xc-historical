@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 char *man[]={"\
 \n\
 \n\
@@ -30,7 +31,7 @@ OPTIONS\n\
              all the usual toolkit options are available.\n\
 \n\
 X DEFAULTS\n\
-     The xmag program uses the following X resources:\n\
+     The xgas program uses the following X resources:\n\
 \n\
      timeStepSize\n\
              Specifies   the   simulated   time    duration    in\n\
