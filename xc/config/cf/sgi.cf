@@ -4,7 +4,6 @@
 
 #define SystemV			YES
 #define HasPutenv		YES
-/*#define HasSharedLibraries	YES	/* System V.3 static link libraries */
 #define ExecableScripts		YES
 #define SetTtyGroup		YES
 #define HasNdbm			YES
@@ -14,8 +13,6 @@
 #define HasSockets		YES
 
 #if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
-#define SharedCodeDef -DSHAREDCODE
-#define SharedLibraryDef -DATTSHAREDLIB
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 #endif
@@ -23,7 +20,7 @@
 /* Extra libraries provide : yp, sysV malloc & shared libc */
 #define ExtraLibraries -lsun -lmalloc -lc_s
 
-#include <sgi.rules>
+/* #include <sgiLib.rules> */
 
 #define CCPreprocessorFlags /* As Nothing For the Standard "cpp" */
 
@@ -67,35 +64,19 @@
 #define BuildServer             YES /* XXX change to NO in R5 */
 #define XnonServer Xnon /* XXX remove in R5 */
 
-#ifdef notdef
+/* Changed to a single shell command for pmake/smake */
 
-/* Server Build Parameters */
-#define BuildServer             NO
-/* We will use DEC's PCF format for IRIX 4.0 */
-#define UsePCFFonts YES
-/* We can now use either "fm" or "snf" fonts ! */
-#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/,/usr/lib/fmfonts/
+/*
+ * ObjectCompile - compile fragment for a normal object file
+ */
+#define	ObjectCompile(options) $(RM) $@ $*.os \				@@\
+	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+	&& $(LD) -x -r $@ -o $*.os \					@@\
+	&& $(MV) $*.os $@
 
-
-#define XsgiServer Xsgi
-#define MipsGNUM
-#define ServerCCOptions MipsGNUM DefaultCCOptions
-#if defined UsePCFFonts && UsePCFFonts
-#define FontDefines -DFONT_PCF -DFONT_BDF -DCOMPRESSED_FONTS -DFONT_SNF \
- -DFONT_NEWS
-#else
-#define FontDefines -DFONT_BDF -DCOMPRESSED_FONTS -DFONT_SNF -DFONT_NEWS
-#endif
-
-#endif
-
-#ifndef Crt1
-#define Crt1 /usr/lib/crt1.o
-#endif /* Crt1 */
-
-#ifndef Crtn
-#define Crtn /usr/lib/crtn.o
-#endif /* Crtn */
-
-CRT1 = Crt1
-CRTN = Crtn
+/*
+ * LibObjCompile - compile fragment for shared/profiled/debugged objects
+ */
+#define LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\
+	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
+	&& $(MV) $@ dir/$@
