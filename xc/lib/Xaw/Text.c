@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.8 87/12/23 07:49:27 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.9 87/12/23 16:27:24 swick Locked $";
 #endif lint
 
 /*
@@ -43,7 +43,7 @@ extern void _XLowerCase();
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
 #define min(x,y)	((x) < (y) ? (x) : (y))
 #define max(x,y)	((x) > (y) ? (x) : (y))
-#define GETLASTPOS  (*(ctx->text.source->scan)) (ctx->text.source, 0, XtstFile, XtsdRight, 1, TRUE)
+#define GETLASTPOS  (*ctx->text.source->Scan) (ctx->text.source, 0, XtstAll, XtsdRight, 1, TRUE)
 #define BUTTONMASK 0x143d
 
 #define  yMargin 2
@@ -75,7 +75,7 @@ static XtResource resources[] = {
     {XtNleftMargin, XtCMargin, XrmRInt, sizeof (int), 
         XtOffset(TextWidget, text.leftmargin), XrmRString, "2"},
     {XtNselectionArray, XtCSelectionArray, XrmRPointer, 
-        sizeof(SelectionArray), XtOffset(TextWidget, text.sarray[0]), 
+        sizeof(XtTextSelectionArray), XtOffset(TextWidget, text.sarray[0]), 
 	XrmRPointer, NULL},
     {XtNtextSource, XtCTextSource, XrmRPointer, sizeof (caddr_t), 
          XtOffset(TextWidget, text.source), XrmRPointer, NULL},
@@ -104,7 +104,7 @@ static void CvtStringToEditMode(screen, fromVal, toVal)
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
-    static XtEditType editType;
+    static XtTextEditType editType;
     XrmQuark    q;
     char        lowerName[1000];
 
@@ -113,17 +113,17 @@ static void CvtStringToEditMode(screen, fromVal, toVal)
     q = XrmAtomToQuark(lowerName);
     if (q == XtQTextRead ) {
         editType = XttextRead;
-        done(&editType, XtEditType);
+        done(&editType, XtTextEditType);
         return;
     }
     if (q == XtQTextAppend) {
         editType = XttextAppend;
-        done(&editType, XtEditType);
+        done(&editType, XtTextEditType);
         return;
     }
     if (q == XtQTextEdit) {
         editType = XttextEdit;
-        done(&editType, XtEditType);
+        done(&editType, XtTextEditType);
         return;
     }
     toVal->size = 0;
@@ -154,7 +154,7 @@ static void Initialize(request, new, args, num_args)
     if (ctx->core.height == DEFAULTVALUE) {
         ctx->core.height = (2*yMargin) + 2;
         if (ctx->text.sink)
-	    ctx->core.height += (*ctx->text.sink->maxHeight)(new, 1);
+	    ctx->core.height += (*ctx->text.sink->MaxHeight)(new, 1);
     }
 
     ctx->text.lt.lines = 0;
@@ -223,7 +223,7 @@ static void Realize( w, valueMask, attributes )
 */
 static void InsertCursor (ctx, state)
   TextWidget ctx;
-  InsertState state;
+  XtTextInsertState state;
 {
     Position x, y;
     int dy, line, visible;
@@ -241,7 +241,7 @@ static void InsertCursor (ctx, state)
 	ctx->text.insertPos > 0 &&
 	ctx->text.insertPos >= ctx->text.lastPos) {
 	   /* reading the source is bogus and this code should use scan */
-	   (*(ctx->text.source->read)) (ctx->text.source, ctx->text.insertPos - 1, &text, 1);
+	   (*ctx->text.source->Read) (ctx->text.source, ctx->text.insertPos - 1, &text, 1);
 	   if (text.ptr[0] == '\n') {
 	       x = ctx->text.leftmargin;
 	       y += dy;
@@ -249,7 +249,7 @@ static void InsertCursor (ctx, state)
     }
     y += dy;
     if (visible)
-	(*(ctx->text.sink->insertCursor))(ctx, x, y, state);
+	(*ctx->text.sink->InsertCursor)(ctx, x, y, state);
 }
 
 
@@ -303,11 +303,11 @@ char *_XtTextGetText(ctx, left, right)
     
     resultLength = right - left + 10;	/* Bogus? %%% */
     result = (char *)XtMalloc((unsigned) resultLength);
-    end = (*(ctx->text.source->read))(ctx->text.source, left, &text, right - left);
+    end = (*ctx->text.source->Read)(ctx->text.source, left, &text, right - left);
     (void) strncpy(result, text.ptr, text.length);
     length = text.length;
     while (end < right) {
-        nend = (*(ctx->text.source->read))(ctx->text.source, end, &text, right - end);
+        nend = (*ctx->text.source->Read)(ctx->text.source, end, &text, right - end);
 	tempResult = result + length;
         (void) strncpy(tempResult, text.ptr, text.length);
 	length += text.length;
@@ -341,10 +341,10 @@ static XtTextPosition PositionForXY (ctx, x, y)
 	return ctx->text.lastPos;
     fromx = ctx->text.lt.info[line].x;	/* starting x in line */
     width = x - fromx;			/* num of pix from starting of line */
-    (*(ctx->text.sink->resolve)) (ctx, position, fromx, width,
+    (*ctx->text.sink->Resolve) (ctx, position, fromx, width,
 	    &resultstart, &resultend);
     if (resultstart >= ctx->text.lt.info[line + 1].position)
-	resultstart = (*(ctx->text.source->scan))(ctx->text.source,
+	resultstart = (*ctx->text.source->Scan)(ctx->text.source,
 		ctx->text.lt.info[line + 1].position, XtstPositions, XtsdLeft, 1, TRUE);
     return resultstart;
 }
@@ -391,7 +391,7 @@ static int LineAndXYForPosition (ctx, pos, line, x, y)
 	*y = ctx->text.lt.info[*line].y;
 	*x = ctx->text.lt.info[*line].x;
 	linePos = ctx->text.lt.info[*line].position;
-	(*(ctx->text.sink->findDistance))(ctx, linePos,
+	(*ctx->text.sink->FindDistance)(ctx, linePos,
                                      *x, pos, &realW, &endPos, &realH);
 	*x = *x + realW;
     }
@@ -416,14 +416,14 @@ static void BuildLineTable (ctx, position)
     Boolean     rebuild;
 
     rebuild = (Boolean) (position != ctx->text.lt.top);
-    lines = (*(ctx->text.sink->maxLines))((Widget)ctx, ctx->core.height);
+    lines = (*ctx->text.sink->MaxLines)((Widget)ctx, ctx->core.height);
     if (ctx->text.lt.info != NULL && lines != ctx->text.lt.lines) {
 	XtFree((char *) ctx->text.lt.info);
 	ctx->text.lt.info = NULL;
     }
     if (ctx->text.lt.info == NULL) {
-	ctx->text.lt.info = (LineTableEntry *)
-	    XtCalloc((unsigned)lines + 1, (unsigned)sizeof(LineTableEntry));
+	ctx->text.lt.info = (XtTextLineTableEntry *)
+	    XtCalloc((unsigned)lines + 1, (unsigned)sizeof(XtTextLineTableEntry));
 	for (line = 0; line < lines; line++) {
 	    ctx->text.lt.info[line].position = 0;
 	    ctx->text.lt.info[line].y = 0;
@@ -444,12 +444,12 @@ static void BuildLineTable (ctx, position)
 	    ctx->text.lt.info[line].position = startPos;
 	    if (startPos <= ctx->text.lastPos) {
 		width = (ctx->text.options & resizeWidth) ? 9999 : ctx->core.width - x;
-		(*(ctx->text.sink->findPosition))((Widget)ctx, 
+		(*ctx->text.sink->FindPosition)((Widget)ctx, 
                         startPos, x,
 			width, (ctx->text.options & wordBreak),
 			&endPos, &realW, &realH);
 		if (!(ctx->text.options & wordBreak) && endPos < ctx->text.lastPos) {
-		    endPos = (*(ctx->text.source->scan))(ctx->text.source, startPos,
+		    endPos = (*ctx->text.source->Scan)(ctx->text.source, startPos,
 			    XtstEOL, XtsdRight, 1, TRUE);
 		    if (endPos == startPos)
 			endPos = ctx->text.lastPos + 1;
@@ -523,7 +523,7 @@ _XtTextScroll(ctx, n)
 		      0, ctx->text.lt.info[n].y,
 		      9999, (Dimension)ctx->core.height - ctx->text.lt.info[n].y,
 		      0, ctx->text.lt.info[0].y);
-	    (*(ctx->text.sink->clearToBackground))(ctx, 0,
+	    (*ctx->text.sink->ClearToBackground)(ctx, 0,
 		ctx->text.lt.info[0].y + ctx->core.height - ctx->text.lt.info[n].y,
 		9999, 9999);
 	    if (n < ctx->text.lt.lines) n++;
@@ -535,7 +535,7 @@ _XtTextScroll(ctx, n)
 	Dimension tempHeight;
 	n = -n;
 	target = ctx->text.lt.top;
-	top = (*(ctx->text.source->scan))(ctx->text.source, target, XtstEOL,
+	top = (*ctx->text.source->Scan)(ctx->text.source, target, XtstEOL,
 				     XtsdLeft, n+1, FALSE);
 	tempHeight = ctx->text.lt.info[ctx->text.lt.lines-n].y;
 	BuildLineTable(ctx, top);
@@ -596,7 +596,7 @@ static int ThumbProc (w, data, where)
     XtTextPosition position;
     _XtTextPrepareToUpdate(ctx);
     position = where * ctx->text.lastPos;
-    position = (*(ctx->text.source->scan))(ctx->text.source, position, XtstEOL, XtsdLeft,
+    position = (*ctx->text.source->Scan)(ctx->text.source, position, XtstEOL, XtsdLeft,
 	    1, FALSE);
     BuildLineTable(ctx, position);
     DisplayTextWindow(ctx);
@@ -652,18 +652,18 @@ int ReplaceText (ctx, pos1, pos2, text)
 
     /* the insertPos may not always be set to the right spot in XttextAppend */
     if ((pos1 == ctx->text.insertPos) && 
-        ((*(ctx->text.source->editType))(ctx->text.source) == XttextAppend)) {
+        ((*ctx->text.source->EditType)(ctx->text.source) == XttextAppend)) {
       ctx->text.insertPos = GETLASTPOS;
       pos2 = pos2 - pos1 + ctx->text.insertPos;
       pos1 = ctx->text.insertPos;
     }
-    updateFrom = (*(ctx->text.source->scan))(ctx->text.source, pos1, XtstWhiteSpace, XtsdLeft,
+    updateFrom = (*ctx->text.source->Scan)(ctx->text.source, pos1, XtstWhiteSpace, XtsdLeft,
 	    1, TRUE);
-    updateFrom = (*(ctx->text.source->scan))(ctx->text.source, updateFrom, XtstPositions, XtsdLeft,
+    updateFrom = (*ctx->text.source->Scan)(ctx->text.source, updateFrom, XtstPositions, XtsdLeft,
 	    1, TRUE);
     startPos = max(updateFrom, ctx->text.lt.top);
     visible = LineAndXYForPosition(ctx, startPos, &line1, &x, &y);
-    error = (*(ctx->text.source->replace))(ctx->text.source, pos1, pos2, text, &delta);
+    error = (*ctx->text.source->Replace)(ctx->text.source, pos1, pos2, text, &delta);
     if (error) return error;
     ctx->text.lastPos = GETLASTPOS;
     if (ctx->text.lt.top >= ctx->text.lastPos) {
@@ -701,11 +701,11 @@ int ReplaceText (ctx, pos1, pos2, text)
 	for (i = line1; i < ctx->text.lt.lines; i++) {/* fixup line table */
 	    width = (ctx->text.options & resizeWidth) ? 9999 : ctx->core.width - x;
 	    if (startPos <= ctx->text.lastPos) {
-		(*(ctx->text.sink->findPosition))(ctx, startPos, x,
+		(*ctx->text.sink->FindPosition)(ctx, startPos, x,
 			width, (ctx->text.options & wordBreak),
 			&endPos, &realW, &realH);
 		if (!(ctx->text.options & wordBreak) && endPos < ctx->text.lastPos) {
-		    endPos = (*(ctx->text.source->scan))(ctx->text.source, startPos,
+		    endPos = (*ctx->text.source->Scan)(ctx->text.source, startPos,
 			    XtstEOL, XtsdRight, 1, TRUE);
 		    if (endPos == startPos)
 			endPos = ctx->text.lastPos + 1;
@@ -763,13 +763,13 @@ static void DisplayText(ctx, pos1, pos2)
 	    endPos = pos2;
 	if (endPos > startPos) {
 	    if (x == ctx->text.leftmargin)
-                (*(ctx->text.sink->clearToBackground))(ctx,
+                (*ctx->text.sink->ClearToBackground)(ctx,
 	             0, y, ctx->text.leftmargin, height);
 	    if (startPos >= ctx->text.s.right || endPos <= ctx->text.s.left) {
-		(*(ctx->text.sink->display))(ctx, x, y,
+		(*ctx->text.sink->Display)(ctx, x, y,
 			startPos, endPos, FALSE);
 	    } else if (startPos >= ctx->text.s.left && endPos <= ctx->text.s.right) {
-		(*(ctx->text.sink->display))(ctx, x, y,
+		(*ctx->text.sink->Display)(ctx, x, y,
 			startPos, endPos, TRUE);
 	    } else {
 		DisplayText(ctx, startPos, ctx->text.s.left);
@@ -780,7 +780,7 @@ static void DisplayText(ctx, pos1, pos2)
 	}
 	startPos = endPos;
 	height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
-        (*(ctx->text.sink->clearToBackground))(ctx,
+        (*ctx->text.sink->ClearToBackground)(ctx,
 	    ctx->text.lt.info[i].endX, y, 999, height);
 	x = ctx->text.leftmargin;
 	y = ctx->text.lt.info[i + 1].y;
@@ -806,8 +806,8 @@ static void DoSelection (ctx, position, time, motion)
 {
     int     delta;
     XtTextPosition newLeft, newRight;
-    XtSelectType newType;
-    XtSelectType *sarray;
+    XtTextSelectType newType;
+    XtTextSelectType *sarray;
 
     delta = (time < ctx->text.lasttime) ?
 	ctx->text.lasttime - time : time - ctx->text.lasttime;
@@ -834,27 +834,27 @@ static void DoSelection (ctx, position, time, motion)
 	    break;
 	case XtselectChar: 
             newLeft = position;
-            newRight = (*(ctx->text.source->scan))(
+            newRight = (*ctx->text.source->Scan)(
                     ctx->text.source, position, position, XtsdRight, 1, FALSE);
 	    break;
 	case XtselectWord: 
-	    newLeft = (*(ctx->text.source->scan))(
+	    newLeft = (*ctx->text.source->Scan)(
 		    ctx->text.source, position, XtstWhiteSpace, XtsdLeft, 1, FALSE);
-	    newRight = (*(ctx->text.source->scan))(
+	    newRight = (*ctx->text.source->Scan)(
 		    ctx->text.source, position, XtstWhiteSpace, XtsdRight, 1, FALSE);
 	    break;
 	case XtselectLine: 
 	case XtselectParagraph:  /* need "para" scan mode to implement pargraph */
- 	    newLeft = (*(ctx->text.source->scan))(
+ 	    newLeft = (*ctx->text.source->Scan)(
 		    ctx->text.source, position, XtstEOL, XtsdLeft, 1, FALSE);
-	    newRight = (*(ctx->text.source->scan))(
+	    newRight = (*ctx->text.source->Scan)(
 		    ctx->text.source, position, XtstEOL, XtsdRight, 1, FALSE);
 	    break;
 	case XtselectAll: 
-	    newLeft = (*(ctx->text.source->scan))(
-		    ctx->text.source, position, XtstFile, XtsdLeft, 1, FALSE);
-	    newRight = (*(ctx->text.source->scan))(
-		    ctx->text.source, position, XtstFile, XtsdRight, 1, FALSE);
+	    newLeft = (*ctx->text.source->Scan)(
+		    ctx->text.source, position, XtstAll, XtsdLeft, 1, FALSE);
+	    newRight = (*ctx->text.source->Scan)(
+		    ctx->text.source, position, XtstAll, XtsdRight, 1, FALSE);
 	    break;
     }
     if ((newLeft != ctx->text.s.left) || (newRight != ctx->text.s.right)
@@ -921,19 +921,19 @@ static void ExtendSelection (ctx, position, motion)
 	    break;
 	case XtselectWord: 
 	    if (ctx->text.extendDir == XtsdRight)
-		newRight = position = (*(ctx->text.source->scan))(
+		newRight = position = (*ctx->text.source->Scan)(
 			ctx->text.source, position, XtstWhiteSpace, XtsdRight, 1, FALSE);
 	    else
-		newLeft = position = (*(ctx->text.source->scan))(
+		newLeft = position = (*ctx->text.source->Scan)(
 			ctx->text.source, position, XtstWhiteSpace, XtsdLeft, 1, FALSE);
 	    break;
         case XtselectLine:
 	case XtselectParagraph: /* need "para" scan mode to implement pargraph */
 	    if (ctx->text.extendDir == XtsdRight)
-		newRight = position = (*(ctx->text.source->scan))(
+		newRight = position = (*ctx->text.source->Scan)(
 			ctx->text.source, position, XtstEOL, XtsdRight, 1, TRUE);
 	    else
-		newLeft = position = (*(ctx->text.source->scan))(
+		newLeft = position = (*ctx->text.source->Scan)(
 			ctx->text.source, position, XtstEOL, XtsdLeft, 1, FALSE);
 	    break;
 	case XtselectAll: 
@@ -951,7 +951,7 @@ static void ExtendSelection (ctx, position, motion)
 static ClearWindow (ctx)
   TextWidget ctx;
 {
-    (*(ctx->text.sink->clearToBackground))(ctx, 0, 0, ctx->core.width, ctx->core.height);
+    (*ctx->text.sink->ClearToBackground)(ctx, 0, 0, ctx->core.width, ctx->core.height);
 }
 
 
@@ -1017,7 +1017,7 @@ CheckResizeOrOverflow(ctx)
 	else
 	    if ((ctx->text.options & resizeHeight) && (line + 1 != ctx->text.lt.lines)) {
 		rbox.request_mode = CWHeight;
-		rbox.height = (*(ctx->text.sink->maxHeight))
+		rbox.height = (*ctx->text.sink->MaxHeight)
 				(ctx, line + 1) + (2*yMargin)+2;
 		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 		if (reply == XtGeometryAlmost)
@@ -1035,8 +1035,8 @@ CheckResizeOrOverflow(ctx)
  */
 void AlterSelection (ctx, mode, action)
     TextWidget     ctx;
-    SelectionMode   mode;	/* {XtsmTextSelect, XtsmTextExtend}		  */
-    SelectionAction action;	/* {XtactionStart, XtactionAdjust, XtactionEnd} */
+    XtTextSelectionMode   mode;	/* {XtsmTextSelect, XtsmTextExtend} */
+    XtTextSelectionAction action; /* {XtactionStart, XtactionAdjust, XtactionEnd} */
 {
     XtTextPosition position;
     char   *ptr;
@@ -1085,11 +1085,11 @@ static void ProcessExposeRegion(w, event)
     int y = event->xexpose.y;
     int width = event->xexpose.width;
     int height = event->xexpose.height;
-    LineTableEntryPtr info;
+    XtTextLineTableEntry *info;
 
    _XtTextPrepareToUpdate(ctx);
     if (x < ctx->text.leftmargin) /* stomp on caret tracks */
-        (*(ctx->text.sink->clearToBackground))(ctx, x, y, width, height);
+        (*ctx->text.sink->ClearToBackground)(ctx, x, y, width, height);
    /* figure out starting line that was exposed */
     line = LineForPosition(ctx, PositionForXY(ctx, x, y));
     while (line < ctx->text.lt.lines && ctx->text.lt.info[line + 1].y < y)
@@ -1098,14 +1098,14 @@ static void ProcessExposeRegion(w, event)
 	info = &(ctx->text.lt.info[line]);
 	if (info->y >= y + height)
 	    break;
-	(*(ctx->text.sink->resolve))(ctx, 
+	(*ctx->text.sink->Resolve)(ctx, 
                                 info->position, info->x,
 			        x - info->x, &pos1, &resultend);
-	(*(ctx->text.sink->resolve))(ctx, 
+	(*ctx->text.sink->Resolve)(ctx, 
                                 info->position, info->x,
 			        x + width - info->x, &pos2, 
                                 &resultend);
-	pos2 = (*(ctx->text.source->scan))(ctx->text.source, pos2, XtstPositions, 
+	pos2 = (*ctx->text.source->Scan)(ctx->text.source, pos2, XtstPositions, 
                                       XtsdRight, 1, TRUE);
 	_XtTextNeedsUpdating(ctx, pos1, pos2);
 	line++;
@@ -1184,11 +1184,11 @@ _XtTextShowPosition(ctx)
 	    first = ctx->text.lt.top;
 	    second = ctx->text.lt.info[1].position;
 	    if (ctx->text.insertPos < first)
-		top = (*(ctx->text.source->scan))(
+		top = (*ctx->text.source->Scan)(
 			ctx->text.source, ctx->text.insertPos, XtstEOL,
 			XtsdLeft, 1, FALSE);
 	    else
-		top = (*(ctx->text.source->scan))(
+		top = (*ctx->text.source->Scan)(
 			ctx->text.source, ctx->text.insertPos, XtstEOL,
 			XtsdLeft, ctx->text.lt.lines, FALSE);
 	    BuildLineTable(ctx, top);
@@ -1331,10 +1331,10 @@ version of Text.
 
 void XtTextSetSelectionArray(w, sarray)
     Widget w;
-    XtSelectType *sarray;
+    XtTextSelectType *sarray;
 {
     TextWidget ctx = (TextWidget) w;
-    XtSelectType *s2;
+    XtTextSelectType *s2;
 
     s2 = ctx->text.sarray;
     while (XtselectNull != (*s2++ = *sarray++)) ;
@@ -1347,7 +1347,7 @@ void XtTextSetLastPos (w, lastPos)
     TextWidget  ctx = (TextWidget) w;
 
 	_XtTextPrepareToUpdate(ctx);
-	(*(ctx->text.source->setLastPos))(ctx->text.source, lastPos);
+	(*ctx->text.source->SetLastPos)(ctx->text.source, lastPos);
 	ctx->text.lastPos = GETLASTPOS;
 	ForceBuildLineTable(ctx);
 	DisplayTextWindow(w);
@@ -1396,7 +1396,7 @@ int XtTextReplace(w, startPos, endPos, text)
 {
     TextWidget ctx = (TextWidget) w;
     int result;
-    result = EDITERROR;
+    result = EditError;
 	_XtTextPrepareToUpdate(ctx);
 	result = ReplaceText(ctx, startPos, endPos, text);
 	_XtTextExecuteUpdate(ctx);
@@ -1481,7 +1481,7 @@ void XtTextInvalidate(w, from, to)
 {
     TextWidget ctx = (TextWidget) w;
 
-        ctx->text.lastPos = (*(ctx->text.source->getLastPos))(ctx->text.source);
+        ctx->text.lastPos = (*ctx->text.source->GetLastPos)(ctx->text.source);
         _XtTextPrepareToUpdate(ctx);
         _XtTextNeedsUpdating(ctx, from, to);
         ForceBuildLineTable(ctx);
@@ -1574,7 +1574,7 @@ StuffFromBuffer(ctx, buffer)
 	XBell(XtDisplay(ctx), 50);
 	return;
     }
-    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
+    ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
     	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
     _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
     XtFree(text.ptr);
@@ -1603,15 +1603,15 @@ static void Stuff(ctx, event)
 static XtTextPosition NextPosition(ctx, position, kind, direction)
     TextWidget ctx;
     XtTextPosition position;
-    ScanType kind;
-    ScanDirection direction;
+    XtTextScanType kind;
+    XtTextScanDirection direction;
 {
     XtTextPosition pos;
 
-     pos = (*(ctx->text.source->scan))(
+     pos = (*ctx->text.source->Scan)(
 	    ctx->text.source, position, kind, direction, 1, FALSE);
      if (pos == ctx->text.insertPos) 
-         pos = (*(ctx->text.source->scan))(
+         pos = (*ctx->text.source->Scan)(
             ctx->text.source, position, kind, direction, 2, FALSE);
      return pos;
 }
@@ -1623,7 +1623,7 @@ static void MoveForwardChar(ctx, event)
    XEvent *event;
 {
    StartAction(ctx, event);
-   ctx->text.insertPos = (*(ctx->text.source->scan))(
+   ctx->text.insertPos = (*ctx->text.source->Scan)(
         ctx->text.source, ctx->text.insertPos, XtstPositions, XtsdRight, 1, 
 	TRUE);
    EndAction(ctx);
@@ -1634,7 +1634,7 @@ static void MoveBackwardChar(ctx, event)
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = (*(ctx->text.source->scan))(
+    ctx->text.insertPos = (*ctx->text.source->Scan)(
             ctx->text.source, ctx->text.insertPos, XtstPositions, XtsdLeft,
 	    1, TRUE);
    EndAction(ctx);
@@ -1706,7 +1706,7 @@ static void MoveToLineEnd(ctx, event)
     if (next > ctx->text.lastPos)
 	next = ctx->text.lastPos;
     else
-	next = (*(ctx->text.source->scan))(ctx->text.source, next, XtstPositions, 
+	next = (*ctx->text.source->Scan)(ctx->text.source, next, XtstPositions, 
 	  XtsdLeft, 1, TRUE);
     ctx->text.insertPos = next;
    EndAction(ctx);
@@ -1732,7 +1732,7 @@ static void MoveNextLine(ctx, event)
     if (LineLastPosition == ctx->text.insertPos)
 	width = LineLastWidth;
     else
-	(*(ctx->text.sink->findDistance))(ctx,
+	(*ctx->text.sink->FindDistance)(ctx,
 		ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 		ctx->text.insertPos, &width, &position, &height);
     line++;
@@ -1741,10 +1741,10 @@ static void MoveNextLine(ctx, event)
 	EndAction(ctx);
 	return;
     }
-    (*(ctx->text.sink->findPosition))(ctx,
+    (*ctx->text.sink->FindPosition)(ctx,
 	    ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 	    width, FALSE, &position, &width2, &height);
-    maxp = (*(ctx->text.source->scan))(ctx->text.source,
+    maxp = (*ctx->text.source->Scan)(ctx->text.source,
             ctx->text.lt.info[line+1].position,
 	    XtstPositions, XtsdLeft, 1, TRUE);
     if (position > maxp)
@@ -1772,15 +1772,15 @@ static void MovePreviousLine(ctx, event)
 	if (LineLastPosition == ctx->text.insertPos)
 	    width = LineLastWidth;
 	else
-	    (*(ctx->text.sink->findDistance))(ctx,
+	    (*ctx->text.sink->FindDistance)(ctx,
 		    ctx->text.lt.info[line].position, 
 		    ctx->text.lt.info[line].x,
 		    ctx->text.insertPos, &width, &position, &height);
 	line--;
-	(*(ctx->text.sink->findPosition))(ctx,
+	(*ctx->text.sink->FindPosition)(ctx,
 		ctx->text.lt.info[line].position, ctx->text.lt.info[line].x,
 		width, FALSE, &position, &width2, &height);
-	maxp = (*(ctx->text.source->scan))(ctx->text.source, 
+	maxp = (*ctx->text.source->Scan)(ctx->text.source, 
 		ctx->text.lt.info[line+1].position,
 		XtstPositions, XtsdLeft, 1, TRUE);
 	if (position > maxp)
@@ -1799,8 +1799,8 @@ static void MoveBeginningOfFile(ctx, event)
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
-    	ctx->text.insertPos, XtstFile, XtsdLeft, 1, TRUE);
+    ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
+    	ctx->text.insertPos, XtstAll, XtsdLeft, 1, TRUE);
    EndAction(ctx);
 }
 
@@ -1810,8 +1810,8 @@ static void MoveEndOfFile(ctx, event)
    XEvent *event;
 {
    StartAction(ctx, event);
-    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
-    	ctx->text.insertPos, XtstFile,  XtsdRight, 1, TRUE);
+    ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
+    	ctx->text.insertPos, XtstAll,  XtsdRight, 1, TRUE);
    EndAction(ctx);
 }
 
@@ -1865,7 +1865,7 @@ static void DeleteForwardChar(ctx, event)
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = (*(ctx->text.source->scan))(
+    next = (*ctx->text.source->Scan)(
             ctx->text.source, ctx->text.insertPos, XtstPositions, 
 	    XtsdRight, 1, TRUE);
     DeleteOrKill(ctx, ctx->text.insertPos, next, FALSE);
@@ -1879,7 +1879,7 @@ static void DeleteBackwardChar(ctx, event)
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = (*(ctx->text.source->scan))(
+    next = (*ctx->text.source->Scan)(
             ctx->text.source, ctx->text.insertPos, XtstPositions, 
 	    XtsdLeft, 1, TRUE);
     DeleteOrKill(ctx, next, ctx->text.insertPos, FALSE);
@@ -1962,7 +1962,7 @@ static void KillToEndOfLine(ctx, event)
     _XtTextShowPosition(ctx);
     line = LineForPosition(ctx, ctx->text.insertPos);
     last = ctx->text.lt.info[line + 1].position;
-    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
+    next = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
        XtstEOL, XtsdRight, 1, FALSE);
     if (last > ctx->text.lastPos)
 	last = ctx->text.lastPos;
@@ -1979,10 +1979,10 @@ static void KillToEndOfParagraph(ctx, event)
     XtTextPosition next;
 
    StartAction(ctx, event);
-    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
+    next = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 				       XtstEOL, XtsdRight, 1, FALSE);
     if (next == ctx->text.insertPos)
-	next = (*(ctx->text.source->scan))(ctx->text.source, next, XtstEOL,
+	next = (*ctx->text.source->Scan)(ctx->text.source, next, XtstEOL,
 					   XtsdRight, 1, TRUE);
     DeleteOrKill(ctx, ctx->text.insertPos, next, TRUE);
    EndAction(ctx);
@@ -2006,11 +2006,11 @@ static int InsertNewLineAndBackupInternal(ctx)
     text.firstPos = 0;
     if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell( XtDisplay(ctx), 50);
-	return(EDITERROR);
+	return(EditError);
     }
     _XtTextSetNewSelection(ctx, (XtTextPosition) 0, (XtTextPosition) 0);
     ctx->text.showposition = TRUE;
-    return(EDITDONE);
+    return(EditDone);
 }
 
 
@@ -2023,12 +2023,12 @@ static int InsertNewLine(ctx, event)
 
    StartAction(ctx, event);
     if (InsertNewLineAndBackupInternal(ctx))
-	return(EDITERROR);
-    next = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
+	return(EditError);
+    next = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 	    XtstPositions, XtsdRight, 1, TRUE);
     ctx->text.insertPos = next;
    EndAction(ctx);
-    return(EDITDONE);
+    return(EditDone);
 }
 
 
@@ -2040,11 +2040,11 @@ static void InsertNewLineAndIndent(ctx, event)
     XtTextPosition pos1, pos2;
 
    StartAction(ctx, event);
-    pos1 = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos, 
+    pos1 = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
     	XtstEOL, XtsdLeft, 1, FALSE);
-    pos2 = (*(ctx->text.source->scan))(ctx->text.source, pos1, XtstEOL, 
+    pos2 = (*ctx->text.source->Scan)(ctx->text.source, pos1, XtstEOL, 
     	XtsdLeft, 1, TRUE);
-    pos2 = (*(ctx->text.source->scan))(ctx->text.source, pos2, XtstWhiteSpace, 
+    pos2 = (*ctx->text.source->Scan)(ctx->text.source, pos2, XtstWhiteSpace, 
     	XtsdRight, 1, TRUE);
     text.ptr = _XtTextGetText(ctx, pos1, pos2);
     text.length = strlen(text.ptr);
@@ -2054,7 +2054,7 @@ static void InsertNewLineAndIndent(ctx, event)
 	EndAction(ctx);
 	return;
     }
-    ctx->text.insertPos = (*(ctx->text.source->scan))(ctx->text.source, 
+    ctx->text.insertPos = (*ctx->text.source->Scan)(ctx->text.source, 
     	ctx->text.insertPos, XtstPositions, XtsdRight, text.length, TRUE);
     XtFree(text.ptr);
    EndAction(ctx);
@@ -2079,9 +2079,9 @@ static void SelectWord(ctx, event)
 {
     XtTextPosition l, r;
    StartAction(ctx, event);
-    l = (*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos, 
+    l = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
     	XtstWhiteSpace, XtsdLeft, 1, FALSE);
-    r = (*(ctx->text.source->scan))(ctx->text.source, l, XtstWhiteSpace, 
+    r = (*ctx->text.source->Scan)(ctx->text.source, l, XtstWhiteSpace, 
     	XtsdRight, 1, FALSE);
     NewSelection(ctx, l, r);
    EndAction(ctx);
@@ -2196,7 +2196,7 @@ static int InsertFileNamed(ctx, str)
     while ((text.length = read(fid, buf, 512)) > 0) {
 	text.ptr = buf;
 	(void) ReplaceText(ctx, position, position, &text);
-	position = (*(ctx->text.source->scan))(ctx->text.source, position, 
+	position = (*ctx->text.source->Scan)(ctx->text.source, position, 
 		XtstPositions, XtsdRight, text.length, TRUE);
     }
     (void) close(fid);
@@ -2248,7 +2248,7 @@ static void InsertChar(ctx, event)
 	return;
     }
     ctx->text.insertPos =
-	(*(ctx->text.source->scan))(ctx->text.source, ctx->text.insertPos,
+	(*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 			    XtstPositions, XtsdRight, text.length, TRUE);
 	 _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
 
@@ -2265,7 +2265,7 @@ static void InsertFile(ctx, event)
 /* this depends on dialog boxes...
 
    StartAction(ctx, event);
-    if (ctx->text.source->editType(ctx->text.source) != XttextEdit) {
+    if ((*ctx->text.source->EditType)(ctx->text.source) != XttextEdit) {
 	XBell(XtDisplay(ctx), 50);
 	EndAction(ctx);
 	return;
@@ -2280,7 +2280,7 @@ static void InsertFile(ctx, event)
 	    (void) ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text);
 	    ctx->text.s.left = ctx->text.insertPos;
 	    ctx->text.s.right = ctx->text.insertPos = 
-		ctx->text.source->scan(ctx->text.source, ctx->text.insertPos, 
+		(*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos, 
 		  XtstPositions, XtsdRight, text.length, TRUE);
 	}
 	XtFree(ptr);
