@@ -1,8 +1,7 @@
-yes
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.59 91/07/16 22:19:37 gildea Exp $
+ * $XConsortium: dm.c,v 1.60 91/07/18 18:47:49 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
