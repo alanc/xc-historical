@@ -1,4 +1,4 @@
-/* $XConsortium: lcStd.c,v 1.1 93/09/17 13:31:36 rws Exp $ */
+/* $XConsortium: lcStd.c,v 1.2 93/09/17 14:24:19 rws Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by TOSHIBA Corp.
@@ -340,7 +340,7 @@ _Xlcctstombs(lcd, to, from, to_len)
     else {
 	ret = to_len - to_left;
 	if (to && to_left > 0)
-	    to[ret] = '0';
+	    *to = '\0';
     }
 
     _XlcCloseConverter(conv);
@@ -373,7 +373,7 @@ _Xlcctstowcs(lcd, to, from, to_len)
     else {
 	ret = to_len - to_left;
 	if (to && to_left > 0)
-	    to[ret] = (wchar_t) 0;
+	    *to = (wchar_t) 0;
     }
 
     _XlcCloseConverter(conv);
@@ -406,7 +406,7 @@ _Xlcmbstocts(lcd, to, from, to_len)
     else {
 	ret = to_len - to_left;
 	if (to && to_left > 0)
-	    to[ret] = '0';
+	    *to = '\0';
     }
 
     _XlcCloseConverter(conv);
@@ -439,7 +439,7 @@ _Xlcwcstocts(lcd, to, from, to_len)
     else {
 	ret = to_len - to_left;
 	if (to && to_left > 0)
-	    to[ret] = '0';
+	    *to = '\0';
     }
 
     _XlcCloseConverter(conv);
