@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.10 90/05/18 11:00:00 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.11 90/05/18 11:09:56 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -562,11 +562,10 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 	Mask validmasks;
 {
     int mskidx = dev->id;
-    int i;
+    int i, ret;
     Mask check;
     InputClientsPtr others;
     extern Mask DevicePointerMotionHintMask;
-    extern int RT_INPUTCLIENT;
 
     if (mask & ~validmasks)
     {
@@ -615,6 +614,28 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 	    }
 	}
     check = 0;
+    if ((ret = AddExtensionClient (pWin, client, mask, mskidx)) != Success)
+	return ret;
+maskSet: 
+    if ((dev->valuator->motionHintWindow == pWin) &&
+	(mask & DevicePointerMotionHintMask) &&
+	!(check & DevicePointerMotionHintMask) &&
+	!dev->grab)
+	dev->valuator->motionHintWindow = NullWindow;
+    RecalculateDeviceDeliverableEvents(pWin);
+    return Success;
+}
+
+int 
+AddExtensionClient (pWin, client, mask, mskidx)
+    WindowPtr pWin;
+    ClientPtr client;
+    Mask mask;
+    int mskidx;
+    {
+    extern int RT_INPUTCLIENT;
+    InputClientsPtr others;
+
     if (!pWin->optional && !MakeWindowOptional (pWin))
 	return BadAlloc;
     others = (InputClients *) xalloc(sizeof(InputClients));
@@ -629,15 +650,8 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
     pWin->optional->inputMasks->inputClients = others;
     if (!AddResource(others->resource, RT_INPUTCLIENT, (pointer)pWin))
 	return BadAlloc;
-maskSet: 
-    if ((dev->valuator->motionHintWindow == pWin) &&
-	(mask & DevicePointerMotionHintMask) &&
-	!(check & DevicePointerMotionHintMask) &&
-	!dev->grab)
-	dev->valuator->motionHintWindow = NullWindow;
-    RecalculateDeviceDeliverableEvents(pWin);
     return Success;
-}
+    }
 
 Bool
 MakeInputMasks (pWin)
@@ -1168,6 +1182,7 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	client->errorValue = mask;
 	return BadValue;
 	}
+
     if (mask == 0) 
 	{
 	if (wOtherInputMasks(pWin))
@@ -1178,8 +1193,8 @@ DeviceEventSuppressForWindow(pWin, client, mask, maskndx)
 	} 
     else 
 	{
-	if (!pWin->optional && !MakeWindowOptional (pWin))
-	    return BadAlloc;
+	if (!wOtherInputMasks(pWin))
+	    AddExtensionClient (pWin, client, 0, 0);
 	wOtherInputMasks(pWin)->dontPropagateMask[maskndx] = mask;
 	}
     RecalculateDeviceDeliverableEvents(pWin);
