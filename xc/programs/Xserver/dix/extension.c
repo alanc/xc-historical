@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.31 87/09/02 15:28:46 newman Locked $ */
+/* $Header: extension.c,v 1.32 87/09/02 18:22:29 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -35,18 +35,18 @@ SOFTWARE.
 #define EXTENSION_BASE  128
 #define EXTENSION_EVENT_BASE  64
 #define LAST_EVENT  128
-#define LAST_ERROR 0x7fffffff
+#define LAST_ERROR 255
 
-ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
+static ScreenProcEntry AuxillaryScreenProcs[MAXSCREENS];
 
-ExtensionEntry *extensions = (ExtensionEntry *)NULL;
+static ExtensionEntry **extensions = (ExtensionEntry **)NULL;
 extern int (* ProcVector[]) ();
 extern int (* SwappedProcVector[]) ();
 extern int (* ReplySwapVector[256]) ();
 
 int lastEvent = EXTENSION_EVENT_BASE;
-int lastError = FirstExtensionError;
-int NumExtensions = 0;
+static int lastError = FirstExtensionError;
+static int NumExtensions = 0;
 
 ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc, 
 			      SwappedMainProc, CloseDownProc)
@@ -59,7 +59,7 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
 {
     int i;
 
-    if (! (MainProc || SwappedMainProc))
+    if (!MainProc || !SwappedMainProc || !CloseDownProc)
         return((ExtensionEntry *) NULL);
     if ((lastEvent + NumEvents > LAST_EVENT) || 
 	        (unsigned)(lastError + NumErrors > LAST_ERROR))
@@ -67,38 +67,39 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
 
     i = NumExtensions;
     NumExtensions += 1;
-    extensions = (ExtensionEntry *) Xrealloc(extensions,
-			      NumExtensions * sizeof(ExtensionEntry));
-    extensions[i].name = (char *)Xalloc(strlen(name) + 1);
-    bcopy(name, extensions[i].name, strlen(name) + 1);  /* include null-termination */
-    extensions[i].index = i;
-    extensions[i].base = i + EXTENSION_BASE;
-    extensions[i].CloseDown = CloseDownProc;
+    extensions = (ExtensionEntry **) Xrealloc(extensions,
+			      NumExtensions * sizeof(ExtensionEntry *));
+    extensions[i] = (ExtensionEntry *) Xalloc(sizeof(ExtensionEntry));
+    extensions[i]->name = (char *)Xalloc(strlen(name) + 1);
+    strcpy(extensions[i]->name,  name);
+    extensions[i]->index = i;
+    extensions[i]->base = i + EXTENSION_BASE;
+    extensions[i]->CloseDown = CloseDownProc;
     ProcVector[i + EXTENSION_BASE] = MainProc;
     SwappedProcVector[i + EXTENSION_BASE] = SwappedMainProc;
     if (NumEvents)
     {
-        extensions[i].eventBase = lastEvent;
-	extensions[i].eventLast = lastEvent + NumEvents;
+        extensions[i]->eventBase = lastEvent;
+	extensions[i]->eventLast = lastEvent + NumEvents;
 	lastEvent += NumEvents;
     }
     else
     {
-        extensions[i].eventBase = 0;
-        extensions[i].eventLast = 0;
+        extensions[i]->eventBase = 0;
+        extensions[i]->eventLast = 0;
     }
     if (NumErrors)
     {
-        extensions[i].errorBase = lastError;
-	extensions[i].errorLast = lastError + NumErrors;
+        extensions[i]->errorBase = lastError;
+	extensions[i]->errorLast = lastError + NumErrors;
 	lastError += NumErrors;
     }
     else
     {
-        extensions[i].errorBase = 0;
-        extensions[i].errorLast = 0;
+        extensions[i]->errorBase = 0;
+        extensions[i]->errorLast = 0;
     }
-    return(&extensions[i]);
+    return(extensions[i]);
 }
 
 CloseDownExtensions()
@@ -107,11 +108,15 @@ CloseDownExtensions()
 
     for (i = 0; i < NumExtensions; i++)
     {
-	(* extensions[i].CloseDown)(&extensions[i]);
-	Xfree(extensions[i].name);
+	(* extensions[i]->CloseDown)(extensions[i]);
+	Xfree(extensions[i]->name);
+	Xfree(extensions[i]);
     }
     Xfree(extensions);
     NumExtensions = 0;
+    extensions = (ExtensionEntry **)NULL;
+    lastEvent = EXTENSION_EVENT_BASE;
+    lastError = FirstExtensionError;
 }
 
 
@@ -137,8 +142,8 @@ ProcQueryExtension(client)
     {
         for (i=0; i<NumExtensions; i++)
 	{
-            if ((strlen(extensions[i].name) == stuff->nbytes) &&
-                 !strncmp(&stuff[1], extensions[i].name, stuff->nbytes))
+            if ((strlen(extensions[i]->name) == stuff->nbytes) &&
+                 !strncmp(&stuff[1], extensions[i]->name, stuff->nbytes))
                  break;
 	}
         if (i == NumExtensions)
@@ -146,9 +151,9 @@ ProcQueryExtension(client)
         else
         {            
             reply.present = xTrue;
-	    reply.major_opcode = extensions[i].base;
-	    reply.first_event = extensions[i].eventBase;
-	    reply.first_error = extensions[i].errorBase;
+	    reply.major_opcode = extensions[i]->base;
+	    reply.first_event = extensions[i]->eventBase;
+	    reply.first_error = extensions[i]->errorBase;
 	}
     }
     WriteReplyToClient(client, sizeof(xQueryExtensionReply), &reply);
@@ -177,15 +182,15 @@ ProcListExtensions(client)
         register int i;	
 
         for (i=0;  i<NumExtensions; i++)
-	    total_length += strlen(extensions[i].name) + 1;
+	    total_length += strlen(extensions[i]->name) + 1;
 
         reply.length = (total_length + 3) >> 2;
 	buffer = bufptr = (char *)ALLOCATE_LOCAL(total_length);
         for (i=0;  i<NumExtensions; i++)
         {
 	    int len;
-            *bufptr++ = len = strlen(extensions[i].name);
-	    bcopy(extensions[i].name, bufptr,  len);
+            *bufptr++ = len = strlen(extensions[i]->name);
+	    bcopy(extensions[i]->name, bufptr,  len);
 	    bufptr += len;
 	}
     }
