@@ -13,7 +13,7 @@
 		 xkmout.o xkbout.o cout.o \
 		 xkbparse.o
       PROGRAMS = xkbcomp
-EXTRA_INCLUDES = -Iutils
+EXTRA_INCLUDES = -Iutils -I$(EXTINCSRC)
 
        XKBCOMP = xkbcomp
 
