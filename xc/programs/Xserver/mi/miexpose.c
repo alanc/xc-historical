@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.26 87/11/08 18:11:37 rws Locked $ */
+/* $Header: miexpose.c,v 1.27 87/11/10 17:49:34 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -35,6 +35,7 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmap.h"
+#include "input.h"
 
 #include "dixstruct.h"
 #include "mi.h"
@@ -190,7 +191,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 					
 	    }
 	    TryClientEvents(requestingClient, pEvent, prgnExposed->numRects,
-			    0, NoEventMask, 0);
+			    0, NoEventMask, NullGrab);
 	    DEALLOCATE_LOCAL(pEvent);
         }
         else
@@ -199,7 +200,7 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	    event.u.u.type = NoExpose;
 	    event.u.noExposure.drawable = requestingClient->lastDrawableID;
 	    TryClientEvents(requestingClient, &event, 1,
-	        0, NoEventMask, 0);
+	        0, NoEventMask, NullGrab);
         }
     }
 
@@ -234,7 +235,7 @@ miSendNoExpose(pGC)
 	event.u.noExposure.drawable = 
 		    requestingClient->lastDrawableID;
         TryClientEvents(requestingClient, &event, 1,
-	        0, NoEventMask, 0);
+	        0, NoEventMask, NullGrab);
     }
 }
 
