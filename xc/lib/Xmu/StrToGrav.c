@@ -1,5 +1,5 @@
 /*
- * $XConsortium: StrToGrav.c,v 1.3 90/04/13 16:22:28 jim Exp $
+ * $XConsortium: StrToGrav.c,v 1.4 90/11/30 17:00:50 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #include <X11/Xmu/Converters.h>
 
 #define done(address, type) \
-        { (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
+        { (*toVal).size = sizeof(type); (*toVal).addr = (XPointer) address; }
 
 static struct _namepair {
     XrmQuark quark;
@@ -51,6 +51,11 @@ static struct _namepair {
     { NULLQUARK, XtEbottom, SouthGravity },
     { NULLQUARK, NULL, ForgetGravity }
 };
+
+/*
+ * This function is deprecated as of the addition of 
+ * XtCvtStringToGravity in R6.
+ */
 
 void XmuCvtStringToGravity (args, num_args, fromVal, toVal)
     XrmValuePtr args;
