@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.51 89/08/31 17:45:11 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.52 89/09/19 09:17:52 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -253,6 +253,9 @@
 #ifndef HasSaberC
 #define HasSaberC		NO	/* for people unclear on the concept */
 #endif
+#ifndef HasFortran
+#define HasFortran		NO
+#endif
 
 #ifndef HasSunOSSharedLibraries
 #define HasSunOSSharedLibraries NO
@@ -356,8 +359,16 @@
 #ifndef CcCmd
 #define CcCmd                  cc
 #endif
+#if HasFortran
 #ifndef FortranCmd			/* for xgks */
 #define FortranCmd f77
+#endif
+#ifndef FortranFlags
+#define FortranFlags /**/
+#endif
+#ifndef FortranDebugFlags
+#define FortranDebugFlags /**/		/* for -O or -g */
+#endif
 #endif
 #ifndef AsCmd
 #define AsCmd                  as
@@ -471,7 +482,11 @@
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp doesn't have uniq sym */
                CC = CcCmd
+#if HasFortran
                FC = FortranCmd
+      FDEBUGFLAGS = FortranDebugFlags
+          FCFLAGS = FortranFlags $(FDEBUGFLAGS)
+#endif
          COMPRESS = CompressCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
