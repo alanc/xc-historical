@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.115 89/10/03 16:42:04 keith Exp $ */
+/* $XConsortium: connection.c,v 1.116 89/10/10 14:21:12 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -53,6 +53,7 @@ SOFTWARE.
 #include <setjmp.h>
 
 #ifdef hpux
+#include <sys/utsname.h>
 #include <sys/ioctl.h>
 #endif
 
@@ -92,8 +93,14 @@ static int unixDomainConnection = -1;
 typedef long CCID;      /* mask of indices into client socket table */
 
 #ifndef X_UNIX_PATH
+#ifdef hpux
+#define X_UNIX_DIR	"/usr/spool/sockets/X11"
+#define X_UNIX_PATH	"/usr/spool/sockets/X11/"
+#define OLD_UNIX_DIR	"/tmp/.X11-unix"
+#else
 #define X_UNIX_DIR	"/tmp/.X11-unix"
 #define X_UNIX_PATH	"/tmp/.X11-unix/X"
+#endif
 #endif
 
 char *display;			/* The display number */
@@ -220,6 +227,27 @@ open_unix_socket ()
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
     strcat (unsock.sun_path, display);
+#ifdef hpux
+    {  
+        /*    The following is for backwards compatibility
+         *    with old HP clients. This old scheme predates the use
+ 	 *    of the /usr/spool/sockets directory, and uses hostname:display
+ 	 *    in the /tmp/.X11-unix directory
+         */
+        struct utsname systemName;
+	static char oldLinkName[256];
+
+        uname(&systemName);
+        strcpy(oldLinkName, OLD_UNIX_DIR);
+        mkdir(oldLinkName, 0777);
+        chown(oldLinkName, 2, 3);
+        strcat(oldLinkName, "/");
+        strcat(oldLinkName, systemName.nodename);
+        strcat(oldLinkName, display);
+        unlink(oldLinkName);
+        symlink(unsock.sun_path, oldLinkName);
+    }
+#endif	/* hpux */
     unlink (unsock.sun_path);
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
     {
