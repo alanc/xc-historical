@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.17 94/03/28 18:29:44 gildea Exp $ */
+/* $XConsortium: genauth.c,v 1.18 94/04/17 20:03:39 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -37,9 +37,13 @@ from the X Consortium.
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
 # include   "dm.h"
+
+#include <errno.h>
+
 #ifdef X_NOT_STDC_ENV
 #define Time_t long
 extern Time_t time ();
+extern int errno;
 #else
 #include <time.h>
 #define Time_t time_t
@@ -80,10 +84,13 @@ long	sum[2];
     int	    loops;
     int	    reads;
     int	    i;
+    int     ret_status = 0;
 
     fd = open (name, 0);
-    if (fd < 0)
+    if (fd < 0) {
+	LogError("Cannot open randomFile \"%s\"\n", name);
 	return 0;
+    }
     reads = FILE_LIMIT;
     sum[0] = 0;
     sum[1] = 0;
@@ -92,10 +99,13 @@ long	sum[2];
 	for (i = 0; i < loops; i+= 2) {
 	    sum[0] += buf[i];
 	    sum[1] += buf[i+1];
+	    ret_status = 1;
 	}
     }
+    if (cnt < 0)
+	LogError("Cannot read randomFile \"%s\", errno = %d\n", name, errno);
     close (fd);
-    return 1;
+    return ret_status;
 }
 
 static
