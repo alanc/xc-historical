@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.75 94/08/28 17:56:34 rws Exp swick $
+ * $XConsortium: init.c,v 2.76 94/08/29 19:46:26 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -243,6 +243,23 @@ xmh man page for further information."
 }
 
 
+/*ARGSUSED*/
+static void _Die(w, client_data, call_data)
+    Widget w;			/* == toplevel */
+    XtPointer client_data;	/* unused */
+    XtPointer call_data;	/* unused */
+{
+    int i;
+
+    for (i=0; i<numScrns; i++)
+	if (scrnList[i]->mapped)
+	    XtUnmapWidget(scrnList[i]->parent);
+
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(w));
+    exit(0);
+}
+
+
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
@@ -470,6 +487,7 @@ char **argv;
 	XInternAtom(XtDisplay(toplevel), "WM_SAVE_YOURSELF", False);
 
     XtAddCallback(toplevel, XtNsaveCallback, DoSaveYourself, (XtPointer)NULL);
+    XtAddCallback(toplevel, XtNdieCallback, _Die, (XtPointer)NULL);
 
     MenuItemBitmap =
 	XCreateBitmapFromData( XtDisplay(toplevel),
