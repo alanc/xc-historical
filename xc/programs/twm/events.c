@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.133 90/03/13 15:29:18 jim Exp $
+ * $XConsortium: events.c,v 1.134 90/03/13 15:52:28 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.133 90/03/13 15:29:18 jim Exp $";
+"$XConsortium: events.c,v 1.134 90/03/13 15:52:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1924,6 +1924,7 @@ HandleEnterNotify()
 	     */
 	    if (Tmp_win->ring.next && (!enter_flag || raise_win == enter_win))
 	      Scr->RingLeader = Tmp_win;
+	    XSync (dpy, 0);
 	    return;
 	}				/* end if Tmp_win */
     }					/* end if !ActiveMenu */
@@ -2054,6 +2055,7 @@ HandleLeaveNotify()
 		}
 	    }
 	}
+	XSync (dpy, 0);
 	return;
     }
 }

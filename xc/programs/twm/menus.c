@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.146 90/03/13 15:29:11 jim Exp $
+ * $XConsortium: menus.c,v 1.147 90/03/13 15:52:22 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.146 90/03/13 15:29:11 jim Exp $";
+"$XConsortium: menus.c,v 1.147 90/03/13 15:52:22 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2173,6 +2173,7 @@ TwmWindow *tmp_win;
       WarpToWindow (tmp_win);
     tmp_win->icon = FALSE;
     tmp_win->icon_on = FALSE;
+    XSync (dpy, 0);
 }
 
 Iconify(tmp_win, def_x, def_y)
@@ -2266,6 +2267,7 @@ int def_x, def_y;
 	tmp_win->icon_on = TRUE;
     else
 	tmp_win->icon_on = FALSE;
+    XSync (dpy, 0);
 }
 
 static void Identify (t)
