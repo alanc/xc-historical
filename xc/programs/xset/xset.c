@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: swick $ 
+ * $Locker:  $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.20 87/09/06 12:14:30 swick Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.21 87/09/07 11:51:22 swick Exp $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -193,11 +193,11 @@ for (i = 1; i < argc; ) {
       set_saver(dpy, PREFER_BLANK, PreferBlanking);
       i++;
     }
-    if (strcmp(arg, "noblank") == 0) {     /*  Ditto.  */
+    else if (strcmp(arg, "noblank") == 0) {     /*  Ditto.  */
       set_saver(dpy, PREFER_BLANK, DontPreferBlanking);
       i++;
     }
-    if (strcmp(arg, "off") == 0) {
+    else if (strcmp(arg, "off") == 0) {
       set_saver(dpy, TIMEOUT, 0);   /*  Turn off screen saver.  */
       i++;
       if (i >= argc)
@@ -208,7 +208,7 @@ for (i = 1; i < argc; ) {
 	i++;
       }
     }
-    if (strcmp(arg, "default") == 0) {    /*  Leave as default.       */
+    else if (strcmp(arg, "default") == 0) {    /*  Leave as default.       */
       set_saver(dpy, ALL, 0);
       i++;
     } 
@@ -219,9 +219,6 @@ for (i = 1; i < argc; ) {
 	break;
       arg = argv[i];
       if (*arg >= '0' && *arg <= '9') {
-	if (atoi(arg) < 20) {
-	  usage(argv[0]);
-	}
 	set_saver(dpy, INTERVAL, atoi(arg));
 	i++;
       }
@@ -231,7 +228,7 @@ for (i = 1; i < argc; ) {
     set_repeat(dpy, ALL, OFF);
   } 
   else if (*arg == 'r') {            /*  If it starts with "r"        */
-    if (i > argc) {
+    if (i >= argc) {
       set_repeat(dpy, ALL, ON);
       break;
     }
