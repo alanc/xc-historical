@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.199 95/01/18 19:24:33 gildea Exp gildea $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.200 95/02/21 21:36:15 gildea Exp gildea $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -291,7 +291,7 @@ ProgramTargetName(step.sentinel):					@@\
 ProgramTargetName(program.sentinel): deplist				@@\
 	RemoveTargetProgram($@)						@@\
 	$(CCENVSETUP) $(SENTINEL) $(SENTINELOPTIONS) $(CC) -o $@ $(LDOPTIONS) linklist $(EXTRA_LOAD_FLAGS) @@\
-
+									@@\
 clean clean.sentinel::							@@\
 	RemoveFile(program.sentinel)
 #else
