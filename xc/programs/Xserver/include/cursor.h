@@ -21,9 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cursor.h,v 1.17 88/09/06 15:48:50 jim Exp $ */
+/* $XConsortium: cursor.h,v 1.18 93/07/12 09:44:56 dpw Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
+
+#include "misc.h"
 
 #define NullCursor ((CursorPtr)NULL)
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormap.h,v 1.22 90/01/13 17:30:13 rws Exp $ */
+/* $XConsortium: colormap.h,v 1.23 93/07/12 09:44:29 dpw Exp $ */
 #ifndef CMAP_H
 #define CMAP_H 1
 
@@ -74,14 +74,14 @@ extern int FreeColormap(
 extern int TellLostMap(
 #if NeedFunctionPrototypes
     WindowPtr /*pwin*/,
-    Colormap */*pmid*/
+    pointer /* Colormap *pmid */
 #endif
 );
 
 extern int TellGainedMap(
 #if NeedFunctionPrototypes
     WindowPtr /*pwin*/,
-    Colormap */*pmid*/
+    pointer /* Colormap *pmid */
 #endif
 );
 

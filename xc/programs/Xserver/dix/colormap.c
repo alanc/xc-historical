@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.25 92/11/14 15:30:34 rws Exp $ */
+/* $XConsortium: colormap.c,v 5.26 93/07/12 09:23:18 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -466,10 +466,11 @@ TellNoMap (pwin, pmid)
 
 /* Tell window that pmid got uninstalled */
 int
-TellLostMap (pwin, pmid)
+TellLostMap (pwin, value)
     WindowPtr	pwin;
-    Colormap 	*pmid;
+    pointer	value;
 {
+    Colormap 	*pmid = (Colormap *)value;
     xEvent 	xE;
     if (wColormap(pwin) == *pmid)
     {
@@ -487,10 +488,11 @@ TellLostMap (pwin, pmid)
 
 /* Tell window that pmid got installed */
 int
-TellGainedMap (pwin, pmid)
+TellGainedMap (pwin, value)
     WindowPtr	pwin;
-    Colormap 	*pmid;
+    pointer	value;
 {
+    Colormap 	*pmid = (Colormap *)value;
     xEvent 	xE;
     if (wColormap (pwin) == *pmid)
     {
