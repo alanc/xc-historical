@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.52 87/11/11 14:37:44 newman Locked $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.53 87/11/23 15:20:27 newman Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -8,7 +8,7 @@ static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.52 87/11/11 14:37:
  
 #include <stdio.h>
 #include "Xlibint.h"
-#include <string.h>
+#include <X11/Xos.h>
 #include "Xatom.h"
 
 #ifndef lint

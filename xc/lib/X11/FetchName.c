@@ -1,12 +1,12 @@
 #include "copyright.h"
 
-/* $Header: XFetchName.c,v 11.18 87/09/01 14:47:27 rws Locked $ */
+/* $Header: XFetchName.c,v 11.19 87/11/11 14:32:05 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
 #include "Xlibint.h"
 #include "Xatom.h"
-#include <string.h>
+#include <X11/Xos.h>
 
 
 Status XFetchName (dpy, w, name)

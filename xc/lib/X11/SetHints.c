@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.19 87/10/30 00:00:13 rws Locked $ */
+/* $Header: XSetHints.c,v 11.20 87/11/11 14:40:14 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,7 @@ SOFTWARE.
 #include "Xutil.h"
 #include "Xatomtype.h"
 #include "Xatom.h"
-#include <string.h>
+#include <X11/Xos.h>
 
 #define safestrlen(s) ((s) ? strlen(s) : 0)
 
