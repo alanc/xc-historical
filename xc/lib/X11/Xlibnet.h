@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.16 91/07/12 15:54:49 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.17 91/07/19 16:32:54 gildea Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -82,12 +82,16 @@ without express or implied warranty.
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 256
+#else
 #include <sys/param.h>
 #ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif

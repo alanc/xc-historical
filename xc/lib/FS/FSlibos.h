@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.9 91/05/13 15:12:02 gildea Exp $ */
+/* $XConsortium: FSlibos.h,v 1.10 91/07/19 16:58:22 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -84,12 +84,16 @@
 #endif
 #endif
 #ifndef OPEN_MAX
+#ifdef SVR4
+#define OPEN_MAX 256
+#else
 #include <sys/param.h>
 #ifndef OPEN_MAX
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif
