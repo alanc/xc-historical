@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.131 94/07/06 16:18:51 mor Exp $
+ * $XConsortium: twm.c,v 1.132 94/07/21 16:06:06 mor Exp mor $
  *
  * twm - "Tom's Window Manager"
  *
@@ -577,7 +577,7 @@ main(argc, argv, environ)
 	if (MultiScreen && NumScreens > 0)
 	  fprintf (stderr, "%s:  unable to find any unmanaged screens\n",
 		   ProgramName);
-	SmcCloseConnection (smcConn, 0, NULL);
+	if (smcConn) SmcCloseConnection (smcConn, 0, NULL);
 	exit (1);
     }
 
