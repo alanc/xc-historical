@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.4 89/03/28 16:51:16 keith Exp $
+ * $XConsortium: util.c,v 1.5 90/05/15 18:42:54 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -173,6 +173,19 @@ char	*string;
 	}
 	argv[i] = 0;
 	return argv;
+}
+
+freeArgs (argv)
+    char    **argv;
+{
+    char    **a;
+
+    if (!argv)
+	return;
+
+    for (a = argv; *a; a++)
+	free (*a);
+    free ((char *) argv);
 }
 
 CleanUpChild ()

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.9 89/12/12 13:58:18 rws Exp $
+ * $XConsortium: verify.c,v 1.10 90/02/12 17:56:34 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -86,12 +86,28 @@ struct verify_info	*verify;
 extern char **setEnv ();
 
 char **
+defaultEnv ()
+{
+    char    **env, **exp, *value;
+
+    env = 0;
+    for (exp = exportList; exp && *exp; ++exp)
+    {
+	value = getenv (*exp);
+	if (value)
+	    env = setEnv (env, *exp, value);
+    }
+    return env;
+}
+
+char **
 userEnv (d, user, home, shell)
 struct display	*d;
 char	*user, *home, *shell;
 {
-	char	**env = 0;
+	char	**env;
 	
+	env = defaultEnv ();
 	env = setEnv (env, "DISPLAY", d->name);
 	env = setEnv (env, "HOME", home);
 	env = setEnv (env, "USER", user);
@@ -105,8 +121,9 @@ systemEnv (d, user, home)
 struct display	*d;
 char	*user, *home;
 {
-	char	**env = 0;
+	char	**env;
 	
+	env = defaultEnv ();
 	env = setEnv (env, "DISPLAY", d->name);
 	env = setEnv (env, "HOME", home);
 	env = setEnv (env, "USER", user);

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.32 90/03/29 11:37:53 keith Exp $
+ * $XConsortium: resource.c,v 1.33 90/08/21 14:37:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -43,10 +43,12 @@ int	autoRescan;
 int	removeDomainname;
 char	*keyFile;
 char	*accessFile;
+char	**exportList;
 
 # define DM_STRING	0
 # define DM_INT		1
 # define DM_BOOL	2
+# define DM_ARGV	3
 
 /*
  * the following constants are supposed to be set in the makefile from
@@ -128,6 +130,8 @@ struct dmResources {
 				DEF_KEY_FILE,
 "accessFile",	"AccessFile",	DM_STRING,	&accessFile,
 				DEF_ACCESS_FILE,
+"exportList",	"ExportList",	DM_ARGV,	(char **) &exportList,
+				"",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -223,7 +227,9 @@ GetResource (name, class, valueType, valuep, default_value)
     XrmValue	value;
     char	*string, *new_string, *strncpy (), *malloc ();
     char	str_buf[50];
+    char	**newargv;
     int	len;
+    extern char **parseArgs();
 
     if (DmResourceDB && XrmGetResource (DmResourceDB,
 	name, class,
@@ -276,6 +282,10 @@ GetResource (name, class, valueType, valuep, default_value)
 		 !strcmp (str_buf, "off") ||
 		 !strcmp (str_buf, "no"))
 		*((int *) valuep) = 0;
+	break;
+    case DM_ARGV:
+	freeArgs (*valuep);
+	*((char ***) valuep) = parseArgs ((char **) 0, string);
 	break;
     }
 }

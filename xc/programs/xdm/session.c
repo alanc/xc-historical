@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.33 90/05/15 18:42:21 keith Exp $
+ * $XConsortium: session.c,v 1.34 90/08/21 14:37:40 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -200,9 +200,10 @@ LoadXloginResources (d)
 struct display	*d;
 {
     char	*args[4];
-    char	**env = 0, **setEnv();
+    char	**env = 0, **setEnv(), **defaultEnv();
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
+	env = defaultEnv ();
 	env = setEnv (env, "DISPLAY", d->name);
 	if (d->authFile)
 	    env = setEnv (env, "XAUTHORITY", d->authFile);
