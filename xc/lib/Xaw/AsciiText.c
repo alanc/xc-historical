@@ -1,12 +1,35 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.7 88/02/08 17:48:51 swick Exp $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.8 88/02/14 13:58:26 rws Exp $";
 #endif lint
 
-/* Copyright	Massachusetts Institute of Technology	1987 */
+
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
 
 #include <X11/copyright.h>
 #include <X11/IntrinsicP.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/AsciiTextP.h>
 
 /* from Text.c */
