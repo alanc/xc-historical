@@ -49,7 +49,7 @@ associated icon or entry in the icon manager
 (see description of the variable
 \fBShowIconManager\fP and of the function \fBf.showiconmgr\fP).
 .PP
-Windows are resized by pressing the right titlebutton (which resembles
+Windows are resized by pressing the right titlebutton (which resembles a
 group of nested squares), dragging the pointer over edge that is to be
 moved, and releasing the pointer when the outline of the window is the desired
 size.  Similarly, windows are moved by pressing in the title or highlight
