@@ -29,8 +29,8 @@
 #include <errno.h>
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-extern int	errno;
 #else
+extern int errno;
 extern void *malloc();
 extern char *getenv();
 #endif
