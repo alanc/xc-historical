@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.47 90/03/19 10:30:44 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.48 90/03/19 12:52:14 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -45,7 +45,9 @@ typedef struct {
 typedef unsigned long XtVersionType;
 
 #define XT_VERSION 11
-#define XT_REVISION 3
+#ifndef XT_REVISION
+#define XT_REVISION 4
+#endif
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
 #define XtVersionDontCheck 0
 
