@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.10 87/09/12 22:02:23 swick Exp $";
+static char rcsid[] = "$Header: Clock.c,v 1.11 87/09/13 03:16:01 swick Locked $";
 #endif lint
 
 /*
@@ -30,7 +30,7 @@ static char rcsid[] = "$Header: Clock.c,v 1.10 87/09/12 22:02:23 swick Exp $";
 #include "Xutil.h"
 #include "Intrinsic.h"
 #include "Clock.h"
-#include "ClockPrivate.h"
+#include "ClockP.h"
 #include "Atoms.h"
 
 extern long time();

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.10 87/09/11 21:18:34 swick Locked $";
 #endif lint
 
 /*
@@ -36,7 +36,7 @@ static char rcsid[] = "$Header$";
 
 #include	"Intrinsic.h"
 #include	"ButtonBox.h"
-#include	"ButtonBoxPrivate.h"
+#include	"ButtonBoxP.h"
 #include	"Atoms.h"
 #include	"Misc.h"
 
