@@ -12,14 +12,24 @@
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
-#define SLIDER_LENGTH 100
+#define SCROLLBAR_LENGTH 125
+#define SLIDER_LENGTH 0.2	/* proportion of scrollbar taken up
+				   by the slider */
 
 static Widget label;		/* the label */
 static Widget slider;		/* the scrollbar */
 static Widget percent;	/* label with chosen percentage */
 
+/* slider_jump(w,data,position)
+** ----------------------------
+** This function is called if the user moves the scrollbar to a new
+** position (generally, by using the middle button).  It updates
+** information about where the scrollbar is.
+*/
+
 /*ARGSUSED*/
-static void slider_jump(w, data, position)
+static void
+slider_jump(w, data, position)
      Widget w;
      caddr_t data;
      caddr_t position;
@@ -28,20 +38,46 @@ static void slider_jump(w, data, position)
     {XtNlabel,   (XtArgVal) NULL}
   };
 
-  float newpercent;
-  char snewpercent[3];
+  float oldpercent;		/* where the scrollbar is */
+  float newpercent;		/* normalized scrollbar */
+  char snewpercent[3];		/* string representation of scrollbar */
 
-  newpercent = *(float *) position;
-  *(float *) data = newpercent;
+  oldpercent = *(float *) position;
+
+  /* We want the scrollbar to be at 100% when the right edge of the slider
+  ** hits the end of the scrollbar, not the left edge.  When the right edge
+  ** is at 1.0, the left edge is at 1.0 - SLIDER_LENGTH.  Normalize
+  ** accordingly.  */
+   
+  newpercent = oldpercent / (1.0 - SLIDER_LENGTH);
+
+  /* If the slider's partially out of the scrollbar, move it back in. */
+
+  if (newpercent > 1.0) {
+    newpercent = 1.0;
+    XawScrollBarSetThumb( slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
+  }
+
+  /* Store the position of the silder where it can be found */
+
+  *(float *)data = newpercent;
+
+  /* Update the label widget */
+
   sprintf(snewpercent,"%d",(int)(newpercent*100));
-
   percentargs[0].value = (XtArgVal) snewpercent;
-
   XtSetValues(percent, percentargs, XtNumber(percentargs));
 }
 
+/* slider_scroll(w,data,position)
+** ------------------------------
+** This function is called when the user does incremental scrolling, 
+** generally with the left or right button.  Right now it just ignores it.
+*/
+
 /*ARGSUSED*/
-static void slider_scroll(w, data, position)
+static void
+slider_scroll(w, data, position)
      Widget w;
      caddr_t data;
      caddr_t position;
@@ -57,7 +93,8 @@ static void slider_scroll(w, data, position)
 ** The current percentage is stored in *stored.
 */
 
-void create_testfrac_choice(w,stored)
+void
+create_testfrac_choice(w,stored)
      Widget w;
      float *stored;
 {
@@ -83,10 +120,9 @@ void create_testfrac_choice(w,stored)
     {XtNfromHoriz,      (XtArgVal) NULL}
   };
 
-
   static Arg scrollargs[] = {
     {XtNorientation,     (XtArgVal) XtorientHorizontal},
-    {XtNlength,          (XtArgVal) SLIDER_LENGTH},
+    {XtNlength,          (XtArgVal) SCROLLBAR_LENGTH},
     {XtNthickness,       (XtArgVal) 10},
     {XtNshown,           (XtArgVal) 10},
     {XtNhorizDistance,   (XtArgVal) 10},
@@ -95,6 +131,9 @@ void create_testfrac_choice(w,stored)
     {XtNscrollProc,      (XtArgVal) NULL}
   };
     
+  /* Let the scrollbar know where to store information where we
+  ** can see it */
+
   jumpcallbacks[0].closure = (caddr_t) stored;
 
   label = XtCreateManagedWidget("Percentage of Test",labelWidgetClass,w,
@@ -112,6 +151,7 @@ void create_testfrac_choice(w,stored)
   slider = XtCreateManagedWidget("Slider",scrollbarWidgetClass,w,
 				 scrollargs,XtNumber(scrollargs));
 
-  XawScrollBarSetThumb(slider, 0.9, 0.1);
+  /* Start the thumb out at 100% */
 
+  XawScrollBarSetThumb(slider, 1.0 - SLIDER_LENGTH, SLIDER_LENGTH);
 }
