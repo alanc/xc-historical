@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: brf_ents.c,v 5.1 91/02/16 10:07:11 rws Exp $ */
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -136,8 +136,8 @@ SOFTWARE.
 #define NICE_CAT_ENT_NAME                                              \
 {	char temp_str2[80];                                            \
 	int k;                                                         \
-	if (strlen(brf_entity->name) > 20) brf_entity->name[19] = '\0';\
-	sprintf(temp_str2,"%s:",brf_entity->name);                     \
+	strncpy(temp_str2, brf_entity->name, 19); temp_str2[19] = '\0';\
+	strcat(temp_str2, ":");					       \
 	strcat (temp_str, temp_str2);                                  \
 	for (k=strlen(brf_entity->name);k<20;k++)                      \
 	   strcat(temp_str," ");                                       \
@@ -145,8 +145,8 @@ SOFTWARE.
 #define NICE_CAT_ENT_NAME_D                                            \
 {	char temp_str2[80];                                            \
 	int k;                                                         \
-	if (strlen(brf_entity->name) > 20) brf_entity->name[19] = '\0';\
-	sprintf(temp_str2,"%s:",brf_entity->name);                     \
+	strncpy(temp_str2, brf_entity->name, 19); temp_str2[19] = '\0';\
+	strcat(temp_str2, ":");					       \
 	strcat (temp_str, temp_str2);                                  \
 	for (k=strlen(brf_entity->name);k<20;k++)                      \
 	   if (k%2)strcat(temp_str,"."); else strcat(temp_str," ");    \
