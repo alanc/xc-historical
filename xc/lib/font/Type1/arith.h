@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: arith.h,v 1.2 91/10/10 11:17:49 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -27,7 +27,9 @@
  * THIS SOFTWARE.
  */
 /*SHARED*/
- 
+
+#include <X11/Xmd.h>		/* LONG64 */
+
 void DLmult(),DLdiv(),DLadd(),DLsub();
  
 fractpel FPmult();
@@ -44,17 +46,25 @@ fractpel FPstarslash();
 /*END SHARED*/
 /*SHARED*/
  
+#ifdef LONG64
+typedef long doublelong;
+#else
 typedef struct {
        long high;
        unsigned long low;
 } doublelong;
- 
+#endif /* LONG64 else */
+
 /*END SHARED*/
 /*SHARED*/
  
+#ifdef LONG64
+#define  DLrightshift(dl,N)  ((dl) >>= (N))
+#else
 #define  DLrightshift(dl,N)  { \
        dl.low = (dl.low >> N) + (((unsigned long) dl.high) << (LONGSIZE - N)); \
        dl.high >>= N; \
 }
- 
+#endif
+
 /*END SHARED*/

@@ -1,4 +1,4 @@
-/* $XConsortium: arith.c,v 1.2 91/10/10 11:14:06 rws Exp $ */
+/* $XConsortium: arith.c,v 1.3 93/09/10 10:46:24 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -109,6 +109,11 @@ void DLmult(product, u, v)
   register unsigned long u;
   register unsigned long v;
 {
+#ifdef LONG64
+/* printf("DLmult(? ?, %lx, %lx)\n", u, v); */
+    *product = u*v;
+/* printf("DLmult returns %lx\n", *product); */
+#else
   register unsigned long u1, u2; /* the digits of u */
   register unsigned long v1, v2; /* the digits of v */
   register unsigned int w1, w2, w3, w4; /* the digits of w */
@@ -141,6 +146,7 @@ void DLmult(product, u, v)
  
   product->high = ASSEMBLE(w1, w2);
   product->low  = ASSEMBLE(w3, w4);
+#endif /* LONG64 else */
 }
  
 /*
@@ -153,6 +159,11 @@ void DLdiv(quotient, divisor)
        doublelong *quotient;       /* also where dividend is, originally     */
        unsigned long divisor;
 {
+#ifdef LONG64
+/* printf("DLdiv(%lx %lx)\n", quotient, divisor); */
+	*quotient /= divisor;
+/* printf("DLdiv returns %lx\n", *quotient); */
+#else
        register unsigned long u1u2 = quotient->high;
        register unsigned long u3u4 = quotient->low;
        register long u3;     /* single digit of dividend                     */
@@ -272,6 +283,7 @@ void DLdiv(quotient, divisor)
        }
        quotient->low = q3q4;
 /* printf("DLdiv returns %x %x\n", quotient->high, quotient->low); */
+#endif /* !LONG64 */
        return;
 }
  
@@ -291,6 +303,11 @@ void DLadd(u, v)
        doublelong *u;        /* u = u + v                                    */
        doublelong *v;
 {
+#ifdef LONG64
+/* printf("DLadd(%lx %lx)\n", *u, *v); */
+       *u = *u + *v;
+/* printf("DLadd returns %lx\n", *u); */
+#else
        register unsigned long lowmax = MAX(u->low, v->low);
  
 /* printf("DLadd(%x %x, %x %x)\n", u->high, u->low, v->high, v->low); */
@@ -298,6 +315,7 @@ void DLadd(u, v)
        u->low += v->low;
        if (lowmax > u->low)
                u->high++;
+#endif
 }
 /*
 :h3.DLsub() - Subtract Two Double Longs
@@ -310,11 +328,17 @@ void DLsub(u, v)
        doublelong *u;        /* u = u - v                                    */
        doublelong *v;
 {
+#ifdef LONG64
+/* printf("DLsub(%lx %lx)\n", *u, *v); */
+       *u = *u - *v;
+/* printf("DLsub returns %lx\n", *u); */
+#else
 /* printf("DLsub(%x %x, %x %x)\n", u->high, u->low, v->high, v->low);*/
        u->high -= v->high;
        if (v->low > u->low)
                u->high--;
        u->low -= v->low;
+#endif
 }
 /*
 :h3.DLrightshift() - Macro to Shift Double Long Right by N
@@ -339,6 +363,9 @@ fractpel FPmult(u, v)
 {
   doublelong w;
   register int negative = FALSE; /* sign flag */
+#ifdef LONG64
+  register fractpel ret;
+#endif
  
   if ((u == 0) || (v == 0)) return (0);
  
@@ -351,12 +378,23 @@ fractpel FPmult(u, v)
  
   DLmult(&w, u, v);
   DLrightshift(w, FRACTBITS);
+#ifndef LONG64
   if (w.high != 0 || SIGNBITON(w.low)) {
         IfTrace2(TRUE,"FPmult: overflow, %px%p\n", u, v);
         w.low = TOFRACTPEL(MAXSHORT);
   }
  
-  return ((negative) ? -(long)w.low : w.low);
+  return ((negative) ? -w.low : w.low);
+#else
+  if (w & 0xffffffff80000000L ) {
+        IfTrace2(TRUE,"FPmult: overflow, %px%p\n", u, v);
+        ret = TOFRACTPEL(MAXSHORT);
+  }
+  else
+        ret = (fractpel)w;
+ 
+  return ((negative) ? -ret : ret);
+#endif
 }
  
 /*
@@ -371,6 +409,9 @@ fractpel FPdiv(dividend, divisor)
 {
        doublelong w;         /* result will be built here                    */
        int negative = FALSE; /* flag for sign bit                            */
+#ifdef LONG64
+       register fractpel ret;
+#endif
  
        if (dividend < 0) {
                dividend = -dividend;
@@ -380,6 +421,7 @@ fractpel FPdiv(dividend, divisor)
                divisor = -divisor;
                negative = !negative;
        }
+#ifndef LONG64
        w.low = dividend << FRACTBITS;
        w.high = dividend >> (LONGSIZE - FRACTBITS);
        DLdiv(&w, divisor);
@@ -387,7 +429,18 @@ fractpel FPdiv(dividend, divisor)
                IfTrace2(TRUE,"FPdiv: overflow, %p/%p\n", dividend, divisor);
                w.low = TOFRACTPEL(MAXSHORT);
        }
-       return( (negative) ? -(long)w.low : w.low);
+       return( (negative) ? -w.low : w.low);
+#else
+       w = ((long)dividend) << FRACTBITS;
+       DLdiv(&w, divisor);
+       if (w & 0xffffffff80000000L ) {
+               IfTrace2(TRUE,"FPdiv: overflow, %p/%p\n", dividend, divisor);
+               ret = TOFRACTPEL(MAXSHORT);
+       }
+       else
+               ret = (fractpel)w;
+       return( (negative) ? -ret : ret);
+#endif
 }
  
 /*
@@ -403,6 +456,9 @@ fractpel FPstarslash(a, b, c)
 {
        doublelong w;         /* result will be built here                    */
        int negative = FALSE;
+#ifdef LONG64
+       register fractpel ret;
+#endif
  
        if (a < 0) { a = -a; negative = TRUE; }
        if (b < 0) { b = -b; negative = !negative; }
@@ -410,9 +466,19 @@ fractpel FPstarslash(a, b, c)
  
        DLmult(&w, a, b);
        DLdiv(&w, c);
+#ifndef LONG64
        if (w.high != 0 || SIGNBITON(w.low)) {
                IfTrace3(TRUE,"FPstarslash: overflow, %p*%p/%p\n", a, b, c);
                w.low = TOFRACTPEL(MAXSHORT);
        }
-       return((negative) ? -(long)w.low : w.low);
+       return((negative) ? -w.low : w.low);
+#else
+       if (w & 0xffffffff80000000L ) {
+               IfTrace3(TRUE,"FPstarslash: overflow, %p*%p/%p\n", a, b, c);
+               ret = TOFRACTPEL(MAXSHORT);
+       }
+       else
+               ret = (fractpel)w;
+       return( (negative) ? -ret : ret);
+#endif
 }

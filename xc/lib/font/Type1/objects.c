@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.8 93/09/20 15:56:38 gildea Exp $ */
+/* $XConsortium: objects.c,v 1.9 94/02/03 19:45:22 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -330,8 +330,8 @@ struct xobject *t1_Allocate(size, template, extra)  /* non-ANSI; type checking w
        }
  
        if (MemoryDebug > 1) {
-               register int *L;
-               L = (int *) r;
+               register long *L;
+               L = (long *) r;
                IfTrace4(TRUE, "Allocating at %x: %x %x %x\n",
                                            L, L[-1], L[0], L[1]);
        }
@@ -358,8 +358,8 @@ void Free(obj)              /* non-ANSI to avoid overly strict type checking */
        obj->type = INVALIDTYPE;
  
        if (MemoryDebug > 1) {
-               register int *L;
-               L = (int *) obj;
+               register long *L;
+               L = (long *) obj;
                IfTrace4(TRUE,"Freeing at %x: %x %x %x\n", L, L[-1], L[0], L[1]);
        }
  
@@ -1089,8 +1089,9 @@ void InitImager()
 /* All other calls to malloc are defined to xiMalloc.  */
  
  
-       if (sizeof(short) != 2 || sizeof(long) != 4)
+/*       if (sizeof(short) != 2 || sizeof(INT32) != 4)
                abort("Fundamental TYPE1IMAGER assumptions invalid in this port");
+*/
        InitSpaces();
        InitFonts();
        InitFiles();

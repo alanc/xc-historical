@@ -1,4 +1,4 @@
-/* $XConsortium: objects.h,v 1.6 92/03/20 14:35:56 keith Exp $ */
+/* $XConsortium: objects.h,v 1.7 94/02/03 19:45:58 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -30,7 +30,7 @@
  
 /*END SHARED*/
 /*SHARED*/
- 
+
 #define   Permanent(obj)    t1_Permanent(obj)
 #define   Temporary(obj)    t1_Temporary(obj)
 #define   Destroy(obj)      t1_Destroy(obj)
@@ -92,10 +92,16 @@ out of memory.
 */
 #endif
  
+#ifndef MIN
 #define   MIN(a,b)    (((a)<(b)) ? a : b)
+#endif
+#ifndef MAX
 #define   MAX(a,b)    (((a)>(b)) ? a : b)
+#endif
+#ifndef ABS
 #define   ABS(a)      (((a)>=0)?(a):-(a))
- 
+#endif
+
 /*END SHARED*/
 /*SHARED*/
  
