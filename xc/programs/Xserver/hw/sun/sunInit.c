@@ -78,31 +78,6 @@ int sunSigIO = 0;	 /* For use with SetInputCheck */
 
 /*-
  *-----------------------------------------------------------------------
- * DoomServer --
- *	Signal handler for the signals that shut the server down.
- *
- * Results:
- *	sunServerIsDoomed is set - server will shut down soon.
- *
- * Side Effects:
- *	None
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-static void
-DoomServer(sig, code, scp)
-    int		code;
-    int		sig;
-    struct sigcontext *scp;
-{
-    extern int clientsDoomed;
-
-    clientsDoomed++;
-}
-
-/*-
- *-----------------------------------------------------------------------
  * SigIOHandler --
  *	Signal handler for SIGIO - input is available.
  *
@@ -225,8 +200,6 @@ InitInput(argc, argv)
 
     RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
     RegisterKeyboardDevice(k);
-    signal(SIGINT, DoomServer);
-    signal(SIGTERM, DoomServer);
     signal(SIGIO, SigIOHandler);
 
     SetInputCheck (&zero, &isItTimeToYield);
