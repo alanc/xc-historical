@@ -26,6 +26,15 @@ static char rcsid[] = "$Header$";
 *****************************************************************************
 **/
 
+/* XrmParseCommand()
+
+   Parse command line and store argument values into resource database
+
+   Allows any un-ambiguous abbreviation for an option name, but requires
+   that the table be ordered with any options that are prefixes of
+   other options appearing before the longer version in the table.
+*/
+
 #include <X/Xlib.h>
 #include "Xlibint.h"
 #include <X/Xresource.h>
@@ -49,13 +58,16 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
     int			*argc;		/* address of argument count 	     */
     char		**argv;		/* argument list (command line)	     */
 {
-    Bool 		foundOption;
+    int 		foundOption;
     char		**argsave;
-    register int	i, j, myargc;
+    register int	i, myargc;
     XrmBinding		bindings[100];
     XrmQuark		quarks[100];
     XrmBinding		*start_bindings;
     XrmQuark		*start_quarks;
+    char		*optP, *argP, optchar, argchar;
+    int			matches;
+    enum {DontCare, Check, NotSorted, Sorted} table_is_sorted;
 
 #define PutCommandResource(value_str)				\
 {								\
@@ -73,21 +85,50 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 	 *start_quarks != NULLQUARK;
 	 start_bindings++, start_quarks++) {};
 
+    table_is_sorted = (myargc > 2) ? Check : DontCare;
     for (--myargc; myargc > 0; --myargc, ++argv) {
 	foundOption = False;
-	for (i=0; (! foundOption) && i < num_options; ++i) {
-	    foundOption = True;
-	    for (j = 0; options[i].option[j] != NULL; ++j) {
-		if (options[i].option[j] != (*argv)[j]) {
-		    foundOption = False;
+	matches = 0;
+	for (i=0; i < num_options; ++i) {
+	    /* checking the sort order first insures we don't have to
+	       re-do the check if the arg hits on the last entry in
+	       the table.  Useful because usually '=' is the last entry
+	       and users frequently specify geometry early in the command */
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(options[i].option, options[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	    for (argP = *argv, optP = options[i].option;
+		 (optchar = *optP++) != NULL &&
+		 (argchar = *argP++) != NULL &&
+		 argchar == optchar;);
+	    if (optchar == NULL) {
+		if (*argP == NULL ||
+		    options[i].argKind == XrmoptionStickyArg ||
+		    options[i].argKind == XrmoptionIsArg) {
+		    /* give preference to exact matches, StickyArg and IsArg */
+		    matches = 1;
+		    foundOption = i;
 		    break;
 		}
 	    }
-
-	    if (foundOption
-	     && ((options[i].argKind == XrmoptionStickyArg)
-	         || (options[i].argKind == XrmoptionIsArg)
-		 || ((*argv)[j] == NULL))) {
+	    else if (argchar == NULL) {
+		/* may be an abbreviation for this option */
+		matches++;
+		foundOption = i;
+	    }
+	    else if (table_is_sorted == Sorted && optchar > argchar) {
+		break;
+	    }
+	    if (table_is_sorted == Check && i > 0 &&
+		strcmp(options[i].option, options[i-1].option) < 0) {
+		table_is_sorted = NotSorted;
+	    }
+	}
+	if (table_is_sorted == Check && i >= (num_options-1))
+	    table_is_sorted = Sorted;
+	if (matches == 1) {
+		i = foundOption;
 		switch (options[i].argKind){
 		case XrmoptionNoArg:
 		    --(*argc);
@@ -101,7 +142,7 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 
 		case XrmoptionStickyArg:
 		    --(*argc);
-		    PutCommandResource((*argv)+j);
+		    PutCommandResource(argP);
 		    break;
 
 		case XrmoptionSepArg:
@@ -130,11 +171,8 @@ void XrmParseCommand(pdb, options, num_options, prefix, argc, argv)
 		    _XReportParseError (&options[i], "unknown kind");
 		    break;
 		}
-	    } else foundOption = False;
-
 	}
-	
-	if (! foundOption) 
+	else
 	    (*argsave++) = (*argv);  /*compress arglist*/ 
     }
 
