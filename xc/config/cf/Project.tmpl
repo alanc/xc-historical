@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.188 93/09/13 14:11:14 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.189 93/09/13 14:13:32 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -113,7 +113,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.188 93/09/13 14:11:14 rws Exp $
 #if (SystemV || SystemV4) && !HasSockets
 #define ConnectionFlags -DSTREAMSCONN
 #else
+#if HasDECnet
+#define ConnectionFlags -DTCPCONN -DUNIXCONN -DDNETCONN
+#else
 #define ConnectionFlags -DTCPCONN -DUNIXCONN
+#endif
 #endif
 #endif
 #ifndef XMTDefines
