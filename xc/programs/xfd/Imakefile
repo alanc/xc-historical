@@ -2,8 +2,8 @@
 #include BandAidCompiler
 #endif
 
-        DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+        DEPLIBS = XawClientDepLibs
+LOCAL_LIBRARIES = XawClientLibs
            SRCS = xfd.c fontgrid.c 
            OBJS = xfd.o fontgrid.o 
 
