@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.58 91/04/23 18:38:18 rws Exp $
+ * $XConsortium: Xrm.c,v 1.59 91/04/23 18:46:27 rws Exp $
  */
 
 /***********************************************************
@@ -38,6 +38,11 @@ SOFTWARE.
 #define Const const
 #else
 #define Const /**/
+#endif
+#if __STDC__ && !defined(VMS)
+#define RConst const
+#else
+#define RConst /**/
 #endif
 
 /*
@@ -404,6 +409,37 @@ static void PrintQuarkList(quarks, stream)
 
 #endif /* DEBUG */
 
+/*ARGSUSED*/
+static void mbnoop(state)
+    XPointer state;
+{
+}
+
+/*ARGSUSED*/
+static char mbchar(state, str, lenp)
+    XPointer state;
+    char *str;
+    int *lenp;
+{
+    *lenp = 1;
+    return *str;
+}
+
+/*ARGSUSED*/
+static char *lcname(state)
+    XPointer state;
+{
+    return "C";
+}
+
+static RConst XrmMethodsRec mb_methods = {
+    mbnoop,
+    mbchar,
+    mbnoop,
+    lcname,
+    mbnoop
+};
+
 static XrmDatabase NewDatabase()
 {
     register XrmDatabase db;
@@ -411,7 +447,9 @@ static XrmDatabase NewDatabase()
     db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
     if (db) {
 	db->table = (NTable)NULL;
-	_XrmInitParseInfo(&db->mbstate);
+	db->methods = _XrmInitParseInfo(&db->mbstate);
+	if (!db->methods)
+	    db->methods = (XrmMethods)&mb_methods;
     }
     return db;
 }
