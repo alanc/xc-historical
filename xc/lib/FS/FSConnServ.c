@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.8 91/05/13 15:11:27 gildea Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.9 91/07/16 20:32:32 keith Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -38,8 +38,6 @@
 #endif
 
 #endif
-
-void        bcopy();
 
 #define FamilyLocal (256)
 #define FamilyWild  (65535)
