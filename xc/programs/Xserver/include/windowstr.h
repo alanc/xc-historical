@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.11 89/03/11 13:23:11 keith Exp $ */
+/* $XConsortium: windowstr.h,v 1.12 89/03/18 16:18:19 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -131,10 +131,18 @@ typedef struct _Window {
 	pointer devBackingStore;		/* optional */
 	pointer devPrivate;			/* dix never looks at this */
 #ifdef SHAPE
-	RegionPtr windowShape;		/* window relative shape */
-	RegionPtr borderShape;		/* window relative border shape */
+	RegionPtr boundingShape;	/* window relative bounding shape */
+	RegionPtr clipShape;		/* window relative inner shape */
 #endif
 } WindowRec;
+
+/* true when w needs a border drawn. */
+
+#ifdef SHAPE
+#define HasBorder(w)	((w)->borderWidth || (w)->clipShape)
+#else
+#define HasBorder(w)	((w)->borderWidth)
+#endif
 
 extern int DeleteWindow();
 extern int ChangeWindowAttributes();
