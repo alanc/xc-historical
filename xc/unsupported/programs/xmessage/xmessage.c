@@ -1,7 +1,7 @@
-/* $XConsortium: xmessage.c,v 1.2 94/04/11 14:47:31 gildea Exp $ */
+static char*id="$XConsortium: xmessage.c,v 1.3 94/04/17 20:45:57 gildea Exp $";
 /*
 
-Copyright (c) 1988, 1991  X Consortium
+Copyright (c) 1988, 1991, 1994  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -31,6 +31,7 @@ from the X Consortium.
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <X11/Shell.h>
 #include <stdio.h>
 
 extern char *malloc();
@@ -51,7 +52,11 @@ static struct _QueryResources {
     char *button_list;
     char *default_button;
     Boolean print_value;
-    char *message;
+    Boolean center;
+    Boolean nearmouse;
+    int timeout_secs;
+    Dimension maxHeight;
+    Dimension maxWidth;
 } qres;				/* initialized by resources below */
 
 #define offset(field) XtOffsetOf(struct _QueryResources, field)
@@ -64,6 +69,16 @@ static XtResource resources[] = {
       offset(default_button), XtRString, (XtPointer) NULL },
     { "printValue", "PrintValue", XtRBoolean, sizeof (Boolean),
       offset(print_value), XtRString, "false" },
+    { "center", "Center", XtRBoolean, sizeof (Boolean),
+      offset(center), XtRString, "false" },
+    { "nearMouse", "NearMouse", XtRBoolean, sizeof (Boolean),
+      offset(nearmouse), XtRString, "false" },
+    { "timeout", "Timeout", XtRInt, sizeof (int),
+      offset(timeout_secs), XtRInt, 0 },
+    { "maxHeight", "Maximum", XtRDimension, sizeof (Dimension),
+      offset(maxHeight), XtRDimension, 0 },
+    { "maxWidth", "Maximum", XtRDimension, sizeof (Dimension),
+      offset(maxWidth), XtRDimension, 0 },
 };
 #undef offset
 
@@ -72,10 +87,14 @@ static XrmOptionDescRec optionList[] =  {
     { "-buttons", ".buttons", XrmoptionSepArg, (XPointer) NULL },
     { "-default", ".defaultButton", XrmoptionSepArg, (XPointer) NULL },
     { "-print",   ".printValue", XrmoptionNoArg, (XPointer) "on" },
+    { "-center",  ".center", XrmoptionNoArg, (XPointer) "on" },
+    { "-nearmouse", ".nearMouse", XrmoptionNoArg, (XPointer) "on" },
+    { "-timeout", ".timeout", XrmoptionSepArg, (XPointer) NULL },
 };
 
 static String fallback_resources[] = {
     "*baseTranslations: #override :<Key>Return: default-exit()",
+    "*message.Scroll: whenNeeded",
     NULL};
 
 
@@ -83,25 +102,28 @@ static String fallback_resources[] = {
  * usage
  */
 
-static void usage ()
+static void usage (outf)
+    FILE *outf;
 {
     static char *options[] = {
-"    -file filename              file to read message from, - means stdin",
+"    -file filename              file to read message from, \"-\" for stdin",
 "    -buttons string             comma-separated list of label:exitcode",
 "    -default button             button to activate if Return is pressed",
 "    -print                      print the button label when selected",
+"    -center                     pop up at center of screen",
+"    -nearmouse                  pop up near the mouse cursor",
+"    -timeout secs               exit with status 0 after \"secs\" seconds",
 "",
 NULL};
     char **cpp;
 
-    fprintf (stderr, "usage: %s [-options] [message ...]\n\n",
+    fprintf (outf, "usage: %s [-options] [message ...]\n\n",
 	     ProgramName);
-    fprintf (stderr, "where options include:\n");
+    fprintf (outf, "where options include:\n");
     for (cpp = options; *cpp; cpp++) {
-	fprintf (stderr, "%s\n", *cpp);
+	fprintf (outf, "%s\n", *cpp);
     }
-    exit (1);
-    /* NOTREACHED */
+    fprintf (outf, "%s\n", id);
 }
 
 /*
@@ -141,13 +163,18 @@ default_exit_action(w, event, params, num_params)
 	exit(default_exitstatus);
 }
 
-XtActionsRec actions_list[] = {
+static XtActionsRec actions_list[] = {
     "exit", exit_action,
     "default-exit", default_exit_action,
 };
 
 static String top_trans =
     "<ClientMessage>WM_PROTOCOLS: exit(1)\n";
+
+/* forward references */
+static void position_near_mouse();
+static void position_near_center();
+static void time_out();
 
 /*
  * xmessage main program - make sure that there is a message,
@@ -159,6 +186,8 @@ main (argc, argv)
 {
     Widget top, queryform;
     XtAppContext app_con;
+    char *message_str;
+    int message_len;
 
     ProgramName = argv[0];
 
@@ -170,11 +199,12 @@ main (argc, argv)
 			       XtNumber(resources), NULL, 0);
 
     if (argc > 1 && !strcmp(argv[1], "-help")) {
-	usage();
+	usage(stdout);
+	exit(0);
     }
     if (argc == 1 && qres.file != NULL) {
-	qres.message = read_file (qres.file);
-	if (qres.message == NULL) {
+	message_str = read_file (qres.file, &message_len);
+	if (message_str == NULL) {
 	    fprintf (stderr, "%s: problems reading message file\n",
 		     ProgramName);
 	    exit (1);
@@ -186,10 +216,13 @@ main (argc, argv)
 	len = argc - 1;		/* spaces between words and final NULL */
 	for (i=1; i<argc; i++)
 	    len += strlen(argv[i]);
-	qres.message = malloc(len);
-	if (!qres.message)
-	    perror("string malloc");
-	cp = qres.message;
+	message_str = malloc(len);
+	if (!message_str) {
+	    fprintf (stderr, "%s: cannot get memory for message string\n",
+		     ProgramName);
+	    exit (1);
+	}
+	cp = message_str;
 	for (i=1; i<argc; i++) {
 	    strcpy(cp, argv[i]);
 	    cp += strlen(argv[i]);
@@ -198,13 +231,10 @@ main (argc, argv)
 	    else
 		*cp = '\0';
 	}
+	message_len = len;
     } else {
-	usage ();
-    }
-
-    if (qres.message == NULL) {
-	fprintf (stderr, "%s: no message\n", ProgramName);
-	exit (1);
+	usage(stderr);
+	exit(1);
     }
 
     XtAppAddActions(app_con, actions_list, XtNumber(actions_list));
@@ -213,8 +243,10 @@ main (argc, argv)
     /*
      * create the query form; this is where most of the real work is done
      */
-    queryform = make_queryform (top, qres.message, qres.button_list,
-				qres.print_value, qres.default_button);
+    queryform = make_queryform (top, message_str, message_len,
+				qres.button_list,
+				qres.print_value, qres.default_button,
+				qres.maxWidth, qres.maxHeight);
     if (!queryform) {
 	fprintf (stderr,
 		 "%s: unable to create query form with buttons: %s\n",
@@ -229,8 +261,99 @@ main (argc, argv)
     wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW", False);
     XSetWMProtocols(XtDisplay(top), XtWindow(top), &wm_delete_window, 1);
 
+    if (qres.center)
+	position_near_center(top);
+    else if (qres.nearmouse)
+	position_near_mouse(top);
+
     XtMapWidget(top);
+
+    if (qres.timeout_secs)
+	XtAppAddTimeOut(app_con, 1000*qres.timeout_secs, time_out, NULL);
+
     XtAppMainLoop(app_con);
 
     exit (0);
+}
+
+/* assumes shell widget has already been realized */
+
+static void
+position_near(shell, x, y)
+    Widget shell;
+    int x, y;
+{
+    int max_x, max_y;
+    Dimension width, height, border;
+    int gravity;
+
+    /* some of this is copied from CenterWidgetOnPoint in Xaw/TextPop.c */
+
+    XtVaGetValues(shell,
+		  XtNwidth, &width,
+		  XtNheight, &height,
+		  XtNborderWidth, &border,
+		  NULL);
+
+    width += 2 * border;
+    height += 2 * border;
+
+    max_x = WidthOfScreen(XtScreen(shell));
+    max_y = HeightOfScreen(XtScreen(shell));
+
+    /* set gravity hint based on position on screen */
+    gravity = 1;
+    if (x > max_x/3) gravity += 1;
+    if (x > max_x*2/3) gravity += 1;
+    if (y > max_y/3) gravity += 3;
+    if (y > max_y*2/3) gravity += 3;
+
+    max_x -= width;
+    max_y -= height;
+
+    x -= ( (Position) width/2 );
+    if (x < 0) x = 0;
+    if (x > max_x) x = max_x;
+
+    y -= ( (Position) height/2 );
+    if (y < 0) y = 0;
+    if ( y > max_y ) y = max_y;
+
+    XtVaSetValues(shell,
+		  XtNx, (Position)x,
+		  XtNy, (Position)y,
+		  XtNwinGravity, gravity,
+		  NULL);
+}
+
+static void
+position_near_mouse(shell)
+    Widget shell;
+{
+    int x, y;
+    Window root, child;
+    int winx, winy;
+    unsigned int mask;
+
+    XQueryPointer(XtDisplay(shell), XtWindow(shell),
+		  &root, &child, &x, &y, &winx, &winy, &mask);
+    position_near(shell, x, y);
+}
+
+static void
+position_near_center(shell)
+    Widget shell;
+{
+    position_near(shell,
+		  WidthOfScreen(XtScreen(shell))/2,
+		  HeightOfScreen(XtScreen(shell))/2);
+}
+
+/* ARGSUSED */
+static void
+time_out(client_data, id)
+    XtPointer client_data;
+    XtIntervalId *id;
+{
+    exit(0);
 }
