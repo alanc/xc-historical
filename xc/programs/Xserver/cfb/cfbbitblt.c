@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.26 90/01/10 19:51:35 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.27 90/02/08 16:03:16 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -951,6 +951,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     unsigned int startmask, endmask;
     register int nl, nlMiddle;
     int firstoff, secondoff;
+    unsigned int    src;
     int nbox;
     BoxPtr  pbox;
 
@@ -1027,7 +1028,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	}
 	leftShift = xoffSrc;
 	rightShift = 32 - leftShift;
-	if (rop == GXcopy && (planemask & PMSK) == PMSK)
+	if (cfb8StippleRRop == GXcopy)
 	{
 	    while (height--)
 	    {
@@ -1171,9 +1172,6 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	}
 	else
 	{
-	    register unsigned int   src;
-
-	    planemask = PFILL(planemask);
 	    while (height--)
 	    {
 	    	psrc = psrcLine;
@@ -1194,14 +1192,11 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 			    tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
-		    src = GetFourPixels (tmp);
-		    *pdst = *pdst & ~(startmask & planemask) |
-			    DoRop (rop, src, *pdst) &
- 			    (startmask & planemask);
+		    src = GetFourBits(tmp);
+		    *pdst = MaskRRopPixels (*pdst, src, startmask);
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
-		if (rop == GXcopy)
 		{
 	    	    while (nl >= 8)
 	    	    {
@@ -1214,29 +1209,8 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    	i = 8;
 		    	while (i--)
 		    	{
-			    src = GetFourPixels (tmp);
-		    	    *pdst = *pdst & ~planemask | src;
-		    	    pdst++;
-		    	    NextFourBits(tmp);
-		    	}
-	    	    }
-		}
-		else
-		{
-	    	    while (nl >= 8)
-	    	    {
-		    	int	i;
-		    	nl -= 8;
-		    	tmp = BitLeft(bits, leftShift);
-		    	bits = *psrc++;
-		    	if (rightShift != 32)
-		    	    tmp |= BitRight(bits, rightShift);
-		    	i = 8;
-		    	while (i--)
-		    	{
-			    src = GetFourPixels (tmp);
-		    	    *pdst = *pdst & ~planemask |
-			    	    DoRop(rop, src, *pdst) & planemask;
+			    src = GetFourBits (tmp);
+			    *pdst = RRopPixels (*pdst, src);
 		    	    pdst++;
 		    	    NextFourBits(tmp);
 		    	}
@@ -1256,18 +1230,15 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    }
 		    while (nl--)
 		    {
-			src = GetFourPixels (tmp);
-		    	*pdst = *pdst & ~planemask |
-			    	DoRop(rop, src, *pdst) & planemask;
+			src = GetFourBits (tmp);
+			*pdst = RRopPixels (*pdst, src);
 		    	pdst++;
 			NextFourBits(tmp);
 		    }
 		    if (endmask)
 		    {
-			src = GetFourPixels (tmp);
-			*pdst = *pdst & ~(endmask & planemask) |
-				DoRop (rop, src, *pdst) &
-				(endmask & planemask);
+			src = GetFourBits (tmp);
+			*pdst = MaskRRopPixels (*pdst, src, endmask);
 		    }
 	    	}
 	    }
@@ -1507,13 +1478,10 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     {
     	if (bitPlane == 1)
 	{
-	    unsigned long fg, bg;
-
        	    doBitBlt = cfbCopyPlane1to8;
-	    fg = pGC->fgPixel & pGC->planemask;
-	    bg = pGC->bgPixel & pGC->planemask;
-	    if (!cfb8CheckPixels(fg, bg))
-		cfb8SetPixels (fg, bg);
+	    cfb8CheckOpaqueStipple (pGC->alu,
+				    pGC->fgPixel, pGC->bgPixel,
+				    pGC->planemask);
     	    ret = cfbCopyArea (pSrcDrawable, pDstDrawable,
 	    	    pGC, srcx, srcy, width, height, dstx, dsty);
     	    doBitBlt = cfbDoBitblt;
