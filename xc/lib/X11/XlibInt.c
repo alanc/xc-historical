@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.78 88/08/15 18:59:16 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.79 88/08/18 12:22:45 jim Exp $";
 #endif
 
 /*
@@ -1173,30 +1173,30 @@ int _XPrintDefaultError (dpy, event, fp)
     char *mtype = "XlibMessage";
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
-    (void) fprintf(stderr, "%s: %s\n  ", mesg, buffer);
+    (void) fprintf(fp, "%s: %s\n  ", mesg, buffer);
     XGetErrorDatabaseText(dpy, mtype, "MajorCode", "Request Major code %d", 
 	mesg, BUFSIZ);
-    (void) fprintf(stderr, mesg, event->request_code);
+    (void) fprintf(fp, mesg, event->request_code);
     sprintf(number, "%d", event->request_code);
     XGetErrorDatabaseText(dpy, "XRequest", number, "", 	buffer, BUFSIZ);
-    (void) fprintf(stderr, " %s", buffer);
-    fputs("\n  ", stderr);
+    (void) fprintf(fp, " %s", buffer);
+    fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code", 
 	mesg, BUFSIZ);
-    (void) fprintf(stderr, mesg, event->minor_code);
-    fputs("\n  ", stderr);
+    (void) fprintf(fp, mesg, event->minor_code);
+    fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
 	mesg, BUFSIZ);
-    (void) fprintf(stderr, mesg, event->resourceid);
-    fputs("\n  ", stderr);
+    (void) fprintf(fp, mesg, event->resourceid);
+    fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "ErrorSerial", "Error Serial #%d", 
 	mesg, BUFSIZ);
-    (void) fprintf(stderr, mesg, event->serial);
-    fputs("\n  ", stderr);
+    (void) fprintf(fp, mesg, event->serial);
+    fputs("\n  ", fp);
     XGetErrorDatabaseText(dpy, mtype, "CurrentSerial", "Current Serial #%d",
 	mesg, BUFSIZ);
-    (void) fprintf(stderr, mesg, dpy->request);
-    fputs("\n", stderr);
+    (void) fprintf(fp, mesg, dpy->request);
+    fputs("\n", fp);
     if (event->error_code == BadImplementation) return 0;
     return 1;
 }
