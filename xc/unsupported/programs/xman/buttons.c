@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.18 89/10/11 11:40:26 jim Exp $
- * $Header: buttons.c,v 1.18 89/10/11 11:40:26 jim Exp $
+ * $XConsortium: buttons.c,v 1.19 89/12/15 12:06:38 kit Exp $
+ * $Header: buttons.c,v 1.19 89/12/15 12:06:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -449,13 +449,20 @@ Widget parent;
   Widget menu, entry;
   int i;
   MenuStruct * menu_struct;
+  Arg args[1];
+  Cardinal num_args;
+  char entry_name[BUFSIZ];
 
   menu = XtCreatePopupShell(SECTION_MENU, simpleMenuWidgetClass, parent,
 			    NULL, (Cardinal) 0);
 
   for (i = 0 ; i < sections ; i ++) {
-    entry = XtCreateManagedWidget(manual[i].blabel, smeBSBObjectClass,
-				  menu, NULL, ZERO);
+    num_args = 0;
+    XtSetArg(args[num_args], XtNlabel, manual[i].blabel); num_args++;
+    sprintf(entry_name, "section%d", i);
+      
+    entry = XtCreateManagedWidget(entry_name, smeBSBObjectClass,
+				  menu, args, num_args);
     menu_struct = (MenuStruct *) XtMalloc(sizeof(MenuStruct));
     menu_struct->data = (caddr_t) man_globals;
     menu_struct->number = i;
