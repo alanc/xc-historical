@@ -1,4 +1,4 @@
-/* $XConsortium: s3.c,v 1.6 95/01/16 13:16:45 kaleb Exp kaleb $ */
+/* $XConsortium: s3.c,v 1.7 95/01/23 15:33:53 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.69 1995/01/23 01:29:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1393,6 +1393,10 @@ s3Probe()
 	    nonMuxMaxClock = 67500;
 	    pixMuxMinClock = 67500;
 	 }
+      }
+      else if (DAC_IS_TRIO) {
+	 nonMuxMaxClock = 80000;
+	 pixMuxMinClock = 80000;
       }
       else {
 	 nonMuxMaxClock = 67500;
