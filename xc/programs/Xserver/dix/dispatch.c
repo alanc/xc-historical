@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.19 90/03/27 18:04:59 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.20 90/06/07 11:22:33 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3178,6 +3178,8 @@ InitProcVectors()
  *  then killed again, the client is really destroyed.
  *********************/
 
+Bool terminateAtReset = FALSE;
+
 void
 CloseDownClient(client)
     register ClientPtr client;
@@ -3203,11 +3205,12 @@ CloseDownClient(client)
 	    clients[client->index] = NullClient;
 	    if ((client->requestVector != InitialVector) &&
 		(--nClients == 0))
-#ifdef GPROF
-		dispatchException |= DE_TERMINATE;
-#else
-		dispatchException |= DE_RESET;
-#endif
+	    {
+		if (terminateAtReset)
+		    dispatchException |= DE_TERMINATE;
+		else
+		    dispatchException |= DE_RESET;
+	    }
 	    xfree(client);
 	}
 	else
