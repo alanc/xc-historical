@@ -55,11 +55,6 @@ typedef struct
     SppPointPtr	pPts;
 } POLYARCINFO;
 
-/* ARCDASH - an individual dash, part of a set of arcs */
-typedef struct _miArcDash {
-    xArc        arc;		/* for miArcSegment - XXX */
-} miArcDashRec, *miArcDashPtr;
-
 /* ARCJOIN - an individual join, part of a set of arcs */
 typedef struct _miArcJoin {
     SppPointRec juncture;	/* central point where they collide */
@@ -79,7 +74,7 @@ typedef struct _miArcCap {
  * Need one of these for even and one for odd stuff.                      */
 typedef struct _miDashedArc {
     int          ndashes, njoins, ncaps; /* number of each thingie */
-    miArcDashPtr dashes;	/* array of the dashes of this type */
+    xArc	 *dashes;	/* array of the dashes of this type */
     miArcJoinPtr joins;		/* array of the joins  of this type */
     miArcCapPtr  caps;		/* array of the caps   of this type */
 } miDashedArcRec, *miDashedArcPtr;
@@ -243,13 +238,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     int				ifirst, count, width;
     Bool			fTricky;
     DrawablePtr			pDrawTo;
+    unsigned long		fg, bg;
     GCPtr			pGCTo;
     register POLYARCINFO	*polyarcs;
 
-    for(i = 0; i < narcs; i++)
-	miArcSegment( pDraw, pGC, parcs[i] );
-    fillSpans (pDraw, pGC);
-#ifdef NOTDEF
     width = pGC->lineWidth;
     if(width == 0 || narcs == 1)
     {
@@ -263,45 +255,56 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 				      pGC->dashOffset,
 				      (pGC->lineStyle == LineDoubleDash))))
 		return;
-	    for (iphase = 0; iphase <
-		 ((pGC->lineStyle == LineDoubleDash) ? 2 : 1); iphase++)
+	    fg = pGC->fgPixel;
+	    bg = pGC->bgPixel;
+	    /*
+	     * draw the background first for DoubleDash
+	     */
+	    for (iphase = ((pGC->lineStyle == LineDoubleDash) ? 1 : 0);
+ 	         iphase >= 0;
+		 iphase--)
 	    {
 		for (i = 0; i < dashes[iphase].ndashes; i++)
 		{
-		    miArcSegment(pDraw, pGC, dashes[iphase].dashes[i].arc,
-				 TRUE, dashes[iphase].dashes[i].pts,
-				 dashes[iphase].dashes[i].npts);
+		    miArcSegment(pDraw, pGC, dashes[iphase].dashes[i]);
+		}
+		if (iphase == 1) {
+			gcvals[0] = bg;
+			gcvals[1] = fg;
+			DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+			ValidateGC (pDraw, pGC);
+		}
+		fillSpans (pDraw, pGC);
+		if (iphase == 1) {
+			gcvals[0] = fg;
+			gcvals[1] = bg;
+			DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+			ValidateGC (pDraw, pGC);
 		}
 		Xfree((pointer) dashes[iphase].dashes);
 	    }
 	    Xfree((pointer) dashes);
 	} else {
+	    for(i = 0; i < narcs; i++) {
+		if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW)) {
+		    parcs[i].x += ((WindowPtr) pDraw)->absCorner.x;
+		    parcs[i].y += ((WindowPtr) pDraw)->absCorner.y;
+		}
+		miArcSegment( pDraw, pGC, parcs[i] );
+		fillSpans (pDraw, pGC);
+	    }
 	}
     }
+#ifdef NOTDEF
+	/*
+	 * this is work in progress, don't tread here...
+	 */
     else 
     {
 	polyarcs = (POLYARCINFO *)ALLOCATE_LOCAL(narcs * sizeof(POLYARCINFO));
 	if(!polyarcs)
 	    return;
 
-	xMin = yMin = MAXSHORT;
-	xMax = yMax = MINSHORT;
-
-	/* Get all points for all the arcs. */
-	for(i = 0; i < narcs; i++)
-	{
-	    pPts = (SppPointPtr) NULL;
-	    cpt = miGetArcPts(&parcs[i], 0, &pPts);
-	    polyarcs[i].cpt = cpt;
-	    polyarcs[i].pPts = pPts;
-	    for(ppt = pPts, count = cpt; --count >= 0; ppt++)
-	    {
-		xMin = min(xMin, ppt->x);
-		yMin = min(yMin, ppt->y);
-		xMax = max(xMax, ppt->x);
-		yMax = max(yMax, ppt->y);
-	    }
-	}
 	/* Set up pDrawTo and pGCTo based on the rasterop */
 	switch(pGC->alu)
 	{
@@ -316,7 +319,21 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	  default:
 	    fTricky = TRUE;
 
+	    xMin = yMin = MAXSHORT;
+	    xMax = yMax = MINSHORT;
+
+	    for(i = 0; i < narcs; i++)
+	    {
+		xMin = min (xMin, parcs[i].x);
+		yMin = min (yMin, parcs[i].y);
+		xMax = max (xMax, parcs[i].x + parcs[i].w);
+		yMax = max (yMax, parcs[i].y + parcs[i].h);
+	    }
+
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
+	    gcvals[GCValsFunction] = GXcopy;
+	    gcvals[GCValsForeground] = 1;
+	    gcvals[GCValsBackground] = 0;
 	    gcvals[GCValsLineWidth] = pGC->lineWidth;
 	    gcvals[GCValsCapStyle] = pGC->capStyle;
 	    gcvals[GCValsJoinStyle] = pGC->joinStyle;
@@ -328,13 +345,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    dy = yMax - yMin + ((double) width) + 1;
 	    for(i = 0; i < narcs; i++)
 	    {
-		for(ppt = polyarcs[i].pPts, count = polyarcs[i].cpt;
-		    --count >= 0;
-		    ppt++)
-		{
-		    ppt->x -= xOrg;
-		    ppt->y -= yOrg;
-		}
+		parcs[i].x -= xOrg;
+		parcs[i].y -= yOrg;
 	    }
 	    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW))
 	    {
@@ -352,6 +364,8 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 
 	ifirst = 0;
 
+	cptAll = 0;
+	pAllPts = (SppPointPtr) NULL;
 	if (polyarcs[0].cpt) {
 	    SppPointRec pt0, ptn;
 
@@ -366,8 +380,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    }
 	}
 	
-	cptAll = 0;
-	pAllPts = (SppPointPtr) NULL;
 
 	for(i = ifirst, count = narcs; --count >= 0; i++)
 	{
@@ -381,14 +393,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	       PTISEQUAL(pPts[0], pAllPts[cptAll-1]))
 	    {			/* join between arcs here - XXX */
 		cpt--;
-		if (!(pAllPts = (SppPointPtr)
-		      Xrealloc((pointer)pAllPts,
-			       (cptAll + cpt) * sizeof(SppPointRec))))
-		    return;
-		bcopy((char *)&pPts[1],
-		      (char *)&pAllPts[cptAll], 
-		      cpt * sizeof(SppPointRec));
-		Xfree((pointer)pPts);
 		cptAll += cpt;
 	    }
 	    else
@@ -396,10 +400,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		/* Flush what we have so far and start collecting again */
 		if(cptAll > 0)
 		{
-		    (*pGCTo->LineHelper) (pDrawTo, pGCTo,
-					  !(pGC->lineStyle == LineDoubleDash),
-					  cptAll, pAllPts, 0, 0);
-		    Xfree((pointer)pAllPts);
+		    fillSpans (pDrawTo, pGCTo);
 		    if(fTricky)
 		    {
 		        (*pGC->PushPixels)(pGC, pDrawTo, pDraw, (int) dx,
@@ -408,16 +409,15 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		    }
 		}
 		cptAll = cpt;
-		pAllPts = pPts;
 	    }
+	    /*
+	     * render this arc here ...
+	     */
 	}
 
 	if (cptAll > 0)
 	{			/* this may be two joined arcs or one arc */
-	    (*pGCTo->LineHelper) (pDrawTo, pGCTo,
-				  !(pGC->lineStyle == LineDoubleDash),
-				  cptAll, pAllPts, 0, 0);
-	    Xfree((pointer)pAllPts);
+	    fillSpans (pDrawTo, pGCTo);
 	    if(fTricky)
 		(*pGC->PushPixels)(pGC, pDrawTo, pDraw, (int) dx, (int) dy,
 				   (int) xOrg, (int) yOrg);
@@ -656,25 +656,6 @@ miGetArcPts(parc, cpt, ppPts)
     return(count);
 }
 
-#ifdef NOTDEF
-
-/* MIDASHARCS -- Converts a list of arcs to a list of dashed arcs.            *
- * Each dashed arc is represented as a record with the number of sub-arcs in  *
- *  the entire dashed arc, and then an array of all the sub-arcs.  Each sub-  *
- *  arc consists of arc segments with assigned phase and a list of double-    *
- *  precision points.                                                         *
- * This routine can parse an entire list of arcs as passed to PolyArc, since  *
- *  it checks for point connection before applying the dash offset.  That is, *
- *  if the next arc begins where the last one ends, then the current offset   *
- *  is retained, otherwise the current offset and dash phase is recomputed    *
- *  based on the passed offset.                                               *
- * The passed pointer of arc-dashes should actually be an array of the same   *
- *  size as the array of argument arcs.  It will be filled in by the routine. *
- *  The number of arcs filled in will be returned.  It should be equal to the *
- *  number of arcs passed.                                                    *
- */
-/* Either returns a pointer to the even dashes or an array of the even and *
- * then the odd dashed arcs.                                               */
 static miDashedArcPtr
 miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
     xArc	  *pArc;	/* array of arcs to dash */
@@ -684,29 +665,18 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
     int           dashOffset;	/* for dashes -- from gc */
     Bool          isDoubleDash;	/* TRUE if double dashed, otherwise onoff */
 {
+#ifdef NOTDEF
     double 	 st,	/* Start Theta, start angle */
                  et,	/* End Theta, offset from start theta */
-		 dt,	/* Delta Theta, angle to sweep ellipse */
-		 cdt,	/* Cos Delta Theta, actually 2 cos(dt) */
-    		 x0, y0, /* the recurrence formula needs two points to start */
-		 x1, y1,
-		 x2, y2, /* this will be the new point generated */
-		 xc, yc, /* the center point */
-                 xt, yt;	/* possible next point */
     int		 count, i, istart, axis;
     double       asin();
-    SppPointPtr	 poly;
-    SppPointRec  lastPt;
     DDXPointRec  last;		/* last point on integer boundaries */
     int          lenCur;	/* used part of current dash */
     int          lenMax;	/* the desired length of this dash */
     int          iDash = 0;	/* index of current dash segment */
-    int          nSegs = 0;	/* number of segments filled in */
     miDashedArcPtr pDashed;
     int          which;		/* EVEN_DASH or ODD_DASH */
     int          iphase;	/* 0 = even, 1 = odd */
-    int          npts,		/* number of points used so far */
-                 nalloced;	/* number of points allocated so far */
     int          a1;		/* angle1 for this arc */
 
     if (!(pDashed = (miDashedArcPtr) Xalloc((isDoubleDash ? 2 : 1) *
@@ -721,12 +691,6 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 	else if (pArc->angle2 < -FULLCIRCLE)
 	    pArc->angle2 = -FULLCIRCLE;
 
-	/* The spec says that positive angles indicate counterclockwise motion.
-	 * Given our coordinate system (with 0,0 in the upper left corner), 
-	 * the screen appears flipped in Y.  The easiest fix is to negate the
-	 * angles given */
-	i = - (a1 = pArc->angle1);
-
 	if(i < 0)
 	{
 	    while (i < -FULLCIRCLE)
@@ -737,6 +701,7 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 	    while(i > FULLCIRCLE)
 		i -= FULLCIRCLE;
 	}
+
 	st = (double ) i;
 	st *= ((double)M_PI) / (64 * 180); /* to degrees, then to rads */
 	
@@ -746,40 +711,12 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 	et = (double) i;
 	et *= ((double)M_PI) / (64 * 180); /* to degrees, then to rads */
 	
-	/* Try to get a delta theta that is within 1/2 pixel.  Then adjust it
-	 * so that it divides evenly into the total.
-	 * I'm just using cdt 'cause I'm lazy.
-	 */
-	cdt = max(pArc->width, pArc->height)/2.0;
-	if(cdt <= 0)
-	    return 0;
-	dt = asin( ((double) 1) / cdt ); /* minimum step necessary */
-	count = et/dt;
-	count = abs(count) + 1;
-	dt = et/count;	
-	count++;
-	
-	cdt = 2 * cos(dt);
-	/* note this insists on arc compression */
-	poly = (SppPointPtr) Xalloc((1+(nalloced = 3)) *
-				    sizeof(SppPointRec));
-	
 	xc = pArc->width/2.0;		/* store half width and half height */
 	yc = pArc->height/2.0;
 	axis = (xc >= yc) ? X_AXIS : Y_AXIS;
 	
-	x0 = xc * cos(st);
-	y0 = yc * sin(st);
-	x1 = xc * cos(st + dt);
-	y1 = yc * sin(st + dt);
 	xc += pArc->x;		/* by adding initial point, these become */
 	yc += pArc->y;		/* the center point */
-	
-	poly[1].x = (xc + x0);
-	poly[1].y = (yc + y0);
-	last.x = ROUNDTOINT( poly[2].x = (xc + x1) );
-	last.y = ROUNDTOINT( poly[2].y = (yc + y1) );
-	npts = 3;		/* got 2 pts so far */
 	
 	/* Handle dash offset if necessary.  May be retained from before. */
 	if (nSegs > 0)
@@ -823,7 +760,6 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 	    pDashed[iphase].joins  = (miArcJoinPtr) NULL;
 	    pDashed[iphase].caps   = (miArcCapPtr)  NULL;
 	}
-	lenCur++;		/* cause we a'ready did x1, y1..right? */
 	
 	for(istart = 0, i = 2; i < count; i++)
 	{
@@ -855,9 +791,6 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 		    pDashed[iphase].dashes[pDashed[iphase].ndashes].arc.angle2
 			= a1 - dt * i * 180 * 64 / M_PI -
 			    pArc->angle1;
-		    pDashed[iphase].dashes[pDashed[iphase].ndashes].pts = poly;
-		    pDashed[iphase].dashes[pDashed[iphase].ndashes].npts =
-			npts;
 		    pDashed[iphase].ndashes++;
 		}
 		pArc->angle1 = a1 -
@@ -878,55 +811,10 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 		lenCur = 0;
 	    }
 	    
-	    xt = xc + x2;
-	    yt = yc + y2;
-	    if (((axis == X_AXIS) ?
-		 (ROUNDTOINT(yt) != last.y) :
-		 (ROUNDTOINT(xt) != last.x)) ||
-		i > count - 3)	/* insure 2 at the end */
-	    {
-		/* allocate more space if we are about to need it */
-		if (npts >= nalloced)
-		    poly = (SppPointPtr)
-			Xrealloc((pointer) poly,
-				 ((1+(nalloced = npts + REALLOC_STEP)) *
-				  sizeof(SppPointRec)));
-		/* check if we just switched direction in the minor axis */
-		if (npts >= 3)
-		{
-		    if (((poly[npts - 2].y - poly[npts - 1].y > 0.0) ?
-			 (yt - poly[npts - 1].y > 0.0) :
-			 (poly[npts - 1].y - yt > 0.0)) ||
-			((poly[npts - 2].x - poly[npts - 1].x > 0.0) ?
-			 (xt - poly[npts - 1].x > 0.0) :
-			 (poly[npts - 1].x - xt > 0.0)))
-		    {		/* axis swap (explained in miGetArcPts) */
-			poly[npts].x = xc + x1;
-			poly[npts].y = yc + y1;
-			npts++;
-			if (npts >= nalloced)
-			    poly = (SppPointPtr)
-				Xrealloc((pointer) poly,
-					 ((1+(nalloced = npts + REALLOC_STEP))
-					  *sizeof(SppPointRec)));
-		    }
-		}
-		last.x = ROUNDTOINT( poly[npts].x = xt );
-		last.y = ROUNDTOINT( poly[npts].y = yt );
-		npts++;
-	    }
-	    
 	    x0 = x1; y0 = y1;
 	    x1 = x2; y1 = y2;
 	}
 	count = i = npts;
-	/* adjust the last point */
-	if (abs(pArc->angle2) >= FULLCIRCLE)
-	    poly[i-1] = poly[1];
-	else {
-	    poly[i-1].x = (cos(st + et) * pArc->width/2.0 + xc);
-	    poly[i-1].y = (sin(st + et) * pArc->height/2.0 + yc);
-	}
 
 	/* put points generated for this arc into this dash segment */
 	if (which == EVEN_DASH)
@@ -949,16 +837,13 @@ miDashArcs(pArc, nArcs, pDash, nDashes, dashOffset, isDoubleDash)
 		*pArc;
 	    pDashed[iphase].dashes[pDashed[iphase].ndashes].arc.angle2
 		= a1 + pArc->angle2 - pArc->angle1;
-	    pDashed[iphase].dashes[pDashed[iphase].ndashes].pts = poly;
-	    pDashed[iphase].dashes[pDashed[iphase].ndashes].npts =
-		npts;
 	    pDashed[iphase].ndashes++;
 	}
     }
     
     return( pDashed );
-}
 #endif
+}
 
 /*
  * scan convert wide arcs.
@@ -977,6 +862,7 @@ extern double	ceil (), floor (), fabs (), sin (), cos (), sqrt (), pow ();
 # define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*PI/180.0)))
 # define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*PI/180.0)))
 
+# define BINARY_LIMIT	(0.1)
 # define NEWTON_LIMIT	(0.0000001)
 
 struct bound {
@@ -1219,92 +1105,119 @@ computeBound (def, bound, acc)
 }
 
 /*
- * using newtons method, compute the elipse y value
+ * using newtons method and a binary search, compute the elipse y value
  * associated with the given edge value (either outer or
  * inner)
  */
 
 double
-elipseY (edge_y, def, bound, acc, outer, initialY)
+elipseY (edge_y, def, bound, acc, outer, y0, y1, altY)
 	double			edge_y;
 	struct arc_def		*def;
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
-	double			initialY;
+	double			y0, y1, altY;
 {
-	double	w, h, l, y, newy, miny;
-	double	h2, h4, w2, h2mw2, q, q3o2;
-	double	wlh2mw2, wlh4, y2;
-	int	count;
+	double	w, h, l, h2, h4, w2, w4, x, y2;
+	double	newtony, binaryy;
+	double	value0, value1, valuealt;
+	double	newtonvalue, binaryvalue;
+	double	minY, maxY;
+	double	(*f)();
 	
 	/*
 	 * compute some accelerators
 	 */
 	w = def->w;
 	h = def->h;
+	f = outer ? outerYfromY : innerYfromY;
 	l = outer ? def->l : -def->l;
-	if (!outer) {
-		if (bound->inner.min == edge_y && edge_y == 0)
-			return 0;
-		if (bound->inner.max == edge_y && edge_y == h + l/2)
-			return h;
-	}
 	h2 = acc->h2;
 	h4 = acc->h4;
 	w2 = acc->w2;
-	h2mw2 = acc->h2mw2;
-	wlh2mw2 = l * acc->wh2mw2;
-	wlh4 = l * acc->wh4;
+	w4 = acc->w4;
+
+	value0 = f (y0, def, acc) - edge_y;
+	if (value0 == 0)
+		return y0;
+	value1 = f (y1, def, acc) - edge_y;
+	if (value1 == 0)
+		return y1;
+	if (altY >= 0 && value1 > 0 == value0 > 0) {
+		valuealt = f (altY, def, acc) - edge_y;
+		if (valuealt == 0)
+			return altY;
+		if (valuealt > 0 == value1 > 0)
+			return maxY + 1;
+		y0 = altY;
+		value0 = valuealt;
+	}
+	maxY = y1;
+	minY = y0;
+	if (y0 > y1) {
+		maxY = y0;
+		minY = y1;
+	}
 	/*
-	 * collect estimate
+	 * binary search for a while
 	 */
-	newy = initialY;
-
-	/*
-	 * iterate to solution
-	 */
-
-	count = 0;
-
 	do {
-		/*                 3/2    3      2   2
-		 *        2 edge_y q    + y w l (h - w )
-		 * newy = -----------------------------
-                 *                   3/2    4
-		 *                2 q    + h l w
-		 *
-		 *            4   2  2   2
-		 * where q = h - y (h - w )
-		 *
-		 * this equation is derived from solving
-		 *
-		 *                 2 y           w^2 h^2          l
-		 *  edge_y = y +/- --- *  --------------------- * -
-		 *                 h^2   \| 4x^2 h^4 + 4y^2 w^4   2
-		 *
-		 *  substituting the solution for x^2 from the elipse:
-		 *
-		 *   x^2   y^2
-		 *   --- + --- = 1
-		 *   w^2   h^2
-		 *
-		 * using newtons method.  Check it out with macsyma.
-		 */ 
-		y = newy;
-		y2 = y*y;
-		q = h4 - y2 * h2mw2;
-		q3o2 = 2 * Sqrt (q * q * q);
+		if (y0 == y1 || value0 == value1)
+			return maxY+1;
+		binaryy = (y0 + y1) / 2;
 
-		newy = (edge_y * q3o2 + y2*y * wlh2mw2) / (q3o2 + wlh4);
+		/*
+		 * inline expansion of the function
+		 */
 
-		if (newy < 0 && outer)
-			newy = fmax ((y + newy ) / 2, 0);
-		if (newy > h)
-			newy = fmin ((y + newy) / 2, h);
-		if (++count > 1000)
-			return (newy + y) / 2;
-	} while (fabs (y - newy) > NEWTON_LIMIT);
-	return newy;
+		y2 = binaryy*binaryy;
+		x = w * Sqrt ((h2 - (y2)) / h2);
+
+		binaryvalue = ( binaryy + (binaryy * w2 * l) /
+			      (2 * Sqrt (x*x * h4 + y2 * w4))) - edge_y;
+
+		if (binaryvalue == 0)
+			return binaryy;
+		if (binaryvalue > 0 == value0 > 0) {
+			y0 = binaryy;
+			value0 = binaryvalue;
+		} else {
+			y1 = binaryy;
+			value1 = binaryvalue;
+		}
+	} while (fabs (value1) > BINARY_LIMIT);
+
+	/*
+	 * clean up the estimate with newtons method
+	 */
+
+	while (fabs (value1) > NEWTON_LIMIT) {
+		newtony = y1 - value1 * (y1 - y0) / (value1 - value0);
+		if (newtony > maxY)
+			newtony = maxY;
+		if (newtony < minY)
+			newtony = minY;
+		/*
+		 * inline expansion of the function
+		 */
+
+		y2 = newtony*newtony;
+		x = w * Sqrt ((h2 - (y2)) / h2);
+
+		newtonvalue = ( newtony + (newtony * w2 * l) /
+			      (2 * Sqrt (x*x * h4 + y2 * w4))) - edge_y;
+
+		if (newtonvalue == 0)
+			return newtony;
+		if (fabs (value0) > fabs (value1)) {
+			y0 = newtony;
+			value0 = newtonvalue;
+		} else {
+			y1 = newtony;
+			value1 = newtonvalue;
+		}
+	}
+	return y1;
 }
 
 double
@@ -1323,23 +1236,15 @@ outerX (outer_y, def, bound, acc)
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 {
-	double	y, inity;
+	double	y;
 
 	if (outer_y == bound->outer.min)
 		y = bound->elipse.min;
 	if (outer_y == bound->outer.max)
 		y = bound->elipse.max;
-	else {
-		inity = def->h * outer_y / (def->h + def->l/2);
-		y = elipseY (outer_y, def, bound, acc, 1, inity);
-		if (!boundedLe (y, bound->elipse)) {
-			if (def->h < def->w)
-				inity = bound->elipse.min;
-			else
-				inity = bound->elipse.max;
-			y = elipseY (outer_y, def, bound, acc, 1, inity);
-		}
-	}
+	else
+		y = elipseY (outer_y, def, bound, acc, 1,
+ 			     bound->elipse.min, bound->elipse.max, -1.0);
 	return outerXfromY (y, def, bound, acc);
 }
 
@@ -1350,31 +1255,24 @@ innerX (inner_y, def, bound, acc)
 	struct arc_bound	*bound;
 	struct accelerators	*acc;
 {
-	double	y, inity, x, xalt;
+	double	y, x, xalt, y0, y1, altY;
 
-	if (def->h == def->l/2)
-		inity = def->h;
-	else
-		inity = def->h * inner_y / (def->h - def->l/2);
-	if (def->h != def->w) {
- 		if (boundedLe (acc->tail_y, bound->elipse)) {
-			if (def->h < def->w) {
-				if (inity <= acc->tail_y + 2)
-					inity = acc->tail_y + 2;
-			} else {
-				if (inity >= acc->tail_y - 2)
-					inity = acc->tail_y - 2;
-			}
+	if (boundedLe (acc->tail_y, bound->elipse)) {
+		if (def->h > def->w) {
+			y0 = bound->elipse.min;
+			y1 = acc->tail_y;
+			altY = bound->elipse.max;
+		} else {
+			y0 = bound->elipse.max;
+			y1 = acc->tail_y;
+			altY = bound->elipse.min;
 		}
+	} else {
+		y0 = bound->elipse.min;
+		y1 = bound->elipse.max;
+		altY = 0.0;
 	}
-	y = elipseY (inner_y, def, bound, acc, 0, inity);
-	if (!boundedLe (y, bound->elipse)) {
-		if (def->h < def->w)
-			inity = bound->elipse.min;
-		else
-			inity = bound->elipse.max;
-		y = elipseY (inner_y, def, bound, acc, 0, inity);
-	}
+	y = elipseY (inner_y, def, bound, acc, 0, y0, y1, altY);
 	x = innerXfromY (y, def, bound, acc);
 	if (acc->left.valid && boundedLe (inner_y, bound->left)) {
 		xalt = acc->left.m * inner_y + acc->left.b;
@@ -1532,7 +1430,7 @@ arcSpan (y, def, bounds, acc)
 {
 	double	innerx, outerx;
 
-	if (boundedLt (y, bounds->inner)) {
+	if (boundedLe (y, bounds->inner)) {
 		/*
 		 * intersection with inner edge
 		 */
@@ -1712,7 +1610,7 @@ mirrorSpan (quadrant, y, min, max)
 	}
 	xmin = (int) ceil (arcXorigin + min - NEWTON_LIMIT);
 	xmax = (int) ceil (arcXorigin + max - NEWTON_LIMIT);
-	spany = (int) (ceil (arcYorigin + y));
+	spany = (int) (ceil (arcYorigin - y));
 	if (xmax > xmin)
 		newFinalSpan (spany, xmin, xmax);
 }
