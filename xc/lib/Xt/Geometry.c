@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.55 92/02/11 17:13:18 converse Exp $ */
+/* $XConsortium: Geometry.c,v 1.56 93/05/13 16:04:14 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -75,6 +75,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 
     if (XtIsShell(widget)) {
 	ShellClassExtension ext;
+	LOCK_PROCESS;
 	for (ext = (ShellClassExtension)((ShellWidgetClass)XtClass(widget))
 		   ->shell_class.extension;
 	     ext != NULL && ext->record_type != NULLQUARK;
@@ -104,6 +105,7 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 	}
 	managed = True;
 	parentRealized = TRUE;
+	UNLOCK_PROCESS;
     } else if (parent == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 		      "invalidParent","xtMakeGeometryRequest",XtCXtToolkitError,
@@ -114,8 +116,10 @@ _XtMakeGeometryRequest (widget, request, reply, clear_rect_obj)
 
 	if (XtIsComposite(parent)) {
 	    parentRealized = XtIsRealized(parent);
+	    LOCK_PROCESS;
 	    manager = ((CompositeWidgetClass) (parent->core.widget_class))
 		    ->composite_class.geometry_manager;
+	    UNLOCK_PROCESS;
 	} else if (managed) {
 	    /* Should never happen - XtManageChildren should have checked */
 	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
@@ -268,8 +272,11 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
 {
     Boolean junk;
     XtGeometryResult returnCode;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     returnCode = _XtMakeGeometryRequest(widget, request, reply, &junk);
+    UNLOCK_APP(app);
 
     return ((returnCode == XtGeometryDone) ? XtGeometryYes : returnCode);
 }
@@ -292,7 +299,9 @@ XtGeometryResult XtMakeResizeRequest
 {
     XtWidgetGeometry request, reply;
     XtGeometryResult r;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     request.request_mode = CWWidth | CWHeight;
     request.width = width;
     request.height = height;
@@ -307,12 +316,16 @@ XtGeometryResult XtMakeResizeRequest
 	    *replyHeight = reply.height;
 	else
 	    *replyHeight = height;
+    UNLOCK_APP(app);
     return r;
 } /* XtMakeResizeRequest */
 
 void XtResizeWindow(w)
     Widget w;
 {
+    WIDGET_TO_APPCON(w);
+
+    LOCK_APP(app);
     if (XtIsRealized(w)) {
 	XWindowChanges changes;
 	changes.width = w->core.width;
@@ -321,6 +334,7 @@ void XtResizeWindow(w)
 	XConfigureWindow(XtDisplay(w), XtWindow(w),
 	    (unsigned) CWWidth | CWHeight | CWBorderWidth, &changes);
     }
+    UNLOCK_APP(app);
 } /* XtResizeWindow */
 
 
@@ -340,7 +354,9 @@ void XtResizeWidget(w, width, height, borderWidth)
     XWindowChanges changes;
     Dimension old_width, old_height, old_borderWidth;
     Cardinal mask = 0;
+    WIDGET_TO_APPCON(w);
 
+    LOCK_APP(app);
     if ((old_width = w->core.width) != width) {
 	changes.width = w->core.width = width;
 	mask |= CWWidth;
@@ -374,10 +390,17 @@ void XtResizeWidget(w, width, height, borderWidth)
 			    TRUE );
 	    }
 	}
-	if ((mask & (CWWidth | CWHeight)) &&
-	      XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-	    (*(w->core.widget_class->core_class.resize))(w);
+	{
+	XtWidgetProc resize;
+
+	LOCK_PROCESS;
+	resize = XtClass(w)->core_class.resize;
+	UNLOCK_PROCESS;
+	if ((mask & (CWWidth | CWHeight)) && resize != (XtWidgetProc) NULL)
+	    (*resize)(w);
+	}
     }
+    UNLOCK_APP(app);
 } /* XtResizeWidget */
 
 #if NeedFunctionPrototypes
@@ -398,7 +421,9 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
 {
     XWindowChanges changes, old;
     Cardinal mask = 0;
+    WIDGET_TO_APPCON(w);
 
+    LOCK_APP(app);
     if ((old.x = w->core.x) != x) {
 	changes.x = w->core.x = x;
 	mask |= CWX;
@@ -431,10 +456,17 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
 	    else
 		ClearRectObjAreas((RectObj)w, &old);
 	}
-	if ((mask & (CWWidth | CWHeight)) &&
-	      XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-	    (*(w->core.widget_class->core_class.resize))(w);
+	{
+	XtWidgetProc resize;
+
+	LOCK_PROCESS;
+	resize = XtClass(w)->core_class.resize;
+	UNLOCK_PROCESS;
+	if ((mask & (CWWidth | CWHeight)) && resize != (XtWidgetProc) NULL)
+	    (*resize)(w);
+	}
     }
+    UNLOCK_APP(app);
 } /* XtConfigureWidget */
 
 #if NeedFunctionPrototypes
@@ -449,6 +481,9 @@ void XtMoveWidget(w, x, y)
     Position x, y;
 #endif
 {
+    WIDGET_TO_APPCON(w);
+
+    LOCK_APP(app);
     if ((w->core.x != x) || (w->core.y != y)) {
 	XWindowChanges old;
 	old.x = w->core.x;
@@ -466,6 +501,7 @@ void XtMoveWidget(w, x, y)
 	    }
         }
     }
+    UNLOCK_APP(app);
 } /* XtMoveWidget */
 
 #if NeedFunctionPrototypes
@@ -485,7 +521,9 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
 {
     Position garbagex, garbagey;
     Widget passed = w;
+    XtAppContext app = XtWidgetToApplicationContext(w);
 
+    LOCK_APP(app);
     if (rootx == NULL) rootx = &garbagex;
     if (rooty == NULL) rooty = &garbagey;
 
@@ -498,7 +536,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
     }
 
     if (w == NULL)
-        XtAppWarningMsg(XtWidgetToApplicationContext(passed),
+        XtAppWarningMsg(app,
 		"invalidShell","xtTranslateCoords",XtCXtToolkitError,
                 "Widget has no shell ancestor",
 		(String *)NULL, (Cardinal *)NULL);
@@ -509,6 +547,7 @@ void XtTranslateCoords(w, x, y, rootx, rooty)
 	*rootx += x + w->core.border_width;
 	*rooty += y + w->core.border_width;
     }
+    UNLOCK_APP(app);
 }
 
 XtGeometryResult XtQueryGeometry(widget, intended, reply)
@@ -517,9 +556,14 @@ XtGeometryResult XtQueryGeometry(widget, intended, reply)
     XtWidgetGeometry *reply;	/* child's preferred geometry; never NULL */
 {
     XtWidgetGeometry null_intended;
-    XtGeometryHandler query = XtClass(widget)->core_class.query_geometry;
+    XtGeometryHandler query;
     XtGeometryResult result;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
+    LOCK_PROCESS;
+    query = XtClass(widget)->core_class.query_geometry;
+    UNLOCK_PROCESS;
     reply->request_mode = 0;
     if (query != NULL) {
 	if (intended == NULL) {
@@ -542,8 +586,8 @@ XtGeometryResult XtQueryGeometry(widget, intended, reply)
     FillIn(CWBorderWidth, border_width);
 #undef FillIn
 
-    if (!reply->request_mode & CWStackMode) reply->stack_mode =
-XtSMDontChange;
-
+    if (!reply->request_mode & CWStackMode) 
+	reply->stack_mode = XtSMDontChange;
+    UNLOCK_APP(app);
     return result;
-  }
+}

@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.89 92/08/26 14:09:28 converse Exp $ */
+/* $XConsortium: Create.c,v 1.90 93/04/26 19:09:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -49,7 +49,11 @@ void XtInitializeWidgetClass(wc)
     WidgetClass wc;
 {
     XtEnum inited;
-    if (wc->core_class.class_inited) return;
+    LOCK_PROCESS;
+    if (wc->core_class.class_inited) {
+	UNLOCK_PROCESS;
+	return;
+    }
     inited = 0x01;
     {
 	WidgetClass pc;
@@ -127,6 +131,7 @@ void XtInitializeWidgetClass(wc)
 	(*(wc->core_class.class_initialize))();
     CallClassPartInit(wc, wc);
     wc->core_class.class_inited = inited;
+    UNLOCK_PROCESS;
 }
 
 static void CallInitialize (class, req_widget, new_widget, args, num_args)
@@ -136,14 +141,25 @@ static void CallInitialize (class, req_widget, new_widget, args, num_args)
     ArgList     args;
     Cardinal    num_args;
 {
-    if (class->core_class.superclass)
-        CallInitialize (class->core_class.superclass,
-	    req_widget, new_widget, args, num_args);
-    if (class->core_class.initialize != NULL)
-	(*class->core_class.initialize)
-	    (req_widget, new_widget, args, &num_args);
-    if (class->core_class.initialize_hook != NULL)
-	(*class->core_class.initialize_hook) (new_widget, args, &num_args);
+    WidgetClass superclass;
+    XtInitProc initialize;
+    XtArgsProc initialize_hook;
+
+    LOCK_PROCESS;
+    superclass = class->core_class.superclass;
+    UNLOCK_PROCESS;
+    if (superclass)
+        CallInitialize (superclass, req_widget, new_widget, args, num_args);
+    LOCK_PROCESS;
+    initialize = class->core_class.initialize;
+    UNLOCK_PROCESS;
+    if (initialize)
+	(*initialize) (req_widget, new_widget, args, &num_args);
+    LOCK_PROCESS;
+    initialize_hook = class->core_class.initialize_hook;
+    UNLOCK_PROCESS;
+    if (initialize_hook)
+	(*initialize_hook) (new_widget, args, &num_args);
 }
 
 static void CallConstraintInitialize (class, req_widget, new_widget, args, num_args)
@@ -152,13 +168,20 @@ static void CallConstraintInitialize (class, req_widget, new_widget, args, num_a
     ArgList	args;
     Cardinal	num_args;
 {
-    if (class->core_class.superclass != constraintWidgetClass)
-	CallConstraintInitialize(
-	    (ConstraintWidgetClass) class->core_class.superclass,
+    WidgetClass superclass;
+    XtInitProc initialize;
+
+    LOCK_PROCESS;
+    superclass = class->core_class.superclass;
+    UNLOCK_PROCESS;
+    if (superclass != constraintWidgetClass)
+	CallConstraintInitialize((ConstraintWidgetClass) superclass,
 	    req_widget, new_widget, args, num_args);
-    if (class->constraint_class.initialize != NULL)
-        (*class->constraint_class.initialize)
-	    (req_widget, new_widget, args, &num_args);
+    LOCK_PROCESS;
+    initialize = class->constraint_class.initialize;
+    UNLOCK_PROCESS;
+    if (initialize)
+        (*initialize) (req_widget, new_widget, args, &num_args);
 }
 
 static Widget _XtCreate(
@@ -187,6 +210,7 @@ static Widget _XtCreate(
     XtCacheRef		    *cache_refs;
     register int	    i;
 
+    LOCK_PROCESS;
     if (! (widget_class->core_class.class_inited))
 	XtInitializeWidgetClass(widget_class);
     wsize = widget_class->core_class.widget_size;
@@ -200,10 +224,13 @@ static Widget _XtCreate(
 		wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
 	}
     }
+    UNLOCK_PROCESS;
     widget = (Widget) XtMalloc((unsigned)(wsize + csize));
     widget->core.self = widget;
     widget->core.parent = parent;
+    LOCK_PROCESS;
     widget->core.widget_class = widget_class;
+    UNLOCK_PROCESS;
     widget->core.xrm_name = StringToName((name != NULL) ? name : "");
     widget->core.being_destroyed =
 	(parent != NULL ? parent->core.being_destroyed : FALSE);
@@ -216,6 +243,7 @@ static Widget _XtCreate(
         widget->core.screen = default_screen;
         widget->core.tm.translations = NULL;
     };
+    LOCK_PROCESS;
     if (XtIsApplicationShell(widget)) {
 	ApplicationShellWidget a = (ApplicationShellWidget) widget;
 	if (class != NULL)
@@ -224,6 +252,7 @@ static Widget _XtCreate(
 	    a->application.xrm_class = widget_class->core_class.xrm_class;
 	a->application.class = XrmQuarkToString(a->application.xrm_class);
     }
+    UNLOCK_PROCESS;
 
     /* fetch resources */
     cache_refs = _XtGetResources(widget, args, num_args, 
@@ -241,6 +270,7 @@ static Widget _XtCreate(
     }
     
     /* Compile any callback lists into internal form */
+    LOCK_PROCESS;
     offsets = (CallbackTable)
 	widget->core.widget_class->core_class.callback_private;
 
@@ -250,6 +280,7 @@ static Widget _XtCreate(
 	if (*cl)
 	    *cl = _XtCompileCallbackList((XtCallbackList) *cl);
     }
+    UNLOCK_PROCESS;
 
     if (cache_refs != NULL) {
 	extern void _XtCallbackReleaseCacheRefs();
@@ -257,7 +288,9 @@ static Widget _XtCreate(
 		       XtCallbackReleaseCacheRefList, (XtPointer)cache_refs );
     }
 
+    LOCK_PROCESS;
     wsize = widget_class->core_class.widget_size;
+    UNLOCK_PROCESS;
     req_widget = (Widget) XtStackAlloc(wsize, widget_cache);
     bcopy ((char *) widget, (char *) req_widget, (int) wsize);
     CallInitialize (XtClass(widget), req_widget, widget, args, num_args);
@@ -308,6 +341,7 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
     ConstraintWidgetClass   cwc;
     XtWidgetProc	    insert_child;
     Screen*                 default_screen;
+    XtEnum		    class_inited;
 
     if (parent == NULL) {
 	XtErrorMsg("invalidParent",XtNxtCreateWidget,XtCXtToolkitError,
@@ -319,13 +353,17 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
                 "XtCreateWidget requires non-NULL widget class",
                   (String *)NULL, (Cardinal *)NULL);
     }
+    LOCK_PROCESS;
     if (!widget_class->core_class.class_inited)
 	XtInitializeWidgetClass(widget_class);
-    if ((widget_class->core_class.class_inited & WidgetClassFlag) == 0) {
+    class_inited = widget_class->core_class.class_inited;
+    UNLOCK_PROCESS;
+    if ((class_inited & WidgetClassFlag) == 0) {
 	/* not a widget */
 	default_screen = NULL;
 	if (XtIsComposite(parent)) {
 	    CompositeClassExtension ext;
+	    LOCK_PROCESS;
 	    for (ext = (CompositeClassExtension)
 		       ((CompositeWidgetClass)XtClass(parent))
 			 ->composite_class.extension;
@@ -353,6 +391,7 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
 			      "attempt to add non-widget child \"%s\" to parent \"%s\" which supports only widgets",
 			      params, &num_params);
 	    }
+	    UNLOCK_PROCESS;
 	}
     } else {
 	default_screen = parent->core.screen;
@@ -367,8 +406,10 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
 		       default_screen, args, num_args,
 		       typed_args, num_typed_args, cwc);
     if (XtIsComposite(parent)) {
-        insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
+	LOCK_PROCESS;
+	insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
 	    composite_class.insert_child;
+	UNLOCK_PROCESS;
     } else {
 	return(widget);
     }
@@ -400,8 +441,14 @@ Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     Cardinal    num_args;
 #endif
 {
-    return(_XtCreateWidget(name, widget_class, parent, args, num_args,
-			   (XtTypedArgList)NULL, (Cardinal)0));
+    Widget retval;
+    WIDGET_TO_APPCON(parent);
+
+    LOCK_APP(app);
+    retval = _XtCreateWidget(name, widget_class, parent, args, num_args,
+			   (XtTypedArgList)NULL, (Cardinal)0);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -423,10 +470,13 @@ Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
 #endif
 {
     register Widget	    widget;
+    WIDGET_TO_APPCON(parent);
 
+    LOCK_APP(app);
     XtCheckSubclass(parent, compositeWidgetClass, "in XtCreateManagedWidget");
     widget = XtCreateWidget(name, widget_class, parent, args, num_args);
     XtManageChild(widget);
+    UNLOCK_APP(app);
     return widget;
 }
 
@@ -485,8 +535,14 @@ Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
     Cardinal    num_args;
 #endif
 {
-    return _XtCreatePopupShell(name, widget_class, parent, args, num_args,
+    Widget retval;
+    WIDGET_TO_APPCON(parent);
+
+    LOCK_APP(app);
+    retval = _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 			       (XtTypedArgList)NULL, (Cardinal)0);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -534,8 +590,14 @@ Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
     Cardinal            num_args;
 #endif
 {
-    return _XtAppCreateShell(name, class, widget_class, display, args, 
+    Widget retval;
+    DPY_TO_APPCON(display);
+
+    LOCK_APP(app);
+    retval = _XtAppCreateShell(name, class, widget_class, display, args, 
 			     num_args, (XtTypedArgList)NULL, (Cardinal)0);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 /* ARGSUSED */
@@ -554,11 +616,19 @@ Widget XtCreateApplicationShell(name, widget_class, args, num_args)
     Cardinal    num_args;
 #endif
 {
-    Display *dpy = _XtDefaultAppContext()->list[0];
-    XrmClass class = _XtGetPerDisplay(dpy)->class;
+    Widget retval;
+    Display* dpy;
+    XrmClass class;
+    XtAppContext app = _XtDefaultAppContext();
 
-    return _XtAppCreateShell((String)NULL, XrmQuarkToString((XrmQuark)class),
+    LOCK_APP(app);
+    dpy = app->list[0];
+    class = _XtGetPerDisplay(dpy)->class;
+
+    retval = _XtAppCreateShell((String)NULL, XrmQuarkToString((XrmQuark)class),
 			     widget_class, dpy, args, num_args,
 			     (XtTypedArgList)NULL, (Cardinal)0);
+    UNLOCK_APP(app);
+    return retval;
 }
 

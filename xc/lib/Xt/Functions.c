@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.5 91/05/03 15:31:31 rws Exp $ */
+/* $XConsortium: Functions.c,v 1.6 92/06/30 10:45:22 rws Exp $ */
 
 /*
 
@@ -90,7 +90,10 @@ Boolean XtIsWMShell(object)
 Boolean XtIsVendorShell(object)
     Widget object;
 {
-    return _XtIsSubclassOf(object,
+    Boolean retval;
+
+    LOCK_PROCESS;
+    retval = _XtIsSubclassOf(object,
 #ifdef notdef
 /*
  * We don't refer to vendorShell directly, because some shared libraries
@@ -100,6 +103,8 @@ Boolean XtIsVendorShell(object)
 #endif
 			   transientShellWidgetClass->core_class.superclass,
 			   (WidgetClass)wmShellWidgetClass, 0x40);
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 
@@ -133,7 +138,10 @@ Boolean XtIsApplicationShell(object)
 void XtMapWidget(w)
     Widget w;
 {
+    WIDGET_TO_APPCON(w);
+    LOCK_APP(app);
     XMapWindow(XtDisplay(w), XtWindow(w));
+    UNLOCK_APP(app);
 }
 
 
@@ -141,7 +149,10 @@ void XtMapWidget(w)
 void XtUnmapWidget(w)
     Widget w;
 {
+    WIDGET_TO_APPCON(w);
+    LOCK_APP(app);
     XUnmapWindow(XtDisplay(w), XtWindow(w));
+    UNLOCK_APP(app);
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.135 93/07/10 12:54:32 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.136 93/08/19 08:41:20 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1033,8 +1033,13 @@ static void TransientRealize(w, vmask, attr)
      Mask *vmask;
      XSetWindowAttributes *attr;
 {
-    (*transientShellWidgetClass->core_class.superclass->
-     core_class.realize) (w, vmask, attr);
+    XtRealizeProc realize;
+
+    LOCK_PROCESS;
+    realize = 
+	transientShellWidgetClass->core_class.superclass->core_class.realize;
+    UNLOCK_PROCESS;
+    (*realize) (w, vmask, attr);
 
     _SetTransientForHint((TransientShellWidget)w, False);
 }
@@ -1208,7 +1213,11 @@ static void _popup_set_prop(w)
 	if (XtIsApplicationShell(p)) {
 	    classhint.res_class =
 		((ApplicationShellWidget)p)->application.class;
-	} else classhint.res_class = XtClass(p)->core_class.class_name;
+	} else {
+	    LOCK_PROCESS;
+	    classhint.res_class = XtClass(p)->core_class.class_name;
+	    UNLOCK_PROCESS;
+	}
 
 	if (XtIsApplicationShell((Widget)w)
 	    && (argc = appshell->application.argc) != -1)
@@ -1231,6 +1240,7 @@ static void _popup_set_prop(w)
 	if (copied_iname)
 	    XFree((XPointer)icon_name.value);
 
+	LOCK_PROCESS;
 	if (XtWidgetToApplicationContext((Widget)w)->langProcRec.proc) {
 	    char *locale = setlocale(LC_CTYPE, (char *)NULL);
 	    if (locale)
@@ -1240,6 +1250,7 @@ static void _popup_set_prop(w)
 				XA_STRING, 8, PropModeReplace,
 				(unsigned char *)locale, strlen(locale));
 	}
+	UNLOCK_PROCESS;
 }
 
 /* ARGSUSED */
@@ -1394,12 +1405,17 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 		}
 	      default:
 		 return;
-	 } 
+	} 
+	{
+	XtWidgetProc resize;
 
-	 if (sizechanged && 
-                 XtClass(wid)->core_class.resize != (XtWidgetProc) NULL)
-                    (*(XtClass(wid)->core_class.resize))(wid);
+	LOCK_PROCESS;
+	resize = XtClass(wid)->core_class.resize;
+	UNLOCK_PROCESS;
 
+	if (sizechanged && resize)
+	    (*resize)(wid);
+	}
 }
 
 static void Destroy(wid)
@@ -1691,7 +1707,11 @@ static _wait_for_response(w, event, request_num)
 
 	    if (_XtWaitForSomething (app, 
 				     FALSE, TRUE, TRUE, TRUE, 
-				     TRUE, &timeout) != -1) continue;
+				     TRUE, 
+#if defined(XTHREADS)
+				     FALSE, 
+#endif
+				     &timeout) != -1) continue;
 	    if (timeout == 0)
 		return FALSE;
 	}
@@ -2196,7 +2216,13 @@ static void ApplicationShellInsertChild(widget)
 	       (String*)NULL, (Cardinal*)NULL);
     }
     else {
-	(*((CompositeWidgetClass)applicationShellClassRec.core_class.
-	   superclass)->composite_class.insert_child) (widget);
+	XtWidgetProc insert_child;
+
+	LOCK_PROCESS;
+	insert_child = 
+	    ((CompositeWidgetClass)applicationShellClassRec.core_class.
+	   superclass)->composite_class.insert_child;
+	UNLOCK_PROCESS;
+	(*insert_child) (widget);
     }
 }

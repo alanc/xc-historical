@@ -1,4 +1,4 @@
-/* $XConsortium: GetActKey.c,v 1.1 91/01/09 19:21:29 converse Exp $ */
+/* $XConsortium: GetActKey.c,v 1.4 91/01/10 14:10:30 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -32,20 +32,25 @@ KeySym XtGetActionKeysym(event, modifiers_return)
     XEvent *event;
     Modifiers *modifiers_return;
 {
-    TMKeyContext tm_context= _XtGetPerDisplay(event->xany.display)->tm_context;
+    TMKeyContext tm_context;
     Modifiers modifiers;
-    KeySym keysym;
+    KeySym keysym, retval;
 
-    if (event->xany.type != KeyPress && event->xany.type != KeyRelease)
+    LOCK_PROCESS;
+    tm_context= _XtGetPerDisplay(event->xany.display)->tm_context;
+    if (event->xany.type != KeyPress && event->xany.type != KeyRelease) {
+	UNLOCK_PROCESS;
 	return NoSymbol;
-
+    }
     if (tm_context != NULL
 	&& event == tm_context->event
 	&& event->xany.serial == tm_context->serial ) {
 
 	if (modifiers_return != NULL)
 	    *modifiers_return = tm_context->modifiers;
-	return tm_context->keysym;
+	retval = tm_context->keysym;
+	UNLOCK_PROCESS;
+	return retval;
     }
 
     XtTranslateKeycode( event->xany.display, (KeyCode)event->xkey.keycode,
@@ -54,5 +59,6 @@ KeySym XtGetActionKeysym(event, modifiers_return)
     if (modifiers_return != NULL)
 	*modifiers_return = event->xkey.state & modifiers;
 
+    UNLOCK_PROCESS;
     return keysym;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.85 91/07/23 15:38:18 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.86 93/08/19 08:40:32 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -124,7 +124,10 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     /* Allow suppression of conversion warnings. %%%  Not specified. */
 
     static enum {Check, Report, Ignore} report_it = Check;
+    XtAppContext app = XtDisplayToApplicationContext(dpy);
 
+    LOCK_APP(app);
+    LOCK_PROCESS;
     if (report_it == Check) {
 	XrmDatabase rdb = XtDatabase(dpy);
 	XrmName xrm_name[2];
@@ -161,13 +164,15 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	Cardinal num_params = 2;
 	params[0] = (String)from;
 	params[1] = (String)toType;
-	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+	XtAppWarningMsg(app,
 		   XtNconversionError,"string",XtCXtToolkitError,
 		   "Cannot convert string \"%s\" to type %s",
 		    params,&num_params);
 #ifndef NO_MIT_HACKS	
     }
 #endif /* ifndef NO_MIT_HACKS */
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 }
 
 #if NeedFunctionPrototypes
@@ -1544,7 +1549,7 @@ Boolean XtCvtStringToGravity (dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-_XtAddDefaultConverters(table)
+void _XtAddDefaultConverters(table)
     ConverterTable table;
 {
 #define Add(from, to, proc, convert_args, num_args, cache) \

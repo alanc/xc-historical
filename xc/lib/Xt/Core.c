@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.55 91/06/11 20:25:04 converse Exp $ */
+/* $XConsortium: Core.c,v 1.56 93/08/09 17:13:17 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,6 +32,7 @@ SOFTWARE.
 #include "ResourceI.h"
 #include "RectObj.h"
 #include "RectObjP.h"
+#include "ThreadsI.h"
 #include "StringDefs.h"
 
 /******************************************************************
@@ -238,8 +239,10 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     save1 = (XtTranslations)new_widget->core.tm.current_state;
     new_widget->core.tm.current_state = NULL;
     save2 = new_widget->core.tm.translations;
+    LOCK_PROCESS;
     new_widget->core.tm.translations =
 	(XtTranslations)new_widget->core.widget_class->core_class.tm_table;
+    UNLOCK_PROCESS;
     if (save1)
 	_XtMergeTranslations(new_widget, save1, save1->operation);
     if (save2)

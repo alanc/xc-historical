@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.28 93/07/14 14:38:07 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.29 93/08/11 14:06:44 kaleb Exp $ */
 
 /********************************************************
 
@@ -161,8 +161,15 @@ static Widget FindFocusWidget(widget, pdi)
 Widget XtGetKeyboardFocusWidget(widget)
     Widget widget;
 {
-    XtPerDisplayInput pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    return FindFocusWidget(widget, pdi);
+    XtPerDisplayInput pdi;
+    Widget retval;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    retval = FindFocusWidget(widget, pdi);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 static Boolean IsOutside(e, w) 
@@ -206,7 +213,8 @@ static Widget 	FindKeyDestination(widget, event,
     
     Widget		dspWidget;
     Widget		focusWidget;
-    
+
+    LOCK_PROCESS;
     dspWidget = 
       focusWidget = 
 	pdi->focusWidget = 
@@ -327,6 +335,7 @@ static Widget 	FindKeyDestination(widget, event,
 		  }
 	    }
       }
+    UNLOCK_PROCESS;
     return dspWidget;
 }
 
@@ -418,26 +427,29 @@ static ActiveType InActiveSubtree(widget)
     static int		pathTraceMax = 0;
     static Display	*display = NULL;
     Boolean		isTarget;
-    
+    ActiveType		retval;
+
+    LOCK_PROCESS;
     if (!pathTraceDepth || 
 	!(display == XtDisplay(widget)) ||
-	!(widget == pathTrace[0]))
-      {
-	  _XtFillAncestorList(&pathTrace, 
-			      &pathTraceMax, 
-			      &pathTraceDepth,
-			      widget,
-			      NULL);
-	  display = XtDisplay(widget);
-      }
+	!(widget == pathTrace[0])) {
+	_XtFillAncestorList(&pathTrace, 
+			    &pathTraceMax, 
+			    &pathTraceDepth,
+			    widget,
+			    NULL);
+	display = XtDisplay(widget);
+    }
     if (widget == _FindFocusWidget(widget, 
 				   pathTrace,
 				   pathTraceDepth, 
 				   TRUE,
 				   &isTarget))
-      return isTarget ? IsTarget : IsActive;
+	retval = (isTarget ? IsTarget : IsActive);
     else
-      return NotActive;
+	retval = NotActive;
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 
@@ -701,12 +713,20 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget widget;
     Widget descendant;
 {
-    Display* dpy = XtDisplay (widget);
-    XtPerDisplayInput pdi = _XtGetPerDisplayInput(dpy);
-    XtPerWidgetInput pwi = _XtGetPerWidgetInput(widget, TRUE);
-    Widget oldDesc = pwi->focusKid;
+    Display* dpy;
+    XtPerDisplayInput pdi;
+    XtPerWidgetInput pwi;
+    Widget oldDesc;
     Widget oldTarget, target;
-    
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    LOCK_PROCESS;
+    dpy = XtDisplay (widget);
+    pdi = _XtGetPerDisplayInput(dpy);
+    pwi = _XtGetPerWidgetInput(widget, TRUE);
+    oldDesc = pwi->focusKid;
+
     if (descendant == widget) descendant = (Widget)None;
 
     target = descendant ? _GetWindowedAncestor(descendant) : NULL;
@@ -788,4 +808,6 @@ void XtSetKeyboardFocus(widget, descendant)
 	    }
 	}
     }
-}	
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
+}

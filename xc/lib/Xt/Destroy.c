@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.43 91/06/30 17:02:46 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.44 92/01/03 18:03:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -81,22 +81,38 @@ static void Phase2Destroy(widget)
     /* Call constraint destroy procedures */
     /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
     if (!XtIsShell(widget) && XtIsConstraint(XtParent(widget))) {
+	LOCK_PROCESS;
 	cwClass = (ConstraintWidgetClass)XtParent(widget)->core.widget_class;
+	UNLOCK_PROCESS;
 	for (;;) {
-	    if (cwClass->constraint_class.destroy != NULL)
-		(*(cwClass->constraint_class.destroy)) (widget);
+	    XtWidgetProc destroy;
+
+	    LOCK_PROCESS;
+	    destroy = cwClass->constraint_class.destroy;
+	    UNLOCK_PROCESS;
+	    if (destroy)
+		(*destroy) (widget);
             if (cwClass == (ConstraintWidgetClass)constraintWidgetClass) break;
-            cwClass = (ConstraintWidgetClass) cwClass->core_class.superclass;
+	    LOCK_PROCESS;
+	    cwClass = (ConstraintWidgetClass) cwClass->core_class.superclass;
+	    UNLOCK_PROCESS;
 	}
     }
 
     /* Call widget destroy procedures */
+    LOCK_PROCESS;
     for (class = widget->core.widget_class;
 	 class != NULL; 
 	 class = class->core_class.superclass) {
-	if ((class->core_class.destroy) != NULL)
-	    (*(class->core_class.destroy))(widget);
+	XtWidgetProc destroy;
+
+	destroy = class->core_class.destroy;
+	UNLOCK_PROCESS;
+	if (destroy)
+	    (*destroy) (widget);
+	LOCK_PROCESS;
     }
+    UNLOCK_PROCESS;
 } /* Phase2Destroy */
 
 static Boolean IsDescendant(widget, root)
@@ -135,15 +151,23 @@ static void XtPhase2Destroy (widget)
     }
 
     if (!isPopup && parent && XtIsComposite(parent)) {
-	XtWidgetProc delete_child =
+	XtWidgetProc delete_child;
+
+	LOCK_PROCESS;
+	delete_child =
 	    ((CompositeWidgetClass) parent->core.widget_class)->
 		composite_class.delete_child;
+	UNLOCK_PROCESS;
         if (XtIsRectObj(widget)) {
        	    XtUnmanageChild(widget);
         }
 	if (delete_child == NULL) {
-	    String param = parent->core.widget_class->core_class.class_name;
+	    String param;
 	    Cardinal num_params = 1;
+
+	    LOCK_PROCESS;
+	    param = parent->core.widget_class->core_class.class_name;
+	    UNLOCK_PROCESS;
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		"invalidProcedure","deleteChild",XtCXtToolkitError,
 		"null delete_child procedure for class %s in XtDestroy",
@@ -244,17 +268,22 @@ void _XtDoPhase2Destroy(app, dispatch_level)
 void XtDestroyWidget (widget)
     Widget    widget;
 {
-    XtAppContext app = XtWidgetToApplicationContext(widget);
-    register DestroyRec *dr, *dr2;
+    XtAppContext app;
+    DestroyRec *dr, *dr2;
 
-    if (widget->core.being_destroyed) return;
-
+    app = XtWidgetToApplicationContext(widget);
+    LOCK_APP(app);
+    if (widget->core.being_destroyed) {
+	UNLOCK_APP(app);
+	return;
+    }
     Recursive(widget, Phase1Destroy);
 
     if (app->in_phase2_destroy &&
 	IsDescendant(widget, app->in_phase2_destroy))
     {
 	XtPhase2Destroy(widget);
+	UNLOCK_APP(app);
 	return;
     }
 
@@ -288,5 +317,6 @@ void XtDestroyWidget (widget)
 	_XtDoPhase2Destroy(app, 0);
 	app->dispatch_level = 0;
     }
+    UNLOCK_APP(app);
 	
 } /* XtDestroyWidget */

@@ -1,4 +1,4 @@
-/* $XConsortium: SetSens.c,v 1.2 90/12/12 14:53:11 rws Exp $ */
+/* $XConsortium: SetSens.c,v 1.3 91/01/06 13:32:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -71,8 +71,13 @@ void XtSetSensitive(widget, sensitive)
     Arg			args[1];
     register Cardinal   i;
     register WidgetList children;
+    WIDGET_TO_APPCON(widget);
 
-    if (widget->core.sensitive == sensitive) return;
+    LOCK_APP(app);
+    if (widget->core.sensitive == sensitive) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     XtSetArg(args[0], XtNsensitive, sensitive);
     XtSetValues(widget, args, XtNumber(args));
@@ -87,4 +92,5 @@ void XtSetSensitive(widget, sensitive)
 	    SetAncestorSensitive (children[i], sensitive);
 	}
     }
+    UNLOCK_APP(app);
 } /* XtSetSensitive */

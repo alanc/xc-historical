@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.18 92/12/22 17:00:05 converse Exp $ */
+/* $XConsortium: TMkey.c,v 1.19 92/12/22 17:20:52 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -250,8 +250,12 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
     KeySym keysym;
     KeySym *lower_return, *upper_return;
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
-    register CaseConverterPtr ptr;
+    XtPerDisplay pd;
+    CaseConverterPtr ptr;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
 
     *lower_return = *upper_return = keysym;
     for (ptr=pd->case_cvt;  ptr; ptr = ptr->next)
@@ -261,6 +265,7 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
 	}
     if (keysym <= 0x3ff)	/* Latin-1 start = 0, Latin-4 stop = 0x3ff */
 	_XtConvertCase(dpy, keysym, lower_return, upper_return);
+    UNLOCK_APP(app);
 }
     
 Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
@@ -423,10 +428,15 @@ void XtTranslateKeycode (dpy, keycode, modifiers,
     KeySym *keysym_return;
 #endif
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
     _InitializeKeysymTables(dpy, pd);
     (*pd->defaultKeycodeTranslator)(
             dpy,keycode,modifiers,modifiers_return,keysym_return);
+    UNLOCK_APP(app);
 }
 
 /* This code should match XTranslateKey (internal, sigh) in Xlib */
@@ -448,14 +458,18 @@ void XtTranslateKey(dpy, keycode, modifiers,
     KeySym *keysym_return;
 #endif
 {
-    register XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
     int per;
     register KeySym *syms;
     KeySym sym, lsym, usym;
+    DPY_TO_APPCON(dpy);
 
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
     *modifiers_return = (ShiftMask|LockMask) | pd->mode_switch;
     if (((int)keycode < pd->min_keycode) || ((int)keycode > pd->max_keycode)) {
 	*keysym_return = NoSymbol;
+	UNLOCK_APP(app);
 	return;
     }
     per = pd->keysyms_per_keycode;
@@ -489,6 +503,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
 
     if (*keysym_return == XK_VoidSymbol)
 	*keysym_return = NoSymbol;
+    UNLOCK_APP(app);
 }
 
 void XtSetKeyTranslator(dpy, translator)
@@ -497,11 +512,16 @@ void XtSetKeyTranslator(dpy, translator)
     XtKeyProc translator;
 
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
 
     pd->defaultKeycodeTranslator = translator;
     FLUSHKEYCACHE(pd->tm_context);
     /* XXX should now redo grabs */
+    UNLOCK_APP(app);
 }
 
 void XtRegisterCaseConverter(dpy, proc, start, stop)
@@ -510,8 +530,12 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     KeySym start;
     KeySym stop;
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
     CaseConverterPtr ptr, prev;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
 
     ptr = (CaseConverterPtr) XtMalloc(sizeof(CaseConverterRec));
     ptr->start = start;
@@ -531,6 +555,7 @@ void XtRegisterCaseConverter(dpy, proc, start, stop)
     }
     FLUSHKEYCACHE(pd->tm_context);
     /* XXX should now redo grabs */
+    UNLOCK_APP(app);
 }
 
 /* This code should match XConvertCase (internal, sigh) in Xlib */
@@ -626,11 +651,18 @@ KeySym *XtGetKeysymTable(dpy, min_keycode_return, keysyms_per_keycode_return)
     KeyCode *min_keycode_return;
     int *keysyms_per_keycode_return;
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
+    KeySym* retval;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
     _InitializeKeysymTables(dpy, pd);
     *min_keycode_return = pd->min_keycode; /* %%% */
     *keysyms_per_keycode_return = pd->keysyms_per_keycode;
-    return pd->keysyms;
+    retval = pd->keysyms;
+    UNLOCK_APP(app);
+    return retval;
 }
 
 void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
@@ -639,7 +671,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     KeyCode **keycodes_return;
     Cardinal *keycount_return;
 {
-    register XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
     unsigned keycode;
     int per, match;
     register KeySym *syms;
@@ -648,7 +680,10 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     unsigned maxcodes = 0;
     unsigned ncodes = 0;
     KeyCode *keycodes, *codeP;
+    DPY_TO_APPCON(dpy);
 
+    LOCK_APP(app);
+    pd = _XtGetPerDisplay(dpy);
     _InitializeKeysymTables(dpy, pd);
     keycodes = NULL;
     per = pd->keysyms_per_keycode;
@@ -689,6 +724,7 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     }
     *keycodes_return = keycodes;
     *keycount_return = ncodes;
+    UNLOCK_APP(app);
 }
 
 

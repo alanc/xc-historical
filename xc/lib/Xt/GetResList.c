@@ -1,4 +1,4 @@
-/* $XConsortium: GetResList.c,v 1.2 91/01/06 13:32:20 rws Exp $ */
+/* $XConsortium: GetResList.c,v 1.3 93/08/18 11:24:10 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,10 +35,12 @@ void XtGetResourceList(widget_class, resources, num_resources)
 	XtResourceList *resources;
 	Cardinal *num_resources;
 {
-	int size = widget_class->core_class.num_resources * sizeof(XtResource);
+	int size;
 	register int i, dest = 0;
 	register XtResourceList *list, dlist;
 
+	LOCK_PROCESS;
+	size = widget_class->core_class.num_resources * sizeof(XtResource);
 	*resources = (XtResourceList) XtMalloc((unsigned) size);
 
 	if (!widget_class->core_class.class_inited) {
@@ -47,6 +49,7 @@ void XtGetResourceList(widget_class, resources, num_resources)
 	    bcopy((char *)widget_class->core_class.resources,
 		    (char *) *resources, size);
 	    *num_resources = widget_class->core_class.num_resources;
+	    UNLOCK_PROCESS;
 	    return;
 	}
 
@@ -73,6 +76,7 @@ void XtGetResourceList(widget_class, resources, num_resources)
 	    }
 	}
 	*num_resources = dest;
+	UNLOCK_PROCESS;
 }
 
 
@@ -95,6 +99,7 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 	register XtResourceList *list, dlist;
 	ConstraintWidgetClass class = (ConstraintWidgetClass)widget_class;
 
+	LOCK_PROCESS;
 	if (   (class->core_class.class_inited &&
 		!(class->core_class.class_inited & ConstraintClassFlag))
 	    || (!class->core_class.class_inited &&
@@ -103,6 +108,7 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 
 	    *resources = NULL;
 	    *num_resources = 0;
+	    UNLOCK_PROCESS;
 	    return;
 	}
 
@@ -115,6 +121,7 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 	    bcopy((char *)class->constraint_class.resources,
 		    (char *) *resources, size);
 	    *num_resources = class->constraint_class.num_resources;
+	    UNLOCK_PROCESS;
 	    return;
 	}
 
@@ -141,4 +148,5 @@ void XtGetConstraintResourceList(widget_class, resources, num_resources)
 	    }
 	}
 	*num_resources = dest;
+	UNLOCK_PROCESS;
 }

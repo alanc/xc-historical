@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.108 93/05/21 13:57:29 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.109 93/08/18 11:24:55 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -190,6 +190,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     /* Return null-terminated quark arrays, with length the number of
        quarks (not including NULL) */
 
+    LOCK_PROCESS;
     for (length = 0; w != NULL; w = (Widget) w->core.parent) {
 	names[length] = w->core.xrm_name;
 	class = XtClass(w);
@@ -200,6 +201,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 	} else classes[length] = class->core_class.xrm_class;
 	length++;
      }
+    UNLOCK_PROCESS;
     /* They're in backwards order, flop them around */
     for (j = 0; j < length/2; j++) {
 	t = names[j];
@@ -710,6 +712,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    if (have_value && rx->xrm_name == Qtranslations)
 			do_tm_hack = True;
 		}
+		LOCK_PROCESS;
 		if (!have_value
 		    && ((rx->xrm_default_type == QImmediate)
 			|| (rx->xrm_default_type == xrm_type)
@@ -782,6 +785,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			}
 		    }
 		}
+		UNLOCK_PROCESS;
 
 		if (typed[j]) {
 		    /*
@@ -899,6 +903,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 	      XtNumber(quark_cache), &quark_args);
 
     /* Get normal resources */
+    LOCK_PROCESS;
     cache_refs = GetResources(w, (char*)w, names, classes,
 	(XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, quark_args, args, num_args,
@@ -912,6 +917,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 	    quark_args, args, num_args, typed_args, num_typed_args, False);
     }
     FreeCache(quark_cache, quark_args);
+    UNLOCK_PROCESS;
     return cache_refs;
 } /* _XtGetResources */
 
@@ -947,9 +953,11 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
     XrmQuarkList  quark_args;
     XrmResourceList* table;
     Cardinal	  null_typed_args = 0;
+    WIDGET_TO_APPCON(w);
 
     if (num_resources == 0) return;
 
+    LOCK_APP(app);
     /* Get full name, class of subobject */
     length = GetNamesAndClasses(w, names, classes);
     names[length] = StringToName(name);
@@ -972,6 +980,7 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
 			(XtTypedArgList)NULL, &null_typed_args, False);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
+    UNLOCK_APP(app);
 }
 
 
@@ -990,9 +999,11 @@ void XtGetApplicationResources
     XrmQuarkList    quark_args;
     XrmResourceList* table;
     Cardinal	  null_typed_args = 0;
+    WIDGET_TO_APPCON(w);
 
     if (num_resources == 0) return;
 
+    LOCK_APP(app);
     /* Get full name, class of application */
     if (w == NULL) {
 	/* hack for R2 compatibility */
@@ -1029,19 +1040,23 @@ void XtGetApplicationResources
 			(XtTypedArgList)NULL, &null_typed_args, False);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
+    UNLOCK_APP(app);
 }
 
 static Boolean initialized = FALSE;
 
 void _XtResourceListInitialize()
 {
+    LOCK_PROCESS;
     if (initialized) {
 	XtWarningMsg("initializationError","xtInitialize",XtCXtToolkitError,
                   "Initializing Resource Lists twice",
 		  (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_PROCESS;
     	return;
     }
     initialized = TRUE;
+    UNLOCK_PROCESS;
 
     QBoolean = XrmPermStringToQuark(XtCBoolean);
     QString = XrmPermStringToQuark(XtCString);

@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.18 91/04/04 20:52:53 converse Exp $ */
+/* $XConsortium: Composite.c,v 1.19 91/10/15 17:05:12 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -110,6 +110,7 @@ static void CompositeClassPartInitialize(widgetClass)
     /* We don't need to check for null super since we'll get to composite
        eventually, and it had better define them!  */
 
+    LOCK_PROCESS;
     if (wcPtr->geometry_manager == XtInheritGeometryManager) {
 	wcPtr->geometry_manager =
 		superPtr->geometry_manager;
@@ -127,7 +128,7 @@ static void CompositeClassPartInitialize(widgetClass)
     if (wcPtr->delete_child == XtInheritDeleteChild) {
 	wcPtr->delete_child = superPtr->delete_child;
     }
-
+    UNLOCK_PROCESS;
 }
 
 static void CompositeDestroy(w)

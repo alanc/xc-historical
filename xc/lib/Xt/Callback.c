@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.34 91/10/30 14:16:58 converse Exp $ */
+/* $XConsortium: Callback.c,v 1.35 91/11/21 14:36:30 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,19 +39,24 @@ static InternalCallbackList* FetchInternalList(widget, name)
     Widget	widget;
     String	name;
 {
-    register XrmQuark		quark;
-    register int 		n;
-    register CallbackTable	offsets;
+    XrmQuark quark;
+    int n;
+    CallbackTable offsets;
+    InternalCallbackList* retval = NULL;
 
     quark = StringToQuark(name);
+    LOCK_PROCESS;
     offsets = (CallbackTable) 
 	widget->core.widget_class->core_class.callback_private;
 
     for (n = (int) *(offsets++); --n >= 0; offsets++)
-	if (quark == (*offsets)->xrm_name)
-	    return (InternalCallbackList *) 
+	if (quark == (*offsets)->xrm_name) {
+	    retval = (InternalCallbackList *) 
 		((char *) widget - (*offsets)->xrm_offset - 1);
-    return NULL;
+	    break;
+	}
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 
@@ -119,16 +124,20 @@ void XtAddCallback(widget, name, callback, closure)
 #endif
 {
     InternalCallbackList *callbacks;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtAddCallback,XtCXtToolkitError,
               "Cannot find callback list in XtAddCallback",
 	      (String *)NULL, (Cardinal *)NULL);
-       return;
+	UNLOCK_APP(app);
+	return;
     }
     _XtAddCallback(callbacks, callback, closure);
+    UNLOCK_APP(app);
 } /* XtAddCallback */
 
 /* ARGSUSED */
@@ -177,16 +186,20 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 #endif
 {
     InternalCallbackList* callbacks;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtAddCallback,XtCXtToolkitError,
               "Cannot find callback list in XtAddCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
-       return;
+	UNLOCK_APP(app);
+	return;
     }
     AddCallbacks(widget, callbacks, xtcallbacks);
+    UNLOCK_APP(app);
 } /* XtAddCallbacks */
 
 void _XtRemoveCallback (callbacks, callback, closure)
@@ -261,17 +274,20 @@ void XtRemoveCallback (widget, name, callback, closure)
 #endif
 {
     InternalCallbackList *callbacks;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtRemoveCallback,XtCXtToolkitError,
               "Cannot find callback list in XtRemoveCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 	return;
     }
-
     _XtRemoveCallback(callbacks, callback, closure);
+    UNLOCK_APP(app);
 } /* XtRemoveCallback */
 
 
@@ -288,21 +304,27 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 #endif
 {
     InternalCallbackList *callbacks;
-    register int i;
-    register InternalCallbackList icl;
-    register XtCallbackList cl, ccl, rcl;
+    int i;
+    InternalCallbackList icl;
+    XtCallbackList cl, ccl, rcl;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtRemoveCallback,XtCXtToolkitError,
               "Cannot find callback list in XtRemoveCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 	return;
     }
 
     icl = *callbacks;
-    if (!icl) return;
+    if (!icl) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     i = icl->count;
     cl = ToList(icl);
@@ -335,6 +357,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 	XtFree((char *)icl);
 	*callbacks = NULL;
     }
+    UNLOCK_APP(app);
 } /* XtRemoveCallbacks */
 
 
@@ -363,17 +386,20 @@ void XtRemoveAllCallbacks(widget, name)
 #endif
 {
     InternalCallbackList *callbacks;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtRemoveAllCallback,XtCXtToolkitError,
               "Cannot find callback list in XtRemoveAllCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
-
+	UNLOCK_APP(app);
 	return;
     }
     _XtRemoveAllCallbacks(callbacks);
+    UNLOCK_APP(app);
 } /* XtRemoveAllCallbacks */
 
 InternalCallbackList _XtCompileCallbackList(xtcallbacks)
@@ -450,25 +476,32 @@ void XtCallCallbacks(widget, name, call_data)
 #endif
 {
     InternalCallbackList *callbacks;
-    register InternalCallbackList icl;
-    register XtCallbackList cl;
-    register int i;
+    InternalCallbackList icl;
+    XtCallbackList cl;
+    int i;
     char ostate;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, name);
     if (!callbacks) {
-       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 	       XtNinvalidCallbackList,XtNxtCallCallback,XtCXtToolkitError,
               "Cannot find callback list in XtCallCallbacks",
 	      (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 	return;
     }
 
     icl = *callbacks;
-    if (!icl) return;
+    if (!icl) {
+	UNLOCK_APP(app);
+	return;
+    }
     cl = ToList(icl);
     if (icl->count == 1) {
 	(*cl->callback) (widget, cl->closure, call_data);
+	UNLOCK_APP(app);
 	return;
     }
     ostate = icl->call_state;
@@ -481,6 +514,7 @@ void XtCallCallbacks(widget, name, call_data)
 	XtFree((char *)icl);
     else
 	icl->call_state = ostate;
+    UNLOCK_APP(app);
 } /* XtCallCallbacks */
 
 
@@ -496,12 +530,17 @@ XtCallbackStatus XtHasCallbacks(widget, callback_name)
 #endif
 {
     InternalCallbackList *callbacks;
+    XtCallbackStatus retval = XtCallbackHasSome;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     callbacks = FetchInternalList(widget, callback_name);
     if (!callbacks)
-	return XtCallbackNoList;
+	retval = XtCallbackNoList;
     else if (!*callbacks)
-	return XtCallbackHasNone;
-    return XtCallbackHasSome;
+	retval = XtCallbackHasNone;
+    UNLOCK_APP(app);
+    return retval;
 } /* XtHasCallbacks */
 
 
@@ -514,12 +553,18 @@ void XtCallCallbackList(widget, callbacks, call_data)
     register XtCallbackList cl;
     register int i;
     char ostate;
+    WIDGET_TO_APPCON(widget);
 
-    if (!callbacks) return;
+    LOCK_APP(app);
+    if (!callbacks) {
+	UNLOCK_APP(app);
+	return;
+    }
     icl = (InternalCallbackList)callbacks;
     cl = ToList(icl);
     if (icl->count == 1) {
 	(*cl->callback) (widget, cl->closure, call_data);
+	UNLOCK_APP(app);
 	return;
     }
     ostate = icl->call_state;
@@ -532,4 +577,5 @@ void XtCallCallbackList(widget, callbacks, call_data)
 	XtFree((char *)icl);
     else
 	icl->call_state = 0;
+    UNLOCK_APP(app);
 } /* XtCallCallbackList */

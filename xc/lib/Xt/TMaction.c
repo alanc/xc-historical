@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.19 93/06/22 08:16:11 kaleb Exp $ */
+/* $XConsortium: TMaction.c,v 1.20 93/07/21 11:49:37 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -250,7 +250,8 @@ static int  BindProcs(widget, stateTree, procs, bindStatus)
     int 			unbound = -1, newUnbound = -1;
     Cardinal 			ndx = 0;
     Widget			w = widget; 
-   
+
+    LOCK_PROCESS;
     do {
         class = w->core.widget_class;
         do {
@@ -295,7 +296,7 @@ static int  BindProcs(widget, stateTree, procs, bindStatus)
 	  bindStatus->boundInContext = False;
 
     }
-
+    UNLOCK_PROCESS;
     return unbound;
 }
 
@@ -303,7 +304,10 @@ static XtActionProc  *TryBindCache(widget, stateTree)
     Widget	widget;
     TMStateTree	stateTree;
 {
-    TMClassCache	classCache = GetClassCache(widget);
+    TMClassCache	classCache;
+
+    LOCK_PROCESS;
+    classCache = GetClassCache(widget);
 
     if (classCache == NULL)
       {
@@ -322,10 +326,12 @@ static XtActionProc  *TryBindCache(widget, stateTree)
 		    (stateTree == bindCache->stateTree))
 		  {
 		      bindCache->status.refCount++;
+		      UNLOCK_PROCESS;
 		      return &bindCache->procs[0];
 		  }
 	    }
       }
+    UNLOCK_PROCESS;
     return NULL;
 }
 
@@ -365,10 +371,15 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
     XtActionProc 	*procs;
     TMBindCacheStatus 	bindStatus;
 {
-    TMClassCache	classCache = GetClassCache(w);
-    TMBindCache		*bindCachePtr = &classCache->bindCache;
-    TMShortCard		procsSize = stateTree->numQuarks * sizeof(XtActionProc);
+    TMClassCache	classCache;
+    TMBindCache*	bindCachePtr;
+    TMShortCard		procsSize;
     TMBindCache		bindCache;
+
+    LOCK_PROCESS;
+    classCache = GetClassCache(w);
+    bindCachePtr = &classCache->bindCache;
+    procsSize = stateTree->numQuarks * sizeof(XtActionProc);
 
     for (bindCache = *bindCachePtr;
 	 (*bindCachePtr); 
@@ -412,6 +423,7 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 		  (XtPointer)&bindCache->procs[0], 
 		  procsSize);
       }
+    UNLOCK_PROCESS;
     return &bindCache->procs[0];
 }
 
@@ -419,10 +431,14 @@ static void RemoveFromBindCache(w,procs)
     Widget		w;
     XtActionProc 	*procs;
 {
-    XtAppContext	app = XtWidgetToApplicationContext (w);
-    TMClassCache	classCache = GetClassCache(w);
-    TMBindCache		*bindCachePtr = (TMBindCache *)&classCache->bindCache;
+    TMClassCache	classCache;
+    TMBindCache*	bindCachePtr;
     TMBindCache		bindCache;
+    XtAppContext	app = XtWidgetToApplicationContext (w);
+
+    LOCK_PROCESS;
+    classCache = GetClassCache(w);
+    bindCachePtr = (TMBindCache *)&classCache->bindCache;
 
     for (bindCache = *bindCachePtr;
 	 *bindCachePtr;
@@ -455,6 +471,7 @@ static void RemoveFromBindCache(w,procs)
 		break;
 	    }
       }
+      UNLOCK_PROCESS;
 }
 
 /* ARGSUSED */
@@ -690,11 +707,13 @@ void XtAppAddActions(app, actions, num_actions)
 {
     register ActionList rec;
 
+    LOCK_APP(app);
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
     rec->table = CompileActionTable(actions, num_actions, False, False);
     rec->count = num_actions;
+    UNLOCK_APP(app);
 }
 
 void XtGetActionList(widget_class, actions_return, num_actions_return)
@@ -709,10 +728,15 @@ void XtGetActionList(widget_class, actions_return, num_actions_return)
     *actions_return = NULL;
     *num_actions_return = 0;
 
-    if (! widget_class->core_class.class_inited)
+    LOCK_PROCESS;
+    if (! widget_class->core_class.class_inited) {
+	UNLOCK_PROCESS;
 	return;
-    if (! (widget_class->core_class.class_inited & WidgetClassFlag))
+    }
+    if (! (widget_class->core_class.class_inited & WidgetClassFlag)) {
+	UNLOCK_PROCESS;
 	return;
+    }
     *num_actions_return = widget_class->core_class.num_actions;
     if (*num_actions_return) {
 	list = *actions_return = (XtActionList) 
@@ -723,6 +747,7 @@ void XtGetActionList(widget_class, actions_return, num_actions_return)
 	    list->proc = table->proc;
 	}
     }
+    UNLOCK_PROCESS;
 }
 
 /***********************************************************************
@@ -757,12 +782,15 @@ void XtMenuPopupAction(widget, event, params, num_params)
 {
     Boolean spring_loaded;
     register Widget popup_shell;
+    XtAppContext app = XtWidgetToApplicationContext(widget);
 
+    LOCK_APP(app);
     if (*num_params != 1) {
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 		      "invalidParameters","xtMenuPopupAction",XtCXtToolkitError,
 			"MenuPopup wants exactly one argument",
 			(String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 	return;
     }
 
@@ -771,7 +799,7 @@ void XtMenuPopupAction(widget, event, params, num_params)
     else if (event->type == KeyPress || event->type == EnterNotify)
 	spring_loaded = False;
     else {
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 		"invalidPopup","unsupportedOperation",XtCXtToolkitError,
 "Pop-up menu creation is only supported on ButtonPress, KeyPress or EnterNotify events.",
                   (String *)NULL, (Cardinal *)NULL);
@@ -780,15 +808,17 @@ void XtMenuPopupAction(widget, event, params, num_params)
 
     popup_shell = _XtFindPopup(widget, params[0]);
     if (popup_shell == NULL) {
-	XtAppWarningMsg(XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 			"invalidPopup","xtMenuPopup",XtCXtToolkitError,
 			"Can't find popup widget \"%s\" in XtMenuPopup",
 			params, num_params);
+	UNLOCK_APP(app);
 	return;
     }
 
     if (spring_loaded) _XtPopup(popup_shell, XtGrabExclusive, TRUE);
     else _XtPopup(popup_shell, XtGrabNonexclusive, FALSE);
+    UNLOCK_APP(app);
 }
 
 
@@ -855,10 +885,11 @@ void _XtPopupInitialize(app)
     rec = XtNew(ActionListRec);
     rec->next = app->action_table;
     app->action_table = rec;
+    LOCK_PROCESS;
     rec->table = CompileActionTable(tmActions, XtNumber(tmActions), False,
 				    True);
     rec->count = XtNumber(tmActions);
-
+    UNLOCK_PROCESS;
     _XtGrabInitialize(app);
 }
 
@@ -886,10 +917,11 @@ void XtCallActionProc(widget, action, event, params, num_params)
     XtAppContext app = XtWidgetToApplicationContext(widget);
     ActionList actionList;
     Cardinal i;
-    
+
+    LOCK_APP(app);
     XtCheckSubclass(widget, coreWidgetClass,
 		    "XtCallActionProc first argument is not a subclass of Core");
-    
+    LOCK_PROCESS;
     do {
 	WidgetClass class = XtClass(w);
 	do {
@@ -912,6 +944,8 @@ void XtCallActionProc(widget, action, event, params, num_params)
 		      }
 		      (*(actionP->proc))
 			(widget, event, params, &num_params);
+		      UNLOCK_PROCESS;
+		      UNLOCK_APP(app);
 		      return;
 		  }
 	      }
@@ -919,6 +953,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 	} while (class != NULL);
 	w = XtParent(w);
     } while (w != NULL);
+    UNLOCK_PROCESS;
     
     for (actionList = app->action_table;
 	 actionList != NULL;
@@ -941,6 +976,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 		}
 		(*(actionP->proc))
 		  (widget, event, params, &num_params);
+		UNLOCK_APP(app);
 		return;
 	    }
 	}
@@ -958,6 +994,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 			params, &num_params
 			);
     }
+    UNLOCK_APP(app);
 }
 
 void _XtDoFreeBindings(app)

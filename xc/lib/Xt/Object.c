@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.18 91/05/09 18:08:38 swick Exp $ */
+/* $XConsortium: Object.c,v 1.19 91/06/10 15:08:05 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -172,6 +172,7 @@ static Boolean ObjectSetValues(old, request, widget, args, num_args)
     register int i;
     register InternalCallbackList *ol, *nl;
 
+    LOCK_PROCESS;
     /* Compile any callback lists into internal form */
     offsets = (CallbackTable) XtClass(widget)->core_class.callback_private;
 
@@ -187,6 +188,7 @@ static Boolean ObjectSetValues(old, request, widget, args, num_args)
 		*nl = _XtCompileCallbackList((XtCallbackList) *nl);
 	}
     }
+    UNLOCK_PROCESS;
     return False;
 }
 
@@ -199,6 +201,7 @@ static void ObjectDestroy (widget)
     register InternalCallbackList cl;
 
     /* Remove all callbacks associated with widget */
+    LOCK_PROCESS;
     offsets = (CallbackTable)
 	widget->core.widget_class->core_class.callback_private;
 
@@ -209,6 +212,7 @@ static void ObjectDestroy (widget)
     }
 
     XtFree((char *) widget);
+    UNLOCK_PROCESS;
 } /* ObjectDestroy */
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.164 93/02/05 16:47:46 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.165 93/06/22 08:17:56 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -99,7 +99,9 @@ static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
 	  }
       }
 #ifdef TRACE_TM
+    LOCK_PROCESS;
     _XtGlobalTM.numBranchHeads++;
+    UNLOCK_PROCESS;
 #endif /* TRACE_TM */
     branchHead = 
       &parseTree->branchHeadTbl[parseTree->numBranchHeads++];
@@ -204,6 +206,7 @@ TMShortCard _XtGetTypeIndex(event)
     TMTypeMatch 	typeMatch;
     TMTypeMatch		segment;
 
+    LOCK_PROCESS;
     for (i = 0; i < _XtGlobalTM.numTypeMatchSegments; i++) {
 	segment = _XtGlobalTM.typeMatchSegmentTbl[i];
 	for (j = 0; 
@@ -214,8 +217,10 @@ TMShortCard _XtGetTypeIndex(event)
 	      if (event->eventType == typeMatch->eventType && 
 		  event->eventCode == typeMatch->eventCode && 
 		  event->eventCodeMask == typeMatch->eventCodeMask &&
-		  event->matchEvent == typeMatch->matchEvent)
+		  event->matchEvent == typeMatch->matchEvent) {
+		    UNLOCK_PROCESS;
 		    return typeIndex;
+		  }
 	  }
     }
     
@@ -237,6 +242,7 @@ TMShortCard _XtGetTypeIndex(event)
     typeMatch->eventCodeMask = event->eventCodeMask;
     typeMatch->matchEvent = event->matchEvent;
     _XtGlobalTM.numTypeMatches++;
+    UNLOCK_PROCESS;
     return typeIndex;
 }
 
@@ -282,6 +288,8 @@ TMShortCard _XtGetModifierIndex(event)
     TMShortCard		modIndex = 0;
     TMModifierMatch 	modMatch;
     TMModifierMatch	segment;
+
+    LOCK_PROCESS;
     for (i = 0; i < _XtGlobalTM.numModMatchSegments; i++) {
 	segment = _XtGlobalTM.modMatchSegmentTbl[i];
 	for (j = 0; 
@@ -304,6 +312,7 @@ TMShortCard _XtGetModifierIndex(event)
 		    XtFree((char *)event->lateModifiers);
 		    event->lateModifiers = NULL;
 		}
+		UNLOCK_PROCESS;
 		return modIndex;
 	    }
 	}
@@ -334,6 +343,7 @@ TMShortCard _XtGetModifierIndex(event)
 #endif /* TRACE_TM */
     modMatch->lateModifiers = event->lateModifiers;
     _XtGlobalTM.numModMatches++;
+    UNLOCK_PROCESS;
     return modIndex;
 }
 
@@ -351,6 +361,7 @@ static int MatchBranchHead(stateTree, startIndex, event)
       branchHead = &stateTree->branchHeadTbl[startIndex];
     register int i;
 
+    LOCK_PROCESS;
     for (i = startIndex;
 	 i < (int)stateTree->numBranchHeads; 
 	 i++, branchHead++)
@@ -361,9 +372,12 @@ static int MatchBranchHead(stateTree, startIndex, event)
 	  typeMatch  = TMGetTypeMatch(branchHead->typeIndex);
 	  modMatch = TMGetModifierMatch(branchHead->modIndex);
 	  
-	  if (MatchIncomingEvent(event, typeMatch, modMatch))
+	  if (MatchIncomingEvent(event, typeMatch, modMatch)) {
+	    UNLOCK_PROCESS;
 	    return i;
+	  }
       }    
+    UNLOCK_PROCESS;
     return (TM_NO_MATCH);
 }
 
@@ -598,6 +612,7 @@ static void PushContext(contextPtr, newState)
 {
     TMContext 		context = *contextPtr;
     
+    LOCK_PROCESS;
     if (context == NULL)
       {
 	  if (contextCache[0].numMatches == 0)
@@ -645,12 +660,15 @@ static void PushContext(contextPtr, newState)
 	  context->matches[context->numMatches++].modIndex = newState->modIndex;
 	  *contextPtr = context;
       }
+      UNLOCK_PROCESS;
 }
+
 static void FreeContext(contextPtr)
     TMContext	*contextPtr;
 {
     TMContext 		context = NULL;
-    
+
+    LOCK_PROCESS;
     if (&contextCache[0] == *contextPtr)
       context = &contextCache[0];
     else if (&contextCache[1] == *contextPtr)
@@ -661,6 +679,7 @@ static void FreeContext(contextPtr)
       XtFree((char *)*contextPtr);
     
     *contextPtr = NULL;
+    UNLOCK_PROCESS;
 }
 
 static int MatchExact(stateTree, startIndex, typeIndex, modIndex) 
@@ -701,7 +720,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
     TMShortCard		typeIndex, modIndex;
     int			matchTreeIndex = TM_NO_MATCH;
     
-    
+    LOCK_PROCESS;
     stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[0];
     
     for (i = 0; 
@@ -801,6 +820,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
       }
     if (complexMatchState)
       PushContext(contextPtr, complexMatchState);
+    UNLOCK_PROCESS;
 }
 
 static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
@@ -811,6 +831,7 @@ static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
 {
     TMShortCard	i;
 
+    LOCK_PROCESS;
     for (i = startIndex; i < stateTree->numComplexBranchHeads; i++)
       {
 	  StatePtr	candState;
@@ -827,10 +848,12 @@ static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
 	    }
 	  if (numMatches == 0) {
 	      *leafStateRtn = candState;
+	      UNLOCK_PROCESS;
 	      return i;
 	  }
       }
     *leafStateRtn = NULL;
+    UNLOCK_PROCESS;
     return (TM_NO_MATCH);
 }
 
@@ -849,6 +872,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
      * we want the first sequence that both matches and has actions.
      * we keep on looking till we find both
      */
+    LOCK_PROCESS;
     while ((currIndex = 
 	    MatchComplexBranch(*stateTreePtr,
 			       ++currIndex,
@@ -863,6 +887,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 	    if (MatchIncomingEvent(curEventPtr, typeMatch, modMatch))
 	      {
 		  if (candState->actions) {
+		      UNLOCK_PROCESS;
 		      return candState;
 		  }
 		  else
@@ -891,6 +916,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 			
 			if ((tmRecPtr->lastEventTime + delta) >= time) {
 			    if (nextState->actions) {
+				UNLOCK_PROCESS;
 				return candState;
 			    }
 			    else
@@ -901,6 +927,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 	    }
 	}
     }
+    UNLOCK_PROCESS;
     return matchState;
 }
 
@@ -915,7 +942,8 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
     StatePtr		matchState = NULL, candState;
     TMComplexStateTree 	*stateTreePtr = 
       (TMComplexStateTree *)&xlations->stateTreeTbl[0];
-    
+
+    LOCK_PROCESS;
     for (i = 0;
 	 i < xlations->numStateTrees;
 	 i++, stateTreePtr++) {
@@ -978,6 +1006,7 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 		      procs,
 		      matchState->actions);
     }
+    UNLOCK_PROCESS;
 }
 
 
@@ -1013,7 +1042,9 @@ static StatePtr NewState(stateTree, typeIndex, modIndex)
     register StatePtr state = XtNew(StateRec);
 
 #ifdef TRACE_TM
+    LOCK_PROCESS;
     _XtGlobalTM.numComplexStates++;
+    LOCK_PROCESS;
 #endif /* TRACE_TM */
     state->typeIndex = typeIndex;
     state->modIndex = modIndex;
@@ -1142,9 +1173,11 @@ static Boolean AggregateEventMask(state, data)
     StatePtr	state;
     XtPointer	data;
 {
+    LOCK_PROCESS;
     *((EventMask *)data) |= EventToMask(TMGetTypeMatch(state->typeIndex), 
 					TMGetModifierMatch(state->modIndex));
-   return False;
+    UNLOCK_PROCESS;
+    return False;
 }    
 
 void _XtInstallTranslations(widget)
@@ -1284,14 +1317,19 @@ void XtUninstallTranslations(widget)
     Widget widget;
 {
     EventMask	oldMask;
+    WIDGET_TO_APPCON(widget);
 
-    if (! widget->core.tm.translations)
+    LOCK_APP(app);
+    if (! widget->core.tm.translations) {
+	UNLOCK_APP(app);
 	return;
+    }
     oldMask = widget->core.tm.translations->eventMask;
     _XtUninstallTranslations(widget);
     if (XtIsRealized(widget) && oldMask)
 	XSelectInput(XtDisplay(widget), XtWindow(widget), 
 		     XtBuildEventMask(widget));
+    UNLOCK_APP(app);
 }
 
 #if NeedFunctionPrototypes
@@ -1314,6 +1352,7 @@ XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
       XtMalloc(sizeof(TranslationData) +
 	       (numStateTrees-1) * sizeof(TMStateTree));
 #ifdef TRACE_TM
+    LOCK_PROCESS;
     if (_XtGlobalTM.numTms == _XtGlobalTM.tmTblSize) {
 	_XtGlobalTM.tmTblSize += 16;
 	_XtGlobalTM.tmTbl = (XtTranslations *)
@@ -1321,6 +1360,7 @@ XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
 		   _XtGlobalTM.tmTblSize * sizeof(XtTranslations));
     }
     _XtGlobalTM.tmTbl[_XtGlobalTM.numTms++] = xlations;
+    UNLOCK_PROCESS;
 #endif /* TRACE_TM */
 
     xlations->composers[0] = first;
@@ -1493,7 +1533,9 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	      AmbigActions(initialEvent, state, stateTree);
 	    (*state)->actions = eventSeq->actions;
 #ifdef TRACE_TM
+	    LOCK_PROCESS
 	    _XtGlobalTM.numComplexActions++;
+	    UNLOCK_PROCESS;
 #endif /* TRACE_TM */
 	}
 
@@ -1503,6 +1545,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	state = &(*state)->nextLevel;
 	typeIndex = _XtGetTypeIndex(&eventSeq->event);
 	modIndex = _XtGetModifierIndex(&eventSeq->event);
+	LOCK_PROCESS;
 	if (!TMNewMatchSemantics()) {
 	    /* 
 	     * force a potential empty entry into the branch head
@@ -1519,6 +1562,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	eventSeq->state->isCycleStart = True;
 	(*state)->isCycleEnd = TRUE;
     }
+    UNLOCK_PROCESS;
 }
 
 
@@ -1588,10 +1632,12 @@ static XtTranslations MergeThem(dest, first, second)
     TMConvertRec 	convert_rec;
     XtTranslations	newTable;
 
+    LOCK_PROCESS;
     if (from_type == NULLQUARK) {
 	from_type = XrmPermStringToQuark(_XtRStateTablePair);
 	to_type = XrmPermStringToQuark(XtRTranslationTable);
     }
+    UNLOCK_PROCESS;
     from.addr = (XPointer)&convert_rec;
     from.size = sizeof(TMConvertRec);
     to.addr = (XPointer)&newTable;
@@ -1599,8 +1645,12 @@ static XtTranslations MergeThem(dest, first, second)
     convert_rec.old = first;
     convert_rec.new = second;
 
-    if (! _XtConvert(dest, from_type, &from, to_type, &to, &cache_ref))
+    LOCK_PROCESS;
+    if (! _XtConvert(dest, from_type, &from, to_type, &to, &cache_ref)) {
+	UNLOCK_PROCESS;
 	return NULL;
+    }
+    UNLOCK_PROCESS;
     if (cache_ref)
 	XtAddCallback(dest, XtNdestroyCallback,
 		      XtCallbackReleaseCacheRef, (XtPointer)cache_ref);
@@ -2078,16 +2128,22 @@ void XtInstallAccelerators(destination, source)
     XtTranslations	aXlations;
     _XtTranslateOp	op;
     String		buf;
+    WIDGET_TO_APPCON(destination);
 
     /*
      * test that it was parsed as an accelarator table. Even though
      * there doesn't need to be a distinction it makes life easier if
      * we honor the spec implication that aXlations is an accelerator
      */
+    LOCK_APP(app);
+    LOCK_PROCESS;
     if ((!XtIsWidget(source)) || 
 	((aXlations = source->core.accelerators) == NULL) ||
-	(aXlations->stateTreeTbl[0]->simple.isAccelerator == False))
-      return;
+	(aXlations->stateTreeTbl[0]->simple.isAccelerator == False)) {
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
+	return;
+    }
     
     aXlations = source->core.accelerators;
     op = aXlations->operation;
@@ -2099,6 +2155,8 @@ void XtInstallAccelerators(destination, source)
 	(*(XtClass(source)->core_class.display_accelerator))(source,buf);
 	XtFree(buf);
     }
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 }
   
 void XtInstallAllAccelerators(destination,source)
@@ -2106,8 +2164,11 @@ void XtInstallAllAccelerators(destination,source)
 {
     register int i;
     CompositeWidget cw;
+    WIDGET_TO_APPCON(destination);
 
     /* Recurse down normal children */
+    LOCK_APP(app);
+    LOCK_PROCESS;
     if (XtIsComposite(source)) {
         cw = (CompositeWidget) source;
         for (i = 0; i < cw->composite.num_children; i++) {
@@ -2123,6 +2184,8 @@ void XtInstallAllAccelerators(destination,source)
     }
     /* Finally, apply procedure to this widget */
     XtInstallAccelerators(destination,source);
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 }
 
 #if 0 /* dead code */
@@ -2139,14 +2202,26 @@ void XtAugmentTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    LOCK_PROCESS;
     (void)ComposeTranslations(widget, XtTableAugment, (Widget)NULL, new);
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 }
 
 void XtOverrideTranslations(widget, new)
     Widget widget;
     XtTranslations new;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    LOCK_PROCESS;
     (void) ComposeTranslations(widget, XtTableOverride, (Widget)NULL, new);
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 }
 
 void _XtMergeTranslations(widget, newXlations, op)

@@ -1,4 +1,4 @@
-/* $XConsortium: EventUtil.c,v 1.8 91/01/10 21:14:42 converse Exp $ */
+/* $XConsortium: EventUtil.c,v 1.9 91/06/13 18:15:27 converse Exp $ */
 
 /********************************************************
 
@@ -36,11 +36,13 @@ void _XtFreePerWidgetInput(w, pwi)
     Widget 		w;
     XtPerWidgetInput	pwi;
 {
+    LOCK_PROCESS;
     XDeleteContext(XtDisplay(w), 
 		   (Window)w,
 		   perWidgetInputContext);
     
     XtFree((char *)pwi);
+    UNLOCK_PROCESS;
 }
 
 /*
@@ -60,7 +62,8 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 {
     XtPerWidgetInput	pwi = NULL;
     Display		*dpy = widget->core.screen->display;
-    
+
+    LOCK_PROCESS;
     if (! perWidgetInputContext)
       perWidgetInputContext = XUniqueContext();
     
@@ -92,6 +95,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 			      perWidgetInputContext, 
 			      (char *) pwi);
       }
+    UNLOCK_PROCESS;
     return pwi;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.32 91/04/12 11:37:18 rws Exp $ */
+/* $XConsortium: Error.c,v 1.33 91/11/09 15:38:01 keith Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,6 +35,7 @@ SOFTWARE.
 #define GLOBALERRORS 1
 #endif
 
+static void InitErrorHandling();
 #if GLOBALERRORS
 static XrmDatabase errorDB = NULL;
 static Boolean error_inited = FALSE;
@@ -48,21 +49,31 @@ static XtErrorHandler warningHandler = _XtDefaultWarning;
 
 XrmDatabase *XtGetErrorDatabase()
 {
+    XrmDatabase* retval;
 #if GLOBALERRORS
-    return &errorDB;
+    LOCK_PROCESS;
+    retval = &errorDB;
+    UNLOCK_PROCESS;
 #else
-    return XtAppGetErrorDatabase(_XtDefaultAppContext());
+    retval = XtAppGetErrorDatabase(_XtDefaultAppContext());
 #endif /* GLOBALERRORS */
+    return retval;
 }
 
 XrmDatabase *XtAppGetErrorDatabase(app)
 	XtAppContext app;
 {
+    XrmDatabase* retval;
 #if GLOBALERRORS
-	return &errorDB;
+    LOCK_PROCESS;
+    retval = &errorDB;
+    UNLOCK_PROCESS;
 #else
-	return &app->errorDB;
+    LOCK_APP(app);
+    retval= &app->errorDB;
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
+    return retval;
 }
 
 #if NeedFunctionPrototypes
@@ -120,13 +131,15 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     char temp[BUFSIZ];
 
 #if GLOBALERRORS
+    LOCK_PROCESS;
     if (error_inited == FALSE) {
-        _XtInitErrorHandling (&errorDB);
+        InitErrorHandling (&errorDB);
         error_inited = TRUE;
     }
 #else
+    LOCK_APP(app);
     if (app->error_inited == FALSE) {
-        _XtInitErrorHandling (&app->errorDB);
+        InitErrorHandling (&app->errorDB);
         app->error_inited = TRUE;
     }
 #endif /* GLOBALERRORS */
@@ -156,9 +169,14 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
 	bcopy(defaultp, buffer, len);
 	buffer[len] = '\0';
     }
+#if GLOBALERRORS
+    UNLOCK_PROCESS;
+#else
+    UNLOCK_APP(app);
+#endif
 }
 
-_XtInitErrorHandling (db)
+static void InitErrorHandling (db)
     XrmDatabase *db;
 {
     XrmDatabase errordb;
@@ -233,8 +251,10 @@ void XtErrorMsg(name,type,class,defaultp,params,num_params)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*errorMsgHandler)((String)name,(String)type,(String)class,
 		       (String)defaultp,params,num_params);
+    UNLOCK_PROCESS;
 #else
     XtAppErrorMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
@@ -260,10 +280,14 @@ void XtAppErrorMsg(app, name,type,class,defaultp,params,num_params)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*errorMsgHandler)((String)name,(String)type,(String)class,
 		       (String)defaultp,params,num_params);
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     (*app->errorMsgHandler)(name,type,class,defaultp,params,num_params);
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
 }
 
@@ -284,8 +308,10 @@ void XtWarningMsg(name,type,class,defaultp,params,num_params)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*warningMsgHandler)((String)name,(String)type,(String)class,
 			 (String)defaultp,params,num_params);
+    UNLOCK_PROCESS;
 #else
     XtAppWarningMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
@@ -311,10 +337,14 @@ void XtAppWarningMsg(app,name,type,class,defaultp,params,num_params)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*warningMsgHandler)((String)name,(String)type,(String)class,
 			 (String)defaultp,params,num_params);
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     (*app->warningMsgHandler)(name,type,class,defaultp,params,num_params);
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
 }
 
@@ -322,8 +352,10 @@ void XtSetErrorMsgHandler(handler)
     XtErrorMsgHandler handler;
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     if (handler != NULL) errorMsgHandler = handler;
     else errorMsgHandler  = _XtDefaultErrorMsg;
+    UNLOCK_PROCESS;
 #else
     XtAppSetErrorMsgHandler(_XtDefaultAppContext(), handler);
 #endif /* GLOBALERRORS */
@@ -341,13 +373,17 @@ XtErrorMsgHandler XtAppSetErrorMsgHandler(app,handler)
 {
     XtErrorMsgHandler old;
 #if GLOBALERRORS
+    LOCK_PROCESS;
     old = errorMsgHandler;
     if (handler != NULL) errorMsgHandler = handler;
     else errorMsgHandler  = _XtDefaultErrorMsg;
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     old = app->errorMsgHandler;
     if (handler != NULL) app->errorMsgHandler = handler;
     else app->errorMsgHandler  = _XtDefaultErrorMsg;
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
     return old;
 }
@@ -356,8 +392,10 @@ void XtSetWarningMsgHandler(handler)
     XtErrorMsgHandler handler;
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     if (handler != NULL) warningMsgHandler  = handler;
     else warningMsgHandler = _XtDefaultWarningMsg;
+    UNLOCK_PROCESS;
 #else
     XtAppSetWarningMsgHandler(_XtDefaultAppContext(),handler);
 #endif /* GLOBALERRORS */
@@ -375,13 +413,17 @@ XtErrorMsgHandler XtAppSetWarningMsgHandler(app,handler)
 {
     XtErrorMsgHandler old;
 #if GLOBALERRORS
+    LOCK_PROCESS;
     old = warningMsgHandler;
     if (handler != NULL) warningMsgHandler  = handler;
     else warningMsgHandler = _XtDefaultWarningMsg;
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     old = app->warningMsgHandler;
     if (handler != NULL) app->warningMsgHandler  = handler;
     else app->warningMsgHandler = _XtDefaultWarningMsg;
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
     return old;
 }
@@ -413,7 +455,9 @@ void XtError(message)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*errorHandler)((String)message);
+    UNLOCK_PROCESS;
 #else
     XtAppError(_XtDefaultAppContext(),message);
 #endif /* GLOBALERRORS */
@@ -431,9 +475,13 @@ void XtAppError(app,message)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*errorHandler)((String)message);
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     (*app->errorHandler)(message);
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
 }
 
@@ -447,7 +495,9 @@ void XtWarning(message)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*warningHandler)((String)message);
+    UNLOCK_PROCESS;
 #else
     XtAppWarning(_XtDefaultAppContext(),message);
 #endif /* GLOBALERRORS */
@@ -465,9 +515,13 @@ void XtAppWarning(app,message)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     (*warningHandler)((String)message);
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     (*app->warningHandler)(message);
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
 }
 
@@ -479,8 +533,10 @@ void XtSetErrorHandler(handler)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     if (handler != NULL) errorHandler = handler;
     else errorHandler  = _XtDefaultError;
+    UNLOCK_PROCESS;
 #else
     XtAppSetErrorHandler(_XtDefaultAppContext(),handler);
 #endif /* GLOBALERRORS */
@@ -498,13 +554,17 @@ XtErrorHandler XtAppSetErrorHandler(app,handler)
 {
     XtErrorHandler old;
 #if GLOBALERRORS
+    LOCK_PROCESS;
     old = errorHandler;
     if (handler != NULL) errorHandler = handler;
     else errorHandler  = _XtDefaultError;
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     old = app->errorHandler;
     if (handler != NULL) app->errorHandler = handler;
     else app->errorHandler  = _XtDefaultError;
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
     return old;
 }
@@ -517,8 +577,10 @@ void XtSetWarningHandler(handler)
 #endif
 {
 #if GLOBALERRORS
+    LOCK_PROCESS;
     if (handler != NULL) warningHandler = handler;
     else warningHandler = _XtDefaultWarning;
+    UNLOCK_PROCESS;
 #else
     XtAppSetWarningHandler(_XtDefaultAppContext(),handler);
 #endif /* GLOBALERRORS */
@@ -536,25 +598,31 @@ XtErrorHandler XtAppSetWarningHandler(app,handler)
 {
     XtErrorHandler old;
 #if GLOBALERRORS
+    LOCK_PROCESS;
     old = warningHandler;
     if (handler != NULL) warningHandler  = handler;
     else warningHandler = _XtDefaultWarning;
+    UNLOCK_PROCESS;
 #else
+    LOCK_APP(app);
     old = app->warningHandler;
     if (handler != NULL) app->warningHandler  = handler;
     else app->warningHandler = _XtDefaultWarning;
+    UNLOCK_APP(app);
 #endif /* GLOBALERRORS */
     return old;
 }
 
 void _XtSetDefaultErrorHandlers(errMsg, warnMsg, err, warn)
-	XtErrorMsgHandler *errMsg, *warnMsg;
-	XtErrorHandler *err, *warn;
+    XtErrorMsgHandler *errMsg, *warnMsg;
+    XtErrorHandler *err, *warn;
 {
 #ifndef GLOBALERRORS
-	*errMsg = _XtDefaultErrorMsg;
-	*warnMsg = _XtDefaultWarningMsg;
-	*err = _XtDefaultError;
-	*warn = _XtDefaultWarning;
+    LOCK_PROCESS;
+    *errMsg = _XtDefaultErrorMsg;
+    *warnMsg = _XtDefaultWarningMsg;
+    *err = _XtDefaultError;
+    *warn = _XtDefaultWarning;
+    UNLOCK_PROCESS;
 #endif /* GLOBALERRORS */
 }

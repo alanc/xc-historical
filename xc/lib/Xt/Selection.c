@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.79 93/05/24 17:50:21 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.80 93/08/09 17:14:14 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +45,9 @@ void XtAppSetSelectionTimeout(app, timeout)
 	XtAppContext app;
 	unsigned long timeout;
 {
+	LOCK_APP(app);
 	app->selectionTimeout = timeout;
+	UNLOCK_APP(app);
 }
 
 unsigned long XtGetSelectionTimeout()
@@ -56,7 +58,12 @@ unsigned long XtGetSelectionTimeout()
 unsigned long XtAppGetSelectionTimeout(app)
 	XtAppContext app;
 {
-	return app->selectionTimeout;
+	unsigned long retval;
+
+	LOCK_APP(app);
+	retval = app->selectionTimeout;
+	UNLOCK_APP(app);
+	return retval;
 }
 
 
@@ -66,7 +73,7 @@ static void HandleSelectionReplies();
 static void ReqTimedOut();
 static void HandlePropertyGone();
 static void HandleGetIncrement();
-static HandleIncremental();
+static void HandleIncremental();
 
 static XContext selectPropertyContext = 0;
 
@@ -92,8 +99,10 @@ static void FreePropList(w, closure, callData)
  XtPointer callData;		/* unused */
 {
     PropList sarray = (PropList)closure;
+    LOCK_PROCESS;
     XDeleteContext(sarray->dpy, DefaultRootWindow(sarray->dpy),
 		   selectPropertyContext);
+    UNLOCK_PROCESS;
     XtFree((char*)sarray->list);
     XtFree((char*)closure);
 }
@@ -103,6 +112,8 @@ static PropList GetPropList(dpy)
     Display *dpy;
 {
     PropList sarray;
+
+    LOCK_PROCESS;
     if (selectPropertyContext == 0)
 	selectPropertyContext = XUniqueContext();
     if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
@@ -130,6 +141,7 @@ static PropList GetPropList(dpy)
 	_XtAddCallback( &pd->destroy_callbacks,
 			FreePropList, (XtPointer)sarray );
     }
+    UNLOCK_PROCESS;
     return sarray;
 }
 
@@ -159,19 +171,21 @@ Display *dpy;
  return(sarray->list[propCount].prop);
 }
 
-static FreeSelectionProperty(dpy, prop)
+static void FreeSelectionProperty(dpy, prop)
 Display *dpy;
 Atom prop;
 {
  SelectionProp p;
  PropList sarray;
  if (prop == None) return;
+ LOCK_PROCESS;
  if (XFindContext(dpy, DefaultRootWindow(dpy), selectPropertyContext,
 		  (XPointer *)&sarray)) 
     XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
 	    "noSelectionProperties", "freeSelectionProperty", XtCXtToolkitError,
 		"internal error: no selection property context for display",
 		 (String *)NULL,  (Cardinal *)NULL );
+ UNLOCK_PROCESS;
  for (p = sarray->list; p; p++) 
    if (p->prop == prop) {
       p->avail = TRUE;
@@ -204,7 +218,7 @@ Boolean incremental;
 	return (info);
 }
 
-static RequestSelectionValue(info, selection, target)
+static void RequestSelectionValue(info, selection, target)
 CallBackInfo info;
 Atom selection;
 Atom target;
@@ -236,7 +250,9 @@ Atom selection;
     ctx->ref_count = 0;
     ctx->free_when_done = FALSE;
     ctx->was_disowned = FALSE;
+    LOCK_PROCESS;
     (void)XSaveContext(dpy, (Window)selection, selectContext, (char *)ctx);
+    UNLOCK_PROCESS;
     return ctx;
 }
 
@@ -246,11 +262,12 @@ Atom selection;
 {
     Select ctx;
 
+    LOCK_PROCESS;
     if (selectContext == 0)
 	selectContext = XUniqueContext();
     if (XFindContext(dpy, (Window)selection, selectContext, (XPointer *)&ctx))
 	ctx = NewContext(dpy, selection);
-
+    UNLOCK_PROCESS;
     return ctx;
 }
 
@@ -317,16 +334,27 @@ static int LocalErrorHandler (dpy, error)
 Display *dpy;
 XErrorEvent *error;
 {
+    int retval;
+
     /* If BadWindow error on selection requestor, nothing to do but let
      * the transfer timeout.  Otherwise, invoke saved error handler. */
 
+    LOCK_PROCESS;
+
     if (error->error_code == BadWindow && error->resourceid == errorWindow &&
-	error->serial >= firstProtectRequest)
+	error->serial >= firstProtectRequest) {
+	UNLOCK_PROCESS;
 	return 0;
+    }
 
-    if (oldErrorHandler == NULL) return 0;  /* should never happen */
+    if (oldErrorHandler == NULL) {
+	UNLOCK_PROCESS;
+	return 0;  /* should never happen */
+    }
 
-    return (*oldErrorHandler)(dpy, error);
+    retval = (*oldErrorHandler)(dpy, error);
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 static void StartProtectedSection(dpy, window)
@@ -336,9 +364,11 @@ static void StartProtectedSection(dpy, window)
     /* protect ourselves against request window being destroyed
      * before completion of transfer */
 
+    LOCK_PROCESS;
     oldErrorHandler = XSetErrorHandler(LocalErrorHandler);
     firstProtectRequest = NextRequest(dpy);
     errorWindow = window;
+    UNLOCK_PROCESS;
 }
 
 static void EndProtectedSection(dpy)
@@ -349,8 +379,10 @@ static void EndProtectedSection(dpy)
 
     XSync(dpy, False);
 
+    LOCK_PROCESS;
     XSetErrorHandler(oldErrorHandler);
     oldErrorHandler = NULL;
+    UNLOCK_PROCESS;
 }
 
 static void AddHandler(req, mask, proc, closure)
@@ -370,6 +402,7 @@ XtPointer closure;
 	XtAddEventHandler(widget, mask, False, proc, closure);
     else {
 	RequestWindowRec *requestWindowRec;
+	LOCK_PROCESS;
 	if (selectWindowContext == 0)
 	    selectWindowContext = XUniqueContext();
 	if (XFindContext(dpy, window, selectWindowContext,
@@ -379,6 +412,7 @@ XtPointer closure;
 	    (void)XSaveContext(dpy, window, selectWindowContext,
 			       (char *)requestWindowRec);
 	}
+	UNLOCK_PROCESS;
 	if (requestWindowRec->active_transfer_count++ == 0) {
 	    XtRegisterDrawable(dpy, window, widget);
 	    XSelectInput(dpy, window, mask);
@@ -402,15 +436,18 @@ XtPointer closure;
 	/* we had to hang this window onto our widget; take it off */
 	RequestWindowRec* requestWindowRec;
 	XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
+	LOCK_PROCESS;
 	(void)XFindContext(dpy, window, selectWindowContext,
 			   (XPointer *)&requestWindowRec);
+	UNLOCK_PROCESS;
 	if (--requestWindowRec->active_transfer_count == 0) {
 	    XtUnregisterDrawable(dpy, window);
 	    StartProtectedSection(dpy, window);
 	    XSelectInput(dpy, window, 0L);
 	    EndProtectedSection(dpy);
-
+	    LOCK_PROCESS;
 	    (void)XDeleteContext(dpy, window, selectWindowContext);
+	    UNLOCK_PROCESS;
 	    XtFree((char*)requestWindowRec);
 	}
     } else {
@@ -470,7 +507,7 @@ static void SendIncrement(incr)
     incr->offset += incrSize;
 }
 
-static AllSent(req)
+static void AllSent(req)
 Request req;
 {
     Select ctx = req->ctx;
@@ -485,10 +522,11 @@ Request req;
 }
 
 /*ARGSUSED*/
-static void HandlePropertyGone(widget, closure, ev)
+static void HandlePropertyGone(widget, closure, ev, cont)
 Widget widget;
 XtPointer closure;
 XEvent *ev;
+Boolean *cont;
 {
     XPropertyEvent *event = (XPropertyEvent *) ev;
     Request req = (Request)closure;
@@ -546,7 +584,7 @@ XEvent *ev;
     }
 }
 
-static PrepareIncremental(req, widget, window, property, target, 
+static void PrepareIncremental(req, widget, window, property, target, 
 	 targetType, value, length, format)
 Request req;
 Widget widget;
@@ -882,9 +920,15 @@ XtConvertSelectionProc convert;
 XtLoseSelectionProc lose;
 XtSelectionDoneProc notify;
 {
-    return OwnSelection(widget, selection, time, convert, lose, notify,
+    Boolean retval;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    retval = OwnSelection(widget, selection, time, convert, lose, notify,
 			(XtCancelConvertSelectionProc)NULL,
 			(XtPointer)NULL, FALSE);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -899,11 +943,17 @@ XtSelectionDoneIncrProc notify;
 XtCancelConvertSelectionProc cancel;
 XtPointer closure;
 {
-    return OwnSelection(widget, selection, time, 
+    Boolean retval;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    retval = OwnSelection(widget, selection, time, 
 			(XtConvertSelectionProc)convert, 
 			(XtLoseSelectionProc)lose,
 			(XtSelectionDoneProc)notify,
 			cancel, closure, TRUE);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -913,9 +963,13 @@ Atom selection;
 Time time;
 {
     Select ctx;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     ctx = FindCtx(XtDisplay(widget), selection);
     if (LoseSelection(ctx, widget, selection, time))
 	XSetSelectionOwner(XtDisplay(widget), selection, None, time);
+    UNLOCK_APP(app);
 }
 
 /* Selection Requestor code */
@@ -1125,7 +1179,7 @@ Boolean *cont;
 }
 
 
-static HandleNone(widget, callback, closure, selection)
+static void HandleNone(widget, callback, closure, selection)
 Widget widget;
 XtSelectionCallbackProc callback;
 XtPointer closure;
@@ -1221,7 +1275,7 @@ Atom selection;
     return TRUE;
 }
 
-static HandleIncremental(dpy, widget, property, info, size)
+static void HandleIncremental(dpy, widget, property, info, size)
 Display *dpy;
 Widget widget;
 Atom property;
@@ -1371,7 +1425,7 @@ Boolean *cont;
     }
 }
 
-static DoLocalTransfer(req, selection, target, widget,
+static void DoLocalTransfer(req, selection, target, widget,
 		       callback, closure, incremental)
 Request req;
 Atom selection;
@@ -1520,8 +1574,12 @@ XtSelectionCallbackProc callback;
 XtPointer closure;
 Time time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GetSelectionValue(widget, selection, target, callback,
 		      closure, time, FALSE);
+    UNLOCK_APP(app);
 }
 
 
@@ -1534,8 +1592,12 @@ XtSelectionCallbackProc callback;
 XtPointer closure;
 Time time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GetSelectionValue(widget, selection, target, callback, 
 		      closure, time, TRUE);
+    UNLOCK_APP(app);
 }
 
 
@@ -1605,8 +1667,12 @@ XtSelectionCallbackProc callback;
 XtPointer *closures;
 Time time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GetSelectionValues(widget, selection, targets, count, callback,
 		       closures, time, FALSE);
+    UNLOCK_APP(app);
 }
 
 
@@ -1620,8 +1686,12 @@ XtSelectionCallbackProc callback;
 XtPointer *closures;
 Time time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GetSelectionValues(widget, selection, targets, count, 
 		       callback, closures, time, TRUE);
+    UNLOCK_APP(app);
 }
 
 
@@ -1632,7 +1702,9 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 { 
     Request req = (Request)id;
     Select ctx;
+    XtAppContext app = XtWidgetToApplicationContext (widget);
 
+    LOCK_APP(app);
     if (   (req == NULL
 	    && ((ctx = FindCtx( XtDisplay(widget), selection )) == NULL
 		|| ctx->req == NULL
@@ -1645,12 +1717,13 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
     {
 	String params = XtName(widget);
 	Cardinal num_params = 1;
-	XtAppWarningMsg( XtWidgetToApplicationContext(widget),
+	XtAppWarningMsg(app,
 			 "notInConvertSelection", "xtGetSelectionRequest",
 			 XtCXtToolkitError,
 			 "XtGetSelectionRequest called for widget \"%s\" outside of ConvertSelection proc",
 			 &params, &num_params
 		       );
+	UNLOCK_APP(app);
 	return NULL;
     }
 
@@ -1676,5 +1749,6 @@ XSelectionRequestEvent *XtGetSelectionRequest( widget, selection, id )
 	req->event.property = None; /* %%% what to do about side-effects? */
     /*  req->event.time = requestors_time; */
     }
+    UNLOCK_APP(app);
     return &req->event;
 }

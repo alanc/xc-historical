@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.46 91/07/30 11:04:41 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.47 92/02/21 13:11:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -255,12 +255,16 @@ char *_XtMalloc(size, file, line)
 {
     StatsPtr ptr;
     unsigned newsize;
+    char* retval = NULL;
 
+    LOCK_PROCESS;
     newsize = StatsSize(size);
     if ((ptr = (StatsPtr)Xmalloc(newsize)) == NULL)
         _XtAllocError("malloc");
     CHAIN(ptr, size, NULL);
-    return(ToMem(ptr));
+    retval = (ToMem(ptr));
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 char *XtMalloc(size)
@@ -277,6 +281,7 @@ char *_XtRealloc(ptr, size, file, line)
 {
    char *newptr;
 
+   LOCK_PROCESS;
    newptr = _XtMalloc(size, file, line);
    if (ptr) {
        unsigned copysize = ToStats(ptr)->size;
@@ -284,6 +289,7 @@ char *_XtRealloc(ptr, size, file, line)
        bcopy(ptr, newptr, copysize);
        _XtFree(ptr);
    }
+   UNLOCK_PROCESS;
    return(newptr);
 }
 
@@ -301,13 +307,17 @@ char *_XtCalloc(num, size, file, line)
 {
     StatsPtr ptr;
     unsigned total, newsize;
+    char* retval = NULL;
 
+    LOCK_PROCESS;
     total = num * size;
     newsize = StatsSize(total);
     if ((ptr = (StatsPtr)Xcalloc(newsize, 1)) == NULL)
         _XtAllocError("calloc");
     CHAIN(ptr, total, NULL);
-    return(ToMem(ptr));
+    retval = (ToMem(ptr));
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 char *XtCalloc(num, size)
@@ -322,10 +332,14 @@ Boolean _XtIsValidPointer(ptr)
     register StatsPtr mem;
     register StatsPtr stp = ToStats(ptr);
 
+    LOCK_PROCESS;
     for (mem = XtMemory; mem; mem = mem->next) {
-	if (mem == stp)
+	if (mem == stp) {
+	    UNLOCK_PROCESS;
 	    return True;
+	}
     }
+    UNLOCK_PROCESS;
     return False;
 }
 
@@ -336,6 +350,7 @@ void _XtFree(ptr)
 {
    register StatsPtr stp;
 
+   LOCK_PROCESS;
    if (ptr) {
        if (_XtValidateMemory && !_XtIsValidPointer(ptr))
 	   abort();
@@ -350,6 +365,7 @@ void _XtFree(ptr)
 	   stp->next->prev = stp->prev;
        Xfree((char *)stp);
    }
+   UNLOCK_PROCESS;
 }
 
 void XtFree(ptr)
@@ -367,12 +383,16 @@ char *_XtHeapMalloc(heap, size, file, line)
     StatsPtr ptr;
     unsigned newsize;
     XtPointer hp = (XtPointer) heap;
+    char* retval = NULL;
 
+    LOCK_PROCESS;
     newsize = StatsSize(size);
     if ((ptr = (StatsPtr)Xmalloc(newsize)) == NULL)
         _XtAllocError("malloc");
     CHAIN(ptr, size, hp);
-    return(ToMem(ptr));
+    retval = (ToMem(ptr));
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 void _XtHeapFree(heap)
@@ -380,6 +400,7 @@ void _XtHeapFree(heap)
 {
     register StatsPtr mem, next;
 
+    LOCK_PROCESS;
     for (mem = XtMemory; mem; mem = next) {
 	next = mem->next;
 	if (mem->heap == heap) {
@@ -394,6 +415,7 @@ void _XtHeapFree(heap)
 	    Xfree((char *)mem);
 	}
     }
+    UNLOCK_PROCESS;
 }
 
 #include <stdio.h>
@@ -408,6 +430,7 @@ char * filename;
 	f = stderr;
     else 
 	f = fopen(filename, "w");
+    LOCK_PROCESS;
     fprintf(f, "total size: %d\n", ActiveXtMemory);
     for (mem = XtMemory; mem; mem = mem->next) {
 	if (mem->file)
@@ -415,6 +438,7 @@ char * filename;
 		    mem->size, mem->seq,
 		    mem->file, mem->line, mem->heap ? "heap" : "");
     }
+    UNLOCK_PROCESS;
     if (filename) fclose(f);
 }
 

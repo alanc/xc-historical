@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.24 90/08/31 16:05:28 swick Exp $ */
+/* $XConsortium: Manage.c,v 1.25 90/12/12 14:52:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,11 +34,12 @@ void XtUnmanageChildren(children, num_children)
     WidgetList children;
     Cardinal num_children;
 {
-    register CompositeWidget	parent;
-    register Widget		child;
-    register Cardinal		num_unique_children, i;
-	     XtWidgetProc	change_managed;
-	     Bool		parent_realized;
+    CompositeWidget	parent;
+    Widget		child;
+    Cardinal		num_unique_children, i;
+    XtWidgetProc	change_managed;
+    Bool		parent_realized;
+    XtAppContext	app;
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
@@ -47,12 +48,19 @@ void XtUnmanageChildren(children, num_children)
 		  (String *)NULL, (Cardinal *)NULL);
 	return;
     }
+    app = XtWidgetToApplicationContext(children[0]);
+    LOCK_APP(app);
     parent = (CompositeWidget) children[0]->core.parent;
-    if (parent->core.being_destroyed) return;
+    if (parent->core.being_destroyed) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     if (XtIsComposite((Widget) parent)) {
+	LOCK_PROCESS;
         change_managed = ((CompositeWidgetClass) parent->core.widget_class)
 		    ->composite_class.change_managed;
+	UNLOCK_PROCESS;
 	parent_realized = XtIsRealized((Widget)parent);
     }
 
@@ -60,14 +68,15 @@ void XtUnmanageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+	    XtAppWarningMsg(app,
 		  XtNinvalidChild,XtNxtUnmanageChildren,XtCXtToolkitError,
                   "Null child passed to XtUnmanageChildren",
 		  (String *)NULL, (Cardinal *)NULL);
+	    UNLOCK_APP(app);
 	    return;
 	}
         if ((CompositeWidget) child->core.parent != parent) {
-	   XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+	   XtAppWarningMsg(app,
 		   "ambiguousParent",XtNxtUnmanageChildren,XtCXtToolkitError,
            "Not all children have same parent in XtUnmanageChildren",
              (String *)NULL, (Cardinal *)NULL);
@@ -97,6 +106,7 @@ void XtUnmanageChildren(children, num_children)
     if (num_unique_children != 0 && change_managed != NULL && parent_realized) {
 	(*change_managed) ((Widget)parent);
     }
+    UNLOCK_APP(app);
 } /* XtUnmanageChildren */
 
 
@@ -112,13 +122,14 @@ void XtManageChildren(children, num_children)
     Cardinal    num_children;
 {
 #define MAXCHILDREN 100
-    register CompositeWidget    parent;
-    register Widget		child;
-    register Cardinal		num_unique_children, i;
-	     XtWidgetProc	change_managed;
-    register WidgetList		unique_children;
-	     Widget		cache[MAXCHILDREN];
-	     Bool		parent_realized;
+    CompositeWidget	parent;
+    Widget		child;
+    Cardinal		num_unique_children, i;
+    XtWidgetProc	change_managed;
+    WidgetList		unique_children;
+    Widget		cache[MAXCHILDREN];
+    Bool		parent_realized;
+    XtAppContext	app;
 
     if (num_children == 0) return;
     if (children[0] == NULL) {
@@ -127,19 +138,26 @@ void XtManageChildren(children, num_children)
 	 (String *)NULL, (Cardinal *)NULL);
 	return;
     } 
+    app = XtWidgetToApplicationContext(children[0]);
+    LOCK_APP(app);
     parent = (CompositeWidget) children[0]->core.parent;
     if (XtIsComposite((Widget) parent)) {
+	LOCK_PROCESS;
         change_managed = ((CompositeWidgetClass) parent->core.widget_class)
 		    ->composite_class.change_managed;
+	UNLOCK_PROCESS;
 	parent_realized = XtIsRealized((Widget)parent);
 
     } else {
-	XtAppErrorMsg(XtWidgetToApplicationContext((Widget)parent),
+	XtAppErrorMsg(app,
 		"invalidParent",XtNxtManageChildren, XtCXtToolkitError,
 	    "Attempt to manage a child when parent is not Composite",
 	    (String *) NULL, (Cardinal *) NULL);
     }
-    if (parent->core.being_destroyed) return;
+    if (parent->core.being_destroyed) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     /* Construct new list of children that really need to be operated upon. */
     if (num_children <= MAXCHILDREN) {
@@ -151,11 +169,12 @@ void XtManageChildren(children, num_children)
     for (i = 0; i < num_children; i++) {
 	child = children[i];
 	if (child == NULL) {
-	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+	    XtAppWarningMsg(app,
 		XtNinvalidChild,XtNxtManageChildren,XtCXtToolkitError,
 		"null child passed to XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
 	    if (unique_children != cache) XtFree((char *) unique_children);
+	    UNLOCK_APP(app);
 	    return;
 	}
 #ifdef DEBUG
@@ -164,7 +183,7 @@ void XtManageChildren(children, num_children)
 	    Cardinal num_params = 2;
 	    params[0] = XtName(child);
 	    params[1] = child->core.widget_class->core_class.class_name;
-	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+	    XtAppWarningMsg(app,
 			    "notRectObj",XtNxtManageChildren,XtCXtToolkitError,
 			    "child \"%s\", class %s is not a RectObj",
 			    params, &num_params);
@@ -172,7 +191,7 @@ void XtManageChildren(children, num_children)
 	}
 #endif /*DEBUG*/
         if ((CompositeWidget) child->core.parent != parent) {
-	    XtAppWarningMsg(XtWidgetToApplicationContext((Widget)parent),
+	    XtAppWarningMsg(app,
 		    "ambiguousParent",XtNxtManageChildren,XtCXtToolkitError,
 		"Not all children have same parent in XtManageChildren",
 		(String *)NULL, (Cardinal *)NULL);
@@ -208,6 +227,7 @@ void XtManageChildren(children, num_children)
     }
 
     if (unique_children != cache) XtFree((char *) unique_children);
+    UNLOCK_APP(app);
 } /* XtManageChildren */
 
 
@@ -229,9 +249,18 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
     Boolean	    mapped_when_managed;
 #endif
 {
-    if (widget->core.mapped_when_managed == mapped_when_managed) return;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    if (widget->core.mapped_when_managed == mapped_when_managed) {
+	UNLOCK_APP(app);
+	return;
+    }
     widget->core.mapped_when_managed = mapped_when_managed;
-    if (! XtIsManaged(widget)) return;
+    if (! XtIsManaged(widget)) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     if (mapped_when_managed) {
 	/* Didn't used to be mapped when managed.		*/
@@ -240,6 +269,5 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
 	/* Used to be mapped when managed.			*/
 	if (XtIsRealized(widget)) XtUnmapWidget(widget);
     }
+    UNLOCK_APP(app);
 } /* XtSetMappedWhenManaged */
-
-

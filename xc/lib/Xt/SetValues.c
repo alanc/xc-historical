@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.14 92/05/19 14:55:12 converse Exp $ */
+/* $XConsortium: SetValues.c,v 1.15 92/05/22 09:50:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,16 +70,28 @@ static Boolean CallSetValues (class, current, request, new, args, num_args)
     Cardinal    num_args;
 {
     Boolean redisplay = FALSE;
+    WidgetClass superclass;
+    XtArgsFunc set_values_hook;
+    XtSetValuesFunc set_values;
 
-    if (class->core_class.superclass != NULL)
-        redisplay = CallSetValues(
-	  class->core_class.superclass, current, request, new, args, num_args);
-    if (class->core_class.set_values != NULL)
-        redisplay |= (*class->core_class.
-		      set_values) (current, request, new, args, &num_args);
-    if (class->core_class.set_values_hook != NULL)
-	redisplay |=
-	    (*class->core_class.set_values_hook) (new, args, &num_args);
+    LOCK_PROCESS;
+    superclass = class->core_class.superclass;
+    UNLOCK_PROCESS;
+    if (superclass)
+        redisplay = 
+	    CallSetValues(superclass, current, request, new, args, num_args);
+
+    LOCK_PROCESS;
+    set_values = class->core_class.set_values;
+    UNLOCK_PROCESS;
+    if (set_values)
+        redisplay |= (*set_values) (current, request, new, args, &num_args);
+
+    LOCK_PROCESS;
+    set_values_hook = class->core_class.set_values_hook;
+    UNLOCK_PROCESS;
+    if (set_values_hook)
+	redisplay |= (*set_values_hook) (new, args, &num_args);
     return (redisplay);
 }
 
@@ -91,6 +103,8 @@ CallConstraintSetValues (class, current, request, new, args, num_args)
     Cardinal    num_args;
 {
     Boolean redisplay = FALSE;
+    XtSetValuesFunc set_values;
+    ConstraintWidgetClass superclass;
 
     if ((WidgetClass)class != constraintWidgetClass) {
 	if (class == NULL)
@@ -98,13 +112,18 @@ CallConstraintSetValues (class, current, request, new, args, num_args)
 		    "invalidClass","constraintSetValue",XtCXtToolkitError,
                  "Subclass of Constraint required in CallConstraintSetValues",
                   (String *)NULL, (Cardinal *)NULL);
-	redisplay = CallConstraintSetValues(
-	    (ConstraintWidgetClass) (class->core_class.superclass),
-	    current, request, new, args, num_args);
+	LOCK_PROCESS;
+	superclass = (ConstraintWidgetClass) class->core_class.superclass;
+	UNLOCK_PROCESS;
+	redisplay = 
+	   CallConstraintSetValues(superclass,
+				   current, request, new, args, num_args);
     }
-    if (class->constraint_class.set_values != NULL)
-        redisplay |= (*class->constraint_class.
-		      set_values) (current, request, new, args, &num_args);
+    LOCK_PROCESS;
+    set_values = class->constraint_class.set_values;
+    UNLOCK_PROCESS;
+    if (set_values)
+        redisplay |= (*set_values) (current, request, new, args, &num_args);
     return (redisplay);
 }
 
@@ -135,12 +154,16 @@ void XtSetValues(w, args, num_args)
     Boolean	    redisplay, cleared_rect_obj = False;
     XtGeometryResult result;
     XtWidgetGeometry geoReq, geoReply;
-    WidgetClass     wc = XtClass(w);
+    WidgetClass     wc;
     ConstraintWidgetClass cwc;
     Boolean	    hasConstraints;
+    XtAlmostProc set_values_almost;
+    XtAppContext app = XtWidgetToApplicationContext(w);
 
+    LOCK_APP(app);
+    wc = XtClass(w);
     if ((args == NULL) && (num_args != 0)) {
-        XtAppErrorMsg(XtWidgetToApplicationContext(w),
+        XtAppErrorMsg(app,
 		"invalidArgCount","xtSetValues",XtCXtToolkitError,
                 "Argument count > 0 on NULL argument list in XtSetValues",
                  (String *)NULL, (Cardinal *)NULL);
@@ -148,15 +171,19 @@ void XtSetValues(w, args, num_args)
 
     /* Allocate and copy current widget into old widget */
 
+    LOCK_PROCESS;
     widgetSize = wc->core_class.widget_size;
+    UNLOCK_PROCESS;
     oldw = (Widget) XtStackAlloc(widgetSize, oldwCache);
     reqw = (Widget) XtStackAlloc (widgetSize, reqwCache);
     bcopy((char *) w, (char *) oldw, (int) widgetSize);
 
     /* Set resource values */
 
+    LOCK_PROCESS;
     SetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
+    UNLOCK_PROCESS;
 
     bcopy ((char *) w, (char *) reqw, (int) widgetSize);
 
@@ -167,9 +194,11 @@ void XtSetValues(w, args, num_args)
      * constraints on some children, thus the extra test here */
     if (hasConstraints) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
-	if (w->core.constraints)
+	if (w->core.constraints) {
+	    LOCK_PROCESS;
 	    constraintSize = cwc->constraint_class.constraint_size;
-	else constraintSize = 0;
+	    UNLOCK_PROCESS;
+	} else constraintSize = 0;
     } else constraintSize = 0;
 	
     if (constraintSize) {
@@ -180,9 +209,11 @@ void XtSetValues(w, args, num_args)
 		(char *) oldw->core.constraints, (int) constraintSize);
 
 	/* Set constraint values */
+	LOCK_PROCESS;
 	SetValues((char*)w->core.constraints,
 	    (XrmResourceList *)(cwc->constraint_class.resources),
 	    cwc->constraint_class.num_resources, args, num_args);
+	UNLOCK_PROCESS;
 	bcopy((char *) w->core.constraints,
 	      (char *) reqw->core.constraints, (int) constraintSize);
     }
@@ -258,8 +289,11 @@ void XtSetValues(w, args, num_args)
 
 		/* An Almost or No reply.  Call widget and let it munge
 		   request, reply */
-		if (wc->core_class.set_values_almost == NULL) {
-		    XtAppWarningMsg(XtWidgetToApplicationContext(w),
+		LOCK_PROCESS;
+		set_values_almost = wc->core_class.set_values_almost;
+		UNLOCK_PROCESS;
+		if (set_values_almost == NULL) {
+		    XtAppWarningMsg(app,
 			    "invalidProcedure","set_values_almost",
 			  XtCXtToolkitError,
 			  "set_values_almost procedure shouldn't be NULL",
@@ -267,16 +301,20 @@ void XtSetValues(w, args, num_args)
 		    break;
 		}
 		if (result == XtGeometryNo) geoReply.request_mode = 0;
-		(*(wc->core_class.set_values_almost))
-		    (oldw, w, &geoReq, &geoReply);
+		(*set_values_almost) (oldw, w, &geoReq, &geoReply);
 	    } while (geoReq.request_mode != 0);
 	    /* call resize proc if we changed size and parent
 	     * didn't already invoke resize */
+	    {
+	    XtWidgetProc resize;
+	    LOCK_PROCESS;
+	    resize = wc->core_class.resize;
+	    UNLOCK_PROCESS;
 	    if ((w->core.width != oldw->core.width ||
 		 w->core.height != oldw->core.height)
 		&& result != XtGeometryDone
-		&& wc->core_class.resize != (XtWidgetProc) NULL) {
-		(*(wc->core_class.resize))(w);
+		&& resize != (XtWidgetProc) NULL)
+		(*resize)(w);
 	    }
 	}
 	/* Redisplay if needed.  No point in clearing if the window is
@@ -309,5 +347,5 @@ void XtSetValues(w, args, num_args)
     }
     XtStackFree((XtPointer)oldw, oldwCache);
     XtStackFree((XtPointer)reqw, reqwCache);
-
+    UNLOCK_APP(app);
 } /* XtSetValues */

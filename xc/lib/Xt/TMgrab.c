@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.8 92/12/23 18:28:08 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.9 92/12/24 10:41:47 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -132,15 +132,22 @@ static Boolean DoGrab(state, data)
     TMShortCard		typeIndex = state->typeIndex;
     TMShortCard		modIndex = state->modIndex;
     ActionRec		*action;
-    TMTypeMatch		typeMatch = TMGetTypeMatch(typeIndex);
-    TMModifierMatch	modMatch = TMGetModifierMatch(modIndex);
+    TMTypeMatch		typeMatch;
+    TMModifierMatch	modMatch;
     Modifiers		careOn = 0;
     Modifiers		careMask = 0;
     Boolean		resolved;
 
+    LOCK_PROCESS;
+    typeMatch = TMGetTypeMatch(typeIndex);
+    modMatch = TMGetModifierMatch(modIndex);
+
     for (action = state->actions; action; action = action->next)
       if (count == action->idx) break;
-    if (!action) return False;
+    if (!action) {
+	UNLOCK_PROCESS;
+	return False;
+    }
     
     switch (typeMatch->eventType) {
       case ButtonPress:
@@ -180,6 +187,7 @@ static Boolean DoGrab(state, data)
 			(String *)NULL, (Cardinal *)NULL);
 	break;
     }
+    UNLOCK_PROCESS;
     return False;
 }
 
@@ -211,6 +219,8 @@ void _XtRegisterGrabs(widget)
 	for (count=0; count < (*stateTreePtr)->numQuarks; count++) {
 	    GrabActionRec* grabP;
 	    DoGrabRec      doGrab;
+
+	    LOCK_PROCESS;
 	    for (grabP = grabActionList; grabP != NULL; grabP = grabP->next) {
 		if (grabP->action_proc == procs[count]) {
 		    /* we've found a "grabber" in the action table. Find the 
@@ -226,6 +236,7 @@ void _XtRegisterGrabs(widget)
 					 (XtPointer)&doGrab);
 		}
 	    }
+	    UNLOCK_PROCESS;
 	}
     }
 }
@@ -249,6 +260,7 @@ void XtRegisterGrabAction(action_proc, owner_events, event_mask,
 {
     GrabActionRec* actionP;
 
+    LOCK_PROCESS;
     for (actionP = grabActionList; actionP != NULL; actionP = actionP->next) {
 	if (actionP->action_proc == action_proc) break;
     }
@@ -276,17 +288,20 @@ void XtRegisterGrabAction(action_proc, owner_events, event_mask,
     actionP->event_mask = event_mask;
     actionP->pointer_mode = pointer_mode;
     actionP->keyboard_mode = keyboard_mode;
+    UNLOCK_PROCESS;
 }
 
 /*ARGSUSED*/
 void _XtGrabInitialize(app)
     XtAppContext	app;
 {
+    LOCK_PROCESS;
     if (grabActionList == NULL)
 	XtRegisterGrabAction( XtMenuPopupAction, True,
 			      (unsigned)(ButtonPressMask | ButtonReleaseMask),
 			      GrabModeAsync,
 			      GrabModeAsync
 			    );
+    UNLOCK_PROCESS;
 
 }

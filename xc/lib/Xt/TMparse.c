@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.134 92/12/30 13:02:26 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.135 93/08/05 11:54:10 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -430,7 +430,7 @@ static String PanicModeRecovery(str)
 }
 
 
-static Syntax(str,str1)
+static void Syntax(str,str1)
     String str,str1;
 {
     Cardinal numChars;
@@ -458,8 +458,11 @@ static Cardinal LookupTMEventType(eventStr,error)
     register XrmQuark	signature;
     static int 	previous = 0;
 
-    if ((signature = StringToQuark(eventStr)) == events[previous].signature)
+    LOCK_PROCESS;
+    if ((signature = StringToQuark(eventStr)) == events[previous].signature) {
+	UNLOCK_PROCESS;
 	return (Cardinal) previous;
+    }
 
     left = 0;
     right = XtNumber(events) - 1;
@@ -471,12 +474,14 @@ static Cardinal LookupTMEventType(eventStr,error)
 	    left = i + 1;
 	else {
 	    previous = i;
+	    UNLOCK_PROCESS;
 	    return (Cardinal) i;
 	}
     }
 
     Syntax("Unknown event type :  ",eventStr);
     *error = TRUE;
+    UNLOCK_PROCESS;
     return (Cardinal) i;
 }
 
@@ -549,7 +554,7 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
     }
 } 
 
-static _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
+static void _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
     String name;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
@@ -572,35 +577,39 @@ static Boolean _XtLookupModifier(signature, lateBindings, notFlag, valueP,
     Value *valueP;
     Bool constMask;
 {
-   register int i, left, right;
-   static int previous = 0;
-   
-   if (signature == modifiers[previous].signature) {
-       if (constMask)  *valueP = modifiers[previous].value;
-       else /* if (modifiers[previous].modifierParseProc) always true */
+    register int i, left, right;
+    static int previous = 0;
+
+    LOCK_PROCESS;
+    if (signature == modifiers[previous].signature) {
+	if (constMask)  *valueP = modifiers[previous].value;
+	else /* if (modifiers[previous].modifierParseProc) always true */
 	   (*modifiers[previous].modifierParseProc)
 	      (modifiers[previous].value, lateBindings, notFlag, valueP);
-       return TRUE;
-   }
+	UNLOCK_PROCESS;
+	return TRUE;
+    }
 
-   left = 0;
-   right = XtNumber(modifiers) - 1;
-   while (left <= right) {
-       i = (left + right) >> 1;
-       if (signature < modifiers[i].signature)
-	   right = i - 1;
-       else if (signature > modifiers[i].signature)
-	   left = i + 1;
-       else {
-	   previous = i;
-	   if (constMask)  *valueP = modifiers[i].value;
-	   else /* if (modifiers[i].modifierParseProc) always true */
-	       (*modifiers[i].modifierParseProc)
-		   (modifiers[i].value, lateBindings, notFlag, valueP);
-	   return TRUE;
-       }
-   }
-   return FALSE;
+    left = 0;
+    right = XtNumber(modifiers) - 1;
+    while (left <= right) {
+	i = (left + right) >> 1;
+	if (signature < modifiers[i].signature)
+	    right = i - 1;
+	else if (signature > modifiers[i].signature)
+	    left = i + 1;
+	else {
+	    previous = i;
+	    if (constMask)  *valueP = modifiers[i].value;
+	    else /* if (modifiers[i].modifierParseProc) always true */
+		(*modifiers[i].modifierParseProc)
+		    (modifiers[i].value, lateBindings, notFlag, valueP);
+	    UNLOCK_PROCESS;
+	    return TRUE;
+	}
+    }
+    UNLOCK_PROCESS;
+    return FALSE;
 }
 
 
@@ -1999,14 +2008,17 @@ XtTranslations XtParseTranslationTable(source)
 
 void _XtTranslateInitialize()
 {
+    LOCK_PROCESS;
     if (initialized) {
 	XtWarningMsg("translationError","xtTranslateInitialize",
                   XtCXtToolkitError,"Initializing Translation manager twice.",
                     (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_PROCESS;
 	return;
     }
 
     initialized = TRUE;
+    UNLOCK_PROCESS;
     QMeta = XrmPermStringToQuark("Meta");
     QCtrl = XrmPermStringToQuark("Ctrl");
     QNone = XrmPermStringToQuark("None");
@@ -2026,7 +2038,7 @@ void _XtTranslateInitialize()
     CompileNameValueTable( mappingNotify );
 }
 
-_XtAddTMConverters(table)
+void _XtAddTMConverters(table)
     ConverterTable table;
 {
      _XtTableAddConverter(table,

@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.21 93/01/28 17:38:01 converse Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.22 93/01/28 18:43:44 converse Exp $ */
 
 /********************************************************
 
@@ -465,8 +465,10 @@ void _XtDestroyServerGrabs(w, closure, call_data)
 {
     XtPerWidgetInput	pwi = (XtPerWidgetInput)closure;
     XtPerDisplayInput	pdi;
-    
+
+    LOCK_PROCESS;
     pdi = _XtGetPerDisplayInput(XtDisplay(w));
+    UNLOCK_PROCESS;
     
     /* Remove the active grab, if necessary */
     if ((pdi->keyboard.grabType != XtNoServerGrab) && 
@@ -505,9 +507,11 @@ XtServerGrabPtr _XtCheckServerGrabsOnWidget (event, widget, isKeyboard)
     XtServerGrabPtr	*passiveListPtr;
     XtPerWidgetInput	pwi;
 
-    if (!(pwi = _XtGetPerWidgetInput(widget, FALSE)))
+    LOCK_PROCESS;
+    pwi = _XtGetPerWidgetInput(widget, FALSE);
+    UNLOCK_PROCESS;
+    if (!pwi)
 	return (XtServerGrabPtr)NULL;
-
     if (isKeyboard)
 	passiveListPtr = &pwi->keyList;
     else
@@ -602,6 +606,7 @@ static void MakeGrabs(passiveListPtr, isKeyboard, pdi)
      * processing done on it. Start with an empty list
      * (passiveListPtr).
      */
+    LOCK_PROCESS;
     *passiveListPtr = NULL;
     while (next)
       {
@@ -610,6 +615,7 @@ static void MakeGrabs(passiveListPtr, isKeyboard, pdi)
 	  pwi = _XtGetPerWidgetInput(grab->widget, FALSE);
 	  MakeGrab(grab, passiveListPtr, isKeyboard, pdi, pwi);
       }
+    UNLOCK_PROCESS;
 } 
    
 /*
@@ -627,8 +633,11 @@ static void  RealizeHandler (widget, closure, event, cont)
     Boolean		*cont;	/* unused */
 {
     XtPerWidgetInput	pwi = (XtPerWidgetInput)closure;
-    XtPerDisplayInput	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    
+    XtPerDisplayInput	pdi;
+
+    LOCK_PROCESS;
+    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    UNLOCK_PROCESS;
     MakeGrabs(&pwi->keyList, KEYBOARD, pdi);
     MakeGrabs(&pwi->ptrList, POINTER, pdi);
  
@@ -669,14 +678,14 @@ void GrabKeyOrButton (widget, keyOrButton, modifiers, owner_events,
     
     
     XtCheckSubclass(widget, coreWidgetClass, "in XtGrabKey or XtGrabButton");
-    
+    LOCK_PROCESS;
     pwi = _XtGetPerWidgetInput(widget, TRUE);
     if (isKeyboard)
       passiveListPtr = &pwi->keyList;
     else
       passiveListPtr = &pwi->ptrList;
     pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    
+    UNLOCK_PROCESS;
     newGrab = CreateGrab(widget, owner_events, modifiers, 
 			 keyOrButton, pointer_mode, keyboard_mode, 
 			 event_mask, confine_to, cursor, False);
@@ -723,9 +732,9 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
     tempGrab.keybut = keyOrButton;
     tempGrab.hasExt = False;
     
-    
+    LOCK_PROCESS;
     pwi = _XtGetPerWidgetInput(widget, FALSE);
-    
+    UNLOCK_PROCESS;
     /*
      * if there is no entry in the context manager then somethings wrong
      */
@@ -776,9 +785,13 @@ void  XtGrabKey (widget, keycode, modifiers, owner_events,
     int 	keyboard_mode;
 #endif
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GrabKeyOrButton(widget, (KeyCode)keycode, modifiers, owner_events,
 		    pointer_mode, keyboard_mode, 
 		    (Mask)0, (Window)None, (Cursor)None, KEYBOARD);
+    UNLOCK_APP(app);
 }
 
 #if NeedFunctionPrototypes
@@ -808,9 +821,13 @@ void  XtGrabButton(widget, button, modifiers, owner_events,
     Cursor 	cursor;
 #endif
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     GrabKeyOrButton(widget, (KeyCode)button, modifiers, owner_events,
 		    pointer_mode, keyboard_mode, 
 		    (Mask)event_mask, confine_to, cursor, POINTER);
+    UNLOCK_APP(app);
 }
 
 
@@ -832,8 +849,11 @@ void   XtUngrabKey (widget, keycode, modifiers)
     Modifiers	modifiers;
 #endif
 {
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     UngrabKeyOrButton(widget, (int)keycode, modifiers, KEYBOARD);
+    UNLOCK_APP(app);
 }
 
 void   XtUngrabButton (widget, button, modifiers)
@@ -841,8 +861,11 @@ void   XtUngrabButton (widget, button, modifiers)
     unsigned int button;
     Modifiers	modifiers;
 {
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     UngrabKeyOrButton(widget, (KeyCode)button, modifiers, POINTER);
+    UNLOCK_APP(app);
 }
 
 /*
@@ -868,9 +891,9 @@ static int GrabDevice (widget, owner_events,
 		    "in XtGrabKeyboard or XtGrabPointer");
     if (!XtIsRealized(widget))
 	return GrabNotViewable;
-    
+    LOCK_PROCESS;
     pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    
+    UNLOCK_PROCESS;
     if (!isKeyboard)
       returnVal = XGrabPointer(XtDisplay(widget), XtWindow(widget), 
 			       owner_events, event_mask,
@@ -904,9 +927,13 @@ static void   UngrabDevice(widget, time, isKeyboard)
     Time	time;
     Boolean	isKeyboard;
 {
-    XtPerDisplayInput	pdi = _XtGetPerDisplayInput(XtDisplay(widget));
-    XtDevice		device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
+    XtPerDisplayInput pdi;
+    XtDevice device;
 
+    LOCK_PROCESS;
+    pdi = _XtGetPerDisplayInput(XtDisplay(widget));
+    UNLOCK_PROCESS;
+    device = isKeyboard ? &pdi->keyboard : &pdi->pointer;
     XtCheckSubclass(widget, coreWidgetClass,
 		    "in XtUngrabKeyboard or XtUngrabPointer");
     if (!XtIsRealized(widget))
@@ -948,9 +975,15 @@ int XtGrabKeyboard (widget, owner_events,
     Time	time;
 #endif
 {
-    return (GrabDevice (widget, owner_events,
+    int retval;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    retval = GrabDevice (widget, owner_events,
 			pointer_mode, keyboard_mode, 
-			(Mask)0, (Window)None, (Cursor)None, time, KEYBOARD));
+			(Mask)0, (Window)None, (Cursor)None, time, KEYBOARD);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -962,7 +995,11 @@ void   XtUngrabKeyboard(widget, time)
     Widget	widget;
     Time	time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     UngrabDevice(widget, time, KEYBOARD);
+    UNLOCK_APP(app);
 }
 
 
@@ -996,10 +1033,16 @@ int XtGrabPointer (widget, owner_events, event_mask,
     Time	time;
 #endif
 {
-    return (GrabDevice (widget, owner_events,
+    int retval;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    retval = GrabDevice (widget, owner_events,
 			pointer_mode, keyboard_mode, 
 			(Mask)event_mask, confine_to, 
-			cursor, time, POINTER));
+			cursor, time, POINTER);
+    UNLOCK_APP(app);
+    return retval;
 }
 
 
@@ -1011,7 +1054,11 @@ void   XtUngrabPointer(widget, time)
     Widget	widget;
     Time	time;
 {
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
     UngrabDevice(widget, time, POINTER);
+    UNLOCK_APP(app);
 }
 
 

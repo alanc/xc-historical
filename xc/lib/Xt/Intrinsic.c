@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.174 93/08/09 17:14:11 kaleb Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.175 93/08/11 14:06:42 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,10 +48,19 @@ Boolean XtIsSubclass(widget, widgetClass)
     WidgetClass widgetClass;
 {
     register WidgetClass w;
+    Boolean retval = FALSE;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
+    LOCK_PROCESS;
     for (w = widget->core.widget_class; w != NULL; w = w->core_class.superclass)
-	if (w == widgetClass) return (TRUE);
-    return (FALSE);
+	if (w == widgetClass) {
+	    retval = TRUE;
+	    break;
+	}
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
+    return retval;
 } /* XtIsSubclass */
 
 
@@ -66,11 +75,15 @@ Boolean _XtCheckSubclassFlag(object, flag)
     XtEnum flag;
 #endif
 {
-    if (object->core.widget_class->core_class.class_inited & flag)
-	return True;
-    else
-	return False;
+    Boolean retval;
 
+    LOCK_PROCESS;
+    if (object->core.widget_class->core_class.class_inited & flag)
+	retval = TRUE;
+    else
+	retval = FALSE;
+    UNLOCK_PROCESS;
+    return retval;
 } /*_XtVerifySubclass */
 
 
@@ -88,15 +101,20 @@ Boolean _XtIsSubclassOf(object, widgetClass, superClass, flag)
     XtEnum flag;
 #endif
 {
-    if (!(object->core.widget_class->core_class.class_inited & flag))
+    LOCK_PROCESS;
+    if (!(object->core.widget_class->core_class.class_inited & flag)) {
+	UNLOCK_PROCESS;
 	return False;
-    else {
+    } else {
 	register WidgetClass c = object->core.widget_class;
 	while (c != superClass) {
-	    if (c == widgetClass)
+	    if (c == widgetClass) {
+		UNLOCK_PROCESS;
 		return True;
+	    }
 	    c = c->core_class.superclass;
 	}
+	UNLOCK_PROCESS;
 	return False;
     }
 } /*_XtIsSubclassOf */
@@ -107,6 +125,8 @@ static void ComputeWindowAttributes(widget,value_mask,values)
     XtValueMask		 *value_mask;
     XSetWindowAttributes *values;
 {
+    XtExposeProc expose;
+
     *value_mask = CWEventMask | CWColormap;
     (*values).event_mask = XtBuildEventMask(widget);
     (*values).colormap = widget->core.colormap;
@@ -124,7 +144,10 @@ static void ComputeWindowAttributes(widget,value_mask,values)
 	*value_mask |= CWBorderPixel;
 	(*values).border_pixel = widget->core.border_pixel;
     }
-    if (widget->core.widget_class->core_class.expose == (XtExposeProc) NULL) {
+    LOCK_PROCESS;
+    expose = widget->core.widget_class->core_class.expose;
+    UNLOCK_PROCESS;
+    if (expose == (XtExposeProc) NULL) {
 	/* Try to avoid redisplay upon resize by making bit_gravity the same
 	   as the default win_gravity */
 	*value_mask |= CWBitGravity;
@@ -150,7 +173,9 @@ static void CallChangeManaged(widget)
     } else return;
 
     children = cpPtr->children;
+    LOCK_PROCESS;
     change_managed = clPtr->change_managed;
+    UNLOCK_PROCESS;
 
     /* CallChangeManaged for all children */
     for (i = cpPtr->num_children; i != 0; --i) {
@@ -212,16 +237,18 @@ static void RealizeWidget(widget)
     XSetWindowAttributes	values;
     XtRealizeProc		realize;
     Window			window;
-    Display*                    display;
+    Display*			display;
+    String			class_name;
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
-
-    display = XtDisplay (widget);
-
+    display = XtDisplay(widget);
     _XtInstallTranslations(widget);
 
     ComputeWindowAttributes (widget, &value_mask, &values);
+    LOCK_PROCESS;
     realize = widget->core.widget_class->core_class.realize;
+    class_name = widget->core.widget_class->core_class.class_name;
+    UNLOCK_PROCESS;
     if (realize == NULL)
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
 		      "invalidProcedure","realizeProc",XtCXtToolkitError,
@@ -235,13 +262,12 @@ static void RealizeWidget(widget)
 	char *s;
 
 	len_nm = widget->core.name ? strlen(widget->core.name) : 0;
-	len_cl = strlen(widget->core.widget_class->core_class.class_name);
+	len_cl = strlen(class_name);
 	s = XtMalloc((unsigned) (len_nm + len_cl + 2));
 	s[0] = '\0';
 	if (len_nm)
 	    strcpy(s, widget->core.name);
-	strcpy(s + len_nm + 1,
-	       widget->core.widget_class->core_class.class_name);
+	strcpy(s + len_nm + 1, class_name);
 	XChangeProperty(display, window,
 			XInternAtom(display, "_MIT_OBJ_CLASS",
 				    False),
@@ -285,10 +311,16 @@ static void RealizeWidget(widget)
 void XtRealizeWidget (widget)
     register Widget		widget;
 {
-    if (XtIsRealized (widget)) return;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
+    if (XtIsRealized (widget)) {
+	UNLOCK_APP(app);
+	return;
+    }
     CallChangeManaged(widget);
     RealizeWidget(widget);
+    UNLOCK_APP(app);
 } /* XtRealizeWidget */
 
 
@@ -340,15 +372,20 @@ static void UnrealizeWidget(widget)
 void XtUnrealizeWidget (widget)
     register Widget		widget;
 {
-    Window window = XtWindow(widget);
+    Window window;
+    WIDGET_TO_APPCON(widget);
 
-    if (! XtIsRealized (widget)) return;
-
+    LOCK_APP(app);
+    window = XtWindow(widget);
+    if (! XtIsRealized (widget)) {
+	UNLOCK_APP(app);
+	return;
+    }
     if (widget->core.parent != NULL) XtUnmanageChild(widget);
-
     UnrealizeWidget(widget);
-
-    if (window != None) XDestroyWindow(XtDisplay(widget), window);
+    if (window != None) 
+	XDestroyWindow(XtDisplay(widget), window);
+    UNLOCK_APP(app);
 } /* XtUnrealizeWidget */
 
 
@@ -359,10 +396,13 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     XtValueMask		 value_mask;
     XSetWindowAttributes *attributes;
 {
+    XtAppContext app = XtWidgetToApplicationContext(widget);
+
+    LOCK_APP(app);
     if (widget->core.window == None) {
 	if (widget->core.width == 0 || widget->core.height == 0) {
 	    Cardinal count = 1;
-	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+	    XtAppErrorMsg(app,
 		       "invalidDimension", "xtCreateWindow", XtCXtToolkitError,
 		       "Widget %s has zero width and/or height",
 		       &widget->core.name, &count);
@@ -378,6 +418,7 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
 		(unsigned)widget->core.border_width, (int) widget->core.depth,
 		window_class, visual, value_mask, attributes);
     }
+    UNLOCK_APP(app);
 } /* XtCreateWindow */
 
 
@@ -509,10 +550,12 @@ Widget XtNameToWidget(root, name)
     XrmBinding *bindings;
     int len, depth, found = 10000;
     Widget result;
+    WIDGET_TO_APPCON(root);
 
     len = strlen(name);
     if (len == 0) return NULL;
 
+    LOCK_APP(app);
     names = (XrmName *) ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmName));
     bindings = (XrmBinding *)
 	ALLOCATE_LOCAL((unsigned) (len+1) * sizeof(XrmBinding));
@@ -522,6 +565,7 @@ Widget XtNameToWidget(root, name)
     if (names[0] == NULLQUARK) {
 	DEALLOCATE_LOCAL((char *) bindings);
 	DEALLOCATE_LOCAL((char *) names);
+	UNLOCK_APP(app);
 	return NULL;
     }
 
@@ -529,6 +573,7 @@ Widget XtNameToWidget(root, name)
 
     DEALLOCATE_LOCAL((char *) bindings);
     DEALLOCATE_LOCAL((char *) names);
+    UNLOCK_APP(app);
     return result;
 } /* XtNameToWidget */
 
@@ -538,6 +583,7 @@ Widget XtNameToWidget(root, name)
 Display *XtDisplayOfObject(object)
      Widget object;
 {
+    /* Attempts to LockApp() here will generate endless recursive loops */
     return XtDisplay(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
@@ -545,6 +591,7 @@ Display *XtDisplayOfObject(object)
 Display *XtDisplay(widget)
 	Widget widget;
 {
+    /* Attempts to LockApp() here will generate endless recursive loops */
     return DisplayOfScreen(widget->core.screen);
 }
 
@@ -552,6 +599,7 @@ Display *XtDisplay(widget)
 Screen *XtScreenOfObject(object)
      Widget object;
 {
+    /* Attempts to LockApp() here will generate endless recursive loops */
     return XtScreen(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
@@ -559,6 +607,7 @@ Screen *XtScreenOfObject(object)
 Screen *XtScreen(widget)
 	Widget widget;
 {
+    /* Attempts to LockApp() here will generate endless recursive loops */
     return widget->core.screen;
 }
 
@@ -579,43 +628,71 @@ Window XtWindow(widget)
 
 #undef XtSuperclass
 WidgetClass XtSuperclass(widget)
-	Widget widget;
+    Widget widget;
 {
-	return XtClass(widget)->core_class.superclass;
+    WidgetClass retval;
+
+    LOCK_PROCESS;
+    retval = XtClass(widget)->core_class.superclass;
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 #undef XtClass
 WidgetClass XtClass(widget)
-	Widget widget;
+    Widget widget;
 {
-	return widget->core.widget_class;
+    WidgetClass retval;
+
+    LOCK_PROCESS;
+    retval = widget->core.widget_class;
+    UNLOCK_PROCESS;
+    return retval;
 }
 
 #undef XtIsManaged
 Boolean XtIsManaged(object)
 	Widget object;
 {
+    Boolean retval;
+    WIDGET_TO_APPCON(object);
+
+    LOCK_APP(app);
     if (XtIsRectObj(object))
-	return object->core.managed;
+	retval = object->core.managed;
     else
-	return False;
+	retval = False;
+    UNLOCK_APP(app);
+    return retval;
 }
 
 #undef XtIsRealized
 Boolean XtIsRealized (object)
-	Widget   object;
+    Widget   object;
 {
-    return XtWindowOfObject(object) != None;
+    Boolean retval;
+    WIDGET_TO_APPCON(object);
+
+    LOCK_APP(app);
+    retval = XtWindowOfObject(object) != None;
+    UNLOCK_APP(app);
+    return retval;
 } /* XtIsRealized */
 
 #undef XtIsSensitive
 Boolean XtIsSensitive(object)
 	Widget	object;
 {
+    Boolean retval;
+    WIDGET_TO_APPCON(object);
+
+    LOCK_APP(app);
     if (XtIsRectObj(object))
-	return object->core.sensitive && object->core.ancestor_sensitive;
+	retval = object->core.sensitive && object->core.ancestor_sensitive;
     else
-	return False;
+	retval = False;
+    UNLOCK_APP(app);
+    return retval;
 }
 
 /*
@@ -641,15 +718,17 @@ Widget _XtWindowedAncestor(object)
 
 #undef XtParent
 Widget XtParent(widget)
-	Widget widget;
+    Widget widget;
 {
-	return widget->core.parent;
+    /* Attempts to LockApp() here will generate endless recursive loops */
+    return widget->core.parent;
 }
 
 #undef XtName
 String XtName(object)
      Widget object;
 {
+    /* Attempts to LockApp() here will generate endless recursive loops */
     return XrmQuarkToString(object->core.xrm_name);
 }
 
@@ -664,12 +743,15 @@ Boolean XtIsObject(object)
     if (object->core.self != object || object->core.xrm_name == NULLQUARK)
 	return False;
 
+    LOCK_PROCESS;
     wc = object->core.widget_class;
     if (wc->core_class.class_name == NULL ||
 	wc->core_class.xrm_class == NULLQUARK ||
 	(class_name = XrmClassToString(wc->core_class.xrm_class)) == NULL ||
-	strcmp(wc->core_class.class_name, class_name) != 0)
+	strcmp(wc->core_class.class_name, class_name) != 0) {
+	    UNLOCK_PROCESS;
 	    return False;
+	}
 
     if (XtIsWidget(object)) {
 	if (object->core.name == NULL ||
@@ -987,7 +1069,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     XtFilePredicate predicate;
 #endif
 {
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    XtPerDisplay pd;
     static char *defaultPath = NULL;
     char *massagedPath;
     int bytesAllocd, bytesLeft;
@@ -999,6 +1081,8 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     XrmClass class_list[3];
     Boolean pathMallocd = False;
 
+    LOCK_PROCESS;
+    pd = _XtGetPerDisplay(dpy);
     if (path == NULL) {
 #ifndef VMS
 	if (defaultPath == NULL) {
@@ -1108,6 +1192,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     else
 	DEALLOCATE_LOCAL(massagedPath);
 
+    UNLOCK_PROCESS;
     return result;
 }
 
@@ -1116,8 +1201,19 @@ Boolean XtCallAcceptFocus(widget, time)
     Widget widget;
     Time *time;
 {
-    XtAcceptFocusProc ac = XtClass(widget)->core_class.accept_focus;
+    XtAcceptFocusProc ac;
+    Boolean retval;
+    WIDGET_TO_APPCON(widget);
 
-    if (ac != NULL) return (*ac) (widget, time);
-    else return FALSE;
+    LOCK_APP(app);
+    LOCK_PROCESS;
+    ac = XtClass(widget)->core_class.accept_focus;
+    UNLOCK_PROCESS;
+
+    if (ac != NULL) 
+	retval = (*ac) (widget, time);
+    else 
+	retval = FALSE;
+    UNLOCK_APP(app);
+    return retval;
 }

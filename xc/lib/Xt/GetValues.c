@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.1 91/05/11 20:40:15 converse Exp $ */
+/* $XConsortium: GetValues.c,v 1.10 91/05/11 20:54:55 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -46,10 +46,12 @@ static int GetValues(base, res, num_resources, args, num_args)
     static XrmQuark QCallback = NULLQUARK;
     static XrmQuark QTranslationTable = NULLQUARK;
 
+    LOCK_PROCESS;
     if (QCallback == NULLQUARK) {
 	QCallback = XrmPermStringToQuark(XtRCallback);
 	QTranslationTable = XrmPermStringToQuark(XtRTranslationTable);
     }
+    UNLOCK_PROCESS;
 
     /* Resource lists should be in compiled form already  */
 
@@ -91,13 +93,20 @@ static void CallGetValuesHook(widget_class, w, args, num_args)
     ArgList	  args;
     Cardinal	  num_args;
 {
-    if (widget_class->core_class.superclass != NULL) {
-	CallGetValuesHook
-	    (widget_class->core_class.superclass, w, args, num_args);
-    }
-    if (widget_class->core_class.get_values_hook != NULL) {
-	(*(widget_class->core_class.get_values_hook)) (w, args, &num_args);
-    }
+    WidgetClass superclass;
+    XtArgsProc get_values_hook;
+
+    LOCK_PROCESS;
+    superclass = widget_class->core_class.superclass;
+    UNLOCK_PROCESS;
+    if (superclass != NULL)
+	CallGetValuesHook (superclass, w, args, num_args);
+
+    LOCK_PROCESS;
+    get_values_hook = widget_class->core_class.get_values_hook;
+    UNLOCK_PROCESS;
+    if (get_values_hook != NULL)
+	(*get_values_hook) (w, args, &num_args);
 }
 
 
@@ -110,6 +119,7 @@ static void CallConstraintGetValuesHook(widget_class, w, args, num_args)
 {
     ConstraintClassExtension ext;
 
+    LOCK_PROCESS;
     if (widget_class->core_class.superclass
 	->core_class.class_inited & ConstraintClassFlag) {
 	CallConstraintGetValuesHook
@@ -136,6 +146,7 @@ static void CallConstraintGetValuesHook(widget_class, w, args, num_args)
 		 params, &num_params);
 	}
     }
+    UNLOCK_PROCESS;
 }
 
 
@@ -144,20 +155,25 @@ void XtGetValues(w, args, num_args)
     register ArgList  args;
     register Cardinal num_args;
 {
-    WidgetClass wc = XtClass(w);
+    WidgetClass wc;
     int targ;
+    XtAppContext app = XtWidgetToApplicationContext(w);
 
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
-	XtAppErrorMsg(XtWidgetToApplicationContext(w),
+	XtAppErrorMsg(app,
 		"invalidArgCount","xtGetValues",XtCXtToolkitError,
             "Argument count > 0 on NULL argument list in XtGetValues",
               (String *)NULL, (Cardinal *)NULL);
     }
 
+    LOCK_APP(app);
+    wc = XtClass(w);
+    LOCK_PROCESS;
     /* Get widget values */
     targ = GetValues((char*)w, (XrmResourceList *) wc->core_class.resources,
 	wc->core_class.num_resources, args, num_args);
+    UNLOCK_PROCESS;
     if (targ != -1 && XtIsWidget(w)) {
 	XtTranslations translations = _XtGetTranslationValue(w);
 	_XtCopyToArg((char*)&translations, &args[targ].value,
@@ -170,9 +186,11 @@ void XtGetValues(w, args, num_args)
     if (!XtIsShell(w) && XtIsConstraint(XtParent(w)) && w->core.constraints) {
 	ConstraintWidgetClass cwc
 	    = (ConstraintWidgetClass) XtClass(XtParent(w));
+	LOCK_PROCESS;
 	GetValues((char*)w->core.constraints, 
 		  (XrmResourceList *)(cwc->constraint_class.resources),
 		  cwc->constraint_class.num_resources, args, num_args);
+	UNLOCK_PROCESS;
     }
     /* Notify any class procedures that we have performed get_values */
     CallGetValuesHook(wc, w, args, num_args);
@@ -180,6 +198,7 @@ void XtGetValues(w, args, num_args)
     /* Notify constraint get_values if necessary */
     if (!XtIsShell(w) && XtIsConstraint(XtParent(w)))
 	CallConstraintGetValuesHook(XtClass(XtParent(w)), w, args,num_args);
+    UNLOCK_APP(app);
 } /* XtGetValues */
 
 void XtGetSubvalues(base, resources, num_resources, args, num_args)

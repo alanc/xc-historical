@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMCW.c,v 1.3 90/07/16 14:44:19 swick Exp $ */
+/* $XConsortium: SetWMCW.c,v 1.4 91/01/08 15:06:58 converse Exp $ */
 /*
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,8 +50,13 @@ Cardinal count;
     register Cardinal i, j, checked_count;
     register Boolean match;
     Atom xa_wm_colormap_windows;
+    WIDGET_TO_APPCON(widget);
 
-    if ( !XtIsRealized(widget) || (count == 0) ) return;
+    LOCK_APP(app);
+    if ( !XtIsRealized(widget) || (count == 0) ) {
+	UNLOCK_APP(app);
+	return;
+    }
 
     top = checked = (Widget *) XtMalloc( (Cardinal) sizeof(Widget) * count);
 
@@ -120,6 +125,5 @@ Cardinal count;
 
     XtFree( (char *) data);
     XtFree( (char *) top);
+    UNLOCK_APP(app);
 }
-		    
-    

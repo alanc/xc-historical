@@ -1,4 +1,4 @@
-/* $XConsortium: VarGet.c,v 1.16 91/02/05 16:59:20 gildea Exp $ */
+/* $XConsortium: VarGet.c,v 1.17 91/06/13 18:07:07 converse Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -50,7 +50,9 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
     ArgList                 args;
     Cardinal                num_args;
     int			    total_count, typed_count;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     Va_start(var, num_resources);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -67,6 +69,7 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
     }    
 
     va_end(var);
+    UNLOCK_APP(app);
 }
 
 
@@ -87,7 +90,9 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
     ArgList                 args; 
     Cardinal                num_args; 
     int			    total_count, typed_count;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     Va_start(var,num_resources);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -104,6 +109,7 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
     }    
 
     va_end(var);         
+    UNLOCK_APP(app);
 } 
 
 
@@ -219,7 +225,9 @@ void XtVaGetValues(widget, va_alist)
     XtResourceList      resources = (XtResourceList)NULL;
     Cardinal            num_resources;
     int			count, total_count, typed_count;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     Va_start(var,widget);
 
     _XtCountVaList(var, &total_count, &typed_count);
@@ -268,6 +276,7 @@ void XtVaGetValues(widget, va_alist)
 	XtGetValues(widget, args, count);
 	XtFree((XtPointer)args);
     }
+    UNLOCK_APP(app);
 }
 
 #if NeedVarargsPrototypes

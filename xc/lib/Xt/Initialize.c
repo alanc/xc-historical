@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.203 93/03/15 15:25:28 converse Exp $ */
+/* $XConsortium: Initialize.c,v 1.204 93/08/17 15:59:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -199,6 +199,7 @@ static String XtGetRootDirName(buf)
      struct passwd *pw;
      static char *ptr = NULL;
 
+     LOCK_PROCESS;
      if (ptr == NULL) {
 	if (!(ptr = getenv("HOME"))) {
 	    if (ptr = getenv("USER")) pw = getpwnam(ptr);
@@ -222,6 +223,7 @@ static String XtGetRootDirName(buf)
      *buf = '/';
      buf++;
      *buf = '\0';
+     UNLOCK_PROCESS;
      return buf;
 }
 
@@ -345,14 +347,20 @@ XtLanguageProc XtSetLanguageProc(app, proc, closure)
     }
 
     if (app) {
+	LOCK_APP(app);
+	LOCK_PROCESS;
 	/* set langProcRec only for this application context */
         old = app->langProcRec.proc;
         app->langProcRec.proc = proc;
         app->langProcRec.closure = closure;
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
     } else {    
 	/* set langProcRec for all application contexts */
-        ProcessContext process = _XtGetProcessContext();
+        ProcessContext process;
 
+	LOCK_PROCESS;
+        process = _XtGetProcessContext();
         old = process->globalLangProcRec.proc;
 	process->globalLangProcRec.proc = proc;
 	process->globalLangProcRec.closure = closure;
@@ -362,6 +370,7 @@ XtLanguageProc XtSetLanguageProc(app, proc, closure)
             app->langProcRec.closure = closure;
 	    app = app->next;
         }
+	UNLOCK_PROCESS;
     }
     return (old ? old : _XtDefaultLanguageProc);
 }
@@ -369,15 +378,17 @@ XtLanguageProc XtSetLanguageProc(app, proc, closure)
 XrmDatabase XtScreenDatabase(screen)
     Screen *screen;
 {
-    Display *dpy;
     int scrno;
     Bool doing_def;
     XrmDatabase db, olddb;
     XtPerDisplay pd;
     Status do_fallback;
     char *scr_resources;
+    Display *dpy = DisplayOfScreen(screen);
+    DPY_TO_APPCON(dpy);
 
-    dpy = DisplayOfScreen(screen);
+    LOCK_APP(app);
+    LOCK_PROCESS;
     if (screen == DefaultScreenOfDisplay(dpy)) {
 	scrno = DefaultScreen(dpy);
 	doing_def = True;
@@ -386,8 +397,11 @@ XrmDatabase XtScreenDatabase(screen)
 	doing_def = False;
     }
     pd = _XtGetPerDisplay(dpy);
-    if (db = pd->per_screen_db[scrno])
-	return doing_def ? XrmGetDatabase(dpy) : db;
+    if (db = pd->per_screen_db[scrno]) {
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
+	return (doing_def ? XrmGetDatabase(dpy) : db);
+    }
     scr_resources = XScreenResourceString(screen);
 
     if (ScreenCount(dpy) == 1) {
@@ -451,6 +465,8 @@ XrmDatabase XtScreenDatabase(screen)
 	    XrmPutLineResource(&fdb, *res);
 	(void)XrmCombineDatabase(fdb, &db, False);
     }
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
     return db;
 }
 
@@ -629,6 +645,7 @@ static void GetLanguage(dpy, pd)
     XrmName name_list[3];
     XrmName class_list[3];
 
+    LOCK_PROCESS;
     if (! pd->language) {
 	name_list[0] = pd->name;
 	name_list[1] = XrmPermStringToQuark("xnlLanguage");
@@ -652,6 +669,7 @@ static void GetLanguage(dpy, pd)
 	pd->language = getenv("LANG");
 
     if (pd->language) pd->language = XtNewString(pd->language);
+    UNLOCK_PROCESS;
 }
 
 
@@ -779,7 +797,9 @@ XtAppContext app_context;
 String *specification_list;
 #endif
 {
+    LOCK_APP(app_context);
     app_context->fallback_resources = specification_list;
+    UNLOCK_APP(app_context);
 }
 
 /*	Function Name: XtAppInitialize
@@ -836,6 +856,7 @@ ArgList args_in;
     dpy = _XtAppInit(&app_con, (String)application_class, options, num_options,
 		     argc_in_out, &argv_in_out, fallback_resources);
 
+    LOCK_APP(app_con);
     XtSetArg(args[num], XtNscreen, DefaultScreenOfDisplay(dpy)); num++;
     XtSetArg(args[num], XtNargc, saved_argc);	                 num++;
     XtSetArg(args[num], XtNargv, argv_in_out);	                 num++;
@@ -851,7 +872,8 @@ ArgList args_in;
 
     XtFree((XtPointer)merged_args);
     XtFree((XtPointer)argv_in_out);
-    return(root);
+    UNLOCK_APP(app_con);
+    return root;
 }
 
 /*	Function Name: XtInitialize
@@ -892,7 +914,8 @@ int *argc;
     root = XtAppInitialize(&app_con, classname, options, num_options,
 			   argc, argv, NULL, NULL, (Cardinal) 0);
 
+    LOCK_PROCESS;
     process->defaultAppContext = app_con;
-    
-    return(root);
+    UNLOCK_PROCESS; 
+    return root;
 }

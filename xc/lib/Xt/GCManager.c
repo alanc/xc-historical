@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.43 91/07/05 09:54:06 rws Exp $ */
+/* $XConsortium: GCManager.c,v 1.44 91/07/29 23:03:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -155,7 +155,11 @@ GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
     Drawable drawable;
     Drawable *pixmaps;
     XtGCMask readOnlyMask;
+    GC retval;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
+    LOCK_PROCESS;
     if (!XtIsWidget(widget))
 	widget = _XtWindowedAncestor(widget);
     if (!depth)
@@ -176,7 +180,10 @@ GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
 	    *prev = cur->next;
 	    cur->next = pd->GClist;
 	    pd->GClist = cur;
-	    return cur->gc;
+	    retval = cur->gc;
+	    UNLOCK_PROCESS;
+	    UNLOCK_APP(app);
+	    return retval;
 	}
     }
 
@@ -222,7 +229,10 @@ GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
     cur->gc = XCreateGC(dpy, drawable, valueMask, values);
     cur->next = pd->GClist;
     pd->GClist = cur;
-    return cur->gc;
+    retval = cur->gc;
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
+    return retval;
 } /* XtAllocateGC */
 
 /* 
@@ -242,8 +252,14 @@ void  XtReleaseGC(widget, gc)
     register GC gc;
 {
     register GCptr cur, *prev;
-    Display *dpy = XtDisplayOfObject(widget);
-    XtPerDisplay pd = _XtGetPerDisplay(dpy);
+    Display* dpy;
+    XtPerDisplay pd;
+    WIDGET_TO_APPCON(widget);
+
+    LOCK_APP(app);
+    LOCK_PROCESS;
+    dpy = XtDisplayOfObject(widget);
+    pd = _XtGetPerDisplay(dpy);
     
     for (prev = &pd->GClist; cur = *prev; prev = &cur->next) {
 	if (cur->gc == gc) {
@@ -255,6 +271,8 @@ void  XtReleaseGC(widget, gc)
 	    break;
 	}
     }
+    UNLOCK_PROCESS;
+    UNLOCK_APP(app);
 } /* XtReleaseGC */
 
 /*  The following interface is broken and supplied only for backwards
@@ -265,9 +283,11 @@ void  XtReleaseGC(widget, gc)
 void XtDestroyGC(gc)
     register GC gc;
 {
-    register GCptr cur, *prev;
-    register XtAppContext app = _XtGetProcessContext()->appContextList;
-    
+    GCptr cur, *prev;
+    XtAppContext app;
+
+    LOCK_PROCESS;
+    app = _XtGetProcessContext()->appContextList;
     /* This is awful; we have to search through all the lists
        to find the GC. */
     for (; app; app = app->next) {
@@ -282,9 +302,11 @@ void XtDestroyGC(gc)
 			XFreeGC(dpy, gc);
 			XtFree((char *) cur);
 		    }
+		    UNLOCK_PROCESS;
 		    return;
 		}
 	    }
 	}
     }
+    UNLOCK_PROCESS;
 } /* XtDestroyGC */

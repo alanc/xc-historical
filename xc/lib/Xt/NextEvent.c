@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.116 93/08/22 10:06:11 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.117 93/08/22 10:17:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -144,7 +144,7 @@ static void AdjustHowLong (howlong, start_time)
  *
  * _XtWaitForSomething( appContext, 
  *                      ignoreEvent, ignoreTimers, ignoreInputs, ignoreSignals,
- *			block, howlong)
+ *			block, drop_lock, howlong)
  * XtAppContext app;	     (Displays to check wait on)
  *
  * Boolean ignoreEvents;     (Don't return if XEvents are available
@@ -157,6 +157,8 @@ static void AdjustHowLong (howlong, start_time)
  * Boolean ignoreSignals;    (Ditto for signals)
  *
  * Boolean block;	     (Okay to block)
+ *
+ * Boolean drop_lock         (drop lock before going into select/poll)
  * TimeVal howlong;	     (howlong to wait for if blocking and not
  *				doing Timers... Null mean forever.
  *				Maybe should mean shortest of both)
@@ -167,6 +169,10 @@ static void AdjustHowLong (howlong, start_time)
  * lots of time for coffee; better not try it!  In fact, it probably
  * makes little sense to do this regardless of the value of howlong
  * (bottom line is, we don't bother checking here).
+ *
+ * If drop_lock is FALSE, the app->lock->mutex is not unlocked before
+ * entering select/poll. It is illegal for drop_lock to be FALSE if
+ * ignoreTimers, ignoreInputs, or ignoreSignals is FALSE.
  */
 #if NeedFunctionPrototypes
 int _XtWaitForSomething(
@@ -176,17 +182,27 @@ int _XtWaitForSomething(
 	_XtBoolean ignoreInputs,
 	_XtBoolean ignoreSignals,
 	_XtBoolean block,
+#if defined(XTHREADS)
+	_XtBoolean drop_lock,
+#endif
 	unsigned long *howlong)
 #else
 int _XtWaitForSomething(app,
 			ignoreEvents, ignoreTimers, ignoreInputs, ignoreSignals,
-			block, howlong)
+			block, 
+#if defined(XTHREADS)
+			drop_lock, 
+#endif
+			howlong)
 	XtAppContext app;
 	Boolean ignoreEvents;
 	Boolean ignoreTimers;
 	Boolean ignoreInputs;
 	Boolean ignoreSignals;
 	Boolean block;
+#if defined(XTHREADS)
+	Boolean drop_lock;
+#endif
 	unsigned long *howlong;
 #endif
 {
@@ -197,6 +213,9 @@ int _XtWaitForSomething(app,
 	struct timeval  time_spent;
 	struct timeval	max_wait_time;
 	int nfound, ii, dd;
+#if defined(XTHREADS)
+	Boolean push_thread = TRUE;
+#endif
 #if !defined(USE_POLL) /* { variable declaration block */
 	static struct timeval  zero_time = { 0 , 0};
 	register struct timeval *wait_time_ptr;
@@ -205,6 +224,14 @@ int _XtWaitForSomething(app,
 #else /* }{ */
 	int poll_wait, fdlistlen, fdli;
 #endif /* } */
+
+#if defined(XTHREADS)
+	assert ((ignoreTimers && ignoreInputs && ignoreSignals) || drop_lock);
+
+	/* If not multi-threaded, never drop lock */
+	if (app->lock == (AppLockProc) NULL)
+	    drop_lock = FALSE;
+#endif
 
 #if !defined(USE_POLL) /* { init timer block */
  	if (block) {
@@ -324,11 +351,40 @@ int _XtWaitForSomething(app,
 		} 
 #endif /* } */
 
+#if defined(XTHREADS) /* { */
+		if (drop_lock) {
+		    int yield = 0;
+		    if (push_thread) {
+			PUSH_THREAD(app);
+			push_thread = FALSE;
+		    }
+		    yield = YIELD_APP_LOCK(app);
 #if !defined(USE_POLL) /* { select/poll block */
-		nfound = select (app->fds.nfds, (int *) &rmaskfd,
-			(int *) &wmaskfd, (int *) &emaskfd, wait_time_ptr);
+		    nfound = select (app->fds.nfds, 
+				     (int *) &rmaskfd, 
+				     (int *) &wmaskfd, 
+				     (int *) &emaskfd, 
+				     wait_time_ptr);
 #else /* }{ */
-		nfound = poll (app->fds.fdlist, fdlistlen, poll_wait);
+		    nfound = poll (app->fds.fdlist, fdlistlen, poll_wait);
+#endif /* } */
+		    RESTORE_APP_LOCK(app, yield);
+
+		    if (!IS_TOP_THREAD(app))
+			goto WaitLoop;
+
+		    POP_THREAD(app);
+		    push_thread = TRUE;
+		} else
+#endif /* } */
+#if !defined(USE_POLL) /* { select/poll block */
+		    nfound = select (app->fds.nfds, 
+				     (int *) &rmaskfd, 
+				     (int *) &wmaskfd, 
+				     (int *) &emaskfd, 
+				     wait_time_ptr);
+#else /* }{ */
+		    nfound = poll (app->fds.fdlist, fdlistlen, poll_wait);
 #endif /* } */
 		if (nfound == -1) {
 			/*
@@ -566,13 +622,16 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
 	XtPointer closure;
 {
 	TimerEventRec *tptr;
-        struct timeval current_time;
+	struct timeval current_time;
 
+	LOCK_APP(app);
+	LOCK_PROCESS;
 	if (freeTimerRecs) {
 	    tptr = freeTimerRecs;
 	    freeTimerRecs = tptr->te_next;
 	}
 	else tptr = XtNew(TimerEventRec);
+	UNLOCK_PROCESS;
 
 	tptr->te_next = NULL;
 	tptr->te_closure = closure;
@@ -584,27 +643,35 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
 	FIXUP_TIMEVAL(current_time);
         ADD_TIME(tptr->te_timer_value,tptr->te_timer_value,current_time);
 	QueueTimerEvent(app, tptr);
+	UNLOCK_APP(app);
 	return( (XtIntervalId) tptr);
 }
 
 void  XtRemoveTimeOut(id)
-    XtIntervalId id;
+	XtIntervalId id;
 {
-   TimerEventRec *t, *last, *tid = (TimerEventRec *) id;
+	TimerEventRec *t, *last, *tid = (TimerEventRec *) id;
+	XtAppContext app = tid->app;
 
-   /* find it */
+	/* find it */
+	LOCK_APP(app);
+	for(t = tid->app->timerQueue, last = NULL;
+	    t != NULL && t != tid;
+	    t = t->te_next) last = t;
 
-   for(t = tid->app->timerQueue, last = NULL;
-	   t != NULL && t != tid;
-	   t = t->te_next) last = t;
+	if (t == NULL) {
+	    UNLOCK_APP(app);
+	    return; /* couldn't find it */
+	}
+	if(last == NULL) { /* first one on the list */
+	    t->app->timerQueue = t->te_next;
+	} else last->te_next = t->te_next;
 
-   if (t == NULL) return; /* couldn't find it */
-   if(last == NULL) { /* first one on the list */
-       t->app->timerQueue = t->te_next;
-   } else last->te_next = t->te_next;
-
-   t->te_next = freeTimerRecs;
-   freeTimerRecs = t;
+	LOCK_PROCESS;
+	t->te_next = freeTimerRecs;
+	freeTimerRecs = t;
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
 }
 
 XtWorkProcId XtAddWorkProc(proc, closure)
@@ -621,17 +688,19 @@ XtWorkProcId XtAppAddWorkProc(app, proc, closure)
 {
 	WorkProcRec *wptr;
 
+	LOCK_APP(app);
+	LOCK_PROCESS;
 	if (freeWorkRecs) {
 	    wptr = freeWorkRecs;
 	    freeWorkRecs = wptr->next;
 	} else wptr = XtNew(WorkProcRec);
-
+	UNLOCK_PROCESS;
 	wptr->next = app->workQueue;
 	wptr->closure = closure;
 	wptr->proc = proc;
 	wptr->app = app;
 	app->workQueue = wptr;
-
+	UNLOCK_APP(app);
 	return (XtWorkProcId) wptr;
 }
 
@@ -639,17 +708,24 @@ void  XtRemoveWorkProc(id)
 	XtWorkProcId id;
 {
 	WorkProcRec *wid= (WorkProcRec *) id, *w, *last;
+	XtAppContext app = wid->app;
 
+	LOCK_APP(app);
 	/* find it */
 	for(w = wid->app->workQueue, last = NULL; w != NULL && w != wid; w = w->next) last = w;
 
-	if (w == NULL) return; /* couldn't find it */
+	if (w == NULL) {
+	    UNLOCK_APP(app);
+	    return; /* couldn't find it */
+	}
 
 	if(last == NULL) wid->app->workQueue = w->next;
 	else last->next = w->next;
-
+	LOCK_PROCESS;
 	w->next = freeWorkRecs;
 	freeWorkRecs = w;
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
 }
 
 XtSignalId XtAddSignal(proc, closure)
@@ -666,17 +742,21 @@ XtSignalId XtAppAddSignal(app, proc, closure)
 {
 	SignalEventRec *sptr;
 
+	LOCK_APP(app);
+	LOCK_PROCESS;
 	if (freeSignalRecs) {
 	    sptr = freeSignalRecs;
 	    freeSignalRecs = sptr->se_next;
 	} else
 	    sptr = XtNew(SignalEventRec);
+	UNLOCK_PROCESS;
 	sptr->se_next = app->signalQueue;
 	sptr->se_closure = closure;
 	sptr->se_proc = proc;
 	sptr->app = app;
 	sptr->se_notice = FALSE;
 	app->signalQueue = sptr;
+	UNLOCK_APP(app);
 	return (XtSignalId) sptr;
 }
 
@@ -684,22 +764,47 @@ void XtRemoveSignal(id)
 	XtSignalId id;
 {
 	SignalEventRec *sid = (SignalEventRec*) id, *s, *last = NULL;
+	XtAppContext app = sid->app;
 
+	LOCK_APP(app);
 	for (s = sid->app->signalQueue; s != NULL && s != sid; s = s->se_next)
 	    last = s;
-	if (s == NULL)
+	if (s == NULL) {
+	    UNLOCK_APP(app);
 	    return;
+	}
 	if (last == NULL)
 	    sid->app->signalQueue = s->se_next;
 	else
 	    last->se_next = s->se_next;
+	LOCK_PROCESS;
 	s->se_next = freeSignalRecs;
 	freeSignalRecs = s;
+	UNLOCK_PROCESS;
+	UNLOCK_APP(app);
 }
 
 void XtNoticeSignal(id)
 	XtSignalId id;
 {
+	/*
+	 * It would be overkill to lock the app to set this flag.
+	 * In the worst case, 2..n threads would be modifying this
+	 * flag. The last one wins. Since signals occur asynchronously
+	 * anyway, this can occur with or without threads.
+	 *
+	 * The other issue is that thread t1 sets the flag in a
+	 * signalrec that has been deleted in thread t2. We rely
+	 * on a detail of the implementation, i.e. free'd signalrecs
+	 * aren't really free'd, they're just moved to a list of
+	 * free recs, so deref'ing one won't hurt anything.
+	 *
+	 * Lastly, and perhaps most importantly, since POSIX threads
+	 * says that the handling of asynchronous signals in a synchronous
+	 * threads environment is undefined. Therefor it would be an
+	 * error for both signals and threads to be in use in the same
+	 * program.
+	 */
 	SignalEventRec *sid = (SignalEventRec*) id;
 	sid->se_notice = TRUE;
 }
@@ -723,7 +828,8 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 {
 	InputEvent* sptr;
 	XtInputMask condition = (XtInputMask) Condition;
-	
+
+	LOCK_APP(app);
 	if (!condition ||
 	    condition & ~(XtInputReadMask|XtInputWriteMask|XtInputExceptMask))
 	    XtAppErrorMsg(app,"invalidParameter","xtAddInput",XtCXtToolkitError,
@@ -763,8 +869,8 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	}
 #endif
 	app->fds.count++;
+	UNLOCK_APP(app);
 	return((XtInputId)sptr);
-
 }
 
 void XtRemoveInput( id )
@@ -775,6 +881,7 @@ void XtRemoveInput( id )
 	register int source = ((InputEvent *)id)->ie_source;
 	Boolean found = False;
 
+	LOCK_APP(app);
 	sptr = app->outstandingQueue;
 	lptr = NULL;
 	for (; sptr != NULL; sptr = sptr->ie_oq) {
@@ -816,12 +923,14 @@ void XtRemoveInput( id )
 		}
 	}
 
-    if (found)
-	app->fds.count--;
-    else
-	XtAppWarningMsg(app, "invalidProcedure","inputHandler",XtCXtToolkitError,
-                   "XtRemoveInput: Input handler not found",
-		   (String *)NULL, (Cardinal *)NULL);
+	if (found)
+	    app->fds.count--;
+	else
+	    XtAppWarningMsg(app, "invalidProcedure","inputHandler",
+			    XtCXtToolkitError, 
+			    "XtRemoveInput: Input handler not found",
+			    (String *)NULL, (Cardinal *)NULL);
+	UNLOCK_APP(app);
 }
 
 void _XtRemoveAllInputs(app)
@@ -861,7 +970,11 @@ static void DoOtherSources(app)
 	    /* Call _XtWaitForSomething to get input queued up */
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 
-					FALSE, (unsigned long *)NULL);
+					FALSE, 
+#if defined(XTHREADS)
+					TRUE, 
+#endif
+					(unsigned long *)NULL);
 	    DrainQueue();
 	}
 	if (app->timerQueue != NULL) {	/* check timeout queue */
@@ -873,9 +986,11 @@ static void DoOtherSources(app)
 		te_ptr->te_next = NULL;
 		if (te_ptr->te_proc != NULL)
 		    TeCallProc(te_ptr);
+		LOCK_PROCESS;
 		te_ptr->te_next = freeTimerRecs;
 		freeTimerRecs = te_ptr;
-              if (app->timerQueue == NULL) break;
+		UNLOCK_PROCESS;
+		if (app->timerQueue == NULL) break;
 	    }
 	}
 	if (app->signalQueue != NULL) {
@@ -907,8 +1022,10 @@ static Boolean CallWorkProc(app)
 	delete = (*(w->proc)) (w->closure);
 
 	if (delete) {
+	    LOCK_PROCESS;
 	    w->next = freeWorkRecs;
 	    freeWorkRecs = w;
+	    UNLOCK_PROCESS;
 	}
 	else {
 	    w->next = app->workQueue;
@@ -932,8 +1049,10 @@ void _XtRefreshMapping(event, dispatch)
     XEvent *event;
     Boolean dispatch;
 {
-    XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
+    XtPerDisplay pd;
 
+    LOCK_PROCESS;
+    pd = _XtGetPerDisplay(event->xmapping.display);
     if (event->xmapping.request != MappingPointer &&
 	pd && pd->keysyms && (event->xmapping.serial >= pd->keysyms_serial))
 	_XtBuildKeysymTables( event->xmapping.display, pd );
@@ -942,6 +1061,7 @@ void _XtRefreshMapping(event, dispatch)
 	XtCallCallbackList((Widget) NULL,
 			   (XtCallbackList)pd->mapping_callbacks,
 			   (XtPointer)event );
+    UNLOCK_PROCESS;
 }
 
 void XtAppNextEvent(app, event)
@@ -950,6 +1070,7 @@ void XtAppNextEvent(app, event)
 {
     int i, d;
 
+    LOCK_APP(app);
     for (;;) {
 	if (app->count == 0)
 	    DoOtherSources(app);
@@ -972,14 +1093,22 @@ void XtAppNextEvent(app, event)
 
 	d = _XtWaitForSomething (app,
 				 FALSE, FALSE, FALSE, FALSE,
-				 TRUE, (unsigned long *) NULL);
+				 TRUE, 
+#if defined(XTHREADS)
+				 TRUE, 
+#endif
+				 (unsigned long *) NULL);
 
 	if (d != -1) {
 	  GotEvent:
 	    XNextEvent (app->list[d], event);
+#if defined(XTHREADS)
+	    assert(app->list[d] == event->xany.display);
+#endif
 	    app->last = d;
 	    if (event->xany.type == MappingNotify)
 		_XtRefreshMapping(event, False);
+	    UNLOCK_APP(app);
 	    return;
 	} 
 
@@ -1000,7 +1129,11 @@ void XtAppProcessEvent(app, mask)
 	XEvent event;
 	struct timeval cur_time;
 
-	if (mask == 0) return;
+	LOCK_APP(app);
+	if (mask == 0) {
+	    UNLOCK_APP(app);
+	    return;
+	}
 
 	for (;;) {
 
@@ -1025,8 +1158,11 @@ void XtAppProcessEvent(app, mask)
 		    te_ptr->te_next = NULL;
                     if (te_ptr->te_proc != NULL)
 		        TeCallProc(te_ptr);
+		    LOCK_PROCESS;
 		    te_ptr->te_next = freeTimerRecs;
 		    freeTimerRecs = te_ptr;
+		    UNLOCK_PROCESS;
+		    UNLOCK_APP(app);
 		    return;
 		}
 	    }
@@ -1036,13 +1172,18 @@ void XtAppProcessEvent(app, mask)
 		    /* Call _XtWaitForSomething to get input queued up */
 		    (void) _XtWaitForSomething (app, 
 						TRUE, TRUE, FALSE, TRUE, 
-						FALSE, (unsigned long *)NULL);
+						FALSE, 
+#if defined(XTHREADS)
+						TRUE, 
+#endif
+						(unsigned long *)NULL);
 		}
 		if (app->outstandingQueue != NULL) {
 		    InputEvent *ie_ptr = app->outstandingQueue;
 		    app->outstandingQueue = ie_ptr->ie_oq;
 		    ie_ptr->ie_oq = NULL;
 		    IeCallProc(ie_ptr);
+		    UNLOCK_APP(app);
 		    return;
 		}
 	    }
@@ -1069,20 +1210,28 @@ void XtAppProcessEvent(app, mask)
 				    (mask & XtIMTimer ? FALSE : TRUE),
 				    (mask & XtIMAlternateInput ? FALSE : TRUE),
 				    (mask & XtIMSignal ? FALSE : TRUE),
-				    TRUE, (unsigned long *) NULL);
+				    TRUE, 
+#if defined(XTHREADS)
+				    TRUE, 
+#endif
+				    (unsigned long *) NULL);
 
 	    if (mask & XtIMXEvent && d != -1) {
 	      GotEvent:
 		XNextEvent(app->list[d], &event);
+#if defined(XTHREADS)
+		assert(app->list[d] == event.xany.display);
+#endif
 		app->last = d;
 		if (event.xany.type == MappingNotify) {
 		    _XtRefreshMapping(&event, False);
 		}
 		XtDispatchEvent(&event);
+		UNLOCK_APP(app);
 		return;
 	    } 
 	
-	}    
+	}
 }
 
 XtInputMask XtPending()
@@ -1100,6 +1249,7 @@ XtInputMask XtAppPending(app)
 /*
  * Check for pending X events
  */
+	LOCK_APP(app);
 	for (d = 0; d < app->count; d++) {
 	    if (XEventsQueued(app->list[d], QueuedAfterReading)) {
 		ret = XtIMXEvent;
@@ -1144,10 +1294,15 @@ XtInputMask XtAppPending(app)
 
 	    if(_XtWaitForSomething (app,
 				    FALSE, TRUE, FALSE, TRUE, 
-				    FALSE, (unsigned long *) NULL) != -1) 
+				    FALSE, 
+#if defined(XTHREADS)
+				    TRUE, 
+#endif
+				    (unsigned long *) NULL) != -1) 
 		ret |= XtIMXEvent;
 	    if (app->outstandingQueue != NULL) ret |= XtIMAlternateInput;
 	}
+	UNLOCK_APP(app);
 	return ret;
 }
 
@@ -1173,7 +1328,11 @@ static Boolean PeekOtherSources(app)
 	    /* Call _XtWaitForSomething to get input queued up */
 	    (void) _XtWaitForSomething (app,
 					TRUE, TRUE, FALSE, TRUE, 
-					FALSE, (unsigned long *)NULL);
+					FALSE, 
+#if defined(XTHREADS)
+					TRUE, 
+#endif
+					(unsigned long *)NULL);
 	    if (app->outstandingQueue != NULL) return TRUE;
 	}
 
@@ -1199,7 +1358,8 @@ Boolean XtAppPeekEvent(app, event)
 {
 	int i, d;
 	Boolean foundCall = FALSE;
-	
+
+	LOCK_APP(app);
 	for (i = 1; i <= app->count; i++) {
 	    d = (i + app->last) % app->count;
 	    if (d == 0) foundCall = PeekOtherSources(app);
@@ -1216,21 +1376,28 @@ Boolean XtAppPeekEvent(app, event)
 	    event->xany.type = 0;
 	    event->xany.display = NULL;
 	    event->xany.window = 0;
+	    UNLOCK_APP(app);
 	    return FALSE;
 	}
 	
 	d = _XtWaitForSomething (app,
 				 FALSE, FALSE, FALSE, FALSE,
-				 TRUE, (unsigned long *) NULL);
+				 TRUE, 
+#if defined(XTHREADS)
+				 TRUE, 
+#endif
+				 (unsigned long *) NULL);
 	
 	if (d != -1) {
 	  GotEvent:
 	    XPeekEvent(app->list[d], event);
 	    app->last = (d == 0 ? app->count : d) - 1;
+	    UNLOCK_APP(app);
 	    return TRUE;
 	}
 	event->xany.type = 0;	/* Something else must be ready */
 	event->xany.display = NULL;
 	event->xany.window = 0;
+	UNLOCK_APP(app);
 	return FALSE;
 }	

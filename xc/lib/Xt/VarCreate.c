@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.25 92/06/12 17:30:39 converse Exp $ */
+/* $XConsortium: VarCreate.c,v 1.26 93/05/13 16:20:25 kaleb Exp $ */
 
 /*
 
@@ -53,7 +53,7 @@ _XtVaCreateWidget(name, widget_class, parent, var, count)
         XtFree((XtPointer)typed_args);
     }    
 
-    return(widget);
+    return widget;
 }
 
 
@@ -76,7 +76,9 @@ Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
     va_list                 var;
     register Widget         widget;
     int			    total_count, typed_count;
+    WIDGET_TO_APPCON(parent);
 
+    LOCK_APP(app);
     Va_start(var,parent);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -84,8 +86,8 @@ Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
     Va_start(var,parent);
     widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
     va_end(var);
-
-    return(widget);
+    UNLOCK_APP(app);
+    return widget;
 }
 
 
@@ -108,7 +110,9 @@ Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
     va_list		var;
     register Widget	widget;
     int			total_count, typed_count;
+    WIDGET_TO_APPCON(parent);
 
+    LOCK_APP(app);
     Va_start(var,parent);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -117,8 +121,8 @@ Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
     widget = _XtVaCreateWidget(name, widget_class, parent, var, total_count);
     XtManageChild(widget);
     va_end(var);
-
-    return (widget);
+    UNLOCK_APP(app);
+    return widget;
 }
 
 
@@ -145,7 +149,9 @@ Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
     XtTypedArgList          typed_args = NULL;
     Cardinal                num_args;
     int			    total_count, typed_count;
+    DPY_TO_APPCON(display);
 
+    LOCK_APP(app);
     Va_start(var,display);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -160,7 +166,8 @@ Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
     }
  
     va_end(var);
-    return(widget);
+    UNLOCK_APP(app);
+    return widget;
 }
 
 
@@ -185,7 +192,9 @@ Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     XtTypedArgList          typed_args = NULL;
     Cardinal                num_args;
     int			    total_count, typed_count;
+    WIDGET_TO_APPCON(parent);
 
+    LOCK_APP(app);
     Va_start(var,parent);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -200,6 +209,7 @@ Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     }
 
     va_end(var);
+    UNLOCK_APP(app);
     return widget;
 }
 
@@ -217,7 +227,9 @@ void XtVaSetValues(widget, va_alist)
     ArgList                 args = NULL;
     Cardinal                num_args;
     int			    total_count, typed_count;
+    WIDGET_TO_APPCON(widget);
 
+    LOCK_APP(app);
     Va_start(var,widget);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
@@ -229,7 +241,7 @@ void XtVaSetValues(widget, va_alist)
     if (args != NULL) {
 	XtFree((XtPointer)args);
     }
-
+    UNLOCK_APP(app);
     va_end(var);
 }
 

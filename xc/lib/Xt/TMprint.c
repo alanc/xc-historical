@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.8 92/04/03 15:18:08 converse Exp $ */
+/* $XConsortium: TMprint.c,v 1.9 92/04/03 15:45:50 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -319,8 +319,12 @@ static Boolean LookAheadForCycleOrMulticlick(state, state_return, countP,
     int repeatCount = 0;
     StatePtr	startState = state;
     Boolean	isCycle = startState->isCycleEnd;
-    TMTypeMatch sTypeMatch = TMGetTypeMatch(startState->typeIndex);
-    TMModifierMatch sModMatch = TMGetModifierMatch(startState->modIndex);
+    TMTypeMatch sTypeMatch;
+    TMModifierMatch sModMatch;
+
+    LOCK_PROCESS;
+    sTypeMatch = TMGetTypeMatch(startState->typeIndex);
+    sModMatch = TMGetModifierMatch(startState->modIndex);
 
     *state_return = startState;
 
@@ -335,6 +339,7 @@ static Boolean LookAheadForCycleOrMulticlick(state, state_return, countP,
 
 	if (state->isCycleEnd) {
 	    *countP = repeatCount;
+	    UNLOCK_PROCESS;
 	    return True;
 	}
 	if ((startState->typeIndex == state->typeIndex) &&
@@ -363,6 +368,7 @@ static Boolean LookAheadForCycleOrMulticlick(state, state_return, countP,
 	}
     }
     *countP = repeatCount;
+    UNLOCK_PROCESS;
     return isCycle;
 }
 
@@ -381,7 +387,7 @@ static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy
 
     /* print the current state */
     if (! state) return;
-    
+    LOCK_PROCESS;
     cycle = LookAheadForCycleOrMulticlick(state, &triggerState, &clickCount,
 					  &nextLevel);
 
@@ -426,6 +432,7 @@ static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy
     if (state->nextLevel && !cycle && !clickCount)
 	PrintComplexState(sb, includeRHS, state->nextLevel,
 			  stateTree, accelWidget, dpy);
+    UNLOCK_PROCESS;
 }
 
 typedef struct{
@@ -554,12 +561,14 @@ static void ProcessStateTree(printData, xlations, tIndex, numPrintsRtn)
 		printData[*numPrintsRtn].bIndex = i;
 		(*numPrintsRtn)++;
 	    }
+	    LOCK_PROCESS;
 	    if (_XtGlobalTM.newMatchSemantics == False)
 	      ProcessLaterMatches(printData, 
 				  xlations, 
 				  tIndex, 
 				  i,
 				  numPrintsRtn);
+	    UNLOCK_PROCESS;
 	}
     }
 }
@@ -573,6 +582,7 @@ static void PrintState(sb, tree, branchHead, includeRHS, accelWidget, dpy)
     Display 	*dpy;
 {
     TMComplexStateTree stateTree = (TMComplexStateTree)tree;
+    LOCK_PROCESS;
     if (branchHead->isSimple) {
 	PrintEvent(sb,
 		   TMGetTypeMatch(branchHead->typeIndex),
@@ -610,6 +620,7 @@ static void PrintState(sb, tree, branchHead, includeRHS, accelWidget, dpy)
 			      (Display *)NULL);
 	}
     *sb->current = '\0';
+    UNLOCK_PROCESS;
 }
 
 #if NeedFunctionPrototypes
@@ -827,6 +838,7 @@ String _XtPrintEventSeq(eventSeq, dpy)
 	    if (eventSeqs[j] == eventSeq)
 	      cycle = True;
       }
+    LOCK_PROCESS;
     for (j = 0; j < i; j++) {
 	typeMatch = 
 	  TMGetTypeMatch(_XtGetTypeIndex(&eventSeqs[j]->event));
@@ -836,6 +848,7 @@ String _XtPrintEventSeq(eventSeq, dpy)
 	if (j < i)
 	  *sb->current++ = ',';
     }
+    UNLOCK_PROCESS;
     return sb->start;
 }
 

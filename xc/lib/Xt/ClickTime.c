@@ -1,4 +1,4 @@
-/* $XConsortium: ClickTime.c,v 1.1 89/09/26 17:58:10 swick Exp $ */
+/* $XConsortium: ClickTime.c,v 1.2 91/01/06 13:32:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,12 +34,22 @@ void XtSetMultiClickTime( dpy, time )
     Display *dpy;
     int time;
 {
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
     _XtGetPerDisplay(dpy)->multi_click_time = time;
+    UNLOCK_APP(app);
 }
 
 
 int XtGetMultiClickTime( dpy )
     Display *dpy;
 {
-    return _XtGetPerDisplay(dpy)->multi_click_time;
+    int retval;
+    DPY_TO_APPCON(dpy);
+
+    LOCK_APP(app);
+    retval = _XtGetPerDisplay(dpy)->multi_click_time;
+    UNLOCK_APP(app);
+    return retval;
 }
