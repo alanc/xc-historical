@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.22 91/04/10 19:17:33 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.23 91/04/11 09:04:08 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -40,15 +40,26 @@
 #include <stdio.h>
 
 #ifndef SYSVNET
+#ifdef WIN32
+#define _X86_ _M_IX86
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#else
 #include <netdb.h>
 #include <sys/socket.h>
 #endif
+#endif
 
+#include <X11/Xos.h>
 #include "Atoms.h"
 #include "StdSel.h"
 #include "SysUtil.h"
 #include <X11/Xfuncs.h>
-#include <X11/Xos.h>
 
 #ifndef OS_NAME
 #ifndef X_OS_FILE
