@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.32 91/05/22 17:47:48 converse Exp $
+ * $XConsortium: Login.c,v 1.33 91/05/23 15:48:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -811,7 +811,7 @@ static Boolean SetValues (current, request, new, args, num_args)
     ArgList args;
     Cardinal *num_args;
 {
-    LoginWidget currentL, newL, w;
+    LoginWidget currentL, newL;
     
     currentL = (LoginWidget) current;
     newL = (LoginWidget) new;
