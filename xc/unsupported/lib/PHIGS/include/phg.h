@@ -1,4 +1,4 @@
-/* $XConsortium: phg.h,v 5.5 91/05/12 16:50:23 rws Exp $ */
+/* $XConsortium: phg.h,v 5.6 91/06/28 16:00:40 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,7 +67,7 @@ extern int	 errno;
 #define M_PI 3.14159265358979323846
 #endif
 
-#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
+#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !(defined(sun) || (defined(sony) && !defined(SYSTYPE_SYSV))))
 #include <float.h>
 #endif
 #ifndef MAXFLOAT
