@@ -24,7 +24,10 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(TOP)/lib/Xau/libXau.
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
        PROGRAMS = xdm xdmshell xdmauthgen sessreg
-        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" ConnectionFlags
+#if SystemV
+      OTHERDEFS = -DNOXDMTITLE
+#endif
+        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" $(OTHERDEFS) ConnectionFlags
 
 /**/#
 /**/# Special definitions for compiling default resources; these parameters
