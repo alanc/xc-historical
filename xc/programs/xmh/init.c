@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 2.12 88/02/06 10:10:39 swick Locked $";
+static char rcs_id[] = "$Header: init.c,v 2.13 88/02/06 10:34:30 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -152,38 +152,37 @@ char **argv;
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
 
-    if (!mailDir) {
-	(void) sprintf(str, "%s/.mh_profile", homeDir);
-	fid = myfopen(str, "r");
-	if (fid) {
-	    while (ptr = ReadLine(fid)) {
-		strncpy(str2, ptr, 5);
-		str2[5] = '\0';
-		LowerCase(str2, str2);
-		if (strcmp(str2, "path:") == 0) {
-		    ptr += 5;
-		    while (*ptr == ' ' || *ptr == '\t')
-			ptr++;
-		    (void) strcpy(str, ptr);
-		}
+    (void) sprintf(str, "%s/.mh_profile", homeDir);
+    fid = myfopen(str, "r");
+    if (fid) {
+	while (ptr = ReadLine(fid)) {
+	    strncpy(str2, ptr, 5);
+	    str2[5] = '\0';
+	    LowerCase(str2, str2);
+	    if (strcmp(str2, "path:") == 0) {
+		ptr += 5;
+		while (*ptr == ' ' || *ptr == '\t')
+		    ptr++;
+		(void) strcpy(str, ptr);
 	    }
-	    (void) myfclose(fid);
-	} else {
-	    (void) strcpy(str, "Mail");
 	}
-	for (l=strlen(str) - 1; l>=0 && (str[l] == ' ' || str[l] == '\t'); l--)
-	    str[l] = 0;
-	if (str[0] == '/')
-	    (void) strcpy(str2, str);
-	else
-	    (void) sprintf(str2, "%s/%s", homeDir, str);
-	mailDir = MallocACopy(str2);
+	(void) myfclose(fid);
+    } else {
+	(void) strcpy(str, "Mail");
     }
+    for (l=strlen(str) - 1; l>=0 && (str[l] == ' ' || str[l] == '\t'); l--)
+	str[l] = 0;
+    if (str[0] == '/')
+	(void) strcpy(str2, str);
+    else
+	(void) sprintf(str2, "%s/%s", homeDir, str);
 
-    (void) sprintf(str, "%s/draft", mailDir);
+    (void) sprintf(str, "%s/draft", str2);
     draftFile = MallocACopy(str);
-    (void) sprintf(str, "%s/xmhdraft", mailDir);
+    (void) sprintf(str, "%s/xmhdraft", str2);
     xmhDraftFile = MallocACopy(str);
+
+    if (!mailDir) mailDir = MallocACopy(str2);
 
     NullSource = XtCreateEDiskSource("/dev/null", FALSE);
 
