@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.30 89/05/31 18:10:12 rws Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.31 89/06/02 17:21:55 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -507,20 +507,22 @@ main(argc, argv)
 	/* wait on mouse input event to terminate */
 	XNextEvent(dpy, &event);
 	switch(event.type) {
-	  case ButtonPress:
+	case ButtonPress:
 	    break;
-	  case ButtonRelease:
+	case ButtonRelease:
 	    if (onclick) {
 		XCloseDisplay(dpy);
 		return;
 	    }
+	    break;
 	case KeyPress:
 	    i = XLookupString(&event, &c, 1, NULL, NULL);
 	    if ((i == 1) && ((c == 'q') || (c == 'Q') || (c == '\03'))) {
 		XCloseDisplay(dpy);
 		return;
-	  }
-	  case Expose:
+	    }
+	    break;
+	case Expose:
 	    if ((expose->x < out_image->width) &&
 		(expose->y < out_image->height)) {
 		if ((out_image->width - expose->x) < expose->width)
@@ -531,6 +533,7 @@ main(argc, argv)
 			  expose->x, expose->y, expose->x, expose->y,
 			  expose->width, expose->height);
 	    }
+	    break;
 	}
     }
 }
