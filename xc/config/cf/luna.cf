@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.16 91/08/26 11:23:34 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.17 92/08/22 11:43:19 rws Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 
@@ -69,6 +69,7 @@ XCOMM operating system:  OSName
 #else
 #define PreIncDir		/usr/lib/ccom/include
 #endif
+#define PostIncDir		/usr/mach/include
 #endif
 
 #ifdef Mc68000Architecture
