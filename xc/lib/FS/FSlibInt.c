@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibInt.c,v 1.12 93/09/22 21:52:44 rws Exp $ */
+/* $XConsortium: FSlibInt.c,v 1.13 93/09/26 21:55:35 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -55,115 +55,6 @@ static void _EatData32();
 #define ESET(val) errno = val
 #endif
 
-#ifdef CRAY
-/*
- * Cray UniCOS does not have readv and writev so we emulate
- */
-#include <sys/socket.h>
-
-int
-_FSReadV(fd, iov, iovcnt)
-    int         fd;
-    struct iovec *iov;
-    int         iovcnt;
-{
-    struct msghdr hdr;
-
-    hdr.msg_iov = iov;
-    hdr.msg_iovlen = iovcnt;
-    hdr.msg_accrights = 0;
-    hdr.msg_accrightslen = 0;
-    hdr.msg_name = 0;
-    hdr.msg_namelen = 0;
-
-    return (recvmsg(fd, &hdr, 0));
-}
-
-int
-_FSWriteV(fd, iov, iovcnt)
-    int         fd;
-    struct iovec *iov;
-    int         iovcnt;
-{
-    struct msghdr hdr;
-
-    hdr.msg_iov = iov;
-    hdr.msg_iovlen = iovcnt;
-    hdr.msg_accrights = 0;
-    hdr.msg_accrightslen = 0;
-    hdr.msg_name = 0;
-    hdr.msg_namelen = 0;
-
-    return (sendmsg(fd, &hdr, 0));
-}
-
-#endif				/* CRAY */
-
-#if (defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)) || defined(WIN32)
-/*
- * SYSV/386 and WIN32 do not have readv so we emulate
- */
-#ifndef WIN32
-#include <sys/uio.h>
-#endif
-
-int _FSReadV(fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-    int i, len, total;
-    char *base;
-
-    ESET(0);
-    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
-	len = iov->iov_len;
-	base = iov->iov_base;
-	while (len > 0) {
-	    register int nbytes;
-	    nbytes = ReadFromServer(fd, base, len);
-	    if (nbytes < 0 && total == 0)  return -1;
-	    if (nbytes <= 0)  return total;
-	    ESET(0);
-	    len   -= nbytes;
-	    total += nbytes;
-	    base  += nbytes;
-	}
-    }
-    return total;
-}
-
-#endif /* SYSV && SYSV386 && !STREAMSCONN || WIN32 */
-
-#ifdef WIN32
-
-int _FSWriteV (fd, iov, iovcnt)
-    int fd;
-    struct iovec *iov;
-    int iovcnt;
-{
-    int i, len, total;
-    char *base;
-
-    ESET(0);
-    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
-	len = iov->iov_len;
-	base = iov->iov_base;
-	while (len > 0) {
-	    register int nbytes;
-	    nbytes = WriteToServer(fd, base, len);
-	    if (nbytes < 0 && total == 0)  return -1;
-	    if (nbytes <= 0)  return total;
-	    ESET(0);
-	    len   -= nbytes;
-	    total += nbytes;
-	    base  += nbytes;
-	}
-    }
-    return total;
-}
-#endif /* WIN32 */
-
 /*
  * The following routines are internal routines used by FSlib for protocol
  * packet transmission and reception.
@@ -217,7 +108,7 @@ _FSFlush(svr)
      */
     while (size) {
 	ESET(0);
-	write_stat = WriteToServer(svr->fd, bufindex, (int) todo);
+	write_stat = _FSTransWrite(svr->trans_conn, bufindex, (int) todo);
 	if (write_stat >= 0) {
 	    size -= write_stat;
 	    todo = size;
@@ -260,7 +151,7 @@ _FSEventsQueued(svr, mode)
 	if (svr->qlen)
 	    return (svr->qlen);
     }
-    if (BytesReadable(svr->fd, &pend) < 0)
+    if (_FSTransBytesReadable(svr->trans_conn, &pend) < 0)
 	(*_FSIOErrorFunction) (svr);
     if ((len = pend) < SIZEOF(fsReply))
 	return (svr->qlen);	/* _FSFlush can enqueue events */
@@ -296,7 +187,7 @@ _FSReadEvents(svr)
 
     do {
 	/* find out how much data can be read */
-	if (BytesReadable(svr->fd, &pend_not_register) < 0)
+	if (_FSTransBytesReadable(svr->trans_conn, &pend_not_register) < 0)
 	    (*_FSIOErrorFunction) (svr);
 	pend = pend_not_register;
 
@@ -351,7 +242,7 @@ _FSRead(svr, data, size)
     if (size == 0)
 	return;
     ESET(0);
-    while ((bytes_read = ReadFromServer(svr->fd, data, (int) size))
+    while ((bytes_read = _FSTransRead(svr->trans_conn, data, (int) size))
 	    != size) {
 
 	if (bytes_read > 0) {
@@ -537,7 +428,7 @@ _FSReadPad(svr, data, size)
     size += iov[1].iov_len;
 
     ESET(0);
-    while ((bytes_read = ReadvFromServer(svr->fd, iov, 2)) != size) {
+    while ((bytes_read = _FSTransReadv(svr->trans_conn, iov, 2)) != size) {
 
 	if (bytes_read > 0) {
 	    size -= bytes_read;
@@ -636,7 +527,7 @@ _FSSend(svr, data, size)
 	InsertIOV(pad, padsize)
 
 	ESET(0);
-	if ((len = WritevToServer(svr->fd, iov, i)) >= 0) {
+	if ((len = _FSTransWritev(svr->trans_conn, iov, i)) >= 0) {
 	    skip += len;
 	    total -= len;
 	    todo = total;
