@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.102 91/05/10 16:56:57 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.103 91/05/11 14:32:47 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -46,10 +46,6 @@
 #include "data.h"
 #include "error.h"
 #include "menu.h"
-
-#if !defined(EWOULDBLOCK) && defined(EAGAIN)
-#define EWOULDBLOCK EAGAIN
-#endif
 
 extern jmp_buf Tekend;
 
@@ -649,7 +645,7 @@ again:
 				if(Tbcnt < 0) {
 					if(errno == EIO)
 						Cleanup (0);
-					else if(errno != EWOULDBLOCK)
+					else if(!E_TEST(errno))
 						Panic(
 				 "Tinput:read returned unexpected error (%d)\n",
 						 errno);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.161 91/05/08 21:28:07 gildea Exp $
+ * $XConsortium: charproc.c,v 1.162 91/05/10 16:57:07 gildea Exp $
  */
 
 /*
@@ -47,10 +47,6 @@
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
-
-#if !defined(EWOULDBLOCK) && defined(EAGAIN)
-#define EWOULDBLOCK EAGAIN
-#endif
 
 extern jmp_buf VTend;
 
@@ -1233,7 +1229,7 @@ in_put()
 	    if (bcnt < 0) {
 		if (errno == EIO)
 		    Cleanup (0);
-		else if (errno != EWOULDBLOCK)
+		else if (!E_TEST(errno))
 		    Panic(
 			  "input: read returned unexpected error (%d)\n",
 			  errno);
