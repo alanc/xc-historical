@@ -1,13 +1,19 @@
 #include "copyright.h"
 
-/* $XConsortium: XMaskEvent.c,v 11.17 88/05/16 11:25:04 rws Exp $ */
+/* $XConsortium: XMaskEvent.c,v 11.18 88/09/06 16:11:31 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
 #include "Xlibint.h"
 
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 extern _XQEvent *_qfree;
-extern long _event_to_mask[];
+extern long Const _event_to_mask[];
 #define AllPointers (PointerMotionMask|PointerMotionHintMask|ButtonMotionMask)
 #define AllButtons (Button1MotionMask|Button2MotionMask|Button3MotionMask|\
 		    Button4MotionMask|Button5MotionMask)
@@ -31,7 +37,8 @@ XMaskEvent (dpy, mask, event)
 	    for (qelt = prev ? prev->next : dpy->head;
 		 qelt;
 		 prev = qelt, qelt = qelt->next) {
-		if ((_event_to_mask[qelt->event.type] & mask) &&
+		if ((qelt->event.type < LASTEvent) &&
+		    (_event_to_mask[qelt->event.type] & mask) &&
 		    ((qelt->event.type != MotionNotify) ||
 		     (mask & AllPointers) ||
 		     (mask & AllButtons & qelt->event.xmotion.state))) {
