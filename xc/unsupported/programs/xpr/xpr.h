@@ -10,7 +10,8 @@
 			  59L*(color)->green + \
 			  11L*(color)->blue)
 
-#define HALFINTENSITY (((1<<16)-1)*50L)
+#define INTENSITYPER(per) (((1<<16)-1)*((long)per))
+#define HALFINTENSITY INTENSITYPER(50)
 
 enum orientation {
     UNSPECIFIED = -1,
