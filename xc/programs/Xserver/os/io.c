@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.38 88/07/19 18:05:09 toddb Exp $ */
+/* $Header: io.c,v 1.39 88/07/19 19:00:15 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -47,6 +47,7 @@ SOFTWARE.
 extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];
+extern long OutputBufferSize;
 extern ClientPtr ConnectionTranslation[];
 extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
@@ -375,7 +376,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	/* If we've arrived here, then the client is stuffed to the gills
 	   and not ready to accept more.  Make a note of it and buffer
 	   the rest. */
-	BITSET(ClientsWriteBlocked, who->index);
+	BITSET(ClientsWriteBlocked, connection);
 	AnyClientsWriteBlocked = TRUE;
 
 	written = total - notWritten;
@@ -395,8 +396,9 @@ FlushClient(who, oc, extraBuf, extraCount)
 	}
 	if ((n = oc->count + notWritten) > oc->bufsize)
 	{
-	    /* allocate at least enough to contain it plus one BUFSIZ */
-	    oc->bufsize += n + BUFSIZ;
+	    /* allocate at least enough to contain it plus one
+	       OutputBufferSize */
+	    oc->bufsize += n + OutputBufferSize;
 	    oc->buf = (unsigned char *)Xrealloc(oc->buf, oc->bufsize);
 	    if (oc->buf == NULL)
 	    {
@@ -421,10 +423,10 @@ FlushClient(who, oc, extraBuf, extraCount)
 
     /* everything was flushed out */
     oc->count = 0;
-    if (oc->bufsize > BUFSIZ)
+    if (oc->bufsize > OutputBufferSize)
     {
-	oc->bufsize = BUFSIZ;
-	oc->buf = (unsigned char *)Xalloc(BUFSIZ);
+	oc->bufsize = OutputBufferSize;
+	oc->buf = (unsigned char *)Xalloc(OutputBufferSize);
 	if (oc->buf == NULL) /* nearly impossible */
 	    goto outOfMem;
     }
@@ -467,14 +469,14 @@ FlushAllOutput()
 	{
 	    index = ffs(mask) - 1;
 	    mask &= ~lowbit(mask);
-	    if ((client = clients[(32 * base) + index ]) == NULL)
+	    if ((client = ConnectionTranslation[(32 * base) + index ]) == NULL)
 		continue;
 	    if (client->clientGone)
 		continue;
 	    oc = (OsComm)client->osPrivate;
 	    if (GETBIT(ClientsWithInput, client->index))
 	    {
-		BITSET(OutputPending, client->index); /* set the bit again */
+		BITSET(OutputPending, oc->fd); /* set the bit again */
 		NewOutputPending = TRUE;
 	    }
 	    else
@@ -535,14 +537,14 @@ WriteToClient (who, count, buf)
 
     if (oc->count + count > oc->bufsize)
     {
-	BITCLEAR(OutputPending, who->index);
+	BITCLEAR(OutputPending, oc->fd);
 	CriticalOutputPending = FALSE;
 	NewOutputPending = FALSE;
 	return FlushClient(who, oc, buf, count);
     }
 
     NewOutputPending = TRUE;
-    BITSET(OutputPending, who->index);
+    BITSET(OutputPending, oc->fd);
     bcopy(buf, oc->buf + oc->count, count);
     oc->count += count + padthis;
     
