@@ -1,9 +1,6 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.3 89/01/04 13:37:41 jim Exp $
+ *	$XConsortium: VTPrsTbl.c,v 1.4 89/03/01 19:59:43 jim Exp $
  */
-
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,14 +25,7 @@
  * SOFTWARE.
  */
 
-#ifndef lint
-static char *rcsid_VTparsetable_c = "$XConsortium: VTPrsTbl.c,v 1.3 89/01/04 13:37:41 jim Exp $";
-#endif	/* lint */
-
 #include "VTparse.h"
-#ifndef lint
-static char rcs_id[] = "$XConsortium: VTPrsTbl.c,v 1.3 89/01/04 13:37:41 jim Exp $";
-#endif	/* lint */
 
 /*
  * Stupid Apollo C preprocessor can't handle long lines.  So... To keep

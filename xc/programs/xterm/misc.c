@@ -1,9 +1,6 @@
 /*
- *	$XConsortium: misc.c,v 1.67 90/07/15 18:09:40 rws Exp $
+ *	$XConsortium: misc.c,v 1.68 90/11/08 15:27:51 dave Exp $
  */
-
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -56,10 +53,6 @@ extern void abort();
 
 static void DoSpecialEnterNotify();
 static void DoSpecialLeaveNotify();
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.67 90/07/15 18:09:40 rws Exp $";
-#endif	/* lint */
 
 xevents()
 {

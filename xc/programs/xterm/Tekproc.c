@@ -1,11 +1,9 @@
 /*
- * $XConsortium: Tekproc.c,v 1.81 90/06/08 13:58:07 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.82 90/11/08 15:27:19 dave Exp $
  *
  * Warning, there be crufty dragons here.
  */
 
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1988 Massachusetts Institute of Technology
@@ -110,7 +108,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.81 90/06/08 13:58:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.82 90/11/08 15:27:19 dave Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;

@@ -1,9 +1,7 @@
 /*
- *	$XConsortium: error.h,v 1.5 89/03/22 18:21:48 jim Exp $
+ *	$XConsortium: error.h,v 1.6 89/05/26 13:34:16 jim Exp $
  */
 
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: screen.c,v 1.18 90/06/06 09:18:36 jim Exp $
+ *	$XConsortium: screen.c,v 1.19 90/06/08 14:15:40 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,10 +26,6 @@
  */
 
 /* screen.c */
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.18 90/06/06 09:18:36 jim Exp $";
-#endif	/* lint */
 
 #include <X11/Xlib.h>
 #include <stdio.h>

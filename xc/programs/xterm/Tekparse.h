@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: Tekparse.h,v 1.2 88/07/20 12:25:52 jim Exp $
+ *	$XConsortium: Tekparse.h,v 1.3 88/09/06 17:07:31 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

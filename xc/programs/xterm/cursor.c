@@ -1,12 +1,6 @@
 /*
- *	$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $
+ *	$XConsortium: cursor.c,v 1.8 90/06/06 09:18:31 jim Exp $
  */
-
-#ifndef lint
-static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $";
-#endif	/* lint */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -33,10 +27,6 @@ static char *rcsid_cursor_c = "$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 ji
 
 /* cursor.c */
 
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: cursor.c,v 1.8 90/06/05 17:48:46 jim Exp $";
-#endif	/* lint */
 
 #include <X11/Xlib.h>
 #include <stdio.h>

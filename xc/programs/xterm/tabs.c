@@ -1,12 +1,6 @@
 /*
- *	$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $
+ *	$XConsortium: tabs.c,v 1.2 88/09/06 17:08:36 jim Exp $
  */
-
-#ifndef lint
-static char *rcsid_tabs_c = "$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $";
-#endif	/* lint */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -32,10 +26,6 @@ static char *rcsid_tabs_c = "$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Ex
  */
 
 /* tabs.c */
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: tabs.c,v 1.1 88/02/10 13:08:17 jim Exp $";
-#endif	/* lint */
 
 #include <X11/Xlib.h>
 #include "ptyx.h"

@@ -1,9 +1,7 @@
 /*
- *	$XConsortium: TekPrsTbl.c,v 1.2 88/09/06 17:07:28 jim Exp $
+ *	$XConsortium: TekPrsTbl.c,v 1.3 89/03/01 19:59:14 jim Exp $
  */
 
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,14 +26,7 @@
  * SOFTWARE.
  */
 
-#ifndef lint
-static char *rcsid_Tekparsetable_c = "$XConsortium: TekPrsTbl.c,v 1.2 88/09/06 17:07:28 jim Exp $";
-#endif	/* lint */
-
 #include "Tekparse.h"
-#ifndef lint
-static char rcs_id[] = "$XConsortium: TekPrsTbl.c,v 1.2 88/09/06 17:07:28 jim Exp $";
-#endif	/* lint */
 
 int Talptable[] = {
 /*	NUL		SOH		STX		ETX	*/

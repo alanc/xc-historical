@@ -1,12 +1,6 @@
 /*
- *	$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $
+ *	$XConsortium: resize.c,v 1.11 89/12/09 17:24:12 jim Exp $
  */
-
-#ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $";
-#endif	/* lint */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -80,7 +74,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.10 89/12/06 15:32:03 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.11 89/12/09 17:24:12 jim Exp $";
 #endif
 
 #define	EMULATIONS	2

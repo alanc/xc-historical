@@ -1,9 +1,7 @@
 /*
- *	$XConsortium: data.h,v 1.6 89/05/25 15:12:02 jim Exp $
+ *	$XConsortium: data.h,v 1.7 89/05/26 18:10:45 jim Exp $
  */
 
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

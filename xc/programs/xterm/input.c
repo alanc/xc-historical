@@ -1,12 +1,6 @@
 /*
- *	$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $
+ *	$XConsortium: input.c,v 1.10 90/06/07 15:49:57 jim Exp $
  */
-
-#ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $";
-#endif	/* lint */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -32,10 +26,6 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim 
  */
 
 /* input.c */
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.9 90/03/16 17:16:34 jim Exp $";
-#endif	/* lint */
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>

@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.35 90/06/06 11:47:57 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.36 90/06/06 15:06:56 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -44,10 +42,6 @@
 #include "menu.h"
 
 extern void bcopy();
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.35 90/06/06 11:47:57 jim Exp $";
-#endif	/* lint */
 
 /* Event handlers */
 

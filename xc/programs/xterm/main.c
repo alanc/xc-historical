@@ -1,6 +1,4 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.158 90/11/08 15:27:42 dave Exp $";
-#endif	/* lint */
+/* $XConsortium: main.c,v 1.159 90/11/09 16:02:35 dave Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -13,8 +11,6 @@ static char rcs_id[] = "$XConsortium: main.c,v 1.158 90/11/08 15:27:42 dave Exp 
  * a generic tty widget with several different parsing widgets so that you 
  * can plug 'em together any way you want.  Don't hold your breath, though....
  */
-
-#include <X11/copyright.h>
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

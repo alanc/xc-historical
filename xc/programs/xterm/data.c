@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: data.c,v 1.7 89/05/25 15:12:01 jim Exp $
+ *	$XConsortium: data.c,v 1.8 89/05/26 18:10:43 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -32,10 +30,6 @@
 #include <X11/Intrinsic.h>
 #include "ptyx.h"
 #include "data.h"
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: data.c,v 1.7 89/05/25 15:12:01 jim Exp $";
-#endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
 	{0, 0},

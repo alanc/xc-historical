@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: util.c,v 1.19 89/12/10 20:44:15 jim Exp $
+ *	$XConsortium: util.c,v 1.20 90/03/14 17:04:59 jim Exp $
  */
-
-#include <X11/copyright.h>
 
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -28,10 +26,6 @@
  */
 
 /* util.c */
-
-#ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.19 89/12/10 20:44:15 jim Exp $";
-#endif	/* lint */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
