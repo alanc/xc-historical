@@ -1,50 +1,14 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.8 93/08/20 10:41:37 mor Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.9 93/08/23 19:46:49 rws Exp $
 
 /*
  * OSF/1 shared library template
  */
 
-#ifndef SharedXlibRev
-#define SharedXlibRev 5.0
-#endif
-#ifndef SharedOldXRev
-#define SharedOldXRev 5.0
-#endif
 #define SharedOldXReqs $(XLIBONLY)
-#ifndef SharedXtRev
-#define SharedXtRev 5.0
-#endif
 #define SharedXtReqs $(XLIBONLY)
-#ifndef SharedXawRev
-#define SharedXawRev 5.0
-#endif
 #define SharedXawReqs $(XMULIB) $(XTOOLLIB) $(XLIB) -init _XawFixupVendorShell
-#ifndef SharedXmuRev
-#define SharedXmuRev 5.0
-#endif
 #define SharedXmuReqs $(XTOOLLIB) $(XLIB)
-#ifndef SharedXextRev
-#define SharedXextRev 5.0
-#endif
 #define SharedXextReqs $(XLIBONLY)
-#ifndef SharedXinputRev
-#define SharedXinputRev 5.0
-#endif
 #define SharedXinputReqs $(XLIB)
-#ifndef SharedXTestRev
-#define SharedXTestRev 1.0
-#endif
-#ifndef SharedPexRev
-#define SharedPexRev 1.0
-#endif
 #define SharedPexReqs $(XLIBONLY) -lm
-#ifndef SharedXieRev
-#define SharedXieRev 1.0
-#endif
 #define SharedXieReqs $(XLIBONLY)
-#ifndef SharedICERev
-#define SharedICERev 1.0
-#endif
-#ifndef SharedSMRev
-#define SharedSMRev 1.0
-#endif

@@ -1,45 +1,8 @@
-XCOMM $XConsortium: sv4Lib.tmpl,v 1.12 93/08/23 10:56:20 rws Exp $
+XCOMM $XConsortium: sv4Lib.tmpl,v 1.13 93/08/23 19:46:54 rws Exp $
 
 /*
  * SVR4 shared library template
  */
-
-#ifndef SharedXlibRev
-#define SharedXlibRev 5.0
-#endif
-#ifndef SharedOldXRev
-#define SharedOldXRev 5.0
-#endif
-#ifndef SharedXtRev
-#define SharedXtRev 5.0
-#endif
-#ifndef SharedXawRev
-#define SharedXawRev 5.0
-#endif
-#ifndef SharedXmuRev
-#define SharedXmuRev 5.0
-#endif
-#ifndef SharedXextRev
-#define SharedXextRev 5.0
-#endif
-#ifndef SharedXinputRev
-#define SharedXinputRev 5.0
-#endif
-#ifndef SharedXTestRev
-#define SharedXTestRev 1.0
-#endif
-#ifndef SharedPexRev
-#define SharedPexRev 1.0
-#endif
-#ifndef SharedXieRev
-#define SharedXieRev 1.0
-#endif
-#ifndef SharedICERev
-#define SharedICERev 1.0
-#endif
-#ifndef SharedSMRev
-#define SharedSMRev 1.0
-#endif
 
 /* SVR4 shared libraries are deficient in link semantics */
 XMULIBONLY = _Use(-lXmu,-L$(XMUSRC) -lXmu)
