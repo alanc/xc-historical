@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.4 91/04/08 09:31:38 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.5 91/04/08 11:50:35 rws Exp $
  */
 
 /*
@@ -103,7 +103,7 @@ Bool _XlcValidModSyntax(mods, valid_mods)
     return mods != (char *)NULL;
 }
 
-Const char *im_valid[] = {"im", (char *)NULL};
+static Const char *im_valid[] = {"im", (char *)NULL};
 
 /*ARGSUSED*/
 char *
