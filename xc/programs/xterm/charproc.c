@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.158 91/05/06 11:56:25 gildea Exp $
+ * $XConsortium: charproc.c,v 1.159 91/05/06 17:11:53 gildea Exp $
  */
 
 /*
@@ -2548,7 +2548,7 @@ HideCursor()
 }
 
 VTReset(full)
-int full;
+    Boolean full;
 {
 	register TScreen *screen = &term->screen;
 
@@ -2568,6 +2568,7 @@ int full;
 		screen->curgl = 0;
 		screen->curgr = 2;
 		screen->curss = 0;
+		FromAlternate(screen);
 		ClearScreen(screen);
 		screen->cursor_state = OFF;
 		if (term->flags & REVERSE_VIDEO)
