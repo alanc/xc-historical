@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.67 89/09/19 08:36:46 swick Exp $";
+    "$XConsortium: Resources.c,v 1.68 89/09/26 10:28:42 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -988,16 +988,20 @@ static Boolean CallSetValues (class, current, request, new, args, num_args)
         redisplay = CallSetValues(
 	  class->core_class.superclass, current, request, new, args, num_args);
     if (class->core_class.set_values != NULL)
-        redisplay |= (*class->core_class.set_values) (current, request, new);
+        redisplay |= (*class->core_class.
+		      set_values) (current, request, new, args, &num_args);
     if (class->core_class.set_values_hook != NULL)
 	redisplay |=
 	    (*class->core_class.set_values_hook) (new, args, &num_args);
     return (redisplay);
 }
 
-static Boolean CallConstraintSetValues (class, current, request, new)
+static Boolean
+CallConstraintSetValues (class, current, request, new, args, num_args)
     ConstraintWidgetClass class;
     Widget      current, request, new;
+    ArgList     args;
+    Cardinal    num_args;
 {
     Boolean redisplay = FALSE;
 
@@ -1009,11 +1013,11 @@ static Boolean CallConstraintSetValues (class, current, request, new)
                   (String *)NULL, (Cardinal *)NULL);
 	redisplay = CallConstraintSetValues(
 	    (ConstraintWidgetClass) (class->core_class.superclass),
-	    current, request, new);
+	    current, request, new, args, num_args);
     }
     if (class->constraint_class.set_values != NULL)
-        redisplay |=
-	    (*class->constraint_class.set_values) (current, request, new);
+        redisplay |= (*class->constraint_class.
+		      set_values) (current, request, new, args, &num_args);
     return (redisplay);
 }
 
@@ -1087,7 +1091,7 @@ void XtSetValues(w, args, num_args)
     /* Inform widget of changes, then inform parent of changes */
     redisplay = CallSetValues (wc, oldw, reqw, w, args, num_args);
     if (w->core.constraints != NULL) {
-	redisplay |= CallConstraintSetValues(cwc, oldw, reqw, w);
+	redisplay |= CallConstraintSetValues(cwc, oldw, reqw, w, args, num_args);
     }
 
     if (XtIsRectObj(w)) {
@@ -1122,11 +1126,11 @@ void XtSetValues(w, args, num_args)
 	if (geoReq.request_mode != 0) {
 	    do {
 		result = XtMakeGeometryRequest(w, &geoReq, &geoReply);
-		if (result != XtGeometryAlmost) {
-		    reconfigured = (result == XtGeometryYes);
+		if (result == XtGeometryYes) {
+		    reconfigured = True;
 		    break;
 		}
-		/* An almost reply.  Call widget and let it munge
+		/* An Almost or No reply.  Call widget and let it munge
 		   request, reply */
 		if (wc->core_class.set_values_almost == NULL) {
 		    XtAppWarningMsg(XtWidgetToApplicationContext(w),
