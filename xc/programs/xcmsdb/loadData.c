@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.10 94/02/07 23:20:09 rws Exp $ */
+/* $XConsortium: loadData.c,v 1.11 94/02/07 23:21:38 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -1560,10 +1560,29 @@ LoadSCCData(pDpy, screenNumber, filename, targetFormat)
 		break;
 	      case SCREEN_CLASS :
 		token1 = strtok((char*)NULL, DATA_DELIMS);
+		token2 = strtok((char*)NULL, DATA_DELIMS);
 		if ((token1 == (char*)NULL)
 			|| ((VisualFlag = SCScrnClassOf(token1)) == -1)) {
 		    closeS (stream, CorrectionHead);
 		    return (0);
+		}
+		/*include code to handle screen number input*/
+		if (token2 != (char*)NULL) {
+		    screenNumber = atoi(token2);
+
+		    if (screenNumber < 0) {
+			fprintf(stderr,"Invalid Screen Number %d\n", 
+				screenNumber);
+		    }
+		    else {
+			root = RootWindow(pDpy, screenNumber);
+			if (!root) {
+	/* if no root window is available then return an error */
+			    fprintf(stderr,
+				    "Could not open root window supplied.\n ");
+			    return (0);
+			}
+		    }
 		}
 		break;
 	      case COLORIMETRIC_BEGIN :

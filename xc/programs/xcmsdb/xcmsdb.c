@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.10 94/02/07 23:20:55 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.11 94/02/07 23:21:58 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -341,6 +341,16 @@ QuerySCCDataRGB(dpy, root)
     unsigned long nitems, nbytes_return;
     Atom MatricesAtom, CorrectAtom;
     VisualID visualID;
+    XVisualInfo vinfo_template, *vinfo_ret;
+    int nvis;
+    static char *visual_strings[] = {
+	"StaticGray",
+	"GrayScale",
+	"StaticColor",
+	"PseudoColor",
+	"TrueColor",
+	"DirectColor"
+	};
 
     /*
      * Get Matrices
@@ -366,7 +376,8 @@ QuerySCCDataRGB(dpy, root)
 		XDCCC_MATRIX_ATOM_NAME);
     } else {
 	pChar = property_return;
-	printf ("\nQuerying property %s\n\n", XDCCC_MATRIX_ATOM_NAME);
+	printf ("Screen: %d\n", DefaultScreen(dpy));
+	printf ("Querying property %s\n", XDCCC_MATRIX_ATOM_NAME);
 	printf ("\tXYZtoRGB matrix :\n");
 	for (i = 0; i < 3; i++) {
 	    printf ("\t");
@@ -473,12 +484,24 @@ QuerySCCDataRGB(dpy, root)
 	     * Get VisualID
 	     */
 	    visualID = _XcmsGetElement(format, &pChar, &nitems);
+	    /* add the depth, class, and bits info in output */
+	    vinfo_template.visualid = visualID;
+	    vinfo_ret = XGetVisualInfo(dpy, VisualIDMask, &vinfo_template, 
+				       &nvis);
 	    while (count--) {
 		visualID = visualID << format;
 		visualID |= _XcmsGetElement(format, &pChar, &nitems);
 	    }
 
+	    if (vinfo_ret != NULL) {
+		printf 
+		 ("\n\tVisualID: 0x%lx class: %s depth: %d bits_per_rgb: %d\n",
+		  visualID, visual_strings[vinfo_ret->class],
+		  vinfo_ret->depth, vinfo_ret->bits_per_rgb);
+	    }
+	    else
 	    printf ("\n\tVisualID: 0x%lx\n", visualID);
+	    XFree(vinfo_ret);
 	    cType = _XcmsGetElement(format, &pChar, &nitems);
 	    printf ("\ttype: %d\n", cType);
 	    nTables = _XcmsGetElement(format, &pChar, &nitems);
