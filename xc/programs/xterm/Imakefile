@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.58 92/05/28 13:10:03 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.59 92/10/18 11:55:46 rws Exp $
 XCOMM
 XCOMM                         Attention xterm porters
 XCOMM
@@ -85,7 +85,7 @@ LDRESUME = -Bdynamic
 install:: xterm
 	MakeDir($(DESTDIR)$(BINDIR))
 	$(RM) xterm.inst
-	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) -lXaw -lXmu -lXt -lXext -lX11 $(LDRESUME) $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
+	$(CC) -o xterm.inst $(OBJS1) $(LDOPTIONS) $(LDOVERRIDE) $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(LDRESUME) $(LDLIBS) $(TERMCAPLIB) $(PTYLIB) $(EXTRA_LOAD_FLAGS)
 	$(INSTALL) -c $(INSTPGMFLAGS) $(INSTUIDFLAGS) xterm.inst $(DESTDIR)$(BINDIR)/xterm
 	$(RM) xterm.inst
 #else
