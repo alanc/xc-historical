@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.68 90/12/13 11:43:52 dave Exp $
+ * $XConsortium: twm.h,v 1.69 91/01/09 17:12:38 rws Exp $
  *
  * twm include file
  *
@@ -289,8 +289,12 @@ typedef struct TwmWindow
 #define TBPM_QUESTION ":question"	/* name of unknown titlebar pixmap */
 #define TBPM_MENU ":menu"	/* name of titlebar pixmap for menus */
 
+#if __STDC__ && !defined(NOSTDHDRS)
+#include <stdlib.h>
+#else
 extern char *malloc(), *calloc(), *realloc(), *getenv();
 extern void free();
+#endif
 extern void Reborder();
 extern SIGNAL_T Done();
 void ComputeCommonTitleOffsets();
