@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.39 88/02/23 19:37:17 rws Exp $ */
+/* $XConsortium: globals.c,v 1.40 88/09/06 15:41:08 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -85,6 +85,6 @@ TimeStamp currentTime;
 
 char *display;
 
-int TimeOutValue = DEFAULT_TIMEOUT;
+long TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
 int	argcGlobal;
 char	**argvGlobal;
