@@ -1,6 +1,5 @@
 char rcsid[] =
-	"$XConsortium$";
-/*	"oldHeader: patch.c,v 2.0.2.0 90/05/01 22:17:50 davison Locked $"; */
+	"$Header: patch.c,v 2.0.2.0 90/05/01 22:17:50 davison Locked $";
 
 /* patch - a program to apply diffs to original files
  *
@@ -9,6 +8,7 @@ char rcsid[] =
  * This program may be copied as long as you don't try to make any
  * money off of it, or pretend that you wrote it.
  *
+ * $Log:	patch.c,v $
  * Revision 2.0.2.0  90/05/01  22:17:50  davison
  * patch12u: unidiff support added
  * 
@@ -143,7 +143,9 @@ char **argv;
     for (i = 0; i<MAXFILEC; i++)
 	filearg[i] = Nullch;
 
+#ifndef WIN32
     myuid = getuid();
+#endif
 
     /* Cons up the names of the temporary files.  */
     {
@@ -209,11 +211,13 @@ char **argv;
 	if (outname == Nullch)
 	    outname = savestr(filearg[0]);
     
+#ifndef WIN32
 	/* for ed script just up and do it and exit */
 	if (diff_type == ED_DIFF) {
 	    do_ed_script();
 	    continue;
 	}
+#endif
     
 	/* initialize the patched file */
 	if (!skip_rest_of_patch)
@@ -500,9 +504,11 @@ get_some_switches()
 		Sprintf(not_defined, "#ifndef %s\n", s);
 		Sprintf(end_defined, "#endif /* %s */\n", s);
 		break;
+#ifndef WIN32
 	    case 'e':
 		diff_type = ED_DIFF;
 		break;
+#endif
 	    case 'E':
 		remove_empty_files = TRUE;
 		break;
@@ -794,7 +800,11 @@ void
 init_output(name)
 char *name;
 {
+#ifndef WIN32
     ofp = fopen(name, "w");
+#else
+    ofp = fopen(name, "wb");
+#endif
     if (ofp == Nullfp)
 	pfatal2("can't create %s", name);
 }
@@ -805,7 +815,11 @@ void
 init_reject(name)
 char *name;
 {
+#ifndef WIN32
     rejfp = fopen(name, "w");
+#else
+    rejfp = fopen(name, "wb");
+#endif
     if (rejfp == Nullfp)
 	pfatal2("can't create %s", name);
 }

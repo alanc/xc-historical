@@ -1,6 +1,3 @@
-
-/* $XConsortium: util.c,v 3.0 94/09/09 20:04:28 kaleb Exp $ */
-
 #include "EXTERN.h"
 #include "common.h"
 #include "INTERN.h"
@@ -92,6 +89,7 @@ char *from, *to;
 	if (debug & 4)
 	    say3("Moving %s to %s.\n", to, bakname);
 #endif
+#ifndef WIN32
 	if (link(to, bakname) < 0) {
 	    /* Maybe `to' is a symlink into a different file system.
 	       Copying replaces the symlink with a file; using rename
@@ -114,12 +112,14 @@ char *from, *to;
 	    Close(tofd);
 	    Close(bakfd);
 	}
+#endif
 	while (unlink(to) >= 0) ;
     }
 #ifdef DEBUGGING
     if (debug & 4)
 	say3("Moving %s to %s.\n", from, to);
 #endif
+#ifndef WIN32
     if (link(from, to) < 0) {		/* different file system? */
 	Reg4 int tofd;
 	
@@ -139,6 +139,9 @@ char *from, *to;
 	Close(tofd);
     }
     Unlink(from);
+#else
+    rename (from, to);
+#endif
     return 0;
 }
 
@@ -250,6 +253,7 @@ ask(pat,arg1,arg2,arg3)
 char *pat;
 long arg1,arg2,arg3;
 {
+#ifndef WIN32
     int ttyfd;
     int r;
     bool tty2 = isatty(2);
@@ -286,6 +290,9 @@ long arg1,arg2,arg3;
 	buf[r] = '\0';
     if (!tty2)
 	say1(buf);
+#else
+    buf[0] = '\n'; buf[1] = '\0';
+#endif
 }
 #endif /* lint */
 
@@ -303,12 +310,14 @@ int reset;
 #endif
 
     if (!reset) {
+#ifndef WIN32
 	hupval = signal(SIGHUP, SIG_IGN);
 	if (hupval != SIG_IGN)
 #ifdef VOIDSIG
 	    hupval = my_exit;
 #else
 	    hupval = (int(*)())my_exit;
+#endif
 #endif
 	intval = signal(SIGINT, SIG_IGN);
 	if (intval != SIG_IGN)
@@ -318,7 +327,9 @@ int reset;
 	    intval = (int(*)())my_exit;
 #endif
     }
+#ifndef WIN32
     Signal(SIGHUP, hupval);
+#endif
     Signal(SIGINT, intval);
 #endif
 }
@@ -329,7 +340,9 @@ void
 ignore_signals()
 {
 #ifndef lint
+#ifndef WIN32
     Signal(SIGHUP, SIG_IGN);
+#endif
     Signal(SIGINT, SIG_IGN);
 #endif
 }
@@ -377,7 +390,11 @@ bool striplast;
 	    *s++ = ' ';
 	    strcpy(s, tmpbuf);
 	}
+#ifndef WIN32
 	*dirv[i] = '/';
+#else
+	*dirv[i] = '\\';
+#endif
     }
     if (s != buf)
 	system(buf);

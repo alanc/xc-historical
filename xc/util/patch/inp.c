@@ -1,8 +1,12 @@
-/* $XConsortium$
- * 
+/* $Header: inp.c,v 3.1 94/03/29 13:39:15 gildea Exp $
+ *
+ * $Log:	inp.c,v $
  * Revision 3.1  94/03/29  13:39:15  gildea
  * check that a patch that creates a file has not already been applied.
  * version "XC1"
+ * 
+ * Revision 3.0  88/06/03  15:06:13  lwall
+ * patch 2.0.12u9
  * 
  * Revision 2.0.1.1  88/06/03  15:06:13  lwall
  * patch10: made a little smarter about sccs files
@@ -100,6 +104,7 @@ char *filename;
 	if (filestat.st_size != 0)
 	    fatal2("supposedly new file \"%s\" already exists\n", filename);
     }
+#ifndef WIN32
     /* For nonexistent or read-only files, look for RCS or SCCS versions.  */
     if (statfailed
 	|| (! output_elsewhere
@@ -158,6 +163,7 @@ char *filename;
 		fatal3("can't check out file %s from %s\n", filename, cs);
 	}
     }
+#endif
     filemode = filestat.st_mode;
     if (!S_ISREG(filemode))
 	fatal2("%s is not a normal file--can't patch\n", filename);
@@ -175,7 +181,11 @@ char *filename;
 #endif
     if (i_womp == Nullch)
 	return FALSE;
+#ifndef WIN32
     if ((ifd = open(filename, 0)) < 0)
+#else
+    if ((ifd = open(filename, _O_RDONLY | _O_BINARY)) < 0)
+#endif
 	pfatal2("can't open file %s", filename);
 #ifndef lint
     if (read(ifd, i_womp, (int)i_size) != i_size) {
@@ -257,9 +267,17 @@ char *filename;
     Reg4 bool found_revision = (revision == Nullch);
 
     using_plan_a = FALSE;
+#ifndef WIN32
     if ((ifp = fopen(filename, "r")) == Nullfp)
+#else
+    if ((ifp = fopen(filename, "rb")) == Nullfp)
+#endif
 	pfatal2("can't open file %s", filename);
+#ifndef WIN32
     if ((tifd = creat(TMPINNAME, 0666)) < 0)
+#else
+    if ((tifd = open(TMPINNAME, _O_CREAT | _O_TRUNC | _O_BINARY, _S_IWRITE)) < 0)
+#endif
 	pfatal2("can't open file %s", TMPINNAME);
     while (fgets(buf, sizeof buf, ifp) != Nullch) {
 	if (revision != Nullch && !found_revision && rev_in_string(buf))
