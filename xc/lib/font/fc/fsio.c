@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.30 93/09/22 16:59:24 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.31 93/09/23 17:08:46 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -30,7 +30,7 @@
 #ifdef WIN32
 #define _WILLWINSOCK_
 #endif
-#include	<X11/Xos.h>
+#include	<X11/Xtrans.h>
 
 #ifdef NCD
 #include	<fcntl.h>
@@ -86,61 +86,6 @@ FdSet _fs_fd_mask;
 
 int  _fs_wait_for_readable();
 
-static int
-_fs_name_to_address(servername, inaddr)
-    char       *servername;
-    struct sockaddr_in *inaddr;
-{
-    int         servernum = 0;
-    char        hostname[256];
-    char       *sp;
-    unsigned long hostinetaddr;
-    struct hostent *hp;
-
-    /* XXX - do any service name lookup to get a hostname */
-
-    (void) strncpy(hostname, servername, sizeof(hostname));
-
-    /* get port */
-    if ((sp = strchr(hostname, ':')) == NULL)
-	return -1;
-
-    *(sp++) = '\0';
-
-    /* missing server number */
-    if (*sp == '\0')
-	return -1;
-    servernum = atoi(sp);
-
-    /* find host address */
-    sp = hostname;
-    if (!strncmp(hostname, "tcp/", 4)) {
-	sp += 4;
-    }
-/* XXX -- this is all TCP specific.  other transports need to hack */
-    hostinetaddr = inet_addr(sp);
-    if (hostinetaddr == -1) {
-	if ((hp = gethostbyname(sp)) == NULL) {
-	    /* no such host */
-	    errno = EINVAL;
-	    return -1;
-	}
-	inaddr->sin_family = hp->h_addrtype;
-	memcpy(&inaddr->sin_addr, hp->h_addr,
-	       sizeof(inaddr->sin_addr));
-    } else {
-	inaddr->sin_addr.s_addr = hostinetaddr;
-	inaddr->sin_family = AF_INET;
-    }
-    inaddr->sin_port = servernum;
-    inaddr->sin_port = htons(inaddr->sin_port);
-#ifdef BSD44SOCKETS
-    inaddr->sin_len = sizeof(*inaddr);
-#endif
-
-    return 1;
-}
-
 #ifdef SIGNALRETURNSINT
 #define SIGNAL_T int
 #else
@@ -155,76 +100,54 @@ _fs_alarm(foo)
     return;
 }
 
-static int
+static XtransConnInfo
 _fs_connect(servername, timeout)
     char       *servername;
     int         timeout;
 {
-    int         fd;
-    struct sockaddr *addr;
-    struct sockaddr_in inaddr;
+    XtransConnInfo trans_conn;		/* transport connection object */
+    int         ret = -1;
 #ifdef SIGALRM
     unsigned    oldTime;
 
     SIGNAL_T(*oldAlarm) ();
 #endif
-    int         ret;
-#ifdef WIN32
-    static WSADATA wsadata;
-#endif
 
-#ifdef WIN32
-    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
-	return -1;
-#endif
-    if (_fs_name_to_address(servername, &inaddr) < 0)
-	return -1;
-
-    addr = (struct sockaddr *) & inaddr;
-    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
-	return -1;
+    /*
+     * Open the network connection.
+     */
+    if( (trans_conn=_FONTTransOpenCOTSClient(servername)) == NULL )
+	{
+	return (NULL);
+	}
 
 #ifdef SIGALRM
     oldTime = alarm((unsigned) 0);
     oldAlarm = signal(SIGALRM, _fs_alarm);
     alarm((unsigned) timeout);
 #endif
-    ret = connect(fd, addr, sizeof(struct sockaddr_in));
+
+    ret = _FONTTransConnect(trans_conn,servername);
+
 #ifdef SIGALRM
     alarm((unsigned) 0);
     signal(SIGALRM, oldAlarm);
     alarm(oldTime);
 #endif
-    if (ret == -1) {
-	(void) close(fd);
-	return -1;
-    }
+
+    if (ret < 0)
+	{
+	_FONTTransClose(trans_conn);
+	return (NULL);
+	}
 
     /*
      * Set the connection non-blocking since we use select() to block.
      */
-    /* ultrix reads hang on Unix sockets, hpux reads fail */
-#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux) && !defined(AIXV3) && !defined(uniosu))
-    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
-#else
-#ifdef FIOSNBIO
-    {
-	int arg = 1;
-	ioctl (fd, FIOSNBIO, &arg);
-    }
-#else
-#if (defined(AIXV3) || defined(uniosu) || defined(WIN32)) && defined(FIONBIO)
-    {
-	int arg;
-	arg = 1;
-	ioctl(fd, FIONBIO, &arg);
-    }
-#else
-    (void) fcntl (fd, F_SETFL, FNDELAY);
-#endif
-#endif
-#endif
-    return fd;
+
+    _FONTTransSetOption(trans_conn, TRANS_NONBLOCKING, 1);
+
+    return trans_conn;
 }
 
 static int  generationCount;
@@ -250,9 +173,10 @@ _fs_setup_connection(conn, servername, timeout)
     FSFpeAltPtr alts;
     int         nalts;
 
-    conn->fs_fd = _fs_connect(servername, 5);
-    if (conn->fs_fd < 0)
+    if ((conn->trans_conn = _fs_connect(servername, 5)) == NULL)
 	return FALSE;
+
+    conn->fs_fd = _FONTTransGetConnectionNumber (conn->trans_conn);
 
     conn->generation = ++generationCount;
 
@@ -288,7 +212,7 @@ _fs_setup_connection(conn, servername, timeout)
 	alts = (FSFpeAltPtr) xalloc(nalts * sizeof(FSFpeAltRec) +
 				    setuplength);
 	if (!alts) {
-	    close(conn->fs_fd);
+	    _FONTTransClose(conn->trans_conn);
 	    errno = ENOMEM;
 	    return FALSE;
 	}
@@ -316,7 +240,7 @@ _fs_setup_connection(conn, servername, timeout)
     setuplength = rep.auth_len << 2;
     if (setuplength &&
 	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) {
-	close(conn->fs_fd);
+	_FONTTransClose(conn->trans_conn);
 	errno = ENOMEM;
 	return FALSE;
     }
@@ -326,7 +250,7 @@ _fs_setup_connection(conn, servername, timeout)
     }
     if (rep.status != AuthSuccess) {
 	xfree(auth_data);
-	close(conn->fs_fd);
+	_FONTTransClose(conn->trans_conn);
 	errno = EPERM;
 	return FALSE;
     }
@@ -338,7 +262,7 @@ _fs_setup_connection(conn, servername, timeout)
     if ((vendor_string = (char *)
 	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) {
 	xfree(auth_data);
-	close(conn->fs_fd);
+	_FONTTransClose(conn->trans_conn);
 	errno = ENOMEM;
 	return FALSE;
     }
@@ -427,7 +351,8 @@ _fs_read(conn, data, size)
 	return 0;
     }
     ESET(0);
-    while ((bytes_read = read(conn->fs_fd, data, (int) size)) != size) {
+    while ((bytes_read = _FONTTransRead(conn->trans_conn,
+	data, (int) size)) != size) {
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
@@ -468,7 +393,8 @@ _fs_write(conn, data, size)
 	return 0;
     }
     ESET(0);
-    while ((bytes_written = write(conn->fs_fd, data, (int) size)) != size) {
+    while ((bytes_written = _FONTTransWrite(conn->trans_conn,
+	data, (int) size)) != size) {
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
@@ -532,7 +458,7 @@ _fs_data_ready(conn)
 {
     long        readable;
 
-    if (BytesReadable(conn->fs_fd, &readable) < 0)
+    if (_FONTTransBytesReadable(conn->trans_conn, &readable) < 0)
 	return -1;
     return readable;
 }
