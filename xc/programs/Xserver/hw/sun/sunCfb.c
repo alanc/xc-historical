@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.1 93/08/08 18:00:40 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.2 93/08/08 18:14:35 kaleb Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -256,7 +256,6 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
     char    	  **argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
-    sunSupportsDepth8 = TRUE;
     sunFbs[screen].EnterLeave = NoopDDA;
     return sunInitCommon (screen, pScreen, (off_t) CG3_MMAP_OFFSET,
 	cfbScreenInit, CGScreenInit,
@@ -352,7 +351,6 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 0xFF;
 	pPrivate = GetScreenPrivate (pScreen);
 	pPrivate->UpdateColormap = CG2UpdateColormap;
-	sunSupportsDepth8 = TRUE;
     }
     return ret;
 }
@@ -391,7 +389,6 @@ Bool sunCG4Init (screen, pScreen, argc, argv)
 {
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = CG4Switch;
-    sunSupportsDepth8 = TRUE;
     return sunInitCommon (screen, pScreen, (off_t) 0,
 	cfbScreenInit, CGScreenInit,
 	cfbCreateDefColormap, sunSaveScreen, (int) ((CG4Ptr) 0)->cpixel);
@@ -425,7 +422,6 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 #undef FBSIZE
     }
     sunFbs[screen].EnterLeave = NoopDDA;
-    sunSupportsDepth8 = TRUE;
     if (!cfbSetupScreen (pScreen, 
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 
