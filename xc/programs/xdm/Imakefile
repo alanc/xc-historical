@@ -8,12 +8,21 @@
 #endif
 
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-           SRCS = buf.c daemon.c display.c displaylist.c dm.c error.c \
+          SRCS1 = buf.c daemon.c display.c displaylist.c dm.c error.c \
 		  file.c greet.c pseudoreset.c resource.c \
 		  session.c socket.c verify.c Login.c
-           OBJS = buf.o daemon.o display.o displaylist.o dm.o error.o \
+          OBJS1 = buf.o daemon.o display.o displaylist.o dm.o error.o \
 		  file.o greet.o pseudoreset.o resource.o \
 		  session.o socket.o verify.o Login.o
+          SRCS2 = xdmshell.c 
+          OBJS2 = xdmshell.o 
+
+#ifdef MacIIArchitecture
+       PROGRAMS = xdm xdmshell
+XDMSHELLINSTFLAGS = $(INSTUIDFLAGS)
+#else
+       PROGRAMS = xdm
+#endif
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
@@ -25,5 +34,9 @@ $(XDMDIR):
 	-mkdir $(XDMDIR)
 #endif
 
-ComplexProgramTarget(xdm)
+ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 
+#ifdef MacIIArchitecture
+SingleProgramTarget(xdmshell,$(OBJS2),,)
+InstallProgramWithFlags(xdmshell,$(BINDIR), $(XDMSHELLINSTFLAGS))
+#endif
