@@ -1,4 +1,4 @@
-/* $XConsortium: miLight.h,v 5.1 91/02/16 09:54:54 rws Exp $ */
+/* $XConsortium: miLight.h,v 5.2 91/05/01 14:19:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -150,9 +150,9 @@ SOFTWARE.
     temp = 2.0 * (n_dot_l);			\
     n = (ddFLOAT *) (normal);			\
     l = (ddFLOAT *) (light);			\
-    *(r++) = temp * (*(n++) - *(l++));		\
-    *(r++) = temp * (*(n++) - *(l++));		\
-    *(r  ) = temp * (*(n  ) - *(l  ));		\
+    *(r++) = temp * (*(n++)) - *(l++);		\
+    *(r++) = temp * (*(n++)) - *(l++);		\
+    *(r  ) = temp * (*(n  )) - *(l  );		\
 }
 
 
