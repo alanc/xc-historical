@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.5 90/02/12 15:30:03 jim Exp $
+ * $XConsortium: Panner.c,v 1.6 90/02/12 15:42:16 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,8 +28,7 @@
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleP.h>
-/* #include <X11/Xaw/PannerP.h> */
-#include "PannerP.h"
+#include <X11/Xaw/PannerP.h>
 
 
 static char defaultTranslations[] = 
@@ -620,8 +619,12 @@ static void ActionNotify (gw, event, params, num_params)
 	XawPannerReport rep;
 
 	Redisplay (gw, (XEvent*) NULL, (Region) NULL);
-	rep.x = pw->panner.slider_x;
-	rep.y = pw->panner.slider_y;
+	rep.slider_x = pw->panner.slider_x;
+	rep.slider_y = pw->panner.slider_y;
+	rep.slider_width = pw->panner.slider_width;
+	rep.slider_height = pw->panner.slider_height;
+	rep.canvas_width = pw->panner.canvas_width;
+	rep.canvas_height = pw->panner.canvas_height;
 	XtCallCallbackList (gw, pw->panner.callbacks, (caddr_t) &rep);
     }
 }

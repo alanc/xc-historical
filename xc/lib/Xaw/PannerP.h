@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.4 90/02/12 14:58:07 jim Exp $
+ * $XConsortium: PannerP.h,v 1.5 90/02/12 15:30:08 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,8 +26,7 @@
 #ifndef _XawPannerP_h
 #define _XawPannerP_h
 
-/* #include <X11/Xaw/Panner.h> */
-#include "Panner.h"
+#include <X11/Xaw/Panner.h>
 
 typedef struct {			/* new fields in widget class */
     int dummy;
