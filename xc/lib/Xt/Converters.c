@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.22 88/02/14 11:57:20 rws Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.23 88/02/14 14:53:02 rws Exp $";
 #endif lint
 
 /*
@@ -35,10 +35,10 @@ static char rcsid[] = "$Header: Converters.c,v 1.22 88/02/14 11:57:20 rws Exp $"
 #include	<X11/Xutil.h>
 #include	<X11/Atoms.h>
 #include	<stdio.h>
-#include	<sys/dir.h>
 #include	<X11/cursorfont.h>
 #include	<X11/Convert.h>
 #include	<X11/Quarks.h>
+#include	<sys/param.h>		/* just to get MAXPATHLEN */
 
 #define	done(address, type) \
 	{ (*toVal).size = sizeof(type); (*toVal).addr = (caddr_t) address; }
@@ -379,7 +379,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     XrmName app_name;
     XrmClass app_class;
     static char* bitmap_file_path = NULL;
-    char filename[MAXNAMLEN+5];
+    char filename[MAXPATHLEN];
     Pixmap source, mask;
     static XColor bgColor = {0, 0, 0, 0};
     static XColor fgColor = {0, ~0, ~0, ~0};

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.110 88/02/14 11:56:46 rws Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.111 88/02/14 14:53:33 rws Exp $";
 #endif
 
 /*
@@ -29,7 +29,7 @@ static char rcsid[] = "$Header: Initialize.c,v 1.110 88/02/14 11:56:46 rws Exp $
 #include <pwd.h>
 #include <stdio.h>
 #include <X11/Xos.h>
-#include <sys/param.h>
+#include <sys/param.h>			/* just to get MAXPATHLEN */
 
  /* Xlib definitions  */
  /* things like Window, Display, XEvent are defined herein */
