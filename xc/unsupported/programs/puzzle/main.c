@@ -82,7 +82,7 @@ Window 		PuzzleRoot, TitleWindow=0, TileWindow,
 char		*ProgName;
 
 char		*TitleFontName    = "8x13";
-char		*TileFontName     = "vtbold";
+char		*TileFontName     = "8x13bold";
 
 XFontStruct	*TitleFontInfo,
 		*TileFontInfo;
