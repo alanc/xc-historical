@@ -67,11 +67,12 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    nmiddle;
     RROP_DECLARE
 
-    if (mode == CoordModePrevious || shape != Convex)
+    if (mode == CoordModePrevious)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, count, ptsIn);
 	return;
     }
+    
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
     origin = *((int *) &pDrawable->x);
     origin -= (origin & 0x8000) << 1;
@@ -84,19 +85,66 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     maxy = 0;
     vertex2p = (int *) ptsIn;
     endp = vertex2p + count;
-    while (count--)
+    if (shape == Convex)
     {
-	c = *vertex2p;
-	clip |= (c - vertex1) | (vertex2 - c);
-	c = intToY(c);
-	if (c < y) 
-	{
-	    y = c;
-	    vertex1p = vertex2p;
-	}
-	vertex2p++;
-	if (c > maxy)
-	    maxy = c;
+    	while (count--)
+    	{
+	    c = *vertex2p;
+	    clip |= (c - vertex1) | (vertex2 - c);
+	    c = intToY(c);
+	    if (c < y) 
+	    {
+	    	y = c;
+	    	vertex1p = vertex2p;
+	    }
+	    vertex2p++;
+	    if (c > maxy)
+	    	maxy = c;
+    	}
+    }
+    else
+    {
+	int yFlip = 0;
+	dx1 = 1;
+	x2 = -1;
+	x1 = -1;
+    	while (count--)
+    	{
+	    c = *vertex2p;
+	    clip |= (c - vertex1) | (vertex2 - c);
+	    c = intToY(c);
+	    if (c < y) 
+	    {
+	    	y = c;
+	    	vertex1p = vertex2p;
+	    }
+	    vertex2p++;
+	    if (c > maxy)
+	    	maxy = c;
+	    if (c == x1)
+		continue;
+	    if (dx1 > 0)
+	    {
+		if (x2 < 0)
+		    x2 = c;
+		else
+		    dx2 = dx1 = (c - x1) >> 31;
+	    }
+	    else
+		if ((c - x1) >> 31 != dx1) 
+		{
+		    dx1 = ~dx1;
+		    yFlip++;
+		}
+	    x1 = c;
+       	}
+	x1 = (x2 - c) >> 31;
+	if (x1 != dx1)
+	    yFlip++;
+	if (x1 != dx2)
+	    yFlip++;
+	if (yFlip != 2) 
+	    clip = 0x8000;
     }
     if (y == maxy)
 	return;
@@ -163,7 +211,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 		    vertex1p = endp;
 	    	c = *--vertex1p;
 	    	Setup (c,x1,vertex1,dx1,dy1,e1,sign1,step1)
-	    } while (y == intToY(vertex1));
+	    } while (y >= intToY(vertex1));
 	    h = dy1;
 	}
 	else
@@ -179,7 +227,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	if (vertex2p == endp)
 		    vertex2p = (int *) ptsIn;
 	    	Setup (c,x2,vertex2,dx2,dy2,e2,sign2,step2)
-	    } while (y == intToY(vertex2));
+	    } while (y >= intToY(vertex2));
 	    if (dy2 < h)
 		h = dy2;
 	}
