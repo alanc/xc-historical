@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.98 89/10/17 17:04:20 jim Exp $
+ * $XConsortium: charproc.c,v 1.99 89/10/17 18:22:04 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.98 89/10/17 17:04:20 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.99 89/10/17 18:22:04 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2035,7 +2035,7 @@ XSetWindowAttributes *values;
 	if (!try_new_font (screen, term->misc.f_n, term->misc.f_b, False)) {
 	    if (XmuCompareISOLatin1(term->misc.f_n, "fixed") != 0) {
 		fprintf (stderr, 
-		     "%s:  unable to open font \"%s\", trying \"fixed\"\n",
+		     "%s:  unable to open font \"%s\", trying \"fixed\"....\n",
 		     xterm_name, term->misc.f_n);
 		(void) try_new_font (screen, "fixed", NULL, False);
 	    }
@@ -2149,57 +2149,7 @@ XSetWindowAttributes *values;
 		InputOutput, CopyFromParent,	
 		*valuemask|CWBitGravity, values);
 
-	/*
-	 * Let's see, there are three things that have "color":
-	 *
-	 *     background
-	 *     text
-	 *     cursorblock
-	 *
-	 * And, there are four situation when drawing a cursor, if we decide
-	 * that we like have a solid block of cursor color with the letter
-	 * that it is highlighting shown in the background color to make it
-	 * stand out:
-	 *
-	 *     selected window, normal video - background on cursor
-	 *     selected window, reverse video - foreground on cursor
-	 *     unselected window, normal video - foreground on background
-	 *     unselected window, reverse video - background on foreground
-	 *
-	 * Since the last two are really just normalGC and reverseGC, we only
-	 * need two new GC's.  Under monochrome, we get the same effect as
-	 * above by setting cursor color to foreground.
-	 */
-
-	{
-	    unsigned long cc = screen->cursorcolor;
-	    unsigned long fg = screen->foreground;
-	    unsigned long bg = term->core.background_pixel;
-
-	    mask = (GCForeground | GCBackground);
-	    if (cc != fg && cc != bg) {
-		/* we have a colored cursor */
-		xgcv.foreground = fg;
-		xgcv.background = cc;
-		screen->cursorGC = XtGetGC ((Widget) term, mask, &xgcv);
-
-		if (screen->always_highlight) {
-		    screen->reversecursorGC = (GC) 0;
-		    screen->cursoroutlineGC = (GC) 0;
-		} else {
-		    xgcv.foreground = bg;
-		    xgcv.background = cc;
-		    screen->reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
-		    xgcv.foreground = cc;
-		    xgcv.background = bg;
-		    screen->cursoroutlineGC = XtGetGC ((Widget) term, mask, &xgcv);
-		}
-	    } else {
-		screen->cursorGC = (GC) 0;
-		screen->reversecursorGC = (GC) 0;
-		screen->cursoroutlineGC = (GC) 0;
-	    }
-	}
+	set_cursor_gcs (screen);
 
 	/* Reset variables used by ANSI emulation. */
 
@@ -2665,6 +2615,7 @@ int try_new_font (screen, nfontname, bfontname, doresize)
     screen->fnt_bold = bfs;
     screen->fnt_bold = screen->fnt_norm;
     screen->enbolden = (nfs == bfs);
+    set_cursor_gcs (screen);
     update_font_info (screen, doresize);
    /*
      * XXX - need to resize and redisplay
@@ -2728,4 +2679,70 @@ set_vt_box (screen)
 	(vp++)->x = -(FontWidth(screen) - 1);
 	vp->y = -(FontHeight(screen) - 1);
 	screen->box = VTbox;
+}
+
+
+set_cursor_gcs (screen)
+    TScreen *screen;
+{
+    XGCValues xgcv;
+    unsigned long mask;
+    unsigned long cc = screen->cursorcolor;
+    unsigned long fg = screen->foreground;
+    unsigned long bg = term->core.background_pixel;
+    GC new_cursorGC = NULL, new_reversecursorGC = NULL;
+    GC new_cursoroutlineGC = NULL;
+
+    /*
+     * Let's see, there are three things that have "color":
+     *
+     *     background
+     *     text
+     *     cursorblock
+     *
+     * And, there are four situation when drawing a cursor, if we decide
+     * that we like have a solid block of cursor color with the letter
+     * that it is highlighting shown in the background color to make it
+     * stand out:
+     *
+     *     selected window, normal video - background on cursor
+     *     selected window, reverse video - foreground on cursor
+     *     unselected window, normal video - foreground on background
+     *     unselected window, reverse video - background on foreground
+     *
+     * Since the last two are really just normalGC and reverseGC, we only
+     * need two new GC's.  Under monochrome, we get the same effect as
+     * above by setting cursor color to foreground.
+     */
+
+    xgcv.font = screen->fnt_norm->fid;
+    mask = (GCForeground | GCBackground | GCFont);
+    if (cc != fg && cc != bg) {
+	/* we have a colored cursor */
+	xgcv.foreground = fg;
+	xgcv.background = cc;
+	new_cursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+
+	if (screen->always_highlight) {
+	    new_reversecursorGC = (GC) 0;
+	    new_cursoroutlineGC = (GC) 0;
+	} else {
+	    xgcv.foreground = bg;
+	    xgcv.background = cc;
+	    new_reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+	    xgcv.foreground = cc;
+	    xgcv.background = bg;
+	    new_cursoroutlineGC = XtGetGC ((Widget) term, mask, &xgcv);
+		}
+    } else {
+	new_cursorGC = (GC) 0;
+	new_reversecursorGC = (GC) 0;
+	new_cursoroutlineGC = (GC) 0;
+    }
+    if (screen->cursorGC) XtReleaseGC (term, screen->cursorGC);
+    if (screen->reversecursorGC) XtReleaseGC (term, screen->reversecursorGC);
+    if (screen->cursoroutlineGC) XtReleaseGC (term, screen->cursoroutlineGC);
+    screen->cursorGC = new_cursorGC;
+    screen->reversecursorGC = new_reversecursorGC;
+    screen->cursoroutlineGC = new_cursoroutlineGC;
 }
