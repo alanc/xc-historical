@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.23 89/11/28 12:22:37 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.24 89/11/28 14:18:04 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -328,9 +328,7 @@ XtIntervalId   *id;
 	if (ctx->notify == NULL) XtFree((char *)incr->value);
 	XtFree((char *)incr); 
      }
-    /* should we really call the owner's notify proc? the requestor
-       hasn't received it, but we are done with it; owner needs
-       the chance to free it */
+    /* the requestor hasn't received it, but owner needs to free it anyway */
     if (rec->notify) 
 	if (ctx->incremental) {
 	    XtRequestId req =
