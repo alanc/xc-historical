@@ -85,15 +85,15 @@ Intrinsics\fP for each widget's list of settable resources.
 .ta .5i 1.0i 1.5i 2.0i
 xedit - Xedit
 	paned - Paned
-		buttons       - Paned
-			quit     - Command
-			save     - Command
-			load     - Command
+		buttons - Paned
+			quit - Command
+			save - Command
+			load - Command
 			filename - Text
-		bc_label      - Label
+		bc_label - Label
 		messageWindow - Text
-		labelWindow   - Label
-		editWindow    - Text
+		labelWindow - Label
+		editWindow - Text
 .fi
 .sp
 .SH ENVIRONMENT
