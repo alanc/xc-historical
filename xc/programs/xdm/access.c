@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.5 91/01/10 11:05:15 rws Exp $
+ * $XConsortium: access.c,v 1.6 91/02/04 19:17:37 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -184,7 +184,6 @@ ReadWord (file, EOFatEOL)
 	    while ((c = getc (file)) != EOF && c != '\n')
 		;
 	case '\n':
-	    Debug ("Found newline, quoted is %d\n", quoted);
 	case EOF:
 	    if (c == EOF || (EOFatEOL && !quoted))
 	    {
@@ -228,7 +227,6 @@ ReadHostEntry (file)
 
 tryagain:
     hostOrAlias = ReadWord (file, TRUE);
-    Debug ("Found word %s\n", hostOrAlias);
     if (!hostOrAlias)
 	return NULL;
     h = (HostEntry *) malloc (sizeof (DisplayEntry));
