@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.48 89/12/15 11:37:22 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.49 90/02/05 11:45:40 jim Exp $";
 #endif /* lint */
 
 
@@ -752,9 +752,11 @@ static XtGeometryResult GeometryManager(child, request, reply)
     ViewportWidget w = (ViewportWidget)child->core.parent;
     Boolean rWidth = (Boolean)(request->request_mode & CWWidth);
     Boolean rHeight = (Boolean)(request->request_mode & CWHeight);
+    Boolean rBW = (Boolean)(request->request_mode & CWBorderWidth);
     XtWidgetGeometry allowed;
     XtGeometryResult result;
     Boolean reconfigured;
+    Boolean child_changed_size;
     Dimension height_remaining;
 
     if (child != w->viewport.child
@@ -770,6 +772,9 @@ static XtGeometryResult GeometryManager(child, request, reply)
 			        (rWidth ? request->width : w->core.width),
 			        (rHeight ? request->height : w->core.height)
 			      );
+
+    child_changed_size = ((rWidth && child->core.width != request->width) ||
+			  (rHeight && child->core.height != request->height));
 
     height_remaining = w->core.height;
     if (rWidth && w->core.width != request->width) {
@@ -818,7 +823,7 @@ static XtGeometryResult GeometryManager(child, request, reply)
 	result = XtGeometryYes;
     }
 
-    if (reconfigured)
+    if (reconfigured || child_changed_size)
 	ComputeLayout( (Widget)w,
 		       /*query=*/ False,
 		       /*destroy=*/ (result == XtGeometryYes) ? True : False );
