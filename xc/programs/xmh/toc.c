@@ -1,5 +1,4 @@
-/*
- * $XConsortium: toc.c,v 2.53 91/07/16 21:00:15 converse Exp $
+/* $XConsortium: toc.c,v 2.54 91/07/17 12:28:48 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -652,15 +651,10 @@ void TocChangeViewedSeq(toc, seq)
   Toc toc;
   Sequence seq;
 {
-    int i;
     if (seq == NULL) seq = toc->viewedseq;
     toc->viewedseq = seq;
-    toc->force_reset = True; /* %%% bug - force Text source to be reset */
+    toc->force_reset = True; /* %%% force Text source to be reset */
     TURefigureWhatsVisible(toc);
-/* redundant 
- *   for (i=0 ; i<toc->num_scrns ; i++) 
- *	TUResetTocLabel(toc->scrn[i]);
- */
 }
 
 
