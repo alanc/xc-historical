@@ -14,7 +14,7 @@ OBJS =   cfbgc.o cfbwindow.o \
 
 STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
-   INCLUDES = -I. -I../../include -I../../../include -I../mfb
+   INCLUDES = -I. -I../../include -I$(INCLUDESRC) -I../mfb
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
 
