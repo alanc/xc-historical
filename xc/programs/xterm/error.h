@@ -1,5 +1,5 @@
 /*
- *	$Header: error.h,v 1.7 87/12/19 10:52:30 rws Exp $
+ *	$Header: error.h,v 1.1 88/02/11 22:08:39 jim Exp $
  */
 
 
@@ -70,7 +70,6 @@
 #define	ERROR_TSELECT	60	/* Tinput: select() failed */
 #define	ERROR_TINIT	64	/* TekInit: can't initialize window */
 #define	ERROR_TBACK	65	/* TekBackground: can't make background */
-#define	ERROR_TWINNAME	66	/* TekInit: malloc failed */
 /* button.c */
 #define	ERROR_BMALLOC2	71	/* SaltTextAway: malloc() failed */
 #define ERROR_BADMENU   72      /* ModeMenu: don't know what menu to use */
