@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.6 92/11/16 13:32:19 mor Exp $ */
+/* $XConsortium: miText.c,v 5.7 92/11/24 13:24:18 mor Exp $ */
 
 
 /***********************************************************
@@ -661,23 +661,22 @@ text3_xform( pos, u, v, attrs, align, xf, aflag)
     temp[0][3] = a;
     temp[1][3] = b;
 
-    /* Let temp1 hold the base vector, the up vector, and the 
-       text position. */
+    /* Let temp1 hold the base vector and the up vector */
 
     temp1[0][0] = vbase.x;
     temp1[0][1] = vup.x;
     temp1[0][2] = 0.0;
-    temp1[0][3] = pos->x;
+    temp1[0][3] = 0.0;
 
     temp1[1][0] = vbase.y;
     temp1[1][1] = vup.y;
     temp1[1][2] = 0.0;
-    temp1[1][3] = pos->y;
+    temp1[1][3] = 0.0;
 
     temp1[2][0] = temp1[3][0] = 0.0;
     temp1[2][1] = temp1[3][1] = 0.0;
     temp1[2][2] = temp1[3][3] = 1.0;
-    temp1[2][3] = pos->z;
+    temp1[2][3] = 0.0;
     temp1[3][2] = 0.0;
 
     /* e3 is the cross-product of direction vectors u and v */
@@ -697,7 +696,8 @@ text3_xform( pos, u, v, attrs, align, xf, aflag)
     } else {	/* Build a 3D transform. */
 
 /* The rotation matrix, temp2, for orienting the text 
-   coordinate space consists of the row vectors, e1, e2 and e3. */
+   coordinate space consists of the row vectors, e1, e2 and e3,
+   and the position. */
 
 /* Normalized vector e3 is row 3 of the rotation matrix */
 
@@ -728,13 +728,15 @@ text3_xform( pos, u, v, attrs, align, xf, aflag)
 	temp2[2][1] = (e2->z *= inv_mag);
 	temp2[3][1] = 0.0;
 
-	temp2[0][3] = temp2[1][3] = temp2[2][3] = 0.0;
+	temp2[0][3] = pos->x;
+	temp2[1][3] = pos->y;
+	temp2[2][3] = pos->z;
 	temp2[3][3] = 1.0;
 
 /* The final transformation matrix, xf, is the product of the
-   3 matrices temp, temp1 and temp2. */
+   3 matrices: temp2 x temp1 x temp. */
 
-        miMatMult( temp3, temp2, temp1 );
+        miMatMult( temp3, temp1, temp2 );
 	miMatMult( xf, temp, temp3 ); 
     }
 }
