@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.2 91/02/12 11:55:41 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.3 91/02/23 11:59:24 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -148,7 +148,7 @@ without express or implied warranty.
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=MSKCNT; --cri>=0; )	\
-		          dst[cri] = (b1[cri] & b2[cri]) }
+		          dst[cri] = (b1[cri] & b2[cri]); }
 #define ORBITS(dst, b1, b2)  \
 		      { int cri;			\
 		      for (cri=MSKCNT; --cri>=0; )	\
