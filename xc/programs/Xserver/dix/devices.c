@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.5 89/11/07 10:45:09 rws Exp $ */
+/* $XConsortium: devices.c,v 5.6 90/01/25 14:22:44 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -988,7 +988,8 @@ ProcChangeKeyboardControl (client)
 	case KBKey:
 	    key = (KeyCode)*vlist;
 	    vlist++;
-	    if (key < 8 || key > 255)
+	    if (key < inputInfo.keyboard->key->curKeySyms.minKeyCode ||
+		key > inputInfo.keyboard->key->curKeySyms.maxKeyCode)
 	    {
 		client->errorValue = key;
 		return BadValue;
