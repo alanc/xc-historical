@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.1 89/05/11 14:01:54 kit Exp $";
+static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.2 89/06/08 16:31:19 swick Exp $";
 #endif /* lint */
 
 
@@ -53,28 +53,10 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
  */
 {
     register Display *display = DisplayOfScreen(screen);
-    XImage image;
     CacheEntry *cachePtr;
     Pixmap stippled_pixmap;
-    GC gc;
-    XGCValues gcValues;
     static unsigned char pixmap_bits[] = {
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
-	0xaa, 0xaa, 0xaa, 0xaa, 0x55, 0x55, 0x55, 0x55,
+	0x02, 0x01,
     };
 
 /*
@@ -82,8 +64,8 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
  *	caches these so that multiple requests share the pixmap
  */
 
-#define pixmap_width 32
-#define pixmap_height 32
+#define pixmap_width 2
+#define pixmap_height 2
 
     /* see if we already have a pixmap suitable for this screen */
     for (cachePtr = pixmapCache; cachePtr; cachePtr = cachePtr->next) {
@@ -92,22 +74,9 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
 	    return( cachePtr->ref_count++, cachePtr->pixmap );
     }
 
-    /* nope, we'll have to construct one now */
-    XQueryBestStipple(display, RootWindowOfScreen(screen), pixmap_width,
-		      pixmap_height, &image.width, &image.height);
-    image.xoffset = 0;
-    image.format = XYBitmap;
-    image.data = (char*) pixmap_bits;
-    image.byte_order = ImageByteOrder(display);
-    image.bitmap_pad = BitmapPad(display);
-    image.bitmap_bit_order = BitmapBitOrder(display);
-    image.bitmap_unit = BitmapUnit(display);
-    image.depth = 1;
-    image.bytes_per_line = pixmap_width/8;
-    image.obdata = NULL;
-
-    stippled_pixmap = XCreatePixmap( display, RootWindowOfScreen(screen), 
-				     image.width, image.height, depth);
+    stippled_pixmap = XCreatePixmapFromBitmapData (display,
+			RootWindowOfScreen(screen), pixmap_bits, 
+			pixmap_width, pixmap_height, fore, back, depth);
 
     /* and insert it at the head of the cache */
     cachePtr = XtNew(CacheEntry);
@@ -119,17 +88,6 @@ Pixmap XmuCreateStippledPixmap(screen, fore, back, depth)
     cachePtr->ref_count = 1;
     cachePtr->next = pixmapCache;
     pixmapCache = cachePtr;
-
-    /* now store the image into it */
-    gcValues.foreground = fore;
-    gcValues.background = back;
-    gc = XCreateGC( display, stippled_pixmap,
-		    GCForeground | GCBackground, &gcValues );
-
-    XPutImage( display, stippled_pixmap, gc, &image, 0, 0, 0, 0,
-	       image.width, image.height);
-
-    XFreeGC( display, gc );
 
     return( stippled_pixmap );
 }
