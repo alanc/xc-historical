@@ -637,7 +637,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
       ALLOSDIRS = os/4.2bsd
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
-InstallMultiple($(ALL),$(BINDIR))
+InstallMultipleFlags($(ALL),$(BINDIR),$(INSTPGMFLAGS))
 
 #define IHaveSubdirs
 
