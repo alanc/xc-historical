@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.53 89/07/22 19:42:22 keith Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.54 89/09/23 00:36:02 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -43,6 +43,8 @@ SOFTWARE.
 #include <X11/extensions/shape.h>
 #endif
 
+#define DEFAULT_HIGHLIGHT_THICKNESS 2
+
 /****************************************************************
  *
  * Full class record constant
@@ -63,9 +65,12 @@ static XtResource resources[] = {
    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
       offset(command.callbacks), XtRCallback, (XtPointer)NULL},
    {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
-      offset(command.highlight_thickness), XtRImmediate, (XtPointer)2},
-#ifdef SHAPE
-   {XtNshapeStyle, XtCShapeStyle, XtRInt, sizeof(int),
+#ifndef SHAPE
+      offset(command.highlight_thickness), XtRImmediate,
+      (XtPointer)DEFAULT_HIGHLIGHT_THICKNESS },
+#else
+      offset(command.highlight_thickness), XtRImmediate, (XtPointer)32767},
+   {XtNshapeStyle, XtCShapeStyle, XtRShapeStyle, sizeof(int),
       offset(command.shape_style), XtRImmediate, (XtPointer)0},
 #endif
 };
@@ -85,6 +90,7 @@ static void Destroy();
 static void PaintCommandWidget();
 
 #ifdef SHAPE
+static void ClassInitialize();
 static void Realize();
 static void Resize();
 #endif SHAPE
@@ -119,7 +125,11 @@ CommandClassRec commandClassRec = {
     (WidgetClass) SuperClass,		/* superclass		  */	
     "Command",				/* class_name		  */
     sizeof(CommandRec),			/* size			  */
+#ifdef SHAPE
+    ClassInitialize,			/* class_initialize	  */
+#else
     NULL,				/* class_initialize	  */
+#endif /*SHAPE*/
     NULL,				/* class_part_initialize  */
     FALSE,				/* class_inited		  */
     Initialize,				/* initialize		  */
@@ -216,10 +226,16 @@ Cardinal *num_args;		/* unused */
   cbw->command.highlighted = HighlightNone;
 #ifdef SHAPE
   if (!XShapeQueryExtension(XtDisplay(new)))
-	cbw->command.shape_style = XawCommandShapeRectangular;
+	cbw->command.shape_style = XawShapeRectangular;
   else {
 	if (cbw->command.shape_style == 0)
-	    cbw->command.shape_style = XawCommandShapeOval;
+	    cbw->command.shape_style = XawShapeOval;
+  }
+  if (cbw->command.highlight_thickness == 32767) {
+      if (cbw->command.shape_style == XawShapeOval)
+	  cbw->command.highlight_thickness = 0;
+      else
+	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
   }
 #endif /*SHAPE*/
 }
@@ -529,18 +545,76 @@ Widget current, request, new;
 
 
 #ifdef SHAPE
+
+#define	done(type, value) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->size = sizeof(type);			\
+		toVal->addr = (XtPointer)&static_val;		\
+	    }							\
+	    return True;					\
+	}
+
+
+static Boolean CvtStringToShapeStyle(dpy, args, num_args, from, toVal, data)
+    Display *dpy;
+    XrmValue *args;		/* unused */
+    Cardinal *num_args;		/* unused */
+    XrmValue *from;
+    XrmValue *toVal;
+    XtPointer *data;		/* unused */
+{
+    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeRectangular")
+	|| XmuCompareISOLatin1((char*)from->addr, "Rectangular"))
+	done( int, XawShapeRectangular );
+    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeOval")
+	|| XmuCompareISOLatin1((char*)from->addr, "Oval"))
+	done( int, XawShapeOval );
+    {
+	int style = 0;
+	char ch, *p = (char*)from->addr;
+	while (ch = *p++) {
+	    if (ch >= '0' && ch <= '9') {
+		style *= 10;
+		style += ch - '0';
+	    }
+	    else break;
+	}
+	if (ch == '\0') done( int, style );
+    }
+    XtDisplayStringConversionWarning( dpy, (char*)from->addr, XtRShapeStyle );
+    return False;
+}
+
+
+static void ClassInitialize()
+{
+    XtSetTypeConverter( XtRString, XtRShapeStyle, CvtStringToShapeStyle,
+		        NULL, 0, XtCacheAll, NULL );
+}
+
+
 static void Realize(w)
     Widget w;
 {
     (*commandWidgetClass->core_class.superclass->core_class.realize)(w);
-    if (((CommandWidget)w)->command.shape_style == XawCommandShapeOval)
+    if (((CommandWidget)w)->command.shape_style == XawShapeOval)
 	ShapeOval(w);
 }
 
 static void Resize(w)
     Widget w;
 {
-    if (((CommandWidget)w)->command.shape_style == XawCommandShapeOval)
+    if (((CommandWidget)w)->command.shape_style == XawShapeOval)
 	ShapeOval(w);
     (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
