@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.13 94/08/05 16:08:44 gildea Exp matt $
+XCOMM $XConsortium: Imakefile,v 1.14 95/05/23 21:43:17 matt Exp dpw $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -8,7 +8,7 @@ PHIGSDIRS = auto_box beach_ball gpc
 
 SUBDIRS = hterm ico listres maze puzzle showfont viewres xbiff xcalc \
 	xditview xedit xev xeyes xfontsel xgas xgc xload \
-	xman xmessage xpr $(PHIGSDIRS) 
+	xman xmessage xpr $(PHIGSDIRS) dbedizzy
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
