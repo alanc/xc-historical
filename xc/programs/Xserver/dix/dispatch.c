@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.92 89/03/24 09:19:16 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.93 89/03/31 13:19:14 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -167,6 +167,38 @@ SetInputCheck(c0, c1)
 {
     checkForInput[0] = c0;
     checkForInput[1] = c1;
+}
+
+void
+UpdateCurrentTime()
+{
+    TimeStamp systime;
+
+    /* To avoid time running backwards, we must call GetTimeInMillis before
+     * calling ProcessInputEvents.
+     */
+    systime.months = currentTime.months;
+    systime.milliseconds = GetTimeInMillis();
+    if (systime.milliseconds < currentTime.milliseconds)
+	systime.months++;
+    if (*checkForInput[0] != *checkForInput[1])
+	ProcessInputEvents();
+    if (CompareTimeStamps(systime, currentTime) == LATER)
+	currentTime = systime;
+}
+
+/* Like UpdateCurrentTime, but can't call ProcessInputEvents */
+void
+UpdateCurrentTimeIf()
+{
+    TimeStamp systime;
+
+    systime.months = currentTime.months;
+    systime.milliseconds = GetTimeInMillis();
+    if (systime.milliseconds < currentTime.milliseconds)
+	systime.months++;
+    if (*checkForInput[0] == *checkForInput[1])
+	currentTime = systime;
 }
 
 void
@@ -756,6 +788,7 @@ ProcDeleteProperty(client)
     int result;
               
     REQUEST_SIZE_MATCH(xDeletePropertyReq);
+    UpdateCurrentTime();
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
@@ -784,6 +817,7 @@ ProcSetSelectionOwner(client)
     REQUEST(xSetSelectionOwnerReq);
 
     REQUEST_SIZE_MATCH(xSetSelectionOwnerReq);
+    UpdateCurrentTime();
     time = ClientTimeToServerTime(stuff->time);
 
     /* If the client's time stamp is in the future relative to the server's
