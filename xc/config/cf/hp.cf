@@ -12,6 +12,7 @@
 #define LnCmd                  ln -s
 #define ExecableScripts        YES
 #define HasSockets             YES
+#define HasVFork               YES
 
 /* This defines the server you want */
 #define XHPServer              Xhp
@@ -19,7 +20,7 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.4 89/01/18 11:47:54 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.5 89/01/27 11:08:50 jim Exp $
 /**/# operating system:  OSName
 
 /*
