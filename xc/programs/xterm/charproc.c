@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.24 88/03/28 19:34:28 jim Exp $
+ * $Header: charproc.c,v 1.25 88/03/29 09:36:34 jim Exp $
  */
 
 
@@ -72,6 +72,7 @@ static void VTallocbuf();
 #define	XtNmarginBell		"marginBell"
 #define	XtNpointerColor		"pointerColor"
 #define	XtNpointerShape		"pointerShape"
+#define XtNmultiClickTime	"multiClickTime"
 #define	XtNmultiScroll		"multiScroll"
 #define	XtNnMarginBell		"nMarginBell"
 #define	XtNreverseWrap		"reverseWrap"
@@ -94,6 +95,7 @@ static void VTallocbuf();
 #define	XtCLogInhibit		"LogInhibit"
 #define	XtCLoginShell		"LoginShell"
 #define	XtCMarginBell		"MarginBell"
+#define XtCMultiClickTime	"MultiClickTime"
 #define	XtCMultiScroll		"MultiScroll"
 #define	XtCColumn		"Column"
 #define	XtCReverseVideo		"ReverseVideo"
@@ -110,7 +112,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.24 88/03/28 19:34:28 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.25 88/03/29 09:36:34 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -156,6 +158,7 @@ static  int	defaultBorderWidth = DEFBORDERWIDTH;
 static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
+static  int	defaultMultiClickTime = MULTICLICKTIME;
 
 static XtResource resources[] = {
 {XtNfont, XtCFont, XtRString, sizeof(char *),
@@ -212,6 +215,9 @@ static XtResource resources[] = {
 {XtNpointerShape,XtCCursor, XtRString, sizeof(Cursor),
 	XtOffset(XtermWidget, misc.curs_shape),
 	XtRString, (caddr_t) "xterm"},
+{XtNmultiClickTime,XtCMultiClickTime, XtRInt, sizeof(int),
+	XtOffset(XtermWidget, screen.multiClickTime),
+	XtRInt, (caddr_t) &defaultMultiClickTime},
 {XtNmultiScroll,XtCMultiScroll, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.multiscroll),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -1782,7 +1788,7 @@ static void VTInitialize (request, new)
    new->screen.visualbell = request->screen.visualbell;
    new->screen.TekEmu = request->screen.TekEmu;
    new->misc.re_verse = request->misc.re_verse;
-
+   new->screen.multiClickTime = request->screen.multiClickTime;
 
     /*
      * set the colors if reverse video; this is somewhat tricky since

@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.21 87/12/19 09:54:17 rws Exp $
+ *	$Header: button.c,v 1.1 88/02/10 13:08:02 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.21 87/12/19 09:54:17 rws Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.1 88/02/10 13:08:02 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -350,16 +350,13 @@ XEvent *event;
 	free (line);	/* free text from fetch */
 }
 
-	
-#define MULTICLICKTIME 250
-
 SetSelectUnit(buttonDownTime, defaultUnit)
 unsigned long buttonDownTime;
 SelectUnit defaultUnit;
 {
 /* Do arithmetic as integers, but compare as unsigned solves clock wraparound */
 	if ((long unsigned)((long int)buttonDownTime - lastButtonUpTime)
-	 > MULTICLICKTIME) {
+	 > term->screen.multiClickTime) {
 		numberOfClicks = 1;
 		selectUnit = defaultUnit;
 	} else {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.27 88/03/29 09:36:42 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.28 88/03/29 15:41:07 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -187,6 +187,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"+ls",		"*loginShell",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+mb",		"*marginBell",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-mc",		"*multiClickTime", XrmoptionSepArg,	(caddr_t) NULL},
 {"-ms",		"*pointerColor",XrmoptionSepArg,	(caddr_t) NULL},
 {"-nb",		"*nMarginBell",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-rw",		"*reverseWrap",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -604,7 +605,7 @@ static char *ustring[] = {
 #endif	/* TIOCCONS */
 " [-fb bold_font] [-fg foregrnd_color] [-fn norm_font] \\\n",
 " [-i] [-j] [-l] [-lf logfile] [-ls] [-mb] [-ms mouse_color] \\\n",
-" [-n name] [-nb bell_margin] [-rv] [-rw] [-s] \\\n",
+" [-n name] [-nb bell_margin] [-rv] [-rw] [-s] [-mc msecs]\\\n",
 " [-sb] [-si] [-sk] [-sl save_lines] [-sn] [-st] [-T title] [-t] [-tb] \\\n",
 " [-vb] [=[width]x[height][[+-]xoff[[+-]yoff]]] \\\n",
 " [%[width]x[height][[+-]xoff[[+-]yoff]]] [#[+-]xoff[[+-]yoff]] \\\n",

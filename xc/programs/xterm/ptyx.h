@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.4 88/02/16 18:58:47 jim Exp $
+ *	$Header: ptyx.h,v 1.5 88/02/20 15:30:55 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -325,11 +325,14 @@ typedef struct {
 	int		margin;		/* 0 -> margin 1, 1 -> margin 2	*/
 	int		pen;		/* current Tektronix pen 0=up, 1=dn */
 	char		*TekGIN;	/* nonzero if Tektronix GIN mode*/
+	int		multiClickTime;	 /* time between multiclick selects */
 } TScreen;
 
 /* meaning of bits in screen.select flag */
 #define	INWINDOW	01	/* the mouse is in one of the windows */
 #define	FOCUS		02	/* one of the windows is the focus window */
+
+#define MULTICLICKTIME 250	/* milliseconds */
 
 typedef struct
 {
