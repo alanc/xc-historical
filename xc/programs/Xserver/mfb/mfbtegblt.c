@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.5 89/11/21 15:19:41 keith Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.6 91/01/27 13:02:14 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -144,6 +144,9 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned int  tmpSrc;
     register int	    glyphBytes;
 #endif
+
+    if (!(pGC->planemask & 1))
+	return;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
