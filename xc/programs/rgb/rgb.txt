@@ -78,8 +78,8 @@
 132 112 255		LightSlateBlue
   0   0 205		medium blue
   0   0 205		MediumBlue
- 58  95 205		royal blue
- 58  95 205		RoyalBlue
+ 65 105 225		royal blue
+ 65 105 225		RoyalBlue
   0   0 255		blue
  30 144 255		dodger blue
  30 144 255		DodgerBlue
@@ -147,19 +147,19 @@
 189 183 107		dark khaki
 189 183 107		DarkKhaki
 240 230 140		khaki
-238 221 130		pale goldenrod
-238 221 130		PaleGoldenrod
+238 232 170		pale goldenrod
+238 232 170		PaleGoldenrod
 250 250 210		light goldenrod yellow
 250 250 210		LightGoldenrodYellow
 255 255 224		light yellow
 255 255 224		LightYellow
 255 255   0		yellow
 255 215   0 		gold
+238 221 130		light goldenrod
+238 221 130		LightGoldenrod
 218 165  32		goldenrod
 184 134  11		dark goldenrod
 184 134  11		DarkGoldenrod
-238 221 130		light goldenrod
-238 221 130		LightGoldenrod
 188 143 143		rosy brown
 188 143 143		RosyBrown
 205  92  92		indian red
@@ -478,10 +478,10 @@
 238  18 137		DeepPink2
 205  16 118		DeepPink3
 139  10	 80		DeepPink4
-255 125 179		MediumPink1
-238 116 167		MediumPink2
-205 100 144		MediumPink3
-139  68	 98		MediumPink4
+255 110 180		HotPink1
+238 106 167		HotPink2
+205  96 144		HotPink3
+139  58	 98		HotPink4
 255 181 197		pink1
 238 169 184		pink2
 205 145 158		pink3
