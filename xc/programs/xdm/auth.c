@@ -318,22 +318,17 @@ SetLocalAuthorization (d)
     }
     if (!d->authNames)
 	return;
-    if (!d->authNameNum)
-    {
-	for (i = 0; d->authNames[i]; i++)
-	    /*SUPPRESS 530*/
-	    ;
-	d->authNameNum = i;
-    }
-    if (*d->authNames && !d->authNameLens)
-    {
-	d->authNameLens = (unsigned short *) malloc
+    for (i = 0; d->authNames[i]; i++)
+	;
+    d->authNameNum = i;
+    if (d->authNameLens)
+	free ((char *) d->authNameLens);
+    d->authNameLens = (unsigned short *) malloc
 				(d->authNameNum * sizeof (unsigned short));
-	if (!d->authNameLens)
-	    return;
-	for (i = 0; i < d->authNameNum; i++)
-	    d->authNameLens[i] = strlen (d->authNames[i]);
-    }
+    if (!d->authNameLens)
+	return;
+    for (i = 0; i < d->authNameNum; i++)
+	d->authNameLens[i] = strlen (d->authNames[i]);
     auths = (Xauth **) malloc (d->authNameNum * sizeof (Xauth *));
     if (!auths)
 	return;
