@@ -1,4 +1,4 @@
-/* $XConsortium: pexUtils.c,v 5.3 91/04/16 20:38:35 keith Exp $ */
+/* $XConsortium: pexUtils.c,v 5.4 91/04/18 17:53:14 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -177,13 +177,13 @@ static unsigned long obj_array_sizes[] = {
     register int newmax; \
     ddPointer pList;	\
 	\
-    newmax = obj_array_sizes[plist->type] + plist->maxObj; \
+    newmax = obj_array_sizes[(int)(plist->type)] + plist->maxObj; \
     if (newmax < (atleast)) \
 	newmax = (atleast); \
     if (plist->pList == (ddPointer) (plist + 1)) \
 	abort (); \
     pList = (ddPointer)Xrealloc( (pointer)(plist->pList), 	\
-		(unsigned long)(newmax * obj_struct_sizes[plist->type] ));	\
+		(unsigned long)(newmax * obj_struct_sizes[(int)(plist->type)] ));	\
     if (!pList ) return( BadAlloc );	\
 	\
     plist->maxObj = (ddLONG)newmax;	\
@@ -230,7 +230,7 @@ puCountList( type, at_least_num )
 ddListType	type;
 int		at_least_num;
 {
-    return(sizeof(listofObj) + at_least_num * obj_struct_sizes[type] );
+    return(sizeof(listofObj) + at_least_num * obj_struct_sizes[(int)type] );
 }	/* puCountList */
 
 /*
@@ -262,12 +262,12 @@ ddListType	type;
 
     pList->type = type;
     pList->numObj = 0;
-    pList->maxObj = obj_array_sizes[type];
+    pList->maxObj = obj_array_sizes[(int)type];
 
     if (!pList->maxObj)
 	pList->pList = (ddPointer) NULL;
     else
-	pList->pList = (ddPointer) Xalloc (pList->maxObj * obj_struct_sizes[type]);
+	pList->pList = (ddPointer) Xalloc (pList->maxObj * obj_struct_sizes[(int)type]);
 
     if (!pList->pList)
     {
@@ -406,8 +406,8 @@ puAddToList( pitem, numItems, plist )
 	if ( plist->numObj + numItems > plist->maxObj )
 		PU_GROW_LIST( plist, plist->numObj + numItems );
 
-	pi2 = &(plist->pList[ obj_struct_sizes[plist->type] * plist->numObj ]);
-	bcopy( (char *)pitem, (char *)pi2, (int)(numItems * obj_struct_sizes[plist->type]) );
+	pi2 = &(plist->pList[ obj_struct_sizes[(int)(plist->type)] * plist->numObj ]);
+	bcopy( (char *)pitem, (char *)pi2, (int)(numItems * obj_struct_sizes[(int)(plist->type)]) );
 
 	plist->numObj += numItems;
 
@@ -551,7 +551,7 @@ puCopyList( psrc, pdest )
 		PU_GROW_LIST( pdest , psrc->numObj );
 
 	PU_COPY_LIST_ELEMENTS( psrc->pList, pdest->pList, 
-			obj_struct_sizes[psrc->type] * psrc->numObj );
+			obj_struct_sizes[(int)(psrc->type)] * psrc->numObj );
 
 	pdest->numObj = psrc->numObj;
 	
@@ -594,7 +594,7 @@ puMergeLists( psrc1, psrc2, pdest )
 	if ( psrc1->numObj )
 	{
 		pi = psrc1->pList;
-		si = obj_struct_sizes[psrc1->type];
+		si = obj_struct_sizes[(int)(psrc1->type)];
 		for ( i=0; i<psrc1->numObj; i++, pi+=si )
 			/* if the item is not already in the list , add it */
 			if ( !puInList( pi, ptemp ) )
@@ -606,7 +606,7 @@ puMergeLists( psrc1, psrc2, pdest )
 	if ( psrc2->numObj )
 	{
 		pi = psrc2->pList;
-		si = obj_struct_sizes[psrc2->type];
+		si = obj_struct_sizes[(int)(psrc2->type)];
 		for ( i=0; i<psrc2->numObj; i++, pi+=si )
 			/* if the item is not already in the list , add it */
 			if ( !puInList( pi, ptemp ) )
