@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: xmodmap.c,v 1.16 88/10/08 15:42:44 jim Exp $
+ * $XConsortium: xmodmap.c,v 1.17 89/07/07 10:56:36 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -107,7 +107,6 @@ main (argc, argv)
 {
     int i;
     char *displayname = NULL;
-    char *filename = NULL;
     int status, errors;
     Bool printMap = False;
     Bool printKeyTable = False;

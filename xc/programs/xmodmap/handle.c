@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.19 89/12/10 16:39:46 rws Exp $
+ * $XConsortium: handle.c,v 1.20 89/12/10 17:26:25 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -68,25 +68,10 @@ static badheader ()
     fprintf (stderr, "%s:  %s:%d:  bad ", ProgramName, inputFilename, lineno);
 }
 
-static void badmsg (what, arg)
-    char *what;
-    char *arg;
-{
-    badheader ();
-    fprintf (stderr, what, arg);
-    fprintf (stderr, "\n");
-    return;
-}
+#define badmsg(what,arg) { badheader(); fprintf (stderr, what, arg); \
+			   putc ('\n', stderr); }
 
-static void badmsgn (what, s, len)
-    char *what;
-    char *s;
-    int len;
-{
-    badmsg (what, copy_to_scratch (s, len));
-    return;
-}
-
+#define badmsgn(what,s,len) badmsg (what, copy_to_scratch (s, len))
 
 void initialize_map ()
 {
@@ -406,6 +391,7 @@ static int finish_keycode (line, len, keycode)
 {
     int n;
     KeySym *kslist;
+    union op *uop;
     struct op_keycode *opk;
    
     n = skip_until_char (line, len, '=');
@@ -426,19 +412,20 @@ static int finish_keycode (line, len, keycode)
 	return (-1);
     }
 
-    opk = AllocStruct (struct op_keycode);
-    if (!opk) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate a %ld byte keycode opcode",
 		(long) sizeof (struct op_keycode));
 	return (-1);
     }
+    opk = &uop->keycode;
 
     opk->type = doKeycode;
     opk->target_keycode = keycode;
     opk->count = n;
     opk->keysyms = kslist;
 
-    add_to_work_queue (opk);
+    add_to_work_queue (uop);
 
 #ifdef later
     /* make sure we handle any special keys */
@@ -501,6 +488,7 @@ static int do_add (line, len)
     int n;
     int modifier;
     KeySym *kslist;
+    union op *uop;
     struct op_addmodifier *opam;
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
@@ -536,19 +524,20 @@ static int do_add (line, len)
 	return (-1);
     }
 
-    opam = AllocStruct (struct op_addmodifier);
-    if (!opam) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate %ld byte addmodifier opcode",
 		(long) sizeof (struct op_addmodifier));
 	return (-1);
     }
+    opam = &uop->addmodifier;
 
     opam->type = doAddModifier;
     opam->modifier = modifier;
     opam->count = n;
     opam->keysyms = kslist;
 
-    add_to_work_queue (opam);
+    add_to_work_queue (uop);
     
     return (0);
 }
@@ -561,14 +550,16 @@ static void make_add (modifier, keysym)
     int modifier;
     KeySym keysym;
 {
+    union op *uop;
     struct op_addmodifier *opam;
 
-    opam = AllocStruct (struct op_addmodifier);
-    if (!opam) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate %ld byte addmodifier opcode",
 		(long) sizeof (struct op_addmodifier));
 	return;
     }
+    opam = &uop->addmodifier;
 
     opam->type = doAddModifier;
     opam->modifier = modifier;
@@ -581,7 +572,7 @@ static void make_add (modifier, keysym)
     }
     opam->keysyms[0] = keysym;
 
-    add_to_work_queue (opam);
+    add_to_work_queue (uop);
     return;
 }
 #endif /* AUTO_ADD_REMOVE */
@@ -606,6 +597,7 @@ static int do_remove (line, len)
     int modifier;
     KeySym *kslist;
     KeyCode *kclist;
+    union op *uop;
     struct op_removemodifier *oprm;
 
     if (len < 6 || !line || *line == '\0') {  /* Lock=a minimum */
@@ -676,19 +668,20 @@ static int do_remove (line, len)
 
     free ((char *) kslist);		/* all done with it */
 
-    oprm = AllocStruct (struct op_removemodifier);
-    if (!oprm) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate %ld byte removemodifier opcode",
 		(long) sizeof (struct op_removemodifier));
 	return (-1);
     }
+    oprm = &uop->removemodifier;
 
     oprm->type = doRemoveModifier;
     oprm->modifier = modifier;
     oprm->count = nc;
     oprm->keycodes = kclist;
 
-    add_to_work_queue (oprm);
+    add_to_work_queue (uop);
     
     return (0);
 }
@@ -701,14 +694,16 @@ static void make_remove (modifier, keycode)
     int modifier;
     KeyCode keycode;
 {
+    union op *uop;
     struct op_removemodifier *oprm;
 
-    oprm = AllocStruct (struct op_removemodifier);
-    if (!oprm) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate %ld byte removemodifier opcode",
 		(long) sizeof (struct op_removemodifier));
 	return;
     }
+    oprm = &uop->removemodifier;
 
     oprm->type = doRemoveModifier;
     oprm->modifier = modifier;
@@ -722,7 +717,7 @@ static void make_remove (modifier, keycode)
     }
     oprm->keycodes[0] = keycode;
 
-    add_to_work_queue (oprm);
+    add_to_work_queue (uop);
     return;
 }
 #endif /* AUTO_ADD_REMOVE */
@@ -741,6 +736,7 @@ static int do_clear (line, len)
 {
     int n;
     int modifier;
+    union op *uop;
     struct op_clearmodifier *opcm;
 
     if (len < 4 || !line || *line == '\0') {  /* Lock minimum */
@@ -761,17 +757,18 @@ static int do_clear (line, len)
 	/* okay to continue */
     }
 
-    opcm = AllocStruct (struct op_clearmodifier);
-    if (!opcm) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate %d byte clearmodifier opcode",
 		(long) sizeof (struct op_clearmodifier));
 	return (-1);
     }
+    opcm = &uop->clearmodifier;
 
     opcm->type = doClearModifier;
     opcm->modifier = modifier;
 
-    add_to_work_queue (opcm);
+    add_to_work_queue (uop);
 
     return (0);
 }
@@ -811,6 +808,7 @@ static int do_pointer (line, len)
     int n;
     int i;
     unsigned long val;
+    union op *uop;
     struct op_pointer *opp;
     unsigned char buttons[MAXBUTTONCODES];
     int nbuttons;
@@ -865,12 +863,13 @@ static int do_pointer (line, len)
 	return (-1);
     }
 
-    opp = AllocStruct (struct op_pointer);
-    if (!opp) {
+    uop = AllocStruct (union op);
+    if (!uop) {
 	badmsg ("attempt to allocate a %ld byte pointer opcode",
 		(long) sizeof (struct op_pointer));
 	return (-1);
     }
+    opp = &uop->pointer;
 
     opp->type = doPointer;
     opp->count = i;
@@ -878,7 +877,7 @@ static int do_pointer (line, len)
 	opp->button_codes[i] = buttons[i];
     }
 
-    add_to_work_queue (opp);
+    add_to_work_queue (uop);
 
     return (0);
 }
