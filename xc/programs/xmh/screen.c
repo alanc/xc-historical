@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.53 89/12/14 21:12:24 converse Exp $
+ * $XConsortium: screen.c,v 2.54 89/12/16 03:33:51 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -113,6 +113,7 @@ Scrn scrn;
     BBoxAddButton(buttonbox, "edit", commandWidgetClass, True);
     BBoxAddButton(buttonbox, "save", commandWidgetClass, False);
     BBoxAddButton(buttonbox, "print", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "delete", commandWidgetClass, True);
 }
     
 
