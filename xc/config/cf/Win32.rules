@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.4 93/08/14 16:19:02 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.5 93/08/14 17:14:43 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -111,14 +111,13 @@ clean::									@@\
 
 #define LibraryTargetNameDir(dir,libname) dir/libname.lib
 
-#define MakeLibrary(libname,objlist) $(AR) -out:libname objlist
+#define MakeLibrary(libname,objlist) $(AR) @<<				@@\
+-out:libname objlist							@@\
+<<
 
 #define	NormalLibraryTarget3(libname,objlist1,objlist2,objlist3)	@@\
 AllTarget(LibraryTargetName(libname))					@@\
 									@@\
 LibraryTargetName(libname): $(OBJS1:.o=.obj) $(OBJS2:.o=.obj) $(OBJS3:.o=.obj) @@\
 	RemoveFile($@)							@@\
-	MakeLibrary($@,$(OBJS1:.o=.obj))				@@\
-	MakeLibrary($@,$(OBJS2:.o=.obj))				@@\
-	MakeLibrary($@,$(OBJS3:.o=.obj))				@@\
-	RanLibrary($@)
+	MakeLibrary($@,$(OBJS1:.o=.obj) $(OBJS2:.o=.obj) $(OBJS3:.o=.obj))
