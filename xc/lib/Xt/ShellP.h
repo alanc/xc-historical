@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.37 94/03/21 16:21:26 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.38 94/04/01 16:04:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -366,6 +366,7 @@ typedef struct {
     XtCallbackList  cancel_callbacks;
     XtCallbackList  save_complete_callbacks;
     XtCallbackList  die_callbacks;
+    XtCallbackList  error_callbacks;
     XtSaveYourself  save;
     XtInputId       input_id;
     XtPointer       ses20;
