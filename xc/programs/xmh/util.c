@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.38 91/04/02 19:28:41 gildea Exp $
+ * $XConsortium: util.c,v 2.39 91/04/16 18:16:11 rws Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -333,7 +333,7 @@ void ChangeLabel(widget, str)
 Widget widget;
 char *str;
 {
-    static Arg arglist[] = {XtNlabel, NULL};
+    static Arg arglist[] = {XtNlabel, (XtArgVal)NULL};
     arglist[0].value = (XtArgVal) str;
     XtSetValues(widget, arglist, XtNumber(arglist));
 }
@@ -359,7 +359,7 @@ char *name;
     Widget result;
     int height;
     static Arg arglist[] = {
-	{XtNlabel, NULL},
+	{XtNlabel, (XtArgVal)NULL},
     };
     arglist[0].value = (XtArgVal) app_resources.banner; /* xmh version */
     result = XtCreateManagedWidget( name, labelWidgetClass, scrn->widget,
