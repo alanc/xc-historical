@@ -17,7 +17,6 @@ IMPORTS = \
 	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/Xutil.h \
 	$(FONTSRC)/cursorfont.h \
-	$(TOOLKITSRC)/Atoms.h \
 	$(TOOLKITSRC)/Cardinals.h \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
@@ -32,6 +31,7 @@ IMPORTS = \
 	$(TOOLKITSRC)/Quarks.h \
 	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/ShellP.h \
+	$(TOOLKITSRC)/StringDefs.h \
 	$(TOOLKITSRC)/TM.h \
 	$(TOOLKITSRC)/Vendor.h \
 	$(TOOLKITSRC)/VendorP.h \
@@ -82,6 +82,8 @@ all: $(IMPORTS) $(SUBIMPORTS) extensions
 	@for i in $(SUBIMPORTS); do \
 		(set -x; cd extensions; $(LN) ../$$i .); \
 	done
+	$(RM) Atoms.h
+	$(LN) StringDefs.h Atoms.h
 
 extensions:
 	-mkdir $@
@@ -95,6 +97,7 @@ clean::
 	@-(list=`echo $(IMPORTS) | sed -e 's/[^ ]*\///g'`; set -x; $(RM) $$list)
 	@-(list=`echo $(SUBIMPORTS) | sed -e 's/[^ ]*\///g'`; \
 		set -x; cd extensions; $(RM) $$list)
+	$(RM) Atoms.h
 
 install::
 	-cd $(INCDIR); mkdir $(SUBDIRS)
