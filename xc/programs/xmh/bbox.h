@@ -1,4 +1,3 @@
-/* $Header$ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -40,7 +39,6 @@ extern int BBoxNumButtons();
 extern char *BBoxNameOfButton();
 extern void BBoxStopUpdate();
 extern void BBoxStartUpdate();
-extern void BBoxForceFullSize();
-extern void BBoxAllowAnySize();
+extern void BBoxLockSize();
 extern void BBoxChangeBorderWidth();
 #endif _bbox_h
