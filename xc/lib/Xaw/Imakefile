@@ -112,18 +112,31 @@ OBJS = \
 	Vendor.o \
 	Viewport.o 
 
-#if DebugLibXaw && ProfileLibXaw
-DebuggedAndProfiledLibraryObjectRule()
+#if SharedLibXaw
+# if DebugLibXaw
+SharedAndDebuggedLibraryObjectRule()
+# else
+SharedLibraryObjectRule()
+# endif
 #else
+# if DebugLibXaw && ProfileLibXaw
+DebuggedAndProfiledLibraryObjectRule()
+# else
 # if DebugLibXaw
 DebuggedLibraryObjectRule()
-# else
-#  if ProfileLibXaw
-ProfiledLibraryObjectRule()
 #  else
+#   if ProfileLibXaw
+ProfiledLibraryObjectRule()
+#   else
 NormalLibraryObjectRule()
+#   endif
 #  endif
 # endif
+#endif
+
+#if SharedLibXt
+NormalSharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),)
+InstallSharedLibrary(Xaw,$(SOXAWREV),$(USRLIBDIR))
 #endif
 
 NormalLibraryTarget(Xaw,$(OBJS))
