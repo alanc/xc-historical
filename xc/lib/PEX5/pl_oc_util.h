@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_util.h,v 1.10 92/05/07 23:31:09 mor Exp $ */
+/* $XConsortium: pl_oc_util.h,v 1.1 92/05/08 15:13:34 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -89,7 +89,7 @@ software without specific, written prior permission.
 \
     PEXGetDisplayInfo (display, pexDisplayInfo); \
     if (PEXStartOCs (_display, _resID, _reqType, \
-	pexDisplayInfo->fpFormat, 1, ocLength) == Success) \
+	pexDisplayInfo->fpFormat, 1, ocLength)) \
     { \
         STORE_ELEMENT_INFO (_display->bufptr, _ocType, ocLength); \
         _display->bufptr += sizeof (pexElementInfo); \
@@ -134,6 +134,7 @@ software without specific, written prior permission.
 #define PEXAddListOC(_display, _resID, _reqType, _ocType, _countNeeded, _count, _elementSize, _elementList) \
 { \
     PEXDisplayInfo 	*pexDisplayInfo; \
+    void		_PEXGenOCBadLengthError(); \
     int			ocListSize; \
     int         	ocHeaderBytes; \
     int			ocLength; \
@@ -145,8 +146,12 @@ software without specific, written prior permission.
     ocLength = NUMWORDS (ocListSize + ocHeaderBytes); \
 \
     PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if (PEXStartOCs (_display, _resID, _reqType, \
-	pexDisplayInfo->fpFormat, 1, ocLength) == Success) \
+    if (ocLength > MAX_REQUEST_SIZE) \
+    { \
+        _PEXGenOCBadLengthError (_display, _resID, _reqType); \
+    } \
+    else if (PEXStartOCs (_display, _resID, _reqType, \
+	pexDisplayInfo->fpFormat, 1, ocLength)) \
     { \
         STORE_ELEMENT_INFO (display->bufptr, _ocType, ocLength); \
     	pReq = (char *) display->bufptr; \
@@ -192,12 +197,17 @@ software without specific, written prior permission.
 #define PEXInitOC(_display, _resID, _reqType, _ocType, _ocHeaderLength, _ocDataLength, _pReqType, _pReq) \
 { \
     PEXDisplayInfo 	*pexDisplayInfo; \
+    void		_PEXGenOCBadLengthError(); \
     int			ocLength = _ocHeaderLength + _ocDataLength; \
 \
     _pReq = NULL; \
     PEXGetDisplayInfo (display, pexDisplayInfo); \
-    if (PEXStartOCs (_display, _resID, _reqType, \
-	pexDisplayInfo->fpFormat, 1, ocLength) == Success) \
+    if (ocLength > MAX_REQUEST_SIZE) \
+    { \
+        _PEXGenOCBadLengthError (_display, _resID, _reqType); \
+    } \
+    else if (PEXStartOCs (_display, _resID, _reqType, \
+	pexDisplayInfo->fpFormat, 1, ocLength)) \
     { \
         STORE_ELEMENT_INFO (display->bufptr, _ocType, ocLength); \
     	_pReq = (_pReqType *) (display->bufptr); \
@@ -407,13 +417,11 @@ software without specific, written prior permission.
     { \
 	lenofStrings += LENOF (pexMonoEncoding); \
 	if (nextString->character_set_width == PEXCSLong) \
-	    (_lenofStrings) += NUMWORDS (nextString->string.length * \
-                                         sizeof (long)); \
+	    (_lenofStrings) += NUMWORDS (nextString->length * sizeof (long));\
 	else if (nextString->character_set_width == PEXCSShort) \
-	    (_lenofStrings) += NUMWORDS (nextString->string.length * \
-                                         sizeof (short)); \
+	    (_lenofStrings) += NUMWORDS (nextString->length * sizeof (short));\
 	else /* ( nextString->character_set_width == PEXCSByte) */ \
-	    (_lenofStrings) += NUMWORDS (nextString->string.length); \
+	    (_lenofStrings) += NUMWORDS (nextString->length); \
     } \
 }
 
@@ -448,15 +456,14 @@ software without specific, written prior permission.
 \
 	if (nextString->character_set_width == PEXCSLong) \
 	    _PEXCopyPaddedBytesToOC (_display, \
-		nextString->string.length * sizeof (long), \
-		(char *) nextString->string.ch); \
+		nextString->length * sizeof (long), \
+		(char *) nextString->ch); \
 	else if (nextString->character_set_width == PEXCSShort) \
 	    _PEXCopyPaddedBytesToOC (_display, \
-		nextString->string.length * sizeof (short), \
-		(char *) nextString->string.ch); \
+		nextString->length * sizeof (short), \
+		(char *) nextString->ch); \
 	else /* nextString->character_set_width == PEXCSByte) */ \
 	    _PEXCopyPaddedBytesToOC (_display, \
-		nextString->string.length, \
-		(char *) nextString->string.ch); \
+		nextString->length, (char *) nextString->ch); \
     } \
 }
