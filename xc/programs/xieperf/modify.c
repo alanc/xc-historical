@@ -1,4 +1,4 @@
-/* $XConsortium: modify.c,v 1.5 93/10/27 21:52:32 rws Exp $ */
+/* $XConsortium: modify.c,v 1.6 93/10/30 13:03:36 rws Exp $ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -796,6 +796,9 @@ XiePhotoElement **flograph;
 	return( 1 );
 }
 
+#ifdef WIN32
+#define RAND( x, y ) ( ( rand() / ((RAND_MAX + 1) / 2.0) ) * ( y - x ) + x )
+#else
 #if defined(SYSV) || defined(SVR4)
 #define random lrand48
 #endif
@@ -803,6 +806,7 @@ XiePhotoElement **flograph;
 extern long random();
 #endif
 #define RAND( x, y ) ( ( random() / 2147483648.0 ) * ( y - x ) + x )
+#endif
 
 void DoModifyLong1(xp, p, reps)
     XParms  xp;
