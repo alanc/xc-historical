@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.4 89/07/14 18:17:55 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.5 89/07/16 10:45:08 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -613,6 +613,279 @@ DDXPointPtr pptSrc;
     /* special case copy */
     if (alu == GXcopy)
     {
+	unsigned long	bits, tmp;
+	int		leftShift, rightShift, xoffDst;
+
+	while(nbox--)
+	{
+	    w = pbox->x2 - pbox->x1;
+	    h = pbox->y2 - pbox->y1;
+
+	    if (ydir == -1) /* start at last scanline of rectangle */
+	    {
+	        psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc);
+	        pdstLine = pdstBase + ((pbox->y2-1) * -widthDst);
+	    }
+	    else /* start at first scanline */
+	    {
+	        psrcLine = psrcBase + (pptSrc->y * widthSrc);
+	        pdstLine = pdstBase + (pbox->y1 * widthDst);
+	    }
+	    if ((pbox->x1 & 0x1f) + w <= 32)
+	    {
+		pdst = pdstLine + (pbox->x1 >> 5);
+		psrc = psrcLine + (pptSrc->x >> 5);
+		xoffSrc = pptSrc->x & 0x1f;
+		xoffDst = pbox->x1 & 0x1f;
+		while (h--)
+		{
+#ifndef PURDUE
+		    getbits (psrc, xoffSrc, w, bits)
+		    putbits (bits, xoffDst, w, pdst)
+#else
+		    getandputbits(psrc, xoffSrc, xoffDst, w, pdst)
+#endif
+		    psrc += widthSrc;
+		    pdst += widthDst;
+		}
+	    }
+	    else
+	    {
+	    	maskbits(pbox->x1, w, startmask, endmask, nlMiddle);
+	    	if (xdir == 1)
+	    	{
+	    	    xoffSrc = pptSrc->x & 0x1f;
+	    	    xoffDst = pbox->x1 & 0x1f;
+		    pdstLine += (pbox->x1 >> 5);
+		    psrcLine += (pptSrc->x >> 5);
+		    if (xoffSrc > xoffDst)
+		    {
+		    	leftShift = (xoffSrc - xoffDst);
+		    	rightShift = 32 - leftShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    bits = *psrc++;
+			    if (startmask)
+			    {
+			    	tmp = SCRLEFT(bits,leftShift);
+			    	bits = *psrc++;
+			    	tmp |= SCRRIGHT(bits,rightShift);
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    	pdst++;
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+ 			    {
+			    	tmp = SCRLEFT(bits, leftShift);
+			    	bits = *psrc++;
+			    	tmp |= SCRRIGHT(bits, rightShift);
+			    	*pdst++ = tmp;
+			    }
+			    if (endmask)
+			    {
+			    	tmp = SCRLEFT(bits, leftShift);
+			    	if (SCRLEFT(endmask, rightShift))
+			    	{
+				    bits = *psrc++;
+				    tmp |= SCRRIGHT(bits, rightShift);
+			    	}
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+		    	}
+		    }
+		    else if (xoffDst > xoffSrc)
+		    {
+		    	rightShift = (xoffDst - xoffSrc);
+		    	leftShift = 32 - rightShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    tmp = 0;
+			    if (startmask)
+			    {
+			    	bits = *psrc++;
+			    	tmp |= SCRRIGHT(bits, rightShift);
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    	pdst++;
+			    	tmp = SCRLEFT(bits, leftShift);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	bits = *psrc++;
+			    	tmp |= SCRRIGHT(bits, rightShift);
+			    	*pdst++ = tmp;
+			    	tmp = SCRLEFT (bits, leftShift);
+			    }
+			    if (endmask)
+			    {
+			    	if (SCRLEFT (endmask, rightShift))
+			    	{
+			    	    bits = *psrc++;
+			    	    tmp |= SCRRIGHT (bits, rightShift);
+			    	}
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+		    	}
+		    }
+		    else
+		    {
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    if (startmask)
+			    {
+			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
+			    	pdst++;
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+				    *pdst++ = *psrc++;
+			    if (endmask)
+			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
+		    	}
+	    	    }
+	    	}
+	    	else	/* xdir == -1 */
+	    	{
+	    	    xoffSrc = (pptSrc->x + w - 1) & 0x1f;
+	    	    xoffDst = (pbox->x2 - 1) & 0x1f;
+		    pdstLine += ((pbox->x2-1) >> 5) + 1;
+		    psrcLine += ((pptSrc->x+w - 1) >> 5) + 1;
+		    if (xoffSrc > xoffDst)
+		    {
+		    	leftShift = (xoffSrc - xoffDst);
+		    	rightShift = 32 - leftShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    tmp = 0;
+			    if (endmask)
+			    {
+			    	bits = *--psrc;
+			    	tmp = SCRLEFT(bits, leftShift);
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    	tmp = SCRRIGHT(bits, rightShift);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	bits = *--psrc;
+			    	tmp |= SCRLEFT (bits, leftShift);
+			    	*--pdst = tmp;
+			    	tmp = SCRRIGHT (bits, rightShift);
+			    }
+			    if (startmask)
+			    {
+			    	if (SCRRIGHT (startmask, leftShift))
+			    	{
+			    	    bits = *--psrc;
+			    	    tmp |= SCRLEFT(bits, leftShift);
+			    	}
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    }
+		    	}
+		    }
+		    else if (xoffDst > xoffSrc)
+		    {
+		    	rightShift = (xoffDst - xoffSrc);
+		    	leftShift = 32 - rightShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    bits = *--psrc;
+			    if (endmask)
+			    {
+			    	tmp = SCRRIGHT(bits, rightShift);
+			    	bits = *--psrc;
+			    	tmp |= SCRLEFT(bits, leftShift);
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	tmp = SCRRIGHT (bits, rightShift);
+			    	bits = *--psrc;
+			    	tmp |= SCRLEFT (bits, leftShift);
+			    	*--pdst = tmp;
+			    }
+			    if (startmask)
+			    {
+			    	tmp = SCRRIGHT(bits, rightShift);
+			    	if (SCRRIGHT (startmask, leftShift))
+			    	{
+				    bits = *--psrc;
+				    tmp |= SCRLEFT(bits, leftShift);
+			    	}
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    }
+		    	}
+		    }
+		    else
+		    {
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    if (endmask)
+			    {
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    	*--pdst = *--psrc;
+			    if (startmask)
+			    {
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
+			    }
+		    	}
+	    	    }
+	    	}
+	    }
+	    pbox++;
+	    pptSrc++;
+	}
+#ifdef OLDWAY
+	/*
+	 * in some instances, this code is actually
+	 * faster than the code above.  It is functionally
+	 * identical; you may want to try it and compare
+	 * using x11perf.  The one known case is the
+	 * VaxStation2000; other possible suspects include
+	 * 68000/68010 machines.  Your mileage will vary.
+	 */
         while (nbox--)
         {
 	    w = pbox->x2 - pbox->x1;
@@ -784,6 +1057,7 @@ DDXPointPtr pptSrc;
 	    pbox++;
 	    pptSrc++;
         } /* while (nbox--) */
+#endif /* OLDWAY */
     }
     else /* do some rop */
     {
