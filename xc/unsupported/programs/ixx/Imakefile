@@ -1,46 +1,42 @@
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/07 11:27:22 kaleb Exp $
 XCOMM
 XCOMM Interface translator
 XCOMM
 
-#ifdef InObjectCodeDir
+        YFLAGS = -d
+DEPEND_DEFINES = CplusplusDependIncludes
+       DEPLIBS =
 
-ComplexProgramTarget(ixx)
-
-#if !defined(UseDebug)
-APP_CCFLAGS = $(OPTIMIZE_CCFLAGS)
+#if ThreadedX
+ LOCAL_LDFLAGS = ThreadsLoadFlags
+ SYS_LIBRARIES = ThreadsLibraries
 #endif
 
-YYDEBUG = -DYYDEBUG
-SRCS = $(SRC)$(SLASH)*.$(CCSUFFIX) $(SRC)/gram.y
+SRCS = gram.cxx main.cxx err.cxx expr.cxx generator.cxx \
+       gen-hdr.cxx gen-impl.cxx gen-stubs.cxx os.cxx resolve.cxx \
+       scanner.cxx
 
-# -vd for y.output
-YFLAGS = -d
+OBJS = gram.o main.o err.o expr.o generator.o \
+       gen-hdr.o  gen-impl.o gen-stubs.o os.o resolve.o \
+       scanner.o
 
-MakeObjectFromSrcFlags(main,$(YYDEBUG))
-MakeObjectFromSrc(err)
-MakeObjectFromSrc(expr)
-MakeObjectFromSrc(generator)
-MakeObjectFromSrc(gen-hdr)
-MakeObjectFromSrc(gen-impl)
-MakeObjectFromSrc(gen-stubs)
-MakeObjectFromSrc(os)
-MakeObjectFromSrc(resolve)
-MakeObjectFromSrc(scanner)
+SPECIAL_OPTIONS = CplusplusSpecialOptions
 
-MakeObjectRule(gram,gram,-I$(SRC) $(YYDEBUG))
+NormalCplusplusObjectRule()
 
-depend:: ${SRC}/tokens
+all::
 
-$(SRC)/tokens gram.$(CCSUFFIX): $(SRC)/gram.y
-	yacc $(YFLAGS) $(SRC)/gram.y
-	mv y.tab.h $(SRC)/tokens
-	mv y.tab.c gram.$(CCSUFFIX)
+depend:: gram.cxx
+
+tokens gram.cxx: gram.y
+	$(CCYACC) $(YFLAGS) gram.y
+	$(MV) y.tab.c gram.cxx
+	$(MV) y.tab.h tokens
+
+ComplexCplusplusProgramTarget(ixx)
+
+SpecialCplusplusObjectRule(gram,gram,$(SPECIAL_OPTIONS))
 
 clean::
-	$(RM) gram.$(CCSUFFIX)
+	RemoveFiles(y.tab.c y.tab.h tokens gram.cxx)
 
-#else
-
-MakeInObjectCodeDir()
-
-#endif
