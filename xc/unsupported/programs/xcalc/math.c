@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.3 89/12/08 19:32:20 converse Exp $ 
+/* $XConsortium: math.c,v 1.4 89/12/15 18:48:51 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -95,7 +95,6 @@ void parse_double (src, fmt, dp)
 void pre_op(keynum)
      int keynum;
 {
-    int i;
     int code;
 
     if (keynum==-1) return;
