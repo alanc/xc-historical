@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.140 93/09/22 12:13:46 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.141 93/10/06 17:36:15 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1256,9 +1256,6 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 	register ShellWidget w = (ShellWidget) wid;
 	WMShellWidget wmshell = (WMShellWidget) w;
 	Boolean  sizechanged = FALSE;
-	unsigned int width, height, border_width, tmpdepth;
-	int tmpx, tmpy, tmp2x, tmp2y;
-	Window tmproot, tmpchild;
 
 	if(w->core.window != event->xany.window) {
 		XtAppErrorMsg(XtWidgetToApplicationContext(wid),
