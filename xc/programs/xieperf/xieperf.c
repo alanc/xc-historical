@@ -1,7 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.25 94/01/12 20:48:30 rws Exp $ */
-
-int   verbosity_Group_xielib ;
-int   verbosity_Group_xielib_user_level ;
+/* $XConsortium: xieperf.c,v 1.26 94/01/17 19:30:04 rws Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -70,6 +67,7 @@ extern Time_t time ();
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+#define lowbit(x) ((x) & (~(x) + 1))
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
 static Bool     drawToFakeServer = False;
@@ -1595,9 +1593,9 @@ XParms	xp;
 			rintensity = ( (i*65535L) / (long) (n_colors-1) );
 			gintensity = ( (i*65535L) / (long) (n_colors-1) );
 			bintensity = ( (i*65535L) / (long) (n_colors-1) );
-			gray[i].pixel = i << ( ffs( DCRedMask ) - 1 ); 
-			gray[i].pixel |= i << ( ffs( DCGreenMask ) - 1 ); 
-			gray[i].pixel |= i << ( ffs( DCBlueMask ) - 1 ); 
+			gray[i].pixel = i * lowbit( DCRedMask );
+			gray[i].pixel |= i * lowbit( DCGreenMask );
+			gray[i].pixel |= i * lowbit( DCBlueMask );
                 	gray[i].red = rintensity;
                 	gray[i].green = gintensity;
                 	gray[i].blue = bintensity;
@@ -1680,9 +1678,9 @@ XParms	xp;
 			rintensity = ( (i*65535L) / (long) (n_colors-1) );
 			gintensity = ( (i*65535L) / (long) (n_colors-1) );
 			bintensity = ( (i*65535L) / (long) (n_colors-1) );
-			gray[i].pixel = i << ( ffs( DCRedMask ) - 1 ); 
-			gray[i].pixel |= i << ( ffs( DCGreenMask ) - 1 ); 
-			gray[i].pixel |= i << ( ffs( DCBlueMask ) - 1 ); 
+			gray[i].pixel = i * lowbit( DCRedMask );
+			gray[i].pixel |= i * lowbit( DCGreenMask );
+			gray[i].pixel |= i * lowbit( DCBlueMask );
                 	gray[i].red = rintensity;
                 	gray[i].green = gintensity;
                 	gray[i].blue = bintensity;
@@ -4501,19 +4499,19 @@ else { \
 	ptr+=sizeof(long); }
 
 #define SETTDLUT if ( lutCellSize == sizeof( char ) ) {\
-        *( ( unsigned char * ) ptr ) = val << (ffs( DCRedMask ) - 1); \
-	*( ( unsigned char * ) ptr ) |= val << (ffs( DCGreenMask ) - 1);\
-	*( ( unsigned char * ) ptr ) |= val << (ffs( DCBlueMask ) - 1);\
+        *( ( unsigned char * ) ptr ) = val * lowbit( DCRedMask ); \
+	*( ( unsigned char * ) ptr ) |= val * lowbit( DCGreenMask ); \
+	*( ( unsigned char * ) ptr ) |= val * lowbit( DCBlueMask ); \
 	ptr+=sizeof(char); } \
 else if ( lutCellSize == sizeof( short ) ) { \
-        *( ( unsigned short * ) ptr ) = val << (ffs( DCRedMask ) - 1); \
-	*( ( unsigned short * ) ptr ) |= val << (ffs( DCGreenMask ) - 1);\
-	*( ( unsigned short * ) ptr ) |= val << (ffs( DCBlueMask ) - 1);\
+        *( ( unsigned short * ) ptr ) = val * lowbit( DCRedMask ); \
+	*( ( unsigned short * ) ptr ) |= val * lowbit( DCGreenMask ); \
+	*( ( unsigned short * ) ptr ) |= val * lowbit( DCBlueMask ); \
 	ptr+=sizeof(short); } \
 else { \
-        *( ( unsigned long * ) ptr ) = val << (ffs( DCRedMask ) - 1); \
-	*( ( unsigned long * ) ptr ) |= val << (ffs( DCGreenMask ) - 1);\
-	*( ( unsigned long * ) ptr ) |= val << (ffs( DCBlueMask ) - 1);\
+        *( ( unsigned long * ) ptr ) = val * lowbit( DCRedMask ); \
+	*( ( unsigned long * ) ptr ) |= val * lowbit( DCGreenMask ); \
+	*( ( unsigned long * ) ptr ) |= val * lowbit( DCBlueMask ); \
 	ptr+=sizeof(long); }
 
 int 
