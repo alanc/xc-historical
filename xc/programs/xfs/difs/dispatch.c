@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.21 94/02/08 15:29:25 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.22 94/02/09 16:20:31 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -226,9 +226,12 @@ ProcEstablishConnection(client)
 
     /* build up a list of the stuff */
     for (i = 0, ad = auth_data; i < (int)prefix->num_auths; i++) {
-	client_auth[i].namelen = *(short *) ad;
+	/* copy carefully in case wire data is not aligned */
+	client_auth[i].namelen = (((unsigned char *)ad)[0] << 8) +
+				 ((unsigned char *)ad)[1];
 	ad += 2;
-	client_auth[i].datalen = *(short *) ad;
+	client_auth[i].datalen = (((unsigned char *)ad)[0] << 8) +
+				 ((unsigned char *)ad)[1];
 	ad += 2;
 	client_auth[i].name = (char *) ad;
 	ad += client_auth[i].namelen;
@@ -550,9 +553,12 @@ ProcCreateAC(client)
     }
     /* build up a list of the stuff */
     for (i = 0, ad = (pointer)stuff + SIZEOF(fsCreateACReq); i < (int)stuff->num_auths; i++) {
-	acp[i].namelen = *(short *) ad;
+	/* copy carefully in case data is not aligned */
+	acp[i].namelen = (((unsigned char *)ad)[0] << 8) +
+			 ((unsigned char *)ad)[1];
 	ad += 2;
-	acp[i].datalen = *(short *) ad;
+	acp[i].datalen = (((unsigned char *)ad)[0] << 8) +
+			 ((unsigned char *)ad)[1];
 	ad += 2;
 	acp[i].name = (char *) ad;
 	ad += acp[i].namelen;
