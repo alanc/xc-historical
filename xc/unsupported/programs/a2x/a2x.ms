@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.37 93/05/20 14:52:54 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.38 93/07/20 12:53:42 rws Exp $
 .de Ds
 .RS
 .nf
@@ -1153,12 +1153,26 @@ Command line options
 .LP
 The command line options for \fBa2x\fP are:
 .LP
+.B \-a
+.IP
+Causes \fBa2x\fP to use "Alt" instead of "Meta".  That is, the most
+significant bit in a character from the PC is interpreted as Alt
+instead of Meta, and {c\-t}{c\-m} turns on Alt instead of Meta.
+.LP
 .B \-b
 .IP
 Prevents \fBa2x\fP from translating Backspace characters into Delete
 characters on output to the X server.
+.LP
+.B \-B
+.IP
 If your DOS telnet program sends Delete when you type {Backspace} and
 Backspace when you type {Del}, then use this option so that \fBa2x\fP knows.
+.LP
+.B \-bs
+.IP
+Causes \fBa2x\fP to translate Backspace characters on output into
+a key labeled with keysym "Backspace", rather than to {c\-h}.
 .LP
 .B \-c
 .IP
