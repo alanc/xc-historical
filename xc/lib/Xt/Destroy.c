@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.34 90/08/31 08:15:04 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.35 90/08/31 19:30:05 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -120,6 +120,9 @@ static void XtPhase2Destroy (widget)
     Widget	    outerInPhase2Destroy = app->in_phase2_destroy;
     int		    starting_count = app->destroy_count;
     Boolean	    isPopup = False;
+
+    /* invalidate focus trace cache for this display */
+    _XtGetPerDisplay(XtDisplay(widget))->pdi.traceDepth = 0;
 
     parent = widget->core.parent;
 
