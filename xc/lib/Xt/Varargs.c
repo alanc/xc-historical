@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Varargs.c,v 1.6 89/11/13 12:39:02 swick Exp $";
+    "$XConsortium: Varargs.c,v 1.7 89/11/14 10:12:17 swick Exp $";
 #endif
 /*
 
@@ -93,7 +93,7 @@ _XtCountVaList(var, total_count, typed_count)
  *   constructs an attribute-value list of type XtTypedArgList and 
  *   returns the list.
  */
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 XtVarArgsList
 XtVaCreateArgsList(XtPointer unused, ...)
 #else

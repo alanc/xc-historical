@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.5 89/11/14 10:14:19 swick Exp $ */
+/* $XConsortium: VarargsI.h,v 1.6 89/11/14 13:56:30 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -41,25 +41,25 @@ typedef struct _XtTypedArg {
 /* private routines */
 
 extern void _XtCountVaList(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     va_list /*var*/, int* /*total_count*/, int* /*typed_count*/
 #endif
 );
 
 extern void _XtVaToArgList(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
    Widget /*widget*/, va_list /*var*/, int /*max_count*/, ArgList* /*args_return*/, Cardinal* /*num_args_return*/
 #endif
 );
 
 extern void _XtVaToTypedArgList(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     va_list /*var*/, int /*count*/, XtTypedArgList* /*args_return*/, Cardinal* /*num_args_return*/
 #endif
 );
 
 extern XtTypedArgList _XtVaCreateTypedArgList(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     va_list /*var*/, int /*count*/
 #endif
 );

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.114 89/11/10 20:03:32 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.115 89/11/14 10:08:03 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -49,13 +49,13 @@ SOFTWARE.
 #define TRUE 1
 #endif
 
-#ifndef IncludePrototypes
+#ifndef NeedFunctionPrototypes
 # if defined(__STDC__) || defined(__cplusplus)
-#  define IncludePrototypes 1
+#  define NeedFunctionPrototypes 1
 # else
-#  define IncludePrototypes 0
+#  define NeedFunctionPrototypes 0
 # endif /* __STDC__ */
-#endif /* IncludePrototypes */
+#endif /* NeedFunctionPrototypes */
 
 #define XtNumber(arr)		((Cardinal) (sizeof(arr) / sizeof(arr[0])))
 
@@ -706,7 +706,7 @@ extern ArgList XtMergeArgLists(); /* args1, num_args1, args2, num_args2 */
 typedef XtPointer	XtVarArgsList;
 
 extern XtVarArgsList XtVaCreateArgsList(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     XtPointer /*unused*/, ...
 #endif
 );
@@ -886,7 +886,7 @@ extern Widget XtCreatePopupShell();
     /* Cardinal	    num_args;	    */
 
 extern Widget XtVaCreatePopupShell(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     String /*name*/, WidgetClass /*widgetClass*/, Widget /*parent*/, ...
 #endif
 );
@@ -944,13 +944,13 @@ extern Widget XtCreateManagedWidget();
     /* Cardinal	    num_args;	    */
 
 extern Widget XtVaCreateWidget(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     String /*name*/, WidgetClass /*widget*/, Widget /*parent*/, ...
 #endif
 );
 
 extern Widget XtVaCreateManagedWidget(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     String /*name*/, WidgetClass /*widget_class*/, Widget /*parent*/,...
 #endif
 );
@@ -969,7 +969,7 @@ extern Widget XtAppCreateShell();
     /* Cardinal	    num_args;	    */
 
 extern Widget XtVaAppCreateShell(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     String /*name*/, String /*class*/, WidgetClass /*widget_class*/, Display* /*display*/,...
 #endif
 );
@@ -1003,7 +1003,7 @@ extern Widget XtAppInitialize();
     /* Cardinal		    num_args;		*/
 
 extern Widget XtVaAppInitialize(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     XtAppContext* /*app_context_return*/,
     String /*application_class*/,
     XrmOptionDescList /*options*/,
@@ -1091,7 +1091,7 @@ extern void XtGetApplicationResources();
     /* Cardinal		num_args;	*/
 
 extern void XtVaGetApplicationResources(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     Widget /*widget*/,
     XtPointer /*base*/,
     XtResourceList /*resources*/,
@@ -1111,7 +1111,7 @@ extern void XtGetSubresources();
     /* Cardinal		num_args;	*/
 
 extern void XtVaGetSubresources(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     Widget /*widget*/,
     XtPointer /*base*/,
     String /*name*/,
@@ -1128,7 +1128,7 @@ extern void XtSetValues();
     /* Cardinal		num_args;	*/
 
 extern void XtVaSetValues(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     Widget /*widget*/, ...
 #endif
 );
@@ -1139,7 +1139,7 @@ extern void XtGetValues();
     /* Cardinal		num_args;	*/
 
 extern void XtVaGetValues(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     Widget /*widget*/, ...
 #endif
 );
@@ -1152,7 +1152,7 @@ extern void XtSetSubvalues();
     /* Cardinal		num_args;	*/
 
 extern void XtVaSetSubvalues(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     XtPointer /*base*/, XtResourceList /*resources*/, Cardinal /*num_resources*/, ...
 #endif
 );
@@ -1165,7 +1165,7 @@ extern void XtGetSubvalues();
     /* Cardinal		num_args;	*/
 
 extern void XtVaGetSubvalues(
-#if IncludePrototypes
+#if NeedFunctionPrototypes
     XtPointer /*base*/, XtResourceList /*resources*/, Cardinal /*num_resources*/, ...
 #endif
 );

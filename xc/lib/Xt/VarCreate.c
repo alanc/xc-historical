@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.6 89/11/10 20:01:05 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.7 89/11/13 12:35:05 swick Exp $";
 #endif
 
 /*
@@ -56,7 +56,7 @@ _XtVaCreateWidget(name, widget_class, parent, var, count)
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 Widget
 XtVaCreateWidget(String name, WidgetClass widget_class, Widget parent, ...)
 #else
@@ -84,7 +84,7 @@ Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 Widget
 XtVaCreateManagedWidget(String name, WidgetClass widget_class, Widget parent, ...)
 #else
@@ -113,7 +113,7 @@ Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 Widget
 XtVaAppCreateShell(String name, String class, WidgetClass widget_class, Display* display, ...)
 #else
@@ -150,7 +150,7 @@ Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 Widget
 XtVaCreatePopupShell(String name, WidgetClass widget_class, Widget parent, ...)
 #else
@@ -185,7 +185,7 @@ Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     return widget;
 }
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaSetValues(Widget widget, ...)
 #else
@@ -216,7 +216,7 @@ void XtVaSetValues(widget, va_alist)
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaSetSubvalues(XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -253,7 +253,7 @@ void XtVaSetSubvalues(base, resources, num_resources, va_alist)
     va_end(var);
 }
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 Widget
 XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
 		  XrmOptionDescList options, Cardinal num_options,

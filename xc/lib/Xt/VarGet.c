@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.8 89/11/13 14:08:55 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.9 89/11/13 14:16:40 swick Exp $";
 #endif
 /*
 
@@ -25,7 +25,7 @@ without express or implied warranty.
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaGetSubresources(Widget widget, XtPointer base, String name, String class, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -64,7 +64,7 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
 }
 
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaGetApplicationResources(Widget widget, XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -196,7 +196,7 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
     return(count);
 }
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaGetValues(Widget widget, ...)
 #else
@@ -264,7 +264,7 @@ void XtVaGetValues(widget, va_alist)
     }
 }
 
-#if IncludePrototypes
+#if NeedFunctionPrototypes
 void
 XtVaGetSubvalues(XtPointer base,XtResourceList  resources, Cardinal num_resources, ...)
 #else
