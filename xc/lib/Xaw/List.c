@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.9 88/10/18 12:31:25 swick Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.10 88/10/23 12:45:31 swick Exp $";
   static char rcsid_module_c[] = "$oHeader: List.c,v 1.4 88/08/30 16:36:03 kit Exp $";
 #endif
 
@@ -70,45 +70,37 @@ static char defaultTranslations[] =
 
 /* Private Data */
 
-static int defIWidth = 4;
-static int defIHeight = 2;
-static int defCols = 2;
-static int defNItems = 0;
-static int defLongest = 0;
-static int defColSpace = 6;
-static int defRowSpace = 2;
-
 #define offset(field) XtOffset(ListWidget, field)
 
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(list.foreground), XtRString, "Black"},
+	offset(list.foreground), XtRString, "XtDefaultForeground"},
     {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
        offset(simple.cursor), XtRString, "left_ptr"},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	offset(list.font),XtRString, "Fixed"},
+	offset(list.font),XtRString, "XtDefaultFont"},
     {XtNlist, XtCList, XtRPointer, sizeof(char **),
        offset(list.list), XtRString, NULL},
     {XtNdefaultColumns, XtCColumns, XtRInt,  sizeof(int),
-	offset(list.default_cols), XtRInt, (caddr_t)&defCols},
+	offset(list.default_cols), XtRImmediate, (caddr_t)2},
     {XtNlongest, XtCLongest, XtRInt,  sizeof(int),
-	offset(list.longest), XtRInt, (caddr_t)&defLongest},
+	offset(list.longest), XtRImmediate, (caddr_t)0},
     {XtNnumberStrings, XtCNumberStrings, XtRInt,  sizeof(int),
-	offset(list.nitems), XtRInt, (caddr_t)&defNItems},
+	offset(list.nitems), XtRImmediate, (caddr_t)0},
     {XtNpasteBuffer, XtCBoolean, XtRBoolean,  sizeof(Boolean),
 	offset(list.paste), XtRString, (caddr_t) "False"},
     {XtNforceColumns, XtCColumns, XtRBoolean,  sizeof(Boolean),
 	offset(list.force_cols), XtRString, (caddr_t) "False"},
     {XtNverticalList, XtCBoolean, XtRBoolean,  sizeof(Boolean),
 	offset(list.vertical_cols), XtRString, (caddr_t) "False"},
-    {XtNinternalWidth, XtCWidth, XtRInt,  sizeof(Dimension),
-	offset(list.internal_width), XtRInt, (caddr_t)&defIWidth},
-    {XtNinternalHeight, XtCHeight, XtRInt, sizeof(Dimension),
-	offset(list.internal_height), XtRInt, (caddr_t)&defIHeight},
-    {XtNcolumnSpacing, XtCSpacing, XtRInt,  sizeof(Dimension),
-	offset(list.column_space), XtRInt, (caddr_t)&defColSpace},
-    {XtNrowSpacing, XtCSpacing, XtRInt,  sizeof(Dimension),
-	offset(list.row_space), XtRInt, (caddr_t)&defRowSpace},
+    {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
+	offset(list.internal_width), XtRImmediate, (caddr_t)4},
+    {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
+	offset(list.internal_height), XtRImmediate, (caddr_t)2},
+    {XtNcolumnSpacing, XtCSpacing, XtRDimension,  sizeof(Dimension),
+	offset(list.column_space), XtRImmediate, (caddr_t)6},
+    {XtNrowSpacing, XtCSpacing, XtRDimension,  sizeof(Dimension),
+	offset(list.row_space), XtRImmediate, (caddr_t)2},
     {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
         offset(list.callback), XtRCallback, NULL},
 };
