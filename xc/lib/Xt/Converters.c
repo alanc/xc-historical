@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.41 89/09/12 16:49:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.42 89/09/21 09:19:46 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -33,6 +33,7 @@ SOFTWARE.
 #include	"StringDefs.h"
 #include	<stdio.h>
 #include        <X11/cursorfont.h>
+#include	<X11/keysym.h>
 #include	"IntrinsicI.h"
 #include	"Quarks.h"
 
@@ -54,7 +55,7 @@ SOFTWARE.
 	    return True;					\
 	}
 
-void XtDpyStringConversionWarning(dpy, from, toType)
+void XtDisplayStringConversionWarning(dpy, from, toType)
     Display* dpy;
     String from, toType;
 {
@@ -115,6 +116,7 @@ void XtStringConversionWarning(from, toType)
 }
 
 void LowerCase();
+static int CompareISOLatin1();
 
 static Boolean CvtXColorToPixel();
 static Boolean CvtIntToBoolean();
@@ -136,6 +138,27 @@ static Boolean CvtStringToInt();
 static Boolean CvtStringToShort();
 static Boolean CvtStringToUnsignedChar();
 static Boolean CvtStringToPixel();
+
+static Boolean IsInteger(string, value)
+    String string;
+    int *value;
+{
+    int val = 0;
+    char ch;
+    while (ch = *string++) {
+	if (ch >= '0' && ch <= '9') {
+	    val *= 10;
+	    val += ch - '0';
+	}
+	else return False;
+    }
+    if (ch == '\0') {
+	*value = val;
+	return True;
+    }
+    return False;
+}
+
 
 /*ARGSUSED*/
 static Boolean CvtIntToBoolean(dpy, args, num_args, fromVal, toVal, closure_ret)
@@ -200,7 +223,7 @@ static Boolean CvtStringToBoolean(dpy, args, num_args, fromVal, toVal, closure_r
     if (q == XtQEfalse || q ==XtQEoff || q == XtQEno)
 	done(Boolean, False);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Boolean");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Boolean");
     return False;
 }
 
@@ -251,7 +274,7 @@ static Boolean CvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (q == XtQEfalse || q ==XtQEoff || q == XtQEno)
 	done(Bool, False);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Bool");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Bool");
     return False;
 }
 
@@ -499,7 +522,7 @@ static Boolean CvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_re
 	    done(Cursor, cursor);
 	}
     }
-    XtDpyStringConversionWarning(dpy, name, "Cursor");
+    XtDisplayStringConversionWarning(dpy, name, "Cursor");
     return False;
 }
 
@@ -544,7 +567,7 @@ static Boolean CvtStringToDisplay(dpy, args, num_args, fromVal, toVal, closure_r
     if (d != NULL)
 	done(Display*, d);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Display");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Display");
     return False;
 }
 
@@ -570,7 +593,7 @@ static Boolean CvtStringToFile(dpy, args, num_args, fromVal, toVal, closure_ret)
     if (f != NULL)
 	done(FILE*, f);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "File");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "File");
     return False;
 }
 
@@ -602,8 +625,6 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 {
     Font	    f;
     Screen	    *screen;
-    char	    lcfont[1000];
-    XrmQuark	    q;
 
     if (*num_args != 1)
 	XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
@@ -612,20 +633,19 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
               (String *) NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
-    LowerCase((char *) fromVal->addr, lcfont);
-    q = XrmStringToQuark(lcfont);
 
-    if (q != XtQExtdefaultfont) {
+    if (CompareISOLatin1((String)fromVal->addr, "XtDefaultFont") != 0) {
 	f = XLoadFont(DisplayOfScreen(screen), (char *)fromVal->addr);
 	if (f != 0)
 	    done(Font, f);
 
-	XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Font");
+	XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Font");
     }
     /* try and get the default font */
 
     f = XLoadFont(dpy,"fixed");
     if (f != 0) done(Font, f);
+    return False;
 }
 
 /* ARGSUSED */
@@ -676,8 +696,6 @@ static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closur
 {
     XFontStruct	    *f;
     Screen	    *screen;
-    char	    lcfont[1000];
-    XrmQuark	    q;
 
     if (*num_args != 1)
      XtAppErrorMsg(XtDisplayToApplicationContext(dpy),
@@ -686,15 +704,13 @@ static Boolean CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closur
               (String *) NULL, (Cardinal *)NULL);
 
     screen = *((Screen **) args[0].addr);
-    LowerCase((char *) fromVal->addr, lcfont);
-    q = XrmStringToQuark(lcfont);
 
-    if (q != XtQExtdefaultfont) {
+    if (CompareISOLatin1((String)fromVal->addr, "XtDefaultFont") != 0) {
 	f = XLoadQueryFont(DisplayOfScreen(screen), (char *)fromVal->addr);
 	if (f != NULL)
 	    done(XFontStruct*, f);
 
-	XtDpyStringConversionWarning(dpy, (char*)fromVal->addr, "XFontStruct");
+	XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr, "XFontStruct");
     }
 
     /* try and get the default font */
@@ -742,10 +758,10 @@ static Boolean CvtStringToInt(dpy, args, num_args, fromVal, toVal, closure_ret)
 		  "wrongParameters","cvtStringToInt","XtToolkitError",
                   "String to Integer conversion needs no extra arguments",
                   (String *) NULL, (Cardinal *)NULL);
-    if (sscanf((char *)fromVal->addr, "%d", &i) == 1)
+    if (IsInteger((String)fromVal->addr, &i))
 	done(int, i);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Integer");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Integer");
     return False;
 }
 
@@ -758,17 +774,17 @@ static Boolean CvtStringToShort(dpy, args, num_args, fromVal, toVal, closure_ret
     XrmValuePtr toVal;
     XtPointer	*closure_ret;
 {
-    short i;
+    int i;
 
     if (*num_args != 0)
         XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 	  "wrongParameters","cvtStringToShort","XtToolkitError",
           "String to Integer conversion needs no extra arguments",
            (String *) NULL, (Cardinal *)NULL);
-    if (sscanf((char *)fromVal->addr, "%hd", &i) == 1)
-        done(short, i);
+    if (IsInteger((String)fromVal->addr, &i))
+        done(short, (short)i);
 
-    XtDpyStringConversionWarning(dpy, (char *) fromVal->addr, "Short");
+    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, "Short");
     return False;
 }
 
@@ -788,14 +804,13 @@ static Boolean CvtStringToUnsignedChar(dpy, args, num_args, fromVal, toVal, clos
 		  "wrongParameters","cvtStringToUnsignedChar","XtToolkitError",
                   "String to Integer conversion needs no extra arguments",
                    (String *) NULL, (Cardinal *)NULL);
-    if (sscanf((char *)fromVal->addr, "%d", &i) == 1) {
-
+    if (IsInteger((String)fromVal->addr, &i)) {
         if ( i < 0 || i > 255 )
-            XtDpyStringConversionWarning(dpy, (char*)fromVal->addr,
+            XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr,
 					 "Unsigned Char");
         done(unsigned char, i);
     }
-    XtDpyStringConversionWarning(dpy, (char*)fromVal->addr, "Unsigned Char");
+    XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr, "Unsigned Char");
     return False;
 }
 
@@ -852,7 +867,8 @@ static Boolean CvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
 }
 
 /*ARGSUSED*/
-static Boolean CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
+static Boolean
+CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;
     Cardinal    *num_args;
@@ -872,8 +888,9 @@ void LowerCase(source, dest)
     register char  *source, *dest;
 {
     register char ch;
+    int i;
 
-    for (; (ch = *source) != 0; source++, dest++) {
+    for (i = 0; (ch = *source) != 0 && i < 999; source++, dest++, i++) {
     	if ('A' <= ch && ch <= 'Z')
 	    *dest = ch - 'A' + 'a';
 	else
@@ -881,6 +898,122 @@ void LowerCase(source, dest)
     }
     *dest = 0;
 }
+
+static int CompareISOLatin1 (first, second)
+    char *first, *second;
+{
+    register unsigned char *ap, *bp;
+
+    for (ap = (unsigned char *) first, bp = (unsigned char *) second;
+	 *ap && *bp; ap++, bp++) {
+	register unsigned char a, b;
+
+	if ((a = *ap) != (b = *bp)) {
+	    /* try lowercasing and try again */
+
+	    if ((a >= XK_A) && (a <= XK_Z))
+	      a += (XK_a - XK_A);
+	    else if ((a >= XK_Agrave) && (a <= XK_Odiaeresis))
+	      a += (XK_agrave - XK_Agrave);
+	    else if ((a >= XK_Ooblique) && (a <= XK_Thorn))
+	      a += (XK_oslash - XK_Ooblique);
+
+	    if ((b >= XK_A) && (b <= XK_Z))
+	      b += (XK_a - XK_A);
+	    else if ((b >= XK_Agrave) && (b <= XK_Odiaeresis))
+	      b += (XK_agrave - XK_Agrave);
+	    else if ((b >= XK_Ooblique) && (b <= XK_Thorn))
+	      b += (XK_oslash - XK_Ooblique);
+
+	    if (a != b) break;
+	}
+    }
+    return (((int) *bp) - ((int) *ap));
+}
+
+
+/*ARGSUSED*/
+static Boolean 
+CvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;
+    Cardinal    *num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;
+{
+    String str = (String)fromVal->addr;
+    if (*num_args != 0)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  "wrongParameters","cvtStringToInitialState","XtToolkitError",
+                  "String to InitialState conversion needs no extra arguments",
+                   (String *) NULL, (Cardinal *)NULL);
+
+    if (CompareISOLatin1(str, "NormalState") == 0) done(int, NormalState);
+    if (CompareISOLatin1(str, "IconicState") == 0) done(int, IconicState);
+    {
+	int val;
+	if (IsInteger(str, &val)) done( int, val );
+    }
+    XtDisplayStringConversionWarning(dpy, str, XtRInitialState);
+    return False;
+}
+
+XtConvertArgRec visualConvertArgs[] = {
+    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer)XtOffset(Widget, core.depth), sizeof(Cardinal)}
+};
+
+/*ARGSUSED*/
+static Boolean 
+CvtStringToVisual(dpy, args, num_args, fromVal, toVal, closure_ret)
+    Display*	dpy;
+    XrmValuePtr args;		/* Screen, depth */
+    Cardinal    *num_args;	/* 2 */
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+    XtPointer	*closure_ret;	/* unused */
+{
+    String str = (String)fromVal->addr;
+    int vc;
+    XVisualInfo vinfo;
+    if (*num_args != 2)
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  "wrongParameters","cvtStringToVisual","XtToolkitError",
+                  "String to Visual conversion needs screen and depth arguments",
+                   (String *) NULL, (Cardinal *)NULL);
+
+         if (CompareISOLatin1(str, "StaticGray") == 0)	vc = StaticGray;
+    else if (CompareISOLatin1(str, "StaticColor") == 0)	vc = StaticColor;
+    else if (CompareISOLatin1(str, "TrueColor") == 0)	vc = TrueColor;
+    else if (CompareISOLatin1(str, "GrayScale") == 0)	vc = GrayScale;
+    else if (CompareISOLatin1(str, "PseudoColor") == 0)	vc = PseudoColor;
+    else if (CompareISOLatin1(str, "DirectColor") == 0)	vc = DirectColor;
+    else if (!IsInteger(str, &vc)) {
+	XtDisplayStringConversionWarning(dpy, str, "Visual class name");
+	return False;
+    }
+
+    if (XMatchVisualInfo( dpy,
+		     XScreenNumberOfScreen((Screen*)*(Screen**)args[0].addr),
+		     (int)*(int*)args[1].addr,
+		     vc,
+		     &vinfo) ) {
+	done( Visual*, vinfo.visual );
+    }
+    else {
+	String params[2];
+	Cardinal num_params = 2;
+	params[0] = str;
+	params[1] = DisplayString(dpy);
+	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
+		  "conversionError", "stringToVisual", "XtToolkitError",
+                  "Cannot find Visual of class %s for display %s",
+		  params, &num_params );
+	return False;
+    }
+}
+
 
 XrmQuark  XtQBoolean;
 XrmQuark  XtQBool;
@@ -892,6 +1025,7 @@ XrmQuark  XtQFile;
 XrmQuark  XtQFont;
 XrmQuark  XtQFontStruct;
 XrmQuark  XtQGeometry;
+XrmQuark  XtQInitialState;
 XrmQuark  XtQInt;
 XrmQuark  XtQPixel;
 XrmQuark  XtQPixmap;
@@ -900,6 +1034,7 @@ XrmQuark  XtQPosition;
 XrmQuark  XtQShort;
 XrmQuark  XtQString;
 XrmQuark  XtQUnsignedChar;
+XrmQuark  XtQVisual;
 XrmQuark  XtQWindow;
 
 XrmQuark  XtQEoff;
@@ -915,7 +1050,6 @@ XrmQuark  XtQEdefault;
 
 XrmQuark  XtQExtdefaultbackground;
 XrmQuark  XtQExtdefaultforeground;
-XrmQuark  XtQExtdefaultfont;
 
 void _XtConvertInitialize()
 {
@@ -930,6 +1064,7 @@ void _XtConvertInitialize()
     XtQFont		= XrmStringToQuark(XtRFont);
     XtQFontStruct	= XrmStringToQuark(XtRFontStruct);
     XtQGeometry		= XrmStringToQuark(XtRGeometry);
+    XtQInitialState     = XrmStringToQuark(XtRInitialState);
     XtQInt		= XrmStringToQuark(XtRInt);
     XtQBool		= XrmStringToQuark(XtRBool);
     XtQPixel		= XrmStringToQuark(XtRPixel);
@@ -939,6 +1074,7 @@ void _XtConvertInitialize()
     XtQShort            = XrmStringToQuark(XtRShort);
     XtQString		= XrmStringToQuark(XtRString);
     XtQUnsignedChar     = XrmStringToQuark(XtRUnsignedChar);
+    XtQVisual	        = XrmStringToQuark(XtRVisual);
     XtQWindow		= XrmStringToQuark(XtRWindow);
 
 /* Boolean enumeration constants */
@@ -954,7 +1090,6 @@ void _XtConvertInitialize()
 
     XtQExtdefaultbackground = XrmStringToQuark(XtExtdefaultbackground);
     XtQExtdefaultforeground = XrmStringToQuark(XtExtdefaultforeground);
-    XtQExtdefaultfont	    = XrmStringToQuark(XtExtdefaultfont);
 }
 
 _XtAddDefaultConverters(table)
@@ -1008,6 +1143,10 @@ _XtAddDefaultConverters(table)
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
 
     Add(XtQString,  XtQGeometry,    CvtStringToGeometry, NULL, 0, XtCacheNone);
+    Add(XtQString,  XtQInitialState,CvtStringToInitialState, NULL, 0, XtCacheNone);
+    Add2(XtQString, XtQVisual,	    CvtStringToVisual,
+	visualConvertArgs, XtNumber(visualConvertArgs),
+	XtCacheByDisplay, NULL);
 
    _XtAddTMConverters(table);
 }
