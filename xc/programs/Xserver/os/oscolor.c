@@ -21,12 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.15 89/03/23 09:39:36 rws Exp $ */
-#ifdef apollo
-#ifndef APOLLO_SR9
-#define NDBM
-#endif
-#endif
+/* $XConsortium: oscolor.c,v 1.16 89/05/21 13:54:37 rws Exp $ */
 #ifdef NDBM
 #include <ndbm.h>
 #else

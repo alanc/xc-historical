@@ -21,12 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.26 89/05/21 13:56:34 rws Exp $ */
-#ifdef apollo
-#ifndef APOLLO_SR9
-#define NDBM
-#endif
-#endif
+/* $XConsortium: osinit.c,v 1.27 89/11/13 09:58:31 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
