@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.16 94/07/11 18:20:15 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.17 94/07/13 12:23:43 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -44,8 +44,8 @@ SmcConn proxy_smcConn;
 XtInputId proxy_iceInputId;
 char *proxy_clientId = NULL;
 
-WinInfo win_list[256];		/* TODO: use linked list or hash table */
-int win_count = 0;
+WinInfo *win_head = NULL;
+
 int proxy_count = 0;
 int die_count = 0;
 
@@ -386,65 +386,113 @@ XErrorEvent *event;
 
 
 
-int
+Bool
+LookupWindow (window, ptr_ret, prev_ptr_ret)
+
+Window window;
+WinInfo **ptr_ret;
+WinInfo **prev_ptr_ret;
+
+{
+    WinInfo *ptr, *prev;
+
+    ptr = win_head;
+    prev = NULL;
+
+    while (ptr)
+    {
+	if (ptr->window == window)
+	    break;
+	else
+	{
+	    prev = ptr;
+	    ptr = ptr->next;
+	}
+    }
+
+    if (ptr)
+    {
+	if (ptr_ret)
+	    *ptr_ret = ptr;
+	if (prev_ptr_ret)
+	    *prev_ptr_ret = prev;
+	return (1);
+    }
+    else
+	return (0);
+}
+
+
+
+WinInfo *
 AddNewWindow (window)
 
 Window window;
 
 {
-    int i;
+    WinInfo *newptr;
 
-    for (i = 0; i < win_count; i++)
-    {
-	if (win_list[i].window == window)
-	    return -1;
-    }
+    if (LookupWindow (window, NULL, NULL))
+	return (NULL);
 
-    win_list[win_count].window = window;
-    win_list[win_count].smc_conn = NULL;
-    win_list[win_count].waiting_for_required_props = 1;
-    win_list[win_count].got_wm_state = 0;
-    win_list[win_count].client_id = NULL;
-    win_list[win_count].wm_command = NULL;
-    win_list[win_count].wm_command_count = 0;
-    win_list[win_count].class.res_name = NULL;
-    win_list[win_count].class.res_class = NULL;
-    win_list[win_count].wm_name = NULL;
-    win_list[win_count].has_save_yourself = 0;
-    win_list[win_count].waiting_for_update = 0;
-    
-    win_count++;
+    newptr = (WinInfo *) malloc (sizeof (WinInfo));
 
-    return (win_count - 1);
+    if (newptr == NULL)
+	return (NULL);
+
+    newptr->next = win_head;
+    win_head = newptr;
+
+    newptr->window = window;
+    newptr->smc_conn = NULL;
+    newptr->waiting_for_required_props = 1;
+    newptr->got_wm_state = 0;
+    newptr->client_id = NULL;
+    newptr->wm_command = NULL;
+    newptr->wm_command_count = 0;
+    newptr->class.res_name = NULL;
+    newptr->class.res_class = NULL;
+    newptr->wm_name = NULL;
+    newptr->has_save_yourself = 0;
+    newptr->waiting_for_update = 0;
+
+    return (newptr);
 }
 
 
 
 void
-RemoveWindow (index)
+RemoveWindow (winptr)
 
-int index;
+WinInfo *winptr;
 
 {
-    if (win_list[index].client_id)
-	free (win_list[index].client_id);
+    WinInfo *ptr, *prev;
 
-    if (win_list[index].wm_command)
-	XFreeStringList (win_list[index].wm_command);
+    if (LookupWindow (winptr->window, &ptr, &prev))
+    {
+	if (prev == NULL)
+	    win_head = ptr->next;
+	else
+	    prev->next = ptr->next;
 
-    if (win_list[index].wm_name)
-	XFree (win_list[index].wm_name);
-
-    if (win_list[index].class.res_name)
-	XFree (win_list[index].class.res_name);
-
-    if (win_list[index].class.res_class)
-	XFree (win_list[index].class.res_class);
-
-    if (index < win_count - 1)
-	win_list[index] = win_list[win_count - 1];
-
-    win_count--;
+	if (ptr->client_id)
+	    free (ptr->client_id);
+	
+	if (ptr->wm_command)
+	    XFreeStringList (ptr->wm_command);
+	
+	if (ptr->wm_name)
+	    XFree (ptr->wm_name);
+	
+	if (ptr->class.res_name)
+	    XFree (ptr->class.res_name);
+	
+	if (ptr->class.res_class)
+	    XFree (ptr->class.res_class);
+	
+	free ((char *) ptr);
+    }
 }
 
 
@@ -460,14 +508,13 @@ Bool errorCheck;
     int actual_format;
     unsigned long nitems, bytesafter;
     unsigned long *datap = NULL;
+    WinInfo *winptr;
 
     /*
      * Add the new window
      */
 
-    int index;
-
-    if ((index = AddNewWindow (event->window)) < 0)
+    if ((winptr = AddNewWindow (event->window)) == NULL)
 	return;
 
 
@@ -502,13 +549,13 @@ Bool errorCheck;
      * around this, we must check for all properties now.
      */
 
-    XFetchName (disp, event->window, &win_list[index].wm_name);
+    XFetchName (disp, event->window, &winptr->wm_name);
 
     XGetCommand (disp, event->window,
-	&win_list[index].wm_command,
-	&win_list[index].wm_command_count);
+	&winptr->wm_command,
+	&winptr->wm_command_count);
 
-    XGetClassHint (disp, event->window, &win_list[index].class);
+    XGetClassHint (disp, event->window, &winptr->class);
 
     if (XGetWindowProperty (disp, event->window, wmStateAtom,
 	0L, 2L, False, AnyPropertyType,
@@ -516,27 +563,26 @@ Bool errorCheck;
 	(unsigned char **) &datap) == Success && datap)
     {
 	if (nitems > 0)
-	    win_list[index].got_wm_state = 1;
+	    winptr->got_wm_state = 1;
 
 	if (datap)
 	    XFree ((char *) datap);
     }
 
-    if (win_list[index].got_wm_state &&
-	win_list[index].wm_name != NULL &&
-	win_list[index].wm_command != NULL &&
-	win_list[index].wm_command_count > 0 &&
-	win_list[index].class.res_name != NULL &&
-	win_list[index].class.res_class != NULL)
+    if (winptr->got_wm_state &&
+	winptr->wm_name != NULL &&
+	winptr->wm_command != NULL &&
+	winptr->wm_command_count > 0 &&
+	winptr->class.res_name != NULL &&
+	winptr->class.res_class != NULL)
     {
-	win_list[index].waiting_for_required_props = 0;
+	winptr->waiting_for_required_props = 0;
 
 	if (!HasXSMPsupport (event->window))
 	{
-	    win_list[index].has_save_yourself =
-		HasSaveYourself (event->window);
+	    winptr->has_save_yourself =	HasSaveYourself (event->window);
 
-	    ConnectClientToSM (&win_list[index]);
+	    ConnectClientToSM (winptr);
 	}
     }
 
@@ -548,7 +594,7 @@ Bool errorCheck;
 	if (caught_error)
 	{
 	    caught_error = 0;
-	    RemoveWindow (index);
+	    RemoveWindow (winptr);
 	}
     }
 }
@@ -561,29 +607,24 @@ HandleDestroy (event)
 XDestroyWindowEvent *event;
 
 {
-    int i;
+    WinInfo *winptr;
 
-    for (i = 0; i < win_count; i++)
+    if (LookupWindow (event->window, &winptr, NULL))
     {
-	if (win_list[i].window == event->window)
+	if (winptr->smc_conn)
 	{
-	    if (win_list[i].smc_conn)
-	    {
-		SmcCloseConnection (win_list[i].smc_conn, 0, NULL);
-		win_list[i].smc_conn = NULL;
-		XtRemoveInput (win_list[i].input_id);
-	    }
-
-	    RemoveWindow (i);
-
-	    if (debug)
-	    {
-		printf ("Removed window (window = 0x%x)\n",
-		    win_list[i].window);
-		printf ("\n");
-	    }
-	    break;
+	    SmcCloseConnection (winptr->smc_conn, 0, NULL);
+	    XtRemoveInput (winptr->input_id);
+	    proxy_count--;
 	}
+
+	if (debug)
+	{
+	    printf ("Removed window (window = 0x%x)\n", winptr->window);
+	    printf ("\n");
+	}
+
+	RemoveWindow (winptr);
     }
 }
 
@@ -596,7 +637,7 @@ XPropertyEvent *event;
 
 {
     Window window = event->window;
-    int i;
+    WinInfo *winptr;
 
     if (event->atom != XA_WM_NAME && event->atom != XA_WM_COMMAND &&
 	event->atom != XA_WM_CLASS && event->atom != wmStateAtom)
@@ -609,80 +650,76 @@ XPropertyEvent *event;
 	return;
     }
 
-    for (i = 0; i < win_count; i++)
-	if (win_list[i].window == window)
-	    break;
-
-    if (i < win_count)
+    if (LookupWindow (window, &winptr, NULL))
     {
 	if (event->atom == XA_WM_NAME)
 	{
-	    if (win_list[i].wm_name)
+	    if (winptr->wm_name)
 	    {
-		XFree (win_list[i].wm_name);
-		win_list[i].wm_name = NULL;
+		XFree (winptr->wm_name);
+		winptr->wm_name = NULL;
 	    }
 
-	    XFetchName (disp, window, &win_list[i].wm_name);
+	    XFetchName (disp, window, &winptr->wm_name);
 	}
 	else if (event->atom == XA_WM_COMMAND)
 	{
-	    if (win_list[i].wm_command)
+	    if (winptr->wm_command)
 	    {
-		XFreeStringList (win_list[i].wm_command);
-		win_list[i].wm_command = NULL;
-		win_list[i].wm_command_count = 0;
+		XFreeStringList (winptr->wm_command);
+		winptr->wm_command = NULL;
+		winptr->wm_command_count = 0;
 	    }
 
 	    XGetCommand (disp, window,
-		&win_list[i].wm_command,
-		&win_list[i].wm_command_count);
+		&winptr->wm_command,
+		&winptr->wm_command_count);
 
-	    if (win_list[i].waiting_for_update)
+	    if (winptr->waiting_for_update)
 	    {
 		/* Finish off the Save Yourself */
 
-		win_list[i].waiting_for_update = 0;
-		FinishSaveYourself (&win_list[i]);
+		winptr->waiting_for_update = 0;
+		FinishSaveYourself (winptr);
 	    }
 	}
 	else if (event->atom == XA_WM_CLASS)
 	{
-	    if (win_list[i].class.res_name)
+	    if (winptr->class.res_name)
 	    {
-		XFree (win_list[i].class.res_name);
-		win_list[i].class.res_name = NULL;
+		XFree (winptr->class.res_name);
+		winptr->class.res_name = NULL;
 	    }
 
-	    if (win_list[i].class.res_class)
+	    if (winptr->class.res_class)
 	    {
-		XFree (win_list[i].class.res_class);
-		win_list[i].class.res_class = NULL;
+		XFree (winptr->class.res_class);
+		winptr->class.res_class = NULL;
 	    }
 
-	    XGetClassHint (disp, window, &win_list[i].class);
+	    XGetClassHint (disp, window, &winptr->class);
 	}
 	else if (event->atom == wmStateAtom)
 	{
-	    win_list[i].got_wm_state = 1;
+	    winptr->got_wm_state = 1;
 	}
 
-	if (win_list[i].waiting_for_required_props)
+	if (winptr->waiting_for_required_props)
 	{
-	    if (win_list[i].got_wm_state &&
-		win_list[i].wm_name != NULL &&
-		win_list[i].wm_command != NULL &&
-		win_list[i].wm_command_count > 0 &&
-		win_list[i].class.res_name != NULL &&
-		win_list[i].class.res_class != NULL)
+	    if (winptr->got_wm_state &&
+		winptr->wm_name != NULL &&
+		winptr->wm_command != NULL &&
+		winptr->wm_command_count > 0 &&
+		winptr->class.res_name != NULL &&
+		winptr->class.res_class != NULL)
 	    {
-		win_list[i].waiting_for_required_props = 0;
+		winptr->waiting_for_required_props = 0;
 		
 		if (!HasXSMPsupport (window))
 		{
-		    win_list[i].has_save_yourself = HasSaveYourself (window);
+		    winptr->has_save_yourself = HasSaveYourself (window);
 
-		    ConnectClientToSM (&win_list[i]);
+		    ConnectClientToSM (winptr);
 		}
 	    }
 	}
@@ -710,6 +747,7 @@ Bool fast;
     SmPropValue prop3val, prop4val, prop5val;
     char discardCommand[80], userId[20];
     int numVals, i;
+    WinInfo *winptr;
 
     path = getenv ("SM_SAVE_DIR");
     if (!path)
@@ -722,14 +760,17 @@ Bool fast;
     filename = tempnam (path, ".PRX");
     proxyFile = fopen (filename, "wb");
 
-    for (i = 0; i < win_count; i++)
+    winptr = win_head;
+    while (winptr)
     {
-	if (win_list[i].client_id)
-	    if (!WriteProxyFileEntry (proxyFile, &win_list[i]))
+	if (winptr->client_id)
+	    if (!WriteProxyFileEntry (proxyFile, winptr))
 	    {
 		success = False;
 		break;
 	    }
+
+	winptr = winptr->next;
     }
 
     fclose (proxyFile);
