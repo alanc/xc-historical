@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.85 87/11/04 14:46:07 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.86 87/11/12 00:01:26 swick Locked $";
 #endif lint
 
 /*
@@ -139,34 +139,10 @@ static XtResource resources[]=
 	    Offset(shell.wmhints.icon_y), XrmRString, "-1"},
 	{ XtNiconMask, XtCIconMask, XrmRPixmap, sizeof(caddr_t),
 	    Offset(shell.wmhints.icon_mask), XrmRPixmap, NULL},
-#ifndef VMS      /* beta xlib Xutil.h */
 	{ XtNwindowGroup, XtCWindowGroup, XrmRWindow, sizeof(XID),
 	    Offset(shell.wmhints.window_group), XrmRWindow, NULL},
-#endif
-
 /*	{ XtNinitial, XtCInitial, XrmRInitialstate, sizeof(int),
 	    Offset(shell.initial), XrmRString, "Normal"} */
-#ifdef DECHINTS
-/* DEC_WM_HINTS */
-	{ XtNiconfiyPixmap, XtCIconifyPixmap, XrmRPixmap, sizeof(caddr_t),
-	    Offset(shell.dechints.iconify_pixmap), XrmRPixmap, NULL},
-	{ XtNiconBox, XtCIconBox, XrmRString, sizeof(caddr_t),
-	    Offset(shell.dechints.icon_box), XrmRString, NULL},
-	{ XtNiconBoxX, XtCIconBoxX, XrmRInt, sizeof(int),
-	    Offset(shell.dechints.icon_box_x), XrmRInt, NULL},
-	{ XtNiconBoxY, XtCIconBoxY, XrmRInt, sizeof(int),
-	    Offset(shell.dechints.icon_box_y), XrmRInt, NULL},
-	{ XtNtiled, XtCTiled, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.dechints.tiled), XrmRBoolean, NULL},
-	{ XtNsticky, XtCSticky, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.dechints.sticky), XrmRBoolean, NULL},
-	{ XtNnoIconify, XtCNoIconify,  sizeof(Boolean),
-	    Offset(shell.dechints.no_iconify_button), XrmRBoolean, NULL},
-	{ XtNnoLower, XtCNoLower,  sizeof(Boolean),
-	    Offset(shell.dechints.no_lower_button), XrmRBoolean, NULL},
-	{ XtNnoResize, XtCNoResize,  sizeof(Boolean),
-	    Offset(shell.dechints.no_resize_button), XrmRBoolean, NULL},
-#endif
 };
 static void Initialize();
 static void Realize();
@@ -331,6 +307,7 @@ char *name;
     return userResources;
 }
 
+/* ARGSUSED */
 static void
 Initialize(request, new, args, num_args)
 Widget request, new;
@@ -533,7 +510,7 @@ XEvent *event;
 			      childwid,
 			      w->core.width,
 			      w->core.height,
-			      w->core.border_width);
+			      (Dimension)0);
 			  break;
 		    }
 		}
@@ -949,7 +926,7 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	int i;
 	char filename[MAXPATHLEN];
 	char **saved_argv;
-	int    saved_argc = *argc;
+	Cardinal saved_argc = *argc;
 	Display *dpy;
 	char *ptr, *rindex();
 	ShellWidget w;
@@ -1041,12 +1018,12 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand( XtDefaultDB,opTable,
+	XrmParseCommand( &XtDefaultDB,opTable,
                            XtNumber(opTable), name, argc, argv);
 	
 	if(num_urs >0) {
 		/* the application has some more defaults */
-		XrmParseCommand(XtDefaultDB, urlist,
+		XrmParseCommand( &XtDefaultDB, urlist,
                            num_urs, name, argc, argv);
 	}
 	/* Resources are initialize and loaded */
