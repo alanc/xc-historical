@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.37 91/07/17 12:29:21 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.38 91/07/17 21:28:33 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -203,21 +203,29 @@ void XmhViewInNewWindow(w, event, params, num_params)
 }
 
 
-/*ARGSUSED*/
-void DoForward(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data;
-    XtPointer	call_data;
+void DoForwardMsg(scrn, params, num_params)
+    Scrn	scrn;
+    String	*params;
+    Cardinal	num_params;
 {
-    Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
     MsgList	mlist;
 
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs)
-	CreateForward(mlist);
+	CreateForward(mlist, params, num_params);
     FreeMsgList(mlist);
+}
+
+
+/*ARGSUSED*/
+void DoForward(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    DoForwardMsg((Scrn) client_data, (String *)NULL, (Cardinal)0);
 }
 
 
@@ -230,7 +238,7 @@ void XmhForward(w, event, params, num_params)
 {
     Scrn scrn = ScrnFromWidget(w);
     if (UserWantsAction(w, scrn))
-	DoForward(w, (XtPointer) scrn, (XtPointer) NULL);
+	DoForwardMsg(scrn, params, *num_params);
 }
 
 
@@ -719,13 +727,11 @@ void DoIncorporateNewMail(w, client_data, call_data)
 }
 
 
-/*ARGSUSED*/
-void DoReply(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data;
-    XtPointer	call_data;
+void DoReplyMsg(scrn, params, num_params)
+    Scrn	scrn;
+    String	*params;
+    Cardinal	num_params;
 {
-    Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
     Scrn	nscrn;
     MsgList	mlist;
@@ -738,11 +744,21 @@ void DoReply(w, client_data, call_data)
 	ScreenSetAssocMsg(nscrn, mlist->msglist[0]);
 	msg = TocMakeNewMsg(DraftsFolder);
 	MsgSetTemporary(msg);
-	MsgLoadReply(msg, mlist->msglist[0]);
+	MsgLoadReply(msg, mlist->msglist[0], params, num_params);
 	MsgSetScrnForComp(msg, nscrn);
 	MapScrn(nscrn);
     }
     FreeMsgList(mlist);
+}
+    
+
+/*ARGSUSED*/
+void DoReply(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    DoReplyMsg((Scrn) client_data, (String *)NULL, (Cardinal)0);
 }
     
 
@@ -755,7 +771,7 @@ void XmhReply(w, event, params, num_params)
 {
     Scrn scrn = ScrnFromWidget(w);
     if (UserWantsAction(w, scrn))
-	DoReply(w, (XtPointer) scrn, (XtPointer) NULL);
+	DoReplyMsg(scrn, params, *num_params);
 }
 
 
