@@ -42,14 +42,18 @@
 
 *fontMenu.Label:  VT Fonts
 *fontMenu*fontdefault*Label:	Default
-*fontMenu*font1*Label:	Tiny
+*fontMenu*font1*Label:	Unreadable
 *VT100*font1:		nil2
-*fontMenu*font2*Label:	Small
-*VT100*font2:		6x10
-*fontMenu*font3*Label:	Medium
-*VT100*font3:		8x13
-*fontMenu*font4*Label:	Large
-*VT100*font4:		9x15
+*fontMenu*font2*Label:	Tiny
+*VT100*font2:		5x8
+*fontMenu*font3*Label:	Small
+*VT100*font3:		6x10
+*fontMenu*font4*Label:	Medium
+*VT100*font4:		7x13
+*fontMenu*font5*Label:	Large
+*VT100*font5:		9x15
+*fontMenu*font6*Label:	Huge
+*VT100*font6:		10x20
 *fontMenu*fontescape*Label:	Escape Sequence
 *fontMenu*fontsel*Label:		Selection
 !fontescape and fontsel overridden by application
