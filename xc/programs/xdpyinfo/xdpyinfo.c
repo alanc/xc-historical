@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.23 92/08/17 12:22:55 rws Exp $
+ * $XConsortium: xdpyinfo.c,v 1.24 92/09/07 14:22:57 rws Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -200,7 +200,8 @@ print_extension_info (dpy)
 	for (i = 0; i < n; i++) {
 	    printf ("    %s\n", extlist[i]);
 	}
-	XFreeExtensionList (extlist);
+	/* do not free, Xlib can depend on contents being unaltered */
+	/* XFreeExtensionList (extlist); */
     }
     return;
 }
