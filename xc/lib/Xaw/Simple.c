@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.24 89/12/11 14:50:10 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.25 89/12/15 11:42:05 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -96,9 +96,9 @@ static void ClassPartInitialize(class)
     if (c->simple_class.change_sensitive == NULL) {
 	char buf[BUFSIZ];
 
-	sprintf("%s Widget: The Simple Widget class method 'change_sensitive'",
-		c->core_class.class_name,
-		"is undefined.\nA function must be defined or inherited.");
+	sprintf(buf,
+		"%s Widget: The Simple Widget class method 'change_sensitive' is undefined.\nA function must be defined or inherited.",
+		c->core_class.class_name);
 	XtWarning(buf);
 	c->simple_class.change_sensitive = ChangeSensitive;
     }
