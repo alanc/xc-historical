@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.29 88/02/24 15:19:32 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.30 88/09/06 15:41:22 jim Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1353,6 +1353,7 @@ WriteSConnSetupPrefix(pClient, pcsp)
     xConnSetupPrefix	cspT;
 
     cspT.success = pcsp->success;
+    cspT.lengthReason = pcsp->lengthReason;
     cpswaps(pcsp->majorVersion, cspT.majorVersion);
     cpswaps(pcsp->minorVersion, cspT.minorVersion);
     cpswaps(pcsp->length, cspT.length);
