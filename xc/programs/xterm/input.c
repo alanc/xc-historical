@@ -1,9 +1,9 @@
 /*
- *	$Header: input.c,v 1.15 87/12/19 10:03:26 rws Exp $
+ *	$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$Header: input.c,v 1.15 87/12/19 10:03:26 rws Exp $";
+static char *rcsid_input_c = "$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,11 +34,12 @@ static char *rcsid_input_c = "$Header: input.c,v 1.15 87/12/19 10:03:26 rws Exp 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: input.c,v 1.15 87/12/19 10:03:26 rws Exp $";
+static char rcs_id[] = "$Header: input.c,v 1.1 88/02/10 13:08:06 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/DECkeysym.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
@@ -89,7 +90,8 @@ register XKeyPressedEvent *event;
 		} else
 			unparseputc(kypd_num[keycode-XK_KP_Space], pty);
 		key = TRUE;
-        } else if (IsCursorKey(keycode)) {
+        } else if (IsCursorKey(keycode) &&
+        	keycode != XK_Prior && keycode != XK_Next) {
        		if (keyboard->flags & CURSOR_APL) {
 			reply.a_type = SS3;
 			unparseseq(&reply, pty);
@@ -100,7 +102,9 @@ register XKeyPressedEvent *event;
 			unparseseq(&reply, pty);
 		}
 		key = TRUE;
-	 } else if (IsFunctionKey(keycode) || IsMiscFunctionKey(keycode)) {
+	 } else if (IsFunctionKey(keycode) || IsMiscFunctionKey(keycode) ||
+	 	keycode == XK_Prior || keycode == XK_Next ||
+	 	keycode == DXK_Remove) {
 		reply.a_type = CSI;
 		reply.a_nparam = 1;
 		reply.a_param[0] = funcvalue(keycode);
@@ -174,6 +178,7 @@ funcvalue(keycode)
 		case XK_Find :	return(1);
 		case XK_Insert:	return(2);
 		case XK_Delete:	return(3);
+		case DXK_Remove: return(3);
 		case XK_Select:	return(4);
 		case XK_Prior:	return(5);
 		case XK_Next:	return(6);
