@@ -1,0 +1,268 @@
+.TH Xman 1 "1 March 1988" "X Version 11"
+.SH NAME
+xman - X window system manual page display program.
+.SH SYNOPSIS
+.B xman
+[-options ...]
+.SH DESCRIPTION
+.I Xman
+opens a small window on the display that contains the a menu of
+commands.  My hope is that this is small enough to allow you to call
+it in your .login and leave it running throughout your entire login
+session.  At this point in the program there several options;
+\fIHelp\fP will pop up a window with on-line help, \fIQuit\fP will
+exit, and \fIManual Page\fP will pop up a window with a manual page
+browser in it, you may pop up more than one manual page browser window
+from a single execution of xman.
+.PP
+For further information on using xman please read the on-line
+help information.  The rest of this manual page will discuss
+customization of xman to suit the needs of a particular user.
+For groups that desire to create a new directory listing (manual
+section), read the section on the \fImandesc\fP file that allows
+system wide customization of manual sections.
+.PP
+Xman creates temporary files for all unformatted man pages and all apropos
+searches.  These files are stored in /tmp. 
+.PP
+.SH MANDESC
+Xman will search each directory in the MANPATH for files to add to the
+directory listing.  xman also looks for a file called \fImandesc\fP in
+each directory specified in the manpath.  The mandesc file tells xman
+to create a separate section for one or more of the directories in the
+manpath.  For example, if your manpath were '/usr/man:/usr/sipb/man'
+then xman would search /usr/man and finding no mandesc file would put
+all of its files in the default section names (e.g. manl gets a section name
+of local).  But it does find a mandesc file while searching
+/usr/sipb/man, this file contains the line 'lSIPB Programs' (no quote
+marks) this tells xman to put all files in the 'manl' section in a new
+directory called 'SIPB Programs'.  Xman will search this file until
+there are no more lines of information.  This flexabilty is \fIideal
+for courses\fP that have their own manual pages.  Like 'man' xman
+searches only the following directories: man0, man1, man2, man3...
+man8 ,manl (small L), mann.  Although it usually ignores the
+information in man0 unless there is a \fImandesc\fP that specifically
+tells it not to.
+.PP
+.SH "COMMAND LINE OPTIONS"
+.PP
+These are the command line options that xman understands.  Please note
+that some of these are inherited from the XToolkit and as the list of
+default toolkit options changes xman will follow.
+.PP
+.TP 16
+.B -helpfile <filename>
+.br
+Specifies a helpfile to use other than the default.
+.PP
+.TP 16
+.B -bothshown
+.br
+Allows both the manual page and manual directory to be on the screen at
+the same time.
+.PP
+.TP 16
+.B -notopbox
+.br
+Starts xman without the Top Menu with the three buttons in it.
+.PP
+.B -geometry (height)x(width)+(x_offset)+(y_offset)
+.TP 16
+.B =(height)x(width)+(x_offset)+(y_offset)
+.br
+Sets the size and location of the Top Menu with the three buttons in it.
+.PP
+.TP 16
+.B -pagesize (height)x(width)+(x_offset)+(y_offset)
+.br
+Sets the size and location of all the Manual Pages.
+.PP
+.B -bw <pixels>
+.TP 16
+.B -borderwidth <pixels>
+.br
+Specifies the width of the border for all windows in xman.
+.PP
+.B -bd <color>
+.TP 16
+.B -bordercolor <color>
+.br
+Specifies the color of the borders of all windows in xman.
+.PP
+.B -fg <color>
+.TP 16
+.B -foreground <color>
+.br
+Specifies the foreground color to be used.
+.PP
+.B -bg <color>
+.TP 16
+.B -background <color>
+.br
+Specifies the background color to be used.
+.PP
+.B -fn <font>
+.TP 16
+.B -font <font>
+.br
+Specifies the font to use for all buttons and labels.
+.TP 16
+.B -display <host:display[.screen]>
+.br
+Specifies a display other than the default specified by the DISPLAY
+environment variable to use to use.
+.TP 16
+.B -name <name>
+.br
+Specifies the name to use when retrieving resources.
+.PP
+.TP 16
+.B -title <title>
+.br
+Specifies the title of this application.
+.PP
+.TP 16
+.B -xrm <resource>
+.br
+Allows a resource to be specified on the command line.
+.PP
+.SH "WIDGET AND RESOURCE NAMES"
+
+Resource management is an important part of X Toolkit applications, and
+xman is not exception, all objects in xman can have many of their 
+distinguishing characteristics changed by changing the resources associated 
+with them, below is a brief list of the resources and what they modify.
+.TP 35
+foreground			
+- foreground color
+.TP 35
+background			
+- background color
+.TP 35
+width & height			
+- size
+.TP 35
+borderWidth			
+- border width
+.TP 35
+borderColor			
+- border color
+.PP
+In order to change the default values for the widget resources you need
+to have the names, thus, below I have specified the names of some of the
+most common widgets.
+.TP 35
+Top Menu
+- topBox.
+.TP 35
+Help Window
+- help
+.TP 35
+Manual Page Display Window
+- manualBrowser.
+.TP 35
+Manual Page Command Popup Menu 	
+- xmanCommands.
+.TP 35
+Manual Page Section Popup Menu 	
+- xmanSections.
+.TP 35
+Manual Page Search Popup       	
+- xmanSearch.
+.PP
+You can also reference Widgets by class, two of the most common classes
+are: Label, Command and Text.
+.PP
+Here are a few example of how to string all this information together into
+a resource specification, that can be used on the command line with the -xrm
+flag, or added to you .Xresource file.
+.TP 35
+.B xman*Command.foreground: Blue
+All command buttons will be  blue.
+.TP 35
+.B xman*topBox*foreground: Blue
+Everything in the top menu has a blue foreground.
+.TP 35
+.B xman*Text.border: Red
+All text widgets have a red border.
+.TP 35
+.B xman*Label.font: 9x15  
+All label buttons have a 9x15 font.
+.PP
+In addition Xman has a few specific application resources, that allow
+customizations that are specific to xman. 
+.PP
+.B manualFontNormal
+.PP
+.B manualFontBold
+.TP 16
+.B manualFontItalic
+The fonts to use for the three types of text in the manual pages.
+.PP
+.TP 8
+.B directoryFontNormal
+The font to use for the directory text.
+.PP
+.TP 8
+.B bothShown
+Either 'true' or 'false', specifies whether or not you want both the
+directory and the manual page shown at start up.
+.PP
+.TP 8
+.B directoryHeight
+The number of pixels heigh the directory is when both it and the manual page
+are shown simultaneously.
+.PP
+.B topCursor
+.PP
+.B helpCursor
+.PP
+.B manpageCursor
+.TP 16
+.B searchEntryCursor
+The cursors to use in the top box, help window, manual page window,
+and search entry text widget respectively.
+.PP
+.TP 8 
+.B helpFile
+Use this rather than the system default helpfile.
+.PP
+.TP 8
+.B topBox
+.br
+Either 'true' or 'false', determines whether the top box (containing
+the help, quit and manual page buttons) or a manual page is put on the screen
+at start-up.
+.PP
+.TP 8
+.B verticalList
+.br
+Either 'true' or 'false', determines whether the directory listing is 
+vertically or horizontally organized, the default is horizontal (false).
+.PP
+.SH FILES
+/usr/man/* or those specified in the MANPATH.
+.br 
+mandesc
+.PP
+.SH "SEE ALSO"
+X(1), X(8C), man(1), apropos(1)
+.PP
+.SH ENVIRONMENT
+.TP 8
+.B DISPLAY
+to get the default host and display to use.
+.TP 8
+.B MANPATH
+to get the search path for manual pages.  Directories are separated by
+colons (e.g. /usr/man:/mit/kit/man:/foo/bar/man).
+.PP
+.SH BUGS
+The -fn and -font option only specify the fonts for the command button
+and not the text of the manpages or directories. 
+.PP
+.SH AUTHORS
+Copyright 1988 by Massachusetts Institute of Technology.
+.br
+Chris Peterson, MIT Project Athena from the V10 version written by Barry
+Shein of Boston University.
