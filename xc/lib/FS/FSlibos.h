@@ -9,6 +9,9 @@
  * FSlib networking & os include file
  */
 
+#include <X11/Xfuncs.h>
+#include <X11/Xosdefs.h>
+
 #ifdef att
 /*
  * UNIX System V Release 3.2
@@ -150,19 +153,21 @@
  */
 #endif
 
-#ifdef sgi
-#include <malloc.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
 #include <string.h>
 #else
-char       *malloc(), *realloc(), *calloc();
-void        free();
-char       *strncpy(), *strncat();
-void        perror();
-#ifndef NCD
-void        exit();
+char *malloc(), *realloc(), *calloc();
+void exit();
+#ifdef SYSV
+#include <string.h>
+#else
+#include <strings.h>
 #endif
-
 #endif
+#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
+char *malloc(), *realloc(), *calloc();
+#endif /* macII */
 
 void        bcopy();
 
