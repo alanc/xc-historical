@@ -4,6 +4,10 @@
 #define DoProfileLib ProfileLibXt
 #include <Library.tmpl>
 
+#ifdef RsArchitecture
+REQUIREDLIBS = $(XLIBSRC)/libX11.a
+#endif
+
 /* config options */
 
 XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
