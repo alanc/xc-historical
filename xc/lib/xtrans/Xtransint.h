@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.11 94/02/06 16:07:38 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.12 94/02/08 20:55:09 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -40,6 +40,10 @@
 
 #ifndef _XTRANSINT_H_
 #define _XTRANSINT_H_
+
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 
 #include "Xtrans.h"
 
@@ -98,8 +102,6 @@ extern int  errno;		/* Internal system error number. */
 #define EGET() errno
 
 #else /* WIN32 */
-
-#define _WILLWINSOCK_
 
 #define ESET(val) WSASetLastError(val)
 #define EGET() WSAGetLastError()
