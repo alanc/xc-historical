@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.13 92/10/15 16:15:57 hersh Exp $ */
+/* $XConsortium: multibuf.c,v 1.14 92/10/19 09:11:54 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -77,6 +77,7 @@ typedef struct _Multibuffer {
 typedef struct _Multibuffers {
     WindowPtr	pWindow;		/* associated window */
     int		numMultibuffer;		/* count of buffers */
+    int		refcnt;			/* ref count for delete */
     int		displayedMultibuffer;	/* currently active buffer */
     int		updateAction;		/* Undefined, Background, Untouched, Copied */
     int		updateHint;		/* Frequent, Intermittent, Static */
@@ -296,22 +297,16 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     int			width, height, depth;
     int			i, j;
 
-    pMultibuffers = (MultibuffersPtr) xalloc (sizeof (MultibuffersRec));
+    DestroyImageBuffers(pWin);
+    pMultibuffers = (MultibuffersPtr) xalloc (sizeof (MultibuffersRec) +
+					      nbuf * sizeof (MultibufferRec));
     if (!pMultibuffers)
 	return BadAlloc;
     pMultibuffers->pWindow = pWin;
-    pMultibuffers->buffers = (MultibufferPtr) xalloc (nbuf * sizeof (MultibufferRec));
-    if (!pMultibuffers->buffers)
-    {
-	xfree (pMultibuffers);
-	return BadAlloc;
-    }
+    pMultibuffers->buffers = (MultibufferPtr) (pMultibuffers + 1);
+    pMultibuffers->refcnt = pMultibuffers->numMultibuffer = 0;
     if (!AddResource (pWin->drawable.id, MultibuffersResType, (pointer) pMultibuffers))
-    {
-	xfree (pMultibuffers->buffers);
-	xfree (pMultibuffers);
 	return BadAlloc;
-    }
     width = pWin->drawable.width;
     height = pWin->drawable.height;
     depth = pWin->drawable.depth;
@@ -340,6 +335,7 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
 	pMultibuffer->pPixmap->drawable.id = ids[i];
     }
     pMultibuffers->numMultibuffer = i;
+    pMultibuffers->refcnt = i;
     pMultibuffers->displayedMultibuffer = -1;
     if (i > 0)
 	AliasMultibuffer (pMultibuffers, 0);
@@ -1594,7 +1590,15 @@ MultibufferDelete (pMultibuffer, id)
     MultibufferPtr	pMultibuffer;
     XID		id;
 {
-    return;
+    MultibuffersPtr	pMultibuffers;
+
+    pMultibuffers = pMultibuffer->pMultibuffers;
+    if (--pMultibuffers->refcnt == 0)
+    {
+	FreeResourceByType (pMultibuffers->pWindow->drawable.id,
+			    MultibuffersResType, TRUE);
+	xfree (pMultibuffers);
+    }
 }
 
 /* Resource delete func for MultibuffersResType */
@@ -1605,10 +1609,11 @@ MultibuffersDelete (pMultibuffers, id)
 {
     int	i;
 
-    for (i = 0; i < pMultibuffers->numMultibuffer; i++)
-	FreeResource (pMultibuffers->buffers[i].pPixmap->drawable.id, 0);
-    xfree (pMultibuffers->buffers);
-    xfree (pMultibuffers);
+    if (pMultibuffers->refcnt == pMultibuffers->numMultibuffer)
+    {
+	for (i = pMultibuffers->numMultibuffer; --i >= 0; )
+	    FreeResource (pMultibuffers->buffers[i].pPixmap->drawable.id, 0);
+    }
 }
 
 /* Resource delete func for DisplayRequestResType */
