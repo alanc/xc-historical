@@ -92,7 +92,7 @@ OBJS = \
 	DisplayQue.o \
 	DrawLogo.o \
 	DrRndRect.o \
-	EditResCom.c \
+	EditResCom.o \
 	FToCback.o \
 	GetHost.o \
 	GrayPixmap.o \
