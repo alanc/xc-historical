@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.26 88/03/16 10:12:08 rws Exp $ */
+/* $Header: dixutils.c,v 1.27 88/04/30 12:01:38 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -76,7 +76,7 @@ ClientTimeToServerTime(c)
     else if (c < currentTime.milliseconds)
     {
 	if (((unsigned long)currentTime.milliseconds - c) > HALFMONTH)
-	    ts.months -= 1L;
+	    ts.months += 1;
     }
     return ts;
 }
