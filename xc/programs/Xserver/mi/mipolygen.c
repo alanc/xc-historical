@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 1.18 88/09/06 14:49:17 jim Exp $ */
+/* $XConsortium: mipolygen.c,v 1.19 88/10/02 15:01:48 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
@@ -75,8 +75,8 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
     if (pgc->fillRule == EvenOddRule) 
     {
         /*
-        /*  for each scanline
-        */
+         *  for each scanline
+         */
         for (y = ET.ymin; y < ET.ymax; y++) 
         {
             /*
