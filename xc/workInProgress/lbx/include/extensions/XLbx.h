@@ -1,6 +1,6 @@
-/* $XConsortium: XLbx.h,v 1.3 94/03/08 16:57:09 dpw Exp $ */
+/* $XConsortium: XLbx.h,v 1.4 94/03/08 20:27:58 dpw Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.16 1994/03/07 21:40:41 lemke Exp $
+ * $NCDId: @(#)XLbx.h,v 1.17 1994/03/24 01:26:07 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -68,6 +68,8 @@
 #define LbxDeltaEvent			2
 #define LbxInvalidateTagEvent		3
 #define LbxSendTagDataEvent		4
+#define LbxListenToOne			5
+#define LbxListenToAll			6
 
 /* Lbx compression schemes */
 #define LbxCompressNone			0

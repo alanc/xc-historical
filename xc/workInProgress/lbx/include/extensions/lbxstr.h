@@ -1,6 +1,6 @@
-/* $XConsortium: lbxstr.h,v 1.3 94/03/08 16:57:13 dpw Exp $ */
+/* $XConsortium: lbxstr.h,v 1.4 94/03/08 20:27:49 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxstr.h,v 1.18 1994/03/07 21:40:43 lemke Exp $
+ * $NCDId: @(#)lbxstr.h,v 1.19 1994/03/22 18:22:47 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -24,6 +24,9 @@
  * Author:  Keith Packard, Network Computing Devices
  */
  
+#ifndef _LBXSTR_H_
+#define _LBXSTR_H_
+
 #include "XLbx.h"
 
 #define LBXNAME "LBX"
@@ -413,3 +416,4 @@ extern int lbxDebug;
 #define DBG(n,m)
 #endif
 
+#endif	/* _LBXSTR_H_ */
