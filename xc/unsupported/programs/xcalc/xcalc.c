@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.2 89/05/08 16:23:15 converse Exp $
+ * $XConsortium: xcalc.c,v 1.3 89/05/11 14:23:46 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -287,10 +287,11 @@ void Syntax(argc, argv)
     (void) fprintf(stderr, "%s: unknown options:", argv[0]);
     for (i=1; i <argc; i++)
 	(void) fprintf(stderr, " %s", argv[i]);
-    (void) fprintf(stderr, ".\n");
-    (void) fprintf(stderr, "Usage: %s", argv[0]);
+    (void) fprintf(stderr, "\n\n");
+    (void) fprintf(stderr, "Usage:  %s", argv[0]);
     for (i=0; i < XtNumber(Options); i++)
 	(void) fprintf(stderr, " [%s]", Options[i].option);
+    (void) fprintf(stderr, "\n");
     XtDestroyApplicationContext(XtWidgetToApplicationContext(toplevel));
     exit(1);
 }
