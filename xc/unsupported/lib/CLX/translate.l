@@ -292,7 +292,7 @@
   (declare (type display display))
   (declare-values (simple-array keysym (display-max-keycode keysyms-per-keycode)))
   (or (display-keysym-mapping display)
-      (setf (display-keysym-mapping display) (xlib:keyboard-mapping display))))
+      (setf (display-keysym-mapping display) (keyboard-mapping display))))
 
 (defun keycode->keysym (display keycode keysym-index)
   (declare (type display display)
