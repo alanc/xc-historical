@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.129 92/05/29 17:01:19 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.130 92/08/06 15:08:07 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -796,14 +796,14 @@ BuildMakefileTarget(Imakefile,NullParameter)
  * DebuggedLibObjCompile - compile fragment for debugged objects
  */
 #ifndef DebuggedLibObjCompile
-#define DebuggedLibObjCompile(options) LibObjCompile(debugger,-g options)
+#define DebuggedLibObjCompile(options) LibObjCompile(debugger,DebuggableCDebugFlags options)
 #endif
 
 /*
  * ProfiledLibObjCompile - compile fragment for profiled objects
  */
 #ifndef ProfiledLibObjCompile
-#define ProfiledLibObjCompile(options) LibObjCompile(profiled,-pg options)
+#define ProfiledLibObjCompile(options) LibObjCompile(profiled,ProfiledCDebugFlags options)
 #endif
 
 /*
