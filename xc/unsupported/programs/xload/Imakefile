@@ -12,3 +12,5 @@ InstallProgramWithFlags(xload, $(BINDIR), $(INSTKMEMFLAGS))
 InstallManPage(xload,$(MANDIR))
 
 InstallAppDefaults(XLoad)
+
+DependTarget()
