@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.34 94/02/05 01:51:51 rws Exp $ */
+/* $XConsortium: fsio.c,v 1.35 94/02/07 11:20:37 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -113,7 +113,7 @@ _fs_connect(servername, timeout)
     /*
      * Open the network connection.
      */
-    if( (trans_conn=_FONTTransOpenCOTSClient(servername)) == NULL )
+    if( (trans_conn=_FontTransOpenCOTSClient(servername)) == NULL )
 	{
 	return (NULL);
 	}
@@ -124,7 +124,7 @@ _fs_connect(servername, timeout)
     alarm((unsigned) timeout);
 #endif
 
-    ret = _FONTTransConnect(trans_conn,servername);
+    ret = _FontTransConnect(trans_conn,servername);
 
 #ifdef SIGALRM
     alarm((unsigned) 0);
@@ -134,7 +134,7 @@ _fs_connect(servername, timeout)
 
     if (ret < 0)
 	{
-	_FONTTransClose(trans_conn);
+	_FontTransClose(trans_conn);
 	return (NULL);
 	}
 
@@ -142,7 +142,7 @@ _fs_connect(servername, timeout)
      * Set the connection non-blocking since we use select() to block.
      */
 
-    _FONTTransSetOption(trans_conn, TRANS_NONBLOCKING, 1);
+    _FontTransSetOption(trans_conn, TRANS_NONBLOCKING, 1);
 
     return trans_conn;
 }
@@ -174,7 +174,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
     if ((conn->trans_conn = _fs_connect(servername, 5)) == NULL)
 	return FALSE;
 
-    conn->fs_fd = _FONTTransGetConnectionNumber (conn->trans_conn);
+    conn->fs_fd = _FontTransGetConnectionNumber (conn->trans_conn);
 
     conn->generation = ++generationCount;
 
@@ -210,7 +210,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
 	alts = (FSFpeAltPtr) xalloc(nalts * sizeof(FSFpeAltRec) +
 				    setuplength);
 	if (!alts) {
-	    _FONTTransClose(conn->trans_conn);
+	    _FontTransClose(conn->trans_conn);
 	    errno = ENOMEM;
 	    return FALSE;
 	}
@@ -238,7 +238,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
     setuplength = rep.auth_len << 2;
     if (setuplength &&
 	    !(auth_data = (char *) xalloc((unsigned int) setuplength))) {
-	_FONTTransClose(conn->trans_conn);
+	_FontTransClose(conn->trans_conn);
 	errno = ENOMEM;
 	return FALSE;
     }
@@ -248,7 +248,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
     }
     if (rep.status != AuthSuccess) {
 	xfree(auth_data);
-	_FONTTransClose(conn->trans_conn);
+	_FontTransClose(conn->trans_conn);
 	errno = EPERM;
 	return FALSE;
     }
@@ -260,7 +260,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
     if ((vendor_string = (char *)
 	 xalloc((unsigned) conn_accept.vendor_len + 1)) == NULL) {
 	xfree(auth_data);
-	_FONTTransClose(conn->trans_conn);
+	_FontTransClose(conn->trans_conn);
 	errno = ENOMEM;
 	return FALSE;
     }
@@ -354,7 +354,7 @@ _fs_read(conn, data, size)
 	return 0;
     }
     ESET(0);
-    while ((bytes_read = _FONTTransRead(conn->trans_conn,
+    while ((bytes_read = _FontTransRead(conn->trans_conn,
 	data, (int) size)) != size) {
 	if (bytes_read > 0) {
 	    size -= bytes_read;
@@ -402,7 +402,7 @@ _fs_write(conn, data, size)
 	return -1;
 
     ESET(0);
-    while ((bytes_written = _FONTTransWrite(conn->trans_conn,
+    while ((bytes_written = _FontTransWrite(conn->trans_conn,
 	data, (int) size)) != size) {
 	if (bytes_written > 0) {
 	    size -= bytes_written;
@@ -467,7 +467,7 @@ _fs_data_ready(conn)
 {
     BytesReadable_t readable;
 
-    if (_FONTTransBytesReadable(conn->trans_conn, &readable) < 0)
+    if (_FontTransBytesReadable(conn->trans_conn, &readable) < 0)
 	return -1;
     return readable;
 }

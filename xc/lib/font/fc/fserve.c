@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.39 94/03/08 15:50:18 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.40 94/03/14 17:50:14 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -315,7 +315,7 @@ fs_close_conn(conn)
     if (!conn->trans_conn)
 	return;
 
-    (void) _FONTTransClose (conn->trans_conn);
+    (void) _FontTransClose (conn->trans_conn);
 
     _fs_bit_clear(_fs_fd_mask, conn->fs_fd);
 
