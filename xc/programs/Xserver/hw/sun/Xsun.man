@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.18 93/11/14 13:01:13 kaleb Exp $
+.\" $XConsortium: Xsun.man,v 1.19 94/02/01 11:01:23 kaleb Exp $
 .TH XSUN 1 "Release 5" "X Version 11"
 .SH NAME
 Xsun, XsunMono \- Sun server for X Version 11
@@ -51,7 +51,7 @@ For backwards compatibility, the normal and mode-shifted keysyms for
 the ten function keys on the left side of Type-4 and Type-5 keyboards 
 may be swapped via command line option. See \fI-swapLkeys\fP.
 .PP
-The X LEDs 1..4 correspond to the NumLock, Compose, ScrollLock, and
+The X LEDs 1..4 correspond to the NumLock, ScrollLock, Compose, and
 CapsLock LEDs respectively. Pressing the key once turns the corresponding
 LED on. Pressing the key again turns the LED off. Turning an LED on or 
 off with e.g. 'xset [-]led [1234]' is equivalent to pressing the 
