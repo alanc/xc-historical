@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.16 87/06/16 09:25:57 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.17 87/06/16 10:18:57 toddb Locked $";
 #endif
 
 /*%
@@ -60,7 +60,7 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.16 87/06/16 09:25:57 chariot Lock
 
 /* Setable Options */
 
-int format;
+int format = ZPixmap;
 Bool nobdrs = False;
 Bool standard_out = True;
 Bool debug = False;
@@ -102,16 +102,6 @@ main(argc, argv)
 	usage();
     }
     
-    /*
-     * Set the right pixmap format for the display type.
-     */
-    if(DisplayPlanes(dpy, screen) == 1) {
-	format = XYBitmap;
-    }
-    else if(format != XYPixmap) {
-	    format = ZPixmap;
-    }
-
     /*
      * Let the user select the target window.
      */
