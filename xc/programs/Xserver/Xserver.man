@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Xserver.man,v 1.44 92/02/25 10:24:47 rws Exp $
 .TH XSERVER 1 "Release 5"  "X Version 11"
 .SH NAME
 Xserver \- X Window System server
@@ -84,6 +84,9 @@ Not obeyed by all servers.
 .B \-co \fIfilename\fP
 sets name of RGB color database.
 .TP 8
+.B \-core
+causes the server to generate a core dump on fatal errors.
+.TP 8
 .B \-dpi \fIresolution\fP
 sets the resolution of the screen, in dots per inch.
 To be used when the server cannot determine the screen size from the hardware.
@@ -136,6 +139,10 @@ There is currently no way to change this from a client.
 .B \-p \fIminutes\fP
 sets screen-saver pattern cycle time in minutes.
 .TP 8
+.B \-pn
+permits the server to continue running if it fails to establish all of
+its well-known sockets, but establishes at least one.
+.TP 8
 .B \-r
 turns off auto-repeat.
 .TP 8
@@ -152,8 +159,14 @@ disables save under support on all screens.
 sets pointer acceleration threshold in pixels (i.e. after how many pixels
 pointer acceleration should take effect).
 .TP 8
+.B \-terminate
+causes the server to terminate at server reset, instead of continuing to run.
+.TP 8
 .B \-to \fIseconds\fP
 sets default connection timeout in seconds.
+.TP 8
+.B \-tst
+disables all testing extensions (e.g., XTEST, XTrap, XTestExtension1).
 .TP 8
 .B tty\fIxx\fP
 ignored, for servers started the ancient way (from init).
