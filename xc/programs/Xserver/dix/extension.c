@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.27 87/09/01 20:50:42 toddb Locked $ */
+/* $Header: extension.c,v 1.28 87/09/01 20:57:16 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -291,23 +291,4 @@ RegisterScreenProc(name, pScreen, proc)
      ErrorF("    rep.resourceID = %x\n", rep.resourceID);
 
      WriteEventsToClient (client, 1, (pointer) &rep);
-}
-
-void
-InitExtensions()
-{
-    int i;
-
-    for (i=0; i<MAXSCREENS; i++)
-        AuxillaryScreenProcs[i].num = 0;
-
-#ifdef ZOID
-    ZoidExtensionInit();
-#endif ZOID
-#ifdef BEZIER
-    BezierExtensionInit();
-#endif BEZIER
-#ifdef OTHEREXTENSION
-    OtherExtensionInit();
-#endif OTHEREXTENSION
 }
