@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.17 87/08/22 12:30:01 ham Exp $ */
+/* $Header: XConnDis.c,v 11.18 87/08/29 16:27:26 ham Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -137,7 +137,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	     */
 	    sprintf(objname, "X%d", display_num);
 	    /*
-	     * Attempt to open the DECnet connection, return 0 if fails.
+	     * Attempt to open the DECnet connection, return -1 if fails.
 	     */
 	    if ((fd = dnet_conn(displaybuf, 
 		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0)
@@ -260,46 +260,56 @@ int _XDisconnectDisplay (server)
 _XWaitForWritable(dpy)
     Display *dpy;
 {
-    int r_mask;
-    int w_mask;
+    unsigned long r_mask[MSKCNT];
+    unsigned long w_mask[MSKCNT];
     int nfound;
-	while (1) {
-	    r_mask = 1 << dpy->fd;
-	    w_mask = 1 << dpy->fd;
-	    do {
-		nfound = select (dpy->fd + 1, &r_mask, &w_mask, NULL, NULL);
-		if (nfound < 0 && errno != EINTR) (*_XIOErrorFunction)(dpy);
-	    } while (nfound <= 0);
-	    if (r_mask) {
-		char buf[BUFSIZE];
-		long pend_not_register;
-		register long pend;
-		register xEvent *ev;
 
-		/* find out how much data can be read */
-		if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
-			(*_XIOErrorFunction)(dpy);
-		pend = pend_not_register;
+    CLEARBITS(r_mask);
+    CLEARBITS(w_mask);
 
-		/* must read at least one xEvent; if none is pending, then
-		   we'll just block waiting for it */
-		if (pend < sizeof(xEvent)) pend = sizeof (xEvent);
+    while (1) {
+	BITSET(r_mask, dpy->fd);
+        BITSET(w_mask, dpy->fd);
+
+	do {
+	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
+	    if (nfound < 0 && errno != EINTR)
+		(*_XIOErrorFunction)(dpy);
+	} while (nfound <= 0);
+
+	if (ANYSET(r_mask)) {
+	    char buf[BUFSIZE];
+	    long pend_not_register;
+	    register long pend;
+	    register xEvent *ev;
+
+	    /* find out how much data can be read */
+	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
+		(*_XIOErrorFunction)(dpy);
+	    pend = pend_not_register;
+
+	    /* must read at least one xEvent; if none is pending, then
+	       we'll just block waiting for it */
+	    if (pend < sizeof(xEvent)) pend = sizeof (xEvent);
 		
-		/* but we won't read more than the max buffer size */
-		if (pend > BUFSIZE) pend = BUFSIZE;
+	    /* but we won't read more than the max buffer size */
+	    if (pend > BUFSIZE) pend = BUFSIZE;
 
-		/* round down to an integral number of XReps */
-		pend = (pend / sizeof (xEvent)) * sizeof (xEvent);
+	    /* round down to an integral number of XReps */
+	    pend = (pend / sizeof (xEvent)) * sizeof (xEvent);
 
-		_XRead (dpy, buf, pend);
-		for (ev = (xEvent *) buf; pend > 0; ev++, pend -= sizeof(xEvent))
-			if (ev->u.u.type == X_Error)
-			    _XError (dpy, (xError *) ev);
-			else  /* it's an event packet; enqueue it */
-			    _XEnq (dpy, ev);
-		}
-		if (w_mask) return;
+	    _XRead (dpy, buf, pend);
+	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= sizeof(xEvent))
+	    {
+		if (ev->u.u.type == X_Error)
+		    _XError (dpy, (xError *) ev);
+		else		/* it's an event packet; enqueue it */
+		    _XEnq (dpy, ev);
+	    }
 	}
+	if (ANYSET(w_mask))
+	    return;
+    }
 }
 
 
@@ -307,11 +317,12 @@ _XWaitForWritable(dpy)
 _XWaitForReadable(dpy)
   Display *dpy;
 {
-    int r_mask;
+    unsigned long r_mask[MSKCNT];
     int result;
-    r_mask = 1 << dpy->fd;
+	
+    BITSET(r_mask, dpy->fd);
     do {
-	result = select(dpy->fd + 1, &r_mask, NULL, NULL, NULL);
+	result = select(dpy->fd + 1, r_mask, NULL, NULL, NULL);
 	if (result == -1 && errno != EINTR) (*_XIOErrorFunction)(dpy);
     } while (result <= 0);
 }
