@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XConsortium: startpex,v 5.2 91/02/18 20:35:58 hersh Exp $
+# $XConsortium: startpex,v 5.3 91/02/18 20:42:19 hersh Exp $
 #
 # 
 # Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -64,11 +64,6 @@ PATH=$PATH:$XPATH; export PATH
 #  Yow!  What a hack!  (But it helps with SunView cut&paste!)
 
 WINDOW_PARENT=/dev/win0; export WINDOW_PARENT
-
-##echo "$XCMD $XRC -- $X $MONO $* -fp $XFONTS -co $XRGB"
-##($XCMD $XRC -- $X $MONO $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
-echo "$XCMD -- $X $MONO $* -fp $XFONTS -co $XRGB"
-($XCMD -- $X $MONO $* -fp $XFONTS -co $XRGB 2>&1 ) | strings &
 
 unset WINDOW_PARENT
 exit
