@@ -1,4 +1,4 @@
-/* $XConsortium: servermd.h,v 1.3 91/07/22 13:35:12 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.4 91/07/25 12:15:04 keith Exp $ */
 /* 
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation and the 
@@ -20,15 +20,12 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)servermd.h	4.1	91/05/02
- *
  */
 #ifndef _SERVERMD_H_
 #define _SERVERMD_H_
 
 #ifndef VENDOR_RELEASE
-#define VENDOR_RELEASE 5000
+#define VENDOR_RELEASE 5001
 #endif
 
 #ifndef VENDOR_STRING
