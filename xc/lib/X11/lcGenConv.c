@@ -1,4 +1,4 @@
-/* $XConsortium: lcGenConv.c,v 1.3 94/01/20 18:06:47 rws Exp $ */
+/* $XConsortium: lcGenConv.c,v 1.5 94/04/02 22:31:41 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -27,6 +27,10 @@
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 #include <stdio.h>
+
+#if !defined(X_NOT_STDC_ENV) && !defined(macII)
+#define STDCVT
+#endif
 
 typedef struct _StateRec {
     XLCd lcd;
@@ -619,7 +623,7 @@ open_cstowcs(from_lcd, from_type, to_lcd, to_type)
     return create_conv(from_lcd, &cstowcs_methods);
 }
 
-#ifndef X_NOT_STDC_ENV
+#ifdef STDCVT
 static int
 stdc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
@@ -868,7 +872,7 @@ open_stdc_cstowcs(from_lcd, from_type, to_lcd, to_type)
 {
     return create_conv(from_lcd, &stdc_cstowcs_methods);
 }
-#endif
+#endif /* STDCVT */
 
 XLCd
 _XlcGenericLoader(name)
@@ -885,7 +889,7 @@ _XlcGenericLoader(name)
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCharSet, open_mbstocs);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNMultiByte, open_cstombs);
 
-#ifndef X_NOT_STDC_ENV
+#ifdef STDCVT
     gen = XLC_GENERIC_PART(lcd);
 
     if (gen->use_stdc_env == True) {
@@ -899,7 +903,7 @@ _XlcGenericLoader(name)
 #endif
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCharSet, open_wcstocs);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNWideChar, open_cstowcs);
-#ifndef X_NOT_STDC_ENV
+#ifdef STDCVT
     }
 #endif
 
