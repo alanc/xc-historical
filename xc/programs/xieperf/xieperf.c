@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.11 93/11/05 17:08:08 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.12 93/11/06 13:28:08 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -1295,6 +1295,7 @@ main(argc, argv)
     XSetScreenSaver(xparms.d, ssTimeout, ssInterval, ssPreferBlanking,
 	ssAllowExposures);
     XCloseDisplay(xparms.d);
+    exit(0);
 }
 
 int
