@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.224 94/12/27 03:57:50 gildea Exp gildea $
+XCOMM $XConsortium: Imake.tmpl,v 1.225 95/02/21 21:36:12 gildea Exp gildea $
 XCOMM
 
 /*
@@ -1088,7 +1088,7 @@ IncludesSubdirs($(SUBDIRS))
 #endif
 
 /* must be after all install.man rules that install anything */
-#ifdef MakeManKeywords		/* typically only at top level */
+#if MakeManKeywords		/* typically only at top level */
 install.man:: man_keywords
 #endif
 
