@@ -1,22 +1,26 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.4 92/06/12 12:41:17 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.5 92/06/30 14:26:26 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
 /*                                                                            */
 /*  (c) Copyright Hewlett-Packard Company, 1992,  Fort Collins, Colorado      */
+/*									      */
+/*  Copyright 1992 by the Massachusetts Institute of Technology		      */
 /*                                                                            */
 /*                            All Rights Reserved                             */
 /*                                                                            */
-/*  Permission to use, copy, modify, and distribute this software and its     */
-/*  documentation for any purpose and without fee is hereby granted,          */
-/*  provided that the above copyright notices appear in all copies and that   */
-/*  both the copyright notices and this permission notice appear in           */
-/*  supporting documentation, and that the names of Digital or                */
-/*  Hewlett-Packard not be used in advertising or publicity pertaining to     */
-/*  distribution of the software without specific, written prior permission.  */
+/*  Permission to use, copy, modify, distribute, and sell this software and   */
+/*  its documentation for any purpose is hereby granted without fee, provided */
+/*  that the above copyright notice appear in all copies and that both that   */
+/*  copyright notice and this permission notice appear in supporting          */
+/*  documentation, and that the name of M.I.T. not be used in advertising or  */
+/*  publicity pertaining to distribution of the software without specific,    */
+/*  written prior permission.  M.I.T. makes no representations about the      */
+/*  suitability of this software for any purpose.  It is provided "as is"     */
+/*  without express or implied warranty.                                      */
 /*                                                                            */
 /*  DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING  */
 /*  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL  */
@@ -56,16 +60,20 @@ extern "C" {                                    /* for C++ V2.0 */
 /*
  * floating point min and max values
  */
-/* QUESTION: what are the correct DEC min and max values */
-#define PEXMaxFloatIeee_754_32          3.40282346638528860e+38
-#define PEXMaxFloatIeee_754_64          1.797693134862315708e+308
-#define PEXMaxFloatDEC_F_Floating       1.701411733192644299e+38 /* correct ? */
-#define PEXMaxFloatDEC_D_Floating       0 /* substitute correct number */
+#define PEXMinFloatIeee_754_32  1.40129846432481707e-45
+#define PEXMaxFloatIeee_754_32  3.40282346638528860e+38
+#define PEXMinFloatIeee_754_64  4.94065645841246544e-324
+#define PEXMaxFloatIeee_754_64  1.797693134862315708e+308
 
-#define PEXMinFloatIeee_754_32          1.40129846432481707e-45
-#define PEXMinFloatIeee_754_64          4.94065645841246544e-324
-#define PEXMinFloatDEC_F_Floating       0 /* substitute correct number */
-#define PEXMinFloatDEC_D_Floating       0 /* substitute correct number */
+/*
+ * constants for PEXInitiliaze - failure return values and error string length
+ */
+#define PEXBadExtension         1
+#define PEXBadProtocolVersion   2
+#define PEXBadFloatConversion   3
+#define PEXBadLocalAlloc        4
+
+#define PEXErrorStringLength    80
 
 
 /*
@@ -152,10 +160,10 @@ typedef struct {
  */
 
 /* output command request types */
-#define PEXOCRender                     0
-#define PEXOCStore                      1
-#define PEXOCRenderSingle               2
-#define PEXOCStoreSingle                3
+#define PEXOCRender             0
+#define PEXOCStore              1
+#define PEXOCRenderSingle       2
+#define PEXOCStoreSingle        3
 
 /* coordinates */
 typedef struct {
@@ -178,17 +186,17 @@ typedef struct {
 
 /* coordinate lists without data */
 typedef struct {
-    unsigned short      count;                  /* number of points */
+    unsigned long       count;                  /* number of points */
     PEXCoord2D          *points;
 } PEXListOfCoord2D;     /* Pointer to an array of 2D points */
 
 typedef struct {
-    unsigned short      count;                  /* number of points */
+    unsigned long       count;                  /* number of points */
     PEXCoord            *points;
 } PEXListOfCoord;       /* Pointer to an array of 3D points */
 
 typedef struct {
-    unsigned short      count;                  /* number of points */
+    unsigned long       count;                  /* number of points */
     PEXCoord4D          *points;
 } PEXListOfCoord4D;     /* Pointer to an array of 4D points */
 
@@ -567,7 +575,7 @@ typedef union {
 } PEXArrayOfVertex;
 
 typedef struct {
-    unsigned short      count;                  /* number of vertices */
+    unsigned long       count;                  /* number of vertices */
     PEXArrayOfVertex    vertices;               /* pointer to vertices */
 } PEXListOfVertex;
 
@@ -1226,11 +1234,11 @@ typedef struct {
 typedef struct {
     int             type;
     Display         *display;      /* Display the event was read from */
+    XID             resourceid;    /* resource id of renderer or structure */
     unsigned long   serial;        /* serial number of failed request */
     unsigned char   error_code;    /* error code of failed request */
     unsigned char   request_code;  /* Major op-code of failed request */
     unsigned char   minor_code;    /* Minor op-code of failed request */
-    XID             resourceid;    /* resource id of renderer or structure */
     unsigned short  op_code;       /* op-code of failed output command */
     unsigned short  count;         /* number of output commands successfully */
                                    /* executed before error */
@@ -1267,15 +1275,15 @@ typedef struct {
             PEXCoord point1;
             PEXCoord point2;
             PEXCoord point3;
-            unsigned long col_count;
-            unsigned long row_count;
+            unsigned int col_count;
+            unsigned int row_count;
             PEXTableIndex *color_indices;
         } CellArray;
         struct {
             PEXCoord2D point1;
             PEXCoord2D point2;
-            unsigned long col_count;
-            unsigned long row_count;
+            unsigned int col_count;
+            unsigned int row_count;
             PEXTableIndex *color_indices;
         } CellArray2D;
         struct {
@@ -1309,8 +1317,8 @@ typedef struct {
             PEXCoord point1;
             PEXCoord point2;
             PEXCoord point3;
-            unsigned long col_count;
-            unsigned long row_count;
+            unsigned int col_count;
+            unsigned int row_count;
             int color_type;
             PEXArrayOfColor colors;
         } ExtendedCellArray;
@@ -1409,7 +1417,7 @@ typedef struct {
             unsigned int col_count;
             unsigned int row_count;
             PEXArrayOfCoord points;
-            unsigned long curve_count;
+            unsigned int curve_count;
             PEXListOfTrimCurve *trim_curves;
         } NURBSurface;
         struct {
@@ -1581,12 +1589,12 @@ typedef struct {
             int flag;
         } SetModelClipFlag;
         struct {
-            int operator;
+            int op;
             unsigned int count;
             PEXHalfSpace *half_spaces;
         } SetModelClipVolume;
         struct {
-            int operator;
+            int op;
             unsigned int count;
             PEXHalfSpace2D *half_spaces;
         } SetModelClipVolume2D;
@@ -1699,7 +1707,7 @@ typedef struct {
             unsigned int vertex_attributes;
             int color_type;
             PEXArrayOfFacetData facet_data;
-            unsigned long count;
+            unsigned int count;
             PEXArrayOfVertex vertices;
         } TriangleStrip;
     } data;
@@ -1713,7 +1721,12 @@ typedef struct {
 /* macro for inquiring max length for PEXGetOCAddr */
 
 #define PEXGetOCAddrMaxSize(_display) \
-    ((_display)->bufmax - (_display)->buffer)
+    ((_display)->bufmax - (_display)->buffer)   /* this macro returns the     */
+                                                /* maximum allowable size (in */
+                                                /* bytes) for PEXGetOCAddr    */
+                                                /* individual implementations */
+                                                /* can modify the value, but  */
+                                                /* the minimum allowed is 1024*/
 
 
 /*
@@ -1721,20 +1734,23 @@ typedef struct {
  */
 
 /* constants for PEXRotate */
-#define PEXXAxis	1
-#define PEXYAxis	2
-#define PEXZAxis	3
+#define PEXXAxis                1
+#define PEXYAxis                2
+#define PEXZAxis                3
 
-/* constants for utilities return status */
-#define	 PEXBadVector		1
-#define	 PEXBadVectors		2
-#define	 PEXBadLimits   	3
-#define	 PEXBadViewport 	4
-#define	 PEXBadPlanes		5
-#define	 PEXBadPRP		6
-#define	 PEXBadMatrix		7
-#define	 PEXBadPrimitive	8
-#define	 PEXBadDistance		9
+/* constants for utilities error return status */
+#define PEXBadVector            1
+#define PEXBadVectors           2
+#define PEXBadLimits            3
+#define PEXBadViewport          4
+#define PEXBadPlanes            5
+#define PEXBadPRP               6
+#define PEXBadMatrix            7
+#define PEXBadPrimitive         8
+#define PEXBadDistance          9
+#define PEXBadAxis              10
+#define PEXBadHomoCoord         11
+#define PEXBadSubVolume         12
 
 
 /*
@@ -1836,6 +1852,28 @@ extern void PEXBeginStructure(
 #endif
 );
 
+extern void PEXBuildTransform(
+#if NeedFunctionPrototypes
+    PEXCoord *		/* fixed_point */,
+    PEXVector *		/* trans_vector */,
+    double 		/* angle_x */,
+    double 		/* angle_y */,
+    double 		/* angle_z */,
+    PEXVector *		/* scale_vector */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXBuildTransform2D(
+#if NeedFunctionPrototypes
+    PEXCoord2D *		/* fixed_point */,
+    PEXVector2D *		/* trans_vector */,
+    double 		/* angle_z */,
+    PEXVector2D *		/* scale_vector */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
 extern void PEXCellArray(
 #if NeedFunctionPrototypes
     Display *		/* display */,
@@ -1844,8 +1882,8 @@ extern void PEXCellArray(
     PEXCoord *		/* point1 */,
     PEXCoord *		/* point2 */,
     PEXCoord *		/* point3 */,
-    unsigned long 		/* col_count */,
-    unsigned long 		/* row_count */,
+    unsigned int 		/* col_count */,
+    unsigned int 		/* row_count */,
     PEXTableIndex *		/* color_indices */
 #endif
 );
@@ -1857,8 +1895,8 @@ extern void PEXCellArray2D(
     PEXOCRequestType 		/* req_type */,
     PEXCoord2D *		/* point1 */,
     PEXCoord2D *		/* point2 */,
-    unsigned long 		/* col_count */,
-    unsigned long 		/* row_count */,
+    unsigned int 		/* col_count */,
+    unsigned int 		/* row_count */,
     PEXTableIndex *		/* color_indices */
 #endif
 );
@@ -1979,14 +2017,6 @@ extern void PEXCopyStructure(
     Display *		/* display */,
     PEXStructure 		/* src_structure */,
     PEXStructure 		/* dst_structure */
-#endif
-);
-
-extern unsigned long PEXCountOCs(
-#if NeedFunctionPrototypes
-    int				/* float_format */,
-    unsigned long		/* length */,
-    char *                      /* encoded_ocs */
 #endif
 );
 
@@ -2271,14 +2301,14 @@ extern void PEXExtendedCellArray(
     PEXCoord *		/* point1 */,
     PEXCoord *		/* point2 */,
     PEXCoord *		/* point3 */,
-    unsigned long 		/* col_count */,
-    unsigned long 		/* row_count */,
+    unsigned int 		/* col_count */,
+    unsigned int 		/* row_count */,
     int 		/* color_type */,
     PEXArrayOfColor 		/* colors */
 #endif
 );
 
-extern char *PEXFetchElements(
+extern Status PEXFetchElements(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXStructure 		/* structure */,
@@ -2288,7 +2318,8 @@ extern char *PEXFetchElements(
     long 		/* offset2 */,
     int 		/* float_format */,
     unsigned long *		/* count_return */,
-    unsigned long *		/* length_return */
+    unsigned long *		/* length_return */,
+    char **		/* ocs_return */
 #endif
 );
 
@@ -2568,6 +2599,65 @@ extern void PEXGSE(
 #endif
 );
 
+extern int PEXGeoNormFillArea(
+#if NeedFunctionPrototypes
+    unsigned int 		/* facet_attributes */,
+    unsigned int 		/* vertex_attributes */,
+    int 		/* color_type */,
+    PEXFacetData *		/* facet_data */,
+    unsigned int 		/* count */,
+    PEXArrayOfVertex 		/* vertices */
+#endif
+);
+
+extern int PEXGeoNormFillAreaSet(
+#if NeedFunctionPrototypes
+    unsigned int 		/* facet_attributes */,
+    unsigned int 		/* vertex_attributes */,
+    int 		/* color_type */,
+    unsigned int 		/* count */,
+    PEXFacetData *		/* facet_data */,
+    PEXListOfVertex *		/* vertex_lists */
+#endif
+);
+
+extern int PEXGeoNormQuadrilateralMesh(
+#if NeedFunctionPrototypes
+    unsigned int 		/* facet_attributes */,
+    unsigned int 		/* vertex_attributes */,
+    int 		/* color_type */,
+    PEXArrayOfFacetData 		/* facet_data */,
+    unsigned int 		/* col_count */,
+    unsigned int 		/* row_count */,
+    PEXArrayOfVertex 		/* vertices */
+#endif
+);
+
+extern int PEXGeoNormSetOfFillAreaSets(
+#if NeedFunctionPrototypes
+    unsigned int 		/* facet_attributes */,
+    unsigned int 		/* vertex_attributes */,
+    int 		/* color_type */,
+    unsigned int 		/* set_count */,
+    PEXArrayOfFacetData 		/* facet_data */,
+    unsigned int 		/* vertex_count */,
+    PEXArrayOfVertex 		/* vertices */,
+    unsigned int 		/* index_count */,
+    PEXConnectivityData *		/* connectivity */
+#endif
+);
+
+extern int PEXGeoNormTriangleStrip(
+#if NeedFunctionPrototypes
+    unsigned int 		/* facet_attributes */,
+    unsigned int 		/* vertex_attributes */,
+    int 		/* color_type */,
+    PEXArrayOfFacetData 		/* facet_data */,
+    unsigned int 		/* count */,
+    PEXArrayOfVertex 		/* vertices */
+#endif
+);
+
 extern PEXStructurePath *PEXGetAncestors(
 #if NeedFunctionPrototypes
     Display *		/* display */,
@@ -2578,11 +2668,12 @@ extern PEXStructurePath *PEXGetAncestors(
 #endif
 );
 
-extern PEXTableIndex *PEXGetDefinedIndices(
+extern Status PEXGetDefinedIndices(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXLookupTable 		/* table */,
-    unsigned long *		/* count_return */
+    unsigned long *		/* count_return */,
+    PEXTableIndex **		/* indices_return */
 #endif
 );
 
@@ -2596,7 +2687,7 @@ extern PEXStructurePath *PEXGetDescendants(
 #endif
 );
 
-extern PEXElementInfo *PEXGetElementInfo(
+extern Status PEXGetElementInfo(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXStructure 		/* structure */,
@@ -2605,18 +2696,20 @@ extern PEXElementInfo *PEXGetElementInfo(
     int 		/* whence2 */,
     long 		/* offset2 */,
     int 		/* float_format */,
-    unsigned long *		/* count_return */
+    unsigned long *		/* count_return */,
+    PEXElementInfo **		/* info_return */
 #endif
 );
 
-extern PEXEnumTypeDesc *PEXGetEnumTypeInfo(
+extern Status PEXGetEnumTypeInfo(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     Drawable 		/* drawable */,
     unsigned long 		/* count */,
     int *		/* enum_types */,
     unsigned long 		/* item_mask */,
-    unsigned long **		/* info_count_return */
+    unsigned long **		/* info_count_return */,
+    PEXEnumTypeDesc **		/* enum_info_return */
 #endif
 );
 
@@ -2626,20 +2719,22 @@ extern PEXExtensionInfo *PEXGetExtensionInfo(
 #endif
 );
 
-extern PEXImpDepConstant *PEXGetImpDepConstants(
+extern Status PEXGetImpDepConstants(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     Drawable 		/* drawable */,
     unsigned long 		/* count */,
-    unsigned short *		/* names */
+    unsigned short *		/* names */,
+    PEXImpDepConstant **		/* constants_return */
 #endif
 );
 
-extern PEXName *PEXGetNameSet(
+extern Status PEXGetNameSet(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXNameSet 		/* nameset */,
-    unsigned long *		/* count_return */
+    unsigned long *		/* count_return */,
+    PEXName **		/* names_return */
 #endif
 );
 
@@ -2675,13 +2770,14 @@ extern PEXPCAttributes *PEXGetPipelineContext(
 #endif
 );
 
-extern PEXPointer PEXGetPredefinedEntries(
+extern Status PEXGetPredefinedEntries(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     Drawable 		/* drawable */,
     int 		/* table_type */,
     unsigned int 		/* start */,
-    unsigned int 		/* count */
+    unsigned int 		/* count */,
+    PEXPointer *		/* entries_return */
 #endif
 );
 
@@ -2725,12 +2821,13 @@ extern int PEXGetSizeOCs(
 #endif
 );
 
-extern PEXStructureInfo *PEXGetStructureInfo(
+extern Status PEXGetStructureInfo(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXStructure 		/* structure */,
     int 		/* float_format */,
-    unsigned long 		/* value_mask */
+    unsigned long 		/* value_mask */,
+    PEXStructureInfo *		/* info_return */
 #endif
 );
 
@@ -2743,14 +2840,15 @@ extern PEXStructure *PEXGetStructuresInNetwork(
 #endif
 );
 
-extern PEXPointer PEXGetTableEntries(
+extern Status PEXGetTableEntries(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXLookupTable 		/* table */,
     unsigned int 		/* start */,
     unsigned int 		/* count */,
     int 		/* value_type */,
-    int *		/* table_type_return */
+    int *		/* table_type_return */,
+    PEXPointer *		/* entries_return */
 #endif
 );
 
@@ -2770,7 +2868,7 @@ extern Status PEXGetTableInfo(
     Display *		/* display */,
     Drawable 		/* drawable */,
     int 		/* table_type */,
-    PEXTableInfo *	/* info_return */
+    PEXTableInfo *		/* info_return */
 #endif
 );
 
@@ -2790,11 +2888,12 @@ extern Status PEXGetWorkstationDynamics(
 #endif
 );
 
-extern PEXWorkstation *PEXGetWorkstationPostings(
+extern Status PEXGetWorkstationPostings(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXStructure 		/* structure */,
-    unsigned long *		/* count_return */
+    unsigned long *		/* count_return */,
+    PEXWorkstation **		/* postings_return */
 #endif
 );
 
@@ -2809,9 +2908,37 @@ extern Status PEXGetWorkstationViewRep(
 #endif
 );
 
-extern Status PEXInitialize(
+extern void PEXIdentityMatrix(
 #if NeedFunctionPrototypes
-    Display *		/* display */
+    PEXMatrix 		/* transform_return */
+#endif
+);
+
+extern void PEXIdentityMatrix2D(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* transform_return */
+#endif
+);
+
+extern int PEXInitialize(
+#if NeedFunctionPrototypes
+    Display *		/* display */,
+    int 		/* length */,
+    char *		/* error_string */
+#endif
+);
+
+extern int PEXInvertMatrix(
+#if NeedFunctionPrototypes
+    PEXMatrix 		/* transform */,
+    PEXMatrix 		/* transform_return */
+#endif
+);
+
+extern int PEXInvertMatrix2D(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* transform */,
+    PEXMatrix3x3 		/* transform_return */
 #endif
 );
 
@@ -2850,25 +2977,67 @@ extern PEXFont PEXLoadFont(
 #endif
 );
 
-extern PEXCoord *PEXMapDCToWC(
+extern int PEXLookAtViewMatrix(
+#if NeedFunctionPrototypes
+    PEXCoord *		/* from */,
+    PEXCoord *		/* to */,
+    PEXVector *		/* up */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern Status PEXMapDCToWC(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXWorkstation 		/* workstation */,
     unsigned long 		/* dc_count */,
     PEXDeviceCoord *		/* dc_points */,
     unsigned int *		/* view_index_return */,
-    unsigned long *		/* wc_count_return */
+    unsigned long *		/* wc_count_return */,
+    PEXCoord **		/* wc_points_return */
 #endif
 );
 
-extern PEXDeviceCoord *PEXMapWCToDC(
+extern Status PEXMapWCToDC(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXWorkstation 		/* workstation */,
     unsigned long 		/* wc_count */,
     PEXCoord *		/* wc_points */,
     unsigned int 		/* view_index */,
-    unsigned long *		/* dc_count_return */
+    unsigned long *		/* dc_count_return */,
+    PEXDeviceCoord **		/* dc_points_return */
+#endif
+);
+
+extern int PEXMapXCToNPC(
+#if NeedFunctionPrototypes
+    int 		/* point_count */,
+    PEXDeviceCoord2D *		/* points */,
+    unsigned int 		/* window_height */,
+    double 		/* z_dc */,
+    PEXDeviceCoord *		/* viewport */,
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    int 		/* view_count */,
+    PEXViewEntry *		/* views */,
+    int *		/* view_return */,
+    int *		/* count_return */,
+    PEXCoord *		/* points_return */
+#endif
+);
+
+extern int PEXMapXCToNPC2D(
+#if NeedFunctionPrototypes
+    int 		/* point_count */,
+    PEXDeviceCoord2D *		/* points */,
+    unsigned int 		/* window_height */,
+    PEXDeviceCoord2D *		/* viewport */,
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    int 		/* view_count */,
+    PEXViewEntry *		/* views */,
+    int *		/* view_return */,
+    int *		/* count_return */,
+    PEXCoord2D *	/* points_return */
 #endif
 );
 
@@ -2892,7 +3061,7 @@ extern void PEXMarkers2D(
 #endif
 );
 
-extern PEXRenderingTarget *PEXMatchRenderingTargets(
+extern Status PEXMatchRenderingTargets(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     Drawable 		/* drawable */,
@@ -2900,7 +3069,42 @@ extern PEXRenderingTarget *PEXMatchRenderingTargets(
     int 		/* type */,
     Visual *		/* visual */,
     unsigned long 		/* max_targets */,
-    unsigned long *		/* count_return */
+    unsigned long *		/* count_return */,
+    PEXRenderingTarget **		/* targets_return */
+#endif
+);
+
+extern void PEXMatrixMult(
+#if NeedFunctionPrototypes
+    PEXMatrix 		/* matrix1 */,
+    PEXMatrix 		/* matrix2 */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXMatrixMult2D(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* matrix1 */,
+    PEXMatrix3x3 		/* matrix2 */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
+extern int PEXNPCToXCTransform(
+#if NeedFunctionPrototypes
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    PEXDeviceCoord *		/* viewport */,
+    unsigned int 		/* window_height */,
+    PEXMatrix 		/* transform_return */
+#endif
+);
+
+extern int PEXNPCToXCTransform2D(
+#if NeedFunctionPrototypes
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    PEXDeviceCoord2D *		/* viewport */,
+    unsigned int 		/* window_height */,
+    PEXMatrix3x3 		/* transform_return */
 #endif
 );
 
@@ -2932,7 +3136,7 @@ extern void PEXNURBSurface(
     unsigned int 		/* col_count */,
     unsigned int 		/* row_count */,
     PEXArrayOfCoord 		/* points */,
-    unsigned long 		/* curve_count */,
+    unsigned int 		/* curve_count */,
     PEXListOfTrimCurve *		/* trim_curves */
 #endif
 );
@@ -2942,6 +3146,43 @@ extern void PEXNoop(
     Display *		/* display */,
     XID 		/* resource_id */,
     PEXOCRequestType 		/* req_type */
+#endif
+);
+
+extern int PEXNormalizeVectors(
+#if NeedFunctionPrototypes
+    int 		/* count */,
+    PEXVector *		/* vectors */,
+    PEXVector *		/* vectors_return */
+#endif
+);
+
+extern int PEXNormalizeVectors2D(
+#if NeedFunctionPrototypes
+    int 		/* count */,
+    PEXVector2D *		/* vectors */,
+    PEXVector2D *		/* vectors_return */
+#endif
+);
+
+extern int PEXOrthoProjMatrix(
+#if NeedFunctionPrototypes
+    double 		/* height */,
+    double 		/* aspect */,
+    double 		/* near */,
+    double 		/* far */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern int PEXPerspProjMatrix(
+#if NeedFunctionPrototypes
+    double 		/* fovy */,
+    double 		/* distance */,
+    double 		/* aspect */,
+    double 		/* near */,
+    double 		/* far */,
+    PEXMatrix 		/* matrix_return */
 #endif
 );
 
@@ -2971,6 +3212,17 @@ extern PEXPickPath *PEXPickOne(
     PEXPickRecord *		/* pick_record */,
     int *		/* status_return */,
     int *		/* undetectable_return */
+#endif
+);
+
+extern int PEXPolarViewMatrix(
+#if NeedFunctionPrototypes
+    PEXCoord *		/* from */,
+    double 		/* distance */,
+    double 		/* azimuth */,
+    double 		/* altitude */,
+    double 		/* twist */,
+    PEXMatrix 		/* matrix_return */
 #endif
 );
 
@@ -3020,7 +3272,7 @@ extern void PEXQuadrilateralMesh(
     Display *		/* display */,
     XID 		/* resource_id */,
     PEXOCRequestType 		/* req_type */,
-    int 		/* shape */,
+    int 		/* shape_hint */,
     unsigned int 		/* facet_attributes */,
     unsigned int 		/* vertex_attributes */,
     int 		/* color_type */,
@@ -3125,10 +3377,49 @@ extern void PEXRestoreModelClipVolume(
 #endif
 );
 
-extern PEXStructurePath *PEXSearchNetwork(
+extern int PEXRotate(
+#if NeedFunctionPrototypes
+    int 		/* axis */,
+    double 		/* angle */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXRotate2D(
+#if NeedFunctionPrototypes
+    double 		/* angle */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
+extern int PEXRotateGeneral(
+#if NeedFunctionPrototypes
+    PEXCoord *		/* point1 */,
+    PEXCoord *		/* point2 */,
+    double 		/* angle */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXScale(
+#if NeedFunctionPrototypes
+    PEXVector *		/* scale_vector */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXScale2D(
+#if NeedFunctionPrototypes
+    PEXVector2D *		/* scale_vector */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
+extern Status PEXSearchNetwork(
 #if NeedFunctionPrototypes
     Display *		/* display */,
-    PEXSearchContext 		/* context */
+    PEXSearchContext 		/* context */,
+    PEXStructurePath **		/* path_return */
 #endif
 );
 
@@ -3582,7 +3873,7 @@ extern void PEXSetModelClipVolume(
     Display *		/* display */,
     XID 		/* resource_id */,
     PEXOCRequestType 		/* req_type */,
-    int 		/* operator */,
+    int 		/* op */,
     unsigned int 		/* count */,
     PEXHalfSpace *		/* half_spaces */
 #endif
@@ -3593,7 +3884,7 @@ extern void PEXSetModelClipVolume2D(
     Display *		/* display */,
     XID 		/* resource_id */,
     PEXOCRequestType 		/* req_type */,
-    int 		/* operator */,
+    int 		/* op */,
     unsigned int 		/* count */,
     PEXHalfSpace2D *		/* half_spaces */
 #endif
@@ -3970,6 +4261,74 @@ extern void PEXText2D(
 #endif
 );
 
+extern int PEXTransformPoints(
+#if NeedFunctionPrototypes
+    PEXMatrix 		/* transform */,
+    int 		/* count */,
+    PEXCoord *		/* points */,
+    PEXCoord *		/* points_return */
+#endif
+);
+
+extern int PEXTransformPoints2D(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* transform */,
+    int 		/* count */,
+    PEXCoord2D *		/* points */,
+    PEXCoord2D *		/* points_return */
+#endif
+);
+
+extern void PEXTransformPoints2DH(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* transform */,
+    int 		/* count */,
+    PEXCoord *		/* points */,
+    PEXCoord *		/* points_return */
+#endif
+);
+
+extern void PEXTransformPoints4D(
+#if NeedFunctionPrototypes
+    PEXMatrix 		/* transform */,
+    int 		/* count */,
+    PEXCoord4D *		/* points */,
+    PEXCoord4D *		/* points_return */
+#endif
+);
+
+extern void PEXTransformVectors(
+#if NeedFunctionPrototypes
+    PEXMatrix 		/* transform */,
+    int 		/* count */,
+    PEXVector *		/* vectors */,
+    PEXVector *		/* vectors_return */
+#endif
+);
+
+extern void PEXTransformVectors2D(
+#if NeedFunctionPrototypes
+    PEXMatrix3x3 		/* transform */,
+    int 		/* count */,
+    PEXVector2D *		/* vectors */,
+    PEXVector2D *		/* vectors_return */
+#endif
+);
+
+extern void PEXTranslate(
+#if NeedFunctionPrototypes
+    PEXVector *		/* trans_vector */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern void PEXTranslate2D(
+#if NeedFunctionPrototypes
+    PEXVector2D *		/* trans_vector */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
 extern void PEXTriangleStrip(
 #if NeedFunctionPrototypes
     Display *		/* display */,
@@ -3979,7 +4338,7 @@ extern void PEXTriangleStrip(
     unsigned int 		/* vertex_attributes */,
     int 		/* color_type */,
     PEXArrayOfFacetData 		/* facet_data */,
-    unsigned long 		/* count */,
+    unsigned int 		/* count */,
     PEXArrayOfVertex 		/* vertices */
 #endif
 );
@@ -4019,6 +4378,70 @@ extern void PEXUpdateWorkstation(
 #if NeedFunctionPrototypes
     Display *		/* display */,
     PEXWorkstation 		/* workstation */
+#endif
+);
+
+extern int PEXViewMappingMatrix(
+#if NeedFunctionPrototypes
+    PEXCoord2D *		/* frame */,
+    PEXNPCSubVolume *		/* viewport */,
+    int 		/* perspective */,
+    PEXCoord *		/* prp */,
+    double 		/* view_plane */,
+    double 		/* back_plane */,
+    double 		/* front_plane */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern int PEXViewMappingMatrix2D(
+#if NeedFunctionPrototypes
+    PEXCoord2D *		/* frame */,
+    PEXCoord2D *		/* viewport */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
+extern int PEXViewOrientationMatrix(
+#if NeedFunctionPrototypes
+    PEXCoord *		/* vrp */,
+    PEXVector *		/* vpn */,
+    PEXVector *		/* vup */,
+    PEXMatrix 		/* matrix_return */
+#endif
+);
+
+extern int PEXViewOrientationMatrix2D(
+#if NeedFunctionPrototypes
+    PEXCoord2D *		/* vrp */,
+    PEXVector2D *		/* vup */,
+    PEXMatrix3x3 		/* matrix_return */
+#endif
+);
+
+extern int PEXXCToNPCTransform(
+#if NeedFunctionPrototypes
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    PEXDeviceCoord *		/* viewport */,
+    unsigned int 		/* window_height */,
+    PEXMatrix 		/* transform_return */
+#endif
+);
+
+extern int PEXXCToNPCTransform2D(
+#if NeedFunctionPrototypes
+    PEXNPCSubVolume *		/* npc_sub_volume */,
+    PEXDeviceCoord2D *		/* viewport */,
+    unsigned int 		/* window_height */,
+    PEXMatrix3x3 		/* transform_return */
+#endif
+);
+
+extern unsigned long PEXCountOCs(
+#if NeedFunctionPrototypes
+    int 		/* float_format */,
+    unsigned long 		/* length */,
+    char *		/* encoded_ocs */
 #endif
 );
 
