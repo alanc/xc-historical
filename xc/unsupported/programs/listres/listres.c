@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.19 89/10/30 18:34:50 jim Exp $
+ * $XConsortium: listres.c,v 1.20 89/10/30 18:36:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -102,7 +102,7 @@ static void print_tree_level (wn, level)
     for (i = 0; i < level; i++) {
 	putchar (' '); putchar (' '); 
     }
-    printf ("%s/%s\n", wn->label, WnClassname(wn));
+    printf ("%d:  %s/%s\n", level, wn->label, WnClassname(wn));
     print_tree_level (wn->children, level + 1);
     print_tree_level (wn->siblings, level);
 }
