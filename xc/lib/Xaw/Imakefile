@@ -164,11 +164,6 @@ OBJS = \
 
 LibraryObjectRule()
 
-#if defined(CrayArchitecture) && defined(CrayUsingSCC)
-XCOMM Cray SCC optimizer is broken
-SpecialLibObjectRule(Paned.o,  ,-hnoopt)
-#endif
-
 #if DoSharedLib
 #if DoNormalLib
 SharedLibraryTarget(Xaw,$(SOXAWREV),$(OBJS),shared,..)
