@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.8 92/08/10 17:04:00 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.9 92/08/26 13:06:22 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -62,6 +62,24 @@ OUTPUT char		*error_string;
      */
 
     LockDisplay (display);
+
+
+    /*
+     * If PEXInitialize() has already been successfully called on this
+     * display, just return the extension information.
+     */
+
+    PEXGetDisplayInfo (display, pexDisplayInfo);
+
+    if (pexDisplayInfo)
+    {
+	*info_return = pexDisplayInfo->extInfo;
+
+        UnlockDisplay (display);
+	PEXSyncHandle (display);
+
+	return (0);
+    }
 
 
     /*
@@ -135,6 +153,8 @@ OUTPUT char		*error_string;
 	    "Implicit call to PEXGetEnumTypeInfo by PEXInitialize failed",
             error_string, length);
 
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
+	
 	return (PEXBadFloatConversion);
     }
 
@@ -156,6 +176,8 @@ OUTPUT char		*error_string;
 	XGetErrorDatabaseText (display, "PEXlibMessage", "NoFloats",
 	    "No floating point formats supported by server",
             error_string, length);
+
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
 
 	return (PEXBadFloatConversion);
     }
@@ -222,6 +244,8 @@ OUTPUT char		*error_string;
 	    "Could not get PEX extension information",
             error_string, length);
 
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
+
 	return (PEXBadExtension);
     }
 
@@ -238,6 +262,8 @@ OUTPUT char		*error_string;
 	XGetErrorDatabaseText (display, "PEXlibMessage", "BadLocalAlloc",
 	    "Could not allocate memory for PEXlib internal usage",
             error_string, length);
+
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
 
 	return (PEXBadLocalAlloc);
     }
@@ -267,6 +293,8 @@ OUTPUT char		*error_string;
 	    "Could not allocate memory for PEXlib internal usage",
             error_string, length);
 
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
+
 	return (PEXBadLocalAlloc);
     }
 
@@ -293,6 +321,8 @@ OUTPUT char		*error_string;
             PEX_PROTO_MAJOR, PEX_PROTO_MINOR,
 	    rep.majorVersion, rep.minorVersion);
   
+	PEXRemoveDisplayInfo (display, pexDisplayInfo);
+
 	return (PEXBadProtocolVersion);
     }
 }
