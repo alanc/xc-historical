@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.99 88/01/05 11:59:17 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.101 88/01/06 14:58:26 swick Locked $";
 #endif lint
 
 /*
@@ -1211,10 +1211,11 @@ static void XtPhase2Destroy (widget, closure, call_data)
     Window	    window;
     XtWidgetProc    delete_child;
 
-    if (widget->core.parent != NULL) {
+    if (widget->core.parent != NULL
+	&& XtIsSubclass(widget->core.parent, compositeWidgetClass)) {
 	XtUnmanageChild(widget);
 	delete_child =
-	    (((CompositeWidgetClass) widget->core.parent->core.widget_class)
+	    (((CompositeWidgetClass)widget->core.parent->core.widget_class)
 		->composite_class.delete_child);
 	if (delete_child == NULL) {
 	    XtWarning("NULL delete_child procedure");
