@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.3 90/10/06 15:28:01 rws Exp $ */
+/* $XConsortium: Event.c,v 1.119 90/10/08 09:21:39 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -336,6 +336,8 @@ void _XtRegisterWindow(window, widget)
     }
     if (!entry)
 	tab->occupied++;
+    else if (entry == &WWfake)
+	tab->fakes--;
     tab->entries[idx] = widget;
 }
 
