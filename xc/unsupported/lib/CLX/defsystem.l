@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: Common-lisp; Base: 10; Lowercase: Yes;  -*-
+;;; -*- Mode: LISP; Syntax: Common-lisp; Base: 10; Lowercase: T;  -*-
 
 ;;;
 ;;;			 TEXAS INSTRUMENTS INCORPORATED
@@ -31,10 +31,10 @@
 ;;;   excl
 
 #-ansi-common-lisp 
-(in-package :user)
+(lisp:in-package :user)
 
 #+ansi-common-lisp
-(in-package :common-lisp-user)
+(common-lisp:in-package :common-lisp-user)
 
 
 ;;;; Lisp Machines
@@ -120,7 +120,6 @@
 #+Genera
 (scl:defsystem CLX
     (:default-pathname "SYS:X11;CLX;"
-     :default-package "XLIB"
      :pretty-name "CLX"
      :maintaining-sites (:scrc)
      :distribute-sources t

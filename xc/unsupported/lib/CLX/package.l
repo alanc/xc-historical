@@ -14,7 +14,7 @@
 ;;; The CLtL way
 
 #-ansi-common-lisp 
-(in-package :xlib :use '(:lisp))
+(lisp:in-package :xlib :use '(:lisp))
 
 #+(and (or kcl ibcl) (not ansi-common-lisp))
 (shadow 
@@ -219,7 +219,7 @@
 ;;; The ANSI Common Lisp way
 
 #+ansi-common-lisp
-(in-package :common-lisp-user)
+(common-lisp:in-package :common-lisp-user)
 
 #+ansi-common-lisp
 (defpackage xlib

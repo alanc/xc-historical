@@ -1899,15 +1899,25 @@
 
 #+lcl3.0 
 (defmacro define-condition (name (parent-type) &optional slots &rest args)
-  `(lcl:define-condition ,name (,parent-type) ,(mapcar #'car slots) ,@args))
+  `(lcl:define-condition
+     ,name (,parent-type)
+     ,(mapcar #'(lambda (slot) (if (consp slot) (car slot) slot))
+	      slots)
+     ,@args))
 
 #+excl
 (defmacro define-condition (name (parent-type) &optional slots &rest args)
-  `(excl::define-condition ,name (,parent-type) ,(mapcar #'car slots) ,@args))
+  `(excl::define-condition
+     ,name (,parent-type)
+     ,(mapcar #'(lambda (slot) (if (consp slot) (car slot) slot))
+	      slots)
+     ,@args))
 
 #+(and lispm (not ansi-common-lisp))
 (defmacro define-condition (name parents &body options)
-  (let ((slots (pop options))
+  (let ((slot-names
+	  (mapcar #'(lambda (slot) (if (consp slot) (car slot) slot))
+		  (pop options)))
 	(documentation nil)
 	(conc-name (concatenate 'string (string name) "-"))	       
 	(reporter nil))
@@ -1917,16 +1927,16 @@
 	(:conc-name (setq conc-name (string (second item))))
 	(:report (setq reporter (second item)))))
     `(within-definition (,name define-condition)
-       (zl:defflavor ,name ,(mapcar #'car slots) ,parents
+       (zl:defflavor ,name ,slot-names ,parents
 	 :initable-instance-variables
 	 #-Genera
 	 (:accessor-prefix ,conc-name)
 	 #+Genera
 	 (:conc-name ,conc-name)
 	 #-Genera
-	 (:outside-accessible-instance-variables ,@slots)
+	 (:outside-accessible-instance-variables ,@slot-names)
 	 #+Genera
-	 (:readable-instance-variables ,@slots))
+	 (:readable-instance-variables ,@slot-names))
        ,(when reporter ;; when no reporter, parent's is inherited
 	  `(zl:defmethod #-Genera (,name :report)
 	                 #+Genera (dbg:report ,name) (stream)
@@ -1974,7 +1984,9 @@
   ;; Define a structure that when printed displays an error message
   (flet ((reporter-for-condition (name)
 	   (xintern "." name '-reporter.)))
-    (let ((slots (pop options))
+    (let ((slot-names
+	    (mapcar #'(lambda (slot) (if (consp slot) (car slot) slot))
+		    (pop options)))
 	  (documentation nil)
 	  (conc-name (concatenate 'string (string name) "-"))	       
 	  (reporter nil)
@@ -1993,7 +2005,7 @@
 		     (:print-function condition-print)
 		     (:include ,(car parents)
 		      (report-function ',report-function)))
-	   ,@(mapcar #'car slots))
+	   ,slot-names)
 	 ,(when documentation
 	    `(setf (documentation name 'type) ,documentation))
 	 ,(when reporter
@@ -2250,8 +2262,11 @@
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
-	   (type t object))
-  (declare (values t)) ;; Object returned by keycode->character
+	   (type t object)
+	   (values t)
+	   (special left-meta-keysym right-meta-keysym
+		    left-super-keysym right-meta-keysym
+		    left-hyper-keysym right-hyper-keysym))
   (when (characterp object)
     (when (logbitp (position :control *state-mask-vector*) state)
       (setf (char-bit object :control) 1))
@@ -2270,9 +2285,9 @@
 (defun default-keysym-translate (display state object)
   (declare (type display display)
 	   (type card16 state)
-	   (type t object))
-  (declare (ignore display state)
-	   (values t)) ;; Object returned by keycode->character
+	   (type t object)
+	   (ignore display state)
+	   (values t))
   object)
 
 
