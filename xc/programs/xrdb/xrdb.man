@@ -50,6 +50,12 @@ the y resolution of the screen in pixels per meter.
 .B PLANES=num
 the number of bit planes for the default visual.
 .TP 8
+.B BITS_PER_RGB=num
+the number of significant bits in an RGB color specification.  This is the
+log base 2 of the number of distinct shades of each primary that the hardware
+can generate.  Note that it is not related to the number of planes, which the
+log base 2 of the size of the colormap.  
+.TP 8
 .B CLASS=visualclass
 one of StaticGray, GrayScale, StaticColor, PsuedoColor, TrueColor,
 DirectColor.
