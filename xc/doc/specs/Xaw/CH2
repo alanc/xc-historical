@@ -21,8 +21,8 @@ widgets that contain no children (for example, a command button) and
 composite widgets which may contain one or more widget children (for
 example, a Box widget). 
 .LP
-The remaining chapters of this guide explain the widgets that are provided
-by the Athena widget set as a set of user-interface components.
+The remaining chapters explain the widgets that are provided
+by the Athena widget set.
 These user-interface components serve as an interface for 
 application programmers who do not want to implement their own widgets.
 In addition, they serve as examples or a starting point
@@ -31,8 +31,8 @@ want to implement alternative application programming interfaces.
 .LP
 This chapter is an introduction to widget programming, although the
 examples provided use the Athena widgets, most of the concepts will apply
-to all widget sets.  There are several programming interfaces to 
-the \*(tk, I will only describe one of them here, for a full
+to all widget sets.  Although there are several programming interfaces to 
+the \*(tk, only one is described here.  A full
 description of the programming interface see \fI\*(xT\fP.
 .NH 2
 Initializing the Toolkit
@@ -238,16 +238,15 @@ _
 Resources Conversions
 .LP
 Most resources in the Athena widget set
-have a converter registered that will convert the string in a resource
-file to the correct internal representation.  While some are obvious,
-for example string to integer, others need specific mention of the
+have a converter registered that will translate the string in a resource
+file to the correct internal representation.  While some are obvious (for example string to integer), others need specific mention of the
 allowable values.  Three general converters are described here:
 .IP \(bu 5
 Cursor
 .IP \(bu 5
 Pixel
 .IP \(bu 5
-BitmapFilePath
+Bitmap
 .LP
 Many widgets have defined special converters that apply only to that
 widget, when these occur the documentation section for that widget
@@ -256,25 +255,18 @@ will describe the converter.
 Cursor Conversion
 .LP
 The value for the \fBcursor\fP resource is specified in the resource
-database as a string, which can be specified as one of the following:
-.IP \(bu 5
-A standard X cursor name from
-.Pn < X11/cursorfont.h >
-.IP \(bu 5
-FONT font-name glyph-index [[ font-name ] glyph-index ]
-.IP \(bu 5
-A relative or absolute file name
-.LP
+database as a string, and are of the following forms:
+.IP "\(bu A standard X cursor name from \fB< X11/cursorfont.h >\fP" .5i
 The names in \fBcursorfont.h\fP each describe a specific cursor.  The
 resource names for these cursors are exactly like the names in this file
-except the \fBXC_f\P is not used.  The cursor definition \fBXC_gumby\fB
+except the \fBXC_f\P is not used.  The cursor definition \fBXC_gumby\fP
 has a resource name of \fBgumby\fP.
-.LP
+.IP "\(bu FONT font-name glyph-index [[ font-name ] glyph-index ]" .5i
 The first font and glyph specify the cursor source pixmap.
 The second font and glyph specify the cursor mask pixmap.
 The mask font defaults to the source font,
 and the mask glyph index defaults to the source glyph index.
-.LP
+.IP "\(bu A relative or absolute file name" .5i
 If a relative or absolute file name is specified, that file is used to
 create the source pixmap.  Then the string "Mask" is appended to
 locate the cursor mask pixmap.  If the "Mask" file does not exist, the
@@ -284,7 +276,7 @@ file path is used (see section 2.4.3).
 .NH 3
 Pixel Conversion
 .LP
-The string to pixel conversion accepts any name acceptable to
+The string-to-pixel converter takes any name that is acceptable to
 XParseColor (see \fI\*(xL\fP).  In addition this routine understands
 the special toolkit symbols `XtDefaultForeground' and
 `XtDefaultBackground', described in \fI\*(xT\fP.  In short the acceptable
@@ -300,19 +292,18 @@ The special strings `XtDefaultForeground' and `XtDefaultBackground'
 .NH 3
 Bitmap Conversion
 .LP
-When converting a string to a bitmap, a file containing the bitmap must
-be exist.  The resource string may be either an absolute filename (one that
-starts with `/' or `./') or a relative filename.  If it is a relative
-filename then the path searched is specified by the 
-.PN bitmapFilePath
-resource which is of class
-.PN BitmapFilePath .
+The sting-to-bitmap convert attempts to locate a file containing
+bitmap data while name is specified by the input string.  If the file
+name is a realtive (i.e does not begin with / or ./), the directories
+to be searched are specified in the \fBbitmapFilePath\fP resource -
+class \fBBitmapFilePath\fP.
 This resourse specifies a colon (:) seperated list of directories that
 will be searched for the named bitmap, or cursor glyph (see section 2.4.1).
 The \fBbitmapFilePath\fP resource is global to the application, and
 may \fBnot\fP be specified differently for each widget that wishes to
-convert a cursor to bitmap.  If the \fBbitmapFilePath\fP resource is
-not defined, the default directory when using UNIX(tm) is
+convert a cursor to bitmap.  In addition to the directories specified
+in the \fBbitmapFilePath\fP resource a default directory is searched.
+When using UNIX(tm) the default directory is
 .PN /usr/include/X11/bitmaps .
 .NH 2
 Realizing a Widget
@@ -329,7 +320,7 @@ of this widget.  The actual calculation is put off until realize time
 for performance reasons.
 .IP \(bu 5
 Creates an X window for the widget and, if it is a composite widget,
-each of its managed children is also realized.
+realizes each of its managed children.
 .IN "XtRealizeWidget" "" "@DEF@"
 .FD 0
 void XtRealizeWidget(\fIw\fP)
@@ -348,7 +339,7 @@ Processing Events
 \*(SN Processing Events
 .XE
 Now that the application has created, managed and realized its
-widgets, it is ready to process the Events that will be delivered by the
+widgets, it is ready to process the events that will be delivered by the
 X Server to this client.  A function call that will process the
 events is \fBXtAppMainLoop\fP.
 .IN "XtAppMainLoop" "" "@DEF@"
@@ -361,7 +352,7 @@ void XtAppMainLoop(\fIapp_con\fP)
 Specifies the application context of this application.  The value is
 normally returned by \fBXtAppInitialize\fP.
 .LP
-This function never returns, it is an infinite loop that processes the
+This function never returns: it is an infinite loop that processes the
 X events.  User input can be handled through callback proceedures and
 applicaiton defined action routines.  More details are provided in
 \fI\*(xT\fP.
@@ -371,19 +362,15 @@ Standard Widget Manipulation Functions
 .XS
 \*(SN Standard Widget Manipulation Functions
 .XE
-After a widget has been created, 
-a client can interact with that widget by calling:
-.IP \(bu 5
-One of the standard widget manipulation routines that
-provide functions that all widgets support
-.IP \(bu 5
-A widget class-specific manipulation routine
+After a widget has been created, a client can interact with that
+widget by calling one of the standard widget manipulation routines
+proviede by the \*(xI, or a widget class-specific manipulation routine.
 .LP
 The \*(xI provide generic routines to provide the
 application programmer access to a set of standard widget functions.
-These routines let an application or composite widget manipulate
+The common widget routines let an application or composite widget 
+perform the following operations on 
 widgets without requiring explicit knowledge of the widget type.
-The standard widget manipulation functions let you:
 .IP \(bu 5
 Control the mapping of widget windows
 .IP \(bu 5
@@ -396,13 +383,10 @@ Set an argument value
 Mapping Widgets
 .LP
 By default,
-widget windows automatically are mapped (made viewable) by
-.PN XtRealizeWidget .
-This behavior can be changed by using 
-.PN XtSetMappedWhenManaged ,
-and it then is the client's responsibility to use the
-.PN XtMapWidget
-function to make the widget viewable.
+widget windows are mapped (made viewable) automatically by
+\fBXtRealizeWidget\fP.  This behavior can be disabled by using 
+\fBXtSetMappedWhenManaged\fP, making the client responsible for calling
+\fBXtMapWidget\fP to make the widget viewable.
 .IN "XtSetMappedWhenManaged" "" @DEF@"
 .FD 0
 void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
@@ -437,16 +421,13 @@ void XtMapWidget(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget.
 .LP
-When you create several children in sequence for a common parent 
-after it has been realized,
-it is generally more efficient to construct a list of children as 
-they are created (using XtCreateWidget) and use
-.PN XtManageChildren
-to inform their parent of them all at once, 
-instead of causing each child to be managed separately.
-By managing a list of children at one time,
-the parent can avoid wasteful duplication of geometry processing
-and the associated "screen flash".
+When you are creating several children in sequence for a previously
+realized common parent it is generally more efficient to construct a
+list of children as they are created (using \fBXtCreateWidgetf\P) and
+then use \fBXtManageChildren\fP to request that their parent managed
+them all at once.  By managing a
+list of children at one time, the parent can avoid wasteful
+duplication of geometry processing and the associated ``screen flash''.
 .IN "XtManageChildren" "" "@DEF@"
 .FD 0
 void XtManageChildren(\fIchildren\fP, \fInum_children\fP)
@@ -511,15 +492,11 @@ pairs that contain the resource name and the address into which the resource val
 .IP \fInum_args\fP 1i
 Specifies the number of arguments in the argument list.
 .LP
-The arguments and values passed in the argument list are dependent on the widget.
-Note that the caller is responsible for allocating space into which the returned
-resource value is copied; the
-.PN ArgList
-contains a pointer to this storage.
-The caller must allocate storage of the type as represented in the widget.
-For example, x and y must be allocated as Position and so on.
-For further information,
-see the \fI\*(xT\fP.
+The arguments and values passed in the argument list are dependent on
+the widget. Note that the caller is responsible for providing space
+into which the returned resource value is copied; the \fBArgList\fP
+contains a pointer to this storage (e.g. x and y must be
+allocated as Position).  For further information, see the \fI\*(xT\fP.
 .NH 3
 Modifying Widget Resource Values
 .LP
@@ -539,18 +516,16 @@ void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .IP \fIw\fP 1i
 Specifies the widget.
 .IP \fIargs\fP 1i
-Specifies a variable-length argument list of name and \fBvalue\fP
+Specifies an array of name and \fBvalue\fP
 pairs that contain the arguments to be modified and their new values.
 .IP \fInum_args\fP 1i
 Specifies the number of arguments in the argument list.
 .LP
-The arguments and values passed in the argument list depend on
-the widget being modified.
-Some widgets may not allow certain resources to be modified
-after the widget instance has been created or realized.
-No notification is given if any part of a 
-.PN XtSetValues
-request is ignored.
+The arguments and values that are passed will depend on the widget
+being modified.  Some widgets may not allow certain resources to be
+modified after the widget instance has been created or realized.
+No notification is given if any part of a \fBXtSetValues\fP request is
+ignored. 
 .LP
 For further information about these functions,
 see the \fI\*(xI\fP.
@@ -591,21 +566,20 @@ Specifies widget for which the callback is registered.
 Specifies arbitrary client-supplied data that the widget should pass back 
 to the client when the widget executes the client's callback procedure.
 This is a way for the client registering the callback to also register 
-client-specific data:
-a pointer to additional information about the widget, 
-a reason for invoking the callback, and so on.
-It is perfectly normal to have \fIclient_data\fP of NULL
-if all necessary information is in the widget.
+client-specific data: a pointer to additional information about the widget, 
+a reason for invoking the callback, and so on. If no additional
+information is necessary NULL may be passed as this argument. 
 This field is also frequently known as the \fIclosure\fP.
 .IP \fIcall_data\fP 1i
 Specifies any callback-specific data the widget wants to pass to the client.
 For example, when Scrollbar executes its \fBjumpProc\fP callback list, 
 it passes the current position of the thumb in \fIcall_data\fP.
 .LP
-Callbacks can be registered with widgets in one of two ways.
-When the widget is created,
-a pointer to a list of callback procedure and data pairs can be passed in the
-argument list to
+Callbacks either be registered with by creating an argument containing
+the callback list described below or through the
+special convience routines \fBXtAddCallback\fP and \fBXtAddCallbacks\fP.
+When the widget is created, a pointer to a list of callback procedure
+and data pairs can be passed in the argument list to
 .PN XtCreateWidget .
 The list is of type
 .PN XtCallbackList :
@@ -671,13 +645,8 @@ Programming Considerations
 .XS
 \*(SN Programming Considerations
 .XE
-This section provides some guidelines to set up an application
+This section provides some guidelines on how to set up an application
 program that uses the \*(tk.
-This section discusses:
-.IP \(bu 5
-Writing applications
-.IP \(bu 5
-Changing widget attributes
 .NH 3
 Writing Applications
 .LP
@@ -692,7 +661,7 @@ This header file automatically includes
 so all Xlib functions also are defined.
 .br
 You may also need to include \fB< X11/StringDefs.h >\fP when setting
-up argument lists, as many of the XtN\fIsomething\gP definitions are
+up argument lists, as many of the XtN\fIsomething\fP definitions are
 only defined in this file.
 .IP 2. 5
 Include the widget-specific header files for each widget type 
@@ -719,14 +688,11 @@ many widgets.
 For further information,
 see Section 2.9.2.2.
 .IP 5. 5
-When the argument list is set up, 
-create the widget by using the
-.PN XtCreateManagedWidget
-function.
-For further information,
+When the argument list is set up, create the widget with the
+\fBXtCreateManagedWidget\fP function.  For further information,
 see Section 2.2 and the \fI\*(xT\fP.
 .IP 6. 5
-If the widget has any callback routines, which are usually defined by the 
+If the widget has any callback routines, set by the 
 .PN XtNcallback
 argument or the
 .PN XtAddCallback 
@@ -767,8 +733,6 @@ The following provides a sample command line:
 .Ds 0
 cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \
 \-lXext \-lX11
-.IP 10. 5
-enjoy
 .De
 .NH 3
 Changing Resource Values
@@ -776,31 +740,25 @@ Changing Resource Values
 The \*(xI support two methods of changing the default resource
 values; the resource manager, and an argument list passed into
 XtCreateWidget.  While resources values will get updated no matter
-which method you use.  The two methods provide slightly different
+which method you use, the two methods provide slightly different
 functionality. 
 .IP "Resource Manager" .75i
 This method picks up resource defintions described in \fI\*(xL\fP from
-many different locations at run time.  The locations most important to the
-application programmer are the \fIfallback resources\fP and the
-\fIapp-defaults\fP file, (see \fI\*(xT\fP for the complete list). 
+many different locations at run time.  The locations most important to
+the application programmer are the \fIfallback resources\fP and the
+\fIapp-defaults\fP file, (see \fI\*(xT\fP for the complete list).
 Since these resource are loaded at run time they can be overriden by
-the user.  This allows an application to
-be customized to fit the particular needs of each individual user.  In
-addition these values can be modified without the need to recompile,
-allowing rapid prototyping of user interfaces.  For these reasons we suggest
-that application programmers use resources in preference to hard coded values
-whenever possible.
+the user, allowing an application to be customized to fit the
+particular needs of each individual user.  These values can also be
+modified without the need to rebuild the application, allowing rapid
+prototyping of user interfaces.  Application programmers should use
+resources in preference to hard coded values whenever possible.
 .IP "Argument Lists"
 The values passed into the widget at creation time via an argument list
 cannot be modified by the user, and allow no opprotunity for
-customization.  We suggest that you only use this method when
-absolutely sure that the user should not change this resource value.
-A callback list is an example of such a resource.
-.LP
-Since the resource manager does not allow dynamic modification of 
-data, XtSetValues and XtVaSetValues are still useful for changing
-resource data on the fly, so coding applications that have no hard
-coded arguments is not yet possible.
+customization.  It is used to set resources that cannot be specified
+(e.g. callback lists) or resources that should not be overriden (e.g.
+window depth) by the user
 .NH 4
 Specifying Resources
 .LP
@@ -809,31 +767,24 @@ understand how to use the X Resource Manager to specify resource for
 widgets in an X application.  This section will describe the most common
 methods used to specify these resources, and how to use the X Resource
 manager.
+.IP \fBXrdb\fP 1.25i
+The \fBxrdb\fP utility may be used to  load a file containing
+resources into the X server.   Once the resources are loaded they will
+effect any new applications that are started on the display that they
+were loaded onto.  
+.IP \fBApplication Defaults\fP 1.25i
+The \fIApplication Defaults\fP (app-defaults) file (normally in
+/usr/lib/X11/app-defaults/\fIclassname\fP) for an appliction is loated
+whenever the application is started.
 .LP
-\fBXrdb\fP
-.LP
-The X Consortium provides an X client called \fBxrdb\fP,  this client
-allows users load a file containing resources into the X Server.
-Once the resources are loaded they will effect any new applications
-that are started on the display that they were loaded onto. 
-.LP
-\fBApplication Defaults\fP
-.LP
-Application programmers are also provided with a place to specify resources
-for their applications.  Resources specified in this \fIApplication Defaults\fP
-(app-defaults) file are loaded whenever the application is started,
-no matter which display the application is started on.
-.LP
-The resource specification has two parts, a name, and
-a value.  These fields are seperated by a colon (:).  Thus a full resource
-specification has the form \fI<name>\fP:\fI<value>\fP.  The \fIvalue\fP is
-a string whose format is dependant on the resource specified by
-\fIname\fP.  \fIName\fP is constructed by appending a resource name to
-a full widget name.
+The resource specification has two colon-seperated parts, a name, and
+a value.  The \fIvalue\fP is a string whose format is dependant on the
+resource specified by \fIname\fP.  \fIName\fP is constructed by
+appending a resource name to a full widget name.
 .LP
 The full widget
-name is constructed by seperating the name of every ancestor of the
-desired widget with a period (.).  Each widget also has a class
+name is contains a list of the names every ancestor of the
+desired widget sperated by periods (.).  Each widget also has a class
 associated with it, a Class is a type of widget (e.g. Label or
 Scrollbar or Box).  Notice that class names, by convention, begin with capital
 letters and instance names begin with lower case letters.  The class
@@ -848,13 +799,11 @@ a Command widget and a child of a Form widget.
 .IP Xman.Form.button1 1.5i
 This is mixed resource name with both widget names and classes specified.
 .LP
-The above syntax will allow an appliaction programmer to specify any widget
-in the widget tree, but there are times when it is convient to match
-more than one widget (for example a user may want to make all Command
-buttons blue).  To bind names loosely use an asterisk (*).  When an
-asterisk is used any number of widgets (including zero) may exist
-between the two widget names seperated by an asterisk.  
-Here are a few examples.
+This syntax allows an appliaction programmer to specify any widget
+in the widget tree.  To match more than one widget (for example a user
+may want to make all Command buttons blue), use an asterisk (*)
+instead of a peroid.  When an asterisk is used, any number of widgets
+(including zero) may exist between the two widget names. For example
 .IP Xman*Command 1.5i
 This matches all Command widgets in the Xman application.
 .IP Foo*button1 1.5i
@@ -862,14 +811,15 @@ This matches any widget in the Foo application that is named \fIbutton1\fP.
 .LP
 The root of all application widget trees is the widget returned by
 \fBXtAppInitialize\fP.  Even though this is actually an
-ApplicationShell widget the toolkit smashes its widget class with the
+ApplicationShell widget the toolkit replaces its widget class with the
 class name of the application.  The name of this widget is either
-\fBargv[0]\fP or the name of the application specified using the
-standard -name command line option supported by the \*(xI.
+the name used to invoke the applicaiton \fBargv[0]\fP or the name of
+the application specified using the standard \fI-name\fP command line option
+supported by the \*(xI. 
 .LP
 The last step in constructing the resource name is to append the name of
 the resource with either a period or asterisk to the full or partial
-widget name already constructed.  Here are a few resource specifications.
+widget name already constructed. 
 .IP *foreground:Blue 2.0i
 Specifies that all widgets in all applications will have a foreground
 color of blue.
@@ -880,17 +830,16 @@ have a border width of 10 (pixels).
 This specifies that a particular widget in the xman application will
 have a label named \fITesting\fP.
 .LP
-The comment character is exclamation point (!) and when used as the
-first character in a line will cause the Resource Manager to ignore the
-enitire line.
+An exclamation point (!) is the first column of a line indicates
+that the rest of the line should be treated as a comment.
 .LP
 \fBFinal Words\fP
 .LP
 The Resource manager is a powerful tool that can be used very
 effectively to customize \*(tk applications at run time by either the
-application programmer or the user.  Some final points of note.
+application programmer or the user.  Some final points of note:
 .IP \(bu 5
-An application programmer is able to add new resources to his/her
+An application programmer may add new resources to his/her
 application.  These resources are associated with the global
 application, and not any particular widget.  The \*(tk function used for
 adding the application resources is \fBXtGetApplicationResources\fP.
@@ -905,31 +854,25 @@ of precedence rules, in general they take the following general stance.
 .IP "" 5
 \(bu	More specific overrides less specific, thus period always overrides asterisk.
 .IP "" 5
-\(bu	Names on the left are more specific and overrided name on the right.
+\(bu	Names on the left are more specific and override names on the right.
 .IP "" 5
-\(bu	When resource specifications are exactly the same user defaults
+\(bu	When resource specifications are exactly the same, user defaults
 .br
 	will override program defaults.
 .LP
-This has been a simple introduction to Resource Manager as used by the X
-Toolkit.  For a complete explanation of the rules if precedence, and
+For a complete explanation of the rules of precedence, and
 other specific topics see \fI\*(xT\fP and \fI\*(xL\fP.
 .NH 4
 Creating Argument Lists
 .LP
 To set up an argument list for the inline specification of widget attributes,
-you can use one of the four approaches discussed in this section.
-You should use whichever approach fits the needs of the application  
-and you are most comfortable with.  Each resource name has a global
-symbol assocaited with it.  The global symbol just the resource name with
-XtN prepended to it.  For example, the symbol for ``foreground'' is 
-.PN XtNforeground .
-For further information,
+you may use any of the four approaches discussed in this section.
+Each resource name has a global symbol associated with it.  This
+global symbol has the form XtN\fIresource name\fP.  For example, the
+symbol for ``foreground'' is \fBXtNforeground\fP. For further information,
 see the \fI\*(xI\fP.
 .LP
-The 
-.PN Arg
-structure contains:
+Argument are specified by using the following structure:
 .IN "ArgList" "" "@DEF@"
 .IN "Arg" "" "@DEF@"
 .LP
@@ -942,7 +885,7 @@ typedef struct {
 } Arg, *ArgList;
 .De
 .LP
-The first approach lets you statically initialize the argument list.
+The first approach is to statically initialize the argument list.
 For example:
 .LP
 .Ds 0
@@ -954,19 +897,18 @@ static Arg arglist[] = {
 };
 .De
 .LP
-This approach makes it easy to add or delete new
-elements.
+This approach is convenient for lists that do not need to be computed
+at runtime and makes adding or deleting new elements easy.
 The 
 .PN XtNumber 
-macro can be used to compute the number of elements in the argument list,
-thus preventing simple programming errors.
-The following provides an example:
+macro is used to compute the number of elements in the argument list,
+preventing simple programming errors:
 .LP
 .Ds 
 XtCreateWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIarglist\fP, XtNumber(\fIarglist\fP));
 .De
 .LP
-The second approach lets you use the 
+The second approach is to use the 
 .PN XtSetArg
 macro.
 For example:
@@ -980,8 +922,7 @@ XtSetArg(arglist[2], XtNheight, 300);
 .De
 .LP
 To make it easier to insert and delete entries, 
-you also can use a variable index,
-as in this example:
+you also can use a variable index:
 .LP
 .Ds 0
 .TA .5i
@@ -1006,9 +947,8 @@ As it is currently implemented,
 is a macro that dereferences the first argument twice.
 .NE
 .LP
-The third approach lets you individually set the elements of the
-argument list array, one piece at a time.
-For example:
+The third approach is to individually set the elements of the
+argument list array:
 .LP
 .Ds 0
 .TA .5i
@@ -1022,9 +962,9 @@ arglist[1].value = (XtArgVal) 300;
 .LP
 Note that in this example, as in the previous example,
 .PN XtNumber 
-would return 10, not 2, and therefore is not useful.
+would return 10, not 2, and therefore would not be useful.
 .LP
-The fourth approach lets you use a mixture of the first and third approaches:
+The fourth approach is to use a mixture of the first and third approaches:
 you can statically define the argument list but modify some entries at runtime.
 For example:
 .LP
@@ -1045,13 +985,10 @@ can be used, as in the first approach, for easier code maintenance.
 Example Programs
 .LP
 The best way to understand how to use any programming library is by
-doing.  To this end we have provided a set of example programs that
-introduce each of the widgets in that Athena widget set, as well
-as many important toolkit programming concepts.  These example range
-from a simple \fIhello world\fP program to an example program that
-uses every widget in the Athena widget set.
-.LP
-The example programs are avaliable on the X11R4 tape in the directory
+trying some simple examples.  A collection of
+example programs that introduce each of the widgets in that Athena
+widget set, as well as many important toolkit programming concepts, are
+avalible in the X11R4 release distributed by M.I.T. in the directory
 \fBexamples/Xaw\fP, see your site administrator for the exact location of
 these files on your system.
 .LP

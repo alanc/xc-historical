@@ -39,7 +39,7 @@ be clipped by the right and bottom edges of the Form.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
+lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
@@ -112,7 +112,7 @@ widget's children to specify individual layout requirements.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
+lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB

@@ -33,7 +33,7 @@ and affect only the single menu entry specified by this object.
 .vs 11
 .nr VS 11
 .TS H
-lw(1.5i) lw(1i) lw(1i) lw(.5i) lw(2i).
+lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
 .TB
