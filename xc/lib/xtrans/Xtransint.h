@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.20 94/04/17 20:23:03 rws Exp $ */
+/* $XConsortium: Xtransint.h,v 1.21 94/05/10 11:08:46 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -108,10 +108,14 @@ extern int  errno;		/* Internal system error number. */
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif

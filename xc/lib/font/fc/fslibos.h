@@ -1,4 +1,4 @@
-/* $XConsortium: fslibos.h,v 1.13 94/02/03 18:53:02 mor Exp $ */
+/* $XConsortium: fslibos.h,v 1.14 94/04/17 20:17:41 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -63,10 +63,14 @@ from the X Consortium.
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.38 94/02/03 18:52:16 mor Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.39 94/04/17 20:21:51 mor Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -62,10 +62,14 @@ in this Software without prior written authorization from the X Consortium.
 #else
 #include <sys/param.h>
 #ifndef OPEN_MAX
+#ifdef __OSF1__
+#define OPEN_MAX 256
+#else
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #else
 #define OPEN_MAX NOFILES_MAX
+#endif
 #endif
 #endif
 #endif
