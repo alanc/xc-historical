@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.10 88/10/08 15:14:56 jim Exp $
+ * $XConsortium: handle.c,v 1.11 88/10/08 15:38:37 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -802,7 +802,7 @@ static int do_buttons (line, len)
     int n;
     int i;
     int val;
-    struct op_buttons *opb;
+    struct op_pointer *opp;
     unsigned char buttons[MAXBUTTONCODES];
 
     if (len < 2 || !line || *line == '\0') {  /* =1 minimum */
@@ -844,20 +844,20 @@ static int do_buttons (line, len)
 	}
     }
     
-    opb = AllocStruct (struct op_buttons);
-    if (!opb) {
-	badmsg ("attempt to allocate a %ld byte buttons opcode",
-		(long) sizeof (struct op_buttons));
+    opp = AllocStruct (struct op_pointer);
+    if (!opp) {
+	badmsg ("attempt to allocate a %ld byte pointer opcode",
+		(long) sizeof (struct op_pointer));
 	return (-1);
     }
 
-    opb->type = doButtons;
-    opb->count = i;
-    for (i = 0; i < opb->count; i++) {
-	opb->button_codes[i] = buttons[i];
+    opp->type = doPointer;
+    opp->count = i;
+    for (i = 0; i < opp->count; i++) {
+	opp->button_codes[i] = buttons[i];
     }
 
-    add_to_work_queue (opb);
+    add_to_work_queue (opp);
 
     return (0);
 }
@@ -1069,7 +1069,7 @@ void print_opcode (op)
  */
 
 static int exec_keycode(), exec_add(), exec_remove(), exec_clear();
-static int exec_buttons();
+static int exec_pointer();
 
 int execute_work_queue ()
 {
@@ -1123,8 +1123,8 @@ int execute_work_queue ()
 	    if (exec_clear (op) < 0) errors++;
 	    else update_map = True;
 	    break;
-	  case doButtons:
-	    if (exec_buttons (op) < 0) errors++;
+	  case doPointer:
+	    if (exec_pointer (op) < 0) errors++;
 	    break;
 	  default:
 	    fprintf (stderr, "%s:  unknown opcode %d\n", 
@@ -1187,10 +1187,10 @@ static int exec_clear (opcm)
 }
 
 
-static int exec_buttons (opb)
-    struct op_buttons *opb;
+static int exec_pointer (opp)
+    struct op_pointer *opp;
 {
-    return (SetPointerMap (opb->button_codes, opb->count));
+    return (SetPointerMap (opp->button_codes, opp->count));
 }
 
 void print_modifier_map ()
