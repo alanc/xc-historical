@@ -4,7 +4,7 @@
 /* xwud - marginally useful raster image undumper */
 
 #ifndef lint
-static char *rcsid = "$XConsortium: xwud.c,v 1.36 90/11/09 15:09:07 dave Exp $";
+static char *rcsid = "$XConsortium: xwud.c,v 1.37 90/11/10 16:10:56 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -18,6 +18,7 @@ static char *rcsid = "$XConsortium: xwud.c,v 1.36 90/11/09 15:09:07 dave Exp $";
 extern int errno;
 extern char *malloc();
 unsigned Image_Size();
+Atom wm_protocols;
 Atom wm_delete_window;
 
 char *progname;
@@ -498,6 +499,7 @@ main(argc, argv)
 			      &attributes);
 
     /* Setup for ICCCM delete window. */
+    wm_protocols = XInternAtom(dpy, "WM_PROTOCOLS", False);
     wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
     (void) XSetWMProtocols (dpy, image_win, &wm_delete_window, 1);
      
@@ -517,21 +519,25 @@ main(argc, argv)
 	XNextEvent(dpy, &event);
 	switch(event.type) {
 	case ClientMessage:
-	     exit(0);		/* ICCCM delete window */
-	     break;
+	  if (event.xclient.message_type == wm_protocols && 
+	      event.xclient.data.l[0] == wm_delete_window)  {
+	    XCloseDisplay(dpy);
+	    exit(0);		/* ICCCM delete window */
+	  }
+	    break;
 	case ButtonPress:
 	    break;
 	case ButtonRelease:
 	    if (onclick) {
 		XCloseDisplay(dpy);
-		return;
+		exit(0);
 	    }
 	    break;
 	case KeyPress:
 	    i = XLookupString(&event.xkey, &c, 1, NULL, NULL);
 	    if ((i == 1) && ((c == 'q') || (c == 'Q') || (c == '\03'))) {
 		XCloseDisplay(dpy);
-		return;
+		exit(0);
 	    }
 	    break;
 	case Expose:
