@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.25 89/05/10 14:13:53 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.26 89/05/10 14:57:59 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -8,6 +8,7 @@
  * These macros are defined for the various templates and Imakefiles (for a 
  * list of the applicable make variables, see the template files):
  * 
+ *      SaberProgramTarget          (program,srclist,objlist,locallibs,syslibs)
  *     	SingleProgramTarget              (program,objects,locallibs,syslibs)
  *     	SimpleProgramTarget                      (program)
  *     	ComplexProgramTarget                     (program)
