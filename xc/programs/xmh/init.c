@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.47 90/11/05 16:36:32 converse Exp $
+ * $XConsortium: init.c,v 2.49 90/11/27 18:27:31 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -217,7 +217,7 @@ xmh man page for further information."
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
-unsigned int argc;
+int argc;
 char **argv;
 {
     int l;

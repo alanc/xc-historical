@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 2.17 90/06/27 13:45:42 swick Exp $
+ * $XConsortium: main.c,v 2.18 90/08/08 14:53:17 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -84,7 +84,7 @@ Boolean ExitLoop = FALSE;
 #endif
 
 main(argc, argv)
-unsigned int argc;
+int argc;
 char **argv;
 {
     XtAppContext appCtx;
