@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 asente Exp $";
+static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 swick Locked $";
 #endif lint
 
 /*
@@ -26,7 +26,6 @@ static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 asente Exp $";
  */
 /* Make sure all wm properties can make it out of the resource manager */
 
-#include "fd.h"
 #include <pwd.h>
 #include <stdio.h>
 #include <strings.h>
@@ -39,6 +38,7 @@ static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 asente Exp $";
 #include "ShellP.h"
 #include "Vendor.h"
 #include "VendorP.h"
+#include "fd.h"
 
 /***************************************************************************
  *
