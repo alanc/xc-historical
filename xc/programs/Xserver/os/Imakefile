@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.55 92/07/26 14:22:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.56 92/08/10 17:46:46 eswu Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -143,10 +143,11 @@ SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(fonttype,$(ICONFIGFILES),$(FONT_DEFINES))
 SpecialCObjectRule(utils,$(ICONFIGFILES),$(TIME_DEFINES))
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
-oscolor.o: $(ICONFIGFILES)
+oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
 	cc -c $(DBM_DEFINES) $(CDEBUGFLAGS) $(ALLDEFINES) $*.c
 #else
