@@ -21,14 +21,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osdep.h,v 1.11 88/07/20 17:21:22 toddb Exp $ */
+/* $Header: osdep.h,v 1.12 88/07/25 10:41:32 toddb Exp $ */
 
 #ifndef NULL
 #define NULL 0
 #endif
 
 #define BUFSIZE 4096
-#define MAXBUFSIZE (1<<17)
+#define BUFWATERMARK 8192
+#define MAXBUFSIZE ((1<<16)<<2)
 #if (NOFILE <= 128) /* 128 is value of MAXCLIENTS in dix layer */
 #define MAXSOCKS (NOFILE - 1)
 #else
