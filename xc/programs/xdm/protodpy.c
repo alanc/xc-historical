@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.2 89/10/31 14:25:39 keith Exp $
+ * $XConsortium: protodpy.c,v 1.3 89/12/06 19:34:14 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -119,7 +119,8 @@ NewProtoDisplay (address, addrlen, displayNumber,
 	return NULL;
     }
     pdpy->sessionID = sessionID;
-    pdpy->authorization = (Xauth *) NULL;
+    pdpy->fileAuthorization = (Xauth *) NULL;
+    pdpy->xdmcpAuthorization = (Xauth *) NULL;
     pdpy->next = protoDisplays;
     protoDisplays = pdpy;
     return pdpy;
@@ -144,8 +145,10 @@ DisposeProtoDisplay (pdpy)
     else
 	protoDisplays = pdpy->next;
     XdmcpDisposeARRAY8 (&pdpy->connectionAddress);
-    if (pdpy->authorization)
-	XauDisposeAuth (pdpy->authorization);
+    if (pdpy->fileAuthorization)
+	XauDisposeAuth (pdpy->fileAuthorization);
+    if (pdpy->xdmcpAuthorization)
+	XauDisposeAuth (pdpy->xdmcpAuthorization);
     free ((char *) pdpy->address);
     free ((char *) pdpy);
 }
