@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: StripChart,v 1.20 91/09/30 13:47:39 converse Exp $
 .NH 2
 StripChart Widget
 .XS
@@ -21,10 +21,12 @@ Superclass	Simple
 .sp
 .De
 .LP
-The StripChart widget is used to provide a real time graphical chart of 
-a single value.  This widget is used by \fBxload\fP to provide the
-load graph.  It will read data from an application, and update
-the chart at the \fBupdate\fP interval specified.
+The StripChart widget is used to provide a roughly real
+time graphical chart of a single value.  For example,
+it is used by the common client program \fBxload\fP
+to provide a graph of processor load.  The StripChart
+reads data from an application, and updates the chart
+at the \fBupdate\fP interval specified.
 .NH 3
 Resources
 .LP
@@ -65,6 +67,7 @@ getValue	Callback	XtCallbackList		NULL
 height	Height	Dimension		120
 highlight	Foreground	Pixel		XtDefaultForeground
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+international	International	Boolean	C	False
 jumpScroll	JumpScroll	int	A	half the width of the widget
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 minScale	Scale	int		1
@@ -100,17 +103,17 @@ _
 A pixel value which indexes the widget's colormap to derive the color
 that will be used to draw the graph.
 .IP \fBgetValue\fP 1.5i
-This is a list of functions to call every \fBupdate\fP seconds.  This
-function will get the value to be graphed by the StripChart widget.  The
-section \fBGetting the StripChart Value\fP will describe the calling
-interface in more detail.  This callback list should contain only one
-function.  If this callback list contains more than one function, the
-behavior is undefined.
+A list of callback functions to call every \fBupdate\fP seconds. 
+This list should contain one function, which returns the
+value to be graphed by the StripChart widget.  The following
+section describes the procedural interface.  Behavior when this list has
+more than one function is undefined.
 .Hw
 .IP \fBhighlight\fP 1.5i
 A pixel value which indexes the widget's colormap to derive the color
 that will be used to draw the scale lines on the graph.
 .Ib
+.Ix
 .IP \fBjumpScroll\fP 1.5i
 When the graph reaches the right edge of the window it must be
 scrolled to the left.  This resource specifies the number of pixels
@@ -132,7 +135,7 @@ the \fBgetValue\fP procedure will be used to get a new graph point,
 and this point will be added to the right end of the StripChart.
 .Xy
 .NH 3
-Getting The StripChart Value
+Getting the StripChart Value
 .IN "StripChart widget" "getting the value"
 .LP
 The StripChart widget will call the application routine passed to it

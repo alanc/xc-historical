@@ -1,6 +1,6 @@
 .LP
 .NH 2
-Ascii Sink Object
+Ascii Sink Object and Multi Sink Object
 .LP
 .XS
 	AsciiSink Object
@@ -21,10 +21,17 @@ Class Name	AsciiSink
 Superclass	TextSink
 .sp 1
 .LP
-The AsciiSink object is used by a text widget to render the text.  It
-will display all Latin1 Characters in an 8 bit font, Tab and Carriage
-Return.  The name may be a bit misleading, but is left this way for
-compatibility.  This object also reports the text window metrics to the
+The AsciiSink or MultiSink object is used by a text widget to render the text.
+Depending on its \fBinternational\fP resource, a
+AsciiText widget will create one or the other of these when the AsciiText
+itself is created.  Both types are nearly identical; the following discussion
+applies to both, with MultiSink differences noted only as they occur.
+The AsciiSink
+will display all printing characters in an 8 bit font, along with handling Tab
+and Carriage Return.  The name has been left as ``AsciiSink'' for compatibility.
+\fIThe MultiSink will display all printing characters in a font set, along with
+handling Tab and Carriage
+Return.\fP    The source object also reports the text window metrics to the
 text widgets.
 .De
 .NH 3
@@ -54,6 +61,7 @@ destroyCallback	Callback	XtCallbackList		NULL
 displayNonprinting	Output	Boolean		True
 echo	Output	Boolean		True
 font	Font	XFontStruct*		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
@@ -62,12 +70,16 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.Bg
-I have added this resource to the AsciiSink instead of just stealing
-if from the Text widget for completeness.
+.Bg Bold
+This resource is retrieved by the AsciiSink instead of being copied
+from the Text widget.
 .Dc
 .Sd Bold
 .Sh Bold
-.Sf
-.Sg
+.IP \fBfont\fP 1.5i
+The text font to use when displaying the \fBstring\fP.
+(This resource is present in the AsciiSink, but not the MultiSink.)
+.IP \fBfontSet\fP 1.5i
+The text font set to use when displaying the \fBstring\fP.
+(This resource is present in the MultiSink, but not the AsciiSink.)
 

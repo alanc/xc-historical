@@ -1,5 +1,5 @@
 .NH 2
-Ascii Source Object
+Ascii Source Object and Multi Source Object
 .LP
 .XS
 	AsciiSrc Object
@@ -9,20 +9,26 @@ Ascii Source Object
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Application Header file	<X11/Xaw/AsciiSrc.h>
+Application Header file	<X11/Xaw/AsciiSrc.h> or <X11/Xaw/MultiSrc.h>
 .IN "AsciiSrc.h" ""
-Class Header file	<X11/Xaw/AsciiSrcP.h>
+Class Header file	<X11/Xaw/AsciiSrcP.h> or  <X11/Xaw/MultiSrcP.h>
 .IN "AsciiSrcP.h" ""
-Class		asciiSrcObjectClass
+Class		asciiSrcObjectClass or multiSrcObjectClass
 .IN "asciiSrcObjectClass" ""
-Class Name	AsciiSrc
+Class Name	AsciiSrc or MultiSrc
 .IN "AsciiSrc object" "class name"
 Superclass	TextSource
 .sp 1
 .LP
-The AsciiSrc object is used by a text widget to read the text from a
-file or string in memory.  It understands all Latin1 characters plus Tab
-and Carriage Return.
+The AsciiSrc or MultiSrc object is used by a text widget to read the text from a
+file or string in memory.  Depending on its \fBinternational\fP resource, an
+AsciiText widget will create one or the other of these when the AsciiText
+itself is created.  Both types are nearly identical; the following discussion
+applies to both, with MultiSrc differences noted only as they occur.
+.LP
+The AsciiSrc understands all Latin1 characters plus Tab
+and Carriage Return.  \fIThe MultiSrc understands any set of character sets that
+the underlying X implementation's internationalization handles.\fP
 .LP
 The AsciiSrc can be either of two types: \fBXawAsciiFile\fP
 or \fBXawAsciiString\fP.
@@ -37,8 +43,11 @@ updated, however, until a call to \fBXawAsciiSave\fP is made.  When the
 source is in this mode the \fBuseStringInPlace\fP resource is ignored.
 .LP
 AsciiSrc objects of type \fBXawAsciiString\fP have the text buffer
-implemented as a string.  The string owner is responsible for allocating
-and managing storage for the string.
+implemented as a string.
+\fIMultiSrc objects of type \fBXawAsciiString\fP have the text buffer
+implemented as a wide character string.\fP
+The string owner is responsible for allocating and managing storage for the
+string.
 .LP
 In the default case for AsciiSrc objects of type \fBXawAsciiString\fP,
 the resource \fBuseStringInPlace\fP is false,

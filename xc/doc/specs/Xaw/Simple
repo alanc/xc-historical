@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Simple,v 1.17 91/09/30 13:47:35 converse Exp $
 .NH 2
 Simple Widget
 .XS
@@ -23,7 +23,7 @@ Superclass	Core
 .LP
 The Simple widget is not very useful by itself, as it has no semantics
 of its own.  It main purpose is to be used as a common superclass for
-the other \fIsimple\fP Athena widgets.  This widget adds five resources
+the other \fIsimple\fP Athena widgets.  This widget adds six resources
 to the resource list provided by the Core widget and its superclasses.
 .NH 3
 Resources
@@ -62,6 +62,7 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension		0
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+international	International	Boolean	C	False
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
@@ -92,6 +93,7 @@ _
 .Dc
 .Hw
 .Ib Bold
+.Ix Bold
 .Mm
 .Pf Bold
 .Pb Bold

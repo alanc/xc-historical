@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH2,v 1.16 91/09/30 13:46:25 converse Exp $
 .bp
 \&
 .sp 1
@@ -38,13 +38,41 @@ interfaces to the \*(tk, only one is described here.  A full
 description of the programming interface is provided in the document
 \fI\*(xT\fP.
 .NH 2
+Setting the Locale
+.LP
+.XS
+	Setting the Locale
+.XE
+If it is desirable that the application take advantage of 
+internationalization (i18n), you must establish locale with 
+.PN XtSetLanguageProc
+before \fBXtDisplayInitialize\fP or \fBXtAppInitialize\fP
+is called.  For full details, please refer to the document 
+\fI\*(xT\fP, section 2.2. However, the following simplest-case 
+call is sufficient in many or most applications.
+.LP
+.IN "internationalization" "" ""
+.IN "XtSetLanguageProc" "" "@DEF@"
+.IN "locale" "" ""
+.Ds
+.TA .5i 2i
+.ta .5i 2i
+	XtSetLanguageProc(NULL, NULL, NULL);
+.De
+.LP
+Most notably, this will affect the Standard C locale, determine which
+resource files will be loaded, and what fonts will be required of FontSet
+specifications.  In many cases, the addition of this line is the only source change
+required to internationalize Xaw programs, and will not disturb the function
+of programs in the default "C" locale.
+.NH 2
 Initializing the Toolkit
 .LP
 .XS
 	Initializing the Toolkit
 .XE
 You must call a toolkit initialization function before invoking any
-other toolkit routines.  
+other toolkit routines (besides locale setting, above).  
 .PN XtAppInitialize
 opens the X server connection, parses the command line,
 and creates an initial widget that will serve as the root of
@@ -778,29 +806,35 @@ XtAppMainLoop(\fIapp_context\fP);
 For information about this function, see the \fI\*(xT\fP.
 .IP 9. 5
 Link your application with 
-.PN libXaw.a
+.PN libXaw
 (the Athena widgets),
-.PN libXmu.a
+.PN libXmu
 (miscellaneous utilities),
-.PN libXt.a 
+.PN libXt
 (the \*(tk \*(xI), 
-.PN libXext.a
+.PN libSM
+(Session Management),
+.PN libICE
+(Inter-Client Exchange),
+.PN libXext
 (the extension library needed for the shape extension code which allows
 rounded Command buttons), and
-.PN libX11.a 
+.PN libX11
 (the core X library).
 The following provides a sample command line:
-.IN "libXaw.a"
-.IN "libXmu.a"
-.IN "libXt.a"
-.IN "libXext.a"
-.IN "libX11.a"
+.IN "libXaw"
+.IN "libXmu"
+.IN "libXt"
+.IN "libSM"
+.IN "libICE"
+.IN "libXext"
+.IN "libX11"
 .IN "linking applications"
 .IN "compiling applications"
 .IP
 .Ds 0
 cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXmu \-lXt \
-\-lXext \-lX11
+\-lSM \-lICE \-lXext \-lX11
 .De
 .NH 3
 Changing Resource Values
@@ -863,11 +897,15 @@ capital letters and instance names begin with lower case letters.  The
 class of any widget may be used in place of its name in a resource
 specification.  Here are a few examples:
 .IP xman.form.button1 1.5i
-This is a fully specified resource name that matches exactly one
-widget instance.
+This is a fully specified resource name, and will affect only widgets
+called button1 that are children of widgets called form that are
+children of
+applications named xman.  (Note that while typically two widgets that
+are siblings will have different names, it is not prohibited.)
+
 .IP Xman.Form.Command 1.5i
-This will match any widget in applications of class \fIXman\fP that is
-a Command widget and a child of a Form widget.
+This will match any Command widget that is a child of a Form widget
+that is itself a child of an application of class \fIXman\fP.
 .IP Xman.Form.button1 1.5i
 This is a mixed resource name with both widget names and classes specified.
 .LP

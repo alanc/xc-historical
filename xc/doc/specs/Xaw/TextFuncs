@@ -15,7 +15,7 @@ These data structures are defined in the Text widget's public header file,
 typedef long XawTextPosition;
 .sp
 .LP
-Character positions in the Text widget begin at 0 and end at n+1, where
+Character positions in the Text widget begin at 0 and end at n, where
 n is the number of characters in the Text source widget.
 .LP
 .IN "XawTextBlock" "" "@DEF@"
@@ -42,8 +42,16 @@ in \fIptr\fP.
 .IP \fIptr\fP 1.0i
 Contains the string to be referenced by the Text widget.
 .IP \fIformat\fP 1.0i
-This field is not currently used, but should be specified as
-\fBFMT8BIT\fP.
+This flag indicates whether the data pointed to by \fBptr\fP is char 
+or wchar_t.  When the associated widget has \fBinternational\fP set 
+to \fBfalse\fP this field must be XawFmt8Bit.  When the associated 
+widget has \fBinternational\fP set to \fBtrue\fP this field must be 
+either XawFmt8Bit or XawFmtWide.
+.LP
+Note: Previous versions of Xaw used 
+.PN FMT8BIT , 
+which has been retained for backwards compatibility. \fBFMT8BIT\fP is 
+deprecated and will eventually be removed from the implementation.
 .NH 3
 Selecting Text
 .LP
@@ -64,6 +72,7 @@ Specifies the character position at which the selection begins.
 .IP \fIright\fP 1i
 Specifies the character position at which the selection ends.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 If redisplay is enabled, this function highlights the text and
 makes it the \fBPRIMARY\fP selection.  This function does not have any
 effect on \fBCUT_BUFFER0\fP.
@@ -101,6 +110,7 @@ Returns the beginning of the text selection.
 .IP \fIend_return\fP 1i
 Returns the end of the text selection.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 If the returned values are equal, no text is currently selected.
 .NH 3
 Replacing Text
@@ -127,6 +137,7 @@ Specifies the text to be inserted into the file.  This function will not
 be able to replace text in read-only text widgets.  It will also only
 be able to append text to an append-only text widget.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP and \fBXawTextBlock\fP.
 This function may return the following values:
 .IP \fBXawEditDone\fP 1.25i
 .IN "XawEditDone" ""
@@ -172,6 +183,7 @@ Specifies the direction to search in.  Legal values are
 .IP \fItext\fP 1i
 Specifies a text block structure that contains the text to search for.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP and \fBXawTextBlock\fP.
 The \fBXawTextSearch\fP function will begin at the insertion point
 and search in the 
 direction specified for a string that matches the one passed in 
@@ -197,6 +209,7 @@ Specifies the start of the text to redisplay.
 .IP \fIto\fP 1i
 Specifies the end of the text to redisplay.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 The \fBXawTextInvalidate\fP
 function causes the specified range of characters to be redisplayed
 immediately if redisplay is enabled or the next time that redisplay is
@@ -297,6 +310,7 @@ Specifies the Text widget.
 .IP \fIposition\fP 1i
 Specifies the new position for the insertion point.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 The text will be scrolled vertically if necessary to make the line
 containing the insertion point visible.  Calling this function is
 equivalent to setting the \fBinsertPosition\fP resource. 
@@ -313,6 +327,7 @@ XawTextPosition XawTextGetInsertionPoint(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the Text widget.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 The result is equivalent to retrieving the value of the
 \fBinsertPosition\fP resource. 
 .LP
@@ -337,6 +352,7 @@ Specifies the text source object.
 Specifies character position that will become the upper left hand corner
 of the displayed text.  This is usually set to zero.
 .LP
+See section 5.4 for a description of \fBXawTextPosition\fP.
 A display update will be performed if redisplay is enabled.
 .LP
 .sp 1

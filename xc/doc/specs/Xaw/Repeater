@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Repeater,v 1.4 91/09/30 13:47:26 converse Exp $
 .NH 2
 Repeater Widget
 .XS
@@ -21,9 +21,11 @@ Superclass	Command
 .sp
 .De
 .LP
-The Repeater widget is a version of the Command button that triggers 
-at an increasing rate while it is held down.  It is typically used to
-implement valuators or certain types of scrollbars.
+The Repeater widget is a subclass of the Command widget; see the
+Command documentation for details.  The difference is that the Repeater can call its
+registered callbacks repeatedly, at an increasing rate.  The default translation
+does so for the duration the user holds down pointer button 1 while the pointer
+is on the Repeater.
 .NH 3
 Resources
 .LP
@@ -66,13 +68,15 @@ destroyCallback	Callback	XtCallbackList		NULL
 encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 flash	Boolean	Boolean		False
 font	Font	XFontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
-height	Height	Dimension	A	\fBfont\fP height + 2 * \fBinternalHeight\fP
+height	Height	Dimension	A	graphic height + 2 * \fBinternalHeight\fP
 highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 initialDelay	Delay	Int		200
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 leftBitmap	LeftBitmap	Bitmap		None
@@ -88,7 +92,7 @@ shapeStyle	ShapeStyle	ShapeStyle		Rectangle
 startCallback	StartCallback	Callback		NULL
 stopCallback	StopCallback	Callback		NULL
 translations	Translations	TranslationTable		See below
-width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
+width	Width	Dimension	A	graphic width + 2 * \fBinternalWidth\fP
 x	Position	Position		0
 y	Position	Position		0
 .sp 3p
@@ -122,6 +126,7 @@ has reached \fBminimumDelay\fP milliseconds.
 .IP \fBflash\fP 1.5i
 Whether or not to flash the Repeater button whenever the timer goes off.
 .Lf
+.Ls
 .Lg
 .Hw
 .Ht
@@ -130,6 +135,7 @@ The number of milliseconds between the beginning of the Repeater button
 being held down and the first invocation of the \fBcallback\fP function.
 .Ib
 .Ih
+.In
 .Ju
 .La
 .Ll

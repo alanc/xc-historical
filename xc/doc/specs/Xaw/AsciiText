@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: AsciiText,v 1.20 91/09/30 13:46:31 converse Exp $
 .NH 2
 Ascii Text Widget
 .LP
@@ -24,14 +24,21 @@ Source Name	textSource
 .De
 .sp 1
 .LP
+For the ease of internationalization, the AsciiText widget class name has not
+been changed, although it is actually able support non-ASCII locales.
 The AsciiText widget is really a collection of smaller parts.  It
-includes the Text widget, an AsciiSrc, and an AsciiSink.  Some of
-the resources listed below are not actually resources of the
-AsciiText, but belong to the AsciiSrc or AsciiSink.  This is
+includes the Text widget itself, a ``Source'' (which supports memory management),
+and a ``Sink'' (which handles the display).  There are currently two supported
+sources, the AsciiSrc and MultiSrc, and two supported sinks, the AsciiSink and
 .IN "AsciiSrc object" ""
 .IN "AsciiSink object" ""
+.IN "MultiSrc object" ""
+.IN "MultiSink object" ""
+MultiSink.  Some of
+the resources listed below are not actually resources of the
+AsciiText, but belong to the associated source or sink.  This is
 is noted in the explanation of each resource where it applies.  When
-specifying these resources in a resource file be sure to use
+specifying these resources in a resource file it is necessary to use
 \fI*AsciiText*resource_name\fP instead of
 \fI*AsciiText.resource_name\fP, since they actually belong to the
 children of the AsciiText widget, and not the AsciiText widget itself.
@@ -82,10 +89,12 @@ displayPosition	TextPosition	XawTextPosition		0
 echo	Output	Boolean		True
 editType	EditType	XawTextEditType		XawtextRead
 font	Font	XFontStruct*		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + margins
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 insertPosition	TextPosition	int		0
+international	International	Boolean	C	False
 leftMargin	Margin	Dimension		2
 length	Length	int	A	length of \fBstring\fP
 mappedWhenManaged	MappedWhenManaged	Boolean		True
@@ -139,6 +148,7 @@ _
 .Oe AsciiText
 .Sh AsciiText
 .Sf AsciiText
+.Sn AsciiText
 .Sg AsciiText
 .Hw
 .Ib

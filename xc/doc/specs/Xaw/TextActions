@@ -1,5 +1,5 @@
 .NH 2
-Text Widget Actions.
+Text Widget Actions
 .LP
 .IN "Text widget" "actions"
 .XS
@@ -48,6 +48,7 @@ Miscellaneous	New Line
 	transpose-characters		kill-paragraph
 	no-op		kill-to-end-of-paragraph
 	XawWMProtocols
+	reconnect-im
 .De
 .sp
 .LP
@@ -233,16 +234,26 @@ option specifies the default filename to put in the filename buffer of
 the popup.  If no \fIfilename\fP is specified the buffer is empty
 at startup.
 .IP insert-char(\|) 2.0i
-This action may only be attached to a key event. It
+This action may only be attached to a key event. When the
+\fBinternational\fP resource is \fBfalse\fP, this action
 calls XLookupString to translate the event into a (rebindable) Latin-1
-character (sequence) and inserts that sequence into the text at the 
-insert point position.
+character (sequence) and inserts it into the text at the 
+insert point.  When the \fBinternational\fP resource is \fBtrue\fP,
+characters are passed to the input method via XwcLookupString, and any
+committed string returned is inserted into the text at the insert point.
 .IP insert-string(\fIstring\fP[,\fIstring\fP,...]) 2.0i
-This action inserts each \fIstring\fP into the text at the insert point
-location.  Any \fIstring\fP beginning with the characters "0x" and
-containing only valid hexadecimal digits in the remainder is interpreted
-as a hexadecimal constant and the corresponding single character is
-inserted instead.
+This action inserts each \fIstring\fP into the text
+at the insert point location.  Any \fIstring\fP
+beginning with the characters "0x" followed by an even
+number of hexadecimal digits is
+interpreted as a hexadecimal constant and the
+corresponding string is inserted instead.  This
+hexadecimal string may represent up to 50 8-bit characters.
+ When the\fBinternational\fP resource is
+\fBtrue\fP, a hexadecimal string is intrepeted as
+being in a multi-byte encoding, and a hexadecimal
+or regular string will result in an error message
+if it is not legal in the current locale.
 .IP display-caret(\fIstate\fP,\fIwhen\fP) 2.0i
 This action allows the insert point to be turned on and off.
 The \fIstate\fP argument specifies the desired state of the insert point.
@@ -303,8 +314,8 @@ this argument is \fIRingBell\fP then a beep is sent to the display.
 .IP XawWMProtocols([\fIwm_protocol_name\fP]) 2.0i
 .IN "XawWMProtocols"
 .sp
-This action is written specifically for the transient shells instantiated by
-the Text widget, which are the file insertion and the search and replace
+This action is written specifically for the file insertion and the search
+and replace
 dialog boxes.  This action is attached to those shells by the Text widget,
 in order to handle ClientMessage events with the WM_PROTOCOLS atom in the
 detail field.  This action supports WM_DELETE_WINDOW on the Text widget
@@ -312,9 +323,20 @@ popups, and may support other window manager protocols if necessary in
 the future.  The popup will be dismissed if the window manager sends
 a WM_DELETE_WINDOW request and there are no parameters in the action
 call, which is the default.  The popup will also be dismissed if the
-parameters include the string "wm_delete_window", and the event is a
+parameters include the string ``wm_delete_window,'' and the event is a
 ClientMessage event requesting dismissal or is not a ClientMessage event.
 This action is not sensitive to the case of the strings passed as parameters.
+.IP reconnect-im() 2.0i
+.IN "Input Method"
+When the \fBinternational\fP resource is \fBtrue\fP,
+input is usually passed to an input method, a separate
+process, for composing.  Sometimes the connection to
+this process gets severed; this action will attempt to
+reconnect it.  Causes for severage include network
+trouble, and the user explicitly killing one input
+method and starting a new one.  This action may also
+establish first connection when the application is
+started before the input method.
 .NH 3
 Text Selections for Application Programmers
 .IN "Text widget" "Text Selections for Application Programmers"
@@ -440,6 +462,7 @@ Text widget's \fBtranslations\fP resource.
 	Ctrl<Key>W:	kill-selection(\|) \\n\\
 	Ctrl<Key>Y:	insert-selection(CUT_BUFFER1) \\n\\
 	Ctrl<Key>Z:	scroll-one-line-up(\|) \\n\\
+	Ctrl<Key>\\:	reconnect-im(\|) \\n\\
 	Meta<Key>B:	backward-word(\|) \\n\\
 	Meta<Key>F:	forward-word(\|) \\n\\
 	Meta<Key>I:	insert-file(\|) \\n\\
@@ -469,6 +492,7 @@ Text widget's \fBtranslations\fP resource.
 	<Key>Linefeed:	newline-and-indent(\|) \\n\\
 	<Key>Return:	newline(\|) \\n\\
 	<Key>:		insert-char(\|) \\n\\
+	<Key>Kanji:	reconnect-im(\|) \\n\\
 	<FocusIn>:	focus-in(\|) \\n\\
 	<FocusOut>:	focus-out(\|) \\n\\
 	<Btn1Down>:	select-start(\|) \\n\\

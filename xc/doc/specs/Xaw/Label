@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Label,v 1.18 91/09/30 13:46:39 converse Exp $
 .NH 2
 Label Widget
 .XS
@@ -21,12 +21,16 @@ Superclass	Simple
 .sp
 .De
 .LP
-A Label widget is a text string or bitmap displayed within a
-rectangular region of the screen.  The \fBlabel\fP may contain
-multiple lines of Latin1 characters.  The Label widget will allow its
-string to be left, right, or center justified.  Normally, this widget
-can be neither selected nor directly edited by the user.  It is
-intended for use as an output device only.
+A Label widget holds a graphic displayed within a
+rectangular region of the screen.  The graphic may be a
+text string containing multiple lines of characters in an
+8 bit or 16 bit character set (to be displayed with a
+\fIfont\fP), or in a multi-byte encoding (for use with a
+\fIfontset\fP).  The graphic may also be a bitmap or
+pixmap.  The Label widget will allow its graphic to be
+left, right, or center justified.  Normally, this widget
+can be neither selected nor directly edited by the user. 
+It is intended for use as an output device only.
 .NH 3
 Resources
 .LP
@@ -65,11 +69,13 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 font	Font	XFontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
-height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
+height	Height	Dimension	A	graphic height + 2 * \fBinternalHeight\fP
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 leftBitmap	LeftBitmap	Bitmap		None
@@ -80,7 +86,7 @@ resize	Resize	Boolean		True
 screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 translations	Translations	TranslationTable		See above
-width	Width	Dimension	A	\fBLabel\fP width + 2 * \fBinternalWidth\fP
+width	Width	Dimension	A	graphic width + 2 * \fBinternalWidth\fP
 x	Position	Position		0
 y	Position	Position		0
 .sp 3p
@@ -105,10 +111,12 @@ _
 .Dc
 .Le Bold
 .Lf Bold
+.Ls Bold
 .Lg Bold
 .Hw
 .Ib
 .Ih Bold
+.In
 .Ju Bold
 .La Bold
 .Ll Bold

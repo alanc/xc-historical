@@ -22,18 +22,18 @@ Chapter 3 - Simple Widgets
 Each of these widgets performs a specific user interface function.  They
 are \fIsimple\fP because they cannot have widget children\(emthey may only
 be used as leaves of the widget tree.  These widgets display information or
-handle small amounts of user input.
+take user input.
 .sp
 .IP \fBCommand\fP 1i
 .IN "Command widget" ""
 A push button that, when selected, may cause a specific action
-to take place.  This widget can display a multi-line string or a bitmap image.
+to take place.  This widget can display a multi-line string or a bitmap or pixmap image.
 .IP \fBGrip\fP 1i
 .IN "Grip widget" ""
 A rectangle that, when selected, will cause an action to take place.
 .IP \fBLabel\fP 1i
 .IN "Label widget" ""
-A rectangle that may contain one or more lines of text or a bitmap image.
+A rectangle that can display a multi-line string or a bitmap or pixmap image.
 .IP \fBList\fP 1i
 .IN "List widget" ""
 A list of text strings presented in row column format that may be
@@ -46,6 +46,7 @@ dimensions.  Notification of movement may be continuous or discrete.
 .IP \fBRepeater\fP 1i
 .IN "Repeater widget" ""
 A push button that triggers an action at an increasing rate when selected.
+This widget can display a multi-line string or a bitmap or pixmap image.
 .IP \fBScrollbar\fP
 .IN "Scrollbar widget" ""
 A rectangular area containing a \fIthumb\fP that when slid along one
@@ -60,6 +61,7 @@ area with a settable mouse cursor and special border.
 A real time data graph that will automatically update and scroll.
 .IP \fBToggle\fP 1i
 .IN "Toggle widget" ""
-A push button (see Command) that contains state information.  Toggles
-may also be used as radio buttons to implement a "one of many" group
-of buttons. 
+A push button that contains state information.  Toggles
+may also be used as ``radio buttons'' to implement a ``one of many'' or
+``zero or one of many'' group
+of buttons.  This widget can display a multi-line string or a bitmap or pixmap image.

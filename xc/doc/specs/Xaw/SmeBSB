@@ -25,7 +25,9 @@ The SmeBSB object is used to create a menu entry that contains a string,
 and optional bitmaps in its left and right margins.  Since each menu
 entry is an independent object, the application is able to change the
 font, color, height, and other attributes of the menu entries, on an
-entry by entry basis.
+entry by entry basis.  The format of the string may either be the encoding
+of the 8 bit \fBfont\fP utilized, or in a multi-byte encoding for use with a
+\fBfontSet\fP.
 .NH 3
 Resources
 .IN "SmeBSB object" "resources"
@@ -51,8 +53,10 @@ ancestorSensitive	AncestorSensitive	Boolean	D	True
 callback	Callback	Callback		NULL
 destroyCallback	Callback	XtCallbackList		NULL
 font	Font	FontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Font height + \fBvertSpace\fP
+international	International	Boolean	C	False
 justify	Justify	Justify		XtjustifyLeft
 label	Label	String		NULL
 leftBitmap	LeftBitmap	Pixmap		XtUnspecifiedPixmap
@@ -75,7 +79,11 @@ All callback functions on this list are called when the SimpleMenu
 \fInotifies\fP this entry that the user has selected it.
 .Dc
 .IP \fBfont\fP 1.5i
-The font used to display the text label.
+The text font to use when displaying the \fBlabel\fP, when the
+\fBinternational\fP resource is \fBfalse\fP.
+.IP \fBfontSet\fP 1.5i
+The text font set to use when displaying the \fBlabel\fP, when the
+\fBinternational\fP resource is \fBtrue\fP.
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the SimpleMenu's colormap to derive the
 foreground color of the menu entry's window.  This color is also 
@@ -83,6 +91,7 @@ used to render all 1's in the left and right \fBbitmaps\fP.
 .Hw
 Keep in mind that the SimpleMenu widget will force the width of all
 menu entries to be the width of the longest entry.
+.In
 .IP \fBjustify\fP 1.5i
 How the label is to be rendered between the left and right margins when
 the space is wider than the actual text.  This resource may be
@@ -103,7 +112,7 @@ This is a name of a bitmap to display in the left or right margin of the
 menu entry.  All 1's in the bitmap will be rendered in the foreground
 color, and all 0's will be drawn in the background color of the
 SimpleMenu widget.  It is the
-programmers responsibility to make sure that the menu entry is tall
+programmers' responsibility to make sure that the menu entry is tall
 enough, and the appropriate margin wide enough to accept the bitmap.
 If care is not taken the bitmap may extend into another menu entry, or
 into this entry's label.

@@ -52,7 +52,6 @@ _
 .sp 3p
 background	Background	Pixel		XtDefaultBackground
 destroyCallback	Callback	XtCallbackList		NULL
-font	Font	XFontStruct*		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
 .sp 3p
 _
@@ -62,9 +61,7 @@ _
 .vs 13
 .nr VS 13
 .Bg Bold
-One foreground color is provided in TextSink.
 .Dc
-.Sf Bold
 .Sg Bold
 .NH 3
 Subclassing the TextSink
@@ -75,8 +72,8 @@ contains the minimum set of class methods that all text sinks must have.
 While all may be inherited, the direct descendant of TextSink \fBmust
 specify\fP some of them as TextSink does contain enough information to
 be a valid text sink by itself.  Do not try to use 
-the TextSink as a valid sink for the Text widget, it is not intended
-to be used as a sink by itself and bad things will probably happen.
+the TextSink as a valid sink for the Text widget; it is not intended
+to be used as a sink by itself.
 .ps 9
 .nr PS 9
 .vs 11

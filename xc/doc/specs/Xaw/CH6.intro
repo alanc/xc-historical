@@ -43,7 +43,7 @@ Allows viewing of a managed child which is as large as, or larger than its
 parent, typically under control of a Panner widget.
 .IP \fBTree\fP 1i
 .IN "Tree widget" ""
-Provides geometry managment of widgets arranged in a directed, acyclic graph.
+Provides geometry management of widgets arranged in a directed, acyclic graph.
 .IP \fBViewport\fP 1i
 .IN "Viewport widget" ""
 Consists of a frame, one or two scrollbars, and an inner window.  The

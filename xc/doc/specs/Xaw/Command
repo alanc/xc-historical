@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Command,v 1.21 91/09/30 13:46:34 converse Exp $
 .NH 2
 Command Widget
 .XS
@@ -21,19 +21,19 @@ Superclass	Label
 .sp
 .De
 .LP
-The Command widget is an area, often rectangular, that contains a text
-label or bitmap image.  Those selectable areas are often referred to as
-"buttons".  When the pointer cursor is on a button, it becomes
-highlighted by drawing a rectangle around its perimeter.  This
-highlighting indicates that the button is ready for selection.  When
-pointer button 1 is pressed, the Command widget indicates that it has
-been selected by reversing its foreground and background colors.  When
-the button is released, the Command widget's \fBnotify\fP action will be
-invoked, calling all functions on its callback list.  If the pointer is
-moved out of the widget before the button is released, the widget
-reverts to its normal foreground and background colors, and releasing
-the button has no effect.  This behavior allows the user to cancel an
-action.
+The Command widget is an area, often rectangular, that contains text
+or a graphical image. Command widgets are often referred to as 
+``push buttons.''  When the pointer is over a Command widget, the 
+widget becomes highlighted by drawing a rectangle around its perimeter.  
+This highlighting indicates that the widget is ready for selection. 
+When mouse button 1 is pressed, the Command widget indicates that 
+it has been selected by reversing its foreground and background colors.  
+When the mouse button is released, the Command widget's \fBnotify\fP 
+action is invoked, calling all functions on its callback list.  If 
+the pointer is moved off of the widget before the pointer button is 
+released, the widget reverts to its normal foreground and background 
+colors, and releasing the pointer button has no effect.  This behavior
+allows the user to cancel an action.
 .NH 3
 Resources
 .LP
@@ -75,12 +75,12 @@ destroyCallback	Callback	XtCallbackList		NULL
 encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 font	Font	XFontStruct		XtDefaultFont
 foreground	Foreground	Pixel		XtDefaultForeground
-height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
+height	Height	Dimension	A	graphic height + 2 * \fBinternalHeight\fP
 highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
-leftBitmap	LeftBitmap	Bitmap		None
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 leftBitmap	LeftBitmap	Bitmap		None
@@ -92,7 +92,7 @@ screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 shapeStyle	ShapeStyle	ShapeStyle		Rectangle
 translations	Translations	TranslationTable		See below
-width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
+width	Width	Dimension	A	graphic width + 2 * \fBinternalWidth\fP
 x	Position	Position		0
 y	Position	Position		0
 .sp 3p
@@ -120,11 +120,13 @@ _
 .Dc
 .Le
 .Lf
+.Ls
 .Lg
 .Hw
 .Ht Bold
 .Ib
 .Ih
+.In
 .Ju
 .La
 .Ll
@@ -193,6 +195,16 @@ in the \fBforeground\fP color.
 When the button is in the \fBset\fP state this action calls all functions in
 the callback list named by the \fBcallback\fP resource.  The value of
 the \fIcall_data\fP argument passed to these functions is undefined. 
+.LP
+A very common alternative to registering callbacks is to augment a
+Command's translations with an action performing the desired
+function.  This often takes the form of:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+*Myapp*save.translations: #augment <Btn1Down>,<Btn1Up>: Save()
+.De
 .LP
 .NT
 When a bitmap of depth greater that one (1) is specified the

@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Panner,v 1.6 91/09/30 13:46:51 converse Exp $
 .NH 2
 Panner Widget
 .LP
@@ -22,18 +22,20 @@ Superclass	Simple
 .sp
 .De
 .LP
-The Panner widget represents a rectangular region (called the ``canvas'') of 
-which only a smaller, enclosed rectangular region (called the ``slider'') by
-is visible at any given time.  It is typically
-used with a Porthole widget to scroll a third widget in two dimensions.
+A Panner widget is a rectangle, called the
+``canvas,'' on which another rectangle, the ``slider,'' moves in two
+dimensions.  It is often used with a Porthole widget to move, or
+``scroll,'' a third widget in two dimensions, in which case the
+slider's size and position gives feedback as to what portion of
+the third widget is visible.
 .LP
-When a Panner is created, it is drawn with the slider in a contrasting
-color.  The slider may be moved around the canvas by pressing, dragging,
-and then releasing Button1.
-While scrolling is in progress, the application receives notification
-through callback procedures which it may use to update any associated 
-widgets.  Notification may be done either continuously whenever the slider
-moves or discretely whenever the slider has been given a new location.
+The slider may be scrolled around the canvas by pressing,
+dragging, and releasing Button1; the default translation also
+enables scrolling via arrow keys and some other keys.  While
+scrolling is in progress, the application receives notification
+through callback procedures.  Notification may be done either
+continuously whenever the slider moves or discretely whenever the
+slider has been given a new location.
 .NH 3
 Resources
 .LP
@@ -77,6 +79,7 @@ destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	depends on orientation
 internalSpace	InternalSpace	Dimension		4
+international	International	Boolean	C	False
 lineWidth	LineWidth	Dimension		0
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
@@ -136,6 +139,7 @@ used to draw the slider.
 The width of internal border in pixels between a slider representing the 
 full size of the canvas
 and the edge of the Panner widget.
+.Ix
 .IP \fBlineWidth\fP 1.5i
 The width of the lines in the rubberbanding rectangle when rubberbanding
 is in effect instead of continuous scrolling.  The default is 0.

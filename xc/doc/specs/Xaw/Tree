@@ -22,8 +22,8 @@ Superclass	Constraint
 .De
 .LP
 The Tree widget provides geometry management of arbitrary widgets arranged
-in a directed, acyclic graph (i.e., a tree).  The hierarchy is contructed by
-attaching a constraint resource called \fBtreeParent\fP to each widget
+in a directed, acyclic graph (i.e., a tree).  The hierarchy is constructed 
+by attaching a constraint resource called \fBtreeParent\fP to each widget
 indicating which other node in the tree should be treated as the widget's
 superior.  The structure of the tree is shown by laying out the nodes
 in the standard format for tree diagrams with lines drawn connecting each

@@ -23,11 +23,11 @@ to display and edit one or more lines of text.  Options are provided to
 allow the user to add Scrollbars to its window, search for a specific
 string, and modify the text in the buffer.
 .LP
-The Text widget is made up of a number of pieces.  The modularization of
-functionality is intended to ease customization.  For most applications,
-the AsciiText widget will be general enough to meet the programmer's
+The Text widget is made up of a number of pieces; it was modularized to
+ease customization.  The AsciiText widget class (actually not limited to
+ASCII but so named for compatibility) is be general enough to most
 needs.  If more flexibility, special features, or extra functionality is
-needed, it can be added by implementing a new TextSource or TextSink, or
+needed, they can be added by implementing a new TextSource or TextSink, or
 by subclassing the Text Widget (See Section 5.8 for customization
 details.)
 .LP
@@ -48,9 +48,9 @@ Editable
 Read-only 
 .LP
 Read-only mode does not allow the user or the programmer to modify the text
-in the widget.  While the programmer may reset the entire string in
-read-only mode with \fBXtSetValues\fP, he may not modify parts of the
-text with \fBXawTextReplace\fP.  Append-only and editable modes allow
+in the widget.  While the entire string may be reset in
+read-only mode with \fBXtSetValues\fP, it cannot be modified via
+with \fBXawTextReplace\fP.  Append-only and editable modes allow
 .IN "XawTextReplace" ""
 the text at the insertion point to be modified.  The only difference is
 that text may only be added to or removed from the end of a buffer in
@@ -66,7 +66,7 @@ Text Widget for Users
 The Text widget provides many of the common keyboard editing commands.
 These commands allow users to move around and edit the buffer.  If an
 illegal operation is attempted, (such as deleting characters in a
-read-only text widget), the terminal bell will be rung.
+read-only text widget), the X server will beep.
 .NH3
 Default Key Bindings
 .IN "Text widget" "default key bindings"
@@ -98,6 +98,8 @@ Ctrl-v	Next Page	Meta-Shift Delete	Kill Previous Word
 Ctrl-w	Kill Selection	Meta-Backspace	Delete Previous Word
 Ctrl-y	Unkill	Meta-Shift Backspace	Kill Previous Word
 Ctrl-z	Scroll One Line Up
+Ctrl-\\	Reconnect to input method
+Kanji	Reconnect to input method
 .De
 .sp
 .LP
@@ -165,7 +167,7 @@ key sequences:
 Using these special key sequences should allow simple
 searches without ever removing one's hands from the keyboard.
 .LP
-At the bottom of the search popup is a row of buttons.  These buttons
+Near the bottom of the search popup is a row of buttons.  These buttons
 allow the same actions to to be performed as the key sequences, but the
 buttons will leave the popup active.  This can be quite useful if many
 searches are being performed, as the popup will be left on the display.
@@ -185,6 +187,11 @@ the current insertion point position to the end (or beginning) of the
 file.  There is no key sequence to perform this action.
 .IP \fBCancel\fP 15
 Remove the search popup from the screen.
+.LP
+Finally, when \fBinternational\fP resource is \fBtrue\fP, there may be a
+pre-edit buffer below the button row, for composing input.  Its presence
+is determined by the X locale in use and the VendorShell's \fBpreeditType\fP
+resource.
 .LP
 The widget hierarchy for the search popup is show below, all widgets
 are listed by class and instance name.
@@ -223,7 +230,7 @@ to enter the filename again.  The file insert may be aborted by clicking
 on \fICancel\fP.  If \fIMeta-i\fP is typed at a text widget that is
 read-only, it will beep, as no file insertion is allowed.
 .LP
-The widget hierarchy for the file insert popup is show below, all widgets
+The widget hierarchy for the file insert popup is show below; all widgets
 are listed by class and instance name.
 .sp
 .nf
@@ -240,30 +247,31 @@ Text  <name of Text widget>
 Text Selections for Users
 .LP
 .IN "Text widget" "Text Selections for Users"
-The text widgets have a very powerful text selection mechanism that allows
+The text widgets have a text selection mechanism that allows
 the user to copy pieces of the text into the \fBPRIMARY\fP selection,
 and paste 
 into the text widget some text that another application (or text
 widget) has put in the \fBPRIMARY\fP selection.
 .LP
-The simplest method of selecting text is to press pointer button 1
+One method of selecting text is to press pointer button 1
 on the beginning of the text to be selected, drag the pointer until all
 of the desired text is highlighted, and then release the button to
-activate the selection.  The text may now be pasted into any other
-application.  This selection will remain active until some other client
-makes a selection.
+activate the selection.  Another method is to click pointer button 1 at
+one end of the text to be selected, then click pointer button 3 at the
+other end.
 .LP
-To modify a currently active selection, click pointer button 3 near
-either the end or the beginning of the selection that you want to
+To modify a currently active selection, press pointer button 3 near
+either the end of the selection that you want to
 adjust.  This end of the selection may be moved while holding down pointer
 button 3.  When the proper area has been highlighted release the pointer
 button to activate the selection.
 .LP
-To paste text that some other application or Text widget has
+The selected text may now be pasted into another application, and
+will remain active until some other client makes a selection.
+To paste text that some other application has
 put into the \fBPRIMARY\fP selection use pointer button 2.  
 First place the insertion point where you would like the text to be inserted,
-then click and release pointer button 2.  The text
-that is in the \fBPRIMARY\fP selection will be placed into the Text widget.
+then click and release pointer button 2.
 .LP
 Rapidly clicking pointer button 1 the following number of times will adjust
 the selection as described.
@@ -279,5 +287,5 @@ Spaces or Tabs between them.
 .IP \fBFive\fP 1.0i
 Select the entire text buffer.
 .LP
-To unset the text selection just click and release pointer button 1
+To unset the text selection, click pointer button 1
 without moving it.

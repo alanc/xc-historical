@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Grip,v 1.19 91/09/30 13:46:36 converse Exp $
 .NH 2
 Grip Widget
 .XS
@@ -64,6 +64,7 @@ destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension		8
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+international	International	Boolean	C	False
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 pointerColor	Foreground	Pixel		XtDefaultForeground
 pointerColorBackground	Background	Pixel		XtDefaultBackground
@@ -90,7 +91,7 @@ _
 .IP \fBcallback\fP 1.5i
 All routines on this list are called whenever the \fBGripAction\fP
 action routine is invoked.  The \fIcall_data\fP contains all
-information passed to the action routine.  A more thorough description
+information passed to the action routine.  A detailed description
 is given below in the \fBGrip Actions\fP section.
 .Cm
 .Cu
@@ -102,6 +103,7 @@ A pixel value which indexes the widget's colormap to derive the color
 used to flood fill the entire Grip widget.
 .Hw
 .Ib
+.Ix
 .Mm
 .Pf
 .Pb

@@ -30,7 +30,7 @@ The Paned widget may accept any widget class as a pane \fBexcept\fP
 Grip.  Grip widgets have a special meaning for the Paned widget, and
 adding a Grip as its own pane will confuse the Paned widget.
 .NH 3
-Using the Paned widget.
+Using the Paned Widget
 .IN "Paned widget" "using"
 .LP
 The grips allow the panes to be resized by the user.  The semantics of

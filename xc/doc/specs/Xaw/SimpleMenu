@@ -21,9 +21,10 @@ Superclass	OverrideShell
 .De
 .LP
 The SimpleMenu widget is a container for the menu entries.  It is a
-direct subclass of shell, and is usually created with
-\fBXtCreatePopupShell\fP.  This is the only part of the menu that
-actually contains a window.  The SimpleMenu serves as the glue to bind
+direct subclass of shell, and is should be created with
+\fBXtCreatePopupShell\fP, not \fBXtCreateManagedWidget\fP.  This is the
+only part of the menu that
+actually is associated with a window.  The SimpleMenu serves as the glue to bind
 the individual menu entries together into a menu.
 .NH 3
 Resources

@@ -103,7 +103,7 @@ _
 A pixmap image to be displayed immediately to the left of the 
 Dialog widget's label.
 .IP \fBlabel\fP 1.5i
-A Latin1 string to be displayed at the top of the Dialog widget.
+A string to be displayed at the top of the Dialog widget.
 .Mm
 .Nc
 .Sc

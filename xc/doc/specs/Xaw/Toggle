@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Toggle,v 1.22 91/09/30 13:47:44 converse Exp $
 .NH 2
 Toggle Widget
 .XS
@@ -21,29 +21,36 @@ Superclass 	Command
 .sp
 .De
 .LP
-The Toggle widget is an area, often rectangular, containing a text label
-or bitmap image.  This widget maintains a Boolean state (e.g.
+The Toggle widget is an area, often rectangular,
+that displays a graphic.  The graphic may be a text
+string containing multiple lines of characters in an 8
+bit or 16 bit character set (to be displayed with a
+\fIfont\fP), or in a multi-byte encoding (for use with
+a \fIfontset\fP).  The graphic may also be a bitmap or
+pixmap.
+.LP
+This widget maintains a Boolean state (e.g.
 True/False or On/Off) and changes state whenever it is selected.  When
-the pointer is on the button, the button may become highlighted by
+the pointer is on the Toggle widget, the Toggle widget may become highlighted by
 drawing a rectangle around its perimeter.  This highlighting indicates
-that the button is ready for selection.  When pointer button 1 is
+that the Toggle widget is ready for selection.  When pointer button 1 is
 pressed and released, the Toggle widget indicates that it has changed
 state by reversing its foreground and background colors, and its
 \fBnotify\fP action is invoked, calling all functions on its callback
-list.  If the pointer is moved out of the widget before the button is
-released, the widget reverts to its normal foreground and background
-colors, and releasing the button has no effect.  This behavior allows
-the user to cancel an action.
+list.  If the pointer is moved off of the widget before the pointer button is
+released, the Toggle widget reverts to its previous foreground and background
+colors, and releasing the pointer button has no effect.  This behavior allows
+the user to cancel the operation.
 .LP
-Toggle buttons may also be part of a radio group.  A radio group is a
+Toggle widgets may also be part of a ``radio group.''  A radio group is a
 .IN "Radio groups" ""
 .IN "Radio button" ""
 .IN "Toggle widget" "used in radio groups"
-list of at least two Toggle buttons in which no more than one Toggle may 
+list of at least two Toggle widget in which no more than one Toggle may 
 be set at
 any time.  A radio group is identified by the widget ID of any one of
 its members.  The convenience routine \fBXawToggleGetCurrent\fP will
-return information about the Toggle button in the radio group.
+return information about the Toggle widget in the radio group.
 .LP
 Toggle widget state is preserved across changes in sensitivity.
 .NH 3
@@ -86,12 +93,14 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 font	Font	XFontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
-height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
+height	Height	Dimension	A	graphic height + 2 * \fBinternalHeight\fP
 highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 leftBitmap	LeftBitmap	Bitmap		None
@@ -106,7 +115,7 @@ sensitive	Sensitive	Boolean		True
 shapeStype	ShapeStyle	ShapeStyle		Rectangle
 state	State	Boolean		Off
 translations	Translations	TranslationTable		See below
-width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
+width	Width	Dimension	A	graphic width + 2 * \fBinternalWidth\fP
 x	Position	Position		0
 y	Position	Position		0
 .sp 3p
@@ -133,11 +142,13 @@ _
 .Dc
 .Le
 .Lf
+.Ls
 .Lg
 .Hw
 .Ht 
 .Ib
 .Ih
+.In
 .Ju
 .La
 .Ll
@@ -177,7 +188,7 @@ Toggle Actions
 .LP
 The Toggle widget supports the following actions:
 .IP \(bu 5
-Switching the button between the foreground and background
+Switching the Toggle widget between the foreground and background
 colors with \fBset\fP and \fBunset\fP and \fBtoggle\fP
 .IP \(bu 5
 Processing application callbacks with \fBnotify\fP
@@ -214,11 +225,11 @@ or \fBbackground\fP ) that matches the interior color of the
 Toggle widget.  
 .IP \fBset\fP(\|) 1.5i
 Enters the \fIset\fP state, in which \fBnotify\fP is possible.  This
-action causes the button to display its interior in the
+action causes the Toggle widget to display its interior in the
 \fBforeground\fP color.  The label or bitmap is displayed in the
 \fBbackground\fP color. 
 .IP \fBunset\fP(\|) 1.5i
-Cancels the \fIset\fP state and displays the interior of the button in the
+Cancels the \fIset\fP state and displays the interior of the Toggle widget in the
 \fBbackground\fP color.  The label or bitmap is displayed in the
 \fBforeground\fP color.
 .IP \fBtoggle\fP(\|) 1.5i
@@ -230,10 +241,10 @@ to be invoked.  The callback routines for the Toggle that
 is to be unset will be called before the one that is to be set.
 .IP \fBreset\fP(\|) 1.5i
 Cancels any \fBset\fP or \fBhighlight\fP and displays the interior of the
-button in the \fBbackground\fP color, with the label displayed in the 
+Toggle widget in the \fBbackground\fP color, with the label displayed in the 
 \fBforeground\fP color.
 .IP \fBnotify\fP(\|) 1.5i
-When the button is in the \fBset\fP state this action calls all functions in
+When the Toggle widget is in the \fBset\fP state this action calls all functions in
 the callback list named by the \fBcallback\fP resource.  The value of
 the call_data argument in these callback functions is undefined. 
 .LP
@@ -251,7 +262,7 @@ There are typically two types of radio groups desired by applications.
 The default translations for the Toggle widget implement a "zero or one
 .IN "Radio groups" "zero or one of many"
 of many" radio group.  This means that there may be no more than one
-button active, but there need not be any buttons active.
+Toggle widget active, but there need not be any Toggle widgets active.
 .LP
 The other type of radio group is "one of many" and has the more strict
 .IN "Radio groups" "one of many"

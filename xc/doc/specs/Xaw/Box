@@ -137,10 +137,9 @@ request a larger width from its parent and will begin the layout
 process from the beginning if a new width is granted.
 .IP \fBXtorientHorizontal\fP 1.5i
 .IN "XtorientHorizontal" "" @DEF@
-When the next child does not fit in the current column, a new column is
-started.  If a child is taller than the height of the box, the box will
-request a larger height from its parent and will begin the layout
-process from the beginning if a new height is granted.
+When the next child does not fit on the current row, the Box widens if
+possible (so as to keep children on a single row); otherwise a new row is
+started.
 .LP
 After positioning all children, the Box widget attempts to shrink its
 own size to the minimum dimensions required for the layout.

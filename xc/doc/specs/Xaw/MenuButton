@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: MenuButton,v 1.18 91/09/30 13:46:41 converse Exp $
 .NH 2
 MenuButton Widget
 .XS
@@ -21,12 +21,20 @@ Superclass	Command
 .De
 .LP
 .sp
-The MenuButton widget is an area, often rectangular, that contains a
-text label or bitmap image.  When the pointer cursor is on the button,
-the button becomes highlighted by drawing a rectangle around its
-perimeter.  This highlighting indicates that the button is ready for
-selection.  When a pointer button is pressed, the MenuButton widget will
-pop up the menu that has been named in the \fBmenuName\fP resource.
+The MenuButton widget is an area, often rectangular,
+that displays a graphic.  The graphic may be a text
+string containing multiple lines of characters in an 8
+bit or 16 bit character set (to be displayed with a
+\fIfont\fP), or in a multi-byte encoding (for use with
+a \fIfontset\fP).  The graphic may also be a bitmap or
+pixmap.
+.LP
+When the pointer cursor is on a MenuButton widget, the
+MenuButton becomes highlighted by drawing a rectangle
+around its perimeter.  This highlighting indicates
+that the MenuButton is ready for selection.  When a
+pointer button is pressed, the MenuButton widget will
+pop up the menu named in the \fBmenuName\fP resource.
 .NH 3
 Resources
 .LP
@@ -68,12 +76,14 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 encoding	Encoding	UnsignedChar		XawTextEncoding8bit
 font	Font	XFontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 foreground	Foreground	Pixel		XtDefaultForeground
-height	Height	Dimension	A	Font height + 2 * \fBinternalHeight\fP
+height	Height	Dimension	A	graphic height + 2 * \fBinternalHeight\fP
 highlightThickness	Thickness	Dimension	A	2 (0 if Shaped)
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 justify	Justify	Justify		XtJustifyCenter (center)
 label	Label	String		name of widget
 leftBitmap	LeftBitmap	Bitmap		None
@@ -86,7 +96,7 @@ screen	Screen	Screen	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 shapeStype	ShapeStyle	ShapeStyle		Rectangle
 translations	Translations	TranslationTable		See below
-width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
+width	Width	Dimension	A	graphic width + 2 * \fBinternalWidth\fP
 x	Position	Position		0
 y	Position	Position		0
 .sp 3p
@@ -112,24 +122,29 @@ _
 .De
 .Dc
 .Lf
+.Ls
 .Lg
 .Hw
 .Ht
 .Ib
 .Ih
+.In
 .Ju
 .La
 .Mm
 .IP \fBmenuName\fP 1.5i
 The name of a popup shell to popup as a menu.  The MenuButton
-will search for this name using \fBXtNameToWidget\fP starting with itself
-as the reference widget.  If it is unsuccessful it will continue up the widget
-tree using each of its ancestors as the reference widget.  If it is still
-unsuccessful it will print a warning message and give up.  When the
-menu is found it will be popped up exclusive and spring_loaded.
-The MenuButton widget does not copy the value of this resource into newly
-allocated memory. The application programmer must pass the resource value
-in nonvolatile memory.
+will search for this name using \fBXtNameToWidget\fP starting
+with itself as the reference widget.  If the search is
+unsuccessful the widget will continue up the widget tree using
+each of its ancestors as the reference widget passed to
+\fBXtNameToWidget\fP.  If no widget of called \fBmenuName\fP is
+found by this algorithm, the widget will print a warning message
+and give up.  When the menu is found it will be popped up
+exclusive and spring_loaded.  The MenuButton widget does not
+copy the value of this resource into newly allocated memory. The
+application programmer must pass the resource value in
+nonvolatile memory.
 .Pf
 .Pb
 .Re

@@ -1,4 +1,4 @@
-.\" $XConsortium: TPage_Credits,v 1.13 91/07/30 15:48:33 gildea Exp $
+.\" $XConsortium: TPage_Credits,v 1.14 91/07/30 17:57:30 converse Exp $
 .ds CH
 .ds CF
 .ps 11
@@ -10,7 +10,7 @@
 
 \s+1\fBX Window System\fP\s-1
 
-\s+1\fBX Version 11, Release 5\fP\s-1
+\s+1\fBX Version 11, Release 6\fP\s-1
 
 .sp 6
 .ce 4
@@ -106,7 +106,7 @@ details.
 .Ds 0
 Chris D. Peterson
 MIT X Consortium
-December, 1989
+December 1989
 .De
 .LP
 .sp
@@ -115,10 +115,23 @@ the MIT X Consortium, with significant contributions by Jim Fulton (NCD).
 .sp
 .Ds 0
 Donna Converse
-July, 1991
+MIT X Consortium
+July 1991
+.De
+.LP
+.sp
+The R6 edition of this document has been edited to reflect changes brought
+about by research staff of the Omron Corporation, with special
+recognition to Li Yuhong, Seiji Kuwari, and Hiroshi Kuribayashi for 
+the X11R5/contrib/lib/Xaw internationalization that inspired this version.
+.sp
+.Ds 0
+Frank Sheeran
+Omron Corporation
+March 1994
 .De
 .bp
 .ds LH \fBAthena Widget Set\fP
 .ds CH
-.ds RH \fBX11, Release 5\fP
+.ds RH \fBX11, Release 6\fP
 .ds CF \fB % \fP

@@ -22,9 +22,9 @@ Superclass	Sme
 .sp
 .LP
 The SmeLine object is used to add a horizontal line or menu separator to
-a menu.  Since each menu entry is an independent object, the application
-is able to change the color, height, and other attributes of the menu
-entries, on an entry by entry basis.  This entry is not selectable, and
+a menu.  Since each SmeLine is an independent object, the application
+is able to change the color, height, and other attributes of the SmeLine
+objects on an entry by entry basis.  This object is not selectable, and
 will not highlight when the pointer cursor is over it.
 .NH 3
 Resources
@@ -50,6 +50,7 @@ _
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension		\fBlineWidth\fP
+international	International	Boolean	C	False
 lineWidth	LineWidth	Dimension		1
 stipple	Stipple	Pixmap		XtUnspecifiedPixmap
 width	Width	Dimension		1
@@ -66,8 +67,9 @@ A pixel value which indexes the SimpleMenu's colormap to derive the
 foreground color used to draw the separator line.
 .Hw
 Keep in mind that the SimpleMenu widget will force all menu items to
-be the width of the widest entry.  Thus the width is generally not
+be the width of the widest entry.  Thus, setting the width is generally not
 very important.
+.Ix
 .IP \fBlineWidth\fP 1.5i
 The width of the horizontal line that is to be displayed.
 .IP \fBstipple\fP 1.5i

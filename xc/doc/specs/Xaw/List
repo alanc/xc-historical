@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: List,v 1.21 91/09/30 13:46:29 converse Exp $
 .NH 2
 List Widget
 .LP
@@ -66,12 +66,14 @@ defaultColumns	Columns	int		2
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 font	Font	FontStruct		XtDefaultFont
+fontSet	FontSet	XFontSet		XtDefaultFontSet
 forceColumns	Columns	Boolean		False
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	Enough space to contain the list
 insensitiveBorder	Insensitive	Pixmap		GreyPixmap
 internalHeight	Height	Dimension		2
 internalWidth	Width	Dimension		4
+international	International	Boolean	C	False
 list	List	Pointer		name of widget
 longest	Longest	int	A	0
 mappedWhenManaged	MappedWhenManaged	Boolean		True
@@ -120,6 +122,12 @@ width nor the height of the List widget is specified or when
 \fBforceColumns\fP is \fBTrue\fP.
 .Dp
 .Dc
+.IP \fBfont\fP
+The text font to use when displaying the \fBlist\fP, when the
+\fBinternational\fP resource is \fBfalse\fP.
+.IP \fBfontSet\fP
+The text font set to use when displaying the \fBlist\fP, when the
+\fBinternational\fP resource is \fBtrue\fP.
 .IP \fBforceColumns\fP
 Forces the default number of columns to be used regardless of the
 List widget's current size. 
@@ -143,11 +151,12 @@ the \fBlist\fP, and \fBlongest\fP is set to the length of the name of the
 widget.  The \fBlist\fP is used in place, and must be available
 to the List widget for the lifetime of this widget, or until it is
 changed with \fBXtSetValues\fP or \fBXawListChange\fP.
+.In
 .IP \fBlongest\fP
 Specifies the width, in pixels, of the longest string in the current
 list.  The List widget will compute this value if zero (the default)
-is specified.  If this resource is not correctly specified, selection of
-list items may not work properly.
+is specified.  If this resource is set by hand, entries longer than this
+will be clipped to fit.
 .Mm
 .IP \fBnumberStrings\fP 1.5i
 The number of strings in the current list.  If a value of zero (the
@@ -323,3 +332,18 @@ containing the currently highlighted item.
 If the value of the index member is XAW_LIST_NONE,
 .IN "XAW_LIST_NONE"
 the string member is undefined, and no item is currently selected.
+.NH 3
+Restrictions
+.LP
+Many programmers create a ``scrolled list'' by putting a List
+widget with many entries as a child of a Viewport widget.  The
+List continues to create a window as big as its contents, but
+that big window is only visible where it intersects the parent
+Viewport's window.  (I.e., it is ``clipped.'')
+.LP
+While this is a useful technique, there is a serious drawback. 
+X does not support windows above 32,767 pixels in width or
+height, but this height limit will be exceeded by a List's
+window when the List has many entries (i.e., with a 12 point
+font, about 3000 entries would be too many.)
+.LP

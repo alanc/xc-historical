@@ -1,15 +1,15 @@
-.\" $XConsortium: strings.xaw,v 1.21 91/09/30 13:36:24 converse Exp $
+.\" $XConsortium: strings.xaw,v 1.22 92/09/23 13:43:01 converse Exp $
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
 A converter is registered for this resource that will convert
 the following strings: \fB\\$1\fP.
 ..
-.de Sk \" This is an AsciiSink Resource
-.if 'AsciiText'\\$1' This is an AsciiSink resource. 
+.de Sk \" This is a resource of the associated sink.
+.if 'AsciiText'\\$1' This is a resource of the associated sink.
 ..
-.de So \" This is an AsciiSrc Resource
-.if 'AsciiText'\\$1' This is an AsciiSrc resource. 
+.de So \" This is a resource of the associated source.
+.if 'AsciiText'\\$1' This is a resource of the associated source.
 ..
 
 \" Object Resources
@@ -126,6 +126,24 @@ will override the \fBcursor\fP resource if both are specified. (See 2.4.1)
 This pixmap will be tiled into the widget's border if the widget becomes
 insensitive.
 ..
+.de In \" Simple international
+.ie 'Bold'\\$1' .IP \fBinternational\fP 1.5i
+.el .IP international 1.5i
+This is a boolean flag, only settable at widget creation
+time.  A value of \fBfalse\fP signals the widget to use
+pre-R6 internationalization (specifically, the lack thereof),
+such as using fonts for displaying text, etc.  A value of
+\fBtrue\fP directs the widget to act in an internationalized
+manner, such as utilizing font sets for displaying text, etc.
+..
+.de Ix \" Simple international
+.ie 'Bold'\\$1' .IP \fBinternational\fP 1.5i
+.el .IP international 1.5i
+This is a boolean flag, only settable at widget creation
+time.  While not utilized in this widget, it can and should
+be checked by any subclasses that have behavior that
+should vary with locale.
+..
 .de Pf \" Simple pointerColor
 .ie 'Bold'\\$1' .IP\fBpointerColor\fP 1.5i
 .el .IP pointerColor 1.5i
@@ -158,11 +176,19 @@ directly into the window.
 .el .IP encoding 1.5i
 The encoding method used by the value of the \fBlabel\fP resource.
 The value may be \fBXawTextEncoding8bit\fP or \fBXawTextEncodingChar2b\fP.
+When \fBinternational\fP is set to \fBtrue\fP this resource is not used.
 ..
 .de Lf \" Label font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
 .el .IP font 1.5i
-The text font to use when displaying the \fBlabel\fP.
+The text font to use when displaying the \fBlabel\fP, when the
+\fBinternational\fP resource is \fBfalse\fP.
+..
+.de Ls \" Label fontSet
+.ie 'Bold'\\$1' .IP \fBfontSet\fP 1.5i
+.el .IP fontSet 1.5i
+The text font set to use when displaying the \fBlabel\fP, when the
+\fBinternational\fP resource is \fBtrue\fP.
 ..
 .de Lg \" Label foreground
 .ie 'Bold'\\$1' .IP \fBforeground\fP 1.5i
@@ -178,32 +204,36 @@ used to render all 1's in a \fBbitmap\fP one plane deep.
 .ns
 .ie 'Bold'\\$1' .IP \fBinternalWidth\fP 1.5i
 .el .IP internalWidth 1.5i
-The minimum amount of space to leave between the \fBlabel\fP or
-\fBbitmap\fP and the vertical and horizontal edges of the window.
+The minimum amount of space to leave between the graphic
+and the vertical and horizontal edges of the window.
 ..
-.de Ju \" Lable justify
+.de Ju \" Label justify
 .ie 'Bold'\\$1' .IP \fBjustify\fP 1.5i
 .el .IP justify 1.5i
 .IN "conversions" "Justify"
-Specifies left, center, or right alignment of \fBlabel\fP within the
+Specifies left, center, or right alignment of graphic within the
 widget.  This resource may be specified with the values
 \fBXtJustifyLeft\fP, \fBXtJustifyCenter\fP, or \fBXtJustifyRight\fP.
 .Rs "left, right, \fPand\fB center".
 This resource only has noticeable effect when the width of the widget
-is larger than necessary to display the \fBlabel\fP.
+is larger than necessary to display the graphic.  Note that when the
+graphic is a multi-line \fBlabel\fP, the longest line will obey this
+justification while shorter lines will be left-justified with the longest
+one.
+
 ..
 .de La \" Label label
 .ie 'Bold'\\$1' .IP \fBlabel\fP 1.5i
 .el .IP label 1.5i
 Specifies the text string to be displayed in the widget's window
 if no bitmap is specified.  The default is the name of this widget.
-Irregardless of the value of \fBencoding\fP, a single newline character
-(1 byte) will cause a line break.
+Irregardless of the value of \fBencoding\fP or \fBinternational\fP,
+a single newline character (1 byte) will cause a line break.
 ..
 .de Ll \" Label leftBitmap
 .ie 'Bold'\\$1' .IP \fBleftBitmap\fP 1.5i
 .el .IP leftBitmap 1.5i
-Specifies a bitmap to display to the left of the label in the widget's 
+Specifies a bitmap to display to the left of the graphic in the widget's 
 window.
 ..
 .de Re \" Label resize
@@ -243,9 +273,9 @@ selected.  The default value is 2 pixels if the \fBshapeStyle\fP is
 .ie 'Bold'\\$1' .IP \fBshapeStyle\fP 1.5i
 .el .IP shapeStyle 1.5i
 .IN "conversions" "ShapeStyle"
-Nonrectangular buttons may be created using this resource.
-Nonrectangular buttons are supported only on a server that supports the
-\fBShape Extension\fP.  If nonrectangular buttons are specified
+Nonrectangular widgets may be created using this resource.
+Nonrectangular widgets are supported only on a server that supports the
+\fBShape Extension\fP.  If nonrectangular widgets are specified
 for a server lacking this extension, the shape is ignored and the
 widgets will be rectangular.  The following shapes are currently
 supported: \fBXmuShapeRectangle\fP, \fBXmuShapeOval\fP,
@@ -331,7 +361,7 @@ child itself, however.
 
 .de Lt \" Form Section on Layout semantics
 The \\$1 widget uses two different sets of layout semantics.  One is
-used when initially laying out the buttons.  The other is used when
+used when initially laying out the children.  The other is used when
 the \\$1 is resized. 
 .LP
 The first layout method uses the \fBfromVert\fP and \fPfromHoriz\fP
@@ -481,7 +511,11 @@ the resource manager.
 These are the TextSink or TextSource objects used by this widget.
 .ie 'Bold'\\$1' When using the Text widget these MUST be set by the \
 application programmer.
-.el The AsciiText widget initializes these resources to point \
+.el When \fBinternational\fP is set to \fBtrue\fP
+the AsciiText widget initializes these resources to point \
+to an MultiSink and MultiSrc respectively.
+.el When \fBinternational\fP is set to \fBfalse\fP
+the AsciiText widget initializes these resources to point \
 to an AsciiSink and AsciiSrc respectively.
 ..
 .de Tw \" Text wrap
@@ -519,13 +553,6 @@ is unrealized.
 A pixel value which indexes the Text widget's colormap to derive the 
 background color used by the text sink.
 ..
-.de Sf \" TextSink font
-.ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
-.el .IP font 1.5i
-This is font for rendering all text and must be a character cell
-font (see the X Logical Font Description).  
-.Sk \\$1
-..
 .de Sg \" TextSink foreground
 .ie 'Bold'\\$1' .IP \fBforeground\fP 1.5i
 .el .IP foreground 1.5i
@@ -552,6 +579,20 @@ in the text buffer.
 Whether or not to echo characters to the screen.  The buffer can still
 be edited, but nothing is displayed.  This mode can be useful for
 entering passwords and other sensitive information.  
+.Sk \\$1
+..
+.de Sf \" AsciiSink font
+.ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
+.el .IP font 1.5i
+The text font to use when displaying the \fBstring\fP, when the
+\fBinternational\fP resource is \fBfalse\fP.
+.Sk \\$1
+..
+.de Sn \" MultiSink fontSet
+.ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
+.el .IP font 1.5i
+The text font set to use when displaying the \fBstring\fP, when the
+\fBinternational\fP resource is \fBtrue\fP.
 .Sk \\$1
 ..
 
@@ -652,6 +693,10 @@ where the programmer wishes to impose strict constraints on the
 contents of the \fBstring\fP.  When using the string in place be sure that:
 the length of the string is specified by setting the \fBlength\fP resource,
 the \fBtype\fP of the Text widget is \fBXawAsciiString\fP, and that
-the \fBstring\fP exists for the lifetime of the text widget, or until it has been reset.
+the \fBstring\fP exists for the lifetime of the text widget, or until it has
+been reset.  \fINote: Since the MultiSrc and AsciiSrc have different data
+formats, use of this resource forces application code to be cognisant as to
+which of the two is being used.  Application programming is simplified when
+use of this resource is avoided.\fP
 .So \\$1
 ..
