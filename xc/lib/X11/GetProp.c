@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetProp.c,v 11.12 88/02/04 19:17:58 rws Exp $ */
+/* $Header: XGetProp.c,v 11.13 88/07/22 19:22:52 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -43,7 +43,7 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
 
     *prop = NULL;
     if (*actual_type != None) switch (reply.format) {
-      long nbytes;
+      long nbytes, netbytes;
       /* 
        * One extra byte is malloced than is needed to contain the property
        * data, but this last byte is null terminated and convenient for 
@@ -51,23 +51,26 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
        * recopy the string to make it null terminated. 
        */
       case 8:
-	*prop = (unsigned char *) Xmalloc ((unsigned)reply.nItems + (unsigned)1);
-        _XReadPad (dpy, (char *) *prop, (long) reply.nItems);
-	(*prop)[reply.nItems] = '\0';
+        nbytes = (*nitems);
+	*prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
+        netbytes = (*nitems);
+        _XReadPad (dpy, (char *) *prop, netbytes);
+	(*prop)[nbytes] = '\0';
         break;
 
       case 16:
-        /* XXX needs rethinking for BIGSHORTS */
-        nbytes = (long)reply.nItems << 1;
+        nbytes = (*nitems) * sizeof (short);
         *prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
-        _XReadPad (dpy, (char *) *prop, nbytes);
+        netbytes = (*nitems) * 2;
+        _XRead16Pad (dpy, (short *) *prop, netbytes);
 	(*prop)[nbytes] = '\0';
         break;
 
       case 32:
-        nbytes = (long)reply.nItems << 2;
+        nbytes = (*nitems) * sizeof (long);
         *prop = (unsigned char *) Xmalloc ((unsigned)nbytes + 1);
-        _XRead (dpy, (char *) *prop, (long)nbytes);
+        netbytes = (*nitems) * 4;
+        _XRead32 (dpy, (long *) *prop, netbytes);
 	(*prop)[nbytes] = '\0';
         break;
 

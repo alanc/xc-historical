@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.72 88/08/11 11:41:39 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.74 88/08/11 18:24:56 jim Exp $";
 #endif
 
 /*
@@ -305,7 +305,7 @@ _XRead32 (dpy, data, size)
  */
 static _doXRead16 (dpy, data, size)
         register Display *dpy;
-        register long *data;
+        register short *data;
         register long size;
 {
 	long *lpack,*lp;
@@ -313,9 +313,9 @@ static _doXRead16 (dpy, data, size)
 	long maskw, nwords, i, bits;
 	extern char packbuffer[];
 
-        _XRead(dpy,packbuffer,size);
+        _XRead(dpy,packbuffer,size);	/* don't do a padded read... */
 
-        lp = data;
+        lp = (long *) data;
         lpack = (long *) packbuffer;
         nwords = size >> 1;  /* number of 16 bit words to be unpacked */
         bits = 48;
@@ -332,7 +332,7 @@ static _doXRead16 (dpy, data, size)
 
 _XRead16 (dpy, data, size)
     Display *dpy;
-    long *data;
+    short *data;
     long size;
 {
     char packbuffer[PACKBUFFERSIZE];
@@ -344,6 +344,19 @@ _XRead16 (dpy, data, size)
     _doXRead16 (dpy, data, len, packbuffer);
 }
 
+_XRead16Pad (dpy, data, size)
+    Display *dpy;
+    short *data;
+    long size;
+{
+    int slop = (size & 3);
+    short slopbuf[3];
+
+    _XRead16 (dpy, data, size);
+    if (slop > 0) {
+	_XRead16 (dpy, slopbuf, 4 - slop);
+    }
+}
 #endif /* WORD64 */
 
 

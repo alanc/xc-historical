@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.51 88/08/11 14:54:47 jim Exp $ */
+/* $Header: Xlibint.h,v 11.52 88/08/11 18:16:56 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -240,6 +240,7 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #ifndef WORD64
 #define Data16(dpy, data, len) Data((dpy), (char *)(data), (len))
 #define Data32(dpy, data, len) Data((dpy), (char *)(data), (len))
+#define _XRead16Pad(dpy, data, len) _XReadPad((dpy), (char *)(data), (len))
 #define _XRead16(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #define _XRead32(dpy, data, len) _XRead((dpy), (char *)(data), (len))
 #endif /* not WORD64 */
