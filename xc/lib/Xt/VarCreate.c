@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.4 89/11/09 15:50:17 swick Exp $";
+    "$XConsortium: VarCreate.c,v 1.5 89/11/10 17:47:07 swick Exp $";
 #endif
 
 /*
@@ -22,10 +22,9 @@ without express or implied warranty.
 
 */
 
-#include <X11/Intrinsic.h>
+#include "IntrinsicI.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
-#include "Xtos.h"
 #include "VarargsI.h"
 
 extern Widget _XtCreateWidget();
