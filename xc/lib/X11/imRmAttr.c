@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imRmAttr.c,v 1.1 93/09/17 13:27:47 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -92,7 +92,7 @@ _XimEncodeAttrIDList(res_list, res_num, arg, idList, num)
 	idList[(*num)++] = res->id;
 	if (res->xrm_size == XimType_NEST) {
 	    if (name = _XimEncodeAttrIDList(res_list, res_num,
-			(XIMArg *)((void *)p->value), &idList[*num], &new_num))
+			(XIMArg *)p->value, &idList[*num], &new_num))
 		return name;
 
 	    *num += new_num;
@@ -109,7 +109,7 @@ _XimAttributeToValue(ic, res, buf, value, mode)
     Xic			  ic;
     XIMrmResourceList	  res;
     CARD16		 *buf;
-    void		 *value;
+    XPointer		  value;
     BITMASK32		  mode;
 {
     switch (res->xrm_size) {
@@ -133,7 +133,7 @@ _XimAttributeToValue(ic, res, buf, value, mode)
     case XimType_XIMStyles:
 	{
 	    INT16		 num = buf[2];
-	    CARD32		*style_list = (CARD32 *)((void *)&buf[4]);
+	    CARD32		*style_list = (CARD32 *)&buf[4];
 	    XIMStyles		*rep;
 	    XIMStyle		*style;
 	    register int	 i;
@@ -147,8 +147,8 @@ _XimAttributeToValue(ic, res, buf, value, mode)
 	    if (!(p = Xmalloc(alloc_len)))
 		return False;
 
-	    rep   = (XIMStyles *)((void *)p);
-	    style = (XIMStyle *)((void *)&p[sizeof(XIMStyles)]);
+	    rep   = (XIMStyles *)p;
+	    style = (XIMStyle *)&p[sizeof(XIMStyles)];
 
 	    for (i = 0; i < num; i++)
 		style[i] = (XIMStyle)style_list[i];
@@ -229,7 +229,7 @@ _XimAttributeToValue(ic, res, buf, value, mode)
     case XimType_XIMOptions:
 	{
 	    INT16		 num = buf[2];
-	    CARD32		*option_list = (CARD32 *)((void *)&buf[4]);
+	    CARD32		*option_list = (CARD32 *)&buf[4];
 	    XIMOptionsList	*rep;
 	    XIMOptions		*option;
 	    register int	 i;
@@ -243,8 +243,8 @@ _XimAttributeToValue(ic, res, buf, value, mode)
 	    if (!(p = Xmalloc(alloc_len)))
 		return False;
 
-	    rep    = (XIMOptionsList *)((void *)p);
-	    option = (XIMOptions *)((void *)&p[sizeof(XIMOptionsList)]);
+	    rep    = (XIMOptionsList *)p;
+	    option = (XIMOptions *)&p[sizeof(XIMOptionsList)];
 
 	    for (i = 0; i < num; i++)
 		option[i] = (XIMOptions)option_list[i];
@@ -257,8 +257,8 @@ _XimAttributeToValue(ic, res, buf, value, mode)
 
     case XimType_XIMHotKeyTriggers:
 	{
-	    INT32		       num = *((CARD32 *)((void *)&buf[2]));
-	    register CARD32	      *key_list = (CARD32 *)((void *)&buf[4]);
+	    INT32		       num = *((CARD32 *)&buf[2]);
+	    register CARD32	      *key_list = (CARD32 *)&buf[4];
 	    register XIMHotKeyTrigger *key;
 	    register int	       i;
 	    XIMHotKeyTriggers	      *rep;
@@ -273,8 +273,8 @@ _XimAttributeToValue(ic, res, buf, value, mode)
 	    if (!(p = Xmalloc(alloc_len)))
 		return False;
 
-	    rep = (XIMHotKeyTriggers *)((void *)p);
-	    key = (XIMHotKeyTrigger *)((void *)&p[sizeof(XIMHotKeyTriggers)]);
+	    rep = (XIMHotKeyTriggers *)p;
+	    key = (XIMHotKeyTrigger *)&p[sizeof(XIMHotKeyTriggers)];
 
 	    for (i = 0; i < num; i++, key_list += 3) {
 		key[i].keysym        = (KeySym)key_list[0]; /* keysym */
@@ -338,7 +338,7 @@ _XimDecodeATTRIBUTE(ic, res_list, res_num,  data, data_len, arg, mode)
 
 	    length = buf[1];
 	    length += XIM_PAD(length) + min_len;
-	    buf = (CARD16 *)((void *)((char *)buf + length));
+	    buf = (CARD16 *)((char *)buf + length);
 	    len -= length;
 	}
 	if (len < min_len)
@@ -347,17 +347,17 @@ _XimDecodeATTRIBUTE(ic, res_list, res_num,  data, data_len, arg, mode)
 	if (res->xrm_size == XimType_NEST) {
 	    if (res->xrm_name == XrmPermStringToQuark(XNPreeditAttributes)) {
 	        if ((name = _XimDecodeATTRIBUTE(ic, res_list, res_num,
-			&buf[2], buf[1], (XIMArg *)((void *)p->value), 
+			&buf[2], buf[1], (XIMArg *)p->value,
 			_XIM_PREEDIT_ATTR)))
 		    return name;
 	    } else if (res->xrm_name == XrmPermStringToQuark(XNStatusAttributes)) {
 	        if ((name = _XimDecodeATTRIBUTE(ic, res_list, res_num,
-			&buf[2], buf[1], (XIMArg *)((void *)p->value), 
+			&buf[2], buf[1], (XIMArg *)p->value,
 			_XIM_STATUS_ATTR)))
 		    return name;
 	    }
 	} else {
-	    if (!(_XimAttributeToValue(ic, res, buf, (void *)p->value, mode)))
+	    if (!(_XimAttributeToValue(ic, res, buf, (XPointer)p->value, mode)))
 		return name;
 	}
     }
@@ -370,7 +370,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
     XIMrmResourceList	 res;
     CARD16		*buf;
     INT16		 buf_size;
-    void		*value;
+    XPointer		 value;
     int			*is_window;
     INT16		*len;
     BITMASK32		 mode;
@@ -403,7 +403,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	if (buf_size < *len)
 	    return False;
 
-	*((CARD32 *)((void *)buf)) = (CARD32)value;
+	*((CARD32 *)buf) = (CARD32)value;
 	break;
 
     case XimType_STRING8:
@@ -426,7 +426,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	    *len = 0;
 	    (*is_window)++;
 	} else
-	    *((CARD32 *)((void *)buf)) = (CARD32)value;
+	    *((CARD32 *)buf) = (CARD32)value;
 	break;
 
     case XimType_XRectangle:
@@ -503,7 +503,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	{
 	    XIMOptionsList	*option = (XIMOptionsList *)value;
 	    INT16		 num = (INT16)option->count_options;
-	    CARD32		*option_list = (CARD32 *)((void *)&buf[2]);
+	    CARD32		*option_list = (CARD32 *)&buf[2];
 	    register int	 i;
 
 	    if (!option)
@@ -528,7 +528,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	{
 	    XIMHotKeyTriggers	*hotkey = (XIMHotKeyTriggers *)value;
 	    INT32		 num = (INT32)hotkey->num_hot_key;
-	    CARD32		*key = (CARD32 *)((void *)&buf[2]);
+	    CARD32		*key = (CARD32 *)&buf[2];
 	    register int	 i;
 
 	    if (!hotkey)
@@ -542,7 +542,7 @@ _XimValueToAttribute(ic, res, buf, buf_size, value, is_window, len, mode)
 	    if (buf_size < *len)
 		return False;
 
-	    *((CARD32 *)((void *)buf)) = num;		/* number of key list */
+	    *((CARD32 *)buf) = num;		/* number of key list */
 	    for (i = 0; i < num; i++, key += 3) {
 		key[0] = (CARD32)(hotkey->key[i].keysym);
 						/* keysym */
@@ -908,12 +908,12 @@ _XimEncodeATTRIBUTE(ic, res_list, res_num, buf, buf_size, arg, total_length, fla
 	if (res->xrm_size == XimType_NEST) {
 	    if (res->xrm_name == XrmPermStringToQuark(XNPreeditAttributes)) {
 	    	if (_XimEncodeATTRIBUTE(ic, res_list, res_num,  &buf[2],
-				buf_size, (XIMArg *)((void *)p->value),
+				buf_size, (XIMArg *)p->value,
 				&len, flag, is_window, _XIM_PREEDIT_ATTR))
 		    return p->name;
 	    } else if (res->xrm_name == XrmPermStringToQuark(XNStatusAttributes)) {
 	    	if (_XimEncodeATTRIBUTE(ic, res_list, res_num,  &buf[2],
-				buf_size, (XIMArg *)((void *)p->value),
+				buf_size, (XIMArg *)p->value,
 				&len, flag, is_window, _XIM_STATUS_ATTR))
 		    return p->name;
 	    }
@@ -923,7 +923,7 @@ _XimEncodeATTRIBUTE(ic, res_list, res_num, buf, buf_size, arg, total_length, fla
 		*flag |= _XimExtenArgCheck(p);
 #endif
 	    if (!( _XimValueToAttribute(ic, res, &buf[2], buf_size,
-				(void *)p->value, is_window, &len, mode)))
+				(XPointer)p->value, is_window, &len, mode)))
 		return p->name;			/* value */
 	}
 	if (!len)
@@ -934,7 +934,7 @@ _XimEncodeATTRIBUTE(ic, res_list, res_num, buf, buf_size, arg, total_length, fla
 	XIM_SET_PAD(&buf[2], len);		/* pad */
 	len += sizeof(CARD16)			/* sizeof attribute ID */
 	     + sizeof(INT16);			/* sizeof value length */
-	buf = (CARD16 *)((void *)((char *)buf + len));
+	buf = (CARD16 *)((char *)buf + len);
 	*total_length += len;
     }
     return (char *)NULL;
@@ -955,7 +955,7 @@ _XimCountNumberOfAttr(total, attr)
 	length = attr[2];
 	length += (min_len + XIM_PAD(length + 2));
 	total -= length;
-	attr = (CARD16 *)((void *)((char *)attr + length));
+	attr = (CARD16 *)((char *)attr + length);
 	n++;
     }
     return n;
@@ -997,7 +997,7 @@ _XimGetAttributeID(im, buf)
 	len = buf[2];
 	names_len += (len + 1);
 	len += (min_len + XIM_PAD(len + 2));
-	buf = (CARD16 *)((void *)((char *)buf + len));
+	buf = (CARD16 *)((char *)buf + len);
     }
 
     if (!(names = (char *)Xmalloc(names_len)))
@@ -1013,7 +1013,7 @@ _XimGetAttributeID(im, buf)
 	res[i].id	     = buf[0];
 	names += (len + 1);
 	len += (min_len + XIM_PAD(len + 2));
-	buf = (CARD16 *)((void *)((char *)buf + len));
+	buf = (CARD16 *)((char *)buf + len);
     }
 
     _XIMCompileResourceList(res, n);
@@ -1041,7 +1041,7 @@ _XimGetAttributeID(im, buf)
 	len = buf[2];
 	names_len += (len + 1);
 	len += (min_len + XIM_PAD(len + 2));
-	buf = (CARD16 *)((void *)((char *)buf + len));
+	buf = (CARD16 *)((char *)buf + len);
     }
 
     if (!(names = (char *)Xmalloc(names_len)))
@@ -1057,7 +1057,7 @@ _XimGetAttributeID(im, buf)
 	res[i].id	     = buf[0];
 	names += (len + 1);
 	len += (min_len + XIM_PAD(len + 2));
-	buf = (CARD16 *)((void *)((char *)buf + len));
+	buf = (CARD16 *)((char *)buf + len);
     }
 
     _XIMCompileResourceList(res, n);

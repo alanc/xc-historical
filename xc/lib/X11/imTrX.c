@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imTrX.c,v 1.1 93/09/17 13:29:16 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.
@@ -43,23 +43,23 @@ _GetReadData(im, event, len, data, prop)
     Xim			  im;
     XEvent		 *event;
     INT16		 *len;
-    void		**data;
+    XPointer		 *data;
     Atom		 *prop;
 {
     unsigned long	  reply_length;
     unsigned char	 *buf;
-    void		 *reply_data;
+    XPointer		  reply_data;
     int			  return_code;
     Atom		  type_ret;
     int			  format_ret;
     unsigned long	  bytes_after_ret;
-    XSpecRec		 *spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec		 *spec = (XSpecRec *)im->private.proto.spec;
     unsigned long	  length;
 
     if (event->xclient.format == 8) {
 	reply_length = XIM_CM_DATA_SIZE; /* XXX */
 	*prop = (Atom)0;
-	if (!(reply_data = (void *)Xmalloc(reply_length)))
+	if (!(reply_data = (XPointer)Xmalloc(reply_length)))
 	    return False;
 	bcopy(event->xclient.data.b, reply_data, reply_length);
     } else {
@@ -77,7 +77,7 @@ _GetReadData(im, event, len, data, prop)
 	if ((int)reply_length < (int)length)
 	    return False;
 
-	if (!(reply_data = (void *)Xmalloc(reply_length))) {
+	if (!(reply_data = (XPointer)Xmalloc(reply_length))) {
 	    XFree(buf);
 	    return False;
 	}
@@ -94,10 +94,10 @@ Private Bool
 _IntrCallbackCheck(im, len, data)
     Xim			 	 im;
     INT16			 len;
-    void			*data;
+    XPointer			 data;
 {
     register XIntrCallbackRec	*rec;
-    XSpecRec		*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
 
     for (rec = spec->intr_cb; rec; rec = rec->next) {
 	if ((*rec->func)(im, len, data, rec->call_data))
@@ -114,10 +114,10 @@ _FilterWaitEvent(d, w, ev, xim)
     XPointer	 xim;
 {
     INT16	len;
-    void	*data;
+    XPointer	data;
     Atom	 prop;
-    Xim		 im = (Xim)((void *)xim);
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    Xim		 im = (Xim)xim;
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if (!(_GetReadData(im, ev, &len, &data, &prop)))
 	return False;
@@ -136,8 +136,8 @@ _CheckCMEvent(display, event, xim)
     XEvent	*event;
     XPointer	 xim;
 {
-    Xim		 im = (Xim)((void *)xim);
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    Xim		 im = (Xim)xim;
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if ((event->type == ClientMessage)
      && (event->xclient.message_type == spec->improtocolid))
@@ -149,13 +149,13 @@ Private Bool
 _XimXRecv(im, len, data, predicate, arg)
     Xim		 im;
     INT16	*len;
-    void	**data;
+    XPointer	*data;
     Bool	(*predicate)();
     XPointer	 arg;
 {
     XEvent	 event;
     Atom	 prop;
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     for (;;) {
 	XIfEvent(im->core.display, &event, _CheckCMEvent, (XPointer)im);
@@ -195,11 +195,11 @@ Private Bool
 _XimXSend(im, len, data)    
     Xim		 im;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
 {
     Atom	 atom;
     char	 atomName[16];
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
     XEvent	 event;
     CARD8	 *p;
 
@@ -212,7 +212,8 @@ _XimXSend(im, len, data)
     if (len > XIM_CM_DATA_SIZE) {
 	atom = XInternAtom(im->core.display, _NewAtom(atomName), False);
 	XChangeProperty(im->core.display, spec->ims_connect_wid,
-			atom, XA_STRING, 8, PropModeAppend, data, len);
+			atom, XA_STRING, 8, PropModeAppend,
+			(unsigned char *)data, len);
 	event.xclient.format = 32;
 	event.xclient.data.l[0] = (long)len;
 	event.xclient.data.l[1] = (long)atom;
@@ -242,7 +243,7 @@ _XimXIntrCallBack(im, callback, call_data)
     XPointer		 call_data;
 {
     XIntrCallbackPtr	 rec;
-    XSpecRec		*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec		*spec = (XSpecRec *)im->private.proto.spec;
 
     if (!(rec = (XIntrCallbackPtr)Xmalloc(sizeof(XIntrCallbackRec))))
         return False;
@@ -274,8 +275,8 @@ _CheckConnect(display, event, xim)
     XEvent	*event;
     XPointer	 xim;
 {
-    Xim		 im = (Xim)((void *)xim);
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    Xim		 im = (Xim)xim;
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if ((event->type == ClientMessage)
      && (event->xclient.message_type == spec->imconnectid))
@@ -288,7 +289,7 @@ _XimXConnect(im)
     Xim im;
 {
     XEvent	 event;
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     if (!(spec->lib_connect_wid = XCreateSimpleWindow(im->core.display,
 		DefaultRootWindow(im->core.display), 0, 0, 1, 1, 1, 0, 0)))
@@ -325,14 +326,14 @@ Private Bool
 _XimXShutdown(im)
     Xim		 im;
 {
-    XSpecRec	*spec = (XSpecRec *)((void *)im->private.proto.spec);
+    XSpecRec	*spec = (XSpecRec *)im->private.proto.spec;
 
     /* ClientMessage Event Filter */
     _XUnregisterFilter(im->core.display,
-	    ((XSpecRec *)((void *)im->private.proto.spec))->lib_connect_wid,
+	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid,
 	    _FilterWaitEvent, (XPointer)im);
     XDestroyWindow(im->core.display,
-	    ((XSpecRec *)((void *)im->private.proto.spec))->lib_connect_wid);
+	    ((XSpecRec *)im->private.proto.spec)->lib_connect_wid);
     _XimXFreeIntrCallBack(spec);
     Xfree(spec);
     return True;

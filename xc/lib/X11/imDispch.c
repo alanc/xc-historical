@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imDispch.c,v 1.1 93/09/17 13:26:06 rws Exp $ */
 /******************************************************************
 
                 Copyright 1993 by FUJITSU LIMITED
@@ -41,7 +41,7 @@ _XimRegProtoIntrCallback(
     CARD16	 minor_code,
     Bool	(*proc)(
 #if NeedNestedPrototypes
-                        Xim, INT16, void *, XPointer
+                        Xim, INT16, XPointer, XPointer
 #endif
 			),
 
@@ -87,7 +87,7 @@ Private Bool
 _XimTransportIntr(im, len, data, call_im)
     Xim		 im;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     Xim		 call_im;
 {
     XimProtoIntrRec	*rec = call_im->private.proto.intrproto;

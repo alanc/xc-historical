@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XimintP.h,v 1.1 93/09/17 13:33:25 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -40,7 +40,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 typedef struct _XimProtoIntrRec {
     Bool			 (*func)(
 #if NeedFunctionPrototypes
-	Xim, INT16, void *, XPointer
+	Xim, INT16, XPointer, XPointer
 #endif
     );
     CARD16			 major_code;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imDefIc.c,v 1.1 93/09/17 13:25:46 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.
@@ -100,11 +100,11 @@ Private Bool
 _XimGetICValuesCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -126,10 +126,10 @@ _XimProtoGetICValues(xic, arg)
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 nCard;
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     char	*name;
 
     if (name = _XimEncodeAttrIDList(im->core.ic_resources,
@@ -145,15 +145,15 @@ _XimProtoGetICValues(xic, arg)
     len += sizeof(CARD16)			/* sizeof imid */
 	 + sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_GET_IC_VALUES, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_GET_IC_VALUES, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return arg->name;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
 					_XimGetICValuesCheck, (XPointer)ic)))
 	return arg->name;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     name = _XimDecodeATTRIBUTE(ic, im->core.ic_resources,
 			im->core.ic_num_resources, &buf_s[4], buf_s[2],
 			arg, _XIM_TOP_ATTR);
@@ -165,11 +165,11 @@ Private Bool
 _XimSetICValuesCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -191,10 +191,10 @@ _XimProtoSetICValues(xic, arg)
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
     INT16	 buf_size;
-    void	*reply;
+    XPointer	reply;
     BITMASK32	 flag = 0L;
     char	*error_name;
     int		 is_window = 0;
@@ -239,8 +239,8 @@ _XimProtoSetICValues(xic, arg)
 	 + sizeof(INT16)			/* sizeof length of attribute */
 	 + sizeof(CARD16);			/* sizeof unused */
 
-    _XimSetHeader((void *)buf, XIM_SET_IC_VALUES, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_SET_IC_VALUES, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return arg->name;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
@@ -255,11 +255,11 @@ Private Bool
 _XimDestroyICCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -280,9 +280,9 @@ _XimProtoDestroyIC(xic)
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
     buf_s[1] = ic->private.proto.icid;		/* icid */
@@ -290,8 +290,8 @@ _XimProtoDestroyIC(xic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_DESTROY_IC, 0, &len);
-    (void)im->private.proto.send(im, len, (void *)buf);
+    _XimSetHeader((XPointer)buf, XIM_DESTROY_IC, 0, &len);
+    (void)im->private.proto.send(im, len, (XPointer)buf);
     im->private.proto.flush(im);
     (void)im->private.proto.recv(im, &len, &reply,
 				_XimDestroyICCheck, (XPointer)ic);
@@ -313,7 +313,7 @@ _XimProtoSetFocus(xic)
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
     XFlush(im->core.display);
@@ -333,7 +333,7 @@ _XimProtoSetFocus(xic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_SET_IC_FOCUS, 0, &len);
+    _XimSetHeader((XPointer)buf, XIM_SET_IC_FOCUS, 0, &len);
     (void)im->private.proto.send(im, len, buf);
     im->private.proto.flush(im);
     return;
@@ -346,7 +346,7 @@ _XimProtoUnsetFocus(xic)
     Xic		 ic = (Xic)xic;
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
     XFlush(im->core.display);
@@ -366,7 +366,7 @@ _XimProtoUnsetFocus(xic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_UNSET_IC_FOCUS, 0, &len);
+    _XimSetHeader((XPointer)buf, XIM_UNSET_IC_FOCUS, 0, &len);
     (void)im->private.proto.send(im, len, buf);
     im->private.proto.flush(im);
     return;
@@ -376,11 +376,11 @@ Private Bool
 _XimResetICCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -398,7 +398,7 @@ Private char *
 _XimCommitedMbString(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     CARD16	*buf_s = (CARD16 *)buf;
     char	*preedit;
@@ -450,9 +450,9 @@ _XimProtoMbReset(xic)
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     char	*commit;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
@@ -461,15 +461,15 @@ _XimProtoMbReset(xic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_RESET_IC, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_RESET_IC, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return NULL;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
 					_XimResetICCheck, (XPointer)ic)))
 	return NULL;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     commit = _XimCommitedMbString(im, ic, &buf_s[2]);
 
     Xfree(reply);
@@ -480,7 +480,7 @@ Private wchar_t *
 _XimCommitedWcString(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     CARD16	*buf_s = (CARD16 *)buf;
     char	*preedit;
@@ -532,9 +532,9 @@ _XimProtoWcReset(xic)
     Xic		 ic = (Xic)xic;
     Xim	 	 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     wchar_t	*commit;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
@@ -543,15 +543,15 @@ _XimProtoWcReset(xic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_RESET_IC, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_RESET_IC, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return NULL;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
 					_XimResetICCheck, (XPointer)ic)))
 	return NULL;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     commit = _XimCommitedWcString(im, ic, &buf_s[2]);
 
     Xfree(reply);
@@ -574,10 +574,10 @@ Private Bool
 _XimCreateICCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -597,10 +597,10 @@ _XimProtoCreateIC(xim, arg)
     Xim		 im = (Xim)xim;
     Xic		 ic;
     CARD8	 buf[BUFSIZE];
-    CARD16      *buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16      *buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
     INT16	 buf_size;
-    void	*reply;
+    XPointer	 reply;
     BITMASK32	 flag = 0L;
     char	*error_name = NULL;
     int		 is_window = 0;
@@ -654,14 +654,14 @@ _XimProtoCreateIC(xim, arg)
 	len += sizeof(CARD16)			/* sizeof imid */
 	     + sizeof(INT16); 			/* sizeof length */
 
-	_XimSetHeader((void *)buf, XIM_CREATE_IC, 0, &len);
-	if (!(im->private.proto.send(im, len, (void *)buf)))
+	_XimSetHeader((XPointer)buf, XIM_CREATE_IC, 0, &len);
+	if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	    goto ErrorOnCreatingIC;
 	im->private.proto.flush(im);
 	if (!(im->private.proto.recv(im, &len, &reply, _XimCreateICCheck, 0)))
 	    goto ErrorOnCreatingIC;
 
-	buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+	buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
 	ic->private.proto.icid = buf_s[1];		/* icid */
 	Xfree(reply);
 	return (XIC)ic;

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imDefLkup.c,v 1.1 93/09/17 13:25:59 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -56,7 +56,7 @@ _XimICOfXICID(im, icid)
 Private void
 _XimProcSetEventMask(ic, buf)
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     EVENTMASK	*buf_l = (EVENTMASK *)buf;
 
@@ -70,25 +70,25 @@ Public Bool
 _XimSetEventMaskCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimSetEventMaskCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
     XICID        icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
-	_XimProcSetEventMask(ic, (void *)&buf_s[2]);
+	_XimProcSetEventMask(ic, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -99,11 +99,11 @@ Private Bool
 _XimSyncCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic  = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic  = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -123,9 +123,9 @@ _XimSync(im, ic)
     Xic		 ic;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
     buf_s[1] = ic->private.proto.icid;		/* icid */
@@ -133,8 +133,8 @@ _XimSync(im, ic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_SYNC, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_SYNC, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
@@ -150,7 +150,7 @@ _XimProcSyncReply(im, ic)
     Xic		 ic;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
@@ -159,8 +159,8 @@ _XimProcSyncReply(im, ic)
     len = sizeof(CARD16)			/* sizeof imid */
 	+ sizeof(CARD16);			/* sizeof icid */
 
-    _XimSetHeader((void *)buf, XIM_SYNC_REPLY, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_SYNC_REPLY, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     return True;
@@ -181,20 +181,20 @@ Public Bool
 _XimSyncCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimSyncCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
     XICID        icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
@@ -226,11 +226,11 @@ _XimForwardEventCore(ic, ev, sync)
 {
     Xim		 im = (Xim)ic->core.im;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
-    void	*reply;
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
+    XPointer	 reply;
     INT16	 len;
 
-    if (!(len = _XimSetEventToWire(ev, (xEvent *)((void *)&buf_s[4]))))
+    if (!(len = _XimSetEventToWire(ev, (xEvent *)&buf_s[4])))
 	return False;				/* X event */
 
     buf_s[0] = im->private.proto.imid;		/* imid */
@@ -245,8 +245,8 @@ _XimForwardEventCore(ic, ev, sync)
 	 + sizeof(BITMASK16)			/* sizeof flag */
 	 + sizeof(CARD16);			/* sizeof serila number */
 
-    _XimSetHeader((void *)buf, XIM_FORWARD_EVENT, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_FORWARD_EVENT, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
 
@@ -299,7 +299,7 @@ _XimProcKey(d, ic, kev, buf)
     CARD16		*buf;
 {
     INT16	 serial = buf[0];
-    xEvent	*ev = (xEvent *)((void *)&buf[1]);
+    xEvent	*ev = (xEvent *)&buf[1];
 
     _XimSetWireToEvent(d, ev, (XEvent *)kev, serial);
     MARK_FABLICATED(ic);
@@ -310,7 +310,7 @@ Private Bool
 _XimForwardEventRecv(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     CARD16	*buf_s = (CARD16 *)buf;
     Display	*d = im->core.display;
@@ -331,25 +331,25 @@ Public Bool
 _XimForwardEventCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimForwardEventCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
     XICID        icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
-	(void)_XimForwardEventRecv(im, ic, (void *)&buf_s[2]);
+	(void)_XimForwardEventRecv(im, ic, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -359,7 +359,7 @@ _XimForwardEventCallback(xim, len, data, call_data)
 Private Bool
 _XimRegisterTriggerkey(im, buf)
     Xim			 im;
-    void		*buf;
+    XPointer		 buf;
 {
     CARD32		*buf_l = (CARD32 *)buf;
     CARD32		 len;
@@ -386,7 +386,7 @@ _XimRegisterTriggerkey(im, buf)
      *  register offkeylist
      */
 
-    buf_l = (CARD32 *)((void *)((char *)buf + len));
+    buf_l = (CARD32 *)((char *)buf + len);
     len = buf_l[0];				/* length of off-keys */
     len += sizeof(INT32);			/* sizeof length of off-keys */
 
@@ -404,22 +404,22 @@ Public Bool
 _XimRegisterTriggerKeysCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimRegisterTriggerKeysCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
 
     if (imid == im->private.proto.imid) {
-	(void )_XimRegisterTriggerkey(im, (void *)&buf_s[2]);
+	(void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -443,11 +443,11 @@ Private Bool
 _XimTriggerNotifyCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic  = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic  = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -469,9 +469,9 @@ _XimTriggerNotify(im, ic, mode, idx)
     CARD32	 idx;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
-    CARD32	*buf_l = (CARD32 *)((void *)&buf[XIM_HEADER_SIZE]);
-    void	*reply;
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
+    CARD32	*buf_l = (CARD32 *)&buf[XIM_HEADER_SIZE];
+    XPointer	 reply;
     INT16	 len;
     EVENTMASK	 mask = _XimGetWindowEventmask(ic);
 
@@ -487,8 +487,8 @@ _XimTriggerNotify(im, ic, mode, idx)
 	+ sizeof(CARD32)		/* sizeof index of key list */
 	+ sizeof(EVENTMASK);		/* sizeof select-event-mask */
 
-    _XimSetHeader((void *)buf, XIM_TRIGGER_NOTIFY, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_TRIGGER_NOTIFY, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply,
@@ -533,7 +533,7 @@ Private Bool
 _XimCommitRecv(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     CARD16	*buf_s = (CARD16 *)buf;
     Display	*d = im->core.display;
@@ -553,25 +553,25 @@ Public Bool
 _XimCommitCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimCommitCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID        imid = buf_s[0];
     XICID        icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
-	(void)_XimCommitRecv(im, ic, (void *)&buf_s[2]);
+	(void)_XimCommitRecv(im, ic, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -582,7 +582,7 @@ Private Bool
 _XimProcError(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     /*
      * Not yet
@@ -595,21 +595,21 @@ Public Bool
 _XimErrorCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimErrorCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     BITMASK16	 flag = buf_s[2];
     XIMID        imid;
     XICID        icid;
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if (flag & XIM_IMID_VALID) {
@@ -622,7 +622,7 @@ _XimErrorCallback(xim, len, data, call_data)
 	if (!(ic = _XimICOfXICID(im, icid)))
 	    return False;
     }
-    (void)_XimProcError(im, ic, (void *)&buf_s[3]);
+    (void)_XimProcError(im, ic, (XPointer)&buf_s[3]);
     Xfree(data);
 
     return True;
@@ -638,7 +638,7 @@ _XimError(im, ic, error_code, detail_length, type, detail)
     char	*detail;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len = 0;
 
     buf_s[0] = im->private.proto.imid;	/* imid */
@@ -664,8 +664,8 @@ _XimError(im, ic, error_code, detail_length, type, detail)
 	 + sizeof(INT16)		/* sizeof length of detail */
 	 + sizeof(CARD16);		/* sizeof type */
 
-    _XimSetHeader((void *)buf, XIM_ERROR, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_ERROR, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     return True;

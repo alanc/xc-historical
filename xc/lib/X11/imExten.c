@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imExten.c,v 1.1 93/09/17 13:26:27 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993 by FUJITSU LIMITED
@@ -87,7 +87,7 @@ Private Bool
 _XimProcExtSetEventMask(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     EVENTMASK	*buf_l = (EVENTMASK *)buf;
     EVENTMASK	 mask = _XimGetWindowEventmask(ic);
@@ -117,25 +117,25 @@ Private Bool
 _XimExtSetEventMaskCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimExtSetEventMaskCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID	 imid = buf_s[0];
     XICID	 icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
-	(void)_XimProcExtSetEventMask(im, ic, (void *)&buf_s[2]);
+	(void)_XimProcExtSetEventMask(im, ic, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -147,7 +147,7 @@ Private Bool
 _XimProcExtForwardKeyEvent(im, ic, buf)
     Xim		 im;
     Xic		 ic;
-    void	*buf;
+    XPointer	 buf;
 {
     CARD8	*buf_b = (CARD8 *)buf;
     CARD16	*buf_s = (CARD16 *)buf;
@@ -178,25 +178,25 @@ Private Bool
 _XimExtForwardKeyEventCallback(
     Xim		 xim,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data)
 #else
 _XimExtForwardKeyEventCallback(xim, len, data, call_data)
     Xim		 xim;
     INT16	 len;
-    void	*data;
+    XPointer	 data;
     XPointer	 call_data;
 #endif /* NeedFunctionPrototypes */
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     XIMID	 imid = buf_s[0];
     XICID	 icid = buf_s[1];
-    Xim		 im = (Xim)((void *)call_data);
+    Xim		 im = (Xim)call_data;
     Xic		 ic;
 
     if ((imid == im->private.proto.imid)
      && (ic = _XimICOfXICID(im, icid))) {
-	(void)_XimProcExtForwardKeyEvent(im, ic, (void *)&buf_s[2]);
+	(void)_XimProcExtForwardKeyEvent(im, ic, (XPointer)&buf_s[2]);
 	Xfree(data);
 	return True;
     }
@@ -207,11 +207,11 @@ Private Bool
 _XimExtForwardKeyEventCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    Xic		 ic  = (Xic)((void *)arg);
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    Xic		 ic  = (Xic)arg;
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -234,9 +234,9 @@ _XimExtForwardKeyEvent(ic, ev, sync)
     Xim		 im = (Xim) ic->core.im;
     CARD8	 buf[BUFSIZE];
     CARD8	*buf_b = &buf[XIM_HEADER_SIZE];	
-    CARD16	*buf_s = (CARD16 *)((void *)buf_b);
-    CARD32	*buf_l = (CARD32 *)((void *)buf_b);
-    void	*reply;
+    CARD16	*buf_s = (CARD16 *)buf_b;
+    CARD32	*buf_l = (CARD32 *)buf_b;
+    XPointer	reply;
     INT16	len;
     int		idx;
 
@@ -263,10 +263,10 @@ _XimExtForwardKeyEvent(ic, ev, sync)
 	+ sizeof(CARD32)			/* sizeof time */
 	+ sizeof(CARD32);			/* sizeof window */
 
-    _XimSetHeader((void *)buf,
+    _XimSetHeader((XPointer)buf,
 		extensions[idx].major_opcode,
 		extensions[idx].minor_opcode, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (sync) {
@@ -317,7 +317,7 @@ _XimParseExtensionList(im, data)
 	for (i = 0; extensions[i].name; i++) {
 	    str_len = buf[2];
 	    if ((str_len == extensions[i].name_len)
-	     && (!strncmp((char *)((void *)&buf[3]),
+	     && (!strncmp((char *)&buf[3],
 				extensions[i].name, str_len))) {
 		extensions[i].major_opcode = (CARD8)buf[0];
 		extensions[i].minor_opcode = (CARD8)buf[1];
@@ -330,7 +330,7 @@ _XimParseExtensionList(im, data)
 		 + sizeof(INT16)	/* sizeof length */
 		 + XIM_PAD(str_len + 2);/* sizeof pad */
 	len -= str_len;
-	buf = (CARD16 *)((void *)((char *)buf + str_len));
+	buf = (CARD16 *)((char *)buf + str_len);
     }
     return;
 }
@@ -339,10 +339,10 @@ Private Bool
 _XimQueryExtensionCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void        *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -359,12 +359,12 @@ _XimExtension(im)
     Xim		 im;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     int		 idx;
 
-    len = _XimSetExtensionList((CARD8 *)((void *)&buf_s[2]));
+    len = _XimSetExtensionList((CARD8 *)&buf_s[2]);
 					/* extensions supported */
     if (!len)
 	return True;
@@ -375,14 +375,14 @@ _XimExtension(im)
     len += sizeof(CARD16)		/* sizeof imid */
 	 + sizeof(INT16);		/* sizeof length of extensions */
 
-   _XimSetHeader((void *)buf, XIM_QUERY_EXTENSION, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+   _XimSetHeader((XPointer)buf, XIM_QUERY_EXTENSION, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply, _XimQueryExtensionCheck, 0)))
 	return False;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     _XimParseExtensionList(im, &buf_s[1]);
     Xfree(reply);
 
@@ -421,7 +421,7 @@ _XimExtMove(im, ic, x, y)
     CARD16	 y;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
     int		idx;
 
@@ -437,9 +437,9 @@ _XimExtMove(im, ic, x, y)
 	+ sizeof(INT16)			/* sizeof X */
 	+ sizeof(INT16);		/* sizeof Y */
 
-    _XimSetHeader((void *)buf, extensions[idx].major_opcode,
+    _XimSetHeader((XPointer)buf, extensions[idx].major_opcode,
 			extensions[idx].minor_opcode, &len);
-    if (!im->private.proto.send(im, len, (void *)buf))
+    if (!im->private.proto.send(im, len, (XPointer)buf))
 	return False;
     im->private.proto.flush(im);
     return True;

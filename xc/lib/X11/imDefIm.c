@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: imDefIm.c,v 1.1 93/09/17 13:25:52 rws Exp $ */
 /******************************************************************
 
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
@@ -42,7 +42,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Public int
 _XimCheckDataSize(buf, len)
-    void	*buf;
+    XPointer	 buf;
     int		 len;
 {
     CARD16	*buf_s = (CARD16 *)buf;
@@ -55,14 +55,14 @@ _XimCheckDataSize(buf, len)
 Public void
 #if NeedFunctionPrototypes
 _XimSetHeader(
-    void	*buf,
+    XPointer	 buf,
     CARD8	 major_opcode,
     CARD8	 minor_opcode,
     INT16	*len
 )
 #else
 _XimSetHeader(buf, major_opcode, minor_opcode, len)
-    void	*buf;
+    XPointer	 buf;
     CARD8	 major_opcode;
     CARD8	 minor_opcode;
     INT16	*len;
@@ -245,7 +245,7 @@ _XimGetSelectionNotify(display, window, target, ret_address)
 			    (unsigned char **)&atom ) != Success )
 	return False;
     *ret_address = XGetAtomName( display, *atom );
-    XFree( (void *)atom );
+    XFree( (XPointer)atom );
     if( !*ret_address )
 	return False;
     return True;
@@ -282,10 +282,10 @@ _XimPreConnectionIM(im, selection)
     if( !(str = XGetAtomName( display, selection )) )
 	return False;
     if(!_XimCheckServerName(im, str)) {
-	XFree( (void *)str );
+	XFree( (XPointer)str );
 	goto Error;
     }
-    XFree( (void *)str );
+    XFree( (XPointer)str );
 
     /* locale name check */
     _XlcGetLCValues(lcd, XlcNLanguage, &language, XlcNTerritory, &territory,
@@ -312,10 +312,10 @@ _XimPreConnectionIM(im, selection)
 	goto Error;
 
     if(!_XimCheckLocaleName(im, address, strlen(address), locale_name, len)) {
-	XFree((void *)address);
+	XFree((XPointer)address);
 	goto Error;
     }
-    XFree((void *)address);
+    XFree((XPointer)address);
 
     /* transport check */
     if((transport = XInternAtom(display, XIM_TRANSPORT, True)) == (Atom)None)
@@ -331,14 +331,14 @@ _XimPreConnectionIM(im, selection)
 				_XimTransportRec[i].transportname,
 				_XimTransportRec[i].namelen, &trans_addr)) {
 	    if( _XimTransportRec[i].config(im, trans_addr) ) {
-		XFree((void *)address);
+		XFree((XPointer)address);
 		XDestroyWindow(display, window);
 		return True;
 	    }
 	}
     }
 
-    XFree((void *)address);
+    XFree((XPointer)address);
 Error:
     XDestroyWindow(display, window);
     return False; 
@@ -370,11 +370,11 @@ _XimPreConnect(im)
 
     if( (actual_type != XA_ATOM) || (actual_format != 32) ) {
 	if( nitems )
-	    XFree((void *)prop_return);
+	    XFree((XPointer)prop_return);
 	return False;
     }
 
-    atoms = (Atom *)((void *)prop_return);
+    atoms = (Atom *)prop_return;
     for(i = 0; i < nitems; i++) {
 	if((im_window = XGetSelectionOwner(display, atoms[i])) == (Window)None)
 	    continue;
@@ -383,7 +383,7 @@ _XimPreConnect(im)
 	    break;
     }
 
-    XFree((void *)prop_return);
+    XFree((XPointer)prop_return);
     if(i >= nitems)
 	return False;
 
@@ -412,7 +412,7 @@ _XimGetAuthProtocolNames(im, buf, num, len)
 Private Bool
 _XimSetAuthReplyData(im, buf, len)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
     INT16	*len;
 {
     /*
@@ -425,7 +425,7 @@ _XimSetAuthReplyData(im, buf, len)
 Private Bool
 _XimSetAuthNextData(im, buf, len)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
     INT16	*len;
 {
     /*
@@ -438,7 +438,7 @@ _XimSetAuthNextData(im, buf, len)
 Private Bool
 _XimSetAuthRequiredData(im, buf, len)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
     INT16	*len;
 {
     /*
@@ -451,7 +451,7 @@ _XimSetAuthRequiredData(im, buf, len)
 Private Bool
 _XimCheckAuthSetupData(im, buf)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
 {
     /*
     * Not yet
@@ -462,7 +462,7 @@ _XimCheckAuthSetupData(im, buf)
 Private Bool
 _XimCheckAuthNextData(im, buf)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
 {
     /*
     * Not yet
@@ -477,7 +477,7 @@ _XimCheckAuthNextData(im, buf)
 Private int
 _XimClientAuthCheck(im, buf)
     Xim		 im;
-    void	*buf;
+    XPointer	 buf;
 {
     /*
     * Not yet
@@ -492,8 +492,8 @@ _XimAuthNG(im)
     CARD8	 buf[BUFSIZE];
     INT16	 len = 0;
 
-    _XimSetHeader((void *)buf, XIM_AUTH_NG, 0, &len);
-    (void)im->private.proto.send(im, len, (void *)buf);
+    _XimSetHeader((XPointer)buf, XIM_AUTH_NG, 0, &len);
+    (void)im->private.proto.send(im, len, (XPointer)buf);
     im->private.proto.flush(im);
     return;
 }
@@ -502,7 +502,7 @@ Private	Bool
 _XimAllRecv(im, len, data, arg)
     Xim		 im;
     INT16	*len;
-    void	*data;
+    XPointer	 data;
     XPointer	 arg;
 {
     return True;
@@ -517,10 +517,10 @@ _XimConnect(im)
 {
     CARD8	 buf[BUFSIZE];
     CARD8	*buf_b = &buf[XIM_HEADER_SIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)buf_b);
+    CARD16	*buf_s = (CARD16 *)((XPointer)buf_b);
     INT16	 len;
     CARD8	 num;
-    void	*reply;
+    XPointer	 reply;
     CARD8	 major_opcode;
     int		 wait_mode;
     int		 ret;
@@ -551,23 +551,23 @@ _XimConnect(im)
     wait_mode = (IS_USE_AUTHORIZATION_FUNC(im)) ? CLIENT_WAIT1 : CLIENT_WAIT2;
 
     for(;;) {
-	_XimSetHeader((void *)buf, major_opcode, 0, &len);
-	if (!(im->private.proto.send(im, len, (void *)buf)))
+	_XimSetHeader((XPointer)buf, major_opcode, 0, &len);
+	if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	    return False;
 	im->private.proto.flush(im);
 	if (!(im->private.proto.recv(im, &len, &reply, _XimAllRecv, 0)))
 	    return False;
 
 	major_opcode = *((CARD8 *)reply);
-	buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+	buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
 
 	if (wait_mode == CLIENT_WAIT1) {
 	    if (major_opcode == XIM_AUTH_REQUIRED) {
-		ret = _XimClientAuthCheck(im, (void *)buf_s);
+		ret = _XimClientAuthCheck(im, (XPointer)buf_s);
 		Xfree(reply);
 		if (ret == NO_MORE_AUTH) {
 		    if (!(_XimSetAuthReplyData(im,
-				(void *)&buf[XIM_HEADER_SIZE], &len))) {
+				(XPointer)&buf[XIM_HEADER_SIZE], &len))) {
 			_XimAuthNG(im);
 			return False;
 		    }
@@ -575,7 +575,7 @@ _XimConnect(im)
 		    wait_mode = CLIENT_WAIT2;
 		} else if (ret == GOOD_AUTH) {
 		    if (!(_XimSetAuthNextData(im,
-				(void *)&buf[XIM_HEADER_SIZE], &len))) {
+				(XPointer)&buf[XIM_HEADER_SIZE], &len))) {
 			_XimAuthNG(im);
 			return False;
 		    }
@@ -593,25 +593,25 @@ _XimConnect(im)
 	    if (major_opcode == XIM_CONNECT_REPLY) {
 		break;
 	    } else if (major_opcode == XIM_AUTH_SETUP) {
-		if (!(_XimCheckAuthSetupData(im, (void *)buf_s))) {
+		if (!(_XimCheckAuthSetupData(im, (XPointer)buf_s))) {
 		    _XimAuthNG(im);
 		    return False;
 		}
 		Xfree(reply);
 		if (!(_XimSetAuthRequiredData(im,
-				(void *)&buf[XIM_HEADER_SIZE], &len))) {
+				(XPointer)&buf[XIM_HEADER_SIZE], &len))) {
 		    _XimAuthNG(im);
 		    return False;
 		}
 		major_opcode = XIM_AUTH_REQUIRED;
 	    } else if (major_opcode == XIM_AUTH_NEXT) {
-		if (!(_XimCheckAuthNextData(im, (void *)buf_s))) {
+		if (!(_XimCheckAuthNextData(im, (XPointer)buf_s))) {
 		    _XimAuthNG(im);
 		    return False;
 		}
 		Xfree(reply);
 		if (!(_XimSetAuthRequiredData(im,
-				(void *)&buf[XIM_HEADER_SIZE], &len))) {
+				(XPointer)&buf[XIM_HEADER_SIZE], &len))) {
 		    _XimAuthNG(im);
 		    return False;
 		}
@@ -641,7 +641,7 @@ Private	Bool
 _XimDisconnectCheck(im, len, data, arg)
     Xim		 im;
     INT16	*len;
-    void	*data;
+    XPointer	 data;
     XPointer	 arg;
 {
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -659,10 +659,10 @@ _XimDisconnect(im)
 {
     CARD8	 buf[BUFSIZE];
     INT16	 len = 0;
-    void	*reply;
+    XPointer	 reply;
 
-    _XimSetHeader((void *)buf, XIM_DISCONNECT, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_DISCONNECT, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply, _XimDisconnectCheck, 0)))
@@ -679,7 +679,7 @@ Private	Bool
 _XimOpenCheck(im, len, data, arg)
     Xim		 im;
     INT16	*len;
-    void	*data;
+    XPointer	 data;
     XPointer	 arg;
 {
     CARD8	 major_opcode = *((CARD8 *)data);
@@ -699,7 +699,7 @@ _XimOpen(im)
     CARD8	*buf_b = &buf[XIM_HEADER_SIZE];
     CARD16	*buf_s;
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     char	*language;
     char	*territory;
     char	 locale_name[XIM_MAXLCNAMELEN];
@@ -717,14 +717,14 @@ _XimOpen(im)
     len += sizeof(BYTE);			   /* sizeof length */
     XIM_SET_PAD(buf_b, len);			   /* pad */
 
-    _XimSetHeader((void *)buf, XIM_OPEN, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_OPEN, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply, _XimOpenCheck, 0)))
 	return False;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     im->private.proto.imid = buf_s[0];		/* imid */
 
     if (!(_XimGetAttributeID(im, &buf_s[1]))) {
@@ -757,10 +757,10 @@ Private	Bool
 _XimCloseCheck(im, len, data, arg)
     Xim		 im;
     INT16	*len;
-    void	*data;
+    XPointer	 data;
     XPointer	 arg;
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -777,17 +777,17 @@ _XimClose(im)
     Xim		 im;
 {
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
 
     buf_s[0] = im->private.proto.imid;		/* imid */
     buf_s[1] = 0;				/* unused */
     len = sizeof(CARD16)			/* sizeof imid */
         + sizeof(CARD16);			/* sizeof unused */
   
-    _XimSetHeader((void *)buf, XIM_CLOSE, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_CLOSE, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return False;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply, _XimCloseCheck, 0)))
@@ -851,10 +851,10 @@ Private Bool
 _XimGetIMValueCheck(im, len, data, arg)
     Xim          im;
     INT16       *len;
-    void       *data;
+    XPointer	 data;
     XPointer     arg;
 {
-    CARD16	*buf_s = (CARD16 *)((void *)((CARD8 *)data + XIM_HEADER_SIZE));
+    CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
     CARD8	 major_opcode = *((CARD8 *)data);
     CARD8	 minor_opcode = *((CARD8 *)data + 1);
     XIMID	 imid = buf_s[0];
@@ -873,9 +873,9 @@ _XimProtoGetIMValues(xim, arg)
 {
     Xim		 im = (Xim)xim;
     CARD8	 buf[BUFSIZE];
-    CARD16	*buf_s = (CARD16 *)((void *)&buf[XIM_HEADER_SIZE]);
+    CARD16	*buf_s = (CARD16 *)&buf[XIM_HEADER_SIZE];
     INT16	 len;
-    void	*reply;
+    XPointer	 reply;
     INT16	 nCard;
     char	*name;
 
@@ -890,14 +890,14 @@ _XimProtoGetIMValues(xim, arg)
     len += sizeof(CARD16)			/* sizeof imid */
 	 + sizeof(INT16);			/* sizeof length of attr */
 
-    _XimSetHeader((void *)buf, XIM_GET_IM_VALUES, 0, &len);
-    if (!(im->private.proto.send(im, len, (void *)buf)))
+    _XimSetHeader((XPointer)buf, XIM_GET_IM_VALUES, 0, &len);
+    if (!(im->private.proto.send(im, len, (XPointer)buf)))
 	return arg->name;
     im->private.proto.flush(im);
     if (!(im->private.proto.recv(im, &len, &reply, _XimGetIMValueCheck, 0)))
 	return arg->name;
 
-    buf_s = (CARD16 *)((void *)((char *)reply + XIM_HEADER_SIZE));
+    buf_s = (CARD16 *)((char *)reply + XIM_HEADER_SIZE);
     name = _XimDecodeATTRIBUTE((Xic)NULL, im->core.im_resources,
 			im->core.im_num_resources, &buf_s[2], buf_s[1],
 			arg, _XIM_TOP_ATTR);

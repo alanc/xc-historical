@@ -1,4 +1,4 @@
-/* $XConsortium: Ximint.h,v 1.1 93/09/17 13:33:12 rws Exp $ */
+/* $XConsortium: Ximint.h,v 1.2 93/09/17 17:50:19 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992 by FUJITSU LIMITED
@@ -144,7 +144,7 @@ extern Bool	_XimRegProtoIntrCallback(
     CARD16	 minor_code,
     Bool	 (*proc)(
 #if NeedNestedPrototypes
-			Xim, INT16, void *, XPointer
+			Xim, INT16, XPointer, XPointer
 #endif
 			),
     XPointer	 call_data
@@ -155,7 +155,7 @@ extern Bool	_XimErrorCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -164,7 +164,7 @@ extern Bool	_XimRegisterTriggerKeysCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -173,7 +173,7 @@ extern Bool	_XimSetEventMaskCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -182,7 +182,7 @@ extern Bool	_XimForwardEventCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -191,7 +191,7 @@ extern Bool	_XimCommitCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -200,7 +200,7 @@ extern Bool	_XimSyncCallback(
 #if NeedFunctionPrototypes
     Xim		 im,
     INT16	 len,
-    void	*data,
+    XPointer	 data,
     XPointer	 call_data
 #endif
 );
@@ -332,7 +332,7 @@ extern int	_Xlcctstowcs(
 
 extern void	_XimSetHeader(
 #if NeedFunctionPrototypes
-    void	*buf,
+    XPointer	 buf,
     CARD8	 major_opcode,
     CARD8	 minor_opcode,
     INT16	*len
