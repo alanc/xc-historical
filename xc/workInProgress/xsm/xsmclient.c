@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.16 94/04/02 17:03:43 converse Exp $ */
+/* $XConsortium: xsmclient.c,v 1.17 94/04/02 17:09:16 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -328,10 +328,6 @@ static void UserSaysOkay(button, client_data, call_data)
 
     /* Do whatever you need to do after you've finished talking to the user. */
     token->save_success = SaveState(ad);
-
-    /* When a session shutdown is not imminent, allow user events again. */
-    if (! token->shutdown)
-	XtSetSensitive(ad->rootShell, True);
 
     XtPopdown(XtParent(ad->dialog));
 
