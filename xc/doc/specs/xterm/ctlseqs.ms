@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.14 94/04/19 14:13:43 gildea Exp $
+.\" $XConsortium: ctlseqs.ms,v 1.15 94/07/21 16:37:12 gildea Exp gildea $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -223,7 +223,6 @@ A text parameter composed of printable characters.
 .SH
 VT100 Mode
 .ds RH VT100 Mode
-.St
 .LP
 Most of these control sequences are standard VT102 control sequences,
 but there are some sequences here from later DEC VT terminals, too.
@@ -235,6 +234,7 @@ Where the function is specified by DEC or ISO 6429, the code assigned
 to it is given in parentheses.  The escape codes to designate and invoke
 character sets are specified by ISO 2022; see that document for a
 discussion of character sets.
+.St
 .IP \\*(Be
 Bell (Ctrl-G)
 .IP \\*(Bs
