@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.10 93/09/13 09:32:09 dpw Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.11 93/12/29 12:30:57 rob Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -173,6 +173,10 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     mfbPolyFillRect(pDrawable, pGC, 1, &backrect);
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = oldFillArea;
+
+    /* MTX: the R5 MTX code moved the code replaced by the call
+     * to the macro mfbGetPixelWidthAndPointer above, to here
+     */
 
     /* the faint-hearted can open their eyes now */
     switch ((*pGC->pScreen->RectIn)(
