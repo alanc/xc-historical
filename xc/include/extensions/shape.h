@@ -24,10 +24,18 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.11 89/10/05 17:35:00 jim Exp $ */
+/* $XConsortium: shape.h,v 1.12 89/10/08 19:22:37 jim Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_
+
+#ifndef NeedFunctionPrototypes
+#if defined(FUNCPROTO) || __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define NeedFunctionPrototypes 1
+#else
+#define NeedFunctionPrototypes 0
+#endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
 
 #define X_ShapeQueryVersion		0
 #define X_ShapeRectangles		1
@@ -67,17 +75,136 @@ typedef struct {
     Bool shaped;	    /* true if the region exists */
 } XShapeEvent;
 
-extern Bool XShapeQueryExtension ();
-extern Status XShapeQueryVersion ();
-extern void XShapeCombineRegion ();
-extern void XShapeCombineRectangles ();
-extern void XShapeCombineMask ();
-extern void XShapeCombineShape ();
-extern void XShapeOffsetShape ();
-extern Status XShapeQueryExtents ();
-extern void XShapeSelectInput ();
-extern unsigned long XShapeInputSelected ();
-extern XRectangle *XShapeGetRectangles ();
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+extern Bool XShapeQueryExtension (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int*	/* event_base */,
+    int*	/* error_base */
+#endif
+);
+
+extern Status XShapeQueryVersion (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    int*	/* major_version */,
+    int*	/* minor_version */
+#endif
+);
+
+extern void XShapeCombineRegion (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* dest */,
+    int		/* dest_kind */,
+    int		/* x_off */,
+    int		/* y_off */,
+#ifdef _XSHAPE_C_
+    REGION*	/* region */,
+#else
+    Region	/* region */,
+#endif
+    int		/* op */
+#endif
+);
+
+extern void XShapeCombineRectangles (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* dest */,
+    int		/* dest_kind */,
+    int		/* x_off */,
+    int		/* y_off */,
+    XRectangle*	/* rectangles */,
+    int		/* n_rects */,
+    int		/* op */,
+    int		/* ordering */
+#endif
+);
+
+extern void XShapeCombineMask (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* dest */,
+    int		/* dest_kind */,
+    int		/* x_off */,
+    int		/* y_off */,
+    Pixmap	/* src */,
+    int		/* op */
+#endif
+);
+
+extern void XShapeCombineShape (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* dest */,
+    int		/* dest_kind */,
+    int		/* x_off */,
+    int		/* y_off */,
+    Window	/* src */,
+    int		/* src_kind */,
+    int		/* op */
+#endif
+);
+
+extern void XShapeOffsetShape (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* dest */,
+    int		/* dest_kind */,
+    int		/* x_off */,
+    int		/* y_off */
+#endif
+);
+
+extern Status XShapeQueryExtents (
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* window */,
+    Bool*		/* bounding_shaped */,
+    int*		/* x_bounding */,
+    int*		/* y_bounding */,
+    unsigned int*	/* w_bounding */,
+    unsigned int*	/* h_bounding */,
+    Bool*		/* clip_shaped */,
+    int*		/* x_clip */,
+    int*		/* y_clip */,
+    unsigned int*	/* w_clip */,
+    unsigned int*	/* h_clip */
+#endif
+);
+
+extern void XShapeSelectInput (
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    Window		/* window */,
+    unsigned long	/* mask */
+#endif
+);
+
+extern unsigned long XShapeInputSelected (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* window */
+#endif
+);
+
+extern XRectangle *XShapeGetRectangles (
+#if NeedFunctionPrototypes
+    Display*	/* display */,
+    Window	/* window */,
+    int		/* kind */,
+    int*	/* count */,
+    int*	/* ordering */
+#endif
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _SHAPE_SERVER_ */
 
