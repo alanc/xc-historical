@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.12 90/12/31 08:19:55 rws Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.13 91/03/09 16:06:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,19 +30,24 @@ SOFTWARE.
 #include	<X11/Xmu/Converters.h>
 #include	<X11/Xmu/Drawing.h>
 
-#ifndef PATH_MAX
+#ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
 #include <limits.h>
 #else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef PATH_MAX
 #include <sys/param.h>
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #endif
-#endif /* _POSIX_SOURCE */
+#endif
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
-#endif /* PATH_MAX */
 
 
 /*
