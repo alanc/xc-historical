@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.21 89/09/05 20:10:01 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.22 89/09/08 14:24:47 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -74,7 +74,11 @@ static GCOps	cfbTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-    cfbZeroPolyArcSS,
+#if PPW == 4
+    cfbZeroPolyArcSS8Copy,
+#else
+    miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     miPolyFillArc,
@@ -104,7 +108,11 @@ static GCOps	cfbNonTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-    cfbZeroPolyArcSS,
+#if PPW == 4
+    cfbZeroPolyArcSS8Copy,
+#else
+    miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     miPolyFillArc,
@@ -563,9 +571,12 @@ cfbValidateGC(pGC, changes, pDrawable)
 	pGC->ops->PolySegment = miPolySegment;
 	if (pGC->lineWidth == 0)
 	{
-	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
-		pGC->ops->PolyArc = cfbZeroPolyArcSS;
+#if PPW == 4
+	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid)
+		&& (pGC->alu == GXcopy) && ((pGC->planemask & PMSK) == PMSK))
+		pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
 	    else
+#endif
 		pGC->ops->PolyArc = miZeroPolyArc;
 	}
 	else
