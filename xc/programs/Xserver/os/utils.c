@@ -21,14 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.92 90/09/15 12:19:36 keith Exp $ */
-#include <stdio.h>
+/* $XConsortium: utils.c,v 1.93 91/02/14 12:00:40 rws Exp $ */
 #include "Xos.h"
+#include <stdio.h>
 #include "misc.h"
 #include "X.h"
 #include "input.h"
 #include "opaque.h"
-#include <sys/signal.h>
+#include <signal.h>
 extern char *display;
 
 extern long defaultScreenSaverTime;	/* for parsing command line */
