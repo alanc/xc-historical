@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.11 91/07/16 16:39:46 rws Exp $ */
+/*      $Header: XExtToWire.c,v 1.12 91/07/16 20:50:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -74,28 +74,24 @@ XInputEventToWire(dpy, re, event, count)
 	    kev->state  	= ev->state;
 	    kev->same_screen 	= ev->same_screen;
 	    kev->detail 	= ev->keycode;
-	    kev->deviceid	= ev->deviceid;
+	    kev->deviceid	= ev->deviceid | MORE_EVENTS;
 
-	    if (ev->axes_count != 0)
+	    vev = (deviceValuator *) ++kev;
+	    vev->type = info->codes->first_event + XI_DeviceValuator;
+	    vev->deviceid = ev->deviceid;
+	    vev->device_state = ev->device_state;
+	    vev->first_valuator = ev->first_axis;
+	    vev->num_valuators = ev->axes_count;
+	    i = vev->num_valuators;
+	    if (i > 6) i = 6;
+	    switch (i)
 		{
-		kev->deviceid |= MORE_EVENTS;
-		vev = (deviceValuator *) ++kev;
-		vev->type = info->codes->first_event + XI_DeviceValuator;
-		vev->deviceid = ev->deviceid;
-		vev->device_state = ev->device_state;
-		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count;
-		i = vev->num_valuators;
-		if (i > 6) i = 6;
-		switch (i)
-		    {
-		    case 6: vev->valuator5 = ev->axis_data[5];
-		    case 5: vev->valuator4 = ev->axis_data[4];
-		    case 4: vev->valuator3 = ev->axis_data[3];
-		    case 3: vev->valuator2 = ev->axis_data[2];
-		    case 2: vev->valuator1 = ev->axis_data[1];
-		    case 1: vev->valuator0 = ev->axis_data[0];
-		    }
+		case 6: vev->valuator5 = ev->axis_data[5];
+		case 5: vev->valuator4 = ev->axis_data[4];
+		case 4: vev->valuator3 = ev->axis_data[3];
+		case 3: vev->valuator2 = ev->axis_data[2];
+		case 2: vev->valuator1 = ev->axis_data[1];
+		case 1: vev->valuator0 = ev->axis_data[0];
 		}
 	    break;
 	    }
@@ -124,28 +120,25 @@ XInputEventToWire(dpy, re, event, count)
 	    pev->root_y 	= ev->y_root;
 	    pev->state  	= ev->state;
 	    pev->same_screen 	= ev->same_screen;
-	    pev->deviceid	= ev->deviceid;
+	    pev->deviceid	= ev->deviceid | MORE_EVENTS;
 
-	    if (ev->axes_count != 0)
+	    vev = (deviceValuator *) ++pev;
+	    vev->type = info->codes->first_event + XI_DeviceValuator;
+	    vev->deviceid = ev->deviceid;
+	    vev->device_state = ev->device_state;
+	    vev->first_valuator = ev->first_axis;
+	    vev->num_valuators = ev->axes_count;
+
+	    i = vev->num_valuators;
+	    if (i > 6) i = 6;
+	    switch (i)
 		{
-		pev->deviceid |= MORE_EVENTS;
-		vev = (deviceValuator *) ++pev;
-		vev->type = info->codes->first_event + XI_DeviceValuator;
-		vev->deviceid = ev->deviceid;
-		vev->device_state = ev->device_state;
-		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count;
-		i = vev->num_valuators;
-		if (i > 6) i = 6;
-		switch (i)
-		    {
-		    case 6: vev->valuator5 = ev->axis_data[5];
-		    case 5: vev->valuator4 = ev->axis_data[4];
-		    case 4: vev->valuator3 = ev->axis_data[3];
-		    case 3: vev->valuator2 = ev->axis_data[2];
-		    case 2: vev->valuator1 = ev->axis_data[1];
-		    case 1: vev->valuator0 = ev->axis_data[0];
-		    }
+		case 6: vev->valuator5 = ev->axis_data[5];
+		case 5: vev->valuator4 = ev->axis_data[4];
+		case 4: vev->valuator3 = ev->axis_data[3];
+		case 3: vev->valuator2 = ev->axis_data[2];
+		case 2: vev->valuator1 = ev->axis_data[1];
+		case 1: vev->valuator0 = ev->axis_data[0];
 		}
 	    break;
 	    }
@@ -175,28 +168,25 @@ XInputEventToWire(dpy, re, event, count)
 	    bev->state  	= ev->state;
 	    bev->same_screen 	= ev->same_screen;
 	    bev->detail 	= ev->button;
-	    bev->deviceid	= ev->deviceid;
+	    bev->deviceid	= ev->deviceid | MORE_EVENTS;
 
-	    if (ev->axes_count != 0)
+	    vev = (deviceValuator *) ++bev;
+	    vev->type = info->codes->first_event + XI_DeviceValuator;
+	    vev->deviceid = ev->deviceid;
+	    vev->device_state = ev->device_state;
+	    vev->first_valuator = ev->first_axis;
+	    vev->num_valuators = ev->axes_count;
+
+	    i = vev->num_valuators;
+	    if (i > 6) i = 6;
+	    switch (i)
 		{
-		bev->deviceid |= MORE_EVENTS;
-		vev = (deviceValuator *) ++bev;
-		vev->type = info->codes->first_event + XI_DeviceValuator;
-		vev->deviceid = ev->deviceid;
-		vev->device_state = ev->device_state;
-		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count;
-		i = vev->num_valuators;
-		if (i > 6) i = 6;
-		switch (i)
-		    {
-		    case 6: vev->valuator5 = ev->axis_data[5];
-		    case 5: vev->valuator4 = ev->axis_data[4];
-		    case 4: vev->valuator3 = ev->axis_data[3];
-		    case 3: vev->valuator2 = ev->axis_data[2];
-		    case 2: vev->valuator1 = ev->axis_data[1];
-		    case 1: vev->valuator0 = ev->axis_data[0];
-		    }
+		case 6: vev->valuator5 = ev->axis_data[5];
+		case 5: vev->valuator4 = ev->axis_data[4];
+		case 4: vev->valuator3 = ev->axis_data[3];
+		case 3: vev->valuator2 = ev->axis_data[2];
+		case 2: vev->valuator1 = ev->axis_data[1];
+		case 1: vev->valuator0 = ev->axis_data[0];
 		}
 	    break;
 	    }
@@ -225,28 +215,25 @@ XInputEventToWire(dpy, re, event, count)
 	    mev->state  	= ev->state;
 	    mev->same_screen 	= ev->same_screen;
 	    mev->detail 	= ev->is_hint;
-	    mev->deviceid	= ev->deviceid;
+	    mev->deviceid	= ev->deviceid | MORE_EVENTS;
 
-	    if (ev->axes_count != 0)
+	    vev = (deviceValuator *) ++mev;
+	    vev->type = info->codes->first_event + XI_DeviceValuator;
+	    vev->deviceid = ev->deviceid;
+	    vev->device_state = ev->device_state;
+	    vev->first_valuator = ev->first_axis;
+	    vev->num_valuators = ev->axes_count;
+
+	    i = vev->num_valuators;
+	    if (i > 6) i = 6;
+	    switch (i)
 		{
-		mev->deviceid |= MORE_EVENTS;
-		vev = (deviceValuator *) ++mev;
-		vev->type = info->codes->first_event + XI_DeviceValuator;
-		vev->deviceid = ev->deviceid;
-		vev->device_state = ev->device_state;
-		vev->first_valuator = 0;
-		vev->num_valuators = ev->axes_count;
-		i = vev->num_valuators;
-		if (i > 6) i = 6;
-		switch (i)
-		    {
-		    case 6: vev->valuator5 = ev->axis_data[5];
-		    case 5: vev->valuator4 = ev->axis_data[4];
-		    case 4: vev->valuator3 = ev->axis_data[3];
-		    case 3: vev->valuator2 = ev->axis_data[2];
-		    case 2: vev->valuator1 = ev->axis_data[1];
-		    case 1: vev->valuator0 = ev->axis_data[0];
-		    }
+		case 6: vev->valuator5 = ev->axis_data[5];
+		case 5: vev->valuator4 = ev->axis_data[4];
+		case 4: vev->valuator3 = ev->axis_data[3];
+		case 3: vev->valuator2 = ev->axis_data[2];
+		case 2: vev->valuator1 = ev->axis_data[1];
+		case 1: vev->valuator0 = ev->axis_data[0];
 		}
 	    break;
 	    }
@@ -406,9 +393,9 @@ XInputEventToWire(dpy, re, event, count)
 			if (i > 6) i = 6;
 			switch (i)
 			    {
-			    case 6: sev->valuator2 = val->valuators[5];
-			    case 5: sev->valuator1 = val->valuators[4];
-			    case 4: sev->valuator0 = val->valuators[3];
+			    case 6: vev->valuator2 = val->valuators[5];
+			    case 5: vev->valuator1 = val->valuators[4];
+			    case 4: vev->valuator0 = val->valuators[3];
 			    }
 		        }
 		    }
