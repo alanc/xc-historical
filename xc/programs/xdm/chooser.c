@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.10 91/08/25 10:49:47 keith Exp $
+ * $XConsortium: chooser.c,v 1.11 91/10/31 09:38:38 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -637,7 +637,7 @@ Choose (h)
 	XdmcpWriteARRAY8 (&buffer, app_resources.clientAddress);
 	XdmcpWriteCARD16 (&buffer, (CARD16) app_resources.connectionType);
 	XdmcpWriteARRAY8 (&buffer, &h->hostaddr);
-	write (fd, buffer.data, buffer.pointer);
+	write (fd, (char *)buffer.data, buffer.pointer);
 	close (fd);
     }
     else
