@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.24 87/08/19 20:30:09 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.25 87/09/01 07:06:11 swick Locked $";
 #endif
 
 /*%
@@ -79,7 +79,7 @@ main(argc, argv)
     INIT_NAME;
 
     Setup_Display_And_Screen(&argc, argv);
-    if (DisplayPlanes(dpy, 0) > 1)
+    if (DisplayPlanes(dpy, DefaultScreen(dpy)) > 1)
         format = ZPixmap;
 
     /* Get window select on command line, if any */
