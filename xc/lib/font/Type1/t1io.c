@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1io.c,v 1.4 91/10/10 11:19:41 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -40,6 +40,9 @@
 #include <fcntl.h>
 #include "t1stdio.h"
 #include "t1hdigit.h"
+#ifdef WIN32
+#include <X11/Xw32defs.h>
+#endif
  
 /* Constants and variables used in the decryption */
 #define c1 ((unsigned short)52845)
