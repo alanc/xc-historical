@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.8 89/10/04 14:56:39 jim Exp $ */
+/* $XConsortium: ico.c,v 1.9 89/10/04 15:01:14 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -98,6 +98,10 @@ int mbuf_event_base, mbuf_error_base;
 Multibuffer multibuffers[2];
 #endif /* MULTIBUFFER */
 
+char *Primaries[] = {"red", "green", "blue", "yellow", "cyan", "magenta",
+		     "black", "white"};
+#define NumberPrimaries 6
+
 int nplanesets;
 int dsync = 0;
 int softdbl = 0, dblbuf = 0;
@@ -112,19 +116,22 @@ Polyinfo *findpoly();
 
 static char *help_message[] = {
 "where options include:",
-"    -display host:dpy                X server to use",
-"    -geometry geom                   geometry of window to use",
-"    -r                               draw in the root window",
-"    -d number                        dashed line pattern for wire frames",
-"    -colors color ...                codes to use on sides",
-"    -dbl                             use double buffering",
-"    -noedges                         don't draw wire frame edges",
-"    -faces                           draw faces",
-"    -lw number                       line width to use",
-"    -i                               invert",
-"    -sleep number                    seconds to sleep in between draws",
-"    -obj objname                     type of polyhedral object to draw",
-"    -objhelp                         list polyhedral objects available",
+"    -display host:dpy            X server to use",
+"    -geometry geom               geometry of window to use",
+"    -r                           draw in the root window",
+"    -d number                    dashed line pattern for wire frames",
+"    -bg color                    background color",
+"    -colors color ...            codes to use on sides",
+"    -p#                          use # (1 through 8) primary colors",
+"    -dbl                         use double buffering (extension if present)",
+"    -softdbl                     use software double buffering",
+"    -noedges                     don't draw wire frame edges",
+"    -faces                       draw faces",
+"    -lw number                   line width to use",
+"    -i                           invert",
+"    -sleep number                seconds to sleep in between draws",
+"    -obj objname                 type of polyhedral object to draw",
+"    -objhelp                     list polyhedral objects available",
 NULL};
 
 /******************************************************************************
@@ -154,6 +161,8 @@ char **argv;
 	unsigned long vmask;
 	XGCValues xgcv;
 	int linewidth = 0;
+	char *background_colorname = NULL;
+	unsigned long backpixel;
 
 	ProgramName = argv[0];
 
@@ -188,6 +197,14 @@ char **argv;
 #endif
 		else if (!strcmp(*argv, "-softdbl"))
 			dblbuf = 1;
+		else if (!strncmp(*argv, "-p", 2)) {
+			numcolors = atoi(argv[0]+2);
+			if (numcolors < 1 || numcolors > NumberPrimaries)
+			  numcolors = NumberPrimaries;
+			colornames = Primaries;
+		}
+		else if (!strcmp(*argv, "-bg"))
+			background_colorname = *++argv;
 		else if (!strcmp(*argv, "-noedges"))
 			doedges = 0;
 		else if (!strcmp(*argv, "-faces"))
@@ -227,16 +244,29 @@ char **argv;
 		exit(-1);
 	        }
 
-	if (invert)
-		{
-		fg = BlackPixel(dpy, DefaultScreen(dpy));
-		bg = WhitePixel(dpy, DefaultScreen(dpy));
-		}
-	else
-		{
-		fg = WhitePixel(dpy, DefaultScreen(dpy));
-		bg = BlackPixel(dpy, DefaultScreen(dpy));
-		}
+	cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
+	if (!cmap) {
+		icoFatal("no default colormap!");
+	}
+
+	fg = WhitePixel(dpy, DefaultScreen(dpy));
+	bg = BlackPixel(dpy, DefaultScreen(dpy));
+	if (background_colorname) {
+	    XColor cdef;
+
+	    if (XParseColor (dpy, cmap, background_colorname, &cdef) &&
+		XAllocColor (dpy, cmap, &cdef))
+	      bg = cdef.pixel;
+	    else 
+	      icoFatal ("no such color \"%s\"", background_colorname);
+	}
+
+	if (invert) {
+	    unsigned long tmp = fg;
+	    fg = bg;
+	    bg = tmp;
+	}
+
 
 	/* Set up window parameters, create and map window if necessary: */
 
@@ -290,6 +320,10 @@ char **argv;
 					MultibufferHintFrequent,
 					multibuffers) == 2)) {
 		win = multibuffers[0];
+#ifdef notimplementedyet
+		XmbufClearBuffer (dpy, multibuffers[0], 0, 0, 0, 0, False);
+		XmbufClearBuffer (dpy, multibuffers[1], 0, 0, 0, 0, False);
+#endif
 	    } else {
 		multibuf = 0;
 	    }
@@ -650,10 +684,6 @@ DBufInfo *b, *otherb;
 			xalloc(dbpair.pixelsperbuf * sizeof(unsigned long));
 	}
 
-	cmap = XDefaultColormap(dpy,DefaultScreen(dpy));
-	if (!cmap) {
-		icoFatal("no default colormap!");
-	}
 	t = XAllocColorCells(dpy,cmap,0,
 		dbpair.plane_masks,dbpair.totalplanes, dbpair.pixels,1);
 			/* allocate color planes */
