@@ -20,6 +20,7 @@ SRCS = \
 	AllCmap.c \
 	Atoms.c \
 	ClientWin.c \
+	CloseHook.c \
 	CrPixFBit.c \
 	CvtStdSel.c \
 	DefErrMsg.c \
@@ -41,6 +42,7 @@ OBJS = \
 	AllCmap.o \
 	Atoms.o \
 	ClientWin.o \
+	CloseHook.o \
 	CrPixFBit.o \
 	CvtStdSel.o \
 	DefErrMsg.o \
