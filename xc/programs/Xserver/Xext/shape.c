@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.11 90/01/23 10:49:17 rws Exp $ */
+/* $XConsortium: shape.c,v 5.12 90/06/07 10:05:06 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -727,7 +727,7 @@ ProcShapeInputSelected (client)
     xShapeInputSelectedReply	rep;
     register int		n;
 
-    REQUEST_SIZE_MATCH (xShapeSelectInputReq);
+    REQUEST_SIZE_MATCH (xShapeInputSelectedReq);
     pWin = LookupWindow (stuff->window, client);
     if (!pWin)
 	return BadWindow;
