@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.10 92/10/05 17:05:22 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.11 92/11/10 19:00:42 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -553,17 +553,19 @@ typedef enum {
 /* pick state for Renderer picking */
 #define DD_PICK_ONE 1
 #define DD_PICK_ALL 2
+#define DD_SERVER	1
+#define DD_CLIENT	2
+#define DD_NEITHER	3
 
 typedef struct {
 	ddUSHORT	  state;        /* pick state one or all */
+	ddUSHORT	  server;       /* client or server traversal */
 	ddSHORT           pick_method;
 	ddBOOL            send_event;
 	ddULONG           max_hits;
 	ddULONG           more_hits;
 	ClientPtr         client;       /* need to send the event */
         diStructHandle    strHandle;	/* struct handle for PickOne */
-        diStructHandle    fakeStr;	/* fake struct handle for BeginPick */
-	ddULONG           sid;          /* structure id for BeginPick */
 	diPMHandle	  pseudoPM;      /* fake PM for Renderer Pick */
 	listofObj	  *list;	/* list of list for pick all */
 	listofObj	  *fakeStrlist;	/* list of fake struct handle for
