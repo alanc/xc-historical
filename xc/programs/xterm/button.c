@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.65 91/05/10 16:57:03 gildea Exp $ */
+/* $XConsortium: button.c,v 1.66 91/05/31 17:00:03 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -348,7 +348,7 @@ Cardinal *num_params;
 
 static void
 SetSelectUnit(buttonDownTime, defaultUnit)
-    unsigned long buttonDownTime;
+    Time buttonDownTime;
     SelectUnit defaultUnit;
 {
 /* Do arithmetic as integers, but compare as unsigned solves clock wraparound */
