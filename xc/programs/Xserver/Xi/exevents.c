@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.17 90/05/18 15:35:15 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.18 90/05/18 15:36:42 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -357,13 +357,16 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 
 	if (v != NULL)
 	    {
+	    CARD32 *ip B32;
+	    INT32 *ip2 B32;
 	    deviceStateNotify 	*tev = sev;
 
 	    tev->classes_reported |= (1 << ValuatorClass);
 	    for (i=0; i<v->numAxes; i+=6)
 		{
+		ip = &tev->valuator0;
 		for (j=0; j<3 && i+j<v->numAxes; j++)
-		   tev->valuators[j] = v->axisVal[i+j]; 
+		   *(ip+j) = v->axisVal[i+j]; 
 	        tev->num_valuators = j;
 		if (i+3 < v->numAxes)
 		    {
@@ -373,8 +376,9 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		    vev->deviceid = dev->id;
 		    vev->num_valuators = v->numAxes < i+6 ? v->numAxes-(i+3) : 3;
 		    vev->first_valuator = i+3;
+		    ip2 = &vev->valuator0;
 		    for (j=0; j<3 && i+j < v->numAxes; j++)
-		        vev->valuators[j] = v->axisVal[i+3+j]; 
+		        *(ip2+j) = v->axisVal[i+3+j]; 
 		    }
 		if (i+6 < v->numAxes)
 		    {
