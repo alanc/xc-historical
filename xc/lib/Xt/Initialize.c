@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.184 91/05/03 15:32:58 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.185 91/05/11 14:55:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -285,28 +285,43 @@ static XrmDatabase CopyDB(db)
 }
 
 /*ARGSUSED*/
-String XtDefaultLanguageProc(dpy, xnl, closure)
-    Display   *dpy;
-    String    xnl;
-    XtPointer closure;
+static String _XtDefaultLanguageProc(dpy, xnl, closure)
+    Display   *dpy;	/* unused */
+    String     xnl;
+    XtPointer  closure;	/* unused */
 {
-    return (xnl ?  xnl : setlocale(LC_ALL, NULL));
+    if (! setlocale(LC_ALL, xnl))
+	XtWarning("locale not supported by C library, locale unchanged");
+
+    if (! XSupportsLocale()) {
+	XtWarning("locale not supported by Xlib, locale set to C");
+	setlocale(LC_ALL, "C");
+    }
+    if (! XSetLocaleModifiers(""))
+	XtWarning("X locale modifiers not supported, using default");
+
+    return setlocale(LC_ALL, NULL); /* re-query in case overwritten */
 }
 
 #if NeedFunctionPrototypes
-XtLangProc XtSetLanguageProc(
+XtLanguageProc XtSetLanguageProc(
     XtAppContext      app,
-    XtLangProc        proc,
+    XtLanguageProc    proc,
     XtPointer         closure
     )
 #else
-XtLangProc XtSetLanguageProc(app, proc, closure)
+XtLanguageProc XtSetLanguageProc(app, proc, closure)
     XtAppContext      app;
-    XtLangProc        proc;
+    XtLanguageProc    proc;
     XtPointer         closure;
 #endif
 {
-    XtLangProc	old;
+    XtLanguageProc    old;
+
+    if (!proc) {
+	proc = _XtDefaultLanguageProc;
+	closure = NULL;
+    }
 
     if (app) {
 	/* set langProcRec only for this application context */
@@ -314,7 +329,7 @@ XtLangProc XtSetLanguageProc(app, proc, closure)
         app->langProcRec.proc = proc;
         app->langProcRec.closure = closure;
     } else {    
-	/* set langProc for all application contexts */
+	/* set langProcRec for all application contexts */
         ProcessContext process = _XtGetProcessContext();
 
         old = process->globalLangProcRec.proc;
@@ -327,7 +342,7 @@ XtLangProc XtSetLanguageProc(app, proc, closure)
 	    app = app->next;
         }
     }
-    return (old);
+    return (old ? old : _XtDefaultLanguageProc);
 }
 
 XrmDatabase XtScreenDatabase(screen)
@@ -372,13 +387,17 @@ XrmDatabase XtScreenDatabase(screen)
 	    &&
 	    (!user_db ||
 	     !XrmQGetResource(user_db, names, classes, &type, &value))){
-	    pd->language = NULL;
+	    pd->language = "";
 	} else {
 	    pd->language = (char *)value.addr;
 	}
     }
-    pd->language = (*pd->appContext->langProcRec.proc)
-	           (dpy, pd->language, pd->appContext->langProcRec.closure);
+
+    if (pd->appContext->langProcRec.proc)
+	pd->language = (*pd->appContext->langProcRec.proc)
+	    (dpy, pd->language, pd->appContext->langProcRec.closure);
+    else if (! pd->language || pd->language[0] == '\0') /* R4 compatibility */
+	pd->language = getenv("LANG");
     pd->language = XtNewString(pd->language);
 
     if (ScreenCount(dpy) == 1) {
