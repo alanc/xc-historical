@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.12 90/12/04 10:04:07 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.13 90/12/12 14:52:43 rws Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -195,19 +195,16 @@ static void ObjectDestroy (widget)
 {
     register CallbackTable offsets;
     register int i;
-    register InternalCallbackList *cl;
-
-    if (((Object)widget)->object.constraints != NULL)
-	    XtFree((char *) ((Object)widget)->object.constraints);
+    register InternalCallbackList cl;
 
     /* Remove all callbacks associated with widget */
     offsets = (CallbackTable)
 	widget->core.widget_class->core_class.callback_private;
 
     for (i = (int) *(offsets++); --i >= 0; offsets++) {
-	cl = (InternalCallbackList *)
+	cl = *(InternalCallbackList *)
 	    ((char *) widget - (*offsets)->xrm_offset - 1);
-	if (*cl) XtFree((char *) *cl);
+	if (cl) XtFree((char *) cl);
     }
 
     XtFree((char *) widget);
