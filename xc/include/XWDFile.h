@@ -1,8 +1,8 @@
-#include <X/mit-copyright.h>
+#include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $Header: XWDFile.h,v 1.2 87/06/04 03:06:40 dkk Locked $ */
+/* $Header: XWDFile.h,v 1.3 87/06/11 12:38:19 toddb Locked $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
