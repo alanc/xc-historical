@@ -12,12 +12,16 @@ A joint production of:
 	Geoff Lee
 	Mark Opperman		Sun Microsystems
 
-This version of the Sun X.11 drivers uses ../mi,  ../mfb and ../cfb to support
+	Bob Scheifler		MIT Laboratory for Computer Science
+	Keith Packard
+
+This version of the Sun X11 drivers uses ../mi,  ../mfb and ../cfb to support
 the following configurations:
 
 	Sun/2		bw2	cg2/3/5
 	Sun/3		bw2	cg2/3/4/5
 	Sun/4		bw2	cg2/4
+	SPARCstation		cg3/6
 	Sun/386i	mono	color
 
 The following configurations are NOT supported:
@@ -27,26 +31,24 @@ The following configurations are NOT supported:
 	Sun/3			gp	(use /dev/cgtwo0)
 	Sun/4			gp	(use /dev/cgtwo0)
 
-The drivers are completely untuned, and have inferior performance.  The code
-is lint-free.  It installs and runs on these configurations under SunOS 3.2,
-3.4, and 4.0.  However, we must stress that it is completely unsupported, and
-if you have problems installing or using it you are on your own.
+The mfb and cfb code has been substantially tuned for 1- and 8-bit framebuffers
+(with code for both fast and slow cpu-to-memory ratios).  It installs and runs
+on these configurations under SunOS 3.2, 3.4, and 4.0.  However, we must stress
+that it is completely unsupported, and if you have problems installing or using
+it you are on your own.
+
 
 Things to check before building:
 
-1)	util/imake.includes/Sun.macros - set the SunOSMajorVersion and
-	SunOSMinorVersion parameters to the right values.
+1)	config/sun.cf - set the SunOSMajorVersion and SunOSMinorVersion 
+	parameters to the right values.
 
-2)	util/imake.includes/Imake.tmpl - check LIBDIR, FONTDIR, etc.
-	and define LibDir, FontDir, etc. in site.def as required.
+2)	config/Project.tmpl - check LIBDIR, FONTDIR, etc.; set 
+	define LibDir, FontDir, etc. in site.def as required.
 
 3)	If you want to use X on top of suntools or NeWS, change
-	UseSunWindowsInServer to YES in Sun.macros.
+	UseSunWindowsInServer to YES in config/sun.cf.
 
-4)	If you want any extensions, define them in ExtensionDefines in
-	Sun.macros.  If you want the non-portable zoids, use -DZOIDS.
-	The non-portable zoids have worse performance than portable
-	zoids but prove that the extension mechanism works for output.
 
 
 Then build the system by:
@@ -58,6 +60,7 @@ Then build the system by:
 	This takes about forty minutes on a 4/260, and somewhat longer
 	on other Suns.
 
+
 2)	Go for it.  In the top-level directory, type
 
 	make install
@@ -66,7 +69,9 @@ Then build the system by:
 	the various executables and data files scattered throughout
 	the hierarchy.
 
+
 3)	Exit suntools or whatever other window system you use.
+
 
 4)	On the console, or from an rlogin connection, put whatever you
 	chose for BINDIR (in Imake.tmpl) in your search path, and then
@@ -90,30 +95,29 @@ Then build the system by:
 	    xterm &
 
 
-6)	In general,  Xsun auto-configures to use all the available
-	framebuffers.  In some circumstances,  you may need to use a
-	-dev argument on the command line to prevent this:
+6)	Make sure that you have special devices in /dev for the appropriate 
+	framebuffer.  See the manual page for Xsun for details or run the
+	constype program.
 
-	3/110LC, 3/110C, 3/60C 
 
-	If you want to use color, use "xinit -- -dev /dev/cgfour0".
-	If you want to use monochrome, use "xinit -- -dev /dev/bwtwo0".
-		
-	GP, GP+, GP2
+7)	In general,  Xsun auto-configures to use all the available framebuffers
+	(see the Xsun manual page).  In some circumstances, you may need to 
+	use the -dev switch on the command line to specify a specific device
+	to use.  In particular, on the GP, GP+, and GP2, you'll need to
+	specify -dev /dev/cgtwo0 your xdm Xservers file or your xinit script.
 
-	If you have one of these GP's installed, use 
 
-	    xinit -- -dev /dev/cgtwo0
+8)	To shut the server down,  send it a Hangup or Terminate signal.
 
-7)	To shut the server down,  hit  it with a Hangup or Terminate signal.
 
-8)	Xsun coexists with the SunWindows environment.  If you run Xsun
+9)	Xsun coexists with the SunWindows environment.  If you run Xsun
 	from a shell window under suntools, then Xsun will overlay that
 	desktop.  If you have two desktops, then 'adjacentscreens' will still
 	be in effect.  You may want to redirect the output of the server to a
 	window that is visible on another desktop.
 
-9)	If X crashes, it will leave the keyboard in a funny state.  There is a
+
+10)	If X crashes, it will leave the keyboard in a funny state.  There is a
 	program called "kbd_mode" that will reset the mode of the keyboard.
 	"kbd_mode -a" is the appropriate setting for the bare console, and
 	"kbd_mode -e" is the appropriate setting for running with SunWindows.
@@ -124,4 +128,4 @@ Then build the system by:
 	xinit ; kbd_mode -a
 
 	so that the keyboard mode will ALWAYS be set properly when the server
-	terminates.  The kbd_mode program is in the server/ddx/sun directory.
+	terminates.
