@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.47 87/08/19 13:06:03 newman Locked $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.50 87/08/29 20:05:23 jg Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -9,6 +9,7 @@ static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.47 87/08/19 13:06:
 #include <stdio.h>
 #include "Xlibint.h"
 #include <strings.h>
+#include "Xatom.h"
 
 #ifndef lint
 static int lock;	/* get rid of ifdefs when locking implemented */
@@ -189,6 +190,7 @@ Display *XOpenDisplay (display)
 	}
 	dpy->resource_id	= 0;
 	dpy->resource_shift	= ffs(dpy->resource_mask) - 1;
+	dpy->db 		= (struct _XrmResourceDataBase *)NULL;
 /* 
  * Initialize pointers to NULL so that XFreeDisplayStructure will
  * work if we run out of memory
@@ -362,6 +364,27 @@ Display *XOpenDisplay (display)
 	(void) XSynchronize(dpy, _Xdebug);
 	UnlockDisplay(dpy);
 	UnlockMutex(&lock);
+/*
+ * get the resource manager database off the root window.
+ */
+	{
+	    Atom actual_type;
+	    int actual_format;
+	    unsigned long nitems;
+	    long leftover;
+	    if (XGetWindowProperty(dpy, RootWindow(dpy, 0), 
+		XA_RESOURCE_MANAGER, 0L, 1073725440L, False, XA_STRING,
+		&actual_type, &actual_format, &nitems, &leftover, 
+		&dpy->xdefaults) != Success) {
+			dpy->xdefaults = (char *) NULL;
+		}
+	    else {
+	    if ( (actual_type != XA_STRING) ||  (actual_format != 8) ) {
+		Xfree ( dpy->xdefaults );
+		dpy->xdefaults = (char *) NULL;
+		}
+	    }
+	}
  	return(dpy);
 }
 
