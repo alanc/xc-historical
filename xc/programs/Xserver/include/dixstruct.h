@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dixstruct.h,v 1.22 93/09/23 15:11:56 rws Exp $ */
+/* $XConsortium: dixstruct.h,v 1.23 93/09/25 16:40:42 rws Exp $ */
 
 #ifndef DIXSTRUCT_H
 #define DIXSTRUCT_H
@@ -67,6 +67,10 @@ typedef struct _Client {
     int         clientGone;
     int         noClientException;	/* this client died or needs to be
 					 * killed */
+#ifdef MTX
+    pointer	msgBuffer;
+    pointer	pConflict;
+#endif /* MTX */
     DrawablePtr lastDrawable;
     Drawable    lastDrawableID;
     GCPtr       lastGC;
