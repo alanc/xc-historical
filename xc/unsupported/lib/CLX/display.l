@@ -345,12 +345,13 @@
 		(buffer-input display buffer-bbuf 0 40)
 		(let* ((root (make-window :id (card32-get 0) :display display))
 		       (root-visual (card32-get 32))
+		       (default-colormap
+			 (make-colormap :id (card32-get 4)
+					:display display))
 		       (screen
 			 (make-screen
 			   :root root
-			   :default-colormap (make-colormap :id (card32-get 4)
-							    :display display
-							    :visual-info root-visual)
+			   :default-colormap default-colormap
 			   :white-pixel (card32-get 8)
 			   :black-pixel (card32-get 12)
 			   :event-mask-at-open (card32-get 16)
@@ -391,7 +392,9 @@
 			  (push visual visuals)))
 		      (push (cons depth (nreverse visuals)) depths)))
 		  (setf (screen-depths screen) (nreverse depths))
-		  (setf (screen-root-visual-info screen) (visual-info display root-visual))
+		  (setf (screen-root-visual-info screen)
+			(setf (colormap-visual-info default-colormap)
+			      (visual-info display root-visual)))
 		  (push screen (display-roots display))))
 	      (setf (display-roots display) (nreverse (display-roots display)))
 	      (setf (display-default-screen display) (first (display-roots display))))))
