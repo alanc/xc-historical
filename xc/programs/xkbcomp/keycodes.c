@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.c,v 1.1 94/04/02 17:06:07 erik Exp $ */
+/* $XConsortium: keycodes.c,v 1.2 94/04/04 15:28:18 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,7 +26,7 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "keycodes.h"
@@ -83,7 +83,7 @@ HashLookup(tbl,name,ndxRtrn,kcRtrn)
 {
 unsigned short hval,ndx;
 unsigned long lval;
-register int i;
+register unsigned i;
 
     hval= HashKeyName(name);
     lval= KeyNameToLong(name);
@@ -126,7 +126,7 @@ HashAdd(tbl,name,kc,replace,kcRtrn)
 {
 unsigned short hval,ndx;
 unsigned long lval;
-register int i;
+register unsigned i;
 
     hval= HashKeyName(name);
     lval= KeyNameToLong(name);
@@ -493,7 +493,7 @@ ParseCommon	*stmt;
 Bool
 CompileKeycodes(file,result,mergeMode)
     XkbFile	*	file;
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     unsigned	 	mergeMode;
 {
 int		errorCount= 0;
