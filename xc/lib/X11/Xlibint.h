@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.111 93/09/13 18:40:34 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.112 93/09/14 17:21:38 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -676,6 +676,11 @@ typedef struct _XExten {	/* private to extension mechanism */
 	void (*error_values)(); /* routine to supply error values */
 } _XExtension;
 
+struct _XPreFlush {
+    struct _XPreFlush *next;	/* next in list */
+    XExtCodes *codes;		/* extension codes */
+    void (*proc)();		/* routine to call when sending data */
+};
 
 /* extension hooks */
 
