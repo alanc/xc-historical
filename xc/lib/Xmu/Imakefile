@@ -50,6 +50,11 @@ OBJS = \
 	StrToOrnt.o \
 	StrToWidg.o
 
+NormalLibraryTarget(Xmu,$(OBJS))
+LintLibraryTarget(Xmu,$(SRCS))
+InstallLibrary(Xmu,$(USRLIBDIR))
+InstallLintLibrary(Xmu,$(LINTLIBDIR))
+
 #if DebugLibXmu && ProfileLibXmu
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
@@ -67,11 +72,6 @@ SpecialObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(OS_NAME_DEFINES))
 #  endif
 # endif
 #endif
-
-NormalLibraryTarget(Xmu,$(OBJS))
-LintLibraryTarget(Xmu,$(SRCS))
-InstallLibrary(Xmu,$(USRLIBDIR))
-InstallLintLibrary(Xmu,$(LINTLIBDIR))
 
 #if ProfileLibXmu 
 ProfiledLibraryTarget(Xmu,$(OBJS))
