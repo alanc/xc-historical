@@ -289,8 +289,7 @@ Widget wid;
 	if(w->top.title == NULL) {
 		w->top.title = w->top.icon_name;
 	}
-	w->core.background_pixel = None;
-	w->core.background_pixmap = NULL;
+	w->core.background_pixmap = None;
 /*
 	w->core.border_width = 0;
 	w->core.border_pixmap = NULL;
@@ -323,7 +322,17 @@ XSetWindowAttributes *attr;
 	Display *dpy = XtDisplay(w);
 	char hostname[1024];
 	XWMHints wmhints;
+	
 
+	mask &= ~(CWBackPixel);
+	mask |= CWBackPixmap;		/* I must have a background pixmap of
+					   none, and no background pixel. 
+					   This should give me a transparent
+					   background so that if there is
+					   latency from when I get resized and
+					   when my child is resized it won't be
+					   as obvious.
+					   */
 	win = w->core.window = XCreateWindow( dpy,
 	    w->core.screen->root, w->core.x, w->core.y,
 	    w->core.width, w->core.height,
