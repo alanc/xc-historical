@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.6 90/02/02 11:36:44 jim Exp $
+ * $XConsortium: TreeP.h,v 1.7 90/02/02 14:32:54 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -59,6 +59,7 @@ typedef struct {
     Widget tree_root;			/* hidden root off all children */
     Dimension *largest;			/* list of largest per depth */
     int n_largest;			/* number of elements in largest */
+    Dimension maxwidth, maxheight;	/* for shrink wrapping */
 } TreePart;
 
 

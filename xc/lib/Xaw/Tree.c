@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.11 90/02/02 17:58:54 jim Exp $
+ * $XConsortium: Tree.c,v 1.12 90/02/02 18:18:34 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -36,7 +36,6 @@
 #include <X11/Xmu/Converters.h>
 #include "TreeP.h"
 
-#define MAXIMUM(a,b) ((a) > (b) ? (a) : (b))
 #define IsHorizontal(tw) ((tw)->tree.orientation == XtorientHorizontal)
 
 static void             ClassInitialize();
@@ -478,18 +477,7 @@ static void set_positions(tw, w, level)
   * Move the widget into position.
   */
   XtMoveWidget (w, tree_const->tree.x, tree_const->tree.y);
- /*
-  * If the widget position plus its width or height doesn't
-  * fit in the tree, ask if the tree can be resized.
-  */
-  if(tw->core.width < tree_const->tree.x + w->core.width ||
-     tw->core.height < tree_const->tree.y + w->core.height){
-      set_tree_size (tw, 
-		     MAXIMUM(tw->core.width, (tree_const->tree.x +
-					      w->core.width)),
-		     MAXIMUM(tw->core.height, (tree_const->tree.y + 
-					       w->core.height)));
-  }
+
 
  /*
   * Set the positions of all children.
@@ -623,6 +611,7 @@ static void arrange_subtree (tree, w, depth, x, y)
     int newx, newy;
     Bool horiz = IsHorizontal (tree);
     Widget child = NULL;
+    Dimension tmp;
 
 #ifdef padparallelsubtrees
     if (tc->tree.n_children > 1) {
@@ -634,11 +623,17 @@ static void arrange_subtree (tree, w, depth, x, y)
     }
 #endif
 
-    tc->tree.x = x;
-    tc->tree.y = y;
     /*
      * If no children, then just lay out where requested.
      */
+    tc->tree.x = x;
+    tc->tree.y = y;
+
+    if ((tmp = ((Dimension) x) + tc->tree.bbwidth) > tree->tree.maxwidth)
+      tree->tree.maxwidth = tmp;
+    if ((tmp = ((Dimension) y) + tc->tree.bbheight) > tree->tree.maxheight)
+      tree->tree.maxheight = tmp;
+
     if (tc->tree.n_children == 0) return;
 
 
@@ -713,8 +708,7 @@ static void new_layout (tw)
     /*
      * Move each widget into place.
      */
-    tc = TREE_CONSTRAINT (tw);
-    set_tree_size (tw, tc->tree.bbwidth, tc->tree.bbheight);
+    set_tree_size (tw, tw->tree.maxwidth, tw->tree.maxheight);
     set_positions (tw, tw->tree.tree_root, 0, 0);
 
     /*
