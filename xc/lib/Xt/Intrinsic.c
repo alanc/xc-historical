@@ -52,7 +52,7 @@ WidgetClassData widgetClassData = {
 Widget XtCreate(widgetClass,parent,args,argCount)
 	
     WidgetClass   widgetClass;
-    Widget        parent;
+    CompositeWidget   parent;
     ArgList       args;
     Cardinal      argCount;
 
@@ -66,7 +66,6 @@ Widget XtCreate(widgetClass,parent,args,argCount)
     widget = (Widget)XtMalloc(widgetClass->coreClass.size); 
     widget->core.widget_class = widgetClass;
     widget->core.parent = parent;
-    widget->core.display = parent->core.display;
     widget->core.screen = parent->core.screen;
     widget->core.managed = FALSE;
     widget->core.visible = TRUE;
@@ -161,6 +160,66 @@ void XtSetSensitive(widget,sensitive)
   for(widgetClass = widget->core.widget_class;widgetClass != NULL; \
                          widgetClass = widgetClass ->coreClass.superclass) \
                          widgetClass->coreClass.proc; \
+}
+
+void XtAddCallback (callbackList,callback,widget,closure)
+    CallbackList *callbackList;
+    CallbackProc callback;
+    Widget widget;
+    Opaque closure;
+{
+
+     CallbackRec *c,*cl;
+     c =  (CallbackRec*) XtMalloc(sizeof(CallbackRec));
+     c -> next = NULL;
+     c -> widget = widget;
+     c -> closure = closure;
+     c -> callback = callback; 
+    if (*callbackList == NULL){
+             (*callbackList) = c;
+             return;
+    }
+    for (cl = (*callbackList); cl->next != NULL; cl = cl->next) {}
+    cl->next = c;
+    return;
+}
+
+void XtRemoveCallback (callbackList, callback, widget, closure)
+    CallbackList *callbackList;
+    CallbackProc callback;
+    Widget widget;
+    Opaque closure;
+{
+   CallbackRec *cl;
+   if (*callbackList == NULL) return;
+   for (cl = (*callbackList); cl->next != NULL; cl = cl->next) 
+           if (( cl->widget == widget) && (cl->closure == closure)
+                            && (cl->callback == callback) ) {
+               cl = (*cl).next;
+               XtFree (*cl);
+           }
+   return;
+}
+
+void XtRemoveAllCallbacks (callbackList)
+    CallbackList *callbackList;
+
+{
+   CallbackRec *cl;
+   if (*callbackList == NULL) return;
+   for (cl = (*callbackList); cl->next != NULL; cl = cl->next) 
+        XtFree (*cl);
+   (*callbackList) == NULL;
+   return;
+}
+
+void XtCallCallbacks (callbackList)
+    CallbackList *callbackList;
+{
+    CallbackRec *cl;
+    if ((*callbackList) == NULL )return;
+    for (cl = (*callbackList); cl != NULL; cl = cl->next) 
+             cl->callback(cl->widget,cl->closure);
 }
 
 void DestroyChildren (widget)

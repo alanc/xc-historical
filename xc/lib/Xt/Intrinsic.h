@@ -67,7 +67,7 @@ typedef unsigned long   Cardinal;
 typedef int             Boolean;
 typedef char*           Opaque;
 typedef Opaque          Translations;
-typedef Opaque          CallbackList;
+typedef struct _CallbackRec*    CallbackList;
 typedef Opaque          XrmExtra;
 typedef unsigned long   ValueMask;
 typedef unsigned long   XtIntervalId;
@@ -121,8 +121,7 @@ typedef char *XtArgVal;
 
  typedef struct _Core {
         struct _WidgetClassData    *widget_class;   /* pointer to Core Class data */
-	Display		*display;	/* widget display connection */
-	Screen		screen;		/* widget screen */
+	Screen		*screen;		/* widget screen */
 	Window		window;		/* window ID */
 	struct _CompositeWidgetData	*parent;/* parent widget */
         String          name;
@@ -286,9 +285,17 @@ extern void XtCompositeRemoveChild ();
  *
  **************************************************************/
 
-typedef void (*Callback)();
+typedef void (*CallbackProc)();
     /* Widget widget; */
     /* caddr_t closure; */
+
+typedef struct _CallbackRec {
+    struct _CallbackRec *next;
+    Widget   widget;
+    CallbackProc callback;
+    Opaque  closure;
+}CallbackRec;
+
 
 extern void XtAddCallback ();
     /* CallbackList callbacks; */
@@ -317,7 +324,7 @@ extern void XtCallCallbacks ();
  *
  ****************************************************************/
 
-extern Display  XtInitialize();
+extern Display *XtInitialize();
     /* XrmOptionsDescRec    options; */
     /* Cardinal             opt_count; */
     /* char               **argv;  */
