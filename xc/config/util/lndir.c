@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.3 91/07/17 10:56:19 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.4 91/07/17 15:55:05 gildea Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -54,6 +54,7 @@
 #endif
 
 extern int errno;
+int silent;
 
 void
 quit (code, fmt, a1, a2, a3)
@@ -136,13 +137,18 @@ int rel;			/* if true, prepend "../" to fn before using */
 		    continue;
 		if (!strcmp (dp->d_name, "SCCS"))
 		    continue;
-		printf ("%s:\n", buf);
+		if (!silent)
+		    printf ("%s:\n", buf);
 		if ((stat (dp->d_name, &sc) < 0) && (errno == ENOENT)) {
 		    if (mkdir (dp->d_name, 0777) < 0 ||
 			stat (dp->d_name, &sc) < 0) {
 			perror (dp->d_name);
 			continue;
 		    }
+		}
+		if (readlink (dp->d_name, symbuf, sizeof(symbuf) - 1) >= 0) {
+		    msg ("%s: is a link instead of a directory\n", dp->d_name);
+		    continue;
 		}
 		if (chdir (dp->d_name) < 0) {
 		    perror (dp->d_name);
@@ -174,17 +180,22 @@ int rel;			/* if true, prepend "../" to fn before using */
 
 
 main (ac, av)
+int ac;
 char **av;
 {
     char *fn, *tn;
     struct stat fs, ts;
 
-    if (ac < 2 || ac > 3)
-	quit (1, "usage: %s fromdir [todir]", av[0]);
+    silent = 0;
+    if (ac > 1 && !strcmp(av[1], "-silent")) {
+	silent = 1;
+    }
+    if (ac < silent + 2 || ac > silent + 3)
+	quit (1, "usage: %s [-silent] fromdir [todir]", av[0]);
 
-    fn = av[1];
-    if (ac == 3)
-	tn = av[2];
+    fn = av[silent + 1];
+    if (ac == silent + 3)
+	tn = av[silent + 2];
     else
 	tn = ".";
 
