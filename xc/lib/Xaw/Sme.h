@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: MenuEntry.h,v 1.1 89/09/28 16:44:50 kit Exp $";
+ "$XConsortium: Sme.h,v 1.2 89/09/29 19:03:50 kit Exp $";
 
                         All Rights Reserved
 
@@ -24,21 +24,21 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _MenuEntry_h
-#define _MenuEntry_h
+#ifndef _Sme_h
+#define _Sme_h
 
 #include <X11/RectObj.h>
 
 /****************************************************************
  *
- * MenuEntry Object
+ * Sme Object
  *
  ****************************************************************/
 
 /*
- * MenuEntry.h - Public Header file for MenuEntry object.
+ * Sme.h - Public Header file for Sme object.
  *
- * This is the public header file for the Athena MenuEntry object.
+ * This is the public header file for the Athena Sme object.
  * It is intended to be used with the simple menu widget.  
  *
  * Date:    April 3, 1989
@@ -48,7 +48,7 @@ SOFTWARE.
  *          kit@expo.lcs.mit.edu
  */
 
-/* Menu Entry Resources:
+/* Simple Menu Entry Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -62,9 +62,9 @@ SOFTWARE.
 
 */
 
-typedef struct _MenuEntryClassRec*	MenuEntryObjectClass;
-typedef struct _MenuEntryRec*	        MenuEntryObject;
+typedef struct _SmeClassRec*	SmeObjectClass;
+typedef struct _SmeRec*	        SmeObject;
 
-extern WidgetClass menuEntryObjectClass;
+extern WidgetClass smeObjectClass;
 
-#endif /* _MenuEntry_h */
+#endif /* _Sme_h */

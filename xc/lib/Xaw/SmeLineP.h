@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LineMenuEntryP.h,v 1.1 89/09/28 16:44:51 kit Exp $
+* $XConsortium: SmeLineP.h,v 1.1 89/09/29 19:04:02 kit Exp $
 */
 
 
@@ -28,42 +28,42 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * LineMenuEntryP.h - Private definitions for LineMenuEntry widget
+ * SmeLineP.h - Private definitions for SmeLine widget
  * 
  */
 
-#ifndef _XawLineMenuEntryP_h
-#define _XawLineMenuEntryP_h
+#ifndef _XawSmeLineP_h
+#define _XawSmeLineP_h
 
 /***********************************************************************
  *
- * LineMenuEntry Widget Private Data
+ * SmeLine Widget Private Data
  *
  ***********************************************************************/
 
-#include <X11/Xaw/MenuEntryP.h>
-#include <X11/Xaw/LineMenuEn.h>
+#include <X11/Xaw/SmeP.h>
+#include <X11/Xaw/SmeLine.h>
 
 /************************************************************
  *
- * New fields for the LineMenuEntry widget class record.
+ * New fields for the SmeLine widget class record.
  *
  ************************************************************/
 
-typedef struct _LineMenuEntryClassPart {
+typedef struct _SmeLineClassPart {
   XtPointer extension;
-} LineMenuEntryClassPart;
+} SmeLineClassPart;
 
 /* Full class record declaration */
-typedef struct _LineMenuEntryClassRec {
-    RectObjClassPart            rect_class;
-    MenuEntryClassPart	        menu_entry_class;
-    LineMenuEntryClassPart	line_entry_class;
-} LineMenuEntryClassRec;
+typedef struct _SmeLineClassRec {
+    RectObjClassPart    rect_class;
+    SmeClassPart	sme_class;
+    SmeLineClassPart	sme_line_class;
+} SmeLineClassRec;
 
-extern LineMenuEntryClassRec lineMenuEntryClassRec;
+extern SmeLineClassRec smeLineClassRec;
 
-/* New fields for the LineMenuEntry widget record */
+/* New fields for the SmeLine widget record */
 typedef struct {
     /* resources */
     Pixel foreground;		/* Foreground color. */
@@ -73,7 +73,7 @@ typedef struct {
     /* private data.  */
 
     GC gc;			/* Graphics context for drawing line. */
-} LineMenuEntryPart;
+} SmeLinePart;
 
 /****************************************************************
  *
@@ -81,12 +81,12 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef struct _LineMenuEntryRec {
-  ObjectPart             object;
-  RectObjPart            rectangle;
-  MenuEntryPart	         menu_entry;
-  LineMenuEntryPart	 line_entry;
-} LineMenuEntryRec;
+typedef struct _SmeLineRec {
+  ObjectPart     object;
+  RectObjPart    rectangle;
+  SmePart	 sme;
+  SmeLinePart	 sme_line;
+} SmeLineRec;
 
 /************************************************************
  *
@@ -94,4 +94,4 @@ typedef struct _LineMenuEntryRec {
  *
  ************************************************************/
 
-#endif /* _XawLineMenuEntryP_h */
+#endif /* _XawSmeLineP_h */

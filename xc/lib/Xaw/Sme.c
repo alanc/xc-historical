@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: MenuEntry.c,v 1.2 89/09/29 19:03:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Sme.c,v 1.3 89/10/09 16:21:16 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -27,7 +27,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * MenuEntry.c - Source code for the generic menu entry
+ * Sme.c - Source code for the generic menu entry
  *
  * Date:    September 26, 1989
  *
@@ -41,10 +41,10 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/XawInit.h>
-#include <X11/Xaw/MenuEntryP.h>
+#include <X11/Xaw/SmeP.h>
 #include <X11/Xaw/Cardinals.h>
 
-#define offset(field) XtOffset(MenuEntryObject, menu_entry.field)
+#define offset(field) XtOffset(SmeObject, sme.field)
 static XtResource resources[] = {
   {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
      offset(callbacks), XtRCallback, (caddr_t)NULL},
@@ -60,11 +60,11 @@ static XtGeometryResult QueryGeometry();
 
 #define SUPERCLASS (&rectObjClassRec)
 
-MenuEntryClassRec menuEntryClassRec = {
+SmeClassRec smeClassRec = {
   {
     /* superclass         */    (WidgetClass) SUPERCLASS,
-    /* class_name         */    "MenuEntry",
-    /* size               */    sizeof(MenuEntryRec),
+    /* class_name         */    "Sme",
+    /* size               */    sizeof(SmeRec),
     /* class_initialize   */	XawInitializeWidgetSet,
     /* class_part_initialize*/	ClassPartInitialize,
     /* Class init'ed      */	FALSE,
@@ -95,7 +95,7 @@ MenuEntryClassRec menuEntryClassRec = {
     /* display_accelerator*/    NULL,
     /* extension	  */    NULL
   },{
-    /* Menu Entry Fields */
+    /* Simple Menu Entry Fields */
       
     /* highlight */             Highlight,
     /* unhighlight */           Unhighlight,
@@ -104,7 +104,7 @@ MenuEntryClassRec menuEntryClassRec = {
   }
 };
 
-WidgetClass menuEntryObjectClass = (WidgetClass) &menuEntryClassRec;
+WidgetClass smeObjectClass = (WidgetClass) &smeClassRec;
 
 /************************************************************
  *
@@ -122,25 +122,24 @@ static void
 ClassPartInitialize(class)
 WidgetClass class;
 {
-    MenuEntryObjectClass m_ent, superC;
+    SmeObjectClass m_ent, superC;
 
-    m_ent = (MenuEntryObjectClass) class;
-    superC = (MenuEntryObjectClass) m_ent->rect_class.superclass;
+    m_ent = (SmeObjectClass) class;
+    superC = (SmeObjectClass) m_ent->rect_class.superclass;
 
 /* 
  * We don't need to check for null super since we'll get to TextSink
  * eventually.
  */
 
-    if (m_ent->menu_entry_class.highlight == XtInheritHighlight) 
-	m_ent->menu_entry_class.highlight = superC->menu_entry_class.highlight;
+    if (m_ent->sme_class.highlight == XtInheritHighlight) 
+	m_ent->sme_class.highlight = superC->sme_class.highlight;
 
-    if (m_ent->menu_entry_class.unhighlight == XtInheritUnhighlight)
-	m_ent->menu_entry_class.unhighlight = 
-	                               superC->menu_entry_class.unhighlight;
+    if (m_ent->sme_class.unhighlight == XtInheritUnhighlight)
+	m_ent->sme_class.unhighlight = superC->sme_class.unhighlight;
 
-    if (m_ent->menu_entry_class.notify == XtInheritNotify) 
-	m_ent->menu_entry_class.notify = superC->menu_entry_class.notify;
+    if (m_ent->sme_class.notify == XtInheritNotify) 
+	m_ent->sme_class.notify = superC->sme_class.notify;
 }
 
 /*	Function Name: Highlight
@@ -200,7 +199,7 @@ QueryGeometry(w, intended, return_val)
 Widget w;
 XtWidgetGeometry *intended, *return_val;
 {
-    MenuEntryObject entry = (MenuEntryObject) w;
+    SmeObject entry = (SmeObject) w;
     Dimension width;
     XtGeometryResult ret_val = XtGeometryYes;
     XtGeometryMask mode = intended->request_mode;

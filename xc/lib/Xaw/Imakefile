@@ -13,8 +13,6 @@ HEADERS = \
 	AsciiSrcP.h \
 	AsciiText.h \
 	AsciiTextP.h \
-	BSBMenuEnt.h \
-	BSBMenuEnP.h \
 	Box.h \
 	BoxP.h \
 	Cardinals.h \
@@ -30,8 +28,6 @@ HEADERS = \
 	GripP.h \
 	Label.h \
 	LabelP.h \
-	LineMenuEn.h \
-	LineMenuEP.h \
 	List.h \
 	ListP.h \
 	Logo.h \
@@ -40,8 +36,6 @@ HEADERS = \
 	MailboxP.h \
 	MenuButton.h \
 	MenuButtoP.h \
-	MenuEntry.h \
-	MenuEntryP.h \
 	Paned.h \
 	PanedP.h \
 	Scroll.h \
@@ -50,6 +44,12 @@ HEADERS = \
 	SimpleP.h \
 	SimpleMenu.h \
 	SimpleMenP.h \
+	Sme.h \
+	SmeP.h \
+	SmeBSB.h \
+	SmeBSBP.h \
+	SmeLine.h \
+	SmeLineP.h \
 	StripChart.h \
 	StripCharP.h \
 	Template.c \
@@ -72,7 +72,6 @@ SRCS = \
 	AsciiSink.c \
 	AsciiSrc.c \
 	AsciiText.c \
-	BSBMenuEnt.c \
 	Box.c \
 	Clock.c \
 	Command.c \
@@ -80,16 +79,17 @@ SRCS = \
 	Form.c \
 	Grip.c \
 	Label.c \
-	LineMenuEn.c \
 	List.c \
 	Logo.c \
 	Mailbox.c \
 	MenuButton.c \
-	MenuEntry.c \
 	Paned.c \
 	Scroll.c \
 	Simple.c \
 	SimpleMenu.c \
+	Sme.c \
+	SmeBSB.c \
+	SmeLine.c \
 	StripChart.c \
 	Text.c \
 	TextSink.c \
@@ -106,7 +106,6 @@ OBJS = \
 	AsciiSink.o \
 	AsciiSrc.o \
 	AsciiText.o \
-	BSBMenuEnt.o \
 	Box.o \
 	Clock.o \
 	Command.o \
@@ -114,16 +113,17 @@ OBJS = \
 	Form.o \
 	Grip.o \
 	Label.o \
-	LineMenuEn.o \
 	List.o \
 	Logo.o \
 	Mailbox.o \
 	MenuButton.o \
-	MenuEntry.o \
 	Paned.o \
 	Scroll.o \
 	Simple.o \
 	SimpleMenu.o \
+	Sme.o \
+	SmeBSB.o \
+	SmeLine.o \
 	StripChart.o \
 	Text.o \
 	TextSink.o \

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.26 89/10/06 18:38:15 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.27 89/10/09 16:20:54 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -42,7 +42,7 @@ SOFTWARE.
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleMenP.h>
-#include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/Cardinals.h>
 
 #include <X11/Xmu/Initer.h>
@@ -121,7 +121,7 @@ static void MakeSetValuesRequest(), CreateLabel(), Layout();
 static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
 static Dimension GetMenuWidth(), GetMenuHeight();
 static Widget FindMenu();
-static MenuEntryObject GetEventEntry();
+static SmeObject GetEventEntry();
 
 static XtActionsRec actionsList[] =
 {
@@ -250,7 +250,7 @@ Widget request, new;
   XmuCallInitializers(XtWidgetToApplicationContext(new));
 
   if (smw->simple_menu.label_class == NULL) 
-      smw->simple_menu.label_class = bSBMenuEntryObjectClass;
+      smw->simple_menu.label_class = smeBSBObjectClass;
 
   smw->simple_menu.label = NULL;
   smw->simple_menu.entry_set = NULL;
@@ -296,8 +296,8 @@ XEvent * event;
 Region region;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject * entry;
-    MenuEntryObjectClass class;
+    SmeObject * entry;
+    SmeObjectClass class;
 
     if (region == NULL) 
 	XClearWindow(XtDisplay(w), XtWindow(w));
@@ -320,7 +320,7 @@ Region region;
 	    default:
 		continue;
 	    }
-	class = (MenuEntryObjectClass) (*entry)->object.widget_class;
+	class = (SmeObjectClass) (*entry)->object.widget_class;
 
 	if (class->rect_class.expose != NULL)
 	    (class->rect_class.expose)( (Widget) *entry, NULL, NULL);
@@ -391,7 +391,7 @@ Resize(w)
 Widget w;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject * entry;
+    SmeObject * entry;
 
     if ( !XtIsRealized(w) ) return;
 
@@ -524,7 +524,7 @@ Widget w;
 XtWidgetGeometry * request, * reply;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) XtParent(w);
-    MenuEntryObject entry = (MenuEntryObject) w;
+    SmeObject entry = (SmeObject) w;
     XtGeometryMask mode = request->request_mode;
     XtGeometryResult answer;
     Dimension old_height, old_width;
@@ -689,14 +689,14 @@ String * params;
 Cardinal * num_params;
 { 
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject entry = smw->simple_menu.entry_set;
-    MenuEntryObjectClass class;
+    SmeObject entry = smw->simple_menu.entry_set;
+    SmeObjectClass class;
  
     if ( entry == NULL) return;
 
     smw->simple_menu.entry_set = NULL;
-    class = (MenuEntryObjectClass) entry->object.widget_class;
-    (class->menu_entry_class.unhighlight) ( (Widget) entry);
+    class = (SmeObjectClass) entry->object.widget_class;
+    (class->sme_class.unhighlight) ( (Widget) entry);
 }
 
 /*      Function Name: Highlight
@@ -716,8 +716,8 @@ String * params;
 Cardinal * num_params;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject entry;
-    MenuEntryObjectClass class;
+    SmeObject entry;
+    SmeObjectClass class;
     
     if ( !XtIsSensitive(w) ) return;
     
@@ -735,9 +735,9 @@ Cardinal * num_params;
     }
 
     smw->simple_menu.entry_set = entry;
-    class = (MenuEntryObjectClass) entry->object.widget_class;
+    class = (SmeObjectClass) entry->object.widget_class;
 
-    (class->menu_entry_class.highlight) ( (Widget) entry);
+    (class->sme_class.highlight) ( (Widget) entry);
 }
 
 /*      Function Name: Notify
@@ -757,13 +757,13 @@ String * params;
 Cardinal * num_params;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject entry = smw->simple_menu.entry_set;
-    MenuEntryObjectClass class;
+    SmeObject entry = smw->simple_menu.entry_set;
+    SmeObjectClass class;
     
     if ( (entry == NULL) || !XtIsSensitive((Widget) entry) ) return;
 
-    class = (MenuEntryObjectClass) entry->object.widget_class;
-    (class->menu_entry_class.notify)( (Widget) entry );
+    class = (SmeObjectClass) entry->object.widget_class;
+    (class->sme_class.notify)( (Widget) entry );
 }
 
 /************************************************************
@@ -854,7 +854,7 @@ Widget w;
 
     XtSetArg(args[0], XtNlabel, smw->simple_menu.label_string);
     XtSetArg(args[1], XtNjustify, XtJustifyCenter);
-    smw->simple_menu.label = (MenuEntryObject) 
+    smw->simple_menu.label = (SmeObject) 
 	                      XtCreateManagedWidget("menuLabel", 
 					    smw->simple_menu.label_class, w,
 					    args, TWO);
@@ -891,7 +891,7 @@ Layout(w, width_ret, height_ret)
 Widget w;
 Dimension *width_ret, *height_ret;
 {
-    MenuEntryObject current_entry, *entry;
+    SmeObject current_entry, *entry;
     SimpleMenuWidget smw;
     Dimension width, height;
     Boolean do_layout = ((height_ret == NULL) || (width_ret == NULL));
@@ -902,7 +902,7 @@ Dimension *width_ret, *height_ret;
     }
     else {
 	smw = (SimpleMenuWidget) XtParent(w);
-	current_entry = (MenuEntryObject) w;
+	current_entry = (SmeObject) w;
     }
 
     if ( smw->simple_menu.menu_height )
@@ -1000,7 +1000,7 @@ Widget w;
 XPoint * location;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject entry;
+    SmeObject entry;
     XPoint t_point;
     static void MoveMenu();
     
@@ -1145,10 +1145,10 @@ static Dimension
 GetMenuWidth(w, w_ent)
 Widget w, w_ent;
 {
-    MenuEntryObject cur_entry = (MenuEntryObject) w_ent;
+    SmeObject cur_entry = (SmeObject) w_ent;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
     Dimension width, widest = (Dimension) 0;
-    MenuEntryObject * entry;
+    SmeObject * entry;
     
     if ( smw->simple_menu.menu_width ) 
 	return(smw->core.width);
@@ -1187,7 +1187,7 @@ GetMenuHeight(w)
 Widget w;
 {
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject * entry;
+    SmeObject * entry;
     Dimension height;
     
     if (smw->simple_menu.menu_height)
@@ -1212,14 +1212,14 @@ Widget w;
  *      Returns: the entry that this point is in.
  */
 
-static MenuEntryObject
+static SmeObject
 GetEventEntry(w, event)
 Widget w;
 XEvent * event;
 {
     Position x_loc, y_loc;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
-    MenuEntryObject * entry;
+    SmeObject * entry;
     
     switch (event->type) {
     case MotionNotify:

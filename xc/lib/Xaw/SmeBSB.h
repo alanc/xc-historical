@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: BSBMenuEnt.h,v 1.2 89/09/29 19:03:59 kit Exp $";
+ "$XConsortium: SmeBSB.h,v 1.3 89/10/05 17:50:39 kit Exp $";
 
                         All Rights Reserved
 
@@ -24,23 +24,23 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _BSBMenuEntry_h
-#define _BSBMenuEntry_h
+#ifndef _SmeBSB_h
+#define _SmeBSB_h
 
 #include <X11/Xmu/Converters.h>
 
-#include <X11/Xaw/MenuEntry.h>
+#include <X11/Xaw/Sme.h>
 
 /****************************************************************
  *
- * BSBMenuEntry object
+ * SmeBSB object
  *
  ****************************************************************/
 
 /*
- * BSBMenuEntry.h - Public Header file for BSBMenuEntry object.
+ * SmeBSB.h - Public Header file for SmeBSB object.
  *
- * This is the public header file for the Athena BSB MenuEntry object.
+ * This is the public header file for the Athena BSB Sme object.
  * It is intended to be used with the simple menu widget.  This object
  * provides bitmap - string - bitmap style entries.
  *
@@ -73,10 +73,10 @@ SOFTWARE.
 
 */
 
-typedef struct _BSBMenuEntryClassRec    *BSBMenuEntryObjectClass;
-typedef struct _BSBMenuEntryRec         *BSBMenuEntryObject;
+typedef struct _SmeBSBClassRec    *SmeBSBObjectClass;
+typedef struct _SmeBSBRec         *SmeBSBObject;
 
-extern WidgetClass bSBMenuEntryObjectClass;
+extern WidgetClass smeBSBObjectClass;
 
 #define XtNleftBitmap "leftBitmap"
 #define XtNleftMargin "leftMargin"
@@ -89,4 +89,4 @@ extern WidgetClass bSBMenuEntryObjectClass;
 #define XtCRightBitmap "RightBitmap"
 #define XtCVertSpace   "VertSpace"
 
-#endif /* _BSBMenuEntry_h */
+#endif /* _SmeBSB_h */

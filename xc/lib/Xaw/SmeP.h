@@ -1,5 +1,5 @@
 /*
-* $XConsortium: MenuEntryP.h,v 1.1 89/09/28 16:44:51 kit Exp $
+* $XConsortium: SmeP.h,v 1.2 89/09/29 19:03:52 kit Exp $
 */
 
 
@@ -28,49 +28,49 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * MenuEntryP.h - Private definitions for MenuEntry widget
+ * SmeP.h - Private definitions for Sme widget
  * 
  */
 
-#ifndef _XawMenuEntryP_h
-#define _XawMenuEntryP_h
+#ifndef _XawSmeP_h
+#define _XawSmeP_h
 
 /***********************************************************************
  *
- * MenuEntry Widget Private Data
+ * Sme Widget Private Data
  *
  ***********************************************************************/
 
 #include <X11/RectObjP.h>
-#include <X11/Xaw/MenuEntry.h>
+#include <X11/Xaw/Sme.h>
 
 /************************************************************
  *
- * New fields for the MenuEntry widget class record.
+ * New fields for the Sme widget class record.
  *
  ************************************************************/
 
-typedef struct _MenuEntryClassPart {
+typedef struct _SmeClassPart {
   void (*highlight)();
   void (*unhighlight)();
   void (*notify)();	
   XtPointer extension;
-} MenuEntryClassPart;
+} SmeClassPart;
 
 /* Full class record declaration */
-typedef struct _MenuEntryClassRec {
+typedef struct _SmeClassRec {
     RectObjClassPart    rect_class;
-    MenuEntryClassPart	menu_entry_class;
-} MenuEntryClassRec;
+    SmeClassPart	sme_class;
+} SmeClassRec;
 
-extern MenuEntryClassRec menuEntryClassRec;
+extern SmeClassRec smeClassRec;
 
-/* New fields for the MenuEntry widget record */
+/* New fields for the Sme widget record */
 typedef struct {
     /* resources */
     XtCallbackList callbacks;	/* The callback list */
 
-} MenuEntryPart;
+} SmePart;
 
 /****************************************************************
  *
@@ -78,11 +78,11 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef struct _MenuEntryRec {
+typedef struct _SmeRec {
   ObjectPart     object;
   RectObjPart    rectangle;
-  MenuEntryPart	 menu_entry;
-} MenuEntryRec;
+  SmePart	 sme;
+} SmeRec;
 
 /************************************************************
  *
@@ -96,4 +96,4 @@ typedef void (*_XawEntryVoidFunc)();
 #define XtInheritUnhighlight XtInheritHighlight
 #define XtInheritNotify      XtInheritHighlight
 
-#endif /* _XawMenuEntryP_h */
+#endif /* _XawSmeP_h */

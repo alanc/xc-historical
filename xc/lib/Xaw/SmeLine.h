@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: MenuEntry.h,v 1.1 89/09/28 16:44:50 kit Exp $";
+ "$XConsortium: SmeLine.h,v 1.1 89/09/29 19:04:03 kit Exp $";
 
                         All Rights Reserved
 
@@ -24,22 +24,22 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _LineMenuEntry_h
-#define _LineMenuEntry_h
+#ifndef _SmeLine_h
+#define _SmeLine_h
 
-#include <X11/Xaw/MenuEntry.h>
+#include <X11/Xaw/Sme.h>
 #include <X11/Xmu/Converters.h>
 
 /****************************************************************
  *
- * LineMenuEntry Object
+ * SmeLine Object
  *
  ****************************************************************/
 
 /*
- * LineMenuEntry.h - Public Header file for LineMenuEntry object.
+ * SmeLine.h - Public Header file for SmeLine object.
  *
- * This is the public header file for the Athena LineMenuEntry object.
+ * This is the public header file for the Athena SmeLine object.
  * It is intended to be used with the simple menu widget.  
  *
  * Date:    April 3, 1989
@@ -69,9 +69,9 @@ SOFTWARE.
 #define XtNlineWidth "lineWidth"
 #define XtNstipple "stipple"
 
-typedef struct _LineMenuEntryClassRec*	LineMenuEntryObjectClass;
-typedef struct _LineMenuEntryRec*	        LineMenuEntryObject;
+typedef struct _SmeLineClassRec*	SmeLineObjectClass;
+typedef struct _SmeLineRec*	        SmeLineObject;
 
-extern WidgetClass lineMenuEntryObjectClass;
+extern WidgetClass smeLineObjectClass;
 
-#endif /* _LineMenuEntry_h */
+#endif /* _SmeLine_h */

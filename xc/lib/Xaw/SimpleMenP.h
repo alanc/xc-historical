@@ -1,6 +1,6 @@
 /***********************************************************
 
- "$XConsortium: SimpleMenP.h,v 1.9 89/09/29 19:03:37 kit Exp $";
+ "$XConsortium: SimpleMenP.h,v 1.10 89/10/02 19:13:59 kit Exp $";
 
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
@@ -39,13 +39,13 @@ SOFTWARE.
 #define _SimpleMenuP_h
 
 #include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/MenuEntryP.h>
+#include <X11/Xaw/SmeP.h>
 #include <X11/ShellP.h>
 
 #define ForAllChildren(smw, childP) \
-  for ( (childP) = (MenuEntryObject *) (smw)->composite.children ; \
-        (childP) < (MenuEntryObject *) ( (smw)->composite.children + \
-					 (smw)->composite.num_children ) ; \
+  for ( (childP) = (SmeObject *) (smw)->composite.children ; \
+        (childP) < (SmeObject *) ( (smw)->composite.children + \
+				 (smw)->composite.num_children ) ; \
         (childP)++ )
 
 typedef struct {
@@ -67,7 +67,7 @@ typedef struct _SimpleMenuPart {
   /* resources */
 
   String       label_string;	/* The string for the label or NULL. */
-  MenuEntryObject   label;	/* If label_string is non-NULL then this is
+  SmeObject   label;		/* If label_string is non-NULL then this is
 				   the label widget. */
   WidgetClass  label_class;	/* Widget Class of the menu label object. */
 
@@ -76,7 +76,7 @@ typedef struct _SimpleMenuPart {
   Dimension    row_height;	/* height of each row (menu entry) */
 
   Cursor       cursor;		/* The menu's cursor. */
-  MenuEntryObject popup_entry;	/* The entry to position the cursor on for
+  SmeObject popup_entry;	/* The entry to position the cursor on for
 				   when using XawPositionSimpleMenu. */
   Boolean      menu_on_screen;	/* Force the menus to be fully on the screen.*/
   int          backing_store;	/* What type of backing store to use. */
@@ -89,7 +89,7 @@ typedef struct _SimpleMenuPart {
 				   core.width */
   Boolean menu_height;		/* Just like menu_width, but for height. */
 
-  MenuEntryObject entry_set;	/* The entry that is currently set or
+  SmeObject entry_set;		/* The entry that is currently set or
 				   highlighted. */
 } SimpleMenuPart;
 

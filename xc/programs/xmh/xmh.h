@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.24 89/09/27 19:11:51 converse Exp $
+ * $XConsortium: xmh.h,v 2.25 89/10/06 14:51:03 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -37,13 +37,13 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/AsciiText.h>
-#include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/LineMenuEn.h>
+#include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/SimpleMenu.h>

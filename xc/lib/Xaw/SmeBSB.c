@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.4 89/10/05 17:50:36 kit Exp $";
+static char Xrcsid[] = "$XConsortium: BSBMenuEnt.c,v 1.5 89/10/09 16:21:14 jim Exp $";
 #endif 
 
 /***********************************************************
@@ -27,7 +27,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * BSBMenuEntry.c - Source code file for BSB Menu Entry object.
+ * SmeBSB.c - Source code file for BSB Menu Entry object.
  *
  * Date:    September 26, 1989
  *
@@ -44,12 +44,12 @@ SOFTWARE.
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/BSBMenuEnP.h>
+#include <X11/Xaw/SmeBSBP.h>
 #include <X11/Xaw/Cardinals.h>
 
 #define ONE_HUNDRED 100
 
-#define offset(field) XtOffset(BSBMenuEntryObject, bsb_entry.field)
+#define offset(field) XtOffset(SmeBSBObject, sme_bsb.field)
 
 static XtResource resources[] = {
   {XtNlabel,  XtCLabel, XtRString, sizeof(String),
@@ -89,12 +89,12 @@ static XtGeometryResult QueryGeometry();
 static void GetDefaultSize(), DrawBitmaps(), GetBitmapInfo();
 static void CreateGCs(), DestroyGCs();
     
-#define superclass (&menuEntryClassRec)
-BSBMenuEntryClassRec bSBMenuEntryClassRec = {
+#define superclass (&smeClassRec)
+SmeBSBClassRec smeBSBClassRec = {
   {
     /* superclass         */    (WidgetClass) superclass,
-    /* class_name         */    "BSBMenuEntry",
-    /* size               */    sizeof(BSBMenuEntryRec),
+    /* class_name         */    "SmeBSB",
+    /* size               */    sizeof(SmeBSBRec),
     /* class_initializer  */	ClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed      */	FALSE,
@@ -138,7 +138,7 @@ BSBMenuEntryClassRec bSBMenuEntryClassRec = {
   }
 };
 
-WidgetClass bSBMenuEntryObjectClass = (WidgetClass) &bSBMenuEntryClassRec;
+WidgetClass smeBSBObjectClass = (WidgetClass) &smeBSBClassRec;
 
 /************************************************************
  *
@@ -147,7 +147,7 @@ WidgetClass bSBMenuEntryObjectClass = (WidgetClass) &bSBMenuEntryClassRec;
  ************************************************************/
 
 /*	Function Name: ClassInitialize
- *	Description: Initializes the BSBMenuEntryObject. 
+ *	Description: Initializes the SmeBSBObject. 
  *	Arguments: none.
  *	Returns: none.
  */
@@ -172,12 +172,12 @@ static void
 Initialize(request, new)
 Widget request, new;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) new;
+    SmeBSBObject entry = (SmeBSBObject) new;
 
-    if (entry->bsb_entry.label == NULL) 
-	entry->bsb_entry.label = XtName(new);
+    if (entry->sme_bsb.label == NULL) 
+	entry->sme_bsb.label = XtName(new);
     else
-	entry->bsb_entry.label = XtNewString( entry->bsb_entry.label );
+	entry->sme_bsb.label = XtNewString( entry->sme_bsb.label );
 
     GetDefaultSize(new, &(entry->rectangle.width), &(entry->rectangle.height));
     CreateGCs(new);
@@ -212,45 +212,45 @@ XEvent * event;
 Region region;
 {
     GC gc;
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;
+    SmeBSBObject entry = (SmeBSBObject) w;
     int	font_ascent, font_descent, y_loc;
     
-    font_ascent = entry->bsb_entry.font->max_bounds.ascent;
-    font_descent = entry->bsb_entry.font->max_bounds.descent;
+    font_ascent = entry->sme_bsb.font->max_bounds.ascent;
+    font_descent = entry->sme_bsb.font->max_bounds.descent;
 
     y_loc = entry->rectangle.y;
     
     if (XtIsSensitive(w) && XtIsSensitive( XtParent(w) ) ) {
 	if ( w == XawSimpleMenuGetActiveEntry(XtParent(w)) ) {
 	    XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w), 
-			   entry->bsb_entry.norm_gc, 0, y_loc,
+			   entry->sme_bsb.norm_gc, 0, y_loc,
 			   (unsigned int) entry->rectangle.width,
 			   (unsigned int) entry->rectangle.height);
-	    gc = entry->bsb_entry.rev_gc;
+	    gc = entry->sme_bsb.rev_gc;
 	}
 	else
-	    gc = entry->bsb_entry.norm_gc;
+	    gc = entry->sme_bsb.norm_gc;
     }
     else
-	gc = entry->bsb_entry.norm_gray_gc;
+	gc = entry->sme_bsb.norm_gray_gc;
     
-    if (entry->bsb_entry.label != NULL) {
-	int x_loc = entry->bsb_entry.left_margin;
-	int len = strlen(entry->bsb_entry.label);
-	char * label = entry->bsb_entry.label;
+    if (entry->sme_bsb.label != NULL) {
+	int x_loc = entry->sme_bsb.left_margin;
+	int len = strlen(entry->sme_bsb.label);
+	char * label = entry->sme_bsb.label;
 
-	switch(entry->bsb_entry.justify) {
+	switch(entry->sme_bsb.justify) {
 	    int width, t_width;
 
 	case XtJustifyCenter:
-	    t_width = XTextWidth(entry->bsb_entry.font, label, len);
-	    width = entry->rectangle.width - (entry->bsb_entry.left_margin +
-					      entry->bsb_entry.right_margin);
+	    t_width = XTextWidth(entry->sme_bsb.font, label, len);
+	    width = entry->rectangle.width - (entry->sme_bsb.left_margin +
+					      entry->sme_bsb.right_margin);
 	    x_loc += (width - t_width)/2;
 	    break;
 	case XtJustifyRight:
-	    t_width = XTextWidth(entry->bsb_entry.font, label, len);
-	    x_loc = entry->rectangle.width - (entry->bsb_entry.right_margin +
+	    t_width = XTextWidth(entry->sme_bsb.font, label, len);
+	    x_loc = entry->rectangle.width - (entry->sme_bsb.right_margin +
 					      t_width);
 	    break;
 	case XtJustifyLeft:
@@ -282,16 +282,16 @@ static Boolean
 SetValues(current, request, new)
 Widget current, request, new;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) new;
-    BSBMenuEntryObject old_entry = (BSBMenuEntryObject) current;
+    SmeBSBObject entry = (SmeBSBObject) new;
+    SmeBSBObject old_entry = (SmeBSBObject) current;
     Boolean ret_val = FALSE;
 
-    if (old_entry->bsb_entry.label != entry->bsb_entry.label) {
-        if (old_entry->bsb_entry.label != XtName( new ) )
-	    XtFree( (char *) old_entry->bsb_entry.label );
+    if (old_entry->sme_bsb.label != entry->sme_bsb.label) {
+        if (old_entry->sme_bsb.label != XtName( new ) )
+	    XtFree( (char *) old_entry->sme_bsb.label );
 
-	if (entry->bsb_entry.label != XtName(new) ) 
-	    entry->bsb_entry.label = XtNewString( entry->bsb_entry.label );
+	if (entry->sme_bsb.label != XtName(new) ) 
+	    entry->sme_bsb.label = XtNewString( entry->sme_bsb.label );
 
 	ret_val = True;
     }
@@ -299,18 +299,18 @@ Widget current, request, new;
     if (entry->rectangle.sensitive != old_entry->rectangle.sensitive )
 	ret_val = TRUE;
 
-    if (entry->bsb_entry.left_bitmap != old_entry->bsb_entry.left_bitmap) {
+    if (entry->sme_bsb.left_bitmap != old_entry->sme_bsb.left_bitmap) {
 	GetBitmapInfo(new, TRUE);
 	ret_val = TRUE;
     }
 
-    if (entry->bsb_entry.right_bitmap != old_entry->bsb_entry.right_bitmap) {
+    if (entry->sme_bsb.right_bitmap != old_entry->sme_bsb.right_bitmap) {
 	GetBitmapInfo(new, FALSE);
 	ret_val = TRUE;
     }
 
-    if ( (old_entry->bsb_entry.font != entry->bsb_entry.font) ||
-	 (old_entry->bsb_entry.foreground != entry->bsb_entry.foreground) ) {
+    if ( (old_entry->sme_bsb.font != entry->sme_bsb.font) ||
+	 (old_entry->sme_bsb.foreground != entry->sme_bsb.foreground) ) {
 	DestroyGCs(current);
 	CreateGCs(new);
 	ret_val = TRUE;
@@ -354,7 +354,7 @@ QueryGeometry(w, intended, return_val)
 Widget w;
 XtWidgetGeometry *intended, *return_val;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;
+    SmeBSBObject entry = (SmeBSBObject) w;
     Dimension width, height;
     XtGeometryResult ret_val = XtGeometryYes;
     XtGeometryMask mode = intended->request_mode;
@@ -396,10 +396,10 @@ static void
 FlipColors(w)
 Widget w;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;
+    SmeBSBObject entry = (SmeBSBObject) w;
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
-		   entry->bsb_entry.invert_gc, 0, (int) entry->rectangle.y,
+		   entry->sme_bsb.invert_gc, 0, (int) entry->rectangle.y,
 		   (unsigned int) entry->rectangle.width, 
 		   (unsigned int) entry->rectangle.height);
 }
@@ -423,21 +423,21 @@ GetDefaultSize(w, width, height)
 Widget w;
 Dimension * width, * height;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;
+    SmeBSBObject entry = (SmeBSBObject) w;
 
-    if (entry->bsb_entry.label == NULL) 
+    if (entry->sme_bsb.label == NULL) 
 	*width = 0;
     else
-	*width = XTextWidth(entry->bsb_entry.font, entry->bsb_entry.label,
-			    strlen(entry->bsb_entry.label));
+	*width = XTextWidth(entry->sme_bsb.font, entry->sme_bsb.label,
+			    strlen(entry->sme_bsb.label));
 
-    *width += entry->bsb_entry.left_margin + entry->bsb_entry.right_margin;
+    *width += entry->sme_bsb.left_margin + entry->sme_bsb.right_margin;
     
-    *height = (entry->bsb_entry.font->max_bounds.ascent +
-	       entry->bsb_entry.font->max_bounds.descent);
+    *height = (entry->sme_bsb.font->max_bounds.ascent +
+	       entry->sme_bsb.font->max_bounds.descent);
 
     *height = (*height * ( ONE_HUNDRED + 
-			  entry->bsb_entry.vert_space )) / ONE_HUNDRED;
+			  entry->sme_bsb.vert_space )) / ONE_HUNDRED;
 }
 
 /*      Function Name: DrawBitmaps
@@ -453,38 +453,38 @@ Widget w;
 GC gc;
 {
     int x_loc, y_loc;
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;
+    SmeBSBObject entry = (SmeBSBObject) w;
     
-    if ( (entry->bsb_entry.left_bitmap == None) && 
-	 (entry->bsb_entry.right_bitmap == None) ) return;
+    if ( (entry->sme_bsb.left_bitmap == None) && 
+	 (entry->sme_bsb.right_bitmap == None) ) return;
 
     y_loc = entry->rectangle.y + (entry->rectangle.height -
-				  entry->bsb_entry.left_bitmap_height) / 2;
+				  entry->sme_bsb.left_bitmap_height) / 2;
 
 /*
  * Draw Left Bitmap.
  */
 
-  if (entry->bsb_entry.left_bitmap != None) {
-    x_loc = (entry->bsb_entry.left_margin - 
-	     entry->bsb_entry.left_bitmap_width) / 2;
-    XCopyPlane(XtDisplayOfObject(w), entry->bsb_entry.left_bitmap,
+  if (entry->sme_bsb.left_bitmap != None) {
+    x_loc = (entry->sme_bsb.left_margin - 
+	     entry->sme_bsb.left_bitmap_width) / 2;
+    XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.left_bitmap,
 	       XtWindowOfObject(w), gc, 0, 0, 
-	       entry->bsb_entry.left_bitmap_width,
-	       entry->bsb_entry.left_bitmap_height, x_loc, y_loc, 1);
+	       entry->sme_bsb.left_bitmap_width,
+	       entry->sme_bsb.left_bitmap_height, x_loc, y_loc, 1);
   }
 
 /*
  * Draw Right Bitmap.
  */
 
-  if (entry->bsb_entry.right_bitmap != None) {
-    x_loc = entry->rectangle.width - (entry->bsb_entry.right_margin - 
-				      entry->bsb_entry.right_bitmap_width) / 2;
-    XCopyPlane(XtDisplayOfObject(w), entry->bsb_entry.right_bitmap,
+  if (entry->sme_bsb.right_bitmap != None) {
+    x_loc = entry->rectangle.width - (entry->sme_bsb.right_margin - 
+				      entry->sme_bsb.right_bitmap_width) / 2;
+    XCopyPlane(XtDisplayOfObject(w), entry->sme_bsb.right_bitmap,
 	       XtWindowOfObject(w), gc, 0, 0, 
-	       entry->bsb_entry.right_bitmap_width,
-	       entry->bsb_entry.right_bitmap_height, x_loc, y_loc, 1);
+	       entry->sme_bsb.right_bitmap_width,
+	       entry->sme_bsb.right_bitmap_height, x_loc, y_loc, 1);
   }
 }
 
@@ -501,7 +501,7 @@ GetBitmapInfo(w, is_left)
 Widget w;
 Boolean is_left;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;    
+    SmeBSBObject entry = (SmeBSBObject) w;    
     unsigned int depth, bw;
     Window root;
     int x, y;
@@ -509,42 +509,42 @@ Boolean is_left;
     char buf[BUFSIZ];
     
     if (is_left) {
-	if (entry->bsb_entry.left_bitmap != None) {
+	if (entry->sme_bsb.left_bitmap != None) {
 	    if (!XGetGeometry(XtDisplayOfObject(w), 
-			      entry->bsb_entry.left_bitmap, &root, 
+			      entry->sme_bsb.left_bitmap, &root, 
 			      &x, &y, &width, &height, &bw, &depth)) {
-		sprintf(buf, "BSBMenuEntry Object: %s %s \"%s\".", "Could not",
+		sprintf(buf, "SmeBSB Object: %s %s \"%s\".", "Could not",
 			"get Left Bitmap geometry information for menu entry ",
 			XtName(w));
 		XtAppError(XtWidgetToApplicationContext(w), buf);
 	    }
 	    if (depth != 1) {
-		sprintf(buf, "BSBMenuEntry Object: %s \"%s\"%s.", 
+		sprintf(buf, "SmeBSB Object: %s \"%s\"%s.", 
 			"Left Bitmap of entry ", 
 			XtName(w), " is not one bit deep.");
 		XtAppError(XtWidgetToApplicationContext(w), buf);
 	    }
-	    entry->bsb_entry.left_bitmap_width = (Dimension) width; 
-	    entry->bsb_entry.left_bitmap_height = (Dimension) height;
+	    entry->sme_bsb.left_bitmap_width = (Dimension) width; 
+	    entry->sme_bsb.left_bitmap_height = (Dimension) height;
 	}
     }
-    else if (entry->bsb_entry.right_bitmap != None) {
+    else if (entry->sme_bsb.right_bitmap != None) {
 	if (!XGetGeometry(XtDisplayOfObject(w),
-			  entry->bsb_entry.right_bitmap, &root,
+			  entry->sme_bsb.right_bitmap, &root,
 			  &x, &y, &width, &height, &bw, &depth)) {
-	    sprintf(buf, "BSBMenuEntry Object: %s %s \"%s\".", "Could not",
+	    sprintf(buf, "SmeBSB Object: %s %s \"%s\".", "Could not",
 		    "get Right Bitmap geometry information for menu entry ",
 		    XtName(w));
 	    XtAppError(XtWidgetToApplicationContext(w), buf);
 	}
 	if (depth != 1) {
-	    sprintf(buf, "BSBMenuEntry Object: %s \"%s\"%s.", 
+	    sprintf(buf, "SmeBSB Object: %s \"%s\"%s.", 
 		    "Right Bitmap of entry ", XtName(w),
 		    " is not one bit deep.");
 	    XtAppError(XtWidgetToApplicationContext(w), buf);
 	}
-	entry->bsb_entry.right_bitmap_width = (Dimension) width; 
-	entry->bsb_entry.right_bitmap_height = (Dimension) height;
+	entry->sme_bsb.right_bitmap_width = (Dimension) width; 
+	entry->sme_bsb.right_bitmap_height = (Dimension) height;
     }
 }      
 
@@ -558,35 +558,35 @@ static void
 CreateGCs(w)
 Widget w;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;    
+    SmeBSBObject entry = (SmeBSBObject) w;    
     XGCValues values;
     XtGCMask mask;
     
     values.foreground = XtParent(w)->core.background_pixel;
-    values.background = entry->bsb_entry.foreground;
-    values.font = entry->bsb_entry.font->fid;
+    values.background = entry->sme_bsb.foreground;
+    values.font = entry->sme_bsb.font->fid;
     values.graphics_exposures = FALSE;
     mask        = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
-    entry->bsb_entry.rev_gc = XtGetGC(w, mask, &values);
+    entry->sme_bsb.rev_gc = XtGetGC(w, mask, &values);
     
-    values.foreground = entry->bsb_entry.foreground;
+    values.foreground = entry->sme_bsb.foreground;
     values.background = XtParent(w)->core.background_pixel;
-    entry->bsb_entry.norm_gc = XtGetGC(w, mask, &values);
+    entry->sme_bsb.norm_gc = XtGetGC(w, mask, &values);
     
     values.fill_style = FillTiled;
     values.tile   = XmuCreateStippledPixmap(XtScreenOfObject(w), 
-					    entry->bsb_entry.foreground,
+					    entry->sme_bsb.foreground,
 					    XtParent(w)->core.background_pixel,
 					    XtParent(w)->core.depth);
     values.graphics_exposures = FALSE;
     mask |= GCTile | GCFillStyle;
-    entry->bsb_entry.norm_gray_gc = XtGetGC(w, mask, &values);
+    entry->sme_bsb.norm_gray_gc = XtGetGC(w, mask, &values);
     
     values.foreground ^= values.background;
     values.background = 0;
     values.function = GXxor;
     mask = GCForeground | GCBackground | GCGraphicsExposures | GCFunction;
-    entry->bsb_entry.invert_gc = XtGetGC(w, mask, &values);
+    entry->sme_bsb.invert_gc = XtGetGC(w, mask, &values);
 }
 
 /*      Function Name: DestroyGCs
@@ -599,10 +599,26 @@ static void
 DestroyGCs(w)
 Widget w;
 {
-    BSBMenuEntryObject entry = (BSBMenuEntryObject) w;    
+    SmeBSBObject entry = (SmeBSBObject) w;    
 
-    XtReleaseGC(w, entry->bsb_entry.norm_gc);
-    XtReleaseGC(w, entry->bsb_entry.norm_gray_gc);
-    XtReleaseGC(w, entry->bsb_entry.rev_gc);
-    XtReleaseGC(w, entry->bsb_entry.invert_gc);
+    XtReleaseGC(w, entry->sme_bsb.norm_gc);
+    XtReleaseGC(w, entry->sme_bsb.norm_gray_gc);
+    XtReleaseGC(w, entry->sme_bsb.rev_gc);
+    XtReleaseGC(w, entry->sme_bsb.invert_gc);
 }
+
+#ifdef apollo
+
+/*
+ * The apollo compiler that we have optomizes out my code for
+ * FlipColors() since it is static. and no one executes it in this
+ * file.  I am setting the function pointer into the class structure so
+ * that it can be called by my parent who will tell me to when to
+ * highlight and unhighlight.
+ */
+
+void _XawSmeBSBApolloHack ()
+{
+    FlipColors();
+}
+#endif /* apollo */

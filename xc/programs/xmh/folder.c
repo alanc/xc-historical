@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.19 89/09/27 19:15:01 converse Exp $
+ * $XConsortium: folder.c,v 2.20 89/10/06 15:02:30 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -557,7 +557,7 @@ static void AddFolderMenuEntry(button, entryname)
 	else name = subfolder;
 	XtFree(parent);
     }
-    XtCreateManagedWidget(name, bSBMenuEntryObjectClass, button->menu, 
+    XtCreateManagedWidget(name, smeBSBObjectClass, button->menu, 
 			  args, n);
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.32 89/09/27 19:16:47 converse Exp $
+ * $XConsortium: tocutil.c,v 2.33 89/10/06 15:04:03 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -94,7 +94,7 @@ static void CheckSequenceMenu(toc)
 
 	/* Assume that the label is the first entry in the list. */
 
-	if (XtClass(entry_list[0]) != bSBMenuEntryObjectClass) /* a label */
+	if (XtClass(entry_list[0]) != smeBSBObjectClass) /* a label */
 	    stable_entry_count++;
 
 	/* See if the sequences in the menu need to be rebuilt. */
@@ -131,9 +131,8 @@ static void CheckSequenceMenu(toc)
 	    callbacks[0].closure = (XtPointer) scrn;
 	    			/* start at 1, skipping "all" */
 	    for (i=1; i < toc->numsequences; i++) 
-		XtCreateManagedWidget(toc->seqlist[i]->name,
-				      bSBMenuEntryObjectClass, menu,
-				      args, XtNumber(args));
+		XtCreateManagedWidget(toc->seqlist[i]->name, smeBSBObjectClass,
+				      menu, args, XtNumber(args));
 	}
 
 	/* Insure that the correct sequence is indicated in the menu. */

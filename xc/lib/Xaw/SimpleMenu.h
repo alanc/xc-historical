@@ -2,7 +2,7 @@
 Copyright 1989 by the Massachusetts Institute of Technology,
 Cambridge, Massachusetts.
 
- "$XConsortium: SimpleMenu.h,v 1.14 89/09/29 19:03:44 kit Exp $";
+ "$XConsortium: SimpleMenu.h,v 1.15 89/10/02 19:14:08 kit Exp $";
 
                         All Rights Reserved
 
@@ -68,7 +68,7 @@ SOFTWARE.
  destroyCallback     Callback		Pointer		NULL
  height		     Height		Dimension	0
  label               Label              String          NULL (No label)
- labelClass          LabelClass         Pointer         bSBMenuEntryClass
+ labelClass          LabelClass         Pointer         smeBSBObjectClass
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  rowHeight           RowHeight          Dimension       Height of Font
  sensitive	     Sensitive		Boolean		True

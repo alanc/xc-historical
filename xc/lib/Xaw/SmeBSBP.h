@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BSBMenuEnP.h,v 1.2 89/09/29 19:03:55 kit Exp $
+* $XConsortium: SmeBSBP.h,v 1.3 89/10/05 17:50:35 kit Exp $
 */
 
 
@@ -28,42 +28,42 @@ SOFTWARE.
 ******************************************************************/
 
 /* 
- * MenuEntryP.h - Private definitions for MenuEntry object
+ * SmeP.h - Private definitions for Sme object
  * 
  */
 
-#ifndef _XawBSBMenuEntryP_h
-#define _XawBSBMenuEntryP_h
+#ifndef _XawSmeBSBP_h
+#define _XawSmeBSBP_h
 
 /***********************************************************************
  *
- * MenuEntry Object Private Data
+ * Sme Object Private Data
  *
  ***********************************************************************/
 
-#include <X11/Xaw/MenuEntryP.h>
-#include <X11/Xaw/BSBMenuEnt.h>
+#include <X11/Xaw/SmeP.h>
+#include <X11/Xaw/SmeBSB.h>
 
 /************************************************************
  *
- * New fields for the MenuEntry Object class record.
+ * New fields for the Sme Object class record.
  *
  ************************************************************/
 
-typedef struct _BSBMenuEntryClassPart {
+typedef struct _SmeBSBClassPart {
   XtPointer extension;
-} BSBMenuEntryClassPart;
+} SmeBSBClassPart;
 
 /* Full class record declaration */
-typedef struct _BSBMenuEntryClassRec {
+typedef struct _SmeBSBClassRec {
     RectObjClassPart       rect_class;
-    MenuEntryClassPart     menu_entry_class;
-    BSBMenuEntryClassPart  bsb_entry_class;
-} BSBMenuEntryClassRec;
+    SmeClassPart     sme_class;
+    SmeBSBClassPart  sme_bsb_class;
+} SmeBSBClassRec;
 
-extern BSBMenuEntryClassRec bSBMenuEntryClassRec;
+extern SmeBSBClassRec smeBSBClassRec;
 
-/* New fields for the MenuEntry Object record */
+/* New fields for the Sme Object record */
 typedef struct {
     /* resources */
     String label;		/* The entry label. */
@@ -87,7 +87,7 @@ typedef struct {
     Dimension right_bitmap_width;
     Dimension right_bitmap_height;
 
-} BSBMenuEntryPart;
+} SmeBSBPart;
 
 /****************************************************************
  *
@@ -95,12 +95,12 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef struct _BSBMenuEntryRec {
+typedef struct _SmeBSBRec {
   ObjectPart         object;
   RectObjPart        rectangle;
-  MenuEntryPart	     menu_entry;
-  BSBMenuEntryPart   bsb_entry;
-} BSBMenuEntryRec;
+  SmePart	     sme;
+  SmeBSBPart   sme_bsb;
+} SmeBSBRec;
 
 /************************************************************
  *
@@ -108,4 +108,4 @@ typedef struct _BSBMenuEntryRec {
  *
  ************************************************************/
 
-#endif /* _XawBSBMenuEntryP_h */
+#endif /* _XawSmeBSBP_h */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.49 89/09/27 19:16:26 converse Exp $
+ * $XConsortium: screen.c,v 2.50 89/10/06 15:03:31 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -173,9 +173,9 @@ static void MakeCommandMenu(scrn, mbd)
 	    XtSetArg(args[n], XtNcallback, callbacks);	n++;
 
 	    if (indent) { XtSetArg(args[n], XtNleftMargin, 18);	n++; }
-	    widgetclass = bSBMenuEntryObjectClass;
+	    widgetclass = smeBSBObjectClass;
 	} else 
-	    widgetclass = lineMenuEntryObjectClass;
+	    widgetclass = smeLineObjectClass;
 	XtCreateManagedWidget(e->name, widgetclass, menu, args, n);
     }
 
