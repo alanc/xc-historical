@@ -33,18 +33,21 @@
  visual              Visual             Visual*         CopyFromParent
 */
 
-#define XtNaspectRatio "aspectRatio"
-#define XtCAspectRatio "AspectRatio"
+#ifndef _XtStringDefs_h_
 #define XtNforeground "foreground"
 #define XtNinternalWidth "internalWidth"
 #define XtNinternalHeight "internalHeight"
+#define XtNresize "resize"
+#define XtCResize "Resize"
+#endif
+
+#define XtNaspectRatio "aspectRatio"
+#define XtCAspectRatio "AspectRatio"
 #define XtNbufferSize "bufferSize"
 #define XtCBufferSize "BufferSize"
 #define XtNscaleX "scaleX"
 #define XtNscaleY "scaleY"
 #define XtCScaleFactor "ScaleFactor"
-#define XtNresize "resize"
-#define XtCResize "Resize"
 #define XtNautoscale "autoscale"
 #define XtCAutoscale "Autoscale"
 #define XtNproportional "proportional"
@@ -63,7 +66,9 @@
 #define XtCuserData "UserData"
 #define XtRuserData "UserData"
 #define XtRImage "Image"
+#ifndef XtNvisual
 #define XtNvisual "visual"
+#endif
 #define XtCvisual "Visual"
 #define XtRvisual "Visual"
 
