@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.67 90/12/26 16:24:29 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.68 91/01/06 11:44:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,7 +28,8 @@
 
 #include <stdio.h>
 #include <X11/Xos.h>
-#include "Xlibint.h"
+#include <X11/Xlibint.h>
+#include "Xlibnet.h"
 #include <X11/Xauth.h>
 #include <ctype.h>
 #ifdef DNETCONN
