@@ -1,4 +1,4 @@
-.\" $XConsortium: CH08,v 1.6 91/07/31 20:24:18 swick Exp $
+.\" $XConsortium: CH08,v 1.7 91/08/26 13:34:44 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -128,7 +128,7 @@ static XtCallbackRec callbacks[] = {
 Although callback lists are passed by address in arglists
 and varargs lists,
 the \*(xI recognize callback lists
-throught the widget resource list and will copy the contents
+through the widget resource list and will copy the contents
 when necessary.
 Widget initialize and set_values procedures
 should not allocate memory for the callback list contents.
@@ -353,7 +353,7 @@ object resource declared with representation type
 .PN XtRCallback .
 If \fIcallbacks\fP is NULL,
 .PN XtCallCallbackList
-returns immediately; otherwiese it calls each of the callback
+returns immediately; otherwise it calls each of the callback
 procedures in the list, passing the client data and \fIcall_data\fP.
 
 .NH 2
