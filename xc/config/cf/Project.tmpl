@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.157 93/06/24 10:51:47 dpw Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.158 93/07/09 15:30:02 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -163,7 +163,11 @@ XCOMM $XConsortium: Project.tmpl,v 1.157 93/06/24 10:51:47 dpw Exp $
 #define ProfileLibPex		NO	/* profiled PEX5 library */
 #endif
 #ifndef ThreadedX
-#define ThreadedX		NO	/* multi-threaded libraries */
+#if HasPosixThreads || HasCThreads
+#define ThreadedX		YES	/* multi-threaded libraries */
+#else
+#define ThreadedX		NO
+#endif
 #endif
 #ifndef ManDirectoryRoot
 #ifdef ProjectRoot
@@ -222,6 +226,26 @@ XCOMM $XConsortium: Project.tmpl,v 1.157 93/06/24 10:51:47 dpw Exp $
 #else
 #define ConnectionFlags -DTCPCONN -DUNIXCONN
 #endif
+#endif
+#ifndef XlibMTDefines
+#if ThreadedX
+#define XlibMTDefines -DXTHREADS
+#else
+#define XlibMTDefines /**/
+#endif
+#endif
+#ifndef ThreadTypeDefines
+#if HasCThreads
+#define ThreadTypeDefines -DCTHREADS
+#else
+#define ThreadTypeDefines /**/
+#endif
+#endif
+#ifndef ThreadsLibraries
+#define ThreadsLibraries /**/
+#endif
+#ifndef ThreadsLoadFlags
+#define ThreadsLoadFlags /**/
 #endif
 #ifndef FontOSDefines
 #define FontOSDefines /**/
