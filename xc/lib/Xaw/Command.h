@@ -41,9 +41,9 @@
 
 
 typedef enum {
-    XtjustifyLeft,       /* justify text to left side of button   */
-    XtjustifyCenter,     /* justify text in center of button      */
-    XtjustifyRight       /* justify text to right side of button  */
+    XtJustifyLeft,       /* justify text to left side of button   */
+    XtJustifyCenter,     /* justify text in center of button      */
+    XtJustifyRight       /* justify text to right side of button  */
 } XtJustify;
 #endif _XtJustify_e
 
@@ -53,7 +53,7 @@ typedef enum {
 #define XtCTranslations         "Translations"
 #define XtRTranslationTable     "TranslationTable"
 
-extern XtCallbackType  activateCommand;
+extern XtCallbackKind  activateCommand;
 extern WidgetClass     commandWidgetClass;
 
 typedef struct _CommandClassRec   *CommandWidgetClass;

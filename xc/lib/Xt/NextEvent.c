@@ -35,6 +35,10 @@ static char *sccsid = "@(#)NextEvent.c	1.15	2/25/87";
 #include <sys/file.h>
 #include <sys/param.h>
 #include "fd.h"
+
+extern void CallCallbacks(); /* gotten from Intrinsic.c, should be in .h ||| */
+extern void RemoveAllCallbacks(); /* from Intrinsic.c, should be in .h ||| */
+
 /*
  * Private definitions
  */
@@ -179,7 +183,7 @@ XtIntervalId timer;
 	(void) gettimeofday(&cur_time, &curzone);
 	
 	if(tptr != (struct Timer_event *) tptr->Te_id) {
-		abort();
+		XtError("Internal event timer botch.");
 	}
 	TIMEDELTA(&sum, &(tptr->Te_tim.ti_value), &cur_time);
 	return((sum.tv_sec*1000)+(sum.tv_usec/1000));
@@ -219,10 +223,10 @@ int condition;
 {
 	struct Select_event *sptr;
 	
-	if(((int)condition &(XtINPUT_READ|XtINPUT_WRITE|XtINPUT_EXCEPT))==0) {
+	if(((int)condition &(XtInputReadMask|XtInputWriteMask|XtInputExceptMask))==0) {
 	  return; /* error */ /* XXX */
 	}
-	if(condition&XtINPUT_READ){
+	if(condition&XtInputReadMask){
 	    sptr = (struct Select_event *)XtMalloc(sizeof (*sptr));
 	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_rqueue[source];
@@ -234,10 +238,10 @@ int condition;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
-	    sptr->Se_event.data.l[1] = XtINPUT_READ;
+	    sptr->Se_event.data.l[1] = XtInputReadMask;
 	}
 	
-	if(condition&XtINPUT_WRITE) {
+	if(condition&XtInputWriteMask) {
 	    sptr = (struct Select_event *) XtMalloc(sizeof (*sptr));
 	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_wqueue[source];
@@ -249,10 +253,10 @@ int condition;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
-	    sptr->Se_event.data.l[1] = XtINPUT_WRITE;
+	    sptr->Se_event.data.l[1] = XtInputWriteMask;
 	}
 	
-	if(condition&XtINPUT_EXCEPT) {
+	if(condition&XtInputExceptMask) {
 	    sptr = (struct Select_event *) XtMalloc(sizeof (*sptr));
 	    sptr->Se_wID = widget;
 	    sptr->Se_next = Select_equeue[source];
@@ -264,7 +268,7 @@ int condition;
 	    sptr->Se_event.message_type = XtHasInput;
 	    sptr->Se_event.format = 32;
 	    sptr->Se_event.data.l[0] = (int)source;
-	    sptr->Se_event.data.l[1] = XtINPUT_EXCEPT;
+	    sptr->Se_event.data.l[1] = XtInputExceptMask;
 	}
 	if (composite.nfds < (source+1))
 	    composite.nfds = source+1;
@@ -277,10 +281,10 @@ int condition;
 {
   	register struct Select_event *sptr, *lptr;
 
-	if(((int)condition &(XtINPUT_READ|XtINPUT_WRITE|XtINPUT_EXCEPT))==0) {
+	if(((int)condition &(XtInputReadMask|XtInputWriteMask|XtInputExceptMask))==0) {
 	    return; /* error */ /* XXX */
 	}
-	if(condition&XtINPUT_READ){
+	if(condition&XtInputReadMask){
 	    if((sptr = Select_rqueue[source]) == NULL)
 	      return; /* error */ /* XXX */
 	    for(lptr = NULL;sptr; sptr = sptr->Se_next){
@@ -297,7 +301,7 @@ int condition;
 		lptr = sptr;	      
 	    }
 	}
-	if(condition&XtINPUT_WRITE){
+	if(condition&XtInputWriteMask){
 	    if((sptr = Select_wqueue[source]) == NULL)
 	      return; /* error */ /* XXX */
 	    for(lptr = NULL;sptr; sptr = sptr->Se_next){
@@ -315,7 +319,7 @@ int condition;
 	    }
 	    
 	}
-	if(condition&XtINPUT_EXCEPT){
+	if(condition&XtInputExceptMask){
 	    if((sptr = Select_equeue[source]) == NULL)
 	      return; /* error */ /* XXX */
 	    for(lptr = NULL;sptr; sptr = sptr->Se_next){
@@ -360,7 +364,7 @@ XEvent *event;
 	extern void perror(), exit();
 	
     if (DestroyList != NULL) {
-        CallCallbacks(&DestroyList);
+        CallCallbacks(&DestroyList, (Opaque)NULL);
         RemoveAllCallbacks(&DestroyList);
     }
 
@@ -448,23 +452,23 @@ XEvent *event;
 }
 
 
-XtPending()
+Boolean XtPending()
 {
     Fd_set rmask, wmask, emask;
     struct timeval cur_time, wait_time;
     struct timezone curzone;
-    int ret;
+    Boolean ret;
 
     (void) gettimeofday(&cur_time, &curzone);
     
-    if(ret = XPending(toplevelDisplay))
+    if(ret = (Boolean) XPending(toplevelDisplay))
       return(ret);
 
     if(outstanding_queue)
-      return(1);
+      return TRUE;
     
     if(ISAFTER(&cur_time, &(Timer_queue->Te_tim.ti_value)))
-	return(1);
+	return TRUE;
 
     FD_SET(ConnectionNumber(toplevelDisplay),&composite.rmask); /*should be done only once */
     if(ConnectionNumber(toplevelDisplay) +1 > composite.nfds) 
@@ -475,9 +479,9 @@ XtPending()
     wmask = composite.wmask;
     emask = composite.emask;
     if(select(composite.nfds,(int *)&rmask,(int *)&wmask,(int*)&emask,&wait_time) > 0)
-	return(1);
+	return TRUE;
       
-    return(0);  
+    return FALSE;  
 }	
 
 XtPeekEvent(event)

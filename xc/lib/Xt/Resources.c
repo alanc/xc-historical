@@ -36,7 +36,9 @@ static char *sccsid = "@(#)ResourceList.c	1.10	2/25/87";
 #include <stdio.h>
 
 
+#ifdef reverseVideoHack
 static XrmName	QreverseVideo;
+#endif
 static XrmClass	QBoolean, QString;
 
 extern void bcopy();
@@ -76,7 +78,7 @@ static void CopyToArg(src, dst, size)
 }
 
 static void PrintResourceList(list, count)
-    register ResourceList list;
+    register XtResourceList list;
     register int count;
 {
     for (; --count >= 0; list++) {
@@ -115,7 +117,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 
 
 /* Spiffy fast compiled form of resource list.				*/
-/* ResourceLists are compiled in-place into XrmResourceLists		*/
+/* XtResourceLists are compiled in-place into XrmResourceLists		*/
 /* All atoms are replaced by quarks, and offsets are -offset-1 to	*/
 /* indicate that this list has been compiled already			*/
 
@@ -129,22 +131,22 @@ typedef struct {
     caddr_t	xrm_default_addr; /* Default resource address		*/
 } XrmResource, *XrmResourceList;
 
-static XrmCompileResourceList(resources, resourceCount)
-    register ResourceList resources;
-    	     Cardinal	  resourceCount;
+static XrmCompileResourceList(resources, num_resources)
+    register XtResourceList resources;
+    	     Cardinal	  num_resources;
 {
     register XrmResourceList xrmres;
     register Cardinal count;
 
     for (xrmres = (XrmResourceList) resources, count = 0;
-         count < resourceCount;
+         count < num_resources;
 	 xrmres++, resources++, count++) {
-    	xrmres->xrm_name	 = XrmAtomToName(resources->resource_name);
-    	xrmres->xrm_class	 = XrmAtomToClass(resources->resource_class);
-    	xrmres->xrm_type	 = XrmAtomToQuark(resources->resource_type);
+    	xrmres->xrm_name	 = StringToName(resources->resource_name);
+    	xrmres->xrm_class	 = StringToClass(resources->resource_class);
+    	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
 	xrmres->xrm_size	 = resources->resource_size;
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
-    	xrmres->xrm_default_type = XrmAtomToQuark(resources->default_type);
+    	xrmres->xrm_default_type = StringToQuark(resources->default_type);
 	xrmres->xrm_default_addr = resources->default_addr;
     }
 
@@ -153,17 +155,17 @@ static XrmCompileResourceList(resources, resourceCount)
 /* ||| References to display should be references to screen */
 
 static void XrmGetResources(
-    dpy, base, names, classes, length, resources, resourceCount, args, argCount)
+    dpy, base, names, classes, length, resources, num_resources, args, num_args)
 
     Display	  *dpy;		   /* The widget's display connection	  */
     caddr_t	  base;		   /* Base address of memory to write to  */
     register XrmNameList names;	   /* Full inheritance name of widget  	  */
     register XrmClassList classes; /* Full inheritance class of widget 	  */
     Cardinal	  length;	   /* Number of entries in names, classes */
-    ResourceList  resources;	   /* The list of resources required. 	  */
-    Cardinal	  resourceCount;   /* number of items in resource list    */
+    XtResourceList  resources;	   /* The list of resources required. 	  */
+    Cardinal	  num_resources;   /* number of items in resource list    */
     ArgList 	  args;		   /* ArgList to override resources	  */
-    Cardinal	  argCount;	   /* number of items in arg list	  */
+    Cardinal	  num_args;	   /* number of items in arg list	  */
 {
     register 	ArgList		arg;
     register 	XrmName		argName;
@@ -172,54 +174,60 @@ static void XrmGetResources(
     		XrmValue	val, defaultVal;
     register 	int		j;
     		int		i;
-		Boolean		reverseVideo, getReverseVideo;
     		XrmHashTable	searchList[100];
     static	Boolean		found[1000];
 
+#ifdef reverseVideoHack
+		Boolean		reverseVideo, getReverseVideo;
+
     reverseVideo    = FALSE;
     getReverseVideo = TRUE;
+#endif
 
     /* ||| This should be passed a compiled arg list, too, but such has to
        be allocated dynamically */
 
     /* ||| Should be warnings? or error? */
-    if ((args == NULL) && (argCount != 0)) {
+    if ((args == NULL) && (num_args != 0)) {
     	XtError("argument count > 0 on NULL argument list");
-	argCount = 0;
+	num_args = 0;
     }
-    if ((resources == NULL) && (resourceCount != 0)) {
+    if ((resources == NULL) && (num_resources != 0)) {
     	XtError("resource count > 0 on NULL resource list");
 	return;
     }
 
-    if (resourceCount != 0) {
+    if (num_resources != 0) {
 	/* Compile resource list if needed */
 	if (((int)resources->resource_offset) >= 0) {
-	    XrmCompileResourceList(resources, resourceCount);
+	    XrmCompileResourceList(resources, num_resources);
 	}
 	xrmres = (XrmResourceList) resources;
 
 	/* Mark each resource as not found on arg list */
-	for (j = 0; j < resourceCount; j++) {
+	for (j = 0; j < num_resources; j++) {
 	    found[j] = FALSE;
     	}
 
 	/* Copy the args into the resources, mark each as found */
-	for (arg = args, i = 0; i < argCount; i++, arg++) {
-	    argName = XrmAtomToName(arg->name);
+	for (arg = args, i = 0; i < num_args; i++, arg++) {
+	    argName = StringToName(arg->name);
+#ifdef reversVideoHack
 	    if (argName == QreverseVideo) {
 		reverseVideo = (Boolean) arg->value;
 		getReverseVideo = FALSE;
-	    } else {
-		for (j = 0, res = xrmres; j < resourceCount; j++, res++) {
+	    } else
+#endif
+		for (j = 0, res = xrmres; j < num_resources; j++, res++) {
 		    if (argName == res->xrm_name) {
-			CopyFromArg(arg->value, base - res->xrm_offset - 1,
-				res->xrm_size);
+			CopyFromArg(
+			    arg->value,
+			    (XtArgVal) base - res->xrm_offset - 1,
+			    res->xrm_size);
 			found[j] = TRUE;
 			break;
 		    }
 		}
-	    }
 	}
     }
 
@@ -244,7 +252,7 @@ static void XrmGetResources(
     names[length] = NULLQUARK;
     classes[length] = NULLQUARK;
 
-    if (resourceCount != 0) {
+    if (num_resources != 0) {
 
 	/* Ask resource manager for a list of database levels that we can
 	   do a single-level search on each resource */
@@ -254,11 +262,14 @@ static void XrmGetResources(
 	/* go to the resource manager for those resources not found yet */
 	/* if it's not in the resource database use the default value   */
     
-	for (res = xrmres, j = 0; j < resourceCount; j++, res++) {
+	for (res = xrmres, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
 		XrmGetSearchResource(dpy, searchList, res->xrm_name,
 		 res->xrm_class, res->xrm_type, &val);
+/*
 		if (val.addr == NULL && res->xrm_default_addr != NULL) {
+*/
+		if (val.addr == NULL) {
 		    /* Convert default value to proper type */
 		    defaultVal.addr = res->xrm_default_addr;
 		    defaultVal.size = sizeof(caddr_t);
@@ -285,37 +296,42 @@ static void XrmGetResources(
 			(char *) res->xrm_default_addr,
 			(char *) (base - res->xrm_offset - 1),
 			(int) res->xrm_size);
+		} else {
+		   /* didn't find a default value, initialize to NULL... */
+		   bzero(
+		       (char *) (base - res->xrm_offset - 1),
+		       (int) res->xrm_size);
 		}
 	    }
 	}
     }
 }
 
-static void GetResources(widgetClass, w, names, classes, length, args, argCount)
+static void GetResources(widgetClass, w, names, classes, length, args, num_args)
     WidgetClass	  widgetClass;
     Widget	  w;
     XrmNameList	  names;
     XrmClassList  classes;
     Cardinal	  length;
     ArgList	  args;
-    Cardinal	  argCount;
+    Cardinal	  num_args;
 {
     /* First get resources for superclasses */
     if (widgetClass->core_class.superclass != NULL) {
         GetResources(widgetClass->core_class.superclass,
-	    w, names, classes, length, args, argCount);
+	    w, names, classes, length, args, num_args);
     }
     /* Then for this class */
     XrmGetResources(XtDisplay(w), (caddr_t) w, names, classes, length,
         widgetClass->core_class.resources, widgetClass->core_class.num_resources,
-	args, argCount);
+	args, num_args);
 } /* GetResources */
 
 
-void XtGetResources(w, args, argCount)
+void XtGetResources(w, args, num_args)
     register 	Widget	  w;
     		ArgList	  args;
-    		Cardinal  argCount;
+    		Cardinal  num_args;
 {
     XrmName	names[100];
     XrmClass	classes[100];
@@ -324,28 +340,28 @@ void XtGetResources(w, args, argCount)
     /* Make sure xrm_class, xrm_name are valid */
     if (w->core.widget_class->core_class.xrm_class == NULLQUARK) {
         w->core.widget_class->core_class.xrm_class =
-	    XrmAtomToClass(w->core.widget_class->core_class.class_name);
+	    StringToClass(w->core.widget_class->core_class.class_name);
     }
-    w->core.xrm_name = XrmAtomToName(w->core.name);
+    w->core.xrm_name = StringToName(w->core.name);
 
     /* Get names, classes for widget on up */
     length = GetNamesAndClasses(w, names, classes);
    
     /* Get resources starting at CorePart on down to this widget */
     GetResources(w->core.widget_class, w, names, classes, length,
-        args, argCount);
+        args, num_args);
 } /* XtGetResources */
 
 void XtGetSubresources
-	(w, base, name, class, resources, resourceCount, args, argCount)
+	(w, base, name, class, resources, num_resources, args, num_args)
     Widget	  w;		  /* Widget "parent" of subobject */
     caddr_t	  base;		  /* Base address to write to     */
-    XrmAtom	  name;		  /* name of subobject		  */
-    XrmAtom	  class;	  /* class of subobject		  */
-    ResourceList  resources;	  /* resource list for subobject  */
-    Cardinal	  resourceCount;
+    String	  name;		  /* name of subobject		  */
+    String	  class;	  /* class of subobject		  */
+    XtResourceList  resources;	  /* resource list for subobject  */
+    Cardinal	  num_resources;
     ArgList	  args;		  /* arg list to override resources */
-    Cardinal	  argCount;
+    Cardinal	  num_args;
 {
     XrmName	  names[100];
     XrmClass	  classes[100];
@@ -353,103 +369,106 @@ void XtGetSubresources
 
     /* Get full name, class of subobject */
     length = GetNamesAndClasses(w, names, classes);
-    names[length] = XrmAtomToName(name);
-    classes[length] = XrmAtomToClass(class);
+    names[length] = StringToName(name);
+    classes[length] = StringToClass(class);
     length++;
 
     /* Fetch resources */
     XrmGetResources(XtDisplay(w), base, names, classes, length,
-        resources, resourceCount, args, argCount);
+        resources, num_resources, args, num_args);
 }
 
 
-static void XrmGetValues(base, resources, resourceCount, args, argCount)
+static void XrmGetValues(base, resources, num_resources, args, num_args)
   caddr_t		base;		/* Base address to fetch values from */
-  register ResourceList resources;	/* The current resource values.      */
-  register Cardinal	resourceCount;	/* number of items in resources      */
+  register XtResourceList resources;	/* The current resource values.      */
+  register Cardinal	num_resources;	/* number of items in resources      */
   ArgList 		args;		/* The resource values requested     */
-  int			argCount;	/* number of items in arg list       */
+  Cardinal		num_args;	/* number of items in arg list       */
 {
     register ArgList		arg;
     register XrmResourceList	xrmres;
     register int 		i;
     register XrmName		argName;
 
-    if (resourceCount == 0) return;
+    if (num_resources == 0) return;
 
     /* Resource lists are assumed to be in compiled form already via the
        initial XtGetResources, XtGetSubresources calls */
 
-    for (arg = args ; --argCount >= 0; arg++) {
-	argName = XrmAtomToName(arg->name);
+    for (arg = args ; --num_args != 0; arg++) {
+	argName = StringToName(arg->name);
 	for (xrmres = (XrmResourceList) resources, i = 0;
-	     i < resourceCount;
+	     i < num_resources;
 	     i++, xrmres++) {
 	    if (argName == xrmres->xrm_name) {
-		CopyToArg(base - xrmres->xrm_offset - 1,
-		          &arg->value,
-			  xrmres->xrm_size);
+		CopyToArg(
+		    (XtArgVal) base - xrmres->xrm_offset - 1,
+		    &arg->value,
+		    xrmres->xrm_size);
 		break;
 	    }
 	}
     }
 }
 
-static void GetValues(widgetClass, w, args, argCount)
+static void GetValues(widgetClass, w, args, num_args)
     WidgetClass	  widgetClass;
     Widget	  w;
     ArgList	  args;
-    Cardinal	  argCount;
+    Cardinal	  num_args;
 {
     /* First get resource values for superclass */
     if (widgetClass->core_class.superclass != NULL) {
-        GetValues(widgetClass->core_class.superclass, w, args, argCount);
+        GetValues(widgetClass->core_class.superclass, w, args, num_args);
     }
     /* Then for this class */
-    XrmGetValues((caddr_t) w,
-        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
-	args, argCount);
+    XrmGetValues(
+	(caddr_t) w,
+        widgetClass->core_class.resources,
+	widgetClass->core_class.num_resources,
+	args, num_args);
 } /* GetValues */
 
-void XtGetValues(w, args, argCount)
+void XtGetValues(w, args, num_args)
     	 	Widget	  w;
     		ArgList	  args;
-    		Cardinal  argCount;
+    		Cardinal  num_args;
 {
-    if (argCount == 0) return;
-    if ((args == NULL) && (argCount != 0)) {
+    if (num_args == 0) return;
+    if ((args == NULL) && (num_args != 0)) {
 	XtError("argument count > 0 on NULL argument list");
 	return;
     }
     /* Get resource values starting at CorePart on down to this widget */
-    GetValues(w->core.widget_class, w, args, argCount);
+    GetValues(w->core.widget_class, w, args, num_args);
 } /* XtGetValues */
  
-static void XrmSetValues(base, resources, resourceCount, args, argCount)
+static void XrmSetValues(base, resources, num_resources, args, num_args)
   caddr_t		base;		/* Base address to write values to   */
-  register ResourceList resources;	/* The current resource values.      */
-  register Cardinal	resourceCount;	/* number of items in resources      */
+  register XtResourceList resources;	/* The current resource values.      */
+  register Cardinal	num_resources;	/* number of items in resources      */
   ArgList 		args;		/* The resource values to set        */
-  int			argCount;	/* number of items in arg list       */
+  Cardinal		num_args;	/* number of items in arg list       */
 {
     register ArgList		arg;
     register XrmResourceList	xrmres;
     register int 	        i;
     register XrmName		argName;
 
-    if (resourceCount == 0) return;
+    if (num_resources == 0) return;
 
     /* Resource lists are assumed to be in compiled form already via the
        initial XtGetResources, XtGetSubresources calls */
 
-    for (arg = args ; --argCount >= 0; arg++) {
-	argName = XrmAtomToName(arg->name);
+    for (arg = args ; --num_args >= 0; arg++) {
+	argName = StringToName(arg->name);
 	for (xrmres = (XrmResourceList) resources, i = 0;
-	     i < resourceCount;
+	     i < num_resources;
 	     i++, xrmres++) {
 	    if (argName == xrmres->xrm_name) {
 		CopyFromArg(arg->value,
-			    base - xrmres->xrm_offset - 1,
+			    (XtArgVal) base - xrmres->xrm_offset - 1,
 			    xrmres->xrm_size);
 		break;
 	    }
@@ -457,54 +476,54 @@ static void XrmSetValues(base, resources, resourceCount, args, argCount)
     }
 } /* XrmSetValues */
 
-static void SetValues(widgetClass, w, args, argCount)
+static void SetValues(widgetClass, w, args, num_args)
     WidgetClass	  widgetClass;
     Widget	  w;
     ArgList	  args;
-    Cardinal	  argCount;
+    Cardinal	  num_args;
 {
     /* First set resource values for superclass */
     if (widgetClass->core_class.superclass != NULL) {
-        SetValues(widgetClass->core_class.superclass, w, args, argCount);
+        SetValues(widgetClass->core_class.superclass, w, args, num_args);
     }
     /* Then for this class */
     XrmSetValues((caddr_t) w,
         widgetClass->core_class.resources,
 	widgetClass->core_class.num_resources,
-	args, argCount);
+	args, num_args);
 } /* SetValues */
 
-void XtSetValues(w, args, argCount)
+void XtSetValues(w, args, num_args)
     Widget   w;
     ArgList  args;
-    Cardinal argCount;
+    Cardinal num_args;
 {
     Widget	newWidget;
     Cardinal	widgetSize;
-    SetValuesProc setValues;
+    XtSetValuesProc setValues;
 
-    if (argCount == 0) return;
-    if ((args == NULL) && (argCount != 0)) {
+    if (num_args == 0) return;
+    if ((args == NULL) && (num_args != 0)) {
 	XtError("argument count > 0 on NULL argument list");
 	return;
     }
 
     /* Allocate and copy current widget into newWidget */
-    widgetSize = w->core.widget_class->core_class.size;
+    widgetSize = w->core.widget_class->core_class.widget_size;
     newWidget = (Widget) XtMalloc(widgetSize);
     bcopy((char *) w, (char *) newWidget, (int) widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
-    SetValues(w->core.widget_class, newWidget, args, argCount);
+    SetValues(w->core.widget_class, newWidget, args, num_args);
 
     /* Inform widget of changes and deallocate newWidget */
     setValues = w->core.widget_class->core_class.set_values;
-    if (setValues == (SetValuesProc) NULL) {
+    if (setValues == (XtSetValuesProc) NULL) {
         XtError("set_values procedure cannot be NULL");
     } else {
     	(*setValues)(w, newWidget);
     }
-    XtFree(newWidget);
+    XtFree((char *)newWidget);
 } /* XtSetValues */
  
 
@@ -516,7 +535,9 @@ extern void ResourceListInitialize()
     	return;
     initialized = TRUE;
 
-    QreverseVideo = XrmAtomToName(XtNreverseVideo);
-    QBoolean = XrmAtomToClass(XtCBoolean);
-    QString = XrmAtomToClass(XtCString);
+#ifdef reverseVideoHack
+    QreverseVideo = StringToName(XtNreverseVideo);
+#endif
+    QBoolean = StringToClass(XtCBoolean);
+    QString = StringToClass(XtCString);
 }

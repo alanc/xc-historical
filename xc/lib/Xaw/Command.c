@@ -73,18 +73,18 @@ static char *defaultTranslation[] = {
     NULL
 };
 static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
-static Resource resources[] = { 
+static XtResource resources[] = { 
 
-   {XtNfunction, XtCFunction, XtRFunction, sizeof(CallbackProc), 
-      Offset(CommandWidget, command.callback), XtRFunction, (caddr_t)NULL},
+   {XtNfunction, XtCFunction, XtRFunction, sizeof(XtCallbackProc), 
+      XtOffset(CommandWidget, command.callback), XtRFunction, (caddr_t)NULL},
    {XtNparameter, XtCParameter, XtRPointer, sizeof(caddr_t), 
-      Offset(CommandWidget,command.closure), XtRPointer, (caddr_t)NULL},
+      XtOffset(CommandWidget,command.closure), XtRPointer, (caddr_t)NULL},
 
    {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
-      Offset(CommandWidget,command.highlightThickness), XrmRString,"2"},
+      XtOffset(CommandWidget,command.highlight_thickness), XrmRString,"2"},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
-      sizeof(Translations),
-      Offset(CommandWidget, core.translations),XtRString,
+      sizeof(_XtTranslations),
+      XtOffset(CommandWidget, core.translations),XtRString,
       (caddr_t)&defaultTranslations},
  };  
 
@@ -135,20 +135,30 @@ CommandClassRec commandClassRec = {
   /* for public consumption */
 WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
 
-XtCallbackType  activateCommand;   /* for public consumption*/
+XtCallbackKind  activateCommand;   /* for public consumption*/
 /****************************************************************
  *
  * Private Procedures
  *
  ****************************************************************/
 
-
+#ifdef saber_bug
+static Cardinal commandCallbackOffset =
+    XtOffset(CommandWidget,command.callback_list);
 static void ClassInitialize()
 {
-  activateCommand = XtNewCallbackType(commandWidgetClass,
-			 Offset(CommandWidget,command.callbackList));
+  activateCommand = XtNewCallbackKind(
+	commandWidgetClass, commandCallbackOffset);
 						
 } 
+#else
+static void ClassInitialize()
+{
+  activateCommand = XtNewCallbackKind(commandWidgetClass,
+			 XtOffset(CommandWidget,command.callback_list));
+						
+} 
+#endif
 
 static void Get_inverseGC(cbw)
     CommandWidget cbw;
@@ -162,7 +172,7 @@ static void Get_inverseGC(cbw)
     values.fill_style   = FillSolid;
 
     ComWinverseGC = XtGetGC((Widget)cbw,
-    	GCForeground | GCFont | GCFillStyle, &values);
+    	(unsigned) GCForeground | GCFont | GCFillStyle, &values);
 }
 
 static void Get_inverseTextGC(cbw)
@@ -177,7 +187,7 @@ static void Get_inverseTextGC(cbw)
     values.fill_style   = FillSolid;
 
     ComWinverseTextGC = XtGetGC((Widget)cbw,
-    	GCForeground | GCFont | GCFillStyle, &values);
+    	(unsigned) GCForeground | GCFont | GCFillStyle, &values);
 }
 
 static void Get_highlightGC(cbw)
@@ -192,7 +202,7 @@ static void Get_highlightGC(cbw)
     values.line_width   = ComWhighlightThickness;
 
     ComWhighlightGC = XtGetGC((Widget)cbw,
-    	GCForeground | GCLineWidth, &values);
+    	(unsigned) GCForeground | GCLineWidth, &values);
 }
 
 
@@ -213,7 +223,7 @@ static void Initialize(w)
       /* Start the callback list if the client specified one in
 	 the arglist */
     if (ComWcallback != NULL)
-      XtAddCallback(cbw,activateCommand,ComWcallback,ComWclosure);
+      XtAddCallback((Widget)cbw,activateCommand,ComWcallback,ComWclosure);
 
       /* init flags for state */
     ComWset = FALSE;
@@ -239,48 +249,53 @@ static void Realize(w, valueMask, attributes)
 *
 ***************************/
 
+/* ARGSUSED */
 static void Set(w,event)
      Widget w;
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = TRUE;
-  Redisplay(w);
+  Redisplay(w, event);
 }
 
+/* ARGSUSED */
 static void Unset(w,event)
      Widget w;
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = FALSE;
-  Redisplay(w);
+  Redisplay(w, event);
 }
 
+/* ARGSUSED */
 static void Highlight(w,event)
      Widget w;
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = TRUE;
-  Redisplay(w);
+  Redisplay(w, event);
 }
 
+/* ARGSUSED */
 static void Unhighlight(w,event)
      Widget w;
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWhighlighted = FALSE;
-  Redisplay(w);
+  Redisplay(w, event);
 }
 
+/* ARGSUSED */
 static void Notify(w,event)
      Widget w;
      XEvent *event;
 {
   CommandWidget cbw = (CommandWidget)w;
-  XtCallCallbacks(cbw,activateCommand,NULL);
+  XtCallCallbacks((Widget)cbw,activateCommand,NULL);
 }
 /*
  * Repaint the widget window
@@ -292,8 +307,10 @@ static void Notify(w,event)
 *
 ************************/
 
-static void Redisplay(w)
+/* ARGSUSED */
+static void Redisplay(w, event)
     Widget w;
+    XEvent *event;
 {
    CommandWidget cbw = (CommandWidget) w;
    XSetWindowAttributes window_attributes;
@@ -349,7 +366,7 @@ static void Redisplay(w)
    XDrawString(XtDisplay(w),XtWindow(w),
 	       (ComWset ?  ComWinverseTextGC : 
 		    (ComWsensitive ? ComWnormalGC : ComWgrayGC)),
-		ComWlabelX, ComWlabelY, ComWlabel, ComWlabelLen);
+		ComWlabelX, ComWlabelY, ComWlabel, (int) ComWlabelLen);
 
    ComWdisplayHighlighted = ComWhighlighted;
    ComWdisplaySet = ComWset;
@@ -381,19 +398,24 @@ static void SetValues(old, new)
 
     XtCallParentProcedure2Args(set_values,old,new);
 
-     /* XtDestroyGC */
      if (XtLField(newcbw,foreground) != ComWforeground)
        {
+         XtDestroyGC((Widget)cbw, ComWinverseGC);
 	 Get_inverseGC(newcbw);
+         XtDestroyGC((Widget)cbw, ComWhighlightGC);
 	 Get_highlightGC(newcbw);
        }
     else 
       {
 	if (XtCField(newcbw,background_pixel) != ComWbackground ||
-	     XtLField(newcbw,font) != ComWfont)
-	  Get_inverseTextGC(newcbw);
-	if (XtCBField(newcbw,highlightThickness) != ComWhighlightThickness)
-	  Get_highlightGC(newcbw);
+	     XtLField(newcbw,font) != ComWfont) {
+	     XtDestroyGC((Widget)cbw, ComWinverseTextGC);
+	     Get_inverseTextGC(newcbw);
+	     }
+	if (XtCBField(newcbw,highlight_thickness) != ComWhighlightThickness) {
+	    XtDestroyGC((Widget)cbw, ComWhighlightGC);
+	    Get_highlightGC(newcbw);
+	}
       }
      
     /*  NEED TO RESET PROC AND CLOSURE */

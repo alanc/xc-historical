@@ -38,6 +38,11 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
 #include "Atoms.h"
 #include "TopLevel.h"
 
+extern char *index();
+extern char *strcat();
+extern char *strncpy();
+extern char *strcpy();
+
 /*
  This is a set of default records describing the command line arguments that
  Xlib will parse and set into the resource data base.
@@ -95,28 +100,28 @@ typedef  struct {
 	TopLevelPart 	top;
 } TopLevelRec, *TopLevelWidget;
 
-static Resource resources[]=
+static XtResource resources[]=
 {
 	{ XtNiconName, XtCIconPixmap, XrmRString, sizeof(caddr_t),
-	    Offset(TopLevelWidget, top.icon_name), XrmRString, (caddr_t) NULL},
+	    XtOffset(TopLevelWidget, top.icon_name), XrmRString, (caddr_t) NULL},
 	{ XtNiconPixmap, XtCIconPixmap, XrmRPixmap, sizeof(caddr_t),
-	    Offset(TopLevelWidget, top.icon_pixmap), XrmRPixmap, 
+	    XtOffset(TopLevelWidget, top.icon_pixmap), XrmRPixmap, 
 	    (caddr_t) NULL},
 	{ XtNiconWindow, XtCIconWindow, XrmRWindow, sizeof(caddr_t),
-	    Offset(TopLevelWidget, top.icon_window), XrmRWindow, 
+	    XtOffset(TopLevelWidget, top.icon_window), XrmRWindow, 
 	    (caddr_t) NULL},
 	{ XtNallowtopresize, XtCAllowtopresize, XrmRBoolean, sizeof(Boolean),
-	    Offset(TopLevelWidget, top.resizeable), XrmRString, "FALSE"},
+	    XtOffset(TopLevelWidget, top.resizeable), XrmRString, "FALSE"},
 	{ XtNgeometry, XtCGeometry, XrmRString, sizeof(caddr_t), 
-	    Offset(TopLevelWidget, top.geostr), XrmRString, (caddr_t) NULL},
+	    XtOffset(TopLevelWidget, top.geostr), XrmRString, (caddr_t) NULL},
 	{ XtNinput, XtCInput, XrmRBoolean, sizeof(Boolean),
-	    Offset(TopLevelWidget, top.input), XrmRString, "FALSE"},
+	    XtOffset(TopLevelWidget, top.input), XrmRString, "FALSE"},
 	{ XtNiconic, XtCIconic, XrmRBoolean, sizeof(Boolean),
-	    Offset(TopLevelWidget, top.iconic), XrmRBoolean, "FALSE"},
+	    XtOffset(TopLevelWidget, top.iconic), XrmRBoolean, "FALSE"},
 	{ XtNtitle, XtCTitle, XrmRString, sizeof(char *),
-	    Offset(TopLevelWidget, top.title), XrmRString, NULL},
+	    XtOffset(TopLevelWidget, top.title), XrmRString, NULL},
 /*	{ XtNinitial, XtCInitial, XrmRInitialstate, sizeof(int),
-	    Offset(TopLevelWidget, top.initial), XrmRString, "Normal"} */
+	    XtOffset(TopLevelWidget, top.initial), XrmRString, "Normal"} */
 };
 static void Initialize();
 static void Realize();
@@ -124,7 +129,7 @@ static void SetValues();
 static void Destroy();
 static void InsertChild();
 static void ChangeManaged(); /* XXX */
-static XtGeometryReturnCode GeometryManager();
+static XtGeometryResult GeometryManager();
 static void EventHandler();
 static void ClassInitialize();
 
@@ -175,6 +180,12 @@ WidgetClass topLevelWidgetClass = (WidgetClass) (&topLevelClassRec);
 /* This needs to be updated to reflect the new world. */
 static void
 DO_Initialize() {
+
+extern void QuarkInitialize();
+extern void ResourceListInitialize();
+extern void EventInitialize();
+extern void TranslateInitialize();
+extern void CursorsInitialize();
 
     /* Resource management initialization */
     QuarkInitialize();
@@ -227,13 +238,14 @@ static void ClassInitialize()
     4) .Xdefaults
 
  */
-static XrmResourceDataBase *
+
+static XrmResourceDataBase
 XGetUsersDataBase(dpy, name)
 Display *dpy;
 char *name;
 {
-	XrmResourceDataBase userResources;
-	XrmResourceDataBase resources;
+	XrmResourceDataBase userResources = NULL;
+	XrmResourceDataBase resources = NULL;
 	int uid;
 	extern struct passwd *getpwuid();
 	struct passwd *pw;
@@ -274,6 +286,7 @@ char *name;
 			}
 		}
 	}
+    return userResources;
 }
 
 static void
@@ -307,8 +320,9 @@ Widget wid;
 			 w->core.screen->height - w->core.height - w->core.y;
 	}
 
-	XtSetEventHandler(wid, StructureNotifyMask,FALSE, EventHandler, 
-			        NULL);
+	XtSetEventHandler(
+	    wid, (EventMask) StructureNotifyMask,
+	    FALSE, EventHandler, (Opaque) NULL);
 }
 
 static void
@@ -320,12 +334,15 @@ XSetWindowAttributes *attr;
 	TopLevelWidget w = (TopLevelWidget) wid;
 	Window win;
 	Display *dpy = XtDisplay(w);
+/*
 	char hostname[1024];
+*/
 	XWMHints wmhints;
 	
 
 	mask &= ~(CWBackPixel);
-	mask |= CWBackPixmap;		/* I must have a background pixmap of
+	mask |= CWBackPixmap;
+	attr->background_pixmap = None;	/* I must have a background pixmap of
 					   none, and no background pixel. 
 					   This should give me a transparent
 					   background so that if there is
@@ -378,11 +395,12 @@ XSetWindowAttributes *attr;
 	XSetNormalHints(dpy, win, &w->top.hints);
 }
 
+/* ARGSUSED */
 static void
-EventHandler(wid, event, closure)
-Widget *wid;
+EventHandler(wid, closure, event)
+Widget wid;
+Opaque closure;
 XEvent *event;
-caddr_t closure;
 {
 	Widget childwid;
 	int i;
@@ -402,15 +420,15 @@ caddr_t closure;
 		w->core.y = event->xconfigure.y;
 
 		for(i = 0; i < w->composite.num_children; i++) {
-			if(w->composite.children[i]->core.managed) {
-			      childwid = w->composite.children[i];
-			      childwid->core.width = w->core.width;
-			      childwid->core.height = w->core.height;
-			      childwid->core.border_width = 
-				w->core.border_width;
-			      XtResizeWidget(childwid);
-			      break;
-		        }
+		    if(w->composite.children[i]->core.managed) {
+			  childwid = w->composite.children[i];
+			  XtResizeWidget(
+			      childwid,
+			      w->core.width,
+			      w->core.height,
+			      w->core.border_width);
+			  break;
+		    }
 		}
 		break;
 	      default:
@@ -425,18 +443,21 @@ Widget wid;
 	TopLevelWidget w = (TopLevelWidget) wid;
 
 	if(w->top.argv != NULL)
-		XtFree(w->top.argv);
+		XtFree((char *)w->top.argv);
 	w->top.argv = NULL;
 	if(w->top.classname != NULL)
 		XtFree(w->top.classname);
 }
 
-static void InsertChild(w)
+/* ARGSUSED */
+static void InsertChild(w, args, num_args)
     Widget w;
+    ArgList args;
+    Cardinal num_args;
 {
     ((CompositeWidgetClass) XtSuperclass(w->core.parent))
-	->composite_class.insert_child(w);
-    XtCompositeAddChild(w);	/* Add to managed set now */
+	->composite_class.insert_child(w, args, num_args);
+    XtManageChild(w);	/* Add to managed set now */
 }
 
 /*
@@ -449,40 +470,42 @@ static void
 ChangeManaged(wid)
 CompositeWidget wid;
 {
-	TopLevelWidget w = (TopLevelWidget) wid;
-	int i;
-	Widget childwid;
+    TopLevelWidget w = (TopLevelWidget) wid;
+    int     i;
+    Widget childwid;
 
-	for(i = 0; i < w->composite.num_children; i++) {
-		if(w->composite.children[i]->core.managed) {
-			childwid = w->composite.children[i];
-			if(!XtIsRealized(wid)) {
-				if(w->core.width == 0 && 
-				   wid->core.height == 0) {
-					w->core.width = childwid->core.width;
-					w->core.height = childwid->core.height;
-					w->top.hints.flags |= PSize;
-				} else {
-					childwid->core.width = w->core.width;
-					childwid->core.height = w->core.height;
-					XtResizeWidget(childwid);
-				}
-				if(w->core.border_width == 0) {
-					w->core.border_width =
-					  childwid->core.border_width;
-				} else {
-					childwid->core.border_width = 
-					  w->core.border_width; 
-					XtResizeWidget(childwid);
-				}
-			}
-			if(childwid->core.x != 0 || childwid->core.y != 0) {
-				XtMoveWidget(childwid, 0, 0);
-			}
+    for (i = 0; i < w->composite.num_children; i++) {
+	if (w->composite.children[i]->core.managed) {
+	    childwid = w->composite.children[i];
+	    if (!XtIsRealized ((Widget) wid)) {
+		if (w->core.border_width == 0) {
+		    w->core.border_width = childwid->core.border_width;
+		} else {
+		    childwid->core.border_width = w->core.border_width;
 		}
+		if (w->core.width == 0
+			&& w->core.height == 0) {
+	            /* we inherit our child's attributes */
+		    w->core.width = childwid->core.width;
+		    w->core.height = childwid->core.height;
+		    w->top.hints.flags |= PSize;
+		} else {
+		    /* our child gets our attributes */
+		    XtResizeWidget (
+		        childwid,
+			w->core.width,
+			w->core.height,
+			w->core.border_width);
+		}
+	    }
+	    if (childwid->core.x != 0 || childwid->core.y != 0) {
+		XtMoveWidget (childwid, 0, 0);
+	    }
 	}
+    }
 
 }
+
 /*
  * This is gross, I can't wait to see if the change happened so I will ask
  * the window manager to change my size and do the appropriate X work.
@@ -491,28 +514,28 @@ CompositeWidget wid;
  * asynchronusly granted.
  */
  
-static XtGeometryReturnCode
+static XtGeometryResult
 GeometryManager( wid, request, reply )
 Widget wid;
-WidgetGeometry *request;
-WidgetGeometry *reply;
+XtWidgetGeometry *request;
+XtWidgetGeometry *reply;
 {
   	XWindowChanges values;
 	XSizeHints	oldhints;
 	TopLevelWidget w = (TopLevelWidget)(wid->core.parent);
 
 	if(w->top.resizeable == FALSE)
-		return(XtgeometryNo);
-	if(!XtIsRealized(w)){
+		return(XtGeometryNo);
+	if(!XtIsRealized((Widget)w)){
 		if (request->request_mode & (CWX|CWY)) {
 			if(request->request_mode & (CWX|CWY) == 
 			   request->request_mode) {
-				return(XtgeometryNo);
+				return(XtGeometryNo);
 			} else {
 				*reply = *request;
 				reply->request_mode = request->request_mode &
 				  ~(CWX|CWY);
-				return(XtgeometryAlmost);
+				return(XtGeometryAlmost);
 			}
 		}
 		*reply = *request;
@@ -522,7 +545,7 @@ WidgetGeometry *reply;
 		   w->core.height = request->height;
 		if(request->request_mode & CWBorderWidth)
 		   w->core.border_width = request->border_width;
-		return(XtgeometryYes);
+		return(XtGeometryYes);
 	}
 	values = *(XWindowChanges *) (&(request->x));
 	XGrabServer(XtDisplay(w));
@@ -538,10 +561,12 @@ WidgetGeometry *reply;
                 oldhints.height = request->height;
         }
         XSetNormalHints(XtDisplay(w), w->core.window, &oldhints);
+/* ||| this code depends on the core x,y,width,height,borderwidth fields */
+/* being the same size and same order as an XWindowChanges record. Yechh!!! */
 	XConfigureWindow(XtDisplay(w), w->core.window,
-		 (XWindowChanges *)&(request->x), request->request_mode);
+		 request->request_mode, (XWindowChanges *)&(request->x));
 	XUngrabServer(XtDisplay(w));
-	return(XtgeometryNo);
+	return(XtGeometryNo);
 }
 
 static void SetValues(old,new)
@@ -555,7 +580,7 @@ Widget *old, *new;
 	Boolean window = FALSE;
 	Boolean title = FALSE;
 	
-	ow-> top.resizeable =  nw -> top.resizeable;
+	ow-> top.resizeable =  nw->top.resizeable;
 	if(ow ->top.icon_name != nw->top.icon_name) {
 		ow ->top.icon_name = nw->top.icon_name;
 		name = TRUE;
@@ -573,7 +598,7 @@ Widget *old, *new;
 		ow ->top.title = nw->top.title;
 		name = TRUE;
 	}
-	if((name || pixmap || window || title) && XtIsRealized(ow)) {
+	if((name || pixmap || window || title) && XtIsRealized((Widget)ow)) {
 		if(name) {
 			XSetIconName(XtDisplay(ow), ow->core.window, ow->top.icon_name);
 		}
@@ -583,7 +608,7 @@ Widget *old, *new;
 		if(pixmap || window) {
 			oldhints = XGetWMHints(XtDisplay(ow), ow->core.window);
 			wmhints = *oldhints;
-			XtFree(oldhints);
+			XtFree((char *)oldhints);
 			if(pixmap) {
 				wmhints.flags |= IconPixmapHint;
 				wmhints.icon_pixmap = ow->top.icon_pixmap;
@@ -606,20 +631,25 @@ Widget *old, *new;
  */
 
 Widget
-XtInitialize(urlist, urlistCount, argc, argv, name, classname)
+XtInitialize(name, classname, urlist, urlistCount, argc, argv)
+char *name;
+char *classname;
 XrmOptionDescRec *urlist;
 int	urlistCount;
 Cardinal  *argc;
 char *argv[];
-char *name;
-char *classname;
 {
 	char  displayName[256];
+/*
 	char *displayName_ptr = displayName;
+*/
 	Arg   args[8];
-	int   argCount = 0;
-	int i, val;
+	Cardinal num_args = 0;
+	int i;
+/*
+	int val;
 	int flags = 0;
+*/
 	char filename[MAXPATHLEN];
 	char **saved_argv;
 	int    saved_argc = *argc;
@@ -640,7 +670,8 @@ char *classname;
 
 	/* save away argv and argc so I can set the properties latter */
 
-	saved_argv = (char **) XtCalloc(((*argc) + 1) , sizeof(*saved_argv));
+	saved_argv = (char **) XtCalloc(
+	    (unsigned) ((*argc) + 1) , (unsigned)sizeof(*saved_argv));
 	for (i = 0 ; i < *argc ; i++)
 	  saved_argv[i] = argv[i];
 	saved_argv[i] = NULL;
@@ -652,7 +683,7 @@ char *classname;
 	displayName[0] = 0;
 
 	for(i = 1; i < *argc; i++) {
-	  if(index(argv[i], ':') != NULL) {
+	  if (index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
 		  if( *argc == i + 1) {
 		    (*argc)--;
@@ -677,17 +708,17 @@ char *classname;
 	/* Open display  */
 	if (!(dpy = XOpenDisplay(displayName))) {
 		char buf[1024];
-		strcpy(buf, "Can't Open display: ");
-		strcat(buf, displayName);
+		(void) strcpy(buf, "Can't Open display: ");
+		(void) strcat(buf, displayName);
 		XtError(buf);
 	}
         toplevelDisplay = dpy;
 	XSynchronize(dpy, TRUE);
 
-        XtSetArg(args[argCount], "display", dpy);
-        argCount++;
-        XtSetArg(args[argCount], "screen", dpy->default_screen);
-        argCount++;
+        XtSetArg(args[num_args], "display", dpy);
+        num_args++;
+        XtSetArg(args[num_args], "screen", dpy->default_screen);
+        num_args++;
 	    
 	/* initialize the toolkit */
 	DO_Initialize();
@@ -695,8 +726,8 @@ char *classname;
 #ifdef UNIX
 #define XAPPLOADDIR  "/usr/lib/Xapps/"
 #endif	
-	strcpy(filename, XAPPLOADDIR);
-	strcat(filename, classname);
+	(void) strcpy(filename, XAPPLOADDIR);
+	(void) strcat(filename, classname);
 
 
 	/*set up resource database */
@@ -720,12 +751,12 @@ char *classname;
 	 */
 	root = TopLevelCreate(name, topLevelWidgetClass,
 			      &(dpy->screens[dpy->default_screen]),
-			       args, argCount);
+			       args, num_args);
 
 	w = (TopLevelWidget) root;
 	w->top.argc = saved_argc;
 	w->top.argv = saved_argv;
-	strcpy(w->top.classname = (char *)XtMalloc(strlen(classname))
+	(void) strcpy(w->top.classname = (char *)XtMalloc((unsigned)strlen(classname))
 	       ,classname);
 
 	init_atoms(dpy);

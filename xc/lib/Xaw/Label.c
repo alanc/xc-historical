@@ -47,7 +47,6 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 #include "LabelPrivate.h"
 #include "Atoms.h"
 
-
 /****************************************************************
  *
  * Full class record constant
@@ -58,19 +57,19 @@ static char *sccsid = "@(#)Label.c	1.15	2/25/87";
 
 #define XtRjustify		"Justify"
 
-static Resource resources[] = {
+static XtResource resources[] = {
     {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
-	Offset(LabelWidget, label.foreground), XrmRString, "Black"},
+	XtOffset(LabelWidget, label.foreground), XrmRString, "Black"},
     {XtNfont,  XtCFont, XrmRFontStruct, sizeof(XFontStruct *),
-	Offset(LabelWidget, label.font),XrmRString, "Fixed"},
+	XtOffset(LabelWidget, label.font),XrmRString, "Fixed"},
     {XtNlabel,  XtCLabel, XrmRString, sizeof(String),
-	Offset(LabelWidget, label.label), XrmRString, NULL},
+	XtOffset(LabelWidget, label.label), XrmRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
-	Offset(LabelWidget, label.justify), XrmRString, "Center"},
+	XtOffset(LabelWidget, label.justify), XrmRString, "Center"},
     {XtNinternalWidth, XtCWidth, XrmRInt,  sizeof(Dimension),
-	Offset(LabelWidget, label.internalWidth),XrmRString, "4"},
+	XtOffset(LabelWidget, label.internal_width),XrmRString, "4"},
     {XtNinternalHeight, XtCHeight, XrmRInt, sizeof(Dimension),
-	Offset(LabelWidget, label.internalHeight),XrmRString, "2"},
+	XtOffset(LabelWidget, label.internal_height),XrmRString, "2"},
 };
 
 static void Initialize();
@@ -118,8 +117,7 @@ static XrmQuark	XrmQEleft;
 static XrmQuark	XrmQEcenter;
 static XrmQuark	XrmQEright;
 
-static void ClassInitialize(w)
- Widget w;
+static void ClassInitialize()
 {
 
     XrmQEleft   = XrmAtomToQuark("left");
@@ -129,6 +127,7 @@ static void ClassInitialize(w)
     XrmRegisterTypeConverter(XrmRString, XtRJustify, CvtStringToJustify);
 } /* ClassInitialize */
 
+/* ARGSUSED */
 static void CvtStringToJustify(display, fromVal, toVal)
     Display     *display;
     XrmValue    fromVal;
@@ -143,7 +142,7 @@ static void CvtStringToJustify(display, fromVal, toVal)
     if (s == NULL) return;
 
     for (i=0; i<=strlen(s); i++) {
-	lowerName[i] = tolower((char *)fromVal.addr[i]);
+	lowerName[i] = (char) tolower((char *)fromVal.addr[i]);
     }
 
     q = XrmAtomToQuark(lowerName);
@@ -151,9 +150,9 @@ static void CvtStringToJustify(display, fromVal, toVal)
     (*toVal).size = sizeof(XtJustify);
     (*toVal).addr = (caddr_t) &e;
 
-    if (q == XrmQEleft)   { e = XtjustifyLeft;   return; }
-    if (q == XrmQEcenter) { e = XtjustifyCenter; return; }
-    if (q == XrmQEright)  { e = XtjustifyRight;  return; }
+    if (q == XrmQEleft)   { e = XtJustifyLeft;   return; }
+    if (q == XrmQEcenter) { e = XtJustifyCenter; return; }
+    if (q == XrmQEright)  { e = XtJustifyRight;  return; }
 
     (*toVal).size = 0;
     (*toVal).addr = NULL;
@@ -168,10 +167,10 @@ static void SetTextWidthAndHeight(lw)
 {
     register XFontStruct	*fs = lw->label.font;
 
-    lw->label.labelLen = XtStrlen(lw->label.label);
-    lw->label.labelHeight = fs->max_bounds.ascent + fs->max_bounds.descent;
-    lw->label.labelWidth = XTextWidth(
-	fs, lw->label.label, lw->label.labelLen);
+    lw->label.label_len = XtStrlen(lw->label.label);
+    lw->label.label_height = fs->max_bounds.ascent + fs->max_bounds.descent;
+    lw->label.label_width = XTextWidth(
+	fs, lw->label.label, (int) lw->label.label_len);
 }
 
 static void GetnormalGC(lw)
@@ -182,7 +181,10 @@ static void GetnormalGC(lw)
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
 
-    lw->label.normalGC = XtGetGC(lw, GCForeground | GCFont, &values);
+    lw->label.normal_GC = XtGetGC(
+	(Widget)lw,
+	(unsigned) GCForeground | GCFont,
+	&values);
 }
 
 static void GetgrayGC(lw)
@@ -190,16 +192,17 @@ static void GetgrayGC(lw)
 {
     XGCValues	values;
     
-    lw->label.grayPixmap = XtGrayPixmap(XtScreen((Widget)lw));
+    lw->label.gray_pixmap = XtGrayPixmap(XtScreen((Widget)lw));
 
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
-    values.tile       = lw->label.grayPixmap;
+    values.tile       = lw->label.gray_pixmap;
     values.fill_style = FillTiled;
 
-    lw->label.grayGC = XtGetGC(lw, 
-				 GCForeground | GCFont | GCTile | GCFillStyle, 
-				 &values);
+    lw->label.gray_GC = XtGetGC(
+	(Widget)lw, 
+	(unsigned) GCForeground | GCFont | GCTile | GCFillStyle, 
+	&values);
 }
 
 static void Initialize(w)
@@ -217,17 +220,17 @@ static void Initialize(w)
     GetgrayGC(lw);
 
     SetTextWidthAndHeight(lw);
-    Resize(lw);
+    Resize((Widget)lw);
 
     if (lw->core.width == 0)
-        lw->core.width = lw->label.labelWidth + 2 * lw->label.internalWidth;
+        lw->core.width = lw->label.label_width + 2 * lw->label.internal_width;
     if (lw->core.height == 0)
-        lw->core.height = lw->label.labelHeight + 2 * lw->label.internalHeight;
+        lw->core.height = lw->label.label_height + 2 * lw->label.internal_height;
 
 /* labels want exposure compression !!! */
 /*     lw->core.compress_expose = TRUE; */
 
-    lw->label.displaySensitive = FALSE;
+    lw->label.display_sensitive = FALSE;
 
 } /* Initialize */
 
@@ -241,18 +244,18 @@ static void Realize(w, valueMask, attributes)
 
     valueMask |= CWBitGravity;
     switch (((LabelWidget)w)->label.justify) {
-	case XtjustifyLeft:	attributes->bit_gravity = WestGravity;   break;
-	case XtjustifyCenter:	attributes->bit_gravity = CenterGravity; break;
-	case XtjustifyRight:	attributes->bit_gravity = EastGravity;   break;
+	case XtJustifyLeft:	attributes->bit_gravity = WestGravity;   break;
+	case XtJustifyCenter:	attributes->bit_gravity = CenterGravity; break;
+	case XtJustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
     
     if (!(w->core.sensitive))
       {
 	  /* change border to gray */
-	lw->core.border_pixmap = lw->label.grayPixmap;
-	attributes->border_pixmap = lw->label.grayPixmap;
+	lw->core.border_pixmap = lw->label.gray_pixmap;
+	attributes->border_pixmap = lw->label.gray_pixmap;
 	valueMask |= CWBorderPixmap;
-	lw->label.displaySensitive = TRUE;
+	lw->label.display_sensitive = TRUE;
       }
     
 
@@ -261,7 +264,8 @@ static void Realize(w, valueMask, attributes)
 		XtDisplay(w), w->core.parent->core.window,
 		w->core.x, w->core.y,
 		w->core.width, w->core.height, w->core.border_width,
-		w->core.depth, InputOutput, (Visual *)CopyFromParent,	
+		(int) w->core.depth,
+		InputOutput, (Visual *)CopyFromParent,	
 		valueMask, attributes);
 } /* Realize */
 
@@ -271,38 +275,42 @@ static void Realize(w, valueMask, attributes)
  * Repaint the widget window
  */
 
-static void Redisplay(w)
+/* ARGSUSED */
+static void Redisplay(w, event)
     Widget w;
+    XEvent *event;
 {
    LabelWidget lw = (LabelWidget) w;
 
    XDrawString(
-	XtDisplay(w), XtWindow(w), lw->label.normalGC,
-	lw->label.labelX, lw->label.labelY,
-	lw->label.label, lw->label.labelLen);
+	XtDisplay(w), XtWindow(w), lw->label.normal_GC,
+	lw->label.label_x, lw->label.label_y,
+	lw->label.label, (int) lw->label.label_len);
 }
 
 
-static void Resize(lw)
-    LabelWidget	lw;
+static void Resize(w)
+    Widget w;
 {
+    LabelWidget lw = (LabelWidget) w;
+
     switch (lw->label.justify) {
 
-	case XtjustifyLeft   :
-	    lw->label.labelX = lw->label.internalWidth;
+	case XtJustifyLeft   :
+	    lw->label.label_x = lw->label.internal_width;
 	    break;
 
-	case XtjustifyRight  :
-	    lw->label.labelX = lw->core.width -
-		(lw->label.labelWidth + lw->label.internalWidth);
+	case XtJustifyRight  :
+	    lw->label.label_x = lw->core.width -
+		(lw->label.label_width + lw->label.internal_width);
 	    break;
 
-	case XtjustifyCenter :
-	    lw->label.labelX = (lw->core.width - lw->label.labelWidth) / 2;
+	case XtJustifyCenter :
+	    lw->label.label_x = (lw->core.width - lw->label.label_width) / 2;
 	    break;
     }
-    if (lw->label.labelX < 0) lw->label.labelX = 0;
-    lw->label.labelY = (lw->core.height - lw->label.labelHeight) / 2
+    if (lw->label.label_x < 0) lw->label.label_x = 0;
+    lw->label.label_y = (lw->core.height - lw->label.label_height) / 2
 	+ lw->label.font->max_bounds.ascent;
 }
 
@@ -315,7 +323,7 @@ static void SetValues(old, new)
 {
     LabelWidget oldlw = (LabelWidget) old;
     LabelWidget newlw = (LabelWidget) new;
-    WidgetGeometry	reqGeo;
+    XtWidgetGeometry	reqGeo;
 
     if (newlw->label.label == NULL) {
 	/* the string will be copied below... */
@@ -338,7 +346,7 @@ static void SetValues(old, new)
     if (oldlw->label.label != newlw->label.label) {
         if (newlw->label.label != NULL) {
 	    newlw->label.label = strcpy(
-	        XtMalloc((unsigned) newlw->label.labelLen + 1),
+	        XtMalloc((unsigned) newlw->label.label_len + 1),
 		newlw->label.label);
 	}
 	XtFree ((char *) oldlw->label.label);
@@ -347,11 +355,11 @@ static void SetValues(old, new)
     /* calculate the window size */
     if (oldlw->core.width == newlw->core.width)
 	newlw->core.width =
-	    newlw->label.labelWidth +2*newlw->label.internalWidth;
+	    newlw->label.label_width +2*newlw->label.internal_width;
 
     if (oldlw->core.height == newlw->core.height)
 	newlw->core.height =
-	    newlw->label.labelHeight + 2*newlw->label.internalHeight;
+	    newlw->label.label_height + 2*newlw->label.internal_height;
 
     reqGeo.request_mode = NULL;
 
@@ -378,7 +386,10 @@ static void SetValues(old, new)
 
     if (reqGeo.request_mode != NULL) {
 	/* this will automatically call "Resize" if it succeeds */
-	if (XtMakeGeometryRequest(newlw, reqGeo, NULL) != XtgeometryYes) {
+	if (XtMakeGeometryRequest(
+		(Widget)newlw,
+		&reqGeo,
+		(XtWidgetGeometry *)NULL) != XtGeometryYes) {
 	    /* punt, undo requested change */
 	    newlw->core.x = oldlw->core.x;
 	    newlw->core.y = oldlw->core.y;
@@ -418,17 +429,17 @@ static void SetValues(old, new)
     if (oldlw->label.foreground != newlw->label.foreground
 	|| oldlw->label.font->fid != newlw->label.font->fid) {
 
-	XtDestroyGC(oldlw->label.normalGC);
+	XtDestroyGC((Widget)oldlw, oldlw->label.normal_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }
 
-    if ((oldlw->label.internalWidth != newlw->label.internalWidth)
-        || (oldlw->label.internalHeight != newlw->label.internalHeight)) {
-	Resize(newlw);
+    if ((oldlw->label.internal_width != newlw->label.internal_width)
+        || (oldlw->label.internal_height != newlw->label.internal_height)) {
+	Resize((Widget)newlw);
     }
 
     XClearWindow(XtDisplay(oldlw), XtWindow(oldlw));
     *oldlw = *newlw;
-    Redisplay(oldlw);
+    Redisplay((Widget)oldlw, NULL);
 }

@@ -45,8 +45,8 @@
  ****************************************************************/
 
 
-#include "/usr/src/x11/include/Xlib.h"
-#include "/usr/src/x11/include/Xresource.h"
+#include	<X11/Xlib.h>
+#include	<X11/Xresource.h>
 #include	<sys/types.h>
 
 #ifndef NULL
@@ -60,64 +60,93 @@
 #endif
 
 #define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
-#define Offset(type,field)    ((unsigned int)&(((type)NULL)->field))
+#define XtOffset(type,field)    ((unsigned int)&(((type)NULL)->field))
 typedef char *String;
-typedef struct _EventRec *EventTable;
+typedef struct _WidgetRec *Widget;
+typedef struct _WidgetClassRec *WidgetClass;
+typedef struct _CompositeRec *CompositeWidget;
+typedef struct _XtEventRec *_XtEventTable;
+typedef struct _XtActionsRec *XtActionList;
+typedef struct _XtResource *XtResourceList;
 typedef struct _GrabRec  *GrabList;
-typedef unsigned long   Cardinal;
-typedef int             Boolean;
-typedef char*           Opaque;
-typedef struct _TranslationData	*Translations;
-typedef struct _CallbackRec*    CallbackList;
-typedef unsigned long   XtCallbackType;
-typedef unsigned long   ValueMask;
+typedef unsigned int   Cardinal;
+typedef unsigned char	Boolean;
+typedef unsigned long	*Opaque;
+typedef struct _TranslationData	*_XtTranslations;
+typedef struct _XtCallbackRec*    XtCallbackList;
+typedef unsigned long   XtCallbackKind;
+typedef unsigned long   XtValueMask;
 typedef unsigned long   XtIntervalId;
-typedef unsigned long   GeometryMask;
-typedef unsigned long   GCMask;     /* Mask of values that are used by widget*/
-typedef unsigned long   EventMask;
-typedef unsigned long   Pixel;	    /* Index into colormap	      */
-typedef int		Position;   /* Offset from 0 coordinate	      */
-typedef int		Dimension;  /* Size in pixels		      */
+typedef unsigned int    XtGeometryMask;
+typedef unsigned long   XtGCMask;   /* Mask of values that are used by widget*/
+typedef unsigned long   Pixel;	    /* Index into colormap	        */
+typedef int		Position;   /* Offset from 0 coordinate	        */
+typedef unsigned int	Dimension;  /* Size in pixels		        */
+				    /* should be unsigned, but pcc      */
+				    /* generates bad code for unsigned? */
 
-typedef void (*WidgetProc)();
+typedef void (*XtProc)();
+    /* takes no arguments */
+
+typedef void (*XtWidgetProc)();
     /* Widget widget */
 
-typedef void (*SetValuesProc)();
+typedef void (*XtArgsProc)();
+    /* Widget widget */
+    /* ArgList args */
+    /* Cardinal num_args */
+
+typedef void (*XtInitProc)();
+    /* Widget requestWidget; */
+    /* Widget newWidget; */
+    /* ArgList args */
+    /* Cardinal num_args */
+
+/* ||| takes new args, see Joel */
+typedef void (*XtSetValuesProc)();
     /* Widget widget;     */
     /* Widget new_values; */
 
-typedef void (*ExposeProc)();
+typedef void (*XtExposeProc)();
     /* Widget    widget; */
     /* XEvent    *event; */
 
-typedef void (*RealizeProc) ();
+typedef void (*XtRealizeProc) ();
     /* Widget	widget;			    */
-    /* ValueMask mask;			    */
+    /* XtValueMask mask;			    */
     /* XSetWindowAttributes *attributes;    */
 
 typedef enum  {
-    XtgeometryYes,        /* Request accepted. */
-    XtgeometryNo,         /* Request denied. */
-    XtgeometryAlmost,     /* Request denied, but willing to take replyBox. */
-} XtGeometryReturnCode;
+    XtGeometryYes,        /* Request accepted. */
+    XtGeometryNo,         /* Request denied. */
+    XtGeometryAlmost,     /* Request denied, but willing to take replyBox. */
+} XtGeometryResult;
 
-typedef XtGeometryReturnCode (*XtGeometryHandler)();
+typedef XtGeometryResult (*XtGeometryHandler)();
     /* Widget		    widget */
-    /* WidgetGeometry       *request */
-    /* WidgetGeometry	    *reply   */
+    /* XtWidgetGeometry       *request */
+    /* XtWidgetGeometry	    *reply   */
 
 /****************************************************************
  *
  * System Dependent Definitions
  *
  *
- * The typedef for XtArgVal should be chosen such that
- *      sizeof (XtArgVal) == max (sizeof(caddr_t), sizeof(long))
+ * XtArgVal ought to be a union of caddr_t, char *, long, int *, and proc *
+ * but casting to union types is not really supported.
+ *
+ * So the typedef for XtArgVal should be chosen such that
+ *
+ *      sizeof (XtArgVal) >=	sizeof(caddr_t)
+ *				sizeof(char *)
+ *				sizeof(long)
+ *				sizeof(int *)
+ *				sizeof(proc *)
  *
  * ArgLists rely heavily on the above typedef.
  *
  ****************************************************************/
-typedef char *XtArgVal;
+typedef long XtArgVal;
 
 /***************************************************************
  * Widget Core Data Structures
@@ -126,44 +155,36 @@ typedef char *XtArgVal;
  **************************************************************/
 
 typedef struct _CorePart {
-    struct _WidgetClassRec *widget_class;/* pointer to Widget's ClassRec     */
-    Screen	 *screen;	       /* window's screen		     */
-    Window	 window;	       /* window ID			     */
-    struct _CompositeRec   *parent;    /* parent widget		  	     */
-    String       name;		       /* widget resource name		     */
-    XrmName      xrm_name;	       /* widget resource name quarkified    */
-    Boolean      managed;	       /* is widget geometry managed?        */
-    Position     x, y;		       /* window position		     */
-    Dimension    width, height;	       /* window dimensions		     */
-    Cardinal     depth;		       /* number of planes in window         */
-    Boolean      visible;	       /* is window mapped and not occluded? */
-    Pixel	 background_pixel;     /* window background pixel	     */
-    Pixmap       background_pixmap;    /* window background pixmap or NULL   */
-    Dimension    border_width;	       /* window border width		     */
-    Pixel	 border_pixel;	       /* window border pixel		     */
-    Pixmap       border_pixmap;	       /* window border pixmap or NULL       */
-    EventMask    event_mask;	       /* events to select for		     */
-    EventTable   event_table;	       /* private to event dispatcher        */
-    Boolean	 sensitive;	       /* is widget sensitive to user events */
-    Boolean      ancestor_sensitive;   /* are all ancestors sensitive?       */
-    Translations translations;	       /* private to Translation Manager     */
-    CallbackList destroy_callbacks;    /* who to call when widget destroyed  */
-    Boolean      being_destroyed;      /* marked for destroy		     */
+    WidgetClass	    widget_class;	/* pointer to Widget's ClassRec	     */
+    Widget	    parent;		/* parent widget	  	     */
+    String          name;		/* widget resource name		     */
+    XrmName         xrm_name;		/* widget resource name quarkified   */
+    Screen	    *screen;		/* window's screen		     */
+    Window	    window;		/* window ID			     */
+    Position        x, y;		/* window position		     */
+    Dimension       width, height;	/* window dimensions		     */
+    Cardinal        depth;		/* number of planes in window        */
+    Dimension       border_width;	/* window border width		     */
+    Pixel	    border_pixel;	/* window border pixel		     */
+    Pixmap          border_pixmap;	/* window border pixmap or NULL      */
+    Pixel	    background_pixel;	/* window background pixel	     */
+    Pixmap          background_pixmap;	/* window background pixmap or NULL  */
+    _XtEventTable   event_table;	/* private to event dispatcher       */
+    _XtTranslations translations;	/* private to Translation Manager    */
+    Boolean         visible;		/* is window mapped and not occluded?*/
+    Boolean	    sensitive;		/* is widget sensitive to user events*/
+    Boolean         ancestor_sensitive;	/* are all ancestors sensitive?      */
+    Boolean         managed;		/* is widget geometry managed?	     */
+    Boolean	    mapped_when_managed;/* map window if it's managed?       */
+    Boolean         being_destroyed;	/* marked for destroy		     */
+    XtCallbackList  destroy_callbacks;	/* who to call when widget destroyed */
 } CorePart;
 
 typedef struct _WidgetRec {
     CorePart    core;
- } WidgetRec, *Widget;
+ } WidgetRec;
 
 typedef Widget *WidgetList;
-
-/* Some macros to get frequently used components of a widget */
-
-#define XtDisplay(w)    (w->core.screen->display)
-#define XtScreen(w)     (w->core.screen)
-#define XtWindow(w)     (w->core.window)
-#define XtMapWidget(w)  XMapWindow(XtDisplay(w), XtWindow(w))
-#define XtUnmapWidget(w) XUnmapWindow(XtDisplay(w), XtWindow(w))
 
 /******************************************************************
  *
@@ -181,31 +202,31 @@ typedef Widget *WidgetList;
  ********************************************************************/
 
 typedef struct _CoreClassPart {
-    struct _WidgetClassRec *superclass;/* pointer to superclass ClassRec     */
-    String      class_name;	       /* widget resource class name         */
-    Cardinal    size;		       /* size in bytes of widget record     */
-    WidgetProc  class_initialize;      /* class initialization proc	     */
-    Boolean     class_inited;	       /* has class been initialized?        */
-    WidgetProc  initialize;	       /* initialize subclass fields         */
-    RealizeProc realize;	       /* XCreateWindow for widget	     */
-    struct _XtActionsRec *actions;     /* widget semantics name to proc map  */
-    Cardinal    num_actions;	       /* number of entries in actions       */
-    struct _Resource *resources;       /* resources for subclass fields      */
-    Cardinal    num_resources;	       /* number of entries in resources     */
-    XrmClass    xrm_class;	       /* resource class quarkified	     */
-    Boolean     compress_motion;       /* compress MotionNotify for widget   */
-    Boolean     compress_exposure;     /* compress Expose events for widget  */
-    Boolean     visible_interest;      /* select for VisibilityNotify        */
-    WidgetProc  destroy;	       /* free data for subclass pointers    */
-    WidgetProc  resize;		       /* geom manager changed widget size   */
-    ExposeProc  expose;		       /* rediplay window		     */
-    SetValuesProc	set_values;    /* set subclass resource values       */
-    WidgetProc	accept_focus;	       /* assign input focus to widget       */
+    WidgetClass	    superclass;	       /* pointer to superclass ClassRec     */
+    String          class_name;	       /* widget resource class name         */
+    Cardinal        widget_size;       /* size in bytes of widget record     */
+    XtProc	    class_initialize;  /* class initialization proc	     */
+    Boolean         class_inited;      /* has class been initialized?        */
+    XtInitProc      initialize;	       /* initialize subclass fields         */
+    XtRealizeProc   realize;	       /* XCreateWindow for widget	     */
+    XtActionList    actions;	       /* widget semantics name to proc map  */
+    Cardinal	    num_actions;       /* number of entries in actions       */
+    XtResourceList  resources;	       /* resources for subclass fields      */
+    Cardinal        num_resources;     /* number of entries in resources     */
+    XrmClass        xrm_class;	       /* resource class quarkified	     */
+    Boolean         compress_motion;   /* compress MotionNotify for widget   */
+    Boolean         compress_exposure; /* compress Expose events for widget  */
+    Boolean         visible_interest;  /* select for VisibilityNotify        */
+    XtWidgetProc    destroy;	       /* free data for subclass pointers    */
+    XtWidgetProc    resize;	       /* geom manager changed widget size   */
+    XtExposeProc    expose;	       /* rediplay window		     */
+    XtSetValuesProc set_values;	       /* set subclass resource values       */
+    XtWidgetProc    accept_focus;      /* assign input focus to widget       */
   } CoreClassPart;
 
 typedef struct _WidgetClassRec {
     CoreClassPart core_class;
-} WidgetClassRec, *WidgetClass;
+} WidgetClassRec;
 
 extern WidgetClassRec widgetClassRec;
 extern WidgetClass widgetClass;
@@ -216,22 +237,22 @@ extern WidgetClass widgetClass;
  *
  ************************************************************************/
 
-typedef Cardinal (*OrderProc)();
+typedef Cardinal (*XtOrderProc)();
     /* Widget child; */
 
 
 typedef struct _CompositePart {
-    WidgetList  children;	/* array of ALL widget children		     */
-    Cardinal    num_children;	/* total number of widget children 	     */
-    Cardinal    num_slots;      /* number of slots in children array	     */
-    Cardinal    num_managed_children; /* number of geometry managed children */
-    OrderProc   insert_position;/* compute position new child should go into */
+    WidgetList  children;	     /* array of ALL widget children	     */
+    Cardinal    num_children;	     /* total number of widget children	     */
+    Cardinal    num_slots;           /* number of slots in children array    */
+    Cardinal    num_mapped_children; /* count of managed and mapped children */
+    XtOrderProc insert_position;     /* compute position of new child	     */
 } CompositePart;
 
 typedef struct _CompositeRec {
     CorePart      core;
     CompositePart composite;
-} CompositeRec, *CompositeWidget;
+} CompositeRec;
 
 typedef struct _ConstraintPart {
     caddr_t     mumble;		/* No new fields, keep C compiler happy */
@@ -250,12 +271,12 @@ typedef struct _ConstraintRec {
  ********************************************************************/
 
 typedef struct _CompositeClassPart {
-    XtGeometryHandler	geometry_manager;  /* geometry manager for children  */
-    WidgetProc  change_managed;	       /* changed managed status of children */
-    WidgetProc  insert_child;	       /* physically add child to parent     */
-    WidgetProc  delete_child;	       /* physically remove child	     */
-    WidgetProc  move_focus_to_next;    /* move Focus to next child	     */
-    WidgetProc  move_focus_to_prev;    /* move Focus to previous child       */
+    XtGeometryHandler geometry_manager;	  /* geometry manager for children   */
+    XtWidgetProc      change_managed;	  /* change managed state of child   */
+    XtArgsProc	      insert_child;	  /* physically add child to parent  */
+    XtWidgetProc      delete_child;	  /* physically remove child	     */
+    XtWidgetProc      move_focus_to_next; /* move Focus to next child	     */
+    XtWidgetProc      move_focus_to_prev; /* move Focus to previous child    */
 } CompositeClassPart;
 
 typedef struct _CompositeClassRec {
@@ -268,7 +289,7 @@ extern CompositeWidgetClass compositeWidgetClass;
 
 
 typedef struct _ConstraintClassPart {
-    struct _Resource *constraints;    /* constraint resource list	     */
+    XtResourceList constraints;	      /* constraint resource list	     */
     Cardinal   num_constraints;       /* number of constraints in list       */
 } ConstraintClassPart;
 
@@ -292,22 +313,32 @@ extern Boolean XtIsSubclass ();
     /* Widget       widget;	    */
     /* WidgetClass  widgetClass;    */
 
-#define XtSuperclass(widget) \
-    ((widget)->core.widget_class->core_class.superclass)
+/* Some macros to get frequently used components of a widget */
+
+#define XtDisplay(widget)	((widget)->core.screen->display)
+#define XtScreen(widget)	((widget)->core.screen)
+#define XtWindow(widget)	((widget)->core.window)
+#define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
+#define XtUnmapWidget(widget)	\
+		XUnmapWindow(XtDisplay(widget), XtWindow(widget))
+#define XtIsComposite(widget)	\
+		XtIsSubclass(widget, (WidgetClass)compositeWidgetClass)
+#define XtClass(widget)		((widget)->core.widget_class)
+#define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 
 extern Widget XtCreateWidget ();
     /* String	    name;	    */
     /* WidgetClass  widgetClass;    */
     /* Widget       parent;	    */
     /* ArgList      args;	    */
-    /* Cardinal     argCount;       */
+    /* Cardinal     num_args;       */
 
 extern Widget TopLevelCreate (); /*hack for now*/
     /* String	   name; */
     /* WidgetClass widgetClass; */
     /* Screen      *screen;*/
     /* ArgList     args; */
-    /* Cardinal    argCount; */
+    /* Cardinal    num_args; */
 
 
 
@@ -324,6 +355,10 @@ extern void XtSetSensitive ();
     /* Widget    widget;    */
     /* Boolean   sensitive; */
 
+extern void XtSetMappedWhenManaged ();
+    /* Widget    widget;    */
+    /* Boolean   mappedWhenManaged; */
+
 /**********************************************************
  *
  * Composite widget Procedures
@@ -331,18 +366,18 @@ extern void XtSetSensitive ();
  **********************************************************\
 
 
-extern void XtCompositeAddChildren ();
+extern void XtManageChildren ();
     /* WidgetList children; */
-    /* Cardinal   childCount; */
+    /* Cardinal   num_children; */
 
-extern void XtCompositeAddChild ();
+extern void XtManageChild ();
     /* Widget    child; */
 
-extern void XtCompositeRemoveChildren ();
+extern void XtUnmanageChildren ();
     /* WidgetList children; */
-    /* Cardinal   childCount; */
+    /* Cardinal   num_children; */
 
-extern void XtCompositeRemoveChild ();
+extern void XtUnmanageChild ();
     /* Widget child; */
 
 
@@ -352,42 +387,42 @@ extern void XtCompositeRemoveChild ();
  *
  **************************************************************/
 
-typedef void (*CallbackProc)();
+typedef void (*XtCallbackProc)();
     /* Widget widget; */
     /* caddr_t closure;  data the application registered */
     /* caddr_t callData; widget instance specific data passed to application*/
 
-typedef struct _CallbackRec {
-    struct _CallbackRec *next;
+typedef struct _XtCallbackRec {
+    XtCallbackList next;
     Widget   widget;
-    CallbackProc callback;
+    XtCallbackProc callback;
     Opaque  closure;
-}CallbackRec;
+}XtCallbackRec;
 
-extern XtCallbackType XtNewXtCallbackType();
+extern XtCallbackKind XtNewCallbackKind();
     /* WidegtClass widgetClass; */
     /* Cardinal offset; */
 
 extern void XtAddCallback ();
     /* Widget       widget;   */
-    /* XtCallbackType callbackType; */
-    /* CallbackProc callback; */
+    /* XtCallbackKind callbackKind; */
+    /* XtCallbackProc callback; */
     /* caddr_t      closure;  */
 
 extern void XtRemoveCallback ();
     /* Widget       widget;   */
-    /* XtCallbackType callbackType; */
-    /* CallbackProc callback; */
+    /* XtCallbackKind callbackKind; */
+    /* XtCallbackProc callback; */
     /* caddr_t      closure;  */
 
 
 extern void XtRemoveAllCallbacks ();
     /* Widget widget; */
-    /* XtCallbackType callbackType; */
+    /* XtCallbackKind callbackKind; */
 
 extern void XtCallCallbacks ();
     /* Widget  widget; */
-    /* XtCallbackType callbackType; */
+    /* XtCallbackKind callbackKind; */
     /* caddr_t callData */
 
 /****************************************************************
@@ -396,22 +431,19 @@ extern void XtCallCallbacks ();
  *
  ****************************************************************/
 
-extern Display *XtInitialize();
-    /* XrmOptionsDescRec    options;    */
-    /* Cardinal             opt_count;  */
-    /* Cardinal		    *argc; */ /* returns count of args not processed */
-    /* char		    **argv;     */
+extern Widget XtInitialize();
     /* XtAtom		    name;       */
     /* XtAtom		    class;      */
-    /* Widget		    *root; */ /*returns top-level application widget */
+    /* XrmOptionsDescRec    options;    */
+    /* Cardinal             num_options;  */
+    /* Cardinal		    *argc; */ /* returns count of args not processed */
+    /* char		    **argv;     */
 
 /****************************************************************
  *
  * Memory Management
  *
  ****************************************************************/
-
-#ifndef _Alloc_c_
 
 extern char *XtMalloc(); /* size */
     /* Cardinal size; */
@@ -427,11 +459,6 @@ extern void XtFree(); /* ptr */
 	/* char  *ptr */
 
 
-#endif
-
-
-
-
 /****************************************************************
  *
  * Arg lists
@@ -439,18 +466,18 @@ extern void XtFree(); /* ptr */
  ****************************************************************/
 
 typedef struct {
-    XrmAtom	name;
+    String	name;
     XtArgVal	value;
 } Arg, *ArgList;
 
 #define XtSetArg(arg, n, d) \
     ( (arg).name = (n), (arg).value = (XtArgVal)(d) )
 
-extern ArgList XtMergeArgLists(); /* args1, argCount1, args2, argCount2 */
+extern ArgList XtMergeArgLists(); /* args1, num_args1, args2, num_args2 */
     /* ArgList args1;       */
-    /* int     argCount1;   */
+    /* int     num_args1;   */
     /* ArgList args2;       */
-    /* int     argCount2;   */
+    /* int     num_args2;   */
 
 
 
@@ -461,25 +488,26 @@ extern ArgList XtMergeArgLists(); /* args1, argCount1, args2, argCount2 */
  ****************************************************************/
 
 /* ||| Much of this should be private */
-CallbackList DestroyList;
+XtCallbackList DestroyList;
 Display *toplevelDisplay;
+typedef unsigned long EventMask;
 
 typedef enum {pass,ignore,remap} GrabType;
-typedef void (*XtEventHandler)(); /* widget,event, closure */
+typedef void (*XtEventHandler)(); /* widget, closure, event */
     /* Widget  widget   */
-    /* XEvent  *event;  */
     /* caddr_t closure  */
+    /* XEvent  *event;  */
 
-typedef struct _EventRec {
-     struct _EventRec  *next;
+typedef struct _XtEventRec {
+     _XtEventTable next;
      EventMask   mask;
      Boolean     non_filter;
      XtEventHandler proc;
      Opaque closure;
-}EventRec;
+}XtEventRec;
 
 typedef struct _GrabRec {
-    struct _GrabRec *next;
+    GrabList next;
     Widget  widget;
     Boolean  exclusive;
 }GrabRec;
@@ -492,6 +520,9 @@ typedef struct _MaskRec {
 #define is_sensitive TRUE
 #define not_sensitive FALSE
 GrabRec *grabList;
+
+extern EventMask _XtBuildEventMask(); /* widget */
+    /* Widget widget; */
 
 extern void XtSetEventHandler(); /* widget, eventMask, other, proc, closure */
     /* Widget		widget      */
@@ -518,9 +549,12 @@ extern void XtMainLoop();
  *
  ****************************************************************/
 
-#define XtINPUT_READ	(1)
-#define XtINPUT_WRITE	(2)
-#define XtINPUT_EXCEPT	(3)
+typedef unsigned long	XtInputMask;
+
+#define XtInputNoneMask		0L
+#define XtInputReadMask		(1L<<0)
+#define XtInputWriteMask	(1L<<1)
+#define XtInputExceptMask	(1L<<2)
 
 extern Atom XtHasInput;
 extern Atom XtTimerExpired;
@@ -538,12 +572,12 @@ extern unsigned long XtGetTimeOut();
 extern void XtAddInput(); /* widget, source, condition */
     /* Widget widget		*/
     /* int source;		*/
-    /* caddr_t condition;       */
+    /* XtInputMask inputMask;	*/
 
 extern void XtRemoveInput(); /* widget, source, condition */
     /* Widget widget		*/
-    /* int source;	    */
-    /* int condition;		*/
+    /* int source;		*/
+    /* XtInputMask inputMask;	*/
 
 extern void XtNextEvent(); /* event */
     /* XtEvent *event;		*/
@@ -560,28 +594,34 @@ extern Boolean XtPending ();
  *
  ****************************************************************/
 
+#define XtSMDontChange	5 /* don't change the stacking order stack_mode */
+
 typedef struct {
-    GeometryMask request_mode;
+    XtGeometryMask request_mode;
     Position x, y;
     Dimension width, height, border_width;
     Widget sibling;
     int stack_mode;	/* Above, Below, TopIf, BottomIf, Opposite */
-} WidgetGeometry;
+} XtWidgetGeometry;
 
 
-extern XtGeometryReturnCode XtMakeGeometryRequest();
+extern XtGeometryResult XtMakeGeometryRequest();
     /*  widget, request, reply		    */
     /* Widget	widget; 		    */
-    /* WidgetGeometry    *request;	    */
-    /* WidgetGeometry	 *reply;  /* RETURN */
+    /* XtWidgetGeometry    *request;	    */
+    /* XtWidgetGeometry	 *reply;  /* RETURN */
 
-extern XtGeometryReturnCode XtMakeResizeRequest ();
+extern XtGeometryResult XtMakeResizeRequest ();
     /* Widget    widget;	*/
     /* Dimension width, height; */
-    /* WidgetGeometry *reply;   */
+    /* Dimension *replyWidth, *replyHeight; */
 
-extern void XtResizeWidget(); /* widget */
+extern void XtResizeWindow(); /* widget */
+    /* Widget widget; */
+
+extern void XtResizeWidget(); /* widget, width, height, borderWidth */
     /* Widget  widget */
+    /* Dimension width, height, borderWidth; */
 
 extern void XtMoveWidget(); /* widget, x, y */
     /* Widget  widget */
@@ -595,13 +635,14 @@ extern void XtMoveWidget(); /* widget, x, y */
 
 extern GC XtGetGC(); /* widget, valueMask, values */
     /* Widget    widget */
-    /* int       valueMask; */
+    /* XtGCMask valueMask; */
     /* XGCValues *values; */
 
-extern void XtDestroyGC ();
-    /* Widget    widget */
+extern void XtDestroyGC (); /* widget, gc */
+    /* Widget widget; */
     /* GC gc; */
-
+/* we pass in the widget because XFreeGC needs a display, and there isn't */
+/* one stored in the GC record. */
 
 /****************************************************************
  *
@@ -609,38 +650,49 @@ extern void XtDestroyGC ();
  *
  ****************************************************************/
 
-typedef struct _Resource {
-    XrmAtom     resource_name;	/* Resource name			    */
-    XrmAtom     resource_class;	/* Resource class			    */
-    XrmAtom     resource_type;	/* Representation type desired		    */
+#define StringToQuark(string) XrmAtomToQuark(string)
+#define StringToName(string) XrmAtomToName(string)
+#define StringToClass(string) XrmAtomToClass(string)
+
+typedef struct _XtResource {
+    String     resource_name;	/* Resource name			    */
+    String     resource_class;	/* Resource class			    */
+    String     resource_type;	/* Representation type desired		    */
     Cardinal    resource_size;	/* Size in bytes of representation	    */
     Cardinal    resource_offset;/* Offset from base to put resource value   */
-    XrmAtom     default_type;	/* representation type of specified default */
+    String     default_type;	/* representation type of specified default */
     caddr_t     default_addr;   /* Address of default resource		    */
-} Resource, *ResourceList;
+} XtResource;
 
 
 extern void XtGetResources();
     /* Widget       widget;             */
     /* ArgList	    args;		*/
-    /* int	    argCount;		*/
+    /* int	    num_args;		*/
 
 extern void XtReadBinaryDatabase ();
     /* FILE    *f;			*/
     /* ResourceDatabase *db;		*/
 
+extern void XtWriteBinaryDatabase ();
+    /* FILE    *f;			*/
+    /* ResourceDatabase db;		*/
+
 extern void XtSetValues(); 
     /* Widget           widget;         */
     /* ArgList		args;		*/
-    /* int		argCount;       */
+    /* int		num_args;       */
 
 extern void XtGetValues();
     /* Widget           widget;         */
     /* ArgList		args;		*/
-    /* Cardinal 	argCount;       */
+    /* Cardinal 	num_args;       */
 
-extern Widget XtNameToWidget ();
-    /* String name ; */
+extern Widget XtStringToWidget ();
+    /* String s; */
+
+extern WidgetClass XtStringToClass ();
+    /* String s; */
 
 
 
@@ -653,7 +705,7 @@ extern Widget XtNameToWidget ();
 typedef struct _XtActionsRec{
     char    *string;
     caddr_t value;
-} XtActionsRec, *XtActionsPtr;
+} XtActionsRec;
 
 /* ||| Should be private */
 extern void XtDefineTranslation ();

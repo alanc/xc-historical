@@ -1,5 +1,5 @@
 
-/* $Header: LabelPrivate.h,v 1.4 87/08/30 20:16:17 ackerman Exp $ */
+/* $Header: LabelPrivate.h,v 1.5 87/08/31 07:35:16 chow Exp $ */
 
 /*
  *	sccsid:	%W%	%G%
@@ -64,18 +64,18 @@ typedef struct {
     XFontStruct	*font;
     char	*label;
     XtJustify	justify;
-    Dimension	internalWidth;
-    Dimension	internalHeight;
+    Dimension	internal_width;
+    Dimension	internal_height;
 
-    GC		normalGC;
-    GC          grayGC;
-    Pixmap      grayPixmap;
-    Position	labelX;
-    Position	labelY;
-    Dimension	labelWidth;
-    Dimension	labelHeight;
-    unsigned int labelLen;
-    Boolean     displaySensitive;
+    GC		normal_GC;
+    GC          gray_GC;
+    Pixmap      gray_pixmap;
+    Position	label_x;
+    Position	label_y;
+    Dimension	label_width;
+    Dimension	label_height;
+    unsigned int label_len;
+    Boolean     display_sensitive;
 } LabelPart;
 
 
@@ -91,6 +91,9 @@ typedef struct _LabelRec {
 } LabelRec;
 
 /* $Log:	LabelPrivate.h,v $
+ * Revision 1.5  87/08/31  07:35:16  chow
+ * bugs
+ * 
  * Revision 1.4  87/08/30  20:16:17  ackerman
  * Added grayGC, displaySensitive to LabelPart; renamed to normalGC
  *   Also changed to new naming scheme.

@@ -126,7 +126,7 @@ GCptr ptr;
 
 GC XtGetGC(widget, valueMask, values)
     Widget	widget;
-    GCMask	valueMask;
+    XtGCMask	valueMask;
     XGCValues	*values;
 {
     GCptr first=GClist;
@@ -167,7 +167,7 @@ void  XtDestroyGC(widget, gc)
     
     for (cur = first; cur != NULL; cur = cur->next) 
       if (cur->gc = gc) 
-         if (--(cur->ref_count) == 0) XFreeGC(gc);     
+         if (--(cur->ref_count) == 0) XFreeGC(XtDisplay(widget), gc);     
     return;
 }
 

@@ -1,32 +1,49 @@
 #include "Intrinsic.h"
+EventMask _XtBuildEventMask(widget)
+    Widget widget;
+{
+    _XtEventTable ev;
+    EventMask	mask = 0;
 
-void XtSetEventHandler(widget, eventMask,other, proc,closure)
+    for (ev = widget->core.event_table; ev != NULL; ev = ev->next)
+	mask |= ev->mask;
+    if (widget->core.widget_class->core_class.expose != NULL)
+	mask |= ExposureMask;
+    if (widget->core.widget_class->core_class.visible_interest) 
+	mask |= VisibilityChangeMask;
+
+    return mask;
+}
+
+void XtSetEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask   eventMask;
-    XtEventHandler  proc;
-    caddr_t	    closure;
     Boolean         other;
+    XtEventHandler  proc;
+    Opaque	closure;
 {
-   register EventRec *p,**pp;
-   register EventMask tempMask;
+   register XtEventRec *p,**pp;
+   register EventMask mask;
 
-   tempMask = 0;
+   mask = _XtBuildEventMask(widget);
    pp = & widget -> core.event_table;
    p = *pp;
-   while (p != NULL && p->proc != proc && p->closure != closure) {
-         tempMask |= p->mask;
+   while (p != NULL
+	&& p->proc != proc
+	&& p->closure != closure) {
+         mask |= p->mask;
          pp = &p->next;
          p = *pp;
    }
    if (p == NULL) {
 	/* new proc to add to list */
          if (eventMask == 0 && other == FALSE) return;
-         p = (EventRec*) XtMalloc(sizeof(EventRec));
+         p = (XtEventRec*) XtMalloc((unsigned)sizeof(XtEventRec));
          p ->next = widget->core.event_table;
          widget -> core.event_table = p;
          p -> proc = proc;
          p -> closure = closure;
-         tempMask = widget -> core.event_mask | eventMask;
+         mask |= eventMask;
          p ->mask = eventMask;
          p ->non_filter = other;
 
@@ -45,19 +62,17 @@ void XtSetEventHandler(widget, eventMask,other, proc,closure)
                p->non_filter = other;
           }
 	 while (p != NULL) {
-          tempMask |= p -> mask;
+          mask |= p -> mask;
           p = p-> next;
          }
     }     
     if (widget->core.widget_class->core_class.expose != NULL)
-       tempMask |= ExposureMask;
+       mask |= ExposureMask;
     if (widget->core.widget_class->core_class.visible_interest) 
-       tempMask |= VisibilityChangeMask;
-    widget->core.event_mask = tempMask;
-     
+       mask |= VisibilityChangeMask;
 
      if (widget->core.window != NULL) 
-         XSelectInput(widget->core.screen->display,widget->core.window,widget->core.event_mask);
+         XSelectInput(widget->core.screen->display,widget->core.window,mask);
 
 }
 
@@ -88,7 +103,6 @@ void RegisterWindow(window, widget)
     Widget widget;
 {
     HashPtr hp, *hpp;
-    unsigned int hashValue;
 
     if ((table->count + (table->count / 5)) >= table->size) ExpandTable();
 
@@ -105,25 +119,26 @@ void RegisterWindow(window, widget)
 	hp = *hpp;
     }
 
-    hp = *hpp = (HashPtr) XtMalloc(sizeof(HashRec));
+    hp = *hpp = (HashPtr) XtMalloc((unsigned)sizeof(HashRec));
     hp->window = window;
     hp->widget = widget;
     hp->next = NULL;
     table->count++;
 }
+
+
 void UnregisterWindow(window, widget)
     Window window;
     Widget widget;
 {
     HashPtr hp, *hpp;
-    unsigned int hashValue;
 
     hpp = &table->entries[(unsigned int)window % table->size];
     hp = *hpp;
 
     while (hp != NULL) {
         if (hp->window == window) {
-	    if (hp->widget != hp->widget) {
+	    if (hp->widget != widget) {
 		XtWarning("Unregister-window does not match widget.\n");
                 return;
                 }
@@ -147,7 +162,8 @@ static void ExpandTable()
     if (oldTable->sizeIndex == NUMSIZES) return;
 
     table = (HashTable) XtMalloc(
-	sizeof(HashTableRec)+sizes[oldTable->sizeIndex+1]*sizeof(HashRec));
+	(unsigned) sizeof(HashTableRec)
+	+sizes[oldTable->sizeIndex+1]*sizeof(HashRec));
     table->sizeIndex = oldTable->sizeIndex+1;
     table->size = sizes[table->sizeIndex];
     table->count = oldTable->count;
@@ -168,7 +184,6 @@ static void ExpandTable()
 Widget ConvertWindowToWidget(window)
     Window window;
 {
-    Widget widget;
     HashPtr hp;
 
     for (
@@ -176,6 +191,8 @@ Widget ConvertWindowToWidget(window)
         hp != NULL;
 	hp = hp->next)
 	if (hp->window == window) return hp->widget;
+
+    return NULL;
 }
 
 void InitializeHash()
@@ -183,7 +200,7 @@ void InitializeHash()
     int i;
 
     table = (HashTable) XtMalloc(
-        sizeof(HashTableRec)+sizes[0]*sizeof(HashPtr));
+        (unsigned) sizeof(HashTableRec)+sizes[0]*sizeof(HashPtr));
 
     table->sizeIndex = 0;
     table->size = sizes[0];
@@ -228,15 +245,14 @@ Boolean onGrabList (widget)
 
 {
    GrabRec* gl;
-    for (; widget != NULL;(CompositeWidget)widget = widget->core.parent) {
-        for (gl = grabList; gl != NULL && gl->exclusive; gl = gl ->next) 
-             if (gl -> widget == widget) return (TRUE);
-    }
-    return (FALSE);
+   for (; widget != NULL; widget = (Widget)widget->core.parent)
+	for (gl = grabList; gl != NULL && gl->exclusive; gl = gl ->next) 
+	    if (gl -> widget == widget) return (TRUE);
+   return (FALSE);
 }
 
 void ConvertTypeToMask (eventType,mask,grabType,sensitive)
-    unsigned long eventType;
+    int eventType;
     EventMask *mask;
     GrabType *grabType;
     Boolean *sensitive;
@@ -295,20 +311,20 @@ void DispatchEvent(event, widget, mask)
 
 
 {
-    EventRec *p;   
+    XtEventRec *p;   
     if (mask == ExposureMask) {
       if ((widget->core.widget_class->core_class.compress_exposure)
         && (event->xexpose.count != 0)) 
         return;
       if(widget->core.widget_class->core_class.expose != NULL)
-         widget->core.widget_class->core_class.expose (widget,event,NULL);
+         widget->core.widget_class->core_class.expose (widget,event);
     }
     if ((mask == VisibilityNotify) &&
             !(widget->core.widget_class->core_class.visible_interest)) return;
 
     for (p=widget->core.event_table; p != NULL; p = p -> next) {
 	if ((mask && p->mask != 0) || (mask==0 && p->non_filter == TRUE)) 
-              p->proc(widget,event,p->closure);
+              (*(p->proc))(widget, p->closure, event);
          }
     return;
 }

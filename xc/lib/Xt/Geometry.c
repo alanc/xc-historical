@@ -30,9 +30,9 @@ static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
 
 #include "Intrinsic.h"
 
-/* Private  Routines */
+/* Public routines */
 
-static void XtResizeWindow(w)
+void XtResizeWindow(w)
     Widget w;
 {
     if (XtIsRealized(w)) {
@@ -41,21 +41,51 @@ static void XtResizeWindow(w)
 	changes.height = w->core.height;
 	changes.border_width = w->core.border_width;
 	XConfigureWindow(XtDisplay(w), XtWindow(w),
-	    CWWidth | CWHeight | CWBorderWidth, &changes);
+	    (unsigned) CWWidth | CWHeight | CWBorderWidth, &changes);
     }
 } /* XtResizeWindow */
 
-/* Public routines */
 
-XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
-    Widget         widget;
-    WidgetGeometry *request, *reply;
+void XtResizeWidget(w, height, width, borderWidth)
+    Widget w;
+    Dimension height, width, borderWidth;
 {
-    WidgetGeometry    junk;
-    XtGeometryHandler manager;
-    XtGeometryReturnCode returnCode;
+    XWindowChanges changes;
+    Cardinal mask = 0;
 
-    if (! XtIsSubclass(widget->core.parent, compositeWidgetClass)) {
+    if (w->core.width != width) {
+	changes.width = w->core.width = width;
+	mask |= CWWidth;
+    }
+
+    if (w->core.height != height) {
+	changes.height = w->core.height = height;
+	mask |= CWHeight;
+    }
+
+    if (w->core.border_width != borderWidth) {
+	changes.border_width = w->core.border_width = borderWidth;
+	mask |= CWBorderWidth;
+    }
+
+    if (mask != 0) {
+	if (XtIsRealized(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+    if ((mask & (CWWidth | CWHeight)) &&
+	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	    w->core.widget_class->core_class.resize(w);
+    }
+} /* XtResizeWidget */
+
+XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
+    Widget         widget;
+    XtWidgetGeometry *request, *reply;
+{
+    XtWidgetGeometry    junk;
+    XtGeometryHandler manager;
+    XtGeometryResult returnCode;
+
+    if (! XtIsComposite(widget->core.parent)) {
 	/* Should never happen - XtCreateWidget should have checked */
 	XtError("XtMakeGeometryRequest - parent not composite");
     }
@@ -66,12 +96,12 @@ XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
     }
     if ( ! widget->core.managed) {
 	XtWarning("XtMakeGeometryRequest - widget not managed");
-	return XtgeometryNo;
+	return XtGeometryNo;
     }
     if (widget->core.being_destroyed) {
-        return XtgeometryNo;
+        return XtGeometryNo;
     }
-    if (reply == (WidgetGeometry *) NULL) {
+    if (reply == (XtWidgetGeometry *) NULL) {
         returnCode = (*manager)(widget, request, &junk);
     } else {
 	returnCode = (*manager)(widget, request, reply);
@@ -79,20 +109,20 @@ XtGeometryReturnCode XtMakeGeometryRequest (widget, request, reply)
     /* ||| Right now this is automatic.  However, we may want it to be
     explicitely called by geometry manager in order to effect the window resize
     (especially to smaller size) before the windows are layed out. */
-    if (returnCode == XtgeometryYes) {
+    if (returnCode == XtGeometryYes) {
 	XtResizeWindow(widget);
     }
     return returnCode;
 } /* XtMakeGeometryRequest */
 
-XtGeometryReturnCode XtMakeResizeRequest
+XtGeometryResult XtMakeResizeRequest
 	(widget, width, height, replyWidth, replyHeight)
     Widget	widget;
     Dimension	width, height;
     Dimension	*replyWidth, *replyHeight;
 {
-    WidgetGeometry request, reply;
-    XtGeometryReturnCode r;
+    XtWidgetGeometry request, reply;
+    XtGeometryResult r;
 
     request.request_mode = CWWidth | CWHeight;
     request.width = width;
@@ -104,15 +134,6 @@ XtGeometryReturnCode XtMakeResizeRequest
 	*replyHeight = (reply.request_mode & CWHeight ? reply.height : height);
     return r;
 } /* XtMakeResizeRequest */
-
-void XtResizeWidget(w)
-    Widget w;
-{
-    if (w->core.widget_class->core_class.resize != (WidgetProc) NULL) {
-	w->core.widget_class->core_class.resize(w);
-    }
-    XtResizeWindow(w);
-} /* XtResizeWidget */
 
 void XtMoveWidget(w, x, y)
     Widget w;

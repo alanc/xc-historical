@@ -89,19 +89,18 @@ extern CommandClassRec commandClassRec;
 
     /* New fields for the Command widget record */
 typedef struct {
-    CallbackList callback_list;
-    Pixmap      grayPixmap;
-    GC          highlightGC;
-    GC          inverseGC;
-    GC          inverseTextGC;
-    Dimension   highlightThickness;
-    CallbackList callbackList;
-    CallbackProc callback;
-    caddr_t     closure;
+    Pixmap      gray_pixmap;
+    GC          highlight_GC;
+    GC          inverse_GC;
+    GC          inverse_text_GC;
+    Dimension   highlight_thickness;
+    XtCallbackList callback_list;
+    XtCallbackProc callback;
+    Opaque	closure;
     Boolean     set;
     Boolean     highlighted;
-    Boolean     displaySet;
-    Boolean     displayHighlighted;
+    Boolean     display_set;
+    Boolean     display_highlighted;
 } CommandPart;
 
 

@@ -62,25 +62,25 @@ static void FreeStateRecs(state)
     XtFree((char *)state->nextLevel);
 }
 
-static void PrintModifiers(mod)
-    unsigned long mod;
+static void PrintModifiers(mask, mod)
+    unsigned long mask, mod;
 {
-    if (mod & ShiftMask)
-	(void) printf("<Shift>");
-    if (mod & ControlMask)
-	(void) printf("<Ctrl>");
-    if (mod & LockMask)
-	(void) printf("<Lock>");
-    if (mod & Mod1Mask)
-	(void) printf("<Meta>");
-    if (mod & Mod2Mask)
-	(void) printf("<Mod2>");
-    if (mod & Mod3Mask)
-	(void) printf("<Mod3>");
-    if (mod & Mod4Mask)
-	(void) printf("<Mod4>");
-    if (mod & Mod5Mask)
-	(void) printf("<Mod5>");
+    if (mask & ShiftMask)
+	(void) printf("<%sShift>", ((mod & ShiftMask) ? "" : "~"));
+    if (mask & ControlMask)
+	(void) printf("<%sCtrl>", ((mod & ControlMask) ? "" : "~"));
+    if (mask & LockMask)
+	(void) printf("<%sLock>", ((mod & LockMask) ? "" : "~"));
+    if (mask & Mod1Mask)
+	(void) printf("<%sMeta>", ((mod & Mod1Mask) ? "" : "~"));
+    if (mask & Mod2Mask)
+	(void) printf("<%sMod2>", ((mod & Mod2Mask) ? "" : "~"));
+    if (mask & Mod3Mask)
+	(void) printf("<%sMod3>", ((mod & Mod3Mask) ? "" : "~"));
+    if (mask & Mod4Mask)
+	(void) printf("<%sMod4>", ((mod & Mod4Mask) ? "" : "~"));
+    if (mask & Mod5Mask)
+	(void) printf("<%sMod5>", ((mod & Mod5Mask) ? "" : "~"));
 }
 
 static void PrintEvent(event, endStr)
@@ -117,15 +117,15 @@ static void PrintCode(code)
         (void) printf("%d", code);
 }
 
-static void PrintActions(ev, code, modif, actions, j)
-    unsigned long ev[], modif[], code[];
+static void PrintActions(ev, code, mask, modif, actions, j)
+    unsigned long ev[], mask[], modif[], code[];
     ActionPtr actions;
     int j;
 {
     char endStr[20];
     int i;
     for (i=0; i<j; i++) {
-	PrintModifiers(modif[i]);
+	PrintModifiers(mask[i], modif[i]);
 	PrintEvent(ev[i], endStr);
 	PrintCode(code[i]);
         (void) printf("%s ",endStr);
@@ -153,7 +153,7 @@ static Boolean SpecialCase(event)
 
 
 static EventObjPtr  CreateStates(translations, index, eventSeq)
-    Translations translations;
+    _XtTranslations translations;
     int index;
     EventSeqPtr eventSeq;
 {
@@ -163,7 +163,7 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
     ActionPtr actions = eventSeq->actions;
 
     if (eventObjTbl[index].state == NULL) {  
-	eventObjTbl[index].state = (StatePtr) XtMalloc (sizeof(StateRec));
+	eventObjTbl[index].state = (StatePtr) XtMalloc((unsigned)sizeof(StateRec));
         state = eventObjTbl[index].state;
         state->index = index;
         state->nextLevel = NULL;
@@ -185,7 +185,7 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
 		        found = TRUE;
 		}
 		if (!found) {
-		    state->next = (StatePtr) XtMalloc(sizeof(StateRec));
+		    state->next = (StatePtr) XtMalloc((unsigned)sizeof(StateRec));
 		    state = state->next;
 		    state->index = index;
 		    state->nextLevel = NULL;
@@ -198,7 +198,7 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
     while (eventSeq->next != NULL) {
 	eventSeq = eventSeq->next;
  	index = EventIndex(translations, eventSeq);
-	state->nextLevel = (StatePtr) XtMalloc(sizeof(StateRec));
+	state->nextLevel = (StatePtr) XtMalloc((unsigned)sizeof(StateRec));
 	state = state->nextLevel;
 	state->index = index;
 	state->nextLevel = NULL;
@@ -215,33 +215,36 @@ static EventObjPtr  CreateStates(translations, index, eventSeq)
 
 /*** Public procedures ***/
 EventObjPtr EventMapObjectCreate(translations, eventSeq)
-  Translations	translations;
+  _XtTranslations	translations;
   EventSeqPtr eventSeq;
 {
+    EventObjPtr new;
+
     if (EventIndex(translations, eventSeq) >= 0)
 	return translations->eventObjTbl;
 
     if (translations->numEvents == translations->eventTblSize) {
         translations->eventTblSize += 100;
 	translations->eventObjTbl = (EventObjPtr) XtRealloc(
-	    translations->eventObjTbl, 
+	    (char *)translations->eventObjTbl, 
 	    translations->eventTblSize*sizeof(EventObjRec));
     }
 
-    translations->eventObjTbl[translations->numEvents].eventType =
-	eventSeq->eventType;
-    translations->eventObjTbl[translations->numEvents].eventCode =
-	eventSeq->eventCode;
-    translations->eventObjTbl[translations->numEvents].modifiersMask =
-	eventSeq->modifiersMask;
-    translations->eventObjTbl[translations->numEvents].state = NULL;
+    new = &translations->eventObjTbl[translations->numEvents];
+
+    new->eventType	= eventSeq->eventType;
+    new->eventCode	= eventSeq->eventCode;
+    new->modifierMask	= eventSeq->modifierMask;
+    new->modifiers	= eventSeq->modifiers;
+    new->state		= NULL;
+
     translations->numEvents++;
     return translations->eventObjTbl;
 }
 
 
 EventObjPtr EventMapObjectGet(translations, eventSeq)
-  Translations translations;
+  _XtTranslations translations;
   EventSeqPtr eventSeq;
 {
     EventObjPtr eventTbl = translations->eventObjTbl;
@@ -254,7 +257,7 @@ EventObjPtr EventMapObjectGet(translations, eventSeq)
 
 
 EventObjPtr EventMapObjectSet(translations, eventSeq)
-  Translations translations;
+  _XtTranslations translations;
   EventSeqPtr eventSeq;
 {
     EventObjPtr eventTbl = translations->eventObjTbl;
@@ -265,8 +268,10 @@ EventObjPtr EventMapObjectSet(translations, eventSeq)
 }
 
 
-void TranslateEvent(w, event)
+/* ARGSUSED */
+void TranslateEvent(w, closure, event)
   Widget w;
+  Opaque closure;
   register XEvent *event;
 {
     static unsigned long upTime=0;
@@ -281,16 +286,16 @@ void TranslateEvent(w, event)
     oldState = 0;
     specialCase = FALSE;
     curEvent.eventCode = 0;
-    curEvent.modifiersMask = 0;
+    curEvent.modifiers = 0;
     curEvent.eventType = event->type;
     switch (event->type) {
 	case KeyPress:
 	case KeyRelease:
 	    buttonUp = FALSE;
-	    curEvent.modifiersMask = event->xkey.state;
+	    curEvent.modifiers = event->xkey.state;
 	    event->xkey.state = 0;
 	    curEvent.eventCode = XLookupKeysym(&event->xkey, 0);
-	    event->xkey.state = curEvent.modifiersMask;
+	    event->xkey.state = curEvent.modifiers;
 	    break;
 	case ButtonPress:
 	    if (buttonUp && curState != NULL) 
@@ -300,23 +305,22 @@ void TranslateEvent(w, event)
 		    curState = NULL;
 	    buttonUp = FALSE;
  	    curEvent.eventCode = event->xbutton.button;
-	    curEvent.modifiersMask = event->xbutton.state & 0x00FF; /* ||| */
+	    curEvent.modifiers = event->xbutton.state;
 	    break;
 	case ButtonRelease:
 	    buttonUp = TRUE;
 	    upTime = event->xbutton.time;
 	    curEvent.eventCode = event->xbutton.button;
-	    curEvent.modifiersMask = event->xbutton.state & 0x00FF; /* ||| */
-;
+	    curEvent.modifiers = event->xbutton.state;
 	    break;
 	case MotionNotify:
 	    buttonUp = FALSE;
-	    curEvent.modifiersMask = event->xmotion.state;
+	    curEvent.modifiers = event->xmotion.state;
 	    break;
 	case EnterNotify:
 	case LeaveNotify:
 	    buttonUp = FALSE;
-	    curEvent.modifiersMask = event->xcrossing.state;
+	    curEvent.modifiers = event->xcrossing.state;
 	    break;
 	default:
 	    buttonUp = FALSE;
@@ -357,7 +361,7 @@ void TranslateEvent(w, event)
 }
 
 void TranslateTableFree(translations)
-    Translations translations;
+    _XtTranslations translations;
 {
     EventObjPtr tbl = translations->eventObjTbl;
     int i;
@@ -373,7 +377,7 @@ void TranslateTableFree(translations)
 
 
 int EventIndex(translations, eventSeq) 
-  Translations translations;
+  _XtTranslations translations;
   EventSeqPtr eventSeq;
 {
     EventObjPtr eventTbl = translations->eventObjTbl;
@@ -382,7 +386,9 @@ int EventIndex(translations, eventSeq)
     for (i=0; i < translations->numEvents; i++) {
         if ((eventTbl[i].eventType == eventSeq->eventType) &&
             (eventTbl[i].eventCode == eventSeq->eventCode) &&
-	    (eventTbl[i].modifiersMask == eventSeq->modifiersMask)) 
+	    (eventTbl[i].modifiers ==
+		(eventSeq->modifierMask & eventSeq->modifiers))
+	   ) 
 		return(i);
    }
     return(-1);
@@ -390,11 +396,11 @@ int EventIndex(translations, eventSeq)
 
 
 void TranslateTablePrint(translations)
-    Translations translations;
+    _XtTranslations translations;
 {
     EventObjPtr tbl = translations->eventObjTbl;
     int i, j;
-    unsigned long ev[100], code[100], modif[100];
+    unsigned long ev[100], code[100], mask[100], modif[100];
     StatePtr stack[100], state;
 	
     for (i=0; i<translations->numEvents; i++) {
@@ -404,9 +410,10 @@ void TranslateTablePrint(translations)
 	    stack[j] = tbl[i].state;
 	    ev[j] = tbl[i].eventType;
 	    code[j] = tbl[i].eventCode;
-	    modif[j++] = tbl[i].modifiersMask;	
+	    mask[j] = tbl[i].modifierMask;
+	    modif[j++] = tbl[i].modifiers;
             if (state->actions != NULL)
-	        PrintActions(ev, code, modif, state->actions, j);
+	        PrintActions(ev, code, mask, modif, state->actions, j);
 	    do {
 	        do {
 	            while (state->nextLevel != NULL) {
@@ -414,9 +421,11 @@ void TranslateTablePrint(translations)
 	                stack[j] = state;
 	                ev[j] = tbl[state->index].eventType;
 		        code[j] = tbl[state->index].eventCode;
-	                modif[j++] = tbl[state->index].modifiersMask;
+			mask[j] =  tbl[state->index].modifierMask;
+	                modif[j++] = tbl[state->index].modifiers;
                     	if (state->actions != NULL)
-	                    PrintActions(ev, code, modif, state->actions, j);
+	                    PrintActions(
+				ev, code, mask, modif, state->actions, j);
 	            }
 	            j--;
 	            if (state->next != NULL) {
@@ -424,9 +433,11 @@ void TranslateTablePrint(translations)
 	            	stack[j] = state;
 	            	ev[j] = tbl[state->index].eventType;
 	            	code[j] = tbl[state->index].eventCode;
-	            	modif[j++] = tbl[state->index].modifiersMask;
+	            	mask[j] = tbl[state->index].modifierMask;
+	            	modif[j++] = tbl[state->index].modifiers;
                     	if (state->actions != NULL)
-	                    PrintActions(ev, code, modif, state->actions, j);
+	                    PrintActions(
+				ev, code, mask, modif, state->actions, j);
 	            }
 	     	} while (state->next != NULL &&  state->nextLevel != NULL);
 	    	j--;
@@ -436,9 +447,10 @@ void TranslateTablePrint(translations)
 		    stack[j] = state;
 	            ev[j] = tbl[state->index].eventType;
 	            code[j] = tbl[state->index].eventCode;
-	            modif[j++] = tbl[state->index].modifiersMask;
+	            mask[j] = tbl[state->index].modifierMask;
+	            modif[j++] = tbl[state->index].modifiers;
                     if (state->actions != NULL)
-	                PrintActions(ev, code, modif, state->actions, j);
+	                PrintActions(ev, code, mask, modif, state->actions, j);
 	        } else
 		    j--;
 	    } while (j-1>0);

@@ -36,11 +36,10 @@
 #define LF 0x0a
 #define BSLASH '\\'
 
-#define AtomToAction(atom)	((XtAction)XrmAtomToQuark(atom))
+#define AtomToAction(atom)	((XtAction)StringToQuark(atom))
 
 typedef int		EventType;
 typedef unsigned int	XtEventType;
-typedef unsigned int	ModifierMask;
 typedef unsigned int	EventCode;
 typedef unsigned int	Value;
 
@@ -65,30 +64,29 @@ typedef NameValueRec CompiledAction;
 typedef NameValueTable CompiledActionTable;
 
 NameValueRec modifiers[] = {
-    {"Shift",0,		ShiftMask},
-    {"Lock", 0,		LockMask},
-    {"Ctrl", 0,		ControlMask},
-    {"Mod1", 0,		Mod1Mask},
-    {"Mod2", 0,		Mod2Mask},
-    {"Mod3", 0,		Mod3Mask},
-    {"Mod4", 0,		Mod4Mask},
-    {"Mod5", 0,		Mod5Mask},
-    {"Meta", 0,		Mod1Mask},
-    {"AnyModifier", 0,	AnyModifier},
-    {NULL, NULL, NULL},
-};
+    {"Shift",	0,	ShiftMask},
+    {"Lock",	0,	LockMask},
+    {"Ctrl",	0,	ControlMask},
+    {"Mod1",	0,	Mod1Mask},
+    {"Mod2",	0,	Mod2Mask},
+    {"Mod3",	0,	Mod3Mask},
+    {"Mod4",	0,	Mod4Mask},
+    {"Mod5",	0,	Mod5Mask},
+    {"Meta",	0,	Mod1Mask},
 
-NameValueRec buttonMasks[] = {
-    {"Button1", 0,	Button1Mask},
-    {"Button2", 0,	Button2Mask},
-    {"Button3", 0,	Button3Mask},
-    {"Button4", 0,	Button4Mask},
-    {"Button5", 0,	Button5Mask},
+    {"Button1",	0,	Button1Mask},
+    {"Button2",	0,	Button2Mask},
+    {"Button3",	0,	Button3Mask},
+    {"Button4",	0,	Button4Mask},
+    {"Button5",	0,	Button5Mask},
+
+    {"Any",	0,	AnyModifier},
+
     {NULL, NULL, NULL},
 };
 
 NameValueRec buttonNames[] = {
-    {"Button1", 0,	Button1},
+    {"Button1",	0,	Button1},
     {"Button2", 0,	Button2},
     {"Button3", 0,	Button3},
     {"Button4", 0,	Button4},
@@ -239,27 +237,27 @@ static void CompileNameValueTable(table)
     int i;
 
     for (i=0; table[i].name; i++)
-        table[i].signature = XrmAtomToQuark(table[i].name);
+        table[i].signature = StringToQuark(table[i].name);
 }
 
-static void CompileEventTable(table)
+static void Compile_XtEventTable(table)
     EventKeys	table;
 {
     int i;
 
     for (i=0; table[i].event; i++)
-        table[i].signature = XrmAtomToQuark(table[i].event);
+        table[i].signature = StringToQuark(table[i].event);
 }
 
 static CompiledActionTable CompileActionTable(actions, count)
     struct _XtActionsRec *actions;
-    int count;
+    Cardinal count;
 {
     int i;
     CompiledActionTable compiledActionTable;
 
     compiledActionTable = (CompiledActionTable) XtCalloc(
-	count+1, sizeof(CompiledAction));
+	count+1, (unsigned) sizeof(CompiledAction));
 
     for (i=0; i<count; i++) {
 	compiledActionTable[i].name = actions[i].string;
@@ -296,7 +294,7 @@ static XtEventType LookupXtEventType(eventStr)
     int i;
     XrmQuark	signature;
 
-    signature = XrmAtomToQuark(eventStr);
+    signature = StringToQuark(eventStr);
     for (i = 0; events[i].event != NULL; i++)
         if (events[i].signature == signature) return i;
 
@@ -315,7 +313,7 @@ static XtEventType LookupXtEventType(eventStr)
         else
 	    reps = 1;
 	for (i=1; i<reps; i++) {
-	    curEvent->next = (EventSeqPtr) XtMalloc(sizeof(EventSeqRec));
+	    curEvent->next = (EventSeqPtr) XtMalloc((unsigned)sizeof(EventSeqRec));
 	    curEvent = curEvent->next;
 	    curEvent->str = NULL;
 	    curEvent->next = NULL;
@@ -339,7 +337,7 @@ static Value LookupTableSym(table, name)
 /* !!! should implement via hash or something else faster than linear search */
 
     int i;
-    XrmQuark	signature = XrmAtomToQuark(name);
+    XrmQuark	signature = StringToQuark(name);
 
     for (i=0;table[i].name != NULL;i++)
 	if (table[i].signature == signature) return table[i].value;
@@ -372,15 +370,19 @@ static char * ScanWhitespace(str)
     return str;
 }
 
-static char * ParseModifiers(str, modifierMaskP)
+static char * ParseModifiers(str, modifierMaskP, modifierP)
     char *str;
     ModifierMask *modifierMaskP;
+    ModifierMask *modifierP;
 {
     char *start;
     char modStr[100];
+    Boolean notFlag;
+    ModifierMask maskBit;
 
     while (*str != '<') {
 	str = ScanWhitespace(str);
+	if (*str == '~') { notFlag = TRUE; str++; } else notFlag = FALSE;
 	start = str;
         str = ScanAlphanumeric(str);
 	if (start == str) {
@@ -389,7 +391,8 @@ static char * ParseModifiers(str, modifierMaskP)
 	}
 	(void) strncpy(modStr, start, str-start);
 	modStr[str-start] = '\0';
-	*modifierMaskP |= LookupTableSym(modifiers, modStr);
+	*modifierMaskP |= maskBit = LookupTableSym(modifiers, modStr);
+	if (notFlag) *modifierP &= ~maskBit; else *modifierP |= maskBit;
     }
     return str;
 }
@@ -529,17 +532,19 @@ static char * ParseEvent(str, eventP)
     char *str;
     EventSeqPtr	eventP;
 {
-    ModifierMask modifiersMask = 0;
+    ModifierMask modifierMask = 0;
+    ModifierMask modifiers = 0;
     XtEventType	eventType = 0;
     EventCode	eventCode = 0;
 
-    str = ParseModifiers(str, &modifiersMask);
+    str = ParseModifiers(str, &modifierMask, &modifiers);
     if (*str != '<') Syntax("Missing '<'"); else str++;
     str = ParseXtEventType(str, &eventType);
     if (*str != '>') Syntax("Missing '>'"); else str++;
     str = ParseDetail(str, eventType, &eventCode);
 
-    eventP->modifiersMask = modifiersMask;
+    eventP->modifierMask = modifierMask;
+    eventP->modifiers = modifiers;
     eventP->eventType = (EventType)eventType;
     eventP->eventCode = eventCode;
 
@@ -558,13 +563,15 @@ static char * ParseQuotedStringEvent(str, eventP)
     char	c;
     char	s[2];
 
+    eventP->modifierMask = ctrlMask | metaMask | shiftMask;
+
     for (j=0; j < 2; j++)
-	if (*str=='^' && !(eventP->modifiersMask | ctrlMask)) {
+	if (*str=='^' && !(eventP->modifiers | ctrlMask)) {
 	    str++;
-	    eventP->modifiersMask |= ctrlMask;
-	} else if (*str == '$' && !(eventP->modifiersMask | metaMask)) {
+	    eventP->modifiers |= ctrlMask;
+	} else if (*str == '$' && !(eventP->modifiers | metaMask)) {
 	    str++;
-	    eventP->modifiersMask |= metaMask;
+	    eventP->modifiers |= metaMask;
 	} else if (*str == '\\') {
 	    str++;
 	    c = *str;
@@ -577,7 +584,7 @@ static char * ParseQuotedStringEvent(str, eventP)
 	}
     eventP->eventType = (EventType) LookupXtEventType("Key");
     if ('A' <= c && c <= 'Z') {
-	eventP->modifiersMask |=  shiftMask;
+	eventP->modifiers |=  shiftMask;
 	c += 'a' - 'A';
     }
     s[0] = c;
@@ -607,8 +614,10 @@ static char *ParseEventSeq(str, eventSeqP)
     while (*str != ':') {
 	EventSeqPtr	event;
 
-	event = (EventSeqPtr) XtMalloc(sizeof(EventSeqRec));
-        event->modifiersMask = 0;
+	event = (EventSeqPtr) XtMalloc((unsigned)sizeof(EventSeqRec));
+	event->str = NULL;
+        event->modifierMask = 0;
+        event->modifiers = 0;
         event->eventType = 0;
         event->eventCode = 0;
         event->next = NULL;
@@ -656,7 +665,8 @@ static char * ParseActionProc(str, actionProcP, actionProcNameP)
     *actionProcP = LookupTableSym(procName, actions);
 */
     *actionProcP = NULL;
-    *actionProcNameP = strncpy(XtMalloc(str-start+1), procName, str-start+1);
+    *actionProcNameP = strncpy(
+	XtMalloc((unsigned)(str-start+1)), procName, str-start+1);
     return str;
 }
 
@@ -699,7 +709,7 @@ static char *ParseActionSeq(str, actionsP)
     while (*str != '\0') {
 	ActionPtr	action;
 
-	action = (ActionPtr) XtMalloc(sizeof(ActionRec));
+	action = (ActionPtr) XtMalloc((unsigned)sizeof(ActionRec));
         action->token = NULL;
         action->proc = NULL;
         action->param = NULL;
@@ -721,12 +731,10 @@ static char *ParseActionSeq(str, actionsP)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static void ParseTranslationTableProduction(
-	w, compiledActionTable, str, otherP)
+static void ParseTranslationTableProduction(w, compiledActionTable, str)
   Widget w;
   CompiledActionTable	compiledActionTable;
   char *str;
-  Boolean *otherP;
 {
     EventSeqPtr	eventSeq = NULL;
     ActionPtr	actions = NULL;
@@ -738,13 +746,26 @@ static void ParseTranslationTableProduction(
     str = ScanWhitespace(str);
     str = ParseActionSeq(str, &actions);
 
-    /* run down the event list, compute event_mask and "other" */
+    /* run down the event list:  */
     /* change translation manager events into real x events */
-    /* and make sure the event is registered in the event table */
+    /* make sure the event is registered in the event table */
     for (esp=eventSeq; esp!=NULL; esp=esp->next) {
-	w->core.event_mask |= events[esp->eventType].mask;
-	if (events[esp->eventType].mask == 0) *otherP = TRUE;
 	esp->eventType = events[esp->eventType].eventType;
+	XtSetEventHandler(
+	    w,
+	    events[esp->eventType].mask,
+	    (Boolean) (events[esp->eventType].mask == 0),
+	    TranslateEvent, (Opaque) NULL);
+#ifdef ndef
+	/* double click needs to make sure that you have selected on both
+	    button down and up. */
+        if (events[esp->eventType].mask & ButtonPressMask)
+	    XtSetEventHandler(
+		w, ButtonReleaseMask, FALSE, TranslateEvent, NULL);
+        if (events[esp->eventType].mask & ButtonReleaseMask)
+	    XtSetEventHandler(
+		w, ButtonPressMask, FALSE, TranslateEvent, NULL);
+#endif
 	if (esp->next == NULL) {
 	    /* put the action procs in at the end */
 	    esp->actions = actions;
@@ -770,16 +791,15 @@ static void ParseTranslationTableProduction(
  * Parses a user's or applications translation table
  */
 
-static void ParseTranslationTable(w, compiledActionTable, otherP)
+static void ParseTranslationTable(w, compiledActionTable)
     Widget w;
     CompiledActionTable	compiledActionTable;
-    Boolean *otherP;
 {
     char **translationTableSource = (char **)w->core.translations;
     int i;
 
     w->core.translations =
-	(Translations) XtMalloc(sizeof(TranslationData));
+	(_XtTranslations) XtMalloc((unsigned) sizeof(TranslationData));
     w->core.translations->numEvents = 0;
     w->core.translations->eventTblSize = 0;
     w->core.translations->eventObjTbl = NULL;
@@ -790,7 +810,7 @@ static void ParseTranslationTable(w, compiledActionTable, otherP)
     i = 0;
     while (translationTableSource[i]) {
         ParseTranslationTableProduction(
-	    w, compiledActionTable, translationTableSource[i], otherP);
+	    w, compiledActionTable, translationTableSource[i]);
 	i++;
     }
 
@@ -801,8 +821,6 @@ static void ParseTranslationTable(w, compiledActionTable, otherP)
 void DefineTranslation(w)
   Widget w;
 {
-    Boolean other = FALSE;
-
     /* this procedure assumes that there is a string table in the */
     /* core.translations field. It compiles it, combines it with */
     /* the action bindings and puts the resulting internal data */
@@ -817,19 +835,17 @@ void DefineTranslation(w)
 	CompileActionTable(
 	    w->core.widget_class->core_class.actions,
 	    w->core.widget_class->core_class.num_actions);
-    ParseTranslationTable(w, compiledActionTable, &other);
+    ParseTranslationTable(w, compiledActionTable);
     FreeCompiledActionTable(compiledActionTable);
 
 
     /* double click needs to make sure that you have selected on both
        button down and up. */
+#ifdef ndef
     if (w->core.event_mask & ButtonPressMask || 
         w->core.event_mask & ButtonReleaseMask)
 	   w->core.event_mask |= ButtonPressMask | ButtonReleaseMask;
-
-
-    XtSetEventHandler(
-        w, w->core.event_mask, other, TranslateEvent, NULL);
+#endif
 }
 
 void TranslateInitialize()
@@ -838,10 +854,8 @@ void TranslateInitialize()
 
     initialized = TRUE;
 
-    CompileEventTable( events );
+    Compile_XtEventTable( events );
     CompileNameValueTable( modifiers );
-    CompileNameValueTable( buttonMasks );
-    CompileNameValueTable( buttonMasks );
     CompileNameValueTable( buttonNames );
     CompileNameValueTable( notifyModes );
     CompileNameValueTable( notifyDetail );
