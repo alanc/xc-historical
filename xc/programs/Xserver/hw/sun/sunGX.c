@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.17 93/07/11 15:03:06 rws Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.18 93/07/20 17:33:43 rws Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -551,7 +551,6 @@ RegionPtr sunGXCopyPlane(pSrcDrawable, pDstDrawable,
     RegionPtr		ret;
     extern RegionPtr    miHandleExposures();
     int			(*doBitBlt)();
-    extern		cfbCopyPlane8to1();
 
     if (pSrcDrawable->bitsPerPixel == 1 && pDstDrawable->bitsPerPixel == 8)
     {

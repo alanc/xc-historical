@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skyBitBlt.c,v 1.4 91/12/11 21:40:35 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *
@@ -62,15 +62,6 @@ Based on code by Keith Packard.
 /*-------*/
 
 
-extern int  cfbDoBitbltCopy();
-extern int  cfbDoBitbltXor();
-extern int  cfbDoBitbltOr();
-extern int  cfbDoBitbltGeneral();
-extern int  cfbDoBitblt();
-
-extern RegionPtr cfbBitBlt();
-
-
 RegionPtr
 skyCopyArea(pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty)
@@ -81,8 +72,8 @@ skyCopyArea(pSrcDrawable, pDstDrawable,
     int width, height;
     int dstx, dsty;
 {
-    int	(*doBitBlt) ();
-    int skyDoBitblt_WinToWin();
+    void (*doBitBlt) ();
+    void skyDoBitblt_WinToWin();
     
     doBitBlt = cfbDoBitbltCopy;
 
@@ -116,7 +107,7 @@ skyCopyArea(pSrcDrawable, pDstDrawable,
 
 
 
-int
+void
 skyDoBitblt_WinToWin(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
     int		    alu;
