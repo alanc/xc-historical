@@ -5,7 +5,7 @@
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
-        DEFINES = ConnectionFlags
+   CONN_DEFINES = ConnectionFlags
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
 #if BandAidLibraryNeeded
@@ -298,21 +298,21 @@ InstallNonExec(XErrorDB,$(LIBDIR))
 #if DebugLibX && ProfileLibX
 DebuggedAndProfiledLibraryObjectRule()
 SpecialDebuggedAndProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),)
+SpecialDebuggedAndProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #else
 # if DebugLibX
 DebuggedLibraryObjectRule()
 SpecialDebuggedObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),)
+SpecialDebuggedObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 # else
 #  if ProfileLibX
 ProfiledLibraryObjectRule()
 SpecialProfiledObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),)
+SpecialProfiledObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  else
 NormalLibraryObjectRule()
 SpecialObjectRule(XErrDes.o,$(ICONFIGFILES),$(DB_DEFINES))
-SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),)
+SpecialObjectRule(XConnDis.o,$(ICONFIGFILES),$(CONN_DEFINES))
 #  endif
 # endif
 #endif
