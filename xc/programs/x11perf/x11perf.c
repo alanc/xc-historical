@@ -276,7 +276,7 @@ void usage()
 "    -time <s>			do tests for <s> seconds each (default = 5)",
 /*"    -draw			draw after each test -- pmax only",*/
 "    -all			do all tests",
-"    -start <test>		like all, but start at <test>",
+"    -range <test1>[,<test2>]	like all, but do <test1> to <test2>",
 "    -labels			generate test labels for use by fillblanks.sh",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
@@ -673,22 +673,37 @@ main(argc, argv)
 	    foundOne = True;
 	} else if (strcmp (argv[i], "-labels") == 0) {
 	    labels = True;
-    } else if (strcmp(argv[i], "-start") == 0) {
-        if (argc <= i)
-	    usage();
-        i++;
-        ForEachTest (j) {
-	    if (strcmp (argv[i], test[j].option) == 0) {
-		int k;
-		for (k = j; test[k].option != NULL; k++) {
-		    doit[k] = True;
-		}
-		break;
+	} else if (strcmp(argv[i], "-range") == 0) {
+	    char *cp1;
+	    char *cp2;
+	    
+	    if (argc <= ++i)
+		usage();
+	    cp1 = argv[i];
+	    if (*cp1 == '-')
+		*cp1++;
+	    if ((cp2 = index(cp1, ',')) != NULL) {
+		*cp2++ = '\0';
+		if (*cp2 == '-')
+		    *cp2++;
+	    } else {
+		cp2 = "-";
 	    }
-        }
-        if (test[j].option == NULL)
-	    usage();
-        foundOne = True;
+	    ForEachTest (j) {
+		if (strcmp (cp1, (test[j].option) + 1) == 0) {
+		    int k = j;
+		    do {
+			doit[k] = True;
+		    } while (strcmp(cp2, (test[k].option + 1)) != 0 &&
+			     test[++k].option != NULL);
+		    if (*cp2 != '-' && test[k].option == NULL)
+			usage();
+		    break;
+		}
+	    }
+	    if (test[j].option == NULL)
+		usage();
+	    foundOne = True;
     } else if (strcmp (argv[i], "-sync") == 0) {
 	    synchronous = True;
 	} else if (strcmp (argv[i], "-draw") == 0) {
@@ -784,7 +799,7 @@ main(argc, argv)
     if (!foundOne)
 	usage ();
     xparms.d = Open_Display (displayName);
-    printf("x11perf - X11 performance program, version 1.1\n");
+    printf("x11perf - X11 performance program, version 1.2\n");
 #ifndef VMS
     gethostname (hostname, 100);
     printf ("%s server on %s\nfrom %s\n",
