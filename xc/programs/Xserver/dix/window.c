@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.70 91/07/03 14:02:01 keith Exp $ */
+/* $XConsortium: window.c,v 5.71 91/07/03 16:35:09 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2133,6 +2133,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     RegionPtr	borderVisible = NullRegion; /* visible area of the border */
     RegionPtr	bsExposed = NullRegion;	    /* backing store exposures */
     Bool	shrunk = FALSE; /* shrunk in an inner dimension */
+    Bool	moved = FALSE;	/* window position changed */
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
@@ -2189,15 +2190,24 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     	if (pWin->drawable.height > h || pWin->drawable.width > w)
 	    shrunk = TRUE;
 
+	if (newx != oldx || newy != oldy)
+	    moved = TRUE;
+
 	if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
 	    HasBorder (pWin))
 	{
 	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
-	    if (shrunk || newx != oldx || newy != oldy)
-		(*pScreen->Subtract) (borderVisible, &pWin->borderClip,
-				      &pWin->winSize);
-	    else
-		(*pScreen->RegionCopy) (borderVisible, &pWin->borderClip);
+	    /* for tiled borders, we punt and draw the whole thing */
+	    if (pWin->borderIsPixel || !moved)
+	    {
+	    	if (shrunk || moved)
+		    (*pScreen->Subtract) (borderVisible,
+					  &pWin->borderClip,
+				      	  &pWin->winSize);
+	    	else
+		    (*pScreen->RegionCopy) (borderVisible,
+					    &pWin->borderClip);
+	    }
 	}
     }
     pWin->origin.x = x + bw;
