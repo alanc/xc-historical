@@ -4,6 +4,8 @@ xrdb - Server Resource Database Utility.
 .SH SYNOPSIS
 .B xrdb
 [
+.B \-display \fIhost\fP:\fInumber\fP
+] [
 .B \-d
 ] [
 .B \-r
@@ -13,8 +15,6 @@ xrdb - Server Resource Database Utility.
 .B \-m
 ] [
 .B \-e
-] [
-.B \fIhost\fP:\fInumber\fP
 ] [
 .I filename
 ] 
@@ -118,3 +118,4 @@ Phil Karlton
 .br
 Copyright (c) 1987, 1988 by Digital Equipment Corporation
 .br
+

@@ -39,8 +39,10 @@ static char rcs_id[] = "$Header: xrdb.c,v 11.5 87/09/11 19:57:36 jg Exp $";
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xos.h>
 #include <ctype.h>
-#include <strings.h>
+
+char *ProgramName;
 
 extern FILE *popen();
 
@@ -393,6 +395,21 @@ cleanup:
     }
 }
 
+void Syntax ()
+{
+    fprintf (stderr, "usage:  %s [-options ...] [filename]\n\n",
+	     ProgramName);
+    fprintf (stderr, "where options include:\n");
+    fprintf (stderr, "    -display host:dpy        which display to use\n");
+    fprintf (stderr, "    -q                       query resources\n");
+    fprintf (stderr, "    -m                       merge resources\n");
+    fprintf (stderr, "    -e                       edit resources\n");
+    fprintf (stderr, "    -d                       show defines\n");
+    fprintf (stderr, "    -r                       remove properties\n");
+    fprintf (stderr, "    -Ddefine=value           #define for cpp\n");
+    exit (1);
+}
+
 main (argc, argv)
     int argc;
     char **argv;
@@ -412,33 +429,66 @@ main (argc, argv)
     int merge = 0;
     int editFile = 0;
 
+    ProgramName = argv[0];
+
     InitBuffer(&buffer);
     InitEntries(&newDB);
     InitEntries(&oldDB);
     defines[0] = '\0';
     for (i = 1; i < argc; i++) {
-	if (index (argv[i], ':') != NULL) displayname = argv[i];
-	else if (strcmp ("-q", argv[i]) == 0) printit = 1;
-	else if (strcmp ("-m", argv[i]) == 0) merge = 1;
-	else if (strcmp ("-e", argv[i]) == 0) editFile = 1;
-	else if (strcmp ("-d", argv[i]) == 0) showDefines = 1;
-	else if (strcmp ("-r", argv[i]) == NULL) removeProp = 1;
-	else if (strncmp ("-D", argv[i], 2) == 0) {
-	    strcat(defines, " \"");
-	    strcat(defines, argv[i]);
-	    strcat(defines, "\"");
-	}
-	else filename = argv[i];
-    }
+	char *arg = argv[i];
+
+	if (arg[0] == '-') {
+	    if (strcmp ("-display", argv[i]) == 0) {
+		if (++i >= argc) Syntax ();
+		displayname = argv[i];
+		continue;
+	    } else {
+		switch (arg[1]) {
+		    case 'g':
+			if (++i >= argc) Syntax ();
+			/* ignore geometry */
+			continue;
+		    case 'q':		/* query */
+			printit = 1;
+			continue;
+		    case 'm':
+			merge = 1;
+			continue;
+		    case 'e':
+			editFile = 1;
+			continue;
+		    case 'd':
+			showDefines = 1;
+			continue;
+		    case 'r':
+			removeProp = 1;
+			continue;
+		    case 'D':
+			strcat(defines, " \"");
+			strcat(defines, arg);
+			strcat(defines, "\"");
+			continue;
+		    default:
+			Syntax ();
+		}
+	    }
+	} else if (arg[0] == '=') 
+	    continue;
+	else if (index (arg, ':') != NULL)		/* old style */
+	    displayname = arg;
+	else
+	    filename = arg;
+    }							/* end for */
 
     /* Open display  */
     if (!(dpy = XOpenDisplay (displayname)))
-	fatal("%s: Can't open display '%s'\n", argv[0],
+	fatal("%s: Can't open display '%s'\n", ProgramName,
 		 XDisplayName (displayname));
 
-    DoDefines(dpy, defines, argv[0], displayname);
+    DoDefines(dpy, defines, ProgramName, displayname);
     if (showDefines)
-	fprintf(stderr, "%s:%s\n", argv[0], defines);
+	fprintf(stderr, "%s:%s\n", ProgramName, defines);
     if (printit == 1) {
 	/* user wants to print contents */
 	if (dpy->xdefaults)
@@ -453,15 +503,15 @@ main (argc, argv)
 	char template[100], old[100];
 
 	if (filename == NULL)
-	    fatal("%s: must specify file name to be edited.\n", argv[0]);
+	    fatal("%s: must specify file name to be edited.\n", ProgramName);
 	input = fopen(filename, "r");
 	if (input == NULL)
-	    fatal("%s: can't open file '%s'\n", argv[0], filename);
+	    fatal("%s: can't open file '%s'\n", ProgramName, filename);
 	strcpy(template, filename);
 	strcat(template, "XXXXXX");
 	output = fopen(mktemp(template), "w");
 	if (output == NULL)
-	    fatal("%s: can't open temporary file '%s'\n", argv[0], template);
+	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
 	buffer.used = strlen(dpy->xdefaults);
 	buffer.buff = dpy->xdefaults;		/* drop it on the floor */
 	buffer.room = buffer.used;
@@ -478,11 +528,11 @@ main (argc, argv)
 	if (filename != NULL) {
 		fp = freopen (filename, "r", stdin);
 		if (fp == NULL)
-		    fatal("%s: can't open file '%s'\n", argv[0], filename);
+		    fatal("%s: can't open file '%s'\n", ProgramName, filename);
 		}
 	sprintf(cmd, "/usr/lib/cpp %s", defines);
 	if ((input = popen(cmd, "r")) == NULL)
-	    fatal("%s: cannot run '%s'\n", argv[0], cmd);
+	    fatal("%s: cannot run '%s'\n", ProgramName, cmd);
 	ReadFile(&buffer, input);
 	GetEntries(&newDB, &buffer);
 	if (merge && dpy->xdefaults) {
@@ -502,5 +552,4 @@ main (argc, argv)
 	XCloseDisplay(dpy);
 
 }
-
 
