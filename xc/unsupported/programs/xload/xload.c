@@ -3,7 +3,7 @@
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
- * $XConsortium: xload.c,v 1.28 90/12/21 11:40:52 gildea Exp $
+ * $XConsortium: xload.c,v 1.29 90/12/21 15:26:27 gildea Exp $
  */
 
 #include <stdio.h> 
@@ -122,7 +122,7 @@ void main(argc, argv)
     setgid(getgid());
 
     toplevel = XtAppInitialize(&app_con, "XLoad", options, XtNumber(options),
-			    (Cardinal *) &argc, argv, NULL, NULL, 0);
+			       &argc, argv, NULL, NULL, 0);
       
     XtGetApplicationResources( toplevel, (caddr_t) &resources, 
 			      my_resources, XtNumber(my_resources),
@@ -143,7 +143,8 @@ void main(argc, argv)
 	XtSetArg(args[0], XtNiconPixmap, 
 		 XCreateBitmapFromData(XtDisplay(toplevel),
 				       XtScreen(toplevel)->root,
-				       xload_bits, xload_width, xload_height));
+				       (char *)xload_bits,
+				       xload_width, xload_height));
 	XtSetValues (toplevel, args, ONE);
     }
 
