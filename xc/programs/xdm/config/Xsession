@@ -1,4 +1,14 @@
 #!/bin/sh
+
+case $# in
+1)
+	case $1 in
+	failsafe)
+		exec xterm -geometry 80x24+50+50
+		;;
+	esac
+esac
+
 startup=$HOME/.xsession
 resources=$HOME/.Xresources
 

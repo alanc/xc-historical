@@ -1,8 +1,6 @@
-xlogin*greetFont: *-times-bold-i-normal--24-*
-xlogin*failFont: *-times-bold-i-normal--18-*
-xlogin*fail: login failed, please try again...
-xlogin*greeting: Welcome to the X Window System
-xlogin*Font: *-times-bold-r-normal--18-*
+xlogin*login.translations: #override\
+	<Key>F1: set-session-argument(failsafe) finish-field()\n\
+	<Key>Return: set-session-argument() finish-field()
 xlogin*borderWidth: 3
 #ifdef COLOR
 xlogin*greetColor: #f63
