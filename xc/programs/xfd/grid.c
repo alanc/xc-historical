@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.9 89/06/08 09:28:53 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.10 89/06/08 10:06:01 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@
 
 
 static void ClassInitialize(), Initialize(), Realize(), Redisplay(), Notify();
-static void Resize(), paint_grid();
+static void Destroy(), Resize(), paint_grid();
 static Boolean SetValues();
 
 
@@ -90,7 +90,7 @@ FontGridClassRec fontgridClassRec = {
     /* compress_exposure        */      TRUE,
     /* compress_enterleave      */      TRUE,
     /* visible_interest         */      FALSE,
-    /* destroy                  */      NULL,
+    /* destroy                  */      Destroy,
     /* resize                   */      Resize,
     /* expose                   */      Redisplay,
     /* set_values               */      SetValues,
@@ -211,6 +211,16 @@ static void Realize (gw, valueMask, attributes)
     return;
 }
 
+
+
+static void Destroy (gw)
+    Widget gw;
+{
+    FontGridWidget fgw = (FontGridWidget) gw;
+
+    XtReleaseGC (gw, fgw->fontgrid.text_gc);
+    XtReleaseGC (gw, fgw->fontgrid.box_gc);
+}
 
 
 static void Resize (gw)
