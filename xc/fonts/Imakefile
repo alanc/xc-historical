@@ -12,12 +12,13 @@ $(SUBDIRS): FRC
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
-#
-# Yuk and XXX!  install puts these files in $(LIBDIR)/fonts/snf not
-# in $(LIBDIR)/fonts!
-#
-# InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
-#
+/*
+ * Yuk and XXX!  install puts these files in $(LIBDIR)/fonts/snf not
+ * in $(LIBDIR)/fonts!
+ *
+ * InstallMultiple(snf/?*.snf,$(LIBDIR)/fonts)
+ */
+
 install:: snf/?*.snf
 	@case '${MFLAGS}' in *[i]*) set +e;; esac; \
 	cd snf; \
