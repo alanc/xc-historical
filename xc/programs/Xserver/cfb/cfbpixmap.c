@@ -206,7 +206,7 @@ cfbXRotatePixmap(pPix, rw)
 	case PSZ:
 	    break;
 	case 1:
-	    mfbXRotatePixmap(pPix, rw);
+	    cfbXRotateBitmap(pPix, rw);
 	    return;
 	default:
 	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
