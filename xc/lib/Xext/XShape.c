@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.15 89/10/08 16:23:02 jim Exp $
+ * $XConsortium: XShape.c,v 1.16 89/10/08 19:23:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,6 +34,8 @@ static /* const */ char *shape_extension_name = SHAPENAME;
 
 #define ShapeCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, shape_extension_name, val)
+#define ShapeSimpleCheckExtension(dpy,i) \
+  XextSimpleCheckExtension (dpy, i, shape_extension_name)
 
 
 /*****************************************************************************
@@ -216,7 +218,7 @@ int n_rects;
     register xShapeRectanglesReq *req;
     register long nbytes;
 
-    ShapeCheckExtension (dpy, info, /**/);
+    ShapeSimpleCheckExtension (dpy, info);
 
     LockDisplay(dpy);
     GetReq(ShapeRectangles, req);
@@ -250,7 +252,7 @@ int op, xOff, yOff;
     XExtDisplayInfo *info = find_display (dpy);
     register xShapeMaskReq *req;
 
-    ShapeCheckExtension (dpy, info, /**/);
+    ShapeSimpleCheckExtension (dpy, info);
 
     LockDisplay(dpy);
     GetReq(ShapeMask, req);
@@ -277,7 +279,7 @@ int op, xOff, yOff;
     XExtDisplayInfo *info = find_display (dpy);
     register xShapeCombineReq *req;
 
-    ShapeCheckExtension (dpy, info, /**/);
+    ShapeSimpleCheckExtension (dpy, info);
 
     LockDisplay(dpy);
     GetReq(ShapeCombine, req);
@@ -304,7 +306,7 @@ int xOff, yOff;
     register xShapeOffsetReq *req;
     XExtCodes	*codes;
 
-    ShapeCheckExtension (dpy, info, /**/);
+    ShapeSimpleCheckExtension (dpy, info);
 
     LockDisplay(dpy);
     GetReq(ShapeOffset, req);
@@ -367,7 +369,7 @@ void XShapeSelectInput (dpy, window, mask)
     XExtDisplayInfo *info = find_display (dpy);
     register xShapeSelectInputReq   *req;
 
-    ShapeCheckExtension (dpy, info, /**/);
+    ShapeSimpleCheckExtension (dpy, info);
 
     LockDisplay (dpy);
     GetReq (ShapeSelectInput, req);
