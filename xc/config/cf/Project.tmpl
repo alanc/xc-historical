@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.3 89/01/17 15:41:15 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.4 89/01/17 15:46:16 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -220,7 +220,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.3 89/01/17 15:41:15 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.4 89/01/17 15:46:16 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -246,6 +246,8 @@ Berklib.c: sysV/Berklib.c					@@\
       XAPPLOADDIR = XAppLoadDir		/* application default resources */
 
           FCFLAGS = FontCompilerFlags
+
+     INSTAPPFLAGS = $(INSTDATFLAGS)	/* XXX - this should go away - XXX */
 
           PATHSEP = /
            DEPEND = $(DEPENDSRC)/makedepend

@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# This Makefile was generated automatically from Imake.tmpl:
-/**/# $XConsortium: Imake.tmpl,v 1.3 89/01/17 13:15:36 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.4 89/01/17 14:40:22 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -217,8 +217,8 @@
 #ifndef InstManFlags
 #define InstManFlags -m 0444
 #endif
-#ifndef InstAppFlags
-#define InstAppFlags -m 0444
+#ifndef InstDatFlags
+#define InstDatFlags -m 0444
 #endif
 #ifndef InstKmemFlags
 #define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
@@ -347,7 +347,7 @@ SYSLAST_LIBRARIES = SysLastLibraries
      INSTLIBFLAGS = InstLibFlags	/* install flags for libraries */
      INSTINCFLAGS = InstIncFlags	/* install flags for headers */
      INSTMANFLAGS = InstManFlags	/* install flags for man pages */
-     INSTAPPFLAGS = InstAppFlags	/* install flags for app defaults */
+     INSTDATFLAGS = InstDatFlags	/* install flags for data files */
     INSTKMEMFLAGS = InstKmemFlags	/* install flags for /dev/kmem progs */
 
           DESTDIR = DestDir		/* root of install */
