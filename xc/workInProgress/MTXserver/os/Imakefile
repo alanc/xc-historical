@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/01/11 20:50:11 rob Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/01/12 10:18:00 gildea Exp $
 #define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
@@ -122,7 +122,6 @@ oscolor.o: oscolor.c $(ICONFIGFILES)
 SpecialCObjectRule(oscolor,$(ICONFIGFILES),$(DBM_DEFINES))
 #endif
 
-LinkSourceFile(WaitFor.c,$(SERVERSRC)/os)
 LinkSourceFile(access.c,$(SERVERSRC)/os)
 LinkSourceFile(oscolor.c,$(SERVERSRC)/os)
 LinkSourceFile(osinit.c,$(SERVERSRC)/os)
