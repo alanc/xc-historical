@@ -1,4 +1,4 @@
-/* $XConsortium: keymap.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: keymap.c,v 1.1 94/04/02 17:06:22 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,24 +26,27 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "vmod.h"
 #include "action.h"
+#include "indicators.h"
 
 Bool
 CompileKeymap(file,result,merge)
     XkbFile	*	file;
-    XkbFileResult *	result;
+    XkbFileInfo *	result;
     unsigned	 	merge;
 {
 unsigned	have;
 Bool		ok;
 unsigned	required,optional,legal;
 unsigned	mainType;
+StringToken	mainName;
 
     mainType= file->type;
+    mainName= file->name;
     switch (mainType) {
 	case XkmSemanticsFile:
 	    required= XkmSemanticsRequired;
@@ -62,7 +65,7 @@ unsigned	mainType;
 	    break;
 	default:
 	    uError("Cannot compile %s alone into an XKM file\n",
-						configText(mainType));
+						XkbConfigText(mainType));
 	    return False;
     }
     have= 0;
@@ -71,22 +74,23 @@ unsigned	mainType;
     while ((file)&&(ok)) {
 	if ((have&(1<<file->type))!=0) {
 	    uError("More than one %s section in a %s file\n",
-					configText(file->type),
-					configText(mainType));
+					XkbConfigText(file->type),
+					XkbConfigText(mainType));
 	    uAction("All sections after the first ignored\n");
 	    ok= False;
 	}
 	else if ((1<<file->type)&(~legal)) {
-	    uError("Cannot define %s in a ",configText(file->type));
-	    uInformation("%s file\n",configText(mainType));
+	    uError("Cannot define %s in a %s file\n",XkbConfigText(file->type),
+	    					     XkbConfigText(mainType));
 	    ok= False;
 	}
 	else switch (file->type) {
 	    case XkmSemanticsFile:
 	    case XkmLayoutFile:
 	    case XkmKeymapFile:
-		uInternalError("Illegal %s file in a ",configText(file->type));
-		uInformation("%s file\n",configText(mainType));
+		uInternalError("Illegal %s configuration in a %s file\n",
+						XkbConfigText(file->type),
+						XkbConfigText(mainType));
 		uAction("Ignored\n");
 		ok= False;
 		break;
@@ -110,7 +114,7 @@ unsigned	mainType;
 	    case XkmVirtualModsIndex:
 	    case XkmIndicatorsIndex:
 		uInternalError("Found an isolated %s section\n",
-						configText(file->type));
+						XkbConfigText(file->type));
 		break;
 	    case XkmAlternateSymsFile:
 		uError("Keymap file contains alternate symbol map\n");
@@ -132,13 +136,20 @@ unsigned	mainType;
 	missing= required&(~have);
 	for (i=0,bit=1;missing!=0;i++,bit<<=1) {
 	    if (missing&bit) {
-		uError("Missing %s section in ",configText(i));
-		uInformation("%s file\n",configText(mainType));
+		uError("Missing %s section in a %s file\n",XkbConfigText(i),
+						XkbConfigText(mainType));
 		missing&=~bit;
 	    }
 	}
-	uAction("Description of %s not compiled\n",configText(mainType));
+	uAction("Description of %s not compiled\n",XkbConfigText(mainType));
 	ok= False;
+    }
+    if ((mainType==XkmSemanticsFile)&&(mainName!=NullStringToken)) {
+        if (result->xkb.names!=NULL)
+	    result->xkb.names->semantics= mainName;
+    }
+    if (result->defined&XkbIndicatorMapsDefined) {
+	ok= BindIndicators(result,False);
     }
     return ok;
 }
