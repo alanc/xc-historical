@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.23 91/06/03 17:00:19 dave Exp $
+ * $XConsortium: man.c,v 1.25 91/06/24 11:21:25 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -381,6 +381,9 @@ char * path;
       nalloc += ENTRYALLOC;
       local_manual->entries =(char **) XtRealloc((char *)local_manual->entries,
 						 nalloc * sizeof(char *));
+      local_manual->entries_less_paths =
+	(char **) XtRealloc((char *)local_manual->entries_less_paths,
+			    nalloc * sizeof(char *));
     }
 
     sprintf(full_name, "%s/%s", path, name);
@@ -391,10 +394,14 @@ char * path;
     if ( (ptr = rindex(full_name, '.')) != NULL) 
       if (streq(ptr + 1, COMPRESSION_EXTENSION)) 
 	*ptr = '\0';
-
-    local_manual->entries[nentries++] = StrAlloc(full_name);
+    local_manual->entries[nentries] = StrAlloc(full_name);
+    local_manual->entries_less_paths[nentries] = 
+      rindex(local_manual->entries[nentries], '/');
+    if ( local_manual->entries_less_paths[nentries] == NULL )
+      PrintError("Internal error while cataloging manual pages.");
+    ++ nentries;
   }
-
+  
   local_manual->nentries = nentries;
   local_manual->nalloc = nalloc;
 
@@ -416,77 +423,421 @@ int number;
 {
   int i;
   char *l1, *l2;
-
+  
   for ( i = 0; i < number; man++, i++) { /* sort each section */
     register int j = 0;      
-
+    
 #ifdef DEBUG
-  printf("sorting section %d - %s\n", i, man->blabel);
+    printf("sorting section %d - %s\n", i, man->blabel);
 #endif /* DEBUG */
-
-    qsort(man->entries, man->nentries, sizeof( char * ), CmpEntryLabel);
-
+    
+    sortstrs ( man->entries_less_paths, man->nentries, man->entries );
+    
 #ifdef DEBUG
     printf("removing from section %d.\n", i);
 #endif /* DEBUG */
-
-    if ( (l1 = rindex(man->entries[j], '/')) == NULL)
-      PrintError("Internal error while removing duplicate manual pages.");
-    j++;
-
-    while (j < man->nentries - 1) {
-      l2 = l1;
-      if ( (l1 = rindex(man->entries[j], '/')) == NULL)
-	PrintError("Internal error while removing duplicate manual pages.");
-      if (man->flags & MFOLD ?  (XmuCompareISOLatin1(l1,l2) == 0)
-	                     : (streq(l1, l2))) {
-	register int k;
-	for( k = j; k < (man->nentries); k++)
-	  man->entries[k - 1] = man->entries[k];
-	(man->nentries)--;
-      }
-      else
-	j++;
+    
+    {
+      register int   j, k, nent, nentm1;
+      int     j2;
+      nent   = man -> nentries;
+      nentm1 = nent - 1;
+      j = 0;
+      l2 = man->entries_less_paths[j++];
+      if ( l2 == NULL )
+        PrintError("Internal error while removing duplicate manual pages.");
+      while ( j < nentm1 )
+	{
+	  l1 = l2;
+	  l2 = man->entries_less_paths[j++];
+	  if ( l2 == NULL )
+	    PrintError("Internal error while removing duplicate manual pages."
+		       );
+	  if ( streq(l1,l2) )
+	    {
+	      j2 = j-1;
+	      k  = j2;
+	      while ( j < nent )
+                {
+		  man -> entries_less_paths[k] = man -> entries_less_paths[j];
+                man -> entries[k++] = man -> entries[j++];
+                }
+	      j = j2;
+	      -- man -> nentries;
+	      -- nent;
+	      -- nentm1;
+	    }
+	}
     }
   }
 }
 
-/*	Function Name: CmpEntryLabel - used in qsort().
- *	Description: compares to elements by using their labels.
- *	Arguments: e1, e2 - two items to compare.
- *	Returns: an integer >, < or = 0.
+ /*
+       *******  Replacement for qsort to keep
+       *******  identical entries in order
+ 
+       A somewhat ugly hack of something that was once simpler...
  */
-
-static int 
-CmpEntryLabel(e1, e2) 
-char **e1, **e2;
-{
-  char *l1, *l2;
-  char *s1, *s2;
-  int result;
-
-/*
- * What we really want to compare is the actual names of the manual pages,
- * and not the full path names.
+ /*
+       Sort an array of pointers to strings, keeping it
+       in ascending order by (1) string comparison and
+       (2) original entry order in the pointer array.
+ 
+       This is a modified radix exchange algorithm.
+ 
+       In case there's insufficient memory for a temporary copy
+       of the pointer array, the original order of identical strings
+       isn't preserved.
  */
-
-  if ( (l1 = rindex(*e1, '/')) == NULL)
-    PrintError("Internal error while sorting manual pages.");
-  if ( (l2 = rindex(*e2, '/')) == NULL)
-    PrintError("Internal error while sorting manual pages.");
-  
-    /* temporarily remove suffixes of the two entries */
-  
-    if ( (s1 = rindex(*e1, '.')) != NULL) *s1 = '\0';
-    if ( (s2 = rindex(*e2, '.')) != NULL) *s2 = '\0';
-  
-    result = strcmp(l1+1, l2+1); 
-  
-    if (s1 != NULL) *s1 = '.';	/* restore suffixes */
-    if (s2 != NULL) *s2 = '.';
-   
-    return result;
-}
+ 
+#ifndef       Byte
+#define       Byte    unsigned char
+#endif
+ 
+#ifndef       reg
+#define       reg     register
+#endif
+ 
+ 
+ 
+ sortstrs ( data, size, otherdata )    /*  Sort an array of string ptrs  */
+ 
+       Byte    *data[];
+       int      size;
+       Byte    *otherdata[];
+ 
+ {
+       Byte   **sp, **ep;
+       Byte   **othersp, **otherep;
+       int     *origorder;
+ 
+ origorder = (int *) calloc (size, sizeof(int));
+ if ( origorder )
+    {
+    reg int     i;
+ 
+    for ( i=0; i < size; ++i )
+       origorder[i] = i;
+    }
+ 
+ sp = data;
+ ep = &data[size-1];
+ othersp = otherdata;
+ otherep = &otherdata[size-1];
+ if ( origorder )
+    {
+    sortstrs_block_oo ( sp, ep, 0, 0x80, origorder, &origorder[size-1],
+       othersp, otherep );
+    free (origorder);
+    }
+ else
+    sortstrs_block ( sp, ep, 0, 0x80, othersp, otherep );
+ }
+ 
+ 
+ 
+ /*---------------------------------*/
+ /*  Sort 1 block of data on 1 bit  */
+ /*---------------------------------*/
+ 
+ sortstrs_block ( start, end, offset, mask, otherstart, otherend )
+ 
+       Byte   **start;
+       Byte   **end;
+       int      offset;
+       Byte     mask;
+       Byte   **otherstart;
+       Byte   **otherend;
+ 
+ {
+ reg   Byte   **sp, **ep;
+ reg   Byte     m;
+ reg   int      off;
+ reg   Byte    *t;
+ reg   int      curstrlen;
+       int      maxstrlen;
+       Byte   **othersp, **otherep;
+ 
+ 
+#define       newstring(ptr) \
+ { \
+ t = *ptr; \
+ curstrlen = 0; \
+ while ( *t++ ) ++ curstrlen; \
+ if ( curstrlen > maxstrlen ) maxstrlen = curstrlen; \
+ t = *ptr; \
+ }
+ 
+ 
+ maxstrlen = 0;
+ sp  = start;
+ ep  = end;
+ off = offset;
+ m   = mask;
+ othersp = otherstart;
+ otherep = otherend;
+ 
+ while (1)
+     {
+     newstring(sp)
+     while (((sp != ep) && ((curstrlen < off) || ((t[off] & m) == 0))))
+       {
+       ++ sp;
+       ++ othersp;
+       newstring(sp)
+       }
+     if ( sp == ep )
+       break;
+ 
+     newstring(ep);
+     while (((sp != ep) && (curstrlen >= off) && ((t[off] & m) != 0)))
+       {
+       -- ep;
+       -- otherep;
+       newstring(ep)
+       }
+     if ( sp == ep )
+       break;
+ 
+     t = *sp;
+     *sp = *ep;
+     *ep = t;
+ 
+     t      = *othersp;
+     *othersp = *otherep;
+     *otherep = t;
+     }
+ 
+ t = *sp;
+ if ((curstrlen < off) || ((t[off] & m) == 0))
+    {
+    if ( ep != end )
+       {
+       ++ ep;
+       ++ otherep;
+       }
+    }
+ else
+    {
+    if ( sp != start )
+       {
+       -- sp;
+       -- othersp;
+       }
+    }
+ 
+ m >>= 1;
+ if ( m == 0 )
+    {
+    m = 0x80;
+    if ( ++off >= maxstrlen )
+       return;
+    }
+ 
+ 
+ if ( sp != start )
+    sortstrs_block ( start, sp, off, m, otherstart, othersp );
+ if ( ep != end )
+    sortstrs_block ( ep, end, off, m, otherep, otherend );
+ }
+ 
+ 
+ 
+ /*-----------------------------------------------------------------*/
+ /*  Sort 1 block of data on 1 bit; check for out-of-order entries  */
+ /*-----------------------------------------------------------------*/
+ 
+ sortstrs_block_oo ( start, end, offset, mask, ostart, oend,
+                        otherstart, otherend )
+ 
+       Byte   **start;
+       Byte   **end;
+       int      offset;
+       Byte     mask;
+       int     *ostart;
+       int     *oend;
+       Byte   **otherstart;
+       Byte   **otherend;
+ 
+ {
+ reg   Byte   **sp, **ep;
+ reg   int     *osp, *oep;
+ reg   Byte     m;
+ reg   int      off;
+ reg   Byte    *t;
+ reg   int      u;
+ reg   int      curstrlen;
+       int      maxstrlen;
+       Byte   **othersp, **otherep;
+ 
+ 
+#define       newstring(ptr) \
+ { \
+ t = *ptr; \
+ curstrlen = 0; \
+ while ( *t++ ) ++ curstrlen; \
+ if ( curstrlen > maxstrlen ) maxstrlen = curstrlen; \
+ t = *ptr; \
+ }
+ 
+ 
+ maxstrlen = 0;
+ sp  = start;
+ ep  = end;
+ osp = ostart;
+ oep = oend;
+ off = offset;
+ m   = mask;
+ othersp = otherstart;
+ otherep = otherend;
+ 
+ while (1)
+     {
+     newstring(sp)
+     while (((sp != ep) && ((curstrlen < off) || ((t[off] & m) == 0))))
+       {
+       ++ sp;
+       ++ osp;
+       ++ othersp;
+       newstring(sp)
+       }
+     if ( sp == ep )
+       break;
+ 
+     newstring(ep);
+     while (((sp != ep) && (curstrlen >= off) && ((t[off] & m) != 0)))
+       {
+       -- ep;
+       -- oep;
+       -- otherep;
+       newstring(ep)
+       }
+     if ( sp == ep )
+       break;
+ 
+     t   = *sp;
+     *sp = *ep;
+     *ep = t;
+ 
+     t      = *othersp;
+     *othersp = *otherep;
+     *otherep = t;
+ 
+     u    = *osp;
+     *osp = *oep;
+     *oep = u;
+     }
+ 
+ t = *sp;
+ if ((curstrlen < off) || ((t[off] & m) == 0))
+    {
+    if ( ep != end )
+       {
+       ++ ep;
+       ++ oep;
+       ++ otherep;
+       }
+    }
+ else
+    {
+    if ( sp != start )
+       {
+       -- sp;
+       -- osp;
+       -- othersp;
+       }
+    }
+ 
+ m >>= 1;
+ if ( m == 0 )
+    {
+    m = 0x80;
+    if ( ++off >= maxstrlen )  /*  Finished sorting block of strings:    */
+       {                               /*  Restore duplicates to
+riginal order  */
+       reg Byte **cp;
+       reg int *ocp;
+         Byte **othercp;
+ 
+ 
+       if ( sp != start )
+        {
+        cp  = start;
+        ocp = ostart;
+        othercp = otherstart;
+        while ( cp != sp )
+           {
+           if ( *ocp > *(ocp+1) )
+               {
+               t       = *(cp+1);
+               *(cp+1) = *cp;
+               *cp     = t;
+ 
+               t               = *(othercp+1);
+               *(othercp+1)    = *othercp;
+               *othercp        = t;
+ 
+               u        = *(ocp+1);
+               *(ocp+1) = *ocp;
+               *ocp     = u;
+ 
+               if ( cp != start )
+                  {
+                  -- cp;
+                  -- ocp;
+                  -- othercp;
+                  continue;
+                  }
+               }
+           ++ cp;
+           ++ ocp;
+           ++ othercp;
+           }
+        }
+       if ( ep != end )
+        {
+        cp  = ep;
+        ocp = oep;
+        othercp = otherep;
+        while ( cp != end )
+           {
+           if ( *ocp > *(ocp+1) )
+               {
+               t       = *(cp+1);
+               *(cp+1) = *cp;
+               *cp     = t;
+ 
+               t               = *(othercp+1);
+               *(othercp+1)    = *othercp;
+               *othercp        = t;
+ 
+               u        = *(ocp+1);
+               *(ocp+1) = *ocp;
+               *ocp     = u;
+ 
+               if ( cp != ep )
+                  {
+                  -- cp;
+                  -- ocp;
+                  -- othercp;
+                  continue;
+                  }
+               }
+           ++ cp;
+           ++ ocp;
+           ++ othercp;
+           }
+        }
+       return;
+       }
+    }
+ 
+ 
+ if ( sp != start )
+    sortstrs_block_oo ( start, sp, off, m, ostart, osp, otherstart, othersp );
+ if ( ep != end )
+    sortstrs_block_oo ( ep, end, off, m, oep, oend, otherep, otherend );
+ }
 
 
 /*	Function Name: InitManual
