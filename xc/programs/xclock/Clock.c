@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.41 88/09/06 16:40:58 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.42 88/09/06 17:39:27 swick Exp $";
 #endif lint
 
 
@@ -35,6 +35,7 @@ SOFTWARE.
 
 extern long time();
 static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
+static erase_hands(), round();
 	
 /* Private Definitions */
 
