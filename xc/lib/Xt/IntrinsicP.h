@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.52 91/01/11 16:59:46 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.53 91/02/05 13:46:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -214,13 +214,13 @@ typedef struct _XtTMRec {
 
 #ifdef DEBUG
 #define XtCheckSubclass(w, widget_class_ptr, message)	\
-	if (!XtIsSubclass((w), (widget_class_ptr))) {	\
+	if (!XtIsSubclass(((Widget)(w)), (widget_class_ptr))) {	\
 	    String params[3];				\
 	    Cardinal num_params = 3;			\
-	    params[0] = (w)->core.widget_class->core_class.class_name;	     \
+	    params[0] = ((Widget)(w))->core.widget_class->core_class.class_name;\
 	    params[1] = (widget_class_ptr)->core_class.class_name;	     \
 	    params[2] = (message);					     \
-	    XtAppErrorMsg(XtWidgetToApplicationContext(w),		     \
+	    XtAppErrorMsg(XtWidgetToApplicationContext((Widget)w),	     \
 		    "subclassMismatch", "xtCheckSubclass", "XtToolkitError", \
 		    "Widget class %s found when subclass of %s expected: %s",\
 		    params, &num_params);		\
