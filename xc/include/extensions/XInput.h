@@ -1,4 +1,4 @@
-/* $XConsortium: XInput.h,v 1.7 90/05/18 11:36:46 rws Exp $ */
+/* $XConsortium: XInput.h,v 1.8 90/05/18 15:17:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -404,6 +404,7 @@ typedef struct {
 typedef struct {
      XID            class;
      int            length;
+     XID            id;
 } XFeedbackState;
 
 typedef struct {
