@@ -6,9 +6,9 @@
 */
 
 #include <X11/Intrinsic.h>
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/Scroll.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Scroll.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
 
@@ -112,6 +112,6 @@ void create_testfrac_choice(w,stored)
   slider = XtCreateManagedWidget("Slider",scrollbarWidgetClass,w,
 				 scrollargs,XtNumber(scrollargs));
 
-  XtScrollBarSetThumb(slider, 0.9, 0.1);
+  XawScrollBarSetThumb(slider, 0.9, 0.1);
 
 }
