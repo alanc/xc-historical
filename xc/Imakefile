@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.111 93/09/06 11:52:45 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.112 93/09/09 11:18:24 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -17,12 +17,12 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
-includes::
-	MakeDir($(BUILDINCDIR))
-
 DependSubdirs($(SUBDIRS))
 
 #ifndef Win32Architecture
+includes::
+	MakeDir($(BUILDINCDIR))
+
 XCOMM
 XCOMM Watch out!!!  Make sure you do make includes after removing X11....
 XCOMM
@@ -82,6 +82,16 @@ dangerous_strip_clean::
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
 #else
+
+includes::
+	MakeDir($(BUILDINCDIR:/=\))
+
+XCOMM
+XCOMM Watch out!!!  Make sure you do make includes after removing X11....
+XCOMM
+clean::
+	deltree /y $(BUILDINCDIR:/=\)
+	deltree /y $(BUILDLIBDIR:/=\)
 
 XCOMM do not name your log file make.log when you run this ...
 World World.Win32::
