@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.61 94/03/29 18:08:22 gildea Exp $
+ * $XConsortium: Xos.h,v 1.62 94/03/29 18:46:52 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -82,7 +82,7 @@
 /*
  * strerror()
  */
-#if !defined(__STDC__) || defined(SYSV) || (defined(sun) && !defined(SVR4))
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4)) || defined(macII)
 #ifndef strerror
 extern char *sys_errlist[];
 extern int sys_nerr;
