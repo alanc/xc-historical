@@ -1,5 +1,6 @@
 /*
-* $Header: IntrinsicI.h,v 1.19 88/02/25 19:13:39 swick Exp $
+* $xHeader: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
+* $oHeader: IntrinsicI.h,v 1.4 88/08/26 16:14:40 asente Exp $
 */
 
 /***********************************************************
@@ -31,38 +32,62 @@ SOFTWARE.
 
 #include "IntrinsicP.h"
 
+#include "TranslateI.h"
+#include "CallbackI.h"
+#include "CompositeI.h"
+#include "InitializeI.h"
+#include "ConvertI.h"
+#include "ResourceI.h"
+#include "EventI.h"
+
 /****************************************************************
  *
  * Byte utilities
  *
  ****************************************************************/
 
-
 extern void bcopy();
+extern void bzero();
+extern int bcmp();
+
+
+/* If the alignment characteristics of your machine are right, these may be
+   faster */
+
+#ifdef UNALIGNED
+
 #define XtBCopy(src, dst, size)				    \
-    if (size == sizeof(int) &&				    \
-	!((unsigned int) src & 0x3) &&			    \
-	!((unsigned int) dst & 0x3))			    \
+    if (size == sizeof(int))				    \
 	*((int *) (dst)) = *((int *) (src));		    \
     else if (size == sizeof(char))			    \
 	*((char *) (dst)) = *((char *) (src));		    \
+    else if (size == sizeof(short))			    \
+	*((short *) (dst)) = *((short *) (src));	    \
     else						    \
 	bcopy((char *) (src), (char *) (dst), (int) (size));
 
-extern void bzero();
 #define XtBZero(dst, size)				    \
     if (size == sizeof(int))				    \
 	*((int *) (dst)) = 0;				    \
     else						    \
 	bzero((char *) (dst), (int) (size));
 
-extern int bcmp();
 #define XtBCmp(b1, b2, size)				    \
     (size == sizeof(int) ?				    \
 	*((int *) (b1)) != *((int *) (b2))		    \
     :   bcmp((char *) (b1), (char *) (b2), (int) (size))    \
     )
 
+#else
+
+#define XtBCopy(src, dst, size)		\
+	bcopy((char *) (src), (char *) (dst), (int) (size));
+
+#define XtBZero(dst, size) bzero((char *) (dst), (int) (size));
+
+#define XtBCmp(b1, b2, size) bcmp((char *) (b1), (char *) (b2), (int) (size))
+
+#endif
 
 
 /****************************************************************
@@ -79,96 +104,22 @@ extern int bcmp();
 #define XtStackFree(pointer, stack_cache_array) \
     if ((pointer) != (stack_cache_array)) XtFree(pointer)
 
-
-
-/****************************************************************
+/***************************************************************
  *
- * Callbacks
+ * Filename defines
  *
- ****************************************************************/
+ **************************************************************/
 
-typedef struct _XtOffsetRec {
-     struct _XtOffsetRec *next;
-     XrmQuark       name;
-     int            offset;
-} XtOffsetRec, *_XtOffsetList;
+#define XAPPLOADDIR "/usr/lib/X11/app-defaults/"
+#define ERRORDB "/usr/lib/XtErrorDB"
 
-extern void _XtRemoveAllCallbacks (); /* callbackList */
-    /* CallbackList	*callbackList;	*/
-
-extern void _XtCallCallbacks (); /* callbacks, call_data */
-    /* CallbackList	*callbacks;	*/
-    /* Opaque		callData;	*/
-
-extern void _XtAddCallback(); /* widget, callbacks, callback, closure */
-    /* Widget           widget; */
-    /* CallbackList     *callbacks; */
-    /* XtCallbackProc   callback; */
-    /* Opaque           closure; */
-
-typedef struct _CallbackRec *CallbackList;
-
-CallbackList DestroyList;
-
-/****************************************************************
+/*************************************************************
  *
- * Next Event
- *
- ****************************************************************/
+ * Misc
+ ************************************************************/
 
-Display *toplevelDisplay;
-
-extern Boolean _XtwaitForSomething(); /* ignoreTimers, ignoreInputs, block, howlong */
-    /* Boolean ignoreTimers; */
-    /* Boolean ignoreInputs; */
-    /* Boolean block; */
-    /* unsigned long *howlong; */
-
-/****************************************************************
- *
- * Resources
- *
- ****************************************************************/
-
-#define StringToQuark(string) XrmStringToQuark(string)
-#define StringToName(string) XrmStringToName(string)
-#define StringToClass(string) XrmStringToClass(string)
-
-extern void XtGetResources();
-    /* Widget       widget;             */
-    /* ArgList	    args;		*/
-    /* int	    num_args;		*/
-
-#ifndef INTRINSIC_C
-globalref XrmDatabase XtDefaultDB;
-globalref XrmName XtApplicationName;
-globalref XrmClass XtApplicationClass;
-#endif
-
-extern void _XtInstallTranslations(); /* widget, stateTable */
-    /* Widget widget; */
-    /* XtTranslations stateTable; */
-
-extern XtTranslations _ParseTranslationTable();	/* source */
-    /* String source; */
-
-extern void _XtBindActions(); /* widget, stateTable */
-    /* Widget widget; */
-    /* XtTranslations stateTable; */
-
-extern void _XtTranslateInitialize();
-
-extern void _XtConvertInitialize();
-
-extern void _XtConvert();
-
-extern void _XtRegisterGrabs(); /* widget */
-    /* Widget widget; */
-
-extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
-    /* Widget      widget; */
-    /* XtGrabKind  grab_kind; */
-    /* Boolean     spring_loaded; */
+ extern Bool _XtClassIsSubclass();
+   /* WidgetClass subWidgetClass, widgetClass */
 
 #endif _XtintrinsicI_h
 /* DON'T ADD STUFF AFTER THIS #endif */
