@@ -28,7 +28,7 @@ printed on the standard error.
 .B \-update \fIseconds\fP
 This option specifies the frequency in seconds at which \fIxbiff\fP
 should update its display.  If the mailbox is obscured and then exposed,
-it will be updated immediately.
+it will be updated immediately.  The default is 60 seconds.
 .TP 8
 .B \-file \fIfilename\fP
 This option specifies the name of the file which should be monitored.  By
@@ -42,11 +42,12 @@ The following standard X Toolkit command line arguments are commonly used with
 .I xbiff:
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to contact; see \fIX(1)\fP.
+This option specifies the X server to contact.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the mailbox window;
-see \fIX(1)\fP.
+This option specifies the prefered size and position of the mailbox window.
+The mailbox is 48 pixels wide and 48 pixels high and will be centered in
+the window.
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
