@@ -1,4 +1,4 @@
-/* $XConsortium: mpgeomaa.c,v 1.1 93/07/19 10:19:51 rws Exp $ */
+/* $XConsortium: mpgeomaa.c,v 1.2 93/07/20 19:42:56 rws Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 				NOTICE
@@ -62,6 +62,9 @@ terms and conditions:
 #define XoftWare
 #endif
 
+#ifdef XoftWare
+#define _NO_FLOATING_PT
+#endif
 /*
  *  Core X Includes
  */
@@ -105,9 +108,6 @@ static int ActivateGeomAA();
 static int ResetGeomAA();
 static int DestroyGeomAA();
 
-static void DoFakeLine();
-static void DoScaleLine();
-static void DoCropLine();
 
 /*
  * DDXIE Geometry entry points
@@ -525,6 +525,7 @@ static int InitializeGeomAA(flo,ped)
 
 	   if (a == 1 && d == 1) {
 	       /* just Cropping, no real resampling to be done */
+             /* will come up with a special case for this in Beta */
 	   }
 	   pvtband->linefunc =
 		scale_lines[IndexClass(pet->emitter[band].format->class)]; 
@@ -1215,33 +1216,5 @@ DO_GL	(GL_R, RealPixel, RealPixel, flt_constant)
 DO_GL	(GL_B, BytePixel, QuadPixel, int_constant)
 DO_GL	(GL_P, PairPixel, QuadPixel, int_constant)
 DO_GL	(GL_Q, QuadPixel, QuadPixel, int_constant)
-
-/**********************************************************************/
-static void DoCropLine(outp,srcimg,width,sline,fconstant,pvt,pvtband)
-register BytePixel *outp;
-register BytePixel **srcimg;
-register int width,sline;
-double fconstant;
-mpAntiAliasDefPtr pvt;
-mpAntiAliasBandPtr pvtband;
-{
-	/* let's fake it until we have time to clean up */
-	DoFakeLine(outp,srcimg,width,sline,fconstant,pvt,pvtband);
-}
-/**********************************************************************/
-static void DoFakeLine(outp,srcimg,width,sline,fconstant,pvt,pvtband)
-register BytePixel *outp;
-register BytePixel **srcimg;
-register int width,sline;
-double fconstant;
-mpAntiAliasDefPtr pvt;
-mpAntiAliasBandPtr pvtband;
-{
-register int i;
-register BytePixel constant = (BytePixel) pvtband->int_constant;
-register BytePixel *src = srcimg[sline];
-
-        for (i=0; i < width; ++i) *outp++ = i%256;
-}
 /**********************************************************************/
 /* end module mpgeomnn.c */
