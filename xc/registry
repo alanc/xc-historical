@@ -1,4 +1,4 @@
-/* $XConsortium: registry,v 1.96 94/03/16 21:28:51 rws Exp $ */
+/* $XConsortium: registry,v 1.97 94/04/18 11:15:06 rws Exp $ */
 
 				  X Registry
 
@@ -358,6 +358,7 @@ Name						Reference
 "FUJITSU-VX-DeviceControl"			[87]
 "JUPMISC"					[93]
 "KPC-XPeer"					[98]
+"MIT-SCREEN-SAVER"				[96]
 "MIT-SHM"					[8]
 "MIT-SUNDRY-NONSTANDARD"			[8]
 "Multi-Buffering"				[8], [10]
@@ -365,7 +366,6 @@ Name						Reference
 "ORL-SYNC"					[65]
 "PanasonicDosEmulatorExtension"			[52]
 "PFU-GAOpAttr"					[32]
-"SCREEN-SAVER"					[96]
 "SGI-GLX"					[6]
 "SGI-XGL"					[6]
 "SGI-MISCELLANEOUS"				[6]
@@ -380,6 +380,7 @@ Name						Reference
 "stellar-shmLink"				[28]
 "stellar-xfdi"					[29]
 "stellar-xtest"					[28]
+"SYNC"						[108]
 "TsiOvlExtension"				[106]
 "TekCms"					[43]
 "TeKDisplayListExtension"			[43]
@@ -388,6 +389,9 @@ Name						Reference
 "VEX"						[14]
 "VIT-Image Display List Extension"		[46]
 "X3D-PEX"					[8], [9]
+"XC-MISC"					[109]
+"XIE"						[110]
+"XKEYBOARD"					[111]
 "XTEST"						[8]
 "XTestExtension1"				[35]
 "ZoidExtension"					[34]
@@ -971,10 +975,9 @@ REFERENCES
 	11 Cambridge Center
 	Cambridge MA 02142
 
-[8]	MIT X Consortium
-	Laboratory for Computer Science
-	545 Technology Square
-	Cambridge, MA 02139
+[8]	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [9]	PEX Protocol Specification
 	PEX Protocol Encoding
@@ -982,16 +985,24 @@ REFERENCES
 	Randi Rost, Digital, document editor
 
 [10]	Extending X for Double-Buffering, Multi-Buffering, and Stereo
-	Jeffrey Friedberg, Larry Seiler, Jeff Vroom
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [11]	X Display Manager Control Protocol
-	Keith Packard, MIT
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [12]	Compound Text Encoding
-	Robert W. Scheifler, MIT
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [13]	X11 Nonrectangular Window Shape Extension
-	Keith Packard, MIT
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [14]	VEX - Video Extension to X
 	Todd Brunhoff, Tektronix
@@ -1000,14 +1011,21 @@ REFERENCES
 	character sets, parts 1 through 9
 
 [16]	Inter-Client Communication Conventions Manual
-	David Rosenthal, Sun
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [17]	Obsolete
 
 [18]	Xlib Manual
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [19]	X Logical Font Description Conventions
-	Jim Flowers, Digital
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [20]	IXI Limited
 
@@ -1016,12 +1034,18 @@ REFERENCES
 [22]	Apple Computer, Inc.
 
 [23]	X Window System Protocol
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [24]	Adobe Systems, Inc.
 
 [25]	Bitstream, Inc.
 
 [26]	Xt Intrinsics Manual
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [27]	Digital Equipment Corporation
 
@@ -1375,24 +1399,24 @@ REFERENCES
 	Alameda, CA 94501
 
 [94]	Bob Scheifler
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [95]	Greg Stiehl
 	Kubota Pacific Computer
 	2630 Walsh Avenue
 	Santa Clara, CA 95051-0905
 
-[96]	X11 Screen Saver Extension, proposed standard
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+[96]	MIT Screen Saver Extension
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
-[97]	Big Requests Extension, proposed standard
-	MIT X Consortium
-	545 Technology Square
-	Cambridge, MA 02139
+[97]	Big Requests Extension
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
 
 [98]	Randi Rost
 	Kubota Pacific Computer
@@ -1439,3 +1463,23 @@ REFERENCES
 
 [107]	ISO/IEC 646, Information technology - ISO 7-bit coded
 	character set for information exchange
+
+[108]	X Synchronization Extension
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
+
+[109]	XC-MISC Extension
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
+
+[110]	X Image Extension
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
+
+[111]	X Keyboard Extension (draft)
+	X Consortium
+	1 Memorial Dr
+	Cambridge MA 02142-1301
