@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.16 95/04/04 21:20:43 dpw Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.18 95/04/25 20:34:35 dpw Exp mor $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -153,6 +153,7 @@ static void
 LbxResetProc (extEntry)
 ExtensionEntry	*extEntry;
 {
+   xfree(motionCache);
    LbxResetTags();
 }
 
