@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miFont.h,v 5.1 91/02/16 09:54:47 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,10 +46,6 @@ SOFTWARE.
 #ifndef PADDING
 #define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)
 #endif PADDING
-
-#ifndef PEX_DEFAULT_FONTPATH
-#define PEX_DEFAULT_FONTPATH "/usr/lib/X11/fonts/PEXfonts"
-#endif
 
 /* definitions in the local font coordinate system */
 #define FONT_COORD_HEIGHT   100.0
