@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.7 93/01/04 09:29:27 rws Exp $
+! $XConsortium: XKeysymDB,v 1.8 93/04/13 11:52:04 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -112,6 +112,8 @@ osfLeft			:1004FF51
 osfUp			:1004FF52
 osfRight		:1004FF53
 osfDown			:1004FF54
+osfPrior		:1004FF55
+osfNext			:1004FF56
 osfEndLine		:1004FF57
 osfBeginLine		:1004FF58
 osfEndData		:1004FF59
@@ -132,6 +134,10 @@ osfReselect		:1004FF73
 osfExtend		:1004FF74
 osfRestore		:1004FF78
 osfSwitchDirection	:1004FF7E
+osfPriorMinor		:1004FFF5
+osfNextMinor		:1004FFF6
+osfRightLine		:1004FFF7
+osfLeftLine		:1004FFF8
 osfDelete		:1004FFFF
 
 SunFA_Grave		:1005FF00
