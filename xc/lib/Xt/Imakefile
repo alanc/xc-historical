@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.96 92/06/05 16:05:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.97 92/06/05 18:32:28 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -37,6 +37,9 @@ XTWARNINGPREFIX = XtWarningPrefix
 #endif
 #if MotifBC
      BC_DEFINES = -DMOTIFBC
+#endif
+#if NoRConst
+ RCONST_DEFINES = -DNORCONST
 #endif
 
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -178,6 +181,7 @@ SpecialCLibObjectRule(Intrinsic,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialCLibObjectRule(Error,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialCLibObjectRule(Alloc,$(_NOOP_),$(ALLOC_DEFINES))
 SpecialCLibObjectRule(Converters,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(TMaction,$(_NOOP_),$(RCONST_DEFINES))
 #if DoSharedLib
 SpecialCObjectRule(sharedlib,$(_NOOP_),$(SHLIBDEF))
 #endif

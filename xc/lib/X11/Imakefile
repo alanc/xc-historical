@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.130 92/01/19 17:33:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.131 92/05/28 12:05:15 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -44,6 +44,9 @@ XBSDLIB = /**/
      NLS_DEFINES = -DXNLSPATHDEFAULT=\"$(NLSDIR)\"
 #if MotifBC
       BC_DEFINES = -DMOTIFBC
+#endif
+#if NoRConst
+ RCONST_DEFINES = -DNORCONST
 #endif
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o 
@@ -851,8 +854,12 @@ LinkSourceFile(XwcTextExt.c,Xsi)					@@\
 LinkSourceFile(XwcTextPer.c,Xsi)					@@\
 LinkSourceFile(XwcTextPrp.c,Xsi)					@@\
 SpecialCLibObjectRule(XConnIM,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
-SpecialCLibObjectRule(XlcLoad,$(ICONFIGFILES),$(NLS_DEFINES))		@@\
-SpecialCLibObjectRule(XLocalIM,$(ICONFIGFILES),$(NLS_DEFINES))
+SpecialCLibObjectRule(XlcLoad,$(ICONFIGFILES),$(NLS_DEFINES) $(RCONST_DEFINES))		@@\
+SpecialCLibObjectRule(XLocalIM,$(ICONFIGFILES),$(NLS_DEFINES) $(RCONST_DEFINES))	@@\
+SpecialCLibObjectRule(XCrFntSet,$(_NOOP_),$(RCONST_DEFINES))		@@\
+SpecialCLibObjectRule(XCrIC,$(_NOOP_),$(RCONST_DEFINES))		@@\
+SpecialCLibObjectRule(XOpenIM,$(_NOOP_),$(RCONST_DEFINES))		@@\
+SpecialCLibObjectRule(XlcDefLd,$(_NOOP_),$(RCONST_DEFINES))
 
 #endif /* BuildXsi */
 
@@ -1003,6 +1010,7 @@ SpecialCLibObjectRule(XlibInt,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(XcmsColNm,$(ICONFIGFILES),$(CMS_DEFINES))
 SpecialCLibObjectRule(globals,$(ICONFIGFILES),$(CONN_DEFINES))
 SpecialCLibObjectRule(Context,$(ICONFIGFILES),$(BC_DEFINES))
+SpecialCLibObjectRule(Xrm,$(_NOOP_),$(RCONST_DEFINES))
 
 LCRules()
 
