@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.83 90/12/31 11:08:29 gildea Exp $ */
+/* $XConsortium: Label.c,v 1.84 91/01/11 18:37:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -50,7 +50,7 @@ SOFTWARE.
 
 /* Private Data */
 
-#define offset(field) XtOffset(LabelWidget, field)
+#define offset(field) XtOffsetOf(LabelRec, field)
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(label.foreground), XtRString, XtDefaultForeground},
@@ -59,18 +59,19 @@ static XtResource resources[] = {
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
-	offset(label.justify), XtRImmediate, (caddr_t)XtJustifyCenter},
+	offset(label.justify), XtRImmediate, (XtPointer)XtJustifyCenter},
     {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
-	offset(label.internal_width), XtRImmediate, (caddr_t)4},
+	offset(label.internal_width), XtRImmediate, (XtPointer)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
-	offset(label.internal_height), XtRImmediate, (caddr_t)2},
+	offset(label.internal_height), XtRImmediate, (XtPointer)2},
     {XtNleftBitmap, XtCLeftBitmap, XtRBitmap, sizeof(Pixmap),
-       offset(label.left_bitmap), XtRImmediate, (caddr_t) None},
+       offset(label.left_bitmap), XtRImmediate, (XtPointer) None},
     {XtNbitmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
-	offset(label.pixmap), XtRImmediate, (caddr_t)None},
+	offset(label.pixmap), XtRImmediate, (XtPointer)None},
     {XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
-	offset(label.resize), XtRImmediate, (caddr_t)True},
+	offset(label.resize), XtRImmediate, (XtPointer)True},
 };
+#undef offset
 
 static void Initialize();
 static void Resize();
