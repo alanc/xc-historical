@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.20 90/08/24 18:49:18 swick Exp $ */
+/* $XConsortium: Keyboard.c,v 1.21 91/05/06 20:28:58 converse Exp $ */
 
 /********************************************************
 
@@ -27,7 +27,6 @@ SOFTWARE.
 ********************************************************/
 
 #include "IntrinsicI.h"
-#include <X11/Xatom.h>
 #include "StringDefs.h"
 
 #include "PassivGraI.h"
