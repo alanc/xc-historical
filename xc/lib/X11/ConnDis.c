@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.75 91/03/29 15:03:22 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.76 91/03/29 15:20:17 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -703,7 +703,7 @@ _XWaitForWritable(dpy)
 		_XIOError(dpy);
 	} while (nfound <= 0);
 
-	if (ANYSET(r_mask)) {
+	if (_XANYSET(r_mask)) {
 	    char buf[BUFSIZE];
 	    long pend_not_register;
 	    register long pend;
@@ -736,7 +736,7 @@ _XWaitForWritable(dpy)
 	    }
 	    ENDITERATE
 	}
-	if (ANYSET(w_mask))
+	if (_XANYSET(w_mask))
 	    return;
     }
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.5 91/03/13 15:43:54 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.6 91/04/02 09:56:47 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -97,7 +97,7 @@ without express or implied warranty.
 #define MASKANDSETBITS(dst, b1, b2) dst[0] = (b1[0] & b2[0])
 #define ORBITS(dst, b1, b2) dst[0] = (b1[0] | b2[0])
 #define UNSETBITS(dst, b1) (dst[0] &= ~b1[0])
-#define ANYSET(src) (src[0])
+#define _XANYSET(src) (src[0])
 #endif
 #if (MSKCNT==2)
 #define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; }
@@ -111,7 +111,7 @@ without express or implied warranty.
 #define UNSETBITS(dst, b1) {\
                       dst[0] &= ~b1[0]; \
                       dst[1] &= ~b1[1]; }
-#define ANYSET(src) (src[0] || src[1])
+#define _XANYSET(src) (src[0] || src[1])
 #endif
 #if (MSKCNT==3)
 #define COPYBITS(src, dst) { dst[0] = src[0]; dst[1] = src[1]; \
@@ -129,7 +129,7 @@ without express or implied warranty.
                       dst[0] &= ~b1[0]; \
                       dst[1] &= ~b1[1]; \
                       dst[2] &= ~b1[2]; }
-#define ANYSET(src) (src[0] || src[1] || src[2])
+#define _XANYSET(src) (src[0] || src[1] || src[2])
 #endif
 #if (MSKCNT==4)
 #define COPYBITS(src, dst) dst[0] = src[0]; dst[1] = src[1]; \
@@ -150,7 +150,7 @@ without express or implied warranty.
                       dst[1] &= ~b1[1]; \
                       dst[2] &= ~b1[2]; \
                       dst[3] &= ~b1[3]
-#define ANYSET(src) (src[0] || src[1] || src[2] || src[3])
+#define _XANYSET(src) (src[0] || src[1] || src[2] || src[3])
 #endif
 
 #if (MSKCNT>4)
@@ -170,9 +170,9 @@ without express or implied warranty.
 		      for (cri=MSKCNT; --cri>=0; )	\
 		          dst[cri] &= ~b1[cri];  }
 /*
- * If MSKCNT>4, then ANYSET is a routine defined in XlibInt.c.
+ * If MSKCNT>4, then _XANYSET is a routine defined in XlibInt.c.
  *
- * #define ANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
+ * #define _XANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
 #endif
 

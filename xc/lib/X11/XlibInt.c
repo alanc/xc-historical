@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.141 91/03/29 09:33:40 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.142 91/04/02 09:54:19 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1684,7 +1684,7 @@ Screen *_XScreenOfWindow (dpy, w)
 /*
  * This is a macro if MSKCNT <= 4
  */
-ANYSET(src)
+_XANYSET(src)
     long	*src;
 {
     int i;
