@@ -1,6 +1,6 @@
 .TH XPR 1 "1 March 1988" "X Version 11"
 .SH NAME
-xpr \- print X window dump
+xpr \- print an X window dump
 .SH SYNOPSIS
 .B xpr
 [
@@ -52,8 +52,8 @@ xpr \- print X window dump
 .SH DESCRIPTION
 
 .I Xpr
-takes as input an X window dump file produced by
-.IR xwd (1)
+takes as input a window dump file produced by
+.IR xwd(1)
 and formats it for output on the LN03, LA100, PostScript printers, or IBM
 PP3812 page printer.  If no file
 argument is given, the standard input is used.  By default, \fIxpr\fP
