@@ -25,3 +25,4 @@ The following changes have been made to this directory since R2:
      o  DIX save under support.  This code supplies save unders to
 	any DDX which advertises backing store but not save unders.
      o  mixing window gravity and bit gravity fixed.
+     o  a host of minor bugs fixed
