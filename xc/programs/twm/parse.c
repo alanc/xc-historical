@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.32 89/12/03 10:55:15 jim Exp $
+ * $XConsortium: parse.c,v 1.33 89/12/08 19:18:35 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.32 89/12/03 10:55:15 jim Exp $";
+"$XConsortium: parse.c,v 1.33 89/12/08 19:18:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -736,6 +736,11 @@ int do_string_keyword (keyword, s)
 	    (WidthValue | HeightValue)) {
 	    twmrc_error_prefix();
 	    fprintf (stderr, "bad MaxWindowSize \"%s\"\n", s);
+	    return 0;
+	}
+	if (JunkWidth <= 0 || JunkHeight <= 0) {
+	    twmrc_error_prefix();
+	    fprintf (stderr, "MaxWindowSize \"%s\" must be positive\n", s);
 	    return 0;
 	}
 	Scr->MaxWindowWidth = JunkWidth;
