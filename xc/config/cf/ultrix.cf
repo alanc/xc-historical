@@ -1,9 +1,9 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.33 91/03/27 09:13:32 rws Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.34 91/04/01 19:51:30 rws Exp $
 
-#define OSName            Ultrix-32 4.1
+#define OSName            Ultrix-32 4.2
 XCOMM operating system:  OSName
 #define OSMajorVersion    4
-#define OSMinorVersion    1
+#define OSMinorVersion    2
 
 #define HasPutenv YES
 #define HasBsearch YES
@@ -16,7 +16,7 @@ XCOMM operating system:  OSName
 #define XqvssServer Xqvss
 /* #define XqdssServer Xqdss */
 #define UnalignedReferencesAllowed YES	       /* if arbitrary deref is okay */
-#define ServerOSDefines -DNOSTDHDRS -DX11R4
+#define ServerOSDefines -DX11R4
 /* #define HasGcc YES */
 #if !HasGcc
 #define BuildPex NO /* compiler runs out of table space */
@@ -25,14 +25,18 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef MipsArchitecture
+#if OSMajorVersion > 4 || (OSMajorVersion == 4 && OSMinorVersion >= 2)
+#define XdecServer Xdec
+#else
 /* #define XmfbpmaxServer Xmfbpmax - why bother, no one needs it... */
 #define XcfbpmaxServer Xcfbpmax
+#endif
 #define NeedFunctionPrototypes YES
 /* default settings are enough if you do not compile PEX client side */
 #define DefaultCCOptions -Wf,-XNp15000,-XNd15000
 #endif
 
 #if HasGcc
-#define CcCmd gcc -ansi -Dvax -Dultrix -DNOSTDHDRS -fpcc-struct-return
+#define CcCmd gcc -ansi -Dvax -Dultrix -fpcc-struct-return
 #define ServerCCOptions /* */
 #endif
