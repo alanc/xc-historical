@@ -36,6 +36,7 @@
             SUN = ddx/sun/libsun.a
           MACII = ddx/macII/libmacII.a
             TEK = ddx/tek/libtek.a
+           MIPS = ddx/mips/libmips.a
            LUNA = ddx/omron/libomron.a
           HPMIT = ddx/hp.mit/libhp.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
@@ -138,6 +139,12 @@ XCOMM
 #define	XlunaServer /* as nothing */
 #endif
 
+#ifdef XmipsServer
+#define domipsServer
+#else
+#define XmipsServer /* as nothing */
+#endif
+
 /*****************************************************************************
  *                                                                           *
  * Now add X<what>Server to the ALL line; do NOT split across lines or you   *
@@ -145,8 +152,8 @@ XCOMM
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer XlunaServer XmipsServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XhpMit XmacII Xcfbpmax Xmfbpmax Xtek Xluna Xmips
 
 all: $(ALL)
 
@@ -420,6 +427,26 @@ XlunaDIRS = $(LUNADIRS)
 ServerTarget(Xluna,$(EXTDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 #endif /* dolunaServer */
 
+
+#ifdef domipsServer
+/**/#
+/**/# mips server
+/**/#
+#define need_dix
+#define need_ddx_mi
+#define need_ddx_mfb
+#define need_ddx_cfb
+#define need_ddx_mips
+#define need_os_42bsd
+MIPSDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/mips os/4.2bsd
+MIPSOBJS = ddx/mips/mipsInitS.o $(FONTUTIL)
+MIPSLIBS = $(MIPS) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
+XmipsDIRS = $(MIPSDIRS)
+ 
+ServerTarget(Xmips,$(EXTDIR) $(MIPSDIRS),$(MIPSOBJS),$(MIPSLIBS),$(MIPSSYSLIBS))
+#endif /* domipsServer */
+
 /*****************************************************************************
  *                                                                           *
  *			Do not modify rest of Imakefile                      *
@@ -533,12 +560,18 @@ ServerTarget(Xluna,$(EXTDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 #define dir_ddx_omron /**/
 #endif
 
+#ifdef need_ddx_mips
+#define dir_ddx_mips ddx/mips
+#else
+#define dir_ddx_mips /**/
+#endif
+
 OURDIX = dir_dix
-OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
+OURDDX = dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp dir_ddx_hpMit
-OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron
+OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron dir_ddx_mips
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 
@@ -549,7 +582,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/ibm \
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
                   ddx/hp ddx/hp.mit ddx/tek \
-                  ddx/macII ddx/omron
+                  ddx/macII ddx/omron ddx/mips
       ALLOSDIRS = os/4.2bsd
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
