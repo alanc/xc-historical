@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.2 92/05/06 19:34:58 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.3 92/08/12 15:23:15 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -30,6 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "ddpex3.h"
 #include "PEXproto.h"
 #include "PEXprotost.h"
+#include "pexExtract.h"
 #include "PEXErr.h"
 #include "pexUtils.h"
 #include "pixmap.h"
@@ -265,9 +266,65 @@ ddBufferPtr     pBuffer;    /* list of pick element ref */
 {
     ddpex3rtn		err = Success;
 
-   /* JSH - to be filled in later with stuff that counts and
-      returns the path from the pick measure 
-  */
+    pexEndPickAllReply	*reply = (pexEndPickAllReply *)(pBuffer->pHead);
+    int 		i, j, numbytes = 0, pbytes, numObj; 
+    listofObj		*list;
+    listofObj		**listofp;
+    ddPickPath		*pp;
+    ddPointer		pplist;
+    ddPickElementRef	ref;
+
+    reply->numPicked = (pRend->pickstr.list)->numObj;
+    reply->pickStatus = ((pRend->pickstr.list)->numObj) ?1:0;
+    reply->morePicks = pRend->pickstr.more_hits;
+
+    numObj = (pRend->pickstr.list)->numObj;
+    listofp = (listofObj **)(pRend->pickstr.list)->pList;
+
+    /* convert the pick path to a pick element ref for return */
+    for (i = 0; i < numObj; i++) {
+	list = listofp[0];
+	pbytes = list->numObj * sizeof(ddPickElementRef);
+	numbytes += pbytes + sizeof(CARD32);
+	PU_CHECK_BUFFER_SIZE(pBuffer, numbytes);
+	PACK_CARD32(list->numObj,  pBuffer->pBuf);
+	pplist = list->pList;
+
+	/* now convert each pick path to a pick element ref */
+	/* and pack it into the reply buffer */
+	for (j = 0; j < list->numObj; j++) {
+	  pp = (ddPickPath *) pplist;
+	  pplist = (ddPointer)(pp+1);
+	  if ((diStructHandle)(pp->structure) == pRend->pickstr.fakeStr)
+	      ref.sid = pRend->pickstr.sid;
+	  else
+	      ref.sid = ((ddStructResource *)(pp->structure))->id;
+	  ref.offset = pp->offset;
+	  ref.pickid = pp->pickid;
+	  PACK_STRUCT(ddPickElementRef, &ref, pBuffer->pBuf);
+	}
+
+	/* remove the list from the list of list */
+	puRemoveFromList( (ddPointer) &list, pRend->pickstr.list);
+
+	/* if there are more hits save the last hit into the start path */
+	if ((pRend->pickstr.more_hits == PEXMoreHits) && (i == numObj-1)) 
+	    pRend->pickStartPath = list;
+	else 
+	    puDeleteList( list);
+	
+    }
+
+    /* if there were no more hits empty the pickStartPath */
+    if (pRend->pickstr.more_hits == PEXNoMoreHits) {
+	puDeleteList( pRend->pickStartPath);
+	pRend->pickStartPath = puCreateList( DD_PICK_PATH);
+    }
+
+    pRend->pickstr.more_hits = PEXNoMoreHits;
+    pBuffer->dataSize = numbytes;
+
+
   return(err);
 }
 
@@ -277,12 +334,122 @@ PickAll( pRend)
 /* in */
 ddRendererPtr       pRend;    /* renderer handle */
 {
-    ddpex3rtn		err = Success;
+    ddpex3rtn			err = Success;
+    miTraverserState      	trav_state;
+    ddULONG            		offset1, offset2, numberOCs;
+    diStructHandle 		pstruct = 0;
+    miStructPtr 		pheader;
+    ddPickPath			*pp;
+    diPMHandle            	pPM = (diPMHandle) NULL;
+    ddpex3rtn 			ValidatePickPath();
 
-    /* JSH this one uses the structure handle in prend->pickstr
-       and makes a fake ddElementRange so that it can call
-       RenderElements to render all elements in the structure
-   */
+    if (!pRend->pickStartPath)  return (PEXERR(PEXPathError));
+    err = ValidatePickPath(pRend->pickStartPath);
+    if (err != Success) return(err);
+
+    /* now call the traverser to traverse this structure */
+    /* set exec_str_flag */
+    trav_state.exec_str_flag = ES_FOLLOW_PICK;
+    trav_state.p_curr_pick_el = (ddPickPath *) pRend->pickStartPath->pList ;
+    trav_state.p_curr_sc_el = (ddElementRef *) NULL;
+    trav_state.max_depth = 0;
+    trav_state.pickId = 0;
+    pPM = pRend->pickstr.pseudoPM;
+
+    pp = (ddPickPath *) pRend->pickStartPath->pList ;
+    pstruct = pp->structure;
+    pheader = (miStructPtr) pstruct->deviceData;
+
+    offset1 = 1;
+    offset2 =  MISTR_NUM_EL(pheader);
+
+    err = traverser(pRend, pstruct, offset1, offset2, pPM, NULL, &trav_state);
 
   return(err);
 }
+
+ddpex3rtn
+AddPickPathToList( pRend, depth, path)
+ddRendererPtr		pRend;		/* renderer handle */
+int			depth;		/* pick path depth */
+miPPLevel		*path;		/* the path 	   */
+{
+    listofObj		*list;
+    int 		i, err;
+    ddPickPath		*patharray;
+
+
+    /* dont know what this is supposed to do */
+    if ((pRend->pickstr.list)->numObj >= pRend->pickstr.max_hits) {
+	pRend->pickstr.more_hits = PEXMoreHits;
+	return;
+    }
+    else pRend->pickstr.more_hits = PEXNoMoreHits;
+
+    /* allocate space to store path while reversing */
+    patharray = (ddPickPath *)  xalloc(depth * sizeof(ddPickPath));
+
+    /* create list to place the path into */
+    list = puCreateList(DD_PICK_PATH);
+
+    /* traverse the list from bottom up and copy into temp store */
+    for (i = 0; i < depth; i++){
+	patharray[i] = path->pp;	
+	path = path->up;
+    }
+
+    /* now store the path from top down */
+    for (i = depth-1; i >= 0; i--){
+	err = puAddToList((ddPointer) &patharray[i], (ddULONG) 1, list);
+	if (err != Success) return(err);
+    }
+
+    xfree(patharray);
+
+    err = puAddToList( (ddPointer) &list, (ddULONG) 1, pRend->pickstr.list);
+    if (err != Success) return(err);
+
+    if ((pRend->pickstr.send_event) && 
+	((pRend->pickstr.list)->numObj == pRend->pickstr.max_hits))
+	err = PEXMaxHitsReachedNotify( pRend->pickstr.client, pRend->rendId);
+
+    return(err);
+}
+
+ddpex3rtn
+ValidatePickPath(pPath)
+    listofObj      *pPath;
+{
+    miGenericElementPtr p_element;
+    diStructHandle  pStruct, pNextStruct;
+    miStructPtr     pstruct;
+    ddULONG         offset;
+    int             i;
+    ddPickPath     *pPickPath;
+
+    
+    pPickPath = (ddPickPath *) pPath->pList;
+    pNextStruct = pPickPath->structure;
+
+    for (i = pPath->numObj; i > 0; i--, pPickPath++) {
+	pStruct = pPickPath->structure;
+	if (pNextStruct != pStruct) return (PEXERR(PEXPathError));
+
+	pstruct = (miStructPtr) pStruct->deviceData;
+
+	offset = pPickPath->offset;
+	if (offset > MISTR_NUM_EL(pstruct)) return (PEXERR(PEXPathError));
+
+	/* dont bother with the leaves */
+	if (i == 1) break;
+
+	MISTR_FIND_EL(pstruct, offset, p_element);
+
+	if (MISTR_EL_TYPE(p_element) != PEXOCExecuteStructure)
+	    return (PEXERR(PEXPathError));
+
+	pNextStruct = (diStructHandle) MISTR_GET_EXSTR_STR(p_element);
+    }
+    return (Success);
+}
+
