@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.46 89/03/23 20:01:53 rws Exp $ */
+/* $XConsortium: extension.c,v 1.47 89/06/21 16:24:46 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -50,18 +50,19 @@ static int lastError = FirstExtensionError;
 static int NumExtensions = 0;
 
 ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc, 
-			      SwappedMainProc, CloseDownProc)
+			      SwappedMainProc, CloseDownProc, MinorOpcodeProc)
     char *name;
     int NumEvents;
     int NumErrors;
     int (* MainProc)();
     int (* SwappedMainProc)();
     void (* CloseDownProc)();
+    unsigned short (* MinorOpcodeProc)();
 {
     int i;
     register ExtensionEntry *ext, **newexts;
 
-    if (!MainProc || !SwappedMainProc || !CloseDownProc)
+    if (!MainProc || !SwappedMainProc || !CloseDownProc || !MinorOpcodeProc)
         return((ExtensionEntry *) NULL);
     if ((lastEvent + NumEvents > LAST_EVENT) || 
 	        (unsigned)(lastError + NumErrors > LAST_ERROR))
@@ -94,6 +95,7 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     ext->index = i;
     ext->base = i + EXTENSION_BASE;
     ext->CloseDown = CloseDownProc;
+    ext->MinorOpcode = MinorOpcodeProc;
     ProcVector[i + EXTENSION_BASE] = MainProc;
     SwappedProcVector[i + EXTENSION_BASE] = SwappedMainProc;
     if (NumEvents)
@@ -140,6 +142,28 @@ Bool AddExtensionAlias(alias, ext)
     ext->aliases[ext->num_aliases] = name;
     ext->num_aliases++;
     return TRUE;
+}
+
+unsigned short
+StandardMinorOpcode(client)
+    ClientPtr client;
+{
+    return ((xReq *)client->requestBuffer)->data;
+}
+
+unsigned short
+MinorOpcodeOfRequest(client)
+    ClientPtr client;
+{
+    unsigned char major;
+
+    major = ((xReq *)client->requestBuffer)->reqType;
+    if (major < EXTENSION_BASE)
+	return 0;
+    major -= EXTENSION_BASE;
+    if (major >= NumExtensions)
+	return 0;
+    return (*extensions[major]->MinorOpcode)(client);
 }
 
 CloseDownExtensions()
@@ -351,36 +375,4 @@ RegisterScreenProc(name, pScreen, proc)
         spentry->num++;        
     }
     return TRUE;
-}
-
-
- /*****************
-  * SendErrorToClient
-  *    Send an Error back to the client.
-  *****************/
-
- SendErrorToClient (client, reqCode, minorCode, resId, status)
-     ClientPtr client;
-     unsigned char reqCode, status;
-     unsigned short minorCode;
-     XID resId;
- {
-     xError rep;
-
-     rep.type = X_Error;
-     rep.sequenceNumber = client->sequence;
-     rep.errorCode = status;
-     rep.majorCode = reqCode;
-     rep.minorCode = minorCode;
-     rep.resourceID = resId;
-
-#ifdef notdef
-     ErrorF("SendErrorToClient %x\n", client->index);
-     ErrorF("    sequenceNumber = %d\n", rep.sequenceNumber);
-     ErrorF("    rep.errorCode= %d\n", rep.errorCode);
-     ErrorF("    rep.majorCode = %d\n", rep.majorCode);
-     ErrorF("    rep.resourceID = %x\n", rep.resourceID);
-#endif
-
-     WriteEventsToClient (client, 1, &rep);
 }
