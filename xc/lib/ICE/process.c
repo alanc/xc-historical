@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.2 93/08/26 17:31:59 mor Exp $ */
+/* $XConsortium: process.c,v 1.3 93/09/03 16:31:05 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -71,7 +71,7 @@ IceReplyWaitInfo *replyWait;
 {
     iceMsg		*header;
     Bool		replyReady = False;
-    IceReplyWaitInfo	*useThisReplyWait;
+    IceReplyWaitInfo	*useThisReplyWait = NULL;
     
     _IceRead (iceConn, SIZEOF (iceMsg), iceConn->inbuf);
     header = (iceMsg *) iceConn->inbuf;
