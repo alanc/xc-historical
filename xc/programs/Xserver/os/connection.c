@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.116 89/10/10 14:21:12 jim Exp $ */
+/* $XConsortium: connection.c,v 1.117 89/10/12 13:20:50 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -504,11 +504,8 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     int	fromlen = sizeof (from);
     XID	 auth_id;
 
-    if (proto_n)
-        auth_id = CheckAuthorization (proto_n, auth_proto,
-				      string_n, auth_string);
-    else
-	auth_id = (XID) ~0L;
+    auth_id = CheckAuthorization (proto_n, auth_proto,
+				  string_n, auth_string);
 
     priv = (OsCommPtr)client->osPrivate;
     if (auth_id == (XID) ~0L && 
