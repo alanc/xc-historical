@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xedit.c,v 1.11 88/02/23 21:06:16 rws Exp $";
+static char rcs_id[] = "$Header: xedit.c,v 1.12 88/05/04 16:13:35 jim Exp $";
 #endif
 
 /*
@@ -116,14 +116,14 @@ makeButtonsAndBoxes()
         replacestringwindow = makeStringBox(Row2, replacestring, 120); 
     {
     int _Min, _Max;
-    static int boxHeight;
+    static Dimension boxHeight;
 	static Arg getargs[] = {
 	    { XtNheight, (XtArgVal)&boxHeight }
         };
         XtGetValues(quitbutton, getargs, XtNumber(getargs));
     boxHeight += 8;
-    XtPanedSetMinMax((Widget) Row1, boxHeight, boxHeight);
-    XtPanedSetMinMax((Widget) Row2, boxHeight, boxHeight);
+    XtPanedSetMinMax((Widget) Row1, (int)boxHeight, (int)boxHeight);
+    XtPanedSetMinMax((Widget) Row2, (int)boxHeight, (int)boxHeight);
 
     }
     messsource = PseudoDiskSourceCreate("");
@@ -163,7 +163,7 @@ main(argc, argv)
   int argc;
   char **argv;
 {
-    static int width, height;
+    static Dimension width, height;
     static Arg args[]={
 	{XtNwidth, (XtArgVal) &width},
 	{XtNheight, (XtArgVal)&height} };
