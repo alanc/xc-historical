@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.4 94/04/17 20:18:23 mor Exp $ */
+/* $XConsortium: events.c,v 1.5 94/04/18 00:09:24 rws Exp mor $ */
 
 /*
 
@@ -169,6 +169,7 @@ xEvent		*wire;
     host_event->name_space = wire_event->instanceNameSpace;
     host_event->time       = wire_event->time;
     host_event->flo_id     = wire_event->instanceFloID;
+    host_event->outcome    = wire_event->outcome;
 
     return (True);
 }

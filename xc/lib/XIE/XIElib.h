@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.9 94/04/17 20:18:16 mor Exp $ */
+/* $XConsortium: XIElib.h,v 1.10 94/05/02 14:15:57 mor Exp mor $ */
 
 /*
 
@@ -802,6 +802,7 @@ typedef struct {
     unsigned long		name_space;
     Time			time;
     unsigned long		flo_id;
+    XiePhotofloOutcome		outcome;
 } XiePhotofloDoneEvent;
 
 
