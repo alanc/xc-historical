@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.26 88/04/06 13:46:50 jim Exp $
+ * $Header: charproc.c,v 1.27 88/04/06 15:59:54 jim Exp $
  */
 
 
@@ -114,7 +114,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.26 88/04/06 13:46:50 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.27 88/04/06 15:59:54 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1847,9 +1847,7 @@ static void VTInitialize (request, new)
    XtAddEventHandler(new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
 
-   if (new->screen.charClass) {
-       set_character_class (new->screen.charClass);
-   }
+   set_character_class (new->screen.charClass);
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
@@ -2616,7 +2614,7 @@ int set_character_class (s)
     static char *errfmt = "%s:  %s in range string \"%s\" (position %d)\n";
     extern char *ProgramName;
 
-    if (!s) return;
+    if (!s || !s[0]) return;
 
     base = 10;				/* in case we ever add octal, hex */
     low = high = -1;			/* out of range */

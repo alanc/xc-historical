@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.29 88/04/06 13:46:57 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.30 88/04/06 16:00:04 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -173,6 +173,7 @@ static XrmOptionDescRec optionDescList[] = {
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
+{"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-cr",		"*cursorColor",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+cu",		"*curses",	XrmoptionNoArg,		(caddr_t) "off"},
@@ -607,7 +608,7 @@ static char *ustring[] = {
 #else	/* TIOCCONS */
 " [-bg backgrnd_color] [-bw border_width] [-cr cursor_color] [-cu] \\\n",
 #endif	/* TIOCCONS */
-" [-fb bold_font] [-fg foregrnd_color] [-fn norm_font] \\\n",
+" [-fb bold_font] [-fg foregrnd_color] [-fn norm_font] [-cc charclasses]\\\n",
 " [-i] [-j] [-l] [-lf logfile] [-ls] [-mb] [-ms mouse_color] \\\n",
 " [-n name] [-nb bell_margin] [-rv] [-rw] [-s] [-mc msecs]\\\n",
 " [-sb] [-si] [-sk] [-sl save_lines] [-sn] [-st] [-T title] [-t] [-tb] \\\n",
