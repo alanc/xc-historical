@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miInfo.h,v 5.1 91/02/16 09:54:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -50,9 +50,9 @@ SOFTWARE.
 #define	SI_NUM_INT_IMPS		21
 
 #define	SI_DITHERING_SUPPORTED		MI_FALSE
-#define	SI_MAX_EDGE_WIDTH		~0L
-#define SI_MAX_LINE_WIDTH		~0L
-#define	SI_MAX_MARKER_SIZE		~0L
+#define	SI_MAX_EDGE_WIDTH		~((unsigned long)0)
+#define SI_MAX_LINE_WIDTH		~((unsigned long)0)
+#define	SI_MAX_MARKER_SIZE		~((unsigned long)0)
 #define	SI_MAX_MODEL_CLIP_PLANES	64
 #define SI_MAX_NAME_SET_NAMES		MINS_NAMESET_SIZE
 #define SI_MAX_NON_AMBIENT_LIGHTS	64
@@ -64,9 +64,9 @@ SOFTWARE.
 #define SI_NOM_EDGE_WIDTH		1	/* nominal edge width */
 #define SI_NOM_LINE_WIDTH		1	/* nominal line width */
 #define SI_NOM_MARKER_SIZE		1	/* nominal marker size */
-#define	SI_SUPP_EDGE_WIDTHS		~0L	/* number of supported edge widths */
-#define	SI_SUPP_LINE_WIDTHS		~0L	/* number of supported line widths */
-#define	SI_SUPP_MARKER_SIZES		~0L	/* number of supported marker sizes */
+#define	SI_SUPP_EDGE_WIDTHS		~((unsigned long)0)	/* number of supported edge widths */
+#define	SI_SUPP_LINE_WIDTHS		~((unsigned long)0)	/* number of supported line widths */
+#define	SI_SUPP_MARKER_SIZES		~((unsigned long)0)	/* number of supported marker sizes */
 #define SI_BEST_COLOUR_APPROX_VALUES	PEXColourApproxAnyValues
 #define	SI_TRANSPARENCY_SUPPORTED	MI_FALSE
 #define	SI_DOUBLE_BUFFERING_SUPPORTED	MI_FALSE
