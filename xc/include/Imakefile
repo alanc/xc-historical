@@ -41,6 +41,8 @@ IMPORTSTOP = \
 	$(TOOLKITSRC)/VendorP.h
 
 IMPORTSXAW = \
+	$(AWIDGETSRC)/AsciiSrc.h \
+	$(AWIDGETSRC)/AsciiSrcP.h \
 	$(AWIDGETSRC)/AsciiText.h \
 	$(AWIDGETSRC)/AsciiTextP.h \
 	$(AWIDGETSRC)/Box.h \
