@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.141 95/01/01 20:40:08 dpw Exp kaleb $
+XCOMM site:  $XConsortium: site.def,v 1.142 95/02/21 21:52:56 kaleb Exp kaleb $
 
 /***************************************************************************
  *                                                                         *
@@ -152,7 +152,7 @@ XCOMM site:  $XConsortium: site.def,v 1.141 95/01/01 20:40:08 dpw Exp kaleb $
 #endif
 #if defined(SunArchitecture) && !defined(SVR4Architecture)
 			/* change this when gcc is updated on Alex */
-#define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.6.0/include
+#define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.6.3/include
 #endif
 #endif
 
