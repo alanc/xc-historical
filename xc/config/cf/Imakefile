@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Imake.file,v 1.1 89/03/14 11:42:04 jim Exp $
  *
  * This Imakefile has a special name because cpp would otherwise always
  * include it instead of the Imakefile in the individual directories.
@@ -15,3 +15,5 @@ InstallMultipleDestFlags(install,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
 
 #define IHaveSpecialMakefileTarget
 BuildMakefileTarget(Imake.file, -fImake.file)
+
+depend::
