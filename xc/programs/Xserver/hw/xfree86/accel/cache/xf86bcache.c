@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86bcache.c,v 1.1 94/10/05 13:27:54 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.c,v 3.1 1994/07/15 06:57:38 dawes Exp $ */
 /*
  * Based on the S3 block allocator code in XFree86-2.0 by Jon Tombs.
  * The original copyright is reproduced below.
@@ -39,7 +40,7 @@
  * this pointer as a argument in order to identify the Cache Pool to be
  * affected by the call.
  *
- * The list of Cacherec structures, each points at a linked list of
+ * The list of Cacherec structures each points at a linked list of
  * BitMapRow structures describing a row of memory.
  * A CacheRec structure is allocated for each invocation of the
  * xf86AddToCachePool function and is then linked to the Cache Pool
@@ -48,7 +49,8 @@
  * bitplanes. The caller supplies a 32-bit id number that is stored in
  * the various data structures and is passed on when doing callbacks to
  * hw driver code. ( the only callback from the block allocator is for
- * compacting a memory row ).
+ * compacting a memory row. Callbacks from font cache code etc. must also
+ * pass on this id number when appropriate ).
  * The block allocator does not use the id number internally, it's expected
  * use is to enable hw driver code to identify which bitplanes that are to
  * be affected by hw driver code.
@@ -57,7 +59,13 @@
  * describing a row of cache memory.
  *
  * Each BitMapBlock structure describes a allocated piece of cache memory.
- *
+ * The BitMapBlock struct contains a reference field used when allowing the
+ * cache allocator to reuse already used cache blocks. This is used by the
+ * font cache code to let the cache allocator take care of keeping the most
+ * recently used fonts in the cache. The higher layer ( font cache etc. ) has
+ * to keep the lru field updated if this reallocation scheme is to work.
+ * If the reference field is left untouched, ( it's initialized to NULL ),
+ * the allocator does not attempt to reuse already allocated cache blocks.
  */
 
 #include	"X.h"
@@ -74,7 +82,7 @@ static void xf86showcache();
 #endif
 
 static void (*xf86CacheMoveBlockFunc)();
-static struct CachePoolRec *xf86PoolList;
+static struct CachePoolRec *xf86PoolList = NULL;
 
 /*
  * Init the static pointers.
@@ -86,7 +94,6 @@ void (*CacheMoveBlockFunc)();
 {
 
     xf86CacheMoveBlockFunc = CacheMoveBlockFunc;
-    xf86PoolList = NULL;
 
 }
 
@@ -169,10 +176,13 @@ unsigned int Id;
  *   This keeps the free space at the right hand end.
  */
 
+#ifdef __STDC__
+void xf86ReleaseToCachePool( CachePool Pool, CacheBlock Block )
+#else
 void xf86ReleaseToCachePool( Pool, Block )
 CachePool Pool;
 CacheBlock Block;
-
+#endif
 {
   bitMapBlockPtr line, tmpb;
   bitMapRowPtr bptr, tmpr;

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ibm8514.c,v 1.1 94/10/05 13:30:48 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.7 1994/09/23 10:07:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -67,14 +68,18 @@ ScrnInfoRec ibm8514InfoRec = {
     (Bool (*)())NoopDDA,/* Bool (* SwitchMode)() */
     ibm8514PrintIdent,  /* void (* PrintIdent)() */
     8,			/* int depth */
+    {0, 0, 0},          /* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,                 /* displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },	       	/* OFlagSet options */
     {0, },	       	/* OFlagSet clockOptions */
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
+    NULL,	       	/* char *ramdac */
+    0,			/* int dacSpeed */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -84,14 +89,20 @@ ScrnInfoRec ibm8514InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
+    NULL,	       	/* DisplayModePtr pModes */
     NULL,               /* char *clockprog */
     -1,			/* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "ibm8514",          /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     ibm8514ValidTokens,	/* int *validTokens */
     IBM8514_PATCHLEVEL,	/* char *patchlevel */
+    0,			/* int IObase */
+    0,			/* int PALbase */
+    0,			/* int COPbase */
+    0,			/* int POSbase */
+    0,			/* int instance */
 };
 
 short ibm8514alu[16] = {
@@ -150,7 +161,7 @@ ibm8514Probe()
 
     if (ibm8514InfoRec.chipset) {
 	if (StrCaseCmp(ibm8514InfoRec.chipset, "ibm8514")) {
-	    ErrorF("Chipset specified in Xconfig is not \"ibm8514\" (%s)!\n",
+	    ErrorF("Chipset specified in XF86Config is not \"ibm8514\" (%s)!\n",
 		   ibm8514InfoRec.chipset);
 	    return(FALSE);
 	}
@@ -238,9 +249,6 @@ ibm8514Initialize (scr_index, pScreen, argc, argv)
 #endif
 
     xf86InitCache( ibm8514CacheMoveBlock );
-#ifdef PIXPRIV
-    ibm8514CacheInit(ibm8514InfoRec.virtualX, ibm8514InfoRec.virtualY);
-#endif
     ibm8514FontCache8Init();
 
     ibm8514ImageInit();
@@ -298,9 +306,6 @@ ibm8514EnterLeaveVT(enter, screen_idx)
 	ibm8514Init(ibm8514ScreenMode);
 	InitEnvironment();
 	ibm8514RestoreDACvalues(); /* 25-4-93 TCG */
-#ifdef PIXPRIV
-	ibm8514CacheInit(ibm8514InfoRec.virtualX, ibm8514InfoRec.virtualY);
-#endif
 	ibm8514FontCache8Init();
 	AlreadyInited = TRUE;
 

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86fcache.c,v 1.1 94/10/05 13:27:54 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.4 1994/09/08 14:25:35 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -40,34 +41,29 @@
 #include	"xf86bcache.h"
 #include	"xf86fcache.h"
 
-static CacheFont8Ptr xf86HeadFont;
-static CachePool xf86FontPool;
+static CacheFont8Ptr xf86HeadFont = NULL;
+static CachePool xf86FontPool = NULL;
 static int xf86MaxWidth;
 static int xf86MaxHeight;
-static void (*xf86ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-				      int, int, int, int, int, int,
-				      short, short);
-static short *xf86Alu;
+static void (*xf86FontOpStippleFunc)(int, int, int, int, unsigned char *, int,
+				     Pixel);
 
 /*
  * Init the font cache.
  * The Cache Pool pointer is stored together with  various other information
  */
 void xf86InitFontCache( FontCache, MaxWidth, MaxHeight,
-			ImageOpStippleFunc, Alu )
+			FontOpStippleFunc )
 CachePool FontCache;
 int MaxWidth, MaxHeight;
-void (*ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-			   int, int, int, int, int, int, short, short);
-short *Alu;
+void (*FontOpStippleFunc)(int, int, int, int, unsigned char *, int, Pixel);
 
 {
     xf86FontPool = FontCache;
     xf86MaxWidth = MaxWidth / 32;
     xf86MaxHeight = MaxHeight;
     xf86HeadFont = (CacheFont8Ptr) Xcalloc(sizeof(CacheFont8Rec));
-    xf86ImageOpStippleFunc = ImageOpStippleFunc;
-    xf86Alu = Alu;
+    xf86FontOpStippleFunc = FontOpStippleFunc;
 }
 
 /*
@@ -86,10 +82,9 @@ void xf86ReleaseFontCache()
     for (CFptr = xf86HeadFont; CFptr != NULL; CFptr=CFptr->next) {
       if (CFptr->font) {
         for (i = 0; i < 8; i++) {
-          if (CFptr->fblock[i] != NULL) {
+          if (CFptr->fblock[i] != NULL)
 	    xf86ReleaseToCachePool( xf86FontPool, CFptr->fblock[i] );
-	    CFptr->fblock[i] = NULL;
-	  }
+
         }
       }
     }
@@ -111,10 +106,9 @@ xf86UnCacheFont8(font)
    for (ptr = xf86HeadFont; ptr != NULL; ptr = ptr->next) {      
       if (ptr->font == font) {
 	 for (i = 0; i < 8; i++) 
-	    if (ptr->fblock[i] != NULL) {
+	    if (ptr->fblock[i] != NULL)
 	        xf86ReleaseToCachePool( xf86FontPool, ptr->fblock[i] );
-		ptr->fblock[i] = NULL;
-	    }
+
 	 if (ptr != xf86HeadFont) {
 	    last->next = ptr->next;
 	    Xfree(ptr);
@@ -150,6 +144,9 @@ xf86CacheFont8(font)
    CharInfoPtr pci;
    CacheFont8Ptr last, ret = xf86HeadFont;
 
+
+   if( !xf86FontPool )	/* No font cache available */
+      return( NULL );
 
    while (ret != NULL) {
       if (ret->font == font)
@@ -221,7 +218,7 @@ xf86loadFontBlock(fentry, block)
    nbyLine = PixmapBytePad(fentry->w, 1);
    ERROR_F(("loading %d (%d) %d\n", fentry->font, block, fentry->fblock[block]));
 
-   pbits = (unsigned char *)ALLOCATE_LOCAL(nbyLine * fentry->w);
+   pbits = (unsigned char *)ALLOCATE_LOCAL(nbyLine * fentry->h);
    if (pbits != NULL &&
     (fentry->fblock[block] = xf86AllocFromCachePool( xf86FontPool,
 						     32 * fentry->w,
@@ -254,16 +251,12 @@ xf86loadFontBlock(fentry, block)
 			*pb++ = *pglyph++;
 		  pb = pbits;
 	       }
-	       (xf86ImageOpStippleFunc)(fentry->fblock[block]->x +
+	       (xf86FontOpStippleFunc)( fentry->fblock[block]->x +
 					 		(c % 32) * fentry->w,
 					fentry->fblock[block]->y,
 					gWidth, gHeight,
-					pb, nbyGlyphWidth, gWidth, gHeight,
-					fentry->fblock[block]->x +
-					(c % 32) * fentry->w,
-					fentry->fblock[block]->y,
-					0xff, 0, xf86Alu[GXcopy],
-					1 << fentry->fblock[block]->daddy->id);
+					pb, nbyGlyphWidth,
+					fentry->fblock[block]->id);
 	    }
 	 }
       }
@@ -281,6 +274,7 @@ xf86loadFontBlock(fentry, block)
     * Unfortunatly this doesn't work if we use the preload code so the
     * demand load makes more sense.
     */
+      if (pbits) DEALLOCATE_LOCAL(pbits);
       ERROR_F(("Time to write new font cache management\n"));
       for (fptr = xf86HeadFont; fptr != NULL; fptr= fptr->next)
 	 if (fptr != fentry) {

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: xf86text.h,v 1.1 94/10/05 13:27:54 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86text.h,v 3.0 1994/08/01 12:09:19 dawes Exp $ */
 /*
  * Function prototypes for the text output functions.
  */
@@ -11,8 +12,8 @@
 
 void xf86InitText(
 #if NeedFunctionPrototypes
-    void (*/*GlyphWriteFunc*/)(int, int, int, int, unsigned char *,
-			       CacheFont8Ptr, GCPtr, BoxPtr),
+    void (*/*GlyphWriteFunc*/)(int, int, int, unsigned char *,
+			       CacheFont8Ptr, GCPtr, BoxPtr, int),
     int (*/*NoCPolyTextFunc*/)(DrawablePtr, GCPtr, int, int, int, char*, Bool),
     int (*/*NoCImageTextFunc*/)(DrawablePtr, GCPtr, int, int, int,
 				 char *, Bool)

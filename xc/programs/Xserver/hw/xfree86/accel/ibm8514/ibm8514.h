@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ibm8514.h,v 1.1 94/10/05 13:30:48 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.1 1994/07/24 11:43:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -547,7 +548,14 @@ void ibm8514GetImage(
     int,
     unsigned int,
     unsigned long,
-    pointer 
+    char * 
+#endif
+);
+void ibm8514InitFrect(
+#if NeedFunctionPrototypes
+    int,
+    int,
+    int
 #endif
 );
 #endif /* IBM8514_H */
