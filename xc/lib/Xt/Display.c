@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.71 91/04/28 14:06:12 converse Exp $ */
+/* $XConsortium: Display.c,v 1.72 91/05/04 13:22:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -43,7 +43,7 @@ ProcessContext _XtGetProcessContext()
 	(XtAppContext)NULL,
 	(XtAppContext)NULL,
 	(ConverterTable)NULL,
-	{ XtDefaultLanguageProc, (XtPointer)NULL }
+	{(XtLanguageProc)NULL, (XtPointer)NULL}
     };
 
     return &processContextRec;
@@ -258,6 +258,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->being_destroyed = False;
 	pd->GClist = NULL;
 	pd->pixmap_tab = NULL;
+	pd->language = NULL;
 	pd->rv = False;
 	pd->last_timestamp = 0;
 	_XtAllocTMContext(pd);
@@ -505,6 +506,7 @@ static void CloseDisplay(dpy)
 	    XrmDestroyDatabase(def_db);
 	    if (xtpd->cmd_db)
 		XrmDestroyDatabase(xtpd->cmd_db);
+	    XtFree(xtpd->language);
         }
 	XtFree((char*)pd);
 	XrmSetDatabase(dpy, (XrmDatabase)NULL);
