@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.16 88/10/13 16:38:57 rws Exp $ */
+/* $XConsortium: mibstore.c,v 1.17 88/10/13 19:53:54 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2746,9 +2746,12 @@ miTranslateBackingStore(pWin, dx, dy, oldClip)
     /* resize and translate backing pixmap and pSavedRegion */
     miResizeBackingStore(pWin, dx, dy);
     /* now find any already saved areas we should retain */
-    (* pScreen->RegionCopy) (newSaved, pWin->clipList);
-    (* pScreen->TranslateRegion)(newSaved, -dx, -dy);
-    (* pScreen->Intersect) (pSavedRegion, pSavedRegion, newSaved);
+    if (pWin->viewable)
+    {
+	(* pScreen->RegionCopy) (newSaved, pWin->clipList);
+	(* pScreen->TranslateRegion)(newSaved, -dx, -dy);
+	(* pScreen->Intersect) (pSavedRegion, pSavedRegion, newSaved);
+    }
     /* compute what the new pSavedRegion will be */
     extents.x1 = pWin->absCorner.x;
     extents.x2 = pWin->absCorner.x + pWin->clientWinSize.width;
