@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: xdmcp.c,v 1.5 92/03/20 13:34:40 gildea Exp $
+ * $XConsortium: xdmcp.c,v 1.6 92/03/24 10:30:37 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -227,6 +227,9 @@ sendForward (connectionType, address, closure)
     case FamilyInternet:
 	addr = (struct sockaddr *) &in_addr;
 	bzero ((char *) &in_addr, sizeof (in_addr));
+#ifdef BSD44SOCKETS
+	in_addr.sin_len = sizeof(in_addr);
+#endif
 	in_addr.sin_family = AF_INET;
 	in_addr.sin_port = htons ((short) XDM_UDP_PORT);
 	if (address->length != 4)
@@ -455,6 +458,9 @@ forward_respond (from, fromlen, length)
 			goto badAddress;
 		    }
 		    bzero ((char *) &in_addr, sizeof (in_addr));
+#ifdef BSD44SOCKETS
+		    in_addr.sin_len = sizeof(in_addr);
+#endif
 		    in_addr.sin_family = AF_INET;
 		    bcopy (clientAddress.data, &in_addr.sin_addr, 4);
 		    bcopy (clientPort.data, (char *) &in_addr.sin_port, 2);
@@ -475,7 +481,12 @@ forward_respond (from, fromlen, length)
 		    bcopy (clientAddress.data, un_addr.sun_path, clientAddress.length);
 		    un_addr.sun_path[clientAddress.length] = '\0';
 		    client = (struct sockaddr *) &un_addr;
+#ifdef BSD44SOCKETS
+		    un_addr.sun_len = strlen(un_addr.sun_path);
+		    clientlen = SUN_LEN(&un_addr);
+#else
 		    clientlen = sizeof (un_addr);
+#endif
 		}
 		break;
 #endif
