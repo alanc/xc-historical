@@ -114,7 +114,7 @@ This option specifies a font to be used when displaying bold text.
 This font must be the same height and width as the normal font.
 If only one of the normal or bold fonts is specified, it will be used as the
 normal font and the bold font will be produced by overstriking this font.
-The default bold font is ``vtbold.''
+The default is to do overstriking of the normal font.
 .TP 8
 .B \-j
 This option indicates that \fIxterm\fP should do jump scrolling.  Normally,
@@ -421,7 +421,7 @@ pointer moves out of the window or the window loses the input focus.
 Specifies the name of the normal font.  The default is ``vtsingle.''
 .TP 8
 .B "boldFont (\fPclass\fB Font)"
-Specifies the name of the bold font.  The default is ``vtbold.''
+Specifies the name of the bold font to use instead of overstriking.
 .TP 8
 .B "c132 (\fPclass\fB C132)"
 Specifies whether or not the VT102 DECCOLM escape sequence should be honored.
