@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.7 93/08/27 16:27:25 kaleb Exp $ */
+/* $XConsortium: Functions.c,v 1.8 93/10/06 17:20:20 kaleb Exp $ */
 
 /*
 
@@ -143,9 +143,21 @@ Boolean XtIsApplicationShell(object)
 void XtMapWidget(w)
     Widget w;
 {
+    Widget hookobj;
     WIDGET_TO_APPCON(w);
+
     LOCK_APP(app);
     XMapWindow(XtDisplay(w), XtWindow(w));
+    hookobj = XtHooksOfDisplay(XtDisplay(w));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = w;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 }
 
@@ -154,9 +166,21 @@ void XtMapWidget(w)
 void XtUnmapWidget(w)
     Widget w;
 {
+    Widget hookobj;
     WIDGET_TO_APPCON(w);
+
     LOCK_APP(app);
     XUnmapWindow(XtDisplay(w), XtWindow(w));
+    hookobj = XtHooksOfDisplay(XtDisplay(w));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = w;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 }
 

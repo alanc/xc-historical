@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMCW.c,v 1.5 93/08/27 16:29:41 kaleb Exp $ */
+/* $XConsortium: SetWMCW.c,v 1.6 93/10/06 17:36:14 kaleb Exp $ */
 /*
  * Copyright 1989 Massachusetts Institute of Technology
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -56,9 +56,9 @@ Widget widget, *list;
 Cardinal count;
 {
     Window *data;
-    Widget *checked, *top, *temp;
-    register Cardinal i, j, checked_count;
-    register Boolean match;
+    Widget *checked, *top, *temp, hookobj;
+    Cardinal i, j, checked_count;
+    Boolean match;
     Atom xa_wm_colormap_windows;
     WIDGET_TO_APPCON(widget);
 
@@ -117,21 +117,23 @@ Cardinal count;
     for ( i = 0 ; i < checked_count ; i++)
 	data[i] = XtWindow(top[i]);
 
-/*
- * Relax, there's an atom cache in Xlib.
- */
-
     xa_wm_colormap_windows = XInternAtom(XtDisplay(widget),
 					 "WM_COLORMAP_WINDOWS", FALSE);
-
-/*
- * No need to check return from XInternAtom() since the atom will be
- * created if it doesn't exist.
- */
 
     XChangeProperty(XtDisplay(widget), XtWindow(widget), 
 		    xa_wm_colormap_windows, XA_WINDOW, 32,
 		    PropModeReplace, (unsigned char *) data, (int) i);
+
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
 
     XtFree( (char *) data);
     XtFree( (char *) top);

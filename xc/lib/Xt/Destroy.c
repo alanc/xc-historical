@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.46 93/10/06 17:20:06 kaleb Exp $ */
+/* $XConsortium: Destroy.c,v 1.47 94/01/10 20:29:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -70,7 +70,14 @@ static void Recursive(widget, proc)
 static void Phase1Destroy (widget)
     Widget    widget;
 {
+    Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+
     widget->core.being_destroyed = TRUE;
+    if (XtHasCallbacks(hookobj, XtNdestroyHook) == XtCallbackHasSome) {
+	XtDestroyHookDataRec call_data;
+	call_data.widget = widget;
+	XtCallCallbacks(hookobj, XtNdestroyHook, (XtPointer) &call_data);
+    }
 } /* Phase1Destroy */
 
 static void Phase2Callbacks(widget)
@@ -91,7 +98,8 @@ static void Phase2Destroy(widget)
 
     /* Call constraint destroy procedures */
     /* assert: !XtIsShell(w) => (XtParent(w) != NULL) */
-    if (!XtIsShell(widget) && XtIsConstraint(XtParent(widget))) {
+    if ((!XtIsShell(widget) && !_XtIsHookObject(widget)) && 
+	XtIsConstraint(XtParent(widget))) {
 	LOCK_PROCESS;
 	cwClass = (ConstraintWidgetClass)XtParent(widget)->core.widget_class;
 	UNLOCK_PROCESS;

@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.53 93/09/25 10:38:57 rws Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.54 93/09/28 11:21:23 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -38,6 +38,7 @@ SOFTWARE.
 #include "RectObj.h"
 #include "ObjectP.h"
 #include "RectObjP.h"
+#include "HookObjP.h"
 
 #include "ConvertI.h"
 #include "TranslateI.h"
@@ -47,6 +48,7 @@ SOFTWARE.
 #include "ThreadsI.h"
 #include "InitialI.h"
 #include "ResourceI.h"
+#include "StringDefs.h"
 
 #define RectObjClassFlag	0x02
 #define WidgetClassFlag		0x04
@@ -63,12 +65,14 @@ SOFTWARE.
  */
 
 #define XtDisplayOfObject(object) \
-    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
-     ->core.screen->display)
+    (XtIsWidget(object) ? (object)->core.screen->display : \
+    _XtIsHookObject(object) ? ((HookObject)(object))->hooks.screen->display : \
+    _XtWindowedAncestor(object)->core.screen->display)
 
 #define XtScreenOfObject(object) \
-    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
-     ->core.screen)
+    (XtIsWidget(object) ? (object)->core.screen : \
+    _XtIsHookObject(object) ? ((HookObject)(object))->hooks.screen : \
+    _XtWindowedAncestor(object)->core.screen)
 
 #define XtWindowOfObject(object) \
     ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
@@ -191,6 +195,18 @@ extern XtGeometryResult _XtMakeGeometryRequest(
     XtWidgetGeometry*	/* request */,
     XtWidgetGeometry*	/* reply_return */,
     Boolean*		/* clear_rect_obj */
+#endif
+);
+
+extern Boolean _XtIsHookObject(
+#if NeedFunctionPrototypes
+    Widget      /* widget */
+#endif
+);
+
+extern void _XtAddShellToHookObj(
+#if NeedFunctionPrototypes
+    Widget      /* widget */
 #endif
 );
 

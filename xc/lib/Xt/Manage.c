@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.27 93/10/06 17:31:41 kaleb Exp $ */
+/* $XConsortium: Manage.c,v 1.28 94/01/06 18:15:34 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -111,8 +111,8 @@ void XtUnmanageChildren (children, num_children)
     WidgetList children;
     Cardinal num_children;
 {
-    Widget parent;
-    Cardinal dummy;
+    Widget parent, hookobj;
+    Cardinal ii;
     XtAppContext app;
 
     if (num_children == 0) return;
@@ -129,8 +129,20 @@ void XtUnmanageChildren (children, num_children)
 	UNLOCK_APP(app);
 	return;
     }
-    UnmanageChildren(children, num_children, parent, &dummy, 
+    UnmanageChildren(children, num_children, parent, &ii, 
 		     (Boolean)True, XtNxtUnmanageChildren);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(children[0]));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = 0;
+	for (ii = 0; ii < num_children; ii++) {
+	    call_data.widget = children[ii];
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	}
+    }
     UNLOCK_APP(app);
 } /* XtUnmanageChildren */
 
@@ -242,7 +254,7 @@ void XtManageChildren(children, num_children)
     WidgetList children;
     Cardinal num_children;
 {
-    Widget parent;
+    Widget parent, hookobj;
     XtAppContext app;
 
     if (children[0] == NULL) {
@@ -260,6 +272,19 @@ void XtManageChildren(children, num_children)
     }
     ManageChildren(children, num_children, parent, (Boolean)False, 
 		   XtNxtManageChildren);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(children[0]));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+	int ii;
+
+	call_data.old = (Widget)NULL;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = 0;
+	for (ii = 0; ii < num_children; ii++) {
+	    call_data.widget = children[ii];
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	}
+    }
     UNLOCK_APP(app);
 } /* XtManageChildren */
 
@@ -281,6 +306,7 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
     Boolean mapped_when_managed;
 #endif
 {
+    Widget hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -289,6 +315,18 @@ void XtSetMappedWhenManaged(widget, mapped_when_managed)
 	return;
     }
     widget->core.mapped_when_managed = mapped_when_managed;
+
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget) NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
+
     if (! XtIsManaged(widget)) {
 	UNLOCK_APP(app);
 	return;
@@ -324,7 +362,7 @@ XtChangeManagedSet(unmanage_children, num_unmanage_children, manage_children, nu
     XtPointer client_data;
 #endif
 {
-    Widget parent;
+    Widget parent, hookobj;
     Cardinal num_unique_unm_children;
     XtAppContext app;
     Boolean call_change_managed = (Boolean)False;
@@ -364,6 +402,19 @@ XtChangeManagedSet(unmanage_children, num_unmanage_children, manage_children, nu
     UnmanageChildren(unmanage_children, num_unmanage_children, parent, 
 		     &num_unique_unm_children, call_change_managed,
 		     XtNxtChangeManagedSet);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(unmanage_children[0]));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+	int ii;
+
+	call_data.old = (Widget)NULL;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = 0;
+	for (ii = 0; ii < num_unmanage_children; ii++) {
+	    call_data.widget = unmanage_children[ii];
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	}
+    }
     /*
      * now call the user supplied hook ... if there is one!
      * note that the app context is locked at this point.
@@ -382,5 +433,17 @@ XtChangeManagedSet(unmanage_children, num_unmanage_children, manage_children, nu
     ManageChildren(manage_children, num_manage_children, parent,
 		   !call_change_managed && num_unique_unm_children != 0,
 		   XtNxtChangeManagedSet);
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+	int ii;
+
+	call_data.old = (Widget)NULL;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = 0;
+	for (ii = 0; ii < num_manage_children; ii++) {
+	    call_data.widget = manage_children[ii];
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	}
+    }
     UNLOCK_APP(app);
 } /* XtChangeManagedSet */

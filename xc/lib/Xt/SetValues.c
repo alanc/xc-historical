@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.17 93/09/18 18:18:37 kaleb Exp $ */
+/* $XConsortium: SetValues.c,v 1.18 93/10/06 17:36:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,7 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "StringDefs.h"
 
 /*
  *	XtSetValues(), XtSetSubvalues()
@@ -169,6 +168,7 @@ void XtSetValues(w, args, num_args)
     Boolean	    hasConstraints;
     XtAlmostProc set_values_almost;
     XtAppContext app = XtWidgetToApplicationContext(w);
+    Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));
 
     LOCK_APP(app);
     wc = XtClass(w);
@@ -226,6 +226,16 @@ void XtSetValues(w, args, num_args)
 	UNLOCK_PROCESS;
 	(void) memmove((char *) reqw->core.constraints, 
 		       (char *) w->core.constraints, (int) constraintSize);
+    }
+
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = oldw;
+	call_data.widget = w;
+	call_data.args = args;
+	call_data.num_args = num_args;
+	XtCallCallbacks (hookobj, XtNchangeHook, (XtPointer)&call_data);
     }
 
     /* Inform widget of changes, then inform parent of changes */

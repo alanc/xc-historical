@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.38 93/09/20 16:25:27 kaleb Exp $ */
+/* $XConsortium: Callback.c,v 1.39 93/10/06 16:56:53 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -134,6 +134,7 @@ void XtAddCallback(widget, name, callback, closure)
 #endif
 {
     InternalCallbackList *callbacks;
+    Widget hookobj;
     XtAppContext app = XtWidgetToApplicationContext(widget);
 
     LOCK_APP(app);
@@ -147,6 +148,18 @@ void XtAddCallback(widget, name, callback, closure)
 	return;
     }
     _XtAddCallback(callbacks, callback, closure);
+    if (!_XtIsHookObject(widget)) {
+	hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+	if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	    XtChangeHookDataRec call_data;
+
+	    call_data.old = (Widget)NULL;
+	    call_data.widget = widget;
+	    call_data.args = (ArgList)NULL;
+	    call_data.num_args = (Cardinal)0;
+	    XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+	}
+    }
     UNLOCK_APP(app);
 } /* XtAddCallback */
 
@@ -196,6 +209,7 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 #endif
 {
     InternalCallbackList* callbacks;
+    Widget hookobj;
     XtAppContext app = XtWidgetToApplicationContext(widget);
 
     LOCK_APP(app);
@@ -209,6 +223,16 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 	return;
     }
     AddCallbacks(widget, callbacks, xtcallbacks);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtAddCallbacks */
 
@@ -284,6 +308,7 @@ void XtRemoveCallback (widget, name, callback, closure)
 #endif
 {
     InternalCallbackList *callbacks;
+    Widget hookobj;
     XtAppContext app = XtWidgetToApplicationContext(widget);
 
     LOCK_APP(app);
@@ -297,6 +322,16 @@ void XtRemoveCallback (widget, name, callback, closure)
 	return;
     }
     _XtRemoveCallback(callbacks, callback, closure);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtRemoveCallback */
 
@@ -314,6 +349,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 #endif
 {
     InternalCallbackList *callbacks;
+    Widget hookobj;
     int i;
     InternalCallbackList icl;
     XtCallbackList cl, ccl, rcl;
@@ -367,6 +403,16 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 	XtFree((char *)icl);
 	*callbacks = NULL;
     }
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtRemoveCallbacks */
 
@@ -396,6 +442,7 @@ void XtRemoveAllCallbacks(widget, name)
 #endif
 {
     InternalCallbackList *callbacks;
+    Widget hookobj;
     XtAppContext app = XtWidgetToApplicationContext(widget);
 
     LOCK_APP(app);
@@ -409,6 +456,16 @@ void XtRemoveAllCallbacks(widget, name)
 	return;
     }
     _XtRemoveAllCallbacks(callbacks);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtRemoveAllCallbacks */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.30 93/08/27 16:27:39 kaleb Exp $ */
+/* $XConsortium: Keyboard.c,v 1.31 93/10/06 17:31:39 kaleb Exp $ */
 
 /********************************************************
 
@@ -36,7 +36,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include "IntrinsicI.h"
-#include "StringDefs.h"
 
 #include "PassivGraI.h"
 
@@ -725,8 +724,7 @@ void XtSetKeyboardFocus(widget, descendant)
     Display* dpy;
     XtPerDisplayInput pdi;
     XtPerWidgetInput pwi;
-    Widget oldDesc;
-    Widget oldTarget, target;
+    Widget oldDesc, oldTarget, target, hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -816,6 +814,16 @@ void XtSetKeyboardFocus(widget, descendant)
 		pwi->queryEventDescendant = descendant;
 	    }
 	}
+    }
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
     }
     UNLOCK_PROCESS;
     UNLOCK_APP(app);

@@ -1,9 +1,8 @@
-/* $XConsortium: Hooks.c,v 1.4 94/01/07 20:01:50 kaleb Exp $ */
+/* $XConsortium: Hooks.c,v 1.5 94/01/08 18:50:53 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
 #include "IntrinsicI.h"
-#include "StringDefs.h"
 
 static void FreeBlockHookList( widget, closure, call_data )
     Widget widget;		/* unused (and invalid) */
@@ -85,8 +84,13 @@ static void DeleteShellFromHookObj(shell, closure, call_data)
 
 #define SHELL_INCR 4
 
+#if NeedFunctionPrototypes
+void _XtAddShellToHookObj(
+    Widget shell)
+#else
 void _XtAddShellToHookObj(shell)
     Widget shell;
+#endif
 {
     /* app_con is locked when this function is called */
     HookObject ho = (HookObject) XtHooksOfDisplay(XtDisplay(shell));
@@ -103,10 +107,21 @@ void _XtAddShellToHookObj(shell)
 		  (XtPointer)ho);
 }
 
+#if NeedFunctionPrototypes
+Boolean _XtIsHookObject(
+    Widget widget)
+#else
+Boolean _XtIsHookObject(widget)
+    Widget widget;
+#endif
+{
+    return (widget->core.widget_class == hookObjectClass);
+}
+
 Widget XtHooksOfDisplay(dpy)
     Display* dpy;
 {
-    extern Widget _XtCreate();
+    extern Widget _XtCreateHookObj();
     Widget retval;
     XtPerDisplay pd;
     DPY_TO_APPCON(dpy);
@@ -114,10 +129,8 @@ Widget XtHooksOfDisplay(dpy)
     LOCK_APP(app);
     pd = _XtGetPerDisplay(dpy);
     if (pd->hook_object == NULL)
-	pd->hook_object = _XtCreate("hooks", "Hooks", hookObjectClass, 
-			(Widget) NULL, (Screen*)DefaultScreenOfDisplay(dpy),
-			(ArgList)NULL, 0, (XtTypedArgList)NULL, 0,
-			(ConstraintWidgetClass) NULL);
+	pd->hook_object = 
+	    _XtCreateHookObj((Screen*)DefaultScreenOfDisplay(dpy));
     retval = pd->hook_object;
     UNLOCK_APP(app);
     return retval;

@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.58 93/09/27 13:58:08 kaleb Exp $ */
+/* $XConsortium: Geometry.c,v 1.59 93/10/06 17:20:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -281,27 +281,41 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtWidgetGeometry *request, *reply;
 {
     Boolean junk;
-    XtGeometryResult returnCode;
+    XtGeometryResult r;
+    XtGeometryHookDataRec call_data;
+    Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    returnCode = _XtMakeGeometryRequest(widget, request, reply, &junk);
+    if (XtHasCallbacks(hookobj, XtNgeometryHook) == XtCallbackHasSome) {
+	call_data.widget = widget;
+	call_data.request = request;
+	call_data.pending = TRUE;
+	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	call_data.result = r = 
+	    _XtMakeGeometryRequest(widget, request, reply, &junk);
+	call_data.reply = reply;
+	call_data.pending = FALSE;
+	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+    } else {
+	r = _XtMakeGeometryRequest(widget, request, reply, &junk);
+    }
     UNLOCK_APP(app);
 
-    return ((returnCode == XtGeometryDone) ? XtGeometryYes : returnCode);
+    return ((r == XtGeometryDone) ? XtGeometryYes : r);
 }
 
 #if NeedFunctionPrototypes
-XtGeometryResult XtMakeResizeRequest(
+XtGeometryResult 
+XtMakeResizeRequest(
     Widget	widget,
     _XtDimension width,
     _XtDimension height,
     Dimension	*replyWidth,
-    Dimension	*replyHeight
-    )
+    Dimension	*replyHeight)
 #else
-XtGeometryResult XtMakeResizeRequest
-	(widget, width, height, replyWidth, replyHeight)
+XtGeometryResult 
+XtMakeResizeRequest (widget, width, height, replyWidth, replyHeight)
     Widget	widget;
     Dimension	width, height;
     Dimension	*replyWidth, *replyHeight;
@@ -309,13 +323,29 @@ XtGeometryResult XtMakeResizeRequest
 {
     XtWidgetGeometry request, reply;
     XtGeometryResult r;
+    XtGeometryHookDataRec call_data;
+    Boolean junk;
+    Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
     request.request_mode = CWWidth | CWHeight;
     request.width = width;
     request.height = height;
-    r = XtMakeGeometryRequest(widget, &request, &reply);
+
+    if (XtHasCallbacks(hookobj, XtNgeometryHook) == XtCallbackHasSome) {
+	call_data.widget = widget;
+	call_data.request = &request;
+	call_data.pending = TRUE;
+	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+	call_data.result = r = 
+	    _XtMakeGeometryRequest(widget, &request, &reply, &junk);
+	call_data.reply = &reply;
+	call_data.pending = FALSE;
+	XtCallCallbacks(hookobj, XtNgeometryHook, (XtPointer)&call_data);
+    } else {
+	r = _XtMakeGeometryRequest(widget, &request, &reply, &junk);
+    }
     if (replyWidth != NULL)
 	if (r == XtGeometryAlmost && reply.request_mode & CWWidth)
 	    *replyWidth = reply.width;
@@ -347,6 +377,41 @@ void XtResizeWindow(w)
     UNLOCK_APP(app);
 } /* XtResizeWindow */
 
+static void
+ResizeWidget(call_data, old)
+    XtConfigureHookData call_data;
+    XWindowChanges* old;
+{
+    XtWidgetProc resize;
+    Widget w = call_data->widget;
+
+    if (XtIsRealized(w)) {
+	if (XtIsWidget(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), 
+			     call_data->changeMask, &call_data->changes);
+	else {
+	    Widget pw = _XtWindowedAncestor(w);
+	    XWindowChanges* new = &call_data->changes;
+	    old->width += (old->border_width << 1);
+	    old->height += (old->border_width << 1);
+	    if ((Dimension)(new->width + (new->border_width << 1)) > old->width)
+		old->width = new->width + (new->border_width << 1);
+	    if ((Dimension)(new->height + (new->border_width << 1)) > old->height)
+		old->height = new->height + (new->border_width << 1);
+	    XClearArea(XtDisplay(pw), XtWindow(pw),
+		       (int)w->core.x, (int)w->core.y,
+		       (unsigned int)old->width, (unsigned int)old->height,
+		       TRUE);
+	}
+    }
+
+    LOCK_PROCESS;
+    resize = XtClass(w)->core_class.resize;
+    UNLOCK_PROCESS;
+    if ((call_data->changeMask & (CWWidth | CWHeight)) && 
+	resize != (XtWidgetProc) NULL)
+	(*resize)(w);
+}
 
 #if NeedFunctionPrototypes
 void XtResizeWidget(
@@ -361,57 +426,66 @@ void XtResizeWidget(w, width, height, borderWidth)
     Dimension width, height, borderWidth;
 #endif
 {
-    XWindowChanges changes;
-    Dimension old_width, old_height, old_borderWidth;
-    Cardinal mask = 0;
+    XtConfigureHookDataRec call_data;
+    XWindowChanges old;
     WIDGET_TO_APPCON(w);
 
     LOCK_APP(app);
-    if ((old_width = w->core.width) != width) {
-	changes.width = w->core.width = width;
-	mask |= CWWidth;
+    call_data.widget = w;
+    call_data.changeMask = (XtGeometryMask) 0;
+    if ((old.width = w->core.width) != width) {
+	call_data.changes.width = w->core.width = width;
+	call_data.changeMask |= CWWidth;
     }
 
-    if ((old_height = w->core.height) != height) {
-	changes.height = w->core.height = height;
-	mask |= CWHeight;
+    if ((old.height = w->core.height) != height) {
+	call_data.changes.height = w->core.height = height;
+	call_data.changeMask |= CWHeight;
     }
 
-    if ((old_borderWidth = w->core.border_width) != borderWidth) {
-	changes.border_width = w->core.border_width = borderWidth;
-	mask |= CWBorderWidth;
+    if ((old.border_width = w->core.border_width) != borderWidth) {
+	call_data.changes.border_width = w->core.border_width = borderWidth;
+	call_data.changeMask |= CWBorderWidth;
     }
 
-    if (mask != 0) {
-	if (XtIsRealized(w)) {
-	    if (XtIsWidget(w))
-		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-	    else {
-		Widget pw = _XtWindowedAncestor(w);
-		old_width += (old_borderWidth << 1);
-		old_height += (old_borderWidth << 1);
-		if ((Dimension)(width + (borderWidth << 1)) > old_width)
-		    old_width = width + (borderWidth << 1);
-		if ((Dimension)(height + (borderWidth << 1)) > old_height)
-		    old_height = height + (borderWidth << 1);
-		XClearArea( XtDisplay(pw), XtWindow(pw),
-			    (int)w->core.x, (int)w->core.y,
-			    (unsigned int)old_width, (unsigned int)old_height,
-			    TRUE );
-	    }
-	}
-	{
-	XtWidgetProc resize;
-
-	LOCK_PROCESS;
-	resize = XtClass(w)->core_class.resize;
-	UNLOCK_PROCESS;
-	if ((mask & (CWWidth | CWHeight)) && resize != (XtWidgetProc) NULL)
-	    (*resize)(w);
+    if (call_data.changeMask != 0) {
+	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));;
+	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
+	    call_data.pending = TRUE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    ResizeWidget(&call_data, &old);
+	    call_data.pending = FALSE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	} else {
+	    ResizeWidget(&call_data, &old);
 	}
     }
     UNLOCK_APP(app);
 } /* XtResizeWidget */
+
+static void
+ConfigureWidget(call_data, old)
+    XtConfigureHookData call_data;
+    XWindowChanges* old;
+{
+    XtWidgetProc resize;
+    Widget w = call_data->widget;
+
+    if (XtIsRealized(w)) {
+	if (XtIsWidget(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), 
+			     call_data->changeMask, &call_data->changes);
+	else
+	    ClearRectObjAreas((RectObj)w, old);
+    }
+
+    LOCK_PROCESS;
+    resize = XtClass(w)->core_class.resize;
+    UNLOCK_PROCESS;
+    if ((call_data->changeMask & (CWWidth | CWHeight)) && 
+	resize != (XtWidgetProc) NULL)
+	(*resize)(w);
+}
 
 #if NeedFunctionPrototypes
 void XtConfigureWidget(
@@ -429,55 +503,72 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
     Dimension width, height, borderWidth;
 #endif
 {
-    XWindowChanges changes, old;
-    Cardinal mask = 0;
+    XWindowChanges old;
+    XtConfigureHookDataRec call_data;
     WIDGET_TO_APPCON(w);
 
     LOCK_APP(app);
+    call_data.widget = w;
+    call_data.changeMask = (XtGeometryMask) 0;
     if ((old.x = w->core.x) != x) {
-	changes.x = w->core.x = x;
-	mask |= CWX;
+	call_data.changes.x = w->core.x = x;
+	call_data.changeMask |= CWX;
     }
 
     if ((old.y = w->core.y) != y) {
-	changes.y = w->core.y = y;
-	mask |= CWY;
+	call_data.changes.y = w->core.y = y;
+	call_data.changeMask |= CWY;
     }
 
     if ((old.width = w->core.width) != width) {
-	changes.width = w->core.width = width;
-	mask |= CWWidth;
+	call_data.changes.width = w->core.width = width;
+	call_data.changeMask |= CWWidth;
     }
 
     if ((old.height = w->core.height) != height) {
-	changes.height = w->core.height = height;
-	mask |= CWHeight;
+	call_data.changes.height = w->core.height = height;
+	call_data.changeMask |= CWHeight;
     }
 
     if ((old.border_width = w->core.border_width) != borderWidth) {
-	changes.border_width = w->core.border_width = borderWidth;
-	mask |= CWBorderWidth;
+	call_data.changes.border_width = w->core.border_width = borderWidth;
+	call_data.changeMask |= CWBorderWidth;
     }
 
-    if (mask != 0) {
-	if (XtIsRealized(w)) {
-	    if (XtIsWidget(w))
-		XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-	    else
-		ClearRectObjAreas((RectObj)w, &old);
-	}
-	{
-	XtWidgetProc resize;
-
-	LOCK_PROCESS;
-	resize = XtClass(w)->core_class.resize;
-	UNLOCK_PROCESS;
-	if ((mask & (CWWidth | CWHeight)) && resize != (XtWidgetProc) NULL)
-	    (*resize)(w);
+    if (call_data.changeMask != 0) {
+	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));
+	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
+	    call_data.pending = TRUE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    ConfigureWidget(&call_data, &old);
+	    call_data.pending = FALSE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	} else {
+	    ConfigureWidget(&call_data, &old);
 	}
     }
     UNLOCK_APP(app);
 } /* XtConfigureWidget */
+
+static void
+MoveWidget(call_data, old)
+    XtConfigureHookData call_data;
+    XWindowChanges* old;
+{
+    Widget w = call_data->widget;
+
+    if (XtIsRealized(w)) {
+	if (XtIsWidget(w))
+	    XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
+	else {
+	    old->width = w->core.width;
+	    old->height = w->core.height;
+	    old->border_width = w->core.border_width;
+	    ClearRectObjAreas((RectObj)w, old);
+	}
+    }
+
+}
 
 #if NeedFunctionPrototypes
 void XtMoveWidget(
@@ -491,25 +582,34 @@ void XtMoveWidget(w, x, y)
     Position x, y;
 #endif
 {
+    XtConfigureHookDataRec call_data;
+    XWindowChanges old;
     WIDGET_TO_APPCON(w);
 
     LOCK_APP(app);
-    if ((w->core.x != x) || (w->core.y != y)) {
-	XWindowChanges old;
-	old.x = w->core.x;
-	old.y = w->core.y;
-	w->core.x = x;
-	w->core.y = y;
-	if (XtIsRealized(w)) {
-	    if (XtIsWidget(w))
-		XMoveWindow(XtDisplay(w), XtWindow(w), w->core.x, w->core.y);
-	    else {
-		old.width = w->core.width;
-		old.height = w->core.height;
-		old.border_width = w->core.border_width;
-		ClearRectObjAreas((RectObj)w, &old);
-	    }
-        }
+    call_data.widget = w;
+    call_data.changeMask = (XtGeometryMask) 0;
+    if ((old.x = w->core.x) != x) {
+	call_data.changes.x = w->core.x = x;
+	call_data.changeMask |= CWX;
+    }
+
+    if ((old.y = w->core.y) != y) {
+	call_data.changes.y = w->core.y = y;
+	call_data.changeMask |= CWY;
+    }
+
+    if (call_data.changeMask != 0) {
+	Widget hookobj = XtHooksOfDisplay(XtDisplayOfObject(w));
+	if (XtHasCallbacks(hookobj, XtNconfigureHook) == XtCallbackHasSome) {
+	    call_data.pending = TRUE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	    MoveWidget(&call_data, &old);
+	    call_data.pending = FALSE;
+	    XtCallCallbacks(hookobj, XtNconfigureHook, (XtPointer)&call_data);
+	} else {
+	    MoveWidget(&call_data, &old);
+	}
     }
     UNLOCK_APP(app);
 } /* XtMoveWidget */

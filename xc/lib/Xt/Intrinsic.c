@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.186 94/01/11 12:18:21 converse Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.186 94/01/11 12:33:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,7 +37,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define INTRINSIC_C
 
 #include "IntrinsicI.h"
-#include "StringDefs.h"
 #ifndef NO_IDENTIFY_WINDOWS
 #include <X11/Xatom.h>
 #endif
@@ -273,7 +272,7 @@ static Boolean ShouldMapAllChildren(cwp)
 
 
 static void RealizeWidget(widget)
-    register Widget		widget;
+    Widget			widget;
 {
     XtValueMask			value_mask;
     XSetWindowAttributes	values;
@@ -326,9 +325,9 @@ static void RealizeWidget(widget)
     _XtExtensionSelect(widget);
 
     if (XtIsComposite (widget)) {
-	register Cardinal		i;
-	register CompositePart *cwp = &(((CompositeWidget)widget)->composite);
-	register WidgetList children = cwp->children;
+	Cardinal		i;
+	CompositePart *cwp = &(((CompositeWidget)widget)->composite);
+	WidgetList children = cwp->children;
 	/* Realize all children */
 	for (i = cwp->num_children; i != 0; --i) {
 	    RealizeWidget (children[i-1]);
@@ -351,8 +350,9 @@ static void RealizeWidget(widget)
 } /* RealizeWidget */
 
 void XtRealizeWidget (widget)
-    register Widget		widget;
+    Widget		widget;
 {
+    Widget hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -362,16 +362,25 @@ void XtRealizeWidget (widget)
     }
     CallChangeManaged(widget);
     RealizeWidget(widget);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtRealizeWidget */
 
 
 static void UnrealizeWidget(widget)
-    register Widget		widget;
+    Widget		widget;
 {
-    register CompositeWidget	cw;
-    register Cardinal		i;
-    register WidgetList		children;
+    CompositeWidget	cw;
+    Cardinal		i;
+    WidgetList		children;
 
     if (!XtIsWidget(widget) || !XtIsRealized(widget)) return;
 
@@ -412,9 +421,10 @@ static void UnrealizeWidget(widget)
 
 
 void XtUnrealizeWidget (widget)
-    register Widget		widget;
+    Widget		widget;
 {
     Window window;
+    Widget hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -427,6 +437,16 @@ void XtUnrealizeWidget (widget)
     UnrealizeWidget(widget);
     if (window != None) 
 	XDestroyWindow(XtDisplay(widget), window);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
     UNLOCK_APP(app);
 } /* XtUnrealizeWidget */
 

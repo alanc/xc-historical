@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.111 94/01/08 18:50:51 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.112 94/01/11 18:44:10 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -35,7 +35,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "HookObj.h"
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
@@ -590,6 +589,8 @@ static void CloseDisplay(dpy)
 #ifdef lint
 	opd = NULL;
 #endif
+	XtDestroyWidget(XtHooksOfDisplay(dpy));
+
 	LOCK_PROCESS;
 	for (pd = _XtperDisplayList;
 	     pd != NULL && pd->dpy != dpy;

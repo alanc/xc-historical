@@ -1,4 +1,4 @@
-/* $XConsortium: Popup.c,v 1.31 92/03/30 11:53:19 converse Exp $ */
+/* $XConsortium: Popup.c,v 1.32 92/08/13 17:52:38 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -25,9 +25,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "Shell.h"
 #include "ShellP.h"
-#include "StringDefs.h"
 
 #if NeedFunctionPrototypes
 void _XtPopup(
@@ -80,6 +78,8 @@ void XtPopup (widget, grab_kind)
     XtGrabKind grab_kind;
 #endif
 {
+    Widget hookobj;
+
     switch (grab_kind) {
 
       case XtGrabNone:
@@ -97,20 +97,44 @@ void XtPopup (widget, grab_kind)
     }
 	
     _XtPopup(widget, grab_kind, FALSE);
+
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
 } /* XtPopup */
 
 void XtPopupSpringLoaded (widget)
     Widget widget;
 {
+    Widget hookobj;
+
     _XtPopup(widget, XtGrabExclusive, True);
+
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
+    }
 }
 
 void XtPopdown(widget)
     Widget  widget;
 {
     /* Unmap a shell widget if it is mapped, and remove from grab list */
-
-    register ShellWidget shell_widget = (ShellWidget) widget;
+    Widget hookobj;
+    ShellWidget shell_widget = (ShellWidget) widget;
 
     if (! XtIsShell(widget)) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
@@ -128,6 +152,17 @@ void XtPopdown(widget)
 	}
 	shell_widget->shell.popped_up = FALSE;
 	XtCallCallbacks(widget, XtNpopdownCallback, (XtPointer)&grab_kind);
+    }
+
+    hookobj = XtHooksOfDisplay(XtDisplay(widget));
+    if (XtHasCallbacks(hookobj, XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.old = (Widget)NULL;
+	call_data.widget = widget;
+	call_data.args = (ArgList)NULL;
+	call_data.num_args = (Cardinal)0;
+	XtCallCallbacks(hookobj, XtNchangeHook, (XtPointer)&call_data);
     }
 } /* XtPopdown */
 
