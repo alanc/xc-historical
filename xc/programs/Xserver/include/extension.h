@@ -1,4 +1,4 @@
-/* $Header: extension.h,v 1.1 87/09/08 12:22:50 toddb Locked $ */
+/* $Header: extension.h,v 1.2 87/09/08 14:02:46 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -52,55 +52,41 @@ SOFTWARE.
 #define GetGCAndDrawableAndValidate(gcID, pGC, drawID, pDraw, client)\
     if ((client->lastDrawableID != drawID) || (client->lastGCID != gcID))\
     {\
-	if (client->lastDrawableID != drawID)\
-	{\
-	    pDraw = (DrawablePtr)LookupID(drawID, RT_DRAWABLE, RC_CORE);\
-	    if (!pDraw)\
-	    {\
-		client->errorValue = drawID; \
-		return (BadDrawable);\
-	    }\
-	    if ((pDraw->type == DRAWABLE_WINDOW) || \
-		(pDraw->type == DRAWABLE_PIXMAP))\
-	    {\
-		client->lastDrawable = pDraw;\
-		client->lastDrawableID = drawID;\
-	    }\
-	    else\
-	    {\
-		client->errorValue = drawID;\
-		return (BadDrawable);\
-	    }\
-	}\
-	else\
-	    pDraw = (DrawablePtr)client->lastDrawable;\
-	if (client->lastGCID != gcID)\
-	{\
+        if (client->lastDrawableID != drawID)\
+    	    pDraw = (DrawablePtr)LookupID(drawID, RT_DRAWABLE, RC_CORE);\
+        else\
+	    pDraw = client->lastDrawable;\
+        if (client->lastGCID != gcID)\
 	    pGC = (GC *)LookupID(gcID, RT_GC, RC_CORE);\
-	    if (!pGC)\
-	    {\
-		client->errorValue = gcID;\
-		return (BadGC);\
-	    }\
-	    client->lastGC = pGC;\
-	    client->lastGCID = gcID;\
-	}\
-	else\
-	    pGC = (GC *) client->lastGC;\
-	if ((pGC->depth != pDraw->depth) || (pGC->pScreen != pDraw->pScreen))\
+        else\
+            pGC = client->lastGC;\
+	if (pDraw && pGC)\
 	{\
-	    client->errorValue = gcID;\
-	    client->lastGCID = 0;\
-	    return (BadMatch);\
-	 }\
+	    if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
+		(pGC->depth != pDraw->depth) ||\
+		(pGC->pScreen != pDraw->pScreen))\
+		return (BadMatch);\
+	    client->lastDrawable = pDraw;\
+	    client->lastDrawableID = drawID;\
+            client->lastGC = pGC;\
+            client->lastGCID = gcID;\
+	}\
     }\
     else\
     {\
-	pGC = (GC *) client->lastGC;\
-	pDraw = (DrawablePtr)client->lastDrawable;\
+        pGC = client->lastGC;\
+        pDraw = client->lastDrawable;\
+    }\
+    if (!pDraw)\
+    {\
+        client->errorValue = drawID; \
+	return (BadDrawable);\
+    }\
+    if (!pGC)\
+    {\
+        client->errorValue = gcID;\
+        return (BadGC);\
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
-    { \
-	ValidateGC(pDraw, pGC);\
-    }
+	ValidateGC(pDraw, pGC);
 #endif /* EXTENSION_H */

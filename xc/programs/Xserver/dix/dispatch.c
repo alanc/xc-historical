@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.45 88/03/16 16:00:34 rws Exp $ */
+/* $Header: dispatch.c,v 1.46 88/04/10 10:53:10 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -94,13 +94,6 @@ XID clientErrorValue;   /* XXX this is a kludge */
 #define SAME_SCREENS(a, b) (\
     (a.pScreen == b.pScreen))
 
-#define VALIDATE(pGC, pDraw, rt) {\
-    if (pGC->serialNumber != pDraw->serialNumber)\
-    {\
-	ValidateGC(pDraw, pGC);\
-    } \
-}
-
 #define LEGAL_NEW_RESOURCE(id,client)\
     if ((LookupID(id, RT_ANY, RC_CORE) != 0) || (id & SERVER_BIT) \
 	|| (client->clientAsMask != CLIENT_BITS(id)))\
@@ -111,78 +104,59 @@ XID clientErrorValue;   /* XXX this is a kludge */
 
 #define LOOKUP_DRAWABLE(did, client)\
     ((client->lastDrawableID == did) ? \
-     (DrawablePtr)client->lastDrawable : (DrawablePtr)LookupDrawable(did, client))
+     client->lastDrawable : (DrawablePtr)LookupDrawable(did, client))
 
 #define VERIFY_GC(pGC, rid, client)\
     if (client->lastGCID == rid)\
-    {\
-        pGC = (GC *) client->lastGC;\
-    }\
+        pGC = client->lastGC;\
     else\
-    {\
 	pGC = (GC *)LookupID(rid, RT_GC, RC_CORE);\
-        if (!pGC)\
-        {\
-	    client->errorValue = rid;\
-	    return (BadGC);\
-        }\
+    if (!pGC)\
+    {\
+	client->errorValue = rid;\
+	return (BadGC);\
     }
 
 #define VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client)\
     if ((client->lastDrawableID != drawID) || (client->lastGCID != stuff->gc))\
     {\
         if (client->lastDrawableID != drawID)\
-	{\
     	    pDraw = (DrawablePtr)LookupID(drawID, RT_DRAWABLE, RC_CORE);\
-    	    if (!pDraw)\
-	    {\
-	        client->errorValue = drawID; \
-                return (BadDrawable);\
-	    }\
-	    if ((pDraw->type == DRAWABLE_WINDOW) || \
-		(pDraw->type == DRAWABLE_PIXMAP))\
-    	    {\
-	        client->lastDrawable = (DrawablePtr)pDraw;\
-	        client->lastDrawableID = drawID;\
-	    }\
-            else\
-	    {\
-	        client->errorValue = drawID;\
-                return (BadDrawable);\
-	    }\
-        }\
         else\
-	    pDraw = (DrawablePtr)client->lastDrawable;\
+	    pDraw = client->lastDrawable;\
         if (client->lastGCID != stuff->gc)\
-	{\
 	    pGC = (GC *)LookupID(stuff->gc, RT_GC, RC_CORE);\
-            if (!pGC)\
-            {\
-	        client->errorValue = stuff->gc;\
-	        return (BadGC);\
-            }\
-            client->lastGC = (GCPtr)pGC;\
-            client->lastGCID = stuff->gc;\
-        }\
         else\
-            pGC = (GC *) client->lastGC;\
-        if ((pGC->depth != pDraw->depth) || (pGC->pScreen != pDraw->pScreen))\
+            pGC = client->lastGC;\
+	if (pDraw && pGC)\
 	{\
-            client->errorValue = stuff->gc;\
-	    client->lastGCID = INVALID;\
-	    client->lastGC = (GCPtr)NULL;\
-	    return (BadMatch);\
-         }\
+	    if ((pDraw->type == UNDRAWABLE_WINDOW) ||\
+		(pGC->depth != pDraw->depth) ||\
+		(pGC->pScreen != pDraw->pScreen))\
+		return (BadMatch);\
+	    client->lastDrawable = pDraw;\
+	    client->lastDrawableID = drawID;\
+            client->lastGC = pGC;\
+            client->lastGCID = stuff->gc;\
+	}\
     }\
     else\
     {\
-        pGC = (GC *) client->lastGC;\
-        pDraw = (DrawablePtr)client->lastDrawable;\
+        pGC = client->lastGC;\
+        pDraw = client->lastDrawable;\
+    }\
+    if (!pDraw)\
+    {\
+        client->errorValue = drawID; \
+	return (BadDrawable);\
+    }\
+    if (!pGC)\
+    {\
+        client->errorValue = stuff->gc;\
+        return (BadGC);\
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
-    { \
-	ValidateGC(pDraw, pGC);\
-    }
+	ValidateGC(pDraw, pGC);
 
 void
 SetInputCheck(c0, c1)
@@ -924,7 +898,7 @@ int
 ProcConvertSelection(client)
     register ClientPtr client;
 {
-    Bool paramsOkay = TRUE;
+    Bool paramsOkay;
     xEvent event;
     WindowPtr pWin;
     REQUEST(xConvertSelectionReq);
@@ -3360,7 +3334,7 @@ void
 DeleteWindowFromAnySelections(pWin)
     WindowPtr pWin;
 {
-    int i = 0;
+    register int i;
 
     for (i = 0; i< NumCurrentSelections; i++)
         if (CurrentSelections[i].pWin == pWin)
@@ -3374,7 +3348,7 @@ static void
 DeleteClientFromAnySelections(client)
     ClientPtr client;
 {
-    int i = 0;
+    register int i;
 
     for (i = 0; i< NumCurrentSelections; i++)
         if (CurrentSelections[i].client == client)
