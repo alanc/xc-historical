@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.5 91/02/17 14:37:40 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.6 91/02/17 15:39:52 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -29,15 +29,12 @@
 #ifndef _XCMSINT_H_
 #define _XCMSINT_H_
 
-#include <sys/types.h>
 #include <X11/Xcms.h>
 
 /*
  *	DEFINES
  */
-#ifndef NULL
-#define NULL 0
-#endif
+
 	/*
 	 * Private Status Value
 	 */
