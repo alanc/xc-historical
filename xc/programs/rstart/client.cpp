@@ -1,6 +1,6 @@
-XCOMM $XConsortium$
-XCOMM
 XCOMM! /bin/sh
+XCOMM $XConsortium: client.cpp,v 1.2 94/02/06 16:16:21 mor Exp $
+XCOMM
 
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
