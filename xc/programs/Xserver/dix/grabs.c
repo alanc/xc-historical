@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.4 89/10/03 19:56:26 rws Exp $ */
+/* $XConsortium: grabs.c,v 5.5 89/10/04 22:50:55 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -347,7 +347,7 @@ DeletePassiveGrabFromList(pMinuendGrab)
 				  (Bool)grab->keyboardMode,
 				  (Bool)grab->pointerMode,
 				  grab->modifierDevice,
-				  AnyModifier, grab->type,
+				  AnyModifier, (int)grab->type,
 				  pMinuendGrab->detail.exact,
 				  grab->confineTo, grab->cursor);
 	    if (!pNewGrab)

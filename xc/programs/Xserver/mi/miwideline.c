@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.23 89/11/16 19:39:30 keith Exp $
+ * $XConsortium: miwideline.c,v 1.24 89/11/19 17:26:17 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -240,7 +240,6 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
 {
     int	    top, bottom;
     double  miny, maxy;
-    double  k;
     register int i;
     int	    j;
     int	    clockwise;
@@ -779,11 +778,9 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     Bool	*left1, *left2;
 {
     int	denom;
-    int	swapslopes;
 
     denom = - pLeft->dx * pRight->dy + pRight->dx * pLeft->dy;
 
-    swapslopes = 0;
     if (denom >= 0)
     {
 	pLeft->xa = -pLeft->xa;
@@ -791,7 +788,6 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     }
     else
     {
-	swapslopes = 1;
 	pRight->xa = -pRight->xa;
 	pRight->ya = -pRight->ya;
     }
