@@ -527,13 +527,149 @@ typedef void (*XtSelectionIncrCallbackProc)(
 
 /***************************************************************
  *
- * Resource Conversions
+ * Exported Interfaces
  *
  ****************************************************************/
 
 #ifdef __cplusplus			/* do not leave open across includes */
 extern "C" {				/* for C++ V2.0 */
 #endif
+
+extern Boolean XtConvertAndStore(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    CONST String 	/* from_type */,
+    XrmValue*		/* from */,
+    CONST String 	/* to_type */,
+    XrmValue*		/* to_in_out */
+#endif
+);
+
+extern Boolean XtCallConverter(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    XtTypeConverter 	/* converter */,
+    XrmValuePtr 	/* args */,
+    Cardinal 		/* num_args */,
+    XrmValuePtr 	/* from */,
+    XrmValue*		/* to_return */,
+    XtCacheRef*		/* cache_ref_return */
+#endif
+);
+
+extern Boolean XtDispatchEvent(
+#if NeedFunctionPrototypes
+    XEvent* 		/* event */
+#endif
+);
+
+extern Boolean XtCallAcceptFocus(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Time*		/* t */
+#endif
+);
+
+extern Boolean XtPeekEvent(
+#if NeedFunctionPrototypes
+    XEvent*		/* event */
+#endif
+);
+
+extern Boolean XtAppPeekEvent(
+#if NeedFunctionPrototypes
+    XtAppContext 	/* appContext */,
+    XEvent*		/* event */
+#endif
+);
+
+extern Boolean XtIsSubclass(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    WidgetClass 	/* widgetClass */
+#endif
+);
+
+extern Boolean XtIsObject(
+#if NeedFunctionPrototypes
+    Widget 		/* object */
+#endif
+);
+
+extern Boolean _XtCheckSubclassFlag( /* implementation-private */
+#if NeedFunctionPrototypes
+    Widget		/* object */,
+#if NeedWidePrototypes
+    /* XtEnum */ unsigned /* type_flag */
+#else
+    XtEnum		/* type_flag */
+#endif /* NeedWidePrototypes */
+#endif
+);
+
+extern Boolean _XtIsSubclassOf( /* implementation-private */
+#if NeedFunctionPrototypes
+    Widget		/* object */,
+    WidgetClass		/* widget_class */,
+    WidgetClass		/* flag_class */,
+    XtEnum		/* type_flag */
+#endif
+);
+
+extern Boolean XtIsManaged(
+#if NeedFunctionPrototypes
+    Widget 		/* rectobj */
+#endif
+);
+
+extern Boolean XtIsRealized(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */
+#endif
+);
+
+extern Boolean XtIsSensitive(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */
+#endif
+);
+
+/*
+ * Set the given widget to own the selection.  The convertProc should
+ * be called when someone wants the current value of the selection. If it
+ * is not NULL, the
+ * losesSelection gets called whenever the window no longer owns the selection
+ * (because someone else took it). If it is not NULL, the doneProc gets
+ * called when the widget has provided the current value of the selection
+ * to a requestor and the requestor has indicated that it has succeeded
+ * in reading it by deleting the property.
+ */
+
+extern Boolean XtOwnSelection(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Atom 		/* selection */,
+    Time 		/* time */,
+    XtConvertSelectionProc /* convert */,
+    XtLoseSelectionProc	/* lose */,
+    XtSelectionDoneProc /* done */
+#endif
+);
+
+/* incremental selection interface */
+
+extern Boolean XtOwnSelectionIncremental(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Atom 		/* selection */,
+    Time 		/* time */,
+    XtConvertSelectionIncrProc /* convert_callback */,
+    XtLoseSelectionIncrProc /* lose_callback */,
+    XtSelectionDoneIncrProc /* done_callback */,
+    XtCancelSelectionCallbackProc /* cancel_callback */,
+    XtPointer 		/* client_data */
+#endif
+);
 
 extern XtGeometryResult XtMakeResizeRequest(
 #if NeedFunctionPrototypes
@@ -564,6 +700,11 @@ extern void XtTransformCoords(
     Position*		/* rooty */
 #endif
 );
+
+/* %%% Caution: don't declare any functions past this point that
+ * return one of the following types or take a pointer to one of
+ * the following types.
+ */
 
 #if NeedWidePrototypes
 #define Boolean		int
@@ -646,16 +787,6 @@ extern void XtConvert(
 #endif
 );
 
-extern Boolean XtConvertAndStore(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    CONST String 	/* from_type */,
-    XrmValue*		/* from */,
-    CONST String 	/* to_type */,
-    XrmValue*		/* to_in_out */
-#endif
-);
-
 extern void XtDirectConvert(
 #if NeedFunctionPrototypes
     XtConverter 	/* converter */,
@@ -663,18 +794,6 @@ extern void XtDirectConvert(
     Cardinal 		/* num_args */,
     XrmValuePtr 	/* from */,
     XrmValue*		/* to_return */
-#endif
-);
-
-extern Boolean XtCallConverter(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    XtTypeConverter 	/* converter */,
-    XrmValuePtr 	/* args */,
-    Cardinal 		/* num_args */,
-    XrmValuePtr 	/* from */,
-    XrmValue*		/* to_return */,
-    XtCacheRef*		/* cache_ref_return */
 #endif
 );
 
@@ -979,12 +1098,6 @@ extern void XtRemoveGrab(
 #endif
 );
 
-extern Boolean XtDispatchEvent(
-#if NeedFunctionPrototypes
-    XEvent* 		/* event */
-#endif
-);
-
 extern void XtProcessEvent(
 #if NeedFunctionPrototypes
     XtInputMask 		/* mask */
@@ -1022,13 +1135,6 @@ extern void XtSetKeyboardFocus(
 #if NeedFunctionPrototypes
     Widget		/* subtree */,
     Widget 		/* descendent */
-#endif
-);
-
-extern Boolean XtCallAcceptFocus(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    Time*		/* t */
 #endif
 );
 
@@ -1106,19 +1212,6 @@ extern void XtAppNextEvent(
 #endif
 );
 
-extern Boolean XtPeekEvent(
-#if NeedFunctionPrototypes
-    XEvent*		/* event */
-#endif
-);
-
-extern Boolean XtAppPeekEvent(
-#if NeedFunctionPrototypes
-    XtAppContext 	/* appContext */,
-    XEvent*		/* event */
-#endif
-);
-
 #define XtIMXEvent		1
 #define XtIMTimer		2
 #define XtIMAlternateInput	4
@@ -1141,36 +1234,6 @@ extern XtInputMask XtAppPending(
  * Random utility routines
  *
  ****************************************************************/
-
-extern Boolean XtIsSubclass(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    WidgetClass 	/* widgetClass */
-#endif
-);
-
-extern Boolean XtIsObject(
-#if NeedFunctionPrototypes
-    Widget 		/* object */
-#endif
-);
-
-extern Boolean _XtCheckSubclassFlag( /* implementation-private */
-#if NeedFunctionPrototypes
-    Widget		/* object */,
-    XtEnum		/* type_flag */
-#endif
-);
-
-extern Boolean _XtIsSubclassOf( /* implementation-private */
-#if NeedFunctionPrototypes
-    Widget		/* object */,
-    WidgetClass		/* widget_class */,
-    WidgetClass		/* flag_class */,
-    XtEnum		/* type_flag */
-#endif
-);
-
 
 #define XtIsRectObj(object)	(_XtCheckSubclassFlag(object, (XtEnum)0x02))
 #define XtIsWidget(object)	(_XtCheckSubclassFlag(object, (XtEnum)0x04))
@@ -1333,24 +1396,6 @@ extern WidgetClass XtSuperclass(
 extern WidgetClass XtClass(
 #if NeedFunctionPrototypes
     Widget 		/* object */
-#endif
-);
-
-extern Boolean XtIsManaged(
-#if NeedFunctionPrototypes
-    Widget 		/* rectobj */
-#endif
-);
-
-extern Boolean XtIsRealized(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */
-#endif
-);
-
-extern Boolean XtIsSensitive(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */
 #endif
 );
 
@@ -2255,28 +2300,6 @@ extern String XtResolvePathname(
     
 
 /*
- * Set the given widget to own the selection.  The convertProc should
- * be called when someone wants the current value of the selection. If it
- * is not NULL, the
- * losesSelection gets called whenever the window no longer owns the selection
- * (because someone else took it). If it is not NULL, the doneProc gets
- * called when the widget has provided the current value of the selection
- * to a requestor and the requestor has indicated that it has succeeded
- * in reading it by deleting the property.
- */
-
-extern Boolean XtOwnSelection(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    Atom 		/* selection */,
-    Time 		/* time */,
-    XtConvertSelectionProc /* convert */,
-    XtLoseSelectionProc	/* lose */,
-    XtSelectionDoneProc /* done */
-#endif
-);
-
-/*
  * The given widget no longer wants the selection.  If it still owns it, then
  * the selection owner is cleared, and the window's losesSelection is called.
  */
@@ -2351,21 +2374,6 @@ extern XSelectionRequestEvent *XtGetSelectionRequest(
     Widget 		/* widget */,
     Atom 		/* selection */,
     XtRequestId 	/* request_id */
-#endif
-);
-
-/* incremental selection interface */
-
-extern Boolean XtOwnSelectionIncremental(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    Atom 		/* selection */,
-    Time 		/* time */,
-    XtConvertSelectionIncrProc /* convert_callback */,
-    XtLoseSelectionIncrProc /* lose_callback */,
-    XtSelectionDoneIncrProc /* done_callback */,
-    XtCancelSelectionCallbackProc /* cancel_callback */,
-    XtPointer 		/* client_data */
 #endif
 );
 
