@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.25 93/09/09 17:07:40 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.26 93/09/14 12:22:25 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -76,9 +76,6 @@ extern int sunMaxLayout;
 extern KeySym *sunType4KeyMaps[];
 extern SunModmapRec *sunType4ModMaps[];
 
-static CARD8 *sunConModMap = 0;
-static KeySymsRec *sunConKeySyms;
-
 extern void	ProcessInputEvents();
 extern void	miPointerPosition();
 
@@ -155,26 +152,27 @@ static void ConvertCase(sym, lower, upper)
 	*upper -= (XK_oslash - XK_Ooblique);
 }
 
-static void SwapKeys()
+static void SwapKeys(keysyms)
+    KeySymsRec* keysyms;
 {
-    int i;
+    unsigned int i;
     KeySym k;
 
-    for (i = 2; i < sunConKeySyms->maxKeyCode * sunConKeySyms->mapWidth; i++)
-	if (sunConKeySyms->map[i] == XK_L1 ||
-	    sunConKeySyms->map[i] == XK_L2 ||
-	    sunConKeySyms->map[i] == XK_L3 ||
-	    sunConKeySyms->map[i] == XK_L4 ||
-	    sunConKeySyms->map[i] == XK_L5 ||
-	    sunConKeySyms->map[i] == XK_L6 ||
-	    sunConKeySyms->map[i] == XK_L7 ||
-	    sunConKeySyms->map[i] == XK_L8 ||
-	    sunConKeySyms->map[i] == XK_L9 ||
-	    sunConKeySyms->map[i] == XK_L10) {
+    for (i = 2; i < keysyms->maxKeyCode * keysyms->mapWidth; i++)
+	if (keysyms->map[i] == XK_L1 ||
+	    keysyms->map[i] == XK_L2 ||
+	    keysyms->map[i] == XK_L3 ||
+	    keysyms->map[i] == XK_L4 ||
+	    keysyms->map[i] == XK_L5 ||
+	    keysyms->map[i] == XK_L6 ||
+	    keysyms->map[i] == XK_L7 ||
+	    keysyms->map[i] == XK_L8 ||
+	    keysyms->map[i] == XK_L9 ||
+	    keysyms->map[i] == XK_L10) {
 	    /* yes, I could have done a clever two line swap! */
-	    k = sunConKeySyms->map[i - 2];
-	    sunConKeySyms->map[i - 2] = sunConKeySyms->map[i];
-	    sunConKeySyms->map[i] = k;
+	    k = keysyms->map[i - 2];
+	    keysyms->map[i - 2] = keysyms->map[i];
+	    keysyms->map[i] = k;
 	}
 }
 
@@ -195,6 +193,9 @@ sunKbdProc (pKeyboard, what)
 {
     KbPrivPtr pPriv;
     int kbdFd, i;
+    CARD8 *workingModMap = 0;
+    KeySymsRec *workingKeySyms;
+
     extern int AddEnabledDevice(), RemoveEnabledDevice();
 
     switch (what) {
@@ -284,37 +285,39 @@ sunKbdProc (pKeyboard, what)
 	    /*
 	     * Initialize the keysym map
 	     */
-	    sunConKeySyms = &sunKeySyms[sysKbPriv.type];
+	    workingKeySyms = &sunKeySyms[sysKbPriv.type];
 
 	    /*
 	     * Create and initialize the modifier map.
 	     */
-	    sunConModMap=(CARD8 *)xalloc(MAP_LENGTH);
-	    (void) bzero(sunConModMap, MAP_LENGTH);
+	    workingModMap=(CARD8 *)xalloc(MAP_LENGTH);
+	    (void) bzero(workingModMap, MAP_LENGTH);
 	    for(i=0; sunModMaps[sysKbPriv.type][i].key != 0; i++)
-		sunConModMap[sunModMaps[sysKbPriv.type][i].key + 
-			     MIN_KEYCODE - sunConKeySyms->minKeyCode] = 
+		workingModMap[sunModMaps[sysKbPriv.type][i].key + 
+			     MIN_KEYCODE - workingKeySyms->minKeyCode] = 
 		    sunModMaps[sysKbPriv.type][i].modifiers;
 
 	    if (sysKbPriv.type == KB_SUN4 && sunSwapLkeys)
-		SwapKeys();
+		SwapKeys(workingKeySyms);
 	    /*
 	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
 	     * and <= MAX_KEYCODE
 	     */
-	    if (sunConKeySyms->minKeyCode < MIN_KEYCODE) {
-		sysKbPriv.offset = MIN_KEYCODE - sunConKeySyms->minKeyCode;
-		sunConKeySyms->minKeyCode += sysKbPriv.offset;
-		sunConKeySyms->maxKeyCode += sysKbPriv.offset;
+	    if (workingKeySyms->minKeyCode < MIN_KEYCODE) {
+		sysKbPriv.offset = MIN_KEYCODE - workingKeySyms->minKeyCode;
+		workingKeySyms->minKeyCode += sysKbPriv.offset;
+		workingKeySyms->maxKeyCode += sysKbPriv.offset;
 	    }
-	    if (sunConKeySyms->maxKeyCode > MAX_KEYCODE)
-		sunConKeySyms->maxKeyCode = MAX_KEYCODE;
+	    if (workingKeySyms->maxKeyCode > MAX_KEYCODE)
+		workingKeySyms->maxKeyCode = MAX_KEYCODE;
 	}
 	pKeyboard->devicePrivate = (pointer)&sysKbPriv;
 	pKeyboard->on = FALSE;
 
-	InitKeyboardDeviceStruct (pKeyboard, sunConKeySyms, sunConModMap,
-				  bell, kbdCtrl);
+	InitKeyboardDeviceStruct(pKeyboard, 
+				 workingKeySyms, workingModMap,
+				 bell, kbdCtrl);
+	xfree(workingModMap);
 	break;
 
     case DEVICE_ON:
@@ -341,9 +344,6 @@ sunKbdProc (pKeyboard, what)
 	if (sunChangeKbdTranslation(pKeyboard,FALSE) == -1)
 	    FatalError("Can't reset keyboard translation\n");
 	RemoveEnabledDevice(kbdFd);
-#if 0
-	xfree(sunConModMap);
-#endif
 	pKeyboard->on = FALSE;
 	break;
     default:
@@ -570,16 +570,18 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 {
     xEvent		xE;
     KbPrivPtr		pPriv;
-    BYTE		*c;
     BYTE		key;
     CARD8		keyModifiers;
     KeySym		ksym;
     int			led;
+    int			map_index;
+    DeviceIntPtr	dev;
 
     key = (fe->id & 0x7f) + sysKbPriv.offset;
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
+    dev = (DeviceIntPtr) pKeyboard;
 
-    keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
+    keyModifiers = dev->key->modifierMap[key];
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
 	/*
@@ -592,41 +594,29 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 
-    /* 
-     * toggling keys are usually found in the first column, but Scroll_Lock
-     * is in the second column on Type_4 keyboards. So for the moment
-     * anyway, we'll only be lighting the Scroll_Lock LED on Type_5 kbds.
-     * Who knows what Scroll_Lock is used for anyway?
-     */
-    ksym = sunConKeySyms->map[(fe->id - 1) * sunConKeySyms->mapWidth];
+    /* look up the present idea of the keysym */
+    map_index = 0;
+    if (dev->key->state & ShiftMask) map_index ^= 1;
+    if (dev->key->state & LockMask) map_index ^= 1;
+    map_index += (fe->id - 1) * dev->key->curKeySyms.mapWidth;
+    ksym = dev->key->curKeySyms.map[map_index];
 
     /*
      * Toggle functionality is hardcoded. This is achieved by always
      * discarding KeyReleases on these keys, and converting every other
-     * KeyPress into a KeyRelease. There is a more generic way to test
-     * for Caps_Lock, but since there is currently never more than one
-     * locking key on Sun keyboards, we'll just take the simple way.
-     *
-     * Note that the "support" here does nothing more than toggle the 
-     * LEDS.  Caps_Lock has the LockMask attribute, and is handled thusly.
-     * Xlib and Xt now grok the Num_Lock key and are handled accordingly.
-     * Compose processing is handled by an input method. The input method
-     * can turn the LED off when it is appropriate to, otherwise the LED
-     * will remain lit until the user turns it off by pressing the Compose
-     * key again.  Scroll_Lock is a Ginsu feature -- the LED is toggled on 
-     * and off. Who knows how or where it's actually used.
+     * KeyPress into a KeyRelease.
      */
     if (xE.u.u.type == KeyRelease 
 	&& (ksym == XK_Num_Lock 
 	|| ksym == XK_Scroll_Lock 
 	|| ksym == SunXK_Compose
-	|| ksym == XK_Caps_Lock)) 
+	|| (keyModifiers & LockMask))) 
 	return;
 
     if ((ksym == XK_Num_Lock && pPriv->ctrl->leds & LED_NUM_LOCK) 
 	|| (ksym == XK_Scroll_Lock && pPriv->ctrl->leds & LED_SCROLL_LOCK) 
 	|| (ksym == SunXK_Compose && pPriv->ctrl->leds & LED_COMPOSE)
-	|| (ksym == XK_Caps_Lock && pPriv->ctrl->leds & LED_CAPS_LOCK))
+	|| ((keyModifiers & LockMask) && pPriv->ctrl->leds & LED_CAPS_LOCK))
 	xE.u.u.type = KeyRelease;
 
     if (ksym == XK_Num_Lock)
@@ -635,7 +625,7 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
     else if (ksym == SunXK_Compose)
 	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_COMPOSE);
-    else if (ksym == XK_Caps_Lock)
+    else if (keyModifiers & LockMask)
 	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
     else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
