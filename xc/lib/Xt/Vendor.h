@@ -1,5 +1,5 @@
 /*
-* $xHeader: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
+* $XConsortium: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
 * $oHeader: Vendor.h,v 1.2 88/08/18 15:56:44 asente Exp $
 */
 

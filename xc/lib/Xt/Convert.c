@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader$";
+static char rcsid[] = "$XConsortium$";
 /* $oHeader: Convert.c,v 1.2 88/08/18 15:36:30 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/

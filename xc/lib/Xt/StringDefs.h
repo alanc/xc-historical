@@ -1,5 +1,5 @@
 /*
-* $xHeader: StringDefs.h,v 1.33 88/08/31 10:25:44 swick Exp $
+* $XConsortium: StringDefs.h,v 1.33 88/08/31 10:25:44 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 

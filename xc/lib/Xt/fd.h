@@ -1,5 +1,5 @@
 /*
-* $xHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
+* $XConsortium: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 

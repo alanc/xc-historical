@@ -1,5 +1,5 @@
 /*
-* $xHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
+* $XConsortium: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 

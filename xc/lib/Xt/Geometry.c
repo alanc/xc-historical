@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Geometry.c,v 1.25 88/08/31 10:22:40 swick Exp $";
+static char rcsid[] = "$XConsortium: Geometry.c,v 1.25 88/08/31 10:22:40 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 

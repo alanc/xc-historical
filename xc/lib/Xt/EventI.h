@@ -1,4 +1,4 @@
-/* $xHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
+/* $XConsortium: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************

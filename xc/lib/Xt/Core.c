@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader$";
+static char rcsid[] = "$XConsortium$";
 #endif lint
 
 /***********************************************************

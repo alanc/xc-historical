@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: TMparse.c,v 1.63 88/08/31 11:44:08 swick Exp $";
+static char rcsid[] = "$XConsortium: TMparse.c,v 1.63 88/08/31 11:44:08 swick Exp $";
 /* $oHeader: TMparse.c,v 1.2 88/08/18 15:51:46 asente Exp $ */
 #endif lint
 
