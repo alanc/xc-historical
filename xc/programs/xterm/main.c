@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.159 90/11/09 16:02:35 dave Exp $ */
+/* $XConsortium: main.c,v 1.160 91/01/06 12:47:45 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -704,12 +704,6 @@ char **argv;
 	XtGetApplicationResources( toplevel, (XtPointer) &resource,
 				  application_resources,
 				   XtNumber(application_resources), NULL, 0 );
-
-	XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
-			actionProcs, XtNumber(actionProcs));
-	XtOverrideTranslations
-	  (toplevel, XtParseTranslationTable
-	   ("<Message>WM_PROTOCOLS: DeleteWindow()"));
 
 	waiting_for_initial_map = resource.wait_for_map;
 
