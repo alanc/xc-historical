@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: cryptokey.c,v 1.1 89/12/13 15:22:52 keith Exp $
+ * $XConsortium: cryptokey.c,v 1.2 90/02/07 18:47:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -36,6 +36,9 @@ static long	key[2];
 #   define USE_CRYPT
 #  endif
 #  ifdef macII
+#   define USE_CRYPT
+#  endif
+#  ifdef luna
 #   define USE_CRYPT
 #  endif
 #  ifdef sun
