@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Dialog,v 1.16 94/05/01 19:20:56 gildea Exp $
 .NH 2
 Dialog Widget
 .LP
@@ -42,6 +42,7 @@ When creating a Dialog widget instance, the following resources are
 retrieved from the argument list or the resource database:
 .IN "Dialog widget" "resources"
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p

@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Form,v 1.13 94/05/01 19:21:09 gildea Exp $
 .NH 2
 Form Widget
 .LP
@@ -45,6 +45,7 @@ retrieved from the argument list or from the resource database:
 .LP
 .IN "Form widget" "resources"
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p

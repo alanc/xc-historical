@@ -1,4 +1,4 @@
-.\" $XConsortium: Viewport,v 1.16 94/05/01 19:21:07 gildea Exp $
+.\" $XConsortium: Viewport,v 1.17 94/05/01 20:13:02 gildea Exp $
 .NH 2
 Viewport Widget
 .LP
@@ -42,6 +42,7 @@ retrieved from the argument list or the resource database:
 .LP
 .IN "Viewport widget" "resources"
 .TS H
+expand;
 lw(1i) lw(1i) lw(1i) lw(.5i) lw(2i).
 _
 .sp 3p
