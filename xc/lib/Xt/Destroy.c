@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.24 90/03/27 11:07:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Destroy.c,v 1.25 90/04/04 11:27:43 swick Exp $";
 /* $oHeader: Destroy.c,v 1.3 88/09/01 11:27:27 asente Exp $ */
 #endif /* lint */
 
@@ -165,7 +165,11 @@ static void XtPhase2Destroy (widget, closure, call_data)
     Recursive(widget, Phase2Destroy);
     app->in_phase2_destroy = outerInPhase2Destroy;
 
-    if (window)
+    /* %%% the following parent test hides a more serious problem,
+       but it avoids breaking those who depended on the old bug
+       until we have time to fix it properly. */
+
+    if (window && (parent == NULL || !parent->core.being_destroyed))
 	XDestroyWindow(display, window);
 } /* XtPhase2Destroy */
 
