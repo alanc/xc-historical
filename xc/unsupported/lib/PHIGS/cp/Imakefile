@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.16 92/08/10 20:46:45 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 5.17 93/09/29 22:48:48 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -71,7 +71,7 @@ NormalLintTarget($(CSRCS))
 
 LintLibraryTarget(cp,$(CSRCS))
 
-SpecialCLibObjectRule(cp_ccom,$(ICONFIGFILES),$(SOCK_DEFINES))
-SpecialCLibObjectRule(phigsmon,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(cp_ccom,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(phigsmon,$(ICONFIGFILES),$(SOCK_DEFINES))
 
 DependTarget()
