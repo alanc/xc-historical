@@ -1,4 +1,4 @@
-/* $XConsortium: sm_error.c,v 1.5 93/09/27 21:07:20 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.6 93/12/07 11:05:31 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -212,8 +212,9 @@ SmPointer 	values;
 	    break;
     }
 
-    fprintf (stderr, "\n");
-    exit (1);
+    fprintf (stderr, "\n\n");
+
+    /* don't exit() - that would kill the SM - pretty devastating */
 }
 
 
