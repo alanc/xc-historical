@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.195 94/04/17 20:38:17 kaleb Exp $
+ * $XConsortium: menus.c,v 1.196 94/05/12 16:55:46 kaleb Exp mor $
  *
  * twm menu code
  *
@@ -76,6 +76,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/bitmaps/menu12>
 #include "version.h"
 #include <X11/extensions/sync.h>
+#include <X11/SM/SMlib.h>
 
 extern XEvent Event;
 
@@ -1427,12 +1428,18 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_RESTART:
+    {
+	extern SmcConn smcConn;
+
 	XSync (dpy, 0);
 	Reborder (eventp->xbutton.time);
 	XSync (dpy, 0);
+	if (smcConn)
+	    SmcCloseConnection (smcConn, 0, NULL);
 	execvp(*Argv, Argv);
 	fprintf (stderr, "%s:  unable to restart:  %s\n", ProgramName, *Argv);
 	break;
+    }
 
     case F_UPICONMGR:
     case F_DOWNICONMGR:
