@@ -1,4 +1,4 @@
-/* $XConsortium: verify.c,v 1.31 94/04/01 18:01:19 gildea Exp $ */
+/* $XConsortium: verify.c,v 1.32 94/04/17 20:03:55 gildea Exp converse $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -178,7 +178,11 @@ struct verify_info	*verify;
 
 	if (strcmp (crypt (greet->password, sp->sp_pwdp), sp->sp_pwdp))
 #else
+#if defined(ultrix) || defined(__ultrix__)
+	if (authenticate_user(p, greet->password, NULL) < 0)
+#else
 	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd))
+#endif
 #endif
 	{
 		Debug ("password verify failed\n");
