@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.114 91/05/06 13:34:02 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.115 91/05/09 12:25:57 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -537,8 +537,8 @@ static void StoreLateBindings(keysymL,notL,keysymR,notR,lateBindings)
         temp[count].knot = FALSE;
         temp[count].keysym = 0;
     }
-    
 } 
+
 static _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
     String name;
     LateBindingsPtr* lateBindings;
@@ -554,20 +554,20 @@ static _XtParseKeysymMod(name,lateBindings,notFlag,valueP,error)
     }
 }
 
-static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
+static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,constMask)
     String name;
     LateBindingsPtr* lateBindings;
     Boolean notFlag;
     Value *valueP;
-    Bool check;
+    Bool constMask;
 {
    register int i, left, right;
    register XrmQuark signature = StringToQuark(name);
    static int previous = 0;
    
    if (signature == modifiers[previous].signature) {
-       if (check)  *valueP = modifiers[previous].value;
-       else if (modifiers[previous].modifierParseProc)
+       if (constMask)  *valueP = modifiers[previous].value;
+       else /* if (modifiers[previous].modifierParseProc) always true */
 	   (*modifiers[previous].modifierParseProc)
 	      (name, modifiers[previous].value, lateBindings, notFlag, valueP);
        return TRUE;
@@ -583,8 +583,8 @@ static Boolean _XtLookupModifier(name,lateBindings,notFlag,valueP,check)
 	   left = i + 1;
        else {
 	   previous = i;
-	   if (check)  *valueP = modifiers[i].value;
-	   else if (modifiers[i].modifierParseProc)
+	   if (constMask)  *valueP = modifiers[i].value;
+	   else /* if (modifiers[i].modifierParseProc) always true */
 	       (*modifiers[i].modifierParseProc)
 		   (name, modifiers[i].value, lateBindings, notFlag, valueP);
 	   return TRUE;
@@ -1103,8 +1103,8 @@ static String ParseQuotedStringEvent(str, event,error)
     char	s[2];
     (void) _XtLookupModifier("Ctrl",(LateBindingsPtr*)NULL,
                  FALSE,(Value *) &ctrlMask,TRUE);
-    (void) _XtLookupModifier("Alt",(LateBindingsPtr*)NULL,
-                 FALSE,(Value *) &metaMask,TRUE);
+    (void) _XtLookupModifier("Meta", &event->event.lateModifiers,
+                 FALSE,(Value *) &metaMask,FALSE);
     (void) _XtLookupModifier("Shift",(LateBindingsPtr*)NULL,
                  FALSE,(Value *) &shiftMask,TRUE);
     for (j=0; j < 2; j++)
