@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.62 91/05/04 23:09:31 keith Exp $ */
+/* $XConsortium: window.c,v 5.63 91/05/09 15:02:32 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -41,6 +41,8 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "servermd.h"
+
+extern Bool permitOldBugs;
 
 /******
  * Window stuff for server 
@@ -2720,7 +2722,9 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
         else
             return NullWindow;
       case TopIf:
-        if (pSib)
+	if ((!pWin->mapped || (pSib && !pSib->mapped)) && !permitOldBugs)
+	    return(pWin->nextSib);
+	else if (pSib)
 	{
             if ((IsSiblingAboveMe(pWin, pSib) == Above) &&
                 ((* pScreen->RectIn)(&pSib->borderSize, &box) != rgnOUT))
@@ -2733,7 +2737,9 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
         else
             return(pWin->nextSib);
       case BottomIf:
-        if (pSib)
+	if ((!pWin->mapped || (pSib && !pSib->mapped)) && !permitOldBugs)
+	    return(pWin->nextSib);
+	else if (pSib)
 	{
             if ((IsSiblingAboveMe(pWin, pSib) == Below) &&
                 ((* pScreen->RectIn)(&pSib->borderSize, &box) != rgnOUT))
@@ -2746,7 +2752,9 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
         else
             return(pWin->nextSib);
       case Opposite:
-        if (pSib)
+	if ((!pWin->mapped || (pSib && !pSib->mapped)) && !permitOldBugs)
+	    return(pWin->nextSib);
+	else if (pSib)
 	{
 	    if ((* pScreen->RectIn)(&pSib->borderSize, &box) != rgnOUT)
             {
