@@ -168,4 +168,7 @@ $(EXTDIR) $(SUBDIRS): FRC
 clean::
 	rm -f $(ALLPOSSIBLE)
 
+InstallManPage(X,$(MANDIR))
+InstallManPage(Xserver,$(MANDIR))
+
 FRC:
