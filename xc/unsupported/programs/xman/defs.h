@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.8 89/02/14 16:07:56 kit Exp $
+ * $XConsortium: defs.h,v 1.9 89/02/15 16:06:40 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -81,10 +81,11 @@
 #define APROPOSFILTER ("man -M %s -k %s | pr -h Apropos > %s")
 #define MANUALCOMMAND "man -M"
 #ifdef macII
-#define FORMAT "pcat"	/* The format command. */
+#define FORMAT "pcat"		              /* The format command. */
 #else
-#define FORMAT "nroff -man"	/* The format command. */
+#define FORMAT "| neqn | nroff -Tcrt -man"    /* The format command. */
 #endif
+#define TBL "tbl"
 
 #define CANCEL "Cancel"
 

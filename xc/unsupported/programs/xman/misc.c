@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.5 89/02/14 16:08:06 kit Exp $
+ * $XConsortium: misc.c,v 1.6 89/02/15 16:06:49 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -160,8 +160,8 @@ char * entry;
         "cd %s;/usr/bin/pcat %s | /usr/bin/col | /usr/bin/ul -t dumb > %s %s",
 	path, entry, man_globals->tmpfile, "2> /dev/null");
 #else
-  sprintf(cmdbuf,"cd %s ; %s %s > %s %s", path,
-	  FORMAT, entry, man_globals->tmpfile, "2> /dev/null");
+  sprintf(cmdbuf,"cd %s ; %s %s %s > %s %s", path, TBL,
+	  entry, FORMAT, man_globals->tmpfile, "2> /dev/null");
 #endif
 
   if(system(cmdbuf) != 0) {	/* execute search. */
