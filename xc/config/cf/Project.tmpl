@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.128 91/07/20 15:08:20 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.129 91/07/21 18:40:36 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -55,6 +55,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.128 91/07/20 15:08:20 rws Exp $
 #endif
 #ifndef InstallXdmConfig
 #define InstallXdmConfig	NO	/* install sample xdm config */
+#endif
+#ifndef XdmServersType			/* what Xservers files to use */
+#if BuildServer
+#define XdmServersType ws
+#else
+#define XdmServersType fs
+#endif
 #endif
 #ifndef InstallFSConfig
 #define InstallFSConfig		NO	/* install sample fs config */
