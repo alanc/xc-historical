@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.25 89/09/11 17:43:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.26 89/09/12 16:49:18 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -52,10 +52,11 @@ parameter is not passed through to the XtRCallProc routines */
     {XtNdepth, XtCDepth, XtRInt,sizeof(int),
          XtOffset(CoreWidget,core.depth), XtRCallProc, (XtPointer)XtCopyFromParent},
     {XtNcolormap, XtCColormap, XtRPointer, sizeof(Colormap),
-      XtOffset(CoreWidget,core.colormap), XtRCallProc,(XtPointer)XtCopyFromParent},
+	 XtOffset(CoreWidget,core.colormap),
+	 XtRImmediate, (XtPointer)CopyFromParent},
     {XtNbackground, XtCBackground, XtRPixel,sizeof(Pixel),
          XtOffset(CoreWidget,core.background_pixel),
-	 XtRString,(XtPointer)"XtDefaultBackground"},
+	 XtRString, (XtPointer)"XtDefaultBackground"},
     {XtNbackgroundPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
          XtOffset(CoreWidget,core.background_pixmap),
 	 XtRImmediate, (XtPointer)XtUnspecifiedPixmap},
