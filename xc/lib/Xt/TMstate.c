@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.147 91/05/09 18:00:07 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.7 91/05/11 20:39:59 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1174,7 +1174,6 @@ void _XtInstallTranslations(widget)
     }
 
     xlations->eventMask = 0;
-    stateTree = xlations->stateTreeTbl[0];
     for (i = 0;
 	 i < xlations->numStateTrees;
 	 i++)
@@ -1259,9 +1258,25 @@ static void _XtUninstallTranslations(widget)
 void _XtDestroyTMData(widget)
     Widget	widget;
 {
+    TMComplexBindData	cBindData;
+
     _XtUninstallTranslations(widget);
-    XtFree((char *)widget->core.tm.proc_table);
+
+    if (cBindData = (TMComplexBindData)widget->core.tm.proc_table) {
+	if (cBindData->isComplex) {
+	    ATranslations	aXlations, nXlations;
+	    
+	    nXlations = (ATranslations) cBindData->getValuesAXlations;
+	    while (nXlations){
+		aXlations = nXlations;
+		nXlations = nXlations->next;
+		XtFree((char *)aXlations);
+	    }
+	}
+	XtFree((char *)cBindData);
+    }
 }
+
 /*** Public procedures ***/
 
 
@@ -1310,6 +1325,7 @@ XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
 
     xlations->composers[0] = first;
     xlations->composers[1] = second;
+    xlations->hasBindings = False;
     xlations->operation = XtTableReplace;
 
     for (i = 0;i < numStateTrees; i++)
@@ -1680,29 +1696,43 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
     Widget		source;
     TMShortCard		*numNewRtn;
 {
-    XtTranslations      newTable;
+    XtTranslations      newTable, xlations;
+    TMComplexBindProcs	bindings;
     TMShortCard		i, j;
     TMStateTree 	*treePtr;
     TMShortCard		numNew = *numNewRtn;
     MergeBindRec	bindPair[2];
 
+    /* If the new translation has an accelerator context then pull it
+     * off and pass it and the real xlations in to the caching merge
+     * routine. 
+     */
+    if (newXlations->hasBindings) {
+	xlations = ((ATranslations) newXlations)->xlations;
+	bindings = (TMComplexBindProcs)
+	    &((ATranslations) newXlations)->bindTbl[0];
+    }
+    else {
+	xlations = newXlations;
+	bindings = NULL;
+    }
     switch(operation) {
       case XtTableReplace:
-	newTable = bindPair[0].xlations = newXlations;
-	bindPair[0].bindings = NULL;
+	newTable = bindPair[0].xlations = xlations;
+	bindPair[0].bindings = bindings;
 	bindPair[1].xlations = NULL;
 	bindPair[1].bindings = NULL;
 	break;
       case XtTableAugment:
 	bindPair[0].xlations = oldXlations;
 	bindPair[0].bindings = oldBindings;
-	bindPair[1].xlations = newXlations;
-	bindPair[1].bindings = NULL;
+	bindPair[1].xlations = xlations;
+	bindPair[1].bindings = bindings;
 	newTable = NULL;
 	break;
       case XtTableOverride:
-	bindPair[0].xlations = newXlations;
-	bindPair[0].bindings = NULL;
+	bindPair[0].xlations = xlations;
+	bindPair[0].bindings = bindings;
 	bindPair[1].xlations = oldXlations;
 	bindPair[1].bindings = oldBindings;
 	newTable = NULL;
@@ -1732,9 +1762,10 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
     return newTable;
 }
 
-static TMBindData MakeBindData(bindings, numBindings)
+static TMBindData MakeBindData(bindings, numBindings, oldBindData)
     TMComplexBindProcs	bindings;
     TMShortCard		numBindings;
+    TMBindData		oldBindData;
 {
     TMShortCard		bytes;
     TMShortCard		i;
@@ -1746,10 +1777,7 @@ static TMBindData MakeBindData(bindings, numBindings)
     for (i = 0; i < numBindings; i++)
       if (bindings[i].widget)
 	break;
-    if (i < numBindings)
-      isComplex = True;
-    else
-      isComplex = False;
+    isComplex = (i < numBindings);
     if (isComplex)
       bytes = (sizeof(TMComplexBindDataRec) + 
 	       ((numBindings - 1) * 
@@ -1763,7 +1791,14 @@ static TMBindData MakeBindData(bindings, numBindings)
     bindData->simple.isComplex = isComplex;
     if (isComplex) {
 	TMComplexBindData cBindData = (TMComplexBindData)bindData;
-	XtBCopy((char *)bindings, 
+	/* 
+	 * If there were any accelerator contexts in the old bindData
+	 * then propagate them to the new one.
+	 */
+	if (oldBindData && oldBindData->simple.isComplex)
+	    cBindData->getValuesAXlations = 
+		((TMComplexBindData) oldBindData)->getValuesAXlations;
+	XtBCopy((char *)bindings,
 		(char *)&cBindData->bindTbl[0],
 		numBindings * sizeof(TMComplexBindProcsRec));
     }
@@ -1782,10 +1817,11 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtTranslations newXlations;
 {
     XtTranslations 	newTable, oldXlations;
+    XtTranslations	accNewXlations;
     EventMask		oldMask;
     TMBindData		bindData;
     TMComplexBindProcs	oldBindings = NULL;
-    TMShortCard		numNewBindings = 0, numBytes;
+    TMShortCard		numOldBindings, numNewBindings = 0, numBytes;
     TMComplexBindProcsRec stackBindings[16], *newBindings;
 
     /*
@@ -1800,6 +1836,11 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 			  (String *)NULL, (Cardinal *)NULL);
 	  return False;
       }
+
+    accNewXlations = newXlations;
+    newXlations = ((newXlations->hasBindings)
+		   ? ((ATranslations)newXlations)->xlations
+		   : newXlations);
 
     if (!(oldXlations = dest->core.tm.translations))
       operation = XtTableReplace;
@@ -1841,9 +1882,14 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 	}
     }
 
-    if (bindData = (TMBindData)dest->core.tm.proc_table ) {
-	TMComplexBindData cBindData = (TMComplexBindData)bindData;
-	oldBindings = &cBindData->bindTbl[0];
+    bindData = (TMBindData) dest->core.tm.proc_table;
+    if (bindData) {
+	numOldBindings = (oldXlations ? oldXlations->numStateTrees : 0);
+ 	if (bindData->simple.isComplex)
+	    oldBindings = &((TMComplexBindData)bindData)->bindTbl[0];
+ 	else
+	    oldBindings = (TMComplexBindProcs)
+		(&((TMSimpleBindData)bindData)->bindTbl[0]);
     }
 
     numBytes =(((oldXlations ? oldXlations->numStateTrees : 0)
@@ -1852,8 +1898,6 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     XtBZero((char *)newBindings, numBytes);
 
     if (operation == XtTableUnmerge) {
-	TMShortCard numOldBindings;
-	numOldBindings = (oldXlations ? oldXlations->numStateTrees : 0);
 	newTable = UnmergeTranslations(dest, 
 				       oldXlations,
 				       newXlations,
@@ -1872,7 +1916,7 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     else {
 	newTable = MergeTranslations(dest, 
 				     oldXlations,
-				     newXlations,
+				     accNewXlations,
 				     operation,
 				     source,
 				     oldBindings,
@@ -1886,11 +1930,11 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 	_XtUninstallTranslations(dest);
     }
     
+    dest->core.tm.proc_table = 
+      (XtActionProc *) MakeBindData(newBindings, numNewBindings, bindData);
+    
     if (bindData) XtFree((char *)bindData);
 
-    dest->core.tm.proc_table = 
-      (XtActionProc *) MakeBindData(newBindings, numNewBindings);
-    
     dest->core.tm.translations = newTable;
 
     if (XtIsRealized(dest)) {
@@ -1904,6 +1948,54 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
     }
     XtStackFree((char *)newBindings, (char *)stackBindings);
     return(newTable != NULL);
+}
+
+/*
+ * If a GetValues is done on a translation resource that contains
+ * accelerators we need to return the accelerator context in addition
+ * to the pure translations.  Since this means returning memory that
+ * the client controlls but we still own, we will track the "headers"
+ * that we return (via a linked list pointed to from the bindData) and
+ * free it at destroy time.
+ */
+XtTranslations _XtGetTranslationValue(w)
+    Widget	w;
+{
+    XtTM		tmRecPtr = (XtTM) &w->core.tm;
+    ATranslations	*aXlationsPtr;
+    TMComplexBindData	cBindData = (TMComplexBindData) tmRecPtr->proc_table;
+    XtTranslations	xlations = tmRecPtr->translations;
+
+    if (! cBindData->isComplex)
+	return xlations;
+
+    /* Walk the list looking to see if we already have generated a
+     * header for the currently installed translations.  If we have,
+     * just return that header.  Otherwise create a new header.
+     */
+    for (aXlationsPtr = (ATranslations *) &cBindData->getValuesAXlations;
+	 *aXlationsPtr && (*aXlationsPtr)->xlations != xlations;
+	 aXlationsPtr = &(*aXlationsPtr)->next)
+	;
+    if (*aXlationsPtr)
+	return (XtTranslations) *aXlationsPtr;
+    else { 
+	/* create a new aXlations context */
+	ATranslations	aXlations;
+	Cardinal	numBindings = xlations->numStateTrees;
+
+	(*aXlationsPtr) = aXlations = (ATranslations)
+	    XtMalloc(sizeof(ATranslationData) + 
+		     (numBindings - 1) * sizeof(TMComplexBindProcsRec));
+
+	aXlations->hasBindings = True;
+	aXlations->xlations = xlations;
+	aXlations->next = NULL;
+	XtBCopy((char *) &cBindData->bindTbl[0],
+		(char *) &aXlations->bindTbl[0],
+		numBindings * sizeof(TMComplexBindProcsRec));
+	return (XtTranslations) aXlations;
+    }
 }
 
 
@@ -2034,6 +2126,14 @@ void XtInstallAllAccelerators(destination,source)
     }
     /* Finally, apply procedure to this widget */
     XtInstallAccelerators(destination,source);
+}
+
+static _XtTranslateOp _XtGetTMOperation(xlations)
+    XtTranslations xlations;
+{
+    return ((xlations->hasBindings)
+	    ? ((ATranslations)xlations)->xlations->operation
+	    : xlations->operation);
 }
 
 void _XtSetTMOperation(xlations, op)
