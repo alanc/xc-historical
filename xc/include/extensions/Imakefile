@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.19 91/02/15 14:56:02 rws Exp $
+# $XConsortium: Imakefile,v 1.20 91/02/15 19:46:32 rws Exp $
 
 #if BuildPexClients || BuildPexExt
 #define IHaveSubdirs
@@ -8,7 +8,7 @@
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	xtestext1.h
-INSTALLFLAGS = -m 0444
+INSTALLFLAGS = $(INSTINCFLAGS)
 
 all::
 
