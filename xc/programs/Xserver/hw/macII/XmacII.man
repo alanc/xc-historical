@@ -1,0 +1,38 @@
+.\" $Header: Xsun.man,v 1.5 88/02/27 20:03:06 rws Exp $
+.TH XMACII 1 "1 March 1988" "X Version 11 Release 2"
+.SH NAME
+XmacII \- Macintosh II server for X Version 11 Release 2
+.SH SYNOPSIS
+.B XmacII
+[ option ] ...
+.SH DESCRIPTION
+.I XmacII
+is the server for Version 11 Release 2 of the X window system on Macintosh II hardware.
+It will normally be started by the shell script
+.IR X11R2,
+or perhaps directly by
+.IR xinit (1).
+.fi
+.SH
+CONFIGURATIONS
+.PP
+.I XmacII
+operates under A/UX Release 1.0 and later.
+It supports a single monochrome display.
+.SH OPTIONS
+.PP
+Options are described under
+.I Xserver(1).
+.SH "SEE ALSO"
+.PP
+Xserver(1), xinit(1), X(1),
+.SH BUGS
+.TP
+1
+If the server crashes,  it may leave the keyboard in a non-useful state.
+The X11R2 script uses the
+.I Xrepair
+command to repair the damage.
+.TP
+2
+Autorepeat for the keyboard cannot be turned off.
