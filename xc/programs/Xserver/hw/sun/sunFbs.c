@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.4 93/10/11 11:51:24 rws Exp $ */
+/* $XConsortium: sunFbs.c,v 1.5 93/10/29 17:40:24 kaleb Exp $ */
 
 /*
  * Copyright 1990, 1993 Massachusetts Institute of Technology
@@ -269,7 +269,8 @@ Bool sunInitCommon (scrn, pScrn, offset, init1, init2, cr_cm, save, fb_off)
 	    sunFbs[scrn].info.fb_width,
 	    sunFbs[scrn].info.fb_height,
 	    monitorResolution, monitorResolution,
-	    sunFbs[scrn].info.fb_width))
+	    sunFbs[scrn].info.fb_width,
+	    sunFbs[scrn].info.fb_depth))
 	    return FALSE;
     /* sunCGScreenInit() if cfb... */
     if (init2)

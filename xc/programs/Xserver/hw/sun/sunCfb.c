@@ -258,7 +258,7 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
     return sunInitCommon (screen, pScreen, (off_t) CG3_MMAP_OFFSET,
-	cfbScreenInit, CGScreenInit,
+	sunCfbScreenInit, CGScreenInit,
 	cfbCreateDefColormap, sunSaveScreen, 0);
 }
 
@@ -344,7 +344,7 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 1;
     } else {
 	ret = sunInitCommon (screen, pScreen, (off_t) 0,
-			cfbScreenInit, CG2ScreenInit,
+			sunCfbScreenInit, CG2ScreenInit,
 			cfbCreateDefColormap, CG2SaveScreen,
 			(int) &((struct cg2memfb *) 0)->pixplane);
 	((CG2Ptr) sunFbs[screen].fb)->regs.ppmask.reg = 0xFF;
@@ -387,7 +387,7 @@ Bool sunCG4Init (screen, pScreen, argc, argv)
     checkMono (argc, argv);
     sunFbs[screen].EnterLeave = CG4Switch;
     return sunInitCommon (screen, pScreen, (off_t) 0,
-	cfbScreenInit, CGScreenInit,
+	sunCfbScreenInit, CGScreenInit,
 	cfbCreateDefColormap, sunSaveScreen, (int) ((CG4Ptr) 0)->cpixel);
 }
 
@@ -419,23 +419,25 @@ Bool sunCG6Init (screen, pScreen, argc, argv)
 #undef FBSIZE
     }
     sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
-    if (!cfbSetupScreen (pScreen, 
+    if (!sunCfbSetupScreen (pScreen, 
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 
 	    sunFbs[screen].info.fb_height,
 	    monitorResolution, monitorResolution, 
-	    sunFbs[screen].info.fb_width))
+	    sunFbs[screen].info.fb_width,
+	    sunFbs[screen].info.fb_depth))
 	return FALSE;
 #ifdef sparc /* { */
     if (!sunGXInit (pScreen, &sunFbs[screen].fb))
 	return FALSE;
 #endif /* } */
-    if (!cfbFinishScreenInit(pScreen,
+    if (!sunCfbFinishScreenInit(pScreen,
 	    sunFbs[screen].fb + CG6_IMAGE_OFFSET,
 	    sunFbs[screen].info.fb_width, 
 	    sunFbs[screen].info.fb_height,
 	    monitorResolution, monitorResolution, 
-	    sunFbs[screen].info.fb_width))
+	    sunFbs[screen].info.fb_width,
+	    sunFbs[screen].info.fb_depth))
 	return FALSE;
     CGScreenInit (pScreen);
     if (!sunScreenInit (pScreen))
