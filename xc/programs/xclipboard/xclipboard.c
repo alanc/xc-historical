@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xclipboard.c,v 1.4 89/07/16 16:04:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,17 +21,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Ralph Swick, DEC/Project Athena
+ * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.3 89/05/11 18:09:22 kit Exp $ */
+/* $XConsortium: xclipboard.c,v 1.4 89/07/16 16:04:00 jim Exp $ */
 
 #include <stdio.h>
-#include <sys/param.h>
-
-#ifdef UTEK
-#undef dirty			/* Brain dead standard include files... */
-#endif
-
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
@@ -44,31 +39,24 @@
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Cardinals.h>
 
+#define Command commandWidgetClass
+#define Text    asciiTextWidgetClass
+
+#define INFINITY 10000000	/* pretty big, huh? */
+
 static XrmOptionDescRec table[] = {
-    {"-w",	"wordWrap",		XrmoptionNoArg,  "on"},
-    {"-nw",	"wordWrap",		XrmoptionNoArg,  "off"},
+    {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
+    {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
 };
 
-typedef struct {
-    Boolean word_wrap;
-} app_resourceRec, *app_res;
-
-app_resourceRec app_resources;
-
-static XtResource resources[] = {
-    {"wordWrap", "WordWrap", XtRBoolean, sizeof(Boolean),
-	XtOffset(app_res,word_wrap), XtRImmediate, (caddr_t)False},
-};
-
-
-static void InsertClipboard(w, client_data, selection, type,
-			    value, length, format)
-    Widget w;
-    caddr_t client_data;
-    Atom *selection, *type;
-    caddr_t value;
-    unsigned long *length;
-    int *format;
+static void 
+InsertClipboard(w, client_data, selection, type, value, length, format)
+Widget w;
+caddr_t client_data;
+Atom *selection, *type;
+caddr_t value;
+unsigned long *length;
+int *format;
 {
     XawTextBlock text;
     Arg args[1];
@@ -79,13 +67,8 @@ static void InsertClipboard(w, client_data, selection, type,
 	return;
     }
 
-#ifdef notdef
-    XtSetArg( args[0], XtNlength, &end );
-    XtGetValues( w, args, ONE );
-#else
-    XawTextSetInsertionPoint(w, 9999999);
+    XawTextSetInsertionPoint(w, INFINITY);
     last = XawTextGetInsertionPoint(w);
-#endif /*notdef*/
 
     text.ptr = (char*)value;
     text.firstPos = 0;
@@ -119,14 +102,13 @@ static Boolean ConvertSelection(w, selection, target,
     int *format;
 {
     Display* d = XtDisplay(w);
-    TextWidget ctx = (TextWidget)w;
 
     if (*target == XA_TARGETS(d)) {
 	Atom* targetP;
 	Atom* std_targets;
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
-				   (caddr_t*)&std_targets, &std_length, format);
+				  (caddr_t*)&std_targets, &std_length, format);
 	*value = XtMalloc(sizeof(Atom)*(std_length /* + 5 */));
 	targetP = *(Atom**)value;
 	*length = std_length /* + 5 */;
@@ -143,51 +125,6 @@ static Boolean ConvertSelection(w, selection, target,
 	*format = 32;
 	return True;
     }
-
-#ifdef notdef
-    if (*target == XA_STRING || *target == XA_TEXT(d)) {
-	*type = XA_STRING;
-	*value = _XawTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
-	*length = strlen(*value);
-	*format = 8;
-	return True;
-    }
-    if (*target == XA_LIST_LENGTH(d)) {
-	*value = XtMalloc(4);
-	if (sizeof(long) == 4)
-	    *(long*)*value = 1;
-	else {
-	    long temp = 1;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
-	}
-	*type = XA_INTEGER;
-	*length = 1;
-	*format = 32;
-	return True;
-    }
-    if (*target == XA_LENGTH(d)) {
-	*value = XtMalloc(4);
-	if (sizeof(long) == 4)
-	    *(long*)*value = ctx->text.s.right - ctx->text.s.left;
-	else {
-	    long temp = ctx->text.s.right - ctx->text.s.left;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
-	}
-	*type = XA_INTEGER;
-	*length = 1;
-	*format = 32;
-	return True;
-    }
-    if (*target == XA_CHARACTER_POSITION(d)) {
-	*value = XtMalloc(8);
-	(*(long**)value)[0] = ctx->text.s.left + 1;
-	(*(long**)value)[1] = ctx->text.s.right;
-	*type = XA_SPAN(d);
-	*length = 2;
-	*format = 32;
-	return True;
-    }
-#endif /*notdef*/
 
     if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
 				    value, length, format))
@@ -209,60 +146,67 @@ static void LoseSelection(w, selection)
 		   ConvertSelection, LoseSelection, NULL);
 }
 
+static void 
+Erase(w, client_data, call_data)
+Widget w;
+caddr_t client_data, call_data;
+{
+    Widget text = (Widget) client_data;
+    XawTextBlock block;
 
-static void Quit(w, client_data, call_data)
-    Widget w;
-    caddr_t client_data;
-    caddr_t call_data;
+    block.ptr = NULL;
+    block.length = 0;
+    block.firstPos = 0;
+    block.format = FMT8BIT;
+
+    XawTextReplace(text, 0, INFINITY, &block);
+    /* If this fails, too bad. */
+}
+
+static void 
+SaveToFile(w, client_data, call_data)
+Widget w;
+caddr_t client_data, call_data;
+{
+    Widget text = (Widget) client_data;
+
+    XawAsciiSave(XawTextGetSource(text));
+}
+
+static void 
+Quit(w, client_data, call_data)
+Widget w;
+caddr_t client_data, call_data;
 {
     XtCloseDisplay( XtDisplay(w) );
     exit( 0 );
 }
 
-
+void
 main(argc, argv)
-unsigned int argc;
+int argc;
 char **argv;
 {
-    static Arg textArgs[] = {
-	{XtNfile, 0},
-	{XtNtextOptions, (XtArgVal)scrollVertical },
-	{XtNeditType, (XtArgVal)XawtextAppend},
-	{XtNwidth, 500},
-	{XtNheight, 100},
-    };
-    Widget top, p, w, text;
-    char file[MAXPATHLEN];
-    FILE *f;
+    Arg args[2];
+    Widget top, parent, quit, save, erase, text;
 
     top = XtInitialize( "xclipboard", "XClipboard", table, XtNumber(table),
 			  &argc, argv);
 
-    XtGetApplicationResources(top, &app_resources, resources,
-			      XtNumber(resources), NULL, ZERO);
+    parent = XtCreateManagedWidget("shell", formWidgetClass, top, NULL, ZERO);
+    quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
+    erase = XtCreateManagedWidget("erase", Command, parent, NULL, ZERO);
+    save = XtCreateManagedWidget("save", Command, parent, NULL, ZERO);
 
-    p = XtCreateManagedWidget("shell", formWidgetClass, top, NULL, ZERO);
-    w = XtCreateManagedWidget("quit",  commandWidgetClass, p, NULL, ZERO);
-    XtAddCallback(w, XtNcallback, Quit, NULL);
-    w = XtCreateManagedWidget("erase", commandWidgetClass, p, NULL, ZERO);
-    /*XtAddCallback(w, XtNcallback, Erase, NULL);*/
-    XtSetSensitive(w, False);
+    XtSetArg(args[0], XtNtype, XawAsciiFile);
+    XtSetArg(args[1], XtNeditType, XawtextEdit);
+    text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
 
-    (void)tmpnam(file);
-    if ((f = fopen(file, "w")) == NULL) {
-	perror( argv[0] );
-	exit(1);
-    }
-    fclose(f);
-
-    textArgs[0].value = (XtArgVal)file;
-    if (app_resources.word_wrap) textArgs[1].value |= wordBreak;
-
-    text = XtCreateManagedWidget( "text", asciiDiskWidgetClass,
-				  p, textArgs, XtNumber(textArgs) );
+    XtAddCallback(quit, XtNcallback, Quit, NULL);
+    XtAddCallback(erase, XtNcallback, Erase, text);
+    XtAddCallback(save, XtNcallback, SaveToFile, text);
 
     XtRealizeWidget(top);
-    unlink(file);
 
     (void)XmuInternAtom( XtDisplay(text), XmuMakeAtom("NULL") ); /* %%% */
     XtOwnSelection(text, XA_CLIPBOARD(XtDisplay(text)), CurrentTime,

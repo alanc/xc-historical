@@ -1,12 +1,32 @@
-XClipboard.shell.quit.top: ChainTop
-XClipboard.shell.quit.bottom: ChainTop
-XClipboard.shell.quit.left: ChainLeft
-XClipboard.shell.erase.fromHoriz: quit
-XClipboard.shell.erase.top: ChainTop
-XClipboard.shell.erase.bottom: ChainTop
-XClipboard.shell.erase.right: ChainRight
-XClipboard.shell.text.fromVert: quit
-XClipboard.shell.text.top: ChainTop
-XClipboard.shell.text.bottom: ChainBottom
-XClipboard.shell.text.left: ChainLeft
-XClipboard.shell.text.right: ChainRight
+XClipboard*quit.label: 			Quit
+XClipboard*quit.top: 			ChainTop
+XClipboard*quit.bottom: 		ChainTop
+XClipboard*quit.left: 			ChainLeft
+XClipboard*quit.right: 			ChainLeft
+
+XClipboard*erase.label: 		Erase
+XClipboard*erase.fromHoriz: 		quit
+XClipboard*erase.top: 			ChainTop
+XClipboard*erase.bottom:		ChainTop
+XClipboard*erase.left:			ChainLeft
+XClipboard*erase.right:			ChainLeft
+
+XClipboard*save.label: 			Save To Temp File
+XClipboard*save.fromHoriz: 		erase
+XClipboard*save.top: 			ChainTop
+XClipboard*save.bottom: 		ChainTop
+XClipboard*save.left: 			ChainLeft
+XClipboard*save.right: 			ChainLeft
+
+XClipboard*text.scrollVertical:  	WhenNeeded
+XClipboard*text.scrollHorizontal:  	WhenNeeded
+XClipboard*text.autoFill: 		on
+
+XClipboard*text.fromVert: 		quit
+XClipboard*text.top: 			ChainTop
+XClipboard*text.bottom: 		ChainBottom
+XClipboard*text.left: 			ChainLeft
+XClipboard*text.right: 			ChainRight
+XClipboard*text.width:			300
+
+XClipboard*geometry:				300x200
