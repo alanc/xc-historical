@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.29 89/04/07 14:25:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.30 89/05/11 01:04:36 kit Exp $";
 #endif /* lint */
 
 
@@ -34,8 +34,12 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/Xaw/TextP.h>
 
+#ifdef GETLASTPOS
+#undef GETLASTPOS		/* We will use our own GETLASTPOS. */
+#endif
 
 #define GETLASTPOS (*source->Scan)(source, 0, XawstAll, XawsdRight, 1, TRUE)
+
 /* Private Ascii TextSink Definitions */
 
 static unsigned bufferSize = 200;
