@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.36 91/07/30 11:33:53 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.37 91/07/30 15:59:11 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -71,6 +71,10 @@ clean::									@@\
 
 #if defined(ATTArchitecture) || defined(VaxArchitecture) || defined(PegasusArchitecture)
 #define BuildFonts NO
+#endif
+
+#ifdef SonyArchitecture
+#define BuildFontServer YES
 #endif
 
 #endif /* AfterVendorCF */
