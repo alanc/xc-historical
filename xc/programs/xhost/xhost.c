@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.26 88/09/07 16:28:14 jim Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.27 88/09/29 11:30:26 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -41,8 +41,9 @@ extern unsigned long inet_makeaddr();
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
+#include <X11/Xmu.h>
  
-int local_xerror();
+static int local_xerror();
 
 #define NAMESERVER_TIMEOUT 5	/* time to wait for nameserver */
 
@@ -334,9 +335,9 @@ nameserver_lost()
 /*
  * local_xerror - local non-fatal error handling routine. If the error was
  * that an X_GetHosts request for an unknown address format was received, just
- * return, otherwise call the default error handler _XDefaultError.
+ * return, otherwise print the normal error message and continue.
  */
-local_xerror (dpy, rep)
+static int local_xerror (dpy, rep)
     Display *dpy;
     XErrorEvent *rep;
 {
@@ -344,17 +345,18 @@ local_xerror (dpy, rep)
 	fprintf (stderr, 
 		 "%s:  must be on local machine to add or remove hosts.\n",
 		 ProgramName);
-	return;
+	return 1;
     } else if ((rep->error_code == BadAccess) && 
 	       (rep->request_code == X_SetAccessControl)) {
 	fprintf (stderr, 
 	"%s:  must be on local machine to enable or disable access control.\n",
 		 ProgramName);
-	return;
+	return 1;
     } else if ((rep->error_code == BadValue) && 
 	       (rep->request_code == X_ListHosts)) {
-	return;
-    } else {
-	_XDefaultError(dpy, rep);
+	return 1;
     }
+
+    XmuPrintDefaultErrorMessage (dpy, rep, stderr);
+    return 0;
 }
