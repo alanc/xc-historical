@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.72 88/08/29 22:28:29 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.73 88/08/29 22:34:58 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1910,27 +1910,6 @@ char *fmt;
 	}
 #endif	/* TIOCNOTTY */
 }
-
-#ifndef USE_SYSV_PGRP
-int dupHigh(oldfd)
-{
-    int desc[3],i,j;
-    /* Find an fd > 2 */
-    for (i=0;i<3;i++) {
-	desc[i] = dup(oldfd);
-	if (desc[i] > 2)
-	    break;
-	}
-    if (i==3) {
-	fprintf(stderr,"dupHigh failed\n");
-	exit(1);
-	}
-    /* Close unneeded ones */
-    for (j=0;j<i;j++)
-	close(desc[j]);
-    return  desc[i];
-}
-#endif	/* !USE_SYSV_PGRP */
 
 checklogin() 
 {
