@@ -46,9 +46,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	LED_NUM		6
 #define	LED_SCROLL	7
 #else
+#ifdef sun
+#define LED_CAPS	4
+#define	LED_NUM		1
+#define	LED_SCROLL	2
+#else
 #define	LED_CAPS	1
 #define	LED_NUM		2
 #define	LED_SCROLL	3
+#endif
 #endif
 
 /***====================================================================***/
@@ -551,4 +557,67 @@ XkbFreeInfo(xkb)
     }
     Xfree(xkb);
     return;
+}
+
+/***====================================================================***/
+
+extern int	XkbDfltRepeatDelay;
+extern int	XkbDfltRepeatInterval;
+
+int
+XkbProcessArguments(argc,argv,i)
+    int		argc;
+    char *	argv[];
+    int		i;
+{
+    if (strncmp(argv[i], "-xkbdir", 7) == 0) {
+	if(++i < argc) {
+	    XkbBaseDirectory= argv[i];
+	    return 2;
+	}
+	else {
+	    return -1;
+	}
+    }
+    else if (strncmp(argv[i], "-xkbmap", 7) == 0) {
+	if(++i < argc) {
+	    XkbInitialMap= argv[i];
+	    return 2;
+	}
+	else {
+	    return -1;
+	}
+    }
+    else if ((strncmp(argv[i],"-accessx",8)==0)||
+                 (strncmp(argv[i],"+accessx",8)==0)) {
+	extern int XkbWantAccessX;
+	if (argv[i][0]=='-')        XkbWantAccessX= 0;
+	else                        XkbWantAccessX= 1;
+	return 1;
+    }
+    if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
+	if (++i >= argc) UseMsg ();
+	XkbDfltRepeatDelay = 1000 * (long)atoi(argv[i]);
+	if (XkbDfltRepeatDelay > 1000000)
+	    XkbDfltRepeatDelay =  999000;
+	return 2;
+    }
+    if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
+	if (++i >= argc) UseMsg ();
+	XkbDfltRepeatInterval = 1000 * (long)atoi(argv[i]);
+	if (XkbDfltRepeatInterval > 1000000)
+	    XkbDfltRepeatInterval =  999000;
+	return 2;
+    }
+    return 0;
+}
+
+void
+XkbUseMsg()
+{
+    ErrorF("-xkbdir                base directory for XKB layout files\n");
+    ErrorF("-xkbmap                XKB keyboard description to load on startup\n");
+    ErrorF("[+-]accessx            enable/disable accessx key sequences\n");
+    ErrorF("-ar1                   set XKB autorepeat delay\n");
+    ErrorF("-ar2                   set XKB autorepeat interval\n");
 }

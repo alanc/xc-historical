@@ -1,4 +1,4 @@
-/* $XConsortium: xkbAccessX.c,v 1.4 93/09/28 22:09:12 rws Exp $ */
+/* $XConsortium: xkbAccessX.c,v 1.6 94/04/01 18:47:57 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -36,6 +36,9 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <sys/time.h>
 
+int	XkbDfltRepeatDelay=	660;
+int	XkbDfltRepeatInterval=	40;
+
 void
 AccessXInit(keybd)
     DeviceIntPtr keybd;
@@ -55,8 +58,8 @@ AccessXInit(keybd)
     xkbInfo->repeatKeyTimer= NULL;
     xkbInfo->krgTimer= NULL;
     xkbInfo->accessXFlags= 0;
-    ctrls->repeat_delay = 660;
-    ctrls->repeat_interval = 40;
+    ctrls->repeat_delay = XkbDfltRepeatDelay;
+    ctrls->repeat_interval = XkbDfltRepeatInterval;
     ctrls->debounce_delay = 300;
     ctrls->slow_keys_delay = 300;
     ctrls->mouse_keys_delay = 160;
