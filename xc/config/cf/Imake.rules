@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.168 93/09/11 17:46:22 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.169 93/09/12 19:35:52 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1021,7 +1021,7 @@ LintLibReferences(varname,libname,libsource)
 #ifndef NormalLibraryObjectRule
 #define	NormalLibraryObjectRule()					@@\
 .c.Osuf:								@@\
-	ObjectCompile($(_NOOP_))
+	NormalLibObjCompile($(_NOOP_))
 #endif /* NormalLibraryObjectRule */
 
 
