@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.13 91/02/11 20:04:56 converse Exp $
+ * $XConsortium: xcalc.c,v 1.14 91/02/11 20:53:34 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -48,6 +48,7 @@
 
 #ifndef IEEE
 extern signal_t fperr();
+extern signal_t illerr();
 #endif
 
 /*
@@ -151,6 +152,7 @@ void main(argc, argv)
 
 #ifndef IEEE
     signal(SIGFPE,fperr);
+    signal(SIGILL,illerr);
 #endif
     ResetCalc();
     XtAppMainLoop(xtcontext);
