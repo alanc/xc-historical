@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/17 13:33:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/17 15:59:34 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -9,3 +9,4 @@ DependSubdirs($(SUBDIRS))
 
 InstallNonExecFile(locale.alias,$(XLOCALEDIR))
 InstallNonExecFile(locale.dir,$(XLOCALEDIR))
+InstallNonExecFile(compose.dir,$(XLOCALEDIR))
