@@ -10,11 +10,6 @@ XCOMM of the Xlib standard.
 XCOMM
 
    INSTALLFLAGS = $(INSTINCFLAGS)
-       LINTLIBS = $(LINTXLIB) 
-
-#ifdef OsNameDefines
-OS_NAME_DEFINES = OsNameDefines
-#endif
 
 #if HasDESLibrary
 DESDEFS = -DHASDES
