@@ -1,5 +1,5 @@
 #define IHaveSubdirs
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)'
 
 #ifdef UseSunWindowsInServer
     CDEBUGFLAGS = -g -DSUN_WINDOWS
@@ -34,7 +34,7 @@ install:: XServerName
 all: servertype
 	@(s=`cat servertype`; \
 	  set -x; \
-	  $(MAKE) $(MFLAGS) 'CDEBUGFLAGS=$(CDEBUGFLAGS)' \
+	  $(MAKE) $(MFLAGS) PassCDebugFlags \
 		'SERVERDIRS=$$('$${s}'DIRS)' \
 		$$s)
 
@@ -92,7 +92,8 @@ ServerTarget(Xapa16,dix $(APA16DIRS),$(APA16OBJS),$(APA16LIBS),$(SYSLIBS))
 #
 APOLLODIRS = ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/init.o ddx/apollo/apollo_io.o \
-		ddx/apollo/gpr_type_mgr.o /sys/traits/io_traits
+		ddx/apollo/gpr_tmgr.o ddx/apollo/apolloGC.o \
+		/sys/traits/io_traits
 APOLLOLIBS = $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
