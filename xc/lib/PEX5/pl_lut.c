@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.1 92/05/08 15:13:07 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.2 92/05/20 20:37:43 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -524,7 +524,7 @@ INPUT PEXPointer	entries;
 #endif
 	    dst->lineWidth = src->width;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->lineColour), sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->lineColor), sizeColor);
 
 	    dst = (pexLineBundleEntry *) ((char *) dst + 
 		sizeof (pexLineBundleEntry) + sizeColor);
@@ -553,7 +553,7 @@ INPUT PEXPointer	entries;
 	    dst->markerType = src->type;
 	    dst->markerScale = src->scale;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->markerColour), sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->markerColor), sizeColor);
 
 	    dst = (pexMarkerBundleEntry *) ((char *) dst + 
 		sizeof (pexMarkerBundleEntry) + sizeColor);
@@ -584,7 +584,7 @@ INPUT PEXPointer	entries;
 	    dst->charExpansion = src->char_expansion;
 	    dst->charSpacing = src->char_spacing;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->textColour), sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->textColor), sizeColor);
 
 	    dst = (pexTextBundleEntry *) ((char *) dst + 
 		sizeof (pexTextBundleEntry) + sizeColor);
@@ -635,7 +635,7 @@ INPUT PEXPointer	entries;
 
 	    /* copy surfaceColor */
 	    PackColorSpecifier (&(src->color), dst, sizeColor);
-	    dst += sizeof (pexColourSpecifier) + sizeColor;
+	    dst += sizeof (pexColorSpecifier) + sizeColor;
 
 	    /* copy reflectionAttr */
 	    ((pexReflectionAttr *) dst)->ambient =
@@ -650,12 +650,12 @@ INPUT PEXPointer	entries;
 		src->reflection_attr.transmission;
 	    PackColorSpecifier ( 
 		&(src->reflection_attr.specular_color),
-		&(((pexReflectionAttr *) dst)->specularColour), sizeColor);
+		&(((pexReflectionAttr *) dst)->specularColor), sizeColor);
 	    dst += sizeof (pexReflectionAttr) + sizeColor;
 
 	    /* copy bfSurfaceColor */
 	    PackColorSpecifier (&(src->bf_color), dst, sizeColor);
-	    dst += sizeof (pexColourSpecifier) + sizeColor;
+	    dst += sizeof (pexColorSpecifier) + sizeColor;
 
 	    /* copy bfReflectionAttr */
 	    ((pexReflectionAttr *) dst)->ambient =
@@ -670,7 +670,7 @@ INPUT PEXPointer	entries;
 		src->bf_reflection_attr.transmission;
 	    PackColorSpecifier ( 
 		&(src->bf_reflection_attr.specular_color),
-		&(((pexReflectionAttr *) dst)->specularColour), sizeColor);
+		&(((pexReflectionAttr *) dst)->specularColor), sizeColor);
 	    dst += sizeof (pexReflectionAttr) + sizeColor;
 	}
 	
@@ -698,7 +698,7 @@ INPUT PEXPointer	entries;
 	    dst->edgeType = src->type;
 	    dst->edgeWidth = src->width;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->edgeColour), sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->edgeColor), sizeColor);
 
 	    dst = (pexEdgeBundleEntry *) ((char *) dst + 
 		sizeof (pexEdgeBundleEntry) + sizeColor);
@@ -731,7 +731,7 @@ INPUT PEXPointer	entries;
 
 	for (i = 0; i < count; i++, src++)
 	{
-	    dst->colourType = src->color_type;
+	    dst->colorType = src->color_type;
 	    dst->numx = src->col_count;
 	    dst->numy = src->row_count;
 
@@ -789,18 +789,18 @@ INPUT PEXPointer	entries;
 
     case PEXLUTColor:
     {
-	pexColourSpecifier *dst, *dstStart;
+	pexColorSpecifier *dst, *dstStart;
 	PEXColorEntry *src = (PEXColorEntry *) entries;
 
-	dstStart = dst = (pexColourSpecifier *)
+	dstStart = dst = (pexColorSpecifier *)
 	    _XAllocScratch (display, count * sizeof (PEXColorEntry));
 
 	for (i = 0; i < count; i++, src++)
 	{
 	    PackColorSpecifier (src, dst, sizeColor);
 	    
-	    dst = (pexColourSpecifier *) ((char *) dst + 
-		sizeof (pexColourSpecifier) + sizeColor);
+	    dst = (pexColorSpecifier *) ((char *) dst + 
+		sizeof (pexColorSpecifier) + sizeColor);
 	}
 
 	/* update the request length */
@@ -845,7 +845,7 @@ INPUT PEXPointer	entries;
 	     dst->attenuation1 = src->attenuation1;
 	     dst->attenuation2 = src->attenuation2;
 		
-	     PackColorSpecifier (&(src->color), &(dst->lightColour), sizeColor);
+	     PackColorSpecifier (&(src->color), &(dst->lightColor), sizeColor);
 
 	     dst = (pexLightEntry *) ((char *) dst + 
 		 sizeof (pexLightEntry) + sizeColor);
@@ -877,7 +877,7 @@ INPUT PEXPointer	entries;
 	     dst->frontScaling = src->front_scaling;
 	     dst->backScaling = src->back_scaling;
 	     
-	     PackColorSpecifier (&(src->color), &(dst->depthCueColour), 
+	     PackColorSpecifier (&(src->color), &(dst->depthCueColor), 
 		 sizeColor);
 
 	     dst = (pexDepthCueEntry *) ((char *) dst + 
@@ -994,7 +994,7 @@ INPUT  int		type;
 #endif
 	    dst->width = src->lineWidth;
 
-	    PackColorSpecifier (&(src->lineColour), &(dst->color), sizeColor);
+	    PackColorSpecifier (&(src->lineColor), &(dst->color), sizeColor);
 
 	    src = (pexLineBundleEntry *) ((char *) src +
 		sizeof (pexLineBundleEntry) + sizeColor);
@@ -1016,7 +1016,7 @@ INPUT  int		type;
 	    dst->type = src->markerType;
 	    dst->scale = src->markerScale;
 	    
-	    PackColorSpecifier (&(src->markerColour), &(dst->color), sizeColor);
+	    PackColorSpecifier (&(src->markerColor), &(dst->color), sizeColor);
 
 	    src = (pexMarkerBundleEntry *) ((char *) src +
 		sizeof (pexMarkerBundleEntry) + sizeColor);
@@ -1040,7 +1040,7 @@ INPUT  int		type;
 	    dst->char_expansion = src->charExpansion;
 	    dst->char_spacing = src->charSpacing;
 	    
-	    PackColorSpecifier (&(src->textColour), &(dst->color), sizeColor);
+	    PackColorSpecifier (&(src->textColor), &(dst->color), sizeColor);
 
 	    src = (pexTextBundleEntry *) ((char *) src +
 		sizeof (pexTextBundleEntry) + sizeColor);
@@ -1084,7 +1084,7 @@ INPUT  int		type;
 
 	    /* copy surfaceColor */
 	    PackColorSpecifier (src, &(dst->color), sizeColor);
-	    src += sizeof (pexColourSpecifier) + sizeColor;
+	    src += sizeof (pexColorSpecifier) + sizeColor;
 
 	    /* copy reflectionAttr */
 	    dst->reflection_attr.ambient = 
@@ -1098,13 +1098,13 @@ INPUT  int		type;
 	    dst->reflection_attr.transmission =
 		((pexReflectionAttr *) src)->transmission;
 	    PackColorSpecifier (
-                &(((pexReflectionAttr *)src)->specularColour),
+                &(((pexReflectionAttr *)src)->specularColor),
                 &(dst->reflection_attr.specular_color), sizeColor);
 	    src += sizeof (pexReflectionAttr) + sizeColor;
 
 	    /* copy bfSurfaceColor */
 	    PackColorSpecifier (src, &(dst->bf_color), sizeColor);
-	    src += sizeof (pexColourSpecifier) + sizeColor;
+	    src += sizeof (pexColorSpecifier) + sizeColor;
 
 	    /* copy bfReflectionAttr */
 	    dst->bf_reflection_attr.ambient =
@@ -1118,7 +1118,7 @@ INPUT  int		type;
 	    dst->bf_reflection_attr.transmission =
 		((pexReflectionAttr *) src)->transmission;
 	    PackColorSpecifier (
-                &(((pexReflectionAttr *) src)->specularColour),
+                &(((pexReflectionAttr *) src)->specularColor),
                 &(dst->bf_reflection_attr.specular_color), sizeColor);
 	    src += sizeof (pexReflectionAttr) + sizeColor;
 	}
@@ -1140,7 +1140,7 @@ INPUT  int		type;
 	    dst->type = src->edgeType;
 	    dst->width = src->edgeWidth;
 
-	    PackColorSpecifier (&(src->edgeColour), &(dst->color), sizeColor);
+	    PackColorSpecifier (&(src->edgeColor), &(dst->color), sizeColor);
 
 	    src = (pexEdgeBundleEntry *) ((char *) src +
 		sizeof (pexEdgeBundleEntry) + sizeColor);
@@ -1159,11 +1159,11 @@ INPUT  int		type;
 
 	for (i = 0; i < numEntries; i++, dst++)
 	{
-	    dst->color_type = src->colourType;
+	    dst->color_type = src->colorType;
 	    dst->col_count = src->numx;
 	    dst->row_count = src->numy;
 
-	    sizeColor = GetColorSize (src->colourType);
+	    sizeColor = GetColorSize (src->colorType);
 	    sizeColor *= (src->numx * src->numy);
 	    dst->colors = (char *) PEXAllocBuf ((unsigned) sizeColor);
 	    COPY_AREA (&src[1], (char *) dst->colors, sizeColor);
@@ -1202,7 +1202,7 @@ INPUT  int		type;
     case PEXLUTColor:
     {
 	PEXColorEntry *dst;
-	pexColourSpecifier *src = (pexColourSpecifier *) pt;
+	pexColorSpecifier *src = (pexColorSpecifier *) pt;
     
 	GetLUTEntryBuffer (numEntries, PEXColorEntry, buf);
 	dst = (PEXColorEntry *) buf;
@@ -1211,8 +1211,8 @@ INPUT  int		type;
 	{
 	    PackColorSpecifier (src, dst, sizeColor);
 
-	    src = (pexColourSpecifier *) ((char *) src +
-		sizeof (pexColourSpecifier) + sizeColor);
+	    src = (pexColorSpecifier *) ((char *) src +
+		sizeof (pexColorSpecifier) + sizeColor);
 	}
     
 	break;
@@ -1247,7 +1247,7 @@ INPUT  int		type;
 	    dst->attenuation1 = src->attenuation1;
 	    dst->attenuation2 = src->attenuation2;
 	    
-	    PackColorSpecifier (&(src->lightColour), &(dst->color), sizeColor);
+	    PackColorSpecifier (&(src->lightColor), &(dst->color), sizeColor);
 
 	    src = (pexLightEntry *) ((char *) src +
 		sizeof (pexLightEntry) + sizeColor);
@@ -1272,7 +1272,7 @@ INPUT  int		type;
 	    dst->front_scaling = src->frontScaling;
 	    dst->back_scaling = src->backScaling;
 	    
-	    PackColorSpecifier (&(src->depthCueColour), &(dst->color),
+	    PackColorSpecifier (&(src->depthCueColor), &(dst->color),
                 sizeColor);
 
 	    src = (pexDepthCueEntry *) ((char *) src +
@@ -1286,7 +1286,7 @@ INPUT  int		type;
 	GetLUTEntryBuffer (numEntries, PEXColorApproxEntry, buf);
 
 	COPY_AREA ((char *) pt, (char *) buf,
-	    numEntries * sizeof (pexColourApproxEntry));
+	    numEntries * sizeof (pexColorApproxEntry));
 
         break;
     }
