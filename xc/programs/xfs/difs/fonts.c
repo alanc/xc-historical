@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.21 94/03/08 17:45:08 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.22 94/03/14 17:48:28 gildea Exp $ */
 /*
  * font control
  */
@@ -250,6 +250,7 @@ do_open_font(client, c)
     Font        orig;
     FontIDListPtr *idlist,
                 ids;
+    int		aliascount = 20;
 
     if (client->clientGone == CLIENT_GONE) {
 	if (c->current_fpe < c->num_fpes) {
@@ -280,6 +281,7 @@ do_open_font(client, c)
 	    c->fontname = newname;
 	    c->fnamelen = newlen;
 	    c->current_fpe = 0;
+	    if (--aliascount <= 0) break;
 	    continue;
 	}
 	if (err == BadFontName) {
@@ -635,6 +637,7 @@ set_font_path_elements(npaths, paths, bad)
     for (i = 0; i < npaths; i++) {
 	len = *cp++;
 	if (len) {
+	    char *name;
 	    /* if it's already in our active list, just reset it */
 	    /*
 	     * note that this can miss FPE's in limbo -- may be worth catching
@@ -652,30 +655,32 @@ set_font_path_elements(npaths, paths, bad)
 		}
 		/* can't do it, so act like it's a new one */
 	    }
-	    type = determine_fpe_type(cp);
+	    name = (char *) fsalloc(len + 1);
+	    if (!name) {
+		err = FSBadAlloc;
+		goto bail;
+	    }
+	    strncpy(name, (char *) cp, len);
+	    name[len] = '\0';
+	    type = determine_fpe_type(name);
 	    if (type == -1)
 	    {
+		fsfree(name);
 		err = FSBadName;
 		goto bail;
 	    }
 	    /* must be new -- make it */
 	    fpe = (FontPathElementPtr) fsalloc(sizeof(FontPathElementRec));
 	    if (!fpe) {
+		fsfree(name);
 		err = FSBadAlloc;
 		goto bail;
 	    }
 	    fpe->type = type;
-	    fpe->name = (char *) fsalloc(len + 1);
-	    if (!fpe->name) {
-		fsfree(fpe);
-		err = FSBadAlloc;
-		goto bail;
-	    }
+	    fpe->name = name;
 	    fpe->refcount = 1;
 	    fplist[i] = fpe;
 
-	    strncpy(fpe->name, (char *) cp, len);
-	    fpe->name[len] = '\0';
 	    cp += len;
 	    fpe->name_length = len;
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
@@ -758,6 +763,7 @@ do_list_fonts_and_aliases(client, c)
     fsListFontsReply reply;
     char	*bufptr;
     char	*bufferStart;
+    int		aliascount;
 
     if (client->clientGone == CLIENT_GONE) {
 	if (c->current.current_fpe < c->num_fpes) {
@@ -871,6 +877,11 @@ do_list_fonts_and_aliases(client, c)
 		    (void) (*fpe_functions[fpe->type].list_next_font_or_alias)
 			((pointer) c->client, fpe, &tmpname, &tmpnamelen,
 			 &tmpname, &tmpnamelen, c->current.private);
+		    if (--aliascount <= 0)
+		    {
+			err = BadFontName;
+			goto ContBadFontName;
+		    }
 		}
 		else
 		{
@@ -882,6 +893,7 @@ do_list_fonts_and_aliases(client, c)
 		    if (c->savedName)
 			memmove(c->savedName, name, namelen + 1);
 		    c->savedNameLen = namelen;
+		    aliascount = 20;
 		}
 		c->current.pattern = resolved;
 		c->current.patlen = resolvedlen;
@@ -897,6 +909,7 @@ do_list_fonts_and_aliases(client, c)
 	 * font names, quit.
 	 */
 	if (err == BadFontName) {
+	  ContBadFontName: ;
 	    c->current.list_started = FALSE;
 	    c->current.current_fpe++;
 	    err = Successful;
@@ -1063,6 +1076,7 @@ do_list_fonts_with_info(client, c)
     fsPropInfo *prop_info;
     int         lenpropdata;
     int         i;
+    int		aliascount;
 
     if (client->clientGone == CLIENT_GONE) {
 	if (c->current.current_fpe < c->num_fpes) {
@@ -1112,17 +1126,44 @@ do_list_fonts_with_info(client, c)
 	 * font is found for the alias, pop back to the old state
 	 */
 	if (err == FontNameAlias) {
-	    if (!c->haveSaved)
+	    /*
+	     * when an alias recurses, we need to give
+	     * the last FPE a chance to clean up; so we call
+	     * it again, and assume that the error returned
+	     * is BadFontName, indicating the alias resolution
+	     * is complete.
+	     */
+	    if (c->haveSaved)
+	    {
+		char	*tmpname;
+		int	tmpnamelen;
+		FontInfoPtr tmpFontInfo;
+
+	    	tmpname = 0;
+	    	tmpFontInfo = &fontInfo;
+	    	(void) (*fpe_functions[fpe->type].list_next_font_with_info)
+		    ((pointer) client, fpe, &tmpname, &tmpnamelen,
+		     &tmpFontInfo, &numFonts, c->current.private);
+		if (--aliascount <= 0)
+		{
+		    err = BadFontName;
+		    goto ContBadFontName;
+		}
+	    }
+	    else
+	    {
 		c->saved = c->current;
+		c->haveSaved = TRUE;
+		c->savedNumFonts = numFonts;
+		c->savedName = (char *) pFontInfo;
+		aliascount = 20;
+	    }
 	    c->current.pattern = name;
 	    c->current.patlen = namelen;
 	    c->current.max_names = 1;
 	    c->current.current_fpe = 0;
 	    c->current.private = 0;
 	    c->current.list_started = FALSE;
-	    c->haveSaved = TRUE;
-	    c->savedNumFonts = numFonts;
-	    c->savedName = (char *) pFontInfo;
 	}
 	/*
 	 * At the end of this FPE, step to the next.  If we've finished
@@ -1130,6 +1171,7 @@ do_list_fonts_with_info(client, c)
 	 * names, quit.
 	 */
 	else if (err == BadFontName) {
+	  ContBadFontName: ;
 	    c->current.list_started = FALSE;
 	    c->current.current_fpe++;
 	    err = Successful;
