@@ -1,6 +1,6 @@
 /* You should not use these any more, use new Library.tmpl insead */
 
-XCOMM $XConsortium: oldlib.rules,v 1.5 91/03/25 15:02:36 rws Exp $
+XCOMM $XConsortium: oldlib.rules,v 1.1 91/03/25 15:08:40 rws Exp $
 
 /*
  * ProfiledLibraryObjectRule - generate make rules to build both profiled
@@ -12,8 +12,8 @@ all::									@@\
 	LibMkdir(profiled)						@@\
 									@@\
 .c.o:									@@\
-	ProfiledLibObjCompile( /**/)					@@\
-	NormalLibObjCompile( /**/)					@@\
+	ProfiledLibObjCompile(NullParameter)				@@\
+	NormalLibObjCompile(NullParameter)				@@\
 									@@\
 clean::									@@\
 	LibCleanDir(profiled)						@@\
@@ -31,8 +31,8 @@ all::									@@\
 	LibMkdir(debugger)						@@\
 									@@\
 .c.o:									@@\
-	DebuggedLibObjCompile( /**/)					@@\
-	NormalLibObjCompile( /**/)					@@\
+	DebuggedLibObjCompile(NullParameter)				@@\
+	NormalLibObjCompile(NullParameter)				@@\
 									@@\
 clean::									@@\
 	LibCleanDir(debugger)						@@\
@@ -51,9 +51,9 @@ all::									@@\
 	LibMkdir(debugger)						@@\
 									@@\
 .c.o:									@@\
-	ProfiledLibObjCompile( /**/)					@@\
-	DebuggedLibObjCompile( /**/)					@@\
-	NormalLibObjCompile( /**/)					@@\
+	ProfiledLibObjCompile(NullParameter)				@@\
+	DebuggedLibObjCompile(NullParameter)				@@\
+	NormalLibObjCompile(NullParameter)				@@\
 									@@\
 clean::									@@\
 	LibCleanDir(profiled)						@@\
