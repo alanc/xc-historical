@@ -172,6 +172,8 @@ alloca (size)			/* returns pointer to storage */
 
   {
     register pointer	new = Xalloc (sizeof (header) + size);
+    if (!new)
+	return NULL;
     /* address of header */
 
     ((header *)new)->h.next = last_alloca_header;
