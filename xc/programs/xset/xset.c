@@ -1,12 +1,12 @@
 /* 
- * $XConsortium: xset.c,v 1.43 88/09/06 14:36:40 jim Exp $ 
+ * $XConsortium: xset.c,v 1.44 88/09/28 11:34:16 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.43 88/09/06 14:36:40 jim Exp $";
+static char *rcsid_xset_c = "$XConsortium: xset.c,v 1.44 88/09/28 11:34:16 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -305,29 +305,6 @@ for (i = 1; i < argc; ) {
       i++;
     }
   } 
-  else if (arg[0] == 'p' && arg[1] == 'm') {	/* arg is "pm" */
-    int j;
-    unsigned char pmap[256];
-
-    if (i >= argc) {
-	set_pointer_map (dpy, NULL, 0);		/* restore defaults */
-	break;
-    }
-    
-    if (strcmp (argv[i], "default") == 0) {
-	set_pointer_map (dpy, NULL, 0);		/* restore defaults */
-	i++;
-    } else {
-	j = 0;
-	do {
-	    arg = argv[i];
-	    if (!isnumber (arg, 255)) break;	/* all done */
-	    pmap[j++] = atoi (arg);
-	    i++;
-	} while (j < 256 && i < argc);
-	set_pointer_map (dpy, pmap, j);
-    }
-  }
   else if (*arg == 'p') {           /*  If arg starts with "p"       */
     if (i + 1 >= argc)
       usage ("missing argument to p", NULL);
@@ -379,45 +356,6 @@ isnumber(arg, maximum)
 
 /*  These next few functions do the real work (xsetting things).
  */
-set_pointer_map(dpy, map, n)
-Display *dpy;
-unsigned char *map;
-int n;
-{
-    unsigned char defmap[256];
-    int j;
-    int retries, timeout;
-
-    if (n == 0) {				/* reset to default */
-	n = XGetPointerMapping (dpy, defmap, 256);
-	for (j = 0; j < n; j++) defmap[j] = (unsigned char) (j + 1);
-	map = defmap;
-    }
-
-    for (retries = 5, timeout = 2; retries > 0; retries--, timeout <<= 1) {
-	int result;
-
-	switch (result = XSetPointerMapping (dpy, map, n)) {
-	  case MappingSuccess:
-	    return;
-	  case MappingBusy:
-	    fprintf (stderr, "%s:  You have %d seconds to list your hands\n",
-		     progName, timeout);
-	    sleep (timeout);
-	    continue;
-	  case MappingFailed:
-	    fprintf (stderr, "%s:  bad pointer mapping\n", progName);
-	    return;
-	  default:
-	    fprintf (stderr, "%s:  bad return %d from XSetPointerMapping\n",
-		     progName, result);
-	    return;
-	}
-    }
-    fprintf (stderr, "%s:  unable to set pointer mapping\n", progName);
-    return;
-}
-
 set_click(dpy, percent)
 Display *dpy;
 int percent;
@@ -776,14 +714,11 @@ XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
 char **font_path; int npaths;
-unsigned char pmap[256], *ucp;		/* there are 8 bits of buttons */
-int pmap_count;
 
 XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
-pmap_count = XGetPointerMapping (dpy, pmap, 256);
 
 printf ("Keyboard Control Values:\n");
 /*printf ("Auto Repeat:  %d \t\t", values.auto_repeat_mode);    %%*/
@@ -821,11 +756,6 @@ if (npaths) {
 } else {
     printf ("Font Path:  (empty)\n");
 }
-printf ("Pointer map:");
-for (ucp = pmap; pmap_count > 0; ucp++, pmap_count--) {
-    printf ("  %u", (unsigned int) *ucp);
-}
-printf ("\n");
 return;
 }
 
@@ -868,16 +798,12 @@ usage (fmt, arg)
     fprintf (stderr, "\t m [acc [thr]]    m default\n");
     fprintf (stderr, "    To set pixel colors:\n");
     fprintf (stderr, "\t p pixel_value color_name\n");
-    fprintf (stderr, "    To set pointer map entries:\n");
-    fprintf (stderr, "\t pm number number ...\n");
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
     fprintf (stderr, "\t-r     r off        r    r on\n");
     fprintf (stderr, "    For screen-saver control:\n");
     fprintf (stderr, "\t s [timeout [cycle]]  s default\n");
     fprintf (stderr, "\t s blank              s noblank\n");
     fprintf (stderr, "\t s expose             s noexpose\n");
-    fprintf (stderr, "    To set the pointer mapping:\n");
-    fprintf (stderr, "\t pm [number ...]      pm default\n");
     fprintf (stderr, "    For status information:  q   or  query\n");
     exit(0);
 }

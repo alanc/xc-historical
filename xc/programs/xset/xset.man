@@ -10,7 +10,6 @@ xset - user preference utility for X
 [[-]led [\fIinteger\fP]] [led on/off]
 [m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
-[pm \fInumber ...\fP] [pm \fIdefault\fP]
 [[-]r] [r on/off]
 [s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
 [s expose/noexpose] [s on/off] [s default]
@@ -121,12 +120,6 @@ Although these are often 0 and 1, they need not be.  Also, a server may
 choose to allocate those colors privately, in which case an error will
 be generated.  The map entry must not be a read-only color,
 or an error will result.
-.PP
-.TP 8
-.B pm
-The \fBpm\fP option controls pointer map entries.  The parameters are
-pointer button codes.  The default is 1, 2, 3, ... up to currently-defined
-number of buttons on the pointer.
 .PP
 .TP 8
 .B r
