@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.46 91/06/30 18:24:59 rws Exp $
+ * $XConsortium: xrdb.c,v 11.47 91/07/09 15:54:30 rws Exp $
  */
 
 /*
@@ -79,7 +79,7 @@ typedef struct _Entries {
 #define INIT_BUFFER_SIZE 10000
 #define INIT_ENTRY_SIZE 500
 
-#if defined(USG) && !defined(CRAY)
+#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
 int rename (from, to)
     char *from, *to;
 {
