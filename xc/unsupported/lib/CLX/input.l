@@ -96,14 +96,14 @@
 
 (eval-when (eval compile load)
 (defconstant *max-events* 64) ;; Maximum number of events supported (the X11 alpha release only has 34)
-(defvar *event-key-vector* (make-array *max-events*)
+(defvar *event-key-vector* (make-array *max-events* :initial-element nil)
   "Vector of event keys - See define-event")
 )
-(defvar *event-macro-vector* (make-array *max-events*)
+(defvar *event-macro-vector* (make-array *max-events* :initial-element nil)
   "Vector of event handler functions - See declare-event")
-(defvar *event-handler-vector* (make-array *max-events*)
+(defvar *event-handler-vector* (make-array *max-events* :initial-element nil)
   "Vector of event handler functions - See declare-event")
-(defvar *event-send-vector* (make-array *max-events*)
+(defvar *event-send-vector* (make-array *max-events* :initial-element nil)
   "Vector of event sending functions - See declare-event")
 
 (defun allocate-event ()
@@ -154,7 +154,7 @@
   ;; To define error handlers, use declare-error and define-condition.
   (declare (type stringable name)
 	   (type list events errors))
-  (let ((name-symbol (intern (string name) 'keyword)) ;; Intern name in the keyword package
+  (let ((name-symbol (kintern name)) ;; Intern name in the keyword package
 	(event-list (mapcar #'canonicalize-event-name events)))
     `(eval-when (compile load eval)
        (setq *extensions* (cons (list ',name-symbol ',event-list ',errors)
@@ -165,7 +165,7 @@
   ;; Returns the event name keyword given an event name stringable
   (declare (type stringable event))
   (declare-values event-key)
-  (intern (symbol-name event) 'keyword))
+  (kintern event))
 ) ;; end eval-when
 
 (eval-when (compile eval load)
@@ -232,13 +232,13 @@
   (declare (type display display)
 	   (type stringable name))
   (declare-values card8)
-  (let ((name-symbol (intern (string name) 'keyword))) ;; Intern name in the keyword package
+  (let ((name-symbol (kintern name))) ;; Intern name in the keyword package
     `(or (second (assoc ',name-symbol (display-extension-alist ,display)))
 	 (x-error 'absent-extension :name ',name-symbol :display ,display))))
 
 (defun initialize-extensions (display)
   ;; Initialize extensions for DISPLAY
-  (let ((event-extensions (make-array 16 :element-type 'card8))
+  (let ((event-extensions (make-array 16 :element-type 'card8 :initial-element 0))
 	(extension-alist nil))
     (declare (type vector event-extensions)
 	     (type list extension-alist))
@@ -259,7 +259,8 @@
 				  *first-extension-event-code*)))
 		(declare (type card8 max-event))
 		(when (>= max-event (length event-extensions))
-		  (let ((new-extensions (make-array (+ max-event 16) :element-type 'card8)))
+		  (let ((new-extensions (make-array (+ max-event 16) :element-type 'card8
+						    :initial-element 0)))
 		    (declare (type vector new-extensions))
 		    (replace new-extensions event-extensions)
 		    (setq event-extensions new-extensions))))
@@ -620,7 +621,7 @@
 		     #'(lambda (type index item args)
 			 (flet ((event-get (type index item args)
 					   (unless (member type '(pad8 pad16))
-					     `(,(intern (string item) 'keyword)
+					     `(,(kintern item)
 					       (,(getify type) ,index ,@args)))))
 			   (if (atom item)
 			       (event-get type index item args)
@@ -635,8 +636,7 @@
 			       (progn
 				 (push item keywords)
 				 `((,(putify type) ,index ,item ,@args)))
-			     (let ((names (mapcar #'(lambda (name)
-						      (intern (symbol-name name) 'keyword))
+			     (let ((names (mapcar #'(lambda (name) (kintern name))
 						  item)))
 			       (setq keywords (append item keywords))
 			       `((,(putify type) ,index
@@ -1148,7 +1148,7 @@
   ;; Execute BODY with the variables in VALUE-LIST bound to components of the
   ;; EVENT-KEYS events.
   (unless (consp event-keys) (setq event-keys (list event-keys)))
-  (flet ((var-key (var) (intern (symbol-name (if (consp var) (first var) var)) 'keyword))
+  (flet ((var-key (var) (kintern (if (consp var) (first var) var)))
 	 (var-symbol (var) (if (consp var) (second var) var)))
     ;; VARS is an alist of:
     ;;  (component-key ((event-key event-key ...) . extraction-code)
