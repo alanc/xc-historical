@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.109 93/11/22 13:19:13 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.110 94/01/07 20:01:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -144,7 +144,6 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     String classname;
 {
     extern void _XtAllocTMContext();
-    extern Widget _XtCreate();
     XtPerDisplay pd;
 
     AddToAppContext(dpy, app);
@@ -189,10 +188,13 @@ static XtPerDisplay InitPerDisplay(dpy, app, name, classname)
     pd->dispatcher_list = NULL;
     pd->ext_select_list = NULL;
     pd->ext_select_count = 0;
+    pd->hook_object = NULL;
+#if 0
     pd->hook_object = _XtCreate("hooks", "Hooks", hookObjectClass,
 	(Widget)NULL, (Screen*)DefaultScreenOfDisplay(dpy),
 	(ArgList)NULL, 0, (XtTypedArgList)NULL, 0, 
 	(ConstraintWidgetClass)NULL);
+#endif
     return pd;
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.95 93/10/15 15:00:48 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.96 93/10/25 15:35:10 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,7 +37,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 #include "StringDefs.h"
-#include "Shell.h"
 #include "ShellP.h"
 #include <stdio.h>
 
@@ -194,7 +193,7 @@ static void CallConstraintInitialize (class, req_widget, new_widget, args, num_a
         (*initialize) (req_widget, new_widget, args, &num_args);
 }
 
-static Widget _XtCreate(
+Widget _XtCreate(
 	name, class, widget_class, parent, default_screen,
 	args, num_args, typed_args, num_typed_args, parent_constraint_class)
     char        *name, *class;
@@ -250,6 +249,9 @@ static Widget _XtCreate(
 	widget->core.constraints = NULL;
     if (XtIsRectObj(widget)) {
 	widget->core.managed = FALSE;
+    }
+    if (XtIsSubclass(widget, hookObjectClass)) {
+	((HookObject)widget)->hooks.screen = default_screen;
     }
     if (XtIsWidget(widget)) {
 	widget->core.name = XrmNameToString(widget->core.xrm_name);
@@ -575,6 +577,9 @@ Widget _XtAppCreateShell(name, class, widget_class, display, args, num_args,
     XtTypedArgList typed_args;
     Cardinal	num_typed_args;
 {
+    extern void _XtAddShellToHookObj();
+    Widget shell;
+
     if (widget_class == NULL) {
 	XtAppErrorMsg(XtDisplayToApplicationContext(display),
 	       "invalidClass","xtAppCreateShell",XtCXtToolkitError,
@@ -585,10 +590,12 @@ Widget _XtAppCreateShell(name, class, widget_class, display, args, num_args,
     if (name == NULL)
 	name = XrmNameToString(_XtGetPerDisplay(display)->name);
 
-    return _XtCreate(name, class, widget_class, (Widget)NULL,
+    shell = _XtCreate(name, class, widget_class, (Widget)NULL,
 	    (Screen*)DefaultScreenOfDisplay(display),
 	    args, num_args, typed_args, num_typed_args,
 	    (ConstraintWidgetClass) NULL);
+    _XtAddShellToHookObj(shell);
+    return shell;
 }
 
 #if NeedFunctionPrototypes

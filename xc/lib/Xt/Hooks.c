@@ -1,8 +1,9 @@
-/* $XConsortium: Hooks.c,v 1.0 93/08/27 16:20:48 kaleb Exp $ */
+/* $XConsortium: Hooks.c,v 1.4 94/01/07 20:01:50 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 
 #include "IntrinsicI.h"
+#include "StringDefs.h"
 
 static void FreeBlockHookList( widget, closure, call_data )
     Widget widget;		/* unused (and invalid) */
@@ -62,6 +63,26 @@ void XtRemoveBlockHook( id )
     UNLOCK_APP(app);
 }
 
+static void DeleteShellFromHookObj(shell, closure, call_data)
+    Widget shell;
+    XtPointer closure, call_data;
+{
+    /* app_con is locked when this function is called */
+    int ii, jj;
+    HookObject ho = (HookObject) closure;
+
+    for (ii = 0; ii < ho->hooks.num_shells; ii++)
+	if (ho->hooks.shells[ii] == shell) {
+	    /* collapse the list */
+	    for (jj = ii; jj < ho->hooks.num_shells; jj++) {
+		if ((jj+1) < ho->hooks.num_shells)
+		    ho->hooks.shells[jj] = ho->hooks.shells[jj+1];
+	    }
+	    break;
+	}
+    ho->hooks.num_shells--;
+}
+
 #define SHELL_INCR 4
 
 void _XtAddShellToHookObj(shell)
@@ -77,35 +98,27 @@ void _XtAddShellToHookObj(shell)
 		ho->hooks.max_shells * sizeof (Widget));
     }
     ho->hooks.shells[ho->hooks.num_shells++] = shell;
-}
 
-void _XtDeleteShellFromHookObj(shell)
-    Widget shell;
-{
-    /* app_con is locked when this function is called */
-    int ii, jj;
-    HookObject ho = (HookObject) XtHooksOfDisplay(XtDisplay(shell));
-
-    for (ii = 0; ii < ho->hooks.num_shells; ii++)
-	if (ho->hooks.shells[ii] == shell) {
-	    /* collapse the list */
-	    for (jj = ii; jj < ho->hooks.num_shells; jj++) {
-		if ((jj+1) < ho->hooks.num_shells)
-		    ho->hooks.shells[jj] = ho->hooks.shells[jj+1];
-	    }
-	    break;
-	}
-    ho->hooks.num_shells--;
+    XtAddCallback(shell, XtNdestroyCallback, DeleteShellFromHookObj, 
+		  (XtPointer)ho);
 }
 
 Widget XtHooksOfDisplay(dpy)
     Display* dpy;
 {
+    extern Widget _XtCreate();
     Widget retval;
+    XtPerDisplay pd;
     DPY_TO_APPCON(dpy);
 
     LOCK_APP(app);
-    retval = _XtGetPerDisplay(dpy)->hook_object;
+    pd = _XtGetPerDisplay(dpy);
+    if (pd->hook_object == NULL)
+	pd->hook_object = _XtCreate("hooks", "Hooks", hookObjectClass, 
+			(Widget) NULL, (Screen*)DefaultScreenOfDisplay(dpy),
+			(ArgList)NULL, 0, (XtTypedArgList)NULL, 0,
+			(ConstraintWidgetClass) NULL);
+    retval = pd->hook_object;
     UNLOCK_APP(app);
     return retval;
 }
