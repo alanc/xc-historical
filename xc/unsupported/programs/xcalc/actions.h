@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.2 89/05/08 16:23:10 converse Exp $
+ * $XConsortium: actions.h,v 1.3 89/05/08 17:38:33 converse Exp $
  * 
  * actions.h - action table declaring externally available procedures for xcalc
  *
@@ -43,7 +43,7 @@ XtActionsRec	Actions[] = {
 {"add",		add},		/* addition */
 {"back",	back},		/* HP-specific backspace */
 {"bell",	bell},		/* ring bell */
-{"clear",	clear},		/* TI-specific clear calculator state */
+{"clear",	clearit},	/* TI-specific clear calculator state */
 {"cosine",	cosine},	/* trigonometric function cosine */
 {"decimal",	decimal},	/* decimal point */
 {"degree",	degree},	/* degree, radian, grad switch */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.3 89/05/08 17:38:15 converse Exp $
+ * $XConsortium: actions.c,v 1.4 89/12/15 18:46:41 converse Exp $
  *
  * actions.c - externally available procedures for xcalc
  * 
@@ -76,7 +76,7 @@ void bell(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void clear(w, e, vector, count)
+void clearit(w, e, vector, count)
     Widget	w;
     XEvent	*e;
     String	*vector;
