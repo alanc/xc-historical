@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.29 91/02/10 17:11:59 rws Exp $
+ * $XConsortium: Bitmap.c,v 1.30 91/02/16 17:40:33 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>
 #include "BitmapP.h"
     
 #include <stdio.h>
@@ -577,7 +578,6 @@ void BWPutImage(w, display, drawable, gc, x, y)
   XPutImage(display, drawable, gc, BW->bitmap.image,
 	    0, 0, x, y, BW->bitmap.image->width, BW->bitmap.image->height);
 }
-
 
 String StripFilename(filename)
     String filename;
