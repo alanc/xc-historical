@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.13 93/08/22 12:09:25 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.14 93/09/18 11:37:12 rws Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -117,7 +117,11 @@
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
 
+#ifdef LONG64
+typedef unsigned int FdSet[MSKCNT];
+#else
 typedef unsigned long FdSet[MSKCNT];
+#endif
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -200,9 +204,8 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 
 #if (MSKCNT>4)
-#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
-				 MSKCNT*sizeof(long))
-#define CLEARBITS(buf) bzero((caddr_t) buf, MSKCNT*sizeof(long))
+#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst, sizeof(FdSet))
+#define CLEARBITS(buf) bzero((caddr_t) buf, sizeof(FdSet))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=0; cri<MSKCNT; cri++)	\

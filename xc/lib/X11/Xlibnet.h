@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.29 93/09/07 21:33:19 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.30 93/09/15 18:29:12 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -112,7 +112,11 @@ without express or implied warranty.
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
 
+#ifdef LONG64
+typedef unsigned int FdSet[MSKCNT];
+#else
 typedef unsigned long FdSet[MSKCNT];
+#endif
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -191,9 +195,8 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 
 #if (MSKCNT>4)
-#define COPYBITS(src, dst) memcpy((char *) dst, (char *) src,\
-				  MSKCNT*sizeof(long))
-#define CLEARBITS(buf) bzero((char *) buf, MSKCNT*sizeof(long))
+#define COPYBITS(src, dst) memcpy((char *) dst, (char *) src, sizeof(FdSet))
+#define CLEARBITS(buf) bzero((char *) buf, sizeof(FdSet))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\
 			for (cri=MSKCNT; --cri>=0; )	\
