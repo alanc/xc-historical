@@ -78,6 +78,7 @@ static Bool sunDevsProbed = FALSE;
 Bool sunSupportsDepth8 = FALSE;
 unsigned long sunGeneration = 0;
 int sunScreenIndex;
+Bool FlipPixels = FALSE;
 
 
 /*-
