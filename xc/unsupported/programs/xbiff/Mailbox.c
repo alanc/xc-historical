@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.47 90/12/31 16:33:50 gildea Exp $
+ * $XConsortium: Mailbox.c,v 1.48 91/01/02 13:51:25 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -37,6 +37,13 @@
 typedef int		waitType;
 # define INTWAITTYPE
 #else /* not _POSIX_SOURCE */
+#ifdef SVR4
+# include <sys/wait.h>
+# define waitCode(w)	WEXITSTATUS(w)
+# define waitSig(w)	WIFSIGNALED(w)
+typedef int		waitType;
+# define INTWAITTYPE
+#else /* not SVR4 */
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
@@ -48,6 +55,7 @@ typedef int		waitType;
 # define waitSig(w)	((w).w_T.w_Termsig)
 typedef union wait	waitType;
 #endif /* SYSV else */
+#endif /* SVR4 else */
 #endif /* _POSIX_SOURCE else */
 
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
