@@ -9,14 +9,15 @@ Text Widget
 .Ds 0
 .TA 2.0i
 .ta 2.0i
-Header file	Text.h
+Application Header file	<X11/Xaw/Text.h>
+Class Header file	<X11/Xaw/TextP.h>
 Class		textWidgetClass
 Class Name	Text
 Superclass	Simple
 .De
 .sp 1
 .LP
-The Text widget the glue that binds all the other pieces together, it
+The Text widget is the glue that binds all the other pieces together, it
 maintains the internal state of the displayed text, and acts as a
 mediator between the source and sink.  
 .LP
@@ -62,7 +63,7 @@ rightMargin	Margin	Position		2
 screen	Screen	Pointer	R	Parent's Screen
 scrollHorizontal	Scroll	XawTextScrollMode		XawtextScrollNever
 scrollVertical	Scroll	XawTextScrollMode		XawtextScrollNever
-selectTypes	SelectTypes	XtTextSelectType*		See above
+selectTypes	SelectTypes	XawTextSelectType*		See above
 sensitive	Sensitive	Boolean		True
 textSink	TextSink	Widget		NULL
 textSource	TextSource	Widget		NULL

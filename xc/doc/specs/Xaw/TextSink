@@ -16,11 +16,13 @@ Class Name	TextSink
 Superclass	Object
 .sp 1
 .LP
-The TextSink object is the root object for all Text Sinks.  Any new text
-sink widgets should be subclasses of the TextSink Object.  The
-TextSink Class contains all methods the Text widget expects a Text
-sink to export.  Since all Text sinks will have some resources in
-common the TextSink defines a few new resources. 
+The TextSink object is the root object for all text sinks.  Any new text
+sink objects should be subclasses of the TextSink Object.  The
+TextSink Class contains all methods the Text widget expects a text
+sink to export.
+.LP
+Since all text sinks will have some resources in common the TextSink
+defines a few new resources.
 .De
 .LP
 .IN "AsciiSink object" "resources"
@@ -61,9 +63,9 @@ Subclassing the TextSink
 .LP
 The only purpose of the TextSink Object is to be subclassed.  It
 contains the minimum set of class methods that all text sinks must have.
-While all may be inherited, the
-direct descendant of TextSink \fBmust specify\fP some of them as TextSink does
-contain enough smarts to be a valid text sink by itself.  Do not try to use
+While all may be inherited, the direct descendant of TextSink \fBmust
+specify\fP some of them as TextSink does contain enough information to
+be a valid text sink by itself.  Do not try to use 
 the TextSink as a valid sink for the Text widget, it is not intended
 to be used as a sink by itself and bad things will probably happen.
 .ps 9
@@ -101,7 +103,7 @@ _
 Displaying Text
 .LP
 To display a section of the text buffer contained in the text source
-use the function \fIDisplayText\fP.
+use the function \fBDisplayText\fP:
 
 .IN "TextSink" "DisplayText" "@DEF@"
 .FD 0
@@ -130,17 +132,17 @@ to be printed.
 .IP \fIhighlight\fP 1i
 Specifies whether or not to paint the text region highlighted.
 .LP
-The text widget will only pass one line at a time to the text sink so this
+The Text widget will only pass one line at a time to the text sink so this
 function does not need to know how to line feed the text.  It is
 acceptable for this function to just ignore Carrige Returns.  \fIx\fP
 and \fIy\fP denote the upper left hand corner of the first character
 to be displayed.  
 .NH 4
-Displaying the Text Cursor
+Displaying the Insert Point
 .LP
 The function that controls the display of the text cursor is
 \fBInsertCursor\fP.  This function will be called whenever the text
-widget desires to change the state of, or move the text cursor.  
+widget desires to change the state of, or move the insert point.  
 .IN "TextSink" "InsertCursor" "@DEF@"
 .FD 0
 void InsertCursor(\fIw\fP, \fIx\fP, \fIy\fP, \fIstate\fP)
@@ -161,19 +163,13 @@ Specifies the y location of the cursor in Pixels.
 Specifies the state of the cursor, may be one of \fBXawisOn\fP or
 \fBXawisOff\fP.
 .LP
-\fIx\fP and \fIy\fP denote the upper left hand corner of the text cursor.
-The current implementation of the Text widget turns the cursor off
-before it performs any operations, and then turns it back on again
-when it is through.  The behavior is horribly inefficient, and I hope
-to have something better at some point.  If this is the case then this
-function may need to be more clever than the current implementation
-now requires.  Please keep this in mind when designing this function.
+\fIX\fP and \fIy\fP denote the upper left hand corner of the insert point.
 .NH 4
 Clearing Portions of the Text window
 .LP
 To clear a portion of the Text window to its background color the Text
 widget will call \fBClearToBackground\fP.  The TextSink object already
-defines this function as calling XClearArea on the region passed.
+defines this function as calling \fBXClearArea\fP on the region passed.
 This behavior will be used if you specify
 \fBXtInheritClearToBackground\fP for this method.
 .IN "TextSink" "ClearToBackground" "@DEF@"
@@ -197,12 +193,12 @@ Specifies the width, in pixels, of the Region to clear.
 .IP \fIheight\fP 1i
 Specifies the height, in pixels, of the Region to clear.
 .LP
-\fIx\fP and \fIy\fP denote the upper left hand corner of region to clear.
+\fIX\fP and \fIy\fP denote the upper left hand corner of region to clear.
 .NH 4
 Finding a Text Position Given Pixel Values
 .LP
 To find the text character position that will be rendered at a given x
-location the text widget uses the function \fBFindPosition\fP.
+location the Text widget uses the function \fBFindPosition\fP:
 .IN "TextSink" "FindPosition" "@DEF@"
 .FD 0
 void FindPosition(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIstopAtWordBreak\fP, \fIpos_return\fP, \fIwidth_return\fP, \fIheight_return\fP)
@@ -250,7 +246,7 @@ widget will only call it one line at a time.
 .LP
 .sp
 Another means of finding a text position is provided by the \fBResolve\fP
-functions
+function:
 .IN "TextSink" "Resolve" "@DEF@"
 .FD 0
 void Resolve(\fIw\fP, \fIfromPos\fP, \fIfromX\fP, \fIwidth\fP, \fIpos_return\fP)
@@ -282,7 +278,7 @@ if \fIstopAtWordBreak\fP is \fBTrue\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.  This is a more convenient
-interface to the \fBFindPosition\fP function, and provides a subset of the
+interface to the \fBFindPosition\fP function, and provides a subset of its
 functionality.
 .NH 4
 Finding the Distance Between two Text Positions
@@ -393,9 +389,9 @@ Specifies the position, in characters, of the tab stops.
 This function is responsible for the converting character positions passed
 to it into whatever internal positions the TextSink uses for tab placement.
 .NH 4
-Getting the Text Cursor's Size and Location
+Getting the Insert Point's Size and Location
 .LP
-To get the size and location of the text cursor use the
+To get the size and location of the insert point use the
 \fBGetCursorBounds\fP function.
 .IN "TextSink" "GetCursorBounds" "@DEF@"
 .FD 0
@@ -408,7 +404,7 @@ XRectangle \fI*rect_return\fP;
 .IP \fIw\fP 1i
 Specifies the TextSinkObject.
 .IP \fIrect_return\fP 1i
-Returns the location and size of the text cursor when this function returns.
+Returns the location and size of the insert point.
 .LP
 \fIRect\fP will be filled with the current size and location of the
-text cursor.
+insert point.

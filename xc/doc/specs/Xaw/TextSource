@@ -1,10 +1,10 @@
 .NH 2
-TextSource Object
+TextSrc Object
 .LP
 .XS
-\*(SN TextSource Object
+\*(SN TextSrc Object
 .XE
-.IN "TextSource object" "" "@DEF@"
+.IN "TextSrc object" "" "@DEF@"
 .IN "TextSrc" "" "@DEF@"
 .LP
 .Ds 0
@@ -17,16 +17,16 @@ Class Name	TextSrc
 Superclass	Object
 .sp 1
 .LP
-The TextSource object is the root object for all text sources.  Any new text
-source widgets should be subclasses of the TextSource Object.  The
-TextSource Class contains all methods the Text widget expects a Text
+The TextSrc object is the root object for all text sources.  Any new text
+source objects should be subclasses of the TextSrc Object.  The
+TextSrc Class contains all methods the Text widget expects a text
 source to export.
 .LP
 Since all text sources will have some resources in common the
-TextSource defines a few new resources.  
+TextSrc defines a few new resources.  
 .De
 .LP
-.IN "TextSource object" "resources"
+.IN "TextSrc object" "resources"
 .ps 9
 .nr PS 9
 .vs 11
@@ -54,16 +54,16 @@ _
 .Dc
 .Oe Bold
 .NH 3
-Subclassing the TextSource
-.IN "TextSource object" "Subclassing" "@DEF@"
+Subclassing the TextSrc
+.IN "TextSrc object" "Subclassing" "@DEF@"
 .LP
-The only purpose of the TextSource Object is to be subclassed.  It
+The only purpose of the TextSrc Object is to be subclassed.  It
 contains the minimum set of class methods that all text sources must have.
-All class methods defined by the TextSource must be defined, as the Text
+All class methods of the TextSrc must be defined, as the Text
 widget uses them all.  While all may be inherited, the direct
-descendant of TextSource \fBmust specify\fP some of them as TextSource
-does not contain enough smarts to be a valid text source by itself.
-Do not try to use the TextSource as a valid source for the Text
+descendant of TextSrc \fBmust specify\fP some of them as TextSrc
+does not contain enough information to be a valid text source by itself.
+Do not try to use the TextSrc as a valid source for the Text
 widget, it is not intended to be used as a source by itself and bad
 things will probably happen. 
 .ps 9
@@ -96,9 +96,8 @@ _
 .NH 4
 Reading Text.
 .LP
-To read the text in a text source use the 
-\fBRead\fP function.
-.IN "TextSource" "Read" "@DEF@"
+To read the text in a text source use the \fBRead\fP function:
+.IN "TextSrc" "Read" "@DEF@"
 .FD 0
 XawTextPosition Read(\fIw\fP, \fIpos\fP, \fItext_return\fP, \fIlength\fP)
 .br
@@ -111,13 +110,13 @@ XawTextBlock \fI*text_return\fP;
 int \fIlength\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIpos\fP 1i
 Specifies the position of the first character to be read from the text buffer.
 .IP \fItext\fP 1i
-Return the text read from the source.
+Returns the text read from the source.
 .IP \fIlength\fP 1i
-Specifies the maximum number of characters the TextSourece should
+Specifies the maximum number of characters the TextSrc should
 return to the application in \fItext_return\fP.
 .LP
 This function returns the actual number of characters read from the
@@ -129,7 +128,7 @@ portion of the text buffer is fully retreived.
 .NH 4
 Replacing Text.
 .LP
-To replace or edit the text in a text buffer use the \fBReplace\fP function.
+To replace or edit the text in a text buffer use the \fBReplace\fP function:
 .FD 0
 XawTextPosition Replace(\fIw\fP, \fIstart\fP, \fIend\fP, \fItext\fP)
 .br
@@ -140,7 +139,7 @@ XawTextPosition \fIstart\fP, \fIend\fP;
 XawTextBlock \fI*text\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIstart\fP 1i
 Specifies the position of the first character to be removed from the text
 buffer.  This is also the location to begin inserting the new text.
@@ -168,10 +167,10 @@ buffer specified by the text block is inserted in their
 place.  If \fIstart\fP and \fIend\fP are equal, no text is deleted and
 the new text is inserted after \fIstart\fP.
 .NH 4
-Scanning the TextSource
+Scanning the TextSrc
 .LP
-To search the text source for one of the predefined boundary types us
-the \fBScan\fP function. 
+To search the text source for one of the predefined boundary types use
+the \fBScan\fP function:
 .FD 0
 XawTextPosition Scan(\fIw\fP, \fIposition\fP, \fItype\fP, \fIdir\fP, \fIcount\fP, \fIinclude\fP)
 .br
@@ -188,29 +187,28 @@ int \fIcount\fP;
 Boolean \fIinclude\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIposition\fP 1i
 Specifies the position to begin scanning the source.
-.IP \fItype\f 1i
+.IP \fItype\fP 1i
 Specifies the type of boundary to scan for, may be one of: \fBXawstPosition\fP,
 \fBXawstWhiteSpace\fP, \fBXawstEOL\fP, \fBXawstParagraph\fP, \fBXawstAll\fP.
-The exact defintion of these types is left up to the individual text source.
-.IP \fIdir\f 1i
+The exact meaning of these boundries is left up to the individual text source.
+.IP \fIdir\fP 1i
 Specifies the direction to scan, may be either \fBXawsdLeft\fP to search
 backward, or \fBXawsdRight\fP to search forward.
 .IP \fIcount\fP 1i
 Specifies the number of boundries to scan for.
 .IP \fIinclude\fP 1i
-Specifies that once a boundary has been found this specifies whether
-to include the last boundary in position that is returned.
+Specifies whether the boundry itself should be included in the scan.
 .LP
 The \fBScan\fP function returns the position in the text source of the desired
 boundary.  It is expected to return a valid address for
 all calls made to it, thus if a particular request is made that would take
 the text widget beyond an end of the source it must just return the
-position of that end, and not go off into space.
+position of that end.
 .NH 4
-Searching through a TextSource
+Searching through a TextSrc
 .LP
 To search for a particular string use the \fBSearch\fP function.
 .FD 0
@@ -225,10 +223,10 @@ XawTextScanDirection \fIdir\fP;
 XawTextBlock \fI*count\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIposition\fP 1i
 Specifies the position to begin the search.
-.IP \fIdir\f 1i
+.IP \fIdir\fP 1i
 Specifies the direction to search, may be either \fBXawsdLeft\fP to search
 backward, or \fBXawsdRight\fP to search forward.
 .IP \fItext\fP 1i
@@ -242,10 +240,9 @@ in the string is returned.  If no text was found then
 .NH 4
 Text Selections
 .LP
-While many of the default selection types are handled by the Text
-widget many text sources will have special types of text that wish to
-handle selection types not defined by the Text widget.  When a selection
-conversion is requested by the X Server the text widget will first
+While many selection types are handled by the Text
+widget text sources may selection types unknown to the Text widget.  When a selection
+conversion is requested by the X server the Text widget will first
 call the \fBConvertSelection\fP function, to attempt the selection conversion.
 .FD 0
 Boolean ConvertSelections(\fIw\fP, \fIselection\fP, \fItarget\fP, \fItype\fP, \fIvalue_return\fP, \fIlength_return\fP, \fIformat_return\fP)
@@ -261,7 +258,7 @@ unsigned long \fI*length_return\fP;
 int \fI*format_return\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIselection\fP 1i
 Specifies the type of selection that was requested (e.g. \fBPRIMARY\fP).
 .IP \fItarget\fP 1i
@@ -287,11 +284,11 @@ selection value is to be stored.
 .LP
 If this function returns \fBTrue\fP then the Text widget will assume
 that the source has taken care of converting the selection, Otherwise the
-text widget will attempt to convert the selection itself.
+Text widget will attempt to convert the selection itself.
 .LP
 .sp
 If the source needs to know when the text selection is modified it
-should define a \fBSetSelection\fP procedure.
+should define a \fBSetSelection\fP procedure:
 .FD 0
 void SetSelection(\fIw\fP, \fIstart\fP, \fIend\fP, \fIselection\fP)
 Widget \fIw\fP;
@@ -301,7 +298,7 @@ XawTextPosition \fIstart\fP, \fIend\fP;
 Atom \fIselection\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the TextSource object.
+Specifies the TextSrc object.
 .IP \fIstart\fP 1i
 Specifies the character position of the beginning of the new text selection.
 .IP \fIend\fP

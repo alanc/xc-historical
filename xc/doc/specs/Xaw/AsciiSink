@@ -58,7 +58,7 @@ I have added this resource to the AsciiSink instead of just stealing
 if from the Text widget for completeness.
 .Dc
 .Sd Bold
-.Se Bold
+.Sh Bold
 .Sf
 .Sg
 
