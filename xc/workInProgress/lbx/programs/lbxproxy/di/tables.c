@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c,v 1.5 94/03/27 13:56:27 dpw Exp mor $ */
+/* $XConsortium: tables.c,v 1.6 94/09/13 16:04:31 mor Exp mor $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)tables.c,v 1.13 1994/03/21 21:08:30 lemke Exp $
@@ -51,7 +51,8 @@ extern int	ProcLBXInternAtom(),
 		ProcLBXFillPoly(),
 		ProcLBXPolyFillRectangle(),
 		ProcLBXPolyFillArc(),
-		ProcLBXPutImage()
+		ProcLBXPutImage(),
+		ProcLBXGetImage()
                 ;
 
 extern int    ProcBadRequest(), ProcCreateWindow(),
@@ -245,7 +246,7 @@ int (* ProcVector[256]) () =
     ProcLBXPolyFillRectangle,			/* 70 */
     ProcLBXPolyFillArc,
     ProcLBXPutImage,
-    ProcStandardRequest,
+    ProcLBXGetImage,
     ProcStandardRequest,
     ProcStandardRequest,			/* 75 */
     ProcStandardRequest,
