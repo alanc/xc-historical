@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_ar.c,v 5.6 91/07/15 18:37:48 hersh Exp $ */
+/* $XConsortium: cpx_ar.c,v 5.7 91/07/15 21:08:21 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -284,7 +284,9 @@ Phg_args *cp_args;
     caddr_t		 buffer;
     Cpx_css_srvr	*css_srvr;
     pexElementInfo	*pex_el;
-    
+    Pedit_mode           cur_edit_mode;
+    Pint                 cur_open_struct, cur_elem_ptr, cur_struct_state;
+
     GET_ARH(cph, args->arid, arh);
     
     switch (args->op) {
@@ -350,11 +352,17 @@ Phg_args *cp_args;
     for (i = 0; i < ar_structs.num_ints; i++) {
 	if ( !(entry = phg_ar_get_entry_from_archive(arh,
 		ar_structs.ints[i])) ) {
-	    ERR_BUF(cph->erh, ERR201);
-	    free((char *)css_ids.ints);
-	    if (args->op != PHG_ARGS_AR_STRUCTS)
-		free((char *)ar_structs.ints);
-	    return;
+	   ERR_BUF(cph->erh, ERR408);
+           /* Structure not in archive, create an empty one in CSS if */
+           /* it isn't already there */
+           if (args->resflag != PRES_MAINTAIN || !(css_ids.num_ints > 0 &&
+               search_integer_list(ar_structs.ints[i],
+                                   css_ids.ints, css_ids.num_ints))) {
+               args2.data.del_el.op = PHG_ARGS_EMPTY_STRUCT;
+               args2.data.del_el.data.struct_id = ar_structs.ints[i];
+               CP_FUNC(cph, CP_FUNC_OP_DELETE_EL, &args2, NULL);
+           }
+           continue;
 	} else if (!(buffer = malloc((unsigned)entry->length))) {
 	    ERR_BUF(cph->erh, ERR900);
 	    free((char *)css_ids.ints);
@@ -387,7 +395,23 @@ Phg_args *cp_args;
 		args2.data.idata = ar_structs.ints[i];
 	    }
 	}
-	
+
+        /* To do this right the id of the current open structure must */
+        /* be retrieved along with the element pointer and edit mode. */
+        /* The edit mode needs to be set to insert and everything */
+        /* restored after the close. Also after the close, if the */
+        /* structure being opened is the one just retrieved, the */
+        /* element pointer should not be reset. */
+        cur_struct_state = PSL_STRUCT_STATE( cph->psl);
+        if (cur_struct_state == PSTRUCT_ST_STOP)
+        {
+            cur_open_struct = cph->psl->open_struct;
+            CP_FUNC(cph, CP_FUNC_OP_INQ_EL_PTR, &args2, &ret2);
+            cur_elem_ptr = ret2.data.idata;
+        }
+        cur_edit_mode = cph->psl->edit_mode;
+        cph->psl->edit_mode = PEDIT_INSERT;
+
 	/* Create new structure and add the elements. */
 	CP_FUNC(cph, CP_FUNC_OP_OPEN_STRUCT, &args2, &ret2);
 	if (ret2.err) {
@@ -410,7 +434,21 @@ Phg_args *cp_args;
 
 	/* close the structure */
 	CP_FUNC(cph, CP_FUNC_OP_CLOSE_STRUCT, &args2, (Phg_ret *)NULL);
-	
+
+        /* Restore things */
+        cph->psl->edit_mode = cur_edit_mode;
+        if (cur_struct_state == PSTRUCT_ST_STOP)
+        {
+            args2.data.idata = cur_open_struct;
+            CP_FUNC(cph, CP_FUNC_OP_OPEN_STRUCT, &args2, &ret2);
+            if (cur_open_struct != ar_structs.ints[i])
+            {
+                args2.data.set_el_ptr.op = PHG_ARGS_SETEP_ABS;
+                args2.data.set_el_ptr.data = cur_elem_ptr;
+                CP_FUNC( cph, CP_FUNC_OP_SET_EL_PTR, &args2, &ret2);
+            }
+        }
+
 	free((char *)buffer);
     }
     
@@ -540,8 +578,10 @@ Phg_args *cp_args;
 			phg_ar_get_entry_from_archive(arh, ids.ints[i]));
 		}
 		
-		for (i = 0; i < nl; i++)
-		    free((char *)lsts[i].ints);
+		for (i = 0; i < nl; i++) {
+		    if (lsts[i].num_ints) 
+			free((char *)lsts[i].ints);
+		}
 		free((char *)lsts);
 		free((char *)ids.ints);
 		
@@ -932,9 +972,9 @@ Pint_list		*out;		/* list of sids in network */
     
 	if (where == PNET_AR) {
 	    if (!phg_ar_get_entry_from_archive(arh, in->ints[i])) {
-		ERR_BUF(cph->erh, ERR201);
-		lsts[i].num_ints = 0;
-		return(1);
+		lsts[i].num_ints = 1;
+		lsts[i].ints = (Pint *)malloc(sizeof(Pint));
+		lsts[i].ints[0] = in->ints[i];
 	    } else {
 		if (get_ar_structure_network_ids(cph, arh, in->ints[i],
 				    &lsts[i])) {
