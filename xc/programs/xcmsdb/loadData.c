@@ -1,0 +1,1305 @@
+/*
+ * (c) Copyright 1990 Tektronix Inc.
+ * 	All Rights Reserved
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation, and that the name of Tektronix not be used
+ * in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
+ *
+ * Tektronix disclaims all warranties with regard to this software, including
+ * all implied warranties of merchantability and fitness, in no event shall
+ * Tektronix be liable for any special, indirect or consequential damages or
+ * any damages whatsoever resulting from loss of use, data or profits,
+ * whether in an action of contract, negligence or other tortious action,
+ * arising out of or in connection with the use or performance of this
+ * software.
+ *
+ *
+ *	NAME
+ *		LoadSCCData.c
+ *
+ *	DESCRIPTION
+ *		TekCMS API routine that reads screen data from a file
+ *	        and then loads the data on the root window of the screen.
+ *		
+ *
+ *
+ */
+#ifndef LINT
+static char *copy_notice = "Copyright 1990 Tektronix, Inc.";
+#  ifdef RCS_ID
+static char *rcsid=  "$Header: LoadSCCData.c,v 1.9 91/02/01 13:44:55 adamsc Exp $";
+#  endif RCS_ID
+#endif LINT
+
+/*
+ *      EXTERNAL INCLUDES
+ *              Include files that must be exported to any package or
+ *              program using this package.
+ */
+
+#ifdef UTEKV
+#include <sys/fcntl.h>
+#endif /* UTEKV */
+#include <sys/file.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+
+#include "Xlib.h"
+#include "Xatom.h"
+#include "TekCMS.h"
+#include "SCCDFile.h"
+
+/*
+ *      INTERNAL INCLUDES
+ *              Include files for local use only, therefore, NOT exported
+ *		to any package or program using this package.
+ */
+
+
+/*
+ *      EXTERNS
+ *              External declarations required locally to this package
+ *              that are not already declared in any of the included header
+ *		files (external includes or internal includes).
+ */
+
+extern char *strtok();
+extern char *strchr();
+extern char *calloc();	/* use calloc since it initializes bytes to zero */
+extern int LINEAR_RGB_FreeSCCData();
+
+/*
+ *      LOCAL TYPEDEFS
+ *              typedefs local to this package (for use with local vars).
+ *
+ */
+
+typedef struct _DefineEntry {
+    char	*pString;
+    int		define;
+} DefineEntry;
+
+
+/*
+ *      LOCAL VARIABLES
+ */
+static int linenum = 0;
+
+static DefineEntry KeyTbl[] = {
+    SC_BEGIN_KEYWORD,		SC_BEGIN,
+    SC_END_KEYWORD,		SC_END,
+    COMMENT_KEYWORD,		COMMENT,
+    NAME_KEYWORD,		NAME,
+    MODEL_KEYWORD,		MODEL,
+    PART_NUMBER_KEYWORD,	PART_NUMBER,
+    SERIAL_NUMBER_KEYWORD,	SERIAL_NUMBER,
+    REVISION_KEYWORD,		REVISION,
+    SCREEN_CLASS_KEYWORD,	SCREEN_CLASS,
+    COLORIMETRIC_BEGIN_KEYWORD,	COLORIMETRIC_BEGIN,
+    COLORIMETRIC_END_KEYWORD,	COLORIMETRIC_END,
+    XYZTORGBMAT_BEGIN_KEYWORD,	XYZTORGBMAT_BEGIN,
+    XYZTORGBMAT_END_KEYWORD,	XYZTORGBMAT_END,
+    WHITEPT_XYZ_BEGIN_KEYWORD,	WHITEPT_XYZ_BEGIN,
+    WHITEPT_XYZ_END_KEYWORD,	WHITEPT_XYZ_END,
+    RGBTOXYZMAT_BEGIN_KEYWORD,	RGBTOXYZMAT_BEGIN,
+    RGBTOXYZMAT_END_KEYWORD,	RGBTOXYZMAT_END,
+    IPROFILE_BEGIN_KEYWORD,	IPROFILE_BEGIN,
+    IPROFILE_END_KEYWORD,	IPROFILE_END,
+    ITBL_BEGIN_KEYWORD,		ITBL_BEGIN,
+    ITBL_END_KEYWORD,		ITBL_END,
+    "",				-1
+};
+
+static DefineEntry ScrnClassTbl[] = {
+    VIDEO_RGB_KEYWORD,		VIDEO_RGB,
+    VIDEO_GRAY_KEYWORD,		VIDEO_GRAY,
+    "",				-1
+};
+
+
+/************************************************************************
+ *									*
+ *			 PRIVATE ROUTINES				*
+ *									*
+ ************************************************************************/
+
+/*
+ *	NAME
+ *		StrToDefine - convert a string to a define
+ *
+ *	SYNOPSIS
+ */
+static int
+StrToDefine(pde,pstring)
+    DefineEntry	pde[];	/* IN: table of X string-define pairs		*/
+			/*     last entry must contain pair "", 0	*/
+    char *pstring;	/* IN: string to be looked up in that table	*/
+/*
+ *	DESCRIPTION
+ *		Converts a string to an integer define.
+ *
+ *		Looks up the string in the table and returns the integer
+ *		associated with the string.
+ *
+ *		Later may need similar function for unsigned long define.
+ *
+ *
+ *
+ *	RETURNS
+ *		The int equivalent of the defined string.
+ *		-1 if the string is not found in table
+ *
+ */
+{
+    while( strcmp(pde->pString,"") != 0 ){
+	if( strcmp(pde->pString,pstring) == 0){
+	    return(pde->define);
+	}
+	pde++;
+    }
+    return(-1);
+}
+
+/*
+ *	NAME
+ *		DefineToStr
+ *
+ *	SYNOPSIS
+ */
+static char *
+DefineToStr(pde,id)
+    DefineEntry	pde[];	/* IN: table of X string-define pairs		*/
+			/*     last entry must contain pair "", 0	*/
+    int		id;	/* IN: id to be looked up in that table	*/
+/*
+ *	DESCRIPTION
+ *		Converts a string to an integer define.
+ *
+ *		Looks up the string in the table and returns the integer
+ *		associated with the string.
+ *
+ *		Later may need similar function for unsigned long define.
+ *
+ *
+ *
+ *	RETURNS
+ *		The int equivalent of the defined string.
+ *		-1 if the string is not found in table
+ *
+ */
+{
+    while(pde->define != -1) {
+	if (pde->define == id) {
+	    return(pde->pString);
+	}
+	pde++;
+    }
+    return(NULL);
+}
+
+/*
+ *	NAME
+ *		SCKeyOf - convert keyword into key ID
+ *
+ *	SYNOPSIS
+ */
+static int
+SCKeyOf(string)
+    char *string;
+/*
+ *	DESCRIPTION
+ *		Converts a string to an integer define.
+ *
+ *		Looks up the string in the table and returns the integer
+ *		associated with the string.
+ *
+ *		Later may need similar function for unsigned long define.
+ *
+ *
+ *
+ *	RETURNS
+ *		The int equivalent of the defined string.
+ *		-1 if the string is not found in table
+ *
+ */
+{
+    return(StrToDefine(KeyTbl, string));
+}
+
+
+/*
+ *	NAME
+ *		SCScrnClassOf - convert screen class string into class ID
+ *
+ *	SYNOPSIS
+ */
+static int
+SCScrnClassOf(string)
+    char *string;
+/*
+ *	DESCRIPTION
+ *		Converts a string to an integer define.
+ *
+ *		Looks up the string in the table and returns the integer
+ *		associated with the string.
+ *
+ *		Later may need similar function for unsigned long define.
+ *
+ *
+ *
+ *	RETURNS
+ *		The int equivalent of the defined string.
+ *		-1 if the string is not found in table
+ *
+ */
+{
+    return(StrToDefine(ScrnClassTbl, string));
+}
+
+
+/*
+ *	NAME
+ *		SCScrnClassStringOf - convert screen class id into class string
+ *
+ *	SYNOPSIS
+ */
+static char *
+SCScrnClassStringOf(id)
+    int *id;
+/*
+ *	DESCRIPTION
+ *		Converts a id to astring
+ *
+ *	RETURNS
+ *		Pointer to string if found; otherwise NULL.
+ *
+ */
+{
+    return(DefineToStr(ScrnClassTbl, id));
+}
+
+/* close the stream and return any memory allocated. */
+static void 
+closeS(stream, pSCCData) 
+    FILE *stream;
+    LINEAR_RGB_SCCData *pSCCData;
+{
+    if (stream) {
+        fclose (stream);
+    }
+    (void) LINEAR_RGB_FreeSCCData(pSCCData);
+}
+
+/*
+ *  Print a msg msg.
+ */
+/*VARARGS*/
+static void
+msg(msg, p1, p2, p3, p4)
+    char *msg, *p1;
+{
+    fprintf(stderr, msg, p1, p2, p3, p4);
+    fprintf(stderr, "\n");
+}
+
+/*
+ *  Get a line of text from the stream.
+ */
+static char *
+nextline(buf, maxch, stream)
+    char *buf;
+    int	maxch;
+    FILE *stream;
+{
+    linenum++;
+    return (fgets(buf, maxch, stream));
+}
+
+
+static int
+ProcessColorimetric(stream, pSCCData, filename, VisualFlag)
+    FILE *stream;
+    LINEAR_RGB_SCCData *pSCCData;
+    char *filename;
+    int VisualFlag;
+{
+    char *pStr;
+    char buf[BUFSIZ];
+    char keyword[BUFSIZ];
+    char token[BUFSIZ], *ptoken;
+    int  ntok;
+    int	 state = 0;
+		 /* 0 -- looking for XYZTORGBMAT */
+		 /* 1 -- processing data for XYZTORGBMAT */
+		 /* 2 -- completed processing XYZTORGBMAT and */
+		 /*      looking for RGBTOXYZMat */
+		 /* 3 -- processing data fro RGBTOXYZMat */
+		 /* 4 -- completed processing RGBTOXYZMat */
+		 /* Note: the order of the matrices is important. */
+		 /*       The XYZTORGBMAT must preceed the RGBTOXYZMat. */
+    int	 count;
+    XcmsFloat *pElement;
+    float fNum;
+
+    while ((pStr = nextline(buf, BUFSIZ, stream)) != NULL) {
+	if ((ntok = sscanf(buf, "%s %s", keyword, token)) > 0) {
+	    switch (SCKeyOf(keyword)) {
+	      case XYZTORGBMAT_BEGIN :
+		if (VisualFlag != VIDEO_RGB) {
+		    msg("Keyword XYZTORGBMAT_BEGIN mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if (state != 0) {
+		    msg("Extraneous keyword %s in file %s.", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 1;
+		count = 0;
+		pElement = (XcmsFloat *) pSCCData->XYZtoRGBmatrix;
+		break;
+	      case XYZTORGBMAT_END :
+		if (VisualFlag != VIDEO_RGB) {
+		    msg("Keyword XYZTORGBMAT_END mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if ((state != 1) || (count != 9)) {
+		    msg("Incomplete A matrix in file %s -- Premature %s", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 2;
+		break;
+	      case RGBTOXYZMAT_BEGIN :
+		if (VisualFlag != VIDEO_RGB) {
+		    msg("Keyword RGBTOXYZMAT_BEGIN mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if (state != 0 && state != 2) {
+		    msg("Extraneous keyword %s in file %s.", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 3;
+		count = 0;
+		pElement = (XcmsFloat *) pSCCData->RGBtoXYZmatrix;
+		break;
+	      case RGBTOXYZMAT_END :
+		if (VisualFlag != VIDEO_RGB) {
+		    msg("Keyword RGBTOXYZMAT_END mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if ((state != 3) || (count != 9)) {
+		    msg("Incomplete A matrix in file %s -- Premature %s", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 4;
+		break;
+	      case WHITEPT_XYZ_BEGIN :
+		if (VisualFlag != VIDEO_GRAY) {
+		    msg("Keyword WHITEPT_XYZ_BEGIN mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if (state != 0) {
+		    msg("Extraneous keyword %s in file %s.", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 1;
+		count = 0;
+		pElement = (XcmsFloat *) pSCCData->XYZtoRGBmatrix;
+		break;
+	      case WHITEPT_XYZ_END :
+		if (VisualFlag != VIDEO_GRAY) {
+		    msg("Keyword WHITEPT_XYZ_END mismatch for visual %s.",
+			 SCScrnClassStringOf(VisualFlag));
+		    return (0);
+		}
+		if ((state != 1) || (count != 3)) {
+		    msg("Incomplete white point in file %s -- Premature %s", 
+			  keyword, filename);
+		    return (0);
+		}
+		state = 4;
+		break;
+	      case DATA :
+		for (ptoken = strtok(buf, DATA_DELIMS); ptoken != NULL;
+			ptoken = strtok(NULL, DATA_DELIMS)) {
+		    /*******************************************************
+		     *  This magic about fNum converted to XcmsFloat is 
+		     *  because our stupid sscanf does not understand that 
+		     *  %f also applies to doubles.
+		     *******************************************************/
+		    if (sscanf(ptoken, "%f", &fNum) != 1) {
+			if (VisualFlag == VIDEO_RGB) {
+			    msg("Invalid A Matrix value %s in file %s.", 
+				ptoken, filename);
+			} else {
+			    msg("Invalid CIEXYZ value %s in file %s.",
+				ptoken, filename);
+			}
+			return (0);
+		    }
+		    *pElement++ = (XcmsFloat) fNum;
+		    if (VisualFlag == VIDEO_RGB) {
+			if (++count > 9) {
+			    msg("Extra A Matrix value %s in filename %s", 
+				  ptoken, filename);
+			    return (0);
+			}
+		    } else {
+			if (++count > 3) {
+			    msg("Extra CIEXYZ value %s in file %s.",
+				  ptoken, filename);
+			    return (0);
+			}
+		    }
+		}
+		break;
+	      case COLORIMETRIC_BEGIN :
+		msg("Extraneous keyword %s in file %s.", 
+		      keyword, filename);
+		return (0);
+		break;
+	      case COLORIMETRIC_END :
+		if (state != 4) {
+		    msg("Incomplete Colorimetric data in file %s -- Premature %s",
+			  filename, keyword);
+		    return (0);
+		}
+		return (1);
+	      case COMMENT :
+		/* Currently, do nothing. */
+		break;
+	      default :
+		msg("Unexpected keyword %s in file %s", keyword, filename);
+		return (0);
+		break;
+	    }
+	} else if (ntok < 0) {
+	    /* mismatch */
+	    msg("Unrecognized keyword");
+	    return (0);
+	    break;
+	}
+    }
+    return (0);
+}
+
+static int
+ProcessIProfile(stream, pSCCData, tableType, nTables, filename)
+    FILE *stream;
+    LINEAR_RGB_SCCData *pSCCData;
+    int  tableType, nTables;
+    char *filename;
+{
+    char *pStr;
+    char buf[BUFSIZ];
+    char keyword[BUFSIZ];
+    char tableStr[BUFSIZ], *ptoken;
+    int  ntok;
+    int  size;
+    int	 state = 0;
+	 /************************************************
+	  * 0 -- Looking for Intensity Table(s)          *
+	  * 1 -- Processing Intensity Table(s)           *
+          ************************************************/
+    int	 nTbl = 0;
+    int	 count = 0;
+    IntensityRec *pIRec = NULL;
+    float fNum;
+    int dNum;
+
+    while ((pStr = nextline(buf, BUFSIZ, stream)) != NULL) {
+	if ((ntok = sscanf(buf, "%s %s %d", keyword, tableStr, &size)) > 0) {
+	    switch (SCKeyOf(keyword)) {
+	      case ITBL_BEGIN :
+		if (state != 0) {
+		    msg("File %s has an unexpected keyword %s", 
+			   filename, keyword);
+		    return (0);
+		}
+		if (size < 0) {
+		    msg("File %s has count %d < 0 for Intensity Table.",
+			      filename, size);
+		    return (0);
+		}
+		if (strcmp(tableStr, "GREEN") == 0) {
+		    if (nTables != 2) {
+			msg("File %s incorrect number of tables", 
+			filename);
+			return (0);
+		    }
+		    if (pSCCData->pGreenTbl->pBase != NULL) {
+			msg("File %s has multiple GREEN Intensity Profiles",
+			           filename);
+			return (0);
+		    }
+		    pSCCData->pGreenTbl->nEntries = size;
+		    pSCCData->pGreenTbl->pBase =
+			 (IntensityRec *) calloc (size, sizeof(IntensityRec));
+		    if (!pSCCData->pGreenTbl->pBase) {
+			msg("Unable to allocate space for GREEN Intensity Profile");
+			return (0);
+		    }
+		    pIRec = pSCCData->pGreenTbl->pBase;
+		} else if (strcmp(tableStr, "BLUE") == 0) {
+		    if (nTables != 2) {
+			msg("File %s incorrect number of tables",
+			    filename);
+			return (0);
+		    }
+		    if (pSCCData->pBlueTbl->pBase != NULL) {
+			msg("File %s has multiple BLUE Intensity Profiles",
+			           filename);
+			return (0);
+		    }
+		    pSCCData->pBlueTbl->nEntries = size;
+		    pSCCData->pBlueTbl->pBase =
+			 (IntensityRec *) calloc (size, sizeof(IntensityRec));
+		    if (!pSCCData->pBlueTbl->pBase) {
+			msg("Unable to allocate space for BLUE Intensity Profile");
+			return (0);
+		    }
+		    pIRec = pSCCData->pBlueTbl->pBase;
+		} else {
+		    if (!strcmp(tableStr, "RGB") && nTables != 0) {
+			msg("File %s has multiple RGB Intensity Tables",
+			      filename);
+			return (0);
+		    }
+		    if (pSCCData->pRedTbl->pBase != NULL) {
+			msg("File %s has multiple RED or GRAY or RGB Intensity Tables",
+				   filename);
+			return (0);
+		    }
+		    pSCCData->pRedTbl->nEntries = size;
+		    pSCCData->pRedTbl->pBase = 
+			 (IntensityRec *) calloc (size, sizeof(IntensityRec));
+		    if (!pSCCData->pRedTbl->pBase) {
+			msg("Unable to allocate space for intensity table");
+			return (0);
+		    }
+		    pIRec = pSCCData->pRedTbl->pBase;
+		}
+		state = 1;
+		count = 0;
+		break;
+	      case ITBL_END :
+		if ((state != 1) || (count != size)) {
+		    msg("File %s has incomplete Intensity Table -- Premature %s",
+			  filename, keyword);
+		    return (0);
+		}
+		nTbl++;
+		state = 0;
+		break;
+	      case DATA :
+		for (ptoken = strtok(buf, DATA_DELIMS); ptoken != NULL;
+			ptoken = strtok(NULL, DATA_DELIMS)) {
+		    /********************************************************
+		    /* Note: tableType should only be 0 or 1 at this point. 
+		    /*       0 indicates value and intensity stored.
+		    /*       1 indicates only intensity stored. 
+		    /********************************************************/
+		    if (tableType) {
+			if (sscanf(ptoken, "%f", &fNum) != 1) {
+			    msg("File %s has invalid Intensity Profile value %s", 
+				  filename, ptoken);
+			    return (0);
+			}
+			/* With tableType 1 only store the intensity. */
+			pIRec->intensity = (XcmsFloat) fNum;
+			pIRec++;
+		    } else {
+#ifndef ANSI_C		/* Note ansi C can handle 0x preceeding hex number */
+			if (*ptoken == '0' && *(ptoken+1) == 'x') 
+			    ptoken += 2;
+#endif /* ANSI_C */
+			/****************************************************
+		         *  This magic about dNum is required because of 
+			 *  a stupid compiler that does not know that %x
+			 *  also applies to shorts.
+			 ****************************************************/
+			if (sscanf(ptoken, "%x", &dNum) != 1) {
+			    msg("File %s has invalid Intensity Profile value %s",
+				  filename, ptoken);
+			    return (0);
+			}
+			if ((ptoken = strtok(NULL, DATA_DELIMS)) == NULL) {
+			    msg("File %s is missing Intensity Profile value",
+				  filename);
+			    return (0);
+			}
+			/****************************************************
+		         *  This magic about fNum is required because of 
+			 *  a stupid compiler that does not know that %f
+			 *  also applies to doubles.
+			 ****************************************************/
+			if (sscanf(ptoken, "%f", &fNum) != 1) {
+			    msg("File %s has invalid Intensity Profile intensity %s",
+				  filename, ptoken);
+			    return (0);
+			}
+			/* With tableType 0 only store both value & intensity*/
+			pIRec->value = (unsigned short) dNum;
+			pIRec->intensity = (XcmsFloat) fNum;
+			pIRec++;
+		    }
+		    if (++count > size) {
+			msg("File %s has extra Intensity value %s",
+			      filename, ptoken);
+			return (0);
+		    }
+		}
+		break;
+	      case IPROFILE_BEGIN :
+		msg("File %s has extraneous keyword %s", 
+			  filename, keyword);
+		return (0);
+		break;
+	      case IPROFILE_END :
+		if ((state != 0) || (nTbl-1 != nTables)) {
+		    msg("File %s has incomplete Intensity Profile data -- Premature %s",
+			   filename, keyword);
+		    return (0);
+		}
+		return (1);
+	      case COMMENT :
+		/* ignore line */
+		break;
+	      default :
+		msg("File %s has unexpected keyword %s",
+		      filename, keyword);
+		return (0);
+		break;
+	    }
+	} else if (ntok < 0) {
+	    /* mismatch */
+	    msg("Unrecognized keyword");
+	    return (0);
+	    break;
+	}
+    }
+}
+
+static int
+LoadDataRGB(pDpy, root, tableType, nTables, pSCCData)
+    Display *pDpy;
+    Window root;
+    int tableType, nTables;
+    LINEAR_RGB_SCCData *pSCCData;
+{
+    char *ret_prop;
+    int  count;
+    int  nLevels;
+    int  IntArray[18], *pInt, *pArray;
+    int  ret_format, ret_len, ret_after;
+    Atom MatricesAtom, CorrectAtom, ret_atom;
+    IntensityRec *pIRec = NULL;
+    XcmsFloat *pValue;
+
+#ifdef PDEBUG
+    printf ("XYZtoRGB Matrix values:\n");
+    printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n", 
+			    pSCCData->XYZtoRGBmatrix[0][0],
+			    pSCCData->XYZtoRGBmatrix[0][1],
+			    pSCCData->XYZtoRGBmatrix[0][2],
+			    pSCCData->XYZtoRGBmatrix[1][0],
+			    pSCCData->XYZtoRGBmatrix[1][1],
+			    pSCCData->XYZtoRGBmatrix[1][2],
+			    pSCCData->XYZtoRGBmatrix[2][0],
+			    pSCCData->XYZtoRGBmatrix[2][1],
+			    pSCCData->XYZtoRGBmatrix[2][2]);
+    printf ("RGBtoXYZ Matrix values:\n");
+    printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n", 
+			    pSCCData->RGBtoXYZmatrix[0][0],
+			    pSCCData->RGBtoXYZmatrix[0][1],
+			    pSCCData->RGBtoXYZmatrix[0][2],
+			    pSCCData->RGBtoXYZmatrix[1][0],
+			    pSCCData->RGBtoXYZmatrix[1][1],
+			    pSCCData->RGBtoXYZmatrix[1][2],
+			    pSCCData->RGBtoXYZmatrix[2][0],
+			    pSCCData->RGBtoXYZmatrix[2][1],
+			    pSCCData->RGBtoXYZmatrix[2][2]);
+    if (tableType != CORR_TYPE_NONE) {
+	printf ("Intensity-RGB value conversion type and number of tables:\n");
+	printf ("       type = %d, number of tables = %d\n", 
+		tableType, (nTables == 0x2 ? 3 : 1));
+    } else {
+	printf ("Intensity-RGB Conversion Not Specified");
+	return (1);
+    }
+/* do not use this debuggin unless you want to see the world go by */
+#ifdef ALLDEBUG
+
+    if (!tableType && !nTables) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  RGB  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+    } else if (tableType && !nTables) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  RGB  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t%f\n", pIRec->intensity);
+	}
+    } else if (!tableType) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  RED    %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+	nLevels = pSCCData->pGreenTbl->nEntries;
+	pIRec = pSCCData->pGreenTbl->pBase;
+	printf ("Intensity Table  GREEN  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+	nLevels = pSCCData->pBlueTbl->nEntries;
+	pIRec = pSCCData->pBlueTbl->pBase;
+	printf ("Intensity Table  BLUE   %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+    } else {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  RED    %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t%f\n", pIRec->intensity);
+	}
+	nLevels = pSCCData->pGreenTbl->nEntries;
+	pIRec = pSCCData->pGreenTbl->pBase;
+	printf ("Intensity Table  GREEN  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t%f\n", pIRec->intensity);
+	}
+	nLevels = pSCCData->pBlueTbl->nEntries;
+	pIRec = pSCCData->pBlueTbl->pBase;
+	printf ("Intensity Table  BLUE   %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t%f\n", pIRec->intensity);
+	}
+    }
+#endif /* ALLDEBUG */
+#endif /* PDEBUG */
+
+    /* Now store the XDCCC_LINEAR_RGB_MATRICES */
+    pInt = IntArray;
+    pValue = (XcmsFloat *)pSCCData->XYZtoRGBmatrix;
+    for (count = 0; count < 9; count++) {
+	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+    }
+    pValue = (XcmsFloat *)pSCCData->RGBtoXYZmatrix;
+    for (count = 0; count < 9; count++) {
+	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+    }
+    MatricesAtom = XInternAtom (pDpy, XDCCC_MATRIX_ATOM_NAME, False);
+    XChangeProperty (pDpy, root, MatricesAtom, XA_INTEGER, 32, 
+		     PropModeReplace, IntArray, 18);
+#ifdef DEBUG
+    XSync (pDpy, 0);
+#endif /* DEBUG */
+
+    /* Now store the XDCCC_LINEAR_RGB_CORRECTION */
+    CorrectAtom = XInternAtom (pDpy, XDCCC_CORRECT_ATOM_NAME, False);
+
+    if (tableType == CORR_TYPE_NONE) {
+	XGetWindowProperty (pDpy, root, CorrectAtom, 
+			    0, 5, False, XA_INTEGER, 
+			    &ret_atom, &ret_format, &ret_len, &ret_after,
+			    &ret_prop);
+	if (ret_format != 0) {
+	    XDeleteProperty (pDpy, root, CorrectAtom);
+	    XFree (ret_prop);
+	}
+	return (1);
+    }
+    if (!tableType && !nTables) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	if (nLevels < 0) {
+	    msg("Illegal number of entries in table");
+	    return (0);
+	}
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + (nLevels * 2), sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 0;		/* type = 0 */
+	*pInt++ = 1;		/* number of tables = 1 */
+	*pInt++ = nLevels;		/* number of pairs in this table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ =(int) (pIRec->value);
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + (nLevels * 2));
+    } else if (tableType && !nTables) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + nLevels, sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 1;		/* type = 1 */
+	*pInt++ = 1;		/* number of tables = 1 */
+	*pInt++ = nLevels;		/* number of pairs in this table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + nLevels);
+    }else if (!tableType) {
+	if (pSCCData->pRedTbl->nEntries != pSCCData->pGreenTbl->nEntries &&
+	    pSCCData->pRedTbl->nEntries != pSCCData->pBlueTbl->nEntries) {
+	    msg("Illegal number of entries in tables");
+	    return (0);
+	}
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + (nLevels * 6), sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 0;		/* type = 0 */
+	*pInt++ = 3;		/* number of tables = 3 */
+	*pInt++ = nLevels;		/* number of pairs in this table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->value);
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	pIRec = pSCCData->pGreenTbl->pBase;
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->value);
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	pIRec = pSCCData->pBlueTbl->pBase;
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->value);
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + (nLevels * 6));
+    } else {
+	if (pSCCData->pRedTbl->nEntries != pSCCData->pGreenTbl->nEntries &&
+	    pSCCData->pRedTbl->nEntries != pSCCData->pBlueTbl->nEntries) {
+	    msg("Illegal number of entries in tables");
+	    return (0);
+	}
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + (nLevels * 3), sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 1;		/* type = 1 */
+	*pInt++ = 1;		/* number of tables = 1 */
+	*pInt++ = 3;		/* number of tables = 3 */
+	*pInt++ = nLevels;		/* number of entries in each table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	pIRec = pSCCData->pGreenTbl->pBase;
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	pIRec = pSCCData->pBlueTbl->pBase;
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + (nLevels * 3));
+    }
+#ifdef DEBUG
+    XSync (pDpy, 0);
+#endif /* DEBUG */
+    if (pArray) 
+	free (pArray);
+    return (1);
+}
+
+
+static int
+LoadDataGray(pDpy, root, tableType, pSCCData)
+    Display *pDpy;
+    Window root;
+    LINEAR_RGB_SCCData *pSCCData;
+{
+    char *ret_prop;
+    int  count;
+    int  nLevels;
+    int  IntArray[18], *pInt, *pArray;
+    int  ret_format, ret_len, ret_after;
+    Atom MatricesAtom, CorrectAtom, ret_atom;
+    IntensityRec *pIRec = NULL;
+    XcmsFloat *pValue;
+
+#ifdef DEBUG
+    printf ("WhitePt XYZ values:\n");
+    printf ("       %f %f %f\n", 
+			    pSCCData->XYZtoRGBmatrix[0][0],
+			    pSCCData->XYZtoRGBmatrix[0][1],
+			    pSCCData->XYZtoRGBmatrix[0][2]);
+    if (tableType != CORR_TYPE_NONE) {
+	printf ("Intensity-RGB value conversion type:\n");
+	printf ("       type = %d\n", tableType);
+    } else {
+	printf ("Intensity-Gray Conversion Not Specified");
+	return (1);
+    }
+    /* do not use this debuggin unless you want to see the world go by */
+
+    if (!tableType) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  GRAY  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+    } else {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	printf ("Intensity Table  GRAY  %d\n", nLevels);
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    printf ("\t%f\n", pIRec->intensity);
+	}
+    }
+#endif /* DEBUG */
+
+    /* Now store the XDCCC_SCREENWHITEPT */
+    pInt = IntArray;
+    pValue = (XcmsFloat *)pSCCData->XYZtoRGBmatrix;
+    for (count = 0; count < 3; count++) {
+	*pInt++ = (int) (*pValue++ * (XcmsFloat) XDCCC_NUMBER);
+    }
+    MatricesAtom = XInternAtom (pDpy,XDCCC_SCREENWHITEPT_ATOM_NAME,False);
+    XChangeProperty (pDpy, root, MatricesAtom, XA_INTEGER, 32, 
+		     PropModeReplace, IntArray, 3);
+#ifdef DEBUG
+    XSync (pDpy, 0);
+#endif /* DEBUG */
+
+    /* Now store the XDCCC_GRAY_CORRECTION */
+    CorrectAtom = XInternAtom (pDpy, XDCCC_GRAY_CORRECT_ATOM_NAME, False);
+
+    if (tableType == CORR_TYPE_NONE) {
+	XGetWindowProperty (pDpy, root, CorrectAtom, 
+			    0, 5, False, XA_INTEGER, 
+			    &ret_atom, &ret_format, &ret_len, &ret_after,
+			    &ret_prop);
+	if (ret_format != 0) {
+	    XDeleteProperty (pDpy, root, CorrectAtom);
+	    XFree (ret_prop);
+	}
+	return (1);
+    }
+    if (!tableType) {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	if (nLevels < 0) {
+	    msg("Illegal number of entries in table");
+	    return (0);
+	}
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + (nLevels * 2), sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 0;			/* type = 0 */
+	*pInt++ = nLevels;		/* number of pairs in this table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ =(int) (pIRec->value);
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + (nLevels * 2));
+    } else {
+	nLevels = pSCCData->pRedTbl->nEntries;
+	pIRec = pSCCData->pRedTbl->pBase;
+	pArray = (int *) calloc (3 + nLevels, sizeof (int));
+	if ((pInt = pArray) == NULL) {
+	    msg("Unable allocate array of ints");
+	    return (0);
+	}
+	*pInt++ = 1;			/* type = 1 */
+	*pInt++ = nLevels;		/* number of pairs in this table */
+	for (count = 0; count < nLevels; count++, pIRec++) {
+	    *pInt++ = (int) (pIRec->intensity * (XcmsFloat) XDCCC_NUMBER);
+	}
+	XChangeProperty (pDpy, root, CorrectAtom, XA_INTEGER, 32, 
+			     PropModeReplace, pArray, 3 + nLevels);
+    }
+#ifdef DEBUG
+    XSync (pDpy, 0);
+#endif /* DEBUG */
+    if (pArray) 
+	free (pArray);
+    return (1);
+}
+
+
+/************************************************************************
+ *									*
+ *			 PUBLIC ROUTINES				*
+ *									*
+ ************************************************************************/
+
+/*
+ *	NAME
+ *		XLoadSCCData - Read and store the screen data
+ *
+ *	SYNOPSIS
+ */
+int
+LoadSCCData(pDpy, screen_number, filename)
+    Display *pDpy;
+    int screen_number;
+    char *filename;
+
+/*
+ *	DESCRIPTION
+ *		Using the X Device Color Characterization Convention (XDCCC)
+ *		read the screen data and store it on the root window of the
+ *		screen.
+ *
+ *	RETURNS
+ *		Returns 0 if failed; otherwise 1.
+ *
+ */
+{    
+    FILE *stream;
+    char *pStr, *pEoln;
+    char buf[BUFSIZ];
+    char keyword[BUFSIZ];
+    char token1[BUFSIZ], token2[BUFSIZ];
+    int  state = 0, tableType = -1, nTables = 0;
+    int VisualFlag = -2;
+    Window root;
+    LINEAR_RGB_SCCData *pSCCData;
+
+    if (screen_number < 0) {
+	msg("Invalid Screen Number %d\n", screen_number);
+	return(0);
+    }
+    root = RootWindow(pDpy, screen_number);
+
+    if (!root) {
+	/* if no root window is available then return an error */
+	msg("Could not open root window supplied. ");
+	return (0);
+    }
+    /*
+     * Open the file, determine its size, then read it into memory.
+     */
+    if (filename == NULL) {
+	stream = stdin;
+    } else if ((stream = fopen(filename, "r")) < 0) {
+	msg("Could not open file %s.", filename);
+	return (0);
+    }
+
+    if ((pSCCData = (LINEAR_RGB_SCCData *)calloc(1, sizeof(LINEAR_RGB_SCCData))) == NULL) {
+	msg("Could not allocate buffer for screen data.");
+	closeS (stream, pSCCData);
+	return (0);
+    }
+
+    /* need to read the screen data file and fill up a LINEAR_RGB_SCCData struct */
+
+    /*
+     * Advance to starting keyword 
+     * Anything before this keyword is just treated as comments.
+     */
+
+    while((pStr = nextline(buf, BUFSIZ, stream)) != NULL) {
+	if ((sscanf(buf, "%s %s", keyword, token1) > 0)
+	    && (strcmp(keyword, SC_BEGIN_KEYWORD) == 0)) {
+	    break;
+	}  /* else ignore the line */
+    }
+
+    if (pStr == NULL) {
+	msg("File %s is missing %s", filename, SC_BEGIN_KEYWORD);
+	closeS (stream, pSCCData);
+	return (0);
+    }
+
+    if (strcmp(token1, TXT_FORMAT_VERSION) != 0) {
+	msg("Screen data format version mismatch in file %s -- expected %s, found %s",
+	      filename, TXT_FORMAT_VERSION, token1);
+	closeS (stream, pSCCData);
+	return (0);
+    }
+
+    while ((pStr = nextline(buf, BUFSIZ, stream)) != NULL) {
+	token1[0] = NULL; token2[0] = NULL;
+	if (sscanf(buf, "%s %s %s", keyword, token1, token2) > 0) {
+	    switch (SCKeyOf(keyword)) {
+		case COMMENT :
+		case NAME :
+		case PART_NUMBER :
+		case MODEL :
+		case SERIAL_NUMBER :
+		case REVISION :
+		    /* Do nothing */
+		    break;
+		case SCREEN_CLASS :
+		    VisualFlag = SCScrnClassOf(token1);
+		    if (VisualFlag == -1) {
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    break;
+		case COLORIMETRIC_BEGIN :
+		    if (VisualFlag == -2) {
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    if (!ProcessColorimetric(stream, pSCCData, filename, VisualFlag)) {
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    state |= 0x02;
+		    break;
+		case IPROFILE_BEGIN :
+		    if (VisualFlag == -2) {
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    if (!token1[0]) {
+			state |= 0x04;
+			break;
+		    }
+		    if (sscanf(token1, "%d", &tableType) != 1 ||
+			(tableType < -1 || tableType > 1)) {
+			msg("File %s has invalid type specified %s",
+				  filename, buf);
+			closeS (stream, pSCCData);
+			return (0);
+		    } 
+		    if (tableType == CORR_TYPE_NONE) {
+			/* a CORR_TYPE_NONE (-1) : no conversion is used*/
+			state |= 0x04;
+			break;
+		    }
+		    if (!token2[0] && (VisualFlag == VIDEO_RGB)) {
+			msg("File %s has invalid number of tables specified",
+				filename, buf);
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    if (VisualFlag == VIDEO_RGB) {
+			if (sscanf(token2, "%d", &nTables) != 1 ||
+			    (nTables < 0 || nTables > 3)) {
+			    msg("File %s has invalid number of tables",
+				filename, buf);
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+		    } else {
+			nTables = 0;
+		    }
+		    if (nTables == 3) {
+			nTables = 2;  /* I am counting from 0 */
+		    } else if (nTables == 1) {
+			nTables = 0;  /* I only allow 0 and 2 as entries */
+		    }
+		    if (nTables) {
+			if (!(pSCCData->pRedTbl = (IntensityTbl *)
+			    calloc (1, sizeof (IntensityTbl)))) {
+			    msg("Could not allocate Red Intensity Table");
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+			if (!(pSCCData->pGreenTbl = (IntensityTbl *)
+			    calloc (1, sizeof (IntensityTbl)))) {
+			    msg("Could not allocate Green Intensity Table");
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+			if (!(pSCCData->pBlueTbl = (IntensityTbl *)
+			    calloc (1, sizeof (IntensityTbl)))) {
+			    msg("Could not allocate Blue Intensity Table");
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+		    } else {
+			if (!(pSCCData->pRedTbl = (IntensityTbl *)
+			      calloc (1, sizeof (IntensityTbl)))) {
+			    msg("Could not allocate Red Intensity Table");
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+			pSCCData->pGreenTbl = pSCCData->pRedTbl;
+			pSCCData->pBlueTbl = pSCCData->pRedTbl;
+		    }
+		    if (!ProcessIProfile(stream, pSCCData, 
+				         tableType, nTables, filename)) {
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    state |= 0x04;
+		    break;
+		case SC_END :
+		    if (!(state & 0x02)) {
+			msg("File %s is missing Colormetric data.", 
+				filename);
+			closeS (stream, pSCCData);
+			return (0);
+		    }
+		    if (!(state & 0x04)) {
+			msg("File %s is missing Intensity Profile Data.",
+			        filename);
+		    }
+		    if (VisualFlag == VIDEO_RGB) {
+			if (!LoadDataRGB(pDpy, root,
+					 tableType, nTables, pSCCData)) {
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+		    } else if (VisualFlag == VIDEO_GRAY) {
+			if (!LoadDataGray(pDpy, root,
+					  tableType, pSCCData)) {
+			    closeS (stream, pSCCData);
+			    return (0);
+			}
+		    } else {
+			msg("File %s Visual missing.", filename);
+		    }
+		    closeS (stream, pSCCData);
+		    return (1);
+		    break;
+		default :
+		    msg("File %s has extraneous keyword %s", 
+			    filename, keyword);
+		    closeS (stream, pSCCData);
+		    return (0);
+
+	    }
+	}   /* else it was just a blank line */
+    }
+    closeS (stream, pSCCData);
+    return (1);
+}

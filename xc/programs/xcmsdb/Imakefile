@@ -1,0 +1,12 @@
+SRCS = xsccd.c LoadSCCData.c
+OBJS = xsccd.o LoadSCCData.o
+INCLUDES = -I. -I$(INCLUDESRC)
+LOCAL_LIBS = $(XLIB)
+EXTENSIONLIB =
+SYS_LIBS =
+
+NormalProgramTarget(xsccd, $(OBJS), $(DEPLIBS), $(LOCAL_LIBS), $(SYS_LIBS))
+
+DependTarget()
+
+NormalLintTarget($(SRCS))
