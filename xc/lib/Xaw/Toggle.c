@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.4 89/03/30 16:54:48 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.5 89/04/10 10:43:59 converse Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -72,7 +72,7 @@ static char defaultTranslations[] =
 
 static XtResource resources[] = { 
    {XtNstate, XtCState, XtRBoolean, sizeof(Boolean), 
-      offset(toggle.state), XtRString, "off"},
+      offset(command.set), XtRString, "off"},
    {XtNradioGroup, XtCWidget, XtRWidget, sizeof(Widget), 
       offset(toggle.widget), XtRWidget, (caddr_t) NULL },
    {XtNradioData, XtCRadioData, XtRPointer, sizeof(caddr_t), 
@@ -225,7 +225,7 @@ static void Initialize(request, new)
  * widget to be unset, thus calling the notify proceedure.
  */
 
-    if (tw->toggle.state)
+    if (tw->command.set)
       ToggleSet(new, NULL, NULL, 0);
 }
 
@@ -291,8 +291,8 @@ Widget current, request, new;
     if (oldtw->toggle.widget != tw->toggle.widget)
       XtToggleChangeRadioGroup(new, tw->toggle.widget);
 
-    if (oldtw->toggle.state != tw->toggle.state) {
-      if (tw->toggle.state) {
+    if (oldtw->command.set != tw->command.set) {
+      if (tw->command.set) {
 	ToggleSet(new, NULL, NULL, 0); /* Does a redisplay. */
       }
       else

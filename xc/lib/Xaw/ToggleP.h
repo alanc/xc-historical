@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ToggleP.h,v 1.1 89/01/12 18:49:01 kit Exp $
+* $XConsortium: ToggleP.h,v 1.2 89/03/30 16:06:06 jim Exp $
 */
 
 
@@ -89,7 +89,6 @@ extern ToggleClassRec toggleClassRec;
     /* New fields for the Toggle widget record */
 typedef struct {
     /* resources */
-    Boolean     state;
     Widget      widget;
     caddr_t     radio_data;
 
