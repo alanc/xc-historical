@@ -1,4 +1,4 @@
-/* $XConsortium: ClDisplay.c,v 11.27 93/09/14 19:42:03 rws Exp $ */
+/* $XConsortium: ClDisplay.c,v 11.28 93/11/05 11:12:20 kaleb Exp $ */
 /*
 
 Copyright 1985, 1990 by the Massachusetts Institute of Technology
@@ -49,7 +49,7 @@ XCloseDisplay (dpy)
 	    if (dpy->request != dpy->last_request_read)
 		XSync(dpy, 1);
 	}
-	_XDisconnectDisplay(dpy->fd);
+	_XDisconnectDisplay(dpy->trans_conn);
 	_XFreeDisplayStructure (dpy);
 	return 0;
 }

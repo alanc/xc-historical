@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.202 93/11/15 11:17:59 kaleb Exp $
+ * $XConsortium: XlibInt.c,v 11.203 93/12/27 18:07:25 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -24,15 +24,10 @@ without express or implied warranty.
 #define NEED_REPLIES
 
 #include "Xlibint.h"
+#include <X11/Xtrans.h>
 #include "Xlibnet.h"
 #include "xcmiscstr.h"
-#include <X11/Xos.h>
 #include <stdio.h>
-#ifdef WIN32
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#undef EINTR
-#define EINTR WSAEINTR
-#endif
 
 #ifdef XTHREADS
 #include "locking.h"
@@ -256,7 +251,7 @@ _XWaitForWritable(dpy
 	    register xReply *rep;
 
 	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, &pend) < 0)
+	    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 		_XIOError(dpy);
 	    len = pend;
 
@@ -556,7 +551,7 @@ static _XFlushInt (dpy, cv)
 	 */
 	while (size) {
 	    ESET(0);
-	    write_stat = WriteToServer(dpy->fd, bufindex, (int) todo);
+	    write_stat = _X11TransWrite(dpy->trans_conn, bufindex, (int) todo);
 	    if (write_stat >= 0) {
 		size -= write_stat;
 		todo = size;
@@ -657,7 +652,7 @@ _XEventsQueued (dpy, mode)
 	}
 #endif /* XTHREADS*/
 
-	if (BytesReadable(dpy->fd, &pend) < 0)
+	if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 	    _XIOError(dpy);
 #ifdef XCONN_CHECK_FREQ
 	/* This is a crock, required because FIONREAD or equivalent is
@@ -689,7 +684,7 @@ _XEventsQueued (dpy, mode)
 	    {
 		if (pend > 0)
 		{
-		    if (BytesReadable(dpy->fd, &pend) < 0)
+		    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 			_XIOError(dpy);
 		    /* we should not get zero, if we do, force a read */
 		    if (!pend)
@@ -830,7 +825,7 @@ _XReadEvents(dpy)
 #endif /* XTHREADS*/
 
 	    /* find out how much data can be read */
-	    if (BytesReadable(dpy->fd, &pend) < 0)
+	    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 	    	_XIOError(dpy);
 	    len = pend;
 
@@ -944,7 +939,7 @@ _XRead (dpy, data, size)
 	if ((dpy->flags & XlibDisplayIOError) || size == 0)
 	    return 0;
 	ESET(0);
-	while ((bytes_read = ReadFromServer(dpy->fd, data, (int)size))
+	while ((bytes_read = _X11TransRead(dpy->trans_conn, data, (int)size))
 		!= size) {
 
 	    	if (bytes_read > 0) {
@@ -1158,7 +1153,7 @@ _XReadPad (dpy, data, size)
 	original_size = size;
 #endif
 	ESET(0);
-	while ((bytes_read = ReadvFromServer (dpy->fd, iov, 2)) != size) {
+	while ((bytes_read = _X11TransReadv (dpy->trans_conn, iov, 2)) != size) {
 
 	    if (bytes_read > 0) {
 		size -= bytes_read;
@@ -1280,7 +1275,7 @@ _XSend (dpy, data, size)
 	    InsertIOV (pad, padsize)
     
 	    ESET(0);
-	    if ((len = WritevToServer(dpy->fd, iov, i)) >= 0) {
+	    if ((len = _X11TransWritev(dpy->trans_conn, iov, i)) >= 0) {
 		skip += len;
 		total -= len;
 		todo = total;
@@ -3037,250 +3032,3 @@ _XANYSET(src)
     return (0);
 }
 #endif
-
-
-#ifdef CRAY
-/*
- * Cray UniCOS does not have readv and writev so we emulate
- */
-#include <sys/socket.h>
-
-int _XReadV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-	struct msghdr hdr;
-
-	hdr.msg_iov = iov;
-	hdr.msg_iovlen = iovcnt;
-	hdr.msg_accrights = 0;
-	hdr.msg_accrightslen = 0;
-	hdr.msg_name = 0;
-	hdr.msg_namelen = 0;
-
-	return (recvmsg (fd, &hdr, 0));
-}
-
-int _XWriteV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-	struct msghdr hdr;
-
-	hdr.msg_iov = iov;
-	hdr.msg_iovlen = iovcnt;
-	hdr.msg_accrights = 0;
-	hdr.msg_accrightslen = 0;
-	hdr.msg_name = 0;
-	hdr.msg_namelen = 0;
-
-	return (sendmsg (fd, &hdr, 0));
-}
-
-#endif /* CRAY */
-
-#if (defined(SYSV) && defined(SYSV386) && !defined(STREAMSCONN)) || defined(WIN32)
-/*
- * SYSV/386 and WIN32 do not have readv so we emulate
- */
-#ifndef WIN32
-#include <sys/uio.h>
-#endif
-
-int _XReadV (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-    int i, len, total;
-    char *base;
-
-    ESET(0);
-    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
-	len = iov->iov_len;
-	base = iov->iov_base;
-	while (len > 0) {
-	    register int nbytes;
-	    nbytes = ReadFromServer(fd, base, len);
-	    if (nbytes < 0 && total == 0)  return -1;
-	    if (nbytes <= 0)  return total;
-	    ESET(0);
-	    len   -= nbytes;
-	    total += nbytes;
-	    base  += nbytes;
-	}
-    }
-    return total;
-}
-
-#endif /* SYSV && SYSV386 && !STREAMSCONN || WIN32 */
-
-#ifdef WIN32
-
-int _XWriteV (fd, iov, iovcnt)
-    int fd;
-    struct iovec *iov;
-    int iovcnt;
-{
-    int i, len, total;
-    char *base;
-
-    ESET(0);
-    for (i=0, total=0;  i<iovcnt;  i++, iov++) {
-	len = iov->iov_len;
-	base = iov->iov_base;
-	while (len > 0) {
-	    register int nbytes;
-	    nbytes = WriteToServer(fd, base, len);
-	    if (nbytes < 0 && total == 0)  return -1;
-	    if (nbytes <= 0)  return total;
-	    ESET(0);
-	    len   -= nbytes;
-	    total += nbytes;
-	    base  += nbytes;
-	}
-    }
-    return total;
-}
-#endif /* WIN32 */
-
-#ifdef STREAMSCONN
-/*
- * Copyright 1988, 1989 AT&T, Inc.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted, provided
- * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of AT&T not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.  AT&T makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- *
- * AT&T DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL AT&T
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- */
-
-/*
- iovec.c (C source file)
-	Acc: 575557389 Mon Mar 28 08:03:09 1988
-	Mod: 575557397 Mon Mar 28 08:03:17 1988
-	Sta: 575557397 Mon Mar 28 08:03:17 1988
-	Owner: 2011
-	Group: 1985
-	Permissions: 664
-*/
-/*
-	START USER STAMP AREA
-*/
-/*
-	END USER STAMP AREA
-*/
-
-
-extern char _XsTypeofStream[];
-extern Xstream _XsStream[];
-
-#define MAX_WORKAREA 4096
-static char workarea[MAX_WORKAREA];
-
-
-
-int
-_XReadV (fd, v, n)
-    int		fd;
-    struct iovec *v;
-    int		n;
-{
-	int i, rc, len, size = 0;
-	char * buf = workarea;
-	char * p;
-
-	if (n <= 0 || n > 16)
-	{
-		ESET(EINVAL);
-		return (-1);
-	}
-	for (i = 0; i < n; ++i)
-	{
-		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
-		{
-			ESET(EINVAL);
-			return (-1);
-		}
-		size += len;
-	}
-	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
-	{
-		ESET(EINVAL);
-		return (-1);
-	}
-	if((rc = (*_XsStream[_XsTypeOfStream[fd]].ReadFromStream)(fd, buf, size,
-							     BUFFERING))> 0)
-	{
-		for (i = 0, p = buf; i < n; ++i)
-		{
-			memcpy (v[i].iov_base, p, len = v[i].iov_len);
-			p += len;
-		}
-	}
-	if (size > MAX_WORKAREA)
-		free (buf);
-
-	return (rc);
-}
-
-int
-_XWriteV (fd, v, n)
-    int fd;
-    struct iovec *v;
-    int n;
-{
-	int i, rc, len, size = 0;
-	char * buf = workarea;
-	char * p;
-
-	if (n <= 0 || n > 16)
-	{
-		ESET(EINVAL);
-		return (-1);
-	}
-	for (i = 0; i < n; ++i)
-	{
-		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
-		{
-			ESET(EINVAL);
-			return (-1);
-		}
-		size += len;
-	}
-
-	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
-	{
-		ESET(EINVAL);
-		return (-1);
-	}
-	for (i = 0, p = buf; i < n; ++i)
-	{
-		memcpy (p, v[i].iov_base, len = v[i].iov_len);
-		p += len;
-	}
-	rc = (*_XsStream[_XsTypeOfStream[fd]].WriteToStream)(fd, buf, size);
-
-	if (size > MAX_WORKAREA)
-		free (buf);
-
-	return (rc);
-}
-
-
-
-#endif /* STREAMSCONN */

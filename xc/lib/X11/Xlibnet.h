@@ -15,73 +15,12 @@ without express or implied warranty.
 */
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
+ *
+ * Note: Lots of the stuff originally found in this file moved
+ *       to the common transport library.
  */
-
-#ifdef LONG64
-typedef int BytesReadable_t;
-#else
-typedef long BytesReadable_t;
-#endif
 
 #ifndef WIN32
-
-#ifndef X_UNIX_PATH
-#ifdef hpux
-#define X_UNIX_PATH "/usr/spool/sockets/X11/"
-#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
-#else
-#define X_UNIX_PATH "/tmp/.X11-unix/X"
-#endif
-#endif /* X_UNIX_PATH */
-
-#ifdef STREAMSCONN
-#ifdef SYSV
-/*
- * UNIX System V Release 3.2
- */
-#define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
-#include <sys/ioctl.h>
-
-#endif /* SYSV */
-#ifdef SVR4
-/*
- * TLI (Streams-based) networking
- */
-#define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
-#include <sys/uio.h>		/* define struct iovec */
-
-#endif /* SVR4 */
-#else /* not STREAMSCONN */
-/*
- * socket-based systems
- */
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
-#include <netinet/in.h>
-#else
-#ifdef ESIX
-#include <lan/in.h>
-#endif
-#endif
-#include <sys/ioctl.h>
-#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN)
-#include <netdb.h>
-#endif
-#include <sys/uio.h>	/* needed for XlibInt.c */
-#ifdef SVR4
-#include <sys/filio.h>
-#endif
-
-#if (defined(SYSV386) && defined(SYSV)) || defined(_SEQUENT_)
-#if !defined(_SEQUENT_) && !defined(ESIX)
-#include <net/errno.h>
-#endif /* _SEQUENT_  || ESIX */
-#include <sys/stropts.h>
-#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (char *)(ptr))
-#else
-#define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (char *)(ptr))
-#endif
-
-#endif /* STREAMSCONN else */
 
 /*
  * If your BytesReadable correctly detects broken connections, then
@@ -237,74 +176,7 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 #endif
 
-/*
- *	ReadvFromServer and WritevToSever use struct iovec, normally found
- *	in Berkeley systems in <sys/uio.h>.  See the readv(2) and writev(2)
- *	manual pages for details.
- *
- *	struct iovec {
- *		caddr_t iov_base;
- *		int iov_len;
- *	};
- */
-#if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu)
-struct iovec {
-    caddr_t iov_base;
-    int iov_len;
-};
-#endif /* USG */
-
-
-#ifdef STREAMSCONN
-#include "Xstreams.h"
-
-extern char _XsTypeOfStream[];
-extern Xstream _XsStream[];
-
-#define ReadFromServer(dpy, data, size) \
-	(*_XsStream[_XsTypeOfStream[dpy]].ReadFromStream)((dpy), (data), (size), \
-						     BUFFERING)
-#define WriteToServer(dpy, bufind, size) \
-	(*_XsStream[_XsTypeOfStream[dpy]].WriteToStream)((dpy), (bufind), (size))
-
-#else /* else not STREAMSCONN */
-
-/*
- * bsd can read from sockets directly
- */
-#define ReadFromServer(dpy, data, size) read((dpy), (data), (size))
-#define WriteToServer(dpy, bufind, size) write((dpy), (bufind), (size))
-
-#ifndef USL_COMPAT
-#if !defined(USG) || defined(MOTOROLA) || defined(uniosu)
-#if !(defined(SYSV) && defined(SYSV386))
-#define _XReadV readv
-#endif
-#define _XWriteV writev
-#endif
-#endif /* !USL_COMPAT */
-
-#endif /* STREAMSCONN */
-
 #else /* not WIN32 */
-
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#include <X11/Xw32defs.h>
-
-#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
-#define ReadFromServer(dpy,data,size) recv((SOCKET)(dpy), data, size, 0)
-#define WriteToServer(dpy,data,size) send((SOCKET)(dpy), data, size, 0)
-
-struct iovec {
-    caddr_t iov_base;
-    int iov_len;
-};
 
 typedef fd_set FdSet;
 
@@ -314,6 +186,3 @@ typedef fd_set FdSet;
 #define _XANYSET(set) set.fd_count
 
 #endif /* WIN32 */
-
-#define ReadvFromServer(dpy, iov, iovcnt) _XReadV((dpy), (iov), (iovcnt))
-#define WritevToServer(dpy, iov, iovcnt) _XWriteV((dpy), (iov), (iovcnt))

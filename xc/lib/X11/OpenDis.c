@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OpenDis.c,v 11.145 93/10/24 15:50:13 rws Exp $
+ * $XConsortium: OpenDis.c,v 11.146 93/12/27 18:02:00 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -19,7 +19,7 @@ without express or implied warranty.
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include "Xlibint.h"
-#include <X11/Xos.h>
+#include <X11/Xtrans.h>
 #include <X11/Xatom.h>
 #include "bigreqstr.h"
 #include <stdio.h>
@@ -97,7 +97,7 @@ Display *XOpenDisplay (display)
 	int conn_auth_namelen, conn_auth_datalen;
 	unsigned long mask;
 	extern Bool _XSendClientPrefix();
-	extern int _XConnectDisplay();
+	extern XtransConnInfo _X11TransConnectDisplay();
 	extern XID _XAllocID();
 
 	/*
@@ -129,18 +129,21 @@ Display *XOpenDisplay (display)
 	}
 
 /*
- * Call the Connect routine to get the network socket. If -1 is returned, the
- * connection failed. The connect routine will set fullname to point to the
- * expanded name.
+ * Call the Connect routine to get the transport connection object.
+ * If NULL is returned, the connection failed. The connect routine
+ * will set fullname to point to the expanded name.
  */
 
-	if ((dpy->fd = _XConnectDisplay (display_name, &fullname, &idisplay,
+	if ((dpy->trans_conn = _X11TransConnectDisplay (
+					 display_name, &fullname, &idisplay,
 					 &iscreen, &conn_auth_name,
 					 &conn_auth_namelen, &conn_auth_data,
-					 &conn_auth_datalen)) < 0) {
+					 &conn_auth_datalen)) == NULL) {
 		Xfree ((char *) dpy);
 		return(NULL);
 	}
+
+	dpy->fd = _X11TransGetConnectionNumber (dpy->trans_conn);
 
 	/* Initialize as much of the display structure as we can.
 	 * Initialize pointers to NULL so that XFreeDisplayStructure will
@@ -263,7 +266,7 @@ Display *XOpenDisplay (display)
 					&prefix);
 	if (prefixread < 0)
 	{
-	    _XDisconnectDisplay (dpy->fd);
+	    _XDisconnectDisplay (dpy->trans_conn);
 	    Xfree ((char *)dpy);
 	    return(NULL);
 	}
@@ -283,7 +286,7 @@ Display *XOpenDisplay (display)
 	    fprintf (stderr,
      "Xlib: client uses different protocol version (%d) than server (%d)!\r\n",
 		     X_PROTOCOL, prefix.majorVersion);
-	    _XDisconnectDisplay (dpy->fd);
+	    _XDisconnectDisplay (dpy->trans_conn);
 	    Xfree ((char *)dpy);
 	    return(NULL);
 	}
@@ -291,7 +294,7 @@ Display *XOpenDisplay (display)
 	setuplength = prefix.length << 2;
 	if ( (u.setup = (xConnSetup *)
 	      (setup =  Xmalloc ((unsigned) setuplength))) == NULL) {
-		_XDisconnectDisplay (dpy->fd);
+		_XDisconnectDisplay (dpy->trans_conn);
 		Xfree ((char *)dpy);
 		return(NULL);
 	}
@@ -593,7 +596,7 @@ static OutOfMemory (dpy, setup)
     Display *dpy;
     char *setup;
 {
-    _XDisconnectDisplay (dpy->fd);
+    _XDisconnectDisplay (dpy->trans_conn);
     _XFreeDisplayStructure (dpy);
     if (setup) Xfree (setup);
 }

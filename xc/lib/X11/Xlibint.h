@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.129 93/12/27 15:36:46 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.130 94/01/09 15:11:31 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -131,6 +131,7 @@ struct _XDisplay
 	XID resource_max;	/* allocator max ID */
 	int xcmisc_opcode;	/* major opcode for XC-MISC */
 	struct _XkbInfoRec *xkb_info; /* XKB info */
+	struct _XtransConnInfo *trans_conn; /* transport connection object */
 };
 
 /*

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.166 93/11/11 17:46:47 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.167 93/11/15 11:18:31 kaleb Exp $
 #define DoNormalLib NormalLibX11
 #define DoSharedLib SharedLibX11
 #define DoDebugLib DebugLibX11
@@ -36,7 +36,7 @@ XBSDLIB = /**/
 #if HasPoll
    POLL_DEFINES = -DUSE_POLL
 #endif
-   CONN_DEFINES = ConnectionFlags
+   CONN_DEFINES = ConnectionFlags -DX11
 #if HasBSD44Sockets
    SOCK_DEFINES = -DBSD44SOCKETS
 #endif
@@ -61,7 +61,7 @@ XBSDLIB = /**/
 
         DEFINES = $(MALLOC_DEFINES) $(MTX_DEFINES)
    OPEN_DEFINES = -I$(EXTINCSRC) $(MTT_DEFINES) $(K5INCL) $(K5DEFS)
- DEPEND_DEFINES = $(OPEN_DEFINES)
+ DEPEND_DEFINES = $(OPEN_DEFINES) $(TRANS_INCLUDES) $(CONN_DEFINES)
    INSTALLFLAGS = $(INSTINCFLAGS)
        AUTHOBJS = AuDispose.o AuGetBest.o AuFileName.o AuRead.o
        AUTHSRCS = AuDispose.c AuGetBest.c AuFileName.c AuRead.c
@@ -655,6 +655,7 @@ SRCS3 = \
 	RegstFlt.c \
 	locking.c \
 	LockDis.c \
+	transport.c \
 	$(XKBSRCS) $(LCSRCS)
 
 OBJS3 = \
@@ -732,6 +733,7 @@ OBJS3 = \
 	RegstFlt.o \
 	locking.o \
 	LockDis.o \
+	transport.o \
 	$(XKBOBJS) $(LCOBJS)
 
 #ifdef RsArchitecture
@@ -881,6 +883,8 @@ OBJS = $(OBJS1) $(OBJS2) $(OBJS3)
 SpecialCLibObjectRule(ErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(StrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
 SpecialCLibObjectRule(ConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES) $(POLL_DEFINES) $(K5INCL) $(K5DEFS))
+SpecialCLibObjectRule(transport,$(ICONFIGFILES),$(TRANS_INCLUDES) $(CONN_DEFINES) $(SOCK_DEFINES))
+LinkSourceFile(transport.c,$(TRANSCOMMSRC))
 SpecialCLibObjectRule(OpenDis,$(ICONFIGFILES),$(BC_DEFINES) $(OPEN_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
