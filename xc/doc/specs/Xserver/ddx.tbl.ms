@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.31 91/07/27 17:05:51 rws Exp $"
+.\" $XConsortium: ddx.tbl.ms,v 1.33 93/06/24 11:49:56 dpw Exp $"
 .EF 'Porting Layer Definition'- % -'June 23, 1993'
 .OF 'Porting Layer Definition'- % -'June 23, 1993'
 .EH '''
@@ -333,7 +333,7 @@ low level memory management.
 .fi
 OsInit initializes your OS code, performing whatever tasks need to be done.
 Frequently there is not much to be done.
-The sample server implementation is in server/os/4.2bsd/osinit.c.
+The sample server implementation is in server/os/osinit.c.
 
 .NH 2
 Scheduling and Request Delivery
@@ -357,7 +357,7 @@ You must supply some of the pieces for proper scheduling between clients.
 		int *pClientReady;
 .fi
 .LP
-WaitForSomething is the scheduler procedure yo must write that will
+WaitForSomething is the scheduler procedure you must write that will
 suspend your server process until something needs to be done.   
 This call should
 make the server suspend until one or more of the following occurs:
@@ -541,10 +541,10 @@ it is an open file descriptor.
 .nf
 
 	void AddEnabledDevice(fd)
-		FID fd;
+		int fd;
 
 	void RemoveEnabledDevice(fd)
-		FID fd;
+		int fd;
 .fi
 These two routines are
 called from the initialize cases of the
@@ -655,7 +655,7 @@ scheme.  The only interface seen by DIX is:
 	ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
 	    ClientPtr client;
 	    char *auth_proto, *auth_string;
-	    int proto_n, string_n;
+	    unsigned int proto_n, string_n;
 .fi
 .LP
 DIX will only call this once per client, once it has read the full initial
@@ -903,14 +903,10 @@ Other OS Functions
 .LP
 .nf
 	void
-	ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)
-	    char *f;
-	    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+	ErrorF(char *f, ...)
 
 	void
-	FatalError(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9)
-	    char *f;
-	    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+	FatalError(char *f, ...)
 
 	void
 	Error(str)
@@ -923,7 +919,7 @@ ddx layers, although implementing them to produce no output will not
 affect the correctness of your server.
 ErrorF() and FatalError() take
 a printf() type of format specification in the first argument and
-up to ten format arguments following that.
+an implementation-dependent number of arguments following that.
 Normally, the formats passed to ErrorF() and FatalError() should be
 terminated with a newline.
 Error() provides an os interface for printing out the string passed
@@ -1027,6 +1023,9 @@ routine:
 .nf
 
 	void DevicePtr->processInputProc(pEvent, device, count)
+		    xEventPtr events;
+		    DeviceIntPtr device;
+		    int count;
 .fi
 This is the "input proc" for the device, a DIX procedure.
 DIX will fill in this procedure pointer to one of its own routines by 
@@ -1159,9 +1158,13 @@ you pass the procedure pointers to DIX routines.
 
 .nf
 
-	int pInternalDevice->GetMotionEvents(buff, start, stop)
-		xTimecoord *buff;
-		CARD32 start, stop;
+	int pInternalDevice->valuator->GetMotionProc(
+					pdevice, coords, start, stop, pScreen)
+		DeviceIntPtr pdevice;
+		xTimecoord * coords;
+		unsigned long start;
+		unsigned long stop;
+		ScreenPtr pScreen;
 .fi
 You write this DDX routine to fill in buff with all the motion events that
 have times (32-bit count of
@@ -1183,15 +1186,17 @@ A client application, like a paint program, may then request that
 these events be delivered to it through this routine.
 .nf
 
-	void pInternalDevice->Bell(loud, pDevice)
-		int loud;
-		DevicePtr pDevice;
+	void pInternalDevice->bell->BellProc(percent, pDevice, ctrl, ?)
+		int percent,
+		DeviceIntPtr pDevice,
+		pointer ctrl,
+		int ?
 .fi
 You need to write this routine to ring the bell on the keyboard. 
 loud is a number from 0 to 100, with 100 being the loudest.
 .nf
 
-	void pInternalDevice->ControlProc(device, ctrl)
+	void pInternalDevice->somedevice->CtrlProc(device, ctrl)
 		DevicePtr device;
 		SomethingCtrl *ctrl;
 
@@ -1328,10 +1333,10 @@ be totally closed down.
 	void InitPointerDeviceStruct(device, map, mapLength,
 			GetMotionEvents, ControlProc, numMotionEvents)
 		DevicePtr device;
-		BYTE *map;
+		CARD8 *map;
 		int mapLength;
-		void (*ControlProc)();
-		int (*GetMotionEvents)();
+		ValuatorMotionProcPtr ControlProc;
+		PtrCtrlProcPtr GetMotionEvents;
 		int numMotionEvents;
 .fi
 InitPointerDeviceStruct is a DIX routine you call at DEVICE_INIT time to declare
@@ -1351,8 +1356,8 @@ numMotionEvents to zero.
 		DevicePtr device;
 		KeySymsPtr pKeySyms;
 		CARD8 *pModifiers;   
-		void (*Bell)();
-		void (*ControlProc)();
+		BellProcPtr Bell;
+		KbdCtrlProcPtr ControlProc;
 
 .fi
 You call this DIX routine when a keyboard device is initialized and 
@@ -4653,7 +4658,7 @@ mi and mfb implementations.
 .TS
 l l.
 dix	portable to all systems; do not attempt to rewrite (server/dix)
-4.2	written for 4.2/4.3bsd Unix or equivalent (server/os/4.2bsd)
+4.2	written for 4.2/4.3bsd Unix or equivalent (server/os)
 ddx	frame buffer dependent (examples in server/ddx/mfb,server/ddx/cfb)
 mi	routine provided in server/ddx/mi
 hd	hardware dependent (examples in many server/ddx directories)
