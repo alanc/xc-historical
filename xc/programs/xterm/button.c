@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.29 89/01/04 11:14:32 jim Exp $
+ *	$XConsortium: button.c,v 1.30 89/01/04 13:33:45 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.29 89/01/04 11:14:32 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.30 89/01/04 13:33:45 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -132,11 +132,14 @@ static int replyToEmacs;
 
 Boolean SendMousePosition(w, event)
 Widget w;
-XEvent* event;			/* must be XButtonEvent* */
+XEvent* event;
 {
     register TScreen *screen = &((XtermWidget)w)->screen;
     
     if (screen->send_mouse_pos == 0) return False;
+
+    if (event->type != ButtonPress && event->type != ButtonRelease)
+	return False;
 
 #define KeyModifiers \
     (event->xbutton.state & (ShiftMask | LockMask | ControlMask | Mod1Mask | \
@@ -150,14 +153,9 @@ XEvent* event;			/* must be XButtonEvent* */
       case 1: /* X10 compatibility sequences */
 
 	if (KeyModifiers == 0) {
-	    if (event->type == ButtonPress) {
+	    if (event->type == ButtonPress)
 		EditorButton(event);
-		return True;
-	    }
-	    else if (event->type == ButtonRelease &&
-		     event->xbutton.button == Button2 ) {
-		return True;
-	    }
+	    return True;
 	}
 	return False;
 
@@ -202,11 +200,9 @@ Cardinal *num_params;		/* unused */
 		case RIGHTEXTENSION :
 			ExtendExtend(event->xmotion.x, event->xmotion.y);
 			break;
-		default :
-			/* Should get here rarely when everything
-			   fixed with windows and the event mgr */
-/*			fprintf(stderr, "Race mouse motion\n");
-*/			break;
+		case NORMAL :
+			/* will get here if send_mouse_pos != 0 */
+		        break;
 	}
 }
 
@@ -654,7 +650,7 @@ ResizeSelection (screen, rows, cols)
     if (rawCol > cols) rawCol = cols;
 }
 
-PointToRowCol(y, x, r, c)
+static PointToRowCol(y, x, r, c)
 register int y, x;
 int *r, *c;
 /* Convert pixel coordinates to character coordinates.
