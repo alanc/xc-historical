@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.18 88/02/07 12:10:59 jim Exp $ */
+/* $Header: XRegion.c,v 11.19 88/06/18 17:19:07 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -178,17 +178,18 @@ XSetRegion( dpy, gc, r )
     register Region r;
 {
     register int i;
-    register XRectangle *xr;
+    register XRectangle *xr, *pr;
+    register BOX *pb;
     LockDisplay (dpy);
     xr = (XRectangle *) 
     	_XAllocScratch(dpy, (unsigned long)(r->numRects * sizeof (XRectangle)));
-    for (i = 0; i < r->numRects; i++) {
-        xr->x = r->rects[i].x1;
-	xr->y = r->rects[i].y1;
-	xr->width = r->rects[i].x2 - r->rects[i].x1;
-	xr->height = r->rects[i].y2 - r->rects[i].y1;
+    for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
+        pr->x = pb->x1;
+	pr->y = pb->y1;
+	pr->width = pb->x2 - pb->x1;
+	pr->height = pb->y2 - pb->y1;
       }
-    _XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, Unsorted);
+    _XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
     UnlockDisplay(dpy);
     SyncHandle();
 }
