@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.54 88/09/06 16:28:18 jim Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.55 88/10/18 11:37:41 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif lint
 
@@ -480,10 +480,11 @@ static void DoOtherSources(app)
 		(unsigned long *)NULL, app);
 	}
 
-	for (ie_ptr = app->outstandingQueue ; ie_ptr != NULL;
-		app->outstandingQueue = ie_ptr = ie_ptr->ie_oq ) {
+	for (ie_ptr = app->outstandingQueue; ie_ptr != NULL;) {
+	    app->outstandingQueue = ie_ptr->ie_oq;
 	    ie_ptr ->ie_oq = NULL;
 	    IeCallProc(ie_ptr);
+	    ie_ptr = app->outstandingQueue;
 	}
 	if (app->timerQueue != NULL) {	/* check timeout queue */
 	    (void) gettimeofday (&cur_time, &cur_timezone);
