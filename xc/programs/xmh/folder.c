@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.27 89/11/30 20:05:25 converse Exp $
+ * $XConsortium: folder.c,v 2.28 89/12/10 20:20:34 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -423,13 +423,13 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
     TocDeleteFolder(toc);
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->folderbuttons) {
-	    
+
 	    if (IsSubfolder(foldername)) {
 		char parent_folder[300];
 		char *c;
 		strcpy(parent_folder, foldername);
 		c = index(parent_folder, '/');
-		*c = '/0';
+		*c = '\0';
 
 /* Since menus are built upon demand, and are a per-screen resource, 
  * resources, not all toc & view screens will have the same menus built.
@@ -645,7 +645,6 @@ static void CreateFolderMenu(button)
     extern	alphasort();
     char	directory[500];
 
-    DEBUG1("Building menu for %s...", button->name)
     n = strlen(app_resources.mail_path);
     (void) strncpy(directory, app_resources.mail_path, n);
     directory[n++] = '/';
@@ -654,7 +653,6 @@ static void CreateFolderMenu(button)
     (void) strcpy(filename, directory);	/* for IsFolder */
     n = scandir(directory, &namelist, IsFolder, alphasort);
     if (n <= 0) {
-	DEBUG(" no entries.\n")
 	/* no subfolders, therefore no menu */
 	button->menu = NoMenuForButton;
 	return;
@@ -681,7 +679,6 @@ static void CreateFolderMenu(button)
 	AddFolderMenuEntry(button, directory);
     }
     XtFree((char *) namelist);
-    DEBUG(" done.\n")
 }
 
 
@@ -704,7 +701,6 @@ static void DeleteFolderMenuEntry(button, foldername)
     XtSetArg(args[0], XtNnumChildren, &n);
     XtSetArg(args[1], XtNlabel, &c);
     XtGetValues(button->menu, args, TWO);
-
     if ((n <= 3 && c) || n <= 2) {
 	XtDestroyWidget(button->menu);	
 	button->menu = NoMenuForButton;
