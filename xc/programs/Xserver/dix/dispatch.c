@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.13 87/09/07 11:40:50 rws Locked $ */
+/* $Header: dispatch.c,v 1.14 87/09/07 18:51:31 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -282,7 +282,7 @@ StartOver:
 		    ErrorF(  "reqType %d %d\n", 
 			     (request ? request->reqType : -1),
 			       nready);
-#endif notdef
+#endif
 		    if (nready > 0)
 			continue;
 		    else
@@ -3098,7 +3098,7 @@ Oops (client, reqCode, minorCode, status)
     ErrorF(  "OOPS! => client: %x, seq: %d, err: %d, maj:%d, min: %d resID: %x\n",
     	client->index, rep.sequenceNumber, rep.errorCode,
 	rep.majorCode, rep.minorCode, rep.resourceID);
-#endif notdef
+#endif
 
     WriteEventsToClient (client, 1, (xEvent *) &rep); 
 }
