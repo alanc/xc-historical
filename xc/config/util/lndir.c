@@ -1,5 +1,5 @@
-/* $XConsortium: lndir.c,v 1.2 91/07/17 09:50:45 rws Exp $ */
-/* Create shadow link tree (after X.V11R4 script of the same name)
+/* $XConsortium: lndir.c,v 1.3 91/07/17 10:56:19 rws Exp $ */
+/* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
 /* Copyright 1990, Massachusetts Institute of Technology
@@ -17,9 +17,10 @@
 
 /* From the original /bin/sh script:
 
-   Used to create a copy of the a directory tree that has links for all non-
-   directories (except those named RCS).  If you are building the distribution
-   on more than one machine, you should use this script.
+   Used to create a copy of the a directory tree that has links for all
+   non-directories (except those named RCS or SCCS).  If you are
+   building the distribution on more than one machine, you should use
+   this script.
 
    If your master sources are located in /usr/local/src/X and you would like
    your link tree to be in /usr/local/src/new-X, do the following:
@@ -27,21 +28,10 @@
    	%  mkdir /usr/local/src/new-X
 	%  cd /usr/local/src/new-X
    	%  lndir ../X
-
-   Note: does not link files beginning with "."  Is this a bug or a feature?
-
-   Improvements over R3 version:
-     Allows the fromdir to be relative: usually you want to say "../dist"
-     The name is relative to the todir, not the current directory.
-
-   Bugs in R3 version fixed:
-     Do "pwd" command *after* "cd $DIRTO".
-     Don't try to link directories, avoiding error message "<dir> exists".
-     Barf with Usage message if either DIRFROM *or* DIRTO is not a directory.
 */
 
-#include <stdio.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <errno.h>
@@ -139,7 +129,8 @@ int rel;			/* if true, prepend "../" to fn before using */
 		/* directory */
 		n_dirs--;
 		if (dp->d_name[0] == '.' &&
-		    (dp->d_name[1] == '\0' || dp->d_name[1] == '.'))
+		    (dp->d_name[1] == '\0' || (dp->d_name[1] == '.' &&
+					       dp->d_name[2] == '\0')))
 		    continue;
 		if (!strcmp (dp->d_name, "RCS"))
 		    continue;
