@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.126 90/12/31 08:11:32 rws Exp $ */
+/* $XConsortium: Event.c,v 1.127 91/01/08 19:17:41 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -514,21 +514,37 @@ void _XtFreeWWTable(pd)
     XtFree((char *)pd->WWtable);
 }
 
-/* A separate procedure to avoid a huge stack frame in the normal case */
-static Boolean CallEventHandlers(widget, event, mask)
+#define EHMAXSIZE 25 /* do not make whopping big */
+
+static void CallEventHandlers(widget, event, mask)
     Widget     widget;
     XEvent    *event;
     EventMask  mask;
 {
     register XtEventRec *p;   
-    XtEventHandler proc[100];
-    XtPointer closure[100];
-    Boolean continue_to_dispatch = True;
+    XtEventHandler *proc;
+    XtPointer *closure;
+    XtEventHandler procs[EHMAXSIZE];
+    XtPointer closures[EHMAXSIZE];
+    Boolean cont_to_disp = True;
     int i, numprocs;
 
-    /* Have to copy the procs into an array, because calling one of them */
-    /* might call XtRemoveEventHandler, which would break our linked list.*/
+    /* Have to copy the procs into an array, because one of them might
+     * call XtRemoveEventHandler, which would break our linked list. */
 
+    numprocs = 0;
+    for (p=widget->core.event_table; p; p = p->next) {
+	if (mask & p->mask)
+	    numprocs++;
+    }
+    if (numprocs > EHMAXSIZE) {
+	proc = (XtEventHandler *)XtMalloc(numprocs * (sizeof(XtEventHandler) +
+						      sizeof(XtPointer)));
+	closure = (XtPointer *)(proc + numprocs);
+    } else {
+	proc = procs;
+	closure = closures;
+    }
     numprocs = 0;
     for (p=widget->core.event_table; p; p = p->next) {
 	if (mask & p->mask) {
@@ -537,13 +553,18 @@ static Boolean CallEventHandlers(widget, event, mask)
 	    numprocs++;
 	}
     }
-    for (i=0 ; i < numprocs && continue_to_dispatch; i++)
-	(*(proc[i]))(widget, closure[i], event, &continue_to_dispatch);
-    return (numprocs != 0);
+    for (i = 0; i < numprocs && cont_to_disp; i++)
+	(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
+    if (numprocs > EHMAXSIZE)
+	XtFree((char *)proc);
 }
 
 static Region nullRegion;
 static void CompressExposures();
+
+/* keep this SMALL to avoid blowing stack cache! */
+/* because some compilers allocate all local locals on procedure entry */
+#define EHSIZE 4
 
 static Boolean DispatchEvent(event, widget, mask, pd)
     register XEvent    *event;
@@ -633,7 +654,33 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     p=widget->core.event_table;
     if (p) {
 	if (p->next) {
-	    was_dispatched = CallEventHandlers(widget, event, mask);
+	    XtEventHandler proc[EHSIZE];
+	    XtPointer closure[EHSIZE];
+	    int numprocs = 0;
+
+	    /* Have to copy the procs into an array, because one of them might
+	     * call XtRemoveEventHandler, which would break our linked list. */
+
+	    for (; p; p = p->next) {
+		if (mask & p->mask) {
+		    if (numprocs >= EHSIZE)
+			break;
+		    proc[numprocs] = p->proc;
+		    closure[numprocs] = p->closure;
+		    numprocs++;
+		}
+	    }
+	    if (numprocs) {
+		if (p) {
+		    CallEventHandlers(widget, event, mask);
+		} else {
+		    int i;
+		    Boolean cont_to_disp = True;
+		    for (i = 0; i < numprocs && cont_to_disp; i++)
+			(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
+		}
+		was_dispatched = True;
+	    }
 	} else if (mask & p->mask) {
 	    was_dispatched = True;
 	    (*p->proc)(widget, p->closure, event, &was_dispatched);
