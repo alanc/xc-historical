@@ -1099,12 +1099,23 @@
 
 #+explorer
 (defun open-x-stream (host display protocol)
-  protocol ;; unused
-  (ip:open-stream host
-		  :remote-port (+ *x-tcp-port* display)
-		  :direction :bidirectional
-		  :characters t
-		  :timeout-after-open nil))
+  (declare (ignore protocol))
+  (net:open-connection-on-medium
+    (net:parse-host host)			;Host
+    :byte-stream				;Medium
+    "X11"					;Logical contact name
+    :stream-type :character-stream
+    :direction :bidirectional
+    :timeout-after-open nil
+    :remote-port (+ *x-tcp-port* display)))
+
+#+explorer
+(net:define-logical-contact-name
+  "X11"
+  `((:local "X11")
+    (:chaos "X11")
+    (:nsp-stream "X11")
+    (:tcp ,*x-tcp-port*)))
 
 #+lucid
 (defun open-x-stream (host display protocol)
