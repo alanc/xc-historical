@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.56 89/11/22 15:36:51 jim Exp $
+ * $XConsortium: resize.c,v 1.57 89/11/22 15:38:18 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.56 89/11/22 15:36:51 jim Exp $";
+"$XConsortium: resize.c,v 1.57 89/11/22 15:38:18 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -430,7 +430,7 @@ EndResize()
     SetupWindow (tmp_win,
 		 dragx - 2 * tmp_win->frame_bw,
 		 dragy - 2 * tmp_win->frame_bw,
-		 dragWidth, dragHeight);
+		 dragWidth, dragHeight, -1);
 
     if (tmp_win->iconmgr)
     {
@@ -599,10 +599,11 @@ ConstrainSize (tmp_win, widthp, heightp)
  *
  *  Inputs:
  *      tmp_win - the TwmWindow pointer
- *      x       - the x coordinate of the frame window
- *      y       - the y coordinate of the frame window
+ *      x       - the x coordinate of the upper-left outer corner of the frame
+ *      y       - the y coordinate of the upper-left outer corner of the frame
  *      w       - the width of the frame window w/o border
  *      h       - the height of the frame window w/o border
+ *      bw      - the border width of the frame window or -1 not to change
  *
  *  Special Considerations:
  *      This routine will check to make sure the window is not completely
@@ -617,13 +618,13 @@ ConstrainSize (tmp_win, widthp, heightp)
  ***********************************************************************
  */
 
-void SetupWindow (tmp_win, x, y, w, h)
+void SetupWindow (tmp_win, x, y, w, h, bw)
     TwmWindow *tmp_win;
-    int x, y, w, h;
+    int x, y, w, h, bw;
 {
     XEvent client_event;
-    XWindowChanges xwc;
-    unsigned int   xwcm;
+    XWindowChanges frame_wc, xwc;
+    unsigned long frame_mask, xwcm;
     int title_width;
     int sendEvent;
 #ifdef SHAPE
@@ -631,17 +632,18 @@ void SetupWindow (tmp_win, x, y, w, h)
 #endif
 
 #ifdef DEBUG
-    fprintf(stderr, "SetupWindow: x=%d, y=%d, w=%d, h=%d\n",
-        x, y, w, h);
+    fprintf (stderr, "SetupWindow: x=%d, y=%d, w=%d, h=%d, bw=%d\n",
+	     x, y, w, h, bw);
 #endif
 
-    if (x > Scr->MyDisplayWidth)
-        x = Scr->MyDisplayWidth - 64;
-    if (y > Scr->MyDisplayHeight)
-        y = Scr->MyDisplayHeight - 64;
+    if (x >= Scr->MyDisplayWidth)
+      x = Scr->MyDisplayWidth - 16;	/* one "average" cursor width */
+    if (y >= Scr->MyDisplayHeight)
+      y = Scr->MyDisplayHeight - 16;	/* one "average" cursor width */
+    if (bw < 0)
+      bw = tmp_win->frame_bw;		/* -1 means current frame width */
 
-    if (tmp_win->iconmgr)
-    {
+    if (tmp_win->iconmgr) {
 	tmp_win->iconmgrp->width = w;
         h = tmp_win->iconmgrp->height + tmp_win->title_height;
     }
@@ -651,11 +653,12 @@ void SetupWindow (tmp_win, x, y, w, h)
      * "synthetic" ConfigureNotify event to the client if the window
      * was moved but not resized.
      */
-    if ((x != tmp_win->frame_x || y != tmp_win->frame_y) &&
-        (w == tmp_win->frame_width && h == tmp_win->frame_height))
-        sendEvent = TRUE;
+    if (((x != tmp_win->frame_x || y != tmp_win->frame_y) &&
+	 (w == tmp_win->frame_width && h == tmp_win->frame_height)) ||
+	(bw != tmp_win->frame_bw))
+      sendEvent = TRUE;
     else
-        sendEvent = FALSE;
+      sendEvent = FALSE;
 
     xwcm = CWWidth;
     title_width = xwc.width = w;
@@ -693,12 +696,20 @@ void SetupWindow (tmp_win, x, y, w, h)
     XMoveResizeWindow (dpy, tmp_win->w, 0, tmp_win->title_height,
 		       w, h - tmp_win->title_height);
 
-    tmp_win->frame_x = x;
-    tmp_win->frame_y = y;
-    tmp_win->frame_width = w;
-    tmp_win->frame_height = h;
-
-    XMoveResizeWindow(dpy, tmp_win->frame, x, y, w, h);
+    /* 
+     * fix up frame
+     */
+    frame_mask = 0;
+    if (bw != tmp_win->frame_bw) {
+	frame_wc.border_width = tmp_win->frame_bw = bw;
+	frame_mask |= CWBorderWidth;
+    }
+    frame_wc.x = tmp_win->frame_x = x;
+    frame_wc.y = tmp_win->frame_y = y;
+    frame_wc.width = tmp_win->frame_width = w;
+    frame_wc.height = tmp_win->frame_height = h;
+    frame_mask |= (CWX | CWY | CWWidth | CWHeight);
+    XConfigureWindow (dpy, tmp_win->frame, frame_mask, &frame_wc);
 
     /*
      * fix up highlight window
@@ -867,9 +878,9 @@ int flag;
 
     dragHeight += tmp_win->title_height;
 
-    SetupWindow(tmp_win, dragx , dragy , dragWidth, dragHeight);
-    XUngrabPointer(dpy, CurrentTime);
-    XUngrabServer(dpy);
+    SetupWindow (tmp_win, dragx , dragy , dragWidth, dragHeight, -1);
+    XUngrabPointer (dpy, CurrentTime);
+    XUngrabServer (dpy);
 }
 
 #ifdef SHAPE

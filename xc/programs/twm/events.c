@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.114 89/11/22 16:07:22 jim Exp $
+ * $XConsortium: events.c,v 1.115 89/11/24 16:32:35 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.114 89/11/22 16:07:22 jim Exp $";
+"$XConsortium: events.c,v 1.115 89/11/24 16:32:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -600,7 +600,7 @@ HandlePropertyNotify()
 					  strlen (Tmp_win->name));
 
 	SetupWindow (Tmp_win, Tmp_win->frame_x, Tmp_win->frame_y,
-		     Tmp_win->frame_width, Tmp_win->frame_height);
+		     Tmp_win->frame_width, Tmp_win->frame_height, -1);
 
 	if (Tmp_win->title_w) XClearArea(dpy, Tmp_win->title_w, 0,0,0,0, True);
 
@@ -1273,10 +1273,10 @@ HandleButtonRelease()
 	}
 
 	if (DragWindow == Tmp_win->frame)
-	    SetupWindow(Tmp_win, xl, yt,
-		Tmp_win->frame_width, Tmp_win->frame_height);
+	    SetupWindow (Tmp_win, xl, yt,
+			 Tmp_win->frame_width, Tmp_win->frame_height, -1);
 	else
-	    XMoveWindow(dpy, DragWindow, xl, yt);
+	    XMoveWindow (dpy, DragWindow, xl, yt);
 
 	if (!Scr->NoRaiseMove)
 	    XRaiseWindow(dpy, DragWindow);
@@ -1740,25 +1740,27 @@ HandleConfigureRequest()
 {
     XWindowChanges xwc;
     unsigned int   xwcm;
-    int x, y, width, height;
+    int x, y, width, height, bw;
+    int gravx, gravy;
+    XConfigureRequestEvent *cre = &Event.xconfigurerequest;
 
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "ConfigureRequest\n");
-    if (Event.xconfigurerequest.value_mask & CWX)
-	fprintf(stderr, "  x = %d\n", Event.xconfigurerequest.x);
-    if (Event.xconfigurerequest.value_mask & CWY)
-	fprintf(stderr, "  y = %d\n", Event.xconfigurerequest.y);
-    if (Event.xconfigurerequest.value_mask & CWWidth)
-	fprintf(stderr, "  width = %d\n", Event.xconfigurerequest.width);
-    if (Event.xconfigurerequest.value_mask & CWHeight)
-	fprintf(stderr, "  height = %d\n", Event.xconfigurerequest.height);
-    if (Event.xconfigurerequest.value_mask & CWSibling)
-	fprintf(stderr, "  above = 0x%x\n", Event.xconfigurerequest.above);
-    if (Event.xconfigurerequest.value_mask & CWStackMode)
-	fprintf(stderr, "  stack = %d\n", Event.xconfigurerequest.detail);
+    if (cre->value_mask & CWX)
+	fprintf(stderr, "  x = %d\n", cre->x);
+    if (cre->value_mask & CWY)
+	fprintf(stderr, "  y = %d\n", cre->y);
+    if (cre->value_mask & CWWidth)
+	fprintf(stderr, "  width = %d\n", cre->width);
+    if (cre->value_mask & CWHeight)
+	fprintf(stderr, "  height = %d\n", cre->height);
+    if (cre->value_mask & CWSibling)
+	fprintf(stderr, "  above = 0x%x\n", cre->above);
+    if (cre->value_mask & CWStackMode)
+	fprintf(stderr, "  stack = %d\n", cre->detail);
 #endif
 
-    Event.xany.window = Event.xconfigurerequest.window;
+    Event.xany.window = cre->window;	/* effectively mashing parent field */
 
     /*
      * According to the July 27, 1988 ICCCM draft, we should ignore size and
@@ -1766,27 +1768,23 @@ HandleConfigureRequest()
      * Instead, we'll read the current geometry.  Therefore, we should respond
      * to configuration requests for windows which have never been mapped.
      */
-    if (Tmp_win == NULL)
-    {
-	xwcm = Event.xconfigurerequest.value_mask & 
-	    (CWX | CWY | CWWidth | CWHeight);
-	xwc.x = Event.xconfigurerequest.x;
-	xwc.y = Event.xconfigurerequest.y;
-	xwc.width = Event.xconfigurerequest.width;
-	xwc.height = Event.xconfigurerequest.height;
+    if (!Tmp_win) {
+	xwcm = cre->value_mask & 
+	    (CWX | CWY | CWWidth | CWHeight | CWBorderWidth);
+	xwc.x = cre->x;
+	xwc.y = cre->y;
+	xwc.width = cre->width;
+	xwc.height = cre->height;
+	xwc.border_width = cre->border_width;
 	XConfigureWindow(dpy, Event.xany.window, xwcm, &xwc);
 	return;
     }
 
-    if (Tmp_win == NULL)
-	return;
-
-
-    if (Event.xconfigurerequest.value_mask & CWStackMode)
+    if (cre->value_mask & CWStackMode)
     {
-	if (Event.xconfigurerequest.detail == Above)
+	if (cre->detail == Above)
 	    XRaiseWindow(dpy, Tmp_win->frame);
-	else if (Event.xconfigurerequest.detail == Below)
+	else if (cre->detail == Below)
 	    XLowerWindow(dpy, Tmp_win->frame);
 
 	return;
@@ -1797,20 +1795,51 @@ HandleConfigureRequest()
     y = Tmp_win->frame_y;
     width = Tmp_win->frame_width;
     height = Tmp_win->frame_height;
+    bw = Tmp_win->frame_bw;
 
-    if (Event.xconfigurerequest.value_mask & CWX)
-	x = Event.xconfigurerequest.x - Tmp_win->title_height;
-    if (Event.xconfigurerequest.value_mask & CWY)
-	y = Event.xconfigurerequest.y;
-    if (Event.xconfigurerequest.value_mask & CWWidth)
-	width = Event.xconfigurerequest.width;
-    if (Event.xconfigurerequest.value_mask & CWHeight)
-	height = Event.xconfigurerequest.height + Tmp_win->title_height;
+    /*
+     * Section 4.1.5 of the ICCCM states that the (x,y) coordinates in the
+     * configure request are for the upper-left outer corner of the window.
+     * This means that we need to adjust for the additional title height as
+     * well as for any border width changes that we decide to allow.  The
+     * current window gravity is to be used in computing the adjustments, just
+     * as when initially locating the window.  Note that if we do decide to 
+     * allow border width changes, we will need to send the synthetic 
+     * ConfigureNotify event.
+     */
+    GetGravityOffsets (Tmp_win, &gravx, &gravy);
+
+    if (cre->value_mask & CWBorderWidth) {
+	int bwdelta = cre->border_width - Tmp_win->old_bw;
+	if (bwdelta && Scr->ClientBorderWidth) {  /* if change allowed */
+	    x += gravx * bwdelta;	/* change default values only */
+	    y += gravy * bwdelta;	/* ditto */
+	    bw = cre->border_width;
+	}
+	Tmp_win->old_bw = cre->border_width;  /* for restoring */
+    }
+    if (cre->value_mask & CWX) {
+	x = cre->x;			/* override even if border change */
+    }
+    if (cre->value_mask & CWY) {
+	y = cre->y - ((gravy >= 0) ? Tmp_win->title_height : 0);
+    }
+
+    if (cre->value_mask & CWWidth) {
+	width = cre->width;
+    }
+    if (cre->value_mask & CWHeight) {
+	height = cre->height + Tmp_win->title_height;
+    }
 
     if (width != Tmp_win->frame_width || height != Tmp_win->frame_height)
 	Tmp_win->zoomed = ZOOM_NONE;
 
-    SetupWindow(Tmp_win, x, y, width, height);
+    /*
+     * SetupWindow (x,y) are the location of the upper-left outer corner and
+     * are passed directly to XMoveResizeWindow (frame).
+     */
+    SetupWindow (Tmp_win, x, y, width, height, bw);
 }
 
 #ifdef SHAPE
