@@ -435,9 +435,9 @@ ServerTarget(Xluna,$(EXTDIR) $(LUNADIRS),$(LUNAOBJS),$(LUNALIBS),$(SYSLIBS))
 
 
 #ifdef domipsServer
-/**/#
-/**/# mips server
-/**/#
+XCOMM
+XCOMM mips server
+XCOMM
 #define need_dix
 #define need_ddx_mi
 #define need_ddx_mfb
