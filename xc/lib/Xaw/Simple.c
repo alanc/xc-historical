@@ -1,4 +1,4 @@
-/* $XConsortium: Simple.c,v 1.31 91/05/28 10:50:57 converse Exp $ */
+/* $XConsortium: Simple.c,v 1.32 91/07/21 00:30:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -195,10 +195,10 @@ Widget w;
 	    simple->simple.cursor = cursor;
     } 
     else {
-	XtAppWarningMsg(XtWidgetToApplicationContext(w),
-			"convertFailed","ConvertCursor","XawError",
-			"Simple: ConvertCursor failed.",
-			(String *)NULL, (Cardinal *)NULL);
+	XtAppErrorMsg(XtWidgetToApplicationContext(w),
+		      "convertFailed","ConvertCursor","XawError",
+		      "Simple: ConvertCursor failed.",
+		      (String *)NULL, (Cardinal *)NULL);
     }
 }
 
