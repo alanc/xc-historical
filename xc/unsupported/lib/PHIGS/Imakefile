@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.22 91/11/17 17:41:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.23 92/11/18 14:06:49 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -51,13 +51,7 @@ CDEBUGFLAGS = PexPhigsCDebugFlags
 		error/DONE input/DONE pex/DONE util/DONE \
 		ws/DONE ws_type/DONE
 
-   PEXAPIINC = include
-  PEXINCLUDE = ../../include/PEX
-    XINCLUDE = $(SERVERSRC)/include
-    INCLUDES = -I. -I$(PEXAPIINC) -I$(PEXINCLUDE) -I$(XINCLUDE) \
-		-I$(INCLUDESRC)
-
-    SWAPDIR = ../../server/PEX/dipex/swap
+    SWAPDIR = $(SERVERSRC)/PEX5/dipex/swap
     SWAPLIB  = $(SWAPDIR)/libdiswapex.a
    SWAPOBJS  = OCTables.o Convert.o floatconv.o OCattr.o OCcolour.o   \
 		cOCprim.o uOCprim.o
@@ -92,10 +86,5 @@ lint lint-x: lintlibs
 ForceSubdirs($(SUBDIRS) $(SWAPDIR))
 
 InstallLibrary(phigs,$(USRLIBDIR))
-
-#ifdef HPArchitecture
-NormalLibraryObjectRule()
-SpecialObjectRule(hppex.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
-#endif
 
 DependSubdirs($(SUBDIRS))

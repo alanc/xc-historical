@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.14 91/07/12 17:39:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.15 91/07/19 19:49:52 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -69,10 +69,6 @@ HDRS =  \
 	ws_inp.h  \
 	ws_type.h \
 	PEXtempl.h
-
-   PEXAPIINC = -I../include
-  PEXINCLUDE = -I../../../include/PEX
-    INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
 CLIENTHEADERS = phigs.h attr.h phigscfunc.h phigsextrn.h phigserr.h errnum.h
 

@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.10 91/07/22 22:30:49 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.11 91/07/22 23:16:07 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -39,8 +39,8 @@ OBJS = wsx.o wsx_lut.o wsx_util.o ws_inp.o wsa.o wsa_pm.o wsb.o wsb_pm.o \
        ws_pm.o wsa_inp.o
 
    PEXAPIINC = -I../include
-  PEXINCLUDE = -I../../../include/PEX
-    INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
+  PEXINCLUDE = -I$(SERVERSRC)/PEX5/include
+    INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I$(INCLUDESRC)
 
 LINTLIBS = ../util/llib-lut.ln ../error/llib-lerr.ln ../pex/llib-lpex.ln \
 		../ws_type/llib-lwst.ln
@@ -50,9 +50,5 @@ SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
 LintLibraryTarget(ws,$(SRCS))
-
-#ifdef HPArchitecture
-SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
-#endif
 
 DependTarget()
