@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.c,v 1.64 91/05/13 17:28:25 dave Exp $ */
+/* $XConsortium: Viewport.c,v 1.65 91/06/04 01:09:25 ackerman Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -842,7 +842,7 @@ QueryGeometry(w, request, reply_return)
       return GeometryRequestPlusScrollbar(w, False, request, reply_return);
     }
       
-  else if (!w->viewport.allowhoriz && !w->viewport.allowvert) 
+  else /* (!w->viewport.allowhoriz && !w->viewport.allowvert) */
     return XtMakeGeometryRequest((Widget) w, request, reply_return);
 }
 
