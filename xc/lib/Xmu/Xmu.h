@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.5 88/09/29 18:54:48 swick Exp $
+ * $XConsortium: Xmu.h,v 1.6 88/10/03 10:27:01 swick Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -24,54 +24,13 @@
 
 #include <X11/Intrinsic.h>
 
-/*
- * public entry points
- */
-Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
-void XmuCopyISOLatin1Lowered();
-Pixmap XmuCreatePixmapFromBitmap();
-void XmuCvtFunctionToCallback();
-void XmuCvtStringToBackingStore();
-void XmuCvtStringToCursor();
-void XmuCvtStringToJustify();
-void XmuCvtStringToOrientation();
-void XmuCvtStringToPixmap();
-void XmuCvtStringToWidget();
-void XmuDeclareAtom( /* AtomPtr*, char* */ );
-Atom XmuInternAtom( /* Display*, AtomPtr */ );
-char *XmuGetAtomName( /* Display*, Atom */ );
-int XmuReadBitmapDataFromFile();
-
+typedef struct _AtomRec* AtomPtr;
 
 #ifdef  _Atoms_c_
 #define globalref
 #else
 #define globalref extern
-
-#define XA_ATOM_PAIR(d)		XmuInternAtom(d, &_XA_ATOM_PAIR)
-#define XA_CHARACTER_POSITION(d) XmuInternAtom(d, &_XA_CHARACTER_POSITION)
-#define XA_CLASS(d)		XmuInternAtom(d, &_XA_CLASS)
-#define XA_CLIENT_WINDOW(d)	XmuInternAtom(d, &_XA_CLIENT_WINDOW)
-#define XA_DECNET_ADDRESS(d)	XmuInternAtom(d, &_XA_DECNET_ADDRESS)
-#define XA_DELETE(d)		XmuInternAtom(d, &_XA_DELETE)
-#define XA_FILENAME(d)		XmuInternAtom(d, &_XA_FILENAME)
-#define XA_HOSTNAME(d)		XmuInternAtom(d, &_XA_HOSTNAME)
-#define XA_IP_ADDRESS(d)	XmuInternAtom(d, &_XA_IP_ADDRESS)
-#define XA_LENGTH(d)		XmuInternAtom(d, &_XA_LENGTH)
-#define XA_LIST_LENGTH(d)	XmuInternAtom(d, &_XA_LIST_LENGTH)
-#define XA_NAME(d)		XmuInternAtom(d, &_XA_NAME)
-#define XA_NET_ADDRESS(d)	XmuInternAtom(d, &_XA_NET_ADDRESS)
-#define XA_NULL(d)		XmuInternAtom(d, &_XA_NULL)
-#define XA_OWNER_OS(d)		XmuInternAtom(d, &_XA_OWNER_OS)
-#define XA_SPAN(d)		XmuInternAtom(d, &_XA_SPAN)
-#define XA_TARGETS(d)		XmuInternAtom(d, &_XA_TARGETS)
-#define XA_TEXT(d)		XmuInternAtom(d, &_XA_TEXT)
-#define XA_TIMESTAMP(d)		XmuInternAtom(d, &_XA_TIMESTAMP)
-#define XA_USER(d)		XmuInternAtom(d, &_XA_USER)
-
 #endif /*_Atoms_c_*/
-
-typedef struct _AtomRec* AtomPtr;
 
 globalref AtomPtr
     _XA_TEXT, _XA_TIMESTAMP, _XA_LIST_LENGTH, _XA_LENGTH,
@@ -107,6 +66,48 @@ typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
 #define XtEleft			"left"
 #define XtEcenter		"center"
 #define XtEright		"right"
+
+/*
+ * public entry points
+ */
+Boolean XmuConvertStandardSelection( /* Widget, Time, Atom*, ... */ );
+void XmuCopyISOLatin1Lowered();
+Pixmap XmuCreatePixmapFromBitmap();
+void XmuCvtFunctionToCallback();
+void XmuCvtStringToBackingStore();
+void XmuCvtStringToCursor();
+void XmuCvtStringToJustify();
+void XmuCvtStringToOrientation();
+void XmuCvtStringToPixmap();
+void XmuCvtStringToWidget();
+AtomPtr XmuMakeAtom( /* char* */ );
+Atom XmuInternAtom( /* Display*, AtomPtr* */ );
+char *XmuGetAtomName( /* Display*, Atom */ );
+char *XmuNameOfAtom( /* AtomPtr */ );
+int XmuReadBitmapDataFromFile();
+
+#ifndef _Atoms_c_
+#define XA_ATOM_PAIR(d)		XmuInternAtom(d, &_XA_ATOM_PAIR)
+#define XA_CHARACTER_POSITION(d) XmuInternAtom(d, &_XA_CHARACTER_POSITION)
+#define XA_CLASS(d)		XmuInternAtom(d, &_XA_CLASS)
+#define XA_CLIENT_WINDOW(d)	XmuInternAtom(d, &_XA_CLIENT_WINDOW)
+#define XA_DECNET_ADDRESS(d)	XmuInternAtom(d, &_XA_DECNET_ADDRESS)
+#define XA_DELETE(d)		XmuInternAtom(d, &_XA_DELETE)
+#define XA_FILENAME(d)		XmuInternAtom(d, &_XA_FILENAME)
+#define XA_HOSTNAME(d)		XmuInternAtom(d, &_XA_HOSTNAME)
+#define XA_IP_ADDRESS(d)	XmuInternAtom(d, &_XA_IP_ADDRESS)
+#define XA_LENGTH(d)		XmuInternAtom(d, &_XA_LENGTH)
+#define XA_LIST_LENGTH(d)	XmuInternAtom(d, &_XA_LIST_LENGTH)
+#define XA_NAME(d)		XmuInternAtom(d, &_XA_NAME)
+#define XA_NET_ADDRESS(d)	XmuInternAtom(d, &_XA_NET_ADDRESS)
+#define XA_NULL(d)		XmuInternAtom(d, &_XA_NULL)
+#define XA_OWNER_OS(d)		XmuInternAtom(d, &_XA_OWNER_OS)
+#define XA_SPAN(d)		XmuInternAtom(d, &_XA_SPAN)
+#define XA_TARGETS(d)		XmuInternAtom(d, &_XA_TARGETS)
+#define XA_TEXT(d)		XmuInternAtom(d, &_XA_TEXT)
+#define XA_TIMESTAMP(d)		XmuInternAtom(d, &_XA_TIMESTAMP)
+#define XA_USER(d)		XmuInternAtom(d, &_XA_USER)
+#endif /*_Atoms_c_*/
 
 #endif /* _XMU_H_ */
 
