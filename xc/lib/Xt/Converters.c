@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.79 91/06/27 13:58:21 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.80 91/07/05 13:16:06 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -431,40 +431,20 @@ Boolean XtCvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
         else	    done(Pixel, BlackPixelOfScreen(screen));
     }
 
-    if (*str == '#') {  /* some color rgb definition */
-
-        status = XParseColor(DisplayOfScreen(screen), colormap,
-			     (char*)str, &screenColor);
-
-        if (status == 0) {
-	    params[0] = str;
-	    XtAppWarningMsg(pd->appContext, "badFormat", "cvtStringToPixel",
-			    XtCXtToolkitError,
-		  "RGB color specification \"%s\" has invalid format",
-		  params, &num_params);
-	    *closure_ret = False;
-	    return False;
-	}
-	else
-           status = XAllocColor(DisplayOfScreen(screen), colormap,
-                                &screenColor);
-    } else  /* some color name */
-
-        status = XAllocNamedColor(DisplayOfScreen(screen), colormap,
-                                  (char*)str, &screenColor, &exactColor);
+    status = XAllocNamedColor(DisplayOfScreen(screen), colormap,
+			      (char*)str, &screenColor, &exactColor);
     if (status == 0) {
 	String msg, type;
 	params[0] = str;
 	/* Server returns a specific error code but Xlib discards it.  Ugh */
-	if (*str == '#' ||
-	    XLookupColor(DisplayOfScreen(screen), colormap, (char*)str,
+	if (XLookupColor(DisplayOfScreen(screen), colormap, (char*)str,
 			 &exactColor, &screenColor)) {
 	    type = "noColormap";
 	    msg = "Cannot allocate colormap entry for \"%s\"";
 	}
 	else {
 	    type = "badValue";
-	    msg = "Color name \"%s\" is not defined in server database";
+	    msg = "Color name \"%s\" is not defined";
 	}
 
 	XtAppWarningMsg(pd->appContext, type, "cvtStringToPixel",
