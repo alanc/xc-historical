@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.70 93/08/17 11:58:58 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.71 93/08/17 12:07:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -54,7 +54,7 @@ SOFTWARE.
 #endif
 #endif
 
-#ifndef USE_POLL
+#if !defined(USE_POLL)
 #include "fd.h"
 #else
 #include <sys/poll.h>
@@ -162,6 +162,22 @@ typedef struct _XtAppStruct {
     Widget in_phase2_destroy;
     LangProcRec langProcRec;
     struct _TMBindCacheRec * free_bindings;
+    String display_name_tried;
+    Display **dpy_destroy_list;
+    int dpy_destroy_count;
+    Boolean exit_flag;
+#if defined(XTHREADS)
+    LockPtr lock_info;
+    ThreadStackPtr stack;
+    AppLockProc lock;
+    AppUnlockProc unlock;
+    YieldAppLockProc yield_lock;
+    RestoreAppLockProc restore_lock;
+    FreeAppLockProc free_lock;
+    PushThreadProc push_thread;
+    PopThreadProc pop_thread;
+    IsTopThreadProc is_top_thread;
+#endif
 } XtAppStruct;
 
 #ifdef XTTRACEMEMORY
@@ -229,20 +245,19 @@ _XtAppInit(
 #endif
 );
 
-extern void _XtDestroyAppContexts(
+extern void _XtDestroyAppContext(
 #if NeedFunctionPrototypes
-    void
+    XtAppContext	/* app */
 #endif
 );
 
 extern void _XtCloseDisplays(
 #if NeedFunctionPrototypes
-    void
+    XtAppContext	/* app */
 #endif
 );
 
 extern int _XtAppDestroyCount;
-extern int _XtDpyDestroyCount;
 
 extern int _XtWaitForSomething(
 #if NeedFunctionPrototypes
@@ -252,6 +267,9 @@ extern int _XtWaitForSomething(
     _XtBoolean 		/* ignoreInputs */,
     _XtBoolean		/* ignoreSignals */,
     _XtBoolean 		/* block */,
+#if defined(XTHREADS)
+    _XtBoolean		/* drop_lock */,
+#endif
     unsigned long*	/* howlong */
 #endif
 );
@@ -322,11 +340,19 @@ extern XtPerDisplay _XtSortPerDisplayList(
 #endif
 );
 
-/*
-extern XtPerDisplay _XtGetPerDisplay( Display* );
-extern XtPerDisplayInputRec* _XtGetPerDisplayInput( Display* );
-*/
+extern XtPerDisplay _XtGetPerDisplay(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
+#endif
+);
 
+extern XtPerDisplayInputRec* _XtGetPerDisplayInput(
+#if NeedFunctionPrototypes
+    Display* 		/* dpy */
+#endif
+);
+
+#if 0
 #ifdef DEBUG
 #define _XtGetPerDisplay(display) \
     ((_XtperDisplayList != NULL && (_XtperDisplayList->dpy == (display))) \
@@ -346,6 +372,7 @@ extern XtPerDisplayInputRec* _XtGetPerDisplayInput( Display* );
      ? &_XtperDisplayList->perDpy.pdi \
      : &_XtSortPerDisplayList(display)->pdi)
 #endif /*DEBUG*/
+#endif
 
 extern void _XtDisplayInitialize(
 #if NeedFunctionPrototypes

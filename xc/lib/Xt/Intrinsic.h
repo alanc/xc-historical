@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.179 93/08/11 14:06:48 kaleb Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.180 93/08/19 08:41:03 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2554,6 +2554,36 @@ extern void XtUnregisterDrawable(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Drawable		/* drawable */
+#endif
+);
+
+extern void XtToolkitThreadInitialize(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void XtAppSetExitFlag(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */
+#endif
+);
+
+extern Boolean XtAppGetExitFlag(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */
+#endif
+);
+
+extern void XtAppLock(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */
+#endif
+);
+
+extern void XtAppUnlock(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */
 #endif
 );
 

@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.56 91/06/14 17:58:06 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.57 91/06/26 19:33:20 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -282,6 +282,18 @@ extern void XtConfigureWidget(
 extern void XtResizeWindow(
 #if NeedFunctionPrototypes
     Widget 		/* widget */
+#endif
+);
+
+extern void XtProcessLock(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void XtProcessUnlock(
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 
