@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.5 94/07/21 16:38:23 mor Exp $ */
+/* $XConsortium: session.c,v 1.6 94/07/21 17:16:13 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -236,7 +236,7 @@ char	**stringp;
  *   WM_CLASS "res name"		LIST of bytes
  *   WM_CLASS "res class" length        1
  *   WM_CLASS "res class"               LIST of bytes
- *   WM_NAME length			1
+ *   WM_NAME length			1		(0 if name changed)
  *   WM_NAME				LIST of bytes
  *   WM_COMMAND arg count		1      		(0 if no SM_CLIENT_ID)
  *   For each arg in WM_COMMAND
@@ -274,8 +274,22 @@ char *windowRole;
 	    return 0;
 	if (!write_counted_string (configFile, theWindow->class.res_class))
 	    return 0;
-	if (!write_counted_string (configFile, theWindow->name))
-	    return 0;
+	if (theWindow->nameChanged)
+	{
+	    /*
+	     * If WM_NAME changed on this window, we can't use it as
+	     * a criteria for looking up window configurations.  See the
+	     * longer explanation in the GetWindowConfig() function below.
+	     */
+
+	    if (!write_counted_string (configFile, NULL))
+		return 0;
+	}
+	else
+	{
+	    if (!write_counted_string (configFile, theWindow->name))
+		return 0;
+	}
     
 	wm_command = NULL;
 	wm_command_count = 0;
@@ -476,11 +490,28 @@ Bool *iconified;
 	    }
 	    else
 	    {
+		/*
+		 * Compare WM_CLASS + only compare WM_NAME if the
+		 * WM_NAME in the saved file is non-NULL.  If the
+		 * WM_NAME in the saved file is NULL, this means that
+		 * the client changed the value of WM_NAME during the
+		 * session, and we can not use it as a criteria for
+		 * our search.  For example, with xmh, at save time
+		 * the window name might be "xmh: folderY".  However,
+		 * if xmh does not properly restore state when it is
+		 * restarted, the initial window name might be
+		 * "xmh: folderX".  This would cause the window manager
+		 * to fail in finding the saved window configuration.
+		 * The best we can do is ignore WM_NAME if its value
+		 * changed in the previous session.
+		 */
+
 		if (strcmp (theWindow->class.res_name,
 		        ptr->class.res_name) == 0 &&
 		    strcmp (theWindow->class.res_class,
 			ptr->class.res_class) == 0 &&
-	    	    strcmp (theWindow->name, ptr->wm_name) == 0)
+	    	   (ptr->wm_name == NULL ||
+		    strcmp (theWindow->name, ptr->wm_name) == 0))
 		{
 		    if (clientId)
 		    {
