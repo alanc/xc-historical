@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.2 89/03/20 14:55:51 converse Exp $ */
+/* $XConsortium: StdCmap.c,v 1.3 89/03/21 14:01:03 converse Exp $ */
 
 /* 
  * Copyright 1989 by the Massachusetts Institute of Technology
@@ -28,6 +28,7 @@ extern char	*calloc();
 extern void	free();
 
 static Status default_map();
+static void free_colormap();
 static Status rgb_map();
 static Status static_map();
 
@@ -53,24 +54,28 @@ static Status static_map();
 
 Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
 			   green_max, blue_max, property, replace)
-    Display		*dpy;
-    int			screen; 
-    VisualID		visualid;
-    unsigned int	depth;
-    unsigned long	red_max, green_max, blue_max;
-    Atom		property;
-    Bool		replace;
+    Display		*dpy;		/* X server to connect to */
+    int			screen; 	/* screen number */
+    VisualID		visualid;	/* identifies the visual type */
+    unsigned int	depth;		/* identifies the visual type */
+    unsigned long	red_max, green_max, blue_max;	/* allocations */
+    Atom		property;	/* standard colormap property */
+    Bool		replace;	/* True: replace any existing def */
 {
-    XStandardColormap	colormap;
+    XStandardColormap	colormap, *stdcmap;
     Status		status = 0;
     XVisualInfo		vinfo_template, *vinfo;
     long		vinfo_mask;
     int			n;
+    int			count;
     unsigned long	ncolors;
     
-    if (!replace && XGetStandardColormap(dpy, RootWindow(dpy, screen),
-					 &colormap, property))
-	return 1;
+    if (XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmap, &count,
+			 property))
+	if (replace)
+	    free_colormap(dpy, screen, &stdcmap, count);
+	else
+	    return 1;
 
     vinfo_template.visualid = visualid;	
     vinfo_template.screen = screen;
@@ -157,9 +162,18 @@ Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
     colormap.blue_max = blue_max;
     colormap.blue_mult = 1;
     colormap.base_pixel = 0;	/* base pixel may change for RGB_DEFAULT_MAP */
+    colormap.visualid = vinfo->visualid;
 
     if (property == XA_RGB_DEFAULT_MAP)
-	status = default_map(dpy, vinfo, &colormap);
+    {
+	Display	*new_connection;
+
+	/* open a new connection to the same display server */
+	if ((new_connection = XOpenDisplay(XDisplayString(dpy))) == NULL)
+	    return 1;
+	status = default_map(new_connection, vinfo, &colormap);
+	XCloseDisplay(new_connection);
+    }
     else if (vinfo->class == PseudoColor || vinfo->class == DirectColor ||
 	     vinfo->class == GrayScale)
 	status = rgb_map(dpy, vinfo, &colormap, property);
@@ -169,20 +183,19 @@ Status XmuStandardColormap(dpy, screen, visualid, depth, red_max,
     if (status)
     {
 	int			exists;	/* true if the property exists */
-	XStandardColormap	stdmap; /* description of pre-existing prop */
+	int 			count;	/* count of std colormap properties */
 
 	XGrabServer(dpy);
-	exists = XGetStandardColormap(dpy, RootWindow(dpy, screen), &stdmap,
-				      property);
+
+	exists = XGetRGBColormaps(dpy, RootWindow(dpy, screen), &stdcmap,
+				  &count, property);
 	if (exists && replace)
-	    XFreeColormap(dpy, stdmap.colormap);
+	    free_colormap(dpy, screen, &stdcmap, count);
 	if (!exists || replace)
-	    XSetStandardColormap(dpy, RootWindow(dpy, screen), &colormap,
+	    XSetRGBColormaps(dpy, RootWindow(dpy, screen), &colormap, 1,
 				 property);
 	XUngrabServer(dpy);
     }
-    else if (property != XA_RGB_DEFAULT_MAP)
-	XFreeColormap(dpy, colormap.colormap);
 
     XFree((char *) vinfo);
     return status;
@@ -198,6 +211,22 @@ static int compare(e1, e2)
     return 0;
 }
 
+static void free_colormap(dpy, screen, stdmap, count)
+    Display		*dpy;
+    int			screen;
+    XStandardColormap	**stdmap;
+    int			count;
+{
+    register int	i;
+
+    for (i=0; i < count; i++)
+	if (stdmap[i]->killid > 1)
+	    XKillClient(dpy, (XID) stdmap[i]->killid);
+        else if (stdmap[i]->killid == 1)
+	    XFreeColormap(dpy, stdmap[i]->colormap);
+}
+    
+    
 static Status default_map(dpy, vinfo, colormap)
     Display		*dpy;
     XVisualInfo		*vinfo;
