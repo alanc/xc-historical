@@ -1,18 +1,24 @@
-# $XConsortium: Imakefile,v 1.10 89/08/21 08:54:22 rws Exp $
-STD_DEFINES = ExtensionDefines
+# $XConsortium: Imakefile,v 1.11 89/10/06 11:57:09 jim Exp $
+    DEFINES = ExtensionDefines
  BEZIERSRCS = beziertest.c
  BEZIEROBJS = beziertest.o
   SHAPESRCS = shapetest.c
   SHAPEOBJS = shapetest.o
     SHMSRCS = shmtest.c
     SHMOBJS = shmtest.o
+   MBUFSRCS = xmbufinfo.c
+   MBUFOBJS = xmbufinfo.o
    INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I../include
-       SRCS = $(BEZIERSRCS) $(SHAPESRCS) $(SHMSRCS)
+       SRCS = /* $(BEZIERSRCS) */ $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS)
+       OBJS = /* $(BEZIEROBJS) */ $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS)
 
 all: beziertest shapetest shmtest
 
-SingleProgramTarget(beziertest,$(BEZIEROBJS),$(EXTENSIONLIB) $(XLIB),)
-SingleProgramTarget(shapetest,$(SHAPEOBJS),$(EXTENSIONLIB) $(XLIB),)
-SingleProgramTarget(shmtest,$(SHMOBJS),$(EXTENSIONLIB) $(XLIB),)
+SingleProgramTarget(xmbufinfo,$(MBUFOBJS), $(XLIB),)
+SingleProgramTarget(shapetest,$(SHAPEOBJS),$(XLIB),)
+SingleProgramTarget(shmtest,$(SHMOBJS),$(XLIB),)
+/*
+SingleProgramTarget(beziertest,$(BEZIEROBJS),$(XLIB),)
+ */
 
 DependTarget()
