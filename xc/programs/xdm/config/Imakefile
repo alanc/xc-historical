@@ -3,9 +3,11 @@
      XDMSERVERS = Xservers
      XDMSESSION = Xsession
 
-all::
+all:: Xservers.ws Xsetup_0 xdm-config
 
-depend::
+CppScriptTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
+CppScriptTarget(Xsetup_0,Xsetup_0.cpp,-DBINDIR=$(BINDIR),NullParameter)
+CppScriptTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
 
 InstallNonExecFile($(XDMCONFIG),$(XDMDIR))
 InstallNonExecFile($(XDMRESOURCES),$(XDMDIR))
@@ -19,3 +21,8 @@ Xservers:
 	echo "Choose one of" Xservers.* "and copy it to Xservers"
 	exit 1
 #endif
+
+depend::
+
+clean::
+	$(RM) Xservers.ws Xsetup_0 xdm-config
