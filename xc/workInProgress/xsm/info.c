@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.19 94/11/30 17:56:17 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.20 94/12/12 20:02:32 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -382,7 +382,7 @@ char *fullname;
     char *lastSlash = NULL;
     int i;
 
-    for (i = 0; i < strlen (fullname); i++)
+    for (i = 0; i < (int) strlen (fullname); i++)
 	if (fullname[i] == '/')
 	    lastSlash = &fullname[i];
     
@@ -452,7 +452,7 @@ UpdateClientList ()
 	    {
 		progName = GetProgramName ((char *) pval->value);
 
-		if (strlen (progName) > maxlen1)
+		if ((int) strlen (progName) > maxlen1)
 		    maxlen1 = strlen (progName);
 	    }
 	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
@@ -476,7 +476,7 @@ UpdateClientList ()
 	else
 	    hostname = tmp2 + 1;
 
-	if (strlen (hostname) > maxlen2)
+	if ((int) strlen (hostname) > maxlen2)
 	    maxlen2 = strlen (hostname);
 
 	numClientListNames++;

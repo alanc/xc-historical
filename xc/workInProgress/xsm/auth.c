@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.8 94/09/14 16:24:34 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.9 94/11/30 18:11:29 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -110,10 +110,12 @@ IceAuthDataEntry	**authDataEntries;
 	    path = ".";
     }
 
-    if ((addAuthFile = (char *) XtNewString (tempnam (path, ".xsm"))) == NULL)
+    if ((addAuthFile = (char *) XtNewString (
+	(char *) tempnam (path, ".xsm"))) == NULL)
 	return (0);
 
-    if ((remAuthFile = (char *) XtNewString (tempnam (path, ".xsm"))) == NULL)
+    if ((remAuthFile = (char *) XtNewString (
+	(char *) tempnam (path, ".xsm"))) == NULL)
 	return (0);
 
     if (!(addfp = fopen (addAuthFile, "w")))

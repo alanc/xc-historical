@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.9 94/08/17 18:08:07 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.10 94/08/29 17:46:05 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -103,7 +103,7 @@ char	*non_local_session_env;
 	default:		/* parent */
 
 	    close (pipefd[0]);
-	    fp = fdopen (pipefd[1], "w");
+	    fp = (FILE *) fdopen (pipefd[1], "w");
 
 	    fprintf (fp, "CONTEXT X\n");
 	    fprintf (fp, "DIR %s\n", cwd);
@@ -206,7 +206,7 @@ char *str;
 		char octal[3];
 		sprintf (octal, "%o", *temp);
 		*(ptr++) = '\\';
-		for (i = 0; i < (3 - strlen (octal)); i++)
+		for (i = 0; i < (3 - (int) strlen (octal)); i++)
 		    *(ptr++) = '0';
 		strcpy (ptr, octal);
 		ptr += strlen (octal);

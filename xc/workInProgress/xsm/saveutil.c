@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.23 94/11/30 18:14:03 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.24 94/12/12 20:04:17 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -232,7 +232,7 @@ char **sm_id;
 	    }
 
 	    strbuf = (String) malloc (bufsize + 1);
-	    strbuf[0] = NULL;
+	    strbuf[0] = '\0';
 
 	    for (i = 0; i < non_session_aware_count; i++)
 	    {
@@ -379,7 +379,7 @@ char *sm_id;
 	    {
 		if (p != c)
 		{
-		    *p = NULL;
+		    *p = '\0';
 		    fprintf (f, "%s\n", c);
 		    *p = '\n';
 		}

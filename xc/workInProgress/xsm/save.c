@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.13 94/12/13 21:05:10 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.14 94/12/14 16:56:52 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -773,7 +773,7 @@ create_save_popup ()
 {
     XtTranslations translations;
 
-    XtActionsRec save_actions[] = {
+    static XtActionsRec save_actions[] = {
         {"SaveOkAction", SaveOkAction}
     };
 
@@ -1145,7 +1145,7 @@ PopupBadSave ()
 	    {
 		progName = (char *) GetProgramName ((char *) pval->value);
 
-		if (strlen (progName) > maxlen1)
+		if ((int) strlen (progName) > maxlen1)
 		    maxlen1 = strlen (progName);
 	    }
 	    else if (strcmp (pprop->name, "_XC_RestartService") == 0)
@@ -1169,7 +1169,7 @@ PopupBadSave ()
 	else
 	    hostname = tmp2 + 1;
 
-	if (strlen (hostname) > maxlen2)
+	if ((int) strlen (hostname) > maxlen2)
 	    maxlen2 = strlen (hostname);
 
 	numFailedNames++;

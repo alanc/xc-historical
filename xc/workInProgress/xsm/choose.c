@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.18 94/12/12 21:18:40 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.19 94/12/13 20:42:27 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -111,7 +111,7 @@ Bool **locked_ret;
     {
 	if (strncmp (entry->d_name, ".XSM-", 5) == 0)
 	{
-	    char *name = entry->d_name + 5;
+	    char *name = (char *) entry->d_name + 5;
 	    char *id = NULL;
 	    Bool locked = CheckSessionLocked (name, True, &id);
 
@@ -576,7 +576,7 @@ void
 create_choose_session_popup ()
 
 {
-    XtActionsRec choose_actions[] = {
+    static XtActionsRec choose_actions[] = {
         {"ChooseSessionUp", ChooseSessionUp},
         {"ChooseSessionDown", ChooseSessionDown},
         {"ChooseSessionBtn1Down", ChooseSessionBtn1Down}
