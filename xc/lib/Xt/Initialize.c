@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.141 89/09/26 17:58:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.142 89/09/28 13:00:12 jim Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -582,6 +582,14 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	(void)_GetResource(dpy, search_list,
 			   "selectionTimeout", "SelectionTimeout",
 			   XtRInt, &value);
+
+#ifndef NO_IDENTIFY_WINDOWS
+	value.size = sizeof(pd->appContext->identify_windows);
+	value.addr = (XtPointer)&pd->appContext->identify_windows;
+	(void)_GetResource(dpy, search_list,
+			   "xtIdentifyWindows", "XtDebug",
+			   XtRBoolean, &value);
+#endif
 
 	XtFree( (XtPointer)options );
 	DEALLOCATE_LOCAL( search_list );
