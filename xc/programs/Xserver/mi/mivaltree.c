@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.21 89/09/24 15:41:25 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.22 89/09/30 10:49:17 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -67,6 +67,72 @@ void	(*func)();
 {
 	clipNotify = func;
 }
+
+#ifdef SHAPE
+/*
+ * Compute the visibility of a shaped window
+ */
+miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
+    ScreenPtr	pScreen;
+    RegionPtr	universe, bounding;
+    BoxPtr	rect;
+    register int x, y;
+{
+    BoxRec  box;
+    register BoxPtr  boundBox;
+    int	    nbox;
+    Bool    someIn, someOut;
+    register int t, x1, y1, x2, y2;
+    int	    (*RectIn)();
+
+    RectIn = pScreen->RectIn;
+    nbox = REGION_NUM_RECTS (bounding);
+    boundBox = REGION_RECTS (bounding);
+    someIn = someOut = FALSE;
+    x1 = rect->x1;
+    y1 = rect->y1;
+    x2 = rect->x2;
+    y2 = rect->y2;
+    while (nbox--)
+    {
+	if ((t = boundBox->x1 + x) < x1)
+	    t = x1;
+	box.x1 = t;
+	if ((t = boundBox->y1 + y) < y1)
+	    t = y1;
+	box.y1 = t;
+	if ((t = boundBox->x2 + x) > x2)
+	    t = x2;
+	box.x2 = t;
+	if ((t = boundBox->y2 + y) > y2)
+	    t = y2;
+	box.y2 = t;
+	if (box.x1 > box.x2)
+	    box.x2 = box.x1;
+	if (box.y1 > box.y2)
+	    box.y2 = box.y1;
+	switch ((*RectIn) (universe, &box))
+	{
+	case rgnIN:
+	    if (someOut)
+		return rgnPART;
+	    someIn = TRUE;
+	    break;
+	case rgnOUT:
+	    if (someIn)
+		return rgnPART;
+	    someOut = TRUE;
+	    break;
+	default:
+	    return rgnPART;
+	}
+	boundBox++;
+    }
+    if (someIn)
+	return rgnIN;
+    return rgnOUT;
+}
+#endif
 
 /*-
  *-----------------------------------------------------------------------
@@ -98,7 +164,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     RegionRec		childUniverse;
     register WindowPtr	pChild;
     int     	  	oldVis;
-    register BoxPtr  	borderSize;
+    BoxRec		borderSize;
     RegionRec		childUnion;
     Bool		overlap;
     RegionPtr		borderVisible;
@@ -112,29 +178,54 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * completely). If the window is completely obscured, none of the
      * universe will cover the rectangle.
      */
-    borderSize = (* pScreen->RegionExtents) (&pParent->borderSize);
-    
+
+    borderSize.x1 = pParent->drawable.x - wBorderWidth(pParent);
+    borderSize.y1 = pParent->drawable.y - wBorderWidth(pParent);
+    dx = (int) pParent->drawable.x + (int) pParent->drawable.width + wBorderWidth(pParent);
+    if (dx > 32767)
+	dx = 32767;
+    borderSize.x2 = dx;
+    dy = (int) pParent->drawable.y + (int) pParent->drawable.height + wBorderWidth(pParent);
+    if (dy > 32767)
+	dy = 32767;
+    borderSize.y2 = dy;
+
     oldVis = pParent->visibility;
-    switch ((* pScreen->RectIn) (universe, borderSize)) 
+    switch ((* pScreen->RectIn) (universe, &borderSize)) 
     {
 	case rgnIN:
-	    if (((borderSize->x2 - borderSize->x1) ==
-		 ((int) pParent->drawable.width + (wBorderWidth (pParent) << 1)))
-		&&
-		((borderSize->y2 - borderSize->y1) ==
-		 ((int) pParent->drawable.height + (wBorderWidth (pParent) << 1))))
-		pParent->visibility = VisibilityUnobscured;
-	    else
-		pParent->visibility = VisibilityPartiallyObscured;
+	    pParent->visibility = VisibilityUnobscured;
 	    break;
 	case rgnPART:
 	    pParent->visibility = VisibilityPartiallyObscured;
+#ifdef SHAPE
+	    {
+		RegionPtr   pBounding;
+
+		if ((pBounding = wBoundingShape (pParent)))
+		{
+		    switch (miShapedWindowIn (pScreen, universe, pBounding,
+					      &borderSize,
+					      pParent->drawable.x,
+ 					      pParent->drawable.y))
+		    {
+		    case rgnIN:
+			pParent->visibility = VisibilityUnobscured;
+			break;
+		    case rgnOUT:
+			pParent->visibility = VisibilityFullyObscured;
+			break;
+		    }
+		}
+	    }
+#endif
 	    break;
 	default:
 	    pParent->visibility = VisibilityFullyObscured;
 	    break;
     }
-    if (oldVis != pParent->visibility)
+    if (oldVis != pParent->visibility &&
+	((pParent->eventMask | wOtherEventMasks(pParent)) & VisibilityChangeMask))
 	SendVisibilityNotify(pParent);
 
     dx = pParent->drawable.x - pParent->valdata->before.oldAbsCorner.x;
@@ -355,14 +446,17 @@ miTreeObscured(pParent)
     register WindowPtr pParent;
 {
     register WindowPtr pChild;
+    register int    oldVis;
 
     pChild = pParent;
     while (1)
     {
 	if (pChild->viewable)
 	{
-	    pChild->visibility = VisibilityFullyObscured;
-	    SendVisibilityNotify(pChild);
+	    oldVis = pChild->visibility;
+	    if (oldVis != (pChild->visibility = VisibilityFullyObscured) &&
+		((pChild->eventMask | wOtherEventMasks(pChild)) & VisibilityChangeMask))
+		SendVisibilityNotify(pChild);
 	    if (pChild->firstChild)
 	    {
 		pChild = pChild->firstChild;
