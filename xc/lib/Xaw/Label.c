@@ -307,7 +307,6 @@ static void Resize(w)
 /* ARGSUSED */
 static Boolean SetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     LabelWidget curlw = (LabelWidget) current;
     LabelWidget reqlw = (LabelWidget) request;
