@@ -52,14 +52,6 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include "Xproto.h"
 #include "keysym.h"
 
-#ifdef	autorepeat
-#include <signal.h>
-#include <sys/time.h>
-#define	AUTOREPEAT_INITIATE	(300)	/* milliseconds */
-#define	AUTOREPEAT_DELAY	(100)	/* milliseconds */
-#define	AUTOREPEAT_EVENT	(-1)	/* AutoRepeat Firm_event value */
-#endif	autorepeat
-
 typedef struct {
     int	    	  trans;          	/* Original translation form */
 } SunKbPrivRec, *SunKbPrivPtr;
@@ -73,10 +65,26 @@ static Firm_event *sunKbdGetEvents();
 static void 	  sunKbdProcessEvent();
 static void 	  sunKbdDoneEvents();
 #ifdef	autorepeat
-static void	  sunAutoRepeater();
-static int	  autoRepeat = 0;
-static int	  autoRepeatDebug = 0;
-extern int	  isItTimeToYield;
+int	  	  autoRepeatKeyDown = 0;
+int	  	  autoRepeatDebug = 0;
+int	  	  autoRepeatReady;
+static int	  autoRepeatFirst;
+static struct timeval autoRepeatLastKeyDownTv;
+static struct timeval autoRepeatDeltaTv;
+#define	tvminus(tv, tv1, tv2) 	/* tv = tv1 - tv2 */ \
+		if ((tv1).tv_usec < (tv2).tv_usec) { \
+		    (tv1).tv_usec += 1000000; \
+		    (tv1).tv_sec -= 1; \
+		} \
+		(tv).tv_usec = (tv1).tv_usec - (tv2).tv_usec; \
+		(tv).tv_sec = (tv1).tv_sec - (tv2).tv_sec;
+#define tvplus(tv, tv1, tv2) 	/* tv = tv1 + tv2 */ \
+		(tv).tv_sec = (tv1).tv_sec + (tv2).tv_sec; \
+		(tv).tv_usec = (tv1).tv_usec + (tv2).tv_usec; \
+		if ((tv).tv_usec > 1000000) { \
+			(tv).tv_usec -= 1000000; \
+			(tv).tv_sec += 1; \
+		}
 #endif	autorepeat
 
 
@@ -181,11 +189,6 @@ sunKbdProc (pKeyboard, what)
 		    (sunModMap[sysKbPriv.type]),
 		    sunBell,
 		    sunKbdCtrl);
-#ifdef	autorepeat
-	    signal(SIGALRM, sunAutoRepeater);
-	    if (autoRepeatDebug)
-	    	ErrorF("signal(SIGALRM, sunAutoRepeater)\n");
-#endif	autorepeat
 	    break;
 
 	case DEVICE_ON:
@@ -293,10 +296,10 @@ sunKbdCtrl (pKeyboard)
  *	A pointer to an array of Firm_events or (Firm_event *)0 if no events
  *	The number of events contained in the array.
 #ifdef	autorepeat
- *	If there are no keyboard events ready and autoRepeat > 0,
- *	then *pNumEvents is set to 1 and Firm_event value is set to
- *	AUTOREPEAT_EVENT.  In sunKbdProcessEvent, if autoRepeat > 0
- *	and Firm_event value == AUTOREPEAT_EVENT, then the event buffer is
+ *	If there are no keyboard events ready and autoRepeatKeyDown > 0,
+ *	then *pNumEvents is set to 1 and Firm_event id is set to
+ *	AUTOREPEAT_EVENTID.  In sunKbdProcessEvent, if autoRepeatKeyDown > 0
+ *	and Firm_event id == AUTOREPEAT_EVENTID, then the event buffer is
  *	ignored and the	event is generated from the last KeyPress event.
 #endif	autorepeat
  *
@@ -328,11 +331,12 @@ sunKbdGetEvents (pKeyboard, pNumEvents)
     }
 
 #ifdef	autorepeat
-    if (*pNumEvents == 0 && autoRepeat > 0) {
-	*pNumEvents = 1;
-	evBuf[0].value = AUTOREPEAT_EVENT;	/* Flags autoRepeat event */
+    if (autoRepeatKeyDown && autoRepeatReady && *pNumEvents == 0) {
+	*pNumEvents = 1;			/* Fake the event */
+	evBuf[0].id = AUTOREPEAT_EVENTID;	/* Flags autoRepeat event */
 	if (autoRepeatDebug)
-	    ErrorF("sunKbdGetEvents: autoRepeat = %d event\n", autoRepeat);
+	    ErrorF("sunKbdGetEvents: autoRepeatKeyDown = %d event\n",
+				autoRepeatKeyDown);
     }
 #endif	autorepeat
 
@@ -368,27 +372,23 @@ sunKbdProcessEvent (pKeyboard, fe)
 #ifdef	autorepeat
     int			delta;
     static xEvent	autoRepeatEvent;
-    static int		autoRepeatFirst;
-    static struct itimerval	autoRepeatIt;
 #endif	autorepeat
 
     ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
 
 #ifdef	autorepeat
-    if (autoRepeat > 0 && fe->value == AUTOREPEAT_EVENT) {
+    if (autoRepeatKeyDown && fe->id == AUTOREPEAT_EVENTID) {
 	/*
 	 * Generate auto repeat event.	XXX one for now.
 	 * Update time & pointer location of saved KeyPress event.
 	 */
 	if (autoRepeatDebug)
-	    ErrorF("sunKbdProcessEvent: autoRepeat = %d\n", autoRepeat);
-	if (autoRepeatFirst == TRUE) {
+	    ErrorF("sunKbdProcessEvent: autoRepeatKeyDown = %d\n",
+			autoRepeatKeyDown);
+
+	delta = TVTOMILLI(autoRepeatDeltaTv) / 2;
+	if (autoRepeatFirst == TRUE)
 		autoRepeatFirst = FALSE;
-		delta = AUTOREPEAT_INITIATE / 2;
-	}
-	else {
-		delta = AUTOREPEAT_DELAY / 2;
-	}
 
 	/*
 	 * Fake a key up event and a key down event
@@ -404,19 +404,19 @@ sunKbdProcessEvent (pKeyboard, fe)
 	autoRepeatEvent.u.u.type = KeyPress;
 	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
 
-	autoRepeat = 0;
+	/* Update time of last key down */
+	tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
+			autoRepeatDeltaTv);
+
 	return;
     }
 
     /*
      * Kill AutoRepeater on any real Kbd event.
      */
-    timerclear(&autoRepeatIt.it_interval);
-    timerclear(&autoRepeatIt.it_value);
-    setitimer(ITIMER_REAL, &autoRepeatIt, (struct itimerval *) 0);
-    autoRepeat = 0;
+    autoRepeatKeyDown = 0;
     if (autoRepeatDebug)
-	ErrorF("sunKbdProcessEvent: kill AutoRepeater\n");
+	ErrorF("sunKbdProcessEvent: autoRepeat off\n");
 #endif	autorepeat
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
@@ -431,15 +431,8 @@ sunKbdProcessEvent (pKeyboard, fe)
             ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
 	autoRepeatEvent = xE;
 	autoRepeatFirst = TRUE;
-
-	(* pKeyboard->processInputProc) (&xE, pKeyboard);
-
-	autoRepeatIt.it_value.tv_sec = 0;
-	autoRepeatIt.it_value.tv_usec = AUTOREPEAT_INITIATE * 1000;
-	autoRepeatIt.it_interval.tv_sec = 0;
-	autoRepeatIt.it_interval.tv_usec = AUTOREPEAT_DELAY * 1000;
-	setitimer(ITIMER_REAL, &autoRepeatIt, (struct itimerval *) 0);
-	return;
+	autoRepeatKeyDown++;
+	autoRepeatLastKeyDownTv = fe->time;
     }
 #endif  autorepeat
 
@@ -665,12 +658,59 @@ LegalModifier(key)
 }
 
 #ifdef	autorepeat
-static void
-sunAutoRepeater()
+/*ARGSUSED*/
+void
+sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
+    int nscreen;
+    pointer pbdata;
+    struct timeval **pptv;
+    pointer pReadmask;
 {
+    static struct timeval artv;	/* autorepeat timeval */
+    static sec1 = 0;			/* tmp for patching */
+    static sec2 = AUTOREPEAT_INITIATE;
+    static sec3 = AUTOREPEAT_DELAY;
+
+    if (!autoRepeatKeyDown)
+	return;
+
+    artv.tv_sec = sec1;
+    if (autoRepeatFirst == TRUE)
+	artv.tv_usec = 1000 * sec2;
+    else
+	artv.tv_usec = 1000 * sec3;
+    *pptv = &artv;
     if (autoRepeatDebug)
-	ErrorF("sunAutoRepeater()\n");
-    autoRepeat++;
-    isItTimeToYield++;
+	ErrorF("sunBlockHandler(%d,%d): \n", artv.tv_sec, artv.tv_usec);
+}
+
+/*ARGSUSED*/
+void
+sunWakeupHandler(nscreen, pbdata, err, pReadmask)
+    int nscreen;
+    pointer pbdata;
+    unsigned long err;
+    pointer pReadmask;
+{
+    struct timeval tv;
+
+    if (autoRepeatDebug)
+	ErrorF("sunWakeupHandler(ar=%d, err=%d):\n", autoRepeatKeyDown, err);
+
+    if (autoRepeatKeyDown) {
+	gettimeofday(&tv, (struct timezone *) NULL);
+	tvminus(autoRepeatDeltaTv, tv, autoRepeatLastKeyDownTv);
+	if (autoRepeatDeltaTv.tv_sec > 0 ||
+			(!autoRepeatFirst && autoRepeatDeltaTv.tv_usec >
+				1000 * AUTOREPEAT_DELAY) ||
+			(autoRepeatDeltaTv.tv_usec >
+				1000 * AUTOREPEAT_INITIATE))
+		autoRepeatReady++;
+    }
+    
+    if (autoRepeatReady)
+	ProcessInputEvents();
+    autoRepeatReady = 0;
 }
 #endif	autorepeat
+

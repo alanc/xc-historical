@@ -152,6 +152,16 @@ ProcessInputEvents ()
 	    return;
 	}
 
+#ifdef	autorepeat
+	if (autoRepeatKeyDown && autoRepeatReady && n <= 0) {
+		/* fake a sunwindows kbd event */
+		n = sizeof(struct inputevent);
+		se->ie_code = AUTOREPEAT_EVENTID;
+		if (autoRepeatDebug)
+		    ErrorF("ProcessInputEvents: sw auto event\n");
+	}
+#endif	autorepeat
+
 	for (seL = sunevents + (n/(sizeof sunevents[0]));  se < seL; se++) {
 	    if (screenSaved)
 		SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);

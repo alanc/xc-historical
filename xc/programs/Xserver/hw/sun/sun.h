@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 4.0 87/08/31 20:20:48 sun Locked $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 4.1 87/09/07 17:02:36 sun Locked $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -274,6 +274,23 @@ extern Bool	  screenSaved;		/* True is screen is being saved */
 extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 extern void	ErrorF();
+
+#ifdef	autorepeat
+#define AUTOREPEAT_INITIATE     (300)           /* milliseconds */
+#define AUTOREPEAT_DELAY        (100)           /* milliseconds */
+/*
+ * We signal autorepeat events with the unique Firm_event
+ * id AUTOREPEAT_EVENTID.
+ * Because inputevent ie_code is set to Firm_event ids in
+ * sunKbdProcessEventSunWin, and ie_code is short whereas
+ * Firm_event id is u_short, we use 0x7fff.
+ */
+#define AUTOREPEAT_EVENTID      (0x7fff)        /* AutoRepeat Firm_event id */
+
+extern int	autoRepeatKeyDown;		/* TRUE if key down */
+extern int	autoRepeatReady;		/* TRUE if time out */
+extern int	autoRepeatDebug;		/* TRUE if debugging */
+#endif	autorepeat
 
 /*
  * Sun specific extensions:
