@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.71 88/11/22 18:41:12 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.72 88/11/29 14:24:20 jim Exp $
  */
 
 #include "copyright.h"
@@ -634,6 +634,14 @@ _XFreeDisplayStructure(dpy)
 	   Xfree (dpy->xdefaults);
 	if (dpy->key_bindings)
 	   _XFreeKeyBindings(dpy);
+
+	while (dpy->ext_procs) {
+	    _XExtension *ext = dpy->ext_procs;
+	    dpy->ext_procs = ext->next;
+	    if (ext->name)
+		Xfree (ext->name);
+	    Xfree ((char *)ext);
+	}
 
 	_XFreeExtData (dpy->ext_data);
         
