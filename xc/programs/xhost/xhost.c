@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.48 91/07/19 18:41:15 rws Exp $ */
+/* $XConsortium: xhost.c,v 11.49 93/09/09 10:00:23 rws Exp $ */
  
 /*
 
@@ -275,7 +275,7 @@ int change_host (dpy, name, add)
   static char *remove_msg = "being removed from access control list";
 
 #ifdef DNETCONN
-  if ((cp = index (name, ':')) && (*(cp + 1) == ':')) {
+  if ((cp = strchr(name, ':')) && (*(cp + 1) == ':')) {
     *cp = '\0';
     ha.family = FamilyDECnet;
     if (dnaddrp = dnet_addr(name)) {
@@ -287,7 +287,7 @@ int change_host (dpy, name, add)
 	  return 0;
       }
       dnaddr.a_len = np->n_length;
-      bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
+      memmove( dnaddr.a_addr, np->n_addr, np->n_length);
     }
     ha.length = sizeof(struct dn_naddr);
     ha.address = (char *)&dnaddr;
@@ -304,7 +304,7 @@ int change_host (dpy, name, add)
     /*
      * If it has an '@',  its a netname
      */
-    if (cp = index(name, '@')) {
+    if (cp = strchr(name, '@')) {
 	char *netname = name;
 #ifdef SECURE_RPC
 	static char username[MAXNETNAMELEN];
@@ -458,7 +458,7 @@ static char *get_hostname (ha)
         len = ha->length;
     else
         len = sizeof(netname) - 1;
-    bcopy(ha->address, netname, len);
+    memmove( netname, ha->address, len);
     netname[len] = '\0';
 #ifdef SECURE_RPC
     if (netname2user(netname, &uid, &gid, &gidlen, gidlist)) {
@@ -616,7 +616,7 @@ print_streams_hostnames (list, nhosts)
 	((xHostEntry *) ptr)->length  = list[i].length;
 	((xHostEntry *) ptr)->family  = list[i].family;
 	ptr += sizeof(xHostEntry);
-	bcopy (list[i].address, ptr, list[i].length);
+	memmove( ptr, list[i].address, list[i].length);
     }
     *(int *) packet = m;
     *(int *) (packet + sizeof(int)) = nhosts;

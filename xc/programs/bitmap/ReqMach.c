@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ReqMach.c,v 1.11 91/11/18 17:30:56 gildea Exp $
+ * $XConsortium: ReqMach.c,v 1.12 93/08/19 09:25:36 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -90,8 +90,8 @@ Boolean BWAddRequest(w, name, trap, call_data, call_data_size)
 	BW->bitmap.request_stack[BW->bitmap.cardinal].trap = trap;
 	BW->bitmap.request_stack[BW->bitmap.cardinal].call_data = 
 	    XtMalloc(call_data_size);
-	bcopy(call_data, 
-	      BW->bitmap.request_stack[BW->bitmap.cardinal].call_data,
+	memmove( BW->bitmap.request_stack[BW->bitmap.cardinal].call_data,
+	      call_data, 
 	      call_data_size);
 
 	return True;

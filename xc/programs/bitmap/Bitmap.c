@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.41 93/02/24 09:47:03 rws Exp $
+ * $XConsortium: Bitmap.c,v 1.42 93/08/19 09:25:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -594,13 +594,13 @@ void BWPutImage(w, display, drawable, gc, x, y)
 String StripFilename(filename)
     String filename;
 {
-    char *begin = rindex (filename, '/');
+    char *begin = strrchr(filename, '/');
     char *end, *result;
     int length;
     
     if (filename) {
 	begin = (begin ? begin + 1 : filename);
-	end = index (begin, '.'); /* change to rindex to allow longer names */
+	end = strchr(begin, '.'); /* change to strrchr to allow longer names */
 	length = (end ? (end - begin) : strlen (begin));
 	result = (char *) XtMalloc (length + 1);
 	strncpy (result, begin, length);
@@ -1122,7 +1122,7 @@ int BWWriteFile(w, filename, basename)
     if (BW->bitmap.zooming) {
         data = XtMalloc(Length(BW->bitmap.zoom.image->width, 
 			       BW->bitmap.zoom.image->height));
-	bcopy(BW->bitmap.zoom.image->data, data,
+	memmove( data, BW->bitmap.zoom.image->data, 
 	      Length(BW->bitmap.zoom.image->width, 
 		     BW->bitmap.zoom.image->height));
 	image = CreateBitmapImage(BW, data,
@@ -1193,7 +1193,7 @@ String BWGetFilepath(w, str)
     String end;
 
     *str = XtNewString(BW->bitmap.filename);
-    end = rindex(*str, '/');
+    end = strrchr(*str, '/');
 
     if (end)
 	*(end + 1) = '\0';

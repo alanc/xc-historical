@@ -1,7 +1,7 @@
 /*
  * atobm - ascii to bitmap filter
  *
- * $XConsortium: atobm.c,v 1.2 92/08/14 13:52:21 converse Exp $
+ * $XConsortium: atobm.c,v 1.3 93/02/24 09:50:54 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -61,12 +61,12 @@ char *cify_name (name)
 char *StripName(name)
   char *name;
 {
-  char *begin = rindex (name, '/');
+  char *begin = strrchr(name, '/');
   char *end, *result;
   int length;
 
   begin = (begin ? begin+1 : name);
-  end = index (begin, '.');	/* change to rindex to allow longer names */
+  end = strchr(begin, '.');	/* change to strrchr to allow longer names */
   length = (end ? (end - begin) : strlen (begin));
   result = (char *) malloc (length + 1);
   strncpy (result, begin, length);
@@ -202,7 +202,7 @@ doit (fp, filename, chars, xhot, yhot, name)
 	}
 	if (*cp == '\n' || !*cp) continue;  /* empty line */
 
-	newline = index (cp, '\n');
+	newline = strchr(cp, '\n');
 	if (!newline) {
 	    fprintf (stderr, "%s:  line %d too long.\n",
 		     ProgramName, lineno);

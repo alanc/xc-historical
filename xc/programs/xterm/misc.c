@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.94 93/02/08 16:51:01 gildea Exp $
+ *	$XConsortium: misc.c,v 1.95 93/02/25 17:02:37 gildea Exp $
  */
 
 /*
@@ -56,9 +56,6 @@ extern jmp_buf VTend;
 extern char *malloc();
 extern char *getenv();
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc();
-#endif /* macII */
 
 extern int child_wait();
 
@@ -860,7 +857,7 @@ register char	*s1, *s2;
 	register char	*s3;
 	int s2len = strlen (s2);
 
-	while ((s3=index(s1, *s2)) != NULL) {
+	while ((s3=strchr(s1, *s2)) != NULL) {
 		if (strncmp(s3, s2, s2len) == 0)
 			return (s3);
 		s1 = ++s3;

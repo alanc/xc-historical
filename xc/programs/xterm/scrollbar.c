@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.41 91/05/22 15:20:07 gildea Exp $
+ *	$XConsortium: scrollbar.c,v 1.42 91/10/21 14:27:54 eswu Exp $
  */
 
 /*
@@ -342,7 +342,7 @@ ScrollBarOn (xw, init, doalloc)
 	       == NULL)
 	      Error (ERROR_SBRALLOC);
 	    screen->buf = &screen->allbuf[2 * screen->savelines];
-	    bcopy ((char *)screen->allbuf, (char *)screen->buf,
+	    memmove( (char *)screen->buf, (char *)screen->allbuf, 
 		   2 * (screen->max_row + 2) * sizeof (char *));
 	    for(i = 2 * screen->savelines - 1 ; i >= 0 ; i--)
 	      if((screen->allbuf[i] =

@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.58 92/07/31 11:42:35 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.59 93/09/13 12:02:28 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -43,8 +43,12 @@
 
 #include <stdio.h>
 #include <errno.h>
-
 #include <X11/Xos.h>
+
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -409,7 +413,6 @@ usage()
 /*
  * Error - Fatal xwd error.
  */
-extern int errno;
 
 Error(string)
 	char *string;	/* Error description string. */

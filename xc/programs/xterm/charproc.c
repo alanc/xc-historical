@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.177 92/09/15 15:28:42 gildea Exp $
+ * $XConsortium: charproc.c,v 1.178 93/02/25 17:19:24 gildea Exp $
  */
 
 /*
@@ -1174,13 +1174,13 @@ v_write(f, d, len)
 	    if (v_bufend < v_bufptr + len) { /* we've run out of room */
 		if (v_bufstr != v_buffer) {
 		    /* there is unused space, move everything down */
-		    /* possibly overlapping bcopy here */
+		    /* possibly overlapping memmove here */
 #ifdef DEBUG
 		    if (debug)
 			fprintf(stderr, "moving data down %d\n",
 				v_bufstr - v_buffer);
 #endif
-		    bcopy(v_bufstr, v_buffer, v_bufptr - v_bufstr);
+		    memmove( v_buffer, v_bufstr, v_bufptr - v_bufstr);
 		    v_bufptr -= v_bufstr - v_buffer;
 		    v_bufstr = v_buffer;
 		}
@@ -1209,7 +1209,7 @@ v_write(f, d, len)
 	    }
 	    if (v_bufend >= v_bufptr + len) {
 		/* new stuff will fit */
-		bcopy(d, v_bufptr, len);
+		memmove( v_bufptr, d, len);
 		v_bufptr += len;
 	    }
 	}
@@ -2049,10 +2049,10 @@ SwitchBufPtrs(screen)
     register int rows = screen->max_row + 1;
     char *save [2 * MAX_ROWS];
 
-    bcopy((char *)screen->buf, (char *)save, 2 * sizeof(char *) * rows);
-    bcopy((char *)screen->altbuf, (char *)screen->buf,
+    memmove( (char *)save, (char *)screen->buf, 2 * sizeof(char *) * rows);
+    memmove( (char *)screen->buf, (char *)screen->altbuf, 
 	  2 * sizeof(char *) * rows);
-    bcopy((char *)save, (char *)screen->altbuf, 2 * sizeof(char *) * rows);
+    memmove( (char *)screen->altbuf, (char *)save, 2 * sizeof(char *) * rows);
 }
 
 VTRun()

@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.205 93/02/10 14:37:11 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.206 93/02/25 17:04:02 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -172,6 +172,10 @@ static Bool IsPts = False;
 #include <errno.h>
 #include <setjmp.h>
 
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
+
 #ifdef hpux
 #include <sys/utsname.h>
 #endif /* hpux */
@@ -255,10 +259,6 @@ extern void exit();
 #ifdef X_NOT_POSIX
 extern char *ttyname();
 #endif
-#if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
-char *malloc(), *realloc(), *calloc();
-char *ttyname(); /* and we don't get this from unistd.h */
-#endif /* macII */
 
 #ifdef SYSV
 extern char *ptsname();
@@ -1172,7 +1172,7 @@ char *name;
 {
 	register char *cp;
 
-	cp = rindex(name, '/');
+	cp = strrchr(name, '/');
 	return(cp ? cp + 1 : name);
 }
 
@@ -2142,7 +2142,7 @@ spawn ()
 		envsize += 1;	/* TERMCAP */
 #endif /* USE_SYSV_ENVVARS */
 		envnew = (char **) calloc ((unsigned) i + envsize, sizeof(char *));
-		bcopy((char *)environ, (char *)envnew, i * sizeof(char *));
+		memmove( (char *)envnew, (char *)environ, i * sizeof(char *));
 		environ = envnew;
 		Setenv ("TERM=", TermName);
 		if(!TermName)
@@ -2245,7 +2245,7 @@ spawn ()
 		(void) strncpy(buf, DisplayString(screen->display),
 			       sizeof(buf));
 	        {
-		    char *disfin = rindex(buf, ':');
+		    char *disfin = strrchr(buf, ':');
 		    if (disfin)
 			*disfin = '\0';
 		}
@@ -2467,7 +2467,7 @@ spawn ()
 		 *(ptr = pw->pw_shell) == 0))
 #endif	/* UTMP */
 			ptr = "/bin/sh";
-		if(shname = rindex(ptr, '/'))
+		if(shname = strrchr(ptr, '/'))
 			shname++;
 		else
 			shname = ptr;
@@ -2752,12 +2752,12 @@ register char *oldtc, *newtc;
 	sprintf (newtc, "%d", li_first ? screen->max_row + 1 :
 	 screen->max_col + 1);
 	newtc += strlen(newtc);
-	ptr1 = index (ptr1, ':');
+	ptr1 = strchr(ptr1, ':');
 	strncpy (newtc, ptr1, i = ptr2 - ptr1);
 	newtc += i;
 	sprintf (newtc, "%d", li_first ? screen->max_col + 1 :
 	 screen->max_row + 1);
-	ptr2 = index (ptr2, ':');
+	ptr2 = strchr(ptr2, ':');
 	strcat (newtc, ptr2);
 #endif /* USE_SYSV_ENVVARS */
 }
@@ -2819,7 +2819,6 @@ static SIGNAL_T reapchild (n)
 consolepr(fmt,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9)
 char *fmt;
 {
-	extern int errno;
 	extern char *SysErrorMsg();
 	int oerrno;
 	int f;
@@ -2851,7 +2850,7 @@ remove_termcap_entry (buf, str)
 
     strinbuf = strindex (buf, str);
     if (strinbuf) {
-        register char *colonPtr = index (strinbuf+1, ':');
+        register char *colonPtr = strchr(strinbuf+1, ':');
         if (colonPtr) {
             while (*colonPtr) {
                 *strinbuf++ = *colonPtr++;      /* copy down */

@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.66 91/05/31 17:00:03 gildea Exp $ */
+/* $XConsortium: button.c,v 1.67 93/09/11 14:39:49 rws Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -1140,7 +1140,7 @@ int *format;
 	*targetP++ = XA_COMPOUND_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
-	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
+	memmove( (char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
 	*format = 32;
@@ -1165,7 +1165,7 @@ int *format;
 	    *(long*)*value = 1;
 	else {
 	    long temp = 1;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	    memmove( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
 	}
 	*type = XA_INTEGER;
 	*length = 1;
@@ -1178,7 +1178,7 @@ int *format;
 	    *(long*)*value = xterm->screen.selection_length;
 	else {
 	    long temp = xterm->screen.selection_length;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, (char*)*value, 4);
+	    memmove( (char*)*value, ((char*)&temp)+sizeof(long)-4, 4);
 	}
 	*type = XA_INTEGER;
 	*length = 1;

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.27 91/07/23 11:11:19 rws Exp $
+ *	$XConsortium: resize.c,v 1.28 93/07/02 17:26:29 rws Exp $
  */
 
 /*
@@ -209,7 +209,7 @@ main (argc, argv)
 	extern char *ttyname();
 #endif
 
-	ptr = rindex(myname = argv[0], '/');
+	ptr = strrchr(myname = argv[0], '/');
 	if(ptr)
 		myname = ptr + 1;
 	if(strcmp(myname, sunname) == 0)
@@ -242,7 +242,7 @@ main (argc, argv)
 			/* this is the same default that xterm uses */
 			ptr = "/bin/sh";
 
-		shell = rindex(ptr, '/');
+		shell = strrchr(ptr, '/');
 		if(shell)
 			shell++;
 		else
@@ -394,7 +394,7 @@ main (argc, argv)
 	i = ptr - termcap + 3;
 	strncpy (newtc, termcap, i);
 	sprintf (newtc + i, "%d", cols);
-	ptr = index (ptr, ':');
+	ptr = strchr(ptr, ':');
 	strcat (newtc, ptr);
 
 	/* now do lines */
@@ -406,7 +406,7 @@ main (argc, argv)
 	i = ptr - newtc + 3;
 	strncpy (termcap, newtc, i);
 	sprintf (termcap + i, "%d", rows);
-	ptr = index (ptr, ':');
+	ptr = strchr(ptr, ':');
 	strcat (termcap, ptr);
 #endif /* USE_TERMCAP */
 
@@ -447,7 +447,7 @@ register char *s1, *s2;
 	register char *s3;
 	int s2len = strlen (s2);
 
-	while ((s3 = index (s1, *s2)) != NULL)
+	while ((s3 = strchr(s1, *s2)) != NULL)
 	{
 		if (strncmp (s3, s2, s2len) == 0) return (s3);
 		s1 = ++s3;

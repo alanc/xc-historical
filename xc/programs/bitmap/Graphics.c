@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Graphics.c,v 1.15 91/07/24 15:24:24 converse Exp $
+ * $XConsortium: Graphics.c,v 1.16 91/11/18 17:30:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1387,7 +1387,7 @@ void BWStoreToBuffer(w)
 {
     BitmapWidget BW = (BitmapWidget) w;
     
-    bcopy(BW->bitmap.image->data, BW->bitmap.buffer->data,
+    memmove( BW->bitmap.buffer->data, BW->bitmap.image->data, 
 	  Length(BW->bitmap.image->width, BW->bitmap.image->height));
 
     BW->bitmap.buffer_hot = BW->bitmap.hot;
@@ -1556,7 +1556,7 @@ XImage *ScaleBitmapImage(BW, src, scale_x, scale_y)
      * average the skipped pixels. But, it is slow as it is now.
      */
     if (scale_x == 1.0 && scale_y == 1.0)
-	bcopy (src->data, dst->data, Length(width, height));
+	memmove( dst->data, src->data, Length(width, height));
     else {
 	table.x = (Position *) XtMalloc(sizeof(Position) * src->width);
 	table.y = (Position *) XtMalloc(sizeof(Position) * src->height);
