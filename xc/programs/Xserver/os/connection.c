@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.95 89/03/14 08:34:47 rws Exp $ */
+/* $XConsortium: connection.c,v 1.96 89/03/14 16:44:50 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -141,7 +141,7 @@ static int open_unix_socket ()
     unlink (unsock.sun_path);
     if ((request = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
     {
-	Notice ("Creating Unix socket");
+	Error ("Creating Unix socket");
     } 
     else 
     {
@@ -209,7 +209,7 @@ CreateWellKnownSockets()
 
     if ((request = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
     {
-	Notice ("Creating TCP socket");
+	Error ("Creating TCP socket");
     } 
     else 
     {
@@ -241,7 +241,7 @@ CreateWellKnownSockets()
 #ifdef SO_LINGER
 	if(setsockopt (request, SOL_SOCKET, SO_LINGER,
 		       (char *)linger, sizeof(linger)))
-	    Notice ("Setting TCP SO_LINGER\n");
+	    Error ("Setting TCP SO_LINGER\n");
 #endif /* SO_LINGER */
 	if (listen (request, 5))
 	    Error ("Reg TCP Listening");
@@ -261,7 +261,7 @@ CreateWellKnownSockets()
 #ifdef DNETCONN
     if ((request = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) 
     {
-	Notice ("Creating DECnet socket");
+	Error ("Creating DECnet socket");
     } 
     else 
     {
