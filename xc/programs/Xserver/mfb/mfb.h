@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.8 89/07/28 08:28:29 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.9 89/07/28 09:41:55 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -94,7 +94,10 @@ extern void mfbPutImage();
 
 extern void mfbLineSS();	/* solid single-pixel wide line */
 				/* calls mfb{Bres|Horz|Vert}S() */
-extern void mfbDashLine();	/* dashed zero-width line */
+extern void mfbLineSD();
+extern void mfbSegmentSS();
+extern void mfbSegmentSD();
+extern void mfbZeroPolyArcSS();
 extern void mfbImageText8();
 extern void mfbImageText16();
 extern int mfbPolyText16();

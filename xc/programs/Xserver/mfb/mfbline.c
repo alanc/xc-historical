@@ -1,4 +1,3 @@
-/* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -22,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.2 89/07/09 16:01:17 rws Exp $ */
+/* $XConsortium: cfbline.c,v 1.3 89/09/01 15:45:27 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -35,7 +34,7 @@ SOFTWARE.
 #include "mfb.h"
 #include "maskbits.h"
 
-/* single-pixel lines on a monochrome frame buffer
+/* single-pixel lines on a color frame buffer
 
    NON-SLOPED LINES
    horizontal lines are always drawn left to right; we have to
@@ -62,67 +61,28 @@ on.  the method uses Cohen-Sutherland outcodes to determine
 outsideness, and a method similar to Pike's layers for doing the
 actual clipping.
 
-   DIVISION
-   When clipping the lines, we want to round the answer, rather
-than truncating.  We want to avoid floating point; we also
-want to avoid the special code required when the dividend
-and divisor have different signs.
-
-    we work a little to make all the numbers in the division
-positive.  we then use the signs of the major and minor axes
-decide whether to add or subtract.  this takes the special-case 
-code out of the rounding division (making it easier for a 
-compiler or inline to do something clever).
-
-   CEILING
-   someties, we want the ceiling.  ceil(m/n) == floor((m+n-1)/n),
-for n > 0.  in C, integer division results in floor.]
-
-   MULTIPLICATION
-   when multiplying by signdx or signdy, we KNOW that it will
-be a multiplication by 1 or -1, but most compilers can't
-figure this out.  if your compiler/hardware combination
-does better at the ?: operator and 'move negated' instructions
-that it does at multiplication, you should consider using
-the alternate macros.
-
-   OPTIMIZATION
-   there has been no attempt to optimize this code.  there
-are obviously many special cases, at the cost of increased
-code space.  a few inline procedures (e.g. round, SignTimes,
-ceiling, abs) would be very useful, since the macro expansions
-are not very intelligent.
 */
 
-/* NOTE
-   maybe OUTCODES should take box (the one that includes all
-edges) instead of pbox (the standard no-right-or-lower-edge one)?
-*/
 #define OUTCODES(result, x, y, pbox) \
     if (x < pbox->x1) \
 	result |= OUT_LEFT; \
+    else if (x >= pbox->x2) \
+	result |= OUT_RIGHT; \
     if (y < pbox->y1) \
 	result |= OUT_ABOVE; \
-    if (x >= pbox->x2) \
-	result |= OUT_RIGHT; \
-    if (y >= pbox->y2) \
+    else if (y >= pbox->y2) \
 	result |= OUT_BELOW;
 
 #define round(dividend, divisor) \
 ( (((dividend)<<1) + (divisor)) / ((divisor)<<1) )
-
-#ifndef PURDUE
-#define ceiling(m,n) ( ((m) + (n) -1)/(n) )
-#else
 #define ceiling(m,n)  (((m)-1)/(n) + 1)
-#endif  /* PURDUE */
-
-#define SignTimes(sign, n) ((sign) * ((int)(n)))
 
 /*
+#define SignTimes(sign, n) ((sign) * ((int)(n)))
+*/
+
 #define SignTimes(sign, n) \
     ( ((sign)<0) ? -(n) : (n) )
-*/
 
 #ifndef PURDUE
 #define SWAPPT(p1, p2, pttmp) \
@@ -152,19 +112,425 @@ j = t;
    
 
 void
-mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
+#ifdef POLYSEGMENT
+mfbSegmentSS (pDrawable, pGC, nseg, pSeg)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		nseg;
+    xSegment	*pSeg;
+#else
+mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     DrawablePtr pDrawable;
-    GCPtr pGC;
-    int mode;		/* Origin or Previous */
-    int npt;		/* number of points */
+    GCPtr	pGC;
+    int		mode;		/* Origin or Previous */
+    int		npt;		/* number of points */
     DDXPointPtr pptInit;
+#endif
 {
     int nboxInit;
     register int nbox;
     BoxPtr pboxInit;
     register BoxPtr pbox;
+#ifndef POLYSEGMENT
     int nptTmp;
     DDXPointPtr ppt;		/* pointer to list of translated points */
+#endif
+
+    unsigned int oc1;		/* outcode of point 1 */
+    unsigned int oc2;		/* outcode of point 2 */
+
+    int *addrl;		/* address of destination pixmap */
+    int nlwidth;		/* width in longwords of destination pixmap */
+    int xorg, yorg;		/* origin of window */
+
+    int adx;		/* abs values of dx and dy */
+    int ady;
+    int signdx;		/* sign of dx and dy */
+    int signdy;
+    int e, e1, e2;		/* bresenham error and increments */
+    int len;			/* length of segment */
+    int axis;			/* major axis */
+
+				/* a bunch of temporaries */
+    int tmp;
+    int x1, x2, y1, y2;
+    RegionPtr cclip;
+    int		    alu;
+
+    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    alu = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
+    pboxInit = REGION_RECTS(cclip);
+    nboxInit = REGION_NUM_RECTS(cclip);
+
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+	addrl = (int *)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	nlwidth = (int)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+    }
+    else
+    {
+	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
+	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
+    }
+
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
+#ifdef POLYSEGMENT
+    while (nseg--)
+#else
+    ppt = pptInit;
+    x2 = ppt->x + xorg;
+    y2 = ppt->y + yorg;
+    while(--npt)
+#endif
+    {
+	nbox = nboxInit;
+	pbox = pboxInit;
+
+#ifdef POLYSEGMENT
+	x1 = pSeg->x1 + xorg;
+	y1 = pSeg->y1 + yorg;
+	x2 = pSeg->x2 + xorg;
+	y2 = pSeg->y2 + yorg;
+	pSeg++;
+#else
+	x1 = x2;
+	y1 = y2;
+	++ppt;
+	if (mode == CoordModePrevious)
+	{
+	    xorg = x1;
+	    yorg = y1;
+	}
+	x2 = ppt->x + xorg;
+	y2 = ppt->y + yorg;
+#endif
+
+	if (x1 == x2)
+	{
+	    /* make the line go top to bottom of screen, keeping
+	       endpoint semantics
+	    */
+	    if (y1 > y2)
+	    {
+#ifdef PURDUE
+		register int tmp;
+#endif
+		tmp = y2;
+		y2 = y1 + 1;
+		y1 = tmp + 1;
+	    }
+#ifdef POLYSEGMENT
+	    if (pGC->capStyle != CapNotLast)
+		y2++;
+#endif
+	    /* get to first band that might contain part of line */
+	    while ((nbox) && (pbox->y2 <= y1))
+	    {
+		pbox++;
+		nbox--;
+	    }
+
+	    if (nbox)
+	    {
+		/* stop when lower edge of box is beyond end of line */
+		while((nbox) && (y2 >= pbox->y1))
+		{
+		    if ((x1 >= pbox->x1) && (x1 < pbox->x2))
+		    {
+			int y1t, y2t;
+			/* this box has part of the line in it */
+			y1t = max(y1, pbox->y1);
+			y2t = min(y2, pbox->y2);
+			if (y1t != y2t)
+			{
+			    mfbVertS (alu,
+				      addrl, nlwidth, 
+				      x1, y1t, y2t-y1t);
+			}
+		    }
+		    nbox--;
+		    pbox++;
+		}
+	    }
+#ifndef POLYSEGMENT
+	    y2 = ppt->y + yorg;
+#endif
+	}
+	else if (y1 == y2)
+	{
+	    /* force line from left to right, keeping
+	       endpoint semantics
+	    */
+	    if (x1 > x2)
+	    {
+#ifdef PURDUE
+		register int tmp;
+#endif
+		tmp = x2;
+		x2 = x1 + 1;
+		x1 = tmp + 1;
+	    }
+#ifdef POLYSEGMENT
+	    if (pGC->capStyle != CapNotLast)
+		x2++;
+#endif
+
+	    /* find the correct band */
+	    while( (nbox) && (pbox->y2 <= y1))
+	    {
+		pbox++;
+		nbox--;
+	    }
+
+	    /* try to draw the line, if we haven't gone beyond it */
+	    if ((nbox) && (pbox->y1 <= y1))
+	    {
+		/* when we leave this band, we're done */
+		tmp = pbox->y1;
+		while((nbox) && (pbox->y1 == tmp))
+		{
+		    int	x1t, x2t;
+
+		    if (pbox->x2 <= x1)
+		    {
+			/* skip boxes until one might contain start point */
+			nbox--;
+			pbox++;
+			continue;
+		    }
+
+		    /* stop if left of box is beyond right of line */
+		    if (pbox->x1 >= x2)
+		    {
+			nbox = 0;
+			break;
+		    }
+
+		    x1t = max(x1, pbox->x1);
+		    x2t = min(x2, pbox->x2);
+		    if (x1t != x2t)
+		    {
+			mfbHorzS (alu,
+				  addrl, nlwidth, 
+				  x1t, y1, x2t-x1t);
+		    }
+		    nbox--;
+		    pbox++;
+		}
+	    }
+#ifndef POLYSEGMENT
+	    x2 = ppt->x + xorg;
+#endif
+	}
+	else	/* sloped line */
+	{
+	    adx = x2 - x1;
+	    ady = y2 - y1;
+	    signdx = sign(adx);
+	    signdy = sign(ady);
+	    adx = abs(adx);
+	    ady = abs(ady);
+
+	    if (adx > ady)
+	    {
+		axis = X_AXIS;
+		e1 = ady << 1;
+		e2 = e1 - (adx << 1);
+		e = e1 - adx;
+
+	    }
+	    else
+	    {
+		axis = Y_AXIS;
+		e1 = adx << 1;
+		e2 = e1 - (ady << 1);
+		e = e1 - ady;
+	    }
+
+	    /* we have bresenham parameters and two points.
+	       all we have to do now is clip and draw.
+	    */
+
+	    while(nbox--)
+	    {
+		oc1 = 0;
+		oc2 = 0;
+		OUTCODES(oc1, x1, y1, pbox);
+		OUTCODES(oc2, x2, y2, pbox);
+		if ((oc1 | oc2) == 0)
+		{
+		    if (axis == X_AXIS)
+			len = adx;
+		    else
+			len = ady;
+#ifdef POLYSEGMENT
+		    if (pGC->capStyle != CapNotLast)
+			len++;
+#endif
+		    mfbBresS (alu,
+			  addrl, nlwidth,
+			  signdx, signdy, axis, x1, y1,
+			  e, e1, e2, len);
+		    break;
+		}
+		else if (oc1 & oc2)
+		{
+		    pbox++;
+		}
+		else
+		{
+	    	    /*
+	     	     * let the mfb helper routine do our work;
+	     	     * better than duplicating code...
+	     	     */
+	    	    BoxRec box;
+    	    	    DDXPointRec pt1Copy;	/* clipped start point */
+    	    	    DDXPointRec pt2Copy;	/* clipped end point */
+    	    	    int err;			/* modified bresenham error term */
+    	    	    int clip1, clip2;		/* clippedness of the endpoints */
+    	    	
+    	    	    int clipdx, clipdy;		/* difference between clipped and
+				       	       	   unclipped start point */
+		    DDXPointRec	pt1;
+    	    	
+    	
+	    	    pt1.x = pt1Copy.x = x1;
+		    pt1.y = pt1Copy.y = y1;
+	    	    pt2Copy.x = x2;
+		    pt2Copy.y = y2;
+	    	    box.x1 = pbox->x1;
+	    	    box.y1 = pbox->y1;
+	    	    box.x2 = pbox->x2-1;
+	    	    box.y2 = pbox->y2-1;
+	    	    clip1 = 0;
+	    	    clip2 = 0;
+    	
+		    if (mfbClipLine (pbox, box,
+				     &pt1, &pt1Copy, &pt2Copy, 
+				     adx, ady, signdx, signdy, axis,
+				     &clip1, &clip2) == 1)
+		    {
+		    	if (axis == X_AXIS)
+			    len = abs(pt2Copy.x - pt1Copy.x);
+		    	else
+			    len = abs(pt2Copy.y - pt1Copy.y);
+    
+#ifdef POLYSEGMENT
+		    	if (clip2 != 0 || pGC->capStyle != CapNotLast)
+			    len++;
+#else
+		    	len += (clip2 != 0);
+#endif
+		    	if (len)
+		    	{
+			    /* unwind bresenham error term to first point */
+			    if (clip1)
+			    {
+			    	clipdx = abs(pt1Copy.x - x1);
+			    	clipdy = abs(pt1Copy.y - y1);
+			    	if (axis == X_AXIS)
+				    err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
+			    	else
+				    err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
+			    }
+			    else
+			    	err = e;
+			    mfbBresS   
+				     (alu,
+				      addrl, nlwidth,
+				      signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
+				      err, e1, e2, len);
+		    	}
+		    }
+		    pbox++;
+		}
+	    } /* while (nbox--) */
+	} /* sloped line */
+    } /* while (nline--) */
+
+#ifndef POLYSEGMENT
+
+    /* paint the last point if the end style isn't CapNotLast.
+       (Assume that a projecting, butt, or round cap that is one
+        pixel wide is the same as the single pixel of the endpoint.)
+    */
+
+    if ((pGC->capStyle != CapNotLast) &&
+	((ppt->x != pptInit->x) ||
+	 (ppt->y != pptInit->y) ||
+	 (ppt == pptInit + 1)))
+    {
+	unsigned int _mask;
+	int _incr;
+
+	if (alu == RROP_BLACK)
+		_mask = rmask[x2 & 0x1f];
+	else
+		_mask = mask[x2 & 0x1f];
+	_incr = (y2 * nlwidth) + (x2 >> 5);
+
+	nbox = nboxInit;
+	pbox = pboxInit;
+	while (nbox--)
+	{
+	    if ((x2 >= pbox->x1) &&
+		(y2 >= pbox->y1) &&
+		(x2 <  pbox->x2) &&
+		(y2 <  pbox->y2))
+	    {
+		addrl += _incr;
+		switch(alu)
+		{
+		    case RROP_BLACK:
+		        *addrl &= _mask;
+			break;
+		    case RROP_WHITE:
+		        *addrl |= _mask;
+			break;
+		    case RROP_INVERT:
+		        *addrl ^= _mask;
+			break;
+		}
+		break;
+	    }
+	    else
+		pbox++;
+	}
+    }
+#endif
+}
+
+/*
+ * Draw dashed 1-pixel lines.
+ */
+
+void
+#ifdef POLYSEGMENT
+mfbSegmentSD (pDrawable, pGC, nseg, pSeg)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		nseg;
+    xSegment	*pSeg;
+#else
+mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
+    DrawablePtr pDrawable;
+    GCPtr pGC;
+    int mode;		/* Origin or Previous */
+    int npt;		/* number of points */
+    DDXPointPtr pptInit;
+#endif
+{
+    int nboxInit;
+    register int nbox;
+    BoxPtr pboxInit;
+    register BoxPtr pbox;
+#ifndef POLYSEGMENT
+    int nptTmp;
+    DDXPointPtr ppt;		/* pointer to list of translated points */
+#endif
 
     DDXPointRec pt1;
     DDXPointRec pt2;
@@ -172,8 +538,8 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
 
-    int *addrl;			/* address of longword with first point */
-    int nlwidth;		/* width in longwords of destination bitmap */
+    int *addrl;		/* address of destination pixmap */
+    int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
     int adx;		/* abs values of dx and dy */
@@ -197,13 +563,22 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
     int tmp;
     int x1, x2, y1, y2;
     RegionPtr cclip;
+    int		    fgrop, bgrop;
+    int		    isDoubleDashed;
+    unsigned char   *pDash;
+    int		    dashOffset;
+    int		    numInDashList;
+    int		    dashIndex;
+    int		    isDoubleDash;
+    int		    dashIndexTmp, dashOffsetTmp;
+    int		    unclippedlen;
+    int		    flipped;
 
     cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
+    fgrop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
-    xorg = pDrawable->x;
-    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrl = (int *)
@@ -217,596 +592,236 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    /* translate the point list */
-    ppt = pptInit;
-    nptTmp = npt;
-    if (mode == CoordModeOrigin)
-    {
-#ifndef PURDUE
-	while(nptTmp--)
-	{
-	    ppt->x += xorg;
-	    ppt++->y += yorg;
-	}
-#else
-	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg);
-#endif  /* PURDUE */
-    }
-    else
-    {
-	ppt->x += xorg;
-	ppt->y += yorg;
-	nptTmp--;
-#ifndef PURDUE
-	while(nptTmp--)
-	{
-	    ppt++;
-	    ppt->x += (ppt-1)->x;
-	    ppt->y += (ppt-1)->y;
-	}
-#else
-	Duff(nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
-#endif  /* PURDUE */
-    }
+    /* compute initial dash values */
+     
+    pDash = (unsigned char *) pGC->dash;
+    numInDashList = pGC->numInDashList;
+    isDoubleDash = (pGC->lineStyle == LineDoubleDash);
+    dashIndex = 0;
+    dashOffset = 0;
+    miStepDash (pGC->dashOffset, &dashIndex, pDash,
+		numInDashList, &dashOffset);
 
+    if (isDoubleDash)
+	bgrop = mfbReduceRop(pGC->alu, pGC->bgPixel);
+
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
+#ifdef POLYSEGMENT
+    while (nseg--)
+#else
     ppt = pptInit;
+    x2 = ppt->x + xorg;
+    y2 = ppt->y + yorg;
     while(--npt)
+#endif
     {
 	nbox = nboxInit;
 	pbox = pboxInit;
 
-	pt1 = *ppt++;
-	pt2 = *ppt;
-
-	if (pt1.x == pt2.x)
-	{
-	    /* make the line go top to bottom of screen, keeping
-	       endpoint semantics
-	    */
-	    if (pt1.y > pt2.y)
-	    {
-#ifdef PURDUE
-		register int tmp;
-#endif
-		tmp = pt2.y;
-		pt2.y = pt1.y + 1;
-		pt1.y = tmp + 1;
-	    }
-
-	    /* get to first band that might contain part of line */
-	    while ((nbox) && (pbox->y2 <= pt1.y))
-	    {
-		pbox++;
-		nbox--;
-	    }
-
-	    if (nbox)
-	    {
-		/* stop when lower edge of box is beyond end of line */
-		while((nbox) && (pt2.y >= pbox->y1))
-		{
-		    if ((pt1.x >= pbox->x1) && (pt1.x < pbox->x2))
-		    {
-			/* this box has part of the line in it */
-			y1 = max(pt1.y, pbox->y1);
-			y2 = min(pt2.y, pbox->y2);
-			if (y1 != y2)
-			{
-			    mfbVertS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
-				      addrl, nlwidth, 
-				      pt1.x, y1, y2-y1);
-			}
-		    }
-		    nbox--;
-		    pbox++;
-		}
-	    }
-
-	}
-	else if (pt1.y == pt2.y)
-	{
-	    /* force line from left to right, keeping
-	       endpoint semantics
-	    */
-	    if (pt1.x > pt2.x)
-	    {
-#ifdef PURDUE
-		register int tmp;
-#endif
-		tmp = pt2.x;
-		pt2.x = pt1.x + 1;
-		pt1.x = tmp + 1;
-	    }
-
-	    /* find the correct band */
-	    while( (nbox) && (pbox->y2 <= pt1.y))
-	    {
-		pbox++;
-		nbox--;
-	    }
-
-	    /* try to draw the line, if we haven't gone beyond it */
-	    if ((nbox) && (pbox->y1 <= pt1.y))
-	    {
-		/* when we leave this band, we're done */
-		tmp = pbox->y1;
-		while((nbox) && (pbox->y1 == tmp))
-		{
-		    if (pbox->x2 <= pt1.x)
-		    {
-			/* skip boxes until one might contain start point */
-			nbox--;
-			pbox++;
-			continue;
-		    }
-
-		    /* stop if left of box is beyond right of line */
-		    if (pbox->x1 >= pt2.x)
-		    {
-			nbox = 0;
-#ifndef PURDUE
-			continue;
+#ifdef POLYSEGMENT
+	x1 = pSeg->x1 + xorg;
+	y1 = pSeg->y1 + yorg;
+	x2 = pSeg->x2 + xorg;
+	y2 = pSeg->y2 + yorg;
+	pSeg++;
 #else
-			break;
-#endif  /* PURDUE */
-		    }
-
-		    x1 = max(pt1.x, pbox->x1);
-		    x2 = min(pt2.x, pbox->x2);
-		    if (x1 != x2)
-		    {
-			mfbHorzS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
-				  addrl, nlwidth, 
-				  x1, pt1.y, x2-x1);
-		    }
-		    nbox--;
-		    pbox++;
-		}
-	    }
-	}
-	else	/* sloped line */
+	x1 = x2;
+	y1 = y2;
+	++ppt;
+	if (mode == CoordModePrevious)
 	{
+	    xorg = x1;
+	    yorg = y1;
+	}
+	x2 = ppt->x + xorg;
+	y2 = ppt->y + yorg;
+#endif
 
-	    adx = pt2.x - pt1.x;
-	    ady = pt2.y - pt1.y;
-	    signdx = sign(adx);
-	    signdy = sign(ady);
-	    adx = abs(adx);
-	    ady = abs(ady);
+	adx = x2 - x1;
+	ady = y2 - y1;
+	signdx = sign(adx);
+	signdy = sign(ady);
+	adx = abs(adx);
+	ady = abs(ady);
 
-	    if (adx > ady)
+	if (adx > ady)
+	{
+	    axis = X_AXIS;
+	    e1 = ady << 1;
+	    e2 = e1 - (adx << 1);
+	    e = e1 - adx;
+	    unclippedlen = adx;
+	}
+	else
+	{
+	    axis = Y_AXIS;
+	    e1 = adx << 1;
+	    e2 = e1 - (ady << 1);
+	    e = e1 - ady;
+	    unclippedlen = ady;
+	}
+
+	/* we have bresenham parameters and two points.
+	   all we have to do now is clip and draw.
+	*/
+
+	while(nbox--)
+	{
+	    oc1 = 0;
+	    oc2 = 0;
+	    OUTCODES(oc1, x1, y1, pbox);
+	    OUTCODES(oc2, x2, y2, pbox);
+	    if ((oc1 | oc2) == 0)
 	    {
-		axis = X_AXIS;
-		e1 = ady*2;
-		e2 = e1 - 2*adx;
-		e = e1 - adx;
-
+#ifdef POLYSEGMENT
+		if (pGC->capStyle != CapNotLast)
+		    unclippedlen++;
+#endif
+		mfbBresD (fgrop, bgrop,
+		      dashIndex, pDash, numInDashList,
+		      dashOffset, isDoubleDash,
+		      addrl, nlwidth,
+		      signdx, signdy, axis, x1, y1,
+		      e, e1, e2, unclippedlen);
+		break;
 	    }
-	    else
+	    else if (oc1 & oc2)
 	    {
-		axis = Y_AXIS;
-		e1 = adx*2;
-		e2 = e1 - 2*ady;
-		e = e1 - ady;
+		pbox++;
 	    }
-
-	    /* we have bresenham parameters and two points.
-	       all we have to do now is clip and draw.
-	    */
-
-	    pt1Orig = pt1;
-	    pt2Orig = pt2;
-
-	    while(nbox--)
+	    else /* have to clip */
 	    {
-
+		/*
+		 * let the mfb helper routine do our work;
+		 * better than duplicating code...
+		 */
 		BoxRec box;
-
-		pt1 = pt1Orig;
-		pt2 = pt2Orig;
-		clipDone = 0;
+		DDXPointRec pt1Copy;	/* clipped start point */
+		DDXPointRec pt2Copy;	/* clipped end point */
+		int err;			/* modified bresenham error term */
+		int clip1, clip2;		/* clippedness of the endpoints */
+	    
+		int clipdx, clipdy;		/* difference between clipped and
+					       unclipped start point */
+		DDXPointRec	pt1;
+    
+		pt1.x = pt1Copy.x = x1;
+		pt1.y = pt1Copy.y = y1;
+		pt2Copy.x = x2;
+		pt2Copy.y = y2;
 		box.x1 = pbox->x1;
 		box.y1 = pbox->y1;
 		box.x2 = pbox->x2-1;
 		box.y2 = pbox->y2-1;
 		clip1 = 0;
 		clip2 = 0;
-
-		oc1 = 0;
-		oc2 = 0;
-		OUTCODES(oc1, pt1.x, pt1.y, pbox);
-		OUTCODES(oc2, pt2.x, pt2.y, pbox);
-
-		if (oc1 & oc2)
-		    clipDone = -1;
-		else if ((oc1 | oc2) == 0)
-		    clipDone = 1;
-		else /* have to clip */
-		    clipDone = mfbClipLine(pbox, box,
-					   &pt1Orig, &pt1, &pt2, 
-					   adx, ady, signdx, signdy, axis,
-					   &clip1, &clip2);
-
-		if (clipDone == -1)
+    
+		if (mfbClipLine (pbox, box,
+				       &pt1, &pt1Copy, &pt2Copy, 
+				       adx, ady, signdx, signdy, axis,
+				       &clip1, &clip2) == 1)
 		{
-		    pbox++;
-		}
-		else
-		{
-
+    
+		    dashIndexTmp = dashIndex;
+		    dashOffsetTmp = dashOffset;
+		    if (clip1)
+		    {
+		    	int dlen;
+    
+		    	if (axis == X_AXIS)
+			    dlen = abs(pt1Copy.x - x1);
+		    	else
+			    dlen = abs(pt1Copy.y - y1);
+		    	miStepDash (dlen, &dashIndexTmp, pDash,
+				    numInDashList, &dashOffsetTmp);
+		    }
 		    if (axis == X_AXIS)
-			len = abs(pt2.x - pt1.x);
+		    	len = abs(pt2Copy.x - pt1Copy.x);
 		    else
-			len = abs(pt2.y - pt1.y);
-
+		    	len = abs(pt2Copy.y - pt1Copy.y);
+    
+#ifdef POLYSEGMENT
+		    if (clip2 != 0 || pGC->capStyle != CapNotLast)
+		    	len++;
+#else
 		    len += (clip2 != 0);
+#endif
 		    if (len)
 		    {
-			/* unwind bresenham error term to first point */
-			if (clip1)
-			{
-			    clipdx = abs(pt1.x - pt1Orig.x);
-			    clipdy = abs(pt1.y - pt1Orig.y);
+		    	/* unwind bresenham error term to first point */
+		    	if (clip1)
+		    	{
+			    clipdx = abs(pt1Copy.x - x1);
+			    clipdy = abs(pt1Copy.y - y1);
 			    if (axis == X_AXIS)
-				err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
+			    	err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
 			    else
-				err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
-			}
-			else
+			    	err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
+		    	}
+		    	else
 			    err = e;
-			mfbBresS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
-				  addrl, nlwidth,
-				  signdx, signdy, axis, pt1.x, pt1.y,
-				  err, e1, e2, len);
+		    	mfbBresD (fgrop, bgrop,
+			      	  dashIndexTmp, pDash, numInDashList,
+			      	  dashOffsetTmp, isDoubleDash,
+			      	  addrl, nlwidth,
+			      	  signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
+			      	  err, e1, e2, len);
 		    }
-
-		    /* if segment is unclipped, skip remaining rectangles */
-		    if (!(clip1 || clip2))
-			break;
-		    else
-			pbox++;
 		}
-	    } /* while (nbox--) */
-	} /* sloped line */
+		pbox++;
+	    }
+	} /* while (nbox--) */
     } /* while (nline--) */
 
+#ifndef POLYSEGMENT
     /* paint the last point if the end style isn't CapNotLast.
        (Assume that a projecting, butt, or round cap that is one
         pixel wide is the same as the single pixel of the endpoint.)
     */
 
     if ((pGC->capStyle != CapNotLast) &&
+        ((dashIndex & 1) == 0 || isDoubleDash) &&
 	((ppt->x != pptInit->x) ||
 	 (ppt->y != pptInit->y) ||
 	 (ppt == pptInit + 1)))
     {
-#ifndef PURDUE
-	pt1 = *ppt;
-
 	nbox = nboxInit;
 	pbox = pboxInit;
 	while (nbox--)
 	{
-	    if ((pt1.x >= pbox->x1) &&
-		(pt1.y >= pbox->y1) &&
-		(pt1.x <  pbox->x2) &&
-		(pt1.y <  pbox->y2))
+	    if ((x2 >= pbox->x1) &&
+		(y2 >= pbox->y1) &&
+		(x2 <  pbox->x2) &&
+		(y2 <  pbox->y2))
 	    {
-		addrl += (pt1.y * nlwidth) + (pt1.x >> 5);
-		switch( ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop)
-		{
-		    case RROP_BLACK:
-		        *addrl &= rmask[pt1.x & 0x1f];
-			break;
-		    case RROP_WHITE:
-		        *addrl |= mask[pt1.x & 0x1f];
-			break;
-		    case RROP_INVERT:
-		        *addrl ^= mask[pt1.x & 0x1f];
-			break;
-		}
+		unsigned long _mask;
+		int rop;
+
+		rop = fgrop;
+		if (dashIndex & 1)
+		    rop = bgrop;
+		if (rop == RROP_BLACK)
+		    _mask = rmask[x2 & 0x1f];
+		else
+		    _mask = mask[x2 & 0x1f];
+		addrl += (y2 * nlwidth) + (x2 >> 5);
+		if (rop == RROP_BLACK)
+		    *addrl &= _mask;
+		else if (rop == RROP_WHITE)
+		    *addrl |= _mask;
+		else
+		    *addrl ^= _mask;
 		break;
 	    }
 	    else
 		pbox++;
 	}
-#else
-	unsigned int _mask;
-	int _incr,  _rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-
-	pt1 = *ppt;
-	if (_rop == RROP_BLACK)
-		_mask = rmask[pt1.x & 0x1f];
-	else
-		_mask = mask[pt1.x & 0x1f];
-	_incr = (pt1.y * nlwidth) + (pt1.x >> 5);
-
-	nbox = nboxInit;
-	pbox = pboxInit;
-	while (nbox--)
-	{
-	    if ((pt1.x >= pbox->x1) &&
-		(pt1.y >= pbox->y1) &&
-		(pt1.x <  pbox->x2) &&
-		(pt1.y <  pbox->y2))
-	    {
-		addrl += _incr;
-		switch(_rop)
-		{
-		    case RROP_BLACK:
-		        *addrl &= _mask;
-			break;
-		    case RROP_WHITE:
-		        *addrl |= _mask;
-			break;
-		    case RROP_INVERT:
-		        *addrl ^= _mask;
-			break;
-		}
-		break;
-	    }
-	    else
-		pbox++;
-	}
-#endif  /* PURDUE */
     }
-}
-
-
-/*
-    this code does not pretend to be efficient, but it does recycle a
-lot of the line code and use the miDashLine() code too.  a better
-implementation is to use the solid line code to clip and
-translate, and then call mfbBresD(), to do the dashes as the
-line is drawn.  a Bres() procedure entry in the devPrivate
-part of the GC would make this easy to do, as well as possibly speeding
-up solid lines to (by avoiding the test of rrop for each segment.)
-
-    to do double dashes we concoct a rop for the (alu, bg) pair.
-
-    the error term at the start of each dash is computed for us by
-miDashLine.  if the segment we draw is not clipped, we can use this
-error term; if the first point of the dash is clipped, we have to
-calculate a new error term based on e at the first point of the line.
-*/
-
-void
-mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
-    DrawablePtr pDrawable;
-    GCPtr pGC;
-    int mode;		/* Origin or Previous */
-    int npt;		/* number of points */
-    DDXPointPtr pptInit;
-{
-    int nseg;			/* number of dashed segments */
-    miDashPtr pdash;		/* list of dashes */
-    miDashPtr pdashInit;
-    int fgRop;			/* reduced rasterop for even dash */
-    int bgRop;			/* reduced rasterop for odd dash */
-    int rop;
-
-    int nboxInit;
-    int nbox;
-    BoxPtr pboxInit;
-    BoxPtr pbox;
-    int nptTmp;
-    DDXPointPtr ppt;		/* pointer to list of translated points */
-
-    DDXPointRec pt1;
-    DDXPointRec pt2;
-
-    unsigned int oc1;		/* outcode of point 1 */
-    unsigned int oc2;		/* outcode of point 2 */
-
-    int *addrl;			/* address of longword with first point */
-    int nlwidth;		/* width in longwords of destination bitmap */
-    int xorg, yorg;		/* origin of window */
-
-				/* these are all per original line */
-    int adx;			/* abs values of dx and dy */
-    int ady;
-    int signdx;			/* sign of dx and dy */
-    int signdy;
-    int e;			/* error term for first point of
-				   original line */
-    int e1, e2;			/* i wonder what these are? */
-
-
-				/* these are all per dash */
-    int err;			/* bres error term for first drawn point */
-    int len;			/* length of segment */
-    int axis;			/* major axis */
-
-    int clipDone;		/* flag for clipping loop */
-    DDXPointRec pt1Orig;	/* unclipped start point */
-    int clip1, clip2;		/* clippedness of the endpoints */
-
-    int clipdx, clipdy;		/* difference between clipped and
-				   unclipped start point */
-    RegionPtr cclip;
-
-    cclip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
-    pboxInit = REGION_RECTS(cclip);
-    nboxInit = REGION_NUM_RECTS(cclip);
-
-    xorg = pDrawable->x;
-    yorg = pDrawable->y;
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwidth = (int)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
-
-    /* translate the point list */
-    ppt = pptInit;
-    nptTmp = npt;
-    if (mode == CoordModeOrigin)
-    {
-#ifndef PURDUE
-	while(nptTmp--)
-	{
-	    ppt->x += xorg;
-	    ppt++->y += yorg;
-	}
-#else
-	Duff(nptTmp, ppt->x += xorg; ppt++->y += yorg );
-#endif  /* PURDUE */
-    }
-    else
-    {
-	ppt->x += xorg;
-	ppt->y += yorg;
-	nptTmp--;
-#ifndef PURDUE
-	while(nptTmp--)
-	{
-	    ppt++;
-	    ppt->x += (ppt-1)->x;
-	    ppt->y += (ppt-1)->y;
-	}
-#else
-	Duff (nptTmp, ppt++; ppt->x += (ppt-1)->x; ppt->y += (ppt-1)->y);
 #endif
-    }
-
-
-    pdash = miDashLine(npt, pptInit, 
-		       pGC->numInDashList, pGC->dash, pGC->dashOffset,
-		       &nseg);
-    pdashInit = pdash;
-
-    if (pGC->lineStyle == LineOnOffDash)
-    {
-	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-    }
-    else
-    {
-	fgRop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
-	bgRop = mfbReduceRop(pGC->alu, pGC->bgPixel);
-    }
-
-    for (; --nseg >= 0; pdash++)
-    {
-	if (pdash->newLine)
-	{
-	    pt1 = *pptInit++;
-	    pt1Orig = pt1;
-	    pt2 = *pptInit;
-	    adx = pt2.x - pt1.x;
-	    ady = pt2.y - pt1.y;
-	    signdx = sign(adx);
-	    signdy = sign(ady);
-	    adx = abs(adx);
-	    ady = abs(ady);
-	    e = pdash->e;
-	    e1 = pdash->e1;
-	    e2 = pdash->e2;
-	    if (adx > ady)
-		axis = X_AXIS;
-	    else
-		axis = Y_AXIS;
-	}
-	if (pGC->lineStyle == LineOnOffDash)
-	{
-	    if (pdash->which == ODD_DASH)
-		continue;
-	}
-	else if (pGC->lineStyle == LineDoubleDash)
-	{
-	    /* use a different color for odd dashes */
-	    if (pdash->which == EVEN_DASH)
-		rop = fgRop;
-	    else
-		rop = bgRop;
-	}
-
-	nbox = nboxInit;
-	pbox = pboxInit;
-	while(nbox--)
-	{
-	    BoxRec box;
-
-	    clipDone = 0;
-	    pt1 = pdash->pt;
-	    pt2 = (pdash+1)->pt;
-	    box.x1 = pbox->x1;
-	    box.y1 = pbox->y1;
-	    box.x2 = pbox->x2-1;
-	    box.y2 = pbox->y2-1;
-	    clip1 = 0;
-	    clip2 = 0;
-
-	    oc1 = 0;
-	    oc2 = 0;
-	    OUTCODES(oc1, pt1.x, pt1.y, pbox);
-	    OUTCODES(oc2, pt2.x, pt2.y, pbox);
-
-	    if (oc1 & oc2)
-		clipDone = -1;
-	    else if ((oc1 | oc2) == 0)
-		clipDone = 1;
-	    else /* have to clip */
-		clipDone = mfbClipLine(pbox, box,
-				       &pt1Orig, &pt1, &pt2, 
-				       adx, ady, signdx, signdy, axis,
-				       &clip1, &clip2);
-
-	    if (clipDone == -1)
-	    {
-		    pbox++;
-	    }
-	    else
-	    {
-		if (axis == X_AXIS)
-		    len = abs(pt2.x - pt1.x);
-		else
-		    len = abs(pt2.y - pt1.y);
-
-		len += (clip2 != 0);
-		if (len)
-		{
-		    if (clip1)
-		    {
-			/* unwind bres error term to first visible point */
-			clipdx = abs(pt1.x - pt1Orig.x);
-			clipdy = abs(pt1.y - pt1Orig.y);
-			if (axis == X_AXIS)
-			    err = e+((clipdy*e2) + ((clipdx-clipdy)*e1));
-			else
-			    err = e+((clipdx*e2) + ((clipdy-clipdx)*e1));
-		    }
-		    else
-		    {
-			/* use error term calculated with the dash */
-			err = pdash->e;
-		    }
-
-		    mfbBresS( rop,
-			      addrl, nlwidth,
-			      signdx, signdy, axis, pt1.x, pt1.y,
-			      err, e1, e2, len);
-		}
-
-		/* if segment is unclipped, skip remaining rectangles */
-		if (!(clip1 || clip2))
-			break;
-		else
-			pbox++;
-	    }
-	} /* while (nbox--) */
-    } /* for */
-
-    xfree(pdashInit);
 }
 
-
+#ifndef POLYSEGMENT
 /*
     the clipping code could be cleaned up some; most of its
 mess derives from originally being inline in the line code,
@@ -976,4 +991,4 @@ int *pclip1, *pclip2;
 
     return clipDone;
 }
-
+#endif

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.10 89/08/08 17:17:58 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.11 89/09/02 15:15:34 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -62,9 +62,9 @@ static GCOps	whiteTECopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -86,9 +86,9 @@ static GCOps	blackTECopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -110,9 +110,9 @@ static GCOps	whiteTEInvertOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -134,9 +134,9 @@ static GCOps	blackTEInvertOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -158,9 +158,9 @@ static GCOps	whiteCopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -182,9 +182,9 @@ static GCOps	blackCopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -206,9 +206,9 @@ static GCOps	whiteInvertOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -230,9 +230,9 @@ static GCOps	blackInvertOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -254,9 +254,9 @@ static GCOps	whiteWhiteCopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -278,9 +278,9 @@ static GCOps	blackBlackCopyOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -302,9 +302,9 @@ static GCOps	fgEqBgInvertOps = {
 	mfbCopyPlane,
 	mfbPolyPoint,
 	mfbLineSS,
-	miPolySegment,
+	mfbSegmentSS,
 	miPolyRectangle,
-	miZeroPolyArc,
+	mfbZeroPolyArcSS,
 	miFillPolygon,
 	mfbPolyFillRect,
 	miPolyFillArc,
@@ -863,29 +863,44 @@ mfbValidateGC(pGC, changes, pDrawable)
 
     if (new_line || new_fill)
     {
-	if (pGC->lineWidth == 0)
-	    pGC->ops->PolyArc = miZeroPolyArc;
-	else
-	    pGC->ops->PolyArc = miPolyArc;
 	if (pGC->lineStyle == LineSolid)
 	{
 	    if(pGC->lineWidth == 0)
 	    {
 	        if (pGC->fillStyle == FillSolid)
+		{
+		    pGC->ops->PolyArc = mfbZeroPolyArcSS;
+		    pGC->ops->PolySegment = mfbSegmentSS;
 		    pGC->ops->Polylines = mfbLineSS;
-	        else
+	        }
+ 		else
+		{
+		    pGC->ops->PolyArc = miZeroPolyArc;
+		    pGC->ops->PolySegment = miPolySegment;
 		    pGC->ops->Polylines = miZeroLine;
+		}
 	    }
 	    else
 	    {
+		pGC->ops->PolyArc = miPolyArc;
+		pGC->ops->PolySegment = miPolySegment;
 		pGC->ops->Polylines = miWideLine;
 	    }
 	}
 	else
-	    if(pGC->lineWidth == 0)
-	        pGC->ops->Polylines = mfbDashLine;
+	{
+	    pGC->ops->PolyArc = miPolyArc;
+	    if(pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
+	    {
+	        pGC->ops->Polylines = mfbLineSD;
+		pGC->ops->PolySegment = mfbSegmentSD;
+	    }
 	    else
+	    {
 	        pGC->ops->Polylines = miWideDash;
+		pGC->ops->PolySegment = miPolySegment;
+	    }
+	}
 
 	switch(pGC->joinStyle)
 	{

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbres.c,v 1.12 88/09/06 14:53:36 jim Exp $ */
+/* $XConsortium: mfbbres.c,v 1.1 89/09/02 13:00:58 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "mfb.h"
@@ -35,13 +35,7 @@ SOFTWARE.
 
 mfbBresS(rop, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;		/* a reduced rasterop */
-
-#ifdef PURDUE
 unsigned int *addrl;		/* pointer to base of bitmap */
-#else
-register int *addrl;		/* pointer to base of bitmap */
-#endif
-
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -49,16 +43,8 @@ int x1, y1;		/* initial point */
 register int e;		/* error accumulator */
 register int e1;	/* bresenham increments */
 int e2;
-
-#ifdef PURDUE
 unsigned int len;	/* length of line */
-#else
-register int len;	/* length of line */
-#endif
-
 {
-
-#ifdef PURDUE
     register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;		/* bitmask long pointer 
 						 * cast to char pointer */
@@ -67,102 +53,89 @@ register int len;	/* length of line */
     unsigned int rightbit = mask[31]; /* rightmost bit to process in new word */
 
     register int e3 = e2-e1;
+    unsigned int	tmp;
 
     /* point to longword containing first point */
     addrb = (unsigned char *)(addrl + (y1 * nlwidth) + (x1 >> 5));
     yinc = signdy * nlwidth * 4;                /* 4 == sizeof(int) */
     e = e-e1;			/* to make looping easier */
     bit = mask[x1 & 31];
-#else
-    register int yinc;	/* increment to next scanline */
-    register int addrb;		/* bitmask */
 
-    /* point to longword containing first point */
-    addrl = addrl + (y1 * nlwidth) + (x1 >> 5);
-    addrb = x1&0x1f;
-    yinc = signdy * nlwidth;
-#endif
-
+    if (!len)
+	return;
     if (rop == RROP_BLACK)
     {
         if (axis == X_AXIS)
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
-		while(len--)
+		tmp = *(unsigned long*)addrb;
+		for (;;)
 		{ 
-		    *(unsigned long *)addrb &= ~bit;
+		    tmp &= ~bit;
+		    if (!--len)
+			break;
+		    bit = SCRRIGHT(bit,1);
 		    e += e1;
-		    if (e >= 0)
+ 		    if (e >= 0)
 		    {
+			*(unsigned long *) addrb = tmp;
 			addrb += yinc;
 			e += e3;
+			if (!bit)
+			{
+			    bit = leftbit;
+			    addrb += 4;
+			}
+			tmp = *(unsigned long *) addrb;
 		    }
-		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += 4; }
+		    else if (!bit)
+ 		    {
+			*(unsigned long *) addrb = tmp;
+			bit = leftbit;
+			addrb += 4;
+			tmp = *(unsigned long *) addrb;
+		    }
 		}
-#else		    
-	        while(len--)
-	        {
-		    *addrl &= rmask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 31)
-		    {
-		        addrb = -1;
-		        addrl++;
-		    }
-		    addrb++;
-	        }
-#endif
+		*(unsigned long *) addrb = tmp;
 	    }
 	    else
 	    {
-#ifdef PURDUE
-		while(len--)
+		tmp = *(unsigned long *)addrb;
+		for (;;)
 		{ 
-		    *(unsigned long *)addrb &= ~bit;
+		    tmp &= ~bit;
+		    if (!--len)
+			break;
 		    e += e1;
+		    bit = SCRLEFT(bit,1);
 		    if (e >= 0)
 		    {
+			*(unsigned long *) addrb = tmp;
 			addrb += yinc;
 			e += e3;
+			if (!bit)
+			{
+			    bit = rightbit;
+			    addrb -= 4;
+			}
+			tmp = *(unsigned long *) addrb;
 		    }
-		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= 4; }
+		    else if (!bit)
+ 		    {
+			*(unsigned long *) addrb = tmp;
+			bit = rightbit;
+			addrb -= 4;
+			tmp = *(unsigned long *) addrb;
+		    }
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl &= rmask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 0)
-		    {
-		        addrb = 32;
-		        addrl--;
-		    }
-		    addrb--;
-	        }
-#endif
+		*(unsigned long *) addrb = tmp;
 	    }
         } /* if X_AXIS */
         else
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb &= ~bit;
@@ -175,29 +148,9 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl &= rmask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 31)
-		        {
-			    addrb = -1;
-			    addrl++;
-		        }
-		        addrb++;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
 	    else
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb &= ~bit;
@@ -210,25 +163,6 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl &= rmask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 0)
-		        {
-			    addrb = 32;
-			    addrl--;
-		        }
-		        addrb--;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
         } /* else Y_AXIS */
     } 
@@ -238,80 +172,73 @@ register int len;	/* length of line */
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
-		while(len--)
+		tmp = *(unsigned long *)addrb;
+		for (;;)
 		{
-		    *(unsigned long *)addrb |= bit;
+		    tmp |= bit;
+		    if (!--len)
+			break;
 		    e += e1;
+		    bit = SCRRIGHT(bit,1);
 		    if (e >= 0)
 		    {
+			*(unsigned long *) addrb = tmp;
 			addrb += yinc;
 			e += e3;
+			if (!bit)
+			{
+			    bit = leftbit;
+			    addrb += 4;
+			}
+			tmp = *(unsigned long *) addrb;
 		    }
-		    bit = SCRRIGHT(bit,1);
-		    if (!bit) { bit = leftbit;addrb += 4; }
+		    else if (!bit)
+ 		    {
+			*(unsigned long *) addrb = tmp;
+			bit = leftbit;
+			addrb += 4;
+			tmp = *(unsigned long *) addrb;
+		    }
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl |= mask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 31)
-		    {
-		        addrb = -1;
-		        addrl++;
-		    }
-		    addrb++;
-	        }
-#endif
+		*(unsigned long *) addrb = tmp;
 	    }
 	    else
 	    {
-#ifdef PURDUE
-		while(len--)
+		tmp = *(unsigned long *) addrb;
+		for (;;)
 		{
-		    *(unsigned long *)addrb |= bit;
+		    tmp |= bit;
+		    if (!--len)
+			break;
 		    e += e1;
+		    bit = SCRLEFT(bit,1);
 		    if (e >= 0)
 		    {
+			*(unsigned long *) addrb = tmp;
 			addrb += yinc;
 			e += e3;
+			if (!bit)
+			{
+			    bit = rightbit;
+			    addrb -= 4;
+			}
+			tmp = *(unsigned long *) addrb;
 		    }
-		    bit = SCRLEFT(bit,1);
-		    if (!bit) { bit = rightbit;addrb -= 4; }
+		    else if (!bit)
+		    {
+			*(unsigned long *) addrb = tmp;
+			bit = rightbit;
+			addrb -= 4;
+			tmp = *(unsigned long *) addrb;
+		    }
 		}
-#else
-		while(len--)
-	        {
-		    *addrl |= mask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 0)
-		    {
-		        addrb = 32;
-		        addrl--;
-		    }
-		    addrb--;
-	        }
-#endif
+		*(unsigned long *) addrb = tmp;
 	    }
         } /* if X_AXIS */
         else
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb |= bit;
@@ -324,29 +251,9 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl |= mask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 31)
-		        {
-			    addrb = -1;
-			    addrl++;
-		        }
-		        addrb++;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
 	    else
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb |= bit;
@@ -359,25 +266,6 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl |= mask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 0)
-		        {
-			    addrb = 32;
-			    addrl--;
-		        }
-		        addrb--;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
         } /* else Y_AXIS */
     }
@@ -387,7 +275,6 @@ register int len;	/* length of line */
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb ^= bit;
@@ -400,29 +287,9 @@ register int len;	/* length of line */
 		    bit = SCRRIGHT(bit,1);
 		    if (!bit) { bit = leftbit;addrb += 4; }
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl ^= mask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 31)
-		    {
-		        addrb = -1;
-		        addrl++;
-		    }
-		    addrb++;
-	        }
-#endif
 	    }
 	    else
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb ^= bit;
@@ -435,32 +302,12 @@ register int len;	/* length of line */
 		    bit = SCRLEFT(bit,1);
 		    if (!bit) { bit = rightbit;addrb -= 4; }
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl ^= mask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        addrl += yinc;
-		        e += e2;
-		    }
-		    if (addrb == 0)
-		    {
-		        addrb = 32;
-		        addrl--;
-		    }
-		    addrb--;
-	        }
-#endif
 	    }
         } /* if X_AXIS */
         else
         {
 	    if (signdx > 0)
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb ^= bit;
@@ -473,29 +320,9 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl ^= mask[addrb];
-		    if (e < 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 31)
-		        {
-			    addrb = -1;
-			    addrl++;
-		        }
-		        addrb++;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
 	    else
 	    {
-#ifdef PURDUE
 		while(len--)
 		{
 		    *(unsigned long *)addrb ^= bit;
@@ -508,25 +335,6 @@ register int len;	/* length of line */
 		    }
 		    addrb += yinc;
 		}
-#else
-	        while(len--)
-	        {
-		    *addrl ^= mask[addrb];
-		    if (e <= 0)
-		        e += e1;
-		    else
-		    {
-		        if (addrb == 0)
-		        {
-			    addrb = 32;
-			    addrl--;
-		        }
-		        addrb--;
-		        e += e2;
-		    }
-		    addrl += yinc;
-	        }
-#endif
 	    }
         } /* else Y_AXIS */
     }
