@@ -1,6 +1,6 @@
 SRCS = cmsdb.c LoadSCCData.c
 OBJS = cmsdb.o LoadSCCData.o
-INCLUDES = -I$(TOP)/lib/X
+INCLUDES = -I$(XLIBSRC)
 DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
 
