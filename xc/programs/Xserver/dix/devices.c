@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.42 94/02/23 15:47:59 dpw Exp $ */
+/* $XConsortium: devices.c,v 5.43 94/04/01 18:44:31 erik Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1267,6 +1267,9 @@ ProcChangeKeyboardControl (client)
     }
     keybd->kbdfeed->ctrl = ctrl;
 #ifdef XKB
+    /* The XKB RepeatKeys control and core protocol global autorepeat */
+    /* value are linked	*/
+    XkbSetRepeatKeys(keybd,keybd->kbdfeed->ctrl.autoRepeat);
     /* If XKB (AccessX) will handle the autorepeat in software we tell 
      * the hardware to not autorepeat.
      */
