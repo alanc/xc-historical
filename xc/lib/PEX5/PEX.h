@@ -1,7 +1,7 @@
 #ifndef PEX_H
 #define PEX_H
 
-/* $XConsortium: PEX.h,v 1.2 92/05/07 23:30:49 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.1 92/05/08 15:11:48 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */
@@ -582,7 +582,7 @@
  * pipeline context
  */
 
-/* pipeline context attributes bitmask */
+/* pipeline context attributes bitmask shift values */
 #define PEXPCMarkerType                 0
 #define PEXPCMarkerScale                1
 #define PEXPCMarkerColor                2
@@ -876,7 +876,7 @@
 #define PEXHigher                       0
 #define PEXLower                        1
 
-/* workstation attributes bitmask */
+/* workstation attributes bitmask shift values */
 #define PEXPWDisplayUpdate              0
 #define PEXPWVisualState                1
 #define PEXPWDisplaySurface             2
