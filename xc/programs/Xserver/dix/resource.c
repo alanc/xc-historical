@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.65 88/06/30 15:33:11 keith Exp $ */
+/* $XConsortium: resource.c,v 1.66 88/09/06 15:41:20 jim Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -169,8 +169,9 @@ AddResource(id, type, value, func, class)
     pointer value;
     int (* func)();
 {
-    int client, j;
-    ResourcePtr res, next, *head;
+    int client;
+    register int j;
+    register ResourcePtr res, next, *head;
     	
     client = CLIENT_ID(id);
     if (!clientTable[client].buckets)
@@ -195,12 +196,18 @@ AddResource(id, type, value, func, class)
 	clientTable[client].hashsize++;
 	for (j = 0; j < clientTable[client].buckets; j++)
 	{
+	    /*
+	     * Must preserve insertion order so that FreeResource doesn't free
+	     * "subclasses" before main resources are freed.  Sigh.
+	     */
 	    for (res = clientTable[client].resources[j]; res; res = next)
 	    {
 		next = res->next;
 		head = &resources[Hash(client, res->id)];
-		res->next = *head;
+		while (*head)
+		    head = &(*head)->next;
 		*head = res;
+		res->next = NullResource;
 	    }
 	}
 	clientTable[client].buckets *= 2;
