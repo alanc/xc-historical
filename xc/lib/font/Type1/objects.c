@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.4 91/10/10 11:18:29 rws Exp $ */
+/* $XConsortium: objects.c,v 1.5 92/03/20 15:56:06 eswu Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -855,7 +855,9 @@ environment.
        }
 #endif
        else if (!strcmp(name, "FLUSHCACHE")) {
+#ifdef notdef
                while (GimeSpace()) { ; }
+#endif
        }
  
        else if (!strcmp(name, "CACHEDCHARS"))
