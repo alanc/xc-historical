@@ -60,7 +60,6 @@ typedef struct {
 
 extern CARD8 *sunModMap[];
 extern KeySymsRec sunKeySyms[];
-extern CARD16 keyModifiersList[];
 
 extern void	ProcessInputEvents();
 extern void	miPointerPosition();
@@ -477,7 +476,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     int			delta;
     static xEvent	autoRepeatEvent;
     BYTE		key;
-    CARD16		keyModifiers;
+    CARD8		keyModifiers;
 
     if (autoRepeatKeyDown && fe->id == AUTOREPEAT_EVENTID) {
 	pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
@@ -505,10 +504,10 @@ sunKbdProcessEvent (pKeyboard, fe)
 			   &autoRepeatEvent.u.keyButtonPointer.rootX,
 			   &autoRepeatEvent.u.keyButtonPointer.rootY);
 	autoRepeatEvent.u.u.type = KeyRelease;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
+	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
 
 	autoRepeatEvent.u.u.type = KeyPress;
-	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
+	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard, 1);
 
 	/* Update time of last key down */
 	tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
@@ -518,7 +517,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     }
 
     key = (fe->id & 0x7F) + sysKbPriv.offset;
-    keyModifiers = keyModifiersList[key];
+    keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
 	/*
@@ -539,9 +538,7 @@ sunKbdProcessEvent (pKeyboard, fe)
     if (keyModifiers & LockMask) {
 	if (xE.u.u.type == KeyRelease)
 	    return; /* this assumes autorepeat is not desired */
-	/* This assumes pKeyboard points to a DeviceRec whose first
-	   element is a DeviceIntRec - a bit tacky */
-	if (((DeviceIntPtr)pKeyboard)->down[key >> 3] & (1 << (key & 7)))
+	if (BitIsOn(((DeviceIntPtr)pKeyboard)->key->down, key))
 	    xE.u.u.type = KeyRelease;
     }
 
@@ -555,7 +552,7 @@ sunKbdProcessEvent (pKeyboard, fe)
 	autoRepeatLastKeyDownTv = fe->time;
     }
 
-    (* pKeyboard->processInputProc) (&xE, pKeyboard);
+    (* pKeyboard->processInputProc) (&xE, pKeyboard, 1);
 }
 
 /*-

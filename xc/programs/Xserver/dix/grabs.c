@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.2 89/07/16 17:24:53 rws Exp $ */
+/* $XConsortium: grabs.c,v 5.3 89/08/08 17:16:37 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,6 +30,8 @@ SOFTWARE.
 #include "inputstr.h"
 #include "cursorstr.h"
 
+extern InputInfo inputInfo;
+
 #define BITMASK(i) (((Mask)1) << ((i) & 31))
 #define MASKIDX(i) ((i) >> 5)
 #define MASKWORD(buf, i) buf[MASKIDX(i)]
@@ -39,13 +41,15 @@ SOFTWARE.
 
 GrabPtr
 CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
-	   pointerMode, modifiers, keybut, confineTo, cursor)
+	   pointerMode, modDevice, modifiers, type, keybut, confineTo, cursor)
     int client;
     DeviceIntPtr device;
     WindowPtr window;
     Mask eventMask;
     Bool ownerEvents, keyboardMode, pointerMode;
+    DeviceIntPtr modDevice;
     unsigned short modifiers;
+    int type;
     KeyCode keybut;	/* key or button */
     WindowPtr confineTo;
     CursorPtr cursor;
@@ -57,6 +61,8 @@ CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
 	return (GrabPtr)NULL;
     grab->resource = FakeClientID(client);
     grab->device = device;
+    grab->coreGrab = ((device == inputInfo.keyboard) ||
+		      (device == inputInfo.pointer));
     grab->window = window;
     grab->eventMask = eventMask;
     grab->ownerEvents = ownerEvents;
@@ -64,6 +70,10 @@ CreateGrab(client, device, window, eventMask, ownerEvents, keyboardMode,
     grab->pointerMode = pointerMode;
     grab->modifiersDetail.exact = modifiers;
     grab->modifiersDetail.pMask = NULL;
+    grab->modifierDevice = modDevice;
+    grab->coreMods = ((modDevice == inputInfo.keyboard) ||
+		      (modDevice == inputInfo.pointer));
+    grab->type = type;
     grab->detail.exact = keybut;
     grab->detail.pMask = NULL;
     grab->confineTo = confineTo;
@@ -207,13 +217,13 @@ Bool
 GrabMatchesSecond(pFirstGrab, pSecondGrab)
     GrabPtr pFirstGrab, pSecondGrab;
 {
-    if (pFirstGrab->device != pSecondGrab->device)
+    if ((pFirstGrab->device != pSecondGrab->device) ||
+	(pFirstGrab->modifierDevice != pSecondGrab->modifierDevice) ||
+	(pFirstGrab->type != pSecondGrab->type))
 	return FALSE;
 
-    if (GrabSupersedesSecond(pFirstGrab, pSecondGrab))
-	return TRUE;
-
-    if (GrabSupersedesSecond(pSecondGrab, pFirstGrab))
+    if (GrabSupersedesSecond(pFirstGrab, pSecondGrab) ||
+	GrabSupersedesSecond(pSecondGrab, pFirstGrab))
 	return TRUE;
  
     if (DetailSupersedesSecond(pSecondGrab->detail, pFirstGrab->detail,

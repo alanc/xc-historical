@@ -310,7 +310,7 @@ MouseAccelerate (pMouse, delta)
     register PtrCtrl *pCtrl;
 
     delta = abs(delta);
-    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
 
     if (delta > pCtrl->threshold) {
 	return ((short) (sgn * (pCtrl->threshold +
@@ -391,7 +391,7 @@ sunMouseProcessEvent (pMouse, fe)
 			   &xE.u.keyButtonPointer.rootX,
 			   &xE.u.keyButtonPointer.rootY);
     
-	(* pMouse->processInputProc) (&xE, pMouse);
+	(* pMouse->processInputProc) (&xE, pMouse, 1);
 	break;
     case LOC_X_DELTA:
 	/*
@@ -610,7 +610,7 @@ sunMouseProcessEventSunWin(pMouse,se)
     xE.u.keyButtonPointer.rootX = event_x(se);
     xE.u.keyButtonPointer.rootY = event_y(se);
 
-    (* pMouse->processInputProc) (&xE, pMouse);
+    (* pMouse->processInputProc) (&xE, pMouse, 1);
 
 }
 #endif SUN_WINDOWS
