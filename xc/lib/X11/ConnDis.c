@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.59 89/10/08 14:28:55 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.60 89/10/10 19:41:04 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -416,7 +416,12 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 #include <sys/un.h>
 
 #ifndef X_UNIX_PATH
+#ifdef hpux
+#define X_UNIX_PATH "/usr/spool/sockets/X11/"
+#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
+#else
 #define X_UNIX_PATH "/tmp/.X11-unix/X"
+#endif
 #endif /* X_UNIX_PATH */
 
 static int MakeUNIXSocketConnection (phostname, idisplay, retries,
@@ -432,12 +437,24 @@ static int MakeUNIXSocketConnection (phostname, idisplay, retries,
     struct sockaddr *addr;		/* generic socket pointer */
     int addrlen;			/* length of addr */
     int fd;				/* socket file descriptor */
+#ifdef hpux /* this is disgusting */
+    struct sockaddr_un ounaddr;		/* UNIX socket data block */
+    struct sockaddr *oaddr;		/* generic socket pointer */
+    int oaddrlen;			/* length of addr */
+#endif
 
     unaddr.sun_family = AF_UNIX;
     sprintf (unaddr.sun_path, "%s%d", X_UNIX_PATH, idisplay);
 
     addr = (struct sockaddr *) &unaddr;
     addrlen = strlen(unaddr.sun_path) + sizeof(unaddr.sun_family);
+
+#ifdef hpux /* this is disgusting */
+    ounaddr.sun_family = AF_UNIX;
+    sprintf (ounaddr.sun_path, "%s%d", OLD_UNIX_PATH, idisplay);
+    oaddr = (struct sockaddr *) &ounaddr;
+    oaddrlen = strlen(ounaddr.sun_path) + sizeof(ounaddr.sun_family);
+#endif
 
     /*
      * Open the network connection.
@@ -450,6 +467,17 @@ static int MakeUNIXSocketConnection (phostname, idisplay, retries,
 	if (connect (fd, addr, addrlen) < 0) {
 	    int olderrno = errno;
 	    (void) close (fd);
+#ifdef hpux /* this is disgusting */
+	    if (olderrno == ENOENT) {
+		fd = socket ((int) oaddr->sa_family, SOCK_STREAM, 0);
+		if (fd >= 0) {
+		    if (connect (fd, oaddr, oaddrlen) >= 0)
+			break;
+		    olderrno = errno;
+		    (void) close (fd);
+		}
+	    }
+#endif
 	    if (olderrno != ENOENT || retries <= 0) {
 		errno = olderrno;
 		return -1;
