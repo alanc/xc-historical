@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.61 93/12/13 17:17:53 dpw Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.62 94/03/26 18:58:08 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName
@@ -62,3 +62,4 @@ XCOMM operating system:  OSName
 #endif
 
 #define ServerExtraDefines AllocateLocalDefines
+#define HasWChar32 YES
