@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.17 91/04/10 11:41:56 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.18 91/07/05 11:04:44 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -446,8 +446,8 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     */
 
     if ((pGC->capStyle != CapNotLast) &&
-	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y) ||
+	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
+	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
 	nbox = nboxInit;
@@ -757,8 +757,8 @@ dontStep:	;
 
     if ((pGC->capStyle != CapNotLast) &&
         ((dashIndex & 1) == 0 || isDoubleDash) &&
-	((ppt->x != pptInit->x) ||
-	 (ppt->y != pptInit->y) ||
+	((ppt->x + xorg != pptInit->x + pDrawable->x) ||
+	 (ppt->y + yorg != pptInit->y + pDrawable->y) ||
 	 (ppt == pptInit + 1)))
     {
 	nbox = nboxInit;
