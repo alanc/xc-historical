@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.2 89/07/09 15:36:32 rws Exp $ */
+/* $XConsortium: shape.c,v 5.3 89/07/16 17:23:29 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -47,6 +47,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "gcstruct.h"
 
 static int ShapeFreeClient(), ShapeFreeEvents();
+static void SendShapeNotify();
 
 static unsigned char ShapeReqCode = 0;
 static int ShapeEventBase = 0;
@@ -548,7 +549,7 @@ ShapeFreeEvents (data, id)
     pHead = (ShapeEventPtr *) data;
     for (pCur = *pHead; pCur; pCur = pNext) {
 	pNext = pCur->next;
-	FreeResource (pCur->clientResource, EventType);
+	FreeResource (pCur->clientResource, ClientType);
 	xfree ((pointer) pCur);
     }
     xfree ((pointer) pHead);
@@ -653,7 +654,7 @@ ProcShapeSelectInput (client)
  * deliver the event
  */
 
-static
+static void
 SendShapeNotify (pWin, which)
     WindowPtr	pWin;
     int		which;
