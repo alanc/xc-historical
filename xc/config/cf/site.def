@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.139 94/11/13 15:53:58 gildea Exp kaleb $
+XCOMM site:  $XConsortium: site.def,v 1.140 94/12/04 18:43:35 kaleb Exp dpw $
 
 /***************************************************************************
  *                                                                         *
@@ -108,7 +108,7 @@ XCOMM site:  $XConsortium: site.def,v 1.139 94/11/13 15:53:58 gildea Exp kaleb $
 #endif /* HPArchitecture */
 
 
-#if defined(BSD386Architecture) || defined(SVR4Architecture)
+#if defined(BSD386Architecture) || (defined(SVR4Architecture) && defined(i386Architecture))
 #ifndef XF86SVGAServer
 #define XF86SVGAServer NO
 #endif
