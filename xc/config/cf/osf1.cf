@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.12 93/08/05 16:03:26 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.13 93/08/13 19:57:02 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
@@ -20,8 +20,8 @@ XCOMM operating system:  OSName
 /* no shared -lpthreads, so we have to play really ugly games */
 #define ForceNormalLib		YES
 #define SeparateSharedCompile	YES
-#define XlibMTDefines /**/
-#define NormalLibObjCompile(options) ObjectCompile(options -DXTHREADS)
+#define XMTDefines /**/
+#define UnsharedLibObjCompile(options) LibObjCompile(unshared,$(CDEBUGFLAGS) options -DXTHREADS)
 #define ThreadsLibraries -lpthreads -lc_r -lpthreads -lmach -lbsd
 #define ThreadsLoadFlags -non_shared
 #endif
