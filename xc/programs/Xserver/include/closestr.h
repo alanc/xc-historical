@@ -23,34 +23,31 @@ typedef struct _OFclosure {
 }           OFclosureRec;
 
 typedef struct _LFclosure {
-    ClientPtr   client;
-    int         npaths;
-    short       current_fpe;
-    short       num_fpes;
-    FontPathElementPtr *fpe_list;
-    FontPathPtr *all_paths;
-    FontPathPtr paths;
-    char       *pattern;
-    int         maxnames;
-    int         patlen;
-    Bool        slept;
+    ClientPtr		client;
+    short		current_fpe;
+    short		num_fpes;
+    FontPathElementPtr	*fpe_list;
+    FontNamesPtr	names;
+    char		*pattern;
+    int			maxnames;
+    int			patlen;
+    Bool		slept;
 }           LFclosureRec;
 
 typedef struct _LFWIclosure {
-    ClientPtr   client;
-    short       current_fpe;
-    short       num_fpes;
-    FontPathElementPtr *fpe_list;
+    ClientPtr		client;
+    FontNamesPtr	names;
+    int			current_name;
+    short		current_fpe;
+    short		num_fpes;
+    FontPathElementPtr	*fpe_list;
     xListFontsWithInfoReply *reply;
-    int         length;
-    char       *pattern;
-    int         maxNames;
-    int         patlen;
-    int         numfonts;
-    char       *fontname;
-    int         namelen;
-    Bool        slept;
-    pointer     private;
+    int			length;
+    char		*name;
+    int			namelen;
+    Bool		list_started;
+    Bool		slept;
+    pointer		private;
 }           LFWIclosureRec;
 
 #endif				/* CLOSESTR_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: dixfont.h,v 1.3 91/01/27 13:07:54 keith Exp $ */
+/* $XConsortium: dixfont.h,v 1.4 91/02/14 19:35:57 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,13 +25,14 @@ SOFTWARE.
 
 #ifndef DIXFONT_H
 #define DIXFONT_H 1
+
+#include    <font.h>
+
 #define NullDIXFontProp ((DIXFontPropPtr)0)
-#define NullFont ((FontPtr)0)
 
 typedef struct _DIXFontProp *DIXFontPropPtr;
 
 #ifndef R4_FONT_STRUCTURES
-typedef struct _EncodedFont *FontPtr;
 
 #define	FontAliasType	0x1000
 
@@ -66,10 +67,12 @@ typedef enum {
 
 #endif
 
+#ifdef NOTDEF
 typedef struct _FontData *FontDataPtr;
 
 extern int  OpenFont();
 extern unsigned char *GetFontPath();
 extern int  SetFontPath();
+#endif
 
 #endif				/* DIXFONT_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.7 91/01/27 13:07:41 keith Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.8 91/02/14 19:35:52 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -26,42 +26,39 @@ SOFTWARE.
 #ifndef DIXFONTSTRUCT_H
 #define DIXFONTSTRUCT_H
 
+#include "servermd.h"
 #include "dixfont.h"
 #include "fontstruct.h"
 #include "misc.h"
 
+#ifdef NOTDEF
 extern FontPtr FontFileLoad( /* name, length */ );	/* implemented in OS
 							 * layer */
 extern Bool FontFilePropLoad( /* name, length, *font, fi, *props */ );
 extern void FontUnload( /* font */ );
+#endif
 
 #ifndef R4_FONT_STRUCTURES
-#define FONTCHARSET(font)	  (font)->pCS
-#define FONTMAXBOUNDS(font,field) (font)->pCS->maxbounds.field
-#define FONTMINBOUNDS(font,field) (font)->pCS->minbounds.field
-#define TERMINALFONT(font)	  (font)->pCS->terminalFont
-#define FONTASCENT(font)	  (font)->pCS->fontAscent
-#define FONTDESCENT(font)	  (font)->pCS->fontDescent
-#define FONTGLYPHS(font)	  (font)->pCS->pBitmaps
-#define FONTCONSTMETRICS(font)	  (font)->pCS->constantMetrics
-#define FONTCONSTWIDTH(font)	  (font)->pCS->constantWidth
-#define FONTALLEXIST(font)	  (font)->allExist
-#define FONTFIRSTCOL(font)	  (font)->firstCol
-#define FONTLASTCOL(font)	  (font)->lastCol
-#define FONTFIRSTROW(font)	  (font)->firstRow
-#define FONTLASTROW(font)	  (font)->lastRow
-#define FONTDEFAULTCH(font)	  (font)->defaultCh
-#define FONTINKMIN(font)	  (&((font)->inkMin))
-#define FONTINKMAX(font)	  (&((font)->inkMax))
-#define FONTPROPS(font)		  (font)->pCS->props
-#define FONTGLYPHBITS(base,pci)	  ((unsigned char *) (pci)->pPriv)
-
-extern FontPathPtr fpExpandFontNamePattern(), fpGetFontPath();
-
-typedef struct _EncodedFont FontRec;
-typedef struct _CharSet FontInfoRec,
-           *FontInfoPtr;
-
+#define FONTCHARSET(font)	  (font)
+#define FONTMAXBOUNDS(font,field) (font)->info.maxbounds.field
+#define FONTMINBOUNDS(font,field) (font)->info.minbounds.field
+#define TERMINALFONT(font)	  (font)->info.terminalFont
+#define FONTASCENT(font)	  (font)->info.fontAscent
+#define FONTDESCENT(font)	  (font)->info.fontDescent
+#define FONTGLYPHS(font)	  0
+#define FONTCONSTMETRICS(font)	  (font)->info.constantMetrics
+#define FONTCONSTWIDTH(font)	  (font)->info.constantWidth
+#define FONTALLEXIST(font)	  (font)->info.allExist
+#define FONTFIRSTCOL(font)	  (font)->info.firstCol
+#define FONTLASTCOL(font)	  (font)->info.lastCol
+#define FONTFIRSTROW(font)	  (font)->info.firstRow
+#define FONTLASTROW(font)	  (font)->info.lastRow
+#define FONTDEFAULTCH(font)	  (font)->info.defaultCh
+#define FONTINKMIN(font)	  (&((font)->info.ink_minbounds))
+#define FONTINKMAX(font)	  (&((font)->info.ink_maxbounds))
+#define FONTPROPS(font)		  (font)->info.props
+#define FONTGLYPHBITS(base,pci)	  ((unsigned char *) (pci)->bits)
+#define FONTINFONPROPS(font)	  (font)->info.nprops
 #else
 
 typedef struct _DIXFontProp {
@@ -107,6 +104,7 @@ typedef struct _Font {
 #define FONTINKMAX(font)	  (&(font)->pInkMax.metrics)
 #define FONTPROPS(font)		  (font)->pFP
 #define FONTGLYPHBITS(base,pci)	  (((unsigned char *) base) + (pci)->byteOffset)
+#define FONTINFONPROPS(pfi)	  (pfi)->nProps
 
 typedef struct _FontInfoRec FontInfoRec,
            *FontInfoPtr;
@@ -118,7 +116,6 @@ typedef struct _DIXFontProp DIXFontPropRec,
 /* some things haven't changed names, but we'll be careful anyway */
 
 #define FONTREFCNT(font)	  (font)->refcnt
-#define FONTINFONPROPS(pfi)	  (pfi)->nProps
 
 /*
  * for linear char sets
@@ -142,5 +139,36 @@ extern void GetGlyphs();
 extern int  LoadGlyphs();
 extern Bool QueryTextExtents();
 extern int  ListFonts();
+
+#define	GLYPHWIDTHPIXELS(pci) \
+	((pci)->metrics.rightSideBearing - (pci)->metrics.leftSideBearing)
+#define	GLYPHHEIGHTPIXELS(pci) \
+ 	((pci)->metrics.ascent + (pci)->metrics.descent)
+#define	GLYPHWIDTHBYTES(pci)	(((GLYPHWIDTHPIXELS(pci))+7) >> 3)
+#define GLYPHWIDTHPADDED(bc)	(((bc)+7) & ~0x7)
+
+#ifndef GLYPHPADBYTES
+#define GLYPHPADBYTES -1
+#endif
+
+#if GLYPHPADBYTES == 0 || GLYPHPADBYTES == 1
+#define	GLYPHWIDTHBYTESPADDED(pci)	(GLYPHWIDTHBYTES(pci))
+#define	PADGLYPHWIDTHBYTES(w)		(((w)+7)>>3)
+#endif
+
+#if GLYPHPADBYTES == 2
+#define	GLYPHWIDTHBYTESPADDED(pci)	((GLYPHWIDTHBYTES(pci)+1) & ~0x1)
+#define	PADGLYPHWIDTHBYTES(w)		(((((w)+7)>>3)+1) & ~0x1)
+#endif
+
+#if GLYPHPADBYTES == 4
+#define	GLYPHWIDTHBYTESPADDED(pci)	((GLYPHWIDTHBYTES(pci)+3) & ~0x3)
+#define	PADGLYPHWIDTHBYTES(w)		(((((w)+7)>>3)+3) & ~0x3)
+#endif
+
+#if GLYPHPADBYTES == 8 /* for a cray? */
+#define	GLYPHWIDTHBYTESPADDED(pci)	((GLYPHWIDTHBYTES(pci)+7) & ~0x7)
+#define	PADGLYPHWIDTHBYTES(w)		(((((w)+7)>>3)+7) & ~0x7)
+#endif
 
 #endif				/* DIXFONTSTRUCT_H */
