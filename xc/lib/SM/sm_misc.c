@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.2 93/08/20 15:36:59 rws Exp $ */
+/* $XConsortium: misc.c,v 1.1 93/09/03 13:25:14 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -18,7 +18,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include <X11/SM/SMlibint.h>
 #include <stdio.h>
 
-
 /*
  * Free properties
  */
@@ -108,7 +107,11 @@ SmcVendor (smcConn)
 SmcConn smcConn;
 
 {
-    return (IceVendor (smcConn->iceConn));
+    char *string = (char *) malloc (strlen (smcConn->vendor) + 1);
+
+    strcpy (string, smcConn->vendor);
+
+    return (string);
 }
 
 
@@ -118,42 +121,35 @@ SmcRelease (smcConn)
 SmcConn smcConn;
 
 {
-    return (IceRelease (smcConn->iceConn));
+    char *string = (char *) malloc (strlen (smcConn->release) + 1);
+
+    strcpy (string, smcConn->release);
+
+    return (string);
 }
 
 
 char *
-SmcConnectionString (smcConn)
+SmcClientID (smcConn)
 
 SmcConn smcConn;
 
 {
-    return (IceConnectionString (smcConn->iceConn));
+    char *clientId = (char *) malloc (strlen (smcConn->client_id) + 1);
+
+    strcpy (clientId, smcConn->client_id);
+
+    return (clientId);
 }
 
 
-unsigned long
-SmcLastSequenceNumber (smcConn)
+IceConn
+SmcGetIceConnection (smcConn)
 
 SmcConn smcConn;
 
 {
-    return (IceLastSequenceNumber (smcConn->iceConn));
-}
-
-
-void
-SmcClientID (smcConn, clientIdLenRet, clientIdRet)
-
-SmcConn smcConn;
-int	*clientIdLenRet;
-char	**clientIdRet;
-
-{
-    *clientIdLenRet = smcConn->client_id_len;
-    *clientIdRet = (char *) malloc (smcConn->client_id_len + 1);
-    bcopy (smcConn->client_id, *clientIdRet, smcConn->client_id_len);
-    (*clientIdRet)[smcConn->client_id_len] = '\0';
+    return (smcConn->iceConn);
 }
 
 
@@ -188,7 +184,11 @@ SmsVendor (smsConn)
 SmsConn smsConn;
 
 {
-    return (IceVendor (smsConn->iceConn));
+    char *string = (char *) malloc (strlen (smsConn->vendor) + 1);
+
+    strcpy (string, smsConn->vendor);
+
+    return (string);
 }
 
 
@@ -198,40 +198,33 @@ SmsRelease (smsConn)
 SmsConn smsConn;
 
 {
-    return (IceRelease (smsConn->iceConn));
+    char *string = (char *) malloc (strlen (smsConn->release) + 1);
+
+    strcpy (string, smsConn->release);
+
+    return (string);
 }
 
 
 char *
-SmsConnectionString (smsConn)
+SmsClientID (smsConn)
 
 SmsConn smsConn;
 
 {
-    return (IceConnectionString (smsConn->iceConn));
+    char *clientId = (char *) malloc (strlen (smsConn->client_id) + 1);
+
+    strcpy (clientId, smsConn->client_id);
+
+    return (clientId);
 }
 
 
-unsigned long
-SmsLastSequenceNumber (smsConn)
+IceConn
+SmsGetIceConnection (smsConn)
 
 SmsConn smsConn;
 
 {
-    return (IceLastSequenceNumber (smsConn->iceConn));
-}
-
-
-void
-SmsClientID (smsConn, clientIdLenRet, clientIdRet)
-
-SmsConn smsConn;
-int	*clientIdLenRet;
-char	**clientIdRet;
-
-{
-    *clientIdLenRet = smsConn->client_id_len;
-    *clientIdRet = (char *) malloc (smsConn->client_id_len + 1);
-    bcopy (smsConn->client_id, *clientIdRet, smsConn->client_id_len);
-    (*clientIdRet)[smsConn->client_id_len] = '\0';
+    return (smsConn->iceConn);
 }
