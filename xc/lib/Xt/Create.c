@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.98 94/01/10 20:29:08 converse Exp $ */
+/* $XConsortium: Create.c,v 1.99 94/01/14 17:56:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -221,11 +221,14 @@ xtWidgetAlloc(widget_class, parent_constraint_class, parent, name,
 			    sizeof(ObjectClassExtensionRec));
     if (ext && ext->allocate) {
 	XtAllocateProc allocate;
+	Cardinal extra = 0;
+	Cardinal nargs = num_args;
+	Cardinal ntyped = num_typed_args;
 	allocate = ext->allocate;
 	UNLOCK_PROCESS;
 	(*allocate)(widget_class, (WidgetClass) parent_constraint_class,
-		    (Cardinal) 0, parent, args, num_args,
-		    typed_args, num_typed_args, &widget, NULL);
+		    &extra, parent, args, &nargs,
+		    typed_args, &ntyped, &widget, NULL);
     } else {
 	wsize = widget_class->core_class.widget_size;
 	csize = 0;
