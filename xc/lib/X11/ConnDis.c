@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.101 93/09/13 19:06:22 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.102 93/09/26 15:40:57 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -780,8 +780,8 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 	return -1;
 
 #ifdef K5AUTH
-    if (conn_auth_namelen == 13 &&
-	!strncmp(conn_auth_name, "KERBEROS-V5-1", 13))
+    if (auth_length == 13 &&
+	!strncmp(auth_proto, "KERBEROS-V5-1", 13))
     {
 	return k5_clientauth(dpy, prefix);
     } else
@@ -938,7 +938,6 @@ auth_ezencode(servername, window, cred_out, len)
 #endif
 
 #ifdef K5AUTH
-#include <krb5/krb5.h>
 #include <com_err.h>
 
 extern krb5_flags krb5_kdc_default_options;
@@ -1016,10 +1015,10 @@ static int k5_clientauth(dpy, sprefix)
 	kbuf.data = buf;
 	kbuf.length = tlen;
     }
-    if (k5_decode(kbuf, &sprinc))
+    if (XauKrb5Decode(kbuf, &sprinc))
     {
 	free(buf);
-	fprintf(stderr, "Xlib: k5_decode bombed\n");
+	fprintf(stderr, "Xlib: XauKrb5Decode bombed\n");
 	return -1;
     }
     if (prefix.reqType == 3)	/* do some special stuff here */
