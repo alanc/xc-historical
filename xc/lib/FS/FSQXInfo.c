@@ -1,25 +1,25 @@
-/* $XConsortium: FSQXInfo.c,v 1.2 91/05/13 15:11:51 gildea Exp $ */
+/* $XConsortium: FSQXInfo.c,v 1.3 92/05/12 18:07:24 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"FSlibint.h"
@@ -33,15 +33,18 @@ int
 FSQueryXInfo(svr, fid, info, props, offsets, prop_data)
     FSServer   *svr;
     Font        fid;
-    fsFontHeader *info;
-    fsPropInfo *props;
-    fsPropOffset **offsets;
+    FSXFontInfoHeader *info;
+    FSPropInfo *props;
+    FSPropOffset **offsets;
     unsigned char **prop_data;
 {
     fsQueryXInfoReq *req;
     fsQueryXInfoReply reply;
-    fsPropOffset *offset_data;
+    FSPropOffset *offset_data;
     unsigned char *pdata;
+    fsPropInfo local_pi;
+    fsPropOffset local_po;
+    int j;
 
     GetReq(QueryXInfo, req);
     req->id = fid;
@@ -51,21 +54,17 @@ FSQueryXInfo(svr, fid, info, props, offsets, prop_data)
 			    SIZEOF(fsGenericReply)) >> 2), fsFalse)) {
 	return FSBadAlloc;
     }
-    bcopy((char *) &reply.header, (char *) info, sizeof(fsFontHeader));
-    if (FSProtocolVersion(svr) == 1)
-    {
-	info->char_range.min_char.high = reply.header.char_range.min_char.low;
-	info->char_range.min_char.low = reply.header.char_range.min_char.high;
-	info->char_range.max_char.high = reply.header.char_range.max_char.low;
-	info->char_range.max_char.low = reply.header.char_range.max_char.high;
-	info->default_char.high = reply.header.default_char.low;
-	info->default_char.low = reply.header.default_char.high;
-    }
+
+    FSUnpack_XFontInfoHeader(&reply, info, FSProtocolVersion(svr));
+
     /* get the prop header */
-    _FSReadPad(svr, (char *) props, sizeof(fsPropInfo));
+    _FSReadPad(svr, (char *) &local_pi, SIZEOF(fsPropInfo));
+    props->num_offsets = local_pi.num_offsets;
+    props->data_len = local_pi.data_len;
+
     /* prepare for prop data */
-    offset_data = (fsPropOffset *)
-	FSmalloc(props->num_offsets * sizeof(fsPropOffset));
+    offset_data = (FSPropOffset *)
+	FSmalloc(props->num_offsets * sizeof(FSPropOffset));
     if (!offset_data)
 	return FSBadAlloc;
     pdata = (unsigned char *) FSmalloc(props->data_len);
@@ -74,8 +73,16 @@ FSQueryXInfo(svr, fid, info, props, offsets, prop_data)
 	return FSBadAlloc;
     }
     /* get offsets */
-    _FSReadPad(svr, (char *) offset_data,
-	       (props->num_offsets * sizeof(fsPropOffset)));
+    for (j=0; j<props->num_offsets; j++)
+    {
+	_FSReadPad(svr, (char *) &local_po, SIZEOF(fsPropOffset));
+	offset_data[j].name.position = local_po.name.position;
+	offset_data[j].name.length = local_po.name.length;
+	offset_data[j].value.position = local_po.value.position;
+	offset_data[j].value.length = local_po.value.length;
+	offset_data[j].type = local_po.type;
+    }
+
     /* get data */
     _FSReadPad(svr, (char *) pdata, props->data_len);
     *offsets = offset_data;

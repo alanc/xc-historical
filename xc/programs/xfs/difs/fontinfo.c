@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.7 91/07/25 12:24:51 keith Exp $ */
+/* $XConsortium: fontinfo.c,v 1.8 92/05/12 18:08:08 gildea Exp $ */
 /*
  * font data query
  */
@@ -7,22 +7,22 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include        "FS.h"
@@ -40,7 +40,7 @@ extern void (*ReplySwapVector[NUM_PROC_VECTORS]) ();
 void
 CopyCharInfo(ci, dst)
     CharInfoPtr ci;
-    fsCharInfo *dst;
+    fsXCharInfo *dst;
 {
     xCharInfo  *src = &ci->metrics;
 
@@ -53,124 +53,80 @@ CopyCharInfo(ci, dst)
 }
 
 
-static int
+int
 convert_props(pinfo, props)
     FontInfoPtr pinfo;
     fsPropInfo **props;
 {
-    pointer     ptr;
-    fsPropInfo  info;
-    fsPropOffset *po,
-               *offsets;
-    FontPropPtr pp;
-    int         i,
-                data_len = 0;
-    int         po_size,
-                num_props;
-
-    info.num_offsets = num_props = pinfo->nprops;
-    po_size = sizeof(fsPropOffset) * num_props;
-    po = offsets = (fsPropOffset *) fsalloc(po_size);
-    if (!offsets)
-	return AllocError;
+    int i;
+    int data_len, cur_off;
+    char *str;
+    pointer ptr, off_ptr, string_base;
+    fsPropOffset local_offset;
 
     /*
-     * copy over the static sized info, and figure out where eveyrthing will
-     * live
+     * compute the size of the property data
      */
-    for (i = 0, pp = pinfo->props; i < num_props; i++, po++, pp++) {
-	po->name.position = data_len;
-	po->name.length = strlen(NameForAtom(pp->name));
-	data_len += po->name.length;
-	if (pinfo->isStringProp[i]) {
-	    po->type = PropTypeString;
-	    po->value.position = data_len;
-	    po->value.length = strlen(NameForAtom(pp->value));
-	    data_len += po->value.length;
-	} else {
-	    po->type = PropTypeSigned;
-	    po->value.position = pp->value;
-	}
+    data_len = 0;
+    for (i = 0; i < pinfo->nprops; i++)
+    {
+	data_len += strlen(NameForAtom(pinfo->props[i].name));
+	if (pinfo->isStringProp[i])
+	    data_len += strlen(NameForAtom(pinfo->props[i].value));
     }
-    info.data_len = data_len;
-    /* allocate the single chunk that the difs layer requires */
-    ptr = (pointer) fsalloc(sizeof(fsPropInfo) + po_size + data_len);
-    if (!ptr) {
-	fsfree((char *) offsets);
+
+    /*
+     * allocate the single chunk that the difs layer requires
+     */
+    ptr = (pointer) fsalloc(SIZEOF(fsPropInfo)
+			    + SIZEOF(fsPropOffset) * pinfo->nprops
+			    + data_len);
+    if (!ptr)
 	return AllocError;
-    }
-    /* move over the static stuff */
-    *props = (fsPropInfo *) ptr;
-    bcopy((char *) &info, (char *) ptr, sizeof(fsPropInfo));
-    ptr += sizeof(fsPropInfo);
-    bcopy((char *) offsets, (char *) ptr, po_size);
-    ptr += po_size;
+    string_base = ptr + SIZEOF(fsPropInfo) + SIZEOF(fsPropOffset) * pinfo->nprops;
+  
+    /*
+     * copy in the header
+     */
+    ((fsPropInfo *)ptr)->num_offsets = pinfo->nprops;
+    ((fsPropInfo *)ptr)->data_len = data_len;
 
-    /* move over the string info */
-    for (i = 0, pp = pinfo->props, po = offsets;
-	    i < num_props;
-	    i++, po++, pp++) {
-	char       *t;
-
-	t = NameForAtom(pp->name);
-	bcopy(t, (char *) ptr, po->name.length);
-	ptr += po->name.length;
-	if (po->type == PropTypeString) {
-	    t = NameForAtom(pp->value);
-	    bcopy(t, (char *) ptr, po->value.length);
-	    ptr += po->value.length;
+    /*
+     * compute the offsets and copy the string data
+     */
+    off_ptr = ptr + SIZEOF(fsPropInfo);
+    cur_off = 0;
+    for (i = 0; i < pinfo->nprops; i++)
+    {
+	local_offset.name.position = cur_off;
+	str = NameForAtom(pinfo->props[i].name);
+	local_offset.name.length = strlen(str);
+	bcopy(str, string_base+cur_off, local_offset.name.length);
+	cur_off += local_offset.name.length;
+	if (pinfo->isStringProp[i])
+	{
+	    local_offset.value.position = cur_off;
+	    str = NameForAtom(pinfo->props[i].value);
+	    local_offset.value.length = strlen(str);
+	    bcopy(str, string_base+cur_off, local_offset.value.length);
+	    cur_off += local_offset.value.length;
+	    local_offset.type = PropTypeString;
+	} else {
+	    local_offset.value.position = pinfo->props[i].value;
+	    local_offset.value.length = 0; /* protocol says must be zero */
+	    local_offset.type = PropTypeSigned;
 	}
+	bcopy(&local_offset, off_ptr, SIZEOF(fsPropOffset));
+	off_ptr += SIZEOF(fsPropOffset);
     }
-    assert(ptr == ((pointer) (*props) + sizeof(fsPropInfo) + po_size + data_len));
 
-    fsfree((char *) offsets);
+    assert(off_ptr == string_base);
+    assert(cur_off == data_len);
+
+    *props = (fsPropInfo *) ptr;
     return Successful;
 }
 
-
-int
-LoadXFontInfo(client, pinfo, hdr, pi)
-    ClientPtr client;		/* for client version info */
-    FontInfoPtr pinfo;
-    fsFontHeader *hdr;
-    fsPropInfo **pi;
-{
-    int         err;
-
-    hdr->flags = (pinfo->allExist) ? FontInfoAllCharsExist : 0;
-    if (pinfo->drawDirection == LeftToRight)
-	hdr->draw_direction = LeftToRightDrawDirection;
-    else
-	hdr->draw_direction = RightToLeftDrawDirection;
-
-    if (pinfo->inkInside)
-	hdr->flags |= FontInfoInkInside;
-    if (client->major_version > 1) {
-	hdr->char_range.min_char.low = pinfo->firstCol;
-	hdr->char_range.min_char.high = pinfo->firstRow;
-	hdr->char_range.max_char.low = pinfo->lastCol;
-	hdr->char_range.max_char.high = pinfo->lastRow;
-	hdr->default_char.low = pinfo->defaultCh & 0xff;
-	hdr->default_char.high = pinfo->defaultCh >> 8;
-    } else {
-	hdr->char_range.min_char.high = pinfo->firstCol;
-	hdr->char_range.min_char.low = pinfo->firstRow;
-	hdr->char_range.max_char.high = pinfo->lastCol;
-	hdr->char_range.max_char.low = pinfo->lastRow;
-	hdr->default_char.high = pinfo->defaultCh & 0xff;
-	hdr->default_char.low = pinfo->defaultCh >> 8;
-    }
-
-    CopyCharInfo(&pinfo->ink_minbounds, &hdr->min_bounds);
-    CopyCharInfo(&pinfo->ink_maxbounds, &hdr->max_bounds);
-
-    hdr->font_ascent = pinfo->fontAscent;
-    hdr->font_descent = pinfo->fontDescent;
-
-    err = convert_props(pinfo, pi);
-
-    return err;
-}
 
 /*
  * does the real work of turning a list of range (or chars) into
@@ -191,7 +147,7 @@ build_range(type, src, item_size, num, all)
 
     if (type) {			/* range flag is set, deal with data as a list
 				 * of char2bs */
-	fsChar2b   *rp = (fsChar2b *) src;
+	char *rp = (char *) src;
 
 	src_num = *num / 2;
 	if (src_num == 0) {
@@ -201,14 +157,18 @@ build_range(type, src, item_size, num, all)
 /* XXX - handle odd length list -- this could get nasty since
  * it has to poke into the font
  */
+	/* yes, a real "sizeof".  This is not a protocol object.
+	   XXX - probably should use a different struct */
 	np = new = (fsRange *) fsalloc(sizeof(fsRange) * src_num);
 	if (!np) {
 	    return np;
 	}
-	/* copy the ranges */
+	/* unpack the ranges from the protocol buffer */
 	for (i = 0; i < src_num; i++) {
-	    np->min_char = *rp++;
-	    np->max_char = *rp++;
+	    np->min_char_high = *rp++;
+	    np->min_char_low  = *rp++;
+	    np->max_char_high = *rp++;
+	    np->max_char_low  = *rp++;
 	    np++;
 	}
 	*num = src_num;
@@ -217,21 +177,22 @@ build_range(type, src, item_size, num, all)
 	pointer     pp = src;
 
 	src_num = *num / item_size;
-	np = new = (fsRange *) fsalloc(sizeof(fsRange) * src_num);
+	np = new = (fsRange *) fsalloc(SIZEOF(fsRange) * src_num);
 	if (!np) {
 	    return np;
 	}
 	/* convert each char to a range */
 	for (i = 0; i < src_num; i++) {
 	    if (item_size == 1) {
-		np->min_char.low = *pp;
-		np->min_char.high = 0;
+		np->min_char_low = *pp;
+		np->min_char_high = 0;
 	    } else {
-		np->min_char.low = ((fsChar2b *) pp)->low;
-		np->min_char.high = ((fsChar2b *) pp)->high;
+		np->min_char_low = ((fsChar2b *) pp)->low;
+		np->min_char_high = ((fsChar2b *) pp)->high;
 	    }
 /* XXX - eventually this should get smarter, and coallesce ranges */
-	    np->max_char = np->min_char;
+	    np->max_char_high = np->min_char_high;
+	    np->max_char_low = np->min_char_low;
 	    np++;
 	    pp += item_size;
 	}
@@ -268,7 +229,7 @@ do_query_extents(client, c)
     int         err;
     unsigned long lendata,
                 num_extents;
-    fsCharInfo *extents;
+    fsXCharInfo *extents;
     fsQueryXExtents8Reply reply;
 
     err = GetExtents (c->client, c->pfont,
@@ -287,11 +248,11 @@ do_query_extents(client, c)
     reply.type = FS_Reply;
     reply.sequenceNumber = c->client->sequence;
     reply.num_extents = num_extents;
-    lendata = sizeof(fsCharInfo) * num_extents;
-    reply.length = (sizeof(fsQueryXExtents8Reply) + lendata) >> 2;
+    lendata = SIZEOF(fsXCharInfo) * num_extents;
+    reply.length = (SIZEOF(fsQueryXExtents8Reply) + lendata) >> 2;
     if (client->swapped)
 	SwapExtents(extents, num_extents);
-    WriteReplyToClient(c->client, sizeof(fsQueryXExtents8Reply), &reply);
+    WriteReplyToClient(c->client, SIZEOF(fsQueryXExtents8Reply), &reply);
     (void) WriteToClient(c->client, lendata, (char *) extents);
     fsfree((char *) extents);
 finish:
@@ -347,7 +308,7 @@ do_query_bitmaps(client, c)
 {
     int         err;
     unsigned long num_glyphs, data_size;
-    fsOffset   *offsets;
+    fsOffset32   *offsets;
     pointer     glyph_data;
     fsQueryXBitmaps8Reply reply;
     int		freedata;
@@ -372,13 +333,13 @@ do_query_bitmaps(client, c)
     reply.replies_hint = 0;
     reply.num_chars = num_glyphs;
     reply.nbytes = data_size;
-    reply.length = (sizeof(fsQueryXBitmaps8Reply) + data_size +
-		    (sizeof(fsOffset) * num_glyphs) + 3) >> 2;
+    reply.length = (SIZEOF(fsQueryXBitmaps8Reply) + data_size +
+		    (SIZEOF(fsOffset32) * num_glyphs) + 3) >> 2;
 
-    WriteReplyToClient(c->client, sizeof(fsQueryXBitmaps8Reply), &reply);
+    WriteReplyToClient(c->client, SIZEOF(fsQueryXBitmaps8Reply), &reply);
     if (client->swapped)
 	SwapLongs((long *)offsets, num_glyphs * 2);
-    (void) WriteToClient(c->client, (num_glyphs * sizeof(fsOffset)),
+    (void) WriteToClient(c->client, (num_glyphs * SIZEOF(fsOffset32)),
 			 (char *) offsets);
     (void) WriteToClient(c->client, data_size, (char *) glyph_data);
     fsfree((char *) offsets);

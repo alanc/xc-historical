@@ -1,4 +1,4 @@
-/* $XConsortium: swapreq.c,v 1.4 92/05/15 12:43:10 gildea Exp $ */
+/* $XConsortium: swapreq.c,v 1.5 92/05/28 16:43:04 gildea Exp $ */
 /*
  * swapped requests
  */
@@ -38,23 +38,24 @@ SwapLongs(list, count)
     unsigned long count;
 {
     int         n;
+    register char *longs = (char *)list;
 
     while (count >= 8) {
-	swapl(list + 0, n);
-	swapl(list + 1, n);
-	swapl(list + 2, n);
-	swapl(list + 3, n);
-	swapl(list + 4, n);
-	swapl(list + 5, n);
-	swapl(list + 6, n);
-	swapl(list + 7, n);
-	list += 8;
+	swapl(longs + 0, n);
+	swapl(longs + 4, n);
+	swapl(longs + 8, n);
+	swapl(longs + 12, n);
+	swapl(longs + 16, n);
+	swapl(longs + 20, n);
+	swapl(longs + 24, n);
+	swapl(longs + 28, n);
+	longs += 32;
 	count -= 8;
     }
     if (count != 0) {
 	do {
-	    swapl(list, n);
-	    list++;
+	    swapl(longs, n);
+	    longs += 4;
 	} while (--count != 0);
     }
 }
@@ -63,35 +64,36 @@ SwapLongs(list, count)
 
 void
 SwapShorts(list, count)
-    register short *list;
+    short *list;
     register unsigned long count;
 {
+    register char *shorts = (char *)list;
     register int n;
 
     while (count >= 16) {
-	swaps(list + 0, n);
-	swaps(list + 1, n);
-	swaps(list + 2, n);
-	swaps(list + 3, n);
-	swaps(list + 4, n);
-	swaps(list + 5, n);
-	swaps(list + 6, n);
-	swaps(list + 7, n);
-	swaps(list + 8, n);
-	swaps(list + 9, n);
-	swaps(list + 10, n);
-	swaps(list + 11, n);
-	swaps(list + 12, n);
-	swaps(list + 13, n);
-	swaps(list + 14, n);
-	swaps(list + 15, n);
-	list += 16;
+	swaps(shorts + 0, n);
+	swaps(shorts + 2, n);
+	swaps(shorts + 4, n);
+	swaps(shorts + 6, n);
+	swaps(shorts + 8, n);
+	swaps(shorts + 10, n);
+	swaps(shorts + 12, n);
+	swaps(shorts + 14, n);
+	swaps(shorts + 16, n);
+	swaps(shorts + 18, n);
+	swaps(shorts + 20, n);
+	swaps(shorts + 22, n);
+	swaps(shorts + 24, n);
+	swaps(shorts + 26, n);
+	swaps(shorts + 28, n);
+	swaps(shorts + 30, n);
+	shorts += 32;
 	count -= 16;
     }
     if (count != 0) {
 	do {
-	    swaps(list, n);
-	    list++;
+	    swaps(shorts, n);
+	    shorts += 2;
 	} while (--count != 0);
     }
 }
@@ -103,10 +105,8 @@ int
 SProcSimpleRequest(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsReq);
-    swaps(&stuff->length, n);
+    stuff->length = lswaps(stuff->length);
     return ((*ProcVector[stuff->reqType]) (client));
 }
 
@@ -117,11 +117,9 @@ int
 SProcResourceRequest(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsResourceReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->id, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->id = lswapl(stuff->id);
     return ((*ProcVector[stuff->reqType]) (client));
 }
 
@@ -157,11 +155,9 @@ int
 SProcCreateAC(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsCreateACReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->acid, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->acid = lswapl(stuff->acid);
     swap_auth((pointer) &stuff[1], stuff->num_auths);
     return ((*ProcVector[stuff->reqType]) (client));
 }
@@ -170,11 +166,9 @@ int
 SProcSetResolution(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsSetResolutionReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->num_resolutions, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->num_resolutions = lswaps(stuff->num_resolutions);
     SwapShorts((short *) &stuff[1], stuff->num_resolutions);
 
     return ((*ProcVector[stuff->reqType]) (client));
@@ -185,11 +179,9 @@ int
 SProcQueryExtension(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsQueryExtensionReq);
-    swaps(&stuff->length, n);
-    swaps(&stuff->nbytes, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->nbytes = lswaps(stuff->nbytes);
     return ((*ProcVector[FS_QueryExtension]) (client));
 }
 
@@ -197,12 +189,10 @@ int
 SProcListCatalogues(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsListCataloguesReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->maxNames, n);
-    swaps(&stuff->nbytes, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->maxNames = lswapl(stuff->maxNames);
+    stuff->nbytes = lswaps(stuff->nbytes);
     return ((*ProcVector[FS_ListCatalogues]) (client));
 }
 
@@ -210,12 +200,10 @@ int
 SProcListFonts(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsListFontsReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->maxNames, n);
-    swaps(&stuff->nbytes, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->maxNames = lswapl(stuff->maxNames);
+    stuff->nbytes = lswaps(stuff->nbytes);
     return ((*ProcVector[FS_ListFonts]) (client));
 }
 
@@ -223,12 +211,10 @@ int
 SProcListFontsWithXInfo(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsListFontsWithXInfoReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->maxNames, n);
-    swaps(&stuff->nbytes, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->maxNames = lswapl(stuff->maxNames);
+    stuff->nbytes = lswaps(stuff->nbytes);
     return ((*ProcVector[FS_ListFontsWithXInfo]) (client));
 }
 
@@ -236,13 +222,11 @@ int
 SProcOpenBitmapFont(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsOpenBitmapFontReq);
-    swaps(&stuff->length, n);
-    swapl(&stuff->fid, n);
-    swapl(&stuff->format_hint, n);
-    swapl(&stuff->format_mask, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->fid = lswapl(stuff->fid);
+    stuff->format_hint = lswapl(stuff->format_hint);
+    stuff->format_mask = lswapl(stuff->format_mask);
     return ((*ProcVector[FS_OpenBitmapFont]) (client));
 }
 
@@ -250,12 +234,10 @@ int
 SProcQueryXExtents(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsQueryXExtents8Req); /* 8 and 16 are the same here */
-    swaps(&stuff->length, n);
-    swapl(&stuff->fid, n);
-    swapl(&stuff->num_ranges, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->fid = lswapl(stuff->fid);
+    stuff->num_ranges = lswapl(stuff->num_ranges);
 
     return ((*ProcVector[stuff->reqType]) (client));
 }
@@ -264,13 +246,11 @@ int
 SProcQueryXBitmaps(client)
     ClientPtr   client;
 {
-    char        n;
-
     REQUEST(fsQueryXBitmaps8Req); /* 8 and 16 are the same here */
-    swaps(&stuff->length, n);
-    swapl(&stuff->fid, n);
-    swapl(&stuff->format, n);
-    swapl(&stuff->num_ranges, n);
+    stuff->length = lswaps(stuff->length);
+    stuff->fid = lswapl(stuff->fid);
+    stuff->format = lswapl(stuff->format);
+    stuff->num_ranges = lswapl(stuff->num_ranges);
 
     return ((*ProcVector[stuff->reqType]) (client));
 }
@@ -278,10 +258,8 @@ SProcQueryXBitmaps(client)
 SwapConnClientPrefix(pCCP)
     fsConnClientPrefix *pCCP;
 {
-    char        n;
-
-    swaps(&pCCP->major_version, n);
-    swaps(&pCCP->minor_version, n);
-    swaps(&pCCP->auth_len, n);
+    pCCP->major_version = lswaps(pCCP->major_version);
+    pCCP->minor_version = lswaps(pCCP->minor_version);
+    pCCP->auth_len = lswaps(pCCP->auth_len);
     swap_auth((pointer) &pCCP[1], pCCP->num_auths);
 }

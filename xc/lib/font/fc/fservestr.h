@@ -1,4 +1,4 @@
-/* $XConsortium: fservestr.h,v 1.7 92/05/12 18:07:36 gildea Exp $ */
+/* $XConsortium: fservestr.h,v 1.8 92/07/09 16:11:10 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -82,7 +82,7 @@ typedef struct _fs_blocked_extents {
     int         nranges;
     Bool        done;
     unsigned long nextents;
-    fsCharInfo *extents;
+    fsXCharInfo *extents;
 }           FSBlockedExtentRec;
 
 /* LoadBitmaps data for blocked request */
@@ -93,7 +93,7 @@ typedef struct _fs_blocked_bitmaps {
     Bool        done;
     unsigned long size;
     unsigned long nglyphs;
-    fsOffset   *offsets;
+    fsOffset32   *offsets;
     pointer     gdata;
 }           FSBlockedBitmapRec;
 
@@ -121,7 +121,7 @@ typedef struct _fs_block_data {
 					 * ListWithInfo */
     pointer		    client;	    /* who wants it */
     int			    sequence_number;/* expected */
-    fsReplyHeader	    header;
+    fsGenericReply	    header;
     pointer		    data;	    /* type specific data */
     struct _fs_block_data   *depending;	    /* clients depending on this one */
     struct _fs_block_data   *next;
@@ -131,5 +131,49 @@ typedef struct _fs_block_data {
 typedef struct _fs_reconnect {
     int	    i;
 } FSReconnectRec, *FSReconnectPtr;
+
+
+#if __STDC__ && !defined(UNIXCPP)
+#define fsCat(x,y) x##_##y
+#else
+#define fsCat(x,y) x/**/_/**/y
+#endif
+
+
+/* copy XCharInfo parts of a protocol reply into a xCharInfo */
+
+#define fsUnpack_XCharInfo(packet, structure) \
+    (structure)->leftSideBearing = fsCat(packet,left); \
+    (structure)->rightSideBearing = fsCat(packet,right); \
+    (structure)->characterWidth = fsCat(packet,width); \
+    (structure)->ascent = fsCat(packet,ascent); \
+    (structure)->descent = fsCat(packet,descent); \
+    (structure)->attributes = fsCat(packet,attributes)
+
+
+/* copy XFontInfoHeader parts of a protocol reply into a FontInfoRec */
+
+#define fsUnpack_XFontInfoHeader(packet, structure) \
+    (structure)->allExist = ((packet)->font_header_flags & FontInfoAllCharsExist) != 0; \
+    (structure)->drawDirection = \
+        ((packet)->font_header_draw_direction == LeftToRightDrawDirection) ? \
+	LeftToRight : RightToLeft; \
+    (structure)->inkInside = ((packet)->font_header_flags & FontInfoInkInside) != 0; \
+ \
+    (structure)->firstRow = (packet)->font_header_char_range_min_char_high; \
+    (structure)->firstCol = (packet)->font_header_char_range_min_char_low; \
+    (structure)->lastRow = (packet)->font_header_char_range_max_char_high; \
+    (structure)->lastCol = (packet)->font_header_char_range_max_char_low; \
+    (structure)->defaultCh = (packet)->font_header_default_char_low \
+                           + ((packet)->font_header_default_char_high << 8); \
+ \
+    (structure)->fontDescent = (packet)->font_header_font_descent; \
+    (structure)->fontAscent = (packet)->font_header_font_ascent; \
+ \
+    fsUnpack_XCharInfo((packet)->font_header_min_bounds, &(structure)->minbounds); \
+    fsUnpack_XCharInfo((packet)->font_header_min_bounds, &(structure)->ink_minbounds); \
+    fsUnpack_XCharInfo((packet)->font_header_max_bounds, &(structure)->maxbounds); \
+    fsUnpack_XCharInfo((packet)->font_header_max_bounds, &(structure)->ink_maxbounds)
+
 
 #endif				/* _FSERVESTR_H_ */

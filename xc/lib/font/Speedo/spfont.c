@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.16 92/05/12 18:07:52 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.17 92/09/17 11:57:02 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -42,26 +42,11 @@
 #endif
 
 extern void SpeedoCloseFont();
-static int  sp_get_glyphs(),
-            sp_get_metrics();
+static int sp_get_glyphs();
+static int sp_get_metrics();
 static int sp_load_font();
 
 static CharInfoRec junkDefault;
-
-static void
-CopyCharInfo(ci, dst)
-    CharInfoPtr ci;
-    fsCharInfo *dst;
-{
-    xCharInfo  *src = &ci->metrics;
-
-    dst->ascent = src->ascent;
-    dst->descent = src->descent;
-    dst->left = src->leftSideBearing;
-    dst->right = src->rightSideBearing;
-    dst->width = src->characterWidth;
-    dst->attributes = 0;
-}
 
 static int
 sp_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)

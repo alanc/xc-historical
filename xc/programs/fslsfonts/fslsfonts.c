@@ -1,31 +1,27 @@
-/* $XConsortium$ */
+/* $XConsortium: fslsfonts.c,v 1.2 91/05/13 16:34:14 gildea Exp $ */
 /*
- * WARNING:  PROTOTYPE SOFTWARE, NOT FOR REDISTRIBUTION
- *
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)fslsfonts.c	4.1	91/05/02
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
+
 #include "FSlib.h"
 #include <stdio.h>
 
@@ -47,9 +43,9 @@ int         font_cnt;
 int         min_max;
 typedef struct {
     char       *name;
-    fsFontHeader *info;
-    fsPropInfo *pi;
-    fsPropOffset *po;
+    FSXFontInfoHeader *info;
+    FSPropInfo *pi;
+    FSPropOffset *po;
     unsigned char *pd;
 }           FontList;
 FontList   *font_list;
@@ -179,9 +175,9 @@ get_list(pattern)
     int         available = nnames + 1,
                 i;
     char      **fonts;
-    fsFontHeader **info;
-    fsPropInfo **props;
-    fsPropOffset **offsets;
+    FSXFontInfoHeader **info;
+    FSPropInfo **props;
+    FSPropOffset **offsets;
     unsigned char **pdata;
 
     /* Get list of fonts matching pattern */
@@ -354,7 +350,7 @@ show_font_header(list)
     FontList   *list;
 {
     char       *string;
-    fsFontHeader *pfh;
+    FSXFontInfoHeader *pfh;
 
     pfh = list->info;
     if (!pfh) {
@@ -446,8 +442,8 @@ show_font_props(list)
 {
     int         i;
     char        buf[1000];
-    fsPropInfo *pi = list->pi;
-    fsPropOffset *po = list->po;
+    FSPropInfo *pi = list->pi;
+    FSPropOffset *po = list->po;
     unsigned char *pd = list->pd;
     int         num_props;
 

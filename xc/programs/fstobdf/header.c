@@ -1,28 +1,25 @@
-/* $XConsortium$ */
+/* $XConsortium: header.c,v 1.2 91/05/13 16:35:53 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)header.c	4.1	91/05/02
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	<stdio.h>
@@ -47,11 +44,11 @@ static char *
 FindStringProperty(propName, propLength, propInfo, propOffsets, propData)
     char       *propName;
     int        *propLength;
-    fsPropInfo *propInfo;
-    fsPropOffset *propOffsets;
+    FSPropInfo *propInfo;
+    FSPropOffset *propOffsets;
     unsigned char *propData;
 {
-    fsPropOffset *propOffset;
+    FSPropOffset *propOffset;
     int         length;
     int         i;
 
@@ -85,11 +82,11 @@ static int
 FindNumberProperty(propName, propValue, propInfo, propOffsets, propData)
     char       *propName;
     int        *propValue;
-    fsPropInfo *propInfo;
-    fsPropOffset *propOffsets;
+    FSPropInfo *propInfo;
+    FSPropOffset *propOffsets;
     unsigned char *propData;
 {
-    fsPropOffset *propOffset;
+    FSPropOffset *propOffset;
     int         i;
     int         length;
 
@@ -115,9 +112,9 @@ FindNumberProperty(propName, propValue, propInfo, propOffsets, propData)
 Bool
 EmitHeader(outFile, fontHeader, propInfo, propOffsets, propData)
     FILE       *outFile;
-    fsFontHeader *fontHeader;
-    fsPropInfo *propInfo;
-    fsPropOffset *propOffsets;
+    FSXFontInfoHeader *fontHeader;
+    FSPropInfo *propInfo;
+    FSPropOffset *propOffsets;
     unsigned char *propData;
 {
     int         len;

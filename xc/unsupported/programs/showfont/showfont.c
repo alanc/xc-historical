@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.9 92/05/19 17:55:40 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.10 92/05/20 16:27:11 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -52,7 +52,7 @@ FSServer   *svr;
 /* set from bitmap_pad to ImageRectMin, ImageMaxWidth, or ImageMax */
 int	    bitmap_format;	
 
-static fsBitmapFormat make_format();
+static FSBitmapFormat make_format();
 
 static void
 usage()
@@ -70,11 +70,11 @@ main(argc, argv)
     int         i;
     Font        fid,
                 dummy;
-    fsBitmapFormat format;
-    fsBitmapFormatMask fmask;
-    fsChar2b    first,
+    FSBitmapFormat format;
+    FSBitmapFormatMask fmask;
+    FSChar2b    first,
                 last;
-    fsFontHeader hdr;
+    FSXFontInfoHeader hdr;
     Bool        show_all = True;
 
     cmd = argv[0];
@@ -180,24 +180,24 @@ main(argc, argv)
 
 show_glyphs(fid, hdr, show_all, first, last)
     Font        fid;
-    fsFontHeader *hdr;
+    FSXFontInfoHeader *hdr;
     Bool        show_all;
-    fsChar2b    first,
+    FSChar2b    first,
                 last;
 {
-    fsCharInfo *extents;
+    FSXCharInfo *extents;
     int         err,
                 ch,
                 start,
                 end;
     int         offset = 0;
     unsigned char *glyphs;
-    fsOffset   *offsets;
+    FSOffset   *offsets;
     int         scanpad;
     int         r,
                 b;
-    fsBitmapFormat format;
-    fsChar2b    chars[2];
+    FSBitmapFormat format;
+    FSChar2b    chars[2];
     int         num_chars;
 
     if (show_all) {
@@ -290,7 +290,7 @@ show_glyphs(fid, hdr, show_all, first, last)
 }
 
 show_char_info(ci)
-    fsCharInfo *ci;
+    FSXCharInfo *ci;
 {
     printf("Left: %-3d    Right: %-3d    Ascent: %-3d    Descent: %-3d    Width: %d\n",
 	   ci->left, ci->right, ci->ascent, ci->descent, ci->width);
@@ -298,12 +298,12 @@ show_char_info(ci)
 
 show_info(fid, hdr, first, last)
     Font        fid;
-    fsFontHeader *hdr;
-    fsChar2b   *first,
+    FSXFontInfoHeader *hdr;
+    FSChar2b   *first,
                *last;
 {
-    fsPropInfo  pi;
-    fsPropOffset *po;
+    FSPropInfo  pi;
+    FSPropOffset *po;
     unsigned char *pd;
 
     FSQueryXInfo(svr, fid, hdr, &pi, &po, &pd);
@@ -332,8 +332,8 @@ show_info(fid, hdr, first, last)
 }
 
 show_props(pi, po, pd)
-    fsPropInfo *pi;
-    fsPropOffset *po;
+    FSPropInfo *pi;
+    FSPropOffset *po;
     unsigned char *pd;
 {
     int         i;
@@ -364,10 +364,10 @@ show_props(pi, po, pd)
     }
 }
 
-static      fsBitmapFormat
+static      FSBitmapFormat
 make_format()
 {
-    fsBitmapFormat format;
+    FSBitmapFormat format;
 
     format = 0;
     /* set up format */

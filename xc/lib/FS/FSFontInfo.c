@@ -1,25 +1,25 @@
-/* $XConsortium: FSFontInfo.c,v 1.3 92/05/12 18:07:18 gildea Exp $ */
+/* $XConsortium: FSFontInfo.c,v 1.4 92/05/13 15:41:58 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"FSlibint.h"
@@ -30,22 +30,24 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
     char       *pattern;
     int         maxNames;
     int        *count;
-    fsFontHeader ***info;
-    fsPropInfo ***pprops;
-    fsPropOffset ***offsets;
+    FSXFontInfoHeader ***info;
+    FSPropInfo ***pprops;
+    FSPropOffset ***offsets;
     unsigned char ***prop_data;
 {
     long        nbytes;
     int         i,
                 j;
     int         size = 0;
-    fsFontHeader **fhdr = (fsFontHeader **) 0;
-    fsPropInfo **pi = (fsPropInfo **) 0;
-    fsPropOffset **po = (fsPropOffset **) 0;
+    FSXFontInfoHeader **fhdr = (FSXFontInfoHeader **) 0;
+    FSPropInfo **pi = (FSPropInfo **) 0;
+    FSPropOffset **po = (FSPropOffset **) 0;
     unsigned char **pd = (unsigned char **) 0;
     char      **flist = NULL;
     fsListFontsWithXInfoReply reply;
     fsListFontsWithXInfoReq *req;
+    fsPropInfo local_pi;
+    fsPropOffset local_po;
     Status status;
 
     GetReq(ListFontsWithXInfo, req);
@@ -97,17 +99,17 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    size = i + reply.nReplies + 1;
 
 	    if (fhdr) {
-		fsFontHeader **tmp_fhdr = (fsFontHeader **)
+		FSXFontInfoHeader **tmp_fhdr = (FSXFontInfoHeader **)
 		FSrealloc((char *) fhdr,
-			  (unsigned) (sizeof(fsFontHeader *) * size));
+			  (unsigned) (sizeof(FSXFontInfoHeader *) * size));
 		char      **tmp_flist = (char **) FSrealloc((char *) flist,
 					 (unsigned) (sizeof(char *) * size));
-		fsPropInfo **tmp_pi = (fsPropInfo **)
+		FSPropInfo **tmp_pi = (FSPropInfo **)
 		FSrealloc((char *) pi,
-			  (unsigned) (sizeof(fsPropInfo *) * size));
-		fsPropOffset **tmp_po = (fsPropOffset **)
+			  (unsigned) (sizeof(FSPropInfo *) * size));
+		FSPropOffset **tmp_po = (FSPropOffset **)
 		FSrealloc((char *) po,
-			  (unsigned) (sizeof(fsPropOffset *) * size));
+			  (unsigned) (sizeof(FSPropOffset *) * size));
 		unsigned char **tmp_pd = (unsigned char **)
 		FSrealloc((char *) pd,
 			  (unsigned) (sizeof(unsigned char *) * size));
@@ -148,22 +150,22 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 		po = tmp_po;
 		pd = tmp_pd;
 	    } else {
-		if (!(fhdr = (fsFontHeader **)
-		      FSmalloc((unsigned) (sizeof(fsFontHeader *) * size))))
+		if (!(fhdr = (FSXFontInfoHeader **)
+		      FSmalloc((unsigned) (sizeof(FSXFontInfoHeader *) * size))))
 		    goto clearwire;
 		if (!(flist = (char **)
 		      FSmalloc((unsigned) (sizeof(char *) * size)))) {
 		    FSfree((char *) fhdr);
 		    goto clearwire;
 		}
-		if (!(pi = (fsPropInfo **)
-		      FSmalloc((unsigned) (sizeof(fsPropInfo *) * size)))) {
+		if (!(pi = (FSPropInfo **)
+		      FSmalloc((unsigned) (sizeof(FSPropInfo *) * size)))) {
 		    FSfree((char *) fhdr);
 		    FSfree((char *) flist);
 		    goto clearwire;
 		}
-		if (!(po = (fsPropOffset **)
-		      FSmalloc((unsigned) (sizeof(fsPropOffset *) * size)))) {
+		if (!(po = (FSPropOffset **)
+		      FSmalloc((unsigned) (sizeof(FSPropOffset *) * size)))) {
 		    FSfree((char *) fhdr);
 		    FSfree((char *) flist);
 		    FSfree((char *) pi);
@@ -179,20 +181,11 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 		}
 	    }
 	}
-	fhdr[i] = (fsFontHeader *) FSmalloc(sizeof(fsFontHeader));
+	fhdr[i] = (FSXFontInfoHeader *) FSmalloc(sizeof(FSXFontInfoHeader));
 	if (!fhdr[i]) {
 	    goto badmem;
 	}
-	bcopy((char *) &reply.header, (char *) fhdr[i], sizeof(fsFontHeader));
-	if (FSProtocolVersion(svr) == 1)
-	{
-	    fhdr[i]->char_range.min_char.high = reply.header.char_range.min_char.low;
-	    fhdr[i]->char_range.min_char.low = reply.header.char_range.min_char.high;
-	    fhdr[i]->char_range.max_char.high = reply.header.char_range.max_char.low;
-	    fhdr[i]->char_range.max_char.low = reply.header.char_range.max_char.high;
-	    fhdr[i]->default_char.high = reply.header.default_char.low;
-	    fhdr[i]->default_char.low = reply.header.default_char.high;
-	}
+	FSUnpack_XFontInfoHeader(&reply, fhdr[i], FSProtocolVersion(svr));
 
 	/* alloc space for the name */
 	flist[i] = (char *) FSmalloc((unsigned int) (reply.nameLength + 1));
@@ -208,15 +201,17 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    flist[i][reply.nameLength] = '\0';
 	}
 
-	pi[i] = (fsPropInfo *) FSmalloc(sizeof(fsPropInfo));
+	pi[i] = (FSPropInfo *) FSmalloc(sizeof(FSPropInfo));
 	if (!pi[i]) {
 	    FSfree((char *) fhdr[i]);
 	    goto badmem;
 	}
-	_FSReadPad(svr, (char *) pi[i], sizeof(fsPropInfo));
+	_FSReadPad(svr, (char *) &local_pi, SIZEOF(fsPropInfo));
+	pi[i]->num_offsets = local_pi.num_offsets;
+	pi[i]->data_len = local_pi.data_len;
 
-	po[i] = (fsPropOffset *)
-	    FSmalloc(pi[i]->num_offsets * sizeof(fsPropOffset));
+	po[i] = (FSPropOffset *)
+	    FSmalloc(pi[i]->num_offsets * sizeof(FSPropOffset));
 	if (!po[i]) {
 	    FSfree((char *) fhdr[i]);
 	    FSfree((char *) pi[i]);
@@ -230,8 +225,16 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    goto badmem;
 	}
 	/* get offsets */
-	_FSReadPad(svr, (char *) po[i],
-		   (pi[i]->num_offsets * sizeof(fsPropOffset)));
+	for (j=0; j<pi[i]->num_offsets; j++)
+	{
+	    _FSReadPad(svr, (char *) &local_po, SIZEOF(fsPropOffset));
+	    po[i][j].name.position = local_po.name.position;
+	    po[i][j].name.length = local_po.name.length;
+	    po[i][j].value.position = local_po.value.position;
+	    po[i][j].value.length = local_po.value.length;
+	    po[i][j].type = local_po.type;
+	}
+	
 	/* get prop data */
 	if (FSProtocolVersion(svr) == 1)
 	    _FSReadPad(svr, (char *) pd[i], pi[i]->data_len);
@@ -286,8 +289,8 @@ clearwire:
 	fsPropInfo  ti;
 
 	_FSEatData(svr, (reply.nameLength + 3) & ~3);
-	_FSReadPad(svr, (char *) &ti, sizeof(fsPropInfo));
-	_FSEatData(svr, (sizeof(fsPropOffset) * ti.num_offsets));
+	_FSReadPad(svr, (char *) &ti, SIZEOF(fsPropInfo));
+	_FSEatData(svr, (SIZEOF(fsPropOffset) * ti.num_offsets));
 	_FSEatData(svr, ti.data_len);
     } while (_FSReply(svr, (fsReply *) & reply,
 		      ((SIZEOF(fsListFontsWithXInfoReply)

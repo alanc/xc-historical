@@ -1,4 +1,4 @@
-/* $XConsortium: FSQGlyphs.c,v 1.3 92/05/12 18:07:20 gildea Exp $ */
+/* $XConsortium: FSQGlyphs.c,v 1.4 92/05/26 17:27:39 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -28,18 +28,20 @@ int
 FSQueryXBitmaps8(svr, fid, format, range_type, str, str_len, offsets, glyphdata)
     FSServer   *svr;
     Font        fid;
-    fsBitmapFormat format;
+    FSBitmapFormat format;
     Bool        range_type;
     unsigned char *str;
     unsigned long str_len;
-    fsOffset  **offsets;
+    FSOffset  **offsets;
     unsigned char **glyphdata;
 {
     fsQueryXBitmaps8Req *req;
     fsQueryXBitmaps8Reply reply;
-    fsOffset   *offs;
+    FSOffset   *offs;
+    fsOffset32 local_offs;
     unsigned char *gd;
     int         left;
+    int		i;
 
     GetReq(QueryXBitmaps8, req);
     req->fid = fid;
@@ -51,22 +53,28 @@ FSQueryXBitmaps8(svr, fid, format, range_type, str, str_len, offsets, glyphdata)
 
     /* get back the info */
     if (!_FSReply(svr, (fsReply *) & reply,
-     (sizeof(fsQueryXBitmaps8Reply) - sizeof(fsGenericReply)) >> 2, fsFalse))
+     (SIZEOF(fsQueryXBitmaps8Reply) - SIZEOF(fsGenericReply)) >> 2, fsFalse))
 	return FSBadAlloc;
 
-    offs = (fsOffset *) FSmalloc(sizeof(fsOffset) * reply.num_chars);
+    offs = (FSOffset *) FSmalloc(sizeof(FSOffset) * reply.num_chars);
     *offsets = offs;
     if (!offs)
 	return FSBadAlloc;
-    left = (reply.length << 2) - sizeof(fsQueryXBitmaps8Reply)
-	- (sizeof(fsOffset) * reply.num_chars);
+    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps8Reply)
+	- (SIZEOF(fsOffset32) * reply.num_chars);
     gd = (unsigned char *) FSmalloc(left);
     *glyphdata = gd;
     if (!gd) {
 	FSfree((char *) offs);
 	return FSBadAlloc;
     }
-    _FSReadPad(svr, (char *) offs, (sizeof(fsOffset) * reply.num_chars));
+    for (i=0; i<reply.num_chars; i++)
+    {
+	_FSReadPad(svr, (char *) &local_offs, (SIZEOF(fsOffset32)));
+	offs->position = local_offs.position;
+	offs->length = local_offs.length;
+	offs++;
+    }
     _FSReadPad(svr, (char *) gd, left);
 
     SyncHandle();
@@ -78,62 +86,70 @@ FSQueryXBitmaps16(svr, fid, format, range_type, str, str_len,
 		  offsets, glyphdata)
     FSServer   *svr;
     Font        fid;
-    fsBitmapFormat format;
+    FSBitmapFormat format;
     Bool        range_type;
-    fsChar2b   *str;
+    FSChar2b   *str;
     unsigned long str_len;
-    fsOffset  **offsets;
+    FSOffset  **offsets;
     unsigned char **glyphdata;
 {
     fsQueryXBitmaps16Req *req;
     fsQueryXBitmaps16Reply reply;
-    fsOffset   *offs;
+    FSOffset   *offs;
+    fsOffset32 local_offs;
     unsigned char *gd;
     int         left;
+    int		i;
 
     GetReq(QueryXBitmaps16, req);
     req->fid = fid;
     req->range = range_type;
     req->format = format;
     req->num_ranges = str_len;
-    req->length += ((str_len * sizeof(fsChar2b)) + 3) >> 2;
+    req->length += ((str_len * SIZEOF(fsChar2b)) + 3) >> 2;
     if (FSProtocolVersion(svr) == 1)
     {
 	int i;
 	fsChar2b_version1 *swapped_str;
 
 	swapped_str = (fsChar2b_version1 *)
-	    FSmalloc(sizeof(fsChar2b_version1) * str_len);
+	    FSmalloc(SIZEOF(fsChar2b_version1) * str_len);
 	if (!swapped_str)
 	    return FSBadAlloc;
 	for (i = 0; i < str_len; i++) {
 	    swapped_str[i].low = str[i].low;
 	    swapped_str[i].high = str[i].high;
 	}
-	_FSSend(svr, (char *)swapped_str, (str_len*sizeof(fsChar2b_version1)));
+	_FSSend(svr, (char *)swapped_str, (str_len*SIZEOF(fsChar2b_version1)));
 	FSfree(swapped_str);
     } else
-	_FSSend(svr, (char *) str, (str_len * sizeof(fsChar2b)));
+	_FSSend(svr, (char *) str, (str_len * SIZEOF(fsChar2b)));
 
     /* get back the info */
     if (!_FSReply(svr, (fsReply *) & reply,
-	      (sizeof(fsQueryXBitmaps16Reply) - sizeof(fsGenericReply)) >> 2,
+	      (SIZEOF(fsQueryXBitmaps16Reply) - SIZEOF(fsGenericReply)) >> 2,
 		  fsFalse))
 	return FSBadAlloc;
 
-    offs = (fsOffset *) FSmalloc(sizeof(fsOffset) * reply.num_chars);
+    offs = (FSOffset *) FSmalloc(sizeof(FSOffset) * reply.num_chars);
     *offsets = offs;
     if (!offs)
 	return FSBadAlloc;
-    left = (reply.length << 2) - sizeof(fsQueryXBitmaps16Reply)
-	- (sizeof(fsOffset) * reply.num_chars);
+    left = (reply.length << 2) - SIZEOF(fsQueryXBitmaps16Reply)
+	- (SIZEOF(fsOffset32) * reply.num_chars);
     gd = (unsigned char *) FSmalloc(left);
     *glyphdata = gd;
     if (!gd) {
 	FSfree((char *) offs);
 	return FSBadAlloc;
     }
-    _FSReadPad(svr, (char *) offs, (sizeof(fsOffset) * reply.num_chars));
+    for (i=0; i<reply.num_chars; i++)
+    {
+	_FSReadPad(svr, (char *) &local_offs, (SIZEOF(fsOffset32)));
+	offs->position = local_offs.position;
+	offs->length = local_offs.length;
+	offs++;
+    }
     _FSReadPad(svr, (char *) gd, left);
 
     SyncHandle();

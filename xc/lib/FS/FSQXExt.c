@@ -1,4 +1,4 @@
-/* $XConsortium: FSQXExt.c,v 1.3 92/05/12 18:07:22 gildea Exp $ */
+/* $XConsortium: FSQXExt.c,v 1.4 92/05/26 17:26:53 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -24,6 +24,19 @@
 
 #include "FSlibint.h"
 
+static void
+_FS_convert_char_info(src, dst)
+    fsXCharInfo *src;
+    FSXCharInfo *dst;
+{
+    dst->ascent = src->ascent;
+    dst->descent = src->descent;
+    dst->left = src->left;
+    dst->right = src->right;
+    dst->width = src->width;
+    dst->attributes = src->attributes;
+}
+
 int
 FSQueryXExtents8(svr, fid, range_type, str, str_len, extents)
     FSServer   *svr;
@@ -31,11 +44,12 @@ FSQueryXExtents8(svr, fid, range_type, str, str_len, extents)
     Bool        range_type;
     unsigned char *str;
     unsigned long str_len;
-    fsCharInfo **extents;
+    FSXCharInfo **extents;
 {
     fsQueryXExtents8Req *req;
     fsQueryXExtents8Reply reply;
-    fsCharInfo *ext;
+    FSXCharInfo *ext;
+    fsXCharInfo local_exts;
     int         i;
 
     GetReq(QueryXExtents8, req);
@@ -47,16 +61,17 @@ FSQueryXExtents8(svr, fid, range_type, str, str_len, extents)
 
     /* get back the info */
     if (!_FSReply(svr, (fsReply *) & reply,
-	       (sizeof(fsQueryXExtents8Reply) - sizeof(fsGenericReply)) >> 2,
+	       (SIZEOF(fsQueryXExtents8Reply) - SIZEOF(fsGenericReply)) >> 2,
 		  fsFalse))
 	return FSBadAlloc;
 
-    ext = (fsCharInfo *) FSmalloc(sizeof(fsCharInfo) * reply.num_extents);
+    ext = (FSXCharInfo *) FSmalloc(sizeof(FSXCharInfo) * reply.num_extents);
     *extents = ext;
     if (!ext)
 	return FSBadAlloc;
     for (i = 0; i < reply.num_extents; i++) {
-	_FSReadPad(svr, (char *) &ext[i], sizeof(fsCharInfo));
+	_FSReadPad(svr, (char *) &local_exts, SIZEOF(fsXCharInfo));
+	_FS_convert_char_info(&local_exts, &ext[i]);
     }
 
     SyncHandle();
@@ -68,49 +83,51 @@ FSQueryXExtents16(svr, fid, range_type, str, str_len, extents)
     FSServer   *svr;
     Font        fid;
     Bool        range_type;
-    fsChar2b   *str;
+    FSChar2b   *str;
     unsigned long str_len;
-    fsCharInfo **extents;
+    FSXCharInfo **extents;
 {
     fsQueryXExtents16Req *req;
     fsQueryXExtents16Reply reply;
-    fsCharInfo *ext;
+    FSXCharInfo *ext;
+    fsXCharInfo local_exts;
     int         i;
 
     GetReq(QueryXExtents16, req);
     req->fid = fid;
     req->range = range_type;
     req->num_ranges = str_len;
-    req->length += ((str_len * sizeof(fsChar2b)) + 3) >> 2;
+    req->length += ((str_len * SIZEOF(fsChar2b)) + 3) >> 2;
     if (FSProtocolVersion(svr) == 1)
     {
 	fsChar2b_version1 *swapped_str;
 
 	swapped_str = (fsChar2b_version1 *)
-	    FSmalloc(sizeof(fsChar2b_version1) * str_len);
+	    FSmalloc(SIZEOF(fsChar2b_version1) * str_len);
 	if (!swapped_str)
 	    return FSBadAlloc;
 	for (i = 0; i < str_len; i++) {
 	    swapped_str[i].low = str[i].low;
 	    swapped_str[i].high = str[i].high;
 	}
-	_FSSend(svr, (char *)swapped_str, (str_len*sizeof(fsChar2b_version1)));
+	_FSSend(svr, (char *)swapped_str, (str_len*SIZEOF(fsChar2b_version1)));
 	FSfree(swapped_str);
     } else
-	_FSSend(svr, (char *) str, (str_len * sizeof(fsChar2b)));
+	_FSSend(svr, (char *) str, (str_len * SIZEOF(fsChar2b)));
 
     /* get back the info */
     if (!_FSReply(svr, (fsReply *) & reply,
-	      (sizeof(fsQueryXExtents16Reply) - sizeof(fsGenericReply)) >> 2,
+	      (SIZEOF(fsQueryXExtents16Reply) - SIZEOF(fsGenericReply)) >> 2,
 		  fsFalse))
 	return FSBadAlloc;
 
-    ext = (fsCharInfo *) FSmalloc(sizeof(fsCharInfo) * reply.num_extents);
+    ext = (FSXCharInfo *) FSmalloc(sizeof(FSXCharInfo) * reply.num_extents);
     *extents = ext;
     if (!ext)
 	return FSBadAlloc;
     for (i = 0; i < reply.num_extents; i++) {
-	_FSReadPad(svr, (char *) &ext[i], sizeof(fsCharInfo));
+	_FSReadPad(svr, (char *) &local_exts, SIZEOF(fsXCharInfo));
+	_FS_convert_char_info(&local_exts, &ext[i]);
     }
 
     SyncHandle();

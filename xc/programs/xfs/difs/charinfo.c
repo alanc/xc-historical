@@ -1,4 +1,4 @@
-/* $XConsortium: charinfo.c,v 1.5 92/05/15 12:01:05 gildea Exp $ */
+/* $XConsortium: charinfo.c,v 1.6 92/05/28 15:57:19 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -91,28 +91,28 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
 	    nchars = n2dChars(pinfo);
 	else
 	    nchars = lastCol - firstCol + 1;
-	local_range.min_char.low = firstCol;
-	local_range.min_char.high = firstRow;
-	local_range.max_char.low = lastCol;
-	local_range.max_char.high = lastRow;
+	local_range.min_char_low = firstCol;
+	local_range.min_char_high = firstRow;
+	local_range.max_char_low = lastCol;
+	local_range.max_char_high = lastRow;
 	range = &local_range;
 	num_ranges = 1;
     } else {
 	nchars = 0;
 	for (i = 0, rp = range; i < num_ranges; i++, rp++) {
-	    if (rp->min_char.high > rp->max_char.high)
+	    if (rp->min_char_high > rp->max_char_high)
 		return BadCharRange;
-	    if (rp->min_char.high == rp->max_char.high)
+	    if (rp->min_char_high == rp->max_char_high)
 	    {
-		if (rp->min_char.low > rp->max_char.low)
+		if (rp->min_char_low > rp->max_char_low)
 		    return BadCharRange;
-		nchars += rp->max_char.low - rp->min_char.low + 1;
+		nchars += rp->max_char_low - rp->min_char_low + 1;
 	    }
 	    else
 	    {
-		nchars += lastRow - rp->min_char.low + 1;
-		nchars += (rp->max_char.high - rp->min_char.high - 1) * num_cols;
-		nchars += rp->max_char.low - firstRow + 1;
+		nchars += lastRow - rp->min_char_low + 1;
+		nchars += (rp->max_char_high - rp->min_char_high - 1) * num_cols;
+		nchars += rp->max_char_low - firstRow + 1;
 	    }
 	}
     }
@@ -143,14 +143,14 @@ getCharInfos (pfont, num_ranges, range, ink_metrics, nump, retp)
      default character substitution so we get zero metrics for
      non-existent characters. */
     for (i = 0, rp = range; i < num_ranges; i++, rp++) {
-	for (r = rp->min_char.high; r <= rp->max_char.high; r++)
+	for (r = rp->min_char_high; r <= rp->max_char_high; r++)
 	{
 	    minCol = firstCol;
-	    if (r == rp->min_char.high)
-		minCol = rp->min_char.low;
+	    if (r == rp->min_char_high)
+		minCol = rp->min_char_low;
 	    maxCol = lastCol;
-	    if (r == rp->max_char.high)
-		maxCol = rp->max_char.low;
+	    if (r == rp->max_char_high)
+		maxCol = rp->max_char_low;
 	    for (c = minCol; c <= maxCol; c++) {
 		ch[0] = r;
 		ch[1] = c;
@@ -181,12 +181,13 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     unsigned long num_ranges;
     fsRange    *range;
     unsigned long *num_extents;	/* return */
-    fsCharInfo **data;		/* return */
+    fsXCharInfo **data;		/* return */
 {
     unsigned long size;
-    fsCharInfo *ci,
-    *pci;
-    CharInfoPtr	*xchars, *xcharsFree, xci;
+    fsXCharInfo *ci;
+    fsXCharInfo cilocal;
+    char *pci;
+    CharInfoPtr	*xchars, xci;
     int		nchars;
     int		err;
     
@@ -198,28 +199,30 @@ GetExtents(client, pfont, flags, num_ranges, range, num_extents, data)
     if (err != Successful)
 	return err;
     
-    size = sizeof(fsCharInfo) * nchars;
-    pci = ci = (fsCharInfo *) fsalloc(size);
-    if (!ci) {
+    size = SIZEOF(fsXCharInfo) * nchars;
+    pci = (char *) fsalloc(size);
+    if (!pci) {
 	fsfree (xchars);
 	return AllocError;
     }
-    
+
+    ci = (fsXCharInfo *) pci;
     *num_extents = nchars;
-    xcharsFree = xchars;
     
+    /* pack the data */
     while (nchars--) {
 	xci = *xchars++;
-	pci->ascent = xci->metrics.ascent;
-	pci->descent = xci->metrics.descent;
-	pci->left = xci->metrics.leftSideBearing;
-	pci->right = xci->metrics.rightSideBearing;
-	pci->width = xci->metrics.characterWidth;
-	pci->attributes = 0;
-	pci++;
+	cilocal.ascent = xci->metrics.ascent;
+	cilocal.descent = xci->metrics.descent;
+	cilocal.left = xci->metrics.leftSideBearing;
+	cilocal.right = xci->metrics.rightSideBearing;
+	cilocal.width = xci->metrics.characterWidth;
+	cilocal.attributes = 0;
+	bcopy(&cilocal, pci, SIZEOF(fsXCharInfo));
+	pci += SIZEOF(fsXCharInfo);
     }
     
-    fsfree (xcharsFree);
+    fsfree (xchars);
     
     *data = ci;
     
@@ -237,12 +240,12 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     fsRange    *range;
     int        *tsize;
     unsigned long *num_glyphs;
-    fsOffset  **offsets;
+    fsOffset32  **offsets;
     pointer    *data;
     int		*freeData;
 {
     int         i;
-    fsOffset	*lengths, *l;
+    fsOffset32	*lengths, *l;
     unsigned long size = 0;
     pointer     gdata,
     gd;
@@ -304,7 +307,7 @@ packGlyphs (client, pfont, format, flags, num_ranges, range, tsize, num_glyphs,
     }
 
     /* get space for glyph offsets */
-    lengths = (fsOffset *) fsalloc(sizeof(fsOffset) * nchars);
+    lengths = (fsOffset32 *) fsalloc(SIZEOF(fsOffset32) * nchars);
     if (!lengths) {
 	fsfree (bitCharsFree);
 	fsfree (inkCharsFree);
@@ -578,7 +581,7 @@ GetBitmaps(client, pfont, format, flags, num_ranges, range,
     fsRange    *range;
     int        *size;
     unsigned long *num_glyphs;
-    fsOffset  **offsets;
+    fsOffset32  **offsets;
     pointer    *data;
     int		*freeData;
 {

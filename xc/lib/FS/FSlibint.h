@@ -1,26 +1,26 @@
-/* $XConsortium$ */
+/* $XConsortium: FSlibint.h,v 1.6 91/05/13 15:12:01 gildea Exp $ */
 
-/* @(#)FSlibint.h	4.1	91/05/02
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 /*
@@ -294,3 +294,49 @@ extern void Data();
 #define ENDITERATE }
 #endif				/* MUSTCOPY - used machines whose C structs
 				 * don't line up with proto */
+
+
+#if __STDC__ && !defined(UNIXCPP)
+#define FSCat(x,y) x##_##y
+#else
+#define FSCat(x,y) x/**/_/**/y
+#endif
+
+/* copy XCharInfo parts of a protocol reply into a FSXCharInfo */
+
+#define FSUnpack_XCharInfo(packet, structure) \
+    (structure)->left = FSCat(packet,left); \
+    (structure)->right = FSCat(packet,right); \
+    (structure)->width = FSCat(packet,width); \
+    (structure)->ascent = FSCat(packet,ascent); \
+    (structure)->descent = FSCat(packet,descent); \
+    (structure)->attributes = FSCat(packet,attributes)
+
+
+/* copy XFontInfoHeader parts of a protocol reply into a FSXFontInfoHeader */
+
+#define FSUnpack_XFontInfoHeader(packet, structure, serverversion) \
+    (structure)->flags = (packet)->font_header_flags; \
+    (structure)->draw_direction = (packet)->font_header_draw_direction; \
+ \
+    if (serverversion > 1) { \
+	(structure)->char_range.min_char.high = (packet)->font_header_char_range_min_char_high; \
+	(structure)->char_range.min_char.low = (packet)->font_header_char_range_min_char_low; \
+	(structure)->char_range.max_char.high = (packet)->font_header_char_range_max_char_high; \
+	(structure)->char_range.max_char.low = (packet)->font_header_char_range_max_char_low; \
+	(structure)->default_char.high = (packet)->font_header_default_char_high; \
+	(structure)->default_char.low = (packet)->font_header_default_char_low; \
+    } else { \
+	(structure)->char_range.min_char.high = (packet)->font_header_char_range_min_char_low; \
+	(structure)->char_range.min_char.low = (packet)->font_header_char_range_min_char_high; \
+	(structure)->char_range.max_char.high = (packet)->font_header_char_range_max_char_low; \
+	(structure)->char_range.max_char.low = (packet)->font_header_char_range_max_char_high; \
+	(structure)->default_char.high = (packet)->font_header_default_char_low; \
+	(structure)->default_char.low = (packet)->font_header_default_char_high; \
+	} \
+ \
+    (structure)->font_ascent = (packet)->font_header_font_ascent; \
+    (structure)->font_descent = (packet)->font_header_font_descent; \
+ \
+    FSUnpack_XCharInfo((packet)->font_header_min_bounds, &(structure)->min_bounds); \
+    FSUnpack_XCharInfo((packet)->font_header_max_bounds, &(structure)->max_bounds)

@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.6 92/01/31 17:44:19 eswu Exp $ */
+/* $XConsortium: swaprep.c,v 1.7 92/05/28 16:43:00 gildea Exp $ */
 /*
  * font server reply swapping
  */
@@ -168,10 +168,8 @@ SGenericReply(client, size, pRep)
     int         size;
     fsGenericReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -181,10 +179,8 @@ SListExtensionsReply(client, size, pRep)
     int         size;
     fsListExtensionsReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -194,12 +190,10 @@ SQueryExtensionReply(client, size, pRep)
     int         size;
     fsQueryExtensionReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swaps(&pRep->major_version, n);
-    swaps(&pRep->minor_version, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->major_version = lswaps(pRep->major_version);
+    pRep->minor_version = lswaps(pRep->minor_version);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -209,12 +203,10 @@ SListCataloguesReply(client, size, pRep)
     int         size;
     fsListCataloguesReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->num_replies, n);
-    swapl(&pRep->num_catalogues, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->num_replies = lswapl(pRep->num_replies);
+    pRep->num_catalogues = lswapl(pRep->num_catalogues);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -224,11 +216,9 @@ SCreateACReply(client, size, pRep)
     int         size;
     fsCreateACReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swaps(&pRep->status, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->status = lswaps(pRep->status);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -238,11 +228,9 @@ SGetEventMaskReply(client, size, pRep)
     int         size;
     fsGetEventMaskReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->event_mask, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->event_mask = lswapl(pRep->event_mask);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -252,10 +240,8 @@ SGetResolutionReply(client, size, pRep)
     int         size;
     fsGetResolutionReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -265,14 +251,32 @@ SListFontsReply(client, size, pRep)
     int         size;
     fsListFontsReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->following, n);
-    swapl(&pRep->nFonts, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->following = lswapl(pRep->following);
+    pRep->nFonts = lswapl(pRep->nFonts);
     (void) WriteToClient(client, size, (char *) pRep);
 }
+
+#define SwapXFontInfoHeader(reply) \
+    reply->font_header_flags = lswapl(reply->font_header_flags); \
+ \
+    reply->font_header_min_bounds_left = lswaps(reply->font_header_min_bounds_left); \
+    reply->font_header_min_bounds_right = lswaps(reply->font_header_min_bounds_right); \
+    reply->font_header_min_bounds_width = lswaps(reply->font_header_min_bounds_width); \
+    reply->font_header_min_bounds_ascent = lswaps(reply->font_header_min_bounds_ascent); \
+    reply->font_header_min_bounds_descent = lswaps(reply->font_header_min_bounds_descent); \
+    reply->font_header_min_bounds_attributes = lswaps(reply->font_header_min_bounds_attributes); \
+ \
+    reply->font_header_max_bounds_left = lswaps(reply->font_header_max_bounds_left); \
+    reply->font_header_max_bounds_right = lswaps(reply->font_header_max_bounds_right); \
+    reply->font_header_max_bounds_width = lswaps(reply->font_header_max_bounds_width); \
+    reply->font_header_max_bounds_ascent = lswaps(reply->font_header_max_bounds_ascent); \
+    reply->font_header_max_bounds_descent = lswaps(reply->font_header_max_bounds_descent); \
+    reply->font_header_max_bounds_attributes = lswaps(reply->font_header_max_bounds_attributes); \
+ \
+    reply->font_header_font_ascent = lswaps(reply->font_header_font_ascent); \
+    reply->font_header_font_descent = lswaps(reply->font_header_font_descent)
 
 void
 SListFontsWithXInfoReply(client, size, pRep)
@@ -280,12 +284,10 @@ SListFontsWithXInfoReply(client, size, pRep)
     int         size;
     fsListFontsWithXInfoReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->nReplies, n);
-    SwapFontHeader(&pRep->header);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->nReplies = lswapl(pRep->nReplies);
+    SwapXFontInfoHeader(pRep);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -295,11 +297,9 @@ SOpenBitmapFontReply(client, size, pRep)
     int         size;
     fsOpenBitmapFontReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->otherid, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->otherid = lswapl(pRep->otherid);
 
     (void) WriteToClient(client, size, (char *) pRep);
 }
@@ -310,11 +310,9 @@ SQueryXInfoReply(client, size, pRep)
     int         size;
     fsQueryXInfoReply *pRep;
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    SwapFontHeader(&pRep->header);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    SwapXFontInfoHeader(pRep);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -324,11 +322,9 @@ SQueryXExtentsReply(client, size, pRep)
     int         size;
     fsQueryXExtents8Reply *pRep; /* QueryXExtents16Reply is the same */
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->num_extents, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->num_extents = lswapl(pRep->num_extents);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -338,13 +334,11 @@ SQueryXBitmapsReply(client, size, pRep)
     int         size;
     fsQueryXBitmaps8Reply *pRep; /* QueryXBitmaps16Reply is the same */
 {
-    int         n;
-
-    swaps(&pRep->sequenceNumber, n);
-    swapl(&pRep->length, n);
-    swapl(&pRep->replies_hint, n);
-    swapl(&pRep->num_chars, n);
-    swapl(&pRep->nbytes, n);
+    pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
+    pRep->length = lswapl(pRep->length);
+    pRep->replies_hint = lswapl(pRep->replies_hint);
+    pRep->num_chars = lswapl(pRep->num_chars);
+    pRep->nbytes = lswapl(pRep->nbytes);
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
@@ -353,12 +347,10 @@ SErrorEvent(error, perror)
     fsError    *error,
                *perror;
 {
-    int         n;
-
     *perror = *error;
-    swaps(&perror->sequenceNumber, n);
-    swapl(&perror->length, n);
-    swapl(&perror->timestamp, n);
+    perror->sequenceNumber = lswaps(perror->sequenceNumber);
+    perror->length = lswapl(perror->length);
+    perror->timestamp = lswapl(perror->timestamp);
 }
 
 void
@@ -378,8 +370,8 @@ WriteSConnectionInfo(client, size, pInfo)
 	return;
     }
     SwapConnSetupAccept(pConnSetup, (fsConnSetupAccept *) pInfoT);
-    pInfoT += sizeof(fsConnSetup);
-    pInfo += sizeof(fsConnSetup);
+    pInfoT += SIZEOF(fsConnSetup);
+    pInfo += SIZEOF(fsConnSetup);
 
     i = (pConnSetup->vendor_len + 3) & ~3;
     bcopy(pInfo, pInfoT, i);
@@ -393,10 +385,10 @@ SwapConnSetupAccept(pConnSetup, pConnSetupT)
     fsConnSetupAccept *pConnSetup,
                *pConnSetupT;
 {
-    cpswapl(pConnSetup->length, pConnSetupT->length);
-    cpswaps(pConnSetup->max_request_len, pConnSetupT->max_request_len);
-    cpswaps(pConnSetup->vendor_len, pConnSetupT->vendor_len);
-    cpswapl(pConnSetup->release_number, pConnSetupT->release_number);
+    pConnSetupT->length = lswapl(pConnSetup->length);
+    pConnSetupT->max_request_len = lswaps(pConnSetup->max_request_len);
+    pConnSetupT->vendor_len = lswaps(pConnSetup->vendor_len);
+    pConnSetupT->release_number = lswapl(pConnSetup->release_number);
 }
 
 void
@@ -406,72 +398,51 @@ WriteSConnSetup(client, pcsp)
 {
     fsConnSetup cspT;
 
-    cpswaps(pcsp->status, cspT.status);
-    cpswaps(pcsp->major_version, cspT.major_version);
-    cpswaps(pcsp->minor_version, cspT.minor_version);
+    cspT.status = lswaps(pcsp->status);
+    cspT.major_version = lswaps(pcsp->major_version);
+    cspT.minor_version = lswaps(pcsp->minor_version);
     cspT.num_alternates = pcsp->num_alternates;
     cspT.auth_index = pcsp->auth_index;
-    cpswaps(pcsp->alternate_len, cspT.alternate_len);
-    cpswaps(pcsp->auth_len, cspT.auth_len);
-    (void) WriteToClient(client, sizeof(cspT), (char *) &cspT);
+    cspT.alternate_len = lswaps(pcsp->alternate_len);
+    cspT.auth_len = lswaps(pcsp->auth_len);
+    (void) WriteToClient(client, SIZEOF(fsConnSetup), (char *) &cspT);
 }
 
-void
-SwapCharInfo(ci)
-    fsCharInfo *ci;
-{
-    SwapShorts((short *) ci, sizeof(fsCharInfo) / sizeof(CARD16));
-}
-
-void
-SwapFontHeader(hdr)
-    fsFontHeader *hdr;
-{
-    int         n;
-
-    SwapCharInfo(&hdr->min_bounds);
-    SwapCharInfo(&hdr->max_bounds);
-    swaps(&hdr->font_ascent, n);
-    swaps(&hdr->font_descent, n);
-    swapl(&hdr->flags, n);
-}
-
-void
+static void
 SwapPropOffset(po)
-    fsPropOffset *po;
+    char *po;
 {
-    int         n;
+    int i, n;
 
-    swapl(&po->name.position, n);
-    swapl(&po->name.length, n);
-    swapl(&po->value.position, n);
-    swapl(&po->value.length, n);
+    for (i=0; i<4; i++)
+    {
+	swapl(po, n);
+	po += 4;
+    }
 }
 
 void
 SwapPropInfo(pi)
     fsPropInfo *pi;
 {
-    int         i,
-                n;
-    fsPropOffset *po;
+    int i;
+    char *po;
 
-    po = (fsPropOffset *) ((pointer) pi + sizeof(fsPropInfo));
-    for (i = 0; i < pi->num_offsets; i++, po++)
+    po = (char *) pi + SIZEOF(fsPropInfo);
+    for (i = 0; i < pi->num_offsets; i++)
+    {
 	SwapPropOffset(po);
-
-    swapl(&pi->num_offsets, n);
-    swapl(&pi->data_len, n);
+	po += SIZEOF(fsPropOffset);
+    }
+ 
+    pi->num_offsets = lswapl(pi->num_offsets);
+    pi->data_len = lswapl(pi->data_len);
 }
 
 void
 SwapExtents(extents, num)
-    fsCharInfo *extents;
+    fsXCharInfo *extents;
     int         num;
 {
-    int         i;
-
-    for (i = 0; i < num; i++) {
-	SwapCharInfo(&extents[i]);
-    }
+    SwapShorts((short *)extents, num * (SIZEOF(fsXCharInfo) / 2));
 }

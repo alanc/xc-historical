@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.11 92/09/29 17:40:59 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.12 92/10/08 17:20:02 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -33,17 +33,17 @@
 #include	"fontstruct.h"
 #include	"fservestr.h"
 
+extern int _fs_load_glyphs();
+
 /*
  * converts data from font server form to X server form
  */
 
 void
-fs_convert_char_info(src, ci)
-    fsCharInfo *src;
-    CharInfoPtr ci;
+_fs_convert_char_info(src, dst)
+    fsXCharInfo *src;
+    xCharInfo *dst;
 {
-    xCharInfo  *dst = &ci->metrics;
-
     dst->ascent = src->ascent;
     dst->descent = src->descent;
     dst->leftSideBearing = src->left;
@@ -52,36 +52,22 @@ fs_convert_char_info(src, ci)
     dst->attributes = src->attributes;
 }
 
-int
-fs_convert_header(conn, hdr, pfi)
+void
+_fs_init_fontinfo(conn, pfi)
     FSFpePtr    conn;
-    fsFontHeader *hdr;
     FontInfoPtr pfi;
 {
-    pfi->allExist = (hdr->flags & FontInfoAllCharsExist) != 0;
-    pfi->drawDirection = (hdr->draw_direction == LeftToRightDrawDirection) ?
-	LeftToRight : RightToLeft;
-    pfi->inkInside = (hdr->flags & FontInfoInkInside) != 0;
-
-    if (conn->fsMajorVersion > 1) {
-	pfi->firstCol = hdr->char_range.min_char.low;
-	pfi->firstRow = hdr->char_range.min_char.high;
-	pfi->lastCol = hdr->char_range.max_char.low;
-	pfi->lastRow = hdr->char_range.max_char.high;
-	pfi->defaultCh = hdr->default_char.low + (hdr->default_char.high << 8);
-    } else {
-	pfi->firstCol = hdr->char_range.min_char.high;
-	pfi->firstRow = hdr->char_range.min_char.low;
-	pfi->lastCol = hdr->char_range.max_char.high;
-	pfi->lastRow = hdr->char_range.max_char.low;
-	pfi->defaultCh = hdr->default_char.high + (hdr->default_char.low << 8);
+    if (conn->fsMajorVersion == 1) {
+	unsigned short n;
+	n = pfi->firstCol;
+	pfi->firstCol = pfi->firstRow;
+	pfi->firstRow = n;
+	n = pfi->lastCol;
+	pfi->lastCol = pfi->lastRow;
+	pfi->lastRow = n;
+	pfi->defaultCh = (pfi->defaultCh >> 8) & 0xff
+	                   + (pfi->defaultCh & 0xff) << 8;
     }
-
-    pfi->fontDescent = hdr->font_descent;
-    pfi->fontAscent = hdr->font_ascent;
-
-    fs_convert_char_info(&hdr->min_bounds, &pfi->minbounds);
-    fs_convert_char_info(&hdr->max_bounds, &pfi->maxbounds);
 
     if (FontCouldBeTerminal (pfi))
     {
@@ -93,16 +79,11 @@ fs_convert_header(conn, hdr, pfi)
 	pfi->maxbounds = pfi->minbounds;
     }
 
-    fs_convert_char_info(&hdr->min_bounds, &pfi->ink_minbounds);
-    fs_convert_char_info(&hdr->max_bounds, &pfi->ink_maxbounds);
-
     FontComputeInfoAccelerators (pfi);
-
-    return 1;
 }
 
 int
-fs_convert_props(pi, po, pd, pfi)
+_fs_convert_props(pi, po, pd, pfi)
     fsPropInfo *pi;
     fsPropOffset *po;
     pointer     pd;
@@ -112,6 +93,8 @@ fs_convert_props(pi, po, pd, pfi)
     int         i,
                 nprops;
     char       *is_str;
+    fsPropOffset local_off;
+    char *off_adr;
 
 /* stolen from server/include/resource.h */
 #define BAD_RESOURCE 0xe0000000
@@ -128,15 +111,18 @@ fs_convert_props(pi, po, pd, pfi)
     pfi->props = dprop;
     pfi->isStringProp = is_str;
 
-    for (i = 0; i < nprops; i++, dprop++, po++, is_str++) {
-	dprop->name = MakeAtom(&pd[po->name.position], po->name.length, 1);
-	if (po->type != PropTypeString) {
+    off_adr = (char *)po;
+    for (i = 0; i < nprops; i++, dprop++, is_str++) {
+	bcopy(off_adr, &local_off, SIZEOF(fsPropOffset));
+	dprop->name = MakeAtom(&pd[local_off.name.position],
+			       local_off.name.length, 1);
+	if (local_off.type != PropTypeString) {
 	    *is_str = FALSE;
-	    dprop->value = po->value.position;
+	    dprop->value = local_off.value.position;
 	} else {
 	    *is_str = TRUE;
-	    dprop->value = (INT32) MakeAtom(&pd[po->value.position],
-					    po->value.length, 1);
+	    dprop->value = (INT32) MakeAtom(&pd[local_off.value.position],
+					    local_off.value.length, 1);
 	    if (dprop->value == BAD_RESOURCE)
 	    {
 		xfree (pfi->props);
@@ -146,13 +132,14 @@ fs_convert_props(pi, po, pd, pfi)
 		return -1;
 	    }
 	}
+	off_adr += SIZEOF(fsPropOffset);
     }
 
     return nprops;
 }
 
 int
-fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
+_fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
     FSFpePtr    conn;
     FontInfoPtr pfi;
     fsListFontsWithXInfoReply *fsrep;
@@ -160,10 +147,10 @@ fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
     fsPropOffset *po;
     pointer     pd;
 {
-    fsFontHeader *hdr = &fsrep->header;
+    fsUnpack_XFontInfoHeader(fsrep, pfi);
+    _fs_init_fontinfo(conn, pfi);
 
-    fs_convert_header(conn, hdr, pfi);
-    if (fs_convert_props(pi, po, pd, pfi) == -1)
+    if (_fs_convert_props(pi, po, pd, pfi) == -1)
 	return AllocError;
 
     return Successful;
@@ -176,7 +163,7 @@ fs_convert_lfwi_reply(conn, pfi, fsrep, pi, po, pd)
  */
 /* ARGSUSED */
 int
-fs_build_range(pfont, count, item_size, range, data)
+_fs_build_range(pfont, count, item_size, range, data)
     FontPtr     pfont;
     unsigned int count;
     int         item_size;
@@ -198,7 +185,7 @@ fs_build_range(pfont, count, item_size, range, data)
  */
 /* ARGSUSED */
 int
-fs_check_extents(pfont, flags, nranges, range, blockrec)
+_fs_check_extents(pfont, flags, nranges, range, blockrec)
     FontPtr     pfont;
     Mask        flags;
     int         nranges;
@@ -218,7 +205,7 @@ fs_check_extents(pfont, flags, nranges, range, blockrec)
  */
 /* ARGSUSED */
 int
-fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec)
+_fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec)
     FontPtr     pfont;
     fsBitmapFormat format;
     Mask        flags;
@@ -232,7 +219,7 @@ fs_check_bitmaps(pfont, format, flags, nranges, range, blockrec)
     return Successful;
 }
 
-static int
+int
 _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
     unsigned long count;
@@ -271,7 +258,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
     else
 	itemSize = 2;
     if (!fsd->complete)
-	err = fs_load_glyphs((pointer) 0, pFont, count, itemSize, chars);
+	err = _fs_load_glyphs((pointer) 0, pFont, count, itemSize, chars);
     if (err != Success)
 	return err;
 
@@ -341,7 +328,7 @@ _fs_get_glyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 
 static CharInfoRec junkDefault;
 
-static int
+int
 _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     FontPtr     pFont;
     unsigned long count;
@@ -352,7 +339,6 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
 {
     int         ret;
     FSFontPtr   fsfont;
-    int         i;
     CharInfoPtr encoding;
     CharInfoPtr oldDefault;
     
@@ -372,8 +358,8 @@ _fs_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
     return ret;
 }
 
-static void
-fs_unload_font(pfont)
+void
+_fs_unload_font(pfont)
     FontPtr     pfont;
 {
     FSFontPtr   fsdata = (FSFontPtr) pfont->fontPrivate;
@@ -386,11 +372,11 @@ fs_unload_font(pfont)
 }
 
 void
-fs_init_font(pfont)
+_fs_init_font(pfont)
     FontPtr     pfont;
 {
     /* set font function pointers */
     pfont->get_glyphs = _fs_get_glyphs;
     pfont->get_metrics = _fs_get_metrics;
-    pfont->unload_font = fs_unload_font;
+    pfont->unload_font = _fs_unload_font;
 }

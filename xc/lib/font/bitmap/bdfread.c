@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.13 92/05/12 18:07:40 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.14 92/05/29 17:10:11 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -800,7 +800,7 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
 
     if (state.quadWidthProp && (state.quadWidthProp->value == -1))
 	state.quadWidthProp->value = state.digitCount ?
-	    (INT32) ((float) state.digitWidths / (float) state.digitCount) :
+	    (INT32) (state.digitWidths / state.digitCount) :
 	    (min->characterWidth + max->characterWidth) / 2;
 
     if (state.weightProp && (state.weightProp->value == -1))

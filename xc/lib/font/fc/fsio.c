@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.23 92/05/14 16:52:27 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.24 92/08/10 17:50:41 eswu Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -64,10 +64,11 @@ extern int  errno;
 #endif
 
 static int  padlength[4] = {0, 3, 2, 1};
-unsigned long fs_fd_mask[MSKCNT];
+unsigned long _fs_fd_mask[MSKCNT];
 
 static int  _fs_wait_for_readable();
 
+static int
 _fs_name_to_address(servername, inaddr)
     char       *servername;
     struct sockaddr_in *inaddr;
@@ -230,11 +231,11 @@ _fs_setup_connection(conn, servername, timeout)
     prefix.num_auths = 0;
     prefix.auth_len = 0;
 
-    if (_fs_write(conn, (char *) &prefix, sizeof(fsConnClientPrefix)) == -1)
+    if (_fs_write(conn, (char *) &prefix, SIZEOF(fsConnClientPrefix)) == -1)
 	return FALSE;
 
     /* read setup info */
-    if (_fs_read(conn, (char *) &rep, sizeof(fsConnSetup)) == -1)
+    if (_fs_read(conn, (char *) &rep, SIZEOF(fsConnSetup)) == -1)
 	return FALSE;
 
     conn->fsMajorVersion = rep.major_version;
@@ -291,7 +292,7 @@ _fs_setup_connection(conn, servername, timeout)
 	return FALSE;
     }
     /* get rest */
-    if (_fs_read(conn, (char *) &conn_accept, (long) sizeof(fsConnSetupAccept)) == -1) {
+    if (_fs_read(conn, (char *) &conn_accept, (long) SIZEOF(fsConnSetupAccept)) == -1) {
 	xfree(auth_data);
 	return FALSE;
     }
@@ -612,7 +613,7 @@ _fs_eat_rest_of_error(conn, err)
     FSFpePtr    conn;
     fsError    *err;
 {
-    int         len = (err->length - (sizeof(fsReplyHeader) >> 2)) << 2;
+    int         len = (err->length - (SIZEOF(fsGenericReply) >> 2)) << 2;
 
 #ifdef DEBUG
     fprintf(stderr, "clearing error\n");

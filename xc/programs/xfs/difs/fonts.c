@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.12 92/05/13 15:49:41 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.13 92/05/28 17:17:15 gildea Exp $ */
 /*
  * font control
  */
@@ -360,9 +360,9 @@ do_open_font(client, c)
 	rep.otherid_valid = FALSE;
     rep.cachable = TRUE;	/* XXX */
     rep.sequenceNumber = client->sequence;
-    rep.length = sizeof(fsOpenBitmapFontReply) >> 2;
+    rep.length = SIZEOF(fsOpenBitmapFontReply) >> 2;
     WriteReplyToClient(client,
-		       sizeof(fsOpenBitmapFontReply), &rep);
+		       SIZEOF(fsOpenBitmapFontReply), &rep);
     if (pfont->refcnt == 0) {
 	pfont->fpe = fpe;
 	UseFPE(pfont->fpe);
@@ -435,9 +435,9 @@ OpenFont(client, fid, format, format_mask, namelen, name)
 	rep.otherid_valid = TRUE;
 	rep.cachable = TRUE;	/* XXX */
 	rep.sequenceNumber = client->sequence;
-	rep.length = sizeof(fsOpenBitmapFontReply) >> 2;
+	rep.length = SIZEOF(fsOpenBitmapFontReply) >> 2;
 	WriteReplyToClient(client,
-			   sizeof(fsOpenBitmapFontReply), &rep);
+			   SIZEOF(fsOpenBitmapFontReply), &rep);
 	return FSSuccess;
     }
     c = (OFclosurePtr) fsalloc(sizeof(OFclosureRec));
@@ -750,7 +750,7 @@ do_list_fonts(client, c)
 	stringLens += names->length[i];
 
     reply.type = FS_Reply;
-    reply.length = (sizeof(fsListFontsReply) + stringLens + nnames + 3) >> 2;
+    reply.length = (SIZEOF(fsListFontsReply) + stringLens + nnames + 3) >> 2;
     reply.following = 0;
     reply.nFonts = nnames;
     reply.sequenceNumber = client->sequence;
@@ -770,7 +770,7 @@ do_list_fonts(client, c)
 	bcopy(names->names[i], bufptr, names->length[i]);
 	bufptr += names->length[i];
     }
-    WriteReplyToClient(client, sizeof(fsListFontsReply), &reply);
+    WriteReplyToClient(client, SIZEOF(fsListFontsReply), &reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
 bail:
@@ -860,7 +860,6 @@ do_list_fonts_with_info(client, c)
     fsListFontsWithXInfoReply *reply;
     int         length;
     fsPropInfo *prop_info;
-    fsFontHeader hdr;
     int         lenpropdata;
     int         i;
 
@@ -961,22 +960,22 @@ do_list_fonts_with_info(client, c)
 		name = c->savedName;
 		namelen = strlen(name);
 	    }
-	    err = LoadXFontInfo(client, pFontInfo, &hdr, &prop_info);
+	    fsPack_XFontInfoHeader(pFontInfo, reply, client->major_version);
+	    err = convert_props(pFontInfo, &prop_info);
 	    if (err != Successful)
 		break;
-	    lenpropdata = sizeof(fsPropInfo) +
-		prop_info->num_offsets * sizeof(fsPropOffset) +
+	    lenpropdata = SIZEOF(fsPropInfo) +
+		prop_info->num_offsets * SIZEOF(fsPropOffset) +
 		prop_info->data_len;
 
 	    reply->type = FS_Reply;
 	    reply->length =
-		(sizeof(fsListFontsWithXInfoReply) +
+		(SIZEOF(fsListFontsWithXInfoReply) +
 		 lenpropdata + namelen + 3) >> 2;
 	    reply->sequenceNumber = client->sequence;
 	    reply->nameLength = namelen;
 	    reply->nReplies = numFonts;
-	    reply->header = hdr;
-	    WriteReplyToClient(client, sizeof(fsListFontsWithXInfoReply), reply);
+	    WriteReplyToClient(client, SIZEOF(fsListFontsWithXInfoReply), reply);
 	    if (client->swapped)
 		SwapPropInfo(prop_info);
 	    if (client->major_version > 1)
@@ -1010,9 +1009,9 @@ do_list_fonts_with_info(client, c)
 
 	final_reply = (fsGenericReply *)c->reply;
 	if (client->major_version > 1)
-	    length = sizeof(fsGenericReply);
+	    length = SIZEOF(fsGenericReply);
 	else
-	    length = sizeof(fsListFontsWithXInfoReply);
+	    length = SIZEOF(fsListFontsWithXInfoReply);
 	if (c->length < length) {
 	    final_reply = (fsGenericReply *) fsrealloc(c->reply, length);
 	    if (final_reply) {

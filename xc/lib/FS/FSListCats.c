@@ -1,26 +1,25 @@
-/* $XConsortium: FSFlush.c,v 1.2 91/05/13 15:11:35 gildea Exp $ */
-
-/* @(#)FSFlush.c	4.1	91/05/02
+/* $XConsortium: FSListCats.c,v 1.1 91/07/16 20:32:03 keith Exp $ */
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"FSlibint.h"
@@ -47,13 +46,13 @@ FSListCatalogues(svr, pattern, maxNames, actualCount)
     req->length += (nbytes + 3) >> 2;
     _FSSend(svr, pattern, nbytes);
     if (!_FSReply(svr, (fsReply *) & rep, 
-    (sizeof(fsListCataloguesReply) - sizeof(fsGenericReply)) >> 2, fsFalse))
+    (SIZEOF(fsListCataloguesReply) - SIZEOF(fsGenericReply)) >> 2, fsFalse))
 	return (char **) 0;
 
     if (rep.num_catalogues) {
 	clist = (char **)
 	    FSmalloc((unsigned) rep.num_catalogues * sizeof(char *));
-	rlen = (rep.length << 2) - sizeof(fsListCataloguesReply);
+	rlen = (rep.length << 2) - SIZEOF(fsListCataloguesReply);
 	c = (char *) FSmalloc((unsigned) (rlen + 1));
 
 	if ((!clist) || (!c)) {

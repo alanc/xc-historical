@@ -1,28 +1,25 @@
-/* $XConsortium$ */
+/* $XConsortium: chars.c,v 1.2 91/05/13 16:35:40 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)chars.c	4.1	91/05/02
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	<stdio.h>
@@ -51,8 +48,8 @@ extern long pointSize;		/* font height in points */
 static void
 EmitBitmap(outFile, fontHeader, charInfo, encoding, bpr, data)
     FILE       *outFile;
-    fsFontHeader *fontHeader;
-    fsCharInfo *charInfo;
+    FSXFontInfoHeader *fontHeader;
+    FSXCharInfo *charInfo;
     unsigned int encoding;
     int         bpr;
     unsigned char *data;
@@ -132,33 +129,33 @@ Bool
 EmitCharacters(outFile, fontServer, fontHeader, fontID)
     FILE       *outFile;
     FSServer   *fontServer;
-    fsFontHeader *fontHeader;
+    FSXFontInfoHeader *fontHeader;
     Font        fontID;
 {
-    fsCharInfo *extents;
-    fsCharInfo *charInfo;
+    FSXCharInfo *extents;
+    FSXCharInfo *charInfo;
     int         encoding;
-    fsOffset   *offsets;
+    FSOffset   *offsets;
     unsigned char *glyph;
     unsigned char *glyphs;
     unsigned int nChars;
-    fsRange    *range;
     int         firstChar;
     int         lastChar;
     int         ch;
-    fsBitmapFormat format;
+    FSBitmapFormat format;
 
     nChars = 0;
-    range = &fontHeader->char_range;
 
     format = BYTE_ORDER | BIT_ORDER | SCANLINE_UNIT |
 	SCANLINE_PAD | EXTENTS;
-    firstChar = (range->min_char.high << 8) + range->min_char.low;
-    lastChar = (range->max_char.high << 8) + range->max_char.low;
+    firstChar = (fontHeader->char_range.min_char.high << 8)
+	        + fontHeader->char_range.min_char.low;
+    lastChar = (fontHeader->char_range.max_char.high << 8)
+	       + fontHeader->char_range.max_char.low;
 
-    (void) FSQueryXExtents16(fontServer, fontID, True, (fsChar2b *) 0, 0,
+    (void) FSQueryXExtents16(fontServer, fontID, True, (FSChar2b *) 0, 0,
 			     &extents);
-    (void) FSQueryXBitmaps16(fontServer, fontID, format, True, (fsChar2b *) 0,
+    (void) FSQueryXBitmaps16(fontServer, fontID, format, True, (FSChar2b *) 0,
 			     0, &offsets, &glyphs);
 
     charInfo = extents;

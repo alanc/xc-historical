@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.14 92/05/29 18:05:13 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.15 92/06/02 14:15:53 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -166,12 +166,12 @@ int
 ProcInitialConnection(client)
     ClientPtr   client;
 {
-    REQUEST(fsReq);
+    REQUEST(fsFakeReq);
     fsConnClientPrefix *prefix;
     int         whichbyte = 1;
 
     nClients++;
-    prefix = (fsConnClientPrefix *) ((char *) stuff + sz_fsReq);
+    prefix = (fsConnClientPrefix *) stuff+1;
     if ((prefix->byteOrder != 'l') && (prefix->byteOrder != 'B'))
 	return (client->noClientException = -2);
     if (((*(char *) &whichbyte) && (prefix->byteOrder == 'B')) ||
@@ -184,7 +184,7 @@ ProcInitialConnection(client)
     stuff->reqType = 2;
     stuff->length += prefix->auth_len;
     if (client->swapped) {
-	swaps(&stuff->length, whichbyte);
+	stuff->length = lswaps(stuff->length);
     }
     ResetCurrentRequest(client);
     return client->noClientException;
@@ -209,9 +209,9 @@ ProcEstablishConnection(client)
                 auth_len;
     AlternateServerPtr altservers;
 
-    REQUEST(fsReq);
+    REQUEST(fsFakeReq);
 
-    prefix = (fsConnClientPrefix *) ((char *) stuff + sz_fsReq);
+    prefix = (fsConnClientPrefix *) stuff+1;
     auth_data = (pointer) prefix + sz_fsConnClientPrefix;
     client_auth = (AuthPtr) ALLOCATE_LOCAL(prefix->num_auths * sizeof(AuthRec));
     if (!client_auth) {
@@ -261,7 +261,7 @@ ProcEstablishConnection(client)
     if (client->swapped) {
 	WriteSConnSetup(client, &csp);
     } else {
-	(void) WriteToClient(client, sizeof(fsConnSetup), (char *) &csp);
+	(void) WriteToClient(client, SIZEOF(fsConnSetup), (char *) &csp);
     }
 
     /* send the alternates info */
@@ -311,7 +311,7 @@ SendErrToClient(client, error, data)
 
     switch (error) {
     case FSBadFormat:
-	extralen = sizeof(fsBitmapFormat);
+	extralen = SIZEOF(fsBitmapFormat);
 	break;
     case FSBadFont:
     case FSBadAccessContext:
@@ -319,10 +319,10 @@ SendErrToClient(client, error, data)
     case FSBadEventMask:
 	if (client->swapped)
 	    SwapLongs((long *) data, 1);
-	extralen = sizeof(Font);
+	extralen = 4;
 	break;
     case FSBadRange:
-	extralen = sizeof(fsRange);
+	extralen = SIZEOF(fsRange);
 	break;
     case FSBadResolution:
 	if (client->swapped)
@@ -335,7 +335,7 @@ SendErrToClient(client, error, data)
     case FSBadLength:
 	if (client->swapped)
 	    SwapLongs((long *) data, 1);
-	extralen = sizeof(long);
+	extralen = 4;
 	break;
     default:
 	/* nothing else to send */
@@ -348,7 +348,7 @@ SendErrToClient(client, error, data)
     rep.major_opcode = ((fsReq *) client->requestBuffer)->reqType;
     rep.minor_opcode = MinorOpcodeOfRequest(client),
 	rep.timestamp = GetTimeInMillis();
-    rep.length = (sizeof(fsError) + extralen) >> 2;
+    rep.length = (SIZEOF(fsError) + extralen) >> 2;
 
     WriteErrorToClient(client, &rep);
 
@@ -387,15 +387,16 @@ ProcListCatalogues(client)
     REQUEST(fsListCataloguesReq);
     REQUEST_AT_LEAST_SIZE(fsListCataloguesReq);
 
-    num = ListCatalogues((char *) &stuff[1], stuff->nbytes, stuff->maxNames,
+    num = ListCatalogues((char *)stuff + SIZEOF(fsListCataloguesReq),
+			 stuff->nbytes, stuff->maxNames,
 			 &catalogues, &len);
     rep.type = FS_Reply;
     rep.num_replies = 0;
     rep.num_catalogues = num;
     rep.sequenceNumber = client->sequence;
-    rep.length = (sizeof(fsListCataloguesReply) + len + 3) >> 2;
+    rep.length = (SIZEOF(fsListCataloguesReply) + len + 3) >> 2;
 
-    WriteReplyToClient(client, sizeof(fsListCataloguesReply), &rep);
+    WriteReplyToClient(client, SIZEOF(fsListCataloguesReply), &rep);
     (void) WriteToClient(client, len, (char *) catalogues);
     fsfree((char *) catalogues);
     return client->noClientException;
@@ -418,13 +419,13 @@ ProcSetCatalogues(client)
 	num = ListCatalogues("*", 1, 10000, &new_cat, &len);
     } else {
 	num = stuff->num_catalogues;
-	err = ValidateCatalogues(&num, (char *) &stuff[1]);
+	err = ValidateCatalogues(&num, (char *)stuff + SIZEOF(fsSetCataloguesReq));
 	if (err == FSSuccess) {
-	    len = (stuff->length << 2) - sizeof(fsSetCataloguesReq);
+	    len = (stuff->length << 2) - SIZEOF(fsSetCataloguesReq);
 	    new_cat = (char *) fsalloc(len);
 	    if (!new_cat)
 		return FSBadAlloc;
-	    bcopy((char *) &stuff[1], new_cat, len);
+	    bcopy((char *)stuff + SIZEOF(fsSetCataloguesReq), new_cat, len);
 	} else {
 	    SendErrToClient(client, err, (pointer) &num);
 	    return err;
@@ -460,9 +461,9 @@ ProcGetCatalogues(client)
     rep.type = FS_Reply;
     rep.num_catalogues = client->num_catalogues;
     rep.sequenceNumber = client->sequence;
-    rep.length = (sizeof(fsGetCataloguesReply) + len + 3) >> 2;
+    rep.length = (SIZEOF(fsGetCataloguesReply) + len + 3) >> 2;
 
-    WriteReplyToClient(client, sizeof(fsGetCataloguesReply), &rep);
+    WriteReplyToClient(client, SIZEOF(fsGetCataloguesReply), &rep);
     (void) WriteToClient(client, len, client->catalogues);
 
     return client->noClientException;
@@ -489,7 +490,8 @@ ProcCreateAC(client)
     authp = (AuthContextPtr) LookupIDByType(client->index, stuff->acid,
 					    RT_AUTHCONT);
     if (authp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->acid);
+	int aligned_acid = stuff->acid;
+	SendErrToClient(client, FSBadIDChoice, (pointer) &aligned_acid);
 	return FSBadIDChoice;
     }
     acp = 0;
@@ -502,7 +504,7 @@ ProcCreateAC(client)
     	}
     }
     /* build up a list of the stuff */
-    for (i = 0, ad = (pointer) &stuff[1]; i < (int)stuff->num_auths; i++) {
+    for (i = 0, ad = (pointer)stuff + SIZEOF(fsCreateACReq); i < (int)stuff->num_auths; i++) {
 	acp[i].namelen = *(short *) ad;
 	ad += 2;
 	acp[i].datalen = *(short *) ad;
@@ -559,10 +561,10 @@ alloc_failure:
     rep.status = accept;
     rep.auth_index = index;
     rep.sequenceNumber = client->sequence;
-    rep.length = (sizeof(fsCreateACReply) + size) >> 2;
+    rep.length = (SIZEOF(fsCreateACReply) + size) >> 2;
     rep.status = AuthSuccess;
 
-    WriteReplyToClient(client, sizeof(fsCreateACReply), &rep);
+    WriteReplyToClient(client, SIZEOF(fsCreateACReply), &rep);
     if (size)
 	(void) WriteToClient(client, size, auth_data);
 
@@ -596,7 +598,8 @@ ProcFreeAC(client)
     authp = (AuthContextPtr) LookupIDByType(client->index, stuff->id,
 					  RT_AUTHCONT);
     if (!authp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->id);
+	int aligned_id = stuff->id;
+	SendErrToClient(client, FSBadIDChoice, (pointer) &aligned_id);
 	return FSBadIDChoice;
     }
     FreeResource(client->index, stuff->id, RT_NONE);
@@ -614,7 +617,8 @@ ProcSetAuthorization(client)
     acp = (AuthContextPtr) LookupIDByType(client->index, stuff->id,
 					  RT_AUTHCONT);
     if (!acp) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->id);
+	int aligned_id = stuff->id;
+	SendErrToClient(client, FSBadIDChoice, (pointer) &aligned_id);
 	return FSBadIDChoice;
     }
     client->auth = acp;		/* XXX does this need a refcount? */
@@ -631,14 +635,14 @@ ProcSetResolution(client)
     REQUEST_AT_LEAST_SIZE(fsSetResolutionReq);
 
     new_res = (fsResolution *)
-	fsalloc(sizeof(fsResolution) * stuff->num_resolutions);
+	fsalloc(SIZEOF(fsResolution) * stuff->num_resolutions);
     if (!new_res) {
 	SendErrToClient(client, FSBadAlloc, NULL);
 	return FSBadAlloc;
     }
     fsfree((char *) client->resolutions);
-    bcopy((char *) &stuff[1], (char *) new_res,
-	  (stuff->num_resolutions * sizeof(fsResolution)));
+    bcopy((char *)stuff + SIZEOF(fsSetResolutionReq), (char *) new_res,
+	  (stuff->num_resolutions * SIZEOF(fsResolution)));
     client->resolutions = new_res;
     client->num_resolutions = stuff->num_resolutions;
 
@@ -657,15 +661,15 @@ ProcGetResolution(client)
     reply.type = FS_Reply;
     reply.num_resolutions = client->num_resolutions;
     reply.sequenceNumber = client->sequence;
-    reply.length = (sizeof(fsGetResolutionReply) +
-		    client->num_resolutions * sizeof(fsResolution)) >> 2;
+    reply.length = (SIZEOF(fsGetResolutionReply) +
+		    client->num_resolutions * SIZEOF(fsResolution)) >> 2;
 
-    WriteReplyToClient(client, sizeof(fsGetResolutionReply), &reply);
+    WriteReplyToClient(client, SIZEOF(fsGetResolutionReply), &reply);
     if (client->swapped)
 	client->pSwapReplyFunc = CopySwap16Write;
 
     WriteSwappedDataToClient(client,
-       (client->num_resolutions * sizeof(fsResolution)), client->resolutions);
+       (client->num_resolutions * SIZEOF(fsResolution)), client->resolutions);
 
     return client->noClientException;
 }
@@ -677,7 +681,8 @@ ProcListFonts(client)
     REQUEST(fsListFontsReq);
     REQUEST_FIXED_SIZE(fsListFontsReq, stuff->nbytes);
 
-    return ListFonts(client, stuff->nbytes, (unsigned char *) &stuff[1],
+    return ListFonts(client, stuff->nbytes,
+		     (unsigned char *)stuff + SIZEOF(fsListFontsReq),
 		     stuff->maxNames);
 }
 
@@ -689,7 +694,7 @@ ProcListFontsWithXInfo(client)
     REQUEST_FIXED_SIZE(fsListFontsWithXInfoReq, stuff->nbytes);
 
     return StartListFontsWithInfo(client, stuff->nbytes,
-			       (unsigned char *) &stuff[1], stuff->maxNames);
+				  (unsigned char *)stuff + SIZEOF(fsListFontsWithXInfoReq), stuff->maxNames);
 }
 
 int
@@ -702,23 +707,26 @@ ProcOpenBitmapFont(client)
     unsigned char *fname;
 
     REQUEST(fsOpenBitmapFontReq);
-    fname = (unsigned char *) &stuff[1];
+    fname = (unsigned char *)stuff + SIZEOF(fsOpenBitmapFontReq);
     nbytes = *fname++;
 
     REQUEST_FIXED_SIZE(fsOpenBitmapFontReq, (nbytes + 1));
 
     pfont = (FontPtr) LookupIDByType(client->index, stuff->fid, RT_FONT);
     if (pfont) {
-	SendErrToClient(client, FSBadIDChoice, (pointer) &stuff->fid);
+	int aligned_fid = stuff->fid;
+	SendErrToClient(client, FSBadIDChoice, (pointer) &aligned_fid);
 	return FSBadIDChoice;
     }
     if (stuff->format_hint != 0 &&
 	    stuff->format_hint & ~ALL_FORMAT_BITS) {
-	SendErrToClient(client, FSBadFormat, (pointer) &stuff->format_hint);
+	int aligned_format_hint = stuff->format_hint;
+	SendErrToClient(client, FSBadFormat, (pointer) &aligned_format_hint);
 	return FSBadFormat;
     }
     if (stuff->format_mask & ~ALL_FORMAT_MASK_BITS) {
-	SendErrToClient(client, FSBadFormat, (pointer) &stuff->format_mask);
+	int aligned_format_mask = stuff->format_mask;
+	SendErrToClient(client, FSBadFormat, (pointer) &aligned_format_mask);
 	return FSBadFormat;
     }
     err = OpenFont(client, stuff->fid, stuff->format_hint, stuff->format_mask,
@@ -746,14 +754,16 @@ ProcQueryXInfo(client)
 
     cfp = (ClientFontPtr) LookupIDByType(client->index, stuff->id, RT_FONT);
     if (!cfp) {
-	SendErrToClient(client, FSBadFont, (pointer) &stuff->id);
+	int aligned_id = stuff->id;
+	SendErrToClient(client, FSBadFont, (pointer) &aligned_id);
 	return FSBadFont;
     }
     reply.type = FS_Reply;
     reply.sequenceNumber = client->sequence;
 
     /* get the header */
-    err = LoadXFontInfo(client, &cfp->font->info, &reply.header, &prop_info);
+    fsPack_XFontInfoHeader(&cfp->font->info, &reply, client->major_version);
+    err = convert_props(&cfp->font->info, &prop_info);
 
     switch (err)
     {
@@ -763,17 +773,17 @@ ProcQueryXInfo(client)
 	SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	return err;
     default:
-	ErrorF("ProcQueryXInfo: unexpected return val %d from LoadXFontInfo",
+	ErrorF("ProcQueryXInfo: unexpected return val %d from convert_props",
 	       err);
 	SendErrToClient(client, FSBadImplementation, (pointer) 0);
 	return err;
     }
-    lendata = sizeof(fsPropInfo) +
-	prop_info->num_offsets * sizeof(fsPropOffset) +
+    lendata = SIZEOF(fsPropInfo) +
+	prop_info->num_offsets * SIZEOF(fsPropOffset) +
 	prop_info->data_len;
 
-    reply.length = (sizeof(fsQueryXInfoReply) + lendata + 3) >> 2;
-    WriteReplyToClient(client, sizeof(fsQueryXInfoReply), &reply);
+    reply.length = (SIZEOF(fsQueryXInfoReply) + lendata + 3) >> 2;
+    WriteReplyToClient(client, SIZEOF(fsQueryXInfoReply), &reply);
 
     if (client->swapped)
 	SwapPropInfo(prop_info);
@@ -797,14 +807,16 @@ ProcQueryXExtents(client)
 
     cfp = (ClientFontPtr) LookupIDByType(client->index, stuff->fid, RT_FONT);
     if (!cfp) {
-	SendErrToClient(client, FSBadFont, (pointer) &stuff->fid);
+	int aligned_fid = stuff->fid;
+	SendErrToClient(client, FSBadFont, (pointer) &aligned_fid);
 	return FSBadFont;
     }
     item_size = (stuff->reqType == FS_QueryXExtents8) ? 1 : 2;
 
     /* get the extents */
     err = QueryExtents(client, cfp, item_size,
-		       stuff->num_ranges, stuff->range, (pointer) &stuff[1]);
+		       stuff->num_ranges, stuff->range,
+		       (pointer)stuff + SIZEOF(fsQueryXExtents8Req));
 
     if (err != FSSuccess) {
 	return err;
@@ -826,11 +838,13 @@ ProcQueryXBitmaps(client)
 
     cfp = (ClientFontPtr) LookupIDByType(client->index, stuff->fid, RT_FONT);
     if (!cfp) {
-	SendErrToClient(client, FSBadFont, (pointer) &stuff->fid);
+	int aligned_fid = stuff->fid;
+	SendErrToClient(client, FSBadFont, (pointer) &aligned_fid);
 	return FSBadFont;
     }
     if (stuff->format & ~ALL_FORMAT_BITS) {
-	SendErrToClient(client, FSBadFormat, (pointer) &stuff->format);
+	int aligned_format = stuff->format;
+	SendErrToClient(client, FSBadFormat, (pointer) &aligned_format);
 	return FSBadFormat;
     }
     assert((stuff->reqType == FS_QueryXBitmaps8) || (stuff->reqType == FS_QueryXBitmaps16));
@@ -838,7 +852,8 @@ ProcQueryXBitmaps(client)
 
     /* get the glyphs */
     err = QueryBitmaps(client, cfp, item_size, stuff->format,
-		       stuff->num_ranges, stuff->range, (pointer) &stuff[1]);
+		       stuff->num_ranges, stuff->range,
+		       (pointer)stuff + SIZEOF(fsQueryXBitmaps8Req));
 
     if (err != FSSuccess) {
 	return err;
@@ -861,7 +876,8 @@ ProcCloseFont(client)
 	FreeResource(client->index, stuff->id, RT_NONE);
 	return client->noClientException;
     } else {
-	SendErrToClient(client, FSBadFont, (pointer) &stuff->id);
+	int aligned_id = stuff->id;
+	SendErrToClient(client, FSBadFont, (pointer) &aligned_id);
 	return FSBadFont;
     }
 }
@@ -958,7 +974,7 @@ NextAvailableClient(ospriv)
 {
     int         i;
     ClientPtr   client;
-    fsReq       data;
+    fsFakeReq   data;
     extern long MaxClients;
 
     i = nextFreeClientID;
@@ -976,8 +992,8 @@ NextAvailableClient(ospriv)
 	return NullClient;
     }
     data.reqType = 1;
-    data.length = (sz_fsReq + sz_fsConnClientPrefix) >> 2;
-    if (!InsertFakeRequest(client, (char *) &data, sz_fsReq)) {
+    data.length = (sizeof(fsFakeReq) + SIZEOF(fsConnClientPrefix)) >> 2;
+    if (!InsertFakeRequest(client, (char *) &data, sizeof(fsFakeReq))) {
 	FreeClientResources(client);
 	fsfree(client);
 	return NullClient;

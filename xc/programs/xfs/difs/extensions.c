@@ -1,32 +1,28 @@
-/* $XConsortium: extensions.c,v 1.3 91/07/18 23:39:35 rws Exp $ */
+/* $XConsortium: extensions.c,v 1.4 91/07/20 13:47:51 rws Exp $ */
 /*
  * font server extensions
- *
  */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * @(#)extensions.c	4.1	5/2/91
- *
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"FSproto.h"
@@ -197,7 +193,7 @@ ProcQueryExtension(client)
     REQUEST_AT_LEAST_SIZE(fsQueryExtensionReq);
 
     reply.type = FS_Reply;
-    reply.length = sizeof(fsQueryExtensionReply) >> 2;
+    reply.length = SIZEOF(fsQueryExtensionReply) >> 2;
     reply.major_opcode = 0;
     reply.sequenceNumber = client->sequence;
 
@@ -228,7 +224,7 @@ ProcQueryExtension(client)
 	}
 
     }
-    WriteReplyToClient(client, sizeof(fsQueryExtensionReply), &reply);
+    WriteReplyToClient(client, SIZEOF(fsQueryExtensionReply), &reply);
     return client->noClientException;
 }
 
@@ -246,7 +242,7 @@ ProcListExtensions(client)
 
     reply.type = FS_Reply;
     reply.nExtensions = NumExtensions;
-    reply.length = sizeof(fsListExtensionsReply) >> 2;
+    reply.length = SIZEOF(fsListExtensionsReply) >> 2;
     reply.sequenceNumber = client->sequence;
     buffer = NULL;
 
@@ -279,7 +275,7 @@ ProcListExtensions(client)
 	    }
 	}
     }
-    WriteReplyToClient(client, sizeof(fsListExtensionsReply), &reply);
+    WriteReplyToClient(client, SIZEOF(fsListExtensionsReply), &reply);
     if (total_length) {
 	WriteToClient(client, total_length, buffer);
 	DEALLOCATE_LOCAL(buffer);

@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.8 92/05/15 10:38:59 gildea Exp $ */
+/* $XConsortium: io.c,v 1.9 92/05/18 13:50:44 gildea Exp $ */
 /*
  * i/o functions
  */
@@ -7,22 +7,22 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	<stdio.h>
@@ -89,7 +89,7 @@ static ConnectionOutputPtr AllocateOutputBuffer();
 	{ timesThisConnection = 0; }
 
 #define	request_length(req, client)		\
-	(((client)->swapped ? lswaps((req)->length) : (req)->length) << 2)
+	((int)((client)->swapped ? lswaps((req)->length) : (req)->length) << 2)
 
 int
 ReadRequest(client)
@@ -129,23 +129,34 @@ ReadRequest(client)
     }
     oci->bufptr += oci->lenLastReq;
 
-    request = (fsReq *) oci->bufptr;
-
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
 
+#ifdef WORD64
+    /* need 8-byte alignment */
+    if ((oci->bufptr - oci->buffer) & 7  &&  gotnow > 0)
+    {
+	bcopy(oci->bufptr, oci->buffer, gotnow);
+	oci->bufptr = oci->buffer;
+	oci->bufcnt = gotnow;
+    }
+#endif
+
+    request = (fsReq *) oci->bufptr;
+
     /* not enough for a request */
-    if ((gotnow < sizeof(fsReq)) ||
+    if ((gotnow < SIZEOF(fsReq)) ||
 	    (gotnow < (needed = request_length(request, client)))) {
 	oci->lenLastReq = 0;
-	if ((gotnow < sizeof(fsReq)) || needed == 0)
-	    needed = sizeof(fsReq);
+	if ((gotnow < SIZEOF(fsReq)) || needed == 0)
+	    needed = SIZEOF(fsReq);
 	else if (needed > MAXBUFSIZE) {
 	    yield_control_death();
 	    return -1;
 	}
 	/* see if we need to shift up a partial request so the rest can fit */
 	if ((gotnow == 0) ||
-		((oci->bufptr - oci->buffer + needed) > oci->size)) {
+	    ((oci->bufptr - oci->buffer + needed) > oci->size))
+	{
 	    if ((gotnow > 0) && (oci->bufptr != oci->buffer))
 		bcopy(oci->bufptr, oci->buffer, gotnow);
 	    /* grow buffer if necessary */
@@ -191,14 +202,14 @@ ReadRequest(client)
 	    }
 	}
 	request = (fsReq *) oci->bufptr;
-	if ((gotnow < sizeof(fsReq)) ||
-		(gotnow < (needed = request_length(request, client)))) {
+	if ((gotnow < SIZEOF(fsReq)) ||
+	    (gotnow < (needed = request_length(request, client)))) {
 	    yield_control_no_input();
 	    return 0;
 	}
     }
     if (needed == 0)
-	needed = sizeof(fsReq);
+	needed = SIZEOF(fsReq);
     oci->lenLastReq = needed;
     /*
      * Check to see if client has at least one whole request in the buffer. If
@@ -206,7 +217,7 @@ ReadRequest(client)
      * select() will be called again and other clients can get into the queue.
      */
 
-    if (gotnow >= needed + sizeof(fsReq)) {
+    if (gotnow >= needed + SIZEOF(fsReq)) {
 	request = (fsReq *) (oci->bufptr + needed);
 	if (gotnow >= needed + request_length(request, client))
 	    BITSET(ClientsWithInput, fd);
@@ -285,7 +296,7 @@ InsertFakeRequest(client, data, count)
     oci->bufptr -= count;
     request = (fsReq *) oci->bufptr;
     gotnow += count;
-    if ((gotnow >= sizeof(fsReq)) &&
+    if ((gotnow >= SIZEOF(fsReq)) &&
 	    (gotnow >= request_length(request, client)))
 	BITSET(ClientsWithInput, fd);
     else
@@ -307,7 +318,7 @@ ResetCurrentRequest(client)
     oci->lenLastReq = 0;
     request = (fsReq *) oci->bufptr;
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
-    if ((gotnow >= sizeof(fsReq)) &&
+    if ((gotnow >= SIZEOF(fsReq)) &&
 	    (gotnow >= request_length(request, client))) {
 	BITSET(ClientsWithInput, fd);
 	yield_control();
@@ -315,6 +326,34 @@ ResetCurrentRequest(client)
 	yield_control_no_input();
     }
 }
+
+#ifdef CRAY
+/*
+ * Cray UniCOS does not have writev so we emulate.
+ * Copied from XlibInt.c
+ */
+#define writev _XWriteV
+
+#include <sys/socket.h>
+
+static int _XWriteV (fd, iov, iovcnt)
+    int fd;
+    struct iovec *iov;
+    int iovcnt;
+{
+    struct msghdr hdr;
+
+    hdr.msg_iov = iov;
+    hdr.msg_iovlen = iovcnt;
+    hdr.msg_accrights = NULL;
+    hdr.msg_accrightslen = 0;
+    hdr.msg_name = NULL;
+    hdr.msg_namelen = 0;
+
+    return (sendmsg (fd, &hdr, 0));
+}
+
+#endif /* CRAY */
 
 int
 FlushClient(client, oc, extraBuf, extraCount, padsize)
