@@ -1098,10 +1098,15 @@ variable has not been set and the client
 has not specified both \fBUser Specified Size\fP hints
 and \fBUser Specified Position\fP hints, \fItwm\fP will put up
 a rubberband box indicating the initial window size.  If pointer
-button one is pressed, the client window is created with the window
-position equal to the current pointer position.  If pointer button two
-is pressed, \fItwm\fP allows the window to be resized.  The resizing
-operation takes place until button two is released.  While the initial
+Bbutton1 is pressed, the client window is created with the window
+position equal to the current pointer position.  If pointer Button2
+is pressed, \fItwm\fP allows the window to be resized.  
+The resizing operation takes place until button two is released.
+If pointer Button3
+is pressed, the client window is created at the current position, with the
+height set to the distance to the bottom of the screen and a width clipped
+to the right edge of the screen.
+While the initial
 positioning of the window is taking place, \fItwm\fP will place a window
 in the upper-left corner of the display showing the window's name.  If
 resizing is taking place, \fItwm\fP will also place a window in the
