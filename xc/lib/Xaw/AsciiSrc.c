@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.7 89/07/11 19:44:42 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.8 89/07/16 14:54:10 jim Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -46,6 +46,7 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.7 89/07/11 19:44:42 kit Exp
 #include <X11/StringDefs.h>
 
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/Converters.h>
 #include <X11/Xmu/Misc.h>
 
 #include <X11/Xaw/AsciiTextP.h>
@@ -1084,6 +1085,9 @@ Piece * piece;
   if (piece->next != NULL)
     (piece->next)->prev = piece->prev;
 
+#ifdef ASCII_STRING
+  if (data->allocated_string)
+#endif
   XtFree(piece->text);
   XtFree(piece);
 }
