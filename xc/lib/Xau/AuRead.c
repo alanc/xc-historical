@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuRead.c,v 1.1 88/11/22 15:27:21 jim Exp $
+ * $XConsortium: AuRead.c,v 1.2 88/12/08 16:40:27 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,6 @@ unsigned short	*countp;
 char	**stringp;
 FILE	*file;
 {
-    unsigned char   file_short[2];
     unsigned short  len;
     char	    *data, *malloc ();
 
@@ -68,7 +67,6 @@ FILE	*auth_file;
     Xauth   local;
     Xauth   *ret;
     char    *malloc ();
-    unsigned char    file_short[2];
 
     if (read_short (&local.family, auth_file) == 0)
 	return 0;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.89 89/11/08 17:07:26 converse Exp $
+ * $XConsortium: XOpenDis.c,v 11.90 89/11/14 16:21:12 converse Exp $
  */
 
 #include "copyright.h"
@@ -23,11 +23,6 @@ static int lock;	/* get rid of ifdefs when locking implemented */
 static xReq _dummy_request = {
 	0, 0, 0
 };
-
-/*
- * support for MIT simple (read: hack) authorization protocol
- */
-static char *mit_magic_cookie_auth = "MIT-MAGIC-COOKIE-1";
 
 /*
  * First, a routine for setting authorization data
