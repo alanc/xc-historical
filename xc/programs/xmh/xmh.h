@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 1.8 88/01/19 14:45:39 swick Exp $";
+ *	rcs_id[] = "$Header: xmh.h,v 1.9 88/01/22 15:01:04 swick Locked $";
  */
 
 /*
@@ -38,7 +38,7 @@
 #include <X/Intrinsic.h>
 #include <X/Atoms.h>
 #include <X/AsciiText.h>
-#include <X/ButtonBox.h>
+#include <X/Box.h>
 #include <X/Command.h>
 #include <X/Dialog.h>
 #include <X/Form.h>
