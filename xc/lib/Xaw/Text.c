@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.45 88/09/05 12:48:16 swick Exp $";
-static char rcsid[] = "$Header: Text.c,v 1.45 88/09/05 12:48:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.46 88/09/06 09:57:48 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.46 88/09/06 09:57:48 swick Exp $";
 #endif
 
 
@@ -1342,7 +1342,7 @@ Widget current, request, new;
     _XtTextPrepareToUpdate(oldtw);
     
     if (oldtw->text.source != newtw->text.source || redisplay) {
-	ForceBuildLineTable(oldtw);
+	ForceBuildLineTable(newtw);
 	redisplay = TRUE;
     }
 
