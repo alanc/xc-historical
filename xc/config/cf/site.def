@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.58 92/08/22 09:20:16 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.59 92/08/22 11:39:28 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -46,7 +46,7 @@ XCOMM site:  $XConsortium: site.def,v 1.58 92/08/22 09:20:16 rws Exp $
 
 #if HasGcc2
 #ifdef Sun3Architecture
-#define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos/2.1/include
+#define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos/2.2.2/include
 #endif
 #endif
 
