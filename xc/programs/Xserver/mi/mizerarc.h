@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.8 89/09/20 18:55:54 rws Exp $ */
+/* $XConsortium: mizerarc.h,v 5.9 89/10/24 18:29:39 rws Exp $ */
 
 typedef struct {
     int x;
@@ -65,8 +65,11 @@ extern Bool miZeroArcSetup();
 	    k1 = dx - k1; \
 	    k3 = -k3; \
 	    b = b + a - (k1 >> 1); \
-	    d = b - (a >> 1) - d + (k3 >> 3); \
-	    a = (dx >> 1) - a; \
+	    d = b + ((-a) >> 1) - d + (k3 >> 3); \
+	    if (dx < 0) \
+		a = -((-dx) >> 1) - a; \
+	    else \
+		a = (dx >> 1) - a; \
 	    dx = 0; \
 	    dy = 1; \
 	    clause \
