@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.7 92/02/04 15:17:02 eswu Exp $
+ * $XConsortium: fontdir.c,v 1.8 92/02/11 18:25:39 eswu Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -138,7 +138,7 @@ FontFileAddEntry(table, prototype)
 
     /* can't add entries to a sorted table, pointers get broken! */
     if (table->sorted)
-	abort ();
+	return (FontEntryPtr) 0;    /* "cannot" happen */
     if (table->used == table->size) {
 	newsize = table->size + 100;
 	entry = (FontEntryPtr) xrealloc(table->entries,
