@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.113 88/02/21 16:20:35 swick Exp $";
+static char rcsid[] = "$Header: Initialize.c,v 1.114 88/02/26 12:39:57 swick Exp $";
 #endif
 
 /***********************************************************
@@ -343,16 +343,16 @@ XtInitialize(shell_name, classname, urlist, num_urs, argc, argv)
 	char **saved_argv;
 	int    saved_argc = *argc;
 	Display *dpy;
-	char *ptr, *rindex();
+	char *rindex();
 	ApplicationShellWidget w;
 	Widget root;
 #ifdef OLDCOLONDISPLAY
 	int squish = -1;
+	Boolean found_display = FALSE;
 #endif
 	Boolean dosync = FALSE;
 	XrmOptionDescRec *options;
 	Cardinal num_options;
-	Boolean found_display = FALSE;
 	int min_display_len = 0;
 	int min_name_len = 0;
 	int min_sync_len = 0;
@@ -400,7 +400,9 @@ XtInitialize(shell_name, classname, urlist, num_urs, argc, argv)
 	          i++;
 		  if(i == *argc) break;
 		  strncpy(displayName, argv[i], sizeof(displayName));
+#ifdef OLDCOLONDISPLAY
 		  found_display = TRUE;
+#endif
 		  continue;
 	  }
 	  if(len > min_name_len && !strncmp("-name", argv[i], len)) {
