@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.129 93/12/29 20:15:28 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.130 94/04/17 20:45:38 rws Exp rws $ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -2934,13 +2934,11 @@ main(argc, argv)
 	    if (!argc)
 		usage();
 	    hotwinname = *argv;
-	    break;
 	} else if (!strcmp(*argv, "-v")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
 	    oldDD = !strcmp(*argv, "1.01") || !strcmp(*argv, "1");
-	    break;
 	} else {
 	    usage();
 	}
