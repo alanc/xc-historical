@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.50 90/02/28 16:09:42 keith Exp $ */
+/* $XConsortium: window.c,v 5.51 90/03/16 15:29:15 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2207,7 +2207,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
 	if (pWin->valdata)
  	{
-	    pWin->valdata->before.shrunk = shrunk;
+	    pWin->valdata->before.resized = TRUE;
 	    pWin->valdata->before.borderVisible = borderVisible;
 	}
 
@@ -3036,6 +3036,7 @@ SetShape(pWin)
     register ScreenPtr pScreen = pWin->drawable.pScreen;
     Bool	anyMarked;
     WindowPtr	pParent = pWin->parent;
+    RegionPtr	pOldClip, bsExposed = NullRegion;
 #ifdef DO_SAVE_UNDERS
     Bool	dosave = FALSE;
 #endif
@@ -3043,15 +3044,18 @@ SetShape(pWin)
     if (WasViewable)
     {
 	anyMarked = MarkOverlappedWindows(pWin, pWin);
-	if (pWin->valdata && HasBorder(pWin))
+	if (pWin->valdata)
 	{
-	    RegionPtr	borderVisible;
+	    if (HasBorder (pWin))
+	    {
+		RegionPtr	borderVisible;
 
-	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
-	    (*pScreen->Subtract) (borderVisible,
-				  &pWin->borderClip, &pWin->winSize);
-	    pWin->valdata->before.borderVisible = borderVisible;
-	    pWin->valdata->before.shrunk = TRUE;
+	    	borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    	(*pScreen->Subtract) (borderVisible,
+				      &pWin->borderClip, &pWin->winSize);
+	    	pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	    pWin->valdata->before.resized = TRUE;
 	}
     }
 
@@ -3062,6 +3066,12 @@ SetShape(pWin)
 
     if (WasViewable)
     {
+	if (pWin->backStorage)
+	{
+	    pOldClip = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->RegionCopy) (pOldClip, &pWin->clipList);
+	}
+
 	anyMarked |= MarkOverlappedWindows(pWin, pWin);
 
 #ifdef DO_SAVE_UNDERS
@@ -3075,10 +3085,33 @@ SetShape(pWin)
 #endif /* DO_SAVE_UNDERS */
 
 	if (anyMarked)
-	{
 	    (* pScreen->ValidateTree)(pParent, NullWindow, VTOther);
+    }
+
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) || WasViewable))
+    {
+	if (!WasViewable)
+	    pOldClip = &pWin->clipList; /* a convenient empty region */
+	bsExposed = (* pScreen->TranslateBackingStore)
+			     (pWin, 0, 0, pOldClip,
+ 			      pWin->drawable.x, pWin->drawable.y);
+    	if (bsExposed)
+    	{
+	    RegionPtr	valExposed = NullRegion;
+    
+	    if (pWin->valdata)
+	    	valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+	    	(*pScreen->RegionEmpty) (valExposed);
+	    (*pScreen->RegionDestroy) (bsExposed);
+    	}
+    }
+    if (WasViewable)
+    {
+	if (anyMarked)
 	    HandleExposures(pParent);
-	}
 #ifdef DO_SAVE_UNDERS
 	if (dosave)
 	    DoChangeSaveUnder(pParent, pWin);
@@ -3276,7 +3309,7 @@ MarkWindow(pWin)
     val->before.oldAbsCorner.x = pWin->drawable.x;
     val->before.oldAbsCorner.y = pWin->drawable.y;
     val->before.borderVisible = NullRegion;
-    val->before.shrunk = FALSE;
+    val->before.resized = FALSE;
     pWin->valdata = val;
 }
 

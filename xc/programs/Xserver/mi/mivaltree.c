@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.22 89/09/30 10:49:17 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.23 89/11/22 18:47:00 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -168,7 +168,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     RegionRec		childUnion;
     Bool		overlap;
     RegionPtr		borderVisible;
-    Bool		shrunk;
+    Bool		resized;
     
     /*
      * Figure out the new visibility of this window.
@@ -302,7 +302,7 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
     }
 
     borderVisible = pParent->valdata->before.borderVisible;
-    shrunk = pParent->valdata->before.shrunk;
+    resized = pParent->valdata->before.resized;
     (* pScreen->RegionInit) (&pParent->valdata->after.borderExposed, NullBox, 0);
     (* pScreen->RegionInit) (&pParent->valdata->after.exposed, NullBox, 0);
 
@@ -419,17 +419,9 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
      * from the old clipList and get the areas that were in the old but aren't
      * in the new and, hence, are about to be obscured.
      */
-    if (pParent->backStorage)
+    if (pParent->backStorage && !resized)
     {
 	(* pScreen->Subtract) (exposed, &pParent->clipList, universe);
-	if (shrunk && (*pScreen->RegionNotEmpty) (exposed))
-	{
-	    RegionPtr	temp, CreateUnclippedWinSize();
-	    
-	    temp = CreateUnclippedWinSize (pParent);
-	    (* pScreen->Intersect) (exposed, exposed, temp);
-	    (* pScreen->RegionDestroy) (temp);
-	}
 	(* pScreen->SaveDoomedAreas)(pParent, exposed, dx, dy);
     }
     

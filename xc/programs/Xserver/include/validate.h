@@ -1,4 +1,4 @@
-/* $XConsortium: validate.h,v 5.0 89/07/16 11:42:49 rws Exp $ */
+/* $XConsortium: validate.h,v 5.1 89/07/21 13:58:27 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -27,7 +27,8 @@ typedef union _Validate {
 	DDXPointRec	oldAbsCorner;	/* old window position */
 	RegionPtr	borderVisible;	/* visible region of border, */
 					/* non-null when size changes */
-	Bool		shrunk;		/* an inside dimension has shrunk */
+	Bool		resized;	/* unclipped winSize has changed - */
+					/* don't call SaveDoomedAreas */
     } before;
     struct AfterValidate {
 	RegionRec	exposed;	/* exposed regions, absolute pos */
