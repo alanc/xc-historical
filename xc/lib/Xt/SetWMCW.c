@@ -48,7 +48,6 @@ Cardinal count;
     Widget *checked, *top, *temp;
     register Cardinal i, j, checked_count;
     register Boolean match;
-    Atom XA_CMAP_WIN;
 
     if ( !XtIsRealized(widget) || (count == 0) ) return;
 
