@@ -67,6 +67,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/LogoP.h \
 	$(AWIDGETSRC)/Mailbox.h \
 	$(AWIDGETSRC)/MailboxP.h \
+	$(AWIDGETSRC)/MenuButton.h \
+	$(AWIDGETSRC)/MenuButtonP.h \
 	$(AWIDGETSRC)/Paned.h \
 	$(AWIDGETSRC)/PanedP.h \
 	$(AWIDGETSRC)/Scroll.h \
