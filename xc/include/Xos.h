@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.54 93/08/22 10:05:08 rws Exp $
+ * $XConsortium: Xos.h,v 1.55 93/08/22 10:17:05 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -106,11 +106,12 @@
 #if !defined(_POSIX_SOURCE) && defined(macII)
 #define _POSIX_SOURCE
 #include <fcntl.h>
+#include <unistd.h>
 #undef _POSIX_SOURCE
 #else
 #include <fcntl.h>
-#endif
 #include <unistd.h>
+#endif
 #endif /* X_NOT_POSIX else */
 
 /*
