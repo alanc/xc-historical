@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.12 94/07/07 10:10:04 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.13 94/07/07 11:19:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -663,7 +663,7 @@ Bool fast;
 	    path = ".";
     }
 
-    filename = tempnam (path, ".SM");
+    filename = tempnam (path, ".PRX");
     proxyFile = fopen (filename, "wb");
 
     for (i = 0; i < win_count; i++)
