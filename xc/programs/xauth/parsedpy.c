@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parsedpy.c,v 1.2 88/11/30 16:34:02 jim Exp $
+ * $XConsortium: parsedpy.c,v 1.3 88/12/12 14:23:23 jim Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *
@@ -62,9 +62,10 @@ extern char *malloc();
 }
 
 
-static char *copyhostname ()
+char *get_local_hostname (buf, maxlen)
+    char *buf;
+    int maxlen;
 {
-    int len;
 #ifdef hpux
     /*
      * same host name crock as in server and xinit.
@@ -72,16 +73,22 @@ static char *copyhostname ()
     struct utsname name;
 
     uname (&name);
-    len = strlen (name.nodename);
-    return copystring (name.nodename, strlen (name.nodename));
+    strcpy (buf, name.nodename);
+    return (buf[0] ? buf : NULL);
 #else
-    char buf[BUFSIZ+1];
-
     buf[0] = '\0';
-    if (gethostname (buf, BUFSIZ) == -1) return NULL;
-    buf[BUFSIZ] = '\0';			/* just in case */
-    return copystring (buf, strlen (buf));
+    if (gethostname (buf, maxlen) == -1) return NULL;
+    buf[maxlen] = '\0';			/* just in case */
+    return buf;
 #endif
+}
+
+static char *copyhostname ()
+{
+    char buf[256];
+
+    return (get_local_hostname (buf, sizeof buf) ? 
+	    copystring (buf, strlen (buf)) : NULL);
 }
 
 
