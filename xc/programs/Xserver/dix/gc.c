@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.117 89/03/18 09:47:36 rws Exp $ */
+/* $XConsortium: gc.c,v 1.118 89/03/18 16:21:30 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -849,42 +849,45 @@ FreeGCperDepth(screenNum)
     GCPtr *ppGC;
 
     pScreen = screenInfo.screens[screenNum];
-    ppGC = (GCPtr *) pScreen->GCperDepth;
+    ppGC = pScreen->GCperDepth;
 
-    /* do depth 1 seperately because it's not included in list */
-    (void)FreeGC(ppGC[0], (GContext)0);
-
-    for (i = 0; i < pScreen-> numDepths; i++)
-    {
-	(void)FreeGC(ppGC[i+1], (GContext)0);
-    }
+    for (i = 0; i <= pScreen->numDepths; i++)
+	(void)FreeGC(ppGC[i], (GContext)0);
 }
 
 
-CreateGCperDepthArray(screenNum)
+Bool
+CreateGCperDepth(screenNum)
     int screenNum;
 {
     register int i;
     register ScreenPtr pScreen;
     DepthPtr pDepth;
+    GCPtr *ppGC;
 
     pScreen = screenInfo.screens[screenNum];
     pScreen->rgf = 0;
-    /* do depth 1 seperately because it's not included in list */
-    if (!(pScreen->GCperDepth[0] = CreateScratchGC(pScreen, 1)))
-	FatalError("failed to create scratch GC");
-    (pScreen->GCperDepth[0])->graphicsExposures = FALSE;
+    ppGC = pScreen->GCperDepth;
+    /* do depth 1 separately because it's not included in list */
+    if (!(ppGC[0] = CreateScratchGC(pScreen, 1)))
+	return FALSE;
+    ppGC[0]->graphicsExposures = FALSE;
 
     pDepth = pScreen->allowedDepths;
     for (i=0; i<pScreen->numDepths; i++, pDepth++)
     {
-	if (!(pScreen->GCperDepth[i+1] = CreateScratchGC(pScreen,
-							 pDepth->depth)))
-	    FatalError("failed to create scratch GC");
-	(pScreen->GCperDepth[i+1])->graphicsExposures = FALSE;
+	if (!(ppGC[i+1] = CreateScratchGC(pScreen, pDepth->depth)))
+	{
+	    for (; i >= 0; i--)
+		(void)FreeGC(ppGC[i], (GContext)0);
+	    return FALSE;
+	}
+	ppGC[i+1]->graphicsExposures = FALSE;
     }
+    return TRUE;
 }
 
+Bool
 CreateDefaultStipple(screenNum)
     int screenNum;
 {
@@ -901,12 +904,15 @@ CreateDefaultStipple(screenNum)
     (* pScreen->QueryBestSize)(StippleShape, &w, &h);
     if (!(pScreen->PixmapPerDepth[0] =
 			(*pScreen->CreatePixmap)(pScreen, w, h, 1)))
-	FatalError("failed to create default stipple");
+	return FALSE;
     /* fill stipple with 1 */
     tmpval[0] = GXcopy; tmpval[1] = 1; tmpval[2] = FillSolid;
     pgcScratch = GetScratchGC(1, pScreen);
     if (!pgcScratch)
-	FatalError("failed to create default stipple");
+    {
+	(*pScreen->DestroyPixmap)(pScreen->PixmapPerDepth[0]);
+	return FALSE;
+    }
     (void)ChangeGC(pgcScratch, GCFunction|GCForeground|GCFillStyle, tmpval);
     ValidateGC((DrawablePtr)pScreen->PixmapPerDepth[0], pgcScratch);
     rect.x = 0;
@@ -916,6 +922,7 @@ CreateDefaultStipple(screenNum)
     (*pgcScratch->PolyFillRect)(pScreen->PixmapPerDepth[0], 
 				pgcScratch, 1, &rect);
     FreeScratchGC(pgcScratch);
+    return TRUE;
 }
 
 FreeDefaultStipple(screenNum)
