@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.3 89/09/19 15:35:10 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.4 89/10/03 20:04:34 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -86,7 +86,7 @@ int len;		/* length of line */
     else
 	dontdraw = (dashIndex & 1);
 #if (PPW == 4)
-    if ((planemask & PIM) == PIM)
+    if ((planemask & PMSK) == PMSK)
     {
     	/* point to first point */
     	nlwidth <<= 2;

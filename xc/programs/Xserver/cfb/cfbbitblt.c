@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.13 89/09/14 17:04:05 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.14 89/09/19 15:36:19 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -219,7 +219,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     }
 
     /* special case copy */
-    if (alu == GXcopy && (planemask & PIM) == PIM)
+    if (alu == GXcopy && (planemask & PMSK) == PMSK)
     {
 	while(nbox--)
 	{
