@@ -1,3 +1,4 @@
+STD_DEFINES = ServerDefines
        SRCS = zoid.c bezier.c
        OBJS = zoid.o bezier.o
 CDEBUGFLAGS = ServerCDebugFlags
