@@ -1056,15 +1056,15 @@ void Manipulator::execute (Command* cmd) {
     CopyCmd* copycmd = CopyCmd::_narrow(cmd);
     if (is_not_nil(instancecmd) || is_not_nil(copycmd)) {
         Manipulator* man;
-        SelectCmd unselectcmd(v, false);
-        execute(&unselectcmd);
-
         if (is_not_nil(instancecmd)) {
             man = shallow_copy();
         } else {
             CopyCmd::glyphmap_->clear();
             man = deep_copy();
         }
+        SelectCmd unselectcmd(v, false);
+        execute(&unselectcmd);
+
         Transform_var tr = man->transformation();
 
         Vertex delta;
@@ -1078,6 +1078,7 @@ void Manipulator::execute (Command* cmd) {
 
         SelectCmd selectcmd(v);
         man->execute(&selectcmd);
+	man->need_redraw();
         return;
     }
     NarrowCmd* narrowcmd = NarrowCmd::_narrow(cmd);

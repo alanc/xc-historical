@@ -23,7 +23,7 @@ public:
     ~TransformSetter();
     
     Transform_return transformation(); //+ Glyph::transformation
-    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
+    void traverse(GlyphTraversalRef t); //+ Glyph::traverse
     void request(Glyph::Requisition& r); //+ Glyph::request
     void child_allocate(Glyph::AllocationInfo&);
 protected:
@@ -73,7 +73,7 @@ void TransformSetter::request(Glyph::Requisition& req) {
 }
 
 //+ TransformSetter(Glyph::traverse)
-void TransformSetter::traverse(GlyphTraversal_in t) {
+void TransformSetter::traverse(GlyphTraversalRef t) {
     Painter_var p = t->current_painter();
     p->push_matrix();
     Glyph::AllocationInfo a;
@@ -102,65 +102,6 @@ void TransformSetter::child_allocate(Glyph::AllocationInfo& a) {
     a.transformation->premultiply(&tx);
 }
 
-class AllocationTranslator : public MonoGlyph {
-    //. During traversal, an AllocationTranslator converts its
-    //. given allocation's origin into a matrix translation.
-    //. This is useful as a gateway between layout objects,
-    //. who specify position using an allocation, and figure
-    //. objects, who ignore allocation during traversal.
-public:
-    AllocationTranslator(GlyphRef g);
-    ~AllocationTranslator();
-    
-    void traverse(GlyphTraversal_in t); //+ Glyph::traverse
-    void child_allocate(Glyph::AllocationInfo&);
-};
-
-AllocationTranslator::AllocationTranslator(GlyphRef g) {
-    body(g);
-}
-
-AllocationTranslator::~AllocationTranslator() { }
-
-//+ AllocationTranslator(Glyph::traverse)
-void AllocationTranslator::traverse(GlyphTraversal_in t) {
-    Painter_var p = t->current_painter();
-    p->push_matrix();
-    Glyph::AllocationInfo a;
-    a.transformation = new TransformImpl;
-    a.allocation = t->allocation();
-    a.damaged = nil;
-    child_allocate(a);
-
-    p->premultiply(a.transformation);
-    MonoGlyph::traverse(t);
-    p->pop_matrix();
-
-    Fresco::unref(a.transformation);
-    Fresco::unref(a.allocation);
-}
-
-void AllocationTranslator::child_allocate(Glyph::AllocationInfo& a) {
-    TransformImpl t;
-    Vertex v;
-    if (is_nil(a.transformation)) {
-        a.transformation = new TransformImpl;
-    }
-    if (is_nil(a.allocation)) {
-        a.allocation = new RegionImpl;
-    }
-    TransformRef tx = a.transformation;
-    RegionRef agiven = a.allocation;
-    agiven->origin(v);
-    t.translate(v);
-    tx->premultiply(&t);
- 
-    t.load_identity();
-    v.x = -v.x; v.y = -v.y; v.z = -v.z;
-    t.translate(v);
-    agiven->apply_transform(&t);
-}
-
 class Requestor : public MonoGlyph {
     //. A Requestor always returns a constant requisition. It is
     //. useful as a wrapper for glyphs whose requisition changes
@@ -168,8 +109,8 @@ class Requestor : public MonoGlyph {
     //. were constant.
 public:
     Requestor(
-        GlyphRef g, Alignment xalign = .5, Alignment yalign = .5,
-        Coord xspan = 1, Coord yspan = 1
+	GlyphRef g, Alignment xalign = .5, Alignment yalign = .5,
+	Coord xspan = 1, Coord yspan = 1
     );
     Requestor(GlyphRef g, const Glyph::Requisition& r);
     ~Requestor();
@@ -204,45 +145,6 @@ void Requestor::request(Glyph::Requisition& r) {
     r = req_;
 }
 
-class Patch : public MonoGlyph {
-public:
-    Patch(GlyphRef);
-
-    virtual void traverse(GlyphTraversalRef);
-    virtual void redraw();
-private:
-    GlyphTraversalRef gt_;
-    TransformImpl tx_;
-    RegionImpl r_;
-};
-
-Patch::Patch(GlyphRef g) {
-    gt_ = nil;
-    body(g);
-}
-
-void Patch::traverse (GlyphTraversalRef gt) {
-    if (gt->op() == GlyphTraversal::draw) {
-        if (is_nil(gt_)) {
-            gt_ = GlyphTraversal::_return_ref(gt->trail());
-            Fresco::ref(gt_);
-        } 
-        r_.copy(gt->allocation());
-        tx_.load(gt->current_painter()->current_matrix());
-    } else {
-        MonoGlyph::traverse(gt);
-    }
-}
-
-void Patch::redraw () {
-    gt_->allocation()->copy(&r_);
-    Painter_var p = gt_->current_painter();
-    p->push_matrix();
-    p->current_matrix()->load(&tx_);
-    MonoGlyph::traverse(gt_);
-    p->pop_matrix();
-}
-
 class ToolSetter : public ActionImpl{
 public:
     ToolSetter(FigViewer*, Tool*, TelltaleRef bs);
@@ -272,9 +174,6 @@ ToolSetter::~ToolSetter() {
 
 void ToolSetter::execute () {
     viewer_->current_tool(tool_);
-    // old_bs_->clear(Telltale::active);
-    // bs_->set(Telltale::active);
-    // old_bs_ = bs_;
 }
 
 FDraw::FDraw (Fresco* f) : ViewerImpl(f, true) {
@@ -310,42 +209,36 @@ Boolean FDraw::key_press (GlyphTraversalRef, EventRef e) {
     return true;
 }
 
-void FDraw::traverse (GlyphTraversalRef gt) {
-    ViewerImpl::traverse(gt);
-    if (gt->op() == GlyphTraversal::draw && editing_) {
-        patch_->redraw();
-    }
-}
-
 Glyph_return FDraw::interior () {
     Fresco* f = fresco_instance();
     LayoutKit_var layouts = f->layout_kit();
     WidgetKit_var widgets = f->widget_kit();
 
-    deck_ = Glyph::_return_ref(layouts->deck());
+    deck_ = layouts->deck();
 
     /* bottom layer: run mode */
     deck_->append(
 	_tmp(layouts->center_aligned(
-	    _tmp(new AllocationTranslator(
-		layouts->natural(viewer_, 5*72.0, 7*72.0)
-	    )), 0.0, 1.0
+	    layouts->natural(viewer_, 5*72.0, 7*72.0), 0.0, 1.0
 	))
     );
 
     /* top layer: edit mode */
     Glyph_var top = layouts->hbox();
 
-    patch_ = new Patch(_tmp(tools()));
-    top->append(patch_);
+    Glyph_var tools_commands = widgets->inset_frame(
+	_tmp(layouts->vbox())
+    );
+    tools_commands->append(_tmp(tools()));
+    tools_commands->append(_tmp(layouts->vfil()));
+    tools_commands->append(_tmp(commands()));
+
+    top->append(tools_commands);
     top->append(
 	_tmp(layouts->vcenter_aligned(
-	    _tmp(new AllocationTranslator(
-		layouts->natural(viewer_, 5*72.0, 7*72.0)
-	    )), 1.0
+	    layouts->natural(viewer_, 5*72.0, 7*72.0), 1.0
 	))
     );
-    top->append(_tmp(commands()));
 
     deck_->append(top);
 
@@ -358,7 +251,7 @@ implementActionCallback(Command)
 Glyph_return FDraw::commands() {
     Fresco* f = fresco_instance();
     LayoutKit_var layouts = f->layout_kit();
-    Glyph_return box = Glyph::_return_ref(layouts->vbox());
+    GlyphRef box = layouts->vbox();
 
     box->append(_tmp(command_button("Group", new GroupCmd(viewer_))));
     box->append(_tmp(command_button("Ungroup", new UngroupCmd(viewer_))));
@@ -372,7 +265,6 @@ Glyph_return FDraw::commands() {
     box->append(
         _tmp(command_button("VBox", new GroupCmd(viewer_, new VBoxManip)))
     );
-    box->append(_tmp(layouts->vfil()));
     return box;
 }
 
@@ -433,42 +325,48 @@ Glyph_return FDraw::tools() {
 
     Button_var line_button = tool_button(
         _tmp(layouts->lmargin(
-	    _tmp(figures->line(_tmp(figures->default_style()), 0, 0, 15, 15)),
-	    9.0
+	    _tmp(figures->line(
+		_tmp(figures->default_style()), 0, 0, 15, 15
+	    )), 9.0
 	)), line_tool, group
     );
     Button_var multiline_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->multiline(
-                FigureKit::stroke, _tmp(figures->default_style()), v_open
+                FigureKit::stroke,
+		_tmp(figures->default_style()), v_open
             )), 9.0
         )), multiline_tool, group
     );
     Button_var openbspline_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->open_bspline(
-                FigureKit::stroke, _tmp(figures->default_style()), v_open
+                FigureKit::stroke,
+		_tmp(figures->default_style()), v_open
             )), 9.0
         )), openbspline_tool, group
     );
     Button_var rect_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->rectangle(
-                FigureKit::stroke, _tmp(figures->default_style()), 0, 0, 18, 15
+                FigureKit::stroke,
+		_tmp(figures->default_style()), 0, 0, 18, 15
             )), 9.0
         )), rect_tool, group
     );
     Button_var ellipse_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->ellipse(
-                FigureKit::stroke, _tmp(figures->default_style()), 0, 0, 12, 8
+                FigureKit::stroke,
+		_tmp(figures->default_style()), 0, 0, 12, 8
             )), 9.0
         )), ellipse_tool, group
     );
     Button_var polygon_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->polygon(
-                FigureKit::stroke, _tmp(figures->default_style()), v_closed
+                FigureKit::stroke,
+		_tmp(figures->default_style()), v_closed
             )), 9.0
         )), polygon_tool, group
     );
@@ -476,7 +374,8 @@ Glyph_return FDraw::tools() {
     Button_var closedbspline_button = tool_button(
         _tmp(layouts->lmargin(
             _tmp(figures->closed_bspline(
-                FigureKit::stroke, _tmp(figures->default_style()), v_closed
+                FigureKit::stroke,
+		_tmp(figures->default_style()), v_closed
             )), 9.0
         )), closedbspline_tool, group
     );
@@ -511,20 +410,19 @@ Glyph_return FDraw::tools() {
     viewer_->current_tool(selectTool);
     ToolSetter::old_bs_ = bs;
 
-    Glyph_return g = Glyph::_return_ref(layouts->vbox());
-    g->append(_tmp(choose));
-    g->append(_tmp(move));
-    g->append(_tmp(scale));
-    g->append(_tmp(rotate));
-    g->append(_tmp(line_button));
-    g->append(_tmp(multiline_button));
-    g->append(_tmp(openbspline_button));
-    g->append(_tmp(rect_button));
-    g->append(_tmp(ellipse_button));
-    g->append(_tmp(polygon_button));
-    g->append(_tmp(closedbspline_button));
-    g->append(_tmp(push_button));
-    g->append(_tmp(layouts->vfil()));
+    GlyphRef g = layouts->vbox();
+    g->append(choose);
+    g->append(move);
+    g->append(scale);
+    g->append(rotate);
+    g->append(line_button);
+    g->append(multiline_button);
+    g->append(openbspline_button);
+    g->append(rect_button);
+    g->append(ellipse_button);
+    g->append(polygon_button);
+    g->append(closedbspline_button);
+    g->append(push_button);
     return g;
 }
 
@@ -536,7 +434,8 @@ Glyph_return FDraw::command_button(const char* label, Command* c) {
 
     Button_var button = widgets->push_button(
 	figures->label(
-	    _tmp(figures->default_style()), Fresco::tmp_string_ref(label)
+	    _tmp(figures->default_style()),
+	    Fresco::tmp_string_ref(label)
         ),
 	new ActionCallback(Command)(c, &Command::execute)
     );
@@ -545,12 +444,12 @@ Glyph_return FDraw::command_button(const char* label, Command* c) {
 }
 	
 Button_return FDraw::tool_button(
-    GlyphRef g, Tool* t, TelltaleRef  group
+    GlyphRef g, Tool* t, TelltaleRef group
 ) {
     Fresco* f = fresco_instance();
     WidgetKit_var widgets = f->widget_kit();
 
-    Button_return b = widgets->palette_button(g, nil);
+    ButtonRef b = widgets->palette_button(g, nil);
     Telltale_var bs = b->state();
     bs->current(group);
     b->click_action(_tmp(new ToolSetter(viewer_, t, bs)));
@@ -569,3 +468,6 @@ void FDraw::flip_to(long card) {
 	}
     }
 }
+
+
+

@@ -916,11 +916,11 @@ int Dish::main(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
 		    Fresco* fresco = dish.fresco();
 		    if (dish.interactive_) {
 			ThreadKit_var threads = fresco->thread_kit();
-			ThreadObj_var thread = threads->thread(
+			ThreadObjRef t = threads->thread(
 			    new FrescoMain(viewer, glyph)
 			);
-			if (is_not_nil(thread)) {
-			    thread->run();
+			if (is_not_nil(t)) {
+			    t->run();
 			} else {
 			    fresco->run(viewer, glyph);
 			}
@@ -948,7 +948,7 @@ int Dish::spawn(ClientData, Tcl_Interp* interp, int argc, char* argv[]) {
 	    if (is_not_nil(a)) {
 		Fresco* fresco = dish.fresco_;
 		ThreadKit_var threads = fresco->thread_kit();
-		ThreadObj_var t = threads->thread(a);
+		ThreadObjRef t = threads->thread(a);
 		if (is_not_nil(t)) {
 		    t->run();
 		    sprintf(interp->result, "%p", ThreadObjRef(t));
@@ -1057,7 +1057,7 @@ void FrescoMain::execute() {
     if (is_nil(g)) {
 	nv = v;
     } else {
-	nv = new ViewerImpl(fresco);
+	nv = new ViewerImpl(fresco, true);
 	nv->body(g);
 	if (is_not_nil(v)) {
 	    nv->append_viewer(v);

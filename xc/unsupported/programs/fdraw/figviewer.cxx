@@ -14,6 +14,35 @@
 #include <X11/Fresco/Impls/transform.h>
 #include <X11/Fresco/OS/memory.h>
 
+class ViewerDamage : public Damage {
+public:
+    ViewerDamage(Region_in a, Transform_in t, Damage_in d);
+    virtual void extend(Region_in r);
+protected:
+    Damage_var damage_;
+    RegionImpl clip_;
+};
+
+ViewerDamage::ViewerDamage(Region_in a, Transform_in t, Damage_in d) {
+    damage_ = d;
+    clip_.copy(a);
+    clip_.apply_transform(t);
+    float tol = 0.1;
+    clip_.lower_.x += tol;
+    clip_.lower_.y += tol;
+    clip_.upper_.x -= tol;
+    clip_.upper_.y -= tol;
+}
+
+void ViewerDamage::extend(Region_in r) {
+    if (r->intersects(&clip_)) {
+	RegionImpl region;
+	region.copy(r);
+	region.merge_intersect(&clip_);
+	damage_->extend(&region);
+    }
+}
+
 FigViewer::FigViewer(Fresco* f, Boolean* editing) : ViewerImpl(f, true) {
     curtool_ = nil;
     active_ = nil;
@@ -36,16 +65,25 @@ FigViewer::~FigViewer() {
 
 //+ FigViewer(Glyph::allocations)
 void FigViewer::allocations(Glyph::AllocationInfoSeq& a) {
-    a._maximum = 1;
-    a._length = 1;
-    a._buffer = new Glyph::AllocationInfo[1];
-
-    Glyph::AllocationInfo& i = a._buffer[0];
+    if (a._length >= a._maximum) {
+	Long n = a._maximum == 0 ? 10 : a._maximum + a._maximum;
+	Glyph::AllocationInfo* buffer = new Glyph::AllocationInfo[n];
+	if (a._maximum > 0) {
+	    Memory::copy(
+		a._buffer, buffer, a._maximum * sizeof(Glyph::AllocationInfo)
+	    );
+	}
+	/* should free old buffer? */
+	a._buffer = buffer;
+	a._maximum = n;
+    }
+    Glyph::AllocationInfo& i = a._buffer[a._length];
     i.allocation = new RegionImpl;
     i.allocation->copy(allocation_);
     i.transformation = new TransformImpl;
-    i.transformation->load(transform_);
-    i.damaged = Damage::_duplicate(damage_);
+    i.transformation->premultiply(transform_);
+    i.damaged = new ViewerDamage(allocation_, transform_, damage_);
+    ++a._length;
 }
 
 //+ FigViewer(Glyph::traverse)
@@ -66,10 +104,17 @@ void FigViewer::traverse(GlyphTraversal_in t) {
     case GlyphTraversal::draw:
         {
             allocation_->copy(_tmp(t->allocation()));
-            Painter_var po = t->current_painter();
-            transform_->load(_tmp(po->current_matrix()));
-            damage_ = Damage::_return_ref(t->damaged());
+            Painter_var p = t->current_painter();
+            transform_->load(_tmp(p->current_matrix()));
+            damage_ = t->damaged();
+
+	    p->push_clipping();
+	    p->clip_rect(
+		allocation_->lower_.x, allocation_->lower_.y,
+		allocation_->upper_.x, allocation_->upper_.y
+	    );
             ViewerImpl::traverse(t);
+	    p->pop_clipping();
         }
         break;
     default:
@@ -184,4 +229,3 @@ Boolean FigViewer::release(GlyphTraversal_in, EventRef e) {
     }
     return true;
 }
-

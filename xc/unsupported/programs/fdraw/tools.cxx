@@ -221,7 +221,7 @@ SelectInfo* SelectTool::create_manipulator (
         for (long i = 0; i < slist.count(); i++) {
             delete slist.item(i);
         }
-    } else {
+    } else if (!e->modifier_is_down(Event::shift)) {
         unselect_all(sel);
     }
     if (target != nil) {
