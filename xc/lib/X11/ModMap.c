@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XModMap.c,v 11.4 88/02/07 12:01:20 jim Exp $ */
+/* $Header: XModMap.c,v 11.5 88/08/09 15:56:28 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -50,7 +50,8 @@ XSetModifierMapping(dpy, modifier_map)
 
     req->numKeyPerModifier = modifier_map->max_keypermod;
 
-    bcopy(modifier_map->modifiermap, (char *)&req[1], mapSize);
+    bcopy (modifier_map->modifiermap, 
+    	   (char *) NEXTPTR(req,xSetModifierMappingReq), mapSize);
 
     (void) _XReply(dpy, (xReply *) & rep,
 	(SIZEOF(xSetModifierMappingReply) - SIZEOF(xReply)) >> 2, xTrue);
