@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbuttonbox.c,v 1.16 89/12/15 19:33:10 kit Exp $
+ * $XConsortium: editres.c,v 1.1 90/02/15 10:53:00 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,11 +41,8 @@ Widget global_tree_parent;
  * external function definitions.
  */
 
-extern void InternAtoms(), ModifySVEntry(), SetMessage(), BuildWidgetTree();
-
-XtActionsRec global_actions[] = {
-  {"SVActiveEntry",     ModifySVEntry},
-};
+extern void InternAtoms(), SetMessage(), BuildWidgetTree();
+extern void SetApplicationActions();
 
 String fallback_resources[] = { 
     NULL,
@@ -66,7 +63,7 @@ char **argv;
     if (argc != 1)		
 	Syntax(app_con, argv[0]);
 
-    XtAppAddActions(app_con, global_actions, XtNumber(global_actions));
+    SetApplicationActions(app_con);
 
     BuildWidgetTree(toplevel);
 

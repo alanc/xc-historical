@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
+#include <X11/Xutil.h>
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/Cardinals.h>
@@ -18,6 +19,11 @@ static void AddChild();
 
 extern TreeInfo *global_tree_info;
 
+extern void PrepareToLayoutTree(), LayoutTree();
+
+void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
+WNode ** CopyActiveNodes();
+
 /*	Function Name: BuildVisualTree
  *	Description: Creates the Tree and shows it.
  *	Arguments: tree_parent - parent of the tree widget.
@@ -33,11 +39,10 @@ char * str;
     WNode * top;
     TreeInfo *CreateTree();
     void AddTreeNode();
-    Widget local;
     char msg[BUFSIZ];
 
     if (global_tree_info != NULL) {
-	XtDestroyWidget(XtParent(global_tree_info->tree_widget));
+	XtDestroyWidget(global_tree_info->tree_widget);
 	XtFree(global_tree_info->active_nodes);
 	XtFree(global_tree_info);
     }
@@ -45,18 +50,21 @@ char * str;
     global_tree_info = CreateTree(str);
     top = global_tree_info->top_node;
 
-    local = XtCreateWidget("viewport", viewportWidgetClass, tree_parent,
-			   NULL, ZERO);
+    global_tree_info->tree_widget = XtCreateWidget("tree", treeWidgetClass,
+						   tree_parent, NULL, ZERO);
 
-    global_tree_info->tree_widget = XtCreateManagedWidget("tree", 
-							  treeWidgetClass,
-							  local, NULL, ZERO);
+    if (top == NULL) {
+	SetMessage(global_screen_data.info_label,
+		   "There is no widget tree to display.");
+	return;
+    }
 
     AddTreeNode(global_tree_info->tree_widget, top);
 
-    if (XtIsRealized(tree_parent))
-	XtRealizeWidget(XtParent(global_tree_info->tree_widget));
-    XtManageChild(XtParent(global_tree_info->tree_widget));
+    if (XtIsRealized(tree_parent)) /* hack around problems in Xt. */
+	XtRealizeWidget(global_tree_info->tree_widget);
+
+    XtManageChild(global_tree_info->tree_widget);
 
     sprintf(msg, "Widget Tree for client %s(%s).", top->name, top->class);
     SetMessage(global_screen_data.info_label, msg);
@@ -77,13 +85,13 @@ Widget tree;
 WNode * top;
 {
     int i;
-    Arg args[10];
+    Arg args[1];
     Cardinal num_args = 0;
     static void TreeToggle();
+    char msg[BUFSIZ];
 
     if (top->parent != NULL) {
 	if (top->parent->widget == NULL) {
-	    char msg[BUFSIZ];
 	    sprintf( msg, "Loop in tree: node %s's parent (%s) has %s.\n",
 		    top->name, top->parent->name, "not been created yet");
 	    SetMessage(global_screen_data.info_label, msg);
@@ -94,6 +102,13 @@ WNode * top;
 
     top->widget = XtCreateManagedWidget(top->name, toggleWidgetClass, tree,
 					args, num_args);
+
+    if (XSaveContext(XtDisplay(top->widget), (Window) top->widget, 
+		     NODE_INFO, (caddr_t) top) != 0) {
+	sprintf( msg, "XSaveContext failed on widget %s.", top->name);
+	SetMessage(global_screen_data.info_label, msg);
+    }	
+
     XtAddCallback(top->widget, XtNcallback, TreeToggle, (XtPointer) top);
 
     for (i = 0; i < top->num_children; i++) 
@@ -253,7 +268,7 @@ WNode * node;
  *
  *               Sting is formatted in the format.
  *
- *               name\tid.name\tid.name\tid:Class\n
+ *               name\tid.name\tid.name\tid:Class|Window\n
  */
     
 TreeInfo *
@@ -307,6 +322,222 @@ WNode * top;
 	PrintNodes(top->children[i]);
 }
 
+/*	Function Name: _TreeRelabel
+ *	Description: Modifies the selected elements of the tree
+ *	Arguments: tree_info - the tree we are working on.
+ *                 type - type of selection to perform
+ *	Returns: none.
+ */
+
+void
+_TreeRelabel(tree_info, type)
+TreeInfo * tree_info;
+LabelTypes type;
+{
+    WNode * top;
+
+    if (tree_info == NULL) {
+	SetMessage(global_screen_data.info_label,
+		   "No widget Tree is avaliable.");
+	return;
+    }
+
+    top = tree_info->top_node;
+
+    PrepareToLayoutTree(tree_info->tree_widget); 
+    _TreeRelabelNode(top, type, TRUE);
+    LayoutTree(tree_info->tree_widget); 
+}
+
+/*	Function Name: _TreeSelect
+ *	Description: Activates relatives of the active nodes, as specified
+ *                   by type, or Selects all nodes as specified by type.
+ *	Arguments: tree_info - information about the tree to work on.
+ *                 type - type of activate to invode.
+ *	Returns: none.
+ */
+
+void
+_TreeSelect(tree_info, type)
+TreeInfo * tree_info;
+SelectTypes type;
+{
+    WNode ** active_nodes;
+    Cardinal num_active_nodes;
+    int i;
+
+    if (tree_info == NULL) {
+	SetMessage(global_screen_data.info_label,
+		   "No widget Tree is avaliable.");
+	return;
+    }
+
+    switch(type) {
+    case SelectNone:
+    case SelectAll:
+    case SelectInvert:
+	_TreeSelectNode(tree_info->top_node, type, TRUE);
+	return;
+    default:
+	break;			/* otherwise continue. */
+    }
+
+    if (tree_info->num_nodes == 0) {
+	SetMessage(global_screen_data.info_label,
+		   "There are no active nodes.");
+	return;
+    }
+
+    active_nodes = CopyActiveNodes(tree_info);
+    num_active_nodes = tree_info->num_nodes;
+
+    for (i = 0; i < num_active_nodes; i++)
+	_TreeActivateNode(active_nodes[i], type);
+
+    XtFree((XtPointer) active_nodes);
+}
+
+/*	Function Name: _TreeSelectNode
+ *	Description: Modifies the state of a node and all its decendants.
+ *	Arguments: node - node to operate on.
+ *                 type - type of selection to perform.
+ *                 recurse - whether to continue on down the tree.
+ *	Returns: none.
+ */
+
+void
+_TreeSelectNode(node, type, recurse)
+WNode * node;
+SelectTypes type;
+Boolean recurse;
+{
+    int i;
+    Arg args[1];
+    Boolean state;
+
+    switch(type) {
+    case SelectAll:
+	state = TRUE;
+	break;
+    case SelectNone:
+	state = FALSE;
+	break;
+    case SelectInvert:
+	XtSetArg(args[0], XtNstate, &state);
+	XtGetValues(node->widget, args, ONE);
+	
+	state = !state;
+	break;
+    default:
+	SetMessage(global_screen_data.info_label,
+		   "Internal Error: Unknown select type.");
+	return;
+    }
+
+    XtSetArg(args[0], XtNstate, state);
+    XtSetValues(node->widget, args, ONE);
+    TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
+
+    if (!recurse)
+	return;
+
+    for (i = 0; i < node->num_children; i++) 
+	_TreeSelectNode(node->children[i], type, recurse);
+}
+
+/*	Function Name: _TreeRelabelNodes
+ *	Description: Modifies the node and all its decendants label.
+ *	Arguments: node - node to operate on.
+ *                 type - type of selection to perform.
+ *                 recurse - whether to continue on down the tree.
+ *	Returns: none.
+ */
+
+void
+_TreeRelabelNode(node, type, recurse)
+WNode * node;
+LabelTypes type;
+Boolean recurse;
+{
+    int i;
+    Arg args[1];
+    char buf[30];
+
+    switch(type) {
+    case ClassLabel:
+	XtSetArg(args[0], XtNlabel, node->class);
+	break;
+    case NameLabel:
+	XtSetArg(args[0], XtNlabel, node->name);
+	break;
+    case IDLabel:
+	sprintf(buf, "id: 0x%lx", node->id);
+	XtSetArg(args[0], XtNlabel, buf);
+	break;
+    case WindowLabel:
+	if (node->window == 0) 
+	    strcpy(buf, "no window");
+	else
+	    sprintf(buf, "win: 0x%lx", node->window);
+	    
+	XtSetArg(args[0], XtNlabel, buf);
+	break;
+    default:
+	SetMessage(global_screen_data.info_label,
+		   "Internal Error: Unknown label type.");
+	return;
+    }
+
+    XtSetValues(node->widget, args, ONE);
+
+    if (!recurse)
+	return;
+
+    for (i = 0; i < node->num_children; i++) 
+	_TreeRelabelNode(node->children[i], type, recurse);
+}
+
+/*	Function Name: _TreeActivateNode
+ *	Description: Activates relatives of the node specfied, as specified
+ *                   by type.
+ *	Arguments: node - node to opererate on.
+ *                 type - type of activate to invode.
+ *	Returns: none.
+ */
+
+void
+_TreeActivateNode(node, type)
+WNode * node;
+SelectTypes type;
+{
+    Arg args[1];
+    int i;
+
+    XtSetArg(args[0], XtNstate, TRUE);
+
+    if ((type == SelectParent) || (type == SelectAncestors)) {
+	node = node->parent;
+	if (node == NULL)
+	    return;
+
+	XtSetValues(node->widget, args, ONE);	
+	AddNodeToActiveList(node);
+
+	if (type == SelectAncestors)
+	    _TreeActivateNode(node, type);	
+    }
+    else if ((type == SelectChildren) || (type == SelectDescendants)) 
+	for (i = 0; i < node->num_children; i++) {
+	    AddNodeToActiveList(node->children[i]);
+	    XtSetValues(node->children[i]->widget, args, ONE);
+	    if (type == SelectDescendants)
+		_TreeActivateNode(node->children[i], type);
+	}
+    else
+	SetMessage(global_screen_data.info_label,
+		   "Internal Error: Unknown activate type.");	
+}
+
 /************************************************************
  *
  * Non - Exported Functions. 
@@ -331,11 +562,11 @@ TreeInfo * tree_info;
 {
     WNode *node, *parent;
     char **names, *class;
-    unsigned long *ids;
+    unsigned long *ids, window;
     Boolean early_break = FALSE;
     Cardinal number;
 
-    if ((number = ParseString(str, &class, &names, &ids)) == 0)
+    if ((number = ParseString(str, &class, &window, &names, &ids)) == 0)
 	return;			/* parsing error. */
 
     if ( (node = FindNode(*top_node, ids, number)) == NULL) {
@@ -343,6 +574,7 @@ TreeInfo * tree_info;
 
 	node->class = class;	            /* already allocated. */
 	node->name = names[number - 1];	    /* already allocated. */
+	node->window = window;
 	node->id = ids[number - 1];
 	node->tree_info = tree_info;
 
@@ -380,6 +612,7 @@ TreeInfo * tree_info;
  *                   Also returns the class of the specific widget.
  *	Arguments: str - string to parse.
  *                 class - pre-allocated string for class.
+ *                 window - the window used by this widget.
  *                 names, ids - list of names and ids.
  *	Returns: the number of names and ids.
  *
@@ -387,27 +620,38 @@ TreeInfo * tree_info;
  */
 
 static Cardinal
-ParseString(str, class, names, ids)
+ParseString(str, class, window, names, ids)
 char * str, ** class, ***names;
-unsigned long ** ids;
+unsigned long ** ids, *window;
 {
     int number, i;
-    char * temp, *ptr, *bufp, buf[BUFSIZ];
+    char * temp, buf[BUFSIZ];
     static Boolean GetNameAndID();
+
+    strcpy(buf, str);
+
+    /*
+     * Strip off the window id.
+     */
+    
+    if ((temp = rindex(buf, WINDOW_SEPARATOR)) == NULL) 
+	return(0);
+    else {
+	*temp++ = '\0';
+	*window = atol(temp);
+    }
 
     /*
      * Strip off the class name.
      */
     
-    if ((temp = rindex(str, CLASS_SEPARATOR)) == NULL) 
+    if ((temp = rindex(buf, CLASS_SEPARATOR)) == NULL) 
 	return(0);
-    else 
-	*class = XtNewString(temp+1);
+    else {
+	*temp++ = '\0';
+	*class = XtNewString(temp);
+    }
 
-    for (bufp = buf, ptr = str; ptr < temp; ptr++, bufp++) 
-	*bufp = *ptr;
-    *bufp = '\0';
-    
     GetAllStrings(buf, NAME_SEPARATOR, names, &number);
 
 /*
@@ -424,7 +668,7 @@ unsigned long ** ids;
     return( (Cardinal) number);
 }	
     
-/*	Function Name: GetNameAndID
+/*	Function Name: GetNameandID
  *	Description: Gets the name and id of the last widget in a list.
  *	Arguments: name - name of node. 
  *                 id - id number of node as string.
@@ -482,137 +726,7 @@ WNode * parent, * child;
  *  Functions that operate of the current tree.
  * 
  ************************************************************/
-
-/*	Function Name: _TreeSelect
- *	Description: Modifies the selected elements of the tree
- *	Arguments: type - type of selection to perform
- *	Returns: none.
- */
-
-void
-_TreeSelect(type)
-SelectTypes type;
-{
-    static void _TreeSelectNode();
-    WNode * top;
-
-    if (global_tree_info == NULL) 
-	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
-    else {
-	top = global_tree_info->top_node;
-	_TreeSelectNode(top, type);
-    }
-}
-
-/*	Function Name: _TreeSelectNode
- *	Description: Modifies the state of a node and all its decendants.
- *	Arguments: node - node to operate on.
- *                 type - type of selection to perform.
- *	Returns: none.
- */
-
-static void
-_TreeSelectNode(node, type)
-WNode * node;
-SelectTypes type;
-{
-    int i;
-    Arg args[1];
-    Boolean state;
-
-    switch(type) {
-    case SelectAll:
-	state = TRUE;
-	break;
-    case SelectNone:
-	state = FALSE;
-	break;
-    case SelectInvert:
-	XtSetArg(args[0], XtNstate, &state);
-	XtGetValues(node->widget, args, ONE);
-	
-	state = !state;
-	break;
-    default:
-	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown select type.");
-	return;
-    }
-
-    XtSetArg(args[0], XtNstate, state);
-    XtSetValues(node->widget, args, ONE);
-    TreeToggle(node->widget, (XtPointer) node, (XtPointer) state);
-
-    for (i = 0; i < node->num_children; i++) 
-	_TreeSelectNode(node->children[i], type);
-}
-
-/*	Function Name: _TreeRelabel
- *	Description: Modifies the selected elements of the tree
- *	Arguments: type - type of selection to perform
- *	Returns: none.
- */
-
-void
-_TreeRelabel(type)
-LabelTypes type;
-{
-    static void _TreeRelabelNode();
-    WNode * top;
-
-    if (global_tree_info == NULL) {
-	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
-	return;
-    }
-
-    top = global_tree_info->top_node;
-
-    XtUnmapWidget(global_tree_info->tree_widget);
-    _TreeRelabelNode(top, type);
-    XtMapWidget(global_tree_info->tree_widget);
-}
-
-/*	Function Name: _TreeRelabelNodes
- *	Description: Modifies the node and all its decendants label.
- *	Arguments: node - node to operate on.
- *                 type - type of selection to perform.
- *	Returns: none.
- */
-
-static void
-_TreeRelabelNode(node, type)
-WNode * node;
-LabelTypes type;
-{
-    int i;
-    Arg args[1];
-    char buf[30];
-
-    switch(type) {
-    case ClassLabel:
-	XtSetArg(args[0], XtNlabel, node->class);
-	break;
-    case NameLabel:
-	XtSetArg(args[0], XtNlabel, node->name);
-	break;
-    case IDLabel:
-	sprintf(buf, "0x%lx", node->id);
-	XtSetArg(args[0], XtNlabel, buf);
-	break;
-    default:
-	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown label type.");
-	return;
-    }
-
-    XtSetValues(node->widget, args, ONE);
-
-    for (i = 0; i < node->num_children; i++) 
-	_TreeRelabelNode(node->children[i], type);
-}
-
+    
 /*	Function Name: CopyActiveNodes
  *	Description: returns a copy of the currently selected nodes.
  *	Arguments: tree_info - the tree info struct.
@@ -636,82 +750,3 @@ TreeInfo * tree_info;
 
     return(list);
 }
-
-/*	Function Name: _TreeActivate
- *	Description: Activates relatives of the active nodes, as specified
- *                   by type.
- *	Arguments: type - type of activate to invode.
- *	Returns: none.
- */
-
-void
-_TreeActivate(type)
-ActivateTypes type;
-{
-    static void _TreeActivateNode();
-    WNode ** active_nodes;
-    Cardinal num_active_nodes;
-    int i;
-
-    if (global_tree_info == NULL) {
-	SetMessage(global_screen_data.info_label,
-		   "No widget Tree is avaliable.");
-	return;
-    }
-
-    if (global_tree_info->num_nodes == 0) {
-	SetMessage(global_screen_data.info_label,
-		   "There are no active nodes.");
-	return;
-    }
-
-    active_nodes = CopyActiveNodes(global_tree_info);
-    num_active_nodes = global_tree_info->num_nodes;
-
-    for (i = 0; i < num_active_nodes; i++)
-	_TreeActivateNode(active_nodes[i], type);
-
-    XtFree((XtPointer) active_nodes);
-}
-
-/*	Function Name: _TreeActivateNode
- *	Description: Activates relatives of the node specfied, as specified
- *                   by type.
- *	Arguments: node - node to opererate on.
- *                 type - type of activate to invode.
- *	Returns: none.
- */
-
-static void
-_TreeActivateNode(node, type)
-WNode * node;
-ActivateTypes type;
-{
-    Arg args[1];
-    int i;
-
-    XtSetArg(args[0], XtNstate, TRUE);
-
-    if ((type == ActivateParents) || (type == ActivateAncestors)) {
-	node = node->parent;
-	if (node == NULL)
-	    return;
-
-	XtSetValues(node->widget, args, ONE);	
-	AddNodeToActiveList(node);
-
-	if (type == ActivateAncestors)
-	    _TreeActivateNode(node, type);	
-    }
-    else if ((type == ActivateChildren) || (type == ActivateDescendants)) 
-	for (i = 0; i < node->num_children; i++) {
-	    AddNodeToActiveList(node->children[i]);
-	    XtSetValues(node->children[i]->widget, args, ONE);
-	    if (type == ActivateDescendants)
-		_TreeActivateNode(node->children[i], type);
-	}
-    else
-	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown activate type.");	
-}
-    

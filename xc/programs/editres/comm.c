@@ -100,8 +100,8 @@ Widget w;
     
     /* Grab the pointer using target cursor, letting it room all over */
     status = XGrabPointer(dpy, root, False,
-			  ButtonPressMask|ButtonReleaseMask, GrabModeSync,
-			  GrabModeAsync, root, cursor, CurrentTime);
+			   ButtonPressMask|ButtonReleaseMask, GrabModeSync,
+			   GrabModeAsync, root, cursor, CurrentTime);
     if (status != GrabSuccess) {
 	SetMessage(global_screen_data.info_label, "Can't grab the mouse.\n");
 	return(None);
@@ -162,7 +162,6 @@ Widget w;
 ResCommand command;
 char * value, * msg;
 {
-    Time time; 
     XClientMessageEvent client_event;
     Display * dpy = XtDisplay(w);
     static void ClientTimedOut(), LoseSelection();
@@ -183,14 +182,13 @@ char * value, * msg;
 	global_client.window = XmuClientWindow(dpy, win);
     }
 
-    time = XtLastTimestampProcessed(dpy);
     global_client.ident = GetNewIdent();
     
     global_client.command = command;
     global_client.value = value;
     global_client.atom = atom_comm;
 
-    if (!XtOwnSelection(w, global_client.atom, time, ConvertCommand, 
+    if (!XtOwnSelection(w, global_client.atom, CurrentTime, ConvertCommand, 
 			LoseSelection, NULL))
 	SetMessage(global_screen_data.info_label,
 		   "Unable to own the Resource Selection");
@@ -199,7 +197,7 @@ char * value, * msg;
     client_event.type = ClientMessage;
     client_event.message_type = atom_resource_editor;
     client_event.format = RES_EDIT_SEND_EVENT_FORMAT;
-    client_event.data.l[0] = time;
+    client_event.data.l[0] = XtLastTimestampProcessed(dpy);
     client_event.data.l[1] = global_client.atom;
     client_event.data.l[2] = (long) global_client.ident;
 
@@ -378,7 +376,6 @@ Atom *selection, *type;
 unsigned long *length;
 int * format;
 {
-    Time time;
     char *string, *local_value, msg[BUFSIZ];
     ResIdent ident;
     ResourceError error;
@@ -436,9 +433,7 @@ int * format;
 	 * global state is still active, re-assert selection.
 	 */
 	  
-	time = XtLastTimestampProcessed(XtDisplay(w));
-
-	if (!XtOwnSelection(w, *selection, time, ConvertCommand, 
+	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 
 			    LoseSelection, NULL))
 	    SetMessage(global_screen_data.info_label,
 		       "Unable to own the Resource Selection");
