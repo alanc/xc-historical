@@ -1,4 +1,4 @@
-.\" $XConsortium: CH10,v 1.8 91/08/26 13:38:16 swick Exp $
+.\" $XConsortium: CH10,v 1.9 94/01/07 19:36:35 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -844,74 +844,6 @@ of each widget encountered onto \fIdestination\fP.
 A common use is to call
 .PN XtInstallAllAccelerators
 and pass the application main window as the source.
-.sp
-.LP
-[ NOTE: The functionality of XtUninstallAccelerators and
-XtUninstallAllAccelerators is under reconsideration,
-and may not appear in the final revision for R6. -- ed.]
-To uninstall accelerators from a widget on another widget, use
-.PN XtUninstallAccelerators .
-.IN "XtUninstallAccelerators" "" "@DEF@"
-.FD 0
-void XtUninstallAccelerators(\fIdestination\fP, \fIsource\fP)
-.br
-      Widget \fIdestination\fP;
-.br
-      Widget \fIsource\fP;
-.FN
-.IP \fIdestination\fP 1i
-Specifies the widget on which the installed accelerators
-are to be removed.  \*(cI
-.IP \fIsource\fP 1i
-Specifies the widget from which the accelerators came.  \*(cI
-.LP
-The result of calling
-.PN XtUninstallAccelerators
-is to remove all accelerators installed using the source widget from the
-bindings on the destination widget.
-If the source widget \fIdisplay_accelerator\fP field is non-NULL then
-.PN XtUninstallAccelerators
-calls it with the source widget and an empty string to indicate that the
-accelerators have been uninstalled
-and that the display should be updated appropriately.
-.LP
-The result of removing the accelerators is that the destination
-widget's translations will have exactly the same bindings as if
-the original installation had never occurred.
-.LP
-.PN XtUninstallAccelerators
-will remove all bindings from a particular source widget, even if several
-calls to 
-.PN XtInstallAccelerators
-were necessary to install the set for that source widget.
-.LP
-It is not an error to pass a destination for whom no accelerators
-have been installed, but no action will take place.
-.sp
-.LP
-As a convenience for uninstalling all accelerators from a widget and all its
-descendants on one destination, use
-.PN XtUninstallAllAccelerators .
-.IN "XtUninstallAllAccelerators" "" "@DEF@"
-.FD 0
-void XtUninstallAllAccelerators(\fIdestination\fP, \fIsource\fP)
-.br
-      Widget \fIdestination\fP;
-.br
-      Widget \fIsource\fP;
-.FN
-.IP \fIdestination\fP 1i
-Specifies the widget on which the installed accelerators
-are to be removed.  \*(cI
-.IP \fIsource\fP 1i
-Specifies the root widget of the widget tree from which the
-accelerators came.  \*(cI
-.LP
-The 
-.PN XtUninstallAllAccelerators
-function recursively descends the widget tree rooted at \fIsource\fP and 
-uninstalls from \fIdestination\fP the accelerators resource value of each
-widget encountered.
 
 .NH 2
 KeyCode-to-KeySym Conversions
