@@ -109,17 +109,11 @@ open_tcp_socket()
     }
 
 #ifdef SO_REUSEADDR
-
-#ifdef hpux
-    set_socket_option(request, SO_REUSEADDR);
-#else
     {
 	int         one = 1;
 
 	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
     }
-#endif
-
 #endif				/* SO_REUSEADDR */
 
     bzero((char *) &insock, sizeof(insock));

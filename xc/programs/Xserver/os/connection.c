@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.132 91/05/08 10:01:49 rws Exp $ */
+/* $XConsortium: connection.c,v 1.133 91/05/10 07:11:55 jap Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -175,14 +175,10 @@ open_tcp_socket ()
     } 
 #ifdef SO_REUSEADDR
     /* Necesary to restart the server without a reboot */
-#ifdef hpux
-    set_socket_option (request, SO_REUSEADDR);
-#else
     {
 	int one = 1;
 	setsockopt(request, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(int));
     }
-#endif
 #endif /* SO_REUSEADDR */
 #ifdef AIXV3
 #ifndef FORCE_DISPLAY_NUMBER
