@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.59 94/03/30 21:28:01 gildea Exp $
+ * $XConsortium: dm.h,v 1.60 94/03/31 22:34:52 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -313,6 +313,11 @@ extern void StartDisplay();
 /* in session.c */
 extern void execute();
 
+/* in auth.c */
+extern void SetLocalAuthorization();
+extern void SetUserAuthorization();
+extern void RemoveUserAuthorization();
+    
 /*
  * CloseOnFork flags
  */
