@@ -27,8 +27,8 @@ static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
  */
 
 extern ResIdent GetNewIdent();
-extern void SetMessage(), BuildVisualTree(),DisplayChild(),HandleFlashWidget();
-extern char * GetFormattedSetValuesError();
+extern void SetMessage(), BuildVisualTree(),DisplayChild();
+extern char * GetFormattedSetValuesError(), *HandleFlashWidget();
 extern int HandleXErrors();
 
 static void TellUserAboutMessage();
@@ -381,6 +381,7 @@ int * format;
     char *string, *local_value, msg[BUFSIZ], *error_msg = NULL;
     ResIdent ident;
     ResourceError error;
+    Boolean no_message = FALSE;
 
     if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) ) 
 	return;
@@ -395,8 +396,9 @@ int * format;
     if (!StripReturnValueFromString(string, &ident, &error, &local_value)) {
 	sprintf(msg, "Error while parsing client string:\n%s\n", local_value);
 	SetMessage(global_screen_data.info_label, msg);
+	XtFree(local_value);
+	return;
     }
-
 	    
     /*
      * Ident is bad, reassert selection and wait for correct ident.
@@ -404,13 +406,14 @@ int * format;
 	
     if (ident != global_client.ident) {
 #ifdef DEBUG
-    if (global_resources.debug)
-	printf("Incorrect ident from client.\n");
+	if (global_resources.debug)
+	    printf("Incorrect ident from client.\n");
 #endif 
 	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 
 			    LoseSelection, NULL))
 	    SetMessage(global_screen_data.info_label,
 		       "Unable to own the Resource Editor Command Selection");
+	XtFree(local_value);
 	return;
     }
 
@@ -419,12 +422,13 @@ int * format;
 	switch(global_client.command) {
 	case SendWidgetTree:
 	    BuildVisualTree(global_tree_parent, local_value);
+	    no_message = TRUE;
 	    break;
 	case SetValues:
-	    SetMessage(global_screen_data.info_label, local_value);
+	    strcpy(msg, local_value);
 	    break;
 	case FlashWidget:
-	    HandleFlashWidget(local_value);
+	    error_msg = HandleFlashWidget(local_value);
 	    break;
 #ifdef notdef
 	case GetGeometry:
@@ -433,13 +437,14 @@ int * format;
 #endif
 	case FindChild:
 	    DisplayChild(local_value);
+	    no_message = TRUE;
 	    break;
 	default:
 	    sprintf(msg, "Internal error: Unknown command %d.", 
 		    global_client.command);
 	    break;
 	}
-	return;
+	break;
 
     case UnformattedResError:
 	sprintf(msg, "Error message received from client:\n%s\n", 
@@ -458,12 +463,12 @@ int * format;
 	    error_msg = GetFormattedSetValuesError(local_value);
 	    break;
 	case FlashWidget:
-	    HandleFlashWidget(local_value);
+	    error_msg = HandleFlashWidget(local_value);
 	    break;
 #ifdef notdef
 	case GetGeometry:
 	    HandleGetGeometry(local_value);
-	    return;
+	    break;
 #endif
 	default:
 	    sprintf(msg, "Internal error: Unknown command %d.", 
@@ -482,13 +487,15 @@ int * format;
 	break;
     }	
 		
-    if (error_msg == NULL) 
-	SetMessage(global_screen_data.info_label, msg);
-    else {
-	SetMessage(global_screen_data.info_label, error_msg);
-	XtFree(error_msg);
+    if (!no_message) {
+	if (error_msg == NULL) 
+	    SetMessage(global_screen_data.info_label, msg);
+	else {
+	    SetMessage(global_screen_data.info_label, error_msg);
+	    XtFree(error_msg);
+	}
     }
-
+    XtFree(local_value);
 }
 
 /*	Function Name: StripReturnValueFromString
@@ -540,7 +547,7 @@ char ** value;
 
     *ptr++ = '\0';
     *error = (ResourceError) atol(string);
-    *value = ptr;
+    *value = XtNewString(ptr);
   
     return(TRUE);		/* parsed cleanly. */
 }

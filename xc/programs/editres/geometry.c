@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.3 90/03/15 17:44:09 kit Exp $
+ * $XConsortium: geometry.c,v 1.4 90/03/16 13:57:09 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -37,6 +37,8 @@ extern void SetMessage(), SetCommand(), SetAndCenterTreeNode(), AddString();
 extern void GetAllStrings();
 extern char * NodeToID();
 extern int HandleXErrors();
+
+static void CreateFlashWidget(), FlashWidgets();
 
 /*	Function Name: _FindWidget
  *	Description: Finds a widget in the tree and shows it to the user.
@@ -194,7 +196,7 @@ TreeInfo * tree_info;
  *	Returns: none.
  */
 
-void
+char *
 HandleFlashWidget(value)
 String value;
 {
@@ -226,11 +228,10 @@ String value;
 	}
     }
 
-    if (errors != NULL) 
-	SetMessage(global_screen_data.info_label, errors);	
-
     FlashWidgets(global_tree_info);
+
     XtFree(strings);
+    return(errors);
 }
 
 /*	Function Name: AddWidgetToFlashList
