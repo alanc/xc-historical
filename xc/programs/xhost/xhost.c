@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.9 87/08/08 18:02:31 johnsson Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.9 87/08/21 12:57:51 newman Locked $";
 #endif
  
 #include <signal.h>
@@ -130,21 +130,20 @@ main(argc, argv)
 	for (i = 1; i < argc; i++) {
 	    arg = argv[i];
 	    if (*arg == '-') {
-	    
-		arg = argv[++i];
-                    if ((address = get_address(arg)) == NULL) 
-		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
-                    else XRemoveHost(dpy, address);
+		arg++;
+                if ((address = get_address(arg)) == NULL) 
+		    fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
+                else XRemoveHost(dpy, address);
 	    } else {
-		if (*arg == '+') {
-		    arg = argv[++i];
-		}
-                    if ((address = get_address(arg)) == NULL) 
-		         fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
-                    else XAddHost(dpy, address);
+		if (*arg == '+')
+		    arg++;
+                if ((address = get_address(arg)) == NULL) 
+		    fprintf(stderr, "%s: bad host: %s\n", argv[0], arg);
+                else XAddHost(dpy, address);
 	    }
 	}
-	XSync(dpy, 0);
+	XSetCloseDownMode (dpy, RetainPermanent);
+	XCloseDisplay (dpy);  /* does an XSync first */
 	exit(0);
 }
 
