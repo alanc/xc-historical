@@ -94,15 +94,15 @@ sets feep (bell) volume (allowable range: 0-7).
 .TP 8
 .B \-ld \fIkilobytes\fP
 sets the data space limit of the server to the specified number of kilobytes.
-The default value is -1, leaving the limit unchanged.  A value of zero makes
-the data space as large as possible.  This option is not available in all
-operating systems.
+The default value is zero, making the data size as large as possible.  A value
+of -1 leaves the data space limit unchanged.  This option is not available in
+all operating systems.
 .TP 8
 .B \-ls \fIkilobytes\fP
 sets the stack space limit of the server to the specified number of kilobytes.
-The default is zero, making the stack size as large as possible.  A value of -1
-leaves the stack space limit unchanged.  This option is not available in all
-operating systems.
+The default value is zero, making the stack size as large as possible.  A value
+of -1 leaves the stack space limit unchanged.  This option is not available in
+all operating systems.
 .TP 8
 .B \-logo
 turns on the X Window System logo display in the screen-saver.
