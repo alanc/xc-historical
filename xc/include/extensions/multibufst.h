@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.8 92/03/17 16:58:11 eswu Exp $
+ * $XConsortium: multibufst.h,v 1.9 92/10/19 09:11:19 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,8 +29,10 @@
  * These would really be in Multi-Buffering's X.h and Xproto.h equivalents
  */
 
-#include "input.h"
 #include "multibuf.h"
+#ifdef _MULTIBUF_SERVER_
+#include "input.h"
+#endif
 
 #if defined(__STDC__) && !defined(UNIXCPP)
 #define MbufGetReq(name,req,info) GetReq (name, req); \
