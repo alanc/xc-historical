@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.183 93/09/15 18:29:34 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.185 93/09/18 09:31:22 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -664,7 +664,7 @@ _XEventsQueued (dpy, mode)
 	    {
 		dpy->lock->reply_was_read = True;
 		if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
-		    memcpy((char *)dpy->lock->reply_awaiters->buf, read_buf,
+		    memcpy(dpy->lock->reply_awaiters->buf, read_buf,
 			   len);
 		ConditionSignal(dpy, dpy->lock->reply_awaiters);
 		UnlockNextEventReader(dpy);
@@ -817,7 +817,7 @@ _XReadEvents(dpy)
 		{
 		    dpy->lock->reply_was_read = True;
 		    if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
-			memcpy((char *)dpy->lock->reply_awaiters->buf,
+			memcpy(dpy->lock->reply_awaiters->buf,
 			       read_buf, len);
 		    ConditionSignal(dpy, dpy->lock->reply_awaiters);
 		    /* useless to us, so keep trying */
@@ -1773,7 +1773,7 @@ XAddConnectionWatch(dpy, callback, client_data)
 	if (!wd_array)
 	    return 0;
 	if (dpy->watcher_count > 1) {
-	    memcpy((void *)(wd_array+1), (void *)info_list->watch_data, dpy->watcher_count-1);
+	    memcpy(wd_array+1, info_list->watch_data, dpy->watcher_count-1);
 	    Xfree(info_list->watch_data);
 	}
 	/* new element is at front of list now */
