@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.5 91/11/16 13:35:11 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.6 92/04/07 10:08:10 rws Exp $
 
 #define OSName			OSF1
 XCOMM operating system:  OSName
@@ -16,6 +16,7 @@ XCOMM operating system:  OSName
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
 #define StandardDefines -D__OSF1__
+#define NoRConst YES
 #define XdecServer YES
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
 #endif
