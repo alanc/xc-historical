@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.5 94/03/17 19:43:43 dpw Exp mor $ */
+/* $XConsortium: Imakefile,v 1.6 94/09/13 17:13:06 mor Exp mor $ */
 /*
  * $NCDId: @(#)Imakefile,v 1.11 1994/03/14 23:32:34 lemke Exp $
  *
@@ -40,12 +40,12 @@ INCLUDES =  -I$(TOP)/include -I$(TOP)/include/fonts -I$(SERVERSRC)/include  -I$(
 
 SRCS =	\
 	lbxmain.c lbxdix.c lbxtags.c lbxprop.c lbxgfx.c lbxtables.c \
-        lbxswap.c lbximage.c
+        lbxswap.c
 
 
 OBJS =	\
 	lbxmain.o lbxdix.o lbxtags.o lbxprop.o lbxgfx.o lbxtables.o \
-        lbxswap.o lbximage.o
+        lbxswap.o
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(lbx,$(OBJS))
