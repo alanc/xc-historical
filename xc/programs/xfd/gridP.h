@@ -22,7 +22,7 @@ typedef struct _FontGridPart {
     Boolean		box_chars;	/* put box around logical width */
     XtCallbackList	callbacks;	/* for notifying caller */
     int			internal_pad;	/* extra padding inside grid */
-    long		start_char;	/* first character of grid */
+    Dimension		start_char;	/* first character of grid */
     int			grid_width;	/* width of grid lines */
     /* private data */
     GC			text_gc;	/* printing text */
