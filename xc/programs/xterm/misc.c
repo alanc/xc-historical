@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.31 89/03/02 12:05:10 jim Exp $
+ *	$XConsortium: misc.c,v 1.32 89/03/23 11:41:30 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.31 89/03/02 12:05:10 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.32 89/03/23 11:41:30 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -428,9 +428,9 @@ char *name;
 			else if(strncmp(&wname[i], " #", 2) == 0)
 				*np++ = atoi(&wname[i + 2]);
 		}
-		free(wname);
+		XFree(wname);
 	}
-	free((char *)children);
+	XFree((char *)children);
 	if(exact) {
 		if(np <= number)
 			strcpy(suffix, " #2");
