@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: viewfuncs.c,v 2.15 89/08/31 19:12:44 converse Exp $";
+    "$XConsortium: viewfuncs.c,v 2.16 89/09/15 16:16:39 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -188,7 +188,8 @@ void XmhEditView(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn	scrn = ScrnFromWidget(w);
-    DoEditView(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (scrn->msg != NULL && ! MsgGetEditable(scrn->msg))
+	DoEditView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -220,7 +221,8 @@ void XmhSaveView(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn	scrn = ScrnFromWidget(w);
-    DoSaveView(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (MsgChanged(scrn->msg) || MsgGetReapable(scrn->msg))
+	DoSaveView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 

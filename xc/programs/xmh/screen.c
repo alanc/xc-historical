@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.47 89/09/15 16:16:10 converse Exp $";
+    "$XConsortium: screen.c,v 2.48 89/09/17 19:40:54 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -31,20 +31,109 @@ static char rcs_id[] =
 
 #include "xmh.h"
 
+
+typedef struct _XmhMenuEntry {
+    char	*name;			/* menu entry name */
+    void   	(*function)();		/* menu entry callback function */
+} XmhMenuEntryRec, *XmhMenuEntry;	
+
+
+typedef struct _XmhMenuButtonDesc {
+    char	*button_name;		/* menu button name */
+    char	*menu_name;		/* menu name */
+    XmhMenuEntry entry;			/* list of menu entries */
+    Cardinal	num_entries;		/* count of menu entries in list */
+} XmhMenuButtonDescRec, *XmhMenuButtonDesc;
+
+
+XmhMenuEntryRec	folderOps[] = {
+    {"compose",			DoComposeMessage},
+    {"close",			DoClose},
+    {"XawMenuSeparator",	(XtCallbackProc) NULL},
+    {"open",			DoOpenFolder},
+    {"openInNew", 		DoOpenFolderInNewWindow},
+    {"create",			DoCreateFolder},
+    {"delete",			DoDeleteFolder},
+};
+
+XmhMenuEntryRec	tocOps[] = {
+    {"inc",			DoIncorporateNewMail},
+    {"commit",			DoCommit},
+    {"pack",			DoPack},
+    {"sort",			DoSort},
+    {"rescan",			DoForceRescan},
+};
+
+XmhMenuEntryRec	messageOps[] = {
+    {"next",			DoNextView},
+    {"prev",			DoPrevView},
+    {"delete",			DoDelete},
+    {"move",			DoMove},
+    {"copy",			DoCopy},
+    {"unmark",			DoUnmark},
+    {"viewNew",			DoViewNew},
+    {"reply",			DoReply},
+    {"forward",			DoForward},
+    {"useAsComp",		DoTocUseAsComp},
+    {"print",			DoPrint},
+};
+
+XmhMenuEntryRec	sequenceOps[] = {
+    {"pick",			DoPickMessages},
+    {"openSeq",			DoOpenSeq},
+    {"addToSeq",		DoAddToSeq},
+    {"removeFromSeq",		DoRemoveFromSeq},
+    {"deleteSeq",		DoDeleteSeq},
+};
+
+XmhMenuEntryRec	sequences[] = {
+    {"all",			(XtCallbackProc) NULL},
+};
+
+XmhMenuEntryRec	viewOps[] = {
+    {"reply",			DoViewReply},
+    {"forward",			DoViewForward},
+    {"useAsComp",		DoViewUseAsComposition},
+    {"edit",			DoEditView},
+    {"save",			DoSaveView},
+    {"print",			DoPrintView},
+};
+
+XmhMenuEntryRec	options[] = {
+    {"reverse",			DoReverseReadOrder},
+};
+
+XmhMenuButtonDescRec	MenuBoxButtons[] = {
+    {"folderOpsButton",
+     "folderOpsMenu",	folderOps,	XtNumber(folderOps) },
+    {"tocOpsButton",
+     "tocOpsMenu",	tocOps,		XtNumber(tocOps) },
+    {"messageOpsButton",
+     "messageOpsMenu",	messageOps,	XtNumber(messageOps) },
+    {"sequenceOpsButton",
+     "sequenceOpsMenu",	sequenceOps,	XtNumber(sequenceOps) },
+    {"sequenceButton",
+     "sequenceMenu",	sequences,	XtNumber(sequences) },
+    {"viewOpsButton",
+     "viewOpsMenu",	viewOps,	XtNumber(viewOps) },
+    {"optionButton",
+     "optionMenu",	options,	XtNumber(options) },
+};
+
+
 /* Fill in the buttons for the view commands. */
 
 static void FillViewButtons(scrn)
 Scrn scrn;
 {
     ButtonBox buttonbox = scrn->viewbuttons;
-    if (scrn->tocwidget == NULL)
-	BBoxAddButton(buttonbox, "close", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "reply", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "forward", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "useAsComp", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "edit", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "save", commandWidgetClass, 999, False);
-    BBoxAddButton(buttonbox, "print", commandWidgetClass, 999, True);
+    BBoxAddButton(buttonbox, "close", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "reply", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "forward", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "useAsComp", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "edit", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "save", commandWidgetClass, False);
+    BBoxAddButton(buttonbox, "print", commandWidgetClass, True);
 }
     
 
@@ -53,106 +142,85 @@ static void FillCompButtons(scrn)
 Scrn scrn;
 {
     ButtonBox buttonbox = scrn->viewbuttons;
-    if (scrn->tocwidget == NULL)
-	BBoxAddButton(buttonbox, "close", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "send", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "reset", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "compose", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "save", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "insert", commandWidgetClass, 999, True);
+    BBoxAddButton(buttonbox, "close", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "send", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "reset", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "compose", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "save", commandWidgetClass, True);
+    BBoxAddButton(buttonbox, "insert", commandWidgetClass, True);
 }
 
 
-/* Figure out which buttons should and shouldn't be enabled in the given
-   screen.  This should be called whenever something major happens to the
-   screen. */
-
-#define SetButton(buttonbox, name, value) \
-    if (value) BBoxEnable(BBoxFindButtonNamed(buttonbox, name)); \
-    else BBoxDisable(BBoxFindButtonNamed(buttonbox, name));
-
-
-void EnableProperButtons(scrn)
-Scrn scrn;
+static void MakeCommandMenu(scrn, mbd)
+    Scrn		scrn;
+    XmhMenuButtonDesc	mbd;
 {
-    static void EnableCallback();
-    int value, changed, reapable;
-    Button	button;
+    register int i, n;
+    Widget	menu;
+    ButtonBox	buttonbox = scrn->mainbuttons;
+    XmhMenuEntry	e;
+    Arg		args[4];
+    static XtCallbackRec callbacks[] = {
+	{ (XtCallbackProc) NULL, (XtPointer) NULL},
+	{ (XtCallbackProc) NULL, (XtPointer) NULL},
+	{ (XtCallbackProc) NULL, (XtPointer) NULL},
+    };
+    extern void DoRememberMenuSelection();
 
-    if (scrn) {
-	switch (scrn->kind) {
-	  case STtocAndView:
+    /* Menus are created as childen of the shell of the scrn in order
+     * that they can be used both as pop-up and as pull-down menus.
+     */
 
-	    button = BBoxFindButtonNamed(scrn->tocbuttons, "tocOps");
-	    value = TocCanIncorporate(scrn->toc);
-	    SendMenuEntryEnableMsg(button, "inc", value);
+    menu = XtCreatePopupShell(mbd->menu_name, simpleMenuWidgetClass,
+			      scrn->widget, args, (Cardinal) 0);
 
-	    button = BBoxFindButtonNamed(scrn->tocbuttons, "sequenceOps");
-	    value = TocHasSequences(scrn->toc);
-	    SendMenuEntryEnableMsg(button, "openSeq", value);
-	    SendMenuEntryEnableMsg(button, "addToSeq", value);
-	    SendMenuEntryEnableMsg(button, "removeFromSeq", value);
-	    SendMenuEntryEnableMsg(button, "deleteSeq", value);
-
-	    button = BBoxFindButtonNamed(scrn->tocbuttons, "viewedMsgOps");
-	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
-	    SendMenuEntryEnableMsg(button, "edit", value);
-	    SendMenuEntryEnableMsg(button, "save",
-				   scrn->msg != NULL && !value);
-	    break;
-
-	  case STview:
-	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
-	    SetButton(scrn->viewbuttons, "edit", value);
-	    SetButton(scrn->viewbuttons, "save", scrn->msg != NULL && !value);
-	    break;
-	  case STcomp:
-	    if (scrn->msg != NULL) {
-		changed = MsgChanged(scrn->msg);
-		reapable = MsgGetReapable(scrn->msg);
-		SetButton(scrn->viewbuttons, "send", changed || !reapable);
-		SetButton(scrn->viewbuttons, "save", changed || reapable);
-		SetButton(scrn->viewbuttons, "insert",
-			  scrn->assocmsg != NULL ? True : FALSE);
-
-		if (!changed) 
-		    MsgSetCallOnChange(scrn->msg, EnableCallback,
-				       (XtPointer) scrn);
-		else 
-		    MsgSetCallOnChange(scrn->msg, (XtCallbackProc) NULL,
-				       (XtPointer) NULL);
-
+    e = mbd->entry;
+    for (i=0; i < mbd->num_entries; i++, e++) {
+	n = 0;
+	if (e->function) {
+	    callbacks[0].callback = e->function;
+	    callbacks[0].closure  = (XtPointer) scrn;
+	    if (app_resources.sticky_menu) {	/* this may disappear */
+		callbacks[1].callback = DoRememberMenuSelection;
+		callbacks[1].closure  = (XtPointer) e->name;
 	    } else {
-		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "send"));
-		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "save"));
-		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "insert"));
+		callbacks[1].callback = (XtCallbackProc) NULL;
+		callbacks[1].closure  = (XtPointer) NULL;
 	    }
-	    break;
+	    XtSetArg(args[n], XtNcallback, callbacks);		n++;
 	}
+	else if (strcmp(e->name, "XawMenuSeparator") == 0) {
+	    XtSetArg(args[n], XtNtype, XawMenuSeparator);	n++;
+	}
+
+	XawSimpleMenuAddEntry(menu, XtNewString(e->name), args, (Cardinal) n);
+    }
+
+    AttachMenuToButton( BBoxFindButtonNamed( buttonbox, mbd->button_name),
+		       menu, mbd->menu_name);
+
+    /* awkward */
+    if (strcmp("optionMenu", mbd->menu_name) == 0) {
+	n = 0;
+	XtSetArg(args[n], XtNleftMargin, 18);	n++;
+	XtSetValues(menu, args, (Cardinal) n);
+	if (app_resources.reverse_read_order)
+	    ToggleMenuItem(menu, "reverse", True);
     }
 }
-
-
-/*ARGSUSED*/
-static void EnableCallback(w, data, junk)
-Widget w;
-XtPointer data, junk;
-{
-  EnableProperButtons( (Scrn) data);
-}  
-
 
 /* Create subwidgets for a toc&view window. */
 
 static void MakeTocAndView(scrn)
 Scrn scrn;
 {
-    int		i, theight, min, max;
-    Button	button;
-    ButtonBox	buttonbox;
+    register int	i;
+    XmhMenuButtonDesc	mbd;
+    ButtonBox		buttonbox;
+    char		*name;
     static XawTextSelectType sarray[] = {XawselectLine,
-					XawselectWord,
 					XawselectAll,
+					XawselectPosition,
 					XawselectNull};
     static Arg args[] = {
 	{ XtNselectTypes,	(XtArgVal) sarray},
@@ -161,103 +229,56 @@ Scrn scrn;
 
     scrn->folderlabel   = CreateTitleBar(scrn, "folderTitlebar");
     scrn->folderbuttons = BBoxCreate(scrn, "folders");
-    scrn->mainbuttons   = BBoxCreate(scrn, "folderButtons");
-    scrn->toclabel      = CreateTitleBar(scrn, "tocTitlebar");
-    scrn->tocwidget     = CreateTextSW(scrn, "toc", args, XtNumber(args));
     scrn->seqbuttons    = RadioBBoxCreate(scrn, "seqButtons");
-    scrn->tocbuttons    = BBoxCreate(scrn, "tocButtons");
+    scrn->mainbuttons   = BBoxCreate(scrn, "menuBox");
+    scrn->toclabel      = CreateTitleBar(scrn, "tocTitlebar");
+    scrn->tocwidget	= CreateTextSW(scrn, "toc", args, XtNumber(args));
+    if (app_resources.command_button_count > 0) 
+	scrn->miscbuttons = BBoxCreate(scrn, "commandBox");
     scrn->viewlabel     = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget    = CreateTextSW(scrn, "view", args, (Cardinal) 0);
 
+    /* the folder buttons and menus */
+
     buttonbox = scrn->folderbuttons;
-    for (i=0 ; i<numFolders ; i++)
-      BBoxAddButton(buttonbox, TocName(folderList[i]), menuButtonWidgetClass,
-		    999, True);
+    for (i=0 ; i<numFolders ; i++) {
+	name = TocName(folderList[i]);
+	if (numScrns == 1 || (! IsSubfolder(name)))
+	    BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
+    }
+
+    /* the command buttons and menus */
 
     buttonbox = scrn->mainbuttons;
-    BBoxAddButton(buttonbox, "close", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "compose", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "open", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "openInNew", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "create", commandWidgetClass, 999, True);
-    BBoxAddButton(buttonbox, "delete", commandWidgetClass, 999, True);
+    mbd = MenuBoxButtons;
+    for (i=0; i < XtNumber(MenuBoxButtons); i++, mbd++) {
+	name = mbd->button_name;
+	BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
+	MakeCommandMenu(scrn, mbd);
+    }
+
+    /* the sequence buttons, soon to disappear? */
 
     buttonbox = scrn->seqbuttons;
-    RadioBBoxAddButton(buttonbox, "all", 999, True);
+    RadioBBoxAddButton(buttonbox, "all", True);
 
-    buttonbox = scrn->tocbuttons;
+    /* the optional miscellaneous command buttons */
 
-    /* the menu of operations on the Table Of Contents */
-
-    BBoxAddButton(buttonbox, "tocOps", menuButtonWidgetClass, 999, True);
-    button = BBoxFindButtonNamed(buttonbox, "tocOps");
-    CreateMenu(button, False);
-    AddMenuEntry(button, "inc", Inc, (XtPointer) scrn, True);
-    AddMenuEntry(button, "commit", DoCommit, (XtPointer) scrn, True);
-    AddMenuEntry(button, "pack", DoPack, (XtPointer) scrn, True);
-    AddMenuEntry(button, "sort", DoSort, (XtPointer) scrn, True);
-    AddMenuEntry(button, "rescan", Rescan, (XtPointer) scrn, True);
-
-    /* the menu of operations on the selected message(s) */
-
-    BBoxAddButton(buttonbox, "msgOps", menuButtonWidgetClass, 999, True);
-    button = BBoxFindButtonNamed(buttonbox, "msgOps");
-    CreateMenu(button, False);
-    AddMenuEntry(button, "next", DoNextView, (XtPointer) scrn, True);
-    AddMenuEntry(button, "prev", DoPrevView, (XtPointer) scrn, True);
-    AddMenuEntry(button, "delete", DoDelete, (XtPointer) scrn, True);
-    AddMenuEntry(button, "move", DoMove, (XtPointer) scrn, True);
-    AddMenuEntry(button, "copy", DoCopy, (XtPointer) scrn, True);
-    AddMenuEntry(button, "unmark", DoUnmark, (XtPointer) scrn, True);
-    AddMenuEntry(button, "viewNew", DoViewNew, (XtPointer) scrn, True);
-    AddMenuEntry(button, "reply", Reply, (XtPointer) scrn, True);
-    AddMenuEntry(button, "forward", DoForward, (XtPointer) scrn, True);
-    AddMenuEntry(button, "useAsComp", DoTocUseAsComp, (XtPointer) scrn, True);
-    AddMenuEntry(button, "print", DoPrint, (XtPointer) scrn, True);
-
-    /* the menu of operations concerning message sequences */
-
-    BBoxAddButton(buttonbox, "sequenceOps", menuButtonWidgetClass, 999, True);
-    button = BBoxFindButtonNamed(buttonbox, "sequenceOps");
-    CreateMenu(button, False);
-    AddMenuEntry(button, "pick", DoPickMessages, (XtPointer) scrn, True);
-    AddMenuEntry(button, "openSeq", DoOpenSeq, (XtPointer) scrn, True);
-    AddMenuEntry(button, "addToSeq", DoAddToSeq, (XtPointer) scrn, True);
-    AddMenuEntry(button, "removeFromSeq", DoRemoveFromSeq, (XtPointer) scrn,
-		 True);
-    AddMenuEntry(button, "deleteSeq", DoDeleteSeq, (XtPointer) scrn, True);
-
-    /* the menu of operations upon the viewed message. */
-
-    BBoxAddButton(buttonbox, "viewedMsgOps", menuButtonWidgetClass, 999, True);
-    button = BBoxFindButtonNamed(buttonbox, "viewedMsgOps");
-    CreateMenu(button, False);
-    AddMenuEntry(button, "reply", DoViewReply, (XtPointer) scrn, True);
-    AddMenuEntry(button, "forward", DoViewForward, (XtPointer) scrn, True);
-    AddMenuEntry(button, "useAsComp", DoViewUseAsComposition, (XtPointer) scrn,
-		 True);
-    AddMenuEntry(button, "edit", DoEditView, (XtPointer) scrn, True);
-    AddMenuEntry(button, "save", DoSaveView, (XtPointer) scrn, True);
-    AddMenuEntry(button, "print", DoPrintView, (XtPointer) scrn, True);
+    if (app_resources.command_button_count > 0) {
+	char	name[30];
+	if (app_resources.command_button_count > 1000)
+	    app_resources.command_button_count = 1000;
+	for (i=1; i <= app_resources.command_button_count; i++) {
+	    sprintf(name, "button%d", i);
+	    BBoxAddButton(scrn->miscbuttons, name, commandWidgetClass, True);
+	}
+    }
 
     if (app_resources.mailWaitingFlag) {
 	static Arg arglist[] = {XtNiconPixmap, NULL};
 	arglist[0].value = (XtArgVal) NoMailPixmap;
 	XtSetValues(scrn->parent, arglist, XtNumber(arglist));
     }
-
-    XtRealizeWidget(scrn->parent);
-
-    BBoxLockSize(scrn->folderbuttons);
-    BBoxLockSize(scrn->mainbuttons);
-    BBoxLockSize(scrn->seqbuttons);
-    BBoxLockSize(scrn->tocbuttons);
-
-    theight = GetHeight(scrn->tocwidget) + GetHeight(scrn->viewwidget);
-    theight = app_resources.defTocPercentage * theight / 100;
-    XawPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
-    XawPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
-    XawPanedSetMinMax((Widget) scrn->tocwidget, min, max);
 }
 
 
@@ -318,8 +339,8 @@ ScrnKind kind;
 				   progName, topLevelShellWidgetClass,
 				   toplevel, arglist, XtNumber(arglist));
     scrn->widget =
-	XtCreateManagedWidget(progName, vPanedWidgetClass, scrn->parent,
-			      (ArgList)NULL, (Cardinal)0);
+	XtCreateManagedWidget(progName, panedWidgetClass, scrn->parent,
+			      (ArgList) NULL, (Cardinal) 0);
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
@@ -328,11 +349,29 @@ ScrnKind kind;
     }
 
     if (kind != STpick) {
+	int	theight, min, max;
+	Arg	args[1];
+
 	DEBUG("Realizing...")
 	XtRealizeWidget(scrn->parent);
 	DEBUG(" done.\n")
-	if (kind == STtocAndView) {
-	    Arg	args[1];
+
+	switch (kind) {
+	  case STtocAndView:
+
+	    BBoxLockSize(scrn->folderbuttons);
+	    BBoxLockSize(scrn->seqbuttons);	/* %%% too early, only one */
+	    BBoxLockSize(scrn->mainbuttons);
+	    theight = GetHeight(scrn->tocwidget) + GetHeight(scrn->viewwidget);
+	    theight = app_resources.defTocPercentage * theight / 100;
+	    XawPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
+	    XawPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
+	    XawPanedSetMinMax((Widget) scrn->tocwidget, min, max);
+	    if (scrn->miscbuttons)
+		BBoxLockSize(scrn->miscbuttons);
+
+	    /* Install accelerators; not active while editing in the view */
+
 	    XtSetArg(args[0], XtNtranslations, &(scrn->edit_translations));
 	    XtGetValues(scrn->viewwidget, args, (Cardinal) 1);
 	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
@@ -340,11 +379,19 @@ ScrnKind kind;
 	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
 	    XtSetArg(args[0], XtNtranslations, &(scrn->read_translations));
 	    XtGetValues(scrn->viewwidget, args, (Cardinal) 1);
+	    break;
+
+	  case STview:
+	  case STcomp:
+	    BBoxLockSize(scrn->viewbuttons);
+	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
+	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
+	    break;
 	}
-	else
-	    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
+
+	InitBusyCursor(scrn);
 	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
-		      app_resources.cursor );
+		      app_resources.cursor);
     }
     scrn->mapped = (numScrns == 1);
     return scrn;
@@ -398,7 +445,7 @@ Scrn ScrnFromWidget(w)		/* heavily used, should be efficient */
 Widget w;
 {
     register int i;
-    while (w && XtClass(w) != vPanedWidgetClass)
+    while (w && XtClass(w) != panedWidgetClass)
 	w = XtParent(w);
     if (w) {
 	for (i=0 ; i<numScrns ; i++) {
@@ -408,4 +455,85 @@ Widget w;
     }
     Punt("ScrnFromWidget failed!");
     /*NOTREACHED*/
+}
+ 
+
+/* Figure out which buttons should and shouldn't be enabled in the given
+ * screen.  This should be called whenever something major happens to the
+ * screen.
+ */
+
+
+/*ARGSUSED*/
+static void EnableCallback(w, data, junk)
+Widget w;
+XtPointer data, junk;
+{
+  EnableProperButtons( (Scrn) data);
+}  
+
+
+#define SetButton(buttonbox, name, value) \
+    if (value) BBoxEnable(BBoxFindButtonNamed(buttonbox, name)); \
+    else BBoxDisable(BBoxFindButtonNamed(buttonbox, name));
+
+
+void EnableProperButtons(scrn)
+Scrn scrn;
+{
+    static void EnableCallback();
+    int value, changed, reapable;
+    Button	button;
+
+    DEBUG("EnbleProperButtons\n")
+    if (scrn) {
+	switch (scrn->kind) {
+	  case STtocAndView:
+	    button = BBoxFindButtonNamed(scrn->mainbuttons, "tocOpsButton");
+	    value = TocCanIncorporate(scrn->toc);
+	    SendMenuEntryEnableMsg(button, "inc", value);
+
+	    button = BBoxFindButtonNamed(scrn->mainbuttons,
+					 "sequenceOpsButton");
+	    value = TocHasSequences(scrn->toc);
+	    SendMenuEntryEnableMsg(button, "openSeq", value);
+	    SendMenuEntryEnableMsg(button, "addToSeq", value);
+	    SendMenuEntryEnableMsg(button, "removeFromSeq", value);
+	    SendMenuEntryEnableMsg(button, "deleteSeq", value);
+
+	    button = BBoxFindButtonNamed(scrn->mainbuttons, "viewOpsButton");
+	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
+	    SendMenuEntryEnableMsg(button, "edit", value);
+	    SendMenuEntryEnableMsg(button, "save",
+				   scrn->msg != NULL && !value);
+	    break;
+	  case STview:
+	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
+	    SetButton(scrn->viewbuttons, "edit", value);
+	    SetButton(scrn->viewbuttons, "save", scrn->msg != NULL && !value);
+	    break;
+	  case STcomp:
+	    if (scrn->msg != NULL) {
+		changed = MsgChanged(scrn->msg);
+		reapable = MsgGetReapable(scrn->msg);
+		SetButton(scrn->viewbuttons, "send", changed || !reapable);
+		SetButton(scrn->viewbuttons, "save", changed || reapable);
+		SetButton(scrn->viewbuttons, "insert",
+			  scrn->assocmsg != NULL ? True : False);
+
+		if (!changed) 
+		    MsgSetCallOnChange(scrn->msg, EnableCallback,
+				       (XtPointer) scrn);
+		else 
+		    MsgSetCallOnChange(scrn->msg, (XtCallbackProc) NULL,
+				       (XtPointer) NULL);
+
+	    } else {
+		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "send"));
+		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "save"));
+		BBoxDisable( BBoxFindButtonNamed(scrn->viewbuttons, "insert"));
+	    }
+	    break;
+	}
+    }
 }

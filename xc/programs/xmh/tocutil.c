@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.30 89/09/15 16:16:31 converse Exp $";
+    "$XConsortium: tocutil.c,v 2.31 89/09/17 19:40:57 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *			COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -84,7 +84,7 @@ Toc toc;
 		RadioBBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
 	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
 		RadioBBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-				   999, True);
+				   True);
 	}
 	if (scrn->seqbuttons) 
 	    RadioBBoxSet(BBoxFindButtonNamed(scrn->seqbuttons,
@@ -97,18 +97,22 @@ Toc toc;
 void TUScanFileForToc(toc)
   Toc toc;
 {
-    Widget parent;
-    Position x, y;
     Scrn scrn;
     char  **argv, str[100];
     if (toc) {
 	TUGetFullFolderInfo(toc);
 	if (toc->num_scrns) scrn = toc->scrn[0];
 	else scrn = scrnList[0];
-	parent = (Widget) scrn->tocwidget;
-	(void) sprintf(str, "Rescanning %s", toc->foldername);
-	XtTranslateCoords(parent, 30, 15, &x, &y);
-	PopupAlert(str, parent, x, y);
+
+	/* Do not alert the user of rescanning if the screen is unmapped. */
+ 
+	if (scrn->mapped) {
+	    Position x, y;
+	    Widget parent = (Widget) scrn->tocwidget;
+	    (void) sprintf(str, "Rescanning %s", toc->foldername);
+	    XtTranslateCoords(parent, 30, 15, &x, &y);
+	    PopupAlert(str, parent, x, y);
+	}
 
 	argv = MakeArgv(4);
 	argv[0] = "scan";
@@ -120,7 +124,8 @@ void TUScanFileForToc(toc)
 	XtFree(argv[1]);
 	XtFree((char *) argv);
 
-	PopdownAlert();
+	if (scrn->mapped)
+	    PopdownAlert();
 	toc->validity = valid;
 	toc->curmsg = NULL;	/* Get cur msg somehow! %%% */
     }
@@ -146,7 +151,8 @@ int TUGetMsgPosition(toc, msg)
     }
     if (toc->msgs[l] == msg) return l;
     if (toc->msgs[h] == msg) return h;
-    (void) sprintf(str, "TUGetMsgPosition search failed! hi=%d, lo=%d, msgid=%d",
+    (void) sprintf(str,
+		   "TUGetMsgPosition search failed! hi=%d, lo=%d, msgid=%d",
 		   h, l, msgid);
     Punt(str);
     return 0; /* Keep lint happy. */
@@ -183,7 +189,7 @@ void TURedisplayToc(scrn)
   Scrn scrn;
 {
     Toc toc;
-    Widget source;
+/*    Widget source; */
     if (scrn != NULL && scrn->tocwidget != NULL) {
 	toc = scrn->toc;
  	if (toc) {
@@ -191,10 +197,9 @@ void TURedisplayToc(scrn)
 		toc->needsrepaint = TRUE;
 		return;
 	    }
-	    XawTextDisableRedisplay(scrn->tocwidget, TRUE);
-	    source = XawTextGetSource(scrn->tocwidget);
-
+	    XawTextDisableRedisplay(scrn->tocwidget);
 /* %%% dmc 8/14/89 
+ *	    source = XawTextGetSource(scrn->tocwidget);
  *	    if (source != toc->source)
  */
 		XawTextSetSource(scrn->tocwidget, toc->source,
@@ -204,12 +209,10 @@ void TURedisplayToc(scrn)
 	    CheckSeqButtons(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
-	    XawTextSetSource(scrn->tocwidget, PNullSource,
-			     (XawTextPosition) 0);
+	    XawTextSetSource(scrn->tocwidget, PNullSource, (XawTextPosition) 0);
 	}
     }
 }
-
 
 
 void TULoadSeqLists(toc)

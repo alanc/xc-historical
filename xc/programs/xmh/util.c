@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.32 89/09/15 16:16:35 converse Exp $";
+    "$XConsortium: util.c,v 2.33 89/09/17 19:41:01 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -33,6 +33,7 @@ static char rcs_id[] =
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
+#include <X11/cursorfont.h>
 
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
 
@@ -73,7 +74,7 @@ int flags, mode;
 {
     int fid;
     fid = open(path, flags, mode);
-    if (fid >= 0) DEBUG2("# %d : %s\n", fid, path);
+    if (fid >= 0) DEBUG2("# %d : %s\n", fid, path)
     return fid;
 }
 
@@ -83,7 +84,7 @@ char *path, *mode;
 {
     FILE *result;
     result = fopen(path, mode);
-    if (result)  DEBUG2("# %d : %s\n", fileno(result), path);
+    if (result)  DEBUG2("# %d : %s\n", fileno(result), path)
     return result;
 }
 
@@ -92,7 +93,7 @@ char *path, *mode;
 int myclose(fid)
 {
     if (close(fid) < 0) Punt("Error in myclose!");
-    DEBUG1( "# %d : <Closed>\n", fid);
+    DEBUG1( "# %d : <Closed>\n", fid)
 }
 
 
@@ -101,7 +102,7 @@ FILE *file;
 {
     int fid = fileno(file);
     if (fclose(file) < 0) Punt("Error in myfclose!");
-    DEBUG1("# %d : <Closed>\n", fid);
+    DEBUG1("# %d : <Closed>\n", fid)
 }
 
 
@@ -375,8 +376,6 @@ char *str;
 }
 
 
-
-
 Widget CreateTextSW(scrn, name, args, num_args)
 Scrn scrn;
 char *name;
@@ -388,7 +387,6 @@ Cardinal num_args;
     return XtCreateManagedWidget( name, asciiTextWidgetClass, scrn->widget,
 				  args, num_args);
 }
-
 
 
 Widget CreateTitleBar(scrn, name)
@@ -409,12 +407,10 @@ char *name;
 }
 
 
-
 void Feep()
 {
     XBell(theDisplay, 0);
 }
-
 
 
 MsgList CurMsgListOrCurMsg(toc)
@@ -502,3 +498,71 @@ char *str;
     arglist[0].value = arglist[1].value = (XtArgVal) str;
     XtSetValues(scrn->parent, arglist, XtNumber(arglist));
 }
+
+
+/* Create an input-only window with a busy-wait cursor. */
+
+void InitBusyCursor(scrn)
+    Scrn	scrn;
+{
+    unsigned long		valuemask;
+    XSetWindowAttributes	attributes;
+
+    /* the second condition is for the pick scrn */
+    if (! app_resources.block_events_on_busy || scrn->wait_window) 
+	return;	
+
+    /* Ignore device events while the busy cursor is displayed. */
+
+    valuemask = CWDontPropagate | CWCursor;
+    attributes.do_not_propagate_mask =	(KeyPressMask | KeyReleaseMask |
+					 ButtonPressMask | ButtonReleaseMask |
+					 PointerMotionMask);
+    attributes.cursor = app_resources.busy_cursor;
+
+    /* The window will be as big as the display screen, and clipped by
+     * it's own parent window, so we never have to worry about resizing.
+     */
+
+    scrn->wait_window =
+	XCreateWindow(XtDisplay(scrn->parent), XtWindow(scrn->parent), 0, 0, 
+		      rootwidth, rootheight, (unsigned int) 0, CopyFromParent,
+		      InputOnly, CopyFromParent, valuemask, &attributes);
+}
+
+void ShowBusyCursor()
+{
+    register int	i;
+
+    for (i=0; i < numScrns; i++)
+	if (scrnList[i]->mapped)
+	    XMapWindow(theDisplay, scrnList[i]->wait_window);
+}
+
+void UnshowBusyCursor()
+{
+    register int	i;
+    
+    for (i=0; i < numScrns; i++)
+	if (scrnList[i]->mapped)
+	    XUnmapWindow(theDisplay, scrnList[i]->wait_window);
+}
+
+
+void SetCursorColor(widget, cursor, foreground)
+    Widget		widget;
+    Cursor		cursor;
+    unsigned long	foreground;
+{
+    XColor	colors[2];
+    Arg		args[2];
+    Colormap	cmap;
+
+    colors[0].pixel = foreground;
+    XtSetArg(args[0], XtNbackground, &(colors[1].pixel));
+    XtSetArg(args[1], XtNcolormap, &cmap);
+    XtGetValues(widget, args, (Cardinal) 2);
+    XQueryColors(XtDisplay(widget), cmap, colors, 2);
+    XRecolorCursor(XtDisplay(widget), cursor, &colors[0], &colors[1]);
+}
+

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.28 89/09/05 16:29:17 converse Exp $";
+    "$XConsortium: toc.c,v 2.29 89/09/15 16:16:19 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -35,8 +35,6 @@ static char rcs_id[] =
 #include "tocutil.h"
 #include <sys/stat.h>
 #include <sys/dir.h>
-
-/*	PUBLIC ROUTINES 	*/
 
 
 static int IsDir(ent)
@@ -116,6 +114,7 @@ static void LoadCheckFiles()
 }
 	    
 
+/*	PUBLIC ROUTINES 	*/
 
 
 /* Read in the list of folders. */
@@ -152,22 +151,17 @@ void TocInit()
 
 
 
-/* Create a toc and a a folder to the folderList.  */
+/* Create a toc and add a folder to the folderList.  */
 
 Toc TocCreate(foldername)
     char	*foldername;
 {
-    register int i, j;
     Toc		toc = TUMalloc();
 
     toc->foldername = XtNewString(foldername);
-    for (i=0; i < numFolders; i++)
-	if (strcmp(foldername, folderList[i]->foldername) < 0) break;
     folderList = (Toc *) XtRealloc((char *) folderList,
 				   (unsigned) ++numFolders * sizeof(Toc));
-    for (j=numFolders - 1; j > i; j--)
-	folderList[j] = folderList[j-1];
-    folderList[i] = toc;
+    folderList[numFolders - 1] = toc;
     return toc;
 }
 
@@ -197,16 +191,20 @@ void TocCheckForNewMail()
     Scrn scrn;
     int i, j, hasmail;
     static Arg arglist[] = {XtNiconPixmap, NULL};
+
     if (!app_resources.defNewMailCheck) return;
+
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i];
 	if (toc->incfile) {
 	    hasmail =  (GetFileLength(toc->incfile) > 0);
 	    if (hasmail != toc->mailpending) {
+
 		toc->mailpending = hasmail;
 		for (j=0 ; j<numScrns ; j++) {
 		    scrn = scrnList[j];
 		    if (scrn->kind == STtocAndView) {
+
 			if (app_resources.mailWaitingFlag
 			    && toc == InitialFolder) {
 			    arglist[0].value = (XtArgVal)
@@ -214,6 +212,8 @@ void TocCheckForNewMail()
 			    XtSetValues(scrn->parent,
 					arglist, XtNumber(arglist));
 			} 
+			/* give visual indication of new mail waiting */
+			    
 		    }
 		}
 	    }
@@ -329,22 +329,27 @@ Scrn scrn;
 	TUResetTocLabel(scrn);
 	TURedisplayToc(scrn);
 	StoreWindowName(scrn, progName);
-	EnableProperButtons(scrn);
     } else {
-	char wm_name[64];
 	toc->num_scrns++;
 	toc->scrn = (Scrn *) XtRealloc((char *) toc->scrn,
 				       (unsigned)toc->num_scrns*sizeof(Scrn));
 	toc->scrn[toc->num_scrns - 1] = scrn;
 	TUEnsureScanIsValidAndOpen(toc);
 	TUResetTocLabel(scrn);
-	(void) strcpy(wm_name, "xmh: ");
-	(void) strcpy(wm_name+5, toc->foldername);
-	StoreWindowName(scrn, wm_name);
+	if (app_resources.prefix_wm_and_icon_name) {
+	    char wm_name[64];
+	    int length = strlen(progName);
+	    (void) strncpy(wm_name, progName, length);
+	    (void) strncpy(wm_name + length , ": ", 2);
+	    (void) strcpy(wm_name + length + 2, toc->foldername);
+	    StoreWindowName(scrn, wm_name);
+	}
+	else
+	    StoreWindowName(scrn, toc->foldername);
 	TURedisplayToc(scrn);
 	SetCurrentFolderName(scrn, toc->foldername);
-	EnableProperButtons(scrn);
     }
+    EnableProperButtons(scrn);
 }
 
 
@@ -391,15 +396,19 @@ Msg msg;
 
 
 void TocRecheckValidity(toc)
-  Toc toc;
+    Toc toc;
 {
     int i;
     if (toc && toc->validity == valid && TUScanFileOutOfDate(toc)) {
+	if (app_resources.block_events_on_busy) ShowBusyCursor(toc->scrn[0]);
+
 	TUScanFileForToc(toc);
 	if (toc->source)
 	    TULoadTocFile(toc);
 	for (i=0 ; i<toc->num_scrns ; i++)
 	    TURedisplayToc(toc->scrn[i]);
+
+	if (app_resources.block_events_on_busy) UnshowBusyCursor(toc->scrn[0]);
     }
 }
 
@@ -484,9 +493,9 @@ Msg TocMsgBefore(toc, msg)
 /* The caller KNOWS the toc's information is out of date; rescan it. */
 
 void TocForceRescan(toc)
-  Toc toc;
+    Toc	toc;
 {
-    int i;
+    register int i;
     if (toc->num_scrns) {
 	toc->viewedseq = toc->seqlist[0];
 	for (i=0 ; i<toc->num_scrns ; i++)
@@ -640,7 +649,7 @@ Toc toc;
 {
     int i;
     for (i=0 ; i<toc->num_scrns ; i++)
-	XawTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
+	XawTextDisableRedisplay(toc->scrn[i]->tocwidget);
     toc->stopupdate++;
 }
 
@@ -780,13 +789,23 @@ int TocConfirmCataclysm(toc, confirms, cancels)
 
     if (found) {
 	char		str[300];
+	Widget		tocwidget;
+	int		i;
+
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
 	yes_callbacks[0].closure = (XtPointer) toc;
 	yes_callbacks[1].callback = confirms[0].callback;
 	yes_callbacks[1].closure = confirms[0].closure;
 
-	PopupConfirm(str, yes_callbacks, cancels);
+	tocwidget = NULL;
+	for (i=0; i < toc->num_scrns; i++)
+	    if (toc->scrn[i]->mapped) {
+		tocwidget = toc->scrn[i]->tocwidget;
+		break;
+	    }
+
+	PopupConfirm(tocwidget, str, yes_callbacks, cancels);
 	return NEEDS_CONFIRMATION;
     }
     else {
@@ -801,8 +820,6 @@ int TocConfirmCataclysm(toc, confirms, cancels)
     }
 }
     
-    
-
 
 /* Commit all the changes in this toc; all messages will meet their 'fate'. */
 
@@ -839,6 +856,8 @@ void TocCommitChanges(widget, client_data, call_data)
     for (i=0 ; i<numFolders ; i++)
 	TocStopUpdate(folderList[i]);
     toc->haschanged = TRUE;
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
     do {
 	curfate = Fignore;
 	i = 0;
@@ -914,6 +933,8 @@ void TocCommitChanges(widget, client_data, call_data)
 	}
 	TocStartUpdate(folderList[i]);
     }
+
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
 }
 
 
@@ -936,6 +957,7 @@ Toc toc;
     char str[100], *file, *ptr;
     Msg msg, firstmessage;
     FILEPTR fid;
+
     argv = MakeArgv(toc->incfile ? 7 : 5);
     argv[0] = "inc";
     argv[1] = TocMakeFolderName(toc);
@@ -947,6 +969,8 @@ Toc toc;
 	argv[5] = toc->incfile;
 	argv[6] = "-truncate";
     } else argv[4] = "-truncate";
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
     file = DoCommandToFile(argv);
     XtFree(argv[1]);
     XtFree((char *)argv);
@@ -968,8 +992,9 @@ Toc toc;
 	(void) myfclose(fid);
     }
     DeleteFileAndCheck(file);
-}
 
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
+}
 
 
 /* The given message has changed.  Rescan it and change the scanfile. */
@@ -1030,7 +1055,7 @@ int msgid;
 	if (app_resources.debug) {
 	    char str[100];
 	    (void)sprintf(str, "Toc is empty! folder=%s\n", toc->foldername);
-	    DEBUG( str );
+	    DEBUG( str )
 	}
 	return NULL;
     }
@@ -1048,7 +1073,7 @@ int msgid;
 	(void) sprintf(str,
 		      "TocMsgFromId search failed! hi=%d, lo=%d, msgid=%d\n",
 		      h, l, msgid);
-	DEBUG( str );
+	DEBUG( str )
     }
     return NULL;
 }

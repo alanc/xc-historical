@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocfuncs.c,v 2.22 89/08/31 19:11:25 converse Exp $";
+    "$XConsortium: tocfuncs.c,v 2.23 89/09/15 16:16:26 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -34,35 +34,38 @@ static char rcs_id[] =
 #define MAX_SYSTEM_LEN 510
 
 /*ARGSUSED*/
-void DoNextView(widget, client_data, call_data)
-    Widget	widget;		/* unused */
-    XtPointer	client_data;
-    XtPointer	call_data;	/* unused */
+static void NextAndPreviousView(scrn, next)
+    Scrn	scrn;
+    Boolean	next;	/* if true, next or forward; if false, previous */
 {
-    Scrn scrn = (Scrn) client_data;
-    Toc toc = scrn->toc;
-    MsgList mlist;
-    FateType fate;
-    Msg msg;
+    Toc		toc = scrn->toc;
+    MsgList	mlist;
+    FateType	fate;
+    Msg		msg;
 
     if (toc == NULL) return;
     mlist = TocCurMsgList(toc);
-    if (mlist->nummsgs)
-	msg = mlist->msglist[0];
+    if (mlist->nummsgs) 
+	msg = (next ? mlist->msglist[0] : mlist->msglist[mlist->nummsgs - 1]);
     else {
 	msg = TocGetCurMsg(toc);
-	if (msg && msg == scrn->msg) msg = TocMsgAfter(toc, msg);
+	if (msg && msg == scrn->msg) 
+	    msg = (next ? TocMsgAfter(toc, msg) : TocMsgBefore(toc, msg));
 	if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
 	while (msg && ((app_resources.SkipDeleted && fate == Fdelete)
 		|| (app_resources.SkipMoved && fate == Fmove)
 		|| (app_resources.SkipCopied && fate == Fcopy))) {
-	    msg = TocMsgAfter(toc, msg);
+	    msg = (next ? TocMsgAfter(toc, msg) : TocMsgBefore(toc, msg));
 	    if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
 	}
     }
+
     if (msg) {
 	XtCallbackRec	confirms[2];
-	confirms[0].callback = (XtCallbackProc) DoNextView;
+	if (next)
+	    confirms[0].callback = (XtCallbackProc) DoNextView;
+	else
+	    confirms[0].callback = (XtCallbackProc) DoPrevView;
 	confirms[0].closure = (XtPointer) scrn;
 	confirms[1].callback = (XtCallbackProc) NULL;
 	confirms[1].closure = (XtPointer) NULL;
@@ -73,6 +76,29 @@ void DoNextView(widget, client_data, call_data)
 	}
     }
     FreeMsgList(mlist);
+}
+
+
+/*ARGSUSED*/
+void DoReverseReadOrder(widget, client_data, call_data)
+    Widget	widget;
+    XtPointer	client_data;
+    XtPointer	call_data;
+{
+    app_resources.reverse_read_order =
+	(app_resources.reverse_read_order ? False : True);
+    ToggleMenuItem(widget, "reverse", app_resources.reverse_read_order);
+}
+
+
+/*ARGSUSED*/
+void DoNextView(widget, client_data, call_data)
+    Widget	widget;		/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
+{
+    NextAndPreviousView((Scrn) client_data,
+			(app_resources.reverse_read_order ? False : True));
 }
 
 /*ARGSUSED*/
@@ -86,48 +112,15 @@ void XmhViewNextMessage(w, event, params, num_params)
     DoNextView(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
-
 /*ARGSUSED*/
 void DoPrevView(widget, client_data, call_data)
     Widget	widget;		/* unused */
     XtPointer	client_data;	
     XtPointer	call_data;	/* unused */
 {
-    Scrn scrn = (Scrn) client_data;
-    Toc toc = scrn->toc;
-    MsgList mlist;
-    FateType fate;
-    Msg msg;
-    if (toc == NULL) return;
-    mlist = TocCurMsgList(toc);
-    if (mlist->nummsgs)
-	msg = mlist->msglist[mlist->nummsgs - 1];
-    else {
-	msg = TocGetCurMsg(toc);
-	if (msg && msg == scrn->msg) msg = TocMsgBefore(toc, msg);
-	if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
-	while (msg && ((app_resources.SkipDeleted && fate == Fdelete)
-		|| (app_resources.SkipMoved && fate == Fmove)
-		|| (app_resources.SkipCopied && fate == Fcopy))) {
-	    msg = TocMsgBefore(toc, msg);
-	    if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
-	}
-    }
-    if (msg) {
-	XtCallbackRec	confirms[2];
-	confirms[0].callback = (XtCallbackProc) DoPrevView;
-	confirms[0].closure = (XtPointer) scrn;
-	confirms[1].callback = (XtCallbackProc) NULL;
-	confirms[1].closure = (XtPointer) NULL;
-	if (MsgSetScrn(msg, scrn, confirms, (XtCallbackList) NULL) !=
-	    NEEDS_CONFIRMATION) {
-	    TocUnsetSelection(toc);
-	    TocSetCurMsg(toc, msg);
-	}
-    }
-    FreeMsgList(mlist);
+    NextAndPreviousView((Scrn) client_data, 
+			(app_resources.reverse_read_order ? True : False));
 }
-
 
 /*ARGSUSED*/
 void XmhViewPreviousMessage(w, event, params, num_params)
@@ -274,8 +267,8 @@ int skip;
 	    if (msg) {
 		MsgSetFate(msg, fate, desttoc);
 		if (skip)
-		    XmhViewNextMessage(scrn->widget, (XEvent *) NULL,
-				       (String *) NULL, (Cardinal *) NULL);
+		    DoNextView(scrn->widget, (XtPointer) scrn,
+			       (XtPointer) NULL);
 	    }
 	} else {
 	    for (i = 0; i < mlist->nummsgs; i++)
@@ -463,12 +456,10 @@ void DoPack(widget, client_data, call_data)
     char	**argv;
     
     if (toc == NULL) return;
-
     confirms[0].callback = (XtCallbackProc) DoPack;
     confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
     confirms[1].closure = (XtPointer) NULL;
-
     if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
     argv = MakeArgv(4);
@@ -476,10 +467,15 @@ void DoPack(widget, client_data, call_data)
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-pack";
     argv[3] = "-fast";
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
     DoCommand(argv, (char *) NULL, (char *) NULL);
     XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
+
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
+
 }
 
 
@@ -501,28 +497,30 @@ void DoSort(widget, client_data, call_data)
     XtPointer	client_data;
     XtPointer	call_data;	/* unused */
 {
-    Scrn scrn = (Scrn) client_data;
-    Toc toc = scrn->toc;
-    char **argv;
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
+    char **	argv;
     XtCallbackRec confirms[2];
 
     if (toc == NULL) return;
-
-    confirms[0].callback = (XtCallbackProc) DoPack;
+    confirms[0].callback = (XtCallbackProc) DoSort;
     confirms[0].closure = (XtPointer) scrn;
     confirms[1].callback = (XtCallbackProc) NULL;
     confirms[1].closure = (XtPointer) NULL;
-
     if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
     argv = MakeArgv(3);
     argv[0] = "sortm";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-noverbose";
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
     DoCommand(argv, (char *) NULL, (char *) NULL);
     XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
+
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
 }
 
 
@@ -546,19 +544,23 @@ void XmhForceRescan(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Rescan(w, (XtPointer) scrn, (XtPointer) NULL);
+    DoForceRescan(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 /*ARGSUSED*/
-void Rescan(w, client_data, call_data)
+void DoForceRescan(w, client_data, call_data)
     Widget	w;
     XtPointer	client_data;
     XtPointer	call_data;
 {
-    Scrn scrn = (Scrn) client_data;
-    Toc toc = scrn->toc;
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc = scrn->toc;
     if (toc == NULL) return;
+    if (app_resources.block_events_on_busy) ShowBusyCursor(scrn);
+
     TocForceRescan(toc);
+    
+    if (app_resources.block_events_on_busy) UnshowBusyCursor(scrn);
 }
 
 
@@ -572,12 +574,13 @@ void XmhIncorporateNewMail(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Inc(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (TocCanIncorporate(scrn->toc))
+	DoIncorporateNewMail(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
 /*ARGSUSED*/
-void Inc(w, client_data, call_data)
+void DoIncorporateNewMail(w, client_data, call_data)
     Widget	w;		/* unused */
     XtPointer	client_data;	/* screen */
     XtPointer	call_data;	/* unused */
@@ -590,7 +593,7 @@ void Inc(w, client_data, call_data)
 
 
 /*ARGSUSED*/
-void Reply(w, client_data, call_data)
+void DoReply(w, client_data, call_data)
     Widget	w;
     XtPointer	client_data;
     XtPointer	call_data;
@@ -624,7 +627,7 @@ void XmhReply(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    Reply(w, (XtPointer) scrn, (XtPointer) NULL);
+    DoReply(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -649,8 +652,9 @@ void DoPickMessages(w, client_data, call_data)
     DEBUG("Realizing Pick...")
     XtRealizeWidget(nscrn->parent);
     DEBUG(" done.\n")
+    InitBusyCursor(nscrn);
     XDefineCursor(XtDisplay(nscrn->parent), XtWindow(nscrn->parent),
-		  app_resources.cursor );
+		  app_resources.cursor);
     MapScrn(nscrn);
 }
 
@@ -689,7 +693,8 @@ void XmhOpenSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
+    if (TocHasSequences(scrn->toc))
+	DoOpenSeq(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 
@@ -771,7 +776,8 @@ void XmhAddToSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    TwiddleSequence(scrn, ADD);
+    if (TocHasSequences(scrn->toc))
+	TwiddleSequence(scrn, ADD);
 }
 
 
@@ -794,7 +800,8 @@ void XmhRemoveFromSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    TwiddleSequence(scrn, REMOVE);
+    if (TocHasSequences(scrn->toc))
+	TwiddleSequence(scrn, REMOVE);
 }
 
 
@@ -817,7 +824,8 @@ void XmhDeleteSequence(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
-    TwiddleSequence(scrn, DELETE);
+    if (TocHasSequences(scrn->toc))
+	TwiddleSequence(scrn, DELETE);
 }
 
 

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.18 89/09/15 16:15:54 converse Exp $";
+    "$XConsortium: popup.c,v 2.19 89/09/17 19:40:50 converse Exp $";
 #endif
 
 /*
@@ -33,7 +33,6 @@ static char rcs_id[]=
 #include "xmh.h"
 #include <X11/Xaw/Cardinals.h>
 
-typedef char* Pointer;
 
 typedef struct _PopupStatus {
 	Widget popup;
@@ -48,9 +47,8 @@ static void DeterminePopupPosition(x_ptr, y_ptr)
     Widget	source;
     Dimension	width, height;
 
-    if (lastInput.win != -1) {
+    if (lastInput.win != -1) 
 	source = XtWindowToWidget( XtDisplay(toplevel), lastInput.win);
-    }
     else
 	source = toplevel;	/* %%% need to keep track of last screen */
 
@@ -58,15 +56,13 @@ static void DeterminePopupPosition(x_ptr, y_ptr)
 	XtSetArg( args[0], XtNwidth, &width );
 	XtSetArg( args[1], XtNheight, &height );
 	XtGetValues( source, args, TWO );
-	XtTranslateCoords( source, (Position)0, (Position)0, x_ptr, y_ptr);
-	*x_ptr += width/2;
-	*y_ptr += height/2;
+	XtTranslateCoords( source, (Position) (width / 2),
+			  (Position) (height / 2), x_ptr, y_ptr);
     } else {
 	*x_ptr = lastInput.x;
 	*y_ptr = lastInput.y;
     }
 }
-
 
 static void PositionThePopup(popup, x, y)
     Widget	popup;
@@ -79,21 +75,54 @@ static void PositionThePopup(popup, x, y)
      * (Xmh*Geometry is needed in case there is no user-supplied default.)
      */
 
-    Arg		args[3];
-    String 	g1, g2;
-    XtSetArg( args[0], XtNgeometry, &g1 );
+    Arg		args[4];
+    String 	top_geom, pop_geom;
+
+    XtSetArg( args[0], XtNgeometry, &top_geom );
     XtGetValues( toplevel, args, ONE );
-    XtSetArg( args[0], XtNgeometry, &g2 );
+    XtSetArg( args[0], XtNgeometry, &pop_geom );
     XtGetValues( popup, args, ONE );
 
-    if (g2 == NULL || g2 == g1) { /* if same db entry, then ... */
+    if (pop_geom == NULL || pop_geom == top_geom) {
+	/* if same db entry, then ... */
 	XtSetArg( args[0], XtNgeometry, (String) NULL);
 	XtSetArg( args[1], XtNx, x);
 	XtSetArg( args[2], XtNy, y);
-	XtSetValues( popup, args, THREE);
+	XtSetArg( args[3], XtNwinGravity, SouthWestGravity);
+	XtSetValues( popup, args, FOUR);
     }
 }
 
+
+static void CenterPopupPosition(widget, popup, px, py)
+    Widget	widget;
+    Widget	popup;
+    Position	px, py;
+{
+    Position	x, y;
+    Position	nx, ny;
+    Arg		args[3];
+
+    if (widget == NULL) return;
+    XtSetArg(args[0], XtNx, &x);
+    XtSetArg(args[1], XtNy, &y);
+    XtGetValues(popup, args, TWO);
+    if (x == px && y == py) {
+
+	/* Program sets geometry.  Correct our earlier calculations. */
+
+	nx = (GetWidth(widget) - GetWidth(popup)) / 2;
+	ny = (GetHeight(widget) - GetHeight(popup)) / 2;
+	if (nx < 0) nx = 0;
+	if (ny < 0) ny = 0;
+	XtTranslateCoords(widget, nx, ny, &x, &y);
+	XtSetArg(args[0], XtNx, x);
+	XtSetArg(args[1], XtNy, y);
+	XtSetArg(args[2], XtNwinGravity, CenterGravity);
+	XtSetValues(popup, args, THREE);
+    }
+}
+	 
 
 /* Insure that the popup is wholly showing on the screen. */
 
@@ -171,8 +200,8 @@ void XmhPromptOkayAction(w, event, params, num_params)
 
 
 void PopupPrompt(question, okayCallback)
-    char		*question;		/* the prompting string */
-    XtCallbackProc	okayCallback;		/* DoCreateFolder() */
+    String		question;		/* the prompting string */
+    XtCallbackProc	okayCallback;		/* CreateFolder() */
 {
     Arg			args[2];
     Widget		popup;
@@ -211,7 +240,7 @@ void PopupPrompt(question, okayCallback)
     XtCreateManagedWidget(OKAY_BUTTON_NAME, commandWidgetClass, dialog, args,
 			  ONE);
     XawDialogAddButton(dialog, "cancel", DestroyPopupPrompt, (XtPointer)popup);
-
+    XtInstallAllAccelerators(popup, popup);
     XtRealizeWidget(popup);
     InsureVisibility(popup, dialog, x, y);
     XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
@@ -222,21 +251,21 @@ void PopupPrompt(question, okayCallback)
 
 /* ARGSUSED */
 static void FreePopupStatus( w, closure, call_data )
-    Widget w;			/* notused */
-    Pointer closure;
-    Pointer call_data;		/* notused */
+    Widget w;			/* unused */
+    XtPointer closure;
+    XtPointer call_data;	/* unused */
 {
     PopupStatus popup = (PopupStatus)closure;
     XtPopdown(popup->popup);
     XtDestroyWidget(popup->popup);
-    XtFree(closure);
+    XtFree((char *) closure);
 }
 
 
 void PopupNotice( message, callback, closure )
     char*		message;
     XtCallbackProc	callback;
-    Pointer		closure;
+    XtPointer		closure;
 {
     PopupStatus popup_status = (PopupStatus)closure;
     Arg args[5];
@@ -276,12 +305,13 @@ void PopupNotice( message, callback, closure )
     XtSetValues( XtNameToWidget(dialog, "value"), args, TWO);
 
     XawDialogAddButton( dialog, "confirm",
-		       (callback != (XtCallbackProc)NULL)
-		          ? callback : (XtCallbackProc)FreePopupStatus,
-		       (Pointer)popup_status
+		       ((callback != (XtCallbackProc) NULL)
+		          ? callback : (XtCallbackProc) FreePopupStatus), 
+		       (XtPointer) popup_status
 		      );
 
     XtRealizeWidget( popup_status->popup );
+    XtInstallAllAccelerators(popup_status->popup, popup_status->popup);
     InsureVisibility(popup_status->popup, dialog, x, y);
     XDefineCursor(XtDisplay(popup_status->popup),
 		  XtWindow(popup_status->popup), app_resources.cursor);
@@ -292,8 +322,8 @@ void PopupNotice( message, callback, closure )
 /*ARGSUSED*/
 static void DestroyPopupConfirm(widget, closure, call_data)    
     Widget	widget;		/* not used */
-    Pointer	closure;
-    Pointer	call_data;	/* not used */
+    XtPointer	closure;
+    XtPointer	call_data;	/* not used */
 {
     Widget	popup = (Widget) closure;
     XtPopdown(popup);
@@ -301,7 +331,8 @@ static void DestroyPopupConfirm(widget, closure, call_data)
 }
 
 
-void PopupConfirm(question, affirm_callbacks, negate_callbacks)
+void PopupConfirm(center_widget, question, affirm_callbacks, negate_callbacks)
+    Widget		center_widget;	/* where to center; may be NULL */
     String		question;
     XtCallbackList	affirm_callbacks;
     XtCallbackList	negate_callbacks;
@@ -315,13 +346,15 @@ void PopupConfirm(question, affirm_callbacks, negate_callbacks)
 	{DestroyPopupConfirm,	(XtPointer) NULL},
 	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
+    static Arg	shell_args[] = {
+	{ XtNallowShellResize,	(XtArgVal) True},
+	{ XtNinput,		(XtArgVal) True},
+    };
 
     DeterminePopupPosition(&x, &y);
-    XtSetArg(args[0], XtNallowShellResize, True);
-    XtSetArg(args[1], XtNinput, True);
     popup = XtCreatePopupShell("confirm", transientShellWidgetClass,
-			       toplevel, args, TWO);
-    PositionThePopup(popup, x, y);
+			       toplevel, shell_args, XtNumber(shell_args));
+    PositionThePopup(popup, x, y); 
 
     XtSetArg(args[0], XtNlabel, question);
     dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, popup, args,
@@ -342,6 +375,8 @@ void PopupConfirm(question, affirm_callbacks, negate_callbacks)
 	XtAddCallbacks(button, XtNcallback, negate_callbacks);
 
     XtRealizeWidget(popup);
+    XtInstallAllAccelerators(popup, popup);
+    CenterPopupPosition(center_widget, popup, x, y);
     InsureVisibility(popup, dialog, x, y);
     XDefineCursor(XtDisplay(popup), XtWindow(popup), app_resources.cursor);
     XtPopup(popup, XtGrabNone);
@@ -352,8 +387,8 @@ static Widget error_popup = NULL;	/* one at a time */
 /*ARGSUSED*/
 static void DestroyPopupError(widget, closure, call_data)    
     Widget	widget;		/* not used */
-    Pointer	closure;
-    Pointer	call_data;	/* not used */
+    XtPointer	closure;
+    XtPointer	call_data;	/* not used */
 {
     if (error_popup) {
 	XtPopdown(error_popup);
@@ -394,8 +429,9 @@ void PopupError(message)
 		       (XtPointer) error_popup);
     
     XtRealizeWidget(error_popup);
+    XtInstallAllAccelerators(error_popup, error_popup);
     InsureVisibility(error_popup, dialog, x, y);
-    XDefineCursor(XtDisplay(error_popup), XtWindow(error_popup),
+    XDefineCursor(XtDisplay(error_popup), XtWindow(error_popup), 
 		  app_resources.cursor);
     XtPopup(error_popup, XtGrabNone);
 }
@@ -423,6 +459,7 @@ void PopupAlert(message, parent, x, y)
 			      ONE);
 	PositionThePopup(alert, x, y);
 	XtRealizeWidget(alert);
+	XtInstallAllAccelerators(alert, alert);
     }
     else {
 	XtSetArg(args[0], XtNlabel, message);

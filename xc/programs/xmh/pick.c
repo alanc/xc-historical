@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.33 89/09/01 17:36:36 kit Exp $";
+    "$XConsortium: pick.c,v 2.34 89/09/05 16:28:28 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -153,7 +153,7 @@ static void AddButton(row, text, func)
 
     args[0].value = (XtArgVal)text;
     entry = CreateWidget( row, WTbutton, args, XtNumber(args) );
-    XtAddCallback( entry->widget, XtNcallback, func, (caddr_t)entry );
+    XtAddCallback( entry->widget, XtNcallback, func, (XtPointer)entry );
 }
 
 
@@ -162,7 +162,7 @@ static void AddToggle(row, text, initial_state, radio_group, radio_data)
     char	*text;
     int		initial_state;
     Widget	radio_group;
-    caddr_t	radio_data;
+    XtPointer	radio_data;
 {
     FormEntry	entry;
     Arg		args[4];
@@ -215,8 +215,8 @@ char *str;
 /* ARGSUSED */
 static void ExecRowOr(w, closure, call_data)
     Widget w;			/* unused */
-    caddr_t closure;		/* FormEntry */
-    caddr_t call_data;		/* unused */
+    XtPointer closure;		/* FormEntry */
+    XtPointer call_data;	/* unused */
 {
     static DeleteWidget();
 
@@ -235,8 +235,8 @@ static void ExecRowOr(w, closure, call_data)
 /* ARGSUSED */
 static void ExecGroupOr(w, closure, call_data)
     Widget w;			/* unused */
-    caddr_t closure;		/* FormEntry */
-    caddr_t call_data;		/* unused */
+    XtPointer closure;		/* FormEntry */
+    XtPointer call_data;	/* unused */
 {
     static AddDetailGroup();
 
@@ -353,8 +353,8 @@ static ParseGroup(group)
 /* ARGSUSED */
 static void ExecOK(w, closure, call_data)
     Widget w;			/* unused */
-    caddr_t closure;		/* FormEntry */
-    caddr_t call_data;		/* unused */
+    XtPointer closure;		/* FormEntry */
+    XtPointer call_data;	/* unused */
 {
     Pick pick = ((FormEntry)closure)->row->group->form->pick;
     Toc toc = pick->toc;
@@ -437,9 +437,13 @@ static void ExecOK(w, closure, call_data)
 	    (void) fprintf(stderr, "%s ", argv[i]);
 	(void) fprintf(stderr, "\n");
     }
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
     cmd_status = DoCommand(argv, (char*)NULL, (char*)NULL);
     TocReloadSeqLists(toc);
     TocChangeViewedSeq(toc, TocGetSeqNamed(toc, toseq));
+
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
     if (cmd_status == 0 /*succeeded*/) DestroyScrn(pick->scrn);
     for (i=0 ; i<argvsize ; i++) XtFree((char *) argv[i]);
     XtFree((char *) argv);
@@ -449,8 +453,8 @@ static void ExecOK(w, closure, call_data)
 /* ARGSUSED */
 static void ExecCancel(w, closure, call_data)
     Widget w;			/* unused */
-    caddr_t closure;		/* FormEntry */
-    caddr_t call_data;		/* unused */
+    XtPointer closure;		/* FormEntry */
+    XtPointer call_data;	/* unused */
 {
     Pick pick = ((FormEntry)closure)->row->group->form->pick;
     Scrn scrn = pick->scrn;
@@ -489,13 +493,13 @@ static FormEntry CreateWidget(row, class, args, num_args)
     else
 	arglist[0].value = (XtArgVal) NULL;
 
-    merged_args = XtMergeArgLists( args, num_args, arglist, XtNumber(arglist) );
+    merged_args = XtMergeArgLists(args, num_args, arglist, XtNumber(arglist) );
 
     entry->widget = XtCreateManagedWidget( (String) NULL, class, row->widget,
 					   merged_args,
 					   num_args + XtNumber(arglist) );
 			
-    XtFree( (caddr_t)merged_args );
+    XtFree((char *) merged_args);
     return entry;
 }
     
@@ -554,9 +558,9 @@ static RowList AddRow(group, type)
     row->widget = XtCreateWidget((String)NULL, formWidgetClass, group->widget,
 				  arglist, XtNumber(arglist) );
     if (type == RTignore) return row;
-    AddToggle(row, "Pick", TRUE, (Widget)NULL, (caddr_t)(&true_data));
+    AddToggle(row, "Pick", TRUE, (Widget)NULL, (XtPointer)(&true_data));
     AddToggle(row, "Skip", FALSE, row->wlist[row->numwidgets - 1]->widget,
-	      (caddr_t)(&false_data));
+	      (XtPointer)(&false_data));
     if (TypeName[type])
 	AddLabel(row, TypeName[type], TRUE);
     else
@@ -647,9 +651,9 @@ static AddGeneralGroup(form)
     row =  AddRow(group, RTignore);
     widgetList[2] = row->widget;
     AddLabel(row, "Clear old entries from sequence?", FALSE);
-    AddToggle(row, "Yes", TRUE, (Widget) NULL, (caddr_t)(&true_data));
+    AddToggle(row, "Yes", TRUE, (Widget) NULL, (XtPointer)(&true_data));
     AddToggle(row, "No", FALSE, row->wlist[row->numwidgets - 1]->widget,
-	      (caddr_t)(&false_data));
+	      (XtPointer)(&false_data));
     row =  AddRow(group, RTignore);
     widgetList[3] = row->widget;
     AddButton(row, "OK", ExecOK);
