@@ -1,5 +1,5 @@
 /*
- *	$Header: Xproto.h,v 1.74 88/01/30 17:48:56 rws Exp $
+ *	$Header: Xproto.h,v 1.75 88/05/16 11:51:21 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -1234,7 +1234,11 @@ typedef struct {
     CARD16 length B16;
     Window destination B32;
     CARD32 eventMask B32;
+#ifdef WORD64
+    BYTE eventdata[SIZEOF(xEvent)];
+#else
     xEvent event;
+#endif /* WORD64 */
 } xSendEventReq;
 
 #endif /* NEED_EVENTS */
