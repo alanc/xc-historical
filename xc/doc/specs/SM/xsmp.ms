@@ -1,5 +1,5 @@
 .\" Use tbl, -ms, and macros.t
-.\" $XConsortium: xsmp.ms,v $
+.\" $XConsortium: xsmp.ms,v 1.3 94/04/14 21:00:43 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -31,18 +31,28 @@ Consortium's ICE protocol.
 .sp 8
 .LP
 .DS C
-X Window System is a trademark of M.I.T.
+X Window System is a trademark of X Consortium, Inc.
 .sp
-Copyright \(co 1992, 1993 by the Massachusetts Institute of Technology
+Copyright \(co 1992, 1993, 1994 X Consortium
 .DE
 .sp 3
 .LP
-Permission to use, copy, modify, and distribute this documentation for any
-purpose and without fee is hereby granted, provided that the above copyright
-notice and this permission notice appear in all copies.  MIT makes no
-representations about the suitability for any purpose of the information in
-this document.  This documentation is provided \*Qas is\*U without express or
-implied warranty.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ``Software''), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .af PN i
 .EF ''\\\\n(PN''
 .OF ''\\\\n(PN''
