@@ -1,4 +1,4 @@
-/* $XConsortium: Command.c,v 1.74 90/12/31 10:53:49 gildea Exp $ */
+/* $XConsortium: Command.c,v 1.75 91/02/17 14:53:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -24,26 +24,19 @@ SOFTWARE.
 
 ******************************************************************/
 
-
 /*
  * Command.c - Command button widget
- *
  */
 
 #include <stdio.h>
-
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-
 #include <X11/Xmu/Misc.h>
-
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/CommandP.h>
-
 #include <X11/Xmu/Converters.h>
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
-
 #define DEFAULT_SHAPE_HIGHLIGHT 32767
 
 /****************************************************************
@@ -62,7 +55,6 @@ static char defaultTranslations[] =
 
 #define offset(field) XtOffsetOf(CommandRec, field)
 static XtResource resources[] = { 
-
    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer), 
       offset(command.callbacks), XtRCallback, (XtPointer)NULL},
    {XtNhighlightThickness, XtCThickness, XtRDimension, sizeof(Dimension),
@@ -80,34 +72,17 @@ static Boolean SetValues();
 static void Initialize(), Redisplay(), Set(), Reset(), Notify(), Unset();
 static void Highlight(), Unhighlight(), Destroy(), PaintCommandWidget();
 static void ClassInitialize();
-
 static Boolean ShapeButton();
 static void Realize(), Resize();
 
-#define XawCommandActions \
-{ \
-  {"set",		Set},\
-  {"notify",		Notify},\
-  {"highlight",		Highlight},\
-  {"reset",		Reset},\
-  {"unset",		Unset},\
-  {"unhighlight",	Unhighlight},\
-}
-static XtActionsRec actionsList[] = XawCommandActions;
-
-/*
- * This is a temporary exported actions list for the command
- * widget I have added this code because there is a bug in the MIT
- * Xtk Intrinsics implementation that does not allow the action table
- * to be retreived from the widget class, Ralph Swick has promised me that
- * this will eventually be fixed, but until then this is how the toggle
- * widget will get the command widget's actions list.
- *
- * Chris D. Peterson - 12/28/88.
- */
-
-static XtActionsRec actionsListCopy[] = XawCommandActions;
-XtActionList xaw_command_actions_list = actionsListCopy;
+static XtActionsRec actionsList[] = {
+  {"set",		Set},
+  {"notify",		Notify},
+  {"highlight",		Highlight},
+  {"reset",		Reset},
+  {"unset",		Unset},
+  {"unhighlight",	Unhighlight}
+};
 
 #define SuperClass ((LabelWidgetClass)&labelClassRec)
 
@@ -538,7 +513,6 @@ static void ClassInitialize()
     XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
 		        NULL, 0, XtCacheNone, NULL );
 }
-
 
 
 static Boolean
