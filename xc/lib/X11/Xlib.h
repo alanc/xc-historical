@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.189 91/03/13 20:06:19 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.190 91/04/01 16:32:50 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -40,10 +40,27 @@
 
 #include <X11/Xfuncproto.h>
 
+#ifndef _XOSDEFS_H_
+#include <X11/Xosdefs.h>
+#define _XLIB_REMOVE_XOSDEFS_
+#endif
+
 #ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
 typedef unsigned int wchar_t;
+#endif
+
+/* We do not want people to depend on Xosdefs.h being included by Xlib.h */
+#ifdef _XLIB_REMOVE_XOSDEFS_
+#ifdef X_NOT_STDC_ENV
+#undef X_NOT_STDC_ENV
+#endif
+#ifdef X_NOT_POSIX
+#undef X_NOT_POSIX
+#endif
+#undef _XOSDEFS_H_
+#undef _XLIB_REMOVE_XOSDEFS_
 #endif
 
 #define Bool int
