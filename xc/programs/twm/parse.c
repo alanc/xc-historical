@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.48 91/01/09 17:13:36 rws Exp $
+ * $XConsortium: parse.c,v 1.49 91/01/18 17:26:34 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -907,7 +907,7 @@ put_pixel_on_root(pixel)
   int           retFormat;
   unsigned long nPixels, retAfter;                     
   Pixel        *retProp;
-  pixelAtom = XInternAtom(dpy, "WM_PRIORITY_COLORS", True);        
+  pixelAtom = XInternAtom(dpy, "_MIT_PRIORITY_COLORS", True);        
   XGetWindowProperty(dpy, Scr->Root, pixelAtom, 0, 8192, 
 		     False, XA_CARDINAL, &retAtom,       
 		     &retFormat, &nPixels, &retAfter,    
@@ -917,7 +917,7 @@ put_pixel_on_root(pixel)
       if (pixel == retProp[i]) addPixel = 0;             
                                                          
   if (addPixel)                                          
-      XChangeProperty (dpy, Scr->Root, _XA_WM_PRIORITY_COLORS,
+      XChangeProperty (dpy, Scr->Root, _XA_MIT_PRIORITY_COLORS,
 		       XA_CARDINAL, 32, PropModeAppend,  
 		       (unsigned char *)&pixel, 1);                       
 }                                                        

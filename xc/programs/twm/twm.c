@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.122 91/03/14 11:53:52 dave Exp $
+ * $XConsortium: twm.c,v 1.123 91/05/01 17:32:58 keith Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -238,7 +238,7 @@ main(argc, argv, environ)
     for (scrnum = firstscrn ; scrnum <= lastscrn; scrnum++)
     {
         /* Make sure property priority colors is empty */
-        XChangeProperty (dpy, RootWindow(dpy, scrnum), _XA_WM_PRIORITY_COLORS,
+        XChangeProperty (dpy, RootWindow(dpy, scrnum), _XA_MIT_PRIORITY_COLORS,
 			 XA_CARDINAL, 32, PropModeReplace, NULL, 0);
 	RedirectError = FALSE;
 	XSetErrorHandler(CatchRedirectError);
@@ -809,7 +809,7 @@ static int CatchRedirectError(dpy, event)
     return 0;
 }
 
-Atom _XA_WM_PRIORITY_COLORS;
+Atom _XA_MIT_PRIORITY_COLORS;
 Atom _XA_WM_CHANGE_STATE;
 Atom _XA_WM_STATE;
 Atom _XA_WM_COLORMAP_WINDOWS;
@@ -823,7 +823,7 @@ InternUsefulAtoms ()
     /* 
      * Create priority colors if necessary.
      */
-    _XA_WM_PRIORITY_COLORS = XInternAtom(dpy, "WM_PRIORITY_COLORS", False);   
+    _XA_MIT_PRIORITY_COLORS = XInternAtom(dpy, "_MIT_PRIORITY_COLORS", False);   
     _XA_WM_CHANGE_STATE = XInternAtom (dpy, "WM_CHANGE_STATE", False);
     _XA_WM_STATE = XInternAtom (dpy, "WM_STATE", False);
     _XA_WM_COLORMAP_WINDOWS = XInternAtom (dpy, "WM_COLORMAP_WINDOWS", False);

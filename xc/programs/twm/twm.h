@@ -27,7 +27,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.71 91/04/04 14:34:25 gildea Exp $
+ * $XConsortium: twm.h,v 1.72 91/05/01 17:33:00 keith Exp $
  *
  * twm include file
  *
@@ -350,7 +350,7 @@ extern XErrorEvent LastErrorEvent;
 extern Bool RestartPreviousState;
 extern Bool GetWMState();
 
-extern Atom _XA_WM_PRIORITY_COLORS;
+extern Atom _XA_MIT_PRIORITY_COLORS;
 extern Atom _XA_WM_CHANGE_STATE;
 extern Atom _XA_WM_STATE;
 extern Atom _XA_WM_COLORMAP_WINDOWS;
