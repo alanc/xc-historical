@@ -1610,21 +1610,16 @@
 ;; consing garbage, you may want to re-write this to allocate and
 ;; initialize lists from a resource.
 ;;
-#+lispm
-(defmacro with-stack-list ((var &rest elements) &body body)
-  `(sys:with-stack-list (,var ,@elements) ,@body))
-
-#+lispm
-(defmacro with-stack-list* ((var &rest elements) &body body)
-  `(sys:with-stack-list* (,var ,@elements) ,@body))
-
 #-lispm
 (defmacro with-stack-list ((var &rest elements) &body body)
   ;; SYNTAX: (WITH-STACK-LIST (var exp1 ... expN) body)
   ;; Equivalent to (LET ((var (MAPCAR #'EVAL '(exp1 ... expN)))) body)
   ;; except that the list produced by MAPCAR resides on the stack and
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
-  `(let ((,var (list ,@elements))) ,@body))
+  `(let ((,var (list ,@elements)))
+     (declare (type cons ,var)
+	      #+ansi-common-lisp (dynamic-extent ,var))
+     ,@body))
 
 #-lispm
 (defmacro with-stack-list* ((var &rest elements) &body body)
@@ -1632,7 +1627,10 @@
   ;; Equivalent to (LET ((var (APPLY #'LIST* (MAPCAR #'EVAL '(exp1 ... expN))))) body)
   ;; except that the list produced by MAPCAR resides on the stack and
   ;; therefore DISAPPEARS when WITH-STACK-LIST is exited.
-  `(let ((,var (list* ,@elements))) ,@body))
+  `(let ((,var (list* ,@elements)))
+     (declare (type cons ,var)
+	      #+ansi-common-lisp (dynamic-extent ,var))
+     ,@body))
 
 (declaim (inline buffer-replace))
 
