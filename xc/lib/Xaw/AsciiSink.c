@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.57 91/07/21 19:04:06 converse Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.57 91/07/21 20:35:00 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -498,8 +498,10 @@ AsciiSinkObject sink;
 
 /* ARGSUSED */
 static void
-Initialize(request, new)
+Initialize(request, new, args, num_args)
 Widget request, new;
+ArgList args;
+Cardinal *num_args;
 {
     AsciiSinkObject sink = (AsciiSinkObject) new;
 
@@ -539,8 +541,10 @@ Widget w;
 
 /* ARGSUSED */
 static Boolean
-SetValues(current, request, new)
+SetValues(current, request, new, args, num_args)
 Widget current, request, new;
+ArgList args;
+Cardinal *num_args;
 {
     AsciiSinkObject w = (AsciiSinkObject) new;
     AsciiSinkObject old_w = (AsciiSinkObject) current;
