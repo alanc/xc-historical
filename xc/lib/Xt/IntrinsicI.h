@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.42 90/07/26 10:05:52 swick Exp $
+* $XConsortium: IntrinsicI.h,v 1.43 90/12/26 16:37:33 rws Exp $
 * $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
 */
 
@@ -87,6 +87,7 @@ SOFTWARE.
  *
  ****************************************************************/
 
+#define _XBCOPYFUNC _XtBCopy
 #include <X11/Xfuncs.h>
 
 /* If the alignment characteristics of your machine are right, these may be

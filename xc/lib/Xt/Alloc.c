@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.37 90/12/31 15:17:50 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.38 91/01/02 19:01:27 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,9 +30,25 @@ SOFTWARE.
  * Uses Xlib memory management, which is spec'd to be re-entrant.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xlibos.h>
 #include "IntrinsicI.h"
+#include <X11/Xlibos.h>
+
+#ifdef _XNEEDBCOPYFUNC
+void _XtBCopy(b1, b2, length)
+    register char *b1, *b2;
+    register length;
+{
+    if (b1 < b2) {
+	b2 += length;
+	b1 += length;
+	while (length--)
+	    *--b2 = *--b1;
+    } else {
+	while (length--)
+	    *b2++ = *b1++;
+    }
+}
+#endif
 
 void _XtAllocError(type)
     String type;
