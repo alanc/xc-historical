@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.60 88/09/02 14:47:29 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 11.61 88/09/06 16:09:16 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -122,12 +122,12 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 #if defined(__STDC__) && !defined(UNIXCPP)
 #define GetReqExtra(name, n, req) \
         WORD64ALIGN\
-	if ((dpy->bufptr + SIZEOF(*req) + n) > dpy->bufmax)\
+	if ((dpy->bufptr + SIZEOF(x##name##Req) + n) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
-	req->length = (SIZEOF(*req) + n)>>2;\
-	dpy->bufptr += SIZEOF(*req) + n;\
+	req->length = (SIZEOF(x##name##Req) + n)>>2;\
+	dpy->bufptr += SIZEOF(x##name##Req) + n;\
 	dpy->request++
 #else
 #define GetReqExtra(name, n, req) \
