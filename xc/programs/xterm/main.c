@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.75 88/08/30 11:40:23 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.76 88/08/30 17:39:22 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -1406,7 +1406,7 @@ spawn ()
 		if (tty > 2)
 		    (void) close(tty);
 
-#ifndef	SYSV
+#ifndef	USE_SYSV_PGRP
 		ioctl(0, TIOCSPGRP, (char *)&pgrp);
 		if (get_ty) {
 			signal(SIGHUP, SIG_IGN);
@@ -1417,7 +1417,7 @@ spawn ()
 			signal(SIGHUP, SIG_DFL);
 		close(open(ttydev, O_WRONLY, 0));
 		setpgrp (0, pgrp);
-#endif /* SYSV */
+#endif /* USE_SYSV_PGRP */
 
 #ifdef UTMP
 #ifdef USE_SYSV_UTMP
@@ -1939,7 +1939,7 @@ checklogin()
 	return(TRUE);
 }
 
-remove_termcap_entry (buf, str)
+remove_termcap_entry (buf, str)
     char *buf;
     char *str;
 {
