@@ -76,6 +76,13 @@ static int exec_one_arg (filename, arg)
 
     if (!filename) return -1;
 
+    if (filename[0] != '/') {
+	fprintf (stderr, 
+	       "%s:  attempt to execute program with relative pathname:  %s\n",
+		 ProgramName, filename);
+	return -1;
+    }
+
     if (access (filename, X_OK) != 0) return -1;
 
 #ifdef SYSV
