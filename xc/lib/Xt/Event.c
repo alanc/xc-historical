@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.39 87/11/01 16:42:39 haynes BL5 $";
+static char rcsid[] = "$Header: Event.c,v 1.39 87/11/01 16:42:39 swick Locked $";
 #endif lint
 
 /*
@@ -327,8 +327,8 @@ static MaskRec masks[] = {
     {FocusChangeMask,   ignore, is_sensitive},  /* FocusOut		*/
     {KeymapStateMask,   ignore, not_sensitive}, /* KeymapNotify		*/
     {ExposureMask,      pass,   not_sensitive}, /* Expose		*/
-    {0,			pass,   not_sensitive}, /* GraphicsExpose       */
-    {0,			pass,   not_sensitive}, /* NoExpose		*/
+    {ExposureMask,	pass,   not_sensitive}, /* GraphicsExpose       */
+    {ExposureMask,	pass,   not_sensitive}, /* NoExpose		*/
     {VisibilityChangeMask,pass, not_sensitive}, /* VisibilityNotify     */
     {0,			pass,   not_sensitive}, /* shouldn't see CreateNotify */
     {StructureNotifyMask,pass,  not_sensitive}, /* DestroyNotify	*/
@@ -348,7 +348,7 @@ static MaskRec masks[] = {
     {StructureNotifyMask,pass,  not_sensitive}, /* SelectionNotify      */
     {ColormapChangeMask,ignore, not_sensitive}, /* ColormapNotify       */
     {0,			ignore, not_sensitive},	/* ClientMessage	*/
-    {0 ,		ignore, not_sensitive}, /* MappingNotify	*/
+    {StructureNotifyMask,ignore,not_sensitive}, /* MappingNotify	*/
   };
 
     eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
