@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.163 91/05/17 16:52:30 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.164 91/06/10 15:06:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -219,7 +219,7 @@ typedef struct {
 /* Additions to Xlib stack modes: don't change stack order */
 #define XtSMDontChange	5
 
-typedef void (*XtConverter)(
+typedef void (*XtConverter)( /* obsolete */
 #if NeedFunctionPrototypes
     XrmValue*		/* args */,
     Cardinal*		/* num_args */,
@@ -387,7 +387,7 @@ typedef void (*XtErrorMsgHandler)(
     String 		/* name */,
     String		/* type */,
     String		/* class */,
-    String		/* defaultp */,
+    String		/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -424,19 +424,6 @@ typedef Boolean (*XtFilePredicate)(
 
 typedef XtPointer XtRequestId;
 
-/*
- * Routine to get the value of a selection as a given type.  Returns
- * TRUE if it successfully got the value as requested, FALSE otherwise.  
- * selection is the atom describing the type of selection (e.g. 
- * primary or secondary). value is set to the pointer of the converted 
- * value, with length elements of data, each of size indicated by format.
- * (This pointer will be freed using XtFree when the selection has
- *  been delivered to the requestor.)  target is
- * the type that the conversion should use if possible; type is returned as
- * the actual type returned.  Format should be either 8, 16, or 32, and
- * specifies the word size of the selection, so that Xlib and the server can
- * convert it between different machine types. */
-
 typedef Boolean (*XtConvertSelectionProc)(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
@@ -449,21 +436,12 @@ typedef Boolean (*XtConvertSelectionProc)(
 #endif
 );
 
-/*
- * Routine to inform a widget that it no longer owns the given selection.
- */
-
 typedef void (*XtLoseSelectionProc)(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     Atom*		/* selection */
 #endif
 );
-
-/*
- * Routine to inform the selection owner when a selection requestor
- * has successfully retrieved the selection value.
- */
 
 typedef void (*XtSelectionDoneProc)(
 #if NeedFunctionPrototypes
@@ -472,12 +450,6 @@ typedef void (*XtSelectionDoneProc)(
     Atom*		/* target */
 #endif
 );
-
-
-/*
- * Routine to call back when a requested value has been obtained for a
- *  selection.
- */
 
 typedef void (*XtSelectionCallbackProc)(
 #if NeedFunctionPrototypes
@@ -577,7 +549,7 @@ extern Boolean XtCallAcceptFocus(
 #endif
 );
 
-extern Boolean XtPeekEvent(
+extern Boolean XtPeekEvent( /* obsolete */
 #if NeedFunctionPrototypes
     XEvent*		/* event */
 #endif
@@ -637,17 +609,6 @@ extern Boolean XtIsSensitive(
 #endif
 );
 
-/*
- * Set the given widget to own the selection.  The convertProc should
- * be called when someone wants the current value of the selection. If it
- * is not NULL, the
- * losesSelection gets called whenever the window no longer owns the selection
- * (because someone else took it). If it is not NULL, the doneProc gets
- * called when the widget has provided the current value of the selection
- * to a requestor and the requestor has indicated that it has succeeded
- * in reading it by deleting the property.
- */
-
 extern Boolean XtOwnSelection(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
@@ -658,8 +619,6 @@ extern Boolean XtOwnSelection(
     XtSelectionDoneProc /* done */
 #endif
 );
-
-/* incremental selection interface */
 
 extern Boolean XtOwnSelectionIncremental(
 #if NeedFunctionPrototypes
@@ -711,18 +670,18 @@ extern void XtKeysymToKeycodeList(
 #endif
 );
 
-extern void XtStringConversionWarning(
+extern void XtStringConversionWarning( /* obsolete */
 #if NeedFunctionPrototypes
-    _Xconst String	/* from */,	/* String attempted to convert.	    */
-    _Xconst String	/* toType */	/* Type attempted to convert it to. */
+    _Xconst String	/* from */,
+    _Xconst String	/* toType */
 #endif
 );
 
 extern void XtDisplayStringConversionWarning(
 #if NeedFunctionPrototypes
     Display*	 	/* dpy */,
-    _Xconst String	/* from */,	/* String attempted to convert.	    */
-    _Xconst String	/* toType */	/* Type attempted to convert it to. */
+    _Xconst String	/* from */,
+    _Xconst String	/* toType */
 #endif
 );
 
@@ -780,7 +739,7 @@ extern void XtAppSetTypeConverter(
 #endif
 );
 
-extern void XtConvert(
+extern void XtConvert( /* obsolete */
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     _Xconst String 	/* from_type */,
@@ -790,7 +749,7 @@ extern void XtConvert(
 #endif
 );
 
-extern void XtDirectConvert(
+extern void XtDirectConvert( /* obsolete */
 #if NeedFunctionPrototypes
     XtConverter 	/* converter */,
     XrmValuePtr 	/* args */,
@@ -860,7 +819,7 @@ extern void XtAppAddActions(
 #endif
 );
 
-extern void XtAddActions(
+extern void XtAddActions( /* obsolete */
 #if NeedFunctionPrototypes
     XtActionList 	/* actions */,
     Cardinal 		/* num_actions */
@@ -991,28 +950,6 @@ extern void XtConvertCase(
  */
 #define XtAllEvents ((EventMask) -1L)
 
-extern void XtInsertEventHandler(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    EventMask 		/* eventMask */,
-    _XtBoolean 		/* nonmaskable */,
-    XtEventHandler 	/* proc */,
-    XtPointer 		/* closure */,
-    XtListPosition 	/* position */
-#endif
-);
-
-extern void XtInsertRawEventHandler(
-#if NeedFunctionPrototypes
-    Widget 		/* widget */,
-    EventMask 		/* eventMask */,
-    _XtBoolean 		/* nonmaskable */,
-    XtEventHandler 	/* proc */,
-    XtPointer 		/* closure */,
-    XtListPosition 	/* position */
-#endif
-);
-
 extern void XtAddEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
@@ -1095,7 +1032,7 @@ extern void XtRemoveGrab(
 #endif
 );
 
-extern void XtProcessEvent(
+extern void XtProcessEvent( /* obsolete */
 #if NeedFunctionPrototypes
     XtInputMask 		/* mask */
 #endif
@@ -1108,7 +1045,7 @@ extern void XtAppProcessEvent(
 #endif
 );
 
-extern void XtMainLoop(
+extern void XtMainLoop( /* obsolete */
 #if NeedFunctionPrototypes
     void
 #endif
@@ -1147,8 +1084,7 @@ extern Time XtLastTimestampProcessed(
  *
  ****************************************************************/
 
-
-extern XtIntervalId XtAddTimeOut(
+extern XtIntervalId XtAddTimeOut( /* obsolete */
 #if NeedFunctionPrototypes
     unsigned long 	/* interval */,
     XtTimerCallbackProc /* proc */,
@@ -1171,7 +1107,7 @@ extern void XtRemoveTimeOut(
 #endif
 );
 
-extern XtInputId XtAddInput(
+extern XtInputId XtAddInput( /* obsolete */
 #if NeedFunctionPrototypes
     int 		/* source */,
     XtPointer 		/* condition */,
@@ -1196,7 +1132,7 @@ extern void XtRemoveInput(
 #endif
 );
 
-extern void XtNextEvent(
+extern void XtNextEvent( /* obsolete */
 #if NeedFunctionPrototypes
     XEvent* 		/* event */
 #endif
@@ -1214,7 +1150,7 @@ extern void XtAppNextEvent(
 #define XtIMAlternateInput	4
 #define XtIMAll (XtIMXEvent | XtIMTimer | XtIMAlternateInput)
 
-extern XtInputMask XtPending(
+extern XtInputMask XtPending( /* obsolete */
 #if NeedFunctionPrototypes
     void
 #endif
@@ -1613,7 +1549,7 @@ extern Widget XtVaCreateManagedWidget(
 #endif
 );
 
-extern Widget XtCreateApplicationShell(
+extern Widget XtCreateApplicationShell( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String 	/* name */,
     WidgetClass 	/* widget_class */,
@@ -1703,7 +1639,7 @@ extern Widget XtVaAppInitialize(
 #endif
 );
 
-extern Widget XtInitialize(
+extern Widget XtInitialize( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String 	/* name */,
     _Xconst String 	/* class */,
@@ -2001,7 +1937,7 @@ extern XtErrorMsgHandler XtAppSetErrorMsgHandler(
 #endif
 );
 
-extern void XtSetErrorMsgHandler(
+extern void XtSetErrorMsgHandler( /* obsolete */
 #if NeedFunctionPrototypes
     XtErrorMsgHandler 	/* handler */
 #endif
@@ -2014,7 +1950,7 @@ extern XtErrorMsgHandler XtAppSetWarningMsgHandler(
 #endif
 );
 
-extern void XtSetWarningMsgHandler(
+extern void XtSetWarningMsgHandler( /* obsolete */
 #if NeedFunctionPrototypes
     XtErrorMsgHandler 	/* handler */
 #endif
@@ -2026,18 +1962,18 @@ extern void XtAppErrorMsg(
     _Xconst String 	/* name */,
     _Xconst String	/* type */,
     _Xconst String	/* class */,
-    _Xconst String	/* defaultp */,
+    _Xconst String	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
 );
 
-extern void XtErrorMsg(
+extern void XtErrorMsg( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String 	/* name */,
     _Xconst String	/* type */,
     _Xconst String	/* class */,
-    _Xconst String	/* defaultp */,
+    _Xconst String	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2049,18 +1985,18 @@ extern void XtAppWarningMsg(
     _Xconst String 	/* name */,
     _Xconst String 	/* type */,
     _Xconst String 	/* class */,
-    _Xconst String 	/* defaultp */,
+    _Xconst String 	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
 );
 
-extern void XtWarningMsg(
+extern void XtWarningMsg( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String	/* name */,
     _Xconst String	/* type */,
     _Xconst String	/* class */,
-    _Xconst String	/* defaultp */,
+    _Xconst String	/* default */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2073,7 +2009,7 @@ extern XtErrorHandler XtAppSetErrorHandler(
 #endif
 );
 
-extern void XtSetErrorHandler(
+extern void XtSetErrorHandler( /* obsolete */
 #if NeedFunctionPrototypes
     XtErrorHandler 	/* handler */
 #endif
@@ -2086,7 +2022,7 @@ extern XtErrorHandler XtAppSetWarningHandler(
 #endif
 );
 
-extern void XtSetWarningHandler(
+extern void XtSetWarningHandler( /* obsolete */
 #if NeedFunctionPrototypes
     XtErrorHandler 	/* handler */
 #endif
@@ -2099,7 +2035,7 @@ extern void XtAppError(
 #endif
 );
 
-extern void XtError(
+extern void XtError( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String	/* message */
 #endif
@@ -2112,7 +2048,7 @@ extern void XtAppWarning(
 #endif
 );
 
-extern void XtWarning(
+extern void XtWarning( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String	/* message */
 #endif
@@ -2124,7 +2060,7 @@ extern XrmDatabase *XtAppGetErrorDatabase(
 #endif
 );
 
-extern XrmDatabase *XtGetErrorDatabase(
+extern XrmDatabase *XtGetErrorDatabase( /* obsolete */
 #if NeedFunctionPrototypes
     void
 #endif
@@ -2136,19 +2072,19 @@ extern void XtAppGetErrorDatabaseText(
     _Xconst String	/* name */,
     _Xconst String	/* type */,
     _Xconst String	/* class */,
-    _Xconst String 	/* defaultp */,
+    _Xconst String 	/* default */,
     String 		/* buffer */,
     int 		/* nbytes */,
     XrmDatabase 	/* database */
 #endif
 );
 
-extern void XtGetErrorDatabaseText(
+extern void XtGetErrorDatabaseText( /* obsolete */
 #if NeedFunctionPrototypes
     _Xconst String	/* name */,
     _Xconst String	/* type */,
     _Xconst String	/* class */,
-    _Xconst String 	/* defaultp */,
+    _Xconst String 	/* default */,
     String 		/* buffer */,
     int 		/* nbytes */
 #endif
@@ -2188,7 +2124,7 @@ extern void XtFree(
 
 #ifdef XTTRACEMEMORY
 
-extern char *_XtMalloc(
+extern char *_XtMalloc( /* implementation-private */
 #if NeedFunctionPrototypes
     Cardinal	/* size */,
     char *	/* file */,
@@ -2196,7 +2132,7 @@ extern char *_XtMalloc(
 #endif		       
 );
 
-extern char *_XtRealloc(
+extern char *_XtRealloc( /* implementation-private */
 #if NeedFunctionPrototypes
     char *	/* ptr */,
     Cardinal    /* size */,
@@ -2205,7 +2141,7 @@ extern char *_XtRealloc(
 #endif
 );
 
-extern char *_XtCalloc(
+extern char *_XtCalloc( /* implementation-private */
 #if NeedFunctionPrototypes
     Cardinal	/* num */,
     Cardinal 	/* size */,
@@ -2214,7 +2150,7 @@ extern char *_XtCalloc(
 #endif
 );
 
-extern void _XtFree(
+extern void _XtFree( /* implementation-private */
 #if NeedFunctionPrototypes
     char *	/* ptr */
 #endif
@@ -2237,7 +2173,7 @@ extern void _XtFree(
  *
  **************************************************************/
 
-extern XtWorkProcId XtAddWorkProc(
+extern XtWorkProcId XtAddWorkProc( /* obsolete */
 #if NeedFunctionPrototypes
     XtWorkProc 		/* proc */,
     XtPointer 		/* closure */
@@ -2272,7 +2208,7 @@ extern GC XtGetGC(
 #endif
 );
 
-extern void XtDestroyGC(
+extern void XtDestroyGC( /* obsolete */
 #if NeedFunctionPrototypes
     GC 			/* gc */
 #endif
@@ -2340,20 +2276,14 @@ extern String XtResolvePathname(
 #endif
 );
 
-
 /****************************************************************
  *
  * Selections
+ *
  *****************************************************************/
 
 #define XT_CONVERT_FAIL (Atom)0x80000001
     
-
-/*
- * The given widget no longer wants the selection.  If it still owns it, then
- * the selection owner is cleared, and the window's losesSelection is called.
- */
-
 extern void XtDisownSelection(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
@@ -2361,10 +2291,6 @@ extern void XtDisownSelection(
     Time 		/* time */
 #endif
 );
-
-/*
- * Get the value of the given selection.  
- */
 
 extern void XtGetSelectionValue(
 #if NeedFunctionPrototypes
@@ -2389,9 +2315,6 @@ extern void XtGetSelectionValues(
 #endif
 );
 
-
-/* Set the selection timeout value, in units of milliseconds */
-
 extern void XtAppSetSelectionTimeout(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
@@ -2399,13 +2322,11 @@ extern void XtAppSetSelectionTimeout(
 #endif
 );
 
-extern void XtSetSelectionTimeout(
+extern void XtSetSelectionTimeout( /* obsolete */
 #if NeedFunctionPrototypes
     unsigned long 	/* timeout */
 #endif
 );
-
- /* Return the selection timeout value, in units of milliseconds */
 
 extern unsigned long XtAppGetSelectionTimeout(
 #if NeedFunctionPrototypes
@@ -2413,7 +2334,7 @@ extern unsigned long XtAppGetSelectionTimeout(
 #endif
 );
 
-extern unsigned long XtGetSelectionTimeout(
+extern unsigned long XtGetSelectionTimeout( /* obsolete */
 #if NeedFunctionPrototypes
     void
 #endif
