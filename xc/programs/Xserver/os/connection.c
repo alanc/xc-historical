@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.67 88/05/05 11:43:51 rws Exp $ */
+/* $Header: connection.c,v 1.68 88/05/17 13:50:59 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -135,9 +135,7 @@ CreateWellKnownSockets()
 
 #ifdef UNIXCONN
     struct sockaddr_un unsock;
-#ifdef X_UNIX_DIR
     int         oldUmask;
-#endif
 #endif /* UNIXCONN */
 
 #ifdef DNETCONN
@@ -205,10 +203,9 @@ CreateWellKnownSockets()
 
 #ifdef UNIXCONN
     unsock.sun_family = AF_UNIX;
-#ifdef X_UNIX_DIR
     oldUmask = umask (0);
+#ifdef X_UNIX_DIR
     mkdir (X_UNIX_DIR, 0777);
-    (void)umask(oldUmask);
 #endif
     strcpy (unsock.sun_path, X_UNIX_PATH);
     strcat (unsock.sun_path, display);
@@ -224,6 +221,7 @@ CreateWellKnownSockets()
 	if (listen (request, 5)) Error ("Unix Listening");
 	WellKnownConnections |= (1 << request);
     }
+    (void)umask(oldUmask);
 #endif /*UNIXCONN */
 
 #ifdef DNETCONN
