@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 1.12 89/03/23 18:28:18 rws Exp $ */
+/* $XConsortium: midash.c,v 5.0 89/06/09 15:08:17 keith Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -80,7 +80,7 @@ int *pnseg;
 
     lenCur = offset;
     which = EVEN_DASH;
-    while(lenCur > pDash[iDash])
+    while(lenCur >= pDash[iDash])
     {
 	lenCur -= pDash[iDash];
 	iDash++;
