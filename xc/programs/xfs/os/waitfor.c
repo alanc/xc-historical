@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)waitfor.c	4.1	5/2/91
+ * @(#)waitfor.c	4.3	5/6/91
  *
  */
 
@@ -31,9 +31,10 @@
 #include	<errno.h>
 #include	<sys/param.h>
 
-#include	<X11/Xos.h>		/* strings, time, etc */
+#include	<X11/Xos.h>	/* strings, time, etc */
 
 #include	"clientstr.h"
+#include	"globals.h"
 #include	"osdep.h"
 
 extern WorkQueuePtr workQueue;
@@ -57,6 +58,7 @@ extern Bool NewOutputPending;
 
 extern int  ConnectionTranslation[];
 
+long        LastReapTime;
 
 /*
  * wait_for_something
@@ -70,11 +72,14 @@ extern int  ConnectionTranslation[];
 WaitForSomething(pClientsReady)
     int        *pClientsReady;
 {
-    struct timeval *wt;
+    struct timeval *wt,
+                waittime;
     long        clientsReadable[mskcnt];
     long        clientsWriteable[mskcnt];
     long        curclient;
     int         selecterr;
+    long        current_time;
+    long        timeout;
     int         nready,
                 i;
 
@@ -87,7 +92,24 @@ WaitForSomething(pClientsReady)
 	    COPYBITS(ClientsWithInput, clientsReadable);
 	    break;
 	}
-	wt = NULL;
+	/*
+	 * deal with KeepAlive timeouts.  if this seems to costly, SIGALRM
+	 * could be used, but its more dangerous since some it could catch us
+	 * at an inopportune moment (like inside un-reentrant malloc()).
+	 */
+	current_time = GetTimeInMillis();
+	timeout = current_time - LastReapTime;
+	if (timeout > ReapClientTime) {
+	    ReapAnyOldClients();
+	    LastReapTime = current_time;
+	    timeout = ReapClientTime;
+	} 
+	timeout = ReapClientTime - timeout;
+	waittime.tv_sec = timeout / MILLI_PER_SECOND;
+	waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+	    (1000000 / MILLI_PER_SECOND);
+	wt = &waittime;
+
 	COPYBITS(AllSockets, LastSelectMask);
 
 	BlockHandler((pointer) &wt, (pointer) LastSelectMask);
@@ -113,6 +135,9 @@ WaitForSomething(pClientsReady)
 		} else if (selecterr != EINTR) {
 		    ErrorF("WaitForSomething: select(): errno %d\n", selecterr);
 		}
+	    } else {		/* must have timed out */
+		ReapAnyOldClients();
+		LastReapTime = GetTimeInMillis();
 	    }
 	} else {
 	    if (AnyClientsWriteBlocked && ANYSET(clientsWriteable)) {
@@ -133,11 +158,15 @@ WaitForSomething(pClientsReady)
     nready = 0;
 
     if (ANYSET(clientsReadable)) {
+	ClientPtr	client;
 	for (i = 0; i < mskcnt; i++) {
 	    while (clientsReadable[i]) {
 		curclient = ffs(clientsReadable[i]) - 1;
-		pClientsReady[nready++] =
+		pClientsReady[nready] =
 		    ConnectionTranslation[curclient + (i << 5)];
+		client = clients[pClientsReady[nready++]];
+		client->last_request_time = current_time;
+		client->clientGone = CLIENT_ALIVE;
 		clientsReadable[i] &= ~(1 << curclient);
 	    }
 	}

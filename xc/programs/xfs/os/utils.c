@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)utils.c	4.1	5/2/91
+ * @(#)utils.c	4.4	5/6/91
  *
  */
 
@@ -42,24 +42,44 @@ char        ErrorFile[MAXPATHLEN];
 
 AutoResetServer()
 {
+
+#ifdef DEBUG
+    fprintf(stderr, "got a reset signal\n");
+#endif
+
     dispatchException |= DE_RESET;
     isItTimeToYield = TRUE;
 }
 
 GiveUp()
 {
+
+#ifdef DEBUG
+    fprintf(stderr, "got a TERM signal\n");
+#endif
+
     dispatchException |= DE_TERMINATE;
     isItTimeToYield = TRUE;
 }
 
 ServerReconfig()
 {
+
+#ifdef DEBUG
+    fprintf(stderr, "got a re-config signal\n");
+#endif
+
     dispatchException |= DE_RECONFIG;
     isItTimeToYield = TRUE;
 }
 
 ServerCacheFlush()
 {
+
+#ifdef DEBUG
+    fprintf(stderr, "got a flush signal\n");
+#endif
+
     dispatchException |= DE_FLUSH;
     isItTimeToYield = TRUE;
 }

@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)resource.c	4.1	5/2/91
+ * %W%	%G%
  *
  */
 /*
@@ -68,6 +68,7 @@ typedef struct _ClientResource {
     int         buckets;
     int         hashsize;	/* log(2)(buckets) */
     FSID        fakeID;
+    FSID	endFakeID;
     FSID        expectID;
 }           ClientResourceRec;
 
@@ -149,7 +150,8 @@ InitClientResources(client)
     clientTable[i].buckets = INITBUCKETS;
     clientTable[i].elements = 0;
     clientTable[i].hashsize = INITHASHSIZE;
-    clientTable[i].fakeID = 100;
+    clientTable[i].fakeID =  SERVER_BIT;
+    clientTable[i].endFakeID = (clientTable[i].fakeID | RESOURCE_ID_MASK) + 1;
     for (j = 0; j < INITBUCKETS; j++) {
 	clientTable[i].resources[j] = NullResource;
     }
@@ -177,6 +179,78 @@ hash(client, id)
 	return ((int) (0x7FF & (id ^ (id >> 11))));
     }
     return -1;
+}
+
+
+static Font
+AvailableID(client, id, maxid, goodid)
+    register int client;
+    register FSID id, maxid, goodid;
+{
+    register ResourcePtr res;
+
+    if ((goodid >= id) && (goodid <= maxid))
+	return goodid;
+    for (; id <= maxid; id++)
+    {
+	res = clientTable[client].resources[hash(client, id)];
+	while (res && (res->id != id))
+	    res = res->next;
+	if (!res)
+	    return id;
+    }
+    return 0;
+}
+
+/*
+ * Return the next usable fake client ID.
+ *
+ * Normally this is just the next one in line, but if we've used the last
+ * in the range, we need to find a new range of safe IDs to avoid
+ * over-running another client.
+ */
+
+FSID
+FakeClientID(client)
+    int	client;
+{
+    register FSID id, maxid;
+    register ResourcePtr *resp;
+    register ResourcePtr res;
+    register int i;
+    FSID goodid;
+
+    id = clientTable[client].fakeID++;
+    if (id != clientTable[client].endFakeID)
+	return id;
+    id = ((Mask)client << CLIENTOFFSET) | SERVER_BIT;
+    maxid = id | RESOURCE_ID_MASK;
+    goodid = 0;
+    for (resp = clientTable[client].resources, i = clientTable[client].buckets;
+	 --i >= 0;)
+    {
+	for (res = *resp++; res; res = res->next)
+	{
+	    if ((res->id < id) || (res->id > maxid))
+		continue;
+	    if (((res->id - id) >= (maxid - res->id)) ?
+		(goodid = AvailableID(client, id, res->id - 1, goodid)) :
+		!(goodid = AvailableID(client, res->id + 1, maxid, goodid)))
+		maxid = res->id - 1;
+	    else
+		id = res->id + 1;
+	}
+    }
+    if (id > maxid) {
+	if (!client)
+	    FatalError("FakeClientID: server internal ids exhausted\n");
+	MarkClientException(clients[client]);
+	id = ((Mask)client << CLIENTOFFSET) | (SERVER_BIT * 3);
+	maxid = id | RESOURCE_ID_MASK;
+    }
+    clientTable[client].fakeID = id + 1;
+    clientTable[client].endFakeID = maxid + 1;
+    return id;
 }
 
 Bool

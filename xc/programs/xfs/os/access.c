@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)access.c	4.1	91/05/02
+ * @(#)access.c	4.3	91/05/03
  *
  */
 
@@ -29,7 +29,7 @@
 #include	<sys/socket.h>
 #include	<netdb.h>
 #include	<netinet/in.h>
-#include	"client.h"
+#include	"clientstr.h"
 #include	"misc.h"
 #include	"site.h"
 #include	"accstr.h"
@@ -47,79 +47,6 @@ AccessSetConnectionLimit(num)
 	return;
     }
     MaxClients = num;
-}
-
-int
-AddHost(list, addr)
-    HostList   *list;
-    HostAddress *addr;
-{
-    HostAddress *new;
-
-    new = (HostAddress *) fsalloc(sizeof(HostAddress));
-    if (!new)
-	return FSBadAlloc;
-    new->address = (pointer) fsalloc(addr->addr_len);
-    if (!new->address) {
-	fsfree((char *) addr);
-	return FSBadAlloc;
-    }
-    new->type = addr->type;
-    new->addr_len = addr->addr_len;
-    bcopy((char *) addr->address, (char *) new->address, new->addr_len);
-
-    new->next = *list;
-    *list = new;
-    return FSSuccess;
-}
-
-int
-RemoveHost(list, addr)
-    HostList   *list;
-    HostAddress *addr;
-{
-    HostAddress *t,
-               *last;
-
-    last = (HostAddress *) 0;
-    t = *list;
-    while (t) {
-	if (t->type == addr->type &&
-		t->addr_len == addr->addr_len &&
-		bcmp((char *) t->address, (char *) addr->address,
-		     min(t->addr_len, addr->addr_len)) == 0) {
-	    if (last) {
-		last->next = t->next;
-	    } else {
-		*list = t->next;
-	    }
-	    fsfree((char *) t->address);
-	    fsfree((char *) t);
-	    return FSSuccess;
-	}
-	last = t;
-	t = t->next;
-    }
-    return FSBadName;		/* bad host name */
-}
-
-Bool
-ValidHost(list, addr)
-    HostList    list;
-    HostAddress *addr;
-{
-    HostAddress *t;
-
-    t = list;
-    while (t) {
-	if (t->type == addr->type &&
-		t->addr_len == addr->addr_len &&
-		bcmp((char *) t->address, (char *) addr->address,
-		     min(t->addr_len, addr->addr_len)) == 0) {
-	    return TRUE;
-	}
-    }
-    return FALSE;
 }
 
 /*
@@ -160,6 +87,12 @@ CheckClientAuthorization(client, client_auth, accept, index, size, auth_data)
     int        *size;
     char      **auth_data;
 {
+    OsCommPtr	oc;
+
+    /* now that its connected, zero the connect time so it doesn't get killed */
+    oc = (OsCommPtr)client->osPrivate;
+    oc->conn_time = 0;
+
     *size = 0;
     *accept = AuthSuccess;
     *index = 0;

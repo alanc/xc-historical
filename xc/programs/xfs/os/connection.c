@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)connection.c	4.1	5/2/91
+ * @(#)connection.c	4.5	5/7/91
  *
  */
 
@@ -73,6 +73,7 @@ extern int  AutoResetServer();
 extern int  GiveUp();
 extern int  ServerReconfig();
 extern int  ServerCacheFlush();
+extern int  CheckClientAge();
 
 extern void FreeOsBuffers();
 
@@ -194,12 +195,14 @@ CreateSockets()
     if (WellKnownConnections == 0)
 	FatalError("Cannot establish any listening sockets");
 
+
+    /* set up all the signal handlers */
     signal(SIGPIPE, SIG_IGN);
     signal(SIGHUP, AutoResetServer);
     signal(SIGINT, GiveUp);
     signal(SIGTERM, GiveUp);
     signal(SIGUSR1, ServerReconfig);
-    signal(SIGUSR1, ServerCacheFlush);
+    signal(SIGUSR2, ServerCacheFlush);
 
     AllSockets[0] = WellKnownConnections;
 }
@@ -244,9 +247,6 @@ MakeNewConnections()
 	return;
     connect_time = GetTimeInMillis();
 
-#ifdef notyet	
-/* XXX this seems a bit brutal for the FS environment */
-/* this is probably the best place to spit out KeepAlive events instead */
     /* kill off stragglers */
     for (i = MINCLIENT; i < currentMaxClients; i++) {
 	if ((client = clients[i]) != NullClient) {
@@ -256,7 +256,6 @@ MakeNewConnections()
 		CloseDownClient(client);
 	}
     }
-#endif
 
     while (readyconnections) {
 	curconn = ffs(readyconnections) - 1;
@@ -472,4 +471,39 @@ AttendClient(client)
     BITSET(LastSelectMask, connection);
     if (GETBIT(IgnoredClientsWithInput, connection))
 	BITSET(ClientsWithInput, connection);
+}
+
+/*
+ * figure out which clients need to be toasted
+ */
+ReapAnyOldClients()
+{
+    int         i;
+    long        cur_time = GetTimeInMillis();
+    ClientPtr   client;
+    extern void SendKeepAliveEvent();
+
+#ifdef DEBUG
+    fprintf(stderr, "Looking for clients to reap\n");
+#endif
+
+    for (i = 0; i < currentMaxClients; i++) {
+	client = clients[i];
+	if (client) {
+	    if ((cur_time - client->last_request_time) >= ReapClientTime) {
+		if (client->clientGone == CLIENT_AGED) {
+		    client->clientGone = CLIENT_TIMED_OUT;
+
+#ifdef DEBUG
+		    fprintf(stderr, "reaping client #%d\n", i);
+#endif
+
+		    CloseDownClient(client);
+		} else {
+		    client->clientGone = CLIENT_AGED;
+		    SendKeepAliveEvent(client);
+		}
+	    }
+	}
+    }
 }

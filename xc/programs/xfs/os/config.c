@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)config.c	4.1	91/05/02
+ * @(#)config.c	4.3	91/05/03
  *
  */
 
@@ -379,6 +379,7 @@ config_set_int(parm, val)
     int         ival,
                 ret;
     extern int  serverNum;
+    extern void	SetDefaultPointSize();
 
     val = config_parse_int(val, &ret, &ival);
     if (ret == -1)
@@ -391,7 +392,7 @@ config_set_int(parm, val)
     } else if (!strcmp(parm->parm_name, "client-limit")) {
 	AccessSetConnectionLimit(ival);
     } else if (!strcmp(parm->parm_name, "default-point-size")) {
-	DefaultPointSize = ival;
+	SetDefaultPointSize(ival);
     }
     return val;
 }

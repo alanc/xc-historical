@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)dispatch.c	4.1	5/2/91
+ * %W%	%G%
  *
  */
 
@@ -40,6 +40,7 @@
 #include	"fontstruct.h"
 #include	"site.h"
 #include	"events.h"
+#include	"cache.h"
 
 static void kill_all_clients();
 
@@ -53,6 +54,8 @@ static int  nextFreeClientID;
 
 extern char *ConnectionInfo;
 extern int  ConnInfoLen;
+
+extern char *configfilename;
 
 extern void NotImplemented();
 
@@ -92,7 +95,7 @@ Dispatch()
     if (!clientReady)
 	return;
 
-    while (!dispatchException) {
+    while (1) {
 	/* wait for something */
 	nready = WaitForSomething(clientReady);
 
@@ -121,13 +124,53 @@ Dispatch()
 		}
 	    }
 	}
-    }
-    kill_all_clients();
-    dispatchException &= ~DE_RESET;
+	if (dispatchException) {
+	    /* re-read the config file */
+	    if (dispatchException & DE_RECONFIG) {
 
 #ifdef DEBUG
-    printf("all clients gone -- resetting\n");
+		fprintf(stderr, "Re-reading config file\n");
 #endif
+
+		if (ReadConfigFile(configfilename) != FSSuccess)
+		    ErrorF("couldn't parse config file");
+		dispatchException &= ~DE_RECONFIG;
+	    }
+	    /* flush all the caches */
+	    if (dispatchException & DE_FLUSH) {
+
+#ifdef DEBUG
+		fprintf(stderr, "flushing all caches\n");
+#endif
+
+		CacheReset();
+		dispatchException &= ~DE_FLUSH;
+	    }
+	    /* reset when no clients left */
+	    if ((dispatchException & DE_RESET) && (nClients == 0)) {
+
+#ifdef DEBUG
+		fprintf(stderr, "reseting\n");
+#endif
+
+		break;
+
+	    }
+	    /* die *now* */
+	    if (dispatchException & DE_TERMINATE) {
+
+#ifdef DEBUG
+		fprintf(stderr, "terminating\n");
+#endif
+
+		kill_all_clients();
+		exit(0);
+		break;
+	    }
+	}
+    }
+    kill_all_clients();
+    dispatchException = 0;
 }
 
 int
@@ -533,7 +576,7 @@ ProcSetResolution(client)
     fsResolution *new_res;
 
     REQUEST(fsSetResolutionReq);
-    REQUEST_FIXED_SIZE(fsSetResolutionReq, stuff->length);
+    REQUEST_AT_LEAST_SIZE(fsSetResolutionReq);
 
     new_res = (fsResolution *)
 	fsalloc(sizeof(fsResolution) * stuff->num_resolutions);
@@ -767,8 +810,8 @@ void
 CloseDownClient(client)
     ClientPtr   client;
 {
-    if (!client->clientGone) {
-	client->clientGone = TRUE;
+    if (client->clientGone == CLIENT_ALIVE) {
+	client->clientGone = CLIENT_GONE;
 	CloseDownConnection(client);
 	FreeClientResources(client);
 	if (client->index < nextFreeClientID)
@@ -843,7 +886,8 @@ NextAvailableClient(ospriv)
 	return NullClient;
     client->index = i;
     client->sequence = 0;
-    client->clientGone = FALSE;
+    client->last_request_time = GetTimeInMillis();
+    client->clientGone = CLIENT_ALIVE;
     client->noClientException = FSSuccess;
     client->requestVector = InitialVector;
     client->osPrivate = ospriv;

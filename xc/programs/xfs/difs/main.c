@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)main.c	4.1	5/2/91
+ * %W%	%G%
  *
  */
 
@@ -34,10 +34,15 @@
 #include	"misc.h"
 #include	"globals.h"
 #include	"servermd.h"
+#include	"cache.h"
 #include	"site.h"
 
 char       *ConnectionInfo;
 int         ConnInfoLen;
+
+Cache       serverCache;
+
+#define	SERVER_CACHE_SIZE	10000	/* for random server cacheables */
 
 extern void InitProcVectors();
 extern void InitFonts();
@@ -46,6 +51,7 @@ extern void InitExtensions();
 extern void ProcessCmdLine();
 
 extern int  serverNum;
+extern ClientPtr currentClient;
 char       *configfilename;
 
 main(argc, argv)
@@ -69,6 +75,7 @@ main(argc, argv)
 	OsInit();
 	if (serverGeneration == 1) {
 	    /* do first time init */
+	    serverCache = CacheInit(SERVER_CACHE_SIZE);
 	    CreateSockets();
 	    InitProcVectors();
 	    clients = (ClientPtr *) fsalloc(MAXCLIENTS * sizeof(ClientPtr));
@@ -81,7 +88,7 @@ main(argc, argv)
 	    if (!serverClient)
 		FatalError("couldn't create server client");
 	    serverClient->sequence = 0;
-	    serverClient->clientGone = FALSE;
+	    serverClient->clientGone = CLIENT_ALIVE;
 	    serverClient->index = SERVER_CLIENT;
 	}
 	ResetSockets();
@@ -89,6 +96,7 @@ main(argc, argv)
 
 	clients[SERVER_CLIENT] = serverClient;
 	currentMaxClients = MINCLIENT;
+	currentClient = serverClient;
 
 	if (!InitClientResources(serverClient))
 	    FatalError("couldn't init server resources");
@@ -108,6 +116,7 @@ main(argc, argv)
 	Dispatch();
 
 	/* clean up per-cycle stuff */
+	CacheReset();
 	CloseDownExtensions();
 	if (dispatchException & DE_TERMINATE)
 	    break;

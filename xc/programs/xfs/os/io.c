@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)io.c	4.1	5/2/91
+ * @(#)io.c	4.2	5/3/91
  *
  */
 
@@ -475,7 +475,7 @@ FlushAllOutput()
 	    if ((index = ConnectionTranslation[(base << 5) + index]) == 0)
 		continue;
 	    client = clients[index];
-	    if (client->clientGone)
+	    if (client->clientGone == CLIENT_GONE)
 		continue;
 	    oc = (OsCommPtr) client->osPrivate;
 	    if (GETBIT(ClientsWithInput, oc->fd)) {

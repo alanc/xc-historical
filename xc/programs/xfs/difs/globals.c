@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)globals.c	4.1	5/2/91
+ * @(#)globals.c	4.3	5/3/91
  *
  */
 #include	"FSproto.h"
@@ -40,6 +40,4 @@ int         argcGlobal;
 char      **argvGlobal;
 
 long        TimeOutValue = DEFAULT_TIMEOUT * MILLI_PER_SECOND;
-
-fsResolution DefaultResolution;
-int         DefaultPointSize;
+long        ReapClientTime = CLIENT_TIMEOUT * MILLI_PER_SECOND;

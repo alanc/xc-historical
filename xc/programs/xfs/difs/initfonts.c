@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)initfonts.c	4.1	91/05/02
+ * %W%	%E%
  *
  */
 
@@ -34,9 +34,5 @@ InitFonts()
 
 #ifdef FONT_FS
     fs_register_fpe_functions();
-#endif
-
-#ifdef FONT_SPEEDO
-    SpeedoRegisterFpeFunctions();
 #endif
 }

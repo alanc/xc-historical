@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)cache.c	4.1	91/05/02
+ * @(#)cache.c	4.2	91/05/02
  *
  */
 #include	"cachestr.h"
@@ -65,7 +65,8 @@ CacheInit(maxsize)
     if (!cache)
 	return (Cache) 0;
     cache->entries = (CacheEntryPtr *)
-	fscalloc(INITBUCKETS * sizeof(CacheEntryPtr));
+	fsalloc(INITBUCKETS * sizeof(CacheEntryPtr));
+    bzero((char *) cache->entries, (INITBUCKETS * sizeof(CacheEntryPtr)));
     if (!cache->entries) {
 	fsfree(cache);
 	return (Cache) 0;
@@ -159,6 +160,8 @@ CacheReset()
 
     for (j = 0; j < num_caches; j++) {
 	cache = caches[j];
+	if (!cache)
+	    continue;
 	for (i = 0; i < cache->buckets; i++) {
 	    for (cp = cache->entries[i]; cp; cp = cp->next) {
 		cache->elements--;

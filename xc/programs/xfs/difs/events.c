@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)events.c	4.1	5/2/91
+ * @(#)events.c	4.4	5/7/91
  *
  */
 
@@ -84,4 +84,30 @@ ProcGetEventMask(client)
     rep.event_mask = client->eventmask;
 
     return client->noClientException;
+}
+
+void
+SendKeepAliveEvent(client)
+    ClientPtr   client;
+{
+    fsKeepAliveEvent ev;
+
+    ev.type = FS_Event;
+    ev.event_code = KeepAlive;
+    ev.sequenceNumber = client->sequence;
+    ev.length = sizeof(fsKeepAliveEvent) >> 2;
+    ev.timestamp = GetTimeInMillis();
+
+#ifdef DEBUG
+    fprintf(stderr, "client #%d is getting a KeepAlive\n", client->index);
+#endif
+
+    if (client->swapped) {
+	fsKeepAliveEvent evTo;
+
+	SErrorEvent((fsError *) & ev, (fsError *) & evTo);
+	(void) WriteToClient(client, sizeof(fsKeepAliveEvent), (char *) &evTo);
+    } else {
+	(void) WriteToClient(client, sizeof(fsKeepAliveEvent), (char *) &ev);
+    }
 }

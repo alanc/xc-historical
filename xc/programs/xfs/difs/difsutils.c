@@ -23,7 +23,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)difsutils.c	4.1	5/2/91
+ * %W%	%G%
  *
  */
 
@@ -33,16 +33,30 @@
 #include	"misc.h"
 #include	"globals.h"
 #include	"clientstr.h"
+#include	"accstr.h"
+#include	"fontstruct.h"
 #include	<X11/keysymdef.h>
 
 extern ClientPtr currentClient;
-static fsResolution *default_resolutions;
+static FontResolutionPtr default_resolutions;
 static int  num_resolutions;
+static int  default_point_size;
 
 AuthContextPtr
 GetClientAuthorization()
 {
     return currentClient->auth;
+}
+
+void
+SetDefaultPointSize(ps)
+    int         ps;
+{
+    int         i;
+
+    default_point_size = ps;
+    for (i = 0; i < num_resolutions; i++)
+	default_resolutions[i].point_size = ps;
 }
 
 int
@@ -53,8 +67,8 @@ SetDefaultResolutions(str)
                 numr = 0,
                 n;
     char       *s;
-    fsResolution *new,
-               *nr;
+    FontResolutionPtr new,
+                nr;
     int         state;
 
     s = str;
@@ -68,8 +82,8 @@ SetDefaultResolutions(str)
 	return FSBadResolution;
     }
     numr = (numr + 1) / 2;
-    nr = new = (fsResolution *) fsalloc(sizeof(fsResolution)
-					* numr);
+    nr = new = (FontResolutionPtr) fsalloc(sizeof(FontResolutionRec)
+					   * numr);
     if (!new)
 	return FSBadAlloc;
     s = str;
@@ -83,6 +97,7 @@ SetDefaultResolutions(str)
 	    } else {
 		state = 0;
 		nr->y_resolution = num;
+		nr->point_size = default_point_size;
 		nr++;
 	    }
 	    num = 0;
@@ -110,24 +125,31 @@ SetDefaultResolutions(str)
     return FSSuccess;
 }
 
-int
-GetDefaultPointSize()
-{
-    return DefaultPointSize;
-}
-
-fsResolution *
+FontResolutionPtr
 GetClientResolutions(num)
     int        *num;
 {
     /* return the client's if it has them, otherwise the default values */
     if (currentClient->num_resolutions) {
 	*num = currentClient->num_resolutions;
-	return currentClient->resolutions;
+	return (FontResolutionPtr) currentClient->resolutions;
     } else {
 	*num = num_resolutions;
 	return default_resolutions;
     }
+}
+
+int
+GetDefaultPointSize()
+{
+    FontResolutionPtr res;
+    int         num;
+
+    res = GetClientResolutions(&num);
+    if (res)
+	return res->point_size;
+    else
+	return 120;
 }
 
 void
@@ -197,6 +219,82 @@ void
 NoopDDA()
 {
 }
+
+/* host list manipulation */
+int
+AddHost(list, addr)
+    HostList   *list;
+    HostAddress *addr;
+{
+    HostAddress *new;
+
+    new = (HostAddress *) fsalloc(sizeof(HostAddress));
+    if (!new)
+	return FSBadAlloc;
+    new->address = (pointer) fsalloc(addr->addr_len);
+    if (!new->address) {
+	fsfree((char *) addr);
+	return FSBadAlloc;
+    }
+    new->type = addr->type;
+    new->addr_len = addr->addr_len;
+    bcopy((char *) addr->address, (char *) new->address, new->addr_len);
+
+    new->next = *list;
+    *list = new;
+    return FSSuccess;
+}
+
+int
+RemoveHost(list, addr)
+    HostList   *list;
+    HostAddress *addr;
+{
+    HostAddress *t,
+               *last;
+
+    last = (HostAddress *) 0;
+    t = *list;
+    while (t) {
+	if (t->type == addr->type &&
+		t->addr_len == addr->addr_len &&
+		bcmp((char *) t->address, (char *) addr->address,
+		     min(t->addr_len, addr->addr_len)) == 0) {
+	    if (last) {
+		last->next = t->next;
+	    } else {
+		*list = t->next;
+	    }
+	    fsfree((char *) t->address);
+	    fsfree((char *) t);
+	    return FSSuccess;
+	}
+	last = t;
+	t = t->next;
+    }
+    return FSBadName;		/* bad host name */
+}
+
+Bool
+ValidHost(list, addr)
+    HostList    list;
+    HostAddress *addr;
+{
+    HostAddress *t;
+
+    t = list;
+    while (t) {
+	if (t->type == addr->type &&
+		t->addr_len == addr->addr_len &&
+		bcmp((char *) t->address, (char *) addr->address,
+		     min(t->addr_len, addr->addr_len)) == 0) {
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/* block & wakeup handlers */
 
 typedef struct _BlockHandler {
     void        (*BlockHandler) ();
