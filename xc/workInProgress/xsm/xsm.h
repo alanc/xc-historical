@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.13 94/07/07 19:47:56 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.14 94/07/08 14:06:18 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -72,6 +72,9 @@ extern FILE *fdopen(int, char const *);
 
 #define MAX_PROPS 50
 
+#define RESTART_MANAGERS 	1
+#define RESTART_REST_OF_CLIENTS	2
+
 typedef struct _ClientRec {
     SmsConn	 	smsConn;
     IceConn		ice_conn;
@@ -122,6 +125,8 @@ extern Bool		shutdownInProgress;
 extern Bool		shutdownCancelled;
 extern Bool		shutdownDialogUp;
 
+extern int		sessionNameCount;
+extern String		*sessionNames;
 
 extern Widget		topLevel;
 
