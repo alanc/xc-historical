@@ -28,6 +28,9 @@ This option specifies the frequency in seconds at which
 .I xload
 updates its display.  Expose events will cause automatic updating.  The minimum
 as well as default time is 5 seconds.
+.TP 8
+.B \-hl \fIcolor\fP
+This option specifies the color of the label and scale lines.  
 .PP
 The following standard X Toolkit arguments are commonly used
 with \fIxload\fP.
@@ -102,6 +105,10 @@ is 1.
 Specifies the color for the graph.  Using the class specifies the
 color for all things that normally would appear in the foreground color.
 The default is ``black'' since the core default for background is ``white.''
+.TP 8
+.B highlight (\fPclass\fB Foreground)
+Specifies the color for the text and scale lines.  The default is the same
+as for the \fBforeground\fP resource.
 .TP 8
 .B label (\fPclass\fB Label)
 Specifies the label to use on the graph.  The default is the hostname.

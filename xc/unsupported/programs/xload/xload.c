@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: xload.c,v 1.11 88/07/07 17:33:51 jim Exp $";
+static char rcsid[] = "$Header: xload.c,v 1.12 88/09/03 10:14:27 rws Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -18,6 +18,8 @@ extern void exit();
 static XrmOptionDescRec options[] = {
 {"-scale",	"*load.minScale",	XrmoptionSepArg,	 NULL},
 {"-update",	"*load.update",		XrmoptionSepArg,	 NULL},
+{"-hl",		"*load.highlight",	XrmoptionSepArg,	 NULL},
+{"-highlight",	"*load.highlight",	XrmoptionSepArg,	 NULL},
 };
 
 
