@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.29 88/08/15 17:32:53 jim Exp $ */
+/* $Header: Xmd.h,v 1.30 88/09/01 16:26:00 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -104,13 +104,10 @@ typedef unsigned char            BOOL;
 #define SIZEOF(x) sizeof_/**/x
 #endif /* if ANSI C compiler else not */
 
-#ifdef CRAY
+/*
+ * This macro must not cast or else pointers will get aligned and be wrong
+ */
 #define NEXTPTR(p,t)  (((char *) p) + SIZEOF(t))
-#define INCPTR(p,t) p =  (((char *) p) + SIZEOF(t))
-#else
-#define NEXTPTR(p,t) (t *) (((char *) p) + SIZEOF(t))
-#define INCPTR(p,t) p = (t *) (((char *) p) + SIZEOF(t))
-#endif
 
 #define sizeof_xSegment 8
 #define sizeof_xPoint 4
@@ -268,10 +265,12 @@ typedef unsigned char            BOOL;
 #else /* else not MUSTCOPY, this is used for 32-bit machines */
 
 #define SIZEOF(x) sizeof(x)
-#define NEXTPTR(p,t) ((p)+1)
-#define INCPTR(p,t) (p++)
+/*
+ * this version should leave result of type (t *), but that should only be 
+ * used when not in MUSTCOPY
+ */  
+#define NEXTPTR(p,t) (((t *)(p)) + 1)
 
 #endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
-
 
 #endif /* XMD_H */
