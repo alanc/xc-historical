@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: chooser.c,v 1.0 90/09/27 20:17:35 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/Intrinsic.h>
-
 /*
  * Chooser - display a menu of names and let the user select one
  */
@@ -47,6 +45,12 @@
  *  |                                                  |
  *  +--------------------------------------------------+
  */
+
+#include    <stdio.h>
+
+#include    <X11/Intrinsic.h>
+#include    <X11/StringDefs.h>
+#include    <X11/Xatom.h>
 
 #include    <X11/Xaw/Paned.h>
 #include    <X11/Xaw/Label.h>
@@ -78,7 +82,33 @@
 
 #include    <X11/Xdmcp.h>
 
-Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit;
+Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
+
+static struct _app_resources {
+    ARRAY8Ptr   xdmAddress;
+    ARRAY8Ptr	clientAddress;
+    int		connectionType;
+} app_resources;
+
+#define offset(field) XtOffset(struct _app_resources*, field)
+
+#define XtRARRAY8   "ARRAY8"
+
+static XtResource  resources[] = {
+    {"xdmAddress",	"XdmAddress",  XtRARRAY8,	sizeof (ARRAY8Ptr),
+	offset (xdmAddress),	    XtRString,	NULL },
+    {"clientAddress",	"ClientAddress",  XtRARRAY8,	sizeof (ARRAY8Ptr),
+	offset (clientAddress),	    XtRString,	NULL },
+    {"connectionType",	"ConnectionType",   XtRInt,	sizeof (int),
+	offset (connectionType),    XtRString,	"0" }
+};
+#undef offset
+
+static XrmOptionDescRec options[] = {
+    "-xdmaddress",	"*xdmAddress",	    XrmoptionSepArg,	NULL,
+    "-clientaddress",	"*clientAddress",   XrmoptionSepArg,	NULL,
+    "-connectionType",	"*connectionType",  XrmoptionSepArg,	NULL,
+};
 
 typedef struct _hostAddr {
     struct _hostAddr	*next;
@@ -398,9 +428,16 @@ RegisterHostname (name)
     }
     else
     {
-	if (isascii (name[0]) && isdigit (name[0]))
+#ifndef ishexdigit
+#define ishexdigit(c)	(isdigit(c) || 'a' <= (c) && (c) <= 'f')
+#endif
+
+	if (isascii (name[0]) && ishexdigit (name[0]))
 	{
-	    in_addr.sin_addr.s_addr = inet_addr (name);
+	    if (!index (name, '.'))
+		FromHex (name, &in_addr.sin_addr.s_addr, strlen (name));
+	    else
+		in_addr.sin_addr.s_addr = inet_addr (name);
 	    if (in_addr.sin_addr.s_addr == -1)
 		return;
 	    in_addr.sin_family = AF_INET;
@@ -443,6 +480,7 @@ InitXDMCP (argv)
     int	soopts = 1;
     XdmcpHeader	header;
     int	i;
+    int optlen;
 
     header.version = XDM_PROTOCOL_VERSION;
     header.opcode = (CARD16) BROADCAST_QUERY;
@@ -462,8 +500,19 @@ InitXDMCP (argv)
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
 #ifdef SO_BROADCAST
+    optlen = sizeof (soopts);
+    if (getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen) < 0)
+    {
+	printf ("getsockopt failed\n");
+	return 0;
+    }
+    printf ("soopts: %d\n", soopts);
+    soopts = -1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, sizeof (soopts)) < 0)
 	return 0;
+    optlen = sizeof (soopts);
+    getsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, &soopts, &optlen);
+    printf ("soopts: %d\n", soopts);
 #endif
     
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
@@ -475,6 +524,63 @@ InitXDMCP (argv)
     }
     pingInterval = PING_INTERVAL;
     PingHosts ();
+}
+
+Boolean
+Choose (h)
+    HostName	*h;
+{
+    if (app_resources.xdmAddress)
+    {
+	struct sockaddr_in  in_addr;
+	struct sockaddr	*addr;
+	int		family;
+	int		len;
+	int		fd;
+	char		buf[1024];
+	XdmcpBuffer	buffer;
+	char		*xdm;
+
+	xdm = (char *) app_resources.xdmAddress->data;
+	family = (xdm[0] << 8) + xdm[1];
+	switch (family) {
+	case AF_INET:
+	    in_addr.sin_family = family;
+	    bcopy (xdm + 2, &in_addr.sin_port, 2);
+	    bcopy (xdm + 4, &in_addr.sin_addr.s_addr, 4);
+	    addr = (struct sockaddr *) &in_addr;
+	    len = sizeof (in_addr);
+	    break;
+	}
+	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
+	{
+	    fprintf (stderr, "Cannot create response socket\n");
+	    exit (REMANAGE_DISPLAY);
+	}
+	if (connect (fd, addr, len) == -1)
+	{
+	    fprintf (stderr, "Cannot connect to xdm\n");
+	    exit (REMANAGE_DISPLAY);
+	}
+	buffer.data = (BYTE *) buf;
+	buffer.size = sizeof (buf);
+	buffer.pointer = 0;
+	buffer.count = 0;
+	XdmcpWriteARRAY8 (&buffer, app_resources.clientAddress);
+	XdmcpWriteCARD16 (&buffer, (CARD16) app_resources.connectionType);
+	XdmcpWriteARRAY8 (&buffer, &h->hostaddr);
+	write (fd, buffer.data, buffer.pointer);
+	close (fd);
+    }
+    else
+    {
+	int i;
+
+    	printf ("%u\n", h->connectionType);
+    	for (i = 0; i < h->hostaddr.length; i++)
+	    printf ("%u%s", h->hostaddr.data[i],
+		    i == h->hostaddr.length - 1 ? "\n" : " ");
+    }
 }
 
 static void
@@ -492,12 +598,9 @@ DoAccept ()
 	for (h = hostNamedb; h; h = h->next)
 	    if (!strcmp (r->string, h->fullname))
 	    {
-		printf ("%u\n", h->connectionType);
-		for (i = 0; i < h->hostaddr.length; i++)
-		    printf ("%u%s", h->hostaddr.data[i],
-			    i == h->hostaddr.length - 1 ? "\n" : " ");
+		Choose (h);
 	    }
-	exit (0);
+	exit (OBEYSESS_DISPLAY);
     }
 }
 
@@ -519,19 +622,35 @@ DoCheckWilling ()
 static void
 DoCancel ()
 {
-    exit (0);
+    exit (OBEYSESS_DISPLAY);
 }
 
-XtActionsRec app_actions[] = {
+static void
+DoPing ()
+{
+    pingInterval = PING_INTERVAL;
+    PingHosts ();
+}
+
+static XtActionsRec app_actions[] = {
     "Accept",	    DoAccept,
     "Cancel",	    DoCancel,
     "CheckWilling", DoCheckWilling,
+    "Ping",	    DoPing,
 };
 
 main (argc, argv)
     char    **argv;
 {
-    toplevel = XtInitialize (argv[0], "Chooser", 0, 0, (Cardinal *)&argc, argv);
+    static void	CvtStringToARRAY8();
+
+    toplevel = XtInitialize (argv[0], "Chooser", options, XtNumber(options), (Cardinal *)&argc, argv);
+
+    XtAddConverter(XtRString, XtRARRAY8, CvtStringToARRAY8, NULL, 0);
+
+    XtGetApplicationResources (toplevel, (XtPointer) &app_resources, resources,
+			       XtNumber (resources), NULL, (Cardinal) 0);
+
     XtAddActions (app_actions, XtNumber (app_actions));
     paned = XtCreateManagedWidget ("paned", panedWidgetClass, toplevel, 0, 0);
     label = XtCreateManagedWidget ("label", labelWidgetClass, paned, 0, 0);
@@ -540,7 +659,52 @@ main (argc, argv)
     box = XtCreateManagedWidget ("box", boxWidgetClass, paned, 0, 0);
     cancel = XtCreateManagedWidget ("cancel", commandWidgetClass, box, 0, 0);
     acceptit = XtCreateManagedWidget ("accept", commandWidgetClass, box, 0, 0);
+    ping = XtCreateManagedWidget ("ping", commandWidgetClass, box, 0, 0);
     XtRealizeWidget (toplevel);
     InitXDMCP (argv + 1);
     XtMainLoop ();
+}
+
+FromHex (s, d, len)
+    char    *s, *d;
+    int	    len;
+{
+    int	t;
+    while (len >= 2)
+    {
+#define HexChar(c)  ('0' <= (c) && (c) <= '9' ? (c) - '0' : (c) - 'a' + 10)
+	t = HexChar (*s) << 4;
+	s++;
+	t += HexChar (*s);
+	s++;
+	*d++ = t;
+	len -= 2;
+    }
+}
+
+static void
+CvtStringToARRAY8 (args, num_args, fromVal, toVal)
+    XrmValuePtr	args;
+    Cardinal	*num_args;
+    XrmValuePtr	fromVal;
+    XrmValuePtr	toVal;
+{
+    static ARRAY8Ptr	dest;
+    char	*s;
+    int		len;
+    char	*d;
+    int		t;
+
+    dest = (ARRAY8Ptr) XtMalloc (sizeof (ARRAY8));
+    len = fromVal->size;
+    s = (char *) fromVal->addr;
+    printf ("Convert string to array8 %s\n", s);
+    if (!XdmcpAllocARRAY8 (dest, len >> 1))
+	XtStringConversionWarning ((char *) fromVal->addr, XtRARRAY8);
+    else
+    {
+	FromHex (s, (char *) dest->data, len);
+    }
+    toVal->addr = (caddr_t) &dest;
+    toVal->size = sizeof (ARRAY8Ptr);
 }
