@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.24 87/09/12 23:22:47 toddb Locked $ */
+/* $Header: servermd.h,v 1.25 87/09/12 23:48:09 toddb Locked $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -104,10 +104,6 @@ SOFTWARE.
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 /* ibm pcc doesn't understand pragmas. */
-
-#   else
-
-#include "this file must be tuned for your machine!!!"
 
 #   endif
 #  endif
