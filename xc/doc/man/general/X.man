@@ -177,7 +177,8 @@ defaults that are available to clients running on any machine.
 .TP 8
 .B "application-specific directory"
 Any files in the resource tree (whose location is controlled by
-the XAPPLOADDIR configuration parameter) that match the class name for
+the XAPPLOADDIR configuration parameter and is /usr/lib/X11/app-defaults in
+the standard release) that match the class name for
 a resourced used by the application are loaded in.
 .TP 8
 .B XENVIRONMENT
@@ -212,6 +213,12 @@ Specifies the color to use for the window border.
 .PP
 The common command line arguments cause particular resources to be set.  See
 the X Toolkit documentation for more details.
+.SH DIAGNOSTICS
+The default error handler uses the Resource Manager to build diagnostic
+messages when error conditions arise.  The default error database is
+stored in XErrorDB in the directory controlled by the LIBDIR configuration 
+parameter (/usr/lib/X11 in the standard release).  This allows user programs
+to provide their own versions of the standard messages.
 .SH "SEE ALSO"
 .PP
 Xserver(8c), xterm(1), bitmap(1), xwm(1), xhost(1), xclock(1), xload(1), 
