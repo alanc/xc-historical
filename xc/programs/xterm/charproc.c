@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.23 88/02/27 15:27:38 rws Exp $
+ * $Header: charproc.c,v 1.24 88/03/28 19:34:28 jim Exp $
  */
 
 
@@ -83,7 +83,6 @@ static void VTallocbuf();
 #define	XtNsignalInhibit	"signalInhibit"
 #define	XtNtekInhibit		"tekInhibit"
 #define	XtNtekStartup		"tekStartup"
-#define XtNthumbWidth		"thumbWidth"
 #define	XtNvisualBell		"visualBell"
 
 #define	XtCC132			"C132"
@@ -106,13 +105,12 @@ static void VTallocbuf();
 #define	XtCSignalInhibit	"SignalInhibit"
 #define	XtCTekInhibit		"TekInhibit"
 #define	XtCTekStartup		"TekStartup"
-#define XtCThumbWidth		"ThumbWidth"
 #define	XtCVisualBell		"VisualBell"
 
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.23 88/02/27 15:27:38 rws Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.24 88/03/28 19:34:28 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -158,7 +156,6 @@ static  int	defaultBorderWidth = DEFBORDERWIDTH;
 static  int	defaultIntBorder   = DEFBORDER;
 static  int	defaultSaveLines   = SAVELINES;
 static  int	defaultNMarginBell = N_MARGINBELL;
-static	int	defaultThumbWidth  = SCROLLBARWIDTH;
 
 static XtResource resources[] = {
 {XtNfont, XtCFont, XtRString, sizeof(char *),
@@ -248,9 +245,6 @@ static XtResource resources[] = {
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNthumbWidth, XtCThumbWidth, XtRInt, sizeof(int),
-	XtOffset(XtermWidget, screen.thumb_width),
-	XtRInt, (caddr_t) &defaultThumbWidth},
 {XtNvisualBell, XtCVisualBell, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.visualbell),
 	XtRBoolean, (caddr_t) &defaultFALSE}
@@ -1765,7 +1759,7 @@ static void VTallocbuf ()
 
 static void VTInitialize (request, new)
    XtermWidget request, new;
-   {
+{
    /* Zero out the entire "screen" component of "new" widget,
       then do field-by-field assigment of "screen" fields
       that are named in the resource list. */
@@ -1788,7 +1782,6 @@ static void VTInitialize (request, new)
    new->screen.visualbell = request->screen.visualbell;
    new->screen.TekEmu = request->screen.TekEmu;
    new->misc.re_verse = request->misc.re_verse;
-   new->screen.thumb_width = request->screen.thumb_width;
 
 
     /*
@@ -1841,6 +1834,11 @@ static void VTInitialize (request, new)
 		HandleKeyPressed, (Opaque)NULL);
    XtAddEventHandler(new, 0L, TRUE,
 		VTNonMaskableEvent, (Opaque)NULL);
+
+   /* create it, but don't realize it */
+   ScrollBarOn (new, TRUE, FALSE);
+
+   return;
 }
 
 
@@ -1867,8 +1865,6 @@ XSetWindowAttributes *values;
 		return;
 	
 	TabReset (term->tabs);
-
-	if (screen->thumb_width < 2) screen->thumb_width = 2;
 
 	screen->fnt_norm = screen->fnt_bold = NULL;
 	
@@ -2104,9 +2100,9 @@ XSetWindowAttributes *values;
 
 	screen->savedlines = 0;
 
-	if(screen->scrollbar) {
+	if (term->misc.scrollbar) {
 		screen->scrollbar = 0;
-		ScrollBarOn(screen, TRUE);
+		ScrollBarOn (term, FALSE, TRUE);
 	}
 	CursorSave (term, &screen->sc);
 	VTUnselect();
@@ -2528,7 +2524,7 @@ int item;
 		if(screen->scrollbar)
 			ScrollBarOff(screen);
 		else
-			ScrollBarOn(screen, FALSE);
+			ScrollBarOn (term, FALSE, FALSE);
 		break;
 
 	case MMENU_SCROLLKEY:

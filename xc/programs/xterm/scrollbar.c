@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.3 88/02/20 15:31:26 swick Exp $
+ *	$Header: scrollbar.c,v 1.4 88/03/28 19:34:38 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,7 +41,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.3 88/02/20 15:31:26 swick Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.4 88/03/28 19:34:38 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -125,8 +125,6 @@ static Widget CreateScrollBar(xw, x, y, height)
 {
 	Widget scrollWidget;
 	TScreen *screen = &xw->screen;
-	XSetWindowAttributes attr;
-	extern char *calloc();
 
 	static Arg argList[] = {
 	   {XtNx,		(XtArgVal) 0},
@@ -135,27 +133,35 @@ static Widget CreateScrollBar(xw, x, y, height)
 	   {XtNreverseVideo,	(XtArgVal) 0},
 	   {XtNorientation,	(XtArgVal) XtorientVertical},
 	   {XtNborderWidth,	(XtArgVal) 1},
-	   {XtNwidth,		(XtArgVal) 0},
 	};   
 
 	argList[0].value = (XtArgVal) x;
 	argList[1].value = (XtArgVal) y;
 	argList[2].value = (XtArgVal) height;
 	argList[3].value = (XtArgVal) xw->misc.re_verse;
-	argList[6].value = (XtArgVal) screen->thumb_width - 1;
 
 	scrollWidget = XtCreateWidget("scrollbar", scrollbarWidgetClass, 
 	  xw, argList, XtNumber(argList));
         XtAddCallback (scrollWidget, XtNscrollProc, ScrollTextUpDownBy, 0);
         XtAddCallback (scrollWidget, XtNthumbProc, ScrollTextTo, 0);
-	XtRealizeWidget(scrollWidget);
+	return (scrollWidget);
+}
 
-	attr.do_not_propagate_mask = 
-	  LeaveWindowMask | EnterWindowMask | StructureNotifyMask;
-	XChangeWindowAttributes(screen->display, XtWindow(scrollWidget), 
-	  CWDontPropagate, &attr);
+static void RealizeScrollBar (sbw, screen)
+    Widget sbw;
+    TScreen *screen;
+{
+    XSetWindowAttributes attr;
 
-	return(scrollWidget);
+    XtRealizeWidget (sbw);
+
+    attr.do_not_propagate_mask = 
+      LeaveWindowMask | EnterWindowMask | StructureNotifyMask;
+
+    XChangeWindowAttributes(screen->display, XtWindow(sbw), 
+			    CWDontPropagate, &attr);
+
+    return;
 }
 
 
@@ -266,39 +272,64 @@ WindowScroll(screen, top)
 	ScrollBarDrawThumb(screen->scrollWidget);
 }
 
-ScrollBarOn(screen, init)
-	register TScreen *screen;
-	int init;
+
+ScrollBarOn (xw, init, doalloc)
+    XtermWidget xw;
+    int init, doalloc;
 {
+	register TScreen *screen = &xw->screen;
 	register int border = 2 * screen->border;
 	register int i;
 	char *realloc(), *calloc();
 
 	if(screen->scrollbar)
 		return;
-	if(!screen->scrollWidget) {
-		if((screen->scrollWidget = CreateScrollBar(term,
-		 -1, - 1, Height(screen) + border)) == NULL) {
-			Bell();
-			return;
-		}
-		if (screen->allbuf) {
-		    if((screen->allbuf = (ScrnBuf) realloc((char *) screen->buf,
-			(unsigned) 2*(screen->max_row + 2 + screen->savelines) * sizeof(char *)))
-		            == NULL)
-			       Error (ERROR_SBRALLOC);
-		    screen->buf = &screen->allbuf[2 * screen->savelines];
-		    bcopy ((char *)screen->allbuf, (char *)screen->buf,
-			   2 * (screen->max_row + 2) * sizeof (char *));
-		    for(i = 2 * screen->savelines - 1 ; i >= 0 ; i--)
-			if((screen->allbuf[i] =
-			 calloc((unsigned) screen->max_col + 1, sizeof(char))) == NULL)
-				Error (ERROR_SBRALLOC2);
-		    }
+
+	if (init) {			/* then create it only */
+	    if (screen->scrollWidget) return;
+
+	    /* make it a dummy size and resize later */
+	    if ((screen->scrollWidget = CreateScrollBar (xw, -1, - 1, 5))
+		== NULL) {
+		Bell();
+		return;
+	    }
+
+	    return;
+
 	}
-	screen->scrollbar = screen->thumb_width;
+
+	if (!screen->scrollWidget) {
+	    Bell ();
+	    Bell ();
+	    return;
+	}
+
+	if (doalloc && screen->allbuf) {
+	    if((screen->allbuf =
+		(ScrnBuf) realloc((char *) screen->buf,
+				  (unsigned) 2*(screen->max_row + 2 +
+						screen->savelines) *
+				  sizeof(char *)))
+	       == NULL)
+	      Error (ERROR_SBRALLOC);
+	    screen->buf = &screen->allbuf[2 * screen->savelines];
+	    bcopy ((char *)screen->allbuf, (char *)screen->buf,
+		   2 * (screen->max_row + 2) * sizeof (char *));
+	    for(i = 2 * screen->savelines - 1 ; i >= 0 ; i--)
+	      if((screen->allbuf[i] =
+		  calloc((unsigned) screen->max_col + 1, sizeof(char))) ==
+		 NULL)
+		Error (ERROR_SBRALLOC2);
+	}
+
+	ResizeScrollBar (screen->scrollWidget, -1, -1,
+			 Height (screen) + border);
+	RealizeScrollBar (screen->scrollWidget, screen);
+	screen->scrollbar = screen->scrollWidget->core.width;
+
 	ScrollBarDrawThumb(screen->scrollWidget);
-	if (!init) ResizeScreen(term, border + screen->thumb_width, border );
+	ResizeScreen (xw, border + screen->scrollbar, border );
 	/* map afterwards so BitGravity can be used profitably */
 	XMapWindow(screen->display, XtWindow(screen->scrollWidget));
 }
