@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.3 93/11/16 16:56:02 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.4 93/11/16 20:48:37 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -50,6 +50,14 @@
 #else /* MTX */
 #define MTX_LOCK_DEVICES() LockDevices()
 #define MTX_UNLOCK_DEVICES() UnlockDevices()
+#endif /* MTX */
+
+#ifndef MTX
+#define MTX_MUTEX_LOCK(_arg)
+#define MTX_MUTEX_UNLOCK(_arg)
+#else /* MTX */
+#define MTX_MUTEX_LOCK(_arg) X_MUTEX_LOCK(_arg)
+#define MTX_MUTEX_UNLOCK(_arg) X_MUTEX_UNLOCK(_arg)
 #endif /* MTX */
 
 /***********************************************************************

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.68 93/09/24 12:17:32 rws Exp $ */
+/* $XConsortium: dix.h,v 1.69 93/11/16 10:56:34 rob Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -124,6 +124,37 @@ SOFTWARE.
     }\
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
+
+/* MTX changes the way reply structures are declared to minimize #ifdef's */
+#ifdef MTX
+
+#define REPLY(_type,_name)				\
+	PooledMessagePtr msg;				\
+	_type *_name = GetReplyMessage(_type, &msg)
+
+#define REP_SET(structure,field,value)			\
+	structure->field = (value)
+
+#define REP_FIELD(structure,field)			\
+	structure->field
+
+#define MTX_REP_SET(structure,field,value)		\
+	REP_SET(structure,field,value)
+
+#else /* MTX */
+
+#define REPLY(_type,_name)				\
+	_type _name
+
+#define REP_FIELD(structure,field)			\
+	structure.field
+
+#define REP_SET(structure,field,value)			\
+	structure.field = (value)
+
+#define MTX_REP_SET(structure,field,value)	/* nothing */
+
+#endif /* MTX */
 
 #ifdef MTX
 /* MTX assumes routines that call WriteReplyToClient have local variable msg */
