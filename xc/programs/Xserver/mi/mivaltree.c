@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.36 87/08/19 11:32:02 susan Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.36 87/09/11 07:20:34 toddb Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -71,7 +71,7 @@ miComputeClips (pParent, pScreen, universe)
     RegionPtr		childUniverse;
     register WindowPtr	pChild;
     int     	  	oldVis;
-    BoxPtr  	  	borderSize;
+    register BoxPtr  	borderSize;
     
     
     childUniverse = (RegionPtr)NULL;
@@ -90,7 +90,13 @@ miComputeClips (pParent, pScreen, universe)
     switch ((* pScreen->RectIn) (universe, borderSize)) 
     {
 	case rgnIN:
-	    pParent->visibility = VisibilityUnobscured;
+	    if (((borderSize->x2 - borderSize->x1) ==
+		 (pParent->clientWinSize.width + (pParent->borderWidth << 1))) &&
+		((borderSize->y2 - borderSize->y1) ==
+		 (pParent->clientWinSize.height + (pParent->borderWidth << 1))))
+		pParent->visibility = VisibilityUnobscured;
+	    else
+		pParent->visibility = VisibilityPartiallyObscured;
 	    break;
 	case rgnPART:
 	    pParent->visibility = VisibilityPartiallyObscured;
@@ -403,6 +409,7 @@ miValidateTree (pParent, pChild, top, anyMarked)
 	} 
         else 
         {
+	    pWin->visibility = VisibilityNotViewable;
 	    /*
 	     * Make sure the child is no longer marked (Windows being unmapped
 	     * are marked but unviewable...)
