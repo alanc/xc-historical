@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.38 91/03/27 16:15:38 gildea Exp $ */
+/* $XConsortium: command.c,v 2.39 91/04/14 17:41:45 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -315,11 +315,7 @@ DEBUG("read.\n")}
 		XtDispatchEvent(eventP);
 	    }
 	}
-#if defined(SYSV) || defined(SVR4) || defined(_POSIX_SOURCE)
-	(void) wait((int *) NULL);
-#else /* !SYSV */
-	(void) wait((union wait *) NULL);
-#endif /* !SYSV */
+	(void) wait(0);
 
 	DEBUG("done\n")
 	subProcessRunning = False;
