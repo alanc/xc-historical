@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.44 89/06/09 16:59:32 jim Exp $
+ * $XConsortium: gram.y,v 1.45 89/06/16 10:29:14 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.44 89/06/09 16:59:32 jim Exp $";
+"$XConsortium: gram.y,v 1.45 89/06/16 10:29:14 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -878,7 +878,14 @@ int func;
 	if ((cont & (1 << i)) == 0)
 	    continue;
 
-	AddFuncKey(key, i, mods, func, Name, Action);
+	if (!AddFuncKey(key, i, mods, func, Name, Action)) {
+	    if (verbose) {
+		fprintf (stderr, 
+			 "twm: line %d:  no key code for \"%s\", ignoring.\n", 
+			 yylineno, key);
+	    }
+	    break;
+	}
     }
 
     Action = "";

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.69 89/06/13 08:55:34 jim Exp $
+ * $XConsortium: menus.c,v 1.70 89/06/13 09:50:02 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.69 89/06/13 08:55:34 jim Exp $";
+"$XConsortium: menus.c,v 1.70 89/06/13 09:50:02 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -152,8 +152,7 @@ InitMenus()
  ***********************************************************************
  */
 
-void
-AddFuncKey(name, cont, mods, func, win_name, action)
+Bool AddFuncKey (name, cont, mods, func, win_name, action)
     char *name;
     int cont, mods, func;
     char *win_name;
@@ -170,8 +169,7 @@ AddFuncKey(name, cont, mods, func, win_name, action)
     if ((keysym = XStringToKeysym(name)) == NoSymbol ||
 	(keycode = XKeysymToKeycode(dpy, keysym)) == 0)
     {
-	fprintf(stderr, "twm: unknown key name \"%s\"\n", name);
-	return;
+	return False;
     }
 
     /* see if there already is a key defined for this context */
@@ -198,6 +196,8 @@ AddFuncKey(name, cont, mods, func, win_name, action)
     tmp->func = func;
     tmp->win_name = win_name;
     tmp->action = action;
+
+    return True;
 }
 
 PaintEntry(mr, mi, exposure)

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.14 89/05/04 15:51:43 jim Exp $
+ * $XConsortium: menus.h,v 1.15 89/06/09 13:47:27 jim Exp $
  *
  * twm menus include file
  *
@@ -136,7 +136,7 @@ extern MenuRoot *NewMenuRoot();
 extern MenuItem *AddToMenu();
 extern void PopUpMenu();
 extern MenuRoot *FindMenuRoot();
-extern void AddFuncKey();
+extern Bool AddFuncKey();
 extern int ExecuteFunction();
 extern int DeferExecution();
 extern void Execute();
