@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.16 91/01/11 13:53:37 dave Exp $
+ * $XConsortium: BitEdit.c,v 1.17 91/01/11 14:34:19 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1027,8 +1027,7 @@ void main(argc, argv)
     Widget radio_group; caddr_t radio_data;
     
     top_widget = XtInitialize(NULL, "Bitmap", 
-			      options, XtNumber(options), 
-			      (Cardinal *)&argc, argv);
+			      options, XtNumber(options), &argc, argv);
 
     if (argc > 3) {
 	fprintf(stderr, usage);
@@ -1037,7 +1036,7 @@ void main(argc, argv)
 
     check_mark = XCreateBitmapFromData(XtDisplay(top_widget),
 				      RootWindowOfScreen(XtScreen(top_widget)),
-				      xlogo16_bits, 
+				      (char *) xlogo16_bits, 
 				      xlogo16_width, 
 				      xlogo16_height);
 
