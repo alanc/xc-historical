@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.39 93/05/27 15:57:50 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.40 93/09/18 11:07:15 rws Exp $
 
 #ifdef SonyBsdArchitecture
 
@@ -46,7 +46,7 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.39 93/05/27 15:57:50 rws Exp $
 #define SystemV4		YES
 #define CcCmd			/usr/bin/cc
 #define HasSockets		YES
-#define DefaultCCOptions	-Wf,-XNp8000,-XNd6000
+#define DefaultCCOptions	-Wf,-XNp9000,-XNd6000
 #define PexCCOptions		-Wf,-XNp15000,-XNd15000
 
 #endif
