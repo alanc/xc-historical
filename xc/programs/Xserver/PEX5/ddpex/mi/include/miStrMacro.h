@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miStrMacro.h,v 5.1 91/02/16 09:54:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -108,14 +108,17 @@ SOFTWARE.
 		i++, ptemp = MISTR_NEXT_EL(ptemp));			\
 	(OFFSET) = i;							\
     }
-    
+   
+/* Must check Proprietary and in Range to avoid Null function ptrs */
 #define	MISTR_DEL_ONE_EL(PSTRUCT, PPREV, PEL)	{			\
     MISTR_NEXT_EL(PPREV) = MISTR_NEXT_EL(PEL);				\
     MISTR_PREV_EL(MISTR_NEXT_EL(PEL)) = (PPREV);			\
-    if (MI_IS_PEX_OC(MISTR_EL_TYPE(PEL)))				\
-	DestroyCSSElementTable[MISTR_EL_TYPE(PEL)]((PSTRUCT), (PEL));	\
+    if (MI_HIGHBIT_ON(MISTR_EL_TYPE(PEL)))				\
+	(*DestroyCSSElementTable[MI_OC_PROP])((PSTRUCT), (PEL));        \
     else								\
-	DestroyCSSElementTable[0]((PSTRUCT), (PEL)); }
+      if (MI_IS_PEX_OC(MISTR_EL_TYPE(PEL)))				\
+	(*DestroyCSSElementTable[MISTR_EL_TYPE(PEL)])((PSTRUCT), (PEL));\
+    }
 
 #define	MISTR_INSERT_ONE_EL(PPREV, PEL)				\
 	MISTR_NEXT_EL(PEL) = MISTR_NEXT_EL(PPREV);		\
@@ -126,6 +129,7 @@ SOFTWARE.
 /* PSTRUCT is structure handle; DDSTRUCT is dd structure header */
 /* first can't be 0, last can't be more than number in structure */
 /* inclusive delete, does not update structure header info */
+/* Must check Proprietary and in Range to avoid Null function ptrs */
 #define	MISTR_DEL_ELS(PSTRUCT, DDSTRUCT, FIRST, LAST)		\
     if ((int)((LAST) - (FIRST)) >= 0) {				\
 	register int	num;					\
@@ -134,11 +138,13 @@ SOFTWARE.
 	pe = MISTR_PREV_EL(pe1);				\
 	for (num = (FIRST); num <= (LAST); num++) {		\
 	    pe2 = MISTR_NEXT_EL(pe1);				\
-	    if (MI_IS_PEX_OC(MISTR_EL_TYPE(pe1)))		\
-		(*DestroyCSSElementTable[MISTR_EL_TYPE(pe1)])	\
-				((PSTRUCT), pe1);		\
+	    if (MI_HIGHBIT_ON(MISTR_EL_TYPE(pe1)))		\
+		(*DestroyCSSElementTable[MI_OC_PROP])           \
+				       ((PSTRUCT), pe1);	\
 	    else						\
-		(*DestroyCSSElementTable[0])((PSTRUCT), pe1);	\
+		if (MI_IS_PEX_OC(MISTR_EL_TYPE(pe1)))		\
+		  (*DestroyCSSElementTable[MISTR_EL_TYPE(pe1)])	\
+				((PSTRUCT), pe1);		\
 	    pe1 = pe2;					\
 	}							\
 	MISTR_NEXT_EL(pe) = pe1;				\

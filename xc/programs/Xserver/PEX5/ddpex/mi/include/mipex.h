@@ -1,4 +1,4 @@
-/* $XConsortium: mipex.h,v 5.1 91/02/16 09:54:57 rws Exp $ */
+/* $XConsortium: mipex.h,v 5.2 91/12/03 16:57:33 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -42,8 +42,17 @@ SOFTWARE.
 #define MI_BACKGROUND 0
 #define MI_FOREGROUND 1
 
-/* see if OC (or element) is in range of PEX OCs */
-#define	MI_IS_PEX_OC(ocnum)	(((ocnum) > PEXOCAll) && ((ocnum) < PEXMaxOC))
+/* high bit mask for proprietary OCs */
+#define MI_OC_HIGHBIT 0x8000
+
+/* a redefinable location for use in branching on proprietary OCs */
+#define MI_OC_PROP 0
+
+/* see if propietary bit is set in OC Type */
+#define MI_HIGHBIT_ON(octype)   ((octype) & MI_OC_HIGHBIT)
+
+/* see if OC Type (or element) is in range of PEX OCs */
+#define	MI_IS_PEX_OC(octype)  (((octype) > PEXOCAll) && ((octype) <= PEXMaxOC))
 
 /**  redefine ASSURE even if it's already defined **/
 #ifdef ASSURE
