@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.21 91/02/19 15:34:54 converse Exp $ */
+/* $XConsortium: Eyes.c,v 1.22 91/03/26 11:58:31 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -259,9 +259,9 @@ static void Destroy (gw)
 
      if (w->eyes.interval_id)
 	XtRemoveTimeOut (w->eyes.interval_id);
-     XtDestroyGC (w->eyes.pupGC);
-     XtDestroyGC (w->eyes.outGC);
-     XtDestroyGC (w->eyes.centerGC);
+     XtReleaseGC(gw, w->eyes.pupGC);
+     XtReleaseGC(gw, w->eyes.outGC);
+     XtReleaseGC(gw, w->eyes.centerGC);
 }
 
 /* ARGSUSED */
