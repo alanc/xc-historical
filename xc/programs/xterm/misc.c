@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.90 91/07/25 17:59:05 rws Exp $
+ *	$XConsortium: misc.c,v 1.91 91/10/31 09:33:48 rws Exp $
  */
 
 /*
@@ -254,9 +254,10 @@ caddr_t eventdata;
 			       (event->detail == NotifyPointer) ? INWINDOW :
 								  FOCUS);
 		if (screen->grabbedKbd && (event->mode == NotifyUngrab)) {
-		    screen->grabbedKbd = FALSE;
-		    ReverseVideo(term);
 		    XBell(screen->display, 100);
+		    ReverseVideo(term);
+		    screen->grabbedKbd = FALSE;
+		    update_securekbd();
 		}
 	}
 }
