@@ -139,6 +139,23 @@ Bool InitDashedLines(xp, p)
     return True;
 }
 
+Bool InitDoubleDashedLines(xp, p)
+    XParms  xp;
+    Parms   p;
+{
+    char dashes[2];
+
+    (void)InitLines(xp, p);
+
+    /* Modify GCs to draw dashed */
+    XSetLineAttributes(xp->d, xp->bggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    XSetLineAttributes(xp->d, xp->fggc, 0, LineDoubleDash, CapButt, JoinMiter);
+    dashes[0] = 3;   dashes[1] = 2;
+    XSetDashes(xp->d, xp->fggc, 0, dashes, 2);
+    XSetDashes(xp->d, xp->bggc, 0, dashes, 2);
+    return True;
+}
+
 void DoLines(xp, p)
     XParms  xp;
     Parms   p;
