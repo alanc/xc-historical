@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.190 91/04/01 16:32:50 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.191 91/04/01 17:07:51 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -40,9 +40,17 @@
 
 #include <X11/Xfuncproto.h>
 
+/* We do not want people to depend on Xosdefs.h being included by Xlib.h */
+#ifndef X_NOT_STDC_ENV
 #ifndef _XOSDEFS_H_
+#ifndef X_NOT_POSIX
+#define _XLIB_REMOVE_POSIX
+#endif
 #include <X11/Xosdefs.h>
-#define _XLIB_REMOVE_XOSDEFS_
+#ifdef X_NOT_STDC_ENV
+#define _XLIB_REMOVE_STDC_ENV
+#endif
+#endif
 #endif
 
 #ifndef X_NOT_STDC_ENV
@@ -52,16 +60,18 @@ typedef unsigned int wchar_t;
 #endif
 
 /* We do not want people to depend on Xosdefs.h being included by Xlib.h */
-#ifdef _XLIB_REMOVE_XOSDEFS_
-#ifdef X_NOT_STDC_ENV
+#ifdef _XLIB_REMOVE_STDC_ENV
 #undef X_NOT_STDC_ENV
+#undef _XLIB_REMOVE_STDC_ENV
 #endif
+#ifdef _XLIB_REMOVE_POSIX
 #ifdef X_NOT_POSIX
 #undef X_NOT_POSIX
 #endif
-#undef _XOSDEFS_H_
-#undef _XLIB_REMOVE_XOSDEFS_
+#undef _XLIB_REMOVE_POSIX
 #endif
+
+typedef char *XPointer;
 
 #define Bool int
 #define Status int
@@ -133,7 +143,7 @@ typedef struct _XExtData {
 	int number;		/* number returned by XRegisterExtension */
 	struct _XExtData *next;	/* next item on list of data for structure */
 	int (*free_private)();	/* called to free private storage */
-	char *private_data;	/* data private to this extension. */
+	XPointer private_data;	/* data private to this extension. */
 } XExtData;
 
 /*
@@ -345,7 +355,7 @@ typedef struct _XImage {
     unsigned long red_mask;	/* bits in z arrangment */
     unsigned long green_mask;
     unsigned long blue_mask;
-    char *obdata;		/* hook for the object routines to hang on */
+    XPointer obdata;		/* hook for the object routines to hang on */
     struct funcs {		/* image manipulation routines */
 	struct _XImage *(*create_image)();
 #if NeedFunctionPrototypes
@@ -530,8 +540,8 @@ typedef struct _XDisplay {
 	 *      and TekCMSP.h for XcmsCmapRec structure definition.
 	 */
 	struct {
-	   caddr_t defaultCCCs;  /* pointer to an array of default XcmsCCC */
-	   caddr_t clientCmaps;  /* pointer to linked list of XcmsCmapRec */
+	   XPointer defaultCCCs;  /* pointer to an array of default XcmsCCC */
+	   XPointer clientCmaps;  /* pointer to linked list of XcmsCmapRec */
 	} cms;
 	struct _XIMFilter *im_filters;
 } Display;
@@ -1079,11 +1089,6 @@ typedef struct {
 
 typedef void (*XIMProc)();
 
-#if __STDC__
-typedef void *XIMValue;
-#else
-typedef char *XIMValue;
-#endif
 typedef struct _XIM *XIM;
 typedef struct _XIC *XIC;
 
@@ -1094,11 +1099,11 @@ typedef struct {
     XIMStyle *supported_styles;
 } XIMStyles;
 
-#define XIMPreEditArea		0x0001
-#define XIMPreEditCallbacks	0x0002
-#define XIMPreEditPosition	0x0004
-#define XIMPreEditNothing	0x0008
-#define XIMPreEditNone		0x0010
+#define XIMPreeditArea		0x0001
+#define XIMPreeditCallbacks	0x0002
+#define XIMPreeditPosition	0x0004
+#define XIMPreeditNothing	0x0008
+#define XIMPreeditNone		0x0010
 #define XIMStatusArea		0x0100
 #define XIMStatusCallbacks	0x0200
 #define XIMStatusNothing	0x0400
@@ -1118,6 +1123,9 @@ typedef struct {
 #define XNPreeditDrawCallback "preeditDrawCallback"
 #define XNPreeditCaretCallback "preeditCaretCallback"
 #define XNPreeditAttributes "preeditAttributes"
+#define XNStatusStartCallback "statusStartCallback"
+#define XNStatusDoneCallback "statusDoneCallback"
+#define XNStatusDrawCallback "statusDrawCallback"
 #define XNStatusAttributes "statusAttributes"
 #define XNArea "area"
 #define XNAreaNeeded "areaNeeded"
@@ -1140,11 +1148,11 @@ typedef struct {
 #if __STDC__
 typedef void *XVaNestedList;
 #else
-typedef caddr_t XVaNestedList;
+typedef XPointer XVaNestedList;
 #endif
 
 typedef struct {
-    XIMValue client_data;
+    XPointer client_data;
     XIMProc callback;
 } XIMCallback;
 
@@ -1167,12 +1175,12 @@ typedef struct _XIMText {
     } string; 
 } XIMText;
 
-typedef struct _XIMPreEditDrawCallbackStruct {
+typedef struct _XIMPreeditDrawCallbackStruct {
     int caret;		/* Cursor offset within pre-edit string */
     int chg_first;	/* Starting change position */
     int chg_length;	/* Length of the change in character count */
     XIMText text;
-} XIMPreEditDrawCallbackStruct;
+} XIMPreeditDrawCallbackStruct;
 
 typedef enum {
     XIMForwardChar, XIMBackwardChar,
@@ -1190,15 +1198,15 @@ typedef enum {
     XIMIsSecondary	/* UI defined caret feedback */
 } XIMCaretStyle;
 
-typedef struct _XIMPreEditCaretCallbackStruct {
+typedef struct _XIMPreeditCaretCallbackStruct {
     int position;		 /* Caret offset within pre-edit string */
     XIMCaretDirection direction; /* Caret moves direction */
     XIMCaretStyle style;	 /* Feedback of the caret */
-} XIMPreEditCaretCallbackStruct;
+} XIMPreeditCaretCallbackStruct;
 
 typedef enum {
-    TextType,
-    Bitmaptype
+    XIMTextType,
+    XIMBitmapType
 } XIMStatusDataType;
 	
 typedef struct _XIMStatusDrawCallbackStruct {
@@ -2116,10 +2124,10 @@ extern Bool XCheckIfEvent(
 #if NeedNestedPrototypes
 	       Display*			/* display */,
                XEvent*			/* event */,
-               char*			/* arg */
+               XPointer			/* arg */
 #endif
              )		/* predicate */,
-    char*		/* arg */
+    XPointer		/* arg */
 #endif
 );
 
@@ -2965,10 +2973,10 @@ extern XIfEvent(
 #if NeedNestedPrototypes
 	       Display*			/* display */,
                XEvent*			/* event */,
-               char*			/* arg */
+               XPointer			/* arg */
 #endif
              )		/* predicate */,
-    char*		/* arg */
+    XPointer		/* arg */
 #endif
 );
 
@@ -3130,10 +3138,10 @@ extern XPeekIfEvent(
 #if NeedNestedPrototypes
 	       Display*		/* display */,
                XEvent*		/* event */,
-               char*		/* arg */
+               XPointer		/* arg */
 #endif
              )		/* predicate */,
-    char*		/* arg */
+    XPointer		/* arg */
 #endif
 );
 
@@ -4037,6 +4045,13 @@ extern int XFontsOfFontSet(
 #endif
 );
 
+extern char *XBaseFontNameListOfFontSet(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    XFontSet		/* font_set */
+#endif
+);
+
 extern char *XLocaleOfFontSet(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -4301,10 +4316,10 @@ extern void XRegisterFilter(
 	     Display*	/* display */,
 	     Window	/* window */,
 	     XEvent*	/* event */,
-	     XIMValue	/* client_data */
+	     XPointer	/* client_data */
 #endif
 	     )		/* filter */,
-    XIMValue		/* client_data */
+    XPointer		/* client_data */
 #endif
 );
 
@@ -4317,10 +4332,10 @@ extern void XUnregisterFilter(
 	     Display*	/* display */,
 	     Window	/* window */,
 	     XEvent*	/* event */,
-	     XIMValue	/* client_data */
+	     XPointer	/* client_data */
 #endif
 	     )		/* filter */,
-    XIMValue		/* client_data */
+    XPointer		/* client_data */
 #endif
 );
 
