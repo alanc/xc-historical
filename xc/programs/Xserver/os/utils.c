@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.107 91/12/29 13:19:38 eswu Exp $ */
+/* $XConsortium: utils.c,v 1.108 91/12/29 14:06:33 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -159,6 +159,31 @@ GetTimeInMillis()
     return(tp.tv_sec * 1000) + (tp.tv_usec / 1000);
 }
 #endif
+
+AdjustWaitForDelay (waitTime, newdelay)
+    pointer	    waitTime;
+    unsigned long   newdelay;
+{
+    static struct timeval   delay_val;
+    struct timeval	    **wt = (struct timeval **) waitTime;
+    unsigned long	    olddelay;
+
+    if (*wt == NULL)
+    {
+	delay_val.tv_sec = newdelay / 1000;
+	delay_val.tv_usec = 1000 * (newdelay % 1000);
+	*wt = &delay_val;
+    }
+    else
+    {
+	olddelay = (*wt)->tv_sec * 1000 + (*wt)->tv_usec / 1000;
+	if (newdelay < olddelay)
+	{
+	    (*wt)->tv_sec = newdelay / 1000;
+	    (*wt)->tv_usec = 1000 * (newdelay % 1000);
+	}
+    }
+}
 
 void UseMsg()
 {
