@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.40 94/05/02 11:18:23 mor Exp $ */
+/* $XConsortium: process.c,v 1.41 94/05/11 17:35:38 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -149,6 +149,7 @@ Bool		 *replyReadyRet;
 	 * If we previously sent a WantToClose and now we detected
 	 * that the connection was closed, _IceRead returns status 0.
 	 * Since the connection was closed, we just want to return here.
+	 */
 
 	return (IceProcessMessagesConnectionClosed);
     }
@@ -215,7 +216,11 @@ Bool		 *replyReadyRet;
 
 	iceConn->dispatch_level--;
 	if (!iceConn->io_ok)
+	{
+	    iceConn->connection_status = IceConnectIOError;
 	    retStatus = IceProcessMessagesIOError;
+	}
+
 	return (retStatus);
     }
 
@@ -349,7 +354,10 @@ Bool		 *replyReadyRet;
 	retStatus = IceProcessMessagesConnectionClosed;
     }
     else if (!iceConn->io_ok)
+    {
+	iceConn->connection_status = IceConnectIOError;
 	retStatus = IceProcessMessagesIOError;
+    }
 
     return (retStatus);
 }
