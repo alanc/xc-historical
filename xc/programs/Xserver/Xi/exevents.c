@@ -220,6 +220,10 @@ ProcessOtherEvent (xE, other, count)
 	if (!b->state && other->fromPassiveGrab)
 	    deactivateDeviceGrab = TRUE;
 	}
+    else if (xE->type == ProximityIn)
+	other->valuator->mode &= ~OutOfProximity;
+    else if (xE->type == ProximityOut)
+	other->valuator->mode |= OutOfProximity;
 
     if (grab)
 	DeliverGrabbedEvent(xE, other, deactivateDeviceGrab, count);
@@ -252,7 +256,7 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution)
     int maxval;
     int resolution;
     {
-    register XAxisInfoPtr ax = dev->valuator->axes + axnum;
+    register AxisInfoPtr ax = dev->valuator->axes + axnum;
 
     ax->min_value = minval;
     ax->max_value = maxval;
@@ -355,6 +359,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    deviceStateNotify 	*tev = sev;
 
 	    tev->classes_reported |= (1 << ValuatorClass);
+	    tev->classes_reported |= (dev->valuator->mode << ModeBitsShift);
 	    for (i=0; i<v->numAxes; i+=6)
 		{
 		ip = &tev->valuator0;
@@ -380,6 +385,8 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		    tev->deviceid = dev->id;
         	    tev->time = currentTime.milliseconds;
 		    tev->classes_reported = (1 << ValuatorClass);
+	    	    tev->classes_reported |= 
+			(dev->valuator->mode << ModeBitsShift);
 		    }
 		}
 	    }
@@ -723,7 +730,6 @@ InputClientGone(pWin, id)
     XID   id;
     {
     register InputClientsPtr other, prev;
-
     if (!wOtherInputMasks(pWin))
 	return(Success);
     prev = 0;
