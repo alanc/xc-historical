@@ -1,4 +1,4 @@
-/* $XConsortium: xpsm.c,v 1.5 93/09/28 17:39:24 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.1 93/10/19 10:21:03 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -15,21 +15,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 ******************************************************************************/
 
 /*
- * Pseudo Session Manager.
+ * X Session Manager.
  *
  * Written by Ralph Mor, X Consortium.
- *
- * This application keeps a log of all client <-> session manager
- * interaction.  The following operations can be performed:
- *
- * - List all registered clients
- *
- * - Save Yourself with option to shut down
- *
- * - List properties of each client
- *
- * - Ping all clients
- *
+ *        and Jordan Brown, Quarterdeck Office Systems
  */
 
 #include <X11/StringDefs.h>
@@ -55,6 +44,7 @@ typedef struct _ClientRec {
     SmsConn	 	smsConn;
     IceConn		iceConn;
     char 		*clientId;
+    char		*clientHostname;
     Bool		interactPending;
     int			numProps;
     SmProp *		props[MAX_PROPS];
@@ -63,6 +53,7 @@ typedef struct _ClientRec {
 
 typedef struct _PendingClient {
     char		*clientId;
+    char		*clientHostname;
     List		*props;
 } PendingClient;
 
@@ -247,6 +238,7 @@ char 		*previousId;
     else make_sm_id(id);
     SmsRegisterClientReply (smsConn, id);
     client->clientId = SmsClientID (smsConn);
+    client->clientHostname = SmsClientHostName (smsConn);
 
     printf (
 	"On IceConn fd = %d, sent REGISTER CLIENT REPLY [Client Id = %s]\n",
@@ -312,8 +304,17 @@ Bool		cancelShutdown;
 
     client->interactPending = False;
 
-    if (cancelShutdown)
+    if (cancelShutdown && !shutdownCancelled)
+    {
+	printf ("\n");
 	shutdownCancelled = True;
+	for (client = ClientList; client; client = client->next)
+	{
+	    SmsShutdownCancelled (client->smsConn);
+	    printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
+		client->clientId);
+	}
+    }
 }
 
 
@@ -331,6 +332,9 @@ Bool		success;
     printf (
 	"Client Id = %s, received SAVE YOURSELF DONE [Success = %s]\n",
         client->clientId, success ? "True" : "False");
+
+    if (shutdownCancelled && client->interactPending)
+	client->interactPending = False;
 
     saveDoneCount++;
 }
@@ -510,6 +514,7 @@ SmsCallbacks	*callbacksRet;
     newClient->smsConn = smsConn;
     newClient->iceConn = SmsGetIceConnection (smsConn);
     newClient->clientId = NULL;
+    newClient->clientHostname = NULL;
     newClient->interactPending = False;
     newClient->numProps = 0;
     newClient->next = ClientList;
@@ -681,7 +686,7 @@ XtPointer 	callData;
 
     XtSetSensitive (savePopup, 0);
 
-    for(client = ClientList; client; client = client->next)
+    for (client = ClientList; client; client = client->next)
     {
 	SmsSaveYourself (client->smsConn,
 	    saveType, shutdown, interactStyle, fast);
@@ -723,7 +728,11 @@ XtPointer 	callData;
 
 	while (client)
 	{
-	    if (client->interactPending)
+	    if (shutdownCancelled)
+	    {
+		break;
+	    }
+	    else if (client->interactPending)
 	    {
 		SmsInteract (client->smsConn);
 		
@@ -739,7 +748,10 @@ XtPointer 	callData;
 	}
 
 	printf ("\n");
-	printf ("Done interacting with all clients\n");
+	if (shutdownCancelled)
+	    printf ("The shutdown was cancelled by a user\n");
+	else
+	    printf ("Done interacting with all clients\n");
 	printf ("\n");
     }
 
@@ -756,17 +768,7 @@ XtPointer 	callData;
 
     if (shutdown && shutdownCancelled)
     {
-	printf ("\n");
-	printf ("The shutdown was cancelled by a user\n");
-	printf ("\n");
-
 	shutdownCancelled = False;
-	for(client = ClientList; client; client = client->next)
-	{
-	    SmsShutdownCancelled (client->smsConn);
-	    printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
-		client->clientId);
-	}
     }
     else if (shutdown)
     {
@@ -1123,6 +1125,7 @@ ClientRec *client;
 	int i;
 
 	free (client->clientId);
+	free (client->clientHostname);
 
 	for (i = 0; i < client->numProps; i++)
 	    SmFreeProperty (client->props[i]);
@@ -1209,6 +1212,8 @@ read_save()
 		    c->clientId = strdup(p);
 		    if(!c->clientId) nomem();
 
+		    c->clientHostname = NULL;  /* set in next state */
+
 		    c->props = ListInit();
 		    if(!c->props) nomem();
 
@@ -1218,7 +1223,14 @@ read_save()
 		    break;
 
 		case 1:
-		case 3:
+		    c->clientHostname = strdup (p);
+                    if (!c->clientHostname) nomem();
+
+                    state = 2;
+                    break;
+
+		case 2:
+		case 4:
 		    prop = (PendingProp *)malloc(sizeof *prop);
 		    if(!prop) nomem();
 
@@ -1232,14 +1244,14 @@ read_save()
 
 		    if(!ListAddLast(c->props, (void *)prop)) nomem();
 
-		    state = 2;
+		    state = 3;
 		    break;
 
-		case 2:
+		case 3:
 		    prop->type = strdup(p);
 		    if(!prop->type) nomem();
 
-		    state = 3;
+		    state = 4;
 		    break;
 
 		default:
@@ -1249,7 +1261,7 @@ read_save()
 		    continue;
 	    }
 	} else {
-	    if(state != 3) {
+	    if(state != 4) {
 		fprintf(stderr, "Corrupt save file line ignored:\n%s\n", buf);
 		continue;
 	    }
@@ -1282,6 +1294,7 @@ write_save()
 	for(client = ClientList; client; client = client->next)
 	{
 	    fprintf(f, "%s\n", client->clientId);
+	    fprintf(f, "%s\n", client->clientHostname);
 	    for(i = 0; i < client->numProps; i++) {
 		prop = client->props[i];
 		fprintf(f, "%s\n", prop->name);
@@ -1351,6 +1364,7 @@ restart_everything()
 	c = (PendingClient *)cl->thing;
 
 	printf("Restarting id '%s'...\n", c->clientId);
+        printf("Host = %s\n", c->clientHostname);
 	cwd = ".";
 	env = NULL;
 	program=NULL;
@@ -1396,7 +1410,14 @@ restart_everything()
 	    printf("\t");
 	    for(pp = args; *pp; pp++) printf("%s ", *pp);
 	    printf("\n");
-	    switch(fork()) {
+
+	    if (!strcmp(c->clientHostname, "local"))
+	    {
+		/*
+		 * The client is being restarted on the local machine.
+		 */
+
+		switch(fork()) {
 		case -1:
 		    perror("fork");
 		    break;
@@ -1408,6 +1429,56 @@ restart_everything()
 		    _exit(255);
 		default:	/* parent */
 		    break;
+		}
+	    }
+	    else
+	    {
+		/*
+		 * The client is being restarted on a remote machine.
+		 * Use the xrsh protocol to do the restart.
+		 */
+
+		int pipefd[2], i;
+		FILE *fp;
+
+		if (pipe (pipefd) < 0)
+		{
+		    perror ("pipe error");
+		}
+		else
+		{
+		    switch(fork()) {
+		    case -1:
+			perror("fork");
+			break;
+		    case 0:		/* kid */
+			close (pipefd[1]);
+			close (0);
+			dup (pipefd[0]);
+			close (pipefd[0]);
+
+			execlp ("remsh", c->clientHostname,
+			    "/users/mor/bin/xrshsrv", (char *) 0);
+			perror("execlp");
+			_exit(255);
+		    default:		/* parent */
+			close (pipefd[0]);
+			fp = fdopen (pipefd[1], "w");
+			fprintf (fp, "CONTEXT X\n");
+			fprintf (fp, "DIR %s\n", cwd);
+			for (i = 0; env[i]; i++)
+			    if (strstr (env[i], "PATH"))
+				fprintf (fp, "MISC X %s\n", env[i]);
+			fprintf (fp, "MISC X %s\n", display_env);
+			fprintf (fp, "MISC X %s\n", session_env);
+			fprintf (fp, "EXEC %s %s", program, program);
+			for (i = 1; args[i]; i++)
+			    fprintf (fp, " %s", args[i]);
+			fprintf (fp, "\n\n");
+			fclose (fp);
+			break;
+		    }
+		}
 	    }
 	} else {
 	    fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
