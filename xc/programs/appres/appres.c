@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.8 91/05/05 12:37:05 gildea Exp $
+ * $XConsortium: appres.c,v 1.9 91/07/13 20:54:21 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -154,6 +154,11 @@ main (argc, argv)
 	    iname = argv[i];
 	else
 	    usage();
+    }
+
+    if (!iname) {
+	XtGetApplicationNameAndClass(XtDisplay(toplevel), &iname, &cname);
+	names[0] = XrmStringToName(iname);
     }
 
     XrmQString = XrmPermStringToQuark("String");
