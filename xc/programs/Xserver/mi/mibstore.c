@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.54 92/04/23 19:35:18 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.55 93/02/09 16:34:15 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2516,6 +2516,18 @@ miBSAllocate(pWin)
 
 	miSendExposures(pWin, pSavedRegion, 0, 0);
     }
+    else if (!pWin->viewable)
+    {
+        /*
+         * Turn off backing store when we're not supposed to
+         * be saving anything
+         */
+        if (pBackingStore->status != StatusNoPixmap)
+        {
+            (* pScreen->RegionEmpty) (&pBackingStore->SavedRegion);
+            miDestroyBSPixmap (pWin);
+        }
+    }
 }
 
 /*-
@@ -3248,7 +3260,8 @@ miBSValidateGC (pGC, stateChanges, pDrawable)
     pPriv->wrapOps = pGC->ops;
 
     if (!lift_functions && ((pPriv->guarantee == GuaranteeVisBack) ||
-			    (!pWin->realized && pWin->backingStore != Always)))
+                            (pWindowPriv->status == StatusNoPixmap) ||
+                            (pWindowPriv->status == StatusBadAlloc)))
         lift_functions = TRUE;
 
     /*
