@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.1 91/04/06 13:18:19 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.2 91/04/06 16:06:00 rws Exp $
  */
 
 /*
@@ -100,7 +100,7 @@ typedef struct {
     int			xrm_size;		/* Size in bytes of data */
     long		xrm_offset;		/* -offset-1 */
     unsigned short 	mode;			/* Read Write Permission */
-    unsigned int	mask;			/* ? */
+    int			mask;			/* ? */
 } XIMrmResource, *XIMrmResourceList;
 
 typedef struct {
@@ -108,7 +108,7 @@ typedef struct {
     int			resource_size;		/* Size in bytes of data */
     long		resource_offset;	/* -offset-1 */
     unsigned short 	mode;			/* Read Write Permission */
-    unsigned int	mask;			/* ? */
+    int			mask;			/* ? */
 } XIMResource, *XIMResourceList;
 
 typedef struct {
@@ -125,6 +125,7 @@ typedef struct {
 typedef struct {
     XRectangle		area;
     XRectangle		area_needed;
+    XPoint		spot_location;
     Colormap		colormap;
     Atom		std_colormap;
     unsigned long	foreground;
@@ -168,8 +169,8 @@ typedef struct {
 
 
 typedef struct _XLCd {
-    XLCdMethods		methods;
-    XLCdCoreRec		core;
+    XLCdMethods		methods;		/* methods of this LC */
+    XLCdCoreRec		core;			/* data of this LC */
 } XLCdRec;
 
 
@@ -412,8 +413,6 @@ typedef struct {
 						/* display or subwindows */
     XIMStyle		input_style;		/* IM's input style */
     Window		focus_window;		/* where key events go */
-    XPoint		spot_location;		/* x coord where next char */
-						/* is to be inserted */
     XrmDatabase		res_database;		/* where IM gets resources */
     char *		string_database;	/* string for IM's resources */
     XIMCallback		geometry_callback;	/* client callback */
