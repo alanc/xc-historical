@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.1 90/01/31 17:35:08 jim Exp $
+ * $XConsortium: viewres.c,v 1.2 90/01/31 17:48:23 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,10 +39,12 @@ extern int nwidgets;
 
 static XrmOptionDescRec Options[] = {
   { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
+  { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
 };
 
 static struct _appresources {
     char *top_object;
+    Boolean show_variable;
 } Appresources;
 
 
@@ -50,6 +52,8 @@ static XtResource Resources[] = {
 #define offset(field) XtOffset(struct _appresources *, field)
   { "topObject", "TopObject", XtRString, sizeof(char *),
       offset(top_object), XtRString, (caddr_t) "object" },
+  { "showVariable", "ShowVariable", XtRBoolean, sizeof(Boolean),
+      offset(show_variable), XtRImmediate, (caddr_t) FALSE },
 #undef offset
 };
 
@@ -68,6 +72,8 @@ usage ()
     fprintf(stderr, "\nwhere options include:\n");
     fprintf(stderr,
 	    "    -top name        object to be top of tree\n");
+    fprintf(stderr,
+	    "    -variable        show variable name instead of class name\n");
     fprintf(stderr, "\n");
     exit (1);
 }
@@ -78,13 +84,21 @@ static void build_tree (node, tree, super)
     Widget tree;
     Widget super;
 {
-    Widget w;
-    Arg args[1];
-    WidgetNode *child;
+    Widget w;				/* widget for this Class */
+    WidgetNode *child;			/* iterator over children */
+    Arg args[2];			/* need to set super node */
+    Cardinal n;				/* count of args */
 
-    XtSetArg (args[0], XtNsuperNode, super);
-    w = XtCreateManagedWidget (node->label, commandWidgetClass, tree,
-			       args, ONE);
+    n = 0;
+    XtSetArg (args[n], XtNsuperNode, super); n++;
+    XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
+				  node->label : WnClassname(node))); n++;
+
+    w = XtCreateManagedWidget (node->label, commandWidgetClass, tree, args, n);
+
+    /*
+     * recursively build the rest of the tree
+     */
     for (child = node->children; child; child = child->siblings) {
 	build_tree (child, tree, w);
     }
