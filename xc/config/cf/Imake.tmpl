@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.171 93/07/14 19:19:57 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.172 93/07/14 19:23:18 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -206,9 +206,10 @@ XCOMM
 #endif
 
 #ifdef Mips
-#  define MacroIncludeFile "Mips.cf"
+#  define MacroIncludeFile <Mips.cf>
 #  define MacroFile Mips.cf
 #  undef Mips
+#  undef mips
 #  if defined(SYSTYPE_BSD43) || defined(BSD) || defined(BSD43)
 #    define MipsBsdArchitecture
 #  else /* BSD */
@@ -646,8 +647,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef InstallCmd		/* hack should be in project */
 #if SystemV || SystemV4
-#ifdef UseInstalled
-#define InstallCmd $(BINDIR)/bsdinst
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define InstallCmd bsdinst
 #else
 #define InstallCmd $(SHELL) $(SCRIPTSRC)/bsdinst.sh
 #endif
@@ -784,8 +785,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define DependFlags /**/
 #endif
 #ifndef MkdirHierCmd
-#ifdef UseInstalled
-#define MkdirHierCmd $(SHELL) $(BINDIR)/mkdirhier
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define MkdirHierCmd mkdirhier
 #else
 #define MkdirHierCmd $(SHELL) $(SCRIPTSRC)/mkdirhier.sh
 #endif
@@ -1070,7 +1071,8 @@ XCOMM -------------------------------------------------------------------------
 XCOMM common rules for all Makefiles - do not edit
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank
- * all is to make sure that an empty Imakefile does not default to make clean.
+ * emptyrule is to make sure that an empty Imakefile does not default to make
+ * clean.
  */
 emptyrule::
 
