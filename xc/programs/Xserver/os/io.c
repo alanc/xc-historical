@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.76 93/09/23 10:51:17 dpw Exp $ */
+/* $XConsortium: io.c,v 1.80 94/02/04 19:35:09 dpw Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -951,7 +951,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	WritingClient = who;
 	if ((len = (*oc->Writev) (connection, iov, i)) >= 0)
 #else
-	if ((len = _XSERVTransWritev(trans_conn, iov, i)) >= 0)
+	if (trans_conn && (len = _XSERVTransWritev(trans_conn, iov, i)) >= 0)
 #endif
 	{
 	    written += len;
@@ -1027,8 +1027,11 @@ FlushClient(who, oc, extraBuf, extraCount)
 #endif
 	else
 	{
-	    _XSERVTransClose(oc->trans_conn);
-	    oc->trans_conn = NULL;
+	    if (oc->trans_conn)
+	    {
+		_XSERVTransClose(oc->trans_conn);
+		oc->trans_conn = NULL;
+	    }
 	    MarkClientException(who);
 	    oco->count = 0;
 	    return(-1);
