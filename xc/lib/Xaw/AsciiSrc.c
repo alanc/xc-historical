@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.17 89/09/01 18:31:02 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.18 89/09/11 16:18:19 kit Exp $";
 #endif 
 
 /*
@@ -39,6 +39,7 @@ static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.17 89/09/01 18:31:02 kit Ex
 
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xmu/Misc.h>
+#include <X11/Xmu/CharSet.h>
 
 /****************************************************************
  *
@@ -817,7 +818,7 @@ WriteToFile(src, string, name)
 AsciiSrcWidget src;
 String string, name;
 {
-  char unsigned buf[BUFSIZ];
+  unsigned char buf[BUFSIZ];
   int fd;
   
   if ( ((fd = creat(name, 0666)) == -1 ) ||

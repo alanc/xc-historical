@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.40 89/09/11 13:58:40 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.41 89/09/11 16:17:45 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -164,7 +164,7 @@ unsigned char c;
 	width = font->min_bounds.width;
 
     if (nonPrinting)
-	width += CharWidth(w, x, '^');
+	width += CharWidth(w, x, (unsigned char) '^');
 
     return width;
 }
@@ -186,21 +186,21 @@ PaintText(w, gc, x, y, buf, len)
 Widget w;
 GC gc;
 Position x, y;
-char * buf;
+unsigned char * buf;
 int len;
 {
     AsciiSinkWidget sink = (AsciiSinkWidget) w;
     TextWidget ctx = (TextWidget) XtParent(w);
 
     Position max_x;
-    Dimension width = XTextWidth(sink->text_sink.font, buf, len); 
+    Dimension width = XTextWidth(sink->text_sink.font, (char *) buf, len); 
     max_x = (Position) ctx->core.width;
 
     if ( ((int) width) <= -x)	           /* Don't draw if we can't see it. */
       return(width);
 
     XDrawImageString(XtDisplay(ctx), XtWindow(ctx), gc, 
-		     (int) x, (int) y, buf, len);
+		     (int) x, (int) y, (char *) buf, len);
     if ( (((Position) width + x) > max_x) && (ctx->text.margin.right != 0) ) {
 	x = ctx->core.width - ctx->text.margin.right;
 	width = ctx->text.margin.right;
@@ -259,7 +259,7 @@ XawTextPosition pos1, pos2;
 		  return;
 
 	        x += temp;
-		width = CharWidth(w, x, '\t');
+		width = CharWidth(w, x, (unsigned char) '\t');
 		XFillRectangle(XtDisplay(w), XtWindow(w), invgc, (int) x,
 			       (int) y - sink->text_sink.font->ascent,
 			       (unsigned int) width,

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.114 89/09/06 17:29:54 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.115 89/09/08 17:20:27 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1600,12 +1600,14 @@ XawTextBlock *text;
     return(error);
   }
 
+  XawTextUnsetSelection((Widget)ctx);
+
   ctx->text.lastPos = GETLASTPOS;
   if (ctx->text.lt.top >= ctx->text.lastPos) {
     _XawTextBuildLineTable(ctx, ctx->text.lastPos, FALSE);
     ClearWindow( (Widget) ctx);
     ctx->text.update_disabled = FALSE; /* rearm redisplay. */
-    return error;
+    return(0);			/* Things are fine. */
   }
 
   delta = text->length - (pos2 - pos1);
@@ -1644,7 +1646,7 @@ XawTextBlock *text;
   }
 
   ctx->text.update_disabled = FALSE; /* rearm redisplay. */
-  return error;
+  return(0);			/* Things are fine. */
 }
 
 /*
@@ -2584,7 +2586,7 @@ Widget w;
  * As selections are lost the atom_count will decrement.
  */
       if (GetCutBufferNumber(sel) == NOT_A_CUT_BUFFER)
-	XtDisownSelection(w, sel);
+	XtDisownSelection(w, sel, ctx->text.time);
       LoseSelection(w, &sel); /* In case this is a cut buffer, or 
 				 XtDisownSelection failed to call us. */
     }

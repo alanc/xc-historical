@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.13 89/09/06 17:30:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.14 89/09/11 17:18:22 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -122,12 +122,11 @@ int buffer;
   text.ptr = XFetchBuffer(XtDisplay(ctx), &(text.length), buffer);
   text.firstPos = 0;
   if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
-    XBell(XtDisplay(ctx), 50);
+    XBell(XtDisplay(ctx), 0);
     return;
   }
   ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 				XawstPositions, XawsdRight, text.length, TRUE);
-  XawTextUnsetSelection((Widget)ctx);
   XtFree(text.ptr);
 }
 
@@ -187,14 +186,14 @@ int *format;
   text.length = *length;
   text.format = FMT8BIT;
   if (_XawTextReplace(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
-    XBell(XtDisplay(ctx), 50);
+    XBell(XtDisplay(ctx), 0);
     return;
   }
   ctx->text.insertPos = SrcScan(ctx->text.source, ctx->text.insertPos, 
 				XawstPositions, XawsdRight, text.length, TRUE);
 
-  XawTextUnsetSelection((Widget)ctx);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
   XtFree(client_data);
   XtFree(value);
 }
@@ -251,17 +250,9 @@ XEvent *event;
 String *params;		/* precedence list of selections to try */
 Cardinal *num_params;
 {
-  static String default_params[] = {"PRIMARY", "CUT_BUFFER0"};
-  Cardinal count;
-
-  StartAction((TextWidget)w, event);
-  if ((count = *num_params) == 0) {
-    params = default_params;
-    count = XtNumber(default_params);
-  }
-  GetSelection(w, ((TextWidget)w)->text.time, params, count);
+  StartAction((TextWidget)w, event); /* Get Time. */
+  GetSelection(w, ((TextWidget)w)->text.time, params, *num_params);
   EndAction((TextWidget)w);
-  _XawTextSetScrollBars((TextWidget) w);
 }
 
 /************************************************************
@@ -504,9 +495,7 @@ Boolean	kill;
   }
   ctx->text.insertPos = from;
   ctx->text.showposition = TRUE; 
-  XawTextUnsetSelection((Widget)ctx);
 }
-
 
 static void
 DeleteOrKill(ctx, event, dir, type, include, kill)
@@ -669,10 +658,8 @@ TextWidget ctx;
     XBell( XtDisplay(ctx), 50);
     error = XawEditError;
   }
-  else {
-    XawTextUnsetSelection((Widget)ctx);
+  else 
     ctx->text.showposition = TRUE;
-  }
 
   XtFree(buf);
   return(error);
@@ -979,7 +966,6 @@ XEvent *event;
       SrcScan(ctx->text.source, ctx->text.insertPos,
 	      XawstPositions, XawsdRight, text.length, TRUE);
     AutoFill(ctx);
-    XawTextUnsetSelection((Widget)ctx);
   }
   else 
     XBell(XtDisplay(ctx), 50);
@@ -1034,7 +1020,6 @@ Cardinal *num_params;
       SrcScan(ctx->text.source, ctx->text.insertPos,
 	      XawstPositions, XawsdRight, text.length, TRUE);
   }
-  XawTextUnsetSelection((Widget)ctx);
   EndAction(ctx);
 }
 
