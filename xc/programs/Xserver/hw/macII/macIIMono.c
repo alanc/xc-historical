@@ -90,12 +90,10 @@ macIIMonoSaveScreen (pScreen, on)
     int         state = on;
     if (on != SCREEN_SAVER_ON) {
       SetTimeSinceLastInputEvent();
-/*	state = FBVIDEO_ON; */
+	state = 1;
     } else {
-/*	state = FBVIDEO_OFF; */
+	state = 0;
     }
-/* XXX fd is closed??!! XXX */
-/*    (void) ioctl(macIIFbs[pScreen->myNum].fd, FBIOSVIDEO, &state); */
     return TRUE;
 }
 
@@ -118,7 +116,12 @@ macIIMonoCloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
 {
+#ifdef never
+    extern macIIBlackScreen();
+
+    macIIBlackScreen(pScreen->myNum);
     return (pScreen->SaveScreen(pScreen, SCREEN_SAVER_OFF));
+#endif never
 }
 
 /*-
@@ -317,11 +320,11 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
 	}
 
 	{
-		static char *video_virtaddr = (char *) (120 * 1024 * 1024);
+		static char *video_virtaddr = 120 * 1024 * 1024;
 		struct video_map vmap;
 		struct strioctl ctl; /* Streams ioctl control structure */
 
-		/* map to next 8MB segment boundary above 128M */
+		/* map frame buffer to next 8MB segment boundary above 128M */
 		video_virtaddr = video_virtaddr + (8 * 1024 * 1024); 
 	        vmap.map_physnum = 0;
         	vmap.map_virtaddr = video_virtaddr;
@@ -341,7 +344,6 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
 		(void) close(fd);
 	}
 
-	macIIFbs[index].fd = fd; /* This fd has been closed! XXX */
 	macIIFbs[index].info = fbType;
 	macIIFbData[fbNum].probeStatus = probedAndSucceeded;
 
