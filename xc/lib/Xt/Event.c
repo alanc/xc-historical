@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.145 93/08/15 15:52:29 converse Exp $ */
+/* $XConsortium: Event.c,v 1.146 93/08/15 16:15:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -742,10 +742,6 @@ static void CompressExposures();
 /* because some compilers allocate all local locals on procedure entry */
 #define EHSIZE 4
 
-#define XtDidNothing	False
-#define XtDidDispatch	True
-#define XtDidFilter	2
-
 static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
     register XEvent    *event;
     Widget    widget;
@@ -753,8 +749,8 @@ static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
     XtPerDisplay pd;
 {
     register XtEventRec *p;   
-    Boolean was_dispatched = XtDidNothing;
-    Boolean call_tm = XtDidNothing;
+    Boolean was_dispatched = False;
+    Boolean call_tm = False;
     Boolean cont_to_disp;
 
     if ( (mask == ExposureMask) ||
@@ -774,13 +770,13 @@ static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
 	    else {
 		CompressExposures(event, widget, pd);
 	    }
-	    was_dispatched = XtDidDispatch;
+	    was_dispatched = True;
 	}
     }
 
     if ((mask == VisibilityChangeMask) &&
         XtClass(widget)->core_class.visible_interest) {
-	    was_dispatched = XtDidDispatch;
+	    was_dispatched = True;
 	    /* our visibility just changed... */
 	    switch (((XVisibilityEvent *)event)->state) {
 		case VisibilityUnobscured:
@@ -803,7 +799,7 @@ static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
     /* to maintain "copy" semantics we check TM now but call later */
     if (widget->core.tm.translations &&
 	(mask & widget->core.tm.translations->eventMask))
-	call_tm = XtDidDispatch;
+	call_tm = True;
 
     cont_to_disp = True;
     p=widget->core.event_table;
@@ -834,12 +830,12 @@ static Boolean _XtDispatchEventToWidget(event, widget, mask, pd)
 		    for (i = 0; i < numprocs && cont_to_disp; i++)
 			(*(proc[i]))(widget, closure[i], event, &cont_to_disp);
 		}
-		was_dispatched = XtDidDispatch;
+		was_dispatched = True;
 	    }
 	} else if ((!p->has_type_specifier && (mask & p->mask)) ||
 		   (p->has_type_specifier && event->type == EXT_TYPE(p))) {
 	    (*p->proc)(widget, p->closure, event, &cont_to_disp);
-	    was_dispatched = XtDidDispatch;
+	    was_dispatched = True;
 	}
     }
     if (call_tm && cont_to_disp)
@@ -1083,7 +1079,7 @@ EventMask _XtConvertTypeToMask (eventType)
     if (eventType < XtNumber(masks))
 	return masks[eventType];
     else
-	return 0;
+	return NoEventMask;
 }
 
 Boolean _XtOnGrabList(widget, grabList)
@@ -1122,8 +1118,6 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     EventMask mask;
     XtPerDisplay pd;
 {
-    if (XFilterEvent(event, XtWindow(widget)))
-	return XtDidFilter;
 
     if (mask == EnterWindowMask &&
 	    widget->core.widget_class->core_class.compress_enterleave) {
@@ -1138,7 +1132,7 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 		 nextEvent.xcrossing.detail == NotifyInferior)) {
 		/* skip the enter/leave pair */
 		XNextEvent(event->xcrossing.display, &nextEvent);
-		return XtDidNothing;
+		return False;
 	    }
 	}
     }
@@ -1175,7 +1169,7 @@ static Boolean DecideToDispatch(event)
 
     mask = _XtConvertTypeToMask(event->xany.type);
     /* the default dispatcher discards all extension events */
-    if (mask == 0) return XtDidNothing;
+    if (mask == NoEventMask) return False;
 
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
     pd = _XtGetPerDisplay(event->xany.display);
@@ -1184,11 +1178,8 @@ static Boolean DecideToDispatch(event)
 
     grabType = pass;
     switch (event->xany.type) {
-
       case KeyPress:
-      case KeyRelease:		grabType = remap;
-				break;
-
+      case KeyRelease:
       case ButtonPress:
       case ButtonRelease:	grabType = remap;
 				break;
@@ -1200,8 +1191,7 @@ static Boolean DecideToDispatch(event)
 #undef XKnownButtons
 				break;
 
-      case EnterNotify:
-				grabType = ignore;
+      case EnterNotify:		grabType = ignore;
 	                        break;
     }
 
@@ -1210,55 +1200,58 @@ static Boolean DecideToDispatch(event)
 	    return XFilterEvent(event, None);
 	/* event occurred in a non-widget window, but we've promised also
 	   to dispatch it to the nearest accessible spring_loaded widget */
-	else if ((widget = LookupSpringLoaded(grabList)) != NULL)
-	    return DispatchEvent(event, widget, mask, pd);
+	else if ((widget = LookupSpringLoaded(grabList)) != NULL) {
+	    if (XFilterEvent(event, XtWindow(widget)))
+		return True;
+	    return _XtDispatchEventToWidget(event, widget, mask, pd);
+	}
 	return XFilterEvent(event, None);
     }
 
-    switch(grabType) {
-	case pass:
+    switch (grabType) {
+      case pass:
+	if (XFilterEvent(event, XtWindow(widget)))
+	    return True;
+	return _XtDispatchEventToWidget(event, widget, mask, pd);
+
+      case ignore:
+	if ((grabList == NULL || _XtOnGrabList(widget, grabList))
+	    && XtIsSensitive(widget)) {
+	    if (XFilterEvent(event, XtWindow(widget)))
+		return True;
 	    return DispatchEvent(event, widget, mask, pd);
+	}
+	return False;
 
-	case ignore:
-	    if ((grabList == NULL || _XtOnGrabList(widget,grabList))
-		&& XtIsSensitive(widget)) {
-		return DispatchEvent(event, widget, mask, pd);
-	    }
-	    return XtDidNothing;
+      case remap: {
+	  Boolean was_dispatched = False;
+	  extern Widget _XtFindRemapWidget();
+	  extern void _XtUngrabBadGrabs();
 
-	case remap:
+	  dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
 	    
-	    {
-		Boolean was_dispatched = XtDidNothing;
-		extern Widget _XtFindRemapWidget();
-		extern void _XtUngrabBadGrabs();
-
-		dspWidget = _XtFindRemapWidget(event, widget, mask, pdi);
+	  if ((grabList == NULL || _XtOnGrabList(dspWidget, grabList))
+	      && XtIsSensitive(dspWidget)) {
+	      if (XFilterEvent(event, XtWindow(widget)))
+		  return True;
+	      was_dispatched = _XtDispatchEventToWidget(event, dspWidget,
+							mask, pd);
+	  }
+	  else _XtUngrabBadGrabs(event, widget, mask, pdi);
 		
-		if ((grabList == NULL || 
-		     _XtOnGrabList(dspWidget, grabList)) &&
-		    XtIsSensitive(dspWidget)) {
-		    was_dispatched = DispatchEvent(event, dspWidget,
-						   mask, pd);
-		    if (was_dispatched & XtDidFilter)
-			return was_dispatched;
-		}
-		else _XtUngrabBadGrabs(event, widget, mask, pdi);
-		
-		/* Also dispatch to nearest accessible spring_loaded. */
-		/* Fetch this afterward to reflect modal list changes */
-		grabList = *_XtGetGrabList(pdi);
-		widget = LookupSpringLoaded(grabList);
-		if (widget != NULL && widget != dspWidget) {
-		    was_dispatched |= DispatchEvent(event, widget,
-						    mask, pd);
-		}
-		
-		return was_dispatched;
-	    }
+	  /* Also dispatch to nearest accessible spring_loaded. */
+	  /* Fetch this afterward to reflect modal list changes */
+	  grabList = *_XtGetGrabList(pdi);
+	  widget = LookupSpringLoaded(grabList);
+	  if (widget != NULL && widget != dspWidget) {
+	      was_dispatched |= _XtDispatchEventToWidget(event, widget,
+							 mask, pd);
+	  }
+	  return was_dispatched;
+      }
     }
     /* should never reach here */
-    return XtDidNothing;
+    return False;
 }
 
 Boolean XtDispatchEvent (event)
@@ -1312,7 +1305,7 @@ Boolean XtDispatchEvent (event)
 	if (app->free_bindings) _XtDoFreeBindings(app);
     }
     
-    return (was_dispatched != XtDidNothing);
+    return was_dispatched;
 }
 
 /* ARGSUSED */
@@ -1513,8 +1506,11 @@ void _XtSendFocusEvent(child, type)
 	event.window = XtWindow(child);
 	event.mode = NotifyNormal;
 	event.detail = NotifyAncestor;
-	DispatchEvent((XEvent*)&event, child, _XtConvertTypeToMask(type),
-			  _XtGetPerDisplay(dpy));
+	if (XFilterEvent((XEvent*)&event, XtWindow(child)))
+	    return;
+	_XtDispatchEventToWidget((XEvent*)&event, child,
+				 _XtConvertTypeToMask(type),
+				 _XtGetPerDisplay(dpy));
     }
 }
 
