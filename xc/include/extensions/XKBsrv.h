@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.2 93/09/26 23:46:10 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.3 93/09/26 23:50:14 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -95,11 +95,11 @@ typedef struct _XKBSrvInfoRec {
 
 	CARD32		 accessXFlags;
 	CARD32		 lastPtrEventTime;
-	struct _XTimer	*mouseKeyTimer;
-	struct _XTimer	*slowKeysTimer;
-	struct _XTimer	*bounceKeysTimer;
-	struct _XTimer	*repeatKeyTimer;
-	struct _XTimer	*krgTimer;
+	OsTimerPtr	 mouseKeyTimer;
+	OsTimerPtr	 slowKeysTimer;
+	OsTimerPtr	 bounceKeysTimer;
+	OsTimerPtr	 repeatKeyTimer;
+	OsTimerPtr	 krgTimer;
 
 	CARD8		 dfltNumLockMod;
 	CARD8		 compatGroup2Mod;
