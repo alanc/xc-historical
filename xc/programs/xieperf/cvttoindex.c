@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.3 93/10/27 21:52:05 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.4 93/11/05 17:07:48 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************
@@ -67,6 +67,8 @@ extern Bool showErrors;
 extern Bool dontClear;
 extern Window drawableWindow;
 
+void EndConvertToIndex();
+
 int 
 InitConvertToIndex(xp, p, reps)
 XParms  xp;
@@ -102,6 +104,8 @@ int     reps;
 
 	if ( reps )
 	{
+		if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
+			InstallDefaultColormap( xp ); 
 		if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == False ) 		{
 			ditheredPhotomap = 
 				GetXIEDitheredTriplePhotomap( xp, p, 1, 
@@ -129,10 +133,9 @@ int     reps;
 			}
 		}
 	}
+
 	if ( reps )
 	{
-		if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
-			InstallDefaultColormap( xp->d, xp->p ); 
 		if ( !CreateCvtToIndexFlo( xp, p ) ) 
 		{
 			fprintf( stderr, 
@@ -143,9 +146,7 @@ int     reps;
 
 	if ( !reps )
 	{
-		if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
-			InstallCustomColormap( xp->d, xp->p );
-		FreeCvtToIndexStuff( xp, p );
+		EndConvertToIndex( xp, p );
 	}
 	return( reps );
 }
@@ -291,7 +292,7 @@ XParms  xp;
 Parms   p;
 {
 	if ( ( ( CvtToIndexParms * ) p->ts )->useDefaultCmap == True )
-		InstallCustomColormap( xp->d, xp->p );
+		InstallCustomColormap( xp );
 	if ( ( ( CvtToIndexParms * ) p->ts )->addCvtFromIndex == True )
 	{
 	        XUnmapWindow( xp->d, drawableWindow );
