@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.76 93/09/29 17:52:17 kaleb Exp $
+ * $XConsortium: twm.h,v 1.3 94/06/16 16:33:00 mor Exp $
  *
  * twm include file
  *
@@ -71,12 +71,13 @@ from the X Consortium.
 #include <X11/cursorfont.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xfuncs.h>
+#include <X11/StringDefs.h>
+#include <X11/Intrinsic.h>
 
 #ifndef WithdrawnState
 #define WithdrawnState 0
 #endif
 
-typedef unsigned long Pixel;
 #define PIXEL_ALREADY_TYPEDEFED		/* for Xmu/Drawing.h */
 
 #ifdef SIGNALRETURNSINT
@@ -308,6 +309,21 @@ typedef struct TwmWindow
     } ring;
 } TwmWindow;
 
+
+typedef struct TWMWinConfigEntry
+{
+    struct TWMWinConfigEntry *next;
+    int tag;
+    char *client_id;
+    XClassHint class;
+    char *wm_name;
+    int wm_command_count;
+    char **wm_command;
+    int iconified;
+    unsigned short x, y, width, height;
+} TWMWinConfigEntry;
+
+
 #define DoesWmTakeFocus		(1L << 0)
 #define DoesWmSaveYourself	(1L << 1)
 #define DoesWmDeleteWindow	(1L << 2)
@@ -333,6 +349,7 @@ void ComputeCommonTitleOffsets();
 void ComputeWindowTitleOffsets(), ComputeTitleLocation();
 extern char *ProgramName;
 extern Display *dpy;
+extern XtAppContext appContext;
 extern Window ResizeWindow;	/* the window we are resizing */
 extern int HasShape;		/* this server supports Shape extension */
 extern int HasSync;		/* this server supports SYNC extension */
@@ -390,5 +407,6 @@ extern Atom TwmAtoms[];
 #define _XA_WM_TAKE_FOCUS		TwmAtoms[5]
 #define _XA_WM_SAVE_YOURSELF		TwmAtoms[6]
 #define _XA_WM_DELETE_WINDOW		TwmAtoms[7]
+#define _XA_SM_CLIENT_ID		TwmAtoms[8]
 
 #endif /* _TWM_ */
