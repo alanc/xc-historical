@@ -1,5 +1,5 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.27 89/05/11 19:24:32 converse Exp $";
+#if !defined lint && !defined SABER
+static char rcs_id[] = "$XConsortium: pick.c,v 2.28 89/05/31 10:32:39 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -721,9 +721,8 @@ FormBox form;
 }
 
 
-static FormBox MakeAForm(pick, position)
+static FormBox MakeAForm(pick)
 Pick pick;
-int position;
 {
     static Arg arglist1[] = {
 	{XtNallowHoriz, (XtArgVal)TRUE},
@@ -758,8 +757,9 @@ AddPick(scrn, toc, fromseq, toseq)
     Pick pick;
     FormBox general, details;
     char str[100];
+#ifdef notdef
     int height;
-
+#endif notdef
     if (scrn->pick) {
 	pick = scrn->pick;
 	CleanForm(pick->details);
@@ -769,10 +769,10 @@ AddPick(scrn, toc, fromseq, toseq)
 	pick->scrn = scrn;
 	pick->errorwidget = NULL;
 
-	pick->label = CreateTitleBar(scrn, 0);
+	pick->label = CreateTitleBar(scrn);
 
-	pick->details = details = MakeAForm(pick, 1);
-	pick->general = general = MakeAForm(pick, 2);
+	pick->details = details = MakeAForm(pick);
+	pick->general = general = MakeAForm(pick);
 	FindStdWidth();
 
 	XawPanedSetRefigureMode(scrn->widget, False);

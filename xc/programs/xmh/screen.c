@@ -1,7 +1,7 @@
-#ifndef lint
+#if !defined lint && !defined SABER
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.33 89/05/11 19:24:48 converse Exp $";
-#endif lint
+    "$XConsortium: screen.c,v 2.34 89/05/31 10:36:06 swick Exp $";
+#endif
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -172,13 +172,13 @@ Scrn scrn;
 
     scrn->folderbuttons = BBoxRadioCreate(scrn, "folders", True);
     scrn->mainbuttons = BBoxCreate(scrn, "folderButtons");
-    scrn->toclabel = CreateTitleBar(scrn, 2);
-    scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0);
+    scrn->toclabel = CreateTitleBar(scrn);
+    scrn->tocwidget = CreateTextSW(scrn, "toc", 0);
 /* %%%				   arglist2, XtNumber(arglist2)); */
     scrn->seqbuttons = BBoxRadioCreate(scrn, "seqButtons", True);
     scrn->tocbuttons = BBoxCreate(scrn, "tocButtons");
-    scrn->viewlabel = CreateTitleBar(scrn, 6);
-    scrn->viewwidget = CreateTextSW(scrn, 7, "view", wordBreak);
+    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewwidget = CreateTextSW(scrn, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
 
     buttonbox = scrn->folderbuttons;
@@ -252,8 +252,8 @@ Scrn scrn;
 MakeView(scrn)
 Scrn scrn;
 {
-    scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "view", wordBreak);
+    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewwidget = CreateTextSW(scrn, "view", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "viewButtons");
     FillViewButtons(scrn);
 }
@@ -262,8 +262,8 @@ Scrn scrn;
 MakeComp(scrn)
 Scrn scrn;
 {
-    scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", wordBreak);
+    scrn->viewlabel = CreateTitleBar(scrn);
+    scrn->viewwidget = CreateTextSW(scrn, "comp", wordBreak);
     scrn->viewbuttons = BBoxCreate(scrn, "compButtons");
     FillCompButtons(scrn);
 }
@@ -275,7 +275,6 @@ Scrn CreateNewScrn(kind)
 ScrnKind kind;
 {
     int i;
-    Position x, y;
     Scrn scrn;
     static Arg arglist[] = {
 	{XtNgeometry, NULL},

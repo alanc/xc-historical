@@ -1,6 +1,6 @@
-#ifndef lint
+#if !defined lint && !defined SABER
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.21 89/04/10 11:50:02 converse Exp $";
+    "$XConsortium: util.c,v 2.22 89/05/11 19:24:43 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -323,9 +323,8 @@ char *str;
 
 
 
-Widget CreateTextSW(scrn, position, name, options)
+Widget CreateTextSW(scrn, name, options)
 Scrn scrn;
-int position;
 char *name;
 int options;
 {
@@ -342,9 +341,8 @@ int options;
 
 
 
-Widget CreateTitleBar(scrn, position)
+Widget CreateTitleBar(scrn)
 Scrn scrn;
-int position;
 {
     Widget result;
     int height;
