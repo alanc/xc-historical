@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.13 88/02/09 11:14:54 jim Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.14 88/06/29 15:18:45 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -113,7 +113,9 @@ main(argc, argv)
 		sethostent(1); /* don't close the data base each time */
 		list = XListHosts(dpy, &nhosts, &enabled);
 		printf ("Host Access Control %s.\n", 
-			enabled ? "enabled": "disabled");
+			(enabled ? 
+			 "enabled (only the following hosts are allowed)": 
+			 "disabled (any host is allowed)"));
 		if (nhosts != 0) {
 		    for (i = 0; i < nhosts; i++ )  {
 		      hostname = get_hostname(&list[i]);
