@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SMlibint.h,v 1.1 93/09/03 13:24:55 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -103,16 +103,28 @@ purpose.  It is provided "as is" without express or implied warranty.
         _pBuf += PAD64 (4 + _len); \
 }
 
+#define EXTRACT_ARRAY8_AS_STRING(_pBuf, _string) \
+{ \
+    CARD32 _len; \
+    EXTRACT_CARD32 (_pBuf, _len); \
+    _string = (char *) malloc (_len + 1); \
+    bcopy (_pBuf, _string, _len); \
+    _string[_len] = '\0'; \
+    _pBuf += _len; \
+    if (PAD64 (4 + _len)) \
+        _pBuf += PAD64 (4 + _len); \
+}
+
 #define EXTRACT_LISTOF_PROPERTY(_pBuf, _count, _props) \
 { \
-    int _i, _j, _len; \
+    int _i, _j; \
     EXTRACT_CARD32 (_pBuf, _count); \
-    _props = (SmProp *) malloc (_count * sizeof (SmProp)); \
     _pBuf += 4; \
+    _props = (SmProp *) malloc (_count * sizeof (SmProp)); \
     for (_i = 0; _i < _count; _i++) \
     { \
-        EXTRACT_ARRAY8 (_pBuf, _len, _props[_i].name); \
-        EXTRACT_ARRAY8 (_pBuf, _len, _props[_i].type); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _props[_i].name); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _props[_i].type); \
         EXTRACT_CARD32 (_pBuf, _props[_i].num_vals); \
         _pBuf += 4; \
         _props[_i].vals = (SmPropValue *) malloc ( \
@@ -125,6 +137,16 @@ purpose.  It is provided "as is" without express or implied warranty.
 	} \
     } \
 }
+
+
+/*
+ * Client replies not processed by callbacks (we block for them).
+ */
+
+typedef struct {
+    Status  	status;		/* if 1, client successfully registered */
+    char	*client_id;
+} _SmcRegisterClientReply;
 
 
 /*
@@ -147,8 +169,8 @@ extern int	        _SmAuthCount;
 extern IceOCLauthRec	_SmcAuthRecs[];
 extern IceACLauthRec	_SmsAuthRecs[];
 
-extern SmcCallbacks _SmcCallbacks;
-extern SmsCallbacks _SmsCallbacks;
+extern SmcCallbacks 	_SmcCallbacks;
+extern SmsCallbacks 	_SmsCallbacks;
 
 extern SmcErrorHandler _SmcErrorHandler;
 extern SmsErrorHandler _SmsErrorHandler;
