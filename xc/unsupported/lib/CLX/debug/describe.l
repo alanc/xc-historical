@@ -88,7 +88,7 @@
   (format t "~2d ~3d " i value)
   (if (consp type)
       (case (first type)
-	(bitmask (format t "~a" (decode-mask (symbol-value (second type)) value))
+	(bitmask (format t "~a" (nreverse (decode-mask (symbol-value (second type)) value)))
 		 (setq type (car type)))
 	(member (if (null (setq temp (nth value (cdr type))))
 		    (format t "*****ERROR*****")
