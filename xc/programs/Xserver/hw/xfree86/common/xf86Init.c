@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xf86Init.c,v 1.5 94/12/14 14:25:59 kaleb Exp kaleb $
+ * $XConsortium: xf86Init.c,v 1.6 95/01/06 20:57:34 kaleb Exp kaleb $
  * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.13 1994/12/29 10:07:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -581,16 +581,4 @@ xf86PrintConfig()
   for (i = 0; i < xf86MaxScreens; i++)
     if (xf86Screens[i])
       (xf86Screens[i]->PrintIdent)();
-}
-
-void
-OsVendorInit()
-{
-    extern void xf86LockServer();
-    static int been_here = FALSE;
-
-    if (!been_here) {
-	xf86LockServer();
-	been_here = TRUE;
-    }
 }
