@@ -1,10 +1,11 @@
 /*
- * $XConsortium: def.h,v 1.21 92/08/22 14:36:45 rws Exp $
+ * $XConsortium: def.h,v 1.22 93/08/17 21:31:32 rws Exp $
  */
 #include <X11/Xosdefs.h>
 #ifdef WIN32
 #include <X11/Xw32defs.h>
 #endif
+#include <X11/Xfuncproto.h>
 #include <stdio.h>
 #include <ctype.h>
 #ifndef X_NOT_POSIX
@@ -111,3 +112,9 @@ struct symtab		*fdefined();
 struct filepointer	*getfile();
 struct inclist		*newinclude();
 struct inclist		*inc_path();
+
+#if NeedVarargsPrototypes
+extern fatalerr(char *, ...);
+extern warning(char *, ...);
+extern warning1(char *, ...);
+#endif
