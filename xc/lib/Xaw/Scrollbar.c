@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Scroll.c,v 1.4 87/09/11 21:24:24 swick Locked $";
 #endif lint
 
 /*
@@ -294,12 +294,9 @@ static void Initialize( gw )
         w->scrollbar.thumb = XtGrayPixmap( XtScreen(w) );
     }
 
-    gcValues.foreground = w->scrollbar.foreground;
     gcValues.fill_style = FillTiled;
     gcValues.tile = w->scrollbar.thumb;
-    w->scrollbar.gc = XtGetGC( w,
-			       GCForeground | GCFillStyle | GCTile,
-			       &gcValues);
+    w->scrollbar.gc = XtGetGC( w, GCFillStyle | GCTile, &gcValues);
 
     if (w->core.width == 0)  w->core.width = 1;
     if (w->core.height == 0) w->core.height = 1;
