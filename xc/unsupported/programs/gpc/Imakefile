@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.6 91/02/17 10:46:48 rws Exp $
+# $XConsortium: Imakefile,v 1.7 91/02/17 12:05:27 rws Exp $
 #
 ##
 ## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -51,8 +51,8 @@ DEFINES = -DUSING_PHIGS
 ComplexProgramTarget(plbpex)
 
 bifparse::
-        $(CP) bifparse.yacc bifparse.y
-        $(YACC) -d -v bifparse.y
-        $(MV) y.tab.c bifparse.c
-        $(MV) y.tab.h bifparse.h
-        $(RM) bifparse.y
+	$(CP) bifparse.yacc bifparse.y
+	$(YACC) -d -v bifparse.y
+	$(MV) y.tab.c bifparse.c
+	$(MV) y.tab.h bifparse.h
+	$(RM) bifparse.y
