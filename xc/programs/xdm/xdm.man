@@ -1,4 +1,15 @@
-.\" $XConsortium: xdm.man,v 1.29 94/04/11 14:28:18 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.30 94/04/11 16:03:18 matt Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XDM 1 "Release 6" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP
@@ -26,7 +37,6 @@ xdm \- X Display Manager with support for XDMCP
 .I session_program
 ]
 .SH DESCRIPTION
-.PP
 .I Xdm
 manages a collection of X displays, which may be on the local host
 or remote servers.  The design of
@@ -72,59 +82,42 @@ Pay particular attention to the
 .B "Session Program"
 section, which will describe how to
 set up the style of session desired.
+.SH "OVERVIEW"
+\fIxdm\fP is highly configurable, and most of its behavior can be
+controlled by resource files and shell scripts.  The names of these
+files themselves are resources read from the file \fIxdm-config\fP or
+the file named by the \fB\-config\fP option.
 .PP
-.SH "TYPICAL USAGE"
+\fIxdm\fP offers display management two different ways.  It can manage
+X servers running on the local machine and specified in
+\fIXservers\fP, and it can manage remote X servers (typically X
+terminals) using XDMCP (the XDM Control Protocol)
+as specified in the \fIXaccess\fP file.
 .PP
-Actually,
-.I xdm
-is designed to operate in such a wide variety of environments that
-.I typical
-is probably a misnomer.
+The resources of the X clients run by \fIxdm\fP outside the user's
+session, including \fIxdm\fP's own login window, can be
+affected by setting resources in the \fIXresources\fP file.
 .PP
-First, the
-.I xdm
-configuration file should be set up.
-Make a directory (usually \fI<XRoot>/lib/X11/xdm\fP, where <XRoot>
-refers to the root of the X11 install tree) to contain all of the relevant
-files.  In the examples that follow, we use /usr/X11R6 as the value of
-<XRoot>.
-.LP
-Here is a reasonable configuration file, which could be
-named \fIxdm-config\fP:
-.nf
-
-.ta .5i 4i
-
-	DisplayManager.servers:	/usr/X11R6/lib/X11/xdm/Xservers
-	DisplayManager.errorLogFile:	/usr/X11R6/lib/X11/xdm/xdm-errors
-	DisplayManager*resources:	/usr/X11R6/lib/X11/xdm/Xresources
-	DisplayManager*startup:	/usr/X11R6/lib/X11/xdm/Xstartup
-	DisplayManager*session:	/usr/X11R6/lib/X11/xdm/Xsession
-	DisplayManager.pidFile:	/usr/X11R6/lib/X11/xdm/xdm-pid
-	DisplayManager._0.authorize:	true
-	DisplayManager*authorize:	false
-
-.fi
+For X terminals that do not offer a menu of hosts to get display
+management from, \fIxdm\fP can collect willing hosts and run the
+\fIchooser\fP program to offer the user a menu.
+For X displays attached to a host, this step is typically not used, as
+the local host does the display management.
 .PP
-Note that this file simply contains references to other files.  Note also
-that some of the resources are specified with ``*'' separating the
-components.  These resources can be made unique for each different display,
-by replacing the ``*'' with the display-name, but normally this is not very
-useful.  See the \fBResources\fP section for a complete discussion.
+After resetting the X server, \fIxdm\fP runs the \fIXsetup\fP script
+to assist in setting up the screen the user sees along with the
+\fIxlogin\fP widget.
 .PP
-The first file, \fI/usr/X11R6/lib/X11/xdm/Xservers,\fP
-contains the list of displays to manage that are not using XDMCP.
-Most workstations have only one display, numbered 0, so the file
-will look something like this:
-.nf
-.ta .5i
-
-	:0 Local local /usr/X11R6/bin/X :0
-
-.fi
+When the user logs in, \fIxdm\fP runs the \fIXstartup\fP script as
+root.
 .PP
-This will keep \fI/usr/X11R6/bin/X\fP running on this display and
-manage a continuous cycle of sessions.
+Then \fIxdm\fP runs the \fIXsession\fP script as the user.  This
+system session file may do some additional startup and typically runs
+a script in the user's home directory.  When the \fIXsession\fP script
+exits, the session is over.
+.PP
+At the end of the session, the \fIXreset\fP script is run to clean up,
+the X server is reset, and the cycle starts over.
 .PP
 The file \fI/usr/X11R6/lib/X11/xdm/xdm-errors\fP will contain error 
 messages from
@@ -136,109 +129,9 @@ When you have trouble getting
 working, check this file to see if
 .I xdm
 has any clues to the trouble.
-.PP
-The next configuration entry, \fI/usr/X11R6/lib/X11/xdm/Xresources\fP, is 
-loaded onto the display as a resource database using
-.I xrdb.
-As the authentication
-widget reads this database before starting up, it usually contains
-parameters for that widget:
-.nf
-.ta .5i 1i
-
-	xlogin*login.translations: #override\\
-		<Key>F1: set-session-argument(failsafe) finish-field()\\n\\
-		<Key>Return: set-session-argument() finish-field()
-	xlogin*borderWidth: 3
-	#ifdef COLOR
-	xlogin*greetColor: CadetBlue
-	xlogin*failColor: red
-	#endif
-
-.fi
-.PP
-Please note the translations entry; it specifies
-a few new translations for the widget which allow users to escape from the
-default session (and avoid troubles that may occur in it).  Note that if
-#override is not specified, the default translations are removed and replaced
-by the new value, not a very useful result as some of the default translations
-are quite useful (such as ``<Key>: insert-char ()'' which responds to normal
-typing).
-.PP
-The \fIXstartup\fP file shown here simply prevents login while the
-file \fI/etc/nologin\fP
-exists.  As there is no provision for displaying any messages here
-(there isn't any core X client which displays files),
-the user will probably be baffled by this behavior.
-Thus this is not a complete example, but
-simply a demonstration of the available functionality.
-.PP
-Here is a sample \fIXstartup\fP script:
-.nf
-.ta .5i 1i
-
-	#!/bin/sh
-	#
-	# Xstartup
-	#
-	# This program is run as root after the user is verified
-	#
-	if [ \-f /etc/nologin ]; then
-		exit 1
-	fi
-	exit 0
-.fi
-.PP
-.PP
-The most interesting script is \fIXsession\fP.  This version recognizes
-the special
-``failsafe'' mode, specified in the translations
-in the \fIXresources\fP file above, to provide an escape
-from the ordinary session:
-.nf
-.ta .5i 1i 1.5i
-
-	#!/bin/sh
-	#
-	# Xsession
-	#
-	# This is the program that is run as the client
-	# for the display manager.  This example is
-	# quite friendly as it attempts to run a per-user
-	# .xsession file instead of forcing a particular
-	# session layout
-	#
-	
-	case $# in
-	1)
-		case $1 in
-		failsafe)
-			exec xterm \-geometry 80x24\-0\-0 \-ls
-			;;
-		esac
-	esac
-	
-	startup=$HOME/.xsession
-	resources=$HOME/.Xresources
-	
-	if [ \-f $startup ]; then
-		exec $startup
-		exec /bin/sh $startup
-	else
-		if [ ! \-f $resources ]; then
-			resources=$HOME/.Xdefaults
-		fi
-		if [ \-f $resources ]; then
-			xrdb \-load $resources
-		fi
-		twm &
-		exec xterm \-geometry 80x24+10+10 \-ls
-	fi
-
-.fi
 .SH OPTIONS
 .PP
-All of these options, except \fB\-config\fP,
+All of these options, except \fB\-config\fP itself,
 specify values that can also be specified in the configuration file
 as resources.
 .IP "\fB\-config\fP \fIconfiguration_file\fP"
@@ -247,6 +140,7 @@ the behavior of
 .I xdm.
 .I <XRoot>/lib/X11/xdm/xdm-config
 is the default.
+See the section \fBConfiguration File\fP.
 .IP "\fB\-nodaemon\fP"
 Specifies ``false'' as the value for the \fBDisplayManager.daemonMode\fP
 resource.
@@ -282,7 +176,7 @@ authentication widget.
 .IP "\fB\-server\fP \fIserver_entry\fP"
 Specifies the value for the \fBDisplayManager.servers\fP resource.
 See the section
-.B "Server Specification"
+.B "Local Server Specification"
 for a description of this resource.
 .IP "\fB\-udpPort\fP \fIport_number\fP"
 Specifies the value for the \fBDisplayManager.requestPort\fP resource.  This
@@ -309,18 +203,29 @@ while others modify its behavior on a single display.  Where actions relate
 to a specific display,
 the display name is inserted into the resource name between
 ``DisplayManager'' and the final resource name segment.
-For example, \fBDisplayManager.expo_0.startup\fP is the name of the 
-resource which defines the startup shell file on the ``expo:0'' display.
+.PP
+For local displays, the resource name and class are as read from the
+\fIXservers\fP file.
+.PP
+For remote displays, the resource name is what the network address of
+the display resolves to.  See the \fBremoveDomain\fP resource.  The
+name must match exactly.  If the name resolve fails, the address is
+used.  The resource class is as sent by the display in the XDMCP
+Manage request.
+.PP
 Because the resource
 manager uses colons to separate the name of the resource from its value and
 dots to separate resource name parts,
 .I xdm
 substitutes underscores for both dots and colons when generating the resource
 name.
+For example, \fBDisplayManager.expo_x_org_0.startup\fP is the name of the 
+resource which defines the startup shell file for the ``expo.x.org:0'' display.
+.\"
 .IP "\fBDisplayManager.servers\fP"
 This resource either specifies a file name full of server entries, one per
 line (if the value starts with a slash), or a single server entry.
-See the section \fBServer Specification\fP for the details.
+See the section \fBLocal Server Specification\fP for the details.
 .IP "\fBDisplayManager.requestPort\fP"
 This indicates the UDP port number which
 .I xdm
@@ -407,7 +312,7 @@ which queries should be forwarded to.  The format of this file is described
 in the section
 .B "XDMCP Access Control."
 .IP \fBDisplayManager.exportList\fP
-A whitespace-separated list of additional environment variables
+A list of additional environment variables, separated by white space,
 to pass on to the \fIXsetup\fP,
 \fIXstartup\fP, \fIXsession\fP, and \fIXreset\fP programs.
 .IP \fBDisplayManager.randomFile\fP
@@ -425,7 +330,7 @@ host.  Otherwise, it is assumed to be from a new session and the
 chooser is offered again.
 Default is 15.
 .\"
-.IP "\fBDisplayManager.DISPLAY.resources\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resources\fP"
 This resource specifies the name of the file to be loaded by \fIxrdb\fP
 as the resource database onto the root window of screen 0 of the display.
 The \fIXsetup\fP program, the Login widget, and \fIchooser\fP will use
@@ -439,46 +344,46 @@ resources that are appropriate to place in this file.
 There is no default value for this resource, but
 \fI<XRoot>/lib/X11/xdm/Xresources\fP
 is the conventional name.
-.IP "\fBDisplayManager.DISPLAY.chooser\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.chooser\fP"
 Specifies the program run to offer a host menu for Indirect queries
 redirected to the special host name CHOOSER.
 \fI<XRoot>/lib/X11/xdm/chooser\fP is the default.
 See the sections \fBXDMCP Access Control\fP and \fBChooser\fP.
-.IP "\fBDisplayManager.DISPLAY.xrdb\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.xrdb\fP"
 Specifies the program used to load the resources.  By default,
 .I xdm
 uses \fI<XRoot>/bin/xrdb\fP.
-.IP "\fBDisplayManager.DISPLAY.cpp\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.cpp\fP"
 This specifies the name of the C preprocessor which is used by \fIxrdb\fP.
-.IP "\fBDisplayManager.DISPLAY.setup\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.setup\fP"
 This specifies a program which is run (as root) before offering the
-Login window.  This may be used to change the appearence of the screen
+Login window.  This may be used to change the appearance of the screen
 around the Login window or to put up other windows (e.g., you may want
 to run \fIxconsole\fP here).
 By default, no program is run.  The conventional name for a
 file used here is \fIXsetup\fP.
 See the section \fBSetup Program.\fP
-.IP "\fBDisplayManager.DISPLAY.startup\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.startup\fP"
 This specifies a program which is run (as root) after the authentication
 process succeeds.  By default, no program is run.  The conventional name for a
 file used here is \fIXstartup\fP.
 See the section \fBStartup Program.\fP
-.IP "\fBDisplayManager.DISPLAY.session\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.session\fP"
 This specifies the session to be executed (not running as root).
 By default, \fI<XRoot>/bin/xterm\fP is
 run.  The conventional name is \fIXsession\fP.
 See the section
 .B "Session Program."
-.IP "\fBDisplayManager.DISPLAY.reset\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.reset\fP"
 This specifies a program which is run (as root) after the session terminates.
 Again, by default no program is run.
 The conventional name is \fIXreset\fP.
 See the section
 .B "Reset Program."
-.IP "\fBDisplayManager.DISPLAY.openDelay\fP"
-.IP "\fBDisplayManager.DISPLAY.openRepeat\fP"
-.IP "\fBDisplayManager.DISPLAY.openTimeout\fP"
-.IP "\fBDisplayManager.DISPLAY.startAttempts\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.openDelay\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.openRepeat\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.openTimeout\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.startAttempts\fP"
 These numeric resources control the behavior of
 .I xdm
 when attempting to open intransigent servers.  \fBopenDelay\fP is
@@ -500,8 +405,8 @@ this behavior may seem arbitrary, it has been empirically developed and
 works quite well on most systems.  The default values are
 5 for \fBopenDelay\fP, 5 for \fBopenRepeat\fP, 30 for \fBopenTimeout\fP and
 4 for \fBstartAttempts\fP.
-.IP "\fBDisplayManager.DISPLAY.pingInterval\fP"
-.IP "\fBDisplayManager.DISPLAY.pingTimeout\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.pingInterval\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.pingTimeout\fP"
 To discover when remote displays disappear,
 .I xdm
 occasionally pings them, using an X connection and \fIXSync\fP
@@ -517,12 +422,12 @@ terminal has been accidentally disabled.
 will not ping local displays.  Although it would seem harmless, it is
 unpleasant when the workstation session is terminated as a result of the
 server hanging for NFS service and not responding to the ping.
-.IP "\fBDisplayManager.DISPLAY.terminateServer\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.terminateServer\fP"
 This boolean resource specifies whether the X server should be terminated
 when a session terminates (instead of resetting it).  This option can be
 used when the server tends to grow without bound over time, in order to limit
 the amount of time the server is run.  The default value is ``false.''
-.IP "\fBDisplayManager.DISPLAY.userPath\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.userPath\fP"
 .I Xdm
 sets the PATH environment variable for the session to this value.  It should
 be a colon separated list of directories; see
@@ -531,8 +436,8 @@ for a full description.
 ``:/bin:/usr/bin:/usr/X11R6/bin:/usr/ucb''
 is a common setting.
 The default value can be specified at build time in the X system
-configuration file with DefaultUserPath;
-.IP "\fBDisplayManager.DISPLAY.systemPath\fP"
+configuration file with DefaultUserPath.
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemPath\fP"
 .I Xdm
 sets the PATH environment variable for the startup and reset scripts to the
 value of this resource.  The default for this resource is specified
@@ -541,19 +446,19 @@ at build time by the DefaultSystemPath entry in the system configuration file;
 Note the absence of ``.'' from this entry.  This is a good practice to
 follow for root; it avoids many common Trojan Horse system penetration
 schemes.
-.IP "\fBDisplayManager.DISPLAY.systemShell\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemShell\fP"
 .I Xdm
 sets the SHELL environment variable for the startup and reset scripts to the
 value of this resource.  It is \fI/bin/sh\fP by default.
-.IP "\fBDisplayManager.DISPLAY.failsafeClient\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.failsafeClient\fP"
 If the default session fails to execute,
 .I xdm
 will fall back to this program.  This program is executed with no
 arguments, but executes using the same environment variables as
 the session would have had (see the section \fBSession Program\fP).
 By default, \fI<XRoot>/bin/xterm\fP is used.
-.IP "\fBDisplayManager.DISPLAY.grabServer\fP"
-.IP "\fBDisplayManager.DISPLAY.grabTimeout\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabServer\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabTimeout\fP"
 To improve security,
 .I xdm
 grabs the server and keyboard while reading the login name and password.
@@ -571,40 +476,41 @@ should be cautious when raising it, as a user can be spoofed by a
 look-alike window on the display.  If the grab fails,
 .I xdm
 kills and restarts the server (if possible) and the session.
-.IP "\fBDisplayManager.DISPLAY.authorize\fP"
-.IP "\fBDisplayManager.DISPLAY.authName\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authorize\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authName\fP"
 \fBauthorize\fP is a boolean resource which controls whether
 .I xdm
 generates and uses authorization for the local server connections.  If
-authorization is used, \fBauthName\fP is a whitespace-separated list
-of authorization mechanisms to use.
+authorization is used, \fBauthName\fP is a list
+of authorization mechanisms to use, separated by white space.
 XDMCP connections dynamically specify which
 authorization mechanisms are supported, so
 \fBauthName\fP is ignored in this case.  When \fBauthorize\fP is set for a
 display and authorization is not available, the user is informed by having a
 different message displayed in the login widget.  By default, \fBauthorize\fP
-is ``true''; \fBauthName\fP is ``MIT-MAGIC-COOKIE-1.''
-.IP \fBDisplayManager.DISPLAY.authFile\fP
+is ``true.''  \fBauthName\fP is ``MIT-MAGIC-COOKIE-1,'' or, if
+XDM-AUTHORIZATION-1 is available, ``XDM-AUTHORIZATION-1\0MIT-MAGIC-COOKIE-1.''
+.IP \fBDisplayManager.\fP\fIDISPLAY\fP\fB.authFile\fP
 This file is used to communicate the authorization data from
 .I xdm
 to the server, using the \fB\-auth\fP server command line option.
 It should be
 kept in a directory which is not world-writable as it could easily be
 removed, disabling the authorization mechanism in the server.
-.IP "\fBDisplayManager.DISPLAY.authComplain\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.authComplain\fP"
 If set to ``false,'' disables the use of the \fBunsecureGreeting\fP
 in the login window.
 See the section \fBAuthentication Widget.\fP
 The default is ``true.''
-.IP "\fBDisplayManager.DISPLAY.resetSignal\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resetSignal\fP"
 The number of the signal \fIxdm\fP sends to reset the server.
 See the section \fBControlling the Server.\fP
 The default is 1 (SIGHUP).
-.IP "\fBDisplayManager.DISPLAY.termSignal\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.termSignal\fP"
 The number of the signal \fIxdm\fP sends to terminate the server.
 See the section \fBControlling the Server.\fP
 The default is 15 (SIGTERM).
-.IP "\fBDisplayManager.DISPLAY.resetForAuth\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resetForAuth\fP"
 The original implementation of authorization in the sample server reread the
 authorization file at server reset time, instead of when checking the
 initial connection.  As
@@ -617,12 +523,43 @@ to send SIGHUP to the server after setting up the file, causing an
 additional server reset to occur, during which time the new authorization
 information will be read.
 The default is ``false,'' which will work for all MIT servers.
-.IP "\fBDisplayManager.DISPLAY.userAuthDir\fP"
+.IP "\fBDisplayManager.\fP\fIDISPLAY\fP\fB.userAuthDir\fP"
 When
 .I xdm
 is unable to write to the usual user authorization file ($HOME/.Xauthority),
 it creates a unique file name in this directory and points the environment
 variable XAUTHORITY at the created file.  It uses \fI/tmp\fP by default.
+.SH "CONFIGURATION FILE"
+First, the
+.I xdm
+configuration file should be set up.
+Make a directory (usually \fI<XRoot>/lib/X11/xdm\fP, where <XRoot>
+refers to the root of the X11 install tree) to contain all of the relevant
+files.  In the examples that follow, we use /usr/X11R6 as the value of
+<XRoot>.
+.LP
+Here is a reasonable configuration file, which could be
+named \fIxdm-config\fP:
+.nf
+
+.ta .5i 4i
+
+	DisplayManager.servers:	/usr/X11R6/lib/X11/xdm/Xservers
+	DisplayManager.errorLogFile:	/usr/X11R6/lib/X11/xdm/xdm-errors
+	DisplayManager*resources:	/usr/X11R6/lib/X11/xdm/Xresources
+	DisplayManager*startup:	/usr/X11R6/lib/X11/xdm/Xstartup
+	DisplayManager*session:	/usr/X11R6/lib/X11/xdm/Xsession
+	DisplayManager.pidFile:	/usr/X11R6/lib/X11/xdm/xdm-pid
+	DisplayManager._0.authorize:	true
+	DisplayManager*authorize:	false
+
+.fi
+.PP
+Note that this file simply contains references to other files.  Note also
+that some of the resources are specified with ``*'' separating the
+components.  These resources can be made unique for each different display,
+by replacing the ``*'' with the display-name, but normally this is not very
+useful.  See the \fBResources\fP section for a complete discussion.
 .SH "XDMCP ACCESS CONTROL"
 .PP
 The database file specified by the \fBDisplayManager.accessFile\fP provides
@@ -721,18 +658,37 @@ xtra.lcs.mit.edu	CHOOSER BROADCAST	#offer a menu of all hosts
 .fi
 .PP
 The program to use for \fIchooser\fP is specified by the
-\fBDisplayManager.DISPLAY.chooser\fP resource.
+\fBDisplayManager.\fP\fIDISPLAY\fP\fB.chooser\fP resource.  For more
+flexibility at this step, the chooser could be a shell script.
+\fIChooser\fP is the session manager here; it is run instead of a
+child \fIxdm\fP to manage the display.
+.PP
 Resources for this program
 can be put into the file named by
-\fBDisplayManager.DISPLAY.resources\fP.
-.SH "SERVER SPECIFICATION"
+\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resources\fP.
+.PP
+When the user selects a host, \fIchooser\fP prints the host chosen,
+which is read by the parent \fIxdm\fP, and exits.
+\fIxdm\fP closes its connection to the X server, and the server resets
+and sends another \fBIndirect\fP XDMCP request.
+\fIxdm\fP remembers the user's choice (for
+\fBDisplayManager.choiceTimeout\fP seconds) and forwards the request
+to the chosen host, which starts a session on that display.
+.\"
+.SH "LOCAL SERVER SPECIFICATION"
+.PP
 The resource \fBDisplayManager.servers\fP gives a server specification
 or, if the values starts with a slash (/), the name of a file
 containing server specifications, one per line.
 .PP
 Each specification
 indicates a display which should constantly be managed and which is
-not using XDMCP.  Each consists of at least three parts:  a display
+not using XDMCP.
+This method is used typically for local servers only.  If the resource
+or the file named by the resource is empty, \fIxdm\fP will offer XDMCP
+service only.
+.PP
+Each specification consists of at least three parts:  a display
 name, a display class, a display type, and (for local servers) a command
 line to start the server.  A typical entry for local display number 0 would
 be:
@@ -766,6 +722,45 @@ string for your device.  If it doesn't, you can run
 in debug mode and
 look at the resource strings which it generates for that device, which will
 include the class string.
+.PP
+When \fIxdm\fP starts a session, it sets up authorization data for the
+server.  For local servers, \fIxdm\fP passes
+``\fB\-auth\fP \fIfilename\fP'' on the server's command line to point
+it at its authorization data.
+For XDMCP servers, \fIxdm\fP passes the
+authorization data to the server via the \fBAccept\fP XDMCP request.
+.SH RESOURCES FILE
+The \fIXresources\fP file is 
+loaded onto the display as a resource database using
+.I xrdb.
+As the authentication
+widget reads this database before starting up, it usually contains
+parameters for that widget:
+.nf
+.ta .5i 1i
+
+	xlogin*login.translations: #override\\
+		Ctrl<Key>R: abort-display()\\n\\
+		<Key>F1: set-session-argument(failsafe) finish-field()\\n\\
+		<Key>Return: set-session-argument() finish-field()
+	xlogin*borderWidth: 3
+	xlogin*greeting: CLIENTHOST
+	#ifdef COLOR
+	xlogin*greetColor: CadetBlue
+	xlogin*failColor: red
+	#endif
+
+.fi
+.PP
+Please note the translations entry; it specifies
+a few new translations for the widget which allow users to escape from the
+default session (and avoid troubles that may occur in it).  Note that if
+#override is not specified, the default translations are removed and replaced
+by the new value, not a very useful result as some of the default translations
+are quite useful (such as ``<Key>: insert-char ()'' which responds to normal
+typing).
+.PP
+This file may also contain resources for the setup program and \fIchooser\fP.
 .SH "SETUP PROGRAM"
 The \fIXsetup\fP file is run after
 the server is reset, but before the Login window is offered.
@@ -780,26 +775,36 @@ the following environment variables are passed:
 .ta .5i 2i
 
 	DISPLAY	the associated display name
-	PATH	the value of \fBDisplayManager.DISPLAY.systemPath\fP
-	SHELL	the value of \fBDisplayManager.DISPLAY.systemShell\fP
+	PATH	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemPath\fP
+	SHELL	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemShell\fP
 	XAUTHORITY	may be set to an authority file
 .fi
 .PP
 Note that since \fIxdm\fP grabs the keyboard, any other windows will not be
 able to receive keyboard input.  They will be able to interact with
 the mouse, however; beware of potential security holes here.
-If \fBDisplayManager.DISPLAY.grabServer\fP is set,
+If \fBDisplayManager.\fP\fIDISPLAY\fP\fB.grabServer\fP is set,
 \fIXsetup\fP will not be able to connect
 to the display at all.
 Resources for this program
 can be put into the file named by
-\fBDisplayManager.DISPLAY.resources\fP.
+\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resources\fP.
+.PP
+Here is a sample \fIXsetup\fP script:
+.nf
+
+	#!/bin/sh
+	# Xsetup_0 \- setup script for one workstation
+	xcmsdb < /usr/X11R6/lib/monitors/alex.0
+	xconsole\0\-geometry\0480x130\-0\-0\0\-notify\0\-verbose\0\-exitOnFail &
+
+.fi
 .SH "AUTHENTICATION WIDGET"
 The authentication widget reads a name/password pair
 from the keyboard.  Nearly every imaginable
 parameter can be controlled with a resource.  Resources for this widget
 should be put into the file named by
-\fBDisplayManager.DISPLAY.resources\fP.  All of these have reasonable
+\fBDisplayManager.\fP\fIDISPLAY\fP\fB.resources\fP.  All of these have reasonable
 default values, so it is not necessary to specify any of them.
 .IP "\fBxlogin.Login.width, xlogin.Login.height, xlogin.Login.x, xlogin.Login.y\fP"
 The geometry of the Login widget is normally computed automatically.  If you
@@ -894,10 +899,13 @@ the user is prompted again.
 .IP "abort-session"
 Terminates and restarts the server.
 .IP "abort-display"
-Terminates the server, disabling it.  This is a rash action and
-is not accessible in the default configuration.  It can be used to
-stop \fIxdm\fP
-when shutting the system down or when using \fIxdmshell.\fP
+Terminates the server, disabling it.  This action
+is not accessible in the default configuration.
+There are various reasons to stop \fIxdm\fP on a system console, such as
+when shutting the system down, when using \fIxdmshell\fP,
+to start another type of server, or to generally access the console.
+Sending \fIxdm\fP a SIGHUP will restart the display.  See the section
+\fBControlling XDM\fP.
 .IP "restart-session"
 Resets the X server and starts a new session.  This can be used when
 the resources have been changed and you want to test them or when
@@ -906,7 +914,7 @@ the screen has been overwritten with system messages.
 Inserts the character typed.
 .IP "set-session-argument"
 Specifies a single word argument which is passed to the session at startup.
-See the sections \fBSession Program\fP and \fBTypical Usage\fP.
+See the section \fBSession Program\fP.
 .IP "allow-all-access"
 Disables access control in the server.  This can be used when
 the .Xauthority file cannot be created by
@@ -919,7 +927,9 @@ before doing this.
 The \fIXstartup\fP file is typically a shell script.
 It is run as root and should be
 very careful about security.  This is the place to put commands which add
-entries to \fI/etc/utmp,\fP mount users' home directories from file servers,
+entries to \fI/etc/utmp\fP
+(the \fIsessreg\fP program may be useful here),
+mount users' home directories from file servers,
 display the message of the day, or abort the session if logins are not
 allowed.
 .PP
@@ -931,8 +941,8 @@ the following environment variables are passed:
 	DISPLAY	the associated display name
 	HOME	the initial working directory of the user
 	USER	the user name
-	PATH	the value of \fBDisplayManager.DISPLAY.systemPath\fP
-	SHELL	the value of \fBDisplayManager.DISPLAY.systemShell\fP
+	PATH	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemPath\fP
+	SHELL	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.systemShell\fP
 	XAUTHORITY	may be set to an authority file
 
 .fi
@@ -944,6 +954,31 @@ exit value of this script is non-zero,
 .I xdm
 discontinues the session and starts another authentication
 cycle.
+.PP
+The sample \fIXstartup\fP file shown here prevents login while the
+file \fI/etc/nologin\fP
+exists.  
+Thus this is not a complete example, but
+simply a demonstration of the available functionality.
+.PP
+Here is a sample \fIXstartup\fP script:
+.nf
+.ta .5i 1i
+
+	#!/bin/sh
+	#
+	# Xstartup
+	#
+	# This program is run as root after the user is verified
+	#
+	if [ \-f /etc/nologin ]; then
+		xmessage\0\-file /etc/nologin
+		exit 1
+	fi
+	sessreg\0\-a\0\-l $DISPLAY\0\-x /usr/X11R6/lib/xdm/Xservers $USER
+	/usr/X11R6/lib/xdm/GiveConsole
+	exit 0
+.fi
 .SH "SESSION PROGRAM"
 .PP
 The \fIXsession\fP program is the command which is run as the user's session.
@@ -958,9 +993,10 @@ the following environment variables are passed:
 	DISPLAY	the associated display name
 	HOME	the initial working directory of the user
 	USER	the user name
-	PATH	the value of \fBDisplayManager.DISPLAY.userPath\fP
+	PATH	the value of \fBDisplayManager.\fP\fIDISPLAY\fP\fB.userPath\fP
 	SHELL	the user's default shell (from \fIgetpwnam\fP)
 	XAUTHORITY	may be set to a non-standard authority file
+	KRB5CCNAME	may be set to a Kerberos credentials cache file
 
 .fi
 .PP
@@ -976,8 +1012,62 @@ using the `set-session-argument' action.  This can be used to select
 different styles of session.  One good use of this feature is to allow
 the user to escape from the ordinary session when it fails.  This
 allows users to repair their own \fI.xsession\fP if it fails,
-without requiring administrative intervention.  The section \fBTypical Usage\fP
+without requiring administrative intervention.
+The example following
 demonstrates this feature.
+.PP
+This example recognizes
+the special
+``failsafe'' mode, specified in the translations
+in the \fIXresources\fP file, to provide an escape
+from the ordinary session:
+.nf
+.ta .5i 1i 1.5i
+
+	#!/bin/sh
+	#
+	# Xsession
+	#
+	# This is the program that is run as the client
+	# for the display manager.
+	
+	case $# in
+	1)
+		case $1 in
+		failsafe)
+			exec xterm \-geometry 80x24\-0\-0
+			;;
+		esac
+	esac
+	
+	startup=$HOME/.xsession
+	resources=$HOME/.Xresources
+	
+	if [ \-f $startup ]; then
+		exec $startup
+		exec /bin/sh $startup
+	else
+		if [ \-f $resources ]; then
+			xrdb \-load $resources
+		fi
+		twm &
+		xman \-geometry +10\-10 &
+		exec xterm \-geometry 80x24+10+10 \-ls
+	fi
+
+.fi
+.PP
+The user's \fI.xsession\fP file might look something like this
+example.  Don't forget that the file must have execute permission.
+.nf
+	#! /bin/csh
+	# no \-f in the previous line so .cshrc gets run to set $PATH
+	twm &
+	xrdb \-merge "$HOME/.Xresources"
+	emacs \-geometry +0+50 &
+	xbiff \-geometry \-430+5 &
+	xterm \-geometry \-0+50 -ls
+.fi
 .SH "RESET PROGRAM"
 .PP
 Symmetrical with \fIXstartup\fP,
@@ -988,14 +1078,28 @@ from \fI/etc/utmp\fP
 or unmounting directories from file servers.  The environment
 variables that were passed to \fIXstartup\fP are also
 passed to \fIXreset\fP.
+.PP
+A sample \fIXreset\fP script:
+.nf
+.ta .5i 1i
+	#!/bin/sh
+	#
+	# Xreset
+	#
+	# This program is run as root after the session ends
+	#
+	sessreg\0\-d\0\-l $DISPLAY\0\-x /usr/X11R6/lib/xdm/Xservers $USER
+	/usr/X11R6/lib/xdm/TakeConsole
+	exit 0
+.fi
 .SH "CONTROLLING THE SERVER"
 .I Xdm
 controls local servers using POSIX signals.  SIGHUP is expected to reset the
 server, closing all client connections and performing other cleanup
 duties.  SIGTERM is expected to terminate the server.
 If these signals do not perform the expected actions,
-the resources \fBDisplayManager.DISPLAY.resetSignal\fP and
-\fBDisplayManager.DISPLAY.termSignal\fP can specify alternate signals.
+the resources \fBDisplayManager.\fP\fIDISPLAY\fP\fB.resetSignal\fP and
+\fBDisplayManager.\fP\fIDISPLAY\fP\fB.termSignal\fP can specify alternate signals.
 .PP
 To control remote terminals not using XDMCP,
 .I xdm
@@ -1080,13 +1184,7 @@ interested in
 .I <XRoot>/lib/X11/xdm/xdm-config
 the default configuration file
 .TP 20
-.I <XRoot>/lib/X11/xdm/Xaccess
-the default access file, listing authorized displays
-.TP 20
-.I <XRoot>/lib/X11/xdm/Xservers
-the default server file, listing non-XDMCP servers to manage
-.TP 20
-.I $(HOME)/.Xauthority
+.I $HOME/.Xauthority
 user authorization file where \fIxdm\fP stores keys for clients to read
 .TP 20
 .I <XRoot>/lib/X11/xdm/chooser
@@ -1101,8 +1199,11 @@ the default server
 .I <XRoot>/bin/X11/xterm
 the default session program and failsafe client
 .TP 20
-.I <XRoot>/lib/X11/xdm/A<host>\-<suffix>
+.I <XRoot>/lib/X11/xdm/A<display>\-<suffix>
 the default place for authorization files
+.TP 20
+.I /tmp/K5C<display>
+Kerberos credentials cache
 .LP
 Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
@@ -1110,12 +1211,11 @@ Note: <XRoot> refers to the root of the X11 install tree.
 .IR xinit (1),
 .IR xauth (1),
 .IR Xsecurity (1),
-and XDMCP
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
+.IR sessreg (1),
+.IR Xserver (1),
+.\" .IR chooser (1), \" except that there isn't a manual for it yet
+.\" .IR xdmshell (1), \" except that there isn't a manual for it yet
 .br
-See
-.IR X (1)
-for a full statement of rights and permissions.
+.I "X Display Manager Control Protocol"
 .SH AUTHOR
 Keith Packard, MIT X Consortium
