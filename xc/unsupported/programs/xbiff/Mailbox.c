@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.49 91/01/04 19:54:18 gildea Exp $
+ * $XConsortium: Mailbox.c,v 1.50 91/01/11 18:41:09 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -87,17 +87,17 @@ static XtActionsRec actionsList[] = {
 
 /* Initialization of defaults */
 
-#define offset(field) XtOffset(MailboxWidget,mailbox.field)
-#define goffset(field) XtOffset(Widget,core.field)
+#define offset(field) XtOffsetOf(MailboxRec, mailbox.field)
+#define goffset(field) XtOffsetOf(WidgetRec, core.field)
 
 static Dimension defDim = 48;
 static Pixmap nopix = None;
 
 static XtResource resources[] = {
     { XtNwidth, XtCWidth, XtRDimension, sizeof (Dimension), 
-	goffset (width), XtRDimension, (caddr_t)&defDim },
+	goffset (width), XtRDimension, (XtPointer)&defDim },
     { XtNheight, XtCHeight, XtRDimension, sizeof (Dimension),
-	goffset (height), XtRDimension, (caddr_t)&defDim },
+	goffset (height), XtRDimension, (XtPointer)&defDim },
     { XtNupdate, XtCInterval, XtRInt, sizeof (int),
 	offset (update), XtRString, "30" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
@@ -109,15 +109,15 @@ static XtResource resources[] = {
     { XtNvolume, XtCVolume, XtRInt, sizeof(int),
 	offset (volume), XtRString, "33"},
     { XtNonceOnly, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	offset (once_only), XtRImmediate, (caddr_t)False },
+	offset (once_only), XtRImmediate, (XtPointer)False },
     { XtNfullPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (full.bitmap), XtRString, "flagup" },
     { XtNfullPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
-	offset (full.mask), XtRBitmap, (caddr_t) &nopix },
+	offset (full.mask), XtRBitmap, (XtPointer) &nopix },
     { XtNemptyPixmap, XtCPixmap, XtRBitmap, sizeof(Pixmap),
 	offset (empty.bitmap), XtRString, "flagdown" },
     { XtNemptyPixmapMask, XtCPixmapMask, XtRBitmap, sizeof(Pixmap),
-	offset (empty.mask), XtRBitmap, (caddr_t) &nopix },
+	offset (empty.mask), XtRBitmap, (XtPointer) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flipit), XtRString, "true" },
     { XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof(Boolean),

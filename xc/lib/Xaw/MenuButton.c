@@ -1,4 +1,4 @@
-/* $XConsortium: MenuButton.c,v 1.15 90/11/05 16:33:50 converse Exp $ */
+/* $XConsortium: MenuButton.c,v 1.16 91/01/06 16:08:37 rws Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -67,11 +67,11 @@ static char defaultTranslations[] =
 
 /* Private Data */
 
-#define offset(field) XtOffset(MenuButtonWidget, field)
+#define offset(field) XtOffsetOf(MenuButtonRec, field)
 static XtResource resources[] = {
   {
     XtNmenuName, XtCMenuName, XtRString, sizeof(String), 
-    offset(menu_button.menu_name), XtRString, (caddr_t)"menu"},
+    offset(menu_button.menu_name), XtRString, (XtPointer)"menu"},
 };
 #undef offset
 
