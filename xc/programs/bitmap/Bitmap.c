@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.12 90/06/09 20:19:28 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.13 90/09/14 13:38:46 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -490,17 +490,17 @@ void BWSwitchStippled(w)
     BWRedrawMark(w);
 }
 
-void BWSelect(w, from_x, from_y, to_x, to_y, time)
+void BWSelect(w, from_x, from_y, to_x, to_y, btime)
     Widget w;
     Position from_x, from_y,
 	     to_x, to_y;
-    Time time;
+    Time btime;
 {
     BitmapWidget BW = (BitmapWidget) w;
     
     BWMark(w, from_x, from_y, to_x, to_y);
 
-    BWGrabSelection(w, time);
+    BWGrabSelection(w, btime);
 }
 
 Boolean BWQueryAxes(w)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Requests.h,v 1.1 90/03/29 15:21:47 dmatic Exp $
+ * $XConsortium: Requests.h,v 1.2 90/06/09 20:20:44 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@ typedef struct {
              to_x, to_y;
     void   (*draw)();
     int      value;
-    Time     time;
+    Time     btime;
     int      state;
 } BWStatus;
 

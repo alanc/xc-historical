@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitEdit.c,v 1.7 90/06/09 20:19:19 dmatic Exp $
+ * $XConsortium: BitEdit.c,v 1.8 90/09/14 13:38:38 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -280,17 +280,21 @@ Widget
 Boolean image_visible = False;
 Pixmap check_mark;
 Dialog info_dialog, input_dialog, error_dialog, qsave_dialog;
-Time time;
+Time btime;
 String filename = "", basename = "", format = "";
 char message[80];
 
 void ShowImage();
 void FixMenu();
+void DoQuit();
 
 static XtActionsRec actions_table[] = {
 {"image", ShowImage},
 {"fix-menu", FixMenu},
+{"quit", DoQuit}
 };
+
+static Atom wm_delete_window;
 
 void FixImage()
 {
@@ -383,7 +387,7 @@ void FixMenu(w, event)
 {
     int i;
 
-    time = event->xbutton.time;
+    btime = event->xbutton.time;
     
     for (i = 0; i < XtNumber(edit_menu); i++)
 	FixEntry(edit_menu[i].widget, &edit_menu[i].id);
@@ -400,6 +404,29 @@ FixStatus()
     n = 0;
     XtSetArg(wargs[n], XtNlabel, str); n++;
     XtSetValues(status_widget, wargs, n);
+}
+
+void DoQuit()
+{
+    if (BWQueryChanged(bitmap_widget)) {
+	BWGetFilename(bitmap_widget, &filename);
+    RetryQuit:
+	switch (PopupDialog(qsave_dialog, "Save file before quitting?",
+				filename, &filename, XtGrabExclusive)) {
+	case Yes:
+	    if (BWWriteFile(bitmap_widget, filename, NULL) 
+		!= BitmapSuccess) {
+		sprintf(message, "Can't write file: %s", filename);
+		if (PopupDialog(error_dialog, message, 
+				NULL, NULL, XtGrabExclusive) == Retry) 
+		    goto RetryQuit;
+	    }
+	    
+	case Cancel:
+	    return;
+	}
+    }
+    exit(0);
 }
 
 static int zero = 0;
@@ -519,25 +546,7 @@ void TheCallback(w, id)
 	break;
 	
     case Quit:
-	if (BWQueryChanged(bitmap_widget)) {
-	    BWGetFilename(bitmap_widget, &filename);
-	RetryQuit:
-	    switch (PopupDialog(qsave_dialog, "Save file before quitting?",
-				filename, &filename, XtGrabExclusive)) {
-	    case Yes:
-		if (BWWriteFile(bitmap_widget, filename, NULL) 
-		    != BitmapSuccess) {
-		    sprintf(message, "Can't write file: %s", filename);
-		    if (PopupDialog(error_dialog, message, 
-				    NULL, NULL, XtGrabExclusive) == Retry) 
-			goto RetryQuit;
-		}
-		
-	    case Cancel:
-		return;
-	    }
-	}
-	exit(0);
+	DoQuit();
 	break;
 	
     case Image:
@@ -658,7 +667,7 @@ void TheCallback(w, id)
 	break;
 
     case Paste:
-	/*BWRequestSelection(bitmap_widget, time, TRUE);*/
+	/*BWRequestSelection(bitmap_widget, btime, TRUE);*/
 	BWEngageRequest(bitmap_widget, RestoreRequest, False, Plain);
 	break;
 	
@@ -883,7 +892,8 @@ void main(argc, argv)
 				      xlogo16_height);
 
     XtAddActions(actions_table, XtNumber(actions_table));
-
+    XtOverrideTranslations
+	(top_widget,XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
     parent_widget = XtCreateManagedWidget("parent", panedWidgetClass,
 					 top_widget, NULL, 0);
 
@@ -970,6 +980,12 @@ void main(argc, argv)
 					  pane_widget, NULL, 0);
 
     XtRealizeWidget(top_widget);
+
+    wm_delete_window = XInternAtom(XtDisplay(top_widget), "WM_DELETE_WINDOW",
+				   False);
+    (void) XSetWMProtocols (XtDisplay(top_widget), XtWindow(top_widget),
+                            &wm_delete_window, 1);
+
     
     image_shell = XtCreatePopupShell("image", transientShellWidgetClass,
 				     top_widget, NULL, 0);

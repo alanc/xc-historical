@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.11 90/04/25 08:30:41 dmatic Exp $
+ * $XConsortium: Handlers.c,v 1.1 90/06/09 20:20:35 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ void DragOnePointHandler(w, status, event)
 	if (!QuerySet(status->at_x, status->at_y)) {
 	    BWStoreToBuffer(w);
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
 	    status->success = (Boolean) status->draw;
@@ -85,7 +85,7 @@ void DragOnePointHandler(w, status, event)
     case ButtonRelease:
 	if (QuerySet(status->at_x, status->at_y)) {
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
 	    status->success = (Boolean) status->draw;
@@ -176,7 +176,7 @@ void OnePointHandler(w, status, event)
 	if (event->xbutton.state != status->state) return;
 	if (!QuerySet(status->at_x, status->at_y)) {
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
 	    if (status->draw)
@@ -192,7 +192,7 @@ void OnePointHandler(w, status, event)
 				status->at_x, status->at_y, Highlight);
 	    
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->at_x = InBitmapX(BW, event->xbutton.x);
 	    status->at_y = InBitmapY(BW, event->xbutton.y);
 	    status->success = True;
@@ -341,7 +341,7 @@ void TwoPointsHandler(w, status, event)
 	if (event->xbutton.state != status->state) return;
 	if (!QuerySet(status->from_x, status->from_y)) {
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->from_x = InBitmapX(BW, event->xbutton.x);
 	    status->from_y = InBitmapY(BW, event->xbutton.y);
 	    status->to_x = InBitmapX(BW, event->xbutton.x);
@@ -360,7 +360,7 @@ void TwoPointsHandler(w, status, event)
 				status->from_x, status->from_y, 
 				status->to_x, status->to_y, Highlight);
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;	    
+	    status->btime = event->xbutton.time;	    
 	    status->to_x = InBitmapX(BW, event->xbutton.x);
 	    status->to_y = InBitmapY(BW, event->xbutton.y);
 	    status->success = True;
@@ -484,7 +484,7 @@ void TwoPointsTerminateTimed(w, status, draw)
 	(*draw)(w,
 		status->from_x, status->from_y,
 		status->to_x, status->to_y,
-		status->time);
+		status->btime);
     else
 	if (QuerySet(status->from_x, status->from_y) && 
 	    QuerySet(status->to_x, status->to_y))
@@ -579,7 +579,7 @@ void DragTwoPointsHandler(w, status, event)
 	if (!QuerySet(status->from_x, status->from_y)) {
 	    BWStoreToBuffer(w);
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;
+	    status->btime = event->xbutton.time;
 	    status->from_x = InBitmapX(BW, event->xbutton.x);
 	    status->from_y = InBitmapY(BW, event->xbutton.y);
 	    status->to_x = InBitmapX(BW, event->xbutton.x);
@@ -595,7 +595,7 @@ void DragTwoPointsHandler(w, status, event)
     case ButtonRelease:
 	if (QuerySet(status->from_x, status->from_y)) {
 	    status->value = Value(BW, event->xbutton.button);
-	    status->time = event->xbutton.time;	    
+	    status->btime = event->xbutton.time;	    
 	    status->from_x = status->to_x;
 	    status->from_y = status->to_y;
 	    status->to_x = InBitmapX(BW, event->xbutton.x);
