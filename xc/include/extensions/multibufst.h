@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.3 89/10/03 17:22:45 jim Exp $
+ * $XConsortium: multibufst.h,v 1.4 89/10/04 15:45:50 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifndef _MULTIBUFST_H_
+#define _MULTIBUFST_H_
+
 /*
  * Protocol requests constants and alignment values
  * These would really be in Multi-Buffering's X.h and Xproto.h equivalents
@@ -39,6 +42,8 @@
 	req->reqType = info->codes->major_opcode; \
 	req->mbufReqType = X_/**/name;
 #endif
+
+#define Multibuffer CARD32
 
 typedef struct {
 	CARD32	visualID B32;		/* associated visual */
@@ -245,8 +250,8 @@ typedef struct {
     CARD8	depth;
     Window	wid B32;
     Window	parent B32;
-    CARD32	left B32;	/* associated buffers */
-    CARD32	right B32;
+    Multibuffer	left B32;	/* associated buffers */
+    Multibuffer	right B32;
     INT16	x B16;
     INT16	y B16;
     CARD16	width B16;
@@ -257,3 +262,24 @@ typedef struct {
     CARD32	mask B32;
 } xMbufCreateStereoWindowReq;		/* followed by value list */
 #define sz_xMbufCreateStereoWindowReq 44
+
+
+typedef struct {
+    CARD8	reqType;	/* always codes->major_opcode */
+    CARD8	mbufReqType;	/* always X_MbufClearBuffer */
+    CARD16	length B16;
+    Multibuffer	buffer B32;
+    INT16	x B16;
+    INT16	y B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD8	exposures;
+    CARD8	unused0;
+    CARD8	unused1;
+    CARD8	unused2;
+} xMbufClearBufferReq;
+#define sz_xMbufClearBufferReq 20
+
+#undef Multibuffer
+
+#endif /* _MULTIBUFST_H_ */

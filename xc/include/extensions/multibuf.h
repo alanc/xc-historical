@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.6 89/10/03 17:58:08 jim Exp $
+ * $XConsortium: multibuf.h,v 1.7 89/10/04 15:45:53 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,6 +39,7 @@
 #define X_MbufGetBufferAttributes	7
 #define X_MbufGetBufferInfo		8
 #define X_MbufCreateStereoWindow	9
+#define X_MbufClearBuffer		10
 
 /*
  * update_action field
@@ -263,6 +264,21 @@ void XmbufChangeBufferAttributes (dpy, buffer, valuemask, attributes)
 	limited to the event_mask.
 
 
+void XmbufClearBuffer (dpy, buffer, x, y, width, height, exposures)
+    Display *dpy;
+    Multibuffer buffer;
+    int x, y;
+    unsigned int width, height;
+    Bool exposures;
+
+	Paints the specified rectangle of the buffer with the corresponding
+	area from the background (if not-None) of the window associated with 
+	the buffer.  If width is zero, it is replaced by the width of the
+	buffer minus x.  If height is zero, it is replaced by the height of
+	the buffer minus y.  If exposures is True, an exposure event is 
+	generated for the rectangle.
+
+
 Status XmbufGetScreenInfo (dpy, drawable, nmono_return, mono_info_return,
 			   nstereo, stereo_info_return)
     Display *dpy;
@@ -316,6 +332,7 @@ extern Status XmbufGetWindowAttributes ();   /* get extension window attrs */
 extern void XmbufChangeWindowAttributes ();  /* set extension window attrs */
 extern Status XmbufGetBufferAttributes ();   /* get buffer attrs */
 extern void XmbufChangeBufferAttributes ();  /* set buffer attrs */
+extern void XmbufClearBuffer ();	/* clear buffer to background */
 extern Status XmbufGetScreenInfo ();	/* get mono and stereo parameters */
 extern Window XmbufCreateStereoWindow ();/* stereo version of XCreateWindow */
 
