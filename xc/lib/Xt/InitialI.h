@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.24 89/09/29 12:06:42 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.25 89/10/05 10:56:59 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -122,6 +122,8 @@ typedef struct _XtAppStruct {
     Boolean identify_windows;		/* debugging hack */
 #endif
 } XtAppStruct;
+
+extern char* _XtHeapAlloc( /* Heap*, Cardinal */ );
 
 extern void _XtSetDefaultErrorHandlers();
 extern void _XtSetDefaultSelectionTimeout();
