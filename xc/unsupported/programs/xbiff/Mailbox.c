@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.30 89/07/16 14:46:35 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.31 89/07/23 17:35:39 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -160,7 +160,7 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
 static void ClassInitialize ()
 {
     static XtConvertArgRec screenConvertArg[] = {
-    { XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *) }
+    { XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen), sizeof(Screen *) }
     };
 
     XtAddConverter (XtRString, XtRPixmap, XmuCvtStringToPixmap,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.7 89/05/11 01:07:07 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.8 89/07/16 14:51:41 jim Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif /* lint */
 
@@ -114,7 +114,7 @@ static void _VendorShellClassInitialize()
 {
     /* %%% botch; this requires an Application Context */
     static XtConvertArgRec screenConvertArg[] = {
-        {XtBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
+        {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
     };
 
