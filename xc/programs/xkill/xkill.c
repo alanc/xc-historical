@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XHeader: xkill.c,v 1.2 88/07/15 10:29:50 jim Exp $
+ * $XHeader: xkill.c,v 1.3 88/07/15 10:34:59 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,6 +26,9 @@
 
 Display *dpy = NULL;
 char *ProgramName;
+
+#define SelectButtonAny (-1)
+#define SelectButtonFirst (-2)
 
 XID parse_id(), get_window_id();
 int parse_button();
@@ -108,31 +111,42 @@ main (argc, argv)
 
     if (id == None) {
 	if (!button_name)
-	  button_name = XGetDefault (dpy, ProgramName, "Button");
+	    button_name = XGetDefault (dpy, ProgramName, "Button");
 
 	if (!button_name)
-	  button = -1;
+	    button = SelectButtonFirst;
 	else if (!parse_button (button_name, &button)) {
 	    fprintf (stderr, "%s:  invalid button specification \"%s\"\n",
 		     ProgramName, button_name);
 	    Exit (1);
 	}
 
-	if (button >= 0) {
+	if (button >= 0 || button == SelectButtonFirst) {
 	    unsigned char pointer_map[256];	 /* 8 bits of pointer num */
 	    int count, j;
 	    unsigned int ub = (unsigned int) button;
 
-	    /* check to make sure button is valid */
+
 	    count = XGetPointerMapping (dpy, pointer_map, 256);
-	    for (j = 0; j < count; j++) {
-		if (ub == (unsigned int) pointer_map[j]) break;
-	    }
-	    if (j == count) {
-		fprintf (stderr,
-	 "%s:  no button number %u in pointer map, can't select window\n",
-			 ProgramName, ub);
+	    if (count <= 0) {
+		fprintf (stderr, 
+			 "%s:  no pointer mapping, can't select window\n",
+			 ProgramName);
 		Exit (1);
+	    }
+
+	    if (button >= 0) {			/* check button */
+		for (j = 0; j < count; j++) {
+		    if (ub == (unsigned int) pointer_map[j]) break;
+		}
+		if (j == count) {
+		    fprintf (stderr,
+	 "%s:  no button number %u in pointer map, can't select window\n",
+			     ProgramName, ub);
+		    Exit (1);
+	        }
+	    } else {				/* get first entry */
+		button = (int) ((unsigned int) pointer_map[0]);
 	    }
 	}
 	id = get_window_id (dpy, button);
@@ -165,8 +179,8 @@ int parse_button (s, buttonp)
 	}
     }
 
-    if (strcmp (s, "all") == 0 || strcmp (s, "any") == 0) {
-	*buttonp = -1;
+    if (strcmp (s, "any") == 0) {
+	*buttonp = SelectButtonAny;
 	return (1);
     }
 
