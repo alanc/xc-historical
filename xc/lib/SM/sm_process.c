@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.4 93/09/12 14:29:43 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.5 93/09/13 16:53:22 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -40,12 +40,19 @@ IceReplyWaitInfo *replyWait;
 	}
 
     if (smcConn == NULL)
+    {
+	_IceReadSkip (iceConn, length << 3);
+
 	return (0);
+    }
 
     if (!smcConn->client_id &&
         opcode != SM_RegisterClientReply && opcode != SM_Error)
     {
+	_IceReadSkip (iceConn, length << 3);
+
 	_SmcErrorBadState (iceConn, opcode, IceFatalToProtocol);
+
 	return (0);
     }
 
@@ -87,6 +94,8 @@ IceReplyWaitInfo *replyWait;
 	if (!replyWait ||
 	    replyWait->minor_opcode_of_request != SM_RegisterClient)
 	{
+	    _IceReadSkip (iceConn, length << 3);
+
 	    _SmcErrorBadState (iceConn,
 		SM_RegisterClientReply, IceFatalToProtocol);
 	}
@@ -115,39 +124,50 @@ IceReplyWaitInfo *replyWait;
 	IceReadMessageHeader (iceConn, SIZEOF (smSaveYourselfMsg),
 	    smSaveYourselfMsg, pMsg);
 
-	(*_SmcCallbacks.save_yourself) (smcConn, smcConn->client_data,
-	    pMsg->saveType, pMsg->shutdown, pMsg->interactStyle, pMsg->fast);
+	(*smcConn->callbacks.save_yourself.callback) (smcConn,
+	    smcConn->callbacks.save_yourself.client_data,
+            pMsg->saveType, pMsg->shutdown, pMsg->interactStyle, pMsg->fast);
 	break;
     }
 
     case SM_Interact:
 
-        if (!smcConn->interact_cb)
+        if (!smcConn->interact_waits)
 	{
 	    _SmcErrorBadState (iceConn,	SM_Interact, IceCanContinue);
 	}
         else
 	{
-	    (*smcConn->interact_cb) (smcConn, smcConn->client_data);
-	    smcConn->interact_cb = NULL;
+	    _SmcInteractWait *next = smcConn->interact_waits->next;
+
+	    (*smcConn->interact_waits->interact_proc) (smcConn,
+		smcConn->interact_waits->client_data);
+
+	    free ((char *) smcConn->interact_waits);
+	    smcConn->interact_waits = next;
 	}
 	break;
 
     case SM_Die:
 
 	IceSetShutdownNegotiation (smcConn->iceConn, False);
-	(*_SmcCallbacks.die) (smcConn, smcConn->client_data);
+
+	(*smcConn->callbacks.die.callback) (smcConn,
+	    smcConn->callbacks.die.client_data);
 	break;
 
     case SM_ShutdownCancelled:
 
-	(*_SmcCallbacks.shutdown_cancelled) (smcConn, smcConn->client_data);
+	(*smcConn->callbacks.shutdown_cancelled.callback) (smcConn,
+	    smcConn->callbacks.shutdown_cancelled.client_data);
 	break;
 
     case SM_PropertiesReply:
 
         if (!smcConn->prop_reply_waits)
 	{
+	    _IceReadSkip (iceConn, length << 3);
+
 	    _SmcErrorBadState (iceConn,
 		SM_PropertiesReply, IceCanContinue);
 	}
@@ -167,8 +187,8 @@ IceReplyWaitInfo *replyWait;
 
 	    next = smcConn->prop_reply_waits->next;
 
-	    (*smcConn->prop_reply_waits->prop_reply_cb) (smcConn,
-		smcConn->client_data, numProps, props);
+	    (*smcConn->prop_reply_waits->prop_reply_proc) (smcConn,
+		smcConn->prop_reply_waits->client_data, numProps, props);
 
 	    free ((char *) smcConn->prop_reply_waits);
 	    smcConn->prop_reply_waits = next;
@@ -177,6 +197,8 @@ IceReplyWaitInfo *replyWait;
 
     default:
     {
+	_IceReadSkip (iceConn, length << 3);
+
 	IceErrorHeader (iceConn,
 	    _SmcOpcode, opcode,
 	    iceConn->sequence - 1,
@@ -213,12 +235,19 @@ Bool		 swap;
 	}
 
     if (smsConn == NULL)
+    {
+	_IceReadSkip (iceConn, length << 3);
+
 	return;
+    }
 
     if (!smsConn->client_id &&
         opcode != SM_RegisterClient && opcode != SM_Error)
     {
+	_IceReadSkip (iceConn, length << 3);
+
 	_SmsErrorBadState (iceConn, opcode, IceFatalToProtocol);
+
 	return;
     }
 
@@ -252,8 +281,8 @@ Bool		 swap;
 
 	EXTRACT_ARRAY8_AS_STRING (pData, previousId);
 
-	(*_SmsCallbacks.register_client) (smsConn,
-            smsConn->manager_data, previousId);
+	(*smsConn->callbacks.register_client.callback) (smsConn,
+            smsConn->callbacks.register_client.manager_data, previousId);
 
 	break;
     }
@@ -274,8 +303,9 @@ Bool		 swap;
 
 	    smsConn->waiting_to_interact = True;
 
-	    (*_SmsCallbacks.interact_request) (smsConn,
-	        smsConn->manager_data, pMsg->dialogType);
+	    (*smsConn->callbacks.interact_request.callback) (smsConn,
+	        smsConn->callbacks.interact_request.manager_data,
+		pMsg->dialogType);
 	}
 	break;
 
@@ -294,8 +324,9 @@ Bool		 swap;
 
 	    smsConn->interact_in_progress = False;
 
-	    (*_SmsCallbacks.interact_done) (smsConn,
-	      smsConn->manager_data, pMsg->cancelShutdown);
+	    (*smsConn->callbacks.interact_done.callback) (smsConn,
+	      smsConn->callbacks.interact_done.manager_data,
+	      pMsg->cancelShutdown);
 	}
 	break;
 
@@ -314,8 +345,9 @@ Bool		 swap;
 
 	    smsConn->save_yourself_in_progress = False;
 
-	    (*_SmsCallbacks.save_yourself_done) (smsConn,
-	        smsConn->manager_data, pMsg->success);
+	    (*smsConn->callbacks.save_yourself_done.callback) (smsConn,
+	        smsConn->callbacks.save_yourself_done.manager_data,
+		pMsg->success);
 	}
 	break;
 
@@ -340,8 +372,9 @@ Bool		 swap;
 	for (i = 0; i < count; i++)
 	    EXTRACT_ARRAY8_AS_STRING (pData, reasonMsgs[i]);
 
-	(*_SmsCallbacks.close_connection) (smsConn,
-	    smsConn->manager_data, locale, count, reasonMsgs);
+	(*smsConn->callbacks.close_connection.callback) (smsConn,
+	    smsConn->callbacks.close_connection.manager_data,
+	     locale, count, reasonMsgs);
 
 	break;
     }
@@ -359,19 +392,23 @@ Bool		 swap;
 
 	EXTRACT_LISTOF_PROPERTY (pData, numProps, props);
 
-	(*_SmsCallbacks.set_properties) (smsConn,
-	    smsConn->manager_data, pMsg->sequenceRef, numProps, props);
+	(*smsConn->callbacks.set_properties.callback) (smsConn,
+	    smsConn->callbacks.set_properties.manager_data,
+            pMsg->sequenceRef, numProps, props);
 
 	break;
     }
 
     case SM_GetProperties:
 
-	(*_SmsCallbacks.get_properties) (smsConn, smsConn->manager_data);
+	(*smsConn->callbacks.get_properties.callback) (smsConn,
+	    smsConn->callbacks.get_properties.manager_data);
 	break;
 
     default:
     {
+	_IceReadSkip (iceConn, length << 3);
+
 	IceErrorHeader (iceConn,
 	    _SmsOpcode, opcode,
 	    iceConn->sequence - 1,
