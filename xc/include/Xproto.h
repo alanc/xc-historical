@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.84 91/03/13 20:09:08 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.85 91/04/06 12:57:05 rws Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -191,6 +191,7 @@ SOFTWARE.
 #define sz_xSetPointerMappingReply 32
 #define sz_xGetKeyboardMappingReply 32
 #define sz_xGetPointerMappingReply 32
+#define sz_xGetModifierMappingReply 32
 #define sz_xListFontsWithInfoReq 8
 #define sz_xPolyLineReq 12
 #define sz_xPolyArcReq 12
