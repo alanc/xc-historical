@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XFSWrap.c,v 11.1 91/04/06 13:18:42 rws Exp $
+ * $XConsortium: XFSWrap.c,v 11.2 91/04/07 16:12:05 rws Exp $
  */
 
 /*
@@ -119,15 +119,15 @@ XCreateFontSet (dpy, base_font_name_list, missing_charset_list,
     *missing_charset_count = 0;
     if (!lcd)
 	return NULL;
-    name_list = _XParseBaseFontNameList(base_font_name_list, &count);
-    if (!name_list)
-        return NULL;
     base_name = (char *)Xmalloc(strlen(base_font_name_list) + 1);
-    if (!base_name) {
-	XFreeStringList(name_list);
+    if (!base_name)
 	return NULL;
-    }
     strcpy(base_name, base_font_name_list);
+    name_list = _XParseBaseFontNameList(base_name, &count);
+    if (!name_list) {
+	Xfree(base_name);
+        return NULL;
+    }
     font_set = (*lcd->methods->create_fontset) (lcd, dpy, base_name,
 						name_list, count,
 						missing_charset_list,
