@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.10 88/11/23 17:00:22 keith Exp $
+ * $XConsortium: session.c,v 1.11 88/12/15 18:32:15 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,8 +27,19 @@
 # include <signal.h>
 # include <X11/Xatom.h>
 # include <setjmp.h>
+# include <sys/errno.h>
 
 static int	clientPid;
+
+static jmp_buf	abortSession;
+
+static void
+catchTerm ()
+{
+	longjmp (abortSession, 1);
+}
+
+extern void	exit ();
 
 ManageSession (d)
 struct display	*d;
@@ -68,22 +79,32 @@ struct display	*d;
 	 */
 	if (source (&verify, d->startup) != 0)
 		SessionExit (OBEYTERM_DISPLAY);
-	/*
-	 * Step 9: Start the clients, changing uid/groups
-	 *	   setting up environment and running the session
-	 */
-	if (StartClient (&verify, d, &clientPid)) {
-		Debug ("Client Started\n");
+	clientPid = 0;
+	if (!setjmp (abortSession)) {
+		signal (SIGTERM, catchTerm);
 		/*
-		 * Step 13: Wait for session to end,
-		 */
-		for (;;) {
-			pid = wait (0);
-			if (pid == clientPid)
-				break;
+	 	 * Step 9: Start the clients, changing uid/groups
+	 	 *	   setting up environment and running the session
+	 	 */
+		if (StartClient (&verify, d, &clientPid)) {
+			Debug ("Client Started\n");
+			/*
+		 	 * Step 13: Wait for session to end,
+		 	 */
+			for (;;) {
+				pid = wait ((waitType *) 0);
+				if (pid == clientPid)
+					break;
+			}
+		} else {
+			LogError ("session start failed\n");
 		}
 	} else {
-		LogError ("session start failed\n");
+		/*
+		 * when terminating the session, nuke
+		 * the child and then run the reset script
+		 */
+		AbortClient (clientPid);
 	}
 	/*
 	 * Step 15: run system-wide reset file
@@ -111,6 +132,7 @@ struct display	*d;
 	}
 }
 
+/*ARGSUSED*/
 DeleteXloginResources (d, dpy)
 struct display	*d;
 Display		*dpy;
@@ -120,7 +142,7 @@ Display		*dpy;
 
 static jmp_buf syncJump;
 
-static
+static void
 syncTimeout ()
 {
 	longjmp (syncJump, 1);
@@ -137,7 +159,7 @@ Display		*dpy;
 				d->name);
 		SessionExit (ABORT_DISPLAY);
 	}
-	alarm (d->grabTimeout);
+	alarm ((unsigned) d->grabTimeout);
 	Debug ("Before XGrabServer %s\n", d->name);
 	XGrabServer (dpy);
 	if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
@@ -193,8 +215,7 @@ int			*pidp;
 	}
 	switch (pid = fork ()) {
 	case 0:
-		CloseOnFork ();
-		setpgrp (0, getpid ());
+		CleanUpChild ();
 #ifdef NGROUPS
 
 		setgid (verify->groups[0]);
@@ -233,13 +254,61 @@ int			*pidp;
 	}
 }
 
+static jmp_buf	tenaciousClient;
+
+static void
+waitAbort ()
+{
+	longjmp (tenaciousClient, 1);
+}
+
+#ifdef SYSV
+#define killpg(pgrp, sig) kill(-(pgrp), sig)
+#endif /* SYSV */
+
+extern int  errno;
+
+AbortClient (pid)
+int	pid;
+{
+	int	sig = SIGTERM;
+#ifdef __STDC__
+	volitile int	i;
+#else
+	int	i;
+#endif
+	int	retId;
+	for (i = 0; i < 4; i++) {
+		if (killpg (pid, sig) == -1) {
+			switch (errno) {
+			case EPERM:
+				LogError ("xdm can't kill client\n");
+			case EINVAL:
+			case ESRCH:
+				return;
+			}
+		}
+		if (!setjmp (tenaciousClient)) {
+			(void) signal (SIGALRM, waitAbort);
+			(void) alarm ((unsigned) 10);
+			retId = wait ((waitType *) 0);
+			(void) alarm ((unsigned) 0);
+			(void) signal (SIGALRM, SIG_DFL);
+			if (retId == pid)
+				break;
+		} else
+			signal (SIGALRM, SIG_DFL);
+		sig = SIGKILL;
+	}
+}
+
 int
 source (verify, file)
 struct verify_info	*verify;
 char			*file;
 {
 	char	*args[4];
-	int	pid, wpid;
+	int	pid;
 	extern int	errno;
 	waitType	result;
 
@@ -247,8 +316,7 @@ char			*file;
 	if (file[0] && access (file, 1) == 0) {
 		switch (pid = fork ()) {
 		case 0:
-			CloseOnFork ();
-			setpgrp (0, getpid ());
+			CleanUpChild ();
 			if (!(args[0] = getEnv (verify->systemEnviron, "SHELL")))
 				args[0] = "/bin/sh";
 			args[1] = "-c";
@@ -264,7 +332,7 @@ char			*file;
 			return 1;
 			break;
 		default:
-			while ((wpid = wait (&result)) != pid)
+			while (wait (&result) != pid)
 				;
 			break;
 		}
