@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.6 88/10/20 17:37:36 keith Exp $
+ * $XConsortium: socket.c,v 1.7 89/08/31 11:35:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -49,26 +49,35 @@ int	WellKnownSocketsMax;
 
 CreateWellKnownSockets ()
 {
-	struct sockaddr_in	sock_addr;
+    struct sockaddr_in	sock_addr;
 
-	if (request_port == 0)
-		return;
-	Debug ("creating socket %d\n", request_port);
-	socketFd = socket (AF_INET, SOCK_DGRAM, 0);
-	if (socketFd == -1) {
-		LogError ("socket creation failed\n");
-		return;
-	}
-	RegisterCloseOnFork (socketFd);
-	sock_addr.sin_family = AF_INET;
-	sock_addr.sin_port = htons ((short) request_port);
-	sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-	if (bind (socketFd, &sock_addr, sizeof (sock_addr)) == -1)
-		LogError ("error binding socket address %d\n", request_port);
-	else {
-		WellKnownSocketsMax = socketFd;
-		FD_SET (socketFd, &WellKnownSocketsMask);
-	}
+    if (request_port == 0)
+	    return;
+    Debug ("creating socket %d\n", request_port);
+    socketFd = socket (AF_INET, SOCK_DGRAM, 0);
+    if (socketFd == -1) {
+	LogError ("socket creation failed\n");
+	return;
+    }
+    RegisterCloseOnFork (socketFd);
+    sock_addr.sin_family = AF_INET;
+    sock_addr.sin_port = htons ((short) request_port);
+    sock_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+    if (bind (socketFd, &sock_addr, sizeof (sock_addr)) == -1)
+	LogError ("error binding socket address %d\n", request_port);
+    else {
+	WellKnownSocketsMax = socketFd;
+	FD_SET (socketFd, &WellKnownSocketsMask);
+    }
+}
+
+DestroyWellKnownSockets ()
+{
+    if (socketFd != -1)
+    {
+	close (socketFd);
+	socketFd = -1;
+    }
 }
 
 AnyWellKnownSockets ()
@@ -491,6 +500,7 @@ static unsigned long	globalSessionID;
     
 static ARRAY8 outOfMemory = { (CARD16) 13, (CARD8Ptr) "Out of memory" };
 static ARRAY8 noValidAddr = { (CARD16) 16, (CARD8Ptr) "No valid address" };
+static ARRAY8 noValidAuth = { (CARD16) 22, (CARD8Ptr) "No valid authorization" };
 
 request_respond (from, fromlen, length)
     struct sockaddr *from;
@@ -506,7 +516,7 @@ request_respond (from, fromlen, length)
     ARRAY8	    manufacturerDisplayID;
     ARRAY8Ptr	    reason;
     int		    expectlen;
-    int		    i;
+    int		    i, j;
     struct protoDisplay  *pdpy;
     ARRAY8	    authorizationName, authorizationData;
     ARRAY8Ptr	    connectionAddress;
@@ -567,14 +577,40 @@ request_respond (from, fromlen, length)
 	    	}
 		else
 		{
-	    	    connectionAddress = &connectionAddresses.data[i];
-	    	    pdpy = NewProtoDisplay (from, fromlen,
-				    	    displayNumber,
-					    connectionTypes.data[i],
-				    	    connectionAddress,
-				    	    NextSessionID());
-	    	    if (!pdpy)
-		    	reason = &outOfMemory;
+		    if (authorizationNames.length == 0)
+			j = 0;
+		    else
+			j = SelectAuthorizationTypeIndex (&authorizationNames);
+		    if (j < 0)
+		    {
+			reason = &noValidAuth;
+		    }
+		    else
+		    {
+	    	    	connectionAddress = &connectionAddresses.data[i];
+	    	    	pdpy = NewProtoDisplay (from, fromlen,
+				    	    	displayNumber,
+					    	connectionTypes.data[i],
+				    	    	connectionAddress,
+				    	    	NextSessionID());
+	    	    	if (!pdpy)
+		    	    reason = &outOfMemory;
+		    	else if (j < authorizationNames.length)
+		    	{
+			    Xauth   *auth;
+			    SetProtoDisplayAuthorization (pdpy,
+				(unsigned short) authorizationNames.data[i].length,
+				(char *) authorizationNames.data[i].data);
+			    auth = pdpy->authorization;
+			    if (auth)
+			    {
+				authorizationName.length = auth->name_length;
+				authorizationName.data = (CARD8Ptr) auth->name;
+				authorizationData.length = auth->data_length;
+				authorizationData.data = (CARD8Ptr) auth->data;
+			    }
+		    	}
+		    }
 		}
 	    }
 	}
@@ -626,11 +662,11 @@ send_accept (to, tolen, sessionID,
     XdmcpFlush (socketFd, &buffer, to, tolen);
 }
    
-send_decline (to, tolen, status, authenticationName, authenticationData)
+send_decline (to, tolen, authenticationName, authenticationData, status)
     struct sockaddr *to;
     int		    tolen;
-    ARRAY8Ptr	    status;
     ARRAY8Ptr	    authenticationName, authenticationData;
+    ARRAY8Ptr	    status;
 {
     XdmcpHeader	header;
 
@@ -728,6 +764,21 @@ manage (from, fromlen, length)
 	    d->from = from_save;
 	    d->fromlen = fromlen;
 	    d->displayNumber = pdpy->displayNumber;
+	    d->authorization = pdpy->authorization;
+	    if (d->authorization)
+		d->authorize = TRUE;
+	    if (remoteAuthDir)
+	    {
+		int len;
+
+		len = strlen (remoteAuthDir) + 12;
+		if (d->authFile)
+		    free (d->authFile);
+		d->authFile = malloc ((unsigned) len);
+		sprintf (d->authFile, "%s/AuthXXXXXX", remoteAuthDir);
+		(void) mktemp (d->authFile);
+	    }
+	    pdpy->authorization = 0;
 	    DisposeProtoDisplay (pdpy);
 	    Debug ("Starting display %s,%s\n", d->name, d->class);
 	    StartDisplay (d);

@@ -16,17 +16,15 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) \
 		  $(TOP)/lib/Xau/libXau.a $(TOP)/lib/Xdmcp/libXdmcp.a
           SRCS1 = auth.c buf.c daemon.c display.c dpylist.c dm.c error.c \
 		  file.c greet.c reset.c resource.c protodpy.c policy.c \
-		  session.c socket.c util.c verify.c Login.c
+		  session.c socket.c util.c verify.c Login.c mitauth.c
           OBJS1 = auth.o buf.o daemon.o display.o dpylist.o dm.o error.o \
 		  file.o greet.o reset.o resource.o protodpy.o policy.o \
-		  session.o socket.o util.o verify.o Login.o
+		  session.o socket.o util.o verify.o Login.o mitauth.o
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
-          SRCS3 = xdmauthgen.c
-          OBJS3 = xdmauthgen.o
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
-       PROGRAMS = xdm xdmshell xdmauthgen sessreg
+       PROGRAMS = xdm xdmshell sessreg
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" $(OTHERDEFS) ConnectionFlags
 
 /**/#
@@ -49,12 +47,10 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
-		  '-DDEF_XDM_AUTH_GEN="$(XDMDIR)/xdmauthgen"' \
 		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
-SingleProgramTarget(xdmauthgen,$(OBJS3),$(LOCAL_LIBRARIES),)
 SingleProgramTarget(sessreg,$(OBJS4),,)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))

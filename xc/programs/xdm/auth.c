@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.8 89/07/22 19:43:05 keith Exp $
+ * $XConsortium: auth.c,v 1.9 89/08/31 11:35:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -53,148 +53,144 @@ static FILE *from_auth_file;
 extern void	exit (), bcopy (), free ();
 extern char	*mktemp ();
 
-InitAuthorization (d)
-struct display	*d;
-{
-    int	    pipein[2], pipeout[2];
-    char    **argv, **parseArgs ();
+extern int	MitInitAuth ();
+extern Xauth	*MitGetAuth ();
 
-    Debug ("InitAuthorization\n");
-    if (d->authGen == 0 || d->authGen[0] == '\0')
-	return;
-    if (pipe (pipein) == -1)
-	return;
-    if (pipe (pipeout) == -1) {
-	close (pipein[0]);
-	close (pipein[1]);
-	return;
-    }
-    switch (auth_pid = fork ()) {
-    case 0:
-	CleanUpChild ();
-	Debug ("starting authGen: %s\n", d->authGen);
-	argv = parseArgs ((char **) 0, d->authGen);
-	close (pipein[1]);
-	if (pipein[0] != 0) {
-	    dup2 (pipein[0], 0);
-	    close (pipein[0]);
+struct AuthProtocol {
+    unsigned short  name_length;
+    char	    *name;
+    int		    (*InitAuth)();
+    Xauth	    *(*GetAuth)();
+    int		    inited;
+};
+
+static struct AuthProtocol AuthProtocols[] = {
+{ (unsigned short) 18,	"MIT-MAGIC-COOKIE-1",
+    MitInitAuth, MitGetAuth,
+}
+};
+
+#define NUM_AUTHORIZATION (sizeof (AuthProtocols) / sizeof (AuthProtocols[0]))
+
+static struct AuthProtocol *
+findProtocol (name_length, name)
+    unsigned short  name_length;
+    char	    *name;
+{
+    int	i;
+
+    for (i = 0; i < NUM_AUTHORIZATION; i++)
+	if (AuthProtocols[i].name_length == name_length &&
+	    bcmp (AuthProtocols[i].name, name, name_length) == 0)
+	{
+	    return &AuthProtocols[i];
 	}
-	close (pipeout[0]);
-	if (pipeout[1] != 1) {
-	    dup2 (pipeout[1], 1);
-	    close (pipeout[1]);
-	}
-	if (!argv)
-	    LogError ("authGen: no arguments");
-	else
-	    execv (argv[0], argv);
-	exit (1);
-    case -1:
-	close (pipein[0]);
-	close (pipein[1]);
-	close (pipeout[0]);
-	close (pipeout[1]);
-	return;
-    default:
-	close (pipein[0]);
-	to_auth=pipein[1];
-	close (pipeout[1]);
-	from_auth=pipeout[0];
-	from_auth_file = fdopen (from_auth, "r");
-	break;
-    }
+    return (struct AuthProtocol *) 0;
 }
 
-static jmp_buf	authAbort;
-static void	(*oldpipe)();
-
-static void
-abortAuth ()
+ValidAuthorization (name_length, name)
+    unsigned short  name_length;
+    char	    *name;
 {
-    longjmp (authAbort, 1);
+    if (findProtocol (name_length, name))
+	return TRUE;
+    return FALSE;
+}
+
+InitAuthorization (name_length, name)
+unsigned short	name_length;
+char		*name;
+{
+    struct AuthProtocol	*a;
+
+    Debug ("InitAuthorization\n");
+    a = findProtocol (name_length, name);
+    if (a && !a->inited)
+    {
+	(*a->InitAuth) (name_length, name);
+	a->inited = TRUE;
+    }
 }
 
 Xauth *
-GenerateAuthorization (timeout)
+GenerateAuthorization (name_length, name)
+unsigned short	name_length;
+char		*name;
 {
-    Xauth   *ret;
+    struct AuthProtocol	*a;
+    Xauth   *auth = 0;
 
-    Debug ("GenerateAuthorization %d\n", timeout);
-    if (auth_pid == -1)
-	return 0;
-    oldpipe = (void (*)()) signal (SIGPIPE, SIG_IGN);
-    if (setjmp (authAbort)) {
-	Debug ("Authorization timeout\n");
-	ret = 0;
-    } else {
-        signal (SIGALRM, abortAuth);
-	alarm ((unsigned) timeout);
-	Debug ("writing byte\n");
-        if (write (to_auth, "\n", 1) != 1) {
-	    Debug ("Write failed\n");
-	    ret = 0;
-	} else {
-	    Debug ("reading authorization\n");
-	    ret = XauReadAuth (from_auth_file);
-	    if (ret)
-		Debug ("Got 0x%x (%d %*.*s)\n", ret,
-			ret->name_length, ret->name_length,
- 			ret->name_length, ret->name);
-	    else
-		Debug ("Got (null)\n");
-	}
-	alarm (0);
+    Debug ("GenerateAuthorization %*.*s\n",
+	    name_length, name_length, name);
+    a = findProtocol (name_length, name);
+    if (a)
+    {
+	auth = (*a->GetAuth) (name_length, name);
+	if (auth)
+	    Debug ("Got 0x%x (%d %*.*s)\n", auth,
+		auth->name_length, auth->name_length,
+ 		auth->name_length, auth->name);
+	else
+	    Debug ("Got (null)\n");
     }
-    signal (SIGALRM, SIG_DFL);
-    signal (SIGPIPE, oldpipe);
-    Debug ("Done generate\n");
-    return ret;
+    return auth;
+}
+
+SetProtoDisplayAuthorization (pdpy, namelen, name)
+    struct protoDisplay	*pdpy;
+    unsigned short	namelen;
+    char		*name;
+{
+    Xauth   *auth;
+
+    InitAuthorization (namelen, name);
+    auth = GenerateAuthorization (namelen, name);
+    pdpy->authorization = auth;
 }
 
 SetServerAuthorization (d)
 struct display	*d;
 {
-	Xauth	*auth, *GenerateAuthorization ();
-	FILE	*auth_file;
-	int	mask;
+    FILE	*auth_file;
+    Xauth	*auth;
+    int	mask;
 
-	Debug ("SetServerAuthorization\n");
-	if (d->authorization) {
-		XauDisposeAuth (d->authorization);
-		d->authorization = 0;
-	}
-	if (!d->authorize || !d->authFile || !d->authFile[0])
-		return 0;
-	auth = GenerateAuthorization (d->openTimeout);
-	if (!auth) {
-		LogError ("Authorization generation failed for %s\n",
-				d->name);
-		return 0;
-	}
-	mask = umask (0077);
-	(void) unlink (d->authFile);
-	auth_file = fopen (d->authFile, "w");
-	umask (mask);
-	if (!auth_file) {
-		LogError ("Cannot open server authorization file %s\n",
-				d->authFile);
-		XauDisposeAuth (auth);
-		return 0;
-	}
-	printf ("File: %s auth: %x\n", d->authFile, auth);
-	if (!XauWriteAuth (auth_file, auth) || fflush (auth_file) == EOF) {
-		LogError ("Cannot write server authorization file %s\n",
-				d->authFile);
-		fclose (auth_file);
-		XauDisposeAuth (auth);
-		return 0;
-	}
-	XSetAuthorization (auth->name, (int) auth->name_length,
-			   auth->data, (int) auth->data_length);
-	d->authorization = auth;
-	fclose (auth_file);
-	Debug ("Success\n");
-	return 1;
+    auth = d->authorization;
+    if (!auth)
+    {
+	if (d->displayType.origin == FromFile && d->authFile)
+    	    auth = GenerateAuthorization (d->authNameLen, d->authName);
+    }
+    if (!auth)
+	return 0;
+    if (d->authFile)
+    {
+    	mask = umask (0077);
+    	(void) unlink (d->authFile);
+    	auth_file = fopen (d->authFile, "w");
+    	umask (mask);
+    	if (!auth_file) {
+    	    LogError ("Cannot open server authorization file %s\n",
+		    	    d->authFile);
+    	    XauDisposeAuth (auth);
+    	    return 0;
+    	}
+    	Debug ("File: %s auth: %x\n", d->authFile, auth);
+    	if (!XauWriteAuth (auth_file, auth) || fflush (auth_file) == EOF) {
+	    LogError ("Cannot write server authorization file %s\n",
+			    d->authFile);
+	    fclose (auth_file);
+	    XauDisposeAuth (auth);
+	    return 0;
+    	}
+    	fclose (auth_file);
+	if (!d->authorization)
+	    d->authorization = auth;
+    }
+    XSetAuthorization (auth->name, (int) auth->name_length,
+		       auth->data, (int) auth->data_length);
+    Debug ("Success\n");
+    return 1;
 }
 
 static

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.14 89/04/27 19:12:07 kit Exp $
+ * $XConsortium: dm.h,v 1.15 89/08/31 11:34:50 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -116,7 +116,8 @@ struct display {
 	Xauth		*authorization;	/* authorization data */
 	char		*authFile;	/* file to store authorization in */
 	char		*userAuthDir;	/* backup directory for tickets */
-	char		*authGen;	/* authorization generation program */
+	char		*authName;	/* authorization protocol name */
+	unsigned short	authNameLen;	/* authorization protocol name len */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
@@ -130,17 +131,18 @@ struct display {
 	CARD16		displayNumber;
 };
 
+#define PROTO_TIMEOUT	(30 * 60)   /* 30 minutes should be long enough */
+
 struct protoDisplay {
 	struct protoDisplay	*next;
-	struct sockaddr		*address;
-	int			addrlen;
+	struct sockaddr		*address;   /* UDP address */
+	int			addrlen;    /* UDP address length */
+	unsigned long		date;	    /* creation date */
 	CARD16			displayNumber;
 	CARD16			connectionType;
 	ARRAY8			connectionAddress;
 	CARD32			sessionID;
-    /*
-     * add authentication data to this record here
-     */
+	Xauth			*authorization;
 };
 
 struct greet_info {
@@ -181,6 +183,7 @@ extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
 extern char	*pidFile;
+extern char	*remoteAuthDir;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),

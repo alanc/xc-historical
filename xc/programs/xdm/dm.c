@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.16 89/07/18 19:43:00 keith Exp $
+ * $XConsortium: dm.c,v 1.17 89/08/31 11:34:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -103,55 +103,55 @@ RescanNotify ()
 
 ScanServers ()
 {
-	struct buffer	*serversFile;
-	int		fd;
-	static DisplayType	acceptableTypes[] =
-		{ { Local, Permanent, FromFile },
-		  { Local, Transient, FromFile },
-		  { Local, Permanent, FromFile },
-		  { Local, Transient, FromFile },
-		  { Foreign, Permanent, FromFile },
-		  { Foreign, Transient, FromFile },
-		};
+    struct buffer	*serversFile;
+    int		fd;
+    static DisplayType	acceptableTypes[] =
+	    { { Local, Permanent, FromFile },
+	      { Local, Transient, FromFile },
+	      { Local, Permanent, FromFile },
+	      { Local, Transient, FromFile },
+	      { Foreign, Permanent, FromFile },
+	      { Foreign, Transient, FromFile },
+	    };
 
-	if (servers[0] == '/') {
-		fd = open (servers, 0);
-		if (fd == -1) {
-			LogError ("cannot access servers file %s\n", servers);
-			return;
-		}
-		serversFile = fileOpen (fd);
-	} else {
-		fd = -1;
-		serversFile = dataOpen (servers, strlen (servers));
+    if (servers[0] == '/') {
+	fd = open (servers, 0);
+	if (fd == -1) {
+	    LogError ("cannot access servers file %s\n", servers);
+	    return;
 	}
-	if (serversFile == NULL)
-		return;
-	while (ReadDisplay (serversFile, acceptableTypes,
- 			    sizeof (acceptableTypes) / sizeof (acceptableTypes[0]))
-		 	    != EOB)
-		;
-	StartDisplays ();
-	bufClose (serversFile);
-	if (fd != -1)
-		close (fd);
+	serversFile = fileOpen (fd);
+    } else {
+	fd = -1;
+	serversFile = dataOpen (servers, strlen (servers));
+    }
+    if (serversFile == NULL)
+	return;
+    while (ReadDisplay (serversFile, acceptableTypes,
+			sizeof (acceptableTypes) / sizeof (acceptableTypes[0]))
+			!= EOB)
+	;
+    StartDisplays ();
+    bufClose (serversFile);
+    if (fd != -1)
+	close (fd);
 }
 
 static void
 MarkDisplay (d)
 struct display	*d;
 {
-	d->state = MissingEntry;
+    d->state = MissingEntry;
 }
 
 static void
 RescanServers ()
 {
-	Debug ("rescanning servers\n");
-	Rescan = 0;
-	ForEachDisplay (MarkDisplay);
-	ReinitResources ();
-	ScanServers ();
+    Debug ("rescanning servers\n");
+    Rescan = 0;
+    ForEachDisplay (MarkDisplay);
+    ReinitResources ();
+    ScanServers ();
 }
 
 /*
@@ -161,9 +161,10 @@ RescanServers ()
 static void
 TerminateAll ()
 {
-	void	TerminateDisplay ();
+    void    TerminateDisplay ();
 
-	ForEachDisplay (TerminateDisplay);
+    DestroyWellKnownSockets ();
+    ForEachDisplay (TerminateDisplay);
 }
 
 /*

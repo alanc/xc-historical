@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.12 89/07/16 16:11:41 jim Exp $
+ * $XConsortium: greet.c,v 1.13 89/07/22 19:42:48 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -48,7 +48,8 @@ GreetDone (w, data, status)
     LoginData	*data;
     int		status;
 {
-	Debug ("GreetDone: %s, %s\n", data->name, data->passwd);
+	Debug ("GreetDone: %s, (password is %d long)\n",
+		data->name, strlen (data->passwd));
 	switch (status) {
 	case NOTIFY_OK:
 		strcpy (name, data->name);
@@ -81,13 +82,10 @@ struct display	*d;
 	Debug ("greet %s\n", d->name);
 	argc = 1;
 	XtToolkitInitialize ();
-	Debug ("name: %s\n", d->name);
 	context = XtCreateApplicationContext();
-	Debug ("name: %s\n", d->name);
 	dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
 				&argc, argv);
 
-	Debug ("name: %s\n", d->name);
 	SecureDisplay (d, dpy);
 
 	i = 0;

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.19 89/07/16 16:07:42 jim Exp $
+ * $XConsortium: resource.c,v 1.20 89/08/31 11:34:58 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,6 +35,7 @@ int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
 char	*pidFile;
+char	*remoteAuthDir;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -78,6 +79,12 @@ char	*pidFile;
 #ifndef DEF_AUTH_FILE
 #define DEF_AUTH_FILE	"/usr/lib/X11/xdm/auth-server"
 #endif
+#ifndef DEF_AUTH_NAME
+#define DEF_AUTH_NAME	"MIT-MAGIC-COOKIE-1"
+#endif
+#ifndef DEF_REMOTE_AUTH_DIR
+#define DEF_REMOTE_AUTH_DIR "/usr/lib/X11/xdm"
+#endif
 #ifndef DEF_AUTH_DIR
 #define DEF_AUTH_DIR	"/tmp"
 #endif
@@ -100,6 +107,8 @@ struct dmResources {
 				"true",
 "pidFile",	"PidFile",	DM_STRING,	&pidFile,
 				"",
+"remoteAuthDir","RemoteAuthDir",DM_STRING,	&remoteAuthDir,
+				DEF_REMOTE_AUTH_DIR,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -146,12 +155,12 @@ struct displayResources {
 				"3",
 "authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
 				"true",
+"authName",	"AuthName",	DM_STRING,	boffset(authName),
+				DEF_AUTH_NAME,
 "authFile",	"AuthFile",	DM_STRING,	boffset(authFile),
 				DEF_AUTH_FILE,
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
 				DEF_AUTH_DIR,
-"authGen",	"AuthGen",	DM_STRING,	boffset(authGen),
-				DEF_XDM_AUTH_GEN,
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\

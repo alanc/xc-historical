@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.17 89/06/21 10:45:58 rws Exp $
+ * $XConsortium: session.c,v 1.18 89/07/18 21:30:28 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -57,7 +57,8 @@ struct display	*d;
 	LoadXloginResources (d);
 	Debug ("name now %s\n", d->name);
 	dpy = InitGreet (d);
-	Debug ("name now %s\n", d->name);
+	if (d->authorization && d->authFile && d->authFile[0])
+	    (void) unlink (d->authFile);
 	for (;;) {
 		/*
 		 * Step 6: Greet user, requesting name/password
@@ -117,28 +118,27 @@ struct display	*d;
 LoadXloginResources (d)
 struct display	*d;
 {
-	char	cmd[1024];
+    char	cmd[1024];
 
-	if (d->resources[0] && access (d->resources, 4) == 0) {
-		if (d->authorization && d->authFile && d->authFile[0]) {
-			sprintf (cmd, "XAUTHORITY=%s %s -display %s -load %s",
-					d->authFile,
-					d->xrdb, d->name, d->resources);
-		} else {
-			sprintf (cmd, "%s -display %s -load %s",
-					d->xrdb, d->name, d->resources);
-		}
-		Debug ("Loading resource file: %s\n", cmd);
-		system (cmd);
+    if (d->resources[0] && access (d->resources, 4) == 0) {
+	if (d->authorization && d->authFile && d->authFile[0]) {
+	    sprintf (cmd, "XAUTHORITY=%s %s -display %s -load %s",
+			    d->authFile,
+			    d->xrdb, d->name, d->resources);
+	} else {
+	    sprintf (cmd, "%s -display %s -load %s",
+			    d->xrdb, d->name, d->resources);
 	}
+	Debug ("Loading resource file: %s\n", cmd);
+	system (cmd);
+    }
 }
 
-/*ARGSUSED*/
 DeleteXloginResources (d, dpy)
 struct display	*d;
 Display		*dpy;
 {
-	XDeleteProperty(dpy, RootWindow (dpy, 0), XA_RESOURCE_MANAGER);
+    XDeleteProperty(dpy, RootWindow (dpy, 0), XA_RESOURCE_MANAGER);
 }
 
 static jmp_buf syncJump;
@@ -146,7 +146,7 @@ static jmp_buf syncJump;
 static void
 syncTimeout ()
 {
-	longjmp (syncJump, 1);
+    longjmp (syncJump, 1);
 }
 
 SecureDisplay (d, dpy)
