@@ -1,4 +1,3 @@
-/* $Header: cfbscrinit.c,v 1.3 87/08/07 21:23:50 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -81,7 +80,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     long	*pVids;
     register PixmapPtr pPixmap;
     int	i;
-    void cfbInitialize332Colormap();
 
     pScreen->myNum = index;
     pScreen->width = xsize;
@@ -135,6 +133,17 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->DestroyPixmap = cfbDestroyPixmap;
     pScreen->ValidateTree = miValidateTree;
 
+#ifdef	STATIC_COLOR
+    pScreen->InstallColormap = NoopDDA;
+    pScreen->UninstallColormap = NoopDDA;
+    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+#endif
+    pScreen->GetStaticColormap = cfbGetStaticColormap;
+#ifdef	STATIC_COLOR
+    pScreen->StoreColors = NoopDDA;
+    pScreen->ResolveColor = cfbResolveStaticColor;
+#endif
+
     pScreen->RegionCreate = miRegionCreate;
     pScreen->RegionCopy = miRegionCopy;
     pScreen->RegionDestroy = miRegionDestroy;
@@ -151,8 +160,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->RegionEmpty = miRegionEmpty;
     pScreen->RegionExtents = miRegionExtents;
 
-    pScreen->CreateColormap = cfbInitialize332Colormap;
-    pScreen->DestroyColormap = NoopDDA;
     /*  Set up the remaining fields in the visuals[] array & make a RT_VISUALID */
     for (i = 0; i < NUMVISUALS; i++) {
 	visuals[i].vid = FakeClientID(0);
@@ -175,6 +182,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	}
 	if (!cfbColorMaps[i])
 	    FatalError("Can't create colormap in cfbScreenInit\n");
+	cfbInitialize332Colormap(cfbColorMaps[i]);
     }
     pScreen->defColormap = cfbColorMaps[ROOTVISUAL]->mid;
     pScreen->rootVisual = visuals[ROOTVISUAL].vid;

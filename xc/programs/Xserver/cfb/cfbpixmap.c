@@ -1,4 +1,3 @@
-/* $Header: cfbpixmap.c,v 1.1 87/08/08 17:06:32 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,7 +29,7 @@ SOFTWARE.
 
 #include "Xmd.h"
 #include "pixmapstr.h"
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 
 #include "cfb.h"
 #include "mi.h"
@@ -148,44 +147,45 @@ cfbPadPixmap(pPixmap)
 }
 
 
-#ifdef DEBUG
-/* cfbdebugging routine -- assumes pixmap is 1 bit deep 
-   and 32 bits wide
-*/
+#ifdef notdef
+/*
+ * cfb debugging routine -- assumes pixmap is 1 byte deep 
+ */
 static cfbdumppixmap(pPix)
     PixmapPtr	pPix;
 {
-    int	*pw;
-    int	i;
-    char	line[34];
+    unsigned int *pw;
+    char *psrc, *pdst;
+    int	i, j;
+    char	line[66];
 
-    line[33] = 0;
-    line[32] = '\n';
     ErrorF(  "pPixmap: 0x%x\n", pPix);
     ErrorF(  "%d wide %d high\n", pPix->width, pPix->height);
-    if (pPix->width > 32)
+    if (pPix->width > 64)
     {
 	ErrorF(  "too wide to see\n");
 	return;
     }
-    pw = (int *)pPix->devPrivate;
-    for (i=0; i<pPix->height; i++)
-	ErrorF(  "0x%x\n", pw[i]);
+
+    pw = (unsigned int *) pPix->devPrivate;
+    psrc = (char *) pw;
+
 /*
-    for(i = 0; i < pPix->height; i++)
-    {
-	for(j = 0; j < pPix->width; j++)
-	{
-	if(pw[i] & (1 << j) )
-	    line[j] = 'X';
-	else
-	    line[j] = ' ';
-	}
-	ErrorF(  "%s", line);
-    }
+    for ( i=0; i<pPix->height; ++i )
+	ErrorF( "0x%x\n", pw[i] );
 */
+
+    for ( i = 0; i < pPix->height; ++i ) {
+	pdst = line;
+	for(j = 0; j < pPix->width; j++) {
+	    *pdst++ = *psrc++ ? 'X' : ' ' ;
+	}
+	*pdst++ = '\n';
+	*pdst++ = '\0';
+	ErrorF( "%s", line);
+    }
 }
-#endif DEBUG
+#endif notdef
 
 /* Rotates pixmap pPix by w pixels to the right on the screen. Assumes that
  * words are 32 bits wide, and that the least significant bit appears on the

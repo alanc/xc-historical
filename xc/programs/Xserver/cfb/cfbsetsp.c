@@ -1,4 +1,3 @@
-/* $Header: cfbsetsp.c,v 1.1 87/08/08 17:06:51 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -34,7 +33,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "maskbits.h"
+#include "cfbmaskbits.h"
 
 
 /* cfbSetScanline -- copies the bits from psrc to the drawable starting at
