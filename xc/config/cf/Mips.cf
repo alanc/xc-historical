@@ -9,8 +9,8 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.10 91/07/30 20:47:59 rws Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: Mips.cf,v 1.11 92/08/22 11:41:51 rws Exp $
+XCOMM operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specific parameters                       *
@@ -30,9 +30,9 @@
 #define ExtraLibraries -lmld
 #define ArCmd ar clr
 #define BootstrapCFlags -DMips
-#define InstallCmd $(ETCDIR)/mipsinstall
+#define InstallCmd /etc/mipsinstall -f
 #define MakeCmd make MakeEnv
-#define DoRanlibCmd 0
+#define DoRanlibCmd NO
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
 /*****************************************************************************
