@@ -1,8 +1,8 @@
-.\" $XConsortium: userguide.mm,v 1.2 92/06/30 20:02:34 rws Exp $
+.\" $XConsortium: userguide.mm,v 1.3 92/06/30 21:05:49 rws Exp $
 '
 .ds dN "\s-1MIT\s0-3-01.3
 '
-.ds dD User Guide for the X test suite (release 1.1)
+.ds dD User Guide for the X Test Suite
 .so 00.header
 .ds xT X\ test suite
 .ds xW X\ Window System
