@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.1 89/10/26 19:56:03 rws Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.2 89/10/27 17:15:57 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -123,22 +123,22 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
 #define FILLSPAN(xl,xr,addr) \
     if (xr >= xl) \
     { \
-	width = xr - xl + 1; \
+	n = xr - xl + 1; \
 	addrl = addr + (xl >> PWSH); \
-	if (((xl & PIM) + width) <= PPW) \
+	if (((xl & PIM) + n) <= PPW) \
 	{ \
-	    maskpartialbits(xl, width, startmask); \
+	    maskpartialbits(xl, n, startmask); \
 	    *addrl = (*addrl & ~startmask) | (fill & startmask); \
 	} \
 	else \
 	{ \
-	    maskbits(xl, width, startmask, endmask, nlmiddle); \
+	    maskbits(xl, n, startmask, endmask, n); \
 	    if (startmask) \
 	    { \
 		*addrl = (*addrl & ~startmask) | (fill & startmask); \
 		addrl++; \
 	    } \
-	    for (n = nlmiddle; n--; ) \
+	    while (n--) \
 		*addrl++ = fill; \
 	    if (endmask) \
 		*addrl = (*addrl & ~endmask) | (fill & endmask); \
@@ -174,8 +174,8 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill, width;
-    int startmask, endmask, nlmiddle;
+    register int fill;
+    int startmask, endmask;
 
     if (pDraw->type == DRAWABLE_WINDOW)
     {
