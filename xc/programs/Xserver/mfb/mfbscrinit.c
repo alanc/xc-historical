@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbscrinit.c,v 1.52 87/09/07 19:08:52 toddb Exp $ */
+/* $Header: mfbscrinit.c,v 1.53 88/01/03 17:06:17 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -74,7 +74,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pScreen->maxInstalledCmaps = 1;
     pScreen->whitePixel = 1;
     pScreen->blackPixel = 0;
-    pScreen->backingStoreSupport = NotUseful;
+    pScreen->backingStoreSupport = Always;
     pScreen->saveUnderSupport = NotUseful;
 
     /* cursmin and cursmax are device specific */

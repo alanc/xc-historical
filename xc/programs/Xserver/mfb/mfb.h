@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header$ */
+/* $Header: mfb.h,v 1.6 87/09/02 00:30:58 toddb Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -30,6 +30,7 @@ SOFTWARE.
 #include "gc.h"
 #include "colormap.h"
 #include "miscstruct.h"
+#include "mibstore.h"
 
 extern int InverseAlu[];
 
@@ -53,6 +54,9 @@ extern PixmapPtr mfbCreatePixmap();
 extern Bool mfbDestroyPixmap();
 
 extern void mfbCopyWindow();
+
+extern void mfbSaveAreas();
+extern void mfbRestoreAreas();
 
 /* window painters */
 extern void mfbPaintWindowNone();

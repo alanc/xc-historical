@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.120 88/05/05 19:09:31 rws Exp $ */
+/* $Header: mfbgc.c,v 1.121 88/06/06 17:28:12 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -104,6 +104,8 @@ mfbCreateGC(pGC)
 	pPriv->ppPixmap = &BogusPixmap;
 	pPriv->FillArea = mfbSolidInvertArea;
     }
+    pGC->devBackingStore = (pointer)NULL;
+
     pQ = (GCInterestPtr) Xalloc(sizeof(GCInterestRec));
     if(!pQ)
     {
@@ -185,6 +187,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     int new_rotate, new_rrop,  new_line, new_text, new_fill;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
     Bool win_moved;		/* window has moved since last time */
+    Mask procChanges = 0;
 
     oldOrg = pGC->lastWinOrg;
 
@@ -522,6 +525,8 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    else
 	        pGC->Polylines = miWideDash;
 
+	procChanges |= MIBS_POLYLINES;
+
 	switch(pGC->joinStyle)
 	{
 	  case JoinMiter:
@@ -588,6 +593,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		pGC->PolyGlyphBlt = miPolyGlyphBlt;
 	    }
 	}
+	procChanges |= (MIBS_POLYGLYPHBLT|MIBS_IMAGEGLYPHBLT);
     }
 
     if (new_fill)
@@ -601,12 +607,15 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    {
 	      case RROP_WHITE:
 		pGC->FillSpans = mfbWhiteSolidFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_BLACK:
 		pGC->FillSpans = mfbBlackSolidFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_INVERT:
 		pGC->FillSpans = mfbInvertSolidFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_NOP:
 		pGC->FillSpans = NoopDDA;
@@ -621,11 +630,13 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		)
 	{
 	    pGC->FillSpans = mfbUnnaturalTileFS;
+	    procChanges |= MIBS_FILLSPANS;
 	}
 	else if (pGC->fillStyle == FillStippled &&
 		 (!pGC->stipple || pGC->stipple->width != 32))
 	{
 	    pGC->FillSpans = mfbUnnaturalStippleFS;
+	    procChanges |= MIBS_FILLSPANS;
 	}
 	else if (pGC->fillStyle == FillStippled)
 	{
@@ -633,12 +644,15 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    {
 	      case RROP_WHITE:
 		pGC->FillSpans = mfbWhiteStippleFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_BLACK:
 		pGC->FillSpans = mfbBlackStippleFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_INVERT:
 		pGC->FillSpans = mfbInvertStippleFS;
+		procChanges |= MIBS_FILLSPANS;
 		break;
 	      case RROP_NOP:
 		pGC->FillSpans = NoopDDA;
@@ -648,6 +662,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	else /* overload tiles to do parti-colored opaque stipples */
 	{
 	    pGC->FillSpans = mfbTileFS;
+	    procChanges |= MIBS_FILLSPANS;
 	}
 
 	/* the rectangle code doesn't deal with opaque stipples that
@@ -718,6 +733,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		devPriv->FillArea = mfbTileArea32;
 	    }
 	} /* end of natural rectangles */
+	procChanges |= MIBS_POLYFILLRECT;
     } /* end of new_fill */
 
 
@@ -774,6 +790,20 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	        devPriv->pRotatedStipple)
 	        mfbYRotatePixmap(devPriv->pRotatedStipple, yrot); 
         }
+    }
+
+
+    /*
+     * If this GC has ever been used with a window with backing-store enabled,
+     * we must call miVaidateBackingStore to keep the backing-store module
+     * up-to-date, should this GC be used with that drawable again. In addition,
+     * if the current drawable is a window and has backing-store enabled, we
+     * also call miValidateBackingStore to give it a chance to get its hooks in.
+     */
+    if (pGC->devBackingStore ||
+	(pWin && (pWin->backingStore != NotUseful)))
+    {
+	miValidateBackingStore(pDrawable, pGC, procChanges);
     }
 
     return ;
