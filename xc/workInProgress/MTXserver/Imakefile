@@ -302,8 +302,8 @@ XCOMM OMRON Luna server
 XCOMM
 SUBDIRS0 = MFBSubdirs ddx/omron
 LUNADIRS = $(SUBDIRS0) $(DEPDIRS)
-LUNAOBJS =
-#ifdef UniOSU
+LUNAOBJS = ddx/omron/omronInit.o
+#ifdef uniosu
 LUNALIBS = ddx/omron/libomron.a MFBLibs $(BSDEMUL)
 #else
 LUNALIBS = ddx/omron/libomron.a MFBLibs
