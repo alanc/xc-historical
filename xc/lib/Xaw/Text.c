@@ -626,13 +626,36 @@ static void ThumbProc (w, closure, callData)
    */
 {
     TextWidget ctx= (TextWidget)closure;
-    XtTextPosition position;
+    XtTextPosition position, old_top, old_bot;
     _XtTextPrepareToUpdate(ctx);
+    old_top = ctx->text.lt.top;
+    old_bot = ctx->text.lt.info[ctx->text.lt.lines-1].position;
     position = callData * ctx->text.lastPos;
     position = (*ctx->text.source->
 		Scan)(ctx->text.source, position, XtstEOL, XtsdLeft, 1, FALSE);
-    BuildLineTable(ctx, position);
-    DisplayTextWindow(ctx);
+    if (position >= old_top && position <= old_bot) {
+	int line;
+	for (line = 0; line < ctx->text.lt.lines &&
+		       position > ctx->text.lt.info[line].position; line++);
+	if (line)
+	    _XtTextScroll(ctx, line);
+    }
+    else {
+	BuildLineTable(ctx, position);
+	if (old_top >= ctx->text.lt.top &&
+	    old_top <= ctx->text.lt.info[ctx->text.lt.lines-1].position) {
+	    int line;
+	    for (line = 0;
+		 line < ctx->text.lt.lines &&
+		 old_top > ctx->text.lt.info[line].position; line++);
+	    BuildLineTable(ctx, old_top);
+	    if (line)
+		_XtTextScroll(ctx, -line);
+	}
+	else {
+	    DisplayTextWindow(ctx);
+	}
+    }
     _XtTextExecuteUpdate(ctx);
 }
 
