@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.33 90/04/20 16:41:01 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.34 90/04/24 16:35:11 kit Exp $";
 #endif 
 
 /*
@@ -1119,7 +1119,7 @@ Piece * piece;
   if (!src->ascii_src.use_string_in_place)
     XtFree(piece->text);
 
-  XtFree(piece);
+  XtFree((char *)piece);
 }
 
 /*	Function Name: FindPiece
@@ -1258,7 +1258,7 @@ Cardinal num_args;
 
   src = XtCreateWidget("genericAsciiString", asciiSrcObjectClass, parent,
 		       ascii_args, num_args + TWO);
-  XtFree(ascii_args);
+  XtFree((char *)ascii_args);
   return(src);
 }
 
@@ -1310,7 +1310,7 @@ Cardinal num_args;
 
   src = XtCreateWidget("genericAsciiDisk", asciiSrcObjectClass, parent,
 		       ascii_args, num_args);
-  XtFree(ascii_args);
+  XtFree((char *)ascii_args);
   return(src);
 }
 #endif /* ASCII_DISK */
