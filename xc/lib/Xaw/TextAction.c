@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.5 89/07/27 18:20:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.6 89/08/15 12:41:25 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -52,6 +52,7 @@ void _XawTextSetField(), _XawTextPopdownSearchAction();
 char * _XawTextGetText();
 void _XawTextBuildLineTable(), _XawTextAlterSelection(), _XawTextVScroll();
 void _XawTextSetSelection(), _XawTextCheckResize(), _XawTextExecuteUpdate();
+void _XawTextSetScrollBars(), _XawTextClearAndCenterDisplay();
 Atom * _XawTextSelectionList();
 
 static void
@@ -246,6 +247,7 @@ Cardinal *num_params;
   }
   GetSelection(w, ((TextWidget)w)->text.time, params, count);
   EndAction((TextWidget)w);
+  _XawTextSetScrollBars((TextWidget) w);
 }
 
 /************************************************************
@@ -861,8 +863,9 @@ RedrawDisplay(w, event)
 Widget w;
 XEvent *event;
 {
-  XawTextDisableRedisplay(w);	/* A hack, but is remarkably efficient. */
-  XawTextEnableRedisplay(w);
+  StartAction( (TextWidget) w, event);
+  _XawTextClearAndCenterDisplay((TextWidget) w);
+  EndAction( (TextWidget) w);
 }
 
 /*ARGSUSED*/
@@ -913,7 +916,7 @@ TextWidget ctx;
       break;
   line_num--;			/* backup a line. */
 
-  max_width = Max(0, ctx->core.width - (x + ctx->text.margin.right));
+  max_width = Max(0, ctx->core.width - HMargins(ctx));
 
   x = ctx->text.margin.left;
   (*FindPosition) ( (Widget) ctx, ctx->text.lt.info[line_num].position, x, 
@@ -995,6 +998,7 @@ XEvent *event;
 
   XtFree(text.ptr);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /*ARGSUSED*/
@@ -1318,6 +1322,7 @@ Cardinal * num_params;
 
   FormRegion(ctx, from, to);
   EndAction(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 	     
 

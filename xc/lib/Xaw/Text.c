@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.102 89/08/15 12:43:17 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.103 89/08/17 16:45:02 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -59,13 +59,13 @@ extern char* sys_errlist[];
  */
 
 static void VScroll(), VJump(), HScroll(), HJump(), ClearWindow(); 
-static void DisplayTextWindow(), ModifySelection(), SetScrollBars();
+static void DisplayTextWindow(), ModifySelection();
 static void UpdateTextInLine(), UpdateTextInRectangle();
 static Boolean LineAndXYForPosition();
 static XawTextPosition FindGoodPosition(), _BuildLineTable();
 
 void _XawTextAlterSelection(), _XawTextExecuteUpdate();
-void _XawTextBuildLineTable();
+void _XawTextBuildLineTable(), _XawTextSetScrollBars();;
 
 /****************************************************************
  *
@@ -542,7 +542,7 @@ XSetWindowAttributes *attributes;
   }
 
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
-  SetScrollBars(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /* Utility routines for support of Text */
@@ -948,8 +948,8 @@ TextWidget ctx;
  * displayed in the window.
  */
 
-static void 
-SetScrollBars(ctx)
+void 
+_XawTextSetScrollBars(ctx)
 TextWidget ctx;
 {
   float first, last, widest;
@@ -1028,7 +1028,7 @@ int n;
       if (n < lt->lines) n++; /* update descenders at bottom */
       _XawTextNeedsUpdating(ctx, lt->info[lt->lines - n].position, 
 			    ctx->text.lastPos);
-      SetScrollBars(ctx);
+      _XawTextSetScrollBars(ctx);
     }
   } 
   else {
@@ -1061,7 +1061,7 @@ int n;
 		   (unsigned int) ctx->core.width, clear_height);
       
       _XawTextNeedsUpdating(ctx, lt->info[0].position, updateTo);
-      SetScrollBars(ctx);
+      _XawTextSetScrollBars(ctx);
     } 
     else if (lt->top != target)
       DisplayTextWindow((Widget)ctx);
@@ -1143,8 +1143,8 @@ caddr_t callData;		/* #pixels */
     
     UpdateTextInRectangle(ctx, &rect);
   }
-  SetScrollBars(ctx);
   _XawTextExecuteUpdate(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /*ARGSUSED*/
@@ -1582,7 +1582,6 @@ XawTextBlock *text;
   if (ctx->text.lt.top >= ctx->text.lastPos) {
     _XawTextBuildLineTable(ctx, ctx->text.lastPos, FALSE);
     ClearWindow( (Widget) ctx);
-    SetScrollBars(ctx);
     ctx->text.update_disabled = FALSE; /* rearm redisplay. */
     return error;
   }
@@ -1622,7 +1621,6 @@ XawTextBlock *text;
     _XawTextNeedsUpdating(ctx, updateFrom, updateTo);
   }
 
-  SetScrollBars(ctx);
   ctx->text.update_disabled = FALSE; /* rearm redisplay. */
   return error;
 }
@@ -1855,6 +1853,24 @@ Widget w;
     (*ClearToBG) (w, 0, 0, (int)w->core.width, (int)w->core.height);
 }
 
+/*	Function Name: _XawTextClearAndCenterDisplay
+ *	Description: Redraws the display with the cursor in insert point
+ *                   centered vertically.
+ *	Arguments: ctx - the text widget.
+ *	Returns: none.
+ */
+
+void
+_XawTextClearAndCenterDisplay(ctx)
+TextWidget ctx;
+{
+  int insert_line = LineForPosition(ctx, ctx->text.insertPos);
+  int scroll_by = insert_line - ctx->text.lt.lines/2;
+
+  _XawTextVScroll(ctx, scroll_by);
+  DisplayTextWindow( (Widget) ctx);
+}
+  
 /*
  * Internal redisplay entire window.
  * Legal to call only if widget is realized.
@@ -1868,7 +1884,7 @@ Widget w;
   ClearWindow(w);
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, FALSE);
   _XawTextNeedsUpdating(ctx, zeroPosition, ctx->text.lastPos);
-  SetScrollBars(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /*
@@ -2269,7 +2285,7 @@ Widget w;
   PositionHScrollBar(ctx);
 
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
-  SetScrollBars(ctx);
+  _XawTextSetScrollBars(ctx);
 }
 
 /*
@@ -2312,7 +2328,6 @@ Widget current, request, new;
       oldtw->text.margin.left != newtw->text.margin.left  ||
       oldtw->text.wrap != newtw->text.wrap) {
     _XawTextBuildLineTable(newtw, newtw->text.lt.top, TRUE);
-    SetScrollBars(newtw);
     redisplay = TRUE;
   }
 
@@ -2320,6 +2335,9 @@ Widget current, request, new;
     newtw->text.showposition = TRUE;
   
   _XawTextExecuteUpdate(newtw);
+  if (redisplay)
+    _XawTextSetScrollBars(newtw);
+
   return redisplay;
 }
 
@@ -2504,6 +2522,7 @@ XawTextBlock *text;
 
   _XawTextCheckResize(ctx);
   _XawTextExecuteUpdate(ctx);
+  _XawTextSetScrollBars(ctx);
   
   return result;
 }
