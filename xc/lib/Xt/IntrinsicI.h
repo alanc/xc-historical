@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.47 91/06/10 15:07:29 converse Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.48 91/06/27 13:24:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -29,6 +29,9 @@ SOFTWARE.
 
 #include "Xtos.h"
 #include "IntrinsicP.h"
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/Xos.h>
 
 #include "Object.h"
