@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Clock.c,v 1.37 88/08/31 18:15:52 jim Exp $";
+static char rcsid[] = "$XConsortium: Clock.c,v 1.38 88/09/04 12:30:59 swick Exp $";
 #endif lint
 
 
@@ -93,6 +93,7 @@ static XtResource resources[] = {
 #undef offset
 #undef goffset
 
+static void ClassInitialize();
 static void Initialize(), Realize(), Destroy(), Resize(), Redisplay();
 static Boolean SetValues();
 
@@ -101,7 +102,7 @@ ClockClassRec clockClassRec = {
     /* superclass		*/	&widgetClassRec,
     /* class_name		*/	"Clock",
     /* widget_size		*/	sizeof(ClockRec),
-    /* class_initialize		*/	NULL,
+    /* class_initialize		*/	ClassInitialize,
     /* class_part_initialize	*/	NULL,
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
@@ -141,6 +142,11 @@ WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
  *
  ****************************************************************/
 
+static void ClassInitialize()
+{
+    XtAddConverter( XtRString, XtRBackingStore, XmuCvtStringToBackingStore,
+		    NULL, 0 );
+}
 
 /* ARGSUSED */
 static void Initialize (request, new)
