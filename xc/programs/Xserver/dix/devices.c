@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.7 90/03/19 16:41:50 keith Exp $ */
+/* $XConsortium: devices.c,v 5.8 90/03/29 11:07:44 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -36,6 +36,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "cursorstr.h"
 #include "dixstruct.h"
+#include "site.h"
 
 extern InputInfo inputInfo;
 extern int (* InitialVector[3]) ();
@@ -178,7 +179,12 @@ CloseDevice(dev)
     xfree(dev->kbdfeed);
     xfree(dev->ptrfeed);
     xfree(dev->intfeed);
-    xfree(dev->stringfeed);
+    if (dev->stringfeed)
+    {
+	xfree(dev->stringfeed->ctrl.symbols_supported);
+	xfree(dev->stringfeed->ctrl.symbols_displayed);
+	xfree(dev->stringfeed);
+    }
     xfree(dev->bell);
     xfree(dev->leds);
     xfree(dev);
@@ -479,6 +485,116 @@ InitPtrFeedbackClassDeviceStruct(dev, controlProc)
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultPointerControl;
     dev->ptrfeed = feedc;
+    (*controlProc)(dev, &feedc->ctrl);
+    return TRUE;
+}
+
+LedCtrl defaultLedControl = {
+	DEFAULT_LEDS};
+
+BellCtrl defaultBellControl = {
+	DEFAULT_BELL,
+	DEFAULT_BELL_PITCH,
+	DEFAULT_BELL_DURATION};
+
+#define DEFAULT_RESOLUTION		0
+#define DEFAULT_MIN_VALUE		0
+#define DEFAULT_MAX_VALUE		0
+#define DEFAULT_INTEGER_DISPLAYED	0
+
+IntegerCtrl defaultIntegerControl = {
+	DEFAULT_RESOLUTION,
+	DEFAULT_MIN_VALUE,
+	DEFAULT_MAX_VALUE,
+	DEFAULT_INTEGER_DISPLAYED};
+
+Bool
+InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
+				     num_symbols_supported, symbols)
+    DeviceIntPtr dev;
+    void (*controlProc)();
+    int max_symbols;
+    int num_symbols_supported;
+    KeySym *symbols;
+{
+    int i;
+    register StringFeedbackPtr feedc;
+
+    feedc = (StringFeedbackPtr)xalloc(sizeof(StringFeedbackClassRec));
+    if (!feedc)
+	return FALSE;
+    feedc->CtrlProc = controlProc;
+    feedc->ctrl.num_symbols_supported = num_symbols_supported;
+    feedc->ctrl.num_symbols_displayed = 0;
+    feedc->ctrl.max_symbols = max_symbols;
+    feedc->ctrl.symbols_supported = (KeySym *) 
+	xalloc (sizeof (KeySym) * num_symbols_supported);
+    feedc->ctrl.symbols_displayed = (KeySym *) 
+	xalloc (sizeof (KeySym) * max_symbols);
+    if (!feedc->ctrl.symbols_supported || !feedc->ctrl.symbols_displayed)
+    {
+	xfree(feedc->ctrl.symbols_supported);
+	xfree(feedc->ctrl.symbols_displayed);
+	xfree(feedc);
+	return FALSE;
+    }
+    for (i=0; i<num_symbols_supported; i++)
+	*(feedc->ctrl.symbols_supported+i) = *symbols++;
+    for (i=0; i<max_symbols; i++)
+	*(feedc->ctrl.symbols_displayed+i) = (KeySym) NULL;
+    dev->stringfeed = feedc;
+    (*controlProc)(dev, &feedc->ctrl);
+    return TRUE;
+}
+
+Bool
+InitBellFeedbackClassDeviceStruct (dev, bellProc, controlProc)
+    DeviceIntPtr dev;
+    void (*bellProc)();
+    void (*controlProc)();
+{
+    register BellFeedbackPtr feedc;
+
+    feedc = (BellFeedbackPtr)xalloc(sizeof(BellFeedbackClassRec));
+    if (!feedc)
+	return FALSE;
+    feedc->CtrlProc = controlProc;
+    feedc->ctrl = defaultBellControl;
+    dev->bell = feedc;
+    (*controlProc)(dev, &feedc->ctrl);
+    return TRUE;
+}
+
+Bool
+InitLedFeedbackClassDeviceStruct (dev, controlProc)
+    DeviceIntPtr dev;
+    void (*controlProc)();
+{
+    register LedFeedbackPtr feedc;
+
+    feedc = (LedFeedbackPtr)xalloc(sizeof(LedFeedbackClassRec));
+    if (!feedc)
+	return FALSE;
+    feedc->CtrlProc = controlProc;
+    feedc->ctrl = defaultLedControl;
+    dev->leds = feedc;
+    (*controlProc)(dev, &feedc->ctrl);
+    return TRUE;
+}
+
+Bool
+InitIntegerFeedbackClassDeviceStruct (dev, controlProc)
+    DeviceIntPtr dev;
+    void (*controlProc)();
+{
+    register IntegerFeedbackPtr feedc;
+
+    feedc = (IntegerFeedbackPtr)xalloc(sizeof(IntegerFeedbackClassRec));
+    if (!feedc)
+	return FALSE;
+    feedc->CtrlProc = controlProc;
+    feedc->ctrl = defaultIntegerControl;
+    dev->intfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
 }
