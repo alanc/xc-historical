@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.13 89/10/10 14:59:12 rws Exp $ */
+/* $XConsortium: events.c,v 5.14 89/11/06 18:19:43 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2429,7 +2429,8 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     UpdateCurrentTime();
     if ((revertTo != RevertToParent) &&
 	(revertTo != RevertToPointerRoot) &&
-	(revertTo != RevertToNone))
+	(revertTo != RevertToNone) &&
+	((revertTo != RevertToFollowKeyboard) || !followOK))
     {
 	client->errorValue = revertTo;
 	return BadValue;
@@ -2453,10 +2454,16 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
 	(CompareTimeStamps(time, focus->time) == EARLIER))
 	return Success;
     mode = (dev->grab) ? NotifyWhileGrabbed : NotifyNormal;
-    DoFocusEvents(dev, focus->win, focusWin, mode);
+    if (focus->win == FollowKeyboardWin)
+	DoFocusEvents(dev, inputInfo.keyboard->focus->win, focusWin, mode);
+    else
+	DoFocusEvents(dev, focus->win, focusWin, mode);
     focus->time = time;
     focus->revert = revertTo;
-    focus->win = focusWin;
+    if (focusID == FollowKeyboard)
+	focus->win = FollowKeyboardWin;
+    else
+	focus->win = focusWin;
     if ((focusWin == NoneWin) || (focusWin == PointerRootWin))
 	focus->traceGood = 0;
     else
