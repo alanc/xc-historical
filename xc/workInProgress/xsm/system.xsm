@@ -1,4 +1,4 @@
-! $XConsortium$
+! $XConsortium: system.xsm,v 1.4 94/08/02 18:45:28 mor Exp mor $
 twm
 smproxy
-xterm -geom +150+150
+xterm
