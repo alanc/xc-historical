@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.229 95/05/24 22:04:05 gildea Exp gildea $";
+static char *rid="$XConsortium: main.c,v 1.230 95/06/08 21:08:14 gildea Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -195,7 +195,6 @@ static Bool IsPts = False;
 #include <sys/ptyio.h>
 #endif /* hpux */
 #ifdef sgi
-#define USE_SYSV_ENVVARS
 #define HAS_BSD_GROUPS
 #include <sys/sysmacros.h>
 #endif /* sgi */
@@ -2771,10 +2770,12 @@ spawn ()
 #endif /* USE_HANDSHAKE */
 
 #ifdef USE_SYSV_ENVVARS
+#ifndef TIOCSWINSZ
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
+#endif
 #ifdef UTMP
 		if (pw) {	/* SVR4 doesn't provide these */
 		    if (!getenv("HOME"))
