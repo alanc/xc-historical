@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.66 90/03/06 17:01:04 jim Exp $
+ * $XConsortium: resize.c,v 1.67 90/03/13 15:29:08 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.66 90/03/06 17:01:04 jim Exp $";
+"$XConsortium: resize.c,v 1.67 90/03/13 15:29:08 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -625,11 +625,18 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
     TwmWindow *tmp_win;
     int x, y, w, h, bw;
 {
+    SetupFrame (tmp_win, x, y, w, h, bw, False);
+}
+
+void SetupFrame (tmp_win, x, y, w, h, bw, sendEvent)
+    TwmWindow *tmp_win;
+    int x, y, w, h, bw;
+    Bool sendEvent;			/* whether or not to force a send */
+{
     XEvent client_event;
     XWindowChanges frame_wc, xwc;
     unsigned long frame_mask, xwcm;
     int title_width, title_height;
-    int sendEvent;
 #ifdef SHAPE
     int reShape;
 #endif
@@ -660,8 +667,6 @@ void SetupWindow (tmp_win, x, y, w, h, bw)
 	 (w == tmp_win->frame_width && h == tmp_win->frame_height)) ||
 	(bw != tmp_win->frame_bw))
       sendEvent = TRUE;
-    else
-      sendEvent = FALSE;
 
     xwcm = CWWidth;
     title_width = xwc.width = w;

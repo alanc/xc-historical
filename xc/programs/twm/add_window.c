@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.138 90/03/22 14:01:33 jim Exp $
+ * $XConsortium: add_window.c,v 1.139 90/03/22 14:06:17 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.138 90/03/22 14:01:33 jim Exp $";
+"$XConsortium: add_window.c,v 1.139 90/03/22 14:06:17 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -145,8 +145,6 @@ IconMgr *iconp;
     Atom actual_type;
     int actual_format;
     unsigned long nitems, bytesafter;
-    XWindowChanges xwc;		/* change window structure */
-    unsigned int xwcm;		/* change window mask */
     int ask_user;		/* don't know where to put the window */
     long supplied = 0;
     int gravx, gravy;			/* gravity signs for positioning */
@@ -526,8 +524,6 @@ IconMgr *iconp;
     }
 
 
-    xwcm = CWX | CWY | CWWidth | CWHeight;
-
 #ifdef DEBUG
 	fprintf(stderr, "  position window  %d, %d  %dx%d\n", 
 	    tmp_win->attr.x,
@@ -542,20 +538,9 @@ IconMgr *iconp;
 	tmp_win->attr.y += gravy * delta;
     }
 
-					/* set up the configure */
-    xwc.x = tmp_win->attr.x + tmp_win->attr.border_width;
-    xwc.y = tmp_win->attr.y + tmp_win->attr.border_width;
-    xwc.width = tmp_win->attr.width;
-    xwc.height = tmp_win->attr.height;
     tmp_win->title_width = tmp_win->attr.width;
 
-    if (tmp_win->frame_bw)
-    {
-	xwc.border_width = 0;
-        xwcm |= CWBorderWidth;
-    }
-
-    XConfigureWindow(dpy, tmp_win->w, xwcm, &xwc);
+    if (tmp_win->old_bw) XSetWindowBorderWidth (dpy, tmp_win->w, 0);
 
     tmp_win->name_width = XTextWidth(Scr->TitleBarFont.font, tmp_win->name,
 				     namelen);
@@ -740,9 +725,8 @@ IconMgr *iconp;
      */
     tmp_win->mapped = FALSE;
 
-    SetupWindow (tmp_win,
-		 tmp_win->frame_x, tmp_win->frame_y,
-		 tmp_win->frame_width, tmp_win->frame_height, -1);
+    SetupFrame (tmp_win, tmp_win->frame_x, tmp_win->frame_y,
+		tmp_win->frame_width, tmp_win->frame_height, -1, True);
 
     /* wait until the window is iconified and the icon window is mapped
      * before creating the icon window 
