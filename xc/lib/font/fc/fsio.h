@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.h,v 1.7 91/07/15 22:42:46 keith Exp $ */
+/* $XConsortium: fsio.h,v 1.8 91/07/17 12:01:20 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -36,6 +36,14 @@ typedef struct _fs_fpe_alternate {
     Bool        subset;
 }           FSFpeAltRec, *FSFpeAltPtr;
 
+
+/* Per client access contexts */
+typedef struct _fs_client_data {
+    pointer		    client;
+    struct _fs_client_data  *next;
+    XID			    acid;
+} FSClientRec, *FSClientPtr;
+
 #define FS_RECONNECT_WAIT	5
 #define FS_MAX_RECONNECT_WAIT	80
 
@@ -50,6 +58,8 @@ typedef struct _fs_fpe_data {
     int         numAlts;
     FSFpeAltPtr alts;
 
+    FSClientPtr	clients;
+    XID		curacid;
 #ifdef DEBUG
     int         reqindex;
     int         reqbuffer[REQUEST_LOG_SIZE];
