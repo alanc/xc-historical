@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.114 94/03/30 13:47:29 dpw Exp $
+XCOMM site:  $XConsortium: site.def,v 1.115 94/03/30 16:04:04 dpw Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -61,6 +61,18 @@ XCOMM site:  $XConsortium: site.def,v 1.114 94/03/30 13:47:29 dpw Exp $
 #define CplusplusCmd /obj/CenterLine/bin/CC
 #define CplusplusStandardDefines -D__ANSI_CPP__
 #define DefaultCplusplusDebugFlags -g
+#endif
+
+#if defined(BSD386Architecture) || defined(SVR4Architecture)
+#ifndef XF86SVGAServer
+#define XF86SVGAServer NO
+#endif
+#ifndef XF86S3Server
+#define XF86S3Server YES
+#endif
+#ifndef XVirtualFramebufferServer
+#define XVirtualFramebufferServer YES
+#endif
 #endif
 
 #endif /* BeforeVendorCF */
@@ -157,15 +169,6 @@ clean::									@@\
 #ifdef SonyBsdArchitecture
 #undef HasSecureRPC
 #endif
-#endif
-
-#ifdef BSD386Architecture
-#define XnestServer YES
-#define XVirtualFramebufferServer YES
-#endif
-
-#ifdef SVR4Architecture
-#define SvgaConfig vga.pmi:1024x768
 #endif
 
 #ifdef i860SVR4Architecture
