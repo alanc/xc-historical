@@ -41,21 +41,21 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 extern void miGetImageWithBS();	/* XXX should not be needed */
 
+extern int defaultColorVisualClass;
+
 static VisualRec visuals[] = {
 /* vid screen class rMask gMask bMask oRed oGreen oBlue bpRGB cmpE nplan */
-    /*  Eventually,  we would like to offer this visual too */
 #ifndef STATIC_COLOR
     0,  0, PseudoColor,0,    0,    0,      0,    0,   0,    8,  256,   8,
     0,  0, DirectColor,0x07, 0x38, 0xc0,   0,    3,   6,    8,  8,     8,
     0,  0, GrayScale,  0,    0,    0,      0,    0,   0,    8,  256,   8,
     0,  0, StaticGray, 0,    0,    0,      0,    0,   0,    8,  256,   8,
 #endif
-    0,  0, StaticColor,0x07, 0x38, 0xc0,   0,    3,   6,    3,  256,   8,
-    0,  0, TrueColor,  0x07, 0x38, 0xc0,   0,    3,   6,    3,  8,     8
+    0,  0, StaticColor,0x07, 0x38, 0xc0,   0,    3,   6,    8,  256,   8,
+    0,  0, TrueColor,  0x07, 0x38, 0xc0,   0,    3,   6,    8,  8,     8
 };
 
 #define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-#define	ROOTVISUAL	0
 
 static DepthRec depths[] = {
 /* depth	numVid		vids */
@@ -178,7 +178,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	    return FALSE;
 	}
     }
-    pScreen->rootVisual = visuals[ROOTVISUAL].vid;
 
     /*  Set up the remaining fields in the depths[] array */
     for (i = 0; i < NUMDEPTHS; i++) {
@@ -200,22 +199,25 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     }
 
     pScreen->defColormap = FakeClientID(0);
-    switch (visuals[ROOTVISUAL].class) {
-    case StaticGray:
-    case StaticColor:
-	i = CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
-			   &cmap, AllocAll, 0);
-	break;
-    case PseudoColor:
-    case GrayScale:
-	i = CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
-			   &cmap, AllocNone, 0);
-	break;
-    case TrueColor:
-    case DirectColor:
-	FatalError("Bad visual in cfbScreenInit\n");
+    if (defaultColorVisualClass < 0)
+    {
+	i = 0;
     }
-    if (i == Success)
+    else
+    {
+	for (i = 0;
+	     (i < NUMVISUALS) && (visuals[i].class != defaultColorVisualClass);
+	     i++)
+	    ;
+	if (i >= NUMVISUALS)
+	    i = 0;
+    }
+    pScreen->rootVisual = visuals[i].vid;
+    if (CreateColormap(pScreen->defColormap, pScreen, &visuals[i], &cmap,
+		       (visuals[i].class & DynamicClass) ? AllocNone :
+							   AllocAll,
+		       0)
+	== Success)
 	return TRUE;
     for (i = 0; i < NUMDEPTHS; i++)
 	xfree(depths[i].vids);
