@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.39 91/07/30 12:11:32 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.40 91/09/10 09:02:30 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
@@ -13,7 +13,6 @@ XCOMM operating system:  OSName
 #define ExtraLibraries      $(XBSDLIB) -lposix
 #define Malloc0ReturnsNull  YES
 #define StandardDefines     -DmacII -DSYSV
-#define LnCmd               ln -s
 #define ExecableScripts     NO
 #define RemoveTargetProgramByMoving YES
 #define ExpandManNames      YES

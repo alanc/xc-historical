@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.24 92/11/04 14:07:50 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.25 92/11/21 17:16:43 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -65,7 +65,6 @@ XCOMM operating system:  OSName
 #define InstKmemFlags -m 2755 -g sys
 
 #define ArCmd ar scq
-#define LnCmd ln -s
 
 /* for xdm or anyone else to use */
 #define DefaultUserPath :/usr/sbin:/usr/bsd:/usr/bin:/bin:$(BINDIR):/etc:/usr/etc

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: DGUX.cf,v 1.0 91/05/09 13:42:59 rws Exp $
+XCOMM platform:  $XConsortium: DGUX.cf,v 1.1 91/05/10 17:19:48 rws Exp $
 
 #define OSName            DG/UX 4.32
 XCOMM operating system:  OSName
@@ -12,7 +12,6 @@ XCOMM operating system:  OSName
 #define HasSockets        YES
 #define HasGcc            YES
 #define BuildServer       NO
-#define LnCmd ln -s
 #define UNCOMPRESSPATH /usr/bin/X11/uncompress
 
 #define ExtraFilesToClean *.lg
