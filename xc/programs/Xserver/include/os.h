@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.29 88/09/20 13:50:03 jim Exp $ */
+/* $XConsortium: os.h,v 1.30 88/10/25 13:40:36 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -113,9 +113,9 @@ FontPathPtr	GetFontPath();
 FontPathPtr	ExpandFontNamePattern();
 FID		FiOpenForRead();
 void		CreateWellKnownSockets();
-void		SetDefaultFontPath();
+int		SetDefaultFontPath();
 void		FreeFontRecord();
-void		SetFontPath();
+int		SetFontPath();
 void		ErrorF();
 void		Error();
 void		FatalError();
