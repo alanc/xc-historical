@@ -89,23 +89,13 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthSrc = (int)
 		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind;
-
-/* translation should be done by caller of this subroutine
-	pptT = ppt;
-	while(pptT < pptLast)
-	{
-	    pptT->x += ((WindowPtr)pDrawable)->absCorner.x;
-	    pptT->y += ((WindowPtr)pDrawable)->absCorner.y;
-	    pptT++;
-	}
-*/
     }
     else
     {
-	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
+	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
     }
     pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, PSZ));
@@ -180,6 +170,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
         ppt++;
 	pwidth++;
     }
+#ifdef NOTDEF
     /*
      * If the drawable is a window with some form of backing-store, consult
      * the backing-store module to fetch any invalid spans from the window's
@@ -206,6 +197,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	miBSGetSpans(pDrawable, &pixmap, wMax, pptInit, pwidthInit,
 		     pwidthPadded, nspans);
     }
+#endif
     DEALLOCATE_LOCAL(pwidthPadded);
     return(pdstStart);
 }

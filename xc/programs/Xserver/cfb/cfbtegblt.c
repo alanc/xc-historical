@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 1.3 89/03/21 11:41:38 rws Exp $ */
+/* $XConsortium: cfbtegblt.c,v 1.4 89/03/23 18:10:32 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -84,18 +84,19 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register int wtmp,xtemp,width;
     unsigned int bgfill,fgfill,*ptemp,tmpDst1,tmpDst2,tmpx,*pdtmp;
 
+    xpos += pDrawable->x;
+    ypos += pDrawable->y;
+
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xpos += ((WindowPtr)pDrawable)->absCorner.x;
-	ypos += ((WindowPtr)pDrawable)->absCorner.y;
 	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -116,7 +117,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bgfill = PFILL(pGC->bgPixel);
 
     switch ((*pGC->pScreen->RectIn)(
-                ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip, &bbox))
+                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;

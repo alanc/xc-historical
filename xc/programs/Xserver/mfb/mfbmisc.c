@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbmisc.c,v 1.9 87/09/11 07:48:26 toddb Exp $ */
+/* $XConsortium: mfbmisc.c,v 1.10 88/09/06 14:53:32 jim Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"
@@ -29,7 +29,9 @@ SOFTWARE.
 
 #include "mfb.h"
 
-void mfbQueryBestSize(class, pwidth, pheight)
+/*ARGSUSED*/
+void
+mfbQueryBestSize(class, pwidth, pheight)
 int class;
 short *pwidth;
 short *pheight;
@@ -38,10 +40,6 @@ short *pheight;
 
     switch(class)
     {
-      case CursorShape:
-	  *pwidth = 16;
-	  *pheight = 16;
-	  break;
       case TileShape:
       case StippleShape:
 	  width = *pwidth;

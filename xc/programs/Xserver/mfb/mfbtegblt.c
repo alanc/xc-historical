@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 1.2 88/09/06 14:53:48 jim Exp $ */
+/* $XConsortium: mfbtegblt.c,v 1.3 89/03/16 14:47:33 jim Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -90,20 +90,18 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register unsigned int tmpSrc;
     BoxRec bbox;		/* for clipping */
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -124,7 +122,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y2 = ypos + h;
 
     switch ((*pGC->pScreen->RectIn)(
-                ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip, &bbox))
+                ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;

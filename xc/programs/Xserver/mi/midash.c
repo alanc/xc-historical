@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 1.11 89/03/22 10:50:12 rws Exp $ */
+/* $XConsortium: midash.c,v 1.12 89/03/23 18:28:18 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"
@@ -59,9 +59,9 @@ miDashPtr
 miDashLine(npt, ppt, nDash, pDash, offset, pnseg)
 int npt;
 DDXPointPtr ppt;
-int nDash;
+unsigned int nDash;
 unsigned char *pDash;
-int offset;
+unsigned int offset;
 int *pnseg;
 {
     DDXPointRec pt1, pt2;

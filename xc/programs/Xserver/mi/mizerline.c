@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 1.8 89/01/11 10:39:30 rws Exp $ */
+/* $XConsortium: mizerline.c,v 1.9 89/03/22 10:51:22 rws Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -58,16 +58,8 @@ DDXPointRec *pptInit;	/* points in the polyline */
     npt = nptInit;
     if (pgc->miTranslate)
     {
-        if (dst->type == DRAWABLE_WINDOW) 
-        {
-	    xorg = ((WindowPtr)dst)->absCorner.x;
-	    yorg = ((WindowPtr)dst)->absCorner.y;
-        }
-        else 
-        {
-	    xorg = 0;
-	    yorg = 0;
-        }
+	xorg = dst->x;
+	yorg = dst->y;
 
         if (mode == CoordModeOrigin) 
         {
@@ -219,7 +211,7 @@ DDXPointRec *pptInit;	/* points in the polyline */
 	    };
 	}
 
-	(*pgc->FillSpans)(dst, pgc, pwidth-pwidthInit,
+	(*pgc->ops->FillSpans)(dst, pgc, pwidth-pwidthInit,
 			  pspanInit, pwidthInit, FALSE);
 	DEALLOCATE_LOCAL(pwidthInit);
 	DEALLOCATE_LOCAL(pspanInit);
@@ -231,6 +223,6 @@ DDXPointRec *pptInit;	/* points in the polyline */
 	 (ppt == pptInit + 1)))
     {
 	int width = 1;
-	(*pgc->FillSpans)(dst, pgc, 1, ppt, &width, TRUE);
+	(*pgc->ops->FillSpans)(dst, pgc, 1, ppt, &width, TRUE);
     }
 } 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipoly.c,v 1.11 87/09/11 07:18:58 toddb Exp $ */
+/* $XConsortium: mipoly.c,v 1.12 88/09/06 14:49:04 jim Exp $ */
 /*
  *  mipoly.c
  *
@@ -58,16 +58,8 @@ miFillPolygon(dst, pgc, shape, mode, count, pPts)
     ppt = pPts;
     if (pgc->miTranslate)
     {
-        if (dst->type == DRAWABLE_WINDOW) 
-        {
-	    xorg = ((WindowPtr)dst)->absCorner.x;
-	    yorg = ((WindowPtr)dst)->absCorner.y;
-        }
-        else 
-        {
-	    xorg = 0;
-	    yorg = 0;
-        }
+	xorg = dst->x;
+	yorg = dst->y;
 
         if (mode == CoordModeOrigin) 
         {

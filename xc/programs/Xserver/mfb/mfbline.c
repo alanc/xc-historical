@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 1.39 89/03/16 14:47:23 jim Exp $ */
+/* $XConsortium: mfbline.c,v 1.40 89/03/18 12:32:10 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -197,23 +197,21 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
     int tmp;
     int x1, x2, y1, y2;
 
-    pboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
-    nboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
+    pboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
+    nboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -292,7 +290,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			y2 = min(pt2.y, pbox->y2);
 			if (y1 != y2)
 			{
-			    mfbVertS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
+			    mfbVertS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
 				      addrl, nlwidth, 
 				      pt1.x, y1, y2-y1);
 			}
@@ -355,7 +353,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 		    x2 = min(pt2.x, pbox->x2);
 		    if (x1 != x2)
 		    {
-			mfbHorzS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
+			mfbHorzS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
 				  addrl, nlwidth, 
 				  x1, pt1.y, x2-x1);
 		    }
@@ -454,7 +452,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 			}
 			else
 			    err = e;
-			mfbBresS( (int)((mfbPrivGC *)(pGC->devPriv))->rop,
+			mfbBresS( (int)((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop,
 				  addrl, nlwidth,
 				  signdx, signdy, axis, pt1.x, pt1.y,
 				  err, e1, e2, len);
@@ -493,7 +491,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 		(pt1.y <  pbox->y2))
 	    {
 		addrl += (pt1.y * nlwidth) + (pt1.x >> 5);
-		switch( ((mfbPrivGC *)(pGC->devPriv))->rop)
+		switch( ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop)
 		{
 		    case RROP_BLACK:
 		        *addrl &= rmask[pt1.x & 0x1f];
@@ -512,7 +510,7 @@ mfbLineSS(pDrawable, pGC, mode, npt, pptInit)
 	}
 #else
 	unsigned int _mask;
-	int _incr,  _rop = ((mfbPrivGC *)(pGC->devPriv))->rop;
+	int _incr,  _rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
 
 	pt1 = *ppt;
 	if (_rop == RROP_BLACK)
@@ -625,23 +623,21 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 				   unclipped start point */
 
 
-    pboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
-    nboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
+    pboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
+    nboxInit = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	addrl = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -685,11 +681,11 @@ mfbDashLine( pDrawable, pGC, mode, npt, pptInit)
 
     if (pGC->lineStyle == LineOnOffDash)
     {
-	rop = ((mfbPrivGC *)(pGC->devPriv))->rop;
+	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
     }
     else
     {
-	fgRop = ((mfbPrivGC *)(pGC->devPriv))->rop;
+	fgRop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->rop;
 	bgRop = ReduceRop(pGC->alu, pGC->bgPixel);
     }
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolypnt.c,v 1.8 88/09/06 14:49:56 jim Exp $ */
+/* $XConsortium: mipolypnt.c,v 1.9 89/03/22 10:50:51 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -45,18 +45,6 @@ miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int			i;
     register xPoint 	*ppt;
 
-
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
-    }
-    else
-    {
-	xorg = 0;
-	yorg = 0;
-    }
-
     /* make pointlist origin relative */
     if (mode == CoordModePrevious)
     {
@@ -75,6 +63,8 @@ miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     {
 	ppt = pptInit;
 	nptTmp = npt;
+	xorg = pDrawable->x;
+	yorg = pDrawable->y;
 	while(nptTmp--)
 	{
 	    ppt->x += xorg;
@@ -94,7 +84,7 @@ miPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     pwidth = pwidthInit;
     for(i = 0; i < npt; i++)
 	*pwidth++ = 1;
-    (*pGC->FillSpans)(pDrawable, pGC, npt, pptInit, pwidthInit, FALSE); 
+    (*pGC->ops->FillSpans)(pDrawable, pGC, npt, pptInit, pwidthInit, FALSE); 
 
     if(fsOld != FillSolid)
     {

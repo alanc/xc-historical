@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolycon.c,v 1.18 88/10/02 15:01:56 rws Exp $ */
+/* $XConsortium: mipolycon.c,v 1.19 89/03/22 10:50:42 rws Exp $ */
 #include "gcstruct.h"
 #include "pixmap.h"
 #include "miscanfill.h"
@@ -178,7 +178,7 @@ miFillConvexPoly(dst, pgc, count, ptsIn)
     /*
      * Finally, fill the <remaining> spans
      */
-    (*pgc->FillSpans)(dst, pgc, 
+    (*pgc->ops->FillSpans)(dst, pgc, 
 		      ptsOut-FirstPoint,FirstPoint,FirstWidth,
 		      1);
     DEALLOCATE_LOCAL(FirstWidth);

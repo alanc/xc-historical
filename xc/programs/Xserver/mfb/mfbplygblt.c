@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 1.17 88/09/06 14:54:05 jim Exp $ */
+/* $XConsortium: mfbplygblt.c,v 1.18 89/03/23 18:58:02 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -120,20 +120,18 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     if (!(pGC->planemask & 1))
 	return;
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		 (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -147,7 +145,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     bbox.y2 = y + info.overallDescent;
 
     switch ((*pGC->pScreen->RectIn)(
-                ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip, &bbox))
+                ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -272,8 +270,8 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	pbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
-	nbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
+	pbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
+	nbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
 
 	for (; --nbox >= 0; pbox++)
 	{

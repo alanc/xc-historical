@@ -1,4 +1,4 @@
-/* $XConsortium: mfbpntwin.c,v 1.5 89/03/22 19:34:26 rws Exp $ */
+/* $XConsortium: mfbpntwin.c,v 1.6 89/03/23 18:52:15 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -63,13 +63,13 @@ mfbPaintWindowPR(pWin, pRegion, what)
     WindowPtr pParent;
 
     pParent = pWin->parent;
-    while(pParent->backgroundTile == (PixmapPtr)ParentRelative)
+    while(pParent->backgroundState == ParentRelative)
 	pParent = pParent->parent;
 
     if(what == PW_BORDER)
-        (*pParent->PaintWindowBorder)(pParent, pRegion, what);
+        (*pParent->funcs->PaintWindowBorder)(pParent, pRegion, what);
     else
-	(*pParent->PaintWindowBackground)(pParent, pRegion, what);
+	(*pParent->funcs->PaintWindowBackground)(pParent, pRegion, what);
 }
 
 void
@@ -80,7 +80,7 @@ mfbPaintWindowSolid(pWin, pRegion, what)
 {
     if (what == PW_BACKGROUND)
     {
-	if (pWin->backgroundPixel)
+	if (pWin->background.pixel)
 	    mfbSolidWhiteArea(pWin, pRegion->numRects, pRegion->rects,
 			      GXset, NullPixmap);
 	else
@@ -89,7 +89,7 @@ mfbPaintWindowSolid(pWin, pRegion, what)
     } 
     else
     {
-	if (pWin->borderPixel)
+	if (pWin->border.pixel)
 	    mfbSolidWhiteArea(pWin, pRegion->numRects, pRegion->rects,
 			      GXset, NullPixmap);
 	else
@@ -131,16 +131,16 @@ mfbPaintWindow32(pWin, pRegion, what)
     unsigned int *pbits;	/* pointer to start of screen */
     mfbPrivWin *pPrivWin;
 
-    pPrivWin = (mfbPrivWin *)(pWin->devPrivate);
+    pPrivWin = (mfbPrivWin *)(pWin->devPrivates[mfbWindowPrivateIndex].ptr);
 
     if (what == PW_BACKGROUND)
     {
-	tileHeight = pWin->backgroundTile->height;
+	tileHeight = pWin->background.pixmap->drawable.height;
 	pPixmap = pPrivWin->pRotatedBackground;
     } 
     else
     {
-        tileHeight = pWin->borderTile->height;
+        tileHeight = pWin->border.pixmap->drawable.height;
 	pPixmap = pPrivWin->pRotatedBorder;
     } 
     if (!pPixmap)
@@ -148,10 +148,10 @@ mfbPaintWindow32(pWin, pRegion, what)
 	miPaintWindow(pWin, pRegion, what);
 	return;
     }
-    psrc = (int *)(pPixmap->devPrivate);
+    psrc = (int *)(pPixmap->devPrivate.ptr);
 
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
-    pbits = (unsigned int *)pPixmap->devPrivate;
+    pbits = (unsigned int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
     nbox = pRegion->numRects;
     pbox = pRegion->rects;

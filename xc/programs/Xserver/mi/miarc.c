@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.77 89/05/10 23:54:07 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.78 89/05/14 12:00:06 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -212,9 +212,9 @@ miArcSegment(pDraw, pGC, tarc, right, left)
 	return;
     }
 
-    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW)) {
-	tarc.x += ((WindowPtr) pDraw)->absCorner.x;
-	tarc.y += ((WindowPtr) pDraw)->absCorner.y;
+    if (pGC->miTranslate) {
+	tarc.x += pDraw->x;
+	tarc.y += pDraw->y;
     }
 
     a0 = tarc.angle1;
@@ -341,10 +341,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		parcs[i].x -= xOrg;
 		parcs[i].y -= yOrg;
 	    }
-	    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW))
+	    if (pGC->miTranslate)
 	    {
-		xOrg += (double) ((WindowPtr)pDraw)->absCorner.x;
-		yOrg += (double) ((WindowPtr)pDraw)->absCorner.y;
+		xOrg += (double) pDraw->x;
+		yOrg += (double) pDraw->y;
 	    }
 
 	    /* allocate a 1 bit deep pixmap of the appropriate size, and
@@ -448,7 +448,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		    if (fTricky) {
 			if (pGC->serialNumber != pDraw->serialNumber)
 			    ValidateGC (pDraw, pGC);
-		    	(*pGC->PushPixels) (pGC, pDrawTo, pDraw, dx,
+		    	(*pGC->ops->PushPixels) (pGC, pDrawTo, pDraw, dx,
 					    dy, xOrg, yOrg);
 			miClearDrawable ((DrawablePtr) pDrawTo, pGCTo);
 		    }
@@ -857,11 +857,14 @@ miGetArcPts(parc, cpt, ppPts)
     		x0, y0,	/* the recurrence formula needs two points to start */
 		x1, y1,
 		x2, y2, /* this will be the new point generated */
-		xc, yc, /* the center point */
-                xt, yt;	/* possible next point */
-    int		count, i, axis, npts = 2; /* # points used thus far */
+		xc, yc; /* the center point */
+    int		count, i;
     SppPointPtr	poly;
     DDXPointRec last;		/* last point on integer boundaries */
+#ifndef NOARCCOMPRESSION
+    double	xt, yt;
+    int		axis, npts = 2;
+#endif
 
     /* The spec says that positive angles indicate counterclockwise motion.
      * Given our coordinate system (with 0,0 in the upper left corner), 
@@ -901,7 +904,9 @@ miGetArcPts(parc, cpt, ppPts)
 
     xc = parc->width/2.0;		/* store half width and half height */
     yc = parc->height/2.0;
+#ifndef NOARCCOMPRESSION
     axis = (xc >= yc) ? X_AXIS : Y_AXIS;
+#endif
     
     x0 = xc * miDcos(st);
     y0 = yc * miDsin(st);
@@ -1596,9 +1601,8 @@ computeAngleFromPath (startAngle, endAngle, map, lenp, backwards)
 	int	*lenp;
 	int	backwards;
 {
-	int	startq, endq, q;
 	int	a0, a1, a;
-	double	len0, len1;
+	double	len0;
 	int	len;
 
 	a0 = startAngle;
@@ -1709,7 +1713,7 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 		rect.y = miny;
 		rect.width = maxx - minx;
 		rect.height = maxy - miny;
-		(*pGC->PolyFillRect) (pDraw, pGC, 1, &rect);
+		(*pGC->ops->PolyFillRect) (pDraw, pGC, 1, &rect);
 	}
 	if (right) {
 		if (h != 0) {
@@ -2728,7 +2732,7 @@ fillSpans (pDrawable, pGC)
 			    ++i;
 		    }
 	    }
-	    (*pGC->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
+	    (*pGC->ops->FillSpans) (pDrawable, pGC, i, xSpans, xWidths, TRUE);
 	}
 	disposeFinalSpans ();
 	xfree (xSpans);

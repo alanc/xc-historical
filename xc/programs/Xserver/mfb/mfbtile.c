@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 1.6 88/09/06 14:53:52 jim Exp $ */
+/* $XConsortium: mfbtile.c,v 1.7 89/03/16 14:47:34 jim Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -81,18 +81,18 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
     if (pDraw->type == DRAWABLE_WINDOW)
     {
 	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate);
+	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
-    tileHeight = ptile->height;
-    psrc = (unsigned int *)(ptile->devPrivate);
+    tileHeight = ptile->drawable.height;
+    psrc = (unsigned int *)(ptile->devPrivate.ptr);
 
     while (nbox--)
     {

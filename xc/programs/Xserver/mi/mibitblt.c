@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.72 89/03/30 09:16:23 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 1.73 89/04/27 19:37:54 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -67,8 +67,8 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     			xMin, xMax, yMin, yMax;
     unsigned int	*ordering;
 
-    srcx = xIn;
-    srcy = yIn;
+    srcx = xIn + pSrcDrawable->x;
+    srcy = yIn + pSrcDrawable->y;
 
     /* If the destination isn't realized, this is easy */
     if (pDstDrawable->type == DRAWABLE_WINDOW &&
@@ -80,27 +80,21 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     {
 	BoxRec box;
 
-	box.x1 = 0;
-	box.y1 = 0;
-	box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-	box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	box.x1 = pSrcDrawable->x;
+	box.y1 = pSrcDrawable->y;
+	box.x2 = pSrcDrawable->x + pSrcDrawable->width;
+	box.y2 = pSrcDrawable->y + pSrcDrawable->height;
 
 	prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	realSrcClip = 1;
     }
     else
     {
-	srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
-	srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
-	if (pGC->subWindowMode == IncludeInferiors)
-	{
-	    prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	if (pGC->subWindowMode == IncludeInferiors) {
+	    prgnSrcClip = NotClippedByChildren ((WindowPtr) pSrcDrawable);
 	    realSrcClip = 1;
-	}
-	else
-	{
+	} else
 	    prgnSrcClip = ((WindowPtr)pSrcDrawable)->clipList;
-	}
     }
 
     /* If the src drawable is a window, we need to translate the srcBox so
@@ -110,15 +104,12 @@ miCopyArea(pSrcDrawable, pDstDrawable,
     srcBox.x2 = srcx  + widthSrc;
     srcBox.y2 = srcy  + heightSrc;
 
-    if (pGC->miTranslate && (pDstDrawable->type == DRAWABLE_WINDOW) )
+    dstx = xOut;
+    dsty = yOut;
+    if (pGC->miTranslate)
     {
-	dstx = xOut + ((WindowPtr)pDstDrawable)->absCorner.x;
-	dsty = yOut + ((WindowPtr)pDstDrawable)->absCorner.y;
-    }
-    else
-    {
-	dstx = xOut;
-	dsty = yOut;
+	dstx += pDstDrawable->x;
+	dsty += pDstDrawable->y;
     }
 
     pptFirst = ppt = (DDXPointPtr)
@@ -237,7 +228,7 @@ miCopyArea(pSrcDrawable, pDstDrawable,
 		*pwidth++ = width;
 	    }
 
-	    (*pGC->SetSpans)(pDstDrawable, pGC, pbits, pptFirst, pwidthFirst,
+	    (*pGC->ops->SetSpans)(pDstDrawable, pGC, pbits, pptFirst, pwidthFirst,
 			     height, TRUE);
 	    xfree(pbits);
 	}
@@ -276,11 +267,8 @@ miGetPlane(pDraw, planeNum, sx, sy, w, h, result)
     int			delta;
 
     depth = pDraw->depth;
-    if(pDraw->type != DRAWABLE_PIXMAP)
-    {
-	sx += ((WindowPtr) pDraw)->absCorner.x;
-	sy += ((WindowPtr) pDraw)->absCorner.y;
-    }
+    sx += pDraw->x;
+    sy += pDraw->y;
     widthInBytes = PixmapBytePad(w, 1);
     if(!result)
         result = (unsigned long *)xalloc(h * widthInBytes);
@@ -469,7 +457,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     prgnSrcClip = (*pGCT->pScreen->RegionCreate)(NULL, 0);
     (*pGCT->pScreen->RegionCopy)(prgnSrcClip, prgnSrc);
     (*pGCT->pScreen->TranslateRegion) (prgnSrcClip, srcx, 0);
-    (*pGCT->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
+    (*pGCT->ops->ChangeClip)(pGCT, CT_REGION, prgnSrcClip, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
 
     /* Since we know pDraw is always a pixmap, we never need to think
@@ -481,7 +469,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 	*pwidth++ = w + srcx;
     }
 
-    (*pGCT->SetSpans)(pPixmap, pGCT, pbits, pptFirst, pwidthFirst, h, TRUE);
+    (*pGCT->ops->SetSpans)(pPixmap, pGCT, pbits, pptFirst, pwidthFirst, h, TRUE);
     DEALLOCATE_LOCAL(pwidthFirst);
     DEALLOCATE_LOCAL(pptFirst);
 
@@ -512,14 +500,14 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     rect.y = dsty;
     rect.width = w;
     rect.height = h;
-    (*pGC->PolyFillRect)(pDraw, pGC, 1, &rect);
+    (*pGC->ops->PolyFillRect)(pDraw, pGC, 1, &rect);
 
     /* Invert the tiling pixmap. This sets 0s for 1s and 1s for 0s, only
      * within the clipping region, the part outside is still all 0s */
     gcv[0] = GXinvert;
     DoChangeGC(pGCT, GCFunction, gcv, 0);
     ValidateGC((DrawablePtr)pPixmap, pGCT);
-    (*pGCT->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w + srcx, h, 0, 0);
+    (*pGCT->ops->CopyArea)(pPixmap, pPixmap, pGCT, 0, 0, w + srcx, h, 0, 0);
 
     /* Swap foreground and background colors on the GC for the drawable.
      * Now when we fill the drawable, we will fill in the "Background"
@@ -535,7 +523,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
     rect.y = dsty;
     rect.width = w;
     rect.height = h;
-    (*pGC->PolyFillRect)(pDraw, pGC, 1, &rect);
+    (*pGC->ops->PolyFillRect)(pDraw, pGC, 1, &rect);
 
     /* Now put things back */
     if(pStipple)
@@ -552,7 +540,7 @@ miOpqStipDrawable(pDraw, pGC, prgnSrc, pbits, srcx, w, h, dstx, dsty)
 
     ValidateGC(pDraw, pGC);
     /* put what we hope is a smaller clip region back in the scratch gc */
-    (*pGCT->ChangeClip)(pGCT, CT_NONE, NULL, 0);
+    (*pGCT->ops->ChangeClip)(pGCT, CT_NONE, NULL, 0);
     FreeScratchGC(pGCT);
     (*pDraw->pScreen->DestroyPixmap)(pPixmap);
 
@@ -581,56 +569,44 @@ miCopyPlane(pSrcDrawable, pDstDrawable,
 
     /* incorporate the source clip */
 
-    if (pSrcDrawable->type != DRAWABLE_PIXMAP)
-    {
-        box.x1 = srcx + ((WindowPtr)pSrcDrawable)->absCorner.x;
-        box.y1 = srcy + ((WindowPtr)pSrcDrawable)->absCorner.y;
-        box.x2 = box.x1 + width;
-        box.y2 = box.y1 + height;
-        prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+    box.x1 = srcx + pSrcDrawable->x;
+    box.y1 = srcy + pSrcDrawable->y;
+    box.x2 = box.x1 + width;
+    box.y2 = box.y1 + height;
+    /* clip to visible drawable */
+    if (box.x1 < pSrcDrawable->x)
+	box.x1 = pSrcDrawable->x;
+    if (box.y1 < pSrcDrawable->y)
+	box.y1 = pSrcDrawable->y;
+    if (box.x2 > pSrcDrawable->x + pSrcDrawable->width)
+	box.x2 = pSrcDrawable->x + pSrcDrawable->width;
+    if (box.y2 > pSrcDrawable->y + pSrcDrawable->height)
+	box.y2 = pSrcDrawable->y + pSrcDrawable->height;
+    if (box.x1 > box.x2)
+	box.x2 = box.x1;
+    if (box.y1 > box.y2)
+	box.y2 = box.y1;
+    prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
+
+    if (pSrcDrawable->type != DRAWABLE_PIXMAP) {
 	/* clip to visible drawable */
+
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
-	    RegionPtr prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+	    RegionPtr	clipList = NotClippedByChildren ((WindowPtr) pSrcDrawable);
+	    (*pGC->pScreen->Intersect) (prgnSrc, prgnSrc, clipList);
+	    (*pGC->pScreen->RegionDestroy) (clipList);
+	} else
 	    (*pGC->pScreen->Intersect)
-		(prgnSrc, prgnSrc, prgnSrcClip);
-	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	}
-	else
-	{
-	    (*pGC->pScreen->Intersect)
-		(prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
-	}
-	(*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
-    }
-    else
-    {
-        box.x1 = srcx;
-        box.y1 = srcy;
-        box.x2 = box.x1 + width;
-        box.y2 = box.y1 + height;
-	/* clip to visible drawable */
-	if (box.x1 < 0)
-	    box.x1 = 0;
-	if (box.y1 < 0)
-	    box.y1 = 0;
-	if (box.x2 > ((PixmapPtr)pSrcDrawable)->width)
-	    box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-	if (box.y2 > ((PixmapPtr)pSrcDrawable)->height)
-	    box.y2 = ((PixmapPtr)pSrcDrawable)->height;
-	if (box.x1 > box.x2)
-	    box.x2 = box.x1;
-	if (box.y1 > box.y2)
-	    box.y2 = box.y1;
-        prgnSrc = (*pGC->pScreen->RegionCreate)(&box, 1);
-	(*pGC->pScreen->TranslateRegion)(prgnSrc, -srcx, -srcy);
+		    (prgnSrc, prgnSrc, ((WindowPtr)pSrcDrawable)->clipList);
     }
 
     box = *(*pGC->pScreen->RegionExtents)(prgnSrc);
+    (*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
+
     if ((box.x2 > box.x1) && (box.y2 > box.y1))
     {
 	/* minimize the size of the data extracted */
-	(*pGC->pScreen->TranslateRegion)(prgnSrc, -box.x1, -box.y1);
 	/* note that we convert the plane mask bitPlane into a plane number */
 	ptile = miGetPlane(pSrcDrawable, ffs(bitPlane) - 1,
 			   srcx + box.x1, srcy + box.y1,
@@ -708,13 +684,8 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	}
 
         linelength = PixmapBytePad(w, depth);
-	srcx = sx;
-	srcy = sy;
-	if(pDraw->type == DRAWABLE_WINDOW)
-	{
-	    srcx += ((WindowPtr)pDraw)->absCorner.x;
-	    srcy += ((WindowPtr)pDraw)->absCorner.y;
-	}
+	srcx = sx + pDraw->x;
+	srcy = sy + pDraw->y;
 	for(i = 0; i < h; i++)
 	{
 	    pt.x = srcx;
@@ -727,7 +698,7 @@ miGetImage(pDraw, sx, sy, w, h, format, planeMask, pdstLine)
 	       pt.x = 0;
 	       pt.y = 0;
 	       width = w;
-	       (*pGC->SetSpans)(pPixmap, pGC, pbits, &pt, &width, 1, TRUE);
+	       (*pGC->ops->SetSpans)(pPixmap, pGC, pbits, &pt, &width, 1, TRUE);
 	       xfree(pbits);
 	       pbits = (unsigned long *)
 		  (*pDraw->pScreen->GetSpans)(pPixmap, w, &pt, &width, 1);
@@ -822,7 +793,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	        gcv[0] = i;
 	        DoChangeGC(pGC, GCPlaneMask, gcv, 0);
 	        ValidateGC(pDraw, pGC);
-	        (*pGC->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
+	        (*pGC->ops->PutImage)(pDraw, pGC, 1, x, y, w, h, leftPad,
 			         XYBitmap, pImage);
 	        pImage += h * PixmapBytePad(w, 1);
 	    }
@@ -844,11 +815,10 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
                DEALLOCATE_LOCAL(pptFirst);
            return;
         }
-	if ((pDraw->type == DRAWABLE_WINDOW) &&
-	    (pGC->miTranslate))
+	if (pGC->miTranslate)
 	{
-	    x += ((WindowPtr)(pDraw))->absCorner.x;
-	    y += ((WindowPtr)(pDraw))->absCorner.y;
+	    x += pDraw->x;
+	    y += pDraw->y;
 	}
 
 	for(i = 0; i < h; i++)
@@ -859,7 +829,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	    *pwidth++ = w;
 	}
 
-	(*pGC->SetSpans)(pDraw, pGC, pImage, pptFirst, pwidthFirst, h, TRUE);
+	(*pGC->ops->SetSpans)(pDraw, pGC, pImage, pptFirst, pwidthFirst, h, TRUE);
 	DEALLOCATE_LOCAL(pwidthFirst);
 	DEALLOCATE_LOCAL(pptFirst);
 	break;
@@ -879,19 +849,11 @@ miClearDrawable(pDraw, pGC)
 
     rect.x = 0;
     rect.y = 0;
-    if(pDraw->type == DRAWABLE_PIXMAP)
-    {
-	rect.width = ((PixmapPtr) pDraw)->width;
-	rect.height = ((PixmapPtr) pDraw)->height;
-    }
-    else
-    {
-	rect.width = ((WindowPtr) pDraw)->clientWinSize.width;
-	rect.height = ((WindowPtr) pDraw)->clientWinSize.height;
-    }
+    rect.width = pDraw->width;
+    rect.height = pDraw->height;
     DoChangeGC(pGC, GCForeground, &bg, 0);
     ValidateGC(pDraw, pGC);
-    (*pGC->PolyFillRect)(pDraw, pGC, 1, &rect);
+    (*pGC->ops->PolyFillRect)(pDraw, pGC, 1, &rect);
     DoChangeGC(pGC, GCForeground, &fg, 0);
     ValidateGC(pDraw, pGC);
 }

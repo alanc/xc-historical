@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 1.35 89/03/18 12:30:26 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 1.36 89/03/23 18:54:18 rws Exp $ */
 
 #include "X.h"
 
@@ -86,15 +86,15 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     if (!pFakePixmap)
 	return;
 
-    pbits = pFakePixmap->devPrivate;
-    pFakePixmap->devPrivate = (pointer)pImage;
-    ((mfbPrivGC *)(pGC->devPriv))->fExpose = FALSE;
+    pbits = pFakePixmap->devPrivate.ptr;
+    pFakePixmap->devPrivate.ptr = (pointer)pImage;
+    ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
     if (format != XYBitmap)
-	(*pGC->CopyArea)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
+	(*pGC->ops->CopyArea)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y);
     else
-	(*pGC->CopyPlane)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
-    ((mfbPrivGC*)(pGC->devPriv))->fExpose = TRUE;
-    pFakePixmap->devPrivate = pbits;
+	(*pGC->ops->CopyPlane)(pFakePixmap, dst, pGC, leftPad, 0, w, h, x, y, 1);
+    ((mfbPrivGC*)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = TRUE;
+    pFakePixmap->devPrivate.ptr = pbits;
     (*dst->pScreen->DestroyPixmap)(pFakePixmap);
 }
 
@@ -108,6 +108,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
  *	XYPixmap and ZPixmap are the same for mfb.
  *	For any planemask with bit 0 == 0, just fill the dst with 0.
  */
+/*ARGSUSED*/
 void
 mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     DrawablePtr pDrawable;
@@ -126,19 +127,11 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     if ((planeMask & 0x1) &&
 	(pPixmap = (PixmapPtr)mfbCreatePixmap(pDrawable->pScreen, w, h, 1)))
     {
-        if (pDrawable->type == DRAWABLE_WINDOW)
-        {
-	    xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	    yorg = ((WindowPtr)pDrawable)->absCorner.y;
-        }
-        else
-        {
-	    xorg = 0;
-	    yorg = 0;
-        }
+	xorg = pDrawable->x;
+	yorg = pDrawable->y;
 
-        pspare = pPixmap->devPrivate;
-        pPixmap->devPrivate = pdstLine;
+        pspare = pPixmap->devPrivate.ptr;
+        pPixmap->devPrivate.ptr = pdstLine;
         ptSrc.x = sx + xorg;
         ptSrc.y = sy + yorg;
         box.x1 = 0;
@@ -149,15 +142,17 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
         prgnDst = (*pDrawable->pScreen->RegionCreate)(&box, 1);
         mfbDoBitblt(pDrawable, (DrawablePtr)pPixmap, GXcopy, prgnDst, &ptSrc);
 
+#ifdef NOTDEF
 	if ((pDrawable->type == DRAWABLE_WINDOW) &&
 	    (((WindowPtr)pDrawable)->backingStore != NotUseful))
 	{
 	    miBSGetImage((WindowPtr)pDrawable, pPixmap, sx, sy, w, h, format,
 			 planeMask, (pointer) 0);
 	}
+#endif
 
         (*pDrawable->pScreen->RegionDestroy)(prgnDst);
-        pPixmap->devPrivate = pspare;
+        pPixmap->devPrivate.ptr = pspare;
         mfbDestroyPixmap(pPixmap);
     }
     else

@@ -154,36 +154,24 @@ cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     }
 
     alu = pGC->alu;
-    prgnDst = ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+    prgnDst = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
 
     pptLast = ppt + nspans;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
-	yMax = (int)((WindowPtr)pDrawable)->clientWinSize.height +
-		    ((WindowPtr)pDrawable)->absCorner.y;
-
-/* translation should be done by caller of this routine
-        pptT = ppt;
-        while(pptT < pptLast)
-	{
-	    pptT->x += ((WindowPtr)pDrawable)->absCorner.x;
-	    pptT->y += ((WindowPtr)pDrawable)->absCorner.y;
-	    pptT++;
-	}
-*/
     }
     else
     {
-	pdstBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-	yMax = ((PixmapPtr)pDrawable)->height;
     }
+    yMax = (int) pDrawable->y + (int) pDrawable->height;
 
     pbox =  prgnDst->rects;
     pboxLast = pbox + prgnDst->numRects;

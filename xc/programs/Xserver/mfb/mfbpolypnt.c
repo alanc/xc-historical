@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 1.14 88/09/06 14:53:42 jim Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 1.15 89/03/16 14:47:30 jim Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -70,28 +70,28 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register int x;
     register int y;
     register int rop;
+    mfbPrivGC	*pGCPriv;
 
     if (!(pGC->planemask & 1))
 	return;
 
-    pboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
-    nboxInit = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
-    rop = ((mfbPrivGC *)(pGC->devPriv))->rop;
+    pGCPriv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
+    pboxInit = pGCPriv->pCompositeClip->rects;
+    nboxInit = pGCPriv->pCompositeClip->numRects;
+    rop = pGCPriv->rop;
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	addrlBase = (int *)
-		   (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		   (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 

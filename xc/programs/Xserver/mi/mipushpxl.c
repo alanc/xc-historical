@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipushpxl.c,v 1.17 88/09/06 14:50:11 jim Exp $ */
+/* $XConsortium: mipushpxl.c,v 1.18 89/03/22 10:50:59 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
@@ -104,7 +104,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
-			    (*pGC->FillSpans)(pDrawable, pGC, 
+			    (*pGC->ops->FillSpans)(pDrawable, pGC, 
 					      NPT, pt, width, TRUE);
 			    ipt = 0;
 			}
@@ -143,7 +143,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
-			    (*pGC->FillSpans)(pDrawable, 
+			    (*pGC->ops->FillSpans)(pDrawable, 
 					      pGC, NPT, pt, width, TRUE);
 			    ipt = 0;
 			}
@@ -159,7 +159,7 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	    width[ipt] = dx + xOrg - pt[ipt].x;
 	    if (++ipt >= NPT)
 	    {
-		(*pGC->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
+		(*pGC->ops->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
 		ipt = 0;
 	    }
 	}
@@ -168,6 +168,6 @@ miPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     /* Flush any remaining spans */
     if (ipt)
     {
-	(*pGC->FillSpans)(pDrawable, pGC, ipt, pt, width, TRUE);
+	(*pGC->ops->FillSpans)(pDrawable, pGC, ipt, pt, width, TRUE);
     }
 }

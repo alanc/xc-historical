@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$XConsortium: sun.h,v 4.7 88/09/06 15:10:52 jim Exp $ SPRITE (Berkeley)"
+ *	"$XConsortium: sun.h,v 4.8 89/03/21 15:02:41 rws Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -124,9 +124,8 @@ typedef struct ptrPrivate {
     void    	  (*DoneEvents)();  	/* When all the events have been */
 					/* handled, this function will be */
 					/* called. */
-    short   	  x,	    	    	/* Current X coordinate of pointer */
-		  y;	    	    	/* Current Y coordinate */
-    ScreenPtr	  pScreen;  	    	/* Screen pointer is on */
+    short   	  dx,	    	    	/* Current X coordinate of pointer */
+		  dy;	    	    	/* Current Y coordinate */
     pointer    	  devPrivate;	    	/* Field private to device */
 } PtrPrivRec, *PtrPrivPtr;
 
@@ -181,13 +180,6 @@ typedef struct crPrivate {
  *	fb  	  	pointer to the mapped image of the frame buffer. Used
  *	    	  	by the driving routines for the specific frame buffer
  *	    	  	type.
- *	pGC 	  	A GC for realizing cursors.
- *	GetImage  	Original GetImage function for this screen.
- *	CreateGC  	Original CreateGC function
- *	CreateWindow	Original CreateWindow function
- *	ChangeWindowAttributes	Original function
- *	GetSpans  	GC function which needs to be here b/c GetSpans isn't
- *	    	  	called with the GC as an argument...
  *	mapped	  	flag set true by the driver when the frame buffer has
  *	    	  	been mapped in.
  *	parent	  	set true if the frame buffer is actually a SunWindows
@@ -196,19 +188,11 @@ typedef struct crPrivate {
  */
 typedef struct {
     pointer 	  	fb; 	    /* Frame buffer itself */
-    GCPtr   	  	pGC;	    /* GC for realizing cursors */
-
-    void    	  	(*GetImage)();
-    Bool	      	(*CreateGC)();/* GC Creation function previously in the
-				       * Screen structure */
-    Bool	      	(*CreateWindow)();
-    Bool		(*ChangeWindowAttributes)();
-    unsigned int  	*(*GetSpans)();
-    void		(*EnterLeave)();
     Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     Bool		parent;	    /* TRUE if fd is a SunWindows window */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */
     struct fbtype 	info;	    /* Frame buffer characteristics */
+    void		(*EnterLeave)();    /* screen switch */
     pointer 	  	fbPriv;	    /* Frame-buffer-dependent data */
 } fbFd;
 

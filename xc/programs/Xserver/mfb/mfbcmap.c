@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 1.15 88/09/06 14:54:03 jim Exp $ */
+/* $XConsortium: mfbcmap.c,v 1.16 89/03/23 19:02:14 rws Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -93,4 +93,65 @@ mfbUninstallColormap(pmap)
 	WalkTree(pmap->pScreen, TellGainedMap, (pointer)&curpmap->mid);
     }
 	
+}
+
+void
+mfbResolveColor (pred, pgreen, pblue, pVisual)
+    unsigned short	*pred;
+    unsigned short	*pgreen;
+    unsigned short	*pblue;
+    VisualPtr		pVisual;
+{
+    /* 
+     * Gets intensity from RGB.  If intensity is >= half, pick white, else
+     * pick black.  This may well be more trouble than it's worth.
+     */
+    *pred = *pgreen = *pblue = 
+        (((30L * *pred +
+           59L * *pgreen +
+           11L * *pblue) >> 8) >= (((1<<8)-1)*50)) ? ~0 : 0;
+}
+
+Bool
+mfbCreateColormap(pMap)
+    ColormapPtr	pMap;
+{
+    ScreenPtr	pScreen;
+    unsigned short  red0, green0, blue0;
+    unsigned short  red1, green1, blue1;
+    unsigned long   pix;
+    
+    pScreen = pMap->pScreen;
+    if (pScreen->whitePixel == 0)
+    {
+	red0 = green0 = blue0 = ~0;
+	red1 = green1 = blue1 = 0;
+    }
+    else
+    {
+	red0 = green0 = blue0 = 0;
+	red1 = green1 = blue1 = ~0;
+    }
+
+    /* this is a monochrome colormap, it only has two entries, just fill
+     * them in by hand.  If it were a more complex static map, it would be
+     * worth writing a for loop or three to initialize it */
+
+    /* this will be pixel 0 */
+    pix = 0;
+    if (AllocColor(pMap, &red0, &green0, &blue0, &pix, 0) != Success)
+	return FALSE;
+
+    /* this will be pixel 1 */
+    if (AllocColor(pMap, &red1, &green1, &blue1, &pix, 0) != Success)
+	return FALSE;
+    return TRUE;
+}
+
+/*ARGSUSED*/
+void
+mfbDestroyColormap (pMap)
+    ColormapPtr	pMap;
+{
+    return;
 }

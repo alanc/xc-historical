@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.15 89/05/10 23:54:23 keith Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.16 89/05/14 11:59:28 rws Exp $ */
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"
@@ -100,10 +100,10 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
     DDXPointPtr 	ptsOut,
     			FirstPoint;	/* output buffer */
 
-    if (pgc->miTranslate && (dst->type == DRAWABLE_WINDOW) )
+    if (pgc->miTranslate)
     {
-	xTrans += ((WindowPtr)dst)->absCorner.x;
-	yTrans += ((WindowPtr)dst)->absCorner.y;
+	xTrans += dst->x;
+	yTrans += dst->y;
     }
 
     imin = GetFPolyYBounds(ptsIn, count, yFtrans, &ymin, &ymax);
@@ -227,7 +227,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
     }  while (y <= ymax);
 
     /* Finally, fill the spans we've collected */
-    (*pgc->FillSpans)(dst, pgc, 
+    (*pgc->ops->FillSpans)(dst, pgc, 
 		      ptsOut-FirstPoint, FirstPoint, FirstWidth, 1);
     DEALLOCATE_LOCAL(Marked);
     DEALLOCATE_LOCAL(FirstWidth);

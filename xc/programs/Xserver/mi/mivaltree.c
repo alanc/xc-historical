@@ -37,7 +37,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.51 89/05/01 18:24:30 keith Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.52 89/05/20 15:19:12 keith Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -53,6 +53,8 @@ static RegionPtr	exposed = NullRegion;
 static RegionPtr	obscured = NullRegion;
 
 static void	(*clipNotify)() = 0;
+
+extern void miRegionAppend();
 
 /*
  * miClipNotify --
@@ -119,10 +121,10 @@ miComputeClips (pParent, pScreen, universe, kind)
     {
 	case rgnIN:
 	    if (((borderSize->x2 - borderSize->x1) ==
-		 (pParent->clientWinSize.width + (pParent->borderWidth << 1)))
+		 (pParent->drawable.width + (wBorderWidth (pParent) << 1)))
 		&&
 		((borderSize->y2 - borderSize->y1) ==
-		 (pParent->clientWinSize.height + (pParent->borderWidth << 1))))
+		 (pParent->drawable.height + (wBorderWidth (pParent) << 1))))
 		pParent->visibility = VisibilityUnobscured;
 	    else
 		pParent->visibility = VisibilityPartiallyObscured;
@@ -141,8 +143,8 @@ miComputeClips (pParent, pScreen, universe, kind)
      * avoid computations when dealing with simple operations
      */
 
-    dx = pParent->absCorner.x - pParent->oldAbsCorner.x;
-    dy = pParent->absCorner.y - pParent->oldAbsCorner.y;
+    dx = pParent->drawable.x - pParent->oldAbsCorner.x;
+    dy = pParent->drawable.y - pParent->oldAbsCorner.y;
     
     switch (kind) {
     case VTMap:
@@ -194,7 +196,7 @@ miComputeClips (pParent, pScreen, universe, kind)
 	     * remove from the old borderClip.
 	     * Note that borderSize is clipped to the window's parent, thus its
 	     * extents are not necessarily those of the window's border, thus we
-	     * must use clientWinSize to find the actual extents of the window.
+	     * must use physical position to find the actual extents of the window.
 	     * XXX: Isn't there a nicer way to do this?  Yes, but we'll
 	     * have to save the old clip lists while validating.
 	     */
@@ -217,20 +219,20 @@ miComputeClips (pParent, pScreen, universe, kind)
 	    	/* Worry about overflow: don't use a Box.  Sigh.
 	     	 * We know we'll clip to universe later, so do it now as well.
 	     	 */
-	    	x1 = pParent->absCorner.x - pParent->borderWidth;
+	    	x1 = pParent->drawable.x - wBorderWidth (pParent);
 	    	if (x1 < newExtents->x1)
 		    x1 = newExtents->x1;
-	    	y1 = pParent->absCorner.y - pParent->borderWidth;
+	    	y1 = pParent->drawable.y - wBorderWidth (pParent);
 	    	if (y1 < newExtents->y1)
 		    y1 = newExtents->y1;
-	    	x2 = pParent->absCorner.x +
-		     (int)pParent->clientWinSize.width +
-		     pParent->borderWidth;
+	    	x2 = pParent->drawable.x +
+		     (int)pParent->drawable.width +
+		     wBorderWidth (pParent);
 	    	if (x2 > newExtents->x2)
 		    x2 = newExtents->x2;
-	    	y2 = pParent->absCorner.y +
-		     (int)pParent->clientWinSize.height +
-		     pParent->borderWidth;
+	    	y2 = pParent->drawable.y +
+		     (int)pParent->drawable.height +
+		     wBorderWidth (pParent);
 	    	if (y2 > newExtents->y2)
 		    y2 = newExtents->y2;
 	    	if (x1 > x2)
@@ -243,7 +245,7 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    /*
 		     * Add the right edge.
 		     */
-		    v = pParent->absCorner.x + (int)pParent->clientWinSize.width;
+		    v = pParent->drawable.x + (int)pParent->drawable.width;
 		    if (v < x1)
 		    	v = x1;
 		    if ((v < x2) && (y1 < y2))
@@ -263,7 +265,7 @@ miComputeClips (pParent, pScreen, universe, kind)
 		    /*
 		     * Add the bottom edge.
 		     */
-		    v = pParent->absCorner.y + (int)pParent->clientWinSize.height;
+		    v = pParent->drawable.y + (int)pParent->drawable.height;
 		    if (v < y1)
 		    	v = y1;
 		    if ((v < y2) && (x1 < x2))
@@ -290,7 +292,8 @@ miComputeClips (pParent, pScreen, universe, kind)
     	}
     }
 
-    pParent->oldAbsCorner = pParent->absCorner;
+    pParent->oldAbsCorner.x = pParent->drawable.x;
+    pParent->oldAbsCorner.y = pParent->drawable.y;
 
     /*
      * Since the borderClip must not be clipped by the children, we do
@@ -397,14 +400,14 @@ miComputeClips (pParent, pScreen, universe, kind)
      * in the new and, hence, are about to be obscured.
      * (note - "exposed" is used as a temporary region here)
      */
-    if (pParent->backStorage && (pParent->backingStore != NotUseful)) 
+    if (pParent->backStorage)
     {
 	(* pScreen->Subtract) (exposed, pParent->clipList, universe);
 	(* pScreen->Union) (pParent->backStorage->obscured,
 			    pParent->backStorage->obscured,
 			    exposed);
-	pParent->backStorage->oldAbsCorner.x = pParent->absCorner.x - dx;
-	pParent->backStorage->oldAbsCorner.y = pParent->absCorner.y - dy;
+	pParent->backStorage->oldAbsCorner.x = pParent->drawable.x - dx;
+	pParent->backStorage->oldAbsCorner.y = pParent->drawable.y - dy;
     }
     
     (* pScreen->RegionCopy) (pParent->clipList, universe);
@@ -552,8 +555,11 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 
     switch (kind) {
     case VTStack:
-	if (pParent->backStorage && (pParent->backingStore != NotUseful))
-	    pParent->backStorage->oldAbsCorner = pParent->absCorner;
+	if (pParent->backStorage)
+	{
+	    pParent->backStorage->oldAbsCorner.x = pParent->drawable.x;
+	    pParent->backStorage->oldAbsCorner.y = pParent->drawable.y;
+	}
 	break;
     default:
 	/*
@@ -565,12 +571,13 @@ miValidateTree (pParent, pChild, kind, anyMarked)
 	(* pScreen->Union) (pParent->exposed, pParent->exposed, exposed);
 	/* fall through */
     case VTMap:
-	if (pParent->backStorage && (pParent->backingStore != NotUseful)) {
+	if (pParent->backStorage) {
 	    (* pScreen->Subtract) (exposed, pParent->clipList, totalClip);
 	    (* pScreen->Union) (pParent->backStorage->obscured,
 				pParent->backStorage->obscured,
 				exposed);
-	    pParent->backStorage->oldAbsCorner = pParent->absCorner;
+	    pParent->backStorage->oldAbsCorner.x = pParent->drawable.x;
+	    pParent->backStorage->oldAbsCorner.y = pParent->drawable.y;
 	}
 	
 	(* pScreen->RegionCopy) (pParent->clipList, totalClip);

@@ -113,12 +113,14 @@ int dstx, dsty;
 
     /* clip the source */
 
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
     if (pSrcDrawable->type == DRAWABLE_PIXMAP)
     {
         if ((pSrcDrawable == pDstDrawable) &&
             (pGC->clientClipType == CT_NONE))
         {
-            prgnSrcClip = ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+            prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
         }
         else
         {
@@ -126,8 +128,8 @@ int dstx, dsty;
 
             box.x1 = 0;
             box.y1 = 0;
-            box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-            box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+            box.x2 = pSrcDrawable->width;
+            box.y2 = pSrcDrawable->height;
 
             prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
             realSrcClip = 1;
@@ -135,14 +137,12 @@ int dstx, dsty;
     }    
     else
     {   
-        srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
-        srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
         if (pGC->subWindowMode == IncludeInferiors)
         {
             if ((pSrcDrawable == pDstDrawable) &&
                 (pGC->clientClipType == CT_NONE))
             {
-                prgnSrcClip = ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+                prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
             }
             else
             {   
@@ -164,6 +164,9 @@ int dstx, dsty;
     prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
     (*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
 
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
         if (!((WindowPtr)pDstDrawable)->realized)
@@ -173,8 +176,6 @@ int dstx, dsty;
                 (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
             return NULL;
         }
-        dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
-        dsty += ((WindowPtr)pDstDrawable)->absCorner.y;
     }
 
     dx = srcx - dstx;
@@ -184,7 +185,7 @@ int dstx, dsty;
     (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
     (*pGC->pScreen->Intersect)(prgnDst,
                 prgnDst,
-                ((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
 
     if (prgnDst->numRects)
     {
@@ -209,7 +210,7 @@ int dstx, dsty;
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    if (((cfbPrivGC *)(pGC->devPriv))->fExpose)
+    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
 	prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
 			  origSource.x, origSource.y,
 			  (int)origSource.width, (int)origSource.height,
@@ -453,28 +454,28 @@ DDXPointPtr pptSrc;
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
 	psrcBase = (int *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthSrc = (int)
 		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	psrcBase = (int *)(((PixmapPtr)pSrcDrawable)->devPrivate);
+	psrcBase = (int *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind) >> 2;
     }
 
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	pdstBase = (int *)(((PixmapPtr)pDstDrawable)->devPrivate);
+	pdstBase = (int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
     }
 

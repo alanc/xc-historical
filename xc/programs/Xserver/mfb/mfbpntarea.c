@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 1.7 89/03/16 14:47:28 jim Exp $ */
+/* $XConsortium: mfbpntarea.c,v 1.8 89/03/18 12:32:28 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -80,13 +80,13 @@ MFBSOLIDFILLAREA(pDraw, nbox, pbox, alu, nop)
     if (pDraw->type == DRAWABLE_WINDOW)
     {
 	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate);
+	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
@@ -233,18 +233,18 @@ MFBSTIPPLEFILLAREA(pDraw, nbox, pbox, alu, pstipple)
     if (pDraw->type == DRAWABLE_WINDOW)
     {
 	pbits = (unsigned int *)
-		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDraw->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate);
+	pbits = (unsigned int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
-    tileHeight = pstipple->height;
-    psrc = (unsigned int *)(pstipple->devPrivate);
+    tileHeight = pstipple->drawable.height;
+    psrc = (unsigned int *)(pstipple->devPrivate.ptr);
 
     while (nbox--)
     {

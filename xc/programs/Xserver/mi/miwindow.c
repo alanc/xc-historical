@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 1.17 88/09/06 14:49:38 jim Exp $ */
+/* $XConsortium: miwindow.c,v 1.18 89/03/23 18:15:48 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -51,20 +51,19 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     BoxRec box;
     RegionPtr pReg;
 
-    box.x1 = pWin->absCorner.x + x;
-    box.y1 = pWin->absCorner.y + y;
+    box.x1 = pWin->drawable.x + x;
+    box.y1 = pWin->drawable.y + y;
     if (w)
         box.x2 = box.x1 + w;
     else
-        box.x2 = box.x1 + pWin->clientWinSize.width - x;
+        box.x2 = box.x1 + pWin->drawable.width - x;
     if (h)
         box.y2 = box.y1 + h;	
     else
-        box.y2 = box.y1 + pWin->clientWinSize.height - y;
+        box.y2 = box.y1 + pWin->drawable.height - y;
 
     pReg = (* pWin->drawable.pScreen->RegionCreate)(&box, 1);
-    if ((pWin->backingStore != NotUseful) &&
-	(pWin->backStorage != (BackingStorePtr)NULL))
+    if (pWin->backStorage)
     {
 	/*
 	 * If the window has backing-store on, call through the
@@ -73,7 +72,7 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
 	 * an Expose event is to be generated for those areas in backing
 	 * store if generateExposures is TRUE).
 	 */
-	(* pWin->backStorage->ClearToBackground)(pWin, x, y, w, h,
+	(* pWin->backStorage->funcs->ClearToBackground)(pWin, x, y, w, h,
 						 generateExposures);
     }
 
@@ -82,12 +81,10 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
         (* pWin->drawable.pScreen->Intersect)(pWin->exposed, pReg, pWin->clipList);
         HandleExposures(pWin);
     }
-    else if (pWin->backgroundTile != (PixmapPtr)None)
+    else if (pWin->backgroundState != None)
     {
         (* pWin->drawable.pScreen->Intersect)(pReg, pReg, pWin->clipList);
-        (*pWin->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
+        (*pWin->funcs->PaintWindowBackground)(pWin, pReg, PW_BACKGROUND);
     }
     (* pWin->drawable.pScreen->RegionDestroy)(pReg);
 }
-
-

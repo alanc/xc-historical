@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyseg.c,v 1.17 87/09/11 07:20:15 toddb Exp $ */
+/* $XConsortium: mipolyseg.c,v 1.18 88/09/06 14:49:52 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -50,7 +50,7 @@ miPolySegment(pDraw, pGC, nseg, pSegs)
 
     for (i=0; i<nseg; i++)
     {
-        (*pGC->Polylines)(pDraw, pGC, CoordModeOrigin, 2,(DDXPointPtr)pSegs);
+        (*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 2,(DDXPointPtr)pSegs);
     	pSegs++;
     }
 }

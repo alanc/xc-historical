@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 1.48 89/03/18 12:31:47 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 1.49 89/04/05 13:39:56 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -58,13 +58,15 @@ mfbCreatePixmap (pScreen, width, height, depth)
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.depth = 1;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pPixmap->width = width;
-    pPixmap->height = height;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = width;
+    pPixmap->drawable.height = height;
     pPixmap->devKind = PixmapBytePad(width, 1);
     pPixmap->refcnt = 1;
     size = height * pPixmap->devKind;
 
-    if ( !(pPixmap->devPrivate = (pointer)xalloc(size)))
+    if ( !(pPixmap->devPrivate.ptr = (pointer)xalloc(size)))
     {
 	xfree(pPixmap);
 	return NullPixmap;
@@ -81,7 +83,7 @@ mfbDestroyPixmap(pPixmap)
 
     if(--pPixmap->refcnt)
 	return TRUE;
-    xfree(pPixmap->devPrivate);
+    xfree(pPixmap->devPrivate.ptr);
     xfree(pPixmap);
     return TRUE;
 }
@@ -100,13 +102,15 @@ mfbCopyPixmap(pSrc)
 	return NullPixmap;
     pDst->drawable.type = pSrc->drawable.type;
     pDst->drawable.pScreen = pSrc->drawable.pScreen;
-    pDst->width = pSrc->width;
-    pDst->height = pSrc->height;
+    pDst->drawable.x = pSrc->drawable.x;
+    pDst->drawable.y = pSrc->drawable.y;
+    pDst->drawable.width = pSrc->drawable.width;
+    pDst->drawable.height = pSrc->drawable.height;
     pDst->drawable.depth = pSrc->drawable.depth;
     pDst->devKind = pSrc->devKind;
     pDst->refcnt = 1;
 
-    size = pDst->height * pDst->devKind;
+    size = pDst->drawable.height * pDst->devKind;
     pDstPriv = (int *)xalloc(size);
     if (!pDstPriv)
     {
@@ -114,8 +118,8 @@ mfbCopyPixmap(pSrc)
 	return NullPixmap;
     }
     bzero((char *) pDstPriv, size);
-    pDst->devPrivate = (pointer) pDstPriv;
-    pSrcPriv = (int *)pSrc->devPrivate;
+    pDst->devPrivate.ptr = (pointer) pDstPriv;
+    pSrcPriv = (int *)pSrc->devPrivate.ptr;
     pDstMax = pDstPriv + (size >> 2);
     /* Copy words */
     while(pDstPriv < pDstMax)
@@ -144,7 +148,7 @@ Bool
 mfbPadPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-    register int width = pPixmap->width;
+    register int width = pPixmap->drawable.width;
     register int h;
     register int mask;
     register unsigned int *p;
@@ -163,8 +167,8 @@ mfbPadPixmap(pPixmap)
 
     mask = endtab[width];
 
-    p = (unsigned int *)(pPixmap->devPrivate);
-    for (h=0; h < pPixmap->height; h++)
+    p = (unsigned int *)(pPixmap->devPrivate.ptr);
+    for (h=0; h < pPixmap->drawable.height; h++)
     {
 	*p &= mask;
 	bits = *p;
@@ -175,7 +179,7 @@ mfbPadPixmap(pPixmap)
 	}
 	p++;
     }
-    pPixmap->width = 32;
+    pPixmap->drawable.width = 32;
     return(TRUE);
 }
 
@@ -193,13 +197,13 @@ mfbXRotatePixmap(pPix, rw)
     if (pPix == NullPixmap)
         return;
 
-    pw = (long *)pPix->devPrivate;
-    rw %= pPix->width;
+    pw = (long *)pPix->devPrivate.ptr;
+    rw %= pPix->drawable.width;
     if (rw < 0)
-	rw += pPix->width;
-    if(pPix->width == 32)
+	rw += pPix->drawable.width;
+    if(pPix->drawable.width == 32)
     {
-        pwFinal = pw + pPix->height;
+        pwFinal = pw + pPix->drawable.height;
 	while(pw < pwFinal)
 	{
 	    t = *pw;
@@ -231,17 +235,19 @@ mfbYRotatePixmap(pPix, rh)
 			   offset of first line moved down to 0 */
     char *pbase;
     char *ptmp;
+    int	height;
 
     if (pPix == NullPixmap)
 	return;
-    rh %= pPix->height;
+    height = (int) pPix->drawable.height;
+    rh %= height;
     if (rh < 0)
-	rh += pPix->height;
+	rh += height;
 
-    pbase = (char *)pPix->devPrivate;
+    pbase = (char *)pPix->devPrivate.ptr;
 
     nbyDown = rh * pPix->devKind;
-    nbyUp = (pPix->devKind * pPix->height) - nbyDown;
+    nbyUp = (pPix->devKind * height) - nbyDown;
     if(!(ptmp = (char *)ALLOCATE_LOCAL(nbyUp)))
 	return;
 
@@ -250,4 +256,3 @@ mfbYRotatePixmap(pPix, rh)
     bcopy(ptmp, pbase+nbyDown, nbyUp);	/* move lower rows up to row rh */
     DEALLOCATE_LOCAL(ptmp);
 }
-

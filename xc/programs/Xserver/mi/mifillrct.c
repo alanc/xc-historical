@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifillrct.c,v 1.19 88/09/06 14:49:20 jim Exp $ */
+/* $XConsortium: mifillrct.c,v 1.20 89/03/22 10:50:23 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -59,10 +59,10 @@ miPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int			*pwFirst;
     register int 	*pw;
 
-    if ((pDrawable->type == DRAWABLE_WINDOW) && (pGC->miTranslate))
+    if (pGC->miTranslate)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
+	xorg = pDrawable->x;
+	yorg = pDrawable->y;
         prect = prectInit;
         maxheight = 0;
         for (i = 0; i<nrectFill; i++, prect++)
@@ -106,7 +106,7 @@ miPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    ppt++;
 	    yorg++;
 	}
-	(* pGC->FillSpans)(pDrawable, pGC, 
+	(* pGC->ops->FillSpans)(pDrawable, pGC, 
 			   prect->height, pptFirst, pwFirst,
 			   1);
 	prect++;

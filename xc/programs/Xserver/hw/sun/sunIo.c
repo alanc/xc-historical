@@ -297,8 +297,6 @@ ProcessInputEvents ()
 
     }
 
-    sunRestoreCursor();
-
 }
 
 
@@ -330,6 +328,7 @@ SetTimeSinceLastInputEvent()
 void
 AbortDDX()
 {
+    sunNonBlockConsoleOff ((char *) 0);
 }
 
 /* Called by GiveUp(). */

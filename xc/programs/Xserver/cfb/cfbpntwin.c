@@ -64,13 +64,13 @@ cfbPaintAreaPR(pWin, pRegion, what)
 	FatalError( "cfbPaintAreaPR: invalid depth\n" );
 
     pParent = pWin->parent;
-    while(pParent->backgroundTile == (PixmapPtr)ParentRelative)
+    while(pParent->backgroundState == ParentRelative)
 	pParent = pParent->parent;
 
     if(what == PW_BORDER)
-        (*pParent->PaintWindowBorder)(pParent, pRegion, what);
+        (*pParent->funcs->PaintWindowBorder)(pParent, pRegion, what);
     else
-	(*pParent->PaintWindowBackground)(pParent, pRegion, what);
+	(*pParent->funcs->PaintWindowBackground)(pParent, pRegion, what);
 }
 
 void
@@ -101,15 +101,15 @@ cfbPaintAreaSolid(pWin, pRegion, what)
 
     if (what == PW_BACKGROUND)
     {
-        srcpix = PFILL(pWin->backgroundPixel);
+        srcpix = PFILL(pWin->background.pixel);
     } 
     else
     {
-        srcpix = PFILL(pWin->borderPixel);
+        srcpix = PFILL(pWin->border.pixel);
     } 
 
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
-    pbits = (int *)pPixmap->devPrivate;
+    pbits = (int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
     nbox = pRegion->numRects;
     pbox = pRegion->rects;
@@ -222,21 +222,21 @@ cfbPaintArea32(pWin, pRegion, what)
     if ( pWin->drawable.depth != PSZ )
 	FatalError( "cfbPaintArea32: invalid depth\n" );
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 
     if (what == PW_BACKGROUND)
     {
-	tileHeight = pWin->backgroundTile->height;
-	psrc = (int *)(pPrivWin->pRotatedBackground->devPrivate);
+	tileHeight = pWin->background.pixmap->drawable.height;
+	psrc = (int *)(pPrivWin->pRotatedBackground->devPrivate.ptr);
     } 
     else
     {
-        tileHeight = pWin->borderTile->height;
-	psrc = (int *)(pPrivWin->pRotatedBorder->devPrivate);
+        tileHeight = pWin->border.pixmap->drawable.height;
+	psrc = (int *)(pPrivWin->pRotatedBorder->devPrivate.ptr);
     } 
 
     pPixmap = (PixmapPtr)(pWin->drawable.pScreen->devPrivate);
-    pbits = (int *)pPixmap->devPrivate;
+    pbits = (int *)pPixmap->devPrivate.ptr;
     nlwScreen = (pPixmap->devKind) >> 2;
     nbox = pRegion->numRects;
     pbox = pRegion->rects;
@@ -364,16 +364,14 @@ cfbPaintAreaOther(pWin, pRegion, what)
 
     if (what == PW_BACKGROUND)
     {
-	tileHeight = pWin->backgroundTile->height;
-	tileWidth = pWin->backgroundTile->width;
-	pPixmap = pWin->backgroundTile;
+	pPixmap = pWin->background.pixmap;
     }
     else
     {
-	tileHeight = pWin->borderTile->height;
-	tileWidth = pWin->borderTile->width;
-	pPixmap = pWin->borderTile;
+	pPixmap = pWin->border.pixmap;
     } 
+    tileHeight = pPixmap->drawable.height;
+    tileWidth = pPixmap->drawable.width;
 
     nbox = pRegion->numRects;
     pbox = pRegion->rects;
@@ -434,11 +432,11 @@ cfbTileOddWin(pSrc, pDstWin, tileWidth, tileHeight, x, y)
     PixmapPtr		pDstPixmap;
 
 
-    psrcLine = (int *)pSrc->devPrivate;
+    psrcLine = (int *)pSrc->devPrivate.ptr;
 
     pDstPixmap = (PixmapPtr)pDstWin->drawable.pScreen->devPrivate;
     widthDst = (int)pDstPixmap->devKind >> 2;
-    pdstLine = (int *)pDstPixmap->devPrivate + (y * widthDst);
+    pdstLine = (int *)pDstPixmap->devPrivate.ptr + (y * widthDst);
     widthSrc = (int)pSrc->devKind >> 2;
 
     if(tileWidth <= PPW)

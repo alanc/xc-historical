@@ -131,13 +131,15 @@ cfbCreatePixmap (pScreen, width, height, depth)
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.depth = depth;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pPixmap->width = width;
-    pPixmap->height = height;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = width;
+    pPixmap->drawable.height = height;
     pPixmap->devKind = PixmapBytePad(width, depth);
     pPixmap->refcnt = 1;
     size = height * pPixmap->devKind;
 
-    if ( !(pPixmap->devPrivate = (pointer)xalloc(size)))
+    if ( !(pPixmap->devPrivate.ptr = (pointer)xalloc(size)))
     {
 	xfree(pPixmap);
 	return NullPixmap;
@@ -154,7 +156,7 @@ cfbDestroyPixmap(pPixmap)
 
     if(--pPixmap->refcnt)
 	return TRUE;
-    xfree(pPixmap->devPrivate);
+    xfree(pPixmap->devPrivate.ptr);
     xfree(pPixmap);
     return TRUE;
 }
@@ -173,13 +175,15 @@ cfbCopyPixmap(pSrc)
 	return NullPixmap;
     pDst->drawable.type = pSrc->drawable.type;
     pDst->drawable.pScreen = pSrc->drawable.pScreen;
-    pDst->width = pSrc->width;
-    pDst->height = pSrc->height;
+    pDst->drawable.x = pSrc->drawable.x;
+    pDst->drawable.y = pSrc->drawable.y;
+    pDst->drawable.width = pSrc->drawable.width;
+    pDst->drawable.height = pSrc->drawable.height;
     pDst->drawable.depth = pSrc->drawable.depth;
     pDst->devKind = pSrc->devKind;
     pDst->refcnt = 1;
 
-    size = pDst->height * pDst->devKind;
+    size = pDst->drawable.height * pDst->devKind;
     pDstPriv = (int *) xalloc(size);
     if (!pDstPriv)
     {
@@ -187,8 +191,8 @@ cfbCopyPixmap(pSrc)
 	return NullPixmap;
     }
     bzero((char *) pDstPriv, size);
-    pDst->devPrivate = (pointer) pDstPriv;
-    pSrcPriv = (int *)pSrc->devPrivate;
+    pDst->devPrivate.ptr = (pointer) pDstPriv;
+    pSrcPriv = (int *)pSrc->devPrivate.ptr;
     pDstMax = pDstPriv + (size >> 2);
     /* Copy words */
     while(pDstPriv < pDstMax)
@@ -218,7 +222,7 @@ Bool
 cfbPadPixmap(pPixmap)
     PixmapPtr pPixmap;
 {
-    register int width = (pPixmap->width) * (pPixmap->drawable.depth);
+    register int width = (pPixmap->drawable.width) * (pPixmap->drawable.depth);
     register int h;
     register int mask;
     register unsigned int *p;
@@ -237,8 +241,8 @@ cfbPadPixmap(pPixmap)
  
     mask = masktab[width];
  
-    p = (unsigned int *)(pPixmap->devPrivate);
-    for (h=0; h < pPixmap->height; h++)
+    p = (unsigned int *)(pPixmap->devPrivate.ptr);
+    for (h=0; h < pPixmap->drawable.height; h++)
     {
         *p &= mask;
         bits = *p;
@@ -253,7 +257,7 @@ cfbPadPixmap(pPixmap)
         }
         p++;
     }    
-    pPixmap->width = 32/(pPixmap->drawable.depth);
+    pPixmap->drawable.width = 32/(pPixmap->drawable.depth);
     return(TRUE);
 }
 
@@ -271,24 +275,24 @@ static cfbdumppixmap(pPix)
     char	line[66];
 
     ErrorF(  "pPixmap: 0x%x\n", pPix);
-    ErrorF(  "%d wide %d high\n", pPix->width, pPix->height);
-    if (pPix->width > 64)
+    ErrorF(  "%d wide %d high\n", pPix->drawable.width, pPix->drawable.height);
+    if (pPix->drawable.width > 64)
     {
 	ErrorF(  "too wide to see\n");
 	return;
     }
 
-    pw = (unsigned int *) pPix->devPrivate;
+    pw = (unsigned int *) pPix->devPrivate.ptr;
     psrc = (char *) pw;
 
 /*
-    for ( i=0; i<pPix->height; ++i )
+    for ( i=0; i<pPix->drawable.height; ++i )
 	ErrorF( "0x%x\n", pw[i] );
 */
 
-    for ( i = 0; i < pPix->height; ++i ) {
+    for ( i = 0; i < pPix->drawable.height; ++i ) {
 	pdst = line;
-	for(j = 0; j < pPix->width; j++) {
+	for(j = 0; j < pPix->drawable.width; j++) {
 	    *pdst++ = *psrc++ ? 'X' : ' ' ;
 	}
 	*pdst++ = '\n';
@@ -323,13 +327,13 @@ cfbXRotatePixmap(pPix, rw)
 	    ErrorF("cfbXRotatePixmap: unsupported depth %d\n", ((DrawablePtr) pPix)->depth);
 	    return;
     }
-    pw = (unsigned int *)pPix->devPrivate;
-    rw %= pPix->width;
+    pw = (unsigned int *)pPix->devPrivate.ptr;
+    rw %= pPix->drawable.width;
     if (rw < 0)
-	rw += pPix->width;
-    if(pPix->width == PPW)
+	rw += pPix->drawable.width;
+    if(pPix->drawable.width == PPW)
     {
-        pwFinal = pw + pPix->height;
+        pwFinal = pw + pPix->drawable.height;
 	while(pw < pwFinal)
 	{
 	    t = *pw;
@@ -339,7 +343,7 @@ cfbXRotatePixmap(pPix, rw)
     }
     else
     {
-	pwNew = (unsigned int *) xalloc( pPix->height * pPix->devKind);
+	pwNew = (unsigned int *) xalloc( pPix->drawable.height * pPix->devKind);
 	if (!pwNew)
 	    return;
 
@@ -349,19 +353,19 @@ cfbXRotatePixmap(pPix, rw)
 	 * of the new pixmap.
 	 * now hook in the new part and throw away the old. All done.
 	 */
-	size = PixmapBytePad(pPix->width, PSZ) >> 2;
+	size = PixmapBytePad(pPix->drawable.width, PSZ) >> 2;
         cfbQuickBlt((int *)pw, (int *)pwNew, 0, 0, rw, 0,
-		    pPix->width - rw, pPix->height, size, size);
-        cfbQuickBlt((int *)pw, (int *)pwNew, pPix->width - rw, 0, 0, 0,
-		    rw, pPix->height, size, size);
-	pPix->devPrivate = (pointer) pwNew;
+		    pPix->drawable.width - rw, pPix->drawable.height, size, size);
+        cfbQuickBlt((int *)pw, (int *)pwNew, pPix->drawable.width - rw, 0, 0, 0,
+		    rw, pPix->drawable.height, size, size);
+	pPix->devPrivate.ptr = (pointer) pwNew;
 	xfree(pw);
 
     }
 
 }
 /* Rotates pixmap pPix by h lines.  Assumes that h is always less than
-   pPix->height
+   pPix->drawable.height
    works on any width.
  */
 cfbYRotatePixmap(pPix, rh)
@@ -388,14 +392,14 @@ cfbYRotatePixmap(pPix, rh)
 	    return;
     }
 
-    rh %= pPix->height;
+    rh %= pPix->drawable.height;
     if (rh < 0)
-	rh += pPix->height;
+	rh += pPix->drawable.height;
 
-    pbase = (char *)pPix->devPrivate;
+    pbase = (char *)pPix->devPrivate.ptr;
 
     nbyDown = rh * pPix->devKind;
-    nbyUp = (pPix->devKind * pPix->height) - nbyDown;
+    nbyUp = (pPix->devKind * pPix->drawable.height) - nbyDown;
     if(!(ptmp = (char *)ALLOCATE_LOCAL(nbyUp)))
 	return;
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 1.19 89/04/05 19:10:22 rws Exp $ */
+/* $XConsortium: mfbclip.c,v 1.20 89/04/05 19:37:29 rws Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"
@@ -67,10 +67,10 @@ mfbPixmapToRegion(pPix)
     }
     Must_have_memory = TRUE; /* XXX */
     FirstRect = rects;
-    width = pPix->width;
-    pw = (unsigned int  *)pPix->devPrivate;
+    width = pPix->drawable.width;
+    pw = (unsigned int  *)pPix->devPrivate.ptr;
     irectPrevStart = -1;
-    for(h = 0; h < pPix->height; h++)
+    for(h = 0; h < pPix->drawable.height; h++)
     {
 
 	irectLineStart = rects - FirstRect;

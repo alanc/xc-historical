@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.11 89/04/22 12:04:20 rws Exp $ */
+/* $XConsortium: shape.c,v 1.12 89/05/19 08:54:44 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -204,10 +204,10 @@ CreateBoundingShape (pWin)
 {
     BoxRec	extents;
 
-    extents.x1 = -pWin->borderWidth;
-    extents.y1 = -pWin->borderWidth;
-    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
-    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+    extents.x1 = -wBorderWidth (pWin);
+    extents.y1 = -wBorderWidth (pWin);
+    extents.x2 = pWin->drawable.width + wBorderWidth (pWin);
+    extents.y2 = pWin->drawable.height + wBorderWidth (pWin);
     return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
@@ -219,8 +219,8 @@ CreateClipShape (pWin)
 
     extents.x1 = 0;
     extents.y1 = 0;
-    extents.x2 = pWin->clientWinSize.width;
-    extents.y2 = pWin->clientWinSize.height;
+    extents.x2 = pWin->drawable.width;
+    extents.y2 = pWin->drawable.height;
     return (*pWin->drawable.pScreen->RegionCreate) (&extents, 1);
 }
 
@@ -265,6 +265,7 @@ ProcShapeRectangles (client)
     RegionPtr		srcRgn;
     RegionPtr		*destRgn;
     RegionPtr		(*createDefault)();
+    int			destBounding;
 
     REQUEST_AT_LEAST_SIZE (xShapeRectanglesReq);
     UpdateCurrentTime();
@@ -273,11 +274,11 @@ ProcShapeRectangles (client)
 	return BadWindow;
     switch (stuff->destKind) {
     case ShapeBounding:
-	destRgn = &pWin->boundingShape;
+	destBounding = 1;
 	createDefault = CreateBoundingShape;
 	break;
     case ShapeClip:
-	destRgn = &pWin->clipShape;
+	destBounding = 0;
 	createDefault = CreateClipShape;
 	break;
     default:
@@ -300,6 +301,14 @@ ProcShapeRectangles (client)
     if (ctype < 0)
 	return BadMatch;
     srcRgn = RectsToRegion (pScreen, nrects, prects, ctype);
+
+    if (!pWin->optional)
+	MakeWindowOptional (pWin);
+    if (destBounding)
+	destRgn = &pWin->optional->boundingShape;
+    else
+	destRgn = &pWin->optional->clipShape;
+
     return RegionOperate (client, pWin, (int)stuff->destKind,
 			  destRgn, srcRgn, (int)stuff->op,
 			  stuff->xOff, stuff->yOff, createDefault);
@@ -319,6 +328,7 @@ ProcShapeMask (client)
     RegionPtr		*destRgn;
     PixmapPtr		pPixmap;
     RegionPtr		(*createDefault)();
+    int			destBounding;
 
     REQUEST_SIZE_MATCH (xShapeMaskReq);
     UpdateCurrentTime();
@@ -327,11 +337,11 @@ ProcShapeMask (client)
 	return BadWindow;
     switch (stuff->destKind) {
     case ShapeBounding:
-	destRgn = &pWin->boundingShape;
+	destBounding = 1;
 	createDefault = CreateBoundingShape;
 	break;
     case ShapeClip:
-	destRgn = &pWin->clipShape;
+	destBounding = 0;
 	createDefault = CreateClipShape;
 	break;
     default:
@@ -349,6 +359,14 @@ ProcShapeMask (client)
 	    return BadMatch;
 	srcRgn = BitmapToRegion (pScreen, pPixmap);
     }
+
+    if (!pWin->optional)
+	MakeWindowOptional (pWin);
+    if (destBounding)
+	destRgn = &pWin->optional->boundingShape;
+    else
+	destRgn = &pWin->optional->clipShape;
+
     return RegionOperate (client, pWin, (int)stuff->destKind,
 			  destRgn, srcRgn, (int)stuff->op,
 			  stuff->xOff, stuff->yOff, createDefault);
@@ -370,19 +388,22 @@ ProcShapeCombine (client)
     RegionPtr		(*createDefault)();
     RegionPtr		(*createSrc)();
     RegionPtr		tmp;
+    int			destBounding;
 
     REQUEST_SIZE_MATCH (xShapeCombineReq);
     UpdateCurrentTime();
     pDestWin = LookupWindow (stuff->dest, client);
     if (!pDestWin)
 	return BadWindow;
+    if (!pDestWin->optional)
+	MakeWindowOptional (pDestWin);
     switch (stuff->destKind) {
     case ShapeBounding:
-	destRgn = &pDestWin->boundingShape;
+	destBounding = 1;
 	createDefault = CreateBoundingShape;
 	break;
     case ShapeClip:
-	destRgn = &pDestWin->clipShape;
+	destBounding = 0;
 	createDefault = CreateClipShape;
 	break;
     default:
@@ -396,11 +417,11 @@ ProcShapeCombine (client)
 	return BadWindow;
     switch (stuff->srcKind) {
     case ShapeBounding:
-	srcRgn = pSrcWin->boundingShape;
+	srcRgn = wBoundingShape (pSrcWin);
 	createSrc = CreateBoundingShape;
 	break;
     case ShapeClip:
-	srcRgn = pSrcWin->clipShape;
+	srcRgn = wClipShape (pSrcWin);
 	createSrc = CreateClipShape;
 	break;
     default:
@@ -408,7 +429,9 @@ ProcShapeCombine (client)
 	return BadValue;
     }
     if (pSrcWin->drawable.pScreen != pScreen)
+    {
 	return BadMatch;
+    }
 
     if (srcRgn) {
         tmp = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
@@ -416,6 +439,13 @@ ProcShapeCombine (client)
         srcRgn = tmp;
     } else
 	srcRgn = (*createSrc) (pSrcWin);
+
+    if (!pDestWin->optional)
+	MakeWindowOptional (pDestWin);
+    if (destBounding)
+	destRgn = &pDestWin->optional->boundingShape;
+    else
+	destRgn = &pDestWin->optional->clipShape;
 
     return RegionOperate (client, pDestWin, (int)stuff->destKind,
 			  destRgn, srcRgn, (int)stuff->op,
@@ -442,18 +472,21 @@ ProcShapeOffset (client)
 	return BadWindow;
     switch (stuff->destKind) {
     case ShapeBounding:
-	srcRgn = pWin->boundingShape;
+	srcRgn = wBoundingShape (pWin);
 	break;
     case ShapeClip:
-	srcRgn = pWin->clipShape;
+	srcRgn = wClipShape(pWin);
 	break;
     default:
 	client->errorValue = stuff->destKind;
 	return BadValue;
     }
     pScreen = pWin->drawable.pScreen;
-    (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
-    SetShape (pWin);
+    if (srcRgn)
+    {
+        (*pScreen->TranslateRegion) (srcRgn, stuff->xOff, stuff->yOff);
+        SetShape (pWin);
+    }
     SendShapeNotify (pWin, (int)stuff->destKind);
     return Success;
 }
@@ -475,27 +508,27 @@ ProcShapeQueryExtents (client)
     rep.type = X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
-    rep.boundingShaped = (pWin->boundingShape != 0);
-    rep.clipShaped = (pWin->clipShape != 0);
-    if (pWin->boundingShape) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->boundingShape);
+    rep.boundingShaped = (wBoundingShape(pWin) != 0);
+    rep.clipShaped = (wClipShape(pWin) != 0);
+    if (wBoundingShape(pWin)) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (wBoundingShape(pWin));
     } else {
-	extents.x1 = -pWin->borderWidth;
-	extents.y1 = -pWin->borderWidth;
-	extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
-	extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+	extents.x1 = -wBorderWidth (pWin);
+	extents.y1 = -wBorderWidth (pWin);
+	extents.x2 = pWin->drawable.width + wBorderWidth (pWin);
+	extents.y2 = pWin->drawable.height + wBorderWidth (pWin);
     }
     rep.xBoundingShape = extents.x1;
     rep.yBoundingShape = extents.y1;
     rep.widthBoundingShape = extents.x2 - extents.x1;
     rep.heightBoundingShape = extents.y2 - extents.y1;
-    if (pWin->clipShape) {
-	extents = *(pWin->drawable.pScreen->RegionExtents) (pWin->clipShape);
+    if (wClipShape(pWin)) {
+	extents = *(pWin->drawable.pScreen->RegionExtents) (wClipShape(pWin));
     } else {
 	extents.x1 = 0;
 	extents.y1 = 0;
-	extents.x2 = pWin->clientWinSize.width;
-	extents.y2 = pWin->clientWinSize.height;
+	extents.x2 = pWin->drawable.width;
+	extents.y2 = pWin->drawable.height;
     }
     rep.xClipShape = extents.x1;
     rep.yClipShape = extents.y1;
@@ -530,7 +563,7 @@ ShapeFreeClient (data, id)
     pShapeEvent = (ShapeEventPtr) data;
     pWin = pShapeEvent->window;
     pHead = (ShapeEventPtr *) LookupID
-			(pWin->wid, RT_WINDOW, ShapeResourceClass);
+			(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
     if (pHead) {
 	pPrev = 0;
 	for (pCur = *pHead; pCur && pCur != pShapeEvent; pCur=pCur->next)
@@ -574,7 +607,7 @@ ProcShapeSelectInput (client)
     if (!pWin)
 	return BadWindow;
     pHead = (ShapeEventPtr *) LookupID 
-		    	(pWin->wid, RT_WINDOW, ShapeResourceClass);
+		    	(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
     switch (stuff->enable) {
     case xTrue:
 	if (pHead) {
@@ -620,7 +653,7 @@ ProcShapeSelectInput (client)
     	{
 	    pHead = (ShapeEventPtr *) xalloc (sizeof (ShapeEventPtr));
 	    if (!pHead ||
-	    	!AddResource (pWin->wid,
+	    	!AddResource (pWin->drawable.id,
 			      RT_WINDOW, (pointer)pHead,
 			      ShapeFreeEvents, ShapeResourceClass))
 	    {
@@ -677,31 +710,31 @@ SendShapeNotify (pWin, which)
     BYTE		shaped;
 
     pHead = (ShapeEventPtr *) LookupID
-		    (pWin->wid, RT_WINDOW, ShapeResourceClass);
+		    (pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
     if (!pHead)
 	return;
     if (which == ShapeBounding) {
-	region = pWin->boundingShape;
+	region = wBoundingShape(pWin);
 	if (region) {
 	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
 	    shaped = xTrue;
 	} else {
-	    extents.x1 = -pWin->borderWidth;
-	    extents.y1 = -pWin->borderWidth;
-	    extents.x2 = pWin->clientWinSize.width + pWin->borderWidth;
-	    extents.y2 = pWin->clientWinSize.height + pWin->borderWidth;
+	    extents.x1 = -wBorderWidth (pWin);
+	    extents.y1 = -wBorderWidth (pWin);
+	    extents.x2 = pWin->drawable.width + wBorderWidth (pWin);
+	    extents.y2 = pWin->drawable.height + wBorderWidth (pWin);
 	    shaped = xFalse;
 	}
     } else {
-	region = pWin->clipShape;
+	region = wClipShape(pWin);
 	if (region) {
 	    extents = *(pWin->drawable.pScreen->RegionExtents) (region);
 	    shaped = xTrue;
 	} else {
 	    extents.x1 = 0;
 	    extents.y1 = 0;
-	    extents.x2 = pWin->clientWinSize.width;
-	    extents.y2 = pWin->clientWinSize.height;
+	    extents.x2 = pWin->drawable.width;
+	    extents.y2 = pWin->drawable.height;
 	    shaped = xFalse;
 	}
     }
@@ -709,7 +742,7 @@ SendShapeNotify (pWin, which)
 	client = pShapeEvent->client;
 	se.type = ShapeNotify + ShapeEventBase;
 	se.kind = which;
-	se.window = pWin->wid;
+	se.window = pWin->drawable.id;
 	se.sequenceNumber = client->sequence;
 	se.x = extents.x1;
 	se.y = extents.y1;
@@ -747,7 +780,7 @@ ProcShapeInputSelected (client)
     if (!pWin)
 	return BadWindow;
     pHead = (ShapeEventPtr *) LookupID 
-		    	(pWin->wid, RT_WINDOW, ShapeResourceClass);
+		    	(pWin->drawable.id, RT_WINDOW, ShapeResourceClass);
     enabled = xFalse;
     if (pHead) {
     	for (pShapeEvent = *pHead;
@@ -790,10 +823,10 @@ ProcShapeGetRectangles (client)
 	return BadWindow;
     switch (stuff->kind) {
     case ShapeBounding:
-	region = pWin->boundingShape;
+	region = wBoundingShape(pWin);
 	break;
     case ShapeClip:
-	region = pWin->clipShape;
+	region = wClipShape(pWin);
 	break;
     default:
 	client->errorValue = stuff->kind;
@@ -806,16 +839,16 @@ ProcShapeGetRectangles (client)
 	    return BadAlloc;
 	switch (stuff->kind) {
 	case ShapeBounding:
-	    rects->x = - (int) pWin->borderWidth;
-	    rects->y = - (int) pWin->borderWidth;
-	    rects->width = pWin->clientWinSize.width + pWin->borderWidth;
-	    rects->height = pWin->clientWinSize.height + pWin->borderWidth;
+	    rects->x = - (int) wBorderWidth (pWin);
+	    rects->y = - (int) wBorderWidth (pWin);
+	    rects->width = pWin->drawable.width + wBorderWidth (pWin);
+	    rects->height = pWin->drawable.height + wBorderWidth (pWin);
 	    break;
 	case ShapeClip:
 	    rects->x = 0;
 	    rects->y = 0;
-	    rects->width = pWin->clientWinSize.width;
-	    rects->height = pWin->clientWinSize.height;
+	    rects->width = pWin->drawable.width;
+	    rects->height = pWin->drawable.height;
 	    break;
 	}
     } else {

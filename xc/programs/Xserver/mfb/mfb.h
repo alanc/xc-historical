@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 1.9 88/09/06 14:53:21 jim Exp $ */
+/* $XConsortium: mfb.h,v 1.10 89/03/16 14:46:49 jim Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -50,6 +50,7 @@ extern Bool mfbRealizeCursor();
 extern Bool mfbUnrealizeCursor();
 extern Bool mfbScreenSaver();
 extern Bool mfbCreateGC();
+extern int  mfbReduceRop();
 
 extern PixmapPtr mfbCreatePixmap();
 extern Bool mfbDestroyPixmap();
@@ -79,9 +80,6 @@ extern void mfbPolyFillRect();
 extern RegionPtr mfbCopyArea();
 extern void mfbPolyPoint();
 extern RegionPtr mfbCopyPlane();
-
-extern void mfbDestroyGC();
-extern void mfbValidateGC();
 
 extern void mfbSetSpans();
 extern unsigned int *mfbGetSpans();
@@ -120,14 +118,11 @@ extern void mfbPolyGlyphBltInvert();
 extern void mfbTEGlyphBltWhite();	/* fg = 1, bg = 0 */
 extern void mfbTEGlyphBltBlack();	/* fg = 0, bg = 1 */
 
-extern void mfbChangeClip();
-extern void mfbDestroyClip();
-extern void mfbCopyClip();
-
 extern int mfbListInstalledColormaps();
 extern void mfbInstallColormap();
 extern void mfbUninstallColormap();
-
+extern Bool mfbCreateColormap();
+extern void mfbDestroyColormap();
 extern void mfbResolveColor();
 
 extern void mfbCopyGCDest();
@@ -170,6 +165,9 @@ typedef struct {
 					   use for tiles and stipples */
     } mfbPrivGC;
 typedef mfbPrivGC	*mfbPrivGCPtr;
+
+extern int  mfbGCPrivateIndex;		/* index into GC private array */
+extern int  mfbWindowPrivateIndex;	/* index into Window private array */
 
 /* freeCompositeClip values */
 #define REPLACE_CC	0		/* compsite clip is a copy of a

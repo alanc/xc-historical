@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 1.17 88/02/16 09:34:08 rws Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 1.18 88/09/06 14:53:49 jim Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -64,7 +64,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     {
 
 	pw = (unsigned int *)
-	     (((char *)(pBitMap->devPrivate))+(h * pBitMap->devKind));
+	     (((char *)(pBitMap->devPrivate.ptr))+(h * pBitMap->devKind));
 	pwLineStart = pw;
 	/* Process all words which are fully in the pixmap */
 	
@@ -94,7 +94,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
-			    (*pGC->FillSpans)(pDrawable, pGC, NPT, pt,
+			    (*pGC->ops->FillSpans)(pDrawable, pGC, NPT, pt,
 			                      width, TRUE);
 			    ipt = 0;
 			}
@@ -133,7 +133,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 				     ib + xOrg - pt[ipt].x;
 			if (++ipt >= NPT)
 			{
-			    (*pGC->FillSpans)(pDrawable, pGC, NPT, pt,
+			    (*pGC->ops->FillSpans)(pDrawable, pGC, NPT, pt,
 			                      width, TRUE);
 			    ipt = 0;
 			}
@@ -149,7 +149,7 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	    width[ipt] = dx + xOrg - pt[ipt].x;
 	    if (++ipt >= NPT)
 	    {
-		(*pGC->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
+		(*pGC->ops->FillSpans)(pDrawable, pGC, NPT, pt, width, TRUE);
 		ipt = 0;
 	    }
 	}
@@ -157,6 +157,6 @@ mfbPushPixels(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     /* Flush any remaining spans */
     if (ipt)
     {
-	(*pGC->FillSpans)(pDrawable, pGC, ipt, pt, width, TRUE);
+	(*pGC->ops->FillSpans)(pDrawable, pGC, ipt, pt, width, TRUE);
     }
 }

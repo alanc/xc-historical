@@ -1,6 +1,11 @@
 STD_DEFINES = ServerDefines
+#ifdef NOTDEF
        SRCS = zoid.c bezier.c plxvideo.c xtest1di.c xtest1dd.c shape.c
        OBJS = zoid.o bezier.o plxvideo.o xtest1di.o xtest1dd.o shape.o
+#else
+       SRCS = shape.c
+       OBJS = shape.o
+#endif
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln

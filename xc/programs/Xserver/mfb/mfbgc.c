@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.128 89/03/29 18:55:48 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 1.129 89/03/29 19:32:04 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -38,14 +38,278 @@ SOFTWARE.
 
 #include "maskbits.h"
 
+static void mfbDestroyOps();
+
 static PixmapPtr BogusPixmap = (PixmapPtr)1;
+
+static void mfbValidateGC(),	mfbChangeGC(),	    mfbCopyGC();
+static void mfbDestroyGC();
+static void mfbChangeClip(),	mfbDestroyClip(),   mfbCopyClip();
+
+static GCFuncs	mfbFuncs = {
+	mfbValidateGC,
+	mfbChangeGC,
+	mfbCopyGC,
+	mfbDestroyGC,
+	mfbChangeClip,
+	mfbDestroyClip,
+	mfbCopyClip,
+};
+
+static GCOps	whiteTECopyOps = {
+	mfbWhiteSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbTEGlyphBltWhite,
+	mfbPolyGlyphBltWhite,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	blackTECopyOps = {
+	mfbBlackSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbTEGlyphBltBlack,
+	mfbPolyGlyphBltBlack,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	invertWhiteTECopyOps = {
+	mfbInvertSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbTEGlyphBltWhite,
+	mfbPolyGlyphBltInvert,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	invertBlackTECopyOps = {
+	mfbInvertSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbTEGlyphBltBlack,
+	mfbPolyGlyphBltInvert,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	whiteCopyOps = {
+	mfbWhiteSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbImageGlyphBltWhite,
+	mfbPolyGlyphBltWhite,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	blackCopyOps = {
+	mfbBlackSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbImageGlyphBltBlack,
+	mfbPolyGlyphBltBlack,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	invertWhiteCopyOps = {
+	mfbInvertSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbImageGlyphBltWhite,
+	mfbPolyGlyphBltInvert,
+	mfbPushPixels,
+	miMiter,
+};
+
+static GCOps	invertBlackCopyOps = {
+	mfbInvertSolidFS,
+	mfbSetSpans,
+	mfbPutImage,
+	mfbCopyArea,
+	mfbCopyPlane,
+	mfbPolyPoint,
+	mfbLineSS,
+	miPolySegment,
+	miPolyRectangle,
+	miPolyArc,
+	miFillPolygon,
+	mfbPolyFillRect,
+	miPolyFillArc,
+	miPolyText8,
+	miPolyText16,
+	miImageText8,
+	miImageText16,
+	mfbImageGlyphBltBlack,
+	mfbPolyGlyphBltInvert,
+	mfbPushPixels,
+	miMiter,
+
+};
+
+struct commonOps {
+    int		    fg, bg;
+    int		    rrop;
+    int		    terminalFont;
+    GCOps	    *ops;
+    void	    (*fillArea)();
+};
+
+static struct commonOps mfbCommonOps[] = {
+    { 1, 0, RROP_WHITE, 1, &whiteTECopyOps, mfbSolidWhiteArea },
+    { 0, 1, RROP_BLACK, 1, &blackTECopyOps, mfbSolidBlackArea },
+    { 1, 0, RROP_INVERT, 1, &invertWhiteTECopyOps, mfbSolidInvertArea },
+    { 1, 0, RROP_INVERT, 1, &invertBlackTECopyOps, mfbSolidInvertArea },
+    { 1, 0, RROP_WHITE, 0, &whiteCopyOps, mfbSolidWhiteArea },
+    { 0, 1, RROP_BLACK, 0, &blackCopyOps, mfbSolidBlackArea },
+    { 1, 0, RROP_INVERT, 0, &invertWhiteCopyOps, mfbSolidInvertArea },
+    { 0, 1, RROP_INVERT, 0, &invertBlackCopyOps, mfbSolidInvertArea },
+};
+
+#define numberCommonOps	(sizeof (mfbCommonOps) / sizeof (mfbCommonOps[0]))
+
+static GCOps *
+matchCommon (pGC)
+    GCPtr   pGC;
+{
+    int	i;
+    struct commonOps	*cop;
+    mfbPrivGC		*priv;
+
+    if (pGC->lineWidth != 0)
+	return 0;
+    if (pGC->lineStyle != LineSolid)
+	return 0;
+    if (pGC->fillStyle != FillSolid)
+	return 0;
+    if (!pGC->font ||
+        pGC->font->pFI->maxbounds.metrics.rightSideBearing -
+	pGC->font->pFI->minbounds.metrics.leftSideBearing > 32)
+	return 0;
+    for (i = 0; i < numberCommonOps; i++) {
+	cop = &mfbCommonOps[i];
+	if (pGC->fgPixel != cop->fg)
+	    continue;
+	if (pGC->bgPixel != cop->bg)
+	    continue;
+	priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
+	if (priv->rop != cop->rrop)
+	    continue;
+	if (cop->terminalFont != pGC->font->pFI->terminalFont)
+	    continue;
+	priv->FillArea = cop->fillArea;
+	return cop->ops;
+    }
+    return 0;
+}
 
 Bool
 mfbCreateGC(pGC)
     register GCPtr pGC;
 {
     mfbPrivGC 	*pPriv;
-    GCInterestPtr	pQ;
 
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
@@ -56,31 +320,8 @@ mfbCreateGC(pGC)
        they depend on being a monochrome frame buffer, they don't change 
     */
 
-    pGC->FillSpans = mfbWhiteSolidFS;
-    pGC->SetSpans = mfbSetSpans;
-    pGC->PutImage = mfbPutImage;
-    pGC->CopyArea = mfbCopyArea;
-    pGC->CopyPlane = mfbCopyPlane;
-    pGC->PolyPoint = mfbPolyPoint;
-
-    pGC->Polylines = mfbLineSS;
-    pGC->PolySegment = miPolySegment;
-    pGC->PolyRectangle = miPolyRectangle;
-    pGC->PolyArc = miPolyArc;
-    pGC->FillPolygon = miFillPolygon;
-    pGC->PolyFillRect = mfbPolyFillRect;
-    pGC->PolyFillArc = miPolyFillArc;
-    pGC->PolyText8 = miPolyText8;
-    pGC->ImageText8 = miImageText8;
-    pGC->PolyText16 = miPolyText16;
-    pGC->ImageText16 = miImageText16;
-    pGC->ImageGlyphBlt = mfbImageGlyphBltWhite;
-    pGC->PolyGlyphBlt = mfbPolyGlyphBltInvert;
-    pGC->PushPixels = mfbPushPixels;
-    pGC->LineHelper = miMiter;
-    pGC->ChangeClip = mfbChangeClip;
-    pGC->DestroyClip = mfbDestroyClip;
-    pGC->CopyClip = mfbCopyClip;
+    pGC->ops = &whiteCopyOps;
+    pGC->funcs = &mfbFuncs;
 
     /* mfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
@@ -90,9 +331,9 @@ mfbCreateGC(pGC)
 	return FALSE;
     else
     {
-	pPriv->rop = ReduceRop(pGC->alu, pGC->fgPixel);
+	pPriv->rop = mfbReduceRop(pGC->alu, pGC->fgPixel);
 	pPriv->fExpose = TRUE;
-	pGC->devPriv = (pointer)pPriv;
+	pGC->devPrivates[mfbGCPrivateIndex].ptr = (pointer)pPriv;
 	pPriv->pRotatedTile = NullPixmap;
 	pPriv->pRotatedStipple = NullPixmap;
 	pPriv->pAbsClientRegion =(* pGC->pScreen->RegionCreate)(NULL, 1); 
@@ -104,48 +345,49 @@ mfbCreateGC(pGC)
 	pPriv->ppPixmap = &BogusPixmap;
 	pPriv->FillArea = mfbSolidInvertArea;
     }
-    pGC->devBackingStore = (pointer)NULL;
-
-    pQ = (GCInterestPtr) xalloc(sizeof(GCInterestRec));
-    if(!pQ)
-    {
-	xfree(pPriv);
-	return FALSE;
-    }
-     
-    /* Now link this device into the GCque */
-    pGC->pNextGCInterest = pQ;
-    pGC->pLastGCInterest = pQ;
-    pQ->pNextGCInterest = (GCInterestPtr) &pGC->pNextGCInterest;
-    pQ->pLastGCInterest = (GCInterestPtr) &pGC->pNextGCInterest;
-    pQ->length = sizeof(GCInterestRec);
-    pQ->owner = 0;		/* server owns this */
-    pQ->ValInterestMask = ~0;	/* interested in everything at validate time */
-    pQ->ValidateGC = mfbValidateGC;
-    pQ->ChangeInterestMask = 0; /* interested in nothing at change time */
-    pQ->ChangeGC = (int (*) () ) NULL;
-    pQ->CopyGCSource = (void (*) () ) NULL;
-    pQ->CopyGCDest = (void (*) () ) NULL;
-    pQ->DestroyGC = mfbDestroyGC;
     return TRUE;
 }
 
-void
-mfbDestroyGC(pGC, pQ)
-    GC 			*pGC;
-    GCInterestPtr	pQ;
+static void
+mfbChangeGC(pGC, mask)
+    GC	    *pGC;
+    BITS32  mask;
+{
+    return;
+}
 
+/*ARGSUSED*/
+static void
+mfbCopyGC (pGCSrc, changes, pGCDst)
+    GCPtr	pGCSrc;
+    Mask 	changes;
+    GCPtr	pGCDst;
+{
+    RegionPtr		pClip;
+
+    if(changes & GCClipMask)
+    {
+	if(pGCDst->clientClipType == CT_PIXMAP)
+	{
+	    ((PixmapPtr)pGCDst->clientClip)->refcnt++;
+	}
+	else if(pGCDst->clientClipType == CT_REGION)
+	{
+	    pClip = (RegionPtr) pGCDst->clientClip;
+	    pGCDst->clientClip =
+	        (pointer)(* pGCDst->pScreen->RegionCreate)(NULL, 1);
+	    (* pGCDst->pScreen->RegionCopy)(pGCDst->clientClip, pClip);
+	}
+    }
+}
+
+static void
+mfbDestroyGC(pGC)
+    GC 			*pGC;
 {
     mfbPrivGC *pPriv;
 
-    /* Most GCInterest pointers would free pQ->devPriv.  This one is privileged
-     * and allowed to allocate its private data directly in the GC (this
-     * saves an indirection).  We must also unlink and free the pQ.
-     */
-    pQ->pLastGCInterest->pNextGCInterest = pQ->pNextGCInterest;
-    pQ->pNextGCInterest->pLastGCInterest = pQ->pLastGCInterest;
-
-    pPriv = (mfbPrivGC *)(pGC->devPriv);
+    pPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);
     if (pPriv->pRotatedTile)
 	mfbDestroyPixmap(pPriv->pRotatedTile);
     if (pPriv->pRotatedStipple)
@@ -154,8 +396,37 @@ mfbDestroyGC(pGC, pQ)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     if(pPriv->pAbsClientRegion)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
-    xfree(pGC->devPriv);
-    xfree(pQ);
+    xfree(pGC->devPrivates[mfbGCPrivateIndex].ptr);
+    mfbDestroyOps (pGC->ops);
+}
+
+/*
+ * create a private op array for a gc
+ */
+
+static GCOps *
+mfbCreateOps (prototype)
+    GCOps	*prototype;
+{
+    GCOps	*ret;
+    extern Bool	Must_have_memory;
+
+    /* XXX */ Must_have_memory = TRUE;
+    ret = (GCOps *) xalloc (sizeof *ret);
+    /* XXX */ Must_have_memory = FALSE;
+    if (!ret)
+	return 0;
+    *ret = *prototype;
+    ret->devPrivate.val = 1;
+    return ret;
+}
+
+static void
+mfbDestroyOps (ops)
+    GCOps   *ops;
+{
+    if (ops->devPrivate.val)
+	xfree (ops);
 }
 
 /* Clipping conventions
@@ -169,10 +440,9 @@ mfbDestroyGC(pGC, pQ)
 */
 
 /*ARGSUSED*/
-void
-mfbValidateGC(pGC, pQ, changes, pDrawable)
+static void
+mfbValidateGC(pGC, changes, pDrawable)
     register GCPtr 	pGC;
-    GCInterestPtr	pQ;
     Mask 		changes;
     DrawablePtr 	pDrawable;
 {
@@ -188,26 +458,23 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     int new_rotate, new_rrop,  new_line, new_text, new_fill;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
     Bool win_moved;		/* window has moved since last time */
-    unsigned long procChanges = 0;
 
     oldOrg = pGC->lastWinOrg;
 
+    pGC->lastWinOrg.x = pDrawable->x;
+    pGC->lastWinOrg.y = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pWin = (WindowPtr)pDrawable;
-	pGC->lastWinOrg.x = pWin->absCorner.x;
-	pGC->lastWinOrg.y = pWin->absCorner.y;
     }
     else
     {
 	pWin = (WindowPtr)NULL;
-	pGC->lastWinOrg.x = 0;
-	pGC->lastWinOrg.y = 0;
     }
     win_moved = (oldOrg.x != pGC->lastWinOrg.x) ||
 		(oldOrg.y != pGC->lastWinOrg.y);
 
-    devPriv = ((mfbPrivGCPtr) (pGC->devPriv));
+    devPriv = ((mfbPrivGCPtr) (pGC->devPrivates[mfbGCPrivateIndex].ptr));
     /*
 	if the client clip is different or moved OR
 	the subwindowMode has changed OR
@@ -336,8 +603,8 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 
 	    pixbounds.x1 = 0;
 	    pixbounds.y1 = 0;
-	    pixbounds.x2 = ((PixmapPtr)pDrawable)->width;
-	    pixbounds.y2 = ((PixmapPtr)pDrawable)->height;
+	    pixbounds.x2 = pDrawable->width;
+	    pixbounds.y2 = pDrawable->height;
 
 	    if (devPriv->freeCompClip == FREE_CC)
 	        (* pGC->pScreen->RegionReset)(
@@ -463,9 +730,61 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
        new_rrop must be done first because subsequent things
        depend on it.
     */
+
+    if(new_rotate)
+    {
+	/* figure out how much to rotate */
+	xrot = pGC->patOrg.x;
+	yrot = pGC->patOrg.y;
+	xrot += pDrawable->x;
+	yrot += pDrawable->y;
+
+	/* destroy any previously rotated tile or stipple */
+	if (devPriv->pRotatedTile)
+	{
+	    mfbDestroyPixmap(devPriv->pRotatedTile);
+	    devPriv->pRotatedTile = (PixmapPtr)NULL;
+	}
+	if (devPriv->pRotatedStipple)
+	{
+	    mfbDestroyPixmap(devPriv->pRotatedStipple);
+	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
+	}
+
+	/* copy current tile and stipple */
+	if (pGC->tile && (pGC->tile->drawable.width <= 32) &&
+	    !(pGC->tile->drawable.width & (pGC->tile->drawable.width - 1)))
+	{
+	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile);
+	    if (devPriv->pRotatedTile)
+		(void)mfbPadPixmap(devPriv->pRotatedTile);
+	}
+	if (pGC->stipple && (pGC->stipple->drawable.width <= 32) &&
+	    !(pGC->stipple->drawable.width & (pGC->stipple->drawable.width - 1)))
+	{
+	    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
+	    if (devPriv->pRotatedStipple)
+		(void)mfbPadPixmap(devPriv->pRotatedStipple);
+	}
+	if (xrot)
+	{
+	    if (devPriv->pRotatedTile)
+		mfbXRotatePixmap(devPriv->pRotatedTile, xrot);
+	    if (devPriv->pRotatedStipple)
+		mfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
+	}
+	if (yrot)
+	{
+	    if (devPriv->pRotatedTile)
+		mfbYRotatePixmap(devPriv->pRotatedTile, yrot);
+	    if (devPriv->pRotatedStipple)
+		mfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
+	}
+    }
+
     if (new_rrop || new_fill)
     {
-	rrop = ReduceRop(pGC->alu, pGC->fgPixel);
+	rrop = mfbReduceRop(pGC->alu, pGC->fgPixel);
 	devPriv->rop = rrop;
 	new_fill = TRUE;
 	/* FillArea raster op is GC's for tile filling,
@@ -502,6 +821,27 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     else
 	rrop = devPriv->rop;
 
+    if (new_line || new_fill || new_text)
+    {
+	GCOps	*newops;
+
+	if (newops = matchCommon (pGC))
+ 	{
+	    if (pGC->ops->devPrivate.val)
+		mfbDestroyOps (pGC->ops);
+	    pGC->ops = newops;
+	    new_line = new_fill = new_text = 0;
+	}
+ 	else
+ 	{
+	    if (!pGC->ops->devPrivate.val)
+ 	    {
+		pGC->ops = mfbCreateOps (pGC->ops);
+		pGC->ops->devPrivate.val = 1;
+	    }
+	}
+    }
+
     if (new_line || new_fill)
     {
 	if (pGC->lineStyle == LineSolid)
@@ -509,31 +849,29 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    if(pGC->lineWidth == 0)
 	    {
 	        if (pGC->fillStyle == FillSolid)
-		    pGC->Polylines = mfbLineSS;
+		    pGC->ops->Polylines = mfbLineSS;
 	        else
-		    pGC->Polylines = miZeroLine;
+		    pGC->ops->Polylines = miZeroLine;
 	    }
 	    else
 	    {
-		pGC->Polylines = miWideLine;
+		pGC->ops->Polylines = miWideLine;
 	    }
 	}
 	else
 	    if(pGC->lineWidth == 0)
-	        pGC->Polylines = mfbDashLine;
+	        pGC->ops->Polylines = mfbDashLine;
 	    else
-	        pGC->Polylines = miWideDash;
-
-	procChanges |= MIBS_POLYLINES;
+	        pGC->ops->Polylines = miWideDash;
 
 	switch(pGC->joinStyle)
 	{
 	  case JoinMiter:
-	    pGC->LineHelper = miMiter;
+	    pGC->ops->LineHelper = miMiter;
 	    break;
 	  case JoinRound:
 	  case JoinBevel:
-	    pGC->LineHelper = miNotMiter;
+	    pGC->ops->LineHelper = miNotMiter;
 	    break;
 	}
     }
@@ -544,8 +882,8 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    (pGC->font->pFI->maxbounds.metrics.rightSideBearing -
 	     pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
 	{
-	    pGC->PolyGlyphBlt = miPolyGlyphBlt;
-	    pGC->ImageGlyphBlt = miImageGlyphBlt;
+	    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+	    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 	}
 	else
 	{
@@ -555,20 +893,20 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		(pGC->fgPixel != pGC->bgPixel))
 	    {
 		/* pcc bug makes this not compile...
-		pGC->ImageGlyphBlt = (pGC->fgPixel) ? mfbTEGlyphBltWhite :
+		pGC->ops->ImageGlyphBlt = (pGC->fgPixel) ? mfbTEGlyphBltWhite :
 						      mfbTEGlyphBltBlack;
 		*/
 		if (pGC->fgPixel)
-		    pGC->ImageGlyphBlt = mfbTEGlyphBltWhite;
+		    pGC->ops->ImageGlyphBlt = mfbTEGlyphBltWhite;
 		else
-		    pGC->ImageGlyphBlt = mfbTEGlyphBltBlack;
+		    pGC->ops->ImageGlyphBlt = mfbTEGlyphBltBlack;
 	    }
 	    else
 	    {
 	        if (pGC->fgPixel == 0)
-		    pGC->ImageGlyphBlt = mfbImageGlyphBltBlack;
+		    pGC->ops->ImageGlyphBlt = mfbImageGlyphBltBlack;
 	        else
-		    pGC->ImageGlyphBlt = mfbImageGlyphBltWhite;
+		    pGC->ops->ImageGlyphBlt = mfbImageGlyphBltWhite;
 	    }
 
 	    /* now do PolyGlyphBlt */
@@ -579,73 +917,18 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	       )
 	    {
 		if (rrop == RROP_WHITE)
-		    pGC->PolyGlyphBlt = mfbPolyGlyphBltWhite;
+		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltWhite;
 		else if (rrop == RROP_BLACK)
-		    pGC->PolyGlyphBlt = mfbPolyGlyphBltBlack;
+		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltBlack;
 		else if (rrop == RROP_INVERT)
-		    pGC->PolyGlyphBlt = mfbPolyGlyphBltInvert;
+		    pGC->ops->PolyGlyphBlt = mfbPolyGlyphBltInvert;
 		else
-		    pGC->PolyGlyphBlt = NoopDDA;
+		    pGC->ops->PolyGlyphBlt = NoopDDA;
 	    }
 	    else
 	    {
-		pGC->PolyGlyphBlt = miPolyGlyphBlt;
+		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	    }
-	}
-	procChanges |= (MIBS_POLYGLYPHBLT|MIBS_IMAGEGLYPHBLT);
-    }
-
-    if(new_rotate)
-    {
-	/* figure out how much to rotate */
-	xrot = pGC->patOrg.x;
-	yrot = pGC->patOrg.y;
-	if (pWin)
-	{
-	    xrot += pWin->absCorner.x;
-	    yrot += pWin->absCorner.y;
-	}
-
-	/* destroy any previously rotated tile or stipple */
-	if (devPriv->pRotatedTile)
-	{
-	    mfbDestroyPixmap(devPriv->pRotatedTile);
-	    devPriv->pRotatedTile = (PixmapPtr)NULL;
-	}
-	if (devPriv->pRotatedStipple)
-	{
-	    mfbDestroyPixmap(devPriv->pRotatedStipple);
-	    devPriv->pRotatedStipple = (PixmapPtr)NULL;
-	}
-
-	/* copy current tile and stipple */
-	if (pGC->tile && (pGC->tile->width <= 32) &&
-	    !(pGC->tile->width & (pGC->tile->width - 1)))
-	{
-	    devPriv->pRotatedTile = mfbCopyPixmap(pGC->tile);
-	    if (devPriv->pRotatedTile)
-		(void)mfbPadPixmap(devPriv->pRotatedTile);
-	}
-	if (pGC->stipple && (pGC->stipple->width <= 32) &&
-	    !(pGC->stipple->width & (pGC->stipple->width - 1)))
-	{
-	    devPriv->pRotatedStipple = mfbCopyPixmap(pGC->stipple);
-	    if (devPriv->pRotatedStipple)
-		(void)mfbPadPixmap(devPriv->pRotatedStipple);
-	}
-	if (xrot)
-	{
-	    if (devPriv->pRotatedTile)
-		mfbXRotatePixmap(devPriv->pRotatedTile, xrot);
-	    if (devPriv->pRotatedStipple)
-		mfbXRotatePixmap(devPriv->pRotatedStipple, xrot);
-	}
-	if (yrot)
-	{
-	    if (devPriv->pRotatedTile)
-		mfbYRotatePixmap(devPriv->pRotatedTile, yrot);
-	    if (devPriv->pRotatedStipple)
-		mfbYRotatePixmap(devPriv->pRotatedStipple, yrot);
 	}
     }
 
@@ -659,19 +942,16 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	    switch(devPriv->rop)
 	    {
 	      case RROP_WHITE:
-		pGC->FillSpans = mfbWhiteSolidFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbWhiteSolidFS;
 		break;
 	      case RROP_BLACK:
-		pGC->FillSpans = mfbBlackSolidFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbBlackSolidFS;
 		break;
 	      case RROP_INVERT:
-		pGC->FillSpans = mfbInvertSolidFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbInvertSolidFS;
 		break;
 	      case RROP_NOP:
-		pGC->FillSpans = NoopDDA;
+		pGC->ops->FillSpans = NoopDDA;
 		break;
 	    }
 	}
@@ -681,39 +961,33 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		 ((pGC->fillStyle == FillOpaqueStippled) &&
 		  !devPriv->pRotatedStipple))
 	{
-	    pGC->FillSpans = mfbUnnaturalTileFS;
-	    procChanges |= MIBS_FILLSPANS;
+	    pGC->ops->FillSpans = mfbUnnaturalTileFS;
 	}
 	else if ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedStipple)
 	{
-	    pGC->FillSpans = mfbUnnaturalStippleFS;
-	    procChanges |= MIBS_FILLSPANS;
+	    pGC->ops->FillSpans = mfbUnnaturalStippleFS;
 	}
 	else if (pGC->fillStyle == FillStippled)
 	{
 	    switch(devPriv->rop)
 	    {
 	      case RROP_WHITE:
-		pGC->FillSpans = mfbWhiteStippleFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbWhiteStippleFS;
 		break;
 	      case RROP_BLACK:
-		pGC->FillSpans = mfbBlackStippleFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbBlackStippleFS;
 		break;
 	      case RROP_INVERT:
-		pGC->FillSpans = mfbInvertStippleFS;
-		procChanges |= MIBS_FILLSPANS;
+		pGC->ops->FillSpans = mfbInvertStippleFS;
 		break;
 	      case RROP_NOP:
-		pGC->FillSpans = NoopDDA;
+		pGC->ops->FillSpans = NoopDDA;
 		break;
 	    }
 	}
 	else /* overload tiles to do parti-colored opaque stipples */
 	{
-	    pGC->FillSpans = mfbTileFS;
-	    procChanges |= MIBS_FILLSPANS;
+	    pGC->ops->FillSpans = mfbTileFS;
 	}
 
 	/* the rectangle code doesn't deal with opaque stipples that
@@ -725,12 +999,12 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 	     (pGC->fgPixel != pGC->bgPixel))
 	   )
 	{
-	    pGC->PolyFillRect = miPolyFillRect;
+	    pGC->ops->PolyFillRect = miPolyFillRect;
 	    devPriv->ppPixmap = &BogusPixmap;
 	}
 	else /* deal with solids and natural stipples and tiles */
 	{
-	    pGC->PolyFillRect = mfbPolyFillRect;
+	    pGC->ops->PolyFillRect = mfbPolyFillRect;
 
 	    if ((pGC->fillStyle == FillSolid) ||
 		((pGC->fillStyle == FillOpaqueStippled) &&
@@ -781,21 +1055,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
 		devPriv->FillArea = mfbTileArea32;
 	    }
 	} /* end of natural rectangles */
-	procChanges |= MIBS_POLYFILLRECT;
     } /* end of new_fill */
-
-    /*
-     * If this GC has ever been used with a window with backing-store enabled,
-     * we must call miVaidateBackingStore to keep the backing-store module
-     * up-to-date, should this GC be used with that drawable again. In addition,
-     * if the current drawable is a window and has backing-store enabled, we
-     * also call miValidateBackingStore to give it a chance to get its hooks in.
-     */
-    if (pGC->devBackingStore ||
-	(pWin && (pWin->backingStore != NotUseful)))
-    {
-	miValidateBackingStore(pDrawable, pGC, procChanges);
-    }
 }
 
 /* table to map alu(src, dst) to alu(~src, dst) */
@@ -816,10 +1076,11 @@ int InverseAlu[16] = {
 	GXor,
 	GXorReverse,
 	GXset
-	};
+};
 
-ReduceRop(alu, src)
-    register int alu;
+int
+mfbReduceRop(alu, src)
+    register unsigned char alu;
     register Pixel src;
 {
     int rop;
@@ -934,7 +1195,7 @@ ReduceRop(alu, src)
     return rop;
 }
 
-void
+static void
 mfbDestroyClip(pGC)
     GCPtr	pGC;
 {
@@ -955,12 +1216,12 @@ mfbDestroyClip(pGC)
     pGC->clientClipType = CT_NONE;
 }
 
-void
+static void
 mfbChangeClip(pGC, type, pvalue, nrects)
-    GCPtr	pGC;
-    int		type;
-    pointer	pvalue;
-    int		nrects;
+    GCPtr	    pGC;
+    unsigned int    type;
+    pointer	    pvalue;
+    int		    nrects;
 {
     mfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
@@ -989,7 +1250,7 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     pGC->stateChanges |= GCClipMask;
 }
 
-void
+static void
 mfbCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
@@ -1009,38 +1270,5 @@ mfbCopyClip (pgcDst, pgcSrc)
 				       (RegionPtr)(pgcSrc->clientClip));
 	mfbChangeClip(pgcDst, CT_REGION, (pointer)prgnNew, 0);
 	break;
-    }
-}
-
-/*ARGSUSED*/
-void
-mfbCopyGCDest (pGC, pQ, changes, pGCSrc)
-    GCPtr	pGC;
-    GCInterestPtr	pQ;
-    Mask 		changes;
-    GCPtr		pGCSrc;
-{
-    RegionPtr		pClip;
-
-    if(changes & GCClipMask)
-    {
-	if(pGC->clientClipType == CT_PIXMAP)
-	{
-	    ((PixmapPtr)pGC->clientClip)->refcnt++;
-	}
-	else if(pGC->clientClipType == CT_REGION)
-	{
-	    BoxRec pixbounds;
-
-	    pixbounds.x1 = 0;
-	    pixbounds.y1 = 0;
-	    pixbounds.x2 = 0;
-	    pixbounds.y2 = 0;
-
-	    pClip = (RegionPtr) pGC->clientClip;
-	    pGC->clientClip =
-	        (pointer)(* pGC->pScreen->RegionCreate)(&pixbounds, 1);
-	    (* pGC->pScreen->RegionCopy)(pGC->clientClip, pClip);
-	}
     }
 }

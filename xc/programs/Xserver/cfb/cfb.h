@@ -63,12 +63,6 @@ extern void cfbPaintAreaOther();
 extern void miPolyFillRect();
 extern void miPolyFillArc();
 
-extern void cfbDestroyGC();
-extern void cfbValidateGC();
-extern void cfbDestroyClip();
-extern void cfbCopyClip();
-extern void cfbChangeClip();
-extern void cfbCopyGCDest();
 extern RegionPtr cfbCopyArea();
 
 extern void cfbSetSpans();
@@ -90,6 +84,7 @@ extern void mfbUnnaturalTileFS();
 extern void mfbUnnaturalStippleFS();
 extern Bool mfbRealizeFont();
 extern Bool mfbUnrealizeFont();
+extern void mfbQueryBestSize();
 extern RegionPtr mfbPixmapToRegion();
 
 extern void miNotMiter();
@@ -120,6 +115,9 @@ extern Bool cfbInitializeColormap();
    pixmap.devKind = width_of_pixmap_in_bytes
 */
 
+extern int  cfbGCPrivateIndex;
+extern int  cfbWindowPrivateIndex;
+
 /* private field of GC */
 typedef struct {
     unsigned char       rop;            /* reduction of rasterop to 1 of 3 */
@@ -134,6 +132,7 @@ typedef struct {
     RegionPtr		pAbsClientRegion;/* client region in screen coords */
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;
+
 typedef cfbPrivGC	*cfbPrivGCPtr;
 
 /* freeCompositeClip values */

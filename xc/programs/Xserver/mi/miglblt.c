@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 1.20 89/03/23 18:27:32 rws Exp $ */
+/* $XConsortium: miglblt.c,v 1.21 89/03/30 09:13:57 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -81,11 +81,10 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     XID gcvals[3];
 
-    if ((pDrawable->type == DRAWABLE_WINDOW) &&
-	(pGC->miTranslate))
+    if (pGC->miTranslate)
     {
-	x += ((WindowPtr)pDrawable)->absCorner.x;
-	y += ((WindowPtr)pDrawable)->absCorner.y;
+	x += pDrawable->x;
+	y += pDrawable->y;
     }
 
     pfont = pGC->font;
@@ -138,13 +137,13 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 	    if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
 		ValidateGC((DrawablePtr)pPixmap, pGCtmp);
-	    (*pGCtmp->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
+	    (*pGCtmp->ops->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
 				0, 0, gWidth, gHeight, 
 				0, XYBitmap, pbits);
 
 	    if ((pGC->serialNumber) != (pDrawable->serialNumber))
 		ValidateGC(pDrawable, pGC);
-	    (*pGC->PushPixels)(pGC, pPixmap, pDrawable,
+	    (*pGC->ops->PushPixels)(pGC, pPixmap, pDrawable,
 			       gWidth, gHeight,
 			       x + pci->metrics.leftSideBearing,
 			       y - pci->metrics.ascent);
@@ -190,13 +189,13 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     gcvals[2] = FillSolid;
     DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
     ValidateGC(pDrawable, pGC);
-    (*pGC->PolyFillRect)(pDrawable, pGC, 1, &backrect);
+    (*pGC->ops->PolyFillRect)(pDrawable, pGC, 1, &backrect);
 
     /* put down the glyphs */
     gcvals[0] = oldFG;
     DoChangeGC(pGC, GCForeground, gcvals, 0);
     ValidateGC(pDrawable, pGC);
-    (*pGC->PolyGlyphBlt)(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
+    (*pGC->ops->PolyGlyphBlt)(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
 
     /* put all the toys away when done playing */
     gcvals[0] = oldAlu;
@@ -205,4 +204,3 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DoChangeGC(pGC, GCFunction|GCForeground|GCFillStyle, gcvals, 0);
 
 }
-

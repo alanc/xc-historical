@@ -41,14 +41,97 @@ SOFTWARE.
 extern cfbXRotatePixmap();
 extern cfbYRotatePixmap();
 #endif
-extern void mfbPushPixels(), mfbDestroyClip(), mfbChangeClip(), mfbCopyClip();
-extern void mfbCopyGCDest(), mfbDestroyGC(), mfbValidateGC();
+
+static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
+static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+
+static GCFuncs cfbFuncs = {
+    cfbValidateGC,
+    cfbChangeGC,
+    cfbCopyGC,
+    cfbDestroyGC,
+    cfbChangeClip,
+    cfbDestroyClip,
+    cfbCopyClip,
+};
+
+static GCOps	cfbTEOps = {
+    cfbSolidFS,
+    cfbSetSpans,
+    miPutImage,
+    cfbCopyArea,
+    miCopyPlane,
+    miPolyPoint,
+    miZeroLine,
+    miPolySegment,
+    miPolyRectangle,
+    miPolyArc,
+    miFillPolygon,
+    miPolyFillRect,
+    miPolyFillArc,
+    miPolyText8,
+    miPolyText16,
+    miImageText8,
+    miImageText16,
+    cfbTEGlyphBlt,
+    miPolyGlyphBlt,
+    mfbPushPixels,
+    miMiter,
+};
+
+static GCOps	cfbNonTEOps = {
+    cfbSolidFS,
+    cfbSetSpans,
+    miPutImage,
+    cfbCopyArea,
+    miCopyPlane,
+    miPolyPoint,
+    miZeroLine,
+    miPolySegment,
+    miPolyRectangle,
+    miPolyArc,
+    miFillPolygon,
+    miPolyFillRect,
+    miPolyFillArc,
+    miPolyText8,
+    miPolyText16,
+    miImageText8,
+    miImageText16,
+    miImageGlyphBlt,
+    miPolyGlyphBlt,
+    mfbPushPixels,
+    miMiter,
+};
+
+static GCOps *
+matchCommon (pGC)
+    GCPtr   pGC;
+{
+    if (pGC->lineWidth != 0)
+	return 0;
+    if (pGC->lineStyle != LineSolid)
+	return 0;
+    if (pGC->fillStyle != FillSolid)
+	return 0;
+    if (pGC->font &&
+	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
+         pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32 &&
+	 pGC->font->pFI->terminalFont &&
+	 pGC->fgPixel != pGC->bgPixel)
+    {
+	return &cfbTEOps;
+    }
+    else
+    {
+	return &cfbNonTEOps;
+    }
+}
 
 Bool
 cfbCreateGC(pGC)
     register GCPtr pGC;
 {
-    GCInterestPtr pQ;
+    cfbPrivGC  *pPriv;
 
     switch (pGC->depth) {
     case 1:
@@ -69,117 +152,47 @@ cfbCreateGC(pGC)
      * on being a color frame buffer, they don't change 
      */
 
-    pGC->FillSpans = cfbSolidFS;
-    pGC->SetSpans = cfbSetSpans;
-    pGC->PutImage = miPutImage;
-    pGC->CopyArea = cfbCopyArea;
-    pGC->CopyPlane = miCopyPlane;
-    pGC->PolyPoint = miPolyPoint;
-
-#ifdef notdef
-    pGC->Polylines = miNotMiter;    /* Doesn't work for 0-width lines */
-#else
-    pGC->Polylines = miZeroLine;
-#endif notdef
-    pGC->PolySegment = miPolySegment;
-    pGC->PolyRectangle = miPolyRectangle;
-    pGC->PolyArc = miPolyArc;
-    pGC->FillPolygon = miFillPolygon;
-    pGC->PolyFillRect = miPolyFillRect;
-    pGC->PolyFillArc = miPolyFillArc;
-    pGC->PolyText8 = miPolyText8;
-    pGC->ImageText8 = miImageText8;
-    pGC->PolyText16 = miPolyText16;
-    pGC->ImageText16 = miImageText16;
-    pGC->ImageGlyphBlt = miImageGlyphBlt;
-    pGC->PolyGlyphBlt = miPolyGlyphBlt;
-#ifdef	notdef
-    pGC->PushPixels = miPushPixels;	/* miPushPixels is garbage */
-#else
-    pGC->PushPixels = mfbPushPixels;	/* but mfbPushPixels isn't depth
-					 * dependent */
-#endif
-    pGC->LineHelper = miMiter;
-    pGC->ChangeClip = cfbChangeClip;
-    pGC->DestroyClip = cfbDestroyClip;
-    pGC->CopyClip = cfbCopyClip;
+    pGC->ops = &cfbNonTEOps;
+    pGC->funcs = &cfbFuncs;
 
     /* cfb wants to translate before scan convesion */
     pGC->miTranslate = 1;
 
-    {
-	cfbPrivGC  *pPriv;
-
-	pPriv = (cfbPrivGC *) xalloc(sizeof(cfbPrivGC));
-	if (!pPriv)
-	    return FALSE;
-	else {
-	    pPriv->rop = pGC->alu;
-	    pPriv->fExpose = TRUE;
-	    pGC->devPriv = (pointer) pPriv;
-#ifdef CFBROTPIX
-	    pPriv->pRotatedTile = NullPixmap;
-	    pPriv->pRotatedStipple = NullPixmap;
-#endif
-	    pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
-	    /* since freeCompClip isn't FREE_CC, we don't need to create
-	       a null region -- no one will try to free the field.
-	    */
-	    pPriv->freeCompClip = REPLACE_CC;
-	}
-    }
-    pGC->devBackingStore = (pointer)NULL;
-    
-    pQ = (GCInterestPtr) xalloc(sizeof(GCInterestRec));
-    if (!pQ) {
-	xfree(pGC->devPriv);
+    pPriv = (cfbPrivGC *) xalloc(sizeof(cfbPrivGC));
+    if (!pPriv)
 	return FALSE;
+    else {
+	pPriv->rop = pGC->alu;
+	pPriv->fExpose = TRUE;
+	pGC->devPrivates[cfbGCPrivateIndex].ptr = (pointer) pPriv;
+#ifdef CFBROTPIX
+	pPriv->pRotatedTile = NullPixmap;
+	pPriv->pRotatedStipple = NullPixmap;
+#endif
+	pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
+	/* since freeCompClip isn't FREE_CC, we don't need to create
+	   a null region -- no one will try to free the field.
+	*/
+	pPriv->freeCompClip = REPLACE_CC;
     }
-
-    /* Now link this device into the GCque */
-    pGC->pNextGCInterest = pQ;
-    pGC->pLastGCInterest = pQ;
-    pQ->pNextGCInterest = (GCInterestPtr) & pGC->pNextGCInterest;
-    pQ->pLastGCInterest = (GCInterestPtr) & pGC->pNextGCInterest;
-    pQ->length = sizeof(GCInterestRec);
-    pQ->owner = 0;		/* server owns this */
-    pQ->ValInterestMask = ~0;	/* interested in everything at validate
-				 * time */
-    pQ->ValidateGC = cfbValidateGC;
-    pQ->ChangeInterestMask = 0;	/* interested in nothing at change time */
-    pQ->ChangeGC = (int (*) ()) NULL;
-    pQ->CopyGCSource = (void (*) ()) NULL;
-    pQ->CopyGCDest = cfbCopyGCDest;
-    pQ->DestroyGC = cfbDestroyGC;
     return TRUE;
 }
 
-void
-cfbDestroyGC(pGC, pQ)
-    GC 			*pGC;
-    GCInterestPtr	pQ;
+static void
+cfbChangeGC(pGC, mask)
+    GC		    *pGC;
+    BITS32	    mask;
+{
+    return;
+}
 
+static void
+cfbDestroyGC(pGC)
+    GC 			*pGC;
 {
     cfbPrivGC *pPriv;
 
-    switch (pGC->depth) {
-    case 1:
-	mfbDestroyGC(pGC, pQ);
-	return;
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return;
-    }
-    /* Most GCInterest pointers would free pQ->devPriv.  This one is privileged
-     * and allowed to allocate its private data directly in the GC (this
-     * saves an indirection).  We must also unlink and free the pQ.
-     */
-    pQ->pLastGCInterest->pNextGCInterest = pGC->pNextGCInterest;
-    pQ->pNextGCInterest->pLastGCInterest = pGC->pLastGCInterest;
-
-    pPriv = (cfbPrivGC *)(pGC->devPriv);
+    pPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
 #ifdef CFBROTPIX
     if (pPriv->pRotatedTile)
 	cfbDestroyPixmap(pPriv->pRotatedTile);
@@ -190,8 +203,37 @@ cfbDestroyGC(pGC, pQ)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pCompositeClip);
     if(pPriv->pAbsClientRegion)
 	(*pGC->pScreen->RegionDestroy)(pPriv->pAbsClientRegion);
-    xfree(pGC->devPriv);
-    xfree(pQ);
+    xfree(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    cfbDestroyOps (pGC->ops);
+}
+
+/*
+ * create a private op array for a gc
+ */
+
+static GCOps *
+cfbCreateOps (prototype)
+    GCOps	*prototype;
+{
+    GCOps	*ret;
+    extern Bool	Must_have_memory;
+
+    /* XXX */ Must_have_memory = TRUE;
+    ret = (GCOps *) xalloc (sizeof *ret);
+    /* XXX */ Must_have_memory = FALSE;
+    if (!ret)
+	return 0;
+    *ret = *prototype;
+    ret->devPrivate.val = 1;
+    return ret;
+}
+
+static
+cfbDestroyOps (ops)
+    GCOps   *ops;
+{
+    if (ops->devPrivate.val)
+	xfree (ops);
 }
 
 /* Clipping conventions
@@ -204,12 +246,11 @@ cfbDestroyGC(pGC, pQ)
 	    CT_other ==> pCompositeClip is the pixmap bounding box
 */
 
-void
-cfbValidateGC(pGC, pQ, changes, pDrawable)
-    register GC *pGC;
-    GCInterestPtr	pQ;
-    Mask changes;
-    DrawablePtr pDrawable;
+static void
+cfbValidateGC(pGC, changes, pDrawable)
+    register GCPtr  pGC;
+    Mask	    changes;
+    DrawablePtr	    pDrawable;
 {
     WindowPtr   pWin;
     int         mask;		/* stateChanges */
@@ -221,37 +262,21 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     int         new_line, new_text, new_fillspans;
     /* flags for changing the proc vector */
     cfbPrivGCPtr devPriv;
-    unsigned long procChanges = 0;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
 
-    switch (pGC->depth) {
-    case PSZ:
-	break;
-    case 1:
-	if (pDrawable->type == DRAWABLE_PIXMAP) {
-	    mfbValidateGC(pGC, pQ, changes, pDrawable);
-	    return;
-	}
-	/* WARNING - FALL THROUGH */
-    default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return;
-    }
     oldOrg = pGC->lastWinOrg;
+    pGC->lastWinOrg.x = pDrawable->x;
+    pGC->lastWinOrg.y = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pWin = (WindowPtr) pDrawable;
-	pGC->lastWinOrg.x = pWin->absCorner.x;
-	pGC->lastWinOrg.y = pWin->absCorner.y;
     }
     else
     {
 	pWin = (WindowPtr) NULL;
-	pGC->lastWinOrg.x = 0;
-	pGC->lastWinOrg.y = 0;
     }
 
-    devPriv = ((cfbPrivGCPtr) (pGC->devPriv));
+    devPriv = ((cfbPrivGCPtr) (pGC->devPrivates[cfbGCPrivateIndex].ptr));
 
     /*
      * if the client clip is different or moved OR the subwindowMode has
@@ -262,8 +287,8 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     if ((changes & (GCClipXOrigin | GCClipYOrigin | GCClipMask)) ||
 	(changes & GCSubwindowMode) ||
 	(pDrawable->serialNumber != (pGC->serialNumber & DRAWABLE_SERIAL_BITS))
-	) {
-
+	)
+    {
 	/*
 	 * if there is a client clip (always a region, for us) AND it has
 	 * moved or is different OR the window has moved we need to
@@ -363,8 +388,8 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 
 	    pixbounds.x1 = 0;
 	    pixbounds.y1 = 0;
-	    pixbounds.x2 = ((PixmapPtr) pDrawable)->width;
-	    pixbounds.y2 = ((PixmapPtr) pDrawable)->height;
+	    pixbounds.x2 = pDrawable->width;
+	    pixbounds.y2 = pDrawable->height;
 
 	    if (devPriv->freeCompClip == FREE_CC)
 		(*pGC->pScreen->RegionReset) (
@@ -448,7 +473,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCTile:
 	    if (pGC->tile)
 	    {
-		int width = pGC->tile->width * PSZ;
+		int width = pGC->tile->drawable.width * PSZ;
 		PixmapPtr ntile;
 
 		if ((width <= 32) && !(width & (width - 1)) &&
@@ -468,7 +493,7 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	case GCStipple:
 	    if (pGC->stipple)
 	    {
-		int width = pGC->stipple->width * PSZ;
+		int width = pGC->stipple->drawable.width * PSZ;
 		PixmapPtr nstipple;
 
 		if ((width <= 32) && !(width & (width - 1)) &&
@@ -525,7 +550,27 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
      */
     if (pDrawable->serialNumber != (pGC->serialNumber & (DRAWABLE_SERIAL_BITS))) {
 	new_fillspans = TRUE;	/* deal with FillSpans later */
-	pGC->SetSpans = cfbSetSpans;
+    }
+
+    if (new_line || new_fillspans || new_text)
+    {
+	GCOps	*newops;
+
+	if (newops = matchCommon (pGC))
+ 	{
+	    if (pGC->ops->devPrivate.val)
+		cfbDestroyOps (pGC->ops);
+	    pGC->ops = newops;
+	    new_line = new_fillspans = new_text = 0;
+	}
+ 	else
+ 	{
+	    if (!pGC->ops->devPrivate.val)
+	    {
+		pGC->ops = cfbCreateOps (pGC->ops);
+		pGC->ops->devPrivate.val = 1;
+	    }
+	}
     }
 
     /* deal with the changes we've collected */
@@ -535,23 +580,21 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	if (pGC->lineStyle == LineSolid)
 	{
 	    if(pGC->lineWidth == 0)
-		pGC->Polylines = miZeroLine;
+		pGC->ops->Polylines = miZeroLine;
 	    else
-		pGC->Polylines = miWideLine;
+		pGC->ops->Polylines = miWideLine;
 	}
 	else
-	    pGC->Polylines = miWideDash;
-
-	procChanges |= MIBS_POLYLINES;
+	    pGC->ops->Polylines = miWideDash;
 
 	switch(pGC->joinStyle)
 	{
 	  case JoinMiter:
-	    pGC->LineHelper = miMiter;
+	    pGC->ops->LineHelper = miMiter;
 	    break;
 	  case JoinRound:
 	  case JoinBevel:
-	    pGC->LineHelper = miNotMiter;
+	    pGC->ops->LineHelper = miNotMiter;
 	    break;
 	}
     }
@@ -561,9 +604,8 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
         if ((pGC->font->pFI->maxbounds.metrics.rightSideBearing -
              pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
         {
-            pGC->PolyGlyphBlt = miPolyGlyphBlt;
-            pGC->ImageGlyphBlt = miImageGlyphBlt;
-	    procChanges |= MIBS_POLYGLYPHBLT|MIBS_IMAGEGLYPHBLT;
+            pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+            pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
         }
         else
         {
@@ -571,11 +613,10 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
             if ((pGC->font->pFI->terminalFont) &&
                 (pGC->fgPixel != pGC->bgPixel))
 	    {
-                pGC->ImageGlyphBlt = cfbTEGlyphBlt;
+                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
 	    }
             else
-                pGC->ImageGlyphBlt = miImageGlyphBlt;
-	    procChanges |= MIBS_IMAGEGLYPHBLT;
+                pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
         }
     }    
 
@@ -583,24 +624,23 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
     if (new_fillspans) {
 	switch (pGC->fillStyle) {
 	case FillSolid:
-	    pGC->FillSpans = cfbSolidFS;
+	    pGC->ops->FillSpans = cfbSolidFS;
 	    break;
 	case FillTiled:
-	    pGC->FillSpans = cfbUnnaturalTileFS;
+	    pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-	    pGC->FillSpans = cfbUnnaturalStippleFS;
+	    pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
 	    if (pGC->fgPixel == pGC->bgPixel)
-		pGC->FillSpans = cfbSolidFS;
+		pGC->ops->FillSpans = cfbSolidFS;
 	    else
-		pGC->FillSpans = cfbUnnaturalStippleFS;
+		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	default:
 	    FatalError("cfbValidateGC: illegal fillStyle\n");
 	}
-	procChanges |= MIBS_FILLSPANS;
     } /* end of new_fillspans */
 
 #ifdef CFBROTPIX
@@ -641,36 +681,12 @@ cfbValidateGC(pGC, pQ, changes, pDrawable)
 	}
     }
 #endif
-    /*
-     * If this GC has ever been used with a window with backing-store enabled,
-     * we must call miVaidateBackingStore to keep the backing-store module
-     * up-to-date, should this GC be used with that drawable again. In
-     * addition, if the current drawable is a window and has backing-store
-     * enabled, we also call miValidateBackingStore to give it a chance to get
-     * its hooks in.
-     */
-    if (pGC->devBackingStore ||
-	(pWin && (pWin->backingStore != NotUseful)))
-    {
-	miValidateBackingStore(pDrawable, pGC, procChanges);
-    }
 }
 
-
-void
+static void
 cfbDestroyClip(pGC)
     GCPtr	pGC;
 {
-    switch (pGC->depth) {
-    case 1:
-	mfbDestroyClip(pGC);
-	return;
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return;
-    }
     if(pGC->clientClipType == CT_NONE)
 	return;
     else if (pGC->clientClipType == CT_PIXMAP)
@@ -688,23 +704,13 @@ cfbDestroyClip(pGC)
     pGC->clientClipType = CT_NONE;
 }
 
-void
+static void
 cfbChangeClip(pGC, type, pvalue, nrects)
     GCPtr	pGC;
     int		type;
     pointer	pvalue;
     int		nrects;
 {
-    switch (pGC->depth) {
-    case 1:
-	mfbChangeClip(pGC, type, pvalue, nrects);
-	return;
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbChangeClip: unsupported depth: %d\n", pGC->depth);
-	return;
-    }
     cfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
@@ -727,22 +733,12 @@ cfbChangeClip(pGC, type, pvalue, nrects)
     pGC->stateChanges |= GCClipMask;
 }
 
-void
+static void
 cfbCopyClip (pgcDst, pgcSrc)
     GCPtr pgcDst, pgcSrc;
 {
     RegionPtr prgnNew;
 
-    switch (pgcSrc->depth) {
-    case 1:
-	mfbCopyClip(pgcDst, pgcSrc);
-	return;
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbCopyClip: unsupported depth: %d\n", pgcSrc->depth);
-	return;
-    }
     switch(pgcSrc->clientClipType)
     {
       case CT_PIXMAP:
@@ -761,32 +757,21 @@ cfbCopyClip (pgcDst, pgcSrc)
 }
 
 /*ARGSUSED*/
-void
-cfbCopyGCDest (pGC, pQ, changes, pGCSrc)
-    GCPtr	pGC;
-    GCInterestPtr	pQ;
-    Mask 		changes;
-    GCPtr		pGCSrc;
+static void
+cfbCopyGC (pGCSrc, changes, pGCDst)
+    GCPtr	pGCSrc;
+    Mask 	changes;
+    GCPtr	pGCDst;
 {
     RegionPtr		pClip;
 
-    switch (pGC->depth) {
-    case 1:
-	mfbCopyGCDest(pGC, pQ, changes, pGCSrc);
-	return;
-    case PSZ:
-	break;
-    default:
-	ErrorF("cfbCreateGC: unsupported depth: %d\n", pGC->depth);
-	return;
-    }
     if(changes & GCClipMask)
     {
-	if(pGC->clientClipType == CT_PIXMAP)
+	if(pGCDst->clientClipType == CT_PIXMAP)
 	{
-	    ((PixmapPtr)pGC->clientClip)->refcnt++;
+	    ((PixmapPtr)pGCDst->clientClip)->refcnt++;
 	}
-	else if(pGC->clientClipType == CT_REGION)
+	else if(pGCDst->clientClipType == CT_REGION)
 	{
 	    BoxRec pixbounds;
 
@@ -795,10 +780,10 @@ cfbCopyGCDest (pGC, pQ, changes, pGCSrc)
 	    pixbounds.x2 = 0;
 	    pixbounds.y2 = 0;
 
-	    pClip = (RegionPtr) pGC->clientClip;
-	    pGC->clientClip =
-	        (pointer)(* pGC->pScreen->RegionCreate)(&pixbounds, 1);
-	    (* pGC->pScreen->RegionCopy)(pGC->clientClip, pClip);
+	    pClip = (RegionPtr) pGCDst->clientClip;
+	    pGCDst->clientClip =
+	        (pointer)(* pGCDst->pScreen->RegionCreate)(&pixbounds, 1);
+	    (* pGCDst->pScreen->RegionCopy)(pGCDst->clientClip, pClip);
 	}
     }
 }

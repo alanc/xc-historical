@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 1.22 88/09/06 14:53:37 jim Exp $ */
+/* $XConsortium: mfbsetsp.c,v 1.23 89/03/16 14:47:14 jim Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -162,25 +162,23 @@ mfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     int			yMax;
 
     alu = pGC->alu;
-    prgnDst = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+    prgnDst = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
 
     pptLast = ppt + nspans;
 
+    yMax = pDrawable->y + pDrawable->height;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		   ((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
-	yMax = (int)((WindowPtr)pDrawable)->clientWinSize.height +
-		    ((WindowPtr)pDrawable)->absCorner.y;
     }
     else
     {
-	pdstBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-	yMax = ((PixmapPtr)pDrawable)->height;
     }
 
     pbox =  prgnDst->rects;

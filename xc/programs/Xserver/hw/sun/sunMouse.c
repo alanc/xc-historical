@@ -49,14 +49,23 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 
 #define NEED_EVENTS
 #include    "sun.h"
+#include    "mipointer.h"
+#include    "misprite.h"
+
+static long sunEventTime();
+static Bool sunCursorOffScreen();
+static void sunCrossScreen();
+
+miPointerCursorFuncRec sunPointerCursorFuncs = {
+    sunEventTime,
+    sunCursorOffScreen,
+    sunCrossScreen,
+};
 
 typedef struct {
     int	    bmask;	    /* Current button state */
     Bool    mouseMoved;	    /* Mouse has moved */
 } SunMsPrivRec, *SunMsPrivPtr;
-
-Bool			PointerConfinedToScreen();
-extern void		NewCurrentScreen();
 
 static void 	  	sunMouseCtrl();
 static int 	  	sunMouseGetMotionEvents();
@@ -65,6 +74,7 @@ static void 	  	sunMouseProcessEvent();
 static void 	  	sunMouseDoneEvents();
 
 static SunMsPrivRec	sunMousePriv;
+
 static PtrPrivRec 	sysMousePriv = {
     -1,				/* Descriptor to device */
     sunMouseGetEvents,		/* Function to read events */
@@ -72,9 +82,8 @@ static PtrPrivRec 	sysMousePriv = {
     sunMouseDoneEvents,		/* When all the events have been */
 				/* handled, this function will be */
 				/* called. */
-    0,				/* Current X coordinate of pointer */
-    0,				/* Current Y coordinate */
-    NULL,			/* Screen pointer is on */
+    0,				/* Current x movement of pointer */
+    0,				/* Current y movement */
     (pointer)&sunMousePriv,	/* Field private to device */
 };
 
@@ -133,12 +142,10 @@ sunMouseProc (pMouse, what)
 		}
 	    }
 
-	    sysMousePriv.pScreen = screenInfo.screens[0];
-	    sysMousePriv.x = sysMousePriv.pScreen->width / 2;
-	    sysMousePriv.y = sysMousePriv.pScreen->height / 2;
-
 	    sunMousePriv.bmask = 0;
 	    sunMousePriv.mouseMoved = FALSE;
+	    sysMousePriv.dx = 0;
+	    sysMousePriv.dy = 0;
 
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
@@ -339,124 +346,143 @@ sunMouseProcessEvent (pMouse, fe)
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 
-    switch (fe->id) {
-	case MS_LEFT:
-	case MS_MIDDLE:
-	case MS_RIGHT:
-	    /*
-	     * A button changed state. Sometimes we will get two events
-	     * for a single state change. Should we get a button event which
-	     * reflects the current state of affairs, that event is discarded.
-	     *
-	     * Mouse buttons start at 1.
-	     */
-	    xE.u.u.detail = (fe->id - MS_LEFT) + 1;
-	    bmask = 1 << xE.u.u.detail;
-	    if (fe->value == VKEY_UP) {
-		if (pSunPriv->bmask & bmask) {
-		    xE.u.u.type = ButtonRelease;
-		    pSunPriv->bmask &= ~bmask;
-		} else {
-		    return;
-		}
+    switch (fe->id)
+    {
+    case MS_LEFT:
+    case MS_MIDDLE:
+    case MS_RIGHT:
+	/*
+	 * A button changed state. Sometimes we will get two events
+	 * for a single state change. Should we get a button event which
+	 * reflects the current state of affairs, that event is discarded.
+	 *
+	 * Mouse buttons start at 1.
+	 */
+	xE.u.u.detail = (fe->id - MS_LEFT) + 1;
+	bmask = 1 << xE.u.u.detail;
+	if (fe->value == VKEY_UP) {
+	    if (pSunPriv->bmask & bmask) {
+		xE.u.u.type = ButtonRelease;
+		pSunPriv->bmask &= ~bmask;
 	    } else {
-		if ((pSunPriv->bmask & bmask) == 0) {
-		    xE.u.u.type = ButtonPress;
-		    pSunPriv->bmask |= bmask;
-		} else {
-		    return;
-		}
-	    }
-	    /*
-	     * If the mouse has moved, we must update any interested client
-	     * as well as DIX before sending a button event along.
-	     */
-	    if (pSunPriv->mouseMoved) {
-		sunMouseDoneEvents (pMouse, FALSE);
-	    }
-	
-	    break;
-	case LOC_X_DELTA:
-	    /*
-	     * When we detect a change in the mouse coordinates, we call
-	     * the cursor module to move the cursor. It has the option of
-	     * simply removing the cursor or just shifting it a bit.
-	     * If it is removed, DIX will restore it before we goes to sleep...
-	     *
-	     * What should be done if it goes off the screen? Move to another
-	     * screen? For now, we just force the pointer to stay on the
-	     * screen...
-	     */
-	    pPriv->x += MouseAccelerate (pMouse, fe->value);
-
-            /*
-             * Active Zaphod implementation:
-             *    increment or decrement the current screen
-             *    if the x is to the right or the left of
-             *    the current screen.
-             */
-            if (screenInfo.numScreens > 1 &&
-                (pPriv->x > pPriv->pScreen->width ||
-                 pPriv->x < 0) &&
-		!PointerConfinedToScreen()) {
-                sunRemoveCursor();
-                /* disable color plane if it's current */
-                index = pPriv->pScreen->myNum;
-                (*sunFbs[index].EnterLeave) (pPriv->pScreen, 1);
-                if (pPriv->x < 0)
-		     index = (index ? index : screenInfo.numScreens) - 1;
-		else
-		     index = (index + 1) % screenInfo.numScreens;
-		pPriv->pScreen = screenInfo.screens[index];
-		if (pPriv->x < 0)
-		    pPriv->x += pPriv->pScreen->width;
-		else
-		    pPriv->x -= pPriv->pScreen->width;
-                /* enable color plane if new current screen */
-                (*sunFbs[index].EnterLeave) (pPriv->pScreen, 0);
-            }
-
-	    if (!sunConstrainXY (&pPriv->x, &pPriv->y)) {
 		return;
 	    }
-
-            NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
+	} else {
+	    if ((pSunPriv->bmask & bmask) == 0) {
+		xE.u.u.type = ButtonPress;
+		pSunPriv->bmask |= bmask;
+	    } else {
+		return;
+	    }
+	}
+	/*
+	 * If the mouse has moved, we must update any interested client
+	 * as well as DIX before sending a button event along.
+	 */
+	if (pSunPriv->mouseMoved) {
+	    sunMouseDoneEvents (pMouse, FALSE);
+	}
+    
+	miPointerPosition (screenInfo.screens[0],
+			   &xE.u.keyButtonPointer.rootX,
+			   &xE.u.keyButtonPointer.rootY);
+    
+	(* pMouse->processInputProc) (&xE, pMouse);
+	break;
+    case LOC_X_DELTA:
+	/*
+	 * When we detect a change in the mouse coordinates, we call
+	 * the cursor module to move the cursor. It has the option of
+	 * simply removing the cursor or just shifting it a bit.
+	 * If it is removed, DIX will restore it before we goes to sleep...
+	 *
+	 * What should be done if it goes off the screen? Move to another
+	 * screen? For now, we just force the pointer to stay on the
+	 * screen...
+	 */
+	pPriv->dx += MouseAccelerate (pMouse, fe->value);
 
 #ifdef	SUN_ALL_MOTION
-	    xE.u.u.type = MotionNotify;
-	    sunMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	    break;
+	miPointerDeltaCursor (screenInfo.screens[0], pPriv->dx, pPriv->dy, TRUE);
+	pPriv->dx = 0;
+	pPriv->dy = 0;
 #else
-	    ((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
-	    return;
+	((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
 #endif
-	case LOC_Y_DELTA:
-	    /*
-	     * For some reason, motion up generates a positive y delta
-	     * and motion down a negative delta, so we must subtract
-	     * here instead of add...
-	     */
-	    pPriv->y -= MouseAccelerate (pMouse, fe->value);
-	    if (!sunConstrainXY (&pPriv->x, &pPriv->y)) {
-		return;
-	    }
+	break;
+    case LOC_Y_DELTA:
+	/*
+	 * For some reason, motion up generates a positive y delta
+	 * and motion down a negative delta, so we must subtract
+	 * here instead of add...
+	 */
+	pPriv->dy -= MouseAccelerate (pMouse, fe->value);
 #ifdef SUN_ALL_MOTION
-	    xE.u.u.type = MotionNotify;
-	    sunMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	    break;
+	miPointerDeltaCursor (screenInfo.screens[0], pPriv->dx, pPriv->dy, TRUE);
+	pPriv->dx = 0;
+	pPriv->dy = 0;
 #else
-	    ((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
-	    return;
+	((SunMsPrivPtr)pPriv->devPrivate)->mouseMoved = TRUE;
 #endif SUN_ALL_MOTION
-	default:
-	    FatalError ("sunMouseProcessEvent: unrecognized id\n");
-	    break;
+	break;
+    default:
+	FatalError ("sunMouseProcessEvent: unrecognized id\n");
+	break;
     }
+}
 
-    xE.u.keyButtonPointer.rootX = pPriv->x;
-    xE.u.keyButtonPointer.rootY = pPriv->y;
+static Bool
+sunCursorOffScreen (pScreen, x, y)
+    ScreenPtr	*pScreen;
+    int		*x, *y;
+{
+    int	    index;
 
-    (* pMouse->processInputProc) (&xE, pMouse);
+    /*
+     * Active Zaphod implementation:
+     *    increment or decrement the current screen
+     *    if the x is to the right or the left of
+     *    the current screen.
+     */
+    if (screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0))
+    {
+	index = (*pScreen)->myNum;
+	if (*x < 0)
+	{
+	    index = (index ? index : screenInfo.numScreens) - 1;
+	    *pScreen = screenInfo.screens[index];
+	    *x += (*pScreen)->width;
+	}
+	else
+	{
+	    *x -= (*pScreen)->width;
+	    index = (index + 1) % screenInfo.numScreens;
+	    *pScreen = screenInfo.screens[index];
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+
+static long
+sunEventTime (pScreen)
+    ScreenPtr	pScreen;
+{
+    return lastEventTime;
+}
+
+static void
+sunCrossScreen (pScreen, entering)
+    ScreenPtr	pScreen;
+    Bool	entering;
+{
+    u_char  select;
+
+    select = 1;
+    if (entering)
+	select = 0;
+    if (sunFbs[pScreen->myNum].EnterLeave)
+	(*sunFbs[pScreen->myNum].EnterLeave) (pScreen, select);
 }
 
 /*-
@@ -484,18 +510,18 @@ sunMouseDoneEvents (pMouse,final)
     PtrPrivPtr	  pPriv;
     SunMsPrivPtr  pSunPriv;
     xEvent	  xE;
+    int		  dx, dy;
 
     pPriv = (PtrPrivPtr) pMouse->devicePrivate;
     pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
 
     if (pSunPriv->mouseMoved) {
-	sunMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-	xE.u.keyButtonPointer.rootX = pPriv->x;
-	xE.u.keyButtonPointer.rootY = pPriv->y;
-	xE.u.keyButtonPointer.time = lastEventTime;
-	xE.u.u.type = MotionNotify;
-	(* pMouse->processInputProc) (&xE, pMouse);
+	dx = pPriv->dx;
+	dy = pPriv->dy;
+	pPriv->dx = 0;
+	pPriv->dy = 0;
 	pSunPriv->mouseMoved = FALSE;
+	miPointerDeltaCursor (screenInfo.screens[0], dx, dy, TRUE);
     }
 }
 

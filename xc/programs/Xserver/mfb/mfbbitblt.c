@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.59 89/03/23 18:55:54 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.60 89/05/20 10:15:30 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -108,6 +108,9 @@ int dstx, dsty;
     origDest.x = dstx;
     origDest.y = dsty;
 
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
+
     /* clip the source */
 
     if (pSrcDrawable->type == DRAWABLE_PIXMAP)
@@ -115,17 +118,17 @@ int dstx, dsty;
 	if ((pSrcDrawable == pDstDrawable) &&
 	    (pGC->clientClipType == CT_NONE))
 	{
-	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+	    prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
 	}
 	else
 #ifndef PURDUE
 	{
 	    BoxRec box;
 
-	    box.x1 = 0;
-	    box.y1 = 0;
-	    box.x2 = ((PixmapPtr)pSrcDrawable)->width;
-	    box.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	    box.x1 = pSrcDrawable->x;
+	    box.y1 = pSrcDrawable->y;
+	    box.x2 = box.x1 + pSrcDrawable->width;
+	    box.y2 = box.y1 + pSrcDrawable->height;
 
 	    prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	    realSrcClip = 1;
@@ -145,10 +148,10 @@ int dstx, dsty;
 	    fastBox.y2 = srcy + height;
 	    
 	    /* Left and top are already clipped, so clip right and bottom */
-	    if (fastBox.x2 > ((PixmapPtr)pSrcDrawable)->width)
-	      fastBox.x2 = ((PixmapPtr)pSrcDrawable)->width;
-	    if (fastBox.y2 > ((PixmapPtr)pSrcDrawable)->height)
-	      fastBox.y2 = ((PixmapPtr)pSrcDrawable)->height;
+	    if (fastBox.x2 > pSrcDrawable->x + pSrcDrawable->width)
+	      fastBox.x2 = pSrcDrawable->x + pSrcDrawable->width;
+	    if (fastBox.y2 > pSrcDrawable->y + pSrcDrawable->height)
+	      fastBox.y2 = pSrcDrawable->y + pSrcDrawable->height;
 
 	    /* Initialize the fast region */
 	    fastRegion.numRects = 1;
@@ -158,14 +161,12 @@ int dstx, dsty;
     }
     else
     {
-	srcx += ((WindowPtr)pSrcDrawable)->absCorner.x;
-	srcy += ((WindowPtr)pSrcDrawable)->absCorner.y;
 	if (pGC->subWindowMode == IncludeInferiors)
 	{
 	    if ((pSrcDrawable == pDstDrawable) &&
 		(pGC->clientClipType == CT_NONE))
 	    {
-		prgnSrcClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+		prgnSrcClip = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip;
 	    }
 	    else
 	    {
@@ -195,6 +196,9 @@ int dstx, dsty;
 	(*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
     }
     
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	if (!((WindowPtr)pDstDrawable)->realized)
@@ -207,8 +211,6 @@ int dstx, dsty;
 		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return NULL;
 	}
-	dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
-	dsty += ((WindowPtr)pDstDrawable)->absCorner.y;
     }
 
     dx = srcx - dstx;
@@ -219,7 +221,7 @@ int dstx, dsty;
     (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
     (*pGC->pScreen->Intersect)(prgnDst,
 			       prgnDst,
-			       ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+			       ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
 
 #else PURDUE
     /* Translate and clip the dst to the destination composite clip */
@@ -234,9 +236,9 @@ int dstx, dsty;
 	/* If the destination composite clip is one rectangle we can
 	   do the clip directly.  Otherwise we have to create a full
 	   blown region and call intersect */
-        if (((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects == 1)
+        if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects == 1)
         {
-	    BoxPtr pBox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
+	    BoxPtr pBox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
 	  
 	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
 	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
@@ -270,7 +272,7 @@ int dstx, dsty;
     {
 	(*pGC->pScreen->Intersect)(prgnDst,
 				   prgnDst,
-				 ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+				 ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
     }
 #endif PURDUE
 
@@ -302,7 +304,7 @@ int dstx, dsty;
     }
 
     prgnExposed = NULL;
-    if (((mfbPrivGC *)(pGC->devPriv))->fExpose) {
+    if (((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose) {
 #ifdef PURDUE
         /* Pixmap sources generate a NoExposed (we return NULL to do this) */
         if (!fastExpose)
@@ -433,7 +435,7 @@ translated.
 mfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
 DrawablePtr pSrcDrawable;
 DrawablePtr pDstDrawable;
-int alu;
+unsigned char alu;
 RegionPtr prgnDst;
 DDXPointPtr pptSrc;
 {
@@ -477,28 +479,28 @@ DDXPointPtr pptSrc;
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
     {
 	psrcBase = (unsigned int *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthSrc = (int)
 		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	psrcBase = (unsigned int *)(((PixmapPtr)pSrcDrawable)->devPrivate);
+	psrcBase = (unsigned int *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind) >> 2;
     }
 
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	pdstBase = (unsigned int *)(((PixmapPtr)pDstDrawable)->devPrivate);
+	pdstBase = (unsigned int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
     }
 
@@ -986,7 +988,7 @@ DDXPointPtr pptSrc;
 
 /*
     if fg == 1 and bg ==0, we can do an ordinary CopyArea.
-    if fg == bg, we can do a CopyArea with alu = ReduceRop(alu, fg)
+    if fg == bg, we can do a CopyArea with alu = mfbReduceRop(alu, fg)
     if fg == 0 and bg == 1, we use the same rasterop, with
 	source operand inverted.
 
@@ -1019,14 +1021,14 @@ unsigned long plane;
 
     if ((pGC->fgPixel == 1) && (pGC->bgPixel == 0))
     {
-	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	prgnExposed = (*pGC->ops->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
     }
     else if (pGC->fgPixel == pGC->bgPixel)
     {
 	alu = pGC->alu;
-	pGC->alu = ReduceRop(pGC->alu, pGC->fgPixel);
-	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	pGC->alu = mfbReduceRop(pGC->alu, pGC->fgPixel);
+	prgnExposed = (*pGC->ops->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
 	pGC->alu = alu;
     }
@@ -1034,7 +1036,7 @@ unsigned long plane;
     {
 	alu = pGC->alu;
 	pGC->alu = InverseAlu[alu];
-	prgnExposed = (*pGC->CopyArea)(pSrcDrawable, pDstDrawable,
+	prgnExposed = (*pGC->ops->CopyArea)(pSrcDrawable, pDstDrawable,
 			 pGC, srcx, srcy, width, height, dstx, dsty);
 	pGC->alu = alu;
     }

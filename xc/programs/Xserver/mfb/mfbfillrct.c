@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 1.37 88/09/06 14:53:57 jim Exp $ */
+/* $XConsortium: mfbfillrct.c,v 1.38 89/03/16 14:47:22 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -59,15 +59,17 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     register BoxPtr pboxClipped;
     BoxPtr pboxClippedBase;
     BoxPtr pextent;
+    mfbPrivGC	*priv;
 
     int alu;
     void (* pfn) ();
     PixmapPtr ppix;
 
-    alu = ((mfbPrivGC *)(pGC->devPriv))->ropFillArea;
-    pfn = ((mfbPrivGC *)(pGC->devPriv))->FillArea;
-    ppix = *( ((mfbPrivGC *)(pGC->devPriv))->ppPixmap);
-    prgnClip = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip;
+    priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
+    alu = priv->ropFillArea;
+    pfn = priv->FillArea;
+    ppix = *(priv->ppPixmap);
+    prgnClip = priv->pCompositeClip;
 
     pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(prgnClip->numRects * 
 					     sizeof(BoxRec));
@@ -76,10 +78,10 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	return;
 
     prect = prectInit;
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
+    if (xorg || yorg)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
         prect = prectInit;
 	n = nrectFill;
 #ifndef PURDUE

@@ -501,8 +501,9 @@ sunKbdProcessEvent (pKeyboard, fe)
 	 * for the last key pressed.
 	 */
 	autoRepeatEvent.u.keyButtonPointer.time += delta;
-	autoRepeatEvent.u.keyButtonPointer.rootX = ptrPriv->x;
-	autoRepeatEvent.u.keyButtonPointer.rootY = ptrPriv->y;
+	miPointerPosition (screenInfo.screens[0],
+			   &autoRepeatEvent.u.keyButtonPointer.rootX,
+			   &autoRepeatEvent.u.keyButtonPointer.rootY);
 	autoRepeatEvent.u.u.type = KeyRelease;
 	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
 
@@ -529,8 +530,9 @@ sunKbdProcessEvent (pKeyboard, fe)
     }
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
-    xE.u.keyButtonPointer.rootX = ptrPriv->x;
-    xE.u.keyButtonPointer.rootY = ptrPriv->y;
+    miPointerPosition (screenInfo.screens[0],
+		       &xE.u.keyButtonPointer.rootX,
+		       &xE.u.keyButtonPointer.rootY);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 

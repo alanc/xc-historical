@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 1.6 89/03/16 14:46:38 jim Exp $ */
+/* $XConsortium: mfbimggblt.c,v 1.7 89/03/23 18:59:55 rws Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
@@ -124,20 +124,18 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     if (!(pGC->planemask & 1))
 	return;
 
+    xorg = pDrawable->x;
+    yorg = pDrawable->y;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	xorg = ((WindowPtr)pDrawable)->absCorner.x;
-	yorg = ((WindowPtr)pDrawable)->absCorner.y;
 	pdstBase = (unsigned int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
 		 (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	xorg = 0;
-	yorg = 0;
-	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate);
+	pdstBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -159,7 +157,7 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
     /* UNCLEAN CODE
        we know the mfbPolyFillRect uses only three fields in
-       devPriv, two of which (ppPixmap and ropFillArea) are 
+       devPrivate[mfbGCPrivateIndex].ptr, two of which (ppPixmap and ropFillArea) are 
        irrelevant for solid filling, so we just poke the FillArea
        field.  the GC is now in an inconsistent state, but we'll fix
        it as soon as PolyFillRect returns.  fortunately, the server
@@ -168,28 +166,28 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     NOTE:
        if you are not using the standard mfbFillRectangle code, you
        need to poke any fields in the GC the rectangle stuff need
-       (probably alu, fgPixel, and fillStyle) and in devPriv
+       (probably alu, fgPixel, and fillStyle) and in devPrivate[mfbGCPrivateIndex].ptr
        (probably rop or ropFillArea.)  You could just call ValidateGC,
        but that is usually not a cheap thing to do.
     */
 
-    oldFillArea = ((mfbPrivGC *)(pGC->devPriv))->FillArea;
+    oldFillArea = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea;
 
 /* pcc doesn't like this.  why?
-    ((mfbPrivGC *)(pGC->devPriv))->FillArea = 
+    ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = 
 			(pGC->bgPixel ? mfbSolidWhiteArea : mfbSolidBlackArea);
 */
     if (pGC->bgPixel)
-        ((mfbPrivGC *)(pGC->devPriv))->FillArea = mfbSolidWhiteArea;
+        ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = mfbSolidWhiteArea;
     else
-        ((mfbPrivGC *)(pGC->devPriv))->FillArea = mfbSolidBlackArea;
+        ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = mfbSolidBlackArea;
 
     mfbPolyFillRect(pDrawable, pGC, 1, &backrect);
-    ((mfbPrivGC *)(pGC->devPriv))->FillArea = oldFillArea;
+    ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->FillArea = oldFillArea;
 
     /* the faint-hearted can open their eyes now */
     switch ((*pGC->pScreen->RectIn)(
-		  ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip, &bbox))
+		  ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip, &bbox))
     {
       case rgnOUT:
 	break;
@@ -317,8 +315,8 @@ MFBIMAGEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    }
 	}
 
-	pbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->rects;
-	nbox = ((mfbPrivGC *)(pGC->devPriv))->pCompositeClip->numRects;
+	pbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->rects;
+	nbox = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip->numRects;
 
 	/* HACK ALERT
 	   since we continue out of the loop below so often, it

@@ -30,9 +30,36 @@ SOFTWARE.
 #include "regionstr.h"
 #include "cfbmskbits.h"
 
-extern void miInitBackingStore(), miFreeBackingStore();
-
 extern WindowPtr *WindowTable;
+
+static WindowFuncs commonFuncs[] = {
+    {
+	cfbPaintArea32,	/* PaintWindowBackground */
+	cfbPaintArea32,	/* PaintWindowBorder */
+	cfbCopyWindow,		/* CopyWindow */
+	miClearToBackground,	/* ClearToBackground */
+    },
+    {
+	cfbPaintAreaSolid,	/* PaintWindowBackground */
+	cfbPaintArea32,	/* PaintWindowBorder */
+	cfbCopyWindow,		/* CopyWindow */
+	miClearToBackground,	/* ClearToBackground */
+    },
+    {
+	cfbPaintAreaSolid,	/* PaintWindowBackground */
+	cfbPaintAreaSolid,	/* PaintWindowBorder */
+	cfbCopyWindow,		/* CopyWindow */
+	miClearToBackground,	/* ClearToBackground */
+    },
+    {
+	cfbPaintAreaNone,
+	cfbPaintAreaPR,
+	cfbCopyWindow,
+	miClearToBackground,
+    },
+};
+
+#define NumCommonFuncs	(sizeof (commonFuncs) / sizeof (commonFuncs[0]))
 
 Bool
 cfbCreateWindow(pWin)
@@ -40,12 +67,9 @@ cfbCreateWindow(pWin)
 {
     cfbPrivWin *pPrivWin;
 
-    pWin->ClearToBackground = miClearToBackground;
-    pWin->PaintWindowBackground = cfbPaintAreaNone;
-    pWin->PaintWindowBorder = cfbPaintAreaPR;
-    pWin->CopyWindow = cfbCopyWindow;
+    pWin->funcs = &commonFuncs[NumCommonFuncs-1];
     pPrivWin = (cfbPrivWin *)xalloc(sizeof(cfbPrivWin));
-    pWin->devPrivate = (pointer)pPrivWin;
+    pWin->devPrivates[cfbWindowPrivateIndex].ptr = (pointer)pPrivWin;
     if (!pPrivWin)
 	return FALSE;
     pPrivWin->pRotatedBorder = NullPixmap;
@@ -62,16 +86,12 @@ cfbDestroyWindow(pWin)
 {
     cfbPrivWin *pPrivWin;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 
     /* cfbDestroyPixmap() deals with any NULL pointers */
     cfbDestroyPixmap(pPrivWin->pRotatedBorder);
     cfbDestroyPixmap(pPrivWin->pRotatedBackground);
-    xfree(pWin->devPrivate);
-    if (pWin->backingStore != NotUseful)
-    {
-	miFreeBackingStore(pWin);
-    }
+    xfree(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
     return(TRUE);
 }
 
@@ -99,30 +119,29 @@ cfbPositionWindow(pWin, x, y)
     cfbPrivWin *pPrivWin;
     int setxy = 0;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
-    if (IS_VALID_PIXMAP(pWin->backgroundTile) &&
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    if (pWin->backgroundState == BackgroundPixmap &&
 	(pPrivWin->fastBackground != 0))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBackground,
-		      pWin->absCorner.x - pPrivWin->oldRotate.x);
+		      pWin->drawable.x - pPrivWin->oldRotate.x);
 	cfbYRotatePixmap(pPrivWin->pRotatedBackground,
-		      pWin->absCorner.y - pPrivWin->oldRotate.y);
+		      pWin->drawable.y - pPrivWin->oldRotate.y);
 	setxy = 1;
     }
 
-    if (IS_VALID_PIXMAP(pWin->borderTile) &&
-	(pPrivWin->fastBorder != 0))
+    if (!pWin->borderIsPixel &&	(pPrivWin->fastBorder != 0))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
-		      pWin->absCorner.x - pPrivWin->oldRotate.x);
+		      pWin->drawable.x - pPrivWin->oldRotate.x);
 	cfbYRotatePixmap(pPrivWin->pRotatedBorder,
-		      pWin->absCorner.y - pPrivWin->oldRotate.y);
+		      pWin->drawable.y - pPrivWin->oldRotate.y);
 	setxy = 1;
     }
     if (setxy)
     {
-	pPrivWin->oldRotate.x = pWin->absCorner.x;
-	pPrivWin->oldRotate.y = pWin->absCorner.y;
+	pPrivWin->oldRotate.x = pWin->drawable.x;
+	pPrivWin->oldRotate.y = pWin->drawable.y;
     }
     return (TRUE);
 }
@@ -162,8 +181,8 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 
 						       pWin->borderClip->numRects);
 
-    dx = ptOldOrg.x - pWin->absCorner.x;
-    dy = ptOldOrg.y - pWin->absCorner.y;
+    dx = ptOldOrg.x - pWin->drawable.x;
+    dy = ptOldOrg.y - pWin->drawable.y;
     (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
     (* pWin->drawable.pScreen->Intersect)(prgnDst, pWin->borderClip, prgnSrc);
 
@@ -190,7 +209,7 @@ cfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
 /* swap in correct PaintWindow* routine.  If we can use a fast output
 routine (i.e. the pixmap is paddable to 32 bits), also pre-rotate a copy
-of it in devPrivate.
+of it in devPrivates[cfbWindowPrivateIndex].ptr.
 */
 Bool
 cfbChangeWindowAttributes(pWin, mask)
@@ -200,131 +219,126 @@ cfbChangeWindowAttributes(pWin, mask)
     register unsigned long index;
     register cfbPrivWin *pPrivWin;
     int width;
+    WindowFuncs	newFuncs;
 
-    pPrivWin = (cfbPrivWin *)(pWin->devPrivate);
+    pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    newFuncs = *pWin->funcs;
     while(mask)
     {
 	index = lowbit (mask);
 	mask &= ~index;
 	switch(index)
 	{
-	  case CWBackingStore:
-	      if (pWin->backingStore != NotUseful)
-	      {
-		  miInitBackingStore(pWin, cfbSaveAreas, cfbRestoreAreas, (void (*)()) 0);
-	      }
-	      else
-	      {
-		  miFreeBackingStore(pWin);
-	      }
-	      /*
-	       * XXX: The changing of the backing-store status of a window
-	       * is serious enough to warrant a validation, since otherwise
-	       * the backing-store stuff won't work.
-	       */
-	      pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-	      break;
-
 	  case CWBackPixmap:
-	      if (pWin->backgroundTile == (PixmapPtr)None)
+	      if (pWin->backgroundState == None)
 	      {
-		  pWin->PaintWindowBackground = cfbPaintAreaNone;
+		  newFuncs.PaintWindowBackground = cfbPaintAreaNone;
 		  pPrivWin->fastBackground = 0;
 	      }
-	      else if (pWin->backgroundTile == (PixmapPtr)ParentRelative)
+	      else if (pWin->backgroundState == ParentRelative)
 	      {
-		  pWin->PaintWindowBackground = cfbPaintAreaPR;
+		  newFuncs.PaintWindowBackground = cfbPaintAreaPR;
 		  pPrivWin->fastBackground = 0;
 	      }
-	      else if (((width = (pWin->backgroundTile->width * PSZ)) <= 32) &&
+	      else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
 		       !(width & (width - 1)))
 	      {
 		  if (pPrivWin->pRotatedBackground)
 		      cfbDestroyPixmap(pPrivWin->pRotatedBackground);
 		  pPrivWin->pRotatedBackground =
-		    cfbCopyPixmap(pWin->backgroundTile);
+		    cfbCopyPixmap(pWin->background.pixmap);
 		  if (pPrivWin->pRotatedBackground)
 		  {
 		      pPrivWin->fastBackground = 1;
-		      pPrivWin->oldRotate.x = pWin->absCorner.x;
-		      pPrivWin->oldRotate.y = pWin->absCorner.y;
+		      pPrivWin->oldRotate.x = pWin->drawable.x;
+		      pPrivWin->oldRotate.y = pWin->drawable.y;
 		      (void)cfbPadPixmap(pPrivWin->pRotatedBackground);
 		      cfbXRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->absCorner.x);
+				       pWin->drawable.x);
 		      cfbYRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->absCorner.y);
-		      pWin->PaintWindowBackground = cfbPaintArea32;
+				       pWin->drawable.y);
+		      newFuncs.PaintWindowBackground = cfbPaintArea32;
 		  }
 		  else
 		  {
 		      pPrivWin->fastBackground = 0;
-		      pWin->PaintWindowBackground = miPaintWindow;
+		      newFuncs.PaintWindowBackground = miPaintWindow;
 		  }
 	      }
 	      else
 	      {
 		  pPrivWin->fastBackground = 0;
-		  pWin->PaintWindowBackground = miPaintWindow;
+		  newFuncs.PaintWindowBackground = miPaintWindow;
 	      }
 	      break;
 
 	  case CWBackPixel:
-              pWin->PaintWindowBackground = cfbPaintAreaSolid;
+              newFuncs.PaintWindowBackground = cfbPaintAreaSolid;
 	      pPrivWin->fastBackground = 0;
 	      break;
 
 	  case CWBorderPixmap:
-	      switch((int)pWin->borderTile)
+	      if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
+		  !(width & (width - 1)))
 	      {
-		case None:
-		  pWin->PaintWindowBorder = cfbPaintAreaNone;
-		  pPrivWin->fastBorder = 0;
-		  break;
-		case ParentRelative:
-		  pWin->PaintWindowBorder = cfbPaintAreaPR;
-		  pPrivWin->fastBorder = 0;
-		  break;
-		default:
-		  if (((width = (pWin->borderTile->width * PSZ)) <= 32) &&
-		      !(width & (width - 1)))
+		  if (pPrivWin->pRotatedBorder)
+		      cfbDestroyPixmap(pPrivWin->pRotatedBorder);
+		  pPrivWin->pRotatedBorder =
+		    cfbCopyPixmap(pWin->border.pixmap);
+		  if (pPrivWin->pRotatedBorder)
 		  {
-		      if (pPrivWin->pRotatedBorder)
-			  cfbDestroyPixmap(pPrivWin->pRotatedBorder);
-		      pPrivWin->pRotatedBorder =
-			cfbCopyPixmap(pWin->borderTile);
-		      if (pPrivWin->pRotatedBorder)
-		      {
-			  pPrivWin->fastBorder = 1;
-			  pPrivWin->oldRotate.x = pWin->absCorner.x;
-			  pPrivWin->oldRotate.y = pWin->absCorner.y;
-			  (void)cfbPadPixmap(pPrivWin->pRotatedBorder);
-			  cfbXRotatePixmap(pPrivWin->pRotatedBorder,
-					   pWin->absCorner.x);
-			  cfbYRotatePixmap(pPrivWin->pRotatedBorder,
-					   pWin->absCorner.y);
-			  pWin->PaintWindowBorder = cfbPaintArea32;
-		      }
-		      else
-		      {
-			  pPrivWin->fastBorder = 0;
-			  pWin->PaintWindowBorder = cfbPaintAreaOther;
-		      }
+		      pPrivWin->fastBorder = 1;
+		      pPrivWin->oldRotate.x = pWin->drawable.x;
+		      pPrivWin->oldRotate.y = pWin->drawable.y;
+		      (void)cfbPadPixmap(pPrivWin->pRotatedBorder);
+		      cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				       pWin->drawable.x);
+		      cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				       pWin->drawable.y);
+		      newFuncs.PaintWindowBorder = cfbPaintArea32;
 		  }
 		  else
 		  {
 		      pPrivWin->fastBorder = 0;
-		      pWin->PaintWindowBorder = cfbPaintAreaOther;
+		      newFuncs.PaintWindowBorder = cfbPaintAreaOther;
 		  }
-		  break;
+	      }
+	      else
+	      {
+		  pPrivWin->fastBorder = 0;
+		  newFuncs.PaintWindowBorder = cfbPaintAreaOther;
 	      }
 	      break;
 	    case CWBorderPixel:
-	      pWin->PaintWindowBorder = cfbPaintAreaSolid;
+	      newFuncs.PaintWindowBorder = cfbPaintAreaSolid;
 	      pPrivWin->fastBorder = 0;
 	      break;
 
 	}
     }
+    if (newFuncs.PaintWindowBorder != pWin->funcs->PaintWindowBorder ||
+        newFuncs.PaintWindowBackground != pWin->funcs->PaintWindowBackground)
+    {
+	int	i;
+
+	for (i = 0; i < NumCommonFuncs; i++)
+	    if (newFuncs.PaintWindowBorder == commonFuncs[i].PaintWindowBorder &&
+	        newFuncs.PaintWindowBackground == commonFuncs[i].PaintWindowBackground)
+	    {
+		break;
+	    }
+	if (i < NumCommonFuncs) {
+	    if (pWin->funcs->devPrivate.val)
+	    	xfree (pWin->funcs);
+	    pWin->funcs = &commonFuncs[i];
+	} else {
+	    if (!pWin->funcs->devPrivate.val)
+		pWin->funcs = (WindowFuncs *) xalloc (sizeof (WindowFuncs));
+	    *pWin->funcs = newFuncs;
+	    pWin->funcs->devPrivate.val = 1;
+	}
+    }
+
     return (TRUE);
 }
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 1.20 88/10/03 15:00:12 jim Exp $ */
+/* $XConsortium: mipolygen.c,v 1.21 89/03/22 10:50:48 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
@@ -112,7 +112,7 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
                  */
                 if (nPts == NUMPTSTOBUFFER) 
 		{
-		    (*pgc->FillSpans)(dst, pgc,
+		    (*pgc->ops->FillSpans)(dst, pgc,
 				      nPts, FirstPoint, FirstWidth,
 				      1);
                     ptsOut = FirstPoint;
@@ -168,7 +168,7 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
                      */
                     if (nPts == NUMPTSTOBUFFER) 
                     {
-			(*pgc->FillSpans)(dst, pgc, nPts, FirstPoint,
+			(*pgc->ops->FillSpans)(dst, pgc, nPts, FirstPoint,
 			                  FirstWidth, 1);
                         ptsOut = FirstPoint;
                         width  = FirstWidth;
@@ -198,7 +198,7 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
     /*
      *     Get any spans that we missed by buffering
      */
-    (*pgc->FillSpans)(dst, pgc, nPts, FirstPoint, FirstWidth, 1);
+    (*pgc->ops->FillSpans)(dst, pgc, nPts, FirstPoint, FirstWidth, 1);
     DEALLOCATE_LOCAL(pETEs);
     miFreeStorage(SLLBlock.next);
     return(TRUE);

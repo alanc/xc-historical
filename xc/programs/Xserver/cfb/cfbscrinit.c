@@ -39,8 +39,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mistruct.h"
 #include "dix.h"
 #include "cfbmskbits.h"
-
-extern void miGetImageWithBS();	/* XXX should not be needed */
+#include "mibstore.h"
 
 extern int defaultColorVisualClass;
 
@@ -77,6 +76,17 @@ static DepthRec depths[] = {
 };
 
 #define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
+
+int cfbWindowPrivateIndex = -1;
+int cfbGCPrivateIndex = -1;
+
+miBSFuncRec cfbBSFuncRec = {
+    cfbSaveAreas,
+    cfbRestoreAreas,
+    (void (*)()) 0,
+    (PixmapPtr (*)()) 0,
+    (PixmapPtr (*)()) 0,
+};
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
@@ -118,10 +128,12 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pPixmap->drawable.depth = 8;
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.serialNumber = 0;
-    pPixmap->width = xsize;
-    pPixmap->height = ysize;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = xsize;
+    pPixmap->drawable.height = ysize;
     pPixmap->refcnt = 1;
-    pPixmap->devPrivate = pbits;
+    pPixmap->devPrivate.ptr = pbits;
     pPixmap->devKind = PixmapBytePad(xsize, 8);
     pScreen->devPrivate = (pointer)pPixmap;
 
@@ -138,7 +150,8 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 
     pScreen->RealizeFont = mfbRealizeFont;
     pScreen->UnrealizeFont = mfbUnrealizeFont;
-    pScreen->GetImage = miGetImageWithBS;
+    pScreen->QueryBestSize = mfbQueryBestSize;
+    pScreen->GetImage = miGetImage;
     pScreen->GetSpans = cfbGetSpans;	/* XXX */
     pScreen->CreateGC = cfbCreateGC;
     pScreen->CreatePixmap = cfbCreatePixmap;
@@ -226,6 +239,11 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	    i = 0;
     }
     pScreen->rootVisual = visuals[i].vid;
+    if (cfbGCPrivateIndex == -1)
+	cfbGCPrivateIndex = AllocateGCPrivateIndex ();
+    if (cfbWindowPrivateIndex == -1)
+	cfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
+    miInitializeBackingStore (pScreen, &cfbBSFuncRec);
     if (CreateColormap(pScreen->defColormap, pScreen, &visuals[i], &cmap,
 		       (visuals[i].class & DynamicClass) ? AllocNone :
 							   AllocAll,

@@ -155,7 +155,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -169,7 +169,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #endif
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
@@ -179,13 +179,13 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -256,6 +256,7 @@ int fSorted;
     int		w, width, x, tmpSrc, srcStartOver, nstart, nend;
     int		xSrc, ySrc;
     int 	endmask, tlwidth, rem, tileWidth, *psrcT, rop;
+    int		tileHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
 
@@ -272,7 +273,7 @@ int fSorted;
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -283,7 +284,7 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
 
@@ -300,23 +301,24 @@ int fSorted;
 	rop = pGC->alu;
     }
 
+    xSrc = pDrawable->x;
+    ySrc = pDrawable->y;
+
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-        xSrc = ((WindowPtr)pDrawable)->absCorner.x;
-        ySrc = ((WindowPtr)pDrawable)->absCorner.y;
     }
     else
     {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-        xSrc = ySrc = 0;
     }
 
-    tileWidth = pTile->width;
+    tileWidth = pTile->drawable.width;
+    tileHeight = pTile->drawable.height;
 
     /* this replaces rotating the tile. Instead we just adjust the offset
      * at which we start grabbing bits from the tile.
@@ -324,13 +326,13 @@ int fSorted;
      * so that iline and xrem always stay within the tile bounds.
      */
     xSrc += (pGC->patOrg.x % tileWidth) - tileWidth;
-    ySrc += (pGC->patOrg.y % pTile->height) - pTile->height;
+    ySrc += (pGC->patOrg.y % tileHeight) - tileHeight;
 
     while (n--)
     {
-	iline = (ppt->y - ySrc) % pTile->height;
+	iline = (ppt->y - ySrc) % tileHeight;
         pdst = addrlBase + (ppt->y * nlwidth) + (ppt->x >> PWSH);
-        psrcT = (int *) pTile->devPrivate + (iline * tlwidth);
+        psrcT = (int *) pTile->devPrivate.ptr + (iline * tlwidth);
 	x = ppt->x;
 
 	if (*pwidth)
@@ -450,6 +452,7 @@ int fSorted;
     int		w, width,  x, xrem, xSrc, ySrc;
     unsigned int tmpSrc, tmpDst1, tmpDst2;
     int 	stwidth, stippleWidth, *psrcS, rop, stiprop;
+    int		stippleHeight;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     unsigned int fgfill, bgfill;
@@ -468,7 +471,7 @@ int fSorted;
     if (!(pGC->planemask))
 	return;
 
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip);
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -479,7 +482,7 @@ int fSorted;
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPriv))->pCompositeClip,
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
 		     pptInit, pwidthInit, nInit, 
 		     ppt, pwidth, fSorted);
     rop = pGC->alu;
@@ -507,7 +510,7 @@ int fSorted;
      *		Depth = 1
      *		Width = stippleWidth
      *		Words per scanline = stwidth
-     *		Pointer to pixels = pStipple->devPrivate
+     *		Pointer to pixels = pStipple->devPrivate.ptr
      */
     pStipple = pGC->stipple;
 
@@ -516,7 +519,8 @@ int fSorted;
     }
 
     stwidth = pStipple->devKind >> 2;
-    stippleWidth = pStipple->width;
+    stippleWidth = pStipple->drawable.width;
+    stippleHeight = pStipple->drawable.height;
 
     /*
      *	The Target:
@@ -525,20 +529,20 @@ int fSorted;
      *		Words per scanline = nlwidth
      *		Pointer to pixels = addrlBase
      */
+    xSrc = pDrawable->x;
+    ySrc = pDrawable->y;
+
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrlBase = (int *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate);
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-        xSrc = ((WindowPtr)pDrawable)->absCorner.x;
-        ySrc = ((WindowPtr)pDrawable)->absCorner.y;
     }
     else
     {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate);
+	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-        xSrc = ySrc = 0;
     }
 
     /* this replaces rotating the stipple. Instead we just adjust the offset
@@ -547,14 +551,14 @@ int fSorted;
      * so that iline and xrem always stay within the stipple bounds.
      */
     xSrc += (pGC->patOrg.x % stippleWidth) - stippleWidth;
-    ySrc += (pGC->patOrg.y % pStipple->height) - pStipple->height;
+    ySrc += (pGC->patOrg.y % stippleHeight) - stippleHeight;
 
     while (n--)
     {
-	iline = (ppt->y - ySrc) % pStipple->height;
+	iline = (ppt->y - ySrc) % stippleHeight;
 	x = ppt->x;
 	pdst = addrlBase + (ppt->y * nlwidth);
-        psrcS = (int *) pStipple->devPrivate + (iline * stwidth);
+        psrcS = (int *) pStipple->devPrivate.ptr + (iline * stwidth);
 
 	if (*pwidth)
 	{

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 1.57 88/10/02 15:08:27 rws Exp $ */
+/* $XConsortium: mfbscrinit.c,v 1.58 89/03/18 12:27:54 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -33,6 +33,7 @@ SOFTWARE.
 #include "mfb.h"
 #include "mistruct.h"
 #include "dix.h"
+#include "mibstore.h"
 
 #include "servermd.h"
 
@@ -44,6 +45,16 @@ mfbFreeVisual(p, id)
 {
     xfree(p);
 }
+
+int mfbWindowPrivateIndex = -1, mfbGCPrivateIndex = -1;
+
+miBSFuncRec mfbBSFuncRec = {
+    mfbSaveAreas,
+    mfbRestoreAreas,
+    (void (*)()) 0,
+    (PixmapPtr (*)()) 0,
+    (PixmapPtr (*)()) 0,
+};
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
 Bool
@@ -99,10 +110,12 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pPixmap->drawable.depth = 1;
     pPixmap->drawable.pScreen = pScreen;
     pPixmap->drawable.serialNumber = 0;
-    pPixmap->width = xsize;
-    pPixmap->height = ysize;
+    pPixmap->drawable.x = 0;
+    pPixmap->drawable.y = 0;
+    pPixmap->drawable.width = xsize;
+    pPixmap->drawable.height = ysize;
     pPixmap->refcnt = 1;
-    pPixmap->devPrivate = pbits;
+    pPixmap->devPrivate.ptr = pbits;
     pPixmap->devKind = PixmapBytePad(xsize, 1);
     pScreen->devPrivate = (pointer)pPixmap;
 
@@ -119,6 +132,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
 
     pScreen->RealizeFont = mfbRealizeFont;
     pScreen->UnrealizeFont = mfbUnrealizeFont;
+    pScreen->QueryBestSize = mfbQueryBestSize;
     pScreen->GetImage = mfbGetImage;
     pScreen->GetSpans = mfbGetSpans;
     pScreen->CreateGC = mfbCreateGC;
@@ -130,6 +144,9 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pScreen->UninstallColormap = mfbUninstallColormap;
     pScreen->ListInstalledColormaps = mfbListInstalledColormaps;
     pScreen->StoreColors = NoopDDA;
+    pScreen->ResolveColor = mfbResolveColor;
+    pScreen->CreateColormap = mfbCreateColormap;
+    pScreen->DestroyColormap = mfbDestroyColormap;
 
     pScreen->RegionCreate = miRegionCreate;
     pScreen->RegionCopy = miRegionCopy;
@@ -166,6 +183,11 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pDepth->numVids = 1;
     pDepth->vids = pVids;
     pVids[0] = pScreen->rootVisual;	/* our one and only visual */
+    if (mfbGCPrivateIndex == -1)
+	mfbGCPrivateIndex = AllocateGCPrivateIndex ();
+    if (mfbWindowPrivateIndex == -1)
+	mfbWindowPrivateIndex = AllocateWindowPrivateIndex ();
+    miInitializeBackingStore (pScreen, &mfbBSFuncRec);
     if (AddResource(pScreen->rootVisual, RT_VISUALID,
 		    (pointer)pVisual, mfbFreeVisual, RC_CORE))
 	return TRUE;

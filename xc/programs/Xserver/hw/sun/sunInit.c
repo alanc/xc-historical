@@ -52,6 +52,7 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include    "dixstruct.h"
 #include    "dix.h"
 #include    "opaque.h"
+#include    "mipointer.h"
 
 extern int sunMouseProc();
 extern int sunKbdProc();
@@ -111,8 +112,10 @@ sunFbDataRec sunFbData[] = {
 #else  ZOIDS
 sunFbDataRec sunFbData[] = {
     sunBW2Probe,  	"/dev/bwtwo0",	    neverProbed,
+#ifdef NOTDEF
     sunCG2CProbe,  	"/dev/cgtwo0",	    neverProbed,
     sunCG3CProbe,  	"/dev/cgthree0",    neverProbed,
+#endif
     sunCG4CProbe,  	"/dev/cgfour0",	    neverProbed,
 };
 #endif ZOIDS
@@ -122,9 +125,9 @@ sunFbDataRec sunFbData[] = {
  * structures in sunFbData which have an actual probeProc).
  */
 #define NUMSCREENS (sizeof(sunFbData)/sizeof(sunFbData[0]))
-#define NUMDEVICES 2
+#define NUMDEVICES  2
 
-fbFd	sunFbs[NUMSCREENS];  /* Space for descriptors of open frame buffers */
+fbFd sunFbs[NUMDEVICES];
 
 static PixmapFormatRec	formats[] = {
     1, 1, BITMAP_SCANLINE_PAD,	/* 1-bit deep */
@@ -134,7 +137,7 @@ static PixmapFormatRec	formats[] = {
 
 /*-
  *-----------------------------------------------------------------------
- * NonBlockConsoleOff --
+ * sunNonBlockConsoleOff --
  *	Turn non-blocking mode on the console off, so you don't get logged
  *	out when the server exits.
  *
@@ -147,8 +150,7 @@ static PixmapFormatRec	formats[] = {
  *-----------------------------------------------------------------------
  */
 /*ARGSUSED*/
-static
-NonBlockConsoleOff(arg)
+sunNonBlockConsoleOff(arg)
     char	*arg;
 {
     register int i;
@@ -197,7 +199,7 @@ InitOutput(pScreenInfo, argc, argv)
      */
     if (nonBlockConsole) {
 	if (!setup_on_exit) {
-	    if (on_exit(NonBlockConsoleOff, (char *)0))
+	    if (on_exit(sunNonBlockConsoleOff, (char *)0))
 		ErrorF("InitOutput: can't register NBIO exit handler\n");
 	    setup_on_exit = 1;
 	}
@@ -270,54 +272,10 @@ InitInput(argc, argv)
 
     RegisterPointerDevice(p, MOTION_BUFFER_SIZE);
     RegisterKeyboardDevice(k);
+    miRegisterPointerDevice(screenInfo.screens[0], p);
     signal(SIGIO, SigIOHandler);
 
     SetInputCheck (&zero, &isItTimeToYield);
-}
-
-/*-
- *-----------------------------------------------------------------------
- * sunQueryBestSize --
- *	Supposed to hint about good sizes for things.
- *
- * Results:
- *	Perhaps change *pwidth (Height irrelevant)
- *
- * Side Effects:
- *	None.
- *
- *-----------------------------------------------------------------------
- */
-/*ARGSUSED*/
-void
-sunQueryBestSize(class, pwidth, pheight)
-int class;
-short *pwidth;
-short *pheight;
-{
-    unsigned width, test;
-
-    switch(class)
-    {
-      case CursorShape:
-      case TileShape:
-      case StippleShape:
-	  width = *pwidth;
-	  if (width > 0) {
-	      /* Return the closes power of two not less than what they gave me */
-	      test = 0x80000000;
-	      /* Find the highest 1 bit in the width given */
-	      while(!(test & width))
-		 test >>= 1;
-	      /* If their number is greater than that, bump up to the next
-	       *  power of two */
-	      if((test - 1) & width)
-		 test <<= 1;
-	      *pwidth = test;
-	  }
-	  /* We don't care what height they use */
-	  break;
-    }
 }
 
 /*-
@@ -330,10 +288,6 @@ short *pheight;
  *	TRUE if successful, else FALSE
  *
  * Side Effects:
- *	The graphics context for the screen is created. The CreateGC,
- *	CreateWindow and ChangeWindowAttributes vectors are changed in
- *	the screen structure.
- *
  *	Both a BlockHandler and a WakeupHandler are installed for the
  *	first screen.  Together, these handlers implement autorepeat
  *	keystrokes on the Sun.
@@ -344,62 +298,10 @@ Bool
 sunScreenInit (pScreen)
     ScreenPtr	  pScreen;
 {
-    fbFd    	  *fb;
-    DrawablePtr	  pDrawable;
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
     static ScreenPtr autoRepeatScreen;
-
-    fb = &sunFbs[pScreen->myNum];
-
-    /*
-     * Prepare the GC for cursor functions on this screen.
-     * Do this before setting interceptions to avoid looping when
-     * putting down the cursor...
-     */
-    pDrawable = (DrawablePtr)(pScreen->devPrivate);
-
-    fb->pGC = CreateScratchGC (pDrawable->pScreen, pDrawable->depth);
-    if (!fb->pGC)
-	return FALSE;
-
-    /*
-     * By setting graphicsExposures false, we prevent any expose events
-     * from being generated in the CopyArea requests used by the cursor
-     * routines.
-     */
-    fb->pGC->graphicsExposures = FALSE;
-
-    /*
-     * Preserve the "regular" functions
-     */
-    fb->CreateGC =	    	    	pScreen->CreateGC;
-    fb->CreateWindow = 	    	    	pScreen->CreateWindow;
-    fb->ChangeWindowAttributes =    	pScreen->ChangeWindowAttributes;
-    fb->GetImage =	    	    	pScreen->GetImage;
-    fb->GetSpans =			pScreen->GetSpans;
-
-    /*
-     * Interceptions
-     */
-    pScreen->CreateGC =	    	    	sunCreateGC;
-    pScreen->CreateWindow = 	    	sunCreateWindow;
-    pScreen->ChangeWindowAttributes = 	sunChangeWindowAttributes;
-    pScreen->QueryBestSize =		sunQueryBestSize;
-    pScreen->GetImage =	    	    	sunGetImage;
-    pScreen->GetSpans =			sunGetSpans;
-
-    /*
-     * Cursor functions
-     */
-    pScreen->RealizeCursor = 	    	sunRealizeCursor;
-    pScreen->UnrealizeCursor =	    	sunUnrealizeCursor;
-    pScreen->DisplayCursor = 	    	sunDisplayCursor;
-    pScreen->SetCursorPosition =    	sunSetCursorPosition;
-    pScreen->CursorLimits = 	    	sunCursorLimits;
-    pScreen->PointerNonInterestBox = 	sunPointerNonInterestBox;
-    pScreen->ConstrainCursor = 	    	sunConstrainCursor;
-    pScreen->RecolorCursor = 	    	sunRecolorCursor;
+    extern miPointerCursorFuncRec   sunPointerCursorFuncs;
 
     /*
      *	Block/Unblock handlers
@@ -413,6 +315,9 @@ sunScreenInit (pScreen)
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
     }
+
+    miDCInitialize (pScreen, &sunPointerCursorFuncs);
+
     return TRUE;
 }
 
