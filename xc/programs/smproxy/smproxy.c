@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.20 94/07/26 12:38:04 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.21 94/07/27 16:19:42 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -112,15 +112,106 @@ Window window;
 
 
 
+char *
+CheckFullyQuantifiedName (name, newstring)
+
+char *name;
+int *newstring;
+
+{
+    /*
+     * Due to a bug in Xlib (for hpux in particular), some clients
+     * will have a WM_CLIENT_MACHINE that is not fully quantified.
+     * For example, we might get "excon" instead of "excon.x.org".
+     * This really stinks.  The best we can do is tag on our own
+     * domain name.
+     */
+
+    if (strchr (name, '.') != NULL)
+    {
+	*newstring = 0;
+	return (name);
+    }
+    else
+    {
+	char hostnamebuf[80];
+	char *firstDot;
+
+	gethostname (hostnamebuf, sizeof hostnamebuf);
+	firstDot = strchr (hostnamebuf, '.');
+
+	if (!firstDot)
+	{
+	    *newstring = 0;
+	    return (name);
+	}
+	else
+	{
+	    int bytes = strlen (name) + strlen (firstDot + 1) + 2;
+	    char *newptr;
+
+	    newptr = (char *) malloc (bytes);
+	    sprintf (newptr, "%s.%s", name, firstDot + 1);
+
+	    *newstring = 1;
+	    return (newptr);
+	}
+    }
+}
+
+
+
 void FinishSaveYourself (winInfo)
 
 WinInfo *winInfo;
 
 {
-    SmProp prop1, prop2, prop3, prop4, prop5, *props[5];
-    SmPropValue prop3val, prop4val, prop5val;
-    char userId[20], restartService[80];
+    SmProp prop1, prop2, prop3, *props[3];
+    SmPropValue prop1val, prop2val, prop3val;
     int i;
+
+    if (!winInfo->got_first_save_yourself)
+    {
+	char userId[20], restartService[80];
+	char *fullyQuantifiedName;
+	int newstring;
+
+	prop1.name = SmProgram;
+	prop1.type = SmARRAY8;
+	prop1.num_vals = 1;
+	prop1.vals = &prop1val;
+	prop1val.value = (SmPointer) winInfo->wm_command[0];
+	prop1val.length = strlen (winInfo->wm_command[0]);
+    
+	sprintf (userId, "%d", getuid());
+	prop2.name = SmUserID;
+	prop2.type = SmARRAY8;
+	prop2.num_vals = 1;
+	prop2.vals = &prop2val;
+	prop2val.value = (SmPointer) userId;
+	prop2val.length = strlen (userId);
+    
+	fullyQuantifiedName = CheckFullyQuantifiedName (
+	    (char *) winInfo->wm_client_machine.value, &newstring);
+	sprintf (restartService, "rstart-rsh/%s", fullyQuantifiedName);
+	if (newstring)
+	    free (fullyQuantifiedName);
+
+	prop3.name = "_XC_RestartService";
+	prop3.type = SmLISTofARRAY8;
+	prop3.num_vals = 1;
+	prop3.vals = &prop3val;
+	prop3val.value = (SmPointer) restartService;
+	prop3val.length = strlen (restartService);
+
+	props[0] = &prop1;
+	props[1] = &prop2;
+	props[2] = &prop3;
+	
+	SmcSetProperties (winInfo->smc_conn, 3, props);
+
+	winInfo->got_first_save_yourself = 1;
+    }
 
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
@@ -146,37 +237,10 @@ WinInfo *winInfo;
     prop2.num_vals = winInfo->wm_command_count;
     prop2.vals = prop1.vals;
     
-    prop3.name = SmProgram;
-    prop3.type = SmARRAY8;
-    prop3.num_vals = 1;
-    prop3.vals = &prop3val;
-    prop3val.value = (SmPointer) winInfo->wm_command[0];
-    prop3val.length = strlen (winInfo->wm_command[0]);
-    
-    sprintf (userId, "%d", getuid());
-    prop4.name = SmUserID;
-    prop4.type = SmARRAY8;
-    prop4.num_vals = 1;
-    prop4.vals = &prop4val;
-    prop4val.value = (SmPointer) userId;
-    prop4val.length = strlen (userId);
-    
-    sprintf (restartService, "rstart-rsh/%s",
-	(char *) winInfo->wm_client_machine.value);
-    prop5.name = "_XC_RestartService";
-    prop5.type = SmLISTofARRAY8;
-    prop5.num_vals = 1;
-    prop5.vals = &prop5val;
-    prop5val.value = (SmPointer) restartService;
-    prop5val.length = strlen (restartService);
-
     props[0] = &prop1;
     props[1] = &prop2;
-    props[2] = &prop3;
-    props[3] = &prop4;
-    props[4] = &prop5;
     
-    SmcSetProperties (winInfo->smc_conn, 5, props);
+    SmcSetProperties (winInfo->smc_conn, 2, props);
     
     free ((char *) prop1.vals);
     
@@ -494,6 +558,7 @@ Window window;
     newptr->wm_client_machine.nitems = 0;
     newptr->has_save_yourself = 0;
     newptr->waiting_for_update = 0;
+    newptr->got_first_save_yourself = 0;
 
     return (newptr);
 }
@@ -799,11 +864,12 @@ SmPointer clientData;
     FILE *proxyFile;
     char *path, *filename;
     Bool success = True;
-    SmProp prop1, prop2, prop3, prop4, *props[4];
-    SmPropValue prop2val, prop3val, prop4val;
-    char discardCommand[80], userId[20];
+    SmProp prop1, prop2, prop3, *props[3];
+    SmPropValue prop1val, prop2val, prop3val;
+    char discardCommand[80];
     int numVals, i;
     WinInfo *winptr;
+    static int first_time = 1;
 
     path = getenv ("SM_SAVE_DIR");
     if (!path)
@@ -830,6 +896,42 @@ SmPointer clientData;
     }
 
     fclose (proxyFile);
+
+    if (first_time)
+    {
+	char userId[20];
+	char hint = SmRestartAnyway;
+
+	prop1.name = SmProgram;
+	prop1.type = SmARRAY8;
+	prop1.num_vals = 1;
+	prop1.vals = &prop1val;
+	prop1val.value = Argv[0];
+	prop1val.length = strlen (Argv[0]);
+
+	sprintf (userId, "%d", getuid());
+	prop2.name = SmUserID;
+	prop2.type = SmARRAY8;
+	prop2.num_vals = 1;
+	prop2.vals = &prop2val;
+	prop2val.value = (SmPointer) userId;
+	prop2val.length = strlen (userId);
+	
+	prop3.name = SmRestartStyleHint;
+	prop3.type = SmCARD8;
+	prop3.num_vals = 1;
+	prop3.vals = &prop3val;
+	prop3val.value = (SmPointer) &hint;
+	prop3val.length = 1;
+	
+	props[0] = &prop1;
+	props[1] = &prop2;
+	props[2] = &prop3;
+
+	SmcSetProperties (smcConn, 3, props);
+
+	first_time = 0;
+    }
 
     prop1.name = SmRestartCommand;
     prop1.type = SmLISTofARRAY8;
@@ -873,35 +975,19 @@ SmPointer clientData;
 
     prop1.num_vals = numVals;
 
-    prop2.name = SmProgram;
+
+    sprintf (discardCommand, "rm %s", filename);
+    prop2.name = SmDiscardCommand;
     prop2.type = SmARRAY8;
     prop2.num_vals = 1;
     prop2.vals = &prop2val;
-    prop2val.value = Argv[0];
-    prop2val.length = strlen (Argv[0]);
-
-    sprintf (discardCommand, "rm %s", filename);
-    prop3.name = SmDiscardCommand;
-    prop3.type = SmARRAY8;
-    prop3.num_vals = 1;
-    prop3.vals = &prop3val;
-    prop3val.value = (SmPointer) discardCommand;
-    prop3val.length = strlen (discardCommand);
-
-    sprintf (userId, "%d", getuid());
-    prop4.name = SmUserID;
-    prop4.type = SmARRAY8;
-    prop4.num_vals = 1;
-    prop4.vals = &prop4val;
-    prop4val.value = (SmPointer) userId;
-    prop4val.length = strlen (userId);
+    prop2val.value = (SmPointer) discardCommand;
+    prop2val.length = strlen (discardCommand);
 
     props[0] = &prop1;
     props[1] = &prop2;
-    props[2] = &prop3;
-    props[3] = &prop4;
 
-    SmcSetProperties (smcConn, 4, props);
+    SmcSetProperties (smcConn, 2, props);
     free ((char *) prop1.vals);
 
     SmcSaveYourselfDone (smcConn, success);
