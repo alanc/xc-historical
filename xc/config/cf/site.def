@@ -1,34 +1,34 @@
-XCOMM site:  $XConsortium: site.def,v 1.130 94/08/02 16:01:35 gildea Exp $
+XCOMM site:  $XConsortium: site.def,v 1.131 94/08/16 14:40:51 matt Exp gildea $
 
-/*****************************************************************************
- *                                                                           *
- *			   SITE-SPECIFIC DEFINITIONS                         *
- *                                                                           *
- * This file contains two halves, one included before the vendor-specific    *
- * configuration file (.cf file), and one included after the .cf file.       *
- * The before-half should be protected by #ifdef BeforeVendorCF, and the     *
- * after-half should be protected by #ifdef AfterVendorCF.                   *
- *                                                                           *
- * The before-half should only set things that the .cf file depends on.      *
- * For the .cf files shipped in this release, the main variables in this     *
- * category are HasGcc and HasGcc2.                                          *
- *                                                                           *
- * The after-half should contain all other definitions.  For example,        *
- * place your ProjectRoot definition here.  Beware that several of the       *
- * .cf files supplied by vendors have a ProjectRoot already defined, so      *
- * you may need to #undef it first.                                          *
- *                                                                           *
- * OS Major and Minor version numbers should be changed directly in the .cf  *
- * file, not overridden in site.def.                                         *
- *                                                                           *
- *****************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *			   SITE-SPECIFIC DEFINITIONS                       *
+ *                                                                         *
+ * This file contains two halves, one included before the vendor-specific  *
+ * configuration file (.cf file), and one included after the .cf file.     *
+ * The before-half should be protected by #ifdef BeforeVendorCF, and the   *
+ * after-half should be protected by #ifdef AfterVendorCF.                 *
+ *                                                                         *
+ * The before-half should only set things that the .cf file depends on.    *
+ * For the .cf files shipped in this release, the main variables in this   *
+ * category are HasGcc and HasGcc2.                                        *
+ *                                                                         *
+ * The after-half should contain all other definitions.  For example,      *
+ * place your ProjectRoot definition here.  Beware that several of the     *
+ * .cf files supplied by vendors have a ProjectRoot already defined, so    *
+ * you may need to #undef it first.                                        *
+ *                                                                         *
+ * OS Major and Minor version numbers should be changed directly in the    *
+ * .cf file, not overridden in site.def.                                   *
+ *                                                                         *
+ ***************************************************************************/
 
-/*****************************************************************************
- *                                                                           *
- *		  X Consortium In-House Build Parameters                     *
- *			Use at Your Own Risk				     *
- *                                                                           *
- *****************************************************************************/
+/***************************************************************************
+ *                                                                         *
+ *		  X Consortium In-House Build Parameters                   *
+ *			Use at Your Own Risk				   *
+ *                                                                         *
+ ***************************************************************************/
 
 #ifndef SiteIConfigFiles
 #define SiteIConfigFiles $(IRULESRC)/host.def
