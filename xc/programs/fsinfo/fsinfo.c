@@ -1,10 +1,8 @@
-/* $XConsortium$ */
+/* $XConsortium: fsinfo.c,v 1.2 91/05/13 16:00:25 gildea Exp $ */
 /*
  * fsinfo -- report info about a font server
  */
 /*
- * WARNING:  PROTOTYPE SOFTWARE, NOT FOR REDISTRIBUTION
- *
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -26,8 +24,6 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)fsinfo.c	4.1	91/05/02
- *
  */
 
 #include	<stdio.h>
@@ -35,6 +31,7 @@
 #include	"FSlib.h"
 
 static void print_server_info();
+static void print_catalogue_info();
 static void print_extension_info();
 static void print_alternate_info();
 
@@ -89,8 +86,26 @@ print_server_info(svr)
     printf("vendor release number:	%d\n", FSVendorRelease(svr));
     printf("maximum request size:	%ld longwords (%ld bytes)\n",
 	   FSMaxRequestSize(svr), FSMaxRequestSize(svr) * sizeof(long));
+    print_catalogue_info(svr);
     print_alternate_info(svr);
     print_extension_info(svr);
+}
+
+static void
+print_catalogue_info(svr)
+    FSServer   *svr;
+{
+    int         n = 0;
+    char      **cats = FSListCatalogues(svr, "*", 1000, &n);
+
+    printf("number of catalogues:	%d\n", n);
+    if (cats) {
+	int         i;
+
+	for (i = 0; i < n; i++) {
+	    printf("	%s\n", cats[i]);
+	}
+    }
 }
 
 static void
