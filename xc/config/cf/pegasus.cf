@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.34 93/09/18 18:22:37 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.35 93/09/21 11:17:06 rws Exp $
 
 #define OSName             UTek 4.0
 XCOMM operating system:  OSName
@@ -16,7 +16,8 @@ XCOMM operating system:  OSName
 #define CcCmd gcc -ansi -fstrength-reduce -fpcc-struct-return -Dmc68000 -Dtektronix -Dutek -Dunix -Dm68k
 #endif
 
-#define XtekServer YES
+#define BuildServer NO
+/* #define XtekServer YES */
 
 #define ServerExtraDefines   -DM4310 -DM4317
 #define ServerOSDefines -DDDXTIME
