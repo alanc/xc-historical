@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.101 91/04/08 17:04:14 gildea Exp $ */
+/* $XConsortium: NextEvent.c,v 1.102 91/04/17 10:16:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -48,7 +48,7 @@ static WorkProcRec* freeWorkRecs;
  */
 
 #ifndef NEEDS_NTPD_FIXUP
-# ifdef sun
+# if defined(sun) || defined(MOTOROLA)
 #  define NEEDS_NTPD_FIXUP 1
 # else
 #  define NEEDS_NTPD_FIXUP 0
