@@ -1,6 +1,10 @@
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)'
+/*
+ * Server Master Makefile
+ */
 
-        SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
+#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
+
+      CCOPTIONS = ServerCCOptions
     STD_DEFINES = ServerDefines
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
@@ -16,8 +20,9 @@
                   ddx/ndx ddx/tek \
                   ddx/macII ddx/plx
       ALLOSDIRS = os/4.2bsd os/bsdemul
-        SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
-           BSD = os/4.2bsd/libos.a $(XAULIB)
+     ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
+        SUBDIRS = $(ALLSUBDIRS)
+            BSD = os/4.2bsd/libos.a $(XAULIB)
         BSDEMUL = os/bsdemul/libbsdemul.a
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
@@ -33,63 +38,119 @@
             PLX = ddx/plx/libplx.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx
 
-#ifndef	XqvssServer
+/**/#
+/**/# This turns off the default rule for compiling .c files because
+/**/# this makefile does not really know how to build it.  This is really
+/**/# just a hack because of sun's version of make and nfs.
+/**/#
+.c.o:
+
+
+
+
+/*****************************************************************************
+ *                                                                           * 
+ *                            To add a new server                            *
+ *                                                                           * 
+ *     1.  Add an #ifdef block at the end of the following list.  It should  *
+ *         determine whether or not a particular server is being built by    *
+ *         checking to see if the symbol X<what>Server is defined:           *
+ *                                                                           * 
+ *             If so, then define a symbol do<what>Server                    * 
+ *             If not, then define X<what>Server to be an empty comment      * 
+ *                                                                           * 
+ *     2.  Add the X<what>Server to the end of the ALL line below.           * 
+ *                                                                           * 
+ *     3.  Add the name of the server to the ALLPOSSIBLE list below.         * 
+ *                                                                           * 
+ *     4.  Add a set of object file definitions and build rules.             * 
+ *                                                                           * 
+ *****************************************************************************/
+
+#ifdef	XqvssServer
+#define doqvssServer
+#else
 #define	XqvssServer /* as nothing */
 #endif
 
-#ifndef	XqdssServer
+#ifdef	XqdssServer
+#define doqdssServer
+#else
 #define	XqdssServer /* as nothing */
 #endif
 
-#ifndef	XsunServer
+#ifdef	XsunServer
+#define dosunServer
+#else
 #define	XsunServer /* as nothing */
 #endif
 
-#ifndef XplxServer
+#ifdef XplxServer
+#define doplxServer
+#else
 #define XplxServer /* as nothing */
 #endif
 
-#ifndef	XHPServer
-#define	XHPServer /* as nothing */
+#ifdef	XhpServer
+#define dohpServer
+#else
+#define	XhpServer /* as nothing */
 #endif
 
-#ifndef	XapolloServer
+#ifdef	XapolloServer
+#define doapolloServer
+#else
 #define	XapolloServer /* as nothing */
 #endif
 
-#ifndef	XibmServer
+#ifdef	XibmServer
+#define doibmServer
+#else
 #define	XibmServer /* as nothing */
 #endif
 
-#ifndef XndxServer
+#ifdef XndxServer
+#define dondxServer
+#else
 #define	XndxServer /* as nothing */
 #endif
 
-#ifndef	XpegServer
+#ifdef	XpegServer
+#define dopegServer
+#else
 #define	XpegServer /* as nothing */
 #endif
 
-#ifndef	XmacIIServer
+#ifdef	XmacIIServer
+#define domacIIServer
+#else
 #define	XmacIIServer /* as nothing */
 #endif
 
-# don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer XplxServer
-
-#
-# This turns off the default rule for compiling .c files because
-# this makefile does not really know how to build it.  This is really
-# just a hack because of sun's version of make and nfs.
-#
-.c.o:
+/*****************************************************************************
+ *                                                                           *
+ * Now add X<what>Server to the ALL line; do NOT split across lines or you   *
+ * will confuse make.  Then, add the name of the server to ALLPOSSIBLE.      *
+ *                                                                           *
+/*****************************************************************************
+ */
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XndxServer XpegServer XmacIIServer XplxServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx Xndx
 
 all: $(ALL)
 
-#
-# qvss server
-#
+
+/*****************************************************************************
+ *		  Build rule blocks, add one for each server                 *
+ *****************************************************************************/
+
+
+#ifdef doqvssServer
+/**/#
+/**/# qvss server
+/**/#
+#define qvssSubdirs dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qvss os/4.2bsd
 QVSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qvss os/4.2bsd
 QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o\
 	$(FONTUTIL)
@@ -97,10 +158,14 @@ QVSSLIBS = $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
 ServerTarget(Xqvss,$(EXTDIR) $(FONTUTILDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+#endif /* doqvssServer */
 
-#
-# qdss server
-#
+
+
+#ifdef doqdssServer
+/**/#
+/**/# qdss server
+/**/#
 QDSSDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qdss \
            ddx/dec/qdss/libtl os/4.2bsd
 QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o\
@@ -111,11 +176,14 @@ QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
 XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(EXTDIR) $(FONTUTILDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
+#endif /* doqdssServer */
 
 
-#
-# sun server
-#
+
+#ifdef dosunServer
+/**/#
+/**/# sun server
+/**/#
 #if defined(UseSunWindowsInServer) && UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
@@ -151,10 +219,14 @@ saber_src_sun:
 	#cd ../../server
 	#load /usr/lib/libm.a
 	#load /usr/lib/libdbm.a
+#endif /* dosunServer */
 
-#
-# plx server
-#
+
+
+#ifdef doplxServer
+/**/#
+/**/# plx server
+/**/#
 PLXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/plx ddx/dec/lk201 os/4.2bsd
 PLXOBJS = ddx/plx/plxInit.o ddx/plx/plxEvents.o $(FONTUTIL)
 PLXLIBS = $(PLX) ddx/dec/lk201/lk201.o $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
@@ -162,10 +234,14 @@ PLXSYSLIBS = $(SYSLIBS) -lplx
 XplxDIRS = $(PLXDIRS)
 
 ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PLXSYSLIBS))
+#endif /* doplxServer */
 
-#
-# HP server
-#
+
+
+#ifdef dohpServer
+/**/#
+/**/# HP server
+/**/#
 HPDIRS = dix ddx/snf ddx/mi ddx/hp/hp ddx/hp/cfb ddx/hp/mfb \
          ddx/hp/topcat os/4.2bsd os/bsdemul
 HPOBJS = ddx/hp/hp/init.o $(FONTUTIL)
@@ -182,11 +258,16 @@ HPMALLOCLIB = -lmalloc
 HPSYSLIBS = $(SYSLIBS) $(HPMALLOCLIB)
 XhpDIRS = $(HPDIRS)
 
-ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 
-#
-# ibm server
-#
+
+ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
+#endif /* dohpServer */
+
+
+#ifdef doibmServer
+/**/#
+/**/# ibm server
+/**/#
 #if SpecialMalloc
 IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 #else
@@ -208,40 +289,56 @@ IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
 ServerTarget(Xibm,$(EXTDIR) $(FONTUTILDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IBMSYSLIBS))
+#endif /* doibmServer */
 
-#
-# apollo server
-#
+
+
+#ifdef doapolloServer
+/**/#
+/**/# apollo server
+/**/#
 APOLLODIRS = dix ddx/snf ddx/mi ddx/mfb ddx/apollo os/4.2bsd
 APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits $(FONTUTIL)
 APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(FONTUTILDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
+#endif /* doapolloServer */
 
-#
-# ndx server
-#
+
+
+#ifdef dondxServer
+/**/#
+/**/# ndx server
+/**/#
 NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/ndx os/4.2bsd
 NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o $(FONTUTIL)
 NDXLIBS = $(DIX) $(BSD) $(SNF) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
 XndxDIRS = $(NDXDIRS)
 
 ServerTarget(Xndx,$(EXTDIR) $(FONTUTILDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SYSLIBS))
+#endif /* dondxServer */
 
-#
-# pegasus server
-#
+
+
+#ifdef dopegServer
+/**/#
+/**/# pegasus server
+/**/#
 PEGASUSDIRS = dix ddx/snf ddx/mi ddx/mfb os/4.2bsd
 PEGASUSOBJS = ddx/tek/XTek.o $(FONTUTIL)
 PEGASUSLIBS = $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XpegDIRS = $(PEGASUSDIRS)
 
 ServerTarget(Xpeg,$(EXTDIR) $(FONTUTILDIR) $(PEGASUSDIRS),$(PEGASUSOBJS),$(PEGASUSLIBS),$(SYSLIBS))
+#endif /* dopegServer */
 
-#
-# macII server
-#
+
+
+#ifdef domacIIServer
+/**/#
+/**/# macII server
+/**/#
 MACIIDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd os/bsdemul
 MACIIOBJS = ddx/macII/macIIInitS.o ddx/macII/macIIColor.o $(FONTUTIL)
 MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(SNF) $(BSDEMUL) $(MFB) $(MI) $(EXTENSIONS)
@@ -249,19 +346,25 @@ MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
 ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILIBS),$(MACIISYSLIBS))
+#endif /* domacIIServer */
 
-#
-# other, necessary targets
-#
+
+
+/*****************************************************************************
+ *                                                                           *
+ *			Do not modify rest of Imakefile                      *
+ *                                                                           *
+ *****************************************************************************/
+
 MakeMakeSubdirs($(SERVERSUBDIRS),RealMakefiles)
 MakeNsubdirMakefiles()
 InstallMultiple($(ALL),$(BINDIR))
 
-#
-# Gad, but I wish this wasn't so complicated.  All this because
-# If we are making two servers, then there may be two lists of
-# directories to depend or whatever, most of which are duplicates
-#
+/**/#
+/**/# Gad, but I wish this wasn't so complicated.  All this because
+/**/# If we are making two servers, then there may be two lists of
+/**/# directories to depend or whatever, most of which are duplicates
+/**/#
 #define DoServerSubdirList(target)					@@\
 target::								@@\
 	@for i in $(ALL); do \						@@\
