@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.173 91/03/27 21:19:16 gildea Exp $ */
+/* $XConsortium: menu.h,v 1.17 91/03/29 13:47:56 gildea Exp $ */
 
 /* Copyright 1989 Massachusetts Institute of Technology */
 
@@ -24,16 +24,34 @@ extern MenuEntry mainMenuEntries[], vtMenuEntries[], tekMenuEntries[];
 extern MenuEntry fontMenuEntries[];
 extern Arg menuArgs[];
 
-extern void HandleAllowSends(), HandleVisualBell(),
-  HandleLogging(), HandleRedraw(), HandleSendSignal(), 
-  HandleQuit(), HandleScrollbar(), HandleJumpscroll(), HandleReverseVideo(),
-  HandleAutoWrap(), HandleReverseWrap(), HandleAutoLineFeed(), 
-  HandleAppCursor(), HandleAppKeypad(), HandleScrollKey(), 
-  HandleScrollTtyOutput(), HandleAllow132(), HandleCursesEmul(), 
-  HandleMarginBell(), HandleAltScreen(), HandleSoftReset(), 
-  HandleHardReset(), HandleSetTerminalType(), HandleVisibility(), 
-  HandleSetTekText(), HandleTekPage(), HandleTekReset(), HandleTekCopy();
-
+extern void HandleAllowSends();
+extern void HandleVisualBell();
+extern void HandleLogging();
+extern void HandleRedraw();
+extern void HandleSendSignal();
+extern void HandleQuit();
+extern void HandleScrollbar();
+extern void HandleJumpscroll();
+extern void HandleReverseVideo();
+extern void HandleAutoWrap();
+extern void HandleReverseWrap();
+extern void HandleAutoLineFeed();
+extern void HandleAppCursor();
+extern void HandleAppKeypad();
+extern void HandleScrollKey();
+extern void HandleScrollTtyOutput();
+extern void HandleAllow132();
+extern void HandleCursesEmul();
+extern void HandleMarginBell();
+extern void HandleAltScreen();
+extern void HandleSoftReset();
+extern void HandleHardReset();
+extern void HandleSetTerminalType();
+extern void HandleVisibility();
+extern void HandleSetTekText();
+extern void HandleTekPage();
+extern void HandleTekReset();
+extern void HandleTekCopy();
 
 
 /*
