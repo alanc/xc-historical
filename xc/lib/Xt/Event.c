@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.121 90/12/11 12:02:08 rws Exp $ */
+/* $XConsortium: Event.c,v 1.122 90/12/12 14:51:17 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -363,7 +363,7 @@ static Const WidgetRec WWfake;	/* placeholder for deletions */
 
 #define WWHASH(tab,win) ((win) & tab->mask)
 #define WWREHASHVAL(tab,win) ((((win) % tab->rehash) + 2) | 1)
-#define WWREHASH(tab,idx,rehash) idx = ((idx + rehash) & tab->mask)
+#define WWREHASH(tab,idx,rehash) ((idx + rehash) & tab->mask)
 #define WWTABLE(display) (_XtGetPerDisplay(display)->WWtable)
 
 static void ExpandWWTable();
