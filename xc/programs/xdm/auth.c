@@ -34,6 +34,10 @@
 #ifdef hpux
 # include   <sys/utsname.h>
 #endif
+#ifdef SVR4
+# include   <sys/utsname.h>
+# include   <netdb.h>
+#endif
 # include    <net/if.h>
 #ifdef TCPCONN
 # include   <netinet/in.h>
@@ -59,6 +63,11 @@ extern int	XdmGetXdmcpAuth ();
 #endif
 #endif
 
+#ifdef SECURE_RPC
+extern int	SecureRPCInitAuth ();
+extern Xauth	*SecureRPCGetAuth ();
+#endif
+
 struct AuthProtocol {
     unsigned short  name_length;
     char	    *name;
@@ -74,8 +83,13 @@ static struct AuthProtocol AuthProtocols[] = {
 },
 #ifdef HASDES
 { (unsigned short) 19,	"XDM-AUTHORIZATION-1",
-    XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth
-}
+    XdmInitAuth, XdmGetAuth, XdmGetXdmcpAuth,
+},
+#endif
+#ifdef SECURE_RPC
+{ (unsigned short) 10, "SECURE-RPC",
+    SecureRPCInitAuth, SecureRPCGetAuth, NULL,
+},
 #endif
 };
 

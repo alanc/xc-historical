@@ -30,6 +30,10 @@
 # include <errno.h>
 # include <stdio.h>
 # include <ctype.h>
+#ifdef SECURE_RPC
+# include <rpc/rpc.h>
+# include <rpc/key_prot.h>
+#endif
 
 extern int  errno;
 
@@ -106,7 +110,7 @@ ErrorHandler(dpy, event)
 ManageSession (d)
 struct display	*d;
 {
-    int			pid, code;
+    int			pid, code, i;
     Display		*dpy, *InitGreet ();
 
     Debug ("ManageSession %s\n", d->name);
@@ -147,6 +151,28 @@ struct display	*d;
 	    FailedLogin (d, &greet);
     }
     DeleteXloginResources (d, dpy);
+#ifdef SECURE_RPC
+    for (i = 0; i < d->authNum; i++)
+    {
+	if (d->authorizations[i]->name_length == 10 &&
+	    bcmp (d->authorizations[i]->name, "SECURE-RPC", 10) == 0)
+	{
+	    XHostAddress	addr;
+	    char		netname[MAXNETNAMELEN+1];
+	    char		domainname[MAXNETNAMELEN+1];
+	    char		secretkey[HEXKEYBYTES+1];
+	    int			ret;
+    
+	    getdomainname(domainname, sizeof domainname);
+	    user2netname (netname, verify.uid, domainname);
+	    addr.family = FamilySecureRPC;
+	    addr.length = strlen (netname);
+	    addr.address = netname;
+	    XAddHost (dpy, &addr);
+	    break;
+	}
+    }
+#endif
     CloseGreet (d);
     Debug ("Greet loop finished\n");
     /*
@@ -165,7 +191,7 @@ struct display	*d;
 	 * Start the clients, changing uid/groups
 	 *	   setting up environment and running the session
 	 */
-	if (StartClient (&verify, d, &clientPid)) {
+	if (StartClient (&verify, d, &clientPid, greet.password)) {
 	    Debug ("Client Started\n");
 	    /*
 	     * Wait for session to end,
@@ -337,10 +363,11 @@ SessionExit (d, status, removeAuth)
     exit (status);
 }
 
-StartClient (verify, d, pidp)
+StartClient (verify, d, pidp, passwd)
 struct verify_info	*verify;
 struct display		*d;
 int			*pidp;
+char			*passwd;
 {
     char	**f, *home, *getEnv ();
     char	*failsafeArgv[2];
@@ -368,6 +395,25 @@ int			*pidp;
 	setgid (verify->gid);
 #endif
 	setuid (verify->uid);
+#ifdef SECURE_RPC
+	{
+	    char    netname[MAXNETNAMELEN+1], secretkey[HEXKEYBYTES+1];
+	    int	    ret;
+	    int	    len;
+
+	    getnetname (netname);
+	    Debug ("User netname: %s\n", netname);
+	    len = strlen (passwd);
+	    if (len > 8)
+		bzero (passwd + 8, len - 8);
+	    ret = getsecretkey(netname,secretkey,passwd);
+	    Debug ("getsecretkey returns %d, key length %d\n",
+		    ret, strlen (secretkey));
+	    ret = key_setsecret(secretkey);
+	    Debug ("key_setsecret returns %d\n", ret);
+	}
+#endif
+	bzero(passwd, strlen(passwd));
 	SetUserAuthorization (d, verify);
 	home = getEnv (verify->userEnviron, "HOME");
 	if (home)
@@ -388,10 +434,12 @@ int			*pidp;
 	execute (failsafeArgv, verify->userEnviron);
 	exit (1);
     case -1:
+	bzero(passwd, strlen(passwd));
 	Debug ("StartSession, fork failed\n");
 	LogError ("can't start session for %d, fork failed\n", d->name);
 	return 0;
     default:
+	bzero(passwd, strlen(passwd));
 	Debug ("StartSession, fork suceeded %d\n", pid);
 	*pidp = pid;
 	return 1;
