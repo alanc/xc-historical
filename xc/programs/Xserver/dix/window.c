@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.202 88/04/28 14:37:10 rws Exp $ */
+/* $Header: window.c,v 1.203 88/06/06 10:59:36 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2699,8 +2699,8 @@ HandleSaveSet(client)
             pParent = pParent->parent;
         if (pParent)
 	{
-            ReparentWindow(pWin, pParent, pWin->absCorner.x, 
-			   pWin->absCorner.y, client);
+            ReparentWindow(pWin, pParent, pWin->absCorner.x - pWin->borderWidth, 
+			   pWin->absCorner.y - pWin->borderWidth, client);
 	    if(!pWin->realized && pWin->mapped)
 		pWin->mapped = FALSE;
             MapWindow(pWin, HANDLE_EXPOSURES, BITS_DISCARDED,
