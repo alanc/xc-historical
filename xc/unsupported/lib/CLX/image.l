@@ -1530,9 +1530,9 @@
 	(let ((pixel (aref array y x)))
 	  (declare (type pixarray-16-element-type pixel))
 	  (setf (aref buffer-bbuf (index+ i 0))
-		(write-image-load-byte 0 pixel))
+		(write-image-load-byte 0 pixel 16))
 	  (setf (aref buffer-bbuf (index+ i 1))
-		(write-image-load-byte 8 pixel)))))))
+		(write-image-load-byte 8 pixel 16)))))))
 
 (defun write-pixarray-24 (buffer-bbuf index array x y width height
 			  padded-bytes-per-line)
@@ -1556,11 +1556,11 @@
 	(let ((pixel (aref array y x)))
 	  (declare (type pixarray-24-element-type pixel))
 	  (setf (aref buffer-bbuf (index+ i 0))
-		(write-image-load-byte 0 pixel))
+		(write-image-load-byte 0 pixel 24))
 	  (setf (aref buffer-bbuf (index+ i 1))
-		(write-image-load-byte 8 pixel))
+		(write-image-load-byte 8 pixel 24))
 	  (setf (aref buffer-bbuf (index+ i 2))
-		(write-image-load-byte 16 pixel)))))))
+		(write-image-load-byte 16 pixel 24)))))))
 
 (defun write-pixarray-32 (buffer-bbuf index array x y width height
 			  padded-bytes-per-line)
@@ -1584,13 +1584,13 @@
 	(let ((pixel (aref array y x)))
 	  (declare (type pixarray-32-element-type pixel))
 	  (setf (aref buffer-bbuf (index+ i 0))
-		(write-image-load-byte 0 pixel))
+		(write-image-load-byte 0 pixel 32))
 	  (setf (aref buffer-bbuf (index+ i 1))
-		(write-image-load-byte 8 pixel))
+		(write-image-load-byte 8 pixel 32))
 	  (setf (aref buffer-bbuf (index+ i 2))
-		(write-image-load-byte 16 pixel))
+		(write-image-load-byte 16 pixel 32))
 	  (setf (aref buffer-bbuf (index+ i 2))
-		(write-image-load-byte 24 pixel)))))))
+		(write-image-load-byte 24 pixel 32)))))))
 
 (defun write-xy-format-image-x
        (display image src-x src-y width height
