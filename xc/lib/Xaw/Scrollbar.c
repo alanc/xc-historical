@@ -41,7 +41,7 @@ static char defaultTranslations[] =
     "<Btn1Down>:   StartScroll(Forward) \n\
      <Btn2Down>:   StartScroll(Continuous) MoveThumb() NotifyThumb() \n\
      <Btn3Down>:   StartScroll(Backward) \n\
-     <Btn2Motion>: MoveThumb() NotifyThumb() \n\
+     Button2<Motion>: MoveThumb() NotifyThumb() \n\
      <BtnUp>:      NotifyScroll(Proportional) EndScroll()";
 
 #ifdef bogusScrollKeys
