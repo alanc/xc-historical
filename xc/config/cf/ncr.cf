@@ -2,25 +2,28 @@
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		0
-#define OSVendor		'NCR'
 
 #define SystemV4		YES
-#define HasSockets		YES
-#define ProjectRoot		/usr/X11R6
+#define BootstrapCFlags		-DNCR
 
 /* Build Flags */
 
-#define	NeedFunctionPrototypes  YES
-#define BootstrapCFlags		-DNCR -DSVR4
 XCOMM #define StandardDefines		-DSVR4 -DNCR -Di386 -DUSL_COMPAT -DXML -DXI18N
 #define StandardDefines		-DSVR4 -DNCR -Di386 -DXML -DXI18N
+#ifndef StrictAnsiMode
+#define StrictAnsiMode		YES
+#endif
+#if StrictAnsiMode
+#define DefaultCCOptions -Xc -Hnocopyr
+#else
+#define DefaultCCOptions -Xa -DANSICPP -Hnocopyr
+#define NeedConstPrototypes	YES
+#define NeedVarargsPrototypes	YES
+#define NeedNestedPrototypes	YES
+#define	NeedFunctionPrototypes  YES
+#endif
 #define DefaultCDebugFlags	-O3
-#define DefaultCCOptions	-Xa -Hnocopyr -DANSICPP
-#define LibraryCDebugFlags	-O3
-#define LibraryCCOptions	-Xa -Hnocopyr -DANSICPP
-#define ServerCDebugFlags	-O3
-#define ServerCCOptions		-Xa -Hnocopyr -DNO_SECONDARY -DANSICPP
-#define ServerExtraDefines      -DSYSV386 -DXSVGA
+#define ServerExtraDefines      -DSYSV386 -DXSVGA -DNO_SECONDARY
 #define ServerOSDefines         -DDDXTIME -DDDXOSINIT
 
 #define ConnectionFlags	-DTLICONN -DLOCALCONN -DUNIXCONN
@@ -53,15 +56,8 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
 
 /* Various Configuration settings */
 
-#define NeedWidePrototypes	NO	/* experimental */
 #define PatheticCpp		YES
 #define XsvgaServer		YES
-#define X386Server		YES
-#define X386OrcaServer		YES
-#define XnestServer		YES
-#define ForceNormalLib		YES
-#define InstallFSConfig		YES
-#define InstallXdmConfig	YES
 #define DefaultUserPath		/bin:/sbin:/usr/bin:/usr/sbin:$(BINDIR):/usr/ucb
 #define DefaultSystemPath	/etc:/bin:/usr/bin:/sbin:/usr/sbin:$(BINDIR):/usr/ucb
 #define ExtraFilesToClean	*.z
@@ -74,7 +70,6 @@ XCOMM #define ExtensionOSDefines	-DXTESTEXT1
 #define LibManSuffix		3X
 #define ManSourcePath		$(MANPATH)/g
 #define XmanSearchPath		/usr/catman
-#define XmanLocalSearchPath	/usr/share/man
 
 #undef	TblCmd
 #define	TblCmd /usr/ucb/tbl
