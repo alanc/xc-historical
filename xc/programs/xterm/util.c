@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.8 88/10/06 09:10:09 swick Exp $
+ *	$XConsortium: util.c,v 1.9 88/10/06 12:01:09 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.8 88/10/06 09:10:09 swick Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.9 88/10/06 12:01:09 swick Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -148,7 +148,7 @@ register TScreen *screen;
 		    (unsigned) refreshheight * FontHeight(screen),
 		    FALSE);
 		ScrnRefresh(screen, refreshtop, 0, refreshheight,
-		 screen->max_col + 1);
+		 screen->max_col + 1, False);
 	}
 }
 
@@ -216,7 +216,7 @@ register int amount;
 	}
 	refreshheight = 0;
     } else {
-
+	ScrollSelection(screen, -(amount));
 	if (amount == i) {
 		ClearScreen(screen);
 		return;
@@ -296,7 +296,7 @@ register int amount;
 		 amount, screen->max_col + 1);
 	if(refreshheight > 0)
 		ScrnRefresh(screen, refreshtop, 0, refreshheight,
-		 screen->max_col + 1);
+		 screen->max_col + 1, False);
 }
 
 
@@ -868,72 +868,7 @@ register XExposeEvent *reply;
 		ncols = screen->max_col - leftcol + 1;
 
 	if (nrows > 0 && ncols > 0) {
-	        int lastrow = toprow + nrows - 1;
-		if (toprow > screen->endHRow || lastrow < screen->startHRow) {
-		    ScrnRefresh (screen, toprow, leftcol, nrows, ncols);
-		}
-		else {
-		    /* region intersects the selection */
-		    int endcol = leftcol + ncols;
-		    int row;
-		    /* do the rectangle above the selection */
-		    if (toprow < screen->startHRow) {
-			int bottom = Min(lastrow, screen->endHRow - 1);
-			ScrnRefresh( screen, toprow, leftcol,
-				     bottom - toprow + 1, ncols );
-		    }
-		    /* do the rectangle to the left of the selection */
-		    if (  toprow <= screen->startHRow &&
-			  leftcol < screen->startHCol) {
-			ScrnRefresh( screen, screen->startHRow, leftcol,
-				     1, screen->startHCol - leftcol );
-		    }
-		    /* do the rectangle to the right of the selection */
-		    if (  lastrow >= screen->endHRow &&
-			  endcol > screen->endHCol) {
-			ScrnRefresh( screen, screen->endHRow,
-				     screen->endHCol + 1, 1,
-				     endcol - screen->endHCol );
-		    }
-		    /* do the rectangle below the selection */
-		    if (lastrow > screen->endHRow) {
-			int top = Max(toprow, screen->endHRow + 1);
-			ScrnRefresh( screen, top, leftcol,
-				     lastrow - top + 1, ncols );
-		    }
-		    /* finally, do the selection */
-		    if ( Max(toprow, screen->startHRow) <=
-			 Min(lastrow, screen->endHRow) ) {
-			GC gc;
-			gc = screen->normalGC;
-			screen->normalGC = screen->reverseGC;
-			screen->reverseGC = gc;
-			gc = screen->normalboldGC;
-			screen->normalboldGC = screen->reverseboldGC;
-			screen->reverseboldGC = gc;
-
-			for (row = Max(toprow, screen->startHRow);
-			     row <= Min(lastrow, screen->endHRow); row++)
-			{
-			    int left, right;
-			    if (row == screen->startHRow &&
-				leftcol < screen->startHCol)
-				 left = screen->startHCol;
-			    else left = leftcol;
-			    if (row == screen->endHRow &&
-				endcol > screen->endHCol)
-				 right = screen->endHCol;
-			    else right = endcol;
-			    ScrnRefresh( screen, row, left, 1, right - left );
-			}
-			gc = screen->normalGC;
-			screen->normalGC = screen->reverseGC;
-			screen->reverseGC = gc;
-			gc = screen->normalboldGC;
-			screen->normalboldGC = screen->reverseboldGC;
-			screen->reverseboldGC = gc;
-		    }
-		}
+		ScrnRefresh (screen, toprow, leftcol, nrows, ncols, False);
 		if (screen->cur_row >= toprow &&
 		    screen->cur_row < toprow + nrows &&
 		    screen->cur_col >= leftcol &&
@@ -1011,7 +946,7 @@ ReverseVideo (term)
 	}
 	XClearWindow(screen->display, TextWindow(screen));
 	ScrnRefresh (screen, 0, 0, screen->max_row + 1,
-	 screen->max_col + 1);
+	 screen->max_col + 1, False);
 	if(screen->Tshow) {
 	    XClearWindow(screen->display, tek);
 	    TekExpose((XExposeEvent *) NULL);
