@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.4 92/08/26 13:06:23 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.5 92/08/26 15:18:10 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1943,7 +1943,7 @@ OUTPUT PEXMatrix	transform_return;
     transform_return[1][1] = -scale_y;
     transform_return[1][2] = 0.0;
     transform_return[1][3] =
-	window_height - 1 - viewport[0].y + (scale_y * npc_sub_volume->min.y);
+	window_height - viewport[0].y + (scale_y * npc_sub_volume->min.y);
 
     transform_return[2][0] = 0.0;
     transform_return[2][1] = 0.0;
@@ -2038,7 +2038,7 @@ OUTPUT PEXMatrix3x3	transform_return;
     transform_return[1][0] = 0.0;
     transform_return[1][1] = -scale_y;
     transform_return[1][2] =
-	window_height - 1 - viewport[0].y + (scale_y * npc_sub_volume->min.y);
+	window_height - viewport[0].y + (scale_y * npc_sub_volume->min.y);
 
     transform_return[2][0] = 0.0;
     transform_return[2][1] = 0.0;
@@ -2136,7 +2136,7 @@ OUTPUT PEXMatrix	transform_return;
     transform_return[1][1] = -scale_y;
     transform_return[1][2] = 0.0;
     transform_return[1][3] =
-	npc_sub_volume->min.y + scale_y * (window_height - 1 - viewport[0].y);
+	npc_sub_volume->min.y + scale_y * (window_height - viewport[0].y);
 
     transform_return[2][0] = 0.0;
     transform_return[2][1] = 0.0;
@@ -2231,7 +2231,7 @@ INPUT PEXMatrix3x3	transform_return;
     transform_return[1][0] = 0.0;
     transform_return[1][1] = -scale_y;
     transform_return[1][2] =
-	npc_sub_volume->min.y + scale_y * (window_height - 1 - viewport[0].y);
+	npc_sub_volume->min.y + scale_y * (window_height - viewport[0].y);
 
     transform_return[2][0] = 0.0;
     transform_return[2][1] = 0.0;
