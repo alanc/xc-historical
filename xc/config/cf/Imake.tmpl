@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.168 93/07/14 10:51:05 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.169 93/07/14 16:55:54 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -424,6 +424,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef StripInstalledPrograms
 #define StripInstalledPrograms NO	/* leave symbol table just in case */
 #endif
+#ifndef UseCCMakeDepend			/* use slow cc -E script */
+#define UseCCMakeDepend NO
+#endif
 
 #ifndef UsrLibDir
 #ifdef ProjectRoot
@@ -464,6 +467,48 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #ifndef AlternateIncRoot
 #define AlternateIncRoot YES
+#endif
+#endif
+#ifndef LintlibDir
+#define LintlibDir $(USRLIBDIR)/lint
+#endif
+#ifndef ManDirectoryRoot
+#ifdef ProjectRoot
+#define ManDirectoryRoot Concat(ProjectRoot,/man)
+#else
+#if SystemV4
+#define ManDirectoryRoot /usr/share/man
+#else
+#define ManDirectoryRoot /usr/man
+#endif
+#endif
+#endif
+#ifndef ManPath
+#define ManPath ManDirectoryRoot
+#endif
+#ifndef ManSourcePath
+#define ManSourcePath $(MANPATH)/man
+#endif
+#ifndef ManDir
+#define ManDir $(MANSOURCEPATH)$(MANSUFFIX)
+#endif
+#ifndef LibmanDir
+#define LibmanDir $(MANSOURCEPATH)$(LIBMANSUFFIX)
+#endif
+#ifndef ConfigSrc
+#define ConfigSrc $(TOP)/config
+#endif
+#ifndef UtilSrc
+#define UtilSrc $(TOP)/util
+#endif
+#ifndef ScriptSrc
+#define ScriptSrc $(UTILSRC)/scripts
+#endif
+#ifndef DependDir
+#if UseCCMakeDepend
+#define DependDir $(SCRIPTSRC)
+#else
+#define DependDir $(UTILSRC)/makedepend
 #endif
 #endif
 #ifndef UNCOMPRESSPATH
@@ -710,8 +755,29 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef LoaderLibPrefix
 #define LoaderLibPrefix /**/
 #endif
+#ifndef ImakeCmd
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define ImakeCmd imake
+#else
+#define ImakeCmd $(IMAKESRC)/imake
+#endif
+#endif
+#ifndef DependCmd
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define DependCmd makedepend
+#else
+#define DependCmd $(DEPENDSRC)/makedepend
+#endif
+#endif
 #ifndef DependFlags
 #define DependFlags /**/
+#endif
+#ifndef MkdirHierCmd
+#ifdef UseInstalled
+#define MkdirHierCmd $(SHELL) $(BINDIR)/mkdirhier
+#else
+#define MkdirHierCmd $(SHELL) $(SCRIPTSRC)/mkdirhier.sh
+#endif
 #endif
 #ifndef TroffCmd
 #define TroffCmd psroff
@@ -732,6 +798,18 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef PurifyOptions
 #define PurifyOptions /**/
 #endif
+#endif
+#ifndef RemoveTargetProgramByMoving
+#define RemoveTargetProgramByMoving NO
+#endif
+#ifndef PathSeparator
+#define PathSeparator /
+#endif
+#ifndef ManSuffix
+#define ManSuffix	n		/* use just one tab or cpp will die */
+#endif
+#ifndef LibManSuffix
+#define LibManSuffix	3		/* use just one tab or cpp will die */
 #endif
 #ifndef ExpandManNames
 #if SystemV
@@ -756,10 +834,29 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define FilesToClean *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
 #endif
 
+          PATHSEP = PathSeparator
             SHELL = BourneShell
 
               TOP = TOPDIR
       CURRENT_DIR = CURDIR
+
+            IMAKE = ImakeCmd
+           DEPEND = DependCmd
+        MKDIRHIER = MkdirHierCmd
+        CONFIGSRC = ConfigSrc
+         IMAKESRC = $(CONFIGSRC)
+          UTILSRC = UtilSrc
+        SCRIPTSRC = ScriptSrc
+        DEPENDSRC = DependDir
+
+          INCROOT = IncRoot		/* base of where to put header files */
+        USRLIBDIR = UsrLibDir		/* nonshared libraries */
+         SHLIBDIR = ShLibDir            /* shared libraries */
+       LINTLIBDIR = LintlibDir		/* lint libraries */
+          MANPATH = ManPath		/* top of manual page tree */
+    MANSOURCEPATH = ManSourcePath	/* prefix for man page sources */
+           MANDIR = ManDir		/* man pages for commands */
+        LIBMANDIR = LibmanDir		/* man pages for library routines */
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
@@ -789,6 +886,8 @@ XCOMM the platform-specific parameters - edit site.def to change
   RANLIBINSTFLAGS = RanlibInstFlags
 #endif
                RM = RmCmd
+        MANSUFFIX = ManSuffix		/* suffix for man pages */
+     LIBMANSUFFIX = LibManSuffix	/* suffix for library man pages */
             TROFF = TroffCmd
          MSMACROS = MsMacros
               TBL = TblCmd
@@ -952,6 +1051,9 @@ PICFLAGS = PositionIndependentCFlags
 #ifdef FixupLibReferences
 FixupLibReferences()
 #endif
+
+/* ConfigDir comes from Project.tmpl */
+        CONFIGDIR = ConfigDir		/* build configuration information */
 
 XCOMM -------------------------------------------------------------------------
 XCOMM start of Imakefile
