@@ -25,21 +25,18 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
  */
 
 #ifdef DefaultFontPath
-SITE_FONT_PATH = -DCOMPILEDDEFAULTFONTPATH=\"DefaultFontPath\"
-#else
-SITE_FONT_PATH = /* as nothing */
+DEFAULTFONTPATH = DefaultFontPath
+SITE_FONT_PATH = -DCOMPILEDDEFAULTFONTPATH=\"$(DEFAULTFONTPATH)\"
 #endif
 
 #ifdef DefaultRGBDatabase
-   SITE_RGB_DB = -DRGB_DB=\"DefaultRGBDatabase\"
-#else
-   SITE_RBB_DB = /* as nothing */
+DEFAULTRGBDATABASE = DefaultRGBDatabase
+   SITE_RGB_DB = -DRGB_DB=\"$(DEFAULTRGBDATABASE)\"
 #endif
 
 #ifdef DefaultDisplayClass
-   SITE_DISPLAY_CLASS = -DCOMPILEDDISPLAYCLASS=\"DefaultDisplayClass\"
-#else
-   SITE_DISPLAY_CLASS = /* as nothing */
+DEFAULTDISPLAYCLASS = DefaultDisplayClass
+   SITE_DISPLAY_CLASS = -DCOMPILEDDISPLAYCLASS=\"$(DEFAULTDISPLAYCLASS)\"
 #endif
 
 SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB) $(SITE_DISPLAY_CLASS)
