@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.7 93/09/17 11:09:18 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.8 93/09/25 16:10:02 rws Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -51,6 +51,9 @@
 #endif
 #endif
 #endif
+#endif
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 2048
 #endif
 
 #ifdef X_NOT_STDC_ENV
