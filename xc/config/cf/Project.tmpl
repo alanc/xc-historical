@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.22 89/06/15 17:43:00 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.23 89/06/15 17:46:53 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -74,9 +74,6 @@
 #endif
 #ifndef NeedBerklibInXlib
 #define NeedBerklibInXlib       NO
-#endif
-#ifndef NeedStreamsInXlib
-#define NeedStreamsInXlib	NO
 #endif
 #ifndef ManDirectoryRoot
 #define ManDirectoryRoot /usr/man		/* if not set in .macros */
@@ -235,21 +232,6 @@
 #define SharedXlibRev 4.1
 #endif
 
-#if NeedStreamsInXlib
-#define BandAidLibraryNeeded		YES
-#define BandAidLibrarySources Xstreams.c Berklib.c
-#define BandAidLibraryObjects Xstreams.o Berklib.o
-#define BandAidLibraryMake()					@@\
-Xstreams.c: sysV/Xstreams.c					@@\
-	-$(RM) Xstreams.c					@@\
-	-$(LN) sysV/Xstreams.c .				@@\
-								@@\
-Berklib.c: sysV/Berklib.c					@@\
-	-$(RM) Berklib.c					@@\
-	-$(LN) sysV/Berklib.c .
-
-#else /* else do not need streams */
-
 #if NeedBerklibInXlib		/* what about regular Berklib */
 #define BandAidLibraryNeeded		YES
 #define BandAidLibrarySources		Berklib.c
@@ -259,7 +241,6 @@ Berklib.c: sysV/Berklib.c					@@\
 	-$(RM) Berklib.c					@@\
 	-$(LN) sysV/Berklib.c .
 #endif /* NeedBerklibInXlib */
-#endif /* NeedStreamsInXlib */
 
 
 #ifndef BandAidLibraryNeeded
@@ -268,7 +249,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.22 89/06/15 17:43:00 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.23 89/06/15 17:46:53 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
