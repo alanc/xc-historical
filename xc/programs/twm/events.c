@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.130 90/03/08 15:19:54 jim Exp $
+ * $XConsortium: events.c,v 1.131 90/03/08 15:44:37 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.130 90/03/08 15:19:54 jim Exp $";
+"$XConsortium: events.c,v 1.131 90/03/08 15:44:37 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -485,6 +485,7 @@ HandleKeyPress()
 {
     FuncKey *key;
     int len;
+    unsigned int modifier;
 
     if (InfoLines) XUnmapWindow(dpy, Scr->InfoWindow);
     Context = C_NO_CONTEXT;
@@ -507,10 +508,11 @@ HandleKeyPress()
 	    Context = C_ICONMGR;
     }
 
+    modifier = (Event.xkey.state & mods_used);
     for (key = Scr->FuncKeyRoot.next; key != NULL; key = key->next)
     {
 	if (key->keycode == Event.xkey.keycode &&
-	    key->mods == Event.xkey.state &&
+	    key->mods == modifier &&
 	    (key->cont == Context || key->cont == C_NAME))
 	{
 	    /* weed out the functions that don't make sense to execute
@@ -1560,7 +1562,7 @@ static do_menu (menu, w)
 void
 HandleButtonPress()
 {
-    int modifier;
+    unsigned int modifier;
     Cursor cur;
 
     /* pop down the menu, if any */
