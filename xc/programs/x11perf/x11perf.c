@@ -33,6 +33,8 @@ SOFTWARE.
 static Bool drawToFakeServer = False;
 static Pixmap tileToQuery = None;
 
+static Bool xorMode = False;
+
 static double syncTime = 0.0;
 
 static int saveargc;
@@ -259,6 +261,7 @@ void usage()
 "    -all			do all tests",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
+"    -xor			use GXxor mode to draw",
 NULL};
 
     fflush(stdout);
@@ -475,15 +478,26 @@ void CreatePerfGCs(xp)
 
     gcv.graphics_exposures = False;
 
-    gcv.foreground = xp->background;
-    gcv.background = xp->foreground;
-    xp->bggc = XCreateGC(xp->d, xp->w, 
+    if (xorMode) {
+	gcv.function = GXxor;
+	gcv.foreground = xp->background ^ xp->foreground;
+	gcv.background = xp->background;
+        xp->fggc = XCreateGC(xp->d, xp->w, 
+	    GCForeground | GCBackground | GCGraphicsExposures | GCFunction,
+	    &gcv);
+        xp->bggc = XCreateGC(xp->d, xp->w, 
+	    GCForeground | GCBackground | GCGraphicsExposures | GCFunction,
+	    &gcv);
+    } else {
+	gcv.foreground = xp->foreground;
+	gcv.background = xp->background;
+	xp->fggc = XCreateGC(xp->d, xp->w, 
 		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
-
-    gcv.foreground = xp->foreground;
-    gcv.background = xp->background;
-    xp->fggc = XCreateGC(xp->d, xp->w, 
+	gcv.foreground = xp->background;
+	gcv.background = xp->foreground;
+	xp->bggc = XCreateGC(xp->d, xp->w, 
 		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
+    }
 }
 
 void DestroyPerfGCs(xp)
@@ -604,6 +618,8 @@ main(argc, argv)
 		usage ();
 	    i++;
 	    background = argv[i];
+	} else if (strcmp(argv[i], "-xor") == 0) {
+	    xorMode = True;
 	} else {
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0) {
