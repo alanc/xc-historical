@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.34 93/11/12 16:38:22 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.35 93/11/14 13:37:48 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -161,13 +161,13 @@ static void SetLights (ctrl)
 }
 
 
-static void ModLight (pKeyboard, on, led)
-    DeviceIntPtr pKeyboard;
+static void ModLight (device, on, led)
+    DeviceIntPtr device;
     Bool	on;
     int		led;
 {
-    KeybdCtrl*	ctrl = &pKeyboard->kbdfeed->ctrl;
-    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->public.devicePrivate;
+    KeybdCtrl*	ctrl = &device->kbdfeed->ctrl;
+    KbPrivPtr	pPriv = (KbPrivPtr) device->public.devicePrivate;
 
     if(on) {
 	ctrl->leds |= led;
@@ -259,6 +259,50 @@ static void EnqueueEvent (xE)
 #endif
 }
 
+#ifndef XKB
+static void pseudoKey(device, down, keycode)
+    DeviceIntPtr device;
+    Bool down;
+    KeyCode keycode;
+{
+    int bit;
+    CARD8 modifiers;
+    CARD16 mask;
+    BYTE* kptr;
+
+    kptr = &device->key->down[keycode >> 3];
+    bit = 1 << (keycode & 7);
+    modifiers = device->key->modifierMap[keycode];
+    if (down) {
+	/* fool dix into thinking this key is now "down" */
+	int i;
+	*kptr |= bit;
+	device->key->prev_state = device->key->state;
+	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	    if (mask & modifiers) {
+		device->key->modifierKeyCount[i]++;
+		device->key->state += mask;
+		modifiers &= ~mask;
+	    }
+    } else {
+	/* fool dix into thinking this key is now "up" */
+	if (*kptr & bit) {
+	    int i;
+	    *kptr &= ~bit;
+	    device->key->prev_state = device->key->state;
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+		if (mask & modifiers) {
+		    if (--device->key->modifierKeyCount[i] <= 0) {
+			device->key->state &= ~mask;
+			device->key->modifierKeyCount[i] = 0;
+		    }
+		    modifiers &= ~mask;
+		}
+	}
+    }
+}
+#endif
+
 /*-
  *-----------------------------------------------------------------------
  * sunKbdCtrl --
@@ -296,83 +340,42 @@ static void sunKbdCtrl (device, ctrl)
  	    Error("Failed to set keyclick");
     }
 #ifndef XKB
-    if (ctrl != NULL && pPriv->leds != ctrl->leds & 0x0f) {
-	Bool keypress;
-	KeyCode key;
-	int bit;
-	CARD8 modifiers;
-	CARD16 mask;
-	BYTE* kptr;
-	KeyClassPtr keyc = device->key;
-	KeySymsPtr keysymsrec = &device->key->curKeySyms;
+    if (ctrl != NULL && 
+	pPriv->leds != ctrl->leds & 0x0f &&
+	pPriv->type == KB_SUN4) {
 
-	/* major presumption that only one LED can change at a time */
-	if ((ctrl->leds & LED_CAPS_LOCK) && !(pPriv->leds & LED_CAPS_LOCK)) {
-	    key = LookupKeyCode(XK_Caps_Lock, keysymsrec);
-	    keypress = TRUE;
-	}
-	if (!(ctrl->leds & LED_CAPS_LOCK) && (pPriv->leds & LED_CAPS_LOCK)) {
-	    key = LookupKeyCode(XK_Caps_Lock, keysymsrec);
-	    keypress = FALSE;
-	}
+	if ((ctrl->leds & LED_CAPS_LOCK) && !(pPriv->leds & LED_CAPS_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
 
-	if ((ctrl->leds & LED_NUM_LOCK) && !(pPriv->leds & LED_NUM_LOCK)) {
-	    key = LookupKeyCode(XK_Num_Lock, keysymsrec);
-	    keypress = TRUE;
-	}
-	if (!(ctrl->leds & LED_NUM_LOCK) && (pPriv->leds & LED_NUM_LOCK)) {
-	    key = LookupKeyCode(XK_Num_Lock, keysymsrec);
-	    keypress = FALSE;
-	}
+	if (!(ctrl->leds & LED_CAPS_LOCK) && (pPriv->leds & LED_CAPS_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
 
-	if ((ctrl->leds & LED_SCROLL_LOCK) && !(pPriv->leds & LED_SCROLL_LOCK)) {
-	    key = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
-	    keypress = TRUE;
-	}
-	if (!(ctrl->leds & LED_SCROLL_LOCK) && (pPriv->leds & LED_SCROLL_LOCK)) {
-	    key = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
-	    keypress = FALSE;
-	}
+	if ((ctrl->leds & LED_NUM_LOCK) && !(pPriv->leds & LED_NUM_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
 
-	if ((ctrl->leds & LED_COMPOSE) && !(pPriv->leds & LED_COMPOSE)) {
-	    key = LookupKeyCode(SunXK_Compose, keysymsrec);
-	    keypress = TRUE;
-	}
-	if (!(ctrl->leds & LED_COMPOSE) && (pPriv->leds & LED_COMPOSE)) {
-	    key = LookupKeyCode(SunXK_Compose, keysymsrec);
-	    keypress = FALSE;
-	}
+	if (!(ctrl->leds & LED_NUM_LOCK) && (pPriv->leds & LED_NUM_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Num_Lock, &device->key->curKeySyms));
 
-	kptr = &keyc->down[key >> 3];
-	bit = 1 << (key & 7);
-	modifiers = keyc->modifierMap[key];
-	if (keypress) {
-	    /* fool dix into thinking this key is now "down" */
-	    int i;
-	    *kptr |= bit;
-	    keyc->prev_state = keyc->state;
-	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
-		if (mask & modifiers) {
-		    keyc->modifierKeyCount[i]++;
-		    keyc->state += mask;
-		    modifiers &= ~mask;
-		}
-	} else {
-	    /* fool dix into thinking this key is now "up" */
-	    if (*kptr & bit) {
-		int i;
-		*kptr &= ~bit;
-		keyc->prev_state = keyc->state;
-		for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
-		    if (mask & modifiers) {
-			if (--keyc->modifierKeyCount[i] <= 0) {
-			    keyc->state &= ~mask;
-			    keyc->modifierKeyCount[i] = 0;
-			}
-			modifiers &= ~mask;
-		    }
-	    }
-	}
+	if ((ctrl->leds & LED_SCROLL_LOCK) && !(pPriv->leds & LED_SCROLL_LOCK))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
+
+	if (!(ctrl->leds & LED_SCROLL_LOCK) && (pPriv->leds & LED_SCROLL_LOCK))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(XK_Scroll_Lock, &device->key->curKeySyms));
+
+	if ((ctrl->leds & LED_COMPOSE) && !(pPriv->leds & LED_COMPOSE))
+	    pseudoKey(device, TRUE,
+		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+
+	if (!(ctrl->leds & LED_COMPOSE) && (pPriv->leds & LED_COMPOSE))
+	    pseudoKey(device, FALSE,
+		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+
 	pPriv->leds = ctrl->leds & 0x0f;
 	SetLights (ctrl);
     }
@@ -529,14 +532,12 @@ int sunKbdProc (device, what)
     case DEVICE_CLOSE:
     case DEVICE_OFF:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-
-	/* 
-	 * dumb bug in Sun's keyboard! Turn off LEDS before resetting
-	 */
-	pPriv->leds = 0;
-	ctrl->leds = 0;
-	SetLights(ctrl);
-
+	if (pPriv->type == KB_SUN4) {
+	    /* dumb bug in Sun's keyboard! Turn off LEDS before resetting */
+	    pPriv->leds = 0;
+	    ctrl->leds = 0;
+	    SetLights(ctrl);
+	}
 	/*
 	 * Restore original keyboard directness and translation.
 	 */
@@ -568,12 +569,10 @@ int sunKbdProc (device, what)
 
 #if NeedFunctionPrototypes
 Firm_event* sunKbdGetEvents (
-    DevicePtr	  pKeyboard,
     int	    	  *pNumEvents,
     Bool	  *pAgain)
 #else
-Firm_event* sunKbdGetEvents (pKeyboard, pNumEvents, pAgain)
-    DevicePtr	  pKeyboard;	    /* Keyboard to read */
+Firm_event* sunKbdGetEvents (pNumEvents, pAgain)
     int	    	  *pNumEvents;	    /* Place to return number of events */
     Bool	  *pAgain;	    /* whether more might be available */
 #endif
@@ -608,31 +607,29 @@ static xEvent	autoRepeatEvent;
 
 #if NeedFunctionPrototypes
 void sunKbdEnqueueEvent (
-    DevicePtr	  pKeyboard,
+    DeviceIntPtr  device,
     Firm_event	  *fe)
 #else
-void sunKbdEnqueueEvent (pKeyboard, fe)
-    DevicePtr	  pKeyboard;
+void sunKbdEnqueueEvent (device, fe)
+    DeviceIntPtr  device;
     Firm_event	  *fe;
 #endif
 {
     xEvent		xE;
-    KbPrivPtr		pPriv;
-    BYTE		key;
+    BYTE		keycode;
     CARD8		keyModifiers;
     KeySym		ksym;
-    int			map_index;
-    DeviceIntPtr	dev;
-    KeybdCtrl*		ctrl = &((DeviceIntPtr)pKeyboard)->kbdfeed->ctrl;
+    int			map_index, bit;
+    KbPrivPtr		pPriv = (KbPrivPtr)device->public.devicePrivate;
+    KeybdCtrl*		ctrl = &device->kbdfeed->ctrl;
+    BYTE*		kptr;
 
-    pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-    key = (fe->id & 0x7f) + MIN_KEYCODE;
-    dev = (DeviceIntPtr) pKeyboard;
+    keycode = (fe->id & 0x7f) + MIN_KEYCODE;
 
-    keyModifiers = dev->key->modifierMap[key];
+    keyModifiers = device->key->modifierMap[keycode];
 #ifndef XKB
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
-	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
+	((fe->value == VKEY_DOWN) || (keycode == autoRepeatEvent.u.u.detail))) {
 	/*
 	 * Kill AutoRepeater on any real non-modifier key down, or auto key up
 	 */
@@ -641,14 +638,14 @@ void sunKbdEnqueueEvent (pKeyboard, fe)
 #endif
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
-    xE.u.u.detail = key;
+    xE.u.u.detail = keycode;
 #ifndef XKB
     /* look up the present idea of the keysym */
     map_index = 0;
-    if (dev->key->state & ShiftMask) map_index ^= 1;
-    if (dev->key->state & LockMask) map_index ^= 1;
-    map_index += (fe->id - 1) * dev->key->curKeySyms.mapWidth;
-    ksym = dev->key->curKeySyms.map[map_index];
+    if (device->key->state & ShiftMask) map_index ^= 1;
+    if (device->key->state & LockMask) map_index ^= 1;
+    map_index += (fe->id - 1) * device->key->curKeySyms.mapWidth;
+    ksym = device->key->curKeySyms.map[map_index];
 
     /*
      * Toggle functionality is hardcoded. This is achieved by always
@@ -662,21 +659,26 @@ void sunKbdEnqueueEvent (pKeyboard, fe)
 	|| (keyModifiers & LockMask))) 
 	return;
 
-    if ((ksym == XK_Num_Lock && ctrl->leds & LED_NUM_LOCK) ||
-	(ksym == XK_Scroll_Lock && ctrl->leds & LED_SCROLL_LOCK) ||
-	(ksym == SunXK_Compose && ctrl->leds & LED_COMPOSE) ||
-	((keyModifiers & LockMask) && ctrl->leds & LED_CAPS_LOCK))
+    kptr = &device->key->down[keycode >> 3];
+    bit = 1 << (keycode & 7);
+    if ((*kptr & bit) &&
+	(ksym == XK_Num_Lock || ksym == XK_Scroll_Lock ||
+	ksym == SunXK_Compose || (keyModifiers & LockMask)))
 	xE.u.u.type = KeyRelease;
 
-    if (ksym == XK_Num_Lock)
-	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_NUM_LOCK);
-    else if (ksym == XK_Scroll_Lock)
-	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
-    else if (ksym == SunXK_Compose)
-	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_COMPOSE);
-    else if (keyModifiers & LockMask)
-	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
-    else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
+    if (ksym == XK_Num_Lock) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE.u.u.type == KeyPress, LED_NUM_LOCK);
+    } else if (ksym == XK_Scroll_Lock) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
+    } else if (ksym == SunXK_Compose) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE.u.u.type == KeyPress, LED_COMPOSE);
+    } else if (keyModifiers & LockMask) {
+	if (pPriv->type == KB_SUN4)
+	    ModLight (device, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+    } else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
 	autoRepeatFirst = TRUE;

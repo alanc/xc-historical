@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.18 93/10/29 17:40:29 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.19 93/11/12 16:38:21 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -44,6 +44,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
+#define NEED_EVENTS
 #include    "sun.h"
 
 /*-
@@ -81,24 +82,20 @@ void sunEnqueueEvents (
 #endif
 )
 {
-    register Firm_event    *ptrEvents,    	/* Current pointer event */
-			   *kbdEvents;	    	/* Current keyboard event */
-    register int	    numPtrEvents, 	/* Number of remaining pointer
-						 * events */
-			    numKbdEvents;   	/* Number of remaining
-						 * keyboard events */
-    int	    	  	    nPE,    	    	/* Original number of pointer
-						 * events */
-			    nKE;    	    	/* Original number of
-						 * keyboard events */
-    Bool		    PtrAgain,		/* need to (re)read */
-			    KbdAgain;		/* need to (re)read */
-    DevicePtr		    pPointer;
-    DevicePtr		    pKeyboard;
+    Firm_event	*ptrEvents,    	/* Current pointer event */
+		*kbdEvents;    	/* Current keyboard event */
+    int		numPtrEvents, 	/* Number of remaining pointer events */
+		numKbdEvents;   /* Number of remaining keyboard events */
+    int		nPE,   	    	/* Original number of pointer events */
+		nKE;   	    	/* Original number of keyboard events */
+    Bool	PtrAgain,	/* need to (re)read */
+		KbdAgain;	/* need to (re)read */
+    DeviceIntPtr	pPointer;
+    DeviceIntPtr	pKeyboard;
 
-    pPointer = LookupPointerDevice();
-    pKeyboard = LookupKeyboardDevice();
-    if (!pPointer->on || !pKeyboard->on)
+    pPointer = (DeviceIntPtr)LookupPointerDevice();
+    pKeyboard = (DeviceIntPtr)LookupKeyboardDevice();
+    if (!pPointer->public.on || !pKeyboard->public.on)
 	return;
 
     numPtrEvents = 0;
@@ -119,11 +116,11 @@ void sunEnqueueEvents (
 	 * in pE and kE
 	 */
 	if ((numPtrEvents == 0) && PtrAgain) {
-	    ptrEvents = sunMouseGetEvents (pPointer, &nPE, &PtrAgain);
+	    ptrEvents = sunMouseGetEvents (&nPE, &PtrAgain);
 	    numPtrEvents = nPE;
 	}
 	if ((numKbdEvents == 0) && KbdAgain) {
-	    kbdEvents = sunKbdGetEvents (pKeyboard, &nKE, &KbdAgain);
+	    kbdEvents = sunKbdGetEvents (&nKE, &KbdAgain);
 	    numKbdEvents = nKE;
 	}
 	if ((numPtrEvents == 0) && (numKbdEvents == 0))

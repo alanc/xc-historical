@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.28 93/11/12 16:37:41 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.29 93/11/14 13:37:32 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -327,7 +327,6 @@ extern Bool sunInitCommon(
 
 extern Firm_event* sunKbdGetEvents(
 #if NeedFunctionPrototypes
-    DevicePtr /* pKeyboard */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -335,7 +334,6 @@ extern Firm_event* sunKbdGetEvents(
 
 extern Firm_event* sunMouseGetEvents(
 #if NeedFunctionPrototypes
-    DevicePtr /* pMouse */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -343,14 +341,14 @@ extern Firm_event* sunMouseGetEvents(
 
 extern void sunKbdEnqueueEvent(
 #if NeedFunctionPrototypes
-    DevicePtr /* pKeyboard */,
+    DeviceIntPtr /* device */,
     Firm_event* /* fe */
 #endif
 );
 
 extern void sunMouseEnqueueEvent(
 #if NeedFunctionPrototypes
-    DevicePtr /* pMouse */,
+    DeviceIntPtr /* device */,
     Firm_event* /* fe */
 #endif
 );

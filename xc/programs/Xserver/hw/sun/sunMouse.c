@@ -196,12 +196,10 @@ int sunMouseProc (device, what)
 
 #if NeedFunctionPrototypes
 Firm_event* sunMouseGetEvents (
-    DevicePtr	  pMouse,
     int	    	  *pNumEvents,
     Bool	  *pAgain)
 #else
-Firm_event* sunMouseGetEvents (pMouse, pNumEvents, pAgain)
-    DevicePtr	  pMouse;	    /* Mouse to read */
+Firm_event* sunMouseGetEvents (pNumEvents, pAgain)
     int	    	  *pNumEvents;	    /* Place to return number of events */
     Bool	  *pAgain;	    /* whether more might be available */
 #endif
@@ -239,16 +237,16 @@ Firm_event* sunMouseGetEvents (pMouse, pNumEvents, pAgain)
  *-----------------------------------------------------------------------
  */
 static short
-MouseAccelerate (pMouse, delta)
-    DevicePtr	  pMouse;
+MouseAccelerate (device, delta)
+    DeviceIntPtr  device;
     int	    	  delta;
 {
-    register int  sgn = sign(delta);
-    register PtrCtrl *pCtrl;
-    register short ret;
+    int  sgn = sign(delta);
+    PtrCtrl *pCtrl;
+    short ret;
 
     delta = abs(delta);
-    pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
+    pCtrl = &device->ptrfeed->ctrl;
     if (delta > pCtrl->threshold) {
 	ret = 
 	    (short) sgn * 
@@ -277,11 +275,11 @@ MouseAccelerate (pMouse, delta)
 
 #if NeedFunctionPrototypes
 void sunMouseEnqueueEvent (
-    DevicePtr	  pMouse,
+    DeviceIntPtr  device,
     Firm_event	  *fe)
 #else
-void sunMouseEnqueueEvent (pMouse, fe)
-    DevicePtr	  pMouse;   	/* Mouse from which the event came */
+void sunMouseEnqueueEvent (device, fe)
+    DeviceIntPtr  device;   	/* Mouse from which the event came */
     Firm_event	  *fe;	    	/* Event to process */
 #endif
 {
@@ -291,7 +289,7 @@ void sunMouseEnqueueEvent (pMouse, fe)
     unsigned long	time;
     int			x, y;
 
-    pPriv = (PtrPrivPtr)pMouse->devicePrivate;
+    pPriv = (PtrPrivPtr)device->public.devicePrivate;
 
     time = xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 
@@ -326,7 +324,7 @@ void sunMouseEnqueueEvent (pMouse, fe)
 	mieqEnqueue (&xE);
 	break;
     case LOC_X_DELTA:
-	miPointerDeltaCursor (MouseAccelerate(pMouse,fe->value),0,time);
+	miPointerDeltaCursor (MouseAccelerate(device,fe->value),0,time);
 	break;
     case LOC_Y_DELTA:
 	/*
@@ -334,7 +332,7 @@ void sunMouseEnqueueEvent (pMouse, fe)
 	 * and motion down a negative delta, so we must subtract
 	 * here instead of add...
 	 */
-	miPointerDeltaCursor (0,-MouseAccelerate(pMouse,fe->value),time);
+	miPointerDeltaCursor (0,-MouseAccelerate(device,fe->value),time);
 	break;
     case LOC_X_ABSOLUTE:
 	miPointerPosition (&x, &y);
