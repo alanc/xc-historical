@@ -1,4 +1,4 @@
-! $XConsortium: XErrorDB,v 1.15 92/08/10 18:59:38 mor Exp $
+! $XConsortium: XErrorDB,v 1.16 93/03/12 18:06:43 rws Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -360,3 +360,44 @@ XRequest.XTEST.1: X_XTestCompareCursor
 XRequest.XTEST.2: X_XTestFakeInput
 ! BIG-REQUESTS extension
 XRequest.BIG-REQUESTS.0: X_BigReqEnable
+! XIE extension
+XRequest.XIE.1: XIE_QueryImageExtension
+XRequest.XIE.2: XIE_QueryTechniques
+XRequest.XIE.3: XIE_CreateColorList
+XRequest.XIE.4: XIE_DestroyColorList
+XRequest.XIE.5: XIE_PurgeColorList
+XRequest.XIE.6: XIE_QueryColorList
+XRequest.XIE.7: XIE_CreateLUT
+XRequest.XIE.8: XIE_DestroyLUT
+XRequest.XIE.9: XIE_CreatePhotomap
+XRequest.XIE.10: XIE_DestroyPhotomap
+XRequest.XIE.11: XIE_QueryPhotomap
+XRequest.XIE.12: XIE_CreateROI
+XRequest.XIE.13: XIE_DestroyROI
+XRequest.XIE.14: XIE_CreatePhotospace
+XRequest.XIE.15: XIE_DestroyPhotospace
+XRequest.XIE.16: XIE_ExecuteImmediate
+XRequest.XIE.17: XIE_CreatePhotoflo
+XRequest.XIE.18: XIE_DestroyPhotoflo
+XRequest.XIE.19: XIE_ExecutePhotoflo
+XRequest.XIE.20: XIE_ModifyPhotoflo
+XRequest.XIE.21: XIE_RedefinePhotoflo
+XRequest.XIE.22: XIE_PutClientData
+XRequest.XIE.23: XIE_GetClientData
+XRequest.XIE.24: XIE_QueryPhotoflo
+XRequest.XIE.25: XIE_Await
+XRequest.XIE.26: XIE_Abort
+XProtoError.XIE.0: XIE_ColorListError
+XlibMessage.XIE.0: ColorList in failed request 0x%lx
+XProtoError.XIE.1: XIE_LUTError
+XlibMessage.XIE.1: LUT in failed request 0x%lx
+XProtoError.XIE.2: XIE_PhotofloError
+XlibMessage.XIE.2: Photoflo in failed request 0x%lx
+XProtoError.XIE.3: XIE_PhotomapError
+XlibMessage.XIE.3: Photomap in failed request 0x%lx
+XProtoError.XIE.4: XIE_PhotospaceError
+XlibMessage.XIE.4: Photospace in failed request 0x%lx
+XProtoError.XIE.5: XIE_ROIError
+XlibMessage.XIE.5: ROI in failed request 0x%lx
+XProtoError.XIE.6: XIE_FloError
+XlibMessage.XIE.6: Photoflo in failed request 0x%lx
