@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.31 93/09/22 12:15:25 kaleb Exp $ */
+/* $XConsortium: ShellP.h,v 1.32 94/01/19 21:19:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -180,6 +180,9 @@ typedef struct {
 	int base_width, base_height;
 	int win_gravity;
 	Atom title_encoding;
+	Widget client_leader;
+	String window_role;
+	Boolean visible;
 } WMShellPart;
 
 typedef  struct {
