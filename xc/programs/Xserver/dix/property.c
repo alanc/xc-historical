@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.54 87/08/21 14:21:10 newman Locked $ */
+/* $Header: property.c,v 1.55 87/09/03 03:04:04 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -380,12 +380,15 @@ ProcGetProperty(client)
 		reply.nItems = len / (pProp->format / 8 );
 		reply.propertyType = pProp->type;
 		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
-		switch (reply.format) {
-		case 32: client->pSwapReplyFunc = CopySwap32Write; break;
-		case 16: client->pSwapReplyFunc = CopySwap16Write; break;
-		default: client->pSwapReplyFunc = WriteToClient; break;
+		if (len)
+		{
+		    switch (reply.format) {
+		    case 32: client->pSwapReplyFunc = CopySwap32Write; break;
+		    case 16: client->pSwapReplyFunc = CopySwap16Write; break;
+		    default: client->pSwapReplyFunc = WriteToClient; break;
+		    }
+		    WriteSwappedDataToClient(client, len, pProp->data + ind);
 		}
-		WriteSwappedDataToClient(client, len, pProp->data + ind);
 
                 if (stuff->delete && (reply.bytesAfter == 0))
                 { /* delete the Property */
