@@ -16,7 +16,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/shape.h>
-#include <X11/Xmu.h
+#include <X11/Xmu.h>
 
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
