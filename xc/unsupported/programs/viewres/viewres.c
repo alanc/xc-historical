@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.4 90/02/02 11:02:21 jim Exp $
+ * $XConsortium: viewres.c,v 1.6 90/02/02 14:03:43 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -38,6 +38,8 @@ extern int nwidgets;
 
 
 static XrmOptionDescRec Options[] = {
+    { "-lbw", "*Tree*Command*BorderWidth", XrmoptionSepArg, (caddr_t) NULL },
+    { "-lw", "*Tree.LineWidth", XrmoptionSepArg, (caddr_t) NULL },
     { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
     { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
     { "-vertical", "*Tree.Orientation", XrmoptionNoArg, (caddr_t) "vertical" },
@@ -71,6 +73,10 @@ usage ()
 {
     fprintf(stderr, "usage:  %s [-options...]\n", ProgramName);
     fprintf(stderr, "\nwhere options include:\n");
+    fprintf(stderr,
+	    "    -lbw number      label border width in pixels\n");
+    fprintf(stderr,
+	    "    -lw number       line width in pixels\n");
     fprintf(stderr,
 	    "    -top name        object to be top of tree\n");
     fprintf(stderr,
@@ -122,13 +128,13 @@ main (argc, argv)
 				Options, XtNumber (Options),
 				&argc, argv, fallback_resources,
 				NULL, ZERO);
+    if (argc != 1) usage ();
 
     XtGetApplicationResources (toplevel, (caddr_t) &Appresources,
 			       Resources, XtNumber(Resources), NULL, ZERO);
     initialize_nodes (widget_list, nwidgets);
 
     topnode = name_to_node (widget_list, nwidgets, Appresources.top_object);
-    argc--, argv++;			/* skip command */
 
     viewport = XtCreateManagedWidget ("viewport", viewportWidgetClass,
 				      toplevel, NULL, 0);
