@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: maze.c,v 1.10 91/04/03 20:32:01 gildea Exp $ */
 
 /******************************************************************************
  * [ maze ] ...
@@ -47,12 +47,6 @@
 #define logo_width xlogo64_width
 #define logo_height xlogo64_height
 #define logo_bits xlogo64_bits
-
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 
 #define LOGOSIZE	7
 #define MIN_MAZE_SIZE	3
@@ -163,9 +157,9 @@ main(argc,argv)                                               /* main module */
     }
   
   if ((dpy = XOpenDisplay(display)) == NULL)	{
-    fprintf(stderr, "Can\'t open display: %s\n",
-	    (display ? display : getenv("DISPLAY")));
-    exit(0);
+    fprintf(stderr, "%s: Can\'t open display: %s\n",
+	    cmd, XDisplayName(display));
+    exit(1);
   }
   screen = DefaultScreen(dpy);
   
