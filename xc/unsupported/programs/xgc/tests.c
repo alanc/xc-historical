@@ -10,9 +10,7 @@
 #include "math.h"
 #include "stdio.h"
 #include <sys/types.h>
-#ifdef SYSV
-#include <time.h>
-#else
+#ifndef SYSV
 #include <sys/time.h>
 #endif
 #include <sys/timeb.h>
@@ -42,12 +40,11 @@ static long
 timer(flag)
      int flag;
 {
+#ifndef SYSV
   static struct timeval starttime;  /* starting time for gettimeofday() */
   struct timeval endtime;           /* ending time for gettimeofday() */
-#ifndef SYSV
   static struct rusage startusage;  /* starting time for getrusage() */
   struct rusage endusage;           /* ending time for getrusage() */
-#endif
   struct timezone tz;               /* to make gettimeofday() happy */
 
   long elapsedtime;                 /* how long since we started the timer */
@@ -55,23 +52,16 @@ timer(flag)
   switch (flag) {
     case StartTimer:                       /* store initial values */
       gettimeofday(&starttime,&tz);       
-#ifndef SYSV
       getrusage(RUSAGE_SELF,&startusage);
-#endif
       return((long) NULL);
     case EndTimer:
       gettimeofday(&endtime,&tz);          /* store final values */
-#ifndef SYSV
       getrusage(RUSAGE_SELF,&endusage);
-#endif
+
   /* all the following line does is use the formula 
      elapsed time = ending time - starting time, but there are three 
      different timers and two different units of time, ack... */
 
-#ifdef SYSV
-      elapsedtime = (long) ((endtime.tv_sec - starttime.tv_sec) * 1000000
-			    + endtime.tv_usec - starttime.tv_usec);
-#else
       elapsedtime = (long) ((long)
 	((endtime.tv_sec - endusage.ru_utime.tv_sec - endusage.ru_stime.tv_sec
 	 - starttime.tv_sec + startusage.ru_utime.tv_sec
@@ -79,13 +69,26 @@ timer(flag)
       ((endtime.tv_usec - endusage.ru_utime.tv_usec - endusage.ru_stime.tv_usec
 	 - starttime.tv_usec + startusage.ru_utime.tv_usec
 	 + startusage.ru_stime.tv_usec));
-#endif
-
       return(elapsedtime);                
+
     default:                              
       fprintf(stderr,"Invalid flag in timer()\n");
       return((long) NULL);
     }
+#else
+  static long starttime;
+  
+  switch (flag) {
+    case StartTimer:
+      time(&starttime);
+      return((long) NULL);
+    case EndTimer:
+      return( (time(NULL) - starttime) * 1000000);
+    default:
+      fprintf(stderr,"Invalid flag in timer()\n");
+      return((long) NULL);
+    }
+#endif
 }
 
 
