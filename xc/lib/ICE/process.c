@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.20 93/11/22 19:09:04 mor Exp $ */
+/* $XConsortium: process.c,v 1.21 93/11/25 14:20:40 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -746,8 +746,7 @@ Bool			swap;
 	{
 	    char *hostname = _IceGetPeerName (iceConn);
 
-	    if ((*iceConn->listen_obj->host_based_auth_proc) (hostname,
-		iceConn->listen_obj->host_based_auth_proc_client_data))
+	    if ((*iceConn->listen_obj->host_based_auth_proc) (hostname))
 	    {
 		accept_setup_now = 1;
 	    }
@@ -1051,8 +1050,7 @@ Bool		swap;
 	    {
 		char *hostname = _IceGetPeerName (iceConn);
 
-		if ((*iceConn->listen_obj->host_based_auth_proc) (hostname,
-		    iceConn->listen_obj->host_based_auth_proc_client_data))
+		if ((*iceConn->listen_obj->host_based_auth_proc) (hostname))
 		{
 		    status = IcePaAuthAccepted;
 		}
@@ -1127,8 +1125,7 @@ Bool		swap;
 	    {
 		char *hostname = _IceGetPeerName (iceConn);
 
-		if ((*myProtocol->host_based_auth_proc) (hostname,
-		    myProtocol->host_based_auth_proc_client_data))
+		if ((*myProtocol->host_based_auth_proc) (hostname))
 		{
 		    status = IcePaAuthAccepted;
 		}
@@ -1605,8 +1602,7 @@ Bool			swap;
 	{
 	    char *hostname = _IceGetPeerName (iceConn);
 
-	    if ((*myProtocol->host_based_auth_proc) (hostname,
-		myProtocol->host_based_auth_proc_client_data))
+	    if ((*myProtocol->host_based_auth_proc) (hostname))
 	    {
 		accept_setup_now = 1;
 	    }

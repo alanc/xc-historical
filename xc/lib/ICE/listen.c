@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.1 93/11/24 15:05:58 mor Exp $ */
+/* $XConsortium: listen.c,v 1.2 93/11/25 14:25:05 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -180,7 +180,6 @@ char		*errorStringRet;
 		(*listenObjsRet)[i]->auth_data_entry_count = 0;
 		(*listenObjsRet)[i]->auth_data_entries = NULL;
 		(*listenObjsRet)[i]->host_based_auth_proc = NULL;
-		(*listenObjsRet)[i]->host_based_auth_proc_client_data = NULL;
 	    }
 
 	    return (1);
