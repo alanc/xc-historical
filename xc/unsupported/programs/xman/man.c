@@ -1,7 +1,7 @@
 /*
  * xman - X Window System manual page display program.
  *
- * $XConsortium: man.c,v 1.19 91/02/13 16:10:41 converse Exp $
+ * $XConsortium: man.c,v 1.20 91/02/17 17:04:14 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -440,15 +440,15 @@ int number;
       PrintError("Internal error while removing duplicate manual pages.");
     j++;
 
-    while (j < man->nentries ) {
+    while (j < man->nentries - 1) {
       l2 = l1;
       if ( (l1 = rindex(man->entries[j], '/')) == NULL)
 	PrintError("Internal error while removing duplicate manual pages.");
-       if (man->flags & MFOLD ?  (XmuCompareISOLatin1(l1,l2) == 0)
-	                      : (streq(l1, l2))) {
+      if (man->flags & MFOLD ?  (XmuCompareISOLatin1(l1,l2) == 0)
+	                     : (streq(l1, l2))) {
 	register int k;
 	for( k = j; k < (man->nentries); k++)
-	  man->entries[k] = man->entries[k+1];
+	  man->entries[k - 1] = man->entries[k];
 	(man->nentries)--;
       }
       else
