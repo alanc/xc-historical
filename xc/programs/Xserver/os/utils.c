@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.104 91/07/06 13:05:57 rws Exp $ */
+/* $XConsortium: utils.c,v 1.105 91/07/19 23:22:14 keith Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -76,7 +76,6 @@ extern char *sbrk();
 #ifdef AIXV3
 #define AIXFILE "/tmp/aixfile"
 FILE *aixfd;
-int FlushOn = 0;
 int SyncOn  = 0;
 extern int SelectWaitTime;
 #endif
@@ -481,10 +480,6 @@ char	*argv[];
             else
                 UseMsg();
         }
-        else if ( strcmp( argv[i], "-flush") == 0)
-        {
-            FlushOn++;
-        }
         else if ( strcmp( argv[i], "-sync") == 0)
         {
             SyncOn++;
@@ -842,8 +837,8 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 {
 #ifdef AIXV3
     fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    if (FlushOn || SyncOn)
-        fflush (aixfd);
+    fflush (aixfd);
+
     if (SyncOn)
         sync();
 #else
