@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.13 91/07/28 15:49:51 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.1 92/09/07 17:29:57 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -33,9 +33,9 @@ for any purpose is hereby granted without fee, provided that
 the above copyright notice appear in all copies and that both that
 copyright notice and this permission notice appear in supporting
 documentation, and that the name of M.I.T. not be used in advertising or
-publicity pertaining to distribution of the software without specific,
+publicity pertaining to distribution of the documentation without specific,
 written prior permission.  M.I.T. makes no representations about the
-suitability of this software for any purpose.  It is provided "as is"
+suitability of this documentation for any purpose.  It is provided "as is"
 without express or implied warranty.
 .ps 10
 .nr PS 10
@@ -228,7 +228,7 @@ The name of this extension is ``BIG-REQUESTS''.
 	20			unused
 .De
 .NH 1
-C language Binding
+C language binding
 .LP
 It is desirable to make the use of this extension as transparent as
 possible to the X client.  As such,
