@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.5 89/11/02 13:44:51 keith Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.6 89/11/24 18:02:25 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -32,6 +32,8 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mfb.h"
 #include "maskbits.h"
+
+#include "mergerop.h"
 
 #include "servermd.h"
 
@@ -634,6 +636,8 @@ int fSorted;
     int rop;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    unsigned long   flip;
+
 
     if (!(pGC->planemask & 1))
 	return;
@@ -674,54 +678,86 @@ int fSorted;
     else
 	rop = ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->ropOpStip;
 
+    flip = 0;
     switch(rop)
     {
-      case GXclear:
-	FILLSPAN32(fnCLEAR)
-	break;
-      case GXand:
-	FILLSPAN32(fnAND)
-	break;
-      case GXandReverse:
-	FILLSPAN32(fnANDREVERSE)
-	break;
+      case GXcopyInverted:  /* for opaque stipples */
+	flip = ~0;
       case GXcopy:
-	FILLSPAN32(fnCOPY)
+	{
+
+#define DoMaskCopyRop(src,dst,mask)	((dst) & ~(mask) | (src) & (mask))
+
+	    while (n--)
+	    {
+	    	if (*pwidth)
+	    	{
+            	    addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+	    	    src = psrc[ppt->y % tileHeight] ^ flip;
+            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    {
+	            	maskpartialbits(ppt->x, *pwidth, startmask);
+			*addrl = DoMaskCopyRop (src, *addrl, startmask);
+            	    }
+            	    else
+            	    {
+	            	maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
+	            	if (startmask)
+	            	{
+			    *addrl = DoMaskCopyRop (src, *addrl, startmask);
+		    	    addrl++;
+	            	}
+	            	while (nlmiddle--)
+	            	{
+			    *addrl = src;
+		    	    addrl++;
+	            	}
+	            	if (endmask)
+			    *addrl = DoMaskCopyRop (src, *addrl, endmask);
+            	    }
+	    	}
+	    	pwidth++;
+	    	ppt++;
+	    }
+	}
 	break;
-      case GXandInverted:
-	FILLSPAN32(fnANDINVERTED)
-	break;
-      case GXnoop:
-	break;
-      case GXxor:
-	FILLSPAN32(fnXOR)
-	break;
-      case GXor:
-	FILLSPAN32(fnOR)
-	break;
-      case GXnor:
-	FILLSPAN32(fnNOR)
-	break;
-      case GXequiv:
-	FILLSPAN32(fnEQUIV)
-	break;
-      case GXinvert:
-	FILLSPAN32(fnINVERT)
-	break;
-      case GXorReverse:
-	FILLSPAN32(fnORREVERSE)
-	break;
-      case GXcopyInverted:
-	FILLSPAN32(fnCOPYINVERTED)
-	break;
-      case GXorInverted:
-	FILLSPAN32(fnORINVERTED)
-	break;
-      case GXnand:
-	FILLSPAN32(fnNAND)
-	break;
-      case GXset:
-	FILLSPAN32(fnSET)
+      default:
+	{
+	    register DeclareMergeRop ();
+
+	    InitializeMergeRop(rop,~0);
+	    while (n--)
+	    {
+	    	if (*pwidth)
+	    	{
+            	    addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> 5);
+	    	    src = psrc[ppt->y % tileHeight];
+            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    {
+	            	maskpartialbits(ppt->x, *pwidth, startmask);
+			*addrl = DoMaskMergeRop (src, *addrl, startmask);
+            	    }
+            	    else
+            	    {
+	            	maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
+	            	if (startmask)
+	            	{
+			    *addrl = DoMaskMergeRop (src, *addrl, startmask);
+		    	    addrl++;
+	            	}
+	            	while (nlmiddle--)
+	            	{
+			    *addrl = DoMergeRop (src, *addrl);
+		    	    addrl++;
+	            	}
+	            	if (endmask)
+			    *addrl = DoMaskMergeRop (src, *addrl, endmask);
+            	    }
+	    	}
+	    	pwidth++;
+	    	ppt++;
+	    }
+	}
 	break;
     }
     DEALLOCATE_LOCAL(pptFree);

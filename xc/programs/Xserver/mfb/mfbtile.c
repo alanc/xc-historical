@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbtile.c,v 5.1 89/09/13 18:58:34 rws Exp $ */
+/* $XConsortium: mfbtile.c,v 5.2 89/11/24 18:07:11 rws Exp $ */
 #include "X.h"
 
 #include "windowstr.h"
@@ -33,11 +33,8 @@ SOFTWARE.
 #include "mfb.h"
 #include "maskbits.h"
 
+#include "mergerop.h"
 /* 
-   this code could be called by the paint window background stuff,
-too; there would be some speed hit because of the different
-parameters and the need to check for a rop when filling
-with a tile.
 
    the boxes are already translated.
 
@@ -50,7 +47,7 @@ is equivalent to iy%= tileheight, and saves a division.
     tile area with a 32 bit wide pixmap 
 */
 void
-mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
+MROP_NAME(mfbTileArea32)(pDraw, nbox, pbox, alu, ptile)
     DrawablePtr pDraw;
     int nbox;
     BoxPtr pbox;
@@ -64,6 +61,7 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 
     int nlwidth;	/* width in longwords of the drawable */
     int w;		/* width of current box */
+    MROP_DECLARE_REG ()
     register int h;	/* height of current box */
     register int nlw;	/* loop version of nlwMiddle */
     register unsigned int *p;	/* pointer to bits we're writing */
@@ -90,6 +88,8 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
 
+    MROP_INITIALIZE(alu,~0)
+
     tileHeight = ptile->drawable.height;
     psrc = (unsigned int *)(ptile->devPrivate.ptr);
 
@@ -107,12 +107,10 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 	    while (h--)
 	    {
 		srcpix = psrc[iy];
-		iy = ++iy < tileHeight ? iy : 0;
-		{
-		    unsigned _p;
-		    DoRop(_p, alu, srcpix, *p);
-		    *p = (*p & ~startmask) | (_p & startmask);
-		}
+		iy++;
+		if (iy == tileHeight)
+		    iy = 0;
+		*p = MROP_MASK(srcpix,*p,startmask);
 		p += nlwExtra;
 	    }
 	}
@@ -127,25 +125,19 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		while (h--)
 		{
 		    srcpix = psrc[iy];
-		    iy = ++iy < tileHeight ? iy : 0;
+		    iy++;
+		    if (iy == tileHeight)
+			iy = 0;
 		    nlw = nlwMiddle;
-		    {
-			unsigned _p;
-			DoRop(_p, alu, srcpix, *p);
-			*p = (*p & ~startmask) | (_p & startmask);
-		    }
+		    *p = MROP_MASK (srcpix,*p,startmask);
 		    p++;
 		    while (nlw--)
 		    {
-			DoRop(*p, alu, srcpix, *p);
+			*p = MROP_SOLID(srcpix,*p);
 			p++;
 		    }
 
-		    {
-			unsigned _p;
-			DoRop(_p, alu, srcpix, *p);
-			*p = (*p & ~endmask) | (_p & endmask);
-		    }
+		    *p = MROP_MASK(srcpix,*p,endmask);
 		    p += nlwExtra;
 		}
 	    }
@@ -155,17 +147,15 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		while (h--)
 		{
 		    srcpix = psrc[iy];
-		    iy = ++iy < tileHeight ? iy : 0;
+		    iy++;
+		    if (iy == tileHeight)
+			iy = 0;
 		    nlw = nlwMiddle;
-		    {
-			unsigned _p;
-			DoRop(_p, alu, srcpix, *p);
-			*p = (*p & ~startmask) | (_p & startmask);
-		    }
+		    *p = MROP_MASK(srcpix,*p,startmask);
 		    p++;
 		    while (nlw--)
 		    {
-		        DoRop(*p, alu, srcpix, *p); 
+			*p = MROP_SOLID(srcpix,*p);
 			p++;
 		    }
 		    p += nlwExtra;
@@ -176,19 +166,17 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		while (h--)
 		{
 		    srcpix = psrc[iy];
-		    iy = ++iy < tileHeight ? iy : 0;
+		    iy++;
+		    if (iy == tileHeight)
+			iy = 0;
 		    nlw = nlwMiddle;
 		    while (nlw--)
 		    {
-			DoRop(*p, alu, srcpix, *p);
+			*p = MROP_SOLID(srcpix,*p);
 			p++;
 		    }
 
-		    {
-			unsigned _p;
-			DoRop(_p, alu, srcpix, *p);
-			*p = (*p & ~endmask) | (_p & endmask);
-		    }
+		    *p = MROP_MASK(srcpix,*p,endmask);
 		    p += nlwExtra;
 		}
 	    }
@@ -197,11 +185,13 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
 		while (h--)
 		{
 		    srcpix = psrc[iy];
-		    iy = ++iy < tileHeight ? iy : 0;
+		    iy++;
+		    if (iy == tileHeight)
+			iy = 0;
 		    nlw = nlwMiddle;
 		    while (nlw--)
 		    {
-			DoRop(*p, alu, srcpix, *p);
+			*p = MROP_SOLID (srcpix,*p);
 			p++;
 		    }
 		    p += nlwExtra;
@@ -212,3 +202,21 @@ mfbTileArea32(pDraw, nbox, pbox, alu, ptile)
     }
 }
 
+#if (MROP) == 0
+void
+mfbTileArea32 (pDraw, nbox, pbox, alu, ptile)
+    DrawablePtr pDraw;
+    int nbox;
+    BoxPtr pbox;
+    int alu;
+    PixmapPtr ptile;
+{
+    void    (*f)(), mfbTileArea32Copy(), mfbTileArea32General();
+    
+    if (alu == GXcopy)
+	f = mfbTileArea32Copy;
+    else
+	f = mfbTileArea32General;
+    (*f) (pDraw, nbox, pbox, alu, ptile);
+}
+#endif

@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.4 89/09/13 18:57:55 rws Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.5 89/11/24 18:04:31 rws Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"
@@ -44,6 +44,8 @@ void mfbPaintOddSize();
 helper function in the GC.
 */
 
+#define NUM_STACK_RECTS	1024
+
 void
 mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr pDrawable;
@@ -51,19 +53,20 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int		nrectFill; 	/* number of rectangles to fill */
     xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
 {
-    int xorg, yorg;
-    register int n;		/* spare counter */
-    register xRectangle *prect; /* temporary */
-    RegionPtr prgnClip;
-    register BoxPtr pbox;	/* used to clip with */
+    xRectangle	    *prect;
+    RegionPtr	    prgnClip;
+    register BoxPtr pbox;
     register BoxPtr pboxClipped;
-    BoxPtr pboxClippedBase;
-    register BoxPtr pextent;
+    BoxPtr	    pboxClippedBase;
+    BoxPtr	    pextent;
+    BoxRec	    stackRects[NUM_STACK_RECTS];
+    int		    numRects;
+    int		    n;
+    int		    xorg, yorg;
     mfbPrivGC	*priv;
     int alu;
     void (* pfn) ();
     PixmapPtr ppix;
-    int numRects;
 
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     alu = priv->ropFillArea;
@@ -87,78 +90,115 @@ mfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	Duff (n, prect->x += xorg; prect->y += yorg; prect++);
     }
 
+
     prect = prectInit;
 
-    pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
-
-    while (nrectFill--)
+    numRects = REGION_NUM_RECTS(prgnClip) * nrectFill;
+    if (numRects > NUM_STACK_RECTS)
     {
-	BoxRec box;
-	int	x2, y2;
+	pboxClippedBase = (BoxPtr)ALLOCATE_LOCAL(numRects * sizeof(BoxRec));
+	if (!pboxClippedBase)
+	    return;
+    }
+    else
+	pboxClippedBase = stackRects;
 
-	/*
-	 * clip the box to the extent of the region --
-	 * avoids overflowing shorts and minimizes other
-	 * computations
-	 */
+    pboxClipped = pboxClippedBase;
+	
+    if (REGION_NUM_RECTS(prgnClip) == 1)
+    {
+	int x1, y1, x2, y2, bx2, by2;
 
-	box.x1 = prect->x;
-	if (box.x1 < pextent->x1)
-		box.x1 = pextent->x1;
+	pextent = REGION_RECTS(prgnClip);
+	x1 = pextent->x1;
+	y1 = pextent->y1;
+	x2 = pextent->x2;
+	y2 = pextent->y2;
+    	while (nrectFill--)
+    	{
+	    if ((pboxClipped->x1 = prect->x) < x1)
+		pboxClipped->x1 = x1;
+    
+	    if ((pboxClipped->y1 = prect->y) < y1)
+		pboxClipped->y1 = y1;
+    
+	    bx2 = (int) prect->x + (int) prect->width;
+	    if (bx2 > x2)
+		bx2 = x2;
+	    pboxClipped->x2 = bx2;
+    
+	    by2 = (int) prect->y + (int) prect->height;
+	    if (by2 > y2)
+		by2 = y2;
+	    pboxClipped->y2 = by2;
 
-	box.y1 = prect->y;
-	if (box.y1 < pextent->y1)
-		box.y1 = pextent->y1;
+	    prect++;
+	    if ((pboxClipped->x1 < pboxClipped->x2) &&
+		(pboxClipped->y1 < pboxClipped->y2))
+	    {
+		pboxClipped++;
+	    }
+    	}
+    }
+    else
+    {
+	int x1, y1, x2, y2, bx2, by2;
 
-	x2 = (int) prect->x + (int) prect->width;
-	if (x2 > pextent->x2)
-		x2 = pextent->x2;
-	box.x2 = x2;
-
-	y2 = (int) prect->y + (int) prect->height;
-	if (y2 > pextent->y2)
-		y2 = pextent->y2;
-	box.y2 = y2;
-
-	prect++;
-
-	if ((box.x1 >= box.x2) || (box.y1 >= box.y2))
-	    continue;
-
-	switch((*pGC->pScreen->RectIn)(prgnClip, &box))
-	{
-	  case rgnOUT:
-	    break;
-	  case rgnIN:
-	    (*pfn)(pDrawable, 1, &box, alu, ppix);
-	    break;
-	  case rgnPART:
-	    pboxClipped = pboxClippedBase;
+	pextent = (*pGC->pScreen->RegionExtents)(prgnClip);
+	x1 = pextent->x1;
+	y1 = pextent->y1;
+	x2 = pextent->x2;
+	y2 = pextent->y2;
+    	while (nrectFill--)
+    	{
+	    BoxRec box;
+    
+	    if ((box.x1 = prect->x) < x1)
+		box.x1 = x1;
+    
+	    if ((box.y1 = prect->y) < y1)
+		box.y1 = y1;
+    
+	    bx2 = (int) prect->x + (int) prect->width;
+	    if (bx2 > x2)
+		bx2 = x2;
+	    box.x2 = bx2;
+    
+	    by2 = (int) prect->y + (int) prect->height;
+	    if (by2 > y2)
+		by2 = y2;
+	    box.y2 = by2;
+    
+	    prect++;
+    
+	    if ((box.x1 >= box.x2) || (box.y1 >= box.y2))
+	    	continue;
+    
+	    n = REGION_NUM_RECTS (prgnClip);
 	    pbox = REGION_RECTS(prgnClip);
-	    n = numRects;
-
+    
 	    /* clip the rectangle to each box in the clip region
 	       this is logically equivalent to calling Intersect()
 	    */
 	    while(n--)
 	    {
-	        pboxClipped->x1 = max(box.x1, pbox->x1);
-	        pboxClipped->y1 = max(box.y1, pbox->y1);
-	        pboxClipped->x2 = min(box.x2, pbox->x2);
-	        pboxClipped->y2 = min(box.y2, pbox->y2);
+		pboxClipped->x1 = max(box.x1, pbox->x1);
+		pboxClipped->y1 = max(box.y1, pbox->y1);
+		pboxClipped->x2 = min(box.x2, pbox->x2);
+		pboxClipped->y2 = min(box.y2, pbox->y2);
 		pbox++;
 
-	        /* see if clipping left anything */
-	        if(pboxClipped->x1 < pboxClipped->x2 && 
-	           pboxClipped->y1 < pboxClipped->y2)
-	        {
+		/* see if clipping left anything */
+		if(pboxClipped->x1 < pboxClipped->x2 && 
+		   pboxClipped->y1 < pboxClipped->y2)
+		{
 		    pboxClipped++;
-	        }
+		}
 	    }
-	    (*pfn)(pDrawable, pboxClipped-pboxClippedBase, 
-		   pboxClippedBase, alu, ppix);
-	    break;
-	}
+    	}
     }
-    DEALLOCATE_LOCAL(pboxClippedBase);
+    if (pboxClipped != pboxClippedBase)
+	(*pfn) (pDrawable,pboxClipped-pboxClippedBase, pboxClippedBase, alu, ppix);
+    if (pboxClippedBase != stackRects)
+    	DEALLOCATE_LOCAL(pboxClippedBase);
 }

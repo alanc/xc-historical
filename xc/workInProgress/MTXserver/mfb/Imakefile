@@ -7,7 +7,7 @@ SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
          mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbscrclse.c mfbclip.c \
          mfbbitblt.c mfbgetsp.c mfbpolypnt.c \
 	 mfbbltC.c mfbbltX.c mfbbltCI.c mfbbltO.c mfbbltG.c \
-	 mfbcmap.c mfbtile.c mfbmisc.c mfbbstore.c
+	 mfbcmap.c mfbtileC.c mfbtileG.c mfbmisc.c mfbbstore.c
 
 SRCS =	 $(SRCS1) mfbplygblt.c mfbimggblt.c mfbpntarea.c mfbtegblt.c
 
@@ -20,7 +20,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbbltC.o mfbbltX.o mfbbltCI.o mfbbltO.o mfbbltG.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
 	 mfbigbwht.o mfbigbblak.o mfbcmap.o \
-	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
+	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o
 
 INCLUDES = -I. -I../mi -I../../include -I$(INCLUDESRC)
@@ -74,6 +74,10 @@ MultiObj(mfbbltCI,mfbblt,-DMROP=McopyInverted)
 MultiObj(mfbbltO,mfbblt,'-DMROP=Mor')
 
 MultiObj(mfbbltG,mfbblt,-DMROP=0)
+
+MultiObj(mfbtileC,mfbtile,-DMROP=Mcopy)
+
+MultiObj(mfbtileG,mfbtile,-DMROP=0)
 
 DependTarget()
 

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.18 89/11/29 19:53:27 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.19 90/03/20 14:48:59 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -1070,7 +1070,17 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    }
 	    else /* deal with tiles */
 	    {
-		devPriv->FillArea = mfbTileArea32;
+		extern void mfbTileArea32Copy(), mfbTileArea32General();
+
+		switch (pGC->alu)
+		{
+		  case GXcopy:
+		    devPriv->FillArea = mfbTileArea32Copy;
+		    break;
+		  default:
+		    devPriv->FillArea = mfbTileArea32General;
+		    break;
+		}
 	    }
 	} /* end of natural rectangles */
     } /* end of new_fill */
