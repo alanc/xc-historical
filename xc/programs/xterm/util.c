@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.1 89/05/24 18:11:58 jim Exp $
+ *	$XConsortium: util.c,v 1.14 89/05/25 15:12:30 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.1 89/05/24 18:11:58 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.14 89/05/25 15:12:30 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -925,11 +925,6 @@ ReverseVideo (term)
 	XDefineCursor(screen->display, TextWindow(screen), screen->pointer_cursor);
 	if(tek)
 		XDefineCursor(screen->display, tek, screen->arrow);
-
-#ifdef notdef
-	MenuNewCursor(screen->arrow);
-	ReverseVideoAllMenus ();
-#endif
 
 	
 	if (term) {
