@@ -24,16 +24,16 @@
 
 ;;; Created 09/14/87 by LaMott G. OREN
 
-(in-package "XLIB" :use '("LISP"))
+(in-package 'xlib :use '(lisp))
 
 (export '(trace-display
-	   untrace-display
-	   display-trace
-	   describe-request
-	   describe-event
-	   describe-reply
-	   describe-error
-	   describe-trace))
+	  untrace-display
+	  display-trace
+	  describe-request
+	  describe-event
+	  describe-reply
+	  describe-error
+	  describe-trace))
 
 (defun trace-display (display)
   "Start a trace on DISPLAY.
@@ -74,20 +74,20 @@
 
 (defun byte-ref16 (vector index)
   #+clx-little-endian
-   (logior (the card16
-		(ash (the card8 (aref vector (index+ index 1))) 8))
-	   (the card8
-		(aref vector index)))
+  (logior (the card16
+	    (ash (the card8 (aref vector (index+ index 1))) 8))
+	  (the card8
+	    (aref vector index)))
   #-clx-little-endian
-   (logior (the card16
-		(ash (the card8 (aref vector index))) 8)
-	   (the card8
-		(aref vector (index+ index 1)))))
+  (logior (the card16
+	    (ash (the card8 (aref vector index)) 8))
+	  (the card8
+	    (aref vector (index+ index 1)))))
 
 (defun byte-ref32 (a i)
   (declare (type buffer-bytes a)
 	   (type array-index i))
-  (declare-values card32)
+  (declare (values card32))
   (declare-buffun)
   #+clx-little-endian
   (the card32
@@ -144,11 +144,11 @@
       (setq request (aref vector i))
       (setq length (index* 4 (byte-ref16 vector (+ i 2))))
       (when (zerop length)
-	(si:fsignal "Zero length in buffer")
+	(warn "Zero length in buffer")
 	(return nil))
       (push (cons 0 (subseq vector i (min (+ i length) end))) new-history)
       (when (zerop request)
-	(si:fsignal "Zero request in buffer")
+	(warn "Zero length in buffer")
 	(return nil))
       )))
 
@@ -262,7 +262,8 @@
 	type
 	(let ((condition 
 		(apply #+lispm #'si:make-condition
-		       #-lispm #'make-condition
+		       #+allegro #'excl::make-condition
+		       #-(or lispm allegro) #'make-condition
 		       error-key
 		       :error-key error-key
 		       :display display
@@ -307,7 +308,7 @@
 If there is more than one event, return NUMBER in the sequence."
   (declare (type display display)
 	   (type (or stringable (integer 0 63)) name)
-	   (type (integer 0) sequence))
+	   (integer sequence))
   (let* ((event (event-number name))
 	 (vector (and event (find-trace display event sequence number))))
     (if (not event)

@@ -20,14 +20,14 @@
 
 ;;; Created 07/15/87 by LaMott G. OREN
 
-(in-package "XLIB" :use '("LISP"))
+(in-package 'xlib :use '(lisp))
 
 (defparameter *request-parameters* (make-array (length *request-names*)))
 
 (defmacro x-request (name &rest fields)
   (unless (zerop (mod (length fields) 3))
     (format t "~%Field length not a multiple of 3 for ~a" name))
-  (let ((request (position name *request-names* :test #'zetalisp:string-equal)))
+  (let ((request (position name *request-names* :test #'string-equal)))
      (if request
 	 `(setf (aref *request-parameters* ,request) ',fields)
        `(format t "~%~s isn't an X11 request name" ',name))))
@@ -35,16 +35,16 @@
 (defun print-history-description (buffer &optional (start 0))
   ;; Display an output history
   (reading-event (buffer)
-    (LET ((request (card8-get start))
-	  (LENGTH (* 4 (card16-get (+ start 2))))
+    (let ((request (card8-get start))
+	  (length (* 4 (card16-get (+ start 2))))
 	  (margin 5))
       (format t "~a (~d) length ~d"
 	      (request-name request) request length)
-      (WHEN (>= request (LENGTH *request-parameters*))
-	(SETQ request 0))
+      (when (>= request (length *request-parameters*))
+	(setq request 0))
       (do ((parms (aref *request-parameters* request) (cdddr parms))
 	   (j start))	  
-	  ((OR (endp parms) (>= j length)))
+	  ((or (endp parms) (>= j length)))
 	(let ((len (first parms))
 	      (type (second parms))
 	      (doc (third parms))
@@ -53,12 +53,12 @@
 			(1 (card8-get j))
 			(2 (card16-get j))
 			(4 (card32-get j))))
-	  (FORMAT t "~%~v@t" margin)
+	  (format t "~%~v@t" margin)
 	  (if value
-	      (PROGN
+	      (progn
 		(print-value j value type doc)
 		     (incf j len))
-	    (PROGN 
+	    (progn 
 	      (format t "~2d ~10a ~a"
 		      j type doc)
 	      (case type
@@ -72,11 +72,11 @@
 		 (dotimes (k (floor (- length (- j start)) 2))
 		   (format t " ~d" (card16-get j))
 		   (incf j 2)))
-		(x (WHEN (INTEGERP len) (INCF j len)))	; Unused
-		(STRING8
+		(x (when (integerp len) (incf j len)))	; Unused
+		(string8
 		 (format t " Bytes:~%~v@t" margin)
 		 (dotimes (k (- length (- j start)))
-		   (format t "~a" (INT-CHAR (card8-get j)))
+		   (format t "~a" (int-char (card8-get j)))
 		   (incf j)))
 		(otherwise
 		 (format t " Bytes:~%~v@t" margin)
@@ -92,8 +92,8 @@
 		 (setq type (car type)))
 	(member (if (null (setq temp (nth value (cdr type))))
 		    (format t "*****ERROR*****")
-		  (format t "~a" temp)
-		  (setq type (car type)))))
+		  (format t "~a" temp))
+		(setq type (car type))))
     (case type
       ((window pixmap drawable cursor font gcontext colormap atom)
        (format t "[#x~x]" value)
@@ -133,7 +133,7 @@
   4n	LISTofVALUE		value-list
   )
 
-(DEFPARAMETER *create-bitmask*
+(defparameter *create-bitmask*
 	      #(background-pixmap background-pixel border-pixmap border-pixel bit-gravity
 		win-gravity backing-store backing-planes backing-pixel override-redirect
 		save-under event-mask do-not-propagate-mask colormap cursor))
@@ -606,7 +606,7 @@
   4n	LISTofVALUE		value-list
 )
 
-(DEFCONSTANT *gc-bitmask*
+(defconstant *gc-bitmask*
 	     #(function plane-mask foreground
 	       background line-width line-style cap-style join-style
 	       fill-style fill-rule tile stipple tile-stipple-x-origin
