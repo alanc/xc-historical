@@ -1,0 +1,8 @@
+XCOMM $XConsortium: $
+
+/*
+ * SGI shared library template
+ */
+#define SharedXtReqs $(LDPRELIB) $(XLIBONLY) -delay_load $(SMLIB) -delay_load $(ICELIB)
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB)
+#define SharedXawReqs -lw
