@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.41 92/12/22 17:45:13 gildea Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.42 93/09/18 09:30:18 rws Exp $
 
 #define OSName            A/UX 3.0.1
 #define OSMajorVersion    3
@@ -10,6 +10,7 @@ XCOMM operating system:  OSName
 #define BootstrapCFlags   -DmacII
 #endif
 #define SystemV             YES
+#define HasPoll		    NO
 #define NeedBerklib         YES
 #define ExtraLibraries      $(XBSDLIB) -lposix
 #define Malloc0ReturnsNull  YES
