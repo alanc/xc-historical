@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.36 88/08/27 22:46:01 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.37 88/09/06 14:49:42 jim Exp $ */
 
 #include "miscstruct.h"
 #include "regionstr.h"
@@ -63,7 +63,7 @@ SOFTWARE.
 typedef BoxRec BOX;	/* this is to cut down on some gratuitous edits */
 
 /*  1: if two BOXs overlap.
-/*  0: if two BOXs do not overlap.
+ *  0: if two BOXs do not overlap.
  *  Remember, x2 and y2 are not in the region 
  */
 #define EXTENTCHECK(r1, r2) \
