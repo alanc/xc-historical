@@ -1,4 +1,4 @@
-/* $Header: xchgfctl.c,v 1.4 91/01/18 15:28:04 gms Exp $ */
+/* $Header: xchgfctl.c,v 1.11 91/01/24 17:03:17 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -618,7 +618,8 @@ ChangeLedFeedback (client, dev, mask, l, f)
 	lctrl.led_mask = f->led_mask;
 	lctrl.led_values = f->led_values;
 	(*l->CtrlProc)(dev, &lctrl);
-	l->ctrl.led_values = f->led_values;
+	l->ctrl.led_values &= ~(f->led_mask);		/* zero changed leds */
+	l->ctrl.led_values |= (f->led_mask & f->led_values);/* OR in set leds*/
         }
 
     return Success;
