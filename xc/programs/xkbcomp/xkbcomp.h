@@ -1,4 +1,4 @@
-/* $XConsortium: xkbcomp.h,v 1.2 94/04/02 17:33:30 erik Exp $ */
+/* $XConsortium: xkbcomp.h,v 1.3 94/04/04 10:39:01 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -42,12 +42,6 @@
 #include "XKM.h"
 
 extern char *scanFile;
-
-#define	XKBFILE_VERSION	0
-#define	XkbXKMFile	0
-#define	XkbCHeaderFile	1
-#define	XkbXKBFile	2
-#define	XkbMessage	3
 
 #define	TypeUnknown	0
 #define	TypeBoolean	1
@@ -101,6 +95,8 @@ typedef	Bool	(*IdentLookupFunc)(/* priv, elem, field, type, val_rtrn */);
 #define	MergeAugment	1
 #define	MergeOverride	2
 #define	MergeReplace	3
+
+extern	unsigned	warningLevel;
 
 typedef struct _IncludeStmt {
     ParseCommon		common;
@@ -215,19 +211,5 @@ typedef struct _XkbFile {
     ParseCommon	*defs;
     int		 id;
 } XkbFile;
-
-#define	XkbMapDefined		(1<<0)
-#define	StateDefined		(1<<1)
-#define	ModMapDefined		(1<<2)
-#define	PerKeyRepeatDefined	(1<<3)
-typedef struct _XkbFileResult {
-    unsigned		defined;
-    unsigned		configs;
-    XkbDescRec	 	xkb;
-    XkbStateRec	 	state;
-    XkbChangesRec	changes;
-    unsigned char	modmap[XkbMaxLegalKeyCode+1];
-    unsigned char	repeat[(XkbMaxLegalKeyCode/8)+1];
-} XkbFileResult;
 
 #endif /* XKBCOMP_H */
