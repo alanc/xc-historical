@@ -1,7 +1,27 @@
 /*
- * standard unix verification routine
+ * xdm - display manager daemon
  *
- * This section should live in a seperate os-dependent file
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
+ * verify.c
+ *
+ * typical unix verification routine.
  */
 
 # include	<pwd.h>
@@ -18,31 +38,32 @@ struct verify_info	*verify;
 {
 	struct passwd	*p;
 	char		*crypt ();
-	char		**env, **setEnv ();
-	char		*shell;
-	int		i;
-	static char	*argv[3];
+	char		**setEnv (), **parseArgs ();
+	char		*shell, *home;
+	char		**argv;
 
-	Debug ("Verify %s %s\n", greet->name, greet->password);
-	argv[0] = d->session;
 	p = getpwnam (greet->name);
 	if (!p)
 		p = &joeblow;
-	if (!strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd)) {
-		verify->uid = p->pw_uid;
-#ifdef NGROUPS
-		verify->groups = parseGroups (greet->name, p->pw_gid);
-#else
-		verify->gid = p->pw_gid;
-#endif
-		argv[1] = greet->string;
-		verify->argv = argv;
-		verify->environ = setEnv (greet->name, p->pw_dir, d->name, p->pw_shell);
-		Debug ("verify succeeded\n");
-		return 1;
+	Debug ("Verify %s %s\n", greet->name, greet->password);
+	if (strcmp (crypt (greet->password, p->pw_passwd), p->pw_passwd)) {
+		Debug ("verify failed\n");
+		return 0;
 	}
-	Debug ("verify failed\n");
-	return 0;
+	Debug ("verify succeeded\n");
+	verify->uid = p->pw_uid;
+#ifdef NGROUPS
+	verify->groups = parseGroups (greet->name, p->pw_gid);
+#else
+	verify->gid = p->pw_gid;
+#endif
+	home = p->pw_dir;
+	shell = p->pw_shell;
+	argv = parseArgs ((char **) 0, d->session);
+	argv = parseArgs (argv, greet->string);
+	verify->argv = argv;
+	verify->environ = setEnv (d, greet->name, home, shell);
+	return 1;
 }
 
 /*
@@ -67,8 +88,6 @@ char	*envname[NENV] = {
 	"SHELL",
 };
 
-char	stdPath[] = ".:/bin:/usr/bin:/usr/bin/X11:/usr/ucb";
-
 char *
 makeEnv (num, value)
 char	*value;
@@ -81,13 +100,14 @@ char	*value;
 }
 
 char **
-setEnv (user, home, display, shell)
-char	*user, *home, *display, *shell;
+setEnv (d, user, home, shell)
+struct display	*d;
+char	*user, *home, *shell;
 {
-	environment[DISPLAY] = makeEnv (DISPLAY, display);
+	environment[DISPLAY] = makeEnv (DISPLAY, d->name);
 	environment[HOME] = makeEnv (HOME, home);
 	environment[USER] = makeEnv (USER, user);
-	environment[PATH] = makeEnv (PATH, stdPath);
+	environment[PATH] = makeEnv (PATH, d->unixPath);
 	environment[SHELL] = makeEnv (SHELL, shell);
 	return environment;
 }
@@ -143,3 +163,39 @@ struct verify_info	*verify;
 	endgrent ();
 }
 #endif
+
+# define isblank(c)	((c) == ' ' || c == '\t')
+
+char **
+parseArgs (argv, string)
+char	**argv;
+char	*string;
+{
+	char	*word;
+	char	*save;
+	int	i;
+	char	*malloc (), *realloc (), *strcpy ();;
+
+	i = 0;
+	while (argv && argv[i])
+		++i;
+	if (!argv)
+		argv = (char **) malloc (sizeof (char *));
+	word = string;
+	for (;;) {
+		if (!*string || isblank (*string)) {
+			if (word != string) {
+				argv = (char **) realloc (argv, (i + 1) * sizeof (char *));
+				argv[i] = strncpy (malloc (string - word + 1), word, string-word);
+				argv[i][string-word] = '\0';
+				i++;
+			}
+			if (!*string)
+				break;
+			word = string + 1;
+		}
+		++string;
+	}
+	argv[i] = 0;
+	return argv;
+}

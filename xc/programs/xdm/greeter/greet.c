@@ -1,11 +1,31 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * widget to get username/password
  *
  */
 
 # include <X11/Xlib.h>
 # include <X11/Intrinsic.h>
-# include <X11/StringDefs.h
+# include <X11/StringDefs.h>
 # include <X11/Xmu.h>
 # include "Login.h"
 # include <X11/Shell.h>
@@ -38,6 +58,9 @@ GreetDone (w, data, status)
 	case NOTIFY_RESTART:
 		Debug ("RESTART_DISPLAY\n");
 		exit (RESTART_DISPLAY);
+	case NOTIFY_ABORT_DISPLAY:
+		Debug ("DISABLE_DISPLAY\n");
+		exit (DISABLE_DISPLAY);
 	}
 }
 

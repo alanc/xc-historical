@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * dm.h
  *
  * public interfaces for greet/verify functionality
@@ -36,18 +56,28 @@ typedef enum displayStatus { running, notRunning } DisplayStatus;
  * transient - session not restarted when it exits
  */
 
-typedef enum displayType {
-	secure,		/* local permanent non-removable server */
- 	insecure,	/* local permanent removable server */
- 	foreign,	/* foreign permanent server */
- 	transient,	/* foreign non-permanent server */
- 	remove,		/* command to remove a server */
-	unknown		/* not any of the above */
+typedef struct displayType {
+	unsigned int	location:1;
+	unsigned int	lifetime:1;
+	unsigned int	mutable:1;
 } DisplayType;
 
-extern DisplayType parseDisplayType ();
+# define Local		1
+# define Foreign	0
 
-# define restartType(t)	((t) == secure || (t) == insecure || (t) == foreign)
+# define Permanent	1
+# define Transient	0
+
+# define Secure		1
+# define Insecure	0
+
+typedef struct displayMessage {
+	enum { MessageManageDisplay, MessageRemove, MessageUnknown }
+ 			message;
+	DisplayType	type;
+} DisplayMessage;
+
+extern DisplayMessage parseDisplayMessage ();
 
 struct display {
 	struct display	*next;
@@ -60,6 +90,7 @@ struct display {
 	char		*startup;	/* Xstartup program */
 	char		*reset;		/* Xreset program */
 	char		*session;	/* Xsession program */
+	char		*unixPath;	/* unix path */
 	int		openDelay;	/* open delay time */
 	int		openRepeat;	/* open attempts to make */
 	int		terminateServer;/* restart for each session */
@@ -102,6 +133,7 @@ struct verify_info {
 
 extern char	*servers;
 extern int	request_port;
+extern int	debugLevel;
 extern char	*errorLogFile;
 extern char	*validProgramsFile;
 

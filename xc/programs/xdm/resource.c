@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * resource.c
  */
 
@@ -6,10 +26,9 @@
 # include <X11/Xlib.h>
 # include <X11/Xresource.h>
 
-# define DM_RESOURCES	"/usr/lib/X11/xdm/Xdm-config"
-
 char	*servers;
 int	request_port;
+int	debugLevel;
 char	*errorLogFile;
 
 # define DM_STRING	0
@@ -23,11 +42,13 @@ struct dmResources {
 	char	*default_value;
 } DmResources[] = {
 "servers",	"Servers", 	DM_STRING,	&servers,
-				"/usr/lib/xdm/Xservers",
+				":0 secure /usr/bin/X11/X :0",
 "requestPort",	"RequestPort",	DM_INT,		(char **) &request_port,
 				"0",
+"debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
+				"0",
 "errorLogFile",	"ErrorLogFile",	DM_STRING,	&errorLogFile,
-				"/usr/adm/Xdm-errors",
+				"",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -41,21 +62,23 @@ struct displayResources {
 	char	*default_value;
 } DisplayResources[] = {
 "resources",	"Resources",	DM_STRING,	boffset(resources),
-				"/usr/lib/xdm/Xresources",
+				"",
 "xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
 				"/usr/bin/X11/xrdb",
 "startup",	"Startup",	DM_STRING,	boffset(startup),
-				"/usr/lib/xdm/Xstartup",
+				"",
 "reset",	"Reset",	DM_STRING,	boffset(reset),
-				"/usr/lib/xdm/Xreset",
+				"",
 "session",	"Session",	DM_STRING,	boffset(session),
-				"/usr/lib/xdm/Xsession",
+				"/usr/bin/X11/xterm -ls",
 "openDelay",	"OpenDelay",	DM_INT,		boffset(openDelay),
 				"5",
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
+"unixPath",	"UnixPath",	DM_STRING,	boffset(unixPath),
+		":/bin:/usr/bin:/usr/bin/X11:/usr/ucb"
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
@@ -110,18 +133,39 @@ char	*default_value;
 	}
 }
 
+XrmOptionDescRec optionTable [] = {
+{"-server",	".servers",		XrmoptionSepArg,	(caddr_t) NULL },
+{"-udpPort",	".requestPort",		XrmoptionSepArg,	(caddr_t) NULL },
+{"-error",	".errorLogFile",	XrmoptionSepArg,	(caddr_t) NULL },
+{"-resources",	"*resources",		XrmoptionSepArg,	(caddr_t) NULL },
+{"-session",	"*session",		XrmoptionSepArg,	(caddr_t) NULL },
+{"-config",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
+{"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
+};
+
 InitResources (argc, argv)
 int	argc;
 char	**argv;
 {
-	char	*resourceFile = DM_RESOURCES;
+	char	**a;
 
-	if (argv[1])
-		resourceFile = argv[1];
-
-	DmResourceDB = XrmGetFileDatabase ( resourceFile );
-	if (!DmResourceDB)
-		LogError ("Can't open resource file %s\n", resourceFile);
+	XrmInitialize ();
+	for (a = argv+1; *a; a++) {
+		if (!strcmp (*a, "-config")) {
+			if (!a[1])
+				LogError ("missing config file argument\n");
+			else {
+				DmResourceDB = XrmGetFileDatabase ( a[1] );
+				if (!DmResourceDB)
+					LogError ("Can't open resource file %s\n", a[1]);
+			}
+			break;
+		}
+	}
+	XrmParseCommand (&DmResourceDB, optionTable,
+ 			 sizeof (optionTable) / sizeof (optionTable[0]),
+			 "DisplayManager", &argc, argv);
+			 
 }
 
 LoadDMResources ()

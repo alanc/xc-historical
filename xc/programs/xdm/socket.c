@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * socket.c
  */
 
@@ -48,6 +68,11 @@ CreateWellKnownSockets ()
 #endif
 }
 
+AnyWellKnownSockets ()
+{
+	return socketFd != 0;
+}
+
 WaitForSomething ()
 {
 #ifdef UDP_SOCKET
@@ -55,13 +80,14 @@ WaitForSomething ()
 	int	nready;
 
 	Debug ("WaitForSomething\n");
-	reads = WellKnownSocketsMask;
-	nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
-	if (nready > 0 && FD_ISSET (socketFd, &reads))
-		ProcessRequestSocket (socketFd);
-#else
-	pause ();
+	if (socketFd) {
+		reads = WellKnownSocketsMask;
+		nready = select (WellKnownSocketsMax + 1, &reads, 0, 0, 0);
+		if (nready > 0 && FD_ISSET (socketFd, &reads))
+			ProcessRequestSocket (socketFd);
+	} else
 #endif
+		pause ();
 }
 
 #ifdef UDP_SOCKET
@@ -78,7 +104,11 @@ int	fd;
 	static char	poll_providers[] = POLL_PROVIDERS;
 	static char	advertise[] = ADVERTISE;
 	static DisplayType	acceptableTypes [] =
-		{ foreign, transient, remove, unknown };
+		{ { Foreign, Permanent, Secure },
+		  { Foreign, Transient, Secure },
+		  { Foreign, Permanent, Insecure },
+		  { Foreign, Transient, Insecure },
+		};
 
 	Debug ("ProcessRequestSocket\n");
 	fromlen = sizeof (from);
@@ -100,7 +130,9 @@ ntohl (from_in->sin_addr.s_addr), ntohs (from_in->sin_port));
 		return;
 	}
 	f = dataOpen (buf, len);
-	ReadDisplay (f, acceptableTypes, (char *) from_in);
+	ReadDisplay (f, acceptableTypes,
+ 		     sizeof (acceptableTypes) / sizeof (acceptableTypes[0]),
+		     (char *) from_in);
 	bufClose (f);
 	StartDisplays ();
 }

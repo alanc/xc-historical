@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * file.c
  */
 
@@ -6,17 +26,26 @@
 # include	"buf.h"
 # include	<signal.h>
 
-ReadDisplay (file, acceptableTypes, sockaddr)
+DisplayTypeMatch (d1, d2)
+DisplayType	d1, d2;
+{
+	return d1.location == d2.location &&
+	       d1.lifetime == d2.lifetime &&
+	       d1.mutable == d2.mutable;
+}
+
+ReadDisplay (file, acceptableTypes, numAcceptable, sockaddr)
 struct buffer	*file;
 DisplayType	*acceptableTypes;
+int		numAcceptable;
 char		*sockaddr;
 {
 	int		c;
 	char		**args;
 	struct display	*d;
-	DisplayType	type;
+	DisplayMessage	message;
 	char		word[1024];
-	char		typeName[1024];
+	char		messageText[1024];
 	int		i;
 
 	c = readWord (file, word, sizeof (word));
@@ -25,33 +54,36 @@ char		*sockaddr;
 			LogError ("missing display type for display %s", word);
 			return c;
 		}
-		c = readWord (file, typeName, sizeof (typeName));
-		type = parseDisplayType (typeName);
-		while (*acceptableTypes != unknown)
-			if (*acceptableTypes++ == type)
-				goto acceptable;
-		LogError ("unacceptable display type %s for display %s\n", typeName, word);
-		return c;
-acceptable:;
-		switch (type) {
-		case unknown:
+		c = readWord (file, messageText, sizeof (messageText));
+		Debug ("read display %s message %s\n", word, messageText);
+		message = parseDisplayMessage (messageText);
+		switch (message.message) {
+		case MessageUnknown:
 			break;
-		case remove:
+		case MessageRemove:
 			if (d = FindDisplayByName (word))
-				if (d->displayType != secure) {
+				if (d->displayType.mutable == Insecure) {
 					Debug ("removing display %s\n", d->name);
 					TerminateDisplay (d);
 				}
 			Debug ("not removing display %s\n", word);
 			break;
-		default:
+		case MessageManageDisplay:
+			Debug ("MessageManageDisplay\n");
+			while (numAcceptable--)
+				if (DisplayTypeMatch (*acceptableTypes++, message.type))
+					goto acceptable;
+			LogError ("unacceptable display type %s for display %s\n", messageText, word);
+			return c;
+acceptable:;
 			if (d = FindDisplayByName (word)) {
 				LogError ("Attempt to start running display %s\n",
 					word);
 				break;
 			}
 			d = NewDisplay (word);
-			d->displayType = type;
+			Debug ("new display %s\n", d->name);
+			d->displayType = message.type;
 #ifdef UDP_SOCKET
 			if (sockaddr)
 				d->addr = *(struct sockaddr_in *) sockaddr;
@@ -110,24 +142,26 @@ int	len;
 
 static struct displayMatch {
 	char		*name;
-	DisplayType	type;
+	DisplayMessage	message;
 } displayTypes[] = {
-	"secure",	secure,
-	"insecure",	insecure,
-	"foreign",	foreign,
-	"transient",	transient,
-	"remove",	remove,
-	0,		unknown
+	"secure",		{ MessageManageDisplay, { Local,  Permanent, Secure }},
+	"insecure",		{ MessageManageDisplay, { Local,  Permanent, Insecure }},
+	"foreign",		{ MessageManageDisplay, { Foreign, Permanent, Secure }},
+	"transient",		{ MessageManageDisplay, { Foreign, Transient, Secure }},
+	"localTransient",	{ MessageManageDisplay, { Local,  Transient, Secure }},
+	"foreignInsecure",	{ MessageManageDisplay, { Foreign, Permanent, Insecure }},
+	"remove",		{ MessageRemove },
+	0,			{ MessageUnknown },
 };
 
-DisplayType
-parseDisplayType (string)
+DisplayMessage
+parseDisplayMessage (string)
 	char	*string;
 {
 	struct displayMatch	*d;
 
 	for (d = displayTypes; d->name; d++)
 		if (!strcmp (d->name, string))
-			return d->type;
-	return d->type;
+			return d->message;
+	return d->message;
 }

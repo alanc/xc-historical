@@ -1,4 +1,24 @@
 /*
+ * xdm - display manager daemon
+ *
+ * $XConsortium: $
+ *
+ * Copyright 1988 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * Author:  Keith Packard, MIT X Consortium
+ */
+
+/*
  * display manager
  */
 
@@ -16,6 +36,8 @@ char	**argv;
 	 */
 	InitResources (argc, argv);
 	LoadDMResources ();
+	if (debugLevel == 0)
+		BecomeDaemon ();
 	InitErrorLog ();
 	/*
 	 * Step 2 - Read /etc/Xservers and set up
@@ -28,7 +50,7 @@ char	**argv;
 	 */
 	ScanServers ();
 	CreateWellKnownSockets ();
-	for (;;)
+	while (AnyWellKnownSockets () || AnyDisplaysLeft ())
 		WaitForSomething ();
 }
 
@@ -39,21 +61,33 @@ ScanServers ()
 	struct display	*d;
 	int		fd;
 	static DisplayType	acceptableTypes[] =
-		{ secure, insecure, remove, unknown };
+		{ { Local, Permanent, Secure },
+		  { Local, Transient, Secure },
+		  { Local, Permanent, Insecure },
+		  { Local, Transient, Insecure },
+		};
 
-	fd = open (servers, 0);
-	if (fd == -1) {
-		LogError ("cannot access servers file %s\n", servers);
-		return;
+	if (servers[0] == '/') {
+		fd = open (servers, 0);
+		if (fd == -1) {
+			LogError ("cannot access servers file %s\n", servers);
+			return;
+		}
+		serversFile = fileOpen (fd);
+	} else {
+		fd = -1;
+		serversFile = dataOpen (servers, strlen (servers));
 	}
-	serversFile = fileOpen (fd);
 	if (serversFile == NULL)
 		return;
-	while (ReadDisplay (serversFile, acceptableTypes, (char *) 0) != EOB)
+	while (ReadDisplay (serversFile, acceptableTypes,
+ 			    sizeof (acceptableTypes) / sizeof (acceptableTypes[0]),
+		 	    (char *) 0) != EOB)
 		;
 	StartDisplays ();
 	bufClose (serversFile);
-	close (servers);
+	if (fd != -1)
+		close (servers);
 }
 
 /*
@@ -81,16 +115,10 @@ CleanChildren ()
 			RemoveDisplay (d);
 			break;
 		case OBEYSESS_DISPLAY:
-			switch (d->displayType) {
-			case secure:
-			case insecure:
-			case foreign:
+			if (d->displayType.lifetime == Permanent)
 				StartDisplay (d);
-				break;
-			case transient:
+			else
 				RemoveDisplay (d);
-				break;
-			}
 			break;
 		case REMANAGE_DISPLAY:
 		default:
