@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.68 89/09/29 17:45:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.69 89/10/03 14:48:23 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1132,10 +1132,11 @@ static void _popup_set_prop(w)
 }
 
 /* ARGSUSED */
-static void EventHandler(wid, closure, event)
+static void EventHandler(wid, closure, event, continue_to_dispatch)
 	Widget wid;
-	XtPointer closure;
+	XtPointer closure;	/* unused */
 	XEvent *event;
+        Boolean *continue_to_dispatch; /* unused */
 {
 	register ShellWidget w = (ShellWidget) wid;
 	WMShellWidget wmshell = (WMShellWidget) w;
@@ -1346,10 +1347,22 @@ static void ChangeManaged(wid)
 			        hintsP, &x, &y, &width, &height,
 			        &win_gravity
 			       );
-	    if (flag & XValue) w->core.x = (Position)x;
-	    if (flag & YValue) w->core.y = (Position)y;
-	    if (flag & WidthValue) w->core.width = (Dimension)width;
-	    if (flag & HeightValue) w->core.height = (Dimension)height;
+	    if (flag) {
+		if (flag & XValue) w->core.x = (Position)x;
+		if (flag & YValue) w->core.y = (Position)y;
+		if (flag & WidthValue) w->core.width = (Dimension)width;
+		if (flag & HeightValue) w->core.height = (Dimension)height;
+	    }
+	    else {
+		String params[2];
+		Cardinal num_params = 2;
+		params[0] = XtName(wid);
+		params[1] = w->shell.geometry;
+		XtAppWarningMsg(XtWidgetToApplicationContext(wid),
+	   "badGeometry", "shellRealize", "XtToolkitError",
+	   "Shell widget \"%s\" has an invalid geometry specification: \"%s\"",
+				params, &num_params);
+	    }
 	}
 	else
 	    flag = 0;
