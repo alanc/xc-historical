@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: GetCmapAlloc.c,v 1.1 89/05/19 14:37:34 converse Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@
 
 static int default_allocation();
 static void best_allocation();
+static void gray_allocation();
 
 /* To determine the best allocation of reds, greens, and blues in a 
  * standard colormap, use XmuGetColormapAllocation.
@@ -57,18 +58,13 @@ Status XmuGetColormapAllocation(vinfo, property, red_max, green_max, blue_max)
     switch (property)
     {
       case XA_RGB_DEFAULT_MAP:
-	status = default_allocation(vinfo->colormap_size, red_max,
-				    green_max, blue_max);
+	status = default_allocation(vinfo, red_max, green_max, blue_max);
 	break;
       case XA_RGB_BEST_MAP:
 	best_allocation(vinfo, red_max, green_max, blue_max);
 	break;
       case XA_RGB_GRAY_MAP:
-	*red_max = (vinfo->colormap_size * 30) / 100;
-	*green_max = (vinfo->colormap_size * 59) / 100; 
-	*blue_max = (vinfo->colormap_size * 11) / 100; 
-	*green_max += ((vinfo->colormap_size - 1) -
-		       (*red_max + *green_max + *blue_max));
+	gray_allocation(vinfo->colormap_size, red_max, green_max, blue_max);
 	break;
       case XA_RGB_RED_MAP:
 	*red_max = vinfo->colormap_size - 1;
@@ -89,6 +85,22 @@ Status XmuGetColormapAllocation(vinfo, property, red_max, green_max, blue_max)
 }
 
 /****************************************************************************/
+/* Determine the appropriate color allocations of a gray scale.
+ *
+ * Keith Packard, MIT X Consortium
+ */
+
+static void gray_allocation(n, red_max, green_max, blue_max)
+    int		n;	/* the number of cells of the gray scale */
+    unsigned long *red_max, *green_max, *blue_max;
+{
+    *red_max = (n * 30) / 100;
+    *green_max = (n * 59) / 100; 
+    *blue_max = (n * 11) / 100; 
+    *green_max += ((n - 1) - (*red_max + *green_max + *blue_max));
+}
+
+/****************************************************************************/
 /* Determine an appropriate color allocation for the RGB_DEFAULT_MAP.
  * If a map has less than a minimum number of definable entries, we do not
  * produce an allocation for an RGB_DEFAULT_MAP.  
@@ -101,18 +113,48 @@ Status XmuGetColormapAllocation(vinfo, property, red_max, green_max, blue_max)
  *
  * Return 0 if an allocation has been determined, non-zero otherwise.
  */
-static int default_allocation(colormap_size, red, green, blue)
-    int			colormap_size;
+
+#define cube_root(n) (pow((double) (n), (double) 1.0/3.0))
+
+static int default_allocation(vinfo, red, green, blue)
+    XVisualInfo		*vinfo;
     unsigned long	*red, *green, *blue;
 {
-    if (colormap_size < 250)	/* skip it */
+    int			ngrays;		/* number of gray cells */
+
+    if (vinfo->colormap_size < 250)	/* skip it */
 	return 0;
 
-    if (colormap_size > 500000)	/* intended for displays with 24 planes */
-	*red = *green = *blue = (unsigned long) 63;
-    else
-	*red = *green = *blue = (unsigned long)
-	    (floor(pow((double) (colormap_size - 125), (double) 1.0/3.0)) - 1);
+    switch (vinfo->class) {
+      case PseudoColor:
+      case DirectColor:
+
+	if (vinfo->colormap_size > 500000)
+	    /* intended for displays with 24 planes */
+	    *red = *green = *blue = (unsigned long) 63;
+	else if (vinfo->colormap_size > 4000)
+	    /* intended for displays with 12 planes */
+	    *red = *green = *blue = (unsigned long) 12;
+	else
+	    /* intended for displays with 8 planes */
+	    *red = *green = *blue = (unsigned long)
+		(floor(cube_root(vinfo->colormap_size - 125)) - 1);  
+	break;
+
+      case GrayScale:
+
+	if (vinfo->colormap_size > 5000000)
+	    ngrays = 4096;
+	else if (vinfo->colormap_size > 4000)
+	    ngrays = 512;
+	else
+	    ngrays = 12;
+	gray_allocation(ngrays, red, green, blue);
+	break;
+	
+      default:
+	return 0;
+    }
     return 1;
 }
 
