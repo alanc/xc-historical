@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.33 93/09/18 19:59:58 rws Exp $ */
+/* $XConsortium: xclock.c,v 1.34 94/01/19 21:43:00 converse Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -83,21 +83,6 @@ static void die(w, client_data, call_data)
     exit(0);
 }
 
-static Widget FindSessionWidget(w)
-    Widget	w;
-{
-    Widget	session = NULL;
-    Arg		arg;
-
-    while (w && ! XtIsApplicationShell(w))
-	w = XtParent(w);
-    if (w) {
-	XtSetArg(arg, XtNsession, &session);
-	XtGetValues(w, &arg, ONE);
-    }
-    return session;
-}
-
 static void quit (w, event, params, num_params)
     Widget w;
     XEvent *event;
@@ -105,6 +90,7 @@ static void quit (w, event, params, num_params)
     Cardinal *num_params;
 {
     Widget session;
+    Arg arg;
 
     if (event->type == ClientMessage &&
 	event->xclient.data.l[0] != wm_delete_window) {
@@ -113,7 +99,8 @@ static void quit (w, event, params, num_params)
     }
 
     /* close the connection to the session manager if one exists */
-    session = FindSessionWidget(w);
+    XtSetArg(arg, XtNsession, &session);
+    XtGetValues(w, &arg, ONE);
     if (session)
 	XtCallCallbacks(session, XtNdieCallback, NULL);
     else 
@@ -129,17 +116,20 @@ void main(argc, argv)
     Pixmap icon_pixmap = None;
     XtAppContext app_con;
 
-    toplevel = XtSessionInitialize(&app_con, "XClock",
-				   NULL, sessionObjectClass,
-				   options, XtNumber(options),
-				   &argc, argv, NULL, NULL, ZERO);
+    toplevel = XtAppInitialize(&app_con, "XClock", options, XtNumber(options),
+			       &argc, argv, NULL, NULL, ZERO);
     if (argc != 1) Syntax(argv[0]);
-
+    session = XtCreateWidget("session", sessionObjectClass, toplevel,
+			     NULL, ZERO);
+    XtSetArg(arg, XtNsession, session);
+    XtSetValues(toplevel, &arg, ONE);
+    XtAddCallback(session, XtNdieCallback, die, NULL);
+    
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
 
     /*
-     * This is a hack so that f.delete will do something useful in this
-     * single-window application.
+     * This is a hack so that wm_delete_window will do something useful
+     * in this single-window application.
      */
     XtOverrideTranslations(toplevel, 
 		    XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
@@ -168,9 +158,5 @@ void main(argc, argv)
 				    False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
 			    &wm_delete_window, 1);
-    session = FindSessionWidget(toplevel);
-    if (session)
-	XtAddCallback(session, XtNdieCallback, die, NULL);
-
     XtAppMainLoop (app_con);
 }
