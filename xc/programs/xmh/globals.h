@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.37 91/07/17 12:27:53 converse Exp $
+ *  $XConsortium: globals.h,v 2.38 91/07/17 21:23:56 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -63,21 +63,22 @@ ext struct _resources {
     char	*view_geometry;
     char	*comp_geometry;
     char	*pick_geometry;
-    int		toc_percentage;
-    Boolean	new_mail_check;		/* Whether to check for new mail. */
-    Boolean	make_checkpoints;     /* Whether to create checkpoint files. */
-    int		check_frequency;	/* checkpoint and rescanning minutes */
+    int		toc_percentage;		/* % of toc and view used by toc */
+    Boolean	new_mail_check;		/* should xmh check for new mail? */
+    Boolean	make_checkpoints;       /* should xmh save edits in progress?*/
+    int		check_frequency;	/* backwards compatibility */
     int		mail_waiting_flag;	/* If true, change icon on new mail */
-    int		mail_interval;		/* make check_frequency obsolete */
-    int		rescan_interval;
-    int		checkpoint_interval;
+    int		mail_interval;		/* how often to check for new mail */
+    int		rescan_interval;	/* how often to check viewed tocs */
+    int		checkpoint_interval;	/* how often to save edits */
+    char *	checkpoint_name_format; /* format of checkpoint file name */
     Pixmap	flag_up;		/* folder has new mail */
     Pixmap	flag_down;		/* folder has no new mail */
     Pixmap	new_mail_icon;		/* new mail icon for wm hints */
     Pixmap	no_mail_icon;		/* no mail icon for wm hints */
     Cursor	cursor;			/* application cursor */
     Pixel	pointer_color;		/* application cursor color */
-    Boolean	show_on_inc;		/* show new message after inc */
+    Boolean	show_on_inc;		/* show 1st new message after inc? */
     Boolean	sticky_menu;		/* command menu entries are sticky? */
     Boolean	prefix_wm_and_icon_name;/* prefix wm names with progName ? */
     Boolean	reverse_read_order;	/* decrement counter to next msg ? */
