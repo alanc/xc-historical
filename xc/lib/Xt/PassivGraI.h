@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.2 89/12/15 11:32:05 swick Exp $
+* $XConsortium: PassivGraI.h,v 1.3 89/12/15 23:19:56 swick Exp $
 */
 
 /********************************************************
@@ -40,7 +40,7 @@ typedef enum {
     XtPassiveServerGrab,
     XtActiveServerGrab,
     XtPseudoPassiveServerGrab,
-    XtPseudoActiveServerGrab,
+    XtPseudoActiveServerGrab
 }XtServerGrabType;
 
 typedef struct _DetailRec {
@@ -72,7 +72,7 @@ typedef enum {
     XtMyDescendant,
     XtMyCousin,
     XtMySelf,
-    XtUnrelated,
+    XtUnrelated
 }XtGeneology;
 
 
