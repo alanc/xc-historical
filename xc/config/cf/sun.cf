@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.113 94/03/29 15:42:17 gildea Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.114 94/03/29 17:18:02 matt Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -25,7 +25,10 @@ XCOMM operating system:  OSName
 /*
  * Compiler setup.  This sun.cf file knows what options to use with 
  * certain compilers, including Sun C, CenterLine C, and gcc.  If you
- * don't tell us which compiler you have, we assume you have Sun C.
+ * don't tell us which compiler you have, we assume you have the 
+ * unbundled Sun C compiler under Solaris 2.x, and the bundled /bin/cc
+ * under SunOS 4.1.x
+ *
  * If you have CenterLine C, you can just define HasCenterLineC to YES
  * in site.def, or if you have gcc or gcc2, you can just define HasGcc 
  * or HasGcc2 to YES in site.def
@@ -39,7 +42,7 @@ XCOMM operating system:  OSName
  */
 
 #ifndef HasSunC
-#if (HasCenterLineC || HasGcc || HasGcc2)
+#if (HasCenterLineC || HasGcc || HasGcc2 || OSMajorVersion < 5)
 #define HasSunC NO
 #else
 #define HasSunC YES
@@ -53,7 +56,7 @@ XCOMM operating system:  OSName
  * in site.def
  */
 
-#if HasSunC
+#if HasSunC 
 #ifndef CCompilerMajorVersion
 #define CCompilerMajorVersion 2
 #endif
