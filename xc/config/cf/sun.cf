@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.101 93/11/12 16:35:31 kaleb Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.102 93/11/17 19:57:49 kaleb Exp $
 
 #ifdef SVR4
 #define OSName            SunOS 5.3
@@ -20,12 +20,12 @@ XCOMM operating system:  OSName
 #define StandardDefines   -DNOSTDHDRS
 #endif
 
-/* You ALSO need this if you have Sun ld patch 100170-06 or later to 4.1.1 */
 #if OSMajorVersion == 4 
 #if OSMinorVersion == 1
 #define HasPoll           YES
 #endif
 #if OSMinorVersion > 1 || (OSMinorVersion == 1 && OSTeenyVersion > 1)
+/* You ALSO need this if you have Sun ld patch 100170-06 or later to 4.1.1 */
 #define SunPost411FCSLd	  YES
 #endif
 #endif
