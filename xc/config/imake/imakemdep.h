@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.26 91/05/01 22:45:54 keith Exp $
+ * $XConsortium: imakemdep.h,v 1.27 91/05/04 22:15:23 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -127,7 +127,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-E",
 #else
 	"cpp",		/* replaced by the actual cpp program to exec */
-#endif
+#endif /* USE_CC_E */
 	"-I.",		/* add current directory to include path */
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
@@ -152,13 +152,13 @@ char *cpp_argv[ARGUMENTS] = {
 #ifndef aix
 #define aix		/* allow BOOTSTRAPCFLAGS="-D_IBMR2" */
 #endif
-#endif
+#endif /* _IBMR2 */
 #ifdef aix
 	"-Daix",	/* AIX instead of AOS */
 #ifndef ibm
 #define ibm		/* allow BOOTSTRAPCFLAGS="-Daix" */
 #endif
-#endif
+#endif /* aix */
 #ifdef ibm
 	"-Dibm",	/* IBM PS/2 and RT under both AOS and AIX */
 #endif
@@ -176,7 +176,16 @@ char *cpp_argv[ARGUMENTS] = {
 # else
 	"-DSYSV",	/* System V environment is the default */
 # endif
-#endif
+#endif /* Mips */
+#ifdef MOTOROLA
+       "-DMOTOROLA",    /* Motorola Delta Systems */
+# ifdef SYSV
+       "-DSYSV", 
+# endif
+# ifdef SVR4
+       "-DSVR4",
+# endif
+#endif /* MOTOROLA */
 };
 #else /* else MAKEDEPEND */
 /*
@@ -257,6 +266,12 @@ struct symtab	predefs[] = {
 #endif
 #ifdef is68k
 	{"is68k", "1"},
+#endif
+#ifdef m68k
+        {"m68k", "1"},
+#endif
+#ifdef m88k
+        {"m88k", "1"},
 #endif
 #ifdef bsd43
 	{"bsd43", "1"},
