@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.h,v 1.1 91/05/11 09:12:07 rws Exp $
+ * $XConsortium: fontxlfd.h,v 1.2 93/08/24 18:49:25 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -80,6 +80,7 @@ typedef struct _FontScalable {
 }           FontScalableRec, *FontScalablePtr;
 
 extern Bool FontParseXLFDName();
+extern fsRange *FontParseRanges();
 
 #define FONT_XLFD_REPLACE_NONE	0
 #define FONT_XLFD_REPLACE_STAR	1

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.10 92/11/20 15:30:50 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.11 93/08/24 18:49:20 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -116,7 +116,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     int			ret;
     Bool		noSpecificSize;
     int			nranges;
-    fsRange		*ranges, *parse_ranges();
+    fsRange		*ranges;
     Bool		name_parses = FALSE;
     
     if (namelen >= MAXFONTNAMELEN)
@@ -127,7 +127,7 @@ FontFileOpenFont (client, fpe, flags, name, namelen, format, fmask,
     tmpName.name = lowerName;
     tmpName.ndashes = FontFileCountDashes (lowerName, namelen);
     /* Match XLFD patterns */
-    ranges = parse_ranges(lowerName, &nranges);
+    ranges = FontParseRanges(lowerName, &nranges);
 
     if (!FontParseXLFDName (lowerName, &vals, FONT_XLFD_REPLACE_ZERO) ||
 	!(tmpName.length = strlen (lowerName),
@@ -413,7 +413,7 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     FontScalableRec	vals, zeroVals, tmpVals;
     int			i;
     int			oldnnames;
-    fsRange		*ranges, *parse_ranges();
+    fsRange		*ranges;
     int			nranges;
 
     if (len >= MAXFONTNAMELEN)
@@ -424,7 +424,7 @@ FontFileListFonts (client, fpe, pat, len, max, names)
     lowerName.name = lowerChars;
     lowerName.length = len;
     lowerName.ndashes = FontFileCountDashes (lowerChars, len);
-    ranges = parse_ranges(lowerChars, &nranges);
+    ranges = FontParseRanges(lowerChars, &nranges);
     /* Match XLFD patterns */
     strcpy (zeroChars, lowerChars);
     if (lowerName.ndashes == 14 &&
@@ -618,7 +618,7 @@ FontFileListOneFontWithInfo (client, fpe, namep, namelenp, pFontInfo)
 		    CopyISOLatin1Lowered (origName, name, namelen);
 		    origName[namelen] = '\0';
 		    vals.xlfdName = origName;
-		    vals.ranges = parse_ranges(origName, &vals.nranges);
+		    vals.ranges = FontParseRanges(origName, &vals.nranges);
 		    ranges = vals.ranges;
 		    /* Make a new scaled instance */
 	    	    strcpy (fileName, dir->directory);

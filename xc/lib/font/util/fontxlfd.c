@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.4 91/07/20 11:24:00 rws Exp $
+ * $XConsortium: fontxlfd.c,v 1.5 93/08/24 18:49:29 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -307,7 +307,7 @@ FontScalablePtr vals;
 }
 
 
-append_ranges(fname, nranges, ranges)
+static void append_ranges(fname, nranges, ranges)
 char *fname;
 int nranges;
 fsRange *ranges;
@@ -377,7 +377,7 @@ FontParseXLFDName(fname, vals, subst)
        results.  So, to prevent memory leaks, this procedure will simply
        lop off and ignore charset subsetting, and initialize the
        relevant vals fields to zero.  It's up to the caller to make its
-       own call to parse_ranges() if it's interested in the charset
+       own call to FontParseRanges() if it's interested in the charset
        subsetting.  */
 
     if (subst != FONT_XLFD_REPLACE_NONE &&
@@ -552,7 +552,7 @@ FontParseXLFDName(fname, vals, subst)
     return TRUE;
 }
 
-fsRange *parse_ranges(name, nranges)
+fsRange *FontParseRanges(name, nranges)
 char *name;
 int *nranges;
 {
