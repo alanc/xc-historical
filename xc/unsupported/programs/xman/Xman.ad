@@ -8,8 +8,8 @@
 *manualBrowser.Title:		Manual Page
 *manualBrowser.IconName:	Manual Page
 
-*SimpleMenu*Font:	   -*-new cent*-medium-r-normal--14-*-*-*-*-*-iso8859-*
-*SimpleMenu*labelFont: -*-new cent*-bold-r-normal--14-*-*-*-*-*-iso8859-*
+*SimpleMenu*Font:      -*-new cent*-medium-r-normal--*-140-*-*-*-*-iso8859-*
+*SimpleMenu*labelFont: -*-new cent*-bold-r-normal--*-140-*-*-*-*-iso8859-*
 *SimpleMenu.BackingStore:	Always
 *SimpleMenu.SaveUnder:		Off
 
