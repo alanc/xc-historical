@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 1.62 88/08/11 17:50:35 rws Exp $ */
+/* $XConsortium: property.c,v 1.63 88/09/06 15:41:17 jim Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -79,9 +79,7 @@ ProcRotateProperties(client)
     PropertyPtr pProp;
     xEvent event;
 
-    REQUEST_AT_LEAST_SIZE(xRotatePropertiesReq);
-    if (stuff->length != ((sizeof(xRotatePropertiesReq) >> 2) + stuff->nAtoms))
-        return BadLength;
+    REQUEST_FIXED_SIZE(xRotatePropertiesReq, stuff->nAtoms << 2);
     pWin = (WindowPtr) LookupWindow(stuff->window, client);
     if (!pWin)
         return(BadWindow);
@@ -167,6 +165,9 @@ ProcChangeProperty(client)
 	client->errorValue = format;
         return BadValue;
     }
+    len = stuff->nUnits;
+    sizeInBytes = format>>3;
+    REQUEST_FIXED_SIZE(xChangePropertyReq, len * sizeInBytes);
 
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
@@ -184,8 +185,6 @@ ProcChangeProperty(client)
 
     /* first see if property already exists */
 
-    len = stuff->nUnits;
-    sizeInBytes = format/8;
     pProp = pWin->userProps;
     while (pProp)
     {
