@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGeom.c,v 1.2 87/05/31 12:36:48 weissman Exp $/
+/* $Header: XGeom.c,v 1.2 87/09/11 08:09:25 jim Locked $/
 /* Copyright Massachusetts Institute of Technology 1985 */
 
 #include "Xlibint.h"
@@ -22,8 +22,10 @@ int XGeometry (dpy, screen, pos, def, bwidth, fwidth, fheight, xadd, yadd, x, y,
      int xadd, yadd;			/* any additional interior space */
      register *x, *y, *width, *height;	/* always set on successful RETURN */
 {
-	int px, py, pwidth, pheight;	/* returned values from parse */
-	int dx, dy, dwidth, dheight;	/* default values from parse */
+	int px, py;			/* returned values from parse */
+	unsigned int pwidth, pheight;	/* returned values from parse */
+	int dx, dy;			/* default values from parse */
+	unsigned int dwidth, dheight;	/* default values from parse */
 	int pmask, dmask;		/* values back from parse */
 
 	pmask = XParseGeometry(pos, &px, &py, &pwidth, &pheight);
