@@ -1,4 +1,4 @@
-! $XConsortium: XErrorDB,v 1.16 93/03/12 18:06:43 rws Exp $
+! $XConsortium: XErrorDB,v 1.17 93/08/08 18:22:23 mor Exp $
 ! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
@@ -401,3 +401,22 @@ XProtoError.XIE.5: XIE_ROIError
 XlibMessage.XIE.5: ROI in failed request 0x%lx
 XProtoError.XIE.6: XIE_FloError
 XlibMessage.XIE.6: Photoflo in failed request 0x%lx
+! SYNC extension
+XRequest.SYNC.0: X_SyncInitialize
+XRequest.SYNC.1: X_SyncListSystemCounters
+XRequest.SYNC.2: X_SyncCreateCounter
+XRequest.SYNC.3: X_SyncSetCounter
+XRequest.SYNC.4: X_SyncChangeCounter
+XRequest.SYNC.5: X_SyncQueryCounter
+XRequest.SYNC.6: X_SyncDestroyCounter
+XRequest.SYNC.7: X_SyncAwait
+XRequest.SYNC.8: X_SyncCreateAlarm
+XRequest.SYNC.9: X_SyncChangeAlarm
+XRequest.SYNC.10: X_SyncQueryAlarm
+XRequest.SYNC.11: X_SyncDestroyAlarm
+XRequest.SYNC.12: X_SyncSetPriority
+XRequest.SYNC.13: X_SyncGetPriority
+XProtoError.SYNC.0: XSyncBadCounter
+XlibMessage.SYNC.0: Counter in failed request 0x%lx
+XProtoError.SYNC.1: XSyncBadAlarm
+XlibMessage.SYNC.1: Alarm in failed request 0x%lx
