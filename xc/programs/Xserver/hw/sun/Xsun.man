@@ -1,5 +1,5 @@
-.\" $XConsortium: Xsun.man,v 1.5 88/02/27 20:03:06 rws Exp $
-.TH XSUN 1 "1 March 1988" "X Version 11"
+.\" $XConsortium: Xsun.man,v 1.6 88/09/06 15:11:01 jim Exp $
+.TH XSUN 1 "26 October 1988" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
 .SH SYNOPSIS
@@ -10,6 +10,8 @@ Xsun \- Sun server for X Version 11
 is the server for Version 11 of the X window system on Sun hardware.
 It will normally be started by
 .IR xinit (1),
+or 
+.IR xdm (1),
 or perhaps by some script such as:
 .LP
 .nf
@@ -161,8 +163,7 @@ entries for any device you don't have a monitor for.
 .TP
 4
 There is a bug in pre-FCS operating systems for the Sun/4
-which causes the server to crash driving a
-.B cgtwo .
+which causes the server to crash driving a \fBcgtwo\fP.
 .TP
 5
 There is a race condition that sometimes happens when running
@@ -178,8 +179,8 @@ Use of the pattern (as opposed to the blanking) screensaver
 may cause the server to loop forever.
 .TP
 8
-The cursor colors are correct.  If you are sceptical,  try running
-.IR hacks/cursorcolor/cursorcolor .
+The cursor colors are correct.  If you are skeptical,  try running
+.IR hacks/cursorcolor/cursorcolor.
 .SH AUTHORS
 .TP
 U. C. Berkeley
