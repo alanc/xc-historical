@@ -136,7 +136,7 @@ static Widget CreateScrollbar(w, horizontal)
     XtSetArg(barArgs[0], XtNorientation,
 	      horizontal ? XtorientHorizontal : XtorientVertical );
     XtSetArg(barArgs[1], XtNlength,
-	     horizontal ? w->core.width : w->core.height);
+	     horizontal ? clip->core.width : clip->core.height);
     XtSetArg(barArgs[2], XtNleft,
 	     (!horizontal && w->viewport.useright) ? XtRubber : XtChainLeft);
     XtSetArg(barArgs[3], XtNright,
@@ -155,15 +155,18 @@ static Widget CreateScrollbar(w, horizontal)
 	w->viewport.horiz_bar = bar;
 	constraints->form.vert_base = bar;
 	XtResizeWidget( clip, clip->core.width,	/* %%% wrong, but... */
-		        w->core.height - bar->core.height - bw, bw );
+		        w->core.height - bar->core.height - bw,
+		        clip->core.border_width );
     }
     else {
 	Dimension bw = bar->core.border_width;
 	w->viewport.vert_bar = bar;
 	constraints->form.horiz_base = bar;
 	XtResizeWidget( clip, w->core.width - bar->core.width - bw, /* %%% */
-		        bar->core.height, bw );
+		        bar->core.height, clip->core.border_width );
     }
+
+    XtSetMappedWhenManaged( bar, False );
     XtManageChild( bar );
 
     return bar;
@@ -181,6 +184,7 @@ static void Initialize(request, new, args, num_args)
 	{XtNfromVert, NULL},
 	{XtNwidth, NULL},
 	{XtNheight, NULL},
+	{XtNborderWidth, 0},
 	{XtNleft, (XtArgVal)XtChainLeft},
 	{XtNright, (XtArgVal)XtChainRight},
 	{XtNtop, (XtArgVal)XtChainTop},
@@ -414,6 +418,9 @@ static void Resize(widget)
 	} while (lw != clip_width || lh != clip_height);
     }
 
+    if (XtIsRealized(clip))
+	XRaiseWindow( XtDisplay(clip), XtWindow(clip) );
+
     XtMoveWidget( clip,
 		  needsvert ? (w->viewport.useright ? 0 :
 			       w->viewport.vert_bar->core.width +
@@ -440,6 +447,7 @@ static void Resize(widget)
 			  (w->viewport.usebottom
 			    ? w->core.height - bar->core.height - bw
 			    : -bw) );
+	    XtSetMappedWhenManaged( bar, True );
 	}
     }
 
@@ -460,6 +468,7 @@ static void Resize(widget)
 			  ((needshoriz && !w->viewport.usebottom)
 			    ? w->viewport.horiz_bar->core.height
 			    : -bw) );
+	    XtSetMappedWhenManaged( bar, True );
 	}
     }
 
