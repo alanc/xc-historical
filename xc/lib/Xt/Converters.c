@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.25 88/02/24 18:16:52 swick Exp $";
+static char rcsid[] = "$Header: Converters.c,v 1.26 88/02/26 12:31:48 swick Exp $";
 #endif lint
 
 
@@ -365,8 +365,6 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     char *name = (char *)fromVal->addr;
     register int i;
     Screen *screen;
-    XrmName app_name;
-    XrmClass app_class;
     static char* bitmap_file_path = NULL;
     char filename[MAXPATHLEN];
     Pixmap source, mask;
