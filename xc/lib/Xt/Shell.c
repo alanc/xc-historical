@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.97 91/02/05 22:14:43 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.98 91/02/06 14:35:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -597,6 +597,8 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* insert_child	  */	ApplicationShellInsertChild,
     /* delete_child	  */	XtInheritDeleteChild,
     /* extension	  */	(XtPointer)&compositeClassExtension
+  },{
+    /* extension	  */	NULL
   },{
     /* extension	  */	NULL
   },{
