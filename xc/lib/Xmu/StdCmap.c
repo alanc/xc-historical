@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.10 89/07/16 18:10:44 jim Exp $ 
+/* $XConsortium: StdCmap.c,v 1.11 89/10/08 15:04:52 rws Exp $ 
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -174,34 +174,27 @@ static Status valid_args(vinfo, red_max, green_max, blue_max, property)
     switch (property)
     {
       case XA_RGB_DEFAULT_MAP:
-	if ((red_max == 0 || green_max == 0 || blue_max == 0) ||
-	    (vinfo->class != PseudoColor && vinfo->class != DirectColor &&
-	     vinfo->class != GrayScale))
+	if (red_max == 0 || green_max == 0 || blue_max == 0)
 	    return 0;
 	break;
       case XA_RGB_RED_MAP:
-	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
-	    (red_max == 0))
+	if (red_max == 0)
 	    return 0;
 	break;
       case XA_RGB_GREEN_MAP:
-	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
-	    (green_max == 0))
+	if (green_max == 0)
 	    return 0;
 	break;
       case XA_RGB_BLUE_MAP:	
-	if ((vinfo->class != PseudoColor && vinfo->class != DirectColor) ||
-	    blue_max == 0)
+	if (blue_max == 0)
 	    return 0;
 	break;
       case XA_RGB_BEST_MAP:
-	if (vinfo->class == GrayScale || vinfo->class == StaticGray ||
-	    red_max == 0 || green_max == 0 || blue_max == 0)
+	if (red_max == 0 || green_max == 0 || blue_max == 0)
 	    return 0;
 	break;
       case XA_RGB_GRAY_MAP:
-	if (vinfo->class == StaticColor || vinfo->class == TrueColor ||
-	    red_max == 0 || blue_max == 0 || green_max == 0)
+	if (red_max == 0 || blue_max == 0 || green_max == 0)
 	    return 0;
 	break;
       default:
