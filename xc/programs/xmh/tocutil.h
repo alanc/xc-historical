@@ -1,4 +1,4 @@
-/* $XConsortium: tocutil.h,v 2.4 89/05/04 18:15:16 converse Exp $ */
+/* $XConsortium: tocutil.h,v 2.5 89/09/27 19:11:48 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -29,6 +29,7 @@
 
 extern Toc	TUMalloc			(/* void	*/);
 extern int	TUScanFileOutOfDate		(/* Toc 	*/);
+extern void	TUCheckSequenceMenu		(/* Toc		*/);
 extern void	TUScanFileForToc		(/* Toc 	*/);
 extern int	TUGetMsgPosition		(/* Toc, Msg 	*/);
 extern void	TUResetTocLabel			(/* Scrn 	*/);

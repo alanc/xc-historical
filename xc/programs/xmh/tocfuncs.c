@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.27 89/11/25 21:06:27 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.28 89/11/30 20:07:20 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -956,6 +956,7 @@ void DoDeleteSeq(w, client_data, call_data)
 {
     Scrn	scrn = (Scrn) client_data;
     TwiddleSequence(scrn, DELETE);
+    TUCheckSequenceMenu(scrn->toc);
 }
 
 
@@ -974,6 +975,6 @@ void XmhDeleteSequence(w, event, params, num_params)
 	(XawSimpleMenuGetActiveEntry(w) == NULL))
 	return;
     if (TocHasSequences(scrn->toc))
-	TwiddleSequence(scrn, DELETE);
+	DoDeleteSeq(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 

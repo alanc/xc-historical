@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.37 89/11/25 21:06:35 converse Exp $
+ * $XConsortium: tocutil.c,v 2.38 89/11/30 19:58:06 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -58,7 +58,7 @@ int TUScanFileOutOfDate(toc)
  * for this toc.
  */
 
-static void CheckSequenceMenu(toc)
+void TUCheckSequenceMenu(toc)
     Toc		toc;
 {
     Scrn	scrn;
@@ -227,7 +227,7 @@ void TURedisplayToc(scrn)
 				 (XawTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
 	    XawTextEnableRedisplay(scrn->tocwidget);
-	    CheckSequenceMenu(toc);
+	    TUCheckSequenceMenu(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
 	    XawTextSetSource(scrn->tocwidget, PNullSource, (XawTextPosition) 0);
