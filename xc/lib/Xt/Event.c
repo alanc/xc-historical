@@ -1,4 +1,4 @@
-/* "$XConsortium: Event.c,v 1.114 90/04/13 19:50:31 swick Exp $"; */
+/* $XConsortium: Event.c,v 1.115 90/06/15 18:38:43 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -52,14 +52,7 @@ SOFTWARE.
 			  (XtExposeGraphicsExposeMerged & COMP_EXPOSE))
 #define NO_EXPOSE        (XtExposeNoExpose & COMP_EXPOSE)
 
-
-
 extern void 			bzero();
-typedef struct XtPerDisplayInputRec *XtPerDisplayInput;
-extern XtPerDisplayInput 	_XtGetPerDisplayInput();
-extern XtGrabList *		_XtGetGrabList();
-
-
 
 CallbackList *_XtDestroyList;
 
@@ -807,12 +800,10 @@ static Boolean DecideToDispatch(event)
     XtPerDisplayInput pdi;
     XtGrabList  grabList;
 
-    extern XtPerDisplayInput _XtGetPerDisplayInput();
-    
     widget = XtWindowToWidget (event->xany.display, event->xany.window);
     pd = _XtGetPerDisplay(event->xany.display);
     pdi = _XtGetPerDisplayInput(event->xany.display);
-    grabList = *(XtGrabList *)_XtGetGrabList(pdi);
+    grabList = *_XtGetGrabList(pdi);
     
     
     /* Lint complains about &grabType not matching the declaration.
@@ -878,7 +869,7 @@ static Boolean DecideToDispatch(event)
 		
 		/* Also dispatch to nearest accessible spring_loaded. */
 		/* Fetch this afterward to reflect modal list changes */
-		grabList = *(XtGrabList *)_XtGetGrabList(pdi);
+		grabList = *_XtGetGrabList(pdi);
 		widget = LookupSpringLoaded(grabList);
 		if (widget != NULL && widget != dspWidget) {
 		    was_dispatched |= DispatchEvent(event, widget,
