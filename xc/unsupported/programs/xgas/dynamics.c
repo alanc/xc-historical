@@ -218,7 +218,7 @@ static double hit( mol, wall)
 	else return -1.0;
     }
     else {
-	error(" In hit, illegal wall type.", deltaT);
+	error(" In hit, illegal wall type.", 0);
 	return -1.0;
     }
 }
