@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.1 93/09/03 13:25:15 mor Exp $ */
+/* $XConsortium: process.c,v 1.2 93/09/03 17:09:30 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -42,22 +42,32 @@ IceReplyWaitInfo *replyWait;
     if (smcConn == NULL)
 	return (0);
 
+    if (!smcConn->client_id &&
+        opcode != SM_RegisterClientReply && opcode != SM_Error)
+    {
+	_SmcErrorBadState (iceConn, opcode, IceFatalToProtocol);
+	return (0);
+    }
+
     switch (opcode)
     {
     case SM_Error:
     {
 	iceErrorMsg 	*pMsg;
 	char	    	*pData;
-	SmcReply 	*reply = (SmcReply *) (replyWait->reply);
 
 	IceReadCompleteMessage (iceConn,
 	    SIZEOF (iceErrorMsg), iceErrorMsg, pMsg, pData);
 
 	if (replyWait &&
-	    pMsg->offendingMinorOpcode == replyWait->minor_opcode_of_request &&
+	    replyWait->minor_opcode_of_request == SM_RegisterClient &&
+	    pMsg->offendingMinorOpcode == SM_RegisterClient &&
 	    pMsg->offendingSequenceNum == replyWait->sequence_of_request)
 	{
-	    reply->type = SMC_ERROR_REPLY;
+	    _SmcRegisterClientReply *reply =
+		(_SmcRegisterClientReply *) (replyWait->reply);
+
+	    reply->status = 0;
 
 	    replyReady = True;
 	}
@@ -78,22 +88,22 @@ IceReplyWaitInfo *replyWait;
 	    replyWait->minor_opcode_of_request != SM_RegisterClient)
 	{
 	    _SmcErrorBadState (iceConn,
-		SM_RegisterClientReply, IceCanContinue);
+		SM_RegisterClientReply, IceFatalToProtocol);
 	}
         else
 	{
 	    smRegisterClientReplyMsg 	*pMsg;
 	    char			*pData;
-	    SmcRegisterClientReply 	*reply = 
-	        &(((SmcReply *) (replyWait->reply))->register_client_reply);
+	    _SmcRegisterClientReply 	*reply = 
+	        (_SmcRegisterClientReply *) (replyWait->reply);
 
 	    IceReadCompleteMessage (iceConn,
 		SIZEOF (smRegisterClientReplyMsg),
 		smRegisterClientReplyMsg, pMsg, pData);
 
-	    EXTRACT_ARRAY8 (pData, reply->client_id_len, reply->client_id);
+	    EXTRACT_ARRAY8_AS_STRING (pData, reply->client_id);
 
-	    reply->type = SMC_REGISTER_CLIENT_REPLY;
+	    reply->status = 1;
 	    replyReady = True;
 	}
 	break;
@@ -102,9 +112,10 @@ IceReplyWaitInfo *replyWait;
     {
 	smSaveYourselfMsg 	*pMsg;
 
-	IceReadSimpleMessage (iceConn, smSaveYourselfMsg, pMsg);
+	IceReadMessageHeader (iceConn, SIZEOF (smSaveYourselfMsg),
+	    smSaveYourselfMsg, pMsg);
 
-	(*_SmcCallbacks.save_yourself) (smcConn, smcConn->call_data,
+	(*_SmcCallbacks.save_yourself) (smcConn, smcConn->client_data,
 	    pMsg->saveType, pMsg->shutdown, pMsg->interactStyle, pMsg->fast);
 	break;
     }
@@ -117,20 +128,19 @@ IceReplyWaitInfo *replyWait;
 	}
         else
 	{
-	    (*smcConn->interact_cb) (smcConn, smcConn->call_data);
-
+	    (*smcConn->interact_cb) (smcConn, smcConn->client_data);
 	    smcConn->interact_cb = NULL;
 	}
 	break;
 
     case SM_Die:
 
-	(*_SmcCallbacks.die) (smcConn, smcConn->call_data);
+	(*_SmcCallbacks.die) (smcConn, smcConn->client_data);
 	break;
 
     case SM_ShutdownCancelled:
 
-	(*_SmcCallbacks.shutdown_cancelled) (smcConn, smcConn->call_data);
+	(*_SmcCallbacks.shutdown_cancelled) (smcConn, smcConn->client_data);
 	break;
 
     case SM_PropertiesReply:
@@ -157,7 +167,7 @@ IceReplyWaitInfo *replyWait;
 	    next = smcConn->prop_reply_waits->next;
 
 	    (*smcConn->prop_reply_waits->prop_reply_cb) (smcConn,
-		smcConn->call_data, numProps, props);
+		smcConn->client_data, numProps, props);
 
 	    free ((char *) smcConn->prop_reply_waits);
 	    smcConn->prop_reply_waits = next;
@@ -204,6 +214,13 @@ Bool		 swap;
     if (smsConn == NULL)
 	return;
 
+    if (!smsConn->client_id &&
+        opcode != SM_RegisterClient && opcode != SM_Error)
+    {
+	_SmsErrorBadState (iceConn, opcode, IceFatalToProtocol);
+	return;
+    }
+
     switch (opcode)
     {
     case SM_Error:
@@ -227,76 +244,103 @@ Bool		 swap;
 	smRegisterClientMsg 	*pMsg;
 	char 			*pData;
 	char 			*previousId = NULL;
-	int			previousIdLen;
 
 	IceReadCompleteMessage (iceConn,
 	    SIZEOF (smRegisterClientMsg),
 	    smRegisterClientMsg, pMsg, pData);
 
-	EXTRACT_ARRAY8 (pData, previousIdLen, previousId);
+	EXTRACT_ARRAY8_AS_STRING (pData, previousId);
 
 	(*_SmsCallbacks.register_client) (smsConn,
-            smsConn->call_data, previousIdLen, previousId);
+            smsConn->manager_data, previousId);
 
 	break;
     }
 
     case SM_InteractRequest:
-    {
-	smInteractRequestMsg 	*pMsg;
 
-	IceReadSimpleMessage (iceConn, smInteractRequestMsg, pMsg);
+        if (!smsConn->save_yourself_in_progress ||
+	    smsConn->waiting_to_interact)
+	{
+	    _SmsErrorBadState (iceConn,
+		SM_InteractRequest, IceCanContinue);
+	}
+        else
+	{
+	    smInteractRequestMsg 	*pMsg;
 
-	(*_SmsCallbacks.interact_request) (smsConn,
-	    smsConn->call_data, pMsg->dialogType);
+	    IceReadSimpleMessage (iceConn, smInteractRequestMsg, pMsg);
+
+	    smsConn->waiting_to_interact = True;
+
+	    (*_SmsCallbacks.interact_request) (smsConn,
+	        smsConn->manager_data, pMsg->dialogType);
+	}
 	break;
-    }
 
     case SM_InteractDone:
-    {
-	smInteractDoneMsg 	*pMsg;
 
-	IceReadSimpleMessage (iceConn, smInteractDoneMsg, pMsg);
+        if (!smsConn->interact_in_progress)
+	{
+	    _SmsErrorBadState (iceConn,
+		SM_InteractDone, IceCanContinue);
+	}
+        else
+	{
+	    smInteractDoneMsg 	*pMsg;
 
-	(*_SmsCallbacks.interact_done) (smsConn,
-	    smsConn->call_data, pMsg->cancelShutdown);
+	    IceReadSimpleMessage (iceConn, smInteractDoneMsg, pMsg);
+
+	    smsConn->interact_in_progress = False;
+
+	    (*_SmsCallbacks.interact_done) (smsConn,
+	      smsConn->manager_data, pMsg->cancelShutdown);
+	}
 	break;
-    }
 
     case SM_SaveYourselfDone:
-    {
-	smSaveYourselfDoneMsg 	*pMsg;
 
-	IceReadSimpleMessage (iceConn, smSaveYourselfDoneMsg, pMsg);
+        if (!smsConn->save_yourself_in_progress)
+	{
+	    _SmsErrorBadState (iceConn,
+		SM_SaveYourselfDone, IceCanContinue);
+	}
+        else
+	{
+	    smSaveYourselfDoneMsg 	*pMsg;
 
-	(*_SmsCallbacks.save_yourself_done) (smsConn,
-	    smsConn->call_data, pMsg->success);
+	    IceReadSimpleMessage (iceConn, smSaveYourselfDoneMsg, pMsg);
+
+	    smsConn->save_yourself_in_progress = False;
+
+	    (*_SmsCallbacks.save_yourself_done) (smsConn,
+	        smsConn->manager_data, pMsg->success);
+	}
 	break;
-    }
 
     case SM_CloseConnection:
     {
 	smCloseConnectionMsg 	*pMsg;
 	char 			*pData;
 	char 			*locale = NULL;
-	int 			count, len, i;
+	int 			count, i;
 	char 			**reasonMsgs = NULL;
 
 	IceReadCompleteMessage (iceConn,
 	    SIZEOF (smCloseConnectionMsg),
 	    smCloseConnectionMsg, pMsg, pData);
 
-	EXTRACT_ARRAY8 (pData, len, locale);
+	EXTRACT_ARRAY8_AS_STRING (pData, locale);
 
 	EXTRACT_CARD32 (pData, count);
 	pData += 4;
 
 	reasonMsgs = (char **) malloc (count * sizeof (char *));
 	for (i = 0; i < count; i++)
-	    EXTRACT_ARRAY8 (pData, len, reasonMsgs[i]);
+	    EXTRACT_ARRAY8_AS_STRING (pData, reasonMsgs[i]);
 
 	(*_SmsCallbacks.close_connection) (smsConn,
-	    smsConn->call_data, locale, count, reasonMsgs);
+	    smsConn->manager_data, locale, count, reasonMsgs);
 
 	SmsCleanUp (smsConn);
 	break;
@@ -316,14 +360,14 @@ Bool		 swap;
 	EXTRACT_LISTOF_PROPERTY (pData, numProps, props);
 
 	(*_SmsCallbacks.set_properties) (smsConn,
-	    smsConn->call_data, pMsg->sequenceRef, numProps, props);
+	    smsConn->manager_data, pMsg->sequenceRef, numProps, props);
 
 	break;
     }
 
     case SM_GetProperties:
 
-	(*_SmsCallbacks.get_properties) (smsConn, smsConn->call_data);
+	(*_SmsCallbacks.get_properties) (smsConn, smsConn->manager_data);
 	break;
 
     default:
