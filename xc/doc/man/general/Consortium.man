@@ -1,8 +1,8 @@
-.TH XCONSORTIUM 1 "Release 4"  "X Version 11"
+.TH XCONSORTIUM 1 "Release 5beta"  "X Version 11"
 .SH NAME
 MIT X Consortium
 .SH SYNOPSIS
-X11R4 is brought to you by the MIT X Consortium.
+X11R5beta is brought to you by the MIT X Consortium.
 .SH DESCRIPTION
 X Window System research began in the summer of 1984 at MIT as an informal
 joint undertaking between the Laboratory for Computer Science and
@@ -20,7 +20,7 @@ and administrative leadership required to make this work.  The
 Consortium is financially self-supporting, with membership open to any
 organization.  There are two categories of membership, Member (for
 large organizations) and Affiliate (for smaller organizations).
-A list of members as of the public release of X11R4 is given below.
+A list of members as of the release of X11R5beta is given below.
 .PP
 The Director of the X Consortium acts as the ultimate architect for all X
 specifications and software.  The activities of the Consortium are overseen
@@ -54,10 +54,11 @@ The MIT staff members are as follows.
 .nf
 
 Donna Converse, converse@expo.lcs.mit.edu
-Jim Fulton, jim@expo.lcs.mit.edu
-Michelle Leger, michelle@expo.lcs.mit.edu
+Stephen Gildea, gildea@expo.lcs.mit.edu
+Susan Hardy, sh@expo.lcs.mit.edu
+Jay Hersh, hersh@expo.lcs.mit.edu
 Keith Packard, keith@expo.lcs.mit.edu
-Chris Peterson, kit@expo.lcs.mit.edu
+Dave Sternlicht, dave@expo.lcs.mit.edu
 .fi
 
 Ralph Swick, swick@athena.mit.edu, an employee of Digital Equipment
@@ -78,77 +79,94 @@ Cambridge, MA 02139
 
 .nf
 Apple Computer, Inc.
-American Telephone & Telegraph Company
 Bull S.A.
 Control Data Corporation
+Convex Computer Corporation
 Cray Research, Inc.
 Data General Corporation
-Digital Equipment Corporation
+Digital Equipment Corp.
+E.I. DuPont de Nemours & Company, Inc.
 Eastman Kodak Company
+Evans & Sutherland
 Fujitsu Limited
 Hewlett-Packard Company
-International Business Machines Corporation
+Hitachi Ltd.
+Hughes Aircraft Company
+IBM Corporation
+Intergraph Corp.
+Matsushita Electric Industrical Co., Ltd.
+MIPS Computer Systems
 Mitsubishi Electric Corporation
 Motorola, Inc.
-NEC Corporation
 NCR Corporation
+NEC Corporation
+Network Computing Devices
 Nippon Telegraph and Telephone Corporation
+Olivetti D.O.R.
 OMRON Corporation
 Prime Computer, Inc.
-Rich, Inc.
 Sequent Computer Systems Inc.
-Siemens AG
+Siemens Nixdorf Informationssysteme AG
 Silicon Graphics, Inc.
 Sony Corporation
 Sun Microsystems, Inc.
+Tandberg Data A/S
 Tektronix, Inc.
 Texas Instruments, Inc.
 Unisys Corporation
-Wang Laboratories, Inc.
+Unix Systems Laboratories/American Telephone & Telegraph Company
 Xerox Corporation
 .fi
 
 .SH AFFILIATES
 
 .nf
-ACER America Corporation
-Adobe Systems
-Advanced Graphics Engineering
-Carnegie Mellon University
+Adobe Systems Inc.
+AGE Logic, Inc.
+ASTEC, Inc.
+Bitstream, Inc.
 CETIA - Compagnie Europeene des Techniques de l'Ingenierie Assistee
+Chromatics, Inc.
 Codonics, Inc.
-Evans & Sutherland
-GfxBase
-INESC - Instituto de Engenharia de Sistemas e Computadores
-Integrated Solutions
+Frame Technology Corp.
+Gfxbase, Inc.
+GIPSI S.A.
+Institute for Information Industry
 Interactive Systems Corporation
-Interactive Development Environments
 Integrated Computer Solutions, Inc.
-Key Systems Engineering Corp.
+IXI Limited
+Japan Computer Corporation
 Jupiter Systems
-University of Kent at Canterbury
-Landmark Graphics Corporation
-Locus Computing
+KAIST - Korean Advanced Institute of Science and Technology
+Labtam Australia
+Locus Computing Corporation
+Metro Link, Inc.
 University of Lowell
-Matrox International
 Megatek Corporation
-MIPS Computer Systems
+Metheus Corporation
 MITRE Corporation
-Network Computing Devices
-Nova Graphics International
+Objectivity, Inc.
 Open Software Foundation
 O'Reilly & Associates, Inc.
 PCS Computer Systeme GmbH
 Ramtek Corporation
-Samsung Software America
-SGIP - Societe de Gestion et d'Informatique Publicis
-Software Productivity Consortium
-Solbourne Computer Inc.
-Spectragraphics Corporation
+Samsung Electronics Corp.
+ShoGraphics, Inc.
+Snitily Graphics Consulting Services
+Solbourne Computer, Inc.
+SOUM Corporation
+SPARC International
+Spectragraphics Corp.
 Stanford University
 Stardent Computer
+Strategic Research Institute Inc.
+Sumitomo Electric Workstation
 Tatung Science and Technology
-UNICAD, Inc.
-Visual Technology Inc.
+Template Graphics Software
+Tyan Computer
+Unipalm XTech
+Visix Software, Inc.
+Visual Information Technologies, Inc.
+Visual Technology, Inc.
 X/Open Company Ltd.
 .fi
