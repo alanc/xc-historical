@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 93/09/04 19:36:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 93/09/09 10:41:46 rws Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex
@@ -7,6 +7,8 @@ XCOMM $XConsortium: Imakefile,v 1.15 93/09/04 19:36:57 rws Exp $
 #define LibName PEX5
 #define SoRev SOPEXREV
 #define IncSubdir PEX5
+
+#include <Threads.tmpl>
 
 #ifdef SharedPexReqs
 REQUIREDLIBS = SharedPexReqs
@@ -20,9 +22,8 @@ FP_DEFINES = -DNATIVE_FP_FORMAT=$(NATIVE_FP_FORMAT)
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
-  MTX_DEFINES = XMTDefines
 
-DEFINES = $(FP_DEFINES) $(ALLOC_DEFINES) $(MTX_DEFINES)
+DEFINES = $(FP_DEFINES) $(ALLOC_DEFINES)
 
 HEADERS = PEXlib.h \
 	  PEXlibint.h \

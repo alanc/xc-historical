@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.47 94/01/29 13:31:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.48 94/02/04 12:19:42 dpw Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
@@ -6,6 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.47 94/01/29 13:31:01 rws Exp $
 #define LibName Xext
 #define SoRev SOXEXTREV
 #define LibHeaders NO
+
+#include <Threads.tmpl>
 
 #ifdef SharedXextReqs
 REQUIREDLIBS = SharedXextReqs
@@ -19,9 +21,8 @@ REQUIREDLIBS = SharedXextReqs
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
-  MTX_DEFINES = XMTDefines
 
-      DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
+      DEFINES = $(ALLOC_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = globals.c extutil.c XMultibuf.c XShape.c $(SHMSRCS)  \
 		MITMisc.c XTestExt1.c XScrnSaver.c XSync.c XLbx.c

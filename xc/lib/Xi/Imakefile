@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 93/09/04 16:37:24 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.16 93/10/11 12:41:15 rws Exp $
 #define DoNormalLib NormalLibXi
 #define DoSharedLib SharedLibXi
 #define DoDebugLib DebugLibXi
@@ -6,6 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.15 93/09/04 16:37:24 rws Exp $
 #define LibName Xi
 #define SoRev SOXINPUTREV
 #define LibHeaders NO
+
+#include <Threads.tmpl>
 
 #ifdef SharedXiReqs
 REQUIREDLIBS = SharedXiReqs
@@ -15,9 +17,7 @@ REQUIREDLIBS = SharedXiReqs
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
-  MTX_DEFINES = XMTDefines
-
- DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
+ DEFINES = $(ALLOC_DEFINES)
 INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 SRCS = XAllowDv.c \
 		  XChgDCtl.c \

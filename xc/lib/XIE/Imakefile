@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/12/28 09:39:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/18 16:05:26 mor Exp $
 
 #define DoNormalLib NormalLibXie
 #define DoSharedLib SharedLibXie
@@ -8,6 +8,8 @@ XCOMM $XConsortium: Imakefile,v 1.4 93/12/28 09:39:57 rws Exp $
 #define SoRev SOXIEREV
 #define IncSubdir extensions
 
+#include <Threads.tmpl>
+
 #ifdef SharedXieReqs
 REQUIREDLIBS = SharedXieReqs
 #endif
@@ -15,9 +17,8 @@ REQUIREDLIBS = SharedXieReqs
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
-  MTX_DEFINES = XMTDefines
 
-DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
+DEFINES = $(ALLOC_DEFINES)
 
 HEADERS = XIElib.h
 

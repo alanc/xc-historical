@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 93/10/11 12:42:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/01/30 14:19:26 rws Exp $
 #define DoNormalLib NormalLibXtst
 #define DoSharedLib SharedLibXtst
 #define DoDebugLib DebugLibXtst
@@ -7,11 +7,12 @@ XCOMM $XConsortium: Imakefile,v 1.7 93/10/11 12:42:16 rws Exp $
 #define SoRev SOXTESTREV
 #define LibHeaders NO
 
+#include <Threads.tmpl>
+
 #ifdef SharedXtstReqs
 REQUIREDLIBS = SharedXtstReqs
 #endif
 
- DEFINES = XMTDefines
 INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
 
 SRCS = XTest.c XRecord.c
