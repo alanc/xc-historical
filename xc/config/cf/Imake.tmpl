@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.18 89/02/09 13:07:04 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.19 89/02/21 08:55:05 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -346,6 +346,9 @@
 #ifndef SysLastLibraries
 #define SysLastLibraries       /**/
 #endif
+#ifndef SysAuxLibraries
+#define SysAuxLibraries        /**/
+#endif
 #ifndef TagsCmd
 #define TagsCmd                ctags
 #endif
@@ -378,6 +381,7 @@
   STD_CPP_DEFINES = StandardCppDefines
       STD_DEFINES = StandardDefines
 SYSLAST_LIBRARIES = SysLastLibraries
+ SYSAUX_LIBRARIES = SysAuxLibraries
              TAGS = TagsCmd
 #if ConstructMFLAGS
            MFLAGS = -$(MAKEFLAGS)
@@ -409,11 +413,10 @@ SYSLAST_LIBRARIES = SysLastLibraries
     IMAKE_DEFINES = /* leave blank, for command line use only */
 #ifdef UseInstalled
          IRULESRC = $(CONFIGDIR)	/* used in rules file */
-        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) -sMakefile $(IMAKE_DEFINES)
+        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
 #else
          IRULESRC = $(CONFIGSRC)
-        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) \
-			-sMakefile $(IMAKE_DEFINES)
+        IMAKE_CMD = $(NEWTOP)$(IMAKE) -I$(NEWTOP)$(IRULESRC) $(IMAKE_DEFINES)
 #endif
      ICONFIGFILES = $(IRULESRC)/Imake.tmpl $(IRULESRC)/Imake.rules \
 			$(IRULESRC)/Project.tmpl $(IRULESRC)/site.def \
