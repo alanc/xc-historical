@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.39 91/10/21 14:31:37 eswu Exp $
+ * $XConsortium: Bitmap.c,v 1.40 91/11/18 17:30:46 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -640,7 +640,7 @@ int XmuWriteBitmapDataToFile (filename, basename,
 	    fprintf(file, "#define %s_x_hot %d\n", basename, x_hot);
 	    fprintf(file, "#define %s_y_hot %d\n", basename, y_hot);
 	}
-	fprintf(file, "static char %s_bits[] = {\n   0x%02x",
+	fprintf(file, "static unsigned char %s_bits[] = {\n   0x%02x",
 		basename, (unsigned char) datap[0]);
 	for(i = 1; i < data_length; i++) {
 	    fprintf(file, ",");
