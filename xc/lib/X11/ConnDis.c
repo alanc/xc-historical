@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.49 89/06/21 10:15:36 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.50 89/06/21 10:45:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,6 +33,15 @@
 #include <X11/Xauth.h>
 #include <ctype.h>
 
+#ifndef X_CONNECTION_RETRIES		/* number retries on ECONNREFUSED */
+#define X_CONNECTION_RETRIES 5
+#endif
+
+#ifndef STREAMSCONN
+#define DO_RETRIES
+#endif
+
+extern char *getenv();
 
 #ifdef DNETCONN
 static int MakeDECnetConnection();
@@ -99,6 +108,7 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int (*connfunc)() = NULL;		/* method to create connection */
     int fd = -1;			/* file descriptor to return */
     int len;				/* length tmp variable */
+    int retries = X_CONNECTION_RETRIES;
 
     p = display_name;
 
@@ -253,9 +263,24 @@ int _XConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
     /*
      * Make the connection, also need to get the auth address info for
-     * non-local connections
+     * non-local connections.  Do retries in case server host has hit its
+     * backlog (which, unfortunately, isn't distinguishable from there not
+     * being a server listening at all, which is why we have to not retry
+     * too many times).
      */
-    fd = (*connfunc) (phostname, idisplay, familyp, saddrlenp, saddrp);
+#ifdef DO_RETRIES
+    if ((p = getenv ("XRETRIES")) != NULL) {
+	retries = atoi (p);
+    }
+    do {
+#endif
+	errno = 0;
+	fd = (*connfunc) (phostname, idisplay, familyp, saddrlenp, saddrp);
+#ifdef DO_RETRIES
+	if (fd >= 0 || errno != ECONNREFUSED) break;
+	sleep (1);
+    } while (retries-- > 0);
+#endif
     if (fd < 0) {
 	goto bad;
     }
@@ -533,9 +558,28 @@ static int MakeTCPConnection (phostname, idisplay,
     }
 
     /*
-     * save the auth information
+     * turn off TCP coalescence
      */
+#ifdef TCP_NODELAY
+    {
+	int mi = 1;
+	setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
+    }
+#endif
 
+    /*
+     * connect to the socket; if there is no X server or if the backlog has
+     * been reached, then ECONNREFUSED will be returned.
+     */
+    if (connect (fd, addr, addrlen) == -1) {
+	(void) close (fd);
+	return -1;
+    }
+
+
+    /*
+     * Success!  So, save the auth information
+     */
 #if defined(CRAY) && defined(OLDTCP)
     len = sizeof(inaddr.sin_addr);
     cp = (char *) &inaddr.sin_addr;
@@ -560,19 +604,6 @@ static int MakeTCPConnection (phostname, idisplay,
 	} else {
 	    *saddrlenp = 0;
 	}
-    }
-
-    /* make sure to turn off TCP coalescence */
-#ifdef TCP_NODELAY
-    {
-	int mi = 1;
-	setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, &mi, sizeof (int));
-    }
-#endif
-
-    if (connect (fd, addr, addrlen) == -1) {
-	(void) close (fd);
-	return -1;
     }
 
     return fd;
