@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.64 89/11/03 21:56:20 keith Exp $
+ * $XConsortium: gram.y,v 1.65 89/11/05 17:47:00 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.64 89/11/03 21:56:20 keith Exp $";
+"$XConsortium: gram.y,v 1.65 89/11/05 17:47:00 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -114,6 +114,7 @@ extern int yylineno;
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
 %token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION NODEFAULTS
 %token <num> LEFT_TITLEBUTTON RIGHT_TITLEBUTTON SQUEEZETITLE
+%token <num> TITLEBUTTON_BORDERWIDTH
 %token <ptr> STRING
 
 %type <ptr> string
@@ -240,6 +241,8 @@ stmt		: error
 		| RIGHT_TITLEBUTTON string EQUALS action { 
 					  GotTitleButton ($2, $4, True);
 					}
+		| TITLEBUTTON_BORDERWIDTH number { if (Scr->FirstTime)
+						     Scr->TBInfo.border = $2; }
 		| button string		{ root = GetRoot($2, 0, 0);
 					  Scr->Mouse[$1][C_ROOT][0].func = F_MENU;
 					  Scr->Mouse[$1][C_ROOT][0].menu = root;
