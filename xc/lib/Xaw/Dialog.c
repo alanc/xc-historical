@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.36 89/11/12 14:02:28 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.37 89/12/06 15:26:31 kit Exp $";
 #endif /* lint */
 
 
@@ -60,7 +60,7 @@ static XtResource resources[] = {
      XtOffset(DialogWidget, dialog.label), XtRString, NULL},
   {XtNvalue, XtCValue, XtRString, sizeof(String),
      XtOffset(DialogWidget, dialog.value), XtRString, NULL},
-  {XtNicon, XtCIcon, XtRPixmap, sizeof(Pixmap),
+  {XtNicon, XtCIcon, XtRBitmap, sizeof(Pixmap),
      XtOffset(DialogWidget, dialog.icon), XtRImmediate, 0},
 };
 
