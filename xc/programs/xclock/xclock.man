@@ -14,128 +14,76 @@ nothing more than a wrapper around the Athena Clock widget.
 .I Xclock
 accepts all of the standard X Toolkit command line options along with the 
 additional options listed below:
-.PP
 .TP 8
 .B \-help
-Display a brief summary of
-.I xclock's
-calling syntax and options.
-.PP
+This option indicates that a brief summary of the allowed options should be
+printed on the standard error.
 .TP 8
 .B \-analog 
-Use analog display mode (the default).  Draw a conventional 12 hour
-clock face with ``ticks'' for each minute and stroke marks on each hour.
-.PP
+This option indicates that a conventional 12 hour clock face with ticks marks
+and hands should be used.  This is the default.
 .TP 8
 .B \-digital
-Use  digital  display  mode.   Display the date and time in
-digital format.  The default is analog  mode.
-.PP
+This option indicates that a 24 hour digital clock should be used.
 .TP 8
 .B \-chime
-Cause the clock to ``chime'' once on the half hour and twice on the hour.
-.PP
+This option indicates that the clock should chime 
+once on the half hour and twice on the hour.
 .TP 8
 .B \-hd \fIcolor\fP
-Determines the color of the hands of the clock.
-.PP
+This option specifies the color of the hands on an analog clock.  The default
+is ``black''.
 .TP 8
 .B \-hl \fIcolor\fP
-Determines the color of the hands in analog mode.
-The default is to make them the same as the foreground color.
-On monochrome displays this is ignored.
-.PP
+This option specifies the color of the edges of the hands on an analog clock,
+and is only useful on color displays.  The default is ``black''.
 .TP 8
 .B \-update \fIseconds\fP
-Specify the frequency in seconds with which
-.I xclock
-updates its display.  If the
-.I xclock
-window is obscured and then exposed,
-.I xclock
-will override this setting  and  redisplay  immediately.   The  default
-update  frequency  is  60  seconds.   The  specification  of an update
-frequency greater than 30 seconds disables the display of  the  second
-hand in analog mode.
-.PP
+This option specifies the frequency in seconds at which \fIxclock\fP
+should update its display.  If the clock is obscured and then exposed,
+it will be updated immediately.  A value of less than 30 seconds will enable a
+second hand on an analog clock.  The default is 60 seconds.
 .TP 8
-.B \-padding \fIpixels\fP
-Specify the width in pixels of the padding ``white space''
-between the window border and anything
-.I xclock
-displays.  The default padding is 10 in digital mode and 8 in analog mode.
+.B \-padding \fInumber\fP
+This option specifies the width in pixels of the padding 
+between the window border and clock text or picture.  The default is 10
+on a digital clock and 8 on an analog clock.
 .PP
 The following standard X Toolkit command line arguments are commonly used with 
 .I xclock:
-.PP
 .TP 8
 .B \-bg \fIcolor\fP
-Determines the color of the background.
-The default color is ``white''.
-.PP
+This option specifies the color to use for the background of the window.  
+The default is ``white.''
 .TP 8
 .B \-bd \fIcolor\fP
-Determines the color of the border.
-The default color is ``black''.
-.PP
+This option specifies the color to use for the border of the window.
+The default is ``black.''
 .TP 8
-.B \-bw \fIpixels\fP
-Specify the width in pixels of the border around the
-.I xclock
-window.
-.PP
+.B \-bw \fInumber\fP
+This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-fg \fIcolor\fP
-Determines the color of the text in digital mode and the
-tick marks in analog mode.
-The default color is ``black''.
-On monochrome displays this is ignored.
-.PP
+This option specifies the color to use for displaying text.  The default is 
+``black''.
 .TP 8
 .B \-fn \fIfont\fP
-The specified
-.I font
-will be used as the output font in digital mode.
-Any fixed width font may be used, the default is ``6x10''.
-.PP
+This option specifies the font to be used for displaying normal text.  The
+default is ``6x10.''
 .TP 8
 .B \-rv
-The foreground and background colors are reversed.
-.PP
+This option indicates that reverse video should be simulated by swapping
+the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-The clock window is created with the specified
-size according to the geometry specification.
-See \fIX(1)\fP for details.
-In digital mode if you do not specify either height and width they are
-determined  by  the font in use.  In analog mode if you do not specify
-either width or height they default to 164.  All geometry values are
-measured in pixels.
-.PP
+This option specifies the prefered size and position of the clock window.
 .TP 8
 .B \-display \fIhost\fP:\fIdisplay\fP
-Normally,
-.I xclock
-gets  the host and display number to use from the environment variable
-``DISPLAY''.  One can, however specify them explicitly.
-The
-.I host
-specifies which machine to create the
-.I xclock
-window on, and
-the
-.I display
-argument specifies the display number.
-For example,
-``mit-frobozz:1'' creates an
-.I xclock
-on display one on the machine mit-frobozz.  If the host is omitted the
-local  host  is  assumed.   If  the  display  is omitted, display 0 is
-assumed, the ``:'' is necessary in either case.
+This option specifies the X server to contact.
 .TP 8
 .B \-xrm \fIresourcestring\fP
-This option can be used to set resources that do not have command line 
-arguments.
+This option specifies a resource string to be used.  This is especially
+useful for setting resources that do not have separate command line options.
 .SH X DEFAULTS
 This program uses the 
 .I Clock
