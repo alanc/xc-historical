@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.86 88/09/19 12:42:11 jim Exp $ */
+/* $XConsortium: connection.c,v 1.87 88/10/22 17:18:54 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -319,13 +319,13 @@ ResetWellKnownSockets ()
 	/*
 	 * see if the unix domain socket has disappeared
 	 */
-	struct stat	mystatb, filestatb;
+	struct stat	statb;
 
-	if (stat (unsock.sun_path, &filestatb) == -1 ||
-	    fstat (unixDomainConnection, &mystatb) == -1 ||
-	    mystatb.st_ino != filestatb.st_ino ||
-	    mystatb.st_dev != filestatb.st_dev)
+	if (stat (unsock.sun_path, &statb) == -1 ||
+	    (statb.st_mode & S_IFMT) != S_IFSOCK)
 	{
+	    ErrorF ("Unix domain socket %s trashed, recreating\n",
+	    	unsock.sun_path);
 	    (void) unlink (unsock.sun_path);
 	    (void) close (unixDomainConnection);
 	    WellKnownConnections &= ~(1L << unixDomainConnection);
