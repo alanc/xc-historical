@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.48 89/11/05 18:17:43 jim Exp $
+ * $XConsortium: screen.h,v 1.49 89/11/05 18:36:33 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -46,7 +46,6 @@ typedef struct _StdCmap {
     XStandardColormap *maps;		/* the actual maps */
 } StdCmap;
 
-#define TITLEBUTTON_BORDERWIDTH 1
 #define SIZE_HINDENT 10
 #define SIZE_VINDENT 2
 

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.79 89/11/05 17:47:21 jim Exp $
+ * $XConsortium: twm.c,v 1.80 89/11/05 18:17:45 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.79 89/11/05 17:47:21 jim Exp $";
+"$XConsortium: twm.c,v 1.80 89/11/05 18:17:45 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -324,7 +324,7 @@ main(argc, argv, environ)
 	Scr->TBInfo.inited = False;
 	Scr->TBInfo.nleft = Scr->TBInfo.nright = 0;
 	Scr->TBInfo.head = NULL;
-	Scr->TBInfo.border = TITLEBUTTON_BORDERWIDTH;
+	Scr->TBInfo.border = 1;
 	Scr->TBInfo.width = 0;
 	Scr->TBInfo.leftx = 0;
 	Scr->TBInfo.titlex = 0;
