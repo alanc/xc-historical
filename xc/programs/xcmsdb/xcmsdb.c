@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.4 91/07/22 16:31:08 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.5 91/07/22 16:36:55 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -423,7 +423,7 @@ QuerySCCDataRGB(dpy, root)
 	    switch (format) {
 	      case 8:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		VisualID1
 		 *		VisualID2
@@ -441,7 +441,7 @@ QuerySCCDataRGB(dpy, root)
 		break;
 	      case 16:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		VisualID3
 		 *		type
@@ -457,7 +457,7 @@ QuerySCCDataRGB(dpy, root)
 		break;
 	      case 32:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		type
 		 *		count
@@ -607,7 +607,7 @@ QuerySCCDataGray(dpy, root)
 	    switch (format) {
 	      case 8:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		VisualID1
 		 *		VisualID2
@@ -625,7 +625,7 @@ QuerySCCDataGray(dpy, root)
 		break;
 	      case 16:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		VisualID3
 		 *		type
@@ -641,7 +641,7 @@ QuerySCCDataGray(dpy, root)
 		break;
 	      case 32:
 		/*
-		 * Must have at lease:
+		 * Must have at least:
 		 *		VisualID0
 		 *		type
 		 *		count
