@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.4 89/09/04 16:03:48 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.5 89/09/04 19:10:18 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -364,7 +364,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    int max = 0;
+    int maxWidth = 0;
     int n;
     register xArc *arc;
     register int i;
@@ -378,19 +378,19 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     {
 	if (arc->width != arc->height)
 	    miPolyArc(pDraw, pGC, 1, arc);
-	else if (arc->width > max)
-	    max = arc->width;
+	else if (arc->width > maxWidth)
+	    maxWidth = arc->width;
     }
-    if (!max)
+    if (!maxWidth)
 	return;
-    numPts = max << 3;
+    numPts = maxWidth << 3;
     dospans = (pGC->lineStyle != LineSolid) || (pGC->fillStyle != FillSolid);
     if (dospans)
     {
 	widths = (int *)ALLOCATE_LOCAL(sizeof(int) * numPts);
 	if (!widths)
 	    return;
-	max = 0;
+	maxWidth = 0;
     }
     if (pGC->lineStyle != LineSolid)
 	numPts <<= 1;
@@ -420,10 +420,10 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		(*pGC->ops->PolyPoint)(pDraw, pGC, CoordModeOrigin, n, points);
 	    else
 	    {
-		if (n > max)
+		if (n > maxWidth)
 		{
-		    while (max < n)
-			widths[max++] = 1;
+		    while (maxWidth < n)
+			widths[maxWidth++] = 1;
 		}
 		if (pGC->miTranslate)
 		{
