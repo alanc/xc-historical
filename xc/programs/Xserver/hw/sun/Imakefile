@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.22 93/09/04 22:16:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.23 93/12/13 18:23:47 dpw Exp $
 #include <Server.tmpl>
 
 SRCS1 =	sunInit.c \
@@ -17,7 +17,7 @@ SRCS =	$(SRCS1) kbd_mode.c constype.c
 #ifdef i386Architecture
 OFILES = sunInit.o
 #else
-OFILES = sunInit.o sunInitMono.o sunInitExtMono.o sunInitMulti.o
+OFILES = sunInit.o sunInitMono.o sunInExMono.o sunInitMulti.o
 #endif
 
 OBJS = 	sunCfb.o \
@@ -45,8 +45,8 @@ NormalLibraryTarget(sun,$(OBJS))
 NormalLintTarget($(SRCS1))
 
 #ifndef i386Architecture
-sunInitExtMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInitExtMono,../../mi/miinitext,-UPEXEXT)
+sunInExMono.o: $(ICONFIGFILES)
+ObjectFromSpecialSource(sunInExMono,../../mi/miinitext,-UPEXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DSUNMAXDEPTH=1)
 ObjectFromSpecialSource(sunInitMulti,sunInit,-DSUNMAXDEPTH=32)
 #endif
