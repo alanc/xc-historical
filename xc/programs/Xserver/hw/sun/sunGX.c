@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.1 91/06/28 16:17:20 keith Exp $
+ * $XConsortium: sunGX.c,v 1.2 91/07/03 08:23:06 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1174,8 +1174,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
     	{
 	    gx->aliney = y;
 	    gx->alinex = x;
-	    gx->aliney = ppt->y;
-	    gx->alinex = ppt->x;
+	    gx->aliney = y = ppt->y;
+	    gx->alinex = x = ppt->x;
 	    ++ppt;
 	    GXDrawDone(gx,r);
 	}
