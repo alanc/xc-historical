@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.h,v 1.1 92/07/24 14:26:20 mor Exp $ */
+/* $XConsortium: pl_util.h,v 1.2 92/07/24 16:39:09 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -73,7 +73,6 @@ without express or implied warranty.
 
 #define NORMALIZE_VECTOR(_v, _len) \
 { \
-    double sqrt(); \
     _len = DOT_PRODUCT (_v, _v); \
     _len = sqrt (_len); \
     if (!NEAR_ZERO (_len)) \
