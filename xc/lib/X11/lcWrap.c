@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.7 91/04/15 11:00:10 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.8 91/05/02 16:26:52 rws Exp $
  */
 
 /*
@@ -124,11 +124,9 @@ _XlcDefaultMapModifiers (lcd, user_mods, prog_mods)
 	i += strlen(user_mods);
     mods = Xmalloc(i);
     if (mods) {
-	if (user_mods) {
-	    strcpy(mods, user_mods);
-	    strcat(mods, prog_mods);
-	} else
-	    strcpy(mods, prog_mods);
+	strcpy(mods, prog_mods);
+	if (user_mods)
+	    strcat(mods, user_mods);
     }
     return mods;
 }
