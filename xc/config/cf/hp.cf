@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.40 91/05/11 10:24:32 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.41 91/06/06 14:13:01 rws Exp $
 
 #define OSName                 HP-UX 7.0
 XCOMM operating system:  OSName
@@ -23,6 +23,7 @@ XCOMM operating system:  OSName
 #define BuildFonts		NO		/* XXX remove in R5 */
 /* This defines the server you want */
 #define BuildServer            YES		/* XXX change to NO in R5 */
+#define BuildXInputExt         YES
 #define XnonServer             YES		/* XXX remove in R5 */
 #define NeedBerklib            BuildServer
 
@@ -57,5 +58,4 @@ XCOMM operating system:  OSName
  */
 #define WritableBlackWhite		/* want BlackPixel and WhitePixel rw */
 
-#define ExtensionOSDefines -DXINPUT
 #define ServerOSDefines -DXOS -DMERGE OsDefines HardwareDefines
