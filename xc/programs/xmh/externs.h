@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.17 89/07/21 18:56:08 converse Exp $
+ * $XConsortium: externs.h,v 2.18 89/08/03 17:22:51 converse Exp $
  */
 
 /*
@@ -45,8 +45,8 @@ extern void	PopupPrompt();
 extern void	PopupConfirm();
 extern void	PopupNotice();
 extern void 	PopupError();
-extern void 	DestroyPopupAlert();
-extern Widget	PopupAlert();
+extern void 	PopdownAlert();
+extern void	PopupAlert();
 
 	/* from screen.c */
 
@@ -93,6 +93,7 @@ extern MsgList	CurMsgListOrCurMsg();
 extern int	GetWidth();
 extern int	GetHeight();
 extern Toc	SelectedToc();
+extern Toc	CurrentToc();
 extern int	strncmpIgnoringCase();
 extern void 	StoreWindowName();
 

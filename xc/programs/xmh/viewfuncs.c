@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: viewfuncs.c,v 2.12 89/07/12 16:24:15 converse Exp $";
+    "$XConsortium: viewfuncs.c,v 2.14 89/07/20 21:15:36 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -38,8 +38,15 @@ void DoCloseView(widget, client_data, call_data)
     caddr_t	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
-    if (MsgSetScrn((Msg) NULL, scrn, DoCloseView, (caddr_t) scrn)
-	== NEEDS_CONFIRMATION)
+    XtCallbackRec	confirms[2];
+
+    confirms[0].callback = DoCloseView;
+    confirms[0].closure = (caddr_t) scrn;
+    confirms[1].callback = (XtCallbackProc) NULL;
+    confirms[1].closure = (caddr_t) NULL;
+    
+    if (MsgSetScrn((Msg) NULL, scrn, confirms, (XtCallbackList) NULL) ==
+	NEEDS_CONFIRMATION)
 	return;
     DestroyScrn(scrn);
 }

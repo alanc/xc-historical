@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocfuncs.c,v 2.19 89/07/12 16:23:52 converse Exp $";
+    "$XConsortium: tocfuncs.c,v 2.21 89/07/20 21:15:33 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -44,6 +44,7 @@ void DoNextView(widget, client_data, call_data)
     MsgList mlist;
     FateType fate;
     Msg msg;
+
     if (toc == NULL) return;
     mlist = TocCurMsgList(toc);
     if (mlist->nummsgs)
@@ -60,8 +61,13 @@ void DoNextView(widget, client_data, call_data)
 	}
     }
     if (msg) {
-	if (MsgSetScrn(msg, scrn, DoNextView, (caddr_t) scrn)
-	    != NEEDS_CONFIRMATION) {
+	XtCallbackRec	confirms[2];
+	confirms[0].callback = (XtCallbackProc) DoNextView;
+	confirms[0].closure = (caddr_t) scrn;
+	confirms[1].callback = (XtCallbackProc) NULL;
+	confirms[1].closure = (caddr_t) NULL;
+	if (MsgSetScrn(msg, scrn, confirms, (XtCallbackList) NULL) !=
+	    NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
 	    TocSetCurMsg(toc, msg);
 	}
@@ -108,8 +114,13 @@ void DoPrevView(widget, client_data, call_data)
 	}
     }
     if (msg) {
-	if (MsgSetScrn(msg, scrn, DoPrevView, (caddr_t) scrn) 
-	    != NEEDS_CONFIRMATION) {
+	XtCallbackRec	confirms[2];
+	confirms[0].callback = (XtCallbackProc) DoPrevView;
+	confirms[0].closure = (caddr_t) scrn;
+	confirms[1].callback = (XtCallbackProc) NULL;
+	confirms[1].closure = (caddr_t) NULL;
+	if (MsgSetScrn(msg, scrn, confirms, (XtCallbackList) NULL) !=
+	    NEEDS_CONFIRMATION) {
 	    TocUnsetSelection(toc);
 	    TocSetCurMsg(toc, msg);
 	}
@@ -144,8 +155,8 @@ void ViewNew(w, event, params, num_params)
     mlist = CurMsgListOrCurMsg(toc);
     if (mlist->nummsgs) {
 	vscrn = NewViewScrn();
-	(void) MsgSetScrn(mlist->msglist[0], vscrn, (XtCallbackProc) NULL,
-			  (caddr_t) NULL);
+	(void) MsgSetScrn(mlist->msglist[0], vscrn, (XtCallbackList) NULL,
+			  (XtCallbackList) NULL);
 	MapScrn(vscrn);
     }
     FreeMsgList(mlist);
@@ -344,11 +355,17 @@ void DoPack(widget, client_data, call_data)
 {
     Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
+    XtCallbackRec confirms[2];
     char	**argv;
     
     if (toc == NULL) return;
 
-    if (TocConfirmCataclysm(toc, (XtCallbackProc)DoPack, (caddr_t)scrn))
+    confirms[0].callback = (XtCallbackProc) DoPack;
+    confirms[0].closure = (caddr_t) scrn;
+    confirms[1].callback = (XtCallbackProc) NULL;
+    confirms[1].closure = (caddr_t) NULL;
+
+    if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
     argv = MakeArgv(4);
     argv[0] = "folder";
@@ -378,13 +395,21 @@ void Pack(w, event, params, num_params)
 void DoSort(widget, client_data, call_data)
     Widget	widget;
     caddr_t	client_data;
-    caddr_t	call_data;
+    caddr_t	call_data;	/* unused */
 {
     Scrn scrn = (Scrn) client_data;
     Toc toc = scrn->toc;
     char **argv;
+    XtCallbackRec confirms[2];
+
     if (toc == NULL) return;
-    if (TocConfirmCataclysm(toc, (XtCallbackProc)DoSort, client_data))
+
+    confirms[0].callback = (XtCallbackProc) DoPack;
+    confirms[0].closure = (caddr_t) scrn;
+    confirms[1].callback = (XtCallbackProc) NULL;
+    confirms[1].closure = (caddr_t) NULL;
+
+    if (TocConfirmCataclysm(toc, confirms, (XtCallbackRec *) NULL))
 	return;
     argv = MakeArgv(3);
     argv[0] = "sortm";

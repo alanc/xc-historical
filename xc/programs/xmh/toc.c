@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.22 89/07/05 18:42:25 converse Exp $";
+    "$XConsortium: toc.c,v 2.24 89/07/20 21:15:27 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -249,13 +249,9 @@ Boolean TocTestAndSetDeletePending(toc)
     return flag;
 }
 
-/*ARGSUSED*/
-void TocClearDeletePending(widget, client_data, call_data)
-    Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+void TocClearDeletePending(toc)
+    Toc	toc;
 {
-    Toc	toc = (Toc) client_data;
     toc->delete_pending = False;
 }
 
@@ -282,8 +278,7 @@ Toc toc;
     int i, j, w;
     if (toc == NULL) return;
     TUGetFullFolderInfo(toc);
-    if (TocConfirmCataclysm(toc, (XtCallbackProc)NULL, (caddr_t)NULL)) return;
-    TocSetScrn(toc, (Scrn) NULL);
+
     w = -1;
     for (i=0 ; i<numFolders ; i++) {
 	toc2 = folderList[i];
@@ -762,22 +757,26 @@ static void TocCataclysmOkay(widget, client_data, call_data)
 #ifdef OBSOLETE_CODE	/* %%% dmc */
     /* doesn't make sense to have this here. */
     for (i=0; i < toc->nummsgs; i++)
-	MsgSetScrn(toc->msgs[i], (Scrn)NULL, (XtCallbackProc)NULL, 
-		   (caddr_t) NULL);
+	MsgSetScrn(toc->msgs[i], (Scrn) NULL, (XtCallbackList) NULL, 
+		   (XtCallbackList) NULL);
 #endif
 }
 	
-TocConfirmCataclysm(toc, callback, client_data)
+int TocConfirmCataclysm(toc, confirms, cancels)
     Toc			toc;
-    XtCallbackProc	callback;
-    caddr_t		client_data;
+    XtCallbackRec	confirms[];
+    XtCallbackRec	cancels[];
 {	
     register int	i;
     int			found = False;
     static XtCallbackRec yes_callbacks[] = {
-	{TocCataclysmOkay,	(caddr_t)NULL},
-	{(XtCallbackProc)NULL,	(caddr_t)NULL},
-	{(XtCallbackProc)NULL,	(caddr_t)NULL}
+	{TocCataclysmOkay,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,	(caddr_t) NULL},
+	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+    };
+    static XtCallbackRec no_callbacks[] = {
+	{(XtCallbackProc) NULL, (caddr_t) NULL},
+	{(XtCallbackProc) NULL, (caddr_t) NULL}
     };
 
     if (toc == NULL) 
@@ -791,9 +790,13 @@ TocConfirmCataclysm(toc, callback, client_data)
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
 	yes_callbacks[0].closure = (caddr_t) toc;
-	yes_callbacks[1].callback = callback;
-	yes_callbacks[1].closure = client_data;
-	PopupConfirm(str, yes_callbacks, (XtCallbackList)NULL);
+	yes_callbacks[1].callback = confirms[0].callback;
+	yes_callbacks[1].closure = confirms[0].closure;
+	if (cancels != NULL) {
+	    no_callbacks[0].callback = cancels[0].callback;
+	    no_callbacks[0].closure  = cancels[0].closure;
+	}
+	PopupConfirm(str, yes_callbacks, no_callbacks);
 	return NEEDS_CONFIRMATION;
     }
     else {
@@ -802,7 +805,7 @@ TocConfirmCataclysm(toc, callback, client_data)
 	    MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
 #endif 
 	for (i=0 ; i<toc->nummsgs ; i++)
-	    if (MsgSetScrn(toc->msgs[i], (Scrn) NULL, callback, client_data))
+	    if (MsgSetScrn(toc->msgs[i], (Scrn) NULL, confirms, cancels))
 		return NEEDS_CONFIRMATION;
 	return 0;
     }
@@ -826,13 +829,19 @@ void TocCommitChanges(widget, client_data, call_data)
     FateType curfate, fate; 
     Toc desttoc;
     Toc curdesttoc;
+    XtCallbackRec	confirms[2];
+
+    confirms[0].callback = TocCommitChanges;
+    confirms[0].closure = (caddr_t) toc;
+    confirms[1].callback = (XtCallbackProc) NULL;
+    confirms[1].closure = (caddr_t) NULL;
 
     if (toc == NULL) return;
     for (i=0 ; i<toc->nummsgs ; i++) {
 	msg = toc->msgs[i];
 	fate = MsgGetFate(msg, (Toc *)NULL);
 	if (fate != Fignore && fate != Fcopy)
-	    if (MsgSetScrn(msg, (Scrn) NULL, TocCommitChanges, (caddr_t) toc)
+	    if (MsgSetScrn(msg, (Scrn) NULL, confirms, (XtCallbackList) NULL)
 		== NEEDS_CONFIRMATION)
 	        return;
     }

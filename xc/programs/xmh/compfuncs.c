@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: compfuncs.c,v 2.11 89/07/12 16:24:09 converse Exp $";
+    "$XConsortium: compfuncs.c,v 2.13 89/07/20 21:15:15 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -42,14 +42,22 @@ void DoCompReset(widget, client_data, call_data)
 {
     Scrn	scrn = (Scrn) client_data;
     Msg		msg;
+    XtCallbackRec	confirms[2];
 
-    if (MsgSetScrn((Msg) NULL, scrn, DoCompReset, (caddr_t) scrn) ==
-	NEEDS_CONFIRMATION) return;
+    confirms[0].callback = (XtCallbackProc) DoCompReset;
+    confirms[0].closure = (caddr_t) scrn;
+    confirms[1].callback = (XtCallbackProc) NULL;
+    confirms[1].closure = (caddr_t) NULL;
+
+    if (MsgSetScrn((Msg) NULL, scrn, confirms, (XtCallbackList) NULL) ==
+	NEEDS_CONFIRMATION)
+	return;
+
     msg = TocMakeNewMsg(DraftsFolder);
     MsgLoadComposition(msg);
     MsgSetTemporary(msg);
     MsgSetReapable(msg);
-    (void) MsgSetScrn(msg, scrn, (XtCallbackProc) NULL, (caddr_t) NULL);
+    (void) MsgSetScrn(msg, scrn, (XtCallbackList) NULL, (XtCallbackList) NULL);
 }
 
 /*ARGSUSED*/
