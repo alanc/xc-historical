@@ -8,5 +8,5 @@ if [ -f Makefile ]; then
     echo mv Makefile Makefile.bak
     mv Makefile Makefile.bak
 fi
-echo imake CONFIGDIRSPEC -DUseInstalled $*
-imake CONFIGDIRSPEC -DUseInstalled $*
+echo imake -DUseInstalled CONFIGDIRSPEC $*
+imake -DUseInstalled CONFIGDIRSPEC $*
