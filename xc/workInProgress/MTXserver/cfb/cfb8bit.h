@@ -46,44 +46,117 @@ purpose.  It is provided "as is" without express or implied warranty.
  				: "0" (x), "dI" (k))
 #endif
 
+#ifndef XTHREADS
+#define MTX_STIPPLE(_a) _a
+#define MTX_STIPPLE_CHANGE(_a) /* nothing */
+#else /* XTHREADS */
+#define MTX_STIPPLE(_a) pstipple->_a
+#define MTX_STIPPLE_CHANGE(_a) pstipple->change = (_a)
+#endif /* XTHREADS */
+
+
 #if PSZ == 8
 
-#define GetPixelGroup(x)		(cfb8StippleXor[GetBitGroup(x)])
-#define RRopPixels(dst,x)	(DoRRop(dst,cfb8StippleAnd[x], cfb8StippleXor[x]))
+#define GetPixelGroup(x)						\
+    (MTX_STIPPLE(cfb8StippleXor[GetBitGroup(x)]))
+#define RRopPixels(dst,x)						\
+    (DoRRop(dst,MTX_STIPPLE(cfb8StippleAnd[x]), 			\
+            MTX_STIPPLE(cfb8StippleXor[x])))
+#define MaskRRopPixels(dst,x,mask)					\
+    (DoMaskRRop(dst,MTX_STIPPLE(cfb8StippleAnd[x]),			\
+                MTX_STIPPLE(cfb8StippleXor[x]), mask))
+
+
 #define RRopPixelGroup(dst,x)	(RRopPixels(dst,GetBitGroup(x)))
-#define MaskRRopPixels(dst,x,mask)  (DoMaskRRop(dst,cfb8StippleAnd[x], cfb8StippleXor[x], mask))
 
 #define NUM_MASKS	(1<<PPW) /* XXX goes in cfbmskbits.h? */
-extern int		cfb8StippleMode, cfb8StippleAlu;
+
+/*
+ * Outch!  None of this stuff exists in the MTX universe.
+ */
+#ifndef XTHREADS 
+extern int		cfb8StippleMode, cfb8StippleAlu, cfb8StippleRRop;
 extern PixelGroup	cfb8StippleFg, cfb8StippleBg, cfb8StipplePm;
-extern PixelGroup	cfb8StippleMasks[NUM_MASKS];
 extern PixelGroup	cfb8StippleAnd[NUM_MASKS], cfb8StippleXor[NUM_MASKS];
-extern int		cfb8StippleRRop;
+#endif /* !XTHREADS */
+
+extern PixelGroup	cfb8StippleMasks[NUM_MASKS];
 
 #define cfb8PixelMasks	cfb8StippleMasks
 #define cfb8Pixels	cfb8StippleXor
 
+#ifdef XTHREADS
+#define UpdateStipple   \
+    pstipple = (cfbGetGCPrivate(pGC))->stipple; \
+    if(pstipple->change == TRUE) \
+    { \
+        if (pGC->fillStyle == FillStippled) \
+        { \
+            if((pGC->alu != pstipple->cfb8StippleAlu)             || \
+               (((pGC->fgPixel) & PMSK) != pstipple->cfb8StippleFg)   || \
+               (((pGC->planemask) & PMSK) != pstipple->cfb8StipplePm) || \
+               (FillStippled != pstipple->cfb8StippleMode)) \
+            { \
+                cfb8SetStipple( pGC->alu, pGC->fgPixel, pGC->planemask,  \
+                                pstipple); \
+            } \
+        } else { \
+            if((pGC->alu != pstipple->cfb8StippleAlu)              || \
+               (((pGC->fgPixel) & PMSK) != pstipple->cfb8StippleFg )   || \
+               (((pGC->bgPixel) & PMSK) != pstipple->cfb8StippleBg )   || \
+               (((pGC->planemask) & PMSK) != pstipple->cfb8StipplePm ) || \
+               (FillOpaqueStippled != pstipple->cfb8StippleMode )) \
+            { \
+                cfb8SetOpaqueStipple( pGC->alu, pGC->fgPixel, pGC->bgPixel, \
+                                      pGC->planemask, pstipple );\
+            }\
+        } \
+        pstipple->change = FALSE; \
+    }
+#endif /* XTHREADS */
+
 #define cfb8CheckPixels(fg, bg) \
-    (FillOpaqueStippled == cfb8StippleMode && \
-     GXcopy == cfb8StippleAlu && \
-     ((fg) & PMSK) == cfb8StippleFg && \
-     ((bg) & PMSK) == cfb8StippleBg && \
-     PMSK == cfb8StipplePm)
+    (FillOpaqueStippled == MTX_STIPPLE(cfb8StippleMode) && \
+     GXcopy == MTX_STIPPLE(cfb8StippleAlu) && \
+     ((fg) & PMSK) == MTX_STIPPLE(cfb8StippleFg) && \
+     ((bg) & PMSK) == MTX_STIPPLE(cfb8StippleBg) && \
+     PMSK == MTX_STIPPLE(cfb8StipplePm))
 
+#ifndef XTHREADS
 #define cfb8CheckOpaqueStipple(alu,fg,bg,pm) \
-    ((FillOpaqueStippled == cfb8StippleMode && \
-      (alu) == cfb8StippleAlu && \
-      ((fg) & PMSK) == cfb8StippleFg && \
-      ((bg) & PMSK) == cfb8StippleBg && \
-      ((pm) & PMSK) == cfb8StipplePm) ? 0 : cfb8SetOpaqueStipple(alu,fg,bg,pm))
+    ((FillOpaqueStippled == MTX_STIPPLE(cfb8StippleMode) && \
+      (alu) == MTX_STIPPLE(cfb8StippleAlu) && \
+      ((fg) & PMSK) == MTX_STIPPLE(cfb8StippleFg) && \
+      ((bg) & PMSK) == MTX_STIPPLE(cfb8StippleBg) && \
+      ((pm) & PMSK) == MTX_STIPPLE(cfb8StipplePm)) ? 0 : cfb8SetOpaqueStipple(alu,fg,bg,pm))
+#else
+#define cfb8CheckOpaqueStipple(alu,fg,bg,pm,pstipple) \
+    ((FillOpaqueStippled == MTX_STIPPLE(cfb8StippleMode) && \
+      (alu) == MTX_STIPPLE(cfb8StippleAlu) && \
+      ((fg) & PMSK) == MTX_STIPPLE(cfb8StippleFg) && \
+      ((bg) & PMSK) == MTX_STIPPLE(cfb8StippleBg) && \
+      ((pm) & PMSK) == MTX_STIPPLE(cfb8StipplePm)) ? 0 : cfb8SetOpaqueStipple(alu,fg,bg,pm,pstipple))
+#endif /* !XTHREADS */
 
+#ifndef XTHREADS
 #define cfb8CheckStipple(alu,fg,pm) \
-    ((FillStippled == cfb8StippleMode && \
-      (alu) == cfb8StippleAlu && \
-      ((fg) & PMSK) == cfb8StippleFg && \
-      ((pm) & PMSK) == cfb8StipplePm) ? 0 : cfb8SetStipple(alu,fg,pm))
+    ((FillStippled == MTX_STIPPLE(cfb8StippleMode) && \
+      (alu) == MTX_STIPPLE(cfb8StippleAlu) && \
+      ((fg) & PMSK) == MTX_STIPPLE(cfb8StippleFg) && \
+      ((pm) & PMSK) == MTX_STIPPLE(cfb8StipplePm)) ? 0 : cfb8SetStipple(alu,fg,pm))
+#else
+#define cfb8CheckStipple(alu,fg,pm,pstipple) \
+    ((FillStippled == MTX_STIPPLE(cfb8StippleMode) && \
+      (alu) == MTX_STIPPLE(cfb8StippleAlu) && \
+      ((fg) & PMSK) == MTX_STIPPLE(cfb8StippleFg) && \
+      ((pm) & PMSK) == MTX_STIPPLE(cfb8StipplePm)) ? 0 : cfb8SetStipple(alu,fg,pm,pstipple))
+#endif /* !XTHREADS */
 
+#ifndef XTHREADS
 #define cfb8SetPixels(fg,bg) cfb8SetOpaqueStipple(GXcopy,fg,bg,PMSK)
+#else
+#define cfb8SetPixels(fg,bg,pstipple) cfb8SetOpaqueStipple(GXcopy,fg,bg,PMSK,pstipple)
+#endif /* !XTHREADS */
 
 /*
  * These macros are shared between the unnatural spans code

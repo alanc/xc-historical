@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.33 94/01/12 17:55:49 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.34 94/01/21 22:07:28 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -24,27 +24,6 @@ ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
 PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-Copyright 1992, 1993 Data General Corporation;
-Copyright 1992, 1993 OMRON Corporation
-
-Permission to use, copy, modify, distribute, and sell this software and its
-documentation for any purpose is hereby granted without fee, provided that the
-above copyright notice appear in all copies and that both that copyright
-notice and this permission notice appear in supporting documentation, and that
-neither the name OMRON or DATA GENERAL be used in advertising or publicity
-pertaining to distribution of the software without specific, written prior
-permission of the party whose name is to be used.  Neither OMRON or
-DATA GENERAL make any representation about the suitability of this software
-for any purpose.  It is provided "as is" without express or implied warranty.
-
-OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
-SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
-IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
-OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
-DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-OF THIS SOFTWARE.
 
 ********************************************************/
 
@@ -73,7 +52,7 @@ extern int  cfbWindowPrivateIndex;
 #ifdef XTHREADS
 typedef
 struct _Stipple {
-        int             change;
+        int		change;
         int             cfb8StippleMode;
         int             cfb8StippleAlu;
         int             cfb8StippleRRop;
@@ -98,7 +77,7 @@ typedef struct {
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     unsigned long	xor, and;	/* reduced rop values */
 #ifdef XTHREADS
-    StippleRec		*stipple;
+    StippleRec          *stipple;
 #endif /* XTHREADS */
     } cfbPrivGC;
 
@@ -395,17 +374,16 @@ extern RegionPtr cfbCopyArea(
 
 extern void cfbCopyPlane1to8(
 #if NeedFunctionPrototypes
-    DrawablePtr /*pSrcDrawable*/,
-    DrawablePtr /*pDstDrawable*/,
-    int /*rop*/,
-    RegionPtr /*prgnDst*/,
-    unsigned long /*planemask*/,
-    DDXPointPtr /*pptSrc*/,
-    unsigned long /*bitPlane*/
+    DrawablePtr /* pSrcDrawable;*/,
+    DrawablePtr /* pDstDrawable;*/,
+    int /* rop;*/,
+    RegionPtr /* prgnDst;*/,
+    DDXPointPtr /* pptSrc;*/,
+    unsigned long /* planemask;*/,
+    unsigned long   /* bitPlane;*/
 #ifdef XTHREADS
-    ,StippleRec * /* pstipple */
+    ,StippleRec * /* pstipple;*/
 #endif /* XTHREADS */
-    
 #endif
 );
 
@@ -719,7 +697,7 @@ extern Bool cfbCreateGC(
 extern void cfbValidateGC(
 #if NeedFunctionPrototypes
     GCPtr /*pGC*/,
-    Mask /*changes*/,
+    unsigned long /*changes*/,
     DrawablePtr /*pDrawable*/
 #endif
 );
