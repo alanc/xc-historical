@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.6 94/12/01 20:52:12 mor Exp mor $ */
+/* $XConsortium: lbxutil.c,v 1.7 95/05/02 19:07:11 mor Exp mor $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -356,7 +356,8 @@ GetQueryTagReply(client, data)
 	    SwapLongs((CARD32 *) tdata, len / 4);
 	    break;
 	case LbxTagTypeFont:
-	    LbxSwapFontInfo((xQueryFontReply *) tdata, FALSE);
+	    LbxSwapFontInfo((xQueryFontReply *) tdata,
+		qtp->typedata.query_font.compression);
 	    break;
 	case LbxTagTypeConnInfo:
 	    SwapConnectionInfo((xConnSetup *) tdata);
