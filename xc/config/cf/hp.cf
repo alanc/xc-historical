@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.50 92/05/09 09:43:52 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.51 92/05/10 11:45:28 rws Exp $
 
 #define OSName                 HP-UX 8.07
 XCOMM operating system:  OSName
@@ -12,7 +12,7 @@ XCOMM operating system:  OSName
 #define DefaultCCOptions       -Aa +ESlit
 #define SharedLibraryCCOptions -Aa
 #define StandardDefines        -Dhpux -DSYSV -D_HPUX_SOURCE
-#include <hpLib.rules>
+/* #include <hpLib.rules> */
 #else
 #define DefaultCCOptions       -Wc,-Nd4000,-Ns4100,-Ne700,-Np200,-Nw300
 #define PexCCOptions           -Wp,-H150000 -Wc,-Nd4000,-Ns8100,-Ne700,-Np200
