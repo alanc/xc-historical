@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Simple.c,v 1.3 88/01/28 12:46:53 swick Locked $";
+static char rcsid[] = "$Header: Simple.c,v 1.4 88/02/05 21:28:50 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -126,7 +126,7 @@ static Boolean ChangeSensitive(w)
 {
     if (XtIsRealized(w)) {
 	if (IsSensitive(w))
-	    if (w->core.border_pixmap)
+	    if (w->core.border_pixmap != 2)	/* see Intrinsic.c */
 		XSetWindowBorderPixmap( XtDisplay(w), XtWindow(w),
 				        w->core.border_pixmap );
 	    else
