@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.25 89/06/23 13:17:38 jim Exp $
+ * $XConsortium: resize.c,v 1.26 89/06/23 14:22:41 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.25 89/06/23 13:17:38 jim Exp $";
+"$XConsortium: resize.c,v 1.26 89/06/23 14:22:41 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -71,7 +71,7 @@ static int last_width;
 static int last_height;
 
 
-static void do_auto_clamping (tmp_win)
+static void do_auto_clamp (tmp_win)
     TwmWindow *tmp_win;
 {
     Window junkRoot;
@@ -96,7 +96,7 @@ static void do_auto_clamping (tmp_win)
 	    clampDY = (y - dragy);
 	} else if (v >= 2) {
 	    clampBottom = 1;
-	    clampDY = (y - dragy - dragWidth);
+	    clampDY = (y - dragy - dragHeight);
 	}
     }
 }
@@ -185,6 +185,10 @@ int x, y, w, h;
     dragWidth = origWidth = w - 2 * (tmp_win->bw + tmp_win->frame_bw);
     dragHeight = origHeight = h - 2 * (tmp_win->bw + tmp_win->frame_bw);
     clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
+
+    if (Scr->AutoRelativeResize) {
+	clampRight = clampBottom = 1;
+    }
 
     XMoveWindow(dpy, Scr->SizeWindow, 0, Scr->InitialFont.height + 4 + BW);
     XMapRaised(dpy, Scr->SizeWindow);
