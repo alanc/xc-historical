@@ -40,6 +40,7 @@ SRCS = connect.c \
        protosetup.c \
        process.c \
        ping.c \
+       replywait.c \
        error.c \
        iceauth.c \
        misc.c
@@ -51,6 +52,7 @@ OBJS = connect.o \
        protosetup.o \
        process.o \
        ping.o \
+       replywait.o \
        error.o \
        iceauth.o \
        misc.o
