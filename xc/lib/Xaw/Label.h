@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Label.h,v 1.15 88/09/06 09:45:03 swick Exp $
+* $XConsortium: Label.h,v 1.16 88/09/06 16:41:42 jim Exp $
 */
 
 
@@ -43,35 +43,39 @@ SOFTWARE.
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
- background	     Background		pixel		White
- border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ background	     Background		Pixel		White
+ border		     BorderColor	Pixel		Black
+ borderWidth	     BorderWidth	Dimension	1
  cursor		     Cursor		Cursor		None
- destroyCallback     Callback		Pointer		NULL
- font		     Font		FontStruct	fixed
- foreground	     Foreground		pixel		Black
- height		     Height		int		text height
+ destroyCallback     Callback		XtCallbackList	NULL
+ font		     Font		XFontStruct*	fixed
+ foreground	     Foreground		Pixel		Black
+ height		     Height		Dimension	text height
  insensitiveBorder   Insensitive	Pixmap		Gray
- internalHeight	     Height		int		2
- internalWidth	     Width		int		4
+ internalHeight	     Height		Dimension	2
+ internalWidth	     Width		Dimension	4
  justify	     Justify		Justify		Center
  label		     Label		String		NULL
  mappedWhenManaged   MappedWhenManaged	Boolean		True
+ pixmap		     Pixmap		Pixmap		None
  sensitive	     Sensitive		Boolean		True
- width		     Width		int		text width
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	text width
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 
 #include <X11/Xmu.h>
 
+#define XtNbitmap		"bitmap"
 #define XtNforeground		"foreground"
 #define XtNlabel		"label"
 #define XtNfont			"font"
 #define XtNinternalWidth	"internalWidth"
 #define XtNinternalHeight	"internalHeight"
  
+#define XtCBitmap		"Bitmap"
+
 /* Class record constants */
 
 extern WidgetClass labelWidgetClass;

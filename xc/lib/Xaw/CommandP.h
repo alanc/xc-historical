@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.18 88/09/06 09:44:38 swick Exp $
+* $XConsortium: CommandP.h,v 1.19 88/09/06 16:41:12 jim Exp $
 */
 
 
@@ -81,9 +81,8 @@ typedef struct {
 
     /* private state */
     Pixmap      gray_pixmap;
-    GC          highlight_GC;
+    GC          normal_GC;
     GC          inverse_GC;
-    GC          inverse_text_GC;
     Boolean     set;
     Boolean     highlighted;
     Boolean     display_set;

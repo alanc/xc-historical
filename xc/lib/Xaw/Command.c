@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.39 88/09/06 09:55:21 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.40 88/09/06 16:41:07 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -38,13 +38,12 @@ SOFTWARE.
      Xt..Field macro in this code just refers to some field in
      one of the substructures of the WidgetRec.  */
 
-#include <stdio.h>
-#include <X11/Xos.h>
-#include <ctype.h>
-#include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
-#include <X11/XawMisc.h>
-#include <X11/CommandP.h>
+#include <X11/StringDefs.h>
+#include <stdio.h>
+#include <ctype.h>
+#include "XawMisc.h"
+#include "CommandP.h"
 #include "CommandI.h"
 
 /****************************************************************
@@ -138,50 +137,21 @@ WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
  *
  ****************************************************************/
 
-static void Get_inverseGC(cbw)
+static GC Get_GC(cbw, fg, bg)
     CommandWidget cbw;
+    Pixel fg, bg;
 {
     XGCValues	values;
 
-    /* Set up a GC for inverse (set) state */
-
-    values.foreground   = ComWforeground;
+    values.foreground   = fg;
+    values.background	= bg;
     values.font		= ComWfont->fid;
-    values.fill_style   = FillSolid;
-
-    ComWinverseGC = XtGetGC((Widget)cbw,
-    	(unsigned) GCForeground | GCFont | GCFillStyle, &values);
-}
-
-static void Get_inverseTextGC(cbw)
-    CommandWidget cbw;
-{
-    XGCValues	values;
-
-    /* Set up a GC for inverse (set) state */
-
-    values.foreground   = ComWbackground; /* default is White */
-    values.font		= ComWfont->fid;
-    values.fill_style   = FillSolid;
-
-    ComWinverseTextGC = XtGetGC((Widget)cbw,
-    	(unsigned) GCForeground | GCFont | GCFillStyle, &values);
-}
-
-static void Get_highlightGC(cbw)
-    CommandWidget cbw;
-{
-    XGCValues	values;
-    
-    /* Set up a GC for highlighted state.  It has a thicker
-       line width for the highlight border */
-
-    values.foreground   = ComWforeground;
     values.line_width   = ComWhighlightThickness > 1
 			  ? ComWhighlightThickness : 0;
 
-    ComWhighlightGC = XtGetGC((Widget)cbw,
-    	(unsigned) GCForeground | GCLineWidth, &values);
+    return XtGetGC((Widget)cbw,
+		   GCForeground | GCBackground | GCFont | GCLineWidth,
+		   &values);
 }
 
 
@@ -191,9 +161,8 @@ static void Initialize(request, new)
 {
     CommandWidget cbw = (CommandWidget) new;
 
-    Get_inverseGC(cbw);
-    Get_inverseTextGC(cbw);
-    Get_highlightGC(cbw);
+    ComWnormalGC = Get_GC(cbw, ComWforeground, ComWbackground);
+    ComWinverseGC = Get_GC(cbw, ComWbackground, ComWforeground);
 
       /* init flags for state */
     ComWset = FALSE;
@@ -218,6 +187,7 @@ static void Set(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = TRUE;
+  ComWlabelGC = ComWinverseGC;
   Redisplay(w, event, NULL);
 }
 
@@ -230,6 +200,7 @@ static void Unset(w,event,params,num_params)
 {
   CommandWidget cbw = (CommandWidget)w;
   ComWset = FALSE;
+  ComWlabelGC = ComWnormalGC;
   if (*num_params == 0)
       Redisplay(w, event, NULL);
 }
@@ -282,55 +253,30 @@ static void Notify(w,event,params,num_params)
 /* ARGSUSED */
 static void Redisplay(w, event, region)
     Widget w;
-    XEvent *event;		/* unused */
-    Region region;		/* unused */
+    XEvent *event;
+    Region region;
 {
    CommandWidget cbw = (CommandWidget) w;
    Boolean very_thick = ComWhighlightThickness > Min(ComWwidth,ComWheight)/2;
 
-   /* Here's the scoop:  If the command button button is normal,
-      you show the text.  If the command button is highlighted but 
-      not set, you draw a thick border and show the text.
-      If the command button is set, draw the button and text
-      in inverse. */
+   (*XtSuperclass(w)->core_class.expose) (w, event, region);
 
-   /* Note that Redisplay must remember the state of its last
-      draw to determine whether to erase the window before
-      redrawing to avoid flicker.  If the state is the same,
-      the window just needs to redraw (even on an expose). */
-
-   if ((!ComWhighlighted && ComWdisplayHighlighted) ||
-       (!ComWset && ComWdisplaySet))
-     XClearWindow(XtDisplay(w),XtWindow(w));
-     /* Don't clear the window if the button's in a set condition;
-	instead, fill it with black to avoid flicker. (Must fill
-	with black in case it was an expose */
-   else if (ComWset)
-     XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
-		    0,0,ComWwidth,ComWheight);
-
-   if (ComWhighlighted && ComWhighlightThickness > 0) {
+   if (ComWhighlightThickness > 0) {
        if (very_thick)
-	   XFillRectangle(XtDisplay(w),XtWindow(w), ComWinverseGC,
+	   XFillRectangle(XtDisplay(w),XtWindow(w), 
+			  (ComWhighlighted ? ComWnormalGC : ComWinverseGC),
 			  0,0,ComWwidth,ComWheight);
        else {
 	   /* wide lines are centered on the path, so indent it */
 	   int offset = ComWhighlightThickness/2;
-	   XDrawRectangle(XtDisplay(w),XtWindow(w), ComWhighlightGC,
+	   XDrawRectangle(XtDisplay(w),XtWindow(w),
+			  (ComWhighlighted ? ComWnormalGC : ComWinverseGC),
 			  offset, offset,
 			  ComWwidth - ComWhighlightThickness,
 			  ComWheight - ComWhighlightThickness);
        }
    }
-
-     /* draw the string:  there are three different "styles" for it,
-	all in separate GCs */
-   XDrawString(XtDisplay(w),XtWindow(w),
-	       (ComWset || (ComWhighlighted && very_thick)
-		  ?  ComWinverseTextGC : 
-		    (ComWsensitive ? ComWnormalGC : ComWgrayGC)),
-		ComWlabelX, ComWlabelY, ComWlabel, (int) ComWlabelLen);
-
+  
    ComWdisplayHighlighted = ComWhighlighted;
    ComWdisplaySet = ComWset;
 }
@@ -340,7 +286,9 @@ static void Redisplay(w, event, region)
 static void Destroy(w)
     Widget w;
 {
-  /* must free GCs and pixmaps */
+    CommandWidget cbw = (CommandWidget)w;
+    XtReleaseGC( XtDisplay(w), ComWnormalGC );
+    XtReleaseGC( XtDisplay(w), ComWinverseGC );
 }
 
 
@@ -353,6 +301,7 @@ static Boolean SetValues (current, request, new)
 {
     CommandWidget cbw = (CommandWidget) current;
     CommandWidget newcbw = (CommandWidget) new;
+    Boolean redisplay = False;
 
     if (XtCField(newcbw,sensitive) != ComWsensitive &&
 	!XtCField(newcbw,sensitive)) {  /* about to become insensitive? */
@@ -360,33 +309,20 @@ static Boolean SetValues (current, request, new)
 	XtCBField(newcbw,highlighted) = FALSE;
     }
 
-     if (XtLField(newcbw,foreground) != ComWforeground)
-       {
-         XtDestroyGC(ComWinverseGC);
-	 Get_inverseGC(newcbw);
-         XtDestroyGC(ComWhighlightGC);
-	 Get_highlightGC(newcbw);
-       }
-    else 
-      {
-	if (XtCField(newcbw,background_pixel) != ComWbackground ||
-	     XtLField(newcbw,font) != ComWfont) {
-	     XtDestroyGC(ComWinverseTextGC);
-	     Get_inverseTextGC(newcbw);
-	     }
-	if (XtCBField(newcbw,highlight_thickness) != ComWhighlightThickness) {
-	    XtDestroyGC(ComWhighlightGC);
-	    Get_highlightGC(newcbw);
-	}
-      }
-     
-    /*  NEED TO RESET PROC AND CLOSURE */
+    if (XtLField(newcbw,foreground) != ComWforeground ||
+	XtCField(newcbw, background_pixel) != ComWbackground ||
+	XtCBField(newcbw,highlight_thickness) != ComWhighlightThickness ||
+	XtLField(newcbw,font) != ComWfont)
+    {
+	XtReleaseGC(XtDisplay(new), ComWnormalGC);	   
+	XtReleaseGC(XtDisplay(new), ComWinverseGC);
+	ComWnormalGC = Get_GC(newcbw, ComWforeground, ComWbackground);
+	ComWinverseGC = Get_GC(newcbw, ComWbackground, ComWforeground);
+	redisplay = True;
+    }
 
-     /* ACTIONS */
-    /* Change Label to remove ClearWindow and Redisplay */
-    /* Change Label to change GCs if foreground, etc */
-
-    return (XtCField(newcbw, sensitive) != ComWsensitive ||
+    return (redisplay ||
+	    XtCField(newcbw, sensitive) != ComWsensitive ||
 	    XtCBField(newcbw, set) != ComWset ||
 	    XtCBField(newcbw, highlighted) != ComWhighlighted);
 }

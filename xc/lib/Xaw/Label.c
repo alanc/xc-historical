@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.54 88/09/23 17:08:43 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.55 88/09/26 15:17:03 swick Exp $";
 #endif lint
 
 
@@ -35,11 +35,10 @@ SOFTWARE.
 #define XtStrlen(s)		((s) ? strlen(s) : 0)
 
 #include <X11/IntrinsicP.h>
-#include <stdio.h>
-#include <X11/Xos.h>
-#include <ctype.h>
 #include <X11/StringDefs.h>
-#include <X11/LabelP.h>
+#include <stdio.h>
+#include <ctype.h>
+#include "LabelP.h"
 
 /****************************************************************
  *
@@ -54,7 +53,7 @@ static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(label.foreground), XtRString, "XtDefaultForeground"},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	offset(label.font),XtRString, "Fixed"},
+	offset(label.font),XtRString, "XtDefaultFont"},
     {XtNlabel,  XtCLabel, XtRString, sizeof(String),
 	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
@@ -63,6 +62,8 @@ static XtResource resources[] = {
 	offset(label.internal_width), XtRImmediate, (caddr_t)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
 	offset(label.internal_height), XtRImmediate, (caddr_t)2},
+    {XtNpixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
+	offset(label.pixmap), XtRPixmap, (caddr_t)None},
 };
 
 static void Initialize();
@@ -71,6 +72,7 @@ static void Resize();
 static void Redisplay();
 static Boolean SetValues();
 static void ClassInitialize();
+static void Destroy();
 
 LabelClassRec labelClassRec = {
   {
@@ -94,7 +96,7 @@ LabelClassRec labelClassRec = {
     /* compress_exposure  	*/	TRUE,
     /* compress_enterleave	*/	TRUE,
     /* visible_interest	  	*/	FALSE,
-    /* destroy		  	*/	NULL,
+    /* destroy		  	*/	Destroy,
     /* resize		  	*/	Resize,
     /* expose		  	*/	Redisplay,
     /* set_values	  	*/	SetValues,
@@ -131,6 +133,19 @@ static void SetTextWidthAndHeight(lw)
 {
     register XFontStruct	*fs = lw->label.font;
 
+    if (lw->label.pixmap != None) {
+	Window root;
+	int x, y;
+	unsigned int width, height, bw, depth;
+	if (XGetGeometry(XtDisplay(lw), lw->label.pixmap, &root, &x, &y,
+			 &width, &height, &bw, &depth)) {
+	    lw->label.label_height = height;
+	    lw->label.label_width = width;
+	    lw->label.label_len = depth;
+	    return;
+	}
+    }
+
     lw->label.label_len = XtStrlen(lw->label.label);
     lw->label.label_height = fs->max_bounds.ascent + fs->max_bounds.descent;
     lw->label.label_width = XTextWidth(
@@ -143,11 +158,12 @@ static void GetnormalGC(lw)
     XGCValues	values;
 
     values.foreground	= lw->label.foreground;
+    values.background	= lw->core.background_pixel;
     values.font		= lw->label.font->fid;
 
     lw->label.normal_GC = XtGetGC(
 	(Widget)lw,
-	(unsigned) GCForeground | GCFont,
+	(unsigned) GCForeground | GCBackground | GCFont,
 	&values);
 }
 
@@ -157,13 +173,14 @@ static void GetgrayGC(lw)
     XGCValues	values;
 
     values.foreground = lw->label.foreground;
+    values.background = lw->core.background_pixel;
     values.font	      = lw->label.font->fid;
     values.tile       = XtGrayPixmap(XtScreen((Widget)lw));
     values.fill_style = FillTiled;
 
     lw->label.gray_GC = XtGetGC(
 	(Widget)lw, 
-	(unsigned) GCForeground | GCFont | GCTile | GCFillStyle,
+	(unsigned) GCForeground | GCBackground | GCFont | GCTile | GCFillStyle,
 	&values);
 }
 
@@ -230,10 +247,22 @@ static void Redisplay(w, event, region)
 #ifdef notdef
    XSetRegion(XtDisplay(w), gc, region);
 #endif /*notdef*/
-   XDrawString(
-	XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
-	lw->label.label_y + lw->label.font->max_bounds.ascent,
-	lw->label.label, (int) lw->label.label_len);
+   if (lw->label.pixmap == None) {
+       XDrawString(
+		   XtDisplay(w), XtWindow(w), gc, lw->label.label_x,
+		   lw->label.label_y + lw->label.font->max_bounds.ascent,
+		   lw->label.label, (int) lw->label.label_len);
+   } else if (lw->label.label_len == 1) { /* depth */
+       XCopyPlane(
+		  XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
+		  0, 0, lw->label.label_width, lw->label.label_height,
+		  lw->label.label_x, lw->label.label_y, 1L);
+   } else {
+       XCopyArea(
+		 XtDisplay(w), lw->label.pixmap, XtWindow(w), gc,
+		 0, 0, lw->label.label_width, lw->label.label_height,
+		 lw->label.label_x, lw->label.label_y);
+   }
 #ifdef notdef
    XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
 #endif notdef
@@ -337,7 +366,8 @@ static Boolean SetValues(current, request, new)
 
     if (was_resized
 	|| (curlw->label.font != newlw->label.font)
-	|| (curlw->label.justify != newlw->label.justify)) {
+	|| (curlw->label.justify != newlw->label.justify)
+	|| (curlw->label.pixmap != newlw->label.pixmap)) {
 
 	SetTextWidthAndHeight(newlw);
 	was_resized = True;
@@ -356,8 +386,8 @@ static Boolean SetValues(current, request, new)
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
-	XtDestroyGC(curlw->label.normal_GC);
-	XtDestroyGC(curlw->label.gray_GC);
+	XtReleaseGC(XtDisplay(new), curlw->label.normal_GC);
+	XtReleaseGC(XtDisplay(new), curlw->label.gray_GC);
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
     }
@@ -371,4 +401,14 @@ static Boolean SetValues(current, request, new)
     }
 
     return( was_resized );
+}
+
+
+static void Destroy(w)
+    Widget w;
+{
+    LabelWidget lw = (LabelWidget)w;
+
+    XtReleaseGC( XtDisplay(w), lw->label.normal_GC );
+    XtReleaseGC( XtDisplay(w), lw->label.gray_GC);
 }

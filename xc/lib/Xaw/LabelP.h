@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.18 88/09/06 09:45:42 swick Exp $
+* $XConsortium: LabelP.h,v 1.19 88/09/06 16:41:43 jim Exp $
 */
 
 
@@ -66,6 +66,7 @@ typedef struct {
     XtJustify	justify;
     Dimension	internal_width;
     Dimension	internal_height;
+    Pixmap	pixmap;
 
     /* private state */
     GC		normal_GC;
@@ -74,7 +75,7 @@ typedef struct {
     Position	label_y;
     Dimension	label_width;
     Dimension	label_height;
-    unsigned int label_len;
+    Dimension	label_len;
 } LabelPart;
 
 
