@@ -51,8 +51,12 @@
        DEPLIBS2 = 
        PROGRAMS = xterm resize
 
-#ifdef CrayArchitecture
+#if SystemV
+#if defined(MacIIArchitecture) || defined(ATTArchitecture)
+     TERMCAPLIB = -ltermcap
+#else
      TERMCAPLIB = -lcurses
+#endif
 #else
      TERMCAPLIB = -ltermcap
 #endif
