@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.10 87/09/11 08:08:50 rws Locked $";
+static char rcsid[] = "$Header: XEvToWire.c,v 11.11 87/10/14 18:00:42 newman Locked $";
 #endif
 
 /*
@@ -12,7 +12,6 @@ static char rcsid[] = "$Header: XEvToWire.c,v 11.10 87/09/11 08:08:50 rws Locked
 #define NEED_EVENTS
 #define NEED_REPLIES
 
-#include <stdio.h>
 #include "Xlibint.h"
 
 /*
