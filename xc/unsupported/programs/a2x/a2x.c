@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.113 93/04/01 19:07:08 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.114 93/04/03 10:42:59 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -218,6 +218,18 @@ typedef struct _location {
     Window window;
     int x, y;
 } LocationRec;
+
+#ifdef MSDOS
+#define Meta (1<<13)
+typedef struct _keybinding {
+    unsigned short modifiers;
+    KeySym keysym;
+    char c;
+} KeyBindingRec;
+
+KeyBindingRec pc_keys[] =
+#include "pckeys.h"
+#endif
 
 char *progname;
 Display *dpy;
@@ -536,9 +548,9 @@ ddread(buf, len)
 	write(1, "\177", 1);
 #else
     n = getch();
-    if (n > 127) {
-	if (n == 339) /* Delete */
-	    n = '\177';
+    if (n > 255) {
+	if (n < 256 + sizeof(pc_keys) / sizeof(KeyBindingRec))
+	    n = pc_keys[n - 256].c;
 	else
 	    n = ' ';
     }
@@ -592,6 +604,7 @@ reset_mapping()
     Window root, w, *children;
     char *name;
     unsigned int nchild, width, height, bwidth, depth;
+    unsigned short metamask;
     long mask;
     XSizeHints hints;
     unsigned char bmap[256];
@@ -652,7 +665,8 @@ reset_mapping()
     i = XKeysymToKeycode(dpy, XK_Meta_L);
     if (!i)
 	i = XKeysymToKeycode(dpy, XK_Meta_R);
-    switch (modmask[i]) {
+    metamask = modmask[i];
+    switch (metamask) {
     case Mod1Mask:
 	meta = mod1;
 	break;
@@ -672,12 +686,30 @@ reset_mapping()
 	meta = 0;
 	break;
     }
+#ifdef MSDOS
+    for (i = 0, c = 128; i < sizeof(pc_keys) / sizeof(KeyBindingRec); i++) {
+	pc_keys[i].c = ' ';
+	if (!pc_keys[i].keysym ||
+	    ((pc_keys[i].modifiers & Meta) && !meta))
+	    continue;
+	j = XKeysymToKeycode(dpy, pc_keys[i].keysym);
+	if (!j)
+	    continue;
+	pc_keys[i].c = c;
+	keycodes[c] = j;
+	modifiers[c] = pc_keys[i].modifiers;
+	if (modifiers[c] & Meta)
+	    modifiers[c] = (modifiers[c] & ~Meta) | metamask;
+	c++;
+    }
+#else
     if (meta) {
 	for (c = 0; c < 128; c++) {
 	    keycodes[c + 128] = keycodes[c];
-	    modifiers[c + 128] = modifiers[c] | modmask[i];
+	    modifiers[c + 128] = modifiers[c] | metamask;
 	}
     }
+#endif
     if (bs_is_del) {
 	keycodes['\b'] = keycodes['\177'];
 	modifiers['\b'] = modifiers['\177'];
