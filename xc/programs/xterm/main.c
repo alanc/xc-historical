@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.194 91/07/17 17:52:45 rws Exp $";
+static char *rid="$XConsortium: main.c,v 1.195 91/07/22 12:23:31 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -745,7 +745,7 @@ char **argv;
 	register TScreen *screen;
 	register int i, pty;
 	int Xsocket, mode;
-	char *basename();
+	char *base_name();
 	int xerror(), xioerror();
 
 	ProgramName = argv[0];
@@ -1022,7 +1022,7 @@ char **argv;
 
 	    if (!resource.title) {
 		if (command_to_exec) {
-		    resource.title = basename (command_to_exec[0]);
+		    resource.title = base_name (command_to_exec[0]);
 		} /* else not reached */
 	    }
 
@@ -1125,7 +1125,7 @@ char **argv;
 	}
 }
 
-char *basename(name)
+char *base_name(name)
 char *name;
 {
 	register char *cp;
