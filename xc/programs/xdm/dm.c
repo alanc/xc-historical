@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.12 88/12/05 17:26:40 keith Exp $
+ * $XConsortium: dm.c,v 1.13 89/01/16 17:08:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,12 +31,12 @@ extern void	exit (), abort ();
 
 static void	RescanServers ();
 static int	Rescan;
+static void	TerminateAll (), RescanNotify ();
 
 main (argc, argv)
 int	argc;
 char	**argv;
 {
-	void	TerminateAll (), RescanNotify ();
 #ifndef SYSV
 	void	ChildNotify ();
 #endif
@@ -72,8 +72,7 @@ char	**argv;
 	Debug ("Nothing left to do, exiting\n");
 }
 
-
-void
+static void
 RescanNotify ()
 {
 	void	RescanNotify ();
@@ -181,7 +180,7 @@ WaitForChild ()
 	else
 		sigblock (0);
 	ChildReady = 0;
-	while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) != 0)
+	while ((pid = wait3 (&status, WNOHANG, (struct rusage *) 0)) > 0)
 #endif
 	{
 		Debug ("pid: %d\n", pid);
@@ -217,6 +216,8 @@ static void
 CheckDisplayStatus (d)
 struct display	*d;
 {
+	void	TerminateDisplay ();
+
 	switch (d->state) {
 	case MissingEntry:
 		TerminateDisplay (d);
