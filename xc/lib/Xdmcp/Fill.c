@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.8 93/08/20 17:06:02 rws Exp $
+ * $XConsortium: Fill.c,v 1.9 94/04/17 20:16:35 rws Exp kaleb $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -85,7 +85,7 @@ XdmcpFill (fd, buffer, from, fromlen)
     buffer->count = dataunit.udata.len;
     *fromlen = dataunit.addr.len;
 #else
-    buffer->count = recvfrom (fd, buffer->data, buffer->size, 0,
+    buffer->count = recvfrom (fd, (char*)buffer->data, buffer->size, 0,
 			      (struct sockaddr *)from, fromlen);
 #endif
     if (buffer->count < 6) {
