@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.228 89/03/17 16:37:10 rws Exp $ */
+/* $XConsortium: window.c,v 1.229 89/03/18 11:36:12 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1028,11 +1028,6 @@ FreeWindowResources(pWin)
     if (pWin->borderShape)
 	(* proc)(pWin->borderShape);
 #endif
-    if (pWin->backStorage)
-    {
-        (* proc)(pWin->backStorage->obscured);
-	xfree(pWin->backStorage);
-    }
     (* pScreen->DestroyPixmap)(pWin->borderTile);
     (* pScreen->DestroyPixmap)(pWin->backgroundTile);
 
