@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.26 89/10/08 15:50:42 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.27 89/10/16 19:15:53 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2018,27 +2018,16 @@ miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
  *-----------------------------------------------------------------------
  * miBSLineHelper --
  *
- * Results:
+ * Results: should never be called
  *
- * Side Effects:
+ * Side Effects: server dies
  *
  *-----------------------------------------------------------------------
  */
 static void
-miBSLineHelper(pDrawable, pGC, cap, npts, pts, xOrg, yOrg)
-    DrawablePtr	pDrawable;
-    GCPtr	pGC;
-    Bool	cap;
-    int		npts;
-    pointer	pts;
-    int		xOrg, yOrg;
+miBSLineHelper()
 {
-    SETUP_BACKING_TERSE (pGC);
-    PROLOGUE(pGC);
-
-    (* pGC->ops->LineHelper)(pDrawable, pGC, cap, npts, pts, xOrg, yOrg);
-
-    EPILOGUE (pGC);
+    FatalError("miBSLineHelper called\n");
 }
 
 /*-
