@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.104 93/06/25 16:29:00 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.105 93/07/09 15:22:50 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -216,43 +216,6 @@ extern void (*_XUnlockMutex_fn)();
 /* used everywhere, so must be fast if not using threads */
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
-
-extern void _XLockMutex(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-extern void _XUnlockMutex(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
-
-/* returns 0 iff initialization okay */
-extern int _XInitDisplayLock(
-#if NeedFunctionPrototypes
-    Display *
-#endif
-);
-
-extern void _XFreeDisplayLock(
-#if NeedFunctionPrototypes
-    Display *
-#endif
-);
-
-extern void _XLockDisplay(
-#if NeedFunctionPrototypes
-    Display *
-#endif
-);
-
-extern void _XUnlockDisplay(
-#if NeedFunctionPrototypes
-    Display *
-#endif
-);
 
 #else /* XTHREADS */
 #define LockDisplay(dis)
