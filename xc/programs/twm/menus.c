@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.102 89/10/27 14:01:24 jim Exp $
+ * $XConsortium: menus.c,v 1.103 89/11/01 17:27:52 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.102 89/10/27 14:01:24 jim Exp $";
+"$XConsortium: menus.c,v 1.103 89/11/01 17:27:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -213,7 +213,7 @@ int AddTitleButton (bitmapname, func, action)
 	return 0;
     }
 
-    tb->next = Scr->TBInfo.head;
+    tb->next = NULL;
     tb->bitmap = FindBitmap (bitmapname, &tb->width, &tb->height);
     if (!tb->bitmap) {
 	if (!Scr->questionPm)
@@ -228,7 +228,13 @@ int AddTitleButton (bitmapname, func, action)
     tb->func = func;
     tb->action = action;
     Scr->TBInfo.nbuttons++;
-    Scr->TBInfo.head = tb;		/* link it into list */
+    if (Scr->TBInfo.head) {		/* link it into list */
+	TitleButton *tail;
+	for (tail = Scr->TBInfo.head; tail->next; tail = tail->next) ;
+	tail->next = tb;
+    } else {
+	Scr->TBInfo.head = tb;
+    }
     return;
 }
 
