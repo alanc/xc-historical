@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.72 92/09/09 11:03:11 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.73 92/09/29 11:58:11 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -803,6 +803,7 @@ Value	Name					Reference
 15	FUJITSU LIMITED				[87]
 16	International Business Machines		[33]
 17	Kubota Pacific Computer			[95]
+18	Hitachi, Ltd.				[100]
 
 
 REFERENCES
@@ -1269,3 +1270,8 @@ REFERENCES
 	NYNEX ALLINK Co.
 	4 Gannett Drive
 	White Plains, NY 10604
+
+[100]	Toshiyuki Kuwana
+	Information Equipment Engineering Dept.
+	Omika Works, Hitatchi Ltd.
+	5-2-1 Omika-cho, Hitachi-shi, Ibaraki-ken, 319-12 Japan
