@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.36 93/10/13 15:31:54 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.37 93/12/23 15:14:18 rws Exp $
 
 #define OSName			IRIX 5.1.1.1
 XCOMM operating system:  OSName
@@ -33,8 +33,8 @@ XCOMM operating system:  OSName
 #define NeedWidePrototypes	NO
 #endif
 
-/* Extra libraries provide : yp, sysV malloc & shared libc */
-#define ExtraLibraries -lsun -lmalloc -lc_s
+/* Extra libraries provide : yp, sysV malloc, shared libc, and widechar */
+#define ExtraLibraries -lsun -lmalloc -lc_s -lw
 
 /* #include <sgiLib.rules> */
 
