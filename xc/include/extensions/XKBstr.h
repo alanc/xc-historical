@@ -86,6 +86,7 @@ typedef struct _XkbKeyType {
 	Atom		  name;
 	Atom		 *lvl_names;
 } XkbKeyTypeRec, *XkbKeyTypePtr;
+#define	XkbNoFreeKTLevelNames	(1<<4)
 #define	XkbNoFreeKTPreserve	(1<<5)
 #define	XkbNoFreeKTMap		(1<<6)
 #define	XkbNoFreeKTStruct	(1<<7)
