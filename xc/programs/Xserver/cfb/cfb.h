@@ -123,6 +123,8 @@ typedef struct {
     unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
     unsigned		fExpose:1;	/* callexposure handling ? */
     unsigned		freeCompClip:1;
+    PixmapPtr		pRotatedTile;
+    PixmapPtr		pRotatedStipple;
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
     } cfbPrivGC;
 
