@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.7 91/02/17 16:09:19 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.8 91/02/19 08:52:45 rws Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -53,7 +53,9 @@ extern XcmsColorSpace **_XcmsDIColorSpaces;
  *      LOCAL DEFINES
  *		#define declarations local to this package.
  */
-#define DEFAULT_ROOT "/usr/lib/X11"
+#ifndef LIBDIR
+#define LIBDIR "/usr/lib/X11"
+#endif
 
 #ifndef isgraph
 #  define isgraph(c)	(isprint((c)) && !isspace((c)))
@@ -515,7 +517,7 @@ resolvePathname(dpy, type, filename, suffix, root, path, substitutions,
      * root
      */
     if (root == NULL) {
-	strcpy(real_root, DEFAULT_ROOT);
+	strcpy(real_root, LIBDIR);
     } else {
 	strcpy(real_root, root);
     }
