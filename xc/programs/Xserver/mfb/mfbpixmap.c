@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.1 89/06/12 16:28:40 keith Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.2 89/07/13 10:11:42 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -194,9 +194,9 @@ mfbXRotatePixmap(pPix, rw)
         return;
 
     pw = (long *)pPix->devPrivate.ptr;
-    rw %= pPix->drawable.width;
+    rw %= (int)pPix->drawable.width;
     if (rw < 0)
-	rw += pPix->drawable.width;
+	rw += (int)pPix->drawable.width;
     if(pPix->drawable.width == 32)
     {
         pwFinal = pw + pPix->drawable.height;
