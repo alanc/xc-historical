@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.54 89/07/05 16:03:26 jim Exp $
+ * $XConsortium: twm.c,v 1.55 89/07/06 10:33:42 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.54 89/07/05 16:03:26 jim Exp $";
+"$XConsortium: twm.c,v 1.55 89/07/06 10:33:42 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -135,7 +135,7 @@ main(argc, argv, environ)
 {
     Window w, root, parent, *children;
     TwmWindow *tmp_win;
-    int nchildren, i;
+    int nchildren, i, j;
     int m, d, y;
     char *display_name;
     unsigned long valuemask;	/* mask for create windows */
@@ -378,9 +378,34 @@ main(argc, argv, environ)
 	CreateIconManagers();
 	if (!Scr->NoIconManagers)
 	    Scr->iconmgr.twm_win->icon = TRUE;
+
+	/*
+	 * weed out icon windows
+	 */
+	for (i = 0; i < nchildren; i++) {
+	    if (children[i]) {
+		XWMHints *wmhintsp = XGetWMHints (dpy, children[i]);
+
+		if (wmhintsp) {
+		    if (wmhintsp->flags & IconWindowHint) {
+			for (j = 0; j < nchildren; j++) {
+			    if (children[j] == wmhintsp->icon_window) {
+				children[j] = None;
+				break;
+			    }
+			}
+		    }
+		    XFree ((char *) wmhintsp);
+		}
+	    }
+	}
+
+	/*
+	 * map all of the non-override windows
+	 */
 	for (i = 0; i < nchildren; i++)
 	{
-	    if (MappedNotOverride(children[i]))
+	    if (children[i] && MappedNotOverride(children[i]))
 	    {
 		XUnmapWindow(dpy, children[i]);
 		Event.xmaprequest.window = children[i];
@@ -625,6 +650,11 @@ RestoreWithdrawnLocation (tmp)
 	}
 
 	XConfigureWindow (dpy, tmp->w, mask, &xwc);
+
+	if (tmp->wmhints && (tmp->wmhints->flags & IconWindowHint)) {
+	    XUnmapWindow (dpy, tmp->wmhints->icon_window);
+	}
+
     }
 }
 
