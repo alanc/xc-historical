@@ -1,4 +1,4 @@
-/* $XConsortium: miConvert.c,v 5.1 91/02/16 09:55:25 rws Exp $ */
+/* $XConsortium: miConvert.c,v 5.2 91/05/01 14:39:02 hersh Exp $ */
 
 
 /***********************************************************
@@ -33,6 +33,67 @@ SOFTWARE.
 #include <stdio.h>
 
 typedef	void	 (*ColorConversionTableType)();
+static void PEXIndexedColour_to_PEXRdrColourModelRGB();
+static void PEXRgb8Colour_to_PEXRdrColourModelRGB();
+static void PEXRgb16Colour_to_PEXRdrColourModelRGB();
+static void NoChange();
+
+/*
+ * Color conversion jump table for miConvertVertexColors,
+ * miConvertFacetColors and miConvertColor.
+ *
+ * Note that only conversions supported are 
+ *
+ *		indexed ->rgbFloat
+ *		Rgb8    ->rgbFloat
+ *		Rgb16   ->rgbFloat
+ *
+ */
+
+static 
+ColorConversionTableType
+ColourConversionRoutine[(PEXRdrColourModelHLS+1)*(PEXMaxColour+1)] = {
+/* Convert to Implementation dependant Color Model */
+  PEXIndexedColour_to_PEXRdrColourModelRGB,	/* Indexed -> ImpDep */
+  NoChange,					/* RgbFloat -> ImpDep */
+  NULL,						/* Cie -> ImpDep */
+  NULL,						/* Hsv -> ImpDep */
+  NULL,						/* Hls -> ImpDep */
+  PEXRgb8Colour_to_PEXRdrColourModelRGB,	/* Rgb8 -> ImpDep */
+  PEXRgb16Colour_to_PEXRdrColourModelRGB,	/* Rgb16 -> ImpDep */
+/* Convert to Rgb Float */
+  PEXIndexedColour_to_PEXRdrColourModelRGB,	/* Indexed -> RgbFloat */
+  NoChange,					/* RgbFloat -> RgbFloat */
+  NULL,						/* Cie -> RgbFloat */
+  NULL,						/* Hsv -> RgbFloat */
+  NULL,						/* Hls -> RgbFloat */
+  PEXRgb8Colour_to_PEXRdrColourModelRGB,	/* Rgb8 -> RgbFloat */
+  PEXRgb16Colour_to_PEXRdrColourModelRGB,	/* Rgb16 -> RgbFloat */
+/* Convert to Cie Float */
+  NULL,						/* Indexed -> CieFloat */
+  NULL,						/* RgbFloat -> CieFloat */
+  NULL,						/* Cie -> CieFloat */
+  NULL,						/* Hsv -> CieFloat */
+  NULL,						/* Hls -> CieFloat */
+  NULL,						/* Rgb8 -> CieFloat */
+  NULL,						/* Rgb16 -> CieFloat */
+/* Convert to Hsv Float */
+  NULL,						/* Indexed -> HsvFloat */
+  NULL,						/* RgbFloat -> HsvFloat */
+  NULL,						/* Cie -> HsvFloat */
+  NULL,						/* Hsv -> HsvFloat */
+  NULL,						/* Hls -> HsvFloat */
+  NULL,						/* Rgb8 -> HsvFloat */
+  NULL,						/* Rgb16 -> HsvFloat */
+/* Convert to Hls Float */
+  NULL,						/* Indexed -> HlsFloat */
+  NULL,						/* RgbFloat -> HlsFloat */
+  NULL,						/* Cie -> HlsFloat */
+  NULL,						/* Hsv -> HlsFloat */
+  NULL,						/* Hls -> HlsFloat */
+  NULL,						/* Rgb8 -> HlsFloat */
+  NULL,						/* Rgb16 -> HlsFloat */
+};
 
 /*++
  |
@@ -52,7 +113,6 @@ ddRendererPtr		pRend;		/* renderer handle */
 ddIndexedColour 	**in_col;
 ddRgbFloatColour	**out_col;
 {
-    extern ColorConversionTableType	ColourConversionRoutine[];
     miColourEntry			*pintcolour;
     ddUSHORT		     	 	status;
 
@@ -134,63 +194,6 @@ ddRgb16Colour	 	**in_col;
 ddRgbFloatColour	**out_col;
 {
 }
-
-/*
- * Color conversion jump table for miConvertVertexColors,
- * miConvertFacetColors and miConvertColor.
- *
- * Note that only conversions supported are 
- *
- *		indexed ->rgbFloat
- *		Rgb8    ->rgbFloat
- *		Rgb16   ->rgbFloat
- *
- */
-
-static 
-ColorConversionTableType
-ColourConversionRoutine[(PEXRdrColourModelHLS+1)*(PEXMaxColour+1)] = {
-/* Convert to Implementation dependant Color Model */
-  PEXIndexedColour_to_PEXRdrColourModelRGB,	/* Indexed -> ImpDep */
-  NoChange,					/* RgbFloat -> ImpDep */
-  NULL,						/* Cie -> ImpDep */
-  NULL,						/* Hsv -> ImpDep */
-  NULL,						/* Hls -> ImpDep */
-  PEXRgb8Colour_to_PEXRdrColourModelRGB,	/* Rgb8 -> ImpDep */
-  PEXRgb16Colour_to_PEXRdrColourModelRGB,	/* Rgb16 -> ImpDep */
-/* Convert to Rgb Float */
-  PEXIndexedColour_to_PEXRdrColourModelRGB,	/* Indexed -> RgbFloat */
-  NoChange,					/* RgbFloat -> RgbFloat */
-  NULL,						/* Cie -> RgbFloat */
-  NULL,						/* Hsv -> RgbFloat */
-  NULL,						/* Hls -> RgbFloat */
-  PEXRgb8Colour_to_PEXRdrColourModelRGB,	/* Rgb8 -> RgbFloat */
-  PEXRgb16Colour_to_PEXRdrColourModelRGB,	/* Rgb16 -> RgbFloat */
-/* Convert to Cie Float */
-  NULL,						/* Indexed -> CieFloat */
-  NULL,						/* RgbFloat -> CieFloat */
-  NULL,						/* Cie -> CieFloat */
-  NULL,						/* Hsv -> CieFloat */
-  NULL,						/* Hls -> CieFloat */
-  NULL,						/* Rgb8 -> CieFloat */
-  NULL,						/* Rgb16 -> CieFloat */
-/* Convert to Hsv Float */
-  NULL,						/* Indexed -> HsvFloat */
-  NULL,						/* RgbFloat -> HsvFloat */
-  NULL,						/* Cie -> HsvFloat */
-  NULL,						/* Hsv -> HsvFloat */
-  NULL,						/* Hls -> HsvFloat */
-  NULL,						/* Rgb8 -> HsvFloat */
-  NULL,						/* Rgb16 -> HsvFloat */
-/* Convert to Hls Float */
-  NULL,						/* Indexed -> HlsFloat */
-  NULL,						/* RgbFloat -> HlsFloat */
-  NULL,						/* Cie -> HlsFloat */
-  NULL,						/* Hsv -> HlsFloat */
-  NULL,						/* Hls -> HlsFloat */
-  NULL,						/* Rgb8 -> HlsFloat */
-  NULL,						/* Rgb16 -> HlsFloat */
-};
 
 /*++
  |
