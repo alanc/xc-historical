@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.6 89/04/17 17:44:59 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.7 89/05/06 11:27:37 rws Exp $";
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -137,10 +137,14 @@ int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
 	    buffer[0] = 0xba;
 	else if ((keysymSet == 6) && (symbol == XK_section))
 	    buffer[0] = 0xfe;
+	else if ((keysymSet == 4) && (symbol == XK_yen))
+	    buffer[0] = 0x5c;
 	else
 	    count = 0;
     } else if (count != 0) {
-	/* nothing */
+	if ((keysymSet == 4) &&
+	    ((symbol == XK_backslash) || (symbol == XK_asciitilde)))
+	    count = 0;
     } else if (((symbol >> 8) == 1) &&
 	       (symbol & 0x80) && (latin2[symbol & 0x7f] & (1 << keysymSet))) {
 	buffer[0] = (symbol & 0xff);
@@ -193,7 +197,7 @@ int XmuLookupLatin4 (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 3);
 }
 
-/* produces ISO 8859-1 GL plus Katakana plus ASCII control */
+/* produces JIS X0201-1976 (8-bit) */
 int XmuLookupKana (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
