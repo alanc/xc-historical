@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.6 91/06/14 15:46:56 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.7 91/07/01 16:38:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -598,6 +598,9 @@ pexElementSearchReq	*strmPtr;
     pc = (CARD16 *)(strmPtr+1);
     for (i=0; i< strmPtr->numIncls; i++, pc++)
 	SWAP_CARD16((*pc));
+
+    /* skip pad if there */
+    if (strmPtr->numIncls & 0x1) pc++;
 
     for (i=0; i< strmPtr->numExcls; i++, pc++)
 	SWAP_CARD16((*pc));
