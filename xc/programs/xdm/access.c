@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.10 91/07/18 19:25:27 rws Exp $
+ * $XConsortium: access.c,v 1.11 91/07/18 19:29:00 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -472,11 +472,16 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth, broadc
     return haveLocalhost;
 }
 
+/* returns non-0 iff string is matched by pattern */
+
 static int
 patternMatch (string, pattern)
     char    *string, *pattern;
 {
     int	    p, s;
+
+    if (!string)
+	string = "";
 
     for (;;)
     {
@@ -484,19 +489,20 @@ patternMatch (string, pattern)
 	switch (p = *pattern++) {
 	case '*':
 	    if (!*pattern)
-		return TRUE;
+		return 1;
 	    for (string--; *string; string++)
 		if (patternMatch (string, pattern))
 		    return 1;
 	    return 0;
 	case '?':
-	    if (s == 0)
+	    if (s == '\0')
 		return 0;
 	    break;
 	case '\0':
-	    return s == 0;
+	    return s == '\0';
 	case '\\':
 	    p = *pattern++;
+	    /* fall through */
 	default:
 	    if (p != s)
 		return 0;
