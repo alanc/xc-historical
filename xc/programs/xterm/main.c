@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.83 88/09/12 17:00:05 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.84 88/09/12 17:03:35 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -1824,14 +1824,12 @@ register char *oldtc, *newtc;
 
 #ifndef SYSV				/* macII *does* want this */
 	if ((ptr1 = strindex (oldtc, "co#")) == NULL){
-		fprintf(stderr, "%s: Can't find co# in termcap string %s\n",
-			xterm_name, TermName);
-		exit (ERROR_NOCO);
+		strcat (oldtc, "co#80:");
+		ptr1 = strindex (oldtc, "co#");
 	}
 	if ((ptr2 = strindex (oldtc, "li#")) == NULL){
-		fprintf(stderr, "%s: Can't find li# in termcap string %s\n",
-			xterm_name, TermName);
-		exit (ERROR_NOLI);
+		strcat (oldtc, "li#24:");
+		ptr2 = strindex (oldtc, "li#");
 	}
 	if(ptr1 > ptr2) {
 		li_first++;
@@ -2001,5 +1999,3 @@ remove_termcap_entry (buf, str)
     }
     return;
 }
-
-
