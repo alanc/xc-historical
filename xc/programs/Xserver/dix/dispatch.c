@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.70 89/01/03 08:23:38 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.71 89/01/04 08:42:02 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -213,6 +213,7 @@ Dispatch()
     int			ErrorStatus;
     register ClientPtr	client;
     register int	nready;
+    register long	**icheck = checkForInput;
 
     nextFreeClientID = 1;
     InitSelections();
@@ -223,7 +224,7 @@ Dispatch()
 
     while (!clientsDoomed)
     {
-        if (*checkForInput[0] != *checkForInput[1]) {
+        if (*icheck[0] != *icheck[1]) {
 	    ProcessInputEvents();
 	    FlushIfCriticalOutputPending();
 	}
@@ -251,7 +252,7 @@ Dispatch()
             requestingClient = client;
 	    while (! isItTimeToYield)
 	    {
-	        if (*checkForInput[0] != *checkForInput[1]) {
+	        if (*icheck[0] != *icheck[1]) {
 		    ProcessInputEvents();
 		    FlushIfCriticalOutputPending();
 		}
@@ -260,21 +261,13 @@ Dispatch()
 
 	        request = (xReq *)ReadRequestFromClient(
 				      client, &result, (char *)request);
-	        if (result < 0) 
+	        if (result <= 0) 
 	        {
+		    if (result == 0)
+			continue;
 		    CloseDownClient(client);
 		    break;
 	        }
-	        else if (result == 0)
-	        {
-#ifdef notdef
-		    ErrorF(  "Blocked read in dispatcher\n");
-		    ErrorF(  "reqType %d %d\n", 
-			     (request ? request->reqType : -1),
-			       nready);
-#endif
-		    continue;
-		}
 
 		client->sequence++;
 		client->requestBuffer = (pointer)request;
