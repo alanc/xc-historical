@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.16 88/09/06 09:54:28 swick Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.17 88/09/06 16:40:44 jim Exp $";
 #endif lint
 
 
@@ -210,7 +210,7 @@ static AsciiClearToBackground (w, x, y, width, height)
 {
     XtTextSink sink = ((TextWidget)w)->text.sink;
     AsciiSinkData *data = (AsciiSinkData *) sink->data;
-    XFillRectangle(XtDisplay(w), XtWindow(w), data->invgc, x, y, width, height);
+    XClearArea(XtDisplay(w), XtWindow(w), x, y, width, height, False);
 }
 
 /*
