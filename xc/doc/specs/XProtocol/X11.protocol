@@ -583,7 +583,8 @@ T}	T{
 An attempt is made to grab a key/button combination already grabbed by another
 client.
 .sp 6p
-An attempt is made to free a colormap entry not allocated by the client.
+An attempt is made to free a colormap entry not allocated by the client,
+or to free an entry in a colormap that was created with all entries writable.
 .sp 6p
 An attempt is made to store into a read-only or an unallocated colormap entry.
 .sp 6p
@@ -7174,11 +7175,16 @@ All specified pixels that are allocated by the client in cmap are freed,
 even if one or more pixels produce an error.
 A 
 .PN Value 
-error is generated if a specified pixel is not a valid index into cmap,
-and an 
+error is generated if a specified pixel is not a valid index into cmap.
+An 
 .PN Access 
 error is generated if a specified pixel is not allocated by the
-client (that is, is unallocated or is only allocated by another client).
+client (that is, is unallocated or is only allocated by another client)
+or if the colormap was created with all entries writable (using an alloc
+value of
+.PN All
+in
+.PN CreateColormap ).
 If more than one pixel is in error, 
 it is arbitrary as to which pixel is reported.
 .sp
