@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.16 89/08/07 19:38:59 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.17 89/12/10 17:10:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -112,6 +112,9 @@ FontGridClassRec fontgridClassRec = {
     /* query_geometry           */      XtInheritQueryGeometry,
     /* display_accelerator      */      XtInheritDisplayAccelerator,
     /* extension                */      NULL
+  },
+  { /* simple fields */
+    /* change_sensitive		*/	XtInheritChangeSensitive
   }
 };
 
