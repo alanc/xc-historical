@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.21 92/09/15 16:17:52 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.22 92/12/03 10:23:37 rws Exp $ */
 
 #include "misc.h"
 
@@ -73,6 +73,9 @@ extern void ScreenSaverExtensionInit ();
 #ifdef XV
 extern void XvExtensionInit();
 #endif
+#ifdef XIE
+extern void XieInit();
+#endif
 
 /*ARGSUSED*/
 void
@@ -121,5 +124,8 @@ InitExtensions(argc, argv)
 #endif
 #ifdef XV
     XvExtensionInit();
+#endif
+#ifdef XIE
+    XieInit();
 #endif
 }

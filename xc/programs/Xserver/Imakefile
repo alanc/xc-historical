@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.145 92/12/03 10:15:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.146 92/12/19 15:28:09 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -33,6 +33,10 @@ XCOMM $XConsortium: Imakefile,v 1.145 92/12/03 10:15:22 rws Exp $
 #if BuildXInputExt
       XINPUTEXT = $(EXTENSIONSRC)/server/xinput/libxinput.a
 #endif
+#if BuildXIE
+      XIEEXT =  $(EXTENSIONSRC)/server/xiesi/dixie/libdixie.a \
+		$(EXTENSIONSRC)/server/xiesi/ddxie/mi/src/libddxiemi.a 
+#endif
 #if BuildXTrapExt
        XTRAPEXT = $(EXTENSIONSRC)/server/xtrap/libxtrapext.a
 #endif
@@ -40,7 +44,7 @@ XCOMM $XConsortium: Imakefile,v 1.145 92/12/03 10:15:22 rws Exp $
        XVSRC = $(EXTENSIONSRC)/xv/server
        XVEXT = $(EXTENSIONSRC)/xv/server/libxv.a
 #endif
-      OTHEREXTS = $(XINPUTEXT) $(XTRAPEXT) $(XVEXT)
+      OTHEREXTS = $(XINPUTEXT) $(XIEEXT) $(XTRAPEXT) $(XVEXT)
       OTHERDEPDIRS = $(XVSRC)
 
         DEPDIRS = $(FONTSRC)/lib/font $(EXTENSIONSRC)/server $(OTHERDEPDIRS)

@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.154 93/02/01 16:48:37 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.155 93/02/08 11:14:20 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -43,6 +43,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.154 93/02/01 16:48:37 rws Exp $
 #endif
 #ifndef BuildXInputLib
 #define BuildXInputLib		YES
+#endif
+#ifndef BuildXIE
+#define BuildXIE		NO
 #endif
 #ifndef BuildXTrapExt
 #define BuildXTrapExt		NO
@@ -262,8 +265,15 @@ XCOMM $XConsortium: Project.tmpl,v 1.154 93/02/01 16:48:37 rws Exp $
 #define ScreenSaverDefines /**/
 #endif
 #endif
+#ifndef XIEdefines
+#if BuildXIE
+#define XIEdefines -DXIE
+#else
+#define XIEdefines /**/
+#endif
+#endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS PexDefines ShmDefines XInputDefines XTrapDefines ScreenSaverDefines
+#define BaseExtensionDefines -DSHAPE -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS PexDefines ShmDefines XInputDefines XTrapDefines ScreenSaverDefines XIEdefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
