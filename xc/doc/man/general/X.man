@@ -24,7 +24,7 @@ Commercial implementations are also available for a much wider range
 of platforms.
 .PP
 The X Consortium requests that the following names be used when
-refering to this software:
+referring to this software:
 .sp
 .ce 5
 X
@@ -212,7 +212,7 @@ The sample server provides two types of access control:  an authorization
 protocol which provides a list of ``magic cookies'' clients can send to
 request access, and a list of hosts from which connections are always
 accepted.  \fIXdm\fP initializes magic cookies in the server, and also places
-them in a file accessable to the user.  Normally, the list of hosts from
+them in a file accessible to the user.  Normally, the list of hosts from
 which connections are always accepted should be empty, so that only clients
 with are explicitly authorized can connect to the display.  When you add
 entries to the host list (with \fIxhost\fP), the server no longer performs any
@@ -248,7 +248,7 @@ by the window manager that the user is running (described below),
 most X programs accept
 a command line argument of the form \fB-geometry \fIWIDTHxHEIGHT+XOFF+YOFF\fR
 (where \fIWIDTH\fP, \fIHEIGHT\fP, \fIXOFF\fP, and \fIYOFF\fP are numbers)
-for specifying a prefered size and location for this application's main
+for specifying a preferred size and location for this application's main
 window.
 .PP
 The \fIWIDTH\fP and \fIHEIGHT\fP parts of the geometry specification are
@@ -434,7 +434,7 @@ Colors are usually specified by their commonly-used names
 (for example, \fIred\fP, \fIwhite\fP, or \fImedium slate blue\fP).
 The server translates these names into appropriate screen colors using
 a color database that can usually be found in \fI/usr/lib/X11/rgb.txt\fP.
-Color names are case-insensative, meaning that \fIred\fP, \fIRed\fP, 
+Color names are case-insensitive, meaning that \fIred\fP, \fIRed\fP, 
 and \fIRED\fP all refer to the same color.  
 .PP
 Many applications also accept color specifications of the following form:
@@ -445,7 +445,7 @@ Many applications also accept color specifications of the following form:
 #rrrgggbbb
 #rrrrggggbbbb
 .sp
-where \fIr\fP, \fIg\fP, and \fIb\fP are hexidecimal numbers indicating how
+where \fIr\fP, \fIg\fP, and \fIb\fP are hexadecimal numbers indicating how
 much \fIred\fP, \fIgreen\fP, and \fIblue\fP should be displayed (zero being
 none and ffff being on full).  Each field
 in the specification must have the same number of digits (e.g., #rrgb or
@@ -488,7 +488,7 @@ and are used to select different symbols that are attached to a single key
 character ^L).  The server keeps a list of keycodes corresponding to the
 various modifier keys.  Whenever a key is pressed or released, the server 
 generates an \fIevent\fP that contains the keycode of the indicated key as 
-well as a mask that specifies which of the modifer keys are currently pressed.
+well as a mask that specifies which of the modifier keys are currently pressed.
 Most servers set up this list to initially contain
 the various shift, control, and shift lock keys on the keyboard.  
 .TP 8
@@ -662,7 +662,7 @@ collections of individual resources (each of which are
 called \fIinstances\fP)
 can be set all at once.  By convention, the instance name of a resource
 begins with a lowercase letter and class name with an upper case letter.
-Multiple word resources are concatentated with the first letter of the 
+Multiple word resources are concatenated with the first letter of the 
 succeeding words capitalized.  Applications written with the X Toolkit
 Intrinsics will have at least the following resources:
 .PP
