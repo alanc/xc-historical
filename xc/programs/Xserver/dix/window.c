@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.171 87/09/10 19:33:58 rws Locked $ */
+/* $Header: window.c,v 1.172 87/10/28 10:54:50 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2902,7 +2902,7 @@ SaveScreens(on, mode)
 		     screenInfo.screen[i].height + RANDOM_WIDTH,
 		     0, InputOutput, mask, attributes, 0, 0, 
 		     WindowTable[i].visual, &result);
-                if (attributes[0] == None)
+                if (mask & CWBackPixmap)
 		{
 		    
 		    pWin->backgroundTile = pWin->parent->backgroundTile;
