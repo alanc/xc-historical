@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.42 89/11/12 18:01:06 keith Exp $ */
+/* $XConsortium: window.c,v 5.43 89/11/26 14:06:01 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -96,6 +96,17 @@ static Bool TileScreenSaver();
         ( ((b1)->x1 >= (b2)->x2)) || \
         ( ((b1)->y2 <= (b2)->y1)) || \
         ( ((b1)->y1 >= (b2)->y2)) ) )
+
+#define RedirectSend(pWin) \
+    ((pWin->eventMask|wOtherEventMasks(pWin)) & SubstructureRedirectMask)
+
+#define SubSend(pWin) \
+    ((pWin->eventMask|wOtherEventMasks(pWin)) & SubstructureNotifyMask)
+
+#define StrSend(pWin) \
+    ((pWin->eventMask|wOtherEventMasks(pWin)) & StructureNotifyMask)
+
+#define SubStrSend(pWin,pParent) (StrSend(pWin) || SubSend(pParent))
 
 /*
  * For SaveUnders using backing-store. The idea is that when a window is mapped
@@ -999,8 +1010,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     WindowHasNewCursor(pWin);
 
-    if ((pParent->eventMask | wOtherEventMasks(pParent)) &
-	SubstructureNotifyMask)
+    if (SubSend(pParent))
     {
 	event.u.u.type = CreateNotify;
 	event.u.createNotify.window = wid;
@@ -1071,12 +1081,15 @@ CrushTree(pWin)
 	}
 	while (1)
 	{
-	    event.u.u.type = DestroyNotify;
-	    event.u.destroyNotify.window = pChild->drawable.id;
-	    DeliverEvents(pChild, &event, 1, NullWindow);		
+	    pParent = pChild->parent;
+	    if (SubStrSend(pChild, pParent))
+	    {
+		event.u.u.type = DestroyNotify;
+		event.u.destroyNotify.window = pChild->drawable.id;
+		DeliverEvents(pChild, &event, 1, NullWindow);		
+	    }
 	    FreeResource(pChild->drawable.id, RT_WINDOW);
 	    pSib = pChild->nextSib;
-	    pParent = pChild->parent;
 #ifdef DO_SAVE_UNDERS
 	    if (pChild->saveUnder && pChild->viewable)
 		deltaSaveUndersViewable--;
@@ -1117,11 +1130,14 @@ DeleteWindow(pWin, wid)
 
     CrushTree(pWin);
 
-    event.u.u.type = DestroyNotify;
-    event.u.destroyNotify.window = pWin->drawable.id;
-    DeliverEvents(pWin, &event, 1, NullWindow);		
-
     pParent = pWin->parent;
+    if (pParent && SubStrSend(pWin, pParent))
+    {
+	event.u.u.type = DestroyNotify;
+	event.u.destroyNotify.window = pWin->drawable.id;
+	DeliverEvents(pWin, &event, 1, NullWindow);		
+    }
+
     FreeWindowResources(pWin);
     if (pParent)
     {
@@ -2880,8 +2896,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     else
         pSib = pWin->nextSib;
 
-    if ((!pWin->overrideRedirect) &&
-        ((pParent->eventMask|wOtherEventMasks(pParent)) & SubstructureRedirectMask))
+    if ((!pWin->overrideRedirect) && RedirectSend(pParent))
     {
 	event.u.u.type = ConfigureRequest;
 	event.u.configureRequest.window = pWin->drawable.id;
@@ -2952,8 +2967,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     return(Success);
 
 ActuallyDoSomething:
-    if (((pWin->eventMask|wOtherEventMasks(pWin)) & StructureNotifyMask) ||
-	((pParent->eventMask|wOtherEventMasks(pParent)) & SubstructureNotifyMask))
+    if (SubStrSend(pWin, pParent))
     {
 	event.u.u.type = ConfigureNotify;
 	event.u.configureNotify.window = pWin->drawable.id;
@@ -3123,7 +3137,7 @@ CirculateWindow(pParent, direction, client)
     else
         event.u.circulate.place = PlaceOnBottom;
 
-    if ((pParent->eventMask|wOtherEventMasks(pParent)) & SubstructureRedirectMask)
+    if (RedirectSend(pParent))
     {
 	event.u.u.type = CirculateRequest;
 	if (MaybeDeliverEventsToClient(pParent, &event, 1,
@@ -3390,8 +3404,7 @@ MapWindow(pWin, client)
         xEvent event;
 	Bool anyMarked;
 
-        if ((!pWin->overrideRedirect) &&
-	    ((pParent->eventMask|wOtherEventMasks(pParent)) & SubstructureRedirectMask))
+        if ((!pWin->overrideRedirect) && RedirectSend(pParent))
 	{
 	    event.u.u.type = MapRequest;
 	    event.u.mapRequest.window = pWin->drawable.id;
@@ -3403,10 +3416,13 @@ MapWindow(pWin, client)
 	}
 
 	pWin->mapped = TRUE;
-	event.u.u.type = MapNotify;
-	event.u.mapNotify.window = pWin->drawable.id;
-	event.u.mapNotify.override = pWin->overrideRedirect;
-	DeliverEvents(pWin, &event, 1, NullWindow);
+	if (SubStrSend(pWin, pParent))
+	{
+	    event.u.u.type = MapNotify;
+	    event.u.mapNotify.window = pWin->drawable.id;
+	    event.u.mapNotify.override = pWin->overrideRedirect;
+	    DeliverEvents(pWin, &event, 1, NullWindow);
+	}
 
         if (!pParent->realized)
             return(Success);
@@ -3461,7 +3477,7 @@ MapWindow(pWin, client)
  *****/
 
 MapSubwindows(pParent, client)
-    WindowPtr pParent;
+    register WindowPtr pParent;
     ClientPtr client;
 {
     register WindowPtr	pWin;
@@ -3470,7 +3486,8 @@ MapSubwindows(pParent, client)
     WindowPtr		pFirstSaveUndered = NullWindow;
 #endif
     register ScreenPtr	pScreen;
-    register Bool	parentRedirect;
+    register Mask	parentRedirect;
+    register Mask	parentNotify;
     xEvent		event;
     Bool		anyMarked;
 #ifdef DO_SAVE_UNDERS
@@ -3478,8 +3495,8 @@ MapSubwindows(pParent, client)
 #endif
 
     pScreen = pParent->drawable.pScreen;
-    parentRedirect = ((pParent->eventMask|wOtherEventMasks(pParent))
-			& SubstructureRedirectMask) != 0;
+    parentRedirect = RedirectSend(pParent);
+    parentNotify = SubSend(pParent);
     anyMarked = FALSE;
     for (pWin = pParent->firstChild; pWin; pWin = pWin->nextSib)
     {
@@ -3497,10 +3514,13 @@ MapSubwindows(pParent, client)
 	    }
     
 	    pWin->mapped = TRUE;
-	    event.u.u.type = MapNotify;
-	    event.u.mapNotify.window = pWin->drawable.id;
-	    event.u.mapNotify.override = pWin->overrideRedirect;
-	    DeliverEvents(pWin, &event, 1, NullWindow);
+	    if (parentNotify || StrSend(pWin))
+	    {
+		event.u.u.type = MapNotify;
+		event.u.mapNotify.window = pWin->drawable.id;
+		event.u.mapNotify.override = pWin->overrideRedirect;
+		DeliverEvents(pWin, &event, 1, NullWindow);
+	    }
     
 	    if (!pFirstMapped)
 		pFirstMapped = pWin;
@@ -3603,17 +3623,20 @@ UnmapWindow(pWin, fromConfigure)
     register WindowPtr pWin;
     Bool fromConfigure;
 {
-    WindowPtr pParent;
+    register WindowPtr pParent;
     xEvent event;
     Bool wasRealized = (Bool)pWin->realized;
     Bool wasViewable = (Bool)pWin->viewable;
 
     if ((!pWin->mapped) || (!(pParent = pWin->parent)))
         return(Success);
-    event.u.u.type = UnmapNotify;
-    event.u.unmapNotify.window = pWin->drawable.id;
-    event.u.unmapNotify.fromConfigure = fromConfigure;
-    DeliverEvents(pWin, &event, 1, NullWindow);
+    if (SubStrSend(pWin, pParent))
+    {
+	event.u.u.type = UnmapNotify;
+	event.u.unmapNotify.window = pWin->drawable.id;
+	event.u.unmapNotify.fromConfigure = fromConfigure;
+	DeliverEvents(pWin, &event, 1, NullWindow);
+    }
     if (wasViewable && !fromConfigure)
     {
 	pWin->valdata = UnmapValData;
@@ -3654,26 +3677,30 @@ UnmapWindow(pWin, fromConfigure)
  *****/
 
 UnmapSubwindows(pWin)
-    WindowPtr pWin;
+    register WindowPtr pWin;
 {
     register WindowPtr pChild, pHead;
     xEvent event;
     Bool wasRealized = (Bool)pWin->realized;
     Bool wasViewable = (Bool)pWin->viewable;
     Bool anyMarked = FALSE;
+    Mask parentNotify;
 
     if (!pWin->firstChild)
 	return;
-
+    parentNotify = SubSend(pWin);
     pHead = RealChildHead(pWin);
     for (pChild = pWin->lastChild; pChild != pHead; pChild = pChild->prevSib)
     {
 	if (pChild->mapped)
         {
-	    event.u.u.type = UnmapNotify;
-	    event.u.unmapNotify.window = pChild->drawable.id;
-	    event.u.unmapNotify.fromConfigure = xFalse;
-	    DeliverEvents(pChild, &event, 1, NullWindow);
+	    if (parentNotify || StrSend(pChild))
+	    {
+		event.u.u.type = UnmapNotify;
+		event.u.unmapNotify.window = pChild->drawable.id;
+		event.u.unmapNotify.fromConfigure = xFalse;
+		DeliverEvents(pChild, &event, 1, NullWindow);
+	    }
 	    if (pChild->viewable)
 	    {
 		pChild->valdata = UnmapValData;
