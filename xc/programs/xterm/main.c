@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.199 91/12/23 17:02:24 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.200 92/03/11 17:36:12 gildea Exp $";
 #endif /* lint */
 
 /*
@@ -1056,7 +1056,12 @@ char **argv;
 		unsigned char *old_bufend;
 
 		old_bufend = (unsigned char *) _bufend(stderr);
+#ifdef hpux
+		stderr->__fileH = (i >> 8);
+		stderr->__fileL = i;
+#else
 		stderr->_file = i;
+#endif
 		_bufend(stderr) = old_bufend;
 #else	/* USE_SYSV_TERMIO */
 		stderr->_file = i;
