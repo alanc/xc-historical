@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.16 93/08/17 17:27:06 rws Exp $
+* $XConsortium: fd.h,v 1.17 93/08/18 15:08:35 rws Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -63,7 +63,11 @@ SOFTWARE.
 #define	FD_SETSIZE	256
 #endif
 
+#ifdef LONG64
+typedef int Fd_mask;
+#else
 typedef long Fd_mask;
+#endif
 #ifndef NFDBITS
 #define NFDBITS	(sizeof(Fd_mask) * NBBY)	/* bits per mask */
 #endif
