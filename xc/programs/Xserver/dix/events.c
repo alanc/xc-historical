@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.142 88/02/14 21:09:50 rws Exp $ */
+/* $Header: events.c,v 1.143 88/02/25 17:38:25 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2328,6 +2328,8 @@ AddInputDevice(deviceProc, autoStart)
     d->sync.frozen = FALSE;
     d->sync.other = NullGrab;
     d->sync.state = NOT_GRABBED;
+    d->grab = NullGrab;
+    bzero((char *)d->down, sizeof(d->down));
     return &d->public;
 }
 
