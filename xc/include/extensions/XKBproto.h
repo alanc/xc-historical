@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.5 93/09/28 23:36:23 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.7 94/02/03 18:43:50 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -38,6 +38,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbError2(a,b)		((((unsigned)(a))<<24)|(b))
 #define	XkbError3(a,b,c)	XkbError2(a,(((unsigned)(b))<<16)|(c))
 #define	XkbError4(a,b,c,d)	XkbError3(a,b,((((unsigned)(c))<<8)|(d)))
+
+#define Window CARD32
+#define Atom CARD32
+#define Time CARD32
 
 typedef struct _UseExtension {
     CARD8	reqType;
@@ -101,7 +105,7 @@ typedef struct _SendEvent {
     BOOL	propagate;
     BOOL	synthesizeClick;
     CARD16	pad B16;
-    Window	destination;
+    Window	destination B32;
     CARD32	eventMask B32;
     xEvent	event;
 } xkbSendEventReq;
@@ -119,7 +123,7 @@ typedef struct _XkbBell {
     INT8	percent;
     CARD8	pad1;
     CARD16	pad2 B16;
-    Atom	name;
+    Atom	name B32;
 } xkbBellReq;
 #define	sz_xkbBellReq		16
 
@@ -150,7 +154,8 @@ typedef	struct _XkbGetStateReply {
     CARD8	compatState;
     CARD8	groupsUnlocked;
     CARD8	pad2;
-    CARD32	pad3[2] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbGetStateReply;
 #define	sz_xkbGetStateReply	32
 
@@ -338,7 +343,10 @@ typedef struct _GetCompatMapReply {
     CARD16	firstSym B16;
     CARD16	nSyms B16;
     CARD16	nTotalSyms B16;
-    CARD32	pad2[4] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetCompatMapReply;
 #define	sz_xkbGetCompatMapReply		32
 
@@ -372,7 +380,11 @@ typedef struct _GetIndicatorStateReply {
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD32	state B32;
-    CARD32	pad[5] B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetIndicatorStateReply;
 #define	sz_xkbGetIndicatorStateReply	32
 
@@ -395,7 +407,10 @@ typedef struct _GetIndicatorMapReply {
     CARD8	nRealIndicators;
     CARD8	nIndicators;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbGetIndicatorMapReply;
 #define	sz_xkbGetIndicatorMapReply	32
 
@@ -434,9 +449,9 @@ typedef	struct _XkbGetNamesReply {
     CARD32	length B32;
     CARD16	pad1 B16;
     CARD16	which B16;
-    Atom	keycodes;
-    Atom	geometry;
-    Atom	symbols;
+    Atom	keycodes B32;
+    Atom	geometry B32;
+    Atom	symbols B32;
     CARD8	nKeyTypes;
     CARD8	nRadioGroups;
     CARD8	nCharSets;
@@ -451,9 +466,9 @@ typedef struct _SetNames {
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD16	which B16;
-    Atom	keycodes;
-    Atom	geometry;
-    Atom	symbols;
+    Atom	keycodes B32;
+    Atom	geometry B32;
+    Atom	symbols B32;
     CARD8	firstKeyType;
     CARD8	nKeyTypes;
     CARD8	firstKTLevel;
@@ -474,8 +489,8 @@ typedef struct _ListAlternateSyms {
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD16	pad B16;
-    Atom	name;
-    Atom	charset;
+    Atom	name B32;
+    Atom	charset B32;
 } xkbListAlternateSymsReq;
 #define	sz_xkbListAlternateSymsReq	16
 
@@ -509,14 +524,16 @@ typedef	struct _XkbGetAlternateSymsReply {
     BYTE	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    Atom	name;
+    Atom	name B32;
     CARD8	index;
     CARD8	nCharSets;
     CARD8	firstKey;
     CARD8	nKeys;
     CARD16	totalSyms B16;
     CARD16	pad2 B16;
-    CARD32	pad3[3] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
 } xkbGetAlternateSymsReply;
 #define	sz_xkbGetAlternateSymsReply	32
 
@@ -587,7 +604,7 @@ typedef struct _GetGeometryReply {
     BYTE	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    Atom	name;
+    Atom	name B32;
     BOOL	supported;
     CARD8	nSections;
     CARD8	nShapes;
@@ -597,7 +614,8 @@ typedef struct _GetGeometryReply {
     CARD16	widthMM B16;
     CARD16	heightMM B16;
     CARD16	pad2 B16;
-    CARD32	pad3[2] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbGetGeometryReply;
 #define sz_xkbGetGeometryReply	32
 
@@ -610,7 +628,7 @@ typedef struct _SetGeometry {
     CARD16	deviceSpec B16;
     CARD8	nShapes;
     CARD8	nSections;
-    Atom	name;
+    Atom	name B32;
     CARD16	widthMM B16;
     CARD16	heightMM B16;
 } xkbSetGeometryReq;
@@ -654,11 +672,14 @@ typedef struct _xkbAnyEvent {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbAnyEvent;
 #define	sz_xkbAnyEvent;
 
@@ -666,7 +687,7 @@ typedef	struct _xkbStateNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	mods;
     CARD8	baseMods;
@@ -693,7 +714,7 @@ typedef	struct _xkbMapNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	pad1;
     CARD8	deviceID;
     CARD16	changed B16;
@@ -705,7 +726,9 @@ typedef	struct _xkbMapNotify {
     CARD8	nKeyActions;
     CARD8	firstKeyBehavior;
     CARD8	nKeyBehaviors;
-    CARD32	pad2[3] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbMapNotify;
 #define	sz_xkbMapNotify	32
 
@@ -713,7 +736,7 @@ typedef struct _xkbControlsNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
@@ -732,14 +755,15 @@ typedef struct _xkbIndicatorNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
     CARD32	stateChanged B32;
     CARD32	state B32;
     CARD32	mapChanged B32;
-    CARD32	pad3[2] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbIndicatorNotify;
 #define	sz_xkbIndicatorNotify	32
 
@@ -754,8 +778,10 @@ typedef struct _xkbBellNotify {
     CARD8	percent;
     CARD16	pitch B16;
     CARD16	duration B16;
-    Atom	name;
-    CARD32	pad1[3] B32;
+    Atom	name B32;
+    CARD32	pad1 B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
 } xkbBellNotify;
 #define	sz_xkbBellNotify	32
 
@@ -763,14 +789,17 @@ typedef struct _xkbSlowKeyNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	slowKeyType;
     CARD8	keycode;
     CARD8	pad1;
     CARD16	delay B16;
     CARD16	pad2 B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbSlowKeyNotify;
 #define	sz_xkbSlowKeyNotify	32
 
@@ -778,7 +807,7 @@ typedef struct _xkbNamesNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	changed B16;
@@ -791,7 +820,8 @@ typedef struct _xkbNamesNotify {
     CARD8	nCharSets;
     CARD8	changedMods;
     CARD32	changedIndicators B32;
-    CARD32	pad3[2] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
 } xkbNamesNotify;
 #define	sz_xkbNamesNotify	32
 
@@ -799,13 +829,16 @@ typedef struct _xkbCompatMapNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	changedMods;
     CARD16	firstSym B16;
     CARD16	nSyms B16;
     CARD16	nTotalSyms B16;
-    CARD32	pad3[4] B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbCompatMapNotify;
 #define sz_xkbCompatMapNotify	32
 
@@ -813,12 +846,16 @@ typedef struct _xkbAlternateSymsNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	altSymsID;
     CARD8	firstKey;
     CARD8	nKeys;
-    CARD32	pad2[5] B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
 } xkbAlternateSymsNotify;
 #define	sz_xkbAlternateSymsNotify	32
 
@@ -837,5 +874,9 @@ typedef struct _xkbEvent {
     } u;
 } xkbEvent;
 #define sz_xkbEvent	32
+
+#undef Window
+#undef Atom
+#undef Time
 
 #endif /* _XKBPROTO_H_ */
