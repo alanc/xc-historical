@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.208 94/01/10 17:04:21 mor Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.209 94/01/11 18:39:35 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -149,9 +149,12 @@ XCOMM $XConsortium: Project.tmpl,v 1.208 94/01/10 17:04:21 mor Exp $
 #endif
 #endif
 #endif
+#ifndef XThreadsDefines		/* defines for threads if using threads */
+#define XThreadsDefines -DXTHREADS SystemMTDefines
+#endif
 #ifndef XMTDefines
 #if ThreadedX
-#define XMTDefines -DXTHREADS SystemMTDefines
+#define XMTDefines XThreadsDefines
 #else
 #define XMTDefines /**/
 #endif
