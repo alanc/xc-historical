@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.52 91/02/22 12:15:52 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.53 91/05/04 23:13:48 keith Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -272,12 +272,9 @@ WaitForSomething(pClientsReady)
     return nready;
 }
 
-#if (mskcnt>4)
-#ifdef ANYSET
-#undef ANYSET
-#endif
+#ifndef ANYSET
 /*
- * This is a macro if mskcnt <= 4
+ * This is not always a macro.
  */
 ANYSET(src)
     long	*src;

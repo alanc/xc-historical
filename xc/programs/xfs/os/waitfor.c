@@ -174,12 +174,9 @@ WaitForSomething(pClientsReady)
     return nready;
 }
 
-#if (MSKCNT > 4)
-#ifdef ANYSET
-#undef ANYSET
-#endif
+#ifndef ANYSET
 /*
- * This is a macro if MSKCNT <= 4
+ * This is not always a macro
  */
 ANYSET(src)
     long	*src;
