@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.57 92/08/15 11:19:56 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.58 92/08/22 09:20:16 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -46,14 +46,14 @@ XCOMM site:  $XConsortium: site.def,v 1.57 92/08/15 11:19:56 rws Exp $
 
 #if HasGcc2
 #ifdef Sun3Architecture
-#define GccIncDir /usr/local/lib/gcc-lib/sun3-sunos/2.1/include
+#define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos/2.1/include
 #endif
 #endif
 
 #define BuildScreenSaverExt	YES
 #define BuildScreenSaverLib	YES
 
-#if defined(SGIArchitecture)
+#ifdef SGIArchitecture
 /* this is to disable dynamic loading without changing ddx Imakefiles */
 #define DynamicDDXObjectTarget(a,b,c,d)
 
