@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.10 94/04/18 20:20:59 rws Exp $
+.\" $XConsortium: Xtk.intr.front,v 1.11 94/04/19 18:35:11 converse Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -93,6 +93,8 @@ It is provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
 .bp 10
+.EF ''\fB \\\\n(PN \fP''
+.OF ''\fB \\\\n(PN \fP''
 .af PN i
 .XS x
 Acknowledgments
@@ -329,5 +331,3 @@ word \fIreturns\fP or, in the case of multiple arguments, the word \fIreturn\^\f
 .af PN 1
 .EH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
 .OH '\fBX Toolkit Intrinsics\fP''\fBX11 Release \*(Rn\fP'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
