@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.201 93/12/13 18:30:58 rob Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.202 93/12/31 14:57:41 kaleb Exp $
 XCOMM
 
 /*
@@ -980,6 +980,9 @@ XCOMM start of Imakefile
 
 XCOMM -------------------------------------------------------------------------
 XCOMM common rules for all Makefiles - do not edit
+
+.c.i:
+	CPPOnlyCompile($*.c,$(_NOOP_))
 /*
  * These need to be here so that rules in Imakefile occur first;  the blank
  * emptyrule is to make sure that an empty Imakefile does not default to make
