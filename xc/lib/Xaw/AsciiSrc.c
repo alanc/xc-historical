@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.51 91/03/25 18:21:57 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.52 91/05/05 14:50:21 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -1223,16 +1223,14 @@ XrmValuePtr	fromVal;
 XrmValuePtr	toVal;
 {
   static XawAsciiType type;
-  static XrmQuark  XtQEstring;
+  static XrmQuark  XtQEstring = NULLQUARK;
   static XrmQuark  XtQEfile;
-  static int	  haveQuarks = FALSE;
   XrmQuark q;
   char lowerName[BUFSIZ];
 
-  if (!haveQuarks) {
+  if (XtQEstring == NULLQUARK) {
     XtQEstring = XrmPermStringToQuark(XtEstring);
     XtQEfile   = XrmPermStringToQuark(XtEfile);
-    haveQuarks = TRUE;
   }
 
   XmuCopyISOLatin1Lowered(lowerName, (char *) fromVal->addr);
@@ -1242,7 +1240,7 @@ XrmValuePtr	toVal;
   if (q == XtQEfile)  type = XawAsciiFile;
 
   (*toVal).size = sizeof(XawAsciiType);
-  (*toVal).addr = (caddr_t) &type;
+  (*toVal).addr = (XPointer) &type;
   return;
 }
 
