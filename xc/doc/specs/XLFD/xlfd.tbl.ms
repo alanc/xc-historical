@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.25 94/01/07 15:21:05 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.26 94/01/08 09:41:39 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -141,12 +141,9 @@ matching
 .IP \(bu 5
 Supports multiple font vendors, arbitrary character sets, and encodings
 .IP \(bu 5
-.sC
 Supports naming and instancing of scalable and polymorphic fonts
 .IP \(bu 5
 Supports transformations and subsetting of fonts
-.br
-.eC
 .IP \(bu 5
 Is independent of X server and operating or file system implementations
 .IP \(bu 5
@@ -188,39 +185,28 @@ Others may desire to perform the mapping dynamically in the server.
 Provisions must be made in the font name 
 that allows a font request to specify or identify specific charset mappings 
 in server environments where multiple charsets are supported.
-.br
-.sC
 .NH 2
 Support Scalable and Polymorphic Fonts
-.eC
 .XS
 \*(SN Support Scalable and Polymorphic Fonts
 .XE
-.sC
 .LP
 If a font source can be scaled to arbitrary size or varied in other
 ways, it should be possible for an application to determine
-.eC
 that fact from the font name, and the
 application should be able to construct a font name for any specific
-.sC
 instance.
 .NH 2
 Support Transformations and Subsetting of Fonts
-.br
-.eC
 .XS
 \*(SN Support Transformations and Subsetting of Fonts
 .XE
-.sC
 .LP
 Arbitrary two-dimensional linear transformations of fonts should be
 able to be requested by applications.  Since such transformed fonts
 may be used for special effects requiring a few characters from each
 of many differently-transformed fonts, it should be possible to
 request only a few characters from a font for efficiency.
-.br
-.eC
 .NH 2
 Be Independent of X Server and Operating or File System Implementations
 .XS
@@ -410,15 +396,11 @@ HYPHEN (02/13), the XLFD font name delimiter character
 .IP \(bu 5
 QUESTION MARK (03/15) and ASTERISK (02/10), the X protocol 
 font name wildcard characters
-.br
-.sC
 .IP \(bu 5
 COMMA (02/12), used by Xlib to separate XLFD font names in a font set.
 .IP \(bu 5
 QUOTATION MARK (02/02), used by some commercial products to quote a
 font name.
-.br
-.eC
 .LP
 Alphabetic case distinctions are allowed but are for human readability 
 concerns only.
@@ -540,10 +522,7 @@ that is, the nominal blackness of the font,
 according to the FOUNDRY's judgment.
 This name must be human-understandable and suitable for presentation to a 
 font user.
-.sC
 The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
-.br
-.eC
 .LP
 The interpretation of this field is somewhat problematic 
 because the typographic judgment of weight has traditionally 
@@ -592,9 +571,7 @@ T}
 Obliqued upright design, slanted counterclockwise from the vertical
 T}
 \*QOT\*U	Other	Other
-.sC
 numeric	Polymorphic	See section \n(sP on polymorphic font support.
-.eC
 .sp 6p
 _
 .TE
@@ -611,10 +588,7 @@ SETWIDTH_NAME Field
 SETWIDTH_NAME is a string that gives the font's typographic 
 proportionate width, that is, the nominal width per horizontal unit of the 
 font, according to the FOUNDRY's judgment.
-.sC
 The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
-.br
-.eC
 .LP
 As with WEIGHT_NAME, the interpretation of this field or font property is 
 somewhat problematic, because the designer's judgment of setwidth has 
@@ -643,11 +617,8 @@ ADD_STYLE_NAME Field
 ADD_STYLE_NAME is a string that identifies additional typographic 
 style information that is not captured by other fields but is needed 
 to identify the particular font.
-.sC
 The character \*Q[\*U anywhere in the field is used to indicate a
 polymorphic font; see section \n(sP.
-.br
-.eC
 .LP
 ADD_STYLE_NAME is not a typeface classification field 
 and is only used for uniqueness.
@@ -668,7 +639,6 @@ PIXEL_SIZE Field
 \*(SN PIXEL_SIZE Field
 .XE
 .LP 
-.sC
 PIXEL_SIZE
 gives the body size of the font at a particular 
 POINT_SIZE and RESOLUTION_Y.
@@ -676,7 +646,6 @@ PIXEL_SIZE is either an integer-string or a string beginning
 with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
 see section \n(sM.
 PIXEL_SIZE usually incorporates additional vertical spacing 
-.eC
 that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
@@ -692,7 +661,6 @@ POINT_SIZE Field
 \*(SN POINT_SIZE Field
 .XE
 .LP 
-.sC
 POINT_SIZE gives the body size 
 for which the font was designed.
 POINT_SIZE is either an integer-string or a string beginning
@@ -700,14 +668,11 @@ with \*Q[\*U.  A string beginning with \*Q[\*U represents a matrix;
 see section \n(sM.
 This field usually incorporates additional vertical spacing 
 that is considered part of the font design.
-.eC
 (Note, however, that POINT_SIZE is not necessarily equivalent to the height 
 of the font bounding box.) 
 POINT_SIZE is expressed in decipoints (where points are as defined 
-.sC
 in the X protocol or 72.27 points equal 1 inch).
 Zero is used to indicate a scalable font; see section \n(sS.
-.eC
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -789,9 +754,7 @@ Also, the vertical extents of the font do not exceed the vertical spacing
 ascent <= font-ascent and descent <= font-descent).
 The cell height = font-descent + font-ascent, and the width = AVERAGE_WIDTH.
 T}
-.sC
 numeric	Polymorphic	See section \n(sP on polymorphic font support.
-.eC
 .sp 6p
 _
 .TE
@@ -802,7 +765,6 @@ AVERAGE_WIDTH Field
 \*(SN AVERAGE_WIDTH Field
 .XE
 .LP 
-.sC
 AVERAGE_WIDTH is an integer-string typographic metric value 
 that gives the unweighted arithmetic mean of the absolute value of the
 width of each glyph in the font 
@@ -811,7 +773,6 @@ writing direction for the font is right-to-left.
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
 Zero is used to indicate a scalable font; see section \n(sS.
-.eC
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -825,10 +786,7 @@ CHARSET_REGISTRY is an x-registered-name that identifies
 the registration authority that owns the specified encoding.
 CHARSET_ENCODING is a registered name that identifies the coded character set 
 as defined by that registration authority
-.sC
 and, optionally, a subsetting hint.
-.br
-.eC
 .LP
 Although the X protocol does not explicitly have any knowledge about 
 character set encodings, 
@@ -881,8 +839,6 @@ as specified in XLFD.
 .LP
 The ISO Latin-1 character set shall be registered by the X Consortium as the 
 CHARSET_REGISTRY-CHARSET_ENCODING value pair: \*QISO8859-1\*U.
-.br
-.sC
 .LP
 If the CHARSET_ENCODING contains an \*Q[\*U,
 the \*Q[\*U and the characters after it up to a \*Q]\*U are a
@@ -917,8 +873,6 @@ tells the rasterizer that the client is interested only in characters
 contains only those characters or any superset of those characters.  The
 client can expect to obtain valid glyphs and metrics only for those
 characters, and not for any other characters in the font.
-.br
-.eC
 .NH 3
 Examples
 .XS
@@ -1075,17 +1029,12 @@ RESOLUTION | MIN_SPACE | NORM_SPACE | MAX_SPACE | END_SPACE | SUPERSCRIPT_X |
 SUPERSCRIPT_Y | SUBSCRIPT_X | SUBSCRIPT_Y | UNDERLINE_POSITION | 
 UNDERLINE_THICKNESS | STRIKEOUT_ASCENT | STRIKEOUT_DESCENT | ITALIC_ANGLE 
 | X_HEIGHT | WEIGHT | FACE_NAME |
-.sC
 FULL_NAME | FONT |
 COPYRIGHT | AVG_CAPITAL_WIDTH | 
-.eC
 AVG_LOWERCASE_WIDTH | RELATIVE_SETWIDTH | RELATIVE_WEIGHT | CAP_HEIGHT | 
 SUPERSCRIPT_ SIZE | FIGURE_WIDTH | SUBSCRIPT_SIZE | SMALL_CAP_SIZE | 
 NOTICE | DESTINATION
-.sC
 | FONT_TYPE | FONT_VERSION | RASTERIZER_NAME | RASTERIZER_VERSION
-.br
-.eC
 T}
 Underscore ::=	T{
 OCTET\-the value of ISO 8859-1 UNDERSCORE character (Column/Row 05/15)
@@ -1188,12 +1137,9 @@ PIXEL_SIZE
 \*(SN PIXEL_SIZE
 .XE
 .LP
-.sC
 PIXEL_SIZE is as defined in the 
 .PN FontName
 except that the property type is INT32.
-.br
-.eC
 .LP
 X clients requiring pixel values for the various typographic fixed 
 spaces (em space, en space and thin space), can use the following 
@@ -1230,12 +1176,9 @@ POINT_SIZE
 \*(SN POINT_SIZE
 .XE
 .LP
-.sC
 POINT_SIZE is as defined in the 
 .PN FontName
 except that the property type is INT32.
-.br
-.eC
 .LP
 X clients requiring device-independent values for em space, 
 en space, and thin space can use the following algorithm:
@@ -1288,22 +1231,17 @@ AVERAGE_WIDTH
 \*(SN AVERAGE_WIDTH
 .XE
 .LP
-.sC
 AVERAGE_WIDTH is as defined in the 
 .PN FontName
 except that the property type is INT32.
-.br
-.eC
 .LP
 AVERAGE_WIDTH can be calculated if not provided as a font property, 
 according to the following algorithm:
 .LP
 .DS
 if (AVERAGE_WIDTH undefined) then
-.sC
    AVERAGE_WIDTH = ROUND (MEAN (ABS (width of each glyph in font)) * 10)
 	* if (dominant writing direction L-to-R) then 1 else \-1
-.eC
 .DE
 .LP
 where MEAN is a function that returns the arithmetic mean of its arguments.
@@ -1344,10 +1282,8 @@ MIN_SPACE
 \*(SN MIN_SPACE
 .XE
 .LP
-.sC
 MIN_SPACE is an integer value (of type INT32)
 that gives the recommended minimum word-space value to be used with this font.
-.eC
 .LP
 MIN_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1362,10 +1298,8 @@ NORM_SPACE
 \*(SN NORM_SPACE
 .XE
 .LP
-.sC
 NORM_SPACE is an integer value (of type INT32)
 that gives the recommended normal word-space value to be used with this font.
-.eC
 .LP
 NORM_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
@@ -1383,10 +1317,8 @@ MAX_SPACE
 \*(SN MAX_SPACE
 .XE
 .LP
-.sC
 MAX_SPACE is an integer value (of type INT32)
 that gives the recommended maximum word-space value to be used with this font.
-.eC
 .LP
 MAX_SPACE can be approximated if not provided as a font property, 
 according to the following algorithm:
