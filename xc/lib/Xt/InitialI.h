@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.30 89/12/12 14:32:48 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.31 90/06/22 16:47:34 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -58,10 +58,11 @@ typedef struct _TimerEventRec {
 typedef struct _InputEvent {
 	XtInputCallbackProc   ie_proc;
 	XtPointer	      ie_closure;
-	struct	_InputEvent   *ie_next;
-	struct  _InputEvent   *ie_oq;
+	struct _InputEvent    *ie_next;
+	struct _InputEvent    *ie_oq;
 	XtAppContext	      app;
 	int		      ie_source;
+	XtInputMask	      ie_condition;
 } InputEvent;
 
 typedef struct _WorkProcRec {
@@ -100,9 +101,7 @@ typedef struct _XtAppStruct {
     Display **list;
     TimerEventRec *timerQueue;
     WorkProcRec *workQueue;
-    InputEvent **selectRqueue;
-    InputEvent **selectWqueue;
-    InputEvent **selectEqueue;
+    InputEvent **input_list;
     InputEvent *outstandingQueue;
     XrmDatabase errorDB;
     XtErrorMsgHandler errorMsgHandler, warningMsgHandler;
