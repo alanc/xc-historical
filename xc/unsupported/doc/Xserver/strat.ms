@@ -195,7 +195,7 @@ manipulating rows of pixels by hand.
 See the "Definition" document for an explanation of these terms.
 
 .LP
-server/ddx/qvss
+server/ddx/dec/qvss
 .RS
 .RE
 This code handles the Digital 
