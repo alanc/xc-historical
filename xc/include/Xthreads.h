@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.17 94/04/17 20:10:54 gildea Exp kaleb $
+ * $XConsortium: Xthreads.h,v 1.18 95/04/07 19:22:33 kaleb Exp kaleb $
  *
  * 
 Copyright (c) 1993  X Consortium
@@ -63,8 +63,9 @@ typedef struct mutex xmutex_rec;
 #define xcondition_broadcast(cv) condition_broadcast(cv)
 #define xcondition_set_name(cv,str) condition_set_name(cv,str)
 #else
-#if defined(sun) || defined(__sun__)
+#ifdef SVR4
 #include <thread.h>
+#include <synch.h>
 typedef thread_t xthread_t;
 typedef cond_t xcondition_rec;
 typedef mutex_t xmutex_rec;
