@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.102 93/04/26 17:42:48 mor Exp $ */
+/* $XConsortium: Xlibint.h,v 11.103 93/04/30 15:39:22 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -141,7 +141,7 @@ typedef struct _XSQEvent
 } _XQEvent;
 #endif
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 #define NEED_REPLIES		/* for xReply */
 #endif
 
@@ -183,7 +183,7 @@ char *malloc(), *realloc(), *calloc();
  * The following definitions can be used for locking requests in multi-threaded
  * address spaces.
  */
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 /* Author: Stephen Gildea, MIT X Consortium
  *
  * declarations for C Threads locking
@@ -216,12 +216,6 @@ extern void (*_XUnlockMutex_fn)();
 /* used everywhere, so must be fast if not using threads */
 #define LockDisplay(d)	     if ((d)->lock_fns) (*(d)->lock_fns->lock_display)((d),__FILE__,__LINE__)
 #define UnlockDisplay(d)     if ((d)->lock_fns) (*(d)->lock_fns->unlock_display)((d),__FILE__,__LINE__)
-
-extern Status XInitThreads(
-#if NeedFunctionPrototypes
-    void
-#endif
-);
 
 extern void _XLockMutex(
 #if NeedFunctionPrototypes
@@ -260,7 +254,7 @@ extern void _XUnlockDisplay(
 #endif
 );
 
-#else /* MULTI_THREADED */
+#else /* XTHREADS */
 #define LockDisplay(dis)
 #define LockMutex(mutex)
 #define UnlockMutex(mutex)
