@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Fill.c,v 1.1 89/09/14 17:11:12 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,11 +28,14 @@
 #include    "Xmd.h"
 #include    "Xdmcp.h"
 
+/* keep SVR4 compiler from complaining about scope of arg declaration below */
+typedef  struct sockaddr *  netaddrbuf;
+
 int
 XdmcpFill (fd, buffer, from, fromlen)
     int		    fd;
     XdmcpBufferPtr  buffer;
-    struct sockaddr *from;
+    netaddrbuf	    from;
     int		    *fromlen;
 {
     BYTE    *newBuf;
