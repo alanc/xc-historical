@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.100 91/02/05 16:58:35 gildea Exp $ */
+/* $XConsortium: NextEvent.c,v 1.101 91/04/08 17:04:14 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -34,14 +34,13 @@ static TimerEventRec* freeTimerRecs;
 static WorkProcRec* freeWorkRecs;
 
 #ifndef OPEN_MAX
-#ifdef _POSIX_SOURCE
-#include <limits.h>
-#else
+#ifndef NOFILE
+#include <sys/param.h>
+#endif
 #ifdef NOFILE
 #define OPEN_MAX NOFILE
 #endif
-#endif /* _POSIX_SOURCE else */
-#endif /* !OPEN_MAX */
+#endif
 
 /* Some systems running NTP daemons are known to return strange usec
  * values from gettimeofday.  At present (3/90) this has only been
