@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 2.9 88/02/01 08:15:57 swick Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 2.10 88/02/26 18:59:25 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -235,7 +235,7 @@ Scrn scrn;
 {
     Toc toc = scrn->toc;
     MsgList mlist;
-    char *str[MAX_SYSTEM_LEN], *msg;
+    char str[MAX_SYSTEM_LEN], *msg;
     int i, used, len;
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
