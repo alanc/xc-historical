@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.105 89/12/08 13:01:26 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.106 89/12/13 17:11:52 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif /* lint */
 
@@ -939,15 +939,14 @@ static Boolean DecideToDispatch(event)
 		if (IsKeyEvent) dspWidget = FindFocusWidget(widget);
 		else dspWidget = widget;
 
-		/* fetch this first in case the modal list changes */
-		widget = LookupSpringLoaded();
-
 		if ((grabList == NULL || OnGrabList(dspWidget)) &&
 			XtIsSensitive(dspWidget)) {
 		    was_dispatched = DispatchEvent(event, dspWidget, mask);
 		}
 
 		/* Also dispatch to nearest accessible spring_loaded. */
+		/* Fetch this afterward to reflect modal list changes */
+		widget = LookupSpringLoaded();
 		if (widget != NULL && widget != dspWidget) {
 		    was_dispatched |= DispatchEvent(event, widget, mask);
 		}
