@@ -21,9 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: rgb.h,v 1.1 87/06/11 16:46:50 todd Exp $ */
+/* $Header: rgb.h,v 1.1 87/09/11 07:50:22 toddb Exp $ */
 
+#ifndef RGB_H
+#define RGB_H
 typedef struct _RGB {
 	unsigned short red, green, blue;
 	} RGB;
-
+#endif /* RGB_H */
