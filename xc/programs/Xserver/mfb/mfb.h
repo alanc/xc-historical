@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.26 94/01/21 22:01:33 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.28 94/03/06 18:24:15 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -1170,3 +1170,21 @@ than a switch on the rop per item (span or rectangle.)
 	    break; \
 	} \
 }
+
+
+/*  C expression fragments for various operations.  These get passed in
+ *  as -D's on the compile command line.  See mfb/Imakefile.  This
+ *  fixes XBUG 6319.
+ *
+ *  This seems like a good place to point out that mfb's use of the
+ *  words black and white is an unfortunate misnomer.  In mfb code, black
+ *  means zero, and white means one.
+ */
+#define MFB_OPEQ_WHITE  |=
+#define MFB_OPEQ_BLACK  &=~
+#define MFB_OPEQ_INVERT ^=
+#define MFB_EQWHOLEWORD_WHITE   =~0
+#define MFB_EQWHOLEWORD_BLACK   =0
+#define MFB_EQWHOLEWORD_INVERT  ^=~0
+#define MFB_OP_WHITE    /* nothing */
+#define MFB_OP_BLACK    ~
