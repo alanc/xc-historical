@@ -197,7 +197,7 @@ static int Replace(source, startPos, endPos, block)
     for (i = 0; i < block->length; i++)
 	msg->buf[startPos - msg->position + i] = block->ptr[i];
     for (i=0 ; i<toc->numwidgets ; i++)
-	Xt_TextMarkRedraw(toc->widgets[i], startPos, endPos);
+	XtTextInvalidate(toc->widgets[i], startPos, endPos);
     return EditDone;
 }
 
@@ -365,5 +365,5 @@ Toc toc;
     int i;
     SetSelection(toc->source, 1, 0); /* %%% A bit of a hack. */
     for (i=0 ; i<toc->numwidgets ; i++)
-	Xt_TextInvalidate(toc->widgets[i], position, length);
+	XtTextInvalidate(toc->widgets[i], position, position+length-1);
 }
