@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Viewport,v 1.16 94/05/01 19:21:07 gildea Exp $
 .NH 2
 Viewport Widget
 .LP
@@ -150,6 +150,6 @@ the resources dynamically once the widget ID has been obtained with
 .IN "XtNameToWidget" ""
 .NT
 Although the Viewport is a Subclass of the Form, no resources for the Form
-my be supplied for any of the children of the Viewport.  These constraints
-are managed internally, and are not meant for public consumption.
+may be supplied for any of the children of the Viewport.  These constraints
+are managed internally and are not meant for public consumption.
 .NE
