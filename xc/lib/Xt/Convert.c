@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.15 88/09/09 12:57:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.16 88/09/26 08:43:32 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -106,7 +106,7 @@ void _XtTableAddConverter(table,from_type, to_type, converter, convert_args, num
 
     pHashEntry= &table[ProcHash(from_type, to_type) & CONVERTHASHMASK];
     /* ||| Check for existing entry, overwrite if exists */
-    p		    = (ConverterPtr) Xpermalloc(sizeof(ConverterRec));
+    p		    = (ConverterPtr) XtMalloc(sizeof(ConverterRec));
     p->next	    = *pHashEntry;
     *pHashEntry     = p;
     p->from	    = from_type;
