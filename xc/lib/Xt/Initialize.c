@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.90 87/12/04 16:48:42 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.91 87/12/14 15:09:45 rws Locked $";
 #endif lint
 
 /*
@@ -29,7 +29,7 @@ static char rcsid[] = "$Header: Initialize.c,v 1.90 87/12/04 16:48:42 swick Lock
 #ifndef VMS
 #include <pwd.h>
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <sys/param.h>
 #else
 #include stdio
