@@ -16,8 +16,8 @@
 .nr PS 9
 .vs 10
 .nr VS 10
-.EH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
-.OH '\s+2\fBX Protocol\fP''\fBX11, Release 3\fP\s-2'
+.EH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
+.OH '\s+2\fBX Protocol\fP''\fBX11, Release 4\fP\s-2'
 .EF ''\s+2\fB % \fP\s-2''
 .OF ''\s+2\fB % \fP\s-2''
 For convenience, KEYSYM values are viewed as split into four bytes: 
@@ -31,7 +31,7 @@ Byte 3 is the next most-significant 8 bits
 .IP \(bu 5
 Byte 4 is the least-significant 8 bits
 .LP
-There are two special KEYSYM values, NoSymbol and VoidSymbol.
+There are two special KEYSYM values: NoSymbol and VoidSymbol.
 .TS
 l l l l l.
 _
@@ -109,9 +109,8 @@ In the Latin-1 to Latin-4 sets,
 all duplicate glyphs occupy the same code position.
 However, duplicates between Greek and Technical do not occupy the same code
 position.  
-Applications wishing to use the Latin-2, Latin-3, Latin-4, Greek, Cyrillic,
-or Technical sets may find it convenient to use arrays to transform the
-keysyms.
+Applications that wish to use the Latin-2, Latin-3, Latin-4, Greek, Cyrillic,
+or Technical sets may find it convenient to use arrays to transform the keysyms.
 .LP
 There is a difference between European and US usage of the names Pilcrow,
 Paragraph, and Section, as follows:
