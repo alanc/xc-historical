@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.30 90/02/12 17:56:40 keith Exp $
+ * $XConsortium: resource.c,v 1.31 90/03/05 18:57:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -130,24 +130,16 @@ struct dmResources {
 
 # define boffset(f)	((char *) &(((struct display *) 0)->f) - (char *) 0)
 
-struct displayResources {
+struct displayResource {
 	char	*name, *class;
 	int	type;
 	int	offset;
 	char	*default_value;
-} DisplayResources[] = {
-"resources",	"Resources",	DM_STRING,	boffset(resources),
-				"",
-"xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
-				XRDB_PROGRAM,
-"cpp",		"Cpp",		DM_STRING,	boffset(cpp),
-				CPP_PROGRAM,
-"startup",	"Startup",	DM_STRING,	boffset(startup),
-				"",
-"reset",	"Reset",	DM_STRING,	boffset(reset),
-				"",
-"session",	"Session",	DM_STRING,	boffset(session),
-				DEF_SESSION,
+};
+
+/* resources for managing the server */
+
+struct displayResource serverResources[] = {
 "serverAttempts","ServerAttempts",DM_INT,	boffset(serverAttempts),
 				"1",
 "openDelay",	"OpenDelay",	DM_INT,		boffset(openDelay),
@@ -164,6 +156,42 @@ struct displayResources {
 				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
+"grabServer",	"GrabServer",	DM_BOOL,	boffset(grabServer),
+				"true",
+"grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
+				"3",
+"resetSignal",	"Signal",	DM_INT,		boffset(resetSignal),
+				"1",	/* SIGHUP */
+"termSignal",	"Signal",	DM_INT,		boffset(termSignal),
+				"15",	/* SIGTERM */
+"resetForAuth",	"ResetForAuth",	DM_BOOL,	boffset(resetForAuth),
+				"false",
+"authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
+				"true",
+"authName",	"AuthName",	DM_STRING,	boffset(authName),
+				DEF_AUTH_NAME,
+"authFile",	"AuthFile",	DM_STRING,	boffset(clientAuthFile),
+				"",
+};
+
+# define NUM_SERVER_RESOURCES	(sizeof serverResources/\
+				 sizeof serverResources[0])
+
+/* resources which control the session behaviour */
+
+struct displayResource sessionResources[] = {
+"resources",	"Resources",	DM_STRING,	boffset(resources),
+				"",
+"xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
+				XRDB_PROGRAM,
+"cpp",		"Cpp",		DM_STRING,	boffset(cpp),
+				CPP_PROGRAM,
+"startup",	"Startup",	DM_STRING,	boffset(startup),
+				"",
+"reset",	"Reset",	DM_STRING,	boffset(reset),
+				"",
+"session",	"Session",	DM_STRING,	boffset(session),
+				DEF_SESSION,
 "userPath",	"Path",		DM_STRING,	boffset(userPath),
 				DEF_USER_PATH,
 "systemPath",	"Path",		DM_STRING,	boffset(systemPath),
@@ -172,26 +200,12 @@ struct displayResources {
 				DEF_SYSTEM_SHELL,
 "failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
 				DEF_FAILSAFE_CLIENT,
-"grabServer",	"GrabServer",	DM_BOOL,	boffset(grabServer),
-				"true",
-"grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
-				"3",
-"authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
-				"true",
-"authName",	"AuthName",	DM_STRING,	boffset(authName),
-				DEF_AUTH_NAME,
-"authFile",	"AuthFile",	DM_STRING,	boffset(clientAuthFile),
-				"",
-"dontHUPServer","DontHUPServer",DM_BOOL,	boffset(dontHUPServer),
-				"false",
-"resetForAuth",	"ResetForAuth",	DM_BOOL,	boffset(resetForAuth),
-				"false",
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
 				DEF_AUTH_DIR,
 };
 
-# define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
-				 sizeof DisplayResources[0])
+# define NUM_SESSION_RESOURCES	(sizeof sessionResources/\
+				 sizeof sessionResources[0])
 
 XrmDatabase	DmResourceDB;
 
@@ -378,23 +392,36 @@ int	len;
     *dst = '\0';
 }
 
-LoadDisplayResources (d)
-struct display	*d;
+LoadDisplayResources (d, resources, numResources)
+    struct display	    *d;
+    struct displayResource  *resources;
+    int			    numResources;
 {
-	int	i;
-	char	name[1024], class[1024];
-	char	dpyName[512], dpyClass[512];
+    int	i;
+    char	name[1024], class[1024];
+    char	dpyName[512], dpyClass[512];
 
-	CleanUpName (d->name, dpyName, sizeof (dpyName));
-	CleanUpName (d->class ? d->class : d->name, dpyClass, sizeof (dpyClass));
-	for (i = 0; i < NUM_DISPLAY_RESOURCES; i++) {
-		sprintf (name, "DisplayManager.%s.%s", 
-			dpyName, DisplayResources[i].name);
-		sprintf (class, "DisplayManager.%s.%s",
-			dpyClass, DisplayResources[i].class);
-		GetResource (name, class, DisplayResources[i].type,
-			      (char **) (((char *) d) + DisplayResources[i].offset),
-			      DisplayResources[i].default_value);
-	}
+    CleanUpName (d->name, dpyName, sizeof (dpyName));
+    CleanUpName (d->class ? d->class : d->name, dpyClass, sizeof (dpyClass));
+    for (i = 0; i < numResources; i++) {
+	    sprintf (name, "DisplayManager.%s.%s", 
+		    dpyName, resources[i].name);
+	    sprintf (class, "DisplayManager.%s.%s",
+		    dpyClass, resources[i].class);
+	    GetResource (name, class, resources[i].type,
+			  (char **) (((char *) d) + resources[i].offset),
+			  resources[i].default_value);
+    }
 }
 
+LoadServerResources (d)
+    struct display  *d;
+{
+    LoadDisplayResources (d, serverResources, NUM_SERVER_RESOURCES);
+}
+
+LoadSessionResources (d)
+    struct display  *d;
+{
+    LoadDisplayResources (d, sessionResources, NUM_SESSION_RESOURCES);
+}
