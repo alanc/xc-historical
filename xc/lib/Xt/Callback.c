@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.22 89/12/12 20:15:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.23 90/04/04 11:27:30 swick Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -31,10 +31,9 @@ SOFTWARE.
 
 /* exported internal procedures */
 
-extern CallbackStruct* _XtCompileCallbackList();
-extern CallbackList* _XtCallbackList();
-extern void _XtFreeCallbackList();
-extern XtCallbackList _XtGetCallbackList();
+CallbackStruct* _XtCompileCallbackList();
+CallbackList* _XtCallbackList();
+XtCallbackList _XtGetCallbackList();
 
 static String XtNinvalidCallbackList = "invalidCallbackList";
 static String XtNxtAddCallback = "xtAddCallback";
@@ -113,6 +112,22 @@ void _XtAddCallback(widget, callbacks, callback, closure)
     *callbacks = new;
 } /* _XtAddCallback */
 
+void _XtAddCallbackOnce(widget, callbacks, callback, closure)
+    Widget		    widget;
+    register CallbackList   *callbacks;
+    XtCallbackProc	    callback;
+    XtPointer		    closure;
+{
+    for ( ; *callbacks != NULL; callbacks = &(*callbacks)->next) {
+	if ((*callbacks)->widget == widget &&
+	    (*callbacks)->callback == callback &&
+	    (*callbacks)->closure == closure)
+	    return;
+    }
+
+    _XtAddCallback(widget, callbacks, callback, closure);
+} /* _XtAddCallbackOnce */
+
 void XtAddCallback(widget, name, callback, closure)
     Widget	    widget;
     String	    name;
@@ -163,7 +178,7 @@ void XtAddCallbacks(widget, name, xtcallbacks)
     XtFree((char*)add_callbacks);
 } /* XtAddCallbacks */
 
-void RemoveCallback (widget, callbacks, callback, closure)
+void _XtRemoveCallback (widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
@@ -180,7 +195,7 @@ void RemoveCallback (widget, callbacks, callback, closure)
 	    return;
 	}
     }
-} /* RemoveCallback */
+} /* _XtRemoveCallback */
 
 void XtRemoveCallback (widget, name, callback, closure)
     Widget	    widget;
@@ -199,7 +214,7 @@ void XtRemoveCallback (widget, name, callback, closure)
 	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
-    RemoveCallback(widget, callbacks, callback, closure);
+    _XtRemoveCallback(widget, callbacks, callback, closure);
 } /* XtRemoveCallback */
 
 
@@ -221,7 +236,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     }
 
     for (; xtcallbacks->callback != NULL; xtcallbacks++) {
-	RemoveCallback(
+	_XtRemoveCallback(
 	    widget, callbacks, xtcallbacks->callback,
 	    xtcallbacks->closure);
     }
