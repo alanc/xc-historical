@@ -238,6 +238,7 @@ Project.tmpl provides defaults for the following variables:
 	ManSourcePath		common prefix of man page directories
 	ManSuffix		man suffix for programs
 	NeedDefaultDepLibs	boolean for enabling default DEPLIBS
+	NlsDir			directory in which to install nls files
 	PrimaryScreenResolution	resolution of default server screen
 	ProfileLibX		boolean for compiling -p Xlib
 	ProfileLibXArchive	boolean for building libX11_p
