@@ -21,9 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: oscolor.c,v 1.9 87/10/22 11:54:26 rws Locked $ */
+/* $Header: oscolor.c,v 1.10 88/01/02 16:35:03 rws Exp $ */
 #include <dbm.h>
 #include "rgb.h"
+#include "os.h"
+#include <ctype.h>
 
 /* Looks up the color in the database.  Note that we are assuming there
  * is only one database for all the screens.  If you have multiple databases,
@@ -44,13 +46,30 @@ OsLookupColor(screen, name, len, pred, pgreen, pblue)
 {
     datum	dbent;
     RGB		rgb;
+    char	*lowername;
+    register unsigned int i;
+    register char c;
 
     if(!havergb)
 	return(0);
 
-    dbent.dptr = name;
+    /* convert name to lower case */
+    lowername = (char *)ALLOCATE_LOCAL(len);
+    if (!lowername)
+	return(0);
+    for (i=0; i<len; i++)
+    {
+	c = name[i];
+	if (isupper(c))
+	    c = tolower(c);
+	lowername[i] = c;
+    }
+
+    dbent.dptr = lowername;
     dbent.dsize = len;
     dbent = fetch (dbent);
+
+    DEALLOCATE_LOCAL(lowername);
 
     if(dbent.dptr)
     {

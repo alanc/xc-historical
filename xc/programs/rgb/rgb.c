@@ -5,7 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$Header: rgb.c,v 11.2 87/07/20 11:46:36 rws Locked $";
+static char *rcsid_rgb_c = "$Header: rgb.c,v 11.3 87/12/16 18:56:13 rws Exp $";
 #endif
 
 #include <dbm.h>
@@ -17,6 +17,7 @@ static char *rcsid_rgb_c = "$Header: rgb.c,v 11.2 87/07/20 11:46:36 rws Locked $
 #endif /* SYSV */
 #include "rgb.h"
 #include "site.h"
+#include <ctype.h>
 
 main(argc, argv)
     int argc;
@@ -30,6 +31,7 @@ main(argc, argv)
     char name[512];
     int items;
     int lineno;
+    int i, n;
 
     if (argc == 2)
 	dbname = argv[1];
@@ -62,7 +64,12 @@ main(argc, argv)
 	    fflush (stderr);
 	    continue;
 	}
-	key.dsize = strlen (name);
+	n = strlen (name);
+	for (i = 0; i < n; i++) {
+	    if (isupper (name[i]))
+		name[i] = tolower (name[i]);
+	}
+	key.dsize = n;
 	rgb.red = red << 8;
 	rgb.green = green << 8;
 	rgb.blue = blue << 8;
