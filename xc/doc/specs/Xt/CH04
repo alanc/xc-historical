@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.12 94/04/18 18:48:08 rws Exp $
+.\" $XConsortium: CH04,v 1.13 94/04/19 17:31:48 converse Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -634,10 +634,10 @@ typedef struct {
 } SessionShellPart;
 .De
 .KE
+.KS
 The full shell widget instance record definitions are
 .LP
 .IN "ShellWidget" "" "@DEF@"
-.KS
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -880,6 +880,7 @@ XtNargv	XtCArgv	XtRStringArray
 _
 .TE
 .LP
+.KS
 The resource names, classes, and representation types that are specified
 in the
 .PN sessionShellClassRec
@@ -913,7 +914,7 @@ XtNshutdownCommand	XtCShutdownCommand	XtRCommandArgArray
 .sp 6p
 _
 .TE
-
+.KE
 .NH 3
 ShellPart Default Values
 .XS
@@ -1226,6 +1227,7 @@ the WMShell realize and set_values procedures then store the
 .PN \s-1WM_TRANSIENT_FOR\s+1
 property with the value of \fIwindow_group\fP.
 .LP
+.KS
 Transient
 shells have the following additional resource:
 .TS
@@ -1240,6 +1242,7 @@ transient_for	NULL
 .sp 6p
 _
 .TE
+.KE
 .LP
 The realize and set_values procedures of
 TransientShell
@@ -1406,7 +1409,7 @@ the shell initialize and set_values methods check the values of the
 resources.  At that time, if \fIrestart_command\fP is NULL, the value
 of the \fIargv\fP resource will be copied to \fIrestart_command\fP.  
 Whether or not \fIrestart_command\fP was NULL,
-if \*Q\fR-xtsessionID\fP\*U \*Q<\fRsession id\fP>\*U does not
+if \*Q\fR-xtsessionID\fP\*U \*Q\fR<session id>\*U does not
 already appear in the \fIrestart_command\fP, it will be added by the
 initialize and set_values methods at the beginning of the command arguments;
 if the \*Q\fR-xtsessionID\fP\*U argument already appears with an incorrect
