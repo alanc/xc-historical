@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.26 90/07/09 09:53:37 rws Exp $ */
+/* $XConsortium: events.c,v 5.27 90/09/10 14:22:05 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1920,10 +1920,13 @@ RecalculateDeliverableEvents(pWin)
     pChild = pWin;
     while (1)
     {
-	for (others = wOtherClients(pChild); others; others = others->next)
+	if (pChild->optional)
 	{
-	    if (others->mask)
+	    pChild->optional->otherEventMasks = 0;
+	    for (others = wOtherClients(pChild); others; others = others->next)
+	    {
 		pChild->optional->otherEventMasks |= others->mask;
+	    }
 	}
 	pChild->deliverableEvents = pChild->eventMask|
 				    wOtherEventMasks(pChild);
