@@ -171,7 +171,7 @@ static struct legal_mode_struct {	/* only 1 and 8 bits are supported */
     int legal;
 } legal_modes[NUMMODES] = {{1,1},{2,0},{4,0},{8,1},{16,0},{24,0},{32,0}};
 
-static int screen_depth[MAXSCREENS] = {0,0,0,0,0,0};
+static int screen_depth[MAXSCREENS] = {0,0,0};
 
 static struct video_mode_struct{
 	int depth[NUMMODES];
@@ -572,12 +572,12 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 	    (void) close (fd);
 
     	    i = AddScreen(macIIMonoInit, argc, argv);
-    	    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
+    	    pScreenInfo->screens[index]->CloseScreen = macIIMonoCloseScreen;
 	    break;
 
 	case 8:
     	    i = AddScreen(macIIColorInit, argc, argv);
-    	    pScreenInfo->screen[index].CloseScreen = macIIColorCloseScreen;
+    	    pScreenInfo->screens[index]->CloseScreen = macIIColorCloseScreen;
 	    break;
 
 	default:

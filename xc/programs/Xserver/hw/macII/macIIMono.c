@@ -350,7 +350,7 @@ macIIMonoProbe(pScreenInfo, index, fbNum, argc, argv)
      */
     oldNumScreens = pScreenInfo->numScreens;
     i = AddScreen(macIIMonoInit, argc, argv);
-    pScreenInfo->screen[index].CloseScreen = macIIMonoCloseScreen;
+    pScreenInfo->screens[index]->CloseScreen = macIIMonoCloseScreen;
     return (i > oldNumScreens);
 }
 
