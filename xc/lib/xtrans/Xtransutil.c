@@ -70,16 +70,28 @@ Xtransaddr	*addrp;
 	{
 	    *familyp=FamilyInternet;
 	    *addrlenp=len;
+#if defined(CRAY) && defined(OLDTCP)
 	    memcpy(addrp,&saddr.sin_addr,len);
+#else
+	    memcpy(addrp,&saddr.sin_addr.s_addr,len);
+#endif
 	}
 	break;
     }
 #endif /* TCPCONN */
 #if defined(DNETCONN)
     case AF_DECnet:
+    {
+	struct sockaddr_dn saddr;
+
+	memcpy (&saddr, addrp, sizeof (struct sockaddr_dn));
+
 	*familyp=FamilyDECnet;
-	*addrlenp=2;
+	*addrlenp=sizeof(struct dn_naddr);
+	memcpy(addrp,&saddr.sdn_add,*addrlenp);
+
 	break;
+    }
 #endif /* DNETCONN */
 #if defined(UNIXCONN)
     case AF_UNIX:
