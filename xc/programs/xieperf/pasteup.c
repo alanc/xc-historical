@@ -1,4 +1,4 @@
-/* $XConsortium: pasteup.c,v 1.2 93/07/19 14:44:24 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.3 93/07/26 14:35:42 rws Exp $ */
 
 /**** module do_pasteup.c ****/
 /******************************************************************************
@@ -307,6 +307,7 @@ int	height;
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
+	XFree((*flograph)[size].data.PasteUp.tiles);
 	return( 1 );
 }
 
@@ -419,6 +420,7 @@ void DoPasteUp(xp, p, reps)
 		XieFloPasteUp( &flograph[ pasteUpIdx ], width, height, 
 			constant, tiles, NTILES );
 		XieModifyPhotoflo( xp->d, flo, pasteUpIdx + 1, &flograph[pasteUpIdx], 1 );
+		XFree(flograph[pasteUpIdx].data.PasteUp.tiles);
 		XSync( xp->d, 0 );
     	}
 }
