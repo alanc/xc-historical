@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.136 91/02/14 15:42:01 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.137 91/02/17 14:51:56 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1937,7 +1937,10 @@ struct timeval *timeout;
 	else
 		timevalue = -1;
 
-	if ((rc = poll (pfds, (unsigned long)nfds, timevalue)) > 0)
+	do {
+	    rc = poll (pfds, (unsigned long)nfds, timevalue);
+	} while (rc < 0 && errno == EAGAIN);
+	if (rc > 0)
 	{
 		if (!efds)
 			for (i = 0; i < nfds; ++i)
