@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: folder.c,v 2.6 88/09/06 17:23:16 jim Exp $";
+static char rcs_id[] = "$XConsortium: folder.c,v 2.7 89/04/10 11:50:44 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -168,10 +168,7 @@ void CreateFolder(name)
 {
     Toc toc;
     int i, position;
-    static char *extra[] = {
-	"<Btn1Down>(2): open-folder()",
-	NULL
-    };
+
     for (i=0 ; name[i] > ' ' ; i++) ;
     name[i] = 0;
     toc = TocGetNamed(name);
@@ -190,5 +187,5 @@ void CreateFolder(name)
     for (i = 0; i < numScrns; i++)
 	if (scrnList[i]->folderbuttons)
 	    BBoxAddButton(scrnList[i]->folderbuttons, name,
-			  NoOp, position, TRUE, extra);
+			  NoOp, position, TRUE);
 }
