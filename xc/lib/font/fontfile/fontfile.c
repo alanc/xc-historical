@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.24 94/02/15 18:13:12 gildea Exp $
+ * $XConsortium: fontfile.c,v 1.25 94/03/08 15:55:44 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -1077,6 +1077,7 @@ FontFileListNextFontOrAlias(client, fpe, namep, namelenp, resolvedp,
 }
 
 
+extern void FontFileEmptyBitmapSource();
 typedef int (*IntFunc) ();
 static int  font_file_type;
 
@@ -1095,5 +1096,6 @@ FontFileRegisterLocalFpeFunctions ()
 					  (IntFunc) 0,
 					  (IntFunc) 0,
 					  FontFileStartListFontsAndAliases,
-					  FontFileListNextFontOrAlias);
+					  FontFileListNextFontOrAlias,
+					  FontFileEmptyBitmapSource);
 }
