@@ -32,18 +32,18 @@ is optionally passed through the C preprocessor with the
 following symbols defined, based on the capabilities of the server
 being used:
 .TP 8
-.B SERVERHOST=hostname
+.B SERVERHOST=\fIhostname\fP
 the hostname portion of the display to which you are connected.
 .TP 8
 .B SRVR_\fIname\fB
 the SERVERHOST hostname string turned into a legal identifier.
 For example, "my-dpy.lcs.mit.edu" becomes SRVR_my_dpy_lcs_mit_edu.
 .TP 8
-.B HOST=hostname
+.B HOST=\fIhostname\fP
 the same as
 .BR SERVERHOST .
 .TP 8
-.B CLIENTHOST=hostname
+.B CLIENTHOST=\fIhostname\fP
 the name of the host on which
 .I xrdb
 is running.
@@ -52,18 +52,18 @@ is running.
 the CLIENTHOST hostname string turned into a legal identifier.
 For example, "expo.lcs.mit.edu" becomes CLNT_expo_lcs_mit_edu.
 .TP 8
-.B RELEASE=num
+.B RELEASE=\fInum\fP
 the vendor release number for the server.  The interpretation of this
 number will vary depending on VENDOR.
 .TP 8
-.B REVISION=num
+.B REVISION=\fInum\fP
 the X protocol minor version supported by this server (currently 0).
 .TP 8
-.B VERSION=num
+.B VERSION=\fInum\fP
 the X protocol major version supported by this server (should always be 11).
 .TP 8
-.B VENDOR=vendor
-a string specifying the vendor of the server.
+.B VENDOR="\fIvendor\fP"
+a string literal specifying the vendor of the server.
 .TP 8
 .B VNDR_\fIname\fP
 the VENDOR name string turned into a legal identifier.
@@ -74,41 +74,50 @@ A symbol is defined for each protocol extension supported by the server.
 Each extension string name is turned into a legal identifier.
 For example, "X3D-PEX" becomes EXT_X3D_PEX.
 .TP 8
-.B NUM_SCREENS=num
+.B NUM_SCREENS=\fInum\fP
 the total number of screens.
 .TP 8
-.B SCREEN_NUM=num
+.B SCREEN_NUM=\fInum\fP
 the number of the current screen (from zero).
 .TP 8
-.B BITS_PER_RGB=num
+.B BITS_PER_RGB=\fInum\fP
 the number of significant bits in an RGB color specification.  This is the
 log base 2 of the number of distinct shades of each primary that the hardware
 can generate.  Note that it usually is not related to PLANES.
 .TP 8
-.B CLASS=visualclass
+.B CLASS=\fIvisualclass\fP
 one of StaticGray, GrayScale, StaticColor, PseudoColor, TrueColor,
 DirectColor.  This is the visual class of the root window.
+.TP 8
+.B CLASS_\fIvisualclass\fP=\fIvisualid\fP
+the visual class of the root window in a form you can \fI#ifdef\fP on.
+The value is the numeric id of the visual.
 .TP 8
 .B COLOR
 defined only if CLASS is one of StaticColor, PseudoColor, TrueColor, or
 DirectColor.
 .TP 8
-.B HEIGHT=num
+.B CLASS_\fIvisualclass\fP_\fIdepth\fP=\fInum\fP
+A symbol is defined for each visual supported for the screen.
+The symbol includes the class of the visual and its depth;
+the value is the numeric id of the visual.
+.TP 8
+.B HEIGHT=\fInum\fP
 the height of the root window in pixels.
 .TP 8
-.B WIDTH=num
+.B WIDTH=\fInum\fP
 the width of the root window in pixels.
 .TP 8
-.B PLANES=num
+.B PLANES=\fInum\fP
 the number of bit planes (the depth) of the root window.
 .TP 8
-.B X_RESOLUTION=num
+.B X_RESOLUTION=\fInum\fP
 the x resolution of the screen in pixels per meter.
 .TP 8
-.B Y_RESOLUTION=num
+.B Y_RESOLUTION=\fInum\fP
 the y resolution of the screen in pixels per meter.
 .LP
-SRVR_\fIname\fB, CLNT_\fIname\fB, VNDR_\fIname\fP, and EXT_\fIname\fP
+SRVR_\fIname\fP, CLNT_\fIname\fP, VNDR_\fIname\fP, and EXT_\fIname\fP
 identifiers are formed by changing all characters other than letters
 and digits into underscores (_).
 .LP
@@ -140,7 +149,7 @@ This option indicates that operation should be performed on the
 screen-independent resource property (RESOURCE_MANAGER), as well as
 the screen-specific property (SCREEN_RESOURCES) on every screen of the
 display.  For example, when used in conjunction with \fI-query\fP,
-the contents of all properties are output.  For \fI-load\fP, -fI-override\fP
+the contents of all properties are output.  For \fI-load\fP, \fI-override\fP
 and \fI-merge\fP,
 the input file is processed once for each screen.  The resources which occur
 in common in the output for every screen are collected, and these are applied
@@ -238,7 +247,7 @@ to generate a backup file.
 .B \-D\fIname\[=value\]\fP
 This option is passed through to the preprocessor and is used to define 
 symbols for use with conditionals such as
-.I #ifdef.
+.I# ifdef.
 .TP 8
 .B \-U\fIname\fP
 This option is passed through to the preprocessor and is used to remove
