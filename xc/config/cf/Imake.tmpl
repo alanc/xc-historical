@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.9 89/01/18 10:19:33 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.10 89/01/18 11:47:51 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -40,20 +40,29 @@
 #define RtArchitecture
 #endif /* ibm032 */
 
-#ifdef vax
 #ifdef ultrix
-#define MacroIncludeFile "vax-dec.cf"
-#define MacroFile vax-dec.cf
+#ifdef vax
+#define MacroIncludeFile "vaxultrix.cf"
+#define MacroFile vaxultrix.cf
 #undef vax
+#define VaxArchitecture
+#endif
+#ifdef mips
+#define MacroIncludeFile "pmax.cf"
+#define MacroFile pmax.cf
+#undef mips
+#define PMaxArchitecture
+#endif
 #undef ultrix
 #define UltrixArchitecture
-#else
-#define MacroIncludeFile "vax-bsd.cf"
-#define MacroFile vax-bsd.cf
-#undef vax
 #endif
+
+#if defined(vax) && !defined(ultrix)
+#define MacroIncludeFile "vaxbsd.cf"
+#define MacroFile vaxbsd.cf
+#undef vax
 #define VaxArchitecture
-#endif /* vax */
+#endif
 
 #ifdef sun
 #define MacroIncludeFile "sun.cf"
@@ -106,22 +115,20 @@
 #define CrayArchitecture
 #endif /* CRAY */
 
-#ifdef mips
-#ifdef ultrix
-#define MacroIncludeFile "mips-dec.cf"
-#define MacroFile mips-dec.cf
-#undef mips
-#undef ultrix
-#define UltrixArchitecture
-#else
-#if defined(SYSTYPE_SYSV) || defined(SYSTYPE_BSD)
-#define MacroIncludeFile "mips-mips.cf"
-#define MacroFile mips-mips.cf
-#undef mips
+#ifdef sgi
+#define MacroIncludeFile "sgi.cf"
+#define MacroFile sgi.cf
+#undef sgi
+#define SGIArchitecture
 #endif
-#endif
+
+#if defined(mips) && !defined(ultrix) && !defined(sgi)
+#define MacroIncludeFile "umips.cf"
+#define MacroFile umips.cf
+#undef mips
+#undef umips
 #define MipsArchitecture
-#endif /* mips */
+#endif
 
 #ifndef MacroIncludeFile
 /**/# WARNING:  Imake.tmpl not configured; guessing at definitions!!!
