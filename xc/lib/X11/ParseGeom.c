@@ -1,7 +1,7 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $Header: XParseGeom.c,v 11.10 87/07/22 16:32:27 ham Exp $ */
+/* $Header: XParseGeom.c,v 11.10 87/09/11 08:05:25 rws Locked $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
@@ -36,16 +36,28 @@ char *search, *what;
 
 int
 ReadInteger(string, NextString)
-char *string, **NextString;
+register char *string;
+char **NextString;
 {
-    int Result = 0;
+    register int Result = 0;
+    int Sign = 1;
     
-    *NextString = string;
-    for (; (**NextString >= '0') && (**NextString <= '9'); (*NextString)++)
+    if (*string == '+')
+	string++;
+    else if (*string == '-')
     {
-	Result = (Result * 10) + (**NextString - '0');
+	string++;
+	Sign = -1;
     }
-    return (Result);
+    for (; (*string >= '0') && (*string <= '9'); string++)
+    {
+	Result = (Result * 10) + (*string - '0');
+    }
+    *NextString = string;
+    if (Sign >= 0)
+	return (Result);
+    else
+	return (-Result);
 }
 
 int XParseGeometry (string, x, y, width, height)
@@ -81,7 +93,7 @@ unsigned int *width, *height;    /* RETURN */
 		mask |= HeightValue;
 	}
 
-	if (strind == strscan (strind, "+-")) {
+	if ((*strind == '+') || (*strind == '-')) {
 		if (*strind == '-') {
   			strind++;
 			tempX = -ReadInteger(strind, &nextCharacter);
@@ -99,7 +111,7 @@ unsigned int *width, *height;    /* RETURN */
 			strind = nextCharacter;
 		}
 		mask |= XValue;
-		if (strind == strscan (strind, "+-")) {
+		if ((*strind == '+') || (*strind == '-')) {
 			if (*strind == '-') {
 				strind++;
 				tempY = -ReadInteger(strind, &nextCharacter);
