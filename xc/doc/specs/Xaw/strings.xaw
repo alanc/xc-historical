@@ -1,3 +1,4 @@
+.\" $XConsortium$
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
