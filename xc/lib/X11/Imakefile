@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.132 92/06/27 21:53:14 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.133 92/06/28 17:45:35 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -41,6 +41,9 @@ XBSDLIB = /**/
         RPCDEFS = -DSECURE_RPC
 #endif
    CONN_DEFINES = ConnectionFlags
+#if HasBSD44Sockets
+   SOCK_DEFINES = -DBSD44SOCKETS
+#endif
      EDB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
      KDB_DEFINES = -DKEYSYMDB=\"$(LIBDIR)/XKeysymDB\"
      CMS_DEFINES = -DXCMSDB=\"$(LIBDIR)/Xcms.txt\"
@@ -1005,7 +1008,7 @@ LibraryObjectRule()
 
 SpecialCLibObjectRule(XErrDes,$(ICONFIGFILES),$(EDB_DEFINES))
 SpecialCLibObjectRule(XStrKeysym,$(ICONFIGFILES),$(KDB_DEFINES))
-SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES))
+SpecialCLibObjectRule(XConnDis,$(ICONFIGFILES),$(XDMAUTHDEFS) $(RPCDEFS) $(CONN_DEFINES) $(SOCK_DEFINES))
 SpecialCLibObjectRule(XOpenDis,$(ICONFIGFILES),$(BC_DEFINES))
 SpecialCLibObjectRule(Wrap,$(ICONFIGFILES),$(XDMAUTHDEFS))
 SpecialCLibObjectRule(Xstreams,$(ICONFIGFILES),$(CONN_DEFINES))
