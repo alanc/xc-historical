@@ -128,7 +128,7 @@ macIIKbdProc (pKeyboard, what)
     switch (what) {
 	case DEVICE_INIT:
 	    if (pKeyboard != LookupKeyboardDevice()) {
-		ErrorF ("Cannot open non-system keyboard");
+		ErrorF ("Cannot open non-system keyboard. \r\n");
 		return (!Success);
 	    }
 	    if (consoleFd == 0) {
@@ -297,17 +297,19 @@ macIIKbdSetUp(fd, openClose)
 		/*
 		 * Not fatal! Convenience for A/UX 1.1 and later.
 		 */
-		MessageF("Failed to ioctl I_STR CONS_REDIRECT.\r\n");
+		MessageF("Unable to ioctl I_STR CONS_REDIRECT.\r\n");
 	}
 #endif
+
     } else {
 #ifdef CONS_UNDIRECT
 	ctl.ic_len = 0;
 	ctl.ic_cmd = CONS_UNDIRECT;
 	if (ioctl(fd, I_STR, &ctl) < 0) {
-	    MessageF("Failed to ioctl I_STR CONS_UNDIRECT.\r\n");
+		MessageF("Failed to ioctl I_STR CONS_UNDIRECT.\r\n");
 	}
 #endif
+
 	iarg = 0;
 	if (ioctl(fd, FIONBIO, &iarg) < 0) {
 		ErrorF("Could not ioctl FIONBIO. \r\n");

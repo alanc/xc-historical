@@ -89,6 +89,7 @@ static PtrPrivRec 	sysMousePriv = {
     (pointer)&macIIMousePriv,	/* Field private to device */
 };
 
+extern BoxRec     currentLimits;
 /*-
  *-----------------------------------------------------------------------
  * macIIMouseProc --
@@ -274,6 +275,7 @@ macIIMouseProcessEvent(pMouse,me)
     register unsigned char *me;
 {   
     xEvent		xE;
+    GrabPtr     	grab = ((DeviceIntPtr)pMouse)->grab;
     register PtrPrivPtr	pPriv;	/* Private data for pointer */
     register macIIMsPrivPtr pmacIIPriv; /* Private data for mouse */
 
@@ -345,11 +347,48 @@ macIIMouseProcessEvent(pMouse,me)
      */
     xpos = *(me + 2) & 0x7f; /* DELTA: low 7 bits */
     if (xpos & 0x0040) xpos = xpos - 0x0080; /* 2's complement */
+#ifdef notdef
     pPriv->x += MouseAccelerate (pMouse, xpos); /* type mismatch? */
+#else
+{
+    register int  sgn = sign(xpos);
+    register PtrCtrl *pCtrl;
+
+    xpos = abs(xpos);
+    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+
+    if (xpos > pCtrl->threshold) {
+	pPriv->x += ((short) (sgn * (pCtrl->threshold +
+				((xpos - pCtrl->threshold) * pCtrl->num) /
+				pCtrl->den)));
+    } else {
+	pPriv->x += ((short) (sgn * xpos));
+    }
+}
+#endif
    
     ypos = *(me + 1) & 0x7f;
     if (ypos & 0x0040) ypos = ypos - 0x0080;
+#ifdef notdef
     pPriv->y += MouseAccelerate (pMouse, ypos);
+#else
+{
+    register int  sgn = sign(ypos);
+    register PtrCtrl *pCtrl;
+
+    ypos = abs(ypos);
+    pCtrl = &((DeviceIntPtr) pMouse)->u.ptr.ctrl;
+
+    if (ypos > pCtrl->threshold) {
+	pPriv->y += ((short) (sgn * (pCtrl->threshold +
+				((ypos - pCtrl->threshold) * pCtrl->num) /
+				pCtrl->den)));
+    } else {
+	pPriv->y += ((short) (sgn * ypos));
+    }
+}
+#endif
+   
    
     /*
      * Active Zaphod implementation:
@@ -357,7 +396,7 @@ macIIMouseProcessEvent(pMouse,me)
      *    if the x is to the right or the left of
      *    the current screen.
      */
-    if (screenInfo.numScreens > 1 &&
+    if (screenInfo.numScreens > 1 && (!grab || !grab->confineTo) &&
         (pPriv->x > pPriv->pScreen->width ||
          pPriv->x < 0)) {
         macIIRemoveCursor();

@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: macII.h,v 1.11 88/09/06 14:41:59 jim Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -332,4 +332,19 @@ extern long 	autoRepeatDeltaTv;
               }
 #endif USE_TOD_CLOCK
 
+#define LookupPointerDevice()	pPointerDevice
+#define LookupKeyboardDevice()	pKeyboardDevice
+extern DevicePtr pPointerDevice, pKeyboardDevice;
+
+#define stateOfCurrentCursor(pScreen) \
+	(((CrPrivPtr)(currentCursor->devPriv[pScreen->myNum]))->state)
+
+#define pScreenOfCurrentCursor \
+	(((PtrPrivPtr)(LookupPointerDevice()->devicePrivate))->pScreen)
+
+#define macIICursorLoc(pScreen, pBox) \
+	((currentCursor != NullCursor) && \
+	 (pScreenOfCurrentCursor == pScreen) && \
+	 (stateOfCurrentCursor(pScreen) == CR_IN))
+	
 #endif _MACII_H_

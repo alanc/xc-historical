@@ -230,9 +230,11 @@ ProcessInputEvents ()
 	}
 
 	if (KEY_DETAIL(*me) == MOUSE_ESCAPE) { 
+#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
 	    }
+#endif
     	    (* ptrPriv->ProcessEvent) (pPointer,me);
 	    me += 2;
 	    lastType = Ptr;
@@ -240,9 +242,11 @@ ProcessInputEvents ()
 
 	else if (IS_MOUSE_KEY(*me))
         {
+#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
 	    if (lastType == Kbd) {
     		(* kbdPriv->DoneEvents) (pKeyboard);
 	    }
+#endif
     	    (* ptrPriv->ProcessEvent) (pPointer,me);
 	    lastType = Ptr;
 	}
@@ -260,7 +264,9 @@ ProcessInputEvents ()
         }
     }
 
+#ifdef notdef /* macIIKbdDoneEvents is an Noop, called many, many times */
     (* kbdPriv->DoneEvents) (pKeyboard);
+#endif
     (* ptrPriv->DoneEvents) (pPointer, FALSE);
 
     macIIRestoreCursor();
