@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: relnote.mm,v 1.1 92/06/11 15:33:11 rws Exp $
 .de TP
 .sp 1
 .tl \\*(}t
@@ -240,16 +240,16 @@ gives enough information to enable an experienced test suite user,
 execute the \*(xT, and analyse the results produced.
 .P
 You can find the source of the User Guide
-in the file xtest/doc/user_guide.mm on the release media, and in PostScript
-form in file xtest/doc/user_guide.ps.
+in the file xtest/doc/userguide.mm on the release media, and in PostScript
+form in file xtest/doc/userguide.ps.
 .LI
 The Programmers Guide
 gives enough information to enable an experienced programmer 
 familiar with the \*(xW to modify or extend the \*(xT.
 .P
 You can find the source of the Programmers Guide
-in the file xtest/doc/prog_guide.mm on the release media, and in PostScript
-form in file xtest/doc/prog_guide.ps.
+in the file xtest/doc/progguide.mm on the release media, and in PostScript
+form in file xtest/doc/progguide.ps.
 .LE
 .HU "TET Documentation"
 You need only refer to the instructions in the

@@ -12,7 +12,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.3 92/06/11 15:33:44 rws Exp $
+# $XConsortium: Makefile,v 1.4 92/06/12 14:23:08 rws Exp $
 #
 
 # This Makefile can be used to print the documentation for the X test suite.
@@ -40,27 +40,27 @@ TROFF=psroff $(MACROS)
 #LPR=cpr -Bps
 LPR=lpr
 
-all: rel_note.ps user_guide.ps prog_guide.ps paper.ps
+all: relnote.ps userguide.ps progguide.ps paper.ps
 
 printall:	print00 print01 print02
 
-print00:	rel_note.ps
-	cat rel_note.ps | $(LPR)
+print00:	relnote.ps
+	cat relnote.ps | $(LPR)
 
-rel_note.ps:	rel_note.mm
-	$(SOELIM) rel_note.mm | $(TBL) | $(TROFF) >rel_note.ps
+relnote.ps:	relnote.mm
+	$(SOELIM) relnote.mm | $(TBL) | $(TROFF) >relnote.ps
 
-print01:	user_guide.ps
-	cat user_guide.ps | $(LPR)
+print01:	userguide.ps
+	cat userguide.ps | $(LPR)
 
-user_guide.ps:	user_guide.mm
-	$(SOELIM) user_guide.mm | $(TBL) | $(TROFF) >user_guide.ps
+userguide.ps:	userguide.mm
+	$(SOELIM) userguide.mm | $(TBL) | $(TROFF) >userguide.ps
 
-print02:	prog_guide.ps
-	cat prog_guide.ps | $(LPR)
+print02:	progguide.ps
+	cat progguide.ps | $(LPR)
 
-prog_guide.ps:	prog_guide.mm
-	$(SOELIM) prog_guide.mm | $(TBL) | $(TROFF) >prog_guide.ps
+progguide.ps:	progguide.mm
+	$(SOELIM) progguide.mm | $(TBL) | $(TROFF) >progguide.ps
 
 print03:	paper.ps
 	cat paper.ps | $(LPR)
