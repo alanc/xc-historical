@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.67 89/05/18 16:15:42 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.68 89/06/07 13:25:07 swick Exp $";
 #endif /* lint */
 
 
@@ -192,6 +192,7 @@ static void GetgrayGC(lw)
 						lw->core.background_pixel,
 						lw->core.depth);
 
+    lw->label.stipple = values.tile;
     lw->label.gray_GC = XtGetGC((Widget)lw, 
 				(unsigned) GCForeground | GCBackground |
 					   GCFont | GCTile | GCFillStyle,
@@ -367,6 +368,7 @@ static Boolean SetValues(current, request, new)
 
 	XtReleaseGC(new, curlw->label.normal_GC);
 	XtReleaseGC(new, curlw->label.gray_GC);
+	XmuReleaseStippledPixmap( XtScreen(current), curlw->label.stipple );
 	GetnormalGC(newlw);
 	GetgrayGC(newlw);
 	redisplay = True;
@@ -425,6 +427,7 @@ static void Destroy(w)
     XtFree( lw->label.label );
     XtReleaseGC( w, lw->label.normal_GC );
     XtReleaseGC( w, lw->label.gray_GC);
+    XmuReleaseStippledPixmap( XtScreen(w), lw->label.stipple );
 }
 
 
