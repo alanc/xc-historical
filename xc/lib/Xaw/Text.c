@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.34 88/02/26 10:08:26 swick Exp $";
+static char rcsid[] = "$Header: Text.c,v 1.35 88/02/26 12:23:52 swick Exp $";
 #endif
 
 
@@ -2470,12 +2470,15 @@ static void InsertFile(w, event)
 	XtSetArg( args[0], XtNlabel, DIALOG_LABEL );
 	XtSetArg( args[1], XtNvalue, ptr ); 
 	dialog->widget =
-	    XtCreateManagedWidget(NULL, dialogWidgetClass, popup, args, TWO);
+	    XtCreateManagedWidget("fileInsert", dialogWidgetClass, popup,
+				  args, TWO);
 
+	XtSetKeyboardFocus( dialog->widget,
+			    XtNameToWidget( dialog->widget, "value" ));
 	callbacks[0].callback = _XtTextAbortDialog;
 	callbacks[0].closure = (caddr_t)dialog;
 	XtSetArg( args[0], XtNcallback, callbacks );
-	XtCreateManagedWidget( "Abort", commandWidgetClass, dialog->widget,
+	XtCreateManagedWidget( "Cancel", commandWidgetClass, dialog->widget,
 			       args, ONE );
 
 	callbacks[0].callback = DoInsert;
