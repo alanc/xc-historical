@@ -11,8 +11,8 @@
 
 #define HasVoidSignalReturn YES
 
-/**/# platform:  $XConsortium: sony.cf,v 1.4 89/12/17 17:54:46 rws Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: sony.cf,v 1.5 90/08/21 13:59:12 rws Exp $
+XCOMM operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *

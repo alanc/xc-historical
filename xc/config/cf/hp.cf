@@ -32,8 +32,8 @@
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.24 89/12/10 11:57:02 rws Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: hp.cf,v 1.25 90/08/22 09:25:25 rws Exp $
+XCOMM operating system:  OSName
 
 /*
  ****************************************************************************

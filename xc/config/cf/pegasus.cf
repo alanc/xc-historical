@@ -32,8 +32,8 @@
 #define XtekServer Xtek
 
 
-/**/# platform:  $XConsortium: pegasus.cf,v 1.12 89/12/22 15:51:09 rws Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.13 89/12/26 10:16:48 rws Exp $
+XCOMM operating system:  OSName
 
 /*
  * platform-specific definitions 

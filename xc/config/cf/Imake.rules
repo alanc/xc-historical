@@ -1,6 +1,6 @@
-/**/###########################################################################
-/**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.73 90/08/22 13:47:48 converse Exp $
+XCOMM -------------------------------------------------------------------------
+XCOMM Imake rules for building libraries, programs, scripts, and data files
+XCOMM rules:  $XConsortium: Imake.rules,v 1.74 90/11/30 10:36:32 keith Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -118,10 +118,10 @@
 #if HasSaberC
 #define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs)	@@\
 Concat(saber_,program):							@@\
-	#load $(ALLDEFINES) srclist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs @@\
+	XCOMM load $(ALLDEFINES) srclist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs @@\
 									@@\
 Concat(osaber_,program):						@@\
-	#load $(ALLDEFINES) objlist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs
+	XCOMM load $(ALLDEFINES) objlist locallibs $(SYS_LIBRARIES) $(EXTRA_LIBRARIES) syslibs
 
 #else
 #define SaberProgramTarget(program,srclist,objlist,locallibs,syslibs) /**/
@@ -557,7 +557,7 @@ depend::								@@\
 #ifndef CleanTarget
 #define	CleanTarget()							@@\
 clean::									@@\
-	$(RM_CMD) \#*
+	$(RM_CMD) "#"*
 #endif /* CleanTarget */
 
 

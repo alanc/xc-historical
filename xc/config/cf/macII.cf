@@ -36,8 +36,8 @@
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: macII.cf,v 1.17 89/12/26 10:16:32 rws Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: macII.cf,v 1.18 90/01/08 11:51:46 jim Exp $
+XCOMM operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specfic parameters                        *

@@ -5,9 +5,15 @@
  * full build (make World) at the top of the sources....
  */
 #define SunOSPlatform     YES		/* set to NO if not running SunOS */
+#ifdef mc68000
 #define OSName            SunOS 4.0.3
 #define OSMajorVersion    4
 #define OSMinorVersion    0
+#else
+#define OSName            SunOS 4.1
+#define OSMajorVersion    4
+#define OSMinorVersion    1
+#endif
 #define HasSaberC	  YES		/* for machines that have it */
 #define HasNdbm		  YES
 #define XsunServer Xsun
@@ -65,8 +71,8 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.38 89/12/23 16:10:10 jim Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: sun.cf,v 1.39 89/12/26 10:15:54 rws Exp $
+XCOMM operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */

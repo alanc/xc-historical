@@ -23,8 +23,8 @@
 #define HasVoidSignalReturn NO
 
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.20 90/02/22 11:00:53 keith Exp $
-/**/# operating system:  OSName
+XCOMM platform:  $XConsortium: apollo.cf,v 1.21 90/03/12 08:54:40 rws Exp $
+XCOMM operating system:  OSName
 
 /*****************************************************************************
  *			  Platform-specific parameters                       *
