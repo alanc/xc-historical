@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.5 89/08/11 13:30:15 converse Exp $
+ * $XConsortium: xcalc.c,v 1.6 89/08/11 13:46:16 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -105,8 +105,6 @@ void main(argc, argv)
     extern void fperr();
 #endif
     void create_calculator();
-    void create_display();
-    void create_keypad();
     void Quit(), Syntax();
 
 
@@ -154,6 +152,9 @@ void main(argc, argv)
 void create_calculator(shell)
     Widget	shell;
 {
+    void create_display();
+    void create_keypad();
+
     rpn = App_Resources.rpn;
     calculator = XtCreateManagedWidget(rpn ? "hp" : "ti", formWidgetClass,
 				       shell, (ArgList) NULL, ZERO);
