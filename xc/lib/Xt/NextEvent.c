@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.64 89/06/30 15:06:41 swick Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.65 89/09/12 16:48:19 swick Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -578,15 +578,15 @@ static void _RefreshMapping(event)
 {
     XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
     if (pd != NULL) {
-	XtFree((char *) pd->keysyms);
-	pd->keysyms = NULL;
-	XtFree((char *) pd->modKeysyms);
-	pd->modKeysyms = NULL;
-	XtFree((char *) pd->modsToKeysyms);
-	pd->modsToKeysyms = NULL;
-	_XtBuildKeysymTable(event->xmapping.display,pd);
-	pd ->modsToKeysyms =_XtBuildModsToKeysymTable(
-	    event->xmapping.display,pd);
+	/* %%% bad abstraction boundary here; should be a callback */
+	XtFree( (XtPointer)pd->keysyms );	pd->keysyms = NULL;
+	XtFree( (XtPointer)pd->modKeysyms);	pd->modKeysyms = NULL;
+	XtFree( (XtPointer)pd->modsToKeysyms);	pd->modsToKeysyms = NULL;
+	_XtBuildKeysymTable( event->xmapping.display, pd );
+	pd->modsToKeysyms =
+	    _XtBuildModsToKeysymTable( event->xmapping.display, pd );
+	if (pd->mapping_callbacks != NULL)
+	    _XtCallCallbacks( &pd->mapping_callbacks, (XtPointer)event );
     }
     XRefreshKeyboardMapping(event);
 }
@@ -706,7 +706,7 @@ void XtAppProcessEvent(app, mask)
 		XNextEvent(app->list[d], &event);
 		app->last = d;
 		if (event.xany.type == MappingNotify) {
-		    XRefreshKeyboardMapping(&event);
+		    _RefreshMapping(&event);
 		}
 		XtDispatchEvent(&event);
 		return;
