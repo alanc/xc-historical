@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.22 88/02/20 15:28:11 swick Exp $
+ * $Header: Tekproc.c,v 1.23 88/02/22 09:04:04 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.22 88/02/20 15:28:11 swick Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.23 88/02/22 09:04:04 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1324,7 +1324,7 @@ static void TekRealize (gw, valuemaskp, values)
 	strcpy(tek_icon_name, icon_name);
 	strcat(tek_icon_name, "(Tek)");
 	tek_title = XtMalloc(strlen(title)+7);
-	strcpy(title, tek_title);
+	strcpy(tek_title, title);
 	strcat(tek_title, "(Tek)");
 	args[0].value = (XtArgVal)tek_icon_name;
 	args[1].value = (XtArgVal)tek_title;
