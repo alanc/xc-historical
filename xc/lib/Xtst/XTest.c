@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.1 92/01/25 16:32:14 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -125,7 +125,7 @@ XTestCompareCursorWithWindow(dpy, window, cursor)
 }
 
 Bool
-XTestCompareCurrrentCursorWithWindow(dpy, window)
+XTestCompareCurrentCursorWithWindow(dpy, window)
     Display *dpy;
     Window window;
 {
