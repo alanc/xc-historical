@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.149 90/06/01 16:41:02 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.150 90/06/13 14:44:17 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -60,6 +60,13 @@ extern char* sys_errlist[];
 
 #define BIGNUM ((Dimension)32023)
 #define MULTI_CLICK_TIME 500L
+
+/*
+ * Compute a the maximum length of a cut buffer that we can pass at any
+ * time.  The 64 allows for the overhead of the Change Property request.
+ */
+
+#define MAX_CUT_LEN(dpy)  (XMaxRequestSize(dpy) - 64)
 
 #define IsValidLine(ctx, num) ( ((num) == 0) || \
 			        ((ctx)->text.lt.info[(num)].position != 0) )
@@ -670,7 +677,7 @@ XawTextPosition left, right;
 {
   register unsigned char *s;
   register unsigned char c;
-  register int i, j, n;
+  register long i, j, n;
 
   s = (unsigned char *)_XawTextGetText(ctx, left, right);
   /* only HT and NL control chars are allowed, strip out others */
@@ -1669,13 +1676,28 @@ Cardinal count;
  */
 
       if ((buffer = GetCutBufferNumber(selection)) != NOT_A_CUT_BUFFER) {
-	char *ptr;
-	ptr = _XawTextGetSTRING(ctx, ctx->text.s.left, ctx->text.s.right);
+	unsigned char *ptr, *tptr;
+	unsigned int amount, max_len = MAX_CUT_LEN(XtDisplay(w));
+	unsigned long len;
+
+	tptr= ptr= (unsigned char *) _XawTextGetSTRING(ctx, ctx->text.s.left, 
+						       ctx->text.s.right);
 	if (buffer == 0) {
 	  _CreateCutBuffers(XtDisplay(w));
 	  XRotateBuffers(XtDisplay(w), 1);
 	}
-	XStoreBuffer(XtDisplay(w), ptr, Min(strlen(ptr), MAXCUT), buffer);
+	amount = Min ( (len = strlen(ptr)), max_len);
+	XChangeProperty(XtDisplay(w), RootWindow(XtDisplay(w), 0), selection, 
+			XA_STRING, 8, PropModeReplace, ptr, amount);
+
+	while (len > max_len) {
+	    len -= max_len;
+	    tptr += max_len;
+	    amount = Min (len, max_len);
+	    XChangeProperty(XtDisplay(w), RootWindow(XtDisplay(w), 0), 
+			    selection, XA_STRING, 8, PropModeAppend, 
+			    tptr, amount);
+	}
 	XtFree (ptr);
       }
       else			/* This is a real selection. */
