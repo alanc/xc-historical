@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xextinit.c,v 1.3 89/11/07 19:40:40 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.4 89/11/08 17:29:24 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -92,6 +92,10 @@ Mask	DeviceFocusChangeMask;
 Mask	DeviceStateNotifyMask;
 Mask	ChangeDeviceNotifyMask;
 Mask	DeviceMappingNotifyMask;
+Mask	DeviceOwnerGrabButtonMask;
+Mask	DeviceButtonGrabMask;
+Mask	DeviceButton1Mask;
+Mask	DeviceButtonMotionMask;
 
 int	DeviceValuator;
 int	DeviceKeyPress;
@@ -560,7 +564,9 @@ FixExtensionEvents (extEntry)
     {
     Mask		mask, GetNextExtEventMask();
     void		SetMaskForExtEvent();
+    void		SetEventInfo();
     void		AllowPropagateSuppress();
+    void		SetExclusiveAccess();
 
     DeviceValuator  	    = extEntry->eventBase;
     DeviceKeyPress   	    = DeviceValuator + 1;
@@ -632,6 +638,24 @@ FixExtensionEvents (extEntry)
     mask = GetNextExtEventMask ();
     SetMaskForExtEvent (mask, ChangeDeviceNotify);
     ChangeDeviceNotifyMask = mask;
+
+    DevicePointerMotionHintMask = GetNextExtEventMask();
+    SetEventInfo (DevicePointerMotionHintMask, _devicePointerMotionHint);
+    DeviceButton1Mask = GetNextExtEventMask();
+    SetEventInfo (DeviceButton1Mask, _deviceButton1Motion);
+    SetEventInfo (GetNextExtEventMask(), _deviceButton2Motion);
+    SetEventInfo (GetNextExtEventMask(), _deviceButton3Motion);
+    SetEventInfo (GetNextExtEventMask(), _deviceButton4Motion);
+    SetEventInfo (GetNextExtEventMask(), _deviceButton5Motion);
+    DeviceButtonMotionMask = GetNextExtEventMask();
+    SetEventInfo (DeviceButtonMotionMask, _deviceButtonMotion);
+
+    DeviceButtonGrabMask = GetNextExtEventMask();
+    SetEventInfo (DeviceButtonGrabMask, _deviceButtonGrab);
+    SetExclusiveAccess (DeviceButtonGrabMask);
+
+    DeviceOwnerGrabButtonMask = GetNextExtEventMask();
+    SetEventInfo (DeviceOwnerGrabButtonMask, _deviceOwnerGrabButton);
     }
 
 /************************************************************************
@@ -649,7 +673,8 @@ RestoreExtensionEvents ()
 
     for (i=0; i<ExtEventIndex-1; i++)
 	{
-        SetMaskForEvent(0,EventInfo[i].type);
+	if ((EventInfo[i].type >= LASTEvent) && (EventInfo[i].type < 128))
+	    SetMaskForEvent(0,EventInfo[i].type);
         EventInfo[i].mask = 0;
         EventInfo[i].type = 0;
 	}
@@ -844,5 +869,27 @@ SetMaskForExtEvent(mask, event)
     if ((event < LASTEvent) || (event >= 128))
 	FatalError("MaskForExtensionEvent: bogus event number");
     SetMaskForEvent(mask,event);
+    }
+
+/**************************************************************************
+ *
+ * Record an event mask where there is no unique corresponding event type.
+ * We can't call SetMaskForEvent, since that would clobber the existing
+ * mask for that event.  MotionHint and ButtonMotion are examples.
+ *
+ * Since extension event types will never be less than 64, we can use
+ * 0-63 in the EventInfo array as the "type" to be used to look up this
+ * mask.  This means that the corresponding macros such as 
+ * DevicePointerMotionHint must have access to the same constants.
+ *
+ */
+
+void
+SetEventInfo(mask, constant)
+    Mask mask;
+    int constant;
+    {
+    EventInfo[ExtEventIndex].mask = mask;
+    EventInfo[ExtEventIndex++].type = constant;
     }
 #endif /* XINPUT */

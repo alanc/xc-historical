@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.4 89/11/21 13:25:25 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.5 89/11/21 13:28:14 rws Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -42,11 +42,14 @@ SOFTWARE.
 #include "miscstruct.h"
 #include "region.h"
 
+#define WID(w) ((w) ? ((w)->drawable.id) : 0)
 #define AllModifiersMask ( \
 	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
 	Mod3Mask | Mod4Mask | Mod5Mask )
 #define AllButtonsMask ( \
 	Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask )
+#define Motion_Filter(class) (DevicePointerMotionMask | \
+			      (class)->state | (class)->motionMask)
 
 void 			ActivateKeyboardGrab();
 void 			DeactivateKeyboardGrab();
@@ -57,9 +60,12 @@ extern int		DeviceButtonPress;
 extern int		DeviceValuator;
 extern Mask 		DevicePointerMotionMask;
 extern Mask 		DeviceMappingNotifyMask;
+extern Mask 		DeviceButton1Mask;
+extern Mask 		DeviceButtonMotionMask;
+extern Mask 		DeviceButtonGrabMask;
+extern Mask 		DeviceOwnerGrabButtonMask;
 extern WindowPtr 	GetSpriteWindow();
 extern InputInfo	inputInfo;
-#define DMotion_Filter(state,id) (DevicePointerMotionMask)
 
 /**************************************************************************
  *
@@ -132,6 +138,8 @@ ProcessOtherEvent (xE, other, count)
 		}
 	    return;
 	    }
+	if (other->valuator)
+	    other->valuator->motionHintWindow = NullWindow;
 	*kptr |= bit;
 	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
@@ -151,6 +159,8 @@ ProcessOtherEvent (xE, other, count)
         kptr = &k->down[key >> 3];
 	if (!(*kptr & bit)) /* guard against duplicates */
 	    return;
+	if (other->valuator)
+	    other->valuator->motionHintWindow = NullWindow;
 	*kptr &= ~bit;
 	for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
 	    {
@@ -179,25 +189,37 @@ ProcessOtherEvent (xE, other, count)
     else if (xE->type == DeviceButtonPress)
 	{
         kptr = &b->down[key >> 3];
+	*kptr |= bit;
+	if (other->valuator)
+	    other->valuator->motionHintWindow = NullWindow;
 	b->buttonsDown++;
+	b->motionMask = DeviceButtonMotionMask;
 	xE->detail = b->map[key];
+	if (xE->detail == 0)
+	     return;
 	if (xE->detail <= 5)
-	    b->state |= k->modifierMap[xE->detail];
-	SetMaskForEvent(DMotion_Filter(b->state, other->id),DeviceMotionNotify);
+	    b->state |= (DeviceButton1Mask >> 1) << xE->detail;
+	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
 	if (!grab)
 	    if (CheckDeviceGrabs(other, xE, 0, count))
 		return;
+
 	}
     else if (xE->type == DeviceButtonRelease)
 	{
         kptr = &b->down[key >> 3];
-	b->buttonsDown--;
+	*kptr &= ~bit;
+	if (other->valuator)
+	    other->valuator->motionHintWindow = NullWindow;
+	if (!--b->buttonsDown)
+		b->motionMask = 0;
 	xE->detail = b->map[key];
+	if (xE->detail == 0)
+	    return;
 	if (xE->detail <= 5)
-	    b->state &= ~k->modifierMap[xE->detail];
-	SetMaskForEvent(DMotion_Filter(b->state, other->id),DeviceMotionNotify);
-	if ((!(b->state & AllButtonsMask)) &&
-	    (other->fromPassiveGrab))
+	    b->state &= ~((DeviceButton1Mask >> 1) << xE->detail);
+	SetMaskForEvent(Motion_Filter(b),DeviceMotionNotify);
+	if (!b->state && other->fromPassiveGrab)
 	    deactivateDeviceGrab = TRUE;
 	}
 
@@ -995,4 +1017,103 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
 	    FreeResource(ic->resource, RT_NONE);
 	    }
     }
+
+int
+MaybeSendDeviceMotionNotifyHint (pEvents, mask)
+    deviceKeyButtonPointer *pEvents;
+    Mask mask;
+    {
+    DeviceIntPtr dev;
+    DeviceIntPtr LookupDeviceIntRec ();
+
+    dev = LookupDeviceIntRec (pEvents->deviceid & DEVICE_BITS);
+    if (pEvents->type == DeviceMotionNotify)
+	{
+	if (mask & DevicePointerMotionHintMask)
+	    {
+	    if (WID(dev->valuator->motionHintWindow) == pEvents->event)
+		{
+		return 1; /* don't send, but pretend we did */
+		}
+	    pEvents->detail = NotifyHint;
+	    }
+	 else
+	    {
+	    pEvents->detail = NotifyNormal;
+	    }
+	}
+    return (0);
+    }
+
+int
+CheckDeviceGrabAndHintWindow (pWin, type, xE, grab, client, deliveryMask)
+    WindowPtr pWin;
+    int type;
+    deviceKeyButtonPointer *xE;
+    GrabPtr grab;
+    ClientPtr client;
+    Mask deliveryMask;
+    {
+    DeviceIntPtr dev;
+    DeviceIntPtr LookupDeviceIntRec ();
+
+    dev = LookupDeviceIntRec (xE->deviceid & DEVICE_BITS);
+    if (type == DeviceMotionNotify)
+	dev->valuator->motionHintWindow = pWin;
+    else if ((type == DeviceButtonPress) && (!grab) && 
+	(deliveryMask & DeviceButtonGrabMask))
+        {
+	GrabRec tempGrab;
+
+	tempGrab.device = dev;
+	tempGrab.resource = client->clientAsMask;
+	tempGrab.window = pWin;
+	tempGrab.ownerEvents = (deliveryMask & DeviceOwnerGrabButtonMask) ? TRUE : FALSE;
+	tempGrab.eventMask = deliveryMask;
+	tempGrab.keyboardMode = GrabModeAsync;
+	tempGrab.pointerMode = GrabModeAsync;
+	tempGrab.confineTo = NullWindow;
+	tempGrab.cursor = NullCursor;
+	(*dev->ActivateGrab)(dev, &tempGrab, currentTime, TRUE);
+        }
+    }
+
+Mask
+DeviceEventMaskForClient(dev, pWin, client)
+    DeviceIntPtr	dev;
+    WindowPtr		pWin;
+    ClientPtr		client;
+    {
+    register InputClientsPtr other, prev;
+
+    if (!wOtherInputMasks(pWin))
+	return 0;
+    for (other = wOtherInputMasks(pWin)->inputClients; other; 
+	other = other->next)
+	{
+	if (SameClient(other, client))
+	    return other->mask[dev->id];
+	}
+    return 0;
+    }
+
+void
+MaybeStopDeviceHint(dev, client)
+    register DeviceIntPtr dev;
+    ClientPtr client;
+{
+    WindowPtr pWin;
+    GrabPtr grab = dev->grab;
+    pWin = dev->valuator->motionHintWindow;
+
+    if ((grab && SameClient(grab, client) &&
+	 ((grab->eventMask & DevicePointerMotionHintMask) ||
+	  (grab->ownerEvents &&
+	   (DeviceEventMaskForClient(dev, pWin, client) &
+	    DevicePointerMotionHintMask)))) ||
+	(!grab &&
+	 (DeviceEventMaskForClient(dev, pWin, client) &
+	  DevicePointerMotionHintMask)))
+	dev->valuator->motionHintWindow = NullWindow;
+}
 #endif /* XINPUT */
