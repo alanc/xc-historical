@@ -153,26 +153,18 @@ coordinates, and the \fIz\fP-coordinate is always assumed to be zero.
 .ta
 .DE
 ..
-.mc *
-.mc
 .nr LL 6.5i
 .nr PD 0.1i
 .nr HM 1.2i
 .nr FM 1.0i
 .nr PO 1.0i
 .nh
-.mc |
 .DA "PEX Version 5.1, 31-August-1992"
-.mc
 .EH ''-%-''
 .OH ''-%-''
-.mc |
 .nr % 1
-.mc
 .AC "Acknowledgements" 1
-.mc |
 .nh
-.mc
 .LP
 .RU
 .LP
@@ -189,7 +181,6 @@ Randi J. Rost, Jeffrey Friedberg, Jeffrey S. Saltz, Pete Nishimoto, and
 William H. Clifford, Jr., all of Digital Equipment Corporation.  They
 provided a head start for this major undertaking.
 .LP
-.mc |
 We owe a major debt to the PEX architecture team which met frequently
 between June, 1987 and August, 1991 to argue and debate issues.  Members 
 of the PEX Architecture Team: 
@@ -199,7 +190,6 @@ Dave Gorgen, Tom Gross, and Jeff Stevenson of Hewlett-Packard Company;
 David Plunkett of Solbourne Computer;
 Jan Hardenbergh of Stardent Computer, Inc.;
 and Marty Hess, and Jim Van Loo of Sun Microsystems.
-.mc
 .LP
 Our sincerest thanks are also extended to Bertram Herzog of the University
 of Michigan, who served as chairman of the X3D organization and was
@@ -230,26 +220,20 @@ the X Consortium also contributed to meetings and to technical discussions.
 To Randi Rost, the first PEX Document Editor, go the thanks of all, for
 translating all the decisions into the written word.
 Sally Barry and Jeff Friedberg are gratefully acknowledged for providing
-.mc |
 thorough and painstaking review of many intermediate drafts of 
 these early PEX documents.
 Sally Barry, document editor for PEX 5.0, gratefully acknowledges the
-.mc
 invaluable assistance and encouragement of Jeff Friedberg, Jan Hardenbergh,
-.mc |
 and Randi Rost, during the production of the PEX 5.0 specifications. 
 Paula Womack, document editor for PEX 5.1, acknowledges Ken
 Garnett of Shographics, for his thorough and timely review of the
 protocol specification. 
 .LP
 In addition the careful review by the
-.mc
 PEX teams at all the various companies that are working on PEX implementations
 has greatly helped the accuracy and precision of this document.
 .LP
-.mc |
 Thanks also to the individuals that worked on the X11, PHIGS, and PHIGS-PLUS
-.mc
 specification documents, from which some PEX descriptions were obtained.
 .LP
 Finally, we acknowledge the contributions of all of the other participants
@@ -261,7 +245,6 @@ will be a useful and long-lived extension to the X Window System.
 .LP
 .RU
 .LP
-.mc |
 .AC "Request Processing" 2
 .LP
 Workstation regeneration and requests which process output commands
@@ -271,7 +254,6 @@ guaranteed for each individual output command primitive, excluding
 Execute Structure, GSE, GDP 3D, and GDP 2D.  Also, requests and output 
 commands will be executed in sequential order for a given connection.
 
-.mc
 .AC "Protocol Format" 2
 .LP
 All PEX\(dg protocol formats are based on the formats specified by the 
@@ -510,9 +492,7 @@ ASF_SPECIFIER			: [enables, asfs : BITMASK]
 ASF_VALUE			: {\fIBundled, Individual\fP}
 ATEXT_STYLE			: ENUM_TYPE_INDEX (used with \fIATextStyle\fP enumerated type)
 BITMASK				: CARD32
-.mc |
 BITMASK_SHORT		: CARD16
-.mc
 BOOLEAN				: {\fIFalse, True\fP}
 BUFFER_MODE			: {\fISingle, Double\fP}
 CARD8				: unsigned 8-bit integer
@@ -533,18 +513,14 @@ CONTOUR				: {\fIDisjoint, Nested, Intersecting, Unknown\fP}
 COORD				: {COORD_2D, COORD_3D, COORD_4D}
 COORD_2D			: [x, y : FLOAT]
 COORD_3D			: [x, y, z : FLOAT] 
-.mc |
 COORD_4D			: [wx, wy, wz, w : FLOAT]
-.mc
 COORD_TYPE			: {\fIRational, NonRational\fP}
 CULL_MODE			: {\fINone, BackFaces, FrontFaces\fP}
 CURVE_APPROX		: [approx_method : CURVE_APPROX_METHOD,
 						tolerance : FLOAT]
 CURVE_APPROX_METHOD : ENUM_TYPE_INDEX (used with \fICurveApproxMethod\fP enumerated type)
-.mc |
 DC_HIT_BOX_DATA		: [pick_position: DEVICE_COORD_2D,
 						pick_distance: FLOAT]
-.mc
 DEVICE_COORD		: [x, y : INT16, z : FLOAT]
 DEVICE_COORD_2D		: [x, y : INT16]
 DEVICE_RECT			: [xmin, ymin, xmax, ymax : INT16]
@@ -557,9 +533,7 @@ DISPLAY_STATE		: {\fINotEmpty, Empty\fP}
 DISPLAY_UPDATE		: ENUM_TYPE_INDEX (used with \fIDisplayUpdateMode\fP enumerated type)
 DRAWABLE_ID			: {WINDOW_ID, PIXMAP_ID}
 DYNAMIC_TYPE		: {\fIIMM, IRG, CBS\fP}
-.mc |
 ECHO_MODE			: {\fINoEcho, Echo, Unecho\fP}
-.mc
 EDGE				: OPT_SWITCH
 EDIT_MODE			: {\fIStructureInsert, StructureReplace\fP}
 ELEMENT_INFO		: [type : ELEMENT_TYPE,
@@ -570,9 +544,7 @@ ELEMENT_RANGE		: [position1, position2 : ELEMENT_POS]
 ELEMENT_REF			: [structure_id : STRUCTURE_ID,
 						offset : CARD32]
 ELEMENT_TYPE		: CARD16
-.mc |
 ENUM_TYPE			:{\fIMarkerType, ATextStyle, InteriorStyle, HatchStyle, 
-.mc
 						LineType, SurfaceEdgeType, PickDeviceType,
 						PolylineInterpMethod, CurveApproxMethod, ReflectionModel,
 						SurfaceInterpMethod, SurfaceApproxMethod,
@@ -580,10 +552,8 @@ ENUM_TYPE			:{\fIMarkerType, ATextStyle, InteriorStyle, HatchStyle,
 						FloatFormat, HLHSRMode, PromptEchoType,
 						DisplayUpdateMode, ColorApproxType, ColorApproxModel,
 						GDP, GDP3, GSE, TrimCurveApproxMethod,
-.mc |
 						RenderingColorModel, ParametricSurfaceCharacteristics,
 						Escape, PickOneMethod, PickAllMethod\fP}
-.mc
 
 ENUM_TYPE_INDEX		: INT16
 EXTENT_INFO			: [lower_left : COORD_2D,
@@ -613,9 +583,7 @@ LIGHT_TYPE			: ENUM_TYPE_INDEX (used with \fILightType\fP enumerated type)
 LINE_TYPE			: ENUM_TYPE_INDEX (used with \fILineType\fP enumerated type)
 LOOKUP_TABLE_ID		: RESOURCE_ID
 MARKER_TYPE			: ENUM_TYPE_INDEX (used with \fIMarkerType\fP enumerated type)
-.mc |
 MATCH_DRAW_TYPE	:{\fIDontCare, Window, Pixmap, Buffer\fP}
-.mc
 MATRIX				: FLOAT[4][4]\(dd
 MATRIX_3X3			: FLOAT[3][3]\(dd
 .FS
@@ -663,24 +631,18 @@ PC_BITMASK			: CARD32[3]
 PEX_FONT_ID			: RESOURCE_ID
 PHIGS_WKS_ID			: RESOURCE_ID
 PIPELINE_CONTEXT_ID	: RESOURCE_ID
-.mc |
 PICK_ALL_METHOD		: ENUM_TYPE_INDEX (used with \fIPickAllMethod\fP enumerated type)
 PICK_ALL_STATE		: {MoreHits, NoMoreHits, MayBeMoreHits}
 PICK_DATA			: {DC_HIT_BOX_DATA, NPC_SUBVOLUME}
-.mc
 PICK_DEVICE_TYPE		: ENUM_TYPE_INDEX (used with \fIPickDeviceType\fP enumerated type)
-.mc *
-.mc
 PICK_ELEMENT_REF		: [s_id : STRUCTURE_ID,
 						offset : CARD32,
 						pickid : CARD32]
-.mc |
 PICK_MEASURE_ID		: RESOURCE_ID
 PICK_ONE_METHOD		: ENUM_TYPE_INDEX (used with \fIPickOneMethod\fP enumerated type)
 PICK_RECORD			: [pick_type: PICK_DEVICE_TYPE,
 						hit_box: PICK_DATA ]
 PICK_STATUS			: {NoPick, Ok, Aborted}
-.mc
 PIXMAP_ID			: RESOURCE_ID
 POLYLINE_INTERP		: ENUM_TYPE_INDEX (used with \fIPolylineInterpMethod\fP enumerated type)
 PROMPT_ECHO_TYPE	: ENUM_TYPE_INDEX (used with \fIPromptEchoType\fP enumerated type)
@@ -696,12 +658,10 @@ REFLECTION_ATTR		: [ambient_coef : FLOAT,
 						specular_color : COLOR_SPECIFIER]
 REFLECTION_MODEL	: ENUM_TYPE_INDEX (used with \fIReflectionModel\fP enumerated type)
 RENDERER_ID			: RESOURCE_ID
-.mc |
 RENDERER_STATE		: {\fIIdle, Rendering, Picking\fP}
 RENDERER_TARGET		: [depth: CARD8,
 						type: MATCH_DRAW_TYPE,
 						visual: VISUAL_ID ]
-.mc
 RESOURCE_ID			: 32-bit identifier
 SEARCH_CONTEXT_ID	: RESOURCE_ID
 SHAPE				: {\fIConvex, Nonconvex, Complex, Unknown\fP}
@@ -755,9 +715,7 @@ VIEW_REP				: [index : TABLE_INDEX,
 						clip_limits : NPC_SUBVOLUME,
 						orientation : MATRIX,
 						mapping : MATRIX]
-.mc |
 VISUAL_ID			: RESOURCE_ID
-.mc
 VISUAL_STATE			: {\fICorrect, Deferred, Simulated\fP}
 WINDOW_ID			: RESOURCE_ID
 WKS_BITMASK			: CARD32[2]
@@ -768,12 +726,10 @@ X11_FONT_ID			: RESOURCE_ID
 .bp
 .AC "Errors" 3
 .LP
-.mc |
 If an error occurs while processing a request that modifies a PEX
 resource then it is possible that some portion of the resource 
 (or some subset of the resource attributes) will have been altered.
 
-.mc
 The PEX Protocol uses the same set of error codes as the X11 Protocol
 when applicable.
 Additional error codes are provided for PEX-specific errors.
@@ -838,7 +794,6 @@ structure resource.
 
 .AC "Events" 2
 .LP
-.mc |
 All PEX events will use the same mechanisms as X events.  
 .LP
 PEX defines a new event, \fBMaxHitsReached\fP.  \fBPEXGetImpDepConstants\fP
@@ -849,7 +804,6 @@ The event includes the renderer identifier.
 Upon receiving the event, the client should terminate the
 pick traversal and decide whether an additional pass is necessary. 
 
-.mc
 .AC "Padding" 2
 .LP
 Certain values that must line up on 2- or 4-byte boundaries may necessitate
@@ -897,39 +851,27 @@ In general, the major version would increment for incompatible changes,
 and the minor version would increment for small, upward-compatible changes.
 Servers that support the protocol defined in this document
 will return a \fIprotocol_major_version\fP of five, and a
-.mc |
 \fIprotocol_minor_version\fP of one.
-.mc
 The \fIvendor\fP parameter is a string of ISO-LATIN1 characters that
 describes the vendor that supplied the PEX extension.  The release number
 is a 32-bit value whose semantics are controlled by the vendor.
-.mc |
 The top 16 bits of \fIsubset_info\fP are reserved for use by vendors and
 the bottom 16 bits contain information
 about whether the PEX server is a full PEX implementation or whether it 
 supports some combination of the standard subsets.  
 .LP
-.mc
 If the 16 low-order bits of \fIsubset_info\fP are zero, the extension
-.mc |
 is a complete PEX implementation.
-.mc
 If the lowest-order bit of \fIsubset_info\fP
-.mc |
 is set, then the PEX extension supports "immediate rendering".
-.mc
 If the next-to-lowest-order bit of \fIsubset_info\fP
-.mc |
 is set, then the PEX extension supports "PHIGS workstation".
 If the third-lowest bit of \fIsubset_info\fP
 is set, then the PEX extension supports "structure rendering".
-.mc
 If a server is sent a request that is not in the PEX subset supported by that
 server, it will return a \fIRequest\fP error.
-.mc |
 See Appendix A for the definition of "immediate rendering", "PHIGS
 workstation", and "structure rendering" subsets.
-.mc
 .LP
 The string "X3D-PEX" should be returned by the X request
 \fBListExtensions\fP to indicate the presence of the PEX extension.
@@ -949,9 +891,7 @@ The same string should be used by clients in the X request
 .Re
 .Pa types LISTofLISTofVALUE
 .Se
-.mc |
 Drawable, Match, Value
-.mc
 .Ds
 This request returns information about the enumerated types specified
 by \fIenum_types\fP.
@@ -1020,8 +960,6 @@ are:
 .Ee
 
 
-.mc *
-.mc
 .Bl "LineType"
 The line type specifies the style that
 is to be used when rendering polyline and curve primitives.
@@ -1039,8 +977,6 @@ or continued at the start of the polyline, at the start of a clipped
 segment of a polyline, and at each vertex of a polyline.
 
 
-.mc *
-.mc
 .Bl "PolylineInterpMethod"
 The polyline interpolation method specifies the style that
 is to be used when rendering polyline primitives that have colors
@@ -1075,10 +1011,8 @@ The registered values are:
 		every implementation, but may differ from one to the next.
 		It may have the same mnemonic and definition as one of the
 		other types, or it may be a method that is not in the list
-.mc |
 		of registered types.  \fItolerance\fP is not used for 
 		this method.
-.mc
 
 2	ConstantBetweenKnots	This technique tessellates the curve with equal parametric
 		increments between successive pairs of knots.  The tolerance
@@ -1117,28 +1051,21 @@ The registered values are:
 
 9	WCS_Relative	This technique maintains a relative level of quality based on the
 		tolerance value independent of scaling in world coordinates.
-.mc |
 		The tolerance must be between 0 and 1 with values closer to 1 
 		specifying  a better relative quality.
-.mc
 
 10	NPC_Relative	This technique maintains a relative level of quality based on the
 		tolerance value independent of scaling in normalized projection
-.mc |
 		coordinates.  The tolerance must be between 0 and 1 with 
 		values closer to 1 specifying  a better relative quality.
-.mc
 
 11	DC_Relative	This technique maintains a relative level of quality based on the
 		tolerance value independent of scaling in device coordinates.
-.mc |
 		The tolerance must be between 0 and 1 with values
 		closer to 1 specifying  a better relative quality.
-.mc
 .Ee
 
 
-.mc |
 .Bl "InteriorStyle"
 The interior style specifies the style that
 is to be used when rendering surface primitives.
@@ -1149,9 +1076,7 @@ The registered values are:
 		primitive is clipped as a result of modeling, view, or workstation
 		clipping, the boundary must be drawn along the clipped boundary
 		as well.
-.mc
 
-.mc |
 2	Solid	The interiors of surface primitives are filled using the
 		surface color.
 
@@ -1190,7 +1115,6 @@ segment of an edge, and at each vertex.
 
 
 
-.mc
 .Bl "ReflectionModel"
 The reflection model specifies the method that
 is used to perform the light source shading computation
@@ -1265,10 +1189,8 @@ The registered values are:
 		every implementation, but may differ from one to the next.
 		It may have the same mnemonic and definition as one of the
 		other types, or it may be a method that is not in the list
-.mc |
 		of registered types.  The tolerance values are not used for 
 		this method.
-.mc
 
 2	ConstantBetweenKnots	This technique tessellates the surface with equal parametric
 		increments between successive pairs of knots.  The two tolerance
@@ -1323,27 +1245,21 @@ The registered values are:
 
 9	WCS_Relative	This technique maintains a relative level of quality based on the
 		specified \fIu_tolerance\fP value independent of scaling in
-.mc |
 		world coordinates.  \fIu_tolerance\fP must be between 0 and 1 
 		with values closer to 1 specifying  a better relative quality.
 		\fIv_tolerance\fP is not used for this method.
-.mc
 
 10	NPC_Relative	This technique maintains a relative level of quality based on the
 		specified \fIu_tolerance\fP value independent of scaling in
-.mc |
 		normalized projection coordinates.  \fIu_tolerance\fP must be 
 		between 0 and 1 with values closer to 1 specifying a better 
 		relative quality.  \fIv_tolerance\fP is not used for this method.
-.mc
 
 11	DC_Relative	This technique maintains a relative level of quality based on the
 		specified \fIu_tolerance\fP value independent of scaling in
-.mc |
 		device coordinates.  \fIu_tolerance\fP must be between 0 and 1 
 		with values closer to 1 specifying  a better relative quality.
 		\fIv_tolerance\fP is not used for this method.
-.mc
 
 
 .Bl "TrimCurveApproxMethod"
@@ -1499,18 +1415,15 @@ The registered values are:
 		may be buffered as they are received.  When an "end rendering"
 		occurs with flush=\fITrue\fP, the primitives in the buffer are 
 		sorted and a hidden line computation is performed.
-.mc |
 
 6 	ZBufferId	This is the same as \fIZBuffer\fP, except that the 
 		\fIHLHSR_identifier\fP is used to enable and disable 
 		z-buffering during traversal.  An \fIHLHSR_id\fP of zero 
 		disables z-buffering and an \fIHLHSR_identifier\fP
 		of one enables z-buffering.
-.mc
 .Ee
 
 
-.mc |
 .Bl "PickDeviceType"
 The pick device type specifies the type of pick device that
 is to be used for workstation picking (via a pick device
@@ -1567,7 +1480,6 @@ The registered values are:
 .Ee
 
 
-.mc
 .Bl "PromptEchoType"
 The prompt echo type defines the method used to do prompting and echoing
 during picking operations.
@@ -1655,8 +1567,6 @@ phase of rendering.  The registered values are:
 		quadrature (narrowband magenta-green)
 .Ee
 
-.mc *
-.mc
 .Bl "RenderingColorModel"
 The rendering color model defines the color model to be used for color
 interpolation within the rendering pipeline.  Reflectance equations should
@@ -1778,7 +1688,6 @@ delim $$
 		priority than the primitive's edges.
 
 .Ee
-.mc |
 
 .Bl "GDP        "
 The GDP type specifies the (2D) Generalized Drawing Primitives (GDPs) that are
@@ -1804,7 +1713,6 @@ are described in appendix E, they are:
 1	SetEchoColor	modify the renderer's echo color 
 .Ee
 
-.mc
 .Fe
 .bp
 
@@ -1819,9 +1727,7 @@ are described in appendix E, they are:
 .Re
 .Pa constants LISTofVALUE
 .Se
-.mc |
 Drawable, Match, Value, FloatingPointFormat
-.mc
 .Ds              
 This request allows a client to query one or more of the
 implementation-dependent constants in a PEX server extension.
@@ -1879,70 +1785,44 @@ constant names consist of:
 		of the marker type \fIDot\fP which is always drawn as the smallest
 		displayable point).
 
-.mc |
 \fIChromaticityRedU\fP	FLOAT	Returns the CIEYUV \fIu\fP chromaticity coefficient for the red channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fIChromaticityRedV\fP	FLOAT	Returns the CIEYUV \fIv\fP chromaticity coefficient for the red channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fILuminanceRed\fP	FLOAT	Returns the CIEYUV luminance value for the red channel of the
-.mc
 		(properly adjusted) display device.
 
-.mc |
 \fIChromaticityGreenU\fP	FLOAT	Returns the CIEYUV \fIu\fP chromaticity coefficient for the green channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fIChromaticityGreenV\fP	FLOAT	Returns the CIEYUV \fIv\fP chromaticity coefficient for the green channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fILuminanceGreen\fP	FLOAT	Returns the CIEYUV luminance value for the green channel of the
-.mc
 		(properly adjusted) display device.
 
-.mc |
 \fIChromaticityBlueU\fP	FLOAT	Returns the CIEYUV \fIu\fP chromaticity coefficient for the blue channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fIChromaticityBlueV\fP	FLOAT	Returns the CIEYUV \fIv\fP chromaticity coefficient for the blue channel
-.mc
 		of the (properly adjusted) display device.
 
-.mc |
 \fILuminanceBlue\fP	FLOAT	Returns the CIEYUV luminance value for the blue channel of the
-.mc
 		(properly adjusted) display device.
 
-.mc |
 \fIChromaticityWhiteU\fP	FLOAT	Returns the CIEYUV \fIu\fP chromaticity coefficient for the reference
-.mc
 		white of the (properly adjusted) display device.
 
-.mc |
 \fIChromaticityWhiteV\fP	FLOAT	Returns the CIEYUV \fIv\fP chromaticity coefficient for the reference
-.mc
 		white of the (properly adjusted) display device.
 
-.mc |
 \fILuminanceWhite\fP	FLOAT	Returns the CIEYUV luminance value for the reference white of the
-.mc
 		(properly adjusted) display device.
 
 \fIMaxNamesetNames\fP	CARD32	Maximum number of names allowed in a name set.
-.mc |
 				The names are between zero and (\fIMaxNamesetNames\fP - 1)
-.mc
 
 \fIMaxModelClipPlanes\fP	CARD32	Maximum number of modeling clipping planes that may be defined.
 
@@ -1965,23 +1845,18 @@ constant names consist of:
 		pixels can be composed using shifts and adds, or \fIColorApproxAnyValues\fP
 		if it makes little or no difference.
 
-.mc |
 \fIDoubleBufferingSupported\fP	CARD32	Returns \fITrue\fP or \fIFalse\fP depending on
-.mc
 		whether or not the server supports double-buffering.
 
-.mc |
 \fIMaxHitsEventSupported\fP	CARD32	Returns \fITrue\fP or \fIFalse\fP, depending on whether the 
 		\fIMaxHitsReached\fP event is supported.
 
 
-.mc
 .ta
 .Fe
 .bp
 
 
-.mc |
 .AC "Match Renderer Targets" 3
 .Fs
 .Na "PEXMatchRendererTargets"
@@ -2078,7 +1953,6 @@ The X extension mechanism must be used for
 vendor-specific requests that generate new events or new errors.
 .Fe
 .bp
-.mc
 .AC "Output Commands" 1
 .LP
 .RU
@@ -2270,11 +2144,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Marker color"
 .Op color COLOR_SPECIFIER
@@ -2288,15 +2160,11 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
-.mc |
 
-.mc
 .Or "Marker bundle index"
 .Op index TABLE_INDEX
 .IP
@@ -2308,9 +2176,7 @@ then default bundle index one is used.  If table index one is not defined,
 the default values listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the bundle index in this 
-.mc |
 output command is zero.
-.mc
 
 .Or "Text font index"
 .Op index TABLE_INDEX
@@ -2326,9 +2192,7 @@ the default index one is used.  If table index one is not defined, the
 default values listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the text font
-.mc |
 index in this output command is zero.
-.mc
 
 .Or "Text precision"
 .Op precision TEXT_PRECISION
@@ -2391,11 +2255,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index one is used.
 If color index one is not defined, the default values listed in Appendix
 D are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Text color"
 .Op color COLOR_SPECIFIER
@@ -2409,11 +2271,9 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
 .Or "Character height"
 .Op height FLOAT
@@ -2536,9 +2396,7 @@ bundle index one is used.  If table index one is not defined, the default
 values listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the bundle index
-.mc |
 in this output command is zero.
-.mc
 
 .Or "Line type"
 .Op line_type LINE_TYPE
@@ -2573,11 +2431,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index
 one is used.  If color index one is not defined, the default values listed
 in Appendix D are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Line color"
 .Op color COLOR_SPECIFIER
@@ -2591,11 +2447,9 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
 .Or "Curve approximation"
 .Op approx CURVE_APPROX
@@ -2634,9 +2488,7 @@ index one is used.  If table index one is not defined, the default values
 listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the bundle index
-.mc |
 in this output command is zero.
-.mc
 
 .Or "Surface interior style"
 .Op interior_style INTERIOR_STYLE
@@ -2684,11 +2536,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index one is used.
 If color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Surface color"
 .Op color COLOR_SPECIFIER
@@ -2702,11 +2552,9 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
 .Or "Surface reflection attributes"
 .Op attr REFLECTION_ATTR
@@ -2790,11 +2638,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Backface surface color"
 .Op color COLOR_SPECIFIER
@@ -2808,11 +2654,9 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
 .Or "Backface surface reflection attributes"
 .Op attr REFLECTION_ATTR
@@ -2878,9 +2722,7 @@ When processed by a renderer,
 this command will
 modify the renderer's \fIdistinguish\fP attribute.
 .IP
-.mc |
 An \fIOutputCommand\fP error is reported if the mode is not \fITrue\fP or \fIFalse\fP.
-.mc
 
 .Or "Pattern size"
 .Op size VECTOR_2D
@@ -2931,9 +2773,7 @@ default bundle index one is used.  If table index one is not defined, the
 default values listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the bundle index
-.mc |
 in this output command is zero.
-.mc
 
 .Or "Surface edge flag"
 .Op onoff SWITCH
@@ -2978,11 +2818,9 @@ color type to \fIIndexed\fP and the color value to the index specified by
 If the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color index in this
 output command is 65535.
-.mc
 
 .Or "Surface edge color"
 .Op color COLOR_SPECIFIER
@@ -2996,11 +2834,9 @@ If the color type is \fIIndexed\fP and
 the specified color index is not defined, color index one is used.  If
 color index one is not defined, the default values listed in Appendix D
 are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the color type is 
 \fIIndexed\fP and the color index is 65535.
-.mc
 
 .Or "Edge bundle index"
 .Op index TABLE_INDEX
@@ -3014,9 +2850,7 @@ index one is used.  If table index one is not defined, the default values
 listed in Appendix D are used.
 .IP
 An \fIOutputCommand\fP error is reported if the bundle index
-.mc |
 in this output command is zero.
-.mc
 
 .Or "Set individual ASF"
 .Op attribute ASF_ATTRIBUTE
@@ -3027,7 +2861,6 @@ this command will
 modify the specified ASF (aspect source flag) attribute in the
 renderer.  Depending on the value of \fIattribute\fP,
 one of the following rendering pipeline attributes will be modified:
-.mc |
 .IP
 .ta 1.8i 3.5i
 \fImarker_type_asf		interior_style_asf\fP
@@ -3043,20 +2876,15 @@ one of the following rendering pipeline attributes will be modified:
 \fIline_color_asf		bf_reflection_model_asf\fP
 \fIcurve_approx_asf		bf_reflection_attr_asf\fP
 \fIpolyline_interp_asf		surface_approx_asf\fP
-.mc
 				\fIsurface_edges_asf\fP
 				\fIsurface_edge_type_asf\fP
 				\fIsurface_edge_width_asf\fP
 				\fIsurface_edge_color_asf\fP
-.mc *
-.mc
 .ta
 .IP
-.mc |
 An \fIOutputCommand\fP error is reported if \fIattribute\fP does
 not refer to a valid ASF attribute or if \fIsource\fP
 is not set to \fIBundled\fP or \fIIndividual\fP.
-.mc
 
 .Or "Local transform 3D"
 .Op comp_type COMPOSITION
@@ -3184,18 +3012,13 @@ indicator is not \fIClip\fP or \fINoClip\fP.
 .Op operator OPERATOR
 .Op halfspaces LISTofHALFSPACE
 .IP
-.mc |
 When processed by a renderer, this command will
-.mc
 modify the renderer's \fImodel_clip_volume\fP attribute.
-.mc |
 Each halfspace is defined by a point in modeling coordinates and a 
 vector defining the normal to the plane which is the boundary of the 
 half space.  The normal points in the direction of the halfspace,
 and the point is considered to be on the plane.  
-.mc
 
-.mc |
 Each half-space is transformed by the current
 composite modeling transformation and combined with the
 current model clipping volume using the operater specified
@@ -3205,24 +3028,18 @@ composite modeling transformation.  If the specified
 operator is not supported by the PEX server or if any halfspace 
 is degenerate, the output command is ignored.
 
-.mc
 .Or "Set model clip volume 2D"
 .Op operator OPERATOR
 .Op halfspaces LISTofHALFSPACE_2D
 .IP
-.mc |
 When processed by a renderer, this command will
-.mc
 modify the renderer's \fImodel_clip_volume\fP attribute.
-.mc |
 Each halfspace is defined by a point in modeling coordinates and a 
 vector defining the normal to the plane which is the boundary of the 
 half space.  The normal points in the direction of the halfspace,
 and the point is considered to be on the plane. 
 The z component of each point and vector are assumed to be zero.
-.mc
 
-.mc |
 Each half-space is transformed by the current
 composite modeling transformation and combined with the
 current model clipping volume using the operater specified
@@ -3232,7 +3049,6 @@ composite modeling transformation.  If the specified
 operator is not supported by the PEX server or if any halfspace 
 is degenerate, the output command is ignored.
 
-.mc
 .Or "Restore model clip volume"
 .IP
 When processed by a renderer,
@@ -3253,10 +3069,8 @@ modify the renderer's \fIview_index\fP attribute.
 If the specified view
 index is not defined, index zero is used.  If view index zero is not defined,
 the default values listed in Appendix D are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the index is 65535.
-.mc
 
 .Or "Light source state"
 .Op enable LISTofCARD16
@@ -3273,9 +3087,7 @@ If any light in the \fIenable\fP or \fIdisable\fP list references an
 undefined \fILight\fP table entry, the light is ignored.
 .IP
 An \fIOutputCommand\fP error is reported if a light in either the
-.mc |
 \fIenable\fP or \fIdisable\fP list is zero, or if the same light is
-.mc
 specified in both the lists.
 
 .Or "Depth cue index"
@@ -3287,10 +3099,8 @@ modify the renderer's \fIdepth_cue_index\fP attribute.
 If the specified depth
 cue index is not defined, index zero is used.  If depth cue index zero is
 not defined, the default values listed in Appendix D are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the index is 65535.
-.mc
 
 .Or "Pick ID       "
 .Op pickid CARD32
@@ -3304,17 +3114,13 @@ No errors or defaults are defined.
 .Or "HLHSR identifier"
 .Op id CARD32
 .IP
-.mc |
 When processed by a renderer, this command will
-.mc
 modify the renderer's \fIHLHSR_identifier\fP attribute.
-.mc |
 This output command is a noop for all registered HLHSR modes except
 \fIZBufferId\fP.  If the renderer's \fIHLHSR_mode\fP is set to \fIZBufferId\fP
 then a zero value will disable z-buffering and a value of one will
 enable it.  For non-registered HLHSR modes the effect of this command 
 is implementation dependent.  If the specified HLHSR
-.mc
 identifier is not supported by the PEX server, the HLHSR identifier used is
 implementation dependent.
 
@@ -3326,10 +3132,8 @@ When processed by a renderer, this command will modify the renderer's
 If the specified color
 approximation index is not defined, index zero is used.  If index zero is
 not defined, the default values listed in Appendix D are used.
-.mc |
 .IP
 An \fIOutputCommand\fP error is reported if the index is 65535.
-.mc
 
 .Or "Rendering color model"
 .Op model COLOR_MODEL
@@ -3349,9 +3153,7 @@ command.
 When processed by a renderer, this command will modify the renderer's
 \fIpsurf_char\fP attribute.
 If the specified type
-.mc |
 is not supported by the PEX server, type 1 (\fINone\fP) is used.
-.mc
 .IP
 Any integer value may be specified as the characteristics type in this
 output command.  If an inconsistent value is specified in the data
@@ -3719,9 +3521,7 @@ no visual effect.  In immediate mode, such a primitive is ignored.
 
 .Or "Polyline set 3D with data"
 .Op color_type COLOR_TYPE
-.mc |
 .Op vert_attributes BITMASK_SHORT
-.mc
 .Op vertices LISTofLISTofVERTEX
 .IP
 When processed by a renderer,
@@ -3811,9 +3611,7 @@ cause an \fIOutputCommand\fP error to be reported:
 \fItype\fP is not \fIRational\fP or \fINonRational\fP,
 \fIorder\fP is less than one,
 there are fewer control points than the order,
-.mc |
 the order is inconsistent with the number of knots and control points,
-.mc
 the knots are not non-decreasing,
 \fItmin\fP and \fItmax\fP are inconsistent with the knots,
 or a \fIRational\fP control point has a w coordinate that is less than or
@@ -3931,10 +3729,8 @@ or \fIignore_edges\fP parameter is invalid.
 .Op shape SHAPE
 .Op ignore_edges BOOLEAN
 .Op color_type COLOR_TYPE
-.mc |
 .Op facet_attributes BITMASK_SHORT
 .Op vert_attributes BITMASK_SHORT
-.mc
 .Op facet FACET
 .IP
 When processed by a renderer,
@@ -3960,9 +3756,7 @@ must be passed in the
 order that they appear in the list above.  If a color value is
 passed per facet, it is taken to be the intrinsic color of the front face
 of the facet.  If a normal is passed per facet, it is taken to be
-.mc |
 the normal to the facet.  
-.mc
 .IP
 The parameter \fIvert_attributes\fP specifies the attributes which are
 specified at each fill area vertex.  The components of the vertex attributes
@@ -3991,12 +3785,10 @@ from the \fIsurface_interp\fP value if the
 The \fIsurface_interp\fP attribute defines how color values between
 the vertices are to be computed.
 .IP
-.mc |
 All normals are assumed to be unit vectors.  The effect of rendering 
 with facet or vertex normals that are not unit vectors is implementation
 dependent.
 .IP
-.mc
 The \fIshape\fP parameter is passed as a hint as to the type of fill
 area that is defined by the vertices.
 A shape hint of \fIUnknown\fP means that nothing is known about the
@@ -4033,14 +3825,12 @@ or \fIignore_edges\fP parameter is invalid.
 .IP
 When processed by a renderer,
 this command will cause a fill area set primitive to
-.mc |
 be drawn.  This primitive is essentially a set of fill area
 primitives which, together, define a polygon with
 islands or holes.  The planarity of the resulting polygon is not 
 verified, but the results of processing a non-planar fill area set 
 are implementation dependent.
 The \fIignore_edges\fP parameter will be applied to all of
-.mc
 the fill areas in the fill area set.
 .IP
 The \fIshape\fP parameter is passed as a hint as to the type of contours
@@ -4105,10 +3895,8 @@ or \fIignore_edges\fP parameter is invalid.
 .Op ignore_edges BOOLEAN
 .Op contour_hint CONTOUR
 .Op color_type COLOR_TYPE
-.mc |
 .Op facet_attributes BITMASK_SHORT
 .Op vert_attributes BITMASK_SHORT
-.mc
 .Op facet_data OPT_DATA
 .Op vertices LISTofLISTofVERTEX
 .IP
@@ -4117,9 +3905,7 @@ this command will cause a fill area set to be rendered.
 The behavior of this primitive is identical to that of the
 3D fill area set primitive, except that
 additional information can be specified
-.mc |
 for each of the fill area sets, for each edge, and for
-.mc
 each vertex.
 Color values that are passed will be of the type specified by
 \fIcolor_type\fP.
@@ -4181,17 +3967,13 @@ output command is stored in the structure, but when this output command is
 interpreted, it has no visual effect.  In immediate mode, such a primitive
 is ignored.
 .IP
-.mc |
 An \fIOutputCommand\fP error is reported if the \fIshape\fP,
-.mc
 \fIignore_edges\fP, or \fIcontour_hint\fP parameter is invalid.
 
 .Or "Triangle strip"
 .Op color_type COLOR_TYPE
-.mc |
 .Op facet_attributes BITMASK_SHORT
 .Op vert_attributes BITMASK_SHORT
-.mc
 .Op facet_data LISTofOPT_DATA
 .Op vertices LISTofVERTEX
 .IP
@@ -4214,9 +3996,7 @@ The attributes that are passed in this way must be passed in the
 order that they appear in the list above.  If a color value is
 passed per facet, it is taken to be the intrinsic color of the front face
 of the facet.  If a normal is passed per facet, it is taken to be
-.mc |
 the normal to the facet.
-.mc
 There will be n-2 entries in the \fIfacet_data\fP list, where n is
 the number of entries in the \fIvertices\fP list.
 .IP
@@ -4240,12 +4020,10 @@ if both are provided.
 If normals are passed per vertex, they are taken to be
 the normals at the vertices of the facet.
 .IP
-.mc |
 All normals are assumed to be unit vectors.  The effect of rendering 
 with facet or vertex normals that are not unit vectors is implementation
 dependent.
 .IP
-.mc
 The triangle strip is created
 from the vertex array.  The strip is composed
 of n-2 triangles, where n is the number of vertices.  The first triangle
@@ -4268,10 +4046,8 @@ is ignored.
 .Op color_type COLOR_TYPE
 .Op m_pts CARD16
 .Op n_pts CARD16
-.mc |
 .Op facet_attributes BITMASK_SHORT
 .Op vert_attributes BITMASK_SHORT
-.mc
 .Op facet_data LISTofOPT_DATA
 .Op vertices LISTofVERTEX
 .IP
@@ -4307,9 +4083,7 @@ The attributes that are passed in this way must be passed in the
 order that they appear in the list above.  If a color value is
 passed per facet, it is taken to be the intrinsic color of the front face
 of the facet.  If a normal is passed per facet, it is taken to be
-.mc |
 the normal to the facet.
-.mc
 .IP
 The parameter \fIvert_attributes\fP specifies the attributes which are
 specified at each quadrilateral mesh vertex.  The components of the vertex
@@ -4331,18 +4105,14 @@ if both are provided.
 If normals are passed per vertex, they are taken to be
 the normals at the vertices of the facet.
 .IP
-.mc |
 All normals are assumed to be unit vectors.  The effect of rendering 
 with facet or vertex normals that are not unit vectors is implementation
 dependent.
 .IP
-.mc
 The surface will be created from a vertex array that is stored in
-.mc |
 row major order
 (i.e., the column number varies fastest as vertices are stored
 in the array).  The
-.mc
 (ith,jth), (i+1th,jth), (i+1th,j+1th) and (ith,j+1th) vertices are connected
 to create a single facet. 
 Adjacent vertices are interconnected until the entire
@@ -4350,11 +4120,9 @@ facet network is processed.
 There are \fIm_pts \(mu n_pts\fP entries in the \fIvertices\fP array, and there
 are \fI(m_pts-1) \(mu (n_pts-1)\fP entries in the \fIfacet_data\fP array if any
 per-facet attributes are passed.
-.mc |
 \fIm_pts\fP is the number of columns in the vertex array and \fIn_pts\fP
 is the number of rows.
 .IP
-.mc
 It is allowable for the boundary of a single facet to 
 not reside in a single plane.  The treatment of the vertex attributes
 in this case is implementation-dependent.  
@@ -4374,11 +4142,9 @@ parameter is invalid.
 .Or "Set of fill area sets"
 .Op shape SHAPE
 .Op color_type COLOR_TYPE
-.mc |
 .Op fas_attributes BITMASK_SHORT
 .Op vert_attributes BITMASK_SHORT
 .Op edge_attributes BITMASK_SHORT
-.mc
 .Op contour_hint CONTOUR
 .Op contours_all_1 BOOLEAN
 .Op num_fas CARD16
@@ -4453,9 +4219,7 @@ fill area set.  The attributes that are passed in this way must be
 passed in the order that they appear in the list above.  If a color
 value is passed, it is taken to be the intrinsic color of the front
 face of the fill area set.  If a normal is passed, it is taken to be
-.mc |
 the normal to the fill area set.
-.mc
 If \fIfas_attributes\fP is null, the \fIper_fas_data\fP list will be null
 as well.  Otherwise, there will be \fInum_fas\fP entries in
 \fIper_facet_data\fP.
@@ -4479,12 +4243,10 @@ are taken to be the normal at the indicated vertex, and will be used
 by all contours that share the vertex.  There will always be
 \fInum_verts\fP entries in the \fIper_vert_data\fP list.
 .IP
-.mc |
 All normals are assumed to be unit vectors.  The effect of rendering 
 with facet or vertex normals that are not unit vectors is implementation
 dependent.
 .IP
-.mc
 The parameter \fIedge_attributes\fP specifies the attributes that are
 specified at each edge.  The components of the edge attributes
 bitmask are, in order:
@@ -4564,14 +4326,10 @@ in modeling coordinates.
 The \fIu_knots\fP sequence and the \fIv_knots\fP sequence must each form
 a non-decreasing sequence of numbers.  \fIMpts\fP indicates the number
 of points in the \fIu\fP direction and \fInpts\fP indicates the number
-.mc |
 of points in the \fIv\fP direction.  The points are stored in the vertex
-.mc
 array in row major order
 (i.e., the column number varies fastest as vertices are stored
-.mc |
 in the array) and the rows increase in the direction of increasing \fIv\fP.
-.mc
 .IP
 The minimum and maximum knot values in \fIu_knots\fP define the range
 over which the B-spline surface is evaluated in the \fIu\fP parametric 
@@ -4594,23 +4352,17 @@ parametric coordinate space over which the
 B-spline surface is to be evaluated.
 Each trimming loop is defined as
 a list of one or more B-spline trimming
-.mc |
 curves that are connected head-to-tail.
-.mc
 Each trim curve can be
 \fIRational\fP or \fINonRational\fP, have a different order, etc.
 The list must be explicitly closed, so that the tail of the last B-spline curve 
-.mc |
 joins the head of the first B-spline curve 
 in each trimming loop.
-.mc
 Each trimming curve
 is parameterized independently.  If there is a floating point
-.mc |
 inaccuracy in closure or in head-to-tail connectivity between B-spline curves
 , closure or connectivity will be assumed.
 B-spline curves for trimming loops are defined in the
-.mc
 parameter space of the surface and may not go outside the parameter
 space of the surface.
 When no trimming loops are
@@ -4630,22 +4382,16 @@ to be clipped away.  A clockwise loop will cause the exterior of
 the loop to be retained and the interior to be trimmed away.  If loops
 are nested, they must alternate in direction. In all cases, the outermost loop
 must be counterclockwise.
-.mc |
 No B-spline curve may 
 intersect itself and no trimming loop may intersect itself or any other
 trimming loop. 
-.mc
 Trimming loops that do not obey these rules
 will result in an implementation-dependent rendering.
 .IP
-.mc |
 Each B-spline curve has a visibility flag that controls its visibility
-.mc
 for the purposes of surface edge display.  Depending on the settings of
 a renderer's surface edge attributes and the visibility
-.mc |
 flags associated with trim curves, the B-spline curves in trimming
-.mc
 loops may be drawn as surface edges.
 .IP
 All attributes that affect the representation of fill area sets also
@@ -4706,9 +4452,7 @@ element in the \fIcolors\fP array.
 Colors are stored in this array by rows, that is, the column number varies
 fastest as colors are stored into the array.  The first color in the
 array is the color at the cell at the corner of \fIpoint1\fP, and subsequent
-.mc |
 colors represent the colors of cells proceeding to \fIpoint2\fP.
-.mc
 .IP
 If any color index is
 not defined, color index one is used.  If color index one is not defined, the
@@ -4788,7 +4532,6 @@ If the specified GDP
 identifier is not supported, the output command is ignored.  Note that
 byte-swapping and floating point conversion may not be done on this type
 of output command.
-.mc |
 
 .Or "Noop"
 .IP
@@ -4796,7 +4539,6 @@ When processed by a renderer, this command will
 only update the current path.  
 It is useful for client-side accumulate state traversals
 since it does not generate any output.  
-.mc
 
 .bp
 .AC "Lookup Tables" 1
@@ -4832,14 +4574,12 @@ type.  For instance, in the \fIMarkerBundle\fP table type, each entry
 in the table consists of a marker type value, a marker scale
 value, and a marker color value.
 .LP
-.mc |
 A lookup table may have \fIpredefined entries\fP.  Predefined entries
 are a set of contiguous table entries that are 
 automatically filled in by the server when the table is created.
 \fBPEXGetTableInfo\fP returns the range of predefined 
 entries.  Predefined table entries may be deleted or overwritten.
 .LP
-.mc
 Each type of table has a specific index value that indicates the
 \fIdefault table entry\fP.
 If a table index references an undefined table entry, the contents
@@ -4855,19 +4595,15 @@ tables whose default entry is zero.
 .LP
 PEX lookup tables are designed to support PHIGS set/realized
 semantics.  A lookup table entry may be set to a value that is impossible
-.mc |
 to represent exactly.
-.mc
 Such a value will be silently mapped
 to a reasonable default when rendering to the drawable.
 When
 retrieving entry values from a lookup table,
 clients may request the value as originally specified
 by the client (\fIvalue_type\fP = \fISet\fP), or the value
-.mc |
 that is actually used when rendering, whether it is the value
 originally specified or an approximation (\fIvalue_type\fP = \fIRealized\fP).
-.mc
 Since all predefined entries are by definition realizable,
 predefined lookup table entries will return the
 same value regardless of whether the \fISet\fP or the \fIRealized\fP value
@@ -5050,19 +4786,14 @@ has a valid resource ID by which it can be referenced.
 This type of lookup table is used to maintain viewing information.
 "Views" are then specified as indices, which are used to look up the
 appropriate information in a view lookup table.
-.mc *
-.mc
 .DS
 .ta 1.0i 2.5i
-.mc |
 	clip_flags	BITMASK_SHORT
-.mc
 	clip_limits	NPC_SUBVOLUME
 	orientation	MATRIX
 	mapping	MATRIX
 .ta
 .DE
-.mc |
 \fIOrientation\fP is a matrix which maps geometry from the world coordinate
 system to the viewing reference coordinate system.  (This is a right-handed 
 coordinate system and is also known as the eye or viewing coordinate system.)
@@ -5071,21 +4802,16 @@ coordinate system
 to the normalized projection coordinate system (also a right-handed
 coordinate system).  This transformation is typically a
 parallel or perspective projection.
-.mc
 The \fIclip_limits\fP specify the minimum and maximum of a rectangular
-.mc |
 volume in normalized projection coordinates and,
 \fIclip_flags\fP contains three bits that indicate whether or not clipping
-.mc
 should be performed
 against the sides, back, and front planes of the
 volume specified by \fIclip_limits\fP.
-.mc |
 The actual clipping volume for each view is a rectangular parallelpiped
 that is computed by taking the intersection of the view
 clipping volume (determined by \fIclip_limits\fP and \fIclip_flags\fP)
 and the NPC subvolume.
-.mc
 
 
 
@@ -5093,8 +4819,6 @@ and the NPC subvolume.
 This type of lookup table is used
 to maintain light source definitions for use in light source shading
 computations.
-.mc *
-.mc
 .DS
 .ta 1.0i 2.5i
 	light_type	LIGHT_TYPE
@@ -5106,21 +4830,16 @@ computations.
 	color 	COLOR_SPECIFIER
 .ta
 .DE
-.mc |
 There are four types of light sources currently supported in PEX: 
 \fIambient\fP, \fIWCS vector\fP, \fIWCS point\fP and \fIWCS spot\fP.
-.mc
 Depending on the type of light, some of the values in a table entry
 may be ignored.
 
-.mc |
 An ambient light source is defined by \fIcolor\fP.  It is a non-directional
 light that affects the color of all surfaces regardless of their orientation.
 Each ambient light causes a constant amount of intensity to be added to each
 point in the scene.
-.mc
 
-.mc |
 A WCS vector light source (or directional light source) is defined by 
 \fIdirection\fP and \fIcolor\fP.  A light source of this type is 
 located at infinity so all light rays which emanate from it 
@@ -5141,12 +4860,9 @@ specified light source position and \fIspread_angle\fP is
 the half-angle of the cone.  The contribution of a spotlight is 
 zero if the point in question lies outside of the cone of influence.
 
-.mc
 .Bl "DepthCue   (0..65534, default entry = 0)"
 This type of lookup table is used
 to maintain depth-cueing information.
-.mc *
-.mc
 .DS
 .ta 1.0i 2.5i
 	mode	SWITCH
@@ -5157,7 +4873,6 @@ to maintain depth-cueing information.
 	color	COLOR_SPECIFIER
 .ta
 .DE
-.mc |
 The depth cueing computation modifies colors according to the distance from the
 viewing position.  \fIcolor\fP indicates the color to which objects will tend
 when going from the \fIfront_plane\fP to the \fIback_plane\fP.
@@ -5167,7 +4882,6 @@ depth cueing planes.  The depth cueing computation is performed
 in NPC space-- \fIfront_plane\fP is the distance to the front depth-cueing
 plane in NPC coordinates and \fIback_plane\fP is the distance to the back
 depth-cueing plane in NPC coordinates. 
-.mc
 
 
 .Bl "ColorApprox   (0..65534, default entry = 0)" 
@@ -5202,41 +4916,27 @@ it is first converted to a color in the color space specified by
 \fIcolor_model\fP.  (In the case where the rendering pipeline colors
 are already in the specified color space, this is a null mapping.)
 
-.mc |
 If \fItype\fP is \fIColorSpace\fP,
-.mc
 each component of the converted color
 (\fIc1, c2, c3\fP) is scaled by the corresponding maximum value (\fImax1, max2,
-.mc |
 max3\fP).  (\fImax1, max2, max3\fP can be used
-.mc
 by the client to indicate the number of entries in the colormap
-.mc |
 for each color axis, minus 1.  For example, to compute a pixel value for
-.mc
 a 3-3-2 RGB colormap allocation, the max values would be 7, 7, and 3).
-.mc |
 The resulting color components are packed into a single pixel value 
 by multiplying the first
-.mc
 component by \fImult1\fP, the second by \fImult2\fP, the third by
-.mc |
 \fImult3\fP, and then adding this to the \fIbase_pixel\fP.
 When the \fItype\fP is \fIColorSpace\fP, \fIweight1\fP, \fIweight2\fP, and 
 \fIweight3\fP values are not used.
-.mc
 
-.mc |
 For a more concrete example, assume that the \fIcolor_model\fP 
 is set to \fIRGB\fP.  During the color approximation stage,
 each color value that emerges from the rendering pipeline must first
 be converted to an RGB triple.  If the rendering pipeline 
 performs color computations in RGB space then this conversion
-.mc
 is a no-op.
-.mc |
 Each of the three components are then mapped to an integer value
-.mc
 as follows:
 .DS I
 red = red intensity component mapped into the range [0, \fImax1\fP]
@@ -5252,8 +4952,6 @@ a different fashion during the color approximation stage.  Once again,
 the rendering pipeline color is first converted into a color in the
 color space specified by \fIcolor_model\fP.
 First,
-.mc *
-.mc
 the color components (\fIc1, c2, c3\fP) that emerge from the rendering
 pipeline are multiplied by their corresponding normalized
 weight values (\fIweight1,
@@ -5262,9 +4960,7 @@ value.  The weight values can be adjusted to allow equal weighting of the
 components (weights are all equal) or to minimize or eliminate one
 or more of the components (one or more weights equal to 0).  For instance,
 the weight values of 0.30, 0.59, 0.11 can be used to convert an RGB value
-.mc |
 to a single-valued intensity according to the NTSC color standard.
-.mc
 
 Next, the computed value is multiplied by \fImax1 \fP(\fImax2 \fPand
 \fImax3 \fPare not used) which should be set by the client to represent
@@ -5273,10 +4969,8 @@ For instance,
 if a client desires to display its computed image on a pseudo-color
 display using gray scale, it could allocate 100 contiguous color cells
 in the color map, and set \fImax1 \fPto the value of 99, so that intensity
-.mc |
 values would be mapped into the range [0,99].  
 This value is then replicated for each of the three color components,
-.mc
 which are then multiplied by \fImult1\fP, \fImult2\fP, and \fImult3\fP
 respectively.
 The values are then added together with \fIbase_pixel\fP to form the
@@ -5316,9 +5010,7 @@ freeing, and copying of lookup table resources.
 .Pa lut_id LOOKUP_TABLE_ID
 .Pa table_type TABLE_TYPE
 .Se
-.mc |
 IDChoice, Drawable, Match, Value, Alloc, LookupTable
-.mc
 .Ds                     
 This request creates a lookup table resource for the specified
 \fIlut_id\fP, for use with drawables with the same root window and depth
@@ -5379,9 +5071,7 @@ These requests inquire lookup table attributes.
 .Pa predefined_min TABLE_INDEX
 .Pa predefined_max TABLE_INDEX
 .Se
-.mc |
 Drawable, Match, Value, LookupTable
-.mc
 .Ds       
 This request will return information about lookup tables of the
 specified \fItable_type\fP if they were to be used with drawables
@@ -5409,16 +5099,12 @@ and \fIpredefined_max\fP are meaningless.
 .Re
 .Pa entries LISTofTABLE_ENTRY
 .Se
-.mc |
 Drawable, Match, Value, FloatingPointFormat, LookupTable
-.mc
 .Ds       
 This request will return the values for predefined table
 entries of the specified \fItable_type\fP if they were to be
 used with drawables
 of the same root and depth as \fIdrawable_example\fP.
-.mc *
-.mc
 \fICount\fP table entries will be returned in \fIentries\fP, starting
 with the table entry specified by \fIstart\fP.  The values in
 \fIentries\fP will be in the format defined for \fItable_type\fP.
@@ -5596,9 +5282,7 @@ pipeline context's attributes are queried, the value \fIAlreadyFreed\fP will
 be returned for the name set ID, since it no longer
 has a valid resource ID by which it can be referenced.
 .LP
-.mc |
 The pipeline context components are listed in the following table.
-.mc
 .LP
 .ID
 .ta 0.4i 2.4i 3.9i
@@ -5893,11 +5577,9 @@ The specular concentration
 defines the sharpness
 of the specular highlights or the "shininess" of a surface.  This
 value is typically used as the exponent in the specular reflection
-.mc |
 term of lighting equations and it ranges from
 zero to the maximum floating point value.
 If \fIspecular_conc\fP is zero, specular
-.mc
 highlights are very broad.  If \fIspecular_conc\fP is much greater than zero,
 the highlights are very small and sharp, as if the surface
 was very shiny.
@@ -5990,10 +5672,8 @@ then front-face attributes are used to render the surface.
 
 .Bl "pattern_size"
 This attribute contains the pattern size
-.mc |
 to use when drawing surface primitives. 
 It is specified in modeling coordinates.
-.mc
 The value <\fIx\fP,0> will be used as the pattern width 
 vector and
 the value <0,\fIy\fP> will be used as the pattern height
@@ -6006,9 +5686,7 @@ vectors, to position, scale, and rotate the pattern on the surface.
 .Bl "pattern_ref_pt"
 This attribute contains the pattern reference point
 to use when drawing surface primitives.
-.mc |
 It is specified in modeling coordinates.
-.mc
 When the interior style
 is \fIPattern\fP, the renderer attempts
 to use the pattern reference point, reference vectors, and
@@ -6018,9 +5696,7 @@ the pattern size to position and scale the pattern on the surface.
 .IP
 This attribute contains the first of two pattern reference vectors
 to be used when interior style is \fIPattern\fP.
-.mc |
 It is specified in modeling coordinates.
-.mc
 When the interior style is \fIPattern\fP,
 the renderer attempts to use the two pattern reference vectors,
 the pattern reference point, and
@@ -6031,9 +5707,7 @@ surface.
 .IP
 This attribute contains the second of two pattern reference vectors
 to be used when interior style is \fIPattern\fP.
-.mc |
 It is specified in modeling coordinates.
-.mc
 When the interior style is \fIPattern\fP,
 the renderer attempts to use the two pattern reference vectors,
 the pattern reference point, and
@@ -6149,7 +5823,6 @@ This attribute contains the pick ID, which
 is used in conjunction with picking operations.
 
 .Bl "HLHSR_identifier"
-.mc |
 This attribute contains an HLHSR identifier.  It is a noop for all
 registered HLHSR modes except \fIZBufferId\fP.
 When the renderer's \fIHLHSR_mode\fP is set to \fIZBufferId\fP then a
@@ -6157,7 +5830,6 @@ zero value will disable z-buffering and a value of one will enable
 z-buffering.  For non-registered HLHSR modes the meaning is
 implementation dependent.  Conceptually, this attribute is bound to
 all output primitives as they enter the rendering pipeline.
-.mc
 
 .Bl "name_set"
 This attribute contains a reference to a name set resource.
@@ -6182,9 +5854,7 @@ freeing, and copying of pipeline contexts.
 .Pa item_mask PC_BITMASK
 .Pa item_list LISTofVALUE
 .Se
-.mc |
 IDChoice, Value, FloatingPointFormat, ColorType, Alloc, NameSet
-.mc
 .Ds                     
 This request creates a pipeline context resource for the specified
 \fIpc_id\fP.  
@@ -6275,9 +5945,7 @@ to modify attributes of pipeline context resources.
 .Pa item_mask PC_BITMASK
 .Pa item_list LISTofVALUE
 .Se
-.mc |
 PipelineContext, Value, FloatingPointFormat, ColorType, NameSet
-.mc
 .Ds       
 This request will modify components of
 the pipeline context specified by \fIpc_id\fP.
@@ -6354,7 +6022,6 @@ the renderer is in the \fIRendering\fP state, an implicit
 \fBPEXEndRendering\fP is performed by the server
 with \fIflush\fP equal to \fIFalse\fP
 in order to return the renderer to the \fIIdle\fP state.
-.mc |
 All subsequent output and traversal commands
 (e.g., \fBPEXRenderOutputCommands\fP, \fBPEXBeginStructure\fP,
 \fBPEXEndStructure\fP, \fBPEXRenderElements\fP, and \fBPEXAccumulateState\fP)
@@ -6366,31 +6033,24 @@ z-buffer fails.
 If a window that is associated with a renderer is moved, exposed, 
 or occluded while the
 renderer is in the \fIRendering\fP state, the server must continue to
-.mc
 process output commands using the newly-modified window hierarchy
 until the next explicit or implicit \fBPEXEndRendering\fP occurs.
 .LP
-.mc |
 Whenever an implicit or explicit \fBPEXBeginRendering\fP occurs
 and the \fIHLHSR_mode\fP indicates
-.mc
 z-buffering should be performed, a z-buffer suitable for
-.mc |
 use with the specified drawable 
 will be allocated, if necessary, and bound to the renderer.
 (A new z-buffer is only allocated
 if a z-buffer does not exist for the renderer or, if the z-buffer
 which is bound to the renderer is not suitable for the current
 drawable.)
-.mc
 If the z-buffer could not be allocated,
 an \fIAlloc\fP error is generated and the rendering is aborted.
-.mc |
 If \fIclear_Z\fP is enabled or, if a new z-buffer was allocated,
 then the z-buffer will be cleared to infinity
 in the region specified by the renderer's current clip list.
 The value of infinity is implementation-dependent.
-.mc
 .LP
 During rendering, primitives will be clipped by the renderer's
 clip list.  If z-buffering is enabled, primitives closer to the
@@ -6398,9 +6058,7 @@ eye will be drawn over primitives that are further away.
 When primitives have the same z values, it is implementation-dependent
 which primitive will get drawn.
 .LP
-.mc |
 The z-buffer will not be deallocated when an explicit or implicit
-.mc
 \fBPEXEndRendering\fP occurs.
 It remains bound to the renderer
 until the renderer is freed.  When the next \fBPEXBeginRendering\fP occurs,
@@ -6409,9 +6067,7 @@ an attempt will be made to reuse the z-buffer.  If it cannot be reused
 it will be deallocated and a z-buffer suitable for the new
 drawable will be allocated.
 .LP
-.mc |
 The renderer components are listed in the following table.
-.mc
 The abbreviation "imp. dep." means that the default value is
 implementation-dependent.
 .LP
@@ -6439,7 +6095,6 @@ implementation-dependent.
 	highlight_exclusion	NAME_SET_ID	\fINull\fP
 	invisibility_inclusion	NAME_SET_ID	\fINull\fP
 	invisibility_exclusion	NAME_SET_ID	\fINull\fP
-.mc |
 	pick_inclusion	NAME_SET_ID	\fINull\fP
 	pick_exclusion	NAME_SET_ID	\fINull\fP
 	pick_start_path	LISTofELEMENT_REF	\fINull\fP
@@ -6447,7 +6102,6 @@ implementation-dependent.
 	clear_I	BOOLEAN	\fIFalse\fP
 	clear_Z	BOOLEAN	\fITrue\fP
 	echo_mode	ECHO_MODE	\fINoEcho\fP
-.mc
 	HLHSR_mode	HLHSR_MODE	1
 	NPC_subvolume	NPC_SUBVOLUME	{(0.0,0.0,0.0),(1.0,1.0,1.0)}
 	viewport	VIEWPORT	{imp. dep., imp. dep., True}
@@ -6469,13 +6123,11 @@ keeping track of paths for client-side traversal.
 .Bl "renderer_state"
 This attribute contains the current state of the renderer.  The
 \fIrenderer_state\fP is set to \fIRendering\fP whenever an explicit or implicit
-.mc |
 \fBPEXBeginRendering\fP request is processed, to \fIPicking\fP
 whenever an explicit or implicit \fBPEXBeginPickOne\fP or
 \fBPEXBeginPickAll\fP request is processed, and to \fIIdle\fP whenever a
 explicit or implicit \fBPEXEndRendering\fP, \fBPEXEndPickOne\fP or
 \fBPEXEndPickAll\fP request is processed.
-.mc
 
 .Bl "marker_bundle"
 This attribute contains the resource ID of the marker bundle lookup table
@@ -6542,7 +6194,6 @@ as the invisibility inclusion set.
 This attribute contains the resource ID of the name set to be used
 as the invisibility exclusion set.
 
-.mc |
 .Bl "pick_inclusion"
 This attribute contains the resource ID of the name set to be used
 as the pick inclusion filter during picking.
@@ -6586,7 +6237,6 @@ guarantee that the method employed will preserve temporal
 priority.  Echoing takes precedence over highlighting.  It is recommended,
 but not required, that the echo and highlight methods are visually distinct.
 
-.mc
 .Bl "HLHSR_mode"
 This attribute contains the hidden line/hidden surface method
 used when resolving visibility of overlapping primitives.
@@ -6618,13 +6268,10 @@ be bound at any time, or they may take effect only at the time of
 a \fBPEXBeginRendering\fP.  Whenever the viewport values are bound,
 the viewport's \fIuse_drawable\fP flag is examined first.
 If it is set to \fITrue\fP, the viewport width and height
-.mc |
 are obtained from the drawable's current width and height and the
 viewport z values are obtained from the values specified in the 
 viewport structure.
-.mc
 If the \fIuse_drawable\fP flag is \fIFalse\fP,
-.mc |
 the viewport width, height and z values are 
 all set to the values in the viewport structure.
 The viewport is then set to the largest rectangle, anchored at the
@@ -6632,7 +6279,6 @@ lower left corner, that achieves an isotropic mapping
 to the renderer's \fINPC_subvolume\fP.
 The viewport will remain in the same position relative to the 
 lower left hand
-.mc
 corner of the drawable after a resize event has occurred.
 
 .Bl "clip_list"
@@ -6647,7 +6293,6 @@ the rectangles in the list.
 The rectangles should be non-overlapping, or the graphics results
 will be undefined.
 Pixels that are outside of all of the rectangles in \fIclip_list\fP are
-.mc |
 effectively "write-protected".  
 The rectangles in the clip list are
 defined by \fIxmin\fP, \fIymin\fP, \fIxmax\fP, and \fIymax\fP which
@@ -6655,7 +6300,6 @@ are in device coordinates.  (0,0) is at the lower left hand corner
 of the window and the \fIxmax\fP and \fIymax\fP values are inclusive.
 These rectangles will remain in the same position relative to the 
 lower left hand corner of the drawable after a resize has occurred.
-.mc
 (Note: If a z-buffering algorithm is used, only those pixels under
 the rectangles in the clip list will have their z values initialized when a
 \fBPEXBeginRendering\fP or a \fBPEXRenderNetwork\fP request is issued.)
@@ -6710,10 +6354,8 @@ If the renderer's \fIrenderer_state\fP attribute is set to \fIRendering\fP
 when this request is processed, an implicit \fBPEXEndRendering\fP
 request with \fIflush\fP equal to \fIFalse\fP will be performed
 before the renderer is freed.
-.mc |
 If the renderer's \fIrenderer_state\fP attribute is set to \fIPicking\fP
 when this request is processed, the pick operation will be aborted. 
-.mc
 .Fe
 .bp
 .AC "Renderer Modification" 2
@@ -6811,9 +6453,7 @@ The \fInamesets\fP bitmask has the following bits defined:
 .ta 2.0i
 \fIHighlightNameset	HighlightNamesetContents
 InvisibilityNameset	InvisibilityNamesetContents
-.mc |
 PickNameset	PickNamesetContents\fP
-.mc
 .ta
 .DE
 The \fIattributes\fP bitmask has the following bits defined:
@@ -6822,21 +6462,17 @@ The \fIattributes\fP bitmask has the following bits defined:
 \fIHLHSRMode
 NPCSubvolume
 Viewport
-.mc |
 ClipList
 EchoMode\fP
-.mc
 .ta
 .DE
 For each defined bit, a value of zero indicates that the specified
-.mc |
 attribute is \fIdynamic\fP and a value of one indicates that it
 is not.  Changes to \fIdynamic\fP attributes take effect immediately.  
 Attributes which are not \fIdynamic\fP can be modified at any time
 but the new value will not take effect until the next
 explicit or implicit \fBPEXBeginRendering\fP occurs.  Implementations that
 allow attributes such as \fIHLHSRMode\fP to be \fIdynamic\fP 
-.mc
 must specify the semantics of changing between all possible supported
 values for that attribute.
 .Fe
@@ -6845,11 +6481,9 @@ values for that attribute.
 .AC "Client-Side Traversal Support" 2
 .LP
 These requests provide support for client-side structure
-.mc |
 traversal.  See section on \fBRenderer Picking\fP for requests
 to do client side picking.  Client-side search traversals are not 
 supported.
-.mc
 
 .AC "Begin Rendering" 3
 .Fs
@@ -6870,7 +6504,6 @@ attribute.  If \fIpipeline_context\fP is \fINull\fP, the default values
 for all of the attributes in a pipeline context are copied into the renderer
 instead.  The
 renderer's \fIrenderer_state\fP attribute is set to \fIRendering\fP and
-.mc |
 its \fIcurrent_path\fP attribute is initialized to structure id zero with
 an element offset of zero.  If \fIclear_I\fP
 is enabled then the image buffer will be cleared to \fIbackground_color\fP.
@@ -6878,23 +6511,18 @@ If \fIclear_Z\fP is enabled and the \fIHLHSR_mode\fP indicates that
 z-buffering should be performed, then the z-buffer will be cleared to infinity.
 The image and
 z-buffer are cleared only in the region specified by \fIclip_list\fP.
-.mc
 .LP
 If the specified drawable does not have the same root and depth as
-.mc |
 the drawable that was passed in to create the renderer, or, if the
 specified drawable is not one of the supported drawables returned
 by \fBPEXMatchRendererTargets\fP,
-.mc
 a \fIMatch\fP error will be generated.
-.mc |
 .LP
 If \fIrenderer_state\fP is currently \fIRendering\fP or \fIPicking\fP,
 the operation is aborted,
 the \fBPEXBeginRendering\fP request is executed, and a
 \fIRendererState\fP error is returned.
 
-.mc
 .Fe
 
 
@@ -6905,30 +6533,20 @@ the \fBPEXBeginRendering\fP request is executed, and a
 .Pa rdr_id RENDERER_ID
 .Pa flush BOOLEAN
 .Se
-.mc |
 Renderer, RendererState 
-.mc
 .Ds       
-.mc |
 This request terminates the current rendering operation
 for the renderer specified by \fIrdr_id\fP.
-.mc
 If \fIflush\fP is \fITrue\fP,
-.mc |
 all pending output will be rendered onto the drawable.
 If \fIflush\fP is \fIFalse\fP, all pending output is discarded.
-.mc
 In either case, the \fIrenderer_state\fP
 attribute of the renderer is set to \fIIdle\fP.
 If the \fIrenderer_state\fP attribute is currently \fIIdle\fP (i.e., no
 rendering is in progress or the rendering was aborted due to a resize),
-.mc |
 the request is ignored and no error is generated.  If the \fIrenderer_state\fP
 is currently \fIPicking\fP then a \fIRendererState\fP error will be generated.
-.mc
 .Fe
-.mc *
-.mc
 
 .AC "Begin Structure" 3
 .Fs
@@ -6939,7 +6557,6 @@ is currently \fIPicking\fP then a \fIRendererState\fP error will be generated.
 .Se
 Renderer
 .Ds       
-.mc |
 If the \fIrenderer_state\fP attribute of the
 renderer specified by \fIrdr_id\fP is set to \fIRendering\fP or \fIPicking\fP,
 then this request causes the pipeline attributes of the
@@ -6947,7 +6564,6 @@ renderer to be saved.
 If the \fIrenderer_state\fP attribute is set to \fIIdle\fP, then this
 request is ignored.
 The attributes of the renderer resource itself (i.e., the
-.mc
 attributes of a renderer that can be set/queried,
 including table and name set resource IDs)
 are not saved.
@@ -6980,14 +6596,12 @@ to the identity matrix.
 .Se
 Renderer, RendererState
 .Ds       
-.mc |
 If the \fIrenderer_state\fP attribute of the
 renderer specified by \fIrdr_id\fP is set to \fIRendering\fP or \fIPicking\fP,
 then this request restores the last-saved pipeline attributes
 in the renderer.
 If the \fIrenderer_state\fP attribute is set to \fIIdle\fP, then this
 request is ignored.
-.mc
 In addition, the last element reference in the renderer's \fIcurrent_path\fP
 is removed, and subsequent output commands will cause the element
 offset of the element reference at the end of the list to be incremented.
@@ -7011,9 +6625,7 @@ These requests cause output commands to be processed by a renderer.
 Renderer, FloatingPointFormat, OutputCommand
 .Ds       
 If the \fIrenderer_state\fP attribute of the
-.mc |
 renderer specified by \fIrdr_id\fP is set to \fIRendering\fP or \fIPicking\fP,
-.mc
 the output commands in \fIcmds\fP will be immediately processed.
 If the \fIrenderer_state\fP attribute is set to \fIIdle\fP, the
 commands will be ignored.
@@ -7029,7 +6641,6 @@ The \fIcurrent_path\fP attribute of the renderer is updated to reflect
 only those output commands actually processed.
 .Fe
 
-.mc |
 .AC "Render Elements" 3
 .Fs
 .Na PEXRenderElements
@@ -7067,9 +6678,7 @@ of elements in the structure, it will be set to the offset
 of the last structure element.
 The structure's element pointer is not affected by this request.
 .Fe
-.mc
 
-.mc |
 .AC "Accumulate State" 3
 .Fs
 .Na PEXAccumulateState
@@ -7100,7 +6709,6 @@ when a structure in the path is executed.  However,
 the current path offset is bumped for each output command that
 is encountered during accumulate state.
 .Fe
-.mc
 
 .AC "Render Network" 3
 .Fs
@@ -7110,9 +6718,7 @@ is encountered during accumulate state.
 .Pa drawable_id DRAWABLE_ID
 .Pa s_id STRUCTURE_ID
 .Se
-.mc |
 Renderer, Drawable, Structure, Match, Alloc, RendererState
-.mc
 .Ds       
 This request causes the structure network rooted at \fIs_id\fP
 to be traversed and rendered on \fIdrawable_id\fP, using the renderer
@@ -7121,16 +6727,13 @@ specified by \fIrdr_id\fP.
 This functionality is equivalent to the following (pseudo-)requests:
 .ID
 \fBPEXBeginRendering\fP(\fIrdr_id\fP, \fIdrawable_id\fP)
-.mc |
 \fBPEXRenderElements\fP(\fIrdr_id\fP, \fIs_id\fP, all elements of \fIs_id\fP)
-.mc
 \fBPEXEndRendering\fP(\fIrdr_id\fP, \fITrue\fP)
 .DE
 .Fe
 .bp
 
 
-.mc |
 .AC "Renderer Picking" 1
 .LP
 .RU
@@ -7533,7 +7136,6 @@ it started ignoring primitives.
 .Fe
 
 .bp
-.mc
 .AC "Structures" 1
 .LP
 .RU
@@ -7661,9 +7263,7 @@ These requests inquire attributes and other information about structures.
 .Rq
 .Pa fp_format FLOAT_FORMAT
 .Pa s_id STRUCTURE_ID
-.mc |
 .Pa item_mask BITMASK_SHORT
-.mc
 .Re
 .Pa editing_mode EDIT_MODE
 .Pa element_ptr CARD32
@@ -8216,11 +7816,9 @@ This request
 deletes all elements between \fIlabel1\fP and \fIlabel2\fP
 in the structure whose ID is specified in \fIs_id\fP.
 A search for
-.mc |
 \fIlabel1\fP is first performed starting at the current element
 pointer position plus one.
 A search
-.mc
 for \fIlabel2\fP is then performed, starting at the element after
 \fIlabel1\fP.  The range of elements between the two labels is then
 deleted.
@@ -8431,11 +8029,9 @@ If \fIaction\fP is \fIRemove\fP, the specified list of names
 is removed from the name set.
 If \fIaction\fP is \fIReplace\fP, all the names in the name set are
 removed, then the specified list of names
-.mc |
 is added to the name set.  If an attempt is
 made to remove a name which is not in the nameset, then the
 name will be ignored and no error will be generated.
-.mc
 .Fe
 .bp
 .AC "Search Contexts" 1
@@ -8496,9 +8092,7 @@ The search context components, in order, are listed in the following table.
 .ta 0.2i 1.9i 3.7i
 	search_pos	COORD_3D	(0.0,0.0,0.0)
 	search_dist	FLOAT	0.0
-.mc |
 	search_ceiling	CARD16	1
-.mc
 	model_clip_flag	BOOLEAN	\fIFalse\fP
 	start_path	LISTofELEMENT_REF	\fINull\fP
 	normal_list	LISTofNAME_SET_PAIR	\fINull\fP
@@ -8521,19 +8115,15 @@ the primitive must intersect the \fIsearch_pos\fP.
 
 .Bl "search_ceiling"
 This attribute defines the ceiling of the search operation.
-.mc |
 The search ceiling is an index into the list contained in \fIstart_path\fP
 and searching stops when the end of the structure specified by
-.mc
 \fIsearch_ceiling\fP is reached.
-.mc |
 For example, if there are \fIn\fP items in \fIstart_path\fP, and 
 \fIsearch_ceiling\fP is set to \fIn\fP, the search traversal will
 terminate at the end of the last structure in the list.  On the other hand, if
 \fIsearch_ceiling\fP is equal to one, then the search will effectively 
 operate without a ceiling, terminating at the end of the first structure 
 in \fIstart_path\fP.
-.mc
 
 .Bl "model_clip_flag"
 This attribute specifies whether modeling clipping must be performed
@@ -9072,9 +8662,7 @@ then no double-buffering will be performed.
 .Pa depth_cue_table DYNAMIC_TYPE
 .Pa color_approx_table DYNAMIC_TYPE
 .Se
-.mc |
 Drawable, Match
-.mc
 .Ds
 This request returns information about the dynamics that
 are supported by PHIGS workstations associated with drawables
@@ -9275,17 +8863,13 @@ enumerated types.
 .LP
 If double buffering is enabled (see \fBPEXSetWKSBufferMode\fP), the display
 update mode affects which buffer is rendered into.
-.mc |
 If the display update mode is \fIVisualizeNone\fP, 
 \fIVisualizeEach\fP or \fIVisualizeWhenever\fP,
-.mc
 output primitives are rendered into the back (undisplayed) buffer while the
 structure network is being traversed.  When the traversal is complete, the
 front and back buffers are swapped, so the rendered image is displayed.
 If the display update mode is \fIVisualizeEasy\fP or \fISimulateSome\fP,
 output primitives are always rendered into the front (displayed) buffer.
-.mc *
-.mc
 .Fe
 .bp
 
@@ -9307,15 +8891,11 @@ to the world coordinate points in \fIwc_points\fP
 using the PHIGS workstation resource specified
 by \fIwks_id\fP.  (The client must convert pointer position values
 in drawable coordinates into device coordinates.)
-.mc |
 Each view in the PHIGS workstation's current view table, which
 has an inverse, is checked to
-.mc
 see if it contains all the specified device coordinate
-.mc |
 points. (If the view transform has no inverse then it is not
 considered).  The index of the view with the highest
-.mc
 view transformation input priority that contains all of the points is
 returned in \fIview_index\fP.  If no view contains all of the points,
 the index of the view containing the most points is returned.
@@ -9436,9 +9016,7 @@ changed until the PHIGS workstation is updated.
 .Pa wks_id PHIGS_WKS_ID
 .Pa mode HLHSR_MODE
 .Se
-.mc |
 PhigsWKS, Value, Alloc
-.mc
 .Ds       
 This request sets the \fIreq_HLHSR_mode\fP
 of the PHIGS workstation specified by \fIwks_id\fP
@@ -9564,17 +9142,13 @@ resources to which
 \fIs_id\fP has been posted.
 .Fe
 .bp
-.mc |
 .AC "Workstation Picking" 1
-.mc
 .LP
 .RU
 .LP
-.mc |
 The discussion of workstation picking includes 
 \fIpick device descriptors\fP which
 are found in PHIGS workstation resources and \fIpick measures\fP.
-.mc
 
 .AC "Pick Device Descriptors" 2
 .LP
@@ -9722,9 +9296,7 @@ point format specified in \fIfp_format\fP.
 .Fe
 .bp
 
-.mc |
 .AC "Pick Measure" 2
-.mc
 .LP
 A \fIpick measure\fP resource must be created to actually perform
 a pick operation.  A pick device type is specified at the time
@@ -9748,9 +9320,7 @@ in the PHIGS workstation resource when the pick measure is created.
 	\fBAttribute Name	Data Type	Default Value\fP
 .ta
 .ta 0.2i 1.3i 3.4i
-.mc |
 	pick_status	{\fINoPick, Ok\fP}	from wks
-.mc
 	picked_prim	LISTofPICK_ELEMENT_REF	from wks
 .ta
 .DE
@@ -9792,8 +9362,6 @@ in the PHIGS workstation resource specified by \fIwks_id\fP.
 .Fe
 
 
-.mc *
-.mc
 .AC "Free Pick Measure" 3
 .Fs
 .Na PEXFreePickMeasure
@@ -9806,8 +9374,6 @@ This request deletes the
 pick measure resource
 and frees the storage associated with it.
 .Fe
-.mc *
-.mc
 
 .AC "Get Pick Measure Attributes" 3
 .Fs
@@ -9827,8 +9393,6 @@ The specified attributes of the pick measure will be returned in
 \fIitem_list\fP.
 .Fe
 
-.mc *
-.mc
 .AC "Update Pick Measure" 3
 .Fs
 .Na PEXUpdatePickMeasure
@@ -9845,18 +9409,14 @@ set to \fIOk\fP and the \fIpicked_prim\fP will be set to the path of the
 picked primitive.  If no primitive was picked, the \fIpick_status\fP
 will be set to \fINoPick\fP.
 .LP
-.mc |
 \fIpicked_prim\fP can be used for echoing when the pick measure is created.
 However it is not used as a start path from which to start picking.
 .LP
-.mc
 The data in \fIinput_record\fP is dependent on the type of pick device for
 which the pick measure resource was created,
 that is, the \fIdev_type\fP specified to \fBPEXCreatePickMeasure\fP.
 \fBPEXGetPickMeasure\fP can be used to return the results
 of a \fBPEXUpdatePickMeasure\fP request.
-.mc *
-.mc
 .LP
 The pick measure input data records for the registered pick device types are:
 .ID
@@ -9869,9 +9429,7 @@ NPC_HitVolume	: [pick_volume : NPC_SUBVOLUME]
 .DE
 .Fe
 .bp
-.mc |
 
-.mc
 .AC "PEX Fonts" 1
 .LP
 .RU
@@ -10089,10 +9647,8 @@ FloatingPointFormat, Value, Match
 .Ds                     
 This request generates a reply which  contains extent information
 in the local 2D text coordinate system for each of the specified strings.
-.mc |
 The extents of each string in \fIstrings\fP is computed independently
 of the other strings in the list.
-.mc
 If \fIresource_id\fP is a renderer or PHIGS workstation resource, the
 \fITextFont\fP table used to perform the extents computation will be
 the \fITextFont\fP table associated with the renderer or PHIGS workstation.
@@ -10124,14 +9680,11 @@ in \fIstrings\fP are taken to have all zero metrics.
 .LP
 \fBPEXGetExtensionInfo\fP returns a 32-bit value (\fIsubset_info\fP)
 containing information
-.mc |
 about whether the PEX server is a full PEX implementation or whether it
 supports some combination of the
 standard subsets.  The top 16 bits of this 32-bit value are
-.mc
 reserved for use by vendors.  The bottom 16 bits contain information
 about how fully the PEX extension implementation supports the PEX protocol.
-.mc |
 Three PEX subsets are currently defined: "immediate rendering",
 "PHIGS workstation" and "structure rendering".
 .LP
@@ -10148,21 +9701,15 @@ allowed to return with both bit 0 and bit 1 set.
 .LP
 If a server is sent a request that is \fInot\fP part of the subset(s) 
 it supports, it will return a \fIRequest\fP error.
-.mc
 .sp
 .SH
-.mc |
 \s+2\f6Immediate Rendering Subset\fP\s-2
-.mc
 .LP
-.mc |
 An "immediate rendering" subset should fully support the following PEX
-.mc
 resources:
 .ID
 \(bu  lookup tables
 \(bu  name sets
-.mc |
 \(bu  pipeline contexts
 \(bu  renderers
 \(bu  PEX fonts
@@ -10214,7 +9761,6 @@ resources:
 .ID
 \(bu  lookup tables
 \(bu  name sets
-.mc
 \(bu  structures
 \(bu  search contexts
 \(bu  PHIGS workstations
@@ -10223,19 +9769,14 @@ resources:
 .DE
 and all of the output commands.
 To qualify as a PHIGS workstation
-.mc |
 PEX subset, an implementation must support
-.mc
 at least the protocol requests in the following list.  Protocol requests
-.mc |
 that are not supported should return an \fIImplementation\fP error.
-.mc
 .ID 0.6i
 .ta 2.5i
 \fBPEXGetExtensionInfo	PEXCreateNameSet
 PEXGetEnumeratedTypeInfo	PEXCopyNameSet
 PEXGetImpDepConstants	PEXFreeNameSet
-.mc |
 PEXMatchRendererTargets	PEXGetNameSet
 	PEXChangeNameSet
 
@@ -10247,7 +9788,6 @@ PEXGetPredefinedEntries	PEXChangeSearchContext
 PEXGetDefinedIndices	PEXSearchNetwork
 PEXGetTableEntry	
 PEXGetTableEntries
-.mc
 PEXSetTableEntries	
 PEXDeleteTableEntries	
 
@@ -10285,37 +9825,26 @@ PEXUpdatePickMeasure	PEXCloseFont\fP
 .bp
 .ta 3.0i
 .SH
-.mc |
 \s+2\f6Structure Rendering Subset\fP\s-2
-.mc
 .LP
-.mc |
 An "structure rendering" subset should fully support the following PEX
-.mc
 resources:
 .ID
 \(bu  lookup tables
 \(bu  name sets
 \(bu  pipeline contexts
 \(bu  renderers
-.mc |
 \(bu  structures
 \(bu  search contexts
-.mc
 \(bu  PEX fonts
 .DE
-.mc |
 and all of the output commands.
 To qualify as an structure rendering
 PEX subset, an implementation must support
-.mc
 at least the protocol requests in the following list.  Protocol requests
-.mc |
 that are not supported should return an \fIImplementation\fP error.
-.mc
 .ID 0.6i
 .ta 2.5i
-.mc |
 \fBPEXGetExtensionInfo	PEXCreateStructure
 PEXGetEnumeratedTypeInfo	PEXCopyStructure
 PEXGetImpDepConstants	PEXDestroyStructures
@@ -10356,24 +9885,17 @@ PEXPickOne	PEXListFonts
 PEXBeginPickAll	PEXOpenFont
 PEXEndPickAll	PEXCloseFont
 PEXPickAll\fP
-.mc
 .ta
 .DE
 .bp
-.mc |
 .AP "Appendix B: Minimum Support for PHIGS/PHIGS-PLUS"
-.mc
 .SH
-.mc |
 \s+3Appendix B: Minimum Support for PHIGS/PHIGS-PLUS\s-3
-.mc
 .LP
 .RU
 .LP
 In order to fully support a PHIGS client-side implementation and the
-.mc |
 targeted PHIGS-PLUS functionality, a PEX extension
-.mc
 implementation must meet or exceed the
 following support criteria.  Other than the minimum support criteria
 listed here and the
@@ -10391,7 +9913,6 @@ LineType	at least types 1-4 (\fISolid, Dashed, Dotted, DashDot\fP) must be suppo
 SurfaceEdgeType	at least type 1 (\fISolid\fP) must be supported
 PickDeviceType	at least pick device type 1 (\fIDC_HitBox\fP) must be supported (for full
 	implementation or for the "PHIGS workstation only" subset)
-.mc |
 PolylineInterpMethod	at least types 1-2 (\fINone, Color\fP) must be supported
 CurveApproxMethod	at least types 1-8 (\fIimp. dep., ConstantBetweenKnots, WCS_ChordalSize, 
 	NPC_ChordalSize, DC_ChordalSize, WCS_ChordalDev, NPC_ChordalDev, 
@@ -10402,29 +9923,20 @@ SurfaceApproxMethod	at least types 1-8 (\fIimp. dep., ConstantBetweenKnots, WCS_
 	NPC_ChordalSize, DC_ChordalSize, WCS_PlanarDev, NPC_PlanarDev, 
 	DC_PlanarDev\fP) must be supported
 TrimCurveApproxMethod	at least types 1-2 (\fIimp. dep., ConstantBetweenKnots\fP) must be supported
-.mc
 ModelClipOperator	at least types 1-2 (\fIReplace, Intersection\fP) must be supported
-.mc |
 LightType	at least types 1-4 (\fIAmbient, WCS_Vector, WCS_Point, WCS_Spot\fP)
-.mc
 	must be supported
-.mc |
 ColorType	type 0 (\fIIndexed\fP) and types 1 (\fIRGBFloat\fP) must be supported
-.mc
 FloatFormat	at least one of types 1-2 (\fIIEEE_754_32, DEC_F_Floating\fP) must be supported
 HLHSRMode	at least type 1 (\fIOff\fP) and one other type (\fIZBuffer, Painters, Scanline,
 	HiddenLineOnly,\fP or an implementation-dependent type) must be supported
 PromptEchoType	at least type 1 (\fIEchoPrimitive\fP) must be supported
-.mc |
 DisplayUpdateMode	at least types 1-3 (\fIVisualizeEach, VisualizeEasy, VisualizeNone\fP) must be supported
-.mc
 ColorApproxType	at least one of types 1-2 {\fIColorSpace, ColorRange\fP} must be supported
 ColorApproxModel	at least one of types 1-5 {\fIRGB, HSV, HLS, CIE, YIQ\fP} must
 	be supported
 RenderingColorModel	at least type 0 (implementation-dependent) must be supported
-.mc |
 ParametricSurfaceCharacteristics at least types 1-3 (\fINone, imp. dep., IsoparametricCurves\fP) must be supported
-.mc
 BufferMode	it is not required that an implementation support double buffering
 GDP	it is not required that an implementation support any GDPs
 GDP3	it is not required that an implementation support any GDP3s
@@ -10451,52 +9963,42 @@ surface_edge_width	surface edge widths other than 1.0 may be ignored
 model_clip_volume	must support the combining of at least six halfspaces to compute the
 	modeling clipping volume
 depth_cue attributes	depth cue attributes other than the default (depth cue off) may be ignored
-.mc |
 HLHSR_identifier 	at least one must be available	
-.mc
 specific GSEs	may be ignored
 
 .IP "\fBOutput Primitives\fP"
 .nf
 .ta 1.5i
-.mc |
 NURB surfaces	must be supported up to order six
 NURB curves	must be supported up to order six
 trim curves	must be supported up to order four
-.mc
 cell arrays	may be simulated by drawing the outline of the cell array
 specific GDPs	may be ignored
 
 .IP "\fBLookup Tables\fP"
 .nf
 .ta 1.5i
-.mc |
 LineBundle	must support at least 5 entries
 MarkerBundle	must support at least 5 entries
 TextBundle	must support at least 6 entries
 InteriorBundle	must support at least 5 entries
 EdgeBundle	must support at least 5 entries
-.mc
 Pattern	must support at least 10 entries (if interior style \fIPattern\fP supported)
 Color		must support at least 2 entries
 TextFont	must support at least 2 entries
 View		must support at least 6 entries
-.mc |
 Light		must support at least 2 entries
 DepthCue	must support at least 2 entries
-.mc
 ColorApprox	must support at least 1 entry
 
 .IP "\fBMiscellaneous\fP"
 .nf
 .ta 1.5i
 fonts	an implementation need not support drawing text primitives with X11 fonts
-.mc |
 	font \fIone\fP must be mono-spaced
 namesets	at least 64 names must be supported
 search contexts	at least one normal and one inverted filter list must be supported
 ws display priorities	at least two ws display priorities must be supported
-.mc
 .ta
 .bp
 .AP "Appendix C: Definition of PEX Errors"
@@ -10511,19 +10013,14 @@ ws display priorities	at least two ws display priorities must be supported
 \fBPEXGetEnumeratedTypeInfo\fP
 	Drawable: specified drawable resource ID is invalid
 	Value: specified enumerated type number is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 
 \fBPEXGetImpDepConstants\fP
 	Value: a specified constant name is invalid
 	FloatingPointFormat: device does not support the specified fp format
 	Drawable: specified drawable resource ID is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 
-.mc |
 \fBPEXMatchRendererTargets\fP
 	Drawable: specified drawable resource ID is invalid
 	Value: specified visual is invalid
@@ -10534,13 +10031,10 @@ ws display priorities	at least two ws display priorities must be supported
 \fBPEXEscapeWithReply\fP
 	Value: a specified constant name is invalid
 
-.mc
 \fBPEXCreateLookupTable\fP
 	IDChoice: ID already in use or not in range assigned to client
 	Drawable: specified drawable resource ID is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 	Value: table_type value does not name a valid table type
 	Alloc: server failed to allocate the requested resource
 	LookupTable: table type not supported by implementation
@@ -10557,19 +10051,13 @@ ws display priorities	at least two ws display priorities must be supported
 
 \fBPEXGetTableInfo\fP
 	Drawable: specified drawable resource ID is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 	Value: table_type value does not name a valid table type
-.mc |
 	LookupTable: table type not supported by implementation
-.mc
 	
 \fBPEXGetPredefinedEntries\fP
 	Drawable: specified drawable resource ID is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 	Value: table_type value does not name a valid table type
 	Value: start < min predefined entry
 	Value: start + count > max predefined entry
@@ -10618,9 +10106,7 @@ ws display priorities	at least two ws display priorities must be supported
 	FloatingPointFormat: device does not support the specified fp format
 	ColorType: device does not support the specified color type
 	Alloc: server failed to allocate the requested resource
-.mc |
 	NameSet: a specified name set resource ID is invalid
-.mc
 
 \fBPEXCopyPipelineContext\fP
 	PipelineContext: pc_id contains an invalid pipeline context ID
@@ -10640,9 +10126,7 @@ ws display priorities	at least two ws display priorities must be supported
 	Value: illegal bit set in item mask parameter
 	FloatingPointFormat: device does not support the specified fp format
 	ColorType: device does not support the specified color type
-.mc |
 	NameSet: a specified name set resource ID is invalid
-.mc
 
 \fBPEXCreateRenderer\fP
 	IDChoice: ID already in use or not in range assigned to client
@@ -10655,9 +10139,7 @@ ws display priorities	at least two ws display priorities must be supported
 	Value: illegal bit set in item mask parameter
 	Alloc: server failed to allocate the requested resource
 	Match: lookup table root/depth does not match example drawable's root/depth
-.mc |
 	Match: specified drawable is not supported
-.mc
 
 \fBPEXFreeRenderer\fP
 	Renderer: specified renderer resource ID is invalid
@@ -10685,20 +10167,14 @@ ws display priorities	at least two ws display priorities must be supported
 	Renderer: specified renderer resource ID is invalid
 	Drawable: specified drawable resource ID is invalid
 	Match: specified renderer resource was not created for drawables
-.mc |
 		of the same root and depth as the specified drawable 
 	Match: specified drawable is not supported
-.mc
 	Alloc: server was unable to allocate the resources necessary to do rendering
-.mc |
 	RendererState: renderer was in the \fIRendering\fP or \fIPicking\fP state
-.mc
 
 \fBPEXEndRendering\fP
 	Renderer: specified renderer resource ID is invalid
-.mc |
 	RendererState: renderer was in the \fIPicking\fP state
-.mc
 
 \fBPEXBeginStructure\fP
 	Renderer: specified renderer resource ID is invalid
@@ -10712,7 +10188,6 @@ ws display priorities	at least two ws display priorities must be supported
 	FloatingPointFormat: device does not support the specified fp format
 	OutputCommand: illegal value in output commands 
 
-.mc |
 \fBPEXRenderElements\fP
 	Renderer: specified renderer resource ID is invalid
 	Structure: specified structure resource ID is invalid
@@ -10723,20 +10198,16 @@ ws display priorities	at least two ws display priorities must be supported
 	Path: illegal or poorly-formed search path (includes invalid structure
 		IDs, invalid element offset values)
 
-.mc
 \fBPEXRenderNetwork\fP
 	Renderer: specified renderer resource ID is invalid
 	Drawable: specified drawable resource ID is invalid
 	Structure: specified structure resource ID is invalid
-.mc |
 	Match: specified renderer resource was not created for drawables
 		of the same root and depth as the specified drawable 
 	Match: specified drawable is not supported
 	Alloc: server was unable to allocate the resources necessary to do rendering
 	RendererState: renderer was in the \fIRendering\fP or \fIPicking\fP state
-.mc
 
-.mc |
 \fBPEXBeginPickOne\fP
 	Renderer: specified renderer resource ID is invalid
 	Drawable: specified drawable resource ID is invalid
@@ -10788,7 +10259,6 @@ ws display priorities	at least two ws display priorities must be supported
 	Value: bad value given for "pick_data"
 	Path: initial pick path is invalid
 
-.mc
 \fBPEXCreateStructure\fP
 	IDChoice: ID already in use or not in range assigned to client
 	Alloc: server failed to allocate the requested resource
@@ -10925,9 +10395,7 @@ ws display priorities	at least two ws display priorities must be supported
 	Drawable: specified drawable resource ID is invalid
 	Match: specified lookup table resource was not created for drawables
 		of the same root and depth as the specified drawable
-.mc |
 	Match: specified drawable is not supported
-.mc
 	LookupTable: a specified lookup table resource ID is invalid
 	NameSet: a specified name set resource ID is invalid
 	Alloc: server failed to allocate the requested resource
@@ -10944,9 +10412,7 @@ ws display priorities	at least two ws display priorities must be supported
 
 \fBPEXGetDynamics\fP
 	Drawable: specified drawable resource ID is invalid
-.mc |
 	Match: specified drawable is not supported
-.mc
 
 \fBPEXGetViewRep\fP
 	PhigsWKS: specified PHIGS workstation resource ID is invalid
@@ -10999,15 +10465,11 @@ ws display priorities	at least two ws display priorities must be supported
 \fBPEXSetHLHSRMode\fP
 	PhigsWKS: specified PHIGS workstation resource ID is invalid
 	Value: bad value for "mode" parameter
-.mc |
 	Alloc: server cannot allocate necessary resources 
-.mc
 
 \fBPEXSetWKSBufferMode\fP
 	PhigsWKS: specified PHIGS workstation resource ID is invalid
-.mc |
 	Value: bad or unsupported value for "buffer_mode" parameter
-.mc
 	Alloc: server cannot allocate resources necessary for double-buffering
 
 \fBPEXPostStructure\fP
@@ -11115,9 +10577,7 @@ the choices it made for those attributes listed as "implementation-dependent".
 .ta
 .DE
 .FS
-.mc |
 \(dg PHIGS-PLUS defines the default curve approximation type to be 1, which
-.mc
 is an implementation-dependent method.
 .FE
 
@@ -11204,9 +10664,7 @@ is an implementation-dependent method.
 .Bl "View   (0..65534, default entry = 0)"
 .LD
 .ta 0.2i 1.7i 3.7i
-.mc |
 	clip_flags	BITMASK_SHORT	all \fIOn\fP
-.mc
 	clip_limits	NPC_SUBVOLUME	(0,0,0),(1,1,1)
 	orientation	MATRIX	identity matrix
 	mapping	MATRIX	identity matrix
@@ -11286,7 +10744,6 @@ number 16, then the suggested values might be:
 	dither	SWITCH	\fIOff\fP
 .ta
 .DE
-.mc |
 .bp
 .AP "Appendix E: Registered PEX Escapes"
 .SH
@@ -11300,9 +10757,7 @@ supports can be inquired by calling \fBPEXGetEnumeratedTypeInfo\fP.  All
 registered escapes contain an \fIescape_id\fP-- this is a positive number
 which identifies the escape request.
 .LP
-.mc
 
-.mc |
 
 
 \fBSet Echo Color\fP
@@ -11334,4 +10789,3 @@ a \fIFloatingPointFormat\fP error is returned if the specified floating
 point format is not supported.  The supported color types and floating
 point formats can be inquired by calling \fBPEXGetEnumeratedTypeInfo\fI.
 .Fe
-.mc
