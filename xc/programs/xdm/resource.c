@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.39 91/01/09 17:29:14 keith Exp $
+ * $XConsortium: resource.c,v 1.40 91/01/10 10:53:59 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,11 +23,8 @@
  */
 
 # include "dm.h"
-# include <X11/Xlib.h>
-# include <X11/Xresource.h>
+# include <X11/Intrinsic.h>
 # include <X11/Xmu/CharSet.h>
-
-/* XtOffset() hack for ibmrt BandAidCompiler */
 
 char	*config;
 
@@ -149,7 +146,7 @@ struct dmResources {
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
 
-# define boffset(f)	((char *) &(((struct display *) 0)->f) - (char *) 0)
+# define boffset(f)	XtOffsetOf(struct display, f)
 
 struct displayResource {
 	char	*name, *class;
