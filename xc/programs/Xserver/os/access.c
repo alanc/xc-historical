@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.60 93/09/28 01:31:25 gildea Exp $ */
+/* $XConsortium: access.c,v 1.61 93/09/29 18:57:24 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -30,13 +30,17 @@ SOFTWARE.
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
+#ifdef ESIX
+#include <lan/socket.h>
+#else
 #include <sys/socket.h>
+#endif
 #include <sys/ioctl.h>
 #include <ctype.h>
 
-#ifdef TCPCONN
+#if defined(TCPCONN) || defined(ISC)
 #include <netinet/in.h>
-#endif /* TCPCONN */
+#endif /* TCPCONN || ISC */
 #ifdef DNETCONN
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
@@ -54,10 +58,22 @@ SOFTWARE.
 #if defined(SYSV) && defined(SYSV386)
 # include <sys/stream.h>
 #endif
+#ifdef ESIX
+# include <lan/if.h>
+#else
 # include <net/if.h>
+#endif
 #endif /* hpux */
 
+#ifdef SVR4
+#include <sys/sockio.h>
+#endif
+
+#ifdef ESIX
+#include <lan/netdb.h>
+#else
 #include <netdb.h>
+#endif
 #undef NULL
 #include <stdio.h>
 #include "dixstruct.h"
@@ -71,6 +87,11 @@ Bool defeatAccessControl = FALSE;
 			 ((fam) == (host)->family &&\
 			  (length) == (host)->len &&\
 			  !acmp (address, (host)->addr, length))
+
+#ifdef LOCALCONN
+extern int xlocal_getpeername();
+#define	getpeername xlocal_getpeername
+#endif
 
 #ifdef hpux
 #define getpeername(fd, from, fromlen)	hpux_getpeername(fd, from, fromlen)
@@ -141,21 +162,27 @@ AccessUsingXdmcp ()
     LocalHostEnabled = FALSE;
 }
 
-#if defined(SVR4) || defined (SYSV386) || (defined (hpux) && ! defined (HAS_IFREQ))
+#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
 /* Define this host for access control.  Find all the hosts the OS knows about 
  * for this fd and add them to the selfhosts list.
- * hpux, SVR4, and SYSV386 do not have SIOCGIFCONF ioctl;
  */
 DefineSelf (fd)
     int fd;
 {
+#if !defined(TCPCONN) && !defined(UNIXCONN)
+    return -1;
+#else
     register int n;
     int	len;
     caddr_t	addr;
     int		family;
     register HOST	*host;
 
+#ifdef __386BSD__
+    char name[100];
+#else
     struct utsname name;
+#endif
     register struct hostent  *hp;
 
     union {
@@ -165,6 +192,12 @@ DefineSelf (fd)
 	
     struct	sockaddr_in	*inetaddr;
 
+#ifdef __386BSD__
+    if (gethostname (name, sizeof name) < 0)
+	    hp = NULL;
+    else
+	    hp = gethostbyname (name);
+#else
     /* Why not use gethostname()?  Well, at least on my system, I've had to
      * make an ugly kernel patch to get a name longer than 8 characters, and
      * uname() lets me access to the whole string (it smashes release, you
@@ -172,6 +205,7 @@ DefineSelf (fd)
      */
     uname(&name);
     hp = gethostbyname (name.nodename);
+#endif
     if (hp != NULL)
     {
 	saddr.sa.sa_family = hp->h_addrtype;
@@ -217,6 +251,7 @@ DefineSelf (fd)
 	    selfhosts = host;
 	}
     }
+#endif /* !TCPCONN && !UNIXCONN */
 }
 
 #else
@@ -449,6 +484,8 @@ ResetHosts (display)
     {
         while (fgets (ohostname, sizeof (ohostname), fd))
 	{
+	if (*ohostname == '#')
+	    continue;
     	if (ptr = strchr(ohostname, '\n'))
     	    *ptr = 0;
         hostlen = strlen(ohostname) + 1;
@@ -600,8 +637,6 @@ AddHost (client, family, length, pAddr)
     pointer             pAddr;
 {
     int			len;
-    register HOST	*host;
-    int                 unixFamily;
 
     if (!AuthorizedClient(client))
 	return(BadAccess);
