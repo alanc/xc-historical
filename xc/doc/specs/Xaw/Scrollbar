@@ -17,7 +17,7 @@ Class		scrollbarWidgetClass
 .IN "scrollbarWidgetClass" ""
 Class Name	Scrollbar
 .IN "Scrollbar widget" "class name"
-Superclass	Core
+Superclass	Simple
 .sp
 .De
 .LP
@@ -87,33 +87,39 @@ backgroundPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
-colormap	Colormap	Pointer		Parent's Colormap
-depth	Depth	int	C	Parent's Depth
+colormap	Colormap	Colormap		parent's Colormap
+cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
+depth	Depth	int	C	parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
 height	Height	Dimension	A	depends on orientation
-jumpProc	Callback	Callback		NULL
+insensitiveBorder	Insensitive	Pixmap		GreyPixmap
+jumpProc	Callback	XtCallbackList		NULL
 length	Length	Dimension		1
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 minimumThumb	MinimumThumb	Dimension		7
 orientation	Orientation	Orientation		XtorientVertical (vertical)
-screen	Screen	Pointer	R	Parent's Screen
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
+screen	Screen	Screen	R	parent's Screen
 scrollDCursor	Cursor	Cursor		XC_sb_down_arrow
 scrollHCursor	Cursor	Cursor		XC_sb_h_double_arrow
 scrollLCursor	Cursor	Cursor		XC_sb_left_arrow
-scrollProc	Callback	Callback		NULL
+scrollProc	Callback	XtCallbackList		NULL
 scrollRCursor	Cursor	Cursor		XC_sb_right_arrow
 scrollUCursor	Cursor	Cursor		XC_sb_up_arrow
 scrollVCursor	Cursor	Cursor		XC_sb_v_arrow
 sensitive	Sensitive	Boolean		True
 shown	Shown	Float		0.0
 thickness	Thickness	Dimension		14
-thumb	Thumb	Pixmap		GreyPixmap
+thumb	Thumb	Bitmap		GreyPixmap
+thumbProc	Callback	XtCallbackList		NULL
 topOfThumb	TopOfThumb	Float		0.0
 translations	Translations	TranslationTable		See below
 width	Width	Dimension	A	depends on orientation
-x	X	Position		0
-y	Y	Position		0
+x	Position	Position		0
+y	Position	Position		0
 .sp 3p
 _
 .TE
@@ -129,22 +135,25 @@ _
 .Bp
 .Bw
 .Cm
-.Cu Bold
+.Cu
+.Pn
+.Pn
 .Dp
 .Dc
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the widget's colormap to derive the color
 used to draw the thumb.
 .Hw
+.Ib
 .IP \fBjumpProc\fP 1.5i
 All functions on this callback list are called when the
 \fBNotifyThumb\fP action is invoked.  See the \fBScrollbar
 Actions\fP section for details.
 .IP \fBlength\fP 1.5i
 The height of a vertical scrollbar or the width of a horizontal scrollbar.
+.Mm
 .IP \fBminimumThumb\fP 1.5i
 The smallest size, in pixels, to which the thumb can shrink.
-.Mm
 .IP \fBorientation\fP 1.5i
 The orientation is the direction that the thumb will be allowed to move.
 This value can be either \fBXtorientVertical\fP or
@@ -152,6 +161,9 @@ This value can be either \fBXtorientVertical\fP or
 .IN "XtorientVertical" ""
 .IN "XtorientHorizontal" ""
 .Rs "vertical \fPand\fB horizontal"
+.Pf
+.Pb
+.Sc
 .IP \fBscrollDCursor\fP 1.5i
 This cursor is used when scrolling backward in a vertical scrollbar.
 .IP \fBscrollHCursor\fP 1.5i
@@ -170,7 +182,6 @@ This cursor is used when scrolling forward in a vertical scrollbar, or when
 thumbing a horizontal scrollbar.
 .IP \fBscrollVCursor\fP 1.5i
 This cursor is used when a vertical scrollbar is inactive.
-.Sc
 .Se
 .IP \fBshown\fP 1.5i
 This is the size of the thumb, expressed as a percentage (0.0 - 1.0)
