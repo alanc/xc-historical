@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.35 91/10/16 21:35:06 eswu Exp $ */
+/* $XConsortium: List.c,v 1.36 93/09/21 15:43:32 kaleb Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -837,9 +837,9 @@ Cardinal *num_args;
     ListWidget nl = (ListWidget) new;
     Boolean redraw = FALSE;
 
-    if ((cl->list.foreground != rl->list.foreground) ||
-	(cl->core.background_pixel != rl->core.background_pixel) ||
-	(cl->list.font != rl->list.font) ) {
+    if ((cl->list.foreground != nl->list.foreground) ||
+	(cl->core.background_pixel != nl->core.background_pixel) ||
+	(cl->list.font != nl->list.font) ) {
 	XGCValues values;
 	XGetGCValues(XtDisplay(current), cl->list.graygc, GCTile, &values);
 	XmuReleaseStippledPixmap(XtScreen(current), values.tile);
@@ -852,36 +852,36 @@ Cardinal *num_args;
 
     /* Reset row height. */
 
-    if ((cl->list.row_space != rl->list.row_space) ||
-	(cl->list.font != rl->list.font)) 
+    if ((cl->list.row_space != nl->list.row_space) ||
+	(cl->list.font != nl->list.font)) 
         nl->list.row_height = nl->list.font->max_bounds.ascent
 	                    + nl->list.font->max_bounds.descent
 			    + nl->list.row_space;
     
-    if ((cl->core.width != rl->core.width)                     ||
-	(cl->core.height != rl->core.height)                   ||
-	(cl->list.internal_width != rl->list.internal_width)   ||
-	(cl->list.internal_height != rl->list.internal_height) ||
-	(cl->list.column_space != rl->list.column_space)       ||
-	(cl->list.row_space != rl->list.row_space)             ||
-	(cl->list.default_cols != rl->list.default_cols)       ||
-	(  (cl->list.force_cols != rl->list.force_cols) &&
-	   (rl->list.force_cols != rl->list.ncols) )           ||
-	(cl->list.vertical_cols != rl->list.vertical_cols)     ||
-	(cl->list.longest != rl->list.longest)                 ||
-	(cl->list.nitems != rl->list.nitems)                   ||
-	(cl->list.font != rl->list.font)                       ||
-	(cl->list.list != rl->list.list)                        ) {
+    if ((cl->core.width != nl->core.width)                     ||
+	(cl->core.height != nl->core.height)                   ||
+	(cl->list.internal_width != nl->list.internal_width)   ||
+	(cl->list.internal_height != nl->list.internal_height) ||
+	(cl->list.column_space != nl->list.column_space)       ||
+	(cl->list.row_space != nl->list.row_space)             ||
+	(cl->list.default_cols != nl->list.default_cols)       ||
+	(  (cl->list.force_cols != nl->list.force_cols) &&
+	   (nl->list.force_cols != nl->list.ncols) )           ||
+	(cl->list.vertical_cols != nl->list.vertical_cols)     ||
+	(cl->list.longest != nl->list.longest)                 ||
+	(cl->list.nitems != nl->list.nitems)                   ||
+	(cl->list.font != nl->list.font)                       ||
+	(cl->list.list != nl->list.list)                        ) {
 
       ResetList(new, TRUE, TRUE);
       redraw = TRUE;
     }
 
-    if (cl->list.list != rl->list.list)
+    if (cl->list.list != nl->list.list)
 	nl->list.is_highlighted = nl->list.highlight = NO_HIGHLIGHT;
 
-    if ((cl->core.sensitive != rl->core.sensitive) ||
-	(cl->core.ancestor_sensitive != rl->core.ancestor_sensitive)) {
+    if ((cl->core.sensitive != nl->core.sensitive) ||
+	(cl->core.ancestor_sensitive != nl->core.ancestor_sensitive)) {
         nl->list.highlight = NO_HIGHLIGHT;
 	redraw = TRUE;
     }
