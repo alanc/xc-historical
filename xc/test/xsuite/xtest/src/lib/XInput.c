@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: XInput.c,v 1.1 94/01/29 15:14:23 rws Exp $ */
+#include <stdio.h>
 #include "extensions/XIproto.h"
 #include "extensions/XInput.h"
 #include "XItest.h"
@@ -53,6 +54,7 @@ Close_Extension_Display()
 Setup_Extension_DeviceInfo(dmask)
     unsigned int dmask;
     {
+    char *disp;
     int handle_x_errors();
     int i, j, k, num_feedbacks,ndevices,numvaluators;
     XModifierKeymap *mmap;
@@ -91,8 +93,17 @@ Setup_Extension_DeviceInfo(dmask)
 	    devicemappingnotifyclass,
 	    kchangedevicenotifyclass;
 
-    if (!dpy2)
-        dpy2 = XOpenDisplay("");
+    /*
+     * Get the display to use and open it.
+     */
+    disp = tet_getvar("XT_DISPLAY");
+
+    if (disp == (char*)0) {
+	report("XT_DISPLAY was not set.  Can not continue.");
+	return;
+    }
+
+    dpy2 = XOpenDisplay(disp);
     if (!init_xinput(dpy2))
 	return False;
     XSetErrorHandler(handle_x_errors);
@@ -187,7 +198,7 @@ Setup_Extension_DeviceInfo(dmask)
 		case ValuatorClass:
 		    {
 		    XValuatorInfo *V = (XValuatorInfo *) any;
-		    numvaluators += V->num_axes;
+		    numvaluators = V->num_axes;
 		    Devs.Valuator = dev;
 		    mask |= ValMask;
 		    DeviceMotionNotify (dev, devicemotionnotify,
@@ -293,6 +304,8 @@ Setup_Extension_DeviceInfo(dmask)
 		mask |= DModMask;
 		}
 	    }
+	else if (!novaluators)
+	    NumValuators=numvaluators;
 	baddev = dev;
 	Devs.NoFeedback=0;
 	state = NULL;
