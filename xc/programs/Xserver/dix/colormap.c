@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.10 90/03/20 15:27:56 keith Exp $ */
+/* $XConsortium: colormap.c,v 5.11 90/03/28 17:14:35 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -230,7 +230,7 @@ CreateColormap (mid, pScreen, pVisual, ppcmap, alloc, client)
     pmap->flags |= BeingCreated;
     if (!(*pScreen->CreateColormap)(pmap))
     {
-	FreeColormap(pmap, mid);
+	FreeResource (mid, RT_NONE);
 	return BadAlloc;
     }
     pmap->flags &= ~BeingCreated;
