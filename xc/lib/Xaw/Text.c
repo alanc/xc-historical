@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.123 89/11/07 18:38:09 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.124 89/11/11 16:25:11 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1635,8 +1635,7 @@ XawTextBlock *text;
    * fixup all current line table entries to reflect edit.
    * %%% it is not legal to do arithmetic on positions.
    * using Scan would be more proper.
-   */
-
+   */ 
   if (delta != 0) {
     XawTextLineTableEntry *lineP;
     i = LineForPosition(ctx, pos1) + 1;
@@ -1678,7 +1677,7 @@ XawTextPosition pos1, pos2;
   Position x, y;
   int height, line, i, lastPos = ctx->text.lastPos;
   XawTextPosition startPos, endPos;
-  Boolean clear_eol;
+  Boolean clear_eol, done_painting;
 
   pos1 = (pos1 < ctx->text.lt.top) ? ctx->text.lt.top : pos1;
   pos2 = FindGoodPosition(ctx, pos2);
@@ -1689,11 +1688,14 @@ XawTextPosition pos1, pos2;
                                    (i < ctx->text.lt.lines) ; i++) {
 
     
-    if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2 )
-      clear_eol = ( ((endPos = pos2) >= lastPos) && 
-		    !ctx->text.single_char);
-    else 
+    if ( (endPos = ctx->text.lt.info[i + 1].position) > pos2 ) {
+      clear_eol = ((endPos = pos2) >= lastPos);
+      done_painting = (!clear_eol && ctx->text.single_char);
+    }
+    else {
       clear_eol = TRUE;
+      done_painting = FALSE;
+    }
 
     height = ctx->text.lt.info[i + 1].y - ctx->text.lt.info[i].y;
 
@@ -1723,7 +1725,7 @@ XawTextPosition pos1, pos2;
 
     x = (Position) ctx->text.margin.left;
     y = ctx->text.lt.info[i + 1].y;
-    if ( !clear_eol || (y >= ctx->core.height - ctx->text.margin.bottom) )
+    if ( done_painting || (y >= ctx->core.height - ctx->text.margin.bottom) )
       break;
   }
   ctx->text.single_char = FALSE;
