@@ -681,23 +681,34 @@
 ;;
 (defmacro holding-lock ((locator &optional whostate) &body body)
   ;; This macro is for use in a multi-process environment.
-  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym)))
-    `(let* ((,lock ,locator)
+  (let ((lock (gensym)) (curproc (gensym)) (locker (gensym))
+	(without-interrupts-state (gensym)))
+    
+    `(let* ((,without-interrupts-state excl::*without-interrupts*)
+	    (excl::*without-interrupts* t)
+	    (,lock ,locator)
 	    (,curproc mp:*current-process*) ; nil if in scheduler (wait fun)
 	    (,locker (mp:process-lock-locker ,lock)))
+       (declare (special *inside-event-listen-catch*))
        
        (unwind-protect
 	    (progn 
 	      (if (and (null ,curproc) ,locker)
-		  (if (member 'event-listen (excl::all-catch-tags) :test #'eq)
+		  (if (and (boundp '*inside-event-listen-catch*)
+			   *inside-event-listen-catch*)
 		      (throw 'event-listen :would-block)
-		    (error "The only CLX function call allowed from a process wait function is \
-       event-listen with timeout 0.")))
-	      (unless (eql ,locker ,curproc)
-		(mp:process-lock ,lock ,curproc
-				 ,@(when whostate `(,whostate))))
+		    (error "The only CLX function call allowed from a process wait \
+       function is event-listen with timeout 0.")))
+	      (excl:if* (eq ,locker ,curproc)
+		 then
+		      (setq ,locker nil)
+		 else
+		      (setq ,locker ,curproc)
+		      (mp:process-lock ,lock ,curproc
+				       ,@(when whostate `(,whostate))))
+	      (setq excl::*without-interrupts* ,without-interrupts-state)
 	      ,@body)
-	 (if (and ,curproc (eql (mp:process-lock-locker ,lock) ,curproc))
+	 (if (and ,curproc (eq ,locker ,curproc))
 	     (mp:process-unlock ,lock ,curproc))))))
 
 ;; If you're not sharing DISPLAY objects within a multi-processing
@@ -726,11 +737,15 @@
   `(pop ,list))
 
 #+excl
+(defvar *inside-event-listen-catch* nil)
+
+#+excl
 (defmacro wrap-event-listen (form &body body)
   ;; If we are running a process wait function (in the scheduler stack group)
   ;; and the input lock is held by another process, return nil.
-  `(unless (eq :would-block (catch 'event-listen ,form))
-     . ,body))
+  `(let ((*inside-event-listen-catch* t))
+     (unless (eq :would-block (catch 'event-listen ,form))
+       . ,body)))
 
 #-excl
 (defmacro wrap-event-listen (form &body body)
