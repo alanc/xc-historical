@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetImage.c,v 11.15 87/09/01 14:49:28 toddb Locked $ */
+/* $Header: XGetImage.c,v 11.16 87/09/01 14:49:58 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -11,13 +11,23 @@
 
 extern XImage *XCreateImage();
 
+static int Ones(mask)                /* HACKMEM 169 */
+    unsigned long mask;
+{
+    register int y;
+
+    y = (mask >> 1) &033333333333;
+    y = mask - y - ((y >>1) & 033333333333);
+    return (((y + (y >> 3)) & 030707070707) % 077);
+}
+
 XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
      register Display *dpy;
      Drawable d;
      int x, y;
      unsigned int width, height;
      long plane_mask;
-     int format;	/* either XYFormat or ZFormat */
+     int format;	/* either XYPixmap or ZPixmap */
 {
 	xGetImageReply rep;
 	register xGetImageReq *req;
@@ -46,16 +56,20 @@ XImage *XGetImage (dpy, d, x, y, width, height, plane_mask, format)
 	nbytes = (long)rep.length << 2;
 	data = (char *) Xmalloc((unsigned) nbytes);
         _XReadPad (dpy, data, nbytes);
-	image = XCreateImage(dpy, _XVIDtoVisual(dpy, rep.visual),
-		(int) rep.depth, format, 0, data, width, height,
- 		((format == ZPixmap) ? _XGetScanlinePad(dpy, rep.depth)
- 				     : dpy->bitmap_pad), 0);
-	
+        if (format == XYPixmap)
+	   image = XCreateImage(dpy, _XVIDtoVisual(dpy, rep.visual),
+		  Ones (plane_mask & ((1 << rep.depth) - 1)),
+		  format, 0, data, width, height, dpy->bitmap_pad, 0);
+	else /* format == ZPixmap */
+           image = XCreateImage (dpy, _XVIDtoVisual(dpy, rep.visual),
+		 rep.depth, ZPixmap, 0, data, width, height,
+		  _XGetScanlinePad(dpy, rep.depth), 0);
 
 	UnlockDisplay(dpy);
 	SyncHandle();
 	return (image);
 }
+
 XGetSubImage(dpy, d, x, y, width, height, plane_mask, format,
                dest_image, dest_x, dest_y)
      register Display *dpy;
