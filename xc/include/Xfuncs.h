@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.1 90/12/26 15:52:32 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.1 90/12/26 16:04:44 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -14,8 +14,6 @@
  * without express or implied warranty.
  *
  */
-
-/* Watch out: bcopy can have the order of evaluation of arguments reversed */
 
 #ifndef _XFUNCS_H_
 #define _XFUNCS_H_
@@ -34,7 +32,12 @@
 #else
 #if defined(SYSV) && !defined(_XUSEBFUNCS)
 #include <memory.h>
+#ifdef _XBCOPYFUNC
+#define bcopy _XBCOPYFUNC
+#define _XNEEDBCOPYFUNC
+#else
 void bcopy();
+#endif
 #define bzero(b,len) memset(b, 0, len)
 #define bcmp(b1,b2,len) memcmp(b1, b2, len)
 #else
