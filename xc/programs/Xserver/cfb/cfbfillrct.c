@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.6 89/09/14 17:04:23 rws Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.7 89/11/02 13:48:53 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -46,12 +46,12 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
 {
     unsigned long   *pdstBase, *pdstRect;
     int		    widthDst;
-    int		    h;
-    unsigned long   fill;
-    unsigned long   *pdst;
-    unsigned long   leftMask, rightMask;
+    register int    h;
+    register unsigned long   fill;
+    register unsigned long   *pdst;
+    register unsigned long   leftMask, rightMask;
     int		    nmiddle;
-    int		    m;
+    register int    m;
     int		    w;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
@@ -76,7 +76,7 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
 #if PPW == 4
 	if (w == 1)
 	{
-	    char    *pdstb = ((char *) pdstRect) + pBox->x1;
+	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
 	    int	    incr = widthDst << 2;
 
 	    if (isCopy)
@@ -344,7 +344,7 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
 void
 cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     DrawablePtr pDrawable;
-    GCPtr	pGC;
+    register GCPtr pGC;
     int		nrectFill; 	/* number of rectangles to fill */
     xRectangle	*prectInit;  	/* Pointer to first rectangle to fill */
 {
