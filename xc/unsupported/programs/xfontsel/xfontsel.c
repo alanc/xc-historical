@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.23 91/02/17 16:01:53 dave Exp $
+/* $XConsortium: xfontsel.c,v 1.24 91/02/17 17:05:12 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -35,6 +35,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xmu/Atoms.h>
+#include <X11/Xmu/StdSel.h>
 #include <X11/Xfuncs.h>
 
 #define MIN_APP_DEFAULTS_VERSION 1
@@ -1017,7 +1018,13 @@ Boolean ConvertSelection(w, selection, target, type, value, length, format)
     unsigned long *length;
     int *format;
 {
-    if (XmuConvertStandardSelection(w,selection,target,type,value,length,format))
+    /* XmuConvertStandardSelection will use the second parameter only when
+     * converting to the target TIMESTAMP.  However, it will never be
+     * called upon to perform this conversion, because Xt will handle it
+     * internally.  CurrentTime will never be used.
+     */
+    if (XmuConvertStandardSelection(w, CurrentTime, selection, target, type,
+				    (caddr_t *) value, length, format))
 	return True;
 
     if (*target == XA_STRING) {
