@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Xrm.c,v 1.10 88/02/26 12:56:11 swick Exp $";
+static char rcsid[] = "$Header: Xrm.c,v 1.11 88/04/09 16:21:21 rws Exp $";
 #endif lint
 
 /***********************************************************
@@ -346,8 +346,12 @@ static char *getstring(buf, nchars, dp)
 	if (*src == '\0') return NULL;
 	while (--nchars >= 0) {
 		*dst++ = c = *src++;
-		if (c == '\n' || c == '\0') {
+		if (c == '\n') {
 			*dp = src;
+			return (buf);
+		}
+		if (c == '\0') {
+			*dp = src-1;
 			return (buf);
 		}
 	}
