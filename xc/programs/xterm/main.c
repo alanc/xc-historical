@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.107 89/03/22 18:21:38 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.108 89/03/23 07:55:12 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -237,6 +237,18 @@ static char etc_lastlog[] = LASTLOG_FILENAME;
 static char etc_wtmp[] = WTMP_FILENAME;
 #endif
 #endif	/* USE_SYSV_UTMP */
+
+/*
+ * Some people with 4.3bsd /bin/login seem to like to use login -p -f user
+ * to implement xterm -ls.  They can turn on USE_LOGIN_DASH_P and turn off
+ * WTMP and LASTLOG.
+ */
+#ifdef USE_LOGIN_DASH_P
+#ifndef LOGIN_FILENAME
+#define LOGIN_FILENAME "/bin/login"
+#endif
+static char bin_login[] = LOGIN_FILENAME;
+#endif
 
 static int inhibit;
 static char passedPty[2];	/* name if pty if slave */
@@ -1759,6 +1771,11 @@ spawn ()
 		 NTTYDISC : 0;
 		ioctl(0, TIOCSETD, (char *)&ldisc);
 #endif	/* !USE_SYSV_TERMIO */
+
+#ifdef USE_LOGIN_DASH_P
+		if (term->misc.login_shell && pw && added_utmp_entry)
+		  execl (bin_login, "login", "-p", "-f", pw->pw_name, 0);
+#endif
 		execlp (ptr, term->misc.login_shell ? shname_minus : shname, 0);
 
 		/* Exec failed. */
