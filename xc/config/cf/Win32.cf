@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.21 93/08/18 15:29:21 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.22 93/08/18 20:28:57 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1
 XCOMM operating system:  OSName
@@ -12,6 +12,7 @@ XCOMM operating system:  OSName
 /* brain-damaged windows headers will not compile with -Za */
 #define StandardDefines		-DWIN32 -D__STDC__ CpuDefines
 #define DebuggableCDebugFlags -Zi
+#define ThreadedX		YES
 #define CpCmd copy
 #define LnCmd copy
 #define MvCmd ren
