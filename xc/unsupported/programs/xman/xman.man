@@ -1,9 +1,12 @@
+.\" $XConsortium$
 .TH XMAN 1 "Release 5" "X Version 11"
 .SH NAME
-xman - Manual page display program for the X Window System.
+xman \- Manual page display program for the X Window System
 .SH SYNOPSIS
 .B xman
-[-options ...]
+[
+.I \-options
+\&.\|.\|. ]
 .SH DESCRIPTION
 .I Xman
 is a manual page browser.  The default size of the initial \fIxman\fP
@@ -11,13 +14,31 @@ window is small so that you can leave it running throughout your entire login
 session.  In the initial window there are three options:
 \fIHelp\fP will pop up a window with on-line help, \fIQuit\fP will
 exit, and \fIManual Page\fP will pop up a window with a manual page
-browser in it.  You may pop up more than one manual page browser window
+browser in it.
+Typing Control-S will pop up a window prompting for a specific manual
+page to display.
+You may display more than one manual page browser window at a time
 from a single execution of \fIxman\fP.
 .PP
-For further information on using \fIxman\fP please read the on-line
-help information.  The rest of this manual page will discuss
+For further information on using \fIxman\fP, please read the on-line
+help information.  Most of this manual will discuss
 customization of \fIxman\fP.
+.SH "OPTIONS"
 .PP
+Xman supports all standard Toolkit command line arguments (see
+\fIX\fP(1)).  The following additional arguments are supported.
+.sp
+.IP "\fB\-helpfile\fP \fIfilename\fP"
+Specifies a helpfile to use other than the default.
+.IP \fB\-bothshown\fP
+Allows both the manual page and manual directory to be on the screen at
+the same time.
+.IP \fB\-notopbox\fP
+Starts without the Top Menu with the three buttons in it.
+.IP "\fB\-geometry\fP \fIWxH+X+Y\fP"
+Sets the size and location of the Top Menu with the three buttons in it.
+.IP "\fB\-pagesize\fP \fIWxH+X+Y\fP"
+Sets the size and location of all the Manual Pages.
 .SH "CUSTOMIZING XMAN"
 .PP
 .I Xman
@@ -66,15 +87,16 @@ alphabetically sorted when the user selects the menu item called
 any of the directories in her MANPATH, or there are no manual pages
 in any of the directories called \fImano\fP then no menu item will be
 displayed for the section called \fI(o) Old\fP.
-.PP
-.sh "THE MANDESC FILE"        
+.SH "THE MANDESC FILE"        
 .PP
 By using the \fImandesc\fP file a user or system manager is able to 
 more closely control which manual pages will appear in each of the sections
 represented by menu items in the \fISections\fP menu.  This 
 functionality is only available on a section by section basis, and individual
-manual pages may not be handled in this manner (Although generous use of 
-symbolic links - ln(1) - will allow almost any configuration you can imagine).
+manual pages may not be handled in this manner.
+(Although generous use of 
+symbolic links \(em see \fIln\fP(1) \(em will allow
+almost any configuration you can imagine.)
 .PP
 The format of the mandesc file is a character followed by a label.  The
 character determines which of the sections will be added under this label.
@@ -127,24 +149,6 @@ Xman will read any section that is of the from \fIman<character>\fP, where
 <character> is an upper or lower case letter (they are treated distinctly) or
 a numeral (0-9).  Be warned, however, that man(1) and catman(8) will 
 not search directories that are non-standard.
-.PP
-.SH "COMMAND LINE OPTIONS"
-.PP
-Xman supports all standard Toolkit command line arguments (see
-\fIX(1)\fP).  The following additional arguments are supported.
-.sp
-.IP "\fB-helpfile\fP \fIfilename\fP"
-Specifies a helpfile to use other than the default.
-.IP \fB-bothshown\fP
-Allows both the manual page and manual directory to be on the screen at
-the same time.
-.IP \fB-notopbox\fP
-Starts without the Top Menu with the three buttons in it.
-.IP "\fB-geometry\fP \fIWxH+X+Y\fP"
-Sets the size and location of the Top Menu with the three buttons in it.
-.IP "\fB-pagesize\fP \fIWxH+X+Y\fP"
-Sets the size and location of all the Manual Pages.
-.PP
 .SH WIDGETS
 In order to specify resources, it is useful to know the hierarchy of
 the widgets which compose \fIxman\fR.  In the notation below,
@@ -180,7 +184,7 @@ Xman xman	\fI(This widget is never used)\fP
 				List  directory	
 				.
 				. (one for each section, 
-				.  created "on the fly")
+				.  created on the fly)
 				.
 			ScrollByLine  manualPage
 		SimpleMenu  optionMenu
@@ -250,7 +254,7 @@ The font to use for italic text in the manual pages.
 The font to use for the directory text.
 .TP 18
 \fBbothShown\fP (Class \fBBoolean\fP)
-Either 'true' or 'false', specifies whether or not you want both the
+Either `true' or `false,' specifies whether or not you want both the
 directory and the manual page shown at start up.
 .TP 18
 \fBdirectoryHeight\fP (Class \fBDirectoryHeight\fP)
@@ -277,14 +281,13 @@ name was chosen to be compatible with xterm.
 Use this rather than the system default helpfile.
 .TP 18
 \fBtopBox\fP (Class \fBBoolean\fP)
-Either 'true' or 'false', determines whether the top box (containing
+Either `true' or `false,' determines whether the top box (containing
 the help, quit and manual page buttons) or a manual page is put on the screen
 at start-up.  The default is true.
 .TP 18
 \fBverticalList\fP (Class \fBBoolean\fP)
-Either 'true' or 'false', determines whether the directory listing is 
+Either `true' or `false,' determines whether the directory listing is 
 vertically or horizontally organized.  The default is horizontal (false).
-.PP
 .SH "GLOBAL ACTIONS"
 \fIXman\fP defines all user interaction through global actions.  This allows
 the user to modify the translation table of any widget, and bind any event
@@ -325,8 +328,8 @@ called it will remove the window, and clean up all resources
 associated with it.
 .TP 1.5i
 .B SaveFormattedPage(\fIaction\fP)
-This action can only be used in the "likeToSave" popup widget, and
-tells xman whether to \fBSave\fP or \fPCancel\fP a save of the 
+This action can only be used in the \fBlikeToSave\fP popup widget, and
+tells xman whether to \fBSave\fP or \fBCancel\fP a save of the 
 manual page that has just been formatted.
 .TP 1.5i
 .B ShowVersion()
@@ -343,10 +346,12 @@ specifies required resources
 .I Xman
 creates temporary files in /tmp for all unformatted man pages and all apropos
 searches.
-.PP
 .SH "SEE ALSO"
-X(1), X(8C), man(1), apropos(1), catman(8), Athena Widget Set
-.PP
+.IR X (1),
+.IR man (1),
+.IR apropos (1),
+.IR catman (8),
+.I "Athena Widget Set"
 .SH ENVIRONMENT
 .TP 1.5i
 .B DISPLAY 
@@ -361,13 +366,10 @@ to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .TP 1.5i
 .B XAPPLRESDIR
-A string that will have "Xman" appended to it.  This string will be
+A string that will have ``Xman'' appended to it.  This string will be
 the full path name of a user app-defaults file to be merged into the
 resource database after the system app-defaults file, and before
 the resources that are attached to the display.
-.PP
-.SH BUGS
-There probably are some.
 .SH COPYRIGHT
 Copyright 1988 by Massachusetts Institute of Technology.
 .br
