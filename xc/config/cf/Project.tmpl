@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.92 91/02/15 14:46:04 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -34,6 +34,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.92 91/02/15 14:46:04 rws Exp $
 #endif
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
+#endif
+#ifndef BuildXInputLib
+#define BuildXInputLib		YES
 #endif
 #ifndef BuildExamples
 #define BuildExamples		NO	/* they take a lot of space */
@@ -337,9 +340,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.92 91/02/15 14:46:04 rws Exp $
 #endif
 
 
-#ifndef HasInputExtension
-#define HasInputExtension YES
-#endif
 #ifndef DoInstallExtensionsIntoXlib
 #define DoInstallExtensionsIntoXlib NO	/* merge libXext.a into libX11.a */
 #endif
@@ -353,7 +353,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.92 91/02/15 14:46:04 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.92 91/02/15 14:46:04 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.93 91/02/15 16:00:44 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
