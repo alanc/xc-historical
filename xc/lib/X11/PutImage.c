@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.61 91/12/18 19:33:43 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.62 91/12/21 16:11:56 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,7 +13,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <X11/Xlibint.h>
+#include "Xlibint.h"
+#include "Xutil.h"
 #include <stdio.h>
 
 #if __STDC__
@@ -939,6 +940,8 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	    img.xoffset = 0;
 	    img.format = ZPixmap;
 	    img.byte_order = dpy->byte_order;
+	    img.bitmap_unit = dpy->bitmap_unit;
+	    img.bitmap_bit_order = dpy->bitmap_bit_order;
 	    img.bitmap_pad = dest_scanline_pad;
 	    img.depth = image->depth;
 	    img.bits_per_pixel = dest_bits_per_pixel;
