@@ -327,6 +327,7 @@ SetTimeSinceLastInputEvent()
 /*
  * DDX - specific abort routine.  Called by AbortServer().
  */
+void
 AbortDDX()
 {
 }
