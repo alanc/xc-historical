@@ -2578,7 +2578,8 @@
 	   (padded-pixels-per-line
 	     (floor padded-bits-per-line bits-per-pixel))
 	   (pixarray-padded-pixels-per-line
-	     (array-row-major-index pixarray 1 0))
+	     #+Genera (sys:array-row-span pixarray)
+	     #-Genera (array-dimension pixarray 1))
 	   (pixarray-padded-bits-per-line
 	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
@@ -2878,7 +2879,8 @@
 	   (padded-pixels-per-line
 	     (floor padded-bits-per-line bits-per-pixel))
 	   (pixarray-padded-pixels-per-line
-	     (array-row-major-index pixarray 1 0))
+	     #+Genera (sys:array-row-span pixarray)
+	     #-Genera (array-dimension pixarray 1))
 	   (pixarray-padded-bits-per-line
 	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
@@ -2916,11 +2918,13 @@
   (or
     #+lispm
     (let* ((pixarray-padded-pixels-per-line
-	     (array-row-major-index pixarray 1 0))
+	     #+Genera (sys:array-row-span pixarray)
+	     #-Genera (array-dimension pixarray 1))
 	   (pixarray-padded-bits-per-line
 	     (* pixarray-padded-pixels-per-line bits-per-pixel))
 	   (copy-padded-pixels-per-line
-	     (array-row-major-index copy 1 0))
+	     #+Genera (sys:array-row-span copy)
+	     #-Genera (array-dimension copy 1))
 	   (copy-padded-bits-per-line
 	     (* copy-padded-pixels-per-line bits-per-pixel)))
       (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
