@@ -419,11 +419,11 @@ IdentString* IdentifierImpl::string() { return value_; }
 RootExpr::RootExpr(SourcePosition* p) : ExprImpl(p) { }
 RootExpr::~RootExpr() { }
 
-InterfaceDef::InterfaceDef(SourcePosition* p) : ExprImpl(p) { }
-InterfaceDef::~InterfaceDef() { }
-
 Module::Module(SourcePosition* p) : ExprImpl(p) { }
 Module::~Module() { }
+
+InterfaceDef::InterfaceDef(SourcePosition* p) : ExprImpl(p) { }
+InterfaceDef::~InterfaceDef() { }
 
 Accessor::Accessor(SourcePosition* p) : ExprImpl(p) { }
 Accessor::~Accessor() { }
@@ -478,9 +478,6 @@ SequenceDecl::~SequenceDecl() { }
 
 StringDecl::StringDecl(SourcePosition* p) : ExprImpl(p) { }
 StringDecl::~StringDecl() { }
-
-AttrDecl::AttrDecl(SourcePosition* p) : ExprImpl(p) { }
-AttrDecl::~AttrDecl() { }
 
 ExceptDecl::ExceptDecl(SourcePosition* p) : StructDecl(p) { }
 ExceptDecl::~ExceptDecl() { }

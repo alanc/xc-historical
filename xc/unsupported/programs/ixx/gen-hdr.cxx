@@ -69,80 +69,202 @@ Boolean RootExpr::generate(Generator* g) {
 	s = p->filename();
     }
     g->emit_edit_warning(s);
+    if (defs_ != nil) {
+	g->need_sep(false);
+	put_list(defs_, &RootExpr::put_decls, g);
+	if (!g->cdecls()) {
+	    put_list(defs_, &RootExpr::put_inlines, g);
+	}
+    }
     if (g->begin_file(g->stubfile())) {
 	g->emit_edit_warning(s);
 	g->emit_stub_includes();
+	g->need_sep(false);
+	put_list(defs_, &RootExpr::put_stubs, g);
 	g->end_file();
     }
     if (g->begin_file(g->serverfile())) {
 	g->emit_edit_warning(s);
 	g->emit_server_includes();
+	g->need_sep(false);
+	put_list(defs_, &RootExpr::put_server, g);
 	g->end_file();
     }
-    if (defs_ != nil) {
+    g->flush();
+    return false;
+}
+
+Boolean RootExpr::put_list(
+    ExprList* list, Boolean (*func)(Generator*, Expr*), Generator* g
+) {
+    Boolean b = false;
+    if (list != nil) {
 	/*
 	 * The separator semantics are a bit different here
-	 * than in ExprList::generate_list because we must check
+	 * than in ExprImpl::generate_list because we must check
 	 * each expression individually to see if it needs
 	 * a trailing semi-colon.  The reason is that some
 	 * declarations (e.g., structs) need semi-colons because
 	 * they can also be used as types for members, while
 	 * interfaces don't need trailing semi-colons.
 	 */
-	g->need_sep(false);
-	g->indirect(true);
-	for (ListItr(ExprList) i(*defs_); i.more(); i.next()) {
+	g->indirect(g->refobjs());
+	for (ListItr(ExprList) i(*list); i.more(); i.next()) {
 	    if (g->need_sep(false)) {
 		g->emit("\n");
 	    }
-	    if (i.cur()->generate(g)) {
-		g->emit(";\n");
+	    Expr* e = i.cur();
+	    if (e->set_source(g)) {
+		b = (*func)(g, e);
+		if (b) {
+		    g->emit(";\n");
+		    g->need_sep(true);
+		}
+	    }
+	}
+    }
+    return b;
+}
+
+Boolean RootExpr::put_decls(Generator* g, Expr* e) {
+    return e->generate(g);
+}
+
+Boolean RootExpr::put_inlines(Generator* g, Expr* e) {
+    Symbol* s = e->symbol();
+    if (s != nil) {
+	Module* m;
+	switch (s->tag()) {
+	case Symbol::sym_module:
+	    m = s->module();
+	    g->enter_scope(m->block());
+	    put_list(m->defs(), &RootExpr::put_inlines, g);
+	    g->leave_scope();
+	    break;
+	case Symbol::sym_interface:
+	    /* cast necessary here to handle forward references correctly */
+	    g->need_sep(((InterfaceDef*)e)->put_inlines(g));
+	    break;
+	}
+    }
+    return /* no semi-colon */ false;
+}
+
+Boolean RootExpr::put_stubs(Generator* g, Expr* e) {
+    Boolean b = false;
+    Symbol* s = e->symbol();
+    if (s != nil) {
+	InterfaceDef* i;
+	e = nil;
+	switch (s->tag()) {
+	case Symbol::sym_module:
+	    b = s->module()->generate_types(g);
+	    break;
+	case Symbol::sym_interface:
+	    i = s->interface();
+	    if (i->info()->generated_body) {
+		i->put_init(g);
+		i->generate_extern_stubs(g);
+		if (g->request() != nil) {
+		    i->put_type_dii(g);
+		} else {
+		    i->put_type(g);
+		}
+		i->generate_stub(g);
+		i->generate_types(g);
+		g->need_sep(true);
+	    }
+	    break;
+	case Symbol::sym_struct:
+	    e = s->struct_tag();
+	    break;
+	case Symbol::sym_union:
+	    e = s->union_tag();
+	    break;
+	case Symbol::sym_sequence:
+	    e = s->sequence_type();
+	    break;
+	}
+	if (e != nil) {
+	    e->generate_extern_stubs(g);
+	    if (e->generate_types(g)) {
 		g->need_sep(true);
 	    }
 	}
     }
-    g->flush();
-    return false;
+    return b;
+}
+
+Boolean RootExpr::put_server(Generator* g, Expr* e) {
+    Boolean b = false;
+    Symbol* s = e->symbol();
+    if (s != nil) {
+	Module* m;
+	InterfaceDef* i;
+	switch (s->tag()) {
+	case Symbol::sym_module:
+	    m = s->module();
+	    g->enter_scope(m->block());
+	    b = put_list(m->defs(), &RootExpr::put_server, g);
+	    g->leave_scope();
+	    break;
+	case Symbol::sym_interface:
+	    i = s->interface();
+	    if (i->info()->generated_body) {
+		i->generate_extern_stubs(g);
+		i->put_receive(g);
+		g->need_sep(true);
+	    }
+	    break;
+	}
+    }
+    return b;
+}
+
+/*
+ * Generate header declaration for a module.  Currently, we use
+ * a class for the scoping.  This should be changed to generate
+ * C++ namespaces if/when supported by the compiler.
+ */
+
+Boolean Module::generate(Generator* g) {
+    Boolean b = false;
+    Boolean cdecls = g->cdecls();
+    if (!cdecls) {
+	b = true;
+	g->emit("class %I {\npublic:\n%i", ident_->string());
+    }
+    g->enter_scope(block_);
+    b |= RootExpr::put_list(defs_, &RootExpr::put_decls, g);
+    g->leave_scope();
+    if (!cdecls) {
+	b = true;
+	g->emit("%u}");
+	g->need_sep(/* newline separator */ true);
+    }
+    return b;
 }
 
 Boolean InterfaceDef::generate(Generator* g) {
-    if (g->is_source()) {
-	String* s = ident_->string();
-	g->indirect(false);
-	if (!info_->generated_decl) {
-	    put_forward_decl(g);
-	    if (!forward_) {
-		g->emit("\n");
-	    }
-	    info_->generated_decl = true;
-	}
+    String* s = ident_->string();
+    Boolean b = g->indirect();
+    g->indirect(false);
+    if (!info_->generated_decl) {
+	put_forward_decl(g);
 	if (!forward_) {
-	    put_hdr(g);
-	    if (g->stubclass() != nil) {
-		put_stub_hdr(g);
-	    }
-	    put_hdr_inlines(g);
-	    if (g->begin_file(g->stubfile())) {
-		put_init(g);
-		generate_extern_stubs(g);
-		if (g->request() != nil) {
-		    put_type_dii(g);
-		} else {
-		    put_type(g);
-		}
-		generate_stub(g);
-		generate_types(g);
-		g->end_file();
-	    }
-	    if (g->begin_file(g->serverfile())) {
-		generate_extern_stubs(g);
-		put_receive(g);
-		g->end_file();
-	    }
+	    g->emit("\n");
 	}
-	g->need_sep(/* newline separator */ true);
-	g->indirect(true);
+	info_->generated_decl = true;
     }
+    if (!forward_) {
+	put_hdr(g);
+	if (g->stubclass() != nil) {
+	    put_stub_hdr(g);
+	}
+	info_->generated_body = true;
+    }
+    g->need_sep(/* newline separator */ true);
+    g->indirect(b);
     return /* no semicolon */ false;
 }
 
@@ -151,13 +273,16 @@ void InterfaceDef::put_forward_decl(Generator* g) {
     Boolean has_super = g->superclass() != nil;
     if (g->cdecls()) {
 	if (has_super) {
-	    g->emit("typedef %S%p %I, %I%p;\n", s);
+	    g->emit("typedef %S%p %_%I, %_%I%p;\n", s);
 	} else {
-	    g->emit("typedef void* %I, %I%p;\n", s);
+	    g->emit("typedef void* %_%I, %_%I%p;\n", s);
 	}
     } else {
 	g->emit("class %I%t;\ntypedef %I%t* %I%p;\n", s);
-	g->emit("class %I%r;\nclass _%I%rExpr;\nclass _%I%rElem;\n", s);
+	if (g->refobjs()) {
+	    g->emit("typedef %I%p %I%r_in;\n", s);
+	    g->emit("class %I%r;\nclass %I%r_tmp;\nclass %I%r_var;\n", s);
+	}
     }
 }
 
@@ -165,9 +290,12 @@ void InterfaceDef::put_hdr(Generator* g) {
     String* s = ident_->string();
     const char* super = g->superclass();
     Boolean is_superclass = super != nil && *s == super;
+    Boolean refobjs = g->refobjs();
     Boolean cdecls = g->cdecls();
     if (!cdecls) {
-	put_indirect(g);
+	if (refobjs) {
+	    put_indirect(g);
+	}
 	g->emit("class %I%t", s);
 	if (supertypes_ != nil) {
 	    g->emit(" : public ");
@@ -189,38 +317,49 @@ void InterfaceDef::put_hdr(Generator* g) {
 	g->emit("public:\n%i");
     }
     g->enter_scope(info_->block);
-    const char* trail = cdecls ? nil : ";\n";
-    generate_list(defs_, &Expr::generate, g, ";\n", trail);
+    generate_list(defs_, &Expr::generate, g, ";\n", ";\n");
     g->leave_scope();
     g->emit_transcriptions(true);
-    if (super != nil && !cdecls) {
-	g->emit("\n_%I%rExpr _ref();\n", s);
-	if (g->metaclass() != nil) {
-	    g->emit("virtual %MId _tid();\n");
-	}
-	if (is_superclass) {
-	    g->emit("%uprivate:\n%i%I%t(const %I&);\n", s);
-	    g->emit("void operator =(const %I&);\n", s);
-	}
-    }
     if (!cdecls) {
-	g->emit("%u}");
+	if (refobjs) {
+	    g->emit("%I%p _obj() { return this; }\n", s);
+	}
+	if (super != nil) {
+	    g->emit("void* _this();\n");
+	    if (g->metaclass() != nil) {
+		g->emit("virtual %MId _tid();\n");
+		if (!refobjs) {
+		    g->emit("\nstatic %I%p _narrow(%S%p);\n", s);
+		    g->emit("static %I%p _duplicate(%I%p obj);\n", s);
+		}
+	    }
+	    if (is_superclass) {
+		g->emit("%uprivate:\n%i%I%t(const %I&);\n", s);
+		g->emit("void operator =(const %I&);\n", s);
+	    }
+	}
+	g->emit("%u};\n");
     }
-    g->emit(";\n");
 }
 
-void InterfaceDef::put_hdr_inlines(Generator* g) {
-    if (g->superclass() != nil && g->metaclass() != nil && !g->cdecls()) {
+Boolean InterfaceDef::put_inlines(Generator* g) {
+    Boolean b = false;
+    if (!forward_ && info_->generated_body &&
+	g->superclass() != nil && g->metaclass() != nil && !g->cdecls()
+    ) {
 	String* s = ident_->string();
-	g->emit("\ninline %:%I%p %Q::_duplicate(%I%p obj) {\n%i", s);
+	g->emit("inline %:%I%p %Q::_duplicate(%I%p obj) {\n%i", s);
 	g->emit("return (%I%p)", s);
 	put_cast_down(g);
 	g->emit("_%S__duplicate(", s);
 	put_cast_up(g);
 	g->emit("obj, %c);\n%u}\n", s);
-	put_indirect_inlines(g);
-	g->emit("inline %:_%I%rExpr %Q%t::_ref() { return this; }\n", s);
+	if (g->refobjs()) {
+	    put_indirect_inlines(g);
+	}
+	b = true;
     }
+    return b;
 }
 
 /*
@@ -259,7 +398,7 @@ void InterfaceDef::put_cast_down(Generator* g) {
 void InterfaceDef::put_release(Generator* g) {
     g->emit("_%S__release(");
     put_cast_up(g);
-    g->emit("_obj);");
+    g->emit("_obj_);");
 }
 
 void InterfaceDef::put_indirect(Generator* g) {
@@ -268,27 +407,27 @@ void InterfaceDef::put_indirect(Generator* g) {
 
     /* indirect object ref */
     g->emit("class %I%r {\npublic:\n%i", s);
-    g->emit("%I%p _obj;\n\n", s);
+    g->emit("%I%p _obj_;\n\n", s);
 
-    g->emit("%I%r() { _obj = 0; }\n", s);
-    g->emit("%I%r(%I%p p) { _obj = p; }\n", s);
+    g->emit("%I%r() { _obj_ = 0; }\n", s);
+    g->emit("%I%r(%I%p p) { _obj_ = p; }\n", s);
     g->emit("%I%r& operator =(%I%p p);\n", s);
     g->emit("%I%r(const %I%r&);\n", s);
     g->emit("%I%r& operator =(const %I%r& r);\n", s);
-    g->emit("%I%r(const _%I%rExpr&);\n", s);
-    g->emit("%I%r& operator =(const _%I%rExpr&);\n", s);
-    g->emit("%I%r(const _%I%rElem&);\n", s);
-    g->emit("%I%r& operator =(const _%I%rElem&);\n", s);
+    g->emit("%I%r(const %I%r_tmp&);\n", s);
+    g->emit("%I%r& operator =(const %I%r_tmp&);\n", s);
+    g->emit("%I%r(const %I%r_var&);\n", s);
+    g->emit("%I%r& operator =(const %I%r_var&);\n", s);
     g->emit("~%I%r();\n\n", s);
-    g->emit("operator %I%p() const { return _obj; }\n", s);
-    g->emit("%I%p operator ->() { return _obj; }\n\n", s);
+    g->emit("%I%p operator ->() { return _obj_; }\n\n", s);
+    g->emit("operator %I%r_in() const { return _obj_; }\n", s);
 
     put_ancestors(g, s, false);
 
     g->emit("static %I%p _narrow(%S%p p);\n", s);
-    g->emit("static _%I%rExpr _narrow(const %S%r& r);\n\n", s);
+    g->emit("static %I%r_tmp _narrow(const %S%r& r);\n\n", s);
     g->emit("static %I%p _duplicate(%I%p obj);\n", s);
-    g->emit("static _%I%rExpr _duplicate(const %I%r& r);\n", s);
+    g->emit("static %I%r_tmp _duplicate(const %I%r& r);\n", s);
 
     g->enter_scope(info_->block);
     generate_list(defs_, &Expr::generate, g, ";\n", ";\n");
@@ -297,19 +436,19 @@ void InterfaceDef::put_indirect(Generator* g) {
     g->emit("%u};\n\n");
 
     /* indirect ref for temporary expressions */
-    g->emit("class _%I%rExpr : public %I%r {\npublic:\n%i", s);
-    g->emit("_%I%rExpr(%I%p p) { _obj = p; }\n", s);
-    g->emit("_%I%rExpr(const %I%r& r) { _obj = r._obj; }\n", s);
-    g->emit("_%I%rExpr(const _%I%rExpr& r) { _obj = r._obj; }\n", s);
-    g->emit("~_%I%rExpr();\n", s);
+    g->emit("class %I%r_tmp : public %I%r {\npublic:\n%i", s);
+    g->emit("%I%r_tmp(%I%p p) { _obj_ = p; }\n", s);
+    g->emit("%I%r_tmp(const %I%r& r);\n", s);
+    g->emit("%I%r_tmp(const %I%r_tmp& r);\n", s);
+    g->emit("~%I%r_tmp();\n", s);
     g->emit("%u};\n\n");
 
     /* indirect refs that do not release when deallocated */
-    g->emit("class _%I%rElem {\npublic:\n%i", s);
-    g->emit("%I%p _obj;\n\n", s);
-    g->emit("_%I%rElem(%I%p p) { _obj = p; }\n", s);
-    g->emit("operator %I%p() const { return _obj; }\n", s);
-    g->emit("%I%p operator ->() { return _obj; }\n", s);
+    g->emit("class %I%r_var {\npublic:\n%i", s);
+    g->emit("%I%p _obj_;\n\n", s);
+    g->emit("%I%r_var(%I%p p) { _obj_ = p; }\n", s);
+    g->emit("operator %I%p() const { return _obj_; }\n", s);
+    g->emit("%I%p operator ->() { return _obj_; }\n", s);
     g->emit("%u};\n\n");
 
     g->indirect(false);
@@ -340,11 +479,12 @@ void InterfaceDef::put_base(
     if (body) {
 	g->emit("inline %:%I::", name);
 	g->emit("operator %I() const {\n%i", s);
-	g->emit("return _%IExpr((%I%p)_%S__duplicate(", s);
+	g->emit("return %I%r_tmp((%I%p)_%S__duplicate(", s);
+	put_cast_up(g);
 	for (ListItr(ExprList) j(path); j.more(); j.next()) {
 	    g->emit("(%F%p)", nil, j.cur());
 	}
-	g->emit("_obj, %c));\n%u}\n", s);
+	g->emit("(%I%p)_obj_, %c));\n%u}\n", s);
     } else {
 	g->emit("operator %I() const;\n", s);
     }
@@ -362,72 +502,80 @@ void InterfaceDef::put_indirect_inlines(Generator* g) {
     g->indirect(true);
     g->emit("inline %:%I%r& %:%I%r::operator =(%I%p p) {\n%i", s);
     put_release(g);
-    g->emit("\n_obj = %I%r::_duplicate(p);\nreturn *this;\n%u}\n", s);
+    g->emit("\n_obj_ = %I%r::_duplicate(p);\nreturn *this;\n%u}\n", s);
 
     g->emit("inline %:%I%r::%I%r(const %I%r& r) {\n%i", s);
-    g->emit("_obj = %I%r::_duplicate(r._obj);\n%u}\n", s);
+    g->emit("_obj_ = %I%r::_duplicate(r._obj_);\n%u}\n", s);
 
     g->emit("inline %:%I%r& %:%I%r::operator =(const %I%r& r) {\n%i", s);
     put_release(g);
-    g->emit("\n_obj = %I%r::_duplicate(r._obj);\nreturn *this;\n%u}\n", s);
+    g->emit("\n_obj_ = %I%r::_duplicate(r._obj_);\nreturn *this;\n%u}\n", s);
 
-    g->emit("inline %:%I%r::%I%r(const _%I%rExpr& r) {\n%i", s);
-    g->emit("_obj = r._obj;\n");
-    g->emit("((_%I%rExpr*)&r)->_obj = 0;\n%u}\n", s);
+    g->emit("inline %:%I%r::%I%r(const %I%r_tmp& r) {\n%i", s);
+    g->emit("_obj_ = r._obj_;\n");
+    g->emit("((%I%r_tmp*)&r)->_obj_ = 0;\n%u}\n", s);
 
-    g->emit("inline %:%I%r& %:%I%r::operator =(const _%I%rExpr& r) {\n%i", s);
+    g->emit("inline %:%I%r& %:%I%r::operator =(const %I%r_tmp& r) {\n%i", s);
     put_release(g);
-    g->emit("\n_obj = r._obj;\n");
-    g->emit("((_%I%rExpr*)&r)->_obj = 0;\nreturn *this;\n%u}\n", s);
+    g->emit("\n_obj_ = r._obj_;\n");
+    g->emit("((%I%r_tmp*)&r)->_obj_ = 0;\nreturn *this;\n%u}\n", s);
 
-    g->emit("inline %:%I%r::%I%r(const _%I%rElem& e) {\n%i", s);
-    g->emit("_obj = %I%r::_duplicate(e._obj);\n%u}\n", s);
+    g->emit("inline %:%I%r::%I%r(const %I%r_var& e) {\n%i", s);
+    g->emit("_obj_ = %I%r::_duplicate(e._obj_);\n%u}\n", s);
 
-    g->emit("inline %:%I%r& %:%I%r::operator =(const _%I%rElem& e) {\n%i", s);
+    g->emit("inline %:%I%r& %:%I%r::operator =(const %I%r_var& e) {\n%i", s);
     put_release(g);
-    g->emit("\n_obj = %I%r::_duplicate(e._obj);\nreturn *this;\n%u}\n", s);
+    g->emit("\n_obj_ = %I%r::_duplicate(e._obj_);\nreturn *this;\n%u}\n", s);
 
     g->emit("inline %:%I%r::~%I%r() {\n%i", s);
     put_release(g);
     g->emit("\n%u}\n");
 
-    g->emit("inline %:_%I%rExpr %:%I%r::_narrow(const %S%r& r)", s);
-    g->emit(" {\n%ireturn _narrow(r._obj);\n%u}\n", s);
+    g->emit("inline %:%I%r_tmp %:%I%r::_narrow(const %S%r& r)", s);
+    g->emit(" {\n%ireturn _narrow(r._obj_);\n%u}\n", s);
 
-    g->emit("inline %:_%I%rExpr %:%I%r::_duplicate(const %I%r& r)", s);
-    g->emit(" {\n%ireturn _duplicate(r._obj);\n%u}\n", s);
+    g->emit("inline %:%I%r_tmp %:%I%r::_duplicate(const %I%r& r) {\n%i", s);
+    g->emit("return _duplicate(r._obj_);\n%u}\n", s);
 
     put_ancestors(g, s, true);
 
-    g->emit("inline %:_%I%rExpr::~_%I%rExpr() { }\n", s);
+    g->emit("inline %:%I%r_tmp::%I%r_tmp(const %I%r& r) {\n%i", s);
+    g->emit("_obj_ = %I%r::_duplicate(r._obj_);\n%u}\n", s);
+
+    g->emit("inline %:%I%r_tmp::%I%r_tmp(const %I%r_tmp& r) {\n%i", s);
+    g->emit("_obj_ = r._obj_;\n");
+    g->emit("((%I%r_tmp*)&r)->_obj_ = 0;\n%u}\n", s);
+
+    g->emit("inline %:%I%r_tmp::~%I%r_tmp() { }\n", s);
 
     g->indirect(false);
 }
 
-Boolean Module::generate(Generator* g) {
-    return generate_list(defs_, &Expr::generate, g, ";\n");
-}
-
 Boolean Accessor::generate(Generator* g) {
-    Boolean b = g->interface_is_ref(false);
     if (g->qualify()) {
+	Boolean b = g->interface_is_ref(false);
 	g->emit("%E%?", nil, qualifier_);
+	g->interface_is_ref(b);
     }
     g->emit("%I", string_);
-    g->interface_is_ref(b);
+    if (symbol_->actual_type()->tag() == Symbol::sym_interface) {
+	g->emit("%P");
+    }
     return true;
 }
 
 Boolean Constant::generate(Generator* g) {
-    String* s = ident_->string();
-    if (g->cdecls()) {
-	g->emit("#define %_%I %E\n", s, value_);
-	return /* no trailing semi-colon */ false;
-    } else if (g->indirect()) {
-	g->emit("static const %F %I", s, type_);
-	Scope* b = symbol_->scope();
-	if (b == nil || b->name == nil) {
-	    g->emit(" = %E", nil, value_);
+    if (g->gendefs()) {
+	String* s = ident_->string();
+	if (g->cdecls()) {
+	    g->emit("#define %_%I %E\n", s, value_);
+	    return /* no trailing semi-colon */ false;
+	} else {
+	    g->emit("static const %F %I", s, type_);
+	    Scope* b = symbol_->scope();
+	    if (b == nil || b->name == nil) {
+		g->emit(" = %E", nil, value_);
+	    }
 	}
     }
     return true;
@@ -453,7 +601,7 @@ Boolean Binary::generate(Generator* g) {
 }
 
 Boolean TypeName::generate(Generator* g) {
-    if (g->is_source() && g->indirect()) {
+    if (g->gendefs()) {
 	if (seq_) {
 	    return type_->generate(g);
 	}
@@ -478,15 +626,13 @@ Boolean TypeName::generate(Generator* g) {
 }
 
 Boolean UnsignedType::generate(Generator* g) {
-    if (g->is_source()) {
-	Symbol* s = symbol_;
-	if (s->tag() == Symbol::sym_typedef) {
-	    TypeName* t = s->typename();
-	    if (t->type() == nil) {
-		/* builtin */
-		g->emit("%I", t->mapping());
-		return true;
-	    }
+    Symbol* s = symbol_;
+    if (s->tag() == Symbol::sym_typedef) {
+	TypeName* t = s->typename();
+	if (t->type() == nil) {
+	    /* builtin */
+	    g->emit("%I", t->mapping());
+	    return true;
 	}
     }
     return false;
@@ -503,7 +649,7 @@ Boolean Declarator::generate(Generator* g) {
 }
 
 Boolean StructDecl::generate(Generator* g) {
-    if (g->is_source() && g->indirect()) {
+    if (g->gendefs()) {
 	String* s = ident_->string();
 	g->emit("struct %I {", s);
 	if (members_ != nil) {
@@ -526,7 +672,7 @@ Boolean StructMember::generate(Generator* g) {
 }
 
 Boolean UnionDecl::generate(Generator* g) {
-    if (g->is_source() && g->indirect()) {
+    if (g->gendefs()) {
 	String* s = ident_->string();
 	if (g->varying()) {
 	    g->emit("class %I {\npublic:\n%i", s);
@@ -614,11 +760,9 @@ Boolean UnionMember::generate(Generator* g) {
     Expr* e = declarators_->item(0);
     g->emit("%E", nil, type_);
     if (g->varying() && type_->varying()) {
-	g->emit("* _");
-    } else {
-	g->emit(" ");
+	g->emit("*");
     }
-    g->emit("%E", nil, e);
+    g->emit(" %E", nil, e);
     return true;
 }
 
@@ -632,7 +776,7 @@ Boolean DefaultLabel::generate(Generator*) {
 }
 
 Boolean EnumDecl::generate(Generator* g) {
-    if (g->is_source() && g->indirect()) {
+    if (g->gendefs()) {
 	g->emit("enum %I {\n%i", ident_->string());
 	generate_list(members_, &Expr::generate, g, ", %b");
 	g->emit("%u\n}");
@@ -673,50 +817,10 @@ Boolean StringDecl::generate(Generator* g) {
     return true;
 }
 
-Boolean AttrDecl::generate(Generator* g) {
-    Expr* e;
-    Boolean need_sep = false;
-    const char* sep = ";\n\n";
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (need_sep) {
-	    g->emit(sep);
-	}
-	if (!readonly_) {
-	    if (g->cdecls()) {
-		g->emit("extern void %__set_%E(%~%p, ", nil, e);
-	    } else {
-		g->emit("virtual void %E(", nil, e);
-	    }
-	    if (g->envclass() != nil && g->envfirst()) {
-		g->emit("%e, ");
-	    }
-	    g->emit("%E", nil, type_);
-	    if (g->envclass() != nil && !g->envfirst()) {
-		g->emit(", %e");
-	    }
-	    g->emit(")%=;\n", nil, type_);
-	}
-	if (g->cdecls()) {
-	    g->emit("extern %E %__get_", nil, type_);
-	    g->emit("%E(%~%p", nil, e);
-	    if (g->envclass() != nil) {
-		g->emit(", ");
-	    }
-	} else {
-	    g->emit("virtual %E ", nil, type_);
-	    g->emit("%E(", nil, e);
-	}
-	g->emit("%e)%=");
-	need_sep = true;
-    }
-    return true;
-}
-
 Boolean ExceptDecl::generate(Generator* g) {
-    if (g->is_source() && g->indirect()) {
+    if (g->gendefs()) {
 	String* s = ident_->string();
-	g->emit("class %I : public UserException {\npublic:\n%i", s);
+	g->emit("class %I : public %U {\npublic:\n%i", s);
 	g->emit("enum { _index = ");
 	g->emit_integer(index_);
 	g->emit(", _code = ");
@@ -724,6 +828,11 @@ Boolean ExceptDecl::generate(Generator* g) {
 	g->emit_integer(((ihash & 0xfffff) << 6) + index_);
 	g->emit(" };\n");
 	g->emit("%I();\n", s);
+	if (members_ != nil) {
+	    g->emit("%I(", s);
+	    generate_list(members_, &Expr::generate, g, ", ");
+	    g->emit(");\n", s);
+	}
 	g->emit("static %I* _cast(const %x*);\n\n", s);
 	g->emit("void _put(%B&) const;\n");
 	g->emit("static %x* _get(%B&);\n", s);
@@ -753,7 +862,8 @@ Boolean Operation::generate(Generator* g) {
 	g->emit(")");
     } else {
 	String* s = ident_->string();
-	if (need_indirect_) {
+	Boolean refobjs = g->refobjs();
+	if (refobjs && need_indirect_) {
 	    g->indirect(true);
 	    put_indirect_type(g);
 	    g->emit(" %I(", s);
@@ -766,8 +876,9 @@ Boolean Operation::generate(Generator* g) {
 	    }
 	    g->indirect(false);
 	}
-	g->emit("virtual %F ", nil, type_);
-	if (need_indirect_) {
+	g->emit("virtual ");
+	g->emit(g->refobjs() ? "%F " : "%E ", nil, type_);
+	if (refobjs && need_indirect_) {
 	    g->emit("_c_");
 	}
 	g->emit("%I(", s, type_);
@@ -780,7 +891,7 @@ Boolean Operation::generate(Generator* g) {
 void Operation::put_indirect_type(Generator* g) {
     if (rtn_indirect_) {
 	Boolean b = g->interface_is_ref(false);
-	g->emit("%;_%E%rExpr", nil, type_);
+	g->emit("%;%E%r_tmp", nil, type_);
 	g->interface_is_ref(b);
     } else {
 	g->emit("%F", nil, type_);
@@ -821,13 +932,15 @@ Boolean Parameter::generate(Generator* g) {
     if (f) {
 	Boolean cdecls = g->cdecls();
 	Boolean addr = g->addr_type(type_);
-	if (addr && in_param && !cdecls) {
+	if (!cdecls && in_param && addr) {
 	    g->emit("const ");
 	}
 	Boolean ref = g->interface_is_ref(false);
-	g->emit(cdecls ? "%Y" : "%X", nil, type_);
+	g->emit(cdecls ? "%Y" : g->refobjs() ? "%X" : "%E", nil, type_);
 	if (t == Symbol::sym_interface) {
-	    g->emit(indirect && !in_param ? "%r" : "%p");
+	    g->emit(
+		(in_param && g->refobjs()) ? "_in" : indirect ? "%r" : "%p"
+	    );
 	}
 	g->interface_is_ref(ref);
 	if (addr || (!in_param && t != Symbol::sym_array)) {
@@ -838,7 +951,7 @@ Boolean Parameter::generate(Generator* g) {
     declarator_->generate(g);
     g->array_decl(a);
     if (indirect && !in_param && !f && t == Symbol::sym_interface) {
-	g->emit("._obj");
+	g->emit("._obj_");
     }
     return true;
 }
@@ -887,29 +1000,39 @@ Boolean CharLiteral::generate(Generator* g) {
     return true;
 }
 
-/*
- * Regardless of whether this function produces any output
- * it should return false to avoid a semi-colon being output
- * after it.
- */
+Boolean ExprImpl::set_source(Generator* g) {
+    return g->is_source();
+}
+
+Boolean IdentifierImpl::set_source(Generator* g) {
+    return g->is_source();
+}
+
+Boolean SrcPos::set_source(Generator* g) {
+    SourcePosition* p = position();
+    if (p == nil) {
+	/* this shouldn't happen? */
+	return false;
+    }
+    g->set_source(p);
+    return true;
+}
 
 Boolean SrcPos::generate(Generator* g) {
     SourcePosition* p = position();
-    if (p != nil) {
-	FileName name = p->filename();
-	LineNumber n = p->lineno();
-	if (g->set_source(p)) {
-	    if (n == 1) {
-		g->emit_ifndef(name);
-		g->emit_includes();
-	    } else {
-		g->emit_endif(name);
-	    }
-	} else if (n == 1) {
-	    g->emit_include(name);
+    FileName name = p->filename();
+    LineNumber n = p->lineno();
+    if (g->is_source()) {
+	if (n == 1) {
+	    g->emit_ifndef(name);
+	    g->emit_includes();
+	} else {
+	    g->emit_endif(name);
 	}
+    } else if (n == 1) {
+	g->emit_include(name);
     }
-    return false;
+    return /* no semi-colon */ false;
 }
 
 /*
@@ -925,6 +1048,9 @@ Boolean Accessor::generate_name(Generator* g) {
 	return s->generate_name(g);
     }
     g->emit("%I", string_);
+    if (symbol_->actual_type()->tag() == Symbol::sym_interface) {
+	g->emit("%P");
+    }
     return true;
 }
 

@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#ifdef sun
+#if defined(sun) && !defined(SVR4)
 #include <sysent.h>
 #endif
 
@@ -290,6 +290,7 @@ void ScannerImpl::init(InputFile* in, const char* name, ErrorHandler* errs) {
     enter("in", IN);
     enter("inout", INOUT);
     enter("interface", INTERFACE);
+    enter("long", LONG);
     enter("module", MODULE);
     enter("oneway", ONEWAY);
     enter("operator", OPERATOR);

@@ -110,11 +110,13 @@ void App::init() {
     gen_.buffer = "MarshalBuffer";
     gen_.exchange = "Exchange";
     gen_.except = "Exception";
+    gen_.user_except = "UserException";
     gen_.stubclass = nil;
     gen_.request = nil;
     gen_.prefix = nil;
     gen_.direct = "_";
     gen_.transcriptions = new StringList;
+    gen_.refobjs = false;
     gen_.cdecls = false;
     gen_.cstubs = false;
     filter_ = nil;
@@ -178,6 +180,8 @@ void App::get_args(int argc, char** argv) {
 	    gen_.exchange = get_next_arg(i, argc, argv);
 	} else if (arg == "-except") {
 	    gen_.except = get_next_arg(i, argc, argv);
+	} else if (arg == "-uexcept") {
+	    gen_.user_except = get_next_arg(i, argc, argv);
 	} else if (arg == "-c" || arg == "-stubclass") {
 	    gen_.stubclass = get_next_arg(i, argc, argv);
 	} else if (arg == "-stubfile") {
@@ -192,6 +196,8 @@ void App::get_args(int argc, char** argv) {
 	    gen_.direct = nil;
 	} else if (arg == "-indirect") {
 	    gen_.direct = get_next_arg(i, argc, argv);
+	} else if (arg == "-refobjs") {
+	    gen_.refobjs = true;
 	} else if (arg == "-extern") {
 	    gen_.transcriptions->append(
 		new String(get_next_arg(i, argc, argv))

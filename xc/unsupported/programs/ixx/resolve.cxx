@@ -45,8 +45,6 @@ implementList(ContextList,Context)
 declareTable(CaseTable,long,long)
 implementTable(CaseTable,long,long)
 
-implementPtrList(ExceptList,ExceptDecl)
-
 class Resolver {
 public:
     Resolver(Expr* superclass, SymbolTable*, ErrorHandler*);
@@ -79,7 +77,9 @@ private:
 
     Symbol* true_;
     Symbol* false_;
-    Symbol* builtin_type(const char* name, const char* mapping, long kind);
+    Symbol* builtin_type(
+	const char* name, const char* mapping, long kind, Boolean enter = true
+    );
 };
 
 inline Expr* Resolver::superclass() { return superclass_; }
@@ -98,16 +98,19 @@ Resolver::Resolver(Expr* superclass, SymbolTable* s, ErrorHandler* h) {
     contexts_ = new ContextList(3);
     symbols_->enter_scope(nil);
     s->void_ = builtin_type("void", "void", 1);
-    s->boolean_ = builtin_type("boolean", "Boolean", 2);
-    s->char_ = builtin_type("char", "Char", 3);
-    s->octet_ = builtin_type("octet", "Octet", 4);
-    s->short_ = builtin_type("short", "Short", 5);
-    s->ushort_ = builtin_type("unsigned_short", "UShort", 6);
-    s->long_ = builtin_type("long", "Long", 7);
-    s->ulong_ = builtin_type("unsigned_long", "ULong", 8);
-    s->float_ = builtin_type("float", "Float", 9);
-    s->double_ = builtin_type("double", "Double", 10);
-    s->string_ = builtin_type("string", "string", 11);
+    s->oneway_ = builtin_type("oneway", "void", 2, false);
+    s->boolean_ = builtin_type("boolean", "Boolean", 3);
+    s->char_ = builtin_type("char", "Char", 4);
+    s->octet_ = builtin_type("octet", "Octet", 5);
+    s->short_ = builtin_type("short", "Short", 6);
+    s->ushort_ = builtin_type("unsigned_short", "UShort", 7, false);
+    s->long_ = builtin_type("long", "Long", 8);
+    s->ulong_ = builtin_type("unsigned_long", "ULong", 9, false);
+    s->longlong_ = builtin_type("longlong", "LongLong", 10);
+    s->ulonglong_ = builtin_type("unsigned_longlong", "ULongLong", 11, false);
+    s->float_ = builtin_type("float", "Float", 12);
+    s->double_ = builtin_type("double", "Double", 13);
+    s->string_ = builtin_type("string", "string", 14);
     true_ = builtin_type("TRUE", "TRUE", 1);
     false_ = builtin_type("FALSE", "FALSE", 1);
 }
@@ -207,7 +210,7 @@ void Resolver::symerr(Expr* e, String* s, const char* message) {
     ErrorHandler* err = handler_;
     e->set_source_position(err);
     err->begin_error();
-    err->put_string("Symbol \"");
+    err->put_chars("Symbol \"");
     err->put_string(*s);
     err->put_chars("\" ");
     err->put_chars(message);
@@ -221,14 +224,16 @@ void Resolver::error(Expr* e, const char* message) {
 }
 
 Symbol* Resolver::builtin_type(
-    const char* name, const char* mapping, long kind
+    const char* name, const char* mapping, long kind, Boolean enter
 ) {
     IdentString* u = new IdentString(name);
     TypeName* t = new TypeName(handler_->position());
     t->builtin(u, new String(mapping), kind);
     Symbol* s = new Symbol(scope());
     s->typename(t);
-    symbols_->bind(u, s);
+    if (enter) {
+	symbols_->bind(u, s);
+    }
     return s;
 }
 
@@ -297,6 +302,7 @@ void InterfaceDef::resolve(Resolver* r) {
 	info_->block = nil;
 	info_->has_body = false;
 	info_->generated_decl = false;
+	info_->generated_body = false;
 	info_->op_index = 0;
     } else {
 	info_ = i->info_;
@@ -411,6 +417,8 @@ void UnsignedType::resolve(Resolver* r) {
 	symbol_ = t->ushort_type();
     } else if (type == t->long_type()) {
 	symbol_ = t->ulong_type();
+    } else if (type == t->longlong_type()) {
+	symbol_ = t->ulonglong_type();
     } else {
 	r->error(type_, "Bad type for unsigned");
     }
@@ -604,22 +612,6 @@ void StringDecl::resolve(Resolver* r) {
     symbol_ = s;
 }
 
-void AttrDecl::resolve(Resolver* r) {
-    type_->resolve(r);
-    symbol_ = new Symbol(r->scope());
-    // symbol_->attribute(this);
-    InterfaceInfo* i = r->context()->in_symbol->interface()->info();
-    index_ = i->op_index;
-    long n = declarators_->count();
-    i->op_index += n;
-    if (!readonly_) {
-	i->op_index += n;
-    }
-    r->push_context(symbol_, type_);
-    resolve_list(declarators_, r);
-    r->pop_context();
-}
-
 void ExceptDecl::resolve(Resolver* r) {
     StructDecl::resolve(r);
     symbol_->except_type(this);
@@ -646,6 +638,14 @@ void Operation::resolve(Resolver* r) {
 	resolve_list(exceptions_, r);
 	r->pop_context();
     }
+    if (attributes_ != nil) {
+	/*
+	 * Right now, the only way the attributes list can be non-nil
+	 * is if oneway was specified.
+	 */
+	oneway_ = true;
+	check_oneway(r);
+    }
     compute_indirect();
 }
 
@@ -666,6 +666,32 @@ void AttrOp::resolve(Resolver* r) {
 	compute_indirect();
     }
     symbol_->attribute(this);
+}
+
+/*
+ * Check to make sure that an operation specified as oneway
+ * doesn't try to return anything.
+ */
+
+void Operation::check_oneway(Resolver* r) {
+    SymbolTable* t = r->symbol_table();
+    if (type_->symbol() != t->void_type()) {
+	r->error(this, "Return value must be \"void\" for oneway operation");
+    } else if (params_ != nil) {
+	for (ListItr(ExprList) e(*params_); e.more(); e.next()) {
+	    Parameter* p = e.cur()->symbol()->parameter();
+	    /* valid params_ => p != nil */
+	    if (p->attr() != ExprKit::in_param) {
+		ErrorHandler* err = r->handler();
+		set_source_position(err);
+		err->begin_error();
+		err->put_chars("Parameter \"");
+		err->put_string(*p->declarator()->ident()->string());
+		err->put_chars("\" must be passed \"in\" to oneway operation");
+		err->end();
+	    }
+	}
+    }
 }
 
 void Operation::compute_index(Resolver* r) {
@@ -993,12 +1019,10 @@ void Symbol::scope(Scope* s) { scope_ = s; }
 
 Scope* Symbol::inner_scope() {
     switch (tag_) {
-    // case sym_module:
-    //     return value_.module_->block();
+    case sym_module:
+	return value_.module_->block();
     case sym_interface:
 	return value_.interface_->block();
-    default:
-	break;
     }
     return nil;
 }

@@ -41,7 +41,9 @@ public:
     Expr* parent();
     Declarator* declarator();
     void resolve(Resolver*);
+    Boolean set_source(Generator*);
     Boolean generate(Generator*);
+    Boolean generate_inlines(Generator*);
     Boolean generate_name(Generator*);
     Boolean generate_def(Generator*);
     Boolean generate_impl(Generator*);
@@ -64,6 +66,7 @@ public:
 	ExprList*, Boolean (Expr::*func)(Generator*), Generator*,
 	const char* sep = nil, const char* trail = nil
     );
+    static Boolean put_except_list(ExprList*, Generator*);
 protected:
     Symbol* symbol_;
     enum { unknown, fixed, varies } varying_;
@@ -219,6 +222,7 @@ public:
     Symbol* resolve_in_scope(Scope*, IdentString*);
 
     Symbol* void_type();
+    Symbol* oneway_type();
     Symbol* boolean_type();
     Symbol* char_type();
     Symbol* octet_type();
@@ -226,6 +230,8 @@ public:
     Symbol* ushort_type();
     Symbol* long_type();
     Symbol* ulong_type();
+    Symbol* longlong_type();
+    Symbol* ulonglong_type();
     Symbol* float_type();
     Symbol* double_type();
     Symbol* string_type();
@@ -235,6 +241,7 @@ protected:
     Scope* scope_;
     SymbolMap* map_;
     Symbol* void_;
+    Symbol* oneway_;
     Symbol* boolean_;
     Symbol* char_;
     Symbol* octet_;
@@ -242,12 +249,15 @@ protected:
     Symbol* ushort_;
     Symbol* long_;
     Symbol* ulong_;
+    Symbol* longlong_;
+    Symbol* ulonglong_;
     Symbol* float_;
     Symbol* double_;
     Symbol* string_;
 };
 
 inline Symbol* SymbolTable::void_type() { return void_; }
+inline Symbol* SymbolTable::oneway_type() { return oneway_; }
 inline Symbol* SymbolTable::boolean_type() { return boolean_; }
 inline Symbol* SymbolTable::char_type() { return char_; }
 inline Symbol* SymbolTable::octet_type() { return octet_; }
@@ -255,6 +265,8 @@ inline Symbol* SymbolTable::short_type() { return short_; }
 inline Symbol* SymbolTable::ushort_type() { return ushort_; }
 inline Symbol* SymbolTable::long_type() { return long_; }
 inline Symbol* SymbolTable::ulong_type() { return ulong_; }
+inline Symbol* SymbolTable::longlong_type() { return longlong_; }
+inline Symbol* SymbolTable::ulonglong_type() { return ulonglong_; }
 inline Symbol* SymbolTable::float_type() { return float_; }
 inline Symbol* SymbolTable::double_type() { return double_; }
 inline Symbol* SymbolTable::string_type() { return string_; }
@@ -268,7 +280,9 @@ public:
     Expr* parent();
     Declarator* declarator();
     void resolve(Resolver*);
+    Boolean set_source(Generator*);
     Boolean generate(Generator*);
+    Boolean generate_inlines(Generator*);
     Boolean generate_name(Generator*);
     Boolean generate_def(Generator*);
     Boolean generate_impl(Generator*);
@@ -327,16 +341,36 @@ private: \
 Expr_class(RootExpr)
 public:
     Boolean generate_impl(Generator*);
+
+    static Boolean put_list(
+	ExprList*, Boolean (*)(Generator*, Expr*), Generator*
+    );
+    static Boolean put_decls(Generator*, Expr*);
+    static Boolean put_inlines(Generator*, Expr*);
+    static Boolean put_stubs(Generator*, Expr*);
+    static Boolean put_server(Generator*, Expr*);
 protected:
     ExprList* defs_;
 };
 
-declarePtrList(ExceptList,ExceptDecl)
+Expr_class(Module)
+public:
+    Identifier* ident() { return ident_; }
+    ExprList* defs() { return defs_; }
+    Scope* block() { return block_; }
+
+    Boolean generate_types(Generator*);
+protected:
+    Identifier* ident_;
+    ExprList* defs_;
+    Scope* block_;
+};
 
 struct InterfaceInfo {
     Scope* block;
     Boolean has_body;
     Boolean generated_decl;
+    Boolean generated_body;
     long op_index;
 };
 
@@ -351,19 +385,18 @@ public:
     /*
      * Tag for stubs should be 1+ value for the last builtin type (string).
      */
-    long kind() { return 12; }
+    long kind() { return 15; }
 
     Boolean generate_name(Generator*);
     Boolean generate_impl(Generator*);
     Boolean generate_stub(Generator*);
     Boolean generate_extern_stubs(Generator*);
     Boolean generate_types(Generator*);
-    Boolean put_excepts(Generator*);
+    Boolean put_inlines(Generator*);
     Boolean put_members(long count, InterfaceDefState&);
     Boolean put_impl(InterfaceDefState*, Expr*);
     void put_forward_decl(Generator*);
     void put_hdr(Generator*);
-    void put_hdr_inlines(Generator*);
     void put_cast_up(Generator*);
     void put_cast_down(Generator*);
     void put_release(Generator*);
@@ -399,12 +432,6 @@ protected:
     ExprList* defs_;
     InterfaceInfo* info_;
     long visit_;
-};
-
-Expr_class(Module)
-    Identifier* ident_;
-    ExprList* defs_;
-    Scope* block_;
 };
 
 Expr_class(Accessor)
@@ -650,38 +677,6 @@ protected:
     Expr* length_;
 };
 
-Expr_class(AttrDecl)
-public:
-    Expr* type() { return type_; }
-
-    Boolean generate_impl(Generator*);
-    Boolean generate_extern_types(Generator*);
-    Boolean generate_method(Generator*);
-    Boolean generate_params(Generator*);
-    Boolean generate_request(Generator*);
-    Boolean generate_stub(Generator*);
-    Boolean generate_extern_stubs(Generator*);
-    Boolean generate_types(Generator*);
-    Boolean generate_receive(Generator*);
-    void put_individual_attr(Generator*, String* name, char* param);
-    void put_skeleton(Generator*, String* impl);
-protected:
-    Boolean readonly_;
-    Expr* type_;
-    ExprList* declarators_;
-    long index_;
-    ExprList* operations_;
-
-    Boolean generate_attr(GenSepState*, Expr*);
-    Boolean put_impl(GenSepState*, Expr*);
-    void put_stub(Generator*, Expr*);
-    void get_stub(Generator*, Expr*, long rdesc);
-    void emit_param_info(
-	Generator*, const char* sep, Expr*, long index, Boolean marshal_func
-    );
-    void emit_index_name(Generator*, const char* after);
-};
-
 class ExceptDecl : public StructDecl {
 public:
     ExceptDecl(SourcePosition*);
@@ -695,6 +690,8 @@ protected:
     friend class ExprKit;
 
     long index_;
+
+    void put_init_list(Generator*, Boolean decl);
 };
 
 Expr_class(Operation)
@@ -732,10 +729,12 @@ protected:
     ExprList* context_;
     InterfaceDef* interface_;
     Scope* block_;
+    Boolean oneway_;
     Boolean need_indirect_;
     Boolean inline_indirect_;
     Boolean rtn_indirect_;
 
+    void check_oneway(Resolver*);
     void compute_index(Resolver*);
     virtual void compute_indirect();
     Boolean has_marshal_funcs(Generator*);
@@ -801,6 +800,8 @@ Expr_class(CharLiteral)
 };
 
 Expr_class(SrcPos)
+public:
+    Boolean set_source(Generator*);
 };
 
 #if defined(__STDC__) || defined(__ANSI_CPP__)

@@ -61,6 +61,7 @@ public:
     FILE* stubfile();
     FILE* serverfile();
     long file_mask();
+    Boolean refobjs();
     Boolean cdecls();
     Boolean cstubs();
     Boolean envfirst();
@@ -89,6 +90,7 @@ public:
 
     void indirect(Boolean);
     Boolean indirect();
+    Boolean gendefs();
 
     void push_prefix(String*);
     void pop_prefix();
@@ -132,7 +134,12 @@ public:
     void emit_env_param(ParamFlags flags);
     void emit_type_info(
 	String* name, char* ptr, ExprList* parents,
-	Boolean dii, Boolean excepts
+	Boolean dii, Boolean excepts, Boolean narrow
+    );
+    void emit_parent_type_info(String* name, Boolean impl, ExprList* parents);
+    void emit_opt_info(
+	Boolean flag, const char* start, const char* tag, String* name,
+	const char* trail
     );
     Boolean emit_scope(Scope*);
 
@@ -178,6 +185,8 @@ private:
     long exchange_length_;
     const char* except_;
     long except_length_;
+    const char* user_except_;
+    long user_except_length_;
     const char* prefix_;
     long prefix_length_;
     const char* direct_prefix_;
@@ -196,9 +205,12 @@ private:
     Boolean formals_;
     Boolean varying_;
     Boolean indirect_;
+    Boolean refobjs_;
     long counter_;
     long indent_;
+    long save_indent_;
     long column_;
+    long save_column_;
     Boolean include_newline_;
     Scope* scope_;
     String* impl_is_from_;
@@ -221,6 +233,7 @@ inline const char* Generator::envclass() { return envclass_; }
 inline const char* Generator::request() { return request_; }
 inline FILE* Generator::stubfile() { return stubfile_; }
 inline FILE* Generator::serverfile() { return serverfile_; }
+inline Boolean Generator::refobjs() { return refobjs_; }
 inline Boolean Generator::cdecls() { return cdecls_; }
 inline Boolean Generator::cstubs() { return cstubs_; }
 inline Boolean Generator::envfirst() { return envfirst_; }
@@ -235,5 +248,6 @@ inline long Generator::counter() { return counter_; }
 inline void Generator::count(long delta) { counter_ += delta; }
 inline void Generator::indirect(Boolean b) { indirect_ = b; }
 inline Boolean Generator::indirect() { return indirect_; }
+inline Boolean Generator::gendefs() { return indirect_ || !refobjs_; }
 
 #endif

@@ -69,11 +69,14 @@ Generator::Generator(ErrorHandler* h, const ConfigInfo& i) {
     exchange_length_= length(exchange_);
     except_ = i.except;
     except_length_= length(except_);
+    user_except_ = i.user_except;
+    user_except_length_= length(user_except_);
     prefix_ = i.prefix;
     prefix_length_ = length(prefix_);
     direct_prefix_ = i.direct;
     direct_length_ = length(direct_prefix_);
     transcriptions_ = i.transcriptions;
+    refobjs_ = i.refobjs;
     cdecls_ = i.cdecls;
     cstubs_ = i.cstubs;
     ptr_ = nil;
@@ -158,12 +161,21 @@ Boolean Generator::begin_file(FILE* f) {
     if (f != nil) {
 	fflush(out_);
 	out_ = f;
+	save_indent_ = indent_;
+	save_column_ = column_;
+	indent_ = 0;
+	column_ = 0;
 	return true;
     }
     return false;
 }
 
-void Generator::end_file() { fflush(out_); out_ = stdout; }
+void Generator::end_file() {
+    fflush(out_);
+    out_ = stdout;
+    indent_ = save_indent_;
+    column_ = save_column_;
+}
 
 Boolean Generator::interface_is_ref(Boolean b) {
     Boolean prev = ref_;
@@ -350,7 +362,6 @@ void Generator::emit_flush(const char* p, const char* start) {
  *    %Y - fully-qualified expression using _ instead of ::
  *    %N - generate type expression's name
  *    %F - generate type expression's fully-qualified name
- *    %U - unmarshal function for given (type) expression
  *    %A - attribute parameter name for given (type) expression
  *    %S - superclass
  *    %M - metaclass
@@ -360,6 +371,7 @@ void Generator::emit_flush(const char* p, const char* start) {
  *    %B - marshal buffer type
  *    %O - object exchange type
  *    %x - exception type
+ *    %U - user exception type
  *    %, - emit ", " if envclass is defined
  *    %e - environment formal parameter (if envclass is defined)
  *    %f - environment formal parameter for body (if envclass is defined)
@@ -398,7 +410,9 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	}
 	break;
     case 't':
-	emit("Type");
+	if (refobjs_) {
+	    emit("Type");
+	}
 	break;
     case '*':
 	emit_str(ptr_, strlen(ptr_));
@@ -433,7 +447,7 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	emit("%:%I", s);
 	break;
     case 'T':
-	emit("_%_%I_tid_", s);
+	emit("_%_%I_tid", s);
 	break;
     case 'E':
 	e->generate(this);
@@ -470,11 +484,6 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	e->generate_name(this);
 	qualify_ = b;
 	break;
-    case 'U':
-	emit("%F _result;\n", nil, e);
-	emit_get(e, "_result", e);
-	emit("return _result");
-	break;
     case 'A':
 	emit_str("p_", 2);
 	e->generate(this);
@@ -502,6 +511,9 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	break;
     case 'x':
 	emit_str(except_, except_length_);
+	break;
+    case 'U':
+	emit_str(user_except_, user_except_length_);
 	break;
     case ',':
 	if (envclass() != nil) {
@@ -542,7 +554,7 @@ void Generator::emit_format(int ch, String* s, Expr* e) {
 	concat_ = b;
 	break;
     case '?':
-	if (concat_) {
+	if (concat_ || cdecls_) {
 	    emit_str("_", 1);
 	} else {
 	    emit_str("::", 2);
@@ -848,31 +860,15 @@ void Generator::emit_env_param(ParamFlags flags) {
 }
 
 void Generator::emit_type_info(
-    String* name, char* ptr, ExprList* parents, Boolean dii, Boolean excepts
+    String* name, char* ptr, ExprList* parents,
+    Boolean dii, Boolean excepts, Boolean narrow
 ) {
-    Boolean b = interface_is_ref(false);
     ptr_ = ptr;
-    long p;
-    long nparents = (parents == nil) ? 0 : parents->count();
-    if (nparents > 0) {
-	emit("extern %M_Descriptor ");
-	p = 0;
-	for (;;) {
-	    emit("_%Y_type_", nil, parents->item(p));
-	    ++p;
-	    if (p == nparents) {
-		break;
-	    }
-	    emit(", ");
-	}
-	emit(";\n");
+    Boolean has_offsets = false;
+    if (parents != nil) {
+	has_offsets = parents->count() > 1;
+	emit_parent_type_info(name, *ptr == '*', parents);
     }
-    emit("%M_Descriptor* _%_%I_parents_[] = { ", name);
-    for (p = 0; p < nparents; p++) {
-	emit("&_%Y_type_, ", nil, parents->item(p));
-    }
-    interface_is_ref(b);
-    emit("nil };\n");
     emit("extern %MId %T;\n", name);
     const char* stubs = stubclass_;
     if (stubclass_ != nil && *ptr == '*') {
@@ -884,19 +880,83 @@ void Generator::emit_type_info(
     if (dii) {
 	emit("extern void _%_%I_receive(%S%p, ULong, %B&);\n", name);
     }
-    emit("%M_Descriptor _%_%I_type_ = {\n%i", name);
+    emit("%M_Descriptor _%_%I_type = {\n%i", name);
     emit("/* type */ 0,\n/* id */ &%T,\n\"%I\",\n", name);
-    emit("_%_%I_parents_, ", name);
-    emit(excepts ? "_%_%I_excepts,\n" : "/* excepts */ nil,\n", name);
-    if (dii) {
-	emit("_%_%I_methods_,\n_%_%I_params_,\n&_%_%I_receive", name);
-    } else {
-	emit("/* methods */ nil,\n/* params */ nil,\n/* receive */ nil");
+    emit_opt_info(parents != nil, nil, "parents", name, ", ");
+    emit_opt_info(has_offsets, nil, "offsets", name, ", ");
+    emit_opt_info(excepts, nil, "excepts", name, ",\n");
+    emit_opt_info(dii, nil, "methods", name, ", ");
+    emit_opt_info(dii, nil, "params", name, ",\n");
+    emit_opt_info(dii, "&", "receive", name, "\n");
+    emit("%u};\n");
+    if (narrow) {
+	emit("\n%Q%* %Q::_narrow(%S%p o) {\n%i", name);
+	emit("return (%Q%*)_%S_tnarrow(\n%io, %T, %b%c\n%u);\n%u}\n", name);
     }
-    emit("\n%u};\n");
-    emit("\n%Q%* %Q::_narrow(%S%p o) {\n%i", name);
-    emit("return (%Q%*)_%S_tnarrow_(\n%io, %T, %b%c\n%u);\n%u}\n", name);
     stubclass_ = stubs;
+}
+
+void Generator::emit_parent_type_info(
+    String* name, Boolean impl, ExprList* parents
+) {
+    Boolean b = interface_is_ref(false);
+    emit("extern %M_Descriptor ");
+    long p = 0;
+    long nparents = parents->count();
+    for (;;) {
+	emit("_%Y_type", nil, parents->item(p));
+	++p;
+	if (p == nparents) {
+	    break;
+	}
+	emit(", ");
+    }
+    emit(";\n");
+    emit("%M_Descriptor* _%_%I_parents[] = { ", name);
+    for (p = 0; p < nparents; p++) {
+	emit("&_%Y_type, ", nil, parents->item(p));
+    }
+    emit("nil };\n");
+    if (nparents > 1) {
+	emit("Long _%_%I_offsets[] = {\n%i", name);
+	p = 1;
+	for (;;) {
+	    emit("Long((%F%t*)(%:%I", name, parents->item(p));
+	    if (!impl) {
+		emit("%t");
+	    }
+	    emit("*)8) - Long((%:%I", name);
+	    if (!impl) {
+		emit("%t");
+	    }
+	    emit("*)8)");
+	    ++p;
+	    if (p == nparents) {
+		break;
+	    }
+	    emit(", ");
+	}
+	emit("\n%u};\n");
+    }
+    interface_is_ref(b);
+}
+
+void Generator::emit_opt_info(
+    Boolean b, const char* start, const char* tag, String* name,
+    const char* trail
+) {
+    if (b) {
+	if (start != nil) {
+	    emit(start);
+	}
+	emit("_%_%I_", name);
+	emit(tag);
+    } else {
+	emit("/* ");
+	emit(tag);
+	emit(" */ nil");
+    }
+    emit(trail);
 }
 
 Boolean Generator::emit_scope(Scope* s) {
@@ -939,7 +999,7 @@ Boolean Generator::emit_extern_stubs(Expr* type) {
     default:
 	if (!s->declared_stub(f)) {
 	    type->generate_extern_stubs(this);
-	    emit("\nextern void _%Y_put(\n%i%B&, %b", nil, type);
+	    emit("extern void _%Y_put(\n%i%B&, %b", nil, type);
 	    emit("const %F", nil, type);
 	    if (addr_type(type)) {
 		emit("&");
@@ -950,7 +1010,7 @@ Boolean Generator::emit_extern_stubs(Expr* type) {
 	    if (s->array() == nil) {
 		emit("&");
 	    }
-	    emit("\n%u);");
+	    emit("\n%u);\n");
 	    s->declare_stub(f);
 	    b = true;
 	}

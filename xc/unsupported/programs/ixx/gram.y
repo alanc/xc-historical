@@ -168,6 +168,22 @@ inline Expr* unsigned_type(Expr* type) {
     return yyparse_exprkit->unsigned_type(type);
 }
 
+inline Expr* long_type() {
+    return yyparse_exprkit->ident(new String("long"));
+}
+
+inline Expr* ulong_type() {
+    return yyparse_exprkit->unsigned_type(long_type());
+}
+
+inline Expr* long_long_type() {
+    return yyparse_exprkit->ident(new String("longlong"));
+}
+
+inline Expr* ulong_long_type() {
+    return yyparse_exprkit->unsigned_type(long_long_type());
+}
+
 static ExprList* declarator_list(Expr* declarator) {
     ExprList* s = yyparse_exprkit->exprlist();
     s->append(declarator);
@@ -239,11 +255,9 @@ inline Expr* string_type(Expr* opt_length) {
 }
 
 inline ExprList* attr_dcl(
-    Expr* opt_readonly, Expr* type, ExprList* declarator_list
+    Boolean opt_readonly, Expr* type, ExprList* declarator_list
 ) {
-    return yyparse_exprkit->attr_decl(
-	opt_readonly != nil, type, declarator_list
-    );
+    return yyparse_exprkit->attr_decl(opt_readonly, type, declarator_list);
 }
 
 inline Expr* except_dcl(Identifier* ident, ExprList* member_list) {
@@ -282,7 +296,7 @@ static ExprList* string_list(Expr* str) {
 %token
     /* keywords in alphabetical order */
     ATTRIBUTE CASE CONST CONTEXT DEFAULT ENUM EXCEPTION FALSE
-    IN INOUT INTERFACE MODULE ONEWAY OPERATOR OUT
+    IN INOUT INTERFACE LONG MODULE ONEWAY OPERATOR OUT
     RAISES READONLY SEQUENCE STRING_TOKEN STRUCT SWITCH TRUE TYPEDEF
     UNION UNSIGNED
 
@@ -301,6 +315,7 @@ static ExprList* string_list(Expr* str) {
     ELLIPSES INCR DECR ARROW LE GE EQ NE AND OR
 
 %union {
+    Boolean boolean_;
     long long_;
     double double_;
     class String* string_;
@@ -316,21 +331,17 @@ static ExprList* string_list(Expr* str) {
     /* Opcode */ unsigned long opcode_;
 };
 
+%type <boolean_> READONLY opt_readonly
 %type <long_> INTCON CHARCON
 %type <double_> FLOATCON
 %type <string_> STRING
 %type <ustring_> IDENT
 %type <expr_>
-    ATTRIBUTE CASE CONST CONTEXT DEFAULT ENUM EXCEPTION FALSE
-    IN INOUT INTERFACE MODULE ONEWAY OPERATOR OUT
-    RAISES READONLY SEQUENCE STRING_TOKEN STRUCT SWITCH TRUE TYPEDEF
-    UNION UNSIGNED
-
     definition name export const_dcl expr type_dcl
     type simple_type template_type constr_type declarator
     struct_type member union_type switch_type case_label
     enum_type sequence_type opt_sequence_length
-    string_type opt_string_length opt_readonly
+    string_type opt_string_length
     except_dcl op_dcl param
 
 %type <exprlist_>
@@ -471,6 +482,10 @@ type:
 simple_type:
     name				{ $$ = $1; }
 |   UNSIGNED name			{ $$ = unsigned_type($2); }
+|   LONG				{ $$ = long_type(); }
+|   UNSIGNED LONG			{ $$ = ulong_type(); }
+|   LONG LONG				{ $$ = long_long_type(); }
+|   UNSIGNED LONG LONG			{ $$ = ulong_long_type(); }
 |   template_type			{ $$ = $1; }
 ;
 
@@ -521,7 +536,11 @@ union_type:
 switch_type:
     name				{ $$ = $1; }
 |   enum_type				{ $$ = $1; }
+|   LONG				{ $$ = long_type(); }
+|   UNSIGNED LONG			{ $$ = ulong_type(); }
 |   UNSIGNED name			{ $$ = unsigned_type($2); }
+|   LONG LONG				{ $$ = long_long_type(); }
+|   UNSIGNED LONG LONG			{ $$ = ulong_long_type(); }
 ;
 
 case_list:
@@ -581,8 +600,8 @@ attr_dcl:
 ;
 
 opt_readonly:
-    /* empty */				{ $$ = nil; }
-|   READONLY				{ $$ = $1; }
+    /* empty */				{ $$ = false; }
+|   READONLY				{ $$ = true; }
 ;
 
 except_dcl:
@@ -597,7 +616,7 @@ op_dcl:
 
 opt_op_attr:
     /* empty */				{ $$ = nil; }
-|   ONEWAY				{ $$ = append(nil, $1); }
+|   ONEWAY				{ $$ = append(nil, intcon(ONEWAY)); }
 ;
 
 opt_params:

@@ -66,9 +66,11 @@ struct ConfigInfo {
     const char* buffer;
     const char* exchange;
     const char* except;
+    const char* user_except;
     const char* prefix;
     const char* direct;
     StringList* transcriptions;
+    Boolean refobjs;
     Boolean cdecls;
     Boolean cstubs;
     SymbolTable* symbols;
@@ -84,6 +86,7 @@ public:
     virtual Expr* parent() = 0;
     virtual Declarator* declarator() = 0;
     virtual void resolve(Resolver*) = 0;
+    virtual Boolean set_source(Generator*) = 0;
     virtual Boolean generate(Generator*) = 0;
     virtual Boolean generate_name(Generator*) = 0;
     virtual Boolean generate_def(Generator*) = 0;

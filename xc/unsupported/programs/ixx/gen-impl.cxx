@@ -196,6 +196,7 @@ Boolean Filter::parse(char* start) {
     }
 
     Generator* g = generator_;
+    ErrorHandler* err = handler();
     SymbolTable* symbols = g->symbol_table();
     Scope* scope = symbols->scope();
     Symbol* sym = nil;
@@ -219,12 +220,19 @@ Boolean Filter::parse(char* start) {
 	    Symbol* sym = symbols->resolve_in_scope(scope, u);
 	    if (sym != nil) {
 		b = put_sym(u, sym, impl, p);
+	    } else if (impl != nil) {
+		if (*p != ')' && *p != ',') {
+		    err->warning("Ignoring filter annotation");
+		} else {
+		    put_interface(nil, impl, name - 1);
+		    b = true;
+		}
 	    } else {
-		handler()->warning("Unrecognized filter annotation");
+		err->warning("Unrecognized filter annotation");
 	    }
 	    delete u;
 	} else {
-	    handler()->warning("Unrecognized filter annotation");
+	    err->warning("Unrecognized filter annotation");
 	}
 	break;
     }
@@ -572,8 +580,12 @@ void Filter::put_interface(InterfaceDef* i, String* impl, char* p) {
 	i->generate_impl(g);
     } else {
 	ExprList* list = new ExprList;
-	list->append(i->ident());
-	g->emit_type_info(impl, "*", get_classes(list, p + 1), false, false);
+	if (i != nil) {
+	    list->append(i->ident());
+	}
+	g->emit_type_info(
+	    impl, "*", get_classes(list, p + 1), false, false, true
+	);
 	if (g->metaclass() != nil) {
 	    g->emit("%MId %I::_tid() { return %T; }\n", impl);
 	}
@@ -669,15 +681,15 @@ void Filter::find_next_annotation() {
  * Generate part of implementation for specific node types.
  */
 
+Boolean ExprImpl::generate_impl(Generator*) { return false; }
+Boolean IdentifierImpl::generate_impl(Generator* g) { return generate(g); }
+
 Boolean RootExpr::generate_impl(Generator* g) {
     Filter* f = new Filter;
     f->run(g);
     delete f;
     return true;
 }
-
-Boolean ExprImpl::generate_impl(Generator*) { return false; }
-Boolean IdentifierImpl::generate_impl(Generator* g) { return generate(g); }
 
 Boolean InterfaceDef::generate_impl(Generator* g) {
     put_init(g);
@@ -700,7 +712,11 @@ void InterfaceDef::put_init(Generator* g) {
 	}
 	g->leave_scope();
     }
-    g->emit("%I%t::%I%t() { }\n%I%t::~%I%t() { }\n\n", ident_->string());
+    String* s = ident_->string();
+    g->emit("%:%I%t::%I%t() { }\n", s);
+    g->emit("%:%I%t::~%I%t() { }\n", s);
+    g->emit("void* %:%I%t::_this() { return this; }\n", s);
+    g->emit("\n");
 }
 
 void InterfaceDef::put_type(Generator* g) {
@@ -709,8 +725,8 @@ void InterfaceDef::put_type(Generator* g) {
     } else {
 	String* s = ident_->string();
 	Boolean has_exceptions = (info_->block->except_index != 0);
-	g->emit_type_info(s, "Ref", supertypes_, false, has_exceptions);
-	g->emit("%MId %I%t::_tid() { return %T; }\n", s);
+	g->emit_type_info(s, "Ref", supertypes_, false, has_exceptions, true);
+	g->emit("%MId %:%I%t::_tid() { return %T; }\n", s);
     }
 }
 
@@ -724,8 +740,8 @@ void InterfaceDef::put_type_dii(Generator* g) {
 	put_method_info(g);
 	String* s = ident_->string();
 	Boolean has_exceptions = (info_->block->except_index != 0);
-	g->emit_type_info(s, "Ref", supertypes_, true, has_exceptions);
-	g->emit("%MId %I%t::_tid() { return %T; }\n", s);
+	g->emit_type_info(s, "Ref", supertypes_, true, has_exceptions, true);
+	g->emit("%MId %:%I%t::_tid() { return %T; }\n", s);
 	put_receive(g);
     }
 }
@@ -733,7 +749,7 @@ void InterfaceDef::put_type_dii(Generator* g) {
 void InterfaceDef::put_empty_type(Generator* g) {
     if (g->metaclass() != nil) {
 	String* s = ident_->string();
-	g->emit("%MId %I%t::_tid() { return 0; }\n", s);
+	g->emit("%MId %:%I%t::_tid() { return 0; }\n", s);
     }
 }
 
@@ -796,65 +812,30 @@ Boolean InterfaceDef::put_impl(InterfaceDefState* s, Expr* e) {
 
 Boolean Operation::generate_impl(Generator* g) {
     String* s = ident_->string();
-    g->emit("%F %.", nil, type_);
-    if (need_indirect_) {
+    String* impl = g->prefix();
+    String* name = g->impl_is_from();
+    g->emit(impl != nil || g->refobjs() ? "%F %." : "%E %.", nil, type_);
+    Boolean refobjs = g->refobjs() && need_indirect_;
+    if (refobjs) {
 	g->emit("_c_");
     }
     g->emit("%I", s);
-    g->emit_param_list(params_, Generator::emit_env_formals_body);
-    String* impl = g->prefix();
-    String* name = g->impl_is_from();
+    g->emit_param_list(
+	params_, impl == nil ?
+	    Generator::emit_env_formals : Generator::emit_env_formals_body
+    );
     if (impl != nil && name != nil) {
 	g->emit(" {\n%i");
 	if (!g->void_type(type_)) {
 	    g->emit("return ");
 	}
 	g->emit("%I", name);
-	if (need_indirect_) {
+	if (refobjs) {
 	    g->emit("_c_");
 	}
 	g->emit("%I", s);
 	g->emit_param_list(params_, Generator::emit_env_actuals);
 	g->emit(";\n%u}\n");
-    }
-    return true;
-}
-
-/*
- * Generate implementation output for all the attributes defined
- * by an AttrDecl.
- */
-
-Boolean AttrDecl::generate_impl(Generator* g) {
-    Expr* e;
-    Boolean need_sep = false;
-    const char* sep = ";\n\n";
-    long index = index_;
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (need_sep) {
-	    g->emit(sep);
-	}
-	String* impl = g->impl_is_from();
-	if (!readonly_) {
-	    g->emit("void %.%E(", nil, e);
-	    g->emit("%X", nil, type_);
-	    if (impl != nil) {
-		g->emit(" %A", nil, e);
-	    }
-	    g->emit("%,%e)");
-	    if (impl != nil) {
-		g->emit(" {\n%i%I%E(%A%,%a);\n%u}\n", impl, e);
-	    } else {
-		g->emit(";\n");
-	    }
-	}
-	type_->generate(g);
-	g->emit(" %.%E(%e)", nil, e);
-	need_sep = true;
-	if (impl != nil) {
-	    g->emit(" {\n%ireturn %I%E(%a);\n%u}\n", impl, e);
-	}
     }
     return true;
 }
@@ -869,12 +850,27 @@ void AttrOp::put_individual_attr(Generator* g, char* param) {
 	return;
     }
     String* s = ident_->string();
+    Boolean refobjs = g->refobjs() && need_indirect_;
     if (param != nil) {
 	g->emit("void %.");
-	if (need_indirect_) {
+	if (refobjs) {
 	    g->emit("_c_");
 	}
-	g->emit("%I(%X", s, type_);
+	g->emit("%I(", s);
+	Boolean addr = g->addr_type(type_);
+	if (addr) {
+	    g->emit("const ");
+	}
+	if (g->actual_type(type_)->tag() == Symbol::sym_interface) {
+	    Boolean ref = g->interface_is_ref(false);
+	    g->emit("%X_in", nil, type_);
+	    g->interface_is_ref(ref);
+	} else {
+	    g->emit("%X", nil, type_);
+	}
+	if (addr) {
+	    g->emit("&");
+	}
 	char* p;
 	for (p = param; isalnum(*p) || *p == '_'; p++);
 	if (p != param) {
@@ -884,7 +880,7 @@ void AttrOp::put_individual_attr(Generator* g, char* param) {
 	g->emit("%,%f)");
     } else {
 	g->emit("%X %.", nil, type_);
-	if (need_indirect_) {
+	if (refobjs) {
 	    g->emit("_c_");
 	}
 	g->emit("%I(%f)", s);
@@ -918,7 +914,7 @@ Boolean StructDecl::generate_def(Generator* g) {
 
 Boolean StructMember::generate_def(Generator* g) {
     return type_->generate_def(g);
-};
+}
 
 Boolean UnionDecl::generate_def(Generator* g) {
     Boolean b = false;
@@ -936,7 +932,7 @@ Boolean UnionDecl::generate_def(Generator* g) {
 	Boolean v = varying();
 	g->emit("%:%I::%I() { ", s);
 	if (v) {
-	    g->emit("__init_ = 0;");
+	    g->emit("_u.__init_ = 0;");
 	}
 	g->emit("}\n");
 	g->emit("void %:%I::_d(%X _nd) {\n%i", s, type_);
@@ -954,7 +950,7 @@ Boolean UnionDecl::generate_def(Generator* g) {
 
 	if (v) {
 	    g->emit("void %:%I::_free() {\n%i", s);
-	    g->emit("switch (_this._d()) {\n");
+	    g->emit("switch (_d()) {\n");
 	    for (ListItr(CaseList) j(*cases_); j.more(); j.next()) {
 		generate_free(g, j.cur());
 	    }
@@ -982,7 +978,7 @@ void UnionDecl::generate_access_impl(Generator* g, CaseElement* c) {
     g->emit("void %:%I::%E(", s, e);
     Boolean addr = g->addr_type(t);
     if (addr) {
-	g->emit("const");
+	g->emit("const ");
     }
     g->emit("%F", nil, t);
     if (addr) {
@@ -991,10 +987,9 @@ void UnionDecl::generate_access_impl(Generator* g, CaseElement* c) {
     g->emit(" _v) {\n%i", nil, t);
     generate_set_tag(g, c);
     if (v) {
-	g->emit("delete _u._%E;\n", nil, e);
+	g->emit("delete _u.%E;\n", nil, e);
 	g->emit("_u.%E = new ", nil, e);
-	g->emit("%F(_this.", nil, t);
-	g->emit("%E);\n", nil, e);
+	g->emit("%F(_v);\n", nil, t);
     } else {
 	g->emit("_u.%E = _v;\n", nil, e);
     }
@@ -1040,7 +1035,7 @@ void UnionDecl::generate_assign(Generator* g, CaseElement* c) {
     }
     g->emit("%i");
     if (list->count() != 1 || list->item(0) == default_label_) {
-	g->emit("_d(_this._d())\n");
+	g->emit("_d(_this._d());\n");
     }
     g->emit("%E(_this.%E());\n", nil, c->element()->declarators()->item(0));
     g->emit("break;\n%u");
@@ -1066,16 +1061,47 @@ Boolean SequenceDecl::generate_def(Generator* g) {
 
 Boolean ExceptDecl::generate_def(Generator* g) {
     String* s = ident_->string();
-    g->emit("extern %MId _%_tid_;\n");
+    g->emit("extern %MId _%_tid;\n");
     g->emit("%Q::%I() {\n%i", s);
     g->emit("_major_ = _index;\n_hash_ = _code;\n");
-    g->emit("_interface_ = _%_tid_;\n%u}\n");
+    g->emit("_interface_ = _%_tid;\n%u}\n");
+    if (members_ != nil) {
+	g->emit("%Q::%I(", s);
+	put_init_list(g, true);
+	g->emit(") : \n%i");
+	put_init_list(g, false);
+	g->emit("\n%u{\n%i");
+	g->emit("_major_ = _index;\n_hash_ = _code;\n");
+	g->emit("_interface_ = _%_tid;\n%u}\n");
+    }
     g->emit("%Q* %Q::_cast(const %x* e) {\n%i", s);
-    g->emit("if (e->_major() == _index && e->_interface() == _%_tid_) {\n%i");
+    g->emit("if (e->_major() == _index && e->_interface() == _%_tid) {\n%i");
     g->emit("return (%I*)e;\n%u}\n", s);
     g->emit("return 0;\n%u}\n");
     StructDecl::generate_def(g);
     return true;
+}
+
+void ExceptDecl::put_init_list(Generator* g, Boolean decl) {
+    Boolean need_sep = false;
+    for (ListItr(ExprList) i(*members_); i.more(); i.next()) {
+	StructMember* s = i.cur()->symbol()->struct_member();
+	if (s != nil && s->declarators() != nil) {
+	    for (ListItr(ExprList) d(*s->declarators()); d.more(); d.next()) {
+		Expr* m = d.cur();
+		if (need_sep) {
+		    g->emit(", ");
+		}
+		if (decl) {
+		    g->emit("%F _", nil, s->type());
+		    m->generate(g);
+		} else {
+		    g->emit("%N(_%N)", nil, m);
+		}
+		need_sep = true;
+	    }
+	}
+    }
 }
 
 /*
@@ -1100,7 +1126,7 @@ void InterfaceDef::put_extern_info(Generator* g) {
     s.func = &InterfaceDef::put_extern_types;
     g->emit("extern %M_Descriptor ");
     if (!put_members(0, s)) {
-	g->emit("_%^void_type_");
+	g->emit("_%^void_type");
     }
     g->emit(";\n");
     g->interface_is_ref(r);
@@ -1128,7 +1154,7 @@ Boolean Operation::generate_extern_types(Generator* g) {
 	if (g->need_sep(true)) {
 	    g->emit(", ");
 	}
-	g->emit("%b_%Y_type_", nil, type_);
+	g->emit("%b_%Y_type", nil, type_);
 	b = true;
     }
     if (params_ != nil) {
@@ -1145,33 +1171,10 @@ Boolean Parameter::generate_extern_types(Generator* g) {
 	}
 	g->emit("%b_%Y", nil, type_);
 	declarator_->generate_params(g);
-	g->emit("_type_");
+	g->emit("_type");
 	return true;
     }
     return false;
-}
-
-Boolean AttrDecl::generate_extern_types(Generator* g) {
-    Boolean b = false;
-    if (!readonly_) {
-	Symbol* s = g->symbol_table()->void_type();
-	if (!s->declared()) {
-	    s->declared(true);
-	    if (g->need_sep(true)) {
-		g->emit(", ");
-	    }
-	    g->emit("%b_%^void_type_");
-	    b = true;
-	}
-    }
-    if (g->need_extern(type_)) {
-	if (g->need_sep(true)) {
-	    g->emit(", ");
-	}
-	g->emit("%b_%Y_type_", nil, type_);
-	b = true;
-    }
-    return b;
 }
 
 Boolean InterfaceDef::put_method_info(Generator* g) {
@@ -1184,7 +1187,7 @@ Boolean InterfaceDef::put_method_info(Generator* g) {
     s.name = nil;
 
     s.func = &InterfaceDef::put_method;
-    g->emit("\n%M_OpData _%_%I_methods_[] = {\n", name);
+    g->emit("\n%M_OpData _%_%I_methods[] = {\n", name);
     if (put_members(0, s)) {
 	g->emit(",\n");
     }
@@ -1192,7 +1195,7 @@ Boolean InterfaceDef::put_method_info(Generator* g) {
 
     s.func = &InterfaceDef::put_params;
     g->need_sep(false);
-    g->emit("%M_ParamData _%_%I_params_[] = {\n", name);
+    g->emit("%M_ParamData _%_%I_params[] = {\n", name);
     if (!put_members(0, s)) {
 	g->emit("%i{ 0, 0, 0 }%u");
     }
@@ -1223,28 +1226,9 @@ Boolean Operation::generate_method(Generator* g) {
 	g->emit(",\n");
     }
     g->emit("%b{ \"%N\", ", nil, this);
-    g->emit("&_%Y_type_, ", nil, type_);
+    g->emit("&_%Y_type, ", nil, type_);
     g->emit_integer(params_ == nil ? 0 : params_->count());
     g->emit(" }");
-    return true;
-}
-
-Boolean AttrDecl::generate_method(Generator* g) {
-    Expr* e;
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (g->need_sep(true)) {
-	    g->emit(",\n");
-	}
-	if (!readonly_) {
-	    g->emit("%b{ \"_set_");
-	    e->generate_method(g);
-	    g->emit("\", &_%^void_type_, 1 },\n");
-	}
-	g->emit("%b{ \"_get_");
-	e->generate_method(g);
-	g->emit("\", &_%Y_type_, 0 }", nil, type_);
-    }
     return true;
 }
 
@@ -1288,7 +1272,7 @@ Boolean Parameter::generate_params(Generator* g) {
     g->emit_integer(attr_ - 1);
     g->emit(", &_%Y", nil, type_);
     declarator_->generate_params(g);
-    g->emit("_type_ }");
+    g->emit("_type }");
     return true;
 }
 
@@ -1299,18 +1283,6 @@ Boolean Declarator::generate_params(Generator* g) {
 	return true;
     }
     return false;
-}
-
-Boolean AttrDecl::generate_params(Generator* g) {
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	if (!readonly_) {
-	    if (g->need_sep(true)) {
-		g->emit(",\n");
-	    }
-	    g->emit("%b{ 0, 0, &_%Y_type_ }", nil, type_);
-	}
-    }
-    return true;
 }
 
 Boolean ExprImpl::generate_request(Generator*) { return false; }
@@ -1380,29 +1352,6 @@ Boolean Declarator::generate_request(Generator* g) {
     return false;
 }
 
-Boolean AttrDecl::generate_request(Generator* g) {
-    long n = index_;
-    Expr* e;
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (!readonly_) {
-	    g->emit("case ");
-	    g->emit_integer(n++);
-	    g->emit(":\n%i");
-	    e->generate_method(g);
-	    g->emit("(*(%X*)_r->param(0));\n", nil, type_);
-	    g->emit("break;\n%u");
-	}
-	g->emit("case ");
-	g->emit_integer(n++);
-	g->emit(":\n%i");
-	g->emit("*(%X*)_r->result() = ", nil, type_);
-	e->generate_method(g);
-	g->emit("();\nbreak;\n%u");
-    }
-    return true;
-}
-
 /*
  * Generate a skeleton suitable for future filtering.
  */
@@ -1436,25 +1385,4 @@ void Operation::put_skeleton(Generator* g, String* impl) {
     g->emit("%I", s);
     g->emit_param_list(params_, Generator::emit_env_formals_body);
     g->emit(" {\n}\n");
-}
-
-void AttrDecl::put_skeleton(Generator* g, String* impl) {
-    Expr* e;
-    Boolean need_sep = false;
-    const char* sep = "\n";
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (need_sep) {
-	    g->emit(sep);
-	}
-	if (!readonly_) {
-	    g->emit("//+ %I(%:%E=)\n", impl, e);
-	    g->emit("void %I::%E", impl, e);
-	    g->emit("(%X) {\n}\n\n", nil, type_);
-	}
-	g->emit("//+ %I(%:%E?)\n", impl, e);
-	type_->generate(g);
-	g->emit(" %I::%E() {\n}\n", impl, e);
-	need_sep = true;
-    }
 }

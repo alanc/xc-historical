@@ -82,8 +82,14 @@ Boolean Operation::generate_stub(Generator* g) {
     String* s = ident_->string();
     Boolean has_return_value = !g->void_type(type_);
     Boolean has_marshal = has_marshal_funcs(g);
+    Boolean refobjs = g->refobjs() && need_indirect_;
     long nparams = (params_ == nil) ? 1 : params_->count() + 1;
-    long rdesc = type_desc(g, type_);
+    long rdesc;
+    if (oneway_) {
+	rdesc = g->symbol_table()->oneway_type()->typename()->kind();
+    } else {
+	rdesc = type_desc(g, type_);
+    }
     g->emit("%B::ArgDesc _%_%N_pdesc[", nil, this);
     g->emit_integer(nparams + 1);
     g->emit("] = { ");
@@ -108,7 +114,7 @@ Boolean Operation::generate_stub(Generator* g) {
     }
 
     g->emit("%B::ArgInfo _%_%N_pinfo = {\n%i", nil, this);
-    g->emit("&_%_tid_, ");
+    g->emit("&_%_tid, ");
     g->emit_integer(index_);
     g->emit(", _%_%N_pdesc, ", nil, this);
     if (has_marshal) {
@@ -118,7 +124,7 @@ Boolean Operation::generate_stub(Generator* g) {
     }
     g->emit("\n%u};\n");
 
-    if (need_indirect_ && !inline_indirect_) {
+    if (refobjs && !inline_indirect_) {
 	put_indirect_type(g);
 	g->emit(" %~%t::%I", s);
 	g->indirect(true);
@@ -128,13 +134,13 @@ Boolean Operation::generate_stub(Generator* g) {
     }
 
     g->emit("%F %~%t::", nil, type_);
-    if (need_indirect_) {
+    if (refobjs) {
 	g->emit("_c_");
     }
     g->emit("%I", s);
     g->emit_param_list(params_, Generator::emit_env_formals_body);
     g->emit(" {\n%i%B _b;\n");
-    g->emit("extern %MId _%_tid_;\n");
+    g->emit("extern %MId _%_tid;\n");
     g->emit("%B::ArgValue ");
     generate_arg(g, nparams, ";\n");
     if (rdesc == 0) {
@@ -145,7 +151,9 @@ Boolean Operation::generate_stub(Generator* g) {
     if (params_ != nil) {
 	generate_param_value(g);
     }
-    g->emit("_b.invoke(this, _%_%N_pinfo, _arg%,%a);\n", nil, this);
+    g->emit("_b.invoke(");
+    interface_->put_cast_up(g);
+    g->emit("this, _%_%N_pinfo, _arg%,%a);\n", nil, this);
     if (has_return_value) {
 	generate_return_value(g, type_);
     }
@@ -348,128 +356,6 @@ Boolean Parameter::generate_stub(Generator* g) {
     return false;
 }
 
-Boolean AttrDecl::generate_stub(Generator* g) {
-    Expr* e;
-    long rdesc = Operation::type_desc(g, type_);
-    long d = rdesc << 2;
-    g->emit("%B::ArgDesc ");
-    emit_index_name(g, "set_pdesc[3] = { 2, 4, ");
-    g->emit_integer(d + ExprKit::in_param);
-    g->emit(" };\n");
-    g->emit("%B::ArgDesc ");
-    emit_index_name(g, "get_pdesc[2] = { 1, ");
-    g->emit_integer(d);
-    g->emit(" };\n");
-    Boolean has_marshal = Operation::has_marshal(g, type_);
-    if (has_marshal) {
-	g->emit("%B::ArgMarshal ");
-	emit_index_name(g, "_pfunc[] = {\n%i");
-	Operation::generate_marshal_func(g, type_);
-	g->emit("\n%u};\n");
-    }
-    Boolean need_sep = false;
-    const char* sep = ";\n\n";
-    long index = index_;
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (need_sep) {
-	    g->emit(sep);
-	}
-	if (!readonly_) {
-	    emit_param_info(g, "set", e, index, has_marshal);
-	    put_stub(g, e);
-	    ++index;
-	}
-	emit_param_info(g, "get", e, index, has_marshal);
-	get_stub(g, e, rdesc);
-	++index;
-	g->emit("\n%u}\n");
-    }
-    return true;
-}
-
-void AttrDecl::put_stub(Generator* g, Expr* e) {
-    g->emit("void %:%E", nil, e);
-    g->emit("(%F", nil, type_);
-    g->emit(" %A%,%f) {\n%i", nil, e);
-    g->emit("%B _b;\n");
-    g->emit("%B::ArgValue ");
-    Operation::generate_arg(g, 2, ";\n");
-    Operation::generate_arg(g, 1, ".u_");
-    Symbol* s = g->actual_type(type_);
-    switch (s->tag()) {
-    case Symbol::sym_enum:
-	g->emit("long = ");
-	break;
-    case Symbol::sym_interface:
-	g->emit("objref = ");
-	break;
-    case Symbol::sym_string:
-	g->emit("string = ");
-	break;
-    case Symbol::sym_typedef:
-	g->emit("%I = ", s->typename()->str());
-	break;
-    case Symbol::sym_array:
-	g->emit("addr = ");
-	break;
-    default:
-	g->emit("addr = &");
-	break;
-    }
-    g->emit("%A;\n", nil, e);
-    g->emit("_b.invoke(this, _%_set_%E_pinfo, _arg%,%a);\n", nil, e);
-    g->emit("%u}\n");
-}
-
-void AttrDecl::get_stub(Generator* g, Expr* e, long rdesc) {
-    g->emit("%F ", nil, type_);
-    g->emit("%:%E(%f)", nil, e);
-    g->emit(" {\n%i");
-    g->emit("%B _b;\n");
-    g->emit("extern %MId _%_tid_;\n");
-    g->emit("%B::ArgValue ");
-    Operation::generate_arg(g, 1, ";\n");
-    if (rdesc == 0) {
-	/* pass address of return value */
-	g->emit("%F _result;\n", nil, type_);
-	Operation::generate_arg(g, 0, ".u_addr = &_result;\n");
-    }
-    g->emit("_b.invoke(this, _%_get_%E_pinfo, _arg%,%a);\n", nil, e);
-    Operation::generate_return_value(g, type_);
-}
-
-void AttrDecl::emit_param_info(
-    Generator* g, const char* sep, Expr* e, long index, Boolean marshal_func
-) {
-    g->emit("%B::ArgInfo _%_");
-    g->emit(sep);
-    g->emit("_%E_pinfo = {\n%i&_%_tid_, ", nil, e);
-    g->emit_integer(index);
-    g->emit(", ");
-    emit_index_name(g, sep);
-    g->emit("_pdesc, ");
-    if (marshal_func) {
-	emit_index_name(g, "_pfunc");
-    } else {
-	g->emit("0");
-    }
-    g->emit("\n%u};\n");
-}
-
-/*
- * Emit a name suitable for the parameter description information
- * for all the attributes in this declaration.  We could use
- * the index, but for now we use the name of the first attribute.
- */
-
-void AttrDecl::emit_index_name(Generator* g, const char* after) {
-    g->emit("_%_");
-    declarators_->item(0)->generate(g);
-    g->emit("_");
-    g->emit(after);
-}
-
 /*
  * Generate extern decls for stubs for data types.
  */
@@ -482,7 +368,7 @@ Boolean InterfaceDef::generate_extern_stubs(Generator* g) {
     if (defs_ != nil) {
 	g->enter_scope(info_->block);
 	if (generate_list(defs_, &Expr::generate_extern_stubs, g)) {
-	    g->emit("\n\n");
+	    g->emit("\n");
 	    b = true;
 	}
 	g->leave_scope();
@@ -535,22 +421,15 @@ Boolean Parameter::generate_extern_stubs(Generator* g) {
     );
 }
 
-Boolean AttrDecl::generate_extern_stubs(Generator* g) {
-    return (
-	g->emit_extern_stubs(type_) |
-	generate_list(declarators_, &Expr::generate_extern_stubs, g)
-    );
-}
-
 Boolean Declarator::generate_extern_stubs(Generator* g) {
     long f = g->file_mask();
     if (subscripts_ != nil && !symbol_->declared_stub(f)) {
-	g->emit("\nextern void _%Y_put(\n%i%B&, %b", nil, this);
+	g->emit("extern void _%Y_put(\n%i%B&, %b", nil, this);
 	g->emit("const %F ", nil, element_type_);
 	g->emit("%E\n%u);\n", nil, this);
 	g->emit("extern void _%Y_get(\n%i%B&, %b", nil, this);
 	g->emit("%F ", nil, element_type_);
-	g->emit("%E\n%u);", nil, this);
+	g->emit("%E\n%u);\n", nil, this);
 	symbol_->declare_stub(f);
 	return true;
     }
@@ -566,23 +445,41 @@ Boolean Declarator::generate_extern_stubs(Generator* g) {
 Boolean ExprImpl::generate_types(Generator*) { return false; }
 Boolean IdentifierImpl::generate_types(Generator*) { return false; }
 
+Boolean Module::generate_types(Generator* g) {
+    Boolean b = false;
+    if (defs_ != nil) {
+	Boolean excepts = block_->except_index > 0;
+	g->emit_type_info(ident_->string(), "Ref", nil, false, excepts, false);
+	g->enter_scope(block_);
+	if (excepts) {
+	    put_except_list(defs_, g);
+	}
+	if (generate_list(defs_, &Expr::generate_def, g)) {
+	    g->emit("\n");
+	}
+	b = RootExpr::put_list(defs_, &RootExpr::put_stubs, g);
+	g->leave_scope();
+    }
+    return b;
+}
+
 Boolean InterfaceDef::generate_types(Generator* g) {
     Boolean b = false;
     if (defs_ != nil) {
 	g->enter_scope(info_->block);
 	b = generate_list(defs_, &Expr::generate_types, g);
 	if (info_->block->except_index != 0) {
-	    b = put_excepts(g);
+	    b = put_except_list(defs_, g);
 	}
 	g->leave_scope();
     }
     return b;
 }
 
-Boolean InterfaceDef::put_excepts(Generator* g) {
+Boolean ExprImpl::put_except_list(ExprList* defs, Generator* g) {
     g->emit("%M_UnmarshalException _%_excepts[] = {\n%i");
     g->need_sep(false);
-    for (ListItr(ExprList) i(*defs_); i.more(); i.next()) {
+    for (ListItr(ExprList) i(*defs); i.more(); i.next()) {
 	Symbol* s = i.cur()->symbol();
 	if (s != nil && s->tag() == Symbol::sym_exception) {
 	    if (g->need_sep(true)) {
@@ -764,7 +661,7 @@ Boolean ExceptDecl::generate_types(Generator* g) {
 
     String* s = ident_->string();
     g->emit("void %Q::_put(%B& _b) const {\n%i", s);
-    g->emit("_b.put_long(_%_tid_);\n", s);
+    g->emit("_b.put_long(_%_tid);\n", s);
     g->emit("_b.put_long(_major_);\n");
     if (members_ != nil) {
 	g->emit("const %F& _this = *this;\n", nil, this);
@@ -798,10 +695,6 @@ Boolean Operation::generate_types(Generator* g) {
 
 Boolean Parameter::generate_types(Generator* g) {
     return type_->generate_types(g) || declarator_->generate_types(g);
-}
-
-Boolean AttrDecl::generate_types(Generator* g) {
-    return type_->generate_types(g);
 }
 
 Boolean Declarator::generate_types(Generator* g) {
@@ -838,9 +731,8 @@ void InterfaceDef::put_receive(Generator* g) {
     String* s = ident_->string();
     g->emit("void _%_%I_receive(", s);
     g->emit("%S%p _object, ULong _m, %B& _b) {\n%i");
-    g->emit("%:%I%p _this = (%:%I%p)", s);
-    put_cast_down(g);
-    g->emit("_object;\n");
+    g->emit("extern %MId %T;\n", s);
+    g->emit("%:%I%p _this = (%:%I%p)_BaseObject_tcast(_object, %T);\n", s);
     if (g->envclass() != nil) {
 	g->emit(g->envclass());
 	g->emit("* _env = _b.env();\n");
@@ -886,7 +778,7 @@ Boolean Operation::generate_receive(Generator* g) {
 	}
     }
     g->emit("_this->");
-    if (need_indirect_) {
+    if (g->refobjs() && need_indirect_) {
 	g->emit("_c_");
     }
     g->emit("%I", s);
@@ -935,48 +827,4 @@ void Operation::generate_receive_asg(Generator* g, Expr* type) {
 	g->emit("addr = &");
 	break;
     }
-}
-
-Boolean AttrDecl::generate_receive(Generator* g) {
-    long n = index_;
-    Boolean has_marshal = Operation::has_marshal(g, type_);
-    Expr* e;
-    for (ListItr(ExprList) i(*declarators_); i.more(); i.next()) {
-	e = i.cur();
-	if (!readonly_) {
-	    g->emit("case ");
-	    g->emit("/* set %E */ ", nil, e);
-	    g->emit_integer(n++);
-	    g->emit(": {\n%i");
-	    g->emit("extern %B::ArgInfo _%_set_%E_pinfo;\n", nil, e);
-	    g->emit("%B::ArgValue ");
-	    Operation::generate_arg(g, 2, ";\n");
-	    Operation::generate_receive_addr(g, 1, type_, e);
-	    g->emit("_b.receive(_%_set_%E_pinfo, _arg);\n", nil, e);
-	    g->emit("_this->%E(%E);\n", nil, e);
-	    g->emit("_b.reply(_%_set_%E_pinfo, _arg);\n", nil, e);
-	    g->emit("break;\n%u}\n");
-	}
-	g->emit("case ");
-	g->emit("/* get %E */ ", nil, e);
-	g->emit_integer(n++);
-	g->emit(": {\n%i");
-	g->emit("extern %B::ArgInfo _%_get_%E_pinfo;\n", nil, e);
-	g->emit("%B::ArgValue ");
-	Operation::generate_arg(g, 1, ";\n");
-	long rdesc = Operation::type_desc(g, type_);
-	if (rdesc == 0) {
-	    g->emit("%F _result = ", nil, type_);
-	} else {
-	    Operation::generate_receive_asg(g, type_);
-	}
-	g->emit("_this->%E();\n", nil, e);
-	if (rdesc == 0) {
-	    Operation::generate_receive_asg(g, type_);
-	    g->emit("_result;\n");
-	}
-	g->emit("_b.reply(_%_get_%E_pinfo, _arg);\n", nil, e);
-	g->emit("break;\n%u}\n");
-    }
-    return true;
 }
