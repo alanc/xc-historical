@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.129 91/01/10 14:12:20 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.130 91/01/10 17:16:28 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -901,15 +901,21 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
 				return nextState;
 			    }
 			    else
-			      matchState = nextState;
+			      matchState = candState;
 			}
 		    }
 		}
 	    }
 	}
     }
-    if (matchState)
-      PushContext(contextPtr, matchState);
+    if (matchState) {
+	typeMatch = TMGetTypeMatch(matchState->typeIndex);
+	if (typeMatch->eventType == _XtEventTimerEventType) {
+	    PushContext(contextPtr, matchState);
+	    matchState = matchState->nextLevel;
+	}
+	PushContext(contextPtr, matchState);
+    }
     return matchState;
 }
 
