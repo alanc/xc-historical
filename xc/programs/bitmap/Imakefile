@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.17 91/07/19 15:44:53 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.18 91/07/30 10:35:59 gildea Exp $
 INSTALLFLAGS = $(INSTINCFLAGS)
 BUTTONPICTURES = \
 	Dashes \
@@ -29,8 +29,8 @@ LOCAL_LIBRARIES = XawClientLibs
        PROGRAMS = bitmap bmtoa atobm
 
 ComplexProgramTarget_1(bitmap,$(LOCAL_LIBRARIES),-lm)
-SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB),NullParameter)
-SingleProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter)
+NormalProgramTarget(bmtoa,$(OBJS2),NullParameter,$(XMULIB),NullParameter)
+NormalProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter,NullParameter)
 
 BuildIncludes($(BUTTONPICTURES),bitmaps,..)
 
