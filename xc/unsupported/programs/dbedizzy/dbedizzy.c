@@ -36,8 +36,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xdbe.h>
-#include <X11/extensions/Xdbeproto.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -123,6 +121,10 @@ getColor( Colormap cmap, char *color_name)
 #define RATIO1 0.4
 #define RATIO2 0.7
 #define RATIO3 0.95
+
+#ifndef M_PI
+#define M_PI 3.1415927
+#endif
 
 #define ANGLE (M_PI*2/spokes)
 
@@ -296,9 +298,9 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s: Missing argument to -class\n", ProgName);
 		exit(1);
 	    }
-	    if (strcasecmp(arg, "True") == 0)
+	    if (strcmp(arg, "True") == 0)
 		class = TrueColor;
-	    else if (strcasecmp(arg, "Pseudo") == 0)
+	    else if (strcmp(arg, "Pseudo") == 0)
 		class = PseudoColor;
 	    else {
 		fprintf(stderr, "%s: Wrong argument %s for -class\n",
