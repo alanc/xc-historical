@@ -1,6 +1,6 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.28 89/12/21 22:13:39 rws Exp $
-.EF 'Porting Layer Definition'- % -'March 1, 1988'
-.OF 'Porting Layer Definition'- % -'March 1, 1988'
+.\" $XConsortium: ddx.tbl.ms,v 1.29 91/04/07 16:53:46 keith Exp $
+.EF 'Porting Layer Definition'- % -'April 22, 1991'
+.OF 'Porting Layer Definition'- % -'April 22, 1991'
 .EH '''
 .OH '''
 .TL
@@ -23,7 +23,7 @@ Bob Scheifler
 .AI
 Massachusetts Institute of Technology
 .sp
-Revised for Release 4 by
+Revised for Release 4 and Release 5beta by
 .AU
 Keith Packard
 .AI
@@ -363,6 +363,16 @@ you should return a count of clients stored in pClientReady
 .IP \(bu 5
 A new client tries to connect, in which case you should create the
 client and  then continue waiting
+.LP
+Before WaitForSomething() computes the masks to pass to select, it needs to
+see if there is anything to do on the work queue; if so, it must call a DIX
+routine called ProcessWorkQueue.
+.nf
+	extern WorkQueuePtr	workQueue;
+
+	if (workQueue)
+		ProcessWorkQueue ();
+.fi
 .LP
 If WaitForSomething() decides it is about to do something that might block
 (in the sample server,  before it calls select()) it must call a DIX
@@ -810,187 +820,26 @@ Font Support
 Font Support
 .XE
 .LP
-In the sample server, fonts are encoded in disk files.
-There is one file per font, with a file name like "Fixed.snf," in 
-one of a handful of directories.
-All of these directories are listed in the current "font path."
+In the sample server, fonts are encoded in disk files or fetched from the
+font server.
+For disk fonts, there is one file per font, with a file name like
+"fixed.pcf".  Font server fonts are read over the network using the
+X Font Server Protocol.  The disk directories containing disk fonts and
+the names of the font servers are listed together in the current "font path."
 
 In principle, you can put all your fonts in ROM or in RAM in your server.
 You can put them all in one library file on disk.
-You could generate them on the fly from stroke descriptions.
-You can put them
-anywhere you want as long as your scheme follows the rules described 
-in this section.
+You could generate them on the fly from stroke descriptions.  By placing the
+appropriate code in the Font Library, you will automatically export fonts in
+that format both through the X server and the Font server.
 
-The sample server implementation is in os/4.2bsd/osfonts.c,fonttype.c and
-ddx/snf
-
-.NH 3
-Font Support Data Structures
-.XS
-Font Support Data Structures
-.XE
-.LP
-A font is identified by a font name, which is a counted character string.
-A font name is sent over the network and its length is 
-kept as a separate integer (and it is NOT null terminated).
-X assigns no format rules for font names, although 
-some groups of fonts follow conventions such as the X Logical Font
-Description Conventions.
-Typical font names are "Fixed," "Times 12,"
-"-Adobe-Times-Medium-R-Normal--10-100-75-75-P-54-ISO8859-1."
-.LP
-Given a font name, your OS code must generate
-a "font file name" for that font.
-You will probably return a real filename for your operating system,
-but anything that serves the same purpose will do, including the font name itself.
-.LP
-Given a font filename, you must be able to produce
-font data in Server Natural Format (see the section on Fonts).
-DIX thinks it is reading a file when it asks for the font data, and it calls
-file-read-like routines to read it into its font buffers.
-Probably these will be real files, but once again, you can do anything you want.
-(If you want to use font data in a format other than SNF, you will have
-to rewrite part of DIX.)
-.LP
-The font-name-to-font-filename translation procedure may want to 
-use a font path to look up the font files.
-(A path is a list of directories to search, in order.)
-Not all servers need to implement a font path.
-In fact, these functions can be very OS-specific and nonportable.
-.LP
-There is a struct, called a FontPathRec, that holds a list of character strings.
-You use it to communicate the current path to and from DIX.
-This struct is also used for other purposes, such as providing a list of 
-font names that matches a given pattern.
-
-A FontPathRec has a count of the number of strings it holds, a pointer
-to an array of lengths, and a pointer to an array of char * pointers.
-All of these arrays and strings are dynamically allocated.  The strings
-are not NULL-terminated.
-.nf
-
-	void FreeFontRecord(pFP)
-		FontPathPtr pFP;
-.fi
-FreeFontRecord must free dynamically allocated FontPathRec's and all underlying
-structures.
-
-When a GC is created, it is assigned default attributes such as solid fill style,
-etc.  The default font is set in DIX to the font whose name is a defined
-constant COMPILEDDEFAULTFONT, in the file server/include/site.h.
-In the sample server, it is "fixed," a simple fixed-width font 
-that is supplied as one of the fonts in bdf format.
-
-.NH 3
-Font Names
-.XS
-Font Names
-.XE
-.LP
-.nf
-
-	FontPathPtr
-	ExpandFontNamePattern(lenPattern, pPattern, maxNames)
-		int lenPattern;
-		char *pPattern;
-		int maxNames;
-.fi
-This routine must take a pattern for a font name, 
-search for all of the available fonts
-that match that pattern, and return them in a pointer to a FontPathRec.
-pPattern and lenPattern are the pattern string in typical "font name" format
-(not null terminated).
-maxNames is the maximum number of names to return; you can allocate
-a FontPathRec of the appropriate size knowing this.
-
-The pattern is case insensitive.  ? and * work 
-as standard match characters (?=any character,
-*=any sequence of characters).
-
-.NH 3
-Font Files
-.XS
-Font Files
-.XE
-.LP
-.nf
-
-	FontPtr FontFileLoad(fontname, length)
-		char *fontname;
-		unsigned length;
-
-	Bool FontFilePropLoad(fontname, length, font, fi, props)
-		char *fontname;
-		unsigned length;
-		FontInfoPtr fi;		/* return */
-		DIXFontPropPtr *props;	/* return */
-		FontPtr	*font;		/* return */
-
-	void FontUnload (font)
-		FontPtr font;
-
-	int FontFileRead ( buf, itemsize, nitems, fid)
-		char *buf;
-		unsigned itemsize;
-		unsigned nitems;
-		FID fid;
-
-	int FontFileSkip (bytes, fid)
-		unsigned bytes;
-		FID fid;
-
-.fi
-FontFileLoad and FontFilePropLoad are used by DIX to load fonts and/or font
-properties, returning FALSE if the requested font does not exist.  Both of
-these use sample implementations use a list of registered font readers to
-actually read the fonts, the basic SNF reader sample implementation can be
-found in DDX/SNF.  The font readers use FontFileRead and FontFileSkip to
-actually extract the bits from the font files
-.nf
-
-	int SetFontPath( client, npaths, countedStrings)
-		ClientPtr client;
-		int npaths;
-		char *countedStrings;
-.fi
-SetFontPath must set the entire path to the new path passed in.
-client is the client issuing the request;
-npaths is the number of paths in the list.
-countedStrings is a pointer to a buffer that contains counted strings
-for each directory name in the path; each counted string is a
-length byte followed by that many characters (not padded, not null-terminated).
-If npaths = 0, SetFontPath should reinstate the default font path.
-The routine returns Success if the path is installed, else an error such
-as BadAlloc.
-.LP
-The default font path is set in DIX to the string that is a defined
-constant COMPILEDDEFAULTFONTPATH, in the file site.h.
-In the sample server, it is either
-"/usr/lib/X11/fonts/misc,/usr/lib/X11/fonts/75dpi,/usr/lib/X11/fonts/100dpi"
-or
-"/usr/lib/X11/fonts/misc,/usr/lib/X11/fonts/100dpi,/usr/lib/X11/fonts/75dpi",
-depending on the resolution of the primary screen for which the server is
-being built.
-.nf
-
-	FontPathPtr GetFontPath()
-.fi
-GetFontPath() must return the font path.
-You must copy it into a dynamically allocated structure
-that will eventually be freed with FreeFontRecord().
-Servers that choose to not implement these should return an 
-empty path.
-.nf
-
-	int SetDefaultFontPath(dirname)
-		char *dirname;
-.fi
-You should write this routine to set the default font path.
-DIX will pass you the value of COMPILEDDEFAULTFONTPATH when the 
-server starts up.
-Return Success on success, else an error such as BadAlloc.
-
+With the incorporation of font-server based fonts and the Speedo donation
+from Bitstream, the font interfaces have been moved into a separate
+library, now called the Font Library (../fonts/lib).  These routines are
+shared between the X server and the Font server, so instead of this document
+specifying what you must implement, simply refer to the font
+library interface specification for the details.  All of the interface code to the Font
+library is contained in dix/dixfonts.c
 .NH 2
 Memory Management
 .XS
@@ -1020,9 +869,9 @@ If you leak a few dozen k per day, that will add up and will cause problems
 for users that leave their workstations on.
 
 .NH 2
-Per-Client Flow Control
+Client Scheduling
 .XS
-Per-Client Flow Control
+Client Scheduling
 .XE
 .LP
 To support the Multi-buffering extension, some OS routines were added
@@ -2593,126 +2442,25 @@ In principle, you can convert fonts from other
 sources or dream up your own fonts for use on your server.
 
 .NH 4
-Server Natural Format
+Portable Compiled Format
 .XS
-Server Natural Format
+Portable Compiled Format
 .XE
 .LP
 A font compiler is supplied with the sample server.
 It has compile-time switches to convert the BDF files
-into a simple binary form, called Server Natural Format or SNF,
-with all the bit- and
-byte-swapping issues being resolved.
+into a portable binary form, called Portable Compiled Format or PCF.
+This allows for an arbitrary data format inside the file, and by
+describing the details of the format in the header of the file, any PCF
+file can be read by any PCF reading client.  By selecting the format which
+matches the required internal format for your renderer, the PCF reader can
+avoid reformatting the data each time it is read in.
 The font compiler should be directly portable to most UNIX-based systems 
 and is probably portable
 to many non-UNIX systems.
 
-WARNING: the bit and byte order defines
-in the font compiler source are distinct from those for
-the main server code.  This is for you to cross-compile
-a font file for a different machine.
-If these are set differently for the same server then your text will
-not draw correctly.
-
 The fonts included with the tape are stored in fonts/bdf.  The
-font compiler is found in fonts/compiler.
-
-Server Natural Format font files consist of five parts (and, possibly a
-sixth part as well). All of the data
-structures in the file are declared in server/include/font.h. Each part begins
-on a 32-bit (4 byte) boundary in the file.   The structures in
-server/include/font.h are shared by the font compiler and server.
-
-The FontInfoRec part is a header that has global information common to all 
-characters in the font and the sizes of the other parts of the file.
-This structure contains the data necessary for the server to
-respond to a QueryFontRequest. The structure contains a version number
-(FONT_FILE_VERSION) at the beginning and the end of the structure to
-aid in detecting bad or outdated files.
-
-The Character Information part has metrics for each character in the font.
-It is an array of character metrics. The first
-element describes the character at fi.firstRow and fi.firstCol.
-In
-addition to the protocol defined metrics, the XCHARINFO
-structure contains a ci.byteOffset and ci.bitOffset for each character.
-The ci.byteOffset offset from the character glyph at the
-beginning of the glyphs (below). The ci.bitOffset is the sum of the
-bounding box widths of all preceding characters.
-
-The Character Glyphs part has bit images for each character in the font.
-Each scanline of each glyph is padded to a byte boundary
-Bit and byte order is whatever is natural for the server.
-(Note: the current BDF to SNF font compiler handles either bit order
-within a byte as a compile time option. It does not need to
-deal with byte order for the sample server implementation.)
-The glyph for a character with XCHARINFO as ci begins at
-cg[ci.byteOffset]. Glyphs may begin at arbitrary byte offsets within
-the array.
-
-The Property Descriptors part is a way to record arbitrary properties and metrics
-that were not designed into the font scheme for X.
-The pd.name field of each entry is the offset into the string table
-of the null-terminated name of the property. If pd.indirect is FALSE,
-pd.value is the INT32 value of the property. Otherwise, pd.value
-is the offset of the null-terminated string property in the string
-table.
-
-The next part is the Property Strings (the values of the properties).
-These are the null-terminated strings for property names and values.
-For a property descriptor pd, the name is at s[pd.name] and the
-value is at s[pd.value] if the pd.indirect is TRUE. All strings
-are null-terminated and may begin at any byte offset from the
-beginning.
-
-The strings array is NOT padded to a 4-byte boundary.
-
-Finally, there may be an array of Ink Information following the Property
-Strings.  The Protocol requires that the character metrics described to the
-client exactly fit the actual bits painted on the screen; but there are some
-fonts for which the bitmaps have been artificially enlarged to simplify (and
-speed up) the glyph painting code.  The Character Information part will
-contain metrics which describe the sizes of the various bitmaps, while this
-optional final section of Ink Information will contain the metrics which are
-sent to the client.  The presence of this information is indicated by
-the inkMetrics bit in the FontInfoRec.
-.NH 4
-Font Loading and Manipulation
-.XS
-Font Loading and Manipulation
-.XE
-.LP
-
-There are a number of routines used by the server to deal with loading and
-manipulating fonts.  The sample OS implementation uses routines that deal
-with SNF format which are supplied (in server/ddx/snf), but you can replace
-or augment these if you want to do conversion from other formats.  For each
-format, the OS layer needs to know the file extension for the format (e.g.
-"snf"), an optional filter program (given as a command line) to execute to
-convert the format to a usable format (e.g., to uncompress a compressed
-file, or to compile a BDF file on the fly), plus routines to load the font,
-load the font properties, and free the font.
-.nf
-
-	FontPtr FontFileReader->loadFont(fp)
-		FID fp;
-.fi
-This routine takes an open file and loads the font.
-.nf
-
-	Bool FontFileReader->loadProperties(fp)
-		FID fp;
-		FontInfoPtr pfi;
-		DIXFontPropPtr *ppdfp;
-.fi
-This routine takes an open file and loads the font properties and metrics.
-.nf
-
-	FontFileReader->freeFont(font)
-		FontPtr font;
-.fi
-This routine frees the storage associated with a font.
-
+font compiler is found in fonts/tools/bdftopcf.
 .NH 4
 Font Realization
 .XS
@@ -3104,7 +2852,8 @@ set of routines stored in the WindowRec.)
 ValidateTree calculates the clipping region for the parent window and
 all of its children.
 This routine must be provided. The sample
-server has a machine-independent version in server/ddx/mi/mivaltree.c.
+server has a machine-independent version in server/ddx/mi/mivaltree.c.  This
+is a very difficult routine to replace.
 .nf
 
 	void pScreen->WindowExposures(pWin, pRegion)
@@ -3121,7 +2870,16 @@ client as to the number of
 regions that are after this one.
 This routine must be provided. The sample
 server has a machine-independent version in server/ddx/mi/miexpose.c.
+.nf
 
+	void pScreen->ClipNotify (pWin, dx, dy)
+		WindowPtr pWin;
+		int dx, dy;
+.fi
+Whenever the cliplist for a window is changed, this function is called to
+perform whatever hardware manipulations might be necessary.  When called,
+the clip list and border clip regions in the window are set to the new
+values.  dx,dy are the distance that the window has been moved (if at all).
 .NH 4
 Window Painting Procedures
 .XS
@@ -4256,8 +4014,8 @@ Although text drawing will work, it will be very slow.
 		GCPtr pGC;
 		int x , y;
 		unsigned int nglyph;
-		XCHARINFO **ppci;		/* array of character info */
-		char *pglyphBase;		/* start of array of glyphs */
+		CharInfoRec **ppci;		/* array of character info */
+		char *pglyphBase;		/* unused in R5 */
 
 .fi
 .LP
@@ -4273,8 +4031,8 @@ and stipple, patOrg, fgPixel and bgPixel (for fillStyle OpaqueStipple).
 		GCPtr pGC;
 		int x , y;
 		unsigned int nglyph;
-		XCHARINFO **ppci;	/* array of character info */
-		char *pglyphBase;	/* start of array of glyphs */
+		CharInfoRec **ppci;	/* array of character info */
+		char *pglyphBase;	/* unused in R5 */
 
 .fi
 .LP
@@ -4314,7 +4072,8 @@ PushPixels routine
 The PushPixels routine writes the current fill style onto the drawable
 in a certain shape defined by a bitmap.  PushPixels is equivalent to
 using a second stipple.  You can thing of it as pushing the fillStyle
-through the stencil which is built by milines and miarcs. 
+through a stencil.  PushPixels is not used by any of the mi rendering code,
+but is used by the mi software cursor code.
 .LP
 .nf
 .ta 1i 3i
@@ -4589,6 +4348,72 @@ vector and not have it lost when your wrapper routine rewraps the GC.  This
 occurs when the wrapped op revalidates the GC with new entries (many mi
 routines do this for opaque stipples or double dashes).  The corollary to
 this rule is:  Never change the func vector after CreateGC.
+.NH 2
+Scheduling Client Activity
+.XS
+Scheduling Client Activity
+.XE
+.LP
+With the addition of support for the X Font Server Protocol, the X server
+now has the ability to schedule clients much like an operating system would,
+suspending and restarting them without regard for the state of their input
+buffers.  This functionality allows the X server to suspend one client and
+continue processing requests from other clients while waiting for a
+long-term network activity (like loading a font) before continuing with the
+first client.
+.NH 3
+Work Queue
+.XS
+Work Queue
+.XE
+.LP
+To queue work for execution when all clients are in a stable state (i.e.
+just before calling select() in WaitForSomething), call:
+.nf
+	Bool QueueWorkProc(function,client,closure)
+		Bool		(*function)();
+		ClientPtr	client;
+		pointer		closure;
+.fi
+.LP
+When the server is about to suspend itself, the given function will be
+executed:
+.nf
+	(*function) (client, closure)
+.fi
+.LP
+Neither client nor closure are actually used inside the work queue routines.
+.NH 3
+Client Suspension
+.XS
+Client Suspension
+.XE
+.LP
+Three functions support "process control" for X clients:
+.nf
+	Bool ClientSleep (client, function, closure)
+		ClientPtr	client;
+		Bool		(*function)();
+		pointer		closure;
+.fi
+.LP
+This suspends the current client (the calling routine is responsible for
+making its way back to Dispatch()).  No more X requests will be processed
+for this client until ClientWakeup is called.
+.nf
+	Bool ClientSignal (client)
+		ClientPtr	client;
+.fi
+.LP
+This function causes a call to the (*function) parameter passed to
+ClientSleep to be queued on the work queue.  This does not automatically
+"wakeup" the client, but the function called is free to do so by calling:
+.nf
+	ClientWakeup (client)
+		ClientPtr	client;
+.fi
+.LP
+This re-enables X request processing for the specified client.
 .NH 1
 Extension Interfaces
 .XS
@@ -4718,6 +4543,7 @@ REQUEST_FIXED_SIZE, LEGAL_NEW_RESOURCE, LOOKUP_DRAWABLE, VERIFY_GC, and
 VALIDATE_DRAWABLE_AND_GC. Useful byte swapping macros can be found
 in server/include/misc.h: lswapl, lswaps, LengthRestB, LengthRestS,
 LengthRestL, SwapRestS, SwapRestL, swapl, swaps, cpswapl, and cpswaps.
+.bp
 .NH 1
 Summary of Routines
 .XS
@@ -4737,7 +4563,6 @@ dix	portable to all systems; do not attempt to rewrite (server/dix)
 4.2	written for 4.2/4.3bsd Unix or equivalent (server/os/4.2bsd)
 ddx	frame buffer dependent (examples in server/ddx/mfb,server/ddx/cfb)
 mi	routine provided in server/ddx/mi
-snf	routine provided in server/ddx/snf
 hd	hardware dependent (examples in many server/ddx directories)
 none	not implemented in sample implementation
 .TE
@@ -4758,7 +4583,10 @@ ChangeGC		GC func
 ChangeWindowAttributes	ddx	Screen
 ClearToBackground	ddx	Window
 ClientAuthorized	4.2
-CloseFont	snf
+ClientSignal	dix
+ClientSleep	dix
+ClientWakeup	dix
+ClipNotify	ddx	Screen
 CloseScreen	hd
 ConstrainCursor	hd	Screen
 CopyArea	mi	GC op
@@ -4772,7 +4600,6 @@ CreateWellKnowSockets	4.2
 CreateWindow	ddx	Screen
 CursorLimits	hd	Screen
 DEALLOCATE_LOCAL	4.2
-DescribeFont	snf
 DestroyClip	ddx	GC func
 DestroyGC	ddx	GC func
 DestroyPixmap	ddx	Screen
@@ -4782,10 +4609,8 @@ Error	4.2
 ErrorF	4.2
 ExpandFontNamePattern	4.2
 FatalError	4.2
-FiClose	4.2
 FillPolygon	mi	GC op
 FillSpans	ddx	GC op
-FiOpenForRead	4.2
 .TE
 .bp
 .TS
@@ -4794,12 +4619,8 @@ c c c
 l c l.
 Procedure	Port	Struct
 _
-FiRead	4.2
 FlushAllOutput	4.2
 FlushIfCriticalOutputPending	4.2
-FreeFontRecord	4.2
-GetFontPath	4.2
-GetGlyphs	snf
 GetImage	mi	Screen
 GetMotionEvents	hd	Device
 GetSpans	ddx	Screen
@@ -4821,7 +4642,6 @@ ListInstalledColormaps	ddx	Screen
 LookupKeyboardDevice	dix	
 LookupPointerDevice	dix	
 NextAvailableClient	dix
-OpenFont	snf
 OsInit	4.2	
 PaintWindowBackground	mi	Window
 PaintWindowBorder	mi	Window
@@ -4842,9 +4662,6 @@ ProcessInputEvents	hd
 PushPixels	mi	GC op
 PutImage	mi	GC op
 QueryBestSize	hd	Screen
-QueryFont	snf
-QueryGlyphExtents	snf
-QueryTextExtents	snf
 ReadRequestFromClient	4.2	
 RealizeCursor	hd	Screen
 .TE
@@ -4876,9 +4693,6 @@ SaveDoomedAreas	none	BackingStore
 SaveScreen	ddx	Screen
 SetCriticalOutputPending	4.2
 SetCursorPosition	hd	Screen
-SetDefaultFont	snf
-SetDefaultFontPath	4.2
-SetFontPath	4.2
 SetInputCheck	dix	
 SetSpans	ddx	GC op
 StoreColors	ddx	Screen
