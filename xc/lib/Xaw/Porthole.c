@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.5 90/03/01 19:05:52 jim Exp $
+ * $XConsortium: Porthole.c,v 1.6 90/03/01 19:13:21 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -108,26 +108,6 @@ WidgetClass portholeWidgetClass = (WidgetClass) &portholeClassRec;
  *                                                                           *
  *****************************************************************************/
 
-static void SendReport (pw, changed)
-    PortholeWidget pw;
-    unsigned int changed;
-{
-    if (pw->porthole.report_callbacks) {
-	XawPannerReport prep;
-	Widget child = pw->composite.children[0];
-
-	prep.changed = changed;
-	prep.slider_x = -child->core.x;	/* porthole is "inner" */
-	prep.slider_y = -child->core.y;	/* child is outer since it is larger */
-	prep.slider_width = pw->core.width;
-	prep.slider_height = pw->core.height;
-	prep.canvas_width = child->core.width;
-	prep.canvas_height = child->core.height;
-	XtCallCallbackList (pw, pw->porthole.report_callbacks,
-			    (caddr_t) &prep);
-    }
-}
-
 static Widget find_child (pw)
     register PortholeWidget pw;
 {
@@ -144,6 +124,27 @@ static Widget find_child (pw)
     }
 
     return (Widget) NULL;
+}
+
+static void SendReport (pw, changed)
+    PortholeWidget pw;
+    unsigned int changed;
+{
+    Widget child = find_child (pw);
+
+    if (pw->porthole.report_callbacks && child) {
+	XawPannerReport prep;
+
+	prep.changed = changed;
+	prep.slider_x = -child->core.x;	/* porthole is "inner" */
+	prep.slider_y = -child->core.y;	/* child is outer since it is larger */
+	prep.slider_width = pw->core.width;
+	prep.slider_height = pw->core.height;
+	prep.canvas_width = child->core.width;
+	prep.canvas_height = child->core.height;
+	XtCallCallbackList (pw, pw->porthole.report_callbacks,
+			    (caddr_t) &prep);
+    }
 }
 
 
