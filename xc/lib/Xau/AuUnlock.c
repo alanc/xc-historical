@@ -1,7 +1,7 @@
 /*
  * Xau - X Authorization Database Library
  *
- * $XConsortium: AuUnlock.c,v 1.3 90/12/12 09:30:46 rws Exp $
+ * $XConsortium: AuUnlock.c,v 1.4 91/01/08 15:09:39 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
 #include <X11/Xauth.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef _POSIX_SOURCE
+#ifndef X_NOT_POSIX
 #include <errno.h>
 #else
 #include <sys/errno.h>
