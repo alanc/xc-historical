@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.20 93/09/09 18:53:57 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.21 93/09/10 18:24:10 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -314,25 +314,16 @@ clean::									@@\
 dst::									@@\
 	@echo sorry, unable to make $@
 
-#define InstallSimple(thing,dest,name)					@@\
+#define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 XVARdef0 = $(DESTDIR)dest						@@\
 									@@\
-install:: thing								@@\
+step:: srcname								@@\
 	MakeDir($(XVARuse0:/=\))					@@\
-	$(INSTALL) thing $(XVARuse0:/=\)name
+	$(INSTALL) srcname $(XVARuse0:/=\)dstname
 
-
-#define InstallProgramWithFlags(program,dest,flags)			@@\
-InstallSimple(ProgramTargetName(program),dest,NullParameter)
 
 #define	InstallLibrary(libname,dest)					@@\
-InstallSimple(LibraryTargetName(libname),dest,NullParameter)
-
-#define	InstallNamedNonExec(srcname,dstname,dest)			@@\
-InstallSimple(srcname,dest,dstname)
-
-#define	InstallNonExecFile(file,dest)					@@\
-InstallSimple(file,dest,NullParameter)
+InstallTarget(install,LibraryTargetName(libname),$(INSTLIBFLAGS),dest)
 
 #define	InstallScript(program,dest) /**/
 
