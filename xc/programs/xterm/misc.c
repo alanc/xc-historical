@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.16 88/05/11 15:48:46 jim Exp $
+ *	$Header: misc.c,v 1.17 88/05/18 10:34:39 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.16 88/05/11 15:48:46 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.17 88/05/18 10:34:39 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -724,16 +724,25 @@ int a;
 #endif	/* DEBUG */
 }
 
+char *SysErrorMsg (n)
+    int n;
+{
+    extern char *sys_errlist[];
+    extern int sys_nerr;
+
+    return ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+}
+
+
 SysError (i)
 int i;
 {
 	int oerrno;
-	extern char *sys_errlist[];
 
 	oerrno = errno;
 	/* perror(3) write(2)s to file descriptor 2 */
 	fprintf (stderr, "%s: Error %d, errno %d: ", xterm_name, i, oerrno);
-	fprintf (stderr, "%s\n", sys_errlist[oerrno]);
+	fprintf (stderr, "%s\n", SysErrorMsg (oerrno));
 	Cleanup(i);
 }
 
@@ -838,13 +847,14 @@ Display *d;
 	** to write to stderr's fd.  Since the original code used
 	** perror which uses write(2), let's not use fprintf(3).
 	*/
-	int oerrno;
+	int oerrno = errno;
+	char *msg = SysErrorMsg (oerrno);
+	int stderrfd = fileno (stderr);
 	
-	oerrno = errno;
-	write(fileno(stderr), xterm_name, strlen(xterm_name));
-	write(fileno(stderr), ": ", 2);
-	write(fileno(stderr), sys_errlist[oerrno], strlen(sys_errlist[oerrno]));
-	write(fileno(stderr), "\n", 1);
+	write(stderrfd, xterm_name, strlen(xterm_name));
+	write(stderrfd, ": ", 2);
+	write(stderrfd, msg, strlen (msg));
+	write(stderrfd, "\n", 1);
 
 	Exit(ERROR_XIOERROR);
 }
