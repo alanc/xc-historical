@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.135 90/03/14 16:50:00 jim Exp $
+ * $XConsortium: events.c,v 1.136 90/03/15 14:22:55 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.135 90/03/14 16:50:00 jim Exp $";
+"$XConsortium: events.c,v 1.136 90/03/15 14:22:55 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -423,6 +423,11 @@ HandleColormapNotify()
 		    n = i*(i-1)/2 + j;
 		else
 		    n = j*(j-1)/2 + i;
+		if (n >= Scr->cmapInfo.cmaps->number_cwins) {
+		    fprintf (stderr,
+			     "Illegal scoreboard %d (max %d; i %d, j %d)\n",
+			     n, Scr->cmapInfo.cmaps->number_cwins - 1, i, j);
+		}
 		Scr->cmapInfo.cmaps->scoreboard[n] = 1;
 	    } else {
 		fprintf (stderr, 
@@ -636,8 +641,10 @@ void free_cwins (tmp)
 	    }
 	}
 	free((char *) tmp->cmaps.cwins);
-	if (tmp->cmaps.number_cwins > 1)
+	if (tmp->cmaps.number_cwins > 1) {
 	    free(tmp->cmaps.scoreboard);
+	    tmp->cmaps.scoreboard = NULL;
+	}
 	tmp->cmaps.number_cwins = 0;
     }
 }
