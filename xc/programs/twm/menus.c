@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.172 91/01/10 14:26:12 dave Exp $
+ * $XConsortium: menus.c,v 1.173 91/01/18 17:26:24 dave Exp $
  *
  * twm menu code
  *
@@ -1524,6 +1524,15 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    ButtonMotionMask | ButtonReleaseMask, &Event))
 		    if (Event.type == ButtonRelease)
 			break;
+	    }
+
+	    /* test to see if we have a second button press to abort move */
+	    if (Event.type == ButtonPress && DragWindow != None) {
+	      if (Scr->OpaqueMove)
+		XMoveWindow (dpy, DragWindow, origDragX, origDragY);
+	      else
+		MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+	      DragWindow = None;
 	    }
 
 	    if (fromtitlebar && Event.type == ButtonPress) {
