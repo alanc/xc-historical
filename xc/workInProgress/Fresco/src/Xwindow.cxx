@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xwindow.cxx,v 1.3 94/04/01 16:47:51 matt Exp $
  */
 
 /*
@@ -87,7 +87,7 @@ PickTraversal::~PickTraversal() {
 void PickTraversal::begin_viewer(Viewer_in v) {
     GlyphTraversalImpl::Info* i = top();
     TransformImpl* t = new TransformImpl;
-    t->load(painter_->current_matrix());
+    t->load(_tmp(painter_->current_matrix()));
     push(v, nil, nil, i->allocation, t);
     Fresco::unref(t);
 }
@@ -95,7 +95,7 @@ void PickTraversal::begin_viewer(Viewer_in v) {
 //+ PickTraversal(GlyphTraversal::traverse_child)
 void PickTraversal::traverse_child(GlyphOffset_in o, Region_in allocation) {
     Transform_var t = new TransformImpl;
-    t->load(painter_->current_matrix());
+    t->load(_tmp(painter_->current_matrix()));
     push(nil, nil, o, allocation, t);
     _tmp(o->child())->traverse(this);
     pop();
@@ -206,12 +206,14 @@ Style_return WindowImpl::window_style() {
 
 //+ WindowImpl(Window::double_buffered=b)
 void WindowImpl::double_buffered(Boolean b) {
-    set_attribute("doubleBuffered", Fresco::string_ref(b ? "true" : "false"));
+    set_attribute(
+	"doubleBuffered", Fresco::tmp_string_ref(b ? "true" : "false")
+    );
 }
 
 //+ WindowImpl(Window::double_buffered?)
 Boolean WindowImpl::double_buffered() {
-    return style_->is_on(Fresco::string_ref("doubleBuffered"));
+    return style_->is_on(Fresco::tmp_string_ref("doubleBuffered"));
 }
 
 //+ WindowImpl(Window::default_cursor=c)
@@ -278,12 +280,12 @@ WindowRef WindowImpl::icon() {
 
 //+ WindowImpl(Window::iconic=b)
 void WindowImpl::iconic(Boolean b) {
-    set_attribute("iconic", Fresco::string_ref(b ? "true" : "false"));
+    set_attribute("iconic", Fresco::tmp_string_ref(b ? "true" : "false"));
 }
 
 //+ WindowImpl(Window::iconic?)
 Boolean WindowImpl::iconic() {
-    return style_->is_on(Fresco::string_ref("iconic"));
+    return style_->is_on(Fresco::tmp_string_ref("iconic"));
 }
 
 //+ WindowImpl(Window::title=t)
@@ -298,7 +300,7 @@ CharStringRef WindowImpl::title() {
 
 //+ WindowImpl(Window::xor_pixel=p)
 void WindowImpl::xor_pixel(Long p) {
-    StyleValue_var a = style_->bind(Fresco::string_ref("xor_pixel"));
+    StyleValue_var a = style_->bind(Fresco::tmp_string_ref("xor_pixel"));
     a->write_integer(p);
 }
 
@@ -313,7 +315,7 @@ Long WindowImpl::xor_pixel() {
 }
 
 void WindowImpl::set_attribute(const char* name, CharStringRef value) {
-    StyleValue_var a = style_->bind(Fresco::string_ref(name));
+    StyleValue_var a = style_->bind(Fresco::tmp_string_ref(name));
     a->write_string(value);
 }
 
@@ -1095,7 +1097,7 @@ Boolean ManagedWindow::set_icon_geometry(ManagedWindow::HintInfo&) {
 	if (is_nil(s)) {
 	    return false;
 	}
-	a = s->resolve(Fresco::string_ref("geometry"));
+	a = s->resolve(Fresco::tmp_string_ref("geometry"));
 	if (is_nil(a)) {
 	    return false;
 	}
@@ -1166,7 +1168,8 @@ Boolean ManagedWindow::set_all(ManagedWindow::HintInfo& info) {
     h.input = True;
     h.flags |= StateHint;
     h.initial_state = (
-	style_->is_on(Fresco::string_ref("iconic")) ? IconicState : NormalState
+	style_->is_on(Fresco::tmp_string_ref("iconic")) ?
+	    IconicState : NormalState
     );
     set_name(info);
     set_geometry(info);
@@ -1245,7 +1248,7 @@ void ManagedWindow::wm_class() {
     XClassHint classhint;
     CharString_var instance = style_->name();
     if (is_not_nil(instance)) {
-	CharString_var classname = Fresco::get_tmp_string(style_, "class");
+	CharString_var classname = Fresco::get_string(style_, "class");
 	if (is_not_nil(classname)) {
 	    CharStringBuffer cs1(instance);
 	    CharStringBuffer cs2(classname);
@@ -1280,7 +1283,7 @@ ApplicationWindow::~ApplicationWindow() { }
 void ApplicationWindow::compute_geometry() {
     unsigned int spec = 0;
     if (is_not_nil(style_)) {
-	CharString_var v = Fresco::get_tmp_string(style_, "geometry");
+	CharString_var v = Fresco::get_string(style_, "geometry");
 	if (is_not_nil(v)) {
 	    CharStringBuffer g(v);
 	    int x = XCoord(xleft_), y = XCoord(xtop_);
@@ -1350,7 +1353,7 @@ PopupWindow::PopupWindow(
 PopupWindow::~PopupWindow() { }
 
 void PopupWindow::set_attributes() {
-    style_->alias(Fresco::string_ref("PopupWindow"));
+    style_->alias(Fresco::tmp_string_ref("PopupWindow"));
     WindowImpl::set_attributes();
     xattrmask_ |= CWOverrideRedirect;
     xattrs_.override_redirect = True;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fresco.cxx,v 1.4 94/04/01 16:47:57 matt Exp $
  */
 
 /*
@@ -337,7 +337,7 @@ FrescoImpl::FrescoImpl(
 
     init_types();
 #if defined(sgi)
-    if (style_->is_on(Fresco::string_ref("malloc_debug"))) {
+    if (style_->is_on(Fresco::tmp_string_ref("malloc_debug"))) {
 	mallopt(M_DEBUG, 1);
     }
 #endif

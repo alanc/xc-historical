@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: threads.cxx,v 1.3 94/04/01 16:48:10 matt Exp $
  */
 
 /*
@@ -1155,6 +1155,7 @@ void* ThreadImpl::sproc_entry(void* thread) {
 void ThreadImpl::terminate() {
     if (thread_ != 0) {
 	thr_kill(thread_, SIGTERM);
+	thread_ = 0;
     }
 }
 

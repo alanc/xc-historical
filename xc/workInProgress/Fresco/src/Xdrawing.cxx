@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xdrawing.cxx,v 1.3 94/04/01 16:48:12 matt Exp $
  */
 
 /*
@@ -419,7 +419,7 @@ ULong FontImpl::hash() {
 
 //+ FontImpl(Font::equal)
 Boolean FontImpl::equal(Font_in f) {
-    return f == this || name_->equal(f->name());
+    return f == this || name_->equal(_tmp(f->name()));
 }
 
 //+ FontImpl(Font::name)
@@ -1055,6 +1055,8 @@ XPainterImpl::~XPainterImpl() {
     xdisplay_ = window_->display()->xdisplay();
     cleanup();
     close_fonts();
+    delete point_;
+    delete subpath_;
 }
 
 //+ XPainterImpl(FrescoObject::update)
@@ -1692,37 +1694,25 @@ XPainterImpl::FontInfo* XPainterImpl::open_font(FontRef f) {
     } else {
 	i->charsize = 1;
     }
-    if (fi->xdisplay() == xdisplay_) {
-	TransformImpl* t = new TransformImpl;
-	t->load(matrix_);
-	i->transform = t;
-	i->surrogate = substitute(fi, scale(t, Y_axis));
-	if (is_nil(i->surrogate)) {
-	    i->xfont = xf->fid;
-	} else {
-	    FontImpl* s = i->surrogate;
-	    s->load();
-	    XFontStruct* xfont = s->xfont();
-	    i->xfont = xfont->fid;
-	    Long max = xfont->max_char_or_byte2 + 1;
-	    Coord* widths = new Coord[max];
-	    for (Long w = 0; w < max; w++) {
-		widths[w] = 0.0;
-	    }
-	    i->widths = widths;
-	}
-	i->remainder = remainder(fi, t, i->surrogate);
+    TransformImpl* t = new TransformImpl;
+    t->load(matrix_);
+    i->transform = t;
+    i->surrogate = substitute(fi, scale(t, Y_axis));
+    if (is_nil(i->surrogate)) {
+	i->xfont = xf->fid;
     } else {
-	/* Convert to ref to workaround DEC CXX bug */
-	CharStringBuffer s(CharString::_return_ref(fi->name()));
-	/*
-	 * Haven't implemented font matching for mulitple displays.
-	 * The strategy probably should be to save xdisplay in FontInfo
-	 * and compare for equality of font, transform, and display
-	 * at the beginning of font_attr.
-	 */
-	i->xfont = XLoadFont(xdisplay_, s.string());
+	FontImpl* s = i->surrogate;
+	s->load();
+	XFontStruct* xfont = s->xfont();
+	i->xfont = xfont->fid;
+	Long max = xfont->max_char_or_byte2 + 1;
+	Coord* widths = new Coord[max];
+	for (Long w = 0; w < max; w++) {
+	    widths[w] = 0.0;
+	}
+	i->widths = widths;
     }
+    i->remainder = remainder(fi, t, i->surrogate);
     return i;
 }
 
@@ -1982,7 +1972,7 @@ float XPainterImpl::scale(TransformRef t, Axis a) {
  */
 FontImpl* XPainterImpl::substitute(FontImpl* f, float scale) {
     FontImpl* result = nil;
-    CharStringBuffer name(f->name());
+    CharStringBuffer name(_tmp(f->name()));
     if (FontSpec::valid(name.string())) {
 	FontSpec spec(name.string());
 	if (spec.is_scalable()) {

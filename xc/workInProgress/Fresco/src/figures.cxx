@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: figures.cxx,v 1.3 94/04/01 16:47:42 matt Exp $
  */
 
 /*
@@ -526,10 +526,10 @@ void Figure::draw(GlyphTraversal_in t) {
             p->close_path();
         }
 	if (mode_ == FigureKit::stroke || mode_ == FigureKit::fill_stroke) {
-	    p->current_brush(style_->brush_attr());
+	    p->current_brush(_tmp(style_->brush_attr()));
 	}
 	if (mode_ == FigureKit::fill || mode_ == FigureKit::stroke) {
-	    p->current_color(style_->foreground());
+	    p->current_color(_tmp(style_->foreground()));
 	}
 	switch (mode_) {
 	case FigureKit::fill:
@@ -539,9 +539,9 @@ void Figure::draw(GlyphTraversal_in t) {
 	    p->stroke();
 	    break;
 	case FigureKit::fill_stroke:
-	    p->current_color(style_->background());
+	    p->current_color(_tmp(style_->background()));
 	    p->fill();
-	    p->current_color(style_->foreground());
+	    p->current_color(_tmp(style_->foreground()));
 	    p->stroke();
 	    break;
 	}
@@ -707,7 +707,8 @@ void PolyFigure::need_resize() {
 }
 
 void PolyFigure::visit_trail(Long, GlyphTraversalRef t) {
-    t->current_painter()->current_matrix()->premultiply(tx_);
+    Painter_var p = t->current_painter();
+    _tmp(p->current_matrix())->premultiply(tx_);
 }
 
 /* class FigureLabel */
@@ -745,7 +746,7 @@ void FigureLabel::request(Glyph::Requisition& r) {
 void FigureLabel::draw(GlyphTraversal_in t) {
     Painter_var p = t->current_painter();
     Region_var a = t->allocation();
-    p->current_color(style_->foreground());
+    p->current_color(_tmp(style_->foreground()));
     Font_var f = style_->font_attr();
     p->current_font(f);
     Vertex v;

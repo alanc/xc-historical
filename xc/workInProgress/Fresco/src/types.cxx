@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: types.cxx,v 1.6 94/04/01 16:48:18 matt Exp $
  */
 
 /*
@@ -895,6 +895,7 @@ SharedStyleImpl::SharedStyleImpl(Fresco* f) {
 }
 
 SharedStyleImpl::~SharedStyleImpl() {
+    Fresco::unref(name_);
     if (is_not_nil(parent_)) {
 	parent_->unlink_child(unlink_);
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: viewers.cxx,v 1.3 94/04/01 16:48:08 matt Exp $
  */
 
 /*
@@ -841,7 +841,7 @@ void MainViewer::draw(GlyphTraversal_in t) {
 	cache();
     }
     Vertex lower, upper;
-    t->allocation()->bounds(lower, upper);
+    _tmp(t->allocation())->bounds(lower, upper);
     Painter_var p = t->current_painter();
     p->current_color(background_);
     p->fill_rect(lower.x, lower.y, upper.x, upper.y);

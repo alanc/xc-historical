@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xdisplay.cxx,v 1.4 94/04/01 16:48:40 matt Exp $
  */
 
 /*
@@ -355,7 +355,7 @@ Tag DisplayImpl::add_filter(GlyphTraversal_in t) {
     FilterInfo* info = new FilterInfo;
     ++filter_tag_;
     info->tag = filter_tag_;
-    info->inverse.load(t->current_transform());
+    info->inverse.load(_tmp(t->current_transform()));
     info->inverse.invert();
     info->traversal = GlyphTraversal::_duplicate(t);
     filters_->prepend(info);
@@ -455,7 +455,7 @@ void DisplayImpl::init_style() {
     long priority = -5;
     StyleImpl* s = new StyleImpl(fresco_);
     style_ = s;
-    s->merge(fresco_->fresco_style());
+    s->merge(_tmp(fresco_->fresco_style()));
     load_path(X_LIBDIR, "/app-defaults/Fresco", priority);
     CharString_var name = fresco_->class_name();
     if (is_not_nil(name)) {
@@ -1222,7 +1222,7 @@ ScreenImpl::ScreenImpl(Fresco* f, DisplayImpl* d, long n) {
     root_ = RootWindow(dpy, n);
     visuals_ = new ScreenVisualList;
     default_visual_ = nil;
-    ScreenImpl::VisualInfo* info = find_visual(d->display_style());
+    ScreenImpl::VisualInfo* info = find_visual(_tmp(d->display_style()));
     if (info == nil) {
 	info = new ScreenImpl::VisualInfo;
 	info->visual = nil;

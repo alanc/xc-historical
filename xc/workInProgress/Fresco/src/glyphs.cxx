@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: glyphs.cxx,v 1.3 94/04/01 16:47:58 matt Exp $
  */
 
 /*
@@ -427,7 +427,7 @@ void MonoGlyph::visit_trail(GlyphTraversalRef t) {
     if (is_not_nil(offset_.child_)) {
 	Glyph::AllocationInfo a;
 	a.allocation = t->allocation();
-	a.transformation = t->current_painter()->current_matrix();
+	a.transformation = _tmp(t->current_painter())->current_matrix();
 	child_allocate(a);
     }
 }
@@ -567,7 +567,7 @@ void DebugGlyph::traverse(GlyphTraversal_in t) {
 	if ((flags_ & f) != 0) {
 	    heading(op);
 	    if ((f & DebugGlyph::trace_draw_pick) != 0) {
-		print_region(t->allocation());
+		print_region(_tmp(t->allocation()));
 	    }
 	    printf("\n");
 	    fflush(stdout);

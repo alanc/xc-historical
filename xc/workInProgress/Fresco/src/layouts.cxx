@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: layouts.cxx,v 1.3 94/04/01 16:47:53 matt Exp $
  */
 
 /*
