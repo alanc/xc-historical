@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.35 89/03/24 07:42:06 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.36 89/07/03 19:50:49 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -42,7 +42,8 @@ Swap32Write(pClient, size, pbuf)
     int		size;  /* in bytes */
     register long *pbuf;
 {
-    int		n, i;
+    register int i;
+    register char n;
 
     size >>= 2;
     for(i = 0; i < size; i++)
@@ -156,7 +157,7 @@ SGenericReply(pClient, size, pRep)
     int				size;
     xGenericReply		*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     (void)WriteToClient(pClient, size, (char *) pRep);
@@ -169,7 +170,7 @@ SGetWindowAttributesReply(pClient, size, pRep)
     int				size;
     xGetWindowAttributesReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -190,7 +191,7 @@ SGetGeometryReply(pClient, size, pRep)
     int			size;
     xGetGeometryReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->root, n);
@@ -208,7 +209,7 @@ SQueryTreeReply(pClient, size, pRep)
     int			size;
     xQueryTreeReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -224,7 +225,7 @@ SInternAtomReply(pClient, size, pRep)
     int			size;
     xInternAtomReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->atom, n);
@@ -237,7 +238,7 @@ SGetAtomNameReply(pClient, size, pRep)
     int				size;
     xGetAtomNameReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -252,7 +253,7 @@ SGetPropertyReply(pClient, size, pRep)
     int				size;
     xGetPropertyReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -268,7 +269,7 @@ SListPropertiesReply(pClient, size, pRep)
     int				size;
     xListPropertiesReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -282,7 +283,7 @@ SGetSelectionOwnerReply(pClient, size, pRep)
     int				size;
     xGetSelectionOwnerReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->owner, n);
@@ -296,7 +297,7 @@ SQueryPointerReply(pClient, size, pRep)
     int			size;
     xQueryPointerReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->root, n);
@@ -334,7 +335,7 @@ SGetMotionEventsReply(pClient, size, pRep)
     int				size;
     xGetMotionEventsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -348,7 +349,7 @@ STranslateCoordsReply(pClient, size, pRep)
     int				size;
     xTranslateCoordsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->child, n);
@@ -363,7 +364,7 @@ SGetInputFocusReply(pClient, size, pRep)
     int			size;
     xGetInputFocusReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->focus, n);
@@ -377,7 +378,7 @@ SQueryKeymapReply(pClient, size, pRep)
     int				size;
     xQueryKeymapReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -465,7 +466,7 @@ SQueryTextExtentsReply(pClient, size, pRep)
     int				size;
     xQueryTextExtentsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->fontAscent, n);
@@ -484,7 +485,7 @@ SListFontsReply(pClient, size, pRep)
     int			size;
     xListFontsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -508,7 +509,7 @@ SGetFontPathReply(pClient, size, pRep)
     int			size;
     xGetFontPathReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -522,7 +523,7 @@ SGetImageReply(pClient, size, pRep)
     int			size;
     xGetImageReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -537,7 +538,7 @@ SListInstalledColormapsReply(pClient, size, pRep)
     int					size;
     xListInstalledColormapsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -551,7 +552,7 @@ SAllocColorReply(pClient, size, pRep)
     int			size;
     xAllocColorReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->red, n);
@@ -567,7 +568,7 @@ SAllocNamedColorReply(pClient, size, pRep)
     int				size;
     xAllocNamedColorReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->pixel, n);
@@ -586,7 +587,7 @@ SAllocColorCellsReply(pClient, size, pRep)
     int				size;
     xAllocColorCellsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -602,7 +603,7 @@ SAllocColorPlanesReply(pClient, size, pRep)
     int				size;
     xAllocColorPlanesReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -638,7 +639,7 @@ SQueryColorsReply(pClient, size, pRep)
     int			size;
     xQueryColorsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -652,7 +653,7 @@ SLookupColorReply(pClient, size, pRep)
     int			size;
     xLookupColorReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->exactRed, n);
@@ -670,7 +671,7 @@ SQueryBestSizeReply(pClient, size, pRep)
     int			size;
     xQueryBestSizeReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->width, n);
@@ -684,7 +685,7 @@ SListExtensionsReply(pClient, size, pRep)
     int				size;
     xListExtensionsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -697,7 +698,7 @@ SGetKeyboardMappingReply(pClient, size, pRep)
     int				size;
     xGetKeyboardMappingReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -710,7 +711,7 @@ SGetPointerMappingReply(pClient, size, pRep)
     int				size;
     xGetPointerMappingReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -723,7 +724,7 @@ SGetModifierMappingReply(pClient, size, pRep)
     int				size;
     xGetModifierMappingReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -736,7 +737,7 @@ SGetKeyboardControlReply(pClient, size, pRep)
     int				size;
     xGetKeyboardControlReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
@@ -752,7 +753,7 @@ SGetPointerControlReply(pClient, size, pRep)
     int				size;
     xGetPointerControlReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->accelNumerator, n);
@@ -767,7 +768,7 @@ SGetScreenSaverReply(pClient, size, pRep)
     int				size;
     xGetScreenSaverReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swaps(&pRep->timeout, n);
@@ -786,7 +787,7 @@ SLHostsExtend(pClient, size, buf)
     while (bufT < endbuf) {
 	xHostEntry *host = (xHostEntry *) bufT;
 	int len = host->length;
-        int n;
+        register char n;
 	swaps (&host->length, n);
 	bufT += sizeof (xHostEntry) + (((len + 3) >> 2) << 2);
 	}
@@ -799,7 +800,7 @@ SListHostsReply(pClient, size, pRep)
     int			size;
     xListHostsReply	*pRep;
 {
-    int n;
+    register char n;
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);

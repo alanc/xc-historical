@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.29 89/07/03 19:50:28 rws Exp $ */
+/* $XConsortium: swapreq.c,v 1.30 90/03/19 15:53:34 keith Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -43,7 +43,7 @@ SwapLongs (list, count)
 	register long *list;
 	register unsigned long count;
 {
-	register int n;
+	register char n;
 
 	while (count >= 8) {
 	    swapl(list+0, n);
@@ -72,7 +72,7 @@ SwapShorts (list, count)
 	register short *list;
 	register unsigned long count;
 {
-	register int n;
+	register char n;
 
 	while (count >= 16) {
 	    swaps(list+0, n);
