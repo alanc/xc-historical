@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkWinEv.c,v 11.11 88/02/04 19:33:59 rws Exp $ */
+/* $Header: XChkWinEv.c,v 11.12 88/05/16 11:23:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -52,8 +52,9 @@ Bool XCheckWindowEvent (dpy, w, mask, event)
 		    return True;
 		}
 	    }
-	    if (n) _XEventsQueued(dpy, QueuedAfterFlush);
+	    if (n) _XEventsQueued(dpy, QueuedAfterReading);
 	}
+	_XFlush(dpy);
 	UnlockDisplay(dpy);
 	return False;
 }

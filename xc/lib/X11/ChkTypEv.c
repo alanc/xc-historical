@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkTypEv.c,v 11.3 87/09/08 14:30:08 newman Exp $ */
+/* $Header: XChkTypEv.c,v 11.4 88/02/03 20:44:45 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -42,8 +42,9 @@ Bool XCheckTypedEvent (dpy, type, event)
 		    return True;
 		}
 	    }
-	    if (n) _XEventsQueued(dpy, QueuedAfterFlush);
+	    if (n) _XEventsQueued(dpy, QueuedAfterReading);
 	}
+	_XFlush(dpy);
 	UnlockDisplay(dpy);
 	return False;
 }

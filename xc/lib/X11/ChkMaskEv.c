@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XChkMaskEv.c,v 11.13 88/02/04 19:34:17 rws Exp $ */
+/* $Header: XChkMaskEv.c,v 11.14 88/05/16 11:27:18 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1987	*/
 #define NEED_EVENTS
 #include "Xlibint.h"
@@ -50,8 +50,9 @@ Bool XCheckMaskEvent (dpy, mask, event)
 		    return True;
 		}
 	    }
-	    if (n) _XEventsQueued(dpy, QueuedAfterFlush);
+	    if (n) _XEventsQueued(dpy, QueuedAfterReading);
 	}
+	_XFlush(dpy);
 	UnlockDisplay(dpy);
 	return False;
 }

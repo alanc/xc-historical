@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.79 88/08/18 12:22:45 jim Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.80 88/08/27 11:39:58 jim Exp $";
 #endif
 
 /*
@@ -168,11 +168,8 @@ _XReadEvents(dpy)
 	long pend_not_register; /* because can't "&" a register variable */
 	register long pend;
 	register xEvent *ev;
-	int qlen = dpy->qlen;
+	Bool not_yet_flushed = True;
 
-	_XFlush (dpy);
-	if (qlen != dpy->qlen)
-	    return;
 	do {
 	    /* find out how much data can be read */
 	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
@@ -180,9 +177,17 @@ _XReadEvents(dpy)
 	    pend = pend_not_register;
 
 	    /* must read at least one xEvent; if none is pending, then
-	       we'll just block waiting for it */
-	    if (pend < SIZEOF(xEvent))
+	       we'll just flush and block waiting for it */
+	    if (pend < SIZEOF(xEvent)) {
 	    	pend = SIZEOF(xEvent);
+		/* don't flush until we block the first time */
+		if (not_yet_flushed) {
+		    int qlen = dpy->qlen;
+		    _XFlush (dpy);
+		    if (qlen != dpy->qlen) return;
+		    not_yet_flushed = False;
+		}
+	    }
 		
 	    /* but we won't read more than the max buffer size */
 	    if (pend > BUFSIZE)
