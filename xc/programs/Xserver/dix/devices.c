@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.11 90/05/18 15:30:19 rws Exp $ */
+/* $XConsortium: devices.c,v 5.8 90/03/29 11:07:44 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -444,11 +444,12 @@ InitValuatorClassDeviceStruct(dev, numAxes, motionProc, numMotionEvents, mode)
     int numMotionEvents;
     int mode;
 {
+    int i;
     register ValuatorClassPtr valc;
 
     valc = (ValuatorClassPtr)xalloc(sizeof(ValuatorClassRec) +
 				    numAxes * sizeof(XAxisInfo) +
-				    numAxes * sizeof(unsigned short));
+				    numAxes * sizeof(unsigned int));
     if (!valc)
 	return FALSE;
     valc->GetMotionProc = motionProc;
@@ -457,8 +458,9 @@ InitValuatorClassDeviceStruct(dev, numAxes, motionProc, numMotionEvents, mode)
     valc->numAxes = numAxes;
     valc->mode = mode;
     valc->axes = (XAxisInfoPtr)(valc + 1);
-    valc->axisVal = (unsigned short *)(valc->axes +
-				       (numAxes * sizeof(XAxisInfo)));
+    valc->axisVal = (unsigned int *)(valc->axes + numAxes);
+    for (i=0; i<numAxes; i++)
+	valc->axisVal[i]=0;
     dev->valuator = valc;
     return TRUE;
 }
@@ -498,7 +500,7 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
     feedc->ctrl = defaultKeyboardControl;
     feedc->id = 0;
     if (feedc->next = dev->kbdfeed)
-        feedc->id = dev->kbdfeed->id + 1;
+	feedc->id = dev->kbdfeed->id + 1;
     dev->kbdfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -523,6 +525,7 @@ InitPtrFeedbackClassDeviceStruct(dev, controlProc)
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
 }
+
 
 LedCtrl defaultLedControl = {
 	DEFAULT_LEDS};
@@ -586,7 +589,7 @@ InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
 	*(feedc->ctrl.symbols_displayed+i) = (KeySym) NULL;
     feedc->id = 0;
     if (feedc->next = dev->stringfeed)
-        feedc->id = dev->stringfeed->id + 1;
+	feedc->id = dev->stringfeed->id + 1;
     dev->stringfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -604,10 +607,11 @@ InitBellFeedbackClassDeviceStruct (dev, bellProc, controlProc)
     if (!feedc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
+    feedc->BellProc = bellProc;
     feedc->ctrl = defaultBellControl;
     feedc->id = 0;
     if (feedc->next = dev->bell)
-        feedc->id = dev->bell->id + 1;
+	feedc->id = dev->bell->id + 1;
     dev->bell = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -627,7 +631,7 @@ InitLedFeedbackClassDeviceStruct (dev, controlProc)
     feedc->ctrl = defaultLedControl;
     feedc->id = 0;
     if (feedc->next = dev->leds)
-        feedc->id = dev->leds->id + 1;
+	feedc->id = dev->leds->id + 1;
     dev->leds = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -647,7 +651,7 @@ InitIntegerFeedbackClassDeviceStruct (dev, controlProc)
     feedc->ctrl = defaultIntegerControl;
     feedc->id = 0;
     if (feedc->next = dev->intfeed)
-        feedc->id = dev->intfeed->id + 1;
+	feedc->id = dev->intfeed->id + 1;
     dev->intfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
