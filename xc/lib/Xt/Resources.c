@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Resources.c,v 1.51 88/09/05 10:46:45 swick Exp $";
+    "$XConsortium: Resources.c,v 1.52 88/09/05 10:55:14 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -525,6 +525,8 @@ static void GetResources(widget, base, names, classes,
 	char	char_val;
 	short	short_val;
 	int	int_val;
+	long	long_val;
+	char*	char_ptr;
 
 	for (res = table, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
@@ -544,21 +546,23 @@ static void GetResources(widget, base, names, classes,
 			(*(XtProc)(rx->xrm_default_addr))(
 			      widget,-(rx->xrm_offset+1), pv);
 		    } else if (xrm_default_type == QImmediate) {
- 			switch( rx->xrm_size ) {
-			    case sizeof(int):
-			        int_val = (int)rx->xrm_default_addr;
-				pv->addr = (caddr_t) &int_val;
-				break;
-			    case sizeof(short):
-				short_val = (short)rx->xrm_default_addr;
-				pv->addr = (caddr_t) &short_val;
-				break;
-			    case sizeof(char):
-				char_val = (char)rx->xrm_default_addr;
-				pv->addr = (caddr_t) &char_val;
-				break;
-			    default:
-				pv->addr = (caddr_t) &(rx->xrm_default_addr);
+			if (rx->xrm_size == sizeof(int)) {
+			    int_val = (int)rx->xrm_default_addr;
+			    pv->addr = (caddr_t) &int_val;
+			} else if (rx->xrm_size == sizeof(short)) {
+			    short_val = (short)rx->xrm_default_addr;
+			    pv->addr = (caddr_t) &short_val;
+			} else if (rx->xrm_size == sizeof(char)) {
+			    char_val = (char)rx->xrm_default_addr;
+			    pv->addr = (caddr_t) &char_val;
+			} else if (rx->xrm_size == sizeof(long)) {
+			    long_val = (long)rx->xrm_default_addr;
+			    pv->addr = (caddr_t) &long_val;
+			} else if (rx->xrm_size == sizeof(char*)) {
+			    char_ptr = (char*)rx->xrm_default_addr;
+			    pv->addr = (caddr_t) &char_ptr;
+			} else {
+			    pv->addr = (caddr_t) &(rx->xrm_default_addr);
 			}
 		    } else if (xrm_default_type == xrm_type) {
 			pv->addr = rx->xrm_default_addr;
