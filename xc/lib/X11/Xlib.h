@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.206 91/06/05 08:22:45 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.207 91/06/05 08:41:45 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -4275,40 +4275,6 @@ extern char *XGetICValues(
 extern XIM XIMOfIC(
 #if NeedFunctionPrototypes
     XIC /* ic */
-#endif
-);
-
-extern void XRegisterFilter(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    Window		/* window */,
-    unsigned long	/* event_mask */,
-    Bool		/* nonmaskable */,
-    Bool (*)(
-#if NeedNestedPrototypes
-	     Display*	/* display */,
-	     Window	/* window */,
-	     XEvent*	/* event */,
-	     XPointer	/* client_data */
-#endif
-	     )		/* filter */,
-    XPointer		/* client_data */
-#endif
-);
-
-extern void XUnregisterFilter(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    Window		/* window */,
-    Bool (*)(
-#if NeedNestedPrototypes
-	     Display*	/* display */,
-	     Window	/* window */,
-	     XEvent*	/* event */,
-	     XPointer	/* client_data */
-#endif
-	     )		/* filter */,
-    XPointer		/* client_data */
 #endif
 );
 
