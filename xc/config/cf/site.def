@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.104 94/03/07 16:43:19 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.105 94/03/07 17:23:54 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -101,12 +101,22 @@ XCOMM #define HasGcc2 YES
 /* this is to disable dynamic loading without changing ddx Imakefiles */
 #define DynamicDDXObjectTarget(a,b,c,d)
 
-#undef BuildServer
-#define BuildServer             YES
-#define XirisServer		YES
-#define BuildRE1		YES
-#define BuildRE2		YES
-#define StaticScreens	-DSTATIC_RE1 -DSTATIC_RE2
+/* 
+ * We don't really want to build the server on all SGI machines,
+ * since we don't have ddx bits for them.  This code is apparantly
+ * here because we once had a Personal Iris for which we did have
+ * bits, but that's not true anymore.  In any case, the default 
+ * as long as SGI doesn't supply a ddx implementation to everyone
+ * should be not to build a server on SGI; machines that can build
+ * the server can enable it in their local host.def file.
+ *
+ * #undef BuildServer
+ * #define BuildServer             YES
+ * #define XirisServer		YES
+ * #define BuildRE1		YES
+ * #define BuildRE2		YES
+ * #define StaticScreens	-DSTATIC_RE1 -DSTATIC_RE2
+ */
 #endif
 
 #if defined(Sun3Architecture) && !HasGcc2
