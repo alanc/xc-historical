@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.10 94/03/16 15:47:55 mor Exp $ */
+/* $XConsortium: error.c,v 1.11 94/03/18 15:59:14 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -148,6 +148,34 @@ int	offendingMinor;
 	IceNoVersion,
 	0);
 
+    IceFlush (iceConn);
+}
+
+
+void
+_IceErrorSetupFailed (iceConn, offendingMinor, reason)
+
+IceConn	iceConn;
+int	offendingMinor;
+char	*reason;
+
+{
+    char *pBuf, *pStart;
+    int bytes = STRING_BYTES (reason);
+    int severity = (offendingMinor == ICE_ConnectionSetup) ?
+	IceFatalToConnection : IceFatalToProtocol;
+
+    IceErrorHeader (iceConn,
+	0, offendingMinor,
+	iceConn->receive_sequence,
+	severity,
+	IceSetupFailed,
+	WORD64COUNT (bytes));
+
+    pBuf = pStart = IceAllocScratch (iceConn, PADDED_BYTES64 (bytes));
+    STORE_STRING (pBuf, reason);
+
+    IceWriteData (iceConn, PADDED_BYTES64 (bytes), pStart);
     IceFlush (iceConn);
 }
 
@@ -389,6 +417,9 @@ IcePointer	values;
         case IceNoVersion:
             str = "NoVersion";
             break;
+        case IceSetupFailed:
+            str = "SetupFailed";
+            break;
         case IceAuthRejected:
             str = "AuthenticationRejected";
             break;
@@ -459,6 +490,12 @@ IcePointer	values;
 	    fprintf (stderr, "Major opcode : %d\n", (int) *pData);
             break;
 
+        case IceSetupFailed:
+
+	    EXTRACT_STRING (pData, swap, str);
+	    fprintf (stderr, "Reason : %s\n", str);
+            break;
+
         case IceAuthRejected:
 
 	    EXTRACT_STRING (pData, swap, str);
@@ -493,7 +530,9 @@ IcePointer	values;
     }
 
     fprintf (stderr, "\n");
-    exit (1);
+
+    if (severity != IceCanContinue)
+	exit (1);
 }
 
 
