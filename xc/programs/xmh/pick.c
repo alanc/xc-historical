@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: pick.c,v 1.11 87/07/31 09:35:56 weissman Exp $";
+static char rcs_id[] = "$Header: pick.c,v 1.12 88/01/07 09:39:09 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -26,14 +26,13 @@ static char rcs_id[] = "$Header: pick.c,v 1.11 87/07/31 09:35:56 weissman Exp $"
  * written prior permission.
  */
 
-/* pick.c -- handle a pick subwindow. */
+/* pick.c -- handle a pick subwidget. */
 
 #include "xmh.h"
-#include "Form.h"
 
-#define WTlabel		0
-#define WTbutton	1
-#define WTtextentry	2
+#define WTlabel		labelWidgetClass
+#define WTbutton	commandWidgetClass
+#define WTtextentry	asciiStringWidgetClass
 
 #define	RTfrom		0
 #define	RTto		1
@@ -55,45 +54,47 @@ static int stdwidth = -1;	/* Width to make text fields, and other
 static char *TypeName[NUMROWTYPE];
 
 typedef struct {
-   short	type;		/* Encode what type of window this is. */
-   Window 	window;		/* The window id itself. */
-   struct _RowListRec *row;	/* Which row this window is in. */
-   short	hilite;		/* Whether to hilight (if button subwindow) */
-   char		*ptr;		/* Data (if text subwindow) */
-} FormEntryRec, *FormEntryPtr;
+   WidgetClass	type;		/* Encode what type of Widget this is. */
+   Widget 	widget;		/* The widget id itself. */
+   struct _RowListRec *row;	/* Which row this widget is in. */
+   short	hilite;		/* Whether to hilight (if button subwidget) */
+   char		*ptr;		/* Data (if text subwidget) */
+} FormEntryRec, *FormEntry;
 
 typedef struct _RowListRec {
    short	type;		/* Encode what type of list this is. */
-   Window	window;		/* Window containing this row */
-   short	numwindows;	/* How many windows in this list. */
-   FormEntryPtr *wlist;		/* List of windows. */
+   Widget	widget;		/* Widget containing this row */
+   short	numwidgets;	/* How many widgets in this list. */
+   FormEntry 	*wlist;		/* List of widgets. */
    struct _GroupRec *group;	/* Which group this is in. */
-} RowListRec, *RowListPtr;
+} RowListRec, *RowList;
 
 typedef struct _GroupRec {
-   short	 numrows;	/* How many rows of window. */
-   Window	window;		/* Window containing this group */
-   RowListPtr	*rlist;		/* List of window rows. */
+   short	 numrows;	/* How many rows of widget. */
+   Widget	widget;		/* Widget containing this group */
+   RowList	*rlist;		/* List of widget rows. */
    struct _FormBoxRec *form;	/* Which form this is in. */
-} GroupRec, *GroupPtr;
+} GroupRec, *Group;
 
 typedef struct _FormBoxRec {
-   Window outer;	/* Outer window (contains scrollbars if any) */
-   Window inner;	/* Inner window (contains master form) */
+   Widget outer;	/* Outer widget (contains scrollbars if any) */
+   Widget inner;	/* Inner widget (contains master form) */
    short numgroups;	/* How many groups of form entries we have. */
-   GroupPtr *glist;	/* List of form groups. */
+   Group *glist;	/* List of form groups. */
    struct _PickRec *pick; /* Which pick this is in. */
-} FormBoxRec, *FormBoxPtr;
+} FormBoxRec, *FormBox;
 
 typedef struct _PickRec {
    Scrn scrn;			/* Scrn containing this pick. */
-   Window label;		/* Window with label for this pick. */
+   Widget label;		/* Widget with label for this pick. */
    Toc toc;			/* Toc for folder being scanned. */
-   FormBoxPtr general;		/* Form for general info about this pick. */
-   FormBoxPtr details;		/* Form for details about this pick. */
-   Window errorwindow;		/* Pop-up error window. */
+   FormBox general;		/* Form for general info about this pick. */
+   FormBox details;		/* Form for details about this pick. */
+   Widget errorwidget;		/* Pop-up error widget. */
 } PickRec;
 
+
+static FormEntry CreateWidget();
 
 InitPick()
 {
@@ -106,93 +107,77 @@ InitPick()
     TypeName[RTother]	= NULL;
 }
 
-static PickFlipColors(window)
-Window window;
+static PickFlipColors(widget)
+Widget widget;
 {
     static Arg arglist[] = {
 	{XtNforeground, NULL},
 	{XtNbackground, NULL},
     };
     XtArgVal temp;
-    XtCommandGetValues(DISPLAY window, arglist, XtNumber(arglist));
+    XtGetValues(widget, arglist, XtNumber(arglist));
     temp = arglist[0].value;
     arglist[0].value = arglist[1].value;
     arglist[1].value = temp;
-    XtCommandSetValues(DISPLAY window, arglist, XtNumber(arglist));
+    XtSetValues(widget, arglist, XtNumber(arglist));
 }
 
 
 static PrepareToUpdate(form)
-  FormBoxPtr form;
+  FormBox form;
 {
-    XtFormDoLayout(DISPLAY form->inner, FALSE);
+    XtFormDoLayout(form->inner, FALSE);
 }
 
 static ExecuteUpdate(form)
-  FormBoxPtr form;
+  FormBox form;
 {
-    XtFormDoLayout(DISPLAY form->inner, TRUE);
+    XtFormDoLayout(form->inner, TRUE);
 }
-
-static FormEntryPtr CreateEntry(window, type)
-  Window window;
-  int type;
-{
-    FormEntryPtr entry;
-    entry = (FormEntryPtr) XtMalloc(sizeof(FormEntryRec));
-    entry->row = NULL;
-    entry->window = window;
-    entry->type = type;
-    return entry;
-}
-
 
 static void AddLabel(row, text, usestd)
-  RowListPtr row;
+  RowList row;
   char *text;
   int usestd;
 {
-    Window window;
+    Widget widget;
     static Arg arglist[] = {
 	{XtNlabel, NULL},
 	{XtNborderWidth, (XtArgVal) 0},
-	{XtNjustify, (XtArgVal) XtjustifyRight},
+	{XtNjustify, (XtArgVal) XtJustifyRight},
 	{XtNwidth, (XtArgVal) NULL}
     };
+
     arglist[0].value = (XtArgVal) text;
     arglist[XtNumber(arglist) - 1].value = (XtArgVal) stdwidth;
-    window = XtLabelCreate(DISPLAY row->window, arglist,
-			   usestd ? XtNumber(arglist) : XtNumber(arglist) - 1);
-    AddWindow(row, CreateEntry(window, WTlabel));
+    CreateWidget(row, WTlabel, arglist,
+		 usestd ? XtNumber(arglist) : XtNumber(arglist) - 1);
 }
 
 
 static void AddButton(row, text, func, hilite)
-  RowListPtr row;
+  RowList row;
   char *text;
-  int (*func)();
+  void (*func)();
   int hilite;
 {
-    FormEntryPtr entry;
-    static Arg arglist[] = {
-	{XtNlabel, NULL},
-	{XtNfunction, NULL},
-	{XtNparameter, NULL}
-    };
-    entry = CreateEntry((Window) 0, WTbutton);
-    arglist[0].value = (XtArgVal)text;
-    arglist[1].value = (XtArgVal)func;
-    arglist[2].value = (XtArgVal)entry;
-    entry->window = XtCommandCreate(DISPLAY  row->window,
-				    arglist, XtNumber(arglist));
+    FormEntry entry;
+    static XtCallbackRec callback[] = { {NULL, NULL}, {NULL, NULL} };
+    Arg args[1];
+
+    XtSetArg( args[0], XtNlabel, text );
+    entry = CreateWidget( row, WTbutton, args, XtNumber(args) );
+    callback[0].callback = func;
+    callback[0].closure = (caddr_t)entry;
+    XtSetArg( args[0], XtNcallback, callback );
+    XtSetValues( entry->widget, args, XtNumber(args) );
     entry->hilite = hilite;
-    if (hilite) PickFlipColors(entry->window);
-    AddWindow(row, entry);
+    if (hilite) PickFlipColors(entry->widget);
 }
 
 
 static void AddTextEntry(row, str)
-  RowListPtr row;
+  RowList row;
   char *str;
 {
     static Arg arglist[] = {
@@ -203,47 +188,47 @@ static void AddTextEntry(row, str)
 	{XtNeditType, (XtArgVal)XttextEdit},
     };
     char *ptr;
-    FormEntryPtr entry;
+    FormEntry entry;
     ptr = XtMalloc(310);
     arglist[0].value = (XtArgVal) ptr;
     arglist[1].value = (XtArgVal) stdwidth;
     (void) strcpy(ptr, str);
-    entry = CreateEntry(XtTextStringCreate(DISPLAY row->window, arglist,
-					   XtNumber(arglist)),
-			WTtextentry);
+    entry = CreateWidget( row, WTtextentry, arglist, XtNumber(arglist) );
     entry->ptr = ptr;
-    AddWindow(row, entry);
 }
 
 
 static void ChangeTextEntry(entry, str)
-FormEntryPtr entry;
+FormEntry entry;
 char *str;
 {
     static Arg arglist[] = {
 	{XtNtextSource, (XtArgVal) NULL}
     };
-    XtTextSource *source;
+    Arg arglist2[3];
+    XtTextSource source;
     if (strcmp(str, entry->ptr) == 0) return;
-    XtTextGetValues(DISPLAY entry->window, arglist, XtNumber(arglist));
-    source = (XtTextSource *) arglist[0].value;
+    XtGetValues(entry->widget, arglist, XtNumber(arglist));
+    source = (XtTextSource) arglist[0].value;
     XtStringSourceDestroy(source);
     (void) strcpy(entry->ptr, str);
-    source = (XtTextSource *)
-	XtStringSourceCreate(entry->ptr, 300, XttextEdit);
-    XtTextNewSource(DISPLAY entry->window, source, (XtTextPosition) 0);
+    XtSetArg( arglist2[0], XtNstring, entry->ptr );
+    XtSetArg( arglist2[1], XtNlength, 300 );
+    XtSetArg( arglist2[2], XtNeditType, XttextEdit );
+    source = XtStringSourceCreate(entry->widget, arglist2, XtNumber(arglist2));
+    XtTextSetSource(entry->widget, source, (XtTextPosition) 0);
 }
 
 
-static ExecYesNo(entry)
-  FormEntryPtr entry;
+static void ExecYesNo(entry)
+  FormEntry entry;
 {
-    RowListPtr row = entry->row;
+    RowList row = entry->row;
     int i;
     if (!entry->hilite) {
 	entry->hilite = TRUE;
-	PickFlipColors(entry->window);
-	for (i = 0; i < row->numwindows; i++)
+	PickFlipColors(entry->widget);
+	for (i = 0; i < row->numwidgets; i++)
 	    if (entry == row->wlist[i])
 		break;
 	if (i > 0 && row->wlist[i-1]->type == WTbutton)
@@ -252,20 +237,20 @@ static ExecYesNo(entry)
 	    i++;
 	entry = row->wlist[i];
 	entry->hilite = FALSE;
-	PickFlipColors(entry->window);
+	PickFlipColors(entry->widget);
     }
 }
 
 
 
 
-static ExecRowOr(entry)
-  FormEntryPtr entry;
+static void ExecRowOr(entry)
+  FormEntry entry;
 {
-    RowListPtr row = entry->row;
-    FormBoxPtr form = row->group->form;
+    RowList row = entry->row;
+    FormBox form = row->group->form;
     PrepareToUpdate(form);
-    DeleteWindow(entry);
+    DeleteWidget(entry);
     AddLabel(row, "or", FALSE);
     AddTextEntry(row, "");
     AddButton(row, "Or", ExecRowOr, FALSE);
@@ -273,15 +258,15 @@ static ExecRowOr(entry)
 }
     
 
-static ExecGroupOr(entry)
-  FormEntryPtr entry;
+static void ExecGroupOr(entry)
+  FormEntry entry;
 {
-    FormBoxPtr form = entry->row->group->form;
-    QXUnmapWindow(theDisplay, form->inner);
+    FormBox form = entry->row->group->form;
+    XUnmapWindow(theDisplay, XtWindow(form->inner));
     PrepareToUpdate(form);
     AddDetailGroup(form);
     ExecuteUpdate(form);
-    QXMapWindow(theDisplay, form->inner);
+    XtMapWidget(form->inner);
 }
 
 static char **argv;
@@ -306,15 +291,15 @@ static EraseLast()
 
 
 static ParseRow(row)
-  RowListPtr row;
+  RowList row;
 {
     int     result = FALSE;
     int i;
-    FormEntryPtr entry;
+    FormEntry entry;
     char   str[1000];
     if (row->type > LASTUSEFULROWTYPE)
 	return FALSE;
-    for (i = 3; i < row->numwindows; i += 2) {
+    for (i = 3; i < row->numwidgets; i += 2) {
 	entry = row->wlist[i];
 	if (*(entry->ptr)) {
 	    if (!result) {
@@ -360,7 +345,7 @@ static ParseRow(row)
 	    
 
 static ParseGroup(group)
-  GroupPtr group;
+  Group group;
 {
     int found = FALSE;
     int i;
@@ -377,42 +362,47 @@ static ParseGroup(group)
 
 
 
-static void DestroyErrorWindow(pick)
+static void DestroyErrorWidget(pick)
 Pick pick;
 {
-    if (pick->errorwindow) {
-	(void) XtSendDestroyNotify(DISPLAY pick->errorwindow);
-	QXDestroyWindow(theDisplay, pick->errorwindow);
-	pick->errorwindow = NULL;
+    if (pick->errorwidget) {
+	XtDestroyWidget(pick->errorwidget);
+	pick->errorwidget = NULL;
     }
 }
 
-static void MakeErrorWindow(pick, str)
+static void MakeErrorWidget(pick, str)
 Pick pick;
 char *str;
 {
-    DestroyErrorWindow(pick);
-    pick->errorwindow = XtDialogCreate(DISPLAY pick->scrn->window, str,
-				       (char *)NULL, (ArgList)NULL, 0);
-    XtDialogAddButton(DISPLAY pick->errorwindow, "OK", DestroyErrorWindow,
-		      (caddr_t)pick);
-    CenterWindow(pick->scrn->window, pick->errorwindow);
-    QXMapWindow(theDisplay, pick->errorwindow);
+    Arg args[1];
+
+    DestroyErrorWidget(pick);
+    XtSetArg( args[0], XtNlabel, str );
+    pick->errorwidget = XtCreateWidget( NULL, dialogWidgetClass,
+				        pick->scrn->widget,
+				        args, XtNumber(args) );
+
+    XtDialogAddButton( pick->errorwidget, "OK",
+		       DestroyErrorWidget, (caddr_t)pick );
+
+    CenterWidget(pick->scrn->widget, pick->errorwidget);
+    XtRealizeWidget( pick->errorwidget );
 }
 
 
 
-static ExecOK(entry)
-  FormEntryPtr entry;
+static void ExecOK(entry)
+  FormEntry entry;
 {
     Pick pick = entry->row->group->form->pick;
     Toc toc = pick->toc;
-    FormBoxPtr details = pick->details;
-    FormBoxPtr general = pick->general;
-    GroupPtr group = general->glist[0];
-    RowListPtr row0 = group->rlist[0];
-    RowListPtr row1 = group->rlist[1];
-    RowListPtr row2 = group->rlist[2];
+    FormBox details = pick->details;
+    FormBox general = pick->general;
+    Group group = general->glist[0];
+    RowList row0 = group->rlist[0];
+    RowList row1 = group->rlist[1];
+    RowList row2 = group->rlist[2];
     char *fromseq = row0->wlist[3]->ptr;
     char *toseq = row0->wlist[1]->ptr;
     char *fromdate = row1->wlist[1]->ptr;
@@ -422,14 +412,14 @@ static ExecOK(entry)
     char str[1000];
     int i, found;
 
-    DestroyErrorWindow(pick);
+    DestroyErrorWidget(pick);
     if (strcmp(toseq, "all") == 0) {
-	MakeErrorWindow(pick, "Can't create a sequence called \"all\".");
+	MakeErrorWidget(pick, "Can't create a sequence called \"all\".");
 	return;
     }
     if (TocGetSeqNamed(toc, fromseq) == NULL) {
 	(void) sprintf(str, "Sequence \"%s\" doesn't exist!", fromseq);
-	MakeErrorWindow(pick, str);
+	MakeErrorWidget(pick, str);
 	return;
     }
     argv = MakeArgv(1);
@@ -481,27 +471,21 @@ static ExecOK(entry)
 
 
 
-static ExecCancel(entry)
-  FormEntryPtr entry;
+static void ExecCancel(entry)
+  FormEntry entry;
 {
     Pick pick = entry->row->group->form->pick;
     Scrn scrn = pick->scrn;
     (void) DestroyScrn(scrn);
-#ifdef X10
-    {
-	XEvent event;
-	event.type = LeaveWindow;
-	event.window = entry->window;
-	XtDispatchEvent(DISPLAY &event);
-    }
-#endif
 }
 
 
 
-static AddWindow(row, entry)
-  RowListPtr row;
-  FormEntryPtr entry;
+static FormEntry CreateWidget(row, class, args, num_args)
+  RowList row;
+  WidgetClass class;
+  ArgList args;
+  Cardinal num_args;
 {
     static Arg arglist[] = {
 	{XtNfromHoriz, (XtArgVal)NULL},
@@ -511,36 +495,46 @@ static AddWindow(row, entry)
 	{XtNbottom, (XtArgVal) XtChainTop},
 	{XtNright, (XtArgVal) XtChainLeft},
     };
+    ArgList merged_args;
+    FormEntry entry;
 
-    row->numwindows++;
-    row->wlist = (FormEntryPtr *)
+    row->numwidgets++;
+    row->wlist = (FormEntry *)
 	XtRealloc((char *) row->wlist,
-		  (unsigned) row->numwindows * sizeof(FormEntryPtr));
-    row->wlist[row->numwindows - 1] = entry;
+		  (unsigned) row->numwidgets * sizeof(FormEntry));
+    entry = XtNew(FormEntryRec);
     entry->row = row;
-    if (row->numwindows > 1)
-	arglist[0].value = (XtArgVal) row->wlist[row->numwindows - 2]->window;
+    entry->type = class;
+    row->wlist[row->numwidgets - 1] = entry;
+    if (row->numwidgets > 1)
+	arglist[0].value = (XtArgVal) row->wlist[row->numwidgets - 2]->widget;
     else
 	arglist[0].value = (XtArgVal) NULL;
-    XtFormAddWidget(DISPLAY row->window,
-		    entry->window, arglist, XtNumber(arglist));
+
+    merged_args = XtMergeArgLists( args, num_args, arglist, XtNumber(arglist) );
+
+    entry->widget = XtCreateManagedWidget( NULL, class, row->widget,
+					   merged_args,
+					   num_args + XtNumber(arglist) );
+			
+    XtFree( (caddr_t)merged_args );
+    return entry;
 }
     
 
-static DeleteWindow(entry)
-  FormEntryPtr entry;
+static DeleteWidget(entry)
+  FormEntry entry;
 {
-    RowListPtr row = entry->row;
+    RowList row = entry->row;
     int i;
-    QXDestroyWindow(theDisplay, entry->window);
-    (void) XtSendDestroyNotify(DISPLAY entry->window);
+    XtDestroyWidget(entry->widget);
     if (entry->type == WTtextentry)
 	XtFree((char *) entry->ptr);
-    for (i = 0; i < row->numwindows; i++)
+    for (i = 0; i < row->numwidgets; i++)
 	if (row->wlist[i] == entry)
 	    break;
-    row->numwindows--;
-    for (; i < row->numwindows; i++)
+    row->numwidgets--;
+    for (; i < row->numwidgets; i++)
 	row->wlist[i] = row->wlist[i + 1];
 }
 
@@ -554,14 +548,12 @@ static void FindStdWidth()
 }
 
 
-static RowListPtr AddRow(group, type)
-  GroupPtr group;
+static RowList AddRow(group, type)
+  Group group;
   int type;
 {
-    static Arg arglist1[] = {
+    static Arg arglist[] = {
 	{XtNborderWidth, (XtArgVal) 0},
-    };
-    static Arg arglist2[] = {
 	{XtNfromVert, (XtArgVal) NULL},
 	{XtNresizable, (XtArgVal) TRUE},
 	{XtNtop, (XtArgVal) XtChainTop},
@@ -569,25 +561,23 @@ static RowListPtr AddRow(group, type)
 	{XtNbottom, (XtArgVal) XtChainTop},
 	{XtNright, (XtArgVal) XtChainLeft}
     };
-    RowListPtr row;
+    RowList row;
     group->numrows++;
-    group->rlist = (RowListPtr *)
+    group->rlist = (RowList *)
 	XtRealloc((char *) group->rlist,
-		  (unsigned) group->numrows * sizeof(RowListPtr));
+		  (unsigned) group->numrows * sizeof(RowList));
     group->rlist[group->numrows - 1] = row =
-	(RowListPtr) XtMalloc(sizeof(RowListRec));
+	(RowList) XtMalloc(sizeof(RowListRec));
     row->type = type;
-    row->numwindows = 0;
-    row->wlist = (FormEntryPtr *) XtMalloc(1);
+    row->numwidgets = 0;
+    row->wlist = (FormEntry *) XtMalloc(1);
     row->group = group;
-    row->window = XtFormCreate(DISPLAY group->window,
-			       arglist1, XtNumber(arglist1));
     if (group->numrows > 1)
-	arglist2[0].value = (XtArgVal)group->rlist[group->numrows - 2]->window;
+	arglist[1].value = (XtArgVal)group->rlist[group->numrows - 2]->widget;
     else
-	arglist2[0].value = (XtArgVal) NULL;
-    XtFormAddWidget(DISPLAY group->window,
-		    row->window, arglist2, XtNumber(arglist2));
+	arglist[1].value = (XtArgVal) NULL;
+    row->widget = XtCreateWidget( NULL, formWidgetClass, group->widget,
+				  arglist, XtNumber(arglist) );
     if (type == RTignore) return row;
     AddButton(row, "Pick", ExecYesNo, TRUE);
     AddButton(row, "Skip", ExecYesNo, FALSE);
@@ -597,17 +587,16 @@ static RowListPtr AddRow(group, type)
 	AddTextEntry(row, "");
     AddTextEntry(row, "");
     AddButton(row, "Or", ExecRowOr, FALSE);
+    XtManageChild(row->widget);
     return row;
 }
 
 
-static GroupPtr AddGroup(form)
-  FormBoxPtr form;
+static Group AddGroup(form)
+  FormBox form;
 {
-    static Arg arglist1[] = {
+    static Arg arglist[] = {
 	{XtNborderWidth, (XtArgVal) 0},
-    };
-    static Arg arglist2[] = {
 	{XtNfromVert, (XtArgVal) NULL},
 	{XtNresizable, (XtArgVal) TRUE},
 	{XtNtop, (XtArgVal) XtChainTop},
@@ -615,39 +604,37 @@ static GroupPtr AddGroup(form)
 	{XtNbottom, (XtArgVal) XtChainTop},
 	{XtNright, (XtArgVal) XtChainLeft}
     };
-    GroupPtr group;
+    Group group;
     form->numgroups++;
-    form->glist = (GroupPtr *)
+    form->glist = (Group *)
 	XtRealloc((char *) form->glist,
-		  (unsigned) form->numgroups * sizeof(GroupPtr));
+		  (unsigned) form->numgroups * sizeof(Group));
     form->glist[form->numgroups - 1] = group =
-	(GroupPtr) XtMalloc(sizeof(GroupRec));
+	(Group) XtMalloc(sizeof(GroupRec));
     group->numrows = 0;
     group->form = form;
-    group->rlist = (RowListPtr *) XtMalloc(1);
-    group->window = XtFormCreate(DISPLAY form->inner,
-				 arglist1, XtNumber(arglist1));
+    group->rlist = (RowList *) XtMalloc(1);
     if (form->numgroups > 1)
-	arglist2[0].value = (XtArgVal)form->glist[form->numgroups - 2]->window;
+	arglist[1].value = (XtArgVal)form->glist[form->numgroups - 2]->widget;
     else
-	arglist2[0].value = (XtArgVal)NULL;
-    XtFormAddWidget(DISPLAY form->inner,
-		    group->window, arglist2, XtNumber(arglist2));
+	arglist[1].value = (XtArgVal)NULL;
+    group->widget = XtCreateManagedWidget( NULL, formWidgetClass, form->inner,
+					   arglist, XtNumber(arglist) );
     return group;
 }
 
 
 
 static AddDetailGroup(form)
-  FormBoxPtr form;
+  FormBox form;
 {
-    GroupPtr group;
-    RowListPtr row;
+    Group group;
+    RowList row;
     int     type;
     if (form->numgroups > 0) {
 	group = form->glist[form->numgroups - 1];
 	row = group->rlist[group->numrows - 1];
-	DeleteWindow(row->wlist[0]);
+	DeleteWidget(row->wlist[0]);
 	AddLabel(row, "- or -", FALSE);
     }
     group = AddGroup(form);
@@ -659,10 +646,10 @@ static AddDetailGroup(form)
 
 
 static AddGeneralGroup(form)
-  FormBoxPtr form;
+  FormBox form;
 {
-    GroupPtr group;
-    RowListPtr row;
+    Group group;
+    RowList row;
     group = AddGroup(form);
     row =  AddRow(group, RTignore);
     AddLabel(row, "Creating sequence:", FALSE);
@@ -690,7 +677,7 @@ static void InitGeneral(pick, fromseq, toseq)
 Pick pick;
 char *fromseq, *toseq;
 {
-    RowListPtr row;
+    RowList row;
     row = pick->general->glist[0]->rlist[0];
     ChangeTextEntry(row->wlist[1], toseq);
     ChangeTextEntry(row->wlist[3], fromseq);
@@ -698,17 +685,17 @@ char *fromseq, *toseq;
 
 
 static void CleanForm(form)
-FormBoxPtr form;
+FormBox form;
 {
     int i, j, k;
-    GroupPtr group;
-    RowListPtr row;
-    FormEntryPtr entry;
+    Group group;
+    RowList row;
+    FormEntry entry;
     for (i=0 ; i<form->numgroups ; i++) {
 	group = form->glist[i];
 	for (j=0 ; j<group->numrows ; j++) {
 	    row = group->rlist[j];
-	    for (k=0 ; k<row->numwindows ; k++) {
+	    for (k=0 ; k<row->numwidgets ; k++) {
 		entry = row->wlist[k];
 		if (entry->type == WTtextentry)
 		    ChangeTextEntry(entry, "");
@@ -718,32 +705,33 @@ FormBoxPtr form;
 }
 
 
-static FormBoxPtr MakeAForm(pick, position)
+static FormBox MakeAForm(pick, position)
 Pick pick;
 int position;
 {
     static Arg arglist1[] = {
-	{XtNname, (XtArgVal) "pick"},
 	{XtNallowHoriz, (XtArgVal)TRUE},
 	{XtNallowVert, (XtArgVal)TRUE},
+	{XtNallowResize, (XtArgVal)TRUE},
+	{XtNmin, 50},
+	{XtNmax, 1500}
     };
     static Arg arglist2[] = {
 	{XtNborderWidth, (XtArgVal) 0}
     };
-    FormBoxPtr result;
-    result = (FormBoxPtr) XtMalloc(sizeof(FormBoxRec));
-    result->outer = XtScrolledWindowCreate(DISPLAY pick->scrn->window,
-					   arglist1, XtNumber(arglist1));
-    result->inner = XtFormCreate(DISPLAY
-				 XtScrolledWindowGetFrame(DISPLAY
-							  result->outer),
-				 arglist2, XtNumber(arglist2));
-    XtScrolledWindowSetChild(DISPLAY result->outer, result->inner);
-    XtVPanedWindowAddPane(DISPLAY pick->scrn->window, result->outer, position,
-			  50, 1500, TRUE);
+    FormBox result;
+    result = (FormBox) XtMalloc(sizeof(FormBoxRec));
+/*    result->outer = XtScrolledWidgetCreate(pick->scrn->widget, */
+    result->outer = XtCreateManagedWidget( "pick", buttonBoxWidgetClass,
+					   pick->scrn->widget,
+					   arglist1, XtNumber(arglist1) );
+/*    result->inner = XtFormCreate(XtScrolledWidgetGetFrame(result->outer), */
+    result->inner = XtCreateManagedWidget(NULL, formWidgetClass, result->outer,
+					  arglist2, XtNumber(arglist2));
+/*    XtScrolledWidgetSetChild(result->outer, result->inner); */
     result->pick = pick;
     result->numgroups = 0;
-    result->glist = (GroupPtr *) XtMalloc(1);
+    result->glist = (Group *) XtMalloc(1);
     return result;
 }
 
@@ -755,9 +743,9 @@ AddPick(scrn, toc, fromseq, toseq)
   char *fromseq, *toseq;
 {
     Pick pick;
-    FormBoxPtr general, details;
+    FormBox general, details;
     char str[100];
-    int width, height, scrnwidth, scrnheight;
+    int height;
 
     if (scrn->pick) {
 	pick = scrn->pick;
@@ -766,7 +754,7 @@ AddPick(scrn, toc, fromseq, toseq)
     } else {
 	pick = scrn->pick = (Pick) XtMalloc(sizeof(PickRec));
 	pick->scrn = scrn;
-	pick->errorwindow = NULL;
+	pick->errorwidget = NULL;
 
 	pick->label = CreateTitleBar(scrn, 0);
 
@@ -780,18 +768,17 @@ AddPick(scrn, toc, fromseq, toseq)
 	PrepareToUpdate(general);
 	AddGeneralGroup(general);
 	ExecuteUpdate(general);
-	GetWindowSize(general->inner, &width, &height);
-	GetWindowSize(scrn->window, &scrnwidth, &scrnheight);
-	if (width > scrnwidth)
-	    height += XtScrollMgrGetThickness(DISPLAY general->outer);
-	XtVPanedSetMinMax(DISPLAY scrn->window,
-			  general->outer, height, height);
-	XtVPanedSetMinMax(DISPLAY scrn->window,
-			  general->outer, 10, 10000);
+	height = general->inner->core.height;
+#ifdef notdef
+	if (general->inner->core.width > scrn->widget->core.width)
+	    height += XtScrollMgrGetThickness(general->outer);
+	XtPanedSetMinMax(scrn->widget, general->outer, height, height);
+	XtPanedSetMinMax(scrn->widget, general->outer, 10, 10000);
+#endif notdef
     }
     pick->toc = toc;
     InitGeneral(pick, fromseq, toseq);
     (void) sprintf(str, "Pick: %s", TocGetFolderName(toc));
     ChangeLabel(pick->label, str);
-    QXStoreName(theDisplay, scrn->window, str);
+    XStoreName(theDisplay, scrn->widget, str);
 }
