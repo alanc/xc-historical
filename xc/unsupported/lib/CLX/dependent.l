@@ -2174,6 +2174,9 @@
 (deftype bitmap ()
   'pixarray-1)
 
+
+#+lcl3.0 (import 'sys:underlying-simple-vector)
+
 ;;; These are used to read and write pixels from and to CARD8s.
 
 ;;; READ-IMAGE-LOAD-BYTE is used to extract 1 and 4 bit pixels from CARD8s.
@@ -2236,7 +2239,7 @@
 
 ;;; FAST-READ-PIXARRAY - fill part of a pixarray from a buffer of card8s
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-1 (buffer-bbuf index array x y width height  
 			     padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2245,7 +2248,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 (index-ceiling x 8))
@@ -2370,7 +2373,7 @@
 	     ))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-4 (buffer-bbuf index array x y width height 
 			     padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2379,7 +2382,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 (index-ceiling x 2))
@@ -2414,7 +2417,7 @@
       ))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-8 (buffer-bbuf index array x y width height 
 			     padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2423,7 +2426,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 x)
@@ -2441,7 +2444,7 @@
  	      (the card8 (aref buffer-bbuf i))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-16 (buffer-bbuf index array x y width height 
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2450,7 +2453,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 (index* x 2))
@@ -2500,7 +2503,7 @@
 		(aref buffer-bbuf (index+ i 2)))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-24 (buffer-bbuf index array x y width height 
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2509,7 +2512,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 (index* x 3))
@@ -2530,7 +2533,7 @@
 		(aref buffer-bbuf (index+ i 2)))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-read-pixarray-32 (buffer-bbuf index array x y width height 
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2539,7 +2542,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (start (index+ index
 			 (index* y padded-bytes-per-line)
 			 (index* x 4))
@@ -2598,7 +2601,7 @@
     (when (= bits-per-pixel 24)
       (fast-read-pixarray-24
 	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+lcl3.0
+    #+(or lcl3.0 excl)
     (funcall
       (ecase bits-per-pixel 
 	(1 #'fast-read-pixarray-1) (4 #'fast-read-pixarray-4)
@@ -2609,7 +2612,7 @@
 
 ;;; FAST-WRITE-PIXARRAY - copy part of a pixarray into an array of CARD8s
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-1 (buffer-bbuf index array x y width height
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2618,7 +2621,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (right-bits (index-mod width 8))
@@ -2673,7 +2676,7 @@
 		(aref vector (index+ x 7)))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-4 (buffer-bbuf index array x y width height
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2683,7 +2686,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (right-nibbles (index-mod width 2))
@@ -2711,7 +2714,7 @@
 		(aref vector (index+ x 1)))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-8 (buffer-bbuf index array x y width height
 			      padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2721,7 +2724,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (start index (index+ start padded-bytes-per-line)))
@@ -2736,7 +2739,7 @@
 	(setf (aref buffer-bbuf i) (the card8 (aref vector x))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-16 (buffer-bbuf index array x y width height
 			       padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2746,7 +2749,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (start index (index+ start padded-bytes-per-line)))
@@ -2798,7 +2801,7 @@
 		(write-image-load-byte 16 pixel 24))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-24 (buffer-bbuf index array x y width height
 			       padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2808,7 +2811,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (start index (index+ start padded-bytes-per-line)))
@@ -2830,7 +2833,7 @@
 		(write-image-load-byte 16 pixel 24))))))
   t)
 
-#+lcl3.0
+#+(or lcl3.0 excl)
 (defun fast-write-pixarray-32 (buffer-bbuf index array x y width height
 			       padded-bytes-per-line)
   (declare (type buffer-bytes buffer-bbuf)
@@ -2840,7 +2843,7 @@
 	   (type array-index index padded-bytes-per-line))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
-    (do* ((vector (sys:underlying-simple-vector array))
+    (do* ((vector (underlying-simple-vector array))
 	  (h 0 (index1+ h))
 	  (y y (index1+ y))
 	  (start index (index+ start padded-bytes-per-line)))
@@ -2899,7 +2902,7 @@
     (when (= bits-per-pixel 24)
       (fast-write-pixarray-24
 	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+lcl3.0
+    #+(or lcl3.0 excl)
     (funcall
       (ecase bits-per-pixel 
 	(1 #'fast-write-pixarray-1) (4 #'fast-write-pixarray-4)
@@ -2949,13 +2952,13 @@
 	  (declare (type array-index dst-idx src-idx dst-end))
 	  (setf (sys:%1d-aref dest dst-idx)
 		(sys:%1d-aref src src-idx)))))
-    #+lcl3.0
+    #+(or lcl3.0 excl)
     (macrolet
       ((copy (type element-type)
 	 `(let* ((pixarray pixarray)
 		 (copy copy)
-		 (src (sys:underlying-simple-vector pixarray))
-		 (dst (sys:underlying-simple-vector copy)))
+		 (src (underlying-simple-vector pixarray))
+		 (dst (underlying-simple-vector copy)))
 	    (declare (type ,type pixarray copy)
 		     (type (simple-array ,element-type (*)) src dst))
 	    #.(declare-buffun)
@@ -2978,5 +2981,5 @@
 	(8  (copy pixarray-8  pixarray-8-element-type))
 	(16 (copy pixarray-16 pixarray-16-element-type))
 	(24 (copy pixarray-24 pixarray-24-element-type))
-	(32 (copy pixarray-32 pixarray-32-element-type))))
-    ))
+	(32 (copy pixarray-32 pixarray-32-element-type)))
+      t)))
