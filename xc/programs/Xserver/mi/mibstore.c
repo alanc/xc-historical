@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.2 89/06/12 16:26:05 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.3 89/06/16 16:56:24 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3254,7 +3254,23 @@ miBSDrawGuarantee (pWin, pGC, guarantee)
 	    miBSCreateGCPrivate (pGC);
 	pPriv = (miBSGCPtr)pGC->devPrivates[miBSGCIndex].ptr;
 	if (pPriv)
-	    pPriv->guarantee = guarantee;
+	{
+	    /*
+	     * XXX KLUDGE ALERT
+	     *
+	     * when the GC is Cheap pPriv will point
+	     * at some device's gc func structure.  guarantee
+	     * will point at the ChangeGC entry of that struct
+	     * and will never match a valid guarantee value.
+	     */
+	    switch (pPriv->guarantee)
+	    {
+	    case GuaranteeNothing:
+	    case GuaranteeVisBack:
+		pPriv->guarantee = guarantee;
+		break;
+	    }
+	}
     }
 }
 
