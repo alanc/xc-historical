@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.119 94/02/04 23:05:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.120 94/02/10 20:39:31 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -103,8 +103,8 @@ XCOMM
 XCOMM Watch out!!!  Make sure you do make includes after removing X11....
 XCOMM
 clean::
-	deltree /y $(BUILDINCDIR:/=\)
-	deltree /y $(BUILDLIBDIR:/=\)
+	RmTreeCmd $(BUILDINCDIR:/=\)
+	RmTreeCmd $(BUILDLIBDIR:/=\)
 
       WORLDOPTS = -i
 
