@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.41 91/02/05 21:37:13 rws Exp $
+ * $XConsortium: xrdb.c,v 11.42 91/04/03 19:14:24 gildea Exp $
  */
 
 /*
@@ -37,7 +37,7 @@
  *
  * Original Author: Jim Gettys, August 28, 1987
  * Extensively Modified: Phil Karlton, January 5, 1987
- * Modified A Bunch More: Bob Scheifler, February, 1991
+ * Modified a Bunch More: Bob Scheifler, February, 1991
  */
 
 #include <X11/Xlib.h>
@@ -79,7 +79,7 @@ typedef struct _Entries {
 #define INIT_BUFFER_SIZE 10000
 #define INIT_ENTRY_SIZE 500
 
-#if defined(USG) && !defined(CRAY)
+#if defined(USG) && !defined(CRAY) && !defined(ISC22)
 int rename (from, to)
     char *from, *to;
 {

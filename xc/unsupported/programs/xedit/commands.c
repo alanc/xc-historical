@@ -1,4 +1,4 @@
-/* $XConsortium: commands.c,v 1.29 90/10/26 12:01:13 dave Exp $ */
+/* $XConsortium: commands.c,v 1.30 91/01/10 21:32:40 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -25,7 +25,6 @@
  * without specific, written prior permission.
  */
 
-#include <stdio.h>
 #include "xedit.h"
 #ifdef CRAY
 #include <unistd.h>
@@ -102,7 +101,7 @@ String buf, filename;
   return (buf);
 }
   
-#if (defined(USG) && !defined(CRAY))
+#if defined(USG) && !defined(CRAY) && !defined(ISC22)
 int rename (from, to)
     char *from, *to;
 {
