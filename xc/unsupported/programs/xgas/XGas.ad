@@ -4,8 +4,6 @@
 ########################################################
 #
 XGas*font:			9x15
-XGas*background:		black
-XGas*foreground:		red
 #
 #
 # Constraints
