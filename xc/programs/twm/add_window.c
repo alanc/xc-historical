@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.71 89/07/06 10:59:50 jim Exp $
+ * $XConsortium: add_window.c,v 1.72 89/07/12 14:37:47 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.71 89/07/06 10:59:50 jim Exp $";
+"$XConsortium: add_window.c,v 1.72 89/07/12 14:37:47 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -987,6 +987,8 @@ TwmWindow *tmp_win;
     }
 }
 
+#define TITLEBUTTON_BORDERWIDTH 1
+
 
 CreateTitleButtons(tmp_win)
 TwmWindow *tmp_win;
@@ -994,7 +996,8 @@ TwmWindow *tmp_win;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int x, y;
-    int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2;
+    int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2
+	    - TITLEBUTTON_BORDERWIDTH * 2;
 
     if (tmp_win->title_height == 0)
     {
@@ -1028,21 +1031,18 @@ TwmWindow *tmp_win;
 	 * draw the logo large so that it gets as dense as possible; then white
 	 * out the edges so that they look crisp
 	 */
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0, h, h);
-	XDrawRectangle (dpy, Scr->iconifyPm, gc,     0, 0, h - 1, h - 1);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 1, 1, h - 3, h - 3);
+	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0, h + 1, h + 1);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
 	XFreeGC (dpy, gcBack);
 
 	/*
 	 * draw the resize button, 
 	 */
-	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, h - 1, h - 1);
-
 	w = (h * 2 + 2) / 3;
-	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w - 1, w - 1);
+	XDrawRectangle (dpy, Scr->resizePm, gc, -1, -1, w + 1, w + 1);
 
 	w = (w + 1) / 2;
-	XDrawRectangle (dpy, Scr->resizePm, gc, 0, 0, w, w);
+	XDrawRectangle (dpy, Scr->resizePm, gc, -1, -1, w + 2, w + 2);
 
 
 	/*
@@ -1053,22 +1053,24 @@ TwmWindow *tmp_win;
 
     attributes.win_gravity = NorthWestGravity;
     attributes.background_pixel = tmp_win->title.back;
+    attributes.border_pixel = tmp_win->title.fore;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
-    valuemask = (CWWinGravity | CWBackPixel | CWEventMask);
-    x = y = Scr->FramePadding + Scr->ButtonIndent;
+    valuemask = (CWWinGravity | CWBackPixel | CWBorderPixel | CWEventMask);
+    x = y = Scr->FramePadding + Scr->ButtonIndent - TITLEBUTTON_BORDERWIDTH;
     tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					h, h, 0, 0, 
+					h, h, TITLEBUTTON_BORDERWIDTH, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
 
     attributes.win_gravity = NorthEastGravity;
-    x = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - h - 1);
+    x = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - h - 1 -
+	 TITLEBUTTON_BORDERWIDTH);
     tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
-					h, h, 0, 0, 
+					h, h, 1, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
-    h += Scr->ButtonIndent * 2;
+    h += Scr->ButtonIndent * 2 + TITLEBUTTON_BORDERWIDTH * 2;
     if (tmp_win->titlehighlight) {
 	XGCValues gcv;
 	GC gc;
