@@ -1,4 +1,4 @@
-/* $XConsortium: phg.h,v 5.2 91/03/29 16:39:55 rws Exp $ */
+/* $XConsortium: phg.h,v 5.3 91/04/02 09:04:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,14 +28,14 @@ SOFTWARE.
 
 /* Main INTERNAL header file for the PHIGS library */
 
-#include <math.h>
-#include <errno.h>
-#include <X11/Xos.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
+#include <X11/Xos.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xfuncs.h>
+#include <math.h>
+#include <errno.h>
 
 /* Xos.h defines index to be strchr.  We don't need to do that because all
  * uses of index and strchr are #ifdef-ed in the SI API code.

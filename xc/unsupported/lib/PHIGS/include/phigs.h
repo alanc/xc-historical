@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.h,v 5.1 91/02/16 09:49:12 rws Exp $ */
+/* $XConsortium: phigs.h,v 5.2 91/03/29 10:43:42 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,14 +26,14 @@ SOFTWARE.
 #ifndef PHIGS_H_INCLUDED
 #define PHIGS_H_INCLUDED
 
-#include <stdio.h>
-#include <sys/types.h>
-#include "attr.h"
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>
 #include <X11/Xlibos.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include "attr.h"
 #include "phigscfunc.h"
 #include "phigsextrn.h"
 #include "phigserr.h"
