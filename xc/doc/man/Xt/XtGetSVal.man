@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetSelectionValue 3Xt "1 September 1988" "X Version 11" 
+.TH XtGetSelectionValue 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtGetSelectionValue, XtGetSelectionValues \- obtain selection values
 .SH SYNTAX
@@ -160,30 +159,30 @@ Specifies the timestamp that indicates when the selection \*(Ti.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtGetSelectionValue
+.ZN XtGetSelectionValue
 function requests the value of the selection that has been converted to 
 the target type. 
 The specified callback will be called some time after 
-.PN XtGetSelectionValue 
+.ZN XtGetSelectionValue 
 is called;
 in fact, it may be called before or after 
-.PN XtGetSelectionValue 
+.ZN XtGetSelectionValue 
 returns.
 .LP
 The
-.PN XtGetSelectionValues
+.ZN XtGetSelectionValues
 function is similar to
-.PN XtGetSelectionValue 
+.ZN XtGetSelectionValue 
 except that it takes a list of target types and a list of client data 
 and obtains the current value of the selection converted to each of the targets.
 The effect is as if each target were specified in a separate call to
-.PN XtGetSelectionValue .
+.ZN XtGetSelectionValue .
 The callback is called once with the corresponding client data for each target.
-.PN XtGetSelectionValues
+.ZN XtGetSelectionValues
 does guarantee that all the conversions will use the same selection value
 becaues the ownership of the selection cannot change in the middle of the list,
 as would be when calling
-.PN XtGetSelectionValue
+.ZN XtGetSelectionValue
 repeatedly.
 .SH "SEE ALSO"
 XtAppGetSelectionTimeout(3Xt),

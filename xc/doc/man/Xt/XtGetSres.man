@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetSubresources 3Xt "1 September 1988" "X Version 11" 
+.TH XtGetSubresources 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtGetSubresources, XtGetApplicationResources \
-\- obtain subresources or application resources
+XtGetSubresources, XtGetApplicationResources \- obtain subresources or application resources
 .SH SYNTAX
 void XtGetSubresources(\fIw\fP, \fIbase\fP, \fIname\fP, \fIclass\fP, \
 \fIresources\fP, \fInum_resources\fP, \fIargs\fP, \fInum_args\fP)
@@ -160,7 +158,7 @@ or that identifies the resource database to search
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtGetSubresources
+.ZN XtGetSubresources
 function constructs a name/class list from the application name/class,
 the name/classes of all its ancestors, and the widget itself.
 Then, it appends to this list the name/class pair passed in.
@@ -173,14 +171,14 @@ However, if num_args is zero,
 the argument list is not referenced.
 .LP
 The
-.PN XtGetApplicationResources
+.ZN XtGetApplicationResources
 function first uses the passed widget,
 which is usually an application shell,
 to construct a resource name and class list,
 Then, it retrieves the resources from the argument list,
 the resource database, or the resource list default values.
 After adding base to each address,
-.PN XtGetApplicationResources
+.ZN XtGetApplicationResources
 copies the resources into the address given in the resource list.
 If args is NULL,
 num_args must be zero.

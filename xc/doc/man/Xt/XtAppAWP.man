@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddWorkProc 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppAddWorkProc 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAppAddWorkProc, XtRemoveWorkProc \
-\- Add and remove background processing procedures
+XtAppAddWorkProc, XtRemoveWorkProc \- Add and remove background processing procedures
 .SH SYNTAX
 XtWorkProcId XtAppAddWorkProc(\fIapp_context\fP, \fIproc\fP, \fIclient_data\fP)
 .br
@@ -128,12 +126,12 @@ Specifies the procedure that is\*(Pr.
 Specifies which work procedure to remove.
 .SH DESCRIPTION
 The
-.PN XtAppAddWorkProc
+.ZN XtAppAddWorkProc
 function adds the specified work procedure for the application identified
 by app_context.
 .LP
 The
-.PN XtRemoveWorkProc
+.ZN XtRemoveWorkProc
 function explicitly removes the specified background work procedure.
 .SH "SEE ALSO"
 XtAppNextEvent(3Xt)

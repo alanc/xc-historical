@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAddEventHandler 3Xt "1 September 1988" "X Version 11" 
+.TH XtAddEventHandler 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAddEventHandler, XtAddRawEventHandler, XtRemoveEventHandler \
-XtRemoveRawEventHandler \- add and remove event handlers
+XtAddEventHandler, XtAddRawEventHandler, XtRemoveEventHandler, XtRemoveRawEventHandler \- add and remove event handlers
 .SH SYNTAX
 void XtAddEventHandler(\fIw\fP, \fIevent_mask\fP, \fInonmaskable\fP, \
 \fIproc\fP, \fIclient_data\fP)
@@ -165,13 +163,13 @@ Specifies the event mask for which \*(Em.
 Specifies a Boolean value that indicates whether this procedure should be 
 \*(Nm on the nonmaskable events
 .Pn ( GraphicsExpose ,
-.PN NoExpose ,
-.PN SelectionClear ,
-.PN SelectionRequest ,
-.PN SelectionNotify ,
-.PN ClientMessage ,
+.ZN NoExpose ,
+.ZN SelectionClear ,
+.ZN SelectionRequest ,
+.ZN SelectionNotify ,
+.ZN ClientMessage ,
 and
-.PN MappingNotify ).
+.ZN MappingNotify ).
 .ds Pr \ to be added or removed
 .IP \fIproc\fP 1i
 Specifies the procedure that is\*(Pr.
@@ -180,44 +178,44 @@ Specifies the procedure that is\*(Pr.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtAddEventHandler
+.ZN XtAddEventHandler
 function registers a procedure with the dispatch mechanism that is
 to be called when an event that matches the mask occurs on the specified
 widget.
 If the procedure is already registered with the same client_data,
 the specified mask is ORed into the existing mask.
 If the widget is realized,
-.PN XtAddEventHandler
+.ZN XtAddEventHandler
 calls
-.PN XSelectInput ,
+.ZN XSelectInput ,
 if necessary.
 .LP
 The
-.PN XtAddRawEventHandler
+.ZN XtAddRawEventHandler
 function is similar to
-.PN XtAddEventHandler 
+.ZN XtAddEventHandler 
 except that it does not affect the widget's mask and never causes an
-.PN XSelectInput
+.ZN XSelectInput
 for its events.
 Note that the widget might already have those mask bits set
 because of other nonraw event handlers registered on it.
 .LP
 The
-.PN XtAddRawEventHandler
+.ZN XtAddRawEventHandler
 function is similar to
-.PN XtAddEventHandler 
+.ZN XtAddEventHandler 
 except that it does not affect the widget's mask and never causes an
-.PN XSelectInput
+.ZN XSelectInput
 for its events.
 Note that the widget might already have those mask bits set
 because of other nonraw event handlers registered on it.
 .LP
 The
-.PN XtRemoveRawEventHandler
+.ZN XtRemoveRawEventHandler
 function stops the specified procedure from receiving the specified events.
 Because the procedure is a raw event handler,
 this does not affect the widget's mask and never causes a call on
-.PN XSelectInput .
+.ZN XSelectInput .
 .SH "SEE ALSO"
 XtAppNextEvent(3Xt),
 XtBuildEventMask(3Xt)

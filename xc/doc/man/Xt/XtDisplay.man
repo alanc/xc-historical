@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtDisplay 3Xt "1 September 1988" "X Version 11" 
+.TH XtDisplay 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtDisplay, XtParent, XtScreen, XtWindow \
-\- obtain window information about a widget
+XtDisplay, XtParent, XtScreen, XtWindow \- obtain window information about a widget
 .SH SYNTAX
 Display *XtDisplay(\fIw\fP)
 .br
@@ -122,16 +120,16 @@ Window XtWindow(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget.
 .SH DESCRIPTION
-.PN XtDisplay
+.ZN XtDisplay
 returns the display pointer for the specified widget.
 .LP
-.PN XtParent
+.ZN XtParent
 returns the parent widget for the specified widget.
 .LP
-.PN XtScreen
+.ZN XtScreen
 returns the screen pointer for the specified widget.
 .LP
-.PN XtWindow
+.ZN XtWindow
 returns the window of the specified widget.
 .SH "SEE ALSO"
 XtClass(3Xt)

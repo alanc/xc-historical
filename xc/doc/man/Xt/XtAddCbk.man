@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAddCallback 3Xt "1 September 1988" "X Version 11" 
+.TH XtAddCallback 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAddCallback, XtAddCallbacks, XtRemoveCallback, XtRemoveCallbacks, \
-XtRemoveAllCallbacks \- add and remove callback procedures
+XtAddCallback, XtAddCallbacks, XtRemoveCallback, XtRemoveCallbacks, XtRemoveAllCallbacks \- add and remove callback procedures
 .SH SYNTAX
 void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
 \fIclient_data\fP)
@@ -164,26 +162,26 @@ when \*(Cd.
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtAddCallback
+.ZN XtAddCallback
 function adds the specified callback procedure to the specified widget's
 callback list.
 .LP
 The
-.PN XtAddCallbacks
+.ZN XtAddCallbacks
 add the specified list of callbacks to the specified widget's callback list.
 .LP
 The
-.PN XtRemoveCallback
+.ZN XtRemoveCallback
 function removes a callback only if both the procedure and the client
 data match.
 .LP
 The
-.PN XtRemoveCallbacks
+.ZN XtRemoveCallbacks
 function removes the specified callback procedures from the specified
 widget's callback list.
 .LP
 The
-.PN XtRemoveAllCallbacks
+.ZN XtRemoveAllCallbacks
 function removes all the callback procedures from the specified
 widget's callback list.
 .SH "SEE ALSO"

@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetGC 3Xt "1 September 1988" "X Version 11" 
+.TH XtGetGC 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtGetGC, XtReleaseGC \- obtain and destroy a sharable GC
 .SH SYNTAX
@@ -127,14 +126,14 @@ Specifies which \*(Vm.
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtGetGC
+.ZN XtGetGC
 function returns a sharable, read-only GC.
 The parameters to this function are the same as those for
-.PN XCreateGC 
+.ZN XCreateGC 
 except that a widget is passed instead of a display.
-.PN XtGetGC
+.ZN XtGetGC
 shares only GCs in which all values in the GC returned by
-.PN XCreateGC
+.ZN XCreateGC
 are the same.
 In particular, it does not use the value_mask provided to
 determine which fields of the GC a widget considers relevant.
@@ -142,11 +141,11 @@ The value_mask is used only to tell the server which fields should be
 filled in with widget data and which it should fill in with default values.
 For further information about value_mask and values,
 see
-.PN XCreateGC
+.ZN XCreateGC
 in the \fI\*(xL\fP.
 .LP
 The
-.PN XtReleaseGC
+.ZN XtReleaseGC
 function deallocate the specified shared GC.
 .SH "SEE ALSO"
 .br

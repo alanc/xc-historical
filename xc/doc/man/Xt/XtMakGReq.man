@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtMakeGeometryRequest 3Xt "1 September 1988" "X Version 11" 
+.TH XtMakeGeometryRequest 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtMakeGeometryRequest, XtMakeResizeRequest \- make geometry manager request
 .SH SYNTAX
@@ -123,7 +122,7 @@ XtGeometryResult XtMakeResizeRequest(\fIw\fP, \fIwidth\fP, \fIheight\fP, \
 .IP \fIreply_return\fP 1i
 Returns the allowed widget size or may be NULL
 if the requesting widget is not interested in handling
-.PN XtGeometryAlmost .
+.ZN XtGeometryAlmost .
 .IP \fIrequest\fP 1i
 Specifies the desired widget geometry (size, position, border width,
 and stacking order).
@@ -137,81 +136,81 @@ Specifies the widget \*(Wi.
 Return the allowed widget width and height.
 .SH DESCRIPTION
 Depending on the condition,
-.PN XtMakeGeometryRequest
+.ZN XtMakeGeometryRequest
 performs the following:
 .IP \(bu 5
 If the widget is unmanaged or the widget's parent is not realized,
 it makes the changes and returns
-.PN XtGeometryYes .
+.ZN XtGeometryYes .
 .IP \(bu 5
 If the parent is not a subclass of
-.PN compositeWidgetClass 
+.ZN compositeWidgetClass 
 or the parent's geometry_manager is NULL,
 it issues an error.
 .IP \(bu 5
 If the widget's being_destroyed field is 
-.PN True ,
+.ZN True ,
 it returns
-.PN XtGeometryNo .
+.ZN XtGeometryNo .
 .IP \(bu 5
 If the widget x, y, width, height and border_width fields are
 all equal to the requested values,
 it returns
-.PN XtGeometryYes ;
+.ZN XtGeometryYes ;
 otherwise, it calls the parent's geometry_manager procedure 
 with the given parameters.
 .IP \(bu 5
 If the parent's geometry manager returns
-.PN XtGeometryYes
+.ZN XtGeometryYes
 and if
-.PN XtCWQueryOnly
+.ZN XtCWQueryOnly
 is not set in the request_mode
 and if the widget is realized,
-.PN XtMakeGeometryRequest
+.ZN XtMakeGeometryRequest
 calls the 
-.PN XConfigureWindow
+.ZN XConfigureWindow
 Xlib function to reconfigure the widget's window (set its size, location, 
 and stacking order as appropriate).
 .IP \(bu 5
 If the geometry manager returns
-.PN XtGeometryDone ,
+.ZN XtGeometryDone ,
 the change has been approved and actually has been done.
 In this case,
-.PN XtMakeGeometryRequest
+.ZN XtMakeGeometryRequest
 does no configuring and returns 
-.PN XtGeometryYes .
-.PN XtMakeGeometryRequest
+.ZN XtGeometryYes .
+.ZN XtMakeGeometryRequest
 never returns
-.PN XtGeometryDone .
+.ZN XtGeometryDone .
 .LP
 Otherwise,
-.PN XtMakeGeometryRequest
+.ZN XtMakeGeometryRequest
 returns the resulting value from the parent's geometry manager.
 .LP
 Children of primitive widgets are always unmanaged; thus,
-.PN XtMakeGeometryRequest
+.ZN XtMakeGeometryRequest
 always returns
-.PN XtGeometryYes
+.ZN XtGeometryYes
 when called by a child of a primitive widget.
 .LP
 The
-.PN XtMakeResizeRequest
+.ZN XtMakeResizeRequest
 function, a simple interface to
-.PN XtMakeGeometryRequest ,
+.ZN XtMakeGeometryRequest ,
 creates a
-.PN XtWidgetGeometry
+.ZN XtWidgetGeometry
 structure and specifies that width and height should change.
 The geometry manager is free to modify any of the other window attributes
 (position or stacking order) to satisfy the resize request.
 If the return value is
-.PN XtGeometryAlmost ,
+.ZN XtGeometryAlmost ,
 width_return and height_return contain a compromise width and height.
 If these are acceptable,
 the widget should immediately make an
-.PN XtMakeResizeRequest
+.ZN XtMakeResizeRequest
 and request that the compromise width and height be applied.
 If the widget is not interested in
-.PN XtGeometryAlmost
+.ZN XtGeometryAlmost
 replies, 
 it can pass NULL for width_return and height_return.
 .SH "SEE ALSO"

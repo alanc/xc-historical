@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppCreateShell 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppCreateShell 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppCreateShell \- create top-level widget instance
 .SH SYNTAX
@@ -135,12 +134,12 @@ Specifies the number of arguments in the argument list.
 Specifies the widget class\*(Wc.
 .SH DESCRIPTION
 The
-.PN XtAppCreateShell
+.ZN XtAppCreateShell
 function saves the specified application name and application class 
 for qualifying all widget resource specifiers.
 The application name and application class are used as the left-most components
 in all widget resource names for this application.
-.PN XtAppCreateShell
+.ZN XtAppCreateShell
 should be used to create a new logical application within a program
 or to create a shell on another display.
 In the first case, 
@@ -149,7 +148,7 @@ In the second case,
 it uses the resource database associated with the other display.
 .LP
 Note that the widget returned by
-.PN XtAppCreateShell
+.ZN XtAppCreateShell
 has the \s-1WM_COMMAND\s+1
 property set for session managers (see Chapter 4).
 .SH "SEE ALSO"

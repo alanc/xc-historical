@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppErrorMsg 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppErrorMsg 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAppErrorMsg, XtAppSetErrorMsgHandler, XtAppSetWarningMsgHandler, \
-XtAppWarningMsg \- high-level error handlers
+XtAppErrorMsg, XtAppSetErrorMsgHandler, XtAppSetWarningMsgHandler, XtAppWarningMsg \- high-level error handlers
 .SH SYNTAX
 void XtAppErrorMsg(\fIapp_context\fP, \fIname\fP, \fItype\fP, \fIclass\fP, \
 \fIdefault\fP, \ \fIparams\fP, \fInum_params\fP)
@@ -169,22 +167,22 @@ Specifies the number of values in the parameter list.
 Specifies a pointer to a list of values to be stored in the message.
 .SH DESCRIPTION
 The
-.PN XtAppErrorMsg
+.ZN XtAppErrorMsg
 function calls the high-level error handler and passes the specified
 information.
 .LP
 The
-.PN XtAppSetErrorMsgHandler
+.ZN XtAppSetErrorMsgHandler
 function registers the specified  procedure,
 which is called when a fatal error occurs.
 .LP
 The
-.PN XtAppSetWarningMsgHandler
+.ZN XtAppSetWarningMsgHandler
 function registers the specified procedure,
 which is called when a nonfatal error condition occurs.
 .LP
 The
-.PN XtAppWarningMsg
+.ZN XtAppWarningMsg
 function calls the high-level error handler and passes the specified
 information.
 .SH "SEE ALSO"

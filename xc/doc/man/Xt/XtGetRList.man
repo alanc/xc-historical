@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtGetResourceList 3Xt "1 September 1988" "X Version 11" 
+.TH XtGetResourceList 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtGetResourceList \- obtain resource list
 .SH SYNTAX
@@ -116,7 +115,7 @@ resource list.
 .IP \fIresources_return\fP 1i
 Specifies a pointer to where to store the returned resource list.
 The caller must free this storage using
-.PN XtFree
+.ZN XtFree
 when done with it.
 .ds Cl \ for which you want the list
 .IP \fIwidget_class\fP 1i
@@ -124,10 +123,10 @@ Specifies the widget class\*(Wc.
 .SH DESCRIPTION
 If it is called before the widget class is initialized (that is,
 before the first widget of that class has been created),
-.PN XtGetResourceList
+.ZN XtGetResourceList
 returns the resource list as specified in the widget class record.
 If it is called after the widget class has been initialized,
-.PN XtGetResourceList
+.ZN XtGetResourceList
 returns a merged resource list that contains the resources 
 for all superclasses.
 .SH "SEE ALSO"

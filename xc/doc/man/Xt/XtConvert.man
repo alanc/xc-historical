@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtConvert 3Xt "1 September 1988" "X Version 11" 
+.TH XtConvert 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtConvert, XtDirectConvert \- invoke resource converters
 .SH SYNTAX
@@ -149,20 +148,20 @@ Returns the converted value.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtConvert
+.ZN XtConvert
 function looks up the type converter registered to convert from_type 
 to to_type, computes any additional arguments needed, and then calls
-.PN XtDirectConvert .
+.ZN XtDirectConvert .
 .LP
 The
-.PN XtDirectConvert
+.ZN XtDirectConvert
 function looks in the converter cache to see if this conversion procedure
 has been called with the specified arguments.
 If so, it returns a descriptor for information stored in the cache;
 otherwise, it calls the converter and enters the result in the cache.
 .LP
 Before calling the specified converter,
-.PN XtDirectConvert
+.ZN XtDirectConvert
 sets the return value size to zero and the return value address to NULL.
 To determine if the conversion was successful,
 the client should check to_return.address for non-NULL.

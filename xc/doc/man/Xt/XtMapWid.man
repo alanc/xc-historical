@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtMapWidget 3Xt "1 September 1988" "X Version 11" 
+.TH XtMapWidget 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtMapWidget, XtSetMappedWhenManaged, XtUnmapWidget \- map and unmap widgets
 .SH SYNTAX
@@ -124,27 +123,27 @@ Specifies the widget.
 .SH DESCRIPTION
 If the widget is realized and managed
 and if the new value of map_when_managed is 
-.PN True ,
-.PN XtSetMappedWhenManaged
+.ZN True ,
+.ZN XtSetMappedWhenManaged
 maps the window.
 If the widget is realized and managed
 and if the new value of map_when_managed is 
-.PN False ,
+.ZN False ,
 it unmaps the window.
-.PN XtSetMappedWhenManaged
+.ZN XtSetMappedWhenManaged
 is a convenience function that is equivalent to (but slightly faster than)
 calling
-.PN XtSetValues
+.ZN XtSetValues
 and setting the new value for the mappedWhenManaged resource.
 As an alternative to using
-.PN XtSetMappedWhenManaged
+.ZN XtSetMappedWhenManaged
 to control mapping,
 a client may set mapped_when_managed to
-.PN False
+.ZN False
 and use
-.PN XtMapWidget
+.ZN XtMapWidget
 and
-.PN XtUnmapWidget
+.ZN XtUnmapWidget
 explicitly.
 .SH "SEE ALSO"
 XtManageChildren(3Xt)

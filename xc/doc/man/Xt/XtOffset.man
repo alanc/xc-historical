@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtOffset 3Xt "1 September 1988" "X Version 11" 
+.TH XtOffset 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtOffset, XtNumber \- determine the byte offset or number of array elements
 .SH SYNTAX
@@ -120,13 +119,13 @@ Specifies the name of the field for which to calculate the byte offset.
 Specifies a type that is declared as a pointer to the structure.
 .SH DESCRIPTION
 The
-.PN XtOffset
+.ZN XtOffset
 macro is usually used to determine the offset of various resource fields 
 from the beginning of a widget and can be used at compile time in static
 initializations.
 .LP
 The
-.PN XtNumber
+.ZN XtNumber
 macro returns the number of elements in the specified argument lists, 
 resources lists, and other counted arrays.
 .SH "SEE ALSO"

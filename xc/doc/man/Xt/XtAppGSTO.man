@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppGetSelectionTimeout 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppGetSelectionTimeout 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtAppGetSelectionTimeout, XtAppSetSelectionTimeout\
-\- set and obtain selection timeout values
+XtAppGetSelectionTimeout, XtAppSetSelectionTimeout \- set and obtain selection timeout values
 .SH SYNTAX
 unsigned long XtAppGetSelectionTimeout(\fIapp_context\fP)
 .br
@@ -119,19 +117,19 @@ Specifies the application context.
 Specifies the selection timeout in milliseconds.
 .SH DESCRIPTION
 The
-.PN XtAppGetSelectionTimeout
+.ZN XtAppGetSelectionTimeout
 function returns the current selection timeout value, in milliseconds.
 The selection timeout is the time within which the two communicating 
 applications must respond to one another.
 The initial timeout value is set by the 
-.PN selectionTimeout
+.ZN selectionTimeout
 application resource, or, if
-.PN selectionTimeout
+.ZN selectionTimeout
 is not specified,
 it defaults to five seconds.
 .LP
 The
-.PN XtAppSetSelectionTimeout
+.ZN XtAppSetSelectionTimeout
 function sets the \*(xI's selection timeout mechanism.
 Note that most applications should not set the selection timeout.
 .SH "SEE ALSO"

@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtSetSensitive 3Xt "1 September 1988" "X Version 11" 
+.TH XtSetSensitive 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtSetSensitive, XtIsSensitive \- set and check a widget's sensitivity state
 .SH SYNTAX
@@ -119,47 +118,47 @@ keyboard and pointer events.
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtSetSensitive
+.ZN XtSetSensitive
 function first calls
-.PN XtSetValues
+.ZN XtSetValues
 on the current widget with an argument list specifying that the
 sensitive field should change to the new value.
 It then recursively propagates the new value
 down the managed children tree by calling
-.PN XtSetValues
+.ZN XtSetValues
 on each child to set the ancestor_sensitive to the new value if the new
 values for sensitive and the child's ancestor_sensitive are not the same.
 .LP
-.PN XtSetSensitive
+.ZN XtSetSensitive
 calls
-.PN XtSetValues
+.ZN XtSetValues
 to change sensitive and ancestor_sensitive.
 Therefore, when one of these changes,
 the widget's set_values procedure should
 take whatever display actions are needed
 (for example, greying out or stippling the widget).
 .LP
-.PN XtSetSensitive
+.ZN XtSetSensitive
 maintains the invariant that if parent has either sensitive 
 or ancestor_sensitive 
-.PN False ,
+.ZN False ,
 then all children have ancestor_sensitive 
-.PN False .
+.ZN False .
 .LP
 The
-.PN XtIsSensitive
+.ZN XtIsSensitive
 function returns 
-.PN True 
+.ZN True 
 or 
-.PN False 
+.ZN False 
 to indicate whether or not user input events are being dispatched.
 If both core.sensitive and core.ancestor_sensitive are 
-.PN True ,
-.PN XtIsSensitive
+.ZN True ,
+.ZN XtIsSensitive
 returns 
-.PN True ;
+.ZN True ;
 otherwise, it returns 
-.PN False .
+.ZN False .
 .SH "SEE ALSO"
 .br
 \fI\*(xT\fP

@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAddGrab 3Xt "1 September 1988" "X Version 11" 
+.TH XtAddGrab 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAddGrab, XtRemoveGrab \- redirect user input to a modal widget
 .SH SYNTAX
@@ -125,26 +124,26 @@ a pointer button.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtAddGrab
+.ZN XtAddGrab
 function appends the widget (and associated parameters) to the modal cascade
 and checks that exclusive is 
-.PN True 
+.ZN True 
 if spring_loaded is 
-.PN True .
+.ZN True .
 If these are not 
-.PN True , 
-.PN XtAddGrab
+.ZN True , 
+.ZN XtAddGrab
 generates an error.
 .LP
 The modal cascade is used by
-.PN XtDispatchEvent
+.ZN XtDispatchEvent
 when it tries to dispatch a user event.
 When at least one modal widget is in the widget cascade, 
-.PN XtDispatchEvent
+.ZN XtDispatchEvent
 first determines if the event should be delivered.
 It starts at the most recent cascade entry and follows the cascade up to and
 including the most recent cascade entry added with the exclusive parameter
-.PN True .
+.ZN True .
 .LP
 This subset of the modal cascade along with all descendants of these widgets
 comprise the active subset.
@@ -152,10 +151,10 @@ User events that occur outside the widgets in this subset are ignored
 or remapped.
 Modal menus with submenus generally add a submenu widget to the cascade
 with exclusive 
-.PN False .
+.ZN False .
 Modal dialog boxes that need to restrict user input to the most deeply nested
 dialog box add a subdialog widget to the cascade with exclusive 
-.PN True .
+.ZN True .
 User events that occur within the active subset are delivered to the
 appropriate widget, which is usually a child or further descendant of the modal
 widget.
@@ -163,11 +162,11 @@ widget.
 Regardless of where on the screen they occur,
 remap events are always delivered to the most recent widget in the active
 subset of the cascade that has spring_loaded 
-.PN True ,
+.ZN True ,
 if any such widget exists.
 .LP
 The
-.PN XtRemoveGrab
+.ZN XtRemoveGrab
 function removes widgets from the modal cascade starting 
 at the most recent widget up to and including the specified widget.
 It issues an error if the specified widget is not on the modal cascade.

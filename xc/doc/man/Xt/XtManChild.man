@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtManageChildren 3Xt "1 September 1988" "X Version 11" 
+.TH XtManageChildren 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtManageChildren, XtManageChild, XtUnmanageChildren, XtUnmanageChild \
-\- manage and unmanage children
+XtManageChildren, XtManageChild, XtUnmanageChildren, XtUnmanageChild \- manage and unmanage children
 .SH SYNTAX
 typedef Widget *WidgetList;
 .sp
@@ -133,16 +131,16 @@ Specifies a list of child widgets.
 Specifies the number of children.
 .SH DESCRIPTION
 The
-.PN XtManageChildren
+.ZN XtManageChildren
 function performs the following:
 .IP \(bu 5
 Issues an error if the children do not all have the same parent or
 if the parent is not a subclass of 
-.PN compositeWidgetClass .
+.ZN compositeWidgetClass .
 .IP \(bu 5
 Returns immediately if the common parent is being destroyed;
 otherwise, for each unique child on the list,
-.PN XtManageChildren
+.ZN XtManageChildren
 ignores the child if it already is managed or is being destroyed
 and marks it if not.
 .IP \(bu 5
@@ -153,21 +151,21 @@ it makes some of the newly managed children viewable:
 Calls the change_managed routine of the widgets' parent.
 .IP \- 5
 Calls
-.PN XtRealizeWidget
+.ZN XtRealizeWidget
 on each previously unmanaged child that is unrealized.
 .IP \- 5
 Maps each previously unmanaged child that has map_when_managed 
-.PN True .
+.ZN True .
 .RE
 .LP
 Managing children is independent of the ordering of children and
 independent of creating and deleting children.
 The layout routine of the parent
 should consider children whose managed field is
-.PN True 
+.ZN True 
 and should ignore all other children.
 Note that some composite widgets, especially fixed boxes, call
-.PN XtManageChild
+.ZN XtManageChild
 from their insert_child procedure.
 .LP
 If the parent widget is realized,
@@ -175,29 +173,29 @@ its change_managed procedure is called to notify it
 that its set of managed children has changed.
 The parent can reposition and resize any of its children.
 It moves each child as needed by calling 
-.PN XtMoveWidget ,
+.ZN XtMoveWidget ,
 which first updates the x and y fields and then calls
-.PN XMoveWindow
+.ZN XMoveWindow
 if the widget is realized.
 .LP
 The
-.PN XtManageChild
+.ZN XtManageChild
 function constructs a
-.PN WidgetList
+.ZN WidgetList
 of length one and calls
-.PN XtManageChildren .
+.ZN XtManageChildren .
 .LP
 The
-.PN XtUnmanageChildren
+.ZN XtUnmanageChildren
 function performs the following:
 .IP \(bu 5
 Issues an error if the children do not all have the same parent
 or if the parent is not a subclass of 
-.PN compositeWidgetClass .
+.ZN compositeWidgetClass .
 .IP \(bu 5
 Returns immediately if the common parent is being destroyed;
 otherwise, for each unique child on the list, 
-.PN XtUnmanageChildren
+.ZN XtUnmanageChildren
 performs the following:
 .RS
 .IP \- 5
@@ -212,16 +210,16 @@ Calls the change_managed routine of the widgets' parent
 after all children have been marked
 if the parent is realized.
 .LP
-.PN XtUnmanageChildren
+.ZN XtUnmanageChildren
 does not destroy the children widgets.
 Removing widgets from a parent's managed set is often a temporary banishment,
 and, some time later, you may manage the children again.
 .LP
 The
-.PN XtUnmanageChild
+.ZN XtUnmanageChild
 function constructs a widget list
 of length one and calls
-.PN XtUnmanageChildren .
+.ZN XtUnmanageChildren .
 .SH "SEE ALSO"
 XtMapWidget(3Xt),
 XtRealizeWidget(3Xt)

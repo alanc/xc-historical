@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtBuildEventMask 3Xt "1 September 1988" "X Version 11" 
+.TH XtBuildEventMask 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtBuildEventMask \- retrieve a widget's event mask
 .SH SYNTAX
@@ -110,16 +109,16 @@ EventMask XtBuildEventMask(\fIw\fP)
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtBuildEventMask
+.ZN XtBuildEventMask
 function returns the event mask representing the logical OR
 of all event masks for event handlers registered on the widget with
-.PN XtAddEventHandler
+.ZN XtAddEventHandler
 and all event translations, including accelerators,
 installed on the widget.
 This is the same event mask stored into the 
-.PN XSetWindowAttributes
+.ZN XSetWindowAttributes
 structure by
-.PN XtRealizeWidget
+.ZN XtRealizeWidget
 and sent to the server when event handlers and translations are installed or
 removed on the realized widget.
 .SH "SEE ALSO"

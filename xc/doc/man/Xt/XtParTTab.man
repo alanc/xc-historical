@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtParseTranslationTable 3Xt "1 September 1988" "X Version 11" 
+.TH XtParseTranslationTable 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtParseTranslationTable, XtAugmentTranslations, XtOverrideTranslations, \
-XtUninstallTranslations \- manage translation tables
+XtParseTranslationTable, XtAugmentTranslations, XtOverrideTranslations, XtUninstallTranslations \- manage translation tables
 .SH SYNTAX
 XtTranslations XtParseTranslationTable(\fItable\fP)
 .br
@@ -132,17 +130,17 @@ Specifies the compiled translation table to merge in (must not be NULL).
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtParseTranslationTable
+.ZN XtParseTranslationTable
 function compiles the translation table into the opaque internal representation
 of type
-.PN XtTranslations .
+.ZN XtTranslations .
 Note that if an empty translation table is required for any purpose,
 one can be obtained by calling
-.PN XtParseTranslationTable
+.ZN XtParseTranslationTable
 and passing an empty string.
 .LP
 The
-.PN XtAugmentTranslations
+.ZN XtAugmentTranslations
 function nondestructively merges the new translations into the existing widget
 translations.
 If the new translations contain an event or event sequence that
@@ -150,7 +148,7 @@ already exists in the widget's translations,
 the new translation is ignored.
 .LP
 The
-.PN XtOverrideTranslations
+.ZN XtOverrideTranslations
 function destructively merges the new translations into the existing widget
 translations.
 If the new translations contain an event or event sequence that
@@ -158,12 +156,12 @@ already exists in the widget's translations,
 the new translation is merged in and override the widget's translation.
 .LP
 To replace a widget's translations completely, use
-.PN XtSetValues
+.ZN XtSetValues
 on the XtNtranslations resource and specifiy a compiled translation table
 as the value.
 .LP
 The
-.PN XtUninstallTranslations
+.ZN XtUninstallTranslations
 function causes the entire translation table for widget to be removed.
 .SH "SEE ALSO"
 XtAppAddActions(3Xt),

@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtSetArg 3Xt "1 September 1988" "X Version 11" 
+.TH XtSetArg 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtSetArg, XtMergeArgLists \- set and merge ArgLists
 .SH SYNTAX
@@ -125,10 +124,10 @@ ArgList XtMergeArgLists(\fIargs1\fP, \fInum_args1\fP, \fIargs2\fP, \
 Specifies the name-value pair to set.
 .IP \fIargs1\fP 1i
 Specifies the first
-.PN ArgList .
+.ZN ArgList .
 .IP \fIargs2\fP 1i
 Specifies the second 
-.PN ArgList .
+.ZN ArgList .
 .IP \fInum_args1\fP 1i
 Specifies the number of arguments in the first argument list.
 .IP \fInum_args2\fP 1i
@@ -137,11 +136,11 @@ Specifies the number of arguments in the second argument list.
 Specifies the name of the resource.
 .IP \fIvalue\fP 1i
 Specifies the value of the resource if it will fit in an
-.PN XtArgVal 
+.ZN XtArgVal 
 or the address.
 .SH DESCRIPTION
 The
-.PN XtSetArg
+.ZN XtSetArg
 function is usually used in a highly stylized manner to
 minimize the probability of making a mistake; for example:
 .LP
@@ -159,7 +158,7 @@ XtSetValues(widget, args, n);
 .LP
 Alternatively, an application can statically declare the argument list
 and use
-.PN XtNumber :
+.ZN XtNumber :
 .LP
 .Ds
 .TA .5i 3i
@@ -173,19 +172,19 @@ XtSetValues(Widget, args, XtNumber(args));
 .LP
 Note that you should not use auto-increment or auto-decrement
 within the first argument to
-.PN XtSetArg .
-.PN XtSetArg
+.ZN XtSetArg .
+.ZN XtSetArg
 can be implemented as a macro that dereferences the first argument twice.
 .LP
 The
-.PN XtMergeArgLists
+.ZN XtMergeArgLists
 function allocates enough storage to hold the combined
-.PN ArgList
+.ZN ArgList
 structures and copies them into it.
 Note that it does not check for duplicate entries.
 When it is no longer needed,
 free the returned storage by using
-.PN XtFree .
+.ZN XtFree .
 .SH "SEE ALSO"
 XtOffset(3Xt)
 .br

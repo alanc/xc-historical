@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,11 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtCreateApplicationContext 3Xt "1 September 1988" "X Version 11" 
+.TH XtCreateApplicationContext 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtCreateApplicationContext, XtDestroyApplicationContext, \
-XtWidgetToApplicationContext, XtToolkitInitialize \
-\- create, destroy, and obtain an application context
+XtCreateApplicationContext, XtDestroyApplicationContext, XtWidgetToApplicationContext, XtToolkitInitialize \- create, destroy, and obtain an application context
 .SH SYNTAX
 XtAppContext XtCreateApplicationContext()
 .LP
@@ -123,25 +120,25 @@ Specifies the application context.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtCreateApplicationContext
+.ZN XtCreateApplicationContext
 function returns an application context,
 which is an opaque type.
 Every application must have at least one application context.
 .LP
 The
-.PN XtDestroyApplicationContext
+.ZN XtDestroyApplicationContext
 function destroys the specified application context as soon as it is safe 
 to do so.
 If called from with an event dispatch (for example, a callback procedure),
-.PN XtDestroyApplicationContext
+.ZN XtDestroyApplicationContext
 does not destroy the application context until the dispatch is complete.
 .LP
 The
-.PN XtWidgetToApplicationContext
+.ZN XtWidgetToApplicationContext
 function returns the application context for the specified widget.
 .LP
 The semantics of calling
-.PN XtToolkitInitialize
+.ZN XtToolkitInitialize
 more than once are undefined.
 .SH "SEE ALSO"
 XtDisplayInitialize(3Xt)

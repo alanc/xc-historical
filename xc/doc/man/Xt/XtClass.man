@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtClass 3Xt "1 September 1988" "X Version 11" 
+.TH XtClass 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtClass, XtSuperClass, XtIsSubclass, XtCheckSubclass, XtIsComposite, \
-XtIsManaged \- obtain and verify a widget's class
+XtClass, XtSuperClass, XtIsSubclass, XtCheckSubclass, XtIsComposite, XtIsManaged \- obtain and verify a widget's class
 .SH SYNTAX
 WidgetClass XtClass(\fIw\fP)
 .br
@@ -142,61 +140,61 @@ Specifies the widget class\*(Wc.
 Specifies the message that is to be \*(Me.
 .SH DESCRIPTION
 The
-.PN XtClass
+.ZN XtClass
 function returns a pointer to the widget's class structure.
 .LP
 The
-.PN XtSuperclass
+.ZN XtSuperclass
 function returns a pointer to the widget's superclass class structure.
 .LP
 The
-.PN XtIsSubclass
+.ZN XtIsSubclass
 function returns 
-.PN True 
+.ZN True 
 if the class of the specified widget is equal to
 or is a subclass of the specified widget class.
 The specified widget can be any number of subclasses down the chain
 and need not be an immediate subclass of the specified widget class.
 Composite widgets that need to restrict the class of the items they
 contain can use
-.PN XtIsSubclass
+.ZN XtIsSubclass
 to find out if a widget belongs to the desired class of objects.
 .LP
 The
-.PN XtCheckSubclass
+.ZN XtCheckSubclass
 macro determines if the class of the specified widget is equal to
 or is a subclass of the specified widget class.
 The widget can be any number of subclasses down the chain
 and need not be an immediate subclass of the specified widget class.
 If the specified widget is not a subclass,
-.PN XtCheckSubclass
+.ZN XtCheckSubclass
 constructs an error message from the supplied message,
 the widget's actual class, and the expected class and calls
-.PN XtErrorMsg .
-.PN XtCheckSubclass
+.ZN XtErrorMsg .
+.ZN XtCheckSubclass
 should be used at the entry point of exported routines to ensure 
 that the client has passed in a valid widget class for the exported operation.
 .LP
-.PN XtCheckSubclass
+.ZN XtCheckSubclass
 is only executed when the widget has been compiled with the compiler symbol
 DEBUG defined; otherwise, it is defined as the empty string 
 and generates no code.
 .LP
 The
-.PN XtIsComposite
+.ZN XtIsComposite
 function is a convenience function that is equivalent to
-.PN XtIsSubclass 
+.ZN XtIsSubclass 
 with
-.PN compositeWidgetClass 
+.ZN compositeWidgetClass 
 specified.
 .LP
 The
-.PN XtIsManaged
+.ZN XtIsManaged
 macro (for widget programmers) or function (for application programmers)
 returns
-.PN True
+.ZN True
 if the specified child widget is managed or
-.PN False
+.ZN False
 if it is not.
 .SH "SEE ALSO"
 XtAppErrorMsg(3Xt),

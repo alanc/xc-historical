@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppGetErrorDatabase 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppGetErrorDatabase 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppGetErrorDatabase, XtAppGetErrorDatabaseText \- obtain error database
 .SH SYNTAX
@@ -142,14 +141,14 @@ of the error message.
 Specifies the size of the buffer in bytes.
 .SH DESCRIPTION
 The
-.PN XtAppGetErrorDatabase
+.ZN XtAppGetErrorDatabase
 function returns the address of the error database.
 The \*(xI do a lazy binding of the error database and do not merge in the
 database file until the first call to
-.PN XtAppGetErrorDatbaseText .
+.ZN XtAppGetErrorDatbaseText .
 .LP
 The
-.PN XtAppGetErrorDatabaseText
+.ZN XtAppGetErrorDatabaseText
 returns the appropriate message from the error database
 or returns the specified default message if one is not found in the
 error database.

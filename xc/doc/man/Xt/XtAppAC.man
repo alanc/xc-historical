@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddConverter 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppAddConverter 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddConverter \- register resource converter
 .SH SYNTAX
@@ -131,7 +130,7 @@ Specifies the number of additional arguments to the converter or zero.
 Specifies the destination type.
 .SH DESCRIPTION
 The
-.PN XtAppAddConverter
+.ZN XtAppAddConverter
 registers a the specified resource converter.
 .SH "SEE ALSO"
 XtConvert(3Xt),

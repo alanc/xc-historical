@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddTimeOut 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppAddTimeOut 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddTimeOut, XtRemoveTimeOut \- register and remove timeouts
 .SH SYNTAX
@@ -132,14 +131,14 @@ Specifies the procedure that is\*(Pr.
 Specifies the ID for the timeout request to be destroyed.
 .SH DESCRIPTION
 The
-.PN XtAppAddTimeOut
+.ZN XtAppAddTimeOut
 function creates a timeout and returns an identifier for it.
 The timeout value is set to interval.
 The callback procedure is called when the time interval elapses,
 and then the timeout is removed.
 .LP
 The
-.PN XtRemoveTimeOut
+.ZN XtRemoveTimeOut
 function removes the timeout.
 Note that timeouts are automatically removed once they trigger.
 .SH "SEE ALSO"

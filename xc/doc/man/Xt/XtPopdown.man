@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtPopdown 3Xt "1 September 1988" "X Version 11" 
+.TH XtPopdown 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtPopdown, XtCallbackPopdown, MenuPopdown \- unmap a pop-up
 .SH SYNTAX
@@ -123,7 +122,7 @@ Specifies the callback data,
 which is not used by this procedure.
 .IP \fIclient_data\fP 1i
 Specifies a pointer to the
-.PN XtPopdownID
+.ZN XtPopdownID
 structure.
 .ds Ps \ to pop down
 .IP \fIpopup_shell\fP 1i
@@ -135,14 +134,14 @@ Specifies the name of the widget shell to pop \*(Sn.
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtPopdown
+.ZN XtPopdown
 function performs the following:
 .IP \(bu 5
 Calls
-.PN XtCheckSubclass
-.\".PN XtCheckSubclass(popup_shell, popupShellWidgetClass)
+.ZN XtCheckSubclass
+.\".ZN XtCheckSubclass(popup_shell, popupShellWidgetClass)
 to ensure popup_shell is a subclass of
-.PN Shell .
+.ZN Shell .
 .IP \(bu 5
 Checks that popup_shell is currently popped_up;
 otherwise, it generates an error.
@@ -150,22 +149,22 @@ otherwise, it generates an error.
 Unmaps popup_shell's window.
 .IP \(bu 5
 If popup_shell's grab_kind is either
-.PN XtGrabNonexclusive
+.ZN XtGrabNonexclusive
 or
-.PN XtGrabExclusive ,
+.ZN XtGrabExclusive ,
 it calls
-.PN XtRemoveGrab .
-.\".PN XtRemoveGrab(popup_shell)
+.ZN XtRemoveGrab .
+.\".ZN XtRemoveGrab(popup_shell)
 .IP \(bu 5
 Sets pop-up shell's popped_up field to 
-.PN False .
+.ZN False .
 .IP \(bu 5
 Calls the callback procedures on the shell's popdown_callback list.
 .LP
 The
-.PN XtCallbackPopdown
+.ZN XtCallbackPopdown
 function casts the client data parameter to an
-.PN XtPopdownID
+.ZN XtPopdownID
 pointer:
 .LP
 .Ds 0
@@ -179,21 +178,21 @@ typedef struct {
 The shell_widget is the pop-up shell to pop down,
 and the enable_widget is the widget that was used to pop it up.
 .LP
-.PN XtCallbackPopdown
+.ZN XtCallbackPopdown
 calls
-.PN XtPopdown
+.ZN XtPopdown
 with the specified shell_widget 
 and then calls
-.PN XtSetSensitive
+.ZN XtSetSensitive
 to resensitize the enable_widget.
 .LP
 If a shell name is not given,
-.PN MenuPopdown
+.ZN MenuPopdown
 calls
-.PN XtPopdown
+.ZN XtPopdown
 with the widget for which the translation is specified.
 If a shell_name is specified in the translation table,
-.PN MenuPopdown
+.ZN MenuPopdown
 tries to find the shell by looking up the widget tree starting at the
 parent of the widget in which it is invoked.
 If it finds a shell with the specified name in the pop-up children 
@@ -201,7 +200,7 @@ of that parent,
 it pops down the shell; 
 otherwise, it moves up the parent chain as needed.
 If 
-.PN MenuPopdown 
+.ZN MenuPopdown 
 gets to the application top-level shell widget 
 and cannot find a matching shell, 
 it generates an error.

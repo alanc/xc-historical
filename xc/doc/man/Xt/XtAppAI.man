@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtAppAddInput 3Xt "1 September 1988" "X Version 11" 
+.TH XtAppAddInput 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtAppAddInput, XtRemoveInput \- register and remove an input source
 .SH SYNTAX
@@ -131,7 +130,7 @@ Specifies the mask that indicates a read, write, or exception condition
 or some operating system dependent condition.
 .IP \fIid\fP 1i
 Specifies the ID returned from the corresponding
-.PN XtAppAddInput
+.ZN XtAppAddInput
 call.
 .ds Pr \ to be called when input is available
 .IP \fIproc\fP 1i
@@ -141,12 +140,12 @@ Specifies the source file descriptor on a UNIX-based system
 or other operating system dependent device specification.
 .SH DESCRIPTION
 The
-.PN XtAppAddInput
+.ZN XtAppAddInput
 function registers with the \*(xI read routine a new source of events,
 which is usually file input but can also be file output.
 Note that file should be loosely interpreted to mean any sink 
 or source of data.
-.PN XtAppAddInput
+.ZN XtAppAddInput
 also specifies the conditions under which the source can generate events.
 When input is pending on this source,
 the callback procedure is called.
@@ -154,12 +153,12 @@ the callback procedure is called.
 The legal values for the condition argument are operating-system dependent.
 On a UNIX-based system,
 the condition is some union of
-.PN XtInputReadMask ,
-.PN XtInputWriteMask ,
+.ZN XtInputReadMask ,
+.ZN XtInputWriteMask ,
 and
-.PN XtInputExceptMask .
+.ZN XtInputExceptMask .
 The
-.PN XtRemoveInput
+.ZN XtRemoveInput
 function causes the \*(xI read routine to stop watching for input
 from the input source.
 .SH "SEE ALSO"

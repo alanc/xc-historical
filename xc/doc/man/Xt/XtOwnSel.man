@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtOwnSelection 3Xt "1 September 1988" "X Version 11" 
+.TH XtOwnSelection 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtOwnSelection, XtDisownSelection \
-\- set selection owner
+XtOwnSelection, XtDisownSelection \- set selection owner
 .SH SYNTAX
 Boolean XtOwnSelection(\fIw\fP, \fIselection\fP, \fItime\fP, \
 \fIconvert_proc\fP, \fIlose_selection\fP, \fIdone_proc\fP)
@@ -139,10 +137,10 @@ lost selection ownership or NULL if the owner is not interested in being
 called back.
 .IP \fIselection\fP 1i
 Specifies an atom that describes the type of the selection (for example,
-.PN XA_PRIMARY , 
-.PN XA_SECONDARY , 
+.ZN XA_PRIMARY , 
+.ZN XA_SECONDARY , 
 or
-.PN XA_CLIPBOARD ).
+.ZN XA_CLIPBOARD ).
 .ds Ti ownership should commence or is to be relinquished
 .IP \fItime\fP 1i
 Specifies the timestamp that indicates when the selection \*(Ti.
@@ -151,13 +149,13 @@ Specifies the timestamp that indicates when the selection \*(Ti.
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 The
-.PN XtOwnSelection
+.ZN XtOwnSelection
 function informs the \*(xI selection mechanism that a
 widget believes it owns a selection.
 It returns 
-.PN True 
+.ZN True 
 if the widget has successfully become the owner and 
-.PN False
+.ZN False
 otherwise.
 The widget may fail to become the owner if some other widget 
 has asserted ownership at a time later than this widget.
@@ -168,24 +166,24 @@ Also note that the lose_selection procedure is not called
 if the widget fails to obtain selection ownership in the first place.
 .LP
 The
-.PN XtDisownSelection
+.ZN XtDisownSelection
 function informs the \*(xI selection mechanism that
 the specified widget is to lose ownership of the selection.
 If the widget does not currently own the selection either 
 because it lost the selection 
 or because it never had the selection to begin with,
-.PN XtDisownSelection
+.ZN XtDisownSelection
 does nothing.
 .LP
 After a widget has called
-.PN XtDisownSelection ,
+.ZN XtDisownSelection ,
 its convert procedure is not called even if a request arrives later 
 with a timestamp during the period that this widget owned the selection.
 However, its done procedure will be called if a conversion that started 
 before the call to
-.PN XtDisownSelection
+.ZN XtDisownSelection
 finishes after the call to
-.PN XtDisownSelection .
+.ZN XtDisownSelection .
 .SH "SEE ALSO"
 XtAppGetSelectionTimeout(3Xt),
 XtGetSelectionValue(3Xt)

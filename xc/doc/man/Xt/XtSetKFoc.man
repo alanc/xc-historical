@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,7 +97,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtSetKeyboardFocus 3Xt "1 September 1988" "X Version 11" 
+.TH XtSetKeyboardFocus 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
 XtSetKeyboardFocus \- focus events on a child widget
 .SH SYNTAX
@@ -109,22 +108,22 @@ XtSetKeyboardFocus(\fIsubtree\fP\, \fIdescendant\fP)
 .IP \fIdescendant\fP 1i
 Specifies either the widget in the subtree structure which is to receive the 
 keyboard event, or 
-.PN None .
+.ZN None .
 Note that it is not an error to specify
-.PN None
+.ZN None
 when no input focus was previously set.
 .ds Wi for which the keyboard focus is to be set
 .IP \fIw\fP 1i
 Specifies the widget \*(Wi.
 .SH DESCRIPTION
 If a future 
-.PN KeyPress
+.ZN KeyPress
 or
-.PN KeyRelease 
+.ZN KeyRelease 
 event occurs within the specified subtree,
-.PN XtSetKeyboardFocus
+.ZN XtSetKeyboardFocus
 causes
-.PN XtDispatchEvent
+.ZN XtDispatchEvent
 to remap and send the event to the specified descendant widget.
 .LP
 When there is no modal cascade,
@@ -141,20 +140,20 @@ and the pointer is within W.
 When there is a modal cascade,
 a widget W receives keyboard events if an ancestor of W is in the active
 subset of the modal cascade and one or more of the previous conditions is
-.PN True .
+.ZN True .
 .LP
 When subtree or one of its descendants acquires the X input focus
 or the pointer moves into the subtree such that keyboard events would
 now be delivered to subtree, a
-.PN FocusIn
+.ZN FocusIn
 event is generated for the descendant if
-.PN FocusNotify
+.ZN FocusNotify
 events have been selected by the descendant.
 Similarly, when W loses the X input focus
 or the keyboard focus for one of its ancestors, a
-.PN FocusOut
+.ZN FocusOut
 event is generated for descendant if
-.PN FocusNotify
+.ZN FocusNotify
 events have been selected by the descendant.
 .SH "SEE ALSO"
 XtCallAcceptFocus(3Xt)

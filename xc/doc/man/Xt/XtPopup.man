@@ -38,7 +38,6 @@
 .LP
 ..
 .de IN		\" send an index entry to the stderr
-.tm \\n%:\\$1:\\$2:\\$3
 ..
 .de C{
 .KS
@@ -67,7 +66,7 @@
 .ie t \\$1\fB\^\\$2\^\fR\\$3
 .el \\$1\fI\^\\$2\^\fP\\$3
 ..
-.de PN
+.de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
@@ -98,10 +97,9 @@
 .el .sp 10p
 ..
 .ny0
-.TH XtPopup 3Xt "1 September 1988" "X Version 11" 
+.TH XtPopup 3Xt "Release 5" "X Version 11" "XT FUNCTIONS"
 .SH NAME
-XtPopup, XtCallbackNone, XtCallbackNonexclusive, XtCallbackExclusive, \
-MenuPopup \- map a pop-up
+XtPopup, XtCallbackNone, XtCallbackNonexclusive, XtCallbackExclusive, MenuPopup \- map a pop-up
 .SH SYNTAX
 void XtPopup(\fIpopup_shell\fP, \fIgrab_kind\fP)
 .br
@@ -150,34 +148,34 @@ Specifies the widget shell\*(Ps.
 Specifies the widget.
 .SH DESCRIPTION
 The
-.PN XtPopup
+.ZN XtPopup
 function performs the following:
 .IP \(bu 5
 Calls
-.PN XtCheckSubclass
-.\".PN XtCheckSubclass(popup_shell, popupShellWidgetClass)
+.ZN XtCheckSubclass
+.\".ZN XtCheckSubclass(popup_shell, popupShellWidgetClass)
 to ensure popup_shell is a subclass of
-.PN Shell .
+.ZN Shell .
 .IP \(bu 5
 Generates an error if the shell's popped_up field is already 
-.PN True .
+.ZN True .
 .IP \(bu 5
 Calls the callback procedures on the shell's popup_callback list.
 .IP \(bu 5
 Sets the shell popped_up field to 
-.PN True ,
+.ZN True ,
 the shell spring_loaded field to 
-.PN False ,
+.ZN False ,
 and the shell grab_kind field from grab_kind.
 .IP \(bu 5
 If the shell's create_popup_child field is non-NULL,
-.PN XtPopup
+.ZN XtPopup
 calls it with popup_shell as the parameter.
 .IP \(bu 5
 If grab_kind is either
-.PN XtGrabNonexclusive
+.ZN XtGrabNonexclusive
 or
-.PN XtGrabExclusive ,
+.ZN XtGrabExclusive ,
 it calls:
 .LP
 .Ds
@@ -185,86 +183,86 @@ XtAddGrab(popup_shell, (grab_kind == XtGrabExclusive), False)
 .De
 .IP \(bu 5
 Calls
-.PN XtRealizeWidget 
+.ZN XtRealizeWidget 
 with popup_shell specified.
 .IP \(bu 5
 Calls
-.PN XMapWindow 
+.ZN XMapWindow 
 with popup_shell specified.
 .LP
 The
-.PN XtCallbackNone ,
-.PN XtCallbackNonexclusive ,
+.ZN XtCallbackNone ,
+.ZN XtCallbackNonexclusive ,
 and
-.PN XtCallbackExclusive
+.ZN XtCallbackExclusive
 functions call
-.PN XtPopup
+.ZN XtPopup
 with the shell specified by the client data argument
 and grab_kind set as the name specifies.
-.PN XtCallbackNone ,
-.PN XtCallbackNonexclusive ,
+.ZN XtCallbackNone ,
+.ZN XtCallbackNonexclusive ,
 and
-.PN XtCallbackExclusive
+.ZN XtCallbackExclusive
 specify
-.PN XtGrabNone ,
-.PN XtGrabNonexclusive ,
+.ZN XtGrabNone ,
+.ZN XtGrabNonexclusive ,
 and
-.PN XtGrabExclusive ,
+.ZN XtGrabExclusive ,
 respectively.
 Each function then sets the widget that executed the callback list 
 to be insensitive by using
-.PN XtSetSensitive .
+.ZN XtSetSensitive .
 Using these functions in callbacks is not required.
 In particular,
 an application must provide customized code for
 callbacks that create pop-up shells dynamically or that must do more than
 desensitizing the button.
 .LP
-.PN MenuPopup
+.ZN MenuPopup
 is known to the translation manager,
 which must perform special actions for spring-loaded pop-ups.
 Calls to
-.PN MenuPopup
+.ZN MenuPopup
 in a translation specification are mapped into calls to a
 nonexported action procedure,
 and the translation manager fills in parameters
 based on the event specified on the left-hand side of a translation.
 .LP
 If
-.PN MenuPopup
+.ZN MenuPopup
 is invoked on
-.PN ButtonPress
+.ZN ButtonPress
 (possibly with modifiers),
 the translation manager pops up the shell with grab_kind set to
-.PN XtGrabExclusive
+.ZN XtGrabExclusive
 and spring_loaded set to 
-.PN True .
+.ZN True .
 If
-.PN MenuPopup
+.ZN MenuPopup
 is invoked on
-.PN EnterWindow
+.ZN EnterWindow
 (possibly with modifiers),
 the translation manager pops up the shell with grab_kind set to
-.PN XtGrabNonexclusive
+.ZN XtGrabNonexclusive
 and spring_loaded set to 
-.PN False .
+.ZN False .
 Otherwise, the translation manager generates an error.
 When the widget is popped up,
 the following actions occur:
 .IP \(bu 5
 Calls
-.PN XtCheckSubclass
-.\".PN XtCheckSubclass(popup_shell, popupShellWidgetClass)
+.ZN XtCheckSubclass
+.\".ZN XtCheckSubclass(popup_shell, popupShellWidgetClass)
 to ensure popup_shell is a subclass of
-.PN Shell .
+.ZN Shell .
 .IP \(bu 5
 Generates an error if the shell's popped_up field is already 
-.PN True .
+.ZN True .
 .IP \(bu 5
 Calls the callback procedures on the shell's popup_callback list.
 .IP \(bu 5
 Sets the shell popped_up field to 
-.PN True
+.ZN True
 and the shell grab_kind and spring_loaded fields appropriately.
 .IP \(bu 5
 If the shell's create_popup_child field is non-NULL,
@@ -277,23 +275,23 @@ XtAddGrab(popup_shell, (grab_kind == XtGrabExclusive), spring_loaded)
 .De
 .IP \(bu 5
 Calls
-.PN XtRealizeWidget 
+.ZN XtRealizeWidget 
 with popup_shell specified.
 .IP \(bu 5
 Calls
-.PN XMapWindow 
+.ZN XMapWindow 
 with popup_shell specified.
 .LP
 (Note that these actions are the same as those for
-.PN XtPopup .)
-.PN MenuPopup
+.ZN XtPopup .)
+.ZN MenuPopup
 tries to find the shell by searching the widget tree starting at
 the parent of the widget in which it is invoked.
 If it finds a shell with the specified name in the pop-up children of
 that parent, it pops up the shell with the appropriate parameters.
 Otherwise, it moves up the parent chain as needed.
 If
-.PN MenuPopup
+.ZN MenuPopup
 gets to the application widget and cannot find a matching shell,
 it generates an error.
 .SH "SEE ALSO"
