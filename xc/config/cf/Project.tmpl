@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.166 93/07/27 13:08:55 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.167 93/07/28 19:03:28 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -189,18 +189,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.166 93/07/27 13:08:55 rws Exp $
 #endif
 #ifndef HasXdmAuth
 #define HasXdmAuth		NO	/* if you can not use XDM-AUTH* */
-#endif
-#ifndef BDFTOSNFFILT
-#define BDFTOSNFFILT -DBDFTOSNFFILT=\"$(BINDIR)/bdftosnf\"
-#endif
-#ifndef SHELLPATH
-#define SHELLPATH -DSHELLPATH=\"/bin/sh\"
-#endif
-#ifndef ZBDFTOSNFFILT
-#define ZBDFTOSNFFILT -DZBDFTOSNFFILT=\"UNCOMPRESSPATH" | $(BINDIR)/bdftosnf $(FONTCFLAGS)\""
-#endif
-#ifndef FontFilters
-#define FontFilters BDFTOSNFFILT SHELLPATH ZBDFTOSNFFILT
 #endif
 #ifndef PrimaryScreenResolution
 #define PrimaryScreenResolution 72		/* a common resolution */
@@ -557,19 +545,11 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 
 #ifdef UseInstalled
               RGB = rgb			/* assume BINDIR in path */
-#ifdef SnfFonts
-            FONTC = bdftosnf		/* assume BINDIR in path */
-#else
             FONTC = bdftopcf		/* assume BINDIR in path */
-#endif
         MKFONTDIR = mkfontdir		/* assume BINDIR in path */
 #else
               RGB = $(RGBSRC)/rgb
-#ifdef SnfFonts
-            FONTC = $(BDFTOSNFSRC)/bdftosnf
-#else
             FONTC = $(BDFTOPCFSRC)/bdftopcf
-#endif
         MKFONTDIR = $(MKFONTDIRSRC)/mkfontdir
 #endif
 
@@ -591,11 +571,7 @@ XCOMM X Window System make variables; these need to be coordinated with rules
        AWIDGETSRC = $(LIBSRC)/Xaw
        OLDXLIBSRC = $(LIBSRC)/oldX
       XDMCPLIBSRC = $(LIBSRC)/Xdmcp
-#ifdef SnfFonts
-      BDFTOSNFSRC = $(FONTSRC)/clients/bdftosnf
-#else
       BDFTOPCFSRC = $(FONTSRC)/clients/bdftopcf
-#endif
      MKFONTDIRSRC = $(FONTSRC)/clients/mkfontdir
          FSLIBSRC = $(FONTSRC)/lib/fs
     FONTSERVERSRC = $(FONTSRC)/server
@@ -799,11 +775,7 @@ install::  fonts.alias							@@\
 #endif
 
 #ifndef FontBaseObj
-#ifdef SnfFonts
-#define FontBaseObj(basename)basename.snf
-#else
 #define FontBaseObj(basename)basename.pcf
-#endif
 #endif
 
 /*
@@ -820,15 +792,9 @@ install::  fonts.scale							@@\
  * UncompressedFontTarget
  */
 #ifndef UncompressedFontTarget
-#ifdef SnfFonts
-#define UncompressedFontTarget(basename)				@@\
-FontBaseObj(basename):  FontSrc(basename)				@@\
-	$(FONTC) $(FONTCFLAGS) $? >$@
-#else
 #define UncompressedFontTarget(basename)				@@\
 FontBaseObj(basename):  FontSrc(basename)				@@\
 	$(FONTC) $(FONTCFLAGS) $? -o $@
-#endif
 #endif /* CompressedFontTarget */
 
 /*
