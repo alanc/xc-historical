@@ -21,9 +21,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: midash.c,v 1.7 87/09/10 09:48:55 rws Exp $ */
+/* $Header: midash.c,v 1.8 88/02/02 18:20:06 rws Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
+#include "mifpoly.h"
 
 static miDashPtr CheckDashStorage();
 
@@ -49,6 +50,9 @@ and nseg == 3.
 
 NOTE:
     EVEN_DASH == ~ODD_DASH
+
+NOTE ALSO:
+    miDashLines may return 0 segments, going from pt[0] to pt[0] with one dash.
 */
 
 miDashPtr
@@ -72,7 +76,7 @@ int *pnseg;
 
     int x, y, len;
     int adx, ady, signdx, signdy;
-    int du, dv, e1, e2, e;
+    int du, dv, e1, e2, e, base_e = 0;
 
     lenCur = offset;
     which = EVEN_DASH;
@@ -87,9 +91,12 @@ int *pnseg;
     lenMax = pDash[iDash];
 
     psegBase = (miDashPtr)NULL;
+    pt2 = ppt[0];		/* just in case there is only one point */
 
     while(--npt)
     {
+	if (PtEqual(ppt[0], ppt[1]))
+	    continue;		/* no duplicated points in polyline */
 	pt1 = *ppt++;
 	pt2 = *ppt;
 
@@ -124,7 +131,7 @@ int *pnseg;
 	pseg->pt = pt1;
 	pseg->e1 = e1;
 	pseg->e2 = e2;
-	pseg->e = e;
+	base_e = pseg->e = e;
 	pseg->which = which;
 	pseg->newLine = 1;
 
@@ -164,7 +171,7 @@ int *pnseg;
 	    }
 
 	    lenCur++;
-	    if (lenCur >= lenMax)
+	    if (lenCur >= lenMax && (len || npt <= 1))
 	    {
 		nseg++;
 		pseg = CheckDashStorage(&psegBase, nseg, &nsegMax);
@@ -187,9 +194,17 @@ int *pnseg;
 	} /* while len-- */
     } /* while --npt */
 
+    if (lenCur == 0 && nseg != 0)
+    {
+	nseg--;
+	which = ~which;
+    }
     *pnseg = nseg;
     pseg = CheckDashStorage(&psegBase, nseg+1, &nsegMax);
     pseg->pt = pt2;
+    pseg->e = base_e;
+    pseg->which = which;
+    pseg->newLine = 0;
     return psegBase;
 } 
 
