@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#endif
 
 #include "list.h"
 
