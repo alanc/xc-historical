@@ -91,7 +91,7 @@
 ;;; indent calls to the function or macro containing the declaration.  
 
 #+genera
-(import 'zwei:indentation)
+(import '(zwei:indentation))
 
 #-genera
 (proclaim '(declaration indentation))
@@ -457,10 +457,7 @@
 				     #'(lambda (slot-name slot-initform slot-type)
 					 `(,slot-name
 					   :initform ,slot-initform :type ,slot-type
-					   :accessor ,(cintern 
-							(symbol-name name)
-							'-
-							(symbol-name slot-name))
+					   :accessor ,(cintern name '- slot-name)
 					   ,@(when (and constructor
 							(or (eq constructor-args t)
 							    (member slot-name
