@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.42 91/05/30 15:04:25 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.43 91/05/31 14:48:32 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -691,6 +691,7 @@ Value	Name					Reference
 8	Metro Link Inc.				[79]
 9	Stardent Computer			[80]
 10	Sony Microsystems			[81]
+11	Digital Equipment Corp.			[82]
 
 
 REFERENCES
@@ -1067,3 +1068,9 @@ REFERENCES
 	Sony Microsystems
 	651 River Oaks Parkway
 	San Jose, CA 95134
+
+[82]	Dick Coulter
+	MLO1-2/U2
+	Digital Equipment Corp.
+	146 Main St.
+	Maynard, MA  01754
