@@ -141,7 +141,10 @@ Editres.Geometry:			500x600
 	:<Key>N:		Relabel(name) \n\
 	:<Key>C:		Relabel(class) \n\
 	:<Key>I:		Relabel(id) \n\
-	:<Key>W:		Relabel(window) 
+	:<Key>W:		Relabel(window) \n\
+	<Btn2Down>,<Btn2Up>:	Select(nothing) toggle() notify() \n\
+	<Btn3Down>,<Btn3Up>:	Select(nothing) toggle() notify() Select(descendants)
+
 
 ! For the SetValues popup
 
