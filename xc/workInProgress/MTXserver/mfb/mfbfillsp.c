@@ -43,7 +43,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 1.2 93/12/29 16:37:29 rob Exp $ */
+/* $XConsortium: mfbfillsp.c,v 1.3 94/01/11 20:48:53 rob Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -151,7 +151,7 @@ mfbBlackSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -232,7 +232,7 @@ mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -243,7 +243,7 @@ mfbWhiteSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ |= startmask;
-		Duff (nlmiddle, *addrl++ = 0xffffffff);
+		Duff (nlmiddle, *addrl++ = ~0);
 		if (endmask)
 		    *addrl |= endmask;
 	    }
@@ -313,7 +313,7 @@ mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 	if (*pwidth)
 	{
-	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
 	    {
 		/* all bits inside same longword */
 		maskpartialbits(ppt->x, *pwidth, startmask);
@@ -324,7 +324,7 @@ mfbInvertSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
 		if (startmask)
 		    *addrl++ ^= startmask;
-		Duff (nlmiddle, *addrl++ ^= 0xffffffff);
+		Duff (nlmiddle, *addrl++ ^= ~0);
 		if (endmask)
 		    *addrl ^= endmask;
 	    }
@@ -401,7 +401,7 @@ mfbWhiteStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl |= (src & startmask);
@@ -487,7 +487,7 @@ mfbBlackStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl &= ~(src & startmask);
@@ -573,7 +573,7 @@ mfbInvertStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	src = psrc[ppt->y % tileHeight];
 
         /* all bits inside same longword */
-        if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+        if ( ((ppt->x & PIM) + *pwidth) < PPW)
         {
 	    maskpartialbits(ppt->x, *pwidth, startmask);
 	    *addrl ^= (src & startmask);
@@ -595,15 +595,15 @@ mfbInvertStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 
-/* this works with tiles of width == 32 */
-#define FILLSPAN32(ROP) \
+/* this works with tiles of width == PPW */
+#define FILLSPANPPW(ROP) \
     while (n--) \
     { \
 	if (*pwidth) \
 	{ \
             addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth); \
 	    src = psrc[ppt->y % tileHeight]; \
-            if ( ((ppt->x & 0x1f) + *pwidth) < 32) \
+            if ( ((ppt->x & PIM) + *pwidth) < PPW) \
             { \
 	        maskpartialbits(ppt->x, *pwidth, startmask); \
 	        *addrl = (*addrl & ~startmask) | \
@@ -715,7 +715,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    	{
             	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight] ^ flip;
-            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
             	    {
 	            	maskpartialbits(ppt->x, *pwidth, startmask);
 			*addrl = DoMaskCopyRop (src, *addrl, startmask);
@@ -753,7 +753,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    	{
             	    addrl = mfbScanline(addrlBase, ppt->x, ppt->y, nlwidth);
 	    	    src = psrc[ppt->y % tileHeight];
-            	    if ( ((ppt->x & 0x1f) + *pwidth) < 32)
+            	    if ( ((ppt->x & PIM) + *pwidth) < PPW)
             	    {
 	            	maskpartialbits(ppt->x, *pwidth, startmask);
 			*addrl = DoMaskMergeRop (src, *addrl, startmask);
@@ -786,7 +786,7 @@ mfbTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 
-/* Fill spans with tiles that aren't 32 bits wide */
+/* Fill spans with tiles that aren't PPW bits wide */
 void
 mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
@@ -844,13 +844,13 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     if (pGC->fillStyle == FillTiled)
     {
 	pTile = pGC->tile.pixmap;
-	tlwidth = pTile->devKind >> 2;
+	tlwidth = pTile->devKind / PGSZB;
 	rop = pGC->alu;
     }
     else
     {
 	pTile = pGC->stipple;
-	tlwidth = pTile->devKind >> 2;
+	tlwidth = pTile->devKind / PGSZB;
 	rop = devPriv->ropOpStip;
     }
 
@@ -894,14 +894,14 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
-		    getandputrop((psrc+endinc), (rem&0x1f), (x & 0x1f), w, pdst, rop);
-		    if((x & 0x1f) + w >= 0x20)
+		    getandputrop((psrc+endinc), (rem&PIM), (x & PIM), w, pdst, rop);
+		    if((x & PIM) + w >= PPW)
 			pdst++;
 		}
-		else if(((x & 0x1f) + w) < 32)
+		else if(((x & PIM) + w) < PPW)
 		{
-		    /* doing < 32 bits is easy, and worth special-casing */
-		    putbitsrop(*psrc, x & 0x1f, w, pdst, rop);
+		    /* doing < PPW bits is easy, and worth special-casing */
+		    putbitsrop(*psrc, x & PIM, w, pdst, rop);
 		}
 		else
 		{
@@ -911,19 +911,19 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
-		        nstart = 32 - (x & 0x1f);
+		        nstart = PPW - (x & PIM);
 	            else
 		        nstart = 0;
 	            if (endmask)
-	                nend = (x + w)  & 0x1f;
+	                nend = (x + w)  & PIM;
 	            else
 		        nend = 0;
 
-	            srcStartOver = nstart > 31;
+	            srcStartOver = nstart > PLST;
 
 		    if(startmask)
 		    {
-			putbitsrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+			putbitsrop(*psrc, (x & PIM), nstart, pdst, rop);
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -931,7 +931,7 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     
 		    while(nlMiddle--)
 		    {
-			    getandputrop0(psrc, nstart, 32, pdst, rop);
+			    getandputrop0(psrc, nstart, PPW, pdst, rop);
 			    pdst++;
 			    psrc++;
 		    }
@@ -952,7 +952,7 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 }
 
 
-/* Fill spans with stipples that aren't 32 bits wide */
+/* Fill spans with stipples that aren't PPW bits wide */
 void
 mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
@@ -1010,7 +1010,7 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     pTile = pGC->stipple;
     rop = devPriv->rop;
-    tlwidth = pTile->devKind >> 2;
+    tlwidth = pTile->devKind / PGSZB;
     xSrc = pDrawable->x;
     ySrc = pDrawable->y;
     mfbGetPixelWidthAndPointer(pDrawable, nlwidth, addrlBase);
@@ -1049,16 +1049,16 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    */
 		    w = min(min(tileWidth - rem, width), BITMAP_SCANLINE_UNIT);
 		    endinc = rem / BITMAP_SCANLINE_UNIT;
-		    getandputrrop((psrc + endinc), (rem & 0x1f), (x & 0x1f),
+		    getandputrrop((psrc + endinc), (rem & PIM), (x & PIM),
 				 w, pdst, rop)
-		    if((x & 0x1f) + w >= 0x20)
+		    if((x & PIM) + w >= PPW)
 			pdst++;
 		}
 
-		else if(((x & 0x1f) + w) < 32)
+		else if(((x & PIM) + w) < PPW)
 		{
-		    /* doing < 32 bits is easy, and worth special-casing */
-		    putbitsrrop(*psrc, x & 0x1f, w, pdst, rop);
+		    /* doing < PPW bits is easy, and worth special-casing */
+		    putbitsrrop(*psrc, x & PIM, w, pdst, rop);
 		}
 		else
 		{
@@ -1068,19 +1068,19 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    maskbits(x, w, startmask, endmask, nlMiddle);
 
 	            if (startmask)
-		        nstart = 32 - (x & 0x1f);
+		        nstart = PPW - (x & PIM);
 	            else
 		        nstart = 0;
 	            if (endmask)
-	                nend = (x + w)  & 0x1f;
+	                nend = (x + w)  & PIM;
 	            else
 		        nend = 0;
 
-	            srcStartOver = nstart > 31;
+	            srcStartOver = nstart > PLST;
 
 		    if(startmask)
 		    {
-			putbitsrrop(*psrc, (x & 0x1f), nstart, pdst, rop);
+			putbitsrrop(*psrc, (x & PIM), nstart, pdst, rop);
 			pdst++;
 			if(srcStartOver)
 			    psrc++;
@@ -1088,7 +1088,7 @@ mfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		     
 		    while(nlMiddle--)
 		    {
-			    getandputrrop0(psrc, nstart, 32, pdst, rop);
+			    getandputrrop0(psrc, nstart, PPW, pdst, rop);
 			    pdst++;
 			    psrc++;
 		    }
