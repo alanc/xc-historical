@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.31 94/08/03 13:09:03 dpw Exp rws $
+ * $XConsortium: xdpyinfo.c,v 1.32 94/09/24 20:15:12 rws Exp dpw $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -36,6 +36,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/extensions/XIElib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/sync.h>
+#include <X11/extensions/Xdbe.h>
 #ifdef MITSHM
 #include <X11/extensions/XShm.h>
 #endif
@@ -45,64 +46,45 @@ in this Software without prior written authorization from the X Consortium.
 char *ProgramName;
 Bool queryExtensions = False;
 
-static void usage ()
+static int StrCmp(a, b)
+    char **a, **b;
 {
-    fprintf (stderr, "usage:  %s [options]\n", ProgramName);
-    fprintf (stderr, "-display displayname\tserver to query\n");
-    fprintf (stderr, "-queryExtensions\tprint info returned by XQueryExtension\n");
-    fprintf (stderr, "-ext all\t\tprint detailed info for all supported extensions\n");
-    fprintf (stderr, "-ext extension-name\tprint detailed info for extension-name if one of:\n     ");
-    print_known_extensions(stderr);
-    fprintf (stderr, "\n");
-    exit (1);
+    return strcmp(*a, *b);
 }
 
-main (argc, argv)
-    int argc;
-    char *argv[];
+void
+print_extension_info (dpy)
+    Display *dpy;
 {
-    Display *dpy;			/* X connection */
-    char *displayname = NULL;		/* server to contact */
-    int i;				/* temp variable:  iterator */
-    Bool multibuf = False;
-    int mbuf_event_base, mbuf_error_base;
+    int n = 0;
+    char **extlist = XListExtensions (dpy, &n);
 
-    ProgramName = argv[0];
+    printf ("number of extensions:    %d\n", n);
 
-    for (i = 1; i < argc; i++) {
-	char *arg = argv[i];
-	int len = strlen(arg);
-	
-	if (!strncmp("-display", arg, len)) {
-	    if (++i >= argc) usage ();
-	    displayname = argv[i];
-	} else if (!strncmp("-queryExtensions", arg, len)) {
-	    queryExtensions = True;
-	} else if (!strncmp("-ext", arg, len)) {
-	    if (++i >= argc) usage ();
-	    mark_extension_for_printing(argv[i]);
-	} else
-	    usage ();
+    if (extlist) {
+	register int i;
+	int opcode, event, error;
+
+	qsort(extlist, n, sizeof(char *), StrCmp);
+	for (i = 0; i < n; i++) {
+	    if (!queryExtensions) {
+		printf ("    %s\n", extlist[i]);
+		continue;
+	    }
+	    XQueryExtension(dpy, extlist[i], &opcode, &event, &error);
+	    printf ("    %s  (opcode: %d", extlist[i], opcode);
+	    if (event)
+		printf (", base event: %d", event);
+	    if (error)
+		printf (", base error: %d", error);
+	    printf(")\n");
+	}
+	/* do not free, Xlib can depend on contents being unaltered */
+	/* XFreeExtensionList (extlist); */
     }
-
-    dpy = XOpenDisplay (displayname);
-    if (!dpy) {
-	fprintf (stderr, "%s:  unable to open display \"%s\".\n",
-		 ProgramName, XDisplayName (displayname));
-	exit (1);
-    }
-
-    print_display_info (dpy);
-    for (i = 0; i < ScreenCount (dpy); i++) {
-	print_screen_info (dpy, i);
-    }
-
-    print_marked_extensions(dpy);
-
-    XCloseDisplay (dpy);
-    exit (0);
 }
 
+void
 print_display_info (dpy)
     Display *dpy;
 {
@@ -198,48 +180,46 @@ print_display_info (dpy)
 
     printf ("default screen number:    %d\n", DefaultScreen (dpy));
     printf ("number of screens:    %d\n", ScreenCount (dpy));
-
-    return;
 }
 
-static int StrCmp(a, b)
-    char **a, **b;
+void
+print_visual_info (vip)
+    XVisualInfo *vip;
 {
-    return strcmp(*a, *b);
-}
+    char errorbuf[40];			/* for sprintfing into */
+    char *class = NULL;			/* for printing */
 
-print_extension_info (dpy)
-    Display *dpy;
-{
-    int n = 0;
-    char **extlist = XListExtensions (dpy, &n);
-
-    printf ("number of extensions:    %d\n", n);
-
-    if (extlist) {
-	register int i;
-	int opcode, event, error;
-
-	qsort(extlist, n, sizeof(char *), StrCmp);
-	for (i = 0; i < n; i++) {
-	    if (!queryExtensions) {
-		printf ("    %s\n", extlist[i]);
-		continue;
-	    }
-	    XQueryExtension(dpy, extlist[i], &opcode, &event, &error);
-	    printf ("    %s  (opcode: %d", extlist[i], opcode);
-	    if (event)
-		printf (", base event: %d", event);
-	    if (error)
-		printf (", base error: %d", error);
-	    printf(")\n");
-	}
-	/* do not free, Xlib can depend on contents being unaltered */
-	/* XFreeExtensionList (extlist); */
+    switch (vip->class) {
+      case StaticGray:    class = "StaticGray"; break;
+      case GrayScale:    class = "GrayScale"; break;
+      case StaticColor:    class = "StaticColor"; break;
+      case PseudoColor:    class = "PseudoColor"; break;
+      case TrueColor:    class = "TrueColor"; break;
+      case DirectColor:    class = "DirectColor"; break;
+      default:    
+	sprintf (errorbuf, "unknown class %d", vip->class);
+	class = errorbuf;
+	break;
     }
-    return;
+
+    printf ("  visual:\n");
+    printf ("    visual id:    0x%lx\n", vip->visualid);
+    printf ("    class:    %s\n", class);
+    printf ("    depth:    %d plane%s\n", vip->depth, 
+	    vip->depth == 1 ? "" : "s");
+    if (vip->class == TrueColor || vip->class == DirectColor)
+	printf ("    available colormap entries:    %d per subfield\n",
+		vip->colormap_size);
+    else
+	printf ("    available colormap entries:    %d\n",
+		vip->colormap_size);
+    printf ("    red, green, blue masks:    0x%lx, 0x%lx, 0x%lx\n",
+	    vip->red_mask, vip->green_mask, vip->blue_mask);
+    printf ("    significant bits in color specification:    %d bits\n",
+	    vip->bits_per_rgb);
 }
 
+void
 print_screen_info (dpy, scr)
     Display *dpy;
     int scr;
@@ -323,47 +303,6 @@ print_screen_info (dpy, scr)
 	print_visual_info (vip+i);
     }
     if (vip) XFree ((char *) vip);
-
-    return;
-}
-
-
-print_visual_info (vip)
-    XVisualInfo *vip;
-{
-    char errorbuf[40];			/* for sprintfing into */
-    char *class = NULL;			/* for printing */
-
-    switch (vip->class) {
-      case StaticGray:    class = "StaticGray"; break;
-      case GrayScale:    class = "GrayScale"; break;
-      case StaticColor:    class = "StaticColor"; break;
-      case PseudoColor:    class = "PseudoColor"; break;
-      case TrueColor:    class = "TrueColor"; break;
-      case DirectColor:    class = "DirectColor"; break;
-      default:    
-	sprintf (errorbuf, "unknown class %d", vip->class);
-	class = errorbuf;
-	break;
-    }
-
-    printf ("  visual:\n");
-    printf ("    visual id:    0x%lx\n", vip->visualid);
-    printf ("    class:    %s\n", class);
-    printf ("    depth:    %d plane%s\n", vip->depth, 
-	    vip->depth == 1 ? "" : "s");
-    if (vip->class == TrueColor || vip->class == DirectColor)
-	printf ("    available colormap entries:    %d per subfield\n",
-		vip->colormap_size);
-    else
-	printf ("    available colormap entries:    %d\n",
-		vip->colormap_size);
-    printf ("    red, green, blue masks:    0x%lx, 0x%lx, 0x%lx\n",
-	    vip->red_mask, vip->green_mask, vip->blue_mask);
-    printf ("    significant bits in color specification:    %d bits\n",
-	    vip->bits_per_rgb);
-
-    return;
 }
 
 /*
@@ -440,6 +379,7 @@ int print_event_mask (buf, lastcol, indent, mask)
     return (bitsfound);
 }
 
+void
 print_standard_extension_info(dpy, extname, majorrev, minorrev)
     Display *dpy;
     char *extname;
@@ -447,7 +387,7 @@ print_standard_extension_info(dpy, extname, majorrev, minorrev)
 {
     int opcode, event, error;
 
-    printf("%s %d.%d ", extname, majorrev, minorrev);
+    printf("%s version %d.%d ", extname, majorrev, minorrev);
 
     XQueryExtension(dpy, extname, &opcode, &event, &error);
     printf ("opcode: %d", opcode);
@@ -458,6 +398,7 @@ print_standard_extension_info(dpy, extname, majorrev, minorrev)
     printf("\n");
 }
 
+int
 print_multibuf_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -520,6 +461,7 @@ char *group_names[] = { /* 0  */ "Default",
 			    /* 24 */ "WhiteAdjust"
 			    };
 
+int
 print_xie_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -566,6 +508,7 @@ print_xie_info(dpy, extname)
     return 1;
 } /* end print_xie_info */
 
+int
 print_xtest_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -578,6 +521,7 @@ print_xtest_info(dpy, extname)
     return 1;
 }
 
+int
 print_sync_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -603,6 +547,7 @@ print_sync_info(dpy, extname)
     return 1;
 }
 
+int
 print_shape_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -616,6 +561,7 @@ print_shape_info(dpy, extname)
 }
 
 #ifdef MITSHM
+int
 print_mitshm_info(dpy, extname)
     Display *dpy;
     char *extname;
@@ -639,6 +585,36 @@ print_mitshm_info(dpy, extname)
     return 1;
 }
 #endif /* MITSHM */
+
+int
+print_dbe_info(dpy, extname)
+    Display *dpy;
+    char *extname;
+{
+    int majorrev, minorrev;
+    XdbeScreenVisualInfo *svi;
+    int numscreens = 0;
+    int iscrn, ivis;
+
+    if (!XdbeQueryExtension(dpy, &majorrev, &minorrev))
+	return 0;
+
+    print_standard_extension_info(dpy, extname, majorrev, minorrev);
+    svi = XdbeGetVisualInfo(dpy, (Drawable *)NULL, &numscreens);
+    for (iscrn = 0; iscrn < numscreens; iscrn++)
+    {
+	printf("  Double-buffered visuals on screen %d\n", iscrn);
+	for (ivis = 0; ivis < svi[iscrn].count; ivis++)
+	{
+	    printf("    visual id 0x%lx  depth %d  perflevel %d\n",
+		   svi[iscrn].visinfo[ivis].visual,
+		   svi[iscrn].visinfo[ivis].depth,
+		   svi[iscrn].visinfo[ivis].perflevel);
+	}
+    }
+    XdbeFreeVisualInfo(svi);
+    return 1;
+}
 
 /* utilities to manage the list of recognized extensions */
 
@@ -664,13 +640,15 @@ ExtensionPrintInfo known_extensions[] =
     {"SHAPE", print_shape_info, False},
     {SYNC_NAME, print_sync_info, False},
     {xieExtName, print_xie_info, False},
-    {XTestExtensionName, print_xtest_info, False}
+    {XTestExtensionName, print_xtest_info, False},
+    {"DOUBLE-BUFFER", print_dbe_info, False}
     /* add new extensions here */
     /* wish list: PEX RECORD XKB LBX? */
 };
 
 int num_known_extensions = sizeof known_extensions / sizeof known_extensions[0];
 
+void
 print_known_extensions(f)
     FILE *f;
 {
@@ -681,6 +659,7 @@ print_known_extensions(f)
     }
 }
 
+void
 mark_extension_for_printing(extname)
     char *extname;
 {
@@ -705,6 +684,7 @@ mark_extension_for_printing(extname)
     }
 }
 
+void
 print_marked_extensions(dpy)
     Display *dpy;
 {
@@ -724,3 +704,60 @@ print_marked_extensions(dpy)
     }
 }
 
+static void usage ()
+{
+    fprintf (stderr, "usage:  %s [options]\n", ProgramName);
+    fprintf (stderr, "-display displayname\tserver to query\n");
+    fprintf (stderr, "-queryExtensions\tprint info returned by XQueryExtension\n");
+    fprintf (stderr, "-ext all\t\tprint detailed info for all supported extensions\n");
+    fprintf (stderr, "-ext extension-name\tprint detailed info for extension-name if one of:\n     ");
+    print_known_extensions(stderr);
+    fprintf (stderr, "\n");
+    exit (1);
+}
+
+int main (argc, argv)
+    int argc;
+    char *argv[];
+{
+    Display *dpy;			/* X connection */
+    char *displayname = NULL;		/* server to contact */
+    int i;				/* temp variable:  iterator */
+    Bool multibuf = False;
+    int mbuf_event_base, mbuf_error_base;
+
+    ProgramName = argv[0];
+
+    for (i = 1; i < argc; i++) {
+	char *arg = argv[i];
+	int len = strlen(arg);
+	
+	if (!strncmp("-display", arg, len)) {
+	    if (++i >= argc) usage ();
+	    displayname = argv[i];
+	} else if (!strncmp("-queryExtensions", arg, len)) {
+	    queryExtensions = True;
+	} else if (!strncmp("-ext", arg, len)) {
+	    if (++i >= argc) usage ();
+	    mark_extension_for_printing(argv[i]);
+	} else
+	    usage ();
+    }
+
+    dpy = XOpenDisplay (displayname);
+    if (!dpy) {
+	fprintf (stderr, "%s:  unable to open display \"%s\".\n",
+		 ProgramName, XDisplayName (displayname));
+	exit (1);
+    }
+
+    print_display_info (dpy);
+    for (i = 0; i < ScreenCount (dpy); i++) {
+	print_screen_info (dpy, i);
+    }
+
+    print_marked_extensions(dpy);
+
+    XCloseDisplay (dpy);
+    exit (0);
+}
