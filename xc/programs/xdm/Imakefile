@@ -1,0 +1,5 @@
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+           SRCS = dm.c greet.c verify.c error.c Login.c
+           OBJS = dm.o greet.o verify.o error.o Login.o
+
+ComplexProgramTarget(xdm)
