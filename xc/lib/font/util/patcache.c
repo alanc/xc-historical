@@ -1,5 +1,5 @@
 /*
- * $XConsortium: patcache.c,v 1.1 91/06/13 20:55:05 keith Exp $
+ * $XConsortium: patcache.c,v 1.2 91/06/14 10:58:11 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -63,11 +63,7 @@ MakeFontPatternCache ()
     if (!cache)
 	return 0;
     for (i = 0; i < NENTRIES; i++)
-    {
-	cache->entries[i].patlen = 0;
 	cache->entries[i].pattern = 0;
-	cache->entries[i].pFont = 0;
-    }
     EmptyFontPatternCache (cache);
     return cache;
 }
@@ -113,6 +109,9 @@ EmptyFontPatternCache (cache)
 	cache->entries[i].next = &cache->entries[i+1];
 	cache->entries[i].prev = 0;
 	cache->entries[i].pFont = 0;
+	xfree (cache->entries[i].pattern);
+	cache->entries[i].pattern = 0;
+	cache->entries[i].patlen = 0;
     }
     cache->free = &cache->entries[0];
     cache->entries[i].next = 0;
