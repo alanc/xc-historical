@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.111 91/02/11 18:58:31 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.112 91/02/11 20:53:23 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -874,6 +874,8 @@ _XFreeDisplayStructure(dpy)
 	   (*dpy->free_funcs->defaultCCCs)(dpy);
 	if (dpy->cms.clientCmaps)
 	   (*dpy->free_funcs->clientCmaps)(dpy);
+	if (dpy->im_filters)
+	   (*dpy->free_funcs->im_filters)(dpy);
 
 	while (dpy->ext_procs) {
 	    _XExtension *ext = dpy->ext_procs;
