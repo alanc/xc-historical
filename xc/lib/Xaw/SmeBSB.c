@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.7 89/10/16 12:07:19 kit Exp $";
+static char Xrcsid[] = "$XConsortium: SmeBSB.c,v 1.8 89/12/11 15:20:11 kit Exp $";
 #endif 
 
 /*
@@ -190,7 +190,11 @@ static void
 Destroy(w)
 Widget w;
 {
-  DestroyGCs(w);
+    SmeBSBObject entry = (SmeBSBObject) w;
+
+    DestroyGCs(w);
+    if (entry->sme_bsb.label != XtName(w))
+	XtFree(entry->sme_bsb.label);
 }
 
 /*      Function Name: Redisplay
