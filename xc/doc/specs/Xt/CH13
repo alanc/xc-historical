@@ -1,4 +1,4 @@
-.\" $XConsortium: CH13,v 1.9 94/04/18 18:48:39 rws Exp $
+.\" $XConsortium: CH13,v 1.10 94/04/18 20:21:02 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -88,7 +88,7 @@ symbolic macro
 .PN XtSpecificationRelease .
 .LP
 .Ds 0
-#define XtSpecificationRelease 5
+#define XtSpecificationRelease 6
 .De
 .IN "XtSpecificationRelease" "" "@DEF@"
 .LP
@@ -517,7 +517,10 @@ Release 5 to Release 6 Compatibility
 .LP
 At the data structure level, Release 6 retains binary compatibility
 with Release 5 for all data structures except 
-.PN WMShellPart .  On some architectures and implementations,
+.PN WMShellPart .
+Three resources were added to the specification.  
+The known implementations had unused space in the data structure,
+therefore on some architectures and implementations,
 the size of the part structure will not have changed as a result of this.
 
 .NH 3
@@ -526,15 +529,43 @@ Widget Internals
 \*(SN Widget Internals
 .XE
 .LP
-Two new widget
-methods for instance allocation and deallocation allow widgets to be treated
-as C++ objects in the C++ environment.
+Two new widget methods for instance allocation and deallocation were added
+to the Object class.  These new methods 
+allow widgets to be treated as C++ objects in the C++ environment,
+when an appropriate allocation method is specified or inherited 
+by the widget class.
 .LP
-The descriptions of creating and destroying widgets have been updated.
+The textual descriptions of the processes of widget creation and
+widget destruction have been edited to provide clarification to widget
+writers.  Widgets writers may have reason to rely on the specific order of 
+the stages of widget creation and destruction; with that motivation,
+the specification now more exactly describes the process.
 .LP
-Describe XtGetClassExtension.
-.LP 
-New event compression flag, XtExposeNoRegion
+As a convenience, an interface to locate a widget class extension
+record on a linked list, 
+.PN XtGetClassExtension ,
+has been added.
+.LP
+A new option to allow bundled changes to the managed set of a Composite
+widget is introduced in the Composite class extension record.
+Widgets which define a change_managed procedure which can accomodate
+additions and deletions to the managed set of children in a single
+invocation should set allows_change_managed_set to \fBTrue\fP in the
+extension record.
+.LP
+The wording of the process followed by
+.PN XtUnmanageChildren
+has changed slightly to better handle changes to the managed set
+during phase 2 destroy processing.
+.LP
+A new exposure event compression flag,
+.PN XtExposeNoRegion ,
+was added.  Many widgets specify exposure compression, but either
+ignore the actual damage region passed to the core expose procedure or
+use only the cumulative bounding box data available in the event.
+Widgets with expose procedures which do not make use of exact
+exposure region information can indicate that the \*(xI need not
+compute the region.
 
 .NH 3
 General Application Development
@@ -542,9 +573,26 @@ General Application Development
 \*(SN General Application Development
 .XE
 .LP
-Describe XtOpenApplication, say why.
+.PN XtOpenApplication
+is a new convenience procedure to initialize the toolkit, create an
+application context, open an X display connection, and create the
+root of the widget instance tree.  It is identical to the interface
+it replaces, 
+.PN XtAppInitialize ,
+in all respects except that it takes an additional argument specifying
+the widget class of the root shell to create.
+This interface is now the recommended one so that clients may easily
+become session participants.
+The old convenience procedures appear in the compatibility section.
 .LP
-Describe XtChangeManagedSet
+The toolkit initialization function
+.PN XtToolkitInitialize
+may be called multiple times without penalty.
+.LP
+In order to optimize changes in geometry to a set of geometry-managed
+children, a new interface 
+.PN XtChangeManagedSet ,
+has been added.
 
 .NH 3
 Communication with Window and Session Managers
@@ -552,19 +600,50 @@ Communication with Window and Session Managers
 \*(SN Communication with Window and Session Managers
 .XE
 .LP
-The revision of the \fI\*(xC\fP as an X Consoritum standard has resulted
+The revision of the \fI\*(xC\fP as an X Consortium standard has resulted
 in the addition of three fields to the specification of
 .PN WMShellPart .
+These are \fIurgency\fP, \fIclient_leader\fP, and \fIwindow_role\fP.
 .LP
-The adoption of the \fIX Session Management Protocol\fI as an X Consortium
+The adoption of the \fIX Session Management Protocol\fP as an X Consortium
 standard has resulted in the addition of a new shell widget, 
-.PN SessionShell .
+.PN SessionShell
+and an accompanying subclass verification interface
+.PN XtIsSessionShell .
+This widget provides support for communication between an application
+and a session manager, as well as a window manager.
 In order to preserve compatibility with existing subclasses of 
 .PN ApplicationShell ,
-the new widget class is a subclass of 
-.PN ApplicationShell .
+the 
+.PN ApplicationShell 
+was subclassed to create the new widget class.
+The session protocol requires a modal response to certain checkpointing
+operations by participating applications.  The
+.PN SessionShell
+structures
+the application's notification of and responses to messages from the session
+manager by use of various callback lists and by use of the new interfaces
+.PN XtSessionGetToken
+and 
+.PN XtSessionReturnToken .
+There is also a new command line argument, -xtsessionID, which facilitates
+the session manager in restarting applications based on the \*(xI.
 .LP
-Shell strings now listed in appendix E.
+The resource name and class strings defined by the \*(xI shell
+widgets in 
+.PN < X11/Shell.h >
+are now listed in appendix E.  The addition of a new symbol
+for the 
+.PN WMShell
+\fIwait_for_wm\fP resource was made to bring the external symbol
+and the string it represents into agreement.  The actual resource name
+string in 
+.PN WMShell
+has not changed.
+The resource representation type of the XtNwinGravity resource of the 
+.PN WMShell
+was changed to XtRGravity in order to register a type 
+converter so that window gravity resource values could be specified by name.
 
 .NH 3
 Geometry Management
@@ -572,7 +651,8 @@ Geometry Management
 \*(SN Geometry Management
 .XE
 .LP
-A spec correction in Ch 6.
+A clarification to the specification was made to indicate that geometry
+requests may include current values along with the requested changes.
 
 .NH 3
 Event Management
@@ -580,23 +660,72 @@ Event Management
 \*(SN 
 .XE Event Management
 .LP
-Support is provided for registering event handlers for events generated by X
-protocol extensions, and for dispatching those events to the appropriate
-widget.  
+In R6, support is provided for registering selectors and event handlers for
+events generated by X protocol extensions,
+and for dispatching those events to the appropriate widget.
+The new event handler registration interfaces are
+.PN XtInsertEventTypeHandler
+and
+.PN XtRemoveEventTypeHandler .
+Since the mechanism to indicate selection of extension events is specific
+to the extension being used, the \*(xI introduces 
+.PN XtRegisterExtensionSelector
+which allows the application to select for the events of interest.
+In order to change the dispatching algorithm to accommodate extension events
+as well as core X protocol events,
+the \*(xI event dispatcher may now be replaced or enveloped
+by the application with
+.PN XtSetEventDispatcher .
+The dispatcher may wish to call 
+.PN XtGetKeyboardFocusWidget
+to determine the widget with the current \*(xI keyboard focus.
+A dispatcher, after determining the destination widget, may use
+.PN XtDispatchEventToWidget
+to cause the event to be dispatched to the event handlers registered
+by a specific widget.
 .LP
-A mechanism has also been added for dispatching events for non-widget
-drawables (such as pixmaps used within a widget) to a widget.
+To permit the dispatching of events
+for non-widget drawables, such as pixmaps which are not associated
+with a widget's window, 
+.PN XtRegisterDrawable
+and 
+.PN XtUnregisterDrawable
+have been added to the library.  A related update was made to
+the description of
+.PN XtWindowToWidget .
 .LP
 The library is now thread-safe, allowing one thread at a time to
 enter the library and protecting global data as necessary from concurrent use.
+Threaded toolkit applications are supported by the 
+new interfaces
+.PN XtToolkitThreadInitialize ,
+.PN XtAppLock ,
+.PN XtAppUnlock ,
+.PN XtAppSetExitFlag ,
+and 
+.PN XtAppGetExitFlag .
+Widget writers may also use 
+.PN XtProcessLock
+and 
+.PN XtProcessUnlock .
 .LP
-Safe handling of POSIX signals and other asynchronous notifications is now
-provided.
+Safe handling of POSIX signals and other asynchronous notifications
+is now provided by use of 
+.PN XtAppAddSignal ,
+.PN XtNoticeSignal ,
+and
+.PN XtRemoveSignal .
 .LP
-A hook has been added to give notification of blocking in the event
-manager. 
+The application can receive notification of an impending block
+in the \*(xI event manager by registering interest through
+.PN XtAppAddBlockHook
+and 
+.PN XtRemoveBlockHook .
 .LP
-A function with deficient semantics has been added: XtGetLastEvent
+.PN XtLastEventProcessed
+returns the most recent event passed to
+.PN XtDispatchEvent
+for a specified display.
 
 .NH 3
 Resource Management
@@ -604,13 +733,13 @@ Resource Management
 \*(SN Resource Management
 .XE
 .LP
-String resource converters have been
-added for window gravity and session management restart style,
-CommandArgArray and DirectoryString.
+Resource converters are registered by the \*(xI for window gravity,
+and for three new resource types associated with session participation:
+RestartStyle, CommandArgArray and DirectoryString.
 .LP
-The file
-search path syntax has been extended to make it easy to prepend and append to
-the default search path controlling resource database construction.
+The file search path syntax has been extended to make it easier to
+prepend and append to the default search path, which controls resource
+database construction, by using the new substitution string, %D.
 
 .NH 3
 Translation Management
@@ -618,19 +747,60 @@ Translation Management
 \*(SN Translation Management
 .XE
 .LP
-Numlock
+The default key translator now recognizes the NumLock modifier.
+If NumLock is on and the second keysym is a keypad keysym
+(a standard keysym named with a ``KP'' prefix or a
+vendor-specific keysym in the hexadecimal range 0x11000000 to 0x1100FFFF),
+then the default key translator will
+use the first keysym if Shift and/or ShiftLock is on, and will 
+use the second keysym if neither is on.  Otherwise, it will
+ignore NumLock and apply the normal protocol semantics.
 
 .NH 3
-Communication Between and Within Clients
+Selections
 .XS
-\*(SN Communication Between and Within Clients
+\*(SN Selections
 .XE
 .LP
-Parameterized targets of selections
-(new to the R6 ICCCM) and the MULTIPLE target are supported with new APIs.
-.LP
-New APIs for selection transfer.
-.LP
-Describe the external agent hooks and what they were intended for.
+The targets of selection requests may be parameterized, as described
+by the revised \fI\*(xC\fP.
+When such requests are made,
+.PN XtSetSelectionParameters
+is used by the requestor to specify the target parameters, and
+.PN XtGetSelectionParameters
+is used by the selection owner to retrieve the parameters.
+When a parameterized target is specified in the context of a bundled
+request for multiple targets, 
+.PN XtCreateSelectionRequest ,
+.PN XtCancelSelectionRequest
+and 
+.PN XtSendSelectionRequest 
+are used to envelope the assembly of the request.
+When the parameters themselves are the names of properties, 
+the \*(xI provides support for the economical use of property atom names;
+see 
+.PN XtReservePropertyAtom
+and 
+.PN XtReleasePropertyAtom .
 
+.NH 3
+External Agent Hooks
+.XS
+\*(SN External Agent Hooks
+.XE
+.LP
+External agent hooks were added for the benefit of applications
+which instrument other applications for purposes of accessibility,
+testing, and customization.  The external agent and the application
+communicate by a shared protocol which is transparent to the application.
+Development of one such protocol is occurring in the Consortium's
+\fBx-agent\fP working group for eventual review as a Consortium standard.
+The hook callbacks permit the external agent to register interest
+in groups or classes of toolkit activity, and to be notified of the
+type and details of the activity as it occurs.  The new interfaces
+related to this effort are
+.PN XtHooksOfDisplay ,
+which returns the hook registration widget, and 
+.PN XtGetDisplays ,
+which returns a list of the X displays associated with an application context.
 .bp
