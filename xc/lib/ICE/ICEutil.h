@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ICEutil.h,v 1.1 94/02/06 15:22:41 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -35,6 +35,19 @@ typedef struct {
     unsigned short  auth_data_length;
     char   	    *auth_data;
 } IceAuthFileEntry;
+
+
+/*
+ * Authentication data maintained in memory.
+ */
+
+typedef struct {
+    char    	    *protocol_name;
+    char	    *address;
+    char    	    *auth_name;
+    unsigned short  auth_data_length;
+    char   	    *auth_data;
+} IceAuthDataEntry;
 
 
 /*
@@ -95,6 +108,19 @@ extern IceAuthFileEntry *IceGetAuthFileEntry (
     char *		/* protocol_name */,
     char *		/* address */,
     char *		/* auth_name */
+#endif
+);
+
+extern char *IceGenerateMagicCookie (
+#if NeedFunctionPrototypes
+    int			/* len */
+#endif
+);
+
+extern void IceSetPaAuthData (
+#if NeedFunctionPrototypes
+    int			/* numEntries */,
+    IceAuthDataEntry *	/* entries */
 #endif
 );
 
