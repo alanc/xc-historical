@@ -130,6 +130,7 @@ char *path;
     }
     p++;
   }
+}
 #endif /* CRAY */
 
 
