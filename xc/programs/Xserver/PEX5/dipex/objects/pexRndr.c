@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.12 92/08/12 15:14:42 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.13 92/10/05 17:00:35 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -382,6 +382,7 @@ pexCreateRendererReq    *strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
+	Xfree((pointer)ppath);
     }
 
     if (strmPtr->itemMask & PEXRDBackgroundColour) {
@@ -624,6 +625,7 @@ pexChangeRendererReq 	*strmPtr;
 	err = ValidatePickPath(prend->pickStartPath);
 	if (err != Success) PEX_ERR_EXIT(err,0,cntxtPtr);
 	ptr = (unsigned char *)per;
+	Xfree((pointer)ppath);
     }
 
 
