@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 91/07/17 00:47:10 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 91/07/29 21:02:36 gildea Exp $
         DEFINES = ConnectionFlags $(SIGNAL_DEFINES) -DBINDIR=\"$(BINDIR)\"
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
@@ -9,10 +9,8 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
 
-MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
-/* MakeScriptFromCpp(xserverrc, -DXINITDIR=$(XINITDIR)) */
-
+MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
 
 InstallNamedProg(startx,startx,$(BINDIR))
 InstallManPage(startx,$(MANDIR))
