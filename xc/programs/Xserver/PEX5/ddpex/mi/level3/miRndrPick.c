@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.8 92/12/14 16:53:30 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.9 93/08/30 17:00:13 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -149,14 +149,14 @@ ddPickRecord       *pRec;     /* PickRecord */
     ppm->type = pRec->pickType;
     switch (ppm->type) {
 	case PEXPickDeviceDC_HitBox:
-	    bcopy((char *)&(pRec->hit_box.DC_HitBox), 
-	       	  (char *)&(ppm->input_rec.dc_hit_box), 
+	    memcpy( (char *)&(ppm->input_rec.dc_hit_box), 
+		  (char *)&(pRec->hit_box.DC_HitBox), 
 		   sizeof(pexPD_DC_HitBox));
             break;
 
 	case PEXPickDeviceNPC_HitVolume:
-	    bcopy((char *)&(pRec->hit_box.NPC_HitVolume), 
-	       	  (char *)&(ppm->input_rec.npc_hit_volume), 
+	    memcpy( (char *)&(ppm->input_rec.npc_hit_volume), 
+		  (char *)&(pRec->hit_box.NPC_HitVolume), 
 		   sizeof(pexPD_NPC_HitVolume));
             break;
     }

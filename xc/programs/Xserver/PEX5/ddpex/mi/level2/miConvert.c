@@ -1,4 +1,4 @@
-/* $XConsortium: miConvert.c,v 5.4 92/04/10 19:46:06 hersh Exp $ */
+/* $XConsortium: miConvert.c,v 5.5 92/05/01 16:15:20 hersh Exp $ */
 
 
 /***********************************************************
@@ -386,7 +386,7 @@ miListHeader		**voutput;	/* output vertex list */
 	  for (j = 0; j < vert_count; j++) {
 
 	     /* Copy the coordinate data to the output list */
-             bcopy(in_pt.ptr, out_pt.ptr, coord_size);
+             memcpy( out_pt.ptr, in_pt.ptr, coord_size);
 	     in_pt.ptr += coord_size;
 	     out_pt.ptr += coord_size;
 
@@ -790,7 +790,7 @@ miAddEdgeFlag(pddc, vinput, voutput)
           out_pt = pddolist->pts.ptr;
 
 	  for (j = 0; j < vert_count; j++) {
-             bcopy(in_pt, out_pt, point_size);
+             memcpy( out_pt, in_pt, point_size);
 	     in_pt += point_size;
 	     out_pt += point_size;
 	     edge_ptr = (ddULONG *)out_pt;
@@ -890,14 +890,14 @@ miRemoveInvisibleEdges(pddc, vinput, voutput)
 	  for (j = 0, counter = 0; j < vert_count; j++) {
 	     edge_ptr = (ddULONG *)(in_pt + edge_offset);
 	     if (*edge_ptr) {
-		bcopy(in_pt, out_pt, point_size);
+		memcpy( out_pt, in_pt, point_size);
 		out_pt += point_size;
 		counter++;
 	     } else if (counter) {
 		/* if edge is invisible, start new list */
 
 		/* First, end last edge of previous edge */
-		bcopy(in_pt, out_pt, point_size);
+		memcpy( out_pt, in_pt, point_size);
 		pddolist->numPoints = counter + 1;
 		counter = 0;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.10 92/12/29 17:13:58 mor Exp $ */
+/* $XConsortium: miText.c,v 5.11 93/01/26 10:40:36 mor Exp $ */
 
 
 /***********************************************************
@@ -928,7 +928,7 @@ miText3D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  memcpy( (char *)tc_to_mc_xform, (char *)text_el.xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -960,7 +960,7 @@ miText3D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      memcpy( (char *)tc_to_cc_xform, (char *)buf_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1207,7 +1207,7 @@ miText2D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  memcpy( (char *)tc_to_mc_xform, (char *)text_el.xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -1238,7 +1238,7 @@ miText2D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      memcpy( (char *)tc_to_cc_xform, (char *)buf_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1469,7 +1469,7 @@ miAnnoText3D(pRend, pExecuteOC)
     /* Get the translation due to the transformation of the annotation  */
     /* text origin by mc_to_npc_xform into buf1_xform.                  */
 
-    bcopy ((char *) ident4x4, (char *)buf1_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)buf1_xform, (char *) ident4x4, 16 * sizeof(ddFLOAT));
     buf1_xform[0][3] += NPC_Origin.x - MC_Origin.x;
     buf1_xform[1][3] += NPC_Origin.y - MC_Origin.y;
     buf1_xform[2][3] += NPC_Origin.z - MC_Origin.z;
@@ -1563,7 +1563,7 @@ miAnnoText3D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  memcpy( (char *)tc_to_mc_xform, (char *)text_el.xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -1593,8 +1593,7 @@ miAnnoText3D(pRend, pExecuteOC)
       }
 
       /* Buffer the tc_to_cc_xform first */
-
-      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      memcpy( (char *)tc_to_cc_xform, (char *)buf_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */
@@ -1887,7 +1886,7 @@ miAnnoText2D(pRend, pExecuteOC)
     /* Get the translation due to the transformation of the annotation  */
     /* text origin by mc_to_npc_xform into buf1_xform.                  */
 
-    bcopy ((char *) ident4x4, (char *)buf1_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)buf1_xform, (char *) ident4x4, 16 * sizeof(ddFLOAT));
     buf1_xform[0][3] += NPC_Origin.x - MC_Origin.x;
     buf1_xform[1][3] += NPC_Origin.y - MC_Origin.y;
 
@@ -1984,7 +1983,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
 	  /* Buffer the tc_to_mc_xform first */
 
-	  bcopy ((char *)text_el.xform, (char *)tc_to_mc_xform, 16*sizeof(ddFLOAT));
+	  memcpy( (char *)tc_to_mc_xform, (char *)text_el.xform, 16*sizeof(ddFLOAT));
 
 	  /* Apply the per character translation and scaling by directly */
 	  /* modifying the concerned matrix elements.                    */
@@ -2015,7 +2014,7 @@ miAnnoText2D(pRend, pExecuteOC)
 
       /* Buffer the tc_to_cc_xform first */
 
-      bcopy ((char *)buf_xform, (char *)tc_to_cc_xform, 16*sizeof(ddFLOAT));
+      memcpy( (char *)tc_to_cc_xform, (char *)buf_xform, 16*sizeof(ddFLOAT));
 
       /* Apply the per character translation and scaling by directly */
       /* modifying the concerned matrix elements.                    */

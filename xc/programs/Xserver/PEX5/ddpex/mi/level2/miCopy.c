@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.5 91/12/26 18:00:39 hersh Exp $ */
+/* $XConsortium: miCopy.c,v 5.6 93/02/08 11:07:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -63,7 +63,7 @@ SOFTWARE.
     *ppDst = (miGenericElementPtr) \
 		Xalloc((unsigned long)((SIZE) + sizeof(miGenericElementStr))); \
     if (!(*ppDst)) return (BadAlloc); \
-    bcopy(  (char *)pSrc, (char *)(*ppDst), \
+    memmove(  (char *)(*ppDst), (char *)pSrc, \
 	    (int)((SIZE) + sizeof(miGenericElementStr))); \
     DD_ST = (TYPE *)((*ppDst)+1);
 
@@ -74,7 +74,7 @@ SOFTWARE.
     if ((NUMBER) > 0) { \
 	DST = (TYPE *)Xalloc((unsigned long)((NUMBER) * sizeof(TYPE))); \
 	if (!(DST)) err = BadAlloc; \
-	else bcopy((char *)(SRC),(char *)(DST),(int)((NUMBER)*sizeof(TYPE))); } \
+	else memmove((char *)(DST),(char *)(SRC),(int)((NUMBER)*sizeof(TYPE))); } \
     else DST = 0;
 
 /*

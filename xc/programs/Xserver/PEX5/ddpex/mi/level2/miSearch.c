@@ -1,4 +1,4 @@
-/* $XConsortium: miSearch.c,v 5.3 91/05/12 16:11:38 rws Exp $ */
+/* $XConsortium: miSearch.c,v 5.4 93/01/25 16:40:38 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -129,7 +129,7 @@ compute_search_volume_xform(search_volume, sv_to_cc_xform)
      *                                  0       0          0
      */
 
-    bcopy ((char *)ident4x4, (char *)sv_to_cc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)sv_to_cc_xform, (char *)ident4x4, 16 * sizeof(ddFLOAT));
 
     /* Check for trivial search volume, I.E., a point or a cube with */
     /* zero dimensions. If so, initialize the transform to ? ? ?     */

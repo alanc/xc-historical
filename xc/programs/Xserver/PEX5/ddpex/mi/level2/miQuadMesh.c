@@ -1,4 +1,4 @@
-/* $XConsortium: miQuadMesh.c,v 5.1 91/02/16 09:55:41 rws Exp $ */
+/* $XConsortium: miQuadMesh.c,v 5.3 92/08/20 16:37:21 hersh Exp $ */
 
 
 /***********************************************************
@@ -190,13 +190,13 @@ miQuadMesh(pRend, pExecuteOC)
 
     out_pt.ptr =  tri_list->ddList->pts.ptr;
 
-    bcopy(in_pt.ptr, out_pt.ptr, inpoint_size); 
+    memcpy( out_pt.ptr, in_pt.ptr, inpoint_size); 
     if (pddc->Static.attrs->edges != PEXOff) {
       *(out_pt.ptr + edge_offset) = ~0; 
     }
     out_pt.ptr += outpoint_size;
  
-    bcopy((in_pt.ptr + row_size), out_pt.ptr, inpoint_size); 
+    memcpy( out_pt.ptr, (in_pt.ptr + row_size), inpoint_size); 
     if (pddc->Static.attrs->edges != PEXOff) {
       *(out_pt.ptr + edge_offset) = ~0; 
       CLEAR_FWD_EDGE(out_pt.ptr, edge_offset);                
@@ -207,12 +207,12 @@ miQuadMesh(pRend, pExecuteOC)
     /* Build up a triangle strip */
     for (j = 1;  j <= num_cols; j++) {
 
-      bcopy(in_pt.ptr, out_pt.ptr, inpoint_size);                             
+      memcpy( out_pt.ptr, in_pt.ptr, inpoint_size);                             
       if (pddc->Static.attrs->edges != PEXOff) {
         *(out_pt.ptr + edge_offset) = ~0; 
       }
       out_pt.ptr += outpoint_size;                                             
-      bcopy((in_pt.ptr + row_size), out_pt.ptr, inpoint_size); 
+      memcpy( out_pt.ptr, (in_pt.ptr + row_size), inpoint_size); 
       if (pddc->Static.attrs->edges != PEXOff){
         *(out_pt.ptr + edge_offset) = ~0; 
         CLEAR_FWD_EDGE(out_pt.ptr, edge_offset);
@@ -221,9 +221,9 @@ miQuadMesh(pRend, pExecuteOC)
       out_pt.ptr += outpoint_size;                                             
 
       if (ddQuad->pFacets->numFacets > 0) {
-        bcopy(quad_fptr, tri_fptr, facet_size);
+        memcpy( tri_fptr, quad_fptr, facet_size);
     	tri_fptr += facet_size;
-    	bcopy(quad_fptr, tri_fptr, facet_size);
+        memcpy( tri_fptr, quad_fptr, facet_size);
     	tri_fptr += facet_size; 
     	quad_fptr += facet_size;
       } 

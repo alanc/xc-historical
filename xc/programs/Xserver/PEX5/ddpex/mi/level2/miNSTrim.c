@@ -1,4 +1,4 @@
-/* $XConsortium: miNSTrim.c,v 5.2 91/05/01 14:45:54 hersh Exp $ */
+/* $XConsortium: miNSTrim.c,v 5.3 91/07/01 08:33:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -356,7 +356,7 @@ evaluate_trim_curve( crv, span, t, p )
       /* Copy points to temp space. */
       cpts3 = &crv->points.pts.p3Dpt[left];
       tmp = temp_points;
-      bcopy( (char *)cpts3, (char *)tmp, order * sizeof(ddCoord3D) );
+      memcpy( (char *)tmp, (char *)cpts3, order * sizeof(ddCoord3D) );
 
     } else {
       ddCoord2D	*cpts2;

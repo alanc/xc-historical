@@ -1,4 +1,4 @@
-/* $XConsortium: ddContext.c,v 5.7 93/01/12 17:41:13 hersh Exp $ */
+/* $XConsortium: ddContext.c,v 5.8 93/05/07 16:24:21 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -182,8 +182,8 @@ CreateDDContext(pRend)
     /*
      * Initialize level 1 rendering procedure jump table
      */
-    bcopy((char *) RenderPrimitiveTable,
-	  (char *) pddc->Static.RenderProcs,
+    memcpy( (char *) pddc->Static.RenderProcs,
+	  (char *) RenderPrimitiveTable,
 	  sizeof(RendTableType) * RENDER_TABLE_LENGTH);
 
     /*
@@ -513,8 +513,8 @@ PushddContext(pRend)
 	      oldDContext->pPCAttr->localMat,
 	      oldDContext->pPCAttr->globalMat);
 
-    bcopy((char *) ident4x4,
-	  (char *) newDContext->pPCAttr->localMat, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) newDContext->pPCAttr->localMat, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
     /** Push the new context onto the renderer DDContext **/
     /* newContext points to the old context */

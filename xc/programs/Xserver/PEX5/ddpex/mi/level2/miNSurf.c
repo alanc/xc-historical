@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.7 91/07/01 08:53:21 rws Exp $ */
+/* $XConsortium: miNSurf.c,v 5.8 91/10/25 18:30:41 hersh Exp $ */
 
 #define TRIMING 1
 
@@ -591,7 +591,7 @@ compute_adaptive_surf_interval( pddc, surface, state, trans )
           for ( i = 0, pin = ctlpts, pa = lower; 
 		i < nu; 
 		i++, pa++, pin += point_size ) {
-	    bcopy(pin, (char *)pa, point_size);
+	    memcpy( (char *)pa, pin, point_size);
 	    pa->w = 1.0;
 	  }
 	}

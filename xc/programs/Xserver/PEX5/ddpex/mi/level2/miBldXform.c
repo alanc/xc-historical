@@ -1,4 +1,4 @@
-/* $XConsortium: miBldXform.c,v 5.3 91/10/24 18:03:18 hersh Exp $ */
+/* $XConsortium: miBldXform.c,v 5.4 92/12/21 10:35:52 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -124,8 +124,7 @@ ng
      * context already set up. Note that the same aspect ratio limitation
      * used above also applies to the viewport transform.
      */
-    bcopy((char *) ident4x4, 
-	  (char *) xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) xform, (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
     if (pRend->viewport.useDrawable) { /* Use the drawable width and height */
       /* FOR RENDERING:
@@ -407,8 +406,8 @@ miBldCC_xform(pRend, pddc)
 
     if (!(pRend->lut[PEXViewLUT])) {   /* Use defaults */
 
-	 bcopy ((char *) ident4x4, 
-		(char *) pddc->Dynamic->npc_to_cc_xform, 
+	 memcpy( (char *) pddc->Dynamic->npc_to_cc_xform, 
+		(char *) ident4x4, 
 		16 * sizeof(ddFLOAT));
 	 pddc->Dynamic->npc_to_cc_xform[0][0] =  2.0;
 	 pddc->Dynamic->npc_to_cc_xform[1][1] =  2.0;
@@ -417,12 +416,12 @@ miBldCC_xform(pRend, pddc)
 	 pddc->Dynamic->npc_to_cc_xform[1][3] = -1.0;
 	 pddc->Dynamic->npc_to_cc_xform[2][3] = -1.0;
 
-	 bcopy ((char *) ident4x4,
-		(char *) pddc->Dynamic->wc_to_npc_xform,
+	 memcpy( (char *) pddc->Dynamic->wc_to_npc_xform,
+		(char *) ident4x4,
 		16*(sizeof(ddFLOAT)));
 
-	 bcopy ((char *) ident4x4, 
-		(char *) cc_to_npc,
+	 memcpy( (char *) cc_to_npc,
+		(char *) ident4x4, 
 		16 * sizeof(ddFLOAT));
 	 cc_to_npc[0][0] = 0.5;
 	 cc_to_npc[1][1] = 0.5;
@@ -489,11 +488,11 @@ pddc->Dynamic->clipFlags = viewbundle->entry.clipFlags;
 	  * Last, note that the cliplimits from the view table entry are only
 	  * used if enabled by the clip flags.
 	  */
-	 bcopy((char *) ident4x4, 
-	       (char *) pddc->Dynamic->npc_to_cc_xform, 16 * sizeof(ddFLOAT));
+	 memcpy( (char *) pddc->Dynamic->npc_to_cc_xform,
+		(char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-	 bcopy((char *) ident4x4, 
-	       (char *) cc_to_npc, 16 * sizeof(ddFLOAT));
+	 memcpy( (char *) cc_to_npc, 
+		(char *) ident4x4, 16 * sizeof(ddFLOAT));
 
 	 /* set up X & Y clip limits */
 
@@ -591,9 +590,8 @@ pddc->Dynamic->clipFlags = viewbundle->entry.clipFlags;
 	    /* to (1,1,1)                                                */
         {
 
-	 bcopy ((char *) ident4x4, 
-		(char *) pddc->Dynamic->npc_to_cc_xform, 
-		16 * sizeof(ddFLOAT));
+	 memcpy( (char *) pddc->Dynamic->npc_to_cc_xform, 
+		(char *) ident4x4, 16 * sizeof(ddFLOAT));
 	 pddc->Dynamic->npc_to_cc_xform[0][0] =  2.0;
 	 pddc->Dynamic->npc_to_cc_xform[1][1] =  2.0;
 	 pddc->Dynamic->npc_to_cc_xform[2][2] =  2.0;
@@ -601,9 +599,8 @@ pddc->Dynamic->clipFlags = viewbundle->entry.clipFlags;
 	 pddc->Dynamic->npc_to_cc_xform[1][3] = -1.0;
 	 pddc->Dynamic->npc_to_cc_xform[2][3] = -1.0;
 
-	 bcopy ((char *) ident4x4, 
-		(char *) cc_to_npc,
-		16 * sizeof(ddFLOAT));
+	 memcpy( (char *) cc_to_npc,
+		(char *) ident4x4, 16 * sizeof(ddFLOAT));
 	 cc_to_npc[0][0] = 0.5;
 	 cc_to_npc[1][1] = 0.5;
 	 cc_to_npc[2][2] = 0.5;

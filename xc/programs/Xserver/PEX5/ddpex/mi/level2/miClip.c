@@ -1,4 +1,4 @@
-/* $XConsortium: miClip.c,v 5.1 91/02/16 09:55:12 rws Exp $ */
+/* $XConsortium: miClip.c,v 5.2 91/05/01 14:30:19 hersh Exp $ */
 
 
 /***********************************************************
@@ -125,7 +125,7 @@ miClipPointList(pddc, vinput, voutput, clip_mode)
 
 	if (!(oc)) {
 	  /* Copy the next point into the clip array */
-	  bcopy(in_pt, out_pt, point_size);
+	  memcpy( out_pt, in_pt, point_size);
 	  num_points++;
 	  out_pt += point_size;
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: miOCs.c,v 5.3 91/07/22 19:40:15 hersh Exp $ */
+/* $XConsortium: miOCs.c,v 5.4 91/07/22 19:58:56 hersh Exp $ */
 
 
 /***********************************************************
@@ -766,8 +766,8 @@ miLocalTransform(pRend, pOC)
 			pddc->Dynamic->pPCAttr->localMat, pLT->matrix);
 	    break;
 	case PEXReplace:
-	    bcopy( (char *)(pLT->matrix),
-		   (char *)(pddc->Dynamic->pPCAttr->localMat),
+	    memcpy( (char *)(pddc->Dynamic->pPCAttr->localMat),
+		   (char *)(pLT->matrix),
                    16*sizeof(ddFLOAT));
 	    break;
     }
@@ -843,7 +843,7 @@ miLocalTransform2D(pRend, pOC)
 			pddc->Dynamic->pPCAttr->localMat, temp);
 	    break;
 	case PEXReplace:
-	    bcopy( (char *)temp,  (char *)(pddc->Dynamic->pPCAttr->localMat), 
+	    memcpy( (char *)(pddc->Dynamic->pPCAttr->localMat), (char *)temp,  
 		    16*sizeof(ddFLOAT));
 	    break;
     }
@@ -882,7 +882,7 @@ miGlobalTransform(pRend, pOC)
     miDDContext    *pddc = (miDDContext *)(pRend->pDDContext);
     pexGlobalTransform *pGT = (pexGlobalTransform *)(pOC+1);
 
-    bcopy( (char *)(pGT->matrix), (char *)(pddc->Dynamic->pPCAttr->globalMat),
+    memcpy( (char *)(pddc->Dynamic->pPCAttr->globalMat), (char *)(pGT->matrix), 
 	    16 * sizeof(ddFLOAT));
 
     /* Update composite transforms */

@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.18 93/01/08 17:33:14 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.19 93/01/27 15:48:27 hersh Exp $ */
 
 
 /***********************************************************
@@ -132,7 +132,8 @@ InitRenderer(pRend)
 
     /* copy the initial oc functions to the OC table */
     pRend->render_mode = MI_REND_DRAWING;
-    bcopy(  (char *)InitExecuteOCTable, (char *)pRend->executeOCs,
+    memcpy(  (char *)pRend->executeOCs,
+	    (char *)InitExecuteOCTable, 
 	    sizeof(ocTableType)*OCTABLE_LENGTH); 
 
     MI_SET_ALL_CHANGES(pRend);
@@ -241,8 +242,8 @@ DefaultPC(pPC)
     pPC->edgeColour.colourType = PEXIndexedColour;
     pPC->edgeColour.colour.indexed.index = 1;
     pPC->edgeIndex = 1;
-    bcopy((char *) ident4x4, (char *) pPC->localMat, 16 * sizeof(ddFLOAT));
-    bcopy((char *) ident4x4, (char *) pPC->globalMat, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pPC->localMat, (char *) ident4x4, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pPC->globalMat, (char *) ident4x4, 16 * sizeof(ddFLOAT));
     pPC->modelClip = PEXNoClip;
     pPC->modelClipVolume = puCreateList(DD_HALF_SPACE);
     pPC->viewIndex = 0;
@@ -938,7 +939,7 @@ void
 init_def_matrix (matrix)
 ddFLOAT matrix[4][4];
 {
-  bcopy((char *) ident4x4, (char *) matrix, 16 * sizeof(ddFLOAT));
+  memcpy( (char *) matrix, (char *) ident4x4, 16 * sizeof(ddFLOAT));
 }
 
 
@@ -1559,8 +1560,8 @@ BeginPicking(pRend, pPM)
 
 /* load picking procs into executeOCs */
 
-    bcopy((char *)PickExecuteOCTable, 
-	(char *)pRend->executeOCs, 
+    memcpy( (char *)pRend->executeOCs, 
+	(char *)PickExecuteOCTable, 
 	sizeof(ocTableType)*OCTABLE_LENGTH); 
 
     pRend->render_mode = MI_REND_PICKING;
@@ -1572,8 +1573,8 @@ BeginPicking(pRend, pPM)
     /*
      * Reinitialize level 1 procedure jump table for PICKING !
      */
-    bcopy((char *)PickPrimitiveTable, 
-	  (char *)pddc->Static.RenderProcs, 
+    memcpy( (char *)pddc->Static.RenderProcs, 
+	  (char *)PickPrimitiveTable, 
 	  sizeof(RendTableType) * RENDER_TABLE_LENGTH); 
 
     init_pipeline(pRend, pDrawable);
@@ -1586,11 +1587,11 @@ BeginPicking(pRend, pPM)
     /* Compute the inverse of the viewport transform to be used to */
     /* convert DC_HitBoxes to NPC_HitVolumes.                      */
 
-    bcopy ((char *)pddc->Static.misc.viewport_xform, 
-	   (char *)inv_xform, 16*sizeof(ddFLOAT));
+    memcpy( (char *)inv_xform, 
+	   (char *)pddc->Static.misc.viewport_xform, 16*sizeof(ddFLOAT));
     miMatInverse (inv_xform);
-    bcopy ((char *) inv_xform, (char *)pddc->Static.misc.inv_vpt_xform, 
-	    16*sizeof(ddFLOAT));
+    memcpy( (char *)pddc->Static.misc.inv_vpt_xform, 
+	    (char *) inv_xform, 16*sizeof(ddFLOAT));
 
     /* Now, clear out the viewport transform computed above to identity */
     /* since we are PICKING, and we do not need this to go to final ddx */
@@ -1599,13 +1600,13 @@ BeginPicking(pRend, pPM)
     /* PICKING ROUTINES WILL ACTUALLY DO THE PICK HIT TEST IN CC. THUS  */
     /* BY MAKING THE viewport transform IDENTITY WE WILL STAY IN CC.    */
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Static.misc.viewport_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Static.misc.viewport_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
     /* Clear out the cc_to_dc_xform also, since we will not be going to DC */
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->cc_to_dc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->cc_to_dc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
     /* Mark as invalid appropriate inverse transforms in dd context */
     pddc->Static.misc.flags |= (INVTRMCTOWCXFRMFLAG | INVTRWCTOCCXFRMFLAG |
@@ -1680,15 +1681,15 @@ EndPicking(pRend)
 
     /* copy the initial oc functions to the OC table */
 
-    bcopy(  (char *)InitExecuteOCTable, 
-	    (char *)pRend->executeOCs, 
+    memcpy( (char *)pRend->executeOCs, 
+	    (char *)InitExecuteOCTable, 
 	    sizeof(ocTableType)*OCTABLE_LENGTH); 
 
     /*
      * Reinitialize level 1 procedure jump table for Rendering !
      */
-    bcopy((char *)RenderPrimitiveTable, 
-	  (char *)pddc->Static.RenderProcs, 
+    memcpy( (char *)pddc->Static.RenderProcs, 
+	  (char *)RenderPrimitiveTable, 
 	  sizeof(RendTableType) * RENDER_TABLE_LENGTH); 
 
     return (Success);
@@ -1816,16 +1817,16 @@ BeginSearching(pRend, pSC)
 
  /* load searching procs into executeOCs  */
 
-    bcopy((char *)SearchExecuteOCTable, 
-	(char *)pRend->executeOCs, 
+    memcpy( (char *)pRend->executeOCs, 
+	(char *)SearchExecuteOCTable, 
 	sizeof(ocTableType)*OCTABLE_LENGTH); 
 
     /*
      * Reinitialize level 1 procedure jump table for Searching.
      * Note that we use the same table as Picking.
      */
-    bcopy((char *)PickPrimitiveTable,
-          (char *)pddc->Static.RenderProcs,
+    memcpy( (char *)pddc->Static.RenderProcs,
+	  (char *)PickPrimitiveTable,
           sizeof(RendTableType) * RENDER_TABLE_LENGTH);
  
     /* Set the model clipping flag to value in search context
@@ -1842,29 +1843,29 @@ BeginSearching(pRend, pSC)
      * to identity.
      */
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Static.misc.viewport_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Static.misc.viewport_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->wc_to_npc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->wc_to_npc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->mc_to_npc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->mc_to_npc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->wc_to_cc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->wc_to_cc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->cc_to_dc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->cc_to_dc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->mc_to_cc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->mc_to_cc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->mc_to_dc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->mc_to_dc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
-    bcopy((char *) ident4x4, 
-	  (char *) pddc->Dynamic->npc_to_cc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *) pddc->Dynamic->npc_to_cc_xform, 
+	  (char *) ident4x4, 16 * sizeof(ddFLOAT));
 
     /* Mark as invalid appropriate inverse transforms in dd context */
     pddc->Static.misc.flags |= (INVTRMCTOWCXFRMFLAG | INVTRWCTOCCXFRMFLAG |
@@ -1912,8 +1913,8 @@ EndSearching(pRend)
 
     pRend->render_mode = MI_REND_DRAWING;
     /* copy the initial oc functions to the OC table */
-    bcopy((char *)InitExecuteOCTable, 
-	(char *)pRend->executeOCs, 
+    memcpy( (char *)pRend->executeOCs, 
+	(char *)InitExecuteOCTable, 
 	sizeof(ocTableType)*OCTABLE_LENGTH); 
 
     return (Success);

@@ -1,4 +1,4 @@
-/* $XConsortium: miCellArray.c,v 5.3 91/07/22 19:44:13 hersh Exp $ */
+/* $XConsortium: miCellArray.c,v 5.4 92/12/02 11:11:02 mor Exp $ */
 
 
 /***********************************************************
@@ -190,9 +190,9 @@ miCellArray(pRend, pExecuteOC)
       endpt.y = basept.y + dRpt.y;
       endpt.z = basept.z + dRpt.z;
 
-      bcopy((char *)&basept, out_pt.ptr, point_size); 
+      memcpy( out_pt.ptr, (char *)&basept, point_size); 
       out_pt.ptr += point_size;
-      bcopy((char *)&endpt, out_pt.ptr, point_size);
+      memcpy( out_pt.ptr, (char *)&endpt, point_size); 
       out_pt.ptr += point_size;
 
       basept.x += y_step.x;
@@ -216,9 +216,9 @@ miCellArray(pRend, pExecuteOC)
       endpt.y = basept.y + dQpt.y;
       endpt.z = basept.z + dQpt.z; 
       
-      bcopy((char *)&basept, out_pt.ptr, point_size); 
+      memcpy( out_pt.ptr, (char *)&basept, point_size); 
       out_pt.ptr += point_size; 
-      bcopy((char *)&endpt, out_pt.ptr, point_size); 
+      memcpy( out_pt.ptr, (char *)&endpt, point_size); 
       out_pt.ptr += point_size;
  
       basept.x += x_step.x;

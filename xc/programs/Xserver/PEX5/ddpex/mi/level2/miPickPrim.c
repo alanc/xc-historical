@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.5 92/12/21 13:10:35 mor Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.6 92/12/29 17:15:05 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -174,7 +174,7 @@ compute_pick_volume_xform(pick_volume, pv_to_cc_xform)
      *                                  0       0          0
      */
 
-    bcopy ((char *)ident4x4, (char *)pv_to_cc_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)pv_to_cc_xform, (char *)ident4x4, 16 * sizeof(ddFLOAT));
     pv_to_cc_xform[0][0] = 
 	2.0 / (pick_volume->maxval.x - pick_volume->minval.x);
     pv_to_cc_xform[1][1] = 
@@ -237,8 +237,8 @@ convert_dcHitBox_to_npc (pRend, aperture)
     /* Now get the inverse viewport transform to transform the DC_HitBox */
     /* into NPC_HitVolume.                                               */
 
-    bcopy ((char *)pDDC->Static.misc.inv_vpt_xform, 
-	   (char *)inv_xform, 16*sizeof(ddFLOAT));
+    memcpy( (char *)inv_xform, (char *)pDDC->Static.misc.inv_vpt_xform, 
+		16*sizeof(ddFLOAT));
 
     /* Compute the corners of the DC_HitBox in NPC */
 
@@ -497,7 +497,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
     /* Get the translation due to the transformation of the annotation  */
     /* text origin by mc_to_npc_xform into buf1_xform.                  */
 
-    bcopy ((char *) ident4x4, (char *)buf1_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)buf1_xform, (char *) ident4x4, 16 * sizeof(ddFLOAT));
     buf1_xform[0][3] += NPC_Origin.x - MC_Origin.x;
     buf1_xform[1][3] += NPC_Origin.y - MC_Origin.y;
 
@@ -613,7 +613,7 @@ miPickAnnoText2D(pRend, pExecuteOC)
 
 	/* Buffer the tc_to_npc_xform first */
 
-	bcopy ((char *)buf2_xform, (char *)tc_to_npc_xform, 16*sizeof(ddFLOAT));
+	memcpy( (char *)tc_to_npc_xform, (char *)buf2_xform,16*sizeof(ddFLOAT));
 
 	/* Apply the per character translation and scaling by */
 	/* directly modifying the concerned matrix elements.  */
@@ -868,7 +868,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
     /* Get the translation due to the transformation of the annotation  */
     /* text origin by mc_to_npc_xform into buf1_xform.                  */
 
-    bcopy ((char *) ident4x4, (char *)buf1_xform, 16 * sizeof(ddFLOAT));
+    memcpy( (char *)buf1_xform, (char *) ident4x4, 16 * sizeof(ddFLOAT));
     buf1_xform[0][3] += NPC_Origin.x - MC_Origin.x;
     buf1_xform[1][3] += NPC_Origin.y - MC_Origin.y;
     buf1_xform[2][3] += NPC_Origin.z - MC_Origin.z;
@@ -986,7 +986,7 @@ miPickAnnoText3D(pRend, pExecuteOC)
 
 	/* Buffer the tc_to_npc_xform first */
 
-	bcopy ((char *)buf2_xform, (char *)tc_to_npc_xform, 16*sizeof(ddFLOAT));
+	memcpy( (char *)tc_to_npc_xform, (char *)buf2_xform,16*sizeof(ddFLOAT));
 
 	/* Apply the per character translation and scaling by */
 	/* directly modifying the concerned matrix elements.  */
@@ -1109,8 +1109,8 @@ miPickPrimitives(pRend, pExecuteOC)
 
       /* Clear out the cc_to_dc_xform, since we will not be going to DC */
 
-      bcopy((char *) ident4x4, 
-	    (char *) pDDC->Dynamic->cc_to_dc_xform, 16 * sizeof(ddFLOAT));
+      memcpy( (char *) pDDC->Dynamic->cc_to_dc_xform, 
+		(char *) ident4x4, 16 * sizeof(ddFLOAT));
 
       /* Get the current defined view entry from the View LUT */
 

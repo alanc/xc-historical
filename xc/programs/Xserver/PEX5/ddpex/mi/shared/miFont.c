@@ -1,4 +1,4 @@
-/* $XConsortium: miFont.c,v 5.3 92/11/24 13:19:56 mor Exp $ */
+/* $XConsortium: miFont.c,v 5.4 92/12/30 13:40:40 mor Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -210,7 +210,7 @@ QueryPEXFont(pFont, pBuffer)
     pbuf = pBuffer->pBuf;
 			
     /* copy actual font info into buffer */		
-    bcopy((char *)&(font->font_info), (char *)pbuf, sizeof(pexFontInfo));
+    memcpy( (char *)pbuf, (char *)&(font->font_info), sizeof(pexFontInfo));
     pbuf += sizeof(pexFontInfo);
     
     /* copy property info into buffer */
@@ -265,7 +265,7 @@ ListPEXFonts(patLen, pPattern, maxNames, pNumNames, pBuffer)
 	valCARD16 = (CARD16 *)pbuf;
 	*valCARD16 = strlen(names[i]);
 	pbuf += sizeof(CARD16);
-	bcopy(names[i], (char *)pbuf, (int)(strlen(names[i])));
+	memcpy( (char *)pbuf, names[i], (int)(strlen(names[i])));
 	pbuf += strlen(names[i]) + PADDING(2 + strlen(names[i]));
 	Xfree(names[i]);
     }

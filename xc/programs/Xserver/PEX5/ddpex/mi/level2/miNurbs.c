@@ -1,4 +1,4 @@
-/* $XConsortium: miNurbs.c,v 5.2 91/03/31 16:48:26 rws Exp $ */
+/* $XConsortium: miNurbs.c,v 5.3 91/05/01 14:44:31 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -216,20 +216,20 @@ mi_nu_insert_knots( order, pt_type,
     /* Check to see if new knots needed. Copy and return if not. */
     if ( *numoutknots <= 0 ) {
 	*numoutknots = numinknots;
-	bcopy( (char *)oknots, (char *)nknots, (int)numinknots * sizeof(ddFLOAT) );
+	memcpy( (char *)nknots, (char *)oknots, (int)numinknots * sizeof(ddFLOAT) );
 	return 1;
     }
 
     /* Copy old control points into new space. */
     num_pts = numinknots - order;
     if ( DD_IsVert2D(pt_type) ) {
-	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord2D));
+	memcpy( (char *)npoints, (char *)opoints, num_pts * sizeof(ddCoord2D));
 	npts2 = (ddCoord2D *)npoints;
     } else if ( DD_IsVert3D(pt_type) ) {
-	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord3D));
+	memcpy( (char *)npoints, (char *)opoints, num_pts * sizeof(ddCoord3D));
 	npts3 = (ddCoord3D *)npoints;
     } else if ( DD_IsVert4D(pt_type) ) {
-	bcopy( (char *)opoints, (char *)npoints, num_pts * sizeof(ddCoord4D));
+	memcpy( (char *)npoints, (char *)opoints, num_pts * sizeof(ddCoord4D));
 	npts4 = (ddCoord4D *)npoints;
     } else return (1);
 
@@ -240,7 +240,7 @@ mi_nu_insert_knots( order, pt_type,
     /* Insert new knots and control points, starting from the end of the
      * original lists.
      */
-    bcopy( (char *)oknots, (char *)tmpknots, (int)numinknots * sizeof(ddFLOAT) );
+    memcpy( (char *)tmpknots, (char *)oknots, (int)numinknots * sizeof(ddFLOAT) );
     numtmpknots = numinknots;
     ink = *numoutknots;
     iok = numinknots - 1;
@@ -260,19 +260,19 @@ mi_nu_insert_knots( order, pt_type,
 	    --iok;
 
 	/* Move control points down to make space for inserted ones.
-	 * Use bcopy(3) so that the overlap is handled.
+	 * Use memove so that the overlap is handled.
 	 */
 	 /* note that the funky &blah[...] notation is equivalent
 	    to blah+...  since blah is a pointer. JSH 4-10-91
 	 */
 	if ( DD_IsVert2D(pt_type) )
-	    bcopy( (char *)(&npts2[iok + 1]), (char *)(&npts2[iok + 1 + mult]),
+	    memmove((char *)(&npts2[iok + 1 + mult]),(char *)(&npts2[iok + 1]), 
 		((num_pts - iok) - 1) * sizeof(ddCoord2D) );
 	else if ( DD_IsVert3D(pt_type) )
-	    bcopy( (char *)(&npts3[iok + 1]), (char *)(&npts3[iok + 1 + mult]),
+	    memmove((char *)(&npts3[iok + 1 + mult]),(char *)(&npts3[iok + 1]),
 		((num_pts - iok) - 1) * sizeof(ddCoord3D) );
 	else
-	    bcopy( (char *)(&npts4[iok + 1]), (char *)(&npts4[iok + 1 + mult]),
+	    memmove((char *)(&npts4[iok + 1 + mult]),(char *)(&npts4[iok + 1]),
 		((num_pts - iok) - 1) * sizeof(ddCoord4D) );
 
 	/* Do de Boor to insert new knot with multiplicity `mult'. */
@@ -348,7 +348,7 @@ mi_nu_insert_knots( order, pt_type,
 
     /* copy results into output buffers */
     *numoutknots = numtmpknots; /* resulting total knots */
-    bcopy( (char *)tmpknots, (char *)nknots, numtmpknots * sizeof(ddFLOAT) );
+    memcpy( (char *)nknots, (char *)tmpknots, numtmpknots * sizeof(ddFLOAT) );
 
     free( (char *)tmpknots );
     return 1;

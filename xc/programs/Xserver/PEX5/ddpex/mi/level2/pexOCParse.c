@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.6 92/11/25 10:24:08 mor Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.7 93/02/08 11:10:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1111,7 +1111,7 @@ OC_PARSER_FUNC_HEADER(Text)
     EXTRACT_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
     ddText->pText = (pexMonoEncoding *)((ddText->pDirections) + 2);
-    bcopy(  (char *)ptr, (char *)(ddText->pText), 
+    memcpy(  (char *)(ddText->pText), (char *)ptr, 
 	    (int)(  sizeof(CARD32) * ((pexText *)pPEXOC)->head.length
 		    - sizeof(pexText)));
     
@@ -1135,7 +1135,7 @@ OC_PARSER_FUNC_HEADER(Text2D)
     EXTRACT_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
     ddText->pText = (pexMonoEncoding *)((ddText->pOrigin) + 1);
-    bcopy(  (char *)ptr, (char *)(ddText->pText), 
+    memcpy(  (char *)(ddText->pText), (char *)ptr, 
 	    (int)( sizeof(CARD32) * ((pexText2D *)pPEXOC)->head.length
 		    - sizeof(pexText2D)));
     
@@ -1162,7 +1162,7 @@ OC_PARSER_FUNC_HEADER(AnnotationText)
     EXTRACT_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
     ddText->pText = (pexMonoEncoding *)((ddText->pOffset) + 1);
-    bcopy(  (char *)ptr, (char *)(ddText->pText), 
+    memcpy(  (char *)(ddText->pText), (char *)ptr, 
 	    (int)( sizeof(CARD32) * ((pexAnnotationText *)pPEXOC)->head.length
 		   - sizeof(pexAnnotationText)));
 
@@ -1192,7 +1192,7 @@ OC_PARSER_FUNC_HEADER(AnnotationText2D)
     EXTRACT_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
     ddText->pText = (pexMonoEncoding *)((ddText->pOffset) + 1);
-    bcopy(  (char *)ptr, (char *)(ddText->pText), 
+    memcpy(  (char *)(ddText->pText), (char *)ptr, 
 	    (int)(  sizeof(CARD32) * ((pexAnnotationText2D *)pPEXOC)->head.length
 		    - sizeof(pexAnnotationText2D)));
 
@@ -2203,7 +2203,7 @@ OC_PARSER_FUNC_HEADER(SetAttribute)
     GET_DD_STORAGE( dstAttrib, ddElementInfo,
 		    pPEXOC->length * sizeof(CARD32));
 
-    bcopy(  (char *)pPEXOC, (char *)dstAttrib,
+    memcpy(  (char *)dstAttrib, (char *)pPEXOC, 
 	    (int)(pPEXOC->length * sizeof(CARD32)));
 
     OC_PARSER_RETURN(pPEXOC);
@@ -2220,7 +2220,7 @@ OC_PARSER_FUNC_HEADER(PropOC)
     GET_DD_STORAGE( dstPropOC, ddElementInfo,
 		    pPEXOC->length * sizeof(CARD32));
 
-    bcopy(  (char *)pPEXOC, (char *)dstPropOC,
+    memcpy(  (char *)dstPropOC, (char *)pPEXOC, 
 	    (int)(pPEXOC->length * sizeof(CARD32)));
 
     OC_PARSER_RETURN(pPEXOC);

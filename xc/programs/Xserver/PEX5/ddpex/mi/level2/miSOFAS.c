@@ -1,4 +1,4 @@
-/* $XConsortium: miSOFAS.c,v 5.1 91/02/16 09:55:44 rws Exp $ */
+/* $XConsortium: miSOFAS.c,v 5.2 91/05/01 14:43:04 hersh Exp $ */
 
 
 /***********************************************************
@@ -159,7 +159,7 @@ miSOFAS(pRend, pExecuteOC)
 	    index = index_list->pConnects;
 
 	    for (k = 0; k < index_list->numLists; k++) {
-		bcopy((in_pt+(*index * point_size)), out_pt.ptr, point_size);
+		memcpy( out_pt.ptr, (in_pt+(*index * point_size)), point_size);
 		out_pt.ptr += point_size;
 		if (ddSOFAS->edgeAttribs) *(out_pt.pEdge++) = *(edge_ptr++);
 		index++;
@@ -175,7 +175,7 @@ miSOFAS(pRend, pExecuteOC)
 
 	/* Copy facet data for FAS */
 	if (in_fct) {
-	  bcopy((char *)in_fct, (char *)out_fct, facet_size);
+	  memcpy( (char *)out_fct, (char *)in_fct, facet_size);
 	  out_fct += facet_size;
 	  in_fct += facet_size;
 	}

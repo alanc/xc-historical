@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.6 93/02/08 11:08:25 rws Exp $ */
+/* $XConsortium: miInquire.c,v 5.7 93/07/08 18:03:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -642,7 +642,7 @@ OC_INQ_FUNC_HEADER(Text)
     PACK_COORD3D( (ddText->pDirections) + 1, ptr);
     PACK_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
-    bcopy(  (char *)(ddText->pText), (char *)ptr, 
+    memcpy( (char *)ptr, (char *)(ddText->pText), 
 	    (int)(  sizeof(CARD32) * pText->head.length
 		    - sizeof(pexText)));
     
@@ -661,7 +661,7 @@ OC_INQ_FUNC_HEADER(Text2D)
     PACK_COORD2D( ddText->pOrigin, ptr);
     PACK_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
-    bcopy(  (char *)(ddText->pText), (char *)ptr, 
+    memcpy(  (char *)ptr, (char *)(ddText->pText), 
 	    (int)( sizeof(CARD32) * pText->head.length
 		    - sizeof(pexText2D)));
 
@@ -681,7 +681,7 @@ OC_INQ_FUNC_HEADER(AnnotationText)
     PACK_COORD3D( ddText->pOffset, ptr);
     PACK_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
-    bcopy(  (char *)(ddText->pText), (char *)ptr, 
+    memcpy(  (char *)ptr, (char *)(ddText->pText), 
 	    (int)( sizeof(CARD32) * pText->head.length
 		   - sizeof(pexAnnotationText)));
 
@@ -701,7 +701,7 @@ OC_INQ_FUNC_HEADER(AnnotationText2D)
     PACK_COORD2D( ddText->pOffset, ptr);
     PACK_CARD16(ddText->numEncodings, ptr);
     SKIP_PADDING(ptr, 2);
-    bcopy(  (char *)(ddText->pText), (char *)ptr, 
+    memcpy(  (char *)ptr, (char *)(ddText->pText), 
 	    (int)(  sizeof(CARD32) * pText->head.length
 		    - sizeof(pexAnnotationText2D)));
 
@@ -1345,7 +1345,7 @@ OC_INQ_FUNC_HEADER(SetAttribute)
 
     GET_INQ_STORAGE( dstAttrib, ddElementInfo, srcAttrib, ddElementInfo);
 
-    bcopy(  (char *)srcAttrib, (char *)dstAttrib,
+    memcpy(  (char *)dstAttrib, (char *)srcAttrib, 
 	    (int)(srcAttrib->length * sizeof(CARD32)));
 
     return(Success);
@@ -1360,7 +1360,7 @@ OC_INQ_FUNC_HEADER(PropOC)
 
     GET_INQ_STORAGE( dstPropOC, ddElementInfo, srcPropOC, ddElementInfo);
 
-    bcopy(  (char *)srcPropOC, (char *)dstPropOC,
+    memcpy(  (char *)dstPropOC, (char *)srcPropOC, 
 	    (int)(srcPropOC->length * sizeof(CARD32)));
 
     return(Success);

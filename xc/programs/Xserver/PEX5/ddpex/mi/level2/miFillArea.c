@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.7 91/11/15 19:56:56 hersh Exp $ */
+/* $XConsortium: miFillArea.c,v 5.8 92/12/29 17:12:27 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -949,7 +949,8 @@ miCloseFillArea(vinput)
 				+ (vert_count * point_size);
 
 	     /* copy first point to end of list */
-	     bcopy(first_pt, last_pt, point_size);
+	     /* JSH - assuming copy may overlap */
+	     memmove( last_pt, first_pt, point_size);
 
 	     /* Increment point count */
 	     pddlist->numPoints += 1;

@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.9 92/12/29 17:14:30 mor Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.10 93/01/25 17:06:17 hersh Exp $ */
 
 
 /***********************************************************
@@ -1707,15 +1707,15 @@ Breakup_TriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
 
 	  in_vert = pt_in.ptr + 2*point_size;
 	  out_vert = pddolist->pts.ptr;
-	  bcopy(in_vert, out_vert, point_size);
+	  memcpy( out_vert, in_vert, point_size);
 	  in_vert -= point_size; out_vert += point_size;
-	  bcopy(in_vert, out_vert, point_size);
+	  memcpy( out_vert, in_vert, point_size);
 				 out_vert += point_size;
-	  bcopy(pt_in.ptr, out_vert, point_size);
+	  memcpy( out_vert, pt_in.ptr, point_size);
   
 	} else {
 
-	  bcopy(pt_in.ptr, pddolist->pts.ptr, facetofpoints);
+	  memcpy( pddolist->pts.ptr, pt_in.ptr, facetofpoints);
 
 	}
 
@@ -1993,14 +1993,14 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
 
 	  if (new_list) { /* starting new list after facet(s) culled */
 	    /*initialize first points for the first facet */
-	    bcopy(in_pt.ptr - (2 * point_size), out_pt.ptr, (2*point_size));
+	    memcpy( out_pt.ptr, in_pt.ptr - (2 * point_size), (2*point_size));
 	    out_pt.ptr += 2 * point_size;
 	    new_list = 0;
 	    verts_in_list += 2;
 	  }
 
 	  /* copy the vertex info associated with this facet */
-	  bcopy(in_pt.ptr, out_pt.ptr, point_size);
+	  memcpy( out_pt.ptr, in_pt.ptr, point_size);
 	  out_pt.ptr += point_size;
 	  ++verts_in_list;
 
