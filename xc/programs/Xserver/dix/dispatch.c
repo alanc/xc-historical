@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.27 91/03/11 09:30:34 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.28 91/04/27 17:55:53 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2761,7 +2761,7 @@ ProcQueryBestSize   (client)
     }
     pScreen = pDraw->pScreen;
     (* pScreen->QueryBestSize)(stuff->class, &stuff->width,
-			       &stuff->height);
+			       &stuff->height, pScreen);
     reply.type = X_Reply;
     reply.length = 0;
     reply.sequenceNumber = client->sequence;

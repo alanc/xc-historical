@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.15 90/10/29 12:07:52 rws Exp $ */
+/* $XConsortium: gc.c,v 5.16 91/04/07 17:30:27 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -570,7 +570,7 @@ CreateDefaultTile (pGC)
 
     w = 1;
     h = 1;
-    (*pGC->pScreen->QueryBestSize)(TileShape, &w, &h);
+    (*pGC->pScreen->QueryBestSize)(TileShape, &w, &h, pGC->pScreen);
     pTile = (PixmapPtr)
 	    (*pGC->pScreen->CreatePixmap)(pGC->pScreen,
 					  w, h, pGC->depth);
@@ -934,7 +934,7 @@ CreateDefaultStipple(screenNum)
 
     w = 16;
     h = 16;
-    (* pScreen->QueryBestSize)(StippleShape, &w, &h);
+    (* pScreen->QueryBestSize)(StippleShape, &w, &h, pScreen);
     if (!(pScreen->PixmapPerDepth[0] =
 			(*pScreen->CreatePixmap)(pScreen, w, h, 1)))
 	return FALSE;
