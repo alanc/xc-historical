@@ -1,5 +1,6 @@
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
+        DEFINES = -DSHAPE
        INCLUDES = -I. -I$(TOOLKITSRC) -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) $(LINTXTOOL)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.21 89/04/12 08:37:19 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.22 89/04/12 13:59:01 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -34,6 +34,9 @@
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
 #include <X11/Xmu.h>			/* for StringToPixmap */
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
@@ -93,10 +96,14 @@ static XtResource resources[] = {
 	offset (full.mask), XtRPixmap, (caddr_t) &nopix },
     { XtNemptyPixmap, XtCPixmap, XtRPixmap, sizeof(Pixmap),
 	offset (empty.bitmap), XtRString, "flagdown" },
-    { XtNemptyPixmap, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
+    { XtNemptyPixmapMask, XtCPixmapMask, XtRPixmap, sizeof(Pixmap),
 	offset (empty.mask), XtRPixmap, (caddr_t) &nopix },
     { XtNflip, XtCFlip, XtRBoolean, sizeof(Boolean),
 	offset (flipit), XtRString, "true" },
+#ifdef SHAPE
+    { XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof(Boolean),
+        offset (shapeit), XtRString, "false" },
+#endif
 };
 
 #undef offset
@@ -180,6 +187,11 @@ static void Initialize (request, new)
 	w->mailbox.foreground_pixel = w->core.background_pixel;
 	w->core.background_pixel = tmp;
     }
+
+#ifdef SHAPE
+    if (w->mailbox.shapeit && !XShapeQueryExtension (XtDisplay (w)))
+      w->mailbox.shapeit = False;
+#endif
 
     return;
 }
@@ -356,6 +368,10 @@ static void Realize (gw, valuemaskp, attr)
 
     w->mailbox.interval_id = XtAddTimeOut (w->mailbox.update * 1000,
 					   clock_tic, (caddr_t) w);
+
+#ifdef SHAPE
+    w->mailbox.shape_cache.mask = None;
+#endif
 
     return;
 }
@@ -536,6 +552,33 @@ static void redraw_mailbox (w)
     XSetWindowBackground (dpy, win, back);
     XClearWindow (dpy, win);
     XCopyArea (dpy, im->pixmap, win, gc, 0, 0, im->width, im->height, x, y);
+
+#ifdef SHAPE
+    /*
+     * XXX - temporary hack; walk up widget tree to find top most parent (which
+     * will be a shell) and mash it to have our shape.  This will be replaced
+     * by a special shell widget.
+     */
+    if (w->mailbox.shapeit) {
+	Widget parent;
+
+	for (parent = (Widget) w; XtParent(parent);
+	     parent = XtParent(parent)) {
+	    x += parent->core.x + parent->core.border_width;
+	    y += parent->core.y + parent->core.border_width;
+	}
+
+	if (im->mask != w->mailbox.shape_cache.mask ||
+	    x != w->mailbox.shape_cache.x || y != w->mailbox.shape_cache.y) {
+	    XShapeCombineMask (XtDisplay(parent), XtWindow(parent),
+			       ShapeBounding, im->mask, ShapeSet, x, y);
+	    w->mailbox.shape_cache.mask = im->mask;
+	    w->mailbox.shape_cache.x = x;
+	    w->mailbox.shape_cache.y = y;
+	}
+    }
+#endif
+
     return;
 }
 
