@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.125 92/05/13 15:43:14 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.126 92/05/13 16:51:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1356,6 +1356,36 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 	        }
 		return;
 
+	      case UnmapNotify:
+		{
+		    XtPerDisplayInput	pdi;
+		    XtDevice		device;
+		    Widget		p;
+
+		    pdi = _XtGetPerDisplayInput(event->xunmap.display);
+
+		    device = &pdi->pointer;
+		    if (device->grabType == XtPassiveServerGrab) {
+			p = device->grab.widget;
+			while (p && !(XtIsShell(p)))
+			    p = p->core.parent;
+			if (p == wid)
+			    device->grabType = XtNoServerGrab;
+		    }
+
+		    device = &pdi->keyboard;
+		    if (IsEitherPassiveGrab(device->grabType)) {
+			p = device->grab.widget;
+			while (p && !(XtIsShell(p)))
+			    p = p->core.parent;
+			if (p == wid) {
+			    device->grabType = XtNoServerGrab;
+			    pdi->activatingKey = 0;
+			}
+		    }
+
+		    return;
+		}
 	      default:
 		 return;
 	 } 
