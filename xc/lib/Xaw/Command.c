@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.57 89/09/29 16:23:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.58 89/10/02 16:03:32 keith Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -37,10 +37,10 @@ SOFTWARE.
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xmu/Misc.h>
-#include <X11/Xaw/CommandP.h>
+#include "CommandP.h"
 
 #ifdef SHAPE
-#include <X11/extensions/shape.h>
+#include <X11/Xmu/Converters.h>
 #endif
 
 #define DEFAULT_HIGHLIGHT_THICKNESS 2
@@ -71,8 +71,12 @@ static XtResource resources[] = {
 #else
       offset(command.highlight_thickness), XtRImmediate, (XtPointer)32767},
    {XtNshapeStyle, XtCShapeStyle, XtRShapeStyle, sizeof(int),
-      offset(command.shape_style), XtRImmediate, (XtPointer)0},
-#endif
+      offset(command.shape_style), XtRImmediate, (XtPointer)XawShapeRectangle},
+   {XtNcornerWidth, XtCCornerWidth, XtRDimension, sizeof(Dimension),
+      offset(command.corner_width), XtRImmediate, (XtPointer)0},
+   {XtNcornerHeight, XtCCornerHeight, XtRDimension, sizeof(Dimension),
+      offset(command.corner_height), XtRImmediate, (XtPointer)0},
+#endif /*SHAPE*/
 };
 #undef offset
 
@@ -225,17 +229,25 @@ Cardinal *num_args;		/* unused */
   cbw->command.set = FALSE;
   cbw->command.highlighted = HighlightNone;
 #ifdef SHAPE
-  if (!XShapeQueryExtension(XtDisplay(new)))
-	cbw->command.shape_style = XawShapeRectangular;
-  else {
-	if (cbw->command.shape_style == 0)
-	    cbw->command.shape_style = XawShapeOval;
-  }
+  if (cbw->command.shape_style != XawShapeRectangle
+      && !XShapeQueryExtension(XtDisplay(new)))
+	cbw->command.shape_style = XawShapeRectangle;
   if (cbw->command.highlight_thickness == 32767) {
-      if (cbw->command.shape_style != XawShapeRectangular)
+      if (cbw->command.shape_style != XawShapeRectangle)
 	  cbw->command.highlight_thickness = 0;
       else
 	  cbw->command.highlight_thickness = DEFAULT_HIGHLIGHT_THICKNESS;
+  }
+  if (cbw->command.shape_style == XawShapeRoundedRectangle
+      && ((cbw->command.corner_width == 0)
+	  || (cbw->command.corner_height == 0)) ) {
+      Dimension corner_size
+	  = ((cbw->core.width < cbw->core.height)
+	     ? cbw->core.width : cbw->core.height)/4;
+      if (cbw->command.corner_width == 0)
+	  cbw->command.corner_width = corner_size;
+      if (cbw->command.corner_height == 0)
+	  cbw->command.corner_height = corner_size;
   }
 #endif /*SHAPE*/
 }
@@ -547,26 +559,11 @@ Widget current, request, new;
 #ifdef SHAPE
   if (XtIsRealized(new)
       && oldcbw->command.shape_style != cbw->command.shape_style) {
-
-      switch (cbw->command.shape_style) {
-
-	case XawShapeRectangular:
-	  XShapeCombineMask( XtDisplay(new), XtWindow(new),
-			     ShapeBounding, 0, 0, None, ShapeSet );
-	  XShapeCombineMask( XtDisplay(new), XtWindow(new),
-			     ShapeClip, 0, 0, None, ShapeSet );
-	  break;
-
-	case XawShapeOval:
-	  ShapeOval(new);
-	  break;
-
-	case XawShapeEllipse:
-	  ShapeEllipse(new);
-	  break;
-
-	default:
-	  ShapeError(new);
+      if (!XmuReshapeWidget(new,
+			    cbw->command.shape_style,
+			    (int)cbw->command.corner_width,
+			    (int)cbw->command.corner_height
+			    )) {
 	  cbw->command.shape_style = oldcbw->command.shape_style;
       }
   }
@@ -577,212 +574,48 @@ Widget current, request, new;
 
 
 #ifdef SHAPE
-
-#define	done(type, value) \
-	{							\
-	    if (toVal->addr != NULL) {				\
-		if (toVal->size < sizeof(type)) {		\
-		    toVal->size = sizeof(type);			\
-		    return False;				\
-		}						\
-		*(type*)(toVal->addr) = (value);		\
-	    }							\
-	    else {						\
-		static type static_val;				\
-		static_val = (value);				\
-		toVal->size = sizeof(type);			\
-		toVal->addr = (XtPointer)&static_val;		\
-	    }							\
-	    return True;					\
-	}
-
-
-static Boolean CvtStringToShapeStyle(dpy, args, num_args, from, toVal, data)
-    Display *dpy;
-    XrmValue *args;		/* unused */
-    Cardinal *num_args;		/* unused */
-    XrmValue *from;
-    XrmValue *toVal;
-    XtPointer *data;		/* unused */
-{
-    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeRectangular") == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "Rectangular") == 0)
-	done( int, XawShapeRectangular );
-    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeOval") == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "Oval") == 0)
-	done( int, XawShapeOval );
-    if (   XmuCompareISOLatin1((char*)from->addr, "ShapeEllipse") == 0
-	|| XmuCompareISOLatin1((char*)from->addr, "Ellipse") == 0)
-	done( int, XawShapeEllipse );
-    {
-	int style = 0;
-	char ch, *p = (char*)from->addr;
-	while (ch = *p++) {
-	    if (ch >= '0' && ch <= '9') {
-		style *= 10;
-		style += ch - '0';
-	    }
-	    else break;
-	}
-	if (ch == '\0') done( int, style );
-    }
-    XtDisplayStringConversionWarning( dpy, (char*)from->addr, XtRShapeStyle );
-    return False;
-}
-
-
 static void ClassInitialize()
 {
-    XtSetTypeConverter( XtRString, XtRShapeStyle, CvtStringToShapeStyle,
-		        NULL, 0, XtCacheAll, NULL );
+    XtSetTypeConverter( XtRString, XtRShapeStyle, XmuCvtStringToShapeStyle,
+		        NULL, 0, XtCacheNone, NULL );
 }
 
-static ShapeError(w)
-    Widget w;
-{
-    String params[1];
-    Cardinal num_params = 1;
-    params[0] = XtName(w);
-    XtAppWarningMsg( XtWidgetToApplicationContext(w),
-		     "shapeUnknown", "xawCommandRealize", "XawLibrary",
-		     "Unsupported shape style for Command widget \"%s\"",
-		     params, &num_params
-		   );
-}
-
-static void Realize(w, valueMask, attributes)
-    Widget w;
+static void Realize(W, valueMask, attributes)
+    Widget W;
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
+    CommandWidget w = (CommandWidget)W;
     (*commandWidgetClass->core_class.superclass->core_class.realize)
-	(w, valueMask, attributes);
+	(W, valueMask, attributes);
 
-    switch (((CommandWidget)w)->command.shape_style) {
-      case XawShapeRectangular:
-	break;
-
-      case XawShapeOval:
-	ShapeOval(w);
-	break;
-
-      case XawShapeEllipse:
-	ShapeEllipse(w);
-	break;
-
-      default:
-	ShapeError(w);
-	((CommandWidget)w)->command.shape_style = XawShapeOval;
-	ShapeOval(w);
-    }
-}
-
-static void Resize(w)
-    Widget w;
-{
-    if (XtIsRealized(w)) {
-	switch (((CommandWidget)w)->command.shape_style) {
-	  case XawShapeRectangular:
-	    break;
-
-	  case XawShapeOval:
-	    ShapeOval(w);
-	    break;
-
-	  case XawShapeEllipse:
-	    ShapeEllipse(w);
-	    break;
-
-	  default:
-	    ShapeError(w);
-	    ((CommandWidget)w)->command.shape_style = XawShapeOval;
-	    ShapeOval(w);
+    if (w->command.shape_style != XawShapeRectangle) {
+	if (!XmuReshapeWidget(W,
+			      w->command.shape_style,
+			      (int)w->command.corner_width,
+			      (int)w->command.corner_height
+			      )) {
+	    w->command.shape_style = XawShapeRectangle;
 	}
     }
-    (*commandWidgetClass->core_class.superclass->core_class.resize)(w);
 }
 
-
-static ShapeOval(W)
+static void Resize(W)
     Widget W;
 {
-    CommandWidget w = (CommandWidget)W;
-    Display *dpy = XtDisplay(W);
-    unsigned width = w->core.width + (w->core.border_width<<1);
-    unsigned height = w->core.height + (w->core.border_width<<1);
-    Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
-    XGCValues values;
-    GC gc;
-    unsigned int diam, x2, y2;
-
-    values.foreground = 0;
-    values.background = 1;
-    values.cap_style = CapRound;
-    if (width < height) {
-	diam = width;
-	x2 = diam>>1;
-	y2 = height - x2 - 1;	/* can't explain the off-by-one */
-    } else {
-	diam = height;
-	y2 = diam>>1;
-	x2 = width - y2 - 1;
+    if (XtIsRealized(W)) {
+	CommandWidget w = (CommandWidget)W;
+	if (w->command.shape_style != XawShapeRectangle) {
+	    if (!XmuReshapeWidget(W,
+				  w->command.shape_style,
+				  (int)w->command.corner_width,
+				  (int)w->command.corner_height
+				  )) {
+		w->command.shape_style = XawShapeRectangle;
+	    }
+	}
     }
-    values.line_width = diam;
-    gc = XCreateGC (dpy, p,
-		    GCForeground | GCBackground | GCLineWidth | GCCapStyle,
-		    &values);
-    XFillRectangle( dpy, p, gc, 0, 0, width, height );
-    XSetForeground( dpy, gc, 1 );
-    XDrawLine( dpy, p, gc, diam>>1, diam>>1, x2, y2 );
-    XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
-		       -(w->core.border_width), -(w->core.border_width),
-		       p, ShapeSet );
-    XSetForeground( dpy, gc, 0 );
-    XFillRectangle( dpy, p, gc, 0, 0, width, height );
-    if (w->core.width < w->core.height) {
-	diam = w->core.width;
-	x2 = diam>>1;
-	y2 = w->core.height - x2 - 1;
-    } else {
-	diam = w->core.height;
-	y2 = diam>>1;
-	x2 = w->core.width - y2 - 1;
-    }
-    values.line_width = diam;
-    values.foreground = 1;
-    XChangeGC (dpy, gc, GCLineWidth|GCForeground, &values);
-    XDrawLine( dpy, p, gc, diam>>1, diam>>1, x2, y2 );
-    XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
-    XFreePixmap( dpy, p );
-    XFreeGC (dpy, gc );
-}
 
-
-static ShapeEllipse(W)
-    Widget W;
-{
-    CommandWidget w = (CommandWidget)W;
-    Display *dpy = XtDisplay(W);
-    unsigned width = w->core.width + (w->core.border_width<<1);
-    unsigned height = w->core.height + (w->core.border_width<<1);
-    Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
-    XGCValues values;
-    GC gc;
-
-    values.foreground = 0;
-    gc = XCreateGC (dpy, p, GCForeground, &values );
-    XFillRectangle( dpy, p, gc, 0, 0, width, height );
-    XSetForeground (dpy, gc, 1);
-    XFillArc( dpy, p, gc, 0, 0, width, height, 0, 360*64 );
-    XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
-		       -(w->core.border_width), -(w->core.border_width),
-		       p, ShapeSet );
-    XSetForeground (dpy, gc, 0);
-    XFillRectangle( dpy, p, gc, 0, 0, width, height );
-    XSetForeground (dpy, gc, 1);
-    XFillArc( dpy, p, gc, 0, 0, w->core.width, w->core.height, 0, 360*64 );
-    XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
-    XFreePixmap( dpy, p );
-    XFreeGC (dpy, gc);
+    (*commandWidgetClass->core_class.superclass->core_class.resize)(W);
 }
 #endif /*SHAPE*/
