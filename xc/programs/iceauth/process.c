@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.4 94/04/17 20:39:56 mor Exp $
+ * $XConsortium: process.c,v 1.5 94/08/02 17:26:11 mor Exp mor $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -918,8 +918,8 @@ static int search_and_do (inputfilename, lineno, start,
 		protoname = argv[i] + 10;
 	    else if (!strncmp ("protodata=", argv[i], 10))
 		protodata = argv[i] + 10;
-	    else if (!strncmp ("netid=", argv[i], 8))
-		netid = argv[i] + 8;
+	    else if (!strncmp ("netid=", argv[i], 6))
+		netid = argv[i] + 6;
 	    else if (!strncmp ("authname=", argv[i], 9))
 		authname = argv[i] + 9;
 	}
