@@ -23,9 +23,9 @@
 **/
 
 #include <stdio.h>
+#include <X/Xos.h>
 #include "Xlibint.h"
 #include "Xresource.h"
-#include <string.h>
 
 char *XErrorList[] = {
 	/* No error	*/	"",
