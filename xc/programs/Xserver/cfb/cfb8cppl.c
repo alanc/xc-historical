@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.1 90/03/29 18:31:35 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.2 91/04/10 11:42:09 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -100,9 +100,6 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     int			    nbox;
     BoxPtr		    pbox;
     MROP_DECLARE()
-
-    extern int starttab[32], endtab[32];
-    extern unsigned int partmasks[32][32];
 
     if (!(planemask & 1))
 	return;
