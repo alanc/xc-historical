@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.1 92/01/25 16:32:14 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.2 92/01/25 17:12:09 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -114,6 +114,8 @@ XTestCompareCursorWithWindow(dpy, window, cursor)
     GetReq(XTestCompareCursor, req);
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestCompareCursor;
+    req->window = window;
+    req->cursor = cursor;
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
