@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.56 89/10/03 09:39:25 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.57 89/10/09 16:53:15 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -487,6 +487,9 @@
 #endif
 #ifndef TagsCmd
 #define TagsCmd ctags
+#endif
+#ifndef LoaderLibPrefix
+#define LoaderLibPrefix /**/			/* cray does -l libX11.a */
 #endif
 #ifndef TOPDIR
 #define TOPDIR .

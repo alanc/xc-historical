@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.10 89/07/21 11:49:06 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.11 89/10/09 17:18:37 jim Exp $
 
 
 /*
@@ -22,6 +22,11 @@
 #define NeedBerklibInXlib	NO
 #define CcCmd			scc
 
+#if CRAY2 && !UNICOS6
+#define LoaderLibPrefix -L
+#else			/* XMP, YMP, CRAY2 && UNICOS6 */
+#define LoaderLibPrefix -l
+#endif
 
 #if UNICOS4
 #define ConnectionFlags -DTCPCONN -DOLDTCP

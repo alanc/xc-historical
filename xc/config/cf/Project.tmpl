@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.40 89/09/29 13:39:04 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.41 89/10/09 17:00:40 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -309,7 +309,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.40 89/09/29 13:39:04 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.41 89/10/09 17:00:40 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -401,44 +401,44 @@ Berklib.c: sysV/Berklib.c					@@\
      EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC) -lXext)
 #else
   DEPEXTENSIONLIB = _Use($(USRLIBDIR),$(EXTENSIONSRC)/lib)/libXext.a
-     EXTENSIONLIB = $(DEPEXTENSIONLIB)
+     EXTENSIONLIB = LoaderLibPrefix $(DEPEXTENSIONLIB)
 #endif
 #if SharedLibX
           DEPXLIB = $(DEPEXTENSIONLIB) /* _Use($(USRLIBDIR),$(XLIBSRC))/libX11.so.$(SOXLIBREV) */
              XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
 #else
           DEPXLIB = $(DEPEXTENSIONLIB) _Use($(USRLIBDIR),$(XLIBSRC))/libX11.a 
-             XLIB = $(EXTENSIONLIB) $(DEPXLIB)
+             XLIB = $(EXTENSIONLIB) LoaderLibPrefix $(DEPXLIB)
 #endif
       DEPXAUTHLIB = _Use($(USRLIBDIR),$(XAUTHSRC))/libXau.a
-         XAUTHLIB = $(DEPXAUTHLIB)
+         XAUTHLIB = LoaderLibPrefix $(DEPXAUTHLIB)
 #if SharedLibXmu
         DEPXMULIB = /* _Use($(USRLIBDIR),$(XMUSRC))/libXmu.so.$(SOXMUREV) */
            XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu)
 #else
         DEPXMULIB = _Use($(USRLIBDIR),$(XMUSRC))/libXmu.a
-           XMULIB = $(DEPXMULIB)
+           XMULIB = LoaderLibPrefix $(DEPXMULIB)
 #endif
 #if SharedOldLibX
        DEPOLDXLIB = /* _Use($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.so.$(SOOLDXREV) */
           OLDXLIB = _Use(-loldX,-L$(OLDXLIBSRC) -loldX)
 #else
        DEPOLDXLIB = _Use($(USRLIBDIR),$(OLDXLIBSRC))/liboldX.a
-          OLDXLIB = $(DEPOLDXLIB)
+          OLDXLIB = LoaderLibPrefix $(DEPOLDXLIB)
 #endif
 #if SharedLibXt
       DEPXTOOLLIB = /* _Use($(USRLIBDIR),$(TOOLKITSRC))/libXt.so.$(SOXTREV) */
          XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
 #else
       DEPXTOOLLIB = _Use($(USRLIBDIR),$(TOOLKITSRC))/libXt.a
-         XTOOLLIB = $(DEPXTOOLLIB)
+         XTOOLLIB = LoaderLibPrefix $(DEPXTOOLLIB)
 #endif
 #if SharedLibXaw
         DEPXAWLIB = /* _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.so.$(SOXAWREV) */
            XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
 #else
         DEPXAWLIB = _Use($(USRLIBDIR),$(AWIDGETSRC))/libXaw.a
-           XAWLIB = $(DEPXAWLIB)
+           XAWLIB = LoaderLibPrefix $(DEPXAWLIB)
 #endif
 
          LINTXLIB = _Use($(USRLIBDIR),$(XLIBSRC))/llib-lX11.ln
