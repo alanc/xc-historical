@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pl_util.h,v 1.1 92/07/24 14:26:20 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -18,7 +18,9 @@ without express or implied warranty.
 
 #define ZERO_TOLERANCE 1.0e-30
 
-#define NEAR_ZERO(_s) (_ABS (_s) < ZERO_TOLERANCE)
+#define ABS(_x) ((_x) < 0.0 ? -(_x) : (_x))
+
+#define NEAR_ZERO(_s) (ABS (_s) < ZERO_TOLERANCE)
 
 #define ZERO_MAG(_s) ((_s) < ZERO_TOLERANCE)
 

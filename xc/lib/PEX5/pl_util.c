@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pl_util.c,v 1.1 92/07/24 14:18:29 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -2491,7 +2491,7 @@ OUTPUT PEXMatrix	inverseReturn;
 
             for (j = i; j < 4; j++)
             {
-                temp = _ABS (aug[j][i]);
+                temp = ABS (aug[j][i]);
                 if (pivot < temp)
                 {
                     pivot = temp;
@@ -2598,7 +2598,7 @@ PEXMatrix3x3	inverseReturn;
 
             for (j = i; j < 3; j++)
             {
-                temp = _ABS (aug[j][i]);
+                temp = ABS (aug[j][i]);
                 if (pivot < temp)
                 {
                     pivot = temp;
