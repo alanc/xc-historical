@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.132 91/07/25 16:54:50 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.133 91/07/25 19:43:32 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -244,6 +244,13 @@ XCOMM $XConsortium: Project.tmpl,v 1.132 91/07/25 16:54:50 rws Exp $
 #endif
 #ifndef PexClientDefines
 #define PexClientDefines -DPEX_SI_PHIGS
+#endif
+#ifndef PhigsInclude
+#ifdef UseInstalled
+#define PhigsInclude -I$(INCDIR)
+#else
+#define PhigsInclude -I$(BUILDINCDIR)
+#endif
 #endif
 #ifndef PexCDebugFlags
 #define PexCDebugFlags DebuggableCDebugFlags
