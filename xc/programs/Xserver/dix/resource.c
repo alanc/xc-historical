@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.75 89/07/17 10:42:55 rws Exp $ */
+/* $XConsortium: resource.c,v 1.76 89/07/25 11:08:00 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -342,6 +342,37 @@ FreeResource(id, skipDeleteFuncType)
     }
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
+}
+
+/*
+ * Change the value associated with a resource id.  Caller
+ * is responsible for "doing the right thing" with the old
+ * data
+ */
+
+Bool
+ChangeResourceValue (id, rtype, value)
+    XID	id;
+    RESTYPE rtype;
+    pointer value;
+{
+    int    cid;
+    register    ResourcePtr res;
+
+    if (((cid = CLIENT_ID(id)) < MAXCLIENTS) && clientTable[cid].buckets)
+    {
+	res = clientTable[cid].resources[Hash(cid, id)];
+
+	for (; res; res = res->next)
+	    if ((res->id == id) && (res->type == rtype))
+	    {
+		if (rtype & RC_CACHED)
+		    FlushClientCaches(res->id);
+		res->value = value;
+		return TRUE;
+	    }
+    }
+    return FALSE;
 }
 
 void
