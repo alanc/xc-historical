@@ -10081,16 +10081,3 @@ and requests.
 For a request from a given client,
 any events destined for that client that are caused by executing the request
 must be sent to the client before any reply or error is sent.
-.XS 74
-Appendix A \- KEYSYM Encoding
-.XE
-.XS 92
-Appendix B \- Protocol Encoding
-.XE
-.XS 137
-Glossary
-.XE
-.XS 145
-Index
-.XE
-.TC
