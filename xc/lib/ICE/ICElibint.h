@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.5 93/09/08 20:03:29 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.6 93/09/08 20:43:54 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -609,7 +609,7 @@ _IceErrorUnknownProtocol (
 #endif
 );
 
-extern void
+extern Status
 _IceRead (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */,
@@ -639,7 +639,8 @@ _IceAddOpcodeMapping (
 extern void
 _IceFreeConnection (
 #if NeedFunctionPrototypes
-    IceConn		/* iceConn */
+    IceConn		/* iceConn */,
+    Bool		/* ignoreWatchProcs */
 #endif
 );
 
