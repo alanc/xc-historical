@@ -15,9 +15,9 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* EXPERIMENTAL! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
+/* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.9 91/06/01 12:09:17 rws Exp $ */
+/* $XConsortium: shm.c,v 1.10 91/06/30 14:29:30 rws Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -67,6 +67,8 @@ static int BadShmSegCode;
 static RESTYPE ShmSegType, ShmPixType;
 static ShmDescPtr Shmsegs;
 static Bool sharedPixmaps;
+static int pixmapFormat;
+static int shmPixFormat[MAXSCREENS];
 static ShmFuncsPtr shmFuncs[MAXSCREENS];
 static ShmFuncs miFuncs = {NULL, miShmPutImage};
 static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
@@ -108,13 +110,21 @@ ShmExtensionInit()
     int i;
 
     sharedPixmaps = xTrue;
+    pixmapFormat = shmPixFormat[0];
     for (i = 0; i < screenInfo.numScreens; i++)
     {
 	if (!shmFuncs[i])
 	    shmFuncs[i] = &miFuncs;
 	if (!shmFuncs[i]->CreatePixmap)
 	    sharedPixmaps = xFalse;
+	if (shmPixFormat[i] && (shmPixFormat[i] != pixmapFormat))
+	{
+	    sharedPixmaps = xFalse;
+	    pixmapFormat = 0;
+	}
     }
+    if (!pixmapFormat)
+	pixmapFormat = ZPixmap;
     ShmSegType = CreateNewResourceType(ShmDetachSegment);
     ShmPixType = CreateNewResourceType(ShmDetachSegment);
     if (ShmSegType && ShmPixType &&
@@ -137,7 +147,10 @@ ExtensionEntry	*extEntry;
     int i;
 
     for (i = 0; i < MAXSCREENS; i++)
+    {
 	shmFuncs[i] = (ShmFuncsPtr)NULL;
+	shmPixFormat[i] = 0;
+    }
 }
 
 void
@@ -146,6 +159,14 @@ ShmRegisterFuncs(pScreen, funcs)
     ShmFuncsPtr funcs;
 {
     shmFuncs[pScreen->myNum] = funcs;
+}
+
+void
+ShmSetPixmapFormat(pScreen, format)
+    ScreenPtr pScreen;
+    int format;
+{
+    shmPixFormat[pScreen->myNum] = format;
 }
 
 void
