@@ -171,9 +171,9 @@ static void Initialize (request, new)
     myXGCV.foreground = w->clock.Hdpixel;
     w->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
 
-    XtAddEventHandler (request, 0, TRUE, EventHandler, NULL);
+    XtAddEventHandler (w, 0, TRUE, EventHandler, NULL);
 
-    w->clock.interval_id = XtAddTimeOut(request, w->clock.update*1000);
+    w->clock.interval_id = XtAddTimeOut(w, w->clock.update*1000);
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
 }
 
