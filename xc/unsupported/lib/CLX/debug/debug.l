@@ -20,7 +20,9 @@
 
 ;;; Created 04/09/87 14:30:41 by LaMott G. OREN
 
-(EXPORT '(display-listen
+(in-package 'xlib :use '(lisp))
+
+(export '(display-listen
 	  readflush
 	  check-buffer
 	  check-finish
@@ -46,17 +48,18 @@
 	  length)
 	 ((>= i buffer-boffset)
 	  (unless (= i buffer-boffset)
-	    (si:fsignal "Buffer size ~d  Requests end at ~d" buffer-boffset i)))
-      (LET ((buffer-boffset 0)
+	    (warn "Buffer size ~d  Requests end at ~d" buffer-boffset i)))
+      
+      (let ((buffer-boffset 0)
 	    #+clx-overlapping-arrays
 	    (buffer-woffset 0))
 	(setq request (card8-get i))
 	(setq length (* 4 (card16-get (+ i 2)))))
       (when (zerop request)
-	(si:fsignal "Zero request in buffer")
+	(warn "Zero request in buffer")
 	(return nil))
       (when (zerop length)
-	(si:fsignal "Zero length in buffer")
+	(warn "Zero length in buffer")
 	(return nil)))))
 
 (defun check-finish (display)
