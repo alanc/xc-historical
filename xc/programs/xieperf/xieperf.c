@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.2 93/10/26 10:07:30 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.3 93/10/26 15:17:56 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -121,6 +121,7 @@ static int maxcoloridx;
 
 Window	CreateXIEParent();
 void	AllocateRest();
+XieLut CreatePointLut();
 
 /* ScreenSaver state */
 static XParmRec    xparms;
@@ -2331,7 +2332,6 @@ int	inlevels;
 	XiePhotomap XIEPhotomap, tmp;
 	XieLut XIELut;
 	XieProcessDomain domain;
-	XieLut CreatePointLut();
 
 	tmp = GetXIEPhotomap( xp, p, which );
 
@@ -2613,7 +2613,6 @@ int	which;
 	XieLut	XIELut;
 	XiePhotomap XIEPhotomap;
         XieProcessDomain domain;
-	XieLut CreatePointLut();
 
 	XIEPhotomap = GetXIEPhotomap( xp, p, which );
 	if ( XIEPhotomap == ( XiePhotomap ) NULL )
@@ -2713,7 +2712,6 @@ int	which;
 	XIEimage *image;
 	XiePhotomap XIEPhotomap;
         XieProcessDomain domain;
-	XieLut CreatePointLut();
 
 	switch( which )
 	{
