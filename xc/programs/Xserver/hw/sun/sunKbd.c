@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.26 93/09/14 12:22:25 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.27 93/09/17 17:43:02 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -193,8 +193,8 @@ sunKbdProc (pKeyboard, what)
 {
     KbPrivPtr pPriv;
     int kbdFd, i;
-    CARD8 *workingModMap = 0;
-    KeySymsRec *workingKeySyms;
+    static CARD8 *workingModMap = 0;
+    static KeySymsRec *workingKeySyms;
 
     extern int AddEnabledDevice(), RemoveEnabledDevice();
 
@@ -317,7 +317,6 @@ sunKbdProc (pKeyboard, what)
 	InitKeyboardDeviceStruct(pKeyboard, 
 				 workingKeySyms, workingModMap,
 				 bell, kbdCtrl);
-	xfree(workingModMap);
 	break;
 
     case DEVICE_ON:
