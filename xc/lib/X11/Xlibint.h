@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.88 91/03/20 09:30:31 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.89 91/05/11 15:33:21 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -355,8 +355,8 @@ extern int errno;			/* Internal system error number. */
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
 #define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
-			     ((cs)->rbearing == 0) && \
-			     ((cs)->lbearing == 0))
+			     (((cs)->rbearing|(cs)->lbearing| \
+			       (cs)->ascent|(cs)->descent) == 0))
 
 /* 
  * CI_GET_CHAR_INFO_1D - return the charinfo struct for the indicated 8bit
