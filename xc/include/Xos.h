@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.38 91/03/30 09:34:08 rws Exp $
+ * $XConsortium: Xos.h,v 1.39 91/04/15 21:57:57 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -90,19 +90,10 @@
  */
 
 #ifdef SYSV
-#if defined(sgi) || defined(CRAY) || defined(stellar) || defined(sun) || defined(_IBMR2)
-#include <sys/time.h>				/* SYSV sys/time.h */
-#ifdef CRAY
-#include <time.h>
-#define __TIMEVAL__
-#endif
-#else
-#include <time.h>				/* else SYSV time.h */
-#endif
 
-#ifdef USG
-#ifndef __TIMEVAL__
-#define __TIMEVAL__
+#include <sys/time.h>
+#include <time.h>
+#if defined(USG) && !defined(CRAY)
 struct timeval {
     long tv_sec;
     long tv_usec;
@@ -111,12 +102,7 @@ struct timezone {
     int tz_minuteswest;
     int tz_dsttime;
 };
-#endif /* __TIMEVAL__ */
 #endif /* USG */
-
-#ifdef macII
-#include <sys/time.h>				/* SYSV && macII */
-#endif
 
 #else /* not SYSV */
 
