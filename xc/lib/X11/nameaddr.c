@@ -1,4 +1,4 @@
-/* $XConsortium: nameaddr.c,v 1.4 91/07/23 11:49:54 rws Exp $ */
+/* $XConsortium: nameaddr.c,v 1.5 91/09/12 13:41:04 rws Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 
@@ -239,6 +239,7 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 	char	*procname = "Xlib/_XMakeStreamsConnection";
 	struct	utsname	 machine;
 	int	fd; 
+	int	tryother = 0;
 
 	PRMSG("GetConnectionType(%s)\n", name, 0);
 
@@ -247,11 +248,11 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 		return(-1);
 		}
 	if(
-		name == NULL || 
-		strcmp(name, "") == 0 ||
+		(name == NULL && (tryother = 1)) || 
+		(strcmp(name, "") == 0 && (tryother = 1)) ||
 		strcmp(name, "unix") == 0 ||
 		strcmp(name, "local") == 0 ||
-		strcmp(name, machine.nodename) == 0 
+		(strcmp(name, machine.nodename) == 0 && (tryother = 1))
 	  )
 	{
 	    fd = ((*_XsStream[X_NAMED_STREAM].CallTheListener)
@@ -266,8 +267,12 @@ int _XMakeStreamsConnection (name, idisplay, retries,
 		} else {
 		    strcpy (*serveraddrp, machine.nodename);
 		}
+		return fd;
 	    }
-	    return fd;
+	    if (!tryother)
+		return fd;
+	    if (!name || !*name)
+		name = machine.nodename;
 	}
 
 	if((handlep = setnetpath()) == NULL)
