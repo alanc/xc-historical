@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.16 89/01/16 17:12:22 keith Exp $
+ * $XConsortium: resource.c,v 1.17 89/01/29 14:15:03 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -124,7 +124,7 @@ struct displayResources {
 "session",	"Session",	DM_STRING,	boffset(session),
 				DEF_SESSION,
 "openDelay",	"OpenDelay",	DM_INT,		boffset(openDelay),
-				"5",
+				"15",
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
 				"5",
 "openTimeout",	"OpenTimeout",	DM_INT,		boffset(openTimeout),

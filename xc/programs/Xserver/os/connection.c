@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.101 89/03/29 14:50:41 rws Exp $ */
+/* $XConsortium: connection.c,v 1.102 89/03/30 09:07:10 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -107,6 +107,9 @@ long NConnBitArrays = mskcnt;
 long FirstClient;
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
+
+static Bool SendSignal;		/* send SIGUSR1 to parent process */
+static int ParentProcess;
 
 static Bool debug_conns = FALSE;
 
@@ -294,6 +297,29 @@ CreateWellKnownSockets()
     FirstClient = request + 1;
     AllSockets[0] = WellKnownConnections;
     ResetHosts(display);
+    /*
+     * Magic:  If SIGUSR1 was set to SIG_IGN when
+     * the server started, assume that either
+     *
+     *  a- The parent process is ignoring SIGUSR1
+     *
+     * or
+     *
+     *  b- The parent process is expecting a SIGUSR1
+     *     when the server is ready to accept connections
+     *
+     * In the first case, the signal will be harmless,
+     * in the second case, the signal will be quite
+     * useful
+     */
+    if (signal (SIGUSR1, SIG_IGN) == SIG_IGN)
+	SendSignal = TRUE;
+    ParentProcess = getppid ();
+    if (SendSignal) {
+	if (ParentProcess > 0) {
+	    kill (ParentProcess, SIGUSR1);
+	}
+    }
 }
 
 void
@@ -322,6 +348,14 @@ ResetWellKnownSockets ()
     }
 #endif /* UNIXCONN */
     ResetAuthorization ();
+    /*
+     * See above in CreateWellKnownSockets about SIGUSR1
+     */
+    if (SendSignal) {
+	if (ParentProcess > 0) {
+	    kill (ParentProcess, SIGUSR1);
+	}
+    }
 }
 
 /*****************************************************************

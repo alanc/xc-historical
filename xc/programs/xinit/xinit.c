@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.32 88/10/05 09:27:45 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.33 89/03/11 09:45:48 rws Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -112,13 +112,22 @@ sigCatch(sig)
 	exit(1);
 }
 
-#ifdef SYSV
 sigAlarm(sig)
 	int sig;
 {
+#ifdef SYSV
 	signal (sig, sigAlarm);
+#endif
 }
-#endif /* SYSV */
+
+void
+sigUsr1(sig)
+	int sig;
+{
+#ifdef SYSV
+	signal (sig, sigUsr1);
+#endif
+}
 
 static Execute (vec)
     char **vec;				/* has room from up above */
@@ -289,9 +298,8 @@ register char **argv;
 	 */
 	signal(SIGQUIT, sigCatch);
 	signal(SIGINT, sigCatch);
-#ifdef SYSV
 	signal(SIGALRM, sigAlarm);
-#endif /* SYSV */
+	signal(SIGUSR1, sigUsr1);
 	if ((serverpid = startServer(server)) > 0
 	 && (clientpid = startClient(client)) > 0) {
 		pid = -1;
@@ -409,7 +417,12 @@ startServer(server)
 #ifdef SIGTTOU
 		(void) signal(SIGTTOU, SIG_IGN);
 #endif
-
+		/*
+		 * ignore SIGUSR1 in child.  The server
+		 * will notice this and send SIGUSR1 back
+		 * at xinit when ready to accept connections
+		 */
+		(void) signal(SIGUSR1, SIG_IGN);
 		/*
 		 * prevent server from getting sighup from vhangup()
 		 * if client is xterm -L
@@ -454,9 +467,15 @@ startServer(server)
 		}
 		/*
 		 * kludge to avoid race with TCP, giving server time to
-		 * set his socket options before we try to open it
+		 * set his socket options before we try to open it,
+		 * either use the 15 second timeout, or await SIGUSR1.
+		 *
+		 * If your machine is substantially slower than 15 seconds,
+		 * you can easily adjust this value.
 		 */
-		sleep(5);
+		alarm (15);
+		pause ();
+		alarm (0);
 
 		if (waitforserver(serverpid) == 0) {
 			Error("unable to connect to X server\r\n");
