@@ -1,4 +1,4 @@
-# $Header: Imakefile,v 1.9 88/08/08 17:31:38 keith Exp $
+# $XConsortium: Imakefile,v 1.10 88/09/03 11:07:59 rws Exp $
     STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include

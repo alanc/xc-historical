@@ -1,5 +1,5 @@
 /*
- * $Header: include.c,v 1.3 87/08/14 18:14:41 toddb Exp $
+ * $XConsortium: include.c,v 1.4 88/08/21 14:07:32 rws Exp $
  */
 #include "def.h"
 

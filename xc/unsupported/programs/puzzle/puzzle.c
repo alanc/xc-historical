@@ -1,5 +1,5 @@
 /*
- *	$Header: puzzle.c,v 1.2 88/01/30 11:35:34 rws Exp $
+ *	$XConsortium: puzzle.c,v 1.3 88/02/24 15:42:56 rws Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$Header: puzzle.c,v 1.2 88/01/30 11:35:34 rws Exp $";
+static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.3 88/02/24 15:42:56 rws Exp $";
 #endif	/* lint */
 
 /**

@@ -1,4 +1,4 @@
-# $Header: Imakefile,v 1.1 87/09/02 02:21:07 toddb Locked $
+# $XConsortium: Imakefile,v 1.2 87/09/03 12:19:27 toddb Exp $
      HEADERS = zoid.h bezier.h
 INSTALLFLAGS = -m 0444
 

@@ -1,5 +1,5 @@
 /*
- * $Header: cppsetup.c,v 1.2 87/08/07 00:23:56 toddb Exp $
+ * $XConsortium: cppsetup.c,v 1.3 88/08/21 14:07:25 rws Exp $
  */
 #include "def.h"
 

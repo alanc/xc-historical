@@ -1,5 +1,5 @@
 /*
- * $Header: def.h,v 1.3 88/08/03 08:55:12 xswick Exp $
+ * $XConsortium: def.h,v 1.4 88/08/21 11:32:11 rws Exp $
  */
 #include <stdio.h>
 #include <ctype.h>

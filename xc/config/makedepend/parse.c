@@ -1,5 +1,5 @@
 /*
- * $Header: parse.c,v 1.4 88/09/03 09:51:41 rws Exp $
+ * $XConsortium: parse.c,v 1.5 88/09/04 12:35:06 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>

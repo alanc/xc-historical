@@ -1,5 +1,5 @@
 /*
- * $Header: pr.c,v 1.3 88/08/18 22:18:39 jim Exp $
+ * $XConsortium: pr.c,v 1.4 88/08/21 14:07:35 rws Exp $
  */
 #include "def.h"
 

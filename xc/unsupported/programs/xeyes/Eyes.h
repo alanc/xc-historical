@@ -1,5 +1,5 @@
 /*
-* $Header: Eyes.h,v 1.1 88/08/13 09:49:53 jim Exp $
+* $XConsortium: Eyes.h,v 1.2 88/09/03 20:30:23 keith Exp $
 */
 
 #ifndef _XtEyes_h

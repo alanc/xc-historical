@@ -1,5 +1,5 @@
 /*
- * $Header: main.c,v 1.14 88/08/18 22:18:36 jim Exp $
+ * $XConsortium: main.c,v 1.15 88/08/21 11:32:34 rws Exp $
  */
 #include "def.h"
 #ifdef hpux
