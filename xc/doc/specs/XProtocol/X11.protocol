@@ -1,4 +1,4 @@
-.\" $XConsortium: X11.protocol,v 1.36 94/04/12 22:08:58 rws Exp $
+.\" $XConsortium: X11.protocol,v 1.37 94/04/13 10:28:45 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -8452,9 +8452,11 @@ Errors:
 .in -.2i
 .LP
 This request adds or removes the specified host from the access control list.
-When the access control mechanism is enabled and a host attempts to
+When the access control mechanism is enabled and a client attempts to
 establish a connection to the server, 
-the host must be in this list, or the server will refuse the connection.
+the host on which the client resides must be in the access control list, 
+or have the client must have been granted permission by a server-dependent
+method, or the server will refuse the connection.
 .LP
 The client must reside on the same host as the server and/or have been granted
 permission by a server-dependent method to execute this request (or an 
