@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.131 92/12/29 15:01:12 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.132 92/12/29 16:01:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -668,7 +668,7 @@ static String ParseModifiers(str, event,error)
 	    return str;
 	} else if (modQ == QAny) { /*backward compatability*/
 	    event->event.modifierMask = 0;
-	    event->event.modifiers = 0;
+	    event->event.modifiers = AnyModifier;
 	    ScanWhitespace(str);
 	    return str;
 	}
