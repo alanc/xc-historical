@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.119 94/04/01 10:27:30 matt Exp $
+XCOMM site:  $XConsortium: site.def,v 1.120 94/04/01 10:30:25 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -59,7 +59,7 @@ XCOMM site:  $XConsortium: site.def,v 1.119 94/04/01 10:27:30 matt Exp $
 #define CplusplusCompilerMajorVersion 4
 #endif
 #ifdef HasSunCplusplus
-#define CplusplusDependIncludes -I/opt/SUNWspro/SC3.0/incl/CC
+#define CplusplusDependIncludes -I/opt/SUNWspro/SC3.0/include/CC
 #endif
 #ifdef HasCenterLineCplusplus
 #define CplusplusCmd /obj/CenterLine/bin/CC
