@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbscrinit.c,v 1.51 87/09/07 18:55:13 toddb Locked $ */
+/* $Header: mfbscrinit.c,v 1.52 87/09/07 19:08:52 toddb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -36,12 +36,13 @@ SOFTWARE.
 
 #include "servermd.h"
 
-static void
+/*ARGSUSED*/
+static int
 mfbFreeVisual(p, id)
     pointer p;
     int id;
 {
-    Xfree(p);
+    xfree(p);
 }
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -55,7 +56,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
 {
     DepthPtr	pDepth;
     VisualPtr	pVisual;
-    long	*pVids;
+    VisualID	*pVids;
     register PixmapPtr pPixmap;
 
     pScreen->myNum = index;
@@ -64,7 +65,7 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     pScreen->mmWidth = (xsize * 254) / (dpix * 10);
     pScreen->mmHeight = (ysize * 254) / (dpiy * 10);
     pScreen->numDepths = 1;
-    pScreen->allowedDepths = pDepth = (DepthPtr) Xalloc(sizeof(DepthRec));
+    pScreen->allowedDepths = pDepth = (DepthPtr) xalloc(sizeof(DepthRec));
 
     pScreen->rootDepth = 1;
     pScreen->rootVisual = FakeClientID(0);
@@ -79,9 +80,9 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
     /* cursmin and cursmax are device specific */
 
     pScreen->numVisuals = 1;
-    pScreen->visuals = pVisual = (VisualPtr) Xalloc(sizeof (VisualRec));
+    pScreen->visuals = pVisual = (VisualPtr) xalloc(sizeof (VisualRec));
 
-    pPixmap = (PixmapPtr )Xalloc(sizeof(PixmapRec));
+    pPixmap = (PixmapPtr )xalloc(sizeof(PixmapRec));
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.depth = 1;
     pPixmap->drawable.pScreen = pScreen;
@@ -150,10 +151,10 @@ mfbScreenInit(index, pScreen, pbits, xsize, ysize, dpix, dpiy)
 
     pDepth->depth = 1;
     pDepth->numVids = 1;
-    pDepth->vids = pVids = (long *) Xalloc(sizeof (long));
+    pDepth->vids = pVids = (VisualID *) xalloc(sizeof (VisualID));
     pVids[0] = pScreen->rootVisual;	/* our one and only visual */
     AddResource(
-	pScreen->rootVisual, RT_VISUALID, pVisual, mfbFreeVisual, RC_CORE);
+	pScreen->rootVisual, RT_VISUALID, (pointer)pVisual, mfbFreeVisual, RC_CORE);
 
     /* we MIGHT return 0 if we had been keeping track of potential
        allocation failures.  one day someone will clean this up.
