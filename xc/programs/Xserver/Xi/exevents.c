@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.3 89/11/08 18:58:53 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.4 89/11/21 13:25:25 rws Exp $ */
 #ifdef XINPUT
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,6 +54,7 @@ void 			ProcessOtherEvent();
 void 			RecalculateDeviceDeliverableEvents();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
+extern int		DeviceValuator;
 extern Mask 		DevicePointerMotionMask;
 extern Mask 		DeviceMappingNotifyMask;
 extern WindowPtr 	GetSpriteWindow();
@@ -98,10 +99,21 @@ ProcessOtherEvent (xE, other, count)
     ButtonClassPtr	b = other->button;
     KeyClassPtr		k = other->key;
     void		NoticeEventTime();
+    deviceValuator	*xV = (deviceValuator *) xE;
 
     key = xE->detail;
     NoticeEventTime(xE);
-    xE->state = k->state | b->state;
+    xE->state = inputInfo.keyboard->key->state | 
+		inputInfo.pointer->button->state;
+    for (i=1; i<count; i++)
+	if ((++xV)->type == DeviceValuator)
+	    {
+	    xV->device_state = 0;
+	    if (k)
+		xV->device_state |= k->state;
+	    if (b)
+	        xV->device_state |= b->state;
+	    }
     bit = 1 << (key & 7);
     modifiers = other->key->modifierMap[key];
     
@@ -234,7 +246,6 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
     {
     extern      int     DeviceFocusIn;
     extern      int     DeviceFocusOut;
-    extern      int     DeviceValuator;
     extern      int     DeviceStateNotify;
     extern      int     DeviceKeyStateNotify;
     extern      int     DeviceButtonStateNotify;
