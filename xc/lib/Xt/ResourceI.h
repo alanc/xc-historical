@@ -1,5 +1,5 @@
-/* $XConsortium: ResourceI.h,v 1.6 89/11/14 14:23:06 swick Exp $ */
-/* $oHeader: ResourceI.h,v 1.2 88/08/18 15:56:00 asente Exp $ */
+/* $XConsortium: ResourceI.h,v 1.7 90/06/12 16:30:12 kit Exp $ */
+
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -55,5 +55,13 @@ extern XtCacheRef* _XtGetResources(
     Cardinal	    /* num_args */,
     XtTypedArgList  /* typed_args */,
     Cardinal*	    /* num_typed_args */
+#endif
+);
+
+extern void _XtCopyFromParent(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    int			/* offset */,
+    XrmValue*		/* value */
 #endif
 );
