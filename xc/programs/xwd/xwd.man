@@ -1,10 +1,10 @@
 .TH XWD 1 "1 March 1988" "X Version 11"
 .SH NAME
-xwd - X Window System, window image dumper.
+xwd - dump a image of an X window
 .SH SYNOPSIS
 .B "xwd"
 [-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy]
-[-display \fIhost\fP:\fIdisplay\fP]
+[-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
 .I Xwd
@@ -37,18 +37,11 @@ file on the command line.  The default is to output to standard out.
 .TP 8
 .B "-xy"
 This option applies to color displays only. It selects `XY' format dumping
-instead of the default `Z' format. Monochrome displays are always dumped in
-`XY' format.
+instead of the default `Z' format.
 .PP
 .TP 8
-.B "-display \fIhost\fP:\fIdisplay\fP"
-This  argument  allow  you  to  specify the host and display number on
-which to find the target window.  For example `xwd -display orpheus:1'
-would specify that the target window is on display `1' on the machine
-`orpheus'.  By default,
-.I xwd
-uses the host and display number stored in the environment variable
-DISPLAY, and therefore this argument is not normally specified.
+.B "-display \fIdisplay\fP"
+This  argument  allow  you  to  specify server to connect to; see \fIX(1)\fP.
 .SH ENVIRONMENT
 .PP
 .TP 8

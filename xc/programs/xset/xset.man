@@ -1,9 +1,9 @@
 .TH XSET 1 "1 March 1988" "X Version 11"
 .SH NAME
-xset - X window system user setup program
+xset - user preference utility for X
 .SH SYNOPSIS
 .B xset
-[-display \fIhost\fP:\fIdisplay\fP]
+[-display \fIdisplay\fP]
 [-b] [b on/off] [b [\fIvolume\fP [\fIpitch\fP [\fIduration\fP]]]
 [-c] [c on/off] [c [\fIvolume\fP]]
 [fp \fIpath\fP[,\fIpath\fP[,...]]] [fp default]
@@ -19,15 +19,8 @@ This program is used to set various user preference options of the display.
 .SH OPTIONS
 .PP
 .TP 8
-.B \-display \fIhost\fP:\fIdpy\fP
-Normally,
-.I xset
-gets the host and display number to use from the environment
-variable ''DISPLAY''. One can, however, specify them explicitly. The
-.I host
-specifies which machine to create the window on, and the
-.I dpy
-argument specifies the display number.
+.B \-display \fIdisplay\fP
+This option specifies the server to use; see \fIX(1)\fP.
 .PP
 .TP 8
 .B b

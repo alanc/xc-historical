@@ -1,6 +1,6 @@
 .TH XREFRESH 1 "1 March 1988" "X Version 11"
 .SH NAME
-xrefresh - refresh all or part of the screen.
+xrefresh - refresh all or part of an X screen
 .SH SYNOPSIS
 .B "xrefresh"
 [-option ...] 
@@ -11,7 +11,7 @@ is a simple X program that causes all or part of your screen to be repainted.
 .I Xrefresh
 maps a window on top of the desired area of the screen and then immediately
 unmaps it, 
-causing refresh events to be sent to all applications.  By default, a
+causing refresh events to be sent to all applications.  By default,
 a window with no background is used, causing all applications to repaint
 ``smoothly.''
 However, the various options can be used to indicate that a solid background 
@@ -47,21 +47,15 @@ Specifies the portion of the screen to be repainted.  This superceeds the
 old style \fB=WxH+X+Y\fP.
 .PP
 .TP 10
-.B \-display \fIhost\fP:\fIdisplay\fP
-This  argument  allows  you  to  specify the host and display number on
-which to display the refresh window.  For example ``xrefresh -display 
-orpheus:1''
-would specify that the display `1' on the machine
-`orpheus' will be refreshed.  By default,
-.I xrefresh
-uses the host and display number stored in the environment variable
-DISPLAY, and therefore this argument is not normally specified.
+.B \-display \fIdisplay\fP
+This  argument  allows  you  to  specify the server and screen to
+refresh; see \fIX(1)\fP.
 .SH X DEFAULTS
-.PP
-This program uses the 
-.I XGetDefault
-routine and therefore uses capitalized named instead of ones starting
-with lower case letters.
+The
+.I xrefresh
+program uses the routine 
+.I XGetDefault(3X)
+to read defaults, so its resource names are all capitalized.
 .PP
 .TP 8
 .B Black\fP, \fBWhite\fP, \fBSolid\fP, \fBNone\fP, \fBRoot\fP
@@ -85,6 +79,3 @@ Copyright 1988, Massachusetts Institute of Technology.
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Jim Gettys, Digital Equipment Corp., MIT Project Athena
-.br
-Jim Fulton, MIT X Consortium
-
