@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.7 90/11/06 16:17:33 dave Exp $
+ * $XConsortium: actions.c,v 1.8 91/02/20 19:56:45 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -33,7 +33,7 @@
  * External Functions.
  */
 
-extern void SetMessage(), _TreeSelect(), _TreeSelectNode();
+extern void SetMessage(), _TreeSelect(), _TreeSelectNode(), _FindWidget();
 extern void _TreeActivateNode(), _TreeRelabel(), _TreeRelabelNode();
 extern void PrepareToLayoutTree(), LayoutTree(), _PopdownFileDialog();
 
@@ -47,6 +47,7 @@ struct ActionValues {
 };
 
 static struct ActionValues select_values[] = {
+    { "widget", (int) SelectWidget },
     { "all", (int) SelectAll },
     { "nothing", (int) SelectNone },
     { "invert", (int) SelectInvert },
@@ -93,7 +94,9 @@ Cardinal * num_params;
 			   select_values, XtNumber(select_values), &type))
 	return;
 
-    if ((node = FindTreeNodeFromWidget(w)) == NULL) 
+    if (type == SelectWidget)
+	_FindWidget(XtParent(w));
+    else if ((node = FindTreeNodeFromWidget(w)) == NULL) 
 	_TreeSelect(global_tree_info, type);
     else {
 	switch(type) {
