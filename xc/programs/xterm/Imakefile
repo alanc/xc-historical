@@ -24,6 +24,7 @@
 #else
 #define GettyProgram /* as nothing */
 #endif
+/* add -DWTMP and -DLASTLOG if you want them */
         DEFINES = -DMODEMENU -DUTMP -DBcopy=bcopy GettyProgram
           SRCS1 = button.c charproc.c cursor.c data.c input.c \
 		  main.c menu.c misc.c screen.c scrollbar.c tabs.c \
