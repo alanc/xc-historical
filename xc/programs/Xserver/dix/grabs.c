@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: grabs.c,v 1.1 87/09/11 07:18:50 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -140,9 +140,8 @@ GrabPtr pGrab;
 
 
 static BOOL
-IsInGrabMask(firstDetail, secondExact, exception)
-DetailRec firstDetail;
-int secondExact;
+IsInGrabMask(firstDetail, secondDetail, exception)
+DetailRec firstDetail, secondDetail;
 int exception;
 {
     if (firstDetail.exact == exception)
@@ -150,7 +149,11 @@ int exception;
 	if (firstDetail.pMask == NULL)
 	    return TRUE;
 	
- 	if (GETBIT(firstDetail.pMask, secondExact))
+	/* (at present) never called with two non-null pMasks */
+	if (secondDetail.exact == exception)
+	    return FALSE;
+
+ 	if (GETBIT(firstDetail.pMask, secondDetail.exact))
 	    return TRUE;
     }
     
@@ -175,7 +178,7 @@ DetailSupersedesSecond(firstDetail, secondDetail, exception)
 DetailRec firstDetail, secondDetail;
 int exception;
 {
-    if (IsInGrabMask(firstDetail, secondDetail.exact, exception))
+    if (IsInGrabMask(firstDetail, secondDetail, exception))
 	return TRUE;
 
     if (IdenticalExactDetails(firstDetail.exact, secondDetail.exact, exception))
