@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.41 93/11/12 16:46:26 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.42 93/11/14 13:37:09 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -384,27 +384,9 @@ void OsVendorInit(
 	    (void) setrlimit (RLIMIT_NOFILE, &rl);
 	}
 #endif
-#define SET_FLOW(fd) fcntl(fd, F_SETFL, FNDELAY | FASYNC)
-#ifdef SVR4
-#define WANT_SIGNALS(fd) ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI)
-#else
-#define WANT_SIGNALS(fd) fcntl(fd, F_SETOWN, getpid())
-#endif
-	if ((sunKbdFd = open ("/dev/kbd", O_RDWR, 0)) >= 0) {
-	    if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
-		(void) close (sunKbdFd);
-		sunKbdFd = -1;
-	    }
-	}
-	if ((sunPtrFd = open ("/dev/mouse", O_RDWR, 0)) >= 0) {
-	    if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
-		(void) close (sunPtrFd);
-		sunPtrFd = -1;
-	    }
-	}
+	sunKbdFd = open ("/dev/kbd", O_RDWR, 0);
+	sunPtrFd = open ("/dev/mouse", O_RDWR, 0);
 	inited = 1;
-#undef SET_FLOW
-#undef WANT_SIGNALS
     }
 }
 
@@ -528,9 +510,26 @@ void InitInput(argc, argv)
     RegisterKeyboardDevice(k);
     miRegisterPointerDevice(screenInfo.screens[0], p);
     (void) mieqInit (k, p);
+#define SET_FLOW(fd) fcntl(fd, F_SETFL, FNDELAY | FASYNC)
 #ifdef SVR4
     (void) OsSignal(SIGPOLL, SigIOHandler);
+#define WANT_SIGNALS(fd) ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI)
 #else
     (void) OsSignal(SIGIO, SigIOHandler);
+#define WANT_SIGNALS(fd) fcntl(fd, F_SETOWN, getpid())
 #endif
+    if (sunKbdFd >= 0) {
+	if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
+	    (void) close (sunKbdFd);
+	    sunKbdFd = -1;
+	    FatalError("Async kbd I/O failed in InitInput");
+	}
+    }
+    if (sunPtrFd >= 0) {
+	if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
+	    (void) close (sunPtrFd);
+	    sunPtrFd = -1;
+	    FatalError("Async mouse I/O failed in InitInput");
+	}
+    }
 }
