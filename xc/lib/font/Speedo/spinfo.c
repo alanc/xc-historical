@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.5 91/07/16 20:20:03 keith Exp $ */
+/* $XConsortium: spinfo.c,v 1.6 91/07/22 22:59:56 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -104,12 +104,27 @@ make_sp_header(spf, pinfo)
 
     /* XXX -- hackery here */
     pinfo->defaultCh = 0;
+/* computed by FontComputeInfoAccelerators:
+ *  noOverlap
+ *  constantMetrics
+ *  terminalFont
+ *  constantWidth
+ *  inkInside
+ */
+    pinfo->inkMetrics = 0;
     pinfo->allExist = 0;
     pinfo->drawDirection = LeftToRight;
+    pinfo->cachable = 1;
     pinfo->anamorphic = 0;
     if (spf->specs.xxmult != spf->specs.yymult)
 	pinfo->anamorphic = TRUE;
-
+/* computed by compute_sp_bounds:
+ *  maxOverlap
+ *  maxbounds
+ *  minbounds
+ *  ink_maxbounds
+ *  ink_minbounds
+ */
     pixel_size = spf->vals.pixel * STRETCH_FACTOR / 100;
     pinfo->fontAscent = pixel_size * 764 / 1000;	/* 764 == EM_TOP */
     pinfo->fontDescent = pixel_size - pinfo->fontAscent;
@@ -145,7 +160,9 @@ compute_sp_bounds(spf, pinfo, flags)
 {
     int         i,
                 id,
-                index;
+                index,
+		maxOverlap,
+		overlap;
     xCharInfo   minchar,
                 maxchar,
                 tmpchar;
@@ -165,7 +182,7 @@ compute_sp_bounds(spf, pinfo, flags)
 	maxchar.leftSideBearing = maxchar.rightSideBearing =
 	maxchar.characterWidth = -32767;
     maxchar.attributes = 0;
-
+    maxOverlap = -32767;
     for (i = 0; i < spmf->num_chars; i++) {
 	index = spmf->enc[i * 2 + 1];
 	width = sp_get_char_width(index);
@@ -189,6 +206,9 @@ compute_sp_bounds(spf, pinfo, flags)
 	tmpchar.characterWidth = (int) (pix_width + 0.5);	/* round */
 	tmpchar.attributes = 0;
 	adjust_min_max(&minchar, &maxchar, &tmpchar);
+	overlap = tmpchar.rightSideBearing - tmpchar.characterWidth;
+	if (maxOverlap < overlap)
+	    maxOverlap = overlap;
 
 	total_width += pix_width;
 
@@ -205,6 +225,7 @@ compute_sp_bounds(spf, pinfo, flags)
     pinfo->minbounds = minchar;
     pinfo->ink_maxbounds = maxchar;
     pinfo->ink_minbounds = minchar;
+    pinfo->maxOverlap = maxOverlap;
 }
 
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.11 91/07/18 22:40:17 keith Exp $ */
+/* $XConsortium: spfont.c,v 1.12 91/07/22 22:59:38 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -753,6 +753,9 @@ load_sp_font(fontname, filename, entry, format, fmask, pfont, flags)
     }
     if (ret != Successful)
 	return ret;
+
+    /* compute remaining accelerators */
+    FontComputeInfoAccelerators (&pfont->info);
 
     pfont->format = format;
 

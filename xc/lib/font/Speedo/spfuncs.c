@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.3 91/06/12 14:35:28 keith Exp $ */
+/* $XConsortium: spfuncs.c,v 1.4 91/07/16 20:18:44 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -86,6 +86,9 @@ get_font_info(pinfo, fontname, filename, entry, spfont)
     compute_sp_bounds(spf, pinfo, (unsigned long) 0);
 
     compute_sp_props(spf, fontname, pinfo);
+
+    /* compute remaining accelerators */
+    FontComputeInfoAccelerators (pinfo);
 
     return Successful;
 }
