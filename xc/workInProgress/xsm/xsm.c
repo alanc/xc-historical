@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.26 94/02/21 10:01:32 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.27 94/02/21 16:25:55 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -128,6 +128,9 @@ int		interactCount = 0;
 Bool		shutdownInProgress = False;
 Bool		shutdownCancelled = False;
 jmp_buf		JumpHere;
+
+IceAuthDataEntry *authDataEntries = NULL;
+int		numTransports = 0;
 
 int		saveTypeData[] = {SmSaveGlobal,
 			  	  SmSaveLocal,
@@ -1460,6 +1463,22 @@ char *str;
     }
 }
 
+
+static void fprintfhex (fp, len, cp)
+    register FILE *fp;
+    unsigned int len;
+    char *cp;
+{
+    unsigned char *ucp = (unsigned char *) cp;
+
+    for (; len > 0; len--, ucp++) {
+	register char *s = hex_table[*ucp];
+	putc (s[0], fp);
+	putc (s[1], fp);
+    }
+    return;
+}
+
 
 
 restart_everything()
@@ -1719,11 +1738,32 @@ restart_everything()
 			fprintf (fp, "MISC X %s\n", non_local_display_env);
 			fprintf (fp, "MISC X %s\n", non_local_session_env);
 
-/*
- * To do: set the auth data.
- *   use AUTH authscheme authdata
- *   The remote machine should have it config'd to invoke iceauth add
- */
+			/*
+			 * Pass the authentication data.
+			 * Each transport has auth data for ICE and XSMP.
+			 * Don't pass local auth data.
+			 */
+
+			for (i = 0; i < numTransports * 2; i++)
+			{
+			    if (Strstr (authDataEntries[i].address, "local/"))
+				continue;
+
+			    fprintf (fp, "AUTH ICE %s \"\" %s %s ",
+				authDataEntries[i].protocol_name,
+				authDataEntries[i].address,
+				authDataEntries[i].auth_name);
+
+			    fprintfhex (fp,
+				authDataEntries[i].auth_data_length,
+				authDataEntries[i].auth_data);
+
+			    fprintf (fp, "\n");
+			}
+
+			/*
+			 * And execute the program
+			 */
 
 			fprintf (fp, "EXEC %s %s", program, program);
 			for (i = 1; args[i]; i++)
@@ -1746,23 +1786,6 @@ restart_everything()
     if(non_local_display_env) free(non_local_display_env);
     if(non_local_session_env) free(non_local_session_env);
     if(audio_env) free(audio_env);
-}
-
-
-
-static void fprintfhex (fp, len, cp)
-    register FILE *fp;
-    unsigned int len;
-    char *cp;
-{
-    unsigned char *ucp = (unsigned char *) cp;
-
-    for (; len > 0; len--, ucp++) {
-	register char *s = hex_table[*ucp];
-	putc (s[0], fp);
-	putc (s[1], fp);
-    }
-    return;
 }
 
 
@@ -1847,15 +1870,15 @@ unsigned short 	*len;
 
 
 Status
-set_auth (count, listenObjs)
+set_auth (count, listenObjs, authDataEntries)
 
 int		count;
 IceListenObj	*listenObjs;
+IceAuthDataEntry **authDataEntries;
 
 {
     FILE		*addfp;
     FILE		*removefp;
-    IceAuthDataEntry	authDataEntry[2];
     int			i;
 
     if (!(addfp = fopen (".xsm-add-auth", "w")))
@@ -1864,33 +1887,34 @@ IceListenObj	*listenObjs;
     if (!(removefp = fopen (".xsm-rem-auth", "w")))
 	return (0);
 
-    authDataEntry[0].protocol_name = "ICE";
-    authDataEntry[0].auth_name = "MIT-MAGIC-COOKIE-1";
+    *authDataEntries = (IceAuthDataEntry *) malloc (
+	count * 2 * sizeof (IceAuthDataEntry));
 
-    GenerateMagicCookie (&authDataEntry[0].auth_data,
-	&authDataEntry[0].auth_data_length);
-
-    authDataEntry[1].protocol_name = "XSMP";
-    authDataEntry[1].auth_name = "MIT-MAGIC-COOKIE-1";
-
-    GenerateMagicCookie (&authDataEntry[1].auth_data,
-	&authDataEntry[1].auth_data_length);
-
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count * 2; i += 2)
     {
-	char *networkId = IceGetListenNetworkId (listenObjs[i]);
+	(*authDataEntries)[i].address =
+		IceGetListenNetworkId (listenObjs[i/2]);
+	(*authDataEntries)[i].protocol_name = "ICE";
+	(*authDataEntries)[i].auth_name = "MIT-MAGIC-COOKIE-1";
 
-	authDataEntry[0].address = networkId;
-	authDataEntry[1].address = networkId;
+	GenerateMagicCookie (&(*authDataEntries)[i].auth_data,
+	    &(*authDataEntries)[i].auth_data_length);
 
-	write_iceauth (addfp, removefp, &authDataEntry[0]);
-	write_iceauth (addfp, removefp, &authDataEntry[1]);
 
-	IceSetPaAuthData (2, authDataEntry);
+	(*authDataEntries)[i+1].address =
+		IceGetListenNetworkId (listenObjs[i/2]);
+	(*authDataEntries)[i+1].protocol_name = "XSMP";
+	(*authDataEntries)[i+1].auth_name = "MIT-MAGIC-COOKIE-1";
 
-	IceSetHostBasedAuthProc (listenObjs[i], HostBasedProc);
+	GenerateMagicCookie (&(*authDataEntries)[i+1].auth_data,
+	    &(*authDataEntries)[i+1].auth_data_length);
 
-	free (networkId);
+	write_iceauth (addfp, removefp, &(*authDataEntries)[i]);
+	write_iceauth (addfp, removefp, &(*authDataEntries)[i+1]);
+
+	IceSetPaAuthData (2, &(*authDataEntries)[i]);
+
+	IceSetHostBasedAuthProc (listenObjs[i/2], HostBasedProc);
     }
 
     fclose (addfp);
@@ -1900,6 +1924,28 @@ IceListenObj	*listenObjs;
 
     return (1);
 }
+
+
+void
+free_auth (count, authDataEntries)
+
+int		count;
+IceAuthDataEntry *authDataEntries;
+
+{
+    /* Each transport has entries for ICE and XSMP */
+
+    int i;
+
+    for (i = 0; i < count * 2; i++)
+    {
+	free (authDataEntries[i].address);
+	free (authDataEntries[i].auth_data);
+    }
+
+    free ((char *) authDataEntries);
+}
+
 
 static void Syntax(call)
     char *call;
@@ -1914,7 +1960,7 @@ main(argc, argv)
 {
     IceListenObj *listenObjs;
     char 	*networkIds;
-    int  	count, i;
+    int  	i;
     char	*p;
     char *	progName;
     char 	errormsg[256];
@@ -1960,14 +2006,14 @@ main(argc, argv)
 	exit (1);
     }
 
-    if (!IceListenForConnections (&count, &listenObjs,
+    if (!IceListenForConnections (&numTransports, &listenObjs,
 	256, errormsg))
     {
 	printf ("%s\n", errormsg);
 	exit (1);
     }
 
-    if (!set_auth (count, listenObjs))
+    if (!set_auth (numTransports, listenObjs, &authDataEntries))
     {
 	printf ("Could not set authorization\n");
 	exit (1);
@@ -2226,7 +2272,7 @@ main(argc, argv)
 
     XtRealizeWidget (topLevel);
     
-    for (i = 0; i < count; i++)
+    for (i = 0; i < numTransports; i++)
     {
 	XtAppAddInput (appContext,
 	    IceGetListenDescrip (listenObjs[i]),
@@ -2235,7 +2281,7 @@ main(argc, argv)
     }
 
     /* the sizeof includes the \0, so we don't need to count the '=' */
-    networkIds = IceComposeNetworkIdList (count, listenObjs);
+    networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
     p = malloc((sizeof environment_name) + strlen(networkIds) + 1);
     if(!p) nomem();
     sprintf(p, "%s=%s", environment_name, networkIds);
@@ -2246,6 +2292,8 @@ main(argc, argv)
 
     read_save();
     restart_everything();
+
+    free_auth (numTransports, authDataEntries);
 
     if (app_resources.verbose)
 	printf ("Waiting for connections...\n");
