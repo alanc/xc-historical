@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.44 88/05/18 11:37:16 swick Exp $ */
+/* $Header: utils.c,v 1.45 88/05/19 10:36:30 swick Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -85,6 +85,9 @@ ErrorF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
 void
 AbortServer()
 {
+    extern void AbortDDX();
+
+    AbortDDX();
     fflush(stderr);
     abort();
 }
