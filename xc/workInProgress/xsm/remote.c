@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.8 94/08/08 16:12:55 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.9 94/08/17 18:08:07 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -107,6 +107,7 @@ char	*non_local_session_env;
 
 	    fprintf (fp, "CONTEXT X\n");
 	    fprintf (fp, "DIR %s\n", cwd);
+	    fprintf (fp, "DETACH\n");
 
 	    if (!env)
 		env = environ;
