@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.49 91/02/06 21:14:36 converse Exp $ */
+/* $XConsortium: Core.c,v 1.50 91/02/17 14:02:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -230,9 +230,9 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     new_widget->core.tm.translations =
 	(XtTranslations)new_widget->core.widget_class->core_class.tm_table;
     if (save1)
-	_XtMergeTranslations(new_widget, save1);
+	_XtMergeTranslations(new_widget, save1, save1->operation);
     if (!save1 || save2)
-	_XtMergeTranslations(new_widget, save2);
+	_XtMergeTranslations(new_widget, save2, save2->operation);
 }
 
 static void CoreRealize(widget, value_mask, attributes)
@@ -271,7 +271,7 @@ static Boolean CoreSetValues(old, reference, new, args, num_args)
     if  (old->core.tm.translations != new->core.tm.translations) {
 	save = new->core.tm.translations;
 	new->core.tm.translations = old->core.tm.translations;
-	_XtMergeTranslations(new,save);
+	_XtMergeTranslations(new, save, XtTableReplace);
     }       
 
     /* Check everything that depends upon window being realized */

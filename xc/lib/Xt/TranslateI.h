@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.36 91/03/28 15:36:01 rws Exp $ */
+/* $XConsortium: TranslateI.h,v 1.37 91/05/04 13:24:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -533,7 +533,8 @@ extern void _XtDestroyTMData(
 extern void _XtMergeTranslations(
 #if NeedFunctionPrototypes
     Widget		/* widget */,
-    XtTranslations	/* newXlations */
+    XtTranslations	/* newXlations */,
+    _XtTranslateOp	/* operation */
 #endif
 );
 

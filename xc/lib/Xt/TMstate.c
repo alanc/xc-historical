@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.146 91/05/08 21:02:40 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.147 91/05/09 18:00:07 swick Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1164,7 +1164,7 @@ void _XtInstallTranslations(widget)
      * ComposeTranslations but we *should* have bindings by then
      */
     if (widget->core.tm.proc_table == NULL) {
-	_XtMergeTranslations(widget, NULL);
+	_XtMergeTranslations(widget, NULL, XtTableReplace);
 	/* 
 	 * if we're realized then we'll be called out of
 	 * ComposeTranslations 
@@ -1231,7 +1231,7 @@ void _XtRemoveTranslations(widget)
     
     if (xlations == NULL) 
       return;
-    stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[0];
+
     for (i = 0;
 	 i < xlations->numStateTrees;
 	 i++)
@@ -1886,14 +1886,11 @@ static Boolean ComposeTranslations(dest, operation, source, newXlations)
 	_XtUninstallTranslations(dest);
     }
     
+    if (bindData) XtFree((char *)bindData);
+
     dest->core.tm.proc_table = 
       (XtActionProc *) MakeBindData(newBindings, numNewBindings);
     
-    if (bindData) {
-	XtFree((char *)bindData);
-	bindData = NULL;
-    }
-
     dest->core.tm.translations = newTable;
 
     if (XtIsRealized(dest)) {
@@ -2069,12 +2066,11 @@ void XtOverrideTranslations(widget, new)
     (void) ComposeTranslations(widget, XtTableOverride, (Widget)NULL, new);
 }
 
-void _XtMergeTranslations(widget, newXlations)
+void _XtMergeTranslations(widget, newXlations, op)
     Widget	widget;
     XtTranslations newXlations;
-{
     _XtTranslateOp op;
-
+{
     if (!newXlations){
 	if (!widget->core.tm.translations)
 	  return;
@@ -2083,7 +2079,6 @@ void _XtMergeTranslations(widget, newXlations)
 	  widget->core.tm.translations = NULL;
       }
     }
-    op = newXlations->operation;
     (void) ComposeTranslations(widget, 
 			     op,
 			     (Widget)NULL, 
