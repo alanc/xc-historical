@@ -98,11 +98,7 @@ all:: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 	done
 
 
-extensions::
-	-if [ ! -d $@ ]; then \
-	    if [ -f $@ ]; then $(RM) $@; else /bin/true ; fi; \
-	    mkdir $@; \
-	else exit 0; fi
+MakeDirectories(extensions,extensions)
 
 MakeDirectories(install, $(INCDIR))
 
