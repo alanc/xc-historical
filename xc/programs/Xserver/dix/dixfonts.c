@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.31 91/07/26 20:55:52 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.32 91/08/23 13:57:34 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -737,22 +737,44 @@ doListFontsWithInfo(client, c)
 	 */
 	if (err == FontNameAlias)
  	{
-	    if (!c->haveSaved)
+	    /*
+	     * when an alias recurses, we need to give
+	     * the last FPE a chance to clean up; so we call
+	     * it again, and assume that the error returned
+	     * is BadFontName, indicating the alias resolution
+	     * is complete.
+	     */
+	    if (c->haveSaved)
+	    {
+		char	*tmpname;
+		int	tmpnamelen;
+		FontInfoPtr tmpFontInfo;
+
+	    	tmpname = 0;
+	    	tmpFontInfo = &fontInfo;
+	    	(void) (*fpe_functions[fpe->type].list_next_font_with_info)
+		    (client, fpe, &tmpname, &tmpnamelen, &tmpFontInfo,
+		     &numFonts, c->current.private);
+	    }
+	    else
+	    {
 		c->saved = c->current;
+		c->haveSaved = TRUE;
+		c->savedNumFonts = numFonts;
+		c->savedName = (char *) pFontInfo;
+	    }
 	    c->current.pattern = name;
 	    c->current.patlen = namelen;
 	    c->current.max_names = 1;
 	    c->current.current_fpe = 0;
 	    c->current.private = 0;
 	    c->current.list_started = FALSE;
-	    c->haveSaved = TRUE;
-	    c->savedNumFonts = numFonts;
-	    c->savedName = (char *) pFontInfo;
 	}
 	/*
 	 * At the end of this FPE, step to the next.  If we've finished
 	 * processing an alias, pop state back. If we've sent enough font
-	 * names, quit.
+	 * names, quit.  Always wait for BadFontName to let the FPE
+	 * have a chance to clean up
 	 */
 	else if (err == BadFontName)
  	{
@@ -827,8 +849,6 @@ doListFontsWithInfo(client, c)
 		xfree(fontInfo.isStringProp);
 	    }
 	    --c->current.max_names;
-	    if (c->current.max_names < 0)
-		break;
 	}
     }
     length = sizeof(xListFontsWithInfoReply);
@@ -843,6 +863,7 @@ bail:
 	ClientWakeup(client);
     for (i = 0; i < c->num_fpes; i++)
 	FreeFPE(c->fpe_list[i], FALSE);
+    xfree(c->reply);
     xfree(c->fpe_list);
     xfree(c->current.pattern);
     xfree(c);
