@@ -97,8 +97,12 @@ InstallLibrary(Xmu_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xmu,$(OBJS))
 #endif
 
-InstallMultiple($(HEADERS),$(INCDIR))
+InstallMultiple($(HEADERS),$(INCDIR)/Xmu)
 
+#if InstallOldHeaderFiles
+/* Make links for old programs that need to be converted. */ 
+LinkFileList(install,$(HEADERS),$(INCDIR),Xmu)
+#endif
 DependTarget()
 
 NormalLintTarget($(SRCS))
