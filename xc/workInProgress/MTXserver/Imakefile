@@ -4,7 +4,11 @@
 
 #include <Server.tmpl>
 
+#ifdef XhpServer
       OTHEREXTS = $(EXTENSIONSRC)/server/xinput/libxinput.a
+#else
+      OTHEREXTS = /* nothing */
+#endif
      EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
     FONTUTILDIR = $(FONTSRC)/mkfontdir
@@ -22,7 +26,6 @@
             SUN = ddx/sun/libsun.a
           MACII = ddx/macII/libmacII.a
             TEK = ddx/tek/libtek.a
-            PLX = ddx/plx/libplx.a
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
         SYSLIBS = -lm -ldbm
@@ -86,12 +89,6 @@
 #define	XsunServer /* as nothing */
 #endif
 
-#ifdef XplxServer
-#define doplxServer
-#else
-#define XplxServer /* as nothing */
-#endif
-
 #ifdef	XhpServer
 #define dohpServer
 #else
@@ -108,12 +105,6 @@
 #define doibmServer
 #else
 #define	XibmServer /* as nothing */
-#endif
-
-#ifdef XndxServer
-#define dondxServer
-#else
-#define	XndxServer /* as nothing */
 #endif
 
 #ifdef	XtekServer
@@ -135,8 +126,8 @@
  *                                                                           *
 /*****************************************************************************
  */
-ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XndxServer XmacIIServer XplxServer XmfbpmaxServer XcfbpmaxServer XtekServer
-ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XmacII Xplx Xcfbpmax Xmfbpmax Xndx Xtek
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XhpServer XmacIIServer XmfbpmaxServer XcfbpmaxServer XtekServer
+ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp XmacII Xcfbpmax Xmfbpmax Xtek
 
 all: $(ALL)
 
@@ -282,28 +273,6 @@ saber_src_sun:
 
 
 
-#ifdef doplxServer
-/**/#
-/**/# plx server
-/**/#
-#define need_dix
-#define need_ddx_snf
-#define need_ddx_mi
-#define need_ddx_mfb
-#define need_ddx_plx
-#define need_ddx_dec_lk201
-#define need_os_42bsd
-PLXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/plx ddx/dec/lk201 os/4.2bsd
-PLXOBJS = ddx/plx/plxInit.o ddx/plx/plxEvents.o $(FONTUTIL)
-PLXLIBS = $(PLX) ddx/dec/lk201/lk201.o $(DIX) $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
-PLXSYSLIBS = $(SYSLIBS) -lplx
-XplxDIRS = $(PLXDIRS)
-
-ServerTarget(Xplx,$(EXTDIR) $(FONTUTILDIR) $(PLXDIRS),$(PLXOBJS),$(PLXLIBS),$(PLXSYSLIBS))
-#endif /* doplxServer */
-
-
-
 #ifdef dohpServer
 /**/#
 /**/# HP server
@@ -380,27 +349,6 @@ XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(EXTDIR) $(FONTUTILDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
 #endif /* doapolloServer */
-
-
-
-#ifdef dondxServer
-/**/#
-/**/# ndx server
-/**/#
-#define need_dix
-#define need_ddx_snf
-#define need_ddx_mi
-#define need_ddx_mfb
-#define need_ddx_cfb
-#define need_ddx_ndx
-#define need_os_42bsd
-NDXDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/ndx os/4.2bsd
-NDXOBJS = ddx/ndx/init.o ddx/ndx/ndx_io.o $(FONTUTIL)
-NDXLIBS = $(DIX) $(BSD) $(SNF) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
-XndxDIRS = $(NDXDIRS)
-
-ServerTarget(Xndx,$(EXTDIR) $(FONTUTILDIR) $(NDXDIRS),$(NDXOBJS),$(NDXLIBS),$(SYSLIBS))
-#endif /* dondxServer */
 
 
 
@@ -485,11 +433,6 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #else
 #define dir_ddx_mi /**/
 #endif
-#ifdef need_ddx_ndx
-#define dir_ddx_ndx ddx/ndx
-#else
-#define dir_ddx_ndx /**/
-#endif
 #ifdef need_ddx_cfb
 #define dir_ddx_cfb ddx/cfb
 #else
@@ -554,11 +497,6 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 #else
 #define dir_ddx_macII /**/
 #endif
-#ifdef need_ddx_plx
-#define dir_ddx_plx ddx/plx
-#else
-#define dir_ddx_plx /**/
-#endif
 #ifdef need_ddx_sun
 #define dir_ddx_sun ddx/sun
 #else
@@ -570,7 +508,7 @@ OURDDX = dir_ddx_snf dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
 OUROS = dir_os_42bsd dir_os_bsdemul
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp
-OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_ndx dir_ddx_plx dir_ddx_sun dir_ddx_tek
+OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek
 
 SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 
@@ -580,8 +518,8 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
                   ddx/apollo ddx/apollo/apc \
                   ddx/ibm \
 		  ddx/dec/mfbpmax ddx/dec/cfbpmax \
-                  ddx/hp ddx/ndx ddx/tek \
-                  ddx/macII ddx/plx
+                  ddx/hp ddx/tek \
+                  ddx/macII
       ALLOSDIRS = os/4.2bsd os/bsdemul
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
