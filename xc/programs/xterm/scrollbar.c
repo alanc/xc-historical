@@ -1,5 +1,5 @@
 /*
- *	$Header: scrollbar.c,v 1.5 88/03/29 09:36:47 jim Exp $
+ *	$Header: scrollbar.c,v 1.6 88/03/29 10:23:35 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -41,7 +41,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$Header: scrollbar.c,v 1.5 88/03/29 09:36:47 jim Exp $";
+static char rcs_id[] = "$Header: scrollbar.c,v 1.6 88/03/29 10:23:35 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -85,7 +85,7 @@ static void ResizeScreen(xw, min_width, min_height )
 				+ min_width;
 	sizehints.height = FontHeight(screen) * (screen->max_row + 1)
 				+ min_height;
-	sizehints.flags |= PMinSize|PResizeInc|PSize;
+	sizehints.flags |= PMinSize|PResizeInc;
 	XSetSizeHints(screen->display,
 	 XtWindow(xw->core.parent), &sizehints, XA_WM_NORMAL_HINTS);
 	XUngrabServer(screen->display);
@@ -107,6 +107,14 @@ static void ResizeScreen(xw, min_width, min_height )
 	    (unsigned) (screen->max_col + 1) * FontWidth(screen) + min_width,
 	    (unsigned) FontHeight(screen) * (screen->max_row + 1) + min_height,
             &junk, &junk);
+
+	/*
+	 * the following is hack until we figure out why XtMakeResizeRequest
+	 * is spitting up all over the normal hints [jim]
+	 */
+	XSetSizeHints(screen->display,
+	 XtWindow(xw->core.parent), &sizehints, XA_WM_NORMAL_HINTS);
+
 
 	/* wait for a window manager to actually do it */
 	XIfEvent( screen->display, &event, IsEventType, ConfigureNotify );
