@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -72,9 +72,6 @@ XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
 #endif
 #ifndef ProfileLibXmu
 #define ProfileLibXmu		NO	/* profiled Xmu library */
-#endif
-#ifndef NeedBerklibInXlib
-#define NeedBerklibInXlib       NO
 #endif
 #ifndef ManDirectoryRoot
 #define ManDirectoryRoot /usr/man		/* if not set in .macros */
@@ -352,7 +349,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.80 91/01/08 11:59:15 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.81 91/01/08 12:21:06 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level

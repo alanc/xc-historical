@@ -93,7 +93,7 @@ a new one is to:
 	    if there are any variables you'd like to set; common ones include:
 
 		HasSockets, HasVFork, HasVoidSignalReturn, HasBsearch,
-		HasPutenv, NeedBerklibInXlib, ConnectionFlags, CcCmd, LnCmd,
+		HasPutenv, ConnectionFlags, CcCmd, LnCmd,
 		setTtyGroup, UnalignedReferencesAllowed
 
 
@@ -238,7 +238,6 @@ Project.tmpl provides defaults for the following variables:
 	ManPath			full path of parent directory
 	ManSourcePath		common prefix of man page directories
 	ManSuffix		man suffix for programs
-	NeedBerklibInXlib	boolean for systems that need BSD emulation
 	NeedDefaultDepLibs	boolean for enabling default DEPLIBS
 	PrimaryScreenResolution	resolution of default server screen
 	ProfileLibX		boolean for compiling -p Xlib
