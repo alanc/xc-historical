@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetKCnt.c,v 11.11 88/08/29 16:49:41 jim Exp $ */
+/* $XConsortium: XGetKCnt.c,v 11.12 88/09/06 16:08:02 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -8,7 +8,6 @@
 
 struct kmap {char keys[32];};
 
-void
 XGetKeyboardControl (dpy, state)
     register Display *dpy;
     register XKeyboardState *state;
