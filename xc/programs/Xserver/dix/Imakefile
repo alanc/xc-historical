@@ -7,6 +7,7 @@ OBJS = atom.o colormap.o cursor.o dispatch.o dixutils.o events.o \
 	initext.o main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../include -I../../include
 EXT_DEFINES = ExtensionDefines

@@ -10,6 +10,7 @@ OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfboldmfb.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I. -I../../include -I../../../include -I../mfb
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \

@@ -1,6 +1,7 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)'
 
         SUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
+    STD_DEFINES = ServerDefines
     CDEBUGFLAGS = ServerCDebugFlags
      EXTENSIONS = $(EXTENSIONSRC)/server/libext.a
          EXTDIR = $(EXTENSIONSRC)/server
