@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.7 88/10/03 08:26:17 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.8 89/03/21 11:37:48 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -212,7 +212,7 @@ getleftbits(psrc, w, dst)
 #else	/* (BITMAP_BIT_ORDER == LSBFirst) */
 #define SCRLEFT(lw, n)	((lw) >> ((n)*PSZ))
 #define SCRRIGHT(lw, n)	((lw) << ((n)*PSZ))
-#endif	(BITMAP_BIT_ORDER == MSBFirst)
+#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
 
 /*
  * Note that the shift direction is independent of the byte ordering of the 
@@ -222,6 +222,12 @@ getleftbits(psrc, w, dst)
 		   ((p)&PMSK) <<   PSZ | \
 		   ((p)&PMSK) << 2*PSZ | \
 		   ((p)&PMSK) << 3*PSZ )
+#define PFILL2(p, pf) { \
+    pf = (p) & PMSK; \
+    pf |= (pf << PSZ); \
+    pf |= (pf << 2*PSZ); \
+}
+
 
 #define maskbits(x, w, startmask, endmask, nlw) \
     startmask = cfbstarttab[(x)&PIM]; \
@@ -273,6 +279,37 @@ else \
     *((pdst)+1) = (*((pdst)+1) & (cfbstarttab[n] | ~pm)) | \
 	(SCRLEFT(src, m) & (cfbendtab[n] & pm)); \
 }
+#if defined(__GNUC__) && defined(mc68020) && defined(PURDUE)
+#undef getbits
+#define FASTGETBITS(psrc, x, w, dst) \
+    asm ("bfextu %3{%1:%2},%0" \
+	 : "=d" (dst) : "di" (PSZ*x), "di" (PSZ*w), "o" (*(char *)(psrc)))
+
+#define getbits(psrc,x,w,dst) \
+    FASTGETBITS(psrc, x, PPW, dst);\
+
+#define FASTPUTBITS(src, x, w, pdst) \
+    asm ("bfins %3,%0{%1:%2}" \
+	 : "=o" (*(char *)(pdst)) \
+	 : "di" (x*PSZ), "di" (w*PSZ), "d" (src), "0" (*(char *) (pdst)))
+
+#undef putbits
+#define putbits(src, x, w, pdst, planemask) \
+{ \
+    if (planemask != 0xff) { \
+        unsigned long _m, _pm; \
+        FASTGETBITS(pdst, x, PPW, _m); \
+        PFILL2(planemask, _pm); \
+        _m &= (~_pm); \
+        _m |= (src & _pm); \
+        FASTPUTBITS(SCRRIGHT(_m, PPW-(w)), x, w, pdst); \
+    } else { \
+        FASTPUTBITS(SCRRIGHT(src, PPW-(w)), x, w, pdst); \
+    } \
+}
+    
+
+#endif /* mc68020 */
 
 #define putbitsrop(src, x, w, pdst, planemask, rop) \
 if ( ((x)+(w)) <= PPW) \
@@ -280,7 +317,8 @@ if ( ((x)+(w)) <= PPW) \
     unsigned long tmpmask; \
     unsigned long t1, t2; \
     maskpartialbits((x), (w), tmpmask); \
-    tmpmask &= PFILL(planemask); \
+    PFILL2(planemask, t1); \
+    tmpmask &= t1; \
     t1 = SCRRIGHT((src), (x)); \
     t2 = DoRop(rop, t1, *(pdst)); \
     *(pdst) = (*(pdst) & ~tmpmask) | (t2 & tmpmask); \
@@ -290,7 +328,8 @@ else \
     unsigned long m; \
     unsigned long n; \
     unsigned long t1, t2; \
-    unsigned long pm = PFILL(planemask); \
+    unsigned long pm; \
+    PFILL2(planemask, pm); \
     m = PPW-(x); \
     n = (w) - m; \
     t1 = SCRRIGHT((src), (x)); \
