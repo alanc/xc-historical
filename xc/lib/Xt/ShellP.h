@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.23 89/09/12 16:49:05 swick Exp $
+* $XConsortium: ShellP.h,v 1.24 89/09/13 17:56:19 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -58,6 +58,17 @@ SOFTWARE.
 typedef struct {
     XtPointer       extension;          /* pointer to extension record      */
 } ShellClassPart;
+
+typedef struct {
+    XtPointer next_extension;	/* 1st 4 mandated for all extension records */
+    XrmQuark record_type;	/* NULLQUARK; on ShellClassPart */
+    long version;		/* must be XtShellExtensionVersion */
+    Cardinal record_size;	/* sizeof(ShellClassExtensionRec) */
+    XtGeometryHandler root_geometry_manager;
+} ShellClassExtensionRec, *ShellClassExtension;
+
+#define XtShellExtensionVersion 1L
+#define XtInheritRootGeometryManager ((XtGeometryHandler)_XtInherit)
 
 typedef struct _ShellClassRec {
   	CoreClassPart      core_class;
