@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ar_conv.c,v 5.1 91/02/16 09:47:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -64,35 +64,31 @@ typedef struct {
 
 static ThreeFuncs ConversionFunction[4][4] = {
 	{   /* From Big Endian Ieee */
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL, (FLOAT (*)())NULL },
+	    { 0, 0, 0 },
 	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL,
-		(FLOAT (*)())ConvertIEEEToVax },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapIEEEToVax }
+	    { 0, 0, ConvertIEEEToVax },
+	    { SwapCARD16, SwapCARD32, SwapIEEEToVax }
 	},
 	{
 	    /* From Big Endian DecF */
 	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL, (FLOAT (*)())NULL },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapIEEEToVax },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL,
-		(FLOAT (*)())ConvertIEEEToVax }
+	    { 0, 0, 0 },
+	    { SwapCARD16, SwapCARD32, SwapIEEEToVax },
+	    { 0, 0, ConvertIEEEToVax }
 	},
 	{
 	    /* From Little Endian Ieee */
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL,
-		(FLOAT (*)())ConvertVaxToIEEE },
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapVaxToIEEE },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL, (FLOAT (*)())NULL },
+	    { 0, 0, ConvertVaxToIEEE },
+	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
+	    { 0, 0, 0 },
 	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 }
 	},
 	{
 	    /* From Little Endian DecF */
-	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapVaxToIEEE },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL,
-		(FLOAT (*)())ConvertVaxToIEEE },
+	    { SwapCARD16, SwapCARD32, SwapVaxToIEEE },
+	    { 0, 0, ConvertVaxToIEEE },
 	    { SwapCARD16, SwapCARD32, (FLOAT (*)())SwapCARD32 },
-	    { (CARD16 (*)())NULL, (CARD32 (*)())NULL, (FLOAT (*)())NULL }
+	    { 0, 0, 0 }
 	}
 };
 
@@ -167,7 +163,7 @@ Phg_ar_index_entry *e;
 
 void
 phg_ar_convert_elements(nelts, buffer, direction)
-int			     nelts;
+int   			     nelts;
 char			    *buffer;
 Phg_ar_archiving_direction   direction;
 {
