@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.24 93/09/29 20:28:14 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.25 93/10/06 17:38:50 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -272,8 +272,7 @@ void XtConvertCase(dpy,keysym,lower_return,upper_return)
 	    (*ptr->proc)(dpy, keysym, lower_return, upper_return);
 	    return;
 	}
-    if (keysym <= 0x3ff)	/* Latin-1 start = 0, Latin-4 stop = 0x3ff */
-	XConvertCase(keysym, lower_return, upper_return);
+    XConvertCase(keysym, lower_return, upper_return);
     UNLOCK_APP(app);
 }
     
