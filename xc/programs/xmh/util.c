@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: util.c,v 2.28 89/07/21 18:56:18 converse Exp $";
+    "$XConsortium: util.c,v 2.29 89/07/27 18:50:58 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -377,6 +377,7 @@ char *name;
     };
     
     /* text widget options are set in the application defaults file */
+
     return XtCreateManagedWidget( name, asciiDiskWidgetClass, scrn->widget,
 				  arglist, XtNumber(arglist) );
 }
@@ -404,7 +405,7 @@ char *name;
 
 void Feep()
 {
-    XBell(theDisplay, 50);
+    XBell(theDisplay, 0);
 }
 
 
@@ -459,6 +460,14 @@ Scrn scrn;
     return toc;
 }
 
+
+Toc CurrentToc(scrn)
+    Scrn	scrn;
+{
+    /* return the toc currently being viewed */
+
+    return scrn->toc;
+}
 
 
 int strncmpIgnoringCase(str1, str2, length)
