@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.88 91/06/22 20:13:59 rws Exp $ */
+/* $XConsortium: Label.c,v 1.89 91/06/22 21:25:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -512,6 +512,7 @@ static Boolean SetValues(current, request, new, args, num_args)
     }
 
     if (curlw->label.foreground != newlw->label.foreground
+	|| curlw->core.background_pixel != newlw->core.background_pixel
 	|| curlw->label.font->fid != newlw->label.font->fid) {
 
 	XtReleaseGC(new, curlw->label.normal_GC);
