@@ -2,7 +2,7 @@
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
 
-/* $Header: XWDFile.h,v 1.5 87/09/09 20:24:02 rws Exp $ */
+/* $Header: XWDFile.h,v 1.6 87/09/11 16:51:01 rws Exp $ */
 /*
  * XWDFile.h	MIT Project Athena, X Window system window raster
  *		image dumper, dump file format header file.
@@ -13,6 +13,27 @@
  * Modifier:    William F. Wyatt, SAO
  *              18-Nov-86  - version 6 for saving/restoring color maps
  */
+
+
+/*
+ * This is not portable between machines of differing word sizes.  To make
+ * it portable, do the following things:
+ *
+ *     o  #include <X11/Xmd.h>
+ *     o  remove the typedef for xwdval
+ *     o  replace all instances of xwdval with the appropriate CARD32 ... B32
+ *     o  make sure that XWDFileHeader is padded to quadword boundaries
+ *     o  make sure the window name is written out quadword aligned
+ *     o  create an XWDColor structure that contains the same fields as XColor
+ *        but which is defined in terms of CARD32 B32, CARD16 B16, and CARD8
+ *     o  convert XColor structures to XWDColor structures in xwd
+ *     o  remove all xwdval casts from xwd
+ *     o  pack image data before writing out if necessary
+ *     o  replace casts from xwdval objects in xwud with cvtINT macros
+ *     o  convert XWDColor structures to XColor structures
+ *     o  unpack data after reading in if necessary
+ */
+
 
 typedef unsigned long xwdval;
 
