@@ -89,7 +89,7 @@ register char **argv;
 	/*
 	 * copy the client args.
 	 */
-	if (argc == 0 || (**argv != '/' && !isalpha(**argv))) {
+	if (argc == 0 || (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
 		strcpy(client_display, hostname);
@@ -118,7 +118,7 @@ register char **argv;
 	/*
 	 * Copy the server args.
 	 */
-	if (argc == 0 || (**argv != '/' && !isalpha(**argv))) {
+	if (argc == 0 || (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		*sptr++ = DEFAULT_SERVER;
 	} else {
 		*sptr++ = *argv++;
