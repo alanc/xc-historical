@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.tmpl,v 1.2 92/05/09 13:44:45 rws Exp $
+XCOMM $XConsortium: hpLib.tmpl,v 1.3 92/06/28 17:44:32 rws Exp $
 
 /*
  * HP shared library template
@@ -33,6 +33,9 @@ XCOMM $XConsortium: hpLib.tmpl,v 1.2 92/05/09 13:44:45 rws Exp $
 #endif
 #ifndef SharedPexRev
 #define SharedPexRev 1.0
+#endif
+#ifndef SharedXieRev
+#define SharedXieRev 1.0
 #endif
 
 SHLIBLDFLAGS = SharedLibraryLoadFlags
@@ -78,4 +81,8 @@ PICFLAGS = PositionIndependentCFlags
 #if SharedLibPex
         DEPPEXLIB = /* _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.sl.$(SOPEXREV)) */
          PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
+#endif
+#if SharedLibXie
+        DEPXIELIB = /* _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.sl.$(SOXIEREV)) */
+         XIELIB = _Use(-lXIE,-L$(XIELIBSRC) -lXIE)
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sunLib.tmpl,v 1.17 92/05/08 09:02:48 rws Exp $
+XCOMM $XConsortium: sunLib.tmpl,v 1.18 92/06/28 17:42:28 rws Exp $
 
 /*
  * SunOS shared library template
@@ -40,6 +40,9 @@ XCOMM $XConsortium: sunLib.tmpl,v 1.17 92/05/08 09:02:48 rws Exp $
 #endif
 #ifndef SharedPexRev
 #define SharedPexRev 1.0
+#endif
+#ifndef SharedXieRev
+#define SharedXieRev 1.0
 #endif
 
 
@@ -92,3 +95,8 @@ PICFLAGS = PositionIndependentCFlags
         DEPPEXLIB = /* _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.sa.$(SOPEXREV)) */
            PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
 #endif
+#if SharedLibXie
+        DEPXIELIB = /* _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.sa.$(SOXIEREV)) */
+           XIELIB = _Use(-lXIE,-L$(XIELIBSRC) -lXIE)
+#endif
+

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: osfLib.tmpl,v 1.4 92/07/14 09:32:39 rws Exp $
+XCOMM $XConsortium: osfLib.tmpl,v 1.5 92/07/24 16:23:30 rws Exp $
 
 /*
  * OSF/1 shared library template
@@ -42,6 +42,10 @@ XCOMM $XConsortium: osfLib.tmpl,v 1.4 92/07/14 09:32:39 rws Exp $
 #define SharedPexRev 1.0
 #endif
 #define SharedPexReqs $(XLIBONLY) -lm
+#ifndef SharedXieRev
+#define SharedXieRev 1.0
+#endif
+#define SharedXieReqs $(XLIBONLY)
 
 SHLIBLDFLAGS = SharedLibraryLoadFlags
 PICFLAGS = PositionIndependentCFlags
@@ -86,4 +90,8 @@ PICFLAGS = PositionIndependentCFlags
 #if SharedLibPex
         DEPPEXLIB = /* _UseCat($(USRLIBDIR),$(PEXLIBSRC),/libPEX5.sa.$(SOPEXREV)) */
            PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
+#endif
+#if SharedLibXie
+        DEPXIELIB = /* _UseCat($(USRLIBDIR),$(XIELIBSRC),/libXIE.sa.$(SOXIEREV)) */
+           XIELIB = _Use(-lXIE,-L$(XIELIBSRC) -lXIE)
 #endif
