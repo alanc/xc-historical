@@ -5,7 +5,7 @@ constype - print type of Sun console
 .B "constype"
 .SH DESCRIPTION
 .I Consoletype
-prints on the standard output the Sun code for the tyep of display
+prints on the standard output the Sun code for the type of display
 that the console is. It is one of:
 .sp 2
 .in +0.5i
