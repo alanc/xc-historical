@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $Header: Xmd.h,v 1.26 88/08/13 12:08:53 jim Exp $ */
+/* $Header: Xmd.h,v 1.27 88/08/13 12:13:40 jim Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -100,7 +100,7 @@ typedef unsigned char            BOOL;
 
 #ifdef MUSTCOPY
 
-#if (defined __STDC__) && (!defined UNIXCPP)
+#if defined(__STDC__) && !defined(UNIXCPP)
 #define SIZEOF(x) sizeof_##x
 #else
 #define SIZEOF(x) sizeof_/**/x
