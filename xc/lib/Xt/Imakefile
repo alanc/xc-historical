@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.89 91/07/16 22:49:58 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.90 91/07/30 22:00:44 rws Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -31,7 +31,9 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if Malloc0ReturnsNull
   ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
+#if MotifBC
      BC_DEFINES = -DMOTIFBC
+#endif
 
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
@@ -171,9 +173,7 @@ LibraryObjectRule()
 SpecialLibObjectRule(Intrinsic.o,$(ICONFIGFILES),$(SRCH_DEFINES))
 SpecialLibObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 SpecialLibObjectRule(Alloc.o,NullParameter,$(ALLOC_DEFINES))
-#if MotifBC
 SpecialLibObjectRule(Converters.o,$(ICONFIGFILES),$(BC_DEFINES))
-#endif
 #if DoSharedLib
 SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
 #endif
