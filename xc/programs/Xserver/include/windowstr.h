@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.10 89/02/06 17:44:15 keith Exp $ */
+/* $XConsortium: windowstr.h,v 1.11 89/03/11 13:23:11 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -139,7 +139,7 @@ typedef struct _Window {
 extern int DeleteWindow();
 extern int ChangeWindowAttributes();
 extern int WalkTree();
-extern CreateRootWindow();
+extern Bool CreateRootWindow();
 extern WindowPtr CreateWindow();
 extern int DeleteWindow();
 extern int DestroySubwindows();
