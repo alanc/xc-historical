@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.124 94/04/04 20:13:18 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.125 94/04/05 16:40:28 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -145,10 +145,6 @@ XCOMM site:  $XConsortium: site.def,v 1.124 94/04/04 20:13:18 rws Exp $
 #define ProjectRoot /X11R4/X11R6/X11
 #else
 #define ProjectRoot /X11
-#endif
-
-#ifndef BuildXKBlib
-#define BuildXKBlib	YES
 #endif
 
 #ifdef SunArchitecture
