@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.47 92/12/31 15:43:27 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.48 93/07/09 15:24:52 gildea Exp $
  */
 
 /***********************************************************
@@ -122,21 +122,33 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
 #endif
 {
 
-    static XrmDatabase db;
-    static int initialized = False;
+    static XrmDatabase db = NULL;
     XrmString type_str;
     XrmValue result;
     char temp[BUFSIZ];
 
     if (nbytes == 0) return;
 
-    LockMutex();
-    if (!initialized) {
+    if (!db) {
+	/* the Xrm routines expect to be called with the global
+	   mutex unlocked. */
+	XrmDatabase temp_db;
+	int do_destroy;
+
 	XrmInitialize();
-	db = XrmGetFileDatabase(ERRORDB);
-	initialized = True;
+	temp_db = XrmGetFileDatabase(ERRORDB);
+
+	LockMutex();
+	if (!db) {
+	    db = temp_db;
+	    do_destroy = 0;
+	} else
+	    do_destroy = 1;	/* we didn't need to get it after all */
+	UnlockMutex();
+
+	if (do_destroy)
+	    XrmDestroyDatabase(temp_db);
     }
-    UnlockMutex();
 
     if (db)
     {
