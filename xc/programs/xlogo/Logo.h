@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Logo.h,v 1.2 88/08/30 10:13:17 swick Exp $
+* $XConsortium: Logo.h,v 1.3 88/09/04 12:32:49 swick Exp $
 */
 
 /*
@@ -38,8 +38,6 @@ without express or implied warranty.
  y		     Position		int		0
 
 */
-
-#define XtCReverseVideo		"ReverseVideo"
 
 typedef struct _LogoRec *LogoWidget;
 typedef struct _LogoClassRec *LogoWidgetClass;
