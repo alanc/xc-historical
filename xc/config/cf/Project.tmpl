@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.225 94/02/10 19:40:14 matt Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.226 94/02/10 21:19:43 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -676,9 +676,9 @@ UnsharedLibReferences(XTF,Xtf,$(XTFSRC))
 #ifndef SharedFrescoRev
 #define SharedFrescoRev 0.4
 #endif
-SharedLibReferences(FRESCO,Fresco,$(FRESCOSRC),SOFRESCOREV,SharedFrescoRev)
+SharedLibReferences(FRESCO,Fresco,$(FRESCOSRC)/src,SOFRESCOREV,SharedFrescoRev)
 #else
-UnsharedLibReferences(FRESCO,Fresco,$(FRESCOSRC))
+UnsharedLibReferences(FRESCO,Fresco,$(FRESCOSRC)/src)
 #endif
 
 #ifndef SharedLibXi
