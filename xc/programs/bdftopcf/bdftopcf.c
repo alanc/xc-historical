@@ -149,7 +149,9 @@ main (argc, argv)
 		 program_name, output_name ? output_name : "<stdout>");
 	if (output_name)
 	    unlink (output_name);
+	exit (1);
     }
     else
 	fclose (output);
+    exit (0);
 }
