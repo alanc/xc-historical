@@ -105,3 +105,18 @@ o In events, CurrentTime (encoded as 0 in the protocol) decodes to NIL instead
   of 0.
 
 o NIL now translates to and from the atom-id of 0.
+
+o A new variable *OUTPUT-BUFFER-SIZE* has been introduced, with value 8192.
+  Now, instead of the buffer creating code always creating output buffers of 
+  length 8192 bytes, they create output buffers of length *OUTPUT-BUFFER-SIZE* 
+  bytes.
+
+o GCONTEXT-CACHE-P has been exported.
+
+o If CREATE-GCONTEXT is given a rect-seq as a clip-mask, then a
+  SetClipRectangles request must be sent to initialize the clip-mask.  The logic
+  to do this is located in FORCE-GCONTEXT-CHANGES-INTERNAL, but this wasn't
+  being called because create-gcontext always forces local/server-state
+  timestamps equal.  Same problem for dash lists.  CREATE-GCONTEXT has been
+  fixed so that in these cases it makes the timestamps unequal so that
+  FORCE-GCONTEXT-CHANGES-INTERNAL is called.
