@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.120 87/08/29 21:12:15 drewry Exp $ */
+/* $Header: main.c,v 1.121 87/08/30 11:51:22 todd Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -128,6 +128,11 @@ main(argc, argv)
 	FatalError("server restarted. Jumped through uninitialized pointer?\n");
     else
 	restart = 1;
+    /* These are needed by some routines which are called from interrupt
+     * handlers, thus have no direct calling path back to main and thus
+     * can't be passed argc, argv as parameters */
+    argcGlobal = argc;
+    argvGlobal = argv;
     ErrorF(  "Hello, this is the X server\n");
     display = "0";
     ProcessCommandLine(argc, argv);
