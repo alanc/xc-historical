@@ -65,6 +65,10 @@ while $continue; do
 			;;
 		esac
 		;;
+	-access)
+		shift
+		xhost +$target
+		;;
 	-name)
 		shift
 		label="$1"
