@@ -10,11 +10,9 @@
       PUTENVDEF = -DNOPUTENV
 #endif
 
-       PROGRAMS = twm
+         YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
-      OTHERSRCS = gram.y lex.l
-         YFLAGS = -d
         DEFINES = ExtensionDefines $(SIGNAL_DEFINES) $(PUTENVDEF)
 
            SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
@@ -32,7 +30,7 @@ depend:: lex.c gram.c deftwmrc.c
 ComplexProgramTarget(twm)
 
 gram.h gram.c: gram.y
-	yacc -d gram.y
+	yacc $(YFLAGS) gram.y
 	$(MV) y.tab.c gram.c
 	$(MV) y.tab.h gram.h
 
