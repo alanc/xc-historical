@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.103 91/05/08 17:38:15 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.104 91/06/26 14:05:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -692,19 +692,20 @@ void XtNextEvent(event)
 	XtAppNextEvent(_XtDefaultAppContext(), event);
 }
 
-static void _RefreshMapping(event)
+void _XtRefreshMapping(event, dispatch)
     XEvent *event;
+    Boolean dispatch;
 {
     XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
-    if (pd != NULL) {
-	if (pd->keysyms != NULL && event->xmapping.request != MappingPointer)
-	    _XtBuildKeysymTables( event->xmapping.display, pd );
-	if (pd->mapping_callbacks != NULL)
-	    XtCallCallbackList((Widget) NULL,
-			       (XtCallbackList)pd->mapping_callbacks,
-			       (XtPointer)event );
-    }
+
+    if (event->xmapping.request != MappingPointer &&
+	pd && pd->keysyms && (event->xmapping.serial >= pd->keysyms_serial))
+	_XtBuildKeysymTables( event->xmapping.display, pd );
     XRefreshKeyboardMapping(&event->xmapping);
+    if (dispatch && pd && pd->mapping_callbacks)
+	XtCallCallbackList((Widget) NULL,
+			   (XtCallbackList)pd->mapping_callbacks,
+			   (XtPointer)event );
 }
 
 void XtAppNextEvent(app, event)
@@ -741,7 +742,7 @@ void XtAppNextEvent(app, event)
 	    XNextEvent (app->list[d], event);
 	    app->last = d;
 	    if (event->xany.type == MappingNotify)
-		_RefreshMapping(event);
+		_XtRefreshMapping(event, False);
 	    return;
 	} 
 
@@ -824,7 +825,7 @@ void XtAppProcessEvent(app, mask)
 		XNextEvent(app->list[d], &event);
 		app->last = d;
 		if (event.xany.type == MappingNotify) {
-		    _RefreshMapping(&event);
+		    _XtRefreshMapping(&event, False);
 		}
 		XtDispatchEvent(&event);
 		return;
