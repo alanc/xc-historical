@@ -866,7 +866,7 @@
 #+kcl
 (defun open-x-stream (host display protocol)
   protocol ;; unused
-  (let ((stream (tcp:open-tcp-stream host (+ *x-tcp-port* display))))
+  (let ((stream (tcp:open-tcp-stream host display)))
     (if (streamp stream)
 	stream
       (error "Cannot connect to server: ~A:~D" host display))))
