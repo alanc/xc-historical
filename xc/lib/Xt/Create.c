@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.99 94/01/14 17:56:04 kaleb Exp $ */
+/* $XConsortium: Create.c,v 1.100 94/01/21 19:12:23 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -451,14 +451,14 @@ _XtCreateWidget(name, widget_class, parent,
     num_params = 1;
 
     if (parent == NULL) {
-	XtErrorMsg("invalidParent",XtNxtCreateWidget,XtCXtToolkitError,
-		"XtCreateWidget \"%s\" requires non-NULL parent",
-		params, &num_params);
+	XtErrorMsg("invalidParent", XtNxtCreateWidget, XtCXtToolkitError,
+		   "XtCreateWidget \"%s\" requires non-NULL parent",
+		   params, &num_params);
     } else if (widget_class == NULL) {
 	XtAppErrorMsg(XtWidgetToApplicationContext(parent),
-		"invalidClass",XtNxtCreateWidget,XtCXtToolkitError,
-		"XtCreateWidget \"%s\" requires non-NULL widget class",
-		params, &num_params);
+		      "invalidClass", XtNxtCreateWidget, XtCXtToolkitError,
+		      "XtCreateWidget \"%s\" requires non-NULL widget class",
+		      params, &num_params);
     }
     LOCK_PROCESS;
     if (!widget_class->core_class.class_inited)
@@ -470,30 +470,29 @@ _XtCreateWidget(name, widget_class, parent,
 	default_screen = NULL;
 	if (XtIsComposite(parent)) {
 	    CompositeClassExtension ext;
+	    ext = (CompositeClassExtension)
+		XtGetClassExtension(XtClass(parent),
+		      XtOffsetOf(CompositeClassRec, composite_class.extension),
+		      NULLQUARK, 1L, (Cardinal) 0);
 	    LOCK_PROCESS;
-	    for (ext = (CompositeClassExtension)
-		       ((CompositeWidgetClass)XtClass(parent))
-			 ->composite_class.extension;
-		 ext != NULL && ext->record_type != NULLQUARK;
-		 ext = (CompositeClassExtension)ext->next_extension);
-	    if (ext != NULL &&
-		(ext->version != XtCompositeExtensionVersion
-		 || ext->record_size != sizeof(CompositeClassExtensionRec))) {
+	    if (ext &&
+		(ext->version > XtCompositeExtensionVersion ||
+		 ext->record_size > sizeof(CompositeClassExtensionRec))) {
 		params[1] = XtClass(parent)->core_class.class_name;
 		num_params = 2;
 		XtAppWarningMsg(XtWidgetToApplicationContext(parent),
-			"invalidExtension", XtNxtCreateWidget, XtCXtToolkitError,
-			"widget \"%s\" class %s has invalid CompositeClassExtension record",
-			params, &num_params);
-		ext = NULL;
+				"invalidExtension", XtNxtCreateWidget,
+				XtCXtToolkitError,
+	   "widget \"%s\" class %s has invalid CompositeClassExtension record",
+				params, &num_params);
 	    }
-	    if (ext == NULL || !ext->accepts_objects) {
+	    if (!ext || !ext->accepts_objects) {
 		params[1] = XtName(parent);
 		num_params = 2;
 		XtAppErrorMsg(XtWidgetToApplicationContext(parent),
-			"nonWidget",XtNxtCreateWidget,XtCXtToolkitError,
-			"attempt to add non-widget child \"%s\" to parent \"%s\" which supports only widgets",
-			params, &num_params);
+			      "nonWidget", XtNxtCreateWidget,XtCXtToolkitError,
+"attempt to add non-widget child \"%s\" to parent \"%s\" which supports only widgets",
+			      params, &num_params);
 	    }
 	    UNLOCK_PROCESS;
 	}
