@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Paned.c,v 1.47 89/02/10 18:51:41 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Paned.c,v 1.1 89/03/06 18:11:08 kit Exp $";
 #endif lint
 
 
@@ -94,7 +94,7 @@ static XtResource resources[] = {
 	 offset(internal_bw), XtRImmediate, (caddr_t) 1},
     {XtNgripIndent, XtCGripIndent, XtRPosition, sizeof(Position),
 	 offset(grip_indent), XtRImmediate, (caddr_t) 10},
-    {XtNrefigureMode, XtCBoolean, XtRBoolean, sizeof(int),
+    {XtNrefigureMode, XtCBoolean, XtRBoolean, sizeof(Boolean),
          offset(refiguremode), XtRImmediate, (caddr_t) TRUE},
     {XtNgripTranslations, XtCTranslations, XtRTranslationTable,
          sizeof(XtTranslations),
@@ -783,7 +783,7 @@ Boolean erase;
 
     ForAllPanes(pw, childP) {
         pane = PaneInfo(*childP);
-	if (pane->olddelta != pane->delta) {
+	if ( erase || (pane->olddelta != pane->delta) ) {
 	    on_size = pw->paned.internal_bw; 
 	    if (!erase) {
 	        on_loc = PaneInfo(*childP)->olddelta - (int) on_size;
@@ -1209,8 +1209,9 @@ Widget w;
  */
 
 static void
-SetChildrenPrefSizes(pw)
+SetChildrenPrefSizes(pw, off_size)
 PanedWidget pw;
+Dimension off_size;
 {
     Widget * childP;
     Boolean vert = IsVert(pw);
@@ -1226,11 +1227,11 @@ PanedWidget pw;
 	    else {
 	        if( vert ) {
 		    request.request_mode = CWWidth;
-		    request.width = PaneSize( (Widget) pw, !vert);
+		    request.width = off_size;
 		}
 		else {
 		    request.request_mode = CWHeight;
-		    request.height = PaneSize( (Widget) pw, !vert);
+		    request.height = off_size;
 		}
 
 		if ((XtQueryGeometry( *childP, &request, &reply ) 
@@ -1623,7 +1624,7 @@ static void ChangeManaged(w)
 	     break;		/* This list is already sorted. */
 
 
-   SetChildrenPrefSizes( (PanedWidget) w);
+   SetChildrenPrefSizes( (PanedWidget) w, size);
 
 /*
  * ForAllPanes can now be used. 
@@ -1645,7 +1646,8 @@ static void
 Resize(w)
 Widget w;
 {
-    SetChildrenPrefSizes( (PanedWidget) w);
+    SetChildrenPrefSizes( (PanedWidget) w,
+			  PaneSize(w, !IsVert((PanedWidget) w)) );
     RefigureLocationsAndCommit(w);
 }
 
