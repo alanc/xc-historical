@@ -19,6 +19,10 @@ The Kanji and Kana fonts are as follows:
 	12x24rk		JIS roman and kana font
 	12x24		ASCII fonts
 
+Roman-kana fonts contain roman part in the left part of them, and kana
+in the right. Because of this, kterm (version 3.2.0 or less) can not
+display kana characters with these fonts.
+
 
 Aliases for the Lucida fonts used by XView can be found in ../{75,100}dpi.
 They are based on the following "generic" aliases:
