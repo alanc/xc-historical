@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.41 88/02/21 18:26:44 rws Exp $ */
+/* $Header: utils.c,v 1.42 88/02/23 19:41:44 rws Exp $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -42,6 +42,10 @@ extern long ScreenSaverTime;		/* for forcing reset */
 
 Bool clientsDoomed = FALSE;
 extern void KillServerResources();
+
+extern char *sbrk();
+
+pointer minfree = NULL;
 
 #ifdef COMPRESSED_FONTS
 int CompressedFonts = 1;
@@ -130,6 +134,8 @@ char	*argv[];
 {
     int i;
 
+    if (!minfree)
+	minfree = (pointer)sbrk(0);
     for ( i = 1; i < argc; i++ )
     {
 	/* initialize display */
@@ -349,8 +355,6 @@ Xalloc (amount)
  *     it would be difficult in many places to "back out" on failure.
  *****************/
 
-extern unsigned long *minfree;           /* DEBUG */
-
 unsigned long *
 Xrealloc (ptr, amount)
 register pointer ptr;
@@ -362,7 +366,7 @@ unsigned long amount;
     amount = (amount + 3) & ~3;  
     if (ptr)
     {
-        if (ptr < (pointer) minfree)
+        if (ptr < minfree)
         {
 	    ErrorF("Xrealloc: trying to free static storage\n");
 	    /* Force a core dump */
@@ -412,7 +416,7 @@ Xfree(ptr)
     if (ptr == (pointer) NULL)
 	return;
 #ifdef DEBUG
-    if (ptr < (pointer) minfree)
+    if (ptr < minfree)
 	ErrorF("Xfree: trying to free static storage\n");
     else if (CheckNode(ptr - 8))
     {
@@ -420,7 +424,7 @@ Xfree(ptr)
 	free(ptr - 8); 
     }
 #else
-    if (ptr >= (pointer) minfree)
+    if (ptr >= minfree)
         free(ptr); 
 #endif /* DEBUG */
 }
