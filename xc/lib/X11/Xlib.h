@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.223 93/09/13 10:11:11 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.224 93/09/13 20:33:31 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -4318,6 +4318,50 @@ extern int XwcLookupString(
 extern XVaNestedList XVaCreateNestedList(
 #if NeedVarargsPrototypes
     int /*unused*/, ...
+#endif
+);
+
+/* internal connections for IMs */
+
+typedef void (*XConnectionWatchProc)(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    XPointer			/* client_data */,
+    int				/* fd */,
+    Bool			/* opening */,	 /* open or close flag */
+    XPointer*			/* watch_data */ /* open sets, close uses */
+#endif
+);
+    
+
+extern Status XInternalConnectionNumbers(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int**			/* fd_return */,
+    int*			/* count_return */
+#endif
+);
+
+extern void XProcessInternalConnection(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    int				/* fd */
+#endif
+);
+
+extern Status XAddConnectionWatch(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    XConnectionWatchProc	/* callback */,
+    XPointer			/* client_data */
+#endif
+);
+
+extern void XRemoveConnectionWatch(
+#if NeedFunctionPrototypes
+    Display*			/* dpy */,
+    XConnectionWatchProc	/* callback */,
+    XPointer			/* client_data */
 #endif
 );
 
