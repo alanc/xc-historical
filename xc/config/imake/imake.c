@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.10 87/08/03 10:27:04 toddb Locked $
+ * $Header: imake.c,v 1.11 87/08/04 20:21:31 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -430,7 +430,7 @@ makeit()
 char *CleanCppInput(Imakefile)
 	char	*Imakefile;
 {
-	FILE	*outFile;
+	FILE	*outFile = NULL;
 	int	infd, got;
 	char	*buf,		/* buffer for file content */
 		*pbuf,		/* walking pointer to buf */
