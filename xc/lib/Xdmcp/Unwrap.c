@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Decrypt.c,v 1.2 90/09/13 18:25:33 keith Exp $
+ * $XConsortium: Decrypt.c,v 1.3 90/11/19 17:37:24 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@
  * Examine the XDMCP specification for the correct algorithm
  */
 
-#include    <des.h>
+#include "des.h"
 
 void
 XdmcpDecrypt (crypto, key, plain, bytes)
