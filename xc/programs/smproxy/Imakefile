@@ -1,0 +1,7 @@
+XCOMM $XConsortium$
+        DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
+           SRCS = smproxy.c
+           OBJS = smproxy.o
+
+ComplexProgramTarget(smproxy)
