@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.48 94/03/22 16:41:01 matt Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.49 94/03/28 17:11:35 matt Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.5
@@ -54,7 +54,13 @@ XCOMM operating system:  OSName
  * As an alternative to this fix, one could edit /etc/xlC.cfg
  * to change the suffix accepted by the compiler, but we prefer not 
  * requiring users to reconfigure their C++ compilers to make them work.
+ * We also have to override the default SUFFIXES to defeat the use of
+ * the builtin .C -> .o file, which doesn't use the right flags.
  */
+
+.SUFFIXES:
+.SUFFIXES: .o .c .y .l .s .sh .h .f .Y .L .cxx
+
 #define NormalLibObjCplusplusCompile(options) test -r $*.C || $(LN) $*.CCsuf $*.C @@\
 	$(CXX) -c $(CXXFLAGS) options $*.C
 
