@@ -1,4 +1,4 @@
-/* $XHeader: Xos.h,v 1.3 87/12/16 16:45:16 rws Exp $ */
+/* $XHeader: Xos.h,v 1.4 88/07/19 18:53:19 jim Exp $ */
 /* 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -70,12 +70,16 @@
  * Get struct timeval
  */
 
+#ifdef macII
+#include <time.h>
+#include <sys/time.h>
+#else /* macII */
 #ifdef SYSV
 #include <time.h>
 #else /* SYSV */
 #include <sys/time.h>
 #endif /* SYSV */
-
+#endif /* macII */
 
 /*
  * More BSDisms
