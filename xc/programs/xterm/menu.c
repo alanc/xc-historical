@@ -133,7 +133,6 @@ static Bool domenu (w, event, params, param_count)
 					    XtNumber(mainMenuEntries));
 	    update_securekbd();
 	    update_allowsends();
-	    update_visualbell();
 	    update_logging();
 #ifndef SIGTSTP
 	    set_sensitivity (screen->mainMenu,
@@ -165,6 +164,7 @@ static Bool domenu (w, event, params, param_count)
 	    update_scrollttyoutput();
 	    update_allow132();
 	    update_cursesemul();
+	    update_visualbell();
 	    update_marginbell();
 	}
 	break;
