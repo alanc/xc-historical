@@ -1,8 +1,6 @@
 /*
- *	$XConsortium: data.h,v 1.7 89/05/26 18:10:45 jim Exp $
+ *	$XConsortium: data.h,v 1.8 91/01/06 12:47:35 rws Exp $
  */
-
-
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -25,10 +23,6 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-/* @(#)data.h\tX10/6.6\t11/10/86 */
-
-#include <X11/Intrinsic.h>
 
 extern TekLink *TekRefresh;
 extern XPoint T_box2[];
@@ -61,8 +55,6 @@ extern int errno;
 extern int max_plus1;
 extern int pty_mask;
 extern int switchfb[];
-extern jmp_buf Tekend;
-extern jmp_buf VTend;
 
 extern int waitingForTrackInfo;
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.70 91/01/24 19:32:25 gildea Exp $
+ *	$XConsortium: misc.c,v 1.71 91/01/30 16:16:27 gildea Exp $
  */
 
 /*
@@ -45,6 +45,9 @@
 #include "data.h"
 #include "error.h"
 #include "menu.h"
+
+extern jmp_buf Tekend;
+extern jmp_buf VTend;
 
 extern char *malloc();
 extern char *mktemp();

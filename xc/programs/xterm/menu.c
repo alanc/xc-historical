@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.48 91/01/24 19:32:18 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.49 91/01/30 16:16:33 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -13,18 +13,16 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <stdio.h>
-#include <X11/Intrinsic.h>
+#include "ptyx.h"
+#include "data.h"
+#include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SmeLine.h>
-#include "ptyx.h"
-#include <setjmp.h>			/* for data.h */
+#include <stdio.h>
 #include <signal.h>
-#include "data.h"
-#include "menu.h"
 
 Arg menuArgs[2] = {{ XtNleftBitmap, (XtArgVal) 0 },
 		   { XtNsensitive, (XtArgVal) 0 }};

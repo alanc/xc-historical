@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.133 91/01/24 19:31:39 gildea Exp $
+ * $XConsortium: charproc.c,v 1.134 91/01/30 15:55:32 gildea Exp $
  */
 
 
@@ -34,24 +34,26 @@
 
 /* charproc.c */
 
-#include <stdio.h>
-#include <X11/Xos.h>
-#include <ctype.h>
-#include <errno.h>
-#include <setjmp.h>
 #include "ptyx.h"
 #include "VTparse.h"
 #include "data.h"
-#include <X11/Xutil.h>
 #include "error.h"
 #include "main.h"
+#include "menu.h"
+#include <X11/Xos.h>
+#include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
-#include "menu.h"
+#include <stdio.h>
+#include <ctype.h>
+#include <errno.h>
+#include <setjmp.h>
 
 #if !defined(EWOULDBLOCK) && defined(EAGAIN)
 #define EWOULDBLOCK EAGAIN
 #endif
+
+extern jmp_buf VTend;
 
 extern Widget toplevel;
 extern void exit();

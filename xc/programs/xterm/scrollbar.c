@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.37 91/01/06 12:48:33 rws Exp $
+ *	$XConsortium: scrollbar.c,v 1.38 91/01/09 16:52:32 rws Exp $
  */
 
 /*
@@ -25,12 +25,11 @@
  * SOFTWARE.
  */
 
+#include "ptyx.h"		/* gets Xt headers, too */
+
 #include <stdio.h>
 #include <ctype.h>
-#include <setjmp.h>
 #include <X11/Xatom.h>
-
-#include "ptyx.h"		/* X headers included here. */
 
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>

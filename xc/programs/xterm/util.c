@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.20 90/03/14 17:04:59 jim Exp $
+ *	$XConsortium: util.c,v 1.21 91/01/06 12:48:39 rws Exp $
  */
 
 /*
@@ -27,15 +27,12 @@
 
 /* util.c */
 
-#include <stdio.h>
-#include <X11/Intrinsic.h>
-#include <setjmp.h>
-typedef int *jmp_ptr;
-
 #include "ptyx.h"
 #include "data.h"
 #include "error.h"
 #include "menu.h"
+
+#include <stdio.h>
 
 /*
  * These routines are used for the jump scroll feature
