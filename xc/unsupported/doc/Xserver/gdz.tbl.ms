@@ -25,6 +25,10 @@ Adam R. de Boor
 .AI
 University of California at Berkeley
 .AB
+.AU
+edits by Bob Scheifler
+.AI
+Massachusetts Institute of Technology
 .LP
 For hackers in a hurry,  here's how to do a quick-and-dirty port of the
 X V11 sample server to memory-mapped monochrome & color frame buffers.
@@ -115,9 +119,9 @@ independent (but slightly incomplete) driver for \fIany\fP frame buffer.
 .IP cfb 8
 The ``color frame buffer'' driver.  This is intended to be a machine
 independent driver for \fIn\fP-bit deep (\fIn\fP <= 32) Z-Format memory mapped displays.
-.IP lk201 8
+.IP dec/lk201 8
 Code to deal with DEC's LK201 keyboard and mouse.
-.IP qvss 8
+.IP dec/qvss 8
 A driver for DEC's QVSS display.  The QVSS is a 1-bit deep memory mapped
 display for the micro-VAX,  and this driver for it uses parts of \fImfb\fP and parts of
 \fImi\fP,  together with the LK201 keyboard driver.
@@ -149,7 +153,7 @@ Layer\fP) written by the DEC team that developed it.\s-2\u2\d\s0
 .FS
 2.  \fIThe Porting Layer for the X V11 Sample Server\fP,  by Susan Angebranndt,
 Raymond Drewry,  Phil Karlton and Todd Newman.  See the file
-\fIdoc/Server/ddx.doc\fP.
+\fIdoc/Server/ddx.doc.tbl.ms\fP.
 .FE
 You do not need this document for a simple monochrome port,  but we refer to
 it frequently when more details are needed.
@@ -362,7 +366,7 @@ T}
 .LP
 Now,  you have to establish a mapping between the codes your keyboard
 sends and the names X V11 uses for keys (the so-called \fIkeysyms\fP).
-Read the files \fIserver/ddx/gwc/gwcKeyMap.c\fP and \fIinclude/keysym.h\fP.
+Read the files \fIserver/ddx/gwc/gwcKeyMap.c\fP and \fIX11/keysym.h\fP.
 Look at your keyboard manual,  and find the lowest keycode it sends (\fIkcmin\fP)
 and the highest keycode it sends (\fIkcmax\fP).
 Look at the keyboard itself,  and find the key with the largest number of
@@ -498,23 +502,21 @@ suitable changes to the makefiles:
 In \fIserver/Imakefile\fP,  make the following changes:
 .KF
 .LS
-     ALLDDXDIRS = ddx/mi ddx/sun ddx/cfb ddx/apollo ddx/mfb ddx/lk201 \e
-                    ddx/qvss ddx/qdss ddx/ibm/apa16 ddx/ibm/rt ddx/gwc
+     ALLDDXDIRS = \fIwhatever is already there\fP ddx/gwc
 	    GWC = ddx/gwc/libgwc.a
-    ALLPOSSIBLE = Xqvss Xqdss Xsun Xapa16 Xapollo Xgwc
+    ALLPOSSIBLE = \fIwhatever is already there\fP Xgwc
 
 #ifndef	XgwcServer
 #define	XgwcServer /* as nothing */
 #endif
-            ALL = XqvssServer XqdssServer XsunServer XapolloServer Xapa16Server \e
-		XgwcServer
+            ALL = \fIwhatever is already there\fP XgwcServer
 
 #
-# sun server
+# GWC server
 #
-GWCDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/gwc os/4.2bsd
+GWCDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/cfb ddx/gwc os/4.2bsd
 GWCOBJS = ddx/gwc/gwcInit.o
-GWCLIBS = $(GWC) $(CFB) $(DIX) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
+GWCLIBS = $(GWC) $(CFB) $(DIX) $(SNF) $(UNIX) $(MFB) $(MI) $(EXTENSIONS)
 GWCSYSLIBS = $(SYSLIBS)
 XgwcDIRS = $(GWCDIRS)
 
@@ -828,7 +830,7 @@ To switch to using a hardware cursor,  you will need to study the QVSS code,\s-2
 12.  See the files
 \fIserver/ddx/sun/sunCursor.c\fP
 and
-\fIserver/ddx/qvss/qvss_io.c\fP,
+\fIserver/ddx/dec/qvss/qvss_io.c\fP,
 and section 2.5 of the \fIPorting Layer\fP.
 .FE
 and to remove the following code from the \fIserver/ddx/sun\fP files:
@@ -912,7 +914,7 @@ The Sun code does this.
 If you have a kernel event queue that can be mapped into a user process,
 give \fBSetInputCheck(\|)\fP the addresses of the head and tail pointers.\s-2\u17\d\s0
 .FS
-17.  See the file \fIserver/ddx/qvss/qvss_io.c\fP.
+17.  See the file \fIserver/ddx/dec/qvss/qvss_io.c\fP.
 .FE
 This is the best alternative,  because it eliminates
 the \fBread(\|)\fP system calls as well.
