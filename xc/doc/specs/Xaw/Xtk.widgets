@@ -2466,7 +2466,7 @@ Unselects any previously selected text and begins selecting new text.
 .IP \fBselect-adjust\fP(\^) 1i
 .br
 .ns
-.IP \fBextend-adjust\fP(\^)\ \ \ 1i
+.IP \fBextend-adjust\fP(\^)\ \ \  1i
 Continues selecting text from the previous start position.
 .sp 6p
 .IP \fBstart-extend\fP(\^) 1i
@@ -3205,7 +3205,7 @@ NotifyScroll returns without executing any callbacks.
 This must be the last action after a movement is complete.
 .IP \fBMoveThumb\fP(\^) 1i
 Repositions the scroll bar thumb to the current pointer location.
-.IP \fBNotifyThumb\fP(\^)\ \ \ 
+.IP \fBNotifyThumb\fP(\^)\ \ \  1i
 Calls the XtNjumpProc callbacks and passes in the relative position of the
 pointer as a percentage of the scroll bar length.
 .LP
