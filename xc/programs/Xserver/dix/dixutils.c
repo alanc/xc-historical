@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.23 87/09/11 17:56:56 sun Exp $ */
+/* $Header: dixutils.c,v 1.24 88/01/01 17:45:34 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -88,6 +88,7 @@ LookupWindow(rid, client)
 {
     WindowPtr pWin;
 
+    client->errorValue = rid;
     if(rid == INVALID)
 	return NULL;
     if (client->lastDrawableID == rid)
@@ -98,7 +99,6 @@ LookupWindow(rid, client)
         return (WindowPtr) NULL;
     }
     pWin = (WindowPtr)LookupID(rid, RT_WINDOW, RC_CORE);
-    client->errorValue = rid;
     return pWin;
 }
 
