@@ -1,4 +1,4 @@
-.\" $XConsortium: xhost.man,v 1.15 94/04/14 15:56:56 dpw Exp $
+.\" $XConsortium: xhost.man,v 1.16 94/04/17 20:23:19 dpw Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -56,7 +56,7 @@ server.  For X terminals, it is the login host.
 .B \-help
 Prints a usage message.
 .TP 8
-.BI "\[\+\]" "name"
+.BI "[+]" "name"
 The given \fIname\fP (the plus sign is optional)
 is added to the list allowed to connect to the X server.
 The name can be a host name or a user name.
