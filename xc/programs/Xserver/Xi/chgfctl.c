@@ -1,4 +1,4 @@
-/* $XConsortium: xchgfctl.c,v 1.5 89/12/02 15:20:28 rws Exp $ */
+/* $XConsortium: xchgfctl.c,v 1.6 90/05/18 13:50:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -88,22 +88,46 @@ ProcXChangeFeedbackControl(client)
     switch (stuff->feedbackid)
 	{
 	case KbdFeedbackClass:
-	    ChangeKbdFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->kbdfeed)
+		ChangeKbdFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	case PtrFeedbackClass:
-	    ChangePtrFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->ptrfeed)
+		ChangePtrFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	case StringFeedbackClass:
-	    ChangeStringFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->stringfeed)
+		ChangeStringFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	case IntegerFeedbackClass:
-	    ChangeIntegerFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->intfeed)
+		ChangeIntegerFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	case LedFeedbackClass:
-	    ChangeLedFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->leds)
+		ChangeLedFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	case BellFeedbackClass:
-	    ChangeBellFeedback (client, dev, stuff->mask, &stuff[1]);
+	    if (dev->bell)
+	        ChangeBellFeedback (client, dev, stuff->mask, &stuff[1]);
+	    else
+		SendErrorToClient (client, IReqCode, X_ChangeFeedbackControl, 
+			0, BadMatch);
 	    break;
 	default:
 	    SendErrorToClient(client, IReqCode, X_ChangeFeedbackControl, 0, 
