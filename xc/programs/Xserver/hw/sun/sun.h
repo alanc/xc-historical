@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 1.2 87/03/24 14:57:14 deboor Exp $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 3.1 87/08/08 15:44:38 toddb Exp $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -100,7 +100,10 @@ typedef struct kbPrivate {
 					/* have been handled. */
     pointer 	  devPrivate;	    	/* Private to keyboard device */
     Bool	  map_q;		/* TRUE if fd has a mapped event queue */
+    int		  offset;		/* to be added to device keycodes */
 } KbPrivRec, *KbPrivPtr;
+
+#define	MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
 
 /*
  * Data private to any sun pointer device.

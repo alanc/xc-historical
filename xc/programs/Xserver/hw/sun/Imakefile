@@ -29,12 +29,7 @@ OBJS = \
 	sunCG4C.o \
 	sunKeyMap.o
 
-#ifdef UseSunWindowsInServer
-CDEBUGFLAGS = -g -DSUN_WINDOWS
-#else
 CDEBUGFLAGS = -g
-#endif
-
    INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I../../../include
      LFLAGS = -buxz
 

@@ -1,14 +1,17 @@
 
-	Sun X11 Beta-2 drivers -  23 July 1987
+	Sun X11 Beta-4 drivers -  29 August 1987
 
 A joint production of:
 
 	Adam de Boor		University of California,  Berkeley
 
-	David Rosenthal &
-	Stuart Marks &
-	Robin Schaufler &
-	Mike Schwartz		Sun Microsystems
+	David Rosenthal
+	Stuart Marks
+	Robin Schaufler
+	Mike Schwartz
+	Frances Ho
+	Geoff Lee
+	Mark Opperman		Sun Microsystems
 
 This version of the Sun X.11 drivers uses ../mi,  ../mfb and ../cfb to support
 the following configurations:
@@ -25,29 +28,22 @@ The following configurations are NOT supported:
 	Sun/4			cg2	(we're working on it)
 
 The drivers are completely untuned, and have inferior performance.  The code
-is lint-free.  It installs and runs on these configurations under SunOS 3.2
-and 3.4.  However, we must stress that it is completely unsupported, and if
-you have problems installing or using it you are on your own.
+is lint-free.  It installs and runs on these configurations under SunOS 3.2,
+3.4, and 4.0.  However, we must stress that it is completely unsupported, and
+if you have problems installing or using it you are on your own.
 
 Things to check before building:
 
-1)	server/include/site.h - replace the font path.
+1)	server/include/site.h - replace the font and rgb paths.
 
 2)	Make sure the fonts/Makefile uses the pad flag on the font
 	compiler to pad the glyphs to 4-byte boundaries.
 
 3)	Change the server makefile to build Xsun
 
-4)	Change the server/ddx makefile to build the subdirectories:
-
-	mfb mi sun
-
-5)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
+4)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
 	The non-portable zoids have worse performance than portable zoids
 	but prove that the extension mechanism works for output.
-
-all: Xsun
-
 
 Then build the system by:
 
@@ -72,31 +68,71 @@ Then build the system by:
 
 5)	On the console, or from an rlogin connection,  start the server:
 
-	server/Xsun
-	
-	If its from the console,  you probably want to redirect the
+	    clients/xinit/xinit
+	or
+	    clients/xinit/xinit -- -dev /dev/??? [see below]
+
+	If it's from the console,  you probably want to redirect the
 	output thus:
 
-	server/Xsun >& /tmp/x11.out
+	    clients/xinit/xinit >& /tmp/x11.out
 
-6)	From an rlogin connection,  start an xterm by:
+6)	xinit should start up an xterm window that acts as a console.  When
+	this xterm terminates, the xinit will kill the server.  You can also
+	start up client programs from a terminal or rlogin, but you must
+	first set the DISPLAY environment variable:
 
-	setenv DISPLAY unix:0
-	clients/xterm/xterm &
+	    setenv DISPLAY unix:0
+	    clients/xterm/xterm &
+
 
 7)	In general,  Xsun auto-configures to use all the available
 	framebuffers.  In some circumstances,  you may need to use a
 	-dev argument on the command line to prevent this:
 
-	3/110	If you want to use color,  use -dev /dev/cgfour0.  If
-		you want to use monochrome -dev /dev/bwtwo0.
-		
-	GP	If you have a GP installed,  use -dev /dev/cgtwo0.
+	3/110LC, 3/110C, 3/60C 
 
-8)	To shut the server down,  hit  it with a Hangup or Terminate signal.
+	If you want to use color, use "xinit -- -dev /dev/cgfour0".
+	If you want to use monochrome, use "xinit -- -dev /dev/bwtwo0".
+		
+	These systems have a hybrid color/monochrome framebuffer, with an
+	enable plane that determines which gets displayed.  If you're
+	starting from the console, you're in monochrome mode.  If you start
+	up X using color, it will start up just fine, except that the color
+	planes will not be displayed.  The system will appear to hang,
+	displaying the monochrome console.  To get around this problem, use
+	the "switcher" command that is provided with the system software.
+	Use "switcher -e 0" to display the color planes, and use 
+	"switcher -e 1" to display the monochrome planes.  Type
+
+	    switcher -e 0 ; clients/xinit/xinit -- -dev /dev/cgfour0
+
+	This problem exists in the present release (beta4) and may be fixed
+	in future releases.
+
+	GP, GP+, GP2
+
+	If you have one of these GP's installed, use 
+
+	    xinit -- -dev /dev/cgtwo0
+
+8)	To shut the server down,  it  it with a Hangup or Terminate signal.
 
 9)	Xsun coexists with the SunWindows environment.  If you run Xsun
 	from a shell window under suntools, then Xsun will overlay that
 	desktop.  If you have two desktops, then 'adjacentscreens' will still
 	be in effect.  You may want to redirect the output of the server to a
 	window that is visible on another desktop.
+
+10)	If X crashes, it will leave the keyboard in a funny state.  There is a
+	program called "kbd_mode" that will reset the mode of the keyboard.
+	"kbd_mode -a" is the appropriate setting for the bare console, and
+	"kbd_mode -e" is the appropriate setting for running with SunWindows.
+	You may have to issue this command from a terminal or from an rlogin
+	connection.  If you run from the bare console, you can give the
+	command
+
+	xinit ; kbd_mode -a
+
+	so that the keyboard mode will ALWAYS be set properly when the server
+	terminates.  The kbd_mode program is in the server/ddx/sun directory.
