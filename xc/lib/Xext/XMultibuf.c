@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.27 92/03/17 16:54:56 eswu Exp $
+ * $XConsortium: XMultibuf.c,v 1.28 92/04/03 10:55:22 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -322,7 +322,8 @@ int XmbufCreateBuffers (dpy, w, count, update_action, update_hint, buffers)
     req->updateAction = update_action;
     req->updateHint = update_hint;
     req->length += count;
-    PackData32 (dpy, buffers, count * sizeof (Multibuffer));
+    count <<= 2;
+    PackData32 (dpy, buffers, count);
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
@@ -380,7 +381,8 @@ void XmbufDisplayBuffers (dpy, count, buffers, min_delay, max_delay)
     req->minDelay = min_delay;
     req->maxDelay = max_delay;
     req->length += count;
-    PackData32 (dpy, buffers, count * sizeof (Multibuffer));
+    count <<= 2;
+    PackData32 (dpy, buffers, count);
     UnlockDisplay (dpy);
     SyncHandle();
 }
