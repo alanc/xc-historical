@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.166 93/04/30 15:39:52 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.167 93/06/25 16:28:02 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -260,11 +260,14 @@ _XWaitForReadable(dpy)
     } while (result <= 0);
 #ifdef XTHREADS
 #ifdef TDEBUG
-    printf("thread %x _XWaitForReadable returning\n", cthread_self());
+    printf("thread %x _XWaitForReadable returning\n", xthread_self());
 #endif
 #endif
 }
 
+#ifdef XTHREADS
+static _XFlushInt();
+#endif
 
 /*
  * _XFlush - Flush the X request buffer.  If the buffer is empty, no
@@ -360,7 +363,7 @@ _XEventsQueued (dpy, mode)
 	struct _XCVList *cvl;
 
 #ifdef TDEBUG
-	printf("_XEventsQueued called in thread %x\n", cthread_self());
+	printf("_XEventsQueued called in thread %x\n", xthread_self());
 #endif
 #endif /* XTHREADS*/
 
@@ -523,7 +526,7 @@ _XReadEvents(dpy)
 
 #ifdef TDEBUG
 	printf("_XReadEvents called in thread %x\n",
-	       cthread_self());
+	       xthread_self());
 #endif
 	/* create our condition variable and append to list */
 	cvl = QueueEventReaderLock(dpy);
@@ -1097,7 +1100,7 @@ Status _XReply (dpy, rep, extra, discard)
 
 #ifdef TDEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
-	   cthread_self(), cvl);
+	   xthread_self(), cvl);
 #endif
 
     _XFlushInt(dpy, cvl->cv);
@@ -1256,7 +1259,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 		       dpy->last_request_read);
 #ifdef XTHREADS
 #ifdef TDEBUG
-	printf("thread %x, unexpected async reply\n", cthread_self());
+	printf("thread %x, unexpected async reply\n", xthread_self());
 #endif
 #endif
 	if (len > *lenp)
