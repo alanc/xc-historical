@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.12 90/04/04 11:28:54 swick Exp $";
+    "$XConsortium: VarGet.c,v 1.13 90/07/24 12:10:46 swick Exp $";
 #endif
 /*
 
@@ -27,9 +27,16 @@ without express or implied warranty.
 
 static String XtNxtGetTypedArg = "xtGetTypedArg";
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
-XtVaGetSubresources(Widget widget, XtPointer base, String name, String class, XtResourceList resources, Cardinal num_resources, ...)
+XtVaGetSubresources(
+    Widget widget,
+    XtPointer base,
+    _Xconst char* name,
+    _Xconst char* class,
+    XtResourceList resources,
+    Cardinal num_resources,
+    ...)
 #else
 /*VARARGS6*/
 void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alist)
@@ -66,7 +73,7 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
 XtVaGetApplicationResources(Widget widget, XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -198,7 +205,7 @@ _XtGetNestedArg(widget, avlist, args, resources, num_resources)
     return(count);
 }
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
 XtVaGetValues(Widget widget, ...)
 #else
@@ -266,7 +273,7 @@ void XtVaGetValues(widget, va_alist)
     }
 }
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
 XtVaGetSubvalues(XtPointer base,XtResourceList  resources, Cardinal num_resources, ...)
 #else

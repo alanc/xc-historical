@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.54 90/12/03 16:30:49 converse Exp $ */
+/* $XConsortium: Display.c,v 1.55 90/12/11 12:20:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -118,6 +118,18 @@ ComputeAbbrevLen(string, name, len)
 }
 
 
+#if NeedFunctionPrototypes
+Display *XtOpenDisplay(
+	XtAppContext app,
+	_Xconst char* displayName,
+	_Xconst char* applName,
+	_Xconst char* className,
+	XrmOptionDescRec *urlist,
+	Cardinal num_urs,
+	Cardinal *argc,
+	String *argv
+	)
+#else
 Display *XtOpenDisplay(app, displayName, applName, className,
 		urlist, num_urs, argc, argv)
 	XtAppContext app;
@@ -126,6 +138,7 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	Cardinal num_urs;
 	Cardinal *argc;
 	String *argv;
+#endif
 {
 	char  displayCopy[256];
 	int i;
@@ -208,6 +221,19 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	return d;
 }
 
+#if NeedFunctionPrototypes
+void
+XtDisplayInitialize(
+	XtAppContext app,
+	Display *dpy,
+	_Xconst char* name,
+	_Xconst char* classname,
+	XrmOptionDescRec *urlist,
+	Cardinal num_urs,
+	Cardinal *argc,
+	String *argv
+	)
+#else
 void
 XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	XtAppContext app;
@@ -217,6 +243,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	Cardinal num_urs;
 	Cardinal *argc;
 	String *argv;
+#endif
 {
 	XtPerDisplay pd;
 	static XtPerDisplay NewPerDisplay();
@@ -256,7 +283,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->pdi.pointer.grabType  = XtNoServerGrab;
 	_XtAllocWWTable(pd);
 
-	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
+	_XtDisplayInitialize(dpy, pd, (String)name, (String)classname, urlist, 
 			     num_urs, argc, argv);
 }
 

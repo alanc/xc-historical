@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.152 90/08/22 12:14:21 swick Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.153 90/08/22 12:48:37 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -46,9 +46,16 @@ Boolean XtIsSubclass(widget, widgetClass)
 } /* XtIsSubclass */
 
 
+#if NeedFunctionPrototypes
+Boolean _XtCheckSubclassFlag(
+    Widget object,
+    _XtXtEnum flag
+    )
+#else
 Boolean _XtCheckSubclassFlag(object, flag)
     Widget object;
     XtEnum flag;
+#endif
 {
     if (object->core.widget_class->core_class.class_inited & flag)
 	return True;
@@ -58,10 +65,19 @@ Boolean _XtCheckSubclassFlag(object, flag)
 } /*_XtVerifySubclass */
 
 
+#ifdef NeedFunctionPrototypes
+Boolean _XtIsSubclassOf(
+    Widget object,
+    WidgetClass widgetClass,
+    WidgetClass superClass,
+    _XtXtEnum flag
+    )
+#else
 Boolean _XtIsSubclassOf(object, widgetClass, superClass, flag)
     Widget object;
     WidgetClass widgetClass, superClass;
     XtEnum flag;
+#endif
 {
     if (!(object->core.widget_class->core_class.class_inited & flag))
 	return False;
@@ -456,9 +472,16 @@ static Widget NameListToWidget(root, names, bindings,
     }
 } /* NameListToWidget */
 
+#if NeedFunctionPrototypes
+Widget XtNameToWidget(
+    Widget root,
+    _Xconst char* name
+    )
+#else
 Widget XtNameToWidget(root, name)
     Widget root;
     String name;
+#endif
 {
     XrmName *names;
     XrmBinding *bindings;
@@ -741,11 +764,20 @@ static Boolean Resolve(source, len, sub, num, buf, collapse)
 }
 
 
+#if NeedFunctionPrototypes
+String XtFindFile(
+    _Xconst char* path,
+    Substitution substitutions,
+    Cardinal num_substitutions,
+    XtFilePredicate predicate
+    )
+#else
 String XtFindFile(path, substitutions, num_substitutions, predicate)
     String path;
     Substitution substitutions;
     Cardinal num_substitutions;
     XtFilePredicate predicate;
+#endif
 {
     char *buf, *buf1, *buf2, *colon, *start;
     int len;
@@ -757,7 +789,7 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
     if (predicate == NULL) predicate = TestFile;
 
     while (1) {
-	start = path;
+	start = (String)path;
 	while (1) {
 	    colon = index(start, ':');
 	    if (colon == NULL) break;
@@ -866,6 +898,18 @@ static SubstitutionRec defaultSubs[] = {
 };
 
 
+#if NeedFunctionPrototypes
+String XtResolvePathname(
+    Display *dpy,
+    _Xconst char* type,
+    _Xconst char* filename,
+    _Xconst char* suffix,
+    _Xconst char* path,
+    Substitution substitutions,
+    Cardinal num_substitutions,
+    XtFilePredicate predicate
+    )
+#else
 String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 			 num_substitutions, predicate)
     Display *dpy;
@@ -873,6 +917,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     Substitution substitutions;
     Cardinal num_substitutions;
     XtFilePredicate predicate;
+#endif
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     static char *defaultPath = NULL;
@@ -954,9 +999,9 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 	for (def = defaultSubs; i--; sub++, def++) sub->match = def->match;
 	for (i = num_substitutions; i--; ) *sub++ = *substitutions++;
     }
-    merged_substitutions[0].substitution = filename;
-    merged_substitutions[1].substitution = type;
-    merged_substitutions[2].substitution = suffix;
+    merged_substitutions[0].substitution = (String)filename;
+    merged_substitutions[1].substitution = (String)type;
+    merged_substitutions[2].substitution = (String)suffix;
     FillInLangSubs(&merged_substitutions[3], pd);
 
     result = XtFindFile(massagedPath, merged_substitutions,

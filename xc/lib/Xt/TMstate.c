@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.121 90/12/05 13:49:43 rws Exp $ */
+/* $XConsortium: TMstate.c,v 1.122 90/12/11 12:02:26 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -473,9 +473,6 @@ Boolean _XtRegularMatch(event,eventSeq)
 static TMContext AllocTMContext(dpy)
     Display *dpy;
 {
-#ifndef _XtHeapAlloc
-    extern char* _XtHeapAlloc();
-#endif 
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     TMContext ctx =
 	(TMContext)_XtHeapAlloc( &pd->heap, (unsigned)sizeof(TMContextRec) );
@@ -2742,9 +2739,16 @@ static void RegisterGrab(widget, stateTable, index, grabP)
 }
 
 
+#if NeedFunctionPrototypes
+void _XtRegisterGrabs(
+    Widget widget,
+    _XtBoolean acceleratorsOnly
+    )
+#else
 void _XtRegisterGrabs(widget, acceleratorsOnly)
     Widget widget;
     Boolean acceleratorsOnly;
+#endif
 {
     XtTranslations translateData = widget->core.tm.translations;
     StateTablePtr stateTable;
@@ -2887,6 +2891,15 @@ void _XtBuildKeysymTables(dpy,pd)
     XFree((char *)modKeymap);
 }
 
+#if NeedFunctionPrototypes
+void XtTranslateKeycode (
+    Display *dpy,
+    _XtKeyCode keycode,
+    Modifiers modifiers,
+    Modifiers *modifiers_return,
+    KeySym *keysym_return
+    )
+#else
 void XtTranslateKeycode (dpy, keycode, modifiers,
                             modifiers_return, keysym_return)
 
@@ -2895,7 +2908,7 @@ void XtTranslateKeycode (dpy, keycode, modifiers,
     Modifiers modifiers;
     Modifiers *modifiers_return;
     KeySym *keysym_return;
-
+#endif
 {
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     _InitializeKeysymTables(dpy, pd);
@@ -2904,6 +2917,15 @@ void XtTranslateKeycode (dpy, keycode, modifiers,
 }
 
 /* This code should match XTranslateKey (internal, sigh) in Xlib */
+#if NeedFunctionPrototypes
+void XtTranslateKey(
+    register Display *dpy,
+    _XtKeyCode keycode,
+    Modifiers modifiers,
+    Modifiers *modifiers_return,
+    KeySym *keysym_return
+    )
+#else
 void XtTranslateKey(dpy, keycode, modifiers,
                             modifiers_return, keysym_return)
     register Display *dpy;
@@ -2911,6 +2933,7 @@ void XtTranslateKey(dpy, keycode, modifiers,
     Modifiers modifiers;
     Modifiers *modifiers_return;
     KeySym *keysym_return;
+#endif
 {
     register XtPerDisplay pd = _XtGetPerDisplay(dpy);
     int per;
@@ -3009,13 +3032,22 @@ void _XtConvertCase(dpy, sym, lower, upper)
     }
 }
 
-
+#if NeedFunctionPrototypes
+void XtRegisterGrabAction(
+    XtActionProc action_proc,
+    _XtBoolean owner_events,
+    unsigned int event_mask,
+    int pointer_mode,
+    int keyboard_mode
+    )
+#else
 void XtRegisterGrabAction(action_proc, owner_events, event_mask,
 			  pointer_mode, keyboard_mode)
     XtActionProc action_proc;
     Boolean owner_events;
     unsigned int event_mask;
     int pointer_mode, keyboard_mode;
+#endif
 {
     GrabActionRec* actionP;
 
@@ -3117,13 +3149,22 @@ void XtKeysymToKeycodeList(dpy, keysym, keycodes_return, keycount_return)
     *keycount_return = ncodes;
 }
 
-
+#if NeedFunctionPrototypes
+void XtCallActionProc(
+    Widget widget,
+    _Xconst char* action,
+    XEvent *event,
+    String *params,
+    Cardinal num_params
+    )
+#else
 void XtCallActionProc(widget, action, event, params, num_params)
     Widget widget;
     String action;
     XEvent *event;
     String *params;
     Cardinal num_params;
+#endif
 {
     CompiledAction* actionP;
     XrmQuark q = XrmStringToQuark(action);
@@ -3145,7 +3186,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 		    while (hook != NULL) {
 			(*hook->proc)( widget,
 				       hook->closure,
-				       action,
+				       (String)action,
 				       event,
 				       params,
 				       &num_params
@@ -3171,7 +3212,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
 		while (hook != NULL) {
 		    (*hook->proc)( widget,
 				   hook->closure,
-				   action,
+				   (String)action,
 				   event,
 				   params,
 				   &num_params
@@ -3188,7 +3229,7 @@ void XtCallActionProc(widget, action, event, params, num_params)
     {
 	String params[2];
 	Cardinal num_params = 2;
-	params[0] = action;
+	params[0] = (String)action;
 	params[1] = XtName(widget);
 	XtAppWarningMsg(app,
 	    "noActionProc", "xtCallActionProc", XtCXtToolkitError,

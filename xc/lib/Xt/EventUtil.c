@@ -1,4 +1,4 @@
-/* $XConsortium: EventUtil.c,v 1.5 90/03/19 13:07:03 swick Exp $ */
+/* $XConsortium: EventUtil.c,v 1.6 90/07/26 10:11:17 swick Exp $ */
 
 /********************************************************
 
@@ -47,9 +47,16 @@ void _XtFreePerWidgetInput(w, pwi)
  * This routine gets the passive list assiciated with the widget
  * from the context manager.
  */
+#if NeedFunctionPrototypes
+XtPerWidgetInput _XtGetPerWidgetInput(
+    Widget	widget,
+    _XtBoolean	create
+    )
+#else
 XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
     Widget	widget;
     Boolean	create;
+#endif
 {
     XtPerWidgetInput	pwi = NULL;
     Display		*dpy = widget->core.screen->display;

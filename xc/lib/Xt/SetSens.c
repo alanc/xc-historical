@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.134 89/09/29 12:09:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SetSens.c,v 1.1 89/09/29 14:01:38 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -59,9 +59,16 @@ static void SetAncestorSensitive(widget, ancestor_sensitive)
 } /* SetAncestorSensitive */
 
 
+#if NeedFunctionPrototypes
+void XtSetSensitive(
+    register Widget widget,
+    _XtBoolean	    sensitive
+    )
+#else
 void XtSetSensitive(widget, sensitive)
     register Widget widget;
     Boolean	    sensitive;
+#endif
 {
     Arg			args[1];
     register Cardinal   i;

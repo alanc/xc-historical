@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.160 90/12/11 12:02:15 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.161 90/12/11 12:20:25 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -614,12 +614,20 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
  *	Returns: none.
  */
 
+#if NeedFunctionPrototypes
+void
+XtAppSetFallbackResources(
+XtAppContext app_context,
+_Xconst char* _Xconst *specification_list
+)
+#else
 void
 XtAppSetFallbackResources(app_context, specification_list)
 XtAppContext app_context;
 String *specification_list;
+#endif
 {
-    app_context->fallback_resources = specification_list;
+    app_context->fallback_resources = (String *)specification_list;
 }
 
 /*	Function Name: XtAppInitialize
@@ -637,6 +645,20 @@ String *specification_list;
  *	Returns: The shell widget.
  */
 	
+#if NeedFunctionPrototypes
+Widget
+XtAppInitialize(
+XtAppContext * app_context_return,
+_Xconst char* application_class,
+XrmOptionDescRec *options,
+Cardinal num_options,
+Cardinal *argc_in_out,
+String *argv_in_out,
+_Xconst char** fallback_resources,
+ArgList args_in,
+Cardinal num_args_in
+)
+#else
 Widget
 XtAppInitialize(app_context_return, application_class, options, num_options,
 		argc_in_out, argv_in_out, fallback_resources, 
@@ -647,6 +669,7 @@ XrmOptionDescRec *options;
 Cardinal num_options, *argc_in_out, num_args_in;
 String *argv_in_out, * fallback_resources;     
 ArgList args_in;
+#endif
 {
     XtAppContext app_con;
     Display * dpy;
@@ -710,12 +733,24 @@ ArgList args_in;
  */
 	
 /*ARGSUSED*/
+#if NeedFunctionPrototypes
+Widget 
+XtInitialize(
+_Xconst char* name,
+_Xconst char* classname,
+XrmOptionDescRec *options,
+Cardinal num_options,
+Cardinal *argc,
+String *argv
+)
+#else
 Widget 
 XtInitialize(name, classname, options, num_options, argc, argv)
 String name, classname;
 XrmOptionDescRec *options;
 Cardinal num_options, *argc;
 String *argv;
+#endif
 {
     Widget root;
     XtAppContext app_con;

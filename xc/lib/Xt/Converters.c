@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.58 90/12/09 17:14:15 rws Exp $"; */
+/* "$XConsortium: Converters.c,v 1.59 90/12/11 12:01:58 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -61,9 +61,17 @@ static Const String XtNconversionError = "conversionError";
 	    return True;					\
 	}
 
+#if NeedFunctionPrototypes
+void XtDisplayStringConversionWarning(
+    Display* dpy,
+    _Xconst char* from,
+    _Xconst char* toType
+    )
+#else
 void XtDisplayStringConversionWarning(dpy, from, toType)
     Display* dpy;
     String from, toType;
+#endif
 {
     static enum {Check, Report, Ignore} report_it = Check;
 
@@ -101,8 +109,8 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     if (report_it == Report) {
 	String params[2];
 	Cardinal num_params = 2;
-	params[0] = from;
-	params[1] = toType;
+	params[0] = (String)from;
+	params[1] = (String)toType;
 	XtAppWarningMsg(XtDisplayToApplicationContext(dpy),
 		   XtNconversionError,"string",XtCXtToolkitError,
 		   "Cannot convert string \"%s\" to type %s",
@@ -110,13 +118,20 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
     }
 }
 
+#if NeedFunctionPrototypes
+void XtStringConversionWarning(
+    _Xconst char* from,
+    _Xconst char* toType
+    )
+#else
 void XtStringConversionWarning(from, toType)
     String from, toType;
+#endif
 {
 	String params[2];
 	Cardinal num_params = 2;
-	params[0] = from;
-	params[1] = toType;
+	params[0] = (String)from;
+	params[1] = (String)toType;
 	XtWarningMsg(XtNconversionError,"string",XtCXtToolkitError,
 		   "Cannot convert string \"%s\" to type %s",
 		    params,&num_params);

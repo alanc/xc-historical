@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.11 90/12/03 16:31:00 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.12 90/12/04 10:04:07 rws Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -153,7 +153,6 @@ static void ObjectClassPartInitialize(wc)
     register WidgetClass wc;
 {
    ObjectClass oc = (ObjectClass)wc;
-   extern void  XrmCompileResourceList();
 
     if (oc->object_class.resources != NULL) {
 	XrmCompileResourceList(oc->object_class.resources,

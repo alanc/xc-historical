@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarCreate.c,v 1.11 90/03/06 13:20:41 kit Exp $";
+    "$XConsortium: VarCreate.c,v 1.12 90/04/04 11:28:49 swick Exp $";
 #endif
 
 /*
@@ -56,9 +56,13 @@ _XtVaCreateWidget(name, widget_class, parent, var, count)
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-XtVaCreateWidget(String name, WidgetClass widget_class, Widget parent, ...)
+XtVaCreateWidget(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget parent,
+    ...)
 #else
 /*VARARGS3*/
 Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
@@ -84,9 +88,13 @@ Widget XtVaCreateWidget(name, widget_class, parent, va_alist)
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-XtVaCreateManagedWidget(String name, WidgetClass widget_class, Widget parent, ...)
+XtVaCreateManagedWidget(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget parent,
+    ...)
 #else
 /*VARARGS3*/
 Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
@@ -113,9 +121,14 @@ Widget XtVaCreateManagedWidget(name, widget_class, parent, va_alist)
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-XtVaAppCreateShell(String name, String class, WidgetClass widget_class, Display* display, ...)
+XtVaAppCreateShell(
+    _Xconst char* name,
+    _Xconst char* class,
+    WidgetClass widget_class,
+    Display* display,
+    ...)
 #else
 /*VARARGS4*/
 Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
@@ -150,9 +163,13 @@ Widget XtVaAppCreateShell(name, class, widget_class, display, va_alist)
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-XtVaCreatePopupShell(String name, WidgetClass widget_class, Widget parent, ...)
+XtVaCreatePopupShell(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget parent,
+    ...)
 #else
 /*VARARGS3*/
 Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
@@ -185,7 +202,7 @@ Widget XtVaCreatePopupShell(name, widget_class, parent, va_alist)
     return widget;
 }
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
 XtVaSetValues(Widget widget, ...)
 #else
@@ -216,7 +233,7 @@ void XtVaSetValues(widget, va_alist)
 }
 
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 void
 XtVaSetSubvalues(XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
 #else
@@ -253,12 +270,17 @@ void XtVaSetSubvalues(base, resources, num_resources, va_alist)
     va_end(var);
 }
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-_XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
-		  XrmOptionDescList options, Cardinal num_options,
-		  Cardinal *argc_in_out, String *argv_in_out,
-		  String *fallback_resources, va_list var_args)
+_XtVaAppInitialize(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    Cardinal *argc_in_out,
+    String *argv_in_out,
+    _Xconst char* _Xconst *fallback_resources,
+    va_list var_args)
 #else
 /*VARARGS7*/
 Widget _XtVaAppInitialize(app_context_return, application_class, options,
@@ -352,12 +374,17 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
  * _XtVaAppInitialize.
  */
 
-#if NeedFunctionPrototypes
+#if NeedVarargsPrototypes
 Widget
-XtVaAppInitialize(XtAppContext *app_context_return, String application_class,
-		  XrmOptionDescList options, Cardinal num_options,
-		  Cardinal *argc_in_out, String *argv_in_out,
-		  String *fallback_resources, ...)
+XtVaAppInitialize(
+    XtAppContext *app_context_return,
+    _Xconst char* application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    Cardinal *argc_in_out,
+    String *argv_in_out,
+    _Xconst char* _Xconst *fallback_resources,
+    ...)
 #else
 Widget XtVaAppInitialize(app_context_return, application_class, options,
 			 num_options, argc_in_out, argv_in_out,
@@ -375,8 +402,8 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
     va_list	var;
 
     Va_start(var, fallback_resources);    
-    return _XtVaAppInitialize(app_context_return, application_class, options,
-			      num_options, argc_in_out, argv_in_out,
+    return _XtVaAppInitialize(app_context_return, (String)application_class,
+			      options, num_options, argc_in_out, argv_in_out,
 			      fallback_resources, var);
 }
 

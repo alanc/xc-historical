@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.48 90/08/31 14:54:23 swick Exp $ */
+/* $XConsortium: Geometry.c,v 1.49 90/09/05 10:26:16 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -266,11 +266,21 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     return(_XtMakeGeometryRequest(widget, request, reply, &junk));
 }
 
+#if NeedFunctionPrototypes
+XtGeometryResult XtMakeResizeRequest(
+    Widget	widget,
+    _XtDimension width,
+    _XtDimension height,
+    Dimension	*replyWidth,
+    Dimension	*replyHeight
+    )
+#else
 XtGeometryResult XtMakeResizeRequest
 	(widget, width, height, replyWidth, replyHeight)
     Widget	widget;
     Dimension	width, height;
     Dimension	*replyWidth, *replyHeight;
+#endif
 {
     XtWidgetGeometry request, reply;
     XtGeometryResult r;
@@ -306,9 +316,18 @@ void XtResizeWindow(w)
 } /* XtResizeWindow */
 
 
+#if NeedFunctionPrototypes
+void XtResizeWidget(
+    Widget w,
+    _XtDimension width,
+    _XtDimension height,
+    _XtDimension borderWidth
+    )
+#else
 void XtResizeWidget(w, width, height, borderWidth)
     Widget w;
     Dimension width, height, borderWidth;
+#endif
 {
     XWindowChanges changes;
     Dimension old_width, old_height, old_borderWidth;
@@ -353,10 +372,21 @@ void XtResizeWidget(w, width, height, borderWidth)
     }
 } /* XtResizeWidget */
 
+#if NeedFunctionPrototypes
+void XtConfigureWidget(
+    Widget w,
+    _XtPosition x,
+    _XtPosition y,
+    _XtDimension width,
+    _XtDimension height,
+    _XtDimension borderWidth
+    )
+#else
 void XtConfigureWidget(w, x, y, width, height, borderWidth)
     Widget w;
     Position x, y;
     Dimension width, height, borderWidth;
+#endif
 {
     XWindowChanges changes, old;
     Cardinal mask = 0;
@@ -404,9 +434,17 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
     }
 } /* XtConfigureWidget */
 
+#if NeedFunctionPrototypes
+void XtMoveWidget(
+    Widget w,
+    _XtPosition x,
+    _XtPosition y
+    )
+#else
 void XtMoveWidget(w, x, y)
     Widget w;
     Position x, y;
+#endif
 {
     if ((w->core.x != x) || (w->core.y != y)) {
 	XWindowChanges old;
@@ -427,10 +465,20 @@ void XtMoveWidget(w, x, y)
     }
 } /* XtMoveWidget */
 
+#if NeedFunctionPrototypes
+void XtTranslateCoords(
+    register Widget w,
+    _XtPosition x,
+    _XtPosition y,
+    register Position *rootx,	/* return */
+    register Position *rooty	/* return */
+    )
+#else
 void XtTranslateCoords(w, x, y, rootx, rooty)
     register Widget w;
     Position x, y;
     register Position *rootx, *rooty;	/* return */
+#endif
 {
     Position garbagex, garbagey;
     Widget passed = w;

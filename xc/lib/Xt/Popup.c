@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.25 89/09/29 14:00:22 swick Exp $";
+    "$XConsortium: Popup.c,v 1.26 90/04/04 11:28:18 swick Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif /* lint */
 
@@ -33,10 +33,17 @@ SOFTWARE.
 #include "ShellP.h"
 #include "StringDefs.h"
 
+#if NeedFunctionPrototypes
+void _XtPopup(widget, grab_kind, spring_loaded)
+    Widget      widget;
+    XtGrabKind  grab_kind;
+    _XtBoolean     spring_loaded;
+#else
 void _XtPopup(widget, grab_kind, spring_loaded)
     Widget      widget;
     XtGrabKind  grab_kind;
     Boolean     spring_loaded;
+#endif
 {
     register ShellWidget shell_widget = (ShellWidget) widget;
 

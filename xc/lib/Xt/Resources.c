@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.90 90/11/30 18:31:47 rws Exp $ */
+/* $XConsortium: Resources.c,v 1.91 90/12/11 12:20:17 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -882,6 +882,18 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
 } /* _XtGetResources */
 
 
+#if NeedFunctionPrototypes
+void XtGetSubresources (
+    Widget	  w,
+    XtPointer	  base,
+    _Xconst char* name,
+    _Xconst char* class,
+    XtResourceList resources,
+    Cardinal	  num_resources,
+    ArgList	  args,
+    Cardinal	  num_args
+    )
+#else
 void XtGetSubresources (w, base, name, class, resources, num_resources,
 			args, num_args)
     Widget	  w;		  /* Widget "parent" of subobject   */
@@ -892,6 +904,7 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
     Cardinal	  num_resources;
     ArgList	  args;		  /* arg list to override resources */
     Cardinal	  num_args;
+#endif
 {
     XrmName	  names[100];
     XrmClass	  classes[100];

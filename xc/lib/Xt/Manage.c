@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.23 90/07/31 10:45:44 swick Exp $ */
+/* $XConsortium: Manage.c,v 1.24 90/08/31 16:05:28 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -218,9 +218,16 @@ void XtManageChild(child)
 } /* XtManageChild */
 
 
+#if NeedFunctionPrototypes
+void XtSetMappedWhenManaged(
+    register Widget widget,
+    _XtBoolean	    mapped_when_managed
+    )
+#else
 void XtSetMappedWhenManaged(widget, mapped_when_managed)
     register Widget widget;
     Boolean	    mapped_when_managed;
+#endif
 {
     if (widget->core.mapped_when_managed == mapped_when_managed) return;
     widget->core.mapped_when_managed = mapped_when_managed;

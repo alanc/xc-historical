@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.120 90/10/31 14:51:34 rws Exp $ */
+/* $XConsortium: Event.c,v 1.121 90/12/11 12:02:08 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -216,27 +216,57 @@ XtListPosition  position;
 
 }
 
+#if NeedFunctionPrototypes
+void XtRemoveEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean	    other,
+    XtEventHandler  proc,
+    XtPointer	    closure
+    )
+#else
 void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask       eventMask;
     Boolean	    other;
     XtEventHandler  proc;
     XtPointer	    closure;
+#endif
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
 }
 
+#if NeedFunctionPrototypes
+void XtAddEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean      other,
+    XtEventHandler  proc,
+    XtPointer	    closure
+    )
+#else
 void XtAddEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask       eventMask;
     Boolean         other;
     XtEventHandler  proc;
     XtPointer	    closure;
+#endif
 {
     AddEventHandler(widget, eventMask, other, 
 		    proc, closure, XtListTail, FALSE, FALSE);
 }
 
+#if NeedFunctionPrototypes
+void XtInsertEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean      other,
+    XtEventHandler  proc,
+    XtPointer	    closure,
+    XtListPosition  position
+    )
+#else
 void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
     Widget	    widget;
     EventMask       eventMask;
@@ -244,21 +274,42 @@ void XtInsertEventHandler(widget, eventMask, other, proc, closure, position)
     XtEventHandler  proc;
     XtPointer	    closure;
     XtListPosition  position;
+#endif
 {
     AddEventHandler(widget, eventMask, other, 
 		    proc, closure, position, TRUE, FALSE);
 }
 
+#if NeedFunctionPrototypes
+void XtRemoveRawEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean	    other,
+    XtEventHandler  proc,
+    XtPointer	    closure
+    )
+#else
 void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask       eventMask;
     Boolean	    other;
     XtEventHandler  proc;
     XtPointer	    closure;
+#endif
 {
     RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
 }
 
+#if NeedFunctionPrototypes
+void XtInsertRawEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean	    other,
+    XtEventHandler  proc,
+    XtPointer	    closure,
+    XtListPosition  position
+    )
+#else
 void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
     Widget	    widget;
     EventMask       eventMask;
@@ -266,17 +317,28 @@ void XtInsertRawEventHandler(widget, eventMask, other, proc, closure, position)
     XtEventHandler  proc;
     XtPointer	    closure;
     XtListPosition  position;
+#endif
 {
     AddEventHandler(widget, eventMask, other, 
 		    proc, closure, position, TRUE, TRUE);
 }
 
+#if NeedFunctionPrototypes
+void XtAddRawEventHandler(
+    Widget	    widget,
+    EventMask       eventMask,
+    _XtBoolean      other,
+    XtEventHandler  proc,
+    XtPointer	    closure
+    )
+#else
 void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
     Widget	    widget;
     EventMask       eventMask;
     Boolean         other;
     XtEventHandler  proc;
     XtPointer	    closure;
+#endif
 {
     AddEventHandler(widget, eventMask, other, 
 		    proc, closure, XtListTail, FALSE, TRUE);
@@ -983,10 +1045,18 @@ static XtGrabRec *NewGrabRec(widget, exclusive, spring_loaded)
     return gl;
 }
 
+#if NeedFunctionPrototypes
+void XtAddGrab(
+    Widget  widget,
+    _XtBoolean exclusive,
+    _XtBoolean spring_loaded
+    )
+#else
 void XtAddGrab(widget, exclusive, spring_loaded)
     Widget  widget;
     Boolean exclusive;
     Boolean spring_loaded;
+#endif
 {
     register    XtGrabList gl;
     XtGrabList	*grabListPtr;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.4 89/12/16 19:23:09 rws Exp $
+* $XConsortium: PassivGraI.h,v 1.5 90/07/26 10:13:08 swick Exp $
 */
 
 /********************************************************
@@ -116,14 +116,10 @@ extern void _XtDestroyServerGrabs(
 #endif
 );
 
-#if NeedWidePrototypes
-#define Boolean int
-#endif
-
 extern XtPerWidgetInput _XtGetPerWidgetInput(
 #if NeedFunctionPrototypes
     Widget	/* widget */,
-    Boolean	/* create */
+    _XtBoolean	/* create */
 #endif
 );
 
@@ -131,11 +127,9 @@ extern XtServerGrabPtr _XtCheckServerGrabsOnWidget(
 #if NeedFunctionPrototypes
     XEvent*		/* event */,
     Widget		/* widget */,
-    Boolean		/* isKeyboard */
+    _XtBoolean		/* isKeyboard */
 #endif
 );
-
-#undef Boolean
 
 /*
 extern XtGrabList* _XtGetGrabList( XtPerDisplayInput );

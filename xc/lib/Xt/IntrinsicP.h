@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.48 90/03/19 12:52:14 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.49 90/04/03 09:58:50 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -242,14 +242,6 @@ typedef struct _XtTMRec {
 extern "C" {				/* for C++ V2.0 */
 #endif
 
-#if NeedWidePrototypes
-#define Boolean		int
-#define Dimension	int
-#define KeyCode		int
-#define Position	int
-#define XtEnum		int
-#endif /* NeedWidePrototypes */
-
 extern Widget _XtWindowedAncestor( /* internal; implementation-dependent */
 #if NeedFunctionPrototypes
     Widget 		/* object */
@@ -275,42 +267,34 @@ extern void XtCreateWindow(
 extern void XtResizeWidget(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Dimension		/* width */,
-    Dimension		/* height */,
-    Dimension 		/* borderWidth */
+    _XtDimension	/* width */,
+    _XtDimension	/* height */,
+    _XtDimension	/* borderWidth */
 #endif /* NeedFunctionPrototypes */
 );
 
 extern void XtMoveWidget(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Position		/* x */,
-    Position 		/* y */
+    _XtPosition		/* x */,
+    _XtPosition		/* y */
 #endif /* NeedFunctionPrototypes */
 );
 
 extern void XtConfigureWidget(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Position		/* x */,
-    Position 		/* y */,
-    Dimension 		/* width */,
-    Dimension		/* height */,
-    Dimension 		/* borderWidth */
+    _XtPosition		/* x */,
+    _XtPosition		/* y */,
+    _XtDimension	/* width */,
+    _XtDimension	/* height */,
+    _XtDimension	/* borderWidth */
 #endif /* NeedFunctionPrototypes */
 );
 
 #ifdef __cplusplus
 }						/* for C++ V2.0 */
 #endif
-
-#if NeedWidePrototypes
-#undef Boolean
-#undef Dimension
-#undef KeyCode
-#undef Position
-#undef XtEnum
-#endif /* NeedWidePrototypes */
 
 #endif /* _XtIntrinsicP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.92 90/10/30 19:02:56 converse Exp $ */
+/* $XConsortium: NextEvent.c,v 1.93 90/12/03 16:30:42 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -141,6 +141,16 @@ static void QueueTimerEvent(app, ptr)
  * makes little sense to do this regardless of the value of howlong
  * (bottom line is, we don't bother checking here).
  */
+#if NeedFunctionPrototypes
+int _XtwaitForSomething(
+	_XtBoolean ignoreTimers,
+	_XtBoolean ignoreInputs,
+	_XtBoolean ignoreEvents,
+	_XtBoolean block,
+	unsigned long *howlong,
+	XtAppContext app
+        )
+#else
 int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 			block, howlong, app)
 	Boolean ignoreTimers;
@@ -149,6 +159,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	Boolean block;
 	unsigned long *howlong;
 	XtAppContext app;
+#endif
 {
 	struct timeval  cur_time;
 	struct timeval  start_time;
@@ -724,7 +735,6 @@ void XtAppNextEvent(app, event)
 void XtProcessEvent(mask)
 	XtInputMask mask;
 {
-	void XtAppProcessEvent();
 	XtAppProcessEvent(_XtDefaultAppContext(), mask);
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.44 90/11/05 15:49:22 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.45 90/11/30 18:31:23 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -170,6 +170,17 @@ void _XtTableAddConverter(table, from_type, to_type, converter, convert_args, nu
 	p->cache_type = XtCacheNone;
 }
 
+#if NeedFunctionPrototypes
+void XtSetTypeConverter(
+    register _Xconst char* from_type,
+    register _Xconst char* to_type,
+    XtTypeConverter	converter,
+    XtConvertArgList    convert_args,
+    Cardinal		num_args,
+    XtCacheType		cache_type,
+    XtDestructor	destructor
+    )
+#else
 void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
     register String	from_type, to_type;
     XtTypeConverter	converter;
@@ -177,6 +188,7 @@ void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, c
     Cardinal		num_args;
     XtCacheType		cache_type;
     XtDestructor	destructor;
+#endif
 {
     ProcessContext process = _XtGetProcessContext();
     XtAppContext app = process->appContextList;
@@ -198,6 +210,18 @@ void XtSetTypeConverter(from_type, to_type, converter, convert_args, num_args, c
     }
 }
 
+#if NeedFunctionPrototypes
+void XtAppSetTypeConverter(
+    XtAppContext	app,
+    register _Xconst char* from_type,
+    register _Xconst char* to_type,
+    XtTypeConverter	converter,
+    XtConvertArgList    convert_args,
+    Cardinal		num_args,
+    XtCacheType		cache_type,
+    XtDestructor	destructor
+    )
+#else
 void XtAppSetTypeConverter(app, from_type, to_type, converter, convert_args, num_args, cache_type, destructor)
     XtAppContext	app;
     register String	from_type, to_type;
@@ -206,6 +230,7 @@ void XtAppSetTypeConverter(app, from_type, to_type, converter, convert_args, num
     Cardinal		num_args;
     XtCacheType		cache_type;
     XtDestructor	destructor;
+#endif
 {
     _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
@@ -215,11 +240,21 @@ void XtAppSetTypeConverter(app, from_type, to_type, converter, convert_args, num
 }
 
 /* old interface */
+#if NeedFunctionPrototypes
+void XtAddConverter(
+    register _Xconst char* from_type,
+    register _Xconst char* to_type,
+    XtConverter		converter,
+    XtConvertArgList    convert_args,
+    Cardinal		num_args
+    )
+#else
 void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
     register String	from_type, to_type;
     XtConverter		converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
+#endif
 {
     ProcessContext process = _XtGetProcessContext();
     XtAppContext app = process->appContextList;
@@ -242,12 +277,23 @@ void XtAddConverter(from_type, to_type, converter, convert_args, num_args)
 }
 
 /* old interface */
+#if NeedFunctionPrototypes
+void XtAppAddConverter(
+    XtAppContext	app,
+    register _Xconst char* from_type,
+    register _Xconst char* to_type,
+    XtConverter		converter,
+    XtConvertArgList    convert_args,
+    Cardinal		num_args
+    )
+#else
 void XtAppAddConverter(app, from_type, to_type, converter, convert_args, num_args)
     XtAppContext	app;
     register String	from_type, to_type;
     XtConverter		converter;
     XtConvertArgList    convert_args;
     Cardinal		num_args;
+#endif
 {
     _XtTableAddConverter(app->converterTable,
 	XrmStringToRepresentation(from_type),
@@ -274,9 +320,6 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     register	CachePtr *pHashEntry;
     register	CachePtr p;
     register    Cardinal i;
-#ifndef _XtHeapAlloc
-    extern char* _XtHeapAlloc();
-#endif
     XtDestructor nullProc = NULL; /* some compilers broken */
     Boolean	has_destructor = (destructor != nullProc);
 
@@ -756,12 +799,22 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
     return False;
 }
 
+#if NeedFunctionPrototypes
+void XtConvert(
+    Widget	widget,
+    _Xconst char* from_type_str,
+    XrmValuePtr	from,
+    _Xconst char* to_type_str,
+    XrmValuePtr	to
+    )
+#else
 void XtConvert(widget, from_type_str, from, to_type_str, to)
     Widget	widget;
     String	from_type_str;
     XrmValuePtr	from;
     String	to_type_str;
     XrmValuePtr	to;
+#endif
 {
     XrmQuark    from_type, to_type;
 
@@ -787,12 +840,22 @@ void XtConvert(widget, from_type_str, from, to_type_str, to)
 	(*to) = *from;
 }
 
+#if NeedFunctionPrototypes
+Boolean XtConvertAndStore(
+    Widget	object,
+    _Xconst char* from_type_str,
+    XrmValuePtr	from,
+    _Xconst char* to_type_str,
+    XrmValuePtr	to
+    )
+#else
 Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
     Widget	object;
     String	from_type_str;
     XrmValuePtr	from;
     String	to_type_str;
     XrmValuePtr	to;
+#endif
 {
     XrmQuark    from_type, to_type;
 

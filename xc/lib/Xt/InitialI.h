@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.38 90/11/05 15:48:48 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.39 90/12/03 16:28:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -193,17 +193,10 @@ extern int _XtDpyDestroyCount;
 
 extern int _XtwaitForSomething(
 #if NeedFunctionPrototypes
-#if NeedWidePrototypes
-    /* Boolean */ int	/* ignoreTimers */,
-    /* Boolean */ int	/* ignoreInputs */,
-    /* Boolean */ int	/* ignoreEvents */,
-    /* Boolean */ int	/* block */,
-#else
-    Boolean 		/* ignoreTimers */,
-    Boolean 		/* ignoreInputs */,
-    Boolean 		/* ignoreEvents */,
-    Boolean 		/* block */,
-#endif /*NeedWidePrototypes*/
+    _XtBoolean 		/* ignoreTimers */,
+    _XtBoolean 		/* ignoreInputs */,
+    _XtBoolean 		/* ignoreEvents */,
+    _XtBoolean 		/* block */,
     unsigned long*	/* howlong */,
     XtAppContext 	/* app */
 #endif

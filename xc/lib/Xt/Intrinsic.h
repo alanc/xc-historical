@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.141 90/12/10 15:50:38 converse Exp $
+* $XConsortium: Intrinsic.h,v 1.142 90/12/11 12:01:27 rws Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -55,13 +55,17 @@ SOFTWARE.
 
 typedef char *String;
 
-#if defined(__cplusplus) || defined(c_plusplus)
-#define CONST const
-/* make const String do the right thing */
+#if NeedFunctionPrototypes
 #define String char*
+#endif
+
+#if defined(NeedFunctionPrototypes) && !defined(_Xconst)
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#define _Xconst const
 #else
-#define CONST
-#endif /* __cplusplus */
+#define _Xconst
+#endif
+#endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
 #if defined(NARROWPROTO)
@@ -70,6 +74,21 @@ typedef char *String;
 #define NeedWidePrototypes 1		/* default to make interropt. easier */
 #endif
 #endif
+
+/* _Xt names are private to Xt implementation, do not use in client code */
+#if NeedWidePrototypes
+#define _XtBoolean	int
+#define _XtDimension	int
+#define _XtKeyCode	int
+#define _XtPosition	int
+#define _XtXtEnum	int
+#else
+#define _XtBoolean	int
+#define _XtDimension	int
+#define _XtKeyCode	int
+#define _XtPosition	int
+#define _XtXtEnum	int
+#endif /* NeedWidePrototypes */
 
 #ifndef NULL
 #define NULL 0
@@ -269,11 +288,7 @@ typedef void (*XtActionHookProc)(
 typedef void (*XtKeyProc)(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-#if NeedWidePrototypes
-    /* KeyCode */ int	/* keycode */,
-#else
-    KeyCode 		/* keycode */,
-#endif /* NeedWidePrototypes */
+    _XtKeyCode 		/* keycode */,
     Modifiers		/* modifiers */,
     Modifiers*		/* modifiers_return */,
     KeySym*		/* keysym_return */
@@ -408,7 +423,11 @@ typedef struct {
     String substitution;
 } SubstitutionRec, *Substitution;
 
-typedef Boolean (*XtFilePredicate)( /* String filename */ );
+typedef Boolean (*XtFilePredicate)(
+#if NeedFunctionPrototypes
+   String /* filename */
+#endif
+);
 
 typedef XtPointer XtRequestId;
 
@@ -535,9 +554,9 @@ extern "C" {				/* for C++ V2.0 */
 extern Boolean XtConvertAndStore(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* from_type */,
+    _Xconst String 	/* from_type */,
     XrmValue*		/* from */,
-    CONST String 	/* to_type */,
+    _Xconst String 	/* to_type */,
     XrmValue*		/* to_in_out */
 #endif
 );
@@ -596,11 +615,7 @@ extern Boolean XtIsObject(
 extern Boolean _XtCheckSubclassFlag( /* implementation-private */
 #if NeedFunctionPrototypes
     Widget		/* object */,
-#if NeedWidePrototypes
-    /* XtEnum */ int	/* type_flag */
-#else
-    XtEnum		/* type_flag */
-#endif /* NeedWidePrototypes */
+    _XtXtEnum		/* type_flag */
 #endif
 );
 
@@ -609,11 +624,7 @@ extern Boolean _XtIsSubclassOf( /* implementation-private */
     Widget		/* object */,
     WidgetClass		/* widget_class */,
     WidgetClass		/* flag_class */,
-#if NeedWidePrototypes
-    /* XtEnum */ int	/* type_flag */
-#else
-    XtEnum		/* type_flag */
-#endif /* NeedWidePrototypes */
+    _XtXtEnum		/* type_flag */
 #endif
 );
 
@@ -675,13 +686,8 @@ extern Boolean XtOwnSelectionIncremental(
 extern XtGeometryResult XtMakeResizeRequest(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-#if NeedWidePrototypes
-    /* Dimension */ int /* width */,
-    /* Dimension */ int /* height */,
-#else
-    Dimension		/* width */,
-    Dimension 		/* height */,
-#endif /* NeedWidePrototypes */
+    _XtDimension	/* width */,
+    _XtDimension	/* height */,
     Dimension*		/* replyWidth */,
     Dimension*		/* replyHeight */
 #endif
@@ -690,13 +696,8 @@ extern XtGeometryResult XtMakeResizeRequest(
 extern void XtTranslateCoords(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-#if NeedWidePrototypes
-    /* Position */ int	/* x */,
-    /* Position	*/ int	/* y */,
-#else
-    Position		/* x */,
-    Position		/* y */,
-#endif /* NeedWidePrototypes */
+    _XtPosition		/* x */,
+    _XtPosition		/* y */,
     Position*		/* rootx_return */,
     Position*		/* rooty_return */
 #endif
@@ -719,31 +720,18 @@ extern void XtKeysymToKeycodeList(
 #endif
 );
 
-/* %%% Caution: don't declare any functions past this point that
- * return one of the following types or take a pointer to one of
- * the following types.
- */
-
-#if NeedWidePrototypes
-#define Boolean		int
-#define Dimension	int
-#define KeyCode		int
-#define Position	int
-#define XtEnum		int
-#endif /* NeedWidePrototypes */
-
 extern void XtStringConversionWarning(
 #if NeedFunctionPrototypes
-    CONST String	/* from */,	/* String attempted to convert.	    */
-    CONST String	/* toType */	/* Type attempted to convert it to. */
+    _Xconst String	/* from */,	/* String attempted to convert.	    */
+    _Xconst String	/* toType */	/* Type attempted to convert it to. */
 #endif
 );
 
 extern void XtDisplayStringConversionWarning(
 #if NeedFunctionPrototypes
     Display*	 	/* dpy */,
-    CONST String	/* from */,	/* String attempted to convert.	    */
-    CONST String	/* toType */	/* Type attempted to convert it to. */
+    _Xconst String	/* from */,	/* String attempted to convert.	    */
+    _Xconst String	/* toType */	/* Type attempted to convert it to. */
 #endif
 );
 
@@ -758,8 +746,8 @@ externalref XtConvertArgRec screenConvertArg[];
 extern void XtAppAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
     XtAppContext	/* app */,
-    CONST String	/* from_type */,
-    CONST String	/* to_type */,
+    _Xconst String	/* from_type */,
+    _Xconst String	/* to_type */,
     XtConverter 	/* converter */,
     XtConvertArgList	/* convert_args */,
     Cardinal 		/* num_args */
@@ -768,8 +756,8 @@ extern void XtAppAddConverter( /* obsolete */
 
 extern void XtAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
-    CONST String	/* from_type */,
-    CONST String 	/* to_type */,
+    _Xconst String	/* from_type */,
+    _Xconst String 	/* to_type */,
     XtConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */
@@ -778,8 +766,8 @@ extern void XtAddConverter( /* obsolete */
 
 extern void XtSetTypeConverter(
 #if NeedFunctionPrototypes
-    CONST String 	/* from_type */,
-    CONST String 	/* to_type */,
+    _Xconst String 	/* from_type */,
+    _Xconst String 	/* to_type */,
     XtTypeConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */,
@@ -791,8 +779,8 @@ extern void XtSetTypeConverter(
 extern void XtAppSetTypeConverter(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app_context */,
-    CONST String 	/* from_type */,
-    CONST String 	/* to_type */,
+    _Xconst String 	/* from_type */,
+    _Xconst String 	/* to_type */,
     XtTypeConverter 	/* converter */,
     XtConvertArgList 	/* convert_args */,
     Cardinal 		/* num_args */,
@@ -804,9 +792,9 @@ extern void XtAppSetTypeConverter(
 extern void XtConvert(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* from_type */,
+    _Xconst String 	/* from_type */,
     XrmValue*		/* from */,
-    CONST String 	/* to_type */,
+    _Xconst String 	/* to_type */,
     XrmValue*		/* to_return */
 #endif
 );
@@ -829,13 +817,13 @@ extern void XtDirectConvert(
 
 extern XtTranslations XtParseTranslationTable(
 #if NeedFunctionPrototypes
-    CONST String	/* source */
+    _Xconst String	/* source */
 #endif
 );
 
 extern XtAccelerators XtParseAcceleratorTable(
 #if NeedFunctionPrototypes
-    CONST String	/* source */
+    _Xconst String	/* source */
 #endif
 );
 
@@ -905,7 +893,7 @@ extern void XtRemoveActionHook(
 extern void XtCallActionProc(
 #if NeedFunctionPrototypes
     Widget		/* widget */,
-    CONST String	/* action */,
+    _Xconst String	/* action */,
     XEvent*		/* event */,
     String*		/* params */,
     Cardinal		/* num_params */
@@ -915,7 +903,7 @@ extern void XtCallActionProc(
 extern void XtRegisterGrabAction(
 #if NeedFunctionPrototypes
     XtActionProc 	/* action_proc */,
-    Boolean 		/* owner_events */,
+    _XtBoolean 		/* owner_events */,
     unsigned int 	/* event_mask */,
     int			/* pointer_mode */,
     int	 		/* keyboard_mode */
@@ -951,7 +939,7 @@ extern KeySym XtGetActionKeysym(
 extern void XtTranslateKeycode(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    KeyCode 		/* keycode */,
+    _XtKeyCode 		/* keycode */,
     Modifiers 		/* modifiers */,
     Modifiers*		/* modifiers_return */,
     KeySym*		/* keysym_return */
@@ -961,7 +949,7 @@ extern void XtTranslateKeycode(
 extern void XtTranslateKey(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    KeyCode		/* keycode */,
+    _XtKeyCode		/* keycode */,
     Modifiers		/* modifiers */,
     Modifiers*		/* modifiers_return */,
     KeySym*		/* keysym_return */
@@ -1008,7 +996,7 @@ extern void XtInsertEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */,
     XtListPosition 	/* position */
@@ -1019,7 +1007,7 @@ extern void XtInsertRawEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */,
     XtListPosition 	/* position */
@@ -1030,7 +1018,7 @@ extern void XtAddEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */
 #endif
@@ -1040,7 +1028,7 @@ extern void XtRemoveEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */
 #endif
@@ -1050,7 +1038,7 @@ extern void XtAddRawEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */
 #endif
@@ -1060,7 +1048,7 @@ extern void XtRemoveRawEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */
 #endif
@@ -1070,7 +1058,7 @@ extern void XtInsertEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */,
     XtListPosition 	/* position */
@@ -1081,7 +1069,7 @@ extern void XtInsertRawEventHandler(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     EventMask 		/* eventMask */,
-    Boolean 		/* nonmaskable */,
+    _XtBoolean 		/* nonmaskable */,
     XtEventHandler 	/* proc */,
     XtPointer 		/* closure */,
     XtListPosition 	/* position */
@@ -1097,8 +1085,8 @@ extern EventMask XtBuildEventMask(
 extern void XtAddGrab(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Boolean 		/* exclusive */,
-    Boolean 		/* spring_loaded */
+    _XtBoolean 		/* exclusive */,
+    _XtBoolean 		/* spring_loaded */
 #endif
 );
 
@@ -1286,21 +1274,21 @@ extern void XtDestroyWidget(
 extern void XtSetSensitive(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Boolean 		/* sensitive */
+    _XtBoolean 		/* sensitive */
 #endif
 );
 
 extern void XtSetMappedWhenManaged(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Boolean 		/* mappedWhenManaged */
+    _XtBoolean 		/* mappedWhenManaged */
 #endif
 );
 
 extern Widget XtNameToWidget(
 #if NeedFunctionPrototypes
     Widget 		/* root */,
-    CONST String	/* name */
+    _Xconst String	/* name */
 #endif
 );
 
@@ -1424,7 +1412,7 @@ extern Widget XtParent(
 extern void XtAddCallback(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */,
+    _Xconst String 	/* callback_name */,
     XtCallbackProc 	/* callback */,
     XtPointer 		/* closure */
 #endif
@@ -1433,7 +1421,7 @@ extern void XtAddCallback(
 extern void XtRemoveCallback(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */,
+    _Xconst String 	/* callback_name */,
     XtCallbackProc 	/* callback */,
     XtPointer 		/* closure */
 #endif
@@ -1442,7 +1430,7 @@ extern void XtRemoveCallback(
 extern void XtAddCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String	/* callback_name */,
+    _Xconst String	/* callback_name */,
     XtCallbackList 	/* callbacks */
 #endif
 );
@@ -1450,7 +1438,7 @@ extern void XtAddCallbacks(
 extern void XtRemoveCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */,
+    _Xconst String 	/* callback_name */,
     XtCallbackList 	/* callbacks */
 #endif
 );
@@ -1458,7 +1446,7 @@ extern void XtRemoveCallbacks(
 extern void XtRemoveAllCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */
+    _Xconst String 	/* callback_name */
 #endif
 );
 
@@ -1466,7 +1454,7 @@ extern void XtRemoveAllCallbacks(
 extern void XtCallCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */,
+    _Xconst String 	/* callback_name */,
     XtPointer 		/* call_data */
 #endif
 );
@@ -1482,7 +1470,7 @@ extern void XtCallCallbackList(
 extern XtCallbackStatus XtHasCallbacks(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    CONST String 	/* callback_name */
+    _Xconst String 	/* callback_name */
 #endif
 );
 
@@ -1511,7 +1499,7 @@ extern XtGeometryResult XtQueryGeometry(
 
 extern Widget XtCreatePopupShell(
 #if NeedFunctionPrototypes
-    CONST String	/* name */,
+    _Xconst String	/* name */,
     WidgetClass 	/* widgetClass */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1521,7 +1509,7 @@ extern Widget XtCreatePopupShell(
 
 extern Widget XtVaCreatePopupShell(
 #if NeedVarargsPrototypes
-    CONST String	/* name */,
+    _Xconst String	/* name */,
     WidgetClass		/* widgetClass */,
     Widget		/* parent */,
     ...
@@ -1590,7 +1578,7 @@ extern void XtMenuPopupAction(
 
 extern Widget XtCreateWidget(
 #if NeedFunctionPrototypes
-    CONST String 	/* name */,
+    _Xconst String 	/* name */,
     WidgetClass 	/* widget_class */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1600,7 +1588,7 @@ extern Widget XtCreateWidget(
 
 extern Widget XtCreateManagedWidget(
 #if NeedFunctionPrototypes
-    CONST String 	/* name */,
+    _Xconst String 	/* name */,
     WidgetClass 	/* widget_class */,
     Widget 		/* parent */,
     ArgList 		/* args */,
@@ -1610,7 +1598,7 @@ extern Widget XtCreateManagedWidget(
 
 extern Widget XtVaCreateWidget(
 #if NeedVarargsPrototypes
-    CONST String	/* name */,
+    _Xconst String	/* name */,
     WidgetClass		/* widget */,
     Widget		/* parent */,
     ...
@@ -1619,7 +1607,7 @@ extern Widget XtVaCreateWidget(
 
 extern Widget XtVaCreateManagedWidget(
 #if NeedVarargsPrototypes
-    CONST String	/* name */,
+    _Xconst String	/* name */,
     WidgetClass		/* widget_class */,
     Widget		/* parent */,
     ...
@@ -1628,7 +1616,7 @@ extern Widget XtVaCreateManagedWidget(
 
 extern Widget XtCreateApplicationShell(
 #if NeedFunctionPrototypes
-    CONST String 	/* name */,
+    _Xconst String 	/* name */,
     WidgetClass 	/* widget_class */,
     ArgList 		/* args */,
     Cardinal 		/* num_args */
@@ -1637,8 +1625,8 @@ extern Widget XtCreateApplicationShell(
 
 extern Widget XtAppCreateShell(
 #if NeedFunctionPrototypes
-    CONST String	/* name */,
-    CONST String	/* class */,
+    _Xconst String	/* name */,
+    _Xconst String	/* class */,
     WidgetClass 	/* widget_class */,
     Display*		/* display */,
     ArgList 		/* args */,
@@ -1648,8 +1636,8 @@ extern Widget XtAppCreateShell(
 
 extern Widget XtVaAppCreateShell(
 #if NeedVarargsPrototypes
-    CONST String	/* name */,
-    CONST String	/* class */,
+    _Xconst String	/* name */,
+    _Xconst String	/* class */,
     WidgetClass		/* widget_class */,
     Display*		/* display */,
     ...
@@ -1672,8 +1660,8 @@ extern void XtDisplayInitialize(
 #if NeedFunctionPrototypes
     XtAppContext 	/* appContext */,
     Display*		/* dpy */,
-    CONST String	/* name */,
-    CONST String	/* class */,
+    _Xconst String	/* name */,
+    _Xconst String	/* class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
     Cardinal*		/* argc */,
@@ -1684,12 +1672,12 @@ extern void XtDisplayInitialize(
 extern Widget XtAppInitialize(
 #if NeedFunctionPrototypes
     XtAppContext*	/* app_context_return */,
-    CONST String		/* application_class */,
+    _Xconst String	/* application_class */,
     XrmOptionDescList 	/* options */,
     Cardinal 		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    CONST String*	/* fallback_resources */,
+    _Xconst String*	/* fallback_resources */,
     ArgList 		/* args */,
     Cardinal 		/* num_args */
 #endif
@@ -1698,20 +1686,20 @@ extern Widget XtAppInitialize(
 extern Widget XtVaAppInitialize(
 #if NeedVarargsPrototypes
     XtAppContext*	/* app_context_return */,
-    CONST String	/* application_class */,
+    _Xconst String	/* application_class */,
     XrmOptionDescList	/* options */,
     Cardinal		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    CONST String*	/* fallback_resources */,
+    _Xconst String _Xconst * /* fallback_resources */,
     ...
 #endif
 );
 
 extern Widget XtInitialize(
 #if NeedFunctionPrototypes
-    CONST String 	/* name */,
-    CONST String 	/* class */,
+    _Xconst String 	/* name */,
+    _Xconst String 	/* class */,
     XrmOptionDescRec* 	/* options */,
     Cardinal 		/* num_options */,
     Cardinal*		/* argc */,
@@ -1722,9 +1710,9 @@ extern Widget XtInitialize(
 extern Display *XtOpenDisplay(
 #if NeedFunctionPrototypes
     XtAppContext 	/* appContext */,
-    CONST String	/* displayName */,
-    CONST String	/* applName */,
-    CONST String	/* className */,
+    _Xconst String	/* displayName */,
+    _Xconst String	/* applName */,
+    _Xconst String	/* className */,
     XrmOptionDescRec*	/* urlist */,
     Cardinal 		/* num_urs */,
     Cardinal*		/* argc */,
@@ -1740,8 +1728,8 @@ extern XtAppContext XtCreateApplicationContext(
 
 extern void XtAppSetFallbackResources(
 #if NeedFunctionPrototypes
-    XtAppContext 	/* app_context */,
-    CONST String* 	/* specification_list */
+    XtAppContext 		/* app_context */,
+    _Xconst String _Xconst * 	/* specification_list */
 #endif
 );
 
@@ -1853,8 +1841,8 @@ extern void XtGetSubresources(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
     XtPointer 		/* base */,
-    CONST String 	/* name */,
-    CONST String 	/* class */,
+    _Xconst String 	/* name */,
+    _Xconst String 	/* class */,
     XtResourceList 	/* resources */,
     Cardinal 		/* num_resources */,
     ArgList 		/* args */,
@@ -1866,8 +1854,8 @@ extern void XtVaGetSubresources(
 #if NeedVarargsPrototypes
     Widget		/* widget */,
     XtPointer		/* base */,
-    CONST String	/* name */,
-    CONST String	/* class */,
+    _Xconst String	/* name */,
+    _Xconst String	/* class */,
     XtResourceList	/* resources */,
     Cardinal		/* num_resources */,
     ...
@@ -2026,10 +2014,10 @@ extern void XtSetWarningMsgHandler(
 extern void XtAppErrorMsg(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    CONST String 	/* name */,
-    CONST String	/* type */,
-    CONST String	/* class */,
-    CONST String	/* defaultp */,
+    _Xconst String 	/* name */,
+    _Xconst String	/* type */,
+    _Xconst String	/* class */,
+    _Xconst String	/* defaultp */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2037,10 +2025,10 @@ extern void XtAppErrorMsg(
 
 extern void XtErrorMsg(
 #if NeedFunctionPrototypes
-    CONST String 	/* name */,
-    CONST String	/* type */,
-    CONST String	/* class */,
-    CONST String	/* defaultp */,
+    _Xconst String 	/* name */,
+    _Xconst String	/* type */,
+    _Xconst String	/* class */,
+    _Xconst String	/* defaultp */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2049,10 +2037,10 @@ extern void XtErrorMsg(
 extern void XtAppWarningMsg(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    CONST String 	/* name */,
-    CONST String 	/* type */,
-    CONST String 	/* class */,
-    CONST String 	/* defaultp */,
+    _Xconst String 	/* name */,
+    _Xconst String 	/* type */,
+    _Xconst String 	/* class */,
+    _Xconst String 	/* defaultp */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2060,10 +2048,10 @@ extern void XtAppWarningMsg(
 
 extern void XtWarningMsg(
 #if NeedFunctionPrototypes
-    CONST String	/* name */,
-    CONST String	/* type */,
-    CONST String	/* class */,
-    CONST String	/* defaultp */,
+    _Xconst String	/* name */,
+    _Xconst String	/* type */,
+    _Xconst String	/* class */,
+    _Xconst String	/* defaultp */,
     String*		/* params */,
     Cardinal*		/* num_params */
 #endif
@@ -2098,26 +2086,26 @@ extern void XtSetWarningHandler(
 extern void XtAppError(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    CONST String	/* message */
+    _Xconst String	/* message */
 #endif
 );
 
 extern void XtError(
 #if NeedFunctionPrototypes
-    CONST String	/* message */
+    _Xconst String	/* message */
 #endif
 );
 
 extern void XtAppWarning(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    CONST String	/* message */
+    _Xconst String	/* message */
 #endif
 );
 
 extern void XtWarning(
 #if NeedFunctionPrototypes
-    CONST String	/* message */
+    _Xconst String	/* message */
 #endif
 );
 
@@ -2136,10 +2124,10 @@ extern XrmDatabase *XtGetErrorDatabase(
 extern void XtAppGetErrorDatabaseText(
 #if NeedFunctionPrototypes
     XtAppContext 	/* app */,
-    CONST String	/* name */,
-    CONST String	/* type */,
-    CONST String	/* class */,
-    CONST String 	/* defaultp */,
+    _Xconst String	/* name */,
+    _Xconst String	/* type */,
+    _Xconst String	/* class */,
+    _Xconst String 	/* defaultp */,
     String 		/* buffer */,
     int 		/* nbytes */,
     XrmDatabase 	/* database */
@@ -2148,10 +2136,10 @@ extern void XtAppGetErrorDatabaseText(
 
 extern void XtGetErrorDatabaseText(
 #if NeedFunctionPrototypes
-    CONST String	/* name */,
-    CONST String	/* type */,
-    CONST String	/* class */,
-    CONST String 	/* defaultp */,
+    _Xconst String	/* name */,
+    _Xconst String	/* type */,
+    _Xconst String	/* class */,
+    _Xconst String 	/* defaultp */,
     String 		/* buffer */,
     int 		/* nbytes */
 #endif
@@ -2332,7 +2320,7 @@ extern void XtSetWMColormapWindows(
 
 extern String XtFindFile(
 #if NeedFunctionPrototypes
-    CONST String	/* path */,
+    _Xconst String	/* path */,
     Substitution	/* substitutions */,
     Cardinal 		/* num_substitutions */,
     XtFilePredicate	/* predicate */
@@ -2342,10 +2330,10 @@ extern String XtFindFile(
 extern String XtResolvePathname(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
-    CONST String	/* type */,
-    CONST String	/* filename */,
-    CONST String	/* suffix */,
-    CONST String	/* path */,
+    _Xconst String	/* type */,
+    _Xconst String	/* filename */,
+    _Xconst String	/* suffix */,
+    _Xconst String	/* path */,
     Substitution	/* substitutions */,
     Cardinal		/* num_substitutions */,
     XtFilePredicate 	/* predicate */
@@ -2465,9 +2453,9 @@ extern void XtGetSelectionValuesIncremental(
 extern void XtGrabKey(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    KeyCode 		/* keycode */,
+    _XtKeyCode 		/* keycode */,
     Modifiers	 	/* modifiers */,
-    Boolean 		/* owner_events */,
+    _XtBoolean 		/* owner_events */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */
 #endif
@@ -2476,7 +2464,7 @@ extern void XtGrabKey(
 extern void XtUngrabKey(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    KeyCode 		/* keycode */,
+    _XtKeyCode 		/* keycode */,
     Modifiers	 	/* modifiers */
 #endif
 );
@@ -2484,7 +2472,7 @@ extern void XtUngrabKey(
 extern int XtGrabKeyboard(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Boolean 		/* owner_events */,
+    _XtBoolean 		/* owner_events */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
     Time 		/* time */
@@ -2503,7 +2491,7 @@ extern void XtGrabButton(
     Widget 		/* widget */,
     int 		/* button */,
     Modifiers	 	/* modifiers */,
-    Boolean 		/* owner_events */,
+    _XtBoolean 		/* owner_events */,
     unsigned int	/* event_mask */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
@@ -2523,7 +2511,7 @@ extern void XtUngrabButton(
 extern int XtGrabPointer(
 #if NeedFunctionPrototypes
     Widget 		/* widget */,
-    Boolean 		/* owner_events */,
+    _XtBoolean 		/* owner_events */,
     unsigned int	/* event_mask */,
     int 		/* pointer_mode */,
     int 		/* keyboard_mode */,
@@ -2552,16 +2540,9 @@ extern void XtGetApplicationNameAndClass(
 }						/* for C++ V2.0 */
 #endif
 
-#if NeedWidePrototypes
-#undef Boolean
-#undef Dimension
-#undef KeyCode
-#undef Position
-#undef XtEnum
-#endif /* NeedWidePrototypes */
-
+#if NeedFunctionPrototypes
 #undef String
-#undef CONST
+#endif
 
 #endif /*_XtIntrinsic_h*/
 /* DON'T ADD STUFF AFTER THIS #endif */

@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.27 90/09/26 13:06:39 swick Exp $ */
+/* $XConsortium: Error.c,v 1.28 90/09/26 13:10:33 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -66,11 +66,22 @@ XrmDatabase *XtAppGetErrorDatabase(app)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtGetErrorDatabaseText(
+    register _Xconst char* name,
+    register _Xconst char* type,
+    register _Xconst char* class,
+    _Xconst char* defaultp,
+    String buffer,
+    int nbytes
+    )
+#else
 void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
     register String name, type, class;
     String defaultp;
     String buffer;
     int nbytes;
+#endif
 {
 #if GLOBALERRORS
     XtAppGetErrorDatabaseText(NULL,
@@ -81,6 +92,18 @@ void XtGetErrorDatabaseText(name,type,class,defaultp, buffer, nbytes)
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtAppGetErrorDatabaseText(
+    XtAppContext app,
+    register _Xconst char* name,
+    register _Xconst char* type,
+    register _Xconst char* class,
+    _Xconst char* defaultp,
+    String buffer,
+    int nbytes,
+    XrmDatabase db
+    )
+#else
 void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
 	buffer, nbytes, db)
     XtAppContext app;
@@ -89,6 +112,7 @@ void XtAppGetErrorDatabaseText(app, name,type,class,defaultp,
     String buffer;
     int nbytes;
     XrmDatabase db;
+#endif
 {
     String type_str;
     XrmValue result;
@@ -182,53 +206,103 @@ void _XtDefaultWarningMsg (name,type,class,defaultp,params,num_params)
    }
 }
 
+#if NeedFunctionPrototypes
+void XtErrorMsg(
+    _Xconst char* name,
+    _Xconst char* type,
+    _Xconst char* class,
+    _Xconst char* defaultp,
+    String* params,
+    Cardinal* num_params
+    )
+#else
 void XtErrorMsg(name,type,class,defaultp,params,num_params)
     String name,type,class,defaultp;
     String* params;
     Cardinal* num_params;
+#endif
 {
 #if GLOBALERRORS
-    (*errorMsgHandler)(name,type,class,defaultp,params,num_params);
+    (*errorMsgHandler)((String)name,(String)type,(String)class,
+		       (String)defaultp,params,num_params);
 #else
     XtAppErrorMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtAppErrorMsg(
+    XtAppContext app,
+    _Xconst char* name,
+    _Xconst char* type,
+    _Xconst char* class,
+    _Xconst char* defaultp,
+    String* params,
+    Cardinal* num_params
+    )
+#else
 void XtAppErrorMsg(app, name,type,class,defaultp,params,num_params)
     XtAppContext app;
     String name,type,class,defaultp;
     String* params;
     Cardinal* num_params;
+#endif
 {
 #if GLOBALERRORS
-    (*errorMsgHandler)(name,type,class,defaultp,params,num_params);
+    (*errorMsgHandler)((String)name,(String)type,(String)class,
+		       (String)defaultp,params,num_params);
 #else
     (*app->errorMsgHandler)(name,type,class,defaultp,params,num_params);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtWarningMsg(
+    _Xconst char* name,
+    _Xconst char* type,
+    _Xconst char* class,
+    _Xconst char* defaultp,
+    String* params,
+    Cardinal* num_params
+    )
+#else
 void XtWarningMsg(name,type,class,defaultp,params,num_params)
     String name,type,class,defaultp;
     String* params;
     Cardinal* num_params;
+#endif
 {
 #if GLOBALERRORS
-    (*warningMsgHandler)(name,type,class,defaultp,params,num_params);
+    (*warningMsgHandler)((String)name,(String)type,(String)class,
+			 (String)defaultp,params,num_params);
 #else
     XtAppWarningMsg(_XtDefaultAppContext(),name,type,class,
 	    defaultp,params,num_params);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtAppWarningMsg(
+    XtAppContext app,
+    _Xconst char* name,
+    _Xconst char* type,
+    _Xconst char* class,
+    _Xconst char* defaultp,
+    String* params,
+    Cardinal* num_params
+    )
+#else
 void XtAppWarningMsg(app,name,type,class,defaultp,params,num_params)
     XtAppContext app;
     String name,type,class,defaultp;
     String* params;
     Cardinal* num_params;
+#endif
 {
 #if GLOBALERRORS
-    (*warningMsgHandler)(name,type,class,defaultp,params,num_params);
+    (*warningMsgHandler)((String)name,(String)type,(String)class,
+			 (String)defaultp,params,num_params);
 #else
     (*app->warningMsgHandler)(name,type,class,defaultp,params,num_params);
 #endif /* GLOBALERRORS */
@@ -307,43 +381,69 @@ void _XtDefaultWarning(message)
     return;
 }
 
+#if NeedFunctionPrototypes
+void XtError(
+    _Xconst char* message
+    )
+#else
 void XtError(message)
     String message;
+#endif
 {
 #if GLOBALERRORS
-    (*errorHandler)(message);
+    (*errorHandler)((String)message);
 #else
     XtAppError(_XtDefaultAppContext(),message);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtAppError(
+    XtAppContext app,
+    _Xconst char* message
+    )
+#else
 void XtAppError(app,message)
     XtAppContext app;
     String message;
+#endif
 {
 #if GLOBALERRORS
-    (*errorHandler)(message);
+    (*errorHandler)((String)message);
 #else
     (*app->errorHandler)(message);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtWarning(
+    _Xconst char* message
+    )
+#else
 void XtWarning(message)
     String message;
+#endif
 {
 #if GLOBALERRORS
-    (*warningHandler)(message);
+    (*warningHandler)((String)message);
 #else
     XtAppWarning(_XtDefaultAppContext(),message);
 #endif /* GLOBALERRORS */
 }
 
+#if NeedFunctionPrototypes
+void XtAppWarning(
+    XtAppContext app,
+    _Xconst char* message
+    )
+#else
 void XtAppWarning(app,message)
     XtAppContext app;
     String message;
+#endif
 {
 #if GLOBALERRORS
-    (*warningHandler)(message);
+    (*warningHandler)((String)message);
 #else
     (*app->warningHandler)(message);
 #endif /* GLOBALERRORS */

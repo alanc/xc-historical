@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.79 90/12/03 16:31:06 converse Exp $ */
+/* $XConsortium: Create.c,v 1.80 90/12/04 10:03:48 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -377,24 +377,44 @@ Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
     return (widget);
 }
 
+#if NeedFunctionPrototypes
+Widget XtCreateWidget(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget   	parent,
+    ArgList 	args,
+    Cardinal    num_args
+    )
+#else
 Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     String	name;
     WidgetClass widget_class;
     Widget   	parent;
     ArgList 	args;
     Cardinal    num_args;
+#endif
 {
     return(_XtCreateWidget(name, widget_class, parent, args, num_args,
 			   (XtTypedArgList)NULL, (Cardinal)0));
 }
 
 
+#if NeedFunctionPrototypes
+Widget XtCreateManagedWidget(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget      parent,
+    ArgList     args,
+    Cardinal    num_args
+    )
+#else
 Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
     String      name;
     WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
+#endif
 {
     register Widget	    widget;
 
@@ -442,12 +462,22 @@ Widget _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 }
 
 
+#if NeedFunctionPrototypes
+Widget XtCreatePopupShell(
+    _Xconst char* name,
+    WidgetClass widget_class,
+    Widget      parent,
+    ArgList     args,
+    Cardinal    num_args
+    )
+#else
 Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
     String      name;
     WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
+#endif
 {
     return _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 			       (XtTypedArgList)NULL, (Cardinal)0);
@@ -480,23 +510,43 @@ Widget _XtAppCreateShell(name, class, widget_class, display, args, num_args,
 	    (ConstraintWidgetClass) NULL);
 }
 
+#if NeedFunctionPrototypes
+Widget XtAppCreateShell(
+    _Xconst char*       name,
+    _Xconst char*       class,
+    WidgetClass         widget_class,
+    Display             *display,
+    ArgList             args,
+    Cardinal            num_args
+    )
+#else
 Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
     String              name, class;
     WidgetClass         widget_class;
     Display             *display;
     ArgList             args;
     Cardinal            num_args;
+#endif
 {
     return _XtAppCreateShell(name, class, widget_class, display, args, 
 			     num_args, (XtTypedArgList)NULL, (Cardinal)0);
 }
 
 /* ARGSUSED */
+#if NeedFunctionPrototypes
+Widget XtCreateApplicationShell(
+    _Xconst char* name,		/* unused in R3 and later */
+    WidgetClass widget_class,
+    ArgList     args,
+    Cardinal    num_args
+    )
+#else
 Widget XtCreateApplicationShell(name, widget_class, args, num_args)
     String      name;		/* unused in R3 and later */
     WidgetClass widget_class;
     ArgList     args;
     Cardinal    num_args;
+#endif
 {
     Display *dpy = _XtDefaultAppContext()->list[0];
     XrmClass class = _XtGetPerDisplay(dpy)->class;

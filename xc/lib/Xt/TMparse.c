@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.99 90/08/24 11:11:31 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.100 90/11/30 18:31:32 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1889,8 +1889,14 @@ CvtStringToTranslations(dpy, args, num_args, from, to, closure_ret)
 /*
  * Parses a user's or applications translation table
  */
+#if NeedFunctionPrototypes
+XtTranslations XtParseTranslationTable(
+    _Xconst char* source
+    )
+#else
 XtTranslations XtParseTranslationTable(source)
     String source;
+#endif
 {
     XtTranslations stateTable;
 
@@ -1906,8 +1912,14 @@ XtTranslations XtParseTranslationTable(source)
     return stateTable;
 }
 
+#if NeedFunctionPrototypes
+XtAccelerators XtParseAcceleratorTable (
+    _Xconst char*   source
+    )
+#else
 XtAccelerators XtParseAcceleratorTable (source)
     String   source;
+#endif
 {
     XtTranslations stateTable;
 

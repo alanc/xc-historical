@@ -1,4 +1,4 @@
-/* $XConsortium: Callback.c,v 1.27 90/12/03 16:31:09 converse Exp $ */
+/* $XConsortium: Callback.c,v 1.28 90/12/04 15:53:35 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,11 +91,20 @@ void _XtAddCallbackOnce(callbacks, callback, closure)
     _XtAddCallback(callbacks, callback, closure);
 } /* _XtAddCallbackOnce */
 
+#if NeedFunctionPrototypes
+void XtAddCallback(
+    Widget	    widget,
+    _Xconst char*   name,
+    XtCallbackProc  callback,
+    XtPointer	    closure
+    )
+#else
 void XtAddCallback(widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
     XtPointer	    closure;
+#endif
 {
     InternalCallbackList *callbacks;
 
@@ -131,10 +140,18 @@ static void AddCallbacks(widget, callbacks, newcallbacks)
 	*cl = *newcallbacks;
 } /* AddCallbacks */
 
+#if NeedFunctionPrototypes
+void XtAddCallbacks(
+    Widget	    widget,
+    _Xconst char*   name,
+    XtCallbackList  xtcallbacks
+    )
+#else
 void XtAddCallbacks(widget, name, xtcallbacks)
     Widget	    widget;
     String	    name;
     XtCallbackList  xtcallbacks;
+#endif
 {
     InternalCallbackList* callbacks;
 
@@ -178,11 +195,20 @@ void _XtRemoveCallback (callbacks, callback, closure)
     }
 } /* _XtRemoveCallback */
 
+#if NeedFunctionPrototypes
+void XtRemoveCallback (
+    Widget	    widget,
+    _Xconst char*   name,
+    XtCallbackProc  callback,
+    XtPointer	    closure
+    )
+#else
 void XtRemoveCallback (widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
     XtPointer	    closure;
+#endif
 {
     InternalCallbackList *callbacks;
 
@@ -199,10 +225,17 @@ void XtRemoveCallback (widget, name, callback, closure)
 } /* XtRemoveCallback */
 
 
+#if NeedFunctionPrototypes
+void XtRemoveCallbacks (widget, name, xtcallbacks)
+    Widget	    widget;
+    _Xconst char*   name;
+    register XtCallbackList  xtcallbacks;
+#else
 void XtRemoveCallbacks (widget, name, xtcallbacks)
     Widget	    widget;
     String	    name;
     register XtCallbackList  xtcallbacks;
+#endif
 {
     register int i, remaining;
     register XtCallbackList cl, ncl;
@@ -256,9 +289,15 @@ void _XtRemoveAllCallbacks (callbacks)
     }
 } /* _XtRemoveAllCallbacks */
 
+#if NeedFunctionPrototypes
+void XtRemoveAllCallbacks(widget, name)
+    Widget widget;
+    _Xconst char* name;
+#else
 void XtRemoveAllCallbacks(widget, name)
     Widget widget;
     String name;
+#endif
 {
     InternalCallbackList *callbacks;
 
@@ -384,10 +423,18 @@ void _XtCallCallbacks (widget, callbacks, call_data)
 }
 
 
+#if NeedFunctionPrototypes
+void XtCallCallbacks(
+    Widget   widget,
+    _Xconst char* name,
+    XtPointer call_data
+    )
+#else
 void XtCallCallbacks(widget, name, call_data)
     Widget   widget;
     String   name;
     XtPointer call_data;
+#endif
 {
     InternalCallbackList *callbacks;
 
@@ -404,9 +451,16 @@ void XtCallCallbacks(widget, name, call_data)
 } /* XtCallCallbacks */
 
 
+#if NeedFunctionPrototypes
+XtCallbackStatus XtHasCallbacks(
+     Widget		widget,
+     _Xconst char*	callback_name
+     )
+#else
 XtCallbackStatus XtHasCallbacks(widget, callback_name)
      Widget		widget;
      String		callback_name;
+#endif
 {
     InternalCallbackList *callbacks;
     callbacks = FetchInternalList(widget, callback_name);
