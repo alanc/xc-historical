@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.115 89/11/08 19:20:31 converse Exp $
+ * $XConsortium: XlibInt.c,v 11.116 89/12/02 12:30:47 jim Exp $
  */
 
 #include "copyright.h"
@@ -1606,8 +1606,8 @@ ANYSET(src)
 
     for (i=0; i<MSKCNT; i++)
 	if (src[ i ])
-	    return (TRUE);
-    return (FALSE);
+	    return (1);
+    return (0);
 }
 #endif
 
