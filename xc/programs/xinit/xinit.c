@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.17 88/08/29 12:48:02 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.18 88/08/29 17:23:27 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -19,10 +19,11 @@ extern int sys_nerr;
 #ifdef hpux
 #include <sys/utsname.h>
 #endif
+#include <setjmp.h>
 
 extern char *getenv();
-
-#include <setjmp.h>
+extern char **environ;
+char **newenviron = NULL;
 
 #ifdef macII
 #define vfork() fork()
@@ -31,19 +32,6 @@ extern char *getenv();
 #if defined(SYSV) && !defined(hpux)
 #define vfork() fork()
 #endif /* SYSV and not hpux */
-
-#define	TRUE		1
-#define	FALSE		0
-#define	OK_EXIT		0
-#define	ERR_EXIT	1
-char hostname[100] = "unix";
-char client_display[100];
-
-#ifndef XINITRC
-#define XINITRC ".xinitrc"
-#endif
-char *xinitrc = XINITRC;
-char xinitrcbuf[256];
 
 char *bindir = BINDIR;
 char *server_names[] = {
@@ -75,6 +63,19 @@ char *server_names[] = {
     "Xplx        Parallax color and video graphics controller",
 #endif
     NULL};
+
+#ifndef XINITRC
+#define XINITRC ".xinitrc"
+#endif
+char *xinitrc = XINITRC;
+char xinitrcbuf[256];
+
+#define	TRUE		1
+#define	FALSE		0
+#define	OK_EXIT		0
+#define	ERR_EXIT	1
+char displayname[100] = "unix";
+char client_display[100];
 
 char *default_server = "X";
 char *default_display = ":0";		/* choose most efficient */
@@ -133,10 +134,10 @@ register char **argv;
 	struct utsname name;
 
 	uname(&name);
-	strcpy(hostname, name.nodename);
+	strcpy(displayname, name.nodename);
 	}
 #else
-	gethostname(hostname, sizeof(hostname));
+	gethostname(displayname, sizeof(displayname));
 #endif
 #endif /* UNIXCONN */
 	/*
@@ -146,7 +147,7 @@ register char **argv;
 	    (**argv != '/' && **argv != '.' && !isalpha(**argv))) {
 		for (ptr = default_client; *ptr; )
 			*cptr++ = *ptr++;
-		strcpy(client_display, hostname);
+		strcpy(client_display, displayname);
 		strcat(client_display, default_display);
 		*cptr++ = client_display;
 #ifdef sun
@@ -188,6 +189,9 @@ register char **argv;
 		*sptr++ = *argv++;
 	*sptr = NULL;
 
+
+	strcat(displayname, displayNum);
+
 	/*
 	 * if no client arguments given, check for a startup file and copy
 	 * that into the argument list
@@ -221,6 +225,11 @@ register char **argv;
 		}
 	    }
 	}
+
+	/*
+	 * put the display name into the environment
+	 */
+	set_environment ();
 
 	/*
 	 * Start the server and client.
@@ -258,8 +267,7 @@ waitforserver(serverpid)
 	int	cycles;			/* Wait cycle count */
 	char	display[100];		/* Display name */
 
-	strcpy(display, hostname);
-	strcat(display, displayNum);
+	strcpy(display, displayname);
 	for (cycles = 0; cycles < ncycles; cycles++) {
 		if (xd = XOpenDisplay(display)) {
 			return(TRUE);
@@ -415,7 +423,8 @@ startClient(client)
 	if ((clientpid = vfork()) == 0) {
 		setuid(getuid());
 		setpgrp(0, getpid());
-		execvp(client[0], client);
+		environ = newenviron;
+		execvp (client[0], client);
 		Error ("no program named \"%s\" in PATH\n", client[0]);
 		fprintf (stderr,
 "\nSpecify a program on the command line or make sure that %s\n", bindir);
@@ -481,4 +490,39 @@ shutdown(serverpid, clientpid)
 	}
 	if (processTimeout(serverpid, 3, "server to die"))
 		Fatal("Can't kill server\n");
+}
+
+
+set_environment ()
+{
+    int nenvvars;
+    char **newPtr, **oldPtr;
+    static char displaybuf[256];
+
+    /* count number of environment variables */
+    for (oldPtr = environ; *oldPtr; oldPtr++) ;
+
+    nenvvars = (oldPtr - environ);
+    newenviron = (char **) malloc ((nenvvars + 2) * sizeof(char **));
+    if (!newenviron) {
+	fprintf (stderr,
+		 "%s:  unable to allocate %d pointers for environment\n",
+		 program, nenvvars + 2);
+	exit (1);
+    }
+
+    /* put DISPLAY=displayname as first element */
+    strcpy (displaybuf, "DISPLAY=");
+    strcpy (displaybuf + 8, displayname);
+    newPtr = newenviron;
+    *newPtr++ = displaybuf;
+
+    /* copy pointers to other variables */
+    for (oldPtr = environ; *oldPtr; oldPtr++) {
+	if (strncmp (*oldPtr, "DISPLAY=", 8) != 0) {
+	    *newPtr++ = *oldPtr;
+	}
+    }
+    *newPtr = NULL;
+    return;
 }
