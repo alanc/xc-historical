@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.17 89/10/05 13:25:39 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.18 89/11/01 15:51:09 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -528,8 +528,8 @@ Boolean	   include, kill;
     from = ctx->text.insertPos;
 
   _DeleteOrKill(ctx, from, to, kill);
-  EndAction(ctx);
   _XawTextSetScrollBars(ctx);
+  EndAction(ctx);
 }
 
 static void 
@@ -1165,7 +1165,7 @@ XawTextPosition from, to;
     }
     else {
       XawTextPosition periodPos, next_word;
-      int i, len, start;
+      int i, len;
 
       periodPos= SrcScan(src, endPos, XawstPositions, XawsdLeft, 1, TRUE);
       next_word = SrcScan(src, endPos, XawstWhiteSpace, XawsdRight, 1, FALSE);
@@ -1174,28 +1174,24 @@ XawTextPosition from, to;
 
       text.length = 1;
       buf = _XawTextGetText(ctx, periodPos, next_word);
-      start = 0;
-      if (periodPos < endPos) {
-	if (buf[0] == '.')
+      if ( (periodPos < endPos) && (buf[0] == '.') )
 	  text.length++;	/* Put in two spaces. */
-	start++;
-      }
 
       /*
        * Remove all extra spaces. 
        */
 
       for (i = 1 ; i < len; i++) 
-	if ( !isspace(buf[i + start]) )
-	  break;
+	  if ( !isspace(buf[i]) || ((periodPos + i) >= to) ) {
+	      break;
+	  }
       
       XtFree(buf);
 
-      to -= i - text.length;
-      startPos = SrcScan(src, periodPos,
-			 XawstPositions, XawsdRight, i + start, TRUE);
+      to -= (i - text.length - 1);
+      startPos = SrcScan(src, periodPos, XawstPositions, XawsdRight, i, TRUE);
       _XawTextReplace(ctx, endPos, startPos, &text);
-	startPos -= i - text.length;
+      startPos -= i - text.length;
     }
   }
   return(to);
