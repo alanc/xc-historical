@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: window.h,v 1.1 87/09/11 07:50:02 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -37,6 +37,8 @@ SOFTWARE.
 
 #define BITS_AVAILABLE         TRUE
 #define BITS_DISCARDED         FALSE
+
+#define VisibilityNotViewable	3
 
 /* return values for tree-walking callback procedures */
 #define WT_STOPWALKING		0
