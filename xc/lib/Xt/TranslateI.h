@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.22 90/07/12 17:50:04 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.23 90/07/13 07:35:51 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -171,37 +171,63 @@ extern void _XtBuildKeysymTables();
 
 extern void _XtPopupInitialize();
 
-extern void _XtInstallTranslations(); /* widget, stateTable */
-    /* Widget widget; */
-    /* XtTranslations stateTable; */
+extern void _XtInstallTranslations(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XtTranslations	/* stateTable */
+#endif
+);
 
-extern void _XtBindActions(); /* widget, stateTable */
-    /* Widget widget; */
-    /* XtTranslations stateTable; */
+extern void _XtBindActions(
+#if NeedFunctionPrototypes
+    Widget	/* widget */,
+    XtTM	/* tm_rec */
+#endif
+);
 
 extern void _XtTranslateInitialize();
 
-extern XtTranslations _XtParseTranslationTable(); /* source */
-    /* String source; */
+extern XtTranslations _XtParseTranslationTable(
+#if NeedFunctionPrototypes
+    String /* source */
+#endif
+);
+
+#if NeedWidePrototypes
+#define Boolean int
+#endif
 
 extern void _XtRegisterGrabs(
 #if NeedFunctionPrototypes
     Widget /* widget */,
-#if NeedWidePrototypes
-    int /* acceleratorsOnly */
-#else
     Boolean /* acceleratorsOnly */
-#endif
 #endif
 );
 
-extern void _XtPopup(); /* widget, grab_kind, spring_loaded */
-    /* Widget      widget; */
-    /* XtGrabKind  grab_kind; */
-    /* Boolean     spring_loaded; */
+extern void _XtPopup(
+#if NeedFunctionPrototypes
+    Widget 	/* widget */,
+    XtGrabKind 	/* grab_kind */,
+    Boolean 	/* spring_loaded */
+#endif
+);
+
+#undef Boolean
 
 extern XtTranslations _XtCondCopyTranslations(
 #if NeedFunctionPrototypes
-    XtTranslations	translations
+    XtTranslations /* translations */
+#endif
+);
+
+extern void _XtRegisterAccRemoveCallbacks(
+#if NeedFunctionPrototypes
+    Widget /* dest */
+#endif
+);
+
+void _XtUninstallAccelerators(
+#if NeedFunctionPrototypes
+    Widget /* w */
 #endif
 );
