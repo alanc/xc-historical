@@ -1928,185 +1928,185 @@
   ;; arguments.
   (declare (arglist event-key-or-keys &rest (type &rest keywords))))
 
-(declare (event (:key-press :key-release :button-press :button-release)
-	       (card16 sequence)
-	       (window (window event-window) root)
-	       ((or null window) child)
-	       (boolean same-screen-p)
-	       (int16 x y root-x root-y)
-	       (card16 state)
-	       (card32 time)
-	       ;; for key-press and key-release, code is the keycode
-	       ;; for button-press and button-release, code is the button number
-	       (card8 code)))
+(declare-event (:key-press :key-release :button-press :button-release)
+  (card16 sequence)
+  (window (window event-window) root)
+  ((or null window) child)
+  (boolean same-screen-p)
+  (int16 x y root-x root-y)
+  (card16 state)
+  (card32 time)
+  ;; for key-press and key-release, code is the keycode
+  ;; for button-press and button-release, code is the button number
+  (card8 code))
 
-(declare (event :motion-notify
-	       (card16 sequence)
-	       (window (window event-window) root)
-	       ((or null window) child)
-	       (boolean same-screen-p)
-	       (int16 x y root-x root-y)
-	       (card16 state)
-	       (card32 time)
-	       (boolean hint-p)))
+(declare-event :motion-notify
+  (card16 sequence)
+  (window (window event-window) root)
+  ((or null window) child)
+  (boolean same-screen-p)
+  (int16 x y root-x root-y)
+  (card16 state)
+  (card32 time)
+  (boolean hint-p))
 
-(declare (event (:enter-notify :leave-notify)
-	       (card16 sequence)
-	       (window (window event-window) root)
-	       ((or null window) child)
-	       (boolean same-screen-p)
-	       (int16 x y root-x root-y)
-	       (card16 state)
-	       (card32 time)
-	       ((member :normal :grab :ungrab) mode)
-	       ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual) kind)
-	       (boolean focus-p)))
+(declare-event (:enter-notify :leave-notify)
+  (card16 sequence)
+  (window (window event-window) root)
+  ((or null window) child)
+  (boolean same-screen-p)
+  (int16 x y root-x root-y)
+  (card16 state)
+  (card32 time)
+  ((member :normal :grab :ungrab) mode)
+  ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual) kind)
+  (boolean focus-p))
 
-(declare (event (:focus-in :focus-out)
-	       (card16 sequence)
-	       (window (window event-window))
-	       ((member :normal :while-grabbed :grab :ungrab) mode)
-	       ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual
-			:pointer :pointer-root :none)
-		kind)))
+(declare-event (:focus-in :focus-out)
+  (card16 sequence)
+  (window (window event-window))
+  ((member :normal :while-grabbed :grab :ungrab) mode)
+  ((member :ancestor :virtual :inferior :nonlinear :nonlinear-virtual
+	   :pointer :pointer-root :none)
+   kind))
 
-(declare (event :keymap-notify
-	       ((bit-vector 256) keymap)))
+(declare-event :keymap-notify
+  ((bit-vector 256) keymap))
 
-(declare (event :exposure
-	       (card16 sequence)
-	       (window (window event-window))
-	       (card16 x y width height count)))
+(declare-event :exposure
+  (card16 sequence)
+  (window (window event-window))
+  (card16 x y width height count))
 
-(declare (event :graphics-exposure
-	       (card16 sequence)
-	       (drawable (drawable event-window))
-	       (card16 x y width height count)
-	       (card8 major)
-	       (card16 minor)))
+(declare-event :graphics-exposure
+  (card16 sequence)
+  (drawable (drawable event-window))
+  (card16 x y width height count)
+  (card8 major)
+  (card16 minor))
 
-(declare (event :no-exposure
-	       (card16 sequence)
-	       (drawable (drawable event-window))
-	       (card8 major)
-	       (card16 minor)))
+(declare-event :no-exposure
+  (card16 sequence)
+  (drawable (drawable event-window))
+  (card8 major)
+  (card16 minor))
 
-(declare (event :visibility-notify
-	       (card16 sequence)
-	       (window (window event-window))
-	       ((member :unobscured :partially-obscured :fully-obscured) state)))
+(declare-event :visibility-notify
+  (card16 sequence)
+  (window (window event-window))
+  ((member :unobscured :partially-obscured :fully-obscured) state))
 
-(declare (event :create-notify
-	       (card16 sequence)
-	       (window window (parent event-window))
-	       (int16 x y)
-	       (card16 width height border-width)
-	       (boolean override-redirect-p)))
+(declare-event :create-notify
+  (card16 sequence)
+  (window window (parent event-window))
+  (int16 x y)
+  (card16 width height border-width)
+  (boolean override-redirect-p))
 
-(declare (event :destroy-notify
-	       (card16 sequence)
-	       (window event-window window)))
+(declare-event :destroy-notify
+  (card16 sequence)
+  (window event-window window))
 
-(declare (event :unmap-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       (boolean configure-p)))
+(declare-event :unmap-notify
+  (card16 sequence)
+  (window event-window window)
+  (boolean configure-p))
 
-(declare (event :map-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       (boolean override-redirect-p)))
+(declare-event :map-notify
+  (card16 sequence)
+  (window event-window window)
+  (boolean override-redirect-p))
 
-(declare (event :map-request
-	       (card16 sequence)
-	       (window (parent event-window) window)))
+(declare-event :map-request
+  (card16 sequence)
+  (window (parent event-window) window))
 
-(declare (event :reparent-notify
-	       (card16 sequence)
-	       (window event-window window parent)
-	       (int16 x y)
-	       (boolean override-redirect-p)))
+(declare-event :reparent-notify
+  (card16 sequence)
+  (window event-window window parent)
+  (int16 x y)
+  (boolean override-redirect-p))
 
-(declare (event :configure-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       (int16 x y)
-	       (card16 width height border-width)
-	       ((or null window) above-sibling)
-	       (boolean override-redirect-p)))
+(declare-event :configure-notify
+  (card16 sequence)
+  (window event-window window)
+  (int16 x y)
+  (card16 width height border-width)
+  ((or null window) above-sibling)
+  (boolean override-redirect-p))
 
-(declare (event :gravity-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       (int16 x y)))
+(declare-event :gravity-notify
+  (card16 sequence)
+  (window event-window window)
+  (int16 x y))
 
-(declare (event :resize-request
-	       (card16 sequence)
-	       (window (window event-window))
-	       (card16 width height)))
+(declare-event :resize-request
+  (card16 sequence)
+  (window (window event-window))
+  (card16 width height))
 
-(declare (event :configure-request
-	       (card16 sequence)
-	       (window (parent event-window) window)
-	       (int16 x y)
-	       (card16 width height border-width)
-	       ((member :above :below :top-if :bottom-if :opposite) stack-mode)
-	       ((or null window) above-sibling)
-	       (mask16 value-mask)))
+(declare-event :configure-request
+  (card16 sequence)
+  (window (parent event-window) window)
+  (int16 x y)
+  (card16 width height border-width)
+  ((member :above :below :top-if :bottom-if :opposite) stack-mode)
+  ((or null window) above-sibling)
+  (mask16 value-mask))
 
-(declare (event :circulate-notify
-	       (card16 sequence)
-	       (window event-window window)
-	       ((member :top :bottom) place)))
+(declare-event :circulate-notify
+  (card16 sequence)
+  (window event-window window)
+  ((member :top :bottom) place))
 
-(declare (event :circulate-request
-	       (card16 sequence)
-	       (window (parent event-window) window)
-	       ((member :top :bottom) place)))
+(declare-event :circulate-request
+  (card16 sequence)
+  (window (parent event-window) window)
+  ((member :top :bottom) place))
 
-(declare (event :property-notify
-	       (card16 sequence)
-	       (window (window event-window))
-	       (keyword atom)
-	       ((member :new-value :deleted) state)
-	       (card32 time)))
+(declare-event :property-notify
+  (card16 sequence)
+  (window (window event-window))
+  (keyword atom)
+  ((member :new-value :deleted) state)
+  (card32 time))
 
-(declare (event :selection-clear
-	       (card16 sequence)
-	       (window (window event-window))
-	       (keyword selection)
-	       (card32 time)))
+(declare-event :selection-clear
+  (card16 sequence)
+  (window (window event-window))
+  (keyword selection)
+  (card32 time))
 
-(declare (event :selection-request
-	       (card16 sequence)
-	       (window (window event-window) requestor)
-	       (keyword selection target)
-	       ((or null keyword) property)
-	       (card32 time)))
+(declare-event :selection-request
+  (card16 sequence)
+  (window (window event-window) requestor)
+  (keyword selection target)
+  ((or null keyword) property)
+  (card32 time))
 
-(declare (event :selection-notify
-	       (card16 sequence)
-	       (window (window event-window))
-	       (keyword selection target)
-	       ((or null keyword) property)
-	       (card32 time)))
+(declare-event :selection-notify
+  (card16 sequence)
+  (window (window event-window))
+  (keyword selection target)
+  ((or null keyword) property)
+  (card32 time))
 
-(declare (event :colormap-notify
-	       (card16 sequence)
-	       (window (window event-window))
-	       ((or null colormap) colormap)
-	       (boolean new-p installed-p)))
+(declare-event :colormap-notify
+  (card16 sequence)
+  (window (window event-window))
+  ((or null colormap) colormap)
+  (boolean new-p installed-p))
 
-(declare (event :mapping-notify
-	       (card16 sequence)
-	       ((member :modifier :keyboard :pointer) request)
-	       (card8 start count)))
+(declare-event :mapping-notify
+  (card16 sequence)
+  ((member :modifier :keyboard :pointer) request)
+  (card8 start count))
 
-(declare (event :client-message
-	       (card16 sequence)
-	       (window (window event-window))
-	       ((member 8 16 32) format)
-	       ((sequence integer) data)))
+(declare-event :client-message
+  (card16 sequence)
+  (window (window event-window))
+  ((member 8 16 32) format)
+  ((sequence integer) data))
 
 (defun queue-event (display event-key &rest args &key append-p &allow-other-keys)
   ;; The event is put at the head of the queue if append-p is nil, else the tail.
