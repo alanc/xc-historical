@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.127 94/04/05 11:20:13 matt Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.128 94/04/08 19:12:53 rws Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -221,6 +221,9 @@ XCOMM operating system:  OSName
 #endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes YES
+#endif
+#ifndef NeedNestedPrototypes
+#define NeedNestedPrototypes YES
 #endif
 #ifndef NeedVarargsPrototypes
 #define NeedVarargsPrototypes YES
