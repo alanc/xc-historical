@@ -387,10 +387,19 @@
 ;;;		(LOAD-CLX <binary-specific-clx-directory>)
 
 #-lispm
-(defun load-clx (&optional (pathname-defaults "")
+(defun load-clx (&optional (binary-pathname-defaults "")
 		 &key (macros-p nil))
 
-  (let ((binary-path (merge-pathnames pathname-defaults)))
+  (let* ((source-path (pathname ""))
+	 (path        (make-pathname
+			:host      (pathname-host      source-path)
+			:device    (pathname-device    source-path)
+			:directory (pathname-directory source-path)
+			:name      (pathname-name      source-path)
+			:type      NIL
+			:version   (pathname-version   source-path)))
+	 (binary-path (merge-pathnames binary-pathname-defaults
+				       path)))
 
     (flet ((load-binary (filename)
 	     (let ((binary (merge-pathnames filename binary-path)))
