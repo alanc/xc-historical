@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.9 89/04/28 15:05:26 kit Exp $
- * $Header: buttons.c,v 1.9 89/04/28 15:05:26 kit Exp $
+ * $XConsortium: buttons.c,v 1.10 89/05/03 17:22:03 kit Exp $
+ * $Header: buttons.c,v 1.10 89/05/03 17:22:03 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ MakeTopBox()
   form = XtCreateManagedWidget("form", formWidgetClass, top, 
 			       NULL, (Cardinal) 0);
 
-  label = XtCreateManagedWidget("manualBrowser", labelWidgetClass, form, 
+  label = XtCreateManagedWidget("topLabel", labelWidgetClass, form, 
 			       NULL, (Cardinal) 0);
 
   num_args = 0;
