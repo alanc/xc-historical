@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.70 90/05/04 16:57:30 keith Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.71 90/07/11 08:31:36 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -951,7 +951,7 @@ Concat(lib,libname.a): objlist1 objlist2				@@\
  */
 #ifndef ProfiledLibraryTarget
 #define	ProfiledLibraryTarget(libname,objlist)				@@\
-AllTarget(Concat3(lib,libname,_p.a)					@@\
+AllTarget(Concat3(lib,libname,_p.a))					@@\
 									@@\
 Concat3(lib,libname,_p.a): objlist					@@\
 	$(RM) $@							@@\
