@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontutil.c,v 1.4 93/08/24 18:49:28 gildea Exp $
+ * $XConsortium: fontutil.c,v 1.5 93/09/20 15:06:13 dpw Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -314,9 +314,9 @@ Bool charset_subset;
 	if (middle < *nranges && keymin > ptrmin) ptr++;	/* after */
 
 	/* Open up a space for our new range */
-	bcopy((char *)ptr,
-	      (char *)(ptr + 1),
-	      (char *)(*range + *nranges) - (char *)ptr);
+	memmove((char *)(ptr + 1),
+		(char *)ptr,
+		(char *)(*range + *nranges) - (char *)ptr);
 
 	/* Insert the new range */
 	ptr->min_char_low = keymin & 0xff;
@@ -378,7 +378,7 @@ Bool charset_subset;
     ptr2--;
     if (ptr1 != ptr2)
     {
-	bcopy(ptr2, ptr1, (char *)endptr - (char *)ptr2);
+	memmove(ptr1, ptr2, (char *)endptr - (char *)ptr2);
 	*nranges -= (ptr2 - ptr1);
     }
 

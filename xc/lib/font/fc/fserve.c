@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.27 93/08/24 18:49:09 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.28 93/09/12 17:42:44 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -37,6 +37,9 @@
 #include	"fservestr.h"
 #include	"FSlibos.h"
 #include	<errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif
 
 #ifdef NCD
 #include	<ncd/nvram.h>
@@ -55,8 +58,6 @@
 			     (pci)->ascent || \
 			     (pci)->descent || \
 			     (pci)->characterWidth)
-
-extern int  errno;
 
 
 extern FontPtr find_old_font();
@@ -202,7 +203,7 @@ fs_send_init_packets(conn)
 		end = sp + strlen(sp);
 	    *cp++ = len = end - sp;
 	    num_cats++;
-	    bcopy(sp, cp, len);
+	    memmove(cp, sp, len);
 	    sp += len;
 	    if (*sp == CATALOGUE_SEP)
 		sp++;
@@ -613,7 +614,7 @@ fs_read_open_font(fpe, blockrec)
     FSBlockedFontPtr origBfont;
 
     /* pull out the OpenFont reply */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
 
     if (rep.type == FS_Error) {
 	_fs_eat_rest_of_error(conn, (fsError *) & rep);
@@ -708,7 +709,7 @@ fs_read_query_info(fpe, blockrec)
     }
 
     /* pull out the QueryXInfo reply */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
     if (_fs_read(conn, (char *) &rep + SIZEOF(fsGenericReply),
 		 SIZEOF(fsQueryXInfoReply) - SIZEOF(fsGenericReply)) == -1) {
 	if (bfont->flags & FontReopen) goto bail;
@@ -867,7 +868,7 @@ fs_read_extent_info(fpe, blockrec)
     pointer fscip;
 
     /* read the QueryXExtents reply */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
     if (_fs_read(conn, (char *) &rep + SIZEOF(fsGenericReply),
 	      SIZEOF(fsQueryXExtents16Reply) - SIZEOF(fsGenericReply)) == -1) {
 	fs_free_font(bfont);
@@ -907,7 +908,7 @@ fs_read_extent_info(fpe, blockrec)
     fscip = (pointer) fsci;
     ci = fsfont->inkMetrics;
     for (i = 0; i < rep.num_extents; i++) {
-	bcopy(fscip, &fscilocal, SIZEOF(fsXCharInfo)); /* align it */
+	memcpy(&fscilocal, fscip, SIZEOF(fsXCharInfo)); /* align it */
 	_fs_convert_char_info(&fscilocal, &ci->metrics);
 	fscip += SIZEOF(fsXCharInfo);
 	/* Initialize the bits field for later glyph-caching use */
@@ -1192,7 +1193,7 @@ fs_wakeup(fpe, LastSelectMask)
 	}
 	blockrec = br;
 
-	bcopy((char *) &rep, (char *) &blockrec->header, SIZEOF(fsGenericReply));
+	memcpy(&blockrec->header, &rep, SIZEOF(fsGenericReply));
 
 	/* go read it, and if we're done, wake up the appropriate client */
 	switch (blockrec->type) {
@@ -1427,7 +1428,7 @@ lowmem:
 	fsd->fpe = fpe;
 	fsd->name = fontname;
 	fsd->namelen = namelen;
-	bcopy(name, fontname, namelen);
+	memcpy(fontname, name, namelen);
 	fsd->format = format;
 	fsd->fmask = fmask;
     }
@@ -1448,7 +1449,7 @@ lowmem:
     }
     /* do an FS_OpenFont, FS_QueryXInfo and FS_QueryXExtents */
     buf[0] = (unsigned char) namelen;
-    bcopy(name, (char *) &buf[1], namelen);
+    memcpy(&buf[1], name, namelen);
     namelen++;
     openreq.reqType = FS_OpenBitmapFont;
     openreq.fid = newid;
@@ -1462,7 +1463,7 @@ lowmem:
 
 #ifdef NCD
     if (configData.ExtendedFontDiags) {
-	bcopy(name, buf, MIN(256, namelen));
+	memcpy(buf, name, MIN(256, namelen));
 	buf[MIN(256, namelen)] = '\0';
 	printf("Requesting font \"%s\" from font server \"%s\"\n",
 	       buf, fpe->name);
@@ -1673,7 +1674,7 @@ fs_read_glyphs(fpe, blockrec)
     unsigned long minchar, maxchar;
 
     /* get reply header */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
     if (rep.type == FS_Error) {
 /* XXX -- translate FS error */
 	_fs_eat_rest_of_error(conn, (fsError *) & rep);
@@ -1751,7 +1752,7 @@ fs_read_glyphs(fpe, blockrec)
     off_adr = (char *)ppbits;
     for (i = 0; i < rep.num_chars; i++)
     {
-	bcopy(off_adr, &local_off, SIZEOF(fsOffset32));	/* align it */
+	memcpy(&local_off, off_adr, SIZEOF(fsOffset32));	/* align it */
 	if (blockrec->type == FS_OPEN_FONT ||
 	    fsdata->encoding[minchar].bits == &glyph_requested)
 	{
@@ -1765,8 +1766,8 @@ fs_read_glyphs(fpe, blockrec)
 		    err = AllocError;
 		    goto bail;
 		}
-		bcopy((char *) pbitmaps + local_off.position, bits,
-		      local_off.length);
+		memcpy(bits, pbitmaps + local_off.position,
+		       local_off.length);
 	    }
 	    else if (NONZEROMETRICS(&fsdata->encoding[minchar].metrics))
 		bits = &glyph_zero_length;
@@ -2120,7 +2121,7 @@ fs_read_list(fpe, blockrec)
     blist->done = TRUE;
 
     /* read reply header */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
     if (rep.type == FS_Error) {
 /* XXX -- translate FS error */
 	_fs_eat_rest_of_error(conn, (fsError *) & rep);
@@ -2196,7 +2197,7 @@ fs_send_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
     if (configData.ExtendedFontDiags) {
 	char        buf[256];
 
-	bcopy(pattern, buf, MIN(256, patlen));
+	memcpy(buf, pattern, MIN(256, patlen));
 	buf[MIN(256, patlen)] = '\0';
 	printf("Listing fonts on pattern \"%s\" from font server \"%s\"\n",
 	       buf, fpe->name);
@@ -2267,7 +2268,7 @@ fs_read_list_info(fpe, blockrec)
 	binfo->pfi = NULL;
     }
     /* get reply header */
-    bcopy((char *) &blockrec->header, (char *) &rep, SIZEOF(fsGenericReply));
+    memcpy(&rep, &blockrec->header, SIZEOF(fsGenericReply));
     if (rep.type == FS_Error) {
 /* XXX -- translate FS error */
 	_fs_eat_rest_of_error(conn, (fsError *) & rep);
@@ -2408,7 +2409,7 @@ fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
     if (configData.ExtendedFontDiags) {
 	char        buf[256];
 
-	bcopy(pattern, buf, MIN(256, len));
+	memcpy(buf, pattern, MIN(256, len));
 	buf[MIN(256, len)] = '\0';
 	printf("Listing fonts with info on pattern \"%s\" from font server \"%s\"\n",
 	       buf, fpe->name);

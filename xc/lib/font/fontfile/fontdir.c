@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.12 93/08/24 18:49:18 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.13 93/09/17 18:26:41 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -157,7 +157,7 @@ FontFileAddEntry(table, prototype)
     entry->name.name = (char *) xalloc(prototype->name.length + 1);
     if (!entry->name.name)
 	return (FontEntryPtr)0;
-    bcopy (prototype->name.name, entry->name.name, prototype->name.length);
+    memcpy (entry->name.name, prototype->name.name, prototype->name.length);
     entry->name.name[entry->name.length] = '\0';
     table->used++;
     return entry;

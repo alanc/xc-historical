@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.27 93/09/12 17:42:23 rws Exp $ */
+/* $XConsortium: fsio.c,v 1.28 93/09/12 20:08:19 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -45,6 +45,9 @@
 #include	<sys/socket.h>
 #endif
 #include	<errno.h>
+#ifdef X_NOT_STDC_ENV
+extern int errno;
+#endif 
 #include	"FSlibos.h"
 #include	"fontmisc.h"
 #include	"fsio.h"
@@ -53,8 +56,6 @@
 #undef EINTR
 #define EINTR WSAEINTR
 #endif
-
-extern int  errno;
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -125,8 +126,8 @@ _fs_name_to_address(servername, inaddr)
 	    return -1;
 	}
 	inaddr->sin_family = hp->h_addrtype;
-	bcopy((char *) hp->h_addr, (char *) &inaddr->sin_addr,
-	      sizeof(inaddr->sin_addr));
+	memcpy(&inaddr->sin_addr, hp->h_addr,
+	       sizeof(inaddr->sin_addr));
     } else {
 	inaddr->sin_addr.s_addr = hostinetaddr;
 	inaddr->sin_family = AF_INET;
@@ -301,7 +302,7 @@ _fs_setup_connection(conn, servername, timeout)
 	    alts[i].subset = alt_data[0];
 	    alt_len = alt_data[1];
 	    alts[i].name = alt_dst;
-	    bcopy(alt_data + 2, alt_dst, alt_len);
+	    memmove(alt_dst, alt_data + 2, alt_len);
 	    alt_dst[alt_len] = '\0';
 	    alt_dst += (alt_len + 1);
 	    alt_data += (2 + alt_len + padlength[(2 + alt_len) & 3]);

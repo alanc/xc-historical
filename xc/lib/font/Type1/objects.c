@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.6 93/07/13 14:38:30 rws Exp $ */
+/* $XConsortium: objects.c,v 1.7 93/09/10 10:47:23 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bufio.c,v 1.5 93/09/12 18:01:35 rws Exp $
+ * $XConsortium: bufio.c,v 1.6 93/09/14 09:05:54 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,11 +24,13 @@
  */
 
 
-#include    <X11/Xos.h>
-#include    <fontmisc.h>
-#include    <bufio.h>
-#include    <errno.h>
+#include <X11/Xos.h>
+#include <fontmisc.h>
+#include <bufio.h>
+#include <errno.h>
+#ifdef X_NOT_STDC_ENV
 extern int errno;
+#endif
 
 BufFilePtr
 BufFileCreate (private, io, skip, close)

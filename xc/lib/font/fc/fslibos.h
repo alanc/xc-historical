@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.7 93/09/12 17:39:23 rws Exp $ */
+/* $XConsortium: FSlibos.h,v 1.8 93/09/12 20:08:43 rws Exp $ */
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -157,8 +157,8 @@ typedef FdSet FdSetPtr;
 #endif
 
 #if (MSKCNT>4)
-#define COPYBITS(src, dst) bcopy((caddr_t) src, (caddr_t) dst,\
-				 MSKCNT*sizeof(long))
+#define COPYBITS(src, dst) memmove((caddr_t) dst, (caddr_t) src,\
+				   MSKCNT*sizeof(long))
 #define CLEARBITS(buf) bzero((caddr_t) buf, MSKCNT*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: patcache.c,v 1.4 92/05/29 18:01:11 gildea Exp $
+ * $XConsortium: patcache.c,v 1.5 92/05/31 16:08:40 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -153,7 +153,7 @@ CacheFontPattern (cache, pattern, patlen, pFont)
 	xfree (e->pattern);
     }
     /* set pattern */
-    bcopy (pattern, newpat, patlen);
+    memcpy (newpat, pattern, patlen);
     e->pattern = newpat;
     e->patlen = patlen;
     /* link to new hash chain */
@@ -183,7 +183,7 @@ FindCachedFontPattern (cache, pattern, patlen)
     for (e = cache->buckets[i]; e; e = e->next)
     {
 	if (e->patlen == patlen && e->hash == hash &&
-	    !bcmp (e->pattern, pattern, patlen))
+	    !memcmp (e->pattern, pattern, patlen))
 	{
 	    return e->pFont;
 	}

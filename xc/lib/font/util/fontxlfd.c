@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontxlfd.c,v 1.8 93/09/17 16:02:50 dpw Exp $
+ * $XConsortium: fontxlfd.c,v 1.9 93/09/18 17:20:17 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -181,7 +181,7 @@ int sign_required;
        it in. */
     if (sign_required && *buffer != *minus)
     {
-	bcopy(buffer, buffer + 1, strlen(buffer) + 1);
+	memmove(buffer + 1, buffer, strlen(buffer) + 1);
 	buffer[0] = *plus;
     }
 
@@ -436,7 +436,7 @@ FontParseXLFDName(fname, vals, subst)
 	if (*ptr1 != '-')
 	{
 	    ptr = index(ptr1, '-');
-	    bcopy(ptr, ptr1, strlen(ptr) + 1);
+	    memmove(ptr1, ptr, strlen(ptr) + 1);
 	}
 	ptr = ptr1 + 1;
 
@@ -455,7 +455,7 @@ FontParseXLFDName(fname, vals, subst)
 	*ptr++ = '*';
 	if (spacingLen > 2)
 	{
-	    bcopy(ptr3, ptr, spacingLen);
+	    memmove(ptr, ptr3, spacingLen);
 	    ptr += spacingLen;
 	}
 	else

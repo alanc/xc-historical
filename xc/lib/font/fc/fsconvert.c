@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.14 93/08/24 18:49:07 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.15 93/09/04 09:43:02 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -117,7 +117,7 @@ _fs_convert_props(pi, po, pd, pfi)
 
     off_adr = (char *)po;
     for (i = 0; i < nprops; i++, dprop++, is_str++) {
-	bcopy(off_adr, &local_off, SIZEOF(fsPropOffset));
+	memcpy(&local_off, off_adr, SIZEOF(fsPropOffset));
 	dprop->name = MakeAtom(&pd[local_off.name.position],
 			       local_off.name.length, 1);
 	if (local_off.type != PropTypeString) {

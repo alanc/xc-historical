@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.14 93/08/26 19:49:57 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.15 93/09/17 18:26:48 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -259,7 +259,7 @@ FindBestToScale(fpe, entry, vals, best, dxp, dyp, sdxp, sdyp, fpep)
     /* find the best match */
     best_scaled = 0;
     best_score = 0;
-    bcopy (entry->name.name, zeroChars, entry->name.length);
+    memcpy (zeroChars, entry->name.name, entry->name.length);
     zeroChars[entry->name.length] = '\0';
     zeroName.name = zeroChars;
     FontParseXLFDName (zeroChars, &temp, FONT_XLFD_REPLACE_ZERO);
@@ -1149,8 +1149,9 @@ ScaleBitmap(pFont, opci, pci, inv_xform, widthMult, heightMult)
 		}
 
 		/* Done with the row... copy dest back over source */
-		bcopy(char_grayscale + (width + 1) * height,
-		      char_grayscale + (width + 1) * row, width);
+		memmove(char_grayscale + (width + 1) * row,
+			char_grayscale + (width + 1) * height,
+			width);
 	    }
 	}
 	if (box_y > 1)
