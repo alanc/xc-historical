@@ -13,30 +13,29 @@
 .nr H5 0
 .LP
 .XS
-Chapter 1 \- Athena Widgets and The Intrinsics
+Chapter 1 \- Athena Widgets and The \*(xI
 .XE
-The Athena widget set and the \*(xI make up the \*(tk.
-In the \*(tk, 
-a widget is the combination of an X window or subwindow 
-and its associated input and output semantics.
+The X Toolkit is two distict pieces, the Xt \*(xI and a widget set.  While
+the \*(xI are a Consortium standard, there is no standard widget set.
+The Athena widget set is a sample implementation of a widget set build
+upon the \*(xI.  In the \*(tk, a widget is the combination of an X
+window or subwindow and its associated input and output semantics.
 The Athena widgets provide the base functionality necessary to build 
-a wide variety of application environments.
-Because the \*(xI mask implementation details from the widget 
-and application programmer,
-the Athena widgets and the application environments built with them are 
-fully compatible with the other widget sets built with the \*(xI. 
-For information about the \*(xI,
-see the \fI\*(xT\fP.
+a wide variety of application environments.  Because the \*(xI provide
+the same basic functionality to all widget sets it may be possible to
+use widgets from the Athena widget set with other widget sets based 
+upon the \*(xI.  Since widget sets may also implement private protocols
+all functionality may not be avalible when mixing and matching widget sets.
+For information about the \*(xI, see the \fI\*(xT\fP.
 .LP
 The Athena widget set is a library package layered on top of the \*(xI
-and Xlib.
-This layer extends the basic abstractions provided by X
+and Xlib.  This layer extends the basic abstractions provided by X
 and provides the next layer of functionality primarily by supplying
 a cohesive set of sample widgets.
 .LP
-To the extent possible, 
-the \*(tk is policy free.
-The application environment, not the \*(tk, defines, implements, and enforces:
+To the extent possible, the \*(xI are policy free.
+The application environment and widget set, not the \*(xI, define,
+implement, and enforce:
 .IP \(bu 5
 Policy
 .IP \(bu 5
@@ -45,22 +44,20 @@ Consistency
 Style 
 .LP
 Each individual widget implementation defines its own policy.
-The \*(tk design allows for but does not necessarily encourage 
+The \*(tk design allows for, but does not necessarily encourage, 
 the free mixing of radically differing widget implementations.
 .NH 2
-Introduction to the \*(tk Library
+Introduction to the \*(tk 
 .LP
 .XS
-\*(SN Introduction to the \*(tk Library
+\*(SN Introduction to the \*(tk
 .XE
-The \*(tk library provides tools that simplify the design of
+The \*(tk provides tools that simplify the design of
 application user interfaces in the X Window System programming environment.
 It assists application programmers by providing a set of common
-underlying user-interface functions.
-It also lets widget programmers modify existing widgets 
-or add new widgets.
-By using the \*(tk library in their applications,
-programmers present a similar user interface across 
+underlying user-interface functions.  It also lets widget programmers
+modify existing widgets or add new widgets.  By using the \*(tk in
+their applications, programmers can present a similar user interface across 
 applications to all workstation users.
 .LP
 The \*(tk consists of:
@@ -69,7 +66,7 @@ A set of \*(xI functions for building widgets
 .IP \(bu 5
 An architectural model for constructing widgets 
 .IP \(bu 5
-A sample interface (widget set) for programming
+A widget set for application programming
 .LP
 While the majority of the \*(xI functions are intended 
 for the widget programmer,
@@ -93,13 +90,15 @@ Make the \*(tk immediately usable by those application
 programmers who find that a supplied application interface layer
 meets their needs
 .LP
-The remainder of this chapter discusses the \*(tk:
+The remainder of this chapter discusses the \*(tk and Athena widget set:
 .IP \(bu 5
 Terminology
 .IP \(bu 5
 Model
 .IP \(bu 5
 Design principles and philosophy
+.IP \(bu 5
+Conventions used in this manual
 .LE
 .NH 2 
 Terminology
@@ -109,7 +108,8 @@ Terminology
 .XE
 .LP
 In addition to the terms already defined for X programming (see \fI\*(xL\fP),
-the following terms are specific to the \*(xI and used throughout this book.
+the following terms are specific to the \*(xI and Athena widget set
+and used throughout this book. 
 .LP
 \fBApplication programmer\fP
 .IN "Application programmer" "" "@DEF@"
@@ -165,7 +165,7 @@ In general, if a function is common to all widgets,
 an application uses a single \*(xI function to invoke the function for all
 types of widgets.
 If a function is unique to a single widget type,
-the widget exports the function as another ``Xt'' function.
+the widget exports the function.
 .LP
 .PN Parent
 .IP
@@ -214,10 +214,10 @@ The underlying architectural model is based on the following premises:
 .KS
 .IP "Widgets are X windows"
 .IP
-Every user-interface widget is contained in a unique X window.
-The X window ID for a widget is readily available from the widget ID,
-so standard Xlib window manipulation procedures can operate on
-widgets.
+Every user-interface widget is associated with an X window.
+The X window ID for a widget is readily available from the widget ID.
+Standard Xlib calls can be used by widgets for many of their input and
+output operations.
 .KE
 .KS
 .IP "Information hiding"
@@ -307,4 +307,37 @@ Several parts of the data structure are common to all widget types,
 while other parts are unique to a particular widget type.
 The widget's private data that is associated with a particular widget instance
 normally is included directly in the widget instance record.
-
+.NH 2
+Conventions Used in this Manual
+.IP \(bu 5
+All resources avalible to the widgets are listed with each widget.  Many
+of these are avalible to more than one widget class due to the object
+oriented nature of the \*(xI.  The new resources for each widget are
+listed in bold text, and the inherited resources are listed in plain text.
+.IP \(bu 5
+Global symbols are printed in \fBbold\fP and can be function names,
+symbols defined in include files, or structure names.  Aguments are
+printed in italics.
+.IP \(bu 5
+Each function is introduced by a general discussion that distinguishes
+it from other functions.  The function declaration itself follows, and
+each argument is specifically explained.  General discussion of the
+function, if any is required, follows the arguments.  Where
+applicable, the last paragraph of the explanation lists the return values
+of the function.
+.IP \(bu 5
+To eliminate any ambiguity between those arguments that you pass and
+those thata function returns to you, the explanations for all
+arguments that you pass start with the word \fIspecifies\fP or, in the
+case of multiple arguments, the word \fIspecify\fP. The explanations
+for all arguments that are returned to you start with the word
+\fIreturns\fP or, in the case of multiple arguments, the word
+\fIreturn\fP.  The explanations for all arguments that you can pass
+and are returned start with the words \fIspecifies and returns\fP.
+.IP \(bu 5
+Any pointer to a structure that is used to return a value is
+designated as such by the \fI_return\fP suffix as part of its name.
+All other pointers passed to these functions are used for reading
+only.  A few arguments use pointers to structures that are used for
+both input and output and are indicated by using the \fI_in_out\fP
+suffix.
