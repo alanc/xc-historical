@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.144 88/04/10 12:15:23 rws Exp $ */
+/* $Header: events.c,v 1.145 88/05/05 21:14:15 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -741,7 +741,7 @@ TryClientEvents (client, pEvents, count, mask, filter, grab)
 		pEvents->u.u.detail = NotifyNormal;
 	    }
 	}
-	if (pEvents->u.u.type != KeymapNotify)
+	if ((pEvents->u.u.type & 0177) != KeymapNotify)
 	{
 	    for (i = 0; i < count; i++)
 		pEvents[i].u.u.sequenceNumber = client->sequence;
