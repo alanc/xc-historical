@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.1 94/07/07 16:47:39 mor Exp $ */
+/* $XConsortium: mainwin.c,v 1.2 94/07/18 15:04:40 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -49,6 +49,8 @@ create_main_window ()
         XtNfromVert, NULL,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (clientInfoButton, XtNcallback, ClientInfoXtProc, 0);
@@ -59,6 +61,8 @@ create_main_window ()
         XtNfromVert, NULL,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (nameSessionButton, XtNcallback, NameSessionXtProc, 0);
@@ -69,6 +73,8 @@ create_main_window ()
         XtNfromVert, clientInfoButton,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (checkPointButton, XtNcallback, CheckPointXtProc, 0);
@@ -79,6 +85,8 @@ create_main_window ()
         XtNfromVert, clientInfoButton,
 	XtNresizable, True,
 	XtNjustify, XtJustifyLeft,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
 	NULL);
 
     XtAddCallback (shutdownButton, XtNcallback, ShutdownXtProc, 0);
