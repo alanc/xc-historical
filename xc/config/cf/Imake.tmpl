@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.40 89/07/12 10:18:13 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.41 89/07/16 21:22:10 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -542,10 +542,10 @@ IncludesSubdirs($(SUBDIRS))
 /**/# empty rules for directories that do not have SUBDIRS - do not edit
 
 install::
-	@echo "install done"
+	@echo "install in $(CURRENT_DIR) done"
 
 install.man::
-	@echo "install.man done"
+	@echo "install.man in $(CURRENT_DIR) done"
 
 Makefiles::
 
