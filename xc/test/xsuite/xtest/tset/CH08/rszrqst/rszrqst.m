@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: rszrqst.m,v 1.8 92/06/11 17:24:40 rws Exp $
  */
 >>TITLE ResizeRequest CH08
 >>EXTERN
@@ -147,8 +147,8 @@ unsigned long valuemask;
 	child->winhg.area.width += 2;
 	child->winhg.area.height += 2;
 	XResizeWindow(client2, child->window, child->winhg.area.width, child->winhg.area.height);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;
@@ -215,8 +215,8 @@ unsigned long valuemask;
 	lastw->winhg.area.width += 2;
 	lastw->winhg.area.height += 2;
 	XResizeWindow(client2, lastw->window, lastw->winhg.area.width, lastw->winhg.area.height);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;

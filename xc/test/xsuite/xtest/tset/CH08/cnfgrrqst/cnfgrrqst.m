@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: cnfgrrqst.m,v 1.9 92/06/11 17:19:35 rws Exp $
  */
 >>TITLE ConfigureRequest CH08
 >>EXTERN
@@ -131,8 +131,8 @@ unsigned long valuemask;
 	XSync(client2, True);
 	XSync(client3, True);
 	XRaiseWindow(client2, child->window);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Verify that no events were delivered. */
 	count = XPending(display);
@@ -173,8 +173,8 @@ unsigned long valuemask;
 	XSync(client2, True);
 	XSync(client3, True);
 	XRaiseWindow(client2, child->window);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;
@@ -460,8 +460,8 @@ unsigned long valuemask;
 	values.sibling = sibling->window;
 	values.stack_mode = Below;
 	XConfigureWindow(client2, child->window, CWSibling|CWStackMode, &values);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;
@@ -666,8 +666,8 @@ unsigned long valuemask;
 	XSync(client3, True);
 	child->winhg.border_width += 5;
 	XSetWindowBorderWidth(client2, child->window, child->winhg.border_width);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;

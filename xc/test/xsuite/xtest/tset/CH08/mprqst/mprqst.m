@@ -12,7 +12,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: mprqst.m,v 1.8 92/06/11 17:23:09 rws Exp $
  */
 >>TITLE MapRequest CH08
 >>EXTERN
@@ -131,8 +131,8 @@ unsigned long valuemask;
 	XSync(client2, True);
 	XSync(client3, True);
 	XMapWindow(client2, child->window);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Verify that no events were delivered. */
 	count = XPending(display);
@@ -173,8 +173,8 @@ unsigned long valuemask;
 	XSync(client2, True);
 	XSync(client3, True);
 	XMapWindow(client2, child->window);
-	XSync(display, False);
 	XSync(client2, False);
+	XSync(display, False);
 	XSync(client3, False);
 /* Initialize for expected events. */
 	event.xany.type = EVENT;
