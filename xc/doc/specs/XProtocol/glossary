@@ -1022,3 +1022,5 @@ appearing from most-significant to least-significant in bit order.
 The data for a pixmap is said to be in Z format if it is organized as
 a set of pixel values in scanline order.
 .KE
+.LP
+.bp
