@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.4 89/12/10 10:35:21 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.5 90/02/26 19:04:41 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -157,10 +157,10 @@ Pixmap XmuLocatePixmapFile (screen, name, fore, back, depth,
 	pixmap = None;
 	if (XmuReadBitmapDataFromFile (fn, &width, &height, &data,
 				       &xhot, &yhot) == BitmapSuccess) {
-	    pixmap = XCreatePixmapFromBitmapData (dpy, root, data,
+	    pixmap = XCreatePixmapFromBitmapData (dpy, root, (char *) data,
 						  width, height,
 						  fore, back, depth);
-	    XFree (data);
+	    XFree ((char *)data);
 	}
 
 	if (pixmap) {

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.25 90/02/26 11:56:20 jim Exp $
+ * $XConsortium: listres.c,v 1.26 90/03/06 18:30:49 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -128,6 +128,7 @@ static void list_known_widgets ()
     XmuWidgetNode *wn;
     int width = 0;
     char format[20];
+    static int print_classname ();
 
     for (i = 0, wn = widget_list; i < nwidgets; i++, wn++) {
 	int l = strlen (wn->label);
