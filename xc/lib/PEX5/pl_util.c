@@ -1,4 +1,4 @@
-/* $XConsortium: pl_util.c,v 1.1 92/07/24 14:18:29 mor Exp $ */
+/* $XConsortium: pl_util.c,v 1.2 92/07/24 16:38:48 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1005,7 +1005,7 @@ OUTPUT PEXMatrix3x3	matrix_return;
 
 
 int
-PEXLookatViewMatrix (from, to, up, matrix_return)
+PEXLookAtViewMatrix (from, to, up, matrix_return)
 
 INPUT PEXCoord		*from;
 INPUT PEXCoord		*to;
