@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicI.h,v 6.17 88/02/14 11:59:57 rws Exp $
+* $Header: IntrinsicI.h,v 1.18 88/02/15 10:31:36 swick Exp $
 */
 
 /*
@@ -38,7 +38,9 @@
 
 extern void bcopy();
 #define XtBCopy(src, dst, size)				    \
-    if (size == sizeof(int))				    \
+    if (size == sizeof(int) &&				    \
+	!((unsigned int) src & 0x3) &&			    \
+	!((unsigned int) dst & 0x3))			    \
 	*((int *) (dst)) = *((int *) (src));		    \
     else if (size == sizeof(char))			    \
 	*((char *) (dst)) = *((char *) (src));		    \
