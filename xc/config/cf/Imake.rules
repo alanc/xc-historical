@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.8 89/01/18 11:47:48 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.9 89/01/19 16:56:26 jim Exp $
 
 /*
  * MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -582,7 +582,7 @@ MakeNsubdirMakefiles()
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 dst::  src deplist							@@\
 	$(RM) $@							@@\
-	$(CPP) $(STD_CPP_DEFINES) defs <src | \				@@\
+	$(CPP) defs <src | \						@@\
 		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >$@			@@\
 	chmod a+x $@
 #else
@@ -590,8 +590,7 @@ dst::  src deplist							@@\
 dst::  src deplist							@@\
 	$(RM) $@							@@\
 	echo \: >$@							@@\
-	sed '1d' src | \						@@\
-		$(CPP) $(STD_CPP_DEFINES) defs  | \			@@\
+	sed '1d' src | $(CPP) defs  | \					@@\
 		sed -e '/^#  *[0-9][0-9]*  *.*$$/d' >>$@		@@\
 	chmod a+x $@
 #endif

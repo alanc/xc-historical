@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.13 89/01/19 16:37:57 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.14 89/01/19 16:49:33 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -344,8 +344,8 @@
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp doesn't have uniq sym */
                CC = CcCmd
          COMPRESS = CompressCmd
-              CPP = CppCmd
-    PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)
+              CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
+    PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
                LD = LdCmd
              LINT = LintCmd
