@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $Header: servermd.h,v 1.29 88/02/09 20:51:29 rws Exp $ */
+/* $Header: servermd.h,v 1.30 88/05/17 13:41:01 rws Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -153,20 +153,21 @@ SOFTWARE.
  */
 
 typedef struct _PaddingInfo {
-	int	scanlinePad;
-	int	bitmapPadLog2;
+	int     padRoundUp;	/* pixels per pad unit - 1 */
+	int	padPixelsLog2;	/* log 2 (pixels per pad unit) */
+	int     padBytesLog2;	/* log 2 (bytes per pad unit) */
 } PaddingInfo;
 extern PaddingInfo PixmapWidthPaddingInfo[];
 
 #define PixmapWidthInPadUnits(w, d) \
-    (((w) + PixmapWidthPaddingInfo[d].scanlinePad) >> \
-	PixmapWidthPaddingInfo[d].bitmapPadLog2)
+    (((w) + PixmapWidthPaddingInfo[d].padRoundUp) >> \
+	PixmapWidthPaddingInfo[d].padPixelsLog2)
 
 /*
  *	Return the number of bytes to which a scanline of the given
  * depth and width will be padded.
  */
 #define PixmapBytePad(w, d) \
-    (PixmapWidthInPadUnits(w, d) << LOG2_BYTES_PER_SCANLINE_PAD)
+    (PixmapWidthInPadUnits(w, d) << PixmapWidthPaddingInfo[d].padBytesLog2)
 
 #endif SERVERMD_H
