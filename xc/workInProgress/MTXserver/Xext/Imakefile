@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 5.15 91/07/16 23:09:51 gildea Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt || BuildPexExt || BuildPexClients
@@ -15,6 +15,9 @@ XCOMM $XConsortium$
   PEXDIRS = PEX/dipex/swap
 #endif
 #endif
+#if BuildXTrapExt
+  XTRAPDIRS = xtrap
+#endif
 #if HasShm
   SHMSRCS = shm.c
   SHMOBJS = shm.o
@@ -23,7 +26,7 @@ XCOMM $XConsortium$
        OBJS = shape.o $(SHMOBJS) multibuf.o mitmisc.o xtest1di.o xtest1dd.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
-        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS)
+        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
