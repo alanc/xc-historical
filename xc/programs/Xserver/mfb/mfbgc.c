@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.125 89/03/18 09:46:52 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 1.126 89/03/18 12:26:51 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -188,7 +188,7 @@ mfbValidateGC(pGC, pQ, changes, pDrawable)
     int new_rotate, new_rrop,  new_line, new_text, new_fill;
     DDXPointRec	oldOrg;		/* origin of thing GC was last used with */
     Bool win_moved;		/* window has moved since last time */
-    Mask procChanges = 0;
+    unsigned long procChanges = 0;
 
     oldOrg = pGC->lastWinOrg;
 
@@ -972,7 +972,9 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     }
     else if (type != CT_NONE)
     {
-	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects, pvalue, type);
+	pGC->clientClip = (pointer) miRectsToRegion(pGC, nrects,
+						    (xRectangle *)pvalue,
+						    type);
 	xfree(pvalue);
     }
     pGC->clientClipType = (type != CT_NONE && pGC->clientClip) ? CT_REGION :
