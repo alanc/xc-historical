@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.96 92/09/29 11:45:31 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.97 92/09/30 16:24:23 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -140,6 +140,7 @@ released automatically at next button or non-modifier key.
 #include <signal.h>
 #ifdef MSDOS
 #include <sys/time.h>
+#include <sys/socket.h>
 #endif
 
 #define control_char '\024' /* control T */
@@ -447,7 +448,12 @@ reset()
 
 void
 quit(val)
+    int val;
 {
+    if (val < 0) {
+	perror("a2x");
+	val = 1;
+    }
     reset();
     exit(val);
 }
@@ -1793,7 +1799,7 @@ do_trigger(buf)
 	FD_SET(Xfd, &fdmask);
 	type = select(maxfd, &fdmask, NULL, NULL, &trigger.time);
 	if (type < 0)
-	    quit(1);
+	    quit(type);
 	if (!type)
 	    unset_trigger();
 	else
@@ -2369,12 +2375,12 @@ process(buf, n, len)
 		if (fakeecho)
 		    write(1, "\177", 1);
 #else
-		buf[j] = i16getch();
+		buf[j] = /*i16*/getch();
 		if (!noecho) echo(buf[j]);
 		n = 1;
 #endif
 		if (n < 0)
-		    quit(0);
+		    quit(n);
 		n += j;
 	    }
 	    if (buf[j] != control_char) {
@@ -2478,6 +2484,7 @@ main(argc, argv)
     struct termios term;
 #endif
     char *dname = NULL;
+    char *s;
     char buf[1024];
     char fbuf[1024];
 #ifdef MSDOS
@@ -2573,7 +2580,8 @@ main(argc, argv)
     if (!init_display(dname))
 	quit(1);
     if (!undofile) {
-	strcpy(fbuf, getenv("HOME"));
+	if (s = getenv("HOME"))
+	    strcpy(fbuf, s);
 	strcat(fbuf, "/.a2x");
 	undofile = fbuf;
     }
@@ -2585,13 +2593,14 @@ main(argc, argv)
 	    process_events();
 	    continue;
 	}
-	FD_SET(0, &fdmask);
 	FD_SET(Xfd, &fdmask);
 #ifndef MSDOS
+	FD_SET(0, &fdmask);
 	i = select(maxfd, &fdmask, NULL, NULL, moving_timeout);
 #else
+	FD_CLR(0, &fdmask);
 	while (1) {
-	    if (i16kbhit()) {
+	    if (/*i16*/kbhit()) {
 		i = 1;
 		FD_SET(0, &fdmask);
 		FD_CLR(Xfd, &fdmask);
@@ -2599,11 +2608,11 @@ main(argc, argv)
 	    } else if (i = select(maxfd, &fdmask, NULL, NULL, &notime))
 		break;
 	    else
-		api_pause();
+		apiPause();
 	}
 #endif
 	if (i < 0)
-	    quit(1);
+	    quit(i);
 	if (!i) {
 	    if (moving_timeout) {
 		if (last_keycode)
@@ -2624,12 +2633,12 @@ main(argc, argv)
 	if (fakeecho)
 	    write(1, "\177", 1);
 #else
-	buf[0] = i16getch();
+	buf[0] = /*i16*/getch();
 	if (!noecho) echo(buf[0]);
 	n = 1;
 #endif
 	if (n <= 0)
-	    quit(0);
+	    quit(n);
 	process(buf, n, sizeof(buf));
 	reflect_modifiers(0);
     }
