@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.20 93/07/28 10:49:37 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.1 93/08/09 15:07:50 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -7,10 +7,12 @@ XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-DWIN32
 #define CpCmd copy
-#define HasSymLinks		NO
 #define LnCmd copy
 #define MvCmd rename
 #define RmCmd del
 #define CcCmd cl
 #define DefaultCCOptions nologo -batch -Za
+#define MakeCmd nmake
 #define LdCmd link
+#define HasSymLinks		NO
+#define HasPutenv		YES
