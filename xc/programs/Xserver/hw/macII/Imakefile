@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.23 93/09/04 17:33:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.24 94/01/28 22:29:49 rws Exp $
 
 #include <Server.tmpl>
 
@@ -28,9 +28,9 @@ OBJS = \
 
    DEFINES = $(SIGNAL_DEFINES) -DPASS_OPTION -DMAXSCREENS=6 -DXTESTEXT1
    INCLUDES = -I.  -I../../include -I../../mi -I../../mfb \
-	      -I/usr/include/mac -I$(INCLUDESRC) -I$(EXTINCSRC)
+	      -I$(INCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
-	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
+	      ../../mfb/llib-lmfb.ln ../../mi/llib-lmi.ln ../../cfb/llib-lcfb.ln
 
 NormalLibraryObjectRule()
 
