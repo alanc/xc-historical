@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.4 89/07/17 10:21:38 rws Exp $ */
+/* $XConsortium: shape.c,v 5.5 89/08/21 08:59:34 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -815,6 +815,7 @@ ProcShapeGetRectangles (client)
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = (nrects * sizeof (xRectangle)) >> 2;
+    rep.ordering = YXBanded;
     rep.nrects = nrects;
     if (client->swapped) {
 	swaps (&rep.sequenceNumber, n);

@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.6 89/08/16 16:31:37 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.7 89/08/21 08:58:01 rws Exp $ */
 
 /*
  * Protocol requests constants and alignment values
@@ -210,14 +210,14 @@ typedef struct _ShapeGetRectangles {
 
 typedef struct {
 	BYTE	type;			/* X_Reply */
-	CARD8	pad1;
+	CARD8	ordering;	/* UnSorted, YSorted, YXSorted, YXBanded */
 	CARD16	sequenceNumber B16;
 	CARD32	length B32;		/* not zero */
 	CARD32	nrects;			/* number of rectangles */
+	CARD32 pad1 B32;
+	CARD32 pad2 B32;
 	CARD32 pad3 B32;
 	CARD32 pad4 B32;
 	CARD32 pad5 B32;
-	CARD32 pad6 B32;
-	CARD32 pad7 B32;
 } xShapeGetRectanglesReply;		/* followed by xRectangles */
 #define sz_xShapeGetRectanglesReply 32
