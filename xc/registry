@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.19 91/03/04 18:49:13 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.20 91/03/04 19:37:01 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -338,6 +338,7 @@ Name						Reference
 "_CHINESE_CONVERSION"				[37]
 "_HUNGLE_CONVERSION"				[37]
 "_EUROPEAN_CONVERSION"				[37]
+"__SAM_" (prefix)				[67]
 
 10. SELECTION TARGETS
 
@@ -935,4 +936,9 @@ REFERENCES
 	Network Computing Devices
 	350 North Bernardo Ave.
 	Mountain View, CA  94043
+
+[67]	John Mackin
+	6/23 Northwood Street
+	Camperdown 2050
+	AUSTRALIA
 Sumitomo Electric Workstation Corp.	[77]
