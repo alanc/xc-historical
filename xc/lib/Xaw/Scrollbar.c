@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.52 89/10/09 16:20:20 jim Exp $";
+    "$XConsortium: Scroll.c,v 1.53 89/11/09 16:15:12 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -75,7 +75,7 @@ static XtResource resources[] = {
        Offset(scrollbar.foreground), XtRString, XtDefaultForeground},
   {XtNshown, XtCShown, XtRFloat, sizeof(float),
        Offset(scrollbar.shown), XtRFloat, (caddr_t)&floatZero},
-  {XtNtopOfScrollbar, XtCTopOfScrollbar, XtRFloat, sizeof(float),
+  {XtNtopOfThumb, XtCTopOfThumb, XtRFloat, sizeof(float),
        Offset(scrollbar.top), XtRFloat, (caddr_t)&floatZero},
   {XtNscrollVCursor, XtCCursor, XtRCursor, sizeof(Cursor),
        Offset(scrollbar.verCursor), XtRString, "sb_v_double_arrow"},
