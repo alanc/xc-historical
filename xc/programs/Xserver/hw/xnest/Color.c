@@ -1,4 +1,4 @@
-/* $XConsortium: Color.c,v 1.2 93/09/03 08:12:44 dpw Exp $ */
+/* $XConsortium: Color.c,v 1.3 94/02/06 17:49:05 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -439,6 +439,8 @@ Bool xnestCreateDefaultColormap(pScreen)
       != Success)
     return False;
 
+  wp = pScreen->whitePixel;
+  bp = pScreen->blackPixel;
   if ((AllocColor(pCmap, &ones, &ones, &ones, &wp, 0) !=
        Success) ||
       (AllocColor(pCmap, &zero, &zero, &zero, &bp, 0) !=
