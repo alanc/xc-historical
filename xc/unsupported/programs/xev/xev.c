@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium$
+ * $XConsortium: xev.c,v 1.7 88/09/06 14:38:01 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,8 +23,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xproto.h>
-#define XK_LATIN1
-#include <X11/keysymdef.h>
 #include <ctype.h>
 
 #define INNER_WINDOW_WIDTH 50
@@ -356,18 +354,21 @@ do_KeyPress (eventp)
     XEvent *eventp;
 {
     XKeyEvent *e = (XKeyEvent *) eventp;
-    KeySym ks = XLookupKeysym (e, 0);
-    char *ksname = XKeysymToString (ks);
+    KeySym ks;
+    char *ksname;
     int nbytes;
     int keycode;
     char str[256+1];
-    XComposeStatus compose_status;
 
+    nbytes = XLookupString (eventp, str, 256, &ks, NULL);
+    if (ks == NoSymbol)
+	ksname = "NoSymbol";
+    else if (!(ksname = XKeysymToString (ks)))
+	ksname = "(no name)";
     printf ("    root 0x%lx, subw 0x%lx, time %lu, (%d,%d), root:(%d,%d),\n",
 	    e->root, e->subwindow, e->time, e->x, e->y, e->x_root, e->y_root);
     printf ("    state 0x%x, keycode %u (keysym 0x%x, %s), same_screen %s,\n",
 	    e->state, e->keycode, ks, ksname, e->same_screen ? Yes : No);
-    nbytes = XLookupString (eventp, str, 256, &keycode, &compose_status);
     if (nbytes < 0) nbytes = 0;
     if (nbytes > 256) nbytes = 256;
     str[nbytes] = '\0';
