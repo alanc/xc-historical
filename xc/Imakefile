@@ -61,3 +61,11 @@ World::
 	$(MAKE) clean
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
+
+Everything::
+	cd $(IMAKESRC); $(MAKE)
+	-$(MV) Makefile Makefile.bak
+	$(MAKE) -f Makefile.bak Makefile
+	$(MAKE) Makefiles
+	$(MAKE) depend
+	$(MAKE) $(WORLDOPTS)
