@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.33 93/10/29 17:40:32 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.34 93/11/12 16:38:22 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -97,10 +97,8 @@ static struct timeval	autoRepeatDeltaTv;
 static KbPrivRec  	sysKbPriv = {
     -1,			/* Type */
     -1,			/* Layout */
-    0,			/* offset */
     0,			/* click */
     (Leds)0,		/* leds */
-    (Bool)0,		/* map_q */
 };
 
 static void kbdWait()
@@ -299,53 +297,82 @@ static void sunKbdCtrl (device, ctrl)
     }
 #ifndef XKB
     if (ctrl != NULL && pPriv->leds != ctrl->leds & 0x0f) {
-	xEvent xE;
-	struct timeval tv;
+	Bool keypress;
+	KeyCode key;
+	int bit;
+	CARD8 modifiers;
+	CARD16 mask;
+	BYTE* kptr;
+	KeyClassPtr keyc = device->key;
 	KeySymsPtr keysymsrec = &device->key->curKeySyms;
 
-	GETTIMEOFDAY(&tv);
-	xE.u.keyButtonPointer.time =  TVTOMILLI(tv);
+	/* major presumption that only one LED can change at a time */
 	if ((ctrl->leds & LED_CAPS_LOCK) && !(pPriv->leds & LED_CAPS_LOCK)) {
-	    /* send a Caps_Lock keypress */
-	    xE.u.u.type = KeyPress;
-	    xE.u.u.detail = LookupKeyCode(XK_Caps_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Caps_Lock, keysymsrec);
+	    keypress = TRUE;
 	}
 	if (!(ctrl->leds & LED_CAPS_LOCK) && (pPriv->leds & LED_CAPS_LOCK)) {
-	    /* send a Caps_Lock keyrelease */
-	    xE.u.u.type = KeyRelease;
-	    xE.u.u.detail = LookupKeyCode(XK_Caps_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Caps_Lock, keysymsrec);
+	    keypress = FALSE;
 	}
+
 	if ((ctrl->leds & LED_NUM_LOCK) && !(pPriv->leds & LED_NUM_LOCK)) {
-	    /* send a Num_Lock keypress */
-	    xE.u.u.type = KeyPress;
-	    xE.u.u.detail = LookupKeyCode(XK_Num_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Num_Lock, keysymsrec);
+	    keypress = TRUE;
 	}
 	if (!(ctrl->leds & LED_NUM_LOCK) && (pPriv->leds & LED_NUM_LOCK)) {
-	    /* send a Num_Lock keyrelease */
-	    xE.u.u.type = KeyRelease;
-	    xE.u.u.detail = LookupKeyCode(XK_Num_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Num_Lock, keysymsrec);
+	    keypress = FALSE;
 	}
+
 	if ((ctrl->leds & LED_SCROLL_LOCK) && !(pPriv->leds & LED_SCROLL_LOCK)) {
-	    /* send a Scroll_Lock keypress */
-	    xE.u.u.type = KeyPress;
-	    xE.u.u.detail = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
+	    keypress = TRUE;
 	}
 	if (!(ctrl->leds & LED_SCROLL_LOCK) && (pPriv->leds & LED_SCROLL_LOCK)) {
-	    /* send a Scroll_Lock keyrelease */
-	    xE.u.u.type = KeyRelease;
-	    xE.u.u.detail = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
+	    key = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
+	    keypress = FALSE;
 	}
+
 	if ((ctrl->leds & LED_COMPOSE) && !(pPriv->leds & LED_COMPOSE)) {
-	    /* send a Compose keypress */
-	    xE.u.u.type = KeyPress;
-	    xE.u.u.detail = LookupKeyCode(SunXK_Compose, keysymsrec);
+	    key = LookupKeyCode(SunXK_Compose, keysymsrec);
+	    keypress = TRUE;
 	}
 	if (!(ctrl->leds & LED_COMPOSE) && (pPriv->leds & LED_COMPOSE)) {
-	    /* send a Compose keyrelease */
-	    xE.u.u.type = KeyRelease;
-	    xE.u.u.detail = LookupKeyCode(SunXK_Compose, keysymsrec);
+	    key = LookupKeyCode(SunXK_Compose, keysymsrec);
+	    keypress = FALSE;
 	}
-	EnqueueEvent(&xE);
+
+	kptr = &keyc->down[key >> 3];
+	bit = 1 << (key & 7);
+	modifiers = keyc->modifierMap[key];
+	if (keypress) {
+	    /* fool dix into thinking this key is now "down" */
+	    int i;
+	    *kptr |= bit;
+	    keyc->prev_state = keyc->state;
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+		if (mask & modifiers) {
+		    keyc->modifierKeyCount[i]++;
+		    keyc->state += mask;
+		    modifiers &= ~mask;
+		}
+	} else {
+	    /* fool dix into thinking this key is now "up" */
+	    if (*kptr & bit) {
+		int i;
+		*kptr &= ~bit;
+		keyc->prev_state = keyc->state;
+		for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+		    if (mask & modifiers) {
+			if (--keyc->modifierKeyCount[i] <= 0) {
+			    keyc->state &= ~mask;
+			    keyc->modifierKeyCount[i] = 0;
+			}
+			modifiers &= ~mask;
+		    }
+	    }
+	}
 	pPriv->leds = ctrl->leds & 0x0f;
 	SetLights (ctrl);
     }
@@ -462,8 +489,7 @@ int sunKbdProc (device, what)
 		workingModMap=(CARD8 *)xalloc(MAP_LENGTH);
 		(void) memset(workingModMap, 0, MAP_LENGTH);
 		for(i=0; sunModMaps[sysKbPriv.type][i].key != 0; i++)
-		    workingModMap[sunModMaps[sysKbPriv.type][i].key + 
-				  MIN_KEYCODE - workingKeySyms->minKeyCode] = 
+		    workingModMap[sunModMaps[sysKbPriv.type][i].key + MIN_KEYCODE] = 
 			sunModMaps[sysKbPriv.type][i].modifiers;
 	    }
 
@@ -474,9 +500,8 @@ int sunKbdProc (device, what)
 	     * and <= MAX_KEYCODE
 	     */
 	    if (workingKeySyms->minKeyCode < MIN_KEYCODE) {
-		sysKbPriv.offset = MIN_KEYCODE - workingKeySyms->minKeyCode;
-		workingKeySyms->minKeyCode += sysKbPriv.offset;
-		workingKeySyms->maxKeyCode += sysKbPriv.offset;
+		workingKeySyms->minKeyCode += MIN_KEYCODE;
+		workingKeySyms->maxKeyCode += MIN_KEYCODE;
 	    }
 	    if (workingKeySyms->maxKeyCode > MAX_KEYCODE)
 		workingKeySyms->maxKeyCode = MAX_KEYCODE;
@@ -601,7 +626,7 @@ void sunKbdEnqueueEvent (pKeyboard, fe)
     KeybdCtrl*		ctrl = &((DeviceIntPtr)pKeyboard)->kbdfeed->ctrl;
 
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-    key = (fe->id & 0x7f) + pPriv->offset;
+    key = (fe->id & 0x7f) + MIN_KEYCODE;
     dev = (DeviceIntPtr) pKeyboard;
 
     keyModifiers = dev->key->modifierMap[key];

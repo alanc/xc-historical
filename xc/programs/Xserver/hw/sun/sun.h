@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.27 93/10/29 17:37:56 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.28 93/11/12 16:37:41 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -168,9 +168,7 @@ extern int monitorResolution;
 typedef struct kbPrivate {
     int		type;		/* Type of keyboard */
     int		layout;		/* The layout of the keyboard */
-    int		offset;		/* to be added to device keycodes */
     int		click;		/* kbd click save state */
-    Bool	map_q;		/* TRUE if has a mapped event queue */
     Leds	leds;		/* last known led state */
 } KbPrivRec, *KbPrivPtr;
 
