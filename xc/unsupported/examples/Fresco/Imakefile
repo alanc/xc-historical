@@ -1,9 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/03/06 14:05:28 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/07 18:32:18 matt Exp $
 
 /*
  * TODO:  Figure out what to do with the stubs/ and raster/
  * subdirectories.			-- Matt Landau 2.10.94
  */
+
+#include <Fresco.tmpl>
 
         DEPLIBS = FrescoClientDepLibs
 LOCAL_LIBRARIES = FrescoClientLibs 
@@ -47,15 +49,7 @@ LOCAL_LIBRARIES = FrescoClientLibs
 		  subpaths \
  		  xtf
 
-#if ThreadedX
-  LOCAL_LDFLAGS = ThreadsLoadFlags
-  SYS_LIBRARIES = ThreadsLibraries
-#endif
-
 all: $(EXAMPLES)
-
-#define CplusplusSource
-NormalCplusplusObjectRule()
 
 #ifdef FrescoExample
 #undef FrescoExample
