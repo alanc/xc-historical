@@ -278,6 +278,7 @@ macIIMouseProcessEvent(pMouse,me)
     register macIIMsPrivPtr pmacIIPriv; /* Private data for mouse */
 
     short xpos, ypos; /* SIGNED shorts for valid comparisons */
+    static short lastx, lasty;
     static unsigned char last_button = 0x80;
 
     pPriv = (PtrPrivPtr)pMouse->devicePrivate;
@@ -384,13 +385,17 @@ macIIMouseProcessEvent(pMouse,me)
     xE.u.keyButtonPointer.rootX = pPriv->x;
     xE.u.keyButtonPointer.rootY = pPriv->y;
    
+    if( (lastx != pPriv->x) || (lasty != pPriv->y)) {
+	lastx = pPriv->x;
+	lasty = pPriv->y;
 #ifdef MACII_ALL_MOTION
-    xE.u.u.type = MotionNotify;
-    macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
-    (* pMouse->processInputProc) (&xE, pMouse);
+    	xE.u.u.type = MotionNotify;
+    	macIIMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);
+    	(* pMouse->processInputProc) (&xE, pMouse);
 #else
-    pmacIIPriv->mouseMoved = TRUE;
+    	pmacIIPriv->mouseMoved = TRUE;
 #endif MACII_ALL_MOTION
+    }
 
     if (KEY_UP(*(me + 1)) != last_button) {
         xE.u.u.detail = (MS_LEFT - MS_LEFT) + 1;
