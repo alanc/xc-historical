@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.67 93/09/18 20:03:22 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.68 93/10/06 10:00:18 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -180,7 +180,11 @@ static void Initialize (request, new, args, num_args)
     if(!w->clock.analog) {
        char *str;
        struct tm tm;
+#if (defined(sun) && !defined(SVR4)) || defined(sony) || defined(luna)
        long time_value;
+#else
+       time_t time_value;
+#endif
        (void) time(&time_value);
        tm = *localtime(&time_value);
        str = asctime(&tm);
