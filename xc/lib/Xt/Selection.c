@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.29 89/11/30 13:02:49 swick Exp $";
+    "$XConsortium: Selection.c,v 1.30 89/11/30 17:52:49 swick Exp $";
 #endif
 
 /***********************************************************
@@ -475,7 +475,7 @@ Atom property;			/* requestor's property */
 Widget widget;			/* physical owner (receives events) */
 Boolean *incremental;
 {
-    XtPointer value;
+    XtPointer value = NULL;
     unsigned long length;
     int format;
     Atom targetType;
@@ -855,8 +855,9 @@ XEvent *ev;
     if (length == 0) {
        (*info->callback)(widget, *info->req_closure, &ctx->selection, 
 			  &info->type, 
-			  (info->offset == 0 ? NULL : info->value), 
+			  (info->offset == 0 ? value : info->value), 
 			  &info->offset, &info->format);
+       if (info->offset) Xfree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
@@ -966,8 +967,7 @@ Atom selection;
 
     XDeleteProperty(dpy, XtWindow(widget), property);
     (*info->callback)(widget, closure, &selection, 
-			  &type, (length == 0 ? NULL : value), 
-			  &length, &format);
+			  &type, value, &length, &format);
     return TRUE;
 }
 
@@ -1131,7 +1131,7 @@ XtSelectionCallbackProc callback;
 XtPointer closure;	/* the closure for the callback, not the conversion */
 Boolean incremental;
 {
-    XtPointer value, temp, total = NULL;
+    XtPointer value = NULL, temp, total = NULL;
     unsigned int length;
     int format;
     Atom resulttype;
@@ -1159,6 +1159,10 @@ Boolean incremental;
 	                bcopy(value, temp, bytelength);
 	                value = temp;
 	              }
+		      /* use care; older clients were not warned that
+		       * they _must_ return a value even if length==0
+		       */
+		     if (value == NULL) value = XtMalloc((unsigned)1);
 		     (*callback)(widget, closure, &selection, 
 			&resulttype, value, &length, &format);
 		     if (ctx->notify) 
@@ -1184,6 +1188,10 @@ Boolean incremental;
 			    &resulttype, &value, &length, &format,
 			    &size, ctx->owner_closure, &req);
 		  }
+		  if (total == NULL)
+		      if (value != NULL) total = value;
+		      else total = XtMalloc(1);
+		  else if (value != NULL) XtFree(value);
 		  totallength = NUMELEM(totallength, format); 
 		  (*callback)(widget, closure, &selection, &resulttype, 
 		    total,  &totallength, &format);
@@ -1201,9 +1209,9 @@ Boolean incremental;
 	        bcopy(value, temp, bytelength);
 	        value = temp;
 	      }
+	      if (value == NULL) value = XtMalloc((unsigned)1);
 	      (*callback)(widget, closure, &selection, &resulttype, 
-		    (length == 0 ? NULL : value), 
-		    &length, &format);
+			  value, &length, &format);
 	      if (ctx->notify)
 	         (*ctx->notify)(ctx->widget, &selection, &target);
 	  }
