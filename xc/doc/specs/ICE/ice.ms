@@ -100,9 +100,7 @@ Quarterdeck Office Systems
 There are numerous possible protocols that can be used for communication
 among clients.  They have many similarities and common needs, including 
 authentication,
-.mc |
 version negotiation,
-.mc
 data typing, and
 connection management.  The
 .I
@@ -142,9 +140,7 @@ subject to change.
 In discussing a variety of protocols \(em existing, under development, and
 hypothetical \(em it was noted that they have many elements in common.  Most
 protocols need mechanisms for authentication, for
-.mc |
 version negotiation,
-.mc
 and for setting up and taking down connections.  There are also
 cases where the same two parties need to talk to each other using multiple
 protocols.  For example, an embedding relationship between two parties is
@@ -256,12 +252,10 @@ Each subprotocol will have one or more messages whose semantics are that the
 subprotocol is to be shut down.  Whether this is done unilaterally or is
 performed through negotiation is defined by each subprotocol.  Once a
 subprotocol is shut down, its major opcodes are removed from
-.mc |
 use; no further messages on this subprotocol should be sent until the
 opcode is reestablished with
 .PN ProtocolSetup .
 .LP
-.mc
 ICE has a facility to negotiate the closing of the connection when there are
 no longer any active subprotocols.  When either party decides that no
 subprotocols are active, it can send a
@@ -359,7 +353,6 @@ LISTof<type> denotes a counted collection of <type>.  The exact encoding
 varies depending on the context; see the encoding section.
 .nH 1 "Message Format"
 .LP
-.mc |
 All ICE messages include the following information:
 .TS H
 expand;
@@ -379,7 +372,6 @@ CARD32	length of remaining data in 8-byte units
 .sp 6p
 _
 .TE
-.mc
 .LP
 The fields are as follows:
 .LP
@@ -410,9 +402,7 @@ error.
 .RE
 .nH 1 "Overall Protocol Description"
 .LP
-.mc |
 Every message sent in a given direction has an implicit sequence number,
-.mc
 starting with 1.  Sequence numbers are global to the connection; independent
 sequence numbers are \fInot\fP maintained for each protocol.
 .LP
@@ -438,18 +428,15 @@ CARD16
 .Mf value(s)
 <dependent on major/minor opcode and class>
 .Me
-.mc |
 This message is sent to report an error in response to a message
 from any protocol.
 The
 .PN Error
 message
-.mc
 exists in all protocol major-opcode spaces; it
 is minor-opcode zero in every protocol.  The minor opcode of the
 message that caused the error is reported, as well as the sequence
 number of that message.
-.mc |
 The severity indicates the sender's behavior following
 the identification of the error.
 .PN CanContinue
@@ -465,7 +452,6 @@ is required to conform to specified severity conditions
 for generic and ICE (major opcode 0) errors; see Sections 6.1
 and 6.2.
 The class defines the generic class of
-.mc
 error.  Classes are specified separately for each protocol (numeric
 values can mean different things in different protocols).  The error
 values, if any, and their types vary with the specific error class
@@ -479,9 +465,7 @@ for the protocol.
 Each of the ICE control opcodes is described below.
 Most of the messages have additional information included beyond the
 description above.  The additional information is appended to the message
-.mc |
 header and
-.mc
 the length field is computed accordingly.
 .LP
 In the following message descriptions, \*QExpected errors\*U indicates
@@ -497,9 +481,7 @@ and
 .PN MajorOpcodeDuplicate )
 might occur, but generally indicate a serious implementation failure on
 the part of the
-.mc |
 errant
-.mc
 peer.
 .Ms ByteOrder
 .Mf byte-order
@@ -538,14 +520,10 @@ STRING
 .PN AuthenticationFailed .
 .Me
 The party that initiates the connection
-.mc |
 (the
-.mc
 one that does the \*Qconnect()\*U)
 must send this
-.mc |
 message
-.mc
 as the second message (after
 .PN ByteOrder )
 on startup.
@@ -628,11 +606,9 @@ Any protocol-specific data that might be required is also sent.
 .PN AuthenticationFailed .
 .Me
 This message is sent in response to an
-.mc |
 .PN AuthenticationRequired
 or
 .PN AuthenticationNextPhase
-.mc
 message, to
 supply authentication data as defined by the authentication protocol
 being used.
@@ -676,14 +652,12 @@ STRING
 .Mf release
 STRING
 .Me
-.mc |
 This message is sent in response to a
 .PN ConnectionSetup
 or
 .PN AuthenticationReply
 message to indicate that the authentication handshake is complete.
 .LP
-.mc
 Version-index gives a 0-based index into the list of versions offered in
 the
 .PN ConnectionSetup
@@ -719,9 +693,7 @@ LISTofSTRING
 .PN AuthenticationRejected ,
 .PN AuthenticationFailed .
 .Me
-.mc |
 This message is used to initiate negotiation of
-.mc
 a protocol and establish any authentication
 specific to it.
 .LP
@@ -734,11 +706,9 @@ it sends.
 Versions gives a list of version numbers, in decreasing order of
 preference, that the party is willing to speak.
 .LP
-.mc |
 Vendor and release are identification strings with semantics defined
 by the specific protocol being negotiated.
 .LP
-.mc
 If must-authenticate is
 .PN True ,
 the initiating party demands authentication; the accepting party \fImust\fP
@@ -780,14 +750,12 @@ STRING
 .Mf release
 STRING
 .Me
-.mc |
 This message is sent in response to a
 .PN ProtocolSetup
 or
 .PN AuthenticationReply
 message to indicate that the authentication handshake is complete.
 .LP
-.mc
 Major-opcode gives the opcode that this party will use in
 messages that it sends.
 .LP
@@ -796,32 +764,25 @@ Version-index gives a 0-based index into the list of versions offered in the
 message; it specifies the version of the protocol that both
 parties should speak for the duration of the connection.
 .LP
-.mc |
 Vendor and release are identification strings with semantics defined
 by the specific protocol being negotiated.
 .LP
-.mc
 .Ms Ping
 .Ma "Response"
 .PN PingReply .
 .Me
-.mc |
 This message is used to test if the connection is still functioning.
-.mc
 .Ms PingReply
 .Me
-.mc |
 This message is sent in response to a
 .PN Ping
 message, indicating that the connection is still functioning.
-.mc
 .Ms WantToClose
 .Ma "Responses"
 .PN WantToClose ,
 .PN NoClose ,
 .PN ProtocolSetup .
 .Me
-.mc |
 This message is used to initiate a possible close of the connection.
 The sending party has noticed that, as a result of mechanisms specific
 to each protocol, there are no active
@@ -829,25 +790,18 @@ protocols
 left.
 There are
 four possible scenarios arising from this request:
-.mc
 .IP (1) 5
-.mc |
 The receiving side noticed too, and has already sent a
-.mc
 .PN WantToClose .
 On receiving a
 .PN WantToClose
 while already attempting to shut down, each party should simply close the
 connection.
 .IP (2)
-.mc |
 The receiving side hasn't noticed, but agrees.  It closes
-.mc
 the connection.
 .IP (3)
-.mc |
 The receiving side has a
-.mc
 .PN ProtocolSetup
 \*Qin flight,\*U in which case it is to ignore
 .PN WantToClose
@@ -856,40 +810,31 @@ and the party sending
 is to abandon the shutdown attempt when it receives the
 .PN ProtocolSetup .
 .IP (4)
-.mc |
 The receiving side wants the connection kept open for some
 reason not specified by the ICE protocol, in which case it
-.mc
 sends
 .PN NoClose .
 .LP
 See the state transition diagram for additional information.
 .Ms NoClose
 .Me
-.mc |
 This message is sent in response to a
 .PN WantToClose
 message to indicate that the responding
-.mc
 party does not want the connection closed at
 this time.  The receiving party should not close the
-.mc |
 connection.  Either party may again initiate
 .PN WantToClose
 at some future time.
 .nH 2 "Generic Error Classes"
-.mc
 .LP
 These errors should be used by all protocols, as applicable.
 For ICE (major opcode 0),
 .PN FatalToProtocol
 should
-.mc |
 be interpreted as
-.mc
 .PN FatalToConnection.
 .Ms BadMinor
-.mc |
 .Mf offending-minor-opcode
 <any>
 .Mf severity
@@ -899,12 +844,9 @@ or
 (protocol's discretion)
 .Mf values
 (none)
-.br
-.mc
 .Me
 Received a message with an unknown minor opcode.
 .Ms BadState
-.mc |
 .Mf offending-minor-opcode
 <any>
 .Mf severity
@@ -914,13 +856,10 @@ or
 (protocol's discretion)
 .Mf values
 (none)
-.br
-.mc
 .Me
 Received a message with a valid minor opcode which is not appropriate
 for the current state of the protocol.
 .Ms BadLength
-.mc |
 .Mf offending-minor-opcode
 <any>
 .Mf severity
@@ -930,47 +869,35 @@ or
 (protocol's discretion)
 .Mf values
 (none)
-.br
-.mc
 .Me
 Received a message with a bad length.  The length of the message is
 longer or shorter than required to contain the data.
 .Ms BadValue
-.mc |
 .Mf offending-minor-opcode
 <any>
 .Mf severity
 .PN CanContinue
 .Mf values
 CARD32 Byte offset to offending value in offending message
-.br
-.mc
 .Mc
 CARD32 Length of offending value
 .Mc
 <varies> Offending value
 .Me
 Received a message with a bad value specified.
-.br
-.mc |
 .nH 2 "ICE Error Classes"
-.mc
 .LP
 These errors are all major opcode 0 errors.
 .Ms BadMajor
-.mc |
 .Mf offending-minor-opcode
 <any>
 .Mf severity
 .PN CanContinue
 .Mf values
 CARD8 Opcode
-.br
-.mc
 .Me
 The opcode given is not one that has been registered.
 .Ms NoAuthentication
-.mc |
 .Mf offending-minor-opcode
 .PN ConnectionSetup ,
 .PN ProtocolSetup
@@ -978,21 +905,15 @@ The opcode given is not one that has been registered.
 .PN ConnectionSetup
 \(->
 .PN FatalToConnection
-.br
-.mc
 .Mc
 .PN ProtocolSetup
 \(->
 .PN FatalToProtocol
 .Mf values
-.mc |
 (none)
-.br
-.mc
 .Me
 None of the authentication protocols offered are available.
 .Ms NoVersion
-.mc |
 .Mf offending-minor-opcode
 .PN ConnectionSetup ,
 .PN ProtocolSetup
@@ -1000,52 +921,37 @@ None of the authentication protocols offered are available.
 .PN ConnectionSetup
 \(->
 .PN FatalToConnection
-.br
-.mc
 .Mc
 .PN ProtocolSetup
 \(->
 .PN FatalToProtocol
 .Mf values
-.mc |
 (none)
-.br
-.mc
 .Me
 None of the protocol versions offered are available.
 .Ms AuthenticationRejected
-.mc |
 .Mf offending-minor-opcode
-.mc
 .PN AuthenticationReply ,
 .PN AuthenticationRequired ,
 .br
 .PN AuthenticationNextPhase
-.mc |
 .Mf severity
 .PN FatalToProtocol
 .Mf values
 STRING Reason
-.br
-.mc
 .Me
 Authentication rejected.  The peer has failed to properly
 authenticate itself.
 .Ms AuthenticationFailed
-.mc |
 .Mf offending-minor-opcode
-.mc
 .PN AuthenticationReply ,
 .PN AuthenticationRequired ,
 .br
 .PN AuthenticationNextPhase
-.mc |
 .Mf severity
 .PN FatalToProtocol
 .Mf values
 STRING Reason
-.br
-.mc
 .Me
 Authentication failed.
 .PN AuthenticationFailed
@@ -1055,7 +961,6 @@ does.  Instead it means that the sender was unable to complete
 the authentication for some other reason.  (For instance, it
 may have been unable to contact an authentication server.)
 .Ms ProtocolDuplicate
-.mc |
 .Mf offending-minor-opcode
 .PN ProtocolSetup
 .Mf severity
@@ -1063,15 +968,12 @@ may have been unable to contact an authentication server.)
 (but see note)
 .Mf values
 STRING Protocol Name
-.br
-.mc
 .Me
 The protocol name was already registered.  This is fatal to
 the \*Qnew\*U protocol being set up by
 .PN ProtocolSetup ,
 but it does not affect the existing registration.
 .Ms MajorOpcodeDuplicate
-.mc |
 .Mf offending-minor-opcode
 .PN ProtocolSetup
 .Mf severity
@@ -1079,23 +981,18 @@ but it does not affect the existing registration.
 (but see note)
 .Mf values
 CARD8 Opcode
-.br
-.mc
 .Me
 The major opcode specified was already registered.  This is
 fatal to the \*Qnew\*U protocol being set up by
 .PN ProtocolSetup ,
 but it does not affect the existing registration.
 .Ms UnknownProtocol
-.mc |
 .Mf offending-minor-opcode
 .PN ProtocolSetup
 .Mf severity
 .PN FatalToProtocol
 .Mf values
 STRING protocol name
-.br
-.mc
 .Me
 The protocol specified is not supported.
 .nH 1 "State Diagrams"
@@ -1104,13 +1001,11 @@ Here are the state diagrams for the party that initiates the connection:
 .Ss start
 .\" .St "connect to other end, send" ConnectionSetup conn_wait
 .RS
-.mc |
 connect to other end, send
 .PN ByteOrder ,
 .PN ConnectionSetup
 \(-> \f7conn_wait\fP
 .RE
-.mc
 .Se
 .Ss conn_wait
 .St "receive" ConnectionReply stasis
@@ -1138,25 +1033,21 @@ accept connection \(-> \f7init_wait\fP
 .Ss init_wait
 .\" .St "receive ByteOrder, ConnectionSetup" auth_ask
 .RS
-.mc |
 receive
 .PN ByteOrder ,
 .PN ConnectionSetup
 \(-> \f7auth_ask\fP
 .RE
-.mc
 .St "receive <other>, send" Error quit
 .Se
 .Ss auth_ask
 .\" .St "send ByteOrder, ConnectionReply" stasis
 .RS
-.mc |
 send
 .PN ByteOrder ,
 .PN ConnectionReply
 \(-> \f7stasis\fP
 .RE
-.mc
 .St "send" AuthenticationRequired auth_wait
 .St "send" Error quit
 .Se
@@ -1188,10 +1079,7 @@ send
 .RE
 .St "receive" WantToClose shutdown_attempt
 .St "receive <other>, send" Error stasis
-.mc |
 .St "all protocols shut down, send" WantToClose close_wait
-.br
-.mc
 .Se
 .Ss proto_wait
 .St "receive" ProtocolReply stasis
@@ -1202,9 +1090,7 @@ receive
 .PN Error ,
 give up on this protocol \(-> \f7stasis\fP
 .RE
-.mc |
 .St "receive" WantToClose proto_wait
-.mc
 .Se
 .Ss give_auth1
 .St "if good auth data, send" AuthenticationReply give_auth2
@@ -1214,9 +1100,7 @@ if bad auth data, send
 .PN Error ,
 give up on this protocol \(-> \f7stasis\fP
 .RE
-.mc |
 .St "receive" WantToClose give_auth1
-.mc
 .Se
 .Ss give_auth2
 .St "receive" ProtocolReply stasis
@@ -1227,9 +1111,7 @@ receive
 .PN Error ,
 give up on this protocol \(-> \f7stasis\fP
 .RE
-.mc |
 .St "receive" WantToClose give_auth2
-.mc
 .Se
 .Ss proto_reply
 .St "send" ProtocolReply stasis
@@ -1276,11 +1158,9 @@ give up on this protocol \(-> \f7stasis\fP
 .St "receive" PingReply stasis
 .Se
 .Ss quit
-.mc |
 .RS
 \(-> close connection
 .RE
-.mc
 .Se
 Here are the state transitions for shutting down the connection:
 .Ss shutdown_attempt
