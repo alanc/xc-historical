@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.13 91/07/28 15:49:51 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.1 92/04/17 12:00:01 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -16,9 +16,8 @@
 \s+2\fBX11 XTEST EXTENSION\fP\s-2
 .sp 3
 .ce 3
-Version 1.0
-MIT X Consortium Standard
-X Version 11, Release 5
+Version 2.1
+MIT X Consortium Draft Standard
 .sp 6
 .ce 4
 \s-1Kieron Drake
@@ -49,48 +48,48 @@ Overview
 This extension is a minimal set of client and server extensions
 required to completely test the X11 server with no user intervention.
 .lP
-This extension is not intended to support general journalling and
-playback of user actions. This is a difficult area [XTrap, 89] as it attempts
-to synchronise synthetic user interactions with their effects; it is at the
+This extension is not intended to support general journaling and
+playback of user actions.  This is a difficult area [XTrap, 89] as it attempts
+to synchronize synthetic user interactions with their effects; it is at the
 higher level of dialogue recording/playback rather than at the strictly lexical
-level. We are only interested in the latter, simpler, case. A more detailed
+level.  We are only interested in the latter, simpler, case.  A more detailed
 discussion and justification of the extension functionality is given in
 [Drake, 91].
 .lP
 We are only aiming to provide a minimum set of facilities that
-solve immediate testing and validation problems. The testing extension
+solve immediate testing and validation problems.  The testing extension
 itself needs testing, where possible, and so should be as simple as possible.
 .lP
 We have also tried to:
 .IP \(bu
 Confine the extension to an appropriate, high, level within the server
-to minimise portability problems. In practice this means that the extension
-should be at the DIX level, or use the DIX/DDX interface, or both. This
+to minimize portability problems.  In practice this means that the extension
+should be at the DIX level, or use the DIX/DDX interface, or both.  This
 has effects, in particular, on the level at which \*Qinput synthesis\*U
 can occur.
 .IP \(bu
-Minimise the changes required in the rest of the server.
+Minimize the changes required in the rest of the server.
 .IP \(bu
-Minimise performance penalties on normal server operation.
+Minimize performance penalties on normal server operation.
 .lP
 .NH 1
 Description
 .lP
 The functions provided by this extension fall into two groups:
 .IP "\fBClient Operations\fP" 10
-These routines manipulate otherwise hidden client-side bevaviour. The
+These routines manipulate otherwise hidden client-side behaviour.  The
 actual implementation will depend on the details of the actual language
-binding and what degree of request buffering, GContext caching etc. is
-provided. In the C binding, defined in section 7, routines are provided
+binding and what degree of request buffering, GContext caching etc., is
+provided.  In the C binding, defined in section 7, routines are provided
 to access the internals of two opaque data structures \*- \fIGC\fPs and
 \fIVisual\fPs \*- and to discard any requests pending within the
-output buffer of a connection. The exact details can be expected to differ for
+output buffer of a connection.  The exact details can be expected to differ for
 other language bindings.
 .IP "\fBServer Requests\fP" 10
 The first of these requests is similar to that provided in most
 extensions: it allows a client to specify a major and minor version
 number to the server and for the server to respond with major and minor
-versions of its own. The remaining two requests
+versions of its own.  The remaining two requests
 .RS
 .IP \fIa)\fP
 allow access to an otherwise \*Qwrite-only\*U server resource: the cursor
@@ -130,10 +129,10 @@ CurrentCursor
 .NH 1
 Client Operations
 .lP
-These are abstract definitions of functionality. They refer to client
+These are abstract definitions of functionality.  They refer to client
 side objects like \*QGC\*U and \*QVISUAL\*U which are quoted to
-denote their abstract nature. Concrete versions of these functions are
-only defined for particular language bindings. In some circumstances
+denote their abstract nature.  Concrete versions of these functions are
+only defined for particular language bindings.  In some circumstances
 a particular language binding may not implement the relevant abstract
 type or may provide it as a transparent, rather than opaque type, with
 the result that the corresponding function does not make sense or is
@@ -189,8 +188,8 @@ Errors:
 .PN Length
 .IP
 This request can be used to ensure that the server version of the XTEST
-extension is usable by the client.  This document defines major version one
-(1), minor version zero (0).
+extension is usable by the client.  This document defines major version two
+(2), minor version one (1).
 .lP
 .PN "XTestCompareCursor"
 .IP
@@ -214,7 +213,7 @@ compares it with
 the null cursor if \fIcursor\fP is
 .PN None ,
 .IP \fIor\fP
-the current cursor (i.e. that being displayed)
+the current cursor (i.e., that being displayed)
 .IP \fIor\fP
 the cursor whose ID is \fIcursor\fP,
 .RE
@@ -231,8 +230,8 @@ Errors:
 .PN Alloc ,
 .PN Value
 .IP
-This request simulates, at the DIX layer, the limited set of core protocol
-events within the set FAKE_EVENT_TYPE. Only the following event fields,
+This request simulates the limited set of core protocol
+events within the set FAKE_EVENT_TYPE.  Only the following event fields,
 defined in FAKE_EVENT, are interpreted:
 .RS
 .IP \fItype\fP
@@ -246,53 +245,51 @@ or else a
 .PN Value
 error occurs.
 .IP \fIdetail\fP
-This is interpreted as the \fIlogical\fP key or button state, according to
-the value in the \fItype\fP field. This means that it will be mapped to
-the corresponding \fIphysical\fP button by the DIX layer according to the
-results of any previous core protocol
-.PN SetPointerMapping or
-.PN SetModifierMapping
-requests. Thus when simulating a button press, say, one may find that the
-detail field of the received event differs from that passed in this request.
-If the \fIdetail\fP field indicates a key less than min-keycode or greater
-than max-keycode, as returned on
-.PN OpenDisplay ,
-or is not a valid button number then a
+For key events, this field is interpreted as the physical keycode. 
+If the keycode is less than min-keycode or greater than max-keycode,
+as returned in the connection setup, then a
 .PN Value
 error occurs.
+For button events, this field is interpreted as the physical (or core) button,
+meaning it will be mapped to the corresponding logical button according to
+the most recent
+.PN SetPointerMapping
+request.
+If the button number is less than one or greater than the number of physical
+buttons, then a
+.PN Value
+error occurs.
+For motion events, if this field is True, then \fIrootX\fP and \fIrootY\fP
+are relative distances from the current pointer location; if this field is
+False, then they are absolute positions.
 .IP \fItime\fP
 This is either
 .PN CurrentTime
 (meaning no delay)
 or the delay in milli-seconds that the server should wait before
-simulating this event. No other requests from this client will be
+simulating this event.  No other requests from this client will be
 processed until this delay, if any, has expired and subsequent processing
 of the simulated event has been completed.
 .IP \fIroot\fP
-In the case of simulated
-.PN MotionNotify
-events this field is the ID of the root window. If this is not a valid
-window then a
+In the case of motion events this field is the ID of the root window on
+which the new motion is to take place.  If
+.PN None
+is specified, the root window of the screen the pointer is currently on
+is used instead.
+If this field is not a valid window then a
 .PN Window
 error occurs.
 .IP "\fIrootX\fP & \fIrootY\fP"
-In the case of simulated
-.PN MotionNotify
-events these fields indicate the pointer coordinates with respect to the
-root window. If they are less than zero, or greater than the root window's
-width or height, respectively, then a
-.PN Value
-error occurs.
+In the case of motion events these fields indicate relative distance or
+absolute pointer coordinates, according to the setting of \fIdetail\fP.
 .RE
 .IP
-When the simulated event(s) are processed they cause event propogation,
-passive grab activation etc. etc. just as if the corresponding input device
+When the simulated event(s) are processed they cause event propagation,
+passive grab activation, etc., just as if the corresponding input device
 action had occurred.
 .IP
-In the current implementation if the event list in \fIevents\fP
-has length other than
-.PN 1
-then a
+For the currently supported event types, the event list must have length one,
+otherwise a
 .PN BadLength
 error occurs.
 .lP
@@ -392,6 +389,7 @@ and minor version zero (0).
 	4	TIME		delay (milli-seconds)
 		0	\fICurrentTime\fP
 	4	WINDOW		root window for \fIMotionNotify\fP
+		0	\fINone\fP
 	8			unused
 	2	INT16		x position for \fIMotionNotify\fP
 	2	INT16		y position for \fIMotionNotify\fP
@@ -412,7 +410,7 @@ constants and macros, will start with the string \*Q\fCXTest\fR\*U.
 All operations are classified as
 server/client (\fCServer\fR) or client-only (\fCClient\fR).
 All routines that have return type \fCStatus\fR will return non-zero for
-\*Qsuccess\*U and zero for \*Qfailure\*U. Even if the XTEST extension is
+\*Qsuccess\*U and zero for \*Qfailure\*U.  Even if the XTEST extension is
 supported the server may withdraw such facilities arbitrarily; in which case
 they will subsequently return zero.
 .lP
@@ -445,7 +443,7 @@ this extension.  As no errors or events are defined for this version of the exte
 the values returned here are not defined (nor useful).
 If the extension is supported, *major_version and *minor_version are set to
 the major and minor version numbers of the extension supported by the
-display. Otherwise none of the arguments are set.
+display.  Otherwise none of the arguments are set.
 .lP
 Bool
 .br
@@ -465,7 +463,7 @@ with the cursor of the window \fIwindow\fP returning
 .PN True
 if they are the same and
 .PN False
-otherwise. If the extension is not supported, then the request is ignored and
+otherwise.  If the extension is not supported, then the request is ignored and
 zero (0) is returned.
 .lP
 Bool
@@ -482,7 +480,7 @@ with the cursor of the window \fIwindow\fP returning
 .PN True
 if they are the same and
 .PN False
-otherwise. If the extension is not supported, then the request is ignored and
+otherwise.  If the extension is not supported, then the request is ignored and
 zero (0) is returned.
 .lP
 XTestFakeKeyEvent (display, keycode, is_press, delay)
@@ -511,7 +509,7 @@ If the extension is supported,
 the simulated event will not be processed until \fIdelay\fP milli-seconds
 after the request is received (if \fIdelay\fP is
 .PN CurrentTime
-then this is interpreted as no delay at all). No other requests from
+then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
 .lP
@@ -541,7 +539,7 @@ If the extension is supported,
 the simulated event will not be processed until \fIdelay\fP milli-seconds
 after the request is received (if \fIdelay\fP is
 .PN CurrentTime
-then this is interpreted as no delay at all). No other requests from
+then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
 .lP
@@ -559,13 +557,39 @@ unsigned long delay;
 If the extension is supported, requests the server to simulate
 a movement of the pointer to position (\fIx\fP, \fIy\fP) on the
 root window of screen number \fIscreen\fP,
-otherwise the request is ignored.
+otherwise the request is ignored.  If \fIscreen\fP is -1, the
+current screen (that the pointer is on) is used.
 .IP
 If the extension is supported,
 the simulated event will not be processed until \fIdelay\fP milli-seconds
 after the request is received (if \fIdelay\fP is
 .PN CurrentTime
-then this is interpreted as no delay at all). No other requests from
+then this is interpreted as no delay at all).  No other requests from
+this client will be processed until this delay, if any, has expired
+and subsequent processing of the simulated event has been completed.
+.lP
+XTestFakeRelativeMotionEvent (display, screen, x, y, delay)
+.RS
+Display *display;
+.br
+int screen;
+.br
+int x, y;
+.br
+unsigned long delay;
+.RE
+.IP
+If the extension is supported, requests the server to simulate
+a movement of the pointer by offsets (\fIx\fP, \fIy\fP) relative
+to the current pointer position on screen number \fIscreen\fP,
+otherwise the request is ignored.  If \fIscreen\fP is -1, the
+current screen (that the pointer is on) is used.
+.IP
+If the extension is supported,
+the simulated event will not be processed until \fIdelay\fP milli-seconds
+after the request is received (if \fIdelay\fP is
+.PN CurrentTime
+then this is interpreted as no delay at all).  No other requests from
 this client will be processed until this delay, if any, has expired
 and subsequent processing of the simulated event has been completed.
 .lP
