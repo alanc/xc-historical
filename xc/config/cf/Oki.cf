@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Oki.cf,v 1.5 92/11/19 16:13:00 rws Exp $
+XCOMM platform:  $XConsortium: Oki.cf,v 1.6 92/11/21 16:58:23 rws Exp $
 
 #define OSName			Unix System V/860 Release 4.0 Version 3
 XCOMM operating system:  OSName
@@ -11,6 +11,7 @@ XCOMM operating system:  OSName
 #define ExtraLibraries		-lsocket -lnsl
 #define SetTtyGroup		YES
 #define HasPutenv		YES
+#define HasPoll                 YES
 #define PatheticCpp		YES
 #define CcCmd			/usr/bin/cc
 #define StandardDefines -DSVR4 -Di860
