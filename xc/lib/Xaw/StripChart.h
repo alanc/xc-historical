@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripChart.h,v 1.16 89/07/21 01:48:48 kit Exp $
+* $XConsortium: StripChart.h,v 1.1 89/08/23 17:53:58 kit Exp $
 */
 
 
@@ -44,12 +44,10 @@ SOFTWARE.
  border		     BorderColor	Pixel		XtDefaultForeground
  borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
- font		     Font		XFontStruct*	XtDefaultFont
  foreground	     Foreground		Pixel		XtDefaultForeground
  getValue	     Callback		Callback	NULL
  height		     Height		Dimension	120
  highlight	     Foreground		Pixel		Black
- label		     Label		String		NULL (no label)
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  minScale	     Scale		int		1
  reverseVideo	     ReverseVideo	Boolean		False

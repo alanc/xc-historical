@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripChartP.h,v 1.13 89/05/11 01:05:47 kit Exp $
+* $XConsortium: StripCharP.h,v 1.1 89/08/23 17:53:56 kit Exp $
 */
 
 
@@ -42,8 +42,7 @@ SOFTWARE.
 
 typedef struct {
     Pixel	fgpixel;	/* color index for graph */
-    Pixel	hipixel;	/* color index for text */
-    XFontStruct	*font;	/* font for text */
+    Pixel	hipixel;	/* color index for lines */
     GC	fgGC;		/* graphics context for fgpixel */
     GC	hiGC;		/* graphics context for hipixel */
     
@@ -54,7 +53,6 @@ typedef struct {
     int	 min_scale;	/* smallest scale factor */
     int	 interval;	/* data point interval */
     Boolean reverse_video;		/* display in reverse video */
-    char	*text;		/* label */
     double max_value;	/* Max Value in window */
     double valuedata[2048];/* record of data points */
     XtIntervalId interval_id;

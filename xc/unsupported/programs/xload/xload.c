@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.21 89/07/21 13:42:10 jim Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.22 89/08/23 18:20:15 kit Exp $";
 #endif /* lint */
 
 #include <stdio.h> 
@@ -9,6 +9,8 @@ static char rcsid[] = "$XConsortium: xload.c,v 1.21 89/07/21 13:42:10 jim Exp $"
 #include <X11/Shell.h>
 
 #include <X11/Xaw/Cardinals.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Paned.h>
 #include <X11/Xaw/StripChart.h>
 
 #include "xload.bit"
@@ -17,74 +19,94 @@ char *ProgramName;
 
 extern void exit(), GetLoadPoint();
 
-/* Command line options table.  Only resources are entered here...there is a
-   pass over the remaining options after XtParseCommand is let loose. */
+/*
+ * Definition of the Application resources structure.
+ */
+
+typedef struct _XLoadResources {
+  Boolean show_label;
+} XLoadResources;
+
+/*
+ * Command line options table.  Only resources are entered here...there is a
+ * pass over the remaining options after XtParseCommand is let loose. 
+ */
 
 static XrmOptionDescRec options[] = {
-{"-scale",	"*load.minScale",	XrmoptionSepArg,	 NULL},
-{"-update",	"*load.update",		XrmoptionSepArg,	 NULL},
-{"-hl",		"*load.highlight",	XrmoptionSepArg,	 NULL},
-{"-highlight",	"*load.highlight",	XrmoptionSepArg,	 NULL},
-{"-label",	"*load.label",		XrmoptionSepArg,	 NULL},
-{"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	 NULL},
+{"-scale",	"*load.minScale",	XrmoptionSepArg,	   NULL},
+{"-update",	"*load.update",		XrmoptionSepArg,	   NULL},
+{"-hl",		"*load.highlight",	XrmoptionSepArg,	   NULL},
+{"-highlight",	"*load.highlight",	XrmoptionSepArg,	   NULL},
+{"-label",	"*label.label",		XrmoptionSepArg,	   NULL},
+{"-nolabel",	"*showLabel",	        XrmoptionNoArg,          "False"},
+{"-jumpscroll",	"*load.jumpScroll",	XrmoptionSepArg,	   NULL},
 };
 
+/*
+ * The structure containing the resource information for the
+ * Xload application resources.
+ */
 
-/* Exit with message describing command line format */
+#define Offset(field) (XtOffset(XLoadResources *, field))
+
+static XtResource my_resources[] = {
+  {"showLabel", XtCBoolean, XtRBoolean, sizeof(Boolean),
+     Offset(show_label), XtRImmediate, (caddr_t) TRUE},
+};
+
+#undef Offset
+
+/*
+ * Exit with message describing command line format.
+ */
 
 void usage()
 {
     fprintf (stderr, "usage:  %s [-options ...]\n\n", ProgramName);
     fprintf (stderr, "where options include:\n");
     fprintf (stderr,
-       "    -display dpy            X server on which to display\n");
+      "    -display dpy            X server on which to display\n");
     fprintf (stderr,
-       "    -geometry geom          size and location of window\n");
+      "    -geometry geom          size and location of window\n");
     fprintf (stderr, 
-       "    -fn font                font to use in label\n");
+      "    -fn font                font to use in label\n");
     fprintf (stderr, 
-       "    -scale number           minimum number of scale lines\n");
+      "    -scale number           minimum number of scale lines\n");
     fprintf (stderr, 
-       "    -update seconds         interval between updates\n");
+      "    -update seconds         interval between updates\n");
     fprintf (stderr,
-       "    -label string           annotation text\n");
+      "    -label string           annotation text\n");
     fprintf (stderr, 
-       "    -bg color               background color\n");
+      "    -bg color               background color\n");
     fprintf (stderr, 
-       "    -fg color               graph color\n");
+      "    -fg color               graph color\n");
     fprintf (stderr, 
-       "    -hl color               scale and text color\n");
+      "    -hl color               scale and text color\n");
     fprintf (stderr, 
-       "    -jumpscroll value       number of pixels to scroll on overflow\n");
+      "    -nolabel                removes the label from above the chart.\n");
+    fprintf (stderr, 
+      "    -jumpscroll value       number of pixels to scroll on overflow\n");
     fprintf (stderr, "\n");
     exit(1);
 }
-
-#ifndef lint
-/* this silliness causes the linker to include the VendorShell
- * module from Xaw, rather than the one from Xt.
- */
-static Junk()
-{
-#include <X11/Vendor.h>
-WidgetClass junk = vendorShellWidgetClass;
-}
-#endif
 
 void main(argc, argv)
     int argc;
     char **argv;
 {
     char host[256], * label;
-    Widget toplevel;
-    Widget load;
+    Widget toplevel, load, pane, label_wid, load_parent;
     Arg args[1];
     Pixmap icon_pixmap = None;
-    
+    XLoadResources resources;
+
     ProgramName = argv[0];
     toplevel = XtInitialize(NULL, "XLoad", 
 			    options, XtNumber(options), &argc, argv);
       
+    XtGetApplicationResources( toplevel, (caddr_t) &resources, 
+			      my_resources, XtNumber(my_resources),
+			      NULL, (Cardinal) 0);
     if (argc != 1) usage();
     
     XtSetArg (args[0], XtNiconPixmap, &icon_pixmap);
@@ -97,18 +119,30 @@ void main(argc, argv)
 	XtSetValues (toplevel, args, ONE);
     }
 
-    load = XtCreateManagedWidget ("load", stripChartWidgetClass,
-				  toplevel, NULL, ZERO);
+    if (resources.show_label) {
+      pane = XtCreateManagedWidget ("paned", panedWidgetClass,
+				    toplevel, NULL, ZERO);
 
-    XtSetArg (args[0], XtNlabel, &label);
-    XtGetValues(load, args, ONE);
-
-    if ( label == NULL ) {
+      label_wid = XtCreateManagedWidget ("label", labelWidgetClass,
+					 pane, NULL, ZERO);
+      
+      XtSetArg (args[0], XtNlabel, &label);
+      XtGetValues(label_wid, args, ONE);
+      
+      if ( strcmp("label", label) == 0 ) {
         (void) gethostname (host, 255);
 	XtSetArg (args[0], XtNlabel, host);
-	XtSetValues (load, args, ONE);
+	XtSetValues (label_wid, args, ONE);
+      }
+
+      load_parent = pane;
     }
-    
+    else
+      load_parent = toplevel;
+
+    load = XtCreateManagedWidget ("load", stripChartWidgetClass,
+				  load_parent, NULL, ZERO);    
+
     XtAddCallback(load, XtNgetValue, GetLoadPoint, NULL);
 
     XtRealizeWidget (toplevel);
