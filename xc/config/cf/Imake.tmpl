@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.213 94/03/23 15:31:16 gildea Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.214 94/03/26 18:46:25 gildea Exp $
 XCOMM
 
 /*
@@ -191,22 +191,6 @@ XCOMM the platform-specific parameters - edit site.def to change
 #else
 #define HasShm			NO
 #endif
-#endif
-#ifndef SystemMTDefines
-#define SystemMTDefines /**/
-#endif
-#ifndef ThreadTypeDefines
-#if HasCThreads
-#define ThreadTypeDefines -DCTHREADS
-#else
-#define ThreadTypeDefines /**/
-#endif
-#endif
-#ifndef ThreadsLibraries
-#define ThreadsLibraries /**/
-#endif
-#ifndef ThreadsLoadFlags
-#define ThreadsLoadFlags /**/
 #endif
 #if HasKrb5
 #ifndef Krb5Includes
@@ -426,6 +410,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasGcc2ForCplusplus
 #define HasGcc2ForCplusplus NO
 #endif
+#ifndef HasCenterLineC
+#define HasCenterLineC NO
+#endif
+#ifndef HasCenterLineCplusplus
+#define HasCenterLineCplusplus NO
+#endif
 #ifndef CcCmd
 #if HasGcc2
 #define CcCmd gcc -fpcc-struct-return 
@@ -433,7 +423,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #if HasGcc
 #define CcCmd gcc -fstrength-reduce -fpcc-struct-return 
 #else
+#if HasCenterLineC
+#define CcCmd clcc
+#else
 #define CcCmd cc
+#endif
 #endif
 #endif
 #endif
@@ -441,7 +435,11 @@ XCOMM the platform-specific parameters - edit site.def to change
 #if HasGcc2ForCplusplus
 #define CplusplusCmd g++
 #else
+#if HasCenterLineCplusplus
+#define CplusplusCmd clCC
+#else
 #define CplusplusCmd CC
+#endif
 #endif
 #endif
 #ifndef CplusplusStandardDefines
@@ -811,8 +809,8 @@ XCOMM the platform-specific parameters - edit site.def to change
     CCSTD_DEFINES = CplusplusStandardDefines
        CCCOPTIONS = CplusplusOptions
        CCINCLUDES = $(INCLUDES) $(TOP_INCLUDES) $(CCEXTRA_INCLUDES) $(CCIDL_INCLUDES) 
-        CCDEFINES = $(CCINCLUDES) $(CCSTD_DEFINES) $(CCEXTRA_DEFINES)
-          CCFLAGS = $(CCDEBUGFLAGS) $(CCCOPTIONS) $(CCDEFINES) 
+        CCDEFINES = $(CCINCLUDES) $(CCSTD_DEFINES) $(THREADS_CCDEFINES) $(CCEXTRA_DEFINES)
+          CCFLAGS = $(CCDEBUGFLAGS) $(CCCOPTIONS) $(THREADS_CCFLAGS) $(CCDEFINES)
 #endif
          COMPRESS = CompressCmd
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
@@ -964,13 +962,13 @@ XCOMM the platform-specific parameters - edit site.def to change
  * LOCAL_LDFLAGS contains client-specific ld flags flags set in Imakefile
  */
       ALLINCLUDES = $(INCLUDES) $(EXTRA_INCLUDES) $(TOP_INCLUDES) $(STD_INCLUDES)
-       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(DEFINES)
-           CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(ALLDEFINES)
+       ALLDEFINES = $(ALLINCLUDES) $(STD_DEFINES) $(EXTRA_DEFINES) $(PROTO_DEFINES) $(THREADS_DEFINES) $(DEFINES)
+           CFLAGS = $(CDEBUGFLAGS) $(CCOPTIONS) $(THREADS_CFLAGS) $(ALLDEFINES)
         LINTFLAGS = $(LINTOPTS) -DLINT $(ALLDEFINES) $(DEPEND_DEFINES)
          LDPRELIB = LdPreLib
         LDPOSTLIB = LdPostLib
-        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(LOCAL_LDFLAGS) $(LDPRELIB)
-           LDLIBS = $(LDPOSTLIB) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
+        LDOPTIONS = $(CDEBUGFLAGS) $(CCOPTIONS) $(EXTRA_LDOPTIONS) $(THREADS_LDFLAGS) $(LOCAL_LDFLAGS) $(LDPRELIB)
+           LDLIBS = $(LDPOSTLIB) $(THREADS_LIBS) $(SYS_LIBRARIES) $(EXTRA_LIBRARIES)
 #if AlternateUsrLibDir && HasLdRunPath
        CCENVSETUP = LD_RUN_PATH=$(USRLIBDIR)
            CCLINK = $(CCENVSETUP) $(CC)
