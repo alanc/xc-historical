@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.42 87/08/09 13:58:52 rws Locked $ */
+/* $Header: mfbbitblt.c,v 1.43 87/11/08 17:03:22 rws Locked $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -113,7 +113,7 @@ int dstx, dsty;
 	    box.x2 = ((PixmapPtr)pSrcDrawable)->width;
 	    box.y2 = ((PixmapPtr)pSrcDrawable)->height;
 
-	    prgnSrcClip = miRegionCreate(&box, 1);
+	    prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
 	    realSrcClip = 1;
 	}
     }
@@ -145,17 +145,17 @@ int dstx, dsty;
     srcBox.x2 = srcx + width;
     srcBox.y2 = srcy + height;
 
-    prgnDst = miRegionCreate(&srcBox, 1);
-    miIntersect(prgnDst, prgnDst, prgnSrcClip);
+    prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
+    (*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
 
     if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
 	if (!((WindowPtr)pDstDrawable)->realized)
 	{
 	    miSendNoExpose(pGC);
-	    miRegionDestroy(prgnDst);
+	    (*pGC->pScreen->RegionDestroy)(prgnDst);
 	    if (realSrcClip)
-		miRegionDestroy(prgnSrcClip);
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	    return;
 	}
 	dstx += ((WindowPtr)pDstDrawable)->absCorner.x;
@@ -166,25 +166,25 @@ int dstx, dsty;
     dy = srcy - dsty;
 
     /* clip the shape of the dst to the destination composite clip */
-    miTranslateRegion(prgnDst, -dx, -dy);
-    miIntersect(prgnDst,
+    (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
+    (*pGC->pScreen->Intersect)(prgnDst,
 		prgnDst,
 		((mfbPrivGC *)(pGC->devPriv))->pCompositeClip);
 
     if (!prgnDst->numRects)
     {
         miSendNoExpose(pGC);
-	miRegionDestroy(prgnDst);
+	(*pGC->pScreen->RegionDestroy)(prgnDst);
 	if (realSrcClip)
-	    miRegionDestroy(prgnSrcClip);
+	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	return;
     }
     if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL( prgnDst->numRects *
         sizeof(DDXPointRec))))
     {
-	miRegionDestroy(prgnDst);
+	(*pGC->pScreen->RegionDestroy)(prgnDst);
 	if (realSrcClip)
-	    miRegionDestroy(prgnSrcClip);
+	    (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 	return;
     }
     pbox = prgnDst->rects;
@@ -205,9 +205,9 @@ int dstx, dsty;
 		          origDest.x, origDest.y);
 		
     DEALLOCATE_LOCAL(pptSrc);
-    miRegionDestroy(prgnDst);
+    (*pGC->pScreen->RegionDestroy)(prgnDst);
     if (realSrcClip)
-	miRegionDestroy(prgnSrcClip);
+	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
 }
 
 /* DoBitblt() does multiple rectangle moves into the rectangles
