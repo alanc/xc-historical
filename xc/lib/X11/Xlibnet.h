@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.20 93/03/29 18:14:30 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.21 93/07/22 12:52:57 gildea Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -16,6 +16,8 @@ without express or implied warranty.
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
+
+#ifndef WIN32
 
 #ifndef X_UNIX_PATH
 #ifdef hpux
@@ -102,6 +104,9 @@ without express or implied warranty.
 #define OPEN_MAX 256
 #endif
 
+#ifdef USE_POLL
+#include <sys/poll.h>
+#else
 #define MSKCNT ((OPEN_MAX + 31) / 32)
 
 #if (MSKCNT==1)
@@ -202,6 +207,7 @@ without express or implied warranty.
  * #define _XANYSET(src) (src[0] || src[1] || src[2] || src[3] || src[4] ...)
  */
 #endif
+#endif
 
 /*
  *	ReadvFromServer and WritevToSever use struct iovec, normally found
@@ -252,6 +258,21 @@ extern Xstream _XsStream[];
 #define _XWriteV writev
 #endif
 #endif /* !USL_COMPAT */
+
+#else /* not WIN32 */
+
+#include <winsock.h>
+#include <X11/Xw32defs.h>
+
+#define BytesReadable(fd,ptr) ioctlsocket((SOCKET)fd, FIONREAD, (u_long *)ptr)
+#define ReadFromServer(dpy, data, size) recv((SOCKET)(dpy), (data), (size), 0)
+#define WriteToServer(dpy, bufind, size) send((SOCKET)(dpy), (bufind), (size), 0)
+
+struct iovec {
+    caddr_t iov_base;
+    int iov_len;
+};
+#endif /* WIN32 */
 
 #define ReadvFromServer(dpy, iov, iovcnt) _XReadV((dpy), (iov), (iovcnt))
 #define WritevToServer(dpy, iov, iovcnt) _XWriteV((dpy), (iov), (iovcnt))
