@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.76 93/07/28 10:55:29 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.77 93/07/28 20:07:33 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -112,7 +112,7 @@ clean::									@@\
 #endif
 #endif
 
-#if defined(SVR4Architecture) || defined(BSDArchitecture)
+#if defined(SVR4Architecture) || defined(BSD386Architecture)
 #undef ServerOSDefines
 #undef X386Server
 #define XnestServer YES
