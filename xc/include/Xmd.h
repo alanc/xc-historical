@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.37 90/12/11 13:24:15 rws Exp $ */
+/* $XConsortium: Xmd.h,v 1.38 91/01/30 15:59:49 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -67,17 +67,6 @@ SOFTWARE.
 #define SIZEOF(x) sz_/**/x
 #endif /* if ANSI C compiler else not */
 
-
-
-/*
- * ibm pcc doesn't understand pragmas.
- */
-#if defined(ibm032) && defined(__HIGHC__)
-pragma on(pointers_compatible);
-pragma off(char_default_unsigned);
-#endif
-
-
 /*
  * Bitfield suffixes for the protocol structure elements, if you
  * need them.  Note that bitfields are not guarranteed to be signed
@@ -93,7 +82,11 @@ pragma off(char_default_unsigned);
 
 typedef long           INT32;
 typedef short          INT16;
+#if __STDC__
+typedef signed char    INT8;
+#else
 typedef char           INT8;
+#endif
 
 typedef unsigned long CARD32;
 typedef unsigned short CARD16;
