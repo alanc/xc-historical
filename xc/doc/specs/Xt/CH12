@@ -1,4 +1,4 @@
-.\" $XConsortium: CH12,v 1.6 94/04/14 21:26:46 converse Exp $
+.\" $XConsortium: CH12,v 1.7 94/04/18 18:48:37 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -383,7 +383,8 @@ or any subclass:
 .PN XtIsVendorShell ,
 .PN XtIsTransientShell ,
 .PN XtIsToplevelShell ,
-.PN XtIsApplicationShell .
+.PN XtIsApplicationShell ,
+.PN XtIsSessionShell
 .IP
 .PN XtIsManaged ,
 .PN XtIsSensitive
@@ -732,7 +733,8 @@ or any subclass:
 .PN XtManageChildren ,
 .PN XtManageChild ,
 .PN XtUnmanageChildren ,
-.PN XtUnmanageChild
+.PN XtUnmanageChild ,
+.PN XtChangeManagedSet
 .IP
 .PN XtQueryGeometry
 .IP
@@ -898,7 +900,9 @@ or a subclass:
 .PN XtCreatePopupShell ,
 .PN XtVaCreatePopupShell ,
 .PN XtAppCreateShell ,
-.PN XtVaAppCreateShell
+.PN XtVaAppCreateShell ,
+.PN XtOpenApplication ,
+.PN XtVaOpenApplication
 .sp
 .LP
 The Widget arguments to the following procedures must be of class
@@ -916,6 +920,12 @@ or any subclass:
 .PN XtRemoveRawEventHandler ,
 .PN XtInsertEventHandler ,
 .PN XtInsertRawEventHandler
+.br
+.PN XtInsertEventTypeHandler ,
+.PN XtRemoveEventTypeHandler ,
+.IP
+.PN XtRegisterDrawable
+.PN XtDispatchEventToWidget
 .IP
 .PN XtAddGrab ,
 .PN XtRemoveGrab ,
