@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.68 89/07/05 16:30:55 jim Exp $
+ * $XConsortium: add_window.c,v 1.69 89/07/05 17:29:17 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.68 89/07/05 16:30:55 jim Exp $";
+"$XConsortium: add_window.c,v 1.69 89/07/05 17:29:17 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -987,13 +987,14 @@ TwmWindow *tmp_win;
     }
 }
 
+
 CreateTitleButtons(tmp_win)
 TwmWindow *tmp_win;
 {
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int x, y;
-    int h = Scr->TitleHeight - (Scr->FramePadding * 2);
+    int h = Scr->TitleHeight - (Scr->FramePadding * 2) - Scr->ButtonIndent * 2;
 
     if (tmp_win->title_height == 0)
     {
@@ -1006,7 +1007,7 @@ TwmWindow *tmp_win;
     if (Scr->iconifyPm == NULL)
     {
 	GC gc, gcBack;
-	int w, x1, x2, y1, y2;
+	int w;
 
 	Scr->iconifyPm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
 	gc = XCreateGC (dpy, Scr->iconifyPm, 0L, NULL);
@@ -1055,19 +1056,19 @@ TwmWindow *tmp_win;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
     valuemask = (CWWinGravity | CWBackPixmap | CWEventMask);
-    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, 
-					Scr->FramePadding, Scr->FramePadding, 
+    x = y = Scr->FramePadding + Scr->ButtonIndent;
+    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, 0, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
 
     attributes.win_gravity = NorthEastGravity;
-    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, 
-				       (tmp_win->attr.width - Scr->FramePadding
-					- h - 1), Scr->FramePadding,
+    x = (tmp_win->attr.width - Scr->FramePadding - Scr->ButtonIndent - h - 1);
+    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, x, y,
 					h, h, 0, 0, 
 					CopyFromParent, CopyFromParent,
 				        valuemask, &attributes);
+    h += Scr->ButtonIndent * 2;
     if (tmp_win->titlehighlight) {
 	XGCValues gcv;
 	GC gc;

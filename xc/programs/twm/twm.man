@@ -19,7 +19,7 @@ twm - a window manager for X11 (Tom's Window Manager)
 .PP
 .SH SYNTAX
 .PP
-\fBtwm \fP[-display \fIdisplay\fP] [-singlescreen] [-f \fIinit_file\fP ]
+\fBtwm \fP[-display \fIdisplay\fP] [-singlescreen] [-f \fIinitfile\fP ]
 .PP
 .SH DESCRIPTION
 .PP
@@ -34,17 +34,18 @@ contains the window's name, a rectangle that is lit when the window is
 receiving keyboard input, and several function ``buttons''.
 .PP
 Pressing
-the left-most button in the title bar, which contains an X in a box,
-causes the window to be iconified.
+the left-most button in the title bar (which looks like an X in a box)
+causes the window to be iconified.  In addition to the common picture and text
+style of icons (with manual or automatic layout), \fItwm\fP supports
+menus-oriented lists of windows called ``icon managers'' that use less screen
+space and are easier to manipulate.
+.PP
 Pressing
-the right-most button, which looks like a group 
-of nested squares, and touching one or more edges of the window while the
+the right-most button (which looks like a group 
+of nested squares) and touching one or more edges of the window while the
 button is still down causes a rubber band representing the outline of the 
 window to appear.  When the
 button is released, the window will be resized to fit the rubber band.  
-Pressing the middle button, which looks like a bullseye and is to the left
-of the resize button, focuses all keyboard input to this window (the 
-\fIf.unfocus\fP function can be invoked to make the focus follow the pointer).
 .SH OPTIONS
 .PP
 .IP "\fB-display\fP \fIdisplay\fP
@@ -176,6 +177,10 @@ The default  is "white".
 This variable specifies the width in pixels of of the border surrounding
 all windows.
 The default is 2.
+.IP "\fBButtonIndent\fP \fIpixels\fP" 8
+This variable specifies the amount by which title bar buttons should be 
+indented on all size.  Positive values cause the buttons to be smaller than
+the window text and highlight area.  The default is 1.
 .IP "\fBClientBorderWidth\fP" 8
 This variable causes \fItwm\fP to use a window's border width for the border
 width of the frame.  The \fIBorderWidth\fP variable is still used for the
@@ -301,8 +306,7 @@ variable for a complete description of the \fIlist\fP.
 The default is "black".
 .IP "\fBIconDirectory\fP \fIstring\fP" 8
 This variable names the directory in which to search for icon bitmap
-files.  This variable is described under the \fBVARIABLES SECTION\fP
-heading.  The default is to have no icon directory.
+files.  The default is to have no icon directory.
 .IP "\fBIconFont\fP \fIstring\fP" 8
 This variable names the font to be displayed within icons.  The default
 is "8x13".
@@ -1303,11 +1307,11 @@ All Rights Reserved.
 .PP
 .ce 2
 COPYRIGHT 1989
-Hewlett-Packard Company and Massachusetts Institute of Technology
+Hewlett-Packard Company and the Massachusetts Institute of Technology
 .PP
 THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT NOTICE AND
 SHOULD NOT BE CONSTRUED AS A COMMITMENT BY EVANS & SUTHERLAND, 
-HEWLETT-PACKARD, OR MIT.  EVANS & SUTHERLAND, HEWLETT-PACKARD, AND MIT 
+HEWLETT-PACKARD, OR M.I.T..  EVANS & SUTHERLAND, HEWLETT-PACKARD, AND M.I.T. 
 MAKE NO REPRESENTATIONS ABOUT THE SUITABILITY
 OF THIS SOFTWARE FOR
 ANY PURPOSE.  IT IS SUPPLIED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY.
@@ -1320,10 +1324,10 @@ Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee is hereby granted, provided
 that the above copyright notice appear in all copies and that both the
 copyright notice and this permission notice appear in supporting documentation,
-and that the names of Evans & Sutherland, Hewlett-Packard, and MIT not be 
+and that the names of Evans & Sutherland, Hewlett-Packard, and M.I.T. not be 
 used in advertising
 or publicity pertaining to distribution of the software without specific, 
 written prior permission.
 .SH AUTHORS
-Tom LaStrange, Solbourne Computer; Dave Payne, Apple Computer; 
-Jim Fulton, MIT X Consortium; Keith Packard, MIT X Consortium
+Tom LaStrange, Solbourne Computer; Jim Fulton, MIT X Consortium;
+Dave Payne, Apple Computer; Keith Packard, MIT X Consortium

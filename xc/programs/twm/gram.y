@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.47 89/06/23 14:22:36 jim Exp $
+ * $XConsortium: gram.y,v 1.48 89/07/05 16:02:57 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.47 89/06/23 14:22:36 jim Exp $";
+"$XConsortium: gram.y,v 1.48 89/07/05 16:02:57 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -91,7 +91,7 @@ extern int yylineno;
 %token <num> MENU_FONT ICON_FONT UNKNOWN_ICON ICONS ICON_DIRECTORY
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
 %token <num> COLON EQUALS BORDER_COLOR TITLE_FOREGROUND TITLE_BACKGROUND
-%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND 
+%token <num> DEFAULT_FOREGROUND DEFAULT_BACKGROUND BUTTON_INDENT
 %token <num> MENU_FOREGROUND MENU_BACKGROUND MENU_SHADOW_COLOR
 %token <num> MENU_TITLE_FOREGROUND MENU_TITLE_BACKGROUND F_AUTORAISE
 %token <num> ICON_FOREGROUND ICON_BACKGROUND ICON_BORDER_COLOR NO_GRAB_SERVER
@@ -193,6 +193,8 @@ stmt		: error
 						Scr->FramePadding = $2; }
 		| TITLE_PADDING	number	{ if (Scr->FirstTime)
 						Scr->TitlePadding = $2; }
+		| BUTTON_INDENT number	{ if (Scr->FirstTime)
+						Scr->ButtonIndent = $2; }
 		| BORDERWIDTH number	{ if (Scr->FirstTime) 
 						Scr->BorderWidth = $2; }
 		| ICON_BORDERWIDTH number{ if (Scr->FirstTime) 

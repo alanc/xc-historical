@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.39 89/06/23 14:22:39 jim Exp $
+ * $XConsortium: lex.l,v 1.40 89/07/05 16:03:02 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,7 +35,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.39 89/06/23 14:22:39 jim Exp $";
+"$XConsortium: lex.l,v 1.40 89/07/05 16:03:02 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -201,6 +201,7 @@ t.move				{ return F_MOVE; }
 [Zz][Oo][Oo][Mm]		{ return (ZOOM); }
 [Ff][Rr][Aa][Mm][Ee][Pp][Aa][Dd][Dd][Ii][Nn][Gg]	{ return (FRAME_PADDING); }
 [Tt][Ii][Tt][Ll][Ee][Pp][Aa][Dd][Dd][Ii][Nn][Gg]	{ return (TITLE_PADDING); }
+[Bb][Uu][Tt][Tt][Oo][Nn][Ii][Nn][Dd][Ee][Nn][Tt]	{ return (BUTTON_INDENT); }
 [Uu][Nn][Kk][Nn][Oo][Ww][Nn][Ii][Cc][Oo][Nn] { return UNKNOWN_ICON; }
 [Ww][Aa][Rr][Pp][Cc][Uu][Rr][Ss][Oo][Rr] { return WARPCURSOR; }
 [Bb][Oo][Rr][Dd][Ee][Rr][Ww][Ii][Dd][Tt][Hh] { return BORDERWIDTH; }

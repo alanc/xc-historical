@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.53 89/06/22 16:46:20 jim Exp $
+ * $XConsortium: twm.c,v 1.54 89/07/05 16:03:26 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.53 89/06/22 16:46:20 jim Exp $";
+"$XConsortium: twm.c,v 1.54 89/07/05 16:03:26 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -530,6 +530,7 @@ InitVariables()
 
     Scr->FramePadding = 2;		/* values that look "nice" on */
     Scr->TitlePadding = 8;		/* 75 and 100dpi displays */
+    Scr->ButtonIndent = 1;
     Scr->BorderWidth = BW;
     Scr->IconBorderWidth = BW;
     Scr->UnknownWidth = 0;

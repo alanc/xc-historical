@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.33 89/06/23 14:22:40 jim Exp $
+ * $XConsortium: screen.h,v 1.34 89/07/05 16:03:22 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -129,6 +129,7 @@ typedef struct ScreenInfo
     int EntryHeight;		/* menu entry height */
     int FramePadding;		/* distance between decorations and border */
     int TitlePadding;		/* distance between items in titlebar */
+    int ButtonIndent;		/* amount to shrink buttons on each side */
     short AutoRelativeResize;	/* start resize relative to position in quad */
     short FocusRoot;		/* is the input focus on the root ? */
     short WarpCursor;		/* warp cursor on de-iconify ? */
