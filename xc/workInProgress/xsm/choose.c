@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.1 94/07/07 16:47:32 mor Exp $ */
+/* $XConsortium: choose.c,v 1.2 94/07/07 19:48:48 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -134,7 +134,7 @@ XtPointer 	callData;
 
     XtRealizeWidget (topLevel);
     
-    start_session (session_name);
+    StartSession (session_name);
 }
 
 
@@ -208,4 +208,6 @@ create_choose_session_popup ()
 
     XtAddCallback (chooseSessionCancelButton, XtNcallback,
 	ChooseSessionCancelXtProc, 0);
+
+    XtInstallAllAccelerators (chooseSessionListWidget, chooseSessionPopup);
 }

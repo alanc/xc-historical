@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.5 94/05/12 11:59:01 mor Exp $ */
+/* $XConsortium: restart.c,v 1.6 94/06/27 14:20:46 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -32,7 +32,7 @@ extern void remote_start ();
 
 
 void
-restart_everything()
+RestartEverything()
 {
     List *cl;
     List *pl;
@@ -143,7 +143,7 @@ restart_everything()
     for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
 	c = (PendingClient *)cl->thing;
 
-	if (app_resources.verbose) {
+	if (verbose) {
 	    printf("Restarting id '%s'...\n", c->clientId);
 	    printf("Host = %s\n", c->clientHostname);
 	}
@@ -188,7 +188,7 @@ restart_everything()
 	}
 
 	if(program && args) {
-	    if (app_resources.verbose) {
+	    if (verbose) {
 		printf("\t%s\n", program);
 		printf("\t");
 		for(pp = args; *pp; pp++) printf("%s ", *pp);
@@ -265,7 +265,7 @@ static int System (s)
 
 
 void
-start_default_apps ()
+StartDefaultApps ()
 
 {
     FILE *f;

@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.4 94/03/17 12:21:20 mor Exp $ */
+/* $XConsortium: auth.c,v 1.5 94/04/17 21:15:15 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 Bool
-HostBasedProc (hostname)
+HostBasedAuthProc (hostname)
 
 char *hostname;
 
@@ -82,7 +82,7 @@ IceAuthDataEntry *entry;
 #define MAGIC_COOKIE_LEN 16
 
 Status
-set_auth (count, listenObjs, authDataEntries)
+SetAuthentication (count, listenObjs, authDataEntries)
 
 int			count;
 IceListenObj		*listenObjs;
@@ -127,7 +127,7 @@ IceAuthDataEntry	**authDataEntries;
 
 	IceSetPaAuthData (2, &(*authDataEntries)[i]);
 
-	IceSetHostBasedAuthProc (listenObjs[i/2], HostBasedProc);
+	IceSetHostBasedAuthProc (listenObjs[i/2], HostBasedAuthProc);
     }
 
     fclose (addfp);
@@ -145,7 +145,7 @@ IceAuthDataEntry	**authDataEntries;
  */
 
 void
-free_auth (count, authDataEntries)
+FreeAuthenticationData (count, authDataEntries)
 
 int			count;
 IceAuthDataEntry 	*authDataEntries;

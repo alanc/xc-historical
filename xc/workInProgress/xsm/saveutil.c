@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.10 94/07/07 15:16:14 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.11 94/07/07 16:46:48 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -56,7 +56,7 @@ char *session_name;
 
 
 int
-read_save(session_name, sm_id)
+ReadSave(session_name, sm_id)
 
 char *session_name;
 char **sm_id;
@@ -79,12 +79,12 @@ char **sm_id;
 
     f = fopen(session_save_file, "r");
     if(!f) {
-	if (app_resources.verbose)
+	if (verbose)
 	    printf("No session save file.\n");
 	*sm_id = NULL;
 	return 0;
     }
-    if (app_resources.verbose)
+    if (verbose)
 	printf("Reading session save file...\n");
 
     buf = NULL;
@@ -178,7 +178,7 @@ char **sm_id;
 
 
 void
-write_save(sm_id)
+WriteSave (sm_id)
 
 char *sm_id;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.12 94/07/07 16:46:56 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.13 94/07/07 19:47:56 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -68,6 +68,8 @@ extern FILE *fdopen(int, char const *);
 
 #include "list.h"
 
+#define DEFAULT_SESSION_NAME "Default"
+
 #define MAX_PROPS 50
 
 typedef struct _ClientRec {
@@ -99,13 +101,9 @@ typedef struct _PendingValue {
 } PendingValue;
 
 
-typedef struct _AppResources {
-    Boolean	verbose;
-} AppResources;
-
-extern AppResources app_resources;
-
 extern XtAppContext	appContext;
+
+extern Bool		verbose;
 
 extern char		*sm_id;
 

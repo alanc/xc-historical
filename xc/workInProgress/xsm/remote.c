@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.4 94/04/17 21:15:17 mor Exp $ */
+/* $XConsortium: remote.c,v 1.5 94/05/02 11:30:58 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -62,7 +62,7 @@ char	*non_local_session_env;
     else
 	hostname = tmp + 1;
 
-    if (app_resources.verbose)
+    if (verbose)
     {
 	printf ("Attempting to restart remote client on %s\n", hostname);
     }
