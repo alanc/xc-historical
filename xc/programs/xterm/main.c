@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.93 88/10/07 11:01:41 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.94 88/10/12 11:22:27 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -459,6 +459,17 @@ static void Help ()
 
     exit (0);
 }
+
+#ifndef lint
+/* this silliness causes the linker to include the VendorShell
+ * module from Xaw, rather than the one from Xt.
+ */
+static Junk()
+{
+#include <X11/Vendor.h>
+WidgetClass junk = vendorShellWidgetClass;
+}
+#endif
 
 
 extern WidgetClass xtermWidgetClass;
