@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.18 89/08/14 18:16:48 jim Exp $
+ * $XConsortium: menus.h,v 1.19 89/10/27 14:01:27 jim Exp $
  *
  * twm menus include file
  *
@@ -123,7 +123,7 @@ extern int ConstMoveXL;
 extern int ConstMoveXR;
 extern int ConstMoveYT;
 extern int ConstMoveYB;
-extern int StartingX, StartingY, RestorePointer;
+extern int StartingX, StartingY;
  
 
 #define MOVE_NONE	0	/* modes of constrained move */
