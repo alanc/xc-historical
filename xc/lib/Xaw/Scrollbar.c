@@ -1,36 +1,38 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.26 88/02/14 13:59:45 rws Exp $";
+static char rcsid[] = "$Header: Scroll.c,v 1.27 88/02/22 21:49:06 swick Exp $";
 #endif lint
 
-/*
- * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
- * 
- *                         All Rights Reserved
- * 
- * Permission to use, copy, modify, and distribute this software and its 
- * documentation for any purpose and without fee is hereby granted, 
- * provided that the above copyright notice appear in all copies and that
- * both that copyright notice and this permission notice appear in 
- * supporting documentation, and that the name of Digital Equipment
- * Corporation not be used in advertising or publicity pertaining to
- * distribution of the software without specific, written prior permission.  
- * 
- * 
- * DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
- * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
- * DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
- * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
- * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
- * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
- * SOFTWARE.
- */
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
+
 /* ScrollBar.c */
 /* created by weissman, Mon Jul  7 13:20:03 1986 */
 /* converted by swick, Thu Aug 27 1987 */
 
 #include <X11/IntrinsicP.h>
 #include <X11/Xresource.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include <X11/ScrollP.h>
 
 /* Private definitions. */
@@ -65,9 +67,9 @@ static XtResource resources[] = {
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 	     Offset(scrollbar.orientation), XtRString, "vertical"},
   {XtNscrollProc, XtCCallback, XtRCallback, sizeof(caddr_t),
-	     Offset(scrollbar.scrollProc), XtRPointer, NULL},
+	     Offset(scrollbar.scrollProc), XtRCallback, NULL},
   {XtNthumbProc, XtCCallback, XtRCallback, sizeof(caddr_t),
-	     Offset(scrollbar.thumbProc), XtRPointer, NULL},
+	     Offset(scrollbar.thumbProc), XtRCallback, NULL},
   {XtNthumb, XtCThumb, XtRPixmap, sizeof(Pixmap),
 	     Offset(scrollbar.thumb), XtRPixmap, NULL},
   {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
