@@ -1,10 +1,24 @@
-.\" $Header: kbd_mode.man,v 1.1 87/09/14 12:24:01 rws Exp $
+.\" $Header: kbd_mode.man,v 1.2 88/02/27 19:24:53 rws Exp $
 .TH KBD_MODE "1 March 1988" "X Version 11"
 .SH NAME
 kbd_mode \- recover the Sun console keyboard
 .SH SYNOPSIS
 .B kbd_mode
-[ -a -e -u ]
+[ -a -e -n -u ]
 .SH DESCRIPTION
 .I Kbd_mode
 resets the Sun console keyboard to a rational state.
+.SH OPTIONS
+The following options are supported, see \fIkb(4S)\fP for details:
+.TP 8
+.B \-a
+Causes ASCII to be reported.
+.TP 8
+.B \-e
+Causes \fIFirm_events\fP to be reported.
+.TP \-n
+Causes up/down key codes to be reported.
+.TP \-u
+Causes undecoded keyboard values to be reported.
+.SH SEE ALSO
+kb(4S)
