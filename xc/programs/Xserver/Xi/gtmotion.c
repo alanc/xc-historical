@@ -1,4 +1,4 @@
-/* $XConsortium: xgtmotion.c,v 1.6 89/11/21 13:49:47 rws Exp $ */
+/* $XConsortium: xgtmotion.c,v 1.7 89/12/02 15:21:18 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -107,6 +107,7 @@ ProcXGetDeviceMotionEvents(client)
     rep.sequenceNumber = client->sequence;
     rep.nEvents = 0;
     rep.axes = axes;
+    rep.mode = v->mode;
     rep.length = 0;
     start = ClientTimeToServerTime(stuff->start);
     stop = ClientTimeToServerTime(stuff->stop);
