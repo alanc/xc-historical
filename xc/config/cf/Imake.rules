@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.52 89/08/28 14:09:46 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.53 89/08/28 14:33:08 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1090,7 +1090,7 @@ name::									@@\
  */
 #ifndef NamedMakeSubdirs
 #define NamedMakeSubdirs(name,dirs) \
-NamedTargetSubdirs(name,dirs,"making" name,PassCDebugFlags,/**/)
+NamedTargetSubdirs(name,dirs,"making" name,PassCDebugFlags,all)
 #endif /* NamedMakeSubdirs */
 
 #ifndef MakeSubdirs
