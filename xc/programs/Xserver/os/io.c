@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.90 94/12/02 17:33:26 mor Exp kaleb $ */
+/* $XConsortium: io.c,v 1.91 95/01/25 11:14:28 kaleb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -159,9 +159,41 @@ typedef struct {
 
 #define MAX_TIMES_PER         10
 
+/*
+ *   A lot of the code in this file manipulates a ConnectionInputPtr:
+ *
+ *    -----------------------------------------------
+ *   |------- bufcnt ------->|           |           |
+ *   |           |- gotnow ->|           |           |
+ *   |           |-------- needed ------>|           |
+ *   |-----------+--------- size --------+---------->|
+ *    -----------------------------------------------
+ *   ^           ^
+ *   |           |
+ *   buffer   bufptr
+ *
+ *  buffer is a pointer to the start of the buffer.
+ *  bufptr points to the start of the current request.
+ *  bufcnt counts how many bytes are in the buffer.
+ *  size is the size of the buffer in bytes.
+ *
+ *  In several of the functions, gotnow and needed are local variables
+ *  that do the following:
+ *
+ *  gotnow is the number of bytes of the request that we're
+ *  trying to read that are currently in the buffer.
+ *  Typically, gotnow = (buffer + bufcnt) - bufptr
+ *
+ *  needed = the length of the request that we're trying to
+ *  read.  Watch out: needed sometimes counts bytes and sometimes
+ *  counts CARD32's.
+ */
+
+
 /*****************************************************************
  * ReadRequestFromClient
- *    Returns one request in client->requestBuffer.  Return status is:
+ *    Returns one request in client->requestBuffer.  The request
+ *    length will be in client->req_len.  Return status is:
  *
  *    > 0  if  successful, specifies length in bytes of the request
  *    = 0  if  entire request is not yet available
@@ -170,8 +202,10 @@ typedef struct {
  *    The request returned must be contiguous so that it can be
  *    cast in the dispatcher to the correct request type.  Because requests
  *    are variable length, ReadRequestFromClient() must look at the first 4
- *    bytes of a request to determine the length (the request length is
- *    always the 3rd and 4th bytes of the request).  
+ *    or 8 bytes of a request to determine the length (the request length is
+ *    in the 3rd and 4th bytes of the request unless it is a Big Request
+ *    (see the Big Request Extension), in which case the 3rd and 4th bytes
+ *    are zero and the following 4 bytes are the request length.
  *
  *    Note: in order to make the server scheduler (WaitForSomething())
  *    "fair", the ClientsWithInput mask is used.  This mask tells which
@@ -213,6 +247,12 @@ ReadRequestFromClient(client)
     Bool move_header;
 #endif
 
+    /* If an input buffer was empty, either free it if it is too big
+     * or link it into our list of free input buffers.  This means that
+     * different clients can share the same input buffer (at different
+     * times).  This was done to save memory.
+     */
+
     if (AvailableInput)
     {
 	if (AvailableInput != oc)
@@ -232,6 +272,9 @@ ReadRequestFromClient(client)
 	}
 	AvailableInput = (OsCommPtr)NULL;
     }
+
+    /* make sure we have an input buffer */
+
     if (!oci)
     {
 	if (oci = FreeInputs)
@@ -245,6 +288,9 @@ ReadRequestFromClient(client)
 	}
 	oc->input = oci;
     }
+
+    /* advance to start of next request */
+
     oci->bufptr += oci->lenLastReq;
 
     need_header = FALSE;
@@ -254,20 +300,28 @@ ReadRequestFromClient(client)
     gotnow = oci->bufcnt + oci->buffer - oci->bufptr;
     if (gotnow < sizeof(xReq))
     {
+	/* We don't have an entire xReq yet.  Can't tell how big
+	 * the request will be until we get the whole xReq.
+	 */
 	needed = sizeof(xReq);
 	need_header = TRUE;
     }
     else
     {
+	/* We have a whole xReq.  We can tell how big the whole
+	 * request will be unless it is a Big Request.
+	 */
 	request = (xReq *)oci->bufptr;
 	needed = get_req_len(request, client);
 #ifdef BIGREQS
 	if (!needed && client->big_requests)
 	{
+	    /* It's a Big Request. */
 	    move_header = TRUE;
 	    if (gotnow < sizeof(xBigReq))
 	    {
-		needed = sizeof(xBigReq) >> 2;
+		/* Still need more data to tell just how big. */
+		needed = sizeof(xBigReq) >> 2; /* needed is in CARD32s now */
 		need_header = TRUE;
 	    }
 	    else
@@ -275,23 +329,34 @@ ReadRequestFromClient(client)
 	}
 #endif
 	client->req_len = needed;
-	needed <<= 2;
+	needed <<= 2; /* needed is in bytes now */
     }
     if (gotnow < needed)
     {
+	/* Need to read more data, either so that we can get a
+	 * complete xReq (if need_header is TRUE), a complete
+	 * xBigReq (if move_header is TRUE), or the rest of the
+	 * request (if need_header and move_header are both FALSE).
+	 */
+
 	oci->lenLastReq = 0;
 	if (needed > MAXBUFSIZE)
 	{
+	    /* request is too big for us to handle */
 	    YieldControlDeath();
 	    return -1;
 	}
 	if ((gotnow == 0) ||
 	    ((oci->bufptr - oci->buffer + needed) > oci->size))
 	{
+	    /* no data, or the request is too big to fit in the buffer */
+
 	    if ((gotnow > 0) && (oci->bufptr != oci->buffer))
+		/* save the data we've already read */
 		memmove(oci->buffer, oci->bufptr, gotnow);
 	    if (needed > oci->size)
 	    {
+		/* make buffer bigger to accomodate request */
 		char *ibuf;
 
 		ibuf = (char *)xrealloc(oci->buffer, needed);
@@ -349,6 +414,7 @@ ReadRequestFromClient(client)
 	}
 	if (need_header && gotnow >= needed)
 	{
+	    /* We wanted an xReq, now we've gotten it. */
 	    request = (xReq *)oci->bufptr;
 	    needed = get_req_len(request, client);
 #ifdef BIGREQS
@@ -366,6 +432,7 @@ ReadRequestFromClient(client)
 	}
 	if (gotnow < needed)
 	{
+	    /* Still don't have enough; punt. */
 	    YieldControlNoInput();
 	    return 0;
 	}
@@ -383,7 +450,8 @@ ReadRequestFromClient(client)
 
     /*
      *  Check to see if client has at least one whole request in the
-     *  buffer.  If there is only a partial request, treat like buffer
+     *  buffer beyond the request we're returning to the caller.
+     *  If there is only a partial request, treat like buffer
      *  is empty so that select() will be called again and other clients
      *  can get into the queue.   
      */
@@ -502,7 +570,7 @@ InsertFakeRequest(client, data, count)
     gotnow += count;
 #ifndef LBX
     if ((gotnow >= sizeof(xReq)) &&
-	(gotnow >= (get_req_len(request, client) << 2)))
+	(gotnow >= (int)(get_req_len(request, client) << 2)))
 #else
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
 #endif
@@ -589,6 +657,137 @@ ResetCurrentRequest(client)
     }
 #endif	/* !LBX */
 }
+
+
+
+/*****************************************************************
+ *  PeekNextRequest and SkipRequests were implemented to support DBE 
+ *  idioms, but can certainly be used outside of DBE.  There are two 
+ *  related macros in os.h, ReqLen and CastxReq.  See the porting 
+ *  layer document for more details.
+ *
+ **********************/
+
+
+/*****************************************************************
+ *  PeekNextRequest
+ *      lets you look ahead at the unexecuted requests in a 
+ *      client's request buffer.
+ *
+ *      Note: this implementation of PeekNextRequest ignores the
+ *      readmore parameter.
+ *
+ **********************/
+
+xReqPtr
+PeekNextRequest(req, client, readmore)
+    xReqPtr req;	/* request we're starting from */
+    ClientPtr client;	/* client whose requests we're skipping */
+    Bool readmore;	/* attempt to read more if next request isn't there? */
+{
+    register ConnectionInputPtr oci = ((OsCommPtr)client->osPrivate)->input;
+    xReqPtr pnextreq;
+    int needed, gotnow, reqlen;
+
+    if (!oci) return NULL;
+
+    if (!req)
+    {
+	/* caller wants the request after the one currently being executed */
+	pnextreq = (xReqPtr)
+	    (((CARD32 *)client->requestBuffer) + client->req_len);
+    }
+    else
+    {
+	/* caller wants the request after the one specified by req */
+	reqlen = get_req_len(req, client);
+#ifdef BIGREQS
+	if (!reqlen) reqlen = get_big_req_len(req, client);
+#endif
+	pnextreq = (xReqPtr)(((char *)req) + (reqlen << 2));
+    }
+
+    /* see how much of the next request we have available */
+
+    gotnow = oci->bufcnt - (((char *)pnextreq) - oci->buffer);
+
+    if (gotnow < sizeof(xReq))
+	return NULL;
+
+    needed = get_req_len(pnextreq, client) << 2;
+#ifdef BIGREQS
+    if (!needed)
+    {
+	/* it's a big request */
+	if (gotnow < sizeof(xBigReq))
+	    return NULL;
+	needed = get_big_req_len(pnextreq, client) << 2;
+    }
+#endif
+
+    /* if we have less than we need, return NULL */
+
+    return (gotnow < needed) ? NULL : pnextreq;
+}
+
+/*****************************************************************
+ *  SkipRequests 
+ *      lets you skip over some of the requests in a client's
+ *      request buffer.  Presumably the caller has used PeekNextRequest
+ *      to examine the requests being skipped and has performed whatever 
+ *      actions they dictate.
+ *
+ **********************/
+
+CallbackListPtr SkippedRequestsCallback = NULL;
+
+void
+SkipRequests(req, client, numskipped)
+    xReqPtr req;	/* last request being skipped */
+    ClientPtr client;   /* client whose requests we're skipping */
+    int numskipped;	/* how many requests we're skipping */
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    register ConnectionInputPtr oci = oc->input;
+    int reqlen;
+
+    /* see if anyone wants to snoop the skipped requests */
+
+    if (SkippedRequestsCallback)
+    {
+	SkippedRequestInfoRec skipinfo;
+	skipinfo.req = req;
+	skipinfo.client = client;
+	skipinfo.numskipped = numskipped;
+	CallCallbacks(&SkippedRequestsCallback, &skipinfo);
+    }
+
+    /* adjust the sequence number */
+    client->sequence += numskipped;
+
+    /* twiddle the oci to skip over the requests */
+
+    reqlen = get_req_len(req, client);
+#ifdef BIGREQS
+    if (!reqlen) reqlen = get_big_req_len(req, client);
+#endif
+    reqlen <<= 2;
+    oci->bufptr = (char *)req;
+    oci->lenLastReq = reqlen;
+
+    /* see if any requests left in the buffer */
+
+    if ( ((char *)req + reqlen) == (oci->buffer + oci->bufcnt) )
+    {
+	/* no requests; mark input buffer as available and client
+	 * as having no input
+	 */
+	int fd = oc->fd;
+	AvailableInput = oc;
+	YieldControlNoInput();
+    }
+}
+
 
     /* lookup table for adding padding bytes to data that is read from
     	or written to the X socket.  */
