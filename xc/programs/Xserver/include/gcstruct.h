@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.1 89/06/09 17:52:37 keith Exp $ */
+/* $XConsortium: gcstruct.h,v 5.2 89/07/18 17:56:45 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -32,7 +32,6 @@ SOFTWARE.
 #include "region.h"
 #include "pixmap.h"
 #include "screenint.h"
-#include "dixfont.h"
 
 /*
  * functions which modify the state of the GC
@@ -111,7 +110,7 @@ typedef struct _GC {
     PixUnion		tile;
     PixmapPtr		stipple;
     DDXPointRec		patOrg;		/* origin for (tile, stipple) */
-    FontPtr		font;
+    struct _Font	*font;
     DDXPointRec		clipOrg;
     DDXPointRec		lastWinOrg;	/* position of window last validated */
     pointer		clientClip;
