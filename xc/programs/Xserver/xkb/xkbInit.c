@@ -398,6 +398,7 @@ register int 	i;
     map->maps[LED_NUM-1].mask= 0;
     map->maps[LED_NUM-1].real_mods= 0;
     map->maps[LED_NUM-1].vmods= vmod_NumLockMask;
+    xkb->iAccel.usesLocked|= (1<<(LED_NUM-1));
     xkb->iAccel.haveMap|= (1<<(LED_NUM-1));
 
     xkb->iAccel.usedComponents|= XkbModifierLockMask;
