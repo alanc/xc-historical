@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.2 90/11/19 15:16:14 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.3 90/11/27 22:42:26 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
@@ -37,6 +37,7 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 {
     int i;
     xRectangle *pR = pRects;
+    DDXPointRec rect[5];
 
     if (pGC->lineStyle == LineSolid && pGC->joinStyle == JoinMiter &&
 	pGC->lineWidth != 0)
@@ -63,34 +64,43 @@ miPolyRectangle(pDraw, pGC, nrects, pRects)
 	    width = pR->width;
 	    height = pR->height;
 	    pR++;
-
-	    t->x = x - offset1;
-	    t->y = y - offset1;
-	    t->width = width + offset2;
-	    t->height = offset2;
-	    t++;
-	    t->x = x - offset1;
-	    t->y = y + offset3;
-	    t->width = offset2;
-	    t->height = height - offset2;
-	    t++;
-	    t->x = x + width - offset1;
-	    t->y = y + offset3;
-	    t->width = offset2;
-	    t->height = height - offset2;
-	    t++;
-	    t->x = x - offset1;
-	    t->y = y + height - offset1;
-	    t->width = width + offset2;
-	    t->height = offset2;
-	    t++;
+	    if (width == 0 && height == 0)
+	    {
+		rect[0].x = x;
+		rect[0].y = y;
+		rect[1].x = x;
+		rect[1].y = y;
+		(*pGC->ops->Polylines)(pDraw, pGC, CoordModeOrigin, 2, rect);
+	    }
+	    else
+	    {
+	    	t->x = x - offset1;
+	    	t->y = y - offset1;
+	    	t->width = width + offset2;
+	    	t->height = offset2;
+	    	t++;
+	    	t->x = x - offset1;
+	    	t->y = y + offset3;
+	    	t->width = offset2;
+	    	t->height = height - offset2;
+	    	t++;
+	    	t->x = x + width - offset1;
+	    	t->y = y + offset3;
+	    	t->width = offset2;
+	    	t->height = height - offset2;
+	    	t++;
+	    	t->x = x - offset1;
+	    	t->y = y + height - offset1;
+	    	t->width = width + offset2;
+	    	t->height = offset2;
+	    	t++;
+	    }
 	}
 	(*pGC->ops->PolyFillRect) (pDraw, pGC, ntmp, tmp);
 	DEALLOCATE_LOCAL ((pointer) tmp);
     }
     else
     {
-	DDXPointRec rect[5];
 
     	for (i=0; i<nrects; i++)
     	{
