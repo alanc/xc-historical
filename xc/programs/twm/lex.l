@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.44 89/07/18 17:15:59 jim Exp $
+ * $XConsortium: lex.l,v 1.45 89/07/26 11:02:31 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,10 +37,11 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.44 89/07/18 17:15:59 jim Exp $";
+"$XConsortium: lex.l,v 1.45 89/07/26 11:02:31 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
+#include "parse.h"
 
 extern int ParseError;
 
@@ -294,6 +295,6 @@ yywrap() { return(1);}
 #undef unput(c)
 #undef input()
 #undef output(c)
-#define unput(c)	TwmUnput(c)
-#define input()		TwmInput()
+#define unput(c)	(*twmUnputFunc)(c)
+#define input()		(*twmInputFunc)()
 #define output(c)	TwmOutput(c)

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.88 89/07/26 11:02:35 jim Exp $
+ * $XConsortium: menus.c,v 1.89 89/07/26 12:47:33 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.88 89/07/26 11:02:35 jim Exp $";
+"$XConsortium: menus.c,v 1.89 89/07/26 12:47:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -87,6 +87,7 @@ extern TwmWindow *ButtonWindow, *Tmp_win;
 extern XEvent Event, ButtonEvent;
 extern char *InitFile;
 
+
 /***********************************************************************
  *
  *  Procedure:
@@ -111,18 +112,6 @@ InitMenus()
 
     Scr->DefaultFunction.func = NULL;
     Scr->WindowFunction.func = NULL;
-
-    Scr->Mouse[1][C_TITLE][0].func = F_RAISE;
-    Scr->Mouse[2][C_TITLE][0].func = F_MOVE;
-    Scr->Mouse[3][C_TITLE][0].func = F_LOWER;
-
-    Scr->Mouse[1][C_ICON][0].func = F_ICONIFY;
-    Scr->Mouse[2][C_ICON][0].func = F_MOVE;
-    Scr->Mouse[3][C_ICON][0].func = F_LOWER;
-
-    Scr->Mouse[1][C_ICONMGR][0].func = F_ICONIFY;
-    Scr->Mouse[2][C_ICONMGR][0].func = F_ICONIFY;
-    Scr->Mouse[3][C_ICONMGR][0].func = F_ICONIFY;
 
     if (FirstScreen)
     {

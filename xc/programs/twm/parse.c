@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.5 89/07/18 17:16:08 jim Exp $
+ * $XConsortium: parse.c,v 1.6 89/07/27 13:59:39 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,10 +38,11 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.5 89/07/18 17:16:08 jim Exp $";
+"$XConsortium: parse.c,v 1.6 89/07/27 13:59:39 jim Exp $";
 #endif
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include "twm.h"
 #include "screen.h"
 #include "menus.h"
@@ -63,6 +64,8 @@ static void twmFileUnput(), twmStringUnput();
 int (*twmInputFunc)();
 void (*twmUnputFunc)();
 
+extern char *getenv();
+extern char *defaultTwmrc;		/* default bindings */
 
 
 /***********************************************************************
@@ -79,37 +82,40 @@ void (*twmUnputFunc)();
 int ParseTwmrc(filename)
     char *filename;
 {
-    char *home;
-    char init_file[200];
+    char *cp = filename;
+    char init_file[257];
 
-    mods = 0;
+    if (!cp) {
+	char *home = getenv ("HOME");
+	if (home) {
+	    int len = strlen (home);
 
-/*     InitMenus(); */
-
-    if (filename == NULL)
-    {
-	/* try the .twmrc.screen file first */
-	home = (char *)getenv("HOME");
-	sprintf(init_file, "%s/.twmrc.%d", home, Scr->screen);
-	if (access(init_file, 4))
-	{
-	    /* try just the .twmrc file */
-	    sprintf(init_file, "%s/.twmrc", home);
-	    if (access(init_file, 4))
-	    {
-		/* try the system file */
-		strcpy(init_file, SYSTEM_INIT_FILE);
+	    cp = init_file;
+	    sprintf (init_file, "%s/.twmrc.%d", home, Scr->screen);
+	    
+	    if (access (init_file, R_OK) != 0) {
+		init_file[len + 7] = '\0';
+		if (access (init_file, R_OK) != 0) {
+		    cp = NULL;
+		}
 	    }
 	}
+	if (!cp) cp = SYSTEM_INIT_FILE;
     }
-    else
-	strcpy(init_file, filename);
 
-    if ((twmrc = fopen(init_file, "r")) == NULL)
-    {
-	fprintf(stderr, "twm: couldn't open \"%s\"\n", init_file);
-    	return False;
+    InitMenus();
+    mods = 0;
+
+    if (!(twmrc = fopen (cp, "r"))) {
+	if (filename) {
+	    fprintf (stderr, 
+		     "%s:  unable to open twmrc file \"%s\"; using defaults\n",
+		     "twm", filename);
+	}
+	ParseString (defaultTwmrc);	/* use default bindings */
+	return 0;
     }
+
 
     ptr = 0;
     len = 0;
@@ -124,12 +130,10 @@ int ParseTwmrc(filename)
 
     if (ParseError)
     {
-	fprintf(stderr, "twm: errors found in \"%s\", twm aborting\n",
-	    init_file);
-/*	Done(); */
-	return False;
+	fprintf (stderr, "twm:  errors found in \"%s\"\n", cp);
+	return 0;
     }
-    return True;
+    return 1;
 }
 
 
@@ -139,14 +143,14 @@ int ParseString (s)
     mods = 0;
     ptr = 0;
     len = 0;
-    yylineno = 0;
+    yylineno = 1;
     ParseError = FALSE;
     twmInputFunc = twmStringInput;
     twmUnputFunc = twmStringUnput;
     stringSource = currentString = s;
     
     yyparse();
-    return (ParseError ? True : False);
+    return (ParseError ? 0 : 1);
 }
 
 
@@ -178,7 +182,13 @@ static int twmFileInput()
 
 static int twmStringInput()
 {
-    return (*stringSource ? *stringSource++ : *stringSource);
+    unsigned int c = (unsigned int) *stringSource;
+
+    if (c != 0) {
+	if (c == '\n') yylineno++;
+	stringSource++;
+    }
+    return (int) c;
 }
 
 

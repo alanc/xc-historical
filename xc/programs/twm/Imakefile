@@ -22,12 +22,12 @@ LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
      OPTIONSDEF = -DSHAPE 
         DEFINES = $(OPTIONSDEF) $(SIGPROCDEF) $(PUTENVDEF)
 
-SRCS1=	gram.c lex.c add_window.c gc.c list.c twm.c parse.c\
-        menus.c events.c resize.c util.c version.c iconmgr.c\
+SRCS1=	gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c parse.c \
+        menus.c events.c resize.c util.c version.c iconmgr.c \
 	cursor.c icons.c
 
-OBJS1=	gram.o lex.o add_window.o gc.o list.o twm.o parse.o\
-        menus.o events.o resize.o util.o version.o iconmgr.o\
+OBJS1=	gram.o lex.o deftwmrc.o add_window.o gc.o list.o twm.o parse.o \
+        menus.o events.o resize.o util.o version.o iconmgr.o \
 	cursor.o icons.o
 
 all:: $(PROGRAMS)
