@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.130 94/04/17 20:45:38 rws Exp rws $ */
+/* $XConsortium: a2x.c,v 1.131 94/09/03 15:44:04 rws Exp rws $ */
 /*
 
 Copyright (c) 1992  X Consortium
@@ -50,6 +50,9 @@ Syntax of magic values in the input stream:
 	s<digit>	save recording as macro <digit>
 	e<digit>	execute macro <digit>
 	d<digit>	delete macro <digit>
+^T^G<option>^T
+      0               write key count
+      1               write key count then reset to 0
 ^T^J<options>[ <mult>]^T
 			jump to next closest top-level window
 	Z		no-op letter to soak up uppercase from prev word 
@@ -336,6 +339,7 @@ Bool do_mouse_fixup = False;
 #ifdef XTESTEXT1
 Bool fixup_mouse = False;
 #endif
+int key_count = 0;
 void (*generate_key)();
 void (*generate_button)();
 void (*generate_motion)();
@@ -365,6 +369,8 @@ xtest_generate_key(key, press)
     int key;
     Bool press;
 {
+    if (press)
+	key_count++;
     XTestFakeKeyEvent(dpy, key, press, time_delay);
     time_delay = 0;
 }
@@ -376,6 +382,8 @@ xtrap_generate_key(key, press)
     int key;
     Bool press;
 {
+    if (press)
+	key_count++;
     delay_time();
     XESimulateXEventRequest(tc, press ? KeyPress : KeyRelease, key, 0, 0, 0);
     time_delay = 0;
@@ -400,6 +408,8 @@ xtestext1_generate_key(key, press)
     int key;
     Bool press;
 {
+    if (press)
+	key_count++;
     if (fixup_mouse)
 	xtestext1_correct_mouse();
     XTestPressKey(dpy, 1, time_delay, key, press ? XTestPRESS : XTestRELEASE);
@@ -2819,6 +2829,11 @@ process(buf, n, len)
 		break;
 	    case '\006': /* control f */
 		do_macro(buf + i + 1);
+		break;
+	    case '\007': /* control g */
+		fprintf(stdout, "key count = %d\n", key_count);
+		if (atoi(buf + i + 1))
+		    key_count = 0;
 		break;
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
