@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.46 89/11/14 18:57:06 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.47 89/11/30 15:35:51 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -104,100 +104,110 @@ SOFTWARE.
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 
+#endif /* vax */
+
+#ifdef sun
+
+#if defined(sun386) || defined(sun5)
+# define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
+# define BITMAP_BIT_ORDER	LSBFirst
 #else
-# ifdef sun
+# define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
+# define BITMAP_BIT_ORDER	MSBFirst
+#endif
 
-# if (sun386 || sun5)
-#define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
-#define BITMAP_BIT_ORDER	LSBFirst
-# else
-#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the SUN only */
-#define BITMAP_BIT_ORDER	MSBFirst
-# endif
-
-#   ifdef sparc
-#    define AVOID_MEMORY_READ
-#    define LARGE_INSTRUCTION_CACHE
-#   endif
+#ifdef sparc
+# define AVOID_MEMORY_READ
+# define LARGE_INSTRUCTION_CACHE
+#endif
 
 #define	GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	1
 
-# else
-#  ifdef apollo
+#endif /* sun */
+
+#ifdef apollo
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the Apollo only*/
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		2
 #define GETLEFTBITS_ALIGNMENT	4
 
-#  else
-#   if defined(ibm032) || defined (ibm)
+#endif /* apollo */
+
+#if defined(ibm032) || defined (ibm)
 
 #ifdef i386
-#define IMAGE_BYTE_ORDER	LSBFirst	/* Value for PS/2 only */
+# define IMAGE_BYTE_ORDER	LSBFirst	/* Value for PS/2 only */
 #else
-#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
+# define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the RT only*/
 #endif
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		1
 #define GETLEFTBITS_ALIGNMENT	4
 /* ibm pcc doesn't understand pragmas. */
 
-#   else
-#    ifdef hpux
+#endif /* ibm */
+
+#ifdef hpux
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		4
 #define	GETLEFTBITS_ALIGNMENT	1
 
-#    else
-#     if defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
+#endif /* hpux */
+
+#if defined(M4315) || defined(M4317) || defined(M4319) || defined(M4330)
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for Pegasus only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define GLYPHPADBYTES		4
 #define GETLEFTBITS_ALIGNMENT	1
 
-#      else
-#      ifdef macII
+#endif /* tektronix */
+
+#ifdef macII
 
 #define IMAGE_BYTE_ORDER      	MSBFirst        /* Values for the MacII only */
 #define BITMAP_BIT_ORDER      	MSBFirst
 #define GLYPHPADBYTES         	4
 #define GETLEFTBITS_ALIGNMENT 	1
 
-#      else
-#       ifdef mips
-#        ifdef MIPSEL
+#endif /* macII */
 
-#define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
-#define BITMAP_BIT_ORDER	LSBFirst
-#define	GLYPHPADBYTES		4
-#define GETLEFTBITS_ALIGNMENT	1
+#ifdef mips
 
-#        else
+#ifdef MIPSEL
+# define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
+# define BITMAP_BIT_ORDER	LSBFirst
+# define GLYPHPADBYTES		4
+# define GETLEFTBITS_ALIGNMENT	1
+#else
+# define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the MIPS only */
+# define BITMAP_BIT_ORDER	MSBFirst
+# define GLYPHPADBYTES		4
+# define GETLEFTBITS_ALIGNMENT	1
+#endif
 
-#define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the MIPS only */
+#define AVOID_MEMORY_READ
+#define FAST_CONSTANT_OFFSET_MODE
+#define LARGE_INSTRUCTION_CACHE
+
+#endif /* mips */
+
+#ifdef stellar
+
+#define IMAGE_BYTE_ORDER	MSBFirst       /* Values for the stellar only*/
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		4
-#define GETLEFTBITS_ALIGNMENT	1
+#define GETLEFTBITS_ALIGNMENT	4
+/*
+ * Use SysV random number generator.
+ */
+#define random rand
 
-#        endif
-
-#        define AVOID_MEMORY_READ
-#        define FAST_CONSTANT_OFFSET_MODE
-#        define LARGE_INSTRUCTION_CACHE
-
-#       endif
-#      endif
-#     endif
-#    endif
-#   endif
-#  endif
-# endif
-#endif
+#endif /* stellar */
 
 /* size of buffer to use with GetImage, measured in bytes. There's obviously
  * a trade-off between the amount of stack (or whatever ALLOCATE_LOCAL gives
@@ -209,7 +219,11 @@ SOFTWARE.
  * 2048 words per buffer / 32 words per scanline = 64 scanlines per buffer
  * 864 scanlines / 64 scanlines = 14 buffers to draw a full screen
  */
+#if defined(stellar)
+#define IMAGE_BUFSIZE		(64*1024)
+#else
 #define IMAGE_BUFSIZE		8192
+#endif
 
 /* pad scanline to a longword */
 #if defined(ibm) && defined(i386)
