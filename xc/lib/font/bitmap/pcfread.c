@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.5 91/06/04 15:51:32 rws Exp $
+ * $XConsortium: pcfread.c,v 1.7 91/07/22 22:58:57 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -348,13 +348,14 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     CharInfoPtr metrics = 0;
     xCharInfo  *ink_metrics = 0;
     char       *bitmaps = 0;
-    CharInfoPtr *encoding;
+    CharInfoPtr *encoding = 0;
     int         nencoding;
     int         encodingOffset;
     CARD32      bitmapSizes[GLYPHPADOPTIONS];
-    CARD32     *offsets;
+    CARD32     *offsets = 0;
     Bool	hasBDFAccelerators;
 
+    pFont->info.props = 0;
     if (!(tables = pcfReadTOC(file, &ntables)))
 	goto Bail;
 
@@ -572,6 +573,7 @@ Bail:
     xfree(ink_metrics);
     xfree(encoding);
     xfree(bitmaps);
+    xfree(offsets);
     xfree(metrics);
     xfree(pFont->info.props);
     pFont->info.props = 0;
