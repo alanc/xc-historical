@@ -37,7 +37,10 @@ choose a different color for the window border.
 choose a different width for the window border.
 .TP 8
 .B \-shape
-uses the SHAPE extension to shape the window.
+uses the SHAPE extension to shape the window.  This is the default.
+.TP 8
+.B \+shape
+Disables uses the SHAPE extension to shape the window.
 .SH "SEE ALSO"
 X(1), X Toolkit documentation
 .SH COPYRIGHT
