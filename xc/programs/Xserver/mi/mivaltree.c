@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.25 90/09/24 09:17:24 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.26 90/11/05 16:36:39 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "X.h"
@@ -232,6 +232,13 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 	    {
 		if (pChild->viewable)
 		{
+		    if (pChild->valdata)
+		    {
+			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
+						 NullBox, 0);
+			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
+						 NullBox, 0);
+		    }
 		    if (pChild->visibility != VisibilityFullyObscured)
 		    {
 			(* pScreen->TranslateRegion) (&pChild->borderClip,
@@ -242,13 +249,6 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 			if (pScreen->ClipNotify)
 			    (* pScreen->ClipNotify) (pChild, dx, dy);
 
-		    }
-		    if (pChild->valdata)
-		    {
-			(* pScreen->RegionInit) (&pChild->valdata->after.borderExposed,
-						 NullBox, 0);
-			(* pScreen->RegionInit) (&pChild->valdata->after.exposed,
-						 NullBox, 0);
 		    }
 		    if (pChild->firstChild)
 		    {
@@ -687,5 +687,7 @@ miValidateTree (pParent, pChild, kind)
 
     (* pScreen->RegionUninit) (&totalClip);
     (* pScreen->RegionUninit) (&exposed);
+    if (pScreen->ClipNotify)
+	(*pScreen->ClipNotify) (pParent, 0, 0);
     return (1);
 }
