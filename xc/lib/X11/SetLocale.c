@@ -28,228 +28,242 @@
  *
  *	Authors: Li Yuhong		OMRON Corporation
  *		 Tetsuya Kato		NTT Software Corporation
- *		 Hiroshi Kuribyashi	OMRON Corporation
+ *		 Hiroshi Kuribayashi	OMRON Corporation
  *   
  */
 
-#include <stdio.h>
 #include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xlocaleint.h"
 
-#define MAXLOCALE       64      /* buffer size of locale name */
+#define MAXLOCALE	64	/* buffer size of locale name */
 
-#define CheckCategory(category) ((category != LC_ALL &&                \
-                                 category != XLC_CODESET &&             \
-                                 category != XLC_FONTSET &&             \
-                                 category != XLC_INPUTMETHOD)? False: True)
+XLocale		_Xlocale_ = NULL;	/* global locale */
+XLocaleTable   *_xlctbl_ = NULL;	/* locale data base table */
 
-#define LocaleNameOfCategory(locale, category) \
-                ((category == LC_ALL)? locale->lc_name: \
-                ((category == XLC_FONTSET)? locale->lc_fs_name: \
-                ((category == XLC_CODESET)? locale->lc_cs_name: \
-                ((category == XLC_INPUTMETHOD)? locale->lc_im_name: \
-                                                NULL))))
+XLocale
+_XlcGetCurrentLocale()
+{
+    return (_Xlocale_);
+}
 
-static char    *_XlcLocaleFromEnviron();
-static char    *_XlcGetDefaultLocaleName();
+static XLocaleDB *
+_XSetLocaleDB(lc_name)
+    char	*lc_name;	/* locale name */
+{
+    XLocaleDB	     *template;
+    extern XLocaleDB *_XlcGetLocaleTemplate();
+    extern XLocaleDB *_XlcLoadTemplate();
 
-extern Bool     _XlcInitializeLocale();
-extern XLocale *_XlcGetLocaleTemplate();
-extern XLocale *_XlcGetCurrentLocale();
+    if (_xlctbl_ == NULL) {
+	_xlctbl_ = (XLocaleTable *) Xmalloc(sizeof(XLocaleTable));
+	if (!_xlctbl_)
+	    return (XLocaleDB *)NULL;
+	_xlctbl_->num_loc = 0;
+	_xlctbl_->template = NULL;
+    }
+    /* set current locale from template. */
+    if ((template = _XlcGetLocaleTemplate(lc_name)) == NULL) {
+	if ((template = _XlcLoadTemplate(lc_name)) == NULL)
+	    return(NULL);
+    }
+    return (template);
+}
 
-XLocale        *_Xlocale_;
+char *
+_XlcSetLocaleModifiers(xlocale, modifiers)
+    XLocale     xlocale;
+    char	*modifiers;
+{
+    int		i, len;
+    char       *p, *q;
+
+    if (!xlocale) {
+	if (!_Xlocale_) {
+	    _Xsetlocale(LC_ALL, setlocale(LC_ALL, (char *)NULL));
+	    if (!_Xlocale_)
+		return (NULL);
+	}
+	xlocale = _Xlocale_;
+    }
+    if (modifiers == NULL)
+	return (xlocale->lc_modifier);
+
+/* for modifiers */
+    len = strlen(modifiers);
+    for (i = 0, p = modifiers;  i < len; i++)
+	if (*p++ == '@') break;
+    xlocale->lc_modifier = Xmalloc((unsigned)strlen(p) + 1);
+    if (!xlocale->lc_modifier) {
+	return (NULL);
+    }
+    strcpy(xlocale->lc_modifier, p);
+
+/* for im : @im=xxxx,... */
+    len = strlen(p);
+    for (i = 0;  i < len; i++, p++) {
+	if (strncmp(p, "im=", 3) == NULL) {
+	    p += 3;
+	    break;
+	}
+    }
+    len = strlen(p);
+    for (i = 0, q = p;  i < len; i++)
+        if (*q++ == '@' || *q++ == ',') break;
+
+    xlocale->lc_im = Xmalloc((unsigned)i + 1);
+    if (!xlocale->lc_im) {
+	Xfree(xlocale->lc_modifier);
+	return (NULL);
+    }
+    strncpy(xlocale->lc_im, p, i);
+    *(xlocale->lc_im + i) = '\0';
+
+    return (xlocale->lc_modifier);
+}
+
+/*ARGSUSED*/
+XLocale
+_XSetLocale(lc_category, lc_name)
+    int		lc_category;	/* locale category */
+    char       *lc_name;	/* locale name */
+{
+    int		i, len;
+    char       *p;
+    char       *lc_alias;
+    char	lang[256];
+    XLocale     xlocale;
+    char	*_XlcResolveName();
+
+    if (lc_name == NULL) {
+	if (_Xlocale_)
+	    return (_Xlocale_);
+	else
+	    lc_name = "C";
+    }
+    /*
+     * if lc_name that points null-string ("") are given, we must take locale
+     * name from environment.
+     */
+    if (*lc_name == '\0') {
+#ifdef OS_SUPPORTS_LOCALE
+	lc_name = _XGetOSLocaleName();
+#else
+	lc_name = setlocale(LC_CTYPE, (char *)NULL);
+#endif
+    }
+
+    xlocale = (XLocale) Xmalloc(sizeof(XLocaleRec));
+    if (!xlocale)
+	return ((XLocale)NULL);
+
+    xlocale->lc_lang = Xmalloc((unsigned)strlen(lc_name) + 1);
+    if (!xlocale->lc_lang) {
+	Xfree((char *)xlocale);
+	return ((XLocale)NULL);
+    }
+    strcpy(xlocale->lc_lang, lc_name);
+
+    /* extract locale name */
+    lc_alias = _XlcResolveName(lc_name);
+
+    /* set Modifiers */
+    if (!_XlcSetLocaleModifiers(xlocale, lc_alias)) {
+	Xfree(xlocale->lc_lang);
+	Xfree((char *)xlocale);
+	return ((XLocale)NULL);
+    }
+
+    len = strlen(lc_alias);
+    for (i = 0, p = lc_alias;  i < len; i++)
+	if (*p++ == '@') break;
+    strncpy(lang, lc_alias, i);
+    lang[i] = '\0';
+
+    xlocale->xlc_db = _XSetLocaleDB(lang) ;
+    if(!xlocale->xlc_db) {
+	Xfree(xlocale->lc_im);
+	Xfree(xlocale->lc_modifier);
+	Xfree(xlocale->lc_lang);
+	Xfree((char *)xlocale);
+	return ((XLocale)NULL);
+    }
+    return (xlocale);
+}
 
 #if NeedFunctionPrototypes
-char           *
+char *
 _Xsetlocale(
     int             lc_category,    /* locale category */
     _Xconst char   *lc_name        /* locale name */
 )
 #else
-char           *
+char *
 _Xsetlocale(lc_category, lc_name)
     int             lc_category;    /* locale category */
     char           *lc_name;        /* locale name */
 #endif
 {
-    XLocale        *current,
-                   *template;
+    XLocale tmp = _Xlocale_;
+    
+    _Xlocale_ = _XSetLocale(lc_category, lc_name);
 
-    if ((lc_name == NULL) && (_Xmbtype() < 0))
-        /*
-         * never setting locale.
-         */
-        return NULL; 
+    if (_Xlocale_ == NULL)
+	return NULL; 
 
-    if (_XlcInitializeLocale() == False) {
-        return NULL;;
-    }
-    /* allocate temporary locale for retrieval */
-    if (CheckCategory(lc_category) == False)
-        return (NULL);
+    if(tmp != NULL && tmp != _Xlocale_)
+	_XFreeLocale(tmp);
 
-    current = _XlcGetCurrentLocale();
-
-    if (lc_name == NULL) {
-        /* query the current locale name */
-        if (current == NULL) {
-            return NULL;
-        }
-        return LocaleNameOfCategory(current, lc_category);
-    }
-    /*
-     * if lc_name that points null-string ("") are given, we must take locale
-     * name from resources or environment.
-     */
-    if (*lc_name == '\0') {
-        lc_name = _XlcGetDefaultLocaleName(lc_category);
-    }
-    if (*lc_name == '@' && lc_category == XLC_INPUTMETHOD) {
-	/*
-  	 * set modifiers, current only for XLC_INPUTMETHOD.
-         * support the XSetLocaleModifiers("im=value").
-         */
-	strcpy(current->lc_im, lc_name);
-	return(current->lc_im);
-    }
-
-    /*
-     * set current locale from template.
-     */
-    if ((template = _XlcGetLocaleTemplate(lc_name)) == NULL) {
-        return NULL;
-    }
-    switch (lc_category) {
-    case LC_ALL:
-        /* all categories */
-        current->lc_name = template->lc_name;
-    case XLC_FONTSET:
-        current->lc_fs_name = template->lc_fs_name;
-        current->lc_fontset = template->lc_fontset;
-        if (lc_category != LC_ALL)
-            break;
-    case XLC_CODESET:
-        current->lc_cs_name = template->lc_cs_name;
-        current->lc_codeset = template->lc_codeset;
-        if (lc_category != LC_ALL)
-            break;
-    case XLC_INPUTMETHOD:
-        /*
-         * only lc_im is malloc'ed to store XLC_INPUTMETHOD.
-         */
-        strcpy(current->lc_im, template->lc_im);
-        current->lc_im_name = template->lc_im_name;
-    }
-    _Xlocale_ = current;       /* for OS locale */
-    return current->lc_name;
+    return _Xlocale_->xlc_db->lc_name;
 }
 
-static char    *
-_XlcGetDefaultLocaleName(category)
-    int             category;
+#ifndef OS_SUPPORTS_LOCALE
+/* alternative setlocale() for OS does not have */
+static char locale_name[MAXLOCALE] = "C";
+
+/*ARGSUSED*/
+char *
+_XGetLocaleName(category, name)
+    int		category;
+    char       *name;
 {
-    char           *locale_name;
+    extern char *getenv();
 
-    if ((locale_name = _XlcLocaleFromEnviron(category)) != NULL) {
-        return locale_name;
+    if (name != NULL) {
+	if (*name == NULL) {
+	    strcpy(locale_name, getenv("LANG"));
+	} else {
+	    strcpy(locale_name, name);
+	}
+	if (!_Xsetlocale(LC_CTYPE, locale_name))
+	    return (NULL);
     }
-    locale_name = Xmalloc(strlen("C") + 1);
-    strcpy(locale_name, "C");
-
     return locale_name;
 }
-
+#else
 /*
- * _XlcLocaleFromEnviron(): This routine gets locale name from environment
- * variables.
+ * _XGetOSLocaleName is an implementation dependent routine that
+ * derives the locale name as used in the sample implementation from
+ * that returned by setlocale  for example HP would use the following:
  */
-static char    *
-_XlcLocaleFromEnviron(category)
-    int             category;
+#ifdef hpux
+static char *
+_XGetOSLocaleName()
 {
-    char           *s;
-    char           *getenv();
+    char           *lc_name;
+    char           *end;
+    int             len;
+    static char     new_name[MAXLOCALE];
 
-    switch (category) {
-    case XLC_FONTSET:
-        if ((s = getenv("LC_MESSAGE")) != NULL)
-            return (s);
-    case XLC_CODESET:
-    case XLC_INPUTMETHOD:
-    case LC_ALL:
-        return (getenv("LANG"));
-    default:
-        return (NULL);
-    }
-
+    lc_name = setlocale(LC_CTYPE, NULL);  /* "/:<locale_name>;/" */
+    lc_name = strchr (lc_name, ':');
+    lc_name++;
+    end = strchr(lc_name, ';');
+    len = end - lc_name;
+    strncpy(new_name, lc_name, len);
+    *(new_name + len) = '\0';
+    return new_name;
 }
+#endif
+#endif  /* OS_SUPPORTS_LOCALE */
 
-#ifdef DISPLAYSTORELOCALEDATABASE
-/*
- * _XlcGetFromResource(): This routine gets the default of locale name from X
- * resource manager XA_RESOURCE_MANAGER property for a specified category.
- * The category is interpreted to X resource name.
- */
-static char    *
-_XlcLocaleFromResource(dpy, category)
-    Display        *dpy;
-    int             category;
-{
-    Window          win = DefaultRootWindow(dpy);
-    unsigned char  *prop;
-    Atom            actual_type;
-    int             actual_format;
-    unsigned long   leftover;
-    unsigned long   nitems;
-    char            progname[MAXLOCALE],
-                    catname[MAXLOCALE];
-
-    if (XGetWindowProperty(dpy, win, XA_WM_COMMAND, 0L, (long) BUFSIZ,
-                           False, XA_STRING, &actual_type, &actual_format,
-                           &nitems, &leftover, &prop) != Success) {
-        return NULL;
-    }
-    /*
-     * The property is a liner null-separated list of strings. so we copy it
-     * directly with the pointer prop, not (char **)prop[0].
-     */
-    if (actual_type == XA_STRING && actual_format == 8 && nitems != 0) {
-        (void) strcpy(progname, prop);
-        Xfree((char *) prop);
-    } else {
-        (void) strcpy(progname, "*");
-    }
-
-    CategoryName(category, catname);
-    return (XGetDefault(dpy, progname, catname));
-}
-
-/*
- * CategoryName(): This routine interpretes a category to its name, and
- * returns the order number of this category.
- */
-static int
-CategoryName(category, catname)
-    int             category;
-    char           *catname;
-{
-    switch (category) {
-    case XLC_CODESET:
-        (void) strcpy(catname, "codeset");
-        return (1);
-    case XLC_FONTSET:
-        (void) strcpy(catname, "fontset");
-        return (2);
-    case XLC_INPUTMETHOD:
-        (void) strcpy(catname, "inputmethod");
-        return (3);
-    case LC_ALL:
-        (void) strcpy(catname, "language");
-        return (4);
-    default:
-        (void) strcpy(catname, "");
-        return (-1);
-    }
-}
-#endif  /* DISPLAYSTORELOCALEDATABASE */
