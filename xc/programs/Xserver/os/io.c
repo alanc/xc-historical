@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.37 87/11/09 13:46:04 rws Exp $ */
+/* $Header: io.c,v 1.38 88/07/19 18:05:09 toddb Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -375,7 +375,6 @@ FlushClient(who, oc, extraBuf, extraCount)
 	/* If we've arrived here, then the client is stuffed to the gills
 	   and not ready to accept more.  Make a note of it and buffer
 	   the rest. */
-	printf("mark %d blocked\n", who->index);
 	BITSET(ClientsWriteBlocked, who->index);
 	AnyClientsWriteBlocked = TRUE;
 
@@ -475,7 +474,6 @@ FlushAllOutput()
 	    oc = (OsComm)client->osPrivate;
 	    if (GETBIT(ClientsWithInput, client->index))
 	    {
-		printf("don't flush #d: input pending\n", client->index);
 		BITSET(OutputPending, client->index); /* set the bit again */
 		NewOutputPending = TRUE;
 	    }
