@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.3 94/07/08 14:06:19 mor Exp $ */
+/* $XConsortium: choose.c,v 1.4 94/07/12 14:25:01 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -87,6 +87,23 @@ String **names_ret;
 
 
 void
+FreeSessionNames (count, names)
+
+int count;
+String *names;
+
+{
+    int i;
+
+    for (i = 0; i < count; i++)
+	XtFree ((char *) names[i]);
+
+    XtFree ((char *) names);
+}
+
+
+
+void
 AddSessionNames (count, names)
 
 int count;
@@ -127,6 +144,8 @@ XtPointer 	callData;
 
     XtFree ((char *) current);
 
+    FreeSessionNames (sessionNameCount, sessionNames);
+
     sprintf (title, "xsm: %s", session_name);
     XtVaSetValues (topLevel,
 	XtNtitle, title,		/* session name */
@@ -162,7 +181,6 @@ create_choose_session_popup ()
 
     chooseSessionPopup = XtVaCreatePopupShell (
 	"chooseSessionPopup", transientShellWidgetClass, topLevel,
-        XtNmappedWhenManaged, False,
 	XtNallowShellResize, True,
 	NULL);
     
