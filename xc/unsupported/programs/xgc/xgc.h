@@ -28,6 +28,7 @@ typedef struct {
   float     percent;		/* percentage of test to run */
   Pixel     foreground;
   Pixel     background;
+  char      *fontname;
 } XStuff;                       /* All the stuff that only X needs to
                                    know about */
 
