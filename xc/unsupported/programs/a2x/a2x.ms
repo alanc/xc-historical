@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.13 92/08/15 18:55:11 rws Exp $
+$XConsortium: a2x.doc,v 1.14 92/08/15 19:25:46 rws Exp $
 
 				Using a2x
 
@@ -910,7 +910,7 @@ try to start up DragonDictate again, or your PC will hang.  You will have
 to reboot before starting up DragonDictate again.
 
 DESQview/X looks for the font "pc8x16" to use in the DOS window.  The
-BDF form of this font comes with DESQview/X, in \DVS\BDF\.  You may
+BDF form of this font comes with DESQview/X, in \DVX\BDF\.  You may
 want to use pc8x14 or pc8x8 instead, to take up less space on your
 screen.  In that case, you will want to create an X font alias to map
 the name pc8x16 to the font you prefer.
