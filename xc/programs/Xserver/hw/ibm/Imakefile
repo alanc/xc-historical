@@ -67,9 +67,9 @@ ListAdd(5,6,vga)
 ListAddEmpty(5,6)
 #endif
 
-SUBDIRS= $(SUBDIRS6) common OPERATING_SYSTEM /* ppc pgc */
+SUBDIRS= $(SUBDIRS6) common OPERATING_SYSTEM pgc /* ppc */
 /* common/ibmcomm.o is the seed for the link -- Don't put it below */
-SUBOBJS= $(SUBOBJS6) OPERATING_SYSTEM/OPERATING_SYSTEM.o /* ppc/ppc.o pgc/pgc.o */
+SUBOBJS= $(SUBOBJS6) OPERATING_SYSTEM/OPERATING_SYSTEM.o pgc/pgc.o /*ppc/ppc.o*/
 DSUBOBJS= $(DSUBOBJS6) OPERATING_SYSTEM/OPERATING_SYSTEM/**/_d.o
 PSUBOBJS= $(PSUBOBJS6) OPERATING_SYSTEM/OPERATING_SYSTEM/**/_p.o
 
