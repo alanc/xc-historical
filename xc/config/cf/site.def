@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.91 93/10/11 09:49:59 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.92 93/11/03 18:43:23 gildea Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -141,6 +141,10 @@ clean::									@@\
 
 #ifdef CrayArchitecture
 #define OptimizedCDebugFlags
+#endif
+
+#if defined(OSF1Architecture) && defined(MipsArchitecture)
+#define BuildPexExt NO
 #endif
 
 #endif /* AfterVendorCF */
