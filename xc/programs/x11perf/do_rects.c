@@ -1,15 +1,20 @@
 #include "x11perf.h"
 
 static XRectangle *rects;
-static GC whitegc, blackgc;
+static GC bggc, fggc;
 static Window w;
 
-static unsigned char bitmap[] = {
+static unsigned char bitmap8x8[] = {
     0xCC, 0x66, 0x33, 0x99, 0xCC, 0x66, 0x33, 0x99
 /*
     0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA
 */
 };
+
+static unsigned char bitmap4x4[] = {
+   0x03, 0x06, 0x0c, 0x09
+};
+
 
 void InitRects(d, p)
     Display *d;
@@ -18,6 +23,7 @@ void InitRects(d, p)
     int i, x, y;
     int width = p->special;
     int cols = COLS;
+
 
     if (width == 50) 
     {
@@ -33,17 +39,52 @@ void InitRects(d, p)
             rects[i].width = rects[i].height = width;
 	    i++;
 	}
-    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &whitegc, &blackgc);
-    if (p->fillStyle != FillSolid) {
+    CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &bggc, &fggc);
+
+#ifdef testclipping
+{
+static Window w[4];
+static XRectangle ws[3] = {
+    {100, 100, 200, 200},
+    {150, 150, 200, 200},
+    {200, 200, 200, 200}
+};
+    for (i = 0; i < 4; i++)
+	w[i] = None;
+    for (i = 0; i < 3; i++)
+	w[i+1] = CreatePerfWindow(
+	    d, ws[i].x, ws[i].y, ws[i].width, ws[i].height);
+
+}
+#endif
+
+    if (p->fillStyle == FillStippled || p->fillStyle == FillOpaqueStippled) {
 	Pixmap  stipple;
 	XGCValues gcv;
 
-	stipple = XCreateBitmapFromData(d, w, bitmap, 8, 8);
+	stipple = XCreateBitmapFromData(d, w, bitmap8x8, 8, 8);
 	gcv.stipple = stipple;
 	gcv.fill_style = p->fillStyle;
-	XChangeGC(d, blackgc, GCFillStyle | GCStipple, &gcv);
-	XChangeGC(d, whitegc, GCFillStyle | GCStipple, &gcv);
+	XChangeGC(d, fggc, GCFillStyle | GCStipple, &gcv);
+	XChangeGC(d, bggc, GCFillStyle | GCStipple, &gcv);
 	XFreePixmap(d, stipple);
+
+    } else if (p->fillStyle == FillTiled) {
+	Pixmap tile;
+	XGCValues gcv;
+
+	gcv.fill_style = FillTiled;
+	tile = XCreatePixmapFromBitmapData(d, w, bitmap4x4, 4, 4,
+		    fgPixel, bgPixel,  DefaultDepth(d, DefaultScreen(d)));
+	gcv.tile = tile;
+	XChangeGC(d, fggc, GCFillStyle | GCTile, &gcv);
+	XFreePixmap(d, tile);
+	tile = XCreatePixmapFromBitmapData(d, w, bitmap4x4, 4, 4,
+		    bgPixel, fgPixel, DefaultDepth(d, DefaultScreen(d)));
+	gcv.fill_style = FillTiled;
+	gcv.tile = tile;
+	XChangeGC(d, bggc, GCFillStyle | GCTile, &gcv);
+	XFreePixmap(d, tile);
     }
 }
 
@@ -54,14 +95,14 @@ void DoRects(d, p)
     GC pgc;
     int i;
 
-    pgc = whitegc;
+    pgc = bggc;
     for (i=0; i < p->reps; i++)
     {
         XFillRectangles(d, w, pgc, rects, p->objects);
-        if (pgc == whitegc)
-            pgc = blackgc;
+        if (pgc == bggc)
+            pgc = fggc;
         else
-            pgc = whitegc;
+            pgc = bggc;
     }
 }
 
@@ -70,8 +111,8 @@ void EndRects(d, p)
     Parms p;
 {
     XDestroyWindow(d, w);
-    XFreeGC(d, whitegc);
-    XFreeGC(d, blackgc);
+    XFreeGC(d, bggc);
+    XFreeGC(d, fggc);
     free(rects);
 }
 
