@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.22 93/09/11 17:52:37 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.23 93/09/11 18:18:01 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -315,11 +315,11 @@ dst::									@@\
 	@echo sorry, unable to make $@
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
-XVARdef0 = $(DESTDIR)dest						@@\
+XVARdef0 = $(DESTDIR)dest/						@@\
 									@@\
 step:: srcname								@@\
 	MakeDir($(XVARuse0:/=\))					@@\
-	$(INSTALL) srcname $(XVARuse0:/=\)\dstname
+	$(INSTALL) srcname $(XVARuse0:/=\)dstname
 
 
 #define	InstallLibrary(libname,dest)					@@\
