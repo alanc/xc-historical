@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.7 91/12/19 18:36:56 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.8 92/12/23 18:06:23 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -120,7 +120,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	pbox++;
 	pptSrc++;
 	psrcLine = psrcBase + srcy * widthSrc + srcx;
-	pdstLine = pdstBase + dsty * widthDst + (dstx >> 5);
+	pdstLine = mfbScanline(pdstBase, dstx, dsty, widthDst);
 	dstx &= 0x1f;
 	if (dstx + width <= 32)
 	{
@@ -150,7 +150,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    	psrc = psrcLine;
 	    	pdst = pdstLine;
 	    	psrcLine += widthSrc;
-	    	pdstLine += widthDst;
+	    	mfbScanlineInc(pdstLine, widthDst);
 	    	if (startmask)
 	    	{
 		    i = niStart;
@@ -183,7 +183,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	    	psrc = psrcLine;
 	    	pdst = pdstLine;
 	    	psrcLine += widthSrc;
-	    	pdstLine += widthDst;
+	    	mfbScanlineInc(pdstLine, widthDst);
 	    	if (startmask)
 	    	{
 		    i = niStart;
