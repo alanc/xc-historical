@@ -7,11 +7,11 @@ LOCAL_LIBRARIES = XawClientLibs
 OBJS = transport.o
 SRCS = transport.c
 
-AllTarget(clienttest)
-AllTarget(servtest)
-AllTarget(displaytest)
-AllTarget(bindanytest)
-AllTarget(parsetest)
+AllTarget(ProgramTargetName(clienttest))
+AllTarget(ProgramTargetName(servtest))
+AllTarget(ProgramTargetName(displaytest))
+AllTarget(ProgramTargetName(bindanytest))
+AllTarget(ProgramTargetName(parsetest))
 
 NormalProgramTarget(clienttest,$(OBJS) clienttest.o,NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(servtest,$(OBJS) servtest.o,NullParameter,NullParameter,NullParameter)
