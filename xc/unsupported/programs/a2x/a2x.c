@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.9 92/03/13 09:22:55 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.10 92/03/13 13:59:15 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -449,7 +449,7 @@ main(argc, argv)
     while (1) {
 	if (moving_x | moving_y) {
 	    mask[0] = 1;
-	    if (!select(1, &mask, NULL, NULL, &timeout)) {
+	    if (!select(1, mask, NULL, NULL, &timeout)) {
 		move_pointer(moving_x, moving_y);
 		XFlush(dpy);
 		continue;
@@ -539,5 +539,4 @@ main(argc, argv)
 	quiesce();
 	XFlush(dpy);
     }
-    quit(0);
 }
