@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.73 94/09/21 20:56:18 converse Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.74 94/11/21 18:33:11 kaleb Exp kaleb $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -67,6 +67,10 @@ SYS_LIBRARIES = -lcrypt
 SOCK_DEFINES = -DBSD44SOCKETS
 #endif
 
+#ifdef i386Architecture
+FRAGILE_DEFINES = -DFRAGILE_DEV_MEM
+#endif
+
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(GREET_DIR) $(XDMCONFIGDIR)
 
@@ -110,7 +114,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB
 		$(SIGNAL_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
 		$(PWD_DEFINES) $(CONN_DEFINES) \
-		$(GREET_DEFINES) \
+		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 
@@ -141,6 +145,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
+InstallProgram(sessreg,$(BINDIR))
 #if BuildChooser
 SpecialCObjectRule(chooser, $(ICONFIGFILES), $(SOCK_DEFINES))
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
