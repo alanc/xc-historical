@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.98 90/08/24 11:05:11 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.99 90/08/24 11:11:31 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -369,7 +369,7 @@ static void CompileNameValueTable(table)
     register int i;
 
     for (i=0; table[i].name; i++)
-        table[i].signature = StringToQuark(table[i].name);
+        table[i].signature = XrmPermStringToQuark(table[i].name);
 }
 
 static void Compile_XtEventTable(table)
@@ -378,7 +378,7 @@ static void Compile_XtEventTable(table)
     register int i;
 
     for (i=0; table[i].event; i++)
-        table[i].signature = StringToQuark(table[i].event);
+        table[i].signature = XrmPermStringToQuark(table[i].event);
 }
 static void Compile_XtModifierTable(table)
     ModifierKeys table;
@@ -387,7 +387,7 @@ static void Compile_XtModifierTable(table)
     register int i;
 
     for (i=0; table[i].name; i++)
-        table[i].signature = StringToQuark(table[i].name);
+        table[i].signature = XrmPermStringToQuark(table[i].name);
 }
 
 static String PanicModeRecovery(str)
@@ -1954,17 +1954,17 @@ _XtAddTMConverters(table)
 {
     XrmQuark q;
      _XtTableAddConverter(table,
-	     q = XrmStringToRepresentation(XtRString), 
-	     XrmStringToRepresentation(XtRTranslationTable), 
+	     q = XrmPermStringToQuark(XtRString), 
+	     XrmPermStringToQuark(XtRTranslationTable), 
  	     CvtStringToTranslations, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table, q,
-	     XrmStringToRepresentation(XtRAcceleratorTable),
+	     XrmPermStringToQuark(XtRAcceleratorTable),
  	     CvtStringToAccelerators, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
      _XtTableAddConverter(table,
-	     XrmStringToRepresentation( _XtRStateTablePair ),
-	     XrmStringToRepresentation(XtRTranslationTable), 
+	     XrmPermStringToQuark( _XtRStateTablePair ),
+	     XrmPermStringToQuark(XtRTranslationTable), 
  	     _XtCvtMergeTranslations, (XtConvertArgList) NULL,
 	     (Cardinal)0, True, CACHED, _XtFreeTranslations);
 }

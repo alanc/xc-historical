@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.43 90/09/04 10:45:55 swick Exp $ */
+/* $XConsortium: Convert.c,v 1.44 90/11/05 15:49:22 converse Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -728,7 +728,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		    if (to->addr != NULL) { /* new-style call */
 			static XrmRepresentation QString = NULLQUARK;
 			if (QString == NULLQUARK)
-			    QString = XrmStringToRepresentation(XtRString);
+			    QString = XrmPermStringToQuark(XtRString);
 			if (to_type == QString)
 			    *(String*)(to->addr) = tempTo.addr;
 			else

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Form.c,v 1.39 90/04/30 17:05:41 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Form.c,v 1.40 90/05/08 15:16:24 converse Exp $";
 #endif /* lint */
 
 
@@ -195,11 +195,11 @@ static void ClassInitialize()
 	{XtBaseOffset, (caddr_t)XtOffset(Widget, core.parent), sizeof(Widget)}
     };
     XawInitializeWidgetSet();
-    XtQChainLeft   = XrmStringToQuark("chainleft");
-    XtQChainRight  = XrmStringToQuark("chainright");
-    XtQChainTop    = XrmStringToQuark("chaintop");
-    XtQChainBottom = XrmStringToQuark("chainbottom");
-    XtQRubber      = XrmStringToQuark("rubber");
+    XtQChainLeft   = XrmPermStringToQuark("chainleft");
+    XtQChainRight  = XrmPermStringToQuark("chainright");
+    XtQChainTop    = XrmPermStringToQuark("chaintop");
+    XtQChainBottom = XrmPermStringToQuark("chainbottom");
+    XtQRubber      = XrmPermStringToQuark("rubber");
 
     XtAddConverter( XtRString, XtREdgeType, _CvtStringToEdgeType, NULL, 0 );
     XtAddConverter( XtRString, XtRWidget, XmuCvtStringToWidget,

@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.6 90/04/30 17:46:13 converse Exp $";
+static char Xrcsid[] = "$XConsortium: TextSrc.c,v 1.7 90/05/08 15:19:39 converse Exp $";
 #endif 
 
 /*
@@ -308,9 +308,9 @@ XrmValuePtr	toVal;
   static Boolean inited = FALSE;
     
   if ( !inited ) {
-    QRead   = XrmStringToQuark(XtEtextRead);
-    QAppend = XrmStringToQuark(XtEtextAppend);
-    QEdit   = XrmStringToQuark(XtEtextEdit);
+    QRead   = XrmPermStringToQuark(XtEtextRead);
+    QAppend = XrmPermStringToQuark(XtEtextAppend);
+    QEdit   = XrmPermStringToQuark(XtEtextEdit);
     inited = TRUE;
   }
 

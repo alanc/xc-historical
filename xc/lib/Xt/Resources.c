@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.88 90/09/04 10:50:38 swick Exp $ */
+/* $XConsortium: Resources.c,v 1.89 90/09/21 12:07:00 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -263,22 +263,45 @@ void  XrmCompileResourceList(resources, num_resources)
     register Cardinal count;
 
 #define xrmres  ((XrmResourceList) resources)
+#define PSToQ   XrmPermStringToQuark
+
+    for (count = 0; count < num_resources; resources++, count++) {
+    	xrmres->xrm_name	 = PSToQ(resources->resource_name);
+    	xrmres->xrm_class	 = PSToQ(resources->resource_class);
+    	xrmres->xrm_type	 = PSToQ(resources->resource_type);
+#ifdef CRAY1
+	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
+#else
+        xrmres->xrm_offset	 = -resources->resource_offset - 1;
+#endif
+    	xrmres->xrm_default_type = PSToQ(resources->default_type);
+    }
+#undef PSToQ
+#undef xrmres
+} /* XrmCompileResourceList */
+
+/* Like XrmCompileResourceList, but strings are not permanent */
+static void  XrmCompileResourceListEphem(resources, num_resources)
+    register XtResourceList resources;
+    	     Cardinal       num_resources;
+{
+    register Cardinal count;
+
+#define xrmres  ((XrmResourceList) resources)
 
     for (count = 0; count < num_resources; resources++, count++) {
     	xrmres->xrm_name	 = StringToName(resources->resource_name);
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
-/*	xrmres->xrm_size	 = resources->resource_size; */
 #ifdef CRAY1
 	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
 #else
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
 #endif
     	xrmres->xrm_default_type = StringToQuark(resources->default_type);
-/*	xrmres->xrm_default_addr = resources->default_addr; */
     }
 #undef xrmres
-} /* XrmCompileResourceList */
+} /* XrmCompileResourceListEphem */
 
 static void BadSize(size, name)
     Cardinal size;
@@ -829,7 +852,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     /* Make sure xrm_class is valid */
     /* ||| Class quarkifying should be part of Core.c */
     if (wc->core_class.xrm_class == NULLQUARK) {
-        wc->core_class.xrm_class = StringToClass(wc->core_class.class_name);
+        wc->core_class.xrm_class = XrmPermStringToQuark(wc->core_class.class_name);
     }
 
     /* Get names, classes for widget and ancestors */
@@ -892,7 +915,7 @@ void XtGetSubresources (w, base, name, class, resources, num_resources,
 
     /* Compile resource list if needed */
     if (((int) resources->resource_offset) >= 0) {
-	XrmCompileResourceList(resources, num_resources);
+	XrmCompileResourceListEphem(resources, num_resources);
     }
     table = _XtCreateIndirectionTable(resources, num_resources); 
     (void) GetResources(w, (char*)base, names, classes, table, num_resources,
@@ -948,7 +971,7 @@ void XtGetApplicationResources
  	    }
  	}
 #endif	/* CRAY2 */
-	XrmCompileResourceList(resources, num_resources);
+	XrmCompileResourceListEphem(resources, num_resources);
     }
     table = _XtCreateIndirectionTable(resources,num_resources);
 
@@ -971,10 +994,10 @@ void _XtResourceListInitialize()
     }
     initialized = TRUE;
 
-    QBoolean = StringToClass(XtCBoolean);
-    QString = StringToClass(XtCString);
-    QCallProc = XrmStringToRepresentation(XtRCallProc);
-    QImmediate = XrmStringToRepresentation(XtRImmediate);
-    QinitialResourcesPersistent = StringToName(XtNinitialResourcesPersistent);
-    QInitialResourcesPersistent = StringToName(XtCInitialResourcesPersistent);
+    QBoolean = XrmPermStringToQuark(XtCBoolean);
+    QString = XrmPermStringToQuark(XtCString);
+    QCallProc = XrmPermStringToQuark(XtRCallProc);
+    QImmediate = XrmPermStringToQuark(XtRImmediate);
+    QinitialResourcesPersistent = XrmPermStringToQuark(XtNinitialResourcesPersistent);
+    QInitialResourcesPersistent = XrmPermStringToQuark(XtCInitialResourcesPersistent);
 }

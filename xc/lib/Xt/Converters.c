@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.55 90/06/15 18:29:21 rws Exp $"; */
+/* "$XConsortium: Converters.c,v 1.56 90/08/31 14:09:11 swick Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -74,16 +74,16 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	XrmClass xrm_class[2];
 	XrmRepresentation rep_type;
 	XrmValue value;
-	xrm_name[0] = StringToName( "stringConversionWarnings" );
+	xrm_name[0] = XrmPermStringToQuark( "stringConversionWarnings" );
 	xrm_name[1] = NULL;
-	xrm_class[0] = StringToClass( "StringConversionWarnings" );
+	xrm_class[0] = XrmPermStringToQuark( "StringConversionWarnings" );
 	xrm_class[1] = NULL;
 	if (XrmQGetResource( rdb, xrm_name, xrm_class,
 			     &rep_type, &value ))
 	{
-	    if (rep_type == StringToQuark(XtRBoolean))
+	    if (rep_type == XrmPermStringToQuark(XtRBoolean))
 		report_it = *(Boolean*)value.addr ? Report : Ignore;
-	    else if (rep_type == StringToQuark(XtRString)) {
+	    else if (rep_type == XrmPermStringToQuark(XtRString)) {
 		XrmValue toVal;
 		Boolean report;
 		toVal.addr = (caddr_t)&report; /* Xresource.h says caddr_t */
@@ -736,9 +736,9 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 	XrmRepresentation rep_type;
 	XrmValue value;
 
-	xrm_name[0] = XrmStringToName ("xtDefaultFont");
+	xrm_name[0] = XrmPermStringToQuark ("xtDefaultFont");
 	xrm_name[1] = NULL;
-	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
+	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
 	xrm_class[1] = NULL;
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
@@ -848,9 +848,9 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 	XrmRepresentation rep_type;
 	XrmValue value;
 
-	xrm_name[0] = XrmStringToName ("xtDefaultFont");
+	xrm_name[0] = XrmPermStringToQuark ("xtDefaultFont");
 	xrm_name[1] = NULL;
-	xrm_class[0] = XrmStringToClass ("XtDefaultFont");
+	xrm_class[0] = XrmPermStringToQuark ("XtDefaultFont");
 	xrm_class[1] = NULL;
 	if (XrmQGetResource(XtDatabase(dpy), xrm_name, xrm_class, 
 			    &rep_type, &value)) {
@@ -1227,29 +1227,29 @@ void _XtConvertInitialize()
 {
 /* Representation types */
 
-    XtQAtom		= XrmStringToQuark(XtRAtom);
-    XtQBoolean		= XrmStringToQuark(XtRBoolean);
-    XtQColor		= XrmStringToQuark(XtRColor);
-    XtQCursor		= XrmStringToQuark(XtRCursor);
-    XtQDimension	= XrmStringToQuark(XtRDimension);
-    XtQDisplay		= XrmStringToQuark(XtRDisplay);
-    XtQFile		= XrmStringToQuark(XtRFile);
-    XtQFloat		= XrmStringToQuark(XtRFloat);
-    XtQFont		= XrmStringToQuark(XtRFont);
-    XtQFontStruct	= XrmStringToQuark(XtRFontStruct);
-    XtQGeometry		= XrmStringToQuark(XtRGeometry);
-    XtQInitialState     = XrmStringToQuark(XtRInitialState);
-    XtQInt		= XrmStringToQuark(XtRInt);
-    XtQBool		= XrmStringToQuark(XtRBool);
-    XtQPixel		= XrmStringToQuark(XtRPixel);
-    XtQPixmap		= XrmStringToQuark(XtRPixmap);
-    XtQPointer		= XrmStringToQuark(XtRPointer);
-    XtQPosition		= XrmStringToQuark(XtRPosition);
-    XtQShort            = XrmStringToQuark(XtRShort);
-    XtQString		= XrmStringToQuark(XtRString);
-    XtQUnsignedChar     = XrmStringToQuark(XtRUnsignedChar);
-    XtQVisual	        = XrmStringToQuark(XtRVisual);
-    XtQWindow		= XrmStringToQuark(XtRWindow);
+    XtQAtom		= XrmPermStringToQuark(XtRAtom);
+    XtQBoolean		= XrmPermStringToQuark(XtRBoolean);
+    XtQColor		= XrmPermStringToQuark(XtRColor);
+    XtQCursor		= XrmPermStringToQuark(XtRCursor);
+    XtQDimension	= XrmPermStringToQuark(XtRDimension);
+    XtQDisplay		= XrmPermStringToQuark(XtRDisplay);
+    XtQFile		= XrmPermStringToQuark(XtRFile);
+    XtQFloat		= XrmPermStringToQuark(XtRFloat);
+    XtQFont		= XrmPermStringToQuark(XtRFont);
+    XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
+    XtQGeometry		= XrmPermStringToQuark(XtRGeometry);
+    XtQInitialState     = XrmPermStringToQuark(XtRInitialState);
+    XtQInt		= XrmPermStringToQuark(XtRInt);
+    XtQBool		= XrmPermStringToQuark(XtRBool);
+    XtQPixel		= XrmPermStringToQuark(XtRPixel);
+    XtQPixmap		= XrmPermStringToQuark(XtRPixmap);
+    XtQPointer		= XrmPermStringToQuark(XtRPointer);
+    XtQPosition		= XrmPermStringToQuark(XtRPosition);
+    XtQShort            = XrmPermStringToQuark(XtRShort);
+    XtQString		= XrmPermStringToQuark(XtRString);
+    XtQUnsignedChar     = XrmPermStringToQuark(XtRUnsignedChar);
+    XtQVisual	        = XrmPermStringToQuark(XtRVisual);
+    XtQWindow		= XrmPermStringToQuark(XtRWindow);
 }
 
 _XtAddDefaultConverters(table)

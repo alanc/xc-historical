@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.160 90/09/29 15:23:24 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.161 90/11/29 18:41:13 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -173,9 +173,9 @@ XrmValuePtr	toVal;
   static Boolean inited = FALSE;
     
   if ( !inited ) {
-    QScrollNever      = XrmStringToQuark(XtEtextScrollNever);
-    QScrollWhenNeeded = XrmStringToQuark(XtEtextScrollWhenNeeded);
-    QScrollAlways     = XrmStringToQuark(XtEtextScrollAlways);
+    QScrollNever      = XrmPermStringToQuark(XtEtextScrollNever);
+    QScrollWhenNeeded = XrmPermStringToQuark(XtEtextScrollWhenNeeded);
+    QScrollAlways     = XrmPermStringToQuark(XtEtextScrollAlways);
     inited = TRUE;
   }
 
@@ -208,9 +208,9 @@ XrmValuePtr	toVal;
   static Boolean inited = FALSE;
     
   if ( !inited ) {
-    QWrapNever = XrmStringToQuark(XtEtextWrapNever);
-    QWrapLine  = XrmStringToQuark(XtEtextWrapLine);
-    QWrapWord  = XrmStringToQuark(XtEtextWrapWord);
+    QWrapNever = XrmPermStringToQuark(XtEtextWrapNever);
+    QWrapLine  = XrmPermStringToQuark(XtEtextWrapLine);
+    QWrapWord  = XrmPermStringToQuark(XtEtextWrapWord);
     inited = TRUE;
   }
 
@@ -243,10 +243,10 @@ XrmValuePtr	toVal;
   static Boolean inited = FALSE;
     
   if ( !inited ) {
-    QResizeNever      = XrmStringToQuark(XtEtextResizeNever);
-    QResizeWidth      = XrmStringToQuark(XtEtextResizeWidth);
-    QResizeHeight     = XrmStringToQuark(XtEtextResizeHeight);
-    QResizeBoth       = XrmStringToQuark(XtEtextResizeBoth);
+    QResizeNever      = XrmPermStringToQuark(XtEtextResizeNever);
+    QResizeWidth      = XrmPermStringToQuark(XtEtextResizeWidth);
+    QResizeHeight     = XrmPermStringToQuark(XtEtextResizeHeight);
+    QResizeBoth       = XrmPermStringToQuark(XtEtextResizeBoth);
     inited = TRUE;
   }
 

@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.157 90/06/15 18:42:24 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.158 90/08/23 12:58:40 swick Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -423,6 +423,7 @@ static void _MergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
 }
 
 
+/* NOTE: name, class, and type must be permanent strings */
 static Boolean _GetResource(dpy, list, name, class, type, value)
     Display *dpy;
     XrmSearchList list;
@@ -431,9 +432,9 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
 {
     XrmRepresentation db_type;
     XrmValue db_value;
-    XrmName Qname = XrmStringToName(name);
-    XrmClass Qclass = XrmStringToClass(class);
-    XrmRepresentation Qtype = XrmStringToQuark(type);
+    XrmName Qname = XrmPermStringToQuark(name);
+    XrmClass Qclass = XrmPermStringToQuark(class);
+    XrmRepresentation Qtype = XrmPermStringToQuark(type);
 
     if (XrmQGetSearchResource(list, Qname, Qclass, &db_type, &db_value)) {
 	if (db_type == Qtype) {

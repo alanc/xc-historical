@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.39 90/06/22 10:09:38 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.40 90/11/27 08:40:06 swick Exp $";
 #endif 
 
 /*
@@ -1226,8 +1226,8 @@ XrmValuePtr	toVal;
   char lowerName[BUFSIZ];
 
   if (!haveQuarks) {
-    XtQEstring = XrmStringToQuark(XtEstring);
-    XtQEfile   = XrmStringToQuark(XtEfile);
+    XtQEstring = XrmPermStringToQuark(XtEstring);
+    XtQEfile   = XrmPermStringToQuark(XtEfile);
     haveQuarks = TRUE;
   }
 
