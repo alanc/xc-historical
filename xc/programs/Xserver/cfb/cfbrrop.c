@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.3 90/03/10 15:51:30 keith Exp $
+ * $XConsortium: cfbrrop.c,v 1.4 91/01/27 13:03:00 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -202,14 +202,16 @@ cfbReduceRasterOp (rop, fg, pm, andp, xorp)
     /* check for some special cases to reduce computation */
     if (and == 0)
 	rrop = GXcopy;
+    /* nothing checks for GXnoop
+    else if (and == ~0 && xor == 0)
+	rrop = GXnoop;
+    */
     else if (and == ~0)
 	rrop = GXxor;
     else if (xor == 0)
 	rrop = GXand;
-    else if (and | xor == ~0)
+    else if (and ^ xor == ~0)
 	rrop = GXor;
-    else if (and == ~0 && xor == 0)
-	rrop = GXnoop;
     else
 	rrop = GXset;   /* rop not reduced */
     return rrop;
