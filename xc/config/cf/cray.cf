@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.45 94/02/06 18:38:41 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.46 94/02/10 20:07:32 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
@@ -18,6 +18,7 @@ XCOMM operating system:  OSName
 #define HasShm			NO
 #define PexNativeFPFormat	PEXCRAY_Floating
 #define NativeFPFormat		CRAY_Float
+#define InstallCmd              sh $(SCRIPTSRC)/install.sh
 
 #ifdef _CRAY2
 #define DefaultCCOptions	-hpagelm -hlimitlm
