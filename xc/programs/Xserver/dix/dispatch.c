@@ -3316,12 +3316,12 @@ CloseDownClient(client)
 	     *  really_close_down == TRUE.
 	     */
 	    FreeClientNeverRetainResources(client);
+	    client->clientState = ClientStateRetained;
+	    if (ClientStateCallback)
+		CallCallbacks(&ClientStateCallback, (pointer)client);
 	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
-	client->clientState = ClientStateRetained;
-	if (ClientStateCallback)
-	    CallCallbacks(&ClientStateCallback, (pointer)client);
 	--nClients;
     }
 
