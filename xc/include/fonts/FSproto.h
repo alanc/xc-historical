@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.3 91/05/13 16:45:36 gildea Exp $ */
+/* $XConsortium: FSproto.h,v 1.4 91/07/16 20:32:52 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -69,22 +69,25 @@
 /* reply sizes */
 #define	sz_fsReply			8
 #define	sz_fsGenericReply		8
-#define	sz_fsGetAuthorizationReply	12
+
 #define	sz_fsListExtensionsReply	8
-#define	sz_fsQueryExtensionReply	16
-#define	sz_fsListFontsReply		12
+#define	sz_fsQueryExtensionReply	20
+#define	sz_fsListCataloguesReply	16
+#define	sz_fsGetCataloguesReply		8
+#define	sz_fsGetEventMaskReply		12
+#define	sz_fsCreateACReply		12
+#define	sz_fsGetResolutionReply		8
+#define	sz_fsListFontsReply		16
 #define	sz_fsListFontsWithXInfoReply	(12 + sz_fsFontHeader)
 #define	sz_fsOpenBitmapFontReply	16
 #define	sz_fsQueryXInfoReply		(8 + sz_fsFontHeader)
 #define	sz_fsQueryXExtents8Reply	12
 #define	sz_fsQueryXExtents16Reply	12
-#define	sz_fsQueryXBitmaps8Reply	12
-#define	sz_fsQueryXBitmaps16Reply	12
+#define	sz_fsQueryXBitmaps8Reply	20
+#define	sz_fsQueryXBitmaps16Reply	20
 
 #define	sz_fsError		16
 #define	sz_fsEvent		12
-
-#define	FS_TCP_PORT	7000
 
 #define	fsTrue	1
 #define	fsFalse	0
@@ -289,8 +292,8 @@ typedef struct {
     BYTE        pad;
     CARD16 	length B16;
     Font 	fid B32;
-    fsBitmapFormat format_hint;
-    fsBitmapFormatMask format_mask;
+    fsBitmapFormatMask format_mask B32;
+    fsBitmapFormat format_hint B32;
 }           fsOpenBitmapFontReq;
 
 typedef fsResourceReq fsQueryXInfoReq;
@@ -310,8 +313,8 @@ typedef struct {
     BOOL	range;
     CARD16 	length B16;
     Font 	fid B32;
+    fsBitmapFormat format B32;
     CARD32	num_ranges B32;
-    fsBitmapFormat format;
 }           fsQueryXBitmaps8Req;
 
 typedef fsQueryXBitmaps8Req	fsQueryXBitmaps16Req;
@@ -426,7 +429,7 @@ typedef struct {
     CARD32 	nReplies B32;
     fsFontHeader header;
 }           fsListFontsWithXInfoReply;
-
+    
 typedef struct {
     BYTE        type;
     CARD8       otherid_valid;
@@ -461,7 +464,9 @@ typedef struct {
     CARD8       pad0;
     CARD16 	sequenceNumber B16;
     CARD32 	length B32;
+    CARD32	replies_hint B32;
     CARD32 	num_chars B32;
+    CARD32	nbytes B32;
 }           fsQueryXBitmaps8Reply;
 
 typedef fsQueryXBitmaps8Reply	fsQueryXBitmaps16Reply;
@@ -511,7 +516,7 @@ typedef struct {
     CARD8	major_opcode;
     CARD8	minor_opcode;
     CARD16	pad B16;
-    fsBitmapFormat	format;
+    fsBitmapFormat	format B32;
 }	    fsFormatError;
 
 typedef struct {
