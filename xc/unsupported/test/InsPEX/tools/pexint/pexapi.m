@@ -1,5 +1,5 @@
 
-/* $XConsortium: pexapi.m,v 5.1 91/02/16 10:00:03 rws Exp $ */
+/* $XConsortium: pexapi.m,v 5.2 91/03/21 15:40:44 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991,1990 by Sun Microsystems, Inc. and the X Consortium.
@@ -108,17 +108,17 @@ perr_log(Pint,Pint,char*)
 void
 phg_cb_format_err_msg(int,int,int,char*)
 void
-pescape(Pint,Pescape_in_data*,Pstore,Pescape_out_data*)
+pescape(Pint,Pescape_in_data*,Pstore,Pescape_out_data**)
 void
 pfill_area3(Ppoint_list3*)
 void
 pfill_area(Ppoint_list*)
 void
-pfill_area_set3(Pint,Ppoint_list3*)
+pfill_area_set3(Ppoint_list_list3*)
 void
 pfill_area_set3_data(Pint,Pint,Pint,Pint,Pfacet_data3*,Pint,Pedge_data_list*,Pfacet_vdata_list3*)
 void
-pfill_area_set(Pint,Ppoint_list*)
+pfill_area_set(Ppoint_list_list*)
 void
 ptri_strip3_data(Pint,Pint,Pint,Pint,Pfacet_data_arr3*,Pfacet_vdata_arr3*)
 void
@@ -272,9 +272,9 @@ pinq_loc_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoi
 void
 pinq_loc_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoint*,Pint*,Plimit*,Ploc_data**)
 void
-pinq_stroke_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoint_list3*,Pint*,Plimit3*,Pstroke_data3**)
+pinq_stroke_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoint_list3**,Pint*,Plimit3*,Pstroke_data3**)
 void
-pinq_stroke_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoint_list*,Pint*,Plimit*,Pstroke_data**)
+pinq_stroke_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pint*,Ppoint_list**,Pint*,Plimit*,Pstroke_data**)
 void
 pinq_val_st3(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfloat*,Pint*,Plimit3*,Pval_data3**)
 void
@@ -284,9 +284,9 @@ pinq_choice_st3(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pin_status*,Pint*
 void
 pinq_choice_st(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pin_status*,Pint*,Pint*,Plimit*,Pchoice_data**)
 void
-pinq_pick_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path*,Pint*,Plimit3*,Ppath_order*,Ppick_data3**)
+pinq_pick_st3(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit3*,Ppath_order*,Ppick_data3**)
 void
-pinq_pick_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path*,Pint*,Plimit*,Ppath_order*,Ppick_data**)
+pinq_pick_st(Pint,Pint,Pinq_type,Pstore,Pint*,Pop_mode*,Pecho_switch*,Pfilter**,Pin_status*,Ppick_path**,Pint*,Plimit*,Ppath_order*,Ppick_data**)
 void
 pinq_string_st3(Pint,Pint,Pstore,Pint*,Pop_mode*,Pecho_switch*,char**,Pint*,Plimit3*,Pstring_data3**)
 void
@@ -523,7 +523,7 @@ pset_text_rep(Pint,Pint,Ptext_bundle*)
 void
 pset_text_rep_plus(Pint,Pint,Ptext_bundle_plus*)
 void
-pinq_text_extent(Pint,Pint,Pfloat,Pfloat,Pfloat,Ptext_path,Phor_align,Pvert_align,char*,Pint*,Prect*,Ppoint*)
+pinq_text_extent(Pint,Pint,Pfloat,Pfloat,Pfloat,Ptext_path,Phor_text_align,Pvert_text_align,char*,Pint*,Prect*,Ppoint*)
 void
 panno_text_rel3(Ppoint3*,Pvec3*,char*)
 void
@@ -579,7 +579,7 @@ pinq_ws_st(Pws_st*)
 void
 pinq_ws_conn_type(Pint,Pint,Pint*,char**,Pint*)
 void
-pinq_set_open_ws(Pint,Pint,Pint*,Pint_list*,Pint*)
+pinq_open_wss(Pint,Pint,Pint*,Pint_list*,Pint*)
 void
 pinq_list_view_inds(Pint,Pint,Pint,Pint*,Pint_list*,Pint*)
 void
@@ -737,7 +737,7 @@ pinq_dyns_structs(Pint,Pint*,Pdyns_structs*)
 void
 pinq_num_avail_in(Pint,Pint*,Pnum_in*)
 void
-pinq_def_loc_data3(Pint,Pint,Pint,Pint,Pstore,Pint*,Ppoint3*,Pint_list*,Pint*,Plimit3*,Ploc_data3**)
+pinq_def_loc_data3(Pint,Pint,Pstore,Pint,Ppoint3*,Pint_list**,Plimit3*,Ploc_data3**)
 void
 pinq_def_loc_data(Pint,Pint,Pstore,Pint*,Ppoint*,Pint_list*,Pint*,Plimit*,Ploc_data**)
 void
