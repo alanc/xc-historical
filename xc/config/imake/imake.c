@@ -14,7 +14,7 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.15 87/08/20 12:33:55 toddb Locked $
+ * $Header: imake.c,v 1.16 87/09/01 15:36:36 toddb Locked $
  * $Locker: toddb $
  *
  * Author:
@@ -487,6 +487,7 @@ char *CleanCppInput(Imakefile)
 		 && strcmp(ptoken, "define")
 		 && strcmp(ptoken, "undef")
 		 && strcmp(ptoken, "ifdef")
+		 && strcmp(ptoken, "ifndef")
 		 && strcmp(ptoken, "else")
 		 && strcmp(ptoken, "endif")
 		 && strcmp(ptoken, "if")) {
