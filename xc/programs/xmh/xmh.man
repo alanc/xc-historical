@@ -1,5 +1,5 @@
-.\" $XConsortium: xmh.man,v 1.13 88/09/06 17:23:59 jim Exp $
-.TH XMH 1 "22 October 1988" "X Version 11"
+.\" $XConsortium: xmh.man,v 1.14 88/10/22 16:14:11 converse Exp $
+.TH XMH 1 "12 December 1988" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the MH message handling system.
 .SH SYNOPSIS
@@ -366,8 +366,11 @@ either direction by using pointer button 3.
 
 In the following, a \fIline\fR refers to one displayed row of characters
 in the window.  A \fIparagraph\fR refers to the text between carriage
-returns.  Text within a paragraph is broken into lines based on the
+returns.  Text within a paragraph is broken into lines for display based on the
 current width of the window.
+When a message is sent, text is broken into lines based upon the values
+of the  \fBSendBreakWidth\fP and \fBSendWidth\fP resources (see
+CUSTOMIZING XMH below).
 
 The following keystroke combinations are defined:
 .TP 8
@@ -672,9 +675,9 @@ with the command-line option, \fB-path\fR. (Default is the
 .PP
 .TP 8
 .B MailWaitingFlag
-If True, \fIxmh\fR will attempt to set an indication in it's icon when
+If True, \fIxmh\fP will attempt to set an indication in it's icon when
 new mail is waiting to be retrieved.  If this option is True, then
-CheckNewMail is assumed to be True as well.  The \fB-flag\fR command line
+CheckNewMail is assumed to be True as well.  The \fB-flag\fP command line
 option is a quick way to turn MailWaitingFlag on.
 .PP
 .TP 8
@@ -713,6 +716,23 @@ The default filter is \fIecho\fP; i.e. it merely inserts the
 name of the file into the composition.  Other interesting filters are
 \fIawk -e '{print "    " $0}'\fP or
 \fI/usr/new/mh.6.5/lib/mhl -form mhl.body\fP.
+.PP
+.TP 8
+.B SendBreakWidth
+When a message is sent from \fIxmh\fP, lines longer than this value will be
+split into multiple lines, each of which is no longer than \fBSendWidth\fP.
+This value may be overridden for a single message by inserting an additional
+line in the message header of the form \fISendBreakWidth: value\fP.  This
+line will be removed from the header before the message is sent.
+.PP
+.TP 8
+.B SendWidth
+When a message is sent from \fIxmh\fP, lines longer than \fBSendBreakWidth\fP
+characters will be split into multiple lines, each of which is no longer than
+this value.
+This value may be overridden for a single message by inserting an additional
+line in the message header of the form \fISendWidth: value\fP.  This
+line will be removed from the header before the message is sent.
 .PP
 .TP 8
 .B TempDir
