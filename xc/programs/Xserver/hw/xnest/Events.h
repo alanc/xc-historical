@@ -1,4 +1,4 @@
-/* $XConsortium: xnestEvents.h,v 1.1 93/06/23 16:23:49 dmatic Exp $ */
+/* $XConsortium: Events.h,v 1.1 93/07/12 15:28:16 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -16,9 +16,11 @@ is" without express or implied warranty.
 #ifndef XNESTEVENTS_H
 #define XNESTEVENTS_H
 
+#include <X11/Xmd.h>
+
 #define ProcessedExpose (LASTEvent + 1)
 
-extern unsigned lastEventTime;
+extern CARD32 lastEventTime;
 
 void xnestCollectExposures();
 void xnestCollectEvents();

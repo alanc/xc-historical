@@ -1,4 +1,4 @@
-/* $XConsortium: xnestTestExt.c,v 1.1 93/06/23 16:23:39 dmatic Exp $ */
+/* $XConsortium: TestExt.c,v 1.1 93/07/12 15:28:51 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -21,7 +21,7 @@ is" without express or implied warranty.
 #include "servermd.h"
 #include "xtestext1.h"
 
-extern unsigned lastEventTime;
+extern CARD32 lastEventTime;
 
 void XTestGetPointerPos(fmousex, fmousey)
      short *fmousex;

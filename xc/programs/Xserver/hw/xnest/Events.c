@@ -1,4 +1,4 @@
-/* $XConsortium: xnestEvents.c,v 1.1 93/06/23 16:23:29 dmatic Exp $ */
+/* $XConsortium: Events.c,v 1.1 93/07/12 15:28:14 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -32,7 +32,7 @@ is" without express or implied warranty.
 #include "Window.h"
 #include "Events.h"
 
-unsigned lastEventTime = 0;
+CARD32 lastEventTime = 0;
 
 void ProcessInputEvents()
 {
