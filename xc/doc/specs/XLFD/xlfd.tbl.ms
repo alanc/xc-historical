@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.32 94/04/08 14:33:32 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.33 94/04/08 14:39:41 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -889,7 +889,7 @@ HexDigit ::=	DecDigit | \*Qa\*U | \*Qb\*U | \*Qc\*U | \*Qd\*U | \*Qe\*U | \*Qf\*
 LeftBracket ::=	\*Q[\*U (LEFT SQUARE BRACKET)
 RightBracket ::=	\*Q]\*U (RIGHT SQUARE BRACKET)
 Space ::=	\*Q \*U (SPACE)
-Underscore ::=	\*Q_\*U (UNDERSCORE)
+Underscore ::=	\*Q_\*U (LOW LINE)
 .TE
 .eC
 .NL
@@ -1062,8 +1062,8 @@ Private font properties should be defined to conform to the general mechanism
 defined in the X protocol to prevent overlap of name space and ambiguous 
 property names, that is, private font property names are of the form: 
 .sC
-\*Q_\*U (UNDERSCORE), 
-followed by the organizational identifier, followed by \*Q_\*U (UNDERSCORE), 
+\*Q_\*U (LOW LINE), 
+followed by the organizational identifier, followed by \*Q_\*U (LOW LINE), 
 and terminated with the property name.
 .eC
 .LP
@@ -1102,7 +1102,7 @@ AXIS_TYPES
 T}
 .eC
 .sC
-Underscore ::=	OCTET\-\*Q_\*U (UNDERSCORE)
+Underscore ::=	OCTET\-\*Q_\*U (LOW LINE)
 .eC
 OrganizationId ::=	T{
 STRING8\-the registered name of the organization
@@ -1533,7 +1533,10 @@ if (SUPERSCRIPT_X undefined) then
 .DE
 .LP
 where TANGENT is a trigonometric function that returns the tangent of 
-its argument (in degrees scaled by 64).
+.sC
+its argument, which is in 1/64 degrees.
+.br
+.eC
 .NH 3
 SUPERSCRIPT_Y
 .XS
