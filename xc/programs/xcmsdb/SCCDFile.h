@@ -27,13 +27,12 @@
  *		X Device Color Characterization Convention (XDCCC).
  *
  *	REVISION
- *		$Header: SCCDFile.h,v 1.2 90/12/13 07:44:21 adamsc Exp $
+ *		$Header: SCCDFile.h,v 1.1 91/02/06 16:12:49 dave Exp $
  */
 #ifndef SCCDFILE_H
 #define SCCDFILE_H
 
-#include "XcmsLRGBSD.h"
-#include "XcmsGRAYSD.h"
+#include <X11/Xcms.h>
 
 /*
  *	DEFINES

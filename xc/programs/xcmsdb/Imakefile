@@ -1,12 +1,8 @@
-SRCS = xsccd.c LoadSCCData.c
-OBJS = xsccd.o LoadSCCData.o
-INCLUDES = -I. -I$(INCLUDESRC)
-LOCAL_LIBS = $(XLIB)
-EXTENSIONLIB =
-SYS_LIBS =
+SRCS = cmsdb.c LoadSCCData.c
+OBJS = cmsdb.o LoadSCCData.o
+INCLUDES = -I$(TOP)/lib/X
+DEPLIBS = $(DEPXLIB)
+LOCAL_LIBRARIES = $(XLIB)
 
-NormalProgramTarget(xsccd, $(OBJS), $(DEPLIBS), $(LOCAL_LIBS), $(SYS_LIBS))
+ComplexProgramTarget(cmsdb)
 
-DependTarget()
-
-NormalLintTarget($(SRCS))
