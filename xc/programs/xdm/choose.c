@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.10 92/04/21 18:45:38 gildea Exp $
+ * $XConsortium: choose.c,v 1.11 93/09/20 18:03:21 hersh Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -29,16 +29,24 @@
  * xdm interface to chooser program
  */
 
-# include   "dm.h"
+#include "dm.h"
 
 #ifdef XDMCP
 
-# include	<X11/X.h>
-# include	<sys/types.h>
-# include	<sys/socket.h>
-# include	<netinet/in.h>
-# include	<sys/un.h>
-# include	<ctype.h>
+#include <X11/X.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/un.h>
+#include <ctype.h>
+
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 static
 FormatBytes (data, length, buf, buflen)
@@ -210,7 +218,7 @@ typedef struct _Choices {
     ARRAY8	    client;
     CARD16	    connectionType;
     ARRAY8	    choice;
-    long	    time;
+    Time_t	    time;
 } ChoiceRec, *ChoicePtr;
 
 static ChoicePtr   choices;
@@ -221,14 +229,14 @@ IndirectChoice (clientAddress, connectionType)
     CARD16	connectionType;
 {
     ChoicePtr	c, next, prev;
-    long	now;
+    Time_t	now;
 
-    now = time (0);
+    now = time ((Time_t*)0);
     prev = 0;
     for (c = choices; c; c = next)
     {
 	next = c->next;
-	if (now - c->time > 15)
+	if (now - c->time > (Time_t)choiceTimeout)
 	{
 	    Debug ("Timeout choice\n");
 	    if (prev)
