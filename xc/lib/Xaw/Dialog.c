@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.24 89/03/30 16:53:35 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.25 89/04/06 12:29:01 swick Exp $";
 #endif /* lint */
 
 
@@ -50,7 +50,7 @@ static XtResource resources[] = {
   {XtNvalue, XtCValue, XtRString, sizeof(String),
      XtOffset(DialogWidget, dialog.value), XtRString, NULL},
   {XtNmaximumLength, XtCMax, XtRInt, sizeof(int),
-     XtOffset(DialogWidget, dialog.max_length), XtRImmediate, 0}
+     XtOffset(DialogWidget, dialog.max_length), XtRImmediate, 256}
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
@@ -236,6 +236,8 @@ Widget current, request, new;
  *	Description: Creates the dialog widgets value widget.
  *	Arguments: w - the dialog widget.
  *	Returns: none.
+ *
+ *	must be called only when w->dialog.value is non-nil.
  */
 
 static void
@@ -244,8 +246,8 @@ Widget w;
 {
     DialogWidget dw = (DialogWidget) w;    
     String initial_value = dw->dialog.value;
-    Cardinal length = Max( dw->dialog.max_length, strlen(initial_value) );
-    static Arg arglist[10];
+    Cardinal length = Max( dw->dialog.max_length, strlen(initial_value)+1 );
+    Arg arglist[10];
     Cardinal num_args = 0;
 
     dw->dialog.value = XtMalloc( length );
@@ -255,6 +257,7 @@ Widget w;
     XtSetArg(arglist[num_args], XtNstring, dw->dialog.value); num_args++;
     XtSetArg(arglist[num_args], XtNlength, length); num_args++;
     XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW); num_args++;
+    XtSetArg(arglist[num_args], XtNresizable, True); num_args++;
     XtSetArg(arglist[num_args], XtNtextOptions, (resizeWidth | resizeHeight));
     num_args++;
     XtSetArg(arglist[num_args], XtNeditType, XttextEdit); num_args++;
