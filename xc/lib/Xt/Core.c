@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Core.c,v 1.30 89/10/02 15:28:53 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Core.c,v 1.31 89/10/04 08:45:00 swick Exp $";
 /* $oHeader: Core.c,v 1.2 88/08/18 15:37:59 asente Exp $ */
 #endif /* lint */
 
@@ -285,29 +285,37 @@ static Boolean CoreSetValues(old, reference, new)
     if (XtIsRealized(old)) {
 	window_mask = 0;
 	/* Check window attributes */
-	if (old->core.background_pixel != new->core.background_pixel) {
+	if (old->core.background_pixel != new->core.background_pixel
+	    && new->core.background_pixmap == XtUnspecifiedPixmap) {
 	   attributes.background_pixel  = new->core.background_pixel;
 	   window_mask |= CWBackPixel;
 	   redisplay = TRUE;
 	}	
 	if (old->core.background_pixmap != new->core.background_pixmap) {
-	   if (new->core.background_pixmap == XtUnspecifiedPixmap)
+	   if (new->core.background_pixmap == XtUnspecifiedPixmap) {
 	       window_mask |= CWBackPixel;
+	       attributes.background_pixel  = new->core.background_pixel;
+	   }
 	   else {
 	       attributes.background_pixmap = new->core.background_pixmap;
+	       window_mask &= ~CWBackPixel;
 	       window_mask |= CWBackPixmap;
 	   }
 	   redisplay = TRUE;
 	}	
-	if (old->core.border_pixel != new->core.border_pixel) {
+	if (old->core.border_pixel != new->core.border_pixel
+	    && new->core.border_pixmap == XtUnspecifiedPixmap) {
 	   attributes.border_pixel  = new->core.border_pixel;
 	   window_mask |= CWBorderPixel;
        }
 	if (old->core.border_pixmap != new->core.border_pixmap) {
-	   if (new->core.border_pixmap == XtUnspecifiedPixmap)
+	   if (new->core.border_pixmap == XtUnspecifiedPixmap) {
 	       window_mask |= CWBorderPixel;
+	       attributes.border_pixel  = new->core.border_pixel;
+	   }
 	   else {
 	       attributes.border_pixmap = new->core.border_pixmap;
+	       window_mask &= ~CWBorderPixel;
 	       window_mask |= CWBorderPixmap;
 	   }
        }
@@ -316,6 +324,10 @@ static Boolean CoreSetValues(old, reference, new)
 		    "invalidDepth","setValues","XtToolkitError",
                "Can't change widget depth", (String *)NULL, (Cardinal *)NULL);
 	   new->core.depth = old->core.depth;
+	}
+	if (old->core.colormap != new->core.colormap) {
+	    window_mask |= CWColormap;
+	    attributes.colormap = new->core.colormap;
 	}
 	if (window_mask != 0) {
 	    /* Actually change X window attributes */
