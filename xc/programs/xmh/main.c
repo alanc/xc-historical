@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 2.19 91/01/10 12:15:03 converse Exp $
+ * $XConsortium: main.c,v 2.20 91/07/02 17:37:17 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -56,13 +56,14 @@ static void CheckMail(client_data, id)
     XtPointer client_data;	/* unused */
     XtIntervalId *id;		/* unused */
 {
+    extern void XmhCheckForNewMail();
     static int count = 0;
     register int i;
     timerid = XtAppAddTimeOut(XtWidgetToApplicationContext( toplevel ),
 			      interval, CheckMail, (XtPointer) NULL);
     if (app_resources.new_mail_check) {
 	DEBUG("(Checking for new mail...")
-	TocCheckForNewMail();
+	XmhCheckForNewMail(NULL, NULL, NULL, NULL);
 	DEBUG(" done)\n")
     }
     if (!subProcessRunning && (count++ % 5 == 0)) {
@@ -90,8 +91,6 @@ char **argv;
     XtAppContext appCtx;
 
     InitializeWorld(argc, argv);
-    if (app_resources.new_mail_check)
-	TocCheckForNewMail();
     subProcessRunning = False;
 
     appCtx = XtWidgetToApplicationContext(toplevel);
