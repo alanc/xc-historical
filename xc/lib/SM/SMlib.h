@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.19 94/03/30 20:52:06 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.20 94/03/30 22:18:50 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -54,6 +54,18 @@ typedef struct {
     int		num_vals;	/* number of values in property */
     SmPropValue *vals;		/* the values */
 } SmProp;
+
+
+
+/*
+ * SmcCloseConnection status return
+ */
+
+typedef enum {
+    SmcClosedNow,
+    SmcClosedASAP,
+    SmcConnectionInUse
+} SmcCloseStatus;
 
 
 
@@ -363,6 +375,7 @@ typedef void (*SmsErrorHandler) (
 extern SmcConn SmcOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
+    SmPointer		/* context */,
     int			/* xsmpMajorRev */,
     int			/* xsmpMinorRev */,
     unsigned long	/* mask */,
@@ -374,7 +387,7 @@ extern SmcConn SmcOpenConnection (
 #endif
 );
 
-extern void SmcCloseConnection (
+extern SmcCloseStatus SmcCloseConnection (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     int			/* count */,
