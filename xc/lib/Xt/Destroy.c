@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.42 91/02/13 10:19:49 converse Exp $ */
+/* $XConsortium: Destroy.c,v 1.43 91/06/30 17:02:46 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -124,7 +124,7 @@ static void XtPhase2Destroy (widget)
 
     parent = widget->core.parent;
 
-    if (parent && parent->core.num_popups) {
+    if (parent && XtIsWidget(parent) && parent->core.num_popups) {
 	int i;
 	for (i = 0; i < parent->core.num_popups; i++) {
 	    if (parent->core.popup_list[i] == widget) {
