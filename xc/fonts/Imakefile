@@ -1,3 +1,6 @@
+#define IHaveSubdirs
+#define PassCDebugFlags
+
              FC = compiler/fc
          SUBDIRS= compiler
         HEADERS = cursorfont.h
@@ -33,18 +36,9 @@ snf/Makefile: bdf Makefile
 snf:
 	mkdir snf
 
-depend:
-	@for i in $(SUBDIRS) ; \
-	do \
-		(cd $$i; echo depending $$i ;make $(MFLAGS) depend) ;\
-	done; \
-	echo "done"
+DependSubdirs($(SUBDIRS))
 
 clean::
-	for i in $(SUBDIRS) ; \
-	do \
-		(cd $$i; make $(MFLAGS) clean) ; \
-	done
 	(cd bdf; $(RM_CMD))
 	(cd snf; $(RM_CMD) Makefile *.snf)
 
