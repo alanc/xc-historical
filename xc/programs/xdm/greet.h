@@ -1,4 +1,4 @@
-/* $XConsortium: greet.h,v 1.2 94/03/31 22:34:50 gildea Exp $ */
+/* $XConsortium: greet.h,v 1.3 94/04/17 20:03:39 gildea Exp converse $ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -54,9 +54,9 @@ struct dlfuncs {
     int (*_printEnv)();
     char **(*_systemEnv)();
     int (*_LogOutOfMem)();
-    void (*_setgrent)();
-    struct group *(*_getgrent)();
-    void (*_endgrent)();
+    void (*_setgrent)();		/* no longer used */
+    struct group *(*_getgrent)();	/* no longer used */
+    void (*_endgrent)();		/* no longer used */
 #ifdef USESHADOW
     struct spwd *(*_getspnam)();
     void (*_endspent)();

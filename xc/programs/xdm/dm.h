@@ -1,4 +1,4 @@
-/* $XConsortium: dm.h,v 1.62 94/04/01 16:42:58 gildea Exp $ */
+/* $XConsortium: dm.h,v 1.63 94/04/17 20:03:37 gildea Exp converse $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -64,11 +64,6 @@ from the X Consortium.
 
 #ifdef XDMCP
 #include <X11/Xdmcp.h>
-#endif
-
-#ifndef NGROUPS_MAX
-#include <sys/param.h>
-#define NGROUPS_MAX NGROUPS
 #endif
 
 #ifdef pegasus
@@ -260,12 +255,7 @@ struct greet_info {
 
 struct verify_info {
 	int		uid;		/* user id */
-#ifdef NGROUPS_MAX
-	GID_T		groups[NGROUPS_MAX];/* group list */
-	int		ngroups;	/* number of elements in groups */
-#else
 	int		gid;		/* group id */
-#endif
 	char		**argv;		/* arguments to session */
 	char		**userEnviron;	/* environment for session */
 	char		**systemEnviron;/* environment for startup/reset */
