@@ -150,12 +150,12 @@
   (declare (fixnum fd start-index length)
 	   (type (simple-array (unsigned-byte 8) (*)) vector))
   (with-interrupt-checking-on
-   (do ((totread 0))
-       ((eq totread length) nil)
-     (declare (fixnum totread))
+   (do ((rest length))
+       ((eq 0 rest) nil)
+     (declare (fixnum rest))
      (multiple-value-bind (numread errcode)
 	 (comp::.primcall-sargs 'sys::filesys excl::fs-read-bytes fd vector
-				(+ start-index totread) length)
+				start-index rest)
        (declare (fixnum numread))
        (if* errcode
 	  then (if (not (eq errcode
@@ -163,8 +163,8 @@
 		   (return t))
 	elseif (eq 0 numread)
 	  then (return t)
-	  else (incf totread numread))))))
-
+	  else (decf rest numread)
+	       (incf start-index numread))))))
 
 (when (plusp (ff:get-entry-points
       (make-array 1 :initial-contents
@@ -310,7 +310,7 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 
-;; $Header: excldep.l,v 1.6 89/10/13 00:56:37 cjl Exp $
+;; $Header: excldep.l,v 1.7 89/10/14 02:06:52 cjl Exp $
 
 (in-package 'patch :use '(lisp excl))
 
