@@ -9,7 +9,9 @@ SRCS =	\
 	macIIUtils.c \
 	macIIGC.c \
 	macIIKMap.c \
-	Xrepair.c
+	Xrepair.c \
+	X11R2 \
+	def.x11start
 
 OFILES = macIIInit.o
 
@@ -40,5 +42,7 @@ NormalLibraryTarget(macII,$(OBJS))
 NormalLintTarget($(SRCS))
 SingleProgramTarget(Xrepair, Xrepair.o,,)
 InstallProgram(Xrepair,$(BINDIR))
+InstallProgram(X11R2,$(BINDIR))
+InstallProgram(def.x11start,$(LIBDIR)/.x11start)
 DependTarget()
 InstallManPage(XmacII,$(MANDIR))
