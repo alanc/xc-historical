@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Destroy.c,v 6.4 87/12/08 12:59:36 asente Exp $";
+static char rcsid[] = "$Header: Destroy.c,v 6.4 87/12/08 12:59:36 swick Locked $";
 #endif lint
 
 /*
@@ -100,7 +100,8 @@ static void XtPhase2Destroy (widget, closure, call_data)
     Window	    window;
     XtWidgetProc    delete_child;
 
-    if (widget->core.parent != NULL) {
+    if (widget->core.parent != NULL &&
+	XtIsComposite(widget->core.parent)) {
 	XtUnmanageChild(widget);
 	delete_child =
 	    (((CompositeWidgetClass) widget->core.parent->core.widget_class)
