@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: photomap.c,v 1.1 93/07/19 11:39:29 mor Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -105,7 +105,8 @@ XieLTriplet     	levels_ret;
 
     END_REQUEST_HEADER (QueryPhotomap, pBuf, req);
 
-    if (_XReply (display, &rep, sz_xieQueryPhotomapReply-32>>2, xTrue) == 0)
+    if (_XReply (display, &rep,
+	(SIZEOF (xieQueryPhotomapReply) - 32) >> 2, xTrue) == 0)
     {
         UnlockDisplay (display);
 	SYNC_HANDLE (display);
