@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.107 91/07/10 09:51:13 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.108 91/07/12 11:00:21 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,17 +32,6 @@ extern int errno;
 
 static TimerEventRec* freeTimerRecs;
 static WorkProcRec* freeWorkRecs;
-
-#undef MIN
-#undef MAX
-#ifndef OPEN_MAX
-#ifndef NOFILE
-#include <sys/param.h>
-#endif
-#ifdef NOFILE
-#define OPEN_MAX NOFILE
-#endif
-#endif
 
 /* Some systems running NTP daemons are known to return strange usec
  * values from gettimeofday.  At present (3/90) this has only been
@@ -503,15 +492,13 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 			  "invalid condition passed to XtAppAddInput",
 			  (String *)NULL, (Cardinal *)NULL);
 
-	if (app->input_list == NULL) {
-#ifdef OPEN_MAX
-	    app->input_max = OPEN_MAX;
-#else
-	    app->input_max = sysconf(_SC_OPEN_MAX);
-#endif
-	    app->input_list = (InputEvent**)
-	       _XtHeapAlloc(&app->heap,(Cardinal)app->input_max*sizeof(InputEvent*));
-	    bzero((char*)app->input_list,(unsigned)app->input_max*sizeof(InputEvent*));
+	if (app->input_max <= source) {
+	    Cardinal n = source + 1;
+	    app->input_list = (InputEvent**)XtRealloc((char*) app->input_list,
+						      n * sizeof(InputEvent*));
+	    bzero((char *) &app->input_list[app->input_max],
+		  (unsigned) (n - app->input_max) * sizeof(InputEvent*));
+	    app->input_max = n;
 	}
 	sptr = XtNew(InputEvent);
 	sptr->ie_proc = proc;
@@ -600,6 +587,7 @@ void _XtRemoveAllInputs(app)
 	    ep = next;
 	}
     }
+    XtFree((char *) app->input_list);
 }
 
 /* Do alternate input and timer callbacks if there are any */
