@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.154 91/03/20 13:15:37 gildea Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.155 91/03/22 17:21:07 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1953,8 +1953,7 @@ extern void XtGetConstraintResourceList(
 
 #endif /* !CRAY */
 
-#if __STDC__ && !defined(NOSTDHDRS)
-#include <stddef.h>
+#ifdef offsetof
 #define XtOffsetOf(s_type,field) offsetof(s_type,field)
 #else
 #define XtOffsetOf(s_type,field) XtOffset(s_type*,field)
