@@ -412,6 +412,7 @@ sunOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
     static char	  *xdevice; 	/* string of devices to use from environ */
     static char	  *devsw;   	/* string of devices from args */
     struct fbgattr  fbattr;
+    int		  type;
 
     sunFbs[index].parent = FALSE;
 
@@ -655,13 +656,29 @@ badfb:
 	    	(void) close(fd);
 	    	return (-1);
 	    }
+	    type = pfbType->fb_type;
 	}
 	else
 	{
+	    int	i;
+
+	    type = fbattr.real_type;
 	    *pfbType = fbattr.fbtype;
+	    if (expect != type)
+	    {
+	    	for (i = 0; i < FB_ATTR_NEMUTYPES; i++)
+	    	{
+		    if (expect == fbattr.emu_types[i])
+		    {
+		    	type = fbattr.emu_types[i];
+			break;
+		    }
+	    	}
+	    }
 	}
 	/* XXX - this is temporary 'cos the CG4 pretends its a BW2 */
-	if (strcmp(name, sunFbData[fbNum].devName) != 0 && pfbType->fb_type != expect) {
+	if (strcmp(name, sunFbData[fbNum].devName) != 0 && type != expect)
+	{
 	    (void) close(fd);
 	    return (-1);
 	}
