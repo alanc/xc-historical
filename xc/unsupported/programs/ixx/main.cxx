@@ -33,7 +33,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#if defined(AIXV3)
+extern "C" int yyparse();
+#else
 extern int yyparse();
+#endif
+
 extern Expr* yyparse_root;
 
 #if defined(YYDEBUG)
@@ -328,9 +333,11 @@ void App::finish() {
     stage("finish");
 }
 
+#if !defined(AIXV3)
 extern "C" {
     void* sbrk(int);
 }
+#endif
 
 unsigned long App::curheapsize() {
     return (((unsigned long)sbrk(0) + 1023) >> 10) - heapstart_;
