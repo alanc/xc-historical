@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.10 88/07/26 17:23:11 xguest Exp $ */
+/* $XConsortium: maskbits.h,v 1.11 88/09/06 14:53:33 jim Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -30,8 +30,8 @@ extern int starttab[];
 extern int endtab[];
 extern int startpartial[];
 extern int endpartial[];
-extern int rmask[32];
-extern int mask[32];
+extern int rmask[];
+extern int mask[];
 
 
 /* the following notes use the following conventions:
