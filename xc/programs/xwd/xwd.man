@@ -3,7 +3,8 @@
 xwd - dump an image of an X window
 .SH SYNOPSIS
 .B "xwd"
-[-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy] [-frame]
+[-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy] [-frame] [-add \fIvalue\fP]
+[-root | -id \fIid\fP | -name \fIname\fP ]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
@@ -13,7 +14,7 @@ is an X Window System window dumping utility.
 allows X users to store window images in a specially formatted dump
 file.  This file can then be read by various other X utilities for
 redisplay, printing, editing, formatting, archiving, image processing, etc.
-The target window is selected by clicking the mouse in the desired window.
+The target window is selected by clicking the pointer in the desired window.
 The keyboard bell is rung once at the beginning of the dump and twice when
 the dump is completed.
 .SH OPTIONS
@@ -51,6 +52,23 @@ This option specifies an signed value to be added to every pixel.
 .B "-frame"
 This option indicates that the window manager frame should be included when
 manually selecting a window.
+.PP
+.TP 8
+.B "-root"
+This option indicates that the root window should be selected for the
+window dump, without requiring the user to select a window with the pointer.
+.PP
+.TP 8
+.B "-id \fIid\fP"
+This option indicates that the window with the specified resource id
+should be selected for the window dump, without requiring the user to
+select a window with the pointer.
+.PP
+.TP 8
+.B "-name \fIname\fP"
+This option indicates that the window with the specified WM_NAME property
+should be selected for the window dump, without requiring the user to
+select a window with the pointer.
 .SH ENVIRONMENT
 .PP
 .TP 8
