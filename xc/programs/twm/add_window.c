@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.47 89/06/09 10:22:15 jim Exp $
+ * $XConsortium: add_window.c,v 1.48 89/06/09 13:36:31 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.47 89/06/09 10:22:15 jim Exp $";
+"$XConsortium: add_window.c,v 1.48 89/06/09 13:36:31 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -297,11 +297,7 @@ IconMgr *iconp;
 			    if (JunkRoot == RootWindow (dpy, scrnum)) break;
 			}
 
-			if (scrnum != NumScreens) {
-			    PreviousScreen = scrnum;
-			    ScreenList[scrnum]->last_x = JunkX;
-			    ScreenList[scrnum]->last_y = JunkY;
-			}
+			if (scrnum != NumScreens) PreviousScreen = scrnum;
 		    }
 		    firsttime = False;
 		}

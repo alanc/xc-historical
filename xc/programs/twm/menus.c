@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.61 89/05/17 14:31:36 jim Exp $
+ * $XConsortium: menus.c,v 1.62 89/06/09 13:37:10 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.61 89/05/17 14:31:36 jim Exp $";
+"$XConsortium: menus.c,v 1.62 89/06/09 13:37:10 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2433,7 +2433,7 @@ WarpToScreen (n, inc)
     int n, inc;
 {
     Window dumwin;
-    int dumint;
+    int x, y, dumint;
     unsigned int dummask;
     ScreenInfo *newscr = NULL;
 
@@ -2459,10 +2459,9 @@ WarpToScreen (n, inc)
     if (Scr->screen == n) return;	/* already on that screen */
 
     PreviousScreen = Scr->screen;
-    XQueryPointer (dpy, Scr->Root, &dumwin, &dumwin, &Scr->last_x,
-		   &Scr->last_y, &dumint, &dumint, &dummask);
+    XQueryPointer (dpy, Scr->Root, &dumwin, &dumwin, &x, &y,
+		   &dumint, &dumint, &dummask);
 
-    XWarpPointer (dpy, None, newscr->Root, 0, 0, 0, 0,
-		  newscr->last_x, newscr->last_y);
+    XWarpPointer (dpy, None, newscr->Root, 0, 0, 0, 0, x, y);
     return;
 }

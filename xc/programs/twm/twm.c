@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.48 89/05/31 16:09:14 jim Exp $
+ * $XConsortium: twm.c,v 1.49 89/06/09 13:38:09 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.48 89/05/31 16:09:14 jim Exp $";
+"$XConsortium: twm.c,v 1.49 89/06/09 13:38:09 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -306,8 +306,6 @@ main(argc, argv, environ)
 	Scr->CMap = DefaultColormap(dpy, scrnum);
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
-	Scr->last_x = Scr->MyDisplayWidth / 2;
-	Scr->last_y = Scr->MyDisplayHeight / 2;
 
 	/* setup default colors */
 	black = Scr->Black = BlackPixel(dpy, scrnum);

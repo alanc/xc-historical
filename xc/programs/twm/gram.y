@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.39 89/05/17 16:10:17 jim Exp $
+ * $XConsortium: gram.y,v 1.40 89/06/09 13:36:59 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,7 +35,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.39 89/05/17 16:10:17 jim Exp $";
+"$XConsortium: gram.y,v 1.40 89/06/09 13:36:59 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
