@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.143 92/02/12 19:15:31 keith Exp $ */
+/* $XConsortium: connection.c,v 1.144 92/05/19 17:23:21 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -662,7 +662,6 @@ EstablishNewConnections(clientUnused, closure)
 	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
 	if (!oc)
 	{
-	    xfree(oc);
 	    ErrorConnMax(newconn);
 	    close(newconn);
 	    continue;
