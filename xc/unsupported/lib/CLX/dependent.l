@@ -814,7 +814,7 @@
 #+excl
 (defun open-x-stream (host display protocol)
   (declare (ignore protocol));; unused
-  (let ((fd (connect-to-server host (+ *x-tcp-port* display)))
+  (let ((fd (connect-to-server host display))
 	stm)
     (when (minusp fd)
       (error "Failed to connect to server: ~A ~D" host display))
