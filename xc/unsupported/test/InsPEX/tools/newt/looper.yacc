@@ -1,5 +1,5 @@
 
-/* $XConsortium: looper.yacc,v 5.2 91/02/16 09:59:47 rws Exp $ */
+/* $XConsortium: looper.yacc,v 5.3 91/05/04 23:18:31 keith Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -408,8 +408,8 @@ N_execute(func,exeflag)
 
 		    /* iterate over the loop */
 		    for ( ; i <= end; i+=increment) {
-			set_val(func->fun.forl.loopvar->name,
-				sprintf(numstring, "%d", i));
+			sprintf(numstring, "%d", i);
+			set_val(func->fun.forl.loopvar->name,numstring);
                         N_execute(func->fun.forl.body,curflag);
 		    }
 		}
