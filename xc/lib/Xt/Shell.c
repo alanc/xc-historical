@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.126 92/05/13 16:51:42 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.127 92/06/08 14:28:33 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1348,11 +1348,16 @@ static void EventHandler(wid, closure, event, continue_to_dispatch)
 
 	      case ReparentNotify:
 		if (event->xreparent.window == XtWindow(w)) {
-		   if (event->xreparent.parent != RootWindowOfScreen(XtScreen(w)))
-		       w->shell.client_specified &= ~_XtShellNotReparented;
-		   else
-		       w->shell.client_specified |= _XtShellNotReparented;
-		   w->shell.client_specified &= ~_XtShellPositionValid;
+		   if (event->xreparent.parent !=
+		       RootWindowOfScreen(XtScreen(w)))
+		       w->shell.client_specified &= 
+			   ~(_XtShellNotReparented | _XtShellPositionValid);
+		   else {
+		       w->core.x = event->xreparent.x;
+		       w->core.y = event->xreparent.y;
+		       w->shell.client_specified |= 
+			   (_XtShellNotReparented | _XtShellPositionValid);
+		   }
 	        }
 		return;
 
