@@ -1,4 +1,4 @@
-/* $XConsortium: mppaste.c,v 1.3 93/11/06 15:41:32 rws Exp $ */
+/* $XConsortium: mppaste.c,v 1.4 94/01/12 20:23:03 rws Exp $ */
 /**** module mppaste.c ****/
 /******************************************************************************
 				NOTICE
@@ -139,7 +139,7 @@ typedef struct _pasterect {
 typedef struct _mppasteupdef {
 	void	     (*fill)();
 	void	     (*action)();
-	CARD32	     nextline;
+	INT32	     nextline;
 	CARD32       iconstant;
 	CARD32	     numRects;	/* Number of interesting src for this band */
 	PasteRectPtr rects;
