@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.12 91/07/17 12:00:26 keith Exp $ */
+/* $XConsortium: fserve.c,v 1.13 91/07/18 22:38:56 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -1007,9 +1007,11 @@ fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     fsOpenBitmapFontReq openreq;
     int         err = Suspended;
-    unsigned char buf[256];
     XID         newid;
+    unsigned char buf[1024];
 
+    if (namelen > sizeof (buf) - 1)
+	return BadFontName;
     _fs_client_access (conn, client, (flags & FontOpenSync) != 0);
 
     newid = GetNewFontClientID();
