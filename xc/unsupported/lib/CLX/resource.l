@@ -636,7 +636,7 @@
   (declare (type (or screen display) screen)
 	   (type (or null resource-database) database)
 	   (type (or null (function (string) t)) key)
-	   (type (or null (function ((list string) t) boolean)) test test-not)
+	   (type (or null (function (list t) boolean)) test test-not)
 	   (values resource-database))
   (let* ((screen (if (type? screen 'display)
 		     (display-default-screen screen)
@@ -656,7 +656,7 @@
 
   (declare (type (or screen display) screen)
 	(type (or null resource-database) database)
-	(type (or null (function ((list string) t) boolean)) test test-not)
+	(type (or null (function (list t) boolean)) test test-not)
 	(type (or null (function (string stream) t)) write)
 	(values resource-database))
   (let* ((screen (if (type? screen 'display)

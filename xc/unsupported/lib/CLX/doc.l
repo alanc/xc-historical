@@ -3010,7 +3010,7 @@ If there are no regions given, return a very large region."
   (declare (type (or screen display) screen)
 	   (type (or null resource-database) database)
 	   (type (or null (function (string) t)) key)
-	   (type (or null (function ((list string) t) boolean)) test test-not)
+	   (type (or null (function (list t) boolean)) test test-not)
 	   (values resource-database)))
 
 (defsetf root-resources (screen &key test test-not (write 'princ)) (database)
@@ -3024,7 +3024,7 @@ If there are no regions given, return a very large region."
 
   (declare (type (or screen display) screen)
 	(type (or null resource-database) database)
-	(type (or null (function ((list string) t) boolean)) test test-not)
+	(type (or null (function (list t) boolean)) test test-not)
 	(type (or null (function (string stream) t)) write)
 	(values resource-database)))
 
