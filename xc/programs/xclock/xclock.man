@@ -1,19 +1,29 @@
-.\" $XConsortium: xclock.man,v 1.22 94/04/11 14:26:26 gildea Exp $
+.\" $XConsortium: xclock.man,v 1.23 94/04/11 16:02:53 matt Exp $
+.\" Copyright 1988 Massachusetts Institute of Technology
+.\"
+.\" Permission to use, copy, modify, distribute, and sell this software and
+.\" its documentation for any purpose is hereby granted without fee, provided
+.\" that the above copyright notice appear in all copies and that both that
+.\" copyright notice and this permission notice appear in supporting
+.\" documentation, and that the name of M.I.T. not be used in advertising or
+.\" publicity pertaining to distribution of the software without specific,
+.\" written prior permission.  M.I.T. makes no representations about the
+.\" suitability of this software for any purpose.  It is provided "as is"
+.\" without express or implied warranty.
 .TH XCLOCK 1 "Release 6" "X Version 11"
 .SH NAME
-xclock - analog / digital clock for X
+xclock \- analog / digital clock for X
 .SH SYNOPSIS
 .ta 8n
-\fBxclock\fP	[-\fItoolkitoption\fP ...] [-help] [-analog] [-digital]
-[-chime] [-hd \fIcolor\fP] 
-.br
-	[-hl \fIcolor\fP] [-update \fIseconds\fP] [-padding \fInumber\fP]
+\fBxclock\fP [ \fB\-help\fP ] [ \fB\-analog\fP ] [ \fB\-digital\fP ]
+[ \fB\-chime\fP ] [ \fB\-hd\fP \fIcolor\fP ]
+[ \fB\-hl\fP \fIcolor\fP ] [ \fB\-update\fP \fIseconds\fP ]
+[ \fB\-padding\fP \fInumber\fP ]
 .SH DESCRIPTION
 The
 .I xclock 
 program displays the time in analog or digital form.  The time is continuously
-updated at a frequency which may be specified by the user.  This program is
-nothing more than a wrapper around the Athena Clock widget.
+updated at a frequency which may be specified by the user.
 .SH OPTIONS
 .I Xclock
 accepts all of the standard X Toolkit command line options along with the 
@@ -27,25 +37,25 @@ printed on the standard error.
 This option indicates that a conventional 12 hour clock face with tick marks
 and hands should be used.  This is the default.
 .TP 8
-.B \-digital
+\fB\-digital\fP or \fB\-d\fP
 This option indicates that a 24 hour digital clock should be used.
 .TP 8
 .B \-chime
 This option indicates that the clock should chime 
 once on the half hour and twice on the hour.
 .TP 8
-.B \-hd \fIcolor\fP
+\fB\-hands\fP \fIcolor\fP (or \fB\-hd\fP \fIcolor\fP)
 This option specifies the color of the hands on an analog clock.  The default
 is \fIblack\fP.
 .TP 8
-.B \-hl \fIcolor\fP
+\fB\-highlight\fP \fIcolor\fP (or \fB\-hl\fP \fIcolor\fP)
 This option specifies the color of the edges of the hands on an analog clock,
 and is only useful on color displays.  The default is \fIblack\fP.
 .TP 8
 .B \-update \fIseconds\fP
 This option specifies the frequency in seconds at which \fIxclock\fP
 should update its display.  If the clock is obscured and then exposed,
-it will be updated immediately.  A value of less than 30 seconds will enable a
+it will be updated immediately.  A value of 30 seconds or less will enable a
 second hand on an analog clock.  The default is 60 seconds.
 .TP 8
 .B \-padding \fInumber\fP
@@ -54,7 +64,7 @@ between the window border and clock text or picture.  The default is 10
 on a digital clock and 8 on an analog clock.
 .SH X DEFAULTS
 This program uses the 
-.I Athena Clock
+.I Clock
 widget.  It understands all of the core resource names and classes as well as:
 .PP
 .TP 8
@@ -128,16 +138,12 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XClock - specifies required resources
 .SH "SEE ALSO"
-X(1), xrdb(1), time(3C), Athena Clock widget
+X(1), xrdb(1), time(3C)
 .SH BUGS
 .I Xclock
 believes the system clock.
 .PP
 When in digital mode, the string should be centered automatically.
-.SH COPYRIGHT
-Copyright 1988, Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Tony Della Fera (MIT-Athena, DEC)
 .br
