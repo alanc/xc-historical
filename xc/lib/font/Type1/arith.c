@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: arith.c,v 1.2 91/10/10 11:14:06 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -356,7 +356,7 @@ fractpel FPmult(u, v)
         w.low = TOFRACTPEL(MAXSHORT);
   }
  
-  return ((negative) ? -w.low : w.low);
+  return ((negative) ? -(long)w.low : w.low);
 }
  
 /*
@@ -387,7 +387,7 @@ fractpel FPdiv(dividend, divisor)
                IfTrace2(TRUE,"FPdiv: overflow, %p/%p\n", dividend, divisor);
                w.low = TOFRACTPEL(MAXSHORT);
        }
-       return( (negative) ? -w.low : w.low);
+       return( (negative) ? -(long)w.low : w.low);
 }
  
 /*
@@ -414,5 +414,5 @@ fractpel FPstarslash(a, b, c)
                IfTrace3(TRUE,"FPstarslash: overflow, %p*%p/%p\n", a, b, c);
                w.low = TOFRACTPEL(MAXSHORT);
        }
-       return((negative) ? -w.low : w.low);
+       return((negative) ? -(long)w.low : w.low);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: objects.c,v 1.5 92/03/20 15:56:06 eswu Exp $ */
+/* $XConsortium: objects.c,v 1.6 93/07/13 14:38:30 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -293,8 +293,8 @@ struct xobject *t1_Allocate(size, template, extra)  /* non-ANSI; type checking w
        /*
        * round up 'size' and 'extra' to be an integer number of 'long's:
        */
-       size = (size + sizeof(long) - 1) & -sizeof(long);
-       extra = (extra + sizeof(long) - 1) & -sizeof(long);
+       size = (size + sizeof(long) - 1) & -(int)sizeof(long);
+       extra = (extra + sizeof(long) - 1) & -(int)sizeof(long);
        if (size + extra <= 0)
                abort("Non-positive allocate?");
        r = (struct xobject *) xiMalloc(size + extra);

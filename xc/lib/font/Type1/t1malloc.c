@@ -1,4 +1,4 @@
-/* $XConsortium: t1malloc.c,v 1.3 91/10/10 11:19:43 rws Exp $ */
+/* $XConsortium: t1malloc.c,v 1.4 92/03/20 15:58:05 eswu Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991
@@ -568,7 +568,7 @@ We'll record where the area was that was given to us for later reports:
                 if (freearea[i] == NULL) break;
         if (i >= MAXAREAS)
                 abort("too many addmemory()s");
-        aaddr = (long *) ( ((long) addr + sizeof(double) - 1) & - sizeof(double) );
+        aaddr = (long *) ( ((long) addr + sizeof(double) - 1) & - (long)sizeof(double) );
         size -= (char *) aaddr - (char *) addr;
         freearea[i] = aaddr;
 /*
