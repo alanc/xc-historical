@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.6 89/09/10 16:23:09 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.7 89/09/12 14:16:14 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -34,6 +34,8 @@ without any express or implied warranty.
 #include "mizerarc.h"
 
 #if PPW == 4
+
+extern void miPolyArc(), miZeroPolyArc();
 
 static void
 cfbZeroArcSS8Copy(pDraw, pGC, arc)

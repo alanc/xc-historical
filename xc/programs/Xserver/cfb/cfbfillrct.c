@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.4 89/08/18 16:46:42 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.5 89/09/08 14:25:05 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -31,9 +31,15 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
+#if PPW == 4
+extern void cfb8FillBoxOpaqueStippled32();
+extern void cfb8FillBoxTransparentStippled32();
+#endif
+
 void
 cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
     DrawablePtr	    pDrawable;
+    int		    nBox;
     BoxPtr	    pBox;
     unsigned long   pixel;
     Bool	    isCopy;
@@ -44,7 +50,6 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel, isCopy)
     unsigned long   fill;
     unsigned long   *pdst;
     unsigned long   leftMask, rightMask;
-    int		    xoffleft, xoffright;
     int		    nmiddle;
     int		    m;
     int		    w;
@@ -325,7 +330,6 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     int numRects;
     Bool isCopy;
     Pixel pixel;
-    Bool fillTiled;
     PixmapPtr	pRoTile;
     PixmapPtr	pTile;
     int		xrot, yrot;
@@ -472,15 +476,18 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 	    switch (pGC->fillStyle)
 	    {
 	    case FillSolid:
-		cfbFillBoxSolid (pDrawable, pboxClipped-pboxClippedBase, 
+		cfbFillBoxSolid (pDrawable,
+				 pboxClipped-pboxClippedBase,
 				 pboxClippedBase, pixel, isCopy);
 		break;
 	    case FillTiled:
 		if (pRoTile)
-		    cfbFillBoxTile32 (pDrawable, pboxClipped-pboxClippedBase, 
+		    cfbFillBoxTile32 (pDrawable,
+				      pboxClipped-pboxClippedBase,
 				      pboxClippedBase, pRoTile);
 		else
-		    cfbFillBoxTileOdd (pDrawable, pboxClipped-pboxClippedBase, 
+		    cfbFillBoxTileOdd (pDrawable,
+				       pboxClipped-pboxClippedBase,
 				      pboxClippedBase, pTile, xrot, yrot);
 		break;
 #if (PPW == 4)

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.1 89/08/18 16:45:35 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.2 89/09/01 15:46:31 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -61,8 +61,8 @@ SOFTWARE.
 
 cfbBresS(rop, pixel, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
-register unsigned char pixel;
-unsigned int *addrl;	/* pointer to base of bitmap */
+register unsigned long pixel;
+int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 register int signdx;
 int signdy;		/* signs of directions */

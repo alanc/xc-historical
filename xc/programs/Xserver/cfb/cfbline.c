@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.4 89/09/05 20:10:18 keith Exp $ */
+/* $XConsortium: cfbline.c,v 1.5 89/09/13 18:58:05 rws Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -114,7 +114,6 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    int nptTmp;
     DDXPointPtr ppt;		/* pointer to list of translated points */
 #endif
 
@@ -502,12 +501,8 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     BoxPtr pboxInit;
     register BoxPtr pbox;
 #ifndef POLYSEGMENT
-    int nptTmp;
     DDXPointPtr ppt;		/* pointer to list of translated points */
 #endif
-
-    DDXPointRec pt1;
-    DDXPointRec pt2;
 
     unsigned int oc1;		/* outcode of point 1 */
     unsigned int oc2;		/* outcode of point 2 */
@@ -523,23 +518,10 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int e, e1, e2;		/* bresenham error and increments */
     int len;			/* length of segment */
     int axis;			/* major axis */
-
-    int clipDone;		/* flag for clipping loop */
-    DDXPointRec pt1Orig;	/* unclipped start point */
-    DDXPointRec pt2Orig;	/* unclipped end point */
-    int err;			/* modified bresenham error term */
-    int clip1, clip2;		/* clippedness of the endpoints */
-
-    int clipdx, clipdy;		/* difference between clipped and
-				   unclipped start point */
-
-				/* a bunch of temporaries */
-    int tmp;
     int x1, x2, y1, y2;
     RegionPtr cclip;
     unsigned long   fg, bg;
     int		    alu;
-    int		    isDoubleDashed;
     unsigned char   *pDash;
     int		    dashOffset;
     int		    numInDashList;
@@ -547,7 +529,6 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int		    isDoubleDash;
     int		    dashIndexTmp, dashOffsetTmp;
     int		    unclippedlen;
-    int		    flipped;
 
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
@@ -573,7 +554,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     isDoubleDash = (pGC->lineStyle == LineDoubleDash);
     dashIndex = 0;
     dashOffset = 0;
-    miStepDash (pGC->dashOffset, &dashIndex, pDash,
+    miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
 		numInDashList, &dashOffset);
 
     fg = pGC->fgPixel;

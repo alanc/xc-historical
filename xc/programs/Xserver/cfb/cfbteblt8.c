@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.0 89/07/26 10:42:41 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.1 89/07/28 12:51:24 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,6 +35,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 #if (PPW == 4)
 
 #include "cfb8bit.h"
+
+extern void miImageGlyphBlt();
 
 void
 cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
@@ -58,7 +60,6 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     unsigned long	*oldRightChar;
     unsigned long	*pdstBase;
     unsigned long	*leftChar;
-    int			s;
     int			hTmp;
     int			widthDst;
     int			widthGlyph;

@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstip8.c,v 1.3 89/08/23 13:59:34 rws Exp $ */
+/* $XConsortium: cfbrctstip8.c,v 1.4 89/09/12 18:08:45 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -43,7 +43,6 @@ cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)
     PixmapPtr	    stipple;	/* rotated, expanded stipple */
     unsigned long   fg, bg;	/* pixel values */
 {
-    int srcpix;	
     int *psrc;		/* pointer to bits in stipple, if needed */
     int stippleHeight;	/* height of the stipple */
 
@@ -53,9 +52,6 @@ cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)
     unsigned long startmask;
     unsigned long endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
-    
     register int nlw;			/* loop version of nlwMiddle */
     unsigned long *dstLine;
     register unsigned long *dst;	/* pointer to bits we're writing */
@@ -153,6 +149,7 @@ static unsigned long clipFirst[4] = { 0xf, 0xe, 0xc, 0x8 };
 static unsigned long clipLast [4] = { 0xf, 0x1, 0x3, 0x7 };
 #endif
 
+void
 cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     DrawablePtr	    pDrawable;
     int		    nBox;	/* number of boxes to fill */
@@ -160,7 +157,6 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     PixmapPtr	    stipple;	/* rotated, expanded stipple */
     unsigned long   fg;		/* pixel value */
 {
-    int srcpix;	
     int *psrc;		/* pointer to bits in stipple, if needed */
     int stippleHeight;	/* height of the stipple */
 
@@ -170,9 +166,6 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     unsigned long startmask;
     unsigned long endmask;	/* masks for reggedy bits at either end of line */
     int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlwExtra;	
-		        /* to get from right of box to left of next span */
-    
     register int nlw;			/* loop version of nlwMiddle */
     unsigned long *dstLine;
     register unsigned long *dst;	/* pointer to bits we're writing */

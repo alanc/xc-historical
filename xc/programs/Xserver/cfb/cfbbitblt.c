@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.11 89/09/06 14:47:56 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.12 89/09/12 14:26:18 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -41,6 +41,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int		    alu;
     RegionPtr	    prgnDst;
     DDXPointPtr	    pptSrc;
+    unsigned long   planemask;
 {
     unsigned int *psrcBase, *pdstBase;	
 				/* start of src and dst bitmaps */
@@ -80,7 +81,6 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     int srcStartOver;		/* pulling nstart bits from src
 				   overflows into the next word? */
     int careful;
-    int	xoff;
     int tmpSrc;
 
     if (pSrc->type == DRAWABLE_WINDOW)
@@ -264,8 +264,6 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 		    {
 	    	    	while (h--)
 	    	    	{
-			    int	dec;
-
 		    	    psrc = psrcLine;
 		    	    pdst = pdstLine;
 		    	    pdstLine += widthDst;

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.1 89/08/18 16:45:50 keith Exp $ */
+/* $XConsortium: cfbimage.c,v 1.2 89/08/20 16:33:15 keith Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -32,6 +32,8 @@ SOFTWARE.
 #include "cfbmskbits.h"
 #include "servermd.h"
 
+extern void miPutImage(), miGetImage(), mfbGetImage();
+
 void
 cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     DrawablePtr dst;
@@ -39,7 +41,7 @@ cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     int		depth, x, y, w, h;
     int leftPad;
     unsigned int format;
-    int 	*pImage;
+    char 	*pImage;
 {
     PixmapRec	FakePixmap;
 

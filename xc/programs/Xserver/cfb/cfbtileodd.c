@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.4 89/08/18 16:46:42 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.1 89/09/08 14:24:18 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -77,7 +77,6 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     PixmapPtr	    tile;	/* tile */
     int		    xrot, yrot;
 {
-    int srcpix;	
     int tileWidth;	/* width of tile in pixels */
     int tileHeight;	/* height of the tile */
     int widthSrc;
@@ -91,7 +90,6 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     int nlwSrc;		/* number of whole longwords in source */
     
     register int nlw;	/* loop version of nlwMiddle */
-    int y;		/* current scan line */
     int srcy;		/* current tile y position */
     int srcx;		/* current tile x position */
     int xoffDst, xoffSrc;
@@ -142,7 +140,6 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     {
 	w = pBox->x2 - pBox->x1;
 	h = pBox->y2 - pBox->y1;
-	y = pBox->y1;
 	srcx = (pBox->x1 - xrot) % tileWidth;
 	srcy = (pBox->y1 - yrot) % tileHeight;
 	xoffDst = pBox->x1 & PIM;

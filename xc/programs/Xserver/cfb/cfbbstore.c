@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.2 89/07/21 13:57:01 keith Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 5.3 89/07/31 19:02:24 keith Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "cfb.h"
@@ -78,7 +78,7 @@ cfbSaveAreas(pPixmap, prgnSave, xorg, yorg)
 		(DrawablePtr)pPixmap,
 		GXcopy,
 		prgnSave,
-		pPtsInit, ~0);
+		pPtsInit, ~0L);
 
     DEALLOCATE_LOCAL (pPtsInit);
 }
@@ -134,9 +134,6 @@ cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg)
 		(DrawablePtr)pPixmap->drawable.pScreen->devPrivate,
 		GXcopy,
 		prgnRestore,
-		pPtsInit, ~0);
+		pPtsInit, ~0L);
     DEALLOCATE_LOCAL (pPtsInit);
 }
-
-
-

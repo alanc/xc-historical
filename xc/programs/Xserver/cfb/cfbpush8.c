@@ -15,7 +15,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.1 89/08/24 19:49:02 rws Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.2 89/08/24 20:07:05 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include	"cfb8bit.h"
 
+extern void mfbPushPixels();
+
+void
 cfbPushPixels8 (pGC, pBitmap, pDrawable, dx, dy, xOrg, yOrg)
     GCPtr	pGC;
     PixmapPtr	pBitmap;

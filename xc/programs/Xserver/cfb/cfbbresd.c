@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.1 89/08/18 16:45:35 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.1 89/08/21 16:41:59 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -53,7 +53,7 @@ unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
 int dashOffset;		/* offset into current dash */
 int isDoubleDash;
-unsigned int *addrl;	/* pointer to base of bitmap */
+int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int signdx, signdy;	/* signs of directions */
 int axis;		/* major axis (Y_AXIS or X_AXIS) */
@@ -61,7 +61,7 @@ int x1, y1;		/* initial point */
 register int e;		/* error accumulator */
 register int e1;	/* bresenham increments */
 int e2;
-unsigned int len;	/* length of line */
+int len;		/* length of line */
 {
     register int yinc;	/* increment to next scanline, in bytes */
     register unsigned char *addrb;

@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.0 89/07/26 10:42:02 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.1 89/07/28 12:51:10 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -55,17 +55,13 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     FontInfoPtr		pfi = pGC->font->pFI;
     unsigned long	*dstLine;
     unsigned long	*pdstBase;
-    int			s;
     int			hTmp;
     int			widthDst;
-    int			widthGlyph;
     int			h;
     int			ew;
     int			xG, yG;
     BoxRec		bbox;		/* for clipping */
-    int			lshift;
     int			widthDiff;
-    int			nw;
     int			w;
 
     pixel = PFILL (pGC->fgPixel);
@@ -220,7 +216,6 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long   c;
     unsigned long   pixel;
     unsigned long   *dst;
-    unsigned long   mask;
     int		    ewTmp;
     int		    xoff;
     unsigned long   *rightChar;
@@ -231,18 +226,13 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long	*pdstBase;
     unsigned long	*cTmp, *clips;
     int			maxAscent, maxDescent;
-    int			s;
     int			hTmp;
     int			widthDst;
-    int			widthGlyph;
-    int			h;
     int			ew;
     int			xG, yG;
     BoxPtr		pBox;
     int			numRects;
-    int			lshift;
     int			widthDiff;
-    int			nw;
     int			w;
     RegionPtr		pRegion;
     int			yBand;
@@ -285,7 +275,8 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
     if (!numRects)
 	return;
-    clips = ALLOCATE_LOCAL ((maxAscent + maxDescent) * sizeof (unsigned long));
+    clips = (unsigned long *)ALLOCATE_LOCAL ((maxAscent + maxDescent) *
+					     sizeof (unsigned long));
     while (nglyph--)
     {
 	pci = *ppci++;

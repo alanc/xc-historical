@@ -67,6 +67,9 @@ extern void cfbGetSpans();
 extern void cfbSolidFS();
 extern void cfbUnnaturalTileFS();
 extern void cfbUnnaturalStippleFS();
+extern void cfbFillBoxTileOdd();
+extern void cfbFillBoxTile32();
+extern void cfbFillBoxSolid();
 
 extern void cfbTEGlyphBlt();
 extern void cfbTEGlyphBlt8();
@@ -85,6 +88,7 @@ extern Bool mfbRealizeFont();
 extern Bool mfbUnrealizeFont();
 extern void mfbQueryBestSize();
 extern RegionPtr mfbPixmapToRegion();
+extern void mfbCopyRotatePixmap();
 
 extern void miNotMiter();
 extern void miMiter();
