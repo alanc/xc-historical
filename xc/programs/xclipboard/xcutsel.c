@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.6 89/07/16 16:04:03 jim Exp $
+ * $XConsortium: xcutsel.c,v 1.7 89/07/21 13:42:43 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xcutsel.c,v 1.6 89/07/16 16:04:03 jim Exp $";
+static char rcsid[] = "$XConsortium: xcutsel.c,v 1.7 89/07/21 13:42:43 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -73,7 +73,9 @@ static ButtonState state;
 Syntax(call)
 	char *call;
 {
-    fprintf( stderr, "Usage: %s [-selection <name>] [-buffer <number>]\n", call );
+    fprintf (stderr, "usage:  %s [-selection name] [-cutbuffer number]\n", 
+	     call);
+    exit (1);
 }
 
 
