@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.53 88/09/06 14:53:55 jim Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.54 88/09/30 14:43:11 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -317,6 +317,7 @@ DDXPointPtr pptSrc;
     int nend;			/* number of ragged bits at end of dst */
     int srcStartOver;		/* pulling nstart bits from src
 				   overflows into the next word? */
+    int careful;
 
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
@@ -347,6 +348,13 @@ DDXPointPtr pptSrc;
 	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
     }
 
+    /* XXX we have to err on the side of safety when both are windows,
+     * because we don't know if IncludeInferiors is being used.
+     */
+    careful = ((pSrcDrawable == pDstDrawable) ||
+	       ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
+		(pDstDrawable->type == DRAWABLE_WINDOW)));
+
     pbox = prgnDst->rects;
     nbox = prgnDst->numRects;
 
@@ -354,7 +362,7 @@ DDXPointPtr pptSrc;
     pptNew1 = NULL;
     pboxNew2 = NULL;
     pptNew2 = NULL;
-    if (pptSrc->y < pbox->y1) 
+    if (careful && (pptSrc->y < pbox->y1))
     {
         /* walk source botttom to top */
 	ydir = -1;
@@ -400,7 +408,7 @@ DDXPointPtr pptSrc;
 	ydir = 1;
     }
 
-    if (pptSrc->x < pbox->x1)
+    if (careful && (pptSrc->x < pbox->x1))
     {
 	/* walk source right to left */
         xdir = -1;
