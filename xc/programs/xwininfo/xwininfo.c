@@ -61,12 +61,121 @@ usage()
     fprintf (stderr,
 	"    -wm                  print out window manager hints\n");
     fprintf (stderr,
+	"    -english             print out sizes in english units\n");
+    fprintf (stderr,
+	"    -metric              print out sizes in metric units\n");
+    fprintf (stderr,
 	"    -all                 -tree, status, -bits, -events, -size, -wm\n");
     fprintf (stderr,
 	"\n");
     exit (1);
 }
 
+/*
+ * pixel to inch, metric converter.
+ * Hacked in by Mark W. Eichin <eichin@athena> [eichin:19880619.1509EST]
+ *
+ * Simply put: replace the old numbers with string print calls.
+ * Returning a local string is ok, since we only ever get called to
+ * print one x and one y, so as long as they don't collide, they're
+ * fine. This is not meant to be a general purpose routine.
+ *
+ */
+
+#define getdsp(var,fn) var = fn(dpy, DefaultScreen(dpy))
+int xp=0, xmm=0;
+int yp=0, ymm=0;
+int bp=0, bmm=0;
+int english = 0, metric = 0;
+
+void scale_init()
+{
+  getdsp(yp,  DisplayHeight);
+  getdsp(ymm, DisplayHeightMM);
+  getdsp(xp,  DisplayWidth);
+  getdsp(xmm, DisplayWidthMM);
+  bp  = xp  + yp;
+  bmm = xmm + ymm;
+}
+
+double drem();
+
+#define MILE (5280*12)
+#define YARD (3*12)
+#define FOOT (12)
+
+char *nscale(n, np, nmm, nbuf)
+     int n, np, nmm;
+     char *nbuf;
+{
+  sprintf(nbuf, "%d", n);
+  if(metric||english) {
+    sprintf(nbuf+strlen(nbuf), " (");
+  }
+  if(metric) {
+    sprintf(nbuf+strlen(nbuf),"%.2f mm%s", ((float) n)*nmm/np, english?"; ":"");
+  }
+  if(english) {
+    float in;
+    int mi, yar, ft, inr;
+    in = ((float) n)*(nmm/25.4)/np;
+    inr = (int)in;
+    if(inr>=MILE) {
+      mi = inr/MILE;
+      inr %= MILE;
+      sprintf(nbuf+strlen(nbuf), "%d %s(?!?), ",
+	      mi, (mi==1)?"mile":"miles");
+    }
+    if(inr>=YARD) {
+      yar = inr/YARD;
+      inr %= YARD;
+      sprintf(nbuf+strlen(nbuf), "%d %s, ",
+	      yar, (yar==1)?"yard":"yards");
+    }
+    if(inr>=FOOT) {
+      ft = inr/FOOT;
+      inr  %= FOOT;
+      sprintf(nbuf+strlen(nbuf), "%d %s, ",
+	      ft, (ft==1)?"foot":"feet");
+    }
+    sprintf(nbuf+strlen(nbuf), "%.2f inches", in);
+  }
+  if (english || metric) strcat (nbuf, ")");
+  return(nbuf);
+}	  
+  
+char xbuf[BUFSIZ];
+char *xscale(x)
+     int x;
+{
+  if(!xp) {
+    scale_init();
+  }
+  return(nscale(x, xp, xmm, xbuf));
+}
+
+char ybuf[BUFSIZ];
+char *yscale(y)
+     int y;
+{
+  if(!yp) {
+    scale_init();
+  }
+  return(nscale(y, yp, ymm, ybuf));
+}
+
+char bbuf[BUFSIZ];
+char *bscale(b)
+     int b;
+{
+  if(!bp) {
+    scale_init();
+  }
+  return(nscale(b, bp, bmm, bbuf));
+}
+
+
+/* end of pixel to inch, metric converter */
 
 main(argc, argv)
      int argc;
@@ -113,6 +222,14 @@ main(argc, argv)
     }
     if (!strcmp(argv[i], "-size")) {
       size = 1;
+      continue;
+    }
+    if (!strcmp(argv[i], "-english")) {
+      english = 1;
+      continue;
+    }
+    if (!strcmp(argv[i], "-metric")) {
+      metric = 1;
       continue;
     }
     if (!strcmp(argv[i], "-all")) {
@@ -242,12 +359,12 @@ Display_Stats_Info(window)
   ybelow = (dh - win_attributes.y - win_attributes.border_width * 2 -
 	    win_attributes.height);
 
-  printf("\n         ==> Upper left X: %d\n", win_attributes.x);
-  printf("         ==> Upper left Y: %d\n", win_attributes.y);
-  printf("         ==> Width: %d\n", win_attributes.width);
-  printf("         ==> Height: %d\n", win_attributes.height);
+  printf("\n         ==> Upper left X: %s\n", xscale(win_attributes.x));
+  printf("         ==> Upper left Y: %s\n", yscale(win_attributes.y));
+  printf("         ==> Width: %s\n", xscale(win_attributes.width));
+  printf("         ==> Height: %s\n", yscale(win_attributes.height));
   printf("         ==> Depth: %d\n", win_attributes.depth);
-  printf("         ==> Border width: %d\n", win_attributes.border_width);
+  printf("         ==> Border width: %s\n", bscale(win_attributes.border_width));
   printf("         ==> Window class: %s\n", Lookup(win_attributes.class,
 						   _window_classes));
   printf("         ==> Window Map State: %s\n",
@@ -421,50 +538,50 @@ Display_Hints(hints)
 	flags = hints.flags;
 	
 	if (flags & USPosition)
-	  printf("             ==> User supplied location: %d, %d\n",
-		 hints.x, hints.y);
+	  printf("             ==> User supplied location: %s, %s\n",
+		 xscale(hints.x), yscale(hints.y));
 
 	if (flags & PPosition)
-	  printf("             ==> Program supplied location: %d, %d\n",
-		 hints.x, hints.y);
+	  printf("             ==> Program supplied location: %s, %s\n",
+		 xscale(hints.x), yscale(hints.y));
 
 	if (flags & USSize) {
-	  printf("             ==> User supplied size: %d by %d\n",
-		 hints.width, hints.height);
+	  printf("             ==> User supplied size: %s by %s\n",
+		 xscale(hints.width), yscale(hints.height));
 	}
 
 	if (flags & PSize)
-	  printf("             ==> Program supplied size: %d by %d\n",
-		 hints.width, hints.height);
+	  printf("             ==> Program supplied size: %s by %s\n",
+		 xscale(hints.width), yscale(hints.height));
 
 	if (flags & PMinSize)
-	  printf("             ==> Program supplied minimum size: %d by %d\n",
-		 hints.min_width, hints.min_height);
+	  printf("             ==> Program supplied minimum size: %s by %s\n",
+		 xscale(hints.min_width), yscale(hints.min_height));
 
 	if (flags & PMaxSize)
-	  printf("             ==> Program supplied maximum size: %d by %d\n",
-		 hints.max_width, hints.max_height);
+	  printf("             ==> Program supplied maximum size: %s by %s\n",
+		 xscale(hints.max_width), yscale(hints.max_height));
 
 	if (flags & PResizeInc) {
-	  printf("             ==> Program supplied x resize increment: %d\n",
-		 hints.width_inc);
-	  printf("             ==> Program supplied y resize increment: %d\n",
-		 hints.height_inc);
+	  printf("             ==> Program supplied x resize increment: %s\n",
+		 xscale(hints.width_inc));
+	  printf("             ==> Program supplied y resize increment: %s\n",
+		 yscale(hints.height_inc));
 	  if (flags & USSize && hints.width_inc != 0 && hints.height_inc != 0)
-	    printf("             ==> User supplied size in resize increments:  %d by %d\n",
-		   (hints.width / hints.width_inc), 
-		   (hints.height / hints.height_inc));
+	    printf("             ==> User supplied size in resize increments:  %s by %s\n",
+		   (xscale(hints.width / hints.width_inc)), 
+		   (yscale(hints.height / hints.height_inc)));
 	  if (flags & PSize && hints.width_inc != 0 && hints.height_inc != 0)
-	    printf("             ==> Program supplied size in resize increments:  %d by %d\n",
-		   (hints.width / hints.width_inc), 
-		   (hints.height / hints.height_inc));
+	    printf("             ==> Program supplied size in resize increments:  %s by %s\n",
+		   (xscale(hints.width / hints.width_inc)), 
+		   (yscale(hints.height / hints.height_inc)));
         }
 
 	if (flags & PAspect) {
-	  printf("             ==> Program supplied min aspect ratio: %d/%d\n",
-		 hints.min_aspect.x, hints.min_aspect.y);
-	  printf("             ==> Program supplied max aspect ratio: %d/%d\n",
-		 hints.max_aspect.x, hints.max_aspect.y);
+	  printf("             ==> Program supplied min aspect ratio: %s/%s\n",
+		 xscale(hints.min_aspect.x), yscale(hints.min_aspect.y));
+	  printf("             ==> Program supplied max aspect ratio: %s/%s\n",
+		 xscale(hints.max_aspect.x), yscale(hints.max_aspect.y));
         }
 }
 
@@ -529,8 +646,8 @@ Display_WM_Info(window)
 	}
 
 	if (flags & IconPositionHint)
-	  printf("             ==> Initial icon position: %d, %d\n",
-		 wmhints->icon_x, wmhints->icon_y);
+	  printf("             ==> Initial icon position: %s, %s\n",
+		 xscale(wmhints->icon_x), yscale(wmhints->icon_y));
 
 	if (flags & StateHint)
 	  printf("             ==> Initial state is %s\n",

@@ -5,6 +5,7 @@ xwininfo - window information utility for X
 .B "xwininfo"
 [-help] [-id \fIid\fP] [-root] [-name \fIname\fP] [-int]
 [-tree] [-stats] [-bits] [-events] [-size] [-wm ] [-all]
+[-english] [-metric]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
@@ -93,6 +94,19 @@ This option causes the selected window's window manager hints to be
 displayed.  Information displayed may include whether or not the application
 accepts input, what the window's icon window # and name is, where the window's
 icon should go, and what the window's initial state should be.
+.PP
+.TP 8
+.B -metric
+This option causes all individual height, width, and x and y positions to be
+displayed in millimeters as well as number of pixels, based on what the
+server thinks the resolution is. Geometry specifications that are in
+\fB+x+y\fP form are not changed.
+.TP 8
+.B -english
+This option causes all individual height, width, and x and y positions to be
+displayed in inches (and feet, yards, and miles if necessary) as well as
+number of pixels. \fB-metric\fP and \fB-english\fP may both be enabled at the
+same time. 
 .PP
 .TP 8
 .B -all
