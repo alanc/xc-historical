@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.71 94/04/02 14:43:05 gildea Exp $ */
+/* $XConsortium: session.c,v 1.72 94/04/17 20:03:45 gildea Exp converse $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -451,11 +451,7 @@ SessionExit (d, status, removeAuth)
 	ResetServer (d);
     if (removeAuth)
     {
-#ifdef NGROUPS_MAX
-	setgid (verify.groups[0]);
-#else
 	setgid (verify.gid);
-#endif
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
 #ifdef K5AUTH
@@ -527,26 +523,17 @@ StartClient (verify, d, pidp, name, passwd)
 	    return (0);
 	}
 #else /* AIXV3 */
-#ifdef NGROUPS_MAX
-	if (setgid(verify->groups[0]) < 0)
-	{
-	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
-		     verify->groups[0], name, errno);
-	    return (0);
-	}
-	if (setgroups(verify->ngroups, verify->groups) < 0)
-	{
-	    LogError("setgroups for \"%s\" failed, errno=%d\n", name, errno);
-	    return (0);
-	}
-#else
 	if (setgid(verify->gid) < 0)
 	{
 	    LogError("setgid %d (user \"%s\") failed, errno=%d\n",
 		     verify->gid, name, errno);
 	    return (0);
 	}
-#endif
+	if (initgroups(name, verify->gid) < 0)
+	{
+	    LogError("initgroups for \"%s\" failed, errno=%d\n", name, errno);
+	    return (0);
+	}
 	if (setuid(verify->uid) < 0)
 	{
 	    LogError("setuid %d (user \"%s\") failed, errno=%d\n",

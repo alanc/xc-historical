@@ -1115,13 +1115,8 @@ SetUserAuthorization (d, verify)
 				    "XAUTHORITY", envname);
 	}
 	XauUnlockAuth (name);
-	if (envname) {
-#ifdef NGROUPS_MAX
-	    chown (envname, verify->uid, verify->groups[0]);
-#else
+	if (envname)
 	    chown (envname, verify->uid, verify->gid);
-#endif
-	}
     }
     Debug ("done SetUserAuthorization\n");
 }
