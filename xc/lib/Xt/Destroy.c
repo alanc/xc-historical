@@ -69,8 +69,8 @@ static void Phase1Destroy (widget)
 static void Phase2Callbacks(widget)
     Widget    widget;
 {
-    _XtCallCallbacks(
-	&(CallbackList)(widget->core.destroy_callbacks), (Opaque) NULL);
+    CallbackList callbacks = (CallbackList)(widget->core.destroy_callbacks);
+    _XtCallCallbacks(&callbacks, (Opaque) NULL);
 } /* Phase2Callbacks */
 
 static void Phase2Destroy(widget)
