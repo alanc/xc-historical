@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.22 92/06/28 17:48:35 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.23 93/08/17 11:16:02 rws Exp $
 #define DoNormalLib NormalOldLibX
 #define DoSharedLib SharedOldLibX
 #define DoDebugLib DebugOldLibX
@@ -14,17 +14,23 @@ REQUIREDLIBS = SharedOldXReqs
 #endif
        INCLUDES = -I$(INCLUDESRC) -I$(XLIBSRC)
    INSTALLFLAGS = $(INSTINCFLAGS)
-           SRCS = *.c
+           SRCS = \
+		XDraw.c \
+		XCrAssoc.c \
+		XDelAssoc.c \
+		XDestAssoc.c \
+		XLookAssoc.c \
+		XMakeAssoc.c
         HEADERS = X10.h
        LINTLIBS =
 
-OBJS = \
-	XDraw.o \
-	XCrAssoc.o \
-	XDelAssoc.o \
-	XDestAssoc.o \
-	XLookAssoc.o \
-	XMakeAssoc.o
+           OBJS = \
+		XDraw.o \
+		XCrAssoc.o \
+		XDelAssoc.o \
+		XDestAssoc.o \
+		XLookAssoc.o \
+		XMakeAssoc.o
 
 LibraryObjectRule()
 
@@ -49,7 +55,7 @@ DebuggedLibraryTarget(oldX,$(OBJS))
 InstallLibrary(oldX_d,$(USRLIBDIR))
 #endif
 
-LintLibraryTarget(oldX,*.c)
+LintLibraryTarget(oldX,$(SRCS))
 
 BuildIncludes($(HEADERS),.,.)
 InstallMultiple($(HEADERS),$(INCDIR))
@@ -62,4 +68,4 @@ DependTarget()
 XCOMM structure alignment errors can safely be ignored.
 XCOMM complaints about qevent can be ignored too.
 
-NormalLintTarget(*.c)
+NormalLintTarget($(SRCS))
