@@ -1,4 +1,4 @@
-/* $XConsortium: pl_rdr.c,v 1.1 92/05/08 15:13:44 mor Exp $ */
+/* $XConsortium: pl_rdr.c,v 1.2 92/05/18 14:21:35 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -178,9 +178,12 @@ INPUT unsigned long		valueMask;
     prdra = (PEXRendererAttributes *)
         PEXAllocBuf ((unsigned) (sizeof (PEXRendererAttributes)));
 
-    prdra->current_path.element = NULL;
-    prdra->clip_list.device_rect = NULL;
-    prdra->pick_start_path.element = NULL;
+    prdra->current_path.count = 0;
+    prdra->current_path.elements = NULL;
+    prdra->clip_list.count = 0;
+    prdra->clip_list.rectangles = NULL;
+    prdra->pick_start_path.count = 0;
+    prdra->pick_start_path.elements = NULL;
 
     for (i = 0; i < (PEXRAMaxShift + 1); i++)
     {
@@ -194,10 +197,10 @@ INPUT unsigned long		valueMask;
 		pv++;
 		prdra->current_path.count = n;
 		size = n * sizeof (PEXElementRef);
-		prdra->current_path.element =
+		prdra->current_path.elements =
 		    (PEXElementRef *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *) pv,
-		    (char *) prdra->current_path.element, size);
+		    (char *) prdra->current_path.elements, size);
 		pv += NUMWORDS (size);
 		break;
 	    case PEXRAPipelineContext:
@@ -205,51 +208,51 @@ INPUT unsigned long		valueMask;
 		pv++;
 		break;
 	    case PEXRAMarkerBundle:
-		prdra->marker_bundle = *((PEXLookUpTable *) pv);
+		prdra->marker_bundle = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRATextBundle:
-		prdra->text_bundle = *((PEXLookUpTable *) pv);
+		prdra->text_bundle = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRALineBundle:
-		prdra->line_bundle = *((PEXLookUpTable *) pv);
+		prdra->line_bundle = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAInteriorBundle:
-		prdra->interior_bundle = *((PEXLookUpTable *) pv);
+		prdra->interior_bundle = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAEdgeBundle:
-		prdra->edge_bundle = *((PEXLookUpTable *) pv);
+		prdra->edge_bundle = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAViewTable:
-		prdra->view_table = *((PEXLookUpTable *) pv);
+		prdra->view_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAColorTable:
-		prdra->color_table = *((PEXLookUpTable *) pv);
+		prdra->color_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRADepthCueTable:
-		prdra->depth_cue_table = *((PEXLookUpTable *) pv);
+		prdra->depth_cue_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRALightTable:
-		prdra->light_table = *((PEXLookUpTable *) pv);
+		prdra->light_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAColorApproxTable:
-		prdra->color_approx_table = *((PEXLookUpTable *) pv);
+		prdra->color_approx_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAPatternTable:
-		prdra->pattern_table = *((PEXLookUpTable *) pv);
+		prdra->pattern_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRATextFontTable:
-		prdra->text_font_table = *((PEXLookUpTable *) pv);
+		prdra->text_font_table = *((PEXLookupTable *) pv);
 		pv++;
 		break;
 	    case PEXRAHighlightIncl:
@@ -289,10 +292,10 @@ INPUT unsigned long		valueMask;
 		pv++;
 		prdra->clip_list.count = n;
 		size = n * sizeof (PEXDeviceRect);
-		prdra->clip_list.device_rect =
+		prdra->clip_list.rectangles =
 		    (PEXDeviceRect *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *) pv,
-		    (char *) (prdra->clip_list.device_rect), size);
+		    (char *) (prdra->clip_list.rectangles), size);
 		pv += NUMWORDS (size);
 		break;
 	    case PEXRAPickIncl:
@@ -308,10 +311,10 @@ INPUT unsigned long		valueMask;
 		pv++;
 		prdra->pick_start_path.count = n;
 		size = n * sizeof (PEXElementRef);
-		prdra->pick_start_path.element =
+		prdra->pick_start_path.elements =
 		    (PEXElementRef *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *) pv,
-		    (char *) prdra->pick_start_path.element, size);
+		    (char *) prdra->pick_start_path.elements, size);
 		pv += NUMWORDS (size);
 		break;
 	    case PEXRABackgroundColor:
@@ -873,7 +876,7 @@ INPUT PEXRendererAttributes 	*values;
 		*pv = length;
 		pv++;
 		length *= sizeof (pexDeviceRect);
-		COPY_AREA ((char *) values->clip_list.device_rect,
+		COPY_AREA ((char *) values->clip_list.rectangles,
 		    (char *) pv, length);
 		pv += NUMWORDS (length);
 		break;
@@ -890,7 +893,7 @@ INPUT PEXRendererAttributes 	*values;
 		*pv = length;
 		pv++;
 		length *= sizeof (pexElementRef);
-		COPY_AREA (values->pick_start_path.element, pv, length);
+		COPY_AREA (values->pick_start_path.elements, pv, length);
 		pv = (CARD32 *) ((char *) pv + length);
 		break;
 	    case PEXRABackgroundColor:

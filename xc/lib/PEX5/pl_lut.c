@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.c,v 1.13 92/05/07 23:28:36 mor Exp $ */
+/* $XConsortium: pl_lut.c,v 1.1 92/05/08 15:13:07 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -34,16 +34,16 @@ static PEXPointer _PEXRepackLUTEntries();
     (_buf) = (char *) PEXAllocBuf ((_numEntries) * (sizeof (_entryType)));
 
 
-PEXLookUpTable
-PEXCreateLookUpTable (display, d, type)
+PEXLookupTable
+PEXCreateLookupTable (display, d, type)
 
 INPUT Display	*display;
 INPUT Drawable	d;
 INPUT int	type;
 
 {
-    PEXLookUpTable		id;
-    pexCreateLookUpTableReq	*req;
+    PEXLookupTable		id;
+    pexCreateLookupTableReq	*req;
 
 
     /*
@@ -64,7 +64,7 @@ INPUT int	type;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CreateLookUpTable, req);
+    PEXGetReq (CreateLookupTable, req);
     req->drawableExample = d;
     req->lut = id;
     req->tableType = type;
@@ -82,13 +82,13 @@ INPUT int	type;
 
 
 void
-PEXFreeLookUpTable (display, lut)
+PEXFreeLookupTable (display, lut)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 
 {
-    pexFreeLookUpTableReq     *req;
+    pexFreeLookupTableReq     *req;
 
 
     /*
@@ -102,7 +102,7 @@ INPUT PEXLookUpTable	lut;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (FreeLookUpTable, req);
+    PEXGetReq (FreeLookupTable, req);
     req->id = lut;
 
 
@@ -116,14 +116,14 @@ INPUT PEXLookUpTable	lut;
 
 
 void
-PEXCopyLookUpTable (display, srcLut, destLut)
+PEXCopyLookupTable (display, srcLut, destLut)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	srcLut;
-INPUT PEXLookUpTable	destLut;
+INPUT PEXLookupTable	srcLut;
+INPUT PEXLookupTable	destLut;
 
 {
-    pexCopyLookUpTableReq     *req;
+    pexCopyLookupTableReq     *req;
 
 
     /*
@@ -137,7 +137,7 @@ INPUT PEXLookUpTable	destLut;
      * Put the request in the X request buffer.
      */
 
-    PEXGetReq (CopyLookUpTable, req);
+    PEXGetReq (CopyLookupTable, req);
     req->src = srcLut;
     req->dst = destLut;
 
@@ -280,7 +280,7 @@ PEXTableIndex *
 PEXGetDefinedIndices (display, lut, numIndicesReturn)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 OUTPUT unsigned long	*numIndicesReturn;
 
 {
@@ -339,7 +339,7 @@ PEXGetTableEntry (display, lut, index, valueType,
     statusReturn, table_type_return)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 INPUT unsigned int	index;
 INPUT int		valueType;
 OUTPUT int		*statusReturn;
@@ -407,7 +407,7 @@ PEXPointer
 PEXGetTableEntries (display, lut, start, count, valueType, table_type_return)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 INPUT unsigned int	start;
 INPUT unsigned int	count;
 INPUT int		valueType;
@@ -476,7 +476,7 @@ void
 PEXSetTableEntries (display, lut, start, count, type, entries)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 INPUT unsigned int	start;
 INPUT unsigned int	count;
 INPUT int		type;
@@ -524,8 +524,7 @@ INPUT PEXPointer	entries;
 #endif
 	    dst->lineWidth = src->width;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->lineColour),
-		sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->lineColour), sizeColor);
 
 	    dst = (pexLineBundleEntry *) ((char *) dst + 
 		sizeof (pexLineBundleEntry) + sizeColor);
@@ -554,8 +553,7 @@ INPUT PEXPointer	entries;
 	    dst->markerType = src->type;
 	    dst->markerScale = src->scale;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->markerColour),
-		sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->markerColour), sizeColor);
 
 	    dst = (pexMarkerBundleEntry *) ((char *) dst + 
 		sizeof (pexMarkerBundleEntry) + sizeColor);
@@ -700,8 +698,7 @@ INPUT PEXPointer	entries;
 	    dst->edgeType = src->type;
 	    dst->edgeWidth = src->width;
 	    
-	    PackColorSpecifier (&(src->color), &(dst->edgeColour), 
-		sizeColor);
+	    PackColorSpecifier (&(src->color), &(dst->edgeColour), sizeColor);
 
 	    dst = (pexEdgeBundleEntry *) ((char *) dst + 
 		sizeof (pexEdgeBundleEntry) + sizeColor);
@@ -740,7 +737,7 @@ INPUT PEXPointer	entries;
 
 	    sizeColor = GetColorSize (src->color_type);
 	    sizeColor *= (src->col_count * src->row_count);
-	    COPY_AREA (src->color, &dst[1], sizeColor);
+	    COPY_AREA ((char *) src->colors, &dst[1], sizeColor);
 
 	    dst = (pexPatternEntry *) ((char *) dst + 
 		sizeof (pexPatternEntry) + sizeColor);
@@ -848,8 +845,7 @@ INPUT PEXPointer	entries;
 	     dst->attenuation1 = src->attenuation1;
 	     dst->attenuation2 = src->attenuation2;
 		
-	     PackColorSpecifier (&(src->color), &(dst->lightColour), 
-		 sizeColor);
+	     PackColorSpecifier (&(src->color), &(dst->lightColour), sizeColor);
 
 	     dst = (pexLightEntry *) ((char *) dst + 
 		 sizeof (pexLightEntry) + sizeColor);
@@ -923,7 +919,7 @@ void
 PEXDeleteTableEntries (display, lut, start, count)
 
 INPUT Display		*display;
-INPUT PEXLookUpTable	lut;
+INPUT PEXLookupTable	lut;
 INPUT unsigned int	start;
 INPUT unsigned int	count;
 
@@ -998,8 +994,7 @@ INPUT  int		type;
 #endif
 	    dst->width = src->lineWidth;
 
-	    PackColorSpecifier (&(src->lineColour), &(dst->color),
-                sizeColor);
+	    PackColorSpecifier (&(src->lineColour), &(dst->color), sizeColor);
 
 	    src = (pexLineBundleEntry *) ((char *) src +
 		sizeof (pexLineBundleEntry) + sizeColor);
@@ -1021,8 +1016,7 @@ INPUT  int		type;
 	    dst->type = src->markerType;
 	    dst->scale = src->markerScale;
 	    
-	    PackColorSpecifier (&(src->markerColour), &(dst->color),
-                sizeColor);
+	    PackColorSpecifier (&(src->markerColour), &(dst->color), sizeColor);
 
 	    src = (pexMarkerBundleEntry *) ((char *) src +
 		sizeof (pexMarkerBundleEntry) + sizeColor);
@@ -1046,8 +1040,7 @@ INPUT  int		type;
 	    dst->char_expansion = src->charExpansion;
 	    dst->char_spacing = src->charSpacing;
 	    
-	    PackColorSpecifier (&(src->textColour), &(dst->color),
-                sizeColor);
+	    PackColorSpecifier (&(src->textColour), &(dst->color), sizeColor);
 
 	    src = (pexTextBundleEntry *) ((char *) src +
 		sizeof (pexTextBundleEntry) + sizeColor);
@@ -1172,8 +1165,8 @@ INPUT  int		type;
 
 	    sizeColor = GetColorSize (src->colourType);
 	    sizeColor *= (src->numx * src->numy);
-	    dst->color = (char *) PEXAllocBuf ((unsigned) sizeColor);
-	    COPY_AREA (&src[1], dst->color, sizeColor);
+	    dst->colors = (char *) PEXAllocBuf ((unsigned) sizeColor);
+	    COPY_AREA (&src[1], (char *) dst->colors, sizeColor);
 
 	    src = (pexPatternEntry *) ((char *) src +
 		sizeof (pexPatternEntry) + sizeColor);
@@ -1254,8 +1247,7 @@ INPUT  int		type;
 	    dst->attenuation1 = src->attenuation1;
 	    dst->attenuation2 = src->attenuation2;
 	    
-	    PackColorSpecifier (&(src->lightColour), &(dst->color),
-                sizeColor);
+	    PackColorSpecifier (&(src->lightColour), &(dst->color), sizeColor);
 
 	    src = (pexLightEntry *) ((char *) src +
 		sizeof (pexLightEntry) + sizeColor);
