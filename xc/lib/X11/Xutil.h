@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.65 91/04/11 19:47:47 rws Exp $ */
+/* $XConsortium: Xutil.h,v 11.66 91/04/11 20:01:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -289,7 +289,7 @@ extern int XSaveContext(
     Display*		/* display */,
     Window		/* w */,
     XContext		/* context */,
-    _Xconst void*	/* data */
+    _Xconst char*	/* data */
 #endif
 );
 
