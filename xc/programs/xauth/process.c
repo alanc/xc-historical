@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.36 91/10/28 17:28:47 rws Exp $
+ * $XConsortium: process.c,v 1.37 91/12/16 14:07:39 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@ extern Bool nameserver_timedout;
 
 #define SECURERPC "SUN-DES-1"
 
-#define XAUTH_DEFAULT_RETRIES 2		/* just a few times */
+#define XAUTH_DEFAULT_RETRIES 10	/* number of competitors we expect */
 #define XAUTH_DEFAULT_TIMEOUT 2		/* in seconds, be quick */
 #define XAUTH_DEFAULT_DEADTIME 600L	/* 10 minutes in seconds */
 
@@ -657,14 +657,6 @@ int auth_initialize (authfilename)
     hexvalues['e'] = hexvalues['E'] = 0xe;
     hexvalues['f'] = hexvalues['F'] = 0xf;
 
-    exists = (access (authfilename, F_OK) == 0);
-    if (exists && access (authfilename, W_OK) != 0) {
-	fprintf (stderr,
-	 "%s:  %s not writable, changes will be ignored\n",
-		 ProgramName, authfilename);
-	xauth_allowed = False;
-    }
-
     if (break_locks && verbose) {
 	printf ("Attempting to break locks on authority file %s\n",
 		authfilename);
@@ -690,6 +682,15 @@ int auth_initialize (authfilename)
 		     ProgramName, reason, authfilename);
 	    return -1;
 	}
+    }
+
+    /* these checks can only be done reliably after the file is locked */
+    exists = (access (authfilename, F_OK) == 0);
+    if (exists && access (authfilename, W_OK) != 0) {
+	fprintf (stderr,
+	 "%s:  %s not writable, changes will be ignored\n",
+		 ProgramName, authfilename);
+	xauth_allowed = False;
     }
 
     original_umask = umask (0077);	/* disallow non-owner access */
