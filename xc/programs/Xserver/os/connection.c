@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.160 93/09/23 15:09:30 rws Exp $ */
+/* $XConsortium: connection.c,v 1.161 93/09/23 16:32:03 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -664,7 +664,7 @@ EstablishNewConnections(clientUnused, closure)
     FdMask readyconnections;     /* mask of listeners that are ready */
     int curconn;                  /* fd of listener that's ready */
     register int newconn;         /* fd of new client */
-    long connect_time;
+    CARD32 connect_time;
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.8 93/07/08 14:03:04 dpw Exp $
+ * $XConsortium: saver.c,v 1.9 93/07/08 14:51:23 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -617,7 +617,7 @@ ProcScreenSaverQueryInfo (client)
     register int		n;
     ScreenSaverStuffPtr		pSaver;
     DrawablePtr			pDraw;
-    long			lastInput;
+    CARD32			lastInput;
     ScreenSaverScreenPrivatePtr	pPriv;
 
     REQUEST_SIZE_MATCH (xScreenSaverQueryInfoReq);
