@@ -1,4 +1,4 @@
-       INCLUDES = -I$(XRMSRC) -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I$(TOP) -I$(TOP)/X11
            OBJS = xclock.o
            SRCS = xclock.c
 
