@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Text.h,v 1.13 88/09/06 09:46:46 swick Exp $
+* $XConsortium: Text.h,v 1.14 88/09/06 16:42:32 jim Exp $
 */
 
 
@@ -84,6 +84,11 @@ SOFTWARE.
 
 #define XtCSelectTypes		"SelectTypes"
 
+/* Return codes from XtTextReplace */
+#define XawEditDone		0
+#define XawEditError		1
+#define XawPositionError	2
+
 /* Class record constants */
 
 extern WidgetClass textWidgetClass;
@@ -109,6 +114,13 @@ typedef enum {XtselectNull, XtselectPosition, XtselectChar, XtselectWord,
 #define resizeWidth		0x10
 #define resizeHeight		0x20
 #define editable		0x40
+
+typedef struct {
+    int  firstPos;
+    int  length;
+    char *ptr;
+    Atom format;
+    } XtTextBlock, *XtTextBlockPtr;
 
 extern void XtTextDisplay(); /* w */
     /* Widget w; */
