@@ -1,4 +1,4 @@
-/* $XConsortium: xrecord.c,v 1.4 94/01/31 00:00:27 rws Exp $ */
+/* $XConsortium: xrecord.c,v 1.5 94/02/04 14:48:37 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -216,7 +216,7 @@ main(argc,argv)
     XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
     XSync(dpy1, False);
           
-    _InitExceptionHandling((void_function)SetGlobalDone); 
+    _InitExceptionHandling((XRecord_void_function)SetGlobalDone); 
 
     if (async) {
 	XRecordEnableCGAsync(dpy2, rec_config1, Dispatch, NULL);
