@@ -911,4 +911,4 @@ Edward Moy (Berkeley), Ralph R. Swick (MIT-Athena),
 Mark Vandevoorde (MIT-Athena), Bob McNamara (DEC-MAD),
 Jim Gettys (MIT-Athena), Bob Scheifler (MIT X Consortium), Doug Mink (SAO),
 Steve Pitschke (Stellar), Ron Newman (MIT-Athena), Jim Fulton (MIT X 
-Consortium)
+Consortium), Dave Serisky (HP)
