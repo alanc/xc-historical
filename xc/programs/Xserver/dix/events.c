@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.118 87/11/25 07:36:52 rws Locked $ */
+/* $Header: events.c,v 1.119 87/11/25 15:44:05 rws Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2388,17 +2388,18 @@ CloseDownDevices(argc, argv)
     int argc;
     char *argv[];
 {
-    int     		i;
     DeviceIntPtr	d;
 
     Xfree(curKeySyms.map);
+    curKeySyms.map = (KeySym *)NULL;
 
-    for (i = inputInfo.numDevices - 1; i >= 0; i--)
+    while (inputInfo.numDevices)
     {
-	d = inputInfo.devices[i];
+	inputInfo.numDevices--;
+	d = inputInfo.devices[inputInfo.numDevices];
 	if (d->inited)
 	    (*d->deviceProc) (d, DEVICE_CLOSE, argc, argv);
-	Xfree(inputInfo.devices[i]);
+	Xfree(d);
     }
    
     /* The array inputInfo.devices doesn't need to be freed here since it
