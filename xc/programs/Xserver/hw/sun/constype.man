@@ -1,4 +1,4 @@
-TH CONSTYPE 1 "1 October 1988" "X Version 11"
+.TH CONSTYPE 1 "1 October 1988" "X Version 11"
 .SH NAME
 constype - print type of Sun console
 .SH SYNOPSIS
