@@ -39,7 +39,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.5 94/01/08 17:31:58 rob Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.6 94/01/11 20:42:41 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -391,7 +391,7 @@ cfbCopyArea(pSrcDrawable, pDstDrawable,
 
 #if PSZ == 8
 void
-cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, bitPlane
+cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, planemask, pptSrc, bitPlane
 #ifdef XTHREADS
     ,pstipple
 #endif /* XTHREADS */
@@ -400,10 +400,10 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
     DrawablePtr pDstDrawable;	/* must be depth 8 drawable */
     int	rop;		/* not used; caller must call cfb8CheckOpaqueStipple
 			 * beforehand to get cfb8StippleRRop set correctly */
-    unsigned long planemask;	/* to apply to destination writes */
     RegionPtr prgnDst;		/* region in destination to draw to;
 				 * screen relative coords. if dest is a window;
 				 * drawable relative if dest is a pixmap */
+    unsigned long planemask;	/* to apply to destination writes */
     DDXPointPtr pptSrc;		/* drawable relative src coords to copy from;
 				 * must be one point for each box in prgnDst */
     unsigned long   bitPlane;	/* not used; assumed always to be 1 */
