@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.34 91/07/17 21:31:00 converse Exp $
+/* $XConsortium: popup.c,v 2.35 91/07/22 21:30:02 converse Exp $
  *
  *
  *			  COPYRIGHT 1989
@@ -472,24 +472,32 @@ void PopupWarningHandler(name, type, class, msg, params, num)
     String *params;
     Cardinal *num;
 {
+    char *ptr;
+    int i;
+    String par[10];
+    char message[500];
     char buffer[500];
+    static Boolean allowPopup = True; /* protect against recursion */
 
     XtGetErrorDatabaseText(name, type, class, msg, buffer, 500);
-    if (!params || !num || !*num)
-	PopupError((Widget)NULL, buffer);
-    else {
-	int i = *num;
-	String par[10];
-	char message[500];
 
-	if (i > 10) i = 10;
+    if (params && num && *num) {
+	i = (*num <= 10) ? *num : 10;
 	bcopy((char*)params, (char*)par, i * sizeof(String));
 	bzero( &par[i], (10-i) * sizeof(String));
-        (void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
+	if (*num > 10)
+	    par[9] = "(truncated)";
+	(void) sprintf(message, buffer, par[0], par[1], par[2], par[3],
 		       par[4], par[5], par[6], par[7], par[8], par[9]);
-	PopupError((Widget)NULL, message); 
-	if (i != *num)
-	    PopupError((Widget)NULL,
-		       "Some arguments in previous message were lost.");
+	ptr = message;
+    } else {
+	ptr = buffer;
+    }
+    if (allowPopup) {
+	allowPopup = False;
+	PopupError((Widget)NULL, ptr); 
+	allowPopup = True;
+    } else {
+	fprintf(stderr, ptr);
     }
 }
