@@ -1,25 +1,28 @@
-! $XConsortium: XSm.ad,v 1.21 94/11/14 15:32:21 mor Exp mor $
+! $XConsortium: XSm.ad,v 1.22 94/12/06 14:42:27 mor Exp mor $
 *chooseSessionPopup*font:		12x24
 *chooseSessionLabel.label:		Session Menu
 *chooseSessionMessageLabel.label:	Press button again to confirm...
 *chooseSessionLoadButton.label:		Load Session
 *chooseSessionDeleteButton.label:	Delete Session
-*chooseSessionForceShutdownButton.label: Force Shutdown
-*chooseSessionFailSafeButton.label:	Default/Fail Safe Session
+*chooseSessionFailSafeButton.label:	Default/Fail Safe
 *chooseSessionCancelButton.label:	Cancel
 
 *chooseSessionLoadButton.background:	light steel blue
 *chooseSessionDeleteButton.background:	light steel blue
-*chooseSessionForceShutdownButton.background: light steel blue
 *chooseSessionFailSafeButton.background:light steel blue
 *chooseSessionCancelButton.background:	light steel blue
 
 *clientInfoButton.label:	Client List
-*nameSessionButton.label:	Rename Session...
+*logButton.label:		Session Log
 *checkPointButton.label:	Checkpoint
 *shutdownButton.label:		Shutdown
 *shutdownSave.label:		With Save
 *shutdownDontSave.label:	No Save
+
+*logPopup.title:		Session Log
+*logOkButton.label:		OK
+*logText.width:			600
+*logText.height:		300
 
 *clientInfoPopup.title:		Client List
 *clientInfoPopup.iconName:	Client List
@@ -39,6 +42,8 @@
 *clientPropTextWidget.height:	300
 *clientPropDoneButton.label:	Done
 
+*saveMessageLabel.label:	Session name
+
 *saveTypeLabel.label:		Save Type     
 *saveTypeNone.label:		None
 *saveTypeLocal.label:		Local
@@ -52,15 +57,15 @@
 
 *saveCancelButton.label:	Cancel
 
+*nameInUsePopup.title:		Warning
+*nameInUseOverwriteButton.label: Overwrite
+*nameInUseCancelButton.label:	Cancel
+
 *badSavePopup.title:		Save Failure
 *badSaveLabel.label:		The following applications did not report\n\
 a successful save of their state:
 *badSaveOkButton.label:		OK
 *badSaveCancelButton.label:	Cancel Shutdown
-
-*nameSessionPopup.title:		Rename Session
-*nameSessionPopup*font:			10x20
-*nameSessionCancelButton.label:		Cancel
 
 *chooseSessionListWidget.Translations: #override\n\
 	<Key>Up:	ChooseSessionUp()\n\
@@ -75,11 +80,9 @@ a successful save of their state:
 	<Btn1Up>:	notify() reset()\n
 *shutdownButton.Translations: #override\n\
 	<Btn1Up>:	notify() reset()\n
-*nameSessionButton.Translations: #override\n\
-	<Btn1Up>:	notify() reset()\n
-
-*nameSessionOkButton.Accelerators: #override\n\
-	<Key>Return:	set() notify() unset()\n
 
 *saveOkButton.Accelerators: #override\n\
+	<Key>Return:	set() notify() unset()\n
+
+*badSaveOkButton.Accelerators: #override\n\
 	<Key>Return:	set() notify() unset()\n
