@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.23 93/09/20 18:08:49 hersh Exp $ */
+/* $XConsortium: connection.c,v 1.24 94/02/03 16:07:10 mor Exp $ */
 /*
  * handles connections
  */
@@ -102,6 +102,7 @@ extern SIGVAL AutoResetServer();
 extern SIGVAL GiveUp();
 extern SIGVAL ServerReconfig();
 extern SIGVAL ServerCacheFlush();
+extern SIGVAL CleanupChild();
 
 extern void FreeOsBuffers();
 
@@ -233,6 +234,7 @@ CreateSockets(oldsock)
     signal(SIGTERM, GiveUp);
     signal(SIGUSR1, ServerReconfig);
     signal(SIGUSR2, ServerCacheFlush);
+    signal(SIGCHLD, CleanupChild);
 
     AllSockets[0] = WellKnownConnections;
 }

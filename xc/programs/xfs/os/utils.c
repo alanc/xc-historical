@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.11 92/11/18 21:30:57 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.12 94/01/01 17:35:41 rws Exp $ */
 /*
  * misc os utilities
  */
@@ -129,6 +129,23 @@ ServerCacheFlush(n)
 
 #ifdef SYSV
     signal(SIGUSR2, ServerCacheFlush);
+#endif
+}
+
+/* ARGSUSED */
+SIGVAL
+CleanupChild(n)
+    int n;
+{
+
+#ifdef DEBUG
+    fprintf(stderr, "got a child signal\n");
+#endif
+
+    wait(NULL);
+
+#ifdef SYSV
+    signal(SIGCHLD, CleanupChild);
 #endif
 }
 
