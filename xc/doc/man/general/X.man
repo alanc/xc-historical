@@ -325,32 +325,29 @@ character set).  Similarly, collections of fonts that are based on a common
 type face (the variations are usually called roman, bold, italic, bold italic, 
 oblique, and bold oblique) are called \fIfamilies\fP.  
 .PP
-Sets of 
-font families of the same resolution (usually measured in dots per inch) 
-are further grouped into \fIdirectories\fP
-(so named because they were initially stored in file system directories).
-Each directory contains a database which lists the name of the font and
-information on how to find the font.  The server uses these
-databases to translate \fIfont names\fP (which have nothing to do with
-file names) into font data.
-.PP
-The list of font directories in which the server looks when trying to find
-a font is controlled by the \fIfont path\fP.  Although most installations
+An X server can obtain fonts from individual files stored in directories
+in the file system, or from one or more font servers,
+or from a mixtures of directories and font servers.
+The list of places the server looks when trying to find
+a font is controlled by its \fIfont path\fP.  Although most installations
 will choose to have the server start up with all of the commonly used font
-directories, the font path can be changed at any time with the \fIxset\fP
-program.  However, it is important to remember that the directory names are
+directories in the font path, the font path can be changed at any time
+with the \fIxset\fP program.
+However, it is important to remember that the directory names are
 on the \fBserver\fP's machine, not on the application's.
-.PP
 The default font path for
 the sample server contains four directories:
 .TP 8
 .I /usr/lib/X11/fonts/misc
 This directory contains many miscellaneous bitmap fonts that are useful on all
-systems.  It contains a small family of fixed-width fonts in pixel heights
-5 through 10, a family of fixed-width fonts from Dale Schumacher in
-similar pixel heights, several Kana fonts from Sony Corporation,
-two JIS Kanji fonts, the standard cursor font, two cursor fonts from
-Digital Equipment Corporation, and OPEN LOOK(tm) cursor and glyph fonts
+systems.  It contains a family of fixed-width fonts,
+a family of fixed-width fonts from Dale Schumacher,
+several Kana fonts from Sony Corporation,
+two JIS Kanji fonts,
+two Hangul fonts from Daewoo Electronics,
+two Hebrew fonts from Joseph Friedman,
+the standard cursor font, two cursor fonts from
+Digital Equipment Corporation, and cursor and glyph fonts
 from Sun Microsystems.
 It also has various font name aliases for the fonts, including
 \fBfixed\fP and \fBvariable\fP.
@@ -371,9 +368,10 @@ and weights are provided for each family.
 This directory contains 100 dots per inch versions of some of the fonts in the 
 \fI75dpi\fP directory.  
 .PP
+Font files are usually created by compiling a textual font description
+into binary form, using \fIbdftopcf\fP.
 Font databases are created by running the \fImkfontdir\fP program in the
-directory containing the source or compiled versions of the fonts (in both
-compressed and uncompressed formats).
+directory containing the source or compiled versions of the fonts.
 Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
 so that the server can find the new fonts.  To make the server reread the
 font database, reset the font path with the \fIxset\fP program.  For example,
@@ -387,6 +385,7 @@ to add a font to a private directory, the following commands could be used:
 .PP
 The \fIxlsfonts\fP program can be used to list all of the fonts that are
 found in font databases in the current font path.  
+The \fIxfontsel\fP program can be used to browse through the fonts.
 Font names tend to be fairly long as they contain all of the information
 needed to uniquely identify individual fonts.  However, the sample server
 supports wildcarding of font names, so the full specification
@@ -394,10 +393,10 @@ supports wildcarding of font names, so the full specification
 .ce 1
 \fI-adobe-courier-medium-r-normal--10-100-75-75-m-60-iso8859-1\fP
 .sp
-could be abbreviated as:
+might be abbreviated as:
 .sp
 .ce 1
-\fI-*-courier-medium-r-normal--*-100-*-*-*-*-*-*\fP
+\fI-*-courier-medium-r-normal--*-100-*-*-*-*-iso8859-1\fP
 .PP
 Because the shell also has special meanings for \fI*\fP and \fI?\fP,
 wildcarded font names should be quoted:
@@ -408,12 +407,7 @@ wildcarded font names should be quoted:
 .PP
 If more than one font in a given directory in the font path matches a
 wildcarded font name, the choice of which particular font to return is left
-to the server.  However, if fonts from more than one directory match a name,
-the returned font will always be from the first such directory in the font
-path.  The example given above will match fonts in both the \fI75dpi\fP and
-\fI100dpi\fP directories; if the \fI75dpi\fP directory is ahead of the
-\fI100dpi\fP directory in the font path, the smaller version of the font will 
-be used.  
+to the server.
 .SH "COLOR NAMES"
 Most applications provide ways of tailoring (usually through resources or
 command line arguments) the colors of various elements
