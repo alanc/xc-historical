@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TreeP.h,v 1.10 90/02/07 11:09:52 jim Exp $
+ * $XConsortium: TreeP.h,v 1.11 90/02/07 16:00:09 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -31,8 +31,7 @@
 #ifndef _XawTreeP_h
 #define _XawTreeP_h
 
-/* #include <X11/Xaw/Tree.h> */
-#include "Tree.h"
+#include <X11/Xaw/Tree.h>
 
 typedef struct _TreeClassPart {
     int ignore;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.25 90/02/08 12:01:05 jim Exp $
+ * $XConsortium: Tree.c,v 1.26 90/02/08 13:15:57 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -33,9 +33,9 @@
 #include <X11/CoreP.h>
 #include <X11/CompositeP.h>
 #include <X11/ConstrainP.h>
+#include <X11/Xaw/TreeP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xmu/Converters.h>
-#include "TreeP.h"
 
 #define IsHorizontal(tw) ((tw)->tree.orientation == XtorientHorizontal)
 
