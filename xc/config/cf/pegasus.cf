@@ -1,0 +1,57 @@
+/**/# platform:  $XConsortium: Pegasus.macros,v 1.31 89/01/07 13:58:17 rws Exp $
+
+#define StandardSystemDefines -DUTEK -Dpegasus
+#define StandardDefines -DUTEK -Dpegasus
+/* pegasus is going away real soon (right, Al?) */
+
+/* Turn off directory search for RCS */
+.DIRECTORIES:
+
+BOOTSTRAPCFLAGS = -DM4310
+             AS = as
+             CC = cc 
+            CPP = /lib/cpp
+             LD = ld
+           LINT = lint
+        INSTALL = install
+           TAGS = ctags
+             RM = rm -f
+             MV = mv
+             LN = ln -s
+         RANLIB = : ar has already done a ranlib on ...
+RANLIBINSTFLAGS = 
+             AR = ar clq
+             LS = ls
+       LINTOPTS = -axz
+    LINTLIBFLAG = -C
+           MAKE = make
+STD_CPP_DEFINES = StandardSystemDefines
+    STD_DEFINES = StandardDefines
+
+
+/* This defines the server you want */
+/* #define XpegServer Xpeg */ /* make sure to remove BuildServer NO */
+#define XpegServer Xpeg
+
+/* define this as you like for normal library compilation */
+#define LibraryDefines		StandardDefines
+/* necessary for Xaw complex widgets, e.g., Load.c */
+
+/* define this as you like for server compilation */
+#define ServerExtra		-DM4310 -DM4317
+#define ServerDefines		StandardDefines ServerExtra
+/* define this as you like for server font support */
+#define FontDefines	-DFONT_SNF -DFONT_BDF
+
+/* -DTCPCONN allows TCP connections */
+/* -DUNIXCONN allows Unix domain connections */
+/* -DDNETCONN allows DECnet connections */
+
+#define ConnectionFlags		-DTCPCONN -DUNIXCONN
+
+/*
+ * override any parameters from site.def
+ */
+/* #define BuildServer		NO */
+
+
