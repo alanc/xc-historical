@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.12 87/08/21 16:15:39 ham Exp $ */
+/* $Header: inputstr.h,v 1.13 87/08/25 10:20:51 swick Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -88,10 +88,12 @@ typedef struct {
 
 #define NOT_GRABBED		0
 #define THAWED			1
-#define FREEZE_NEXT_EVENT	2
-#define FROZEN			3	/* any state >= has device frozen */
-#define FROZEN_NO_EVENT		3
-#define FROZEN_WITH_EVENT	4
+#define THAWED_BOTH		2	/* not a real state */
+#define FREEZE_NEXT_EVENT	3
+#define FREEZE_BOTH_NEXT_EVENT	4
+#define FROZEN			5	/* any state >= has device frozen */
+#define FROZEN_NO_EVENT		5
+#define FROZEN_WITH_EVENT	6
 
 typedef struct _DeviceIntRec {
     DeviceRec	public;

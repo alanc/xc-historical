@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.100 87/08/25 08:33:55 susan Exp $ */
+/* $Header: events.c,v 1.97 87/08/25 10:17:18 swick Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -59,15 +59,11 @@ extern void CopySwap32Write(), SwapTimeCoordWrite();
 	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
 	Mod3Mask | Mod4Mask | Mod5Mask )
 #define Motion_Filter(state) (PointerMotionMask | \
-		(AllButtonsMask & state) | buttonMotionMask);
+		(AllButtonsMask & state) | buttonMotionMask)
 
 
 #define WID(w) ((w) ? ((w)->wid) : 0)
 
-#define BitOn(ptr, bit) \
-	((BYTE *) (ptr))[(bit)>>3] |= (1 << ((bit) & 7))
-#define BitOff(ptr, bit) \
-	((BYTE *) (ptr))[(bit)>>3] &= ~(1 << ((bit) & 7))
 #define IsOn(ptr, bit) \
 	(((BYTE *) (ptr))[(bit)>>3] & (1 << ((bit) & 7)))
 
@@ -443,9 +439,6 @@ CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
 	if (otherDev->sync.other &&
 	    (otherDev->sync.other->client == grab->client))
 	    otherDev->sync.other = NullGrab;
-	if ((otherDev->sync.state >= FROZEN) &&
-	    (otherDev->grab->client == grab->client))
-	    otherDev->sync.state = THAWED;
     }
     ComputeFreezes(thisDev, otherDev);
 }
@@ -467,13 +460,13 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 	mouse->grab, mouse, grab->pointerMode,
 	inputInfo.keyboard, grab->keyboardMode);
     PostNewCursor();
-    DoEnterLeaveEvents(sprite.win, grab->window, NotifyGrab);
     if (w = grab->u.ptr.confineTo)
     {
 	NewCursorConfines(
 	    w->absCorner.x, w->absCorner.x + w->clientWinSize.width,
 	    w->absCorner.y, w->absCorner.y + w->clientWinSize.height);
     }
+    DoEnterLeaveEvents(sprite.win, grab->window, NotifyGrab);
 }
 
 static void
@@ -527,34 +520,83 @@ DeactivateKeyboardGrab(keybd)
 }
 
 static void
-AllowSome(client, time, thisDev, otherDev, minFreeze)
+AllowSome(client, time, thisDev, otherDev, newState)
     ClientPtr		client;
     TimeStamp		time;
     DeviceIntPtr	thisDev, otherDev;
-    int			minFreeze;
+    int			newState;
 {
-    if (!thisDev->sync.frozen)
+    Bool	thisGrabbed, otherGrabbed;
+    TimeStamp	grabTime;
+
+    thisGrabbed = thisDev->grab && (thisDev->grab->client == client);
+    otherGrabbed = otherDev->grab && (otherDev->grab->client == client);
+    if (!((thisGrabbed && thisDev->sync.state >= FROZEN) ||
+	  (otherGrabbed && thisDev->sync.other)))
 	return;
-    if (CompareTimeStamps(time, thisDev->grabTime) == EARLIER)
+    if (thisGrabbed &&
+	(!otherGrabbed ||
+	 (CompareTimeStamps(otherDev->grabTime, thisDev->grabTime) == EARLIER)))
+	grabTime = thisDev->grabTime;
+    else
+	grabTime = otherDev->grabTime;
+    if ((CompareTimeStamps(time, currentTime) == LATER) ||
+	(CompareTimeStamps(time, grabTime) == EARLIER))
 	return;
-    if (thisDev->sync.state < minFreeze)
-	return;
-    switch (minFreeze)
+    switch (newState)
     {
-	case NOT_GRABBED: 	       /* Async */
-	    if (thisDev->grab && (thisDev->grab->client == client))
+	case THAWED:	 	       /* Async */
+	    if (thisGrabbed)
 		thisDev->sync.state = THAWED;
-	    if (thisDev->sync.other && (thisDev->sync.other->client == client))
+	    if (otherGrabbed)
 		thisDev->sync.other = NullGrab;
 	    ComputeFreezes(thisDev, otherDev);
 	    break;
-	case FROZEN_NO_EVENT:		/* Sync */
-	    if (thisDev->grab->client == client)
+	case FREEZE_NEXT_EVENT:		/* Sync */
+	    if (thisGrabbed)
+	    {
 		thisDev->sync.state = FREEZE_NEXT_EVENT;
-	    ComputeFreezes(thisDev, otherDev);
+		if (otherGrabbed)
+		    thisDev->sync.other = NullGrab;
+		ComputeFreezes(thisDev, otherDev);
+	    }
 	    break;
-	case FROZEN_WITH_EVENT:		/* Replay */
-	    if (thisDev->grab->client == client)
+	case THAWED_BOTH:		/* AsyncBoth */
+	    if ((otherGrabbed && otherDev->sync.state >= FROZEN) ||
+		(thisGrabbed && otherDev->sync.other))
+	    {
+		if (thisGrabbed)
+		{
+		    thisDev->sync.state = THAWED;
+		    otherDev->sync.other = NullGrab;
+		}
+		if (otherGrabbed)
+		{
+		    otherDev->sync.state = THAWED;
+		    thisDev->sync.other = NullGrab;
+		}
+		ComputeFreezes(thisDev, otherDev);
+	    }
+	    break;
+	case FREEZE_BOTH_NEXT_EVENT:	/* SyncBoth */
+	    if ((otherGrabbed && otherDev->sync.state >= FROZEN) ||
+		(thisGrabbed && otherDev->sync.other))
+	    {
+		if (thisGrabbed)
+		{
+		    thisDev->sync.state = FREEZE_BOTH_NEXT_EVENT;
+		    otherDev->sync.other = NullGrab;
+		}
+		if (otherGrabbed)
+		{
+		    otherDev->sync.state = FREEZE_BOTH_NEXT_EVENT;
+		    thisDev->sync.other = NullGrab;
+		}
+		ComputeFreezes(thisDev, otherDev);
+	    }
+	    break;
+	case NOT_GRABBED:		/* Replay */
+	    if (thisGrabbed && thisDev->sync.state == FROZEN_WITH_EVENT)
 	    {
 		syncEvents.replayDev = thisDev;
 		syncEvents.replayWin = thisDev->grab->window;
@@ -585,27 +627,31 @@ ProcAllowEvents(client)
 
     REQUEST_SIZE_MATCH(xAllowEventsReq);
     time = ClientTimeToServerTime(stuff->time);
-    if (CompareTimeStamps(time, currentTime) == LATER)
-	return Success;
     switch (stuff->mode)
     {
 	case ReplayPointer:
-	    AllowSome(client, time, mouse, keybd, FROZEN_WITH_EVENT);
-	    break;
-	case SyncPointer: 
-	    AllowSome(client, time, mouse, keybd, FROZEN_NO_EVENT);
-	    break;
-	case AsyncPointer: 
 	    AllowSome(client, time, mouse, keybd, NOT_GRABBED);
 	    break;
+	case SyncPointer: 
+	    AllowSome(client, time, mouse, keybd, FREEZE_NEXT_EVENT);
+	    break;
+	case AsyncPointer: 
+	    AllowSome(client, time, mouse, keybd, THAWED);
+	    break;
 	case ReplayKeyboard: 
-	    AllowSome(client, time, keybd, mouse, FROZEN_WITH_EVENT);
+	    AllowSome(client, time, keybd, mouse, NOT_GRABBED);
 	    break;
 	case SyncKeyboard: 
-	    AllowSome(client, time, keybd, mouse, FROZEN_NO_EVENT);
+	    AllowSome(client, time, keybd, mouse, FREEZE_NEXT_EVENT);
 	    break;
 	case AsyncKeyboard: 
-	    AllowSome(client, time, keybd, mouse, NOT_GRABBED);
+	    AllowSome(client, time, keybd, mouse, THAWED);
+	    break;
+	case SyncBoth:
+	    AllowSome(client, time, keybd, mouse, FREEZE_BOTH_NEXT_EVENT);
+	    break;
+	case AsyncBoth:
+	    AllowSome(client, time, keybd, mouse, THAWED_BOTH);
 	    break;
 	default: 
 	    client->errorValue = stuff->mode;
@@ -851,11 +897,6 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt)
 	child = pWin->wid;
 	pWin = pWin->parent;
     }
-/*
- * This point should never be reached. Either stopAt is NullWindow, in which
- * case, the procedure is exited from the middle of the loop above, or it is
- * a window that the caller is asserting is an ancestor of pWin.
- */
     return 0;
 }
 
@@ -1124,7 +1165,8 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
     temporaryGrab.window = pWin;
     temporaryGrab.device = device;
     temporaryGrab.u.keybd.keyDetail.exact = xE->u.u.detail;
-    temporaryGrab.modifiersDetail.exact = keyButtonState & AllModifiersMask;
+    temporaryGrab.modifiersDetail.exact = xE->u.keyButtonPointer.state
+					    & AllModifiersMask;
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
@@ -1183,7 +1225,9 @@ CheckDeviceGrabs(device, xE, checkFirst, isKeyboard)
 		return TRUE;
 	}
   
-        if (pWin != spriteTrace[i-1])
+	if ((device->u.keybd.focus.win == NoneWin) ||
+	    (i >= spriteTraceGood) ||
+	    ((i > 0) && (pWin != spriteTrace[i-1])))
 	    return FALSE;
     }
         
@@ -1221,15 +1265,60 @@ NormalKeyboardEvent(keybd, xE, window)
     DeliverEventsToWindow(focus, xE, 1, filters[xE->u.u.type], NullGrab);
 }
 
+static void
+DeliverGrabbedEvent(xE, thisDev, otherDev, deactivateGrab)
+    register xEvent *xE;
+    register DeviceIntPtr thisDev;
+    DeviceIntPtr otherDev;
+    Bool deactivateGrab;
+{
+    register GrabPtr grab = thisDev->grab;
+    Bool syncIt;
+    Mask filterToUse;
+
+    if ((!grab->ownerEvents) ||
+	(!(syncIt = DeliverDeviceEvents(sprite.win, xE, grab, NullWindow))))
+    {
+	FixUpEventFromWindow(xE, grab->window, None, TRUE);
+	if (xE->u.u.type == MotionNotify)
+	    filterToUse = Motion_Filter(keyButtonState);
+	else
+	    filterToUse = filters[xE->u.u.type];
+	syncIt = TryClientEvents(grab->client, xE, 1, grab->eventMask,
+				 filterToUse, grab);
+    }
+    if (syncIt && !deactivateGrab && (xE->u.u.type != MotionNotify))
+	switch (thisDev->sync.state)
+	{
+	   case FREEZE_BOTH_NEXT_EVENT:
+		otherDev->sync.frozen = TRUE;
+		if ((otherDev->sync.state == FREEZE_BOTH_NEXT_EVENT) &&
+		    (otherDev->grab->client == thisDev->grab->client))
+		    otherDev->sync.state = FROZEN_NO_EVENT;
+		else
+		    otherDev->sync.other = thisDev->grab;
+		/* fall through */
+	   case FREEZE_NEXT_EVENT:
+		thisDev->sync.state = FROZEN_WITH_EVENT;
+		thisDev->sync.frozen = TRUE;
+		thisDev->sync.event = *xE;
+		break;
+	}
+}
+
 void
 ProcessKeyboardEvent (xE, keybd)
     register xEvent *xE;
     register DeviceIntPtr keybd;
 {
-    register int    key;
+    int             key, bit;
+    register BYTE   *kptr;
+    register int    i;
+    register CARD16 modifiers;
+    register CARD16 mask;
+
     GrabPtr         grab = keybd->grab;
-    WindowPtr       pWin;
-    Bool            deactiveGrab = FALSE;
+    Bool            deactivateGrab = FALSE;
 
     if (keybd->sync.frozen)
     {
@@ -1238,114 +1327,68 @@ ProcessKeyboardEvent (xE, keybd)
     }
     NoticeTimeAndState(xE);
     key = xE->u.u.detail;
-    pWin = sprite.win;
-/*
-    CheckMotion(
-	xE->u.keyButtonPointer.rootX, xE->u.keyButtonPointer.rootY,
-	FALSE);
-    xE->u.keyButtonPointer.rootX = sprite.hot.x;  ignore x and y for keyboard?
-    xE->u.keyButtonPointer.rootY = sprite.hot.y;
-*/
-    xE->u.u.detail = key;           
+    kptr = &keybd->down[key >> 3];
+    bit = 1 << (key & 7);
+    modifiers = keyModifiersList[key];
     lastWasMotion  = FALSE;
     switch (xE->u.u.type)
     {
 	case KeyPress: 
-	    BitOn(keybd->down, key);
-	    if (!xE->u.u.detail)
-		return;
-	    BitOn(keybd->down, xE->u.u.detail);
-	 
-	    if (!grab)
-		if (CheckDeviceGrabs(keybd, xE, 0, TRUE))
+	    if (*kptr & bit) /* allow ddx to generate multiple downs */
+	    {   
+		if (!modifiers)
 		{
-		    keyThatActivatedPassiveGrab = xE->u.u.detail;
- 		{
- 		    register int i = 0;
- 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
- 		    register CARD16 mask = 1;
- 
- 		    while (modifiers) {
- 			if (mask & modifiers) {
- 			    /* This key affects modifier "i" */
- 			    modifierKeyCount[i]++;
- 			    keyButtonState |= mask;
- 			}
- 			i++;
- 			modifiers &= ~mask;
- 			mask <<= 1;
- 		    }
- 		}
-		    return;
+		    xE->u.u.type = KeyRelease;
+		    ProcessKeyboardEvent(xE, keybd);
+		    xE->u.u.type = KeyPress;
+		    /* release can have side effects, don't fall through */
+		    ProcessKeyboardEvent(xE, keybd);
 		}
- 		{
- 		    register int i = 0;
- 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
- 		    register CARD16 mask = 1;
- 
- 		    while (modifiers) {
- 			if (mask & modifiers) {
- 			    /* This key affects modifier "i" */
- 			    modifierKeyCount[i]++;
- 			    keyButtonState |= mask;
- 			}
- 			i++;
- 			modifiers &= ~mask;
- 			mask <<= 1;
- 		    }
- 		}
+		return;
+	    }
+	    *kptr |= bit;
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	    {
+		if (mask & modifiers) {
+		    /* This key affects modifier "i" */
+		    modifierKeyCount[i]++;
+		    keyButtonState |= mask;
+		    modifiers &= ~mask;
+		}
+	    }
+	    if (!grab && CheckDeviceGrabs(keybd, xE, 0, TRUE))
+	    {
+		keyThatActivatedPassiveGrab = key;
+		return;
+	    }
 	    break;
 	case KeyRelease: 
-	    BitOff(keybd->down, key);
-	    if (!xE->u.u.detail)
+	    if (!(*kptr & bit)) /* guard against duplicates */
 		return;
-	    BitOff(keybd->down, xE->u.u.detail);
- 		{
- 		    register int i = 0;
- 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
- 		    register CARD16 mask = 1;
- 
- 		    while (modifiers) {
- 			if (mask & modifiers) {
- 			    /* This key affects modifier "i" */
- 			    if (--modifierKeyCount[i] <= 0) {
- 				keyButtonState &= ~mask;
- 				modifierKeyCount[i] = 0;
- 			    }
- 			}
- 			i++;
- 			modifiers &= ~mask;
- 			mask <<= 1;
- 		    }
- 		}
+	    *kptr &= ~bit;
+	    for (i = 0, mask = 1; modifiers; i++, mask <<= 1)
+	    {
+		if (mask & modifiers) {
+		    /* This key affects modifier "i" */
+		    if (--modifierKeyCount[i] <= 0) {
+			keyButtonState &= ~mask;
+			modifierKeyCount[i] = 0;
+		    }
+		    modifiers &= ~mask;
+		}
+	    }
 	    if ((keybd->u.keybd.passiveGrab) &&
-			(xE->u.u.detail == keyThatActivatedPassiveGrab))
-		deactiveGrab = TRUE;
+			(key == keyThatActivatedPassiveGrab))
+		deactivateGrab = TRUE;
 	    break;
 	default: 
 	    FatalError("Impossible keyboard event");
     }
-    if (grab = keybd->grab)
-    {
-	Bool syncIt;
-	if ((!grab->ownerEvents) ||
-		(!(syncIt = DeliverDeviceEvents(pWin, xE, grab, NullWindow))))
-	{
-	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
-	    syncIt = TryClientEvents(
-		grab->client, xE, 1, grab->eventMask, 
-		filters[xE->u.u.type], grab);
-	}
-	if (syncIt && (keybd->sync.state == FREEZE_NEXT_EVENT))
-	{
-	    keybd->sync.state = FROZEN_WITH_EVENT;
-	    keybd->sync.frozen = TRUE;
-	    keybd->sync.event = *xE;
-	}
-    }
+    if (grab)
+	DeliverGrabbedEvent(xE, keybd, inputInfo.pointer, deactivateGrab);
     else
-	NormalKeyboardEvent(keybd, xE, pWin);
-    if (deactiveGrab)
+	NormalKeyboardEvent(keybd, xE, sprite.win);
+    if (deactivateGrab)
         DeactivateKeyboardGrab(keybd);
 }
 
@@ -1354,10 +1397,8 @@ ProcessPointerEvent (xE, mouse)
     register xEvent 		*xE;
     register DeviceIntPtr 	mouse;
 {
-    Mask    		filterToUse;
     register int    	key;
     register GrabPtr	grab = mouse->grab;
-    WindowPtr		pWin;
     Bool		moveIt = FALSE;
     Bool                deactivateGrab = FALSE;
 
@@ -1392,13 +1433,11 @@ ProcessPointerEvent (xE, mouse)
     }
     NoticeTimeAndState(xE);
     key = xE->u.u.detail;
-    pWin = sprite.win;
     switch (xE->u.u.type)
     {
 	case ButtonPress: 
 	    lastWasMotion = FALSE;
 	    buttonsDown++;
-	    filterToUse = filters[ButtonPress];
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
 		keyButtonState |= keyModifiersList[xE->u.u.detail];
@@ -1409,7 +1448,6 @@ ProcessPointerEvent (xE, mouse)
 	case ButtonRelease: 
             lastWasMotion = FALSE;
 	    buttonsDown--;
-	    filterToUse = filters[ButtonRelease];
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
 		keyButtonState &= ~keyModifiersList[xE->u.u.detail];
@@ -1418,36 +1456,19 @@ ProcessPointerEvent (xE, mouse)
 		deactivateGrab = TRUE;
 	    break;
 	case MotionNotify: 
-            pWin = CheckMotion(
-	        xE->u.keyButtonPointer.rootX, xE->u.keyButtonPointer.rootY, 
-		FALSE);
-            if (!pWin)
-                return ;
-	    filterToUse = Motion_Filter(keyButtonState);
+	    if (!CheckMotion(xE->u.keyButtonPointer.rootX,
+			     xE->u.keyButtonPointer.rootY, 
+			     FALSE))
+                return;
 	    break;
 	default: 
 	    FatalError("bogus pointer event from ddx");
     }
     buttonMotionMask = (buttonsDown) ? ButtonMotionMask : 0;
     if (grab)
-    {
-	Bool syncIt;
-	if ((!grab->ownerEvents) ||
-		(!(syncIt = DeliverDeviceEvents(pWin, xE, grab, NullWindow))))
-	{
-	    FixUpEventFromWindow(xE, grab->window, None, TRUE);
-	    syncIt = TryClientEvents(
-		grab->client, xE, 1, grab->eventMask, filterToUse, grab);
-	}
-	if (syncIt && (mouse->sync.state == FREEZE_NEXT_EVENT))
-	{
-	    mouse->sync.state = FROZEN_WITH_EVENT;
-	    mouse->sync.frozen = TRUE;
-	    mouse->sync.event = *xE;
-	}
-    }
+	DeliverGrabbedEvent(xE, mouse, inputInfo.keyboard, deactivateGrab);
     else
-	DeliverDeviceEvents(pWin, xE, NullGrab, NullWindow);
+	DeliverDeviceEvents(sprite.win, xE, NullGrab, NullWindow);
     if (deactivateGrab)
         DeactivatePointerGrab(mouse);
 }
@@ -1955,13 +1976,8 @@ ProcSetInputFocus(client)
     focus->time = time;
     focus->revert = stuff->revertTo;
     focus->win = focusWin;
-    if (focusWin == NoneWin)
+    if ((focusWin == NoneWin) || (focusWin == PointerRootWin))
         focusTraceGood = 0;
-    else if (focusWin == PointerRootWin)
-    {
-        focusTraceGood = 0;
-        focusTrace[0] = ROOT;
-    }
     else
     {
         int depth=0;
@@ -2796,19 +2812,19 @@ ProcGetModifierMapping(client)
     xGetModifierMappingReply rep;
     REQUEST(xReq);
 
-      REQUEST_SIZE_MATCH(xReq);
-      rep.type = X_Reply;
-      rep.numKeyPerModifier = maxKeysPerModifier;
-      rep.sequenceNumber = client->sequence;
-      /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
-      rep.length = 2*maxKeysPerModifier;
-  
-      WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
-  
-      /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-      WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
-      return client->noClientException;
-  }
+    REQUEST_SIZE_MATCH(xReq);
+    rep.type = X_Reply;
+    rep.numKeyPerModifier = maxKeysPerModifier;
+    rep.sequenceNumber = client->sequence;
+    /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
+    rep.length = 2*maxKeysPerModifier;
+
+    WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
+
+    /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
+    WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
+    return client->noClientException;
+}
 
 int
 ProcChangeKeyboardMapping(client)
@@ -3386,7 +3402,6 @@ ProcUngrabKey(client)
 {
     REQUEST(xUngrabKeyReq);
     WindowPtr pWin;
-    GrabPtr grab;
     GrabRec temporaryGrab;
 
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
@@ -3418,7 +3433,6 @@ ProcGrabKey(client)
     REQUEST(xGrabKeyReq);
     GrabPtr grab;
     GrabPtr temporaryGrab;
-    Bool useOld = FALSE;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
     if (((stuff->key > curKeySyms.maxKeyCode) || (stuff->key < curKeySyms.minKeyCode))
@@ -3431,7 +3445,7 @@ ProcGrabKey(client)
 	client->errorValue = stuff->grabWindow;
 	return BadWindow;
     }
- 
+
     temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
 	(KeyPressMask | KeyReleaseMask), stuff->ownerEvents,
 	stuff->keyboardMode, stuff->pointerMode, stuff->modifiers, stuff->key);
@@ -3462,7 +3476,6 @@ ProcGrabButton(client)
     WindowPtr pWin, confineTo;
     REQUEST(xGrabButtonReq);
     GrabPtr grab;
-    Bool useOld = FALSE;
     CursorPtr cursor;
     GrabPtr temporaryGrab;
 
@@ -3535,7 +3548,6 @@ ProcUngrabButton(client)
 {
     REQUEST(xUngrabButtonReq);
     WindowPtr pWin;
-    GrabPtr grab;
     GrabRec temporaryGrab;
 
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
