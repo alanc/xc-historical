@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.11 94/04/18 17:38:08 converse Exp $
+.\" $XConsortium: CH04,v 1.12 94/04/18 18:48:08 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -546,7 +546,6 @@ typedef struct {
 .ta .5i 3i
 typedef struct { int empty; } OverrideShellPart;
 .De
-.KS
 .Ds 0
 .TA .5i 1i 1.5i 2i
 .ta .5i 1i 1.5i 2i
@@ -555,7 +554,7 @@ typedef struct {
 	int wm_timeout;
 	Boolean wait_for_wm;
 	Boolean transient;
-	Boolean	urgency;
+	Boolean urgency;
 	Widget	client_leader;
 	String	window_role;
 	struct _OldXSizeHints {
@@ -575,7 +574,6 @@ typedef struct {
 	Atom title_encoding;
 } WMShellPart;
 .De
-.KE
 .KS
 .Ds 0
 .TA .5i 3i
@@ -585,7 +583,6 @@ typedef struct {
 } VendorShellPart;
 .De
 .KE
-.KS
 .Ds 0
 .TA .5i 3i
 .ta .5i 3i
@@ -599,7 +596,6 @@ typedef struct {
 	Atom icon_name_encoding;
 } TopLevelShellPart;
 .De
-.KE
 .KS
 .Ds 0
 .TA .5i 3i
@@ -609,7 +605,6 @@ typedef struct {
 	XrmClass xrm_class;
 	int argc;
 	char **argv;
-	Widget session;
 } ApplicationShellPart;
 .De
 .KE
@@ -1017,10 +1012,7 @@ state information as described under
 .PN XtPopdown ,
 and
 .PN XtMenuPopdown .
-The pop-up and pop-down callbacks are called during
-.PN XtPopup
-and
-.PN XtPopdown .
+.IN "allowShellResize" "" "@DEF@"
 The \fIallow_shell_resize\fP field controls whether the widget contained
 by the shell is allowed to try to resize itself.
 If allow_shell_resize is 
@@ -1042,11 +1034,20 @@ is mapped.
 For further information on override_redirect,
 see Section 3.2 in \fI\*(xL\fP and Sections 4.1.10 and 4.2.2 in the
 \fI\*(xC\fP.
-The default value of the \fIvisual\fP resource is the symbol
+The pop-up and pop-down callbacks are called during
+.PN XtPopup
+and
+.PN XtPopdown .
+The default value of the \fIvisual\fP resource is the symbolic value
 .PN CopyFromParent .
-To reliably determine the visual of a shell, use 
+The \*(xI do not need to query the parent's visual type when the
+default value is used; if a client using
+.PN XtGetValues
+to examine the visual type receives the value
+.PN CopyFromParent ,
+it must then use
 .PN XGetWindowAttributes
-and the window of the shell.
+if it needs the actual visual type.
 
 .LP
 The default values for Shell fields in
@@ -1359,7 +1360,9 @@ join_session	T{
 T}
 resign_command	NULL
 restart_command	See text
-restart_style	SmRestartIfRunning
+restart_style	T{
+.PN SmRestartIfRunning
+T}
 program_path	See text
 save_callbacks	NULL
 save_complete_callbacks	NULL
@@ -1403,17 +1406,17 @@ the shell initialize and set_values methods check the values of the
 resources.  At that time, if \fIrestart_command\fP is NULL, the value
 of the \fIargv\fP resource will be copied to \fIrestart_command\fP.  
 Whether or not \fIrestart_command\fP was NULL,
-if \fI-xtsessionID\fP <\fIsession_id\fP> does not
+if \*Q\fR-xtsessionID\fP\*U \*Q<\fRsession id\fP>\*U does not
 already appear in the \fIrestart_command\fP, it will be added by the
 initialize and set_values methods at the beginning of the command arguments;
-if the \fI-xtsessionID\fP argument already appears with an incorrect
-value of \fIsession_id\fP in the following argument, that argument
-will be replaced with the current \fIsession_id\fP.
+if the \*Q\fR-xtsessionID\fP\*U argument already appears with an incorrect
+\fRsession id\fP in the following argument, that argument
+will be replaced with the current \fRsession id\fP.
 .LP
 After this, the shell initialize and set_values procedures check the
 \fIclone_command\fP.  If \fIclone_command\fP is NULL, 
 \fIrestart_command\fP will be copied to \fIclone_command\fP,
-except the \fI-xtsessionID\fP and following argument will not be copied.
+except the \*Q\fR-xtsessionID\fP\*U and following argument will not be copied.
 .LP
 Finally, the shell initialize and set_values procedures check the
 \fIprogram_path\fP.  If \fIprogram_path\fP is NULL, the 
@@ -1606,7 +1609,7 @@ If \fIfast\fP is
 .PN True ,
 the client should perform the checkpoint as quickly as possible.
 If \fIcancel_shutdown\fP is 
-.PN True,
+.PN True ,
 a 
 .PN ShutdownCancelled
 message has been received for the current save operation.  (See section 4.4.4.)
@@ -1658,9 +1661,9 @@ when phase is 1, which will cause the shell to send the
 when the first phase is complete.  When the 
 .PN SaveYourselfPhase2 
 message is received, the shell will invoke the save callbacks a
-second time with \fIphase\fP = 2.
+second time with \fIphase\fP equal to 2.
 Manager clients should save the state of other clients
-when the callbacks are invoked the second time and \fIphase\fP = 2.
+when the callbacks are invoked the second time and \fIphase\fP equal to 2.
 .LP
 The application may request additional tokens while a checkpoint is under way,
 and these additional tokens must be returned by an explicit call.
@@ -1689,7 +1692,7 @@ function will return NULL if no checkpoint operation is currently under way.
 To indicate the completion of checkpoint processing including user 
 interaction, the application must signal the Session shell
 by returning all tokens.
-(See Sections 4.4.1 and 4.4.2).
+(See Sections 4.2.2.2 and 4.2.2.4).
 To return a token use
 .PN  XtSessionReturnToken .
 .IN "XtSessionReturnToken" "" "@DEF@"
@@ -1839,7 +1842,7 @@ the procedures on the interact callback list will be executed
 and passed a token with \fIinteract_style\fP 
 .PN SmInteractStyleNone .
 The application should not interact with the user, and the Session shell
-wil not send an 
+will not send an 
 .PN InteractDone
 message.
 
