@@ -1,8 +1,9 @@
-XCOMM $XConsortium: Imakefile,v 5.23 93/12/13 18:23:47 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 5.24 94/02/01 11:22:31 kaleb Exp $
 #include <Server.tmpl>
 
 SRCS1 =	sunInit.c \
 	sunCfb.c \
+	sunCfb24.c \
 	sunCursor.c \
 	sunFbs.c \
 	sunIo.c \
@@ -21,6 +22,7 @@ OFILES = sunInit.o sunInitMono.o sunInExMono.o sunInitMulti.o
 #endif
 
 OBJS = 	sunCfb.o \
+	sunCfb24.o \
 	sunCursor.o \
 	sunFbs.o \
 	sunIo.o \
@@ -30,8 +32,8 @@ OBJS = 	sunCfb.o \
 	sunGX.o \
 	sunKeyMap.o
 
-   INCLUDES = -I. -I../../mfb -I../../mi -I../../cfb -I../../include\
-   		-I$(INCLUDESRC) -I$(FONTINCSRC)
+   INCLUDES = -I. -I../.. -I../../mi -I../../mfb -I../../cfb -I../../cfb32 \
+	      -I../../include -I$(INCLUDESRC) -I$(FONTINCSRC)
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
 	      ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln ../cfb/llib-lcfb.ln
 
