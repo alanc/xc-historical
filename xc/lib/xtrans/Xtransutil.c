@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransutil.c,v 1.11 94/02/06 16:03:28 mor Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.12 94/02/17 15:25:23 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -362,3 +362,19 @@ Xtransaddr	*peer_addr;
 }
 
 #endif /* ICE_t */
+
+
+static int
+is_numeric (str)
+
+char *str;
+
+{
+    int i;
+
+    for (i = 0; i < (int) strlen (str); i++)
+	if (!isdigit (str[i]))
+	    return (0);
+
+    return (1);
+}
