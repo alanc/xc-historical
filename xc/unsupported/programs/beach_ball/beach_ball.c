@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.5 91/04/02 08:32:19 rws Exp $ */
+/* $XConsortium: beach_ball.c,v 5.6 91/07/12 18:04:11 hersh Exp $ */
 /***********************************************************
 Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 
@@ -310,6 +310,13 @@ init_phigs()
     Pint	hidden_surf = PHIGS_HLHSR_MODE_NONE;
 
     popen_phigs( (char *)NULL, PDEF_MEM_SIZE);
+    {
+	Psys_st sys_state;
+
+	pinq_sys_st( &sys_state );
+	if (sys_state != PSYS_ST_PHOP) { exit(1); }
+    }
+
 
 #ifdef USE_X_DRAWABLE
     conn.display = appl_display;
