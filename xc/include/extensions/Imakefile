@@ -1,5 +1,3 @@
-# $XConsortium: Imakefile,v 1.21 91/03/13 19:22:09 rws Exp $
-
 #if BuildPexClients || BuildPexExt
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
