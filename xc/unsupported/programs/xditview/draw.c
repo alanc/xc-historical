@@ -1,5 +1,5 @@
 /*
- * $XConsortium: draw.c,v 1.3 91/07/25 21:34:07 keith Exp $
+ * $XConsortium: draw.c,v 1.5 91/07/26 12:30:50 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -410,7 +410,7 @@ DviWidget dw;
 {
     Point	*p, *q;
     double	x1, y1;
-    double	dx, dy;
+    int		dx, dy;
     double	xpos, ypos;
 
     p = spline;
@@ -424,8 +424,8 @@ DviWidget dw;
     x1 = y1 = 0.0;
 
     while (p != (Point *)NULL) {
-	dx = (int)(p->x - x1 + 0.5);
-	dy = (int)(p->y - y1 + 0.5);
+	dx = p->x - x1 + 0.5;
+	dy = p->y - y1 + 0.5;
 	DrawLine (dw, dx, dy);
 
 	x1 = p->x;

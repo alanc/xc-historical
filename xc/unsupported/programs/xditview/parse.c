@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.10 91/07/26 17:45:45 keith Exp $ */
+/* $XConsortium: parse.c,v 1.11 91/07/26 21:17:47 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -101,7 +101,6 @@ ParseInput(dw)
 			{
 	    	    	    DviCharNameMap	*map;
 			    int			i;
-			    int			savex;
 			    unsigned char	*ligature;
     	    	    
 			    c = -1;

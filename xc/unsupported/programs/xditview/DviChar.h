@@ -38,3 +38,4 @@ extern char		*DviCharName ( /* DviCharNameMap *map, int index, int synonym */ );
 #endif
 extern int		DviCharIndex ( /* DviCharNameMap *map, char *name */ );
 extern unsigned char	*DviCharIsLigature ( /* DviCharNameMap *map, char *name */ );
+extern void		ResetFonts ( /* DviWidget dw */ );

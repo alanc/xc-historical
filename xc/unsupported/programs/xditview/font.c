@@ -233,7 +233,6 @@ InstallFont (dw, position, dvi_name, x_name)
 	char		*x_name;
 {
     DviFontList	*f;
-    DviFontSizeList	*sizes;
     char		*encoding;
 
     f = LookupFontByPosition (dw, position);

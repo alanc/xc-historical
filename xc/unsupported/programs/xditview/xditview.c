@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.28 91/07/26 17:45:16 keith Exp $ */
+/* $XConsortium: xditview.c,v 1.29 91/07/26 21:18:01 keith Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -89,7 +89,10 @@ static void	NewResolution ();
 static void	NewFile ();
 static void	DisplayPageNumber ();
 static void	VisitFile ();
-static Widget	toplevel, paned, form, panner, porthole, dvi;
+static Widget	toplevel, paned, porthole, dvi;
+#ifdef NOTDEF
+static Widget	form, panner;
+#endif
 static Widget	popupMenu;
 static Widget	menuBar;
 static Widget	fileMenuButton, fileMenu;
