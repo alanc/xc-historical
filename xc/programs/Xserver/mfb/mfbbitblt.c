@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.22 93/09/13 09:32:15 dpw Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.23 94/01/07 09:43:13 dpw Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -379,7 +379,7 @@ mfbRegisterCopyPlaneProc (pScreen, proc)
 	    return FALSE;
 	copyPlaneGeneration = serverGeneration;
     }
-    pScreen->devPrivates[copyPlaneScreenIndex].ptr = (pointer) proc;
+    pScreen->devPrivates[copyPlaneScreenIndex].fptr = (pointer (*)()) proc;
     return TRUE;
 }
 
@@ -414,7 +414,7 @@ unsigned long plane;
     {
 	if (copyPlaneScreenIndex >= 0 &&
 	    (copyPlane = (RegionPtr (*)()) 
-		pSrcDrawable->pScreen->devPrivates[copyPlaneScreenIndex].ptr)
+		pSrcDrawable->pScreen->devPrivates[copyPlaneScreenIndex].fptr)
 	    )
 	{
 	    return (*copyPlane) (pSrcDrawable, pDstDrawable,
