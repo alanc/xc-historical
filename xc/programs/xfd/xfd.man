@@ -111,7 +111,7 @@ window will display the minimum or maximum values respectively
 taken on by each of these fields over the entire font.
 .PP
 The font name is interpreted by the X server.
-To obtain a list of all the fonts available, use \fIxlsfonts(1)\fp.
+To obtain a list of all the fonts available, use \fIxlsfonts(1)\fP.
 .PP
 If no font name is given on the command line, 
 .I Xfd
