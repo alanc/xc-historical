@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.14 91/07/19 23:20:14 keith Exp $ */
+/* $XConsortium: mipointer.c,v 5.15 91/07/24 14:26:18 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -432,8 +432,8 @@ miPointerMove (pScreen, x, y, time)
 {
     SetupScreen(miPointer.pScreen);
     xEvent		xE;
-    miHistoryPtr	history;
-    int			end, start;
+    miHistoryPtr	history, prevHistory;
+    int			prev, end, start;
     Bool		isnoninterest;
 
     if (!pScreenPriv->waitForUpdate && pScreen == miPointer.pScreen)
@@ -456,20 +456,29 @@ miPointerMove (pScreen, x, y, time)
     miPointer.y = y;
     miPointer.pScreen = pScreen;
     end = miPointer.history_end;
-    history = &miPointer.history[end];
+    start = miPointer.history_start;
+    prev = end - 1;
+    if (end == 0)
+	prev = MOTION_SIZE - 1;
+    history = &miPointer.history[prev];
+    if (end == start || history->event.time != time)
+    {
+    	history = &miPointer.history[end];
+    	if (++end == MOTION_SIZE) 
+	    end = 0;
+    	if (end == start)
+    	{
+	    start = end + 1;
+	    if (start == MOTION_SIZE)
+	    	start = 0;
+	    miPointer.history_start = start;
+    	}
+    	miPointer.history_end = end;
+    }
     history->event.x = x;
     history->event.y = y;
     history->event.time = time;
     history->pScreen = pScreen;
-    if (++end == MOTION_SIZE) 
-	end = 0;
-    if (end == miPointer.history_start)
-    {
-	if ((start = end + 1) == MOTION_SIZE)
-	    start = 0;
-	miPointer.history_start = start;
-    }
-    miPointer.history_end = end;
 }
 
 void
