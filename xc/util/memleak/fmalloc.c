@@ -23,6 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+
 /*
  * Leak tracing allocator -- using C lib malloc/free, tracks
  * all allocations.  When requested, performs a garbage-collection
@@ -33,7 +34,17 @@
  */
 
 #include    <stdio.h>
-#include    "memleak.h"
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifdef X_NOT_POSIX
+#define NO_ATEXIT
+#endif
 
 typedef unsigned long mem;
 
@@ -63,8 +74,6 @@ typedef struct _head {
     struct _head    *left, *right;
     struct _head    *next;
     int		    balance;
-    char	    *file;
-    int		    line;
 #ifdef HAS_GET_RETURN_ADDRESS
     mem		    returnStack[MAX_RETURN_STACK];
 #endif
@@ -73,6 +82,7 @@ typedef struct _head {
     unsigned long   freeTime;
     int		    size;
     int		    desiredsize;
+    int		    actualSize;
     int		    marked;
     int		    headMagic;
 } HeadRec, *HeadPtr;
@@ -94,8 +104,16 @@ typedef struct _tail {
 typedef HeadRec		tree;
 typedef mem		*tree_data;
 
-#define LESS_THAN(a,b)	    (((unsigned) (a)) < ((unsigned) (b)))
-#define GREATER_THAN(a,b)   (((unsigned) (a)) > ((unsigned) (b)))
+#define COMPARE_ADDR(a,b,op)	(((unsigned) (a)) op ((unsigned) (b)))
+#define COMPARE(a,b,op,s)	((!s) ? \
+			 COMPARE_ADDR(a,b,op) :\
+			(((a)->actualSize op (b)->actualSize) || \
+			 ((a)->actualSize == (b)->actualSize && \
+			  COMPARE_ADDR(a,b,op))))
+				
+
+#define LESS_THAN(a,b,s)    COMPARE(a,b,<,s)
+#define GREATER_THAN(a,b,s) COMPARE(a,b,>,s)
 
 #define SEARCH(top,result,p) for (result = top; result;) {\
     if ((mem *) (p) < (mem *) (result + 1)) \
@@ -107,7 +125,7 @@ typedef mem		*tree_data;
 }
     
 
-static tree	*activeMemory, *freedMemory;
+static tree	*activeMemory, *freedMemory, *deadMemory;
 
 static mem	*endOfStaticMemory;
 static mem	*highestAllocatedMemory;
@@ -125,33 +143,54 @@ unsigned long	FindLeakTime;
 
 static void MarkActiveBlock ();
 static int  tree_insert (), tree_delete ();
+void	    CheckMemory ();
+char	    *malloc (), *realloc (), *calloc ();
+void	    free ();
+extern char *sbrk ();
+
+#ifdef HAS_GET_RETURN_ADDRESS
+static void
+PrintReturnStack (m, ra)
+    char    *m;
+    mem	    *ra;
+{
+    int	    i;
+
+    fprintf (stderr, "   %s:", m);
+    for (i = 0; i < MAX_RETURN_STACK && ra[i]; i++)
+	fprintf (stderr, " 0x%x", ra[i]);
+    fprintf (stderr, "\n");
+}
+#endif
 
 static void
-MemError (s, h, file, line)
+MemError (s, h, ourRet)
     char	*s;
     HeadPtr	h;
-    char	*file;
-    int		line;
+    int		ourRet;
 {
     mem *ra;
     int	i;
 
-    if (file)
-	fprintf (stderr, "called from \"%s\", line %d: ", file, line);
     if (h)
     {
-	fprintf (stderr, "\"%s\", line %d: %s 0x%08x (size %d) (from 0x%x)\n",
-	     h->file, h->line, s, (mem *) (h+1), h->desiredsize, h->from);
+	fprintf (stderr, "%s 0x%08x (size %d) (from 0x%x)\n",
+	     s, (mem *) (h+1), h->desiredsize, h->from);
 #ifdef HAS_GET_RETURN_ADDRESS
-	fprintf (stderr, "return stack:");
-	ra = h->returnStack;
-	for (i = 0; i < MAX_RETURN_STACK && ra[i]; i++)
-	    fprintf (stderr, " 0x%x", ra[i]);
-	fprintf (stderr, "\n");
+	PrintReturnStack ("Saved return stack", h->returnStack);
 #endif
     }
     else 
 	fprintf (stderr, "%s\n", s);
+#ifdef HAS_GET_RETURN_ADDRESS
+    if (ourRet)
+    {
+	mem	returnStack[MAX_RETURN_STACK];
+
+	getStackTrace (returnStack, MAX_RETURN_STACK);
+	PrintReturnStack ("Current return stack", returnStack);
+    }
+#endif
 }
 
 static void
@@ -227,9 +266,9 @@ SweepActiveTree (t)
 	return;
     SweepActiveTree (t->left);
     if (!t->marked)
-	MemError ("Unreferenced allocated", t, (char *) 0, 0);
+	MemError ("Unreferenced allocated", t, FALSE);
     else if (!(t->marked & REFERENCED_HEAD))
-	MemError ("Referenced allocated middle", t, (char *) 0, 0);
+	MemError ("Referenced allocated middle", t, FALSE);
     SweepActiveTree (t->right);
 }
 
@@ -253,9 +292,9 @@ SweepFreedTree (t)
     if (t->marked)
     {
 	if (t->marked & REFERENCED_HEAD)
-	    MemError ("Referenced freed base", t, (char *) 0, 0);
+	    MemError ("Referenced freed base", t, FALSE);
 	else if (FindLeakWarnMiddlePointers)
-	    MemError ("Referenced freed middle", t, (char *) 0, 0);
+	    MemError ("Referenced freed middle", t, FALSE);
     }
     right_last = SweepFreedTree (t->right);
 
@@ -284,11 +323,12 @@ SweepFreedMemory ()
     for (t = freedMemory; t; t = n) {
 	n = t->next;
 	count++;
-	if (!t->marked) {
-	    (void) tree_delete (&freedMemory, t);
+	if (!t->marked) 
+	{
+	    (void) tree_delete (&freedMemory, t, FALSE);
 	    freedMemoryTotal -= t->desiredsize;
 	    freedMemoryCount--;
-	    free ((char *) t);
+	    tree_insert (&deadMemory, t, TRUE);
 	}
     }
     if (count != shouldCount)
@@ -310,15 +350,15 @@ ValidateTree (head, headMagic, tailMagic, bodyMagic, mesg)
     ValidateTree (head->left, headMagic, tailMagic, bodyMagic, mesg);
     tail = TailForHead (head);
     if (head->headMagic != headMagic)
-	MemError (mesg, head, (char *) 0, 0);
+	MemError (mesg, head, FALSE);
     if (tail->tailMagic != tailMagic)
-	MemError (mesg, head, (char *) 0, 0);
+	MemError (mesg, head, FALSE);
     if (bodyMagic) {
 	i = head->size / sizeof (mem);
 	p = (mem *) (head + 1);
 	while (i--) {
 	    if (*p++ != bodyMagic)
-		MemError (mesg, head, (char *) 0, 0);
+		MemError (mesg, head, FALSE);
 	}
     }
     ValidateTree (head->right, headMagic, tailMagic, bodyMagic, mesg);
@@ -346,7 +386,7 @@ AddActiveBlock (h)
     mem		*p;
     int		i;
 
-    tree_insert (&activeMemory, h);
+    tree_insert (&activeMemory, h, FALSE);
     if ((mem *) t > highestAllocatedMemory)
 	highestAllocatedMemory = (mem *) t;
 
@@ -375,7 +415,7 @@ RemoveActiveBlock (h)
 {
     activeMemoryTotal -= h->desiredsize;
     activeMemoryCount--;
-    tree_delete (&activeMemory, h);
+    tree_delete (&activeMemory, h, FALSE);
 }
 
 static void
@@ -386,7 +426,7 @@ AddFreedBlock (h)
     int		i;
     mem		*p;
 
-    tree_insert (&freedMemory, h);
+    tree_insert (&freedMemory, h, FALSE);
 
     /*
      * Breakpoint position - assign FindLeakFreeBreakpoint with
@@ -413,11 +453,11 @@ AddFreedBlock (h)
 /*
  * Entry points:
  *
- *  CheckMemory ()			--	Verifies heap
- *  Fmalloc (size, file, line)		--	Allocates memory
- *  Ffree (old, file, line)		--	Deallocates memory
- *  Frealloc (old, size, file, line)	--	Allocate, copy, free
- *  Fcalloc (num, size_per)		--	Allocate and bzero
+ *  CheckMemory ()		--	Verifies heap
+ *  malloc (size)		--	Allocates memory
+ *  free (old)			--	Deallocates memory
+ *  realloc (old, size)		--	Allocate, copy, free
+ *  calloc (num, size_per)	--	Allocate and zero
  */
 
 void
@@ -444,29 +484,79 @@ CheckMemory ()
     fprintf (stderr, "CheckMemory done\n");
 }
 
+/*
+ * Allocator interface -- malloc and free (others in separate files)
+ */
+
+#define CORE_CHUNK  16384
+
+static char	*core;
+static unsigned	core_left;
+static unsigned	total_core_used;
+
+static char *
+morecore (size)
+    unsigned	size;
+{
+    unsigned	alloc_size;
+    char	*alloc, *newcore;
+
+    if (core_left < size)
+    {
+	alloc_size = (size + CORE_CHUNK - 1) & ~(CORE_CHUNK-1);
+    	newcore = sbrk (alloc_size);
+    	if (((int) newcore) == -1)
+	    return 0;
+	core = newcore;
+	core_left = alloc_size;
+	total_core_used += alloc_size;
+    }
+    alloc = core;
+    core += size;
+    core_left -= size;
+    return alloc;
+}
+
 char *
-Fmalloc (desiredsize, file, line)
+malloc (desiredsize)
     unsigned	desiredsize;
-    char	*file;
-    int		line;
 {
     char	*ret;
     unsigned	size;
     unsigned	totalsize;
     HeadPtr	h;
-    char	*sbrk();
 
     if (!endOfStaticMemory)
 	endOfStaticMemory = (mem *) sbrk(0);
     size = RoundUp(desiredsize);
     totalsize = TotalSize (size);
-    h = (HeadPtr) malloc (totalsize);
-    if (!h)
-	return NULL;
+    
+    h = deadMemory;
+    while (h)
+    {
+	if (h->actualSize == size)
+	    break;
+	else if (h->actualSize < size)
+	    h = h->right;
+	else {
+	    if (!h->left)
+		break;
+	    h = h->left;
+	}
+    }
+    if (h) 
+    {
+	tree_delete (&deadMemory, h, TRUE);
+    }
+    else
+    {
+	h = (HeadPtr) morecore (totalsize);
+	if (!h)
+	    return NULL;
+	h->actualSize = size;
+    }
     h->desiredsize = desiredsize;
     h->size = size;
-    h->file = file;
-    h->line = line;
 #ifdef HAS_GET_RETURN_ADDRESS
     getStackTrace (h->returnStack, MAX_RETURN_STACK);
 #endif
@@ -475,36 +565,44 @@ Fmalloc (desiredsize, file, line)
 }
 
 void
-Ffree (p, file, line)
+free (p)
     char    *p;
-    char    *file;
-    int	    line;
 {
     HeadPtr	h;
+    static int	beenHere;
     
+#ifndef NO_ATEXIT
+    /* do it at free instead of malloc to avoid recursion? */
+    if (!beenHere)
+    {
+	beenHere = TRUE;
+	atexit (CheckMemory);
+    }
+#endif
     if (!p)
+    {
+	MemError ("Freeing NULL", (HeadPtr) 0, TRUE);
 	return;
+    }
     SEARCH (activeMemory, h, p);
     if (!h)
     {
 	SEARCH(freedMemory, h, p);
 	if (h)
-	    MemError ("Freeing something twice", h, file, line);
+	    MemError ("Freeing something twice", h, TRUE);
 	else
-	    MemError ("Freeing something never allocated", h, file, line);
+	    MemError ("Freeing something never allocated", h, TRUE);
 	return;
     }
     if ((mem *) (h + 1) != (mem *) p)
     {
-	MemError ("Freeing pointer to middle of allocated block", h, file, line);
+	MemError ("Freeing pointer to middle of allocated block", h, TRUE);
 	return;
     }
     if (h->headMagic != ACTIVE_HEAD_MAGIC ||
 	TailForHead(h)->tailMagic != ACTIVE_TAIL_MAGIC)
-	MemError ("Freeing corrupted data", h, file, line);
+	MemError ("Freeing corrupted data", h, TRUE);
     RemoveActiveBlock (h);
-    h->file = file;
-    h->line = line;
 #ifdef HAS_GET_RETURN_ADDRESS
     getStackTrace (h->returnStack, MAX_RETURN_STACK);
 #endif
@@ -512,74 +610,62 @@ Ffree (p, file, line)
 }
 
 char *
-Frealloc (old, desiredsize, file, line)
-    char    *old;
-    char    *file;
-    int	    line;
+realloc (old, desiredsize)
+    char	*old;
+    unsigned	desiredsize;
 {
     char    *new;
     HeadPtr  h, fh;
     int	    copysize;
 
-    new = NULL;
-    if (desiredsize)
+    new = malloc (desiredsize);
+    if (!new)
+	return NULL;
+    SEARCH(activeMemory, h, old);
+    if (!h)
     {
-    	new = Fmalloc (desiredsize, file, line);
-    	if (!new)
-	    return NULL;
+	SEARCH(freedMemory, fh, old);
+	if (fh)
+	    MemError ("Reallocing from freed data", fh);
+	else
+	    MemError ("Reallocing from something not allocated", h);
     }
-    if (old) 
+    else
     {
-	SEARCH(activeMemory, h, old);
-	if (!h)
+	if ((mem *) (h + 1) != (mem *) old)
 	{
-	    SEARCH(freedMemory, fh, old);
-	    if (fh)
-		MemError ("Reallocing from freed data", fh, file, line);
-	    else
-		MemError ("Reallocing from something not allocated", h, file, line);
+	    MemError ("Reallocing from pointer to middle of allocated block", h);
 	}
 	else
 	{
-    	    if ((mem *) (h + 1) != (mem *) old)
-    	    {
-	    	MemError ("Reallocing from pointer to middle of allocated block", h, file, line);
-    	    }
-	    else
-	    {
-    	    	if (h->headMagic != ACTIVE_HEAD_MAGIC ||
-	    	    TailForHead(h)->tailMagic != ACTIVE_TAIL_MAGIC)
-	    	    MemError ("Reallocing corrupted data", h, file, line);
-		if (new)
-		{
-		    copysize = desiredsize;
-		    if (h->desiredsize < desiredsize)
-		    	copysize = h->desiredsize;
-	    	    bcopy (old, new, copysize);
-		}
-	    	RemoveActiveBlock (h);
-	    	h->file = file;
-	    	h->line = line;
+	    if (h->headMagic != ACTIVE_HEAD_MAGIC ||
+		TailForHead(h)->tailMagic != ACTIVE_TAIL_MAGIC)
+		MemError ("Reallocing corrupted data", h);
+	    copysize = desiredsize;
+	    if (h->desiredsize < desiredsize)
+		copysize = h->desiredsize;
+	    bcopy (old, new, copysize);
+	    RemoveActiveBlock (h);
 #ifdef HAS_GET_RETURN_ADDRESS
-		getStackTrace (h->returnStack, MAX_RETURN_STACK);
+	    getStackTrace (h->returnStack, MAX_RETURN_STACK);
 #endif
-	    	AddFreedBlock (h);
-	    }
+	    AddFreedBlock (h);
 	}
     }
     return new;
 }
 
 char *
-Fcalloc (num, size, file, line)
+calloc (num, size)
     unsigned	num, size;
 {
     char *ret;
 
-    ret = Fmalloc (num * size, file, line);
+    size *= num;
+    ret = malloc (size);
     if (!ret)
-	return (char *) 0;
-    bzero (ret, num * size);
+	return NULL;
+    bzero (ret, size);
     return ret;
 }
 
@@ -599,9 +685,10 @@ static	rebalance_right (), rebalance_left ();
  */
 
 static int
-tree_insert (treep, new)
+tree_insert (treep, new, bySize)
 tree	**treep;
 tree	*new;
+int	bySize;
 {
 	if (!(*treep)) {
 		(*treep) = new;
@@ -610,8 +697,8 @@ tree	*new;
 		(*treep)->balance = 0;
 		return 1;
 	} else {
-		if (LESS_THAN (*treep, new)) {
-			if (tree_insert (&((*treep)->right), new))
+		if (LESS_THAN (*treep, new, bySize)) {
+			if (tree_insert (&((*treep)->right), new, bySize))
 				switch (++(*treep)->balance) {
 				case 0:
 					return 0;
@@ -621,8 +708,8 @@ tree	*new;
 					(void) rebalance_right (treep);
 				}
 			return 0;
-		} else if (GREATER_THAN(*treep, new)) {
-			if (tree_insert (&((*treep)->left), new))
+		} else if (GREATER_THAN(*treep, new, bySize)) {
+			if (tree_insert (&((*treep)->left), new, bySize))
 				switch (--(*treep)->balance) {
 				case 0:
 					return 0;
@@ -646,9 +733,10 @@ tree	*new;
  */
 
 static int
-tree_delete (treep, old)
+tree_delete (treep, old, bySize)
 tree	**treep;
 tree	*old;
+int	bySize;
 {
 	tree	*to_be_deleted;
 	tree	*replacement;
@@ -661,8 +749,8 @@ tree	*old;
 	if (!*treep)
 		/* node not found */
 		return 0;
-	if (LESS_THAN(*treep, old)) {
-		if (tree_delete (&(*treep)->right, old))
+	if (LESS_THAN(*treep, old, bySize)) {
+		if (tree_delete (&(*treep)->right, old, bySize))
 			/*
 			 * check the balance factors
 			 * Note that the conditions are
@@ -677,8 +765,8 @@ tree	*old;
 				return rebalance_left (treep);
 			}
 		return 0;
-	} else if (GREATER_THAN(*treep, old)) {
-		if (tree_delete (&(*treep)->left, old))
+	} else if (GREATER_THAN(*treep, old, bySize)) {
+		if (tree_delete (&(*treep)->left, old, bySize))
 			switch (++(*treep)->balance) {
 			case 0:
 				return 1;
@@ -772,7 +860,7 @@ tree	*old;
 			 * delete the node from the sub-tree
 			 */
 			if (delete_direction == -1) {
-				if (tree_delete (&(*treep)->left, old)) {
+				if (tree_delete (&(*treep)->left, old, bySize)) {
 					switch (++(*treep)->balance) {
 					case 2:
 						abort ();
@@ -784,7 +872,7 @@ tree	*old;
 				}
 				return 0;
 			} else {
-				if (tree_delete (&(*treep)->right, old)) {
+				if (tree_delete (&(*treep)->right, old, bySize)) {
 					switch (--(*treep)->balance) {
 					case -2:
 						abort ();
