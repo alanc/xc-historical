@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 5.27 93/07/12 16:28:36 dpw Exp $ */
+/* $XConsortium: cfb.h,v 5.28 93/09/13 09:35:14 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -110,7 +110,7 @@ extern int cfbComputeClipMasks32(
     int /*y*/,
     int /*w*/,
     int /*h*/,
-    unsigned long */*clips*/
+    unsigned long * /*clips*/
 #endif
 );
 /* cfb8cppl.c */
@@ -162,8 +162,8 @@ extern void cfb8LineSS1Rect(
 extern int cfbClipPoint(
 #if NeedFunctionPrototypes
     int /*oc*/,
-    int */*xp*/,
-    int */*yp*/,
+    int * /*xp*/,
+    int * /*yp*/,
     int /*dx*/,
     int /*dy*/,
     BoxPtr /*boxp*/,
@@ -249,7 +249,7 @@ extern int cfb8SegmentSS1RectCopy(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSegInit*/
+    xSegment * /*pSegInit*/
 #endif
 );
 /* cfb8segCS.c */
@@ -259,7 +259,7 @@ extern int cfb8SegmentSS1RectShiftCopy(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSegInit*/
+    xSegment * /*pSegInit*/
 #endif
 );
 
@@ -268,7 +268,7 @@ extern void cfb8SegmentSS1Rect(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSegInit*/
+    xSegment * /*pSegInit*/
 #endif
 );
 /* cfb8segG.c */
@@ -278,7 +278,7 @@ extern int cfb8SegmentSS1RectGeneral(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSegInit*/
+    xSegment * /*pSegInit*/
 #endif
 );
 /* cfbsegX.c */
@@ -288,7 +288,7 @@ extern int cfb8SegmentSS1RectXor(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSegInit*/
+    xSegment * /*pSegInit*/
 #endif
 );
 /* cfballpriv.c */
@@ -296,8 +296,8 @@ extern int cfb8SegmentSS1RectXor(
 extern Bool cfbAllocatePrivates(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
-    int */*window_index*/,
-    int */*gc_index*/
+    int * /*window_index*/,
+    int * /*gc_index*/
 #endif
 );
 /* cfbbitblt.c */
@@ -313,7 +313,7 @@ extern RegionPtr cfbBitBlt(
     int /*height*/,
     int /*dstx*/,
     int /*dsty*/,
-    void (*/*doBitBlt*/)(),
+    void (* /*doBitBlt*/)(),
     unsigned long /*bitPlane*/
 #endif
 );
@@ -424,7 +424,7 @@ extern int cfbBresS(
     int /*rop*/,
     unsigned long /*and*/,
     unsigned long /*xor*/,
-    unsigned long */*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -442,12 +442,12 @@ extern int cfbBresS(
 extern int cfbBresD(
 #if NeedFunctionPrototypes
     cfbRRopPtr /*rrops*/,
-    int */*pdashIndex*/,
-    unsigned char */*pDash*/,
+    int * /*pdashIndex*/,
+    unsigned char * /*pDash*/,
     int /*numInDashList*/,
-    int */*pdashOffset*/,
+    int * /*pdashOffset*/,
     int /*isDoubleDash*/,
-    unsigned long */*addrl*/,
+    unsigned long * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -502,9 +502,9 @@ extern void cfbUninstallColormap(
 
 extern void cfbResolveColor(
 #if NeedFunctionPrototypes
-    unsigned short */*pred*/,
-    unsigned short */*pgreen*/,
-    unsigned short */*pblue*/,
+    unsigned short * /*pred*/,
+    unsigned short * /*pgreen*/,
+    unsigned short * /*pblue*/,
     VisualPtr /*pVisual*/
 #endif
 );
@@ -519,8 +519,8 @@ extern int cfbExpandDirectColors(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
     int /*ndef*/,
-    xColorItem */*indefs*/,
-    xColorItem */*outdefs*/
+    xColorItem * /*indefs*/,
+    xColorItem * /*outdefs*/
 #endif
 );
 
@@ -540,12 +540,12 @@ extern Bool cfbSetVisualTypes(
 
 extern Bool cfbInitVisuals(
 #if NeedFunctionPrototypes
-    VisualPtr */*visualp*/,
-    DepthPtr */*depthp*/,
-    int */*nvisualp*/,
-    int */*ndepthp*/,
-    int */*rootDepthp*/,
-    VisualID */*defaultVisp*/,
+    VisualPtr * /*visualp*/,
+    DepthPtr * /*depthp*/,
+    int * /*nvisualp*/,
+    int * /*ndepthp*/,
+    int * /*rootDepthp*/,
+    VisualID * /*defaultVisp*/,
     unsigned long /*sizes*/,
     int /*bitsPerRGB*/
 #endif
@@ -557,7 +557,7 @@ extern void cfbPolyFillArcSolidCopy(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 /* cfbfillarcG.c */
@@ -567,7 +567,7 @@ extern void cfbPolyFillArcSolidGeneral(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 /* cfbfillrct.c */
@@ -597,7 +597,7 @@ extern void cfbPolyFillRect(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nrectFill*/,
-    xRectangle */*prectInit*/
+    xRectangle * /*prectInit*/
 #endif
 );
 /* cfbfillsp.c */
@@ -608,7 +608,7 @@ extern void cfbUnnaturalTileFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -619,7 +619,7 @@ extern void cfbUnnaturalStippleFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -630,7 +630,7 @@ extern void cfb8Stipple32FS(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -641,7 +641,7 @@ extern void cfb8OpaqueStipple32FS(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -729,9 +729,9 @@ extern void cfbGetSpans(
     DrawablePtr /*pDrawable*/,
     int /*wMax*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     int /*nspans*/,
-    unsigned int */*pdstStart*/
+    char * /*pdstStart*/
 #endif
 );
 /* cfbglblt8.c */
@@ -743,8 +743,8 @@ extern void cfbPolyGlyphBlt8(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* cfbglrop8.c */
@@ -756,8 +756,8 @@ extern void cfbPolyGlyphRop8(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* cfbhrzvert.c */
@@ -767,7 +767,7 @@ extern int cfbHorzS(
     int /*rop*/,
     unsigned long /*and*/,
     unsigned long /*xor*/,
-    int */*addrl*/,
+    int * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -780,7 +780,7 @@ extern int cfbVertS(
     int /*rop*/,
     unsigned long /*and*/,
     unsigned long /*xor*/,
-    int */*addrl*/,
+    int * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -796,8 +796,8 @@ extern void cfbImageGlyphBlt8(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* cfbimage.c */
@@ -813,7 +813,7 @@ extern void cfbPutImage(
     int /*h*/,
     int /*leftPad*/,
     int /*format*/,
-    char */*pImage*/
+    char * /*pImage*/
 #endif
 );
 
@@ -826,7 +826,7 @@ extern void cfbGetImage(
     int /*h*/,
     unsigned int /*format*/,
     unsigned long /*planeMask*/,
-    pointer /*pdstLine*/
+    char * /*pdstLine*/
 #endif
 );
 /* cfbline.c */
@@ -897,7 +897,7 @@ extern void cfbYRotatePixmap(
 extern void cfbCopyRotatePixmap(
 #if NeedFunctionPrototypes
     PixmapPtr /*psrcPix*/,
-    PixmapPtr */*ppdstPix*/,
+    PixmapPtr * /*ppdstPix*/,
     int /*xrot*/,
     int /*yrot*/
 #endif
@@ -961,7 +961,7 @@ extern void cfbPolyPoint(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    xPoint */*pptInit*/
+    xPoint * /*pptInit*/
 #endif
 );
 /* cfbpush8.c */
@@ -1012,8 +1012,8 @@ extern int cfbReduceRasterOp(
     int /*rop*/,
     unsigned long /*fg*/,
     unsigned long /*pm*/,
-    unsigned long */*andp*/,
-    unsigned long */*xorp*/
+    unsigned long * /*andp*/,
+    unsigned long * /*xorp*/
 #endif
 );
 /* cfbscrinit.c */
@@ -1067,7 +1067,7 @@ extern void cfbSegmentSS(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSeg*/
+    xSegment * /*pSeg*/
 #endif
 );
 
@@ -1076,7 +1076,7 @@ extern void cfbSegmentSD(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSeg*/
+    xSegment * /*pSeg*/
 #endif
 );
 /* cfbsetsp.c */
@@ -1087,9 +1087,9 @@ extern int cfbSetScanline(
     int /*xOrigin*/,
     int /*xStart*/,
     int /*xEnd*/,
-    unsigned int */*psrc*/,
+    unsigned int * /*psrc*/,
     int /*alu*/,
-    int */*pdstBase*/,
+    int * /*pdstBase*/,
     int /*widthDst*/,
     unsigned long /*planemask*/
 #endif
@@ -1099,9 +1099,9 @@ extern void cfbSetSpans(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
-    unsigned int */*psrc*/,
+    char * /*psrc*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     int /*nspans*/,
     int /*fSorted*/
 #endif
@@ -1123,7 +1123,7 @@ extern void cfbSolidSpansCopy(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -1144,7 +1144,7 @@ extern void cfbSolidSpansGeneral(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -1165,7 +1165,7 @@ extern void cfbSolidSpansXor(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -1178,8 +1178,8 @@ extern void cfbTEGlyphBlt8(
     int /*xInit*/,
     int /*yInit*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* cfbtegblt.c */
@@ -1191,8 +1191,8 @@ extern void cfbTEGlyphBlt(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* cfbtile32C.c */
@@ -1212,7 +1212,7 @@ extern void cfbTile32FSCopy(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -1233,7 +1233,7 @@ extern void cfbTile32FSGeneral(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -1257,7 +1257,7 @@ extern void cfbFillSpanTileOddCopy(
     DrawablePtr /*pDrawable*/,
     int /*n*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     PixmapPtr /*tile*/,
     int /*xrot*/,
     int /*yrot*/,
@@ -1284,7 +1284,7 @@ extern void cfbFillSpanTile32sCopy(
     DrawablePtr /*pDrawable*/,
     int /*n*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     PixmapPtr /*tile*/,
     int /*xrot*/,
     int /*yrot*/,
@@ -1312,7 +1312,7 @@ extern void cfbFillSpanTileOddGeneral(
     DrawablePtr /*pDrawable*/,
     int /*n*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     PixmapPtr /*tile*/,
     int /*xrot*/,
     int /*yrot*/,
@@ -1339,7 +1339,7 @@ extern void cfbFillSpanTile32sGeneral(
     DrawablePtr /*pDrawable*/,
     int /*n*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     PixmapPtr /*tile*/,
     int /*xrot*/,
     int /*yrot*/,
@@ -1402,7 +1402,7 @@ extern void cfbZeroPolyArcSS8Copy(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 /* cfbzerarcG.c */
@@ -1412,7 +1412,7 @@ extern void cfbZeroPolyArcSS8General(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 /* cfbzerarcX.c */
@@ -1422,7 +1422,7 @@ extern void cfbZeroPolyArcSS8Xor(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 
