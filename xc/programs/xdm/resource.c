@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.37 90/11/19 17:34:47 keith Exp $
+ * $XConsortium: resource.c,v 1.38 90/12/10 15:45:41 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -79,6 +79,9 @@ char	*randomFile;
 #endif
 #ifndef DEF_XDM_CONFIG
 #define DEF_XDM_CONFIG "/usr/lib/X11/xdm/xdm-config"
+#endif
+#ifndef DEF_CHOOSER
+#define DEF_CHOOSER "/usr/lib/X11/xdm/chooser"
 #endif
 #ifndef CPP_PROGRAM
 #define CPP_PROGRAM "/lib/cpp"
@@ -186,6 +189,8 @@ struct displayResource serverResources[] = {
 				"false",
 "authorize",	"Authorize",	DM_BOOL,	boffset(authorize),
 				"true",
+"authComplain",	"AuthComplain",	DM_BOOL,	boffset(authComplain),
+				"true",
 "authName",	"AuthName",	DM_ARGV,	boffset(authNames),
 				DEF_AUTH_NAME,
 "authFile",	"AuthFile",	DM_STRING,	boffset(clientAuthFile),
@@ -222,6 +227,8 @@ struct displayResource sessionResources[] = {
 				DEF_FAILSAFE_CLIENT,
 "userAuthDir",	"UserAuthDir",	DM_STRING,	boffset(userAuthDir),
 				DEF_AUTH_DIR,
+"chooser",	"Chooser",	DM_STRING,	boffset(chooser),
+				DEF_CHOOSER,
 };
 
 # define NUM_SESSION_RESOURCES	(sizeof sessionResources/\
