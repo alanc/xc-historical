@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.99 91/01/10 21:01:06 converse Exp $ */
+/* $XConsortium: NextEvent.c,v 1.100 91/02/05 16:58:35 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -887,7 +887,7 @@ XtInputMask XtAppPending(app)
 
 /* Peek at alternate input and timer callbacks if there are any */
 
-Boolean PeekOtherSources(app)
+static Boolean PeekOtherSources(app)
 	XtAppContext app;
 {
 	struct timeval  cur_time;
