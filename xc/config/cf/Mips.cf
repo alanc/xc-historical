@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-/**/# platform:  $XConsortium: Mips.cf,v 1.8 91/07/22 13:36:09 rws Exp $
+/**/# platform:  $XConsortium: Mips.cf,v 1.9 91/07/28 22:40:08 rws Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
@@ -28,7 +28,7 @@
 #define StandardDefines -DMips -DBSD43
 #define ExtraLibraries -lmld
 #define ArCmd ar clr
-#define BootstrapCFlags $(SYSDEFS)
+#define BootstrapCFlags -DMips
 #define InstallCmd $(ETCDIR)/mipsinstall
 #define MakeCmd make MakeEnv
 #define DoRanlibCmd 0
