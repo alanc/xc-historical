@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.10 93/09/29 18:59:40 dpw Exp $ */
+/* $XConsortium: miwindow.c,v 5.11 93/09/30 15:59:37 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -321,9 +321,13 @@ miMarkWindow(pWin)
 
     if (pWin->valdata)
 	return;
+#ifndef MTX
     Must_have_memory = TRUE; /* XXX */
     val = (ValidatePtr)xalloc(sizeof(ValidateRec));
     Must_have_memory = FALSE; /* XXX */
+#else /* not MTX */
+    val = (ValidatePtr)xnfalloc(sizeof(ValidateRec));
+#endif /* not MTX */
     val->before.oldAbsCorner.x = pWin->drawable.x;
     val->before.oldAbsCorner.y = pWin->drawable.y;
     val->before.borderVisible = NullRegion;
