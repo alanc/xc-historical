@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.6 89/08/16 18:48:36 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.7 89/08/17 16:56:47 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -366,6 +366,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 
 	fg = pGCTo->fgPixel;
 	bg = pGCTo->bgPixel;
+	if ((pGC->fillStyle == FillTiled) ||
+	    (pGC->fillStyle == FillOpaqueStippled))
+	    bg = fg; /* the protocol sez these don't cause color changes */
+
 	polyArcs = miComputeArcs (parcs, narcs, pGC);
 
 	if (!polyArcs)
@@ -384,14 +388,10 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	     iphase--)
 	{
 	    if (iphase == 1) {
-		gcvals[0] = bg;
-		gcvals[1] = fg;
-		DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+		DoChangeGC (pGC, GCForeground, (XID *)&bg, 0);
 		ValidateGC (pDraw, pGC);
 	    } else if (pGC->lineStyle == LineDoubleDash) {
-		gcvals[0] = fg;
-		gcvals[1] = bg;
-		DoChangeGC (pGC, GCForeground|GCBackground, gcvals, 0);
+		DoChangeGC (pGC, GCForeground, (XID *)&fg, 0);
 		ValidateGC (pDraw, pGC);
 	    }
 	    for (i = 0; i < polyArcs[iphase].narcs; i++) {
