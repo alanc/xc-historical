@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.89 92/01/19 15:02:48 rws Exp $
+ * $XConsortium: XConnDis.c,v 11.90 92/05/07 17:13:51 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -427,6 +427,9 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 
 #ifdef UNIXCONN
 #include <sys/un.h>
+#if defined(__OSF1__) && !defined(_SOCKADDR_LEN)
+#undef SUN_LEN
+#endif
 
 /*ARGSUSED*/
 static int MakeUNIXSocketConnection (phostname, idisplay, retries,
