@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.16 90/01/23 13:53:12 rws Exp $
+ * $XConsortium: xkill.c,v 1.17 90/01/23 14:05:49 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -179,14 +179,17 @@ main (argc, argv)
 				"the window whose client you wish to kill")) {
 	    if (id == RootWindow(dpy,screenno)) id = None;
 	    else if (!top) {
-		Window root;
-		int dummyi;
-		unsigned int dummy;
+		XID indicated = id;
+		if ((id = XmuClientWindow(dpy, indicated)) == indicated) {
+		    
+		    /* Try not to kill the window manager when the user
+		     * indicates an icon to xkill.
+		     */
 
-		if (XGetGeometry (dpy, id, &root, &dummyi, &dummyi,
-				  &dummy, &dummy, &dummy, &dummy) &&
-		    id != root)
-		  id = XmuClientWindow(dpy, id);
+		    if (! wm_state_set(dpy, id) && wm_running(dpy, screenno))
+			id = None;
+
+		} 
 	    }
 	}
     }
@@ -387,4 +390,44 @@ int verify_okay_to_kill (dpy, screenno)
 	printf ("Aborting.\n");
 	return 0;
     }
+}
+
+/* Return True if the property WM_STATE is set on the window, otherwise
+ * return False.
+ */
+Bool wm_state_set(dpy, win) 
+Display	*dpy;
+Window	win;
+{
+    Atom wm_state;
+    Atom actual_type;
+    int success;
+    int actual_format;
+    unsigned long nitems, remaining;
+    unsigned char* prop = NULL;
+
+    wm_state = XInternAtom(dpy, "WM_STATE", True);
+    if (wm_state == None) return False;
+    success = XGetWindowProperty(dpy, win, wm_state, 0L, 0L, False, 
+				 AnyPropertyType, &actual_type, &actual_format,
+				 &nitems, &remaining, &prop);
+    if (prop) XFree((char *) prop);
+    return (success == Success && actual_type != None && actual_format);
+}
+
+/* Using a heuristic method, return True if a window manager is running,
+ * otherwise, return False.
+ */
+
+Bool wm_running(dpy, screenno)
+Display *dpy;
+int	screenno;
+{
+    XWindowAttributes	xwa;
+    Status		status;
+
+    status = XGetWindowAttributes(dpy, RootWindow(dpy, screenno), &xwa);
+    return (status &&
+	    ((xwa.all_event_masks & SubstructureRedirectMask) ||
+	     (xwa.all_event_masks & SubstructureNotifyMask)));
 }
