@@ -1,7 +1,7 @@
-# $Header: Imakefile,v 1.1 87/09/02 02:21:13 toddb Locked $
+# $Header: Imakefile,v 1.2 87/09/03 12:23:15 toddb Locked $
        INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
-           SRCS = XFillZoids.c XPolyBeziers.c
-           OBJS = XFillZoids.o XPolyBeziers.o
+           SRCS = XFillZoids.c XBezier.c
+           OBJS = XFillZoids.o XBezier.o
 
 #if DebugLibXext && ProfileLibXext
 DebuggedAndProfiledLibraryObjectRule()
