@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.2 91/07/12 17:55:15 hersh Exp $ */
+/* $XConsortium: miInquire.c,v 5.3 91/12/26 18:00:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -63,8 +63,8 @@ SOFTWARE.
 #define LEN_WO_HEADER(OCtype) (pPEXOC->length * sizeof(CARD32) - sizeof(OCtype))
 
 #define GET_INQ_STORAGE(PEX_ST, PEX_TYPE, DD_ST, DD_TYPE) \
-    if (PU_BUF_TOO_SMALL( pBuf, pExecuteOC->element.pexOClength)) { \
-	if ((puBuffRealloc(pBuf, pExecuteOC->element.pexOClength)) != Success) {\
+    if (PU_BUF_TOO_SMALL( pBuf, (pExecuteOC->element.pexOClength)<<2)) { \
+       if ((puBuffRealloc(pBuf, (pExecuteOC->element.pexOClength)<<2)) != Success) {\
 	    return (BadAlloc); } } \
     *ppPEXOC = (pexElementInfo *)(pBuf->pBuf); \
     (*ppPEXOC)->elementType = pExecuteOC->element.elementType; \
@@ -1229,27 +1229,49 @@ OC_INQ_FUNC_HEADER(PSurfaceChars)
 	case PEXPSCIsoCurves: {
 	    GET_INQ_STORAGE(	pPSC, pexParaSurfCharacteristics, ddPSC,
 				miPSurfaceCharsStruct);
+            pPSC->characteristics = ddPSC->type; 
+            pPSC->length = 4 * sizeof(CARD16); 
 	    ptr = (ddPointer)(pPSC+1);
-	    PACK_CARD16(ddPSC->data.pIsoCurves, ptr);
+	    PACK_CARD16(ddPSC->data.pIsoCurves->placementType, ptr);
 	    SKIP_PADDING(ptr,2);
-	    EXTRACT_CARD16(ddPSC->data.pIsoCurves->numUcurves, ptr);
-	    EXTRACT_CARD16(ddPSC->data.pIsoCurves->numVcurves, ptr);
+	    PACK_CARD16(ddPSC->data.pIsoCurves->numUcurves, ptr);
+	    PACK_CARD16(ddPSC->data.pIsoCurves->numVcurves, ptr);
 	    break;
 	}
 
 	case PEXPSCMcLevelCurves: {
 	    GET_INQ_STORAGE(	pPSC, pexParaSurfCharacteristics, ddPSC,
 				miPSurfaceCharsStruct);
+            pPSC->characteristics = ddPSC->type; 
+            pPSC->length = sizeof(pexCoord3D) + sizeof(pexVector3D) +
+			   (2 *sizeof(CARD16)) + (sizeof(PEXFLOAT)* 
+			   ddPSC->data.pMcLevelCurves->numberIntersections); 
 	    ptr = (ddPointer)(pPSC+1);
-	    PACK_STRUCT(ddPSC_LevelCurves,ddPSC->data.pMcLevelCurves, ptr);
+	    PACK_STRUCT(pexCoord3D, &(ddPSC->data.pMcLevelCurves->origin),ptr);
+	    PACK_STRUCT(pexVector3D, &(ddPSC->data.pMcLevelCurves->direction),ptr);
+	    PACK_CARD16(ddPSC->data.pMcLevelCurves->numberIntersections, ptr);
+	    SKIP_PADDING(ptr,2);
+	    PACK_LISTOF_STRUCT(ddPSC->data.pMcLevelCurves->numberIntersections,
+				PEXFLOAT, ddPSC->data.pMcLevelCurves->pPoints,
+				ptr);
 	    break;
 	}
 
 	case PEXPSCWcLevelCurves: {
 	    GET_INQ_STORAGE(	pPSC, pexParaSurfCharacteristics, ddPSC,
 				miPSurfaceCharsStruct);
+            pPSC->characteristics = ddPSC->type; 
+            pPSC->length = sizeof(pexCoord3D) + sizeof(pexVector3D) +
+			   (2 *sizeof(CARD16)) + (sizeof(PEXFLOAT)* 
+			   ddPSC->data.pWcLevelCurves->numberIntersections); 
 	    ptr = (ddPointer)(pPSC+1);
-	    PACK_STRUCT(ddPSC_LevelCurves,ddPSC->data.pWcLevelCurves, ptr);
+	    PACK_STRUCT(pexCoord3D, &(ddPSC->data.pWcLevelCurves->origin),ptr);
+	    PACK_STRUCT(pexVector3D, &(ddPSC->data.pWcLevelCurves->direction),ptr);
+	    PACK_CARD16(ddPSC->data.pWcLevelCurves->numberIntersections, ptr);
+	    SKIP_PADDING(ptr,2);
+	    PACK_LISTOF_STRUCT(ddPSC->data.pWcLevelCurves->numberIntersections,
+				PEXFLOAT, ddPSC->data.pWcLevelCurves->pPoints,
+				ptr);
 	    break;
 	}
     }
