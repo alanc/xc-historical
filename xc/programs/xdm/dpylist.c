@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.19 90/09/13 18:28:38 keith Exp $
+ * $XConsortium: dpylist.c,v 1.20 90/09/14 16:30:07 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -134,6 +134,7 @@ struct display	*old;
 	    IfFree (d->resources);
 	    IfFree (d->xrdb);
 	    IfFree (d->cpp);
+	    IfFree (d->setup);
 	    IfFree (d->startup);
 	    IfFree (d->reset);
 	    IfFree (d->session);
@@ -209,6 +210,7 @@ char		*class;
     d->resources = NULL;
     d->xrdb = NULL;
     d->cpp = NULL;
+    d->setup = NULL;
     d->startup = NULL;
     d->reset = NULL;
     d->session = NULL;
