@@ -46,7 +46,7 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.17 89/05/15 13:55:38 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.18 89/05/16 18:45:25 jim Exp $
 /**/# operating system:  OSName
 
 #if SunOSPlatform
@@ -65,10 +65,12 @@
 
 /* define this as you like for server compilation */
 #if OSMajorVersion >= 4 || defined(SparcArchitecture)
-#define ServerDefines SunWindowsDefines ExtensionDefines -DINCLUDE_ALLOCA_H
+#define HWOSDefines -DINCLUDE_ALLOCA_H
 #else
-#define ServerDefines SunWindowsDefines ExtensionDefines -DPURDUE
+#define HWOSDefines /* as nothing */
 #endif
+
+#define ServerDefines SunWindowsDefines ExtensionDefines HWOSDefines -DPURDUE
 
 #if OSMajorVersion >= 4 && OSMinorVersion >= 0
 #define SetTtyGroup YES
