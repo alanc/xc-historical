@@ -117,7 +117,7 @@ record pointer are declared.
 .LP
 For the "WindowWidget", we want 2 drawing colors, a callback list for
 user input and an
-\fBXtNexposeCallback\fP callback list, and we will declare three
+\fBexposeCallback\fP callback list, and we will declare three
 convenience procedures, so we need to add
 .LP
 .sp
@@ -143,7 +143,7 @@ extern Font\ \ WindowFont(\|/* Widget */\|);
 .LP
 Note that we have chosen to call the input callback list by the generic
 name,
-.PN XtNcallback ,
+.PN callback ,
 rather than a specific name.  If widgets that define a single user-input
 action all choose the same resource name then there is greater possibility
 for an application to switch between widgets of different types.
@@ -416,4 +416,10 @@ or the \fBWindowColor\fP functions.  The actual window created for the
 "WindowWidget" is available by calling the
 .PN XtWindow
 function.
+.EH ''''
+.OH ''''
+.bp
+.af % i
+.pn iii
 .TC
+
