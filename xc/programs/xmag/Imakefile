@@ -27,8 +27,6 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = xmag.c CutAndPaste.c RootWindow.c Scale.c 
            OBJS = xmag.o CutAndPaste.o RootWindow.o Scale.o
 
-       INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
-
 ComplexProgramTarget(xmag)
 InstallAppDefaults(Xmag)
 
