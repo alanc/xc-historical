@@ -1,9 +1,9 @@
+/*
+ * $XConsortium$
+ */
+
 #include "copyright.h"
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
-
-#ifndef lint
-static char rcsid[] = "$XConsortium: XEvToWire.c,v 11.15 88/02/20 20:25:43 rws Exp $";
-#endif
 
 /*
  *	XEvToWire.c - Internal support routines for the C subroutine

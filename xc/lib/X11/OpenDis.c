@@ -1,7 +1,8 @@
+/*
+ * $XConsortium$
+ */
+
 #include "copyright.h"
-#ifndef lint
-static char *rcsid_xopendisplay_c = "$XConsortium: XOpenDis.c,v 11.66 88/08/26 18:31:29 jim Exp $";
-#endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
 /* Converted to V11 by jg */

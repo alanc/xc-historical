@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: XGetDflt.c,v 1.12 88/08/11 15:07:50 jim Exp $";
-#endif /* lint */
+/*
+ * $XConsortium$
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

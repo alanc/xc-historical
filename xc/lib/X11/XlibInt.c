@@ -1,9 +1,9 @@
+/*
+ * $XConsortium$
+ */
+
 #include "copyright.h"
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
-
-#ifndef lint
-static char rcsid[] = "$XConsortium: XlibInt.c,v 11.83 88/09/06 16:09:43 jim Exp $";
-#endif
 
 /*
  *	XlibInternal.c - Internal support routines for the C subroutine

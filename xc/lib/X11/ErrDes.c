@@ -1,6 +1,6 @@
-#ifndef lint
-static char rcsid[] = "$XConsortium: XErrDes.c,v 11.26 88/08/11 15:07:48 jim Exp $";
-#endif /* lint */
+/*
+ * $XConsortium$
+ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
