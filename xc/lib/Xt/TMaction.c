@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.12 91/05/04 18:29:13 converse Exp $ */
+/* $XConsortium: TMaction.c,v 1.13 91/05/08 22:21:33 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -497,7 +497,7 @@ static void RemoveAccelerators(widget,closure,data)
     if (numXlations == 0)
       XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		      XtNtranslationError,"nullTable",XtCXtToolkitError,
-		      "Tried to remove non-existant accelerators",
+		      "Tried to remove nonexistent accelerators",
 		      (String *)NULL, (Cardinal *)NULL);
     else {
 	if (!destination->core.being_destroyed)

@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.16 90/12/31 13:11:44 rws Exp $ */
+/* $XConsortium: PassivGrab.c,v 1.17 91/01/06 13:32:28 rws Exp $ */
 
 /********************************************************
 
@@ -753,7 +753,7 @@ void   UngrabKeyOrButton (widget, keyOrButton, modifiers, isKeyboard)
       {
 	  XtAppWarningMsg(XtWidgetToApplicationContext(widget),
 		       "invalidGrab", "ungrabKeyOrButton", XtCXtToolkitError,
-		       "Attempt to remove non-existant passive grab",
+		       "Attempt to remove nonexistent passive grab",
 		       (String *)NULL, (Cardinal *)NULL);
 	  return;
       }
