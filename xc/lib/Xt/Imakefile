@@ -117,6 +117,8 @@ DebuggedLibraryTarget(Xt,$(OBJS))
 
 InstallMultiple($(HEADERS),$(INCDIR))
 
+depend:: Atoms.h
+
 DependTarget()
 
 NormalLintTarget($(SRCS))
