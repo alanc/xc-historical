@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.209 94/02/10 19:25:15 matt Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.210 94/02/19 18:06:17 rws Exp $
 XCOMM
 
 /*
@@ -855,10 +855,24 @@ _NULLCMD_ = @ echo -n
     SHAREDCODEDEF = SharedCodeDef
          SHLIBDEF = SharedLibraryDef
 #ifdef SharedLibraryLoadFlags
-SHLIBLDFLAGS = SharedLibraryLoadFlags
+     SHLIBLDFLAGS = SharedLibraryLoadFlags
 #endif
+/*
+ * Here we set up flags needed to produce position-independent code 
+ * when doing C and C++ compilation.  The default if you specify C
+ * PIC flags without also specifying C++ PIC flags is to assume that 
+ * the C flags work for both.  If your C++ compiler requires different
+ * flags, specify them explicitly in PositionIndependentCplusplusFlags.
+ */
 #ifdef PositionIndependentCFlags
-PICFLAGS = PositionIndependentCFlags
+         PICFLAGS = PositionIndependentCFlags
+#endif
+#ifdef PositionIndependentCplusplusFlags
+      CXXPICFLAGS = PositionIndependentCplusplusFlags
+#else
+#ifdef PositionIndependentCFlags
+      CXXPICFLAGS = PositionIndependentCFlags
+#endif
 #endif
 #endif
 #if !HasVoidSignalReturn
