@@ -542,6 +542,8 @@ macIISlotProbe (pScreenInfo, index, fbNum, argc, argv)
 
     }
 
+    macIIBlackScreen(index);
+
     switch (macIIFbs[index].default_depth) {
 	case 1:
 	    /* install the black & white color map */
@@ -837,6 +839,63 @@ macIIOpenFrameBuffer(expect, pfbType, index, fbNum, argc, argv)
     }
 
     return (fd);
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * macIIBlackScreen --
+ *    Fill a frame buffer with the black pixel.
+ *
+ * Results:
+ *    None
+ *
+ * Side Effects:
+ *
+ *-----------------------------------------------------------------------
+ */
+int
+macIIBlackScreen(index)
+      int index;
+{
+    fbFd *pf;
+    register unsigned char* fb;
+    register int fbinc, line, lw;
+    register unsigned int *fbt;
+
+    pf = &macIIFbs[index];
+    fb = pf->fb; /* Assumed longword aligned! */
+
+    switch (pf->info.v_pixelsize) {
+    case 1:
+    {
+      fbinc = pf->info.v_rowbytes;
+        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+          fbt = (unsigned int *)fb;
+          lw = ((pf->info.v_right - pf->info.v_left) + 31) >> 5;
+          do {
+              *fbt++ = 0xffffffff;
+          } while (--lw);
+          fb += fbinc;
+      }
+      break;
+    }
+    case 8:
+    {
+      fbinc = pf->info.v_rowbytes;
+        for (line = pf->info.v_top; line < pf->info.v_bottom; line++) {
+          fbt = (unsigned int *)fb;
+          lw = ((pf->info.v_right - pf->info.v_left) + 3) >> 2;
+          do {
+              *fbt++ = 0x01010101;
+          } while (--lw);
+          fb += fbinc;
+      }
+      break;
+    }
+    default:
+      ErrorF("Bad depth in macIIBlackScreen.");
+      break;
+    }
 }
 
 void
