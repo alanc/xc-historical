@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 1.75 89/04/04 14:58:41 keith Exp $ */
+/* $XConsortium: miarc.c,v 1.76 89/04/04 16:17:08 keith Exp $ */
 /* Author: Keith Packard */
 
 #include "X.h"
@@ -33,6 +33,10 @@ SOFTWARE.
 #include "windowstr.h"
 #include "mifpoly.h"
 #include "mi.h"
+#undef fabs
+#include <math.h>
+
+double	miDsin(), miDcos(), miDasin(), miDatan2();
 
 /*
  * some interesting sematic interpretation of the protocol:
@@ -61,10 +65,7 @@ SOFTWARE.
 /* these are from our <math.h>, but I'm told some systems don't have
  * math.h and that they're not in all versions of math.h. */
 
-# define torad(xAngle)	(((double) (xAngle)) / 64.0 * M_PI/180.0)
-
-#define M_PI	3.14159265358979323846
-#define M_PI_2	1.57079632679489661923
+# define todeg(xAngle)	(((double) (xAngle)) / 64.0)
 
 #ifndef X_AXIS
 # define X_AXIS 0
@@ -128,8 +129,6 @@ typedef struct _miPolyArc {
 				 GCLineWidth | GCCapStyle | GCJoinStyle)
 static XID gcvals[6];
 
-extern double sqrt(), cos(), sin(), atan(), atan2(), pow(), acos(), asin();
-extern double ceil(), floor(), hypot();
 extern void miFillSppPoly();
 static void fillSpans(), span(), drawArc(), drawQuadrant(), drawZeroArc();
 static void miFreeArcs();
@@ -137,13 +136,41 @@ static int computeAngleFromPath();
 static miPolyArcPtr miComputeArcs ();
 
 #undef max
+#undef min
+
+#if defined (__GNUC__) && defined (__STDC__) && !defined (__STRICT_ANSI__)
+#define USE_INLINE
+#endif
+
+#ifdef USE_INLINE
+inline static const int max (const int x, const int y)
+{
+	return x>y? x:y;
+}
+
+inline static const int min (const int x, const int y)
+{
+	return x<y? x:y;
+}
+
+inline static const double fmax (const double x, const double y)
+{
+	return x>y? x:y;
+}
+
+inline static const double fmin (const double x, const double y)
+{
+	return x<y? x:y;
+}
+
+#else
+
 static int
 max (x, y)
 {
 	return x>y? x:y;
 }
 
-#undef min
 static int
 min (x, y)
 {
@@ -163,6 +190,13 @@ double	a, b;
 {
 	return a < b ? a : b;
 }
+
+#ifdef fabs
+#undef fabs
+#endif
+#define fabs(x)	((x) >= 0.0 ? (x) : -(x))
+
+#endif
 
 /*
  * draw one segment of the arc using the arc spans generation routines
@@ -447,13 +481,13 @@ angleBetween (center, point1, point2)
 	 * reflect from X coordinates back to ellipse
 	 * coordinates -- y increasing upwards
 	 */
-	a1 = atan2 (- (point1.y - center.y), point1.x - center.x);
-	a2 = atan2 (- (point2.y - center.y), point2.x - center.x);
+	a1 = miDatan2 (- (point1.y - center.y), point1.x - center.x);
+	a2 = miDatan2 (- (point2.y - center.y), point2.x - center.x);
 	a = a2 - a1;
-	if (a < -M_PI)
-		a += 2 * M_PI;
-	else if (a > M_PI)
-		a -= 2 * M_PI;
+	if (a < -180.0)
+		a += 360.0;
+	else if (a > 180.0)
+		a -= 360.0;
 	return a;
 }
 
@@ -513,7 +547,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		return;
 	center = pRight->center;
 	if (0 <= (a = angleBetween (center, pRight->clock, pLeft->counterClock))
- 	    && a <= M_PI)
+ 	    && a <= 180.0)
  	{
 		corner = pRight->clock;
 		otherCorner = pLeft->counterClock;
@@ -530,7 +564,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		arc.y = center.y - width/2;
 		arc.width = width;
 		arc.height = width;
-		arc.angle1 = -atan2 (corner.y - center.y, corner.x - center.x);
+		arc.angle1 = -miDatan2 (corner.y - center.y, corner.x - center.x);
 		arc.angle2 = a;
 		pArcPts = (SppPointPtr) xalloc (3 * sizeof (SppPointRec));
 		if (!pArcPts)
@@ -554,7 +588,7 @@ miArcJoin (pDraw, pGC, pLeft, pRight,
 		/*
 		 * don't miter arcs with less than 11 degrees between them
 		 */
-		if (a < 169 * M_PI / 180.0) {
+		if (a < 169.0) {
 			poly[0] = corner;
 			poly[1] = center;
 			poly[2] = otherCorner;
@@ -661,8 +695,8 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	sppArc.y = parcs[i].y;
 	sppArc.width = parcs[i].width;
 	sppArc.height = parcs[i].height;
-	sppArc.angle1 = torad (angle1);
-	sppArc.angle2 = torad (angle2);
+	sppArc.angle1 = todeg (angle1);
+	sppArc.angle2 = todeg (angle2);
 	/* We do this test every time because a full circle PieSlice isn't
 	 * really a slice, but a full pie, and the Chord code (below) should
 	 * handle it better */
@@ -675,7 +709,7 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	    if (abs (angle2) > FULLCIRCLE / 2) {
 		pPts = (SppPointPtr) NULL;
 		a = angle2 > 0 ? FULLCIRCLE / 2 : - FULLCIRCLE / 2;
-		sppArc.angle2 = torad (a);
+		sppArc.angle2 = todeg (a);
 		if (cpt = miGetArcPts(&sppArc, 0, &pPts))
 		    miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
 		xfree (pPts);
@@ -685,8 +719,8 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 		else if (angle1 <= -FULLCIRCLE)
 		    angle1 += FULLCIRCLE;
 		angle2 -= a;
-		sppArc.angle1 = torad(angle1);
-		sppArc.angle2 = torad(angle2);
+		sppArc.angle1 = todeg(angle1);
+		sppArc.angle2 = todeg(angle2);
 	    }
 	    if (!(pPts = (SppPointPtr)xalloc(sizeof(SppPointRec))))
 		return;
@@ -705,6 +739,99 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 		miFillSppPoly(pDraw, pGC, cpt, pPts, 0, 0, 0.0, 0.0);
 	    xfree(pPts);
 	}
+    }
+}
+
+
+/*
+ * To avoid inaccuracy at the cardinal points, use trig functions
+ * which are exact for those angles
+ */
+
+#ifndef M_PI
+#define M_PI	3.14159265358979323846
+#endif
+#ifndef M_PI_2
+#define M_PI_2	1.57079632679489661923
+#endif
+
+# define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*M_PI/180.0)))
+# define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
+# define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
+
+double
+miDcos (a)
+double	a;
+{
+	int	i;
+
+	if (floor (a/90) == a/90) {
+		i = (int) (a/90.0);
+		switch (mod (i, 4)) {
+		case 0: return 1;
+		case 1: return 0;
+		case 2: return -1;
+		case 3: return 0;
+		}
+	}
+	return cos (a * M_PI / 180.0);
+}
+
+double
+miDsin (a)
+double	a;
+{
+	int	i;
+
+	if (floor (a/90) == a/90) {
+		i = (int) (a/90.0);
+		switch (mod (i, 4)) {
+		case 0: return 0;
+		case 1: return 1;
+		case 2: return 0;
+		case 3: return -1;
+		}
+	}
+	return sin (a * M_PI / 180.0);
+}
+
+double
+miDasin (v)
+double	v;
+{
+    if (v == 0)
+	return 0.0;
+    if (v == 1.0)
+	return 90.0;
+    if (v == -1.0)
+	return -90.0;
+    return asin(v) * (180.0 / M_PI);
+}
+
+double
+miDatan2 (dy, dx)
+double	dy, dx;
+{
+    if (dy == 0) {
+	if (dx >= 0)
+	    return 0.0;
+	return 180.0;
+    } else if (dx == 0) {
+	if (dy > 0)
+	    return 90.0;
+	return -90.0;
+    } else if (fabs (dy) == fabs (dx)) {
+	if (dy > 0) {
+	    if (dx > 0)
+		return 45.0;
+	    return 135.0;
+	} else {
+	    if (dx > 0)
+		return 225.0;
+	    return 315.0;
+	}
+    } else {
+	return atan2 (dy, dx) * (180.0 / M_PI);
     }
 }
 
@@ -760,13 +887,13 @@ miGetArcPts(parc, cpt, ppPts)
 	return 0;
     if (cdt < 1.0)
 	cdt = 1.0;
-    dt = asin( 1.0 / cdt ); /* minimum step necessary */
+    dt = miDasin ( 1.0 / cdt ); /* minimum step necessary */
     count = et/dt;
     count = abs(count) + 1;
     dt = et/count;	
     count++;
 
-    cdt = 2 * cos(dt);
+    cdt = 2 * miDcos(dt);
 #ifdef NOARCCOMPRESSION
     if (!(poly = (SppPointPtr) xrealloc((pointer)*ppPts,
 					(cpt + count) * sizeof(SppPointRec))))
@@ -782,10 +909,10 @@ miGetArcPts(parc, cpt, ppPts)
     yc = parc->height/2.0;
     axis = (xc >= yc) ? X_AXIS : Y_AXIS;
     
-    x0 = xc * cos(st);
-    y0 = yc * sin(st);
-    x1 = xc * cos(st + dt);
-    y1 = yc * sin(st + dt);
+    x0 = xc * miDcos(st);
+    y0 = yc * miDsin(st);
+    x1 = xc * miDcos(st + dt);
+    y1 = yc * miDsin(st + dt);
     xc += parc->x;		/* by adding initial point, these become */
     yc += parc->y;		/* the center point */
 
@@ -861,8 +988,8 @@ miGetArcPts(parc, cpt, ppPts)
     if (abs(parc->angle2) >= FULLCIRCLE)
 	poly[cpt +i -1] = poly[0];
     else {
-	poly[cpt +i -1].x = (cos(st + et) * parc->width/2.0 + xc);
-	poly[cpt +i -1].y = (sin(st + et) * parc->height/2.0 + yc);
+	poly[cpt +i -1].x = (miDcos(st + et) * parc->width/2.0 + xc);
+	poly[cpt +i -1].y = (miDsin(st + et) * parc->height/2.0 + yc);
     }
 
     return(count);
@@ -985,7 +1112,7 @@ miFreeArcs(arcs, pGC)
 
 # define DASH_MAP_SIZE	91
 
-# define dashIndexToAngle(di)	((((double) (di)) * M_PI_2) / ((double) DASH_MAP_SIZE - 1))
+# define dashIndexToAngle(di)	((((double) (di)) * 90.0) / ((double) DASH_MAP_SIZE - 1))
 # define xAngleToDashIndex(xa)	((((long) (xa)) * (DASH_MAP_SIZE - 1)) / (90 * 64))
 # define dashIndexToXAngle(di)	((((long) (di)) * (90 * 64)) / (DASH_MAP_SIZE - 1))
 # define dashXAngleStep	(((double) (90 * 64)) / ((double) (DASH_MAP_SIZE - 1)))
@@ -1004,8 +1131,8 @@ computeDashMap (arcp, map)
 
 	for (di = 0; di < DASH_MAP_SIZE; di++) {
 		a = dashIndexToAngle (di);
-		x = ((double) arcp->width / 2.0) * cos (a);
-		y = ((double) arcp->height / 2.0) * sin (a);
+		x = ((double) arcp->width / 2.0) * miDcos (a);
+		y = ((double) arcp->height / 2.0) * miDsin (a);
 		if (di == 0) {
 			map->map[di] = 0.0;
 		} else {
@@ -1061,18 +1188,18 @@ miComputeArcs (parcs, narcs, pGC)
 	    return (miPolyArcPtr)NULL;
 	}
 	for (i = 0; i < narcs; i++) {
-		a0 = torad (parcs[i].angle1);
+		a0 = todeg (parcs[i].angle1);
 		angle2 = parcs[i].angle2;
 		if (angle2 > FULLCIRCLE)
 			angle2 = FULLCIRCLE;
 		else if (angle2 < -FULLCIRCLE)
 			angle2 = -FULLCIRCLE;
 		data[i].selfJoin = angle2 == FULLCIRCLE || angle2 == -FULLCIRCLE;
-		a1 = torad (parcs[i].angle1 + angle2);
-		data[i].x0 = parcs[i].x + (double) parcs[i].width / 2 * (1 + cos (a0));
-		data[i].y0 = parcs[i].y + (double) parcs[i].height / 2 * (1 - sin (a0));
-		data[i].x1 = parcs[i].x + (double) parcs[i].width / 2 * (1 + cos (a1));
-		data[i].y1 = parcs[i].y + (double) parcs[i].height / 2 * (1 - sin (a1));
+		a1 = todeg (parcs[i].angle1 + angle2);
+		data[i].x0 = parcs[i].x + (double) parcs[i].width / 2 * (1 + miDcos (a0));
+		data[i].y0 = parcs[i].y + (double) parcs[i].height / 2 * (1 - miDsin (a0));
+		data[i].x1 = parcs[i].x + (double) parcs[i].width / 2 * (1 + miDcos (a1));
+		data[i].y1 = parcs[i].y + (double) parcs[i].height / 2 * (1 - miDsin (a1));
 	}
 
 	for (iphase = 0; iphase < (isDoubleDash ? 2 : 1); iphase++) {
@@ -1350,10 +1477,6 @@ arcfail:
 	return (miPolyArcPtr)NULL;
 }
 
-/* b > 0 only */
-
-# define mod(a,b)	((a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
-
 static double
 angleToLength (angle, map)
 	int	angle;
@@ -1511,58 +1634,8 @@ computeAngleFromPath (startAngle, endAngle, map, lenp, backwards)
 }
 
 /*
- * To avoid inaccuracy at the cardinal points, use trig functions
- * which are exact for those angles
- */
-
-# define Dsin(d)	((d) == 0.0 ? 0.0 : ((d) == 90.0 ? 1.0 : sin(d*M_PI/180.0)))
-# define Dcos(d)	((d) == 0.0 ? 1.0 : ((d) == 90.0 ? 0.0 : cos(d*M_PI/180.0)))
-
-static double
-FullDcos (a)
-double	a;
-{
-	int	i;
-
-	if (floor (a/90) == a/90) {
-		i = (int) (a/90.0);
-		switch (mod (i, 4)) {
-		case 0: return 1;
-		case 1: return 0;
-		case 2: return -1;
-		case 3: return 0;
-		}
-	}
-	return cos (a * M_PI / 180.0);
-}
-
-static double
-FullDsin (a)
-double	a;
-{
-	int	i;
-
-	if (floor (a/90) == a/90) {
-		i = (int) (a/90.0);
-		switch (mod (i, 4)) {
-		case 0: return 0;
-		case 1: return 1;
-		case 2: return 0;
-		case 3: return -1;
-		}
-	}
-	return sin (a * M_PI / 180.0);
-}
-
-/*
  * scan convert wide arcs.
  */
-
-#undef fabs
-#undef min
-#undef max
-
-#define fabs(x)	((x) >= 0.0 ? (x) : -(x))
 
 /*
  * draw zero width/height arcs
@@ -1598,10 +1671,10 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 	startAngle = - ((double) a0 / 64.0);
 	endAngle = - ((double) (a0 + a1) / 64.0);
 	
-	x0 = w * FullDcos(startAngle);
-	y0 = h * FullDsin(startAngle);
-	x1 = w * FullDcos(endAngle);
-	y1 = h * FullDsin(endAngle);
+	x0 = w * miDcos(startAngle);
+	y0 = h * miDsin(startAngle);
+	x1 = w * miDcos(endAngle);
+	y1 = h * miDsin(endAngle);
 
 	if (y0 != y1) {
 		if (y0 < y1) {
@@ -1727,9 +1800,13 @@ struct arc_def {
 	double	a0, a1;
 };
 
+#ifdef USE_INLINE
+inline static const double Sqrt (const double x)
+#else
 static double
 Sqrt (x)
 double	x;
+#endif
 {
 	if (x < 0) {
 		if (x > -NEWTON_LIMIT)
@@ -2539,7 +2616,10 @@ arcSpan (y, def, bounds, acc)
 	 * there are a very few cases when two spans will be
 	 * generated.
 	 */
-	if (innerx1 < outerx1 && outerx1 < innerx2 && innerx2 < outerx2) {
+	if (innerx1 <= outerx1 &&
+ 	    outerx1 <  innerx2 &&
+ 	    innerx2 <= outerx2)
+ 	{
 		span (innerx1, outerx1);
 		span (innerx2, outerx2);
 	} else
@@ -2776,6 +2856,42 @@ newFinalSpan (y, xmin, xmax)
 }
 
 static void
+deleteFinalSpan (y, xmin, xmax)
+    int		y;
+    register int	xmin, xmax;
+{
+	register struct finalSpan	*x;
+	register struct finalSpan	**f;
+	int				newmax;
+
+	f = findSpan (y);
+	if (!f)
+	    return;
+	for (x = *f; x; x=x->next) {
+	    if (x->min <= xmin && xmax <= x->max) {
+		if (x->min == xmin) {
+		    x->min = xmax;
+		} else if (x->max == xmax) {
+		    x->max = xmin;
+		} else {
+		    newmax = x->max;
+		    x->max = xmin;
+		    newFinalSpan (y, xmax, newmax);
+		}
+		return;
+	    } else if (x->min <= xmax && xmin <= x->max) {
+		if (x->min <= xmin) {
+		    x->max = xmin;
+		} else {
+		    x->min = xmax;
+		    if (x->min > x->max)
+			x->min = x->max;
+		}
+	    }
+	}
+}
+
+static void
 mirrorSppPoint (quadrant, sppPoint)
 	int		quadrant;
 	SppPointPtr	sppPoint;
@@ -2845,6 +2961,50 @@ span (left, right)
 
 		if (xmax > xmin)
 			newFinalSpan (spany, xmin, xmax);
+	}
+}
+
+static void
+unspan (left, right)
+double	left, right;
+{
+	register int	mask = quadrantMask, bit;
+	register double	min, max, y;
+	int	xmin, xmax, spany;
+
+	while (mask) {
+		bit = lowbit (mask);
+		mask &= ~bit;
+		switch (bit) {
+		case 1:
+			min = left;
+			max = right;
+			y = spanY;
+			break;
+		case 2:
+			min = -right;
+			max = -left;
+			y = spanY;
+			break;
+		case 4:
+			min = -right;
+			max = -left;
+			y = -spanY;
+			break;
+		case 8:
+			min = left;
+			max = right;
+			y = -spanY;
+			break;
+		default:
+			FatalError ("miarc.c: illegal quadrant mask bit %d\n", bit);
+		}
+		xmin = (int) ceil (min + arcXcenter) + arcXoffset;
+		xmax = (int) ceil (max + arcXcenter) + arcXoffset;
+		spany = (int) (ceil (arcYcenter - y)) + arcYoffset;
+
+		if (xmax > xmin)
+			deleteFinalSpan (spany, xmin, xmax);
 	}
 }
 
@@ -3107,11 +3267,21 @@ drawQuadrant (def, acc, a0, a1, mask, right, left)
 		arcSpan (y, def, &bound, acc);
 	}
 	/*
-	 * add the pixel at the top of the arc
+	 * add the pixel at the top of the arc if
+	 * this segment terminates exactly at the
+	 * top of the arc, and the outside
+	 * point is exactly an integer (width
+	 * is integral and (line width/2)
+	 * is integral)
 	 */
-	if (a1 == 90 * 64 && (mask & 1) && ((int) (def->w * 2 + def->l)) & 1) {
+	if (a1 == 90 * 64 && (mask & 1) &&
+	    def->w == floor (def->w) &&
+	    def->l/2 == floor (def->l/2))
+ 	{
 		quadrantMask = 1;
 		spanY = def->h + def->l/2;
 		span (0.0, 1.0);
+		spanY = def->h - def->l/2;
+		unspan (0.0, 1.0);
 	}
 }

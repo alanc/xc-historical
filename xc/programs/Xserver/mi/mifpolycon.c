@@ -21,12 +21,14 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.13 88/10/15 17:50:12 keith Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.14 89/03/22 10:50:26 rws Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "mifpoly.h"
+#undef fabs
+#include <math.h>
 
 static int GetFPolyYBounds();
 
@@ -98,7 +100,6 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
                  	nextright;	/* indices to second endpoints */
     DDXPointPtr 	ptsOut,
     			FirstPoint;	/* output buffer */
-    double 		ceil();
 
     if (pgc->miTranslate && (dst->type == DRAWABLE_WINDOW) )
     {
@@ -246,7 +247,7 @@ GetFPolyYBounds(pts, n, yFtrans, by, ty)
     int 			*by, *ty;
 {
     register SppPointPtr	ptMin;
-    double 			ymin, ymax, ceil();
+    double 			ymin, ymax;
     SppPointPtr			ptsStart = pts;
 
     ptMin = pts;
