@@ -113,6 +113,7 @@ int x, y;
 	pPrivWin->oldRotate.x = pWin->absCorner.x;
 	pPrivWin->oldRotate.y = pWin->absCorner.y;
     }
+    return (TRUE);
 }
 
 Bool cfbUnmapWindow(pWindow)
@@ -293,5 +294,6 @@ cfbChangeWindowAttributes(pWin, mask)
 
 	}
     }
+    return (TRUE);
 }
 
