@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.6 91/07/02 17:59:37 converse Exp $
+ * $XConsortium: actions.h,v 1.7 91/07/06 15:55:03 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -63,6 +63,7 @@ extern void	XmhReloadSeqLists();
 
 	/* from tocfuncs.c */
 
+extern void	XmhCheckForNewMail();
 extern void	XmhIncorporateNewMail();
 extern void	XmhCommitChanges();
 extern void	XmhPackFolder();
