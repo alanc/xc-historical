@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 22:07:10 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/03/03 17:16:24 matt Exp $
 
 /*
  * TODO:  Figure out what to do with the stubs/ and raster/
@@ -21,18 +21,18 @@ LOCAL_LIBRARIES = FrescoClientLibs
 		  subpaths.CCsuf \
 		  xtf.CCsuf 
 
-           OBJS = barrier.Osuf \
-		  box.Osuf \
-	  	  buttons.Osuf \
-		  check.Osuf \
-		  circle.Osuf \
-		  figviewer.Osuf \
-		  hello.Osuf \
-		  mtcircles.Osuf \
-		  narrow.Osuf \
-		  styles.Osuf \
-		  subpaths.Osuf \
-		  xtf.Osuf 
+           OBJS = barrier.o \
+		  box.o \
+	  	  buttons.o \
+		  check.o \
+		  circle.o \
+		  figviewer.o \
+		  hello.o \
+		  mtcircles.o \
+		  narrow.o \
+		  styles.o \
+		  subpaths.o \
+		  xtf.o 
 
        EXAMPLES = barrier \
 		  box \
@@ -62,10 +62,10 @@ NormalCplusplusObjectRule()
 #endif
 
 #define FrescoExample(name)			@@\
-NormalCplusplusProgramTarget(name,name.Osuf,$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
+NormalCplusplusProgramTarget(name,name.o,$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
 
 #define FrescoExampleWithLibs(name,libs)	@@\
-NormalCplusplusProgramTarget(name,name.Osuf,$(DEPLIBS),libs $(LOCAL_LIBRARIES),NullParameter)
+NormalCplusplusProgramTarget(name,name.o,$(DEPLIBS),libs $(LOCAL_LIBRARIES),NullParameter)
 
 FrescoExample(barrier)
 FrescoExample(box)
