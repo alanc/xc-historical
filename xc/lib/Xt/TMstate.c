@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.158 91/08/21 11:04:40 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.159 91/12/03 16:33:34 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -299,7 +299,8 @@ TMShortCard _XtGetModifierIndex(event)
 		 * late modifiers. If there isn't a match we use the
 		 * parser's copy
 		 */
-		if (event->lateModifiers) {
+		if (event->lateModifiers &&
+		    --event->lateModifiers->ref_count == 0) {
 		    XtFree((char *)event->lateModifiers);
 		    event->lateModifiers = NULL;
 		}
