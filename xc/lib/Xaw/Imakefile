@@ -87,7 +87,7 @@ SRCS = \
 	Mailbox.c \
 	MenuButton.c \
 	Paned.c \
-	Scroll.c \
+	Scrollbar.c \
 	Simple.c \
 	SimpleMenu.c \
 	Sme.c \
@@ -121,7 +121,7 @@ OBJS = \
 	Mailbox.o \
 	MenuButton.o \
 	Paned.o \
-	Scroll.o \
+	Scrollbar.o \
 	Simple.o \
 	SimpleMenu.o \
 	Sme.o \
