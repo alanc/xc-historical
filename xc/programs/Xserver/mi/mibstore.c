@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.51 92/01/30 19:40:07 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.52 92/03/13 16:01:54 eswu Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3649,7 +3649,7 @@ miCreateBSPixmap (pWin, pExtents)
 			      !backSet);
 	if (exposed)
 	{
-	    miSendExposures(pWin, exposed, 0, 0);
+	    miSendExposures(pWin, exposed, pWin->drawable.x, pWin->drawable.y);
 	    (* pScreen->RegionDestroy)(exposed);
 	}
     }
