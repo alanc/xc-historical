@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.138 88/01/30 19:25:07 rws Exp $ */
+/* $Header: events.c,v 1.139 88/02/01 11:03:26 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2072,11 +2072,18 @@ ProcGrabPointer(client)
     TimeStamp time;
 
     REQUEST_SIZE_MATCH(xGrabPointerReq);
-    if ((stuff->pointerMode != GrabModeSync) && 
-	(stuff->pointerMode != GrabModeAsync) && 
-	(stuff->keyboardMode != GrabModeSync) && 
-	(stuff->keyboardMode != GrabModeAsync))
+    if ((stuff->pointerMode != GrabModeSync) &&
+	(stuff->pointerMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->pointerMode;
         return BadValue;
+    }
+    if ((stuff->keyboardMode != GrabModeSync) &&
+	(stuff->keyboardMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->keyboardMode;
+        return BadValue;
+    }
 
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
@@ -2206,11 +2213,18 @@ ProcGrabKeyboard(client)
     REQUEST(xGrabKeyboardReq);
 
     REQUEST_SIZE_MATCH(xGrabKeyboardReq);
-    if ((stuff->pointerMode != GrabModeSync) && 
-	(stuff->pointerMode != GrabModeAsync) && 
-	(stuff->keyboardMode != GrabModeSync) && 
-	(stuff->keyboardMode != GrabModeAsync))
+    if ((stuff->pointerMode != GrabModeSync) &&
+	(stuff->pointerMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->pointerMode;
         return BadValue;
+    }
+    if ((stuff->keyboardMode != GrabModeSync) &&
+	(stuff->keyboardMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->keyboardMode;
+        return BadValue;
+    }
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)
     {
@@ -2728,21 +2742,28 @@ SendMappingNotify(request, firstKeyCode, count)
  * sort it to do the checking. How often is it called? Just being lazy?
  */
 static Bool
-BadDeviceMap(buff, length, low, high)
-    BYTE *buff;
+BadDeviceMap(buff, length, low, high, errval)
+    register BYTE *buff;
     int length;
     unsigned low, high;
+    XID *errval;
 {
-    int     i, j;
+    register int     i, j;
 
     for (i = 0; i < length; i++)
 	if (buff[i])		       /* only check non-zero elements */
 	{
 	    if ((low > buff[i]) || (high < buff[i]))
+	    {
+		*errval = buff[i];
 		return TRUE;
+	    }
 	    for (j = i + 1; j < length; j++)
 		if (buff[i] == buff[j])
+		{
+		    *errval = buff[i];
 		    return TRUE;
+		}
 	}
     return FALSE;
 }
@@ -2789,6 +2810,7 @@ ProcSetModifierMapping(client)
 	if (inputMap[i]
 	    && (inputMap[i] < curKeySyms.minKeyCode
 		|| inputMap[i] > curKeySyms.maxKeyCode)) {
+		client->errorValue = inputMap[i];
 		return BadValue;
 		}
     }
@@ -2881,9 +2903,16 @@ ProcChangeKeyboardMapping(client)
     if (len != (stuff->keyCodes * stuff->keySymsPerKeyCode))
             return BadLength;
     if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-	(stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms.maxKeyCode) ||
-        (stuff->keySymsPerKeyCode == 0))
+	(stuff->firstKeyCode + stuff->keyCodes - 1 > curKeySyms.maxKeyCode))
+    {
+	    client->errorValue = stuff->firstKeyCode;
+	    return BadValue;
+    }
+    if (stuff->keySymsPerKeyCode == 0)
+    {
+	    client->errorValue = 0;
             return BadValue;
+    }
     keysyms.minKeyCode = stuff->firstKeyCode;
     keysyms.maxKeyCode = stuff->firstKeyCode + stuff->keyCodes - 1;
     keysyms.mapWidth = stuff->keySymsPerKeyCode;
@@ -2912,8 +2941,11 @@ ProcSetPointerMapping(client)
     rep.success = MappingSuccess;
     map = (BYTE *)&stuff[1];
     if (stuff->nElts != inputInfo.pointer->u.ptr.mapLength)
+    {
+	client->errorValue = stuff->nElts;
 	return BadValue;
-    if (BadDeviceMap(&map[0], (int)stuff->nElts, 1, 255))
+    }
+    if (BadDeviceMap(&map[0], (int)stuff->nElts, 1, 255, &client->errorValue))
 	return BadValue;
     for (i=0; i < stuff->nElts; i++)
 	if ((inputInfo.pointer->u.ptr.map[i + 1] != map[i]) &&
@@ -2940,9 +2972,16 @@ ProcGetKeyboardMapping(client)
     REQUEST_SIZE_MATCH(xGetKeyboardMappingReq);
 
     if ((stuff->firstKeyCode < curKeySyms.minKeyCode) ||
-        (stuff->firstKeyCode > curKeySyms.maxKeyCode) ||
-	(stuff->firstKeyCode + stuff->count > curKeySyms.maxKeyCode + 1))
+        (stuff->firstKeyCode > curKeySyms.maxKeyCode))
+    {
+	client->errorValue = stuff->firstKeyCode;
+	return BadValue;
+    }
+    if (stuff->firstKeyCode + stuff->count > curKeySyms.maxKeyCode + 1)
+    {
+	client->errorValue = stuff->count;
         return BadValue;
+    }
 
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
@@ -3025,7 +3064,10 @@ ProcChangeKeyboardControl (client)
 	if (t == -1)
 	    t = defaultKeyboardControl.click;
 	else if (t < 0 || t > 100)
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
 	ctrl.click = t;
     }
     if (stuff->mask & KBBellPercent)
@@ -3035,7 +3077,10 @@ ProcChangeKeyboardControl (client)
 	if (t == -1)
 	    t = defaultKeyboardControl.bell;
 	else if (t < 0 || t > 100)
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
 	ctrl.bell = t;
     }
     if (stuff->mask & KBBellPitch)
@@ -3045,7 +3090,10 @@ ProcChangeKeyboardControl (client)
 	if (t == -1)
 	    t = defaultKeyboardControl.bell_pitch;
 	else if (t < 0)
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
 	ctrl.bell_pitch = t;
     }
     if (stuff->mask & KBBellDuration)
@@ -3055,7 +3103,10 @@ ProcChangeKeyboardControl (client)
 	if (t == -1)
 	    t = defaultKeyboardControl.bell_duration;
 	else if (t < 0)
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
 	ctrl.bell_duration = t;
     }
     if (stuff->mask & KBLed)
@@ -3063,7 +3114,10 @@ ProcChangeKeyboardControl (client)
 	led = (CARD8)*vlist;
 	vlist++;
 	if (led < 1 || led > 32)
+	{
+	    client->errorValue = led;
 	    return BadValue;
+	}
 	if (!(stuff->mask & KBLedMode))
 	    return BadMatch;
     }
@@ -3086,14 +3140,20 @@ ProcChangeKeyboardControl (client)
 		ctrl.leds |= (((Leds)(1)) << (led - 1));
 	}
 	else
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
     }
     if (stuff->mask & KBKey)
     {
 	key = (KeyCode)*vlist;
 	vlist++;
 	if (key < 8 || key > 255)
+	{
+	    client->errorValue = key;
 	    return BadValue;
+	}
 	if (!(stuff->mask & KBAutoRepeatMode))
 	    return BadMatch;
     }
@@ -3128,7 +3188,10 @@ ProcChangeKeyboardControl (client)
 			(defaultKeyboardControl.autoRepeats[index] & mask);
 	}
 	else
+	{
+	    client->errorValue = t;
 	    return BadValue;
+	}
     }
     keybd->u.keybd.ctrl = ctrl;
     (*keybd->u.keybd.CtrlProc)(keybd, &keybd->u.keybd.ctrl);
@@ -3171,7 +3234,10 @@ ProcBell(client)
     REQUEST(xBellReq);
     REQUEST_SIZE_MATCH(xBellReq);
     if (stuff->percent < -100 || stuff->percent > 100)
+    {
+	client->errorValue = stuff->percent;
 	return BadValue;
+    }
     newpercent = (base * stuff->percent) / 100;
     if (stuff->percent < 0)
         newpercent = base + newpercent;
@@ -3412,7 +3478,10 @@ ProcSendEvent(client)
     if ( ! ((stuff->event.u.u.type < LASTEvent) || 
 	((EXTENSION_EVENT_BASE  <= stuff->event.u.u.type) &&
 	(stuff->event.u.u.type < lastEvent))) )
+    {
+	client->errorValue = stuff->event.u.u.type;
 	return BadValue;
+    }
 
     if (stuff->destination == PointerWindow)
 	pWin = sprite.win;
@@ -3503,7 +3572,10 @@ ProcGrabKey(client)
     REQUEST_SIZE_MATCH(xGrabKeyReq);
     if (((stuff->key > curKeySyms.maxKeyCode) || (stuff->key < curKeySyms.minKeyCode))
 	&& (stuff->key != AnyKey))
+    {
+	client->errorValue = stuff->key;
         return BadValue;
+    }
     pWin = LookupWindow(stuff->grabWindow, client);
     client->errorValue = stuff->grabWindow;
     if (!pWin)
@@ -3547,11 +3619,18 @@ ProcGrabButton(client)
     GrabPtr temporaryGrab;
 
     REQUEST_SIZE_MATCH(xGrabButtonReq);
-    if ((stuff->pointerMode != GrabModeSync) && 
-	(stuff->pointerMode != GrabModeAsync) && 
-	(stuff->keyboardMode != GrabModeSync) && 
-	(stuff->keyboardMode != GrabModeAsync))
+    if ((stuff->pointerMode != GrabModeSync) &&
+	(stuff->pointerMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->pointerMode;
         return BadValue;
+    }
+    if ((stuff->keyboardMode != GrabModeSync) &&
+	(stuff->keyboardMode != GrabModeAsync))
+    {
+	client->errorValue = stuff->keyboardMode;
+        return BadValue;
+    }
 
     pWin = LookupWindow(stuff->grabWindow, client);
     if (!pWin)

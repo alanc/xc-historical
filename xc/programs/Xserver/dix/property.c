@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.57 88/01/02 14:25:01 rws Locked $ */
+/* $Header: property.c,v 1.58 88/01/16 10:29:14 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -155,10 +155,17 @@ ProcChangeProperty(client)
     REQUEST_AT_LEAST_SIZE(xChangePropertyReq);
     format = stuff->format;
     mode = stuff->mode;
-    if (((mode != PropModeReplace) && (mode != PropModeAppend) &&
-	 (mode != PropModePrepend)) 
-    || ((format != 8) && (format != 16) && (format != 32)))
+    if ((mode != PropModeReplace) && (mode != PropModeAppend) &&
+	(mode != PropModePrepend))
+    {
+	client->errorValue = mode;
+	return BadValue;
+    }
+    if ((format != 8) && (format != 16) && (format != 32))
+    {
+	client->errorValue = format;
         return BadValue;
+    }
 
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
     if (!pWin)
@@ -369,7 +376,10 @@ ProcGetProperty(client)
                         be negative, it's a value error. */
 
 		if (n < ind)
+		{
+		    client->errorValue = stuff->longOffset;
 		    return BadValue;
+		}
 
 		len = min(n - ind, 4 * stuff->longLength);
 
