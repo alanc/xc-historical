@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.33 89/03/11 09:45:48 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.34 89/04/06 13:38:10 keith Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -375,6 +375,7 @@ processTimeout(pid, timeout, string)
 		if (++i > timeout)
 			break;
 	}
+	if ( i > 0 ) fputc( '\n', stderr );     /* tidy up after message */
 	laststring = string;
 	return( pid != pidfound );
 }
