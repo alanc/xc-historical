@@ -26,7 +26,7 @@
 
 # include	<X11/Xos.h>
 
-#define	UDP_SOCKET
+# include	<sys/param.h>	/* for NGROUPS */
 
 #ifdef SYSV
 # define waitCode(w)	((w) & 0xff)
@@ -44,7 +44,7 @@ typedef union wait	waitType;
 #include	<netinet/in.h>
 #endif
 
-# define waitVal(w)	(waitSig(w) ? -1 : waitCode (w))
+# define waitVal(w)	(waitSig(w) ? (waitSig(w) * 256 + 1) : waitCode (w))
 
 typedef enum displayStatus { running, notRunning } DisplayStatus;
 
