@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.177 93/07/28 20:06:51 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.178 93/07/29 09:37:33 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -51,7 +51,7 @@ XCOMM
 #endif
 #undef ultrix
 #define UltrixArchitecture
-#endif
+#endif /* ultrix */
 
 #if defined(vax) && !defined(UltrixArchitecture)
 #define MacroIncludeFile <bsd.cf>
@@ -59,14 +59,14 @@ XCOMM
 #undef vax
 #define BSDArchitecture
 #define VaxArchitecture
-#endif
+#endif /* vax */
 
 #ifdef bsdi
 #define MacroIncludeFile <bsdi.cf>
 #define MacroFile bsdi.cf
 #undef bsdi
 #define BSD386Architecture
-#endif
+#endif /* bsdi */
 
 #ifdef sun
 #define MacroIncludeFile <sun.cf>
@@ -165,14 +165,14 @@ XCOMM
 #define SGIArchitecture
 #undef mips
 #define MipsArchitecture
-#endif
+#endif /* sgi */
 
 #ifdef stellar
 #define MacroIncludeFile <stellar.cf>
 #define MacroFile stellar.cf
 #undef stellar
 #define StellarArchitecture
-#endif
+#endif /* stellar */
 
 #if defined(ibm) || defined(_IBMR2) || defined(ibm032) || defined(aix)
 #define MacroIncludeFile <ibm.cf>
@@ -210,7 +210,7 @@ XCOMM
 #undef mc88000
 #define Mc88000Architecture
 #endif
-#endif
+#endif /* luna */
 
 #ifdef Mips
 #  define MacroIncludeFile <Mips.cf>
@@ -251,7 +251,7 @@ XCOMM
 #define MacroFile DGUX.cf
 #undef DGUX
 #define DguxArchitecture
-#endif
+#endif /* DGUX */
 
 #ifdef __convex__
 # define MacroIncludeFile <convex.cf>
@@ -260,7 +260,7 @@ XCOMM
 #  undef convex
 # endif
 # define ConvexArchitecture
-#endif
+#endif /* _convex_ */
 
 #ifdef __OSF1__
 #define MacroIncludeFile <osf1.cf>
@@ -271,7 +271,7 @@ XCOMM
 #undef __mips__
 #define MipsArchitecture
 #endif
-#endif
+#endif /* __OSF1__ */
 
 #ifdef Oki
 #define MacroIncludeFile <Oki.cf>
@@ -279,6 +279,12 @@ XCOMM
 #undef Oki
 #define i860SVR4Architecture
 #endif /* Oki */
+
+#ifdef WIN32
+#define MacroIncludeFile <Win32.cf>
+#define MacroFile Win32.cf
+#define Win32Architecture
+#endif /* WIN32 */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!

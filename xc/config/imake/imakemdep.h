@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.55 93/08/07 10:52:43 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.56 93/08/07 11:43:21 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -76,6 +76,9 @@
 #define imake_ccflags "-DX_NOT_POSIX"
 #endif
 
+#ifdef WIN32
+#define imake_ccflags "-nologo -batch -Za"
+#endif
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -99,10 +102,12 @@
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32)
 #define FIXUP_CPP_WHITESPACE
 #endif
-
+#ifdef WIN32
+#define REMOVE_CPP_LEADSPACE
+#endif
 
 /*
  * Step 4:  USE_CC_E, DEFAULT_CC, DEFAULT_CPP
@@ -112,6 +117,10 @@
  */
 #ifdef hpux
 #define USE_CC_E
+#endif
+#ifdef WIN32
+#define USE_CC_E
+#define DEFAULT_CC "cl"
 #endif
 #ifdef apollo
 #define DEFAULT_CPP "/usr/lib/cpp"
@@ -258,6 +267,12 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef SVR4
 	"-DSVR4",
 #endif
+#endif
+#ifdef WIN32
+	"-DWIN32",
+	"-nologo",
+	"-batch",
+	"-Za",
 #endif
 };
 #else /* else MAKEDEPEND */
