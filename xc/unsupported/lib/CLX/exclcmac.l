@@ -19,33 +19,33 @@
 ;;
 ;; Type predicates
 ;;
-(defcmacro card8p (x)
+(excl:defcmacro card8p (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        (declare (optimize (speed 3) (safety 0))
 		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 8) ,xx) (>= ,xx 0)))))
+       (and (excl:fixnump ,xx) (> #.(expt 2 8) ,xx) (>= ,xx 0)))))
 
-(defcmacro card16p (x)
+(excl:defcmacro card16p (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        (declare (optimize (speed 3) (safety 0))
 		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 16) ,xx) (>= ,xx 0)))))
+       (and (excl:fixnump ,xx) (> #.(expt 2 16) ,xx) (>= ,xx 0)))))
 
-(defcmacro int8p (x)
+(excl:defcmacro int8p (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        (declare (optimize (speed 3) (safety 0))
 		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 7) ,xx) (>= ,xx #.(expt -2 7))))))
+       (and (excl:fixnump ,xx) (> #.(expt 2 7) ,xx) (>= ,xx #.(expt -2 7))))))
 
-(defcmacro int16p (x)
+(excl:defcmacro int16p (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        (declare (optimize (speed 3) (safety 0))
 		(fixnum ,xx))
-       (and (fixnump ,xx) (> #.(expt 2 15) ,xx) (>= ,xx #.(expt -2 15))))))
+       (and (excl:fixnump ,xx) (> #.(expt 2 15) ,xx) (>= ,xx #.(expt -2 15))))))
 
 ;; Card29p, card32p, int32p are too large to expand inline
 
@@ -53,7 +53,7 @@
 ;;
 ;; Type transformers
 ;;
-(defcmacro card8->int8 (x)
+(excl:defcmacro card8->int8 (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        ,(declare-bufmac)
@@ -61,11 +61,11 @@
        (the int8 (if (logbitp 7 ,xx)
 		     (the int8 (- ,xx #x100))
 		   ,xx)))))
-(defcmacro int8->card8 (x)
+(excl:defcmacro int8->card8 (x)
   `(locally ,(declare-bufmac)
      (the card8 (ldb (byte 8 0) (the int8 ,x)))))
 
-(defcmacro card16->int16 (x)
+(excl:defcmacro card16->int16 (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        ,(declare-bufmac)
@@ -74,11 +74,11 @@
 		      (the int16 (- ,xx #x10000))
 		    ,xx)))))
 
-(defcmacro int16->card16 (x)
+(excl:defcmacro int16->card16 (x)
   `(locally ,(declare-bufmac)
      (the card16 (ldb (byte 16 0) (the int16 ,x)))))
 
-(defcmacro card32->int32 (x)
+(excl:defcmacro card32->int32 (x)
   (let ((xx (gensym)))
     `(let ((,xx ,x))
        ,(declare-bufmac)
@@ -87,15 +87,15 @@
 		      (the int32 (- ,xx #x100000000))
 		    ,xx)))))
 
-(defcmacro int32->card32 (x)
+(excl:defcmacro int32->card32 (x)
   `(locally ,(declare-bufmac)
      (the card32 (ldb (byte 32 0) (the int32 ,x)))))
 
-(defcmacro char->card8 (char)
+(excl:defcmacro char->card8 (char)
   `(locally ,(declare-bufmac)
      (the card8 (char-code (the string-char ,char)))))
 
-(defcmacro card8->char (card8)
+(excl:defcmacro card8->char (card8)
   `(locally ,(declare-bufmac)
      (the string-char (code-char (the card8 ,card8)))))
 
@@ -103,32 +103,32 @@
 ;;
 ;; Array accessors and setters
 ;;
-(defcmacro aref-card8 (a i)
+(excl:defcmacro aref-card8 (a i)
   `(locally ,(declare-bufmac)
 	    (the card8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
 
-(defcmacro aset-card8 (v a i)
+(excl:defcmacro aset-card8 (v a i)
   `(locally ,(declare-bufmac)
 	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
 	      (the card8 ,v))))
 
-(defcmacro aref-int8 (a i)
+(excl:defcmacro aref-int8 (a i)
   `(locally ,(declare-bufmac)
 	    (card8->int8 (aref (the buffer-bytes ,a) (the array-index ,i)))))
 
-(defcmacro aset-int8 (v a i)
+(excl:defcmacro aset-int8 (v a i)
   `(locally ,(declare-bufmac)
 	    (setf (aref (the buffer-bytes ,a) (the array-index ,i))
 	      (int8->card8 ,v))))
 
-(defcmacro aref-card16 (a i)
+(excl:defcmacro aref-card16 (a i)
   `(locally ,(declare-bufmac)
      (the card16 (sys:memref (the buffer-bytes ,a)
 			     #.(comp::mdparam 'comp::md-svector-data0-adj)
 			     (the array-index ,i)
 			     :unsigned-word))))
   
-(defcmacro aset-card16 (v a i)
+(excl:defcmacro aset-card16 (v a i)
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
 			     #.(comp::mdparam 'comp::md-svector-data0-adj)
@@ -136,14 +136,14 @@
 			     :unsigned-word)
        (the card16 ,v))))
   
-(defcmacro aref-int16 (a i)
+(excl:defcmacro aref-int16 (a i)
   `(locally ,(declare-bufmac)
      (the int16 (sys:memref (the buffer-bytes ,a)
 			    #.(comp::mdparam 'comp::md-svector-data0-adj)
 			    (the array-index ,i)
 			    :signed-word))))
   
-(defcmacro aset-int16 (v a i)
+(excl:defcmacro aset-int16 (v a i)
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
 		       #.(comp::mdparam 'comp::md-svector-data0-adj)
@@ -151,14 +151,14 @@
 		       :signed-word)
        (the int16 ,v))))
   
-(defcmacro aref-card32 (a i)
+(excl:defcmacro aref-card32 (a i)
   `(locally ,(declare-bufmac)
      (the card32 (sys:memref (the buffer-bytes ,a)
 			     #.(comp::mdparam 'comp::md-svector-data0-adj)
 			     (the array-index ,i)
 			     :unsigned-long))))
     
-(defcmacro aset-card32 (v a i)
+(excl:defcmacro aset-card32 (v a i)
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
 		       #.(comp::mdparam 'comp::md-svector-data0-adj)
@@ -166,14 +166,14 @@
 		       :unsigned-long)
        (the card32 ,v))))
 
-(defcmacro aref-int32 (a i)
+(excl:defcmacro aref-int32 (a i)
   `(locally ,(declare-bufmac)
      (the int32 (sys:memref (the buffer-bytes ,a)
 			    #.(comp::mdparam 'comp::md-svector-data0-adj)
 			    (the array-index ,i)
 			    :signed-long))))
     
-(defcmacro aset-int32 (v a i)
+(excl:defcmacro aset-int32 (v a i)
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
 		       #.(comp::mdparam 'comp::md-svector-data0-adj)
@@ -181,7 +181,7 @@
 		       :signed-long)
        (the int32 ,v))))
 
-(defcmacro aref-card29 (a i)
+(excl:defcmacro aref-card29 (a i)
   ;; Don't need to mask bits here since X protocol guarantees top bits zero
   `(locally ,(declare-bufmac)
      (the card29 (sys:memref (the buffer-bytes ,a)
@@ -189,7 +189,7 @@
 			     (the array-index ,i)
 			     :unsigned-long))))
 
-(defcmacro aset-card29 (v a i)
+(excl:defcmacro aset-card29 (v a i)
   ;; I also assume here Lisp is passing a number that fits in 29 bits.
   `(locally ,(declare-bufmac)
      (setf (sys:memref (the buffer-bytes ,a)
@@ -201,20 +201,20 @@
 ;;
 ;; Font accessors
 ;;
-(defcmacro font-id (font)
+(excl:defcmacro font-id (font)
   ;; Get font-id, opening font if needed
   (let ((f (gensym)))
     `(let ((,f ,font))
        (or (font-id-internal ,f)
 	   (open-font-internal ,f)))))
 
-(defcmacro font-font-info (font)
+(excl:defcmacro font-font-info (font)
   (let ((f (gensym)))
     `(let ((,f ,font))
        (or (font-font-info-internal ,f)
 	   (query-font ,f)))))
 
-(defcmacro font-char-infos (font)
+(excl:defcmacro font-char-infos (font)
   (let ((f (gensym)))
     `(let ((,f ,font))
        (or (font-char-infos-internal ,f)
@@ -225,11 +225,11 @@
 ;;
 ;; Miscellaneous
 ;;
-(defcmacro current-process ()
+(excl:defcmacro current-process ()
   `(the (or mp::process null) (and mp::*scheduler-stack-group*
 				  mp::*current-process*)))
 
-(defcmacro process-wakeup (process)
+(excl:defcmacro process-wakeup (process)
   (let ((proc (gensym)))
     `(let ((.pw-curproc. mp::*current-process*)
 	   (,proc ,process))
@@ -239,8 +239,9 @@
 	     (mp::process-allow-schedule ,proc))))))
 
 #+notyet
-(defcmacro buffer-replace (target-sequence source-sequence target-start
-					   target-end &optional (source-start 0))
+(excl:defcmacro buffer-replace
+		(target-sequence source-sequence target-start target-end
+				 &optional (source-start 0))
   (let ((tv (gensym)) (sv (gensym)) (ts (gensym)) (te (gensym)) (ss (gensym)))
     `(let ((,tv ,target-sequence) (,sv ,source-sequence)
 	   (,ts ,target-start) (,te ,target-end) (,ss ,source-start))
@@ -271,14 +272,14 @@
 		   (setf (aref ,tv target-index)
 		     (aref ,sv source-index))))))))
 
-(defcmacro buffer-new-request-number (buffer)
+(excl:defcmacro buffer-new-request-number (buffer)
   (let ((buf (gensym)))
     `(let ((,buf ,buffer))
        (declare (type buffer ,buf))
        (setf (buffer-request-number ,buf)
 	 (ldb (byte 16 0) (1+ (buffer-request-number ,buf)))))))
 
-(defcmacro byte-reverse (byte)
+(excl:defcmacro byte-reverse (byte)
   `(aref ,'#.(coerce
 	     '#(0 128 64 192 32 160 96 224 16 144 80 208 48 176 112 240
 		8 136 72 200 40 168 104 232 24 152 88 216 56 184 120 248
@@ -301,7 +302,7 @@
 
 #|
 #+(or allegro-v3.0 allegro-v3.1)
-(defcmacro graphic-char-p (char)
+(excl:defcmacro graphic-char-p (char)
   `(let* ((cint (char-int ,char)))
      (if (and (<= #.(char-code #\space) cint)
 	      (<= cint #.(char-code #\~)))
