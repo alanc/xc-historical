@@ -232,6 +232,12 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 	XrmValue value;
 	XrmQuark q;
 
+	/* save first app name & class for R2 compatibility onlyX */
+	if (app->class == NULL) {
+	    app->name = XrmStringToName(name);
+	    app->class = XrmStringToName(classname);
+	}
+
 	GetInitialResourceDatabase(dpy, classname);
 
 	/*

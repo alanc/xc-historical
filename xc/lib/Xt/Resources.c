@@ -203,6 +203,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     register Cardinal length, j;
     register XrmQuark t;
     WidgetClass class;
+    Widget cw = w;
 
     /* Return null-terminated quark arrays, with length the number of
        quarks (not including NULL) */
@@ -229,6 +230,10 @@ static Cardinal GetNamesAndClasses(w, names, classes)
     }
     names[length] = NULLQUARK;
     classes[length] = NULLQUARK;
+    if (names[0] == NULLQUARK) {
+	/* hack for R2 compatibility */
+	names[0] = XtWidgetToApplicationContext(cw)->name;
+    }
     return length;
 } /* GetNamesAndClasses */
 
@@ -683,8 +688,18 @@ void XtGetApplicationResources
     XrmResourceList* table;
 
     if (num_resources == 0) return;
+
     /* Get full name, class of application */
-    (void) GetNamesAndClasses(w, names, classes);
+    if (w == NULL) {
+	/* hack for R2 compatibility */
+	names[0] = _XtDefaultAppContext()->name;
+	names[1] = NULLQUARK;
+	classes[0] = _XtDefaultAppContext()->class;
+	classes[1] = NULLQUARK;
+    }
+    else {
+	(void) GetNamesAndClasses(w, names, classes);
+    }
 
     /* Compile arg list into quarks */
     CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);

@@ -92,6 +92,7 @@ typedef struct _XtAppStruct {
     FdStruct fds;
     short count, max, last;
     Boolean sync, rv, being_destroyed, error_inited;
+    XrmQuark name, class;	/* for R2 compatibility only */
 } XtAppStruct;
 
 extern void _SetDefaultErrorHandlers();

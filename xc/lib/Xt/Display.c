@@ -181,6 +181,7 @@ XtAppContext XtCreateApplicationContext()
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
 	FD_ZERO(&app->fds.emask);
+	app->name = app->class = NULL; /* R2 compatibility only */
 	return app;
 }
 
