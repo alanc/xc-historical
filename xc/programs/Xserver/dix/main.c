@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.140 88/09/06 15:41:15 jim Exp $ */
+/* $XConsortium: main.c,v 1.141 88/09/13 16:39:58 jim Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -238,7 +238,7 @@ main(argc, argv)
         xfree(clients);
 	xfree(ConnectionInfo);
 
-	DestroyWellKnownConnections ();
+	CloseDownWellKnownSockets ();
 	looping = 1;
     }
 }

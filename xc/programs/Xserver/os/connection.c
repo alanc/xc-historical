@@ -21,11 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.82 88/09/06 15:50:53 jim Exp $ */
+/* $XConsortium: connection.c,v 1.83 88/09/13 16:40:10 jim Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
- *      EstablishNewConnections, CreateWellKnownSockets,
+ *      EstablishNewConnections, CreateWellKnownSockets, 
+ *      CloseDownWellKnownSockets,
  *      CloseDownConnection, CheckConnections, AddEnabledDevice,
  *	RemoveEnabledDevice, OnlyListToOneClient,
  *      ListenToAllClients,
@@ -298,7 +299,7 @@ CreateWellKnownSockets()
 }
 
 void
-DestroyWellKnownConnections ()
+CloseDownWellKnownSockets ()
 {
     register int i;
     register long l;
