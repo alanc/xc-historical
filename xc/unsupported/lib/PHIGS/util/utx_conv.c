@@ -1,4 +1,4 @@
-/* $XConsortium: utx_conv.c,v 5.5 91/07/17 18:58:10 hersh Exp $ */
+/* $XConsortium: utx_conv.c,v 5.6 91/07/19 14:21:16 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2026,7 +2026,6 @@ phg_utx_compute_el_size( el_info, oc )
 	    count = VAR_LENGTH(el_info->length,FillArea2D) / sizeof(pexCoord2D);
 	    size = count * sizeof(Ppoint);
 	    break;
-	    break;
 	case PEXOCCellArray:
 	    count = VAR_LENGTH(el_info->length,CellArray)
 		/ sizeof(pexTableIndex);
@@ -2448,7 +2447,6 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    (void)phg_utx_ptlst3_from_pex( ed->point_list3.num_points,
 		(pexCoord3D *)(RHEADER(Polyline) + 1),
 		ed->point_list3.points );
-		break;
 	    break;
 
 	case PEXOCPolyline2D:
@@ -2459,7 +2457,6 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 	    (void)phg_utx_ptlst_from_pex( ed->point_list.num_points,
 		(pexCoord2D *)(RHEADER(Polyline2D) + 1),
 		ed->point_list.points );
-		break;
 	    break;
 
 	case PEXOCFillArea:
@@ -2639,7 +2636,7 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		ed->plsd3.vdata = (Pline_vdata_list3 *)buf;
 		pexptr = (char *)(RHEADER(PolylineSet) + 1);
 		(void)phg_utx_vdata_from_pex( ed->plsd3.npl, !0,
-		    ed->plsd3.vflag, ed->plsd3.vdata,
+		    ed->plsd3.vflag, (Pfacet_vdata_list3*)ed->plsd3.vdata,
 		    PEDGE_NONE, (Pedge_data_list *)NULL,
 		    ed->plsd3.colr_model, pexptr );
 	    }
@@ -2866,15 +2863,11 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		}
 		buf += RHEADER(Gdp)->numPoints * sizeof(Ppoint3);
 	    }
-	    switch ( ed->gdp3.id ) {
-		default:
-		    ed->gdp3.data.unsupp.size = RHEADER(Gdp)->numBytes;
-		    ed->gdp.data.unsupp.data = buf;
-		    if ( RHEADER(Gdp)->numBytes > 0 )
-			bcopy( pexptr, ed->gdp3.data.unsupp.data,
-			    ed->gdp3.data.unsupp.size );
-		    break;
-	    }
+	    ed->gdp3.data.unsupp.size = RHEADER(Gdp)->numBytes;
+	    ed->gdp.data.unsupp.data = buf;
+	    if ( RHEADER(Gdp)->numBytes > 0 )
+		bcopy( pexptr, ed->gdp3.data.unsupp.data,
+		    ed->gdp3.data.unsupp.size );
 	    break;
 
 	case PEXOCGdp2D:
@@ -2890,15 +2883,11 @@ phg_utx_el_data_from_pex( oc, buf, ed )
 		}
 		buf += RHEADER(Gdp2D)->numPoints * sizeof(Ppoint);
 	    }
-	    switch ( ed->gdp.id ) {
-		default:
-		    ed->gdp.data.unsupp.size = RHEADER(Gdp2D)->numBytes;
-		    ed->gdp.data.unsupp.data = buf;
-		    if ( RHEADER(Gdp2D)->numBytes > 0 )
-			bcopy( pexptr, ed->gdp.data.unsupp.data,
-			    ed->gdp.data.unsupp.size );
-		    break;
-	    }
+	    ed->gdp.data.unsupp.size = RHEADER(Gdp2D)->numBytes;
+	    ed->gdp.data.unsupp.data = buf;
+	    if ( RHEADER(Gdp2D)->numBytes > 0 )
+		bcopy( pexptr, ed->gdp.data.unsupp.data,
+		    ed->gdp.data.unsupp.size );
 	    break;
 	    
 	case PEXOCTextAlignment:
@@ -3390,23 +3379,15 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	case PELEM_GDP3:
 	    TYPE_AND_SIZE(Gdp)
 	    data_size = ed->gdp3.pts.num_points * sizeof(pexCoord3D);
-	    switch ( ed->gdp3.id ) {
-		default:
-		    data_size += ed->gdp3.rec.unsupp.size;
-		    pad = PADDING(ed->gdp3.rec.unsupp.size);
-		    break;
-	    }
+	    data_size += ed->gdp3.rec.unsupp.size;
+	    pad = PADDING(ed->gdp3.rec.unsupp.size);
 	    break;
 
 	case PELEM_GDP:
 	    TYPE_AND_SIZE(Gdp2D)
 	    data_size = ed->gdp.pts.num_points * sizeof(pexCoord2D);
-	    switch ( ed->gdp.id ) {
-		default:
-		    data_size += ed->gdp.rec.unsupp.size;
-		    pad = PADDING(ed->gdp.rec.unsupp.size);
-		    break;
-	    }
+	    data_size += ed->gdp.rec.unsupp.size;
+	    pad = PADDING(ed->gdp.rec.unsupp.size);
 	    break;
 
 	case PELEM_APPL_DATA:
@@ -3417,12 +3398,8 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 
 	case PELEM_GSE:
 	    TYPE_AND_SIZE(Gse)
-	    switch ( ed->gse.id ) {
-		default:
-		    data_size = ed->gse.rec.unsupp.size;
-		    pad = PADDING(ed->gse.rec.unsupp.size);
-		    break;
-	    }
+	    data_size = ed->gse.rec.unsupp.size;
+	    pad = PADDING(ed->gse.rec.unsupp.size);
 	    break;
 
 	case PELEM_ADD_NAMES_SET:
@@ -3896,14 +3873,10 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	    if ( ed->gdp3.pts.num_points > 0 )
 		buf += phg_utx_ptlst3_to_pex( ed->gdp3.pts.num_points,
 		    (Ppoint3 *)ed->gdp3.pts.points, (pexCoord3D *)buf );
-	    switch ( ed->gdp3.id ) {
-		default:
-		    HEADER(Gdp)->numBytes = ed->gdp3.rec.unsupp.size;
-		    if ( ed->gdp3.rec.unsupp.size > 0 )
-			bcopy( ed->gdp3.rec.unsupp.data, buf,
-			    ed->gdp3.rec.unsupp.size );
-		    break;
-	    }
+	    HEADER(Gdp)->numBytes = ed->gdp3.rec.unsupp.size;
+	    if ( ed->gdp3.rec.unsupp.size > 0 )
+		bcopy( ed->gdp3.rec.unsupp.data, buf,
+		    ed->gdp3.rec.unsupp.size );
 	    break;
 
 	case PELEM_GDP:
@@ -3912,14 +3885,10 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 	    if ( ed->gdp.pts.num_points > 0 )
 		buf += phg_utx_ptlst_to_pex( ed->gdp.pts.num_points,
 		    (Ppoint *)ed->gdp.pts.points, (pexCoord2D *)buf );
-	    switch ( ed->gdp.id ) {
-		default:
-		    HEADER(Gdp2D)->numBytes = ed->gdp.rec.unsupp.size;
-		    if ( ed->gdp.rec.unsupp.size > 0 )
-			bcopy( ed->gdp.rec.unsupp.data, buf,
-			    ed->gdp.rec.unsupp.size );
-		    break;
-	    }
+	    HEADER(Gdp2D)->numBytes = ed->gdp.rec.unsupp.size;
+	    if ( ed->gdp.rec.unsupp.size > 0 )
+		bcopy( ed->gdp.rec.unsupp.data, buf,
+		    ed->gdp.rec.unsupp.size );
 	    break;
 
 	/* All these requests just contain one CARD16. */
@@ -4180,14 +4149,10 @@ phg_utx_build_pex_oc( erh, el_type, ed, scratch, pex_oc )
 
 	case PELEM_GSE:
 	    HEADER(Gse)->id = ed->gse.id;
-	    switch ( ed->gse.id ) {
-		default:
-		    HEADER(Gse)->numElements = ed->gse.rec.unsupp.size;
-		    if ( ed->gse.rec.unsupp.size > 0 )
-			bcopy( ed->gse.rec.unsupp.data, buf,
-			    ed->gse.rec.unsupp.size );
-		    break;
-	    }
+	    HEADER(Gse)->numElements = ed->gse.rec.unsupp.size;
+	    if ( ed->gse.rec.unsupp.size > 0 )
+		bcopy( ed->gse.rec.unsupp.data, buf,
+		    ed->gse.rec.unsupp.size );
 	    break;
 
 	case PELEM_PARA_SURF_CHARACS: 
