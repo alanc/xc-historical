@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.1 89/10/26 20:00:26 rws Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.2 89/10/27 17:52:06 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -45,7 +45,7 @@ mfbFillEllipseSolid(pDraw, pGC, arc, rop)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill, xpos;
+    register int xpos;
     int startmask, endmask, nlmiddle;
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -60,10 +60,6 @@ mfbFillEllipseSolid(pDraw, pGC, arc, rop)
 	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    if (rop == RROP_BLACK)
-	fill = 0;
-    else
-	fill = ~0;
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
     xorg += pDraw->x;
@@ -91,65 +87,83 @@ mfbFillEllipseSolid(pDraw, pGC, arc, rop)
 	if (((xpos & 0x1f) + slw) < 32)
 	{
 	    maskpartialbits(xpos, slw, startmask);
-	    if (rop == RROP_INVERT)
-		*addrl ^= startmask;
+	    if (rop == RROP_BLACK)
+		*addrl &= ~startmask;
+	    else if (rop == RROP_WHITE)
+		*addrl |= startmask;
 	    else
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
+		*addrl ^= startmask;
 	    if (miFillArcLower(slw))
 	    {
 		addrl = addrlb + (xpos >> 5);
-		if (rop == RROP_INVERT)
-		    *addrl ^= startmask;
+		if (rop == RROP_BLACK)
+		    *addrl &= ~startmask;
+		else if (rop == RROP_WHITE)
+		    *addrl |= startmask;
 		else
-		    *addrl = (*addrl & ~startmask) | (fill & startmask);
+		    *addrl ^= startmask;
 	    }
 	    continue;
 	}
 	maskbits(xpos, slw, startmask, endmask, nlmiddle);
 	if (startmask)
 	{
-	    if (rop == RROP_INVERT)
-		*addrl ^= startmask;
+	    if (rop == RROP_BLACK)
+		*addrl++ &= ~startmask;
+	    else if (rop == RROP_WHITE)
+		*addrl++ |= startmask;
 	    else
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
-	    addrl++;
+		*addrl++ ^= startmask;
 	}
-	if (rop == RROP_INVERT)
-	    for (n = nlmiddle; n--; )
-		*addrl++ ^= ~0;
+	n = nlmiddle;
+	if (rop == RROP_BLACK)
+	    while (n--)
+		*addrl++ = 0;
+	else if (rop == RROP_WHITE)
+	    while (n--)
+		*addrl++ = ~0;
 	else
-	    for (n = nlmiddle; n--; )
-		*addrl++ = fill;
+	    while (n--)
+		*addrl++ ^= ~0;
 	if (endmask)
 	{
-	    if (rop == RROP_INVERT)
-		*addrl ^= endmask;
+	    if (rop == RROP_BLACK)
+		*addrl &= ~endmask;
+	    else if (rop == RROP_WHITE)
+		*addrl |= endmask;
 	    else
-		*addrl = (*addrl & ~endmask) | (fill & endmask);
+		*addrl ^= endmask;
 	}
 	if (!miFillArcLower(slw))
 	    continue;
 	addrl = addrlb + (xpos >> 5);
 	if (startmask)
 	{
-	    if (rop == RROP_INVERT)
-		*addrl ^= startmask;
+	    if (rop == RROP_BLACK)
+		*addrl++ &= ~startmask;
+	    else if (rop == RROP_WHITE)
+		*addrl++ |= startmask;
 	    else
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
-	    addrl++;
+		*addrl++ ^= startmask;
 	}
-	if (rop == RROP_INVERT)
-	    for (n = nlmiddle; n--; )
-		*addrl++ ^= ~0;
+	n = nlmiddle;
+	if (rop == RROP_BLACK)
+	    while (n--)
+		*addrl++ = 0;
+	else if (rop == RROP_WHITE)
+	    while (n--)
+		*addrl++ = ~0;
 	else
-	    for (n = nlmiddle; n--; )
-		*addrl++ = fill;
+	    while (n--)
+		*addrl++ ^= ~0;
 	if (endmask)
 	{
-	    if (rop == RROP_INVERT)
-		*addrl ^= endmask;
+	    if (rop == RROP_BLACK)
+		*addrl &= ~endmask;
+	    else if (rop == RROP_WHITE)
+		*addrl |= endmask;
 	    else
-		*addrl = (*addrl & ~endmask) | (fill & endmask);
+		*addrl ^= endmask;
 	}
     }
 }
@@ -162,34 +176,43 @@ mfbFillEllipseSolid(pDraw, pGC, arc, rop)
 	if (((xl & 0x1f) + width) < 32) \
 	{ \
 	    maskpartialbits(xl, width, startmask); \
-	    if (rop == RROP_INVERT) \
-		*addrl ^= startmask; \
+	    if (rop == RROP_BLACK) \
+		*addrl &= ~startmask; \
+	    else if (rop == RROP_WHITE) \
+		*addrl |= startmask; \
 	    else \
-		*addrl = (*addrl & ~startmask) | (fill & startmask); \
+		*addrl ^= startmask; \
 	} \
 	else \
 	{ \
 	    maskbits(xl, width, startmask, endmask, nlmiddle); \
 	    if (startmask) \
 	    { \
-		if (rop == RROP_INVERT) \
-		    *addrl ^= startmask; \
+		if (rop == RROP_BLACK) \
+		    *addrl++ &= ~startmask; \
+		else if (rop == RROP_WHITE) \
+		    *addrl++ |= startmask; \
 		else \
-		    *addrl = (*addrl & ~startmask) | (fill & startmask); \
-		addrl++; \
+		    *addrl++ ^= startmask; \
 	    } \
-	    if (rop == RROP_INVERT) \
-		for (n = nlmiddle; n--; ) \
-		    *addrl++ ^= ~0; \
+	    n = nlmiddle; \
+	    if (rop == RROP_BLACK) \
+		while (n--) \
+		    *addrl++ = 0; \
+	    else if (rop == RROP_WHITE) \
+		while (n--) \
+		    *addrl++ = ~0; \
 	    else \
-		for (n = nlmiddle; n--; ) \
-		    *addrl++ = fill; \
+		while (n--) \
+		    *addrl++ ^= ~0; \
 	    if (endmask) \
 	    { \
-		if (rop == RROP_INVERT) \
-		    *addrl ^= endmask; \
+		if (rop == RROP_BLACK) \
+		    *addrl &= ~endmask; \
+		else if (rop == RROP_WHITE) \
+		    *addrl |= endmask; \
 		else \
-		    *addrl = (*addrl & ~endmask) | (fill & endmask); \
+		    *addrl ^= endmask; \
 	    } \
 	} \
     }
@@ -224,7 +247,7 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill, width;
+    register int width;
     int startmask, endmask, nlmiddle;
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -239,10 +262,6 @@ mfbFillArcSliceSolidCopy(pDraw, pGC, arc, rop)
 	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    if (rop == RROP_BLACK)
-	fill = 0;
-    else
-	fill = ~0;
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice);
     MIFILLARCSETUP();
