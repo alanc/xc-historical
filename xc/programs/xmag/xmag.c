@@ -120,22 +120,31 @@ static Pixel
 
 /* application resources */
 
-typedef struct { String source, mag; } OptionsRec;
-
+typedef struct { String geometry, source, mag, title; } OptionsRec;
 static OptionsRec options;
 
 #define Offset(field) XtOffsetOf(OptionsRec, field)
 static XtResource resources[] = {
-  {"source", "Source", XtRString, sizeof(String),
-     Offset(source), XtRString, (XtPointer)"SRCWIDTHxSRCHEIGHT"},
+  {"geometry", "Geometry", XtRString, sizeof(String),
+     Offset(geometry), XtRString, (XtPointer)NULL},
   {"mag", "Mag", XtRString, sizeof(String),
      Offset(mag), XtRString, (XtPointer)"5.0"},
+  {"source", "Source", XtRString, sizeof(String),
+     Offset(source), XtRString, (XtPointer)"SRCWIDTHxSRCHEIGHT"},
+  {"title", XtCString, XtRString, sizeof(char *),
+     Offset(title), XtRString, "xmag"},
 };
 #undef Offset
 
 static XrmOptionDescRec optionDesc[] = {
-  {"-source", "*source", XrmoptionSepArg, (XtPointer)NULL},
-  {"-mag", "*mag", XrmoptionSepArg, (XtPointer)NULL},
+  {"-bd",         "*boarderColor", XrmoptionSepArg, (XtPointer)NULL},
+  {"-bg",         "*background",   XrmoptionSepArg, (XtPointer)NULL},
+  {"-bw",         "*boarderWidth", XrmoptionSepArg, (XtPointer)NULL},
+  
+  {"-geometry", "*geometry", XrmoptionSepArg, (XtPointer)NULL},
+  {"-mag",      "*mag",                XrmoptionSepArg, (XtPointer)NULL},
+  {"-source",   "*source",             XrmoptionSepArg, (XtPointer)NULL},
+  {"-title",    "*title",              XrmoptionSepArg, (XtPointer)NULL},
 };
 
 
@@ -858,6 +867,8 @@ PopupNewScale(data)
 
   data->scaleShell = 
     XtVaCreatePopupShell("xmag", topLevelShellWidgetClass, toplevel, 
+			 XtNgeometry, (XtArgVal)options.geometry,
+			 XtNtitle, (XtArgVal)options.title,
 			 NULL);
   pane1 = XtCreateManagedWidget("pane1", panedWidgetClass, data->scaleShell,
 				(Arg *) NULL, 0);
@@ -1003,13 +1014,6 @@ main(argc, argv)
      int argc;
      char **argv;
 {
-  if (argc > 1) 
-    if (!strcmp(argv[1], "-help")) {
-      fprintf (stderr,
-	    "usage:  xmag [-source geom] [-mag magfactor] [-toolkitoption]\n");
-      exit(1);
-    }
-  
   XSetErrorHandler(Error);
     
 				/* SUPPRESS 594 */
@@ -1021,6 +1025,13 @@ main(argc, argv)
   scr = DefaultScreen(dpy);
   XtGetApplicationResources(toplevel, (XtPointer) &options, resources,
 			    XtNumber(resources), NULL, 0);
+  if (argc != 1) {
+    fprintf (stderr,
+	    "usage:  xmag [-source geom] [-mag magfactor] [-toolkitoption]\n");
+    exit(1);
+  }
+  
+
   ParseSourceGeom();
   XtAppAddActions(app, actions_table, XtNumber(actions_table));
   InitCursors();
