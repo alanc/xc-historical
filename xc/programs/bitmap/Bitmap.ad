@@ -99,7 +99,6 @@
 *editMenu.copy.label:			Copy
 *editMenu.paste.label:			Paste
 
-*form.clear.fromVert: 			infoButton
 *form.clear.label:			Clear
 *form.set.fromVert: 			clear
 *form.set.label:			Set

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.4 90/03/29 16:41:18 jim Exp $
+ * $XConsortium: Bitmap.c,v 1.5 90/03/30 15:26:08 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -3318,8 +3318,8 @@ static void Initialize(request, new, argv, argc)
 	if (!strcmp(new->bitmap.basename, "")) {
 	    XtFree(new->bitmap.basename);
 	    new->bitmap.basename = StripFilename(new->bitmap.filename);
+	}
     }
-    
     Resize(new);
 }
 
@@ -3467,8 +3467,10 @@ int BWReadFile(w, filename, basename)
 	BW->bitmap.changed = False;
 	BW->bitmap.zooming = False;
 	
-	strcpy(BW->bitmap.filename, filename);
-	strcpy(BW->bitmap.basename, StripFilename(filename));
+	XtFree(BW->bitmap.filename);
+	BW->bitmap.filename = XtNewString(filename);
+	XtFree(BW->bitmap.basename);
+	BW->bitmap.basename= XtNewString(StripFilename(filename));
 	BWChangeBasename(w, basename);
 
 	BWUnmark(w);
@@ -3527,11 +3529,16 @@ int BWWriteFile(w, filename, basename)
     
     if (!filename) filename = BW->bitmap.filename;
     else {
-	strcpy(BW->bitmap.filename, filename);
-	strcpy(BW->bitmap.basename, StripFilename(filename));
+	XtFree(BW->bitmap.filename);
+	BW->bitmap.filename = XtNewString(filename);
+	XtFree(BW->bitmap.basename);
+	BW->bitmap.basename= XtNewString(StripFilename(filename));
     }
     if (!basename) basename = BW->bitmap.basename;
-    else strcpy(BW->bitmap.basename, basename);
+    else {
+	XtFree(BW->bitmap.basename);
+	BW->bitmap.basename = XtNewString(basename);
+    }
 
     if (DEBUG)
 	fprintf(stderr, "Saving filename: %s\n", filename);
