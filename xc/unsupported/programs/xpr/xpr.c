@@ -39,7 +39,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.39 89/10/07 15:49:29 rws Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.40 89/10/07 17:29:00 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -102,13 +102,6 @@ unsigned long grayscale4x4[] =
 GrayRec gray2x2 = {sizeof(grayscale2x2)/sizeof(long), 2, 2, grayscale2x2};
 GrayRec gray3x3 = {sizeof(grayscale3x3)/sizeof(long), 3, 3, grayscale3x3};
 GrayRec gray4x4 = {sizeof(grayscale4x4)/sizeof(long), 4, 4, grayscale4x4};
-
-/*****************************************************************************
- * This macro returns a pixel value stored in gray.
- * Intensity specifies which gray scale rectangle to use, x and y specify
- * which pixel in the rectangle to return.
- ****************************************************************************/
-#define GRAY(bits,x,dy) (bits >> (dy + x))
 
 main(argc, argv)
 char **argv;
@@ -689,7 +682,7 @@ convert_data(win, data, plane, gray, colors, flags)
 	    direct = 1;
 	if (flags & F_GRAY) {
 	    register int ox, oy;
-	    int ix, iy, dy;
+	    int ix, iy;
 	    unsigned long bits;
 	    for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
 		for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX)
@@ -706,12 +699,9 @@ convert_data(win, data, plane, gray, colors, flags)
 		    bits = gray->grayscales[(int)(gray->level *
 						  INTENSITY(&color)) /
 					    (INTENSITYPER(100) + 1)];
-		    for (iy = 0, dy = 0;
-			 iy < gray->sizeY;
-			 iy++, dy += gray->sizeY)
-			for (ix = 0; ix < gray->sizeX; ix++)
-			    XPutPixel(&out_image, ox + ix, oy + iy,
-				      GRAY(bits, ix, dy));
+		    for (iy = 0; iy < gray->sizeY; iy++)
+			for (ix = 0; ix < gray->sizeX; ix++, bits >>= 1)
+			    XPutPixel(&out_image, ox + ix, oy + iy, bits);
 		}
 	} else {
 	    for (y = 0; y < in_image.height; y++)
@@ -731,7 +721,7 @@ convert_data(win, data, plane, gray, colors, flags)
 	}
     } else if (flags & F_GRAY) {
 	register int ox, oy;
-	int ix, iy, dy;
+	int ix, iy;
 	unsigned long bits;
 
 	if (win->ncolors == 0) {
@@ -741,17 +731,15 @@ convert_data(win, data, plane, gray, colors, flags)
 	for (x = 0; x < win->ncolors; x++) {
 	    register XColor *color = &colors[x];
 
-	    color->pixel = ((gray->level * INTENSITY(color)) /
-			    (INTENSITYPER(100) + 1));
+	    color->pixel = gray->grayscales[(gray->level * INTENSITY(color)) /
+					    (INTENSITYPER(100) + 1)];
 	}
 	for (y = 0, oy = 0; y < in_image.height; y++, oy += gray->sizeY)
 	    for (x = 0, ox = 0; x < in_image.width; x++, ox += gray->sizeX) {
-		bits = gray->grayscales[
-				     colors[XGetPixel(&in_image, x, y)].pixel];
-	        for (iy = 0, dy = 0; iy < gray->sizeY; iy++, dy += gray->sizeY)
-		    for (ix = 0; ix < gray->sizeX; ix++)
-			XPutPixel(&out_image, ox + ix, oy + iy,
-				  GRAY(bits, ix, dy));
+		bits = colors[XGetPixel(&in_image, x, y)].pixel;
+	        for (iy = 0; iy < gray->sizeY; iy++)
+		    for (ix = 0; ix < gray->sizeX; ix++, bits >>= 1)
+			XPutPixel(&out_image, ox + ix, oy + iy, bits);
 	    }
     } else {
 	if (win->ncolors == 0) {
