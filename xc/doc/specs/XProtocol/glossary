@@ -757,8 +757,8 @@ The server scales the values to match the display hardware.
 \fBRoot\fP
 .IN "Root" "" "@DEF@"
 .IP
-The root of a pixmap or graphics context is the same as the root of
-whatever drawable was used when the pixmap or graphics context was
+The root of a pixmap, colormap, or graphics context is the same as the root of
+whatever drawable was used when the pixmap, colormap, or graphics context was
 created.
 The root of a window is the root window under which the window was created.
 .KE
