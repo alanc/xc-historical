@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.152 93/09/04 20:46:11 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.154 93/09/18 10:26:14 rws Exp $
 #define DoNormalLib NormalLibX
 #define DoSharedLib SharedLibX
 #define DoDebugLib DebugLibX
@@ -721,7 +721,7 @@ OBJS3 = \
 	$(LCOBJS)
 
 #ifdef RsArchitecture
-LCDEPSYMSRCS = XaixlcLoad.c
+LCDEPSYMSRCS = aixlcLoad.c
 #endif
 
 #if HasDECnet
@@ -800,7 +800,7 @@ LCDEPOBJS = XsunDL.o
 #endif
 */
 #ifdef RsArchitecture
-LCDEPOBJS = XaixlcLoad.o
+LCDEPOBJS = aixlcLoad.o
 #endif
 
 LCOBJS = \
