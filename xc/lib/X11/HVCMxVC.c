@@ -1,4 +1,4 @@
-/* $XConsortium: HVCMxVC.c,v 1.6 91/07/25 01:08:17 rws Exp $" */
+/* $XConsortium: HVCMxVC.c,v 1.7 93/09/07 21:31:00 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -52,9 +52,9 @@
  *	DEFINES
  */
 #define MIN(x,y) ((x) > (y) ? (y) : (x))
-#define MIN3(x,y,z) (MIN((x), MIN((y), (z))))
+#define MIN3(x,y,z) ((x) > (MIN((y), (z))) ? (MIN((y), (z))) : (x))
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
-#define MAX3(x,y,z) (MAX((x), MAX((y), (z))))
+#define MAX3(x,y,z) ((x) > (MAX((y), (z))) ? (x) : (MAX((y), (z))))
 #define START_V	    40.0
 #define START_C	    120.0
 

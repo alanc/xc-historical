@@ -1,4 +1,4 @@
-/* $XConsortium: LRGB.c,v 1.27 93/07/05 11:44:08 rws Exp $" */
+/* $XConsortium: LRGB.c,v 1.28 93/09/07 21:31:14 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -72,10 +72,10 @@ extern void _XcmsFreeIntensityMaps();
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 #endif /* MAX */
 #ifndef MIN3
-#define MIN3(x,y,z) (MIN(x, MIN(y, z)))
+#define MIN3(x,y,z) ((x) > (MIN((y), (z))) ? (MIN((y), (z))) : (x))
 #endif /* MIN3 */
 #ifndef MAX3
-#define MAX3(x,y,z) (MAX(x, MAX(y, z)))
+#define MAX3(x,y,z) ((x) > (MAX((y), (z))) ? (x) : (MAX((y), (z))))
 #endif /* MAX3 */
 
 /*
