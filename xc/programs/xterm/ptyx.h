@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.8 88/04/06 17:08:51 jim Exp $
+ *	$Header: ptyx.h,v 1.9 88/05/11 16:11:06 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -288,6 +288,7 @@ typedef struct {
 	int		scroll_amt;	/* amount to scroll		*/
 	int		refresh_amt;	/* amount to refresh		*/
 	Boolean		jumpscroll;	/* whether we should jumpscroll */
+	Boolean         always_highlight; /* whether to highlight cursor */
 
 /* Tektronix window parameters */
 	GC		TnormalGC;	/* normal painting		*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.43 88/06/28 15:11:38 swick Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.44 88/07/05 16:07:43 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -184,6 +184,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
 {"-132",	"*c132",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+132",	"*c132",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-ah",		"*alwaysHighlight", XrmoptionNoArg,	(caddr_t) "on"},
+{"+ah",		"*alwaysHighlight", XrmoptionNoArg,	(caddr_t) "off"},
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
@@ -645,7 +647,7 @@ static char *ustring[] = {
 " [-i] [-j] [-l] [-lf logfile] [-ls] [-mb] [-ms mouse_color] \\\n",
 " [-n name] [-nb bell_margin] [-rv] [-rw] [-s] [-mc msecs]\\\n",
 " [-sb] [-si] [-sk] [-sl save_lines] [-sn] [-st] [-T title] [-t] [-tb] \\\n",
-" [-vb] [-cn] [-cb] [=[width]x[height][[+-]xoff[[+-]yoff]]] \\\n",
+" [-vb] [-cn] [-cb] [=[width]x[height][[+-]xoff[[+-]yoff]]] [-hs] [+hs] \\\n",
 " [%[width]x[height][[+-]xoff[[+-]yoff]]] [#[+-]xoff[[+-]yoff]] \\\n",
 " [-e command_to_exec]\n\n",
 "Fonts must be of fixed width and of same size;\n",

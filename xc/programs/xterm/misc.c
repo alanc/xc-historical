@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.17 88/05/18 10:34:39 jim Exp $
+ *	$Header: misc.c,v 1.18 88/05/18 10:46:09 jim Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.17 88/05/18 10:34:39 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.18 88/05/18 10:46:09 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -199,6 +199,8 @@ register TScreen *screen;
 register int flag;
 {
     register int i;
+
+    if (screen->always_highlight) return;
 
     if(screen->TekEmu) {
 	if(!Ttoggled) TCursorToggle(TOGGLE);

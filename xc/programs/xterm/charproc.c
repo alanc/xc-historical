@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.32 88/05/11 16:10:51 jim Exp $
+ * $XHeader: charproc.c,v 1.33 88/06/14 17:54:46 jim Exp $
  */
 
 
@@ -57,6 +57,7 @@ static void VTallocbuf();
 #define TRACKTIMESEC	4L
 #define TRACKTIMEUSEC	0L
 
+#define XtNalwaysHighlight	"alwaysHighlight"
 #define	XtNboldFont		"boldFont"
 #define	XtNc132			"c132"
 #define XtNcharClass		"charClass"
@@ -90,6 +91,7 @@ static void VTallocbuf();
 #define XtNtiteInhibit		"titeInhibit"
 #define	XtNvisualBell		"visualBell"
 
+#define XtCAlwaysHighlight	"AlwaysHighlight"
 #define	XtCC132			"C132"
 #define XtCCharClass		"CharClass"
 #define	XtCCurses		"Curses"
@@ -120,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.32 88/05/11 16:10:51 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.33 88/06/14 17:54:46 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -202,6 +204,9 @@ static XtResource resources[] = {
 {XtNgeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.geo_metry),
 	XtRString, (caddr_t) NULL},
+{XtNalwaysHighlight,XtCAlwaysHighlight,XtRBoolean,
+        sizeof(Boolean),XtOffset(XtermWidget, screen.always_highlight),
+        XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekGeometry,XtCGeometry, XtRString, sizeof(char *),
 	XtOffset(XtermWidget, misc.T_geometry),
 	XtRString, (caddr_t) NULL},
@@ -1664,7 +1669,7 @@ VTRun()
 
 	screen->cursor_state = OFF;
 	screen->cursor_set = ON;
-	if(screen->select)
+	if(screen->select || screen->always_highlight)
 		VTSelect();
 	if (L_flag > 0) {
 		XWarpPointer (screen->display, None, VWindow(screen),
@@ -1686,7 +1691,8 @@ VTRun()
 		VTparse();
 	HideCursor();
 	screen->cursor_set = OFF;
-	VTUnselect();
+	if (!screen->always_highlight)
+	    VTUnselect ();
 	reselectwindow (screen);
 }
 
@@ -1812,6 +1818,7 @@ static void VTInitialize (request, new)
    new->screen.charClass = request->screen.charClass;
    new->screen.cutNewline = request->screen.cutNewline;
    new->screen.cutToBeginningOfLine = request->screen.cutToBeginningOfLine;
+   new->screen.always_highlight = request->screen.always_highlight;
    new->misc.titeInhibit = request->misc.titeInhibit;
 
     /*
@@ -2087,9 +2094,13 @@ XSetWindowAttributes *values;
 		xgcv.background = cc;
 		screen->cursorGC = XtGetGC ((Widget) term, mask, &xgcv);
 
-		xgcv.foreground = bg;
-		xgcv.background = cc;
-		screen->reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+		if (screen->always_highlight) {
+		    screen->reversecursorGC = (GC) 0;
+		} else {
+		    xgcv.foreground = bg;
+		    xgcv.background = cc;
+		    screen->reversecursorGC = XtGetGC ((Widget) term, mask, &xgcv);
+		}
 	    } else {
 		screen->cursorGC = (GC) 0;
 		screen->reversecursorGC = (GC) 0;
@@ -2164,7 +2175,7 @@ ShowCursor()
 	if (c == 0)
 		c = ' ';
 
-	if(screen->select) {
+	if(screen->select || screen->always_highlight) {
 		if(flags & INVERSE) { /* is reverse video */
 		    if (screen->cursorGC) {
 			currentGC = screen->cursorGC;
@@ -2208,7 +2219,7 @@ ShowCursor()
 	if(flags & UNDERLINE) 
 		XDrawLine(screen->display, TextWindow(screen), currentGC,
 			x, y+1, x + FontWidth(screen), y+1);
-	if (!screen->select) {
+	if (!screen->select && !screen->always_highlight) {
 		screen->box->x = x + screen->fnt_norm->max_bounds.lbearing;
 		screen->box->y = y - screen->fnt_norm->max_bounds.ascent;
 		XDrawLines(screen->display, TextWindow(screen), currentGC,

@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.29 88/04/12 15:16:53 jim Exp $
+ * $Header: Tekproc.c,v 1.30 88/06/28 15:11:22 swick Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.29 88/04/12 15:16:53 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.30 88/06/28 15:11:22 swick Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1002,7 +1002,7 @@ TekRun()
 	    set_tek_visibility (TRUE);
 	} 
 
-	if(screen->select)
+	if(screen->select || screen->always_highlight)
 		TekSelect();
 	if (L_flag > 0) {
 		XWarpPointer (screen->display, None, TWindow(screen),
@@ -1023,7 +1023,8 @@ TekRun()
 		Ttoggled = TRUE;
 	}
 	screen->TekEmu = FALSE;
-	TekUnselect();
+	if (!screen->always_highlight)
+	    TekUnselect ();
 	reselectwindow (screen);
 }
 
@@ -1432,7 +1433,7 @@ int toggle;
 	y = ((TEKHEIGHT + TEKTOPPAD - screen->cur_Y) * TekScale(screen)) +
 	 screen->border - screen->tobaseline[c];
 	if (toggle) {
-	   if (screen->select) 
+	   if (screen->select || screen->always_highlight) 
 		XFillRectangle(
 		    screen->display, TWindow(screen), screen->TcursorGC,
 		    x, y,
@@ -1445,7 +1446,7 @@ int toggle;
 		    screen->Tbox[c], NBOX, CoordModePrevious);
 	   }
 	} else {
-	   if (screen->select) 
+	   if (screen->select || screen->always_highlight) 
 		XClearArea(screen->display, TWindow(screen), x, y,
 		    (unsigned) Tf->Twidth, (unsigned) Tf->Theight, FALSE);
 	   else { 
@@ -1471,7 +1472,7 @@ TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (tekWidget && TShellWindow)
+	if (tekWidget && TShellWindow && !screen->always_highlight)
 	  XSetWindowBorderPixmap (screen->display, TShellWindow,
 				  screen->graybordertile);
 }
