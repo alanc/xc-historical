@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.12 89/09/12 14:26:18 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.13 89/09/14 17:04:05 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -32,7 +32,6 @@ Author: Keith Packard
 #include	"regionstr.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
-
 #include	"cfb8bit.h"
 #include	"fastblt.h"
 

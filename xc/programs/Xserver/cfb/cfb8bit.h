@@ -18,7 +18,9 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.3 89/08/18 16:50:56 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.4 89/09/12 18:08:23 keith Exp $ */
+
+#if (PPW == 4)
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((unsigned long) (x)) >> 28)
@@ -41,32 +43,8 @@ extern unsigned long		cfb8PixelMasks[16];
 
 extern void			cfb8SetPixels ();
 
-
 #define cfb8CheckPixels(fg, bg) \
     (((fg) & 0xff) == cfb8Pixelsfg && ((bg) & 0xff) == cfb8Pixelsbg)
-
-#define Duff(counter, block)	    \
-    switch (counter & 3) {	    \
-    do {			    \
-	{ block; }		    \
-    case 3:			    \
-	{ block; }		    \
-    case 2:			    \
-	{ block; }		    \
-    case 1:			    \
-	{ block; }		    \
-    case 0:			    \
-	;			    \
-    } while ((counter -= 4) >= 0);  \
-}
-
-#ifdef mips
-#define AVOID_SCREEN_READ
-#endif
-
-#ifdef sparc
-#define AVOID_SCREEN_READ
-#endif
 
 /*
  * WriteFourBits takes the destination address, a pixel
@@ -85,7 +63,7 @@ extern void			cfb8SetPixels ();
     *(dst) = (*(dst) & ~_maskTmp) | ((pixel) & _maskTmp);	\
     }
 
-#else
+#else /* AVOID_SCREEN_READ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define WriteFourBits(dst,pixel,bits) \
@@ -117,7 +95,7 @@ extern void			cfb8SetPixels ();
 	    ((char *) (dst))[1] = (pixel);	\
 	    break;			\
 	case 8:				\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((char *) (dst))[0] = (pixel);	\
 	    break;			\
 	case 9:				\
 	    ((char *) (dst))[3] = (pixel);	\
@@ -146,7 +124,8 @@ extern void			cfb8SetPixels ();
 	    ((long *) (dst))[0] = (pixel);	\
 	    break;			\
 	}
-#else
+#else /* BITMAP_BIT_ORDER */
+
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
 	case 0:				\
@@ -205,8 +184,10 @@ extern void			cfb8SetPixels ();
 	    ((long *) (dst))[0] = (pixel);	\
 	    break;			\
 	}
-#endif
-#endif
+# endif /* BITMAP_BIT_ORDER */
+#endif /* AVOID_SCREEN_READ */
 
 extern unsigned long	cfb8BitLenMasks[32];
 extern int		cfb8ComputeClipMasks32 ();
+
+#endif /* PPW == 4 */

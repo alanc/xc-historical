@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstip8.c,v 1.4 89/09/12 18:08:45 keith Exp $ */
+/* $XConsortium: cfbrctstip8.c,v 1.5 89/09/14 17:04:50 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -31,9 +31,9 @@ Author: Keith Packard, MIT X Consortium
 
 #include "cfb.h"
 #include "cfbmskbits.h"
+#include "cfb8bit.h"
 
 #if (PPW == 4)
-#include "cfb8bit.h"
 
 void
 cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)

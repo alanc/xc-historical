@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.23 89/09/09 19:03:01 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.24 89/09/10 16:30:37 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -40,10 +40,7 @@ SOFTWARE.
 #include "mibstore.h"
 
 #include "cfbmskbits.h"
-
-#if (PPW == 4)
 #include "cfb8bit.h"
-#endif
 
 static void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
@@ -590,8 +587,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case LineSolid:
 	    if(pGC->lineWidth == 0)
 	    {
-		if (((pGC->planemask & PMSK) == PMSK || pGC->alu == GXinvert) &&
-		    pGC->fillStyle == FillSolid)
+		if (pGC->fillStyle == FillSolid)
 		{
 		    pGC->ops->Polylines = cfbLineSS;
 		    pGC->ops->PolySegment = cfbSegmentSS;
@@ -604,8 +600,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case LineOnOffDash:
 	case LineDoubleDash:
-	    if (pGC->lineWidth == 0 && (pGC->planemask & PMSK) == PMSK &&
-	        pGC->fillStyle == FillSolid)
+	    if (pGC->lineWidth == 0 && pGC->fillStyle == FillSolid)
 	    {
 		pGC->ops->Polylines = cfbLineSD;
 		pGC->ops->PolySegment = cfbSegmentSD;

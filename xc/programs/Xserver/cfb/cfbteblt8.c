@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.1 89/07/28 12:51:24 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.2 89/09/14 17:04:55 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -31,10 +31,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"regionstr.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
+#include	"cfb8bit.h"
 
 #if (PPW == 4)
 
-#include "cfb8bit.h"
 
 extern void miImageGlyphBlt();
 

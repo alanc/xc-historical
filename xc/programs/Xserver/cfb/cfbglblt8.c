@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.1 89/07/28 12:51:10 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.2 89/09/14 17:04:31 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -30,10 +30,9 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"regionstr.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
+#include	"cfb8bit.h"
 
 #if PPW == 4
-
-#include	"cfb8bit.h"
 
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)

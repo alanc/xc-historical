@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.1 89/09/08 14:24:18 keith Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.2 89/09/14 17:04:58 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.1 89/07/28 12:51:54 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.2 89/08/18 16:48:32 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -18,11 +18,9 @@
 #include	"regionstr.h"
 #include	"cfb.h"
 #include	"cfbmskbits.h"
-
+#include	"cfb8bit.h"
 
 #if (PPW == 4)
-
-#include "cfb8bit.h"
 
 unsigned long cfb8PixelMasks[16] = {
     0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
