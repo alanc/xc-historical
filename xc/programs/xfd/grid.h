@@ -29,4 +29,4 @@ typedef struct _FontGridCharRec {
 
 void GetFontGridCellDimensions();
 
-#endif _FontGrid_h_
+#endif /* _FontGrid_h_ */
