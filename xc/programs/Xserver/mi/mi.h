@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.7 90/06/12 13:12:27 rws Exp $ */
+/* $XConsortium: mi.h,v 1.8 92/05/17 10:33:25 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,7 +24,11 @@ SOFTWARE.
 ******************************************************************/
 #ifndef MI_H
 #define MI_H
+#include "X11/X.h"
 #include "region.h"
+#include "validate.h"
+#include "window.h"
+#include "gc.h"
 
 typedef struct _miDash *miDashPtr;
 #define EVEN_DASH	0
@@ -34,7 +38,6 @@ extern void  miPutImage();
 extern void  miGetImage();
 extern RegionPtr  miCopyArea();
 extern RegionPtr  miCopyPlane();
-extern void  miClearToBackground();
 extern int   miValidateTree();
 extern void  miPolySegment();
 extern void  miPolyRectangle();
@@ -83,9 +86,162 @@ extern Bool miRectAlloc();
 #ifdef DEBUG
 extern Bool miValidRegion();
 #endif
-extern void miSendExposures();
-extern void miWindowExposures();
-extern void miSendGraphicsExpose();
 extern RegionPtr miHandleExposures();
+
+/* miexpose.c */
+
+extern RegionPtr miHandleExposures(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrcDrawable*/,
+    DrawablePtr /*pDstDrawable*/,
+    GCPtr /*pGC*/,
+    int /*srcx*/,
+    int /*srcy*/,
+    int /*width*/,
+    int /*height*/,
+    int /*dstx*/,
+    int /*dsty*/,
+    unsigned long /*plane*/
+#endif
+);
+
+extern void miSendGraphicsExpose(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    RegionPtr /*pRgn*/,
+    XID /*drawable*/,
+    int /*major*/,
+    int /*minor*/
+#endif
+);
+
+extern void miSendExposures(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*pRgn*/,
+    int /*dx*/,
+    int /*dy*/
+#endif
+);
+
+extern void miWindowExposures(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*prgn*/,
+    RegionPtr /*other_exposed*/
+#endif
+);
+
+extern void miPaintWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    RegionPtr /*prgn*/,
+    int /*what*/
+#endif
+);
+
+extern int miClearDrawable(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GCPtr /*pGC*/
+#endif
+);
+
+/* miwindow.c */
+
+extern void miClearToBackground(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*w*/,
+    unsigned int /*h*/,
+    Bool /*generateExposures*/
+#endif
+);
+
+extern Bool miChangeSaveUnder(
+#if NeedFunctionPrototypes
+    register WindowPtr /*pWin*/,
+    WindowPtr /*first*/
+#endif
+);
+
+extern void miPostChangeSaveUnder(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pFirst*/
+#endif
+);
+
+extern void miMarkWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern Bool miMarkOverlappedWindows(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    WindowPtr /*pFirst*/,
+    WindowPtr * /*ppLayerWin*/
+#endif
+);
+
+extern void miMoveWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/,
+    WindowPtr /*pNextSib*/,
+    VTKind /*kind*/
+#endif
+);
+
+extern void miSlideAndSizeWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    int /*x*/,
+    int /*y*/,
+    unsigned int /*w*/,
+    unsigned int /*h*/,
+    WindowPtr /*pSib*/
+#endif
+);
+
+extern WindowPtr miGetLayerWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void miHandleValidateExposures(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void miSetShape(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+void
+miChangeBorderWidth(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    unsigned int /*width*/
+#endif
+);
+
+void
+miMarkUnrealizedWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pChild*/,
+    WindowPtr /*pWin*/,
+    Bool /*fromConfigure*/
+#endif
+);
 
 #endif /* MI_H */

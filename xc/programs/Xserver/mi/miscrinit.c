@@ -14,7 +14,7 @@ without express or implied warranty.
 
 */
 
-/* $XConsortium: miscrinit.c,v 5.6 93/07/16 15:46:09 dpw Exp $ */
+/* $XConsortium: miscrinit.c,v 5.7 93/07/19 18:21:08 rws Exp $ */
 
 #include "X.h"
 #include "servermd.h"
@@ -238,6 +238,20 @@ miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
     pScreen->wakeupData = (pointer)0;
     if (bsfuncs)
 	miInitializeBackingStore (pScreen, bsfuncs);
+    pScreen->MarkWindow = miMarkWindow;
+    pScreen->MarkOverlappedWindows = miMarkOverlappedWindows;
+    pScreen->ChangeSaveUnder = miChangeSaveUnder;
+    pScreen->PostChangeSaveUnder = miPostChangeSaveUnder;
+    pScreen->MoveWindow = miMoveWindow;
+    pScreen->ResizeWindow = miSlideAndSizeWindow;
+    pScreen->GetLayerWindow = miGetLayerWindow;
+    pScreen->HandleExposures = miHandleValidateExposures;
+    pScreen->ReparentWindow = (void (*)())0;
+    pScreen->ChangeBorderWidth = miChangeBorderWidth;
+#ifdef SHAPE
+    pScreen->SetShape = miSetShape;
+#endif
+    pScreen->MarkUnrealizedWindow = miMarkUnrealizedWindow;
 
     return miScreenDevPrivateInit(pScreen, width, pbits);
 }

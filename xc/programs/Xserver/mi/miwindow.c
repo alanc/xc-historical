@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.7 91/03/11 17:06:52 keith Exp $ */
+/* $XConsortium: miwindow.c,v 5.8 91/05/29 14:56:14 keith Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"
@@ -29,12 +29,13 @@ SOFTWARE.
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "mivalidate.h"
 
 void 
 miClearToBackground(pWin, x, y, w, h, generateExposures)
     WindowPtr pWin;
-    short x,y;
-    unsigned short w,h;
+    int x,y;
+    unsigned int w,h;
     Bool generateExposures;
 {
     BoxRec box;
@@ -107,4 +108,1029 @@ miClearToBackground(pWin, x, y, w, h, generateExposures)
     (* pScreen->RegionUninit)(&reg);
     if (pBSReg)
 	(* pScreen->RegionDestroy)(pBSReg);
+}
+
+/*
+ * For SaveUnders using backing-store. The idea is that when a window is mapped
+ * with saveUnder set TRUE, any windows it obscures will have its backing
+ * store turned on setting the DIXsaveUnder bit,
+ * The backing-store code must be written to allow for this
+ */
+
+/*-
+ *-----------------------------------------------------------------------
+ * CheckSubSaveUnder --
+ *	Check all the inferiors of a window for coverage by saveUnder
+ *	windows. Called from ChangeSaveUnder and CheckSaveUnder.
+ *	This code is very inefficient.
+ *
+ * Results:
+ *	TRUE if any windows need to have backing-store removed.
+ *
+ * Side Effects:
+ *	Windows may have backing-store turned on or off.
+ *
+ *-----------------------------------------------------------------------
+ */
+static Bool
+miCheckSubSaveUnder(pParent, pFirst, pRegion)
+    register WindowPtr	pParent;	/* Parent to check */
+    WindowPtr		pFirst;		/* first reconfigured window */
+    RegionPtr		pRegion;	/* Initial area obscured by saveUnder */
+{
+    register WindowPtr	pChild;		/* Current child */
+    register ScreenPtr	pScreen;	/* Screen to use */
+    RegionRec		SubRegion;	/* Area of children obscured */
+    Bool		res = FALSE;	/* result */
+    Bool		subInited=FALSE;/* SubRegion initialized */
+
+    pScreen = pParent->drawable.pScreen;
+    if ( (pChild = pParent->firstChild) )
+    {
+	/*
+	 * build region above first changed window
+	 */
+
+	for (; pChild != pFirst; pChild = pChild->nextSib)
+	    if (pChild->viewable && pChild->saveUnder)
+		(*pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
+	
+	/*
+	 * check region below and including first changed window
+	 */
+
+	for (; pChild; pChild = pChild->nextSib)
+	{
+	    if (pChild->viewable)
+	    {
+		/*
+		 * don't save under nephew/niece windows;
+		 * use a separate region
+		 */
+
+		if (pChild->firstChild)
+		{
+		    if (!subInited)
+		    {
+			(*pScreen->RegionInit)(&SubRegion, NullBox, 0);
+			subInited = TRUE;
+		    }
+		    (*pScreen->RegionCopy) (&SubRegion, pRegion);
+		    res |= miCheckSubSaveUnder(pChild, pChild->firstChild,
+					     &SubRegion);
+		}
+		else
+		{
+		    res |= miCheckSubSaveUnder(pChild, pChild->firstChild,
+					     pRegion);
+		}
+
+		if (pChild->saveUnder)
+		    (*pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
+	    }
+	}
+
+	if (subInited)
+	    (*pScreen->RegionUninit) (&SubRegion);
+    }
+
+    /*
+     * Check the state of this window.	DIX save unders are
+     * enabled for viewable windows with some client expressing
+     * exposure interest and which intersect the save under region
+     */
+
+    if (pParent->viewable && 
+	((pParent->eventMask | wOtherEventMasks(pParent)) & ExposureMask) &&
+	(*pScreen->RegionNotEmpty) (&pParent->borderSize) &&
+	(*pScreen->RectIn) (pRegion, (*pScreen->RegionExtents)
+					(&pParent->borderSize)) != rgnOUT)
+    {
+	if (!pParent->DIXsaveUnder)
+	{
+	    pParent->DIXsaveUnder = TRUE;
+	    (*pScreen->ChangeWindowAttributes) (pParent, CWBackingStore);
+	}
+    }
+    else
+    {
+	if (pParent->DIXsaveUnder)
+	{
+	    res = TRUE;
+	    pParent->DIXsaveUnder = FALSE;
+	}
+    }
+    return res;
+}
+
+
+/*-
+ *-----------------------------------------------------------------------
+ * ChangeSaveUnder --
+ *	Change the save-under state of a tree of windows. Called when
+ *	a window with saveUnder TRUE is mapped/unmapped/reconfigured.
+ *	
+ * Results:
+ *	TRUE if any windows need to have backing-store removed (which
+ *	means that PostChangeSaveUnder needs to be called later to 
+ *	finish the job).
+ *
+ * Side Effects:
+ *	Windows may have backing-store turned on or off.
+ *
+ *-----------------------------------------------------------------------
+ */
+Bool
+miChangeSaveUnder(pWin, first)
+    register WindowPtr	pWin;
+    WindowPtr		first;		/* First window to check.
+					 * Used when pWin was restacked */
+{
+    RegionRec	rgn;	/* Area obscured by saveUnder windows */
+    register ScreenPtr pScreen;
+    Bool	res;
+
+    if (!deltaSaveUndersViewable && !numSaveUndersViewable)
+	return FALSE;
+    numSaveUndersViewable += deltaSaveUndersViewable;
+    deltaSaveUndersViewable = 0;
+    pScreen = pWin->drawable.pScreen;
+    (*pScreen->RegionInit) (&rgn, NullBox, 1);
+    res = miCheckSubSaveUnder (pWin->parent,
+			       pWin->saveUnder ? first : pWin->nextSib,
+			       &rgn);
+    (*pScreen->RegionUninit) (&rgn);
+    return res;
+}
+
+/*-
+ *-----------------------------------------------------------------------
+ * PostChangeSaveUnder --
+ *	Actually turn backing-store off for those windows that no longer
+ *	need to have it on.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	Backing-store and SAVE_UNDER_CHANGE_BIT are turned off for those
+ *	windows affected.
+ *
+ *-----------------------------------------------------------------------
+ */
+void
+miPostChangeSaveUnder(pWin, pFirst)
+    WindowPtr		pWin;
+    WindowPtr		pFirst;
+{
+    register WindowPtr pChild;
+    Bool (* ChangeWindowAttributes)();
+
+    ChangeWindowAttributes = pWin->drawable.pScreen->ChangeWindowAttributes;
+    if (!pWin->DIXsaveUnder &&
+	(pWin->backingStore == NotUseful) && pWin->backStorage)
+	(*ChangeWindowAttributes)(pWin, CWBackingStore);
+    if (!(pChild = pFirst))
+	return;
+    while (1)
+    {
+	if (!pChild->DIXsaveUnder &&
+	    (pChild->backingStore == NotUseful) && pChild->backStorage)
+	    (*ChangeWindowAttributes)(pChild, CWBackingStore);
+	if (pChild->firstChild)
+	{
+	    pChild = pChild->firstChild;
+	    continue;
+	}
+	while (!pChild->nextSib)
+	{
+	    pChild = pChild->parent;
+	    if (pChild == pWin)
+		return;
+	}
+	pChild = pChild->nextSib;
+    }
+}
+
+void
+miMarkWindow(pWin)
+    register WindowPtr pWin;
+{
+    register ValidatePtr val;
+    extern Bool Must_have_memory;
+
+    if (pWin->valdata)
+	return;
+    Must_have_memory = TRUE; /* XXX */
+    val = (ValidatePtr)xalloc(sizeof(ValidateRec));
+    Must_have_memory = FALSE; /* XXX */
+    val->before.oldAbsCorner.x = pWin->drawable.x;
+    val->before.oldAbsCorner.y = pWin->drawable.y;
+    val->before.borderVisible = NullRegion;
+    val->before.resized = FALSE;
+    pWin->valdata = val;
+}
+
+Bool
+miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
+    WindowPtr pWin;
+    WindowPtr pFirst;
+    WindowPtr *ppLayerWin;
+{
+    register BoxPtr box;
+    register WindowPtr pChild, pLast;
+    int (* RectIn)();
+    Bool anyMarked = FALSE;
+    void (* MarkWindow)() = pWin->drawable.pScreen->MarkWindow;
+
+    /* single layered systems are easy */
+    if (ppLayerWin) *ppLayerWin = pWin;
+
+    if (pWin == pFirst)
+    {
+	/* Blindly mark pWin and all of it's inferiors.	 This is a slight
+	 * overkill if there are mapped windows that outside pWin's border,
+	 * but it's better than wasting time on RectIn checks.
+	 */
+	pChild = pWin;
+	while (1)
+	{
+	    if (pChild->viewable)
+	    {
+		(* MarkWindow)(pChild);
+		if (pChild->firstChild)
+		{
+		    pChild = pChild->firstChild;
+		    continue;
+		}
+	    }
+	    while (!pChild->nextSib && (pChild != pWin))
+		pChild = pChild->parent;
+	    if (pChild == pWin)
+		break;
+	    pChild = pChild->nextSib;
+	}
+	anyMarked = TRUE;
+	pFirst = pFirst->nextSib;
+    }
+    if ( (pChild = pFirst) )
+    {
+	box = (* pChild->drawable.pScreen->RegionExtents)(&pWin->borderSize);
+	RectIn = pChild->drawable.pScreen->RectIn;
+	pLast = pChild->parent->lastChild;
+	while (1)
+	{
+	    if (pChild->viewable && (*RectIn)(&pChild->borderSize, box))
+	    {
+		(* MarkWindow)(pChild);
+		anyMarked = TRUE;
+		if (pChild->firstChild)
+		{
+		    pChild = pChild->firstChild;
+		    continue;
+		}
+	    }
+	    while (!pChild->nextSib && (pChild != pLast))
+		pChild = pChild->parent;
+	    if (pChild == pLast)
+		break;
+	    pChild = pChild->nextSib;
+	}
+    }
+    if (anyMarked)
+	(* MarkWindow)(pWin->parent);
+    return anyMarked;
+}
+
+/*****
+ *  miHandleValidateExposures(pWin)
+ *    starting at pWin, draw background in any windows that have exposure
+ *    regions, translate the regions, restore any backing store,
+ *    and then send any regions still exposed to the client
+ *****/
+void
+miHandleValidateExposures(pWin)
+    WindowPtr pWin;
+{
+    register WindowPtr pChild;
+    register ValidatePtr val;
+    Bool (* RegionNotEmpty)();
+    void (* RegionUninit)();
+    void (* WindowExposures)();
+
+    pChild = pWin;
+    RegionNotEmpty = pChild->drawable.pScreen->RegionNotEmpty;
+    RegionUninit = pChild->drawable.pScreen->RegionUninit;
+    WindowExposures = pChild->drawable.pScreen->WindowExposures;
+    while (1)
+    {
+	if ( (val = pChild->valdata) )
+	{
+	    if ((*RegionNotEmpty)(&val->after.borderExposed))
+		(*pChild->drawable.pScreen->PaintWindowBorder)(pChild,
+						    &val->after.borderExposed,
+						    PW_BORDER);
+	    (*RegionUninit)(&val->after.borderExposed);
+	    (*WindowExposures)(pChild, &val->after.exposed, NullRegion);
+	    (*RegionUninit)(&val->after.exposed);
+	    xfree(val);
+	    pChild->valdata = (ValidatePtr)NULL;
+	    if (pChild->firstChild)
+	    {
+		pChild = pChild->firstChild;
+		continue;
+	    }
+	}
+	while (!pChild->nextSib && (pChild != pWin))
+	    pChild = pChild->parent;
+	if (pChild == pWin)
+	    break;
+	pChild = pChild->nextSib;
+    }
+}
+
+void
+miMoveWindow(pWin, x, y, pNextSib, kind)
+    register WindowPtr pWin;
+    int x,y;
+    WindowPtr pNextSib;
+    VTKind kind;
+{
+    WindowPtr pParent;
+    Bool WasViewable = (Bool)(pWin->viewable);
+    short bw;
+    RegionPtr oldRegion;
+    DDXPointRec oldpt;
+    Bool anyMarked;
+    register ScreenPtr pScreen;
+    WindowPtr windowToValidate;
+#ifdef DO_SAVE_UNDERS
+    Bool dosave = FALSE;
+#endif
+    WindowPtr pLayerWin;
+
+    /* if this is a root window, can't be moved */
+    if (!(pParent = pWin->parent))
+       return ;
+    pScreen = pWin->drawable.pScreen;
+    bw = wBorderWidth (pWin);
+
+    oldpt.x = pWin->drawable.x;
+    oldpt.y = pWin->drawable.y;
+    if (WasViewable)
+    {
+	oldRegion = (*pScreen->RegionCreate)(NullBox, 1);
+	(*pScreen->RegionCopy)(oldRegion, &pWin->borderClip);
+	anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin, &pLayerWin);
+    }
+    pWin->origin.x = x + (int)bw;
+    pWin->origin.y = y + (int)bw;
+    x = pWin->drawable.x = pParent->drawable.x + x + (int)bw;
+    y = pWin->drawable.y = pParent->drawable.y + y + (int)bw;
+
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
+
+    (*pScreen->PositionWindow)(pWin, x, y);
+
+    windowToValidate = MoveWindowInStack(pWin, pNextSib);
+
+    ResizeChildrenWinSize(pWin, x - oldpt.x, y - oldpt.y, 0, 0);
+
+    if (WasViewable)
+    {
+	if (pLayerWin == pWin)
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)
+				(pWin, windowToValidate, (WindowPtr *)NULL);
+	else
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)
+				(pWin, pLayerWin, (WindowPtr *)NULL);
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, windowToValidate);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	{
+	    (*pScreen->ValidateTree)(pLayerWin->parent, NullWindow, kind);
+	    (* pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, oldRegion);
+	    (*pScreen->RegionDestroy)(oldRegion);
+	    /* XXX need to retile border if ParentRelative origin */
+	    (*pScreen->HandleExposures)(pLayerWin->parent);
+	}
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	    if (pLayerWin == pWin)
+		(*pScreen->PostChangeSaveUnder)(pWin->parent,
+						windowToValidate);
+	    else
+		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
+						pLayerWin);
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pLayerWin->parent, NullWindow, kind);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+}
+
+
+/*
+ * pValid is a region of the screen which has been
+ * successfully copied -- recomputed exposed regions for affected windows
+ */
+
+static int
+miRecomputeExposures (pWin, value)
+    register WindowPtr	pWin;
+    pointer		value; /* must conform to VisitWindowProcPtr */
+{
+    register ScreenPtr	pScreen;
+    RegionPtr	pValid = (RegionPtr)value;
+
+    if (pWin->valdata)
+    {
+	pScreen = pWin->drawable.pScreen;
+	/*
+	 * compute exposed regions of this window
+	 */
+	(*pScreen->Subtract)(&pWin->valdata->after.exposed, &pWin->clipList, pValid);
+	/*
+	 * compute exposed regions of the border
+	 */
+	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
+			     &pWin->borderClip, &pWin->winSize);
+	(*pScreen->Subtract)(&pWin->valdata->after.borderExposed,
+			     &pWin->valdata->after.borderExposed, pValid);
+	return WT_WALKCHILDREN;
+    }
+    return WT_NOMATCH;
+}
+
+void
+miSlideAndSizeWindow(pWin, x, y, w, h, pSib)
+    register WindowPtr pWin;
+    int x,y;
+    unsigned int w, h;
+    WindowPtr pSib;
+{
+    WindowPtr pParent;
+    Bool WasViewable = (Bool)(pWin->viewable);
+    unsigned short width = pWin->drawable.width,
+		   height = pWin->drawable.height;
+    short oldx = pWin->drawable.x,
+	  oldy = pWin->drawable.y;
+    int bw = wBorderWidth (pWin);
+    short dw, dh;
+    DDXPointRec oldpt;
+    RegionPtr oldRegion;
+    Bool anyMarked;
+    register ScreenPtr pScreen;
+    WindowPtr pFirstChange;
+    register WindowPtr pChild;
+    RegionPtr	gravitate[StaticGravity + 1];
+    register unsigned g;
+    int		nx, ny;		/* destination x,y */
+    int		newx, newy;	/* new inner window position */
+    RegionPtr	pRegion;
+    RegionPtr	destClip;	/* portions of destination already written */
+    RegionPtr	oldWinClip;	/* old clip list for window */
+    RegionPtr	borderVisible = NullRegion; /* visible area of the border */
+    RegionPtr	bsExposed = NullRegion;	    /* backing store exposures */
+    Bool	shrunk = FALSE; /* shrunk in an inner dimension */
+    Bool	moved = FALSE;	/* window position changed */
+#ifdef DO_SAVE_UNDERS
+    Bool	dosave = FALSE;
+#endif
+    WindowPtr  pLayerWin;
+
+    /* if this is a root window, can't be resized */
+    if (!(pParent = pWin->parent))
+	return ;
+
+    pScreen = pWin->drawable.pScreen;
+    newx = pParent->drawable.x + x + bw;
+    newy = pParent->drawable.y + y + bw;
+    if (WasViewable)
+    {
+	anyMarked = FALSE;
+	/*
+	 * save the visible region of the window
+	 */
+	oldRegion = (*pScreen->RegionCreate) (NullBox, 1);
+	(*pScreen->RegionCopy) (oldRegion, &pWin->winSize);
+
+	/*
+	 * categorize child windows into regions to be moved
+	 */
+	for (g = 0; g <= StaticGravity; g++)
+	    gravitate[g] = (RegionPtr) NULL;
+	for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	{
+	    g = pChild->winGravity;
+	    if (g != UnmapGravity)
+	    {
+		if (!gravitate[g])
+		    gravitate[g] = (*pScreen->RegionCreate) (NullBox, 1);
+		(*pScreen->Union) (gravitate[g],
+				   gravitate[g], &pChild->borderClip);
+	    }
+	    else
+	    {
+		UnmapWindow(pChild, TRUE);
+		anyMarked = TRUE;
+	    }
+	}
+	anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pWin, 
+						       &pLayerWin);
+
+	oldWinClip = NULL;
+	if (pWin->bitGravity != ForgetGravity)
+	{
+	    oldWinClip = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->RegionCopy) (oldWinClip, &pWin->clipList);
+	}
+	/*
+	 * if the window is changing size, borderExposed
+	 * can't be computed correctly without some help.
+	 */
+	if (pWin->drawable.height > h || pWin->drawable.width > w)
+	    shrunk = TRUE;
+
+	if (newx != oldx || newy != oldy)
+	    moved = TRUE;
+
+	if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
+	    HasBorder (pWin))
+	{
+	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+	    /* for tiled borders, we punt and draw the whole thing */
+	    if (pWin->borderIsPixel || !moved)
+	    {
+		if (shrunk || moved)
+		    (*pScreen->Subtract) (borderVisible,
+					  &pWin->borderClip,
+					  &pWin->winSize);
+		else
+		    (*pScreen->RegionCopy) (borderVisible,
+					    &pWin->borderClip);
+	    }
+	}
+    }
+    pWin->origin.x = x + bw;
+    pWin->origin.y = y + bw;
+    pWin->drawable.height = h;
+    pWin->drawable.width = w;
+
+    x = pWin->drawable.x = newx;
+    y = pWin->drawable.y = newy;
+
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
+
+    dw = (int)w - (int)width;
+    dh = (int)h - (int)height;
+    ResizeChildrenWinSize(pWin, x - oldx, y - oldy, dw, dh);
+
+    /* let the hardware adjust background and border pixmaps, if any */
+    (*pScreen->PositionWindow)(pWin, x, y);
+
+    pFirstChange = MoveWindowInStack(pWin, pSib);
+
+    if (WasViewable)
+    {
+	pRegion = (*pScreen->RegionCreate) (NullBox, 1);
+	if (pWin->backStorage)
+	    (*pScreen->RegionCopy) (pRegion, &pWin->clipList);
+
+	if (pLayerWin == pWin)
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pFirstChange,
+						(WindowPtr *)NULL);
+	else
+	    anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pLayerWin,
+						(WindowPtr *)NULL);
+
+	if (pWin->valdata)
+	{
+	    pWin->valdata->before.resized = TRUE;
+	    pWin->valdata->before.borderVisible = borderVisible;
+	}
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pLayerWin != pWin)
+		dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
+	    else
+		dosave = (*pScreen->ChangeSaveUnder)(pWin, pFirstChange);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	    (*pScreen->ValidateTree)(pLayerWin->parent, pFirstChange, VTOther);
+	/*
+	 * the entire window is trashed unless bitGravity
+	 * recovers portions of it
+	 */
+	(*pScreen->RegionCopy) (&pWin->valdata->after.exposed, &pWin->clipList);
+    }
+
+    GravityTranslate (x, y, oldx, oldy, dw, dh, pWin->bitGravity, &nx, &ny);
+
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) || WasViewable))
+    {
+	if (!WasViewable)
+	    pRegion = &pWin->clipList; /* a convenient empty region */
+	if (pWin->bitGravity == ForgetGravity)
+	    bsExposed = (*pScreen->TranslateBackingStore)
+				(pWin, 0, 0, NullRegion, oldx, oldy);
+	else
+	{
+	    bsExposed = (*pScreen->TranslateBackingStore)
+			     (pWin, nx - x, ny - y, pRegion, oldx, oldy);
+	}
+    }
+
+    if (WasViewable)
+    {
+	/* avoid the border */
+	if (HasBorder (pWin))
+	{
+	    int	offx, offy, dx, dy;
+
+	    /* kruft to avoid double translates for each gravity */
+	    offx = 0;
+	    offy = 0;
+	    for (g = 0; g <= StaticGravity; g++)
+	    {
+		if (!gravitate[g])
+		    continue;
+
+		/* align winSize to gravitate[g].
+		 * winSize is in new coordinates,
+		 * gravitate[g] is still in old coordinates */
+		GravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
+		
+		dx = (oldx - nx) - offx;
+		dy = (oldy - ny) - offy;
+		if (dx || dy)
+		{
+		    (*pScreen->TranslateRegion) (&pWin->winSize, dx, dy);
+		    offx += dx;
+		    offy += dy;
+		}
+		(*pScreen->Intersect) (gravitate[g], gravitate[g], &pWin->winSize);
+	    }
+	    /* get winSize back where it belongs */
+	    if (offx || offy)
+		(*pScreen->TranslateRegion) (&pWin->winSize, -offx, -offy);
+	}
+	/*
+	 * add screen bits to the appropriate bucket
+	 */
+
+	if (oldWinClip)
+	{
+	    /*
+	     * clip to new clipList
+	     */
+	    (*pScreen->RegionCopy) (pRegion, oldWinClip);
+	    (*pScreen->TranslateRegion) (pRegion, nx - oldx, ny - oldy);
+	    (*pScreen->Intersect) (oldWinClip, pRegion, &pWin->clipList);
+	    /*
+	     * don't step on any gravity bits which will be copied after this
+	     * region.	Note -- this assumes that the regions will be copied
+	     * in gravity order.
+	     */
+	    for (g = pWin->bitGravity + 1; g <= StaticGravity; g++)
+	    {
+		if (gravitate[g])
+		    (*pScreen->Subtract) (oldWinClip, oldWinClip, gravitate[g]);
+	    }
+	    (*pScreen->TranslateRegion) (oldWinClip, oldx - nx, oldy - ny);
+	    g = pWin->bitGravity;
+	    if (!gravitate[g])
+		gravitate[g] = oldWinClip;
+	    else
+	    {
+		(*pScreen->Union) (gravitate[g], gravitate[g], oldWinClip);
+		(*pScreen->RegionDestroy) (oldWinClip);
+	    }
+	}
+
+	/*
+	 * move the bits on the screen
+	 */
+
+	destClip = NULL;
+
+	for (g = 0; g <= StaticGravity; g++)
+	{
+	    if (!gravitate[g])
+		continue;
+
+	    GravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
+
+	    oldpt.x = oldx + (x - nx);
+	    oldpt.y = oldy + (y - ny);
+
+	    /* Note that gravitate[g] is *translated* by CopyWindow */
+
+	    /* only copy the remaining useful bits */
+
+	    (*pScreen->Intersect) (gravitate[g], gravitate[g], oldRegion);
+
+	    /* clip to not overwrite already copied areas */
+
+	    if (destClip) {
+		(*pScreen->TranslateRegion) (destClip, oldpt.x - x, oldpt.y - y);
+		(*pScreen->Subtract) (gravitate[g], gravitate[g], destClip);
+		(*pScreen->TranslateRegion) (destClip, x - oldpt.x, y - oldpt.y);
+	    }
+
+	    /* and move those bits */
+
+	    if (oldpt.x != x || oldpt.y != y)
+		(*pWin->drawable.pScreen->CopyWindow)(pWin, oldpt, gravitate[g]);
+
+	    /* remove any overwritten bits from the remaining useful bits */
+
+	    (*pScreen->Subtract) (oldRegion, oldRegion, gravitate[g]);
+
+	    /*
+	     * recompute exposed regions of child windows
+	     */
+	
+	    for (pChild = pWin->firstChild; pChild; pChild = pChild->nextSib)
+	    {
+		if (pChild->winGravity != g)
+		    continue;
+		(*pScreen->Intersect) (pRegion,
+				       &pChild->borderClip, gravitate[g]);
+		TraverseTree (pChild, miRecomputeExposures, (pointer)pRegion);
+	    }
+
+	    /*
+	     * remove the successfully copied regions of the
+	     * window from its exposed region
+	     */
+
+	    if (g == pWin->bitGravity)
+		(*pScreen->Subtract)(&pWin->valdata->after.exposed,
+				     &pWin->valdata->after.exposed, gravitate[g]);
+	    if (!destClip)
+		destClip = gravitate[g];
+	    else
+	    {
+		(*pScreen->Union) (destClip, destClip, gravitate[g]);
+		(*pScreen->RegionDestroy) (gravitate[g]);
+	    }
+	}
+
+	(*pScreen->RegionDestroy) (oldRegion);
+	(*pScreen->RegionDestroy) (pRegion);
+	if (destClip)
+	    (*pScreen->RegionDestroy) (destClip);
+	if (bsExposed)
+	{
+	    RegionPtr	valExposed = NullRegion;
+
+	    if (pWin->valdata)
+		valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+		(*pScreen->RegionEmpty) (valExposed);
+	    (*pScreen->RegionDestroy) (bsExposed);
+	}
+	if (anyMarked)
+	    (*pScreen->HandleExposures)(pLayerWin->parent);
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	{
+	    if (pLayerWin == pWin)
+		(*pScreen->PostChangeSaveUnder)(pParent, pFirstChange);
+	    else
+		(*pScreen->PostChangeSaveUnder)(pLayerWin->parent, pLayerWin);
+	}
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pLayerWin->parent, pFirstChange,
+					  VTOther);
+    }
+    else if (bsExposed)
+    {
+	(*pScreen->WindowExposures) (pWin, NullRegion, bsExposed);
+	(*pScreen->RegionDestroy) (bsExposed);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+}
+
+WindowPtr
+miGetLayerWindow(pWin)
+    WindowPtr pWin;
+{
+    return pWin->firstChild;
+}
+
+#ifdef SHAPE
+/******
+ *
+ * miSetShape
+ *    The border/window shape has changed.  Recompute winSize/borderSize
+ *    and send appropriate exposure events
+ */
+
+void
+miSetShape(pWin)
+    register WindowPtr	pWin;
+{
+    Bool	WasViewable = (Bool)(pWin->viewable);
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    Bool	anyMarked;
+    WindowPtr	pParent = pWin->parent;
+    RegionPtr	pOldClip, bsExposed;
+#ifdef DO_SAVE_UNDERS
+    Bool	dosave = FALSE;
+#endif
+    WindowPtr   pLayerWin;
+
+    if (WasViewable)
+    {
+	anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin,
+						      &pLayerWin);
+	if (pWin->valdata)
+	{
+	    /* XYZ make this a screen func */
+	    if (HasBorder (pWin))
+	    {
+		RegionPtr	borderVisible;
+
+		borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
+		(*pScreen->Subtract) (borderVisible,
+				      &pWin->borderClip, &pWin->winSize);
+		pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	    pWin->valdata->before.resized = TRUE;
+	}
+    }
+
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
+
+    ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
+
+    if (WasViewable)
+    {
+	if (pWin->backStorage)
+	{
+	    pOldClip = (*pScreen->RegionCreate) (NullBox, 1);
+	    (*pScreen->RegionCopy) (pOldClip, &pWin->clipList);
+	}
+
+	anyMarked |= (*pScreen->MarkOverlappedWindows)(pWin, pWin,
+						(WindowPtr *)NULL);
+
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	    (*pScreen->ValidateTree)(pLayerWin->parent, NullWindow, VTOther);
+    }
+
+    if (pWin->backStorage &&
+	((pWin->backingStore == Always) || WasViewable))
+    {
+	if (!WasViewable)
+	    pOldClip = &pWin->clipList; /* a convenient empty region */
+	bsExposed = (*pScreen->TranslateBackingStore)
+			     (pWin, 0, 0, pOldClip,
+			      pWin->drawable.x, pWin->drawable.y);
+	if (WasViewable)
+	    (*pScreen->RegionDestroy) (pOldClip);
+	if (bsExposed)
+	{
+	    RegionPtr	valExposed = NullRegion;
+    
+	    if (pWin->valdata)
+		valExposed = &pWin->valdata->after.exposed;
+	    (*pScreen->WindowExposures) (pWin, valExposed, bsExposed);
+	    if (valExposed)
+		(*pScreen->RegionEmpty) (valExposed);
+	    (*pScreen->RegionDestroy) (bsExposed);
+	}
+    }
+    if (WasViewable)
+    {
+	if (anyMarked)
+	    (*pScreen->HandleExposures)(pLayerWin->parent);
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin->parent, pLayerWin);
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pLayerWin->parent, NullWindow, VTOther);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+    CheckCursorConfinement(pWin);
+}
+#endif
+
+/* Keeps the same inside(!) origin */
+
+void
+miChangeBorderWidth(pWin, width)
+    register WindowPtr pWin;
+    unsigned int width;
+{
+    WindowPtr pParent;
+    int oldwidth;
+    Bool anyMarked;
+    register ScreenPtr pScreen;
+    Bool WasViewable = (Bool)(pWin->viewable);
+    Bool HadBorder;
+#ifdef DO_SAVE_UNDERS
+    Bool	dosave = FALSE;
+#endif
+    WindowPtr  pLayerWin;
+
+    oldwidth = wBorderWidth (pWin);
+    if (oldwidth == width)
+	return;
+    HadBorder = HasBorder(pWin);
+    pScreen = pWin->drawable.pScreen;
+    pParent = pWin->parent;
+    if (WasViewable && width < oldwidth)
+	anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin, &pLayerWin);
+
+    pWin->borderWidth = width;
+    SetBorderSize (pWin);
+
+    if (WasViewable)
+    {
+	if (width > oldwidth)
+	{
+	    anyMarked = (*pScreen->MarkOverlappedWindows)(pWin, pWin,
+							  &pLayerWin);
+	    /*
+	     * save the old border visible region to correctly compute
+	     * borderExposed.
+	     */
+	    if (pWin->valdata && HadBorder)
+	    {
+		/* XYZ make this a screen func */
+		RegionPtr   borderVisible;
+		borderVisible = (*pScreen->RegionCreate) (NULL, 1);
+		(*pScreen->Subtract) (borderVisible,
+				      &pWin->borderClip, &pWin->winSize);
+		pWin->valdata->before.borderVisible = borderVisible;
+	    }
+	}
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    dosave = (*pScreen->ChangeSaveUnder)(pLayerWin, pLayerWin->nextSib);
+	}
+#endif /* DO_SAVE_UNDERS */
+
+	if (anyMarked)
+	{
+	    (*pScreen->ValidateTree)(pLayerWin->parent, pLayerWin, VTOther);
+	    (*pScreen->HandleExposures)(pLayerWin->parent);
+	}
+#ifdef DO_SAVE_UNDERS
+	if (dosave)
+	    (*pScreen->PostChangeSaveUnder)(pLayerWin->parent,
+					    pLayerWin->nextSib);
+#endif /* DO_SAVE_UNDERS */
+	if (anyMarked && pScreen->PostValidateTree)
+	    (*pScreen->PostValidateTree)(pLayerWin->parent, pLayerWin,
+					  VTOther);
+    }
+    if (pWin->realized)
+	WindowsRestructured ();
+}
+
+void
+miMarkUnrealizedWindow(pChild, pWin, fromConfigure)
+    WindowPtr pChild;
+    WindowPtr pWin;
+    Bool fromConfigure;
+{
+    if ((pChild != pWin) || fromConfigure)
+    {
+	(* pChild->drawable.pScreen->RegionEmpty)(&pChild->clipList);
+	if (pChild->drawable.pScreen->ClipNotify)
+	    (* pChild->drawable.pScreen->ClipNotify)(pChild, 0, 0);
+	(* pChild->drawable.pScreen->RegionEmpty)(&pChild->borderClip);
+    }
 }
