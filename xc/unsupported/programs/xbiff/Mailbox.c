@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.41 90/09/10 11:39:14 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.42 90/09/11 15:55:17 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -90,9 +90,9 @@ static XtResource resources[] = {
     { XtNupdate, XtCInterval, XtRInt, sizeof (int),
 	offset (update), XtRString, "30" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
-	offset (foreground_pixel), XtRString, "black" },
+	offset (foreground_pixel), XtRString, XtDefaultForeground },
     { XtNbackground, XtCBackground, XtRPixel, sizeof (Pixel),
-	goffset (background_pixel), XtRString, "white" },
+	goffset (background_pixel), XtRString, XtDefaultBackground },
     { XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
 	offset (reverseVideo), XtRString, "FALSE" },
     { XtNfile, XtCFile, XtRString, sizeof (String),
