@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.70 89/06/13 09:50:02 jim Exp $
+ * $XConsortium: menus.c,v 1.71 89/06/22 16:46:14 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.70 89/06/13 09:50:02 jim Exp $";
+"$XConsortium: menus.c,v 1.71 89/06/22 16:46:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1111,14 +1111,12 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
     case F_RIGHTICONMGR:
     case F_FORWICONMGR:
     case F_BACKICONMGR:
-        if (context == C_ICONMGR)
-	    MoveIconManager(func);
+	MoveIconManager(func);
         break;
 
     case F_NEXTICONMGR:
     case F_PREVICONMGR:
-        if (context == C_ICONMGR)
-	    JumpIconManager(func);
+	JumpIconManager(func);
         break;
 
     case F_SHOWLIST:
