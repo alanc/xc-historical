@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.76 89/12/09 22:57:25 rws Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.77 89/12/12 12:01:52 jim Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -33,6 +33,9 @@ SOFTWARE.
 #include "IntrinsicI.h"
 
 extern int errno;
+
+static TimerEventRec* freeTimerRecs;
+static WorkProcRec* freeWorkRecs;
 
 #if defined(USG) && !defined(CRAY)
 static int gettimeofday (tvp, tzp)
@@ -378,7 +381,12 @@ XtIntervalId XtAppAddTimeOut(app, interval, proc, closure)
         struct timeval current_time;
 	struct timezone timezone;
 
-	tptr = (TimerEventRec *)XtMalloc((unsigned) sizeof(TimerEventRec));
+	if (freeTimerRecs) {
+	    tptr = freeTimerRecs;
+	    freeTimerRecs = tptr->te_next;
+	}
+	else tptr = XtNew(TimerEventRec);
+
 	tptr->te_next = NULL;
 	tptr->te_closure = closure;
 	tptr->te_proc = proc;
@@ -399,15 +407,16 @@ void  XtRemoveTimeOut(id)
    /* find it */
 
    for(t = tid->app->timerQueue, last = NULL;
-	   t != NULL && t != (TimerEventRec *)id;
+	   t != NULL && t != tid;
 	   t = t->te_next) last = t;
 
    if (t == NULL) return; /* couldn't find it */
    if(last == NULL) { /* first one on the list */
-    tid->app->timerQueue = t->te_next;
+       t->app->timerQueue = t->te_next;
    } else last->te_next = t->te_next;
 
-   XtFree((char*)t);
+   t->te_next = freeTimerRecs;
+   freeTimerRecs = t;
    return;
 }
 
@@ -425,7 +434,11 @@ XtWorkProcId XtAppAddWorkProc(app, proc, closure)
 {
 	WorkProcRec *wptr;
 
-	wptr = XtNew(WorkProcRec);
+	if (freeWorkRecs) {
+	    wptr = freeWorkRecs;
+	    freeWorkRecs = wptr->next;
+	} else wptr = XtNew(WorkProcRec);
+
 	wptr->next = app->workQueue;
 	wptr->closure = closure;
 	wptr->proc = proc;
@@ -448,7 +461,8 @@ void  XtRemoveWorkProc(id)
 	if(last == NULL) wid->app->workQueue = w->next;
 	else last->next = w->next;
 
-	XtFree((char *) w);
+	w->next = freeWorkRecs;
+	freeWorkRecs = w;
 }
 
 XtInputId XtAddInput( source, Condition, proc, closure)
@@ -616,7 +630,8 @@ static void DoOtherSources(app)
 		te_ptr->te_next = NULL;
 		if (te_ptr->te_proc != NULL)
 		    TeCallProc(te_ptr);
-		XtFree((char*)te_ptr);
+		te_ptr->te_next = freeTimerRecs;
+		freeTimerRecs = te_ptr;
               if (app->timerQueue == NULL) break;
 	    }
 	}
@@ -637,7 +652,10 @@ static Boolean CallWorkProc(app)
 
 	delete = (*(w->proc)) (w->closure);
 
-	if (delete) XtFree((char *) w);
+	if (delete) {
+	    w->next = freeWorkRecs;
+	    freeWorkRecs = w->next;
+	}
 	else {
 	    w->next = app->workQueue;
 	    app->workQueue = w;
@@ -739,7 +757,8 @@ void XtAppProcessEvent(app, mask)
 		    te_ptr->te_next = NULL;
                     if (te_ptr->te_proc != 0)
 		        TeCallProc(te_ptr);
-		    XtFree((char*)te_ptr);
+		    te_ptr->te_next = freeTimerRecs;
+		    freeTimerRecs = te_ptr;
 		    return;
 		}
 	    }
