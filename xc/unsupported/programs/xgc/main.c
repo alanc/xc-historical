@@ -339,23 +339,6 @@ typedef struct {
   
 void set_foreground_and_background()
 {
-#ifdef notdef
-  static XtResource resources[] = {
-    {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-       XtOffset(ColorResources *, foreground), XtRString, XtDefaultForeground},
-    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
-       XtOffset(ColorResources *, background), XtRString, XtDefaultBackground}
-  };
-  
-  ColorResources colors;
-  
-  XtGetApplicationResources(bigdaddy, (caddr_t) &colors, resources,
-			    XtNumber(resources), NULL, (Cardinal) 0);
-
-  X.foreground = colors.foreground;
-  X.background = colors.background;
-#endif
-
   static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
        XtOffset(XStuff *, foreground), XtRString, XtDefaultForeground},
