@@ -653,6 +653,36 @@ color names aren't portable because there is no standard naming scheme and
 because the color database needs to be tuned for each monitor.
 .PP
 Application developers should take care to make their colors tailorable.
+.SH "KEYS"
+.PP
+The X keyboard model is broken into two layers:  server-specific codes
+(called \fIkeycodes\fP) which represent the physical keys, and 
+server-independent symbols (called \fIkeysyms\fP) which
+represent the letters or words that appear on the keys.  
+Two tables are kept in the server for converting keycodes to keysyms:
+.TP 8
+.I "modifier list"
+Some keys (such as Shift, Control, and Caps Lock) are known as \fImodifier\fP
+and are used to select different symbols that are attached to a single key
+(such as Shift-a generates a capital A, and Control-l generates a formfeed
+character ^L).  The server keeps a list of keycodes corresponding to the
+various modifier keys.  Whenever a key is pressed or released, the server 
+generates an \fIevent\fP that contains the keycode of the indicated key as 
+well as a mask that specifies which of the modifer keys are currently pressed.
+Most servers set up this list to initially contain
+the various shift, control, and shift lock keys on the keyboard.  
+.TP 8
+.I "keymap table"
+Applications translate event keycodes and modifier masks into keysyms
+using a \fIkeysym table\fP which contains one row for each keycode and one
+column for each of the modifiers.  This table is initialized by the server
+to correspond to normal typewriter conventions, but is only ever used by
+client programs.  
+.PP
+Although most programs deal with keysyms directly (such as those written with
+the X Toolkit), most programming libraries provide routines for converting
+keysyms into the appropriate type of string (such as ISO Latin-1).  However,
+programs that use such routines are usually less portable and not as flexible.
 .SH "COMMONLY USED PROGRAMS"
 The following is a collection of sample command lines for some of the 
 more frequently used commands.  For more information on a particular command,
@@ -660,6 +690,7 @@ please refer to that command's manual page.
 .sp
 .nf
         %  xrdb -load $HOME/.Xresources
+        %  xmodmap -e "keysym BackSpace = Delete"
         %  mkfontdir /usr/local/lib/X11/otherfonts
         %  xset fp+ /usr/local/lib/X11/otherfonts
         %  xmodmap $HOME/.keymap.km
