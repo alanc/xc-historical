@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.127 92/06/08 14:28:33 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.130 92/09/14 17:21:50 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -558,6 +558,7 @@ static XtResource applicationResources[]=
 
 static void ApplicationInitialize();
 static void ApplicationDestroy();
+static Boolean ApplicationSetValues();
 static void ApplicationShellInsertChild();
 
 static CompositeClassExtensionRec compositeClassExtension = {
@@ -592,7 +593,7 @@ externaldef(applicationshellclassrec) ApplicationShellClassRec applicationShellC
     /* destroy            */    ApplicationDestroy,
     /* resize             */    XtInheritResize,
     /* expose             */    NULL,
-    /* set_values         */    NULL,
+    /* set_values         */    ApplicationSetValues,
     /* set_values_hook    */	NULL,			
     /* set_values_almost  */	XtInheritSetValuesAlmost,
     /* get_values_hook    */	NULL,			
@@ -2082,6 +2083,41 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
     return False;
 }
 
+
+/*ARGSUSED*/
+static Boolean ApplicationSetValues(current, request, new, args, num_args)
+    Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
+{
+    ApplicationShellWidget nw = (ApplicationShellWidget) new;
+    ApplicationShellWidget cw = (ApplicationShellWidget) current;
+
+    if (cw->application.argv != nw->application.argv ||
+	cw->application.argc != nw->application.argc) {
+
+	if (nw->application.argc > 0) {
+	    int i = nw->application.argc;
+	    char **argp = nw->application.argv + i;
+	    char **argv = (char **) XtMalloc((unsigned) i * sizeof(char *));
+	    while (--i >= 0)
+		argv[i] = *--argp;
+	    nw->application.argv = argv;
+	}
+	if (cw->application.argc > 0 &&
+	    cw->application.argv != nw->application.argv)
+	    XtFree((char *) cw->application.argv);
+
+	if (XtIsRealized(new) && !nw->shell.override_redirect) {
+	    if (nw->application.argc >= 0 && nw->application.argv)
+		XSetCommand(XtDisplay(new), XtWindow(new),
+			    nw->application.argv, nw->application.argc);
+	    else
+		XDeleteProperty(XtDisplay(new), XtWindow(new), XA_WM_COMMAND);
+	}
+    }
+    return False;
+}
 
 void _XtShellGetCoordinates( widget, x, y)
     Widget widget;
