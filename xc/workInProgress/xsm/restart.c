@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.9 94/07/15 10:06:20 mor Exp $ */
+/* $XConsortium: restart.c,v 1.10 94/07/15 14:12:30 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -33,6 +33,17 @@ in this Software without prior written authorization from the X Consortium.
 
 extern List *PendingList;
 extern void remote_start ();
+
+
+Bool
+CheckIsManager (program)
+
+char *program;
+
+{
+    return (strcmp (program, "twm") == 0);
+}
+
 
 
 Status
@@ -168,11 +179,11 @@ int flag;
 	    if(!strcmp(prop->name, "Program")) {
 		vl = ListFirst(prop->values);
 		if(vl) program = ((PendingValue *)vl->thing)->value;
+		if (CheckIsManager (program))
+		    is_manager = 1;
 	    } else if(!strcmp(prop->name, "CurrentDirectory")) {
 		vl = ListFirst(prop->values);
 		if(vl) cwd = ((PendingValue *)vl->thing)->value;
-	    } else if(!strcmp(prop->name, "_XC_IsManager")) {
-		is_manager = 1;
 	    } else if(!strcmp(prop->name, "RestartCommand")) {
 		cnt = ListCount(prop->values);
 		args = (char **)malloc((cnt+1) * sizeof(char *));
