@@ -14,7 +14,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium$
+ * $XConsortium: chgptr.m,v 1.4 94/01/29 15:16:47 rws Exp $
  */
 >>TITLE XChangePointerDevice XEXTENSIONS
 void
@@ -670,8 +670,8 @@ Window grab_window;
 	device = Devs.Valuator;
         grab_window = defwin (display);
 
-	XGrabKeyboard (Dsp, grab_window, True, NoEventMask, 
-		GrabModeSync, GrabModeSync, CurrentTime);
+	XGrabDevice (Dsp, device, grab_window, True, 0, 
+		NULL, GrabModeSync, GrabModeSync, CurrentTime);
 	XSync(Dsp,0);
 	if (isdeleted()) {
 		delete("Could not set up initial grab");
