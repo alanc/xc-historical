@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.190 88/01/02 17:54:01 rws Locked $ */
+/* $Header: window.c,v 1.191 88/01/16 10:15:09 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -385,6 +385,8 @@ CreateRootWindow(screen)
 
     pWin->drawable.depth = pScreen->rootDepth;
 
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+
     pWin->parent = NullWindow;
     SetWindowToDefaults(pWin, pScreen);
 
@@ -542,6 +544,7 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     pWin->drawable.depth = depth;
     if (class == InputOnly)
         pWin->drawable.type = (short) UNDRAWABLE_WINDOW;
+    pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 
     pWin->wid = wid;
     pWin->client = client;
