@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.30 89/07/11 16:18:30 converse Exp $";
+    "$XConsortium: pick.c,v 2.31 89/07/21 18:56:25 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -92,7 +92,6 @@ typedef struct _PickRec {
    Toc toc;			/* Toc for folder being scanned. */
    FormBox general;		/* Form for general info about this pick. */
    FormBox details;		/* Form for details about this pick. */
-   Widget errorwidget;		/* Pop-up error widget. */
 } PickRec;
 
 
@@ -355,42 +354,6 @@ static ParseGroup(group)
     return found;
 }
 
-
-/* ARGSUSED */
-static void DestroyErrorWidget(w, client_data, call_data)
-    Widget w;			/* unused */
-    caddr_t client_data;	/* Pick */
-    caddr_t call_data;		/* unused */
-{
-    Pick pick = (Pick)client_data;
-    if (pick->errorwidget) {
-	XtDestroyWidget(pick->errorwidget);
-	pick->errorwidget = NULL;
-    }
-}
-
-static void MakeErrorWidget(pick, str)
-Pick pick;
-char *str;
-{
-    Arg args[1];
-    void CenterWidget();
-
-    DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
-    XtSetArg( args[0], XtNlabel, str );
-    pick->errorwidget = XtCreateWidget( "error", dialogWidgetClass,
-				        pick->scrn->widget,
-				        args, XtNumber(args) );
-
-    XawDialogAddButton( pick->errorwidget, "OK",
-		       DestroyErrorWidget, (caddr_t)pick );
-
-    XtRealizeWidget( pick->errorwidget );
-    CenterWidget( pick->scrn->widget, pick->errorwidget );
-    XtMapWidget( pick->errorwidget );
-}
-
-
 /* ARGSUSED */
 static void ExecOK(w, closure, call_data)
     Widget w;			/* unused */
@@ -415,15 +378,13 @@ static void ExecOK(w, closure, call_data)
     int i, found;
     char *folderpath;
     int cmd_status;
-
-    DestroyErrorWidget((Widget)NULL, (caddr_t)pick, (caddr_t)NULL);
     if (strcmp(toseq, "all") == 0) {
-	MakeErrorWidget(pick, "Can't create a sequence called \"all\".");
+	PopupError("Can't create a sequence called \"all\".");
 	return;
     }
     if (TocGetSeqNamed(toc, fromseq) == NULL) {
 	(void) sprintf(str, "Sequence \"%s\" doesn't exist!", fromseq);
-	MakeErrorWidget(pick, str);
+	PopupError(str);
 	return;
     }
     argv = MakeArgv(1);
@@ -769,10 +730,7 @@ AddPick(scrn, toc, fromseq, toseq)
     } else {
 	pick = scrn->pick = (Pick) XtMalloc(sizeof(PickRec));
 	pick->scrn = scrn;
-	pick->errorwidget = NULL;
-
 	pick->label = CreateTitleBar(scrn, "pickTitlebar");
-
 	pick->details = details = MakeAForm(pick);
 	pick->general = general = MakeAForm(pick);
 	FindStdWidth();
