@@ -1,4 +1,4 @@
-/* $XConsortium: pex_priv.h,v 5.1 91/02/16 09:50:07 rws Exp $ */
+/* $XConsortium: pex_priv.h,v 5.2 91/02/18 11:16:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,7 +46,7 @@ SOFTWARE.
 #undef CAT3
 #endif
 
-#ifdef __STDC__
+#if __STDC__ && !defined(UNIXCPP)
 #define CAT(a,b) a##b
 #define CAT3(a,b,c) a##b##c
 #else
