@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 1.8 89/03/16 14:45:08 rws Exp $ */
+/* $XConsortium: grabs.c,v 1.9 89/03/16 15:42:21 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -92,7 +92,7 @@ FreeGrab(pGrab)
 }
 
 /*ARGSUSED*/
-static int
+static
 DeletePassiveGrab(pGrab, id)
     GrabPtr pGrab;
     XID   id;
