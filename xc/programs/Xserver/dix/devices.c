@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.33 93/09/25 17:44:04 rws Exp $ */
+/* $XConsortium: devices.c,v 5.34 93/09/27 22:49:36 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1187,6 +1187,10 @@ ProcChangeKeyboardControl (client)
 		client->errorValue = t;
 		return BadValue;
 	    }
+#ifdef XKB
+	    keybd->kbdfeed->ctrl.leds= ctrl.leds;
+	    XkbUpdateIndicators(keybd,((led==DO_ALL)?~0L:(1L<<(led-1))),NULL);
+#endif
 	    break;
 	case KBKey:
 	    key = (KeyCode)*vlist;
