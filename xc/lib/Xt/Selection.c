@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.93 94/03/16 17:46:16 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.94 94/04/01 10:02:34 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2025,7 +2025,7 @@ extern void XtSendSelectionRequest(widget, selection, time)
 
 	/* special case a multiple which isn't needed */
 	GetSelectionValue(widget, selection, req[i]->target,
-			  req[i]->closure, req[i]->callback, time, 
+			  req[i]->callback, req[i]->closure, time, 
 			  req[i]->incremental, req[i]->param);
       } else {
 	Atom *targets;
