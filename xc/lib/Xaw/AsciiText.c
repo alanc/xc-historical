@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.27 89/08/18 15:34:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.28 89/08/21 15:57:28 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -60,7 +60,7 @@ static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
 AsciiTextClassRec asciiTextClassRec = {
   { /* core fields */
     /* superclass       */      (WidgetClass) &textClassRec,
-    /* class_name       */      "Text",
+    /* class_name       */      "AsciiText",
     /* widget_size      */      sizeof(AsciiRec),
     /* class_initialize */      ClassInitialize,
     /* class_part_init  */	NULL,
