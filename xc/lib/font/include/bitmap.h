@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmap.h,v 1.1 91/05/11 09:11:56 rws Exp $
+ * $XConsortium: bitmap.h,v 1.2 91/09/07 11:59:30 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 #define _BITMAP_H_
 
 #include <fontfileio.h>
+#include <stdio.h>  /* just for NULL */
 
 /*
  * Internal format used to store bitmap fonts
