@@ -1,10 +1,10 @@
-/* $XConsortium: xmag.c,v 1.25 92/05/19 09:28:21 dave Exp $ */
+/* $XConsortium: xmag.c,v 1.26 92/06/10 16:16:29 dave Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the name of M.I.T. not be used in advertising or
  * publicity pertaining to distribution of the software without specific,
@@ -12,11 +12,13 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
- * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ * ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+ * M.I.T.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ * ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
  *
  * xmag.c -- toolkit version.
  *
@@ -924,7 +926,7 @@ GetMinIntensity(data)
 
 
 
-static Widget pane1, pane2, pane3, cclose, replace, new, select, paste, label;
+static Widget pane1, pane2, pane3, cclose, replace, new, select_w, paste, label;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -953,9 +955,9 @@ PopupNewScale(data)
   new = XtCreateManagedWidget("new", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
-  select = XtCreateManagedWidget("select", commandWidgetClass, pane2,
+  select_w = XtCreateManagedWidget("select", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
-  XtAddCallback(select, XtNcallback, SelectCB, (XtPointer)data);
+  XtAddCallback(select_w, XtNcallback, SelectCB, (XtPointer)data);
   paste = XtCreateManagedWidget("paste", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(paste, XtNcallback, PasteCB, (XtPointer)data);
