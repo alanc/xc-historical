@@ -1,4 +1,4 @@
-/* $XConsortium: list.c,v 1.4 94/04/17 21:15:15 mor Exp mor $ */
+/* $XConsortium: list.c,v 1.5 94/08/17 17:45:24 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -25,13 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
-#include <stdio.h>
-#include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
-#include <stdlib.h>
-#endif
-
-#include "list.h"
+#include "xsm.h"
 
 List *
 ListInit()
@@ -74,8 +68,27 @@ List *l;
 		l = next;
 		next = l->next;
 		thing = l->thing;
-		XtFree(l);
+		XtFree((char *)l);
 	} while(thing);
+}
+
+void
+ListFreeAllButHead(l)
+List *l;
+{
+	List *p, *next;
+
+	p = ListFirst(l);
+
+	while (p)
+	{
+	    next = ListNext (p);
+	    XtFree((char *) p);
+	    p = next;
+	}
+
+	l->next = l;
+	l->prev = l;
 }
 
 List *
@@ -124,6 +137,25 @@ List *e;
 	e->prev->next = e->next;
 	XtFree((char *)e);
 }
+
+
+Status
+ListSearchAndFreeOne(l,thing)
+List *l;
+void *thing;
+{
+    	List *p;
+
+	for (p = ListFirst (l); p; p = ListNext (p))
+	    if (((char *) p->thing) == (char *) thing)
+	    {
+		ListFreeOne (p);
+		return (1);
+	    }
+
+	return (0);
+}
+
 
 int
 ListCount(l)

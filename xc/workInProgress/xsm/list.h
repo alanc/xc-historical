@@ -1,4 +1,4 @@
-/* $XConsortium: list.h,v 1.2 94/02/22 10:47:43 mor Exp $ */
+/* $XConsortium: list.h,v 1.3 94/04/17 21:15:16 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -45,7 +45,9 @@ extern List *ListInit();
 extern List *ListFirst();
 extern List *ListNext();
 extern void ListFreeAll();
+extern void ListFreeAllButHead();
 extern void ListFreeOne();
+extern Status ListSearchAndFreeOne();
 extern List *ListAddFirst();
 extern List *ListAddLast();
 extern int ListCount();
