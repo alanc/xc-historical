@@ -1,4 +1,4 @@
-       INCLUDES = -I$(TOP) -I$(INCLUDESRC)
+       INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = -DUNIXCONN
    INSTALLFLAGS = -m 0644
            SRCS = *.c
