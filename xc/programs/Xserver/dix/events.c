@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.137 88/01/30 10:06:07 rws Exp $ */
+/* $Header: events.c,v 1.138 88/01/30 19:25:07 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2717,7 +2717,10 @@ SendMappingNotify(request, firstKeyCode, count)
     /* 0 is the server client */
     for (i=1; i<currentMaxClients; i++)
         if (clients[i] && ! clients[i]->clientGone)
+	{
+	    event.u.u.sequenceNumber = clients[i]->sequence;
             WriteEventsToClient(clients[i], 1, &event);
+	}
 }
 
 /*
