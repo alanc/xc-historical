@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.43 90/08/03 17:50:35 converse Exp $
+ * $XConsortium: tocutil.c,v 2.44 90/08/15 14:26:59 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -377,8 +377,7 @@ void TULoadTocFile(toc)
 	TocSetCurMsg(toc, (Msg)NULL);
     } else origcurmsgid = 0;  /* The "default" current msg; 0 means none */
     fid = FOpenAndCheck(toc->scanfile, "r");
-    maxmsgs = 10;
-    orignummsgs = toc->nummsgs;
+    maxmsgs = orignummsgs = toc->nummsgs;
     toc->nummsgs = 0;
     origmsgs = toc->msgs;
     toc->msgs = (Msg *) XtMalloc((Cardinal) maxmsgs * sizeof(Msg));
@@ -443,8 +442,10 @@ void TULoadTocFile(toc)
 		    msg->position = toc->msgs[j]->position;
 		    msg->visible = TRUE;
 		    ptr = toc->msgs[j]->buf;
+		    l = toc->msgs[j]->length;
 		    *(toc->msgs[j]) = *msg;
 		    toc->msgs[j]->buf = ptr;
+		    toc->msgs[j]->length = l;
 		    scrnList[i]->msg = toc->msgs[j];
 		    break;
 		}
