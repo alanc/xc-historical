@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontmisc.h,v 1.1 91/05/11 09:12:03 rws Exp $
+ * $XConsortium: fontmisc.h,v 1.2 91/05/11 11:06:18 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -31,6 +31,8 @@ typedef int		Bool;
 #ifndef X_PROTOCOL
 typedef unsigned long	Atom;
 typedef unsigned long	XID;
+#define LSBFirst	0
+#define MSBFirst	1
 #endif
 
 #ifndef None
@@ -48,9 +50,6 @@ extern char	    *NameForAtom ();
 #define xfree(p)    Xfree ((pointer) p)
 #define xrealloc(p,n)	Xrealloc ((pointer)p,n)
 #define lowbit(x) ((x) & (~(x) + 1))
-
-#define LSBFirst		0
-#define MSBFirst		1
 
 #define assert(x)
 
