@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.40 91/02/07 16:30:54 rws Exp $
+ * $XConsortium: toc.c,v 2.36 90/01/22 17:37:59 swick Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -445,17 +445,15 @@ void TocRecheckValidity(toc)
 {
     int i;
     if (toc && toc->validity == valid && TUScanFileOutOfDate(toc)) {
-	if (toc->source) {
-	    if (app_resources.block_events_on_busy) ShowBusyCursor();
+	if (app_resources.block_events_on_busy) ShowBusyCursor();
 
-	    TUScanFileForToc(toc);
+	TUScanFileForToc(toc);
+	if (toc->source)
 	    TULoadTocFile(toc);
-	    for (i=0 ; i<toc->num_scrns ; i++)
-		TURedisplayToc(toc->scrn[i]);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TURedisplayToc(toc->scrn[i]);
 
-	    if (app_resources.block_events_on_busy) UnshowBusyCursor();
-	}
-	else toc->validity = invalid;
+	if (app_resources.block_events_on_busy) UnshowBusyCursor();
     }
 }
 
@@ -543,17 +541,19 @@ void TocForceRescan(toc)
     Toc	toc;
 {
     register int i;
-
-    if (toc->seqlist)
+    if (toc->num_scrns) {
 	toc->viewedseq = toc->seqlist[0];
-    else
-	TULoadSeqLists(toc);
-    for (i=0 ; i<toc->num_scrns ; i++)
-	TUResetTocLabel(toc->scrn[i]);
-    TUScanFileForToc(toc);
-    TULoadTocFile(toc);
-    for (i=0 ; i<toc->num_scrns ; i++)
-	TURedisplayToc(toc->scrn[i]);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TUResetTocLabel(toc->scrn[i]);
+	TUScanFileForToc(toc);
+	TULoadTocFile(toc);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TURedisplayToc(toc->scrn[i]);
+    } else {
+	TUGetFullFolderInfo(toc);
+	(void) unlink(toc->scanfile);
+	toc->validity = invalid;
+    }
 }
 
 
@@ -709,8 +709,8 @@ Toc toc;
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
 	if (looping++) Punt( "Cannot correct scan file" );
-        DEBUG2( "**** FOLDER %s SCAN WAS INVALID; msg %d already existed!\n",
-		toc->foldername, msg->msgid)
+        DEBUG2("**** FOLDER %s WAS INVALID; msg %d already existed!\n",
+	       toc->foldername, msg->msgid);
 	TocForceRescan(toc);
 	return TocMakeNewMsg(toc); /* Try again.  Using recursion here is ugly,
 				      but what the hack ... */
