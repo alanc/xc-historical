@@ -3,7 +3,7 @@
 bitmap \- bitmap editor for the X Window System.
 .SH SYNOPSIS
 .B bitmap
-[-options ...]\fI filename basename\fP
+[-options ...]\fI [filename] [basename]\fP
 .SH DESCRIPTION
 The\fI bitmap\fP program is a rudimentary tool for creating or editing
 rectangular images made up of 1's and 0's.  Bitmaps are used in X for
@@ -75,7 +75,7 @@ bit in the picture being edited.  Actual size of the bitmap image, as
 it would appear normaly and inverted, can be obtained by pressing\fB
 Meta-I\fP key.  You are free to move the image popup out of the way to
 continue editing.  Pressing the left mouse button in the popup window
-or\fB Meta-I\fP againg will remove the real size bitmap image.
+or\fB Meta-I\fP again will remove the real size bitmap image.
 .PP
 If the bitmap is to be used for defining a cursor, one of the squares
 in the images may be designated as the hot spot.  This determines
