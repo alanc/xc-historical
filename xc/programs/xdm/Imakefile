@@ -2,15 +2,12 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 #endif
+#define BuildChooser !SystemV
 
 #if HasDESLibrary
 DES_DEFINES = -DHASDES
 DESOBJS = xdmauth.o
 DESSRCS = xdmauth.c
-#else
-DES_DEFINES = 
-DESOBJS =
-DESSRCS = 
 #endif
 
 #if HasSecureRPC
@@ -18,11 +15,6 @@ RPC_DEFINES = -DSECURE_RPC
 RPCOBJS = rpcauth.o
 RPCSRCS = rpcauth.c
 RPCLIB = -lrpcsvc
-#else
-RPC_DEFINES = 
-RPCOBJS =
-RPCSRCS = 
-RPCLIB =
 #endif
 
    XDMCONFIGDIR = XdmConfigurationSubdirectory
@@ -42,10 +34,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  cryptokey.o access.o choose.o $(DESOBJS) $(RPCOBJS)
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
-#if SystemV
-          SRCS3 = /**/
-          OBJS3 = /**/
-#else
+#if BuildChooser
           SRCS3 = chooser.c
           OBJS3 = chooser.o
 #endif
@@ -54,10 +43,10 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
        
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
-#if SystemV
-       PROGRAMS = xdm xdmshell sessreg
-#else
+#if BuildChooser
        PROGRAMS = xdm xdmshell sessreg chooser
+#else
+       PROGRAMS = xdm xdmshell sessreg
 #endif
 
  OSMAJORVERSION = OSMajorVersion
@@ -97,10 +86,10 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
-#ifdef IHaveSubdirs
+#if InstallXdmConfig || BuildChooser
 MakeDirectories(install,$(XDMDIR))
 #endif
-#if !SystemV
+#if BuildChooser
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3), /**/)
 SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3), /**/)
 InstallProgram(chooser,$(XDMDIR))
