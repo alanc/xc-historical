@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.16 92/02/11 17:25:26 eswu Exp $ */
+/* $XConsortium: fserve.c,v 1.17 92/03/17 15:45:43 keith Exp $ */
 /*
  *
  * Copyright 1990 Network Computing Devices
@@ -254,6 +254,28 @@ fail:
     return err;
 }
 
+/* 
+ * close font server and remove any state associated with
+ * this connection - this includes any client records.
+ */
+
+static void
+fs_close_conn(conn)
+    FSFpePtr	conn;
+{
+    FSClientPtr	client, nclient;
+
+    (void) close(conn->fs_fd);
+
+    _fs_bit_clear(fs_fd_mask, conn->fs_fd);
+
+    for (client = conn->clients; client; client = nclient) 
+    {
+	nclient = client->next;
+	xfree (client);
+    }
+}
+
 /*
  * the wakeup handlers have to be set when the FPE is open, and not
  * removed until it is freed, in order to handle unexpected data, like
@@ -285,10 +307,10 @@ fs_init_fpe(fpe, format)
 	fpe->private = (pointer) conn;
 	err = fs_send_init_packets(conn);
 	if (err != Successful) {
-	    (void) close(conn->fs_fd);
-	    xfree(conn->servername);
-	    xfree(conn->alts);
-	    xfree(conn);
+	    fs_close_conn(conn);
+    	    xfree(conn->servername);
+    	    xfree(conn->alts);
+    	    xfree(conn);
 	    return err;
 	}
 	if (init_fs_handlers(fpe, fs_block_handler) != Successful)
@@ -335,7 +357,6 @@ fs_free_fpe(fpe)
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     FSFpePtr    recon,
                *prev;
-
     prev = &awaiting_reconnect;
     while (recon = *prev) {
 	if (conn == recon) {
@@ -345,11 +366,10 @@ fs_free_fpe(fpe)
 	prev = &recon->next_reconnect;
     }
 
-    /* close font server */
-    (void) close(conn->fs_fd);
+    fs_close_conn(conn);
 
-    _fs_bit_clear(fs_fd_mask, conn->fs_fd);
-    remove_fs_handlers(fpe, fs_block_handler, !_fs_any_bit_set(fs_fd_mask));
+    remove_fs_handlers(fpe, fs_block_handler,
+		       !_fs_any_bit_set(fs_fd_mask) && !awaiting_reconnect);
 
     xfree(conn->alts);
     xfree(conn->servername);
@@ -938,8 +958,7 @@ _fs_connection_died(conn)
     if (!conn->attemptReconnect)
 	return;
     conn->attemptReconnect = FALSE;
-    _fs_bit_clear(fs_fd_mask, conn->fs_fd);
-    close(conn->fs_fd);
+    fs_close_conn(conn);
     conn->time_to_try = time((long *) 0) + FS_RECONNECT_WAIT;
     conn->reconnect_delay = FS_RECONNECT_WAIT;
     conn->fs_fd = -1;
