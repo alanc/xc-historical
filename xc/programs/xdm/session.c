@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.23 89/11/08 17:20:53 keith Exp $
+ * $XConsortium: session.c,v 1.24 89/11/17 18:43:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ static struct verify_info	verify;
 
 static jmp_buf	abortSession;
 
-static void
+static SIGVAL
 catchTerm ()
 {
     longjmp (abortSession, 1);
@@ -43,7 +43,7 @@ catchTerm ()
 
 static jmp_buf	pingTime;
 
-static void
+static SIGVAL
 catchAlrm ()
 {
     longjmp (pingTime, 1);
@@ -177,6 +177,7 @@ struct display	*d;
     }
 }
 
+/*ARGSUSED*/
 DeleteXloginResources (d, dpy)
 struct display	*d;
 Display		*dpy;
@@ -186,7 +187,7 @@ Display		*dpy;
 
 static jmp_buf syncJump;
 
-static void
+static SIGVAL
 syncTimeout ()
 {
     longjmp (syncJump, 1);
@@ -306,7 +307,7 @@ int			*pidp;
 
 static jmp_buf	tenaciousClient;
 
-static void
+static SIGVAL
 waitAbort ()
 {
 	longjmp (tenaciousClient, 1);
