@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.37 92/11/14 11:48:31 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.38 92/12/30 16:06:44 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1116,7 +1116,7 @@ DeleteDeviceFromAnyExtEvents(pWin, dev)
 		if (inputInfo.keyboard->focus->win) {
 		    DoFocusEvents(dev, pWin, inputInfo.keyboard->focus->win,
 				  focusEventMode);
-		    dev->focus->win = inputInfo.keyboard->focus->win;
+		    dev->focus->win = FollowKeyboardWin;
 		    dev->focus->traceGood = 0;
 		} else {
 		    DoFocusEvents(dev, pWin, NoneWin, focusEventMode);
