@@ -22,4 +22,4 @@
 			<Btn3Up>:set()notify()unset()
 *pixLabel.Translations:<Enter>:popdown-pixel()
 *helpLabel.font:	8x13bold
-*helpLabel.label:	xtmag
+*helpLabel.label:	xmag
