@@ -35,8 +35,13 @@ static void clock_tic(), DrawHand(), DrawSecond(), SetSeg(), DrawClockFace();
 /* Initialization of defaults */
 
 #define offset(field) Offset(ClockWidget,clock.field)
+#define goffset(field) Offset(Widget,core.field)
 
 static Resource resources[] = {
+    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
+	goffset(width), XrmRString, "164"},
+    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
+	goffset(height), XrmRString, "164"},
     {XtNupdate, XtCInterval, XrmRInt, sizeof(int), 
         offset(update), XrmRString, "60" },
     {XtNforeground, XtCForeground, XrmRPixel, sizeof(Pixel),
@@ -56,29 +61,36 @@ static Resource resources[] = {
 };
 
 #undef offset
+#undef goffset
 
-extern void Initialize(), Realize(), Destroy(), Resize(), Redisplay(), SetValues();
+static void Initialize(), Realize(), Destroy(), Resize(), Redisplay(), SetValues();
 
-ClockWidgetClassData clockWidgetClassData = {
+ClockClassRec clockClassRec = {
     { /* core fields */
-    /* superclass */ 	(WidgetClass) &widgetClassData,
-    /* class_name */    "Clock",
-    /* size */		sizeof(ClockWidgetClassData),
-    /* initialize */	Initialize,
-    /* realize */	Realize,
-    /* actions */	NULL,
-    /* resources */	resources,
-    /* resource_count*/ XtNumber(resources),
-    /* xrm_extra */     NULL,
-    /* xrm_class */     NULL,
+    /* superclass */ 	  &widgetClassRec,
+    /* class_name */      "Clock",
+    /* size */		   sizeof(ClockClassRec),
+    /* class_initialize */ NULL,
+    /* class_inited */     FALSE,
+    /* initialize */	   Initialize,
+    /* realize */	   Realize,
+    /* actions */	   NULL,
+    /* num_actions */      0,
+    /* resources */	   resources,
+    /* resource_count*/    XtNumber(resources),
+    /* xrm_class */        NULL,
+    /* compress_motion */  TRUE,
+    /* compress_exposure */TRUE,
     /* visible_interest */ FALSE,
-    /* destroy */       Destroy,
-    /* resize */        Resize,
-    /* expose */	Redisplay,
-    /* set_values */    SetValues,
-    /* accepts_focus */ FALSE,
+    /* destroy */          Destroy,
+    /* resize */           Resize,
+    /* expose */	   Redisplay,
+    /* set_values */       SetValues,
+    /* accept_focus */     NULL,
     }
 };
+
+WidgetClass clockWidgetClass = (WidgetClass) &clockClassRec;
 
 /****************************************************************
  *
@@ -87,44 +99,18 @@ ClockWidgetClassData clockWidgetClassData = {
  ****************************************************************/
 
 
-static Atom XtTimerExpired = -1;  /* XXXXXXXXXXXXXXXXXX */
-
-static void EventHandler(w, event)
-    ClockWidget w;
+static void EventHandler(gw, event)
+    Widget gw;
     XEvent *event;
 {
     if (event->type == ClientMessage && event->xclient.message_type == XtTimerExpired)
-        clock_tic(w);
+        clock_tic((ClockWidget)gw);
 }
 
-static void Resize (w) 
-    ClockWidget w;
+static void Initialize (gw)
+    Widget gw;
 {
-    /* don't do this computation if window hasn't been realized yet. */
-    if (XtWidgetIsRealized(w) && w->clock.analog) {
-        w->clock.radius = (min(w->core.width, w->core.height)-(2 * w->clock.padding)) / 2;
-        w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.hour_hand_length = ((HOUR_HAND_FRACT * w->clock.radius) / 100);
-        w->clock.hand_width = ((HAND_WIDTH_FRACT * w->clock.radius) / 100);
-        w->clock.second_hand_width = ((SECOND_WIDTH_FRACT * w->clock.radius) / 100);
-        w->clock.centerX = w->core.width / 2;
-        w->clock.centerY = w->core.height / 2;
-    }
-}
-
-static void Redisplay (w)
-    ClockWidget w;
-{
-    if (w->clock.analog)
-        DrawClockFace(w);
-    clock_tic(w);
-}
-
-
-static void Initialize (w)
-    ClockWidget w;
-{
+    ClockWidget w = (ClockWidget)gw;
     GCMask		valuemask;
     XGCValues	myXGCV;
 
@@ -167,25 +153,52 @@ static void Initialize (w)
     w->clock.show_second_hand = (w->clock.update <= SECOND_HAND_TIME);
 }
 
-static void Realize (w, valueMask, attrs)
-     ClockWidget w;
+static void Realize (gw, valueMask, attrs)
+     Widget gw;
      ValueMask valueMask;
      XSetWindowAttributes *attrs;
 {
-     w->core.window = XCreateWindow (XtDisplay(w), w->core.parent->core.window,
-	  w->core.x, w->core.y, w->core.width, w->core.height, w->core.border_width,
-          CopyFromParent, InputOutput, CopyFromParent, valueMask, attrs);
-     Resize(w);
+     gw->core.window = XCreateWindow (XtDisplay(gw), gw->core.parent->core.window,
+	  gw->core.x, gw->core.y, gw->core.width, gw->core.height, gw->core.border_width,
+          gw->core.depth, InputOutput, /* visualID */ CopyFromParent, valueMask, attrs);
+     Resize(gw);
 }
 
-static void Destroy (w)
-     ClockWidget w;
+static void Destroy (gw)
+     Widget gw;
 {
+     ClockWidget w = (ClockWidget) gw;
      XtRemoveTimeOut (w->clock.interval_id);
-     XtDestroyGC (w, w->clock.myGC);
-     XtDestroyGC (w, w->clock.HighGC);
-     XtDestroyGC (w, w->clock.HandGC);
-     XtDestroyGC (w, w->clock.EraseGC);
+     XtDestroyGC (w->clock.myGC);
+     XtDestroyGC (w->clock.HighGC);
+     XtDestroyGC (w->clock.HandGC);
+     XtDestroyGC (w->clock.EraseGC);
+}
+
+static void Resize (gw) 
+    Widget gw;
+{
+    ClockWidget w = (ClockWidget) gw;
+    /* don't do this computation if window hasn't been realized yet. */
+    if (XtWidgetIsRealized(w) && w->clock.analog) {
+        w->clock.radius = (min(w->core.width, w->core.height)-(2 * w->clock.padding)) / 2;
+        w->clock.second_hand_length = ((SECOND_HAND_FRACT * w->clock.radius) / 100);
+        w->clock.minute_hand_length = ((MINUTE_HAND_FRACT * w->clock.radius) / 100);
+        w->clock.hour_hand_length = ((HOUR_HAND_FRACT * w->clock.radius) / 100);
+        w->clock.hand_width = ((HAND_WIDTH_FRACT * w->clock.radius) / 100);
+        w->clock.second_hand_width = ((SECOND_WIDTH_FRACT * w->clock.radius) / 100);
+        w->clock.centerX = w->core.width / 2;
+        w->clock.centerY = w->core.height / 2;
+    }
+}
+
+static void Redisplay (gw)
+    Widget gw;
+{
+    ClockWidget w = (ClockWidget) gw;
+    if (w->clock.analog)
+        DrawClockFace(w);
+    clock_tic(w);
 }
 
 
@@ -581,9 +594,11 @@ double x;
 	return(x >= 0.0 ? (int)(x + .5) : (int)(x - .5));
 }
 
-static void SetValues (w, newvals)
-    ClockWidget w, newvals;
+static void SetValues (gw, gnewvals)
+    Widget gw, gnewvals;
 {
+      ClockWidget w = (ClockWidget) gw;
+      ClockWidget newvals = (ClockWidget) gnewvals;
       int redisplay = FALSE;
       GCMask valuemask;
       XGCValues	myXGCV;
@@ -601,7 +616,7 @@ static void SetValues (w, newvals)
 	   redisplay = TRUE;
 
       if (newvals->clock.padding != w->clock.padding) {
-	   Resize(w);
+	   Resize(gw);
 	   redisplay = TRUE;
 	   }
 
@@ -615,7 +630,7 @@ static void SetValues (w, newvals)
 	  myXGCV.background = w->core.background_pixel;
           myXGCV.font = w->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w, w->clock.myGC);
+	  XtDestroyGC (w->clock.myGC);
 	  newvals->clock.myGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -625,7 +640,7 @@ static void SetValues (w, newvals)
 	  myXGCV.foreground = w->clock.fgpixel;
           myXGCV.font = w->clock.font->fid;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w, w->clock.HighGC);
+	  XtDestroyGC (w->clock.HighGC);
 	  newvals->clock.HighGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -633,7 +648,7 @@ static void SetValues (w, newvals)
       if (newvals->clock.Hdpixel != w->clock.Hdpixel) {
           valuemask = GCForeground;
 	  myXGCV.foreground = w->clock.fgpixel;
-	  XtDestroyGC (w, w->clock.HandGC);
+	  XtDestroyGC (w->clock.HandGC);
 	  newvals->clock.HandGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
           }
@@ -642,7 +657,7 @@ static void SetValues (w, newvals)
           valuemask = GCForeground | GCLineWidth;
 	  myXGCV.foreground = w->core.background_pixel;
 	  myXGCV.line_width = 0;
-	  XtDestroyGC (w, w->clock.EraseGC);
+	  XtDestroyGC (w->clock.EraseGC);
 	  newvals->clock.EraseGC = XtGetGC(w, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
@@ -655,10 +670,10 @@ static void SetValues (w, newvals)
        || (newvals->core.height != w->core.height))
          redisplay = TRUE;
 
-     (*w->core.widget_class->coreClass.superclass->coreClass.set_values)(w, newvals);
+     (*w->core.widget_class->core_class.superclass->core_class.set_values)(w, newvals);
 
      if(redisplay) {
 	XClearWindow(XtDisplay(w), XtWindow(w));
-	Redisplay(w);
+	Redisplay(gw);
         }
 }

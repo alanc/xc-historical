@@ -3,7 +3,8 @@
 
 #define SEG_BUFF_SIZE		128
 
-typedef struct  {
+/* New fields for the clock widget instance record */
+typedef struct {
 	 Pixel	fgpixel;	/* color index for text */
 	 Pixel	Hipixel;	/* color index for Highlighting */
 	 Pixel	Hdpixel;	/* color index for hands */
@@ -33,22 +34,24 @@ typedef struct  {
 	 XPoint	*hour, *sec;
 	 struct tm  otm ;
 	 XtIntervalId interval_id;
-   } Clock;
+   } ClockPart;
 
 /* Full instance record declaration */
-typedef struct {
-   Core core;
-   Clock clock;
-   } ClockData, *ClockWidget;
+typedef struct _ClockRec {
+   CorePart core;
+   ClockPart clock;
+   } ClockRec;
 
 /* New fields for the Clock widget class record */
-typedef struct {int dummy;} ClockClass;
+typedef struct {int dummy;} ClockClassPart;
 
 /* Full class record declaration. */
-typedef struct _ClockWidgetClassData {
-   CoreClass core_class;
-   ClockClass clock_class;
-} *ClockWidgetClass;
+typedef struct _ClockClassRec {
+   CoreClassPart core_class;
+   ClockClassPart clock_class;
+   } ClockClassRec;
 
+/* Class pointer. */
+extern ClockClassRec clockClassRec;
 
 #endif _XtClockPrivate_h
