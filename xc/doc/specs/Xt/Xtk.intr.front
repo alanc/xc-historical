@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: Xtk.intr.front,v 1.4 91/07/31 20:25:16 swick Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -176,7 +176,7 @@ of the following:
 .Ds
 .ta 3i
 Don Alecci (AT&T)	Ellis Cohen (OSF)
-Donna Converse (MIT) Clive Feather (IXI)
+Donna Converse (MIT)	Clive Feather (IXI)
 Nayeem Islam (Sun)	Dana Laursen (HP)
 Keith Packard (MIT)	Chris Peterson (MIT)
 Richard Probst (Sun)	Larry Cable (Sun)
@@ -186,7 +186,8 @@ Richard Probst (Sun)	Larry Cable (Sun)
 In Release 5, the effort to define the internationalization additions was
 headed by Bill McMahon of Hewlett Packard and Frank Rojas of IBM.  This
 has been an educational process for many of us and Bill and Frank's
-tutelage has carried us through.  The implementation efforts of
+tutelage has carried us through.  Vania Joloboff of the OSF also contributed
+to the internationalization additions.  The implementation efforts of
 Bill, Gabe Beged-Dov, and especially Donna Converse for this release
 are also gratefully acknowledged.
 .sp
