@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.48 89/06/21 10:12:09 jim Exp $
+ * $XConsortium: XConnDis.c,v 11.49 89/06/21 10:15:36 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,9 +26,6 @@
 
 #include "copyright.h"
 #define NEED_EVENTS
-#ifdef USG
-#define NEED_REPLIES
-#endif
 
 #include <stdio.h>
 #include <X11/Xos.h>
@@ -36,11 +33,7 @@
 #include <X11/Xauth.h>
 #include <ctype.h>
 
-extern char *getenv();
 
-#ifdef STREAMSCONN
-extern int _XMakeStreamsConnection();
-#endif
 #ifdef DNETCONN
 static int MakeDECnetConnection();
 #endif
@@ -50,6 +43,10 @@ static int MakeUNIXSocketConnection();
 #ifdef TCPCONN
 static int MakeTCPConnection();
 #endif
+#ifdef STREAMSCONN
+extern int _XMakeStreamsConnection();
+#endif
+
 
 static char *copystring (src, len)
     char *src;
@@ -581,119 +578,6 @@ static int MakeTCPConnection (phostname, idisplay,
     return fd;
 }
 #endif /* TCPCONN */
-
-
-
-#ifdef STREAMSCONN
-/*
- * UNIX System V Release 3.2
- *
- * USG connection portions are Copyright 1988, 1989 AT&T, Inc.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted, provided
- * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of AT&T not be used in advertising
- * or publicity pertaining to distribution of the software without specific,
- * written prior permission.  AT&T makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- *
- * AT&T DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL AT&T
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- */
-
-#ifdef TLI
-#include <sys/tiuser.h>
-#endif
-
-#include <memory.h>
-#include <signal.h>
-#include <sys/utsname.h>
-#include <X11/Xproto.h>
-
-/* if you change this define (for BUFFERSIZE) here remember to change it in
- * Xstreams.c as well.   (I know, I know, I know ) 
- */
-#define BUFFERSIZE 2048
-extern char * _XsInputBuffer[];
-extern int _XsInputBuffersize[];
-extern int _XsInputBufferptr[];
-
-int _XBytesReadable (fd, ptr)
-    int fd;
-    int *ptr;
-{
-    int inbuf = _XsInputBuffersize[fd] - _XsInputBufferptr[fd];
-    int n;
-    int flg;
-
-    /*
-     * XXX - ought to have code for other types of connections in here too...
-     */
-
-    if (inbuf >= sizeof(xReply)) {
-	*ptr = inbuf;
-	return (0);
-    }
-
-    if (_XsInputBufferptr[fd] > 0) {
-	/* move tidbit to front of buffer */
-	bcopy (&_XsInputBuffer[fd][_XsInputBufferptr[fd]],
-	       &_XsInputBuffer[fd][0], inbuf);
-
-	/* Adjust pointers in buffer to reflect move */
-	_XsInputBuffersize[fd] = inbuf;
-	_XsInputBufferptr[fd] = 0;
-    }
-
-    if (inbuf < 0) {
-	inbuf = 0;
-	_XsInputBuffersize[fd] = 0;
-    }
-
-    /* Read no more than number of bytes left in buffer */
-    errno = 0;
-
-    if (_XsTypeOfStream[fd] == X_LOCAL_STREAM)
-      n = read(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf);
-    else
-      n = t_rcv(fd, &_XsInputBuffer[fd][inbuf], BUFFERSIZE-inbuf, &flg);
-
-    if (n > 0) {
-	_XsInputBuffersize[fd] += n;
-	*ptr = _XsInputBuffersize[fd];
-	return (0);
-    } else {
-#ifdef EWOULDBLOCK
-	if (errno == EWOULDBLOCK) {
-	    *ptr = _XsInputBuffersize[fd];
-	    return (0);
-	} else {
-#endif
-	    if (n == 0) {
-		errno = EPIPE;
-		return (-1);
-	    } else {
-		if (errno != EINTR)
-		  return (-1);
-		else {
-		    *ptr = _XsInputBuffersize[fd];
-		    return (0);
-		}
-	    }
-#ifdef EWOULDBLOCK
-	}
-#endif
-    }
-}
-#endif /* STREAMSCONN */
 
 
 
