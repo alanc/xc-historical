@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.213 94/01/19 19:39:31 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.214 94/01/30 14:21:48 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -204,11 +204,23 @@ XCOMM $XConsortium: Project.tmpl,v 1.213 94/01/19 19:39:31 rws Exp $
 #define XkbDefines /**/
 #endif
 #endif
+#ifndef LBXDefines
+#if BuildLBX
+#define LBXDefines -DLBX
+#define BigReqDefines /**/
+#else
+#define LBXDefines /**/
+#define BigReqDefines -DBIGREQS
+#endif
+#endif
+#ifndef BigReqDefines
+#define BigReqDefines -DBIGREQS
+#endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LBXDefines
 #endif
 #ifndef BaseExtensionDefines
-#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DBIGREQS -DXSYNC -DSCREENSAVER -DXCMISC -DXRECORD PexDefines ShmDefines XieDefines
+#define BaseExtensionDefines -DMULTIBUFFER -DMITMISC -DXTEST -DXSYNC -DSCREENSAVER -DXCMISC -DXRECORD PexDefines ShmDefines XieDefines BigReqDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
