@@ -74,6 +74,8 @@ IMPORTS2 = \
 	$(AWIDGETSRC)/Text.h \
 	$(AWIDGETSRC)/TextP.h \
 	$(AWIDGETSRC)/TextSrcP.h \
+	$(AWIDGETSRC)/Toggle.h \
+	$(AWIDGETSRC)/ToggleP.h \
 	$(AWIDGETSRC)/VPaned.h \
 	$(AWIDGETSRC)/VPanedP.h \
 	$(AWIDGETSRC)/Viewport.h \
