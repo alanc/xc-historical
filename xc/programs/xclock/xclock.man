@@ -20,7 +20,7 @@ This option indicates that a brief summary of the allowed options should be
 printed on the standard error.
 .TP 8
 .B \-analog 
-This option indicates that a conventional 12 hour clock face with ticks marks
+This option indicates that a conventional 12 hour clock face with tick marks
 and hands should be used.  This is the default.
 .TP 8
 .B \-digital
@@ -32,11 +32,11 @@ once on the half hour and twice on the hour.
 .TP 8
 .B \-hd \fIcolor\fP
 This option specifies the color of the hands on an analog clock.  The default
-is ``black''.
+is \fIblack\fP.
 .TP 8
 .B \-hl \fIcolor\fP
 This option specifies the color of the edges of the hands on an analog clock,
-and is only useful on color displays.  The default is ``black''.
+and is only useful on color displays.  The default is \fIblack\fP.
 .TP 8
 .B \-update \fIseconds\fP
 This option specifies the frequency in seconds at which \fIxclock\fP
@@ -54,22 +54,22 @@ The following standard X Toolkit command line arguments are commonly used with
 .TP 8
 .B \-bg \fIcolor\fP
 This option specifies the color to use for the background of the window.  
-The default is ``white.''
+The default is \fIwhite\fP.
 .TP 8
 .B \-bd \fIcolor\fP
 This option specifies the color to use for the border of the window.
-The default is ``black.''
+The default is \fIblack\fP.
 .TP 8
 .B \-bw \fInumber\fP
 This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the color to use for displaying text.  The default is 
-``black''.
+\fIblack\fP.
 .TP 8
 .B \-fn \fIfont\fP
 This option specifies the font to be used for displaying normal text.  The
-default is ``6x10.''
+default is \fI6x10\fP.
 .TP 8
 .B \-rv
 This option indicates that reverse video should be simulated by swapping
@@ -82,8 +82,7 @@ This option specifies the prefered size and position of the clock window.
 This option specifies the X server to contact.
 .TP 8
 .B \-xrm \fIresourcestring\fP
-This option specifies a resource string to be used.  This is especially
-useful for setting resources that do not have separate command line options.
+This option specifies a resource string to be used.
 .SH X DEFAULTS
 This program uses the 
 .I Clock
@@ -92,18 +91,21 @@ classes as well as:
 .PP
 .TP 8
 .B width (\fPclass\fB Width)
-Specifies the width of the clock.
+Specifies the width of the clock.  The default for analog clocks is 164
+pixels; the default for digital clocks is whatever is needed to hold the 
+clock when displayed in the chosen font.
 .TP 8
 .B height (\fPclass\fB Height)
-Specifies the height of the clock.
+Specifies the height of the clock.  The default for analog clocks is 164
+pixels; the default for digital clocks is whatever is needed to hold the
+clock when displayed in the chosen font.
 .TP 8
 .B update (\fPclass\fB Interval)
 Specifies the frequency in seconds at which the time should be redisplayed.
 .TP 8
 .B foreground (\fPclass\fB Foreground)
-Specifies the color for the tic marks.  Using the class specifies the
-color for all things that normally would appear in the foreground color.
-The default is ``black'' since the core default for background is ``white.''
+Specifies the color for the tic marks.  
+The default is \fIblack\fP since the core default for background is \fIwhite\fP.
 .TP 8
 .B hands (\fPclass\fB Foreground)
 Specifies the color of the insides of the clock's hands.
@@ -128,15 +130,6 @@ fonts currently will not always display correctly.
 .TP 8
 .B reverseVideo (\fPclass\fB ReverseVideo)
 Specifies that the foreground and background colors should be reversed.
-.SH ENVIRONMENT
-.PP
-.TP 8
-.B DISPLAY
-to get the default host and display number.
-.TP 8
-.B XENVIRONMENT
-to get the name of a resource file that overrides the global resources
-stored in the RESOURCE_MANAGER property.
 .SH "SEE ALSO"
 X(1), xrdb(1), time(3C), Athena Clock widget
 .SH BUGS
@@ -145,16 +138,13 @@ believes the system clock.
 .PP
 When in digital mode, the string should be centered automatically.
 .PP
-When specifying an offset, the grammar requires an hours field but if
+When specifying a time offset, the grammar requires an hours field but if
 only minutes are given they will be quietly ignored.  A negative offset
 of less than 1 hour is treated as a positive offset.
 .PP
 Digital clock windows default to the analog clock size.
 .PP
 Border color has to be explicitly specified when reverse video is used.
-.PP
-When the update is an even divisor of 60 seconds, the second hand should
-always be on a multiple of the update time.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
