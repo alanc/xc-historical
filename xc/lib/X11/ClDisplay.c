@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XClDisplay.c,v 11.10 87/08/03 12:25:21 swick Locked $ */
+/* $Header: XClDisplay.c,v 11.11 87/08/03 12:51:15 swick Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #include "Xlibint.h"
@@ -14,6 +14,7 @@ XCloseDisplay (dpy)
 	register Display *dpy;
 {
 	register _XExtension *ext;
+	int i;
 	XSync(dpy, 1);  /* throw away pending input events */
         LockDisplay(dpy);
 	for (i = 0; i < dpy->nscreens; i++) {
