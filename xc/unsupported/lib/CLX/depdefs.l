@@ -24,6 +24,20 @@
 ;;; Declarations
 ;;;-------------------------------------------------------------------------
 
+;;; fix a bug in kcl's RATIONAL...
+;;;   redefine both the function and the type.
+
+#+kcl
+(shadow 'rational)
+
+#+kcl
+(progn
+  (defun rational (x)
+    (if (rationalp x)
+	x
+	(lisp:rational x)))
+  (deftype rational () 'lisp:rational))
+
 ;;; VALUES value1 value2 ... -- Documents the values returned by the function.
 
 #-lispm
@@ -135,15 +149,15 @@
 
 (defmacro resource-id-map-test ()
   #+excl '#'equal
-  #-excl (if #.(> #x1fffffff most-positive-fixnum) '#'eql '#'eq))
+  #-excl '#'eql)		    ; (eq fixnum fixnum) is not guaranteed.
 
 (defmacro atom-cache-test ()
   #+excl '#'equal
-  #-excl '#'eq)
+  #-excl '#'eql)
 
 (defmacro keysym->character-map-test ()
   #+excl '#'equal
-  #-excl '#'eq)
+  #-excl '#'eql)
 
 ;;; You must define this to match the real byte order.  It is used by
 ;;; overlapping array and image code.
