@@ -1,5 +1,5 @@
 /*
- * $XConsortium: globals.c,v 1.1 89/10/03 17:25:16 jim Exp $
+ * $XConsortium: globals.c,v 1.2 93/02/08 09:59:28 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -10,8 +10,11 @@
  */
 #include <X11/Xlib.h>
 #include <X11/extensions/Xext.h>
-#include <sys/param.h>			/* for definition of NULL */
-
+#ifndef X_NOT_STDC_ENV
+#include <stddef.h>			/* for definition of NULL */
+#else
+#include <sys/param.h>
+#endif
 
 /*
  * If possible, it is useful to have the global data default to a null value.
