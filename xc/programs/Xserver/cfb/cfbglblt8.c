@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.18 91/05/03 17:02:44 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.19 91/05/03 20:00:51 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -121,6 +121,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthGlyph;
     unsigned long	widthMask;
 #endif
+#ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
     void		(*stipple)();
     extern void		stipplestack (), stipplestackte ();
@@ -128,6 +129,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     stipple = stipplestack;
     if (FONTCONSTMETRICS(pfont))
 	stipple = stipplestackte;
+#endif
 #endif
     
     x += pDrawable->x;
@@ -193,36 +195,37 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xoff = x + pci->metrics.leftSideBearing;
 	dstLine = pdstBase +
 	          (y - pci->metrics.ascent) * widthDst + (xoff >> 2);
-	hTmp = pci->metrics.descent + pci->metrics.ascent;
-	x += pci->metrics.characterWidth;
-	xoff &= 0x3;
-#ifdef USE_LEFTBITS
-	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
-	widthMask = endtab[w];
-#endif
-#ifdef USE_STIPPLE_CODE
-	(*stipple)(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
-#else
-#ifdef STIPPLE
-	STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
-#else
-	while (hTmp--)
+	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
 	{
-	    dst = dstLine;
-	    dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
-	    GlyphBits(glyphBits, w, c)
-	    WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    dst++;
-	    c = BitLeft(c,4-xoff);
-	    while (c)
-	    {
-		WriteFourBits(dst, pixel, GetFourBits(c));
-		NextFourBits(c);
-		dst++;
-	    }
-	}
-#endif /* STIPPLE else */
+	    x += pci->metrics.characterWidth;
+	    xoff &= 0x3;
+#ifdef STIPPLE
+	    STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+#else
+#ifdef USE_STIPPLE_CODE
+	    (*stipple)(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+#else
+#ifdef USE_LEFTBITS
+	    widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	    widthMask = endtab[w];
+#endif
+	    do {
+	    	dst = dstLine;
+	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	GlyphBits(glyphBits, w, c)
+	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
+	    	dst++;
+	    	c = BitLeft(c,4-xoff);
+	    	while (c)
+	    	{
+		    WriteFourBits(dst, pixel, GetFourBits(c));
+		    NextFourBits(c);
+		    dst++;
+	    	}
+	    } while (--hTmp);
 #endif /* USE_STIPPLE_CODE else */
+#endif /* STIPPLE else */
+	}
     }
 }
 
@@ -310,77 +313,78 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;
 	x += pci->metrics.characterWidth;
-	hTmp = pci->metrics.descent + pci->metrics.ascent;
-	dstLine = pdstBase + yG * widthDst + (xG >> 2);
-	xoff = xG & 0x3;
+	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
+	{
+	    dstLine = pdstBase + yG * widthDst + (xG >> 2);
+	    xoff = xG & 0x3;
 #ifdef USE_LEFTBITS
-	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
-	widthMask = endtab[w];
+	    widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	    widthMask = endtab[w];
 #endif
-	switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
- 	{
-	case rgnPART:
+	    switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
+ 	    {
+	    case rgnPART:
 #ifdef USE_LEFTBITS
-	    cTmp = clips;
-	    while (hTmp--)
-	    {
-	    	dst = dstLine;
-	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
-	    	GlyphBits(glyphBits, w, c)
-		c &= *cTmp++;
-		if (c)
-		{
-	    	    WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    	    c = BitLeft(c,4 - xoff);
-	    	    dst++;
-	    	    while (c)
-	    	    {
-		    	WriteFourBits(dst, pixel, GetFourBits(c));
-		    	NextFourBits(c);
-		    	dst++;
-	    	    }
-		}
-	    }
-	    break;
+	    	cTmp = clips;
+	    	do {
+	    	    dst = dstLine;
+	    	    dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	    GlyphBits(glyphBits, w, c)
+		    c &= *cTmp++;
+		    if (c)
+		    {
+	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
+	    	    	c = BitLeft(c,4 - xoff);
+	    	    	dst++;
+	    	    	while (c)
+	    	    	{
+		    	    WriteFourBits(dst, pixel, GetFourBits(c));
+		    	    NextFourBits(c);
+		    	    dst++;
+	    	    	}
+		    }
+	    	} while (hTmp--);
+	    	break;
 #else
-	    {
-		int h;
-
-		h = hTmp;
-		while (h--)
-		    clips[h] = clips[h] & glyphBits[h];
-	    }
-	    glyphBits = clips;
-	    /* fall through */
+	    	{
+		    int h;
+    
+		    h = hTmp;
+		    do
+		    	clips[h] = clips[h] & glyphBits[h];
+		    while (h--);
+	    	}
+	    	glyphBits = clips;
+	    	/* fall through */
 #endif
-	case rgnIN:
-#ifdef USE_STIPPLE_CODE
-	    stipplestackte(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
-#else
+	    case rgnIN:
 #ifdef STIPPLE
-	    STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+	    	STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
-	    while (hTmp--)
-	    {
-	    	dst = dstLine;
-	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
-	    	GlyphBits(glyphBits, w, c)
-		if (c)
-		{
-	    	    WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    	    c = BitLeft(c,4-xoff);
-	    	    dst++;
-	    	    while (c)
-	    	    {
-		    	WriteFourBits(dst, pixel, GetFourBits(c));
-		    	NextFourBits(c);
-		    	dst++;
-	    	    }
-		}
-	    }
-#endif /* STIPPLE else */
+#ifdef USE_STIPPLE_CODE
+	    	stipplestackte(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+#else
+	    	do {
+	    	    dst = dstLine;
+	    	    dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
+	    	    GlyphBits(glyphBits, w, c)
+		    if (c)
+		    {
+	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
+	    	    	c = BitLeft(c,4-xoff);
+	    	    	dst++;
+	    	    	while (c)
+	    	    	{
+		    	    WriteFourBits(dst, pixel, GetFourBits(c));
+		    	    NextFourBits(c);
+		    	    dst++;
+	    	    	}
+		    }
+	    	} while (hTmp--);
 #endif /* USE_STIPPLE_CODE else */
-	    break;
+#endif /* STIPPLE else */
+	    	break;
+	    }
 	}
     }
     DEALLOCATE_LOCAL (clips);
