@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parse.c,v 1.14 89/12/09 16:12:42 jim Exp $
+ * $XConsortium: parse.c,v 1.15 89/12/12 12:44:22 jim Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -89,7 +89,7 @@ find_includes(filep, file, file_red, recursion)
 			    (val && val->s_name);
 			    val = isdefined(line, file_red))
 
-			    *(val->s_name) = '\0';
+			    val->s_name = "";
 		    }
 			break;
 		case INCLUDE:
