@@ -1,4 +1,4 @@
-/* $XConsortium: micphoto.c,v 1.2 93/10/26 14:11:38 rws Exp $ */
+/* $XConsortium: micphoto.c,v 1.3 93/10/31 09:45:05 dpw Exp $ */
 /**** module micphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -375,7 +375,7 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
   CARD32 	        nbands = ped->inFloLst[IMPORT].bands;
   bandPtr                 sbnd = pet->receptor[IMPORT].band, dbnd;
   CARD32 oldslen, nextslen, b;
-  void *src = (void *)NULL, *dst = (void *)NULL;
+  pointer src = (pointer)NULL, dst = (pointer)NULL;
 
   for(b = 0; b < nbands; ++sbnd, ++b, pvt++) {
     void (*action)() = pvt->action;
@@ -383,8 +383,8 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
     dbnd = &pet->emitter[pvt->bandMap];
     if(pet->scheduled & 1<<b &&
-       (src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
-       (dst = GetCurrentDst(void,flo,pet,dbnd))) {
+       (src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current,nextslen,KEEP)) &&
+       (dst = GetCurrentDst(pointer,flo,pet,dbnd))) {
       do {
 
 	(*action)(src, dst, sbnd->format->width, pvt->bitOff,
@@ -394,9 +394,9 @@ static int ActivateICPhotoUncomByPlane(flo,ped,pet)
         pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
 	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(void,flo,pet,sbnd,sbnd->current+oldslen, nextslen,
+	src = GetSrcBytes(pointer,flo,pet,sbnd,sbnd->current+oldslen, nextslen,
 									KEEP);
-	dst = GetNextDst(void,flo,pet,dbnd,FLUSH);
+	dst = GetNextDst(pointer,flo,pet,dbnd,FLUSH);
       } while(src && dst);
     }
     
@@ -585,7 +585,7 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
   bandPtr     db1 = &pet->emitter[pvt[1].bandMap];
   bandPtr     db2 = &pet->emitter[pvt[2].bandMap];
   CARD32    width = db0->format->width;
-  void       *dp0 = NULL, *dp1 = NULL, *dp2 = NULL;
+  pointer   dp0 = NULL, dp1 = NULL, dp2 = NULL;
   BytePixel  *src;
   
   if (pvt->unaligned) {
@@ -597,10 +597,10 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
     CARD32 stride = sbnd->format->stride;
     
     nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-    if((src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
-       && (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(void,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+    if((src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,nextslen,KEEP))
+       && (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
       do {
 	
 	(*action)(src,dp0,dp1,dp2,width,pvt->bitOff,depth0,depth1,depth2, 
@@ -609,28 +609,28 @@ static int ActivateICPhotoUncomByPixel(flo,ped,pet)
 	pvt->bitOff = pvt->bitOff + sbnd->format->pitch & 7;	/* Set next */
 	oldslen = (pvt->bitOff) ? nextslen - 1 : nextslen;
 	nextslen = pvt->bitOff + sbnd->format->pitch + 7 >> 3;
-	src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+oldslen,
+	src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+oldslen,
 			  nextslen,KEEP);
-	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   } else {
     CARD32   slen = sbnd->format->pitch+7>>3;
-    if((src = GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
-       (dp0 = GetCurrentDst(void,flo,pet,db0)) &&
-       (dp1 = GetCurrentDst(void,flo,pet,db1)) && 
-       (dp2 = GetCurrentDst(void,flo,pet,db2)))
+    if((src = GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current,slen,KEEP)) && 
+       (dp0 = GetCurrentDst(pointer,flo,pet,db0)) &&
+       (dp1 = GetCurrentDst(pointer,flo,pet,db1)) && 
+       (dp2 = GetCurrentDst(pointer,flo,pet,db2)))
       do {
 	
 	(*pvt[0].action)(src,dp0,width,&pvt[0]);
 	(*pvt[1].action)(src,dp1,width,&pvt[1]);
 	(*pvt[2].action)(src,dp2,width,&pvt[2]);
 	
-	src =GetSrcBytes(BytePixel,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
-	dp0 = GetNextDst(void,flo,pet,db0,FLUSH);
-	dp1 = GetNextDst(void,flo,pet,db1,FLUSH);
-	dp2 = GetNextDst(void,flo,pet,db2,FLUSH);
+	src =GetSrcBytes(BytePixel *,flo,pet,sbnd,sbnd->current+slen,slen,KEEP);
+	dp0 = GetNextDst(pointer,flo,pet,db0,FLUSH);
+	dp1 = GetNextDst(pointer,flo,pet,db1,FLUSH);
+	dp2 = GetNextDst(pointer,flo,pet,db2,FLUSH);
       } while(src && dp0 && dp1 && dp2);
   }
   if(!src && sbnd->final && db0->current < db0->format->height) {
