@@ -12,16 +12,16 @@
 #include <X11/StringDefs.h>
 #include <stdio.h>
 
-#include "xbench.h"
+#include "xgc.h"
 
-extern XbenchStuff TestStuff;
-extern XbenchStuff FunctionStuff;
-extern XbenchStuff LinestyleStuff;
-extern XbenchStuff CapstyleStuff;
-extern XbenchStuff JoinstyleStuff;
-extern XbenchStuff FillstyleStuff;
-extern XbenchStuff FillruleStuff;
-extern XbenchStuff ArcmodeStuff;
+extern XgcStuff TestStuff;
+extern XgcStuff FunctionStuff;
+extern XgcStuff LinestyleStuff;
+extern XgcStuff CapstyleStuff;
+extern XgcStuff JoinstyleStuff;
+extern XgcStuff FillstyleStuff;
+extern XgcStuff FillruleStuff;
+extern XgcStuff ArcmodeStuff;
 
 extern XStuff X;
 extern Boolean recording;
@@ -110,58 +110,58 @@ void print_out_gc_values()
 {
   int i;
   for (i=0;i<NUM_TESTS;++i) {
-    if ((*TestStuff.data)[i].code == X.test) {
+    if ((TestStuff.data)[i].code == X.test) {
       fprintf(recordfile,"%s %s\n",
-	      TestStuff.choice.text,(*TestStuff.data)[i].text);
+	      TestStuff.choice.text,(TestStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_FUNCTIONS;++i) {
-    if ((*FunctionStuff.data)[i].code == X.gcv.function) {
+    if ((FunctionStuff.data)[i].code == X.gcv.function) {
       fprintf(recordfile,"%s %s\n",
-	      FunctionStuff.choice.text,(*FunctionStuff.data)[i].text);
+	      FunctionStuff.choice.text,(FunctionStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_LINESTYLES;++i) {
-    if ((*LinestyleStuff.data)[i].code == X.gcv.line_style) {
+    if ((LinestyleStuff.data)[i].code == X.gcv.line_style) {
       fprintf(recordfile,"%s %s\n",
-	      LinestyleStuff.choice.text,(*LinestyleStuff.data)[i].text);
+	      LinestyleStuff.choice.text,(LinestyleStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_CAPSTYLES;++i) {
-    if ((*CapstyleStuff.data)[i].code == X.gcv.cap_style) {
+    if ((CapstyleStuff.data)[i].code == X.gcv.cap_style) {
       fprintf(recordfile,"%s %s\n",
-	      CapstyleStuff.choice.text,(*CapstyleStuff.data)[i].text);
+	      CapstyleStuff.choice.text,(CapstyleStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_JOINSTYLES;++i) {
-    if ((*JoinstyleStuff.data)[i].code == X.gcv.join_style) {
+    if ((JoinstyleStuff.data)[i].code == X.gcv.join_style) {
       fprintf(recordfile,"%s %s\n",
-	      JoinstyleStuff.choice.text,(*JoinstyleStuff.data)[i].text);
+	      JoinstyleStuff.choice.text,(JoinstyleStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_FILLSTYLES;++i) {
-    if ((*FillstyleStuff.data)[i].code == X.gcv.fill_style) {
+    if ((FillstyleStuff.data)[i].code == X.gcv.fill_style) {
       fprintf(recordfile,"%s %s\n",
-	      FillstyleStuff.choice.text,(*FillstyleStuff.data)[i].text);
+	      FillstyleStuff.choice.text,(FillstyleStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_FILLRULES;++i) {
-    if ((*FillruleStuff.data)[i].code == X.gcv.fill_rule) {
+    if ((FillruleStuff.data)[i].code == X.gcv.fill_rule) {
       fprintf(recordfile,"%s %s\n",
-	      FillruleStuff.choice.text,(*FillruleStuff.data)[i].text);
+	      FillruleStuff.choice.text,(FillruleStuff.data)[i].text);
       break;
     }
   }
   for (i=0;i<NUM_ARCMODES;++i) {
-    if ((*ArcmodeStuff.data)[i].code == X.gcv.arc_mode) {
+    if ((ArcmodeStuff.data)[i].code == X.gcv.arc_mode) {
       fprintf(recordfile,"%s %s\n",
-	      ArcmodeStuff.choice.text,(*ArcmodeStuff.data)[i].text);
+	      ArcmodeStuff.choice.text,(ArcmodeStuff.data)[i].text);
       break;
     }
   }
