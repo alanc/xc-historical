@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.14 91/07/09 20:09:04 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.15 91/07/10 09:40:27 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -31,7 +31,6 @@ without express or implied warranty.
 /*
  * UNIX System V Release 3.2
  */
-#include <sys/stropts.h>
 #define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
 #define MALLOC_0_RETURNS_NULL
 #include <sys/ioctl.h>
@@ -59,7 +58,6 @@ without express or implied warranty.
 
 #if defined(SYSV386) && defined(SYSV)
 #include <net/errno.h>
-#include <sys/stropts.h>
 #define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
 #else
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
