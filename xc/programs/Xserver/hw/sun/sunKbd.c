@@ -78,6 +78,7 @@ static int	  autoRepeatFirst;
 struct timeval    autoRepeatLastKeyDownTv;
 struct timeval    autoRepeatDeltaTv;
 static KeybdCtrl  sysKbCtrl;
+static int	  lockKeyDown;
 
 static SunKbPrivRec	sunKbPriv;  
 static KbPrivRec  	sysKbPriv = {
@@ -568,8 +569,13 @@ sunKbdEnqueueEvent (pKeyboard, fe)
     if (keyModifiers & LockMask) {
 	if (xE.u.u.type == KeyRelease)
 	    return; /* this assumes autorepeat is not desired */
-	if (BitIsOn(((DeviceIntPtr)pKeyboard)->key->down, key))
+	if (lockKeyDown) {
 	    xE.u.u.type = KeyRelease;
+	    xE.u.u.detail = lockKeyDown;
+	    lockKeyDown = 0;
+	}
+ 	else
+	    lockKeyDown = key;
 	sunKbdLockLight (pKeyboard, xE.u.u.type == KeyPress);
     }
 
