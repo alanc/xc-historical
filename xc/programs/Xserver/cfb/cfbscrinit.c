@@ -28,7 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "X.h"
 #include "Xmd.h"
-#include	<servermd.h>
+#include "servermd.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "resource.h"
