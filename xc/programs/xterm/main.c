@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.9 88/02/16 14:59:51 jim Exp $
+ *	$Header: main.c,v 1.10 88/02/16 18:49:00 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.9 88/02/16 14:59:51 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.10 88/02/16 18:49:00 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -416,6 +416,10 @@ char **argv;
 	int xerror(), xioerror();
         Widget toplevel;
         Arg Args[1];
+	int fd1 = -1;
+	int fd2 = -1;
+	int fd3 = -1;
+
 	/* close any extra open (stray) file descriptors */
 	for (i = 3; i < NOFILE; i++)
 		(void) close(i);
@@ -482,11 +486,31 @@ char **argv;
 /* ||| 
 gettimeofday(&startT, &tz);
 */
+	/* This is ugly.  When running under init, we need to make sure
+	 * Xlib/Xt won't use file descriptors 0/1/2, because we need to
+	 * stomp on them.  This check doesn't guarantee a -L found is
+	 * really an option, but the opens don't hurt anyway.
+	 */
+	for (i = 1; i < argc; i++) {
+	    if ((argv[i][0] == '-') && (argv[i][1] == 'L')) {
+		fd1 = open ("/dev/null", O_RDONLY, 0);
+		fd2 = open ("/dev/null", O_RDONLY, 0);
+		fd3 = open ("/dev/null", O_RDONLY, 0);
+		break;
+	    }
+	}
 	/* Init the Toolkit. */
 	toplevel = XtInitialize(xterm_name, "XTerm",
 		optionDescList, XtNumber(optionDescList), &argc, argv);
 	XtSetArg(Args[0], XtNallowShellResize, TRUE);
 	XtSetValues(toplevel, Args, XtNumber(Args));
+	/* Now that we are in control again, close any uglies. */
+	if (fd1 >= 0)
+	    (void)close(fd1);
+	if (fd2 >= 0)
+	    (void)close(fd2);
+	if (fd3 >= 0)
+	    (void)close(fd3);
 
 /* ||| 
 gettimeofday(&initT, &tz);
