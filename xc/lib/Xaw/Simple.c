@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.13 88/09/06 09:57:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.14 88/09/06 16:42:21 jim Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -8,6 +8,7 @@ static char Xrcsid[] = "$XConsortium: Simple.c,v 1.13 88/09/06 09:57:27 swick Ex
 #include <X11/copyright.h>
 #include <X11/StringDefs.h>
 #include <X11/SimpleP.h>
+#include <X11/Vendor.h>		/* hack; force Xaw/Vendor.o to be loaded */
 
 #define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */
 #define IsSensitive(w) ((w)->core.sensitive && (w)->core.ancestor_sensitive)
@@ -73,6 +74,12 @@ static void ClassPartInitialize(class)
     WidgetClass class;
 {
     register SimpleWidgetClass c = (SimpleWidgetClass)class;
+#ifndef lint
+    /* this silliness causes the linker to include the VendorShell
+     * module from Xaw, rather than the one from Xt.
+     */
+    WidgetClass junk = vendorShellWidgetClass;
+#endif
 
     if (c->simple_class.change_sensitive == XtInheritChangeSensitive)
 	c->simple_class.change_sensitive = ChangeSensitive;
