@@ -93,6 +93,11 @@ Everything::
 	$(MAKE) depend
 	$(MAKE) $(WORLDOPTS)
 
-/**/# this is used to make sure the distribution is okay.
+/*
+ * This section used for generating distributions will not be useful to most
+ * people.
+ */
+/**/# check all filenames for length, letters, and content
 checkfilenames::  $(CHECKFN)/checkfn
 	@find . -type d -exec $(CHECKFN)/find.sh $(CHECKFN)/checkfn {} \;
+
