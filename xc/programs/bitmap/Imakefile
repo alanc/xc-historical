@@ -55,6 +55,7 @@ SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB), /**/)
 SingleProgramTarget(atobm,$(OBJS3), /**/, /**/)
 
 InstallAppDefaults(Bitmap)
+InstallAppDefaultsLong(Bitmap-co,Bitmap-color)
 InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
 
 InstallProgramWithFlags(bmtoa,$(BINDIR), /**/)
