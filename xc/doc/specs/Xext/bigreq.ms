@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.2 92/09/07 17:33:22 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.3 92/09/07 20:28:38 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -230,11 +230,21 @@ The name of this extension is ``BIG-REQUESTS''.
 .NH 1
 C language binding
 .LP
-It is desirable to make the use of this extension as transparent as
-possible to the X client.  As such,
+It is desirable for core Xlib, and other extensions,
+to use this extension internally when necessary.
+It is also desirable to make the use of this extension as transparent as
+possible to the X client.  For example, if enabling of the extension was
+delayed until the first time it was needed, an application that used
+.PN XNextRequest
+to determine the sequence number of a request would no longer get the
+correct sequence number.
+As such,
 .PN XOpenDisplay
 will determine if the extension is supported by the server and, if it is,
-enable extended-length encodings.  The core Xlib functions
+enable extended-length encodings.  (This will require one extra round
+trip to the server, is this acceptable?)
+.LP
+The core Xlib functions
 .PN XDrawLines ,
 .PN XDrawArcs ,
 .PN XFillPolygon ,
@@ -242,8 +252,8 @@ and
 .PN XChangeProperty
 are required to use extended-length encodings when necessary, if supported
 by the server.  Use of extended-length encodings in other core Xlib
-functions (e.g.,
-.PN XDrawPoints ,
+functions
+.Pn ( XDrawPoints ,
 .PN XDrawRectangles ,
 .PN XDrawSegments ,
 .PN XFillArcs ,
@@ -268,7 +278,17 @@ units) supported by the server through the extended-length encoding.
 .LP
 I propose this separate function because I am not sure of the
 consequences of changing the existing XMaxRequestSize function to return
-a value greater than 65535.  Are there good arguments on either side?
+a larger value.  Are there good arguments on either side?
+.LP
+If XMaxRequestSize were changed to return a larger value, it would
+have to return the extended maximum-request-length - 1, because existing
+applications can have computations like
+.RS
+((XMaxRequestSize(dpy) << 2) - SIZEOF(xPolyArcReq)) / SIZEOF(xArc)
+.RE
+.LP
+which will not otherwise account for the extra 4 bytes that will be occupied
+by the extended length field.
 .NH 1
 Acknowledgements
 .LP
