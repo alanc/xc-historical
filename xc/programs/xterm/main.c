@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.176 91/04/14 12:23:57 rws Exp $ */
+/* $XConsortium: main.c,v 1.177 91/04/15 13:53:06 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1069,7 +1069,7 @@ int *pty;
 	strcpy(ttydev, ptsname(*pty));
 #endif
 	return 0;
-#else /* !ATT, need lots of code */
+#else /* ATT */
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
@@ -1092,7 +1092,7 @@ int *pty;
 #endif /* !sgi */
 	/* got one! */
 	return(0);
-#else /* not (umips && SYSTYPE_SYSV) */
+#else /* sgi or umips */
 #ifdef CRAY
 	for (; devindex < 256; devindex++) {
 	    sprintf (ttydev, "/dev/ttyp%03d", devindex);
@@ -1106,7 +1106,7 @@ int *pty;
 		return(0);
 	    }
 	}
-#else /* !CRAY */
+#else /* CRAY */
 	while (PTYCHAR1[letter]) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
 		    PTYCHAR1 [letter];
@@ -1126,14 +1126,14 @@ int *pty;
 	    devindex = 0;
 	    (void) letter++;
 	}
-#endif /* CRAY else not CRAY */
+#endif /* CRAY else */
 	/* We were unable to allocate a pty master!  Return an error
 	 * condition and let our caller terminate cleanly.
 	 */
 	return(1);
-#endif /* umips && SYSTYPE_SYSV */
-#endif /* USE_GET_PSEUDOTTY */
-#endif /* ATT */
+#endif /* sgi or umips else */
+#endif /* USE_GET_PSEUDOTTY else */
+#endif /* ATT else */
 }
 
 get_terminal ()
@@ -1598,7 +1598,7 @@ spawn ()
 		if (!getenv("CONSEM") && ioctl (ptyfd, I_PUSH, "consem") < 0) {
 		    SysError (3);
 		}
-#endif /* SVR4 */
+#endif /* !SVR4 */
 		if (ioctl (ptyfd, I_PUSH, "ldterm") < 0) {
 		    SysError (4);
 		}
