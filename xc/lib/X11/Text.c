@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XText.c,v 11.13 87/07/29 14:26:14 ham Exp $ */
+/* $Header: XText.c,v 11.13 87/07/29 14:26:14 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -13,8 +13,6 @@ XDrawString(dpy, d, gc, x, y, string, length)
     char *string;
     int length;
 {   
-    register int i;
-    register XTextItem *item;
     int Datalength = 0;
     register xPolyText8Req *req;
 

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.28 87/08/21 16:21:46 ham Exp $ */
+/* $Header: XKeyBind.c,v 11.28 87/08/21 16:21:46 toddb Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -11,7 +11,7 @@
 #include "keysym.h"
 #include <stdio.h>
 
-static  struct XKeytrans {
+struct XKeytrans {
 	struct XKeytrans *next;/* next on list */
 	char *string;		/* string to return when the time comes */
 	int len;		/* length of string (since NULL is legit)*/
