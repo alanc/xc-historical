@@ -25,7 +25,7 @@ implied warranty.
 #include "XShm.h"
 #include "shmstr.h"
 
-/* $XConsortium: XShm.c,v 1.0 89/04/22 12:03:06 rws Exp $ */
+/* $XConsortium: XShm.c,v 1.0 89/08/18 17:50:27 rws Exp $ */
 
 struct DpyHasShm {
     struct DpyHasShm	*next;
@@ -265,6 +265,62 @@ XShmDetach(dpy, shmseg)
     SyncHandle();
 }
 
+static int
+_XShmDestroyImage (ximage)
+    XImage *ximage;
+
+{
+	Xfree((char *)ximage);
+	return 1;
+}
+
+#define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad) - 1)) / (pad)) * (pad))
+
+XImage *
+XShmCreateImage(dpy, visual, depth, format, data, info, width, height)
+    register Display *dpy;
+    register Visual *visual;
+    unsigned int depth;
+    int format;
+    char *data;
+    XShmSegmentInfo *info;
+    unsigned int width;
+    unsigned int height;
+{
+    register XImage *image;
+
+    image = (XImage *)Xcalloc(1, (unsigned)sizeof(XImage));
+    if (!image)
+	return image;
+    image->data = data;
+    image->obdata = (char *)info;
+    image->width = width;
+    image->height = height;
+    image->depth = depth;
+    image->format = format;
+    image->byte_order = dpy->byte_order;
+    image->bitmap_unit = dpy->bitmap_unit;
+    image->bitmap_bit_order = dpy->bitmap_bit_order;
+    image->bitmap_pad = _XGetScanlinePad(dpy, depth);
+    image->xoffset = 0;
+    if (visual) {
+	image->red_mask = visual->red_mask;
+	image->green_mask = visual->green_mask;
+	image->blue_mask = visual->blue_mask;
+    } else {
+	image->red_mask = image->green_mask = image->blue_mask = 0;
+    }
+    if (format == ZPixmap)
+	image->bits_per_pixel = _XGetBitsPerPixel(dpy, (int)depth);
+    else
+	image->bits_per_pixel = 1;
+    image->bytes_per_line = ROUNDUP((image->bits_per_pixel * width),
+				    image->bitmap_pad) >> 3;
+    _XInitImageFuncPtrs(image);
+    image->f.destroy_image = _XShmDestroyImage;
+    return image;
+}
+
 XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
 	      src_width, src_height, send_event)
     register Display *dpy;
@@ -279,7 +335,7 @@ XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     register xShmPutImageReq *req;
     XExtCodes *codes;
 
-    if (!(codes = CheckExtension(dpy)))
+    if (!info || !(codes = CheckExtension(dpy)))
 	return 0;
     LockDisplay(dpy);
     GetReq(ShmPutImage, req);
@@ -300,9 +356,81 @@ XShmPutImage (dpy, d, gc, image, src_x, src_y, dst_x, dst_y,
     req->sendEvent = send_event;
     req->shmseg = info->shmseg;
     req->offset = info->addr - image->data;
-    req->size = image->bytes_per_line * image->height;
     UnlockDisplay(dpy);
     SyncHandle();
+}
+
+Status
+XShmGetImage(dpy, d, image, x, y, plane_mask)
+    register Display *dpy;
+    Drawable d;
+    XImage *image;
+    int x, y;
+    unsigned long plane_mask;
+{
+    XShmSegmentInfo *info = (XShmSegmentInfo *)image->obdata;
+    register xShmGetImageReq *req;
+    xShmGetImageReply rep;
+    XExtCodes *codes;
+    register Visual *visual;
+
+    if (!info || !(codes = CheckExtension(dpy)))
+	return 0;
+    LockDisplay(dpy);
+    GetReq(ShmGetImage, req);
+    req->reqType = codes->major_opcode;
+    req->shmReqType = X_ShmGetImage;
+    req->drawable = d;
+    req->x = x;
+    req->y = y;
+    req->width = image->width;
+    req->height = image->height;
+    req->planeMask = plane_mask;
+    req->format = image->format;
+    req->shmseg = info->shmseg;
+    req->offset = info->addr - image->data;
+    if (_XReply(dpy, (xReply *)&rep, 0, xFalse) == 0) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return 0;
+    }
+    visual = _XVIDtoVisual(dpy, rep.visual);
+    image->red_mask = visual->red_mask;
+    image->green_mask = visual->green_mask;
+    image->blue_mask = visual->blue_mask;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return 1;
+}
+
+Pixmap
+XShmCreatePixmap (dpy, d, data, info, width, height, depth)
+    register Display *dpy;
+    Drawable d;
+    char *data;
+    XShmSegmentInfo *info;
+    unsigned int width, height, depth;
+{
+    Pixmap pid;
+    register xShmCreatePixmapReq *req;
+    XExtCodes *codes;
+
+    if (!(codes = CheckExtension(dpy)))
+	return 0;
+    LockDisplay(dpy);
+    GetReq(ShmCreatePixmap, req);
+    req->reqType = codes->major_opcode;
+    req->shmReqType = X_ShmCreatePixmap;
+    req->drawable = d;
+    req->width = width;
+    req->height = height;
+    req->depth = depth;
+    req->shmseg = info->shmseg;
+    req->offset = data - info->addr;
+    pid = req->pid = XAllocID(dpy);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return pid;
 }
 
 #endif
