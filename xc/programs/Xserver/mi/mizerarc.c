@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.12 89/09/10 16:23:25 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.13 89/09/14 16:30:26 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -112,15 +112,16 @@ miZeroArcSetup(arc, info)
 	info->startx = -1;
 	info->endx = -1;
 	info->starty = -1;
+	info->endy = -1;
 	if (angle2)
 	{
 	    info->initialMask = 0xf;
-	    info->endy = info->h;
 	}
 	else
 	{
 	    info->initialMask = 0;
-	    info->endy = 0;
+	    info->h = -1;
+	    info->w = -1;
 	}
 	return;
     }
