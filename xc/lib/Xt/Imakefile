@@ -119,7 +119,7 @@ SpecialObjectRule(Error.o,$(ICONFIGFILES),$(DB_DEFINES))
 # endif
 #endif
 
-#if defined(SunArchitecture) && SunOSPlatform && OSMajorVersion >= 4
+#if defined(SunArchitecture) && defined(SparcArchitecture)
 /* the Sun C optimizer is broken on just this file */
 TMparse.o:  TMparse.c
 	$(MAKE) $(MFLAGS) CDEBUGFLAGS= nooptTMparse.o
