@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.85 89/10/03 16:42:27 keith Exp $ */
+/* $XConsortium: utils.c,v 1.86 89/10/10 14:21:15 jim Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -191,9 +191,7 @@ void UseMsg()
     ErrorF("-wm                    WhenMapped default backing-store\n");
     ErrorF("-x string              loads named extension at init time \n");
 #ifdef XDMCP
-    ErrorF("-query host-name       contact named host for XDMCP\n");
-    ErrorF("-broadcast             broadcast for XDMCP\n");
-    ErrorF("-indirect host-name    contact named host for indirect XDMCP\n");
+    XdmcpUseMsg();
 #endif
     ddxUseMsg();
 }
@@ -248,10 +246,9 @@ char	*argv[];
 #endif
 	else if ( strcmp( argv[i], "-auth") == 0)
 	{
-	    if(++i < argc) {
-	        if (InitAuthorization (argv[i]))
-		    DisableLocalHost ();
-	    } else
+	    if(++i < argc)
+	        InitAuthorization (argv[i]);
+	    else
 		UseMsg();
 	}
 	else if ( strcmp( argv[i], "bc") == 0)

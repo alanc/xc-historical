@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.5 89/09/14 16:20:13 rws Exp $
+ * $XConsortium: auth.c,v 1.6 89/10/10 14:21:11 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -20,6 +20,7 @@
 
 # include   "X.h"
 # include   "Xauth.h"
+# include   "misc.h"
 
 struct protocol {
     unsigned short   name_length;
@@ -56,21 +57,29 @@ static struct protocol   protocols[] = {
 static char *authorization_file = (char *)NULL;
 
 static int  AuthorizationIndex = 0;
+static Bool ShouldLoadAuth = TRUE;
 
 InitAuthorization (file_name)
 char	*file_name;
+{
+    authorization_file = file_name;
+}
+
+int
+LoadAuthorization ()
 {
     FILE    *f;
     Xauth   *auth;
     int	    i;
     int	    count = 0;
 
-    authorization_file = file_name;
-    if (!file_name)
+    ShouldLoadAuth = FALSE;
+    if (!authorization_file)
 	return 0;
     f = fopen (authorization_file, "r");
     if (!f)
 	return 0;
+    AuthorizationIndex = 0;
     while (auth = XauReadAuth (f)) {
 	for (i = 0; i < NUM_AUTHORIZATION; i++) {
 	    if (protocols[i].name_length == auth->name_length &&
@@ -111,13 +120,19 @@ char	*data;
 {
     int	i;
 
-    for (i = 0; i < NUM_AUTHORIZATION; i++) {
-    	if (protocols[i].name_length == name_length &&
-	    bcmp (protocols[i].name, name, (int) name_length) == 0)
-    	{
-	    return (*protocols[i].Check) (data_length, data);
-    	}
+    if (ShouldLoadAuth)
+    {
+	if (!LoadAuthorization())
+	    EnableLocalHost ();
     }
+    if (name_length)
+	for (i = 0; i < NUM_AUTHORIZATION; i++) {
+	    if (protocols[i].name_length == name_length &&
+		bcmp (protocols[i].name, name, (int) name_length) == 0)
+	    {
+		return (*protocols[i].Check) (data_length, data);
+	    }
+	}
     return (XID) ~0L;
 }
 
@@ -127,11 +142,7 @@ ResetAuthorization ()
 
     for (i = 0; i < NUM_AUTHORIZATION; i++)
 	(*protocols[i].Reset)();
-    AuthorizationIndex = 0;
-    if (InitAuthorization (authorization_file))
-	DisableLocalHost ();
-    else
-	EnableLocalHost ();
+    ShouldLoadAuth = TRUE;
 }
 
 XID
