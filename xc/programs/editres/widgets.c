@@ -30,7 +30,7 @@
 
 static void CreateResourceNameForm(), SetToggleGroupLeaders(), CreateLists();
 static void CreateCommandMenu(), CreateTreeCommandMenu(), FreeClientData();
-static void FreeResBox(), CreateValueWidget(), PopupOnNode();
+static void FreeResBox(), CreateValueWidget(), PopupOnNode(), CreateAuthor();
 static Widget CreateTopArea();
 
 extern void GetResourceList(), AnyChosen(), SetResourceString();
@@ -158,6 +158,10 @@ Widget parent;
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
+
+    entry = XtCreateManagedWidget("author", smeBSBObjectClass, menu,
+				    NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, CreateAuthor, NULL);
 
     entry = XtCreateManagedWidget("quit", smeBSBObjectClass, menu,
 				    NULL, ZERO);
@@ -788,3 +792,31 @@ XtPointer ptr, junk;
 	XtFree((XtPointer) old_name);
     } 
 }
+
+/*	Function Name: CreateAuthor
+ *	Description: Creates the author popup dialog.
+ *	Arguments: w - the widget that activated this popup.
+ *                 junk, garbage - UNUSED.
+ *	Returns: none
+ */
+
+/* ARGSUSED */
+static void
+CreateAuthor(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    Widget parent = XtParent(w), shell, box, button;
+
+    shell = XtCreatePopupShell("authorPopup", transientShellWidgetClass, 
+			       parent, NULL, ZERO);
+
+    box = XtCreateManagedWidget("box", boxWidgetClass, shell, NULL, ZERO);
+    (void) XtCreateManagedWidget("label", labelWidgetClass, box, NULL, ZERO);
+    button= XtCreateManagedWidget("okay", commandWidgetClass, box, NULL, ZERO);
+    XtAddCallback(button, XtNcallback, PopdownResBox, (XtPointer) shell);
+
+    PopupCentered(NULL, shell, XtGrabNone);
+}
+
+    
