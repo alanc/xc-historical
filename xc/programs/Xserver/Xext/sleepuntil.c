@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: sleepuntil.c,v 1.1 92/02/24 19:02:27 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -47,7 +47,7 @@ static RESTYPE	    SertafiedResType;
 static Bool	    BlockHandlerRegistered;
 static int	    SertafiedGeneration;
 static void	    WachetAuf();
-static void	    SertafiedDelete();
+static int	    SertafiedDelete();
 static void	    SertafiedBlockHandler();
 static void	    SertafiedWakeupHandler();
 
@@ -118,10 +118,12 @@ WachetAuf (client, closure)
 }
 
 
-static void
-SertafiedDelete (pRequest)
-    SertafiedPtr	pRequest;
+static int
+SertafiedDelete (value, id)
+    pointer value;
+    XID id;
 {
+    SertafiedPtr	pRequest = (SertafiedPtr)value;
     SertafiedPtr	pReq, pPrev;
 
     pPrev = 0;
@@ -137,6 +139,7 @@ SertafiedDelete (pRequest)
     if (pRequest->notifyFunc)
 	(*pRequest->notifyFunc) (pRequest->pClient, pRequest->closure);
     xfree (pRequest);
+    return TRUE;
 }
 
 static void

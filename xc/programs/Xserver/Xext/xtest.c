@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.18 93/03/05 18:24:39 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.19 93/03/09 18:18:31 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -383,7 +383,7 @@ ProcXTestFakeInput(client)
     if (screenIsSaved == SCREEN_SAVER_ON)
 	SaveScreens(SCREEN_SAVER_OFF, ScreenSaverReset);
     ev->u.keyButtonPointer.time = currentTime.milliseconds;
-    (*dev->public.processInputProc)(ev, (DevicePtr)dev, nev);
+    (*dev->public.processInputProc)(ev, dev, nev);
     return client->noClientException;
 }
 

@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.15 92/11/06 18:24:55 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.16 92/11/14 16:40:25 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -138,33 +138,33 @@ static int		EventSelectForMultibuffer();
  * with this type
  */
 RESTYPE			MultibufferDrawableResType;
-static void		MultibufferDrawableDelete ();
+static int		MultibufferDrawableDelete ();
 /*
  * The per-buffer data can be found as a resource with this type.
  * the resource id of the per-buffer data is the same as the resource
  * id of the pixmap
  */
 static RESTYPE		MultibufferResType;
-static void		MultibufferDelete ();
+static int		MultibufferDelete ();
 /*
  * The per-window data can be found as a resource with this type,
  * using the window resource id
  */
 static RESTYPE		MultibuffersResType;
-static void		MultibuffersDelete ();
+static int		MultibuffersDelete ();
 /*
  * Per display-buffers request is attached to a resource so that
  * it will disappear if the client dies before the request should
  * be processed
  */
 static RESTYPE		DisplayRequestResType;
-static void		DisplayRequestDelete ();
+static int		DisplayRequestDelete ();
 /*
  * Clients other than the buffer creator attach event masks in
  * OtherClient structures; each has a resource of this type.
  */
 static RESTYPE		OtherClientResType;
-static void		OtherClientDelete ();
+static int		OtherClientDelete ();
 
 /****************
  * MultibufferExtensionInit
@@ -592,8 +592,10 @@ ProcGetMBufferAttributes (client)
 	swaps(&rep.displayedBuffer, n);
 	SwapLongs (ids, pMultibuffers->numMultibuffer);
     }
-    WriteToClient (client, sizeof (xMbufGetMBufferAttributesReply), &rep);
-    WriteToClient (client, (int) (pMultibuffers->numMultibuffer * sizeof (XID)), ids);
+    WriteToClient (client, sizeof(xMbufGetMBufferAttributesReply),
+		   (char *)&rep);
+    WriteToClient (client, (int)(pMultibuffers->numMultibuffer * sizeof (XID)),
+		   (char *)ids);
     DEALLOCATE_LOCAL((pointer) ids);
     return client->noClientException;
 }
@@ -1032,12 +1034,13 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 	    break;
 	case MultibufferUpdateActionBackground:
 	    SetupBackgroundPainter (pWin, pGC);
-	    ValidateGC (pPrevPixmap, pGC);
+	    ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
 	    clearRect.x = 0;
 	    clearRect.y = 0;
 	    clearRect.width = pPrevPixmap->drawable.width;
 	    clearRect.height = pPrevPixmap->drawable.height;
-	    (*pGC->ops->PolyFillRect) (pPrevPixmap, pGC, 1, &clearRect);
+	    (*pGC->ops->PolyFillRect) ((DrawablePtr)pPrevPixmap, pGC,
+				       1, &clearRect);
 	    break;
 	case MultibufferUpdateActionUntouched:
 	    if (pPrevMultibuffer->eventMask & ExposureMask)
@@ -1045,7 +1048,7 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 	    	bool = TRUE;
 	    	DoChangeGC (pGC, GCGraphicsExposures, &bool, FALSE);
 	    }
-	    ValidateGC (pPrevPixmap, pGC);
+	    ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
 	    pExposed = (*pGC->ops->CopyArea)
 			    ((DrawablePtr) pWin,
 			     (DrawablePtr) pPrevPixmap,
@@ -1072,14 +1075,15 @@ PerformDisplayRequest (ppMultibuffers, pMultibuffer, nbuf)
 	    }
 	    break;
 	case MultibufferUpdateActionCopied:
-	    ValidateGC (pPrevPixmap, pGC);
-	    (*pGC->ops->CopyArea) (pNewPixmap, pPrevPixmap, pGC,
+	    ValidateGC ((DrawablePtr)pPrevPixmap, pGC);
+	    (*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap,
+				   (DrawablePtr)pPrevPixmap, pGC,
 				   0, 0, pWin->drawable.width, pWin->drawable.height,
 				   0, 0);
 	    break;
 	}
-	ValidateGC (pWin, pGC);
-	(*pGC->ops->CopyArea) (pNewPixmap, pWin, pGC,
+	ValidateGC ((DrawablePtr)pWin, pGC);
+	(*pGC->ops->CopyArea) ((DrawablePtr)pNewPixmap, (DrawablePtr)pWin, pGC,
 			       0, 0, pWin->drawable.width, pWin->drawable.height,
 			       0, 0);
 	ppMultibuffers[i]->lastUpdate = currentTime;
@@ -1537,16 +1541,17 @@ MultibufferPositionWindow (pWin, x, y)
 	    DestroyImageBuffers (pWin);
 	    break;
 	}
-	ValidateGC (pPixmap, pGC);
+	ValidateGC ((DrawablePtr)pPixmap, pGC);
 	/*
 	 * I suppose this could avoid quite a bit of work if
 	 * it computed the minimal area required.
 	 */
 	if (clear)
-	    (*pGC->ops->PolyFillRect) (pPixmap, pGC, 1, &clearRect);
+	    (*pGC->ops->PolyFillRect) ((DrawablePtr)pPixmap, pGC, 1, &clearRect);
 	if (pWin->bitGravity != ForgetGravity)
 	{
-	    (*pGC->ops->CopyArea) (pMultibuffer->pPixmap, pPixmap, pGC,
+	    (*pGC->ops->CopyArea) ((DrawablePtr)pMultibuffer->pPixmap,
+				   (DrawablePtr)pPixmap, pGC,
 				    sourcex, sourcey, savewidth, saveheight,
 				    destx, desty);
 	}
@@ -1566,7 +1571,7 @@ MultibufferPositionWindow (pWin, x, y)
 
 /* Resource delete func for MultibufferDrawableResType */
 /*ARGSUSED*/
-static void
+static int
 MultibufferDrawableDelete (pDrawable, id)
     DrawablePtr	pDrawable;
     XID		id;
@@ -1586,11 +1591,12 @@ MultibufferDrawableDelete (pDrawable, id)
 	pPixmap = (PixmapPtr) pDrawable;
     }
     (*pPixmap->drawable.pScreen->DestroyPixmap) (pPixmap);
+    return TRUE;
 }
 
 /* Resource delete func for MultibufferResType */
 /*ARGSUSED*/
-static void
+static int
 MultibufferDelete (pMultibuffer, id)
     MultibufferPtr	pMultibuffer;
     XID		id;
@@ -1604,11 +1610,12 @@ MultibufferDelete (pMultibuffer, id)
 			    MultibuffersResType, TRUE);
 	xfree (pMultibuffers);
     }
+    return TRUE;
 }
 
 /* Resource delete func for MultibuffersResType */
 /*ARGSUSED*/
-static void
+static int
 MultibuffersDelete (pMultibuffers, id)
     MultibuffersPtr	pMultibuffers;
     XID		id;
@@ -1620,20 +1627,22 @@ MultibuffersDelete (pMultibuffers, id)
 	for (i = pMultibuffers->numMultibuffer; --i >= 0; )
 	    FreeResource (pMultibuffers->buffers[i].pPixmap->drawable.id, 0);
     }
+    return TRUE;
 }
 
 /* Resource delete func for DisplayRequestResType */
 /*ARGSUSED*/
-static void
+static int
 DisplayRequestDelete (pRequest, id)
     DisplayRequestPtr	pRequest;
     XID			id;
 {
     DisposeDisplayRequest (pRequest);
+    return TRUE;
 }
 
 /* Resource delete func for OtherClientResType */
-static void
+static int
 OtherClientDelete (pMultibuffer, id)
     MultibufferPtr	pMultibuffer;
     XID		id;
@@ -1655,6 +1664,7 @@ OtherClientDelete (pMultibuffer, id)
 	}
 	prev = other;
     }
+    return TRUE;
 }
 
 static int

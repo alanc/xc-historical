@@ -141,7 +141,7 @@ void	stop_stealing_input();
 void	flush_input_actions();
 void	parse_fake_input();
 
-static void	XTestCurrentClientGone();
+static int	XTestCurrentClientGone();
 
 /*****************************************************************************
  *
@@ -731,9 +731,9 @@ XTestResetProc()
  *	server state.
  */
 /*ARGSUSED*/
-static void
+static int
 XTestCurrentClientGone(value, id)
-	int	value;
+	pointer	value;
 	XID	id;
 {
 	/*
@@ -746,6 +746,7 @@ XTestCurrentClientGone(value, id)
 	 * defined in xtestdd.c
 	 */
 	stop_stealing_input();	
+	return TRUE;
 }
 
 /*****************************************************************************
