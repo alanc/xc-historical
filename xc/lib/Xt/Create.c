@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.82 90/12/26 16:39:07 rws Exp $ */
+/* $XConsortium: Create.c,v 1.83 90/12/30 16:28:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -91,7 +91,8 @@ void XtInitializeWidgetClass(wc)
 #undef LeaveIfClass
     }
     if (wc->core_class.version != XtVersion &&
-	wc->core_class.version != XtVersionDontCheck) {
+	wc->core_class.version != XtVersionDontCheck &&
+	wc->core_class.version != (11 * 1000 + 4)) { /* MIT R4 is OK */
 	String param[3];
         param[0] = wc->core_class.class_name;
 	if (wc->core_class.version == (11 * 1000 + 3)) { /* MIT X11R3 */
