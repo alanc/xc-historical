@@ -1,7 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: ScrollByL.c,v 1.1 88/08/31 22:52:21 jim Exp $
+ * $XConsortium$
+ * $oHeader: ScrollByL.c,v 4.0 88/08/31 22:11:02 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -117,7 +118,6 @@ static int MergeArglists();
 static Boolean Layout();
 static XtGeometryResult GeometryManager();
 static void ChangeManaged();
-static void ClassInitialize();
 
 static XtActionsRec actions[] = {
   { "Page",   Page},
@@ -130,7 +130,7 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "ScrollByLine",
     /* widget_size        */    sizeof(ScrollByLineRec),
-    /* class_initialize   */    ClassInitialize,
+    /* class_initialize   */    NULL,
     /* class_part_init    */    NULL,
     /* class_inited       */	FALSE,
     /* initialize         */    NULL,
@@ -156,14 +156,16 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
     /* tm_table           */    defaultTranslations,
+    /* query_geometry	  */	XtInheritQueryGeometry,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension	  */	NULL,
   },{
 /* composite_class fields */
     /* geometry_manager   */    GeometryManager,
     /* change_managed     */    ChangeManaged,
-    /* insert_child	  */	NULL,	/* Inherit from superclass */
-    /* delete_child	  */	NULL,	/* Inherit from superclass */
-    /* move_focus_to_next */    NULL,
-    /* move_focus_to_prev */    NULL
+    /* insert_child	  */	XtInheritInsertChild,
+    /* delete_child	  */	XtInheritDeleteChild,
+    /* extension	  */	NULL,
   },{
     /* mumble		  */	0	/* Make C compiler happy   */
   }
@@ -179,26 +181,6 @@ WidgetClass scrollByLineWidgetClass =
  *
  ****************************************************************/
 
-/*	Function Name: ClassInitialize
- *	Description: Used to initialize this class of widgets.
- *	Arguments: none.
- *	Returns: none.
- */
-
-static void ClassInitialize()
-{
-     CompositeWidgetClass superclass;
-     ScrollByLineWidgetClass myclass;
-
-     myclass = (ScrollByLineWidgetClass) scrollByLineWidgetClass;
-     superclass = (CompositeWidgetClass) myclass->core_class.superclass;
-
-     /* Inherit insert_child and delete_child from Composite */
-     myclass->composite_class.insert_child =
-	 superclass->composite_class.insert_child;
-     myclass->composite_class.delete_child =
-	 superclass->composite_class.delete_child;
-}
 
 /*	Function Name: Layout
  *	Description: This function lays out the scroll_by_line widget.
