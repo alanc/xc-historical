@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.74 92/11/13 17:40:46 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.76 93/03/09 16:09:44 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -73,6 +73,17 @@ static XContext selectPropertyContext = 0;
 static int StorageSize[3] = {1, sizeof(short), sizeof(long)};
 #define BYTELENGTH(length, format) ((length) * StorageSize[(format)>>4])
 #define NUMELEM(bytelength, format) ((bytelength) / StorageSize[(format)>>4])
+
+/* Xlib and Xt are permitted to have different memory allocators, and in the
+ * XtSelectionCallbackProc the client is instructed to free the selection
+ * value with XtFree, so the selection value received from XGetWindowProperty
+ * should be copied to memory allocated through Xt.  But copying is
+ * undesirable since the selection value may be large, and, under normal
+ * library configuration copying is unnecessary.
+ */
+#ifdef XTTRACEMEMORY
+#define XT_COPY_SELECTION	1
+#endif
 
 /*ARGSUSED*/
 static void FreePropList(w, closure, callData)
@@ -1072,6 +1083,13 @@ Boolean *cont;
        XtFree((char*)info);
     } else { /* add increment to collection */
       if (info->incremental) {
+#ifdef XT_COPY_SELECTION
+	  int size = BYTELENGTH(length, info->format) + 1;
+	  char *tmp = XtMalloc((Cardinal) size);
+	  bcopy(value, tmp, size);
+	  XFree(value);
+	  value = tmp;
+#endif
         (*info->callback)(widget, *info->req_closure, &ctx->selection, 
 			  &info->type, value, &length, &info->format);
       } else {
@@ -1180,6 +1198,15 @@ Atom selection;
     }
 
     XDeleteProperty(dpy, XtWindow(widget), property);
+#ifdef XT_COPY_SELECTION
+    if (value) {   /* it could have been deleted after the SelectionNotify */
+	int size = BYTELENGTH(length, info->format) + 1;
+	char *tmp = XtMalloc((Cardinal) size);
+	bcopy(value, tmp, size);
+	XFree(value);
+	value = (unsigned char *) tmp;
+    }
+#endif
     (*info->callback)(widget, closure, &selection, 
 			  &type, (XtPointer)value, &length, &format);
 
