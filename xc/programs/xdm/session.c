@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.65 94/01/18 17:29:15 gildea Exp $
+ * $XConsortium: session.c,v 1.66 94/02/02 08:42:15 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -415,24 +415,38 @@ StartClient (verify, d, pidp, name, passwd)
 	/* do like "keylogin" program */
 	{
 	    char    netname[MAXNETNAMELEN+1], secretkey[HEXKEYBYTES+1];
-	    int	    ret;
+	    int	    nameret, keyret;
 	    int	    len;
+	    int     key_set_ok = 0;
 
-	    getnetname (netname);
+	    nameret = getnetname (netname);
 	    Debug ("User netname: %s\n", netname);
 	    len = strlen (passwd);
 	    if (len > 8)
 		bzero (passwd + 8, len - 8);
-	    ret = getsecretkey(netname,secretkey,passwd);
+	    keyret = getsecretkey(netname,secretkey,passwd);
 	    Debug ("getsecretkey returns %d, key length %d\n",
-		    ret, strlen (secretkey));
+		    keyret, strlen (secretkey));
 	    /* is there a key, and do we have the right password? */
-	    if (ret && *secretkey)
+	    if (keyret == 1)
 	    {
-		ret = key_setsecret(secretkey);
-		Debug ("key_setsecret returns %d\n", ret);
+		if (*secretkey)
+		{
+		    keyret = key_setsecret(secretkey);
+		    Debug ("key_setsecret returns %d\n", keyret);
+		    if (keyret == -1)
+			LogError ("failed to set NIS secret key\n");
+		    else
+			key_set_ok = 1;
+		}
+		else
+		{
+		    /* found a key, but couldn't interpret it */
+		    LogError ("password incorrect for NIS principal \"%s\"\n",
+			      nameret ? netname : name);
+		}
 	    }
-	    else
+	    if (!key_set_ok)
 	    {
 		/* remove SUN-DES-1 from authorizations list */
 		int i, j;
