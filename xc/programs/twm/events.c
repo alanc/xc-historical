@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.177 91/05/07 13:40:32 dave Exp $
+ * $XConsortium: events.c,v 1.178 91/05/10 17:54:25 dave Exp $
  *
  * twm event handling
  *

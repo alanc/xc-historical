@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.78 91/03/13 10:08:33 dave Exp $
+ * $XConsortium: resize.c,v 1.79 91/05/01 11:03:53 dave Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -172,10 +172,46 @@ Bool fromtitlebar;
 		 tmp_win->frame_bw, tmp_win->title_height);
 }
 
+
+
+void
+MenuStartResize(tmp_win, x, y, w, h)
+TwmWindow *tmp_win;
+int x, y, w, h;
+{
+  Window junkRoot;
+  unsigned int junkbw, junkDepth;
+    XGrabServer(dpy);
+    XGrabPointer(dpy, Scr->Root, True,
+        ButtonPressMask | ButtonMotionMask | PointerMotionMask,
+        GrabModeAsync, GrabModeAsync,
+        Scr->Root, Scr->ResizeCursor, CurrentTime);
+    dragx = x + tmp_win->frame_bw;
+    dragy = y + tmp_win->frame_bw;
+    origx = dragx;
+    origy = dragy;
+    dragWidth = origWidth = w; /* - 2 * tmp_win->frame_bw; */
+    dragHeight = origHeight = h; /* - 2 * tmp_win->frame_bw; */
+    clampTop = clampBottom = clampLeft = clampRight = clampDX = clampDY = 0;
+    last_width = 0;
+    last_height = 0;
+    Scr->SizeStringOffset = SIZE_HINDENT;
+    XResizeWindow (dpy, Scr->SizeWindow,
+		   Scr->SizeStringWidth + SIZE_HINDENT * 2, 
+		   Scr->SizeFont.height + SIZE_VINDENT * 2);
+    XMapRaised(dpy, Scr->SizeWindow);
+    DisplaySize(tmp_win, origWidth, origHeight);
+    MoveOutline (Scr->Root, dragx - tmp_win->frame_bw,
+		 dragy - tmp_win->frame_bw, 
+		 dragWidth + 2 * tmp_win->frame_bw,
+		 dragHeight + 2 * tmp_win->frame_bw,
+		 tmp_win->frame_bw, tmp_win->title_height);
+}
+
 /***********************************************************************
  *
  *  Procedure:
- *      AddStartResize - begin a window resize operation from AddWindow
+ *      AddStartResize - begin a windorew resize operation from AddWindow
  *
  *  Inputs:
  *      tmp_win - the TwmWindow pointer
@@ -209,6 +245,113 @@ int x, y, w, h;
     last_width = 0;
     last_height = 0;
     DisplaySize(tmp_win, origWidth, origHeight);
+}
+
+
+
+void
+MenuDoResize(x_root, y_root, tmp_win)
+int x_root;
+int y_root;
+TwmWindow *tmp_win;
+{
+    int action;
+
+    action = 0;
+
+    x_root -= clampDX;
+    y_root -= clampDY;
+
+    if (clampTop) {
+        int         delta = y_root - dragy;
+        if (dragHeight - delta < MINHEIGHT) {
+            delta = dragHeight - MINHEIGHT;
+            clampTop = 0;
+        }
+        dragy += delta;
+        dragHeight -= delta;
+        action = 1;
+    }
+    else if (y_root <= dragy/* ||
+             y_root == findRootInfo(root)->rooty*/) {
+        dragy = y_root;
+        dragHeight = origy + origHeight -
+            y_root;
+        clampBottom = 0;
+        clampTop = 1;
+	clampDY = 0;
+        action = 1;
+    }
+    if (clampLeft) {
+        int         delta = x_root - dragx;
+        if (dragWidth - delta < MINWIDTH) {
+            delta = dragWidth - MINWIDTH;
+            clampLeft = 0;
+        }
+        dragx += delta;
+        dragWidth -= delta;
+        action = 1;
+    }
+    else if (x_root <= dragx/* ||
+             x_root == findRootInfo(root)->rootx*/) {
+        dragx = x_root;
+        dragWidth = origx + origWidth -
+            x_root;
+        clampRight = 0;
+        clampLeft = 1;
+	clampDX = 0;
+        action = 1;
+    }
+    if (clampBottom) {
+        int         delta = y_root - dragy - dragHeight;
+        if (dragHeight + delta < MINHEIGHT) {
+            delta = MINHEIGHT - dragHeight;
+            clampBottom = 0;
+        }
+        dragHeight += delta;
+        action = 1;
+    }
+    else if (y_root >= dragy + dragHeight) {
+        dragy = origy;
+        dragHeight = 1 + y_root - dragy;
+        clampTop = 0;
+        clampBottom = 1;
+	clampDY = 0;
+        action = 1;
+    }
+    if (clampRight) {
+        int         delta = x_root - dragx - dragWidth;
+        if (dragWidth + delta < MINWIDTH) {
+            delta = MINWIDTH - dragWidth;
+            clampRight = 0;
+        }
+        dragWidth += delta;
+        action = 1;
+    }
+    else if (x_root >= dragx + dragWidth) {
+        dragx = origx;
+        dragWidth = 1 + x_root - origx;
+        clampLeft = 0;
+        clampRight = 1;
+	clampDX = 0;
+        action = 1;
+    }
+
+    if (action) {
+        ConstrainSize (tmp_win, &dragWidth, &dragHeight);
+        if (clampLeft)
+            dragx = origx + origWidth - dragWidth;
+        if (clampTop)
+            dragy = origy + origHeight - dragHeight;
+        MoveOutline(Scr->Root,
+            dragx - tmp_win->frame_bw,
+            dragy - tmp_win->frame_bw,
+            dragWidth + 2 * tmp_win->frame_bw,
+            dragHeight + 2 * tmp_win->frame_bw,
+	    tmp_win->frame_bw, tmp_win->title_height);
+    }
+
+    DisplaySize(tmp_win, dragWidth, dragHeight);
 }
 
 /***********************************************************************
@@ -446,10 +589,26 @@ EndResize()
     ResizeWindow = None;
 }
 
+void
+MenuEndResize(tmp_win)
+TwmWindow *tmp_win;
+{
+    MoveOutline(Scr->Root, 0, 0, 0, 0, 0, 0);
+    XUnmapWindow(dpy, Scr->SizeWindow);
+    ConstrainSize (tmp_win, &dragWidth, &dragHeight);
+    AddingX = dragx;
+    AddingY = dragy;
+    AddingW = dragWidth + (2 * tmp_win->frame_bw);
+    AddingH = dragHeight + (2 * tmp_win->frame_bw);
+    SetupWindow (tmp_win, AddingX, AddingY, AddingW, AddingH, -1);
+}
+
+
+
 /***********************************************************************
  *
  *  Procedure:
- *      AddEndResize - finish the resize operation for AddWindow
+ *      AddEndResize - finish the resize operation for AddWindo<w
  *
  ***********************************************************************
  */

@@ -467,12 +467,16 @@ XEvent *e;
 
 
 
+static Bool fromMenu;
+
 UpdateMenu()
 {
     MenuItem *mi;
     int i, x, y, x_root, y_root, entry;
     int done;
     MenuItem *badItem = NULL;
+
+    fromMenu = TRUE;
 
     while (TRUE)
     {
@@ -497,6 +501,7 @@ UpdateMenu()
 
 	if (Event.type == ButtonRelease || Cancel) {
 	  menuFromFrameOrWindowOrTitlebar = FALSE;
+	  fromMenu = FALSE;
 	  return;
 	}
 
@@ -593,6 +598,7 @@ UpdateMenu()
 	if (badItem != ActiveItem) badItem = NULL;
 	XFlush(dpy);
     }
+
 }
 
 
@@ -1187,6 +1193,112 @@ static Bool belongs_to_twm_window (t, w)
 
 
 
+
+/***********************************************************************
+ *
+ *  Procedure:
+ *	resizeFromCenter -
+ *
+ ***********************************************************************
+ */
+
+
+extern int AddingX;
+extern int AddingY;
+extern int AddingW;
+extern int AddingH;
+
+void resizeFromCenter(w, tmp_win)
+     Window w;
+     TwmWindow *tmp_win;
+{
+  int lastx, lasty, width, height, bw2;
+  int namelen;
+  int stat;
+  XEvent event;
+  Window junk;
+
+  namelen = strlen (tmp_win->name);
+  bw2 = tmp_win->frame_bw * 2;
+  AddingW = tmp_win->attr.width + bw2;
+  AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
+  width = (SIZE_HINDENT + XTextWidth (Scr->SizeFont.font,
+				      tmp_win->name, namelen));
+  height = Scr->SizeFont.height + SIZE_VINDENT * 2;
+  XGetGeometry(dpy, w, &JunkRoot, &origDragX, &origDragY,
+	       (unsigned int *)&DragWidth, (unsigned int *)&DragHeight, 
+	       &JunkBW, &JunkDepth);
+  XWarpPointer(dpy, None, w,
+	       0, 0, 0, 0, DragWidth/2, DragHeight/2);   
+  XQueryPointer (dpy, Scr->Root, &JunkRoot, 
+		 &JunkChild, &JunkX, &JunkY,
+		 &AddingX, &AddingY, &JunkMask);
+/*****
+  Scr->SizeStringOffset = width +
+    XTextWidth(Scr->SizeFont.font, ": ", 2);
+  XResizeWindow (dpy, Scr->SizeWindow, Scr->SizeStringOffset +
+		 Scr->SizeStringWidth, height);
+  XDrawImageString (dpy, Scr->SizeWindow, Scr->NormalGC, width,
+		    SIZE_VINDENT + Scr->SizeFont.font->ascent,
+		    ": ", 2);
+*****/
+  lastx = -10000;
+  lasty = -10000;
+/*****
+  MoveOutline(Scr->Root,
+	      origDragX - JunkBW, origDragY - JunkBW,
+	      DragWidth * JunkBW, DragHeight * JunkBW,
+	      tmp_win->frame_bw,
+	      tmp_win->title_height);
+*****/
+  MenuStartResize(tmp_win, origDragX, origDragY, DragWidth, DragHeight);
+  while (TRUE)
+    {
+      XMaskEvent(dpy,
+		 ButtonPressMask | PointerMotionMask, &event);
+      
+      if (event.type == MotionNotify) {
+	/* discard any extra motion events before a release */
+	while(XCheckMaskEvent(dpy,
+			      ButtonMotionMask | ButtonPressMask, &event))
+	  if (event.type == ButtonPress)
+	    break;
+      }
+      
+      if (event.type == ButtonPress)
+	{
+	  MenuEndResize(tmp_win);
+	  XMoveResizeWindow(dpy, w, AddingX, AddingY, AddingW, AddingH);
+	  break;
+	}
+      
+/*    if (!DispatchEvent ()) continue; */
+
+      if (event.type != MotionNotify) {
+	continue;
+      }
+      
+      /*
+       * XXX - if we are going to do a loop, we ought to consider
+       * using multiple GXxor lines so that we don't need to 
+       * grab the server.
+       */
+      XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
+		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
+      
+      if (lastx != AddingX || lasty != AddingY)
+	{
+	  MenuDoResize(AddingX, AddingY, tmp_win);
+	  
+	  lastx = AddingX;
+	  lasty = AddingY;
+	}
+      
+    }
+} 
+
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1204,7 +1316,7 @@ static Bool belongs_to_twm_window (t, w)
  *  Returns:
  *	TRUE if should continue with remaining actions else FALSE to abort
  *
-***********************************************************************
+ ***********************************************************************
  */
 
 int
@@ -1379,45 +1491,52 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w) {	/* can't resize icons */
-	  /*
-	   * see if this is being done from the titlebar
-	   */
-	  fromtitlebar = 
-	    belongs_to_twm_window (tmp_win, eventp->xbutton.window);
-	  
-	  /* Save pointer position so we can tell if it was moved or
-	     not during the resize. */
-	  ResizeOrigX = eventp->xbutton.x_root;
-	  ResizeOrigY = eventp->xbutton.y_root;
-	  
-	  StartResize (eventp, tmp_win, fromtitlebar);
-	  
-	  do {
-	    XMaskEvent(dpy,
-		       ButtonPressMask | ButtonReleaseMask |
-		       EnterWindowMask | LeaveWindowMask |
-		       ButtonMotionMask, &Event);
+
+	  if ((Context == C_FRAME || Context == C_WINDOW || Context == C_TITLE)
+	      && fromMenu) 
+	    resizeFromCenter(w, tmp_win);
+	  else {
+	    /*
+	     * see if this is being done from the titlebar
+	     */
+	    fromtitlebar = 
+	      belongs_to_twm_window (tmp_win, eventp->xbutton.window);
 	    
-	    if (fromtitlebar && Event.type == ButtonPress) {
-	      fromtitlebar = False;
-	      continue;
-	    }
+	    /* Save pointer position so we can tell if it was moved or
+	       not during the resize. */
+	    ResizeOrigX = eventp->xbutton.x_root;
+	    ResizeOrigY = eventp->xbutton.y_root;
 	    
-	    if (Event.type == MotionNotify) {
-	      /* discard any extra motion events before a release */
-	      while
-		(XCheckMaskEvent
-		 (dpy, ButtonMotionMask | ButtonReleaseMask, &Event))
-		  if (Event.type == ButtonRelease)
-		    break;
-	    }
+	    StartResize (eventp, tmp_win, fromtitlebar);
 	    
-	    if (!DispatchEvent ()) continue;
-	    
-	  } while (!(Event.type == ButtonRelease || Cancel));
-	  return TRUE;
-	}
+	    do {
+	      XMaskEvent(dpy,
+			   ButtonPressMask | ButtonReleaseMask |
+			   EnterWindowMask | LeaveWindowMask |
+			   ButtonMotionMask, &Event);
+		
+		if (fromtitlebar && Event.type == ButtonPress) {
+		  fromtitlebar = False;
+		    continue;
+		  }
+		
+	    	if (Event.type == MotionNotify) {
+		  /* discard any extra motion events before a release */
+		  while
+		    (XCheckMaskEvent
+		     (dpy, ButtonMotionMask | ButtonReleaseMask, &Event))
+		      if (Event.type == ButtonRelease)
+			break;
+		}
+	      
+	      if (!DispatchEvent ()) continue;
+	      
+	    } while (!(Event.type == ButtonRelease || Cancel));
+	    return TRUE;
+	  }
+	} 
 	break;
+
 
     case F_ZOOM:
     case F_HORIZOOM:
@@ -2407,8 +2526,7 @@ int def_x, def_y;
     {
 	for (t = Scr->TwmRoot.next; t != NULL; t = t->next)
 	{
-	    if (tmp_win->group == t->group && tmp_win->group != t->w &&
-		t->transient)
+	    if (tmp_win->group == t->group && tmp_win->group != t->w)
 	    {
 		if (iconify)
 		{
