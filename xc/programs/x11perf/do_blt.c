@@ -342,9 +342,11 @@ Bool InitCopyPlane(xp, p)
 
     /* Create bitmap to write stuff into, and initialize it */
     pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT, 1);
+    gcv.graphics_exposures = False;
     gcv.foreground = 0;
     gcv.background = 1;
-    pixgc = XCreateGC(xp->d, pix, GCForeground | GCBackground, &gcv);
+    pixgc = XCreateGC(xp->d, pix, 
+		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
     XFillRectangle(xp->d, pix, pixgc, 0, 0, WIDTH, HEIGHT);
     gcv.foreground = 1;
     gcv.background = 0;

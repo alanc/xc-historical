@@ -473,13 +473,17 @@ void CreatePerfGCs(xp)
 {
     XGCValues gcv;
 
+    gcv.graphics_exposures = False;
+
     gcv.foreground = xp->background;
     gcv.background = xp->foreground;
-    xp->bggc = XCreateGC(xp->d, xp->w, GCForeground | GCBackground , &gcv);
+    xp->bggc = XCreateGC(xp->d, xp->w, 
+		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
 
     gcv.foreground = xp->foreground;
     gcv.background = xp->background;
-    xp->fggc = XCreateGC(xp->d, xp->w, GCForeground | GCBackground , &gcv);
+    xp->fggc = XCreateGC(xp->d, xp->w, 
+		GCForeground | GCBackground | GCGraphicsExposures, &gcv);
 }
 
 void DestroyPerfGCs(xp)
