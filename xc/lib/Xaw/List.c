@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.22 89/10/09 16:20:43 jim Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.23 89/12/06 15:13:06 kit Exp $";
 #endif
 
 /***********************************************************
@@ -810,8 +810,8 @@ Cardinal *num_params;
  * Set specified arguments into widget
  */
 
-/* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean 
+SetValues(current, request, new)
 Widget current, request, new;
 {
     ListWidget cl = (ListWidget) current;

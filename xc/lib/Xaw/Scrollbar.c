@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.54 89/11/09 16:31:25 kit Exp $";
+    "$XConsortium: Scroll.c,v 1.55 89/11/17 10:43:20 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -433,7 +433,6 @@ Widget current,		/* what I am */
     return( redraw );
 }
 
-/* ARGSUSED */
 static void Resize( gw )
    Widget gw;
 {

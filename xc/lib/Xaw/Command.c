@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.66 89/12/06 16:25:20 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.67 89/12/06 19:12:05 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -484,8 +484,6 @@ Boolean change;
   (*SuperClass->core_class.expose) (w, (XEvent *) NULL, region);
 }
 
-
-/* ARGSUSED */
 static void 
 Destroy(w)
 Widget w;

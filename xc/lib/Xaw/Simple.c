@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.20 89/05/11 01:06:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.21 89/10/09 16:20:22 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -96,8 +96,6 @@ static void ClassPartInitialize(class)
 	c->simple_class.change_sensitive = ChangeSensitive;
 }
 
-
-/* ARGSUSED */
 static void Realize(w, valueMask, attributes)
     register Widget w;
     Mask *valueMask;

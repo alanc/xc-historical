@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.12 89/09/12 16:49:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.13 89/09/13 13:13:04 swick Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif /* lint */
 
@@ -139,7 +139,6 @@ void CompositeDestroy(w)
     XtFree((char *) w->composite.children);
 }
 
-/*ARGSUSED*/
 void CompositeInsertChild(w)
     Widget	w;
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.48 89/10/09 14:25:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.49 89/10/11 18:40:34 kit Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -337,7 +337,6 @@ static Boolean CvtIntOrPixelToXColor(dpy, args, num_args, fromVal, toVal, closur
 }
 
 
-/*ARGSUSED*/
 static Boolean CvtStringToPixel(dpy, args, num_args, fromVal, toVal, closure_ret)
     Display*	dpy;
     XrmValuePtr args;

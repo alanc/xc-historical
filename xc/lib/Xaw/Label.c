@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.74 89/10/21 09:41:16 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.75 89/12/06 15:30:25 kit Exp $";
 #endif /* lint */
 
 
@@ -344,7 +344,7 @@ static void _Reposition(lw, width, height, dx, dy)
 
 static void Resize(w)
     Widget w;
-{
+
     LabelWidget lw = (LabelWidget)w;
     Position dx, dy;
     _Reposition(lw, w->core.width, w->core.height, &dx, &dy);
@@ -359,7 +359,6 @@ static void Resize(w)
 #define HEIGHT 2
 #define NUM_CHECKS 3
 
-/* ARGSUSED */
 static Boolean SetValues(current, request, new, args, num_args)
     Widget current, request, new;
     ArgList args;

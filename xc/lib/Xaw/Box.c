@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.41 89/10/09 16:19:57 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.42 89/11/06 10:50:58 swick Exp $";
 #endif /* lint */
 
 
@@ -136,7 +136,6 @@ WidgetClass boxWidgetClass = (WidgetClass)&boxClassRec;
  *
  */
 
-/* ARGSUSED */
 static DoLayout(bbw, width, height, reply_width, reply_height, position)
     BoxWidget	bbw;
     Dimension	width, height;
