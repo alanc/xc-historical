@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.9 89/12/10 16:12:25 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Dvi.c,v 1.10 90/04/30 16:55:09 converse Exp $";
 #endif /* lint */
 
 /*
@@ -33,6 +33,7 @@ R	-*-times-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 I	-*-times-medium-i-normal--*-*-*-*-*-*-iso8859-1\n\
 B	-*-times-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
 F	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
+BI	-*-times-bold-i-normal--*-*-*-*-*-*-iso8859-1\n\
 C	-*-courier-medium-r-normal--*-*-*-*-*-*-iso8859-1\n\
 CO	-*-courier-medium-o-normal--*-*-*-*-*-*-iso8859-1\n\
 CB	-*-courier-bold-r-normal--*-*-*-*-*-*-iso8859-1\n\
@@ -153,6 +154,22 @@ static void Initialize(request, new)
 	dw->dvi.file = 0;
 	dw->dvi.seek = False;
 	dw->dvi.device_resolution = 75;
+	dw->dvi.tmpFile = 0;
+	dw->dvi.readingTmp = 0;
+	dw->dvi.ungot = 0;
+	dw->dvi.file_map = 0;
+	dw->dvi.fonts = 0;
+	dw->dvi.font_map = 0;
+	dw->dvi.current_page = 0;
+	dw->dvi.font_size = 0;
+	dw->dvi.font_number = 0;
+	dw->dvi.device_resolution = 0;
+	dw->dvi.line_width = 0;
+	dw->dvi.backing_store = 0;
+	dw->dvi.font = 0;
+	dw->dvi.display_enable = 0;
+	dw->dvi.state = 0;
+	dw->dvi.cache.font = 0; 
 }
 
 static void
