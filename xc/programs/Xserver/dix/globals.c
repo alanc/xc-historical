@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.42 89/03/18 16:23:59 rws Exp $ */
+/* $XConsortium: globals.c,v 1.43 89/03/27 18:26:12 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -86,6 +86,8 @@ TimeStamp currentTime;
 Bool permitOldBugs = FALSE; /* turn off some error checking, to permit certain
 			     * old broken clients (like R2/R3 xterms) to work
 			     */
+
+int defaultColorVisualClass = -1;
 
 char *display;
 
