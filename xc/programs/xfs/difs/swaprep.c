@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.8 92/11/18 21:30:09 gildea Exp $ */
+/* $XConsortium: swaprep.c,v 1.9 93/09/20 18:10:43 hersh Exp $ */
 /*
  * font server reply swapping
  */
@@ -286,8 +286,10 @@ SListFontsWithXInfoReply(client, size, pRep)
 {
     pRep->sequenceNumber = lswaps(pRep->sequenceNumber);
     pRep->length = lswapl(pRep->length);
-    pRep->nReplies = lswapl(pRep->nReplies);
-    SwapXFontInfoHeader(pRep);
+    if (size > SIZEOF(fsGenericReply)) { 	/* not last in series? */
+	pRep->nReplies = lswapl(pRep->nReplies);
+	SwapXFontInfoHeader(pRep);
+    }
     (void) WriteToClient(client, size, (char *) pRep);
 }
 
