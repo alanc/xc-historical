@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.89 89/12/13 09:08:48 rws Exp $ */
+/* $XConsortium: utils.c,v 1.89 89/12/13 09:10:53 rws Exp $ */
 #include <stdio.h>
 #include "Xos.h"
 #include "misc.h"
@@ -368,6 +368,12 @@ char	*argv[];
 		TimeOutValue = ((long)atoi(argv[i])) * MILLI_PER_SECOND;
 	    else
 		UseMsg();
+	}
+	else if ( strcmp( argv[i], "-terminate") == 0)
+	{
+	    extern Bool terminateAtReset;
+	    
+	    terminateAtReset = TRUE;
 	}
 	else if ( strcmp( argv[i], "v") == 0)
 	    defaultScreenSaverBlanking = PreferBlanking;
