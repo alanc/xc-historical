@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.26 93/07/12 09:31:49 dpw Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.27 93/07/12 16:28:35 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -122,6 +122,19 @@ cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     return TRUE;
 }
 
+#ifdef CFB_NEED_SCREEN_PRIVATE
+Bool
+cfbCreateScreenResources(pScreen)
+    ScreenPtr pScreen;
+{
+    pointer oldDevPrivate = pScreen->devPrivate;
+    pScreen->devPrivate = pScreen->devPrivates[cfbScreenPrivateIndex].ptr;
+    miCreateScreenResources(pScreen);
+    pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
+    pScreen->devPrivate = oldDevPrivate;
+}
+#endif
+
 cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
@@ -157,6 +170,7 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
      * on the backing store wrapped version */
     miInitializeBackingStore (pScreen, &cfbBSFuncRec);
 #ifdef CFB_NEED_SCREEN_PRIVATE
+    pScreen->CreateScreenResources = cfbCreateScreenResources;
     pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
     pScreen->devPrivate = oldDevPrivate;
 #endif
