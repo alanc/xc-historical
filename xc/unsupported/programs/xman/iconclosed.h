@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: iconclosed.h,v 1.1 88/08/31 22:52:41 jim Exp $
+ * $XConsortium: iconclosed.h,v 1.2 88/09/06 17:48:07 jim Exp $
  * $Athena: iconclosed.h,v 4.0 88/08/31 22:12:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -22,7 +22,7 @@
 
 #define iconclosed_width 20
 #define iconclosed_height 30
-static char iconclosed_bits[] = {
+static unsigned char iconclosed_bits[] = {
    0x00, 0x00, 0x00, 0xfc, 0xff, 0x07, 0x0e, 0xf8, 0x07, 0x06, 0x00, 0x05,
    0xfe, 0xff, 0x04, 0xbe, 0xfb, 0x04, 0xbe, 0xfb, 0x04, 0xbe, 0xfb, 0x04,
    0xbe, 0xfb, 0x04, 0xbe, 0xfb, 0x04, 0x3e, 0xf8, 0x04, 0xfe, 0xff, 0x04,
