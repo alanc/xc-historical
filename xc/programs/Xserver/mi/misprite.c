@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.41 93/07/17 09:53:24 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.42 93/09/20 20:23:43 dpw Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -122,7 +122,7 @@ static void	    miSpriteImageText8(),	miSpriteImageText16();
 static void	    miSpriteImageGlyphBlt(),	miSpritePolyGlyphBlt();
 static void	    miSpritePushPixels();
 #ifdef NEED_LINEHELPER
-static void	    miBSLineHelper();
+static void	    miSpriteLineHelper();
 #endif
 
 static GCOps miSpriteGCOps = {
@@ -134,7 +134,7 @@ static GCOps miSpriteGCOps = {
     miSpriteImageText8,	    miSpriteImageText16,    miSpriteImageGlyphBlt,
     miSpritePolyGlyphBlt,   miSpritePushPixels
 #ifdef NEED_LINEHELPER
-    , miBSLineHelper
+    , miSpriteLineHelper
 #endif
 };
 
