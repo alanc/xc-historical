@@ -1,4 +1,4 @@
-/* $XConsortium: restart.c,v 1.10 94/07/15 14:12:30 mor Exp $ */
+/* $XConsortium: restart.c,v 1.11 94/07/21 15:59:06 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -52,9 +52,7 @@ Restart (flag)
 int flag;
 
 {
-    List *cl;
-    List *pl;
-    List *vl;
+    List 	*cl, *pl, *vl;
     PendingClient *c;
     PendingProp *prop;
     PendingValue *v;
@@ -66,99 +64,8 @@ int flag;
     int		cnt;
     extern char **environ;
     char	*p, *temp;
-    static char	envDISPLAY[]="DISPLAY";
-    static char	envSESSION_MANAGER[]="SESSION_MANAGER";
-    static char	envAUDIOSERVER[]="AUDIOSERVER";
-    char	*display_env, *non_local_display_env;
-    char	*session_env, *non_local_session_env;
-    char	*audio_env;
-    int		remote_allowed = 1;
     Bool	is_manager;
     Bool	ran_manager = 0;
-
-    display_env = NULL;
-    if(p = (char *) getenv(envDISPLAY)) {
-	display_env = (char *) malloc(strlen(envDISPLAY)+1+strlen(p)+1);
-	if(!display_env) nomem();
-	sprintf(display_env, "%s=%s", envDISPLAY, p);
-
-	/*
-	 * When we restart a remote client, we have to make sure the
-	 * display environment we give it has the SM's hostname.
-	 */
-
-	if ((temp = strchr (p, '/')) == 0)
-	    temp = p;
-	else
-	    temp++;
-
-	if (*temp != ':')
-	{
-	    /* we have a host name */
-
-	    non_local_display_env = (char *) malloc (strlen (display_env) + 1);
-	    if (!non_local_display_env) nomem();
-
-	    strcpy (non_local_display_env, display_env);
-	}
-	else
-	{
-	    char hostnamebuf[256];
-
-	    gethostname (hostnamebuf, sizeof hostnamebuf);
-	    non_local_display_env = (char *) malloc (strlen (envDISPLAY) + 1 +
-		strlen (hostnamebuf) + strlen (temp) + 1);
-	    if (!non_local_display_env) nomem();
-	    sprintf(non_local_display_env, "%s=%s%s",
-		envDISPLAY, hostnamebuf, temp);
-	}
-    }
-
-    session_env = NULL;
-    if(p = (char *) getenv(envSESSION_MANAGER)) {
-	session_env = (char *) malloc(
-	    strlen(envSESSION_MANAGER)+1+strlen(p)+1);
-	if(!session_env) nomem();
-	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
-
-	/*
-	 * When we restart a remote client, we have to make sure the
-	 * session environment does not have the SM's local connection port.
-	 */
-
-	non_local_session_env = (char *) malloc (strlen (session_env) + 1);
-	if (!non_local_session_env) nomem();
-	strcpy (non_local_session_env, session_env);
-
-	if ((temp = Strstr (non_local_session_env, "local/")) != NULL)
-	{
-	    char *delim = strchr (temp, ',');
-	    if (delim == NULL)
-	    {
-		if (temp == non_local_session_env +
-		    strlen (envSESSION_MANAGER) + 1)
-		{
-		    *temp = '\0';
-		    remote_allowed = 0;
-		}
-		else
-		    *(temp - 1) = '\0';
-	    }
-	    else
-	    {
-		int bytes = strlen (delim + 1);
-		memmove (temp, delim + 1, bytes);
-		*(temp + bytes) = '\0';
-	    }
-	}
-    }
-
-    audio_env = NULL;
-    if(p = (char *) getenv(envAUDIOSERVER)) {
-	audio_env = (char *) malloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
-	if(!audio_env) nomem();
-	sprintf(audio_env, "%s=%s", envAUDIOSERVER, p);
-    }
 
     for(cl = ListFirst(PendingList); cl; cl = ListNext(cl)) {
 	c = (PendingClient *)cl->thing;
@@ -176,15 +83,15 @@ int flag;
 
 	for(pl = ListFirst(c->props); pl; pl = ListNext(pl)) {
 	    prop = (PendingProp *)pl->thing;
-	    if(!strcmp(prop->name, "Program")) {
+	    if(!strcmp(prop->name, SmProgram)) {
 		vl = ListFirst(prop->values);
 		if(vl) program = ((PendingValue *)vl->thing)->value;
 		if (CheckIsManager (program))
 		    is_manager = 1;
-	    } else if(!strcmp(prop->name, "CurrentDirectory")) {
+	    } else if(!strcmp(prop->name, SmCurrentDirectory)) {
 		vl = ListFirst(prop->values);
 		if(vl) cwd = ((PendingValue *)vl->thing)->value;
-	    } else if(!strcmp(prop->name, "RestartCommand")) {
+	    } else if(!strcmp(prop->name, SmRestartCommand)) {
 		cnt = ListCount(prop->values);
 		args = (char **)malloc((cnt+1) * sizeof(char *));
 		pp = args;
@@ -192,7 +99,7 @@ int flag;
 		    *pp++ = ((PendingValue *)vl->thing)->value;
 		}
 		*pp = NULL;
-	    } else if(!strcmp(prop->name, "Environment")) {
+	    } else if(!strcmp(prop->name, SmEnvironment)) {
 		cnt = ListCount(prop->values);
 		env = (char **)malloc((cnt+3+1) * sizeof(char *));
 		pp = env;
@@ -273,16 +180,141 @@ int flag;
 	if(args) free((char *)args);
 	if(env) free((char *)env);
     }
-    if(display_env) free(display_env);
-    if(session_env) free(session_env);
-    if(non_local_display_env) free(non_local_display_env);
-    if(non_local_session_env) free(non_local_session_env);
-    if(audio_env) free(audio_env);
 
     if (flag == RESTART_MANAGERS && !ran_manager)
 	return (0);
     else
 	return (1);
+}
+
+
+
+void
+Clone (client)
+
+ClientRec *client;
+
+{
+    char	*cwd;
+    char	*program;
+    char	**args;
+    char	**env;
+    char	**pp;
+    int		i, j;
+    extern char **environ;
+    char	*p, *temp;
+
+    if (verbose)
+    {
+	printf ("Cloning id '%s'...\n", client->clientId);
+	printf ("Host = %s\n", client->clientHostname);
+    }
+
+    cwd = ".";
+    env = NULL;
+    program = NULL;
+    args = NULL;
+
+    for (i = 0; i < client->numProps; i++)
+    {
+	SmProp *prop = client->props[i];
+
+	if (strcmp (prop->name, SmProgram) == 0)
+	    program = (char *) prop->vals[0].value;
+	else if (strcmp (prop->name, SmCurrentDirectory) == 0)
+	    cwd = (char *) prop->vals[0].value;
+	else if (strcmp(prop->name, SmCloneCommand) == 0)
+	{
+	    args = (char **) malloc ((prop->num_vals + 1) * sizeof (char *));
+	    pp = args;
+	    for (j = 0; j < prop->num_vals; j++)
+		*pp++ = (char *) prop->vals[j].value;
+	    *pp = NULL;
+	}
+	else if (strcmp (prop->name, SmEnvironment) == 0)
+	{
+	    env = (char **) malloc (
+		(prop->num_vals + 3 + 1) * sizeof (char *));
+	    pp = env;
+	    for (j = 0; j < prop->num_vals; j++)
+	    {
+		p = (char *) prop->vals[j].value;
+
+		if ((display_env && strbw (p, "DISPLAY="))
+	         || (session_env && strbw (p, "SESSION_MANAGER="))
+		 || (audio_env && strbw (p, "AUDIOSERVER=")))
+		    continue;
+
+		*pp++ = p;
+	    }
+
+	    if (display_env)
+		*pp++ = display_env;
+	    if (session_env)
+		*pp++ = session_env;
+	    if (audio_env)
+		*pp++ = audio_env;
+
+	    *pp = NULL;
+	}
+    }
+
+    if (program && args)
+    {
+	if (verbose)
+	{
+	    printf("\t%s\n", program);
+	    printf("\t");
+	    for (pp = args; *pp; pp++)
+		printf ("%s ", *pp);
+	    printf("\n");
+	}
+
+	if (strncmp (client->clientHostname, "tcp/", 4) != 0 &&
+	    strncmp (client->clientHostname, "decnet/", 7) != 0)
+	{
+	    /*
+	     * The client is being restarted on the local machine.
+	     */
+
+	    switch(vfork()) {
+	    case -1:
+		perror("vfork");
+		break;
+	    case 0:		/* kid */
+		chdir (cwd);
+		if (env) environ = env;
+		execvp (program, args);
+		perror ("execve");
+		_exit (255);
+	    default:	/* parent */
+		break;
+	    }
+	}
+	else if (!remote_allowed)
+	{
+	    fprintf (stderr,
+		   "Can't remote clone client ID '%s': only local supported\n",
+		     client->clientId);
+	}
+	else
+	{
+	    /*
+	     * The client is being restarted on a remote machine.
+	     */
+
+	    remote_start (client->clientHostname, program, args, cwd, env,
+		non_local_display_env, non_local_session_env);
+	}
+    } else {
+	fprintf(stderr, "Can't restart ID '%s':  no program or no args\n",
+		client->clientId);
+    }
+
+    if (args)
+	free ((char *)args);
+    if (env)
+	free ((char *)env);
 }
 
 
