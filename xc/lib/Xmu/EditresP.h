@@ -1,5 +1,8 @@
 /************************************************************
 
+		The Editres Protocol
+
+
   The Client message sent to the application is:
 
   ATOM = "ResEditor" 		--- RES_EDITOR_NAME
@@ -11,204 +14,181 @@
   l[2] = ident of command.
   l[3] = protocol version number to use.
 
---------------------
 
-  The syntax for Resource editor commands is:
 
-  Selection = 	<ident>\t<command>|<command value>
+  The binary protocol has the following format:
 
-  ident = 	A uniquie identification number.
-
-  command =	The command that the application should execute.
-
-  command value = 	The some additional data required by this command.
-
---------------------
-
-  The syntax returned to the resource editor is:
-
-  Selection = 	<ident>\t<error>|<return value>
-
-  ident = 	the ident number passed with the command.
-
-  error = 	either 0 or non-zero.  If non-zero then an error has occured.
-  
-  Current Error codes:
-
-  	0 	- no error.
-	1	- unable to talk this version of the protocol.
-	2       - unformatted error.
-	3	- formatted error.
-
-if (error == 1)
-	return value	= a version of the protocol that the client will 
-			  understand.
-else if (error == 2)
-	return value	= <unformatted ascii string>
-else
-	return value	= This is data specific to the command passed.
-endif
-
-************************************************************
-
-Commands
-
-The command values and return values for the various commands are
-documented here.  If the <error> value is 1 or 2 then the return
-values will be as stated above.
-
-Currently supported commands are:
-
-	SendWidgetTree
-	SetValues
-	GetResources
-	GetGeometry
-
-************************************************************
-
---------------------
-SendWidgetTree
---------------------
-
-command value 	= <ignored>
-
-return value  	= <widget><EOL_SEPARATOR><return_value>
-
-widget 		= <grandparent_name>.<parent_name>.<_name>:<class>|<window>
-
-*_name		= <widget_name>\t<widget_id>
-
-widget_name	= name of the widget returned by XtName()
-
-class		= class of the widget stored in the class record stucture
-
-widget_id	= id of the widget represented as a string in decimal form.
-
-window   	= id of the window associated with this widget, or 0 if
-		  this widget has no window.
-
---------------------
-SetValues
---------------------
-
-command value	= <command><EOL_SEPARATOR><command value>
-
-command		= <id>#resource_name:resource_value
-
-   id 		= .<widget_id>.<parent_id>.<grandparent_id>...
-
-if (error == 3) then 
-
-	return value 	= <value><EOL_SEPARATOR>
-
-	value		= {[id], "Unknown Widget"}:<string>
-
-else if (error == 0)
-
-	return value = <string>
-
-endif
-
---------------------
-GetResources
---------------------
-
-command value 	= <id><EOL_SEPARATOR><command value>
-
-   id 		= .<widgetid>.<parentid>.<grandparentid>...
-
-return value 	= <value><EOL_SEPARATOR>
-
-   value	= <e_val><info>
-
-   e_val	= 1 if an error occured, 0 otherwise.
-                  NOTE: This field is exactly one character wide.
-
-   if (e_val == 0) then
-
-        info	= [id]:<data>
-
-   	data 	= <resource>\t...
-
-	resource= <type><name>:<class>#<type>
-
-	type = 'n' or 'c'
-	       NOTE: type is exactly one character long
-	             and distinguishes between (n)ormal 
-		     and (c)onstraint resources.
-
-   else if (e_val == 3)
-
-	info	= {[id], "Unknown Widget"}:<string>
-
-   else
-
-   	data 	= <string>
-
-   endif
-
------------
-GetGeometry
------------
-
-command value 	= <id><EOL_SEPARATOR>...
-
-   id 		= .<widgetid>.<parentid>.<grandparentid>...
-
-return value 	= <value><EOL_SEPARATOR>
-
-   value	= <e_val>
-
-   e_val	= 1 if an error occured, 0 otherwise.
-                  NOTE: This field is exactly one character wide.
-
-   if (e_val == 0) then
-
-        info	= [id]:<data>
+	Card8:		8-bit unsingned integer
+	Card16:		16-bit unsingned integer
+	Card32:		32-bit unsingned integer
+	Int16:		16-bit signed integer
+	Window:		32-bit value
+	Widget:		32-bit value
 	
-   	data 	= <geometry>#<border_width> || <"NOT_VISABLE">
+	[a][b][c] represent an exclusive list of choices.
 
-	geometry = <geometry string in format used by XParseGeomtery>
-		
-   else if (e_val == 3) then
+	All widgets are passed as a list of widgets, containing the 
+	full instance heirarch of this widget.  The heirarchy is ordered
+	from parent to child.  Thus first element of each list is
+	the root of the widget tree.
 
-	info 	=  {[id], "Unknown Widget"}:<string>
+	ListOfFoo comprises a lsit of things in the following format:
+	
+	number:			Card16
+	<number> things:	????
+	
+  This is a synchronous protocol, every request MUST be followed by a
+  reply.  
 
-   else
+  Request:
 
-   	data 	= <string>
+	Serial Number:	Card8
+	Op Code:	Card8 -	{ SendWidgetTree = 0,
+				  SetValues = 1,
+				  GetResources = 2,
+				  GetGeometry = 3,
+				  FindChild = 4 }
+	Length:		Card32
+	Data:		
 
-   endif
+   Reply:
 
------------
-FindChild
------------
+	Serial Number:	Card8
+	Type:		Card8 - { PartialSuccess, Failure, ProtocolMismatch }
+	Length:		Card32
 
-command value 	= <id>:<position_geom>
 
-position_geom	= {+-}<x_coord>{+-}<y_coord>
+   Byte Order:
 
-EXAMPLE:	+2+5  OR  -300+30
+	All Fields are MSB -> LSB
 
-NOTE:		These are root coordinates, not coordinates relative
-		to the widget passed.
+   ERRORS:
 
-   id 		= .<widgetid>.<parentid>.<grandparentid>...
+	Failure:
 
-   if (e_val == 0)
+		Message:	String8
 
-	return value 	= <id>
+	ProtocolMismatch:
 
-   else 
+		RequestedVersion:   	Card8
 
-        return value    = <string>
+------------------------------------------------------------
 
-NOTE:
+   SendWidgetTree:
 
-The returned widget is undefined if the point is contained in
-two or more mapped widgets, or in two overlapping Rect objs.
+	--->
+
+	Number of Entries:	Card16
+	Entry:
+		widget:		ListOfWidgets
+		name:		String8
+		class:		String8
+		window:		Card32
+
+	Send widget Tree returns the fully specified list of widgets
+	for each widget in the tree.  This is enough information to completely
+	reconstruct the entire widget heirarchy.
+
+   SetValues:
+
+	name:	String8
+	type:	String8
+	value:  String8
+	Number of Entries:	Card16
+	Entry:
+		widget:		ListOfWidgets
+
+	--->
+
+	Number of Entries:	Card16
+	Entry:
+		widget:		ListOfWidgets:
+		message:	String8
+
+	SetValues will allow the same resource to be set for a number of 
+	widgets.  This function will return a message for any widget for which
+	the SetValues request failed.
+	
+   GetResources:
+
+	Number of Entries:	Card16
+	Entry
+		widget:		ListOfWidgets:
+
+	---->
+
+	Number of Entries:	Card16
+	Entry
+		Widget:			ListOfWidgets:
+		Error:			Bool
+
+		[ Message:		String 8 ]
+		[ Number of Resources:	Card16
+		Resource:
+			Kind:	{normal, constraint}
+			Name:	String8
+			Class:	String8	
+			Type:	String8 ]
+
+	GetResource retrieves the kind, name, type and class for every 
+	widget passed to it.  If an error occured with the resource fetch
+	Error will be set to True for the given widget and a message
+	is returned rather than the resource info.
+
+  GetGeometry:
+
+	Number of Entries:	Card16
+	Entry
+		Widget:		ListOfWidgets:
+
+	---->
+
+	Number of Entries:	Card16
+	Entry
+		Widget:			ListOfWidgets:
+		Error:			Bool
+
+		[ message:		String 8 ]
+		[ Visable:      Boolean
+		  X: 		Int16
+		  Y:  		Int16
+		  Width: 	Card16
+	      	  Height:	Card16
+		  BorderWidth:	Card16 ]
+
+	GetGeometry retreives the x, y, width, height and border width 
+	for each widget specified.  If an error occured with the geometry
+	fetch Error will be set to True for the given widget and a message
+	is returned rather than the geometry info.  X an Y corrospond to
+	the root coordinates of the outside of window border of the widget
+	specified.
+	
+  FindChild:
+
+	Widget:		ListOfWidgets
+	X:		Int16
+	Y:		Int16
+	
+	--->
+
+	Widget:		ListOfWidgets
+
+	Find Child returns a descendent of the widget specified that 
+	is at the root coordinates specified.
+
+	NOTE:
+
+	The returned widget is undefined if the point is contained in
+	two or more mapped widgets, or in two overlapping Rect objs.
 
 ************************************************************/
+
+#include <X11/Intrinsic.h>
+
+#define BYTE 8
+#define BYTE_MASK 255
+
+#define HEADER_SIZE 6
 
 #define EDITRES_IS_OBJECT 2
 #define EDITRES_IS_UNREALIZED 0
@@ -219,46 +199,50 @@ two or more mapped widgets, or in two overlapping Rect objs.
 
 #define EDITRES_FORMAT             8
 #define EDITRES_SEND_EVENT_FORMAT 32
+
 /*
  * Atoms
  */
 
-#define EDITRES_NAME         "EditRes"
-#define EDITRES_COMMAND_ATOM "EditResCommand"
-#define EDITRES_COMM_ATOM    "EditResComm"
-#define EDITRES_CLIENT_VALUE "EditResClientVal"
+#define EDITRES_NAME         "Editres"
+#define EDITRES_COMMAND_ATOM "EditresCommand"
+#define EDITRES_COMM_ATOM    "EditresComm"
+#define EDITRES_CLIENT_VALUE "EditresClientVal"
+#define EDITRES_PROTOCOL_ATOM "EditresProtocol"
 
-/*
- * Resource Editor Commands.
- */
+typedef enum { SendWidgetTree = 0, SetValues = 1, GetResources = 2,
+	       GetGeometry = 3, FindChild = 4 } EditresCommand;
 
-#define EDITRES_SEND_WIDGET_TREE	"SendWidgetTree"
-#define EDITRES_SET_VALUES		"SetValues"
-#define EDITRES_GET_GEOMETRY		"GetGeometry"
-#define EDITRES_GET_RESOURCES		"GetResources"
-#define EDITRES_FIND_CHILD		"FindChild"
-
-/*
- * Seperators for various fields.
- */
-
-#define CLASS_SEPARATOR (':')
-#define COMMAND_SEPARATOR ('|')
-#define ID_SEPARATOR ('\t')
-#define NAME_SEPARATOR ('.')
-#define WID_RES_SEPARATOR ('#')
-#define EDITRES_BORDER_WIDTH_SEPARATOR WID_RES_SEPARATOR
-#define NAME_VAL_SEPARATOR CLASS_SEPARATOR
-#define CLASS_TYPE_SEPARATOR WID_RES_SEPARATOR
-#define RESOURCE_SEPARATOR ID_SEPARATOR
-#define WINDOW_SEPARATOR COMMAND_SEPARATOR
-#define EOL_SEPARATOR ('\n')
+typedef enum {NormalResource = 0, ConstraintResource = 1} ResourceType;
 
 /*
  * The type of a resource identifier.
  */
 
-typedef unsigned int ResIdent;
+typedef unsigned char ResIdent;
 
-typedef enum {NoResError = 0, ProtocolResError = 1, UnformattedResError = 2,
-	      FormattedResError = 3} ResourceError;
+typedef enum {PartialSuccess, Failure, ProtocolMismatch} EditResError;
+
+typedef struct _WidgetInfo {
+    unsigned short num_widgets;
+    unsigned long * ids;
+    Widget real_widget;
+} WidgetInfo;
+
+typedef struct _ProtocolStream {
+    unsigned long size, alloc;
+    XtPointer real_top, top, current;
+} ProtocolStream;
+
+/************************************************************
+ *
+ * Function definitions for reading and writing protocol requests.
+ *
+ ************************************************************/
+
+void _XawInsertString8(), _XawInsert8(), _XawInsert16(), _XawInsert32();
+void _XawInsertWidgetInfo(), _XawInsertWidget(), _XawResetStream();
+
+Boolean _XawRetrieve8(), _XawRetrieve16(), _XawRetrieveSigned16();
+Boolean _XawRetrieve32(), _XawRetrieveString8(), _XawRetrieveWidgetInfo();
+

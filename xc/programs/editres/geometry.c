@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.5 90/03/16 16:37:50 kit Exp $
+ * $XConsortium: geometry.c,v 1.6 90/06/25 18:09:25 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,12 +32,10 @@
 
 #include "editresP.h"
 
-extern WNode * IDToNode();
 extern void SetMessage(), SetCommand(), SetAndCenterTreeNode(), AddString();
-extern void GetAllStrings();
-extern Boolean ParseOutWidgetInfo();
-extern char * NodeToID();
+extern void GetAllStrings(), InsertWidgetFromNode();
 extern int HandleXErrors();
+extern WNode * FindNode();
 
 static void CreateFlashWidget(), FlashWidgets();
 
@@ -64,12 +62,13 @@ Widget w;
     if ( (win = GetClientWindow(w, &x, &y)) != None) {
 	node = FindWidgetFromWindow(global_tree_info, win);
 	if (node != NULL) {
-	    char buf[BUFSIZ], * id = NodeToID(node);
+	    ProtocolStream * stream = &(global_client.stream);	    
 	    
-	    sprintf(buf, "%s%c%c%d%c%d", id, NAME_VAL_SEPARATOR, 
-		    ((x < 0) ? '-' : '+'), x, ((y < 0) ? '-' : '+'), y);
-	    SetCommand(w, FindChild, buf, NULL);
-	    XtFree(id);
+	    _XawResetStream(stream);
+	    InsertWidgetFromNode(stream, node);
+	    _XawInsert16(stream, (short) x);
+	    _XawInsert16(stream, (short) y);
+	    SetCommand(w, LocalFindChild, NULL);
 	    return;
 	}
     }
@@ -126,22 +125,26 @@ Window win;
 
 /*	Function Name: DisplayChild
  *	Description: Displays the child node returned by the client
- *	Arguments: str - id of the node that contains this info.
+ *	Arguments: event - the event from the client.
  *	Returns: none.
  */
 
 void
-DisplayChild(str)
-char * str;
+DisplayChild(event)
+Event * event;
 {
+    FindChildEvent * find_event = (FindChildEvent *) event;
     WNode * node;
     char msg[BUFSIZ];
     void _FlashActiveWidgets();
 
-    if ( (node = IDToNode(global_tree_info->top_node, str)) == NULL) {
-	sprintf(msg, "Unable to find widget specified in string `%s'", str);
+    node = FindNode(global_tree_info->top_node, find_event->widgets.ids,
+		    find_event->widgets.num_widgets);
+
+    if (node == NULL) {
+	sprintf(msg, "Editres Internal Error: Unable to FindNode.\n");
 	SetMessage(global_screen_data.info_label, msg);
-	return;
+	return;	
     }
 
     SetAndCenterTreeNode(node);
@@ -165,7 +168,7 @@ _FlashActiveWidgets(tree_info)
 TreeInfo * tree_info;
 {
     int i;
-    char * all_nodes = NULL;
+    ProtocolStream * stream = &(global_client.stream);
 
     if (tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
@@ -178,110 +181,85 @@ TreeInfo * tree_info;
 	return;
     }
 	
-    for (i = 0; i < tree_info->num_nodes; i++) {
-	char buf[BUFSIZ];
-	char * id = NodeToID(tree_info->active_nodes[i]);
+    _XawResetStream(stream); 
+    /*
+     * Insert the number of widgets. 
+     */
+    _XawInsert16(stream, (unsigned short) tree_info->num_nodes);
 
-	sprintf(buf, "%s\n", id);
-	XtFree(id);
+    for (i = 0; i < tree_info->num_nodes; i++) 
+	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);
 
-	AddString(&all_nodes, buf);
-    }
-
-    SetCommand(tree_info->tree_widget, FlashWidget, all_nodes, NULL);
-    XtFree(all_nodes);
+    SetCommand(tree_info->tree_widget, LocalFlashWidget, NULL);
 }
 
 /*	Function Name: HandleFlashWidget
  *	Description: Is called when client has returned geometry of all widget
  *                   to flash.
- *	Arguments: value - strings containing geometry of widgets to flash.
+ *	Arguments: event - the event containing the client info.
  *	Returns: none.
  */
 
 char *
-HandleFlashWidget(value)
-String value;
+HandleFlashWidget(event)
+Event * event;
 {
+    GetGeomEvent * geom_event = (GetGeomEvent *) event;
     static void AddToFlashList();
-    char ** strings, * errors = NULL, *data;
-    int i, num_strings;
-    WNode * node;
+    char * errors = NULL;
+    int i;
 
-    GetAllStrings(value, EOL_SEPARATOR, &strings, &num_strings);
-
-    for (i = 0; i < num_strings; i++) {
-	if (ParseOutWidgetInfo(global_tree_info, &errors, strings[i], 
-			       &node, &data))
-	    AddToFlashList(global_tree_info, node, data, &errors);
-
-    }
+    for (i = 0; i < geom_event->num_entries; i++) 
+	AddToFlashList(global_tree_info, geom_event->info + i, &errors);
 
     FlashWidgets(global_tree_info);
 
-    XtFree(strings);
     return(errors);
 }
 
 /*	Function Name: AddWidgetToFlashList
  *	Description: Adds a widget to the list of widget to flash.
  *	Arguments: tree_info - info about this tree.
- *                 node - the node corrosponding to this widget.
- *                 geom_str - a string containing the geometry.
+ *                 geom_info - the info from the client about this widget.
  *                 errors - a string containing the errors.
- *	Returns: 
+ *	Returns: none
  */
 
 static void
-AddToFlashList(tree_info, node, geom_str, errors)
+AddToFlashList(tree_info, geom_info, errors)
 TreeInfo * tree_info;
-WNode *node;
-String geom_str;
+GetGeomInfo * geom_info;
 char ** errors;
 {
+    WNode * node;
     static void _AddToFlashList();
-    char * ptr, geom[100];
-    unsigned int width, height;
-    int bw, x, y, mask;
+    char buf[BUFSIZ];
 
-    if (streq(geom_str, "NOT_VISABLE")) {
-	char buf[BUFSIZ];
+    node = FindNode(tree_info->top_node, 
+		    geom_info->widgets.ids, geom_info->widgets.num_widgets);
 
+    if (node == NULL) {
+	sprintf(buf, "Editres Internal Error: Unable to FindNode.\n");
+	AddString(errors, buf); 
+	return;	
+    }
+
+    if (geom_info->error) {
+	AddString(errors, geom_info->message); 
+	return;	
+    }
+
+    if (!geom_info->visable) {
 	sprintf(buf, "%s(0x%lx) - This widget is not mapped\n",
 		node->name, node->id);
 	AddString(errors, buf); 
 	return;
     }
 
-    strcpy(geom, geom_str);
-
-    if ( (ptr = index(geom, EDITRES_BORDER_WIDTH_SEPARATOR)) == NULL) {
-	char buf[BUFSIZ];
-
-	sprintf(buf, "%s(0x%lx) - Incorrectly formatted entry, no `%c'\n",
-		node->name, node->id, EDITRES_BORDER_WIDTH_SEPARATOR);
-	AddString(errors, buf); 
-	return;
-    }
-
-    *ptr++ = '\0';    
-    bw = 2 * atoi(ptr);
-
-    mask = XParseGeometry(geom, &x, &y, &width, &height);
-    if ( !((mask & XValue) && (mask & YValue) && 
-	   (mask & WidthValue) && (mask & HeightValue)) ) {
-	char buf[BUFSIZ];
-
-	sprintf(buf, "%s(0x%lx) - Could not parse geometry string `%s'.\n", 
-		node->name, node->id, geom);
-	AddString(errors, buf); 
-	return;
-    }    
-
-    width += bw;		/* Border width has already been doubled. */
-    height += bw;
-
-    _AddToFlashList(tree_info, errors, node, x, y, width, height);
+    _AddToFlashList(tree_info, errors, node, 
+		    geom_info->x, geom_info->y, 
+		    geom_info->width + geom_info->border_width, 
+		    geom_info->height + geom_info->border_width);
 }
 
 /*	Function Name: _AddToFlashList

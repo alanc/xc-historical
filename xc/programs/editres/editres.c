@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.4 90/03/15 17:44:01 kit Exp $
+ * $XConsortium: editres.c,v 1.5 90/06/25 18:09:19 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

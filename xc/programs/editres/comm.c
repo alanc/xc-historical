@@ -14,13 +14,12 @@
 
 #include "editresP.h"
 
-#define CURRENT_PROTOCOL_VERSION 3
-
 /*
  * static Globals.
  */
 
 static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
+static Atom atom_editres_protocol;
 
 /*
  * external function definitions.
@@ -29,11 +28,13 @@ static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
 extern ResIdent GetNewIdent();
 extern void SetMessage(), BuildVisualTree(),DisplayChild();
 extern char * GetFormattedSetValuesError(), *HandleFlashWidget();
-extern char * HandleGetResources();
+extern char * HandleGetResources(),  *PrintSetValuesError();
+char * GetFailureMessage(), * ProtocolFailure();
 extern int HandleXErrors();
 
 static void TellUserAboutMessage();
-static Boolean StripReturnValueFromString();
+static Event * BuildEvent();
+static char * DispatchEvent();
 
 /*	Function Name: ClientTimedOut
  *	Description: Called if the client takes too long to take our selection.
@@ -52,15 +53,9 @@ XtIntervalId * id;
     char msg[BUFSIZ];
     Widget w = (Widget) data;
     
-
     global_client.ident = NO_IDENT;
     XtDisownSelection(w, global_client.atom, 
 		      XtLastTimestampProcessed(XtDisplay(w)));
-
-    if (global_client.value != NULL) {
-	XtFree(global_client.value);
-	global_client.value = NULL;
-    }
 
     sprintf(msg, "It appears that this client does not %s.",
 	    "listen to the Resource Editor");
@@ -145,21 +140,20 @@ int *x, *y;
  *                   command selection.
  *	Arguments: w - the widget that will own the selection.
  *                 command - command to send to client.
- *                 value - value string to pass with the command.
  *                 msg - message to prompt the user to select a client.
  *	Returns: none.
  */
 
 /* ARGSUSED */
 void
-SetCommand(w, command, value, msg)
+SetCommand(w, command, msg)
 Widget w;
 ResCommand command;
-char * value, * msg;
+char * msg;
 {
     XClientMessageEvent client_event;
     Display * dpy = XtDisplay(w);
-    static void ClientTimedOut(), LoseSelection();
+    static void ClientTimedOut(), LoseSelection(), SelectionDone();
     static Boolean ConvertCommand();
     
     if (msg == NULL) 
@@ -175,11 +169,12 @@ char * value, * msg;
     global_client.ident = GetNewIdent();
     
     global_client.command = command;
-    global_client.value = XtNewString(value);
     global_client.atom = atom_comm;
 
+    BuildHeader(&(global_client)); 
+
     if (!XtOwnSelection(w, global_client.atom, CurrentTime, ConvertCommand, 
-			LoseSelection, NULL))
+			LoseSelection, SelectionDone))
 	SetMessage(global_screen_data.info_label,
 		   "Unable to own the Resource Selection");
 
@@ -210,7 +205,7 @@ char * value, * msg;
 		"Please select the application manually");
 
 	global_client.window = None;
-	SetCommand(w, command, value, error_buf);
+	SetCommand(w, command, error_buf);
 	return;
     }   
 		   
@@ -235,20 +230,20 @@ ResCommand command;
     char msg[BUFSIZ], *str;
 
     switch(command) {
-    case SendWidgetTree:
+    case LocalSendWidgetTree:
 	str = " asking for widget tree";
 	break;
-    case SetValues:
+    case LocalSetValues:
 	str = " asking it to perform SetValues()";
 	break;
-    case FlashWidget:
-    case GetGeometry:
+    case LocalFlashWidget:
+    case LocalGetGeometry:
 	str = " asking it to perform GetGeometry()";
 	break;
-    case GetResources:
+    case LocalGetResources:
 	str = " asking it to get a widget's resource list";
 	break;
-    case FindChild:
+    case LocalFindChild:
 	str = " asking it to find the child Widget.";
 	break;
     default:
@@ -267,9 +262,6 @@ ResCommand command;
  *	Returns: TRUE if we could convert the selection and target asked for.
  */
 
-#define EXTRA_SPACE 30		/* Space for ident as a string, and 
-				   a few other characters. */
-
 /* ARGSUSED */
 static Boolean
 ConvertCommand(w,selection,target,type_ret, value_ret, length_ret, format_ret)
@@ -279,58 +271,27 @@ XtPointer *value_ret;
 unsigned long * length_ret;
 int * format_ret;
 {
-    int len;
-    char * command, *command_str, *value;
-
     if ((*selection != atom_comm) || (*target != atom_command))
 	return(FALSE);
 
-    *type_ret = XA_STRING;
-
-    switch(global_client.command) {
-    case SendWidgetTree:
-	command_str = EDITRES_SEND_WIDGET_TREE;
-	break;
-    case SetValues:
-	command_str = EDITRES_SET_VALUES;
-	break;
-    case FlashWidget:
-    case GetGeometry:
-	command_str = EDITRES_GET_GEOMETRY;
-	break;
-    case GetResources:
-	command_str = EDITRES_GET_RESOURCES;
-	break;
-    case FindChild:
-	command_str = EDITRES_FIND_CHILD;
-	break;
-    default:
-	SetMessage(global_screen_data.info_label,
-		   "Internal Error: Unknown client command.");
-	return(FALSE);
-    }
-
-    if (global_client.value == NULL)
-	value = "";
-    else
-	value = global_client.value;
-
-    len = strlen(command_str) + strlen(value) + EXTRA_SPACE;
-    command = XtMalloc(sizeof(char) * len);
-
-    sprintf(command, "%d%c%s%c%s", global_client.ident, ID_SEPARATOR, 
-	    command_str, COMMAND_SEPARATOR, value);
-
-#ifdef DEBUG
-    if (global_resources.debug)
-	printf("To Client:\n%s\n\n", command);
-#endif 
-
-    *value_ret = (XtPointer) command;
-    *length_ret = strlen(command) + 1;
+    *type_ret = atom_editres_protocol;
+    *value_ret = (XtPointer) global_client.stream.real_top;
+    *length_ret = global_client.stream.size + HEADER_SIZE;
     *format_ret = EDITRES_FORMAT;
     
     return(TRUE);
+}
+
+/*	Function Name: SelectionDone
+ *	Description: done with the selection.
+ *	Arguments: *** UNUSED ***
+ *	Returns: none.
+ */
+
+static void
+SelectionDone()
+{
+    /* Keep the toolkit from automaticaly freeing the selection value */
 }
 
 /*	Function Name: LoseSelection
@@ -351,11 +312,6 @@ Atom * sel;
     if (global_client.timeout != 0) {
 	XtRemoveTimeOut(global_client.timeout);
 	global_client.timeout = 0;
-    }
-
-    if (global_client.value != NULL) {
-	XtFree(global_client.value);
-	global_client.value = NULL;
     }
 
     XtGetSelectionValue(w, *sel, atom_client_value, GetClientValue,
@@ -385,195 +341,462 @@ Atom *selection, *type;
 unsigned long *length;
 int * format;
 {
-    char *string, *local_value, msg[BUFSIZ], *error_msg = NULL;
-    ResIdent ident;
-    ResourceError error;
+    Event * event;
+    ProtocolStream alloc_stream, *stream;
+    unsigned char ident, error_code;
+    char * error_str, msg[BUFSIZ];
 
-    msg[0] = '\0';
-
-    if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) ) 
+    if (*length == 0)
 	return;
 
-    string = (char *) value;
+    stream = &alloc_stream;	/* easier to think of it this way... */
 
-#ifdef DEBUG
-    if (global_resources.debug)
-	printf("From Client:\n%s\n\n", string);
-#endif 
+    stream->current = stream->top = value;
+    stream->size = HEADER_SIZE;		/* size of header. */
 
-    if (!StripReturnValueFromString(string, &ident, &error, &local_value)) {
-	sprintf(msg, "Error while parsing client string:\n%s\n", local_value);
-	SetMessage(global_screen_data.info_label, msg);
-	XtFree(local_value);
+    /*
+     * Retrieve the Header.
+     */
+
+    if (*length < HEADER_SIZE) {
+	SetMessage(global_screen_data.info_label,
+		   "Incorrectly formatted message from client.");
 	return;
     }
-	    
-    /*
-     * Ident is bad, reassert selection and wait for correct ident.
-     */
-	
-    if (ident != global_client.ident) {
+
+    (void) _XawRetrieve8(stream, &ident);
+    if (global_client.ident != ident) {
 #ifdef DEBUG
 	if (global_resources.debug)
 	    printf("Incorrect ident from client.\n");
 #endif 
 	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 
-			    LoseSelection, NULL))
+			    LoseSelection, SelectionDone))
 	    SetMessage(global_screen_data.info_label,
 		       "Unable to own the Resource Editor Command Selection");
-	XtFree(local_value);
 	return;
     }
 
-    switch(error) {
-    case NoResError:
-	switch(global_client.command) {
-	case SendWidgetTree:
-	    BuildVisualTree(global_tree_parent, local_value);
-	    break;
-	case SetValues:
-	    strcpy(msg, local_value);
-	    break;
-	case FlashWidget:
-	    error_msg = HandleFlashWidget(local_value);
-	    break;
-#ifdef notdef
-	case GetGeometry:
-	    HandleGetGeometry(local_value);
-	    break;
-#endif
-	case GetResources:
-	    error_msg = HandleGetResources(local_value);
-	    break;
-	case FindChild:
-	    DisplayChild(local_value);
-	    break;
-	default:
-	    sprintf(msg, "Internal error: Unknown command %d.", 
-		    global_client.command);
-   	    break;
+    (void) _XawRetrieve8(stream, &error_code); 
+    (void) _XawRetrieve32(stream, &(stream->size));
+    stream->top = stream->current; /* reset stream to top of value.*/
+
+    switch ((int) error_code) {
+    case PartialSuccess:
+	if ((event = BuildEvent(stream)) != NULL) {
+	    error_str = DispatchEvent(event);
+	    FreeEvent(event);
+	}
+	else {
+	    sprintf(msg, "Unable to unpack protocol request.");
+	    error_str = XtNewString(msg);
 	}
 	break;
-
-    case UnformattedResError:
-	sprintf(msg, "Error message received from client:\n%s\n", 
-		local_value);
+    case Failure:
+	error_str = GetFailureMessage(stream);
+	break;
+    case ProtocolMismatch:
+	error_str = ProtocolFailure(stream);
+	break;
+    default:
+	sprintf(msg, "Unknown Error code %d", (int) error_str);
 	SetMessage(global_screen_data.info_label, msg);
 	break;
-
-    case FormattedResError:
-	switch(global_client.command) {
-	case SendWidgetTree:
-	case FindChild:
-	    sprintf(msg, "Error message received from client:\n%s\n", 
-		    local_value);
-	    break;
-	case SetValues:
-	    error_msg = GetFormattedSetValuesError(local_value);
-	    break;
-	case FlashWidget:
-	    error_msg = HandleFlashWidget(local_value);
-	    break;
-#ifdef notdef
-	case GetGeometry:
-	    HandleGetGeometry(local_value);
-	    break;
-#endif
-	case GetResources:
-	    HandleGetResources(local_value);
-	    break;
-	default:
-	    sprintf(msg, "Internal error: Unknown command %d.", 
-		    global_client.command);
-	    break;
-	}
-	break;
-
-    case ProtocolResError:
-	sprintf(msg, "Error: That client %s %d\nof the editres protocol.", 
-		"does not understand version", CURRENT_PROTOCOL_VERSION);
-	break;
-	
-    default:
-	sprintf(msg, "Internal error: Unknown error code %d.", error);
-	break;
-    }	
-
-    XtFree(local_value);
-		
-    if (error_msg != NULL) {
-	SetMessage(global_screen_data.info_label, error_msg);
-	XtFree(error_msg);
-	return;
     }
 
-    if (msg[0] == '\0') {
+    if (error_str == NULL) {
 	WNode * top;
 	
 	if (global_tree_info == NULL)
 	    return;
 	
 	top = global_tree_info->top_node;
-	
 	sprintf(msg, "Widget Tree for client %s(%s).", top->name, top->class);
+	SetMessage(global_screen_data.info_label, msg);
+	return;
     }
-    SetMessage(global_screen_data.info_label, msg);
+    SetMessage(global_screen_data.info_label, error_str);
+    XtFree(error_str);
 }
 
-/*	Function Name: StripReturnValueFromString
- *	Description: 
- *	Arguments: string - The string that came from the client.
- *                 ident - the ident number *** RETURNED ***
- *                 error - True if an error has occured *** RETURNED ***
- *                 value - If error is true then this contains 
- *                                the error message.
- *	Returns: True if no error occured while parsing.
+/*	Function Name: BuildHeader
+ *	Description: Puts the header into the message.
+ *	Arguments: client_data - the client data.
+ *	Returns: none.
  */
 
-#define ERROR_TEMPLATE \
-	  "No %s Separator in the return string received from the client."
-
-static Boolean
-StripReturnValueFromString(string, ident, error, value)
-char * string;
-ResIdent * ident;
-ResourceError * error;
-char ** value;
+static void
+BuildHeader(client_data)
+CurrentClient * client_data;
 {
-    char * ptr, buf[BUFSIZ];
+    unsigned long old_alloc, old_size;
+    XtPointer old_current;
+    EditresCommand command;
+    ProtocolStream * stream = &(client_data->stream);
 
-    *error = NoResError;
-    *value = NULL;
+    /*
+     * We have cleverly keep enough space at the top of the header
+     * for the return protocol stream, so all we have to do is
+     * fill in the space.
+     */
 
-    ptr = index(string, ID_SEPARATOR);
-    if (ptr == NULL) {
-	*error = UnformattedResError;
-	*ident = 0;
-	sprintf(buf, ERROR_TEMPLATE, "ID");
-	*value = XtNewString(buf);
-	return(FALSE);
-    }
-   
-    *ptr = '\0';
-    *ident = atoi(string);	/* ASSUME that ident is an int. */
+    /* 
+     * Fool the insert routines into putting the header in the right
+     * place while being damn sure not to realloc (that would be very bad.
+     */
     
-    string = ptr + 1;		/* now points to error character. */
+    old_current = stream->current;
+    old_alloc = stream->alloc;
+    old_size = stream->size;
 
-    ptr = index(string, COMMAND_SEPARATOR);
-    if (ptr == NULL) {
-	*error = UnformattedResError;
-	sprintf(buf, ERROR_TEMPLATE, "COMMAND");
-	*value = XtNewString(buf);
-	return(FALSE);
+    stream->current = stream->real_top;
+    stream->alloc = stream->size + (2 * HEADER_SIZE);	
+    
+    _XawInsert8(stream, client_data->ident);
+    switch(client_data->command) {
+    case LocalSendWidgetTree:
+	command = SendWidgetTree;
+	break;
+    case LocalSetValues:
+	command = SetValues;
+	break;
+    case LocalFlashWidget:
+	command = GetGeometry;
+	break;
+    case LocalGetResources:
+	command = GetResources;
+	break;
+    case LocalFindChild:
+	command = FindChild;
+	break;
+    default:
+	command = SendWidgetTree;
+	break;
+    }
+				  
+    _XawInsert8(stream, (unsigned char) command);
+    _XawInsert32(stream, old_size);
+
+    stream->alloc = old_alloc;
+    stream->current = old_current;
+    stream->size = old_size;
+}
+
+/*	Function Name: BuildEvent
+ *	Description: Builds the event structure from the 
+ *	Arguments: stream - the protocol data stream.
+ *	Returns: event - the event.
+ */
+
+static Event * 
+BuildEvent(stream)
+ProtocolStream * stream;
+{
+    int i;
+    Event * event = (Event *) XtCalloc(sizeof(Event), 1);
+
+    /*
+     * The return value will be different depending upon the
+     * request sent out.
+     */
+
+    switch(global_client.command) {
+    case LocalSendWidgetTree:
+        {
+	    SendWidgetTreeEvent * send_event = (SendWidgetTreeEvent *) event;
+
+	    send_event->type = SendWidgetTree;
+
+	    if (!_XawRetrieve16(stream, &(send_event->num_entries)))
+		goto done;
+	    
+	    send_event->info = (WidgetTreeInfo *)
+		                XtCalloc(sizeof(WidgetTreeInfo),
+					 send_event->num_entries);
+
+	    for (i = 0; i < send_event->num_entries; i++) {
+		WidgetTreeInfo * info = send_event->info + i;
+		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _XawRetrieveString8(stream, &(info->name)) &&
+		      _XawRetrieveString8(stream, &(info->class)) &&
+		      _XawRetrieve32(stream, &(info->window)))) 
+		{
+		    goto done;
+		}
+	    }
+	}
+	break;
+    case LocalSetValues:
+        {
+	    SetValuesEvent * sv_event = (SetValuesEvent *) event;
+
+	    sv_event->type = SetValues;
+
+	    if (!_XawRetrieve16(stream, &(sv_event->num_entries)))
+		goto done;
+	    
+	    sv_event->info = (SetValuesInfo *) XtCalloc(sizeof(SetValuesInfo),
+							sv_event->num_entries);
+
+	    for (i = 0; i < sv_event->num_entries; i++) {
+		SetValuesInfo * info = sv_event->info + i;
+		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _XawRetrieveString8(stream, &(info->message))))
+		{
+		    goto done;
+		}
+	    }
+	}
+	break;
+    case LocalGetResources:
+        {
+	    GetResourcesEvent * res_event = (GetResourcesEvent *) event;
+	    
+	    res_event->type = GetGeometry;
+
+	    if (!_XawRetrieve16(stream, &(res_event->num_entries)))
+		goto done;
+
+	    res_event->info = (GetResourcesInfo *) 
+		                   XtCalloc(sizeof(GetResourcesInfo),
+					    res_event->num_entries);
+
+	    for (i = 0; i < res_event->num_entries; i++) {
+		GetResourcesInfo * res_info = res_event->info + i;
+		if (!(_XawRetrieveWidgetInfo(stream, &(res_info->widgets)) &&
+		      _XawRetrieveBoolean(stream, &(res_info->error))))
+		{
+		    goto done;
+		}
+		if (res_info->error) {
+		    if (!_XawRetrieveString8(stream, &(res_info->message))) 
+			goto done;
+		}
+		else {
+		    unsigned int j;
+
+		    if (!_XawRetrieve16(stream, &(res_info->num_resources)))
+			goto done;
+
+		    res_info->res_info = (ResourceInfo *) 
+			                  XtCalloc(sizeof(ResourceInfo),
+						   res_info->num_resources);
+
+		    for (j = 0; j < res_info->num_resources; j++) {
+			ResourceInfo * info = res_info->res_info + j;
+			if (!(_XawRetrieveResType(stream, &(info->res_type)) &&
+			      _XawRetrieveString8(stream, &(info->name)) &&
+			      _XawRetrieveString8(stream, &(info->class)) &&
+			      _XawRetrieveString8(stream, &(info->type))))
+			{
+			    goto done;
+			}
+		    } /* for */
+		} /* else */
+	    } /* for */
+	}
+	break;
+    case LocalFlashWidget:
+    case LocalGetGeometry:
+        {
+	    GetGeomEvent * geom_event = (GetGeomEvent *) event;
+
+	    geom_event->type = GetGeometry;
+
+	    if (!_XawRetrieve16(stream, &(geom_event->num_entries)))
+		goto done;
+	    
+	    geom_event->info = (GetGeomInfo *) XtCalloc(sizeof(GetGeomInfo),
+						      geom_event->num_entries);
+
+	    for (i = 0; i < geom_event->num_entries; i++) {
+		GetGeomInfo * info = geom_event->info + i;
+		if (!(_XawRetrieveWidgetInfo(stream, &(info->widgets)) &&
+		      _XawRetrieveBoolean(stream, &(info->error))))
+		{
+		    goto done;
+		}
+		if (info->error) {
+		    if (!_XawRetrieveString8(stream, &(info->message)))
+			goto done;
+		}
+		else {
+		    if (!(_XawRetrieveBoolean(stream, &(info->visable)) &&
+			  _XawRetrieveSigned16(stream, &(info->x)) &&
+			  _XawRetrieveSigned16(stream, &(info->y)) &&
+			  _XawRetrieve16(stream, &(info->width)) &&
+			  _XawRetrieve16(stream, &(info->height)) &&
+			  _XawRetrieve16(stream, &(info->border_width))))
+		    {
+			goto done;
+		    }
+		}
+	    }
+	}
+	break;
+    case LocalFindChild:
+        {
+	    FindChildEvent * find_event = (FindChildEvent *) event;
+
+	    find_event->type = FindChild;
+
+	    if (!_XawRetrieveWidgetInfo(stream, &(find_event->widgets)))
+		goto done;
+	}
+	break;
+    default:
+	goto done;
     }
 
-    *ptr++ = '\0';
-    *error = (ResourceError) atol(string);
-    *value = XtNewString(ptr);
-  
-    return(TRUE);		/* parsed cleanly. */
+    return(event);
+
+ done:
+    FreeEvent(event);
+    return(NULL);
 }
- 
+
+
+/*	Function Name: FreeEvent
+ *	Description: Frees all memory associated with the event. 
+ *	Arguments: event - the event.
+ *	Returns: none.
+ *
+ * NOTE: XtFree() returns w/o freeing if ptr is NULL.
+ */
+
+static void
+FreeEvent(event)
+Event * event;
+{
+    unsigned int i;
+
+    switch(event->any_event.type) {
+    case SendWidgetTree:
+        {
+	    SendWidgetTreeEvent * send_event = (SendWidgetTreeEvent *) event;
+	    WidgetTreeInfo * info = send_event->info;
+	    
+	    if (info != NULL) {
+		for (i = 0; i < send_event->num_entries; i++, info++) {
+		    XtFree(info->widgets.ids);
+		    XtFree(info->name);
+		    XtFree(info->class);
+		}
+		XtFree(send_event->info);
+	    }
+	}
+	break;
+    case SetValues:
+        {
+	    SetValuesEvent * sv_event = (SetValuesEvent *) event;
+	    SetValuesInfo * info = sv_event->info;
+	    
+	    if (info != NULL) {
+		for (i = 0; i < sv_event->num_entries; i++, info++) {
+		    XtFree(info->widgets.ids);
+		    XtFree(info->message);
+		}
+		XtFree(sv_event->info);
+	    }
+	}
+	break;
+    case GetResources:
+        {
+	    GetResourcesEvent * get_event = (GetResourcesEvent *) event;
+	    GetResourcesInfo * info = get_event->info;
+
+	    if (info != NULL) {
+		for (i = 0; i < get_event->num_entries; i++, info++) {
+		    XtFree(info->widgets.ids);
+		    if (info->error) 
+			XtFree(info->message);
+		    else {
+			unsigned int j;
+			ResourceInfo * res_info = info->res_info;
+			
+			if (res_info != NULL) {
+			    for (j = 0; 
+				 j < info->num_resources; j++, res_info++) 
+			    {
+				XtFree(res_info->name);
+				XtFree(res_info->class);
+				XtFree(res_info->type);
+			    }
+			    XtFree(info->res_info);
+			}
+		    }
+		} 
+		XtFree(get_event->info);
+	    }
+	}
+	break;
+    case GetGeometry:
+        {
+	    GetGeomEvent * geom_event = (GetGeomEvent *) event;
+	    GetGeomInfo * info = geom_event->info;
+
+	    if (info != NULL) {
+		for (i = 0; i < geom_event->num_entries; i++, info++) {
+		    XtFree(info->widgets.ids);
+		    if (info->error) 
+			XtFree(info->message);
+		}
+		XtFree(geom_event->info);
+	    }
+	}
+	break;
+    case FindChild:
+        {
+	    FindChildEvent * find_event = (FindChildEvent *) event;
+	    
+	    XtFree(find_event->widgets.ids);
+	}
+	break;
+    default:
+	break;
+    }
+}
+
+/*	Function Name: DispatchEvent
+ *	Description: Handles the event, calling the proper function.
+ *	Arguments: event - the event.
+ *	Returns: one.
+ */
+	
+static char *
+DispatchEvent(event)
+Event * event;
+{
+    char * error = NULL;
+
+    switch(global_client.command) {
+    case LocalSendWidgetTree:
+	BuildVisualTree(global_tree_parent, event);
+	break;
+    case LocalSetValues:
+	error = PrintSetValuesError(event);
+	break;
+    case LocalFlashWidget:
+	error = HandleFlashWidget(event);
+	break;
+    case LocalGetResources:
+	error = HandleGetResources(event);
+	break;
+    case LocalFindChild:
+	DisplayChild(event);
+	break;
+    default:
+        {
+	    char msg[BUFSIZ];
+	    sprintf(msg, "Internal error: Unknown command %d.", 
+		    global_client.command);
+	    error = XtNewString(msg);
+	}
+	break;
+    }
+    return(error);
+}
+
 /*	Function Name: InternAtoms
  *	Description: interns all static atoms.
  *	Arguments: display - the current display.
@@ -588,6 +811,7 @@ Display * dpy;
     atom_command = XInternAtom(dpy, EDITRES_COMMAND_ATOM, False);
     atom_resource_editor = XInternAtom(dpy, EDITRES_NAME, False);
     atom_client_value = XInternAtom(dpy, EDITRES_CLIENT_VALUE, False);
+    atom_editres_protocol = XInternAtom(dpy, EDITRES_PROTOCOL_ATOM, False);
 }
 
 ResIdent

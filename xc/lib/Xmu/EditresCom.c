@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.10 90/04/26 17:35:19 converse Exp $
+ * $XConsortium: EditResCom.c,v 1.11 90/06/25 18:08:36 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,31 +34,77 @@
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/EditRes.h>
 
-#ifdef notdef
-#  include <X11/Xaw/Text.h>
-#endif
+#define _XawInsertBool _XawInsert8	
+#define _XawInsertResourceType _XawInsert8
 
-#define CURRENT_PROTOCOL_VERSION 3L
+/************************************************************
+ *
+ * Local structure definitions.
+ *
+ ************************************************************/
 
-#define UNKNOWN ("Unknown Widget")
+typedef struct _SetValuesEvent {
+    EditresCommand type;	/* first field must be type. */
+    WidgetInfo * widgets;
+    unsigned short num_entries;		/* number of set values requests. */
+    char * name;
+    char * res_type;
+    XtPointer value;
+    unsigned short value_len;
+} SetValuesEvent;
+
+typedef struct _SVErrorInfo {
+    SetValuesEvent * event;
+    ProtocolStream * stream;
+    unsigned short * count;
+    WidgetInfo * entry;
+} SVErrorInfo;
+
+typedef struct _FindChildEvent {
+    EditresCommand type;	/* first field must be type. */
+    WidgetInfo * widgets;
+    short x, y;
+} FindChildEvent;
+
+typedef struct _GenericGetEvent {
+    EditresCommand type;	/* first field must be type. */
+    WidgetInfo * widgets;
+    unsigned short num_entries;		/* number of set values requests. */
+} GenericGetEvent, GetResEvent, GetGeomEvent;
+
+/*
+ * Things that are common to all events.
+ */
+
+typedef struct _AnyEvent {
+    EditresCommand type;	/* first field must be type. */
+    WidgetInfo * widgets;
+} AnyEvent;
+
+/*
+ * The event union.
+ */
+
+typedef union _EditresEvent {
+    AnyEvent any_event;
+    SetValuesEvent set_values_event;
+    GetResEvent get_resources_event;
+    GetGeomEvent get_geometry_event;
+    FindChildEvent find_child_event;
+} EditresEvent;
+
+#define CURRENT_PROTOCOL_VERSION 4L
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 
-static Atom res_editor_command, client_value;
+static Atom res_editor_command, res_editor_protocol, client_value;
 
-static char * global_selection_command;
+static SVErrorInfo global_error_info;
 
-typedef struct _Message {
-    char * str;			/* The Error String. */
-    int len, alloc;		/*length of message, and amount alloced space*/
-    Boolean formatted;		/* is this a formatted error message. */
-} Message;
+static ProtocolStream global_stream; /* zeroed out by compiler. */
+static ProtocolStream * global_command_stream; /* command stream. */
 
-static Message * global_error;
-static char *global_widget_str, *global_resource_name, *global_resource_value;
-static Boolean ParseCommand();
-static void AddError(), ExecuteCommand(), SendReturnCommand();
-static void SendBackError(), SendCommand();
+static void SendFailure(), SendCommand(), InsertWidget(), ExecuteCommand();
 
 /************************************************************
  *
@@ -98,6 +144,7 @@ Boolean *cont;
 	first_time = TRUE;
 	res_editor = XInternAtom(disp, EDITRES_NAME, False);
 	res_editor_command = XInternAtom(disp, EDITRES_COMMAND_ATOM, False);
+	res_editor_protocol = XInternAtom(disp, EDITRES_PROTOCOL_ATOM, False);
 
 	/*
 	 * Used in later proceedures. 
@@ -118,16 +165,189 @@ Boolean *cont;
 	res_comm = c_event->data.l[1];
 	ident = (ResIdent) c_event->data.l[2];
 	if (c_event->data.l[3] != CURRENT_PROTOCOL_VERSION) {
-	    char buf[BUFSIZ];
-
-	    sprintf(buf, "%ld", CURRENT_PROTOCOL_VERSION);
-	    SendCommand(w, res_comm, ident, ProtocolResError, buf);
+	    _XawResetStream(&global_stream);
+	    _XawInsert8(&global_stream, CURRENT_PROTOCOL_VERSION);
+	    SendCommand(w, res_comm, ident, ProtocolMismatch, &global_stream);
 	    return;
 	}
 
 	XtGetSelectionValue(w, res_comm, res_editor_command,
 			    GetCommand, (XtPointer) ident, time);
     }
+}
+
+/*	Function Name: BuildEvent
+ *	Description: Takes the info out the protocol stream an constructs
+ *                   the proper event structure.
+ *	Arguments: w - widget to own selection, in case of error.
+ *                 sel - selection to send error message beck in.
+ *                 data - the data for the request.
+ *                 ident - the id number we are looking for.
+ *                 length - length of request.
+ *	Returns: the event, or NULL.
+ */
+
+#define ERROR_MESSAGE ("Client: Improperly formatted protocol request")
+
+EditresEvent *
+BuildEvent(w, sel, data, ident, length)
+Widget w;
+Atom sel;
+XtPointer data;
+ResIdent ident;
+unsigned long length;
+{
+    EditresEvent * event;
+    ProtocolStream alloc_stream, *stream;
+    unsigned char temp;
+    register unsigned int i;
+
+    stream = &alloc_stream;	/* easier to think of it this way... */
+
+    stream->current = stream->top = data;
+    stream->size = HEADER_SIZE;		/* size of header. */
+
+    /*
+     * Retrieve the Header.
+     */
+
+    if (length < HEADER_SIZE) {
+	SendFailure(w, sel, ident, Failure, ERROR_MESSAGE);
+	return(NULL);
+    }
+
+    (void) _XawRetrieve8(stream, &temp);
+    if (temp != ident)		/* Id's don't match, ignore request. */
+	return(NULL);		
+
+    event = (EditresEvent *) XtCalloc(sizeof(EditresEvent), 1);
+
+    (void) _XawRetrieve8(stream, &temp);
+    event->any_event.type = (EditresCommand) temp;
+    (void) _XawRetrieve32(stream, &(stream->size));
+    stream->top = stream->current; /* reset stream to top of value.*/
+	
+    /*
+     * Now retrieve the data segment.
+     */
+    
+    switch(event->any_event.type) {
+    case SendWidgetTree:
+	break;			/* no additional info */
+    case SetValues:
+        {
+	    SetValuesEvent * sv_event = (SetValuesEvent *) event;
+	    
+	    if ( !(_XawRetrieveString8(stream, &(sv_event->name)) &&
+		   _XawRetrieveString8(stream, &(sv_event->res_type))))
+	    {
+		goto done;
+	    }
+
+	    /*
+	     * Since we need the value length, we have to pull the
+	     * value out by hand.
+	     */
+
+	    if (!_XawRetrieve16(stream, &(sv_event->value_len)))
+		goto done;
+
+	    sv_event->value = XtMalloc(sizeof(char) * 
+				       (sv_event->value_len + 1));
+
+	    for (i = 0; i < sv_event->value_len; i++) {
+		if (!_XawRetrieve8(stream, 
+				   (unsigned char *) sv_event->value + i)) 
+		{
+		    goto done;
+		}
+	    }
+	    sv_event->value[i] = '\0'; /* NULL terminate that sucker. */
+
+	    if (!_XawRetrieve16(stream, &(sv_event->num_entries)))
+		goto done;
+
+	    sv_event->widgets = (WidgetInfo *)
+		XtCalloc(sizeof(WidgetInfo), sv_event->num_entries);
+	    
+	    for (i = 0; i < sv_event->num_entries; i++) {
+		if (!_XawRetrieveWidgetInfo(stream, sv_event->widgets + i))
+		    goto done;
+	    }
+	}
+	break;
+    case FindChild:
+        {
+	    FindChildEvent * find_event = (FindChildEvent *) event;
+	    
+	    find_event->widgets = (WidgetInfo *) 
+		                  XtCalloc(sizeof(WidgetInfo), 1);
+
+	    if (!(_XawRetrieveWidgetInfo(stream, find_event->widgets) &&
+		  _XawRetrieveSigned16(stream, &(find_event->x)) &&
+		  _XawRetrieveSigned16(stream, &(find_event->y))))
+	    {
+		goto done;
+	    }	    				
+
+	}
+	break;
+    case GetGeometry:
+    case GetResources:
+        {
+	    GenericGetEvent * get_event = (GenericGetEvent *) event;
+	    
+	    if (!_XawRetrieve16(stream, &(get_event->num_entries)))
+		goto done;
+		
+	    get_event->widgets = (WidgetInfo *)
+		XtCalloc(sizeof(WidgetInfo), get_event->num_entries);
+	    for (i = 0; i < get_event->num_entries; i++) {
+		if (!_XawRetrieveWidgetInfo(stream, get_event->widgets + i)) 
+		    goto done;
+	    }
+	}
+	break;
+    default:
+	{
+	    char buf[BUFSIZ];
+	    
+	    sprintf(buf, "Unknown Protocol request %d.",event->any_event.type);
+	    SendFailure(w, sel, ident, buf);
+	    return(NULL);
+	}
+    }
+    return(event);
+
+ done:
+
+    SendFailure(w, sel, ident, ERROR_MESSAGE);
+    FreeEvent(event);
+    return(NULL);
+}    
+
+/*	Function Name: FreeEvent
+ *	Description: Frees the event structure and any other pieces
+ *                   in it that need freeing.
+ *	Arguments: event - the event to free.
+ *	Returns: none.
+ */
+
+static void
+FreeEvent(event)
+EditresEvent * event;
+{
+    if (event->any_event.widgets != NULL) {
+	XtFree(event->any_event.widgets->ids);
+	XtFree(event->any_event.widgets);
+    }
+
+    if (event->any_event.type == SetValues) {
+	XtFree(event->set_values_event.name);     /* XtFree does not free if */
+	XtFree(event->set_values_event.res_type); /* value is NULL. */
+    }
+	
+    XtFree(event);
 }
 
 /*	Function Name: GetCommand
@@ -147,63 +367,16 @@ Atom *selection, *type;
 unsigned long *length;
 int * format;
 {
-    char * command, *command_value;
     ResIdent ident = (ResIdent) data;
+    EditresEvent * event;
 
-    if ( (*type != XA_STRING) || (*format != EDITRES_FORMAT) )
+    if ( (*type != res_editor_protocol) || (*format != EDITRES_FORMAT) )
 	return;
 
-    if (ParseCommand(w, *selection, (char *) value, ident,
-		     &command, &command_value))
-	ExecuteCommand(w, *selection, ident, command, command_value);
-}
-
-/*	Function Name: ParseCommand
- *	Description: Parses the command string into a command and value.
- *	Arguments: str - string to parse.
- *                 ident - ident to match.
- *                 command - command to execute.
- *                 value - value associated with the command.
- *	Returns: True if string is formatted well and idents match.
- */
-
-#define FORMAT_ERROR "Resource Editor command sent in wrong format."
-
-static Boolean
-ParseCommand(w, sel, str, ident, command, value) 
-Widget w;
-Atom sel;
-char * str;
-ResIdent ident;
-char ** command, **value;
-{
-    char * ptr;
-
-    if ( (ptr = index(str, ID_SEPARATOR)) == NULL) {
-	SendBackError(w, sel, ident, FORMAT_ERROR);
-	return(FALSE);
+    if ((event = BuildEvent(w, *selection, value, ident, *length)) != NULL) {
+	ExecuteCommand(w, *selection, ident, event);
+	FreeEvent(event);
     }
-    
-    *ptr = '\0';
-
-    if (ident != atoi(str)) {
-#ifdef DEBUG	
-	printf("Ident numbers don't match.\n");
-#endif 
-	return(FALSE);
-    }
-
-    *command = ptr + 1;
-    
-    if ( (ptr = index(*command, COMMAND_SEPARATOR)) == NULL) {
-	SendBackError(w, sel, ident, FORMAT_ERROR);
-	return(FALSE);
-    }
-    
-    *ptr = '\0';
-    *value = ptr + 1;
-
-    return(TRUE);
 }
 
 /*	Function Name: ExecuteCommand
@@ -219,52 +392,47 @@ char ** command, **value;
 
 /* ARGSUSED */    
 static void
-ExecuteCommand(w, sel, ident, command, value)
+ExecuteCommand(w, sel, ident, event)
 Widget w;
 Atom sel;
 ResIdent ident;
-char * command, *value;
+EditresEvent * event;
 {
-    if (streq(EDITRES_SEND_WIDGET_TREE, command)) {
-	char * DumpWidgets();
-	char * comm_str = DumpWidgets(w);
+    static char * (*func)();
+    static char * DumpWidgets(), *DoSetValues(), *DoFindChild();
+    static char * DoGetGeometry(), *DoGetResources();
+    char * str;
 
-	SendReturnCommand(w, sel, ident, comm_str);
-	XtFree(comm_str);
+    switch(event->any_event.type) {
+    case SendWidgetTree:
+	func = DumpWidgets;
+	break;
+    case SetValues:
+	func = DoSetValues;
+	break;
+    case FindChild:
+	func = DoFindChild;
+	break;
+    case GetGeometry:
+	func = DoGetGeometry;
+	break;
+    case GetResources:
+	func = DoGetResources;
+	break;
+    default: 
+        {
+	    char buf[BUFSIZ];
+	    sprintf(buf,"Unknown Protocol request %d.",event->any_event.type);
+	    SendFailure(w, sel, ident, buf);
+	}
     }
+
+    _XawResetStream(&global_stream);
+    if ((str = (*func)(w, event, &global_stream)) == NULL)
+	SendCommand(w, sel, ident, PartialSuccess, &global_stream);
     else {
-	Message error_message;
-	static Boolean DoFindChild(), DoSetValues(), DoGetGeometry();
-	static Boolean DoGetResources();
-	static Boolean (*func)();
-       
-	bzero((char *) &error_message, sizeof(Message));
-
-	if (streq(EDITRES_SET_VALUES, command))
-	    func = DoSetValues;
-	else if (streq(EDITRES_GET_GEOMETRY, command))
-	    func = DoGetGeometry;
-	else if (streq(EDITRES_GET_RESOURCES, command))
-	    func = DoGetResources;
-	else if (streq(EDITRES_FIND_CHILD, command)) 
-	    func = DoFindChild;
-	else {
-	    char msg[BUFSIZ];
-	    sprintf(msg, "Unknown Command: %s", command);
-	    SendBackError(w, sel, ident, msg);
-	    return;
-	}
-		
-	if ((*func)(w, value, &error_message))
-	    SendReturnCommand(w, sel, ident, error_message.str);
-	else {
-	    SendCommand(w, sel, ident, 
-			(error_message.formatted ? FormattedResError 
-			                         : UnformattedResError),
-			error_message.str);	    
-	}
-
-	XtFree(error_message.str);
+	SendFailure(w, sel, ident, str);
+	XtFree(str);
     }
 }
 
@@ -290,8 +458,6 @@ XtPointer *value_ret;
 unsigned long * length_ret;
 int * format_ret;
 {
-    char * DumpWidgets();
-
     /*
      * I assume the intrinsics give me the correct selection back.
      */
@@ -299,11 +465,10 @@ int * format_ret;
     if ((*target != client_value))
 	return(FALSE);
 
-    *type_ret = XA_STRING;
+    *type_ret = res_editor_protocol;
+    *value_ret = global_command_stream->real_top;
+    *length_ret = global_command_stream->size + HEADER_SIZE;
     *format_ret = EDITRES_FORMAT;
-
-    *value_ret = (XtPointer) global_selection_command;
-    *length_ret = strlen((String) *value_ret) + 1;
 
     return(TRUE);
 }
@@ -320,87 +485,94 @@ CommandDone()
     /* Keep the toolkit from automaticaly freeing the selection value */
 }
 
-/*	Function Name: LoseReturnCommand
- *	Description: lose selection proc called when command selection is lost.
- *	Arguments: *** UNUSED ***.
- *	Returns: none.
- */
-
-/* ARGSUSED */
-static void
-LoseReturnCommand(w, sel)
-Widget w;
-Atom *sel;
-{
-    XtFree(global_selection_command);
-    global_selection_command = NULL;
-}
-
-/*	Function Name: SendReturnCommand
- *	Description: builds a return command in the proper format.
- *	Arguments: w - the widget that will own the selection.
- *                 ident - the unique ident.
- *                 value - command value.
- *	Returns: none.
- */
-
-static void
-SendReturnCommand(w, sel, ident, value)
-Widget w;
-Atom sel;
-ResIdent ident;
-char * value;
-{
-    SendCommand(w, sel, ident, NoResError, value);
-}
-
-/*	Function Name: SendBackError
- *	Description: sends back and error message.
+/*	Function Name: SendFailure
+ *	Description: Sends a failure message.
  *	Arguments: w - the widget to own the selection.
- *                 ident - the unique ident.
- *                 value - command value.
+ *                 sel - the selection to assert.
+ *	 	   ident - the identifier.
+ *                 str - the error message.
  *	Returns: none.
  */
 
 static void
-SendBackError(w, sel, ident, value)
+SendFailure(w, sel, ident, str) 
 Widget w;
 Atom sel;
 ResIdent ident;
-char * value;
+char * str;
 {
-    SendCommand(w, sel, ident, UnformattedResError, value);
+    _XawResetStream(&global_stream);
+    _XawInsertString8(&global_stream, str);
+    SendCommand(w, sel, ident, Failure, &global_stream);
 }
+
+/*	Function Name: BuildReturnPacket
+ *	Description: Builds a return packet, given the data to send.
+ *	Arguments: ident - the identifier.
+ *                 command - the command code.
+ *                 stream - the protocol stream.
+ *	Returns: packet - the packet to send.
+ */
+
+XtPointer
+BuildReturnPacket(ident, command, stream)
+ResIdent ident;
+EditresCommand command;
+ProtocolStream * stream;
+{
+    long old_alloc, old_size;
+    XtPointer old_current;
+    
+    /*
+     * We have cleverly keep enough space at the top of the header
+     * for the return protocol stream, so all we have to do is
+     * fill in the space.
+     */
+
+    /* 
+     * Fool the insert routines into putting the header in the right
+     * place while being damn sure not to realloc (that would be very bad.
+     */
+    
+    old_current = stream->current;
+    old_alloc = stream->alloc;
+    old_size = stream->size;
+
+    stream->current = stream->real_top;
+    stream->alloc = stream->size + (2 * HEADER_SIZE);	
+    
+    _XawInsert8(stream, ident);
+    _XawInsert8(stream, (unsigned char) command);
+    _XawInsert32(stream, old_size);
+
+    stream->alloc = old_alloc;
+    stream->current = old_current;
+    stream->size = old_size;
+    
+    return(stream->real_top);
+}    
 
 /*	Function Name: SendCommand
  *	Description: Builds a return command line.
- *	Arguments: ident - the identifier.
- *                 error - TRUE if this is an error message.
- *                 str - string to pass as the value or error message.
+ *	Arguments: w - the widget to own the selection.
+ *                 sel - the selection to assert.
+ *	 	   ident - the identifier.
+ *                 command - the command code.
+ *                 stream - the protocol stream.
  *	Returns: none.
  */
 
 static void
-SendCommand(w, sel, ident, error, str)
+SendCommand(w, sel, ident, command, stream)
 Widget w;
 Atom sel;
 ResIdent ident;
-ResourceError error;
-char * str;
+EditresCommand command;
+ProtocolStream * stream;
 {
-    int len = strlen(str);
-    char * command;
+    BuildReturnPacket(ident, command, stream);
+    global_command_stream = stream;	
 
-    command = XtMalloc(sizeof(char) * (len + 20));
-    
-    sprintf(command, "%d%c%d%c%s", ident, ID_SEPARATOR, (int) error, 
-	    COMMAND_SEPARATOR, str);
-    
-    if (global_selection_command != NULL) 
-	XtFree(global_selection_command);
-
-    global_selection_command = command;
-    
 /*
  * I REALLY want to own the selection.  Since this was not triggered
  * by a user action, and I am the only one using this atom it is safe to
@@ -408,7 +580,7 @@ char * str;
  */
 
     XtOwnSelection(w, sel, CurrentTime,
-		   ConvertReturnCommand, LoseReturnCommand, CommandDone);
+		   ConvertReturnCommand, NULL, CommandDone);
 }
 
 /************************************************************
@@ -416,50 +588,6 @@ char * str;
  * Generic Utility Functions.
  *
  ************************************************************/
-
-/*	Function Name: BreakUpCommand
- *	Description: Breaks up one command by line into several
- *                   smaller commands.
- *	Arguments: str - string containg the original command.
- *                 num - the number of commands.
- *	Returns: the newly allocated commands.
- */
-
-/*
- * SIDE EFFECT WARNING:
- * 
- * The command string is modified to change all EOL_SEPARATORS to '\0'.
- */
-
-static char **
-BreakUpCommand(msg, str, num)
-Message * msg;
-char * str;
-int * num;
-{
-    register int i;
-    char * ptr, ** commands;
-
-    *num = 1;
-    ptr = str;
-    while (((ptr = index(ptr, EOL_SEPARATOR)) != NULL) ) {
-	ptr++;
-	(*num)++;
-    }
-
-    commands = (char **) XtMalloc(sizeof(char **) * *num);
-    
-    for (i = 0, ptr = str; i < *num; i++) {
-	commands[i] = ptr;
-	if ( (ptr = index(ptr, EOL_SEPARATOR)) == NULL) {
-	    *num = i + 1;
-	    return(commands);	/* we are done */
-	}
-	*ptr = '\0';
-	ptr++;
-    }
-    return(commands);
-}
 
 /*	Function Name: FindChildren
  *	Description: Retuns all children (popup, normal and otherwise)
@@ -478,10 +606,6 @@ Boolean normal, popup;
 {
     CompositeWidget cw = (CompositeWidget) parent;
     int i, num_children, current = 0;
-#ifdef TEXT_WIDGET
-    Arg args[2];
-    Widget sink, source;
-#endif /* TEXT_WIDGET */
     
     num_children = 0;
 
@@ -496,19 +620,6 @@ Boolean normal, popup;
 	return(0);
     }
 
-#ifdef TEXT_WIDGET
-	if (XtIsSubclass(parent, textWidgetClass)) {
-	    XtSetArg(args[0], XtNtextSink, &sink);
-	    XtSetArg(args[1], XtNtextSource, &source);
-	    XtGetValues(parent, args, TWO);
-
-	    if (sink != NULL) 
-		num_children++;
-	    if (source != NULL)
-		num_children++;
-	}
-#endif /* TEXT_WIDGET */
-
     *children =(Widget*) XtMalloc((Cardinal) sizeof(Widget) * num_children);
 
     if (XtIsComposite(parent) && normal)
@@ -519,60 +630,7 @@ Boolean normal, popup;
 	for ( i = 0; i < parent->core.num_popups; i++, current++) 
 	    (*children)[current] = parent->core.popup_list[i];
 
-#ifdef TEXT_WIDGET
-	if (XtIsSubclass(w, textWidgetClass)) {
-	    if (sink != NULL) {
-		(*children)[current] = sink;
-		current++;
-	    }
-	    if (source != NULL) {
-		(*children)[current] = source;
-		current++;
-	    }
-	}
-#endif /* TEXT_WIDGET */
-
     return(num_children);
-}
-
-/************************************************************
- *
- * Code to Perform SetValues operations.
- *
- ************************************************************/
-
-/*	Function Name: 	DoSetValues
- *	Description: performs the setvalues requested.
- *	Arguments: w - a widget in the tree.
- *                 value - the value part of the set values command.
- *                 msg - message to return to editres.
- *	Returns: True if all SetValues requests were sucessful.
- */
-
-static Boolean
-DoSetValues(w, value, msg)
-Widget w;
-char * value;
-Message * msg;
-{
-    int i, num_commands;
-    static void ExecuteSetValues();
-    register char **commands;
-    Boolean ret_val = FALSE;
-
-    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
-	return(FALSE);
-
-    for (i = 0; i < num_commands; i++) 
-	ExecuteSetValues(w, commands[i], msg);
-
-    if (msg->str == NULL) {
-	AddError(msg, NULL, "Set Values was sucessful.");
-	ret_val = TRUE;
-    }
-
-    XtFree((char *) commands);
-    return(ret_val);
 }
 		
 /*	Function Name: IsChild
@@ -606,349 +664,92 @@ Widget top, parent, child;
     return(FALSE);
 }
 
-/*	Function Name: ExecuteSetValues
- *	Description: Performs a setvalues for a given command.
- *	Arguments: w - any widget in the tree.
- *                 command - command to execute.
- *                 msg - the error message info.
- *	Returns: none.
- */
-
-static void
-ExecuteSetValues(w, command, msg)
-Widget w;
-char * command;
-Message * msg;
-{
-    Widget widget;
-    static Widget VerifyWidget();
-    static void HandleToolkitErrors();
-    XtErrorMsgHandler old;
-    char * begin,* end, *bp, name[100], value[100];
-
-    if ((widget = VerifyWidget(w, command, msg, WID_RES_SEPARATOR)) == NULL)
-	return;
-
-    begin = index(command, WID_RES_SEPARATOR);
-    end = index(command, NAME_VAL_SEPARATOR);
-
-    if ((begin == NULL) || (end == NULL)) {
-	char error_buf[BUFSIZ];
-
-	if (begin == NULL) 
-	    sprintf(error_buf, "Improperly formatted SetValues %s`%c'.", 
-		    "Command, could not find a ", WID_RES_SEPARATOR);
-	else
-	    sprintf(error_buf, "Improperly formatted SetValues %s`%c'.", 
-		    "Command, could not find a ", NAME_VAL_SEPARATOR);
-
-	AddError(msg, UNKNOWN, error_buf);
-	return;
-    }
-	
-    begin++;
-
-    for ( bp = name; begin < end; begin++, bp++)
-	*bp = *begin;
-    *bp = '\0';
-
-    strcpy(value, (end + 1));
-
-    global_error = msg;		/* No data can be passed to Error Handlers */
-    global_widget_str = command; /* so I have to use globals (YUCK) */
-    global_resource_name = name;
-    global_resource_value = value;
-
-    old = XtAppSetWarningMsgHandler(XtWidgetToApplicationContext(widget),
-				    HandleToolkitErrors);
-
-    XtVaSetValues(widget, XtVaTypedArg,
-		  name, XtRString, value, strlen(value) + 1,
-		  NULL);
-
-    (void)XtAppSetWarningMsgHandler(XtWidgetToApplicationContext(widget), old);
-}
-
 /*	Function Name: VerifyWidget
  *	Description: Makes sure all the widgets still exist.
  *	Arguments: w - any widget in the tree.
- *                 command - the command containing the widget list to verify.
- *                 error - the error message info.
- *                 c - character that terminates the widget name.
- *	Returns: the widget id of the leaf if it exists, otherwise NULL.
+ *                 info - the info about the widget to verify.
+ *	Returns: an error message or NULL.
  */
 
-static Widget
-VerifyWidget(w, command, error, c)
+static char * 
+VerifyWidget(w, info)
 Widget w;
-char * command;
-Message * error;
-char c;
+WidgetInfo *info;
 {
     Widget top;
     static Boolean IsChild();
-    char buf[BUFSIZ], *ptr, *end;
-    Widget parent, child; 
 
-    strcpy(buf, command);
-
-    if (streq(buf, ""))     /* Just ignore empty lines. */
-	return(NULL);
-
-    if (c != '\0') {
-	if ((end = index(buf, c)) == NULL) {
-	    sprintf(buf, "Formatting error is VerifyWidget, no %c %s",
-		    c, "in command.");
-	    AddError(error, UNKNOWN, buf);
-	    return(NULL);
-	}
-	*end = '\0';
-    }
+    register int count;
+    register Widget parent;
+    register unsigned long * child;
 
     for (top = w; XtParent(top) != NULL; top = XtParent(top)) {}
 
     parent = NULL;
+    child = info->ids;
+    count = 0;
+
     while (TRUE) {
-	if ( (ptr = rindex(buf,  NAME_SEPARATOR)) == NULL) {
-	    sprintf(buf, "Formatting error is VerifyWidget, no %c %s",
-		    NAME_SEPARATOR, "in command.");
-	    AddError(error, UNKNOWN, buf);
-	    return(NULL);
-	}
+	if (!IsChild(top, parent, (Widget) *child)) 
+	    return(XtNewString("This widget no longer exists in the client."));
 
-	*ptr = '\0';
-	
-	child = (Widget) atol(ptr + 1);
-	
-	if (!IsChild(top, parent, child)) {
-	    AddError(error, UNKNOWN, "This widget does not exist.");
-	    return(NULL);
-	}
-
-	if (ptr == buf)
+	if (++count == info->num_widgets)
 	    break;
-	
-	parent = child;
+
+	parent = (Widget) *child++;
     }
-    return(child);
+
+    info->real_widget = (Widget) *child;
+    return(NULL);
 }
 
 /************************************************************
  *
- * Code for Creating and dumping widget tree.
+ * Code to Perform SetValues operations.
  *
  ************************************************************/
 
-/*	Function Name: DumpWidgets
- *	Description: Give a widget it returns a string containing all the
- *		     widget names and classes.
- *	Arguments: w  - any widget.
- *	Returns: 	This function retuns a list of widget names as a
- *			single character string in the following format:
- *
- *                      name\tid.name\tid.name\tid:Class<EOL_SEPARATOR>
+
+/*	Function Name: 	DoSetValues
+ *	Description: performs the setvalues requested.
+ *	Arguments: w - a widget in the tree.
+ *                 event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: NULL.
  */
 
-char * 
-DumpWidgets(w)
+static char *
+DoSetValues(w, event, stream)
 Widget w;
+EditresEvent * event;
+ProtocolStream * stream;
 {
-    static void DumpChildren();
-
-    char * list = NULL;
-    Cardinal bytes = 0, end = 0;
+    char * str;
+    register int i;
+    unsigned short count = 0;
+    SetValuesEvent * sv_event = (SetValuesEvent *) event;
     
-    /* Find Tree's root. */
-    for ( ; XtParent(w) != NULL; w = XtParent(w));
-    
-    DumpChildren(w, "", &list, &end, &bytes);
-    
-    return(list);
-}
+    _XawInsert16(stream, count); /* insert 0, will be overwritten later. */
 
-/*	Function Name: DumpChildren
- *	Description: Adds a child's name to the list.
- *	Arguments: w - the widget to dump.
- *                 parent_name - full name of this widget's parent.
- *                 list - the list of all children.
- *                 end - byte position of the list's end.
- *                 bytes - number of bytes in this string.
- *	Returns: none.
- */
-
-static void
-DumpChildren(w, parent_name, list, end, bytes)
-Widget w;
-char *parent_name, **list;
-Cardinal *end, *bytes;
-{
-    int i, num_children;
-    char my_name[BUFSIZ * 3];	/* beats me how big it should be... */
-    static void DumpName();
-    Widget * children;
-
-    DumpName(w, parent_name, list, end, bytes);
-
-    if (XtName(w) == NULL)
-	sprintf(my_name, "%s%c%c%ld", parent_name, NAME_SEPARATOR,
-		ID_SEPARATOR, (unsigned long) w);
-    else
-	sprintf(my_name, "%s%c%s%c%ld", parent_name, NAME_SEPARATOR,
-		XtName(w), ID_SEPARATOR, (unsigned long) w);
-
-    num_children = FindChildren(w, &children, TRUE, TRUE);
-
-    for (i = 0; i < num_children; i++) 
-	DumpChildren(children[i], my_name, list, end, bytes);
-
-    XtFree((char *)children);
-}
-
-/*	Function Name: DumpName
- *	Description: Prints the name of this widget 
- *	Arguments: w - the widget to dump.
- *                 parent_name - name of this widget's parent.
- *                 list - the list of all children.
- *                 end - byte position of the list's end.
- *                 bytes - number of bytes in this string.
- *	Returns: none.
- */
-
-#define EXTRA_CHARS 5		/* Space for the static characters. */
-
-static void
-DumpName(w, parent_name, list, end, bytes)
-Widget w;
-char *parent_name, **list;
-Cardinal *end, *bytes;
-{
-    char * name, *class, *ptr, id[BUFSIZ], window[BUFSIZ];
-    int len, more_mem;
-
-    sprintf(id, "%ld", (long) w);
-
-    if (XtIsWidget(w)) 
-	if (XtIsRealized(w))
-	    sprintf(window, "%ld", (long) XtWindow(w));
-	else
-	    sprintf(window, "%d", EDITRES_IS_UNREALIZED);	    
-    else
-	sprintf(window, "%d", EDITRES_IS_OBJECT);
-
-    name = XtName(w);
-
-    if (XtIsApplicationShell(w)) {
-	ApplicationShellWidget a = (ApplicationShellWidget) w;
-	class = a->application.class;
-    }
-    else
-	class = XtClass(w)->core_class.class_name;
-
-    len = strlen(parent_name) + strlen(class) + 
-	  strlen(id) + strlen(window) + EXTRA_CHARS + 1; 
-
-    if (name != NULL)
-	len += strlen(name);
-
-    more_mem = len > BUFSIZ ? len : BUFSIZ;
-
-    if ( (*end + len) > *bytes) 
-	*list = XtRealloc(*list, (Cardinal) (*bytes += more_mem));
-	
-    ptr = *list + *end;
-    
-    if (name == NULL)
-	sprintf(ptr, "%s%c%c%s%c%s%c%s%c", parent_name, NAME_SEPARATOR, 
-		ID_SEPARATOR, id, CLASS_SEPARATOR, class,
-		WINDOW_SEPARATOR, window, EOL_SEPARATOR);
-    else
-	sprintf(ptr, "%s%c%s%c%s%c%s%c%s%c", parent_name, NAME_SEPARATOR,
-		name, ID_SEPARATOR, id, CLASS_SEPARATOR, class,
-		WINDOW_SEPARATOR, window, EOL_SEPARATOR);
-
-    *end += (len - 1);
-}
-
-/*************************************************************
- *
- * Error Handling code.
- *
- *************************************************************/
-
-/*	Function Name: _AddMessage
- *	Description: Adds a message to the message structure.
- *	Arguments: message - message structure.
- *                 str - new message to add.
- *	Returns: none
- */
-
-static void
-_AddMessage(message, str)
-Message * message;
-char * str;
-{
-    char * ptr;
-    int len = strlen(str);
-
-    if ((message->len + len) >= message->alloc) {
-	message->alloc += ((len + 2) > BUFSIZ) ? (len + 2) : BUFSIZ;
-	message->str = XtRealloc(message->str, message->alloc * sizeof(char));
-    }
-
-    ptr = message->str + message->len;
-    message->len += len;
-
-    sprintf(ptr, "%s", str);
-}
- 
-/*	Function Name: AddError
- *	Description: Add a string to the error message in the form:
- *                   <widget id>:<message>
- *                   or
- *                   <message>                 if 'widget' is NULL.
- *
- *	Arguments: error - the error structure.
- *                 widget - the string contatining the widget ids.
- *                 str - the message to append to the buffer.
- *	Returns: none.
- */
-
-static void
-AddError(error, widget, str) 
-Message * error;
-char * widget, *str;
-{
-    char buf[BUFSIZ], *end, *ptr;
-    int len;
-
-    if (widget == NULL) {
-	error->formatted = FALSE;
-	buf[0] = '\0';
-    }
-    else {
-	error->formatted = TRUE;
-
-	end = index(widget, WID_RES_SEPARATOR);
-
-	if (end == NULL) {
-	    strcpy(buf, widget);
-	    ptr = buf + strlen(widget);
+    for (i = 0 ; i < sv_event->num_entries; i++) {
+	if ((str = VerifyWidget(w, &(sv_event->widgets[i]))) != NULL) {
+	    _XawInsertWidgetInfo(stream, &(sv_event->widgets[i]));
+	    _XawInsertString8(stream, str);
+	    XtFree(str);
+	    count++;
 	}
-	else {
-	    for (ptr = buf; widget < end; ptr++, widget++) 
-		*ptr = *widget;
-	    *ptr = '\0';
-	}
-	
-	*ptr++ = NAME_VAL_SEPARATOR;
-	*ptr = '\0';
+	else 
+	    ExecuteSetValues(sv_event->widgets[i].real_widget, 
+			     sv_event, sv_event->widgets + i, stream, &count);
     }
 
-    strcat(buf, str);
-    buf[len = strlen(buf)] = EOL_SEPARATOR;
-    buf[len + 1] = '\0';
+    /*
+     * Overwrite the first 2 bytes with the real count.
+     */
 
-    _AddMessage(error, buf);
+    *(stream->top) = count >> BYTE;
+    *(stream->top + 1) = count;
+    return(NULL);
 }
 
 /*	Function Name: HandleToolkitErrors
@@ -967,23 +768,171 @@ HandleToolkitErrors(name, type, class, msg, params, num_params)
 String name, type, class, msg, *params;
 Cardinal * num_params;
 {
+    SVErrorInfo * info = &global_error_info;	
     char buf[BUFSIZ];
 
     if ( streq(name, "unknownType") ) 
 	sprintf(buf, "The `%s' resource is not used by this widget.", 
-		global_resource_name); 
+		info->event->name); 
     else if ( streq(name, "noColormap") ) 
 	sprintf(buf, msg, params[0]);
-    else if ( streq(name, "conversionFailed") || 
-	      streq(name, "conversionError") )
-	sprintf(buf, "Could not convert the string `%s' %s `%s' resource.",
-		global_resource_value, "to the proper type for the",
-		global_resource_name); 
+    else if (streq(name, "conversionFailed") || streq(name, "conversionError"))
+    {
+	if (streq(info->event->value, XtRString))
+	    sprintf(buf, 
+		    "Could not convert the string '%s' for the `%s' resource.",
+		    info->event->value, info->event->name);   
+	else
+	    sprintf(buf, "Could not convert the `%s' resource.",
+		    info->event->name);
+    }
     else 
 	sprintf(buf, "Name: %s, Type: %s, Class: %s, Msg: %s",
 		name, type, class, msg);
 
-    AddError(global_error, global_widget_str, buf);
+    /*
+     * Insert this info into the protocol stream, and update the count.
+     */ 
+
+    (*(info->count))++;
+    _XawInsertWidgetInfo(info->stream, info->entry);
+    _XawInsertString8(info->stream, buf);
+}
+
+/*	Function Name: ExecuteSetValues
+ *	Description: Performs a setvalues for a given command.
+ *	Arguments: w - the widget to perform the set_values on.
+ *                 sv_event - the set values event.
+ *                 sv_info - the set_value info.
+ *	Returns: none.
+ */
+
+static void
+ExecuteSetValues(w, sv_event, entry, stream, count)
+Widget w;
+SetValuesEvent * sv_event;
+WidgetInfo * entry;
+ProtocolStream * stream;
+unsigned short * count;
+{
+    XtErrorMsgHandler old;
+    
+    SVErrorInfo * info = &global_error_info;	
+    info->event = sv_event;	/* No data can be passed to */
+    info->stream = stream;	/* an error handler, so we */
+    info->count = count;	/* have to use a global, YUCK... */
+    info->entry = entry;
+
+    old = XtAppSetWarningMsgHandler(XtWidgetToApplicationContext(w),
+				    HandleToolkitErrors);
+
+    XtVaSetValues(w, XtVaTypedArg,
+		  sv_event->name, sv_event->res_type,
+		  sv_event->value, sv_event->value_len,
+		  NULL);
+
+    (void)XtAppSetWarningMsgHandler(XtWidgetToApplicationContext(w), old);
+}
+
+
+/************************************************************
+ *
+ * Code for Creating and dumping widget tree.
+ *
+ ************************************************************/
+
+/*	Function Name: 	DumpWidgets
+ *	Description: Given a widget it builds a protocol packet
+ *                   containing the entire widget heirarchy.
+ *	Arguments: w - a widget in the tree.
+ *                 event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: NULL
+ */
+
+/* ARGSUSED */
+static char * 
+DumpWidgets(w, event, stream)
+Widget w;
+EditresEvent * event;		/* UNUSED */
+ProtocolStream * stream;
+{
+    static void DumpChildren();
+    unsigned short count = 0;
+        
+    /* Find Tree's root. */
+    for ( ; XtParent(w) != NULL; w = XtParent(w)) {}
+    
+    /*
+     * hold space for count, overwritten later. 
+     */
+
+    _XawInsert16(stream, (unsigned int) 0);
+
+    DumpChildren(w, stream, &count);
+
+    /*
+     * Overwrite the first 2 bytes with the real count.
+     */
+
+    *(stream->top) = count >> BYTE;
+    *(stream->top + 1) = count;
+    return(NULL);
+}
+
+/*	Function Name: DumpChildren
+ *	Description: Adds a child's name to the list.
+ *	Arguments: w - the widget to dump.
+ *                 stream - the stream to dump to.
+ *                 count - number of dumps we have performed.
+ *	Returns: none.
+ */
+
+static void
+DumpChildren(w, stream, count)
+Widget w;
+ProtocolStream * stream;
+unsigned short *count;
+{
+    int i, num_children;
+    Widget *children;
+    unsigned long window;
+    char * class;
+
+    (*count)++;
+	
+    InsertWidget(stream, w);       /* Insert the widget into the stream. */
+
+    _XawInsertString8(stream, XtName(w)); /* Insert name */
+
+    if (XtIsApplicationShell(w)) { /* Class */
+	ApplicationShellWidget a = (ApplicationShellWidget) w;
+	class = a->application.class;
+    }
+    else
+	class = XtClass(w)->core_class.class_name;
+
+    _XawInsertString8(stream, class); /* Insert class */
+
+     if (XtIsWidget(w))
+	 if (XtIsRealized(w))
+	    window = XtWindow(w);
+	else
+	    window = EDITRES_IS_UNREALIZED;
+     else
+	 window = EDITRES_IS_OBJECT;
+
+    _XawInsert32(stream, window); /* Insert window id. */
+
+    /*
+     * Find children and recurse.
+     */
+
+    num_children = FindChildren(w, &children, TRUE, TRUE);
+    for (i = 0; i < num_children; i++) 
+	DumpChildren(children[i], stream, count);
+
+    XtFree((char *)children);
 }
 
 /************************************************************
@@ -992,90 +941,69 @@ Cardinal * num_params;
  *
  ************************************************************/
 
-/*	Function Name: AddReturnMessage
- *	Description: adds a return message to the GetGeometry message
- *	Arguments: msg - message structure.
- *                 error_code - must be 0 or 1.
- *                 widget - widget id of widget message is associated with.
- *                 str - message to send.
- *	Returns: none
- */
-
-static void
-AddReturnMessage(msg, error_code, widget, str)
-Message * msg;
-int error_code;
-char * widget, * str;
-{
-    char buf[BUFSIZ];
-
-    msg->formatted = TRUE;
-
-    sprintf(buf, "%1d%s%c%s%c", error_code, widget, 
-	    NAME_VAL_SEPARATOR, str, EOL_SEPARATOR);
-
-    _AddMessage(msg, buf);
-}
-    
 /*	Function Name: 	DoGetGeometry
- *	Description: retreives the Geometry of each specified widget.
+ *	Description: retrieves the Geometry of each specified widget.
  *	Arguments: w - a widget in the tree.
- *                 value - the value part of the set values command.
- *                 msg - messge to return to editres.
- *	Returns: True if Get Geometry was completely successful.
+ *                 event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: NULL
  */
 
-static Boolean
-DoGetGeometry(w, value, msg)
+static char *
+DoGetGeometry(w, event, stream)
 Widget w;
-char * value;
-Message * msg;
+EditresEvent * event;
+ProtocolStream * stream;
 {
-    int i, num_commands;
-    static Boolean ExecuteGetGeometry();
-    register char **commands;
-    Boolean ret_val = TRUE;
+    int i;
+    char * str;
+    GetGeomEvent * geom_event = (GetGeomEvent *) event;
+    
+    _XawInsert16(stream, geom_event->num_entries);
 
-    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
-	return(FALSE);
+    for (i = 0 ; i < geom_event->num_entries; i++) {
 
-    for (i = 0; i < num_commands; i++)
-	ret_val &= ExecuteGetGeometry(w, commands[i], msg);
+	/* 
+	 * Send out the widget id. 
+	 */
 
-    XtFree((char *) commands);
-
-    return(ret_val);
+	_XawInsertWidgetInfo(stream, &(geom_event->widgets[i]));
+	if ((str = VerifyWidget(w, &(geom_event->widgets[i]))) != NULL) {
+	    _XawInsertBool(stream, True); /* an error occured. */
+	    _XawInsertString8(stream, str);	/* set message. */
+	    XtFree(str);
+	}
+	else 
+	    ExecuteGetGeometry(geom_event->widgets[i].real_widget, stream);
+    }
+    return(NULL);
 }
 
 /*	Function Name: ExecuteGetGeometry
  *	Description: Gets the geometry for each widget specified.
- *	Arguments: w - any widget in the widget tree.
- *                 command - widget to execute get geom on.
- *                 msg - message containing the return values.
+ *	Arguments: w - the widget to get geom on.
+ *                 stream - stream to append to.
  *	Returns: True if no error occured.
  */
 
-#define NOT_VIS ("NOT_VISABLE")
-
-static Boolean
-ExecuteGetGeometry(w, command, msg)
+static void
+ExecuteGetGeometry(w, stream)
 Widget w;
-String command;
-Message * msg;
+ProtocolStream * stream;
 {
+    int i;
     Boolean mapped_when_man;
-    char buf[100];
     Dimension width, height, border_width;
     Arg args[8];
     Cardinal num_args = 0;
     Position x, y;
     
-    if ((w = VerifyWidget(w, command, msg, '\0')) == NULL)
-	return(FALSE);
-
     if ( !XtIsRectObj(w) || (XtIsWidget(w) && !XtIsRealized(w)) ) {
-	AddReturnMessage(msg, 0, command, NOT_VIS);
-	return(TRUE);
+	_XawInsertBool(stream, False); /* no error. */
+	_XawInsertBool(stream, False); /* not visable. */
+	for (i = 0; i < 5; i++) /* fill in extra space with 0's. */
+	    _XawInsert16(stream, 0);
+	return;
     }
 
     XtSetArg(args[num_args], XtNwidth, &width); num_args++;
@@ -1095,25 +1023,29 @@ Message * msg;
 	
 	if (XGetWindowAttributes(XtDisplay(w), XtWindow(w), &attrs) != 0) {
 	    if (attrs.map_state != IsViewable) {
-		AddReturnMessage(msg, 0, command, NOT_VIS);
-		return(TRUE);
+		_XawInsertBool(stream, False); /* no error. */
+		_XawInsertBool(stream, False); /* not visable. */
+		for (i = 0; i < 5; i++) /* fill in extra space with 0's. */
+		    _XawInsert16(stream, 0);
+		return;
 	    }
 	}
 	else {
-	    AddReturnMessage(msg, 1, 
-			     command, "XGetWindowAttributes failed.");
-	    return(FALSE);
+	    _XawInsert8(stream, True); /* Error occured. */
+	    _XawInsertString8(stream, "XGetWindowAttributes failed.");
+	    return;
 	}
     }
 
     XtTranslateCoords(w, -((int) border_width), -((int) border_width), &x, &y);
 
-    sprintf(buf, "%dx%d%c%d%c%d%c%d", (int) width, (int) height, 
-	    ((x < 0) ? '-' : '+'), (int) x, ((y < 0) ? '-' : '+'), (int) y,
-	    EDITRES_BORDER_WIDTH_SEPARATOR, (int) border_width);
-    
-    AddReturnMessage(msg, 0, command, buf);
-    return(TRUE);
+    _XawInsertBool(stream, False); /* no error. */
+    _XawInsertBool(stream, True); /* Visable. */
+    _XawInsert16(stream, x);
+    _XawInsert16(stream, y);
+    _XawInsert16(stream, width);
+    _XawInsert16(stream, height);
+    _XawInsert16(stream, border_width);
 }
 
 /************************************************************
@@ -1174,7 +1106,7 @@ int x, y;
 	    (y >= child_y) && (y <= (child_y + height + 2 * border_width)) );
 }
 
-/*	Function Name: FindChild
+/*	Function Name: _FindChild
  *	Description: Finds the child that actually contatians the point shown.
  *	Arguments: parent - a widget that is known to contain the point
  *                 	    specified.
@@ -1184,7 +1116,7 @@ int x, y;
  */
 
 static Widget 
-FindChild(parent, x, y)
+_FindChild(parent, x, y)
 Widget parent;
 int x, y;
 {
@@ -1198,7 +1130,7 @@ int x, y;
 	    Widget child = children[i];
 	    
 	    XtFree((char *)children);
-	    return(FindChild(child, x - child->core.x, y - child->core.y));
+	    return(_FindChild(child, x - child->core.x, y - child->core.y));
 	}
     }
 
@@ -1208,151 +1140,478 @@ int x, y;
 
 /*	Function Name: DoFindChild
  *	Description: finds the child that contains the location specified.
- *	Arguments: w - any widget in the widget tree.
- *                 str - command string.
- *                 msg - a message struct to stuff the return value into.
- *	Returns: True if completely sucessful.
+ *	Arguments: w - a widget in the tree.
+ *                 event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: an allocated error message if something went horribly
+ *               wrong and no set values were performed, else NULL.
  */
 
-static Boolean
-DoFindChild(w, str, msg)
+static char *
+DoFindChild(w, event, stream)
 Widget w;
-String str;
-Message * msg;
+EditresEvent * event;
+ProtocolStream * stream;
 {
-    char * parse_string, buf[BUFSIZ];
+    char * str;
     Widget parent, child;
-    int x_loc, y_loc, mask;
-    unsigned int junk;
     Position parent_x, parent_y;
+    FindChildEvent * find_event = (FindChildEvent *) event;
+    
+    if ((str = VerifyWidget(w, find_event->widgets)) != NULL) 
+	return(str);
 
-    if ((parent = VerifyWidget(w, str, msg, NAME_VAL_SEPARATOR)) == NULL)
-	return(FALSE);
-
-    /*
-     * There should never be NULL returned here, because VerifyWidget()
-     * already checked to make sure a NAME_VAL_SEPARATOR was found.
-     */
-
-    parse_string = index(str, NAME_VAL_SEPARATOR) + 1;
-
-    mask = XParseGeometry(parse_string, &x_loc, &y_loc, &junk, &junk);
-
-    if ( !(mask & XValue) || !(mask & YValue)) {
-	sprintf(buf, "%s `%s' %s %s",
-		"The geometry string", parse_string, "passed to the",
-		"client process does not contain an X and Y value.");
-	AddError(msg, UNKNOWN,  buf);
-	return(FALSE);
-    }
+    parent = find_event->widgets->real_widget;
 
     XtTranslateCoords(parent, (Position) 0, (Position) 0,
 		      &parent_x, &parent_y);
     
-    child = FindChild(parent, x_loc - (int) parent_x, y_loc - (int) parent_y);
+    child = _FindChild(parent, find_event->x - (int) parent_x,
+		       find_event->y - (int) parent_y);
 
-    for (; child != NULL; child = XtParent(child)) {
-	sprintf(buf, "%c%ld", NAME_SEPARATOR, (long) child);
-	_AddMessage(msg, buf);
-    }
-
-    return(TRUE);
+    InsertWidget(stream, child);
+    return(NULL);
 }
 
-/*
+/************************************************************
+ *
  * Procedures for performing GetResources.
+ *
+ ************************************************************/
+
+/*	Function Name: DoGetResources
+ *	Description: Gets the Resources associated with the widgets passed.
+ *	Arguments: w - a widget in the tree.
+ *                 event - the event that caused this action.
+ *                 stream - the protocol stream to add.
+ *	Returns: NULL
  */
+
+static char *
+DoGetResources(w, event, stream)
+Widget w;
+EditresEvent * event;
+ProtocolStream * stream;
+{
+    int i;
+    char * str;
+    GetResEvent * res_event = (GetResEvent *) event;
+    
+    _XawInsert16(stream, res_event->num_entries); /* number of replys */
+
+    for (i = 0 ; i < res_event->num_entries; i++) {
+	/* 
+	 * Send out the widget id. 
+	 */
+	_XawInsertWidgetInfo(stream, &(res_event->widgets[i]));
+	if ((str = VerifyWidget(w, &(res_event->widgets[i]))) != NULL) {
+	    _XawInsertBool(stream, True); /* an error occured. */
+	    _XawInsertString8(stream, str);	/* set message. */
+	    XtFree(str);
+	}
+	else {
+	    _XawInsertBool(stream, False); /* no error occured. */
+	    ExecuteGetResources(res_event->widgets[i].real_widget,
+				stream);
+	}
+    }
+    return(NULL);
+}
 
 /*	Function Name: ExecuteGetResources.
  *	Description: Gets the resources for any individual widget.
- *	Arguments: w - any real widget in the app.
- *                 val - widget to perform GetResources on.
- *                 msg - message to send back to editres.
- *	Returns: TRUE if sucessful, FALSE otherwise.
+ *	Arguments: w - the widget to get resources on.
+ *                 stream - the protocol stream.
+ *	Returns: none.
  */
 
-static Boolean ExecuteGetResources(w, val, msg)
+static void
+ExecuteGetResources(w, stream)
 Widget w;
-char * val;
-Message * msg;
+ProtocolStream * stream;
 {
-    Widget widget;
-    XtResourceList res_list;
-    Cardinal number;
-    char buf[BUFSIZ];
+    XtResourceList norm_list, cons_list;
+    Cardinal num_norm, num_cons;
     register int i;
-
-    if ((widget = VerifyWidget(w, val, msg, '\0')) == NULL)
-	return(FALSE);
-
-    /*
-     * Identify this widget.
-     */
-
-    sprintf(buf, "0%s%c", val, NAME_VAL_SEPARATOR);
-    _AddMessage(msg, buf);
 
     /* 
      * Get Normal Resources. 
      */
 
-    XtGetResourceList(XtClass(widget), &res_list, &number);
-    for ( i = 0; i < (int) number; i++) {
-	sprintf(buf, "n%s%c%s%c%s%c", res_list[i].resource_name,
-		CLASS_SEPARATOR, res_list[i].resource_class,
-		CLASS_TYPE_SEPARATOR, res_list[i].resource_type,
-		RESOURCE_SEPARATOR);
-	_AddMessage(msg, buf);
-    }
-    XtFree((char *) res_list);
+    XtGetResourceList(XtClass(w), &norm_list, &num_norm);
 
-    /* 
-     * Get Constraint Resources. 
+    if (XtParent(w) != NULL) 
+	XtGetConstraintResourceList(XtClass(XtParent(w)),&cons_list,&num_cons);
+    else
+	num_cons = 0;
+
+    _XawInsert16(stream, num_norm + num_cons); /* how many resources. */
+    
+    /*
+     * Insert all the normal resources.
      */
 
-    if (XtParent(widget) != NULL) {
-	XtGetConstraintResourceList(XtClass(XtParent(widget)), 
-				    &res_list, &number);
-	for ( i = 0; i < (int) number; i++) {
-	    sprintf(buf, "c%s%c%s%c%s%c", res_list[i].resource_name,
-		    CLASS_SEPARATOR, res_list[i].resource_class,
-		    CLASS_TYPE_SEPARATOR, res_list[i].resource_type,
-		    RESOURCE_SEPARATOR);
-	    _AddMessage(msg, buf);
+    for ( i = 0; i < (int) num_norm; i++) {
+	_XawInsertResourceType(stream, NormalResource);
+	_XawInsertString8(stream, norm_list[i].resource_name);
+	_XawInsertString8(stream, norm_list[i].resource_class);
+	_XawInsertString8(stream, norm_list[i].resource_type);
+    }
+    XtFree((char *) norm_list);
+
+    /*
+     * Insert all the constraint resources.
+     */
+
+    if (num_cons > 0) {
+	for ( i = 0; i < (int) num_cons; i++) {
+	    _XawInsertResourceType(stream, ConstraintResource);
+	    _XawInsertString8(stream, cons_list[i].resource_name);
+	    _XawInsertString8(stream, cons_list[i].resource_class);
+	    _XawInsertString8(stream, cons_list[i].resource_type);
 	}
-	XtFree((char *) res_list);
+	XtFree((char *) cons_list);
+    }
+}
+
+/************************************************************
+ *
+ * Code for inserting values into the protocol stream.
+ *
+ ************************************************************/
+
+/*	Function Name: InsertWidget
+ *	Description: Inserts the full parent heirarchy of this
+ *                   widget into the protocol stream as a widget list.
+ *	Arguments: stream - the protocol stream.
+ *                 w - the widget to insert.
+ *	Returns: none
+ */
+
+static void
+InsertWidget(stream, w)
+ProtocolStream * stream;
+Widget w;
+{
+    Widget temp;
+    unsigned long * widget_list;
+    register int i, num_widgets;
+
+    for (temp = w, i = 0; temp != 0; temp = XtParent(temp), i++) {}
+
+    num_widgets = i;
+    widget_list = (unsigned long *) 
+	                XtMalloc(sizeof(unsigned long) * num_widgets);
+
+    /*
+     * Put the widgets into the list.
+     * make sure that they are inserted in the list from parent -> child.
+     */
+
+    for (i--, temp = w; temp != NULL; temp = XtParent(temp), i--) 
+	widget_list[i] = (unsigned long) temp;
+	
+    _XawInsert16(stream, num_widgets);	/* insert number of widgets. */
+    for (i = 0; i < num_widgets; i++) /* insert Widgets themselves. */
+	_XawInsert32(stream, widget_list[i]);
+    
+    XtFree(widget_list);
+}
+
+/************************************************************
+ *
+ * All of the following routines are public.
+ *
+ ************************************************************/
+
+/*	Function Name: _XawInsertString8
+ *	Description: Inserts a string into the protocol stream.
+ *	Arguments: stream - stream to insert string into.
+ *                 str - string to insert.
+ *	Returns: none.
+ */
+
+void
+_XawInsertString8(stream, str)
+ProtocolStream * stream;
+char * str;
+{
+    int i, len = strlen(str);
+
+    _XawInsert16(stream, len);
+    for (i = 0 ; i < len ; i++, str++)
+	_XawInsert8(stream, *str);
+}
+
+/*	Function Name: _XawInsert8
+ *	Description: Inserts an 8 bit integer into the protocol stream.
+ *	Arguments: stream - stream to insert string into.
+ *                 value - value to insert.
+ *	Returns: none
+ */
+
+void
+_XawInsert8(stream, value)
+ProtocolStream * stream;
+unsigned int value;
+{
+    unsigned int temp;
+
+    if (stream->size >= stream->alloc) {
+	stream->alloc += 100;
+	stream->real_top = XtRealloc(stream->real_top, 
+				     stream->alloc + HEADER_SIZE);
+	stream->top = stream->real_top + HEADER_SIZE;
+	stream->current = stream->top + stream->size;
     }
 
-    buf[0] = EOL_SEPARATOR;
-    buf[1] = '\0';
-    _AddMessage(msg, buf);
+    temp = value & BYTE_MASK;
+    *((stream->current)++) = temp;
+    (stream->size)++;
+}
+
+/*	Function Name: _XawInsert16
+ *	Description: Inserts a 16 bit integer into the protocol stream.
+ *	Arguments: stream - stream to insert string into.
+ *                 value - value to insert.
+ *	Returns: void
+ */
+
+void
+_XawInsert16(stream, value)
+ProtocolStream * stream;
+unsigned int value;
+{
+    _XawInsert8(stream, (value >> BYTE) & BYTE_MASK);
+    _XawInsert8(stream, value & BYTE_MASK);
+}
+
+/*	Function Name: _XawInsert32
+ *	Description: Inserts a 32 bit integer into the protocol stream.
+ *	Arguments: stream - stream to insert string into.
+ *                 value - value to insert.
+ *	Returns: void
+ */
+
+void
+_XawInsert32(stream, value)
+ProtocolStream * stream;
+unsigned long value;
+{
+    int i;
+
+    for (i = 3; i >= 0; i--) 
+	_XawInsert8(stream, (value >> (BYTE*i)) & BYTE_MASK);
+}
+
+/*	Function Name: _XawInsertWidgetInfo
+ *	Description: Inserts the widget info into the protocol stream.
+ *	Arguments: stream - stream to insert widget info into.
+ *                 info - info to insert.
+ *	Returns: none
+ */
+
+void
+_XawInsertWidgetInfo(stream, info)
+ProtocolStream * stream;
+WidgetInfo * info;
+{
+    int i;
+
+    _XawInsert16(stream, info->num_widgets);
+    for (i = 0; i < info->num_widgets; i++) 
+	_XawInsert32(stream, info->ids[i]);
+}
+
+/************************************************************
+ *
+ * Code for retrieving values from the protocol stream.
+ *
+ ************************************************************/
+    
+/*	Function Name: _XawResetStream
+ *	Description: resets the protocol stream
+ *	Arguments: stream - the stream to reset.
+ *	Returns: none.
+ */
+
+void
+_XawResetStream(stream)
+ProtocolStream * stream;
+{
+    stream->current = stream->top;
+    stream->size = 0;
+    if (stream->real_top == NULL) {
+	stream->real_top = XtRealloc(stream->real_top, 
+				     stream->size + HEADER_SIZE);
+	stream->top = stream->real_top + HEADER_SIZE;
+	stream->current = stream->top + stream->size;
+    }
+}
+
+/*
+ * NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE 
+ *
+ * The only modified field if the "current" field.
+ *
+ * The only fields that must be set correctly are the "current", "top"
+ * and "size" fields.
+ */
+
+/*	Function Name: _XawRetrieveg8
+ *	Description: Retrieves an unsigned 8 bit value
+ *                   from the protocol stream.
+ *	Arguments: stream.
+ *                 val - a pointer to value to return.
+ *	Returns: TRUE if sucessful.
+ */
+
+Boolean
+_XawRetrieve8(stream, val)
+ProtocolStream * stream;
+unsigned char * val;
+{
+    if (stream->size < (stream->current - stream->top)) 
+	return(FALSE);
+
+    *val = *((stream->current)++);
     return(TRUE);
 }
 
-/*	Function Name: DoGetResources
- *	Description: Gets the Resources associated with the widgets passed.
- *	Arguments: w - any widget in the widget tree.
- *                 value - command string.
- *                 msg - a message to return to editres.
- *	Returns: True if completely sucessful.
+/*	Function Name: _XawRetrieve16
+ *	Description: Retrieves an unsigned 16 bit value
+ *                   from the protocol stream.
+ *	Arguments: stream.
+ *                 val - a pointer to value to return.
+ *	Returns: TRUE if sucessful.
  */
 
-static Boolean
-DoGetResources(w, value, msg)
-Widget w;
-char * value;
-Message * msg;
+Boolean
+_XawRetrieve16(stream, val)
+ProtocolStream * stream;
+unsigned short * val;
 {
-    int i, num_commands;
-    Boolean ret_val = TRUE;
-    register char **commands;
+    unsigned char temp1, temp2;
 
-    if ( (commands = BreakUpCommand(msg, value, &num_commands)) == NULL)
+    if ( !(_XawRetrieve8(stream, &temp1) && _XawRetrieve8(stream, &temp2)) )
+	return(FALSE);
+    
+    *val = (((unsigned short) temp1 << BYTE) + ((unsigned short) temp2));
+    return(TRUE);
+}
+
+/*	Function Name: _XawRetrieveSigned16
+ *	Description: Retrieves an signed 16 bit value from the protocol stream.
+ *	Arguments: stream.
+ *                 val - a pointer to value to return.
+ *	Returns: TRUE if sucessful.
+ */
+
+Boolean
+_XawRetrieveSigned16(stream, val)
+ProtocolStream * stream;
+short * val;
+{
+    unsigned char temp1, temp2;
+
+    if ( !(_XawRetrieve8(stream, &temp1) && _XawRetrieve8(stream, &temp2)) )
+	return(FALSE);
+    
+    if (temp1 & (1 << (BYTE - 1))) { /* If the sign bit is active. */
+	*val = -1;		 /* store all 1's */
+	*val &= (temp1 << BYTE); /* Now and in the MSB */
+	*val &= temp2;		 /* and LSB */
+    }
+    else 
+	*val = (((unsigned short) temp1 << BYTE) + ((unsigned short) temp2));
+
+    return(TRUE);
+}
+
+/*	Function Name: _XawRetrieve32
+ *	Description: Retrieves an unsigned 32 bit value
+ *                   from the protocol stream.
+ *	Arguments: stream.
+ *                 val - a pointer to value to return.
+ *	Returns: TRUE if sucessful.
+ */
+
+Boolean
+_XawRetrieve32(stream, val)
+ProtocolStream * stream;
+unsigned long * val;
+{
+    unsigned short temp1, temp2;
+
+    if ( !(_XawRetrieve16(stream, &temp1) && _XawRetrieve16(stream, &temp2)) )
+	return(FALSE);
+    
+    *val = (((unsigned short) temp1 << (BYTE * 2)) + 
+	    ((unsigned short) temp2));
+    return(TRUE);
+}
+
+/*	Function Name: _XawRetrieveString8
+ *	Description: Retrieves an 8 bit string value from the protocol stream.
+ *	Arguments: stream - the protocol stream
+ *                 str - the string to retrieve.
+ *	Returns: True if retrieval was successful.
+ */
+
+Boolean
+_XawRetrieveString8(stream, str)
+ProtocolStream * stream;
+char ** str;
+{
+    unsigned short len;
+    register int i;
+
+    if (!_XawRetrieve16(stream, &len)) {
+	return(FALSE);
+    }
+
+    *str = XtMalloc(sizeof(char) * (len + 1));
+
+    for (i = 0; i < len; i++) {
+	if (!_XawRetrieve8(stream, (unsigned char *) *str + i)) {
+	    XtFree(*str);
+	    *str = NULL;
+	    return(FALSE);
+	}
+    }
+    (*str)[i] = '\0';		/* NULL terminate that sucker. */
+    return(TRUE);
+}
+
+/*	Function Name: _XawRetrieveWidgetInfo
+ *	Description: Retrieves the list of widgets that follow and stores
+ *                   them in the widget info structure provided.
+ *	Arguments: stream - the protocol stream
+ *                 info - the widget info struct to store into.
+ *	Returns: True if retrieval was successful.
+ */
+
+Boolean
+_XawRetrieveWidgetInfo(stream, info)
+ProtocolStream * stream;
+WidgetInfo * info;
+{
+    int i;
+
+    if (!_XawRetrieve16(stream, &(info->num_widgets))) 
 	return(FALSE);
 
-    for (i = 0; i < num_commands; i++) 
-	ret_val &= ExecuteGetResources(w, commands[i], msg);
+    info->ids = (unsigned long *) XtMalloc(sizeof(long) * (info->num_widgets));
 
-    XtFree((char *) commands);
-    return(ret_val);
+    for (i = 0; i < info->num_widgets; i++) {
+	if (!_XawRetrieve32(stream, info->ids + i)) {
+	    XtFree(info->ids);
+	    info->ids = NULL;
+	    return(FALSE);
+	}
+    }
+    return(TRUE);
 }
+
+	    
+    

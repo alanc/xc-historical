@@ -34,11 +34,15 @@ static Widget CreateTopArea();
 
 extern void GetResourceList(), AnyChosen(), SetResourceString();
 extern void PannerCallback(), PortholeCallback(), DumpTreeToFile();
-extern void Quit(), SendTree(), InitSetValues(), FlashActiveWidgets();
+extern void Quit(), SendTree(), FlashActiveWidgets();
 extern void TreeSelect(), TreeRelabel(), TreeActivate(), FindWidget();
 extern void ResourceListCallback(), PopdownResBox(), SaveResource();
 extern void GetNamesAndClasses(), ApplyResource(), ActivateResourceWidgets();
 extern void ActivateWidgetsAndSetResourceString(), SetFile();
+
+#ifdef SET_VALUES_POPUP    
+    extern InitSetValues();
+#endif
 
 /*	Function Name: BuildWidgetTree
  *	Description: Creates all widgets for Editres.
@@ -133,10 +137,11 @@ Widget parent;
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);
-    
+#ifdef SET_VALUES_POPUP    
     entry = XtCreateManagedWidget("setValues", smeBSBObjectClass, menu,
 				    NULL, ZERO);
     XtAddCallback(entry, XtNcallback, InitSetValues, NULL);
+#endif /* SET_VALUES_POPUP */
 
     entry = XtCreateManagedWidget("dumpTreeToFile", smeBSBObjectClass, menu,
 				    NULL, ZERO);

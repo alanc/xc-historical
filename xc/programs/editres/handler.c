@@ -19,9 +19,10 @@ extern void SetCommand(), PopupSetValues(), SetAndCenterTreeNode();
 extern void _TreeSelect(), _TreeRelabel(), _TreeActivate(), SetMessage();
 extern void _FlashActiveWidgets(), _DumpTreeToFile(), _PopupFileDialog();
 extern void AddString(), CreateResourceBox(), ExecuteOverAllNodes();
-extern void GetNamesAndClasses(), TreeToggle();
+extern void GetNamesAndClasses(), TreeToggle(), InsertWidgetFromNode();
 extern Boolean CheckDatabase();
 extern XrmQuarkList Quarkify();
+extern char *GetResourceValueForSetValues();
 
 void SetResourceString(), ActivateResourceWidgets();
 void ActivateWidgetsAndSetResourceString();
@@ -66,7 +67,8 @@ XtPointer value, call_data;
     if (!XtIsWidget(w))     /* Make sure that we use a "Real" widget here. */
 	w = XtParent(w);
 
-    SetCommand(w, SendWidgetTree, NULL, NULL);
+    _XawResetStream(&(global_client.stream)); /* an empty message. */
+    SetCommand(w, LocalSendWidgetTree, NULL);
 }
 
 /*	Function Name: FindWidget
@@ -89,6 +91,7 @@ XtPointer client_data, call_data;
 				   widget not a rect_obj. */
 }
 
+#ifdef SEV_VALUES_POPUP
 /*	Function Name: InitSetValues
  *	Description: This function pops up the setvalues dialog
  *	Arguments: w - the widget caused this action.
@@ -108,6 +111,7 @@ XtPointer call_data, client_data;
 
     PopupSetValues(w, NULL);
 }
+#endif /* SEV_VALUES_POPUP */
 
 /*	Function Name: TreeSelect
  *	Description: Selects all widgets.
@@ -232,7 +236,7 @@ Widget w;
 XtPointer junk, garbage;
 {
     WNode * node;
-    char buf[BUFSIZ], *NodeToID(), *id;
+    ProtocolStream * stream = &(global_client.stream);
 
     if (global_tree_info == NULL) {
 	SetMessage(global_screen_data.info_label,
@@ -251,14 +255,15 @@ XtPointer junk, garbage;
 	CreateResourceBox(node);
 	return;
     }
+
     /*
      * No resoruces, fetch them from the client.
      */
-    
-    sprintf(buf, "%s%c", id = NodeToID(global_tree_info->active_nodes[0]),
-	    EOL_SEPARATOR);
-    SetCommand(global_tree_info->tree_widget, GetResources, buf, NULL);
-    XtFree(id);
+
+    _XawResetStream(stream); 
+    _XawInsert16(stream, (unsigned short) 1);
+    InsertWidgetFromNode(stream, node);
+    SetCommand(global_tree_info->tree_widget, LocalGetResources, NULL);
 }
 
 /*	Function Name: DumpTreeToFile
@@ -664,38 +669,61 @@ ApplyResource(w, node_ptr, junk)
 Widget w;
 XtPointer node_ptr, junk;
 {
+    ProtocolStream * stream = &(global_client.stream);
     static void CreateSetValuesCommand();
-    WNode * node = (WNode *) node_ptr;
     ApplyResourcesInfo info;
-    char * line;
+    WNode * node = (WNode *) node_ptr;	       
+    char * value;
+    unsigned short size, i;
+    long len;
     Arg args[1];
-
-    XtSetArg(args[0], XtNlabel, &line);
-    XtGetValues(node->resources->res_box->res_label, args, ONE);
-
-    info.database = NULL;
-    XrmPutLineResource(&(info.database), line);
-
-    XtSetArg(args[0], XtNstring, &line);
-    XtGetValues(node->resources->res_box->value_wid, args, ONE);
-    info.value = XtNewString(line);
 
     info.name = GetResourceName(node->resources->res_box);
     info.class = "IGNORE_ME";	/* Not currently used.  */
-    info.com_str = NULL;
+    info.stream = stream;
+    info.count = 0;
+
+    XtSetArg(args[0], XtNlabel, &value);
+    XtGetValues(node->resources->res_box->res_label, args, ONE);
+
+    info.database = NULL;
+    XrmPutLineResource(&(info.database), value);
+
+
+    _XawResetStream(stream);
+    _XawInsertString8(stream, info.name); /* Insert name */
+    _XawInsertString8(stream, XtRString); /* insert type */
+
+    /*
+     * Insert value.
+     */
+
+    value = GetResourceValueForSetValues(node, &size);
+    _XawInsert16(stream, size);    
+    for (i = 0; i < size; i++) 
+	_XawInsert8(stream, value[i]);
+    XtFree(value);
+    len = stream->current - stream->top;
+
+    /* 
+     * Insert the widget count, overriden later. 
+     */
+
+    _XawInsert16(stream, 0); 
 
     ExecuteOverAllNodes(node->tree_info->top_node,
 			CreateSetValuesCommand, (XtPointer) &info);
     
-    if (info.com_str != NULL) {
-	SetCommand(node->tree_info->tree_widget, SetValues,info.com_str,NULL);
-	XtFree(info.com_str);
+    if (info.count > 0) {
+	*(stream->top + len++) = info.count >> BYTE; /* Set the correct */
+	*(stream->top + len) = info.count;           /* count. */
+
+	SetCommand(node->tree_info->tree_widget, LocalSetValues, NULL);
     }
     else 
 	SetMessage(global_screen_data.info_label,
 		   "ApplyResource: found no matches.");
 	
-    XtFree(info.value);
     XrmDestroyDatabase(info.database);
 }
 
@@ -716,20 +744,14 @@ XtPointer info_ptr;
     XrmNameList name_quarks;
     XrmClassList class_quarks;
     char ** names, **classes;
-    char command[BUFSIZ], *ptr;
 
     GetNamesAndClasses(node, &names, &classes);
     name_quarks = (XrmNameList) Quarkify(names, info->name);
     class_quarks = (XrmNameList) Quarkify(classes, info->class);
 
     if (CheckDatabase(info->database, name_quarks, class_quarks)) {
-	ptr = NodeToID(node);
-	sprintf(command, "%c%s%c%s%c", WID_RES_SEPARATOR, info->name,
-		NAME_VAL_SEPARATOR, info->value, EOL_SEPARATOR);
-	
-	AddString(&info->com_str, ptr);		/* put in widget name. */
-	AddString(&info->com_str, command); 	/* put in rest of command. */
-	XtFree(ptr);
+	InsertWidgetFromNode(info->stream, node);
+	info->count++;
     }
 
     XtFree(names);
@@ -752,12 +774,21 @@ ActivateResourceWidgets(w, node_ptr, junk)
 Widget w;
 XtPointer node_ptr, junk;
 {
-    WNode * node = (WNode *) node_ptr;	       
     static void SetOnlyMatchingWidgets();
-
+    WNode * node = (WNode *) node_ptr;	       
     ApplyResourcesInfo info;
     char * line;
     Arg args[1];
+
+    info.name = GetResourceName(node->resources->res_box);
+    info.class = "IGNORE_ME";	/* Not currently used.  */
+
+    /* 
+     * Unused fields.
+     */
+
+    info.count = 0;
+    info.stream = NULL;
 
     XtSetArg(args[0], XtNlabel, &line);
     XtGetValues(node->resources->res_box->res_label, args, ONE);
@@ -765,9 +796,6 @@ XtPointer node_ptr, junk;
     info.database = NULL;
     XrmPutLineResource(&(info.database), line);
 
-    info.name = GetResourceName(node->resources->res_box);
-    info.class = "IGNORE_ME";	/* Not currently used.  */
-    info.com_str = info.value = NULL; /* unused fields */
 
     ExecuteOverAllNodes(node->tree_info->top_node,
 			SetOnlyMatchingWidgets, (XtPointer) &info);

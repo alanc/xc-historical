@@ -207,78 +207,6 @@ Window win;
     return(NULL);
 }
 
-/*	Function Name: NodeToID
- *	Description: gets the fully specified node id as a string.
- *	Arguments: node - node to work on.
- *	Returns: an allocated fully specified node id as a string.
- */
-
-#define MORE_MEM 200
-
-char * 
-NodeToID(node)
-WNode * node;
-{
-    int t_len = 1, alloc = 0;
-    char * str = NULL;
-
-    for ( ; node != NULL; node = node->parent) {
-	char buf[BUFSIZ], *ptr;
-	Cardinal len;
-	    
-	sprintf(buf, "%c%ld", NAME_SEPARATOR, node->id);
-	
-	len = strlen(buf);
-	
-	if (t_len + len >= alloc) {
-	    alloc += (len > MORE_MEM) ? len : MORE_MEM;
-	    str = XtRealloc(str, sizeof(char) * alloc);
-	}
-	    
-	ptr = str + t_len - 1;
-	strcpy(ptr, buf);
-	
-	t_len += len;
-    }
-    return(str);
-}
-
-/*	Function Name: IDToNode
- *	Description: gets the node pointer given the id.
- *	Arguments: top_node - the top_node of this tree.
- *                 str - string containng the node id.
- *	Returns: the node pointer of this node.
- */
-
-WNode * 
-IDToNode(top_node, str)
-WNode * top_node;
-char * str;
-{
-    char **names;
-    int num_names, j;
-    unsigned long * ids;
-    WNode *FindNode(), *node;
-
-    GetAllStrings(str, NAME_SEPARATOR, &names, &num_names);
-    
-    ids = (unsigned long *) XtMalloc(sizeof(unsigned long) * num_names);
-	    
-    /*
-     * Reverse the order, and store as unsigned longs.
-     */
-    
-    for (j = num_names - 1; j >= 0; j--)
-	ids[j] = atol(names[num_names - j - 1]);
-    
-    node = FindNode(top_node, ids, (Cardinal) num_names);
-    
-    XtFree(ids);
-    XtFree(names);
-
-    return(node);
-}
-
 /*	Function Name: HandleXErrors
  *	Description: Handles error codes from the server.
  *	Arguments: display - the display.
@@ -544,23 +472,23 @@ XtPointer client_data, junk;
  *
  ************************************************************/
 
-/*	Function Name: GetNamesAndClasses
- *	Description: Gets a list of names and classes for this widget.
- *	Arguments: node - this widget's node.
+/*    Function Name: GetNamesAndClasses
+ *    Description: Gets a list of names and classes for this widget.
+ *    Arguments: node - this widget's node.
  *                 names, classes - list of names and classes. ** RETURNED **
- *	Returns: none.
+ *    Returns: none.
  */
 
 void
-GetNamesAndClasses(node, names, classes) 
+GetNamesAndClasses(node, names, classes)
 WNode * node;
 char *** names, ***classes;
 {
     int i, total_widgets;
     WNode * temp = node;
 
-    for (total_widgets = 1 ; temp->parent != NULL ; 
-	 total_widgets++, temp = temp->parent) { } /* empty for */
+    for (total_widgets = 1 ; temp->parent != NULL ;
+       total_widgets++, temp = temp->parent) { } /* empty for */
 
     *names = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
     *classes = (char **) XtMalloc(sizeof(char *) * (total_widgets + 1));
@@ -568,38 +496,47 @@ char *** names, ***classes;
     (*names)[total_widgets] = (*classes)[total_widgets] = NULL;
 
     for ( i = (total_widgets - 1); i >= 0 ; node = node->parent, i--) {
-	(*names)[i] = node->name;
-	(*classes)[i] = node->class;
+      (*names)[i] = node->name;
+      (*classes)[i] = node->class;
     }
 }
 
 /*	Function Name: HandleGetResources
  *	Description: Gets the resources.
- *	Arguments: val - the return value from the client.
- *	Returns: none.
+ *	Arguments: event - the information from the client.
+ *	Returns: an error message to display.
  */
 
 char *
-HandleGetResources(val)
-char * val;
+HandleGetResources(event)
+Event * event;
 {
-    char ** widget_strings, *data, * errors = NULL;
-    int i, num;
+    GetResourcesEvent * get_event = (GetResourcesEvent *) event;
+    char buf[BUFSIZ], * errors = NULL;
+    int i;
     WNode * node;
 
-    GetAllStrings(val, EOL_SEPARATOR, &widget_strings, &num);
-    
-    for (i = 0; i < num; i++) {
-	if (ParseOutWidgetInfo(global_tree_info, &errors, widget_strings[i], 
-			       &node, &data)) {
-	    if (node->resources != NULL) 
-		FreeResources(node->resources);
-	    node->resources = ParseResources(data, &errors);
+    for (i = 0; i < get_event->num_entries; i++) {
+	node = FindNode(global_tree_info->top_node,
+			get_event->info[i].widgets.ids, 
+			get_event->info[i].widgets.num_widgets);
+
+	if (node == NULL) {
+	    sprintf(buf, "Editres Internal Error: Unable to FindNode.\n");
+	    AddString(&errors, buf); 
+	    continue;	
+	}
+
+	if (node->resources != NULL) 
+	    FreeResources(node->resources);
+	if (!get_event->info[i].error) {
+	    node->resources = ParseResources(get_event->info + i, &errors);
 	    CreateResourceBox(node);
 	}
+	else 
+	    AddString(&errors, get_event->info[i].message);
     }
 
-    XtFree(widget_strings);
     return(errors);
 }
 
@@ -645,18 +582,19 @@ WNode * node;
 /*	Function Name: ParseResources
  *	Description: Parses the resource values returned from the client
  *                   into a resources structure.
- *	Arguments: str - string containing resources for this widget.
+ *	Arguments: info - info about a widget's resources.
+ *                 error - where to place error info.
  *	Returns: The resource information.
  */
 
 static WidgetResources * 
-ParseResources(str, error)
-char * str, **error;
+ParseResources(info, error)
+GetResourcesInfo * info;
+char **error;
 {
     WidgetResources * resources;
     WidgetResourceInfo * normal;
-    char ** res_strings;
-    int i, num;
+    int i;
 
     resources = (WidgetResources *) XtMalloc(sizeof(WidgetResources)); 
     
@@ -667,31 +605,29 @@ char * str, **error;
      * that there is no overlap.
      */
 
-    GetAllStrings(str, RESOURCE_SEPARATOR, &res_strings, &num);
-
     resources->normal = (WidgetResourceInfo *) 
-	                           XtMalloc(sizeof(WidgetResourceInfo) * num);
+	            XtMalloc(sizeof(WidgetResourceInfo) * info->num_resources);
 
     normal = resources->normal;
-    resources->constraint = resources->normal + num - 1;
+    resources->constraint = resources->normal + info->num_resources - 1;
 
     resources->num_constraint = resources->num_normal = 0;
 
-    for (i = 0; i < num; i++) {
-	switch(res_strings[i][0]) {
-	case 'n':
+    for (i = 0; i < info->num_resources; i++) {
+	switch((int) info->res_info[i].res_type) {
+	case NormalResource:
 	    resources->num_normal++;
-	    AddResource(res_strings[i] + 1, error, normal++);
+	    AddResource(info->res_info + i, normal++);	    
 	    break;
-	case 'c':
+	case ConstraintResource:
 	    resources->num_constraint++;
-	    AddResource(res_strings[i] + 1, error, resources->constraint--);
+	    AddResource(info->res_info + i, resources->constraint--);
 	    break;
 	default:
 	    {
 		char buf[BUFSIZ];
-		sprintf(buf, "Improperly formatted resource value: '%s'", 
-			res_strings[i]);
+		sprintf(buf, "Unknown resource type %d", 
+			info->res_info[i].res_type);
 		AddString(error, buf);
 	    }
 	    break;
@@ -732,47 +668,22 @@ WidgetResourceInfo *e1, *e2;
 /*	Function Name: AddResource
  *	Description: Parses the resource string a stuffs in individual
  *                   parts into the resource info struct.
- *	Arguments: str - the string to parse, format is below.
+ *	Arguments: res_info - the resource info from the event.
  *                 resource - location to stuff the resource into.
  *	Returns: none.
- *
- * Resources are of the form:
- *
- * <name>:<Class>#type
  */
 
 static void
-AddResource(str, error, resource) 
-char * str;
-char ** error;
+AddResource(res_info, resource) 
+ResourceInfo * res_info;
 WidgetResourceInfo * resource;
 {
-    char buf[BUFSIZ], *temp, *ptr;
-    int len;
-
-    if ((ptr = index(str, NAME_VAL_SEPARATOR)) == NULL) {
-	sprintf("Error parsing resource value: '%s', must contain a %c",
-		str, NAME_VAL_SEPARATOR);
-	AddString(error, buf);
-    }
-    len = ptr - str;
-    resource->name = XtMalloc(sizeof(char) * (len + 1));
-    strncpy(resource->name, str, len);
-    resource->name[len] = '\0';
-
-    temp = ptr + 1;
-    if ((ptr = index(temp, CLASS_TYPE_SEPARATOR)) == NULL) {
-	sprintf("Error parsing resource value: '%s', must contain a %c",
-		str, CLASS_TYPE_SEPARATOR);
-	AddString(error, buf);
-    }
-    len = ptr - temp;
-    resource->class = XtMalloc(sizeof(char) * (len + 1));
-    strncpy(resource->class, temp, len);
-    resource->class[len] = '\0';
-    
-    temp = ptr + 1;
-    resource->type = XtNewString(temp);
+    resource->name = res_info->name;
+    res_info->name = NULL;	/* Keeps it from being deallocated. */
+    resource->class = res_info->class;
+    res_info->class = NULL;	/* Keeps it from being deallocated. */
+    resource->type = res_info->type;
+    res_info->type = NULL;	/* Keeps it from being deallocated. */
 }
 
 
@@ -791,63 +702,6 @@ WidgetResources * resources;
     XFree(resources);
 }
 	
-/*	Function Name: ParseOutWidgetInfo
- *	Description: Parses out the widget info and adds the error code 
- *                   to the error string.
- *	Arguments: tree_info - the tree info.
- *                 error - the string containing the error message.
- *                 str - info to parse. 
- *                 node - node contained in this command.
- *                 data - the data associated with this command.
- *	Returns: True if no error occured and parse was sucessful, 
- *               False otherwise.
- *
- * str is in the form:
- *
- *            <e_val>[id]:<data>\0
- *
- *   e_val	= 1 if an error occured, 0 otherwise.
- *                NOTE: This field is exactly one character wide.
- *
- *   id 	= .<widgetid>.<parentid>.<grandparentid>...
- *
- *   data 	= <string>
- */
-
-Boolean
-ParseOutWidgetInfo(tree_info, error, str, node, data)
-TreeInfo * tree_info;
-char ** error, *str;
-WNode ** node;
-char ** data;
-{
-    char ** names, buf[BUFSIZ];
-    int num_names;
-
-    GetAllStrings(str + 1, NAME_VAL_SEPARATOR, &names, &num_names);
-	    
-    if ((*node = IDToNode(tree_info->top_node, names[0])) != NULL) {
-	if (str[0] = '0') {	/* no error occured. */
-	    *data = str + (names[1] - names[0]) + 1; /* A bit of a hack... 
-						        but gets us the 
-							correct data. */
-	    XtFree(names);
-	    return(TRUE);
-	}
-	
-	/* 
-	 * error code returned add message to 'error'.
-	 */
-	
-	sprintf(buf, "%s(0x%lx) - %s\n", (*node)->name, (*node)->id, names[1]);
-    }
-    else 
-	sprintf(buf, "%s - %s\n", names[0], names[1]);
-
-    AddString(error, buf);
-    XtFree(names);
-    return(FALSE);
-}
 
 /*	Function Name: CheckDatabase
  *	Description: Checks to see if the node is in the database.
@@ -921,3 +775,83 @@ XtPointer data;
     for (i = 0; i < top_node->num_children; i++) 
 	ExecuteOverAllNodes(top_node->children[i], func, data);
 }
+
+/*	Function Name: InsertWidgetFromNode
+ *	Description: Inserts the widget info for this widget represented
+ *                   by this node.
+ *	Arguments: stream - the stream to insert it info into.
+ *                 none - the widget node to insert.
+ *	Returns: none
+ */
+
+void
+InsertWidgetFromNode(stream, node)
+ProtocolStream * stream;
+WNode * node;
+{
+    WNode *temp;
+    unsigned long * widget_list;
+    register int i, num_widgets;
+
+    for (temp = node, i = 0; temp != 0; temp = temp->parent, i++) {}
+
+    num_widgets = i;
+    widget_list = (unsigned long *) 
+	          XtMalloc(sizeof(unsigned long) * num_widgets);
+
+    /*
+     * Put the widgets into the list.
+     * Make sure that they are inserted in the list from parent -> child.
+     */
+
+    for (i--, temp = node; temp != 0; temp = temp->parent, i--) 
+	widget_list[i] = temp->id;
+	
+    _XawInsert16(stream, num_widgets);	/* insert number of widgets. */
+    for (i = 0; i < num_widgets; i++) 	/* insert Widgets themselves. */
+	_XawInsert32(stream, widget_list[i]);
+    
+    XtFree(widget_list);
+}
+
+/*	Function Name: GetFailureMesssage
+ *	Description: returns the message returned from a failed request.
+ *	Arguments: stream - the protocol stream containing the message.
+ *	Returns: message to show.
+ */
+
+char * 
+GetFailureMessage(stream)
+ProtocolStream * stream;
+{
+    char * return_str;
+
+    if (_XawRetrieveString8(stream, &return_str)) 
+	return(return_str);
+
+    return(XtNewString("Unable to unpack protocol request."));
+}
+
+/*	Function Name: ProtocolFailure
+ *	Description: Gets the version of the protocol the client is
+ *                   willing to speak.
+ *	Arguments: stream - the protocol stream containing the message.
+ *	Returns: message to show.
+ */
+
+char * 
+ProtocolFailure(stream)
+ProtocolStream * stream;
+{
+    char buf[BUFSIZ];
+    unsigned char version;
+
+    if (!_XawRetrieve8(stream, &version)) 
+	return(XtNewString("Unable to unpack protocol request."));
+
+    sprintf(buf, "This version of editres uses protocol version %d.\n%s%d",
+	    CURRENT_PROTOCOL_VERSION,
+	    "But the client speaks version ", (int) version);
+    return(XtNewString(buf));
+}
+	

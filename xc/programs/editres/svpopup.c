@@ -1,3 +1,8 @@
+
+#include "editresP.h"
+
+#ifdef SEV_VALUES_POPUP
+
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definations. */
@@ -11,11 +16,8 @@
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Label.h>	
 
-#include "editresP.h"
-
-extern void SetMessage(), SetCommand(), GetAllActiveTreeEntries();
-extern void GetAllStrings(), AddString(), PopupCentered();
-extern WNode * IDToNode();
+extern void SetMessage(), SetCommand(), InsertWidgetFromNode();
+extern void GetAllStrings(), PopupCentered();
 
 static void _SetField(), CreateSetValuesPopup();
 
@@ -254,13 +256,12 @@ DoSetValues(w, junk, garbage)
 Widget w;
 caddr_t junk, garbage;
 {
-    char ** entries, *res_name, *res_value, *command_value;
+    ProtocolStream * stream = &(global_client.stream);
+    char *res_name, *res_value;
     Arg args[1];
-    Cardinal num_entries, i, res_len, total_len, alloc_len;
+    Cardinal i;
 
-    GetAllActiveTreeEntries(global_tree_info, &entries, &num_entries);
-
-    if (num_entries == 0) {
+    if (global_tree_info->num_nodes == 0) {
 	SetMessage(global_screen_data.info_label,
 		   "There are no currently active widgets.");
 	return;
@@ -272,39 +273,16 @@ caddr_t junk, garbage;
     XtSetArg(args[0], XtNstring, &res_value);
     XtGetValues(global_screen_data.val_text, args, ONE);
     
-    res_len = strlen(res_name) + strlen(res_value); 
+    _XawResetStream(stream);
+    _XawInsertString8(stream, res_name);
+    _XawInsertString8(stream, XtRString);
+    _XawInsertString8(stream, res_value);
+    _XawInsert16(stream, global_tree_info->num_nodes);
 
-    command_value = NULL;
-    total_len = 1;		/* space for '\0' */
-    alloc_len = 0;
-    
-    for (i = 0; i < num_entries; i++) {
-	Cardinal len;
-	char * ptr;
+    for (i = 0; i < global_tree_info->num_nodes; i++) 
+	InsertWidgetFromNode(stream, global_tree_info->active_nodes[i]);
 
-	/*
-	 * The '3' is for the three separators is the sprintf below.
-	 */
-
-	len = strlen(entries[i]) + res_len + 3;
-			   
-	if ((total_len + len) >= alloc_len) {
-	    alloc_len += BUFSIZ;
-	    command_value = XtRealloc(command_value, alloc_len);
-	}
-
-	ptr = command_value + total_len - 1;
-	sprintf(ptr, "%s%c%s%c%s%c", entries[i], WID_RES_SEPARATOR, res_name,
-		NAME_VAL_SEPARATOR, res_value, EOL_SEPARATOR);
-
-	XtFree(entries[i]);
-	total_len += len;
-    }
-
-    XtFree(entries);
-
-    SetCommand(w, SetValues, command_value, NULL);
-    XtFree(command_value);
+    SetCommand(w, LocalSetValues, NULL);
 }
 
 /*	Function Name: CancelSetValues
@@ -322,52 +300,4 @@ caddr_t junk, garbage;
 {
     XtPopdown(XtParent(XtParent(w))); 
 }
-
-/*	Function Name: GetFormattedSetValuesError
- *	Description: Returns a formatted string for a formatted 
- *                   setvalues error.
- *	Arguments: value - the formatted error string.
- *	Returns: printable error message.
- */
-
-char * 
-GetFormattedSetValuesError(value)
-char * value;
-{
-    char buf[BUFSIZ], ** strings, *ret_val;
-    int num_strings, i;
-    WNode *node;
-
-    GetAllStrings(value, EOL_SEPARATOR, &strings, &num_strings);
-
-    ret_val = NULL;
-
-    for (i = 0; i < num_strings; i++) {
-	char *ptr;
-
-	ptr = index(strings[i], NAME_VAL_SEPARATOR);
-	if (ptr == NULL) {
-	    sprintf(buf, "Incorrectly formatted entry, no `%c'\n",
-		    NAME_VAL_SEPARATOR);
-	    AddString(&ret_val, buf); 
-	    continue;
-	}
-
-	if (ptr != strings[i]) {
-	    *ptr++ = '\0';
-	    node = IDToNode(global_tree_info->top_node, strings[i]);
-	    
-	    if (node != NULL) 
-		sprintf(buf, "%s(0x%lx) - %s\n", node->name, node->id, ptr);
-	    else
-		sprintf(buf, "%s - %s\n", strings[i], ptr);
-	}
-	else
-	    strcpy(buf, (ptr + 1));
-
-	AddString(&ret_val, buf);
-    }
-    
-    XtFree(strings);
-    return(ret_val);
-}
+#endif /* SET_VALUES_POPUP */

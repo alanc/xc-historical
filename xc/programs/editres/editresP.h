@@ -10,6 +10,8 @@
 #  define CLIENT_TIME_OUT 5000	/* wait five seconds for the client. */
 #endif /* DEBUG */
 
+#define CURRENT_PROTOCOL_VERSION 4
+
 #define FLASH_TIME  1000	/* Default flash time in microseconds */
 #define NUM_FLASHES 3		/* Default number of flashes. */
 
@@ -20,6 +22,13 @@
 #define ANY_RADIO_DATA ("the any widget")
 
 extern void exit();
+
+/*
+ * Retrieving ResType and Boolean is the same as retrieving a Card8.
+ */
+
+#define _XawRetrieveBoolean _XawRetrieve8
+#define _XawRetrieveResType _XawRetrieve8
 
 /*
  * Contexts to use with the X Context Manager.
@@ -34,8 +43,8 @@ extern void exit();
 #define NO_ERROR 0
 #define NO_WINDOW 1
 
-typedef enum {SendWidgetTree, SetValues, FindChild, FlashWidget,
-	      GetGeometry, GetResources} ResCommand;
+typedef enum {LocalSendWidgetTree, LocalSetValues, LocalFindChild, 
+	      LocalFlashWidget, LocalGetGeometry, LocalGetResources}ResCommand;
 
 typedef enum {ClassLabel, NameLabel, IDLabel, WindowLabel} LabelTypes;
 typedef enum {SelectAll, SelectNone, SelectInvert, SelectParent, 
@@ -99,9 +108,9 @@ typedef struct _AnyInfo {
  */
 
 typedef struct _CurrentClient {
-    ResIdent ident;		/* The ident number being used. */
-    ResCommand command;		/* Command we are currently executing. */
-    char *value;		/* Command's value. */
+    ResCommand command;		/* the command sent. */
+    ResIdent ident;
+    ProtocolStream stream;	/* protocol stream for this client. */
     XtIntervalId timeout;	/* timeout set in case he doesn't answer. */
     Window window;		/* window to communicate with. */
     Atom atom;			/* Atom used to communicate with this client.*/
@@ -146,10 +155,95 @@ typedef struct _AppResources {
  */
 
 typedef struct _ApplyResourcesInfo {
-    char * name, *class, *value, /* Name, class and value of this resource. */
-        *com_str;		/* Command string to pass to setvalue call. */
+    char * name, *class;	/* name and class  of this resource. */
+    unsigned short count;
+    ProtocolStream * stream;
     XrmDatabase database;
 } ApplyResourcesInfo;
+    
+
+/************************************************************
+ *
+ * The Event Structures.
+ *
+ ************************************************************/
+
+typedef struct _AnyEvent {
+    EditresCommand type;
+} AnyEvent;
+
+typedef struct _WidgetTreeInfo {
+    WidgetInfo widgets;
+    char * name;
+    char * class;
+    unsigned long window;
+} WidgetTreeInfo;
+
+typedef struct _SendWidgetTreeEvent {
+    EditresCommand type;
+    unsigned short num_entries;
+    WidgetTreeInfo * info;
+} SendWidgetTreeEvent;
+
+typedef struct _SetValuesInfo {
+    WidgetInfo widgets;
+    char * message;
+} SetValuesInfo;
+    
+typedef struct _SetValuesEvent {
+    EditresCommand type;
+    unsigned short num_entries;
+    SetValuesInfo * info;
+} SetValuesEvent;
+
+typedef struct _ResourceInfo {
+    ResourceType res_type;
+    char * name, *class, *type;
+} ResourceInfo;
+
+typedef struct _GetResourcesInfo {
+    WidgetInfo widgets;
+    Boolean error;
+    char * message;
+    unsigned short num_resources;
+    ResourceInfo * res_info;
+} GetResourcesInfo;
+
+typedef struct _GetResourcesEvent {
+    EditresCommand type;
+    unsigned short num_entries;
+    GetResourcesInfo * info;
+} GetResourcesEvent;
+
+typedef struct _GetGeomInfo {
+    EditresCommand type;
+    WidgetInfo widgets;
+    Boolean error;
+    char * message;
+    Boolean visable;
+    short x, y;
+    unsigned short width, height, border_width;
+} GetGeomInfo;
+
+typedef struct _GetGeomEvent {
+    EditresCommand type;
+    unsigned short num_entries;
+    GetGeomInfo * info;
+} GetGeomEvent;
+
+typedef struct _FindChildEvent {
+    EditresCommand type;
+    WidgetInfo widgets;
+} FindChildEvent;
+
+typedef union _Event {
+    AnyEvent any_event;
+    SendWidgetTreeEvent send_widget_tree_event;
+    SetValuesEvent set_values_event;
+    GetResourcesEvent get_resources_event;
+    GetGeomEvent get_geom_event;
+    FindChildEvent find_child_event;
+} Event;
     
 /*
  * Global variables. 
@@ -172,4 +266,3 @@ typedef struct _ApplyResourcesInfo {
  */
 
 #define streq(a, b)        ( strcmp((a), (b)) == 0 )
- 

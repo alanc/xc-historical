@@ -14,28 +14,27 @@ extern ScreenData global_screen_data;
 extern void SetMessage();
 
 static Boolean IsActiveNode();
-static Cardinal ParseString();
 static void AddChild();
 
 extern void PrepareToLayoutTree(), LayoutTree();
 
 extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
 extern WNode ** CopyActiveNodes();
-extern char * NodeToID();
 
 void TreeToggle();
 
 /*	Function Name: BuildVisualTree
  *	Description: Creates the Tree and shows it.
  *	Arguments: tree_parent - parent of the tree widget.
- *                 str - the widget tree as a string.
+ *                 event - the event that caused this action.
  *	Returns: none.
  */
 
+/* ARGSUSED */
 void
-BuildVisualTree(tree_parent, str)
+BuildVisualTree(tree_parent, event)
 Widget tree_parent;
-char * str;
+Event * event;
 {
     WNode * top;
     TreeInfo *CreateTree();
@@ -48,7 +47,7 @@ char * str;
 	XtFree(global_tree_info);
     }
 
-    global_tree_info = CreateTree(str);
+    global_tree_info = CreateTree(event);
     top = global_tree_info->top_node;
 
     global_tree_info->tree_widget = XtCreateWidget("tree", treeWidgetClass,
@@ -139,29 +138,6 @@ caddr_t node_ptr, state_ptr;
 	RemoveNodeFromActiveList(node);
 }
 
-/*	Function Name: GetAllActiveTreeEntries
- *	Description: returns a fully specified id list for each active.
- *	Arguments: tree_info - the tree info structure.
- *                 entries - the list of active entries *** RETURNED ***
- *                 num_entries - the number of active entries *** RETURNED ***
- *	Returns: none.
- */
-
-void
-GetAllActiveTreeEntries(tree_info, entries, num_entries)
-TreeInfo * tree_info;
-char *** entries;
-Cardinal * num_entries;
-{
-    int i;
-
-    *num_entries = tree_info->num_nodes;
-    *entries = (char **) XtMalloc(sizeof(char *) * (*num_entries));
-
-    for (i = 0; i < *num_entries; i++) 
-	(*entries)[i] = NodeToID(tree_info->active_nodes[i]);
-}
-
 /*	Function Name: AddNodeToActiveList
  *	Description: Adds this node to the list of active toggles.
  *	Arguments: node - node to add.
@@ -236,23 +212,17 @@ WNode * node;
     
 /*	Function Name: CreateTree
  *	Description: Creates a widget tree give a list of names and classes.
- *	Arguments: str - string containing widget names and classes.
- *                 tree_info - global information on this tree.
+ *	Arguments: event - the information from the client.
  *	Returns: The tree_info about this new tree.
- *
- *               Sting is formatted in the format.
- *
- *               name\tid.name\tid.name\tid:Class|Window\n
  */
     
 TreeInfo *
-CreateTree(str)
-char * str;
+CreateTree(event)
+Event * event;
 {
+    SendWidgetTreeEvent * send_event = (SendWidgetTreeEvent *) event;
     static void AddNode();
-    void GetAllStrings();
-    char ** strings;
-    int num_strings, i;
+    int i;
 
     TreeInfo * tree_info;
 
@@ -265,12 +235,8 @@ char * str;
     tree_info->flash_widgets = NULL;
     tree_info->num_flash_widgets = tree_info->alloc_flash_widgets = 0;
 
-    GetAllStrings(str, EOL_SEPARATOR, &strings, &num_strings);
-
-    for ( i = 0; i < num_strings; i++)
-	AddNode(&(tree_info->top_node), strings[i], tree_info);
-
-    XtFree(strings);
+    for ( i = 0; i < send_event->num_entries; i++)
+	AddNode(&(tree_info->top_node), (send_event->info + i), tree_info);
 
     return(tree_info);
 }
@@ -527,40 +493,32 @@ WNode * FindNode();
 /*	Function Name: AddNode
  *	Description: adds a node to the widget tree.
  *	Arguments: top_node - a pointer to the current top node.
- *                 str - string containing the name of this widget.
+ *                 info - the info from the client about the widget tree.
  *                 tree_info - global information on this tree.
  *	Returns: none.
  */
 
 static void
-AddNode(top_node, str, tree_info)
+AddNode(top_node, info, tree_info)
 WNode ** top_node;
-char *str;
+WidgetTreeInfo * info;
 TreeInfo * tree_info;
 {
     WNode *node, *parent;
-    char **names, *class;
-    unsigned long *ids, window;
     Boolean early_break = FALSE;
-    Cardinal number;
+    Cardinal number = info->widgets.num_widgets;
 
-    if ((number = ParseString(str, &class, &window, &names, &ids)) == 0)
-	return;			/* parsing error. */
-
-    if ( (node = FindNode(*top_node, ids, number)) == NULL) {
+    if ( (node = FindNode(*top_node, info->widgets.ids, number)) == NULL) {
 	node = (WNode *) XtCalloc(sizeof(WNode), ONE);
 
-	node->class = class;	            /* already allocated. */
-	node->name = names[number - 1];	    /* already allocated. */
-	node->window = window;
-	node->id = ids[number - 1];
-	node->tree_info = tree_info;
+	node->id = info->widgets.ids[number - 1];
+	FillNode(info, node, tree_info);
 
 	for ( number--; number > 0; number--, node = parent) {
-	    if ( (parent = FindNode(*top_node, ids, number)) == NULL) {
+	    parent = FindNode(*top_node, info->widgets.ids, number);
+	    if (parent == NULL) {
 		parent = (WNode *) XtCalloc(sizeof(WNode), ONE);
-		parent->id = ids[number - 1];
-		parent->name = names[number - 1];
+		parent->id = info->widgets.ids[number - 1];
 	    }
 	    else
 		early_break = TRUE;
@@ -579,101 +537,29 @@ TreeInfo * tree_info;
 	}
     }
     else
-	node->class = class;
-
-    XtFree(ids);
-    XtFree(names);
+	FillNode(info, node, tree_info);
 }
 
-/*	Function Name: ParseString
- *	Description: parses a string for the name and id of each widget.
- *                   Also returns the class of the specific widget.
- *	Arguments: str - string to parse.
- *                 class - pre-allocated string for class.
- *                 window - the window used by this widget.
- *                 names, ids - list of names and ids.
- *	Returns: the number of names and ids.
- *
- * names/ids come out backward:   child, parent, grandparent...
+/*	Function Name: FillNode
+ *	Description: Fills in everything but the node id in the node.
+ *	Arguments: info - the info from the client.
+ *                 node - node to fill.
+ *                 tree_info - global information on this tree.
+ *	Returns: none
  */
 
-static Cardinal
-ParseString(str, class, window, names, ids)
-char * str, ** class, ***names;
-unsigned long ** ids, *window;
+static void
+FillNode(info, node, tree_info)
+WidgetTreeInfo * info;
+WNode * node;
+TreeInfo * tree_info;
 {
-    int number, i;
-    char * temp, buf[BUFSIZ];
-    static Boolean GetNameAndID();
-
-    strcpy(buf, str);
-
-    /*
-     * Strip off the window id.
-     */
-    
-    if ((temp = rindex(buf, WINDOW_SEPARATOR)) == NULL) 
-	return(0);
-    else {
-	*temp++ = '\0';
-	*window = atol(temp);
-    }
-
-    /*
-     * Strip off the class name.
-     */
-    
-    if ((temp = rindex(buf, CLASS_SEPARATOR)) == NULL) 
-	return(0);
-    else {
-	*temp++ = '\0';
-	*class = XtNewString(temp);
-    }
-
-    GetAllStrings(buf, NAME_SEPARATOR, names, &number);
-
-/*
- * Names are now good, all I have to do is collect the id numbers,
- * and I'll be all set.
- */
-
-    *ids = (unsigned long *) XtMalloc(sizeof(unsigned long) * number);
-
-    for (i = 0; i < number; i++) {
-	if (!GetNameAndID(*names + i, *ids + i))
-	    return(0);
-    }
-    return( (Cardinal) number);
-}	
-    
-/*	Function Name: GetNameandID
- *	Description: Gets the name and id of the last widget in a list.
- *	Arguments: name - name of node. 
- *                 id - id number of node as string.
- *	Returns: Returns FALSE if there is a parsing error.
- *
- * NOTES:  munges str.
- */
- 
-static Boolean
-GetNameAndID(name, id)
-char **name;
-unsigned long *id;
-{
-    char * temp, msg[BUFSIZ];
-
-    if ((temp = rindex(*name, ID_SEPARATOR)) == NULL) {
-	sprintf( msg,
-		"rightmost name of this string contains no ID_SEPARATOR: %s\n",
-		*name);
-	SetMessage(global_screen_data.info_label, msg);
-	return(FALSE);
-    }
-
-    *temp++ = '\0';
-    *id = atol(temp);
-    *name = XtNewString(*name);
-    return(TRUE);
+    node->class = info->class;
+    info->class = NULL;	/* keeps it from deallocating. */
+    node->name = info->name;
+    info->name = NULL;
+    node->window = info->window;
+    node->tree_info = tree_info;
 }
 
 /*	Function Name: AddChild

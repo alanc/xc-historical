@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.3 90/04/27 16:58:42 kit Exp $
+ * $XConsortium: actions.c,v 1.4 90/06/25 18:09:12 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -196,11 +196,15 @@ Cardinal * num_params;
  *	Returns: none.
  */
 
+#ifdef SEV_VALUES_POPUP
 extern void ModifySVEntry();
+#endif 
 
 static XtActionsRec actions[] = {
   {"Select",            SelectAction},
+#ifdef SEV_VALUES_POPUP
   {"SVActiveEntry",     ModifySVEntry},
+#endif 
   {"Relabel",      	RelabelAction}, 
   {"PopdownFileDialog", PopdownFileDialogAction},
 };
