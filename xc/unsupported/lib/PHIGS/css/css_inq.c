@@ -1,4 +1,4 @@
-/* $XConsortium: css_inq.c,v 5.1 91/02/16 09:50:50 rws Exp $ */
+/* $XConsortium: css_inq.c,v 5.2 91/04/14 12:52:08 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,12 @@ SOFTWARE.
 #include "css.h"
 #include "css_priv.h"
 #include "alloc.h"
+
+static int css_inq_sort();
+static int css_inq_descendants();
+static int css_inq_ancestors();
+static int css_add_to_allpaths();
+static int css_path_unique();
 
 /*******************
 
@@ -269,7 +275,6 @@ int
 phg_css_get_conf(csslist, arlist, conflist)
 Pint_list	*csslist, *arlist, *conflist;
 {
-    int			css_inq_sort();
     register int	*arptr, *cssptr;
     register int	*cssend, *arend;
     register int	numconf = 0;

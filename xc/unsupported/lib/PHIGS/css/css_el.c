@@ -1,4 +1,4 @@
-/* $XConsortium: css_el.c,v 5.1 91/02/16 09:50:48 rws Exp $ */
+/* $XConsortium: css_el.c,v 5.2 91/02/18 18:21:19 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,7 +30,8 @@ SOFTWARE.
 #include "css_priv.h"
 #include "alloc.h"
 
-void css_rm_from_refer_sets();
+static void css_rm_from_refer_sets();
+static int css_add_to_refer_sets();
 
 #define ELDATA_PTR(argdata) (((Css_eldata *)(argdata))->ptr)
 
@@ -746,7 +747,7 @@ Phg_ret		*ret;
 		return;
 	    } else
 		type_array[(int)sel_type] = FALSE;
-#   undef  count	elem_no		/* re-use the integer register */
+#   undef  count		/* re-use the integer register */
     }
 
     /* elptr points to element numbered start_el in struct_id */

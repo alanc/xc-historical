@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css_pr.c,v 5.1 91/02/16 09:50:52 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,7 +30,7 @@ SOFTWARE.
 #include "css.h"
 #include "css_priv.h"
 
-void
+static void
     css_print_eltype(),
     css_print_refer_to_me(),
     css_print_i_refer_to();
