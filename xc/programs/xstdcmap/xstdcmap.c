@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xstdcmap.c,v 1.6 89/07/24 11:06:26 jim Exp $
+ * $XConsortium: xstdcmap.c,v 1.7 92/11/23 16:56:05 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -242,6 +242,9 @@ static XVisualInfo *getBestVisual(property, vinfo, nvisuals)
 	if (((v1 = getDeepestVisual(GrayScale, vinfo, nvisuals)) != NULL) ||
 	    ((v1 = getDeepestVisual(StaticGray, vinfo, nvisuals)) != NULL))
 	    return v1;
+    if (property == XA_RGB_DEFAULT_MAP)
+	for (v1 = vinfo; v1->visual != DefaultVisual(dpy, v1->screen); v1++)
+	    ;
     return v1;
 
 }
