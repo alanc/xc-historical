@@ -1,25 +1,22 @@
 /*
  * xauth - manipulate authorization file
  *
- * This program allows you to perform the following functions:
+ * Syntax:
  *
- *     - list the contents of an authorization file
- *     - search for cookies so that they can be merged into another host
- *     - remove cookies from an authorization file
- *     - merge cookies into an authorization file
- *
- *
- * The general syntax is 
- *
- *     xauth [-f authfilename] [[-c "command arg ..."] [-s scriptfile] ...]
+ *     xauth [-f authfilename] [command arg ...]
  *
  * where commands include
  *
+ *     help
  *     list [displayname]
  *     merge filename [filename ...]
  *     extract filename displayname
  *     add displayname protocolname hexkey
  *     remove displayname
+ *     source filename
+ *
+ * If no command is given on the command line, the standard input will
+ * be read.
  */
 
 #include "xauth.h"
@@ -38,39 +35,49 @@ Bool print_numeric = False;		/* dump entries in hex */
 
 static char *authfilename = NULL;	/* filename of cookie file */
 static int do_script ();		/* for reading scripts */
+static char *defcmds[] = { "source", "-", NULL };  /* default command */
+static int ndefcmds = 2;
+static char *defsource = "(stdin)";
 
 /*
  * utility routines
  */
-static void usage ()
+void print_help ()
 {
     static char *help[] = {
 "",
 "where options include:",
 "    -f authfilename           name of authority file to use (must be first)",
-"    -n                        print entries in numeric form",
-"    -c \"command [arg ...]\"    command to perform",
-"    -s scriptfile             file containing commands to perform",
+"    -n                        read and write entries in numeric form",
 "",
 "and commands have the following syntax",
-"    list [displayname]        list display(s) in authority file",
-"    merge filename ...        merge in cookies from given files",
-"    extract filename displayname  extract binary entry for display into file",
-"    add displayname protocolname hexkey  add entry",
-"    remove displayname        remove entry for given display",
+"    help                              display this message",
+"    list [displayname]                list display(s) in authority file",
+"    merge filename [filename ...]     merge in cookies from given files",
+"    extract filename dpyname          extract entry for display into file",
+"    add dpyname protoname hexkey      add entry to authority file",
+"    remove dpyname                    remove entry for given display",
+"    source filename                   read command from the given file",
 "",
-"If a single dash is specified as a filename for the merge command the data",
-"will be read from the standard input.  If a single dash is specified as the",
-"filename for the extract command the data will be written to the standard",
-"output.",
+"If a single dash is specified as a filename for the merge or source commands",
+"the data will be read from the standard input.  If a single dash is",
+"specified as the filename for the extract command the data will be written",
+"to the standard output.",
 "",
 NULL };
     char **msg;
 
-    fprintf (stderr, "usage:  %s [-options ...]\n", ProgramName);
+    fprintf (stderr, "usage:  %s [-options ...] [command arg ...]\n",
+	     ProgramName);
     for (msg = help; *msg; msg++) {
 	fprintf (stderr, "%s\n", *msg);
     }
+    return;
+}
+
+static void usage ()
+{
+    print_help ();
     exit (1);
 }
 
@@ -110,9 +117,9 @@ main (argc, argv)
     char *argv[];
 {
     int i;
-    int errors = 0;
-    int cmdarg = 0;
-    Bool been_initialized = False;
+    char *sourcename = defsource;
+    char **arglist = defcmds;
+    int nargs = ndefcmds;
 
     ProgramName = argv[0];
 
@@ -131,22 +138,6 @@ main (argc, argv)
 		}
 		authfilename = argv[i];
 		continue;
-	      case 'c':			/* -c "command arg" */
-		if (++i >= argc) usage ();
-		if (!been_initialized) {
-		    initialize (authfilename);
-		    been_initialized = True;
-		}
-		errors += process_command ("argv[]", ++cmdarg, argv[i]);
-		continue;
-	      case 's':			/* -s script */
-		if (++i >= argc) usage ();
-		if (!been_initialized) {
-		    initialize (authfilename);
-		    been_initialized = True;
-		}
-		errors += do_script (argv[i]);
-		continue;
 	      case 'n':			/* -n */
 		print_numeric = True;
 		continue;
@@ -154,63 +145,15 @@ main (argc, argv)
 		usage ();
 	    }
 	} else {
-	    usage ();
-	}
-    }
-
-    exit (errors == 0 ? 0 : 1);
-}
-
-
-static int do_script (script)
-    char *script;
-{
-    char buf[BUFSIZ];
-    FILE *fp;
-    Bool used_stdin = False;
-    int lineno = 0;
-    int len;
-    int errors = 0, status;
-
-    if (strcmp (script, "-") == 0) {
-	if (okay_to_use_stdin) {
-	    fp = stdin;
-	    okay_to_use_stdin++;
-	    used_stdin = True;
-	} else {
-	    fprintf (stderr,
-	     "%s:  stdin has already been used, can't reuse for script\n",
-		     ProgramName);
-	    return 1;
-	}
-    } else {
-	fp = fopen (script, "r");
-	if (!fp) {
-	    fprintf (stderr, "%s:  unable to open script file \"%s\"\n",
-		     ProgramName, script);
-	    return 1;
-	}
-    }
-
-    while (1) {
-	buf[0] = '\0';
-	if (fgets (buf, sizeof buf, fp) == NULL) break;
-	lineno++;
-	len = strlen (buf);
-	if (len == 0 || buf[0] == '#') continue;
-	if (buf[len-1] != '\n') {
-	    fprintf (stderr, "%s:  line %d of script \"%s\" too long.\n",
-		     ProgramName, lineno, script);
-	    errors++;
+	    sourcename = "(argv)";
+	    nargs = argc - i;
+	    arglist = argv + i;
 	    break;
 	}
-	buf[--len] = '\0';		/* remove new line */
-	errors += process_command (script, lineno, buf);
     }
 
-    if (!used_stdin) {
-	(void) fclose (fp);
-    }
-    return errors;
+    initialize (authfilename);
+    exit ((process_command_list (sourcename, 1, nargs, arglist) != 0) ? 1 : 0);
 }
+
 

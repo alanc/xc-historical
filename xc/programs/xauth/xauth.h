@@ -10,5 +10,6 @@ typedef int Bool;
 
 extern char *ProgramName;
 extern Bool okay_to_use_stdin;
-int process_command(), auth_initialize();
+int process_command_list(), auth_initialize();
+extern void print_help();
 extern Bool print_numeric;

@@ -21,6 +21,25 @@ typedef struct _AuthList {
     Xauth *auth;
 } AuthList;
 
+static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
+static int do_help(), do_source();
+
+struct _cmdtab {			/* commands that are understood */
+    char *name;				/* full name */
+    int minlen;				/* unique prefix */
+    int maxlen;				/* strlen(name) */
+    int (*processfunc)();		/* handler */
+} command_table[] = {
+    { "add",     1, 5, do_add },	/* add dpy proto hexkey */
+    { "extract", 1, 7, do_extract },	/* extract filename dpy */
+    { "help",    1, 4, do_help },	/* help */
+    { "list",    1, 4, do_list },	/* list [dpy] */
+    { "merge",   1, 5, do_merge },	/* merge filename [filename ...] */
+    { "remove",  1, 6, do_remove },	/* remove dpy */
+    { "source",  1, 6, do_source },	/* source filename */
+    { NULL,      0, 0, NULL },
+};
+
 static char *hex_table[] = {		/* for printing hex digits */
     "00", "01", "02", "03", "04", "05", "06", "07", 
     "08", "09", "0a", "0b", "0c", "0d", "0e", "0f", 
@@ -56,23 +75,7 @@ static char *hex_table[] = {		/* for printing hex digits */
     "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff", 
 };
 
-static int do_list(), do_merge(), do_extract(), do_add(), do_remove();
 static char *get_hostname();
-
-struct _cmdtab {			/* commands that are understood */
-    char *name;				/* full name */
-    int minlen;				/* unique prefix */
-    int maxlen;				/* strlen(name) */
-    int (*processfunc)();		/* handler */
-} command_table[] = {
-    { "list",    1, 4, do_list },	/* list [dpy] */
-    { "merge",   1, 5, do_merge },	/* merge filename [filename ...] */
-    { "extract", 1, 7, do_extract },	/* extract filename dpy */
-    { "add",     1, 5, do_add },	/* add dpy proto hexkey */
-    { "remove",  1, 6, do_remove },	/* remove dpy */
-    { NULL, 0, 0, NULL },
-};
-
 static Bool nameserver_timedout = False;
 
 
@@ -101,6 +104,15 @@ static char *skip_nonspace (s)
 
     for (; (c = *s) && isascii(c) && !isspace(c); s++) ;
     return s;
+}
+
+static char **split_into_words (s, argcp)
+    char *s;
+    int *argcp;
+{
+    *argcp = 0;
+    /* XXX */
+    return NULL;
 }
 
 
@@ -160,31 +172,26 @@ int auth_initialize (authfilename)
     return 0;
 }
 
-int process_command (inputfilename, lineno, cmd)
+int process_command_list (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
 {
     struct _cmdtab *ct;
     int n, status;
-    char *cp;
+    char *cmd;
 
-    cp = skip_space (cmd);		/* skip space to start of command */
-    if (!cp) return 1;
-    cmd = cp;
-
-    cp = skip_nonspace (cmd);		/* skip command */
-    if (!cp) return 1;
-    n = (cp - cmd);			/* length of token */
+    if (argc < 1 || !argv || !argv[0]) return 1;
 
 					/* scan table for command */
+    cmd = argv[0];
+    n = strlen (cmd);
     for (ct = command_table; ct->name; ct++) {
 					/* look for unique prefix */
 	if (n >= ct->minlen && n <= ct->maxlen &&
 	    strncmp (cmd, ct->name, n) == 0) {
-	    cmd = cp;
-	    cp = skip_space (cmd);
-	    status = (*(ct->processfunc)) (inputfilename, lineno, cp);
+	    status = (*(ct->processfunc)) (inputfilename, lineno, argc, argv);
 	    return status;
 	}
     }
@@ -197,10 +204,8 @@ int process_command (inputfilename, lineno, cmd)
 
 
 /*
- * private procedures 
+ * utility routines
  */
-
-
 
 static void fprintfhex (fp, len, cp)
     register FILE *fp;
@@ -273,22 +278,35 @@ static void dump_entry (fp, auth)
 
 
 /*
- * list [displayname]
+ * action routines
  */
-static int do_list (inputfilename, lineno, cmd)
+
+/*
+ * help
+ */
+static int do_help (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
+{
+    print_help ();
+    return 0;
+}
+
+/*
+ * list [displayname]
+ */
+static int do_list (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
 {
     AuthList *l;
-    char *cp;
     Bool specific_display = False;
 
-    cp = skip_space (cmd);
-    if (!cp) return 1;
-    cmd = cp;
-
-    if (cmd[0]) {			/* if a specific dpy was given */
+    if (argc > 1) {
 	/* XXX - parse the rest of the command */
 	specific_display = True;
     }
@@ -305,10 +323,11 @@ static int do_list (inputfilename, lineno, cmd)
 /*
  * merge filename [filename ...]
  */
-static int do_merge (inputfilename, lineno, cmd)
+static int do_merge (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
 {
     /* XXX */
     return 0;
@@ -317,10 +336,11 @@ static int do_merge (inputfilename, lineno, cmd)
 /*
  * extract filename displayname
  */
-static int do_extract (inputfilename, lineno, cmd)
+static int do_extract (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
 {
     /* XXX */
     return 0;
@@ -329,10 +349,11 @@ static int do_extract (inputfilename, lineno, cmd)
 /*
  * add displayname protocolname hexkey
  */
-static int do_add (inputfilename, lineno, cmd)
+static int do_add (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
 { 
     /* XXX */
    return 0;
@@ -341,14 +362,94 @@ static int do_add (inputfilename, lineno, cmd)
 /*
  * remove displayname
  */
-static int do_remove (inputfilename, lineno, cmd)
+static int do_remove (inputfilename, lineno, argc, argv)
     char *inputfilename;
     int lineno;
-    char *cmd;
+    int argc;
+    char **argv;
 {
     /* XXX */
     return 0;
 }
+
+/*
+ * source filename
+ */
+static int do_source (inputfilename, lineno, argc, argv)
+    char *inputfilename;
+    int lineno;
+    int argc;
+    char **argv;
+{
+    char *script;
+    char buf[BUFSIZ];
+    FILE *fp;
+    Bool used_stdin = False;
+    int len;
+    int errors = 0, status;
+    int sublineno = 0;
+    char **subargv;
+    int subargc;
+
+    if (argc < 2 || !argv[1]) return 1;
+    script = argv[1];
+
+    if (strcmp (script, "-") == 0) {
+	if (okay_to_use_stdin) {
+	    fp = stdin;
+	    okay_to_use_stdin++;
+	    used_stdin = True;
+	    script = "(stdin)";
+	} else {
+	    fprintf (stderr,
+	     "%s:  stdin has already been used, can't reuse for script\n",
+		     ProgramName);
+	    return 1;
+	}
+    } else {
+	fp = fopen (script, "r");
+	if (!fp) {
+	    fprintf (stderr, "%s:  unable to open script file \"%s\"\n",
+		     ProgramName, script);
+	    return 1;
+	}
+    }
+
+    while (1) {
+	buf[0] = '\0';
+	if (fgets (buf, sizeof buf, fp) == NULL) break;
+	sublineno++;
+	len = strlen (buf);
+	if (len == 0 || buf[0] == '#') continue;
+	if (buf[len-1] != '\n') {
+	    fprintf (stderr, "%s:  line %d of script \"%s\" too long.\n",
+		     ProgramName, sublineno, script);
+	    errors++;
+	    break;
+	}
+	buf[--len] = '\0';		/* remove new line */
+	subargv = split_into_words (buf, &subargc);
+	if (argv) {
+	    errors += process_command_list (script, sublineno,
+					    subargc, subargv);
+	    free ((char *) argv);
+	} else {
+	    fprintf (stderr,
+		    "%s:  unable to split line %d of script \"%s\" in words\n",
+		     ProgramName, sublineno, script);
+	    errors++;
+	}
+    }
+
+    if (!used_stdin) {
+	(void) fclose (fp);
+    }
+    return errors;
+}
+
+
+
+
 
 
 /*
