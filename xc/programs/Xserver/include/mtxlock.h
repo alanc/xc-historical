@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.2 93/11/16 10:57:02 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.3 93/11/16 16:56:02 rob Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H
@@ -84,8 +84,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VALIDATE_DRAWABLE_AND_GC LOCK_AND_VALIDATE_DRAWABLE_AND_GC
 #else
-#define MTX_LOCK_AND_VALIDATE_DRAWABLE_AND_GC(pDraw, pGC, drawID, gcID, \
-					      client)			\
+#define MTX_LOCK_AND_VALIDATE_DRAWABLE_AND_GC(pDraw, pGC, drawID, gcID, client)\
 {									\
     VALIDATE_DRAWABLE_AND_GC(drawID, pDraw, pGC, client);		\
 }
@@ -121,8 +120,7 @@
  *
  ***********************************************************************/
 
-#define LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, 	\
-					       dstID, gcID, client)	\
+#define LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client) \
 {									\
     int _error;								\
 									\
@@ -181,8 +179,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC
 #else
-#define MTX_LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID,\
-					           dstID, gcID, client)	\
+#define MTX_LOCK_AND_VALIDATE_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client)\
 {									\
     VALIDATE_DRAWABLE_AND_GC(dstID, pDst, pGC, client);			\
     if (dstID != srcID)							\
@@ -208,8 +205,7 @@
  *
  ***********************************************************************/
 
-#define UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, 	\
-				    gcID, client)			\
+#define UNLOCK_TWO_DRAWABLES_AND_GC(pSrc, pDst, pGC, srcID, dstID, gcID, client)\
 {									\
     POQUnlock((client));						\
 									\
@@ -263,8 +259,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VERIFY_WINDOW LOCK_AND_VERIFY_WINDOW
 #else
-#define MTX_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, 	\
-				   conflictMask)			\
+#define MTX_LOCK_AND_VERIFY_WINDOW(pWin, winID, client, regionType, conflictMask)\
 {									\
     if (!(pWin = (WindowPtr)LookupWindow(winID, client)))		\
 	return BadWindow;						\
@@ -306,8 +301,7 @@
 #define MTX_UNLOCK_POQ_IF_FAILURE(client)				\
 	UNLOCK_PENDING_OPERATION_QUEUE(client);
 
-#define MTX_UNLOCK_ALL_WINDOWS_IF_FAILURE(pwin, pdst, stuffSrc,		\
-					  stuffDst, client)		\
+#define MTX_UNLOCK_ALL_WINDOWS_IF_FAILURE(pwin, pdst, stuffSrc, stuffDst, client)\
 	MTX_UNLOCK_ALL_WINDOWS(pwin, pdst, stuffSrc, stuffDst, client)
 
 #define MTX_UNLOCK_FONT_IF_FAILURE(pFont, fontID, client)		\
@@ -323,8 +317,7 @@
  *
  ***********************************************************************/
 
-#define LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client,\
-				    regionType, conflictMask)		\
+#define LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
 {									\
     int _error;								\
 									\
@@ -371,8 +364,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VERIFY_ALL_WINDOWS LOCK_AND_VERIFY_ALL_WINDOWS
 #else
-#define MTX_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client,\
-					regionType, conflictMask)	\
+#define MTX_LOCK_AND_VERIFY_ALL_WINDOWS(pWin1, pWin2, winID1, winID2, client, regionType, conflictMask)\
 {									\
     MTX_LOCK_AND_VERIFY_WINDOW(pWin1, winID1, client, regionType, 	\
 			       conflictMask);				\
@@ -447,8 +439,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VERIFY_DRAWABLE LOCK_AND_VERIFY_DRAWABLE
 #else
-#define MTX_LOCK_AND_VERIFY_DRAWABLE(pDraw, stuffDrawable, 		\
-				     client, conflictMask)		\
+#define MTX_LOCK_AND_VERIFY_DRAWABLE(pDraw, stuffDrawable, client, conflictMask)\
     VERIFY_DRAWABLE(pDraw, stuffDrawable, client)
 #endif
 
@@ -647,8 +638,7 @@
 #ifdef MTX
 #define MTX_LOCK_AND_VERIFY_TWO_GCS LOCK_AND_VERIFY_TWO_GCS
 #else
-#define MTX_LOCK_AND_VERIFY_TWO_GCS(pGC1, pGC2, gcID1, gcID2, 		\
-				    client, conflictMask)		\
+#define MTX_LOCK_AND_VERIFY_TWO_GCS(pGC1, pGC2, gcID1, gcID2, client, conflictMask)		\
     VERIFY_GC(pGC1, gcID1, client);					\
     VERIFY_GC(pGC2, gcID2, client)
 #endif
