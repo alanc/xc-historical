@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.81 88/09/06 16:16:33 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.82 88/09/06 16:27:49 jim Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -708,9 +708,15 @@ void XtDispatchEvent (event)
 
     DecideToDispatch(event);
 
-    if (destroyList != NULL) {
+    /* To accomodate widgets destroying other widgets in their destroy
+     * callbacks, we have to make this a loop */
+
+    while (destroyList != NULL) {
+	CallbackList newList = NULL;
+	_XtDestroyList = &newList;
 	_XtCallCallbacks (&destroyList, (Opaque) NULL);
 	_XtRemoveAllCallbacks (&destroyList);
+	destroyList = newList;
     }
 
     _XtDestroyList = oldDestroyList;
