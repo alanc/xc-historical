@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.72 91/04/30 18:57:41 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.73 91/05/05 20:00:54 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -49,7 +49,9 @@ static Const String XtNmissingCharsetList = "missingCharsetList";
 #define XtQDisplay	XrmPermStringToQuark(XtRDisplay)
 #define XtQFile		XrmPermStringToQuark(XtRFile)
 #define XtQFloat	XrmPermStringToQuark(XtRFloat)
+#ifdef STRING_TO_GEOMETRY
 #define XtQGeometry	XrmPermStringToQuark(XtRGeometry)
+#endif
 #define XtQInitialState	XrmPermStringToQuark(XtRInitialState)
 #define XtQPixmap	XrmPermStringToQuark(XtRPixmap)
 #define XtQShort	XrmPermStringToQuark(XtRShort)
@@ -139,7 +141,7 @@ void XtDisplayStringConversionWarning(dpy, from, toType)
 	    else if (rep_type == XtQString) {
 		XrmValue toVal;
 		Boolean report;
-		toVal.addr = (caddr_t)&report; /* Xresource.h says caddr_t */
+		toVal.addr = (XPointer)&report;
 		toVal.size = sizeof(Boolean);
 		if (XtCallConverter(dpy, XtCvtStringToBoolean, (XrmValuePtr)NULL,
 				    (Cardinal)0, &value, &toVal,
@@ -516,7 +518,7 @@ static void FetchDisplayArg(widget, size, value)
 		   (String*)NULL, (Cardinal*)NULL);
     }
     value->size = sizeof(Display*);
-    value->addr = (caddr_t)&DisplayOfScreen(XtScreenOfObject(widget));
+    value->addr = (XPointer)&DisplayOfScreen(XtScreenOfObject(widget));
 }
 
 static XtConvertArgRec Const displayConvertArg[] = {
@@ -984,7 +986,7 @@ static void FetchLocaleArg(widget, size, value )
     locale = XrmQuarkToString(XrmStringToQuark
 			      (setlocale(LC_CTYPE, (char*)NULL)));
     value->size = sizeof(XrmString);
-    value->addr = (caddr_t)&locale;
+    value->addr = (XPointer)&locale;
 }
 
 static XtConvertArgRec Const localeDisplayConvertArgs[] = {
@@ -1211,6 +1213,7 @@ Boolean XtCvtIntToPixmap(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Pixmap, *(Pixmap*)fromVal->addr);
 }
 
+#ifdef STRING_TO_GEOMETRY	/* not in the specification */
 /*ARGSUSED*/
 static Boolean
 CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
@@ -1228,6 +1231,7 @@ CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
                    (String *) NULL, (Cardinal *)NULL);
     done(String, *(String*)fromVal->addr);
 }
+#endif
 
 static int CompareISOLatin1 (first, second)
     char *first, *second;
@@ -1392,10 +1396,11 @@ _XtAddDefaultConverters(table)
     Add(XtQInt,   XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
     Add(XtQInt,   XtQDimension,   XtCvtIntToShort,     NULL, 0, XtCacheNone);
-    Add(XtQInt,   XtQFont,	  XtCvtIntToFont,      NULL, 0, XtCacheNone);
-    Add(XtQInt,   XtQPixel,	  XtCvtIntToPixel,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQFont,        XtCvtIntToFont,      NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQPixel,       XtCvtIntToPixel,     NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPixmap,      XtCvtIntToPixmap,    NULL, 0, XtCacheNone);
     Add(XtQInt,   XtQPosition,    XtCvtIntToShort,     NULL, 0, XtCacheNone);
+    Add(XtQInt,   XtQShort,       XtCvtIntToShort,     NULL, 0, XtCacheNone);
 
     Add(XtQPixel, XtQColor,	  XtCvtIntToColor,
 	colorConvertArgs, XtNumber(colorConvertArgs), XtCacheByDisplay);
@@ -1423,7 +1428,9 @@ _XtAddDefaultConverters(table)
 	displayConvertArg, XtNumber(displayConvertArg),
 	XtCacheByDisplay, FreeFontStruct);
 
+#ifdef STRING_TO_GEOMETRY /* Not in the specification */
     Add(XtQString, XtQGeometry,   CvtStringToGeometry, NULL, 0, XtCacheNone);
+#endif
 
     Add(XtQString, XtQInt,	    XtCvtStringToInt,    NULL, 0, XtCacheAll);
     Add(XtQString, XtQInitialState, XtCvtStringToInitialState, NULL, 0,
