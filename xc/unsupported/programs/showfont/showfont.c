@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.7 92/05/19 17:10:30 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.8 92/05/19 17:51:51 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -57,7 +57,7 @@ static fsBitmapFormat make_format();
 static void
 usage()
 {
-    fprintf(stderr, "%s: [-server servername] [-extents_only] [-noprops] [-l] [-m] [-L] -[M] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
+    printf("%s: [-server servername] [-extents_only] [-noprops] [-l] [-m] [-L] -[M] [-unit #] [-pad #] [-bitmap_pad value] [-start first_char] [-end last_char] -fn fontname\n", cmd);
     exit(0);
 }
 
@@ -135,11 +135,11 @@ main(argc, argv)
 	fprintf(stderr,
 		"bad character range -- end (%d) is less than start (%d)\n",
 		end_ch, first_ch);
-	exit(-1);
+	exit(1);
     }
     if ((svr = FSOpenServer(servername)) == NULL) {
 	fprintf(stderr, "can't open server \"%s\"\n", FSServerName(servername));
-	exit(0);
+	exit(1);
     }
     format = make_format();
     fmask = (BitmapFormatMaskByte | BitmapFormatMaskBit |
@@ -171,7 +171,8 @@ main(argc, argv)
 	show_glyphs(fid, &hdr, show_all, first, last);
 	FSCloseFont(svr, fid);
     } else {
-	printf("couldn't get font %s\n", fontname);
+	fprintf(stderr, "couldn't get font %s\n", fontname);
+	exit(1);
     }
     exit(0);
 }
@@ -215,7 +216,7 @@ show_glyphs(fid, hdr, show_all, first, last)
 
 	if (err != FSSuccess) {
 	    fprintf(stderr, "QueryGlyphs failed\n");
-	    exit(0);
+	    exit(1);
 	}
     }
     start = first.low + (first.high << 8);
