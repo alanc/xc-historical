@@ -1,4 +1,4 @@
-/* $XConsortium: LibTest.c,v 1.2 91/02/15 18:38:03 dave Exp $ */
+/* $XConsortium: LibTest.c,v 1.3 91/05/14 15:02:45 dave Exp $ */
 
 /*
  *	Copyright 1989 1990, Tektronix, Inc.
@@ -61,7 +61,6 @@
  *              program using this package.
  */
 #include "LibTest.h"
-#include <X11/Xlib.h>
 #include <X11/Xlibint.h>      
 
 /*
