@@ -1,4 +1,4 @@
-/* $XConsortium: XimTrInt.h,v 1.1 93/09/17 13:28:40 rws Exp $ */
+/* $XConsortium: XimTrInt.h,v 1.2 94/01/20 18:02:33 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.
@@ -60,40 +60,15 @@ extern Bool	_XimXConf(
 #endif
 );
 
-#ifdef TCPCONN
-extern Bool	_XimInetConf(
-#if NeedFunctionPrototypes
-    Xim		 im,
-    char	*address
-#endif
-);
-#endif /* TCPCONN */
+#if defined(TCPCONN) || defined(UNIXCONN) || defined(DNETCONN) || defined(STREAMSCONN)
 
-#ifdef UNIXCONN
-extern Bool	_XimInternalConf(
+extern Bool	_XimTransConf(
 #if NeedFunctionPrototypes
     Xim		 im,
     char	*address
 #endif
 );
-#endif
 
-#ifdef DNETCONN
-extern Bool	_XimDecnetConf(
-#if NeedFunctionPrototypes
-    Xim		 im,
-    char	*address
 #endif
-);
-#endif /* DNETCONN */
-
-#ifdef STREAMSCONN
-extern Bool	_XimStreamsConf(
-#if NeedFunctionPrototypes
-    Xim		 im,
-    char	*address
-#endif
-);
-#endif /* STREAMSCONN */
 
 #endif /* _XIMTRINT_H */
