@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.20 93/12/06 19:56:46 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.21 93/12/07 11:04:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -720,7 +720,39 @@ extern IceIOErrorHandler IceSetIOErrorHandler (
 #endif
 );
 
-extern char *IceAuthFileName ();
+
+/*
+ * Multithread Routines
+ */
+
+extern Status IceInitThreads (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void IceLockConn (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+extern void IceUnlockConn (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
+#endif
+);
+
+
+/*
+ * ICE Authority File Utils
+ */
+
+extern char *IceAuthFileName (
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern int IceLockAuthFile (
 #if NeedFunctionPrototypes
