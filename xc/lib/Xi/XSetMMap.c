@@ -1,4 +1,4 @@
-/* $XConsortium: XSetMMap.c,v 1.4 89/12/06 20:38:53 rws Exp $ */
+/* $XConsortium: XSetMMap.c,v 1.5 93/01/28 19:40:44 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,7 +56,7 @@ XSetDeviceModifierMapping (dpy, dev, modmap)
     req->ReqType = X_SetDeviceModifierMapping;
     req->deviceid = dev->device_id;
     req->numKeyPerModifier = modmap->max_keypermod;
-    bcopy(modmap->modifiermap, (char *)&req[1], mapSize);
+    memcpy((char *)&req[1], modmap->modifiermap, mapSize);
 
     (void) _XReply(dpy, (xReply *) &rep,
 	(sizeof(xSetDeviceModifierMappingReply) - sizeof(xReply)) >> 2, xTrue);

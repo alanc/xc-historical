@@ -1,4 +1,4 @@
-/* $XConsortium: XListDev.c,v 1.19 93/02/05 17:03:43 rws Exp $ */
+/* $XConsortium: XListDev.c,v 1.20 93/08/24 09:28:01 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -206,7 +206,7 @@ XDeviceInfo
 	for (i=0; i<*ndevices; i++,clist++) 
 	    {
 	    clist->name = (char *) Nptr;
-	    bcopy ( nptr+1, Nptr, *nptr);
+	    memcpy (Nptr,  nptr+1, *nptr);
 	    Nptr += (*nptr);
 	    *Nptr++ = '\0';
 	    nptr += (*nptr + 1);

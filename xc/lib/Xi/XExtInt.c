@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.27 92/11/14 10:36:21 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.28 93/08/19 09:08:59 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -494,7 +494,7 @@ XInputWireToEvent (dpy, re, event)
 	        kstev->class = KeyClass;
 	        kstev->length = sizeof (XKeyStatus);
 	        kstev->num_keys = sev->num_keys;
-	        bcopy ((char *) &sev->keys[0], (char *) &kstev->keys[0], 4);
+	        memcpy ((char *) &kstev->keys[0], (char *) &sev->keys[0], 4);
 	        data += sizeof (XKeyStatus);
 	        }
 	    if (sev->classes_reported & (1 << ButtonClass))
@@ -503,7 +503,7 @@ XInputWireToEvent (dpy, re, event)
 	        bev->class = ButtonClass;
 	        bev->length = sizeof (XButtonStatus);
 	        bev->num_buttons = sev->num_buttons;
-	        bcopy ((char *) sev->buttons, (char *) bev->buttons, 4);
+	        memcpy ((char *) bev->buttons, (char *) sev->buttons, 4);
 	        data += sizeof (XButtonStatus);
 	        }
 	    if (sev->classes_reported & (1 << ValuatorClass))
@@ -552,7 +552,7 @@ XInputWireToEvent (dpy, re, event)
 	
 	    kv = (XKeyStatus *) anyclass;
 	    kv->num_keys = 256;
-	    bcopy ((char *) ksev->keys, (char *) &kv->keys[4], 28);
+	    memcpy ((char *) &kv->keys[4], (char *) ksev->keys, 28);
     	    if (ksev->deviceid & MORE_EVENTS)
 	        return (DONT_ENQUEUE);
 	    else
@@ -583,7 +583,7 @@ XInputWireToEvent (dpy, re, event)
 	
 	    bv = (XButtonStatus *) anyclass;
 	    bv->num_buttons = 256;
-	    bcopy ((char *) bsev->buttons, (char *) &bv->buttons[4], 28);
+	    memcpy ((char *) &bv->buttons[4], (char *) bsev->buttons, 28);
     	    if (bsev->deviceid & MORE_EVENTS)
 	        return (DONT_ENQUEUE);
 	    else

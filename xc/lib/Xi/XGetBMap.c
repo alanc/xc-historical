@@ -1,4 +1,4 @@
-/* $XConsortium: XGetBMap.c,v 1.3 89/09/25 16:20:21 gms Exp $ */
+/* $XConsortium: XGetBMap.c,v 1.4 89/12/06 20:38:18 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -72,7 +72,7 @@ XGetDeviceButtonMapping (dpy, device, map, nmap)
 
 	/* don't return more data than the user asked for. */
 	if (rep.nElts) 
-	    bcopy ((char *) mapping, (char *) map, MIN ((int)rep.nElts, nmap) );
+	    memcpy ((char *) map, (char *) mapping, MIN((int)rep.nElts, nmap));
 	status = rep.nElts;
 	}
     else

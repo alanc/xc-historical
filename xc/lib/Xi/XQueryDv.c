@@ -1,4 +1,4 @@
-/* $XConsortium: XQueryDv.c,v 1.10 91/02/09 17:53:04 rws Exp $ */
+/* $XConsortium: XQueryDv.c,v 1.11 92/11/14 12:55:23 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -123,7 +123,7 @@ XDeviceState
 		    K->class = k->class;
 		    K->length = sizeof (XKeyState);
 		    K->num_keys = k->num_keys;
-		    bcopy ((char *) &k->keys[0], (char *) &K->keys[0], 32);
+		    memcpy ((char *) &K->keys[0], (char *) &k->keys[0], 32);
 		    Any = (XInputClass *) (K+1);
 		    }
 		    break;
@@ -134,8 +134,8 @@ XDeviceState
 		    B->class = b->class;
 		    B->length = sizeof (XButtonState);
 		    B->num_buttons = b->num_buttons;
-		    bcopy ((char *) &b->buttons[0], (char *) &B->buttons[0], 
-			32);
+		    memcpy ((char *) &B->buttons[0], (char *) &b->buttons[0],
+			    32);
 		    Any = (XInputClass *) (B+1);
 		    }
 		    break;

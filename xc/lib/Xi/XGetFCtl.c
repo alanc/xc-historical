@@ -1,4 +1,4 @@
-/* $XConsortium: XGetFCtl.c,v 1.11 91/01/26 13:34:42 rws Exp $ */
+/* $XConsortium: XGetFCtl.c,v 1.12 92/11/14 12:55:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -147,8 +147,8 @@ XFeedbackState
 		    K->duration = k->duration;
 		    K->led_mask = k->led_mask;
 		    K->global_auto_repeat = k->global_auto_repeat;
-		    bcopy ((char *) &k->auto_repeats[0], 
-			(char *) &K->auto_repeats[0], 32);
+		    memcpy ((char *) &K->auto_repeats[0],
+			    (char *) &k->auto_repeats[0], 32);
 		    break;
 		    }
 		case PtrFeedbackClass:
@@ -195,8 +195,8 @@ XFeedbackState
 		    S->max_symbols = s->max_symbols;
 		    S->num_syms_supported = s->num_syms_supported;
 		    S->syms_supported = (KeySym *) (S+1);
-		    bcopy ((char *) (s+1), (char *) S->syms_supported,
-			(S->num_syms_supported * sizeof (KeySym)));
+		    memcpy ((char *) S->syms_supported, (char *) (s+1),
+			    (S->num_syms_supported * sizeof (KeySym)));
 		    break;
 		    }
 		case LedFeedbackClass:

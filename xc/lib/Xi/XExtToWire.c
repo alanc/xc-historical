@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.13 91/12/26 12:17:38 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.14 92/11/14 12:56:14 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -332,7 +332,7 @@ XInputEventToWire(dpy, re, event, count)
 
 		    sev->classes_reported |= (1 << KeyClass);
 		    sev->num_keys = k->num_keys;
-		    bcopy ( (char *) (k->keys) , (char *) (sev->keys), 4);
+		    memcpy ((char *) (sev->keys), (char *) (k->keys), 4);
 		    if (k->num_keys > 32)
 			{
 		        kev = (deviceKeyStateNotify *) tev++;
@@ -341,7 +341,7 @@ XInputEventToWire(dpy, re, event, count)
 		        kev->deviceid = ev->deviceid;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(kev->deviceid);
-			bcopy ( (char *) (&k->keys[4]) , (char *) (kev->keys), 
+			memcpy ((char *) (kev->keys), (char *) (&k->keys[4]),
 				28);
 			}
 		    }
@@ -352,7 +352,7 @@ XInputEventToWire(dpy, re, event, count)
 
 		    sev->classes_reported |= (1 << ButtonClass);
 		    sev->num_buttons = b->num_buttons;
-		    bcopy ( (char *) (b->buttons) , (char *) (sev->buttons), 4);
+		    memcpy ((char *) (sev->buttons), (char *) (b->buttons), 4);
 		    if (b->num_buttons > 32)
 			{
 		        bev = (deviceButtonStateNotify *) tev++;
@@ -361,7 +361,7 @@ XInputEventToWire(dpy, re, event, count)
 		        bev->deviceid = ev->deviceid;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(bev->deviceid);
-			bcopy ((char *)(&b->buttons[4]), (char *)(bev->buttons),
+			memcpy ((char *)(bev->buttons), (char *)(&b->buttons[4]),
 				28);
 			}
 		    }
