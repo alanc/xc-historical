@@ -24,4 +24,10 @@ SingleProgramTarget(hw, $(OBJS4),, )
 
 SingleProgramTarget(hw1, $(OBJS5),, )
 
+xhw.PS:
+	$(TBL) xhw.ms | $(TROFF) $(MSMACROS) > xhw.PS
+
 DependTarget()
+
+clean::
+	$(RM) xhw.PS
