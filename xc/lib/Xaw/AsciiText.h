@@ -1,6 +1,6 @@
 #include <X/copyright.h>
 
-/* $Header: AsciiText.h,v 1.1 87/12/23 16:39:25 swick Locked $ */
+/* $Header: AsciiText.h,v 1.2 88/01/22 11:13:49 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _AsciiText_h
@@ -12,7 +12,7 @@
  *
  ****************************************************************/
 
-/* Parameters:
+/* Resources:
 
  Name		     Class		RepType		Default Value
  ----		     -----		-------		-------------
@@ -21,6 +21,7 @@
  borderWidth	     BorderWidth	int		1
  destroyCallback     Callback		Pointer		NULL
  displayPosition     TextPosition	int		0
+ editType	     EditType		XtTextEditType	XttextRead
  file		     File		String		NULL
  height		     Height		int		font height
  insertPosition	     TextPosition	int		0
