@@ -76,15 +76,17 @@
  */
 
 #ifdef macII
-#include <time.h>
-#include <sys/time.h>
-#else /* macII */
+#include <time.h>		/* need this as well as sys/time.h */
+#endif /* macII */
+
 #ifdef SYSV
 #include <time.h>
-#else /* SYSV */
+# ifdef mips
+# include <bsd/sys/time.h>
+# endif /* mips */
+#else /* else not SYSV */
 #include <sys/time.h>
 #endif /* SYSV */
-#endif /* macII */
 
 /*
  * More BSDisms
@@ -102,5 +104,13 @@
 #ifdef hpux
 #define sigvec sigvector
 #endif /* hpux */
+
+#ifdef mips
+# ifdef SYSTYPE_SYSV
+# include <bsd/sys/ioctl.h>
+# include <bsd/sys/file.h>
+# endif /* SYSTYPE_SYSV */
+#endif /* mips */
+
 
 #endif /* _XOS_H_ */
