@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripCharP.h,v 1.1 89/08/23 17:53:56 kit Exp $
+* $XConsortium: StripCharP.h,v 1.2 89/08/24 11:51:55 kit Exp $
 */
 
 
@@ -50,8 +50,9 @@ typedef struct {
     
     int	update;		/* update frequence */
     int	scale;		/* scale factor */
-    int	 min_scale;	/* smallest scale factor */
-    int	 interval;	/* data point interval */
+    int	min_scale;	/* smallest scale factor */
+    int	interval;	/* data point interval */
+    XPoint * points ;	/* Poly point for repairing graph lines. */
     Boolean reverse_video;		/* display in reverse video */
     double max_value;	/* Max Value in window */
     double valuedata[2048];/* record of data points */
