@@ -186,7 +186,7 @@ done \
 	    if (rec != "")
 		print rec
 	    }' \
-      >> $DEPENDLINES
+  | egrep -v '^[^:]*:[ 	]*$' >> $DEPENDLINES
 
 trap "" 1 2 13 15	# Now we are committed
 case "$makefile" in
