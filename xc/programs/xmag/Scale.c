@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.9 91/03/26 14:41:34 dave Exp $
+ * $XConsortium: Scale.c,v 1.10 91/03/27 18:22:57 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,10 +32,11 @@
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include "ScaleP.h"
+#include <X11/Xosdefs.h>
 
 #define myrint(x) floor(x + 0.5)
 
-#if __STDC__ && !defined(NOSTDHDRS)
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
 
