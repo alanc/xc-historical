@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.64 89/03/28 17:22:34 keith Exp $ */
+/* $XConsortium: Xlibint.h,v 11.65 89/03/29 15:14:36 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -50,6 +50,7 @@ extern char *_XAllocScratch();		/* fast memory allocator */
 extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
 extern int _XGetHostname();		/* get name of this machine */
+extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
 
 #ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */

@@ -1,5 +1,5 @@
 /* Copyright 1989 Massachusetts Institute of Technology */
-/* $XConsortium: GetRGBCMap.c,v 1.1 89/03/28 18:11:31 jim Exp $ */
+/* $XConsortium: GetRGBCMap.c,v 1.2 89/05/02 18:38:22 rws Exp $ */
 
 #include "copyright.h"
 
@@ -7,8 +7,6 @@
 #include "Xutil.h"
 #include "Xatomtype.h"
 #include "Xatom.h"
-
-static VisualID _get_default_visual_of_window();
 
 Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
     Display *dpy;
@@ -50,11 +48,13 @@ Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
 	ncmaps = 1;
 	old_style = True;
 	if (nitems < (NumPropStandardColormapElements - 1)) {
-	    def_visual = _get_default_visual_of_window (dpy, w);
-	    if (def_visual == None) {
+	    Screen *sp = _XScreenOfWindow (dpy, w);
+
+	    if (!sp) {
 		if (data) Xfree ((char *) data);
 		return False;
 	    }
+	    def_visual = sp->root_visual->visualid;
 	}
     } else {
 	/*
@@ -106,26 +106,3 @@ Status XGetRGBColormaps (dpy, w, stdcmap, count, property)
     return True;
 }
 
-
-static VisualID _get_default_visual_of_window (dpy, w)
-    Display *dpy;
-    Window w;
-{
-    register int i;
-    Window root;
-    int x, y;
-    unsigned int width, height, bw, depth;
-    VisualID vid = None;
-
-    if (XGetGeometry (dpy, w, &root, &x, &y, &width, &height,
-		      &bw, &depth) == False) {
-	return None;
-    }
-    for (i = 0; i < ScreenCount (dpy); i++) {	/* find root */
-	if (root == RootWindow (dpy, i)) {
-	    vid = (DefaultVisual (dpy, i))->visualid;
-	    break;
-	}
-    }
-    return vid;
-}

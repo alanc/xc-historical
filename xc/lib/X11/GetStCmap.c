@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XGetStCmap.c,v 1.2 89/02/22 18:30:51 jim Exp $ */
+/* $XConsortium: XGetStCmap.c,v 1.7 89/03/28 18:14:22 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,37 +31,64 @@ SOFTWARE.
 #include "Xatomtype.h"
 #include "Xatom.h"
 
+/*
+ * 				    WARNING
+ * 
+ * This is a pre-ICCCM routine.  It must not reference any of the new fields
+ * in the XStandardColormap structure.
+ */
+
 Status XGetStandardColormap (dpy, w, cmap, property)
-	Display *dpy;
-	Window w;
-	XStandardColormap *cmap;
-        Atom property;		/* XA_RGB_BEST_MAP, etc. */
+    Display *dpy;
+    Window w;
+    XStandardColormap *cmap;
+    Atom property;		/* XA_RGB_BEST_MAP, etc. */
 {
-	xPropStandardColormap *prop;
-        Atom actual_type;
-        int actual_format;
-        unsigned long leftover;
-        unsigned long nitems;
+    Status stat;			/* return value */
+    XStandardColormap *stdcmaps;	/* will get malloced value */
+    int nstdcmaps;			/* count of above */
 
-	if (XGetWindowProperty (dpy, w, property, 0L,
-	    (long)OldNumPropStandardColormapElements, False,
-	    XA_RGB_COLOR_MAP, &actual_type, &actual_format,
-            &nitems, &leftover, (unsigned char **)&prop)
-            != Success) return (0);
+    stat = XGetRGBColormaps (dpy, w, &stdcmaps, &nstdcmaps, property);
+    if (stat) {
+	XStandardColormap *use;
 
-        if ((nitems < OldNumPropStandardColormapElements)
-	 || (actual_format != 32)) {
-		if (prop) Xfree ((char *)prop);
-                return(0);
-		}
-	cmap->colormap	 = prop->colormap;
-	cmap->red_max	 = prop->red_max;
-	cmap->red_mult	 = prop->red_mult;
-	cmap->green_max	 = prop->green_max;
-	cmap->green_mult = prop->green_mult;
-	cmap->blue_max	 = prop->blue_max;
-	cmap->blue_mult	 = prop->blue_mult;
-	cmap->base_pixel = prop->base_pixel;
-	Xfree((char *)prop);
-	return(1);
+	if (nstdcmaps > 1) {
+	    VisualID vid;
+	    Screen *sp = _XScreenOfWindow (dpy, w);
+	    int i;
+
+	    if (!sp) {
+		if (stdcmaps) Xfree ((char *) stdcmaps);
+		return False;
+	    }
+	    vid = sp->root_visual->visualid;
+
+	    for (i = 0; i < nstdcmaps; i++) {
+		if (stdcmaps[i].visualid == vid) break;
+	    }
+
+	    if (i == nstdcmaps) {	/* not found */
+		Xfree ((char *) stdcmaps);
+		return False;
+	    }
+	    use = &stdcmaps[i];
+	} else {
+	    use = stdcmaps;
+	}
+	    
+	/*
+	 * assign only those fields which were in the pre-ICCCM version
+	 */
+	cmap->colormap	 = use->colormap;
+	cmap->red_max	 = use->red_max;
+	cmap->red_mult	 = use->red_mult;
+	cmap->green_max	 = use->green_max;
+	cmap->green_mult = use->green_mult;
+	cmap->blue_max	 = use->blue_max;
+	cmap->blue_mult	 = use->blue_mult;
+	cmap->base_pixel = use->base_pixel;
+
+	Xfree ((char *) stdcmaps);	/* don't need alloced memory */
+    }
+    return stat;
 }

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XSetStCmap.c,v 1.2 89/02/22 18:30:56 jim Exp $ */
+/* $XConsortium: XSetStCmap.c,v 1.4 89/03/28 18:14:23 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,23 +31,39 @@ SOFTWARE.
 #include "Xatomtype.h"
 #include "Xatom.h"
 
-void XSetStandardColormap(dpy, w, cmap, property)
-	Display *dpy;
-	Window w;
-	XStandardColormap *cmap;
-        Atom property;		/* XA_RGB_BEST_MAP, etc. */
-{
-        xPropStandardColormap prop;
+/*
+ * 				    WARNING
+ * 
+ * This is a pre-ICCCM routine.  It must not reference any of the new fields
+ * in the XStandardColormap structure.
+ */
 
-	prop.colormap	 = cmap->colormap;
-	prop.red_max	 = cmap->red_max;
-	prop.red_mult	 = cmap->red_mult;
-	prop.green_max	 = cmap->green_max;
-	prop.green_mult  = cmap->green_mult;
-	prop.blue_max	 = cmap->blue_max;
-	prop.blue_mult	 = cmap->blue_mult;
-	prop.base_pixel  = cmap->base_pixel;
-	XChangeProperty (dpy, w, property, XA_RGB_COLOR_MAP, 32,
-	     PropModeReplace, (unsigned char *) &prop,
-	     OldNumPropStandardColormapElements);
+void XSetStandardColormap(dpy, w, cmap, property)
+    Display *dpy;
+    Window w;
+    XStandardColormap *cmap;
+    Atom property;		/* XA_RGB_BEST_MAP, etc. */
+{
+    Screen *sp;
+    XStandardColormap stdcmap;
+
+    sp = _XScreenOfWindow (dpy, w);
+    if (!sp) {
+	/* already caught the XGetGeometry error in _XScreenOfWindow */
+	return;
+    }
+
+    stdcmap.colormap	= cmap->colormap;
+    stdcmap.red_max	= cmap->red_max;
+    stdcmap.red_mult	= cmap->red_mult;
+    stdcmap.green_max	= cmap->green_max;
+    stdcmap.green_mult  = cmap->green_mult;
+    stdcmap.blue_max	= cmap->blue_max;
+    stdcmap.blue_mult	= cmap->blue_mult;
+    stdcmap.base_pixel	= cmap->base_pixel;
+    stdcmap.visualid	= sp->root_visual->visualid;
+    stdcmap.killid	= None;		/* don't know how to kill this one */
+
+    XSetRGBColormaps (dpy, w, &stdcmap, 1, property);
+    return;
 }

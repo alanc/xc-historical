@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.98 89/04/20 16:47:09 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.99 89/04/20 20:29:58 rws Exp $
  */
 
 #include "copyright.h"
@@ -1559,6 +1559,32 @@ int _XGetHostname (buf, maxlen)
     len = strlen(buf);
 #endif /* hpux */
     return len;
+}
+
+
+/*
+ * _XScreenOfWindow - get the Screen of a given window
+ */
+
+Screen *_XScreenOfWindow (dpy, w)
+    Display *dpy;
+    Window w;
+{
+    register int i;
+    Window root;
+    int x, y;				/* dummy variables */
+    unsigned int width, height, bw, depth;  /* dummy variables */
+
+    if (XGetGeometry (dpy, w, &root, &x, &y, &width, &height,
+		      &bw, &depth) == False) {
+	return None;
+    }
+    for (i = 0; i < ScreenCount (dpy); i++) {	/* find root from list */
+	if (root == RootWindow (dpy, i)) {
+	    return ScreenOfDisplay (dpy, i);
+	}
+    }
+    return NULL;
 }
 
 
