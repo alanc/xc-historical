@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.17 89/10/05 11:18:19 jim Exp $ */
+/* $XConsortium: ico.c,v 1.18 89/10/05 18:36:16 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -369,7 +369,6 @@ char **argv;
 					MultibufferUpdateActionBackground,
 					MultibufferUpdateHintFrequent,
 					multibuffers) == 2) {
-		    XmbufDisplayBuffers (dpy, 1, &multibuffers[0], 0, 0);
 		    XmbufDisplayBuffers (dpy, 1, &multibuffers[1], 0, 0);
 		    XmbufDisplayBuffers (dpy, 1, &multibuffers[0], 0, 0);
 		    win = multibuffers[0];
