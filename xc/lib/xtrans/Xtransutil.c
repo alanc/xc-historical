@@ -148,6 +148,8 @@ Xtransaddr	*addrp;
 
 #ifdef ICE
 
+#include <signal.h>
+
 char *
 TRANS(GetMyNetworkId) (family, addrlen, addr)
 
@@ -213,7 +215,7 @@ Xtransaddr	*addr;
 static jmp_buf env;
 
 #ifdef SIGALRM
-Bool nameserver_timedout = False;
+int nameserver_timedout = 0;
 
 static 
 #ifdef SIGNALRETURNSINT
@@ -223,7 +225,7 @@ void
 #endif
 nameserver_lost(sig)
 {
-  nameserver_timedout = True;
+  nameserver_timedout = 1;
   longjmp (env, -1);
   /* NOTREACHED */
 #ifdef SIGNALRETURNSINT
@@ -279,7 +281,7 @@ Xtransaddr	*peer_addr;
 	 * jump out of it. 
 	 */
 
-	nameserver_timedout = False;
+	nameserver_timedout = 0;
 	signal (SIGALRM, nameserver_lost);
 	alarm (4);
 	if (setjmp(env) == 0) {
