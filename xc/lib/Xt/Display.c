@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.94 93/08/16 14:05:20 kaleb Exp $ */
+/* $XConsortium: Display.c,v 1.95 93/08/27 16:27:18 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,12 @@ SOFTWARE.
 #include <stdlib.h>
 #else
 extern char* getenv();
+#endif
+
+#if defined (XTHREADS)
+void (*_XtProcessLock)() = NULL;
+void (*_XtProcessUnlock)() = NULL;
+ThreadAppProc _XtInitAppLock = NULL;
 #endif
 
 static String XtNnoPerDisplay = "noPerDisplay";
@@ -268,6 +274,7 @@ String **argv_in_out, * fallback_resources;
 	XtFree((char *) (*app_context_return)->display_name_tried);
     }
     *argv_in_out = saved_argv;
+    UNLOCK_APP((*app_context_return));
     return dpy;
 }
 

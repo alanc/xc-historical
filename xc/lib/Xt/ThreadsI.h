@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.1 93/08/27 08:55:56 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.2 93/08/27 16:19:51 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -28,104 +28,54 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-#if defined(XTHREADS)
+#if defined (XTHREADS)
 
-#define xmalloc XtMalloc
-#define xfree   XtFree
+typedef struct _LockRec *LockPtr;
+typedef struct _ThreadStack *ThreadStackPtr;
 
-#include <X11/Xthreads.h>
-#define NDEBUG
-#include <assert.h>
-
-/* No thread should have _XT_NO_THREAD_ID as its id*/
-#ifndef _XT_NO_THREAD_ID
-#define _XT_NO_THREAD_ID 0
-#endif
-
-
-/* NOTHING BELOW THIS SHOULD BE VENDOR SPECFIC */
-
-/* typedefs */
-typedef struct _LockRec {
-    xthread_t holder;
-    xmutex_t mutex;
-    int recursion;
-    xcondition_t cond;
-} LockRec, *LockPtr;
-
-#define STACK_INCR 16
-
-typedef struct _ThreadStack {
-	unsigned int size;
-	int sp;
-	xthread_t *p;
-} ThreadStack, *ThreadStackPtr;
-
-typedef void (*ProcessLockProc)();
-typedef void (*ProcessUnlockProc)();
-
-typedef void (*InitAppLockProc)(
+typedef void (*ThreadAppProc)(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
 #endif
 );
 
-typedef void (*AppLockProc)(
+typedef int (*ThreadAppYieldLockProc)(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
 #endif
 );
 
-typedef void (*AppUnlockProc)(
-#if NeedFunctionPrototypes
-    XtAppContext /* app */
-#endif
-);
-
-typedef int  (*YieldAppLockProc)(
-#if NeedFunctionPrototypes
-    XtAppContext /* app */
-#endif
-);
-
-typedef void (*RestoreAppLockProc)(
+typedef void (*ThreadAppRestoreLockProc)(
 #if NeedFunctionPrototypes
     XtAppContext /* app */,
     int /* recursion */
 #endif
 );
 
-typedef void (*FreeAppLockProc)(
+typedef Boolean (*ThreadAppTopProc)(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
 #endif
 );
 
-typedef void (*PushThreadProc)(
+extern void (*_XtProcessLock)(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void (*_XtProcessUnlock)(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void (*_XtInitAppLock)(
 #if NeedFunctionPrototypes
     XtAppContext /* app */
 #endif
 );
 
-typedef void (*PopThreadProc)(
-#if NeedFunctionPrototypes
-    XtAppContext /* app */
-#endif
-);
-
-typedef Boolean (*IsTopThreadProc)(
-#if NeedFunctionPrototypes
-    XtAppContext /* app */
-#endif
-);
-
-/* INTERNAL FUNCTION PROTOTYPES */
-
-extern ProcessLockProc _XtProcessLock;
-extern ProcessUnlockProc _XtProcessUnlock;
-extern InitAppLockProc _XtInitAppLock;
-
-/* DEFINES */
 #define INIT_APP_LOCK(app) if(_XtInitAppLock) (*_XtInitAppLock)(app)
 
 #define LOCK_PROCESS if(_XtProcessLock)(*_XtProcessLock)()

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.71 93/08/17 12:07:18 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.72 93/08/27 16:23:41 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -127,6 +127,7 @@ typedef struct {
 
 typedef struct _DestroyRec DestroyRec;
 
+
 typedef struct _XtAppStruct {
     XtAppContext next;		/* link to next app in process context */
     ProcessContext process;	/* back pointer to our process context */
@@ -169,14 +170,14 @@ typedef struct _XtAppStruct {
 #if defined(XTHREADS)
     LockPtr lock_info;
     ThreadStackPtr stack;
-    AppLockProc lock;
-    AppUnlockProc unlock;
-    YieldAppLockProc yield_lock;
-    RestoreAppLockProc restore_lock;
-    FreeAppLockProc free_lock;
-    PushThreadProc push_thread;
-    PopThreadProc pop_thread;
-    IsTopThreadProc is_top_thread;
+    ThreadAppProc lock;
+    ThreadAppProc unlock;
+    ThreadAppYieldLockProc yield_lock;
+    ThreadAppRestoreLockProc restore_lock;
+    ThreadAppProc free_lock;
+    ThreadAppProc push_thread;
+    ThreadAppProc pop_thread;
+    ThreadAppTopProc is_top_thread;
 #endif
 } XtAppStruct;
 

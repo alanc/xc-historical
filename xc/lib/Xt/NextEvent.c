@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.117 93/08/22 10:17:38 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.118 93/08/27 16:29:30 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -226,10 +226,10 @@ int _XtWaitForSomething(app,
 #endif /* } */
 
 #if defined(XTHREADS)
-	assert ((ignoreTimers && ignoreInputs && ignoreSignals) || drop_lock);
+	/* assert ((ignoreTimers && ignoreInputs && ignoreSignals) || drop_lock); */
 
 	/* If not multi-threaded, never drop lock */
-	if (app->lock == (AppLockProc) NULL)
+	if (app->lock == (ThreadAppProc) NULL)
 	    drop_lock = FALSE;
 #endif
 
@@ -1103,7 +1103,7 @@ void XtAppNextEvent(app, event)
 	  GotEvent:
 	    XNextEvent (app->list[d], event);
 #if defined(XTHREADS)
-	    assert(app->list[d] == event->xany.display);
+	    /* assert(app->list[d] == event->xany.display); */
 #endif
 	    app->last = d;
 	    if (event->xany.type == MappingNotify)
@@ -1220,7 +1220,7 @@ void XtAppProcessEvent(app, mask)
 	      GotEvent:
 		XNextEvent(app->list[d], &event);
 #if defined(XTHREADS)
-		assert(app->list[d] == event.xany.display);
+		/* assert(app->list[d] == event.xany.display); */
 #endif
 		app->last = d;
 		if (event.xany.type == MappingNotify) {

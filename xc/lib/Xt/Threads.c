@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.2 93/08/27 16:19:22 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.3 93/09/02 08:50:17 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -32,11 +32,32 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #if defined(XTHREADS)
 
-static LockPtr process_lock = NULL;
+#define xmalloc XtMalloc
+#define xfree XtFree
+#include <X11/Xthreads.h>
 
-ProcessLockProc _XtProcessLock = NULL;
-ProcessUnlockProc _XtProcessUnlock = NULL;
-InitAppLockProc _XtInitAppLock = NULL;
+#define NDEBUG
+#include <assert.h>
+
+typedef struct _LockRec {
+    xthread_t holder;
+    xmutex_t mutex;
+    int recursion;
+    xcondition_t cond;
+} LockRec;
+
+typedef struct _ThreadStack {
+    unsigned int size;
+    int sp;
+    xthread_t *p;
+} ThreadStack;
+
+#ifndef _XT_NO_THREAD_ID
+#define _XT_NO_THREAD_ID 0
+#endif
+#define STACK_INCR 16
+
+static LockPtr process_lock = NULL;
 
 static void
 InitProcessLock()
@@ -334,7 +355,6 @@ InitAppLock(app)
     app->stack->sp = -1;
     app->stack->p = (xthread_t *)XtMalloc(sizeof(xthread_t)*STACK_INCR);
 }
-
 
 #endif /* defined(XTHREADS) */
 

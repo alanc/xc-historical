@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.153 93/08/25 14:51:40 converse Exp $ */
+/* $XConsortium: Event.c,v 1.154 93/08/27 16:27:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1515,7 +1515,7 @@ void XtAppMainLoop(app)
     do {
     	XtAppNextEvent(app, &event);
 #if defined(XTHREADS)
-	assert(app == XtDisplayToApplicationContext(event.xany.display));
+	/* assert(app == XtDisplayToApplicationContext(event.xany.display)); */
 #endif
 	XtDispatchEvent(&event);
     } while(app->exit_flag == FALSE);
