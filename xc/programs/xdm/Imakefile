@@ -45,7 +45,11 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
        
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
+#if SystemV
+       PROGRAMS = xdm xdmshell sessreg
+#else
        PROGRAMS = xdm xdmshell sessreg chooser
+#endif
 
 #if !HasVoidSignalReturn
         SIGDEFS = -DSIGNALRETURNSINT
