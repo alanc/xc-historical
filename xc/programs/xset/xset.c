@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.10 87/05/18 09:32:18 dkk Locked $ 
+ * $Header: xset.c,v 1.11 87/06/18 07:43:05 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.10 87/05/18 09:32:18 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.11 87/06/18 07:43:05 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
@@ -59,7 +59,7 @@ char **argv;
 	int status = FALSE;
 	int numpixels = 0;
 	int newpixels = FALSE;
-	XColor def;  /* was Color, but only XColor, Colormap exist %%*/
+	XColor def;
 	value_mask = 0;          /*  initialize mask for LED changes */
 	do_acc = do_thresh = FALSE;
 
@@ -127,7 +127,7 @@ char **argv;
 			}
 		} 
 		else if (strcmp(arg, "-led") == 0) {
-			values.led = 0;
+			values.led = (~0 >> 1);
 			values.led_mode = 0;
 			value_mask |= KBLedMode;
 
@@ -276,6 +276,8 @@ char **argv;
 		usage(argv[0]);
 
 	dpy = XOpenDisplay(disp);
+
+	XSynchronize(dpy, 1);
 	
 	if (dpy == NULL) {
 		fprintf(stderr, "%s: Can't open display '%s'\n",
