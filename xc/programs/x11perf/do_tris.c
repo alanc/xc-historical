@@ -21,6 +21,12 @@ SOFTWARE.
 
 ******************************************************************************/
 
+
+#undef POLYTRIANGLE_HACK    /* don't use this code */
+#ifdef POLYTRIANGLE_HACK
+#include <X11/Xlibint.h>
+#endif
+
 #include "x11perf.h"
 #include "bitmaps.h"
 
@@ -85,6 +91,8 @@ int InitTriangles(xp, p, reps)
     return reps;
 }
 
+#ifndef POLYTRIANGLE_HACK
+
 void DoTriangles(xp, p, reps)
     XParms  xp;
     Parms   p;
@@ -106,6 +114,82 @@ void DoTriangles(xp, p, reps)
             pgc = xp->bggc;
     }
 }
+
+#else
+void DoTriangles(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    int     i, j;
+    XPoint  *curPoint;
+
+    for (i = 0; i != reps; i++) {
+        XPolyTriangle (xp->d, xp->w, pgc, points, p->objects, Convex, 
+			 CoordModeOrigin);
+        if (pgc == xp->bggc)
+            pgc = xp->fggc;
+        else
+            pgc = xp->bggc;
+    }
+}
+
+static xReq _dummy_request = {
+	0, 0, 0
+};
+
+XPolyTriangle(dpy, d, gc, points, n_triangles, shape, mode)
+register Display *dpy;
+Drawable d;
+GC gc;
+XPoint *points;
+int n_triangles;
+int shape;
+int mode;
+{
+    register xFillPolyReq *req;
+    register long nbytes;
+    int		max_triangles;
+    int		n_this_time;
+    int		*buf, *pts;
+    int		gcid;
+    int		last;
+
+    max_triangles = (dpy->bufmax - dpy->buffer) / 28;
+    LockDisplay(dpy);
+    FlushGC(dpy, gc);
+    dpy->request += n_triangles;
+    pts = (int *) points;
+    gcid = gc->gid;
+    last = shape | (mode << 8);
+    while (n_triangles)
+    {
+	if ((n_this_time = max_triangles) > n_triangles)
+	    n_this_time = n_triangles;
+	n_triangles -= n_this_time;
+	GetReqExtra(FillPoly, 
+	    (SIZEOF(xFillPolyReq) + 12) * n_this_time - SIZEOF(xFillPolyReq), req);
+	--dpy->request;
+
+	buf = req;
+        while (n_this_time--)
+	{
+	    buf[0] = X_FillPoly | (7 << 16);
+	    buf[1] = d;
+	    buf[2] = gcid;
+	    buf[3] = last;
+	    buf[4] = pts[0];
+	    buf[5] = pts[1];
+	    buf[6] = pts[2];
+	    buf += 7;
+	    pts += 3;
+	}
+    }
+    dpy->last_req = &_dummy_request;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+#endif
 
 void EndTriangles(xp, p)
     XParms  xp;
