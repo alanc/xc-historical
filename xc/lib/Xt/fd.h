@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.14 89/10/05 13:32:53 swick Exp $
+* $XConsortium: fd.h,v 1.15 93/07/08 13:29:55 kaleb Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -29,6 +29,23 @@ SOFTWARE.
 
 #ifndef _Xt_fd_set
 #define _Xt_fd_set
+
+#ifdef WIN32
+
+#ifndef	FD_SETSIZE
+#define	FD_SETSIZE	256
+#endif
+#define _X86_ _M_IX86
+#define BOOL wBOOL
+#undef Status
+#define Status wStatus
+#include <winsock.h>
+#undef Status
+#define Status int
+#undef BOOL
+#define Fd_set fd_set
+
+#else /* !WIN32 */
 
 #if (defined(SVR4) || defined(CRAY) || defined(AIXV3)) && !defined(FD_SETSIZE)
 #include <sys/select.h>		/* defines FD stuff except howmany() */
@@ -71,5 +88,7 @@ typedef	struct Fd_set {
 #ifndef FD_ZERO
 #define FD_ZERO(p)	bzero((char *)(p), sizeof(*(p)))
 #endif
+
+#endif /* WIN32 */
 
 #endif /*_Xt_fd_set*/
