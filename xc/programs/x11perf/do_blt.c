@@ -1,4 +1,4 @@
-/* $XConsortium: do_blt.c,v 2.14 93/09/09 10:09:35 rws Exp $ */
+/* $XConsortium: do_blt.c,v 2.15 93/09/20 18:04:38 hersh Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -34,10 +34,7 @@ static XSegment *segsa, *segsb;
 
 #define NegMod(x, y) ((y) - (((-x)-1) % (7)) - 1)
 
-int InitScroll(xp, p, reps)
-    XParms  xp;
-    Parms   p;
-    int     reps;
+void InitBltLines()
 {
     int i, x, y;
 
@@ -62,7 +59,14 @@ int InitScroll(xp, p, reps)
 	x += WIDTH / (NUMPOINTS/2);
 	points[i].x = x;
     }
-	
+}
+
+int InitScroll(xp, p, reps)
+    XParms  xp;
+    Parms   p;
+    int     reps;
+{
+    InitBltLines();
     XDrawLines(xp->d, xp->w, xp->fggc, points, NUMPOINTS, CoordModeOrigin);
     return reps;
 }
@@ -220,7 +224,7 @@ Bool InitGetImage(xp, p, reps)
     (void) InitCopyWin(xp, p, reps);
 
     /* Create image to stuff bits into */
-    image = XGetImage(xp->d, xp->w, 0, 0, WIDTH, HEIGHT, ~0,
+    image = XGetImage(xp->d, xp->w, 0, 0, WIDTH, HEIGHT, xp->planemask,
 		      p->font==0?ZPixmap:XYPixmap);
     if(image==0){
 	printf("XGetImage failed\n");
@@ -309,16 +313,16 @@ void DoGetImage(xp, p, reps)
     for (sa = segsa, sb = segsb, i = 0; i != reps; i++, sa++, sb++) {
 	XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sa->x1, sa->y1, size, size,
-	    ~0, format);
+	    xp->planemask, format);
 	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sa->x2, sa->y2, size, size,
-	    ~0, format);
+	    xp->planemask, format);
 	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sb->x2, sb->y2, size, size,
-	    ~0, format);
+	    xp->planemask, format);
 	if (image) XDestroyImage(image);
 	image = XGetImage(xp->d, xp->w, sb->x1, sb->y1, size, size,
-	    ~0, format);
+	    xp->planemask, format);
 /*
 
 One might expect XGetSubImage to be slightly faster than XGetImage.  Go look
@@ -326,13 +330,13 @@ at the code in Xlib.  MIT X11R3 ran approximately 30 times slower for a 500x500
 rectangle.
 
 	(void) XGetSubImage(xp->d, xp->w, sa->x1, sa->y1, size, size,
-	    ~0, ZPixmap, image, sa->x2, sa->y2);
+	    xp->planemask, ZPixmap, image, sa->x2, sa->y2);
 	(void) XGetSubImage(xp->d, xp->w, sa->x2, sa->y2, size, size,
-	    ~0, ZPixmap, image, sa->x1, sa->y1);
+	    xp->planemask, ZPixmap, image, sa->x1, sa->y1);
 	(void) XGetSubImage(xp->d, xp->w, sb->x2, sb->y2, size, size,
-	    ~0, ZPixmap, image, sb->x2, sb->y2);
+	    xp->planemask, ZPixmap, image, sb->x2, sb->y2);
 	(void) XGetSubImage(xp->d, xp->w, sb->x1, sb->y1, size, size,
-	    ~0, ZPixmap, image, sb->x2, sb->y2);
+	    xp->planemask, ZPixmap, image, sb->x2, sb->y2);
 */
     }
 }
@@ -506,18 +510,15 @@ Bool InitCopyPlane(xp, p, reps)
     Parms   p;
     int     reps;
 {
-    int		i;
     XGCValues   gcv;
     GC		pixgc;
 
-    for (i = 0; i != NUMPOINTS; i++) {    
-        points[i].x = rand() % WIDTH;
-        points[i].y = rand() % HEIGHT;
-    }
+    InitBltLines();
     InitCopyLocations(xp, p, reps);
 
-    /* Create bitmap to write stuff into, and initialize it */
-    pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT, 1);
+    /* Create pixmap to write stuff into, and initialize it */
+    pix = XCreatePixmap(xp->d, xp->w, WIDTH, HEIGHT, 
+	    p->font==0 ? 1 : xp->vinfo.depth);
     gcv.graphics_exposures = False;
     gcv.foreground = 0;
     gcv.background = 1;

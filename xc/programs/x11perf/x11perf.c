@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.47 94/01/17 18:59:32 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.45 93/09/19 13:02:39 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -34,12 +34,13 @@ SOFTWARE.
 #endif
 #include "x11perf.h"
 #include <X11/Xmu/SysUtil.h>
+
 #ifdef X_NOT_STDC_ENV
-#define TIME_T long
-extern TIME_T time ();
+#define Time_t long
+extern Time_t time ();
 #else
 #include <time.h>
-#define TIME_T time_t
+#define Time_t time_t
 #endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
@@ -65,6 +66,15 @@ RopNameRec ropNames[] = {
 	"orInverted",	GXorInverted,	/* NOT src OR dst */
 	"nand",		GXnand,		/* NOT src OR NOT dst */
 	"set",		GXset,		/* 1 */
+};
+
+char *(visualClassNames)[] = {
+    "StaticGray",
+    "GrayScale",
+    "StaticColor",
+    "PseudoColor",
+    "TrueColor",
+    "DirectColor"
 };
 
 static Bool     labels		= False;
@@ -110,6 +120,8 @@ static XRectangle ws[] = {  /* Clip rectangles */
 static Window clipWindows[MAXCLIP];
 static Colormap cmap;
 static int depth = -1;  /* -1 means use default depth */
+static int vclass = -1; /* -1 means use CopyFromParent */
+static Visual *visual = CopyFromParent;
 
 /* ScreenSaver state */
 static XParmRec    xparms;
@@ -169,9 +181,9 @@ static struct  timeval start;
 
 void PrintTime()
 {
-    TIME_T t;
+    Time_t t;
 
-    t = time((TIME_T *)NULL);
+    t = time((Time_t *)NULL);
     printf("%s\n", ctime(&t));
 }
 
@@ -312,6 +324,64 @@ char *Get_Display_Name(pargc, argv)
 
 
 /*
+ * GetVersion (argc, argv) Look for -v1.2, -v1.3, or -v1.4.
+ * If found remove it from command line.  Don't go past a lone -.
+ */
+
+Version GetVersion(pargc, argv)
+    int     *pargc;  /* MODIFIED */
+    char    **argv; /* MODIFIED */
+{
+    int     argc = *pargc;
+    char    **pargv = argv+1;
+    Version version = VERSION1_5;
+    int     i;
+    Bool    found = False;
+
+    for (i = 1; i != argc; i++) {
+	char *arg = argv[i];
+
+	if (!strcmp (arg, "-v1.2")) {
+	    version = VERSION1_2;
+	    *pargc -= 1;
+	    if (found) {
+		fprintf(stderr, "Warning: multiple version specifications\n");
+	    }
+	    found = True;
+	    continue;
+	}
+	if (!strcmp (arg, "-v1.3")) {
+	    version = VERSION1_3;
+	    *pargc -= 1;
+	    if (found) {
+		fprintf(stderr, "Warning: multiple version specifications\n");
+	    }
+	    found = True;
+	    continue;
+	}
+	if (!strcmp (arg, "-v1.4")) {
+	    version = VERSION1_4;
+	    *pargc -= 1;
+	    if (found) {
+		fprintf(stderr, "Warning: multiple version specifications\n");
+	    }
+	    found = True;
+	    continue;
+	}
+	if (!strcmp(arg,"-")) {
+	    while (i<argc)  *pargv++ = argv[i++];
+	    break;
+	}
+	*pargv++ = arg;
+    }
+
+    *pargv = NULL;
+    return (version);
+}
+
+
+
+/*
  * Open_Display: Routine to open a display with correct error handling.
  */
 Display *Open_Display(display_name)
@@ -323,7 +393,6 @@ Display *Open_Display(display_name)
     if (d == NULL) {
 	fprintf (stderr, "%s:  unable to open display '%s'\n",
 		 program_name, XDisplayName (display_name));
-	usage ();
 	/* doesn't return */
     }
 
@@ -377,6 +446,7 @@ void usage()
 "    -rop <rop0 rop1 ...>      use the given rops to draw (default = GXcopy)",
 "    -pm <pm0 pm1 ...>         use the given planemasks to draw (default = ~0)",
 "    -depth <depth>            use a visual with <depth> planes per pixel",
+"    -vclass <class>           the visual class to use (default = root)",
 "    -reps <n>                 fix the rep count (default = auto scale)",
 "    -subs <s0 s1 ...>         a list of the number of sub-windows to use",
 "    -v1.2                     perform only v1.2 tests using old semantics",
@@ -391,8 +461,11 @@ NULL};
 	fprintf(stderr, "%s\n", *cpp);
     }
     while (test[i].option != NULL) {
-        fprintf(stderr, "    %-24s   %s\n",
-		test[i].option, test[i].label14 ? test[i].label14 : test[i].label);
+	if (test[i].versions & xparms.version ) {
+	    fprintf(stderr, "    %-24s   %s\n",
+		test[i].option,
+		test[i].label14 ? test[i].label14 : test[i].label);
+	}
         i++;
     }
     fprintf(stderr, "\n");
@@ -736,6 +809,7 @@ void ProcessTest(xp, test, func, pm, label)
     int     reps, fooreps;
     int     j;
 
+    xp->planemask = pm;
     CreatePerfGCs(xp, func, pm);
     DisplayStatus(xp->d, "Calibrating", label, 0);
     reps = CalibrateTest(xp, test, seconds, &time);
@@ -824,7 +898,6 @@ main(argc, argv)
     }
 
     xparms.pack = False;
-    xparms.version = VERSION1_4;
     xparms.save_under = False;
     xparms.backing_store = NotUseful;
 
@@ -835,10 +908,11 @@ main(argc, argv)
     /* Parse arguments */
     program_name = argv[0];
     displayName = Get_Display_Name (&argc, argv);
+    xparms.version = GetVersion(&argc, argv);
     for (i = 1; i != argc; i++) {
 	if (strcmp (argv[i], "-all") == 0) {
 	    ForEachTest (j)
-		doit[j] = True;
+		doit[j] = test[j].versions & xparms.version;
 	    foundOne = True;
 	} else if (strcmp (argv[i], "-labels") == 0) {
 	    labels = True;
@@ -864,7 +938,7 @@ main(argc, argv)
 		    (test[j].versions & xparms.version)) {
 		    int k = j;
 		    do {
-			doit[k] = True;
+			doit[k] = test[j].versions & xparms.version;
 		    } while (!(strcmp(cp2, (test[k].option + 1)) == 0 &&
 			       (test[k].versions & xparms.version)) &&
 			     test[++k].option != NULL);
@@ -945,6 +1019,18 @@ main(argc, argv)
             depth = atoi(argv[i]);
             if (depth <= 0)
 		usage ();
+        } else if (strcmp(argv[i], "-vclass") == 0) {
+	    i++;
+	    if (argc <= i)
+                usage ();
+	    for (j = StaticGray; j <= DirectColor; j++) {
+		if (strcmp(argv[i], visualClassNames[j]) == 0) {
+		    vclass = j;
+		    break;
+		}
+	    }
+            if (vclass < 0)
+		usage ();
 	} else if (strcmp(argv[i], "-subs") == 0) {
 	    skip = GetNumbers (i+1, argc, argv, subWindows, &numSubWindows);
 	    i += skip;
@@ -1000,7 +1086,7 @@ main(argc, argv)
 	   assemble data from different x11perf runs into a nice format */
 	ForEachTest (i) {
 	    int child;
-	    if (doit[i] && (test[i].versions & xparms.version)) {
+	    if (doit[i]) {
 		switch (test[i].testType) {
 		    case NONROP:
 			printf ("%s\n", LABELP(i));
@@ -1026,6 +1112,19 @@ main(argc, argv)
 				}
 			    } /* for pm */
 			} /* for rop */
+			break;
+		    
+		    case PLANEMASK:
+			/* Run it through all specified planemasks */
+			for (pm = 0; pm < numPlanemasks; pm++) {
+			    if (planemasks[pm] == ~0) {
+				printf ("%s\n", LABELP(i));
+			    } else {
+				printf ("(0x%x) %s\n",
+					planemasks[pm],
+					LABELP(i));
+			    }
+			} /* for pm */
 			break;
 		    
 		    case WINDOW:
@@ -1056,19 +1155,32 @@ main(argc, argv)
 	exit(1);
     }
 
-    if (depth == -1) {
+    if (depth == -1 && vclass == -1) {
 	/* use the default visual and colormap */
 	xparms.vinfo = *vinfolist;
 	cmap = XDefaultColormap(xparms.d, screen);
     } else {
 	/* find the specified visual */
-	vmask = VisualDepthMask | VisualScreenMask;
-	vinfotempl.depth = depth;
+	int errorDepth = vinfolist[0].depth;
+	int errorClass = vinfolist[0].class;
+
+	vmask = VisualScreenMask;
 	vinfotempl.screen = screen;
+	if (depth >= 0) {
+	    vinfotempl.depth = depth;
+	    vmask |= VisualDepthMask;
+	    errorDepth = depth;
+	}
+	if (vclass >= 0) {
+	    vinfotempl.class = vclass;
+	    vmask |= VisualClassMask;
+	    errorClass = vclass;
+	}
 	vinfolist = XGetVisualInfo(xparms.d, vmask, &vinfotempl, &n);
 	if (!vinfolist) {
-	    fprintf (stderr, "%s: can't find a visual of depth %d\n",
-		program_name, depth);
+	    fprintf (stderr,
+		"%s: can't find a visual of depth %d and class %s\n",
+		program_name, errorDepth, visualClassNames[errorClass]);
 	    exit(1);
 	}
 	xparms.vinfo = *vinfolist;  /* use the first one in list */
@@ -1082,10 +1194,12 @@ main(argc, argv)
 	    /* since this is not default cmap, must force color allocation */
 	    if (!foreground) foreground = "Black";
 	    if (!background) background = "White";
+	    XInstallColormap(xparms.d, cmap);
 	}
     }
 
     printf("x11perf - X11 performance program, version %s\n",
+	   xparms.version & VERSION1_5 ? "1.5" :
 	   xparms.version & VERSION1_4 ? "1.4" :
 	   xparms.version & VERSION1_3 ? "1.3" :
 	   "1.2"
@@ -1137,8 +1251,10 @@ main(argc, argv)
     if (3 + HEIGHT > DisplayHeight(xparms.d, screen))
 	HSy = DisplayHeight(xparms.d, screen) - 4;
     status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
-    tgcv.foreground = BlackPixel(xparms.d, screen);
-    tgcv.background = WhitePixel(xparms.d, screen);
+    tgcv.foreground = 
+	AllocateColor(xparms.d, "black", BlackPixel(xparms.d, screen));
+    tgcv.background = 
+	AllocateColor(xparms.d, "white", WhitePixel(xparms.d, screen));
     tgc = XCreateGC(xparms.d, status, GCForeground | GCBackground, &tgcv);
    
     xparms.p = (Pixmap)0;
@@ -1193,6 +1309,21 @@ main(argc, argv)
 		    } /* for rop */
 		    break;
 		
+		case PLANEMASK:
+		    /* Run it through all specified planemasks */
+		    for (pm = 0; pm < numPlanemasks; pm++) {
+			if (planemasks[pm] == ~0) {
+			    sprintf (label, "%s", LABELP(i));
+			} else {
+			    sprintf (label, "(0x%x) %s",
+				    planemasks[pm],
+				    LABELP(i));
+			}
+			ProcessTest(&xparms, &test[i], GXcopy,
+				    planemasks[pm], label);
+		    } /* for pm */
+		    break;
+		
 		case WINDOW:
 		    /* Loop through number of children array */
 		    for (child = 0; child != numSubWindows; child++) {
@@ -1236,11 +1367,11 @@ GetWords (argi, argc, argv, wordsp, nump)
     return count;
 }
 
-static int
+static long
 atox (s)
     char    *s;
 {
-    int     v, c;
+    long   v, c;
 
     v = 0;
     while (*s) {
@@ -1260,7 +1391,7 @@ int GetNumbers (argi, argc, argv, intsp, nump)
     int     argi;
     int     argc;
     char    **argv;
-    unsigned long *intsp;
+    long    *intsp;
     int     *nump;
 {
     char    *words[256];
@@ -1312,8 +1443,8 @@ GetRops (argi, argc, argv, ropsp, nump)
 	    }
 	}
 	if (rop == 16) {
-	    fprintf (stderr, "unknown rop name %s\n", words[i]);
 	    usage ();
+	    fprintf (stderr, "unknown rop name %s\n", words[i]);
 	}
     }
     return count;

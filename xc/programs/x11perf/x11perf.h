@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.h,v 2.10 92/11/11 16:59:59 rws Exp $ */
+/* $XConsortium: x11perf.h,v 2.11 93/08/04 11:47:07 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -60,10 +60,12 @@ typedef unsigned char Version;
 #define VERSION1_2  ((Version)(1 << 0))
 #define VERSION1_3  ((Version)(1 << 1))
 #define VERSION1_4  ((Version)(1 << 2))
+#define VERSION1_5  ((Version)(1 << 3))
 #define V1_2ONLY VERSION1_2
-#define V1_2FEATURE	(VERSION1_2 | VERSION1_3 | VERSION1_4)
-#define V1_3FEATURE	(VERSION1_3 | VERSION1_4)
-#define V1_4FEATURE	(VERSION1_4)
+#define V1_2FEATURE	(VERSION1_2 | VERSION1_3 | VERSION1_4 | VERSION1_5)
+#define V1_3FEATURE	(VERSION1_3 | VERSION1_4 | VERSION1_5)
+#define V1_4FEATURE	(VERSION1_4 | VERSION1_5)
+#define V1_5FEATURE     (VERSION1_5)
 
 typedef struct _Parms {
     /* Required fields */
@@ -91,12 +93,14 @@ typedef struct _XParms {
     Version	    version;
     Bool	    save_under;
     int		    backing_store;
+    unsigned long   planemask;
 } XParmRec, *XParms;
 
 typedef enum {
-    WINDOW,     /* Windowing test, rop has no affect		    */
-    ROP,	/* Graphics test, rop has some affect		    */
-    NONROP      /* Graphics or overhead test, top has no affect     */
+    WINDOW,     /* Windowing test, rop, planemask have no affect	*/
+    ROP,	/* Graphics test, rop, planemask has some affect	*/
+    PLANEMASK,  /* Graphics test, rop no affect, planemask some affect  */
+    NONROP      /* Graphics or overhead test, rop has no affect		*/
 } TestType;
 
 typedef struct _Test {
