@@ -1,21 +1,20 @@
-#define COMM #
-COMM 
-COMM  XLocale Database Sample for ko.
-COMM 
+XCOMM  $XConsortium$
+XCOMM  XLocale Database Sample for ko.
+XCOMM 
 
-COMM 
-COMM 	XLC_FONTSET category
-COMM 
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
 XLC_FONTSET
-COMM 	cs0 class (7 bit ASCII)
+XCOMM 	cs0 class (7 bit ASCII)
 cs0	ISO8859-1:GL
-COMM 	cs1 class 
+XCOMM 	cs1 class 
 cs1	KSC5601.1987-0:GL
 END XLC_FONTSET
 
-COMM 
-COMM 	XLC_XLOCALE category
-COMM 
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
 XLC_XLOCALE
 
 encoding_name		ko.euc
@@ -29,7 +28,7 @@ wc_encoding_mask	\x00008080
 wc_shift_bits		8
 #endif
 
-COMM 	cs0 class
+XCOMM 	cs0 class
 cs0	{
 	side		GL:Default
 	length		1
@@ -37,7 +36,7 @@ cs0	{
 	ct_encoding	ISO8859-1:GL
 }
 
-COMM 	cs1 class
+XCOMM 	cs1 class
 cs1	{
 	side		GR:Default
 	length		2

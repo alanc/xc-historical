@@ -1,29 +1,28 @@
-#define COMM #
-COMM 
-COMM  XLocale Database Sample for zh_TW
-COMM 
+XCOMM  $XConsortium$
+XCOMM  XLocale Database Sample for zh_TW
+XCOMM 
 
-COMM 
-COMM 	XLC_FONTSET category
-COMM 
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
 XLC_FONTSET
-COMM 	cs0 class (7 bit ASCII)
+XCOMM 	cs0 class (7 bit ASCII)
 cs0	ISO8859-1:GL; CNS11643-0:GL
-COMM 	cs1 class
+XCOMM 	cs1 class
 cs1	CNS11643-1:GL
-COMM 	cs2 class
+XCOMM 	cs2 class
 cs2	CNS11643-2:GL
-COMM 	cs3 class 
+XCOMM 	cs3 class 
 cs3	CNS11643-14:GL
-COMM 	cs4 class 
+XCOMM 	cs4 class 
 cs4	CNS11643-15:GL
-COMM 	cs5 class 
+XCOMM 	cs5 class 
 cs5	CNS11643-16:GL
 END XLC_FONTSET
 
-COMM 
-COMM 	XLC_XLOCALE category
-COMM 
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
 XLC_XLOCALE
 
 encoding_name		zh_TW.euc
@@ -32,7 +31,7 @@ state_depend_encoding	False
 wc_encoding_mask	\x3fffc000
 wc_shift_bits		7
 
-COMM 	cs0 class
+XCOMM 	cs0 class
 cs0	{
 	side		GL:Default
 	length		1
@@ -40,7 +39,7 @@ cs0	{
 	ct_encoding	ISO8859-1:GL; CNS11643-0:GL
 }
 
-COMM 	cs1 class
+XCOMM 	cs1 class
 cs1	{
 	side		GR:Default
 	length		2
@@ -48,7 +47,7 @@ cs1	{
 	ct_encoding	CNS11643-1:GR
 }
 
-COMM 	cs2 class	# plane 2
+XCOMM 	cs2 class	# plane 2
 cs2	{
 	side		GR
 	length		2
@@ -57,7 +56,7 @@ cs2	{
 	ct_encoding	CNS11643-2:GR
 }
 
-COMM 	cs3 class	# plane 14
+XCOMM 	cs3 class	# plane 14
 cs3	{
 	side		GR
 	length		2
@@ -66,7 +65,7 @@ cs3	{
 	ct_encoding	CNS11643-14:GR
 }
 
-COMM 	cs4 class	# plane 15
+XCOMM 	cs4 class	# plane 15
 cs4	{
 	side		GR
 	length		2
@@ -75,7 +74,7 @@ cs4	{
 	ct_encoding	CNS11643-15:GR
 }
 
-COMM 	cs5 class	# plane 16
+XCOMM 	cs5 class	# plane 16
 cs5	{
 	side		GR
 	length		2

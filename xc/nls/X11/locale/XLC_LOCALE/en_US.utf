@@ -1,101 +1,100 @@
-#define COMM #
-COMM 
-COMM  XLocale Database Sample for en_US.utf
-COMM 
+XCOMM  $XConsortium$
+XCOMM  XLocale Database Sample for en_US.utf
+XCOMM 
 
-COMM 
-COMM 	XLC_FONTSET category
-COMM 
+XCOMM 
+XCOMM 	XLC_FONTSET category
+XCOMM 
 XLC_FONTSET
-COMM 	cs0 class (7 bit ASCII)
+XCOMM 	cs0 class (7 bit ASCII)
 cs0	ISO8859-1:GL
-COMM 	cs1 class (Kanji)
+XCOMM 	cs1 class (Kanji)
 cs1	JISX0208.1983-0:GL
-COMM 	cs2 class (Half Kana)
+XCOMM 	cs2 class (Half Kana)
 cs2	JISX0201.1976-0:GR
-COMM 	cs3 class (ISO8859 families)
+XCOMM 	cs3 class (ISO8859 families)
 cs3	ISO8859-1:GR
-COMM    cs4 class (Korean Character)
+XCOMM   cs4 class (Korean Character)
 cs4     KSC5601.1987-0:GL
-COMM    cs5 class (Chinese Han Character)
+XCOMM   cs5 class (Chinese Han Character)
 cs5     GB2312.1980-0:GL
 END XLC_FONTSET
 
-COMM 
-COMM 	XLC_XLOCALE category
-COMM 
+XCOMM 
+XCOMM 	XLC_XLOCALE category
+XCOMM 
 XLC_XLOCALE
 
 encoding_name		"UTF"
 mb_cur_max		3
 state_depend_encoding	False
 
-COMM #if WCHAR32
-COMM wc_encoding_mask	\x30000000
-COMM wc_shift_bits		7
-COMM #else
-COMM wc_encoding_mask	\x00008080
-COMM wc_shift_bits		8
-COMM #endif
+XCOMM #if WCHAR32
+XCOMM wc_encoding_mask	\x30000000
+XCOMM wc_shift_bits		7
+XCOMM #else
+XCOMM wc_encoding_mask	\x00008080
+XCOMM wc_shift_bits		8
+XCOMM #endif
 
-COMM 	cs0 class
+XCOMM 	cs0 class
 cs0	{
 	side		GL:Default
 	length		1
-COMM	wc_encoding	\x00000000
+XCOMM	wc_encoding	\x00000000
 	ct_encoding	ISO8859-1:GL
 }
 
-COMM 	cs1 class
+XCOMM 	cs1 class
 cs1	{
 	side		GR:Default
 	length		2
-COMM #if WCHAR32
-COMM	wc_encoding	\x30000000
-COMM #else
-COMM	wc_encoding	\x00008080
-COMM #endif
+XCOMM #if WCHAR32
+XCOMM	wc_encoding	\x30000000
+XCOMM #else
+XCOMM	wc_encoding	\x00008080
+XCOMM #endif
 	ct_encoding	JISX0208.1983-0:GL; JISX0208.1983-0:GR;\
 			JISX0208.1983-1:GL; JISX0208.1983-1:GR
 }
 
-COMM 	cs2 class
+XCOMM 	cs2 class
 cs2	{
 	side		GR:Default
 	length		1
-COMM	mb_encoding	<SS> \x8e
-COMM #if WCHAR32
-COMM	wc_encoding	\x10000000
-COMM #else
-COMM	wc_encoding	\x00000080
-COMM #endif
+XCOMM	mb_encoding	<SS> \x8e
+XCOMM #if WCHAR32
+XCOMM	wc_encoding	\x10000000
+XCOMM #else
+XCOMM	wc_encoding	\x00000080
+XCOMM #endif
 	ct_encoding	JISX0201.1976-0:GR
 }
 
-COMM       cs3 class
+XCOMM       cs3 class
 cs3     {
         side            GR:Default
         length          1
-COMM       mb_encoding     <SS> \x8e
-COMM       wc_encoding     \x00000000
+XCOMM      mb_encoding     <SS> \x8e
+XCOMM      wc_encoding     \x00000000
         ct_encoding     ISO8859-1:GR
 }
  
-COMM       cs4 class
+XCOMM       cs4 class
 cs4     {
         side            GL
         length          2
-COMM       mb_encoding     <SS> \x8f
-COMM       wc_encoding     \x00000000
+XCOMM      mb_encoding     <SS> \x8f
+XCOMM      wc_encoding     \x00000000
         ct_encoding     KSC5601.1987-0:GL; KSC5601.1987-0:GR;\
                         KSC5601.1987-1:GL; KSC5601.1987-1:GR
 }
  
-COMM       cs5 class
+XCOMM       cs5 class
 cs5     {
         side            GR:Default
         length          2
-COMM       wc_encoding     \x00000000
+XCOMM      wc_encoding     \x00000000
         ct_encoding     GB2312.1980-0:GL; GB2312.1980-0:GR
 }
  
