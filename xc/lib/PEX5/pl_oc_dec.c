@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_dec.c,v 1.6 92/07/24 13:47:34 mor Exp $ */
+/* $XConsortium: pl_oc_dec.c,v 1.7 92/08/06 22:56:35 mor Exp $ */
 
 /******************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -761,10 +761,18 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
-	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
+
+	if (srcEnc->characterSetWidth == PEXCSLong)
+	    size = srcEnc->numChars * sizeof (long);
+	else if (srcEnc->characterSetWidth == PEXCSShort)
+	    size = srcEnc->numChars * sizeof (short);
+	else /* srcEnc->characterSetWidth == PEXCSByte) */
+	    size = srcEnc->numChars;
+	
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) size);
+	COPY_AREA ((srcEnc + 1), destEnc->ch, size);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
-	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
+	    sizeof (pexMonoEncoding) + PADDED_BYTES (size));
     }
 
     *ocSrc = (char *) srcEnc;
@@ -802,10 +810,18 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
-	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
+
+	if (srcEnc->characterSetWidth == PEXCSLong)
+	    size = srcEnc->numChars * sizeof (long);
+	else if (srcEnc->characterSetWidth == PEXCSShort)
+	    size = srcEnc->numChars * sizeof (short);
+	else /* srcEnc->characterSetWidth == PEXCSByte) */
+	    size = srcEnc->numChars;
+	
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) size);
+	COPY_AREA ((srcEnc + 1), destEnc->ch, size);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
-	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
+	    sizeof (pexMonoEncoding) + PADDED_BYTES (size));
     }
 
     *ocSrc = (char *) srcEnc;
@@ -847,10 +863,18 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
-	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
+
+	if (srcEnc->characterSetWidth == PEXCSLong)
+	    size = srcEnc->numChars * sizeof (long);
+	else if (srcEnc->characterSetWidth == PEXCSShort)
+	    size = srcEnc->numChars * sizeof (short);
+	else /* srcEnc->characterSetWidth == PEXCSByte) */
+	    size = srcEnc->numChars;
+	
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) size);
+	COPY_AREA ((srcEnc + 1), destEnc->ch, size);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
-	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
+	    sizeof (pexMonoEncoding) + PADDED_BYTES (size));
     }
 
     *ocSrc = (char *) srcEnc;
@@ -890,10 +914,18 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
-	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
+
+	if (srcEnc->characterSetWidth == PEXCSLong)
+	    size = srcEnc->numChars * sizeof (long);
+	else if (srcEnc->characterSetWidth == PEXCSShort)
+	    size = srcEnc->numChars * sizeof (short);
+	else /* srcEnc->characterSetWidth == PEXCSByte) */
+	    size = srcEnc->numChars;
+	
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) size);
+	COPY_AREA ((srcEnc + 1), destEnc->ch, size);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
-	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
+	    sizeof (pexMonoEncoding) + PADDED_BYTES (size));
     }
 
     *ocSrc = (char *) srcEnc;
