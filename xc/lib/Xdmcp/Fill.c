@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Fill.c,v 1.6 93/08/18 15:11:50 rws Exp $
+ * $XConsortium: Fill.c,v 1.7 93/08/19 09:03:09 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,6 +23,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
+#ifdef WIN32
+#define _WILLWINSOCK_
+#endif
 #include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/Xmd.h>
