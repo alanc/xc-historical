@@ -69,7 +69,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "macII.h"
 #include <stdio.h>
 #include "Xproto.h"
-#include "keysym.h"
 #include "inputstr.h"
 
 extern CARD8 *macIIModMap[];
