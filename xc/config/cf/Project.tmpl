@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.102 91/03/23 16:43:01 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -18,6 +18,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
  */
 #ifndef BuildServer
 #define BuildServer		YES	/* go ahead and build server */
+#endif
+#ifndef BuildBdfFonts
+#define BuildBdfFonts		BuildServer
 #endif
 #ifndef BuildPex
 #define BuildPex		NO	/* at least not for alpha */	
@@ -94,6 +97,18 @@ XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
 #endif
 #ifndef ProfileLibXmu
 #define ProfileLibXmu		NO	/* profiled Xmu library */
+#endif
+#ifndef DebugLibXau
+#define DebugLibXau		NO	/* debugged auth library */
+#endif
+#ifndef ProfileLibXau
+#define ProfileLibXau		NO	/* profiled auth library */
+#endif
+#ifndef DebugLibXdmcp
+#define DebugLibXdmcp		NO	/* debugged XDMCP library */
+#endif
+#ifndef ProfileLibXdmcp
+#define ProfileLibXdmcp		NO	/* profiled XDMCP library */
 #endif
 #ifndef ManDirectoryRoot
 #define ManDirectoryRoot /usr/man		/* if not set in .macros */
@@ -319,61 +334,68 @@ XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
 #define AllocateLocalDefines /**/
 #endif
 
-#ifndef SharedLibX
-#if HasSharedLibraries
-#define SharedLibX YES
-#else
-#define SharedLibX NO
+#ifndef ForceNormalLib
+#define ForceNormalLib (HasSaberC | HasGcc)
 #endif
+#ifndef SharedLibX
+#define SharedLibX HasSharedLibraries
+#endif
+#ifndef NormalLibX
+#define NormalLibX (!SharedLibX | ForceNormalLib)
 #endif
 #ifndef SharedOldLibX
-#if HasSharedLibraries
-#define SharedOldLibX YES
-#else
-#define SharedOldLibX NO
+#define SharedOldLibX HasSharedLibraries
 #endif
+#ifndef NormalOldLibX
+#define NormalOldLibX (!SharedOldLibX | ForceNormalLib)
 #endif
 #ifndef SharedLibXt
-#if HasSharedLibraries
-#define SharedLibXt YES
-#else
-#define SharedLibXt NO
+#define SharedLibXt HasSharedLibraries
 #endif
+#ifndef NormalLibXt
+#define NormalLibXt (!SharedLibXt | ForceNormalLib)
 #endif
 #ifndef SharedLibXaw
-#if HasSharedLibraries
-#define SharedLibXaw YES
-#else
-#define SharedLibXaw NO
+#define SharedLibXaw HasSharedLibraries
 #endif
+#ifndef NormalLibXaw
+#define NormalLibXaw (!SharedLibXaw | ForceNormalLib)
 #endif
 #ifndef SharedLibXmu
-#if HasSharedLibraries
-#define SharedLibXmu YES
-#else
-#define SharedLibXmu NO
+#define SharedLibXmu HasSharedLibraries
 #endif
+#ifndef NormalLibXmu
+#define NormalLibXmu (!SharedLibXmu | ForceNormalLib)
+#endif
+#ifndef SharedLibXau
+#define SharedLibXau NO		/* don't need shared form */
+#endif
+#ifndef NormalLibXau
+#define NormalLibXau (!SharedLibXau | ForceNormalLib)
+#endif
+#ifndef SharedLibXdmcp
+#define SharedLibXdmcp NO	/* don't need shared form */
+#endif
+#ifndef NormalLibXdmcp
+#define NormalLibXdmcp (!SharedLibXdmcp | ForceNormalLib)
 #endif
 #ifndef SharedLibXext
-#if HasSharedLibraries
 #define SharedLibXext NO	/* XXX - haven't made it sharable yet */
-#else
-#define SharedLibXext NO
 #endif
+#ifndef NormalLibXext
+#define NormalLibXext (!SharedLibXext | ForceNormalLib)
 #endif
 #ifndef SharedLibXinput
-#if HasSharedLibraries
-#define SharedLibXinput No
-#else
-#define SharedLibXinput NO
+#define SharedLibXinput NO	/* XXX - haven't made it sharable yet */
 #endif
+#ifndef NormalLibXinput
+#define NormalLibXinput (!SharedLibXinput | ForceNormalLib)
 #endif
 #ifndef SharedLibPhigs
-#if HasSharedLibraries
 #define SharedLibPhigs NO	/* XXX - haven't made it sharable yet */
-#else
-#define SharedLibPhigs NO
 #endif
+#ifndef NormalLibPhigs
+#define NormalLibPhigs (!SharedLibPhigs | ForceNormalLib)
 #endif
 
 
@@ -390,7 +412,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.101 91/03/16 16:52:39 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.102 91/03/23 16:43:01 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
