@@ -1,12 +1,12 @@
 /* 
- * $XHeader: xset.c,v 1.32 88/07/05 14:24:20 jim Exp $ 
+ * $XHeader: xset.c,v 1.33 88/07/07 14:42:22 jim Exp $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$XHeader: xset.c,v 1.32 88/07/05 14:24:20 jim Exp $";
+static char *rcsid_xset_c = "$XHeader: xset.c,v 1.33 88/07/07 14:42:22 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -555,11 +555,14 @@ XKeyboardState values;
 int acc_num, acc_denom, threshold;
 int timeout, interval, prefer_blank, allow_exp;
 char **font_path; int npaths;
+unsigned char pmap[256], *ucp;		/* there are 8 bits of buttons */
+int pmap_count;
 
 XGetKeyboardControl(dpy, &values);
 XGetPointerControl(dpy, &acc_num, &acc_denom, &threshold);
 XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
 font_path = XGetFontPath(dpy, &npaths);
+pmap_count = XGetPointerMapping (dpy, pmap, 256);
 
 printf ("Keyboard Control Values:\n");
 /*printf ("Auto Repeat: %d \t\t", values.auto_repeat_mode);    %%*/
@@ -594,6 +597,11 @@ if (npaths) {
         printf( ",%s", *font_path++ );
     printf( "\n" );
 }
+printf ("Pointer map:");
+for (ucp = pmap; pmap_count > 0; ucp++, pmap_count--) {
+    printf ("  %u", (unsigned int) *ucp);
+}
+printf ("\n");
 return;
 }
 
