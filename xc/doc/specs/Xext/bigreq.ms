@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.6 92/12/30 14:33:44 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.7 93/01/04 17:26:22 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -26,7 +26,7 @@ Massachusetts Institute of Technology
 .nr PS 9
 .sp 8
 .LP
-Copyright \(co 1992 by the Massachusetts Institute of Technology
+Copyright \(co 1993 by the Massachusetts Institute of Technology
 .LP
 Permission to use, copy, modify, distribute, and sell this documentation
 for any purpose is hereby granted without fee, provided that
