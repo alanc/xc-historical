@@ -26,5 +26,9 @@ OBJS =	FSlibInt.o FSOpenServ.o  FSClServ.o FSConnServ.o FSServName.o	\
 
 NormalLibraryTarget(FS,$(OBJS))
 
+includes::
+	$(RM) $(FONTSRC)/include/FSlib.h
+	$(LN) ../lib/fs/FSlib.h $(FONTSRC)/include/FSlib.h
+
 DependTarget()
 
