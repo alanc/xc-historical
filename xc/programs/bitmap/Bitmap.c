@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.32 91/04/16 09:06:42 rws Exp $
+ * $XConsortium: Bitmap.c,v 1.33 91/05/08 14:12:42 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -1454,10 +1454,10 @@ static void Destroy(w)
 {
     BitmapWidget BW = (BitmapWidget) w;
 
-    XtDestroyGC(BW->bitmap.drawing_gc);
-    XtDestroyGC(BW->bitmap.highlighting_gc);
-    XtDestroyGC(BW->bitmap.frame_gc);
-    XtDestroyGC(BW->bitmap.axes_gc);
+    XFreeGC(XtDisplay(w), BW->bitmap.drawing_gc);
+    XFreeGC(XtDisplay(w), BW->bitmap.highlighting_gc);
+    XFreeGC(XtDisplay(w), BW->bitmap.frame_gc);
+    XFreeGC(XtDisplay(w), BW->bitmap.axes_gc);
     BWRemoveAllRequests(w);
 
     XtFree(BW->bitmap.filename);
