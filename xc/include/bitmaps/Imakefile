@@ -2,6 +2,19 @@ INSTALLFLAGS = $(INSTINCFLAGS)
 HEADERS = \
 	1x1 \
 	2x2 \
+	Dashes \
+	Down \
+	Excl \
+	FlipHoriz \
+	FlipVert \
+	Fold \
+	Left \
+	Right \
+	RotateLeft \
+	RotateRight \
+	Stipple \
+	Term \
+	Up \
 	black \
 	boxes \
 	calculator \
