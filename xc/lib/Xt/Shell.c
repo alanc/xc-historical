@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.133 93/05/24 20:01:06 kaleb Exp $ */
+/* $XConsortium: Shell.c,v 1.134 93/05/25 10:38:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1689,8 +1689,9 @@ static _wait_for_response(w, event, request_num)
 		    continue;	/* flush old events */
 	    }
 
-	    if (_XtwaitForSomething(TRUE, TRUE, FALSE, TRUE, &timeout, app)
-		!= -1) continue;
+	    if (_XtWaitForSomething (app, 
+				     FALSE, TRUE, TRUE, TRUE, 
+				     TRUE, &timeout) != -1) continue;
 	    if (timeout == 0)
 		return FALSE;
 	}
