@@ -125,7 +125,7 @@ scrolled to the left.  This resources specifies the number of pixels
 it will jump.  Smooth scrolling is achieved by setting this resource
 to 1. 
 .IP mappedWhenManaged 1.5i
-If this resource is \fBtrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP \fBminScale\fP 1.5i
 The minium scale for the graph.  The number of divisions on the graph
@@ -135,7 +135,7 @@ The screen that this widget is displayed on.  This is not a settable resource.
 .IP sensitive 1.5i
 Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBfalse\fP.
+\fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
 The translations associated with this widget.
 .IP \fBupdate\fP

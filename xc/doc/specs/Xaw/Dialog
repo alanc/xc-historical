@@ -128,7 +128,7 @@ Dialog widget's label.
 .IP \fBlabel\fP 1.5i
 A single line Latin1 string to be displayed at the top of the Dialog widget.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBtrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP numChildren 1.5i
 The number of children in this composite widget.
@@ -137,7 +137,7 @@ The screen that this widget is displayed on.  This is not a settable resource.
 .IP sensitive 1.5i
 Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBfalse\fP.
+\fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
 The translations associated with this widget.
 .IP \fBvalue\fP 1.5i

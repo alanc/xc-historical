@@ -239,9 +239,9 @@ constant and the corresponding single character is inserted instead.
 This action allows the cursor to be turned on and off.
 The \fIstate\fP argument specifies the desired state of the cursor.
 This value may be any of the string
-values accepted for Boolean resources (e.g. \fBon\fP, \fBtrue\fP,
-\fBoff\fP, \fBfalse\fP, etc.).  If no arguments are specified, the
-default value is \fBtrue\fP. 
+values accepted for Boolean resources (e.g. \fBon\fP, \fBTrue\fP,
+\fBoff\fP, \fBFalse\fP, etc.).  If no arguments are specified, the
+default value is \fBTrue\fP. 
 The \fIwhen\fP argument specifies, for \fBEnterNotify\fP or \fBLeaveNotify\fP
 events whether or not the focus field in the event is to be examined.
 If the second argument is not specified, or specified as something other

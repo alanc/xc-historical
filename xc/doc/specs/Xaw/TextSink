@@ -59,8 +59,8 @@ Text widget for completeness.
 .IP destroyCallback 1.5i
 All callback functions on this list are called when this object is destroyed.
 .IP \fBdisplayNonprinting\fP 1.5i
-If \fBtrue\fP all non-printable characters will be displayed as the
-string \fI^@\fP.  If \fBfalse\fP blank space will be left where a non
+If \fBTrue\fP all non-printable characters will be displayed as the
+string \fI^@\fP.  If \fBFalse\fP blank space will be left where a non
 printable character exists in the text buffer.
 .IP \fBecho\fP 1.5i
 Whether or not to echo characters to the screen.  You can still edit
@@ -210,7 +210,7 @@ to be printed.
 Specifies the location within the text source of the last character
 to be printed.
 .IP \fIhighlight\fP 1i
-If this is \fBtrue\fP then paint then paint this text region highlighted.
+If this is \fBTrue\fP then paint then paint this text region highlighted.
 .LP
 The text widget will only pass one line at a time to the text sink so this
 function does not need to know how to line feed the text.  It is
@@ -315,12 +315,12 @@ Specifies the distance, in pixels, from the reference position to the
 desired character position.
 .IP \fIstopAtWordBreak\fP 1.25i
 If the position that we have specified is not on a word break and 
-this value is \fBtrue\fP then return the word break closest to the new
+this value is \fBTrue\fP then return the word break closest to the new
 character position, but between this position and the reference position.
 .IP \fIresPos\fP 1.25i
 \fI*resPos\fP will contain the character position that corresponds to the
 location that we have specified, or the closest white space if
-\fIstopAtWordBread\fP is \fBtrue\fP.
+\fIstopAtWordBread\fP is \fBTrue\fP.
 .IP \fIresWidth\fP 1.25i
 \fI*resWidth\fP will contain the actual distance between \fIfromPos\fP
 and \fI*resPos\fI.
@@ -361,7 +361,7 @@ desired character position.
 .IP \fIresPos\fP 1i
 \fI*resPos\fP will contain the character position that corresponds to the
 location that we have specified, or the closest white space if
-\fIstopAtWordBread\fP is \fBtrue\fP.
+\fIstopAtWordBread\fP is \fBTrue\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The text
 widget will only call it one line at a time.  This is a more convient

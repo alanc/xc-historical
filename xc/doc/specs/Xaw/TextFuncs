@@ -352,7 +352,7 @@ Specifies the widget ID of the Text widget.
 .IP \fIvisible\fP 1i
 Specifies whether or not the caret should be displayed.
 .LP
-If \fIvisible\fP is \fBfalse\fP the cursor will be disabled.
-The marker is re-enabled either by setting \fIvisible\fP to \fBtrue\fP, by
+If \fIvisible\fP is \fBFalse\fP the cursor will be disabled.
+The marker is re-enabled either by setting \fIvisible\fP to \fBTrue\fP, by
 calling \fBXtSetValues\fP, or by executing the \fIdisplay-caret\fP
 action routine.

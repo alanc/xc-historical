@@ -38,7 +38,7 @@ allocated buffer in the \fBlength\fP resource.
 .LP
 If the application chooses to allow the AsciiSource to manage the
 string internally (the default - \fBuseStringInPlace\fP is
-\fBfalse\fP) then it need not worry about running out of buffer space
+\fBFalse\fP) then it need not worry about running out of buffer space
 (subject to the total memory avaliable to the application, of course).
 The performance
 does not decay linearly as the buffer grows large, as is ncessarily the
@@ -93,8 +93,8 @@ Acceptable values are \fBXawtextRead\fP, \fBXawtextEdit\fP, and
 the strings \fBread\fP, \fBedit\fP, and \fBappend\fP to the proper
 \fBXawEditType\fP. 
 .IP \fBlength\fP 1.5i
-If the \fBuseStringInPlace\fP resource is \fBfalse\fP this attribute has no
-effect.  If that resource is \fBtrue\fP, however, then the \fBlength\fP
+If the \fBuseStringInPlace\fP resource is \fBFalse\fP this attribute has no
+effect.  If that resource is \fBTrue\fP, however, then the \fBlength\fP
 resource specifies the length of the buffer passed to the text widget
 in the \fBstring\fP resource.
 .IP \fBpieceSize\fP 1.5i
@@ -104,7 +104,7 @@ your memory will be, but the slower your editing will be.  The text
 widgets will always allocate a chunk of memory this size to stuff the
 \fBstring\fP into, so when using small strings, having this buffer
 large can waste memory.  This resource has no effect if
-\fBuseStringInPlace\fP is \fBtrue\fP. 
+\fBuseStringInPlace\fP is \fBTrue\fP. 
 .IP \fBstring\fP 1.5i
 If the AsciiText widget is of type \fBXawAsciiString\fP then this string
 contains the buffer to be displayed in the AsciiText widget. 
@@ -123,7 +123,7 @@ this resource and accepts the values \fBstring\fP and \fBfile\fP.
 While having the AsciiText widget perform dynamic memory management
 makes the programers job much easier, and is very helpful for most
 tasks there are times when it just gets in the way.
-In these cases by setting this resource to \fBtrue\fP the AsciiText
+In these cases by setting this resource to \fBTrue\fP the AsciiText
 widget will use the \fBstring\fP in place.  Be
 sure to set the \fBtype\fP resource to size of the buffer allocated
 by the application.  If the \fBstring\fP is used in place then it must
@@ -167,7 +167,7 @@ Widget \fIw\fP;
 .IP \fIw\fP 1i
 Specifies the widget ID of the AsciiSource object.
 .LP
-\fBXawAsciiSave\fP returns \fBtrue\fP if the save was successful.
+\fBXawAsciiSave\fP returns \fBTrue\fP if the save was successful.
 It will update the file named in the \fBstring\fP resource.
 If the buffer has not been changed, no action will be taken.  This function
 only works on an AsciiSource of type \fBXawAsciiFile\fP.
@@ -187,7 +187,7 @@ Specifies the widget ID of the AsciiSource object.
 .IP \fIname\fP 1i
 The name of the file to save the current buffer into.
 .LP
-This function returns \fBtrue\fP if the save was successful.
+This function returns \fBTrue\fP if the save was successful.
 \fBXawAsciiSaveAsFile\fP will work with a buffer of either type
 \fBXawAsciiString\fP or type \fBXawAsciiFile\fP. If the buffer has not been
 changed, no action will be taken. 
@@ -204,7 +204,7 @@ Widget \fIw\fP;
 .IP \fIw\fP 1i
 Specifies the widget ID of the AsciiSource object.
 .LP
-This function will return \fBtrue\fP if the source has changed since
+This function will return \fBTrue\fP if the source has changed since
 the last time it was saved or queried.  The internal change flag is
 reset whenever the string is queried via \fBXtGetValues\fP or the
 buffer is saved with one of the convience functions described above.
@@ -501,7 +501,7 @@ The size of each element is determined by \fIformat\fP.
 A pointer into which the size in bits of the data elements of the
 selection value is to be stored.
 .LP
-If this function returns \fBtrue\fP then the Text widget will assume
+If this function returns \fBTrue\fP then the Text widget will assume
 that the source has taken care of converting the selection, Otherwise the
 text widget will attempt to convert the selection itself.
 .LP

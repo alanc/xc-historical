@@ -118,7 +118,7 @@ pointer is in this widget.
 .IP \fBdefaultColumns\fP 1.5i
 The default number of columns.  This value is used when neither the
 width nor the height of the List widget is specified or when
-\fBforceColumns\fP is \fBtrue\fP.
+\fBforceColumns\fP is \fBTrue\fP.
 .IP depth 1.5i
 The depth of this widget's window.
 .IP destroyCallback 1.5i
@@ -153,7 +153,7 @@ is changed with \fBXtSetValues\fP or \fBXawListChange\fP.
 Specifes the width, in pixels, of the longest string in the current list.
 The List widget will compute this value if a 0 (the default) is specified.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBtrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP \fBnumberStrings\fP 1.5i
 The number of strings in the current list.  If a value of 0 (the
@@ -161,19 +161,19 @@ default) is specified, the List widget will compute one.  When computing
 the number of strings the List widget assumes that \fBlist\fP is NULL
 terminated. 
 .IP \fBpasteBuffer\fP 1.5i
-If this resource is set to \fBtrue\fP then the name of the currently
+If this resource is set to \fBTrue\fP then the name of the currently
 selected list element will be put into X cut buffer 0.
 .IP screen 1.5i
 The screen that this widget is displayed on.  This is not a settable resource.
 .IP sensitive 1.5i
 Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBfalse\fP.  When the List widget is insensitive
+\fBsensitive\fP is \fBFalse\fP.  When the List widget is insensitive
 all its elements will be drawn through a gray stipple.
 .IP translations 1.5i
 The translations associated with this widget.
 .IP \fBverticalList\fP 1.5i
-If this resource is \fBtrue\fP then the list will be displayed vertically (
+If this resource is \fBTrue\fP then the list will be displayed vertically (
 element 2 under element 1).  Otherwise the list will be displayed
 horizontally (element 2 to the right of element 1).
 .IP x 1.5i
@@ -260,7 +260,7 @@ Specifies the length of the longest item in the list in pixels.
 If a value less than 1 is specified,
 the List widget calculates the value.
 .IP \fIresize\fP 1i
-Specifies a Boolean value that if \fBtrue\fP indicates whether the
+Specifies a Boolean value that if \fBTrue\fP indicates whether the
 List widget should try to resize itself after making the change.
 Remember that the constraints of the parent of the List widget are
 always enforced, regardless of the value specified here.

@@ -130,7 +130,7 @@ The height and width of this widget in pixels.
 .IP insertPosition 1.5i
 [||| What is this resource anyway??? ]
 .IP mappedWhenManaged 1.5i
-If this resource is \fBtrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP numChildren 1.5i
 The number of children in this composite widget.  This list contains
@@ -140,7 +140,7 @@ The screen that this widget is displayed on.  This is not a settable resource.
 .IP sensitive 1.5i
 Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBfalse\fP.
+\fBsensitive\fP is \fBFalse\fP.
 .IP translations 1.5i
 The translations associated with this widget.
 .IP \fBuseBottom\fP 1.5i

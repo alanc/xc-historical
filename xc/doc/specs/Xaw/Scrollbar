@@ -158,7 +158,7 @@ The height of a vertical scrollbar or the width of a horizontal scrollbar.
 .IP \fBminiumThumb\fP 1.5i
 The smallest size, in pixels, to which thumb can shrink.
 .IP mappedWhenManaged 1.5i
-If this resource is \fBtrue\fP then the widget will automatically be
+If this resource is \fBTrue\fP then the widget will automatically be
 mapped by the Toolkit when it is realized and managed.
 .IP \fBorientation\fP 1.5i
 The orientation is the direction that the thumb will be allowed to move.
@@ -188,7 +188,7 @@ The screen that this widget is displayed on.  This is not a settable resource.
 .IP sensitive 1.5i
 Whether or not the toolkit will pass events to this widget.  The
 widget will not get events if either \fBancestorSensitive\fP or 
-\fBsensitive\fP is \fBfalse\fP.
+\fBsensitive\fP is \fBFalse\fP.
 .IP \fBshown\fP 1.5i
 This is the size of the thumb, expressed as a percentage (0.0 - 1.0)
 of the length of the scrollbar. 
