@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.2 87/09/11 21:18:29 swick Locked $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.5 87/09/18 21:32:46 newman Exp $";
 #endif lint
 
 /*
@@ -43,7 +43,6 @@ typedef struct _AsciiSinkData {
     XFontStruct *font;
     int tabwidth;
     Pixmap insertCursorOn;
-    Pixmap insertCursorOff;
     InsertState laststate;
 } AsciiSinkData, *AsciiSinkPtr;
 
@@ -151,45 +150,15 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 }
 
 
-static Pixmap CreateInsertCursor(dpy, gc, state)
-Display *dpy;
-GC gc;
-InsertState state;
+static Pixmap CreateInsertCursor(s)
+Screen *s;
 {
-    XImage image;
-    Pixmap insertCursor;
-
-    /* stuff for the text insertion cursor */
-
 #   define insertCursor_width 6
 #   define insertCursor_height 3
+    static char insertCursor_bits[] = {0x0c, 0x1e, 0x33};
 
-    static short insertCursor_bits[] = {0x000c, 0x001e, 0x0033};
-/*    static short insertCursor_bits[] = {0xfff3, 0xffe1, 0xffcc}; */
-    static short blank_bits[] = {0x0000, 0x0000, 0x0000};
-
-    image.height = insertCursor_height;
-    image.width = insertCursor_width;
-    image.xoffset = 0;
-    image.format = XYBitmap;
-    image.data = (char *) ((state == XtisOn) ? insertCursor_bits : blank_bits);
-/*    image.data = (char *) insertCursor_bits;*/
-    image.byte_order = LSBFirst;
-    image.bitmap_unit = 16;
-    image.bitmap_bit_order = LSBFirst;
-    image.bitmap_pad = 16;
-    image.depth = 1;
-    image.bytes_per_line = ((insertCursor_width+15) / 16) * 2;
-    image.bits_per_pixel = 1;
-    image.obdata = NULL;
-    insertCursor = XCreatePixmap(dpy, DefaultRootWindow(dpy), (Dimension) image.width,
-				 (Dimension) image.height,
-				 DefaultDepth(dpy, 0));
-    /* !!! BOGUS -- should otherwise figure out the depth; this code may not
-       work on multiple screen displays. ||| */
-    XPutImage(dpy, insertCursor, gc, &image, 0, 0, 0, 0,
-	      (Dimension)image.width, (Dimension)image.height);
-    return insertCursor;
+    return (XCreateBitmapFromData (DisplayOfScreen(s), RootWindowOfScreen(s),
+        insertCursor_bits, insertCursor_width, insertCursor_height));
 }
 
 /*
@@ -211,10 +180,10 @@ static AsciiInsertCursor (w, x, y, state)
 	      x - (insertCursor_width >> 1), y - (insertCursor_height));
 */
     if (state != data->laststate)
-	XCopyArea(XtDisplay(w),
+	XCopyPlane(XtDisplay(w),
 		  data->insertCursorOn, XtWindow(w),
 		  data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
-		  x - (insertCursor_width >> 1), y - (insertCursor_height));
+		  x - (insertCursor_width >> 1), y - (insertCursor_height), 1);
     data->laststate = state;
 }
 
@@ -453,12 +422,7 @@ caddr_t XtAsciiSinkCreate (w, args, argCount)
     if (wid <= 0) wid = 1;
     data->tabwidth = 8 * wid;
     data->font = font;
-/*    data->insertCursorOn = CreateInsertCursor(XtDisplay(w),
-	data->normgc, XtisOn);*/
-/*    data->insertCursorOff = CreateInsertCursor(XtDisplay(w),
-	data->normgc, XtisOff);*/
-    data->insertCursorOn = CreateInsertCursor(XtDisplay(w),
-        data->xorgc, XtisOn);
+    data->insertCursorOn = CreateInsertCursor(XtScreen(w));
     data->laststate = XtisOff;
     return(caddr_t) sink;
 }
