@@ -1,5 +1,6 @@
-/* $XHeader: Xos.h,v 1.4 88/07/19 18:53:19 jim Exp $ */
-/* 
+/*
+ * $XConsortium$
+ * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
