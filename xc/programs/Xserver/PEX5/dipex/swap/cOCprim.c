@@ -1,4 +1,4 @@
-/* $XConsortium: cOCprim.c,v 5.2 91/03/15 18:46:05 hersh Exp $ */
+/* $XConsortium: cOCprim.c,v 5.3 91/05/04 23:17:13 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -495,7 +495,7 @@ pexSOFAS	*strmPtr;
 {
     CARD16 i, j, k;
     unsigned char *ptr = (unsigned char *)(strmPtr+1);
-    CARD16 numList, numSubList;
+    CARD16 numListsofLists, numLists, numitems;
 
     SWAP_CARD16 (strmPtr->shape);
     SWAP_COLOUR_TYPE (strmPtr->colourType);
@@ -517,17 +517,19 @@ pexSOFAS	*strmPtr;
 
     ptr += ((int)(((strmPtr->numEdges * strmPtr->edgeAttributes) + 3) / 4)) * 4;
 
-    for (i=0; i < strmPtr->numFAS; i++){
-	SWAP_CARD16((*ptr));
-	numList = *((CARD16 *)ptr);
-	ptr += sizeof (CARD16);
-	for (j=0; j < numList; j++) {
-	    SWAP_CARD16((*ptr));
-	    numSubList = *((CARD16 *)ptr);
-	    ptr += sizeof (CARD16);
-	    for (k=0; k < numSubList; k++) {
-		SWAP_CARD16((*ptr));
-		ptr += sizeof (CARD16);
+
+    numListsofLists = strmPtr->numFAS;
+    for (i=0; i < numListsofLists; i++){
+	SWAP_CARD16 ((*((CARD16 *)ptr)));
+	numLists = *(CARD16 *)ptr;
+	ptr += sizeof(CARD16);
+	for (j=0; j < numLists; j++) {
+	    SWAP_CARD16 ((*((CARD16 *)ptr)));
+	    numitems = *(CARD16 *)ptr;
+	    ptr += sizeof(CARD16);
+	    for (k=0; k < numitems; k++) {
+		SWAP_CARD16 ((*((CARD16 *)ptr)));
+		ptr += sizeof(CARD16);
 	    }
 	}
     }
