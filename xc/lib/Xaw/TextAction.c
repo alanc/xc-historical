@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.12 89/09/01 14:29:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.13 89/09/06 17:30:12 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -25,6 +25,18 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+
+/*
+ * NOTE:  There are some ASCII Dependancies on '\n' and '\0' that I
+ *        am not too thrilled with.  There is also the implicit assumption
+ *        that the individual characters will fit inside a "char".
+ *        It would be nice if we could generalize this a but more.  If
+ *        anyone out there comes up with an implementation of this stuff
+ *        that has no dependency on ASCII, please send the code back to us.
+ *
+ *						Chris D. Peterson     
+ *						MIT X Consortium 
+ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -925,33 +937,12 @@ TextWidget ctx;
   if ( ret_pos >= ctx->text.insertPos )
     return;
   
-  /*
-   * Do not make any changes if we could not find a word break.
-   */
-  
-  XawTextSourceRead(ctx->text.source, ret_pos - 1, &text, 1);
-  if ( (text.length != 1) || !isspace(text.ptr[0]) )
-    return;
-  
   text.ptr = "\n";
   text.length = 1;
   text.firstPos = 0;
   text.format = FMT8BIT;
-  
+
   _XawTextReplace(ctx, ret_pos - 1, ret_pos, &text);
-  
-  ctx->text.lt.info[line_num].textWidth = width;
-  ctx->text.lt.info[line_num + 1].position = ret_pos;
-  
-  XawTextSinkFindPosition( ctx->text.sink,
-			  ctx->text.lt.info[line_num + 1].position + 1, x,
-			  (int) (ctx->core.width - x), FALSE, 
-			  &ret_pos, &width, &height);
-  
-  ctx->text.lt.info[line_num + 1].textWidth = width;
-  
-  if (ret_pos != ctx->text.lt.info[line_num + 2].position)
-    _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
 }
 
 static void
