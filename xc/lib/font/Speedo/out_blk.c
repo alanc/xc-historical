@@ -13,9 +13,12 @@
 *****************************************************************************/
 /********************* Revision Control Information **********************************
 *                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/out_blk.c,v 22.1 91/01/23 17:19:04 leeann Release $                                                                       *
+*     $Header: out_blk.c,v 1.1 91/05/10 16:29:42 keith Exp $                                                                       *
 *                                                                                    *
 *     $Log:	out_blk.c,v $
+ * Revision 1.1  91/05/10  16:29:42  keith
+ * Initial revision
+ * 
 *       Revision 22.1  91/01/23  17:19:04  leeann
 *       Release
 *       
@@ -178,7 +181,7 @@
 *************************************************************************************/
 
 #ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_blk.c,v 22.1 91/01/23 17:19:04 leeann Release $";
+static char rcsid[] = "$Header: out_blk.c,v 1.1 91/05/10 16:29:42 keith Exp $";
 #endif
 
 
@@ -248,7 +251,7 @@ return (TRUE);
 #endif
 
 
-#if INCL_BLACK
+#if INCL_BLACK
 FUNCTION boolean begin_char_black(Psw, Pmin, Pmax)
 GDECL
 point_t Psw;                   
@@ -441,7 +444,7 @@ if (how_many_y < 0)
     }
 }
 #endif
-#if INCL_BLACK
+#if INCL_BLACK
 FUNCTION boolean end_char_black()
 GDECL
 /* Called when all character data has been output
