@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.18 87/09/13 22:45:21 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.19 87/12/01 16:28:07 swick Locked $";
 #endif lint
 
 /*
@@ -196,9 +196,12 @@ static void Realize (gw, valueMask, attrs)
      XtValueMask *valueMask;
      XSetWindowAttributes *attrs;
 {
+#ifdef notdef
+     *valueMask |= CWBitGravity;
      attrs->bit_gravity = ForgetGravity;
+#endif
      XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
-		     (*valueMask | CWBitGravity), attrs);
+		     *valueMask, attrs);
      Resize(gw);
 }
 
