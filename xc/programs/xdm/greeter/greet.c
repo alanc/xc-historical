@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.33 93/09/18 20:27:33 rws Exp $
+ * $XConsortium: greet.c,v 1.34 94/02/02 08:42:25 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -127,7 +127,7 @@ InitGreet (d)
     SecureDisplay (d, dpy);
 
     i = 0;
-    scrn = DefaultScreenOfDisplay(dpy);
+    scrn = XDefaultScreenOfDisplay(dpy);
     XtSetArg(arglist[i], XtNscreen, scrn);	i++;
     XtSetArg(arglist[i], XtNargc, argc);	i++;
     XtSetArg(arglist[i], XtNargv, argv);	i++;
@@ -145,10 +145,10 @@ InitGreet (d)
 				    arglist, i);
     XtRealizeWidget (toplevel);
 
-    XWarpPointer(dpy, None, RootWindowOfScreen (scrn),
+    XWarpPointer(dpy, None, XRootWindowOfScreen (scrn),
 		    0, 0, 0, 0,
-		    WidthOfScreen(scrn) / 2,
-		    HeightOfScreen(scrn) / 2);
+		    XWidthOfScreen(scrn) / 2,
+		    XHeightOfScreen(scrn) / 2);
 
     if (d->pingInterval)
     {
@@ -179,7 +179,7 @@ CloseGreet (d)
 	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
     }
     XtDestroyWidget (toplevel);
-    ClearCloseOnFork (ConnectionNumber (XtDisplay (toplevel)));
+    ClearCloseOnFork (XConnectionNumber (XtDisplay (toplevel)));
     XCloseDisplay (XtDisplay (toplevel));
     Debug ("Greet connection closed\n");
 }
