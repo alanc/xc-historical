@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.60 91/07/06 15:54:31 converse Exp $
+ * $XConsortium: init.c,v 2.61 91/07/10 19:38:26 converse Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -109,9 +109,13 @@ static XtResource resources[] = {
 	 Offset(mail_path), XtRString, NULL},
     {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
 	 Offset(mail_waiting_flag), XtRImmediate, (XtPointer)False},
-    {"flagUp", "FlagUp", XtRBitmap, sizeof(Pixmap),
+    {"newMailIconBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
+	 Offset(new_mail_icon), XtRImmediate, (XtPointer)None},
+    {"noMailIconBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
+	 Offset(no_mail_icon), XtRImmediate, (XtPointer)None},
+    {"newMailBitmap", "NewMailBitmap", XtRBitmap, sizeof(Pixmap),
 	 Offset(flag_up), XtRImmediate, (XtPointer)None},
-    {"flagDown", "FlagDown", XtRBitmap, sizeof(Pixmap),
+    {"noMailBitmap", "NoMailBitmap", XtRBitmap, sizeof(Pixmap),
 	 Offset(flag_down), XtRImmediate, (XtPointer)None},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 Offset(cursor), XtRString, "left_ptr"},
@@ -416,7 +420,6 @@ char **argv;
 
     TocInit();
     InitPick();
-    IconInit();
     BBoxInit();
     PopupInit(app);
 
