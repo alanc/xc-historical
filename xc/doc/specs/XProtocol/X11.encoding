@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: X11.encoding,v 1.17 94/04/11 17:59:38 rws Exp $
 \&
 .sp 1
 .ps 11
@@ -3786,7 +3786,8 @@ Requests
 .PN NoOperation
 	1	127		opcode
 	1			unused
-	2	1		request length
+	2	1+n		request length
+	4n			unused
 .De
 .ps 11
 .nr PS 11
