@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.7 90/12/26 11:39:08 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.8 91/01/08 09:30:39 rws Exp $
 
 
 /*
@@ -11,6 +11,7 @@ XCOMM platform:  $XConsortium: att.cf,v 1.7 90/12/26 11:39:08 rws Exp $
 #define OSMinorVersion		2
 #define SystemV4		YES
 #define BootstrapCFlags		-Datt
+#define ExtraLibraries		-lnsl
 #define NeedWidePrototypes	NO	/* experimental */
 #define DefaultCCOptions	-Xc
 #define BuildServer		NO
