@@ -96,7 +96,7 @@ extern void cfbPutImage();
 extern void cfbGetImage();
 extern RegionPtr miCopyArea();
 extern RegionPtr miCopyPlane();
-extern void miPolyPoint();
+extern void cfbPolyPoint();
 extern void miPushPixels();
 
 #ifdef	STATIC_COLOR
