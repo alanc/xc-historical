@@ -6,13 +6,13 @@
 
 # set DOITPROG to echo to test this script
 
-doit="${DOITPROG:-}"
+doit="${DOITPROG-}"
 
 
 # put in absolute paths if you don't have them in your path; or use env. vars.
 
-lnprog="${LNPROG:-ln -s}"
-rmprog="${RMPROG:-rm}"
+lnprog="${LNPROG-ln -s}"
+rmprog="${RMPROG-rm}"
 
 instcmd="$lnprog"
 rmcmd="$rmprog -f"
