@@ -17,6 +17,8 @@ SRCS = \
 	Lower.c \
 	RdBitF.c \
 	StrToBS.c \
+	StrToBmap.c \
+	StrToCurs.c \
 	StrToJust.c \
 	StrToOrnt.c
 
@@ -25,6 +27,8 @@ OBJS = \
 	Lower.o \
 	RdBitF.o \
 	StrToBS.o \
+	StrToBmap.c \
+	StrToCurs.c \
 	StrToJust.o \
 	StrToOrnt.o
 
