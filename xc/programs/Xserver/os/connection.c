@@ -635,6 +635,7 @@ EstablishNewConnections(clientUnused, closure)
     while (readyconnections) 
     {
 	XtransConnInfo trans_conn, new_trans_conn;
+	int status;
 
 	curconn = ffs (readyconnections) - 1;
 	readyconnections &= ~(1 << curconn);
@@ -642,7 +643,7 @@ EstablishNewConnections(clientUnused, closure)
 	if ((trans_conn = lookup_trans_conn (curconn)) == NULL)
 	    continue;
 
-	if ((new_trans_conn = _XSERVTransAccept (trans_conn)) == NULL)
+	if ((new_trans_conn = _XSERVTransAccept (trans_conn, &status)) == NULL)
 	    continue;
 
 	newconn = _XSERVTransGetConnectionNumber (new_trans_conn);
