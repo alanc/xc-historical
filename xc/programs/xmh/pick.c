@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.37 89/12/10 17:39:05 converse Exp $
+ * $XConsortium: pick.c,v 2.38 89/12/10 20:19:38 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -710,8 +710,8 @@ Pick pick;
 	{XtNallowHoriz, (XtArgVal)TRUE},
 	{XtNallowVert, (XtArgVal)TRUE},
 /* %%%	{XtNallowResize, (XtArgVal)TRUE}, */
-	{XtNmin, 50},
-	{XtNmax, 1500}
+	{XtNmin, (XtArgVal)50},
+	{XtNmax, (XtArgVal)1500}
     };
     static Arg arglist2[] = {
 	{XtNborderWidth, (XtArgVal) 0}
