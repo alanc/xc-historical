@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.45 92/05/15 15:27:51 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.42 92/05/28 09:05:28 rws Exp $ */
 /* Author: Keith Packard and Bob Scheifler */
 /* Warning: this code is toxic, do not dally very long here. */
 
@@ -860,7 +860,8 @@ miComputeWideEllipse(lw, parc, mustFree)
     lruent->lw = lw;
     lruent->width = parc->width;
     lruent->height = parc->height;
-    lastCacheHit = lruent;
+    if (lruent != &fakeent)
+	lastCacheHit = lruent;
     if (parc->width == parc->height)
 	miComputeCircleSpans(lw, parc, spdata);
     else
