@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.12 92/08/15 18:47:36 rws Exp $
+$XConsortium: a2x.doc,v 1.13 92/08/15 18:55:11 rws Exp $
 
 				Using a2x
 
@@ -575,7 +575,7 @@ clobbers the real WM_CLASS on shell windows.)
 For example:
 
 	add-word /t "[start jump]" "{c-t}{c-j}ZcP" left right
-	add-word /t "[start skip]" "{c-t}{c-j}ZCN" left right
+	add-word /t "[start skip]" "{c-t}{c-j}ZCp" left right
 	add-word /t "[go there]" "{c-t}" invisible
 
 With these macros, you can say sequences like "[start skip]", "emacs", "[go

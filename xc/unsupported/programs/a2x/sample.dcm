@@ -116,7 +116,7 @@ add-word /t "[skip up]" "{c-t}{c-j}U{c-t}" invisible
 add-word /t "[slow down]" "{c-t}{c-a}2 1 0{c-t}" invisible
 add-word /t "[start display]" "{c-t}{c-r}D" left right
 add-word /t "[start jump]" "{c-t}{c-j}ZcP" left right
-add-word /t "[start skip]" "{c-t}{c-j}ZCN" left right
+add-word /t "[start skip]" "{c-t}{c-j}ZCp" left right
 add-word /t "[stop moving]" "{c-t}{c-q}" invisible
 add-word /t "[system menu]" "{c-t}{c-m}{c-t}{c-c}{c-t}{c-s}{c-t}{c-b}1{c-t}" invisible
 add-word /t "[way down]" "{c-t}{c-j}DO{c-t}" invisible
