@@ -1,4 +1,4 @@
-/* $XConsortium: init_bench.c,v 5.3 91/04/04 13:33:00 gildea Exp $ */
+/* $XConsortium: init_bench.c,v 5.4 91/05/07 12:02:43 rws Exp $ */
 /***********************************************************
 Copyright(c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium at M.I.T.
 
@@ -350,7 +350,7 @@ Wk_info *wkinfo;
 
 	/* First check if the user wants a different buffer mode */
 	(void *)strcpy(tmpln, Prog_name);
-	(void *)strcat(tmpln, ".bufferMode");
+	(void *)strcat(tmpln, ".bufMode");
 	if (XrmGetResource(dis_db, tmpln, (char *)NULL, &str_type, &val)) {
 	    upcase(val.addr,tmpln);
 	    if (!strcmp(tmpln,"SINGLE")) {
@@ -363,18 +363,18 @@ Wk_info *wkinfo;
 		    PLB_EXCEPTION(BIF_EX_BUFFMODE);
 		wkinfo->buffer_mode = DOUBLE_BUFFER;
 	    }
-	}
 
-	switch(wkinfo->buffer_mode)
-	{
-	  case DOUBLE_BUFFER:
-	    gpc_ws = phigs_ws_type_create(gpc_ws, (char *)PHIGS_X_BUF_MODE,
+	  switch(wkinfo->buffer_mode)
+	  {
+	    case DOUBLE_BUFFER:
+	      gpc_ws = phigs_ws_type_create(gpc_ws, (char *)PHIGS_X_BUF_MODE,
 					  (char *)PHIGS_BUF_DOUBLE, (char *)0);
-	    break;
-	  case SINGLE_BUFFER:
-	    gpc_ws = phigs_ws_type_create(gpc_ws, (char *)PHIGS_X_BUF_MODE, 
+	      break;
+	    case SINGLE_BUFFER:
+	      gpc_ws = phigs_ws_type_create(gpc_ws, (char *)PHIGS_X_BUF_MODE, 
 					  (char *)PHIGS_BUF_SINGLE, (char *)0);
-	    break;
+	      break;
+	  }
 	}
 
 	popen_ws((Pint)benchsetup->workid,(Pconnid)&conn,gpc_ws);
