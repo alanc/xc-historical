@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.53 87/08/06 16:57:22 jg Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.54 87/08/11 15:24:30 jg Exp $";
 #endif
 
 /*
@@ -359,14 +359,14 @@ static _EatData (dpy, n)
 
 /*
  * _XEnq - Place event packets on the display's queue.
+ * note that no squishing of move events in V11, since there
+ * is pointer motion hints....
  */
 _XEnq (dpy, event)
 	register Display *dpy;
 	register xEvent *event;
 {
 	register _XQEvent *qelt;
-
-/* XXX need to squish mouse moved events in here somewhere.... */
 
 /*NOSTRICT*/
 	if (qelt = _qfree) {
