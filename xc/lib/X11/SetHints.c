@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.18 87/08/31 01:51:24 hania Exp $ */
+/* $Header: XSetHints.c,v 11.18 87/09/01 15:05:37 newman Locked $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,6 +30,8 @@ SOFTWARE.
 #include "Xutil.h"
 #include "Xatomtype.h"
 #include "Xatom.h"
+
+#define safestrlen(s) ((s) ? strlen(s) : 0)
 
 XSetSizeHints(dpy, w, hints, property)
 	Display *dpy;
@@ -148,14 +150,18 @@ XSetCommand (dpy, w, argv, argc)
 	register unsigned nbytes;
 	register char *buf, *bp;
 	for (i = 0, nbytes = 0; i < argc; i++) {
-		nbytes += strlen(argv[i]) + 1;
+		nbytes += safestrlen(argv[i]) + 1;
 	}
 	if (nbytes == 0) return;
 	bp = buf = Xmalloc(nbytes);
 	/* copy arguments into single buffer */
 	for (i = 0; i < argc; i++) {
-		(void) strcpy(bp, argv[i]);
-		bp += strlen(argv[i]) + 1;
+		if (argv[i]) { 
+		   (void) strcpy(bp, argv[i]);
+		   bp += strlen(argv[i]) + 1;
+		   }
+		else
+		   *bp++ = '\0';
 	}
 	XChangeProperty (dpy, w, XA_WM_COMMAND, XA_STRING, 8, PropModeReplace,
 		(unsigned char *)buf, nbytes);
@@ -187,7 +193,7 @@ XSetStandardProperties (dpy, w, name, icon_string, icon_pixmap, argv, argc, hint
 
 	if (icon_string != NULL) {
 	    XChangeProperty (dpy, w, XA_WM_ICON_NAME, XA_STRING, 8,
-		PropModeReplace, (unsigned char *)icon_string, strlen(icon_string));
+		PropModeReplace, (unsigned char *)icon_string, safestrlen(icon_string));
 		}
 
 	if (icon_pixmap != None) {
@@ -218,13 +224,22 @@ XSetClassHint(dpy, w, classhint)
 	XClassHint *classhint;
 {
 	char *class_string = NULL;
+	char *s;
 	int len_nm, len_cl;
 
-	len_nm = strlen(classhint->res_name);
-	len_cl = strlen(classhint->res_class);
-	class_string = Xmalloc(len_nm + len_cl + 2);
-	strcpy(class_string, classhint->res_name);
-	strcpy(class_string+strlen(classhint->res_name)+1, classhint->res_class);
+	len_nm = safestrlen(classhint->res_name);
+	len_cl = safestrlen(classhint->res_class);
+	class_string = s = Xmalloc(len_nm + len_cl + 2);
+	if (len_nm) {
+	     strcpy(s, classhint->res_name);
+	     s += len_nm + 1;
+	     }
+	else
+	     *s++ = '\0';
+	if (len_cl)
+             strcpy(s, classhint->res_class);
+	else
+	     *s = '\0';
 	XChangeProperty(dpy, w, XA_WM_CLASS, XA_STRING, 8,
 		PropModeReplace, class_string, len_nm+len_cl+2);
 	Xfree(class_string);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuExt.c,v 11.12 87/05/24 21:38:10 jg Exp $ */
+/* $Header: XQuExt.c,v 11.12 87/09/11 08:05:57 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -18,7 +18,7 @@ Bool XQueryExtension(dpy, name, major_opcode, first_event, first_error)
 
     LockDisplay(dpy);
     GetReq(QueryExtension, req);
-    req->nbytes = strlen(name);
+    req->nbytes = name ? strlen(name) : 0;
     req->length += (req->nbytes+3)>>2;
     _XSend(dpy, name, (long)req->nbytes);
     (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStName.c,v 11.9 87/06/14 23:13:14 hania Exp $ */
+/* $Header: XStName.c,v 11.9 87/09/11 08:07:39 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -12,7 +12,8 @@ XStoreName (dpy, w, name)
     char *name;
 {
     XChangeProperty(dpy, w, XA_WM_NAME, XA_STRING, 
-		8, PropModeReplace, (unsigned char *)name, strlen(name));
+		8, PropModeReplace, (unsigned char *)name,
+                name ? strlen(name) : 0);
 }
 
 XSetIconName (dpy, w, icon_name)
@@ -21,5 +22,6 @@ XSetIconName (dpy, w, icon_name)
     char *icon_name;
 {
     XChangeProperty(dpy, w, XA_WM_ICON_NAME, XA_STRING, 
-		8, PropModeReplace, (unsigned char *)icon_name, strlen(icon_name));
+		8, PropModeReplace, (unsigned char *)icon_name,
+		icon_name ? strlen(icon_name) : 0);
 }

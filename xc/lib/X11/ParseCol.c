@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XParseCol.c,v 11.13 87/09/11 08:05:21 newman Locked $ */
+/* $Header: XParseCol.c,v 11.14 87/10/29 17:36:25 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -16,6 +16,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	int r, g, b;
 	char c;
 
+        if (!spec) return(0);
 	n = strlen (spec);
 	if (*spec != '#') {
 	    xLookupColorReply reply;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLoadFont.c,v 11.6 87/05/24 21:36:57 jg Exp $ */
+/* $Header: XLoadFont.c,v 11.6 87/09/11 08:04:52 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -14,7 +14,7 @@ Font XLoadFont (dpy, name)
     register xOpenFontReq *req;
     LockDisplay(dpy);
     GetReq(OpenFont, req);
-    nbytes = req->nbytes = strlen(name);
+    nbytes = req->nbytes = name ? strlen(name) : 0;
     req->fid = fid = XAllocID(dpy);
     req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);

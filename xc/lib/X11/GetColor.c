@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetColor.c,v 11.12 87/06/03 13:19:19 jg Exp $ */
+/* $Header: XGetColor.c,v 11.12 87/09/11 08:03:55 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -22,7 +22,7 @@ XColor *exact_def; /* RETURN */
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = strlen(colorname);
+    nbytes = req->nbytes = colorname ? strlen(colorname) : 0;
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
     _XSend(dpy, colorname, nbytes);

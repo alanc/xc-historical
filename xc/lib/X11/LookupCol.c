@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLookupCol.c,v 11.6 87/06/03 13:19:55 jg Exp $ */
+/* $Header: XLookupCol.c,v 11.6 87/09/11 08:10:04 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #define NEED_REPLIES
@@ -16,7 +16,7 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	xLookupColorReply reply;
 	register xLookupColorReq *req;
 
-	n = strlen (spec);
+	n = spec ? strlen (spec) : 0;
 	LockDisplay(dpy);
 	GetReq (LookupColor, req);
 	req->cmap = cmap;

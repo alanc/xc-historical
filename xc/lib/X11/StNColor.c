@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStNColor.c,v 11.8 87/05/24 21:39:58 jg Exp $ */
+/* $Header: XStNColor.c,v 11.8 87/09/11 08:07:36 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -21,7 +21,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     req->cmap = cmap;
     req->flags = flags;
     req->pixel = pixel;
-    req->nbytes = nbytes = strlen(name);
+    req->nbytes = nbytes = name ? strlen(name) : 0;
     req->length += (nbytes + 3) >> 2; /* round up to multiple of 4 */
     Data(dpy, name, (long)nbytes);
     UnlockDisplay(dpy);

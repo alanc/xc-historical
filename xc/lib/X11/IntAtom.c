@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XIntAtom.c,v 11.9 87/09/08 12:27:47 newman Locked $ */
+/* $Header: XIntAtom.c,v 11.10 87/09/08 14:32:02 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -16,7 +16,7 @@ Atom XInternAtom (dpy, name, onlyIfExists)
     register xInternAtomReq *req;
     LockDisplay(dpy);
     GetReq(InternAtom, req);
-    nbytes = req->nbytes = strlen(name);
+    nbytes = req->nbytes = name ? strlen(name) : 0;
     req->onlyIfExists = onlyIfExists;
     req->length += (nbytes+3)>>2;
     _XSend (dpy, name, nbytes);

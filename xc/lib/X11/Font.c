@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFont.c,v 11.20 87/08/06 17:05:29 jg Exp $ */
+/* $Header: XFont.c,v 11.21 87/08/11 13:12:02 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -18,7 +18,7 @@ XFontStruct *XLoadQueryFont(dpy, name)
 
     LockDisplay(dpy);
     GetReq(OpenFont, req);
-    nbytes = req->nbytes  = strlen(name);
+    nbytes = req->nbytes  = name ? strlen(name) : 0;
     req->fid = fid = XAllocID(dpy);
     req->length += (nbytes+3)>>2;
     Data (dpy, name, nbytes);

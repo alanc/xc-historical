@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFontInfo.c,v 11.8 87/08/24 15:54:33 susan Exp $ */
+/* $Header: XFontInfo.c,v 11.8 87/09/11 08:08:46 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -24,7 +24,7 @@ XFontStruct **info;
     LockDisplay(dpy);
     GetReq(ListFontsWithInfo, req);
     req->maxNames = maxNames;
-    nbytes = req->nbytes = strlen (pattern);;
+    nbytes = req->nbytes = pattern ? strlen (pattern) : 0;
     req->length += (nbytes + 3) >> 2;
     _XSend (dpy, pattern, nbytes);
     /* use _XSend instead of Data, since subsequent _XReply will flush buffer */
