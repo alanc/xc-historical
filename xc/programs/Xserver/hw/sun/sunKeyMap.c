@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.10 93/08/06 14:29:24 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.11 93/08/06 15:09:38 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -739,7 +739,7 @@ static SunModmapRec Canada4modmap[] = {
 #define Canada4KPMap   	NULL
 #define Canada4modmap  	NULL
 
-#endif CANADA4
+#endif /* CANADA4 */
 
 
 #ifdef DENMARK4
@@ -913,7 +913,7 @@ static SunModmapRec Denmark4modmap[] = {
 #define Denmark4KPMap   	NULL
 #define Denmark4modmap  	NULL
 
-#endif DENMARK4
+#endif /* DENMARK4 */
 
 
 #ifdef DENMARK5
@@ -1087,7 +1087,7 @@ static SunModmapRec Denmark5modmap[] = {
 #define Denmark5KPMap   	NULL
 #define Denmark5modmap  	NULL
 
-#endif DENMARK5
+#endif /* DENMARK5 */
 
 
 #ifdef FRANCE5
@@ -1261,7 +1261,7 @@ static SunModmapRec France5modmap[] = {
 #define France5KPMap   	NULL
 #define France5modmap  	NULL
 
-#endif FRANCE5
+#endif /* FRANCE5 */
 
 
 #ifdef FRANCEBELG4
@@ -1435,7 +1435,7 @@ static SunModmapRec FranceBelg4modmap[] = {
 #define FranceBelg4KPMap   	NULL
 #define FranceBelg4modmap  	NULL
 
-#endif FRANCEBELG4
+#endif /* FRANCEBELG4 */
 
 
 #ifdef GERMANY4
@@ -1609,7 +1609,7 @@ static SunModmapRec Germany4modmap[] = {
 #define Germany4KPMap   	NULL
 #define Germany4modmap  	NULL
 
-#endif GERMANY4
+#endif /* GERMANY4 */
 
 
 #ifdef GERMANY5
@@ -1783,7 +1783,7 @@ static SunModmapRec Germany5modmap[] = {
 #define Germany5KPMap   	NULL
 #define Germany5modmap  	NULL
 
-#endif GERMANY5
+#endif /* GERMANY5 */
 
 
 #ifdef ITALY4
@@ -1957,7 +1957,7 @@ static SunModmapRec Italy4modmap[] = {
 #define Italy4KPMap   	NULL
 #define Italy4modmap  	NULL
 
-#endif ITALY4
+#endif /* ITALY4 */
 
 
 #ifdef ITALY5
@@ -2131,7 +2131,7 @@ static SunModmapRec Italy5modmap[] = {
 #define Italy5KPMap   	NULL
 #define Italy5modmap  	NULL
 
-#endif ITALY5
+#endif /* ITALY5 */
 
 
 #ifdef JAPAN4
@@ -2305,7 +2305,7 @@ static SunModmapRec Japan4modmap[] = {
 #define Japan4KPMap   	NULL
 #define Japan4modmap  	NULL
 
-#endif JAPAN4
+#endif /* JAPAN4 */
 
 
 #ifdef JAPAN5
@@ -2479,7 +2479,7 @@ static SunModmapRec Japan5modmap[] = {
 #define Japan5KPMap   	NULL
 #define Japan5modmap  	NULL
 
-#endif JAPAN5
+#endif /* JAPAN5 */
 
 
 #ifdef KOREA4
@@ -2653,7 +2653,7 @@ static SunModmapRec Korea4modmap[] = {
 #define Korea4KPMap   	NULL
 #define Korea4modmap  	NULL
 
-#endif KOREA4
+#endif /* KOREA4 */
 
 
 #ifdef KOREA5
@@ -2827,7 +2827,7 @@ static SunModmapRec Korea5modmap[] = {
 #define Korea5KPMap   	NULL
 #define Korea5modmap  	NULL
 
-#endif KOREA5
+#endif /* KOREA5 */
 
 
 #ifdef NETHERLAND4
@@ -3001,7 +3001,7 @@ static SunModmapRec Netherland4modmap[] = {
 #define Netherland4KPMap   	NULL
 #define Netherland4modmap  	NULL
 
-#endif NETHERLAND4
+#endif /* NETHERLAND4 */
 
 
 #ifdef NETHERLAND5
@@ -3175,7 +3175,7 @@ static SunModmapRec Netherland5modmap[] = {
 #define Netherland5KPMap   	NULL
 #define Netherland5modmap  	NULL
 
-#endif NETHERLAND5
+#endif /* NETHERLAND5 */
 
 
 #ifdef NORWAY4
@@ -3349,7 +3349,7 @@ static SunModmapRec Norway4modmap[] = {
 #define Norway4KPMap   	NULL
 #define Norway4modmap  	NULL
 
-#endif NORWAY4
+#endif /* NORWAY4 */
 
 
 #ifdef NORWAY5
@@ -3523,7 +3523,7 @@ static SunModmapRec Norway5modmap[] = {
 #define Norway5KPMap   	NULL
 #define Norway5modmap  	NULL
 
-#endif NORWAY5
+#endif /* NORWAY5 */
 
 
 #ifdef PORTUGAL4
@@ -3697,7 +3697,7 @@ static SunModmapRec Portugal4modmap[] = {
 #define Portugal4KPMap   	NULL
 #define Portugal4modmap  	NULL
 
-#endif PORTUGAL4
+#endif /* PORTUGAL4 */
 
 
 #ifdef PORTUGAL5
@@ -3871,7 +3871,7 @@ static SunModmapRec Portugal5modmap[] = {
 #define Portugal5KPMap   	NULL
 #define Portugal5modmap  	NULL
 
-#endif PORTUGAL5
+#endif /* PORTUGAL5 */
 
 
 #ifdef SPAIN5
@@ -4045,7 +4045,7 @@ static SunModmapRec Spain5modmap[] = {
 #define Spain5KPMap   	NULL
 #define Spain5modmap  	NULL
 
-#endif SPAIN5
+#endif /* SPAIN5 */
 
 
 #ifdef SPAINLATAM4
@@ -4219,7 +4219,7 @@ static SunModmapRec SpainLatAm4modmap[] = {
 #define SpainLatAm4KPMap   	NULL
 #define SpainLatAm4modmap  	NULL
 
-#endif SPAINLATAM4
+#endif /* SPAINLATAM4 */
 
 
 #ifdef SWEDEN5
@@ -4393,7 +4393,7 @@ static SunModmapRec Sweden5modmap[] = {
 #define Sweden5KPMap   	NULL
 #define Sweden5modmap  	NULL
 
-#endif SWEDEN5
+#endif /* SWEDEN5 */
 
 
 #ifdef SWEDENFIN4
@@ -4567,7 +4567,7 @@ static SunModmapRec SwedenFin4modmap[] = {
 #define SwedenFin4KPMap   	NULL
 #define SwedenFin4modmap  	NULL
 
-#endif SWEDENFIN4
+#endif /* SWEDENFIN4 */
 
 
 #ifdef SWITZER_FR4
@@ -4741,7 +4741,7 @@ static SunModmapRec Switzer_Fr4modmap[] = {
 #define Switzer_Fr4KPMap   	NULL
 #define Switzer_Fr4modmap  	NULL
 
-#endif SWITZER_FR4
+#endif /* SWITZER_FR4 */
 
 
 #ifdef SWITZER_FR5
@@ -4915,7 +4915,7 @@ static SunModmapRec Switzer_Fr5modmap[] = {
 #define Switzer_Fr5KPMap   	NULL
 #define Switzer_Fr5modmap  	NULL
 
-#endif SWITZER_FR5
+#endif /* SWITZER_FR5 */
 
 
 #ifdef SWITZER_GE4
@@ -5089,7 +5089,7 @@ static SunModmapRec Switzer_Ge4modmap[] = {
 #define Switzer_Ge4KPMap   	NULL
 #define Switzer_Ge4modmap  	NULL
 
-#endif SWITZER_GE4
+#endif /* SWITZER_GE4 */
 
 
 #ifdef SWITZER_GE5
@@ -5263,7 +5263,7 @@ static SunModmapRec Switzer_Ge5modmap[] = {
 #define Switzer_Ge5KPMap   	NULL
 #define Switzer_Ge5modmap  	NULL
 
-#endif SWITZER_GE5
+#endif /* SWITZER_GE5 */
 
 
 #ifdef TAIWAN4
@@ -5437,7 +5437,7 @@ static SunModmapRec Taiwan4modmap[] = {
 #define Taiwan4KPMap   	NULL
 #define Taiwan4modmap  	NULL
 
-#endif TAIWAN4
+#endif /* TAIWAN4 */
 
 
 #ifdef TAIWAN5
@@ -5611,7 +5611,7 @@ static SunModmapRec Taiwan5modmap[] = {
 #define Taiwan5KPMap   	NULL
 #define Taiwan5modmap  	NULL
 
-#endif TAIWAN5
+#endif /* TAIWAN5 */
 
 
 #ifdef UK4
@@ -5785,7 +5785,7 @@ static SunModmapRec UK4modmap[] = {
 #define UK4KPMap   	NULL
 #define UK4modmap  	NULL
 
-#endif UK4
+#endif /* UK4 */
 
 
 #ifdef UK5
@@ -5959,7 +5959,7 @@ static SunModmapRec UK5modmap[] = {
 #define UK5KPMap   	NULL
 #define UK5modmap  	NULL
 
-#endif UK5
+#endif /* UK5 */
 
 
 #ifdef US101A_SUN
@@ -6131,7 +6131,7 @@ static SunModmapRec US101A_Sunmodmap[] = {
 #define US101A_SunKPMap   	NULL
 #define US101A_Sunmodmap  	NULL
 
-#endif US101A_SUN
+#endif /* US101A_SUN */
 
 
 #ifdef US4
@@ -6305,7 +6305,7 @@ static SunModmapRec US4modmap[] = {
 #define US4KPMap   	NULL
 #define US4modmap  	NULL
 
-#endif US4
+#endif /* US4 */
 
 
 #ifdef US5
@@ -6479,7 +6479,7 @@ static SunModmapRec US5modmap[] = {
 #define US5KPMap   	NULL
 #define US5modmap  	NULL
 
-#endif US5
+#endif /* US5 */
 
 
 #ifdef US_UNIX5
@@ -6653,7 +6653,7 @@ static SunModmapRec US_UNIX5modmap[] = {
 #define US_UNIX5KPMap   	NULL
 #define US_UNIX5modmap  	NULL
 
-#endif US_UNIX5
+#endif /* US_UNIX5 */
 
 KeySym *sunType4Maps[] = {
 	US4Map,    		/* 0x00 */
