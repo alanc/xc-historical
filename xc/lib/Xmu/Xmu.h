@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.21 89/05/24 11:06:06 converse Exp $
+ * $XConsortium: Xmu.h,v 1.22 89/06/07 16:48:24 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -55,6 +55,8 @@ typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
 #define XtCBackingStore		"BackingStore"
 
 #define XtRBackingStore		"BackingStore"
+
+#define XtRLong "Long"
 
 /* BackingStore constants */
 #define XtEnotUseful		"notUseful"
