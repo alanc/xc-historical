@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Create.c,v 1.41 88/09/04 14:33:29 swick Exp $";
+    "$XConsortium: Create.c,v 1.42 88/09/04 18:09:00 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif lint
 
@@ -35,9 +35,6 @@ SOFTWARE.
 #include <stdio.h>
 
 extern void bcopy();
-
-static void RecurseInitialize();
-static void RecurseConstraintInitialize();
 
 static void CallClassPartInit(ancestor, wc)
      WidgetClass ancestor, wc;
@@ -99,7 +96,7 @@ static void CallConstraintInitialize (class, req_widget, new_widget)
     ConstraintWidgetClass class;
     Widget	req_widget, new_widget;
 {
-    if (class->core_class.superclass != (WidgetClass) constraintWidgetClass)
+    if (class->core_class.superclass != constraintWidgetClass)
 	CallConstraintInitialize(
 	    (ConstraintWidgetClass) class->core_class.superclass,
 	    req_widget, new_widget);
@@ -325,7 +322,7 @@ Widget XtCreatePopupShell(name, widgetClass, parent, args, num_args)
                (unsigned) (parent->core.num_popups+1) * sizeof(Widget));
     parent->core.popup_list[parent->core.num_popups++] = widget;
     XtAddCallback(
-       widget,XtNdestroyCallback,RemovePopupFromParent, (Opaque)NULL);
+       widget,XtNdestroyCallback,RemovePopupFromParent, (caddr_t)NULL);
     return(widget);
 } /* XtCreatePopupShell */
 
