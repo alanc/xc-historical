@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.67 91/07/13 20:52:32 rws Exp $
+ * $XConsortium: Xrm.c,v 1.68 91/07/15 15:21:45 rws Exp $
  */
 
 /***********************************************************
@@ -664,7 +664,8 @@ static void MergeTables(ftable, pprev, override)
 	    while (tentry && tentry->name == fentry->name) {
 		/* if tentry is earlier, skip it */
 		if ((fentry->leaf && !tentry->leaf) ||
-		    (!fentry->tight && tentry->tight)) {
+		    (!fentry->tight && tentry->tight &&
+		     (fentry->leaf || !tentry->leaf))) {
 		    tentry = *(prev = &tentry->next);
 		    continue;
 		}
