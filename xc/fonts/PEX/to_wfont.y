@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.4 91/10/31 08:59:03 rws Exp $ */
+/* $XConsortium: to_wfont.y,v 5.5 93/07/29 13:40:21 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -327,7 +327,7 @@ check_num_ch()
 
 yyerror()
 {
-#ifndef bsdi
+#ifndef __bsdi__
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -350,7 +350,7 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#ifdef bsdi
+#ifdef __bsdi__
 		fprintf(stderr, "%s.\n", str);
 #else
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);

@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.31 92/11/20 19:12:38 rws Exp $
+ * $XConsortium: get_load.c,v 1.32 93/07/29 13:57:40 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -367,7 +367,7 @@ void GetLoadPoint( w, closure, call_data )
 
 #else /* not __OSF1__ */
 
-#ifdef bsdi
+#ifdef __bsdi__
 #include <kvm.h>
 
 static struct nlist nl[] = {
@@ -811,7 +811,7 @@ static xload_error(str1, str2)
 char *str1, *str2;
 {
     (void) fprintf(stderr,"xload: %s %s\n", str1, str2);
-#ifdef bsdi
+#ifdef __bsdi__
     if (kd)
 	kvm_close(kd);
 #endif
