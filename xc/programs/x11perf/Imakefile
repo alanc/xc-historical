@@ -33,7 +33,7 @@ install:: $(PERFLIB)
 
 CppScriptTarget(x11perfcomp,x11pcomp.cpp,-DLIBPATH=$(PERFLIB),$(ICONFIGFILE))
 
-InstallProgram(x11perfcomp,$(BINDIR))
+InstallNamedProg(x11perfcomp,x11perfcomp,$(BINDIR))
 InstallNamedProg(getlabel.sh,getlabel,$(PERFLIB))
 InstallNamedProg(getavg.sh,getavg,$(PERFLIB))
 InstallNamedProg(fillblnk.sh,fillblnk,$(PERFLIB))
