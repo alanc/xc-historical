@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: displaylist.c,v 1.5 88/10/20 17:36:39 keith Exp $
+ * $XConsortium: displaylist.c,v 1.6 88/11/23 17:00:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -72,7 +72,7 @@ struct display	*old;
 	struct display	*d, *p;
 
 	p = 0;
-	for (d = displays; d; d = d->next)
+	for (d = displays; d; d = d->next) {
 		if (d == old) {
 			if (p)
 				p->next = d->next;
@@ -81,6 +81,8 @@ struct display	*old;
 			free (d);
 			break;
 		}
+		p = d;
+	}
 }
 
 struct display *
