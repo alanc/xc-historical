@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.18 88/09/30 08:55:08 jim Exp $
+ * $XConsortium: main.c,v 1.19 88/10/19 10:28:00 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -420,7 +420,7 @@ redirect(line, makefile)
 		fputs(buf, fdout);
 	}
 	if (!found) {
-		log("Adding new delimiting line \"%s\"\nAppending dependencies...\n",
+		log("Adding new delimiting line \"%s\"\nAdding dependencies...\n",
 			line);
 		puts(line); /* same as fputs(fdout); but with newline */
 	}
