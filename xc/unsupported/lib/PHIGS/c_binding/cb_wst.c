@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.2 91/03/21 15:44:18 hersh Exp $ */
+/* $XConsortium: cb_wst.c,v 5.3 91/04/04 17:05:32 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -29,13 +29,25 @@ SOFTWARE.
 #include "phg.h"
 #include "cp.h"
 #include "cb_priv.h"
-#include <varargs.h>
+#include <X11/Xfuncproto.h>
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
+#else
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
+#endif
 
+#if NeedVarargsPrototypes
+caddr_t
+phigs_ws_type_set( register Wst *wst, ... )
+#else
 /*VARARGS2*/
 caddr_t
 phigs_ws_type_set( wst, va_alist )
     register Wst	*wst;
     va_dcl
+#endif
 {
     caddr_t	avlist[PHG_ATTR_STANDARD_SIZE], status = NULL;
     va_list     valist;
@@ -49,7 +61,7 @@ phigs_ws_type_set( wst, va_alist )
 	    ERR_REPORT( phg_cur_cph->erh, ERRN100);
 
 	} else {
-	    va_start( valist);
+	    Va_start( valist,wst);
 	    phg_attr_make( avlist, PHG_ATTR_STANDARD_SIZE, valist);
 	    va_end( valist);
 	    status = phg_wst_set_attrs( wst, avlist);
@@ -78,11 +90,16 @@ phigs_ws_type_get( wst, attr, arg)
     return status;
 }
 
+#if NeedVarargsPrototypes
+Pint
+phigs_ws_type_create( Pint base_type, ... )
+#else
 /*VARARGS2*/
 Pint
 phigs_ws_type_create( base_type, va_alist )
     Pint	base_type;
     va_dcl
+#endif
 {
     Wst		*base = (Wst *)base_type;
     Wst		*wst = (Wst *)NULL;
@@ -94,7 +111,7 @@ phigs_ws_type_create( base_type, va_alist )
 	    ERR_REPORT( phg_cur_cph->erh, ERR52);
 
 	} else {
-	    va_start( valist );
+	    Va_start( valist,base_type );
 	    phg_attr_make( avlist, PHG_ATTR_STANDARD_SIZE, valist );
 	    va_end( valist );
 
