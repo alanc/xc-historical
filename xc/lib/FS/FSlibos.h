@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSlibos.h,v 1.9 91/05/13 15:12:02 gildea Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -30,6 +30,11 @@
 #include <X11/Xfuncs.h>
 #include <X11/Xosdefs.h>
 
+/* Sorry, we do not really support streams yet */
+#ifdef STREAMSCONN
+#undef STREAMSCONN
+#endif
+
 #ifdef STREAMSCONN
 #ifdef SYSV
 /*
@@ -60,8 +65,13 @@
 #include <sys/filio.h>
 #endif
 
+#if defined(SYSV386) && defined(SYSV)
+#include <net/errno.h>
+#include <sys/stropts.h>
+#define BytesReadable(fd,ptr) ioctl((fd), I_NREAD, (ptr))
+#else
 #define BytesReadable(fd, ptr) ioctl ((fd), FIONREAD, (ptr))
-
+#endif
 #endif /* STREAMSCONN else */
 
 #ifndef X_NOT_POSIX
@@ -313,10 +323,14 @@ extern FSstream _FSsStream[];
 #endif				/* STREAMSCONN */
 
 
+#ifndef USL_COMPAT
 #if !defined(USG) || defined(MOTOROLA)
+#if !(defined(SYSV) && defined(SYSV386))
 #define _FSReadV readv
+#endif
 #define _FSWriteV writev
 #endif
+#endif /* !USL_COMPAT */
 
 #define ReadvFromServer(svr, iov, iovcnt) _FSReadV((svr), (iov), (iovcnt))
 #define WritevToServer(svr, iov, iovcnt) _FSWriteV((svr), (iov), (iovcnt))
