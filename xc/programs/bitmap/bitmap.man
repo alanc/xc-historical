@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH BITMAP 1 "Release 5" "X Version 11"
 .SH NAME
 bitmap, bmtoa, atobm \- bitmap editor and converter utilities for the X Window System
@@ -238,7 +239,7 @@ except that the marked area will be moved instead of copied.
 .B Flip Horizontally
 This command will flip the bitmap image with respect to the horizontal axes.
 If a marked area of the grid is highlighted, it will operate only 
-inside the marked area.  Pressing F inside the bitmap window has the
+inside the marked area.  Pressing H inside the bitmap window has the
 same effect.
 .TP 4
 .B Up
