@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.115 90/06/15 18:38:43 rws Exp $ */
+/* $XConsortium: Event.c,v 1.116 90/07/26 09:53:41 swick Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -421,6 +421,7 @@ static void InitializeHash()
 }
 
 static Region nullRegion;
+static void CompressExposures();
 
 static Boolean DispatchEvent(event, widget, mask, pd)
     register XEvent    *event;
@@ -450,7 +451,6 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 		(*widget->core.widget_class->core_class.expose)
 		    (widget, event, (Region)NULL);
 	    else {
-		static void CompressExposures();
 		CompressExposures(event, widget, pd);
 	    }
 	    was_dispatched = True;
@@ -550,6 +550,9 @@ typedef struct _CheckExposeInfo {
  *      NOTE: Event must be of type Expose or GraphicsExpose.
  */
 
+static void SendExposureEvent();
+static Bool CheckExposureEvent();
+
 static void
 CompressExposures(event, widget, pd)
 Widget widget;
@@ -557,7 +560,6 @@ XEvent * event;
 XtPerDisplay pd;
 {
     CheckExposeInfo info;
-    static void SendExposureEvent();
     int count;
 
     XtAddExposureToRegion(event, pd->region);
@@ -605,7 +607,6 @@ XtPerDisplay pd;
     count = 0;
     while (TRUE) {
 	XEvent event_return;
-	static Bool CheckExposureEvent();
 
 	if (XCheckIfEvent(XtDisplay(widget), &event_return, 
 			  CheckExposureEvent, (char *) &info)) {
