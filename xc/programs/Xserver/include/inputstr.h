@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: inputstr.h,v 1.14 87/08/29 16:31:44 rws Locked $ */
+/* $Header: inputstr.h,v 1.15 88/01/02 13:04:34 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H
@@ -66,16 +66,9 @@ typedef struct _DeviceIntRec *DeviceIntPtr;
     Bool		keyboardMode, pointerMode;
     DetailRec		modifiersDetail;
     Mask		eventMask;
-    union {
-	struct {
-	    DetailRec 	buttonDetail;
-	    WindowPtr	confineTo;
-	    CursorPtr	cursor;
-	} ptr;
-	struct {
-	    DetailRec	keyDetail;
-	} keybd;
-    } u;
+    DetailRec		detail;		/* key or button */
+    WindowPtr		confineTo;	/* always NULL for keyboards */
+    CursorPtr		cursor;		/* always NULL for keyboards */
 } GrabRec;
 
 typedef struct {
