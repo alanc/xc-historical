@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.7 90/01/25 08:55:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: PassivGrab.c,v 1.8 90/01/25 09:26:09 swick Exp $";
 #endif
 
 /********************************************************
@@ -474,13 +474,11 @@ static void DestroyPassiveList(passiveListPtr)
 	  grab = next;
 	  next = grab->next;
 	  
-	  if (XtIsRealized(grab->widget))
-	    XUngrabKey(pDisplay(grab),
-		       grab->detail.exact, 
-		       grab->modifiersDetail.exact, 
-		       pWindow(grab));
+	  /* not necessary to explicitly ungrab key or button;
+	   * window is being destroyed so server will take care of it.
+	   */ 
+
 	  FreeGrab(grab);
-	  grab = NULL;
       }
 }
 
