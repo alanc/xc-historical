@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.155 91/03/22 17:21:07 gildea Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.157 91/04/08 14:58:16 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,7 +33,18 @@ SOFTWARE.
 #include	<X11/Xfuncproto.h>
 #ifdef XT_BC
 #include <X11/Xos.h>		/* for R4 compatibility */
-#endif
+#else
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <string.h>		/* for XtNewString */
+#else
+#ifdef SYSV
+#include <string.h>
+#else
+#include <strings.h>
+#endif /* SYSV else */
+#endif /* !X_NOT_STDC_ENV else */
+#endif /* XT_BC else */
 
 #define XtSpecificationRelease 4
 
