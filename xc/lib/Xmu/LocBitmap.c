@@ -1,5 +1,5 @@
 /*
- * $XConsortium: LocBitmap.c,v 1.16 91/07/02 09:09:59 rws Exp $
+ * $XConsortium: LocBitmap.c,v 1.17 91/12/09 15:48:03 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,7 +39,11 @@
 #endif
 #endif /* X_NOT_POSIX */
 #ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
 #include <sys/param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN

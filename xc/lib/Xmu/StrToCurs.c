@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.18 92/03/06 14:09:58 converse Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.19 92/03/19 15:22:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -39,7 +39,11 @@ SOFTWARE.
 #endif
 #endif /* X_NOT_POSIX */
 #ifndef PATH_MAX
+#ifdef WIN32
+#define PATH_MAX 512
+#else
 #include <sys/param.h>
+#endif
 #ifndef PATH_MAX
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
