@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Selection.c,v 1.20 89/11/28 08:52:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Selection.c,v 1.21 89/11/28 09:49:02 swick Exp $";
 /* $oHeader: Selection.c,v 1.8 88/09/01 11:53:42 asente Exp $ */
 #endif /* lint */
 
@@ -68,7 +68,7 @@ unsigned int XtAppGetSelectionTimeout(app)
 
 /* General utilities */
 
-XContext selectPropertyContext = NULL;
+static XContext selectPropertyContext = NULL;
 
 static Atom GetSelectionProperty(dpy)
 Display *dpy;
@@ -185,16 +185,27 @@ Atom selection;
     if (selectContext == NULL)
 	selectContext = XUniqueContext();
     if (XFindContext(dpy, (Window)selection, selectContext, (caddr_t *)&ctx)) {
-	ctx = (Select) XtMalloc((unsigned) sizeof(SelectRec));
+	static XContext selectionAtomContext = NULL;
+	SelectionAtomRec* atoms;
+	if (selectionAtomContext == NULL)
+	    selectionAtomContext = XUniqueContext();
+	if (XFindContext(dpy, DefaultRootWindow(dpy), selectionAtomContext,
+			 (caddr_t *)&atoms)) {
+	    atoms = XtNew(SelectionAtomRec);
+	    atoms->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
+	    atoms->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
+	    (void)XSaveContext(dpy, (Window)selection, selectionAtomContext,
+			       (caddr_t)atoms);
+	}
+	ctx = XtNew(SelectRec);
 	ctx->dpy = dpy;
 	ctx->selection = selection;
 	ctx->widget = NULL;
 	ctx->incrList = NULL;
  	ctx->refcount = 0;
-	ctx->incremental_atom = XInternAtom(dpy, "INCR", FALSE);
-	ctx->indirect_atom = XInternAtom(dpy, "MULTIPLE", FALSE);
-	(void) XSaveContext(
-	    dpy, (Window)selection, selectContext, (caddr_t) ctx);
+	ctx->incremental_atom = atoms->incremental_atom;
+	ctx->indirect_atom = atoms->indirect_atom;
+	(void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
     }
     return ctx;
 }
