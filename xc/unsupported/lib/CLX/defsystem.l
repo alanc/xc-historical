@@ -456,7 +456,7 @@
 
 #-(or lispm allegro)
 (defun load-clx (&optional (binary-pathname-defaults "")
-		 &key (macros-p nil))
+		 &key (macrosp nil))
 
   (let* ((source-path (pathname ""))
 	 (path        (make-pathname
@@ -502,7 +502,7 @@
       (load-binary "depdefs")
       (load-binary "clx")
       (load-binary "dependent")
-      (when macros-p
+      (when macrosp
 	#+excl (load-binary "exclcmac")
 	(load-binary "macros")
 	(load-binary "bufmac"))
