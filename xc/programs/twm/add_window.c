@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.123 89/12/08 19:18:27 jim Exp $
+ * $XConsortium: add_window.c,v 1.124 89/12/09 22:21:28 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.123 89/12/08 19:18:27 jim Exp $";
+"$XConsortium: add_window.c,v 1.124 89/12/09 22:21:28 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1192,7 +1192,7 @@ void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     if (squeeze && tmp_win->squeeze_info) {
 	int rx = (tmp_win->highlightx + 
 		  (tmp_win->hilite_w
-		    ? Scr->TBInfo.width : 0) +
+		    ? Scr->TBInfo.width * 2 : 0) +
 		  (Scr->TBInfo.nright > 0 ? Scr->TitlePadding : 0) +
 		  Scr->FramePadding);
 	if (rx < tmp_win->rightx) tmp_win->rightx = rx;
