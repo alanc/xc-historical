@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 1.2 91/07/23 18:49:01 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 91/07/24 16:24:08 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -46,7 +46,7 @@ outline: $(CHAPTERS)
 
 doc.PS:
 	$(XREF) -o outline $(CHAPTERS) | $(PIC) | \
-	(cat $(PEXMACROS) ; $(TBL)) | $(TROFF) -rF1 -rM1 >doc.PS 2>slush.tmp
+	(cat $(PEXMACROS) ; $(TBL)) | $(TROFF) -rF1 -rM1 >doc.PS 2>>slush.tmp
 	$(RECODE) < slush.tmp >slush.file
 	$(RM) slush.tmp 
 
