@@ -1,4 +1,4 @@
-/* $XConsortium: speedo.h,v 1.2 91/05/11 09:56:10 rws Exp $ */
+/* $XConsortium: speedo.h,v 1.3 91/05/11 14:16:13 rws Exp $ */
 
 /*
 
@@ -143,10 +143,10 @@ WITH THE SPEEDO SOFTWARE OR THE BITSTREAM CHARTER OUTLINE FONT.
 #ifndef STDEF
 #ifndef SPD_BMAP
 
-#if defined(APOLLO) || defined(sun)
-typedef   char     fix7;
-#else
+#if __STDC__ || defined(sgi) || defined(AIXV3)
 typedef signed char fix7;
+#else
+typedef   char     fix7;
 #endif
 
 typedef   double   real;
