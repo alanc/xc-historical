@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.53 89/08/10 12:16:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.54 89/08/10 12:38:06 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -75,7 +75,22 @@ void XtInitializeWidgetClass(wc)
     if (wc->core_class.class_initialize != NULL)
 	(*(wc->core_class.class_initialize))();
     CallClassPartInit(wc, wc);
-    wc->core_class.class_inited = TRUE;
+    {
+	WidgetClass pc;
+	Boolean inited = 0x01;
+#define LeaveIfClass(c, d) if (pc == c) { inited = d; break; }
+	for (pc = wc; pc; pc = pc->core_class.superclass) {
+	    LeaveIfClass(rectObjClass,		   0x03);
+	    LeaveIfClass(coreWidgetClass,	   0x07);
+	    LeaveIfClass(compositeWidgetClass,	   0x0f);
+	    LeaveIfClass(constraintWidgetClass,    0x1f);
+	    LeaveIfClass(shellWidgetClass,	   0x2f);
+	    LeaveIfClass(wmShellWidgetClass,	   0x6f);
+	    LeaveIfClass(topLevelShellWidgetClass, 0xef);
+	}
+#undef LeaveIfClass
+	wc->core_class.class_inited = inited;
+    }
 }
 
 static void CallInitialize (class, req_widget, new_widget, args, num_args)
@@ -159,7 +174,8 @@ Widget _XtCreate(
     cache_refs = _XtGetResources(widget, args, num_args);
 
     /* Compile any callback lists into internal form */
-    for (offsetList = widget->core.widget_class->core_class.callback_private;
+    for (offsetList = (_XtOffsetList)widget->core.widget_class->
+				core_class.callback_private;
 	 offsetList != NULL;
 	 offsetList = offsetList->next) {
 	 pCallbacks = (XtCallbackList *) ((int)widget - offsetList->offset - 1);
