@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.6 89/09/14 17:04:38 rws Exp $ */
+/* $XConsortium: cfbline.c,v 1.7 89/09/15 08:12:27 keith Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"
@@ -138,6 +138,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     RegionPtr cclip;
     unsigned long   pixel;
     int		    alu;
+    unsigned long   planemask;
 
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
@@ -158,10 +159,12 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 
     alu = pGC->alu;
     pixel = pGC->fgPixel;
+    planemask = pGC->planemask;
     if (alu == GXinvert)
     {
 	pixel = pGC->planemask;
 	alu = GXxor;
+	planemask = PIM;
     }
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -233,7 +236,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			y2t = min(y2, pbox->y2);
 			if (y1t != y2t)
 			{
-			    cfbVertS (alu, pixel,
+			    cfbVertS (alu, pixel, planemask,
 				      addrl, nlwidth, 
 				      x1, y1t, y2t-y1t);
 			}
@@ -299,7 +302,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    x2t = min(x2, pbox->x2);
 		    if (x1t != x2t)
 		    {
-			cfbHorzS (alu, pixel,
+			cfbHorzS (alu, pixel, planemask,
 				  addrl, nlwidth, 
 				  x1t, y1, x2t-x1t);
 		    }
@@ -356,7 +359,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (pGC->capStyle != CapNotLast)
 			len++;
 #endif
-		    cfbBresS (alu, pixel,
+		    cfbBresS (alu, pixel, planemask,
 			  addrl, nlwidth,
 			  signdx, signdy, axis, x1, y1,
 			  e, e1, e2, len);
@@ -425,7 +428,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			    else
 			    	err = e;
 			    cfbBresS   
-				     (alu, pixel,
+				     (alu, pixel, planemask,
 				      addrl, nlwidth,
 				      signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
 				      err, e1, e2, len);
@@ -522,6 +525,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     RegionPtr cclip;
     unsigned long   fg, bg;
     int		    alu;
+    unsigned long   planemask;
     unsigned char   *pDash;
     int		    dashOffset;
     int		    numInDashList;
@@ -560,10 +564,12 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     fg = pGC->fgPixel;
     bg = pGC->bgPixel;
     alu = pGC->alu;
+    planemask = pGC->planemask;
     if (alu == GXinvert)
     {
 	fg = bg = pGC->planemask;
 	alu = GXxor;
+	planemask = PIM;
     }
 
     xorg = pDrawable->x;
@@ -639,7 +645,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		if (pGC->capStyle != CapNotLast)
 		    unclippedlen++;
 #endif
-		cfbBresD (alu, fg, bg,
+		cfbBresD (alu, fg, bg, planemask,
 		      dashIndex, pDash, numInDashList,
 		      dashOffset, isDoubleDash,
 		      addrl, nlwidth,
@@ -722,7 +728,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    	}
 		    	else
 			    err = e;
-		    	cfbBresD (alu, fg, bg,
+		    	cfbBresD (alu, fg, bg, planemask,
 			      	  dashIndexTmp, pDash, numInDashList,
 			      	  dashOffsetTmp, isDoubleDash,
 			      	  addrl, nlwidth,

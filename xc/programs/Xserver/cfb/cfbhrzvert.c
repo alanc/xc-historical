@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.10 89/03/16 14:47:31 jim Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.1 89/08/18 16:45:42 keith Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -35,7 +35,7 @@ SOFTWARE.
 /* horizontal solid line
    abs(len) > 1
 */
-cfbHorzS(rop, pixel, addrl, nlwidth, x1, y1, len)
+cfbHorzS(rop, pixel, planemask, addrl, nlwidth, x1, y1, len)
 int rop;
 unsigned long	pixel;
 register int *addrl;	/* pointer to base of bitmap */
@@ -50,6 +50,7 @@ int len;		/* length of line */
     unsigned long   scrbits;
 
     pixel = PFILL (pixel);
+    planemask = PFILL (planemask);
     /* force the line to go left to right
        but don't draw the last point
     */
@@ -66,6 +67,7 @@ int len;		/* length of line */
     if ( ((x1 & PIM) + len) < PPW)
     {
 	maskpartialbits(x1, len, startmask);
+	startmask &= planemask;
 	scrbits = *addrl;
 	*addrl = (scrbits & ~startmask) |
 		 (DoRop (rop, pixel, scrbits) & startmask);
@@ -75,17 +77,31 @@ int len;		/* length of line */
 	maskbits(x1, len, startmask, endmask, nlmiddle);
 	if (startmask)
 	{
+	    startmask &= planemask;
 	    scrbits = *addrl;
 	    *addrl++ = (scrbits & ~startmask) |
 		       (DoRop (rop, pixel, scrbits) & startmask);
 	}
-	while (nlmiddle--)
+	if ((planemask & PIM == PIM))
 	{
-	    *addrl = DoRop (rop, pixel, *addrl);
-	    ++addrl;
+	    while (nlmiddle--)
+	    {
+	    	*addrl = DoRop (rop, pixel, *addrl);
+	    	addrl++;
+	    }
+	}
+	else
+	{
+	    while (nlmiddle--)
+	    {
+		scrbits = *addrl;
+	    	*addrl++ = scrbits & ~planemask |
+			DoRop (rop, pixel, scrbits) & planemask;
+	    }
 	}
 	if (endmask)
 	{
+	    endmask &= planemask;
 	    scrbits = *addrl;
    	    *addrl = (scrbits & ~endmask) |
 		     (DoRop (rop, pixel, scrbits) & endmask);
@@ -99,7 +115,7 @@ int len;		/* length of line */
    it's OK to use it.
 */
 
-cfbVertS(rop, pixel, addrl, nlwidth, x1, y1, len)
+cfbVertS(rop, pixel, planemask, addrl, nlwidth, x1, y1, len)
 int rop;
 unsigned long pixel;
 register int *addrl;	/* pointer to base of bitmap */
@@ -108,55 +124,60 @@ int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
 #if (PPW == 4)
-    register unsigned char    *bits = (unsigned char *) addrl;
-
-    nlwidth <<= 2;
-    bits = bits + (y1 * nlwidth) + x1;
-    if (len < 0)
+    if ((planemask & PIM) == PIM)
     {
-	nlwidth = -nlwidth;
-	len = -len;
-    }
-
-    /*
-     * special case copy to avoid a test per pixel
-     */
-    if (rop == GXcopy)
-    {
-	while (len--)
- 	{
-	    *bits = pixel;
-	    bits += nlwidth;
-	}
+    	register unsigned char    *bits = (unsigned char *) addrl;
+    
+    	nlwidth <<= 2;
+    	bits = bits + (y1 * nlwidth) + x1;
+    	if (len < 0)
+    	{
+	    nlwidth = -nlwidth;
+	    len = -len;
+    	}
+    
+    	/*
+     	 * special case copy to avoid a test per pixel
+     	 */
+    	if (rop == GXcopy)
+    	{
+	    while (len--)
+ 	    {
+	    	*bits = pixel;
+	    	bits += nlwidth;
+	    }
+    	}
+    	else
+    	{
+	    while (len--)
+ 	    {
+	    	*bits = DoRop(rop, pixel, *bits);
+	    	bits += nlwidth;
+	    }
+    	}
     }
     else
-    {
-	while (len--)
- 	{
-	    *bits = DoRop(rop, pixel, *bits);
-	    bits += nlwidth;
-	}
-    }
-#else
-    register unsigned long  scrbits, mask;
-
-    addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
-
-    if (len < 0)
-    {
-	nlwidth = -nlwidth;
-	len = -len;
-    }
- 
-    mask = cfbmask[x1 & PIM];
-    pixel = PFILL (pixel);
-
-    do
-    {
-	scrbits = *addrl;
-	*addrl = (scrbits & ~ mask) | (DoRop (rop, pixel, scrbits) & mask);
-	addrl += nlwidth;
-    }
-    while (--len);
 #endif
+    {
+    	register unsigned long  scrbits, mask;
+    
+    	addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
+    
+    	if (len < 0)
+    	{
+	    nlwidth = -nlwidth;
+	    len = -len;
+    	}
+     
+    	mask = cfbmask[x1 & PIM] & PFILL (planemask);
+    	pixel = PFILL (pixel);
+    
+    	do
+    	{
+	    scrbits = *addrl;
+	    *addrl = (scrbits & ~ mask) | (DoRop (rop, pixel, scrbits) & mask);
+	    addrl += nlwidth;
+    	}
+    	while (--len);
+    }
 }

@@ -21,23 +21,18 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.2 89/09/01 15:46:31 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.3 89/09/14 17:04:13 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
-
-#if (PPW == 4)
-#include "cfb8bit.h"
-#endif
 
 /* Solid bresenham line */
 /* NOTES
    e2 is used less often than e1, so it's not in a register
 */
 
-#undef Duff
-#ifdef mips
+#ifdef LARGE_INSTRUCTION_CACHE
 #define Duff(count,body) \
     switch (count & 15) { \
     case 15: body    case 14: body    case 13: body    case 12: body\
@@ -49,7 +44,7 @@ SOFTWARE.
 	body body body body body body body body \
 	body body body body body body body body \
     }
-#else
+#else /* LARGE_INSTRUCTION_CACHE */
 #define Duff(count,body) \
     switch (count & 3) { \
     case 3: body    case 2: body    case 1: body \
@@ -57,11 +52,12 @@ SOFTWARE.
     while ((count -= 4) >= 0) { \
 	body body body body \
     }
-#endif
+#endif /* LARGE_INSTRUCTION_CACHE */
 
-cfbBresS(rop, pixel, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
+cfbBresS(rop, pixel, planemask, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
 register unsigned long pixel;
+unsigned long planemask;
 int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 register int signdx;
@@ -81,80 +77,185 @@ int len;	/* length of line */
     register int e3 = e2-e1;
 
 #if (PPW == 4)
-    /* point to first point */
-    nlwidth <<= 2;
-    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    yinc = signdy * nlwidth;
-    xinc = signdx;
-    e = e-e1;			/* to make looping easier */
-
-    if (axis == X_AXIS)
+    if ((planemask & PIM) == PIM)
     {
-	if (rop == GXcopy)
-	{
-	    Duff (len,
-	    { 
-	    	*addrb = pixel;
-	    	e += e1;
-	    	addrb += xinc;
-	    	if (e >= 0)
-	    	{
-		    addrb += yinc;
-		    e += e3;
+    	/* point to first point */
+    	nlwidth <<= 2;
+    	addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    	yinc = signdy * nlwidth;
+    	xinc = signdx;
+    	e = e-e1;			/* to make looping easier */
+    
+    	if (axis == X_AXIS)
+    	{
+	    if (rop == GXcopy)
+	    {
+	    	Duff (len,
+	    	{ 
+	    	    *addrb = pixel;
+	    	    e += e1;
+	    	    addrb += xinc;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += yinc;
+		    	e += e3;
+	    	    }
+	    	}
+	    	)
+	    }
+	    else
+	    {
+	    	while(len--)
+	    	{ 
+	    	    *addrb = DoRop (rop, pixel, *addrb);
+	    	    e += e1;
+	    	    addrb += xinc;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += yinc;
+		    	e += e3;
+	    	    }
 	    	}
 	    }
-	    )
-	}
-	else
-	{
-	    while(len--)
-	    { 
-	    	*addrb = DoRop (rop, pixel, *addrb);
-	    	e += e1;
-	    	addrb += xinc;
-	    	if (e >= 0)
+    	} /* if X_AXIS */
+    	else
+    	{
+	    if (rop == GXcopy)
+	    {
+	    	Duff (len,
 	    	{
-		    addrb += yinc;
-		    e += e3;
-	    	}
+	    	    *addrb = pixel;
+	    	    e += e1;
+	    	    addrb += yinc;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += xinc;
+		    	e += e3;
+	    	    }
+    	    	}
+	    	)
 	    }
-	}
-    } /* if X_AXIS */
+	    else
+	    {
+	    	while(len--)
+	    	{
+	    	    *addrb = DoRop (rop, pixel, *addrb);
+	    	    e += e1;
+	    	    addrb += yinc;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += xinc;
+		    	e += e3;
+	    	    }
+    	    	}
+	    }
+    	} /* else Y_AXIS */
+    }
     else
-    {
-	if (rop == GXcopy)
-	{
-	    Duff (len,
-	    {
-	    	*addrb = pixel;
-	    	e += e1;
-	    	addrb += yinc;
-	    	if (e >= 0)
-	    	{
-		    addrb += xinc;
-		    e += e3;
-	    	}
-    	    }
-	    )
-	}
-	else
-	{
-	    while(len--)
-	    {
-	    	*addrb = DoRop (rop, pixel, *addrb);
-	    	e += e1;
-	    	addrb += yinc;
-	    	if (e >= 0)
-	    	{
-		    addrb += xinc;
-		    e += e3;
-	    	}
-    	    }
-	}
-    } /* else Y_AXIS */
-#else
-/*
- * arbitrary pixel size case is harder...
- */
 #endif
-} 
+    {
+    	register unsigned long   tmp, bit, leftbit, rightbit;
+
+    	/* point to longword containing first point */
+    	addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
+    	yinc = signdy * nlwidth;
+    	e = e-e1;			/* to make looping easier */
+
+    	planemask = PFILL(planemask);
+    	pixel = PFILL(pixel);
+
+    	leftbit = cfbmask[0] & planemask;
+    	rightbit = cfbmask[PPW-1] & planemask;
+    	bit = cfbmask[x1 & PIM] & planemask;
+
+    	if (!bit)
+	    return;			/* in case planemask == 0 */
+    
+    	if (axis == X_AXIS)
+    	{
+    	    if (signdx > 0)
+    	    {
+	    	while (len--)
+	    	{ 
+		    tmp = *addrl;
+	    	    *addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+	    	    bit = SCRRIGHT(bit,1);
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrl += yinc;
+		    	e += e3;
+	    	    }
+	    	    if (!bit)
+	    	    {
+		    	bit = leftbit;
+		    	addrl++;
+	    	    }
+	    	}
+    	    }
+    	    else
+    	    {
+	    	while (len--)
+	    	{ 
+		    tmp = *addrl;
+	    	    *addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+	    	    e += e1;
+	    	    bit = SCRLEFT(bit,1);
+	    	    if (e >= 0)
+	    	    {
+		    	addrl += yinc;
+		    	e += e3;
+	    	    }
+	    	    if (!bit)
+	    	    {
+		    	bit = rightbit;
+		    	addrl--;
+	    	    }
+	    	}
+    	    }
+    	} /* if X_AXIS */
+    	else
+    	{
+    	    if (signdx > 0)
+    	    {
+	    	while(len--)
+	    	{
+		    tmp = *addrl;
+	    	    *addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	bit = SCRRIGHT(bit,1);
+		    	if (!bit)
+ 		    	{
+			    bit = leftbit;
+			    addrl++;
+		    	}
+		    	e += e3;
+	    	    }
+	    	    addrl += yinc;
+	    	}
+    	    }
+    	    else
+    	    {
+	    	while(len--)
+	    	{
+		    tmp = *addrl;
+	    	    *addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	bit = SCRLEFT(bit,1);
+		    	if (!bit)
+ 		    	{
+			    bit = rightbit;
+			    addrl--;
+		    	}
+		    	e += e3;
+	    	    }
+	    	    addrl += yinc;
+	    	}
+    	    }
+    	} /* else Y_AXIS */
+    } 
+}

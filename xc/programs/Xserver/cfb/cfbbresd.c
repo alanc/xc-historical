@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.1 89/08/21 16:41:59 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.2 89/09/14 17:04:17 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -42,12 +42,13 @@ SOFTWARE.
 	else \
 	    dontdraw = (dashIndex & 1); \
     }
-cfbBresD(rop, fg, bg,
+cfbBresD(rop, fg, bg, planemask,
 	 dashIndex, pDash, numInDashList, dashOffset, isDoubleDash,
 	 addrl, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
 unsigned long fg, bg;
+unsigned long planemask;
 int dashIndex;		/* current dash */
 unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
@@ -80,85 +81,207 @@ int len;		/* length of line */
     else
 	dontdraw = (dashIndex & 1);
 #if (PPW == 4)
-    /* point to first point */
-    nlwidth <<= 2;
-    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    yinc = signdy * nlwidth;
-    e = e-e1;			/* to make looping easier */
-
-    if (axis == X_AXIS)
+    if ((planemask & PIM) == PIM)
     {
-	if (rop == GXcopy)
-	{
-	    while(len--)
-	    { 
-		if (!dontdraw)
-		    *addrb = pixel;
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += yinc;
-		    e += e3;
+    	/* point to first point */
+    	nlwidth <<= 2;
+    	addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    	yinc = signdy * nlwidth;
+    	e = e-e1;			/* to make looping easier */
+    
+    	if (axis == X_AXIS)
+    	{
+	    if (rop == GXcopy)
+	    {
+	    	while(len--)
+	    	{ 
+		    if (!dontdraw)
+		    	*addrb = pixel;
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += yinc;
+		    	e += e3;
+	    	    }
+	    	    addrb += signdx;
+		    StepDash
 	    	}
-	    	addrb += signdx;
-		StepDash
 	    }
-	}
-	else
-	{
-	    while(len--)
-	    { 
-		if (!dontdraw)
-		    *addrb = DoRop (rop, pixel, *addrb);
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += yinc;
-		    e += e3;
+	    else
+	    {
+	    	while(len--)
+	    	{ 
+		    if (!dontdraw)
+		    	*addrb = DoRop (rop, pixel, *addrb);
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += yinc;
+		    	e += e3;
+	    	    }
+	    	    addrb += signdx;
+		    StepDash
 	    	}
-	    	addrb += signdx;
-		StepDash
 	    }
-	}
-    } /* if X_AXIS */
+    	} /* if X_AXIS */
+    	else
+    	{
+	    if (rop == GXcopy)
+	    {
+	    	while(len--)
+	    	{
+		    if (!dontdraw)
+		    	*addrb = pixel;
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += signdx;
+		    	e += e3;
+	    	    }
+	    	    addrb += yinc;
+		    StepDash
+    	    	}
+	    }
+	    else
+	    {
+	    	while(len--)
+	    	{
+		    if (!dontdraw)
+		    	*addrb = DoRop (rop, pixel, *addrb);
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrb += signdx;
+		    	e += e3;
+	    	    }
+	    	    addrb += yinc;
+		    StepDash
+    	    	}
+	    }
+    	} /* else Y_AXIS */
+    }
     else
-    {
-	if (rop == GXcopy)
-	{
-	    while(len--)
-	    {
-		if (!dontdraw)
-		    *addrb = pixel;
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += signdx;
-		    e += e3;
-	    	}
-	    	addrb += yinc;
-		StepDash
-    	    }
-	}
-	else
-	{
-	    while(len--)
-	    {
-		if (!dontdraw)
-		    *addrb = DoRop (rop, pixel, *addrb);
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += signdx;
-		    e += e3;
-	    	}
-	    	addrb += yinc;
-		StepDash
-    	    }
-	}
-    } /* else Y_AXIS */
-#else
-/*
- * arbitrary pixel size case is harder...
- */
 #endif
+    {
+    	register unsigned long   tmp;
+	unsigned long leftbit, rightbit, bit;
+
+    	/* point to longword containing first point */
+    	addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
+    	yinc = signdy * nlwidth;
+    	e = e-e1;			/* to make looping easier */
+
+    	planemask = PFILL(planemask);
+    	pixel = PFILL(pixel);
+
+    	leftbit = cfbmask[0] & planemask;
+    	rightbit = cfbmask[PPW-1] & planemask;
+    	bit = cfbmask[x1 & PIM] & planemask;
+
+    	if (!bit)
+	    return;			/* in case planemask == 0 */
+    
+    	if (axis == X_AXIS)
+    	{
+    	    if (signdx > 0)
+    	    {
+	    	while (len--)
+	    	{ 
+		    if (!dontdraw)
+		    {
+		    	tmp = *addrl;
+	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		    }
+	    	    bit = SCRRIGHT(bit,1);
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	addrl += yinc;
+		    	e += e3;
+	    	    }
+	    	    if (!bit)
+	    	    {
+		    	bit = leftbit;
+		    	addrl++;
+	    	    }
+		    StepDash
+	    	}
+    	    }
+    	    else
+    	    {
+	    	while (len--)
+	    	{ 
+		    if (!dontdraw)
+		    {
+		    	tmp = *addrl;
+	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		    }
+	    	    e += e1;
+	    	    bit = SCRLEFT(bit,1);
+	    	    if (e >= 0)
+	    	    {
+		    	addrl += yinc;
+		    	e += e3;
+	    	    }
+	    	    if (!bit)
+	    	    {
+		    	bit = rightbit;
+		    	addrl--;
+	    	    }
+		    StepDash
+	    	}
+    	    }
+    	} /* if X_AXIS */
+    	else
+    	{
+    	    if (signdx > 0)
+    	    {
+	    	while(len--)
+	    	{
+		    if (!dontdraw)
+		    {
+		    	tmp = *addrl;
+	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		    }
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	bit = SCRRIGHT(bit,1);
+		    	if (!bit)
+ 		    	{
+			    bit = leftbit;
+			    addrl++;
+		    	}
+		    	e += e3;
+	    	    }
+	    	    addrl += yinc;
+		    StepDash
+	    	}
+    	    }
+    	    else
+    	    {
+	    	while(len--)
+	    	{
+		    if (!dontdraw)
+		    {
+		    	tmp = *addrl;
+	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		    }
+	    	    e += e1;
+	    	    if (e >= 0)
+	    	    {
+		    	bit = SCRLEFT(bit,1);
+		    	if (!bit)
+ 		    	{
+			    bit = rightbit;
+			    addrl--;
+		    	}
+		    	e += e3;
+	    	    }
+	    	    addrl += yinc;
+		    StepDash
+	    	}
+    	    }
+    	} /* else Y_AXIS */
+    } 
 } 
