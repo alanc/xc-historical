@@ -5197,7 +5197,7 @@ are:
 .\".so ../../lib/Xaw/Template.h
 #include <X11/copyright.h>
 
-/* $XConsortium: Xtk.widgets,v 1.10 88/10/24 20:32:03 swick Exp $ */
+/* $XConsortium: Xtk.widgets,v 1.11 88/10/25 10:55:10 swick Exp $ */
 /* Copyright Massachusetts Institute of Technology 1987, 1988 */
 
 #ifndef _Template_h
@@ -5287,7 +5287,7 @@ are:
 .\".so ../../lib/Xaw/TemplateP.h
 #include <X11/copyright.h>
 
-/* $XConsortium: Xtk.widgets,v 1.10 88/10/24 20:32:03 swick Exp $ */
+/* $XConsortium: Xtk.widgets,v 1.11 88/10/25 10:55:10 swick Exp $ */
 /* Copyright Massachusetts Institute of Technology 1987, 1988 */
 
 #ifndef _TemplateP_h
@@ -5451,6 +5451,7 @@ static XtResource resources[] = {
 The user input callback will be implemented by an action procedure which
 is declared as:
 .CB
+/* ARGSUSED */
 static void InputAction(w, params, num_params)
 	Widget w;
 	String *params;		/* unused */
@@ -5481,6 +5482,7 @@ static char translations[] =
 In the class record declaration and initialization, the only field that
 is different from the Template is the expose procedure:
 .CB
+/* ARGSUSED */
 static void Redisplay(w, event, region)
 	Widget w;
 	XEvent *event;	/* unused */
@@ -5529,4 +5531,7 @@ or the \fBWindowColor\fP functions.  The actual window created for the
 "WindowWidget" is available by calling the
 .PN XtWindow
 function.
+.LP
+To test the new ``WindowWidget'', you may substitute ``window'' for
+``command'' in the sample program given in Section 2.7.3.
 .TC
