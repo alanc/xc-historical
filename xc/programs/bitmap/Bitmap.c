@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.31 91/03/19 12:10:13 gildea Exp $
+ * $XConsortium: Bitmap.c,v 1.32 91/04/16 09:06:42 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -165,7 +165,7 @@ static XtActionsRec actions[] =
 {"redraw",             BWRedraw},
 };
 
-static char translations[] =
+static char translations1[] =
 "\
 Shift<Btn1Down>: mark()\n\
 Shift<Btn2Down>: mark-all()\n\
@@ -198,7 +198,10 @@ Ctrl<Key>l: redraw()\n\
             flip-horiz()\
             change-notify()\
             set-changed()\n\
-<Key>v:     store-to-buffer()\
+";
+
+static char translations2[] =
+"<Key>v:     store-to-buffer()\
             flip-vert()\
             change-notify()\
             set-changed()\n\
@@ -271,7 +274,7 @@ BitmapClassRec bitmapClassRec = {
     /* accept_focus		*/	NULL,
     /* version			*/	XtVersion,
     /* callback_private		*/	NULL,
-    /* tm_table			*/	translations,
+    /* tm_table			*/	NULL , /* set in code */
     /* query_geometry		*/	XtInheritQueryGeometry,
     /* display_accelerator	*/	XtInheritDisplayAccelerator,
     /* extension		*/	NULL,
@@ -700,6 +703,12 @@ static void ClassInitialize()
   {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
        sizeof(Screen *)}
   };
+  int size1 = sizeof(translations1), size2 = sizeof(translations2);
+  char *translations0 = XtMalloc(size1 + size2);
+  
+  strcat(translations0, strcat(translations1, translations2));
+
+  bitmapClassRec.core_class.tm_table = translations0;
 
   XawInitializeWidgetSet();
 
