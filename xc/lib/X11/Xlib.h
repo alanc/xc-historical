@@ -1,6 +1,6 @@
-/* $XConsortium: Xlib.h,v 11.199 91/04/11 20:15:55 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.200 91/04/14 12:41:37 rws Exp $ */
 /* 
- * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
+ * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided 
@@ -3986,7 +3986,11 @@ extern int XWriteBitmapFile(
 #endif
 );
 
-extern Bool XSupportsLocale();
+extern Bool XSupportsLocale(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern char *XSetLocaleModifiers(
 #if NeedFunctionPrototypes
