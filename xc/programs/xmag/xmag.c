@@ -1,5 +1,5 @@
 /*
- * Copyright 1989 Massachusetts Institute of Technology
+ * Copyright 1991 Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -97,7 +97,7 @@ static void
   CloseCB(), 
   ReplaceCB(),
   NewCB(), 
-  CutCB(),
+  SelectCB(),
   Paste(),
   SetupGC(), 
   ResizeEH(), 
@@ -505,10 +505,10 @@ NewCB(w, clientData, callData)
 
 
 /*
- * CutCB() -- Own the primary selection.
+ * SelectCB() -- Own the primary selection.
  */
 static void			/* ARGSUSED */
-CutCB(w, clientData, callData)
+SelectCB(w, clientData, callData)
      Widget w; XtPointer clientData, callData;
 {
   hlPtr data = (hlPtr)clientData;
@@ -890,7 +890,7 @@ GetMinIntensity(data)
 
 
 
-static Widget pane1, pane2, pane3, cclose, replace, new, cut, paste, label;
+static Widget pane1, pane2, pane3, cclose, replace, new, select, paste, label;
 
 /*
  * PopupNewScale() -- Create and popup a new scale composite.
@@ -919,9 +919,9 @@ PopupNewScale(data)
   new = XtCreateManagedWidget("new", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(new, XtNcallback, NewCB, (XtPointer)NULL);
-  cut = XtCreateManagedWidget("cut", commandWidgetClass, pane2,
+  select = XtCreateManagedWidget("select", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
-  XtAddCallback(cut, XtNcallback, CutCB, (XtPointer)data);
+  XtAddCallback(select, XtNcallback, SelectCB, (XtPointer)data);
   paste = XtCreateManagedWidget("paste", commandWidgetClass, pane2,
 			      (Arg *) NULL, 0);
   XtAddCallback(paste, XtNcallback, PasteCB, (XtPointer)data);
