@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-# $XConsortium$
+# $XConsortium: link_man7.sh,v 5.1 91/02/16 09:45:11 rws Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,6 +25,7 @@
 ## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 ## PERFORMANCE OF THIS SOFTWARE.
 
-ln -s p392 colour.7
-ln -s p393 phigs_description_table.7
-ln -s p394 phigs_workstation_description_table.7
+ln -s p407 colour.7
+ln -s p408 phigs_description_table.7
+ln -s p409 phigs_traversal_state_list.7
+ln -s p410 phigs_workstation_description_table.7
