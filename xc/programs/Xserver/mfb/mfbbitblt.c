@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 5.1 89/07/09 15:59:33 rws Exp $ */
+/* $XConsortium: mfbbitblt.c,v 5.2 89/07/14 17:10:52 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -152,8 +152,6 @@ int dstx, dsty;
 	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
 	    if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
 	      fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
-
-	    (*pGC->pScreen->RegionInit)(&fastRegion, &fastBox, 1);
 	}
 #endif /* PURDUE */
     }
@@ -248,7 +246,9 @@ int dstx, dsty;
 
 	    /* Check to see if the region is empty */
 	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
-		(*pGC->pScreen->RegionEmpty)(&fastRegion);
+		(*pGC->pScreen->RegionInit)(&fastRegion, NullBox, 0);
+	    else
+		(*pGC->pScreen->RegionInit)(&fastRegion, &fastBox, 1);
 
 	    /* Use the fast region for all future computation.
 	       The following code insures that RegionDestroy is not
