@@ -1,5 +1,5 @@
 /* 
- * $Header: xset.c,v 1.9 87/05/14 18:30:00 dkk Locked $ 
+ * $Header: xset.c,v 1.10 87/05/18 09:32:18 dkk Locked $ 
  * $Locker: dkk $ 
  */
 #include <X11/copyright.h>
@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.9 87/05/14 18:30:00 dkk Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.10 87/05/18 09:32:18 dkk Locked $";
 #endif
 
 #include <X11/X.h>      /*  Should be transplanted to X11/Xlibwm.h     %*/
