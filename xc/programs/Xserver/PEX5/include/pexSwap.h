@@ -1,4 +1,4 @@
-/* $XConsortium: pexSwap.h,v 5.4 91/12/31 11:11:59 hersh Exp $ */
+/* $XConsortium: pexSwap.h,v 5.5 92/03/04 14:08:10 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,7 @@ SOFTWARE.
 #ifndef PEXSWAP_H
 #define PEXSWAP_H 1
 
-#include <X11/extensions/PEXErr.h>
+#include "PEXErr.h"
 
 typedef void	    (*ConvFunction)();
 typedef void	    (*SwapShortFunction)();
