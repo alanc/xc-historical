@@ -1,4 +1,4 @@
-/* $XConsortium: ephoto.c,v 1.1 93/10/26 10:02:37 rws Exp $ */
+/* $XConsortium: ephoto.c,v 1.2 93/10/31 09:37:48 dpw Exp $ */
 /**** module ephoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -225,9 +225,9 @@ static Bool DebriefEPhoto(flo,ped,ok)
         free old compression parameters and image data
      */
     if (map->tecParms)
-	    map->tecParms = (void *)XieFree(map->tecParms);
+	    map->tecParms = (pointer)XieFree(map->tecParms);
     if (map->pvtParms)
-	    map->pvtParms = (void *)XieFree(map->pvtParms);
+	    map->pvtParms = (pointer)XieFree(map->pvtParms);
     map->pvtParms = pvt->pvtParms;
     map->dataClass = (src->bands == 3)? xieValTripleBand : xieValSingleBand;
 
@@ -260,7 +260,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
 	            FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 		    					return(FALSE));
 	        map->technique    = xieValDecodeUncompressedSingle;
-	        map->tecParms     = (void *)dtec;
+	        map->tecParms     = (pointer)dtec;
 #if (IMAGE_BYTE_ORDER == MSBFirst) /* Conform to server's "native" format */
 	        dtec->fillOrder   = xieValMSFirst;
 	        dtec->pixelOrder  = xieValMSFirst; 
@@ -280,7 +280,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
 	            FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 		    				    return(FALSE));
 	        map->technique    = xieValDecodeUncompressedTriple;
-	        map->tecParms     = (void *)dtec;
+	        map->tecParms     = (pointer)dtec;
 #if (IMAGE_BYTE_ORDER == MSBFirst) /* Conform to server's "native" format */
 	        dtec->fillOrder   = xieValMSFirst;
 	        dtec->pixelOrder  = xieValMSFirst; 
@@ -308,7 +308,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
 	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 		    				return(FALSE));
 	    map->technique    = xieValDecodeUncompressedSingle;
-	    map->tecParms     = (void *)dtec;
+	    map->tecParms     = (pointer)dtec;
 	    dtec->fillOrder   = etec->fillOrder;
 	    dtec->pixelOrder  = etec->pixelOrder;
 	    dtec->pixelStride = etec->pixelStride;
@@ -328,7 +328,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
 	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 		    				return(FALSE));
 	    map->technique    = xieValDecodeUncompressedTriple;
-	    map->tecParms     = (void *)dtec;
+	    map->tecParms     = (pointer)dtec;
 	    dtec->fillOrder   = etec->fillOrder;
 	    dtec->pixelOrder  = etec->pixelOrder;
 	    dtec->bandOrder   = etec->bandOrder;
@@ -350,7 +350,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
 	        FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 		    				return(FALSE));
 	    map->technique     = xieValDecodeG31D;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->normal       = TRUE;
 	    dtec->radiometric  = etec->radiometric;
 	    dtec->encodedOrder = etec->encodedOrder;
@@ -366,7 +366,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
     		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 						return(FALSE));
 	    map->technique     = xieValDecodeG32D;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->normal       = TRUE;
 	    dtec->radiometric  = etec->radiometric;
 	    dtec->encodedOrder = etec->encodedOrder;
@@ -382,7 +382,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
     		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 						return(FALSE));
 	    map->technique     = xieValDecodeG42D;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->normal       = TRUE;
 	    dtec->radiometric  = etec->radiometric;
 	    dtec->encodedOrder = etec->encodedOrder;
@@ -399,7 +399,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
     		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 						return(FALSE));
 	    map->technique     = xieValDecodeJPEGBaseline;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->interleave   = etec->interleave;
 	    dtec->bandOrder    = etec->bandOrder;
 	    }
@@ -414,7 +414,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
     		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 						return(FALSE));
 	    map->technique     = xieValDecodeTIFF2;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->normal       = TRUE;
 	    dtec->radiometric  = etec->radiometric;
 	    dtec->encodedOrder = etec->encodedOrder;
@@ -431,7 +431,7 @@ static Bool DebriefEPhoto(flo,ped,ok)
     		FloAllocError(flo,ped->phototag,xieElemExportPhotomap, 
 						return(FALSE));
 	    map->technique     = xieValDecodeTIFFPackBits;
-	    map->tecParms      = (void *)dtec;
+	    map->tecParms      = (pointer)dtec;
 	    dtec->normal       = TRUE;
 	    dtec->encodedOrder = etec->encodedOrder;
 	    }
