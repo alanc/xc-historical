@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.6 91/01/10 11:23:38 rws Exp $ */
+/* $XConsortium: Berklib.c,v 1.7 91/01/10 18:35:51 rws Exp $ */
 
 #include <sys/types.h>
 
@@ -130,7 +130,7 @@ register struct qelem *elem;
  * We simulate via System V's rand()
  */
 
-#if 0
+#if defined(hpux)
 int
 random()
 {
@@ -144,7 +144,7 @@ random()
  * We simulate via System V's rand()
  */
 
-#if 0
+#if defined(hpux)
 int
 srandom(seed)
 int seed;
