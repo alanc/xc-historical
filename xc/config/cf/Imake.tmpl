@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.167 93/07/13 11:16:48 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.168 93/07/14 10:51:05 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -361,6 +361,13 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define HasSockets		NO	/* do not assume it has them */
 #else
 #define HasSockets		YES	/* bsd does have them */
+#endif
+#endif
+#ifndef HasPoll
+#if SystemV || SystemV4
+#define HasPoll			YES
+#else
+#define HasPoll			NO
 #endif
 #endif
 #ifndef HasVFork
