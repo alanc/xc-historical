@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.213 91/07/05 09:49:50 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.214 91/07/09 20:01:41 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -521,13 +521,13 @@ typedef struct _XDisplay {
 	struct _XContextDB *context_db; /* context database */
 	Bool (**error_vec)();      /* vector for wire to error */
 	/*
-	 * TekCMS per Display Information
-	 *      See TekCMS.h for XcmsCCC structure definition,
-	 *      and TekCMSP.h for XcmsCmapRec structure definition.
+	 * Xcms information
 	 */
 	struct {
 	   XPointer defaultCCCs;  /* pointer to an array of default XcmsCCC */
 	   XPointer clientCmaps;  /* pointer to linked list of XcmsCmapRec */
+	   XPointer perVisualIntensityMaps;
+				  /* linked list of XcmsIntensityMap */
 	} cms;
 	int conn_checker;         /* ugly thing used by _XEventsQueued */
 	struct _XIMFilter *im_filters;
