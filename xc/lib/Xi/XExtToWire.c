@@ -1,4 +1,4 @@
-/*      $Header: XExtToWire.c,v 1.10 91/05/12 18:39:07 rws Exp $ */
+/*      $Header: XExtToWire.c,v 1.11 91/07/16 16:39:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -45,6 +45,7 @@ XInputEventToWire(dpy, re, event, count)
     register int *count;
     {
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
+    int i;
 
     switch ((re->type & 0x7f) - info->codes->first_event) 
 	{
@@ -84,7 +85,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
-		switch (vev->num_valuators)
+		i = vev->num_valuators;
+		if (i > 6) i = 6;
+		switch (i)
 		    {
 		    case 6: vev->valuator5 = ev->axis_data[5];
 		    case 5: vev->valuator4 = ev->axis_data[4];
@@ -132,7 +135,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
-		switch (vev->num_valuators)
+		i = vev->num_valuators;
+		if (i > 6) i = 6;
+		switch (i)
 		    {
 		    case 6: vev->valuator5 = ev->axis_data[5];
 		    case 5: vev->valuator4 = ev->axis_data[4];
@@ -181,7 +186,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
-		switch (vev->num_valuators)
+		i = vev->num_valuators;
+		if (i > 6) i = 6;
+		switch (i)
 		    {
 		    case 6: vev->valuator5 = ev->axis_data[5];
 		    case 5: vev->valuator4 = ev->axis_data[4];
@@ -229,7 +236,9 @@ XInputEventToWire(dpy, re, event, count)
 		vev->device_state = ev->device_state;
 		vev->first_valuator = 0;
 		vev->num_valuators = ev->axes_count;
-		switch (vev->num_valuators)
+		i = vev->num_valuators;
+		if (i > 6) i = 6;
+		switch (i)
 		    {
 		    case 6: vev->valuator5 = ev->axis_data[5];
 		    case 5: vev->valuator4 = ev->axis_data[4];
@@ -289,7 +298,6 @@ XInputEventToWire(dpy, re, event, count)
 	    register xEvent *tev;
 	    XInputClass	*any = (XInputClass *) &ev->data[0];
 	    unsigned char *sav_id;
-	    int i;
 	    *count = 1;
 
 	    for (i=0; i<ev->num_classes; i++)
@@ -394,7 +402,9 @@ XInputEventToWire(dpy, re, event, count)
 		        vev->num_valuators = val->num_valuators - 3;
 		        *sav_id |= MORE_EVENTS;
 			sav_id = &(vev->deviceid);
-			switch (val->num_valuators)
+			i = val->num_valuators;
+			if (i > 6) i = 6;
+			switch (i)
 			    {
 			    case 6: sev->valuator2 = val->valuators[5];
 			    case 5: sev->valuator1 = val->valuators[4];
