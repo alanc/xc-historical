@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.11 91/08/26 10:57:28 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 5.12 91/10/31 11:41:55 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -56,7 +56,7 @@ FONTS_BINARY = Roman.phont Roman_M.phont
 all:: to_wfont $(FONTS_BINARY)
 
 to_wfont.h to_wfont.c: to_wfont.y
-	yacc -d to_wfont.y
+	$(YACC) -d to_wfont.y
 	$(MV) y.tab.c to_wfont.c
 	$(MV) y.tab.h to_wfont.h
 
