@@ -1,6 +1,6 @@
 #ifndef X_HIL_H
 #define X_HIL_H
-
+/* $XConsortium$ */
 /*
 
 Copyright (c) 1988  X Consortium
