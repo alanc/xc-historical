@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.8 93/07/22 13:29:19 gildea Exp $
+ * $XConsortium: locking.c,v 1.9 93/08/22 17:56:00 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -38,9 +38,24 @@
 extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
 
-#ifdef _DECTHREADS_
-xthread_t _X_no_thread_id;
-#endif
+#ifdef WIN32
+static DWORD _X_TlsIndex;
+
+xthread_t
+_Xthread_self()
+{
+    xthread_t me;
+
+    if (!(me = TlsGetValue(_X_TlsIndex))) {
+	printf("initializing\n");
+	me = (xthread_t)xmalloc(sizeof(struct _xthread_t));
+	me->sem = CreateSemaphore(NULL, 0, 1, NULL);
+	me->next = NULL;
+	TlsSetValue(_X_TlsIndex, me);
+    }
+    return me;
+}
+#endif /* WIN32 */
 
 static xmutex_t _Xglobal_lock;
 
@@ -435,11 +450,16 @@ void _XUserUnlockDisplay(dpy)
 
 Status XInitThreads()
 {
+    if (_Xglobal_lock)
+	return 1;
+#ifdef WIN32
+    _X_TlsIndex = TlsAlloc();
+#endif
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
     _Xglobal_lock = xmutex_malloc();
-    if (_Xglobal_lock == NULL)
+    if (!_Xglobal_lock)
 	return 0;
     xmutex_init(_Xglobal_lock);
     _XLockMutex_fn = _XLockMutex;
