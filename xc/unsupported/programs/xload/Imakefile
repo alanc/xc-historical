@@ -9,3 +9,5 @@ LOCAL_LIBRARIES = XawClientLibs
    INSTALLFLAGS = $(INSTKMEMFLAGS)
 
 ComplexProgramTarget(xload)
+
+InstallAppDefaults(XLoad)
