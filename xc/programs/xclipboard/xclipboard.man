@@ -66,21 +66,22 @@ one line in the clipboard should wrap around to the following lines.
 This option indicates that long lines of text should not wrap around.  This
 is the default behavior.
 .SH WIDGETS
-The widgets used by xclipboard are listed below.  Widgets are listed by
-name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
-Intrinsics\fP for the each widget's list of settable resources.
+In order to specify resources, it is useful to know the hierarchy of
+the widgets which compose \fIxclipboard\fR.  In the notation below,
+indentation indicates hierarchical structure.  The widget class name
+is given first, followed by the widget instance name.
 .sp
 .nf
 .TA .5i 1.0i 1.5i
 .ta .5i 1.0i 1.5i
-xclipboard - XClipboard
-	form - Form
-		quit  - Command
-		delete - Command
-		new - Command
-		next - Command
-		prev - Command
-		text  - Text
+XClipboard  xclipboard
+	Form  form
+		Command  quit
+		Command  delete
+		Command  new
+		Command  next
+		Command  prev
+		Text  text
 .fi
 .sp
 .SH SENDING/RETRIEVING CLIPBOARD CONTENTS
