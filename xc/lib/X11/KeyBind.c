@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.46 89/03/10 17:45:23 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.47 89/04/17 17:06:31 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -9,7 +9,9 @@
 #include "Xlib.h"
 #include "Xlibint.h"
 #include "Xutil.h"
-#include "keysym.h"
+#define XK_MISCELLANY
+#define XK_LATIN1
+#include "keysymdef.h"
 #include <stdio.h>
 
 static ComputeMaskFromKeytrans();
