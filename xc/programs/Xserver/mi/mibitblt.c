@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mibitblt.c,v 1.68 88/10/02 15:37:02 rws Exp $ */
+/* $XConsortium: mibitblt.c,v 1.69 88/10/15 10:25:55 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -146,7 +146,10 @@ miCopyArea(pSrcDrawable, pDstDrawable,
        Following assumes that prgnSrcClip->rects are sorted from top
        to bottom and left to right.
     */
-    if (pSrcDrawable != pDstDrawable)
+    if ((pSrcDrawable != pDstDrawable) &&
+	((pGC->subWindowMode != IncludeInferiors) ||
+	 (pSrcDrawable->type == DRAWABLE_PIXMAP) ||
+	 (pDstDrawable->type == DRAWABLE_PIXMAP)))
       for (i=0; i < prgnSrcClip->numRects; i++)
         ordering[i] = i;
     else { /* within same drawable, must sequence moves carefully! */
