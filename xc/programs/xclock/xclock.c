@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.34 94/01/19 21:43:00 converse Exp $ */
+/* $XConsortium: xclock.c,v 1.35 94/01/21 17:47:34 converse Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -84,12 +84,12 @@ static void die(w, client_data, call_data)
 }
 
 static void quit (w, event, params, num_params)
-    Widget w;
+    Widget w;		/* ApplicationShellWidget */
     XEvent *event;
     String *params;
     Cardinal *num_params;
 {
-    Widget session;
+    SmcConn connection;
     Arg arg;
 
     if (event->type == ClientMessage &&
@@ -97,16 +97,24 @@ static void quit (w, event, params, num_params)
 	XBell (XtDisplay(w), 0);
 	return;
     }
-
-    /* close the connection to the session manager if one exists */
-    XtSetArg(arg, XtNsession, &session);
+    XtSetArg(arg, XtNconnection, &connection);
     XtGetValues(w, &arg, ONE);
-    if (session)
-	XtCallCallbacks(session, XtNdieCallback, NULL);
+    if (connection)
+	/* resign from the session */
+	XtCallCallbacks(w, XtNdieCallback, NULL);
     else 
 	die(w, NULL, NULL);
 }
- 
+
+static void save(w, client_data, call_data)
+    Widget w;
+    XtPointer client_data, call_data;
+{
+    XtCheckpointToken token = (XtCheckpointToken) call_data;
+    /* we have nothing to save */
+    token->save_success = True;
+}
+
 void main(argc, argv)
     int argc;
     char **argv;
@@ -119,11 +127,8 @@ void main(argc, argv)
     toplevel = XtAppInitialize(&app_con, "XClock", options, XtNumber(options),
 			       &argc, argv, NULL, NULL, ZERO);
     if (argc != 1) Syntax(argv[0]);
-    session = XtCreateWidget("session", sessionObjectClass, toplevel,
-			     NULL, ZERO);
-    XtSetArg(arg, XtNsession, session);
-    XtSetValues(toplevel, &arg, ONE);
-    XtAddCallback(session, XtNdieCallback, die, NULL);
+    XtAddCallback(toplevel, XtNdieCallback, die, NULL);
+    XtAddCallback(toplevel, XtNsaveCallback, save, NULL);
     
     XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
 
