@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.90 94/03/09 11:44:03 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.91 94/03/14 13:45:26 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1281,7 +1281,7 @@ Atom selection;
 	    *ninfo->target = info->target[number + 1];
 	    info = ninfo;
 	}
-	HandleIncremental(dpy, widget, property, info, size, number);
+	HandleIncremental(dpy, widget, property, info, size);
 	return FALSE;
     }
 
@@ -1707,8 +1707,8 @@ Time time;
     incremental = XtStackAlloc(count * sizeof(Boolean), incremental_values);
     for(i = 0; i < count; i++) incremental[i] = FALSE;
     if (IsGatheringRequest(widget, selection)) {
-      AddSelectionRequests(widget, selection, count, &targets, &callback, 
-			   1, &closures, incremental, NULL);
+      AddSelectionRequests(widget, selection, count, targets, &callback, 
+			   1, closures, incremental, NULL);
     } else {
       GetSelectionValues(widget, selection, targets, count, &callback, 1,
 			 closures, time, incremental, NULL);
@@ -1737,8 +1737,8 @@ Time time;
     incremental = XtStackAlloc(count * sizeof(Boolean), incremental_values);
     for(i = 0; i < count; i++) incremental[i] = TRUE;
     if (IsGatheringRequest(widget, selection)) {
-      AddSelectionRequests(widget, selection, count, &targets, &callback, 
-			   1, &closures, incremental, NULL);
+      AddSelectionRequests(widget, selection, count, targets, &callback, 
+			   1, closures, incremental, NULL);
     } else {
       GetSelectionValues(widget, selection, targets, count,
 			 &callback, 1, closures, time, incremental, NULL);
@@ -2131,7 +2131,7 @@ void XtSetSelectionParameters(requestor, selection, type, value, length, format)
     AddParamInfo(requestor, selection, property);
   }
 
-  StartProtectedSection(dpy, requestor);
+  StartProtectedSection(dpy, window);
   XChangeProperty(dpy, window, property,
 		  type, format, PropModeReplace,
 		  (unsigned char *) value, length);
@@ -2157,7 +2157,7 @@ void XtGetSelectionParameters(owner, selection, request_id, type_return,
   unsigned long dummy;
 
   if (xselevent->property != None) {
-    StartProtectedSection(dpy, owner);
+    StartProtectedSection(dpy, XtWindow(owner));
     XGetWindowProperty(dpy, xselevent->requestor,
 		       xselevent->property,
 		       0, max, False, AnyPropertyType,
