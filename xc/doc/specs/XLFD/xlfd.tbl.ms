@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.3 91/06/17 16:28:43 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.4 91/06/17 20:12:45 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -11,7 +11,7 @@
 .ce 5
 \s+2\fBX Logical Font Description Conventions\fP\s-2
 
-\s-1\fBVersion 1.3\fP\s-1
+\s-1\fBVersion 1.4\fP\s-1
 
 \s+1\fBMIT X Consortium Standard\fP\s-1
 .bp
@@ -83,7 +83,7 @@ point sizes, and character sets available for that family.
 .LP
 This document gives a standard logical font description 
 (hereafter referred to as XLFD) and the conventions to be used 
-in the core protocol so that clients can query and access screen type libraries 
+in the core protocol so that clients can query and access screen type libraries
 in a consistent manner across all X servers.
 In addition to completely specifying a given font by means of its 
 .PN FontName ,
@@ -112,6 +112,8 @@ standard logical font description that:
 Provides unique, descriptive font names that support simple pattern matching
 .IP \(bu 5
 Supports multiple font vendors, arbitrary character sets, and encodings
+.IP \(bu 5
+Supports naming and instancing of scalable fonts
 .IP \(bu 5
 Is independent of X server and operating or file system implementations
 .IP \(bu 5
@@ -153,6 +155,15 @@ Others may desire to perform the mapping dynamically in the server.
 Provisions must be made in the font name 
 that allows a font request to specify or identify specific charset mappings 
 in server environments where multiple charsets are supported.
+.NH 2
+Support Scalable Fonts
+.XS
+\*(SN Support Scalable Fonts
+.XE
+.LP
+If a font source can be scaled to arbitrary size, it should be possible
+for an application to determine that fact from the font name, and the
+application should be able to construct a font name for any specific size.
 .NH 2
 Be Independent of X Server and Operating or File System Implementations
 .XS
@@ -467,7 +478,7 @@ that is, it is possible that the DemiBold weight of one font could be
 almost equivalent in typographic feel to a Bold font from another family.
 .LP
 WEIGHT_NAME is captured as an arbitrary string 
-because it is an important part of a font's complete human-understandable name. 
+because it is an important part of a font's complete human-understandable name.
 However, it should not be used for font matching or substitution.
 For this purpose,
 X client applications should use the weight-related font properties 
@@ -579,6 +590,7 @@ that is considered part of the font design.
 (Note, however, that this value is not necessarily equivalent to the height 
 of the font bounding box.)
 PIXEL_SIZE is in the range zero to a very large number.
+Zero is used in conjunction with scalable fonts; see section 4.
 .LP
 PIXEL_SIZE usually is used by X client applications that need to 
 query fonts according to device-dependent size, 
@@ -600,6 +612,7 @@ of the font bounding box.)
 POINT_SIZE is expressed in decipoints (where points are as defined 
 in the X protocol or 72.27 points equal 1 inch) in the range zero to a 
 very large number.
+Zero is used in conjunction with scalable fonts; see section 4.
 .LP
 POINT_SIZE and RESOLUTION_Y are used by X clients to query fonts 
 according to device-independent size to maintain constant text 
@@ -623,7 +636,7 @@ The separation of pixel or point size and resolution is necessary
 because X allows for servers with very different video characteristics 
 (for example, horizontal and vertical resolution, screen and pixel size, 
 pixel shape, and so on) to potentially access the same font library.
-The font name, for example, must differentiate between a 14 point font designed 
+The font name, for example, must differentiate between a 14 point font designed
 for 75 dpi (body size of about 14 pixels) or a 14 point font designed 
 for 150 dpi (body size of about 28 pixels).
 Further, in servers that implement some or all fonts as continuously scaled 
@@ -697,6 +710,8 @@ that gives the unweighted arithmetic mean width of all glyphs in the font
 (measured in tenths of pixels).
 For monospaced and character cell fonts, 
 this is the width of all glyphs in the font.
+AVERAGE_WIDTH is in the range zero to a very large number.
+Zero is used in conjunction with scalable fonts; see section 4.
 .NH 4
 CHARSET_REGISTRY and CHARSET_ENCODING Fields
 .XS
@@ -1896,12 +1911,113 @@ DEFAULT_CHAR	CARD32
 _
 .TE
 .NH 1
+Scalable Fonts
+.XS
+\*(SN Scalable Fonts
+.XE
+.LP
+The XLFD is designed to support scalable fonts.  A scalable font is a
+font source from which instances of arbitrary size can be derived.
+A scalable font source might be one or more outlines
+together with zero or more hand-tuned bitmap fonts at specific sizes and
+resolutions, or it might be a programmatic description together with
+zero or more bitmap fonts, or some other format
+(perhap even just a single bitmap font).
+.LP
+The following definitions are useful for discussing scalable fonts:
+.LP
+\fBWell-formed XLFD pattern\fP
+.br
+.IP
+A pattern string containing 14 hyphens, one of which is
+the first character of the pattern.  Wildcard characters are permitted
+in the fields of a well-formed XLFD pattern.
+.LP
+\fBScalable font name\fP
+.br
+.IP
+A well-formed XLFD pattern containing no wildcards and containing the
+digit ``0'' in the PIXEL_SIZE, POINT_SIZE, and AVERAGE_WIDTH fields.
+.LP
+\fBScalable fields\fP
+.br
+.IP
+The XLFD fields PIXEL_SIZE, POINT_SIZE, RESOLUTION_X,
+RESOLUTION_Y, and AVERAGE_WIDTH.
+.LP
+\fBDerived instance\fP
+.br
+.IP
+The result of replacing the scalable fields of a font name
+with values to yield a font name that could actually be
+produced from the font source.  A scaling engine is
+permitted, but not required, to interpret the scalable
+fields in font names to support anamorphic scaling.
+.LP
+\fBGlobal list\fP
+.br
+.IP
+The list of names that would be returned by an X server for a
+.PN ListFonts
+protocol request on the pattern ``*'' if there were no protocol
+restrictions on the total number of names returned.
+.sp
+.LP
+The global list consists of font names derived from font sources.  If a single
+font source can be used to generate multiple character sets (specified
+in the CHARSET_REGISTRY and CHARSET_ENCODING fields), each such character
+set should be used to form a separate font name in the list.
+For a nonscalable font source, the simple font name
+for each character set is included in the global list.
+For a scalable font source, a scalable font name for each character set
+is included in the list.  In addition to the scalable font name,
+specific derived instance names can also be included in the list.
+The relative order of derived instances with respect to the scalable
+font name is not constrained.  Finally, font name aliases can also be included
+in the list.  The relative order of aliases with respect to the ``real''
+font name is not constrained.
+.LP
+The values of the RESOLUTION_X and RESOLUTION_Y fields of a scalable font name
+are implementation dependent, but to maximize backward compatibility they
+should be reasonable non-zero values, for example, a resolution close to that
+provided by the screen (in a single-screen server).  To maximize backward
+compatibility, server vendors are strongly encouraged in the near term to
+provide a mechanism for including derived instances of scalable fonts in the
+global list, since some existing applications rely on seeing a collection of
+point and pixel sizes for reasonable operation.  For font sources that contain
+a collection of hand-tuned bitmap fonts, including names of these instances
+in the global list is recommended and sufficient.
+.LP
+The X protocol request
+.PN OpenFont
+on a scalable font name returns a font corresponding to an
+implementation-dependent derived instance of that font name.
+.LP
+The X protocol request
+.PN ListFonts
+on a well-formed XLFD pattern returns the following.  Start with the
+global list.  If the actual pattern argument has values containing no wildcards
+in scalable fields, then substitute each such field into the corresponding
+field in each scalable font name in the list.  For each resulting font name,
+if the remaining scalable fields cannot be replaced with values to produce a
+derived instance, remove the font name from the list.  Now take the modified
+list, and perform a simple pattern match against the pattern argument.
+.PN ListFonts
+returns the resulting list.
+.LP
+.PN ListFonts
+on a pattern containing wildcards that is not a well-formed XLFD
+pattern is only required to return the list obtained by performing
+a simple pattern match against the global list.
+X servers are permitted, but not required,
+to use a more sophisticated matching algorithm.
+.NH 1
 Affected Elements of Xlib and the X Protocol
 .XS
 \*(SN Affected Elements of Xlib and the X Protocol
 .XE
 .LP
-The following X protocol requests must use the font naming conventions:
+The following X protocol requests must support the XLFD conventions:
 .IP \(bu 5
 .PN OpenFont
 \- for the name argument
@@ -1913,7 +2029,7 @@ The following X protocol requests must use the font naming conventions:
 \- for the pattern argument
 .LP
 In addition, 
-the following Xlib functions must use the font naming conventions:
+the following Xlib functions must support the XLFD conventions:
 .IP \(bu 5
 .PN XLoadFont
 \- for the name argument
@@ -1944,7 +2060,7 @@ XLFD Conformance Requirements
 \*(SN XLFD Conformance Requirements
 .XE
 .LP
-A BDF font conforms to the XLFD V1.3 specification if and only if the 
+A BDF font conforms to the XLFD specification if and only if the 
 following conditions are satisfied:
 .IP \(bu 5
 The value for the BDF item \fBFONT\fP conforms to the syntax 
