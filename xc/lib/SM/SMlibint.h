@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.4 93/09/22 17:58:47 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.5 93/09/23 11:55:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -174,24 +174,5 @@ extern SmPointer	_SmsNewClientData;
 
 extern SmcErrorHandler _SmcErrorHandler;
 extern SmsErrorHandler _SmsErrorHandler;
-
-
-extern void
-_SmcErrorBadState (
-#if NeedFunctionPrototypes
-    IceConn	/* iceConn */,
-    int		/* offendingMinor */,
-    int		/* severity */
-#endif
-);
-
-extern void
-_SmsErrorBadState (
-#if NeedFunctionPrototypes
-    IceConn	/* iceConn */,
-    int		/* offendingMinor */,
-    int		/* severity */
-#endif
-);
 
 #endif /* SMLIBINT */

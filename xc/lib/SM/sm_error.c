@@ -1,4 +1,4 @@
-/* $XConsortium: sm_error.c,v 1.2 93/09/08 20:22:25 mor Exp $ */
+/* $XConsortium: sm_error.c,v 1.3 93/09/22 17:59:41 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -259,43 +259,4 @@ SmsErrorHandler handler;
 	_SmsErrorHandler = _SmsDefaultErrorHandler;
 
     return (oldHandler);
-}
-
-
-
-void
-_SmcErrorBadState (iceConn, offendingMinor, severity)
-
-IceConn	iceConn;
-int	offendingMinor;
-int	severity;
-
-{
-    IceErrorHeader (iceConn,
-	_SmcOpcode, offendingMinor,
-	iceConn->sequence - 1,
-	severity,
-	IceBadState,
-	0);
-
-    IceFlush (iceConn);
-}
-
-
-void
-_SmsErrorBadState (iceConn, offendingMinor, severity)
-
-IceConn	iceConn;
-int	offendingMinor;
-int	severity;
-
-{
-    IceErrorHeader (iceConn,
-	_SmsOpcode, offendingMinor,
-	iceConn->sequence - 1,
-	severity,
-	IceBadState,
-	0);
-
-    IceFlush (iceConn);
 }
