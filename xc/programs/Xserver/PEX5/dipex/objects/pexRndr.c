@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.2 91/03/15 18:26:13 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.3 91/05/01 17:13:54 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -276,7 +276,11 @@ pexCreateRendererReq    *strmPtr;
 	EXTRACT_FLOAT(prend->viewport.maxval.z,ptr);
 	EXTRACT_CARD8(prend->viewport.useDrawable,ptr);
 	SKIP_PADDING(ptr,(sizeof(CARD8)+sizeof(CARD16)));
-    } else prend->viewport.useDrawable = 1;		/* default */
+    } else {                                            /* default */
+	prend->viewport.useDrawable = 1;
+	prend->viewport.maxval.z = 1.0;
+	prend->viewport.minval.z = 0.0;
+    }
 
 
     prend->clipList = puCreateList(DD_DEVICE_RECT);	
