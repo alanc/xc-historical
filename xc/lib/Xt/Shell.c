@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.164 94/04/13 17:52:10 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.165 94/04/17 20:14:47 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -3003,14 +3003,15 @@ static void XtCallCancelCallbacks(connection, client_data)
 
     if (w->session.checkpoint_state != XtSaveInactive) {
 	w->session.save->cancel_shutdown = True;
-	call_interacts = (w->session.save->interact_style != None);
+	call_interacts = (w->session.save->interact_style !=
+			  SmInteractStyleNone);
     }
 
     XtCallCallbackList((Widget)w, w->session.cancel_callbacks,
 		       (XtPointer) NULL);
 
     if (call_interacts) {
-	w->session.save->interact_style = None;
+	w->session.save->interact_style = SmInteractStyleNone;
 	XtInteractPermission(w->session.connection, (SmPointer) w);
     }
 
@@ -3018,7 +3019,8 @@ static void XtCallCancelCallbacks(connection, client_data)
 	if (w->session.save->save_tokens == 0 &&
 	    w->session.checkpoint_state == XtSaveActive) {
 	    w->session.checkpoint_state = XtSaveInactive;
-	    SmcSaveYourselfDone(w->session.connection, False);
+	    SmcSaveYourselfDone(w->session.connection,
+				w->session.save->save_success);
 	    CleanUpSave(w);
 	}
     }
