@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.13 87/09/13 20:35:58 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.14 87/12/01 15:49:21 swick Locked $";
 #endif lint
 
 /*
@@ -303,10 +303,15 @@ static XtGeometryResult GeometryManager(w, request, reply)
 	   expanded to allow new button to fit */
 
 	bbw = (ButtonBoxWidget) w->core.parent;
+
+/* whenever a child changes his geometry, we attempt to
+ * change ours to be the minimum enclosing size...
 	if (((request->width + request->border_width <= width + borderWidth) &&
 	    (request->height + request->border_width <= height + borderWidth))
 	|| PreferredSize(bbw, bbw->core.width, bbw->core.height, &junk, &junk)
 	|| TryNewLayout(bbw)) {
+ */
+	if (TryNewLayout(bbw)) {
 	    /* Fits in existing or new space, relayout */
 	    Resize(bbw);
 	    return (XtGeometryYes);
