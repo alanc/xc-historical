@@ -1,11 +1,10 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.37 91/07/25 19:45:22 rws Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.38 91/07/28 22:39:22 rws Exp $
 
 #define OSName            A/UX 2.0.1
 #define OSMajorVersion    2
 #define OSMinorVersion    0
 XCOMM operating system:  OSName
 
-/* #define HasGcc         YES */
 #if HasGcc
 #define BootstrapCFlags   -DmacII
 #endif
