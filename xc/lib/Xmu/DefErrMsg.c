@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DefErrMsg.c,v 1.7 90/12/09 17:58:54 rws Exp $
+ * $XConsortium: DefErrMsg.c,v 1.8 90/12/09 18:05:14 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -34,6 +34,7 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
     char number[32];
     char *mtype = "XlibMessage";
     register _XExtension *ext = (_XExtension *)NULL;
+    _XExtension *bext = (_XExtension *)NULL;
     XGetErrorText(dpy, event->error_code, buffer, BUFSIZ);
     XGetErrorDatabaseText(dpy, mtype, "XError", "X Error", mesg, BUFSIZ);
     (void) fprintf(fp, "%s:  %s\n  ", mesg, buffer);
@@ -68,31 +69,36 @@ int XmuPrintDefaultErrorMessage (dpy, event, fp)
 	fputs("\n  ", fp);
     }
     if (event->error_code >= 128) {
-	/* let extensions try to print the values */
-	/* XXX this is non-portable code */
-	for (ext = dpy->ext_procs; ext; ext = ext->next) {
-	    if (ext->error_values)
-		(*ext->error_values)(dpy, event, fp);
-	}
-	/* the rest is a fallback, providing a simple default */
 	/* kludge, try to find the extension that caused it */
 	buffer[0] = '\0';
 	for (ext = dpy->ext_procs; ext; ext = ext->next) {
 	    if (ext->error_string) 
 		(*ext->error_string)(dpy, event->error_code, &ext->codes,
 				     buffer, BUFSIZ);
-	    if (buffer[0])
+	    if (buffer[0]) {
+		bext = ext;
 		break;
+	    }
+	    if (ext->codes.first_error &&
+		ext->codes.first_error < event->error_code &&
+		(!bext || ext->codes.first_error > bext->codes.first_error))
+		bext = ext;
 	}    
-	if (buffer[0])
-	    sprintf(buffer, "%s.%d", ext->name,
-		    event->error_code - ext->codes.first_error);
+	if (bext)
+	    sprintf(buffer, "%s.%d", bext->name,
+		    event->error_code - bext->codes.first_error);
 	else
 	    strcpy(buffer, "Value");
 	XGetErrorDatabaseText(dpy, mtype, buffer, "", mesg, BUFSIZ);
-	if (*mesg) {
+	if (mesg[0]) {
+	    fputs("  ", fp);
 	    (void) fprintf(fp, mesg, event->resourceid);
-	    fputs("\n  ", fp);
+	    fputs("\n", fp);
+	}
+	/* let extensions try to print the values */
+	for (ext = dpy->ext_procs; ext; ext = ext->next) {
+	    if (ext->error_values)
+		(*ext->error_values)(dpy, event, fp);
 	}
     } else if ((event->error_code == BadWindow) ||
 	       (event->error_code == BadPixmap) ||
