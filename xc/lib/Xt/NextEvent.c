@@ -544,7 +544,7 @@ void XtRemoveInput( id )
 				} else {
 				    lptr->ie_next = sptr->ie_next;
 				}
-				for (condition = 0, lptr = sptr;
+				for (condition = 0, lptr = sptr->ie_next;
 				     lptr; lptr = lptr->ie_next)
 				    condition |= lptr->ie_condition;
 				if ((sptr->ie_condition & XtInputReadMask) &&
