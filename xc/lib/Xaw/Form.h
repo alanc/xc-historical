@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.15 88/09/09 16:35:05 swick Exp $ */
+/* $XConsortium: Form.h,v 1.16 88/10/23 13:39:30 swick Exp $ */
 
 
 /***********************************************************
@@ -103,6 +103,8 @@ typedef enum {
 				   from the edges of the form*/
 } XtEdgeType;
 #endif  _XtEdgeType_e
+
+extern void XtFormDoLayout();
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
