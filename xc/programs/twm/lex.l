@@ -26,7 +26,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.34 89/05/16 10:11:26 jim Exp $
+ * $XConsortium: lex.l,v 1.35 89/05/17 16:10:21 jim Exp $
  *
  * .twmrc lex file
  *
@@ -35,9 +35,9 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.34 89/05/16 10:11:26 jim Exp $";
+"$XConsortium: lex.l,v 1.35 89/05/17 16:10:21 jim Exp $";
 
-#include <stdio.h>
+/* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
 
 extern int ParseError;
