@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.86 88/10/18 09:10:52 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.87 88/10/18 09:53:46 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -734,7 +734,7 @@ void XtDispatchEvent (event)
     }
 }
 
-static void RemoveGrab();
+static Boolean RemoveGrab();
 
 /* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
@@ -743,7 +743,7 @@ static void GrabDestroyCallback(widget, closure, call_data)
     caddr_t call_data;
 {
     /* Remove widget from grab list if it destroyed */
-    RemoveGrab(widget, False);
+    (void)RemoveGrab(widget, False);
 }
 
 /* ARGSUSED */
@@ -753,7 +753,7 @@ static void FocusDestroyCallback(widget, closure, call_data)
     caddr_t call_data;
 {
     /* Remove widget from grab list if it destroyed */
-    RemoveGrab((Widget)closure, True);
+    (void)RemoveGrab((Widget)closure, True);
 }
 
 static GrabRec *NewGrabRec(widget, exclusive, spring_loaded, keyboard_focus)
@@ -840,9 +840,10 @@ static Boolean InsertFocusEntry(widget, keyboard_focus)
     return True;
 }
 
-static void RemoveGrab(widget, keyboard_focus)
+static Boolean RemoveGrab(widget, keyboard_focus)
     Widget  widget;
     Boolean keyboard_focus;
+    /* returns False if no grab entry was found, True otherwise */
 {
     GrabList *whichList;
     register GrabList gl, prev, next;
@@ -864,7 +865,7 @@ static void RemoveGrab(widget, keyboard_focus)
 		       "XtRemoveGrab asked to remove a widget not on the list",
 		       (String *)NULL, (Cardinal *)NULL);
 	}
-	return;
+	return False;
     }
 
     if (keyboard_focus) {
@@ -874,7 +875,7 @@ static void RemoveGrab(widget, keyboard_focus)
 		FocusDestroyCallback, widget);
 	XtFree((char *)gl);
 	focusTraceGood = False;	/* invalidate the cache */
-	return;
+	return True;
     }
 
     do {
@@ -885,12 +886,13 @@ static void RemoveGrab(widget, keyboard_focus)
 		GrabDestroyCallback, (caddr_t)NULL);
 	XtFree((char *)gl);
     } while (! done);
+    return True;
 }
 
 void XtRemoveGrab(widget)
     Widget  widget;
 {
-    RemoveGrab(widget, False);
+    (void)RemoveGrab(widget, False);
 }
 
 void XtMainLoop()
@@ -1050,7 +1052,7 @@ static void HandleFocus(widget, client_data, event)
     }
 
     if (add) (void) InsertFocusEntry(widget, descendant);
-    else RemoveGrab(widget, True);
+    else (void)RemoveGrab(widget, True);
 
     SendFocusNotify(descendant, add ? FocusIn : FocusOut);
 }
@@ -1141,11 +1143,22 @@ void XtSetKeyboardFocus(widget, descendant)
     EventMask mask;
 
     if (descendant == (Widget)None) {
-	RemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL,
+        register XtEventRec* p;
+        register XtEventHandler proc;
+        p = widget->core.event_table;
+        proc = HandleFocus;     /* compiler bug */
+        while (p != NULL && p->proc != proc) p = p->next;
+        if (p != NULL) {
+            descendant = (Widget)p->closure;
+	    RemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL,
 			   FALSE, FALSE); /* not raw, don't check closure */
+        }
 	RemoveEventHandler(widget, XtAllEvents, True, ForwardEvent, NULL,
 			   FALSE, FALSE); /* not raw, don't check closure */
-	RemoveGrab(widget, True);
+
+        if (RemoveGrab( widget, True ) && descendant != (Widget)None)
+            SendFocusNotify( descendant, FocusOut );
+
 	return;
     }
 
