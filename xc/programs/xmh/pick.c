@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.32 89/08/03 17:20:55 converse Exp $";
+    "$XConsortium: pick.c,v 2.33 89/09/01 17:36:36 kit Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -60,7 +60,6 @@ typedef struct {
    WidgetClass	type;		/* Encode what type of Widget this is. */
    Widget 	widget;		/* The widget id itself. */
    struct _RowListRec *row;	/* Which row this widget is in. */
-   char		*ptr;		/* Data (if text subwidget) */
 } FormEntryRec, *FormEntry;
 
 typedef struct _RowListRec {
@@ -191,14 +190,9 @@ static void AddTextEntry(row, str)
 	{XtNresize, (XtArgVal) XawtextResizeBoth},
 	{XtNeditType, (XtArgVal)XawtextEdit},
     };
-    char *ptr;
-    FormEntry entry;
-    ptr = XtMalloc((Cardinal)310);
-    arglist[0].value = (XtArgVal) ptr;
+    arglist[0].value = (XtArgVal) str;
     arglist[1].value = (XtArgVal) stdwidth;
-    (void) strcpy(ptr, str);
-    entry = CreateWidget( row, WTtextentry, arglist, XtNumber(arglist) );
-    entry->ptr = ptr;
+    (void) CreateWidget( row, WTtextentry, arglist, XtNumber(arglist) );
 }
 
 
@@ -207,8 +201,11 @@ FormEntry entry;
 char *str;
 {
     Arg arglist[1];
+    char *ptr;
 
-    if (strcmp(str, entry->ptr) == 0) 
+    XtSetArg(arglist[0], XtNstring, &ptr);
+    XtGetValues(entry->widget, arglist, (Cardinal) 1);
+    if (strcmp(str, ptr) == 0) 
         return;
 
     XtSetArg(arglist[0], XtNstring, str);
@@ -275,15 +272,22 @@ static EraseLast()
 static ParseRow(row)
   RowList row;
 {
-    int     result = FALSE;
-    int i;
-    FormEntry entry;
-    char   str[1000];
+    int		result = FALSE;
+    int		i;
+    FormEntry	entry;
+    char	str[1000];
+    Arg	  	args[4];
+    char	*ptr;
+    char	*other;
+
     if (row->type > LASTUSEFULROWTYPE)
 	return FALSE;
+
     for (i = 3; i < row->numwidgets; i += 2) {
 	entry = row->wlist[i];
-	if (*(entry->ptr)) {
+	XtSetArg(args[0], XtNstring, &ptr);
+	XtGetValues(entry->widget, args, (Cardinal) 1);
+	if (ptr && *ptr) {
 	    if (!result) {
 		result = TRUE;
 		if (! (*((short *)
@@ -311,11 +315,13 @@ static ParseRow(row)
 		    AppendArgv("-search");
 		    break;
 		case RTother: 
-		    (void) sprintf(str, "--%s", row->wlist[2]->ptr);
+		    XtSetArg(args[0], XtNstring, &other);
+		    XtGetValues(row->wlist[2]->widget, args, (Cardinal) 1);
+		    (void) sprintf(str, "--%s", other);
 		    AppendArgv(str);
 		    break;
 	    }
-	    AppendArgv(entry->ptr);
+	    AppendArgv(ptr);
 	    AppendArgv("-or");
 	}
     }
@@ -358,25 +364,33 @@ static void ExecOK(w, closure, call_data)
     RowList row0 = group->rlist[0];
     RowList row1 = group->rlist[1];
     RowList row2 = group->rlist[2];
-    char *fromseq = row0->wlist[3]->ptr;
-    char *toseq = row0->wlist[1]->ptr;
-    char *fromdate = row1->wlist[1]->ptr;
-    char *todate = row1->wlist[3]->ptr;
-    char *datefield = row1->wlist[5]->ptr;
-    short removeoldmsgs = *((short*)XawToggleGetCurrent(row2->wlist[1]->widget));
+    char *fromseq;
+    char *toseq;
+    char *datefield;
+    char *fromdate;
+    char *todate;
+    short removeoldmsgs =
+	*((short*)XawToggleGetCurrent(row2->wlist[1]->widget));
     char str[1000];
     int i, found;
     char *folderpath;
     int cmd_status;
+    Arg args[5];
+
+    XtSetArg(args[0], XtNstring, &toseq);
+    XtGetValues(row0->wlist[1]->widget, args, (Cardinal) 1);
     if (strcmp(toseq, "all") == 0) {
 	PopupError("Can't create a sequence called \"all\".");
 	return;
     }
+    XtSetArg(args[0], XtNstring, &fromseq);
+    XtGetValues(row0->wlist[3]->widget, args, (Cardinal) 1);
     if (TocGetSeqNamed(toc, fromseq) == NULL) {
 	(void) sprintf(str, "Sequence \"%s\" doesn't exist!", fromseq);
 	PopupError(str);
 	return;
     }
+
     argv = MakeArgv(1);
     argvsize = 0;
     AppendArgv("pick");
@@ -389,15 +403,21 @@ static void ExecOK(w, closure, call_data)
 	AppendArgv("-zero");
     else
 	AppendArgv("-nozero");
+    XtSetArg(args[0], XtNstring, &datefield);
+    XtGetValues(row1->wlist[5]->widget, args, (Cardinal) 1);
     if (*datefield) {
 	AppendArgv("-datefield");
 	AppendArgv(datefield);
     }
+    XtSetArg(args[0], XtNstring, &fromdate);
+    XtGetValues(row1->wlist[1]->widget, args, (Cardinal) 1);
     if (*fromdate) {
 	AppendArgv("-after");
 	AppendArgv(fromdate);
 	AppendArgv("-and");
     }
+    XtSetArg(args[0], XtNstring, &todate);
+    XtGetValues(row1->wlist[3]->widget, args, (Cardinal) 1);
     if (*todate) {
 	AppendArgv("-before");
 	AppendArgv(todate);
@@ -486,8 +506,6 @@ static DeleteWidget(entry)
     RowList row = entry->row;
     int i;
     XtDestroyWidget(entry->widget);
-    if (entry->type == WTtextentry)
-	XtFree((char *) entry->ptr);
     for (i = 0; i < row->numwidgets; i++)
 	if (row->wlist[i] == entry)
 	    break;
@@ -700,7 +718,6 @@ Pick pick;
 }
 
 
-
 AddPick(scrn, toc, fromseq, toseq)
   Scrn scrn;
   Toc toc;
@@ -747,3 +764,7 @@ AddPick(scrn, toc, fromseq, toseq)
     ChangeLabel(pick->label, str);
     StoreWindowName(scrn, str);
 }
+
+
+
+
