@@ -33,11 +33,12 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.30 88/09/06 17:20:33 jim Exp $";
+static char *rcsid_xpr_c = "$XConsortium: xpr.c,v 1.31 88/12/26 15:08:21 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <sys/uio.h>
 #include <stdio.h>
 #include <pwd.h>
@@ -73,6 +74,7 @@ enum device {LN01, LN03, LA100, PS, PP};
 char *infilename = "stdin", *whoami;
 
 char *malloc();
+char *convert_data();
 
 main(argc, argv)
 char **argv;
@@ -90,11 +92,12 @@ char **argv;
     int top_margin, left_margin;
     int hpad;
     char *header, *trailer;
-    int plane = 0;
-    char *tmpbuf;
-    int size;
+    int plane = -1;
+    char *data;
+    long size;
     enum orientation orientation;
     enum device device;
+    XColor *colors = (XColor *)NULL;
     
     parse_args (argc, argv, &scale, &width, &height, &left, &top, &device, 
 		&flags, &split, &header, &trailer, &plane);
@@ -126,20 +129,11 @@ char **argv;
 	exit(1);
     }
 
-    if (win.pixmap_depth != 1 && win.pixmap_format != XYPixmap) {
-        fprintf(stderr,"xpr: image is not in XY format\n");
-	exit(1);
-    }
-
-    if (win.byte_order != win.bitmap_bit_order)
-        fprintf(stderr,"xpr: image will be incorrect, byte swapping required but not performed.\n");
-
     w_name = malloc((unsigned)(win.header_size - sizeof win));
     fullread(0, w_name, (int) (win.header_size - sizeof win));
     
     if(win.ncolors) {
-	XColor *colors = (XColor *)malloc((unsigned) (win.ncolors * sizeof(XColor)));
-
+	colors = (XColor *)malloc((unsigned) (win.ncolors * sizeof(XColor)));
 	fullread(0, (char *)colors, (int) (win.ncolors * sizeof(XColor)));
 	if (*(char *) &swaptest) {
 	    for (i = 0; i < win.ncolors; i++) {
@@ -147,20 +141,28 @@ char **argv;
 		_swapshort((char *) &colors[i].red, (long) (3 * sizeof(short)));
 	    }
 	}
-	if (win.ncolors == 2 && INTENSITY(colors[0]) > INTENSITY(colors[1]))
+	if (win.ncolors == 2 && INTENSITY(&colors[0]) > INTENSITY(&colors[1]))
 	    flags ^= F_INVERT;
     }
-    if (plane >= win.pixmap_depth) {
+    if (plane >= (long)win.pixmap_depth) {
 	fprintf(stderr,"xpr: plane number exceeds image depth\n");
 	exit(1);
     }
-    if (plane < win.pixmap_depth - 1) {
+    size = win.bytes_per_line * win.pixmap_height;
+    if (win.pixmap_format == XYPixmap)
+	size *= win.pixmap_depth;
+    data = malloc((unsigned)size);
+    fullread(0, data, (int)size);
+    if ((win.pixmap_depth > 1) || (win.byte_order != win.bitmap_bit_order)) {
+	data = convert_data(&win, data, plane, colors);
 	size = win.bytes_per_line * win.pixmap_height;
-	tmpbuf = malloc(size);
-	for (i = win.pixmap_depth; --i != plane;)
-	    fullread(0, tmpbuf, size);
-	free(tmpbuf);
     }
+    if (win.bitmap_bit_order == MSBFirst) {
+	_swapbits((unsigned char *)data, size);
+	win.bitmap_bit_order = LSBFirst;
+    }
+    if (flags & F_INVERT)
+	_invbits((unsigned char *)data, size);
 
     /* calculate orientation and scale */
     setup_layout(device, (int) win.pixmap_width, (int) win.pixmap_height, flags, width, 
@@ -178,7 +180,7 @@ char **argv;
 	/* build pixcells from input file */
 	sixel_count = iw * ih;
 	sixmap = (unsigned char (*)[])malloc((unsigned)sixel_count);
-	build_sixmap(iw, ih, sixmap, hpad, (flags & F_INVERT), &win);
+	build_sixmap(iw, ih, sixmap, hpad, &win, data);
     }
 
     /* output commands and sixel graphics */
@@ -196,7 +198,7 @@ char **argv;
     } else if (device == PS) {
 	ps_setup(iw, ih, orientation, scale, left, top,
 		   flags, header, trailer, w_name);
-	ps_output_bits(iw, ih, flags, orientation, &win);
+	ps_output_bits(iw, ih, flags, orientation, &win, data);
 	ps_finish();
     } else {
 	fprintf(stderr, "xpr: device not supported\n");
@@ -481,6 +483,127 @@ enum orientation *orientation;
     if (iscale > 0 && iscale < *scale) *scale = iscale;
 }
 
+char *
+convert_data(win, data, plane, colors)
+    register XWDFileHeader *win;
+    char *data;
+    int plane;
+    XColor *colors;
+{
+    XImage in_image, out_image;
+    register int x, y;
+
+    if ((win->pixmap_format == XYPixmap) && (plane >= 0)) {
+	data += win->bytes_per_line * win->pixmap_height *
+		(win->pixmap_depth - (plane + 1));
+	win->pixmap_format = XYBitmap;
+	win->pixmap_depth = 1;
+	return data;
+    }
+
+    /* initialize the input image */
+    in_image.width = (int) win->pixmap_width;
+    in_image.height = (int) win->pixmap_height;
+    in_image.xoffset = (int) win->xoffset;
+    in_image.format = (int) win->pixmap_format;
+    in_image.byte_order = (int) win->byte_order;
+    in_image.bitmap_unit = (int) win->bitmap_unit;
+    in_image.bitmap_bit_order = (int) win->bitmap_bit_order;
+    in_image.bitmap_pad = (int) win->bitmap_pad;
+    in_image.depth = (int) win->pixmap_depth;
+    in_image.bits_per_pixel = (int) win->bits_per_pixel;
+    in_image.bytes_per_line = (int) win->bytes_per_line;
+    in_image.red_mask = win->red_mask;
+    in_image.green_mask = win->green_mask;
+    in_image.blue_mask = win->blue_mask;
+    in_image.obdata = NULL;
+    in_image.data = data;
+    _XInitImageFuncPtrs(&in_image);
+    out_image.width = (int) win->pixmap_width;
+    out_image.height = (int) win->pixmap_height;
+    out_image.xoffset = win->xoffset = 0;
+    out_image.format = win->pixmap_format = XYBitmap;
+    out_image.byte_order = win->byte_order = LSBFirst;
+    out_image.bitmap_unit = win->bitmap_unit = 8;
+    out_image.bitmap_bit_order = win->bitmap_bit_order = LSBFirst;
+    out_image.bitmap_pad = win->bitmap_pad = 8;
+    out_image.depth = win->pixmap_depth = 1;
+    out_image.bits_per_pixel = win->bits_per_pixel = 1;
+    out_image.bytes_per_line = win->bytes_per_line =
+		(out_image.height + 7) >> 3;
+    out_image.red_mask = 0;
+    out_image.green_mask = 0;
+    out_image.blue_mask = 0;
+    out_image.obdata = NULL;
+    out_image.data = malloc((unsigned)out_image.bytes_per_line *
+				      out_image.height);
+    _XInitImageFuncPtrs(&out_image);
+    if ((in_image.depth > 1) && (plane > 0)) {
+	for (y = 0; y < in_image.height; y ++)
+	    for (x = 0; x < in_image.width; x++)
+		XPutPixel(&out_image, x, y,
+			  (XGetPixel(&in_image, x, y) >> plane) & 1);
+    } else if ((in_image.depth > 1) &&
+	       ((win->visual_class == TrueColor) ||
+		(win->visual_class == DirectColor))) {
+	XColor color;
+	int direct = 0;
+	unsigned long rmask, gmask, bmask;
+	int rshift = 0, gshift = 0, bshift = 0;
+
+	rmask = win->red_mask;
+	while (!(rmask & 1)) {
+	    rmask >>= 1;
+	    rshift++;
+	}
+	gmask = win->green_mask;
+	while (!(gmask & 1)) {
+	    gmask >>= 1;
+	    gshift++;
+	}
+	bmask = win->blue_mask;
+	while (!(bmask & 1)) {
+	    bmask >>= 1;
+	    bshift++;
+	}
+	if ((win->ncolors == 0) || (win->visual_class = DirectColor))
+	    direct = 1;
+	for (y = 0; y < in_image.height; y ++)
+	    for (x = 0; x < in_image.width; x++) {
+		color.pixel = XGetPixel(&in_image, x, y);
+		color.red = (color.pixel >> rshift) & rmask;
+		color.green = (color.pixel >> gshift) & gmask;
+		color.blue = (color.pixel >> bshift) & bmask;
+		if (!direct) {
+		    color.red = colors[color.red].red;
+		    color.green = colors[color.green].green;
+		    color.blue = colors[color.blue].blue;
+		}
+		XPutPixel(&out_image, x, y, INTENSITY(&color) > HALFINTENSITY);
+	    }
+    } else if (in_image.depth > 1) {
+	if (win->ncolors == 0) {
+	    fprintf(stderr, "no colors in data, can't remap\n");
+	    exit(1);
+	}
+	for (x = 0; x < win->ncolors; x++) {
+	    register XColor *color = &colors[x];
+	    color->pixel = (INTENSITY(color) > HALFINTENSITY);
+	}
+	for (y = 0; y < in_image.height; y ++)
+	    for (x = 0; x < in_image.width; x++)
+		XPutPixel(&out_image, x, y,
+			  colors[XGetPixel(&in_image, x, y)].pixel);
+    } else {
+	for (y = 0; y < in_image.height; y ++)
+	    for (x = 0; x < in_image.width; x++)
+		XPutPixel(&out_image, x, y, XGetPixel(&in_image, x, y));
+    }
+
+    free(data);
+    return (out_image.data);
+}
+
 dump_sixmap(sixmap, iw, ih)
 register unsigned char (*sixmap)[];
 int iw;
@@ -499,45 +622,41 @@ int ih;
     }
 }
 
-build_sixmap(iw, ih, sixmap, hpad, invert, win)
+build_sixmap(iw, ih, sixmap, hpad, win, data)
 int ih;
 int iw;
 unsigned char (*sixmap)[];
 int hpad;
-int invert;
 XWDFileHeader *win;
+char *data;
 {
     int iwb = win->bytes_per_line;
-    struct iovec linevec[6];
-    unsigned char line[6][500];
+    unsigned char *line[6];
     register unsigned char *c;
-    register int i, j, w;
+    register int i, j;
+#ifdef NOINLINE
+    register int w;
+#endif
     register int sixel;
+    unsigned char *buffer = (unsigned char *)data;
 
     c = (unsigned char *)sixmap;
 
 
     while (--ih >= 0) {
         for (i = 0; i <= 5; i++) {
-	    linevec[i].iov_base = (caddr_t)line[i];
-	    linevec[i].iov_len = iwb;
+	    line[i] = buffer;
+	    buffer += iwb;
         }
-	if (ih > 0 || hpad == 0) 
-	    fullreadv(0, linevec, 6, iwb*6);
-	else {
-	    i = 6 - hpad;
-	    fullreadv(0, linevec, i, iwb*i);
-	    for (; i < 6; i++)
-		for (j = 0; j < iwb; j++) line[i][j] = 0xFF;
+	if ((ih == 0) && (hpad > 0)) {
+	    unsigned char *ffbuf;
+
+	    ffbuf = (unsigned char *)malloc((unsigned)iwb);
+	    for (j = 0; j < iwb; j++)
+		ffbuf[j] = 0xFF;
+	    for (; --hpad >= 0; i--)
+		line[i] = ffbuf;
 	}
-
-	if (win->bitmap_bit_order == MSBFirst)
-	    for (i = 0; i <= 5; i++)
-	        _swapbits(&line[i][0], (long)iwb);
-
-	if (invert)
-	    for (i = 0; i <= 5; i++)
-	        _invbits(&line[i][0], (long)iwb);
 
 #ifndef NOINLINE
 	for (i = 0; i < iw; i++) {
@@ -674,6 +793,7 @@ ln03_finish()
 
 }
 
+/*ARGSUSED*/
 la100_setup(iw, ih, scale)
 {
     char buf[256];
@@ -1084,6 +1204,7 @@ int left_margin;
     write(1, (char *)buf, bp-buf);
 }
 
+/*ARGSUSED*/
 la100_output_sixels(sixmap, iw, ih, nosixopt)
 unsigned char (*sixmap)[];
 int iw;
@@ -1146,25 +1267,24 @@ int nosixopt;
 }
 
 #define LINELEN 72 /* number of CHARS (bytes*2) per line of bitmap output */
-char *obuf; /* buffer to contain entire rotated bit map */
 
-ps_output_bits(iw, ih, flags, orientation, win)
+ps_output_bits(iw, ih, flags, orientation, win, data)
 int iw;
 int ih;
 int flags;
 XWDFileHeader *win;
 enum orientation orientation;
+char *data;
 {
     unsigned long swaptest = 1;
     int iwb = win->bytes_per_line;
     register int i;
-    int n,bytes;
-    unsigned char *buffer;
+    int bytes;
+    unsigned char *buffer = (unsigned char *)data;
     register int ocount=0;
     extern char hex1[],hex2[];
     static char hex[] = "0123456789abcdef";
 
-    buffer = (unsigned char *)malloc((unsigned)(iwb + 3));
     if (orientation == LANDSCAPE) {
 	/* read in and rotate the entire image */
 	/* The Postscript language has a rotate operator, but using it
@@ -1176,6 +1296,8 @@ enum orientation orientation;
 	int owidth = (ih+31)/32; /* width of rotated image, in bytes */
 	int oheight = (iw+31)/32; /* height of rotated image, in scanlines */
 	register char *p, *q;
+	char *obuf;
+	unsigned char *ibuf;
 	owidth *= 4;
 	oheight *= 32;
 
@@ -1190,15 +1312,13 @@ enum orientation orientation;
 	}
 	bzero(obuf,owidth*oheight);
 
+	ibuf = (unsigned char *)malloc((unsigned)(iwb + 3));
 	for (i=0;i<ih;i++) {
-	    fullread(0,(char *)buffer,iwb);
-	    if (win->bitmap_bit_order == MSBFirst)
-		_swapbits(buffer, (long)iwb);
-	    if (flags & F_INVERT)
-		_invbits(buffer, (long)iwb);
+	    bcopy((char *)buffer, (char *)ibuf, iwb);
+	    buffer += iwb;
 	    if (!(*(char *) &swaptest))
-		_swaplong((char *)buffer,(long)iwb);
-	    ps_bitrot(buffer,iw,--ocol,owidth);
+		_swaplong((char *)ibuf,(long)iwb);
+	    ps_bitrot(ibuf,iw,--ocol,owidth,obuf);
 	}
 	if (!(*(char *) &swaptest))
 	    _swaplong(obuf,(long)(iw*owidth));
@@ -1209,12 +1329,8 @@ enum orientation orientation;
     }
     else {
 	for (i=0;i<ih;i++) {
-	    fullread(0,(char *)buffer,iwb);
-	    if (win->bitmap_bit_order == MSBFirst)
-		_swapbits(buffer, (long)iwb);
-	    if (flags & F_INVERT)
-		_invbits(buffer, (long)iwb);
 	    ocount = ps_putbuf(buffer,(iw+7)/8,ocount,flags&F_COMPACT);
+	    buffer += iwb;
 	}
     }
     if (flags & F_COMPACT) {
@@ -1396,11 +1512,12 @@ int compact;			/* if non-zero, do compaction (see below) */
     return ocount;
 }
 
-ps_bitrot(s,n,col,owidth)
+ps_bitrot(s,n,col,owidth,obuf)
 unsigned char *s;
 register int n;
 int col;
 register int owidth;
+char *obuf;
 /* s points to a chunk of memory and n is its width in bits.
  * The algorithm is, roughly,
  *    for (i=0;i<n;i++) {
@@ -1461,46 +1578,6 @@ fullread (file, data, nbytes)
 	data += bytes_read;
 	}
     }
-
-/* fullreadv() is the same as readv(),  except that it guarantees to 
-   read all the bytes requested. The "total_length" parameter must
-   be the same as the sum of the individual iovec lengths; it is
-   included here because the caller knows it and fullreadv() can
-   therefore avoid recomputing it. */
-/* Note that after fullreadv() returns, both the "iov_len" and
-   "iov_base" fields of each element of "iov" have been destroyed!   The caller
-   must reinitialize them before using the "iov" array again. */
-
-fullreadv (file, iov, nvec, total_length)
-    int file;
-    struct iovec *iov;
-    int nvec;
-    int total_length;
-    {
-    int bytes_read;
-    while ((bytes_read = readv(file, iov, nvec)) != total_length) {
-	int i;
-	if (bytes_read < 0) {
-	    perror ("error while reading standard input");
-	    return;
-	    }
-	else if (bytes_read == 0) {
-	    fprintf (stderr, "xpr: premature end of file\n");
-	    return;
-	    }
-	total_length -= bytes_read;
-	iov[0].iov_len -= bytes_read;
-	iov[0].iov_base += bytes_read;
-	for (i=0; i<nvec-1; i++) {
-	    if (iov[i].iov_len < 0) {
-		iov[i+1].iov_len += iov[i].iov_len;
-		iov[i+1].iov_base -= iov[i].iov_len;
-		iov[i].iov_len = 0;
-		}
-	    }
-	}
-    }
-	
 
 /* mapping tables to map a byte in to the hex representation of its
  * bit-reversal
