@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.235 94/03/31 14:11:10 gildea Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.236 94/04/01 19:56:56 kaleb Exp $
 
 /****************************************************************************
  *                                                                          *
@@ -171,7 +171,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.235 94/03/31 14:11:10 gildea Exp $
 #if SystemV4
 #define XawI18nDefines -DHAS_WCTYPE_H
 #else
-#define XawI18nDefines /**/
+#define XawI18nDefines -DUSE_XWCHAR_STRING
 #endif
 #endif
 #ifndef ExtensionOSDefines
