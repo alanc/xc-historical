@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.194 94/07/08 09:45:41 kaleb Exp kaleb $ */
+/* $XConsortium: Text.c,v 1.195 95/06/06 20:50:30 kaleb Exp kaleb $ */
 
 /***********************************************************
 
@@ -665,7 +665,7 @@ XawTextInsertState state;
   if ( ctx->simple.international ) {
     Arg list[1];
 
-    XtSetArg (list[1], XtNinsertPosition, ctx->text.insertPos);
+    XtSetArg (list[0], XtNinsertPosition, ctx->text.insertPos);
     _XawImSetValues (w, list, 1);
   }
 }
