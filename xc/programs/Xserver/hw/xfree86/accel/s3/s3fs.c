@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: s3fs.c,v 1.1 94/03/28 21:15:15 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -180,6 +180,8 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    register int *pwidth;	/* pointer to list of n widths */
    int   xrot, yrot, width, height, pixWidth;
    PixmapPtr pPix = pGC->tile.pixmap;
+   DDXPointPtr initPpt;
+   int *initPwidth;
 
    if (!xf86VTSema)
    {
@@ -205,9 +207,9 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-   pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+   initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
-   ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+   initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
    if (!ppt || !pwidth) {
       if (ppt)
 	 DEALLOCATE_LOCAL(ppt);
@@ -258,8 +260,8 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       }
    }
 
-   DEALLOCATE_LOCAL(ppt);
-   DEALLOCATE_LOCAL(pwidth);
+   DEALLOCATE_LOCAL(initPpt);
+   DEALLOCATE_LOCAL(initPwidth);
 }
 
 void
@@ -276,6 +278,8 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    register int *pwidth;	/* pointer to list of n widths */
    int   xrot, yrot, width, height, pixWidth;
    PixmapPtr pPix = pGC->stipple;
+   DDXPointPtr initPpt;
+   int *initPwidth;
 
    if (!xf86VTSema)
    {
@@ -302,9 +306,9 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-   pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+   initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
-   ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+   initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
    if (!ppt || !pwidth) {
       if (ppt)
 	 DEALLOCATE_LOCAL(ppt);
@@ -357,8 +361,8 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       }
    }
 
-   DEALLOCATE_LOCAL(ppt);
-   DEALLOCATE_LOCAL(pwidth);
+   DEALLOCATE_LOCAL(initPpt);
+   DEALLOCATE_LOCAL(initPwidth);
 }
 
 void
@@ -375,6 +379,8 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
    register int *pwidth;	/* pointer to list of n widths */
    int   xrot, yrot, width, height, pixWidth;
    PixmapPtr pPix = pGC->stipple;
+   DDXPointPtr initPpt;
+   int *initPwidth;
 
    if (!xf86VTSema)
    {
@@ -401,9 +407,9 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       return;
 
    n = nInit * miFindMaxBand(((cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-   pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+   initPwidth = pwidth = (int *)ALLOCATE_LOCAL(n * sizeof(int));
 
-   ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+   initPpt = ppt = (DDXPointRec *) ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
    if (!ppt || !pwidth) {
       if (ppt)
 	 DEALLOCATE_LOCAL(ppt);
@@ -458,6 +464,6 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
       }
    }
 
-   DEALLOCATE_LOCAL(ppt);
-   DEALLOCATE_LOCAL(pwidth);
+   DEALLOCATE_LOCAL(initPpt);
+   DEALLOCATE_LOCAL(initPwidth);
 }
