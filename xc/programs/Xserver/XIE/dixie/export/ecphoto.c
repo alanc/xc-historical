@@ -1,4 +1,4 @@
-/* $XConsortium: ecphoto.c,v 1.1 93/10/26 10:03:02 rws Exp $ */
+/* $XConsortium: ecphoto.c,v 1.2 93/11/06 15:49:01 rws Exp $ */
 /**** module ecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -297,7 +297,7 @@ Bool CopyECPhotoJPEGBaseline(flo, ped, sparms, rparms, tsize)
      rparms->lenDCtable & 3) 
     return(FALSE);
   
-  if(!(ped->techPvt=(void *)XieMalloc(sizeof(eTecEncodeJPEGBaselineDefRec))))
+  if(!(ped->techPvt=(pointer)XieMalloc(sizeof(eTecEncodeJPEGBaselineDefRec))))
     FloAllocError(flo, ped->phototag, xieElemExportClientPhoto, return(TRUE));
   
   pvt = (eTecEncodeJPEGBaselineDefPtr)ped->techPvt;
