@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.9 94/02/03 09:57:59 mor Exp $ */
+/* $XConsortium: listen.c,v 1.10 94/02/03 16:20:17 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -152,7 +152,7 @@ char		*errorStringRet;
 
 
 int
-IceGetListenDescrip (listenObj)
+IceGetListenConnectionNumber (listenObj)
 
 IceListenObj listenObj;
 
@@ -163,7 +163,7 @@ IceListenObj listenObj;
 
 
 char *
-IceGetListenNetworkId (listenObj)
+IceGetListenConnectionString (listenObj)
 
 IceListenObj listenObj;
 
@@ -220,16 +220,22 @@ IceListenObj	*listenObjs;
 
 
 void
-IceFreeListenObj (listenObj)
+IceFreeListenObjs (count, listenObjs)
 
-IceListenObj listenObj;
+int	     count;
+IceListenObj *listenObjs;
 
 {
-    if (listenObj)
+    int i;
+
+    for (i = 0; i < count; i++)
     {
-	free (listenObj->network_id);
-	free ((char *) listenObj);
+	free (listenObjs[i]->network_id);
+	_ICETransClose (listenObjs[i]->trans_conn);
+	free ((char *) listenObjs[i]);
     }
+
+    free ((char *) listenObjs);
 }
 
 
