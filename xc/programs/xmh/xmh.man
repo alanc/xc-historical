@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.26 91/07/31 21:18:00 converse Exp $
+.\" $XConsortium: xmh.man,v 1.27 91/08/01 00:07:30 converse Exp $
 .TH XMH 1 "Release 5" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH
@@ -37,7 +37,7 @@ folder buttons and to request the window manager to change the appearance
 of the \fIxmh\fP icon when new mail has arrived.  By default,
 \fIxmh\fP will change the appearance of the ``inbox'' folder button when
 new mail is waiting.  The application-specific resource \fBcheckNewMail\fP
-can be used to turn off this notification, and the \fI\-flag\fP option will
+can be used to turn off this notification, and the \fB\-flag\fP option will
 still override it.
 .PP
 These three options have corresponding application-specific resources, 
@@ -48,7 +48,7 @@ The standard toolkit command line options are given in \fIX(1)\fP.
 
 .SH INSTALLATION
 .PP
-fIxmh\fR requires that the user is already set up
+\fIxmh\fR requires that the user is already set up
 to use \fIMH\fR, version 6.  To do so, see if there is a file
 called .mh_profile in your home directory.  If it exists, check to see if it
 contains a line that starts with ``Current-Folder''.  If it does, 
@@ -422,10 +422,10 @@ not affected; they simply are no longer grouped together to define a
 message-sequence.  The corresponding action is \fBXmhDeleteSequence()\fP.
 
 .SS VIEW COMMANDS
-Commands in the View menu and in the buttonboxes of 
-view windows (which result from the Message command ``View In New'')
+Commands in the \fIView\fP menu and in the buttonboxes of view windows
+(which result from the \fIMessage\fP menu command \fBView In New\fP)
 correspond in functionality to commands of the same
-name in the Message menu, but they operate on the viewed message 
+name in the \fIMessage\fP menu, but they operate on the viewed message 
 rather than the selected messages or current message.
 
 .TP 18
@@ -1034,9 +1034,9 @@ removal of the checkpoint files.
 The number of command buttons to create in a button box in between the toc
 and the view areas of the main window.  \fIxmh\fP will create these buttons
 with the names \fIbutton1, button2\fP and so on, in a box with the name
-\fIcommandBox\fR.  The user can specify labels and actions for the buttons
-in a private resource file; see the section titled "Actions and Interface
-Customization."  The default is 0.
+\fIcommandBox\fR.   The default is 0.
+\fIxmh\fP users can specify labels and actions for the buttons in a private 
+resource file; see the section ACTIONS AND INTERFACE CUSTOMIZATION.
 .PP
 .TP 8
 .B compGeometry
@@ -1282,11 +1282,12 @@ xpert	/users/converse/maildrops/xpert
 .PP
 Because \fIxmh\fR provides action procedures which correspond to command
 functionality and installs accelerators, users can customize accelerators
-in a private resource file.
+and new button functionality in a private resource file.
 For examples of specifying customized resources, see the file
 \fImit/clients/xmh/Xmh.sample\fR.  To understand the syntax, see the 
 Appendix of the \fIX Toolkit Intrinsics\fP specification
-on \fITranslation Table Syntax\fP.
+on \fITranslation Table Syntax\fP, and any general explanation of
+using and specifying \fIX\fP resources.
 Unpredictable results can occur if 
 actions are bound to events or widgets for which they were not designed.
 .PP
@@ -1296,60 +1297,56 @@ not required, in case you don't have access to the sample file mentioned
 above.
 .sp
 .nf
-! To create buttons in the middle of the main window and give them meaning:
+! To create buttons in the middle of the main window and give them semantics:
 
-Xmh*CommandButtonCount:		6
+Xmh*CommandButtonCount:		5
 
 Xmh*commandBox.button1.label:	Inc
-Xmh*commandBox.button1.translations: #override\
+Xmh*commandBox.button1.translations: #override\\
 	<Btn1Down>,<Btn1Up>: XmhIncorporateNewMail() unset()
 
 Xmh*commandBox.button2.label:	Compose
-Xmh*commandBox.button2.translations: #override\
+Xmh*commandBox.button2.translations: #override\\
 	<Btn1Down>,<Btn1Up>: XmhComposeMessage() unset()
 
 Xmh*commandBox.button3.label:	Next
-Xmh*commandBox.button3.translations: #override\
+Xmh*commandBox.button3.translations: #override\\
 	<Btn1Down>,<Btn1Up>: XmhViewNextMessage() unset()
 
 Xmh*commandBox.button4.label:	Delete
-Xmh*commandBox.button4.translations: #override\
+Xmh*commandBox.button4.translations: #override\\
 	<Btn1Down>,<Btn1Up>: XmhMarkDelete() unset()
 
 Xmh*commandBox.button5.label:	Commit
-Xmh*commandBox.button5.translations: #override\
+Xmh*commandBox.button5.translations: #override\\
 	<Btn1Down>,<Btn1Up>: XmhCommitChanges() unset()
-
-Xmh*commandBox.button6.label:	Check for Mail
-Xmh*commandBox.button6.translations: #override\
-	<Btn1Down>,<Btn1Up>: XmhCheckForNewMail() unset()
 
 ! To redefine the accelerator bindings to exclude modifier keys,
 ! and add your own keyboard accelerator for Compose Message:
 
-Xmh*tocMenu.accelerators: #override\n\
-	!:<Key>I:	XmhIncorporateNewMail()\n\
-	!:<Key>C: 	XmhCommitChanges()\n\
-	!:<Key>R:	XmhForceRescan()\n\
-	!:<Key>P:	XmhPackFolder()\n\
-	!:<Key>S:	XmhSortFolder()\n
-Xmh*messageMenu.accelerators: #override\n\
-	!:<Key>E:	XmhComposeMessage()\n\
-	!<Key>space:    XmhViewNextMessage()\n\
-	!:<Key>c:	XmhMarkCopy()\n\
-	!:<Key>d:	XmhMarkDelete()\n\
-	!:<Key>f:	XmhForward()\n\
-	!:<Key>m:	XmhMarkMove()\n\
-	!:<Key>n:	XmhViewNextMessage()\n\
-	!:<Key>p:	XmhViewPreviousMessage()\n\
-	!:<Key>r:	XmhReply()\n\
-	!:<Key>u:	XmhUnmark()\n
+Xmh*tocMenu.accelerators: #override\\n\\
+	!:<Key>I:	XmhIncorporateNewMail()\\n\\
+	!:<Key>C: 	XmhCommitChanges()\\n\\
+	!:<Key>R:	XmhForceRescan()\\n\\
+	!:<Key>P:	XmhPackFolder()\\n\\
+	!:<Key>S:	XmhSortFolder()\\n
+Xmh*messageMenu.accelerators: #override\\n\\
+	!:<Key>E:	XmhComposeMessage()\\n\\
+	!<Key>space:    XmhViewNextMessage()\\n\\
+	!:<Key>c:	XmhMarkCopy()\\n\\
+	!:<Key>d:	XmhMarkDelete()\\n\\
+	!:<Key>f:	XmhForward()\\n\\
+	!:<Key>m:	XmhMarkMove()\\n\\
+	!:<Key>n:	XmhViewNextMessage()\\n\\
+	!:<Key>p:	XmhViewPreviousMessage()\\n\\
+	!:<Key>r:	XmhReply()\\n\\
+	!:<Key>u:	XmhUnmark()\\n
 .fi
 .PP
 \fIxmh\fR provides action procedures
 which correspond to entries in the command menus; these are given in the
 sections describing menu commmands, not here.
-In addition to the actions corresponding to commands,
+In addition to the actions corresponding to commands in the menus,
 these action routines are defined:
 .TP 10
 .B XmhPushFolder(\fR[\fIfoldername, ...\fR]\fB)\fR
@@ -1405,9 +1402,9 @@ messages and no current message.
 This action will check all mail drops known to xmh.  If no mail drops have
 been specified by the user either through the \fI.xmhcheck\fR file or by
 the \fBinitialIncFile\fP resource, the \fIMH\fP command \fImsgchk\fP is
-used to check for new mail.
+used to check for new mail, otherwise, \fIxmh\fP checks directly.
 .TP 10
-.B XmhWMProtocols([wm_delete_window] [wm_save_yourself])
+.B XmhWMProtocols(\fP[\fBwm_delete_window\fP] [\fBwm_save_yourself\fP])
 This action is responsible for participation in window manager communication
 protocols.  It responds to delete window and save yourself messages.
 The user can cause \fIxmh\fP to respond to one or both of these protocols,
@@ -1427,11 +1424,12 @@ invocation of \fIxmh\fP and the message template is re-used for every
 successive new composition.
 .PP
 \fIxmh\fP uses \fIMH\fP commands, including \fIinc\fP, \fImsgchk\fP,
-\fIpick\fP, \fIcomp\fP, \fIsend\fP, \fIrefile\fP, \fIrmm\fP, \fIpack\fP,
-\fIsort\fP, and \fIscan\fP.  Some flags for these commands can be specified
+\fIcomp\fP, \fIsend\fP, \fIrepl\fP, \fIforw\fP,
+\fIrefile\fP, \fIrmm\fP, \fIpick\fP, \fIpack\fP, \fIsort\fP, and \fIscan\fP. 
+Some flags for these commands can be specified
 in the \fIMH\fP profile; \fIxmh\fP may override them.  The application
-resource \fBdebug\fP can be set to true to see how \fIxmh\fP uses \fIMH\fP
-commands.
+resource \fBdebug\fP can be set to true to see how \fIxmh\fP
+uses \fIMH\fP commands.
 
 .SH ENVIRONMENT
 .br
@@ -1463,10 +1461,8 @@ window should also be closed by \fIxmh\fP.
 - When \fBXmhUseAsComposition\fP and \fBXmhViewUseAsComposition\fP operate
 on messages in the \fBDraftsFolder\fP, \fIxmh\fP disallows editing of the
 composition if the same message is also being viewed in another window.
-The easier solution will be to prevent multiple views of a message which
-is being edited, as opposed to reflecting edits in multiple windows.
 .br
-Occasionally after committing changes, the table of contents will appear 
+- Occasionally after committing changes, the table of contents will appear 
 to be completely blank when there are actually messages present.
 When this happens, refreshing the display, or typing Control-L in the 
 table of contents, will often cause the correct listing to appear.
@@ -1484,7 +1480,7 @@ of the first toc and view, while trying to keep other \fIxmh\fP windows around.
 .br
 - Doesn't support annotations when replying to messages.
 .br
-- Does not allow folders to be shared without write permission.
+- Doesn't allow folders to be shared without write permission.
 .br
 - Doesn't recognize private sequences.
 .br
