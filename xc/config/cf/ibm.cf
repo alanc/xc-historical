@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.33 92/11/23 10:27:01 eswu Exp $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.34 92/12/22 17:45:12 gildea Exp $
 
 #ifdef RsArchitecture
 #define OSName		AIX 3.2.0
@@ -31,6 +31,7 @@ XCOMM operating system:  OSName
 #define HasBSD44Sockets		YES
 #endif
 
+#define CcCmd xlc
 #define SystemV			YES
 #define HasSockets		YES
 #define LdCombineFlags		-r
