@@ -1,4 +1,4 @@
-/* $XConsortium: XMacros.c,v 11.25 91/01/06 11:46:55 rws Exp $ */
+/* $XConsortium: Macros.c,v 11.27 93/09/29 18:14:28 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -106,7 +106,14 @@ int XImageByteOrder(dpy) Display *dpy; { return (ImageByteOrder(dpy)); }
 
 unsigned long XNextRequest(dpy)
     Display *dpy;
-    { return (NextRequest(dpy)); }
+    {
+#ifdef WORD64
+	WORD64ALIGN
+	return dpy->request + 1;
+#else
+	return (NextRequest(dpy));
+#endif
+    }
 
 unsigned long XLastKnownRequestProcessed(dpy)
     Display *dpy;
