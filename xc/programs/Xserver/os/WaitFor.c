@@ -22,12 +22,13 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.64 93/09/23 17:29:34 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.65 93/09/26 12:07:15 rws Exp $ */
 
 /*****************************************************************
- * OS Depedent input routines:
+ * OS Dependent input routines:
  *
- *  WaitForSomething,  GetEvent
+ *  WaitForSomething
+ *  TimerForce, TimerSet, TimerCheck, TimerFree
  *
  *****************************************************************/
 
@@ -81,6 +82,16 @@ static FdSet LastWriteMask;
 extern int playback_on;
 #endif /* XTESTEXT1 */
 
+struct _OsTimerRec {
+    OsTimerPtr		next;
+    CARD32		expires;
+    OsTimerCallback	callback;
+    pointer		arg;
+};
+
+static void DoTimer();
+static OsTimerPtr timers;
+
 /*****************
  * WaitForSomething:
  *     Make the server suspend until there is
@@ -113,6 +124,7 @@ WaitForSomething(pClientsReady)
     int selecterr;
     int nready;
     FdSet devicesReadable;
+    CARD32 now;
 
     CLEARBITS(clientsReadable);
 
@@ -129,10 +141,26 @@ WaitForSomething(pClientsReady)
 	    COPYBITS(ClientsWithInput, clientsReadable);
 	    break;
 	}
+	if (ScreenSaverTime || timers)
+	    now = GetTimeInMillis();
+	wt = NULL;
+	if (timers)
+	{
+	    while (timers && timers->expires <= now)
+		DoTimer(timers, now, &timers);
+	    if (timers)
+	    {
+		timeout = timers->expires - now;
+		waittime.tv_sec = timeout / MILLI_PER_SECOND;
+		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
+		    (1000000 / MILLI_PER_SECOND);
+		wt = &waittime;
+	    }
+	}
 	if (ScreenSaverTime)
 	{
 	    timeout = (ScreenSaverTime -
-		       (GetTimeInMillis() - lastDeviceEventTime.milliseconds));
+		       (now - lastDeviceEventTime.milliseconds));
 	    if (timeout <= 0) /* may be forced by AutoResetServer() */
 	    {
 		INT32 timeSinceSave;
@@ -158,20 +186,14 @@ WaitForSomething(pClientsReady)
 		    timeout = ScreenSaverTime;
 		timeTilFrob = 0;
 	    }
-	    if (timeTilFrob >= 0)
+	    if (timeTilFrob >= 0 && (!wt || timeout < (timers->expires - now)))
 	    {
 		waittime.tv_sec = timeout / MILLI_PER_SECOND;
 		waittime.tv_usec = (timeout % MILLI_PER_SECOND) *
 					(1000000 / MILLI_PER_SECOND);
 		wt = &waittime;
 	    }
-	    else
-	    {
-		wt = NULL;
-	    }
 	}
-	else
-	    wt = NULL;
 	COPYBITS(AllSockets, LastSelectMask);
 #ifdef apollo
         COPYBITS(apInputMask, LastWriteMask);
@@ -226,6 +248,12 @@ WaitForSomething(pClientsReady)
 		else if (selecterr != EINTR)
 		    ErrorF("WaitForSomething(): select: errno=%d\n",
 			selecterr);
+	    if (timers)
+	    {
+		now = GetTimeInMillis();
+		while (timers && timers->expires <= now)
+		    DoTimer(timers, now, &timers);
+	    }
 	    if (*checkForInput[0] != *checkForInput[1])
 		return 0;
 	}
@@ -316,3 +344,129 @@ ANYSET(src)
     return (FALSE);
 }
 #endif
+
+static void
+DoTimer(timer, now, prev)
+    register OsTimerPtr timer;
+    CARD32 now;
+    OsTimerPtr *prev;
+{
+    CARD32 newTime;
+
+    *prev = timer->next;
+    timer->next = NULL;
+    newTime = (*timer->callback)(timer, now, timer->arg);
+    if (newTime)
+	TimerSet(timer, 0, newTime, timer->callback, timer->arg);
+}
+
+OsTimerPtr
+TimerSet(timer, flags, millis, func, arg)
+    register OsTimerPtr timer;
+    int flags;
+    CARD32 millis;
+    OsTimerCallback func;
+    pointer arg;
+{
+    register OsTimerPtr *prev;
+    CARD32 now = GetTimeInMillis();
+
+    if (!timer)
+    {
+	timer = (OsTimerPtr)xalloc(sizeof(struct _OsTimerRec));
+	if (!timer)
+	    return NULL;
+    }
+    else
+    {
+	for (prev = &timers; *prev; prev = &(*prev)->next)
+	{
+	    if (*prev == timer)
+	    {
+		*prev = timer->next;
+		if (flags & TimerForceOld)
+		    (void)(*timer->callback)(timer, now, timer->arg);
+		break;
+	    }
+	}
+    }
+    if (!millis)
+	return timer;
+    if (!(flags & TimerAbsolute))
+	millis += now;
+    timer->expires = millis;
+    timer->callback = func;
+    timer->arg = arg;
+    if (millis <= now)
+    {
+	timer->next = NULL;
+	millis = (*timer->callback)(timer, now, timer->arg);
+	if (!millis)
+	    return timer;
+    }
+    for (prev = &timers;
+	 *prev && millis > (*prev)->expires;
+	 prev = &(*prev)->next)
+	;
+    timer->next = *prev;
+    *prev = timer;
+    return timer;
+}
+
+Bool
+TimerForce(timer)
+    register OsTimerPtr timer;
+{
+    register OsTimerPtr *prev;
+    register CARD32 newTime;
+
+    for (prev = &timers; *prev; prev = &(*prev)->next)
+    {
+	if (*prev == timer)
+	{
+	    DoTimer(timer, GetTimeInMillis(), prev);
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+void
+TimerFree(timer)
+    register OsTimerPtr timer;
+{
+    register OsTimerPtr *prev;
+
+    if (!timer)
+	return;
+    for (prev = &timers; *prev; prev = &(*prev)->next)
+    {
+	if (*prev == timer)
+	{
+	    *prev = timer->next;
+	    break;
+	}
+    }
+    xfree(timer);
+}
+
+void
+TimerCheck()
+{
+    register CARD32 now = GetTimeInMillis();
+
+    while (timers && timers->expires <= now)
+	DoTimer(timers, now, &timers);
+}
+
+void
+TimerInit()
+{
+    OsTimerPtr timer;
+
+    while (timer = timers)
+    {
+	timers = timer->next;
+	xfree(timer);
+    }
+}
