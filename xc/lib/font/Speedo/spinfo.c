@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.4 91/06/04 15:50:36 rws Exp $ */
+/* $XConsortium: spinfo.c,v 1.5 91/07/16 20:20:03 keith Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -106,6 +106,9 @@ make_sp_header(spf, pinfo)
     pinfo->defaultCh = 0;
     pinfo->allExist = 0;
     pinfo->drawDirection = LeftToRight;
+    pinfo->anamorphic = 0;
+    if (spf->specs.xxmult != spf->specs.yymult)
+	pinfo->anamorphic = TRUE;
 
     pixel_size = spf->vals.pixel * STRETCH_FACTOR / 100;
     pinfo->fontAscent = pixel_size * 764 / 1000;	/* 764 == EM_TOP */
