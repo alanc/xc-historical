@@ -1,4 +1,4 @@
-/* $XConsortium: Form.h,v 1.19 89/05/11 01:05:18 kit Exp $ */
+/* $XConsortium: Form.h,v 1.20 89/05/11 14:20:19 kit Exp $ */
 
 
 /***********************************************************
@@ -102,7 +102,7 @@ typedef enum {
     XtRubber			/* Keep this edge a proportional distance
 				   from the edges of the form*/
 } XtEdgeType;
-#endif  _XawEdgeType_e
+#endif /* _XawEdgeType_e */
 
 typedef struct _FormClassRec	*FormWidgetClass;
 typedef struct _FormRec		*FormWidget;
