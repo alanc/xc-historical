@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.71 91/06/13 18:57:21 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.72 91/07/23 12:20:29 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -847,9 +847,11 @@ Boolean incremental;
      * of the event handler and the destroy callback, so the old context
      * pointer and the record contents must be preserved for LoseSelection.
      */
-    if (oldctx)
+    if (oldctx) {
 	(void) LoseSelection(oldctx, oldctx->widget, selection, oldctx->time);
-
+	if (!oldctx->ref_count && oldctx->free_when_done)
+	    XtFree((char*)oldctx);
+    }
     return TRUE;
 }
 
