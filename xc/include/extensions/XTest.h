@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.1 92/01/25 16:33:27 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.2 92/02/01 15:05:45 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -69,6 +69,15 @@ extern XTestFakeMotionEvent(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     int			/* screen */,
+    int			/* x */,
+    int			/* y */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeRelativeMotionEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
     int			/* x */,
     int			/* y */,
     unsigned long	/* delay */
