@@ -1,7 +1,7 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.35 88/09/03 10:15:44 swick Exp $";
-/* $oHeader: Shell.c,v 1.6 88/08/19 16:49:51 asente Exp $ */
+    "$XConsortium: Shell.c,v 1.36 88/09/03 11:38:11 swick Exp $";
+/* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -912,7 +912,8 @@ static void EventHandler(wid, closure, event)
 	Window tmproot, tmpchild;
 
 	if(w->core.window != event->xany.window) {
-		XtErrorMsg("invalidWindow","eventHandler","XtToolkitError",
+		XtAppErrorMsg(XtWidgetToApplicationContext(w),
+			"invalidWindow","eventHandler","XtToolkitError",
                         "Event with wrong window",
 			(String *)NULL, (Cardinal *)NULL);
 		return;
@@ -967,7 +968,8 @@ static void EventHandler(wid, closure, event)
 		     */
 
 		    if(wmshell->wm.wait_for_wm) {
-			XtWarningMsg("communicationError","windowManager",
+			XtAppWarningMsg(XtWidgetToApplicationContext(wid),
+				"communicationError","windowManager",
                                   "XtToolkitError",
                                   "Window Manager is confused",
 				  (String *)NULL, (Cardinal *)NULL);
@@ -1250,7 +1252,8 @@ static _wait_for_response(w, values, event)
 		for (; q.others > 0; q.others--) {
 		    if (!XCheckIfEvent(XtDisplay(w), &junkevent,
 			    findOthers, (char *) &q)) {
-			XtErrorMsg("missingEvent","shell","XtToolkitError",
+			XtAppErrorMsg(XtWidgetToApplicationContext(w),
+				"missingEvent","shell","XtToolkitError",
 				"Events are disappearing from under Shell",
 				(String *)NULL, (Cardinal *)NULL);
 		    }
@@ -1364,7 +1367,8 @@ Cardinal mask;
 		    	w->core.x = event.xclient.data.s[0];
 			w->core.y = event.xclient.data.s[1];
 			return TRUE;
-		} else XtErrorMsg("internalError","shell","XtToolkitError",
+		} else XtAppErrorMsg(XtWidgetToApplicationContext(w),
+				"internalError","shell","XtToolkitError",
                              "Shell's window manager interaction is broken",
 			     (String *)NULL, (Cardinal *)NULL);
 	} else {
