@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.21 91/07/30 15:29:56 rws Exp $ */
+/* $XConsortium: Vendor.c,v 1.22 91/10/16 21:40:24 eswu Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -125,6 +125,18 @@ static void XawVendorShellClassInitialize()
     XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 }
+
+#ifdef __OSF1__
+/* stupid OSF/1 shared libraries have the wrong semantics */
+/* symbols do not get resolved external to the shared library */
+void _XawFixupVendorShell()
+{
+    transientShellWidgetClass->core_class.superclass =
+	(WidgetClass) &vendorShellClassRec;
+    topLevelShellWidgetClass->core_class.superclass =
+	(WidgetClass) &vendorShellClassRec;
+}
+#endif
 
 /* ARGSUSED */
 static void XawVendorShellInitialize(req, new, args, num_args)
