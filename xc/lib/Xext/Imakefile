@@ -66,11 +66,11 @@ MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_d.a,libXext_d.a)
 LintLibraryTarget(Xext,$(SRCS))
 InstallLintLibrary(Xext,$(LINTLIBDIR))
 
+DependTarget()
+
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
 #endif
-
-DependTarget()
 
 NormalLintTarget($(SRCS))
