@@ -31,6 +31,12 @@ kana14       -*-fixed-medium-r-normal--14-*-*-*-*-*-jisx0201.1976-*
 12x24kana     -sony-fixed-medium-r-normal--24-170-100-100-c-120-jisx0201.1976-0
 12x24romankana -sony-fixed-medium-r-normal--24-170-100-100-c-120-jisx0201.1976-0
 
+olcursor   -sun-open look cursor-----12-120-75-75-p-160-sunolcursor-1
+olglyph-10 -sun-open look glyph-----10-100-75-75-p-101-sunolglyph-1
+olglyph-12 -sun-open look glyph-----12-120-75-75-p-113-sunolglyph-1
+olglyph-14 -sun-open look glyph-----14-140-75-75-p-128-sunolglyph-1
+olglyph-19 -sun-open look glyph-----19-190-75-75-p-154-sunolglyph-1
+
 -misc-fixed-medium-r-normal--8-60-100-100-c-50-iso8859-1 -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso8859-1
 -misc-fixed-medium-r-normal--9-80-100-100-c-60-iso8859-1 -misc-fixed-medium-r-normal--9-90-75-75-c-60-iso8859-1
 -misc-fixed-medium-r-normal--10-70-100-100-c-60-iso8859-1 -misc-fixed-medium-r-normal--10-100-75-75-c-60-iso8859-1
