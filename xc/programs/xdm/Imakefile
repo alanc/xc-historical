@@ -1,8 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 1.53 91/07/16 22:19:49 gildea Exp $
-#if InstallXdmConfig
+XCOMM $XConsortium: Imakefile,v 1.54 91/07/19 21:37:11 gildea Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-#endif
+
 #define BuildChooser !SystemV
 
 #if HasDESLibrary
