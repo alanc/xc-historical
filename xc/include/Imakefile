@@ -5,6 +5,7 @@ INSTALLFLAGS = $(INSTINCFLAGS)
 SUBDIRS = bitmaps
 
 HEADERS = DECkeysym.h \
+	Sunkeysym.h \
 	X.h \
 	XWDFile.h \
 	Xatom.h \
