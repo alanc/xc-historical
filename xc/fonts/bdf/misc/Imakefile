@@ -1,20 +1,3 @@
-SRCS = FontSrc(5x8) FontSrc(6x9) FontSrc(6x10) FontSrc(6x12) FontSrc(6x13) \
-	FontSrc(6x13B) FontSrc(7x13) FontSrc(7x13B) FontSrc(8x13) \
-	FontSrc(8x13B) FontSrc(9x15) FontSrc(9x15B) FontSrc(10x20) \
-	FontSrc(cursor) FontSrc(deccurs) FontSrc(decsess) FontSrc(olcursor) \
-	FontSrc(olgl10) FontSrc(olgl12) FontSrc(olgl14) FontSrc(olgl19) \
-	FontSrc(nil2) FontSrc(clB6x10) FontSrc(clB6x12) FontSrc(clB8x10) \
-	FontSrc(clB8x12) FontSrc(clB8x13) FontSrc(clB8x14) FontSrc(clB8x16) \
-	FontSrc(clB8x8) FontSrc(clB9x15) FontSrc(clI6x12) FontSrc(clI8x8) \
-	FontSrc(clR4x6) FontSrc(clR5x10) FontSrc(clR5x6) FontSrc(clR5x8) \
-	FontSrc(clR6x10) FontSrc(clR6x12) FontSrc(clR6x13) FontSrc(clR6x6) \
-	FontSrc(clR6x8) FontSrc(clR7x10) FontSrc(clR7x12) FontSrc(clR7x14) \
-	FontSrc(clR7x8) FontSrc(clR8x10) FontSrc(clR8x12) FontSrc(clR8x13) \
-	FontSrc(clR8x14) FontSrc(clR8x16) FontSrc(clR8x8) FontSrc(clR9x15) \
-	FontSrc(k14) FontSrc(7x14) FontSrc(7x14rk) FontSrc(12x24) \
-	FontSrc(12x24rk) FontSrc(8x16) FontSrc(8x16rk) FontSrc(jiskan16) \
-	FontSrc(jiskan24) FontSrc(hanglg16) FontSrc(hanglm16) FontSrc(hanglm24)
-
 OBJS = FontObj(5x8) FontObj(6x9) FontObj(6x10) FontObj(6x12) FontObj(6x13) \
 	FontObj(6x13B) FontObj(7x13) FontObj(7x13B) FontObj(8x13) \
 	FontObj(8x13B) FontObj(9x15) FontObj(9x15B) FontObj(10x20) \
