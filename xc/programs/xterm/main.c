@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.195 91/07/22 12:23:31 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.196 91/10/31 09:41:38 rws Exp $";
 #endif /* lint */
 
 /*
@@ -1183,6 +1183,17 @@ get_pty (pty)
 #endif
 	return 0;
 #else /* ATT else */
+#ifdef sgi
+	{
+	    char    *tty_name;
+
+	    tty_name = _getpty (pty, O_RDWR, 0622, 0);
+	    if (tty_name == 0)
+		return 1;
+	    strcpy (ttydev, tty_name);
+	    return 0;
+	}
+#endif
 #ifdef __convex__
         {
 	    char *pty_name, *getpty();
@@ -1201,7 +1212,7 @@ get_pty (pty)
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
-#if defined(sgi) || (defined(umips) && defined (SYSTYPE_SYSV))
+#if (defined(umips) && defined (SYSTYPE_SYSV))
 	struct stat fstat_buf;
 
 	*pty = open ("/dev/ptc", O_RDWR);
