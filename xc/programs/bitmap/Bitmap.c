@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Bitmap.c,v 1.3 90/03/30 06:24:09 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -289,6 +289,10 @@ void BWDebug(w)
     DEBUG ^= True;
 }
 
+/*****************************************************************************
+ *                               Converters                                  *
+ *****************************************************************************/
+
 #define Length(width, height)\
 	(int)((int)(((width) + 7) / 8) * (height))
 
@@ -367,6 +371,85 @@ Pixmap BWGetUnzoomedPixmap(w)
     }
     XFreeGC(XtDisplay(w), gc);
     return(pix);
+}
+
+
+XImage *CreateBitmapImage();
+
+void ConvertToBitmapImage();
+
+XImage *GetImage(BW, pixmap)
+    BitmapWidget BW;
+    Pixmap pixmap;
+{
+    Window root;
+    int x, y;
+    unsigned int width, height, border_width, depth;
+    XImage *source, *image;
+    char *image_data;
+
+    XGetGeometry(XtDisplay(BW), pixmap, &root, &x, &y,
+		 &width, &height, &border_width, &depth);
+
+    source = XGetImage(XtDisplay(BW), pixmap, x, y, width, height,
+		     1, XYPixmap);
+
+    image_data = CreateCleanData(Length(width, height));
+    image = CreateBitmapImage(BW, image_data, width, height);
+
+    ConvertToBitmapImage(source, image);
+
+    return image;
+}
+
+
+XImage *CreateBitmapImage(BW, data, width, height)
+    BitmapWidget BW;
+    char *data;
+    Dimension width, height;
+{
+    XImage *image = XCreateImage(XtDisplay(BW),
+				 DefaultVisual(XtDisplay(BW), 
+					       DefaultScreen(XtDisplay(BW))),
+				 1, XYBitmap, 0, 
+				 data, width, height,
+				 8, (width + 7) / 8);
+
+    image->height = height;
+    image->width = width;
+    image->depth = 1;
+    image->xoffset = 0;
+    image->format = XYBitmap;
+    image->data = (char *)data;
+    image->byte_order = LSBFirst;
+    image->bitmap_unit = 8;
+    image->bitmap_bit_order = LSBFirst;
+    image->bitmap_pad = 8;
+    image->bytes_per_line = (width + 7) / 8;
+
+    return image;
+}
+
+void DestroyBitmapImage(image)
+    XImage **image;
+{
+    /*XDestroyImage(*image);*/
+    if (image) {
+	if (*image) {
+	    if ((*image)->data)
+		XtFree((*image)->data);
+	    XtFree(*image);
+	}
+	*image = NULL;
+    }
+}
+
+XImage *BWGetImage(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    return BW->bitmap.image;
 }
 
 /*****************************************************************************
@@ -640,10 +723,1119 @@ void BWClearChanged(w)
     BW->bitmap.changed = False;
 }
 
-#include "Graphics.h"
-#include "Handlers.h"
-#include "Xmu.h"
-   
+/*****************************************************************************
+ *                                   Graphics                                *
+ *****************************************************************************/
+
+
+#define QuerySet(x, y) (((x) != NotSet) && ((y) != NotSet))
+
+#define bit int
+
+#define QueryZero(x, y) (((x) == 0) || ((y) == 0))
+
+#define Swap(x, y) {Position t; t = x; x = y; y = t;}
+
+#define QuerySwap(x, y) if(x > y) Swap(x, y)
+
+#define QueryInBitmap(BW, x, y)\
+  (((x) >= 0) && ((x) < BW->bitmap.image->width) &&\
+   ((y) >= 0) && ((y) < BW->bitmap.image->height))
+
+#define Value(BW, button)   (BW->bitmap.button_action[button - 1])
+
+#define GetBit(image, x, y)\
+    ((bit)((*(image->data + (x) / 8 + (y) * image->bytes_per_line) &\
+	    (1 << ((x) % 8))) ? 1 : 0))
+
+
+bit BWGetBit(w, x, y)
+    Widget  w;
+     Position      x, y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (QueryInBitmap(BW, x, y))
+	return GetBit(BW->bitmap.image, x, y);
+    else
+	return NotSet;
+}
+
+
+#define InvertBit(image, x, y)\
+    (*(image->data + (x) / 8 + (y) * image->bytes_per_line) ^=\
+     (bit) (1 << ((x) % 8)))
+
+
+#define SetBit(image, x, y)\
+    (*(image->data + (x) / 8 + (y) * image->bytes_per_line) |=\
+     (bit) (1 << ((x) % 8)))
+
+#define ClearBit(image, x, y)\
+    (*(image->data + (x) / 8 + (y) * image->bytes_per_line) &=\
+     (bit)~(1 << ((x) % 8)))
+
+/*
+#define HighlightSquare(BW, x, y)\
+    XFillRectangle(XtDisplay(BW), XtWindow(BW),\
+                   BW->bitmap.highlighting_gc,\
+		   InWindowX(BW, x), InWindowY(BW, y),\
+                   BW->bitmap.squareW, BW->bitmap.squareH)
+*/
+void HighlightSquare(BW, x, y)
+    BitmapWidget BW;
+    Position x, y;
+{
+    XFillRectangle(XtDisplay(BW), XtWindow(BW),
+                   BW->bitmap.highlighting_gc,
+		   InWindowX(BW, x), InWindowY(BW, y),
+                   BW->bitmap.squareW, BW->bitmap.squareH);
+}
+
+/*
+#define DrawSquare(BW, x, y)\
+    XFillRectangle(XtDisplay(BW), XtWindow(BW),\
+                   BW->bitmap.drawing_gc,\
+		   InWindowX(BW, x), InWindowY(BW, y),\
+                   BW->bitmap.squareW, BW->bitmap.squareH) 
+*/
+
+void DrawSquare(BW, x, y)
+    BitmapWidget BW;
+    Position x, y;
+{
+    XFillRectangle(XtDisplay(BW), XtWindow(BW),
+                   BW->bitmap.drawing_gc,
+		   InWindowX(BW, x), InWindowY(BW, y),
+                   BW->bitmap.squareW, BW->bitmap.squareH);
+}
+
+#define InvertPoint(BW, x, y)\
+    {InvertBit(BW->bitmap.image, x, y); DrawSquare(BW, x, y);}
+
+#define DrawPoint(BW, x, y, value)\
+    if (GetBit(BW->bitmap.image, x, y) != value)\
+       InvertPoint(BW, x, y)
+
+void BWDrawPoint(w, x, y, value)
+    Widget  w;
+    Position      x, y;
+    bit           value;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (QueryInBitmap(BW, x, y)) {
+	if (value == Highlight)
+	    HighlightSquare(BW, x, y);
+	else
+	    DrawPoint(BW, x, y, value);
+    }
+}
+
+XPoint *HotSpotShape(BW, x ,y)
+    BitmapWidget BW;
+    Position     x, y;
+{
+    static XPoint points[5];
+  
+    points[0].x = InWindowX(BW, x);
+    points[0].y = InWindowY(BW, y + 1.0/2);
+    points[1].x = InWindowX(BW, x + 1.0/2);
+    points[1].y = InWindowY(BW, y + 1);
+    points[2].x = InWindowX(BW, x + 1);
+    points[2].y = InWindowY(BW, y + 1.0/2);
+    points[3].x = InWindowX(BW, x + 1.0/2);
+    points[3].y = InWindowY(BW, y);
+    points[4].x = InWindowX(BW, x);
+    points[4].y = InWindowY(BW, y + 1.0/2);
+    
+    return points;
+}
+
+#define DrawHotSpot(BW, x, y)\
+  XFillPolygon(XtDisplay(BW), XtWindow(BW), BW->bitmap.drawing_gc,\
+	       HotSpotShape(BW, x, y), 5, Convex, CoordModeOrigin)
+
+#define HighlightHotSpot(BW, x, y)\
+  XFillPolygon(XtDisplay(BW), XtWindow(BW), BW->bitmap.highlighting_gc,\
+	       HotSpotShape(BW, x, y), 5, Convex, CoordModeOrigin)
+
+XImage *CreateBitmapImage();
+void DestroyBitmapImage();
+
+void BWRedrawHotSpot(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y))
+	DrawHotSpot(BW, BW->bitmap.hot.x, BW->bitmap.hot.y);
+}
+
+void BWClearHotSpot(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    DrawHotSpot(BW, BW->bitmap.hot.x, BW->bitmap.hot.y);
+    BW->bitmap.hot.x = BW->bitmap.hot.y = NotSet;
+}
+
+void BWDrawHotSpot(w, x, y, value)
+    Widget w;
+    Position x, y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (QueryInBitmap(BW, x, y)) {
+	if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y) &&
+	    ((BW->bitmap.hot.x == x) && (BW->bitmap.hot.y == y))) {
+	    if ((value == Clear) || (value == Invert)) {
+		BWClearHotSpot(w);
+	    }
+	}
+	else
+	    if ((value == Set) || (value == Invert)) {
+		BWClearHotSpot(w);
+		DrawHotSpot(BW, x, y);
+		BW->bitmap.hot.x = x;
+		BW->bitmap.hot.y = y;
+	    }
+	
+	if (value == Highlight)
+	    HighlightHotSpot(BW, x, y); 
+    }
+}
+
+void BWSetHotSpot(w, x, y)
+    Widget w;
+    Position x, y;
+{
+    if (QuerySet(x, y))
+	BWDrawHotSpot(w, x, y, Set);
+    else
+	BWClearHotSpot(w);
+}
+
+void CopyImageData();
+
+/* high level procedures */
+
+void BWRedrawSquares(w, from_x, from_y, to_x, to_y)
+    Widget  w;
+    Position      from_x, from_y,
+                  to_x, to_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register int x, y;
+
+    QuerySwap(from_x, to_x);
+    QuerySwap(from_y, to_y);
+    from_x = max(0, from_x);
+    from_y = max(0, from_y);
+    to_x = min(BW->bitmap.image->width - 1, to_x);
+    to_y = min(BW->bitmap.image->height - 1, to_y);
+  
+    for (x = from_x; x <= to_x; x++)
+	for (y = from_y; y <= to_y; y++)
+	    if (GetBit(BW->bitmap.image, x, y)) DrawSquare(BW, x, y);
+}
+
+void BWDrawGrid(w, from_x, from_y, to_x, to_y)
+     Widget w;
+     Position from_x, from_y,
+              to_x, to_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    int i;
+  
+    QuerySwap(from_x, to_x);
+    QuerySwap(from_y, to_y);
+    from_x = max(0, from_x);
+    from_y = max(0, from_y);
+    to_x = min(BW->bitmap.image->width - 1, to_x);
+    to_y = min(BW->bitmap.image->height - 1, to_y);
+  
+    for(i = from_x + (from_x == 0); i <= to_x; i++)
+	XDrawLine(XtDisplay(BW), XtWindow(BW), 
+		  BW->bitmap.framing_gc,
+		  InWindowX(BW, i), InWindowY(BW, from_y),
+		  InWindowX(BW, i), InWindowY(BW, to_y + 1));
+  
+    for(i = from_y + (from_y == 0); i <= to_y; i++)
+	XDrawLine(XtDisplay(BW), XtWindow(BW), 
+		  BW->bitmap.framing_gc,
+		  InWindowX(BW, from_x), InWindowY(BW, i),
+		  InWindowX(BW, to_x + 1), InWindowY(BW, i));
+}
+
+
+void BWRedrawGrid(w, from_x, from_y, to_x, to_y)
+    Widget w;
+    Position from_x, from_y,
+	to_x, to_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (BW->bitmap.grid)
+	BWDrawGrid(w, from_x, from_y, to_x, to_y);
+}
+
+void BWDrawLine(w, from_x, from_y, to_x, to_y, value)
+    Widget  w;
+    Position      from_x, from_y,
+                  to_x, to_y;
+    int           value;
+{
+    Position i;
+    register double x, y;
+    double dx, dy, delta;
+
+    dx = to_x - from_x;
+    dy = to_y - from_y;
+    x = from_x + 0.5;
+    y = from_y + 0.5;
+    delta = max(abs(dx), abs(dy));
+    if (delta > 0) {
+	dx /= delta;
+	dy /= delta;
+	for(i = 0; i <= delta; i++) {
+	    BWDrawPoint(w, (Position) x, (Position) y, value);
+	    x += dx;
+	    y += dy;
+	}
+    }
+    else
+	BWDrawPoint(w, from_x, from_y, value);
+}
+
+void BWBlindLine(w, from_x, from_y, to_x, to_y, value)
+    Widget  w;
+    Position      from_x, from_y,
+                  to_x, to_y;
+    int           value;
+{
+    Position i;
+    register double x, y;
+    double dx, dy, delta;
+
+    dx = to_x - from_x;
+    dy = to_y - from_y;
+    x = from_x + 0.5;
+    y = from_y + 0.5;
+    delta = max(abs(dx), abs(dy));
+    if (delta > 0) {
+	dx /= delta;
+	dy /= delta;
+	x += dx;
+	y += dy;
+	for(i = 1; i <= delta; i++) {
+	    BWDrawPoint(w, (Position) x, (Position) y, value);
+	    x += dx;
+	    y += dy;
+	}
+    }
+    else
+	BWDrawPoint(w, from_x, from_y, value);
+}
+
+void BWDrawRectangle(w, from_x, from_y, to_x, to_y, value)
+    Widget w;
+    Position     from_x, from_y,
+	to_x, to_y;
+    bit          value;
+{
+    register Position i;
+    Dimension delta, width, height;
+    
+    QuerySwap(from_x, to_x);
+    QuerySwap(from_y, to_y);
+    
+    width = to_x - from_x;
+    height = to_y - from_y;
+
+    delta = max(width, height);
+    
+    if (!QueryZero(width, height)) {
+	for (i = 0; i < delta; i++) {
+	    if (i < width) {
+		BWDrawPoint(w, from_x + i, from_y, value);
+		BWDrawPoint(w, to_x - i, to_y, value);
+	    }
+	    if (i < height) {
+		BWDrawPoint(w, from_x, to_y - i, value);
+		BWDrawPoint(w, to_x, from_y + i, value);
+	    }
+	}
+    }
+    else
+	BWDrawLine(w, 
+		   from_x, from_y, 
+		   to_x, to_y, value);
+}
+  
+void BWDrawFilledRectangle(w, from_x, from_y, to_x, to_y, value)
+    Widget   w;
+    Position from_x, from_y,
+	     to_x, to_y;
+    bit      value;
+{
+    register Position x, y;
+
+    QuerySwap(from_x, to_x);
+    QuerySwap(from_y, to_y);
+    
+    for (x = from_x; x <= to_x; x++)
+	for (y = from_y; y <= to_y; y++)
+	    BWDrawPoint(w, x, y, value);
+}
+
+void BWDrawCircle(w, origin_x, origin_y, point_x, point_y, value)
+    Widget  w;
+    Position      origin_x, origin_y,
+	point_x, point_y;
+    bit           value;
+{
+    register Position i, delta;
+    Dimension dx, dy, half;
+    double radius;
+    
+    dx = abs(point_x - origin_x);
+    dy = abs(point_y - origin_y);
+    radius = sqrt((double) (dx * dx + dy * dy));
+    if (radius < 1.0) {
+	BWDrawPoint(w, origin_x, origin_y, value);
+    }
+    else {
+	BWDrawPoint(w, origin_x - (Position) floor(radius), origin_y, value);
+	BWDrawPoint(w, origin_x + (Position) floor(radius), origin_y, value);
+	BWDrawPoint(w, origin_x, origin_y - (Position) floor(radius), value);
+	BWDrawPoint(w, origin_x, origin_y + (Position) floor(radius), value);
+    }
+    half = radius / sqrt(2.0);
+    for(i = 1; i <= half; i++) {
+	delta = sqrt(radius * radius - i * i);
+	BWDrawPoint(w, origin_x - delta, origin_y - i, value);
+	BWDrawPoint(w, origin_x - delta, origin_y + i, value);
+	BWDrawPoint(w, origin_x + delta, origin_y - i, value);
+	BWDrawPoint(w, origin_x + delta, origin_y + i, value);
+	if (i != delta) {
+	    BWDrawPoint(w, origin_x - i, origin_y - delta, value);
+	    BWDrawPoint(w, origin_x - i, origin_y + delta, value);
+	    BWDrawPoint(w, origin_x + i, origin_y - delta, value);
+	    BWDrawPoint(w, origin_x + i, origin_y + delta, value);
+	}
+    }
+}
+
+void BWDrawFilledCircle(w, origin_x, origin_y, point_x, point_y, value)
+    Widget  w;
+    Position      origin_x, origin_y,
+	          point_x, point_y;
+    bit           value;
+{
+    register Position i, j, delta;
+    Dimension dx, dy;
+    double radius;
+    
+    dx = abs(point_x - origin_x);
+    dy = abs(point_y - origin_y);
+    radius = sqrt((double) (dx * dx + dy * dy));
+    for(j = origin_x - (Position) floor(radius); 
+	j <= origin_x + (Position) floor(radius); j++)
+	BWDrawPoint(w, j, origin_y, value);
+    for(i = 1; i <= (Position) floor(radius); i++) {
+	delta = sqrt(radius * radius - i * i);
+	for(j = origin_x - delta; j <= origin_x + delta; j++) {
+	    BWDrawPoint(w, j, origin_y - i, value);
+	    BWDrawPoint(w, j, origin_y + i, value);
+	}
+    }
+}
+
+#define QueryFlood(BW, x, y, value)\
+    ((GetBit(BW->bitmap.image, x, y) !=\
+      (value & 1)) && QueryInBitmap(BW, x, y))
+
+#define Flood(BW, x, y, value)\
+    {if (value == Highlight) HighlightSquare(BW, x, y);\
+     else InvertPoint(BW, x, y);}
+
+/*
+void FloodLoop(BW, x, y, value)
+    BitmapWidget  BW;
+    Position      x, y;
+    bit           value;
+{
+    if (QueryFlood(BW, x, y, value)) {
+	Flood(BW, x, y, value);
+	FloodLoop(BW, x, y - 1, value);
+	FloodLoop(BW, x - 1, y, value);
+	FloodLoop(BW, x, y + 1, value);
+	FloodLoop(BW, x + 1, y, value);
+    }
+}
+*/
+
+void FloodLoop(BW, x, y, value)
+    BitmapWidget BW;
+    Position     x, y;
+    bit          value;
+{
+    Position save_x, save_y, x_left, x_right;
+    
+    if (QueryFlood(BW, x, y, value)) 
+	Flood(BW, x, y, value)
+
+
+    save_x = x;
+    save_y = y;
+
+    x++;
+    while (QueryFlood(BW, x, y, value)) {
+	Flood(BW, x, y, value);
+	x++;
+    }
+    x_right = --x;
+
+    x = save_x;
+    x--;
+    while (QueryFlood(BW, x, y, value)) {
+	Flood(BW, x, y, value);
+	x--;
+    }
+    x_left = ++x;
+
+
+    x = x_left;
+    y = save_y;
+    y++;
+    
+    while (x <= x_right) {
+	Boolean flag = False;
+	Position x_enter;
+	
+	while (QueryFlood(BW, x, y, value) && (x <= x_right)) {
+	    flag = True;
+	    x++;
+	}
+	
+	if (flag) {
+	    if ((x == x_right) && QueryFlood(BW, x, y, value))
+		FloodLoop(BW, x, y, value);
+	    else
+		FloodLoop(BW, x - 1, y, value);
+	}
+	
+	x_enter = x;
+	
+	while (!QueryFlood(BW, x, y, value) && (x < x_right))
+	    x++;
+	
+	if (x == x_enter) x++;
+    }
+
+    x = x_left;
+    y = save_y;
+    y--;
+
+    while (x <= x_right) {
+	Boolean flag = False;
+	Position x_enter;
+	
+	while (QueryFlood(BW, x, y, value) && (x <= x_right)) {
+	    flag = True;
+	    x++;
+	}
+	
+	if (flag) {
+	    if ((x == x_right) && QueryFlood(BW, x, y, value))
+		FloodLoop(BW, x, y, value);
+	    else
+		FloodLoop(BW, x - 1, y, value);
+	}
+	
+	x_enter = x;
+	
+	while (!QueryFlood(BW, x, y, value) && (x < x_right))
+	    x++;
+	
+	if (x == x_enter) x++;
+    }
+}
+
+void BWFloodFill(w, x, y, value)
+    Widget  w;
+    Position      x, y;
+    bit           value;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    FloodLoop(BW, x, y, (value == Invert) ? 
+	      !GetBit(BW->bitmap.image, x, y) : value);
+}
+
+Boolean BWQueryMarked();
+#define QueryHotInMark(BW)\
+    ((BW->bitmap.hot.x == max(BW->bitmap.mark.from_x,\
+			      min(BW->bitmap.hot.x, BW->bitmap.mark.to_x)))\
+     &&\
+     (BW->bitmap.hot.y == max(BW->bitmap.mark.from_y,\
+			      min(BW->bitmap.hot.y, BW->bitmap.mark.to_y))))
+
+void BWUp(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    bit first, up, down;
+    Position from_x, from_y, to_x, to_y;
+
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+
+    if ((to_y - from_y) == 0)
+	return;
+    
+    for(x = from_x; x <= to_x; x++) {
+	first = up = GetBit(BW->bitmap.image, x, to_y);
+	for(y = to_y - 1; y >= from_y; y--) {
+	    down = GetBit(BW->bitmap.image, x, y);
+	    if (up != down) 
+		InvertPoint(BW, x, y);
+	    up =down;
+	}
+	if(first != down)
+	    InvertPoint(BW, x, to_y);
+    }
+
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     BW->bitmap.hot.x,
+		     (BW->bitmap.hot.y - 1 + BW->bitmap.image->height) % 
+		     BW->bitmap.image->height);
+
+}
+
+void BWDown(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    bit first, down, up;
+    Position from_x, from_y, to_x, to_y;
+
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+
+    if ((to_y - from_y) == 0)
+	return;
+
+    for(x = from_x; x <= to_x; x++) {
+	first = down = GetBit(BW->bitmap.image, x, from_y);
+	for(y = from_y + 1; y <= to_y; y++) {
+	    up = GetBit(BW->bitmap.image, x, y);
+	    if (down != up)
+		InvertPoint(BW, x, y);
+	    down = up;
+	}
+	if(first != up) 
+	    InvertPoint(BW, x, from_y);
+    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     BW->bitmap.hot.x,
+		     (BW->bitmap.hot.y + 1) % BW->bitmap.image->height);
+}
+
+void BWLeft(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    bit first, left, right;
+    Position from_x, from_y, to_x, to_y;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+
+    if ((to_x - from_x) == 0)
+	return;
+    
+    for(y = from_y; y <= to_y; y++) {
+	first = left = GetBit(BW->bitmap.image, to_x, y);
+	for(x = to_x - 1; x >= from_x; x--) {
+	    right = GetBit(BW->bitmap.image, x, y);
+	    if (left != right)
+		InvertPoint(BW, x, y);
+	    left = right;
+	}
+	if(first != right)
+	    InvertPoint(BW, to_x, y);
+    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     (BW->bitmap.hot.x - 1 + BW->bitmap.image->width) % 
+		     BW->bitmap.image->width,
+		     BW->bitmap.hot.y);
+}
+
+void BWRight(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    bit first, right, left;
+    Position from_x, from_y, to_x, to_y;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+    
+    if ((to_x - from_x) == 0)
+	return;
+    
+    for(y = from_y; y <= to_y; y++) {
+	first = right = GetBit(BW->bitmap.image, from_x, y);
+	for(x = from_x + 1; x <= to_x; x++) {
+	    left = GetBit(BW->bitmap.image, x, y);
+	    if (right != left)
+		InvertPoint(BW, x, y);
+	    right = left;
+	}
+	if(first != left)
+	    InvertPoint(BW, from_x, y);
+    }
+
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     (BW->bitmap.hot.x + 1) % BW->bitmap.image->width,
+		     BW->bitmap.hot.y);
+}
+
+void TransferImageData();
+
+void BWFold(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Position x, y, new_x, new_y;
+    Dimension horiz, vert;
+    char *storage_data;
+    XImage *storage;
+	
+    storage_data = CreateCleanData(Length(BW->bitmap.image->width, 
+					  BW->bitmap.image->height));
+
+    storage = CreateBitmapImage(BW, storage_data, 
+				BW->bitmap.image->width, 
+				BW->bitmap.image->height);
+
+    TransferImageData(BW->bitmap.image, storage);
+
+    BW->bitmap.fold ^= True;
+    horiz = (BW->bitmap.image->width + BW->bitmap.fold) / 2;
+    vert = (BW->bitmap.image->height + BW->bitmap.fold) / 2;
+    
+    for (x = 0; x < BW->bitmap.image->width; x++)
+	for (y = 0; y < BW->bitmap.image->height; y++) {
+	    new_x = (x + horiz) % BW->bitmap.image->width;
+	    new_y = (y + vert) % BW->bitmap.image->height;
+	    if(GetBit(BW->bitmap.image, new_x, new_y) != 
+	       GetBit(storage, x, y))
+		InvertPoint(BW, new_x, new_y);
+	}
+    
+    DestroyBitmapImage(&storage);
+
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y))
+	BWSetHotSpot(w, 
+		     (Position) 
+		     ((BW->bitmap.hot.x + horiz) % BW->bitmap.image->width),
+		     (Position)
+		     ((BW->bitmap.hot.y + vert) % BW->bitmap.image->height));
+}
+
+
+void BWClear(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    int i, length;
+
+    length = Length(BW->bitmap.image->width, BW->bitmap.image->height);
+
+    for (x = 0; x < BW->bitmap.image->width; x++)
+	for (y = 0; y < BW->bitmap.image->height; y++)
+	    if (GetBit(BW->bitmap.image, x, y))
+		DrawSquare(BW, x, y);
+    
+    for (i = 0; i < length; i++)
+	BW->bitmap.image->data[i] = 0;
+
+}
+
+void BWSet(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    int i, length;
+    
+    length = Length(BW->bitmap.image->width, BW->bitmap.image->height);
+    
+    for (x = 0; x < BW->bitmap.image->width; x++)
+	for (y = 0; y < BW->bitmap.image->height; y++)
+	    if (!GetBit(BW->bitmap.image, x, y))
+		DrawSquare(BW, x, y);
+    
+    for (i = 0; i < length; i++)
+	BW->bitmap.image->data[i] = 255;
+
+}
+ 
+void BWRedraw(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    XClearArea(XtDisplay(BW), XtWindow(BW),
+	       0, 0, BW->core.width, BW->core.height,
+	       True);
+}
+
+void BWInvert(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    int i, length;
+
+    length = Length(BW->bitmap.image->width, BW->bitmap.image->height);
+
+    XFillRectangle(XtDisplay(BW), XtWindow(BW),
+		   BW->bitmap.drawing_gc,
+		   InWindowX(BW, 0), InWindowY(BW, 0),
+		   InWindowX(BW, BW->bitmap.image->width) - InWindowX(BW, 0),
+		   InWindowY(BW, BW->bitmap.image->height) - InWindowY(BW, 0));
+    
+    for (i = 0; i < length; i++)
+	BW->bitmap.image->data[i] ^= 255;
+}
+
+void BWFlipHoriz(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    Position from_x, from_y, to_x, to_y;
+    float half;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+    half = (float) (to_y - from_y) / 2.0 + 0.5;
+    
+    if (half == 0.0)
+	return;
+    
+    for (x = from_x; x <= to_x; x++) 
+	for (y = 0; y <  half; y++)
+	    if (GetBit(BW->bitmap.image, x, from_y + y) != 
+		GetBit(BW->bitmap.image, x, to_y - y)) {
+		InvertPoint(BW, x, from_y + y);
+		InvertPoint(BW, x, to_y - y);
+	    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     BW->bitmap.hot.x,
+		     BW->bitmap.image->height - 1 - BW->bitmap.hot.y);
+}
+
+void BWFlipVert(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    register Position x, y;
+    Position from_x, from_y, to_x, to_y;
+    float half;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+    half = (float) (to_x - from_x) / 2.0 + 0.5;
+
+    if (half == 0)
+	return;
+
+    for (y = from_y; y <= to_y; y++)
+	for (x = 0; x < half; x++)
+	    if (GetBit(BW->bitmap.image, from_x + x, y) != 
+		GetBit(BW->bitmap.image, to_x - x, y)) {
+		InvertPoint(BW, from_x + x, y);
+		InvertPoint(BW, to_x - x, y);
+	    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w))
+	BWSetHotSpot(w,
+		     BW->bitmap.image->width - 1 - BW->bitmap.hot.x,
+		     BW->bitmap.hot.y);
+}
+
+
+void BWRotateRight(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Position x, y, delta, shift, tmp;
+    Position half_width, half_height;
+    XPoint hot;
+    bit quad1, quad2, quad3, quad4;
+    Position from_x, from_y, to_x, to_y;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+
+    half_width = floor((to_x - from_x) / 2.0 + 0.5);
+    half_height = floor((to_y - from_y ) / 2.0 + 0.5);
+    shift = min((Position)(to_x - from_x), (Position)(to_y - from_y )) % 2;
+    delta = min((Position) half_width, (Position) half_height) - shift;
+    
+    for (x = 0; x <= delta; x++) {
+	for (y = 1 - shift; y <= delta; y++) {
+	    quad1 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width + x, 
+			   from_y + (Position)half_height + y);
+	    quad2 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width + y, 
+			   from_y + (Position)half_height - shift - x);
+	    quad3 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width - shift - x, 
+			   from_y + (Position)half_height - shift - y);
+	    quad4 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width - shift - y, 
+			   from_y + (Position)half_height + x);
+
+	    if (quad1 != quad2)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width + x, 
+			    from_y + (Position)half_height + y);
+	    if (quad2 != quad3)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width + y, 
+			    from_y + (Position)half_height - shift - x);
+	    if (quad3 != quad4)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width - shift - x,
+			    from_y + (Position)half_height - shift - y);
+	    if (quad4 != quad1)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width - shift - y, 
+			    from_y + (Position)half_height + x);
+	}
+    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w)) {
+	hot.x = BW->bitmap.hot.x - half_width;
+	hot.y = BW->bitmap.hot.y - half_height;
+	if (hot.x >= 0) hot.x += shift;
+	if (hot.y >= 0) hot.y += shift;
+	tmp = hot.x;
+	hot.x = - hot.y;
+	hot.y = tmp;
+	if (hot.x > 0) hot.x -= shift;
+	if (hot.y > 0) hot.y -= shift;
+	hot.x += half_width;
+	hot.y += half_height;
+	if (QueryInBitmap(BW, hot.x, hot.y))
+	    BWSetHotSpot(w, hot.x, hot.y);
+    }
+    
+}
+
+void BWRotateLeft(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Position x, y,delta, shift, tmp;
+    Position half_width, half_height;
+    XPoint hot;
+    bit quad1, quad2, quad3, quad4;
+    Position from_x, from_y, to_x, to_y;
+    
+    if (BWQueryMarked(w)) {
+	from_x = BW->bitmap.mark.from_x;
+	from_y = BW->bitmap.mark.from_y;
+	to_x = BW->bitmap.mark.to_x;
+	to_y = BW->bitmap.mark.to_y;
+    }
+    else {
+	from_x = 0;
+	from_y = 0;
+	to_x = BW->bitmap.width - 1;
+	to_y = BW->bitmap.height - 1;
+    }
+
+    half_width = floor((to_x - from_x) / 2.0 + 0.5);
+    half_height = floor((to_y - from_y ) / 2.0 + 0.5);
+    shift = min((Position)(to_x - from_x), (Position)(to_y - from_y )) % 2;
+    delta = min((Position) half_width, (Position) half_height) - shift;
+    
+    for (x = 0; x <= delta; x++) {
+	for (y = 1 - shift; y <= delta; y++) {
+	    quad1 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width + x, 
+			   from_y + (Position)half_height + y);
+	    quad2 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width + y, 
+			   from_y + (Position)half_height - shift - x);
+	    quad3 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width - shift - x, 
+			   from_y + (Position)half_height - shift - y);
+	    quad4 = GetBit(BW->bitmap.image, 
+			   from_x + (Position)half_width - shift - y, 
+			   from_y + (Position)half_height + x);
+
+	    if (quad1 != quad4)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width + x, 
+			    from_y + (Position)half_height + y);
+	    if (quad2 != quad1)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width + y, 
+			    from_y + (Position)half_height - shift - x);
+	    if (quad3 != quad2)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width - shift - x,
+			    from_y + (Position)half_height - shift - y);
+	    if (quad4 != quad3)
+		InvertPoint(BW, 
+			    from_x + (Position)half_width - shift - y, 
+			    from_y + (Position)half_height + x);
+	}
+    }
+    
+    if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)
+	&&
+	!BWQueryMarked(w)) {
+	hot.x = BW->bitmap.hot.x - half_width;
+	hot.y = BW->bitmap.hot.y - half_height;
+	if (hot.x >= 0) hot.x += shift;
+	if (hot.y >= 0) hot.y += shift;
+	tmp = hot.x;
+	hot.x = hot.y;
+	hot.y = - tmp;
+	if (hot.x > 0) hot.x -= shift;
+	if (hot.y > 0) hot.y -= shift;
+	hot.x += half_width;
+	hot.y += half_height;
+	if (QueryInBitmap(BW, hot.x, hot.y))
+	    BWSetHotSpot(w, hot.x, hot.y);
+    }
+}
+
+
+void CopyImageData(source, destination, from_x, from_y, to_x, to_y, at_x, at_y)
+    XImage *source, *destination;
+    Position  from_x, from_y, to_x, to_y, at_x, at_y;
+{
+    Position x, y, delta_x, delta_y;
+    
+    delta_x = to_x - from_x + 1;
+    delta_y = to_y - from_y + 1;
+    
+    for (x = 0; x < delta_x; x++)
+	for (y = 0; y < delta_y; y++)
+	    if (GetBit(source, from_x + x, from_y + y))
+		SetBit(destination, at_x + x, at_y + y);
+	    else
+		ClearBit(destination, at_x + x, at_y + y);
+}
+      
 void ConvertToBitmapImage(source, destination)
     XImage *source, *destination;
 {
@@ -655,31 +1847,1300 @@ void ConvertToBitmapImage(source, destination)
 		InvertBit(destination, x, y);
 }
 
-XImage *GetImage(BW, pixmap)
-    BitmapWidget BW;
-    Pixmap pixmap;
+void TransferImageData(source, destination)
+    XImage *source, *destination;
 {
-    Window root;
-    int x, y;
-    unsigned int width, height, border_width, depth;
-    XImage *source, *image;
-    char *image_data;
-
-    XGetGeometry(XtDisplay(BW), pixmap, &root, &x, &y,
-		 &width, &height, &border_width, &depth);
-
-    source = XGetImage(XtDisplay(BW), pixmap, x, y, width, height,
-		     1, XYPixmap);
-
-    image_data = CreateCleanData(Length(width, height));
-    image = CreateBitmapImage(BW, image_data, width, height);
-
-    ConvertToBitmapImage(source, image);
-
-    return image;
+    Position x, y;
+    
+    for (x = 0; x < min(source->width, destination->width); x++)
+	for (y = 0; y < min(source->height,destination-> height); y++)
+	    if (GetBit(source, x, y) != GetBit(destination, x, y))
+		InvertBit(destination, x, y);
 }
 
-#include "Cutandpaste.h"
+void BWStore(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Dimension width, height;
+    char *storage_data;
+
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) {
+
+	DestroyBitmapImage(&BW->bitmap.storage);
+
+	width = BW->bitmap.mark.to_x - BW->bitmap.mark.from_x + 1;
+	height = BW->bitmap.mark.to_y - BW->bitmap.mark.from_y + 1;
+	
+	storage_data = CreateCleanData(Length(width, height));
+
+	BW->bitmap.storage = CreateBitmapImage(BW,
+					       storage_data,
+					       width, height);
+
+	CopyImageData(BW->bitmap.image, BW->bitmap.storage,
+		      BW->bitmap.mark.from_x,  BW->bitmap.mark.from_y,
+		      BW->bitmap.mark.to_x,  BW->bitmap.mark.to_y,
+		      0, 0);
+    }
+}
+
+void BWClearMarked(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y))
+	BWDrawFilledRectangle(w,
+			      BW->bitmap.mark.from_x,
+			      BW->bitmap.mark.from_y,
+			      BW->bitmap.mark.to_x,
+			      BW->bitmap.mark.to_y,
+			      Clear);
+}
+
+
+void BWDragMarked(w, at_x, at_y)
+    Widget w;
+    Position     at_x, at_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y))
+	BWDrawRectangle(w, 
+			at_x, at_y, 
+			at_x + BW->bitmap.mark.to_x - BW->bitmap.mark.from_x,
+			at_y + BW->bitmap.mark.to_y - BW->bitmap.mark.from_y,
+			Highlight);
+}
+
+void BWDragStored(w, at_x, at_y)
+    Widget w;
+    Position     at_x, at_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (BW->bitmap.storage)
+	BWDrawRectangle(w, 
+			at_x, at_y,
+			at_x + BW->bitmap.storage->width - 1,
+			at_y + BW->bitmap.storage->height - 1,
+			Highlight);
+}
+
+void DrawImageData(BW, image, at_x, at_y, value)
+    BitmapWidget BW;
+    XImage *image;
+    Position at_x, at_y;
+    bit value;
+{
+    Position x, y;
+    Boolean  C, S, I, H;
+    bit      A, B;
+
+    C = value == Clear;
+    S = value == Set;
+    I = value == Invert;
+    H = value == Highlight;
+
+    for (x = 0; x < image->width; x++) 
+	for (y = 0; y < image->height; y++) {
+	    A = GetBit(image, x, y);
+	    B = GetBit(BW->bitmap.image, at_x + x, at_y + y);
+	    if (A & C | (A | B) & S | (A ^ B) & I | (A | B) & H)
+		value = (A & H) ? Highlight : Set;
+	    else
+		value = Clear;
+	    BWDrawPoint((Widget) BW, 
+			 at_x + x, at_y + y, 
+			 value);
+	}
+}
+
+void BWRestore(w, at_x, at_y, value)
+    Widget w;
+    Position     at_x, at_y;
+    int          value;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (BW->bitmap.storage)
+	DrawImageData(BW, BW->bitmap.storage, at_x, at_y, value);
+}
+
+void BWCopy(w, at_x, at_y, value)
+    Widget w;
+    Position     at_x, at_y;
+    int          value;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    XImage *storage;
+    char *storage_data;
+    Dimension width, height;
+
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) {
+
+	width = BW->bitmap.mark.to_x - BW->bitmap.mark.from_x + 1;
+	height = BW->bitmap.mark.to_y - BW->bitmap.mark.from_y + 1;
+	
+	storage_data = CreateCleanData(Length(width, height));
+
+	storage = CreateBitmapImage(BW, storage_data, width, height);
+
+	CopyImageData(BW->bitmap.image, storage,
+		      BW->bitmap.mark.from_x,  BW->bitmap.mark.from_y,
+		      BW->bitmap.mark.to_x,  BW->bitmap.mark.to_y,
+		      0, 0);
+
+	DrawImageData(BW, storage, at_x, at_y, value);
+
+	DestroyBitmapImage(&storage);
+    }
+}
+
+void BWMark();
+
+void BWMove(w, at_x, at_y, value)
+    Widget   w;
+    Position at_x, at_y;
+    int      value;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    XImage *storage;
+    char *storage_data;
+    Dimension width, height;
+
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) {
+
+	width = BW->bitmap.mark.to_x - BW->bitmap.mark.from_x + 1;
+	height = BW->bitmap.mark.to_y - BW->bitmap.mark.from_y + 1;
+	
+	storage_data = CreateCleanData(Length(width, height));
+
+	storage = CreateBitmapImage(BW, storage_data, width, height);
+
+	CopyImageData(BW->bitmap.image, storage,
+		      BW->bitmap.mark.from_x,  BW->bitmap.mark.from_y,
+		      BW->bitmap.mark.to_x,  BW->bitmap.mark.to_y,
+		      0, 0);
+
+	BWDrawFilledRectangle(w,
+			      BW->bitmap.mark.from_x, BW->bitmap.mark.from_y,
+			      BW->bitmap.mark.to_x, BW->bitmap.mark.to_y,
+			      Clear);
+
+	DrawImageData(BW, storage, at_x, at_y, value);
+
+	BWMark(w, at_x, at_y,
+	     at_x + BW->bitmap.mark.to_x - BW->bitmap.mark.from_x,
+	     at_y + BW->bitmap.mark.to_y - BW->bitmap.mark.from_y);
+
+	DestroyBitmapImage(&storage);
+    }
+}
+
+void BWRedrawMark(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) 
+	XFillRectangle(XtDisplay(BW), XtWindow(BW), BW->bitmap.highlighting_gc,
+		       InWindowX(BW, BW->bitmap.mark.from_x), 
+		       InWindowY(BW, BW->bitmap.mark.from_y), 
+		       InWindowX(BW, BW->bitmap.mark.to_x + 1) - 
+		       InWindowX(BW, BW->bitmap.mark.from_x),
+		       InWindowY(BW, BW->bitmap.mark.to_y + 1) -
+		       InWindowY(BW, BW->bitmap.mark.from_y));
+}
+
+Boolean BWQueryStippled(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    return BW->bitmap.stippled;
+}
+
+void BWSwitchStippled(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWRedrawMark(w);
+    
+    BW->bitmap.stippled ^= True;
+    XSetFillStyle(XtDisplay(BW), BW->bitmap.highlighting_gc,
+		  (BW->bitmap.stippled ? FillStippled : FillSolid));
+
+    BWRedrawMark(w);
+}
+
+
+void BWStoreToBuffer(w)
+     Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    bcopy(BW->bitmap.image->data, BW->bitmap.buffer->data,
+	  Length(BW->bitmap.image->width, BW->bitmap.image->height));
+
+    BW->bitmap.buffer_hot = BW->bitmap.hot;
+    BW->bitmap.buffer_mark = BW->bitmap.mark;
+}
+
+void BWUnmark(w)
+     Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BW->bitmap.buffer_mark = BW->bitmap.mark;
+
+    if (QuerySet(BW->bitmap.mark.from_x, BW->bitmap.mark.from_y)) {
+	XFillRectangle(XtDisplay(BW), XtWindow(BW), BW->bitmap.highlighting_gc,
+		       InWindowX(BW, BW->bitmap.mark.from_x), 
+		       InWindowY(BW, BW->bitmap.mark.from_y), 
+		       InWindowX(BW, BW->bitmap.mark.to_x + 1) - 
+		       InWindowX(BW, BW->bitmap.mark.from_x),
+		       InWindowY(BW, BW->bitmap.mark.to_y + 1) -
+		       InWindowY(BW, BW->bitmap.mark.from_y));
+    
+	BW->bitmap.mark.from_x = BW->bitmap.mark.from_y = NotSet;
+	BW->bitmap.mark.to_x = BW->bitmap.mark.to_y = NotSet;
+    }
+}
+
+
+void BWMark(w, from_x, from_y, to_x, to_y)
+    Widget w;
+    Position from_x, from_y,
+	     to_x, to_y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWUnmark(w);
+    
+    if (QuerySet(from_x, from_y)) {
+	if ((from_x == to_x) && (from_y == to_y)) {
+	    /*
+	      BW->bitmap.mark.from_x = 0;
+	      BW->bitmap.mark.from_y = 0;
+	      BW->bitmap.mark.to_x = BW->bitmap.image->width - 1;
+	      BW->bitmap.mark.to_y = BW->bitmap.image->height - 1;
+	      */
+	    return;
+	}
+	else {
+	    QuerySwap(from_x, to_x);
+	    QuerySwap(from_y, to_y);
+	    from_x = max(0, from_x);
+	    from_y = max(0, from_y);
+	    to_x = min(BW->bitmap.image->width - 1, to_x);
+	    to_y = min(BW->bitmap.image->height - 1, to_y);
+	    
+	    BW->bitmap.mark.from_x = from_x;
+	    BW->bitmap.mark.from_y = from_y;
+	    BW->bitmap.mark.to_x = to_x;
+	    BW->bitmap.mark.to_y = to_y;
+	}
+	
+	XFillRectangle(XtDisplay(BW), XtWindow(BW), BW->bitmap.highlighting_gc,
+		       InWindowX(BW, BW->bitmap.mark.from_x),
+		       InWindowY(BW, BW->bitmap.mark.from_y), 
+		       InWindowX(BW, BW->bitmap.mark.to_x + 1) -
+		       InWindowX(BW, BW->bitmap.mark.from_x),
+		       InWindowY(BW, BW->bitmap.mark.to_y +1) - 
+		       InWindowY(BW, BW->bitmap.mark.from_y));
+    }
+}
+
+void BWSelect(w, from_x, from_y, to_x, to_y, time)
+    Widget w;
+    Position from_x, from_y,
+	     to_x, to_y;
+    Time time;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    BWMark(w, from_x, from_y, to_x, to_y);
+
+    BWGrabSelection(w, time);
+}
+
+void BWUndo(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Position x, y;
+    char *tmp_data;
+    XPoint tmp_hot;
+    BWArea tmp_mark;
+    
+    tmp_data = BW->bitmap.image->data;
+    BW->bitmap.image->data = BW->bitmap.buffer->data;
+    BW->bitmap.buffer->data = tmp_data;
+
+    tmp_hot = BW->bitmap.hot;
+    tmp_mark = BW->bitmap.mark;
+    
+    for (x = 0; x < BW->bitmap.image->width; x++)
+	for (y = 0; y < BW->bitmap.image->height; y++)
+	 if (GetBit(BW->bitmap.image, x, y) != GetBit(BW->bitmap.buffer, x, y))
+	     DrawSquare(BW, x, y);
+
+    BWSetHotSpot(w, BW->bitmap.buffer_hot.x, BW->bitmap.buffer_hot.y);
+/*    BWMark(w, BW->bitmap.buffer_mark.from_x, BW->bitmap.buffer_mark.from_y,
+	   BW->bitmap.buffer_mark.to_x, BW->bitmap.buffer_mark.to_y);
+*/
+    BW->bitmap.buffer_hot = tmp_hot;
+    BW->bitmap.buffer_mark= tmp_mark;
+
+}
+
+void BWHighlightAxes(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    XDrawLine(XtDisplay(BW), XtWindow(BW),
+	      BW->bitmap.axes_gc,
+	      InWindowX(BW, 0), 
+	      InWindowY(BW, 0),
+	      InWindowX(BW, BW->bitmap.width),
+	      InWindowY(BW, BW->bitmap.height));
+    XDrawLine(XtDisplay(BW), XtWindow(BW),
+	      BW->bitmap.axes_gc,
+	      InWindowX(BW, BW->bitmap.width),
+	      InWindowY(BW, 0), 
+	      InWindowX(BW, 0),
+	      InWindowY(BW, BW->bitmap.height));
+    XDrawLine(XtDisplay(BW), XtWindow(BW),
+	      BW->bitmap.axes_gc,
+	      InWindowX(BW, 0),
+	      InWindowY(BW, BW->bitmap.height / 2.0),
+	      InWindowX(BW, BW->bitmap.width),
+	      InWindowY(BW, BW->bitmap.height / 2.0));
+    XDrawLine(XtDisplay(BW), XtWindow(BW),
+	      BW->bitmap.axes_gc,
+	      InWindowX(BW, BW->bitmap.width / 2.0),
+	      InWindowY(BW, 0),
+	      InWindowX(BW, BW->bitmap.width / 2.0),
+	      InWindowY(BW, BW->bitmap.height));
+}
+
+Boolean BWQueryAxes(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    return BW->bitmap.axes;
+}
+
+void BWSwitchAxes(w)
+     Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BW->bitmap.axes ^= True;
+    BWHighlightAxes(w);
+}
+
+void BWAxes(w, _switch)
+    Widget w;
+    Boolean _switch;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (BW->bitmap.axes != _switch)
+	BWSwitchAxes(w);
+}
+
+void BWRedrawAxes(w)
+    Widget w;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (BW->bitmap.axes)
+	BWHighlightAxes(w);
+}
+
+void BWPutImage(w, display, drawable, gc, x, y)
+     BitmapWidget w;
+     Display     *display;
+     Drawable     drawable;
+     GC           gc;
+     Position     x, y;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+  XPutImage(display, drawable, gc, BW->bitmap.image,
+	    0, 0, x, y, BW->bitmap.image->width, BW->bitmap.image->height);
+}
+
+
+/*****************************************************************************
+ *                                  Handlers                                 *
+ *****************************************************************************/
+
+#define QueryInSquare(BW, x, y, square_x, square_y)\
+    ((InBitmapX(BW, x) == (square_x)) &&\
+     (InBitmapY(BW, y) == (square_y)))
+
+
+void DragOnePointHandler(w, status, event)
+     Widget       w;
+     BWStatus    *status;
+     XEvent      *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (DEBUG)
+	fprintf(stderr, "D1PH ");
+
+    switch (event->type) {
+    
+    case ButtonPress:
+	fprintf(stderr, "<");
+	if (event->xbutton.state != status->state) return;
+	fprintf(stderr, ">");	
+	if (!QuerySet(status->at_x, status->at_y)) {
+	    BWStoreToBuffer(w);
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->at_x = InBitmapX(BW, event->xbutton.x);
+	    status->at_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = (Boolean) status->draw;
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, status->value);
+	}
+	break;
+	
+    case ButtonRelease:
+	if (QuerySet(status->at_x, status->at_y)) {
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->at_x = InBitmapX(BW, event->xbutton.x);
+	    status->at_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = (Boolean) status->draw;
+      
+	    BWTerminateRequest(w, TRUE);
+	}
+	break;
+
+    case MotionNotify:
+	if (QuerySet(status->at_x, status->at_y)) {
+	    if (!QueryInSquare(BW, event->xmotion.x, event->xmotion.y,
+			       status->at_x, status->at_y)) {
+		status->at_x = InBitmapX(BW, event->xmotion.x);
+		status->at_y = InBitmapY(BW, event->xmotion.y);
+		if (status->draw)
+		    (*status->draw)(w,
+				    status->at_x, status->at_y, status->value);
+	    }
+	}
+	break;
+
+    }
+}
+
+void DragOnePointEngage(w, status, draw, state)
+    Widget      w;
+    BWStatus   *status;
+    void      (*draw)();
+    int        *state;
+{
+    
+    status->at_x = NotSet;
+    status->at_y = NotSet;
+    status->draw = draw;
+    status->success = False;
+    status->state = *state;
+    
+    XtAddEventHandler(w,
+		      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+		      FALSE, DragOnePointHandler, status);
+}
+
+void DragOnePointTerminate(w, status, client_data)
+    Widget     w;
+    BWStatus  *status;
+    caddr_t    client_data;
+{
+    
+    if (status->success) {
+	BWChangeNotify(w, NULL, NULL);
+	BWSetChanged(w);
+    }
+    
+    XtRemoveEventHandler(w,
+		 ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+		 FALSE, DragOnePointHandler, status);
+    
+}
+
+void OnePointHandler(w, status, event)
+    Widget       w;
+    BWStatus    *status;
+    XEvent      *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    if (DEBUG)
+	fprintf(stderr, "1PH ");
+
+    switch (event->type) {
+	
+    case Expose:
+	if (QuerySet(status->at_x, status->at_y)) {
+	    BWClip(w, 
+		   InBitmapX(BW, event->xexpose.x), 
+		   InBitmapY(BW, event->xexpose.y),
+		   InBitmapX(BW, event->xexpose.x + event->xexpose.width),
+		   InBitmapY(BW, event->xexpose.y + event->xexpose.height));
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, Highlight);
+	    
+	    BWUnclip(w);
+	}
+	break;
+	
+    case ButtonPress:
+	if (event->xbutton.state != status->state) return;
+	if (!QuerySet(status->at_x, status->at_y)) {
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->at_x = InBitmapX(BW, event->xbutton.x);
+	    status->at_y = InBitmapY(BW, event->xbutton.y);
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, Highlight);
+	}
+	break;
+	
+    case ButtonRelease:
+	if (QuerySet(status->at_x, status->at_y)) {
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, Highlight);
+	    
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->at_x = InBitmapX(BW, event->xbutton.x);
+	    status->at_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = True;
+	    
+	    BWTerminateRequest(w, TRUE);
+	}
+	break;
+	
+    case MotionNotify:
+	if (QuerySet(status->at_x, status->at_y)) {
+	    if (!QueryInSquare(BW, event->xmotion.x, event->xmotion.y,
+			       status->at_x, status->at_y)) {
+		if (status->draw)
+		    (*status->draw)(w,
+				    status->at_x, status->at_y, Highlight);
+		status->at_x = InBitmapX(BW, event->xmotion.x);
+		status->at_y = InBitmapY(BW, event->xmotion.y);
+		if (status->draw)
+		    (*status->draw)(w,
+				    status->at_x, status->at_y, Highlight);
+	    }
+	}      
+	break;
+    }
+}
+
+void OnePointEngage(w, status, draw, state)
+    Widget      w;
+    BWStatus   *status;
+    void      (*draw)();
+    int        *state;
+{
+    status->at_x = NotSet;
+    status->at_y = NotSet;
+    status->draw = draw;
+    status->success = False;
+    status->state = *state;
+
+    XtAddEventHandler(w,
+		      ButtonPressMask | ButtonReleaseMask | 
+		      ExposureMask | PointerMotionMask,
+		      FALSE, OnePointHandler, status);
+}
+
+void OnePointImmediateEngage(w, status, draw, state)
+    Widget      w;
+    BWStatus   *status;
+    void      (*draw)();
+    int        *state;
+{
+    status->at_x = 0;
+    status->at_y = 0;
+    status->draw = draw;
+    status->success = False;
+    status->state = *state;
+    
+    if (status->draw)
+	(*status->draw)(w,
+			status->at_x, status->at_y, Highlight);
+    
+    XtAddEventHandler(w,
+		      ButtonPressMask | ButtonReleaseMask | 
+		      ExposureMask | PointerMotionMask,
+		      FALSE, OnePointHandler, status);
+}
+
+void OnePointTerminate(w, status, draw)
+    Widget     w;
+    BWStatus  *status;
+    void     (*draw)();
+{
+    
+    if (status->success && draw) {
+	BWStoreToBuffer(w);
+	(*draw)(w,
+		status->at_x, status->at_y,
+		status->value);
+	BWChangeNotify(w, NULL, NULL);
+	BWSetChanged(w);
+    }    
+    else
+	if (QuerySet(status->at_x, status->at_y))
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, Highlight);
+    
+    XtRemoveEventHandler(w,
+			 ButtonPressMask | ButtonReleaseMask | 
+			 ExposureMask | PointerMotionMask,
+			 FALSE, OnePointHandler, status);
+}
+
+void OnePointTerminateTransparent(w, status, draw)
+    Widget     w;
+    BWStatus  *status;
+    void     (*draw)();
+{
+    
+    if (status->success && draw)
+	(*draw)(w,
+		status->at_x, status->at_y,
+		status->value);
+    else
+	if (QuerySet(status->at_x, status->at_y))
+	    if (status->draw)
+		(*status->draw)(w,
+				status->at_x, status->at_y, Highlight);
+    
+    XtRemoveEventHandler(w,
+			 ButtonPressMask | ButtonReleaseMask | 
+			 ExposureMask | PointerMotionMask,
+			 FALSE, OnePointHandler, status);
+    
+}
+
+
+void TwoPointsHandler(w, status, event)
+    Widget      w;
+    BWStatus   *status;
+    XEvent     *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (DEBUG)
+	fprintf(stderr, "2PH ");
+    
+    switch (event->type) {
+	
+    case Expose:
+	if (QuerySet(status->from_x, status->from_y) && 
+	    QuerySet(status->to_x, status->to_y)) {
+	    BWClip(w, 
+		   InBitmapX(BW, event->xexpose.x), 
+		   InBitmapY(BW, event->xexpose.y),
+		   InBitmapX(BW, event->xexpose.x + event->xexpose.width),
+		   InBitmapY(BW, event->xexpose.y + event->xexpose.height));
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+	    BWUnclip(w);
+	}
+	break;
+	
+    case ButtonPress:
+	if (event->xbutton.state != status->state) return;
+	if (!QuerySet(status->from_x, status->from_y)) {
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->from_x = InBitmapX(BW, event->xbutton.x);
+	    status->from_y = InBitmapY(BW, event->xbutton.y);
+	    status->to_x = InBitmapX(BW, event->xbutton.x);
+	    status->to_y = InBitmapY(BW, event->xbutton.y);
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+	}
+	break;
+	
+    case ButtonRelease:
+	if (QuerySet(status->from_x, status->from_y)) {
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;	    
+	    status->to_x = InBitmapX(BW, event->xbutton.x);
+	    status->to_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = True;
+	    
+	    BWTerminateRequest(w, TRUE);
+	}
+	break;
+	
+    case MotionNotify:
+	if (QuerySet(status->from_x, status->from_y)) {
+	    if (QuerySet(status->to_x, status->to_y)) {
+		if (!QueryInSquare(BW, event->xmotion.x, event->xmotion.y,
+				   status->to_x, status->to_y)) {
+		    if (status->draw)
+			(*status->draw)(w,
+					status->from_x, status->from_y, 
+					status->to_x, status->to_y, Highlight);
+		    status->to_x = InBitmapX(BW, event->xmotion.x);
+		    status->to_y = InBitmapY(BW, event->xmotion.y);
+		    if (status->draw)
+			(*status->draw)(w,
+					status->from_x, status->from_y, 
+					status->to_x, status->to_y, Highlight);
+		}
+	    }
+	    else {
+		status->to_x = InBitmapX(BW, event->xmotion.x);
+		status->to_y = InBitmapY(BW, event->xmotion.y);
+		if (status->draw)
+		    (*status->draw)(w,
+				    status->from_x, status->from_y, 
+				    status->to_x, status->to_y, Highlight);
+	    }
+	}
+	break;
+    }
+}
+
+void TwoPointsEngage(w, status, draw, state)
+    Widget     w;
+    BWStatus  *status;
+    void     (*draw)();
+    int       *state;
+{
+    
+    status->from_x = NotSet;
+    status->from_y = NotSet;
+    status->to_x = NotSet;
+    status->to_y = NotSet;
+    status->draw = draw;
+    status->success = False;
+    status->state = *state;
+
+    XtAddEventHandler(w,
+		      ButtonPressMask | ButtonReleaseMask | 
+		      ExposureMask | PointerMotionMask,
+		      FALSE, TwoPointsHandler, status);
+}
+
+void TwoPointsTerminate(w, status, draw)
+    Widget    w;
+    BWStatus *status;
+    void    (*draw)();
+{
+    
+    if (status->success && draw) {
+	BWStoreToBuffer(w);
+	(*draw)(w,
+		status->from_x, status->from_y,
+		status->to_x, status->to_y,
+		status->value);
+	BWChangeNotify(w, NULL, NULL);
+	BWSetChanged(w);
+    }
+    else
+	if (QuerySet(status->from_x, status->from_y) && 
+	    QuerySet(status->to_x, status->to_y))
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+    
+    XtRemoveEventHandler(w,
+			 ButtonPressMask | ButtonReleaseMask | 
+			 ExposureMask | PointerMotionMask,
+			 FALSE, TwoPointsHandler, status);
+}
+
+void TwoPointsTerminateTransparent(w, status, draw)
+    Widget    w;
+    BWStatus *status;
+    void    (*draw)();
+{
+    
+    if (status->success && draw)
+	(*draw)(w,
+		status->from_x, status->from_y,
+		status->to_x, status->to_y,
+		status->value);
+    else
+	if (QuerySet(status->from_x, status->from_y) && 
+	    QuerySet(status->to_x, status->to_y))
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+    
+    XtRemoveEventHandler(w,
+			 ButtonPressMask | ButtonReleaseMask | 
+			 ExposureMask | PointerMotionMask,
+			 FALSE, TwoPointsHandler, status);
+}
+
+void TwoPointsTerminateTimed(w, status, draw)
+    Widget    w;
+    BWStatus *status;
+    void    (*draw)();
+{
+    
+    if (status->success && draw)
+	(*draw)(w,
+		status->from_x, status->from_y,
+		status->to_x, status->to_y,
+		status->time);
+    else
+	if (QuerySet(status->from_x, status->from_y) && 
+	    QuerySet(status->to_x, status->to_y))
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, Highlight);
+    
+    XtRemoveEventHandler(w,
+			 ButtonPressMask | ButtonReleaseMask | 
+			 ExposureMask | PointerMotionMask,
+			 FALSE, TwoPointsHandler, status);
+}
+
+void Interface(w, status, action)
+    Widget     w;
+    caddr_t    status;
+    void     (*action)();
+{
+ 	(*action)(w);
+}
+
+void Paste(w, at_x, at_y, value)
+    Widget    w;
+    Position  at_x, at_y;
+    int       value;
+{
+    BitmapWidget    BW = (BitmapWidget) w;
+    BWStatus       *my_status;
+    BWRequest       request;
+
+    my_status = (BWStatus *) 
+	BW->bitmap.request_stack[BW->bitmap.current].status;
+
+    my_status->draw = NULL;
+
+   request = (BWRequest)
+   BW->bitmap.request_stack[BW->bitmap.current].request->terminate_client_data;
+	
+    BWTerminateRequest(w, FALSE);
+    
+    if ((at_x == max(BW->bitmap.mark.from_x, min(at_x, BW->bitmap.mark.to_x)))
+	&&
+      (at_y == max(BW->bitmap.mark.from_y, min(at_y, BW->bitmap.mark.to_y)))) {
+	
+	BWStatus *status;
+	
+	if (DEBUG)
+	    fprintf(stderr, "Prepaste request: %s\n", request);
+	
+	BWEngageRequest(w, request, False, &(my_status->state), sizeof(int));
+	
+	status = (BWStatus *) 
+	    BW->bitmap.request_stack[BW->bitmap.current].status;
+	
+	status->at_x = at_x;
+	status->at_y = at_y;
+	status->value = value;
+	(*status->draw) (w, at_x, at_y, Highlight);	
+    }
+    else {
+
+	BWStatus *status;
+	
+      BWEngageRequest(w, MarkRequest, False, &(my_status->state), sizeof(int));
+	
+	status = (BWStatus *) 
+	    BW->bitmap.request_stack[BW->bitmap.current].status;
+	
+	status->from_x = status->to_x = at_x;
+	status->from_y = status->to_y = at_y;
+	status->value = value;
+	(*status->draw) (w, at_x, at_y, at_x, at_y, Highlight);
+    }
+}
+
+
+void DragTwoPointsHandler(w, status, event)
+    Widget      w;
+    BWStatus   *status;
+    XEvent     *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    if (DEBUG)
+	fprintf(stderr, "D2PH ");
+
+    switch (event->type) {
+	
+    case ButtonPress:
+	if (event->xbutton.state != status->state) return;
+	if (!QuerySet(status->from_x, status->from_y)) {
+	    BWStoreToBuffer(w);
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;
+	    status->from_x = InBitmapX(BW, event->xbutton.x);
+	    status->from_y = InBitmapY(BW, event->xbutton.y);
+	    status->to_x = InBitmapX(BW, event->xbutton.x);
+	    status->to_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = (Boolean) status->draw;
+	    if (status->draw)
+		(*status->draw)(w,
+				status->from_x, status->from_y, 
+				status->to_x, status->to_y, status->value);
+	}
+	break;
+	
+    case ButtonRelease:
+	if (QuerySet(status->from_x, status->from_y)) {
+	    status->value = Value(BW, event->xbutton.button);
+	    status->time = event->xbutton.time;	    
+	    status->from_x = status->to_x;
+	    status->from_y = status->to_y;
+	    status->to_x = InBitmapX(BW, event->xbutton.x);
+	    status->to_y = InBitmapY(BW, event->xbutton.y);
+	    status->success = True;
+	    
+	    BWTerminateRequest(w, TRUE);
+	}
+	break;
+	
+    case MotionNotify:
+	if (QuerySet(status->from_x, status->from_y)) {
+	    if (QuerySet(status->to_x, status->to_y)) {
+		if (!QueryInSquare(BW, event->xmotion.x, event->xmotion.y,
+				   status->to_x, status->to_y)) {
+		    status->from_x = status->to_x;
+		    status->from_y = status->to_y;
+		    status->to_x = InBitmapX(BW, event->xmotion.x);
+		    status->to_y = InBitmapY(BW, event->xmotion.y);
+		    if (status->draw)
+			(*status->draw)(w,
+					status->from_x, status->from_y, 
+					status->to_x, status->to_y, status->value);
+		}
+	    }
+	}
+	break;
+    }
+}
+
+void DragTwoPointsEngage(w, status, draw, state)
+    Widget     w;
+    BWStatus  *status;
+    void     (*draw)();
+    int       *state;
+{
+    
+    status->from_x = NotSet;
+    status->from_y = NotSet;
+    status->to_x = NotSet;
+    status->to_y = NotSet;
+    status->draw = draw;
+    status->success = False;
+    status->state = *state;
+
+    XtAddEventHandler(w,
+		      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+		      FALSE, DragTwoPointsHandler, status);
+}
+
+void DragTwoPointsTerminate(w, status, draw)
+    Widget     w;
+    BWStatus  *status;
+    void     (*draw)();
+{
+    
+    if (status->success && draw) {
+	if ((status->from_x != status->to_x) 
+	    || 
+	    (status->from_y != status->to_y))
+	    (*draw)(w,
+		    status->from_x, status->from_y,
+		    status->to_x, status->to_y,
+		    status->value);
+	BWChangeNotify(w, NULL, NULL);
+	BWSetChanged(w);
+    }
+    
+    XtRemoveEventHandler(w,
+		         ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+			 FALSE, DragTwoPointsHandler, status);
+}
+
+
+void BWTPaste(w, event)
+    Widget  w;
+    XEvent *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWRequestSelection(w, event->xbutton.time);
+
+    
+    BWEngageRequest(w, RestoreRequest, False, 
+		    &(event->xbutton.state), sizeof(int));
+
+    OnePointHandler(w,
+             (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
+	     event);
+}
+
+void BWTMark(w, event)
+    Widget  w;
+    XEvent *event;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+
+    BWEngageRequest(w, MarkRequest, False,
+		    &(event->xbutton.state), sizeof(int));
+    TwoPointsHandler(w,
+            (BWStatus*) BW->bitmap.request_stack[BW->bitmap.current].status,
+	     event);
+}
+
+void BWTUnmark(w)
+    Widget w;
+{
+    BWUnmark(w);
+}
+
+
+/*****************************************************************************/
+
+String StripFilename(filename)
+    String filename;
+{
+    char *begin = rindex (filename, '/');
+    char *end, *result;
+    int length;
+    
+    if (filename) {
+	begin = (begin ? begin + 1 : filename);
+	end = index (begin, '.');     /* change to rindex to allow longer names */
+	length = (end ? (end - begin) : strlen (begin));
+	result = (char *) XtMalloc (length + 1);
+	strncpy (result, begin, length);
+	result [length] = '\0';
+	return (result);
+    }
+    else
+	return (XtNdummy);
+}
+
+int XmuWriteBitmapDataToFile (filename, basename, 
+			      width, height, datap, x_hot, y_hot)
+    String filename, basename;
+    unsigned int width, height;
+    char *datap;
+    int x_hot, y_hot;
+{
+    FILE *file;
+    int i, data_length;
+    
+    data_length = Length(width, height);
+    
+    if(!filename)    
+	file = stdout;
+    else
+    	file = fopen(filename, "w+");
+    
+    if (!basename)
+	basename = StripFilename(filename);
+    
+    if (file) {
+	fprintf(file, "#define %s_width %d\n", basename, width);
+	fprintf(file, "#define %s_height %d\n", basename, height);
+	if (QuerySet(x_hot, y_hot)) {
+	    fprintf(file, "#define %s_x_hot %d\n", basename, x_hot);
+	    fprintf(file, "#define %s_y_hot %d\n", basename, y_hot);
+	}
+	fprintf(file, "static char %s_bits[] = {\n   0x%02x",
+		basename, (unsigned char) datap[0]);
+	for(i = 1; i < data_length; i++) {
+	    fprintf(file, ",");
+	    fprintf(file, (i % 12) ? " " : "\n   ");
+	    fprintf(file, "0x%02x", (unsigned char) datap[i]);
+	}
+	fprintf(file, "};\n");
+	
+	if (file != stdout)
+	    fclose(file);
+
+	return BitmapSuccess;
+    }
+    
+    return 1;
+}
+
+/*****************************************************************************
+ *                               Cut and Paste                               *
+ *****************************************************************************/
+
+
+Boolean ConvertSelection(w, selection, target, type, value, length, format)
+    Widget w;
+    Atom *selection, *target, *type;
+    caddr_t *value;
+    unsigned long *length;
+    int *format;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Pixmap *pixmap;
+    static str;
+    char *data;
+    XImage *image;
+    Dimension width, height;
+ 
+    switch (*target) {
+/*
+    case XA_TARGETS:
+	*type = XA_ATOM;
+	*value = (caddr_t) bitmapClassRec.bitmap_class.targets;
+	*length = bitmapClassRec.bitmap_class.num_targets;
+	*format = 32;
+	return True;
+*/
+    case XA_BITMAP:
+    case XA_PIXMAP:
+	if (!BWQueryMarked(w)) return False;
+	width = BW->bitmap.mark.to_x - BW->bitmap.mark.from_x + 1;
+	height = BW->bitmap.mark.to_y - BW->bitmap.mark.from_y + 1;
+	data = CreateCleanData(Length(width, height));
+	image = CreateBitmapImage(BW, data, width, height);
+	CopyImageData(BW->bitmap.image, image, 
+		      BW->bitmap.mark.from_x, BW->bitmap.mark.from_y,
+		      BW->bitmap.mark.to_x, BW->bitmap.mark.to_y, 0, 0);
+	pixmap = (Pixmap *) XtMalloc(sizeof(Pixmap));
+	*pixmap = GetPixmap(BW, image);
+	DestroyBitmapImage(&image);
+	*type = XA_PIXMAP;
+	*value = (caddr_t) pixmap;
+	*length = 1;
+	*format = 32;
+	return True;
+
+    case XA_STRING:
+	*type = XA_STRING;
+	*value = "Hello world!";
+	*length = XtStrlen(*value);
+	*format = 8;
+	return True;
+
+    default:
+	return False;
+    }
+}
+
+void LoseSelection(w, selection)
+    Widget w;
+    Atom *selection;
+{
+    if (DEBUG)
+	fprintf(stderr, "Lost Selection\n");
+    BWUnmark(w);
+}
+
+void SelectionDone(w, selection, target)
+    Widget w;
+    Atom *selection, *target;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+/*  
+    if (*target != XA_TARGETS)
+	XtFree(BW->bitmap.value);
+*/
+}
+
+void BWGrabSelection(w, time)
+    Widget w;
+    Time time;
+{
+    
+    if (XtOwnSelection(w, XA_PRIMARY, time,
+		       ConvertSelection, LoseSelection, SelectionDone))
+	if (DEBUG)
+	    fprintf(stderr, "Own the selection\n");
+}
+
+void SelectionCallback(w, client_data, selection, type, value, length, format)
+    Widget w;
+    caddr_t client_data;
+    Atom *selection, *type;
+    caddr_t value;
+    unsigned long *length;
+    int *format;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    Pixmap *pixmap;
+    switch (*type) {
+	
+    case XA_BITMAP:
+    case XA_PIXMAP:
+	DestroyBitmapImage(&BW->bitmap.storage);
+	pixmap = (Pixmap *) value;
+	BW->bitmap.storage = GetImage(BW, *pixmap);
+	XFreePixmap(XtDisplay(w), *pixmap);
+	break;
+	
+    case XA_STRING:
+	if (DEBUG)
+	    fprintf(stderr, "Received:%s\n", value);
+	break;
+
+    default:
+	XtWarning(" selection request failed.  BitmapWidget");
+	break;
+    }
+}
+
+void BWRequestSelection(w, time)
+    Widget w;
+    Time time;
+{
+    BitmapWidget BW = (BitmapWidget) w;
+    
+    XtGetSelectionValue(w, XA_PRIMARY, XA_PIXMAP,
+			SelectionCallback, NULL, time);
+}
+
+
+/*****************************************************************************/
 
 
 
@@ -713,6 +3174,7 @@ static void Initialize(request, new, argv, argc)
     XGCValues  values;
     XtGCMask   mask;
     char *image_data, *buffer_data;
+    int zero = 0;
 
     new->bitmap.notify = NULL;
     new->bitmap.cardinal = 0;
@@ -809,7 +3271,7 @@ static void Initialize(request, new, argv, argc)
 					   new->bitmap.width,
 					   new->bitmap.height);
     /* magic command !!! */
-    BWEngageRequest((Widget)new, MarkRequest, True, 0, sizeof(int));
+    BWEngageRequest((Widget)new, MarkRequest, True, (caddr_t) &zero, sizeof(int));
 
     /* Read file */
     {
@@ -1550,55 +4012,6 @@ void BWDashed(w, _switch)
 static Boolean SetValues()
 {
     return FALSE;
-}
-
-XImage *CreateBitmapImage(BW, data, width, height)
-    BitmapWidget BW;
-    char *data;
-    Dimension width, height;
-{
-    XImage *image = XCreateImage(XtDisplay(BW),
-				 DefaultVisual(XtDisplay(BW), 
-					       DefaultScreen(XtDisplay(BW))),
-				 1, XYBitmap, 0, 
-				 data, width, height,
-				 8, (width + 7) / 8);
-
-    image->height = height;
-    image->width = width;
-    image->depth = 1;
-    image->xoffset = 0;
-    image->format = XYBitmap;
-    image->data = (char *)data;
-    image->byte_order = LSBFirst;
-    image->bitmap_unit = 8;
-    image->bitmap_bit_order = LSBFirst;
-    image->bitmap_pad = 8;
-    image->bytes_per_line = (width + 7) / 8;
-
-    return image;
-}
-
-void DestroyBitmapImage(image)
-    XImage **image;
-{
-    /*XDestroyImage(*image);*/
-    if (image) {
-	if (*image) {
-	    if ((*image)->data)
-		XtFree((*image)->data);
-	    XtFree(*image);
-	}
-	*image = NULL;
-    }
-}
-
-XImage *BWGetImage(w)
-    Widget w;
-{
-    BitmapWidget BW = (BitmapWidget) w;
-
-    return BW->bitmap.image;
 }
 
 Boolean BWQueryProportional(w)
