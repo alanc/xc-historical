@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.54 91/01/06 12:15:43 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.55 91/07/19 23:09:16 rws Exp $ */
 
 /* Copyright 1987 Massachusetts Institute of Technology */
 
@@ -42,6 +42,7 @@
 %*/
 
 #include <stdio.h>
+#include <errno.h>
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.47 91/07/14 13:47:04 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.47 91/07/14 13:51:36 rws Exp $ */
 /* Copyright 1985, 1986, 1988 Massachusetts Institute of Technology */
 
 /*
@@ -24,6 +24,7 @@ without express or implied warranty.
 #include <X11/XWDFile.h>
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
+#include <errno.h>
 
 extern int errno;
 extern char *malloc();

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.88 91/07/05 15:07:24 rws Exp $
+ *	$XConsortium: misc.c,v 1.89 91/07/10 11:45:55 rws Exp $
  */
 
 /*
@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <errno.h>
 
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>

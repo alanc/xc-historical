@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.47 91/07/09 15:54:30 rws Exp $
+ * $XConsortium: xrdb.c,v 11.48 91/07/12 16:58:59 rws Exp $
  */
 
 /*
@@ -45,6 +45,7 @@
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
 
