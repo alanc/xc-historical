@@ -1,10 +1,12 @@
-XTerm*SimpleMenu*labelFont: *-*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
+XTerm*SimpleMenu*labelFont: *-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso*-*
 XTerm*SimpleMenu*HorizontalMargins: 16
 XTerm*SimpleMenu*Cursor: left_ptr
 XTerm*SimpleMenu*VerticalSpace: 2
 XTerm*SimpleMenu*translations:	#override \
 	<BtnUp>:	MenuPopdown() notify() unhighlight()
 
+
+XTerm*SimpleMenu*line0*Type: blank
 
 XTerm*mainMenu.Label:  Main Options
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
@@ -58,7 +60,7 @@ XTerm*tekMenu*vtshow*Label:  Show VT Window
 XTerm*tekMenu*vtmode*Label:  Switch to VT Mode
 XTerm*tekMenu*tekhide*Label:  Hide Tek Window
 
-XTerm*tek4014*fontLarge: *-courier-medium-r-normal--*-180-*-*-*-*-*-*
-XTerm*tek4014*font2: *-courier-medium-r-normal--*-140-*-*-*-*-*-*
-XTerm*tek4014*font3: *-courier-medium-r-normal--*-120-*-*-*-*-*-*
-XTerm*tek4014*fontSmall: *-courier-medium-r-normal--*-100-*-*-*-*-*-*
+XTerm*tek4014*fontLarge: 9x15
+XTerm*tek4014*font2: 8x13
+XTerm*tek4014*font3: 6x13
+XTerm*tek4014*fontSmall: 6x10
