@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.57 93/08/27 16:27:15 kaleb Exp $ */
+/* $XConsortium: Core.c,v 1.58 93/09/28 10:40:01 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include "IntrinsicP.h"
 #include "EventI.h"
+#include "ConvertI.h"
 #include "TranslateI.h"
 #include "ResourceI.h"
 #include "RectObj.h"
