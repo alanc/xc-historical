@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.25 88/10/04 08:26:42 swick Exp $
+* $XConsortium: TextP.h,v 1.26 88/10/04 16:08:33 swick Exp $
 */
 
 
@@ -31,9 +31,8 @@ SOFTWARE.
 #define _XtTextP_h
 
 
-#include "Text.h"
-#include <X11/CoreP.h>
-#include "SimpleP.h"
+#include <X11/Text.h>
+#include <X11/SimpleP.h>
 
 /****************************************************************
  *
