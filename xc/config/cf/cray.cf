@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.46 94/02/10 20:07:32 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.47 94/03/29 13:24:14 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName
@@ -35,5 +35,5 @@ XCOMM operating system:  OSName
 #  endif
 #endif
 
-/* XKB library code is not 64-bit ready yet */
+/* XKB library code does not work here yet */
 #define BuildXKBlib NO
