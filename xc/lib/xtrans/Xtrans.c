@@ -720,11 +720,38 @@ XtransConnInfo	ciptr;
  * Independant API.
  */
 
+static int
+complete_network_count ()
+
+{
+    int count = 0;
+    int found_local = 0;
+    int i;
+
+    /*
+     * For a complete network, we only need one LOCALCONN transport to work
+     */
+
+    for (i = 0; i < NUMTRANS; i++)
+    {
+	if (Xtransports[i]->flags & TRANS_ALIAS)
+	    continue;
+
+	if (Xtransports[i]->flags & TRANS_LOCAL)
+	    found_local = 1;
+	else
+	    count++;
+    }
+
+    return (count + found_local);
+}
+
+
 int
-TRANS(MakeAllCOTSServerListeners) (port, max_ret, count_ret, ciptrs_ret)
+TRANS(MakeAllCOTSServerListeners) (port, partial, count_ret, ciptrs_ret)
 
 char		*port;
-int		*max_ret;
+int		*partial;
 int		*count_ret;
 XtransConnInfo 	**ciptrs_ret;
 
@@ -737,14 +764,11 @@ XtransConnInfo 	**ciptrs_ret;
 	   port, ciptrs_ret, 0);
 
     *count_ret = 0;
-    *max_ret = 0;
 
     for (i = 0; i < NUMTRANS; i++)
     {
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
-
-	(*max_ret)++;
 
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
 
@@ -775,6 +799,12 @@ XtransConnInfo 	**ciptrs_ret;
 	(*count_ret)++;
     }
 
+    *partial = (*count_ret < complete_network_count());
+
+    PRMSG (5,
+     "TRANS(MakeAllCLTSServerListeners) partial=%d, actual=%d, complete=%d \n",
+	*partial, *count_ret, complete_network_count());
+
     if (*count_ret > 0)
     {
 	if ((*ciptrs_ret = (XtransConnInfo *) malloc (
@@ -795,10 +825,10 @@ XtransConnInfo 	**ciptrs_ret;
 }
 
 int
-TRANS(MakeAllCLTSServerListeners) (port, max_ret, count_ret, ciptrs_ret)
+TRANS(MakeAllCLTSServerListeners) (port, partial, count_ret, ciptrs_ret)
 
 char		*port;
-int		*max_ret;
+int		*partial;
 int		*count_ret;
 XtransConnInfo 	**ciptrs_ret;
 
@@ -811,14 +841,11 @@ XtransConnInfo 	**ciptrs_ret;
 	port, ciptrs_ret, 0);
 
     *count_ret = 0;
-    *max_ret = 0;
 
     for (i = 0; i < NUMTRANS; i++)
     {
 	if (Xtransports[i]->flags&TRANS_ALIAS)
 	    continue;
-
-	(*max_ret)++;
 
 	sprintf(buffer,"%s/:%s", Xtransports[i]->TransName, port);
 
@@ -847,6 +874,12 @@ XtransConnInfo 	**ciptrs_ret;
 	temp_ciptrs[*count_ret] = ciptr;
 	(*count_ret)++;
     }
+
+    *partial = (*count_ret < complete_network_count());
+
+    PRMSG (5,
+     "TRANS(MakeAllCLTSServerListeners) partial=%d, actual=%d, complete=%d \n",
+	*partial, *count_ret, complete_network_count());
 
     if (*count_ret > 0)
     {
