@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.105 88/02/05 23:05:02 newman Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.106 88/02/07 17:25:45 swick Locked $";
 #endif lint
 
 /*
@@ -223,7 +223,11 @@ char *name;
  * Merge two option tables, allowing the second to over-ride the first,
  * so that ambiguous abbreviations can be noticed.  The merge attempts
  * to make the resulting table lexicographically sorted, but succeeds
- * only if the first source table is sorted.
+ * only if the first source table is sorted.  Though it _is_ recommended
+ * (for optimizations later in XrmParseCommand), it is not required
+ * that either source table be sorted.
+ *
+ * Caller is responsible for freeing the returned option table.
  */
 
 void
@@ -234,9 +238,10 @@ XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     Cardinal *num_dst;
 {
     XrmOptionDescRec *table, *endP;
-    register XrmOptionDescRec *opt1, *opt2, *dstP; 
+    register XrmOptionDescRec *opt1, *opt2, *whereP, *dstP; 
     int i1, i2, dst_len, order;
     Boolean found;
+    enum {Check, NotSorted, IsSorted} sort_order = Check;
 
     *dst = table = (XrmOptionDescRec*)
 	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
@@ -249,32 +254,47 @@ XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
     endP = &table[dst_len = num_src1];
     for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
 	found = False;
+	whereP = endP-1;	/* assume new option goes at the end */
 	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
-	    /* have to walk the entire new table so new list is ordered */
+	    /* have to walk the entire new table so new list is ordered
+	       (if src1 was ordered) */
+	    if (sort_order == Check && i1 > 0
+		&& strcmp(opt1->option, (opt1-1)->option) < 0)
+		sort_order = NotSorted;
 	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
 		/* same option names; just overwrite opt1 with opt2 */
 		*opt1 = *opt2;
 		found = True;
 		break;
 		}
-	    else if (order > 0) {
-		/* insert after opt1 to preserve order */
+	    /* else */
+	    if (sort_order == IsSorted && order > 0) {
+		/* insert before opt1 to preserve order */
 		/* shift rest of table forward to make room for new entry */
-		for (dstP = endP; dstP > opt1; dstP--)
+		for (dstP = endP++; dstP > opt1; dstP--)
 		    *dstP = *(dstP-1);
 		*opt1 = *opt2;
 		dst_len++;
-		endP++;
 		found = True;
 		break;
 	    }
+	    /* else */
+	    if (order < 0)
+		/* opt2 sorts after opt1, so remember this position */
+		whereP = opt1;
 	}
+	if (sort_order == Check && i1 == dst_len)
+	    sort_order = IsSorted;
 	if (!found) {
-	   /* if we get here, then "opt2" sorts after everything already in the table.
-	      So put it at the end. */
-	    *endP++ = *opt2;
+	   /* when we get here, whereP points to the last entry in the
+	      destination that sorts before "opt2".  Shift rest of table
+	      forward and insert "opt2" after whereP. */
+	    whereP++;
+	    for (dstP = endP++; dstP > whereP; dstP--)
+		*dstP = *(dstP-1);
+	    *whereP = *opt2;
 	    dst_len++;
-	    }
+	}
     }
     *num_dst = dst_len;
 }
