@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.29 90/05/08 15:16:32 converse Exp $ */
+/* $XConsortium: List.c,v 1.30 90/12/31 11:10:46 gildea Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -67,34 +67,34 @@ static char defaultTranslations[] =
 
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	offset(list.foreground), XtRString, "XtDefaultForeground"},
+	offset(list.foreground), XtRString, XtDefaultForeground},
     {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
        offset(simple.cursor), XtRString, "left_ptr"},
     {XtNfont,  XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	offset(list.font),XtRString, "XtDefaultFont"},
+	offset(list.font),XtRString, XtDefaultFont},
     {XtNlist, XtCList, XtRPointer, sizeof(char **),
        offset(list.list), XtRString, NULL},
     {XtNdefaultColumns, XtCColumns, XtRInt,  sizeof(int),
-	offset(list.default_cols), XtRImmediate, (caddr_t)2},
+	offset(list.default_cols), XtRImmediate, (XtPointer)2},
     {XtNlongest, XtCLongest, XtRInt,  sizeof(int),
-	offset(list.longest), XtRImmediate, (caddr_t)0},
+	offset(list.longest), XtRImmediate, (XtPointer)0},
     {XtNnumberStrings, XtCNumberStrings, XtRInt,  sizeof(int),
-	offset(list.nitems), XtRImmediate, (caddr_t)0},
+	offset(list.nitems), XtRImmediate, (XtPointer)0},
     {XtNpasteBuffer, XtCBoolean, XtRBoolean,  sizeof(Boolean),
-	offset(list.paste), XtRString, (caddr_t) "False"},
+	offset(list.paste), XtRImmediate, (XtPointer) False},
     {XtNforceColumns, XtCColumns, XtRBoolean,  sizeof(Boolean),
-	offset(list.force_cols), XtRString, (caddr_t) "False"},
+	offset(list.force_cols), XtRImmediate, (XtPointer) False},
     {XtNverticalList, XtCBoolean, XtRBoolean,  sizeof(Boolean),
-	offset(list.vertical_cols), XtRString, (caddr_t) "False"},
+	offset(list.vertical_cols), XtRImmediate, (XtPointer) False},
     {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
-	offset(list.internal_width), XtRImmediate, (caddr_t)4},
+	offset(list.internal_width), XtRImmediate, (XtPointer)4},
     {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
-	offset(list.internal_height), XtRImmediate, (caddr_t)2},
+	offset(list.internal_height), XtRImmediate, (XtPointer)2},
     {XtNcolumnSpacing, XtCSpacing, XtRDimension,  sizeof(Dimension),
-	offset(list.column_space), XtRImmediate, (caddr_t)6},
+	offset(list.column_space), XtRImmediate, (XtPointer)6},
     {XtNrowSpacing, XtCSpacing, XtRDimension,  sizeof(Dimension),
-	offset(list.row_space), XtRImmediate, (caddr_t)2},
-    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
+	offset(list.row_space), XtRImmediate, (XtPointer)2},
+    {XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
         offset(list.callback), XtRCallback, NULL},
 };
 
@@ -755,7 +755,7 @@ Cardinal *num_params;
     ret_value.string = lw->list.list[item];
     ret_value.list_index = item;
     
-    XtCallCallbacks( w, XtNcallback, (caddr_t) &ret_value);
+    XtCallCallbacks( w, XtNcallback, (XtPointer) &ret_value);
 }
 
 /*	Function Name: Unset
