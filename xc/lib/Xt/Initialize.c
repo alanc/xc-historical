@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.40 87/09/13 19:25:14 newman Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 1.43 87/09/13 21:52:37 newman Locked $";
 #endif lint
 
 /*
@@ -327,7 +327,7 @@ Widget request, new;
 	}
 
 	XtAddEventHandler(
-	    request, (EventMask) StructureNotifyMask,
+	    new, (EventMask) StructureNotifyMask,
 	    FALSE, EventHandler, (Opaque) NULL);
 }
 
