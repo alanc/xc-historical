@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.5 89/09/19 15:36:33 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.6 89/11/02 13:49:28 keith Exp $ */
 
 #if (PPW == 4)
 
@@ -26,14 +26,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((unsigned long) (x)) >> 28)
-#define BitRight(x,xoff)	((x) >> (xoff))
 #define NextFourBits(x)		((x) <<= 4)
-#define BitLeft(x,y)		((x) << (y))
 #else
 #define GetFourBits(x)		((x) & 0xf)
-#define BitRight(x,xoff)	((x) << (xoff))
 #define NextFourBits(x)		((x) >>= 4)
-#define BitLeft(x,y)		((x) >> (y))
 #endif
 
 #define GetFourPixels(x)	(cfb8Pixels[GetFourBits(x)])

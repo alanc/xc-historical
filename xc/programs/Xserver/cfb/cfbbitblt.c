@@ -66,15 +66,13 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				/* following used for looping through a line */
     unsigned int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
-#ifdef FAST_CONSTANT_OFFSET_MODE
-    register unsigned int bits1;
-#endif
-				/* place to store full source word */
     int xoffSrc, xoffDst;
     register int leftShift, rightShift;
-    register unsigned int bits, tmp;
+    register unsigned int bits;
+    register unsigned int bits1;
     register int nl;		/* temp copy of nlMiddle */
 
+				/* place to store full source word */
     int nstart;			/* number of ragged bits at start of dst */
     int nend;			/* number of ragged bits at end of dst */
     int srcStartOver;		/* pulling nstart bits from src
@@ -273,7 +271,10 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
+
+#ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
+
 			    psrc += nl & (UNROLL-1);
 			    pdst += nl & (UNROLL-1);
 
@@ -284,6 +285,14 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pdst += UNROLL; \
     psrc += UNROLL;
 
+#else
+
+#define BodyOdd(n)  *pdst++ = *psrc++;
+#define BodyEven(n) BodyOdd(n)
+
+#define LoopReset   ;
+
+#endif
 			    PackedLoop
 
 #undef BodyOdd
@@ -321,16 +330,20 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	bits = *psrc++;
 			    if (startmask)
 			    {
-			    	tmp = BitLeft(bits,leftShift);
+			    	bits1 = BitLeft(bits,leftShift);
 			    	bits = *psrc++;
-			    	tmp |= BitRight(bits,rightShift);
+			    	bits1 |= BitRight(bits,rightShift);
 			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+				    	(bits1 & startmask);
 			    	pdst++;
 			    }
 			    nl = nlMiddle;
-#ifdef FAST_CONSTANT_OFFSET_MODE
+
+#ifdef LARGE_INSTRUCTION_CACHE
 			    bits1 = bits;
+
+#ifdef FAST_CONSTANT_OFFSET_MODE
+
 			    psrc += nl & (UNROLL-1);
 			    pdst += nl & (UNROLL-1);
 
@@ -346,6 +359,20 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pdst += UNROLL; \
     psrc += UNROLL;
 
+#else
+
+#define BodyOdd(n) \
+    bits = *psrc++; \
+    *pdst++ = BitLeft(bits1, leftShift) | BitRight(bits, rightShift);
+			   
+#define BodyEven(n) \
+    bits1 = *psrc++; \
+    *pdst++ = BitLeft(bits, leftShift) | BitRight(bits1, rightShift);
+
+#define LoopReset   ;
+
+#endif	/* !FAST_CONSTANT_OFFSET_MODE */
+
 			    PackedLoop
 
 #undef BodyOdd
@@ -354,22 +381,22 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 
 #else
 			    DuffL (nl,label2,
-				tmp = BitLeft(bits, leftShift);
+				bits1 = BitLeft(bits, leftShift);
 				bits = *psrc++;
-				*pdst++ = tmp | BitRight(bits, rightShift);
+				*pdst++ = bits1 | BitRight(bits, rightShift);
 			    )
 #endif
-    
+
 			    if (endmask)
 			    {
-			    	tmp = BitLeft(bits, leftShift);
+			    	bits1 = BitLeft(bits, leftShift);
 			    	if (BitLeft(endmask, rightShift))
 			    	{
 				    bits = *psrc++;
-				    tmp |= BitRight(bits, rightShift);
+				    bits1 |= BitRight(bits, rightShift);
 			    	}
 			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
+				    	(bits1 & endmask);
 			    }
 		    	}
 		    }
@@ -395,6 +422,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 			    nl = nlMiddle;
 
+#ifdef LARGE_INSTRUCTION_CACHE
 #ifdef FAST_CONSTANT_OFFSET_MODE
 			    psrc -= nl & (UNROLL - 1);
 			    pdst -= nl & (UNROLL - 1);
@@ -407,6 +435,13 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pdst -= UNROLL;\
     psrc -= UNROLL;
 
+#else
+
+#define BodyOdd(n)  *--pdst = *--psrc;
+#define BodyEven(n) BodyOdd(n)
+#define LoopReset   ;
+
+#endif
 			    PackedLoop
 
 #undef BodyOdd
@@ -447,17 +482,18 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 				bits = *--psrc;
 			    if (endmask)
 			    {
-			    	tmp = BitRight(bits, rightShift);
+			    	bits1 = BitRight(bits, rightShift);
 			    	bits = *--psrc;
-			    	tmp |= BitLeft(bits, leftShift);
+			    	bits1 |= BitLeft(bits, leftShift);
 			    	pdst--;
 			    	*pdst = (*pdst & ~endmask) |
-				    	(tmp & endmask);
+				    	(bits1 & endmask);
 			    }
 			    nl = nlMiddle;
 
-#ifdef FAST_CONSTANT_OFFSET_MODE
+#ifdef LARGE_INSTRUCTION_CACHE
 			    bits1 = bits;
+#ifdef FAST_CONSTANT_OFFSET_MODE
 			    psrc -= nl & (UNROLL - 1);
 			    pdst -= nl & (UNROLL - 1);
 
@@ -473,6 +509,20 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     pdst -= UNROLL; \
     psrc -= UNROLL;
 
+#else
+
+#define BodyOdd(n) \
+    bits = *--psrc; \
+    *--pdst = BitRight(bits1, rightShift) | BitLeft(bits, leftShift);
+
+#define BodyEven(n) \
+    bits1 = *--psrc; \
+    *--pdst = BitRight(bits, rightShift) | BitLeft(bits1, leftShift);
+
+#define LoopReset   ;
+
+#endif
+
 			    PackedLoop
 
 #undef BodyOdd
@@ -481,23 +531,23 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 
 #else
 			    DuffL (nl, label4,
-				tmp = BitRight(bits, rightShift);
+				bits1 = BitRight(bits, rightShift);
 				bits = *--psrc;
-				*--pdst = tmp | BitLeft(bits, leftShift);
+				*--pdst = bits1 | BitLeft(bits, leftShift);
 			    )
 #endif
 
 			    if (startmask)
 			    {
-			    	tmp = BitRight(bits, rightShift);
+			    	bits1 = BitRight(bits, rightShift);
 			    	if (BitRight (startmask, leftShift))
 			    	{
 				    bits = *--psrc;
-				    tmp |= BitLeft(bits, leftShift);
+				    bits1 |= BitLeft(bits, leftShift);
 			    	}
 			    	--pdst;
 			    	*pdst = (*pdst & ~startmask) |
-				    	(tmp & startmask);
+				    	(bits1 & startmask);
 			    }
 		    	}
 		    }
