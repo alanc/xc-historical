@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.33 90/04/30 16:53:23 converse Exp $
+ *	$XConsortium: scrollbar.c,v 1.34 90/06/05 14:56:53 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.33 90/04/30 16:53:23 converse Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.34 90/06/05 14:56:53 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -153,10 +153,6 @@ static void ResizeScreen(xw, min_width, min_height )
 		      XtNminHeight, min_height + FontHeight(screen),
 		      NULL);
 
-#ifndef nothack
-	XSetWMNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
-#endif
-	
 	oldWidth = xw->core.width;
 	oldHeight = xw->core.height;
 	reqWidth = (screen->max_col + 1) * FontWidth(screen) + min_width;
@@ -168,6 +164,10 @@ static void ResizeScreen(xw, min_width, min_height )
 	     geomreqresult = XtMakeResizeRequest ((Widget)xw, repWidth,
 						  repHeight, NULL, NULL);
 	}
+
+#ifndef nothack
+	XSetWMNormalHints(screen->display, XtWindow(XtParent(xw)), &sizehints);
+#endif
 }
 
 void DoResizeScreen (xw)
