@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.c,v 2.19 89/12/16 03:35:39 converse Exp $ */
+/* $XConsortium: tsource.c,v 2.20 91/01/06 21:08:53 rws Exp $ */
 
 /*
  *			  COPYRIGHT 1987
@@ -40,11 +40,14 @@
 
 /* Private Data */
 
-#define offset(field) XtOffset(TocSourceWidget, toc_source.field)
+#define Offset(field) XtOffsetOf(TocSourceRec, toc_source.field)
+
 static XtResource resources[] = {
     {XtNtoc, XtCToc, XtRPointer, sizeof(caddr_t), 
-       offset(toc), XtRPointer, NULL},
+       Offset(toc), XtRPointer, NULL},
 };
+
+#undef Offset
 
 static void Initialize();
 static XawTextPosition Read(), Scan(), Search();
