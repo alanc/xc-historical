@@ -1,4 +1,4 @@
-/* $XConsortium: cpx_clnt.c,v 5.3 91/04/04 21:51:50 gildea Exp $ */
+/* $XConsortium: cpx_clnt.c,v 5.4 91/05/07 16:29:16 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -282,8 +282,8 @@ phg_cpxc_open( err_file, open_info )
 
     name = open_info && open_info->appl_id.name
 	? open_info->appl_id.name : "phigs";
-    class = open_info && open_info->appl_id.class
-	? open_info->appl_id.class : "Phigs";
+    class = open_info && open_info->appl_id.class_name
+	? open_info->appl_id.class_name : "Phigs";
 
     if ( !(cph = (Cp_handle)calloc( 1, sizeof(Cp_struct))) ) {
 	ERR_HANDLE( ERR900, Pfn_open_phigs, err_file );

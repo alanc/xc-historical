@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ctrl.c,v 5.3 91/04/05 16:54:33 gildea Exp $ */
+/* $XConsortium: cb_ctrl.c,v 5.4 91/06/19 10:45:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -95,7 +95,7 @@ popen_xphigs( error_file, memory, xinfo_mask, xinfo )
     /* RMDB stuff. */
     if ( xinfo_mask & PXPHIGS_INFO_APPL_ID ) {
 	xphigs_info.appl_id.name = xinfo->appl_id.name;
-	xphigs_info.appl_id.class = xinfo->appl_id.class;
+	xphigs_info.appl_id.class_name = xinfo->appl_id.class_name;
     }
     if ( xinfo_mask & PXPHIGS_INFO_RMDB )
 	/* Must assign rmdb before the args. */
