@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.113 91/07/22 21:40:47 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.114 91/07/22 22:16:48 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -707,7 +707,7 @@ BuildMakefileTarget(Imakefile,NullParameter)
  */
 #ifndef ObjectCompile
 #define ObjectCompile(options) $(RM) $@					@@\
-	$(CC) -c options $(CFLAGS) $*.c
+	$(CC) -c $(CFLAGS) options $*.c
 #endif
 
 /*
@@ -730,7 +730,7 @@ BuildMakefileTarget(Imakefile,NullParameter)
  */
 #ifndef LibObjCompile
 #define LibObjCompile(dir,options) $(RM) $@ dir/$@			@@\
-	$(CC) -c options $(CCOPTIONS) $(ALLDEFINES) $*.c		@@\
+	$(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c		@@\
 	$(MV) $@ dir/$@
 #endif
 
