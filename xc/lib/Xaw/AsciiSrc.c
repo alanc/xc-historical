@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.9 89/07/16 16:08:10 converse Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.10 89/07/16 18:07:27 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -332,7 +332,7 @@ Boolean	              include;
   }
 
   if (position >= data->length)
-    position = data->length - 1;
+    position = data->length;
 
   piece = FindPiece(data, position, &first);
 
