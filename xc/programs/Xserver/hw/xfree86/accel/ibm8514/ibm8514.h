@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514.h,v 1.1 94/10/05 13:30:48 kaleb Exp $ */
+/* $XConsortium: ibm8514.h,v 1.2 94/10/12 19:52:10 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.1 1994/07/24 11:43:17 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -99,8 +99,8 @@ void ibm8514ImageStipple(
     int,
     int,
     short,
-    short,
-    int
+    unsigned long,
+    int 
 #endif
 );
 
@@ -292,8 +292,8 @@ void ibm8514ImageFill(
     int,
     int,
     int,
-    int,
-    int 
+    short,
+    unsigned long 
 #endif
 );
 /* ibm8514bsto.c */
