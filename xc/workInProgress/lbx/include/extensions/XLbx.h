@@ -1,6 +1,6 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: XLbx.h,v 1.2 94/02/20 10:30:43 dpw Exp $ */
 /*
- * $NCDId: @(#)XLbx.h,v 1.13 1994/02/10 01:53:09 lemke Exp $
+ * $NCDId: @(#)XLbx.h,v 1.15 1994/03/04 02:29:51 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -80,6 +80,7 @@
 #define	LbxTagTypeKeymap		2
 #define	LbxTagTypeProperty		3
 #define	LbxTagTypeFont			4
+#define	LbxTagTypeConnInfo		5
 
 #ifndef _XLBX_SERVER_
 typedef struct {

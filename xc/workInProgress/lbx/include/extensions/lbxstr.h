@@ -1,6 +1,6 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxstr.h,v 1.2 94/02/20 10:30:53 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxstr.h,v 1.14 1994/02/11 00:12:19 lemke Exp $
+ * $NCDId: @(#)lbxstr.h,v 1.17 1994/03/04 02:29:53 dct Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -30,6 +30,24 @@
 
 #define LBX_MAJOR_VERSION	0	/* current version numbers */
 #define LBX_MINOR_VERSION	0
+
+typedef struct {
+    CARD8	byteOrder;
+    BOOL	useTag;
+    CARD16	majorVersion B16, minorVersion B16;
+    CARD16	nbytesAuthProto B16;    /* Authorization protocol */
+    CARD16	nbytesAuthString B16;   /* Authorization string */
+    CARD16	pad2 B16;
+} xLbxConnClientPrefix;
+
+typedef struct {
+    BOOL	success;		/* TRUE */
+    BOOL	tagOnly;
+    CARD16	majorVersion B16,
+		minorVersion B16;
+    CARD16	length B16;		/* 1/4 additional bytes in setup info */
+    CARD32	tag B32;
+} xLbxConnSetupPrefix;
 
 typedef struct _LbxQueryVersion {
     CARD8	reqType;		/* always LbxReqCode */
@@ -282,12 +300,12 @@ typedef struct {
     CARD8	valid;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
+    CARD32	real_length B32;
     CARD32	pad0 B32;		/* byte swapping info ? */
     CARD32	pad1 B32;
     CARD32	pad2 B32;
     CARD32	pad3 B32;
     CARD32	pad4 B32;
-    CARD32	pad5 B32;
     /* data */
 } xLbxQueryTagReply;
 #define sz_xLbxQueryTagReply	32
