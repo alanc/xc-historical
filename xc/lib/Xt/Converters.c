@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.93 94/02/04 18:06:11 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.94 94/02/08 20:21:47 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1553,7 +1553,7 @@ static void StringArrayDestructor(app, toVal, closure, args, num_args)
     if (closure) {
 	strarray = (String*) closure;
 	XtFree(*strarray);
-	XtFree(strarray);
+	XtFree((char *) strarray);
     }
 }
 /*ARGSUSED*/
