@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.107 89/07/31 16:57:23 keith Exp $ */
+/* $XConsortium: connection.c,v 1.108 89/08/03 20:26:02 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -126,7 +126,7 @@ extern int AutoResetServer();
 extern int GiveUp();
 extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
-extern void FreeOsBuffers();
+extern void FreeOsBuffers(), ResetOsBuffers();
 
 #ifdef TCPCONN
 static int
@@ -352,6 +352,7 @@ CreateWellKnownSockets()
 void
 ResetWellKnownSockets ()
 {
+    ResetOsBuffers();
 #ifdef UNIXCONN
     if (unixDomainConnection != -1)
     {
