@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: pick.c,v 2.22 88/08/22 13:08:20 swick Exp $";
+static char rcs_id[] = "$XConsortium: pick.c,v 2.23 88/09/06 17:23:28 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -340,7 +340,8 @@ static ParseRow(row)
 		    AppendArgv("-search");
 		    break;
 		case RTother: 
-		    AppendArgv(sprintf(str, "--%s", row->wlist[2]->ptr));
+		    sprintf(str, "--%s", row->wlist[2]->ptr);
+		    AppendArgv(str);
 		    break;
 	    }
 	    AppendArgv(entry->ptr);
