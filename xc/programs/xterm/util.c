@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.7 88/09/06 17:08:37 jim Exp $
+ *	$XConsortium: util.c,v 1.8 88/10/06 09:10:09 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.7 88/09/06 17:08:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.8 88/10/06 09:10:09 swick Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -868,7 +868,72 @@ register XExposeEvent *reply;
 		ncols = screen->max_col - leftcol + 1;
 
 	if (nrows > 0 && ncols > 0) {
-		ScrnRefresh (screen, toprow, leftcol, nrows, ncols);
+	        int lastrow = toprow + nrows - 1;
+		if (toprow > screen->endHRow || lastrow < screen->startHRow) {
+		    ScrnRefresh (screen, toprow, leftcol, nrows, ncols);
+		}
+		else {
+		    /* region intersects the selection */
+		    int endcol = leftcol + ncols;
+		    int row;
+		    /* do the rectangle above the selection */
+		    if (toprow < screen->startHRow) {
+			int bottom = Min(lastrow, screen->endHRow - 1);
+			ScrnRefresh( screen, toprow, leftcol,
+				     bottom - toprow + 1, ncols );
+		    }
+		    /* do the rectangle to the left of the selection */
+		    if (  toprow <= screen->startHRow &&
+			  leftcol < screen->startHCol) {
+			ScrnRefresh( screen, screen->startHRow, leftcol,
+				     1, screen->startHCol - leftcol );
+		    }
+		    /* do the rectangle to the right of the selection */
+		    if (  lastrow >= screen->endHRow &&
+			  endcol > screen->endHCol) {
+			ScrnRefresh( screen, screen->endHRow,
+				     screen->endHCol + 1, 1,
+				     endcol - screen->endHCol );
+		    }
+		    /* do the rectangle below the selection */
+		    if (lastrow > screen->endHRow) {
+			int top = Max(toprow, screen->endHRow + 1);
+			ScrnRefresh( screen, top, leftcol,
+				     lastrow - top + 1, ncols );
+		    }
+		    /* finally, do the selection */
+		    if ( Max(toprow, screen->startHRow) <=
+			 Min(lastrow, screen->endHRow) ) {
+			GC gc;
+			gc = screen->normalGC;
+			screen->normalGC = screen->reverseGC;
+			screen->reverseGC = gc;
+			gc = screen->normalboldGC;
+			screen->normalboldGC = screen->reverseboldGC;
+			screen->reverseboldGC = gc;
+
+			for (row = Max(toprow, screen->startHRow);
+			     row <= Min(lastrow, screen->endHRow); row++)
+			{
+			    int left, right;
+			    if (row == screen->startHRow &&
+				leftcol < screen->startHCol)
+				 left = screen->startHCol;
+			    else left = leftcol;
+			    if (row == screen->endHRow &&
+				endcol > screen->endHCol)
+				 right = screen->endHCol;
+			    else right = endcol;
+			    ScrnRefresh( screen, row, left, 1, right - left );
+			}
+			gc = screen->normalGC;
+			screen->normalGC = screen->reverseGC;
+			screen->reverseGC = gc;
+			gc = screen->normalboldGC;
+			screen->normalboldGC = screen->reverseboldGC;
+			screen->reverseboldGC = gc;
+		    }
+		}
 		if (screen->cur_row >= toprow &&
 		    screen->cur_row < toprow + nrows &&
 		    screen->cur_col >= leftcol &&
