@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.11 89/07/21 14:20:42 jim Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.12 89/07/24 13:59:13 keith Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -20,6 +20,7 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.11 89/07/21 14:20:42 jim Exp
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Label.h>
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/BSBMenuEnt.h>
 
 #include "libXdvi/Dvi.h"
 
@@ -110,6 +111,7 @@ void main(argc, argv)
     };
     Arg		    topLevelArgs[2];
     int		    height;
+    Widget          entry;
 
     toplevel = XtInitialize("main", "Xditview",
 			    options, XtNumber (options),
@@ -128,7 +130,8 @@ void main(argc, argv)
     XtSetArg (topLevelArgs[1], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay (toplevel),
 				     XtScreen(toplevel)->root,
-				     xdit_mask_bits, xdit_mask_width, xdit_mask_height));
+				     xdit_mask_bits, 
+				     xdit_mask_width, xdit_mask_height));
     XtSetValues (toplevel, topLevelArgs, 2);
     if (argc > 1)
 	file_name = argv[1];
@@ -139,11 +142,10 @@ void main(argc, argv)
     simpleMenu = XtCreatePopupShell ("menu", simpleMenuWidgetClass, toplevel,
 				    NULL, 0);
     for (i = 0; i < XtNumber (menuEntries); i++) {
-	XawSimpleMenuAddEntry(simpleMenu, menuEntries[i].name,
-			      NULL, (Cardinal) 0);
-	XawSimpleMenuAddEntryCallback(simpleMenu, menuEntries[i].name,
-				      menuEntries[i].function,
-				      menuEntries[i].name);
+	entry = XtCreateManagedWidget(menuEntries[i].name, 
+				      bSBMenuEntryObjectClass, simpleMenu,
+				      NULL, (Cardinal) 0);
+	XtAddCallback(entry, XtNcallback, menuEntries[i].function, NULL);
     }
 
     paned = XtCreateManagedWidget("paned", panedWidgetClass, toplevel,
@@ -234,23 +236,22 @@ char	*name;
 
 static fileBuf[1024];
 
-ResetMenuEntry (mw, name)
-    Widget  mw;
-    char    *name;
+ResetMenuEntry (entry)
+    Widget  entry;
 {
     Arg	arg[1];
 
-    XtSetArg (arg[0], XtNpopupOnEntry, name);
-    XtSetValues (mw, arg, 1);
+    XtSetArg (arg[0], XtNpopupOnEntry, entry);
+    XtSetValues (XtParent(entry) , arg, (Cardinal) 1);
 }
 
 static void
-NextPage (mw, name, data)
-    Widget  mw;
+NextPage (entry, name, data)
+    Widget  entry;
     caddr_t name, data;
 {
     NextPageAction();
-    ResetMenuEntry (mw, (char *) name);
+    ResetMenuEntry (entry);
 }
 
 static void
@@ -265,12 +266,12 @@ NextPageAction ()
 }
 
 static void
-PreviousPage (mw, name, data)
-    Widget  mw;
+PreviousPage (entry, name, data)
+    Widget  entry;
     caddr_t name, data;
 {
     PreviousPageAction ();
-    ResetMenuEntry (mw, (char *) name);
+    ResetMenuEntry (entry);
 }
 
 static void
@@ -285,12 +286,12 @@ PreviousPageAction ()
 }
 
 static void
-SelectPage (mw, name, data)
-    Widget  mw;
+SelectPage (entry, name, data)
+    Widget  entry;
     caddr_t name, data;
 {
     SelectPageAction ();
-    ResetMenuEntry (mw, (char *) name);
+    ResetMenuEntry (entry);
 }
 
 static void
@@ -300,12 +301,12 @@ SelectPageAction ()
 }
 
 static void
-OpenFile (mw, name, data)
-    Widget  mw;
+OpenFile (entry, name, data)
+    Widget  entry;
     caddr_t name, data;
 {
     OpenFileAction ();
-    ResetMenuEntry (mw, (char *) name);
+    ResetMenuEntry (entry);
 }
 
 static void
@@ -319,8 +320,8 @@ OpenFileAction ()
 }
 
 static void
-Quit (mw, closure, data)
-    Widget  mw;
+Quit (entry, closure, data)
+    Widget  entry;
     caddr_t closure, data;
 {
     QuitAction ();
