@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.18 90/05/18 15:36:42 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.19 90/05/18 15:40:27 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -57,6 +57,8 @@ void 			RecalculateDeviceDeliverableEvents();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
 extern int		DeviceValuator;
+extern int		DeviceMotionNotify;
+extern Mask		DevicePointerMotionHintMask;
 extern Mask 		DevicePointerMotionMask;
 extern Mask 		DeviceMappingNotifyMask;
 extern Mask 		DeviceButton1Mask;
@@ -92,7 +94,6 @@ ProcessOtherEvent (xE, other, count)
     {
     extern	int	DeviceKeyRelease;
     extern	int	DeviceButtonRelease;
-    extern	int	DeviceMotionNotify;
     extern	int	ProximityIn;
     extern	int	ProximityOut;
     register BYTE   	*kptr;
@@ -570,7 +571,6 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
     int i, ret;
     Mask check;
     InputClientsPtr others;
-    extern Mask DevicePointerMotionHintMask;
 
     if (mask & ~validmasks)
     {
