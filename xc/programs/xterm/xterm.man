@@ -47,6 +47,10 @@ This option specifies the size of the inner border (the distance between
 the outer edge of the characters and the window border) in pixels.  The
 default is 2.
 .TP 8
+.B "\-cc \fIcharacterclassrange\fP:\fIvalue\fP[,...]"
+This sets classes indicated by the given ranges for using in selecting by
+words.  See the section specifying character classes.
+.TP 8
 .BI \-cr " color"
 This option specifies the color to use for text cursor.  The default is to
 use the same foreground color that is used for text.
@@ -313,6 +317,12 @@ Specifies the name of the bold font.  The default is ``vtbold.''
 .B "c132 (\fPclass\fB C132)"
 Specifies whether or not the VT102 DECCOLM escape sequence should be honored.
 The default is ``false.''
+.TP 8
+.B "charClass (\fPclass\fB CharClass)"
+Specifies comma-separated lists of character class bindings of the form
+\[\fIlow\fP-\]\fIhigh\fP:\fIvalue\fP.  These are used in determining which
+sets of characters should be treated the same when doing cut and paste.
+See the section on specifying character classes.
 .TP 8
 .B "curses (\fPclass\fB Curses)"
 Specifies whether or not the last column bug in cursor should be worked around.
@@ -637,6 +647,64 @@ The current font size is checked in the modes section of the menu.
 The
 .B PAGE
 entry in the command section clears the Tektronix window.
+.SH "CHARACTER CLASSES"
+Clicking the middle mouse button twice in rapid succession will cause all
+characters of the same class (e.g. letters, white space, punctuation) to be
+selected.  Since different people have different preferences for what should
+be selected (for example, should filenames be selected as a whole or only
+the separate subnames), the default mapping can be overridden through the use 
+of the \fIclarClass\fP (class \fICharClass\fP) resource.
+.PP
+This resource is simply a list of \fIrange\fP:\fIvalue\fP pairs where the
+range is either a single number or \fIlow\fP-\fIhigh\fP in the range of 0
+to 127, corresponding to the ASCII code for the character or characters to be
+set.  The \fIvalue\fP is arbitrary, although the default table uses the
+character number of the first character occurring in the set.
+.PP
+The default table is:
+.sp
+.in +10
+.nf
+static int charClass[128] = {
+/* NUL  SOH  STX  ETX  EOT  ENQ  ACK  BEL */
+    32,   1,   1,   1,   1,   1,   1,   1,
+/*  BS   HT   NL   VT   NP   CR   SO   SI */
+     1,  32,   1,   1,   1,   1,   1,   1,
+/* DLE  DC1  DC2  DC3  DC4  NAK  SYN  ETB */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/* CAN   EM  SUB  ESC   FS   GS   RS   US */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/*  SP    !    "    #    $    %    &    ' */
+    32,  33,  34,  35,  36,  37,  38,  39,
+/*   (    )    *    +    ,    -    .    / */
+    40,  41,  42,  43,  44,  45,  46,  47,
+/*   0    1    2    3    4    5    6    7 */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   8    9    :    ;    <    =    >    ? */
+    48,  48,  58,  59,  60,  61,  62,  63,
+/*   @    A    B    C    D    E    F    G */
+    64,  48,  48,  48,  48,  48,  48,  48,
+/*   H    I    J    K    L    M    N    O */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   P    Q    R    S    T    U    V    W */ 
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   X    Y    Z    [    \\    ]    ^    _ */
+    48,  48,  48,  91,  92,  93,  94,  48,
+/*   `    a    b    c    d    e    f    g */
+    96,  48,  48,  48,  48,  48,  48,  48,
+/*   h    i    j    k    l    m    n    o */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   p    q    r    s    t    u    v    w */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   x    y    z    {    |    }    ~  DEL */
+    48,  48,  48, 123, 124, 125, 126,   1};
+.fi
+.sp
+.in -10
+For example, the string ``33:48,37:48,46-47:48,64:48'' indicates that the
+exclamation mark, percent sign, period, slash, and ampersand characters
+should be treated the same way as characters and numbers.  This is very useful 
+for cutting and pasting electronic mailing addresses and Unix filenames.
 .SH "OTHER FEATURES"
 .I Xterm
 automatically highlights the window border and text cursor when the
