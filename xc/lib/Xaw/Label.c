@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.27 87/12/04 10:57:10 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.28 87/12/08 10:52:22 swick Locked $";
 #endif lint
 
 /*
@@ -321,7 +321,7 @@ static Boolean SetValues(current, request, new, last)
     LabelWidget curlw = (LabelWidget) current;
     LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
-    XtWidgetGeometry	reqGeo;
+    Boolean was_resized;
 
     if (newlw->label.label == NULL) {
 	/* the string will be copied below... */
@@ -359,42 +359,9 @@ static Boolean SetValues(current, request, new, last)
 	newlw->core.height =
 	    newlw->label.label_height + 2*newlw->label.internal_height;
 
-    reqGeo.request_mode = NULL;
-
-    if (curlw->core.x != newlw->core.x) {
-	reqGeo.request_mode |= CWX;
-	reqGeo.x = newlw->core.x;
-    }
-    if (curlw->core.y != newlw->core.y) {
-	reqGeo.request_mode |= CWY;
-	reqGeo.y = newlw->core.y;
-    }
-    if (curlw->core.width != newlw->core.width) {
-	reqGeo.request_mode |= CWWidth;
-	reqGeo.width = newlw->core.width;
-    }
-    if (curlw->core.height != newlw->core.height) {
-	reqGeo.request_mode |= CWHeight;
-	reqGeo.height = newlw->core.height;
-    }
-    if (curlw->core.border_width != newlw->core.border_width) {
-	reqGeo.request_mode |= CWBorderWidth;
-	reqGeo.border_width = newlw->core.border_width;
-    }
-
-    if (reqGeo.request_mode != NULL) {
-	if (XtMakeGeometryRequest(
-		(Widget)curlw,
-		&reqGeo,
-		(XtWidgetGeometry *)NULL) != XtGeometryYes) {
-	    /* punt, undo requested change */
-	    newlw->core.x = curlw->core.x;
-	    newlw->core.y = curlw->core.y;
-	    newlw->core.width = curlw->core.width;
-	    newlw->core.height = curlw->core.height;
-	    newlw->core.border_width = curlw->core.border_width;
-	}
-    }
+    was_resized = (XtSetValuesGeometryRequest( curlw, newlw,
+					       (XtWidgetGeometry *)NULL )
+		   == XtGeometryYes);
 
     if (newlw->core.depth != curlw->core.depth) {
 	XtWarning("SetValues: Attempt to change existing widget depth.");
@@ -439,7 +406,8 @@ static Boolean SetValues(current, request, new, last)
     }
 
     if ((curlw->label.internal_width != newlw->label.internal_width)
-        || (curlw->label.internal_height != newlw->label.internal_height)) {
+        || (curlw->label.internal_height != newlw->label.internal_height)
+	|| was_resized) {
 	Resize((Widget)newlw);
     }
 

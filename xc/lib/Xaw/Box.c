@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: ButtonBox.c,v 1.15 87/12/08 07:53:50 swick Locked $";
+static char rcsid[] = "$Header: ButtonBox.c,v 1.16 87/12/08 08:19:31 swick Locked $";
 #endif lint
 
 /*
@@ -373,11 +373,15 @@ static void Realize(w, valueMask, attributes)
  */
 
 static Boolean SetValues (current, request, new, last)
-    ButtonBoxWidget current, request, new;
+    Widget current, request, new;
     Boolean last;
 {
-    /* ||| Old code completely bogus, need background, etc., then
-    XtMakeGeometryRequest, then relayout */
+    /* ||| Old code completely bogus, need background, etc. then relayout */
+
+    XtSetValuesGeometryRequest( current, new, (XtWidgetGeometry *)NULL );
+
+    /* ||| should handle XtGeometryAlmost */
+
     return (FALSE);
 }
 

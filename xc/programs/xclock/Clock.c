@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Clock.c,v 1.19 87/12/01 16:28:07 swick Locked $";
+static char rcsid[] = "$Header: Clock.c,v 1.20 87/12/08 10:31:16 swick Locked $";
 #endif lint
 
 /*
@@ -655,15 +655,19 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
 	    new->clock.show_second_hand = (new->clock.update <= SECOND_HAND_TIME);
       }
 
+      if (new->clock.padding != current->clock.padding)
+	   redisplay = TRUE;
+
+      if (XtSetValuesGeometryRequest( gcurrent, gnew, (XtWidgetGeometry*)NULL )
+		== XtGeometryYes)
+           redisplay = TRUE;
+
+      if (redisplay)  Resize(gnew);
+
       if (new->clock.analog != current->clock.analog)
 	   redisplay = TRUE;
 
-      if (new->clock.padding != current->clock.padding) {
-	   Resize(gnew);
-	   redisplay = TRUE;
-	   }
-
-      if (new->clock.font != current->clock.font)
+       if (new->clock.font != current->clock.font)
 	   redisplay = TRUE;
 
       if ((new->clock.fgpixel != current->clock.fgpixel)
@@ -704,13 +708,6 @@ static Boolean SetValues (gcurrent, grequest, gnew, last)
 	  new->clock.EraseGC = XtGetGC((Widget)gcurrent, valuemask, &myXGCV);
 	  redisplay = TRUE;
 	  }
-
-     if ((new->core.x != current->core.x)
-       || (new->core.y != current->core.y)
-       || (new->core.width != current->core.width)
-       || (new->core.height != current->core.height)
-       || (new->core.border_width != current->core.border_width))
-         /* need to make geometry request */;
      
      return (redisplay);
 
