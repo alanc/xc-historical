@@ -116,12 +116,8 @@ macIIMonoCloseScreen(i, pScreen)
     int		i;
     ScreenPtr	pScreen;
 {
-#ifdef never
-    extern macIIBlackScreen();
-
     macIIBlackScreen(pScreen->myNum);
     return (pScreen->SaveScreen(pScreen, SCREEN_SAVER_OFF));
-#endif never
 }
 
 /*-
