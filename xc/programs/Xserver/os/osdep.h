@@ -191,6 +191,9 @@ typedef struct _connectionOutput {
     int size;
     unsigned char *buf;
     int count;
+#ifdef LBX
+    Bool nocompress;
+#endif
 } ConnectionOutput, *ConnectionOutputPtr;
 
 #ifdef K5AUTH
@@ -205,16 +208,35 @@ typedef struct _k5_state {
 
 typedef struct _osComm {
     int fd;
+#ifdef LBX
+    int	vfd;
+#endif
     ConnectionInputPtr input;
     ConnectionOutputPtr output;
+#ifdef LBX
+    ConnectionOutputPtr ofirst;
+    ConnectionOutputPtr olast;
+#endif
     XID	auth_id;		/* authorization id */
 #ifdef K5AUTH
     k5_state	authstate;	/* state of setup auth conversation */
 #endif
     CARD32 conn_time;		/* timestamp if not established, else 0  */
     struct _XtransConnInfo *trans_conn; /* transport connection object */
+#ifdef LBX
+    void (*Close) ();
+    int  (*Writev) ();
+    int  (*Read) ();
+    int  (*flushClient) ();
+    void (*compressOff) ();
+    void (*compressOn) ();
+#endif
 } OsCommRec, *OsCommPtr;
 
+#ifdef LBX
+#define FlushClient(who, oc, extraBuf, extraCount) \
+    (*((OsCommPtr)((who)->osPrivate))->flushClient)(who, oc, extraBuf, extraCount)
+#else
 extern int FlushClient(
 #if NeedFunctionPrototypes
     ClientPtr /*who*/,
@@ -223,6 +245,7 @@ extern int FlushClient(
     int /*extraCount*/
 #endif
 );
+#endif
 
 extern void FreeOsBuffers(
 #if NeedFunctionPrototypes

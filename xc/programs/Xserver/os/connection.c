@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.173 94/02/02 21:40:57 mor Exp $ */
+/* $XConsortium: connection.c,v 1.174 94/02/03 15:38:51 mor Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -115,6 +115,9 @@ static FdSet SavedClientsWithInput;
 int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
+#ifdef LBX
+int ConnectionOutputTranslation[MAXSOCKS];
+#endif
 
 XtransConnInfo 	*ListenTransConns = NULL;
 int	       	*ListenTransFds = NULL;
@@ -130,9 +133,16 @@ XtransConnInfo /* trans_conn */
 #endif
 );
 
-static void CloseDownFileDescriptor(
+#ifndef LBX
+static
+#endif
+void CloseDownFileDescriptor(
 #if NeedFunctionPrototypes
+#ifdef LBX
+    ClientPtr	client
+#else
     register OsCommPtr /*oc*/
+#endif
 #endif
 );
 
@@ -157,6 +167,13 @@ int fd;
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
+#ifdef LBX
+extern int  StandardReadRequestFromClient();
+extern int  StandardWriteToClient ();
+extern unsigned long  StandardRequestLength ();
+extern int  StandardFlushClient ();
+#endif
+
 
 /*****************
  * CreateWellKnownSockets
@@ -176,6 +193,9 @@ CreateWellKnownSockets()
     CLEARBITS(ClientsWithInput);
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
+#ifdef LBX
+    for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
+#endif
 #ifndef X_NOT_POSIX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
@@ -452,6 +472,108 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     return((char *)NULL);
 }
 
+#ifdef LBX
+
+ClientConnectionNumber (client)
+    ClientPtr	client;
+{
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
+
+    return oc->fd;
+}
+
+AvailableClientInput (client)
+    ClientPtr	client;
+{
+    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+
+    if (GETBIT(AllSockets, oc->fd))
+	BITSET(ClientsWithInput, oc->fd);
+}
+
+ClientPtr
+AllocNewConnection (trans_conn, fd, Read, Writev, Close)
+    XtransConnInfo trans_conn;
+    int	    fd;
+    int	    (*Read)();
+    int	    (*Writev)();
+    void    (*Close)();
+{
+    OsCommPtr	oc;
+    ClientPtr	client;
+    
+    if (fd >= lastfdesc)
+	return NullClient;
+    oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
+    if (!oc)
+	return NullClient;
+    oc->trans_conn = trans_conn;
+    oc->fd = fd;
+    oc->input = (ConnectionInputPtr)NULL;
+    oc->output = (ConnectionOutputPtr)NULL;
+    oc->conn_time = GetTimeInMillis();
+    oc->Read = Read;
+    oc->Writev = Writev;
+    oc->Close = Close;
+    oc->flushClient = StandardFlushClient;
+    oc->ofirst = (ConnectionOutputPtr) NULL;
+    if (!(client = NextAvailableClient((pointer)oc)))
+    {
+	xfree (oc);
+	return NullClient;
+    }
+    if (!ConnectionTranslation[fd])
+    {
+	ConnectionTranslation[fd] = client->index;
+	ConnectionOutputTranslation[fd] = client->index;
+	if (GrabInProgress)
+	{
+	    BITSET(SavedAllClients, fd);
+	    BITSET(SavedAllSockets, fd);
+	}
+	else
+	{
+	    BITSET(AllClients, fd);
+	    BITSET(AllSockets, fd);
+	}
+    }
+    oc->vfd = client->index;	/* XXX better be no larger than MAX_FDS */
+    client->public.readRequest = StandardReadRequestFromClient;
+    client->public.writeToClient = StandardWriteToClient;
+    client->public.requestLength = StandardRequestLength;
+    return client;
+}
+
+void
+SwitchConnectionFuncs (client, Read, Writev, Close)
+    ClientPtr	client;
+    int		(*Read)();
+    int		(*Writev)();
+    void	(*Close)();
+{
+    OsCommPtr	oc = (OsCommPtr) client->osPrivate;
+
+    oc->Read = Read;
+    oc->Writev = Writev;
+    oc->Close = Close;
+    oc->conn_time = 0;
+}
+
+void
+StartOutputCompression(client, CompressOn, CompressOff)
+    ClientPtr	client;
+    void	(*CompressOn)();
+    void	(*CompressOff)();
+{
+    OsCommPtr	oc = (OsCommPtr) client->osPrivate;
+    extern int	LbxFlushClient();
+
+    oc->compressOn = CompressOn;
+    oc->compressOff = CompressOff;
+    oc->flushClient = LbxFlushClient;
+}
+#endif
+
 /*****************
  * EstablishNewConnections
  *    If anyone is waiting on listened sockets, accept them.
@@ -472,6 +594,9 @@ EstablishNewConnections(clientUnused, closure)
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;
+#ifdef LBX
+    extern int  writev(), close();
+#endif
 
     readyconnections = (((FdMask)closure) & WellKnownConnections);
     if (!readyconnections)
@@ -505,6 +630,16 @@ EstablishNewConnections(clientUnused, closure)
 
 	_X11TransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
 
+#ifdef LBX
+	client = AllocNewConnection (new_trans_conn, newconn,
+		read, writev, CloseDownFileDescriptor);
+	if (!client)
+	{
+	    ErrorConnMax(new_trans_conn);
+	    _X11TransClose(new_trans_conn);
+	    continue;
+	}
+#else
 	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
 	if (!oc)
 	{
@@ -537,6 +672,7 @@ EstablishNewConnections(clientUnused, closure)
 	    ErrorConnMax(new_trans_conn);
 	    CloseDownFileDescriptor(oc);
 	}
+#endif	/* LBX */
     }
     return TRUE;
 }
@@ -599,15 +735,29 @@ XtransConnInfo trans_conn;
  *     Remove this file descriptor and it's I/O buffers, etc.
  ************/
 
+#ifdef LBX
+void
+CloseDownFileDescriptor(client)
+    ClientPtr	client;
+#else
 static void
 CloseDownFileDescriptor(oc)
     register OsCommPtr oc;
+#endif
 {
+#ifdef LBX
+    register OsCommPtr oc = (OsCommPtr) client->osPrivate;
+#endif
     int connection = oc->fd;
 
     if (oc->trans_conn)
 	_X11TransClose(oc->trans_conn);
+#ifdef LBX
+    ConnectionTranslation[connection] = 0;
+    ConnectionOutputTranslation[connection] = 0;
+#else
     FreeOsBuffers(oc);
+#endif
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
     BITCLEAR(ClientsWithInput, connection);
@@ -622,7 +772,9 @@ CloseDownFileDescriptor(oc)
     if (!ANYSET(ClientsWriteBlocked))
     	AnyClientsWriteBlocked = FALSE;
     BITCLEAR(OutputPending, connection);
+#ifndef LBX
     xfree(oc);
+#endif
 }
 
 /*****************
@@ -683,7 +835,13 @@ CloseDownConnection(client)
 #ifdef XDMCP
     XdmcpCloseDisplay(oc->fd);
 #endif
+#ifndef LBX
     CloseDownFileDescriptor(oc);
+#else
+    (*oc->Close) (client);
+    FreeOsBuffers(oc);
+    xfree(oc);
+#endif
     client->osPrivate = (pointer)NULL;
     if (auditTrailLevel > 1)
 	AuditF("client %d disconnected\n", client->index);
