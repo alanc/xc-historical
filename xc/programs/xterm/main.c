@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.168 91/02/11 15:33:51 rws Exp $ */
+/* $XConsortium: main.c,v 1.169 91/02/21 16:41:12 rws Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -800,8 +800,7 @@ char **argv;
 	/*
 	 * ICCCM delete_window.
 	 */
-	XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
-			actionProcs, XtNumber(actionProcs));
+	XtAppAddActions(app_con, actionProcs, XtNumber(actionProcs));
 	XtOverrideTranslations
 	  (toplevel, 
 	   XtParseTranslationTable("<Message>WM_PROTOCOLS: DeleteWindow()"));
@@ -889,7 +888,7 @@ char **argv;
 	    break;
 	}
 
-	XawSimpleMenuAddGlobalActions (XtWidgetToApplicationContext(toplevel));
+	XawSimpleMenuAddGlobalActions (app_con);
 	XtRegisterGrabAction (HandlePopupMenu, True,
 			      (ButtonPressMask|ButtonReleaseMask),
 			      GrabModeAsync, GrabModeAsync);
@@ -983,12 +982,12 @@ char **argv;
 	/* open a terminal for client */
 	get_terminal ();
 	spawn ();
-	/* Child process is out there, let's catch it's termination */
+	/* Child process is out there, let's catch its termination */
 	signal (SIGCHLD, reapchild);
 
 	/* Realize procs have now been executed */
 
-	Xsocket = screen->display->fd;
+	Xsocket = ConnectionNumber(screen->display);
 	pty = screen->respond;
 
 	if (am_slave) { /* Write window id so master end can read and use */
@@ -1259,7 +1258,7 @@ spawn ()
 {
 	extern char *SysErrorMsg();
 	register TScreen *screen = &term->screen;
-	int Xsocket = screen->display->fd;
+	int Xsocket = ConnectionNumber(screen->display);
 #ifdef USE_HANDSHAKE
 	handshake_t handshake;
 #else
