@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Grip.c,v 1.14 88/02/26 12:12:02 swick Exp $";
+static char rcsid[] = "$Header: Grip.c,v 1.20 88/08/23 17:42:35 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -37,20 +37,23 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/GripP.h>
 
-static int defDim = 8;
-static int defBorder = 0;
+static Dimension defDim = 8;
+static Dimension defBorder = 0;
+static Cursor defNone = None;
 
 static XtResource resources[] = {
-   {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-      XtOffset(GripWidget, core.width), XtRInt, (caddr_t)&defDim},
-   {XtNheight, XtCHeight, XtRInt, sizeof(int),
-      XtOffset(GripWidget, core.height), XtRInt, (caddr_t)&defDim},
+   {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+      XtOffset(GripWidget, core.width), XtRDimension, (caddr_t)&defDim},
+   {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+      XtOffset(GripWidget, core.height), XtRDimension, (caddr_t)&defDim},
    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
       XtOffset(GripWidget, core.background_pixel), XtRString, "Black"},
-   {XtNborderWidth, XtCBorderWidth, XtRInt, sizeof(int),
-      XtOffset(GripWidget, core.border_width), XtRInt, (caddr_t)&defBorder},
+   {XtNborderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
+      XtOffset(GripWidget, core.border_width), XtRDimension, (caddr_t)&defBorder},
    {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
       XtOffset(GripWidget, grip.grip_action), XtRCallback, NULL},
+   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
+      XtOffset(GripWidget, grip.cursor), XtRCursor, (caddr_t)&defNone}
 };
 
 void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
@@ -60,6 +63,8 @@ static XtActionsRec actionsList[] =
   {"GripAction",      GripAction},
 };
 
+
+static void Realize();
 
 GripClassRec gripClassRec = {
    {
@@ -72,7 +77,7 @@ GripClassRec gripClassRec = {
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,
     /* initialize_hook    */   NULL,
-    /* realize            */   XtInheritRealize,
+    /* realize            */   Realize,
     /* actions            */   actionsList,
     /* num_actions        */   XtNumber(actionsList),
     /* resourses          */   resources,
@@ -94,6 +99,8 @@ GripClassRec gripClassRec = {
     /* callback_private   */   NULL,
     /* tm_table           */   NULL,
     /* query_geometry     */   XtInheritQueryGeometry,
+    /* display_accelerator*/   XtInheritDisplayAccelerator,
+    /* extension          */   NULL
    }, {
     /* empty              */   0  /* make C compiler happy */
    }
@@ -114,4 +121,17 @@ static void GripAction( widget, event, params, num_params )
     call_data.num_params = *num_params;
 
     XtCallCallbacks( widget, XtNcallback, (caddr_t)&call_data );
+}
+
+static void Realize( w, valueMask, attributes )
+   Widget w;
+   Mask *valueMask;
+   XSetWindowAttributes *attributes;
+{
+    GripWidget gw = (GripWidget) w;
+
+    attributes->cursor = gw->grip.cursor;
+    *valueMask |= CWCursor;
+    
+    (*XtSuperclass(w)->core_class.realize) (w, valueMask, attributes);
 }
