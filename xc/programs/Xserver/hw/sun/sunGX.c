@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.18 93/07/20 17:33:43 rws Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.19 93/09/13 09:40:43 dpw Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -1980,7 +1980,7 @@ GCFuncs	sunGXGCFuncs = {
     sunGXDestroyGC,
     cfbChangeClip,
     cfbDestroyClip,
-    cfbCopyClip,
+    cfbCopyClip
 };
 
 GCOps	sunGXTEOps1Rect = {
@@ -2004,7 +2004,9 @@ GCOps	sunGXTEOps1Rect = {
     sunGXTEGlyphBlt,
     sunGXPolyTEGlyphBlt,
     cfbPushPixels8,
+#ifdef NEED_LINEHELPER
     NULL,
+#endif
 };
 
 GCOps	sunGXTEOps = {
@@ -2028,7 +2030,9 @@ GCOps	sunGXTEOps = {
     sunGXTEGlyphBlt,
     sunGXPolyTEGlyphBlt,
     cfbPushPixels8,
+#ifdef NEED_LINEHELPER
     NULL,
+#endif
 };
 
 GCOps	sunGXNonTEOps1Rect = {
@@ -2052,7 +2056,9 @@ GCOps	sunGXNonTEOps1Rect = {
     miImageGlyphBlt,
     sunGXPolyGlyphBlt,
     cfbPushPixels8,
+#ifdef NEED_LINEHELPER
     NULL,
+#endif
 };
 
 GCOps	sunGXNonTEOps = {
@@ -2076,7 +2082,9 @@ GCOps	sunGXNonTEOps = {
     miImageGlyphBlt,
     sunGXPolyGlyphBlt,
     cfbPushPixels8,
+#ifdef NEED_LINEHELPER
     NULL,
+#endif
 };
 
 #define PPW 4
