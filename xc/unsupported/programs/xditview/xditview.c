@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.21 91/02/08 18:23:34 keith Exp $ */
+/* $XConsortium: xditview.c,v 1.22 91/02/19 16:34:42 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -27,11 +27,11 @@
  *   Display ditroff output in an X window
  */
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
+#include <X11/Xatom.h>
 #include <X11/Shell.h>
+#include <X11/Xos.h>		/* rindex declaration */
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Panner.h>
 #include <X11/Xaw/Porthole.h>

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.16 91/02/20 10:20:00 dave Exp $
+ * $XConsortium: handler.c,v 1.17 91/02/20 19:57:07 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,7 +21,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 
@@ -30,6 +29,9 @@
 #include <X11/Xaw/Panner.h>
 #include <X11/Xaw/Toggle.h>
 #include <X11/Xfuncs.h>
+#include <X11/Xos.h>		/* for W_OK def */
+
+#include <stdio.h>
 
 #include "editresP.h"
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: utils.c,v 1.13 91/01/09 17:46:03 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -21,14 +21,16 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xutil.h>
+#include <X11/Xos.h>
 #include <X11/Shell.h>
 #include <X11/StringDefs.h>
 
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Dialog.h>
+
+#include <stdio.h>
 
 #include "editresP.h"
 
