@@ -1,6 +1,6 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxserve.h,v 1.2 94/02/20 10:50:30 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxserve.h,v 1.8 1994/02/09 00:18:05 lemke Exp $
+ * $NCDId: @(#)lbxserve.h,v 1.11 1994/03/24 01:30:14 dct Exp $
  * $NCDOr: lbxserve.h,v 1.1 1993/12/06 18:47:18 keithp Exp $
  *
  * Copyright 1992 Network Computing Devices
@@ -19,7 +19,7 @@
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NCD.
  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Keith Packard, Network Computing Devices
@@ -30,8 +30,8 @@
 
 #define MAX_LBX_CLIENTS	MAXCLIENTS
 
-typedef struct _LbxClient   *LbxClientPtr;
-typedef struct _LbxProxy    *LbxProxyPtr;
+typedef struct _LbxClient *LbxClientPtr;
+typedef struct _LbxProxy *LbxProxyPtr;
 
 typedef struct _LbxClient {
     int         index;
@@ -60,6 +60,7 @@ typedef struct _LbxProxy {
     int         switchEventRemaining;
     int         deltaEventRemaining;
     Bool        aborted;
+    int		grabClient;
     int         (*read) ();
     int         (*writev) ();
     void       *lzwHandle;
@@ -73,11 +74,12 @@ typedef struct _LbxProxy {
 
 /* This array is indexed by server client index, not lbx proxy index */
 
-extern LbxClientPtr	lbxClients[MAXCLIENTS];
+extern LbxClientPtr lbxClients[MAXCLIENTS];
 
 #define LbxClient(client)   (lbxClients[(client)->index])
 #define LbxProxy(client)    (LbxClient(client)->proxy)
 #define LbxMaybeProxy(client)	(LbxClient(client) ? LbxProxy(client) : 0)
 #define	LbxProxyID(client)  (LbxProxy(client)->pid)
 
-extern void	LbxDixInit();
+extern void LbxDixInit();
+extern LbxProxyPtr LbxPidToProxy();
