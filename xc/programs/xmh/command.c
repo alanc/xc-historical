@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.45 93/09/20 17:52:14 hersh Exp $ */
+/* $XConsortium: command.c,v 2.46 94/02/04 14:45:30 kaleb Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -391,7 +391,7 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
     int *lenP;
     Bool waitEOF;
 {
-    long nread;
+    int nread;
 /*  DEBUG2( " CheckReadFromPipe #%d,len=%d,", fd, *lenP )  */
 #ifdef FIONREAD
     if (!ioctl( fd, FIONREAD, &nread )) {
