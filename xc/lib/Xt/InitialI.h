@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.6 88/09/06 09:41:25 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.7 88/09/06 16:27:58 jim Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -49,12 +49,12 @@ typedef struct _TimerEventRec {
 	Display *te_dpy;
 	XtTimerCallbackProc	te_proc;
 	XtAppContext app;
-	Opaque	te_closure;
+	caddr_t	te_closure;
 } TimerEventRec;
 
 typedef struct _InputEvent {
 	XtInputCallbackProc  ie_proc;
-	Opaque ie_closure;
+	caddr_t ie_closure;
 	struct	_InputEvent	*ie_next;
 	struct  _InputEvent	*ie_oq;
 	XtAppContext app;
@@ -63,7 +63,7 @@ typedef struct _InputEvent {
 
 typedef struct _WorkProcRec {
 	XtWorkProc proc;
-	Opaque closure;
+	caddr_t closure;
 	struct _WorkProcRec *next;
 	XtAppContext app;
 } WorkProcRec;
