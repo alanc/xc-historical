@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.73 88/08/29 22:34:58 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.74 88/08/29 23:04:12 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -397,37 +397,6 @@ char **argv;
 	int fd3 = -1;
 
 	ProgramName = argv[0];
-
-#ifdef	hpux
-	/* This is a temporary kludge to get around the bug in 6.2 hp-ux unix
-	 * domain sockets which will crash the server if we do an invalid
-	 * (to unix domain sockets) ioctl on it.  Let's run through fd's
-	 * 0, 1, and 2 and if any of them are sockets, let's move them
-	 * out of the way.
-	 */
-
-	for (i = 0; i <= 2; i++) {
-	    struct stat st;
-
-	    if (!fstat(i, &st)) {
-		if ((st.st_mode & S_IFMT) == S_IFSOCK) {
-		    /* dup it outside the range... */
-		    (void) fcntl(i, F_DUPFD, 3);
-		    /* and close it up */
-		    (void) close(i);
-		    /* and open up /dev/null in it's place */
-		    (void) open("/dev/null", O_RDONLY);
-		}
-	    } else {
-		/* open up a file into this slot so that the unix domain
-		 * socket won't fall into the slot and possibly panic us
-		 * when cuserid calls... which does a TCGETA against fd's
-		 * 0, 1, and 2 which would panic us.
-		 */
-		(void) open("/dev/null", O_RDONLY);
-	    }
-	}
-#endif	/* hpux */
 
 #ifdef macII
 	/*
