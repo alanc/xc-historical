@@ -1,4 +1,4 @@
-/* $XConsortium: miLvl2Tab.c,v 5.1 91/02/16 09:55:35 rws Exp $ */
+/* $XConsortium: miLvl2Tab.c,v 5.2 91/05/31 07:24:36 jap Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -154,13 +154,14 @@ extern ddpex2rtn
 	parseGdp(),
 	parseGdp2D(),
 	parseSetAttribute(),
+	parsePropOC(),
 	parseSOFAS(),
 	parsePSurfaceChars(),
 	parseSetMCVolume(),
 	parseSetMCVolume2D();
 
 ocTableType	ParseOCTable[] = {
-    NULL,		/* 0 dummy entry */
+    parsePropOC,	        /* 0 dummy entry */
     parseSetAttribute,		/* 1 marker type */
     parseSetAttribute,		/* 2 marker scale */
     parseColourIndexOC,		/* 3 marker colour index */
@@ -273,7 +274,7 @@ extern void		destroyOC_PEX(),
 			destroyNurbSurface();
 
 destroyTableType	DestroyOCTable[] = {
-    NULL,			/* 0 dummy entry */
+    destroyOC_PEX,		/* 0 entry for proprietary OCs */
     destroyOC_PEX,		/* 1 marker type */
     destroyOC_PEX,		/* 2 marker scale */
     destroyOC_PEX,		/* 3 marker colour index */
@@ -367,9 +368,9 @@ destroyTableType	DestroyOCTable[] = {
     destroyOC_PEX,		/* 91 fill area 3d with data */
     destroyOC_PEX,		/* 92 fill area set 3d */
     destroyOC_PEX,		/* 93 fill area set 2d */
-    destroyOC_PEX,	/* 94 fill area set 3d with data */
+    destroyOC_PEX,	        /* 94 fill area set 3d with data */
     destroyOC_PEX,		/* 95 triangle strip */
-    destroyOC_PEX,	/* 96 quadrilateral mesh */
+    destroyOC_PEX,        	/* 96 quadrilateral mesh */
     destroySOFAS,		/* 97 set of fill area sets */
     destroyNurbSurface,		/* 98 non-uniform b spline surface */
     destroyOC_PEX,		/* 99 cell array 3d */
@@ -736,6 +737,7 @@ extern ddpex2rtn
     copyMCVolume(),
     copyQuadrilateralMesh(),
     copySetAttribute(),
+    copyPropOC(),
     copySOFAS(),
     copyText(),
     copyText2D(),
@@ -744,7 +746,7 @@ extern ddpex2rtn
 
 
 ocTableType	CopyOCTable[] = {
-    NULL,			/* 0 dummy entry */
+    copyPropOC,			/* 0 dummy entry */
     copySetAttribute,		/* 1 marker type */
     copySetAttribute,		/* 2 marker scale */
     copyColourIndexOC,		/* 3 marker colour index */
@@ -881,6 +883,7 @@ extern ddpex2rtn
     inquirePSurfaceChars(),
     inquireQuadrilateralMesh(),
     inquireSetAttribute(),
+    inquirePropOC(),
     inquireSOFAS(),
     inquireText(),
     inquireText2D(),
@@ -890,7 +893,7 @@ extern ddpex2rtn
 
 
 ocTableType	InquireOCTable[] = {
-    NULL,			/* 0 dummy entry */
+    inquirePropOC,		/* 0 dummy entry */
     inquireSetAttribute,	/* 1 marker type */
     inquireSetAttribute,	/* 2 marker scale */
     inquireColourIndexOC,	/* 3 marker colour index */
@@ -1005,7 +1008,7 @@ extern ddpex2rtn
 
 
 ocTableType	ReplaceOCTable[] = {
-    NULL,			/* 0 dummy entry */
+    parsePropOC,		/* 0 dummy entry */
     parseSetAttribute,		/* 1 marker type */
     parseSetAttribute,		/* 2 marker scale */
     parseColourIndexOC,		/* 3 marker colour index */
@@ -1030,7 +1033,7 @@ ocTableType	ReplaceOCTable[] = {
     parseSetAttribute,		/* 22 line type */
     parseSetAttribute,		/* 23 line width */
     parseColourIndexOC,		/* 24 line colour index */
-    parseColourOC,			/* 25 line colour */
+    parseColourOC,		/* 25 line colour */
     parseSetAttribute,		/* 26 curve approximation method */
     parseSetAttribute,		/* 27 polyline interpolation method */
     parseSetAttribute,		/* 28 line bundle index */

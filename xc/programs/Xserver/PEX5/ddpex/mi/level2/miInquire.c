@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.1 91/02/16 09:55:38 rws Exp $ */
+/* $XConsortium: miInquire.c,v 5.2 91/07/12 17:55:15 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1315,6 +1315,21 @@ OC_INQ_FUNC_HEADER(SetAttribute)
 
     bcopy(  (char *)srcAttrib, (char *)dstAttrib,
 	    (int)(srcAttrib->length * sizeof(CARD32)));
+
+    return(Success);
+}
+
+OC_INQ_FUNC_HEADER(PropOC)
+{
+    /** The function Handles Proprietary Vendor OCs
+     **/
+
+    ddElementInfo  *dstPropOC, *srcPropOC;
+
+    GET_INQ_STORAGE( dstPropOC, ddElementInfo, srcPropOC, ddElementInfo);
+
+    bcopy(  (char *)srcPropOC, (char *)dstPropOC,
+	    (int)(srcPropOC->length * sizeof(CARD32)));
 
     return(Success);
 }

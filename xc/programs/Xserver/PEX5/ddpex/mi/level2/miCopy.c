@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.3 91/07/12 17:54:49 hersh Exp $ */
+/* $XConsortium: miCopy.c,v 5.4 91/09/06 14:36:15 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1064,3 +1064,13 @@ OC_COPY_FUNC_HEADER(SetAttribute)
     return(Success);
 }
 
+
+OC_COPY_FUNC_HEADER(PropOC)
+{
+    COPY_DECL(PropOC, pexElementInfo);
+
+    DST_STORE_AND_COPY(	dstPropOC, pexElementInfo,
+			srcPropOC->length * sizeof(CARD32));
+
+    return(Success);
+}

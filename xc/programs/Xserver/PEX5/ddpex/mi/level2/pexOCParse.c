@@ -1,4 +1,4 @@
-/* $XConsortium: pexOCParse.c,v 5.2 91/05/01 14:37:56 hersh Exp $ */
+/* $XConsortium: pexOCParse.c,v 5.3 91/07/12 17:54:19 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -96,7 +96,12 @@ SOFTWARE.
 	*ppExecuteOC =							\
 	    (miGenericElementPtr) Xalloc((unsigned long)((SIZE)		\
 					+ sizeof(miGenericElementStr)));\
-	if (!(*ppExecuteOC)) return (BadAlloc);	}			\
+    }			                                                \
+    else {                                                              \
+	*ppExecuteOC = (miGenericElementPtr) Xrealloc(*ppExecuteOC,     \
+	        (unsigned long)((SIZE) + sizeof(miGenericElementStr))); \
+    }			                                                \
+    if (!(*ppExecuteOC)) return (BadAlloc);	                        \
     (DD_ST) = (TYPE *)((*ppExecuteOC)+1);
 
 #define GET_MORE_STORAGE(DD_ST, TYPE, SIZE)			\
@@ -2200,6 +2205,23 @@ OC_PARSER_FUNC_HEADER(SetAttribute)
 		    pPEXOC->length * sizeof(CARD32));
 
     bcopy(  (char *)pPEXOC, (char *)dstAttrib,
+	    (int)(pPEXOC->length * sizeof(CARD32)));
+
+    OC_PARSER_RETURN(pPEXOC);
+}
+
+
+OC_PARSER_FUNC_HEADER(PropOC)
+{
+    /** This handles storing ProprietaryOC 
+     **/
+
+    ddElementInfo  *dstPropOC;
+
+    GET_DD_STORAGE( dstPropOC, ddElementInfo,
+		    pPEXOC->length * sizeof(CARD32));
+
+    bcopy(  (char *)pPEXOC, (char *)dstPropOC,
 	    (int)(pPEXOC->length * sizeof(CARD32)));
 
     OC_PARSER_RETURN(pPEXOC);
