@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.38 91/05/09 15:35:26 rws Exp $ */
+/* $XConsortium: events.c,v 5.39 91/05/09 20:54:56 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -142,6 +142,7 @@ extern Bool DeletePassiveGrabFromList();
 extern int AddPassiveGrabToList();
 
 extern Bool permitOldBugs;
+extern Bool Must_have_memory;
 
 static Mask lastEventMask;
 
@@ -1359,10 +1360,10 @@ XYToWindow(x, y)
 	    if (spriteTraceGood >= spriteTraceSize)
 	    {
 		spriteTraceSize += 10;
+		Must_have_memory = TRUE; /* XXX */
 		spriteTrace = (WindowPtr *)xrealloc(
 		    spriteTrace, spriteTraceSize*sizeof(WindowPtr));
-		if (!spriteTrace)
-		    FatalError("could not realloc spriteTrace"); /* XXX */
+		Must_have_memory = FALSE; /* XXX */
 	    }
 	    spriteTrace[spriteTraceGood++] = pWin;
 	    pWin = pWin->firstChild;
@@ -1603,8 +1604,10 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, count)
 
 	    if (device->sync.state == FROZEN_NO_EVENT)
 	    {
+		Must_have_memory = TRUE; /* XXX */
 	    	device->sync.event = (xEvent *)xrealloc(device->sync.event,
 							count*sizeof(xEvent));
+		Must_have_memory = FALSE; /* XXX */
 		device->sync.evcount = count;
 		for (dxE = device->sync.event; --count >= 0; dxE++, xE++)
 		    *dxE = *xE;
@@ -1764,8 +1767,10 @@ DeliverGrabbedEvent(xE, thisDev, deactivateGrab, count)
 	case FREEZE_NEXT_EVENT:
 	    thisDev->sync.state = FROZEN_WITH_EVENT;
 	    FreezeThaw(thisDev, TRUE);
+	    Must_have_memory = TRUE; /* XXX */
 	    thisDev->sync.event = (xEvent *)xrealloc(thisDev->sync.event,
 						     count*sizeof(xEvent));
+	    Must_have_memory = FALSE; /* XXX */
 	    thisDev->sync.evcount = count;
 	    for (dxE = thisDev->sync.event; --count >= 0; dxE++, xE++)
 		*dxE = *xE;
@@ -2519,11 +2524,11 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
         if (depth > focus->traceSize)
         {
 	    focus->traceSize = depth+1;
+	    Must_have_memory = TRUE; /* XXX */
 	    focus->trace = (WindowPtr *)xrealloc(focus->trace,
 						 focus->traceSize *
 						 sizeof(WindowPtr));
-	    if (!focus->trace)
-		FatalError("could not realloc focus trace"); /* XXX */
+	    Must_have_memory = FALSE; /* XXX */
 	}
 	focus->traceGood = depth;
         for (pWin = focusWin, depth--; pWin; pWin = pWin->parent, depth--) 
