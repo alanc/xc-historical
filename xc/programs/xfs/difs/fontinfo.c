@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.4 91/05/13 16:55:32 gildea Exp $ */
+/* $XConsortium: fontinfo.c,v 1.5 91/07/16 20:23:21 keith Exp $ */
 /*
  * font data query
  */
@@ -320,10 +320,11 @@ do_query_bitmaps(client, c)
     fsOffset   *offsets;
     pointer     glyph_data;
     fsQueryXBitmaps8Reply reply;
+    int		freedata;
 
     err = (*c->pfont->get_bitmaps) ((pointer) c->client, c->pfont, c->format,
 				    c->flags, c->nranges, c->range,
-			     &data_size, &num_glyphs, &offsets, &glyph_data);
+			     &data_size, &num_glyphs, &offsets, &glyph_data, &freedata);
 
     if (err == Suspended) {
 	if (!c->slept) {
@@ -349,7 +350,8 @@ do_query_bitmaps(client, c)
 			 (char *) offsets);
     (void) WriteToClient(c->client, data_size, (char *) glyph_data);
     fsfree((char *) offsets);
-    fsfree((char *) glyph_data);
+    if (freedata)
+	fsfree((char *) glyph_data);
 finish:
     if (c->slept)
 	ClientWakeup(c->client);
