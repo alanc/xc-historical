@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: resource.c,v 1.60 87/08/28 16:25:54 toddb Locked $ */
+/* $Header: resource.c,v 1.61 87/08/31 19:21:56 toddb Locked $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -231,21 +231,24 @@ int id, skipDeleteFuncClass;
 	head = &clientTable[cid].resources[Hash(cid, id)];
 
 	for (res = *head; res; res = *head)
+	{
 	    if (res->id == id)
 	    {
 		*head = res->next;
+		clientTable[cid].elements--;
 		if (res->type & CACHEDTYPES)
 		    FlushClientCaches(res->id);
 		if (skipDeleteFuncClass != res->class)
 		    (*res->DeleteFunc) (res->value, res->id);
 		Xfree(res);
 		gotOne = TRUE;
-		clientTable[cid].elements--;
+		break;
 	    }
 	    else
 		head = &res->next;
-	    if(clients[cid] && (id == clients[cid]->lastDrawableID))
-		clients[cid]->lastDrawableID = INVALID;
+        }
+	if(clients[cid] && (id == clients[cid]->lastDrawableID))
+	    clients[cid]->lastDrawableID = INVALID;
     }
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
