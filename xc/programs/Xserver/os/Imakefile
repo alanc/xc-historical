@@ -61,6 +61,7 @@ BOOTSTRAPCFLAGS =
      OS_DEFINES =
 #endif /* SpecialMalloc */
     DBM_DEFINES = NdbmDefines
+ OSINIT_DEFINES = -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(DBM_DEFINES)
         DEFINES = ConnectionFlags $(OS_DEFINES) $(DESDEFS) $(RPCDEFS)
        INCLUDES = -I.  -I../../include -I$(INCLUDESRC) -I$(TOP)/lib/Xau
     EXT_DEFINES = ExtensionDefines
@@ -123,7 +124,7 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
-SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(DBM_DEFINES))
+SpecialObjectRule(osinit.o, $(ICONFIGFILES), $(OSINIT_DEFINES))
 SpecialObjectRule(WaitFor.o, $(ICONFIGFILES), $(EXT_DEFINES))
 SpecialObjectRule(fonttype.o, $(ICONFIGFILES), $(FONT_DEFINES))
 #if defined(SparcArchitecture) && HasGcc
