@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.224 94/02/10 19:33:04 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.225 94/02/10 19:40:14 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -1019,13 +1019,14 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 all:: file.PS								@@\
 									@@\
 file.PS:								@@\
-	$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > $@	@@\
+	$(TROFF) $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > file.nPS \@@\
+	&& $(MV) file.nPS $@						@@\
 									@@\
 file.txt:								@@\
 	nroff $(MSMACROS) $(XDOCMACROS) srcs 2> index.raw > $@		@@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.PS file.txt
+	$(RM) index.raw file.nPS file.PS file.txt
 #endif
 
 #ifndef MakeTblDoc
@@ -1033,13 +1034,14 @@ clean::									@@\
 all:: file.PS								@@\
 									@@\
 file.PS:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > $@ @@\
+	$(TBL) $(XDOCMACROS) srcs | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
+	&& $(MV) file.nPS $@						@@\
 									@@\
 file.txt:								@@\
 	$(TBL) $(XDOCMACROS) srcs | nroff $(MSMACROS) 2> index.raw | col > $@	@@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.PS file.txt
+	$(RM) index.raw file.nPS file.PS file.txt
 #endif
 
 #ifndef MakeEqnDoc
@@ -1047,13 +1049,14 @@ clean::									@@\
 all:: file.PS								@@\
 									@@\
 file.PS:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > $@ @@\
+	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > file.nPS \@@\
+	&& $(MV) file.nPS $@						@@\
 									@@\
 file.txt:								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(EQN) | nroff $(MSMACROS) 2> index.raw | col > $@ @@\
+	$(TBL) $(XDOCMACROS) srcs | neqn | nroff $(MSMACROS) 2> index.raw | col > $@ @@\
 									@@\
 clean::									@@\
-	$(RM) index.raw file.PS file.txt
+	$(RM) index.raw file.nPS file.PS file.txt
 #endif
 
 #ifndef MakeDocIndex
@@ -1063,9 +1066,10 @@ all:: file.idx.PS							@@\
 file.idx.PS:								@@\
 	tail -1 index.raw > index.pageno				@@\
 	grep -v '^.pn ' index.raw | sort -f '-t:' +1 -3 +0n -1n | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
-	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > $@		@@\
+	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > file.idx.nPS \@@\
+	&& $(MV) file.idx.nPS $@					@@\
 	$(RM) index.troff index.pageno					@@\
 									@@\
 clean::									@@\
-	$(RM) index.troff index.pageno file.idx.PS
+	$(RM) index.troff index.pageno file.idx.nPS file.idx.PS
 #endif
