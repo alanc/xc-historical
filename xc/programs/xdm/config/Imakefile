@@ -12,6 +12,10 @@ InstallNonExec($(XDMRESOURCES), $(XDMDIR))
 InstallNonExec($(XDMSERVERS), $(XDMDIR))
 InstallPr($(XDMSESSION), $(XDMDIR))
 
+#ifdef XdmServersType
+LinkFile(Xservers,Xservers.XdmServersType)
+#else
 Xservers:
 	echo "Choose one of" Xservers.* "and copy it to Xservers"
 	exit 1
+#endif
