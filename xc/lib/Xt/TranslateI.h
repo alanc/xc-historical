@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.30 91/01/21 09:13:23 rws Exp $ */
+/* $XConsortium: TranslateI.h,v 1.31 91/02/06 21:17:01 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -359,24 +359,90 @@ extern void _XtRegisterGrabs(
 
 #undef Boolean
 
+extern void _XtAddEventSeqToStateTree(
+#if NeedFunctionPrototypes
+    EventSeqPtr		/* eventSeq */,
+    TMParseStateTree	/* stateTree */
+#endif 
+);
 
-extern void _XtAddEventSeqToStateTree();
-
-extern void _XtInitializeStateTable(); /* stateTable */
-    /* _XtTranslations *stateTable; */
-
-extern Boolean _XtMatchUsingStandardMods();
-extern Boolean _XtMatchUsingDontCareMods();
-extern Boolean _XtRegularMatch();
-extern Boolean _XtMatchAtom();
-extern void _XtConvertCase();
-extern void _XtBuildKeysymTables();
-#ifndef NO_MIT_HACKS
-extern void  _XtDisplayTranslations();
-extern void  _XtDisplayAccelerators();
-extern void _XtDisplayInstalledAccelerators();
+extern Boolean _XtMatchUsingStandardMods(
+#if NeedFunctionPrototypes
+    TMTypeMatch		/* typeMatch */,
+    TMModifierMatch	/* modMatch */,
+    TMEventPtr		/* eventSeq */
 #endif
-extern void _XtPopupInitialize();
+);
+
+extern Boolean _XtMatchUsingDontCareMods(
+#if NeedFunctionPrototypes
+    TMTypeMatch		/* typeMatch */,
+    TMModifierMatch	/* modMatch */,
+    TMEventPtr		/* eventSeq */
+#endif
+);
+
+extern Boolean _XtRegularMatch(
+#if NeedFunctionPrototypes
+    TMTypeMatch		/* typeMatch */,
+    TMModifierMatch	/* modMatch */,
+    TMEventPtr		/* eventSeq */
+#endif
+);
+
+extern Boolean _XtMatchAtom(
+#if NeedFunctionPrototypes
+    TMTypeMatch		/* typeMatch */,
+    TMModifierMatch	/* modMatch */,
+    TMEventPtr		/* eventSeq */
+#endif
+);
+
+extern void _XtConvertCase(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    KeySym		/* sym */,
+    KeySym*		/* lower */,
+    KeySym*		/* upper */
+#endif
+);
+
+extern void _XtBuildKeysymTables();
+
+#ifndef NO_MIT_HACKS
+extern void  _XtDisplayTranslations(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XEvent*		/* event */,
+    String*		/* params */,
+    Cardinal*		/* num_params */
+);
+#endif 
+
+extern void  _XtDisplayAccelerators(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XEvent*		/* event */,
+    String*		/* params */,
+    Cardinal*		/* num_params */
+#endif
+);
+
+extern void _XtDisplayInstalledAccelerators(
+#if NeedFunctionPrototypes
+    Widget		/* widget */,
+    XEvent*		/* event */,
+    String*		/* params */,
+    Cardinal*		/* num_params */
+#endif
+);
+#endif /* ifndef NO_MIT_HACKS */
+
+extern void _XtPopupInitialize(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app_context */
+#endif
+);
 
 extern void _XtBindActions(
 #if NeedFunctionPrototypes
