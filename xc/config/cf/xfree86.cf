@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.3 94/11/21 17:13:14 kaleb Exp kaleb $
+XCOMM $XConsortium: xfree86.cf,v 1.4 95/01/05 19:41:42 kaleb Exp kaleb $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -123,17 +123,17 @@ XCOMM $XConsortium: xfree86.cf,v 1.3 94/11/21 17:13:14 kaleb Exp kaleb $
  */
 #ifndef XF86SvgaDrivers
 # define XF86SvgaDrivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak mx al2101 ali cl6420 \
+				ncr77c22 compaq oak mx al2101 ali cl64xx \
 				video7 chips generic
 #endif
 
 #ifndef XF86Vga16Drivers
-# define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl6420 generic
+# define XF86Vga16Drivers	et4000 ncr77c22 ati tvga8900 oak cl64xx generic
 #endif
 
 #ifndef XF86Vga2Drivers
 # define XF86Vga2Drivers	et4000 et3000 pvga1 gvga ati tvga8900 cirrus \
-				ncr77c22 compaq oak cl6420 generic
+				ncr77c22 compaq oak cl64xx generic
 #endif
 
 #ifndef XF86Vga2Banked
@@ -186,7 +186,7 @@ XCOMM $XConsortium: xfree86.cf,v 1.3 94/11/21 17:13:14 kaleb Exp kaleb $
 #endif
 
 #ifndef XFree86Version
-#define XFree86Version	3100
+#define XFree86Version	3102
 #endif
 
 #ifndef UseRgbTxt
@@ -210,7 +210,15 @@ XCOMM $XConsortium: xfree86.cf,v 1.3 94/11/21 17:13:14 kaleb Exp kaleb $
 #endif
 
 #ifndef XFree86ServerOSDefines
-#define XFree86ServerOSDefines	-DDDXOSINIT -DXFREE86
+#define XFree86ServerOSDefines	-DDDXOSINIT -DXFREE86 -DSERVER_LOCK
+#endif
+
+#ifndef XFree86ConsoleDefines
+#ifdef i386BsdArchitecture
+#define XFree86ConsoleDefines	-DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
+#else
+#define XFree86ConsoleDefines	/**/
+#endif
 #endif
 
 #ifndef ServerOSDefines
@@ -243,7 +251,7 @@ VGA16DRIVERSRC = $(XF86SRC)/drivers/vga16
 #ifdef SiteIConfigFiles
 #undef SiteIConfigFiles
 #endif
-#define SiteIConfigFiles $(TOP)/site.def $(TOP/LinkKit.tmpl $(TOP)/Imakefile
+#define SiteIConfigFiles $(TOP)/site.def $(TOP)/Imakefile
 #else
        XF86SRC = $(SERVERSRC)/hw/xfree86
   XF86ACCELSRC = $(XF86SRC)/accel
