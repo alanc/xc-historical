@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.16 93/02/10 14:38:15 rws Exp $ */
+/* $XConsortium: xtest.c,v 1.17 93/02/18 13:09:20 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -134,6 +134,9 @@ ProcXTestFakeInput(client)
     int type;
 #ifdef XINPUT
     Bool extension = FALSE;
+    deviceValuator *dv;
+    int base;
+    int *values;
 #endif /* XINPUT */
 
     nev = (stuff->length << 2) - sizeof(xReq);
@@ -162,25 +165,29 @@ ProcXTestFakeInput(client)
 	}
 	if (nev == 1 && type == XI_DeviceMotionNotify)
 	    return BadLength;
+	if (type == XI_DeviceMotionNotify)
+	    base = ((deviceValuator *)(ev+1))->first_valuator;
+	else
+	    base = 0;
 	for (n = 1; n < nev; n++)
 	{
-	    if (ev[n].u.u.type != DeviceValuator)
+	    dv = (deviceValuator *)(ev + n);
+	    if (dv->type != DeviceValuator)
 	    {
-		client->errorValue = ev[n].u.u.type;
+		client->errorValue = dv->type;
 		return BadValue;
 	    }
-	    if (((deviceValuator *)(ev+n))->first_valuator != ((n - 1) * 6))
+	    if (dv->first_valuator != base)
 	    {
-		client->errorValue =
-		    ((deviceValuator *)(ev+n))->first_valuator;
+		client->errorValue = dv->first_valuator;
 		return BadValue;
 	    }
-	    if (((deviceValuator *)(ev+n))->num_valuators !=
-		((deviceValuator *)(ev+1))->num_valuators)
+	    if (!dv->num_valuators || dv->num_valuators > 6)
 	    {
-		client->errorValue = ((deviceValuator *)(ev+n))->num_valuators;
+		client->errorValue = dv->num_valuators;
 		return BadValue;
 	    }
+	    base += dv->num_valuators;
 	}
 	type = type - XI_DeviceKeyPress + KeyPress;
 	extension = TRUE;
@@ -247,12 +254,16 @@ ProcXTestFakeInput(client)
 	}
 	if (nev > 1)
 	{
-	    if (!dev->valuator || nev != ((dev->valuator->numAxes + 11) / 6))
-		return BadLength;
-	    if (((deviceValuator *)(ev+1))->num_valuators !=
+	    dv = (deviceValuator *)(ev + 1);
+	    if (!dev->valuator || dv->first_valuator >= dev->valuator->numAxes)
+	    {
+		client->errorValue = dv->first_valuator;
+		return BadValue;
+	    }
+	    if (dv->first_valuator + dv->num_valuators >
 		dev->valuator->numAxes)
 	    {
-		client->errorValue = ((deviceValuator *)(ev+1))->num_valuators;
+		client->errorValue = dv->num_valuators;
 		return BadValue;
 	    }
 	}
@@ -276,7 +287,38 @@ ProcXTestFakeInput(client)
     case MotionNotify:
 #ifdef XINPUT
 	if (extension)
+	{
+	    if (ev->u.u.detail == xTrue)
+	    {
+		values = dev->valuator->axisVal + dv->first_valuator;
+		for (n = 1; n < nev; n++)
+		{
+		    dv = (deviceValuator *)(ev + n);
+		    switch (dv->num_valuators)
+		    {
+		    case 6:
+			dv->valuator5 += values[5];
+		    case 5:
+			dv->valuator4 += values[4];
+		    case 4:
+			dv->valuator3 += values[3];
+		    case 3:
+			dv->valuator2 += values[2];
+		    case 2:
+			dv->valuator1 += values[1];
+		    case 1:
+			dv->valuator0 += values[0];
+		    }
+		    values += 6;
+		}
+	    }
+	    else if (ev->u.u.detail != xFalse)
+	    {
+		client->errorValue = ev->u.u.detail;
+		return BadValue;
+	    }
 	    break;
+	}
 #endif /* XINPUT */
 	dev = (DeviceIntPtr)LookupPointerDevice();
 	if (ev->u.keyButtonPointer.root == None)
