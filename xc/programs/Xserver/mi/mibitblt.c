@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mibitblt.c,v 1.63 88/08/30 17:07:10 keith Exp $ */
+/* $Header: mibitblt.c,v 1.64 88/09/01 19:10:46 keith Exp $ */
 /* Author: Todd Newman  (aided and abetted by Mr. Drewry) */
 
 #include "X.h"
@@ -755,11 +755,12 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
     unsigned char	*pImage;
 {
     DDXPointPtr		pptFirst, ppt;
-    int			*pwidthFirst, *pwidth, i;
+    int			*pwidthFirst, *pwidth;
     RegionPtr		prgnSrc;
     BoxRec		box;
     unsigned long	oldFg, oldBg, gcv[3];
     unsigned long	oldPlanemask;
+    unsigned long	i;
 
     switch(format)
     {
@@ -785,7 +786,7 @@ miPutImage(pDraw, pGC, depth, x, y, w, h, leftPad, format, pImage)
 	gcv[1] = 0;
 	DoChangeGC(pGC, GCForeground | GCBackground, gcv, 0);
 
-	for (i = 1 << (depth-1); i > 0; i >>= 1)
+	for (i = 1 << (depth-1); i != 0; i >>= 1)
 	{
 	    if (i & oldPlanemask)
 	    {
