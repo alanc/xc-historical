@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.91 94/01/20 17:48:43 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.92 94/01/30 17:26:15 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -39,6 +39,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include	"IntrinsicI.h"
 #include	"StringDefs.h"
+#include	"Shell.h"
 #include	<stdio.h>
 #include        <X11/cursorfont.h>
 #include	<X11/keysym.h>
