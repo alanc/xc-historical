@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium$
+ * $XConsortium: Xosdefs.h,v 1.1 91/03/27 17:48:27 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -22,6 +22,9 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifndef _XOSDEFS_H_
+#define _XOSDEFS_H_
 
 /*
  * X_NOT_STDC_ENV means does not have ANSI C header files.  Lack of this
@@ -52,3 +55,5 @@
 #define X_NOT_STDC_ENV
 #endif
 #endif
+
+#endif /* _XOSDEFS_H_ */
