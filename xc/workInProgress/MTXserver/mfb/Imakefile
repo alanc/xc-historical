@@ -3,7 +3,7 @@
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
 	 mfbfillrct.c mfbpntwin.c maskbits.c mfbpixmap.c \
 	 mfbimage.c mfbline.c mfbbres.c mfbhrzvert.c mfbbresd.c \
-	 mfbpushpxl.c mfbzerarc.c \
+	 mfbpushpxl.c mfbzerarc.c mfbfillarc.c \
          mfbfillsp.c mfbsetsp.c mfbscrinit.c mfbscrclse.c mfbclip.c \
          mfbbitblt.c mfbgetsp.c mfbpolypnt.c \
 	 mfbcmap.c mfbtile.c mfbmisc.c mfbbstore.c
@@ -13,7 +13,7 @@ SRCS =	 $(SRCS1) mfbplygblt.c mfbimggblt.c mfbpntarea.c mfbtegblt.c
 OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbfillrct.o mfbpntwin.o maskbits.o mfbpixmap.o \
 	 mfbimage.o mfbline.o mfbbres.o mfbhrzvert.o mfbbresd.o mfbseg.o \
-	 mfbpushpxl.o mfbzerarc.o \
+	 mfbpushpxl.o mfbzerarc.o mfbfillarc.o \
 	 mfbfillsp.o mfbsetsp.o mfbscrinit.o mfbscrclse.o mfbclip.o \
          mfbbitblt.o mfbgetsp.o mfbpolypnt.o \
 	 mfbpgbwht.o mfbpgbblak.o mfbpgbinv.o \
