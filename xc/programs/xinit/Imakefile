@@ -6,7 +6,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
   SAMPLECONFIGS = xinitrc /* xserverrc */
        PROGRAMS = xinit startx $(SAMPLECONFIGS)
 
-ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES), /**/)
+ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
 
 MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR))
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))

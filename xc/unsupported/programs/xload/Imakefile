@@ -20,7 +20,7 @@ LOCAL_LIBRARIES = XawClientLibs
       DEFINES = -DOSMAJORVERSION=$(OSMAJORVERSION) -DOSMINORVERSION=$(OSMINORVERSION) 
 
 AllTarget(xload)
-NormalProgramTarget(xload,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES), /**/)
+NormalProgramTarget(xload,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES),NullParameter)
 InstallProgramWithFlags(xload,$(BINDIR),$(INSTKMEMFLAGS))
 InstallManPage(xload,$(MANDIR))
 

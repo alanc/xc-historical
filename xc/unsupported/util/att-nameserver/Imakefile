@@ -39,12 +39,12 @@ SRCS=xdaemon.c starserver.c itserver.c
 
 all:: xdaemon starserver itserver
 
-SingleProgramTarget(xdaemon,xdaemon.o,$(XLIB), /**/)
+SingleProgramTarget(xdaemon,xdaemon.o,$(XLIB),NullParameter)
 InstallProgram(xdaemon,$(LIBDIR))
 
 InstallNamedProg(xdaemon.rc,xdaemon.rc,$(ADMDIR))
 
-SingleProgramTarget(starserver,starserver.o,$(XLIB), /**/)
+SingleProgramTarget(starserver,starserver.o,$(XLIB),NullParameter)
 
 install:: starserver
 	cp starserver nameserver

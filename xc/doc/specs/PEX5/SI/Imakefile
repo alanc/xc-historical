@@ -1,5 +1,5 @@
 ##
-# $XConsortium$
+# $XConsortium: Imakefile,v 5.2 91/02/16 09:45:56 rws Exp $
 ## 
 ## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -107,9 +107,9 @@ all:: xref recode indexer pex.macros
 
 pex.macros: ex.toc exp.acc exp.eqn exp.ref exp.tbl
 
-NormalProgramTarget(xref,$(XREF_OBJECTS), /**/, /**/, /**/)
-NormalProgramTarget(recode,$(RECODE_OBJECTS), /**/, /**/, /**/)
-NormalProgramTarget(indexer,$(IND_OBJECTS), /**/, /**/, /**/)
+NormalProgramTarget(xref,$(XREF_OBJECTS),NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(recode,$(RECODE_OBJECTS),NullParameter,NullParameter,NullParameter)
+NormalProgramTarget(indexer,$(IND_OBJECTS),NullParameter,NullParameter,NullParameter)
 
 DependTarget()
 

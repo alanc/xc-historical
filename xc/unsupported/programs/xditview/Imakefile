@@ -15,8 +15,8 @@ LOCAL_LIBRARIES = $(XDVILIB) $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
 MakeSubdirs($(SUBDIRS))
 
-ComplexProgramTarget_1(xditview,$(LOCAL_LIBRARIES), /**/)
-SingleProgramTarget(xtotroff,$(OBJS2),$(LOCAL_LIBRARIES), /**/)
+ComplexProgramTarget_1(xditview,$(LOCAL_LIBRARIES),NullParameter)
+SingleProgramTarget(xtotroff,$(OBJS2),$(LOCAL_LIBRARIES),NullParameter)
 InstallAppDefaults(Xditview)
 
 DependSubdirs($(SUBDIRS))

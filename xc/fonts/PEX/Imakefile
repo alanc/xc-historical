@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.5 91/03/21 18:33:42 rws Exp $
+# $XConsortium: Imakefile,v 5.6 91/03/24 18:05:05 rws Exp $
 ## 
 ## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -60,7 +60,7 @@ to_wfont.h to_wfont.c: to_wfont.y
 	$(MV) y.tab.c to_wfont.c
 	$(MV) y.tab.h to_wfont.h
 
-SingleProgramTarget(to_wfont,$(OBJS), $(LIBS), /**/)
+SingleProgramTarget(to_wfont,$(OBJS), $(LIBS),NullParameter)
 
 .src.phont:
 	to_wfont -o $@ $<

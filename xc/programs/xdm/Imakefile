@@ -87,11 +87,11 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),$(SYSLIBS))
-SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
-SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
+SingleProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter)
+SingleProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter)
 #if BuildChooser
-NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3), /**/)
-SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3), /**/)
+NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)
+SaberProgramTarget(chooser,$(SRCS3),$(OBJS3),$(LIBS3),NullParameter)
 InstallProgram(chooser,$(XDMDIR))
 #endif
 
@@ -109,5 +109,5 @@ MakeSubdirs($(SUBDIRS))
  * abort-display() resource:
  */
 #ifdef comment
-InstallProgramWithFlags(xdmshell,$(BINDIR), /**/)
+InstallProgramWithFlags(xdmshell,$(BINDIR),NullParameter)
 #endif

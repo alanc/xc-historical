@@ -51,12 +51,12 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
        PROGRAMS = bitmap bmtoa atobm
 
 ComplexProgramTarget_1(bitmap, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), -lm)
-SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB), /**/)
-SingleProgramTarget(atobm,$(OBJS3), /**/, /**/)
+SingleProgramTarget(bmtoa,$(OBJS2),$(XMULIB),NullParameter)
+SingleProgramTarget(atobm,$(OBJS3),NullParameter,NullParameter)
 
 InstallAppDefaults(Bitmap)
 InstallAppDefaultsLong(Bitmap-co,Bitmap-color)
 InstallMultiple($(BUTTONPICTURES),$(INCDIR)/bitmaps)
 
-InstallProgramWithFlags(bmtoa,$(BINDIR), /**/)
-InstallProgramWithFlags(atobm,$(BINDIR), /**/)
+InstallProgramWithFlags(bmtoa,$(BINDIR),NullParameter)
+InstallProgramWithFlags(atobm,$(BINDIR),NullParameter)
