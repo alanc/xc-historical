@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.112 90/04/13 13:29:12 jim Exp $
+ * $XConsortium: twm.c,v 1.113 90/04/13 13:52:12 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.112 90/04/13 13:29:12 jim Exp $";
+"$XConsortium: twm.c,v 1.113 90/04/13 13:52:12 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -133,7 +133,6 @@ main(argc, argv, environ)
     char *display_name = NULL;
     unsigned long valuemask;	/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    SigProc old_handler;
     int numManaged, firstscrn, lastscrn, scrnum;
     extern ColormapWindow *CreateColormapWindow();
 
@@ -171,16 +170,15 @@ main(argc, argv, environ)
 	exit (1);
     }
 
-    old_handler = signal(SIGINT, SIG_IGN);
-    if (old_handler != SIG_IGN)
-	signal(SIGINT, Done);
+#define newhandler(sig) \
+    if (signal (sig, SIG_IGN) != SIG_IGN) (void) signal (sig, Done)
 
-    old_handler = signal(SIGHUP, SIG_IGN);
-    if (old_handler != SIG_IGN)
-	signal(SIGHUP, Done);
+    newhandler (SIGINT);
+    newhandler (SIGHUP);
+    newhandler (SIGQUIT);
+    newhandler (SIGTERM);
 
-    signal(SIGQUIT, Done);
-    signal(SIGTERM, Done);
+#undef newhandler
 
     Home = getenv("HOME");
     if (Home == NULL)
