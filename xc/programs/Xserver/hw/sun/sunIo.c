@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.9 92/03/20 18:52:12 rws Exp $ */
+/* $XConsortium: sunIo.c,v 5.10 92/11/24 10:48:32 rws Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -45,16 +45,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include    "sun.h"
-#include    "opaque.h"
+#ifndef i386 
+#include	<sys/resource.h>
+#endif
 
 extern int      screenIsSaved;
 extern void	SaveScreens();
-
-#ifdef SUN_WINDOWS
-int	windowFd = 0;
-int	sunIgnoreEvent = TRUE;
-#define	INPBUFSIZE	128
-#endif /* SUN_WINDOWS */
 
 /*-
  *-----------------------------------------------------------------------
@@ -74,7 +70,7 @@ int	sunIgnoreEvent = TRUE;
 void
 ProcessInputEvents ()
 {
-    mieqProcessInputEvents ();
+    (void) mieqProcessInputEvents ();
     miPointerUpdate ();
 }
 
@@ -85,7 +81,7 @@ ProcessInputEvents ()
  *	enqueue them using the mi event queue
  */
 
-sunEnqueueEvents ()
+void sunEnqueueEvents ()
 {
     register Firm_event    *ptrEvents,    	/* Current pointer event */
 			   *kbdEvents;	    	/* Current keyboard event */
@@ -104,118 +100,44 @@ sunEnqueueEvents ()
     register PtrPrivPtr     ptrPriv;
     register KbPrivPtr	    kbdPriv;
 
-#ifdef SUN_WINDOWS
-    struct inputevent sunevents[INPBUFSIZE];
-    register struct inputevent *se = sunevents, *seL;
-    int         n;
-#endif /* SUN_WINDOWS */
-
     pPointer = LookupPointerDevice();
     pKeyboard = LookupKeyboardDevice();
     if (!pPointer->on || !pKeyboard->on)
 	return;
 
-    if ( sunUseSunWindows() ) {
-#ifdef SUN_WINDOWS
-	if ((n=read(windowFd,sunevents,INPBUFSIZE*sizeof sunevents[0])) < 0 
-			    && errno != EWOULDBLOCK) {
-	    /*
-	     * Error reading events; should do something. XXX
-	     */
-/*debug*/
-	ErrorF("ProcessInputEvents: read(windowFd)  n=%d\n",n);
-	    return;
-	}
+    ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
+    kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 
-	for (seL = sunevents + (n/(sizeof sunevents[0]));  se < seL; se++) {
+    numPtrEvents = 0;
+    PtrAgain = TRUE;
+    numKbdEvents = 0;
+    KbdAgain = TRUE;
+    lastEvent = (Firm_event *)0;
 
-	    /*
-	     * Decide whether or not to pay attention to events.
-	     * Ignore the events if the locator has exited X Display.
-	     */
-	    switch (event_id(se)) {
-		case KBD_DONE:
-		    sunChangeKbdTranslation( pKeyboard, FALSE );
-		    break;
-		case KBD_USE:
-		    sunChangeKbdTranslation( pKeyboard, TRUE );
-		    break;
-		case LOC_WINENTER:
-		    sunIgnoreEvent = FALSE;
-		    break;
-		case LOC_WINEXIT:
-		    sunIgnoreEvent = TRUE;
-		    break;
-	    }
-
-	    if (sunIgnoreEvent) {
-		continue;
-	    }
-
-	    /*
-	     * Figure out the X device this event should be reported on.
-	     */
-	    switch (event_id(se)) {
-		case LOC_MOVE:
-		case MS_LEFT:
-		case MS_MIDDLE:
-		case MS_RIGHT:
-		    sunMouseEnqueueEventSunWin(pPointer,se);
-		    break;
-		case LOC_WINEXIT:
-		case LOC_WINENTER:
-		case KBD_DONE:
-		case KBD_USE:
-		    break;
-		default:
-		    sunKbdEnqueueEventSunWin(pKeyboard,se);
-		    break;
-	    }
-	}
-#endif /* SUN_WINDOWS */
-    } 
-    else {
-	ptrPriv = (PtrPrivPtr)pPointer->devicePrivate;
-	kbdPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-	
-	numPtrEvents = 0;
-	PtrAgain = TRUE;
-	numKbdEvents = 0;
-	KbdAgain = TRUE;
-
+    /*
+     * So long as one event from either device remains unprocess, we loop:
+     * Take the oldest remaining event and pass it to the proper module
+     * for processing. The DDXEvent will be sent to ProcessInput by the
+     * function called.
+     */
+    while (1) {
 	/*
-	 * So long as one event from either device remains unprocess, we loop:
-	 * Take the oldest remaining event and pass it to the proper module
-	 * for processing. The DDXEvent will be sent to ProcessInput by the
-	 * function called.
+	 * Get events from both the pointer and the keyboard, storing the number
+	 * of events gotten in nPE and nKE and keeping the start of both arrays
+	 * in pE and kE
 	 */
-	while (1) {
-	    /*
-	     * Get events from both the pointer and the keyboard, storing the number
-	     * of events gotten in nPE and nKE and keeping the start of both arrays
-	     * in pE and kE
-	     */
-	    if ((numPtrEvents == 0) && PtrAgain) {
-		ptrEvents = (* ptrPriv->GetEvents) (pPointer, &nPE, &PtrAgain);
-		numPtrEvents = nPE;
-	    }
-	    if ((numKbdEvents == 0) && KbdAgain) {
-		kbdEvents = (* kbdPriv->GetEvents) (pKeyboard, &nKE, &KbdAgain);
-		numKbdEvents = nKE;
-	    }
-	    if ((numPtrEvents == 0) && (numKbdEvents == 0))
-		break;
-	    if (numPtrEvents && numKbdEvents) {
-		if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
-		    (* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
-		    numKbdEvents--;
-		    kbdEvents++;
-		} else {
-		    (* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
-		    numPtrEvents--;
-		    ptrEvents++;
-		}
-	    } else if (numKbdEvents) {
+	if ((numPtrEvents == 0) && PtrAgain) {
+	    ptrEvents = (* ptrPriv->GetEvents) (pPointer, &nPE, &PtrAgain);
+	    numPtrEvents = nPE;
+	}
+	if ((numKbdEvents == 0) && KbdAgain) {
+	    kbdEvents = (* kbdPriv->GetEvents) (pKeyboard, &nKE, &KbdAgain);
+	    numKbdEvents = nKE;
+	}
+	if ((numPtrEvents == 0) && (numKbdEvents == 0))
+	    break;
+	if (numPtrEvents && numKbdEvents) {
+	    if (timercmp (&kbdEvents->time, &ptrEvents->time, <)) {
 		(* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
 		numKbdEvents--;
 		kbdEvents++;
@@ -224,27 +146,33 @@ sunEnqueueEvents ()
 		numPtrEvents--;
 		ptrEvents++;
 	    }
+	} else if (numKbdEvents) {
+	    (* kbdPriv->EnqueueEvent) (pKeyboard, kbdEvents);
+	    numKbdEvents--;
+	    kbdEvents++;
+	} else {
+	    (* ptrPriv->EnqueueEvent) (pPointer, ptrEvents);
+	    numPtrEvents--;
+	    ptrEvents++;
 	}
     }
 }
 
-
 /*
  * DDX - specific abort routine.  Called by AbortServer().
  */
-void
-AbortDDX()
+void AbortDDX()
 {
     int		i;
     ScreenPtr	pScreen;
 
 #ifdef SVR4
-    Signal (SIGPOLL, SIG_IGN);
+    signal (SIGPOLL, SIG_IGN)
 #else
     signal (SIGIO, SIG_IGN);
 #endif
-    sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
-    sunNonBlockConsoleOff ((char *) 0);
+    (void) sunChangeKbdTranslation (LookupKeyboardDevice (), FALSE);
+    sunNonBlockConsoleOff ();
     for (i = 0; i < screenInfo.numScreens; i++)
     {
 	pScreen = screenInfo.screens[i];
@@ -269,15 +197,24 @@ ddxProcessArgument (argc, argv, i)
     extern void UseMsg();
     extern Bool ActiveZaphod;
     extern Bool FlipPixels;
+    extern Bool FbInfo;
 
+#ifndef i386 /* { */
+	struct rlimit rl;
+
+	if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
+		rl.rlim_cur = MAXCLIENTS < rl.rlim_max ? MAXCLIENTS : rl.rlim_max;
+		(void) setrlimit (RLIMIT_NOFILE, &rl);
+	}
+#endif /* } */
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
-	autoRepeatInitiate = 1000 * (long)atoi(argv[i]);
+	sunAutoRepeatInitiate = 1000 * (long)atoi(argv[i]);
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
-	autoRepeatDelay = 1000 * (long)atoi(argv[i]);
+	sunAutoRepeatDelay = 1000 * (long)atoi(argv[i]);
 	return 2;
     }
     if (strcmp (argv[i], "-debug") == 0) {	/* -debug */
@@ -298,16 +235,31 @@ ddxProcessArgument (argc, argv, i)
 	FlipPixels = TRUE;
 	return 1;
     }
+    if (strcmp (argv[i], "-fbinfo") == 0) {	/* -fbinfo */
+	FbInfo = TRUE;
+	return 1;
+    }
+    if (strcmp (argv[i], "-kbd") == 0) {	/* -kbd */
+	if (++i >= argc) UseMsg();
+	return 2;
+    }
+    if (strcmp (argv[i], "-protect") == 0) {	/* -protect */
+	if (++i >= argc) UseMsg();
+	return 2;
+    }
     return 0;
 }
 
 void
 ddxUseMsg()
 {
-    ErrorF("-ar1 int               set autorepeat initiate time\n");
-    ErrorF("-ar2 int               set autorepeat interval time\n");
-    ErrorF("-debug                 disable non-blocking console mode\n");
-    ErrorF("-dev filename          name of device to open\n");
-    ErrorF("-mono                  force monochrome-only screen\n");
-    ErrorF("-zaphod                disable active Zaphod mode\n");
+    ErrorF("-ar1 int            set autorepeat initiate time\n");
+    ErrorF("-ar2 int            set autorepeat interval time\n");
+    ErrorF("-kbd opt            set specified keyboard option\n");
+    ErrorF("-protect x[,y[...]] protect the specified keycodes\n");
+    ErrorF("-debug              disable non-blocking console mode\n");
+    ErrorF("-dev fn[:fn][:fn]   name of device[s] to open\n");
+    ErrorF("-mono               force monochrome-only screen\n");
+    ErrorF("-zaphod             disable active Zaphod mode\n");
+    ErrorF("-fbinfo             tell more about the found frame buffer\n");
 }
