@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.12 92/08/16 09:37:23 rws Exp $
+ * $XConsortium: xconsole.c,v 1.13 92/12/02 18:22:58 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -187,7 +187,8 @@ OpenConsole ()
 	}
 	else
 	{
-	    input = fopen (app_resources.file, "r");
+           if (access(app_resources.file, R_OK) == 0)
+	       input = fopen (app_resources.file, "r");
 	}
 	if (!input)
 	{
