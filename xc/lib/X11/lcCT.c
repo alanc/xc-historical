@@ -1,4 +1,4 @@
-/* $XConsortium: lcCT.c,v 1.2 93/09/17 14:23:59 rws Exp $ */
+/* $XConsortium: lcCT.c,v 1.3 94/01/20 18:06:14 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -634,19 +634,26 @@ strtocs(conv, from, from_left, to, to_left, args, num_args)
     int num_args;
 {
     State state = (State) conv->state;
+    register char *src, *dst;
+    unsigned char side;
     register length;
 
+    src = (char *) *from;
+    dst = (char *) *to;
+
     length = min(*from_left, *to_left);
-    memcpy(*to, *from, length);
+    side = *((unsigned char *) src) & 0x80;
 
-    *((char **) from) += length;
-    *from_left -= length;
-
-    *((char **) to) += length;
-    *to_left -= length;
+    while (side == (*((unsigned char *) src) & 0x80) && length-- > 0)
+	*dst++ = *src++;
+    
+    *from_left -= src - (char *) *from;
+    *from = (XPointer) src;
+    *to_left -= dst - (char *) *to;
+    *to = (XPointer) dst;
 
     if (num_args > 0)
-	*((XlcCharSet *) args[0]) = state->charset;
+	*((XlcCharSet *)args[0]) = side ? state->GR_charset : state->GL_charset;
 
     return 0;
 }
@@ -665,10 +672,10 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
     char *csptr, *string_ptr;
     int csstr_len, str_len;
     unsigned char ch;
-    int cvt_length;
+    int cvt_length, unconv_num = 0;
 
-    /* XXX */
-    if (num_args < 1 || state->charset != (XlcCharSet) args[0])
+    if (num_args < 1 || (state->GL_charset != (XlcCharSet) args[0] &&
+	state->GR_charset != (XlcCharSet) args[0]))
 	return -1;
     
     csptr = *((char **) from);
@@ -677,15 +684,16 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
     str_len = *to_left;
 
     cvt_length = 0;
-    while (csstr_len > 0 && str_len > 0) {
-	ch = *((unsigned char *) csptr++) & 0x7f;
-	if (ch < 0x20 || ch > 0x7e)
-	    if (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x1b)
-		continue;	/* XXX */
+    while (csstr_len-- > 0 && str_len > 0) {
+	ch = *((unsigned char *) csptr++);
+	if ((ch < 0x20 && ch != 0x00 && ch != 0x09 && ch != 0x0a) ||
+	    ch == 0x7f || ((ch & 0x80) && ch < 0xa0)) {
+	    unconv_num++;
+	    continue;
+	}
 	cvt_length++;
 	if (string_ptr) 
-	    *string_ptr++ = ch;
-	csstr_len--;
+	    *((unsigned char *) string_ptr++) = ch;
 	str_len--;
     }
 
@@ -696,7 +704,7 @@ cstostr(conv, from, from_left, to, to_left, args, num_args)
 	*to = (XPointer) string_ptr;
     *to_left -= cvt_length;
 
-    return 0;
+    return unconv_num;
 }
 
 
