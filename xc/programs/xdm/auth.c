@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.7 89/07/21 13:43:59 jim Exp $
+ * $XConsortium: auth.c,v 1.8 89/07/22 19:43:05 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -136,8 +136,12 @@ GenerateAuthorization (timeout)
 	} else {
 	    Debug ("reading authorization\n");
 	    ret = XauReadAuth (from_auth_file);
-	    Debug ("Got 0x%x (%d %*.*s)\n", ret,
-	    ret->name_length, ret->name_length, ret->name_length, ret->name);
+	    if (ret)
+		Debug ("Got 0x%x (%d %*.*s)\n", ret,
+			ret->name_length, ret->name_length,
+ 			ret->name_length, ret->name);
+	    else
+		Debug ("Got (null)\n");
 	}
 	alarm (0);
     }
