@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Resources.c,v 1.50 88/09/04 15:14:08 swick Exp $";
+    "$XConsortium: Resources.c,v 1.51 88/09/05 10:46:45 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -531,11 +531,12 @@ static void GetResources(widget, base, names, classes,
 		rx = *res;
 		xrm_type = rx->xrm_type;
 		if (XrmQGetSearchResource(searchList,
-			rx->xrm_name, rx->xrm_class, &rawType, pv)
-		    && rawType != xrm_type) {
-		    rawValue = *pv;
-		    _XtConvert(widget, rawType, &rawValue, xrm_type, pv);
-		}
+			rx->xrm_name, rx->xrm_class, &rawType, pv)) {
+		    if (rawType != xrm_type) {
+			rawValue = *pv;
+			_XtConvert(widget, rawType, &rawValue, xrm_type, pv);
+		    }
+		} else pv->addr = NULL;
 		if (pv->addr == NULL && rx->xrm_default_addr != NULL) {
 		    /* Convert default value to proper type */
 		    xrm_default_type = rx->xrm_default_type;
