@@ -23,12 +23,13 @@
 #define HasVFork               YES
 #define RemoveTargetProgramByMoving YES
 
+#define BuildBdfFonts		NO		/* XXX remove in R5 */
 /* This defines the server you want */
-#define XhpServer              Xhp
+#define XhpServer              Xnon /* Xhp */	/* XXX fix in R5 */
 #define BuildServer            YES
 #define NeedBerklib            BuildServer
 
-XCOMM platform:  $XConsortium: hp.cf,v 1.30 91/02/23 22:39:50 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.31 91/03/25 10:55:19 rws Exp $
 XCOMM operating system:  OSName
 
 /*
