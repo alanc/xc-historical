@@ -1,6 +1,4 @@
-/* $XConsortium: Context.c,v 1.13 91/07/30 16:30:39 rws Exp $ */
-/* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
-
+/* $XConsortium: Context.c,v 1.14 92/07/29 10:01:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -26,8 +24,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-/* Created by weissman, Thu Jun 26 15:18:59 1986 */
 
 /* This module implements a simple sparse array.
 
