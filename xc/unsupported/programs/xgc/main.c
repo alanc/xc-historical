@@ -89,7 +89,7 @@ static Widget percentchoice;	/* form for choosing percentage of test */
 
 void
 main(argc,argv)
-     int argc;
+     Cardinal argc;
      char **argv;
 {
   static Arg testformargs[] = {	
