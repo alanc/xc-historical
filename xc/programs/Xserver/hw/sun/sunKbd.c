@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.21 93/08/06 15:07:44 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.22 93/08/13 14:34:16 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -156,6 +156,26 @@ static void ConvertCase(sym, lower, upper)
 	*upper -= (XK_oslash - XK_Ooblique);
 }
 
+static void SwapKeys()
+{
+    int i;
+
+    for (i = 4; i < sunConKeySyms->maxKeyCode * sunConKeySyms->mapWidth; i++)
+	if (sunConKeySyms->map[i] == XK_L1 ||
+	    sunConKeySyms->map[i] == XK_L2 ||
+	    sunConKeySyms->map[i] == XK_L3 ||
+	    sunConKeySyms->map[i] == XK_L4 ||
+	    sunConKeySyms->map[i] == XK_L5 ||
+	    sunConKeySyms->map[i] == XK_L6 ||
+	    sunConKeySyms->map[i] == XK_L7 ||
+	    sunConKeySyms->map[i] == XK_L8 ||
+	    sunConKeySyms->map[i] == XK_L9 ||
+	    sunConKeySyms->map[i] == XK_L10) {
+	    sunConKeySyms->map[i - 2] ^= sunConKeySyms->map[i];
+	    sunConKeySyms->map[i] ^= sunConKeySyms->map[i - 2];
+	}
+}
+
 /*-
  *-----------------------------------------------------------------------
  * sunKbdProc --
@@ -163,15 +183,6 @@ static void ConvertCase(sym, lower, upper)
  *
  * Results:
  *	None.
- *
- * Side Effects:
- *
- * Note:
- *	When using sunwindows, all input comes off a single fd, stored in the
- *	global windowFd.  Therefore, only one device should be enabled and
- *	disabled, even though the application still sees both mouse and
- *	keyboard.  We have arbitrarily chosen to enable and disable windowFd
- *	in the keyboard routine sunKbdProc rather than in sunMouseProc.
  *
  *-----------------------------------------------------------------------
  */
@@ -285,19 +296,8 @@ sunKbdProc (pKeyboard, what)
 			     MIN_KEYCODE - sunConKeySyms->minKeyCode] = 
 		    sunModMaps[sysKbPriv.type][i].modifiers;
 
-	    /*
-	     * modify the keycode/keysym table based on command line options.
-	     */
-	    if (sysKbPriv.type == KB_SUN4 && sunDoF11)
-		for (i=0; 
-		     i < sunConKeySyms->maxKeyCode*sunConKeySyms->mapWidth; 
-		     i++) {
-		    if (sunConKeySyms->map[i] == SunXK_F36)
-			sunConKeySyms->map[i] = XK_F11;
-		    else if (sunConKeySyms->map[i] == SunXK_F37)
-			sunConKeySyms->map[i] = XK_F12;
-	    }
-
+	    if (sysKbPriv.type == KB_SUN4 && sunSwapLkeys)
+		SwapKeys();
 	    /*
 	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
 	     * and <= MAX_KEYCODE
