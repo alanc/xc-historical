@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.48 91/07/12 16:58:59 rws Exp $
+ * $XConsortium: xrdb.c,v 11.49 91/07/25 17:57:39 rws Exp $
  */
 
 /*
@@ -1005,10 +1005,23 @@ ReProcess(scrno, doScreen)
     Atom res_prop;
     register int i;
 
-    buffer.used = 0;
-    for (i = 0; i < newDB.used; i++) {
-	if (newDB.entry[i].usable)
-	    AppendEntryToBuffer(&buffer, &newDB.entry[i]);
+    if (!doScreen && oper == OPMERGE && XResourceManagerString(dpy)) {
+	char *saveBuff = buffer.buff;
+	Entries oldDB;
+	InitEntries(&oldDB);
+	buffer.buff = XResourceManagerString(dpy);
+	buffer.used = strlen(buffer.buff);
+	GetEntries(&oldDB, &buffer, 1);
+	buffer.buff = saveBuff;
+	buffer.used = 0;
+	MergeEntries(&buffer, &newDB, &oldDB);
+	FreeEntries(&oldDB);
+    } else {
+	buffer.used = 0;
+	for (i = 0; i < newDB.used; i++) {
+	    if (newDB.entry[i].usable)
+		AppendEntryToBuffer(&buffer, &newDB.entry[i]);
+	}
     }
     if (doScreen) {
 	root = RootWindow(dpy, scrno);
