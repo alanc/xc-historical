@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.2 93/07/19 14:43:25 rws Exp $ */
+/* $XConsortium: await.c,v 1.4 93/07/26 14:12:38 rws Exp $ */
 
 /**** module do_await.c ****/
 /******************************************************************************
@@ -145,6 +145,7 @@ int InitAwait(xp, p, reps)
 	return( reps );
 }
 
+#ifdef SIGALRM
 #ifdef SIGNALRETURNSINT
 int
 #else
@@ -213,6 +214,7 @@ AwaitHandler(sig)
 		alarm( GetTimeout() );
 	}	
 }
+#endif
 
 void DoAwait(xp, p, reps)
     XParms  xp;
@@ -253,9 +255,10 @@ void DoAwait(xp, p, reps)
 		}
 		else				/* parent */
 		{
+#ifdef SIGALRM
 			signal( SIGALRM, AwaitHandler );
 			alarm( GetTimeout() );		
-
+#endif
 			/* if we query the photoflo and it is active, then
 			   XieAwait didn't really do what we wanted it to */
 
@@ -284,8 +287,9 @@ void DoAwait(xp, p, reps)
 		}
 
 		/* whew! somehow we got through this mess unscathed */
-
+#ifdef SIGALRM
 		alarm( 0 );	
+#endif
     	}
 }
 
