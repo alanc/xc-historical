@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.sample,v 1.1 93/09/30 16:01:16 rws Exp $
+XCOMM site:  $XConsortium: site.sample,v 1.2 93/09/30 16:22:56 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -32,6 +32,9 @@ XCOMM site:  $XConsortium: site.sample,v 1.1 93/09/30 16:01:16 rws Exp $
 #define ProjectRoot /usr/X11R6
 
 /* #define HasXdmAuth YES */
+
+/* #define BuildXKB YES */
+/* #define BuildXKBlib YES */
 
 /* #define PreIncDir /usr/local/lib/gcc-lib/sparc-sun-sunos4.1.3/2.4.5/include */
 
