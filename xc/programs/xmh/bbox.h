@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.8 89/09/15 16:09:46 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.9 89/09/27 19:10:50 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -51,6 +51,7 @@ extern Button	 BBoxFindButton	      (/*  ButtonBox, Widget  */);
 extern Button	 BBoxButtonNumber     (/*  ButtonBox, int  */);
 extern int	 BBoxNumButtons	      (/*  ButtonBox  */);
 extern char *	 BBoxNameOfButton     (/*  Button  */);
+extern Widget	 BBoxMenuOfButton     (/*  Button  */);
 extern void	 BBoxLockSize	      (/*  ButtonBox  */);
 
 #endif /* _bbox_h */
