@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.69 89/07/05 17:29:17 jim Exp $
+ * $XConsortium: add_window.c,v 1.70 89/07/06 10:33:33 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.69 89/07/05 17:29:17 jim Exp $";
+"$XConsortium: add_window.c,v 1.70 89/07/06 10:33:33 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1076,10 +1076,23 @@ TwmWindow *tmp_win;
 
 	/*
 	 * If a special highlight pixmap was given, use that.  Otherwise,
-	 * use the little lines (which looks awful on interlaced monitors).
-	 * If that fails, then use the foreground color to look like a solid
-	 * line.
+	 * use a nice, even gray pattern.  The old horizontal lines look really
+	 * awful on interlaced monitors (as well as resembling other looks a
+	 * little bit too closely), but can be used by putting
+	 *
+	 *                 Pixmaps { TitleHighlight "hline2" }
+	 *
+	 * (or whatever the horizontal line bitmap is named) in the startup
+	 * file.  If all else fails, use the foreground color to look like a 
+	 * solid line.
 	 */
+	if (!Scr->hilitePm) {
+	    Scr->hilitePm = XCreateBitmapFromData (dpy, tmp_win->title_w, 
+						   gray_bits, gray_width, 
+						   gray_height);
+	    Scr->hilite_pm_width = gray_width;
+	    Scr->hilite_pm_height = gray_height;
+	}
 	if (Scr->hilitePm) {
 	    pm = XCreatePixmap (dpy, tmp_win->title_w,
 				Scr->hilite_pm_width, Scr->hilite_pm_height,
@@ -1099,14 +1112,6 @@ TwmWindow *tmp_win;
 		XFreePixmap (dpy, pm);
 		pm = None;
 	    }
-	} else {
-	    pm = XCreatePixmap (dpy, tmp_win->title_w, 8, h, Scr->d_depth);
-	    gc = XCreateGC (dpy, pm, (unsigned long)0, (XGCValues *) NULL);
-	    XSetForeground (dpy, gc, tmp_win->title.back);
-	    XFillRectangle (dpy, pm, gc, 0,0, 8, h);
-	    XSetForeground (dpy, gc, tmp_win->title.fore);
-	    for (y = 1; y < h; y += 2) XDrawLine(dpy, pm, gc, 0, y, 10, y);
-	    XFreeGC (dpy, gc);
 	}
 	if (pm) {
 	    valuemask = CWBackPixmap;
