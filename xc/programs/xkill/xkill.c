@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium$
+ * $XConsortium: xkill.c,v 1.5 88/09/06 14:37:16 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,11 +18,17 @@
  * Author:  Jim Fulton, MIT X Consortium; Dana Chee, Bellcore
  */
 
+/*
+ * Warning, this is a very dangerous client....
+ */
+
 #include <stdio.h>
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <ctype.h>
+#include <X11/Xmu.h>
+#include <X11/Xproto.h>
 
 Display *dpy = NULL;
 char *ProgramName;
@@ -31,7 +37,7 @@ char *ProgramName;
 #define SelectButtonFirst (-2)
 
 XID parse_id(), get_window_id();
-int parse_button();
+int parse_button(), verify_okay_to_kill();
 
 Exit (code)
     int code;
@@ -49,6 +55,7 @@ usage ()
 "    -display displayname    X server to contact",
 "    -id resource            resource whose client is to be killed",
 "    -button number          specific button to be pressed to select window",
+"    -all                    kill all clients with top level windows",
 "",
 NULL};
     char **cpp;
@@ -67,9 +74,11 @@ main (argc, argv)
 {
     int i;				/* iterator, temp variable */
     char *displayname = NULL;		/* name of server to contact */
+    int screenno;			/* screen number of dpy */
     XID id = None;			/* resource to kill */
     char *button_name = NULL;		/* name of button for window select */
     int button;				/* button number or negative for all */
+    Bool kill_all = False;
 
     ProgramName = argv[0];
 
@@ -90,6 +99,9 @@ main (argc, argv)
 		if (++i >= argc) usage ();
 		button_name = argv[i];
 		continue;
+	      case 'a':			/* -all */
+		kill_all = True;
+		continue;
 	      default:
 		usage ();
 	    }
@@ -103,6 +115,13 @@ main (argc, argv)
 	fprintf (stderr, "%s:  unable to open display \"%s\"\n",
 		 ProgramName, XDisplayName (displayname));
 	Exit (1);
+    }
+    screenno = DefaultScreen (dpy);
+
+    if (kill_all) {
+	if (verify_okay_to_kill (dpy, screenno)) 
+	  kill_all_windows (dpy, screenno);
+	Exit (0);
     }
 
     /*
@@ -149,7 +168,9 @@ main (argc, argv)
 		button = (int) ((unsigned int) pointer_map[0]);
 	    }
 	}
-	id = get_window_id (dpy, button);
+	id = get_window_id (dpy, screenno, button,
+			    "the window whose client you wish to kill");
+	if (id == RootWindow(dpy,screenno)) id = None;
     }
 
     if (id != None) {
@@ -208,11 +229,12 @@ XID parse_id (s)
     return (retval);
 }
 
-XID get_window_id (dpy, button)
+XID get_window_id (dpy, screen, button, msg)
     Display *dpy;
+    int screen;
     int button;
+    char *msg;
 {
-    int screen;			/* the default screen number */
     Cursor cursor;		/* cursor to use when selecting */
     Window root;		/* the current root */
     Window retwin = None;	/* the window that got selected */
@@ -221,7 +243,6 @@ XID get_window_id (dpy, button)
 
 #define MASK (ButtonPressMask | ButtonReleaseMask)
 
-    screen = DefaultScreen (dpy);
     root = RootWindow (dpy, screen);
     cursor = XCreateFontCursor (dpy, XC_draped_box);
     if (cursor == None) {
@@ -230,12 +251,12 @@ XID get_window_id (dpy, button)
 	Exit (1);
     }
 
-    printf ("Select with ");
+    printf ("Select %s with ", msg);
     if (button == -1)
       printf ("any button");
     else
       printf ("button %d", button);
-    printf (" the window whose client you wish to kill....\n");
+    printf ("....\n");
     XSync (dpy, 0);			/* give xterm a chance */
 
     if (XGrabPointer (dpy, root, False, MASK, GrabModeSync, GrabModeAsync, 
@@ -269,7 +290,75 @@ XID get_window_id (dpy, button)
     XFreeCursor (dpy, cursor);
     XSync (dpy, 0);
 
-    if (retwin == root) retwin = None;
     return ((button == -1 || retbutton == button) ? retwin : None);
 }
 
+
+catch_window_errors (dpy, ev)
+    Display *dpy;
+    XErrorEvent *ev;
+{
+    if (ev->request_code == X_KillClient) return;
+    XmuPrintDefaultErrorMessage (dpy, ev, stderr);
+    return;
+}
+
+int kill_all_windows (dpy, screenno)
+    Display *dpy;
+    int screenno;
+{
+    Window root = RootWindow (dpy, screenno);
+    Window dummywindow;
+    Window *children;
+    int nchildren;
+    int i;
+
+    if (!XQueryTree (dpy, root, &dummywindow, &dummywindow,
+		     &children, &nchildren)) {
+	return -1;
+    }
+
+    XSync (dpy, 0);
+    XSetErrorHandler (catch_window_errors);
+
+    for (i = 0; i < nchildren; i++) {
+	XKillClient (dpy, children[i]);
+    }
+
+    XSync (dpy, 0);
+    XSetErrorHandler (NULL);		/* pretty stupid way to do things... */
+
+    return 0;
+}
+
+/*
+ * ask the user to press in the root with each button in succession
+ */
+int verify_okay_to_kill (dpy, screenno)
+    Display *dpy;
+    int screenno;
+{
+    unsigned char pointer_map[256];
+    int count = XGetPointerMapping (dpy, pointer_map, 256);
+    int i;
+    int button;
+    static char *msg = "the root window";
+    Window root = RootWindow (dpy, screenno);
+    int okay = 0;
+
+    for (i = 0; i < count; i++) {
+	button = (int) pointer_map[i];
+	if (button == 0) continue;	/* disabled */
+	if (get_window_id (dpy, screenno, button, msg) != root) {
+	    okay = 0;
+	    break;
+	}
+	okay++;				/* must have at least one button */
+    }
+    if (okay) {
+	return 1;
+    } else {
+	printf ("Aborting.\n");
+	return 0;
+    }
+}

@@ -3,7 +3,7 @@
 xkill - kill a client by its X resource
 .SH SYNOPSIS
 .B "xkill"
-[\-display \fIdisplyname\fP] [\-id \fIresource\fP] [\-button number]
+[\-display \fIdisplyname\fP] [\-id \fIresource\fP] [\-button number] [\-all]
 .SH DESCRIPTION
 .PP
 .I Xkill
@@ -29,6 +29,12 @@ This option specifies a specific pointer button number
 that should be used in selecting a window to kill.  
 If the word "any" is specified, any button on the pointer may be used.  By
 default, the first button in the pointer map is used.
+.TP 8
+.B \-all
+This option indicates that all clients with top-level windows on the screen
+should be killed.  \fIXkill\fP will ask you to select the root window with 
+each of the currently defined buttons to give you several chances to abort.
+Use of this option is highly discouraged.
 .SH XDEFAULTS
 .TP 8
 .B Button
