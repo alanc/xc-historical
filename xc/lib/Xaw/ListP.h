@@ -8,9 +8,9 @@
  *                      MIT - Project Athena
  *
  *      $Source: /usr/expo/X/src/lib/Xaw/RCS/ListP.h,v $
- *      $Author: kit $
+ *      $Author: swick $
  *      $oHeader: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
- *      $XConsortium: ListP.h,v 1.3 88/08/30 16:37:03 kit Exp $
+ *      $XConsortium: ListP.h,v 1.4 88/09/05 11:52:52 swick Exp $
  *	
  */
 
@@ -58,8 +58,6 @@ SOFTWARE.
 #define NO_HIGHLIGHT            XT_LIST_NONE
 #define OUT_OF_RANGE            -1
 #define OKAY                     0
-
-#define XtRjustify		"Justify"
 
 /* New fields for the List widget class record */
 
