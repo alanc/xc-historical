@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.19 87/09/13 22:35:03 toddb Locked $
- * $Locker: toddb $
+ * $Header: imake.c,v 1.20 87/09/14 00:00:47 rws Locked $
+ * $Locker: rws $
  *
  * Author:
  *	Todd Brunhoff
@@ -89,15 +89,23 @@
 #include	<ctype.h>
 #include	<sys/types.h>
 #include	<sys/file.h>
+#ifdef SYSV
+#include	<fcntl.h>
+#else	/* !SYSV */
 #include	<sys/wait.h>
+#endif	/* !SYSV */
 #include	<sys/signal.h>
 #include	<sys/stat.h>
 
+#ifdef SYSV
+#define	dup2(fd1,fd2)	((fd1 == fd2) ? fd1 : \
+				(close(fd2), fcntl(fd1, F_DUPFD, fd2)))
+#endif	/* SYSV */
 #define	TRUE		1
 #define	FALSE		0
 #define	ARGUMENTS	50
 
-#ifdef sun
+#if defined(sun) || defined(hpux)
 #define REDUCED_TO_ASCII_SPACE
 int	InRule = FALSE;
 #endif
@@ -373,7 +381,11 @@ cppit(Imakefile, template, outfd)
 {
 	FILE	*pipeFile;
 	int	pid, pipefd[2];
+#ifdef SYSV
+	int	status;
+#else	/* !SYSV */
 	union wait	status;
+#endif	/* !SYSV */
 	char	*cleanedImakefile;
 
 	/*
@@ -401,10 +413,17 @@ cppit(Imakefile, template, outfd)
 		fclose(pipeFile);
 		while (wait(&status) > 0) {
 			errno = 0;
+#ifdef SYSV
+			if ((status >> 8) & 0xff)
+				LogFatal("Signal %d.", (status >> 8) & 0xff);
+			if (status & 0xff)
+				LogFatal("Exit code %d.", status & 0xff);
+#else	/* !SYSV */
 			if (status.w_termsig)
 				LogFatal("Signal %d.", status.w_termsig);
 			if (status.w_retcode)
 				LogFatal("Exit code %d.", status.w_retcode);
+#endif	/* !SYSV */
 		}
 		CleanCppOutput(outfd);
 	} else {	/* child... dup and exec cpp */
@@ -421,7 +440,11 @@ cppit(Imakefile, template, outfd)
 makeit()
 {
 	int	pid;
+#ifdef SYSV
+	int	status;
+#else	/* !SYSV */
 	union wait	status;
+#endif	/* !SYSV */
 
 	/*
 	 * Fork and exec make
@@ -432,10 +455,17 @@ makeit()
 	if (pid) {	/* parent... simply wait */
 		while (wait(&status) > 0) {
 			errno = 0;
+#ifdef SYSV
+			if ((status >> 8) & 0xff)
+				LogFatal("Signal %d.", (status >> 8) & 0xff);
+			if (status & 0xff)
+				LogFatal("Exit code %d.", status & 0xff);
+#else	/* !SYSV */
 			if (status.w_termsig)
 				LogFatal("Signal %d.", status.w_termsig);
 			if (status.w_retcode)
 				LogFatal("Exit code %d.", status.w_retcode);
+#endif	/* !SYSV */
 		}
 	} else {	/* child... dup and exec cpp */
 		if (verbose)
