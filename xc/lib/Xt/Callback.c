@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Callback.c,v 6.12 88/01/29 15:54:10 asente Exp $";
+static char rcsid[] = "$Header: Callback.c,v 1.2 88/02/03 08:59:53 swick Locked $";
 #endif lint
 
 /*
@@ -34,7 +34,7 @@ typedef struct _CallbackRec {
     CallbackList  next;
     Widget	    widget;
     XtCallbackProc  callback;
-    Opaque	    closure;
+    caddr_t	    closure;
 } CallbackRec;
 
 static CallbackList *FetchCallbackList (widget, name)
@@ -60,7 +60,7 @@ void _XtAddCallback(widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    Opaque		    closure;
+    caddr_t		    closure;
 {
     register CallbackRec *new;
 
@@ -78,7 +78,7 @@ void XtAddCallback(widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    Opaque	    closure;
+    caddr_t	    closure;
 {
     CallbackList *callbacks;
 
@@ -119,7 +119,7 @@ void RemoveCallback (widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    Opaque		    closure;
+    caddr_t		    closure;
 
 {
     register CallbackList cl;
@@ -138,7 +138,7 @@ void XtRemoveCallback (widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    Opaque	    closure;
+    caddr_t	    closure;
 {
 
     CallbackList *callbacks;
@@ -169,7 +169,7 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
     for (; xtcallbacks->callback != NULL; xtcallbacks++) {
 	RemoveCallback(
 	    widget, callbacks, xtcallbacks->callback,
-	    (Opaque) xtcallbacks->closure);
+	    (caddr_t) xtcallbacks->closure);
     }
 } /* XtRemoveCallbacks */
 
@@ -208,7 +208,7 @@ void XtRemoveAllCallbacks(widget, name)
 
 void _XtCallCallbacks (callbacks, call_data)
     CallbackList *callbacks;
-    Opaque       call_data;
+    caddr_t       call_data;
 {
     register CallbackRec *cl;
     CallbackRec		 stack_cache [CALLBACK_CACHE_SIZE];
@@ -261,7 +261,7 @@ CallbackList _CompileCallbackList(widget, xtcallbacks)
 	pLast		= &(new->next);
 	new->widget     = widget;
 	new->callback   = xtcallbacks->callback;
-	new->closure    = (Opaque) xtcallbacks->closure;
+	new->closure    = (caddr_t) xtcallbacks->closure;
     };
     *pLast = NULL;
 
@@ -271,7 +271,7 @@ CallbackList _CompileCallbackList(widget, xtcallbacks)
 void XtCallCallbacks(widget, name, call_data)
     Widget   widget;
     String   name;
-    Opaque  call_data;
+    caddr_t  call_data;
 {
     CallbackList *callbacks;
 
