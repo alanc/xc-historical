@@ -113,20 +113,23 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 {
 				/* next three parameters are post-clip */
     int n;			/* number of spans to fill */
-    register DDXPointPtr ppt;	/* pointer to list of start points */
-    register int *pwidth;	/* pointer to list of n widths */
+    DDXPointPtr ppt;		/* pointer to list of start points */
+    int *pwidth;		/* pointer to list of n widths */
     int *addrlBase;		/* pointer to start of bitmap */
     int nlwidth;		/* width in longwords of bitmap */
     register int *addrl;	/* pointer to current longword in bitmap */
+    register int width;		/* current span width */
+    register int x;
     register int startmask;
     register int endmask;
     register int nlmiddle;
-    int rop;			/* reduced rasterop */
+    int rop;			/* rasterop */
+    int planemask;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
     int fill;
 
-    if (!(pGC->planemask))
+    if (!(planemask = pGC->planemask))
 	return;
 
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
@@ -165,40 +168,86 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     rop = pGC->alu;
     fill = PFILL(pGC->fgPixel);
+    planemask = PFILL(planemask);
 
-    while (n--)
+    if (rop == GXcopy && (planemask & PMSK) == PMSK)
     {
-        addrl = addrlBase + (ppt->y * nlwidth) + (ppt->x >> PWSH);
-
-	if (*pwidth)
+	while (n--)
 	{
-	    if ( ((ppt->x & PIM) + *pwidth) <= PPW)
+	    x = ppt->x;
+	    addrl = addrlBase + (ppt->y * nlwidth);
+	    ++ppt;
+	    width = *pwidth++;
+	    if (!width)
+		continue;
+#if PPW == 4
+	    if (width <= 4)
 	    {
-		/* all bits inside same longword */
-		putbitsrop( fill, ppt->x & PIM, *pwidth,
-		    addrl, pGC->planemask, rop );
+		register char	*addrb;
+
+		addrb = ((char *) addrl) + x;
+		while (width--)
+		    *addrb++ = fill;
 	    }
+#else
+	    if ( ((x & PIM) + width) <= PPW)
+	    {
+		addrl += x >> PWSH;
+		maskpartialbits(x, width, startmask);
+		*addrl = (*addrl & ~startmask) | (fill & startmask);
+	    }
+#endif
 	    else
 	    {
-		maskbits(ppt->x, *pwidth, startmask, endmask, nlmiddle);
+		addrl += x >> PWSH;
+		maskbits(x, width, startmask, endmask, nlmiddle);
 		if ( startmask ) {
-		    putbitsrop( fill, ppt->x & PIM,
-			PPW-(ppt->x&PIM), addrl, pGC->planemask, rop);
+		    *addrl = *addrl & ~startmask | fill & startmask;
 		    ++addrl;
 		}
-		while ( nlmiddle-- ) {
-		    putbitsrop( fill, 0, PPW,
-			addrl, pGC->planemask, rop );
-		    ++addrl;
-		}
-		if ( endmask ) {
-		    putbitsrop( fill, 0, 
-			((ppt->x + *pwidth)&PIM), addrl, pGC->planemask, rop );
-		}
+		while ( nlmiddle-- )
+		    *addrl++ = fill;
+		if ( endmask )
+		    *addrl = *addrl & ~endmask | fill & endmask;
 	    }
 	}
-	pwidth++;
-	ppt++;
+    }
+    else
+    {
+    	while (n--)
+    	{
+	    x = ppt->x;
+	    addrl = addrlBase + (ppt->y * nlwidth) + (x >> PWSH);
+	    ++ppt;
+	    width = *pwidth++;
+	    if (width)
+	    {
+	    	if ( ((x & PIM) + width) <= PPW)
+	    	{
+		    maskpartialbits(x, width, startmask);
+		    *addrl = *addrl & ~(planemask & startmask) |
+			     DoRop(rop, fill, *addrl) & (planemask & startmask);
+	    	}
+	    	else
+	    	{
+		    maskbits(x, width, startmask, endmask, nlmiddle);
+		    if ( startmask ) {
+			*addrl = *addrl & ~(planemask & startmask) |
+			         DoRop (rop, fill, *addrl) & (planemask & startmask);
+		    	++addrl;
+		    }
+		    while ( nlmiddle-- ) {
+			*addrl = (*addrl & ~planemask) |
+				 DoRop (rop, fill, *addrl) & planemask;
+		    	++addrl;
+		    }
+		    if ( endmask ) {
+			*addrl = *addrl & ~(planemask & endmask) |
+			         DoRop (rop, fill, *addrl) & (planemask & endmask);
+		    }
+	    	}
+	    }
+    	}
     }
     DEALLOCATE_LOCAL(pptFree);
     DEALLOCATE_LOCAL(pwidthFree);
