@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.29 94/03/15 13:38:42 mor Exp $ */
+/* $XConsortium: process.c,v 1.30 94/03/16 16:12:43 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -717,10 +717,10 @@ Bool		swap;
 
     pData = pStart;
 
-    SKIP_STRING (pData, swap);				     /* vendor */
-    SKIP_STRING (pData, swap);				     /* release */
-    SKIP_LISTOF_STRING (pData, swap, message->authCount);    /* auth names */
-    pData += (message->versionCount * 4);		     /* versions */
+    SKIP_STRING (pData, swap);				       /* vendor */
+    SKIP_STRING (pData, swap);				       /* release */
+    SKIP_LISTOF_STRING (pData, swap, (int) message->authCount);/* auth names */
+    pData += (message->versionCount * 4);		       /* versions */
 
     CHECK_COMPLETE_SIZE (iceConn, ICE_ConnectionSetup,
 	length, pData - pStart + SIZEOF (iceConnectionSetupMsg),
@@ -1624,11 +1624,11 @@ Bool		swap;
 
     pData = pStart;
 
-    SKIP_STRING (pData, swap);				    /* protocol name */
-    SKIP_STRING (pData, swap);				    /* vendor */
-    SKIP_STRING (pData, swap);				    /* release */
-    SKIP_LISTOF_STRING (pData, swap, message->authCount);   /* auth names */
-    pData += (message->versionCount * 4);		    /* versions */
+    SKIP_STRING (pData, swap);				       /* proto name */
+    SKIP_STRING (pData, swap);				       /* vendor */
+    SKIP_STRING (pData, swap);				       /* release */
+    SKIP_LISTOF_STRING (pData, swap, (int) message->authCount);/* auth names */
+    pData += (message->versionCount * 4);		       /* versions */
 
     CHECK_COMPLETE_SIZE (iceConn, ICE_ProtocolSetup,
 	length, pData - pStart + SIZEOF (iceProtocolSetupMsg),
