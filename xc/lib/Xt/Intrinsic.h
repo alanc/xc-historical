@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.64 88/01/06 12:27:50 swick Locked $
+* $Header: Intrinsic.h,v 1.65 88/01/07 08:00:16 swick Locked $
 */
 
 /*
@@ -330,10 +330,8 @@ extern Boolean XtIsSubclass ();
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
 #define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
-#define XtUnmapWidget(widget)	\
-		XUnmapWindow(XtDisplay(widget), XtWindow(widget))
-#define XtIsComposite(widget)	\
-		XtIsSubclass(widget, (WidgetClass)compositeWidgetClass)
+#define XtUnmapWidget(widget) XUnmapWindow(XtDisplay(widget), XtWindow(widget))
+#define XtIsComposite(widget) XtIsSubclass(widget, compositeWidgetClass)
 #define XtClass(widget)		((widget)->core.widget_class)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
@@ -749,6 +747,16 @@ extern void XtGetResources();
     /* Widget       widget;             */
     /* ArgList	    args;		*/
     /* int	    num_args;		*/
+
+extern void XtGetSubresources();
+    /* Widget	    widget;		*/
+    /* caddr_t	    base;		*/
+    /* String	    name;		*/
+    /* String	    class;		*/
+    /* XtResourceList resources;	*/
+    /* Cardinal	    num_resources;	*/
+    /* ArgList	    args;		*/
+    /* Cardinal	    num_args;		*/
 
 extern void XtReadBinaryDatabase ();
     /* FILE    *f;			*/
