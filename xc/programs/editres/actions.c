@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.9 91/07/08 12:34:55 rws Exp $
+ * $XConsortium: actions.c,v 1.10 91/07/09 09:39:49 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -94,21 +94,22 @@ Cardinal * num_params;
 			   select_values, XtNumber(select_values), &type))
 	return;
 
-    if (type == SelectWidget)
-	_FindWidget(XtParent(w));
-    else if ((node = FindTreeNodeFromWidget(w)) == NULL) 
+    switch(type) {
+    case SelectAll:
+    case SelectNone:
+    case SelectInvert:
 	_TreeSelect(global_tree_info, type);
-    else {
-	switch(type) {
-	case SelectAll:
-	case SelectNone:
-	case SelectInvert:
-	    _TreeSelectNode(node, type, FALSE);	
-	    break;
-	default:
+	break;
+    case SelectWidget:
+	_FindWidget(XtParent(w));
+	break;
+    default:
+	node = FindTreeNodeFromWidget(w);
+	if (node)
 	    _TreeActivateNode(node, type);	
-	    break;
-	}
+	else
+	    _TreeSelect(global_tree_info, type);
+	break;
     }
 }
 
