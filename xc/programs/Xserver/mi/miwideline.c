@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.22 89/11/16 18:26:45 keith Exp $
+ * $XConsortium: miwideline.c,v 1.23 89/11/16 19:39:30 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -51,21 +51,23 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     PolyEdgePtr	left, right;
     int		left_count, right_count;
 {
-    int	left_x;
+    register int left_x, left_e;
     int	left_stepx;
     int	left_signdx;
-    int	left_e, left_dy, left_dx;
+    int	left_dy, left_dx;
 
-    int	right_x;
+    register int right_x, right_e;
     int	right_stepx;
     int	right_signdx;
-    int	right_e, right_dy, right_dx;
+    int	right_dy, right_dx;
 
     int	height;
     int	left_height, right_height;
 
-    DDXPointPtr	ppt, pptInit;
-    int		*pwidth, *pwidthInit;
+    register DDXPointPtr ppt;
+    DDXPointPtr pptInit;
+    register int *pwidth;
+    int *pwidthInit;
     unsigned long oldPixel;
     int		xorg;
     Spans	spanRec;
@@ -171,10 +173,10 @@ static int
 miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     double	x0, y0;
     double	k;  /* x0 * dy - y0 * dx */
-    int		dx, dy;
+    register int dx, dy;
     int		xi, yi;
     int		left;
-    PolyEdgePtr	edge;
+    register PolyEdgePtr edge;
 {
     int	    x, y, e;
     int	    xady;
@@ -228,8 +230,8 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
 
 static int
 miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, h)
-    PolyVertexPtr   vertices;
-    PolySlopePtr    slopes;
+    register PolyVertexPtr vertices;
+    register PolySlopePtr  slopes;
     int		    count;
     int		    xi, yi;
     PolyEdgePtr	    left, right;
@@ -239,11 +241,12 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
     int	    top, bottom;
     double  miny, maxy;
     double  k;
-    int	    i, j;
+    register int i;
+    int	    j;
     int	    clockwise;
     int	    slopeoff;
-    int	    s;
-    int	    nleft, nright;
+    register int s;
+    register int nright, nleft;
     int	    y, lasty, bottomy, topy;
 
     /* find the top of the polygon */
@@ -342,7 +345,7 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     GCPtr	    pGC;
     unsigned long   pixel;
     SpanDataPtr	    spanData;
-    LineFacePtr	    pLeft, pRight;
+    register LineFacePtr pLeft, pRight;
 {
     double	    mx, my;
     int		    denom;
@@ -722,8 +725,8 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
 }
 
 miRoundJoinFace (face, edge, leftEdge)
-    LineFacePtr	face;
-    PolyEdgePtr	edge;
+    register LineFacePtr face;
+    register PolyEdgePtr edge;
     Bool	*leftEdge;
 {
     int	    y;
@@ -770,7 +773,7 @@ miRoundJoinFace (face, edge, leftEdge)
 }
 
 miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
-    LineFacePtr	pLeft, pRight;
+    register LineFacePtr pLeft, pRight;
     PolyEdgePtr	edge1, edge2;
     int		*y1, *y2;
     Bool	*left1, *left2;
@@ -797,13 +800,13 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
 }
 
 miRoundCapClip (face, isInt, edge, leftEdge)
-    LineFacePtr	face;
+    register LineFacePtr face;
     Bool	isInt;
-    PolyEdgePtr	edge;
+    register PolyEdgePtr edge;
     Bool	*leftEdge;
 {
     int	    y;
-    int	    dx, dy;
+    register int dx, dy;
     double  xa, ya, k;
     Bool	left;
 
@@ -851,7 +854,7 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     register GCPtr  pGC;
     unsigned long   pixel;
     SpanDataPtr	    spanData;
-    LineFacePtr	    leftFace, rightFace;
+    register LineFacePtr leftFace, rightFace;
     double	    xorg, yorg;
     Bool	    isInt;
 {
@@ -970,9 +973,9 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     GCPtr	    pGC;
     unsigned long   pixel;
     SpanDataPtr	    spanData;
-    int		    x1, y1, x2, y2;
+    register int    x1, y1, x2, y2;
     Bool	    projectLeft, projectRight;
-    LineFacePtr	    leftFace, rightFace;
+    register LineFacePtr leftFace, rightFace;
 {
     double	l, L, r;
     double	xa, ya;
@@ -982,7 +985,7 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     int		x, y;
     int		dx, dy;
     int		finaly;
-    PolyEdgePtr	left, right;
+    PolyEdgePtr left, right;
     PolyEdgePtr	top, bottom;
     int		lefty, righty, topy, bottomy;
     int		signdx;
@@ -1205,7 +1208,7 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 
 static SpanDataPtr
 miSetupSpanData (pGC, spanData, npt)
-    GCPtr	pGC;
+    register GCPtr pGC;
     SpanDataPtr	spanData;
     int		npt;
 {
@@ -1256,10 +1259,10 @@ miCleanupSpanData (pDrawable, pGC, spanData)
 void
 miWideLine (pDrawable, pGC, mode, npt, pPts)
     DrawablePtr	pDrawable;
-    GCPtr	pGC;
+    register GCPtr pGC;
     int		mode;
-    int		npt;
-    DDXPointPtr	pPts;
+    register int npt;
+    register DDXPointPtr pPts;
 {
     int		    x1, y1, x2, y2;
     SpanDataRec	    spanDataRec;
@@ -1267,7 +1270,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     unsigned long   pixel;
     Bool	    projectLeft, projectRight;
     LineFaceRec	    leftFace, rightFace, prevRightFace;
-    int		    first;
+    register int    first;
     Bool	    somethingDrawn = FALSE;
 
     if (npt == 0)
@@ -1353,7 +1356,7 @@ static void
 miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	   x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
     DrawablePtr	    pDrawable;
-    GCPtr	    pGC;
+    register GCPtr  pGC;
     int		    *pDashOffset, *pDashIndex;
     SpanDataPtr	    spanData;
     int		    x1, y1, x2, y2;
@@ -1694,10 +1697,10 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 void
 miWideDash (pDrawable, pGC, mode, npt, pPts)
     DrawablePtr	pDrawable;
-    GCPtr	pGC;
+    register GCPtr pGC;
     int		mode;
-    int		npt;
-    DDXPointPtr	pPts;
+    register int npt;
+    register DDXPointPtr pPts;
 {
     int		    x1, y1, x2, y2;
     unsigned long   pixel;
@@ -1705,7 +1708,7 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     LineFaceRec	    leftFace, rightFace, prevRightFace;
     int		    first;
     int		    dashIndex, dashOffset;
-    int		    prevDashIndex;
+    register int    prevDashIndex;
     SpanDataRec	    spanDataRec;
     SpanDataPtr	    spanData;
 
