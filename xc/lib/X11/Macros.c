@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XMacros.c,v 1.2 89/03/22 09:33:02 jim Exp $ */
+/* $XConsortium: XMacros.c,v 11.22 89/03/28 18:14:14 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 #include "Xlibint.h"
@@ -151,7 +151,18 @@ int XDoesBackingStore(s) Screen *s; { return (DoesBackingStore(s)); }
 
 long XEventMaskOfScreen(s) Screen *s; { return (EventMaskOfScreen(s)); }
 
-int XScreenNumberOfScreen(s) Screen *s; { return (ScreenNumberOfScreen(s)); }
+int XScreenNumberOfScreen (scr)
+    register Screen *scr;
+{
+    register Display *dpy = scr->display;
+    register Screen *dpyscr = dpy->screens;
+    register int i;
+
+    for (i = 0; i < dpy->nscreens; i++, dpyscr++) {
+	if (scr == dpyscr) return i;
+    }
+    return -1;
+}
 
 /*
  * These macros are used to give some sugar to the image routines so that
