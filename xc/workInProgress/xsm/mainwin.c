@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.3 94/08/10 15:00:17 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.4 94/08/11 18:56:42 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +29,16 @@ in this Software without prior written authorization from the X Consortium.
 #include "info.h"
 #include "save.h"
 #include "name.h"
+
+Widget mainWindow;
+Widget   clientInfoButton;
+Widget   nameSessionButton;
+Widget   checkPointButton;
+Widget   shutdownButton;
+Widget     shutdownMenu;
+Widget       shutdownSave;
+Widget       shutdownDontSave;
+
 
 
 void

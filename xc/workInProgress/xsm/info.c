@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.17 94/09/14 16:14:15 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.18 94/11/14 15:32:08 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -29,6 +29,27 @@ in this Software without prior written authorization from the X Consortium.
 #include "restart.h"
 
 static Pixmap checkBitmap;
+
+Widget clientInfoPopup;
+Widget   clientInfoForm;
+Widget     viewPropButton;
+Widget	   cloneButton;
+Widget	   killClientButton;
+Widget	   clientInfoDoneButton;
+Widget	   restartHintButton;
+Widget	     restartHintMenu;
+Widget		restartIfRunning;
+Widget		restartAnyway;
+Widget		restartImmediately;
+Widget		restartNever;
+Widget     clientListWidget;
+Widget	   manualRestartLabel;
+Widget	   manualRestartCommands;
+
+Widget clientPropPopup;
+Widget   clientPropForm;
+Widget     clientPropDoneButton;
+Widget     clientPropTextWidget;
 
 
 
@@ -349,7 +370,7 @@ XtPointer 	callData;
 
 
 
-static char *
+char *
 GetProgramName (fullname)
 
 char *fullname;
