@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.8 94/03/06 18:20:36 dpw Exp $
+ * $XConsortium: cfbmap.h,v 1.9 94/04/17 20:28:54 dpw Exp dpw $
  *
 Copyright (c) 1991  X Consortium
 
@@ -87,7 +87,7 @@ cfb can not hack PSZ yet
 #define cfbCreateGC NAME(CreateGC)
 #define cfbCreatePixmap NAME(CreatePixmap)
 #define cfbCreateWindow NAME(CreateWindow)
-#define cfbCreateScreenResources NAME(CreateScreenResoures)
+#define cfbCreateScreenResources NAME(CreateScreenResources)
 #define cfbDestroyPixmap NAME(DestroyPixmap)
 #define cfbDestroyWindow NAME(DestroyWindow)
 #define cfbDoBitblt NAME(DoBitblt)
