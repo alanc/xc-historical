@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.145 88/06/29 11:59:56 rws Exp $ */
+/* $Header: Xlib.h,v 11.146 88/08/18 10:45:52 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -25,7 +25,15 @@
 #ifndef _XLIB_H_
 #define _XLIB_H_
 
+#ifdef CRAY
+#ifndef __TYPES__
+#define __TYPES__
+#include <sys/types.h>			/* forgot to protect it... */
+#endif /* __TYPES__ */
+#else
 #include <sys/types.h>
+#endif /* CRAY */
+
 #include <X11/X.h>
 
 #define Bool int
