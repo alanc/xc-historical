@@ -136,7 +136,7 @@ user-defined menus (containing functions to be invoked or
 commands to be executed).
 .PP
 Variable names and keywords are case-insensitive.  Strings must be surrounded
-by double quote characters (e.g. \"blue\") and are case-sensitive.
+by double quote characters (e.g. "blue") and are case-sensitive.
 A pound sign (#) outside
 of a string causes the remainder of the line in which the character appears to
 be treated as a comment.
@@ -680,7 +680,7 @@ for \fBright\fP.  For example:
 	"XTerm"	left		0	0
 	"xterm1"	left		1	3
 	"xterm2"	left		2	3
-	"olock"		center		0	0
+	"oclock"	center		0	0
 	"emacs"	right		0	0
 }
 .EE
@@ -807,7 +807,7 @@ keysym name; buttons are given as the keywords \fBButton1\fP-\fBButton5\fP:
 .EE
 The \fImodlist\fP is any combination of the modifier names \fBshift\fP,
 \fBcontrol\fP, and \fBmeta\fP (which may be abbreviated as 
-\fBs\fP, \fBc\fP, and \fBm\fP respectively) separated by a vertical bar (\|).
+\fBs\fP, \fBc\fP, and \fBm\fP respectively) separated by a vertical bar (\(or).
 Similarly, the \fIcontext\fP is any combination of 
 \fBwindow\fP,
 \fBtitle\fP,
