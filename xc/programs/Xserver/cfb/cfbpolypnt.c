@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.5 89/09/05 20:33:44 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.6 89/09/06 18:03:27 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -28,24 +28,24 @@ without any express or implied warranty.
 
 void
 cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
-    register DrawablePtr pDrawable;
+    DrawablePtr pDrawable;
     GCPtr pGC;
     int mode;
     int npt;
     xPoint *pptInit;
 {
-    register int i;
+    register int *addr;
     register xPoint *ppt;
     RegionPtr cclip;
     int nbox;
-    register BoxPtr pbox;
     register int x, y;
+    register int i;
     int *addrl;
-    int nlwidth;
+    register int nlwidth;
+    register BoxPtr pbox;
     int rop = pGC->alu;
     unsigned long pixel = pGC->fgPixel;
     unsigned long planemask = PFILL(pGC->planemask);
-    register int *addr;
     unsigned long mask;
     int	x1, x2, y1, y2;
     int xoff, yoff;
