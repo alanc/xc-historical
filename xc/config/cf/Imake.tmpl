@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.67 89/11/14 20:20:33 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.68 89/11/15 15:01:31 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -137,15 +137,6 @@
 #define SGIArchitecture
 #undef mips
 #define MipsArchitecture
-#endif
-
-#if defined(mips) && !defined(UltrixArchitecture) && !defined(SGIArchitecture)
-#define MacroIncludeFile <umips.cf>
-#define MacroFile umips.cf
-#undef mips
-#undef umips
-#define MipsArchitecture
-#define UMipsArchitecture
 #endif
 
 
