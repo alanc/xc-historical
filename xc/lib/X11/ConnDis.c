@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.124 95/04/05 19:57:57 kaleb Exp mor $ */
+/* $XConsortium: ConnDis.c,v 11.125 95/04/06 16:58:50 mor Exp mor $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -104,7 +104,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int family;
     int saddrlen;
     Xtransaddr *saddr;
-    char *lastp, *p;			/* char pointers */
+    char *lastp, *lastc, *p;		/* char pointers */
     char *pprotocol = NULL;		/* start of protocol name */
     char *phostname = NULL;		/* start of host of display */
     char *pdpynum = NULL;		/* start of dpynum of display */
@@ -113,7 +113,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     int idisplay;			/* required display number */
     int iscreen = 0;			/* optional screen number */
     int (*connfunc)();			/* method to create connection */
-    int len;				/* length tmp variable */
+    int len, hostlen;			/* length tmp variable */
     int retry;				/* retry counter */
     char address[128];			/* final address passed to
 					   X Transport Interface */
@@ -144,16 +144,43 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 					   case no protocol was given */
 
     /*
-     * Step 1, find the hostname.  This is delimited by the required 
-     * first colon.
+     * Step 1, find the hostname.  This is delimited by either one colon,
+     * or two colons in the case of DECnet (DECnet Phase V allows a single
+     * colon in the hostname).
      */
-    for (lastp = p; *p && *p != ':'; p++) ;
-    if (!*p) return NULL;		/* must have a colon */
 
-    if (p != lastp) {		/* hostname given? */
-	phostname = copystring (lastp, p - lastp);
+    lastp = p;
+    lastc = NULL;
+    for (; *p; p++)
+	if (*p == ':')
+	    lastc = p;
+
+    if (!lastc) return NULL;		/* must have a colon */
+
+    if ((lastp != lastc) && (*(lastc - 1) == ':')) {
+	/* DECnet display specified */
+
+#ifndef DNETCONN
+	goto bad;
+#else
+	dnet = True;
+	/* override the protocol specified */
+	if (pprotocol)
+	    Xfree (pprotocol);
+	pprotocol = copystring ("dnet", 4);
+	hostlen = lastc - 1 - lastp;
+#endif
+    }
+    else
+	hostlen = lastc - lastp;
+
+    if (hostlen > 0) {		/* hostname given? */
+	phostname = copystring (lastp, hostlen);
 	if (!phostname) goto bad;	/* no memory */
     }
+
+    p = lastc;
+
 #ifdef LOCALCONN
     /* check if phostname == localnodename */
     if (phostname && uname(&sys) >= 0 &&
@@ -166,25 +193,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
 
     /*
-     * Step 2, see if this is a DECnet address by looking for the optional
-     * second colon.
-     */
-    if (p[1] == ':') {			/* then DECnet format */
-	dnet = True;
-	if( pprotocol ) Xfree(pprotocol); /* override the protocol specified */
-	pprotocol = copystring ("dnet", 4);
-	p++;
-    }
-
-    /*
-     * see if we're allowed to have a DECnet address
-     */
-#ifndef DNETCONN
-    if (dnet) goto bad;
-#endif
-
-    /*
-     * Step 3, find the display number.  This field is required and is 
+     * Step 2, find the display number.  This field is required and is 
      * delimited either by a nul or a period, depending on whether or not
      * a screen number is present.
      */
@@ -198,7 +207,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 
 
     /*
-     * Step 4, find the screen number.  This field is optional.  It is 
+     * Step 3, find the screen number.  This field is optional.  It is 
      * present only if the display number was followed by a period (which
      * we've already verified is the only non-nul character).
      */
