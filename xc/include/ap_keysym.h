@@ -8,9 +8,9 @@ Permission to use, duplicate, change, and distribute this software and
 its documentation for any purpose and without fee is granted, provided
 that the above copyright notice appear in such copy and that this
 copyright notice appear in all supporting documentation, and that the
-names of Apollo Computer Inc., the Hewlett-Packard Company, or MIT not
-be used in advertising or publicity pertaining to distribution of the
-software without written prior permission.
+names of Apollo Computer Inc., the Hewlett-Packard Company, or the X
+Consortium not be used in advertising or publicity pertaining to
+distribution of the software without written prior permission.
 
 HEWLETT-PACKARD MAKES NO WARRANTY OF ANY KIND WITH REGARD
 TO THIS SOFWARE, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
