@@ -20,7 +20,9 @@
 .TL
 \s+2\fBInter-Client Exchange (ICE) Library\fP\s-2
 .sp
-Public Review Draft
+Version 0.10
+.sp
+Preliminary Public Review Draft
 .sp
 X Consortium Standard
 .sp
@@ -1001,25 +1003,29 @@ function.
 .LP
 .sM
 .FD 0
-IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fImust_authenticate\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
+IceConn IceOpenConnection\^(\^\fInetwork_ids_list\fP, \fImust_authenticate\fP\^, \fImajor_opcode_check\fP\^, \fIerror_length\fP\^, \fIerror_string_ret\fP\^)
 .br
      char *\fInetwork_ids_list\fP\^;
 .br
      Bool \fImust_authenticate\fP\^;
 .br
+     int \fImajor_opcode_check\fP\^;
+.br
      int  \fIerror_length\fP\^;
 .br
      char *\fIerror_string_ret\fP\^;
 .FN
-.IP \fInetwork_ids_list\fP 1.1i
+.IP \fInetwork_ids_list\fP 1.3i
 Specifies the network ID(s) of the other client.
-.IP \fImust_authenticate\fP 1.1i
+.IP \fImust_authenticate\fP 1.3i
 If
 .PN True ,
 the other client may not bypass authentication.
-.IP \fIerror_length\fP 1.1i
+.IP \fImajor_opcode_check\fP 1.3i
+Used to force a new ICE connection to be created (see below).
+.IP \fIerror_length\fP 1.3i
 Length of the \fIerror_string_ret\fP\^ argument passed in.
-.IP \fIerror_string_ret\fP 1.1i
+.IP \fIerror_string_ret\fP 1.3i
 Returns a null terminated error message, if any.  \fIerror_string_ret\fP
 points to user supplied memory.  No more than \fIerror_length\fP\^ bytes
 are used.
@@ -1047,7 +1053,11 @@ internally make a call into
 .PN IceOpenConnection .
 If the ICE library detects that an ICE connection has already been opened
 with the other client, a second connection is not made - the previously
-allocated connection object is returned.
+allocated connection object is returned.  However, if
+\fImajor_opcode_check\fP\^ contains a non-zero major opcode value, a
+previously created ICE connection will be used only if the major opcode
+is not active on the connection.  This can be used to force multiple ICE
+connections between two clients for the same protocol.
 .LP
 Any authentication requirements are handled internally by the ICE library.
 The method by which the authentication data is obtained is implementation
@@ -1116,7 +1126,7 @@ The listen object.
 .LP
 In order to detect a new connection on a listen object, select() must be
 called on the descriptor associated with the listen object.  To obtain
-the descriptor associated with a listen object, call the
+the descriptor, call the
 .PN IceGetListenDescrip
 function.
 .LP
@@ -1175,6 +1185,7 @@ The number of listen objects.
 .IP \fIlisten_objs\fP 1i
 The listen objects.
 .LP
+.eM
 .NH 2
 Host Based Authentication for ICE Connections
 .XS
@@ -1586,9 +1597,7 @@ IceProtocolSetupStatus IceProtocolSetup\^(\^\fIice_conn\fP, \fImy_opcode\fP\^, \
 .IP \fIice_conn\fP 1.1i
 A valid ICE connection object.
 .IP \fImy_opcode\fP 1.1i
-The major opcode of the protocol to be set up.  This major opcode
-was returned by
-.PN IceRegisterForProtocolSetup .
+The major opcode of the protocol to be set up.
 .IP \fImust_authenticate\fP 1.1i
 If
 .PN True ,
@@ -1598,11 +1607,9 @@ The major version of the protocol to be used is returned.
 .IP \fIminor_version_ret\fP 1.1i
 The minor version of the protocol to be used is returned.
 .IP \fIvendor_ret\fP 1.1i
-The vendor name of the protocol receiver is returned.  For example,
-this might be the vendor name of a session manager.
+The vendor name of the application accepting the \fIProtocol Setup\fP\^.
 .IP \fIrelease_ret\fP 1.1i  
-The release of the protocol receiver is returned.  For example,
-this might be the release of a session manager.
+The release of the application accepting the \fIProtocol Setup\fP\^.
 .IP \fIerror_length\fP 1.1i
 Specifies the length of the \fIerror_string_ret\fP\^ argument passed in.
 .IP \fIerror_string_ret\fP 1.1i
