@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: macros.t,v 1.5 93/12/20 17:24:06 rws Exp $
 .\" macros.t -- macros for X Consortium documents
 .\" Revised and commented by smarks 93.12.20.
 .\"
@@ -155,7 +155,7 @@
 .de sM
 .KS
 .sp 1
-\\h'-0.5i'\\L'-1v'\\v'2p'\\l'1v'\\v'1v-2p'
+\\h'-0.5i'\\L'-1v'\\v'1p'\\l'1v'\\v'1v-1p'
 .sp -1
 ..
 .\"
@@ -163,7 +163,7 @@
 .\"
 .de eM
 .sp -1
-\\h'-0.5i'\\L'-1v'\\v'1v+2p'\\l'1v'\\v'-2p'
+\\h'-0.5i'\\L'-1v'\\v'1v+1p'\\l'1v'\\v'-1p'
 .sp 1
 .KE
 ..
@@ -177,8 +177,8 @@
 .if o .bp
 .		\" Emit a .pn directive with one plus the last page number.
 		\" This will be the number of the first page of the index.
-.nr YZ \n%+1
-.tm .pn \n(YZ
+.nr YZ \\n%+1
+.tm .pn \\n(YZ
 .		\" Issue the table of contents, setting roman numerals,
 .		\" and redefining the footer to use them.
 .bp \\$1
