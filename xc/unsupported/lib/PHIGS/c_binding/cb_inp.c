@@ -1,4 +1,4 @@
-/* $XConsortium: cb_inp.c,v 5.1 91/02/16 09:47:46 rws Exp $ */
+/* $XConsortium: cb_inp.c,v 5.2 91/07/12 19:50:30 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -2595,6 +2595,7 @@ copy_pick_data( store, err, state, init_pick, filter )
     exfilt_size = state->exclusion_filter.num_ints * sizeof(Pint);
     total_size = path_size + infilt_size + exfilt_size;
     if ( CB_STORE_SPACE( store, total_size, err ) ) {
+	init_pick->depth = path_size;
 	init_pick->path_list = (Ppick_path_elem *)store->buf;
 	if ( path_size > 0 )
 	    bcopy( (char*)state->pick.pick_path.path_list,
@@ -2605,7 +2606,8 @@ copy_pick_data( store, err, state, init_pick, filter )
 	    bcopy( (char*)state->inclusion_filter.ints,
 		(char*)filter->incl_set.ints, infilt_size );
 	filter->excl_set.num_ints = state->exclusion_filter.num_ints;
-	filter->excl_set.ints = (Pint *)store->buf + path_size;
+	filter->excl_set.ints = (Pint *)store->buf + path_size +
+				    infilt_size;
 	if ( exfilt_size > 0 )
 	    bcopy( (char*)state->exclusion_filter.ints,
 		(char*)filter->excl_set.ints, exfilt_size );
