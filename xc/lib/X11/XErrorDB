@@ -167,6 +167,38 @@ XRequest.SHAPE.5: X_ShapeQueryExtents
 XRequest.SHAPE.6: X_ShapeSelectInput
 XRequest.SHAPE.7: X_ShapeInputSelected
 XRequest.SHAPE.8: X_ShapeGetRectangles
+# Input extension, not (yet) an X Consortium standard
+XRequest.XInputExtension.1:X_GetExtensionVersion
+XRequest.XInputExtension.2:X_ListInputDevices
+XRequest.XInputExtension.3:X_OpenDevice
+XRequest.XInputExtension.4:X_CloseDevice
+XRequest.XInputExtension.5:X_SetDeviceMode
+XRequest.XInputExtension.6:X_SelectExtensionEvent
+XRequest.XInputExtension.7:X_GetSelectedExtensionEvents
+XRequest.XInputExtension.8:X_ChangeDeviceDontPropagateList
+XRequest.XInputExtension.9:X_GetDeviceDontPropagateList
+XRequest.XInputExtension.10:X_GetDeviceMotionEvents
+XRequest.XInputExtension.11:X_ChangeKeyboardDevice
+XRequest.XInputExtension.12:X_ChangePointerDevice
+XRequest.XInputExtension.13:X_GrabDevice
+XRequest.XInputExtension.14:X_UngrabDevice
+XRequest.XInputExtension.15:X_GrabDeviceKey
+XRequest.XInputExtension.16:X_UngrabDeviceKey
+XRequest.XInputExtension.17:X_GrabDeviceButton
+XRequest.XInputExtension.18:X_UngrabDeviceButton
+XRequest.XInputExtension.19:X_AllowDeviceEvents
+XRequest.XInputExtension.20:X_GetDeviceFocus
+XRequest.XInputExtension.21:X_SetDeviceFocus
+XRequest.XInputExtension.22:X_GetFeedbackControl
+XRequest.XInputExtension.23:X_ChangeFeedbackControl
+XRequest.XInputExtension.24:X_GetDeviceKeyMapping
+XRequest.XInputExtension.25:X_ChangeDeviceKeyMapping
+XRequest.XInputExtension.26:X_GetDeviceModifierMapping
+XRequest.XInputExtension.27:X_SetDeviceModifierMapping
+XRequest.XInputExtension.28:X_GetDeviceButtonMapping
+XRequest.XInputExtension.29:X_SetDeviceButtonMapping
+XRequest.XInputExtension.30:X_QueryDeviceState
+XRequest.XInputExtension.31:X_SendExtensionEvent
 # MIT-SHM extension, experimental, not an X Consortium standard
 XRequest.MIT-SHM.0: X_ShmQueryVersion
 XRequest.MIT-SHM.1: X_ShmAttach
