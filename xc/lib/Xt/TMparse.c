@@ -631,8 +631,8 @@ void DefineTranslation(w)
 	   w->core.event_mask |= ButtonPressMask | ButtonReleaseMask;
 
 
-    XtSetEventHandler(XtDisplay(w), w->core.window, TranslateEvent,
-		      w->core.event_mask, NULL);
+    XtSetEventHandler(w, w->core.event_mask,FALSE, TranslateEvent,NULL);
+
 }
 
 void TranslateInitialize()

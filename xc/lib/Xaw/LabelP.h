@@ -1,5 +1,5 @@
 
-/* $Header: LabelPrivate.h,v 1.3 87/08/28 18:38:51 ackerman Exp $ */
+/* $Header: LabelPrivate.h,v 1.4 87/08/30 20:16:17 ackerman Exp $ */
 
 /*
  *	sccsid:	%W%	%G%
@@ -91,6 +91,10 @@ typedef struct _LabelRec {
 } LabelRec;
 
 /* $Log:	LabelPrivate.h,v $
+ * Revision 1.4  87/08/30  20:16:17  ackerman
+ * Added grayGC, displaySensitive to LabelPart; renamed to normalGC
+ *   Also changed to new naming scheme.
+ * 
  * Revision 1.3  87/08/28  18:38:51  ackerman
  * Moved full instance declaration of LabelData, LabelWidget into file
  * 
