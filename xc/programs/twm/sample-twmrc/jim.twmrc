@@ -5,7 +5,6 @@
 #**********************************************************************
 
 #IconDirectory "/users/jim/icons"	# use *bitmapFilePath instead.
-MaxWindowSize "2000x2000"		# let me get a handle on it
 
 #
 # Use the SHAPE extension to make titles use as little space as possible.  The
@@ -21,7 +20,7 @@ SqueezeTitle			# also sets default to Squeeze all Titles
     "oclock"	center	  0  0		# centered over middle of title
     "XTerm"	left	  0  0		# left edge of title
     "xlogo"	right	  0  0		# for kicks
-    "emacs"	center	  0  0
+    "emacs"	right	  0  0		# left side emacs with center tab
     "xmh"	center	  0  0
 }
 DontSqueezeTitle
@@ -43,7 +42,6 @@ BorderWidth 2			# width of top level windows created by twm
 NoGrabServer			# don't grab server during menus, etc.
 NoRaiseOnMove			# allow moving under other windows
 NoRaiseOnResize			# allow resizing under other windows
-NoRaiseOnWarp			# prevent flashing
 NoTitleFocus			# avoid keystrokes in wrong window cause of lag
 DecorateTransients		# put titlebars on transients
 TitleFont "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -119,6 +117,7 @@ Button1 = c|m|s: root			  : f.refresh
 "F24"	=      : all			  : f.warpto "xmh"
 "F25"   =      : all			  : f.warpto "[expo]"
 "F26"   =      : all                      : f.warpto "emacs"
+#"KP_Subtract" = : all                     : f.colormap "next"
 "F28"   =      : all                      : f.warpring "next"
 "F30"   =      : all                      : f.warptoiconmgr ""
 "F32"   =      : all                      : f.raiselower
