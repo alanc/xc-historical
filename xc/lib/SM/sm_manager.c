@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.7 93/09/24 12:11:51 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.8 93/09/27 21:09:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -226,7 +226,7 @@ SmsReturnProperties (smsConn, numProps, props)
 
 SmsConn	smsConn;
 int	numProps;
-SmProp  *props;
+SmProp  **props;
 
 {
     IceConn			iceConn = smsConn->iceConn;
