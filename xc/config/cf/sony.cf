@@ -1,0 +1,23 @@
+/*
+ * SET VERSION NUMBERS BEFORE MAKING MAKEFILES
+ */
+
+#define SystemV           NO
+#define OSName            NEWS-OS 3.2
+#define OSMajorVersion    3
+#define OSMinorVersion    2
+#define BuildServer       NO
+
+#define SignalReturnProcType int
+
+/**/# platform:  $XConsortium: bsd.cf,v 1.5 89/07/11 11:32:59 jim Exp $
+/**/# operating system:  OSName
+
+/*****************************************************************************
+ *			  Platform-specfic parameters                        *
+ *****************************************************************************/
+
+#define UnalignedReferencesAllowed NO	       /* if arbitrary deref is okay */
+#define SetTtyGroup YES
+
+
