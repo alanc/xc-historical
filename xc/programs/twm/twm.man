@@ -655,7 +655,7 @@ This is typically used to try to regenerate the state that the screen
 was in before the previous window manager was shutdown.
 .IP "\fBSaveColor\fP { \fIcolors-list\fP }" 8
 This variable indicates a list of color assignments to be stored as pixel
-values in the root window property WM_PRIORITY_COLORS.  Clients may elect
+values in the root window property _MIT_PRIORITY_COLORS.  Clients may elect
 to preserve these values when installing their own colormap.  Note that
 use of this mechanism is a way an for application to avoid the "technicolor" 
 problem, whereby useful screen objects such as window borders and titlebars
