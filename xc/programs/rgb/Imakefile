@@ -1,4 +1,5 @@
-   SITE_RGB_DB = -DRGB_DB=\"DefaultRGBDatabase\"
+        RGB_DB = DefaultRGBDatabase
+   SITE_RGB_DB = -DRGB_DB=\"$(RGB_DB)\"
       DEPLIBS = 
       DEFINES = NdbmDefines $(SITE_RGB_DB)
      INCLUDES = -I$(SERVERSRC)/include
