@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miCopy.c,v 5.1 91/02/16 09:55:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -680,7 +680,7 @@ OC_COPY_FUNC_HEADER(ExtFillAreaSet)
     listofddPoint   *dstPoint, *srcPoint;
     ddUSHORT	    i;
     int		    facetSize = 0, vertexSize = 0;
-    ddPointer	    vertexPtr = 0;
+    ddPointer	    facetPtr  = 0, vertexPtr = 0;
     ddpex2rtn	    err = Success;
     COPY_DECL(Fill, miFillAreaStruct);
 
@@ -697,8 +697,15 @@ OC_COPY_FUNC_HEADER(ExtFillAreaSet)
     dstFill->pFacets = (listofddFacet *)(dstFill+1);
     dstFill->points.ddList = (listofddPoint *)((dstFill->pFacets)+1);
 
-    for (i=0, dstPoint=dstFill->points.ddList, vertexSize = 0,
-	    vertexPtr = (ddPointer)(dstFill->points.ddList + dstFill->points.numLists);
+    facetPtr = (ddPointer)(dstFill->points.ddList + 1);
+    if (facetSize == 0)
+	dstFill->pFacets->facets.pNoFacet = 0;
+    else
+	dstFill->pFacets->facets.pNoFacet = facetPtr;
+
+    vertexPtr = facetPtr + facetSize;
+
+    for (i=0, dstPoint=dstFill->points.ddList, vertexSize = 0;
 	 i<dstFill->points.numLists;
 	 i++, dstPoint++, srcPoint++) {
 
@@ -722,7 +729,7 @@ OC_COPY_FUNC_HEADER(SOFAS)
     extern void destroySOFAS();
     COPY_DECL(Fill, miSOFASStruct);
 
-    facetSize = CountddFacetOptData( srcFill->pFacets);
+    facetSize = CountddFacetOptData( &srcFill->pFacets);
     vertexSize = CountddVertexData( srcFill->points.ddList,
 				    srcFill->points.type);
     if (srcFill->edgeData) {
