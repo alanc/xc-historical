@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.27 91/07/09 14:54:15 rws Exp $
+ * $XConsortium: XGetDflt.c,v 1.28 93/08/14 16:47:53 rws Exp $
  */
 
 /***********************************************************
@@ -47,14 +47,15 @@ static char *GetHomeDir (dest, destlen)
 #ifdef WIN32
 	register char *ptr;
 
-	dest[0] = '\0';
 	if (ptr = getenv("HOME"))
 		(void) strcpy(dest, ptr);
-	else if (ptr = getenv("USERNAME")) {
-		(void) strcpy (dest, "\\users\\");
-		(void) strcat (dest, ptr);
-	} else
-	    (void) GetUserName(dest, destlen);
+	else {
+		(void) strcpy (dest, "/users/");
+		if (ptr = getenv("USERNAME"))
+			(void) strcat (dest, ptr);
+		else
+			(void) GetUserName(dest + 7, destlen - 7);
+	}
 	return dest;
 #else
 #ifndef X_NOT_POSIX
@@ -153,11 +154,19 @@ char *XGetDefault(dpy, prog, name)
 	XrmRepresentation fromType;
 	XrmValue result;
 	char *progname;
+#ifdef WIN32
+	char *progname2;
+#endif
 
 	/*
 	 * strip path off of program name (XXX - this is OS specific)
 	 */
 	progname = rindex (prog, '/');
+#ifdef WIN32
+	progname2 = rindex (prog, '\\');
+	if (progname2 && (!progname || progname < progname2))
+	    progname = progname2;
+#endif
 	if (progname)
 	    progname++;
 	else
