@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.41 93/12/24 10:51:27 rws Exp $ */
+/* $XConsortium: ico.c,v 1.42 94/01/17 07:28:05 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -68,10 +68,13 @@ Polyinfo polygons[] = {
 };
  int polysize = sizeof(polygons)/sizeof(polygons[0]);
 
-extern long time();
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#include <time.h>
+#define Time_t time_t
 #else
+#define Time_t long
+extern Time_t time ();
 extern long rand();
 char *malloc();
 #endif
@@ -498,7 +501,7 @@ void * do_ico_window(closure)
 
 	/* Get the initial position, size, and speed of the bounding-box */
 
-	srand((int) time(0) % 231);
+	srand((int) time((Time_t *)0) % 231);
 	icoX = ((closure->winW - icoW) * (rand() & 0xFF)) >> 8;
 	icoY = ((closure->winH - icoH) * (rand() & 0xFF)) >> 8;
 
