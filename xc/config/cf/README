@@ -1,3 +1,23 @@
+[XXX - this needs to be updated to R4:
+
+     o  easier to maintain since common information is stored in one place
+        instead of many.
+
+     o  easier to port (now uses the "describe how you are different" model
+        instead of "tell me how to do each of the following 20 things").
+
+     o  main template is more generic so that other projects might make use of
+        it (there is still some work to be done in separating X-specific
+        rules from generic ones).
+
+     o  more descriptive names used for config files (and easier to find).
+
+     o  will support use without source tree (not tested yet).
+
+     o  will support multiple installation (e.g. DW and R4).
+
+- XXX]
+
 
 				X Window System
 			   Imake Configuration Guide
