@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.152 89/11/09 15:51:35 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.153 89/11/09 18:00:04 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -42,6 +42,8 @@ SOFTWARE.
 #include "CoreP.h"
 #include "ShellP.h"
 #include "Quarks.h"
+
+extern void _XtConvertInitialize();
 
 #if defined(SUNSHLIB) && defined(SHAREDCODE)
 /*
