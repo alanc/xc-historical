@@ -102,7 +102,9 @@
 		(push `(defmacro ,(xintern 'gcontext-internal- (first extra)) (state)
 			 `(svref ,state ,,index))
 		      macros)
-		(setf (getf indexes (or (second extra) (first extra))) index)
+		;; don't override already correct index entries
+		(unless (or (getf indexes (second extra)) (getf indexes (first extra)))
+		  (setf (getf indexes (or (second extra) (first extra))) index))
 		(push (logior (ash 1 index)
 			      (if (second extra)
 				  (ash 1 (position (second extra) *gcontext-components*))
@@ -394,7 +396,8 @@
 	(without-interrupts
 	  (setf (gcontext-internal-font-obj local-state) font-object
 		(gcontext-internal-font local-state) font)
-	  (if (null font-object)
+	  ;; check against font, not against font-obj
+	  (if (null font)
 	      (setf (gcontext-internal-font server-state) nil)
 	    (setf (gcontext-internal-font-obj server-state) font-object))))))
   font)
@@ -849,8 +852,8 @@
 	  (mask 0))
       (declare (type xgcmask mask))
       (with-display (display)
-	(force-gcontext-changes src)
-	(force-gcontext-changes dst)
+	(force-gcontext-changes-internal src)
+	(force-gcontext-changes-internal dst)
 	
 	;; collect entire mask and handle extensions
 	(dolist (key keys)
