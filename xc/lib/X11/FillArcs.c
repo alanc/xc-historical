@@ -1,4 +1,4 @@
-/* $XConsortium: XFillArcs.c,v 11.14 90/06/06 17:30:32 rws Exp $ */
+/* $XConsortium: XFillArcs.c,v 11.15 91/01/06 11:45:32 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -36,11 +36,11 @@ int n_arcs;
 	req->gc = gc->gid;
 	n = n_arcs;
 	len = ((long)n) * arc_scale;
-	if (len > (dpy->max_request_size - req->length)) {
+	if (!dpy->bigreq_size && len > (dpy->max_request_size - req->length)) {
 	    n = (dpy->max_request_size - req->length) / arc_scale;
 	    len = ((long)n) * arc_scale;
 	}
-	req->length += len;
+	SetReqLen(req, len, len);
 	len <<= 2; /* watch out for macros... */
 	Data16 (dpy, (short *) arcs, len);
 	n_arcs -= n;
