@@ -21,17 +21,50 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.8 87/08/19 15:39:43 todd Exp $ */
+/* $Header: osinit.c,v 1.9 87/09/05 12:24:13 toddb Exp $ */
 #include "os.h"
 #include "site.h"
 #include "opaque.h"
 #undef NULL
 #include <dbm.h>
+#undef NULL
+#include <stdio.h>
 
 int	havergb = 0;
+extern char *display;
+
 OsInit()
 {
+    static Bool been_here = FALSE;
+    char fname[32];
+
+    /* hack test to decide where to log errors */
+
+    if (!been_here) {
+	if (write (2, fname, 0)) 
+	{
+	    long t; 
+	    char *ctime();
+	    fclose(stdin);
+	    fclose(stdout);
+	    strcpy (fname, "/usr/adm/X");
+	    strcat (fname, display);
+	    strcat (fname, "msgs");
+	    freopen (fname, "a+", stderr);
+	    setlinebuf(stderr);
+	    time (&t);
+	    fprintf (stderr, "start %s", ctime(&t));
+	}
+
+	if (getpgrp (0) == 0)
+	    setpgrp (0, getpid ());
+
+	been_here = TRUE;
+    }
+
     if(!havergb)
         if(dbminit (rgbPath) == 0)
 	    havergb = 1;
+        else
+	    ErrorF( "Couldn't open RGB_DB '%s'\n", rgbPath );
 }
