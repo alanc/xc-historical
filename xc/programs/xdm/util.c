@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.8 91/02/04 19:18:43 gildea Exp $
+ * $XConsortium: util.c,v 1.9 91/02/13 19:14:31 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,9 +25,14 @@
  */
 
 # include   "dm.h"
+#if defined(SVR4) && __STDC__ && !defined(_POSIX_SOURCE)
+/* SVR4 is stupid */
+#define _POSIX_SOURCE
 # include   <signal.h>
-
-extern void	free ();
+#undef _POSIX_SOURCE
+#else
+# include   <signal.h>
+#endif
 
 printEnv (e)
 char	**e;
@@ -78,7 +83,6 @@ setEnv (e, name, value)
 	char	*newe;
 	int	envsize;
 	int	l;
-	char	*malloc (), *realloc ();
 
 	l = strlen (name);
 	newe = makeEnv (name, value);
@@ -135,7 +139,6 @@ char	*string;
 	char	*word;
 	char	*save;
 	int	i;
-	char	*malloc (), *realloc (), *strcpy (), *strncpy ();
 
 	i = 0;
 	while (argv && argv[i])
