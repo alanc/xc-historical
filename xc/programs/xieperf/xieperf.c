@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.8 93/10/30 11:12:44 rws Exp $ */
+/* $XConsortium: xieperf.c,v 1.9 93/10/30 11:52:31 rws Exp $ */
 
 int   verbosity_Group_xielib ;
 int   verbosity_Group_xielib_user_level ;
@@ -1146,9 +1146,13 @@ main(argc, argv)
     XGetScreenSaver(xparms.d, &ssTimeout, &ssInterval, &ssPreferBlanking,
 	&ssAllowExposures);
     (void) signal(SIGINT, Cleanup); /* ^C */
+#ifdef SIGQUIT
     (void) signal(SIGQUIT, Cleanup);
+#endif
     (void) signal(SIGTERM, Cleanup);
+#ifdef SIGHUP
     (void) signal(SIGHUP, Cleanup);
+#endif
     XSetScreenSaver(xparms.d, 8 * 3600, ssInterval, ssPreferBlanking, 
 	ssAllowExposures);
 
