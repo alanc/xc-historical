@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Clock.c,v 1.49 89/11/28 15:02:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Clock.c,v 1.50 89/12/06 15:23:24 kit Exp $";
 #endif /* lint */
 
 
@@ -100,7 +100,7 @@ static Boolean SetValues();
 
 ClockClassRec clockClassRec = {
     { /* core fields */
-    /* superclass		*/	&widgetClassRec,
+    /* superclass		*/	(WidgetClass) &simpleClassRec,
     /* class_name		*/	"Clock",
     /* widget_size		*/	sizeof(ClockRec),
     /* class_initialize		*/	ClassInitialize,
@@ -132,6 +132,12 @@ ClockClassRec clockClassRec = {
     /* query_geometry           */	XtInheritQueryGeometry,
     /* display_accelerator      */	XtInheritDisplayAccelerator,
     /* extension                */	NULL
+    },
+    { /* simple fields */
+    /* change_sensitive         */      XtInheritChangeSensitive
+    },
+    { /* clock fields */
+    /* ignore                   */      0
     }
 };
 
@@ -232,8 +238,7 @@ static void Realize (gw, valueMask, attrs)
 	attrs->backing_store = w->clock.backing_store;
 	break;
      }
-     XtCreateWindow( gw, InputOutput, (Visual *)CopyFromParent,
-		     *valueMask, attrs);
+     (*XtSuperclass(gw)->core_class.realize) (gw, valueMask, attrs);
      Resize(gw);
 }
 

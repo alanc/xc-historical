@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ClockP.h,v 1.18 89/05/11 01:04:54 kit Exp $
+* $XConsortium: ClockP.h,v 1.19 89/12/06 15:23:06 kit Exp $
 */
 
 
@@ -32,7 +32,7 @@ SOFTWARE.
 
 #include <X11/Xos.h>		/* Needed for struct tm. */
 #include <X11/Xaw/Clock.h>
-#include <X11/CoreP.h>
+#include <X11/Xaw/SimpleP.h>
 
 #define SEG_BUFF_SIZE		128
 #define ASCII_TIME_BUFLEN	32	/* big enough for 26 plus slop */
@@ -76,6 +76,7 @@ typedef struct {
 /* Full instance record declaration */
 typedef struct _ClockRec {
    CorePart core;
+   SimplePart simple;
    ClockPart clock;
    } ClockRec;
 
@@ -85,6 +86,7 @@ typedef struct {int dummy;} ClockClassPart;
 /* Full class record declaration. */
 typedef struct _ClockClassRec {
    CoreClassPart core_class;
+   SimpleClassPart simple_class;
    ClockClassPart clock_class;
    } ClockClassRec;
 
