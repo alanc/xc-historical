@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.110 92/01/26 16:20:36 rws Exp $
+ * $XConsortium: Tekproc.c,v 1.111 92/11/22 11:33:34 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
+#include <signal.h>
 
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -188,7 +189,9 @@ static XtActionsRec actionsList[] = {
     /* menu actions */
     { "allow-send-events",	HandleAllowSends },
     { "set-visual-bell",	HandleSetVisualBell },
+#ifdef ALLOWLOGGING
     { "set-logging",		HandleLogging },
+#endif
     { "redraw",			HandleRedraw },
     { "send-signal",		HandleSendSignal },
     { "quit",			HandleQuit },
@@ -357,10 +360,12 @@ static void Tekparse()
 			/* special return to vt102 mode */
 			Tparsestate = curstate;
 			TekRecord->ptr[-1] = NAK; /* remove from recording */
+#ifdef ALLOWLOGGING
 			if(screen->logging) {
 				FlushLog(screen);
 				screen->logstart = buffer;
 			}
+#endif
 			return;
 
 		 case CASE_SPT_STATE:
@@ -669,8 +674,10 @@ again:
 				       (int *) NULL, &crocktimeout);
 #endif
 			if(Tselect_mask & pty_mask) {
+#ifdef ALLOWLOGGING
 				if(screen->logging)
 					FlushLog(screen);
+#endif
 				Tbcnt = read(screen->respond, (char *)(Tbptr = Tbuffer), BUF_SIZE);
 				if(Tbcnt < 0) {
 					if(errno == EIO)
@@ -1553,16 +1560,25 @@ void TekSimulatePageButton (reset)
 }
 
 
+#ifndef X_NOT_POSIX
+#define HAS_WAITPID
+#endif
+
 /* write copy of screen to a file */
 
 TekCopy()
 {
-	register TekLink *Tp;
-	register int tekcopyfd;
 	register TScreen *screen = &term->screen;
 	register struct tm *tp;
 	long l;
 	char buf[32];
+	int waited;
+	int pid;
+#ifndef HAS_WAITPID
+	int (*chldfunc)();
+
+	chldfunc = signal(SIGCHLD, SIG_DFL);
+#endif
 
 	time(&l);
 	tp = localtime(&l);
@@ -1577,21 +1593,53 @@ TekCopy()
 		Bell();
 		return;
 	}
-	if((tekcopyfd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0) {
-		Bell();
-		return;
-	}
-	chown(buf, screen->uid, screen->gid);
-	sprintf(buf, "\033%c\033%c", screen->page.fontsize + '8',
-	 screen->page.linetype + '`');
-	write(tekcopyfd, buf, 4);
-	Tp = &Tek0; 
-	do {
+
+	/* Write the file in an unprivileged child process because
+	   using access before the open still leaves a small window
+	   of opportunity. */
+	pid = fork();
+	switch (pid)
+	{
+	case 0:			/* child */
+	{
+	    register int tekcopyfd;
+	    char initbuf[5];
+	    register TekLink *Tp;
+
+	    setgid(screen->gid);
+	    setuid(screen->uid);
+	    tekcopyfd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	    if (tekcopyfd < 0)
+		_exit(1);
+	    sprintf(initbuf, "\033%c\033%c", screen->page.fontsize + '8',
+		    screen->page.linetype + '`');
+	    write(tekcopyfd, initbuf, 4);
+	    Tp = &Tek0; 
+	    do {
 		write(tekcopyfd, (char *)Tp->data, Tp->count);
 		Tp = Tp->next;
-	} while(Tp);
-	close(tekcopyfd);
+	    } while(Tp);
+	    close(tekcopyfd);
+	    _exit(0);
+	}
+	case -1:		/* error */
+	    Bell();
+	    return;
+	default:		/* parent */
+#ifdef HAS_WAITPID
+	    waitpid(pid, NULL, 0);
+#else
+	    waited = wait(NULL);
+	    signal(SIGCHLD, chldfunc);
+	    /*
+	      Since we had the signal handler uninstalled for a while,
+	      we might have missed the termination of our screen child.
+	      If we can check for this possibility without hanging, do so.
+	      */
+	    do
+		if (waited == term->screen.pid)
+		    Cleanup(0);
+	    while ( (waited=nonblocking_wait()) > 0);
+#endif
+	}
 }
-
-
-
