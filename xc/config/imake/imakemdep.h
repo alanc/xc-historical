@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.44 92/09/03 19:55:01 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.45 92/10/16 17:45:13 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -248,6 +248,9 @@ char *cpp_argv[ARGUMENTS] = {
 # ifdef __GNUC__
 	"-traditional"
 # endif
+#endif
+#ifdef Oki
+	"-DOki",
 #endif
 };
 #else /* else MAKEDEPEND */
