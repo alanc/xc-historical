@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: mibstore.c,v 1.1 87/09/11 07:20:42 toddb Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -104,7 +104,7 @@ WindowPtr pWin;
 	    (PixmapPtr)(*pScreen->CreatePixmap)(pScreen,
 					      pWin->clientWinSize.width, 
 					      pWin->clientWinSize.height,
-					      1, XYBitmap);
+					      1);
 	pBack->pSavedRegion = (* pScreen->RegionCreate)(NullBox, 1);
 	pBack->pOrigClientClip = (* pScreen->RegionCreate)(NullBox, 1);
 	pBack->clientClipOrg.x = 0;
@@ -467,7 +467,7 @@ WindowPtr pWin;
         (PixmapPtr)(*pScreen->CreatePixmap)(pScreen, 
 					   pWin->clientWinSize.width, 
 					   pWin->clientWinSize.height, 
-					   1, XYBitmap);
+					   1);
 
     ValidateGC(pNewPixmap, pGC);
     (*pGC->CopyArea)(pBackingPixmap, pNewPixmap, pGC,
