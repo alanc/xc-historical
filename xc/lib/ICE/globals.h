@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.5 93/11/08 16:34:12 mor Exp $ */
+/* $XConsortium: globals.h,v 1.6 93/11/18 11:12:54 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -38,6 +38,9 @@ IcePaAuthRec	_IcePaAuthRecs[] = {
 
 int		 _IceAuthDataEntryCount = 0;
 IceAuthDataEntry *_IceAuthDataEntries = NULL;
+
+IceHostBasedAuthProc _IceHostBasedAuthProc = NULL;
+IcePointer	     _IceHostBasedAuthProcClientData = NULL;
 
 int		_IceVersionCount = 1;
 _IceVersion	_IceVersions[] = {
