@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.31 90/03/12 14:04:00 rws Exp $ */
+/* $XConsortium: mibstore.c,v 5.32 90/03/12 18:48:19 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2461,6 +2461,9 @@ miBSAllocate(pWin)
 	    if (wClipShape (pWin))
 		(*pScreen->Intersect) (pSavedRegion, pSavedRegion, wClipShape (pWin));
 #endif
+	    /* if window is already on-screen, assume it has been drawn to */
+	    if (pWin->viewable)
+		pBackingStore->status = StatusVDirty;
 	    miTileVirtualBS (pWin);
 	    
 	    /*
@@ -2527,49 +2530,6 @@ miBSFree(pWin)
 	    pWin->backStorage = NULL;
 	}
     }
-}
-
-/*
- * Translate SavedRegion, as appropriate, and clip it
- * to be within the window's new bounds.
- */
-static void
-miTranslateSavedRegion(pWin, dx, dy)
-    WindowPtr 	  pWin;
-    int	    	  dx,
-		  dy;
-{
-    miBSWindowPtr pBackingStore;
-    ScreenPtr pScreen;
-    BoxRec pixbounds;
-    RegionPtr prgnTmp;
-
-    pBackingStore = (miBSWindowPtr)(pWin->backStorage);
-    pScreen = pWin->drawable.pScreen;
-    if (dx || dy)
-    {
-	(*pScreen->TranslateRegion)(&pBackingStore->SavedRegion, dx, dy);
-	if (pBackingStore->pBackingPixmap)
-	{
-	    pBackingStore->x += dx;
-	    pBackingStore->y += dy;
-	}
-    }
-    pixbounds.x1 = 0;
-    pixbounds.x2 = pWin->drawable.width;
-    pixbounds.y1 = 0;
-    pixbounds.y2 = pWin->drawable.height;
-    prgnTmp = (* pScreen->RegionCreate)(&pixbounds, 1);
-#ifdef SHAPE
-    if (wBoundingShape (pWin))
-	(*pScreen->Intersect) (prgnTmp, prgnTmp, wBoundingShape (pWin));
-    if (wClipShape (pWin))
-	(*pScreen->Intersect) (prgnTmp, prgnTmp, wClipShape (pWin));
-#endif
-    (* pScreen->Intersect)(&pBackingStore->SavedRegion,
-			   &pBackingStore->SavedRegion,
-			   prgnTmp);
-    (* pScreen->RegionDestroy)(prgnTmp);
 }
 
 /*-
@@ -2662,7 +2622,7 @@ miResizeBackingStore(pWin)
  * miBSSaveDoomedAreas --
  *	Saved the areas of the given window that are about to be
  *	obscured.  If the window has moved, pObscured is expected to
- *	be at the new location and (dx,dy) is expected to be the offset
+ *	be at the new screen location and (dx,dy) is expected to be the offset
  *	to the window's previous location.
  *
  * Results:
@@ -2739,9 +2699,7 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
 		    y += pBackingStore->y;
 		}
 		(* pScreenPriv->funcs->SaveAreas) (pBackingStore->pBackingPixmap,
-						   pObscured,
-						   x - dx,
-						   y - dy);
+						   pObscured, x - dx, y - dy);
 	    }
 	}
 	(*pScreen->TranslateRegion) (pObscured, x, y);
@@ -2924,17 +2882,23 @@ miBSRestoreAreas(pWin, prgnExposed)
  *-----------------------------------------------------------------------
  */
 static RegionPtr
-miBSTranslateBackingStore(pWin, dx, dy, oldClip)
+miBSTranslateBackingStore(pWin, windx, windy, oldClip, oldx, oldy)
     WindowPtr 	  pWin;
-    int     	  dx;		/* translation distance */
-    int     	  dy;
+    int     	  windx;	/* bit translation distance in window */
+    int     	  windy;
     RegionPtr	  oldClip;  	/* Region being copied */
+    int     	  oldx;		/* old window position */
+    int     	  oldy;
 {
     register miBSWindowPtr 	pBackingStore;
     register RegionPtr 	    	pSavedRegion;
-    register RegionPtr 	    	newSaved, exposed;
+    register RegionPtr 	    	newSaved, doomed;
     register ScreenPtr		pScreen;
     BoxRec			extents;
+    int     	  scrdx;	/* bit translation distance on screen */
+    int     	  scrdy;
+    int		  dx;		/* distance window moved  on screen */
+    int		  dy;
 
     pScreen = pWin->drawable.pScreen;
     pBackingStore = (miBSWindowPtr)(pWin->backStorage);
@@ -2942,15 +2906,18 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 	return NullRegion;
 
     /* bit gravity makes things virtually too hard, punt */
-    if (((dx != 0) || (dy != 0)) && (pBackingStore->status != StatusContents))
+    if (((windx != 0) || (windy != 0)) &&
+	(pBackingStore->status != StatusContents))
 	miCreateBSPixmap(pWin);
 
+    dx = pWin->drawable.x - oldx;
+    dy = pWin->drawable.y - oldy;
+    scrdx = windx + dx;
+    scrdy = windy + dy;
     pSavedRegion = &pBackingStore->SavedRegion;
     if (!oldClip)
 	(* pScreen->RegionEmpty) (pSavedRegion);
     newSaved = (* pScreen->RegionCreate) (NullBox, 1);
-    exposed = (* pScreen->RegionCreate) (NullBox, 1);
-    miTranslateSavedRegion(pWin, dx, dy);
     /* compute what the new pSavedRegion will be */
     extents.x1 = pWin->drawable.x;
     extents.x2 = pWin->drawable.x + (int) pWin->drawable.width;
@@ -2973,49 +2940,68 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
 #endif
     
     /* now find any visible areas we can save from the screen */
-    (* pScreen->TranslateRegion)(newSaved, -dx, -dy);
+    /* and then translate newSaved to old local coordinates */
     if (oldClip)
     {
-	(* pScreen->Intersect) (exposed, oldClip, newSaved);
-	if ((* pScreen->RegionNotEmpty) (exposed))
-	{
-	    /* save those visible areas */
-	    (* pScreen->TranslateRegion) (exposed, dx, dy);
-	    miBSSaveDoomedAreas(pWin, exposed, dx, dy);
-	}
+	/* intersect at old bit position */
+	(* pScreen->TranslateRegion)(newSaved, -scrdx, -scrdy);
+	doomed = (* pScreen->RegionCreate) (NullBox, 1);
+	(* pScreen->Intersect) (doomed, oldClip, newSaved);
+	(* pScreen->TranslateRegion) (newSaved, scrdx - oldx, scrdy - oldy);
     }
-    /* translate newSaved to local coordinates */
-    (* pScreen->TranslateRegion) (newSaved,
-				  dx-pWin->drawable.x,
-				  dy-pWin->drawable.y);
+    else
+	(* pScreen->TranslateRegion) (newSaved, -oldx, -oldy);
     /* subtract out what we already have saved */
-    (* pScreen->Subtract) (exposed, newSaved, pSavedRegion);
-    /* and expose whatever there is */
-    if ((* pScreen->RegionNotEmpty) (exposed))
+    (* pScreen->Subtract) (pSavedRegion, newSaved, pSavedRegion);
+    /* now exchange old and new SaveRegions */
     {
 	RegionRec tmpRgn;
-	extents = *((* pScreen->RegionExtents) (exposed));
+
 	tmpRgn = pBackingStore->SavedRegion; /* don't look */
-	pBackingStore->SavedRegion = *exposed;
+	pBackingStore->SavedRegion = *newSaved;
+	*newSaved = tmpRgn;
+    }
+    /* now save any visible areas we need to keep */
+    if (oldClip)
+    {
+	if ((* pScreen->RegionNotEmpty) (doomed))
+	{
+	    /* need new coordinates for SaveDoomedAreas, sigh */
+	    (* pScreen->TranslateRegion)(doomed, dx, dy);
+	    (* pScreen->SaveDoomedAreas)(pWin, doomed, dx, dy);
+	}
+	else
+	    miResizeBackingStore(pWin);
+	(*pScreen->RegionDestroy)(doomed);
+    }
+    else
+	miResizeBackingStore(pWin);
+    /* and expose whatever there is that's new */
+    if ((* pScreen->RegionNotEmpty) (newSaved))
+    {
+	RegionRec tmpRgn;
+	extents = *((* pScreen->RegionExtents) (newSaved));
+	tmpRgn = pBackingStore->SavedRegion; /* don't look */
+	pBackingStore->SavedRegion = *newSaved;
 	(void) miBSClearBackingStore(pWin, extents.x1, extents.y1,
 					extents.x2 - extents.x1,
 					extents.y2 - extents.y1,
 					FALSE);
 	pBackingStore->SavedRegion = tmpRgn;
-	(*pScreen->TranslateRegion) (exposed,
+	(*pScreen->TranslateRegion) (newSaved,
 				     pWin->drawable.x,
 				     pWin->drawable.y);
     }
     else
     {
-	(*pScreen->RegionDestroy) (exposed);
-	exposed = NullRegion;
+	(*pScreen->RegionDestroy) (newSaved);
+	newSaved = NullRegion;
     }
-    /* finally install new SavedRegion */
-    (* pScreen->RegionCopy) (pSavedRegion, newSaved);
-    (* pScreen->RegionDestroy) (newSaved);
-    miResizeBackingStore(pWin);
-    return exposed;
+    /* now shift backing store to new position */
+    (*pScreen->TranslateRegion)(pSavedRegion, windx, windy);
+    pBackingStore->x += windx;
+    pBackingStore->y += windy;
+    return newSaved;
 }
 
 /*
