@@ -20,10 +20,6 @@
  * static Globals.
  */
 
-static int global_error_code;
-static unsigned long global_send_event_serial;
-static int (*global_old_error_handler)();
-
 static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
 
 /*
@@ -31,8 +27,9 @@ static Atom atom_comm, atom_command, atom_resource_editor, atom_client_value;
  */
 
 extern ResIdent GetNewIdent();
-extern void SetMessage(), BuildVisualTree(), DisplayChild();
+extern void SetMessage(), BuildVisualTree(),DisplayChild(),HandleFlashWidget();
 extern char * GetFormattedSetValuesError();
+extern int HandleXErrors();
 
 static void TellUserAboutMessage();
 static Boolean StripReturnValueFromString();
@@ -162,7 +159,6 @@ char * value, * msg;
     XClientMessageEvent client_event;
     Display * dpy = XtDisplay(w);
     static void ClientTimedOut(), LoseSelection();
-    static int HandleXErrors();
     static Boolean ConvertCommand();
     
     if (msg == NULL) 
@@ -197,14 +193,14 @@ char * value, * msg;
 
     global_error_code = NO_ERROR;                 /* Reset Error code. */
     global_old_error_handler = XSetErrorHandler(HandleXErrors);
-    global_send_event_serial = NextRequest(dpy);
+    global_serial_num = NextRequest(dpy);
 
     XSendEvent(dpy, global_client.window, FALSE, (long) 0, 
 	       (XEvent *) &client_event);
 
     XSync(dpy, FALSE);
     XSetErrorHandler(global_old_error_handler);
-    if (global_error_code == NO_SEND_EVENT_WINDOW) {
+    if (global_error_code == NO_WINDOW) {
 	char error_buf[BUFSIZ];
 	
 	global_error_code = NO_ERROR;	/* Reset Error code. */
@@ -244,6 +240,7 @@ ResCommand command;
     case SetValues:
 	str = " asking it to perform SetValues()";
 	break;
+    case FlashWidget:
     case GetGeometry:
 	str = " asking it to perform GetGeometry()";
 	break;
@@ -293,6 +290,7 @@ int * format_ret;
     case SetValues:
 	command_str = EDITRES_SET_VALUES;
 	break;
+    case FlashWidget:
     case GetGeometry:
 	command_str = EDITRES_GET_GEOMETRY;
 	break;
@@ -425,6 +423,9 @@ int * format;
 	case SetValues:
 	    SetMessage(global_screen_data.info_label, local_value);
 	    break;
+	case FlashWidget:
+	    HandleFlashWidget(local_value);
+	    break;
 #ifdef notdef
 	case GetGeometry:
 	    HandleGetGeometry(local_value);
@@ -455,6 +456,9 @@ int * format;
 	    break;
 	case SetValues:
 	    error_msg = GetFormattedSetValuesError(local_value);
+	    break;
+	case FlashWidget:
+	    HandleFlashWidget(local_value);
 	    break;
 #ifdef notdef
 	case GetGeometry:
@@ -565,30 +569,3 @@ GetNewIdent()
     return(ident++);
 }
 
-/*	Function Name: HandleXErrors
- *	Description: Handles error codes from the server.
- *	Arguments: display - the display.
- *                 error - error information.
- *	Returns: none.
- */
-
-/* ARGSUSED */
-static int
-HandleXErrors(display, error)
-Display * display;
-XErrorEvent * error;
-{
-    if (error->serial != global_send_event_serial) {
-	(*global_old_error_handler) (display, error);
-	return(0);
-    }
-
-    if ( (error->error_code == BadWindow) && 
-	(error->request_code == X_SendEvent) ) 
-	global_error_code = NO_SEND_EVENT_WINDOW;    
-    else {
-	if (XmuPrintDefaultErrorMessage(display, error, stderr) != 0)
-	    exit(1);
-    }
-    return(0);
-}

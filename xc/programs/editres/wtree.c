@@ -261,6 +261,8 @@ char * str;
     tree_info->top_node = NULL;
     tree_info->active_nodes = NULL;
     tree_info->num_nodes = tree_info->alloc_nodes = 0;
+    tree_info->flash_widgets = NULL;
+    tree_info->num_flash_widgets = tree_info->alloc_flash_widgets = 0;
 
     GetAllStrings(str, EOL_SEPARATOR, &strings, &num_strings);
 
@@ -448,8 +450,10 @@ Boolean recurse;
 	XtSetArg(args[0], XtNlabel, buf);
 	break;
     case WindowLabel:
-	if (node->window == 0) 
-	    strcpy(buf, "no window");
+	if (node->window == EDITRES_IS_UNREALIZED) 
+	    strcpy(buf, "unrealized widget");
+	else if (node->window == EDITRES_IS_OBJECT) 
+	    strcpy(buf, "non windowed object");	    
 	else
 	    sprintf(buf, "win: 0x%lx", node->window);
 	    

@@ -29,7 +29,7 @@ static void CreateCommandMenu(), CreateTreeCommandMenu();
 static Widget CreateTopArea();
 
 extern void PannerCallback(), PortholeCallback();
-extern void Quit(), SendTree(), InitSetValues();
+extern void Quit(), SendTree(), InitSetValues(), FlashActiveWidgets();
 extern void TreeSelect(), TreeRelabel(), TreeActivate(), FindWidget();
 
 /*	Function Name: BuildWidgetTree
@@ -129,6 +129,10 @@ Widget parent;
     entry = XtCreateManagedWidget("setValues", smeBSBObjectClass, menu,
 				    NULL, ZERO);
     XtAddCallback(entry, XtNcallback, InitSetValues, NULL);
+
+    entry= XtCreateManagedWidget("flashActiveWidgets", smeBSBObjectClass, menu,
+				 NULL, ZERO);
+    XtAddCallback(entry, XtNcallback, FlashActiveWidgets, NULL);
 
     entry = XtCreateManagedWidget("line", smeLineObjectClass, menu,
 				  NULL, ZERO);

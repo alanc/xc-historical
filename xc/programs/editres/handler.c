@@ -14,6 +14,7 @@
 
 extern void SetCommand(), PopupSetValues(), SetAndCenterTreeNode();
 extern void _TreeSelect(), _TreeRelabel(), _TreeActivate(), SetMessage();
+extern void _FlashActiveWidgets();
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -191,4 +192,19 @@ XtPointer panner_ptr, report_ptr;
 	XtSetArg (args[n], XtNcanvasHeight, report->canvas_height); n++;
     }
     XtSetValues (panner, args, n);
+}
+
+/*	Function Name: FlashActiveWidgets
+ *	Description: called to flass all active widgets in the display.
+ *	Arguments: *** NOT USED ***
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+void 
+FlashActiveWidgets(w, junk, garbage)
+Widget w;
+XtPointer junk, garbage;
+{
+    _FlashActiveWidgets(global_tree_info);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.2 90/03/08 17:35:34 kit Exp $
+ * $XConsortium: editres.c,v 1.3 90/03/14 17:20:45 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,6 +36,9 @@
  * Global variables. 
  */
 
+int global_error_code;
+unsigned long global_serial_num;
+int (*global_old_error_handler)();
 
 TreeInfo *global_tree_info = NULL;
 CurrentClient global_client;
@@ -59,6 +62,12 @@ String fallback_resources[] = {
 static XtResource editres_resources[] = {
   {"debug", "Debug", XtRBoolean, sizeof(Boolean),
      Offset(debug), XtRImmediate, (XtPointer) FALSE},
+  {"numFlashes", "NumFlashes", XtRInt, sizeof(int),
+     Offset(num_flashes), XtRImmediate, (XtPointer) NUM_FLASHES},       
+  {"flashTime", "FlashTime", XtRInt, sizeof(int),
+     Offset(flash_time), XtRImmediate, (XtPointer) FLASH_TIME},       
+  {"flashColor", XtCForeground, XtRPixel, sizeof(Pixel),
+     Offset(flash_color), XtRImmediate, (XtPointer) XtDefaultForeground},
 };
 
 void

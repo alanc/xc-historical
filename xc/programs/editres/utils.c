@@ -266,3 +266,30 @@ char * str;
 
     return(node);
 }
+
+/*	Function Name: HandleXErrors
+ *	Description: Handles error codes from the server.
+ *	Arguments: display - the display.
+ *                 error - error information.
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+int
+HandleXErrors(display, error)
+Display * display;
+XErrorEvent * error;
+{
+    if (error->serial != global_serial_num) {
+	(*global_old_error_handler) (display, error);
+	return(0);
+    }
+
+    if (error->error_code == BadWindow)
+	global_error_code = NO_WINDOW;    
+    else {
+	if (XmuPrintDefaultErrorMessage(display, error, stderr) != 0)
+	    exit(1);
+    }
+    return(0);
+}

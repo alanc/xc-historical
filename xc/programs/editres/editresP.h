@@ -9,6 +9,9 @@
 #  define CLIENT_TIME_OUT 5000	/* wait five seconds for the client. */
 #endif /* DEBUG */
 
+#define FLASH_TIME  1000	/* Default flash time in microseconds */
+#define NUM_FLASHES 3		/* Default number of flashes. */
+
 #define NO_IDENT 0		/* an ident that will match nothing. */
 
 #define NUM_INC 10		/* amount to increment allocators. */
@@ -26,9 +29,10 @@ extern void exit();
  */
 
 #define NO_ERROR 0
-#define NO_SEND_EVENT_WINDOW 1
+#define NO_WINDOW 1
 
-typedef enum {SendWidgetTree, SetValues, FindChild, GetGeometry} ResCommand;
+typedef enum {SendWidgetTree, SetValues, FindChild, FlashWidget,
+	      GetGeometry} ResCommand;
 
 typedef enum {ClassLabel, NameLabel, IDLabel, WindowLabel} LabelTypes;
 typedef enum {SelectAll, SelectNone, SelectInvert, SelectParent, 
@@ -63,10 +67,12 @@ typedef struct _CurrentClient {
  */
 
 typedef struct _TreeInfo {
-    Widget tree_widget;
-    WNode * top_node;
-    WNode ** active_nodes;
-    Cardinal num_nodes, alloc_nodes;
+    Widget tree_widget;		/* The Tree widget that contains all nodes */
+    WNode * top_node;		/* The top node in the tree. */
+    WNode ** active_nodes;	/* The currently active nodes. */
+    Cardinal num_nodes, alloc_nodes; /* number of active nodes, and space */
+    Widget * flash_widgets;	/* list of widgets to flash on and off. */
+    Cardinal num_flash_widgets, alloc_flash_widgets; /* number of flash wids.*/
 } TreeInfo;
 
 /*
@@ -82,6 +88,8 @@ typedef struct _ScreenData {
 
 typedef struct _AppResources {
     Boolean debug;		/* Is debugging on? */
+    int num_flashes, flash_time; /* Number and duration of flashes. */
+    Pixel flash_color;		/* Color of flash window. */
 } AppResources;
 
 /*
@@ -89,6 +97,10 @@ typedef struct _AppResources {
  */
 
 #ifndef THIS_IS_MAIN
+    extern int global_error_code;
+    extern unsigned long global_serial_num;
+    extern int (*global_old_error_handler)();
+
     extern TreeInfo *global_tree_info;
     extern CurrentClient global_client;
     extern ScreenData global_screen_data;
