@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.40 92/12/30 16:13:13 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.41 92/12/30 18:43:43 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -273,6 +273,76 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     ax->max_resolution = max_res;
     }
 
+static void FixDeviceStateNotify (dev, ev, k, b, v, first)
+    DeviceIntPtr dev;
+    deviceStateNotify *ev;
+    KeyClassPtr k;
+    ButtonClassPtr b;
+    ValuatorClassPtr v;
+    int first;
+    {
+    extern      int     DeviceStateNotify;
+
+    ev->type = DeviceStateNotify;
+    ev->deviceid = dev->id;
+    ev->time = currentTime.milliseconds;
+    ev->classes_reported = 0;
+    ev->num_keys = 0;
+    ev->num_buttons = 0;
+    ev->num_valuators = 0;
+
+    if (b) {
+	ev->classes_reported |= (1 << ButtonClass);
+	ev->num_buttons = b->numButtons;
+	bcopy((char *) b->down, (char *) &ev->buttons[0], 4);
+	}
+    else if (k) {
+	ev->classes_reported |= (1 << KeyClass);
+	ev->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
+	bcopy((char *) k->down, (char *) &ev->keys[0], 4);
+	}
+    if (v) {
+	int nval = v->numAxes - first;
+	ev->classes_reported |= (1 << ValuatorClass);
+	ev->classes_reported |= (dev->valuator->mode << ModeBitsShift);
+	ev->num_valuators = nval < 3 ? nval : 3;
+	switch (ev->num_valuators) 
+	    {
+	    case 3:
+		ev->valuator2 = v->axisVal[first+2];
+	    case 2:
+		ev->valuator1 = v->axisVal[first+1];
+	    case 1:
+		ev->valuator0 = v->axisVal[first];
+	    break;
+	    }
+	}
+    }
+
+static void FixDeviceValuator (dev, ev, v, first)
+    DeviceIntPtr dev;
+    deviceValuator *ev;
+    ValuatorClassPtr v;
+    int first;
+    {
+    int nval = v->numAxes - first;
+
+    ev->type = DeviceValuator;
+    ev->deviceid = dev->id;
+    ev->num_valuators = nval < 3 ? nval : 3;
+    ev->first_valuator = first;
+    switch (ev->num_valuators) {
+	case 3:
+	    ev->valuator2 = v->axisVal[first+2];
+	case 2:
+	    ev->valuator1 = v->axisVal[first+1];
+	case 1:
+	    ev->valuator0 = v->axisVal[first];
+	break;
+	}
+    first += ev->num_valuators;
+    }
+
 DeviceFocusEvent(dev, type, mode, detail, pWin)
     DeviceIntPtr dev;
     int type, mode, detail;
@@ -280,7 +350,6 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
     {
     extern      int     DeviceFocusIn;
     extern      int     DeviceFocusOut;
-    extern      int     DeviceStateNotify;
     extern      int     DeviceKeyStateNotify;
     extern      int     DeviceButtonStateNotify;
     extern      int     DeviceValuatorStateNotify;
@@ -313,121 +382,90 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	deviceStateNotify 	*ev, *sev;
 	deviceKeyStateNotify 	*kev;
 	deviceButtonStateNotify *bev;
-	deviceValuator 		*vev;
 
 	KeyClassPtr k;
 	ButtonClassPtr b;
 	ValuatorClassPtr v;
+	int nval=0, nkeys=0, nbuttons=0, first=0;
 
-	if ((b=dev->button) != NULL)
-	    {
-	    if (b->numButtons > 32)
+	if ((b=dev->button) != NULL) {
+	    nbuttons = b->numButtons;
+	    if (nbuttons > 32)
+		evcount++;
+	}
+	if ((k=dev->key) != NULL) {
+	    nkeys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
+	    if (nkeys > 32)
+		evcount++;
+	    if (nbuttons > 0) {
 		evcount++;
 	    }
-	if ((v=dev->valuator) != NULL)
-	    {
-	    if (v->numAxes > 3)
-		evcount += ((v->numAxes-4) / 3) + 1;
-	    }
-	if ((k=dev->key) != NULL)
-	    {
-	    if ((k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode) > 32)
+	}
+	if ((v=dev->valuator) != NULL) {
+	    nval = v->numAxes;
+
+	    if (nval > 3)
 		evcount++;
-	    if ((b != NULL) && (b->numButtons != NULL))
-		evcount++;
+	    if (nval > 6) {
+		if (!(k && b))
+		    evcount++;
+		if (nval > 9)
+		    evcount += ((nval - 7) / 3);
 	    }
+	}
 
-	ev = (deviceStateNotify *) xalloc(evcount * sizeof(xEvent));
+	sev = ev = (deviceStateNotify *) xalloc(evcount * sizeof(xEvent));
+	FixDeviceStateNotify (dev, ev, NULL, NULL, NULL, first);
 
-	ev->type = DeviceStateNotify;
-	ev->deviceid = dev->id;
-        ev->time = currentTime.milliseconds;
-	ev->classes_reported = 0;
-	ev->num_keys = 0;
-	ev->num_buttons = 0;
-	ev->num_valuators = 0;
-	sev = ev;
-
-	if (b != NULL)
-	    {
-	    sev->classes_reported |= (1 << ButtonClass);
-	    sev->num_buttons = b->numButtons;
-	    bcopy((char *) b->down, (char *) &sev->buttons[0], 4);
-	    if (b->numButtons > 32)
-		{
-		ev->deviceid |= MORE_EVENTS;
-		bev = (deviceButtonStateNotify *) ++ev; 
+	if (b != NULL) {
+	    FixDeviceStateNotify (dev, ev++, NULL, b, v, first);
+	    first += 3;
+	    nval -= 3;
+	    if (nbuttons > 32) {
+		(ev-1)->deviceid |= MORE_EVENTS;
+		bev = (deviceButtonStateNotify *) ev++; 
 		bev->type = DeviceButtonStateNotify;
 		bev->deviceid = dev->id;
 		bcopy((char *) &b->down[4], (char *) &bev->buttons[0], 28);
-		}
 	    }
-
-	if (v != NULL)
-	    {
-	    INT32 *ip B32;
-	    deviceStateNotify 	*tev = sev;
-
-	    tev->classes_reported |= (1 << ValuatorClass);
-	    tev->classes_reported |= (dev->valuator->mode << ModeBitsShift);
-	    for (i=0; i<v->numAxes; i+=6)
-		{
-		ip = &tev->valuator0;
-		for (j=0; j<3 && i+j<v->numAxes; j++)
-		   *(ip+j) = v->axisVal[i+j]; 
-	        tev->num_valuators = j;
-		if (i+3 < v->numAxes)
-		    {
-		    ev->deviceid |= MORE_EVENTS;
-		    vev = (deviceValuator *) ++ev; 
-		    vev->type = DeviceValuator;
-		    vev->deviceid = dev->id;
-		    vev->num_valuators = v->numAxes < i+6 ? v->numAxes-(i+3) : 3;
-		    vev->first_valuator = i+3;
-		    ip = &vev->valuator0;
-		    for (j=0; j<3 && i+j < v->numAxes; j++)
-		        *(ip+j) = v->axisVal[i+3+j]; 
-		    }
-		if (i+6 < v->numAxes)
-		    {
-		    tev = (deviceStateNotify *) ++ev;
-		    tev->type = DeviceStateNotify;
-		    tev->deviceid = dev->id;
-        	    tev->time = currentTime.milliseconds;
-		    tev->classes_reported = (1 << ValuatorClass);
-	    	    tev->classes_reported |= 
-			(dev->valuator->mode << ModeBitsShift);
-		    }
-		}
+	    if (nval > 0) {
+		(ev-1)->deviceid |= MORE_EVENTS;
+		FixDeviceValuator (dev, (deviceValuator *) ev++, v, first);
+		first += 3;
+		nval -= 3;
 	    }
-	if (k != NULL)
-	    {
-	    deviceStateNotify 	*tev;
+	}
 
-	    for (tev=sev; tev <= (deviceStateNotify *) ev; tev++)
-		if (tev->type==DeviceStateNotify && 
-		 !(tev->classes_reported & (1<<ButtonClass))) 
-		break;
-	    if (tev > (deviceStateNotify *) ev)
-		{
-		tev->type = DeviceStateNotify;
-		tev->deviceid = dev->id;
-        	tev->time = currentTime.milliseconds;
-		ev++;
-		}
-	    tev->classes_reported |= (1 << KeyClass);
-	    tev->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
-
-	    bcopy((char *) k->down, (char *) &tev->keys[0], 4);
-	    if (tev->num_keys > 32)
-		{
-		ev->deviceid |= MORE_EVENTS;
-		kev = (deviceKeyStateNotify *) ++ev; 
+	if (k != NULL) {
+	    FixDeviceStateNotify (dev, ev++, k, NULL, v, first);
+	    first += 3;
+	    nval -= 3;
+	    if (nkeys > 32) {
+		(ev-1)->deviceid |= MORE_EVENTS;
+		kev = (deviceKeyStateNotify *) ev++; 
 		kev->type = DeviceKeyStateNotify;
 		kev->deviceid = dev->id;
 		bcopy((char *) &k->down[4], (char *) &kev->keys[0], 28);
-		}
 	    }
+	    if (nval > 0) {
+		(ev-1)->deviceid |= MORE_EVENTS;
+		FixDeviceValuator (dev, (deviceValuator *) ev++, v, first);
+		first += 3;
+		nval -= 3;
+	    }
+	}
+
+	while (nval > 0) {
+	    FixDeviceStateNotify (dev, ev++, NULL, NULL, v, first);
+	    first += 3;
+	    nval -= 3;
+	    if (nval > 0) {
+		(ev-1)->deviceid |= MORE_EVENTS;
+		FixDeviceValuator (dev, ev++, v, first);
+		first += 3;
+		nval -= 3;
+	    }
+	}
 
 	(void) DeliverEventsToWindow(pWin, sev, evcount, DeviceStateNotifyMask, 
 	    NullGrab, dev->id);
