@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.47 87/08/18 20:39:11 toddb Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.47 87/08/19 13:06:03 newman Locked $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -87,7 +87,7 @@ Display *XOpenDisplay (display)
  */
 
 	if ((dpy->fd = _XConnectDisplay(display_name, displaybuf, &screen_num))
-	     == 0) {
+	     < 0) {
 		Xfree ((char *) dpy);
 		UnlockMutex(&lock);
 		return(NULL);		/* errno set by XConnectDisplay */

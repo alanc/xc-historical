@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.16 87/07/24 08:31:37 ham Exp $ */
+/* $Header: XConnDis.c,v 11.16 87/08/21 13:00:26 newman Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -60,7 +60,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * as "host::number"
 	 */
 	(void) strncpy(displaybuf, display_name, sizeof(displaybuf));
-	if ((display_ptr = SearchString(displaybuf,':')) == NULL) return (0);
+	if ((display_ptr = SearchString(displaybuf,':')) == NULL) return (-1);
 #ifdef DNETCONN
 	if (*(display_ptr + 1) == ':') {
 	    dnet++;
@@ -73,7 +73,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	 * display_ptr points to the display number.
 	 * If the display number is missing there is an error. */
 
-	if (*display_ptr == '\0') return(0);
+	if (*display_ptr == '\0') return(-1);
 
 	/*
 	 * Build a string of the form <display-number>.<screen-number> in
@@ -137,11 +137,11 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 	     */
 	    sprintf(objname, "X%d", display_num);
 	    /*
-	     * Attempt to open the DECnet connection, return 0 if fails.
+	     * Attempt to open the DECnet connection, return -1 if fails.
 	     */
 	    if ((fd = dnet_conn(displaybuf, 
 		   objname, SOCK_STREAM, 0, 0, 0, 0)) < 0)
-		return(0);	    /* errno set by dnet_conn. */
+		return(-1);	    /* errno set by dnet_conn. */
 	} else
 #endif
 	{
@@ -158,7 +158,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 		 * Open the network connection.
 	 	 */
 	        if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
-		    return(0);	    /* errno set by system call. */
+		    return(-1);	    /* errno set by system call. */
 	    } else
 #endif
 	    {
@@ -167,13 +167,13 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 			if ((host_ptr = gethostbyname(displaybuf)) == NULL) {
 				/* No such host! */
 				errno = EINVAL;
-				return(0);
+				return(-1);
 			}
 			/* Check the address type for an internet host. */
 			if (host_ptr->h_addrtype != AF_INET) {
 				/* Not an Internet host! */
 				errno = EPROTOTYPE;
-				return(0);
+				return(-1);
 			}
  
 			/* Set up the socket data. */
@@ -194,7 +194,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 		 */
 
 		if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
-		    return(0);	    /* errno set by system call. */
+		    return(-1);	    /* errno set by system call. */
 		/* make sure to turn off TCP coalescence */
 #ifdef TCP_NODELAY
 		{
@@ -207,7 +207,7 @@ int _XConnectDisplay (display_name, expanded_name, screen_num)
 
 	    if (connect(fd, addr, addrlen) == -1) {
 		(void) close (fd);
-		return(0); 	    /* errno set by system call. */
+		return(-1); 	    /* errno set by system call. */
 	    }
         }
 	/*
