@@ -4,7 +4,7 @@
 ** interprets and executes lines in the Xgc syntax.
 */
 
-#include "stdio.h"
+#include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 #include "xgc.h"
