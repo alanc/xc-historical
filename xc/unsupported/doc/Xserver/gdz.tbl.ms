@@ -15,7 +15,7 @@
 .TL
 Godzilla's Guide to Porting the X V11 Sample Server
 .sp
-11\s-2\uth\d\s0 September 1987
+March 1, 1988
 .AU
 David S. H. Rosenthal
 .AI

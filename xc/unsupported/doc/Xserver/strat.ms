@@ -1,5 +1,5 @@
-.EF 'Strategies for Porting'- % -'June 15, 1987'
-.OF 'Strategies for Porting'- % -'June 15, 1987'
+.EF 'Strategies for Porting'- % -'March 1, 1988'
+.OF 'Strategies for Porting'- % -'March 1, 1988'
 .EH '''
 .OH '''
 .TL
