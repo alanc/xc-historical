@@ -1,4 +1,4 @@
-/* $XConsortium: os.h,v 1.4 91/07/16 20:21:49 keith Exp $ */
+/* $XConsortium: os.h,v 1.5 94/02/09 17:20:09 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -47,6 +47,10 @@ extern void FSfree();
 #define	fsalloc(size)		FSalloc((unsigned long)size)
 #define	fsrealloc(ptr, size)	FSrealloc((pointer)ptr, (unsigned long)size)
 #define	fsfree(ptr)		FSfree((pointer)ptr)
+
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#endif
 
 #if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
 #define	ALLOCATE_LOCAL(size)		alloca((int)size)
