@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.222 94/02/10 17:42:34 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.223 94/02/10 19:25:37 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -1062,8 +1062,8 @@ all:: file.idx.PS							@@\
 									@@\
 file.idx.PS:								@@\
 	tail -1 index.raw > index.pageno				@@\
-	grep -v '^.pn ' index.raw | sort -f -t: +1 -3 +0n -1n | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
-	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > $@ @@\
+	grep -v '^.pn ' index.raw | sort -f '-t:' +1 -3 +0n -1n | awk -f $(DOCUTILSRC)/fixindex.awk | awk -f $(DOCUTILSRC)/block.awk > index.troff @@\
+	cat srcs $(XIDXMACROS) index.troff | $(TROFF) -me > $@		@@\
 	$(RM) index.troff index.pageno					@@\
 									@@\
 clean::									@@\
