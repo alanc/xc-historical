@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.54 92/09/10 20:38:34 rws Exp $
+ * $XConsortium: xrdb.c,v 11.55 92/09/11 14:19:59 rws Exp $
  */
 
 /*
@@ -152,14 +152,17 @@ void AddEntry(e, entry)
     for (n = 0; n < e->used; n++) {
 	if (!strcmp(e->entry[n].tag, entry->tag)) {
 	    /* overwrite old entry */
-	    if (!quiet) {
+	    if (e->entry[n].lineno && !quiet) {
 		fprintf (stderr, 
 			 "%s:  \"%s\" on line %d overrides entry on line %d\n",
 			 ProgramName, entry->tag, entry->lineno, 
 			 e->entry[n].lineno);
 	    }
+	    free(e->entry[n].tag);
+	    free(e->entry[n].value);
+	    entry->usable = True;
 	    e->entry[n] = *entry;
-	    return ;  /* ok to leave, now there's only one of each tag in db */
+	    return;  /* ok to leave, now there's only one of each tag in db */
 	}
     }
 
@@ -214,10 +217,10 @@ char *FindFirst(string, dest, lines)
     }
 }
 
-void GetEntries(entries, buff, dosort)
+void GetEntries(entries, buff, bequiet)
     register Entries *entries;
     Buffer *buff;
-    int dosort;
+    int bequiet;
 {
     register char *line, *colon, *temp, *str;
     Entry entry;
@@ -230,14 +233,15 @@ void GetEntries(entries, buff, dosort)
     for ( ; str < buff->buff + buff->used;
 	  str = line + 1, lineno += lines_skipped) {
 	line = FindFirst(str, '\n', &lines_skipped);
-	lineno++;
+	if (!bequiet)
+	    lineno++;
 	if (!line)
 	    break; 
 	if (*str == '!')
 	    continue;
 	if (*str == '\n')
 	    continue;
-	if (*str == '#') {
+	if (!bequiet && *str == '#') {
 	    int dummy;
 	    if (sscanf (str, "# %d", &dummy) == 1 ||
 		sscanf (str, "# line %d", &dummy) == 1)
@@ -250,13 +254,11 @@ void GetEntries(entries, buff, dosort)
 	if (!*temp || *temp == '\n') continue;
 
 	colon = FindFirst(str, ':', NULL);
-	if (!colon)
-	    break;
-	if (colon > line) {
-	    line[0] = '\0';
-	    fprintf (stderr, 
-		     "%s:  colon missing on line %d, ignoring entry \"%s\"\n",
-		     ProgramName, lineno, str);
+	if (!colon || colon > line) {
+	    if (!bequiet && !quiet)
+		fprintf (stderr, 
+			 "%s: colon missing on line %d, ignoring line\n",
+			 ProgramName, lineno);
 	    continue;
 	}
 
@@ -284,32 +286,19 @@ void GetEntries(entries, buff, dosort)
 
 	AddEntry(entries, &entry);
     }
-    if (dosort && (entries->used > 0))
-	qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
 }
 
-int MergeEntries(buffer, new, old)
-    Entries *new, *old;
-    Buffer *buffer;
+GetEntriesString(entries, str)
+    register Entries *entries;
+    char *str;
 {
-    int n, o, cmp;
+    Buffer buff;
 
-    n = o = 0;
-    while ((n < new->used) && (o < old->used)) {
-	cmp = strcmp(new->entry[n].tag, old->entry[o].tag);
-	if (cmp > 0)
-	    AppendEntryToBuffer(buffer, &old->entry[o++]);
-	else {
-	    AppendEntryToBuffer(buffer, &new->entry[n++]);
-	    if (cmp == 0)
-		o++;
-	}
+    if (str && *str) {
+	buff.buff = str;
+	buff.used = strlen(str);
+	GetEntries(entries, &buff, 1);
     }
-    while (n < new->used)
-	AppendEntryToBuffer(buffer, &new->entry[n++]);
-    while (o < old->used)
-	AppendEntryToBuffer(buffer, &old->entry[o++]);
-    AppendToBuffer(buffer, "", 1);
 }
 
 void ReadFile(buffer, input)
@@ -487,7 +476,7 @@ Entry *FindEntry(db, b)
     phoney.used = 0;
     phoney.room = 1;
     phoney.entry = &entry;
-    GetEntries(&phoney, b, 0);
+    GetEntries(&phoney, b, 1);
     if (phoney.used < 1)
 	return NULL;
     for (i = 0; i < db->used; i++) {
@@ -567,8 +556,10 @@ void Syntax ()
 	     " -query              query resources\n");
     fprintf (stderr,
 	     " -load               load resources from file [default]\n");
+    fprintf (stderr,
+	     " -override           add in resources from file\n");
     fprintf (stderr, 
-	     " -merge              merge resources from file\n");
+	     " -merge              merge resources from file & sort\n");
     fprintf (stderr, 
 	     " -edit filename      edit resources into file\n");
     fprintf (stderr, 
@@ -632,6 +623,7 @@ static Bool isabbreviation (arg, s, minslen)
 #define OPEDIT 3
 #define OPLOAD 4
 #define OPMERGE 5
+#define OPOVERRIDE 6
 
 char tmpname[32];
 char *filename = NULL;
@@ -700,6 +692,9 @@ main (argc, argv)
 	    } else if (isabbreviation ("-merge", arg, 2)) {
 		oper = OPMERGE;
 		continue;
+	    } else if (isabbreviation ("-override", arg, 2)) {
+		oper = OPOVERRIDE;
+		continue;
 	    } else if (isabbreviation ("-symbols", arg, 3)) {
 		oper = OPSYMBOLS;
 		continue;
@@ -760,7 +755,7 @@ main (argc, argv)
     defines_base = strlen(defines);
 
     if (!filename &&
-	(oper == OPLOAD || oper == OPMERGE) &&
+	(oper == OPLOAD || oper == OPMERGE || oper == OPOVERRIDE) &&
 	(whichResources == RALL || whichResources == RSCREENS)) {
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
 	(void) mktemp(tmpname);
@@ -782,7 +777,7 @@ main (argc, argv)
     else if (whichResources == RSCREEN)
 	Process(DefaultScreen(dpy), True, True);
     else if (whichResources == RSCREENS ||
-	     (oper != OPLOAD && oper != OPMERGE)) {
+	     (oper != OPLOAD && oper != OPMERGE && oper != OPOVERRIDE)) {
 	if (whichResources == RALL && oper != OPSYMBOLS) {
 	    if (need_newline)
 		printf("! screen-independent resources\n");
@@ -794,12 +789,17 @@ main (argc, argv)
 	    if (need_newline) {
 		if (oper == OPSYMBOLS)
 		    printf("# screen %d symbols\n", i);
-		else
+		else {
 		    printf("! screen %d resources\n", i);
+		    printf("#if SCREEN_NUM == %d\n", i);
+		}
 	    }
 	    Process(i, True, True);
-	    if (need_newline && i+1 != ScreenCount(dpy))
-		printf("\n");
+	    if (need_newline) {
+		printf("#endif\n");
+		if (i+1 != ScreenCount(dpy))
+		    printf("\n");
+	    }
 	}
     }
     else {
@@ -811,6 +811,8 @@ main (argc, argv)
 	    dbs[i] = newDB;
 	}
 	InitEntries(&newDB);
+	if (oper == OPMERGE || oper == OPOVERRIDE)
+	    GetEntriesString(&newDB, XResourceManagerString(dpy));
 	ShuffleEntries(&newDB, dbs, ScreenCount(dpy));
 	if (need_newline)
 	    printf("! screen-independent resources\n");
@@ -819,11 +821,16 @@ main (argc, argv)
 	    printf("\n");
 	for (i = 0; i < ScreenCount(dpy); i++) {
 	    newDB = dbs[i];
-	    if (need_newline)
+	    if (need_newline) {
 		printf("! screen %d resources\n", i);
+		printf("#if SCREEN_NUM == %d\n", i);
+	    }
 	    ReProcess(i, True);
-	    if (need_newline && i+1 != ScreenCount(dpy))
-		printf("\n");
+	    if (need_newline) {
+		printf("#endif\n");
+		if (i+1 != ScreenCount(dpy))
+		    printf("\n");
+	    }
 	}
     }
 
@@ -833,6 +840,23 @@ main (argc, argv)
 	XSetCloseDownMode(dpy, RetainPermanent);
     XCloseDisplay(dpy);
     exit (0);
+}
+
+void FormatEntries(buffer, entries)
+    register Buffer *buffer;
+    register Entries *entries;
+{
+    register int i;
+
+    buffer->used = 0;
+    if (!entries->used)
+	return;
+    if (oper == OPMERGE)
+	qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
+    for (i = 0; i < entries->used; i++) {
+	if (entries->entry[i].usable)
+	    AppendEntryToBuffer(buffer, &entries->entry[i]);
+    }
 }
 
 StoreProperty(dpy, root, res_prop)
@@ -869,12 +893,10 @@ Process(scrno, doScreen, execute)
     Atom res_prop;
     FILE *input, *output;
     char cmd[BUFSIZ];
-    Entries oldDB;
 
     defines[defines_base] = '\0';
     buffer.used = 0;
     InitEntries(&newDB);
-    InitEntries(&oldDB);
     DoScreenDefines(dpy, scrno, defines);
     if (doScreen) {
 	xdefs = XScreenResourceString (ScreenOfDisplay(dpy, scrno));
@@ -895,7 +917,6 @@ Process(scrno, doScreen, execute)
 	    XDeleteProperty(dpy, root, res_prop);
     } else if (oper == OPEDIT) {
 	char template[100], old[100];
-	char *saveBuff;
 
 	input = fopen(editFile, "r");
 	if (!input) {
@@ -919,12 +940,7 @@ Process(scrno, doScreen, execute)
 	output = fopen(template, "w");
 	if (!output)
 	    fatal("%s: can't open temporary file '%s'\n", ProgramName, template);
-	saveBuff = buffer.buff;
-	buffer.used = (xdefs ? strlen(xdefs) : 0);
-	buffer.buff = xdefs;
-	buffer.room = buffer.used;
-	GetEntries(&newDB, &buffer, 0);
-	buffer.buff = saveBuff;
+	GetEntriesString(&newDB, xdefs);
 	EditFile(&newDB, input, output);
 	fclose(input);
 	fclose(output);
@@ -947,6 +963,8 @@ Process(scrno, doScreen, execute)
 	    rename (template, editFile);
 	}
     } else {
+	if (oper == OPMERGE || oper == OPOVERRIDE)
+	    GetEntriesString(&newDB, xdefs);
 	if (filename) {
 	    if (!freopen (filename, "r", stdin))
 		fatal("%s: can't open file '%s'\n", ProgramName, filename);
@@ -961,24 +979,15 @@ Process(scrno, doScreen, execute)
 	ReadFile(&buffer, input);
 	if (cpp_program)
 	    pclose(input);
-	GetEntries(&newDB, &buffer, oper == OPMERGE);
-	if (oper == OPMERGE && xdefs) {
-	    char *saveBuff = buffer.buff;
-	    buffer.used = strlen(xdefs);
-	    buffer.buff = xdefs;
-	    GetEntries(&oldDB, &buffer, 1);
-	    buffer.buff = saveBuff;
-	} else
-	    oldDB.used = 0;
-	buffer.used = 0;
-	MergeEntries(&buffer, &newDB, &oldDB);
-	if (dont_execute && execute) {
-	    if (buffer.used > 0) {
-		fwrite (buffer.buff, 1, buffer.used, stdout);
-		if (buffer.buff[buffer.used - 1] != '\n') putchar ('\n');
-	    }
-	} else if (execute) {
-	    if (buffer.used > 1 || !doScreen)
+	GetEntries(&newDB, &buffer, 0);
+	if (execute) {
+	    FormatEntries(&buffer, &newDB);
+	    if (dont_execute) {
+		if (buffer.used > 0) {
+		    fwrite (buffer.buff, 1, buffer.used, stdout);
+		    if (buffer.buff[buffer.used - 1] != '\n') putchar ('\n');
+		}
+	    } else if (buffer.used > 1 || !doScreen)
 		StoreProperty (dpy, root, res_prop);
 	    else
 		XDeleteProperty (dpy, root, res_prop);
@@ -986,7 +995,6 @@ Process(scrno, doScreen, execute)
     }
     if (execute)
 	FreeEntries(&newDB);
-    FreeEntries(&oldDB);
     if (doScreen && xdefs)
 	XFree(xdefs);
 }
@@ -1038,24 +1046,7 @@ ReProcess(scrno, doScreen)
     Atom res_prop;
     register int i;
 
-    if (!doScreen && oper == OPMERGE && XResourceManagerString(dpy)) {
-	char *saveBuff = buffer.buff;
-	Entries oldDB;
-	InitEntries(&oldDB);
-	buffer.buff = XResourceManagerString(dpy);
-	buffer.used = strlen(buffer.buff);
-	GetEntries(&oldDB, &buffer, 1);
-	buffer.buff = saveBuff;
-	buffer.used = 0;
-	MergeEntries(&buffer, &newDB, &oldDB);
-	FreeEntries(&oldDB);
-    } else {
-	buffer.used = 0;
-	for (i = 0; i < newDB.used; i++) {
-	    if (newDB.entry[i].usable)
-		AppendEntryToBuffer(&buffer, &newDB.entry[i]);
-	}
-    }
+    FormatEntries(&buffer, &newDB);
     if (doScreen) {
 	root = RootWindow(dpy, scrno);
 	res_prop = XInternAtom(dpy, SCREEN_RESOURCES, False);
