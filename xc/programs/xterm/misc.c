@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.6 88/02/17 11:27:58 jim Exp $
+ *	$Header: misc.c,v 1.7 88/02/17 12:18:43 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.6 88/02/17 11:27:58 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.7 88/02/17 12:18:43 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -95,10 +95,13 @@ Cursor make_colored_cursor (cursorindex, fg, bg)
 /*ARGSUSED*/
 void HandleKeyPressed(w, eventdata, event)
 Widget w;
-XEvent *event;
+XKeyPressedEvent *event;
 caddr_t eventdata;
 {
-	Input (&term->keyboard, &term->screen, (XKeyPressedEvent *)event);
+    register TScreen *screen = &term->screen;
+
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term))
+	Input (&term->keyboard, screen, event);
 }
 
 /*ARGSUSED*/
@@ -107,8 +110,9 @@ Widget w;
 register XEnterWindowEvent *event;
 caddr_t eventdata;
 {
-	register TScreen *screen = &term->screen;
+    register TScreen *screen = &term->screen;
 
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
 	if (((event->detail) != NotifyInferior) && event->focus) {
 #ifdef DEBUG
 		if(debug)
@@ -117,6 +121,7 @@ caddr_t eventdata;
 #endif	/* DEBUG */
 		selectwindow(screen, INWINDOW);
 	}
+    }
 }
 
 /*ARGSUSED*/
@@ -125,8 +130,9 @@ Widget w;
 register XEnterWindowEvent *event;
 caddr_t eventdata;
 {
-	register TScreen *screen = &term->screen;
+    register TScreen *screen = &term->screen;
 
+    if (w == (screen->TekEmu ? (Widget)tekWidget : (Widget)term)) {
 	if (((event->detail) != NotifyInferior) && event->focus) {
 #ifdef DEBUG
 		if(debug)
@@ -135,6 +141,7 @@ caddr_t eventdata;
 #endif	/* DEBUG */
 		unselectwindow(screen, INWINDOW);
 	}
+    }
 }
 
 
