@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.12 91/07/30 17:05:12 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.13 91/08/27 11:00:42 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -56,11 +56,11 @@ suitability for any purpose of the information in this document.
 This documentation is provided as is without express or implied warranty. 
 .ps 11
 .nr PS 11
-.bp 3
+.bp 1
 .EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 5'
 .OH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 5'
-.EF ''\fB % \fP''
-.OF ''\fB % \fP''
+.EF ''\fB\\\\n(PN\fP''
+.OF ''\fB\\\\n(PN\fP''
 .NH 1 
 Introduction
 .XS
@@ -2218,4 +2218,9 @@ in the font,
 then no display is performed.
 .LP
 DEFAULT_CHAR cannot be approximated if not provided as a font property.
-.TC
+.\"
+.\" print Table of Contents
+.if o .bp \" blank page to make count even
+.bp 1
+.af PN i
+.PX
