@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.3 91/05/14 15:43:34 rws Exp $ */
+/* $XConsortium: bdfread.c,v 1.4 91/05/30 19:06:23 keith Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -443,11 +443,13 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 		 sizeof(CharInfoPtr));
 	goto BAILOUT;
     }
+    pFont->info.allExist = TRUE;
     i = 0;
     for (char_row = pFont->info.firstRow;
 	    char_row <= pFont->info.lastRow;
 	    char_row++) {
 	if (bdfEncoding[char_row] == (CharInfoPtr *) NULL) {
+	    pFont->info.allExist = FALSE;
 	    for (char_col = pFont->info.firstCol;
 		    char_col <= pFont->info.lastCol;
 		    char_col++) {
@@ -457,6 +459,8 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	    for (char_col = pFont->info.firstCol;
 		    char_col <= pFont->info.lastCol;
 		    char_col++) {
+		if (!bdfEncoding[char_row][char_col])
+		    pFont->info.allExist = FALSE;
 		bitmapFont->encoding[i++] = bdfEncoding[char_row][char_col];
 	    }
 	}
