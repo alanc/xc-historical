@@ -67,7 +67,7 @@ connection.o: $(ICONFIGFILES)
 /**/#
 dbm.o:  $(DBMLIB)
 	rm -f dbm.o
-	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; fi
+	if [ ! -d dbm ]; then $(RM) -r dbm; mkdir dbm; else /bin/true; fi
 	(cd dbm; rm -f *.o; ar -x $(DBMLIB); \
 	ld -r -o a.out.o -h _bcopy ndbm.o; \
 	mv a.out.o ndbm.o; ld -r -o ../dbm.o *.o)
