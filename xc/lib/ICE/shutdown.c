@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.6 93/09/14 15:35:32 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.7 93/11/22 16:26:35 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -105,8 +105,7 @@ IceConn     iceConn;
      * some other reason).
      */
 
-    if ((iceConn->iceConn_type == ICE_CONN_FROM_ACCEPT ||
-	iceConn->iceConn_type == ICE_CONN_FROM_LOCAL_ACCEPT) &&
+    if (iceConn->listen_obj &&
 	iceConn->connection_status != IceConnectAccepted)
     {
 	_IceFreeConnection (iceConn, False);
@@ -172,7 +171,7 @@ Bool	ignoreWatchProcs;
 	_IceConnectionClosed (iceConn);
     }
 
-    if (iceConn->iceConn_type == ICE_CONN_FROM_CONNECT)
+    if (iceConn->listen_obj == NULL)
     {
 	/*
 	 * This iceConn was created with IceOpenConnection.
