@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.6 91/10/01 02:51:20 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.7 91/12/11 18:11:43 hersh Exp $ */
 
 
 /***********************************************************
@@ -199,8 +199,9 @@ SOFTWARE.
 	    }\
 	}}
 
+/* JSH - assuming copy may overlap */
 #define EXTRACT_STRUCT(num, data_type, dstPtr, srcPtr) {\
-	bcopy(	(char *)(srcPtr), (char *)(dstPtr), \
+	memmove(	(char *)(dstPtr), (char *)(srcPtr), \
 		(int)(num * sizeof(data_type)));\
 	(srcPtr) = ((CARD8 *) (srcPtr)) + num * sizeof(data_type); }
 
@@ -308,13 +309,15 @@ SOFTWARE.
 	    }\
 	}}
 
+/* JSH - assuming copy may overlap */
 #define PACK_STRUCT(data_type,srcPtr,dstPtr)	{       \
-    bcopy(  (char *)(srcPtr), (char *)(dstPtr),		\
+    memmove(  (char *)(dstPtr),	(char *)(srcPtr), 	\
 	    sizeof(data_type));				\
     SKIP_STRUCT(dstPtr, 1, data_type); }
 
+/* JSH - assuming copy may overlap */
 #define PACK_LISTOF_STRUCT(num,data_type,srcPtr,dstPtr){\
-    bcopy(  (char *)(srcPtr), (char *)(dstPtr),		\
+    memmove(  (char *)(dstPtr),	(char *)(srcPtr), 	\
 	    (int)(num * sizeof(data_type)));	\
     SKIP_STRUCT(dstPtr, num, data_type); }
 /*
