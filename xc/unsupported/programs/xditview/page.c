@@ -1,15 +1,21 @@
+/* $XConsortium: loadData.c,v 1.3 91/02/17 14:48:54 dave Exp $ */
+
 /*
  * page.c
  *
  * map page numbers to file position
  */
 
-#include <X11/Xos.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "DviP.h"
+
+#ifdef X_NOT_STDC_ENV
+extern long	ftell();
+#endif
 
 static DviFileMap *
 MapPageNumberToFileMap (dw, number)
@@ -46,7 +52,6 @@ RememberPagePosition(dw, number)
 	DviWidget	dw;
 	int		number;
 {
-	extern long	ftell();
 	DviFileMap	*m;
 
 	if (!(m = MapPageNumberToFileMap (dw, number))) {
