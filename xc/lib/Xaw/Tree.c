@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.c,v 1.10 90/02/02 15:07:30 jim Exp $
+ * $XConsortium: Tree.c,v 1.11 90/02/02 17:58:54 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  * Copyright 1989 Prentice Hall
@@ -56,6 +56,7 @@ static void             Redisplay();
 static void             set_positions();
 static void             initialize_dimensions();
 static GC               get_tree_gc();
+static void             set_tree_size();
 
 /*
  * resources of the tree itself
@@ -470,8 +471,6 @@ static void set_positions(tw, w, level)
      int          level;
 {
  int               i;
- Dimension         replyWidth = 0, replyHeight = 0;
- XtGeometryResult  result;
   
  if(w){
   TreeConstraints tree_const = TREE_CONSTRAINT(w);
@@ -485,21 +484,13 @@ static void set_positions(tw, w, level)
   */
   if(tw->core.width < tree_const->tree.x + w->core.width ||
      tw->core.height < tree_const->tree.y + w->core.height){
-    result = 
-      XtMakeResizeRequest(tw, MAXIMUM(tw->core.width, 
-                                  tree_const->tree.x + 
-                                  w->core.width),
-                              MAXIMUM(tw->core.height, 
-                                  tree_const->tree.y + 
-                                  w->core.height),
-                          &replyWidth, &replyHeight);
-    /*
-     * Accept any compromise.
-     */
-     if (result == XtGeometryAlmost)
-       XtMakeResizeRequest (tw, replyWidth, replyHeight, 
-                             NULL, NULL);
+      set_tree_size (tw, 
+		     MAXIMUM(tw->core.width, (tree_const->tree.x +
+					      w->core.width)),
+		     MAXIMUM(tw->core.height, (tree_const->tree.y + 
+					       w->core.height)));
   }
+
  /*
   * Set the positions of all children.
   */
@@ -700,6 +691,8 @@ static void arrange_subtree (tree, w, depth, x, y)
 static void new_layout (tw)
     TreeWidget tw;
 {
+    TreeConstraints tc;
+
     /*
      * Do a depth-first search computing the width and height of the bounding
      * box for the tree at that position (and below).  Then, walk again using
@@ -720,6 +713,8 @@ static void new_layout (tw)
     /*
      * Move each widget into place.
      */
+    tc = TREE_CONSTRAINT (tw);
+    set_tree_size (tw, tc->tree.bbwidth, tc->tree.bbheight);
     set_positions (tw, tw->tree.tree_root, 0, 0);
 
     /*
@@ -747,6 +742,23 @@ static GC get_tree_gc (w)
 }
 
 
+static void set_tree_size (tw, width, height)
+    TreeWidget tw;
+    Dimension width, height;
+{
+    Dimension replyWidth = 0, replyHeight = 0;
+    XtGeometryResult result = XtMakeResizeRequest (tw, width, height,
+						   &replyWidth, &replyHeight);
+
+    /*
+     * Accept any compromise.
+     */
+    if (result == XtGeometryAlmost)
+      XtMakeResizeRequest (tw, replyWidth, replyHeight, NULL, NULL);
+    return;
+}
+
+
 
 /*****************************************************************************
  *                                                                           *
@@ -759,3 +771,5 @@ void XawTreeForceLayout (tree)
 {
     new_layout (tree);
 }
+
+
