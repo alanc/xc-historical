@@ -143,11 +143,6 @@ WaitForSomething(pClientsReady)
 	        {
 		    long timeSinceSave;
 
-		    if (clientsDoomed)
-		    {
-			break;
-		    }
-
 		    timeSinceSave = -timeout;
 	            if ((timeSinceSave >= timeTilFrob) && (timeTilFrob >= 0))
                     {
@@ -199,7 +194,10 @@ WaitForSomething(pClientsReady)
 		XTestComputeWaitTime (&waittime);
 	    }
 #endif /* XTESTEXT1 */
-	    if (AnyClientsWriteBlocked)
+	    /* keep this check close to select() call to minimize race */
+	    if (clientsDoomed)
+		i = -1;
+	    else if (AnyClientsWriteBlocked)
 	    {
 		COPYBITS(ClientsWriteBlocked, clientsWritable);
 		i = select (MAXSOCKS, LastSelectMask, clientsWritable,
@@ -217,6 +215,8 @@ WaitForSomething(pClientsReady)
 #endif /* XTESTEXT1 */
 	    if (i <= 0) /* An error or timeout occurred */
             {
+		if (clientsDoomed)
+		    return 0;
 		CLEARBITS(clientsWritable);
 		if (i < 0) 
 		    if (selecterr == EBADF)    /* Some client disconnected */
