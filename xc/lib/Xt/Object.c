@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.10 89/10/05 12:54:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Object.c,v 1.11 90/12/03 16:31:00 converse Exp $";
 /* $oHeader: Object.c,v 1.2 88/08/18 15:51:09 asente Exp $ */
 #endif /* lint */
 
@@ -105,7 +105,7 @@ static void ConstructCallbackOffsets(widgetClass)
      */
 
     if (QCallback == NULLQUARK)
-	QCallback = XrmStringToQuark(XtRCallback);
+	QCallback = XrmPermStringToQuark(XtRCallback);
 
     if (objectClass->object_class.superclass != NULL) {
 	superTable = (CallbackTable)

@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.5 90/12/03 16:30:32 converse Exp $ */
+/* $XConsortium: GetValues.c,v 1.6 90/12/03 17:52:15 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -45,8 +45,8 @@ static void GetValues(base, res, num_resources, args, num_args)
     static XrmQuark QCallback = NULLQUARK, QTranslations;
 
     if (QCallback == NULLQUARK) {
-	QCallback = XrmStringToQuark(XtRCallback);
-	QTranslations = XrmStringToRepresentation(XtRTranslationTable);
+	QCallback = XrmPermStringToQuark(XtRCallback);
+	QTranslations = XrmPermStringToQuark(XtRTranslationTable);
     }
 
     /* Resource lists should be in compiled form already  */

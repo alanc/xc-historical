@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.78 90/09/04 10:50:33 swick Exp $ */
+/* $XConsortium: Create.c,v 1.79 90/12/03 16:31:06 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -215,7 +215,7 @@ static Widget _XtCreate(
 	    a->application.xrm_class = StringToClass(class);
 	else
 	    a->application.xrm_class =
-		StringToClass(widget_class->core_class.class_name);
+		XrmPermStringToQuark(widget_class->core_class.class_name);
 	a->application.class = XrmQuarkToString(a->application.xrm_class);
     }
 
