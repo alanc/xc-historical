@@ -1,24 +1,28 @@
 /*
- * $XConsortium: omronKbd.c,v 1.2 93/09/03 19:50:21 dpw Exp $
+ * $XConsortium: omronKbd.c,v 1.1 94/01/04 19:19:05 rob Exp $
  *
- * Copyright 1991 by OMRON Corporation
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1991, 1992, 1993 OMRON Corporation  
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of OMRON not be used in advertising or
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
  * publicity pertaining to distribution of the software without specific,
- * written prior permission.  OMRON makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
  *
- * OMRON DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL OMRON
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
+ *
  */
 
 #include "omron.h"
@@ -51,91 +55,107 @@ extern unsigned char *omronAutoRepeats[];
 static Bool omronKbdInit();
 static void omronBell();
 static void omronKbdCtrl();
+#ifdef MTX
+static void omronKbdClose();
+#endif /* MTX */
 #ifndef USE_KANA_SWITCH
 static void omronKbdModCheck();
 #endif
 
 int
 omronKbdProc(pKeyboard,what)
-DevicePtr     pKeyboard;
-int           what;
+    DevicePtr     pKeyboard;
+    int           what;
 {
-	static Bool initFlag = FALSE;
-	static omronKeyPrv prv[1];
+#ifndef MTX
+    static Bool initFlag = FALSE;
+#endif /* MTX */
+    static omronKeyPrv prv[1];
 
-	switch(what) {
-		case DEVICE_INIT:
-			pKeyboard->devicePrivate = (pointer)prv;
-			if (initFlag == FALSE) {
+    switch(what)
+    {
+	case DEVICE_INIT:
+	    pKeyboard->devicePrivate = (pointer)prv;
+#ifndef MTX
+	    if (initFlag == FALSE)
+#endif /* MTX */
+	    {
 #ifdef USE_KEYCOMPATI
-				prv->offset = 0;
+		prv->offset = 0;
 #else
-				prv->offset = 7;
+		prv->offset = 7;
 #endif
-				if (!omronKbdInit(prv))
-					return (!Success);
-				initFlag = TRUE;
-			}
-			memmove(prv->semiEncode,prv->semiEncodeDef,CODTBSZ);
+		if (!omronKbdInit(prv))
+		    return (!Success);
+#ifndef MTX
+		initFlag = TRUE;
+#endif /* MTX */
+	    }
+	    memmove(prv->semiEncode,prv->semiEncodeDef,CODTBSZ);
 #ifndef USE_KANA_SWITCH
-			memmove(prv->semiKanaEncode,prv->semiEncodeDef,CODTBSZ);
+	    memmove(prv->semiKanaEncode,prv->semiEncodeDef,CODTBSZ);
 #endif
-			memmove (defaultKeyboardControl.autoRepeats,
-				 omronAutoRepeats[prv->type],AREPBUFSZ);
-			prv->keybdCtrl = defaultKeyboardControl;
+	    memmove (defaultKeyboardControl.autoRepeats,
+		 omronAutoRepeats[prv->type],AREPBUFSZ);
+	    prv->keybdCtrl = defaultKeyboardControl;
 #ifndef USE_KANA_SWITCH
-			prv->key_state = 0;
+	    prv->key_state = 0;
 # ifdef luna2
-			if (prv->type != KB_ASCII ) {
+	    if (prv->type != KB_ASCII )
 # endif
-				prv->kana_offset =
-					(omronKeySyms[prv->type].maxKeyCode +
-					 omronKeySyms[prv->type].minKeyCode + 1) /2 - 
-					 omronKeySyms[prv->type].minKeyCode ; 
-# ifdef luna2
-			}
-# endif
+	    {
+		prv->kana_offset =
+			(omronKeySyms[prv->type].maxKeyCode +
+			 omronKeySyms[prv->type].minKeyCode + 1) /2 - 
+			 omronKeySyms[prv->type].minKeyCode ; 
+	    }
 #endif
-			InitKeyboardDeviceStruct(pKeyboard,
-				&(omronKeySyms[prv->type]), (omronKeyModMap[prv->type]),
-				omronBell, omronKbdCtrl);
+	    InitKeyboardDeviceStruct(pKeyboard,
+		    &(omronKeySyms[prv->type]), (omronKeyModMap[prv->type]),
+		    omronBell, omronKbdCtrl);
 #ifndef UNUSE_DRV_TIME 
-			omronSetDriverTimeMode(NULL, pKeyboard);
+	    omronSetDriverTimeMode(NULL, pKeyboard);
 #endif
-			break;
-		case DEVICE_ON:
+	    break;
+	case DEVICE_ON:
+#ifndef MTX
 #ifndef UNUSE_SIGIO_SIGNAL
-			prv->flags |= FASYNC;
-			if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 ) {
-				Error("Can't enable the keyboard SIGIO.");
-				return (!Success);
-			}
+	    prv->flags |= FASYNC;
+	    if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 )
+	    {
+		Error("Can't enable the keyboard SIGIO.");
+		return (!Success);
+	    }
 #endif
-			AddEnabledDevice(prv->fd);
-			pKeyboard->on = TRUE;
-			break;
-		case DEVICE_OFF:
-		case DEVICE_CLOSE:
+#endif /* MTX */
+	    AddEnabledDevice(prv->fd);
+	    pKeyboard->on = TRUE;
+		break;
+	case DEVICE_OFF:
+	case DEVICE_CLOSE:
+#ifndef MTX
 #ifndef UNUSE_SIGIO_SIGNAL
-			prv->flags &= ~FASYNC;
-			if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 ) {
-				Error("Can't disable the keyboard SIGIO.");
-			}
+	    prv->flags &= ~FASYNC;
+	    if (fcntl(prv->fd, F_SETFL, prv->flags) < 0 )
+		Error("Can't disable the keyboard SIGIO.");
 #endif
-			if (ioctl(prv->fd, KBFLSH, NULL) < 0) {
-				Error("Keyboard ioctl KBFLSH fault.");
-			}
-			RemoveEnabledDevice(prv->fd);
-			pKeyboard->on = FALSE;
-			break;
-	}
-	return (Success);
+#endif /* MTX */
+	    if (ioctl(prv->fd, KBFLSH, NULL) < 0)
+		Error("Keyboard ioctl KBFLSH fault.");
+	    RemoveEnabledDevice(prv->fd);
+	    pKeyboard->on = FALSE;
+#ifdef MTX
+	    omronKbdClose(prv);
+#endif /* MTX */
+	    break;
+    }
+    return (Success);
 } 
 
 
 static Bool
 omronKbdInit(prv)
-omronKeyPrvPtr prv;
+    omronKeyPrvPtr prv;
 {
 #ifdef uniosu
 	struct termio new_term;
@@ -146,18 +166,20 @@ omronKeyPrvPtr prv;
 #if   (! defined(uniosu)) && (! defined(luna88k)) && (! defined(luna2))
 	register int i;
 #endif
-#ifdef UNUSE_SIGIO_SIGNAL
+
+#if defined(UNUSE_SIGIO_SIGNAL) || defined(MTX)
 	int arg = 1; 
 #endif
 
-
-	if((prv->fd = open("/dev/kbd",O_RDWR,0)) < 0) {
+	if((prv->fd = open("/dev/kbd",O_RDWR,0)) < 0)
+	{
 		Error("Can't open /dev/kbd");
 		return FALSE;
 	}
 
 #ifdef luna2
-	if( ioctl(prv->fd,KIOCTYPE,&(prv->type)) == -1 ) {
+	if( ioctl(prv->fd,KIOCTYPE,&(prv->type)) == -1 )
+	{
 		Error("Can't get kbd type.");
 		return FALSE;
 	}	
@@ -165,8 +187,8 @@ omronKeyPrvPtr prv;
 	prv->type = 0;
 #endif
 
-#ifdef UNUSE_SIGIO_SIGNAL
-	ioctl (prv->fd, FIONBIO, &arg);
+#if defined(UNUSE_SIGIO_SIGNAL) || defined(MTX)
+	ioctl (prv->fd, FIONBIO, &arg); /* set non-blocking io */
 #else
 	if ((prv->flags = fcntl(prv->fd, F_GETFL, NULL)) < 0) {
 		Error("Keyboard fcntl F_GETFL fault.");
@@ -174,28 +196,33 @@ omronKeyPrvPtr prv;
 	}
 	prv->flags |= FNDELAY;
 	if (fcntl(prv->fd, F_SETFL, prv->flags) < 0
-		|| fcntl(prv->fd, F_SETOWN, getpid()) < 0) {
+		|| fcntl(prv->fd, F_SETOWN, getpid()) < 0)
+	{
 		Error("Can't set up kbd to receive SIGIO.");
 		return FALSE;
 	}
 #endif
 
-	if(ioctl(prv->fd,KBSETM,SEMIENCODED) < 0) {
+	if(ioctl(prv->fd,KBSETM,SEMIENCODED) < 0)
+	{
 		Error("Keyboard ioctl SEMIENCODED fault.");
 		return FALSE;
 	}
 
-	if (ioctl(prv->fd,KBRSTENABLE,RSTDISABLE) < 0) {
+	if (ioctl(prv->fd,KBRSTENABLE,RSTDISABLE) < 0)
+	{
 		Error("Keyboard ioctl RSTDISABLE fault.");
 		return FALSE;
 	}
 #ifdef uniosu
-	if(ioctl(prv->fd,TCGETA,&(prv->old_term)) < 0) {
+	if(ioctl(prv->fd,TCGETA,&(prv->old_term)) < 0)
+	{
 		Error("Keyboard ioctl TCGETA fault.");
 		return FALSE;
 	}
 #else
-	if(ioctl(prv->fd,TIOCGETP,&(prv->old_term)) < 0) {
+	if(ioctl(prv->fd,TIOCGETP,&(prv->old_term)) < 0)
+	{
 		Error("Keyboard ioctl TCGETA fault.");
 		return FALSE;
 	}
@@ -220,7 +247,8 @@ omronKeyPrvPtr prv;
 #endif
 	
 	segeta.kbsreptp = prv->semiEncodeDef;
-	if(ioctl(prv->fd, KBSGETTA, &segeta) < 0) {
+	if(ioctl(prv->fd, KBSGETTA, &segeta) < 0)
+	{
 		Error("Kbd ioctl KBSGETTA fault.");
 		return FALSE;
 	}
@@ -817,87 +845,108 @@ key_event     *data;
 #ifndef USE_KANA_SWITCH
 static void
 omronKbdModCheck(keysym, type, modstate)
-unsigned long keysym;
-BYTE type;
-unsigned long *modstate;
+    unsigned long keysym;
+    BYTE type;
+    unsigned long *modstate;
 {
-		unsigned long modst;
+    unsigned long modst;
 
-		modst = *modstate;
-		switch(keysym) {
-		case XK_Control_L:
-			if (type == KeyPress) {
-				modst |= KS_CTRL_L;
-			} else {
-				modst &= ~KS_CTRL_L;
-			}
-			break;
-		case XK_Control_R:
-			if (type == KeyPress) {
-				modst |= KS_CTRL_R;
-			} else {
-				modst &= ~KS_CTRL_R;
-			}
-			break;
-		case XK_Meta_L:
-			if (type == KeyPress) {
-				modst |= KS_META_L;
-			} else {
-				modst &= ~KS_META_L;
-			}
-			break;
-		case XK_Meta_R:
-			if (type == KeyPress) {
-				modst |= KS_META_R;
-			} else {
-				modst &= ~KS_META_R;
-			}
-			break;
-		case XK_Alt_L:
-			if (type == KeyPress) {
-				modst |= KS_ALT_L;
-			} else {
-				modst &= ~KS_ALT_L;
-			}
-			break;
-		case XK_Alt_R:
-			if (type == KeyPress) {
-				modst |= KS_ALT_R;
-			} else {
-				modst &= ~KS_ALT_R;
-			}
-			break;
-		case XK_Super_L:
-			if (type == KeyPress) {
-				modst |= KS_SUPER_L;
-			} else {
-				modst &= ~KS_SUPER_L;
-			}
-			break;
-		case XK_Super_R:
-			if (type == KeyPress) {
-				modst |= KS_SUPER_R;
-			} else {
-				modst &= ~KS_SUPER_R;
-			}
-			break;
-		case XK_Hyper_L:
-			if (type == KeyPress) {
-				modst |= KS_HYPER_L;
-			} else {
-				modst &= ~KS_HYPER_L;
-			}
-			break;
-		case XK_Hyper_R:
-			if (type == KeyPress) {
-				modst |= KS_HYPER_R;
-			} else {
-				modst &= ~KS_HYPER_R;
-			}
-			break;
-		default:
-			break;
-		}
-		*modstate = modst;
+    modst = *modstate;
+    switch(keysym)
+    {
+	case XK_Control_L:
+	    if (type == KeyPress)
+		modst |= KS_CTRL_L;
+	    else
+		modst &= ~KS_CTRL_L;
+	    break;
+	case XK_Control_R:
+	    if (type == KeyPress)
+		modst |= KS_CTRL_R;
+	    else
+		modst &= ~KS_CTRL_R;
+	    break;
+	case XK_Meta_L:
+	    if (type == KeyPress)
+		modst |= KS_META_L;
+	    else
+		modst &= ~KS_META_L;
+	    break;
+	case XK_Meta_R:
+	    if (type == KeyPress)
+		modst |= KS_META_R;
+	    else
+		modst &= ~KS_META_R;
+	    break;
+	case XK_Alt_L:
+	    if (type == KeyPress)
+		modst |= KS_ALT_L;
+	    else
+		modst &= ~KS_ALT_L;
+	    break;
+	case XK_Alt_R:
+	    if (type == KeyPress)
+		modst |= KS_ALT_R;
+	    else
+		modst &= ~KS_ALT_R;
+	    break;
+	case XK_Super_L:
+	    if (type == KeyPress)
+		modst |= KS_SUPER_L;
+	    else
+		modst &= ~KS_SUPER_L;
+	    break;
+	case XK_Super_R:
+	    if (type == KeyPress)
+		modst |= KS_SUPER_R;
+	    else
+		modst &= ~KS_SUPER_R;
+	    break;
+	case XK_Hyper_L:
+	    if (type == KeyPress)
+		modst |= KS_HYPER_L;
+	    else
+		modst &= ~KS_HYPER_L;
+	    break;
+	case XK_Hyper_R:
+	    if (type == KeyPress)
+		modst |= KS_HYPER_R;
+	    else
+		modst &= ~KS_HYPER_R;
+	    break;
+	default:
+	    break;
+    }
+    *modstate = modst;
 }
 #endif
+
+#ifdef MTX
+void
+omronKbdClose(prv)
+    omronKeyPrvPtr prv;
+{
+
+    if (ioctl(prv->fd,KBSETM,ENCODED) < 0)
+	Error("Kbd ioctl fault(set encode mode).");
+
+    if (ioctl(prv->fd,KBRSTENABLE,RSTENABLE) < 0)
+	Error("Kbd ioctl fault.");
+
+#ifdef uniosu	
+    if (ioctl(prv->fd,TCSETA,&(prv->old_term)) < 0)
+	Error("Kbd ioctl fault(reset term mode).");
+#else
+    if (ioctl(prv->fd,TIOCSETP,&(prv->old_term)) < 0)
+	Error("Kbd ioctl fault(reset term mode).");
+#endif
+
+#ifndef UNUSE_DRV_TIME
+    if(ioctl(prv->fd, KBTIME,0) < 0)
+	if ( errno != EINVAL )
+	    Error("Kbd ioctl KBTIME fault.");
+#endif
+
+    close(prv->fd);
+}
+#endif /* MTX */

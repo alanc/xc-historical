@@ -1,24 +1,28 @@
 /*
- * $XConsortium: omronMouse.c,v 1.1 91/06/29 13:49:03 xguest Exp $
+ * $XConsortium: omronMouse.c,v 1.1 94/01/04 19:19:06 rob Exp $
  *
- * Copyright 1991 by OMRON Corporation
- * 
+ * Copyright 1992, 1993 Data General Corporation;
+ * Copyright 1991, 1992, 1993 OMRON Corporation  
+ *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of OMRON not be used in advertising or
+ * the above copyright notice appear in all copies and that both that copyright
+ * notice and this permission notice appear in supporting documentation, and
+ * that neither the name OMRON or DATA GENERAL be used in advertising or
  * publicity pertaining to distribution of the software without specific,
- * written prior permission.  OMRON makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
+ * written prior permission of the party whose name is to be used.  Neither 
+ * OMRON or DATA GENERAL make any representation about the suitability of this
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.  
  *
- * OMRON DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL OMRON
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * OMRON AND DATA GENERAL EACH DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL OMRON OR DATA GENERAL BE LIABLE FOR ANY SPECIAL, INDIRECT
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ * USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+ * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+ * OF THIS SOFTWARE.
+ *
  */
 
 #include "omron.h"
@@ -29,6 +33,7 @@ static void omronCrossScreen();
 static void omronWarpCursor();
 static void omronMouseControl(); 
 static Bool omronCursorOffScreen();
+
 
 miPointerScreenFuncRec omronPointerScreenFuncs = {
 	omronCursorOffScreen,
@@ -41,21 +46,30 @@ omronMouseProc(pMouse,what)
 DevicePtr 	pMouse;
 int		what;
 {
+#ifndef MTX
 	static	Bool initFlag = FALSE;
+#else /* MTX */
+	static  char	DITNAME[] = "DIT";
+#endif /* MTX */
 	static	omronMousePrv	prv[1];
 	BYTE    map[5];
 
 	switch(what) {
 	case DEVICE_INIT:
 		pMouse->devicePrivate = (pointer)prv;
-		if(initFlag == FALSE) {
+#ifndef MTX
+		if(initFlag == FALSE)
+#endif /* MTX */
+		{
 			if (!omronMouseInit(prv))
 				return (!Success);
 #ifdef uniosu
 			if (!omronResetTty(prv))
 				return (!Success);
 #endif
+#ifndef MTX
 			initFlag = TRUE;
+#endif /* MTX */
 		}
 		prv->button_state = 7;
 		map[1] = Button1;
@@ -68,29 +82,40 @@ int		what;
 #endif
 		break;	
 	case DEVICE_ON:
+#ifndef MTX
 #ifndef UNUSE_SIGIO_SIGNAL
 		prv->ctl_flags |= FASYNC;
-		if (fcntl(prv->fd, F_SETFL, prv->ctl_flags) < 0) {
+		if (fcntl(prv->fd, F_SETFL, prv->ctl_flags) < 0)
+		{
 			Error("Can't enable the mouse SIGIO.");
 			return (!Success);
 		}
 #endif
+#endif /* MTX */
 		AddEnabledDevice (prv->fd);
 		pMouse->on = TRUE;
 		break;
 	case DEVICE_OFF:
 	case DEVICE_CLOSE:
+#ifndef MTX
 #ifndef UNUSE_SIGIO_SIGNAL
 		prv->ctl_flags &= ~FASYNC;
 		if (fcntl(prv->fd, F_SETFL, prv->ctl_flags) < 0) {
 			Error("Can't disable the mouse SIGIO.");
 		}
 #endif
+#endif /* MTX */
 		if (ioctl(prv->fd, MSDFLUSH, NULL) < 0) {
 			Error("Mouse ioctl MSDFLUSH fault.");
 		}
 		RemoveEnabledDevice(prv->fd);
 		pMouse->on = FALSE;
+#ifdef MTX
+		(void)close(prv->fd);
+#ifdef uniosu
+                (void)close(prv->ttyfd);
+#endif
+#endif /* MTX */
 		break;
 	}
 	return (Success);
@@ -125,7 +150,8 @@ omronMousePrvPtr prv;
 #ifdef	uniosu
 	struct mssetlimt limit;
 #endif	/* uniosu */
-#ifdef UNUSE_SIGIO_SIGNAL
+
+#if defined(MTX) || defined(UNUSE_SIGIO_SIGNAL)
 	int arg = 1;
 #endif
 
@@ -134,8 +160,8 @@ omronMousePrvPtr prv;
 		return FALSE;
 	}
 
-#ifdef UNUSE_SIGIO_SIGNAL
-	ioctl(prv->fd, FIONBIO, &arg);
+#if defined(MTX) || defined(UNUSE_SIGIO_SIGNAL)
+	ioctl(prv->fd, FIONBIO, &arg); /* set non-blocking io */
 #else
 	if ((prv->ctl_flags = fcntl(prv->fd, F_GETFL, NULL)) < 0) {
 		Error("Mouse fcntl F_GETFL fault.");
@@ -197,18 +223,26 @@ omronCursorOffScreen(pScreen, x, y)
 }
 
 static void
+#ifndef MTX
 omronCrossScreen(pScreen,x,y)
-ScreenPtr	pScreen;
-int		x;
-int		y;
+#else /* MTX */
+omronCrossScreen(pScreen, flag)
+#endif /* MTX */
+    ScreenPtr	pScreen;
+#ifndef MTX
+    int		x;
+    int		y;
+#else /* MTX */
+    Bool		flag;
+#endif /* MTX */
 {
 }
 
 
 static short
 omronMouseAccelerate (pMouse, delta)
-DevicePtr	  pMouse;
-int	    	  delta;
+    DevicePtr	  pMouse;
+    int	    	  delta;
 {
     register PtrCtrl *p;
     register int  s;
@@ -242,11 +276,16 @@ omronWarpCursor (pScreen, x, y)
 	ScreenPtr   pScreen;
 	int         x, y;
 {
+#ifndef MTX
 	int oldmask;
 
 	oldmask = sigblock (sigmask(SIGIO));
-	miPointerWarpCursor (pScreen, x, y);
-	sigsetmask (oldmask);
+#endif /* MTX */
+    /* NOTE - MTX may not pend signal. */
+    miPointerWarpCursor (pScreen, x, y);
+#ifndef MTX
+    sigsetmask (oldmask);
+#endif /* MTX */
 }
 
 
