@@ -1,3 +1,4 @@
+/* $Header: msg.h,v 1.2 88/01/25 15:45:50 swick Locked $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

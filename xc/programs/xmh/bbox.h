@@ -1,3 +1,4 @@
+/* $Header: bbox.h,v 1.2 88/01/25 15:35:15 swick Locked $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
