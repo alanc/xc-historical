@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.5 92/11/16 11:17:29 mor Exp $ */
+/* $XConsortium: miInquire.c,v 5.6 93/02/08 11:08:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -142,7 +142,8 @@ ddPointer	    *rptr;	    /* out */
 	
 	case DD_FACET_NORM: {
 	    *rfacetMask = PEXGANormal;
-	    *rcolourType = 0;
+	    /* return an out of range value instead of 0 */
+	    *rcolourType = 666;
 	    PACK_LISTOF_STRUCT(	pFacetList->numFacets, ddVector3D,
 				pFacetList->facets.pFacetN, ptr);
 	    break; }
@@ -200,7 +201,8 @@ ddPointer	    *rptr;	    /* out */
 	case DD_FACET_NONE: {
 	    /* neither Colour nor Normal specified */
 	    *rfacetMask = 0;
-	    *rcolourType = 0;
+	    /* return an out of range value instead of 0 */
+	    *rcolourType = 666;
 	    break; }
     }
     
@@ -268,7 +270,9 @@ ddPointer	    *rptr;	    /* out */
 	    break; }
 	
 	case DD_NORM_EDGE_POINT: {
+	   /* take this out to prevent overwrite of valid facet colortype
 	    *rcolourType = 0;
+	   */
 	    *rvertexMask = PEXGANormal | PEXGAEdges;
 	    PACK_LISTOF_STRUCT(	pVertexList->numPoints, ddNormEdgePoint, 
 				pVertexList->pts.pNEpt, ptr);
@@ -324,7 +328,9 @@ ddPointer	    *rptr;	    /* out */
 	    break; }
 	
 	case DD_NORM_POINT: {
+	   /* take this out to prevent overwrite of valid facet colortype
 	    *rcolourType = 0;
+	   */
 	    *rvertexMask = PEXGANormal;
 	    PACK_LISTOF_STRUCT(	pVertexList->numPoints, ddNormalPoint, 
 				pVertexList->pts.pNpt, ptr);
@@ -381,7 +387,9 @@ ddPointer	    *rptr;	    /* out */
 		
 	case DD_EDGE_POINT: {
 	    /* neither Colour nor Normal specified */
+	   /* take this out to prevent overwrite of valid facet colortype
 	    *rcolourType = 0;
+	   */
 	    *rvertexMask = 0;
 	    PACK_LISTOF_STRUCT(	pVertexList->numPoints, ddEdgePoint,
 				pVertexList->pts.pEpt, ptr);
@@ -437,7 +445,9 @@ ddPointer	    *rptr;	    /* out */
 		
 	case DD_3D_POINT: {
 	    /* neither Colour nor Normal specified */
+	   /* take this out to prevent overwrite of valid facet colortype
 	    *rcolourType = 0;
+	   */
 	    *rvertexMask = 0;
 	    PACK_LISTOF_STRUCT(	pVertexList->numPoints, ddCoord3D,
 				pVertexList->pts.p3Dpt, ptr);
