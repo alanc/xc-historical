@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.19 89/01/02 16:37:29 jim Exp $
+ * $XConsortium: process.c,v 1.20 89/01/02 18:06:28 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -89,31 +89,31 @@ static int do_quit(), do_questionmark();
 
 CommandTable command_table[] = {
     { "add",      2, 3, do_add,
-	"add dpyname protoname hexkey   add entry to authority file" },
+	"add dpyname protoname hexkey   add entry" },
     { "exit",     3, 4, do_exit,
-	"exit                           exit program (same as end of file)" },
+	"exit                           save changes and exit program" },
     { "extract",  3, 7, do_extract,
-	"extract filename dpyname...    extract auth entries into file" },
+	"extract filename dpyname...    extract entries into file" },
     { "help",     1, 4, do_help,
-	"help [topic]                   print help about topic" },
+	"help [topic]                   print help" },
     { "info",     1, 4, do_info,
-	"info                           print information about input" },
+	"info                           print information about entries" },
     { "list",     1, 4, do_list,
-	"list [dpyname...]              list auth entries" },
+	"list [dpyname...]              list entries" },
     { "merge",    1, 5, do_merge,
-	"merge filename...              merge in cookies from given files" },
+	"merge filename...              merge entries from files" },
     { "nextract", 2, 8, do_extract,
-	"nextract filename dpyname...   extract auth entries into file" },
+	"nextract filename dpyname...   numerically extract entries" },
     { "nlist",    2, 5, do_list,
-	"nlist [dpyname...]             list auth entries" },
+	"nlist [dpyname...]             numerically list entries" },
     { "nmerge",   2, 6, do_merge,
-	"nmerge filename...             merge in cookies from given files" },
+	"nmerge filename...             numerically merge entries" },
     { "quit",     1, 4, do_quit,
-	"quit                           exit program and abort changes" },
+	"quit                           abort changes and exit program" },
     { "remove",   1, 6, do_remove,
-	"remove dpyname...              remove entries for given displays" },
+	"remove dpyname...              remove entries" },
     { "source",   1, 6, do_source,
-	"source filename                read commands from given file" },
+	"source filename                read commands from file" },
     { "?",        1, 1, do_questionmark,
 	"?                              list available commands" },
     { NULL,       0, 0, NULL, NULL },
