@@ -23,7 +23,7 @@ add-word /t "[dragon quit]" "{c-t}{c-e}{Dcom}dkey {Enter}{Dcom}" invisible
 add-word /t "[dragon reload]" "{c-t}{c-u}" invisible
 add-word /t "[execute macro]" "{c-t}{c-f}e0{c-t}" invisible
 add-word /t "[fix up space]" "{c-t}{c-m}b{Del}{c-t}{c-m}f" invisible
-add-word /t "[get mailing list]" "{c-t}{c-y}Mnsearch{c-t}{c-s}{c-t}{c-y}W{c-t}-request{c-t}{c-y}Unsearch{c-t}{Enter}{c-t}{c-y}W{c-t}{c-u}{c-b}{c-u}{c-b}{c-@}{c-t}{c-m}b{c-t}{c-m}{c-w}{c-e}{c-t}{c-j}Cpemacs{c-t}{c-t}{c-z}.1{c-t}{c-t}F6{c-t}/ml/{c-t}{c-m}{c-y}.ml{Enter}{c-t}KP_F2{c-t}" invisible
+add-word /t "[get mailing list]" "{c-t}{c-y}Mnsearch{c-t}{c-s}{c-t}{c-y}W{c-t}-request{c-t}{c-y}Unsearch{c-t}{Enter}{c-t}{c-y}W{c-t}{c-u}{c-b}{c-u}{c-b}{c-@}{c-t}{c-m}b{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-e}{c-t}{c-j}Cpemacs{c-t}{c-t}{c-y}W{c-t}{c-t}F6{c-t}/ml/{c-t}{c-m}{c-y}.ml{Enter}{c-t}KP_F2{c-t}" invisible
 add-word /t "[go back]" "{c-t}{c-l}w0{c-t}" invisible
 add-word /t "[go down left]" "{c-t}{c-d}-5 5{c-t}{c-t}{c-a}0 0 .1{c-t}" invisible
 add-word /t "[go down right]" "{c-t}{c-d}5 5{c-t}{c-t}{c-a}0 0 .1{c-t}" invisible
@@ -75,15 +75,15 @@ add-word /t "[nudge down]" "{c-t}{c-d}0 2{c-t}" invisible
 add-word /t "[nudge left]" "{c-t}{c-d}-2 0{c-t}" invisible
 add-word /t "[nudge right]" "{c-t}{c-d}2 0{c-t}" invisible
 add-word /t "[nudge up]" "{c-t}{c-d}0 -2{c-t}" invisible
-add-word /t "[paste 1]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-n}{Enter}" capitalize left right
-add-word /t "[paste 2]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{Enter}" capitalize left right
-add-word /t "[paste 3]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{Enter}" capitalize left right
-add-word /t "[paste 4]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{c-n}{Enter}" capitalize left right
-add-word /t "[paste 5]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{c-n}{c-n}{Enter}" capitalize left right
-add-word /t "[paste emacs]" "{c-t}{c-m}{c-w}{c-t}KP_F1{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}" invisible
+add-word /t "[paste 1]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-n}{Enter}" capitalize left right
+add-word /t "[paste 2]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{Enter}" capitalize left right
+add-word /t "[paste 3]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{Enter}" capitalize left right
+add-word /t "[paste 4]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{c-n}{Enter}" capitalize left right
+add-word /t "[paste 5]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}{Enter}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-p}    {c-a}{c-n}{c-n}{c-n}{c-n}{c-n}{Enter}" capitalize left right
+add-word /t "[paste emacs]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}Cpemacs{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}" invisible
 add-word /t "[paste it]" "{c-t}{c-m}{c-y}" invisible
-add-word /t "[paste reply]" "{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}" invisible
-add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-z}.1{c-t}{c-t}{c-m}{c-y}" invisible
+add-word /t "[paste reply]" "{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}" invisible
+add-word /t "[paste single]" "{c-@}{c-e}{c-t}{c-y}SPRIMARY{c-t}{c-t}{c-m}{c-w}{c-t}{c-j}Cpdrafts:{c-t}{c-t}{c-y}W{c-t}{c-t}{c-m}{c-y}" invisible
 add-word /t "[press 1]" "{c-t}{c-b}1{c-t}" invisible
 add-word /t "[press 2]" "{c-t}{c-b}2{c-t}" invisible
 add-word /t "[press 3]" "{c-t}{c-b}3{c-t}" invisible
