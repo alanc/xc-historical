@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.122 91/05/09 14:23:30 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.123 91/05/10 17:09:01 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -611,6 +611,9 @@ XCOMM site-specific configuration parameters - edit site.def to change
 #ifndef CURDIR
 #define CURDIR .
 #endif
+#ifndef ExtraFilesToClean
+#define ExtraFilesToClean /**/
+#endif
 #ifndef FilesToClean
 #define FilesToClean *.CKP *.ln *.BAK *.bak *.o core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
 #endif
@@ -750,7 +753,7 @@ XCOMM site-specific configuration parameters - edit site.def to change
       DEPENDFLAGS = DependFlags
 
         MACROFILE = MacroFile
-           RM_CMD = $(RM) FilesToClean
+           RM_CMD = $(RM) FilesToClean ExtraFilesToClean
 
     IMAKE_DEFINES = /* leave blank, for command line use only */
 #ifdef UseInstalled
