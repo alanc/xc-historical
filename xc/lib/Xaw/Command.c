@@ -175,7 +175,7 @@ static void Get_highlightGC(cbw)
     /* Set up a GC for highlighted state.  It has a thicker
        line width for the highlight border */
 
-    values.background   = ComWbackground;
+    values.foreground   = ComWforeground;
     values.line_width   = ComWhighlightThickness;
 
     ComWhighlightGC = XtGetGC((Widget)cbw,
