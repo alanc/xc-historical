@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.11 93/09/26 16:44:07 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.12 93/09/26 18:15:00 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -334,7 +334,8 @@ Bool		 swap;
 
     case SM_InteractRequest:
 
-        if (!(smsConn->save_yourself_in_progress && smsConn->can_interact))
+        if (!smsConn->save_yourself_in_progress ||
+	    smsConn->interaction_allowed == SmInteractStyleNone)
 	{
 	    _IceErrorBadState (iceConn, _SmsOpcode,
 		SM_InteractRequest, IceCanContinue);
@@ -345,9 +346,18 @@ Bool		 swap;
 
 	    IceReadSimpleMessage (iceConn, smInteractRequestMsg, pMsg);
 
-	    (*smsConn->callbacks.interact_request.callback) (smsConn,
-	        smsConn->callbacks.interact_request.manager_data,
-		pMsg->dialogType);
+	    if (pMsg->dialogType == SmDialogNormal &&
+		smsConn->interaction_allowed != SmInteractStyleAny)
+	    {
+		_IceErrorBadState (iceConn, _SmsOpcode,
+		    SM_InteractRequest, IceCanContinue);
+	    }
+	    else
+	    {
+		(*smsConn->callbacks.interact_request.callback) (smsConn,
+	            smsConn->callbacks.interact_request.manager_data,
+		    pMsg->dialogType);
+	    }
 	}
 	break;
 
@@ -394,7 +404,7 @@ Bool		 swap;
 	    IceReadSimpleMessage (iceConn, smSaveYourselfDoneMsg, pMsg);
 
 	    smsConn->save_yourself_in_progress = False;
-	    smsConn->can_interact = False;
+	    smsConn->interaction_allowed = SmInteractStyleNone;
 
 	    (*smsConn->callbacks.save_yourself_done.callback) (smsConn,
 	        smsConn->callbacks.save_yourself_done.manager_data,
