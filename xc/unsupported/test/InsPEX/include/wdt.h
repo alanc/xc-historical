@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt.h,v 5.4 91/07/24 18:44:18 hersh Exp $ */
+/* $XConsortium: wdt.h,v 5.5 91/09/30 17:02:15 hersh Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -668,26 +668,48 @@ Plimit3 list_choice3_def_echo_volume[] = { {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0
 	2. valuator data records are ommited, since they will not be verified 
 */
 
-Pint list_valuator_dev_num [] = {1};
-Pfloat list_valuator_def_init_value[] = {0.0};
-Pint list_valuator_num_pet[] = {2};
-Pint list_valuator_list_pet[][10] = { {1,-1} };
+Pint list_valuator_dev_num [] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+Pfloat list_valuator_def_init_value[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+Pint list_valuator_num_pet[] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+Pint list_valuator_list_pet[][10] = { {1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1} };
 #ifdef PHIGS_WS_TYPE_X_TOOL
-Plimit list_valuator_def_echo_area[] = { {0.0,600.0, 0.0,600.0} };
+Plimit list_valuator_def_echo_area[] = { {0.0,600.0, 0.0,600.0} ,
+{0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} ,
+{0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} ,
+{0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} ,
+{0.0,600.0, 0.0,600.0} , {0.0,600.0, 0.0,600.0} };
 #endif
 #ifdef PHIGS_WS_TYPE_X_DRAWABLE
-Plimit list_valuator_def_echo_area[] = { {0.0,WIN_WIDTH,0.0,WIN_HEIGHT} };
+Plimit list_valuator_def_echo_area[] = { {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT} };
 #endif
 
-Pint list_valuator3_dev_num [] = {1};
-Pfloat list_valuator3_def_init_value[] = {0.0};
-Pint list_valuator3_num_pet[] = {2};
-Pint list_valuator3_list_pet[][10] = { {1,-1} };
+Pint list_valuator3_dev_num [] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+Pfloat list_valuator3_def_init_value[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+Pint list_valuator3_num_pet[] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+Pint list_valuator3_list_pet[][10] = { {1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1},{1,-1} };
 #ifdef PHIGS_WS_TYPE_X_TOOL
-Plimit3 list_valuator3_def_echo_volume[] = { {0.0,600.0, 0.0,600.0, 0.0,1.0} };
+Plimit3 list_valuator3_def_echo_volume[] = { {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0}, {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0}, {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0}, {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0}, {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0}, {0.0,600.0, 0.0,600.0, 0.0,1.0},
+{0.0,600.0, 0.0,600.0, 0.0,1.0} };
 #endif
 #ifdef PHIGS_WS_TYPE_X_DRAWABLE
-Plimit3 list_valuator3_def_echo_volume[] = { {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0} };
+Plimit3 list_valuator3_def_echo_volume[] = { {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0}, {0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0},
+{0.0,WIN_WIDTH,0.0,WIN_HEIGHT,0.0,1.0} };
 #endif
 /*
   default data for every logical device of class stroke(3):
