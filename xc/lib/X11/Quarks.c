@@ -29,8 +29,6 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 
-#define USEPERMALLOC
-
 typedef unsigned long Signature;
 typedef unsigned long Entry;
 
@@ -47,9 +45,6 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 #define CHUNKPER	8
 #define CHUNKMASK	((CHUNKPER<<QUANTUMSHIFT)-1)
 
-#ifndef USEPERMALLOC
-#define PERMSTRING	0x80000000L
-#endif
 #define LARGEQUARK	0x40000000L
 #define QUARKSHIFT	16
 #define QUARKMASK	((LARGEQUARK-1)>>QUARKSHIFT)
@@ -149,14 +144,12 @@ ExpandQuarkTable()
 
 #if NeedFunctionPrototypes
 XrmQuark _XrmInternalStringToQuark(
-    register const char *name, register int len, register Signature sig,
-    Bool permstring)
+    register const char *name, register int len, register Signature sig)
 #else
-XrmQuark _XrmInternalStringToQuark(name, len, sig, permstring)
+XrmQuark _XrmInternalStringToQuark(name, len, sig)
     register XrmString name;
     register int len;
     register Signature sig;
-    Bool permstring;
 #endif
 {
     register XrmQuark q;
@@ -188,12 +181,6 @@ nomatch:    if (!rehash)
 	    idx = REHASH(idx, rehash);
 	    continue;
 	}
-#ifndef USEPERMALLOC
-	if (permstring && !(entry & PERMSTRING)) {
-	    Xfree(NAME(q));
-	    NAME(q) = (char *)name;
-	}
-#endif
 	return q;
     }
     if (nextUniq == nextQuark)
@@ -201,7 +188,7 @@ nomatch:    if (!rehash)
     if ((nextQuark + (nextQuark >> 2)) > quarkMask) {
 	if (!ExpandQuarkTable())
 	    return NULLQUARK;
-	return _XrmInternalStringToQuark(name, len, sig, permstring);
+	return _XrmInternalStringToQuark(name, len, sig);
     }
     q = nextQuark;
     if (!(q & QUANTUMMASK)) {
@@ -217,28 +204,17 @@ nomatch:    if (!rehash)
 	      (XrmString *)Xmalloc(sizeof(XrmString) * (QUANTUMMASK+1))))
 	    return NULLQUARK;
     }
-    if (!permstring) {
-	s2 = (char *)name;
-#ifdef USEPERMALLOC
-	name = Xpermalloc(len+1);
-#else
-	name = Xmalloc(len+1);
-#endif
-	if (!name)
-	    return NULLQUARK;
-	for (i = len, s1 = (char *)name; --i >= 0; )
-	    *s1++ = *s2++;
-	*s1++ = '\0';
-    }
-    NAME(q) = (char *)name;
+    s1 = Xpermalloc(len+1);
+    if (!s1)
+	return NULLQUARK;
+    NAME(q) = s1;
+    for (i = len, s2 = (char *)name; --i >= 0; )
+	*s1++ = *s2++;
+    *s1++ = '\0';
     if (q <= QUARKMASK)
 	entry = (q << QUARKSHIFT) | (sig & SIGMASK);
     else
 	entry = q | LARGEQUARK;
-#ifndef USEPERMALLOC
-    if (permstring)
-	entry |= PERMSTRING;
-#endif
     quarkTable[idx] = entry;
     nextQuark++;
     return q;
@@ -262,28 +238,7 @@ XrmQuark XrmStringToQuark(name)
     for (tname = (char *)name; c = *tname++; i++)
 	sig = (sig << 1) + c;
 
-    return _XrmInternalStringToQuark(name, i, sig, False);
-}
-
-#if NeedFunctionPrototypes
-XrmQuark XrmPermStringToQuark(
-    const char *name)
-#else
-XrmQuark XrmPermStringToQuark(name)
-    XrmString name;
-#endif
-{
-    register char c, *tname;
-    register int i = 0;
-    register Signature sig = 0;
-
-    if (!name)
-	return (NULLQUARK);
-
-    for (tname = (char *)name; c = *tname++; i++)
-	sig = (sig << 1) + c;
-
-    return _XrmInternalStringToQuark(name, i, sig, True);
+    return _XrmInternalStringToQuark(name, i, sig);
 }
 
 XrmQuark XrmUniqueQuark()
@@ -296,51 +251,7 @@ XrmQuark XrmUniqueQuark()
 XrmString XrmQuarkToString(quark)
     XrmQuark quark;
 {
-#ifndef USEPERMALLOC
-    char *name;
-    register Entry entry;
-    register char c, *s1, *s2;
-    register int i, idx;
-    int len, rehash;
-    Signature sig;
-    XrmQuark q;
-#endif
-
     if (quark <= 0 || quark >= nextQuark)
     	return NULLSTRING;
-#ifdef USEPERMALLOC
     return NAME(quark);
-#else
-    /* If the string is not permanent, we need to mark it permanent, so
-     * that it will not get freed out from under the application */
-    name = NAME(quark);
-    sig = 0;
-    len = 0;
-    for (s1 = name; c = *s1++; len++)
-	sig = (sig << 1) + c;
-    rehash = 0;
-    idx = HASH(sig);
-    while (entry = quarkTable[idx]) {
-	if (entry & LARGEQUARK)
-	    q = entry & (LARGEQUARK-1);
-	else {
-	    if ((entry - sig) & SIGMASK)
-		goto notit;
-	    q = (entry >> QUARKSHIFT) & QUARKMASK;
-	}
-	for (i = len, s1 = name, s2 = NAME(q); --i >= 0; ) {
-	    if (*s1++ != *s2++)
-		goto notit;
-	}
-	if (*s2) {
-notit:	    if (!rehash)
-		rehash = REHASHVAL(sig);
-	    idx = REHASH(idx, rehash);
-	    continue;
-	}
-	quarkTable[idx] = entry | PERMSTRING;
-	break;
-    }
-    return name;
-#endif
 }
