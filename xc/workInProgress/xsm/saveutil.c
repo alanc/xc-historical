@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.16 94/07/25 13:32:09 mor Exp $ */
+/* $XConsortium: saveutil.c,v 1.17 94/07/28 11:25:08 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -332,7 +332,10 @@ char *session_name;
 		continue;
 	    }
 	    if (foundDiscard)
+	    {
 		system (p);	/* Discard Command */
+		foundDiscard = 0;
+	    }
 	}
     }
 
