@@ -173,8 +173,7 @@ GC XtGetGC(widget, valueMask, values)
     return cur->gc;
 }
 
-void  XtDestroyGC(widget, gc)
-    Widget widget;
+void  XtDestroyGC(gc)
     GC gc;
 {
     GCptr cur, last;
@@ -184,7 +183,7 @@ void  XtDestroyGC(widget, gc)
 	    if (--(cur->ref_count) == 0) {
 		if (last) last->next = cur->next;
 		else GClist = cur->next;
-		XFreeGC(XtDisplay(widget), gc);
+		XFreeGC(cur->dpy, gc);
 		XtFree((char *) cur);
 		break;
 	    }
