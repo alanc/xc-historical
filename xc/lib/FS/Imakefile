@@ -1,19 +1,19 @@
-XCOMM $XConsortium: Imakefile,v 1.11 92/05/28 12:58:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 92/08/10 17:45:56 eswu Exp $
 #if Malloc0ReturnsNull
         DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 INCLUDES = -I$(FONTSRC)/include
 
-SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c\
-	FSFlush.c FSFontInfo.c FSFtNames.c FSGetCats.c FSListCats.c\
-	FSListExt.c FSMisc.c FSNextEv.c FSOpenFont.c FSOpenServ.c\
-	FSQGlyphs.c FSQXExt.c FSQXInfo.c FSQuExt.c FSServName.c\
+SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c \
+	FSFlush.c FSFontInfo.c FSFtNames.c FSGetCats.c FSListCats.c \
+	FSListExt.c FSMisc.c FSNextEv.c FSOpenFont.c FSOpenServ.c \
+	FSQGlyphs.c FSQXExt.c FSQXInfo.c FSQuExt.c FSServName.c \
 	FSSetCats.c FSSync.c FSSynchro.c FSlibInt.c
 
-OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o\
-	FSFlush.o FSFontInfo.o FSFtNames.o FSGetCats.o FSListCats.o\
-	FSListExt.o FSMisc.o FSNextEv.o FSOpenFont.o FSOpenServ.o\
-	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o\
+OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o \
+	FSFlush.o FSFontInfo.o FSFtNames.o FSGetCats.o FSListCats.o \
+	FSListExt.o FSMisc.o FSNextEv.o FSOpenFont.o FSOpenServ.o \
+	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o \
 	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o
 
 CONN_DEFINES = ConnectionFlags
