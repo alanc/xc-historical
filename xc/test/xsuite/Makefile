@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.2 92/06/11 15:26:22 rws Exp $
+# $XConsortium: Makefile,v 1.3 92/07/06 18:50:01 rws Exp $
 
 #
 # Makefile for building the TET and the X test suite libraries/utilities.
@@ -57,6 +57,7 @@ install:
 	cd tet/src/posix_c/api; pmake install
 	cd xtest/src/lib; pmake install
 	cd xtest/src/libproto; pmake install
+	cd xtest/src/xim; pmake install
 	cd xtest/fonts; pmake install
 	cd xtest/src/bin/mc ; pmake install
 	cd xtest/src/pixval/blowup; pmake install
@@ -66,6 +67,7 @@ clean:
 	cd tet/src/posix_c/api; pclean
 	cd xtest/src/lib; pclean
 	cd xtest/src/libproto; pclean
+	cd xtest/src/xim; pclean
 	cd xtest/fonts; pclean
 	cd xtest/src/bin/mc ; pclean
 	cd xtest/src/pixval/blowup; pclean
