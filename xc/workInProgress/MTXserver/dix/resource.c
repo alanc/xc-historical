@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.5 94/01/11 20:47:20 rob Exp $ */
+/* $XConsortium: resource.c,v 1.6 94/01/19 17:18:15 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -286,14 +286,6 @@ extern WindowPtr *WindowTable;
 
 #define NullResource  ((ResourcePtr)NULL)
 
-typedef enum
-{
-    reader_writer_lock,
-    exclusive_lock,
-    no_lock,
-    read_lock,
-    write_lock,
-} ResourceLockType;
 #endif /* XTHREADS */
 
 typedef struct _Resource {
