@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.128 92/03/05 18:48:55 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.129 92/05/20 16:05:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1109,39 +1109,23 @@ static String ParseQuotedStringEvent(str, event,error)
     register EventPtr event;
     Boolean *error;
 {
-    register int j;
-
-    Value ctrlMask;
     Value metaMask;
-    Value shiftMask;
-    register char	c;
     char	s[2];
-    (void) _XtLookupModifier("Ctrl",(LateBindingsPtr*)NULL,
-                 FALSE,(Value *) &ctrlMask,TRUE);
-    (void) _XtLookupModifier("Meta", &event->event.lateModifiers,
-                 FALSE,(Value *) &metaMask,FALSE);
-    (void) _XtLookupModifier("Shift",(LateBindingsPtr*)NULL,
-                 FALSE,(Value *) &shiftMask,TRUE);
-    for (j=0; j < 2; j++)
-	if (*str=='^' && !(event->event.modifiers | ctrlMask)) {
-	    str++;
-	    event->event.modifiers |= ctrlMask;
-	} else if (*str == '$' && !(event->event.modifiers | metaMask)) {
-	    str++;
-	    event->event.modifiers |= metaMask;
-	} else if (*str == '\\') {
-	    str++;
-	    c = *str;
-	    if (*str != '\0' && *str != '\n') str++;
-	    break;
-	} else {
-	    c = *str;
-	    if (*str != '\0' && *str != '\n') str++;
-	    break;
-	}
-    event->event.eventType = KeyPress;
-    s[0] = c;
+
+    if (*str=='^') {
+	str++;
+	event->event.modifiers = ControlMask;
+    } else if (*str == '$') {
+	str++;
+	(void) _XtLookupModifier("Meta", &event->event.lateModifiers, FALSE,
+				 &metaMask, FALSE);
+    }
+    if (*str == '\\')
+	str++;
+    s[0] = *str;
     s[1] = '\0';
+    if (*str != '\0' && *str != '\n') str++;
+    event->event.eventType = KeyPress;
     event->event.eventCode = StringToKeySym(s, error);
     if (*error) return PanicModeRecovery(str);
     event->event.eventCodeMask = ~0L;
