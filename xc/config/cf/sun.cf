@@ -59,11 +59,15 @@
 /* see below for ServerDefines */
 
 
-/**/# platform:  $XConsortium: sun.cf,v 1.32 89/10/11 18:54:52 jim Exp $
+/**/# platform:  $XConsortium: sun.cf,v 1.33 89/10/20 11:23:49 jim Exp $
 /**/# operating system:  OSName
 
 #if OSMajorVersion == 3 && OSMinorVersion <= 2
 #define OptimizedCDebugFlags /* as nothing */
+#endif
+
+#if HasGcc
+#define ServerCDebugFlags -O -g
 #endif
 
 #define UseSunWindowsInServer	NO	/* link in SunWindows support? */
