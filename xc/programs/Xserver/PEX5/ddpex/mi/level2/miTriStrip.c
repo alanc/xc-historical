@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.8 92/12/07 17:06:13 mor Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.9 92/12/29 17:14:30 mor Exp $ */
 
 
 /***********************************************************
@@ -784,6 +784,7 @@ miClipTriStrip(pddc, input_vert, input_fct, output_vert, output_fct,clip_mode)
                                 in_ptR, t_ptR, out_pt);
                                         /*Places point "B" into output list */
                   out_pt.ptr += point_size;
+		  pts_in_list++;
                   if (finput) {
                     COPY_FACET(in_fct, out_fct, facet_size);
                     out_fct += facet_size;
@@ -986,15 +987,30 @@ miClipTriStrip(pddc, input_vert, input_fct, output_vert, output_fct,clip_mode)
 		}
  
 		/* Look for next point inside bounds */
-		while(clip_code && (k < vert_count)) {
+		do {
 		  clip_code = 0;
 		  in_ptR.ptr += point_size;
 		  if (finput) in_fct += facet_size;
+		  k++;
+  		  if (k == vert_count)
+  		    break;
             	  COMPUTE_CLIP_PARAMS(in_ptR, t_ptR, 2, clip_mode,
 			current_clip,MC_HSpace,clip_code);
-		  k++;
-		}
+		} while(clip_code);
 		if (k < vert_count) {
+  		  /*
+  		   * k is incremented by the for loop, but because we have
+  		   * a new_list, the pointers won't get bumped.  Therefore,
+  		   * k must be decremented to keep it consistent with the
+  		   * pointers for reentering the for loop.
+  		   *
+  		   * However, k must not be adjusted when k == vert_count,
+  		   * because in this case P, Q and R are all clipped and it
+  		   * is necessary to leave k == vert_count to terminate the
+  		   * for loop.
+  		   */
+  		  k--;
+
 		  /* Get P & Q; re-enter loop. 
 	 	   * Next case encountered will be 3, which will
 		   * handle the odd-even rule for normals.
