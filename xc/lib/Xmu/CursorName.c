@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CursorName.c,v 1.2 89/07/19 15:59:42 jim Exp $
+ * $XConsortium: CursorName.c,v 1.3 89/07/19 17:16:10 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,11 +26,17 @@
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
 
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
 int XmuCursorNameToIndex (name)
     char *name;
 {
-    static struct _CursorName {
-	char		*name;
+    static Const struct _CursorName {
+	Const char	*name;
 	unsigned int	shape;
     } cursor_names[] = {
 			{"x_cursor",		XC_X_cursor},
@@ -111,7 +117,7 @@ int XmuCursorNameToIndex (name)
 			{"watch",		XC_watch},
 			{"xterm",		XC_xterm},
     };
-    register struct _CursorName *table;
+    register Const struct _CursorName *table;
     register int i;
     char tmp[40];
     
