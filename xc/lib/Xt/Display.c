@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.78 91/07/05 14:42:32 rws Exp $ */
+/* $XConsortium: Display.c,v 1.79 91/07/12 12:34:12 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -242,9 +242,9 @@ String **argv_in_out, * fallback_resources;
 
     if (!dpy) {
 	String param = display_name_tried;
-	i = 1;
+	Cardinal param_count = 1;
 	XtErrorMsg("invalidDisplay","xtInitialize",XtCXtToolkitError,
-                   "Can't open display: %s", &param, &i);
+                   "Can't open display: %s", &param, &param_count);
     }
     *argv_in_out = saved_argv;
     return dpy;
