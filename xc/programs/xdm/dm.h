@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.9 88/11/17 17:04:53 keith Exp $
+ * $XConsortium: dm.h,v 1.10 88/11/23 17:00:11 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,8 +30,8 @@
 # include	<sys/param.h>	/* for NGROUPS */
 
 #ifdef SYSV
-# define waitCode(w)	((w) & 0xff)
-# define waitSig(w)	(((w) >> 8) & 0xff)
+# define waitCode(w)	(((w) >> 8) & 0xff)
+# define waitSig(w)	((w) & 0xff)
 typedef int		waitType;
 #else
 # include	<sys/wait.h>
@@ -105,6 +105,7 @@ struct display {
 	char		*systemPath;	/* path set for startup/reset */
 	char		*systemShell;	/* interpreter for startup/reset */
 	char		*failsafeClient;/* a client to start when the session fails */
+	int		authorize;	/* enable authorization */
 	Xauth		*authorization;	/* authorization data */
 	char		*authFile;	/* file to store authorization in */
 	char		*userAuthDir;	/* backup directory for tickets */
