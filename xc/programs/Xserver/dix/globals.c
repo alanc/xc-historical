@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.48 91/05/14 12:05:02 rws Exp $ */
+/* $XConsortium: globals.c,v 1.49 91/05/14 12:16:21 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -49,7 +49,7 @@ KeybdCtrl defaultKeyboardControl = {
 PtrCtrl defaultPointerControl = {
 	DEFAULT_PTR_NUMERATOR,
 	DEFAULT_PTR_DENOMINATOR,
-	DEFAULT_PTR_THRESHOLD
+	DEFAULT_PTR_THRESHOLD,
 	0};
 
 ClientPtr *clients;
