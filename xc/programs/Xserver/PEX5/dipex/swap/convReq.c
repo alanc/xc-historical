@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.14 92/11/09 18:49:54 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.15 92/11/16 13:31:32 mor Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1345,7 +1345,11 @@ SWAP_FUNC_PREFIX(PEXQueryTextExtents) (cntxtPtr, strmPtr)
 pexContext		*cntxtPtr;
 pexQueryTextExtentsReq	*strmPtr;
 {
-    pexSwap *swapPtr = cntxtPtr->swap;
+    pexSwap		*swapPtr = cntxtPtr->swap;
+    pexMonoEncoding	*pEnc;
+    CARD32		*numEnc;
+    int			bytes, i;
+
     SWAP_CARD16 (strmPtr->length);
     SWAP_ENUM_TYPE_INDEX (strmPtr->fpFormat);
     SWAP_CARD16 (strmPtr->textPath);
@@ -1359,8 +1363,22 @@ pexQueryTextExtentsReq	*strmPtr;
     
     SWAP_CARD32 (strmPtr->numStrings);
 
-    SWAP_FUNC_PREFIX(SwapMonoEncoding) (swapPtr, (pexMonoEncoding *)(strmPtr+1),
-					strmPtr->numStrings);
+    numEnc = (CARD32 *) (strmPtr + 1);
+
+    for (i = 0; i < strmPtr->numStrings; i++)
+    {
+	SWAP_CARD32 (*numEnc);
+
+	pEnc = (pexMonoEncoding *) (numEnc + 1);
+	SWAP_FUNC_PREFIX(SwapMonoEncoding) (swapPtr, pEnc, *numEnc);
+
+	bytes = pEnc->numChars * ((pEnc->characterSetWidth == PEXCSByte) ?
+	  sizeof(CARD8) : ((pEnc->characterSetWidth == PEXCSShort) ?
+	  sizeof(CARD16) : sizeof(CARD32)));
+
+	numEnc = (CARD32 *) ((char *) (pEnc + 1) + bytes + PADDING (bytes));
+    }
+
     CALL_REQUEST;
 }
 
