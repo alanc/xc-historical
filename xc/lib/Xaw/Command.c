@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Command.c,v 1.23 87/09/13 19:16:31 newman Locked $";
+static char rcsid[] = "$Header: Command.c,v 1.24 87/09/13 23:04:23 swick Locked $";
 #endif lint
 
 /*
@@ -35,7 +35,7 @@ static char rcsid[] = "$Header: Command.c,v 1.23 87/09/13 19:16:31 newman Locked
  * from Command.c (XToolkit, alpha version)
  *              Charles Haynes
  *              Digital Equipment Corporation
- *              Western Research Laboratory
+ *              Western Software Laboratory
  */
 
 #define XtStrlen(s)	((s) ? strlen(s) : 0)
@@ -52,7 +52,7 @@ static char rcsid[] = "$Header: Command.c,v 1.23 87/09/13 19:16:31 newman Locked
 #include "LabelP.h"
 #include "Command.h"
 #include "CommandP.h"
-#include "CommandInt.h"
+#include "CommandI.h"
 #include "Atoms.h"
 
 /****************************************************************
@@ -73,26 +73,23 @@ static char *defaultTranslation[] = {
 static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 static XtResource resources[] = { 
 
-   {XtNfunction, XtCFunction, XtRFunction, sizeof(XtCallbackProc), 
-      XtOffset(CommandWidget, command.callback), XtRFunction, (caddr_t)NULL},
-   {XtNparameter, XtCParameter, XtRPointer, sizeof(caddr_t), 
-      XtOffset(CommandWidget,command.closure), XtRPointer, (caddr_t)NULL},
-
+   {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
+      XtOffset(CommandWidget, command.callbacks), XtRPointer, (caddr_t)NULL},
    {XtNhighlightThickness, XtCThickness, XrmRInt, sizeof(Dimension),
       XtOffset(CommandWidget,command.highlight_thickness), XrmRString,"2"},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
-      sizeof(_XtTranslations),
+      sizeof(XtTranslations),
       XtOffset(CommandWidget, core.translations),XtRTranslationTable,
       (caddr_t)&defaultTranslations},
  };  
 
 static XtActionsRec actionsList[] =
 {
-  {"set", (caddr_t) Set},
-  {"notify", (caddr_t) Notify},
-  {"highlight", (caddr_t) Highlight},
-  {"unset", (caddr_t) Unset},
-  {"unhighlight", (caddr_t) Unhighlight},
+  {"set",		Set},
+  {"notify",		Notify},
+  {"highlight",		Highlight},
+  {"unset",		Unset},
+  {"unhighlight",	Unhighlight},
 };
 
   /* ...ClassData must be initialized at compile time.  Must
@@ -101,26 +98,28 @@ static XtActionsRec actionsList[] =
   */
 CommandClassRec commandClassRec = {
   {
-    (WidgetClass) &labelClassRec,    /* superclass	*/    
-    "Command",                               /* class_name	*/
-    sizeof(CommandRec),                 /* size		*/
-    ClassInitialize,                       /* class initialize  */
+    (WidgetClass) &labelClassRec,          /* superclass	*/    
+    "Command",                             /* class_name	*/
+    sizeof(CommandRec),                    /* size		*/
+    NULL,                                  /* class initialize  */
     FALSE,                                 /* class_inited      */
     Initialize,                            /* initialize	*/
-    Realize,                               /* realize		*/
+    XtInheritRealize,                      /* realize		*/
     actionsList,                           /* actions		*/
-    XtNumber(actionsList),
+    XtNumber(actionsList),                 /* num_actions	*/
     resources,                             /* resources	        */
     XtNumber(resources),                   /* resource_count	*/
     NULLQUARK,                             /* xrm_class	        */
-    FALSE,
-    FALSE,
+    FALSE,                                 /* compress_motion	*/
+    FALSE,                                 /* compress_exposure	*/
     FALSE,                                 /* visible_interest	*/
     Destroy,                               /* destroy		*/
-    Resize,                                /* resize		*/
+    XtInheritResize,                       /* resize		*/
     Redisplay,                             /* expose		*/
     SetValues,                             /* set_values	*/
     NULL,                                  /* accept_focus	*/
+    NULL,                                  /* callback_private	*/
+    NULL,                                  /* reserved_private	*/
   },  /* CoreClass fields initialization */
   {
     0,                                     /* field not used    */
@@ -133,30 +132,11 @@ CommandClassRec commandClassRec = {
   /* for public consumption */
 WidgetClass commandWidgetClass = (WidgetClass) &commandClassRec;
 
-XtCallbackKind  activateCommand;   /* for public consumption*/
 /****************************************************************
  *
  * Private Procedures
  *
  ****************************************************************/
-
-#ifdef saber_bug
-static Cardinal commandCallbackOffset =
-    XtOffset(CommandWidget,command.callback_list);
-static void ClassInitialize()
-{
-  activateCommand = XtNewCallbackKind(
-	commandWidgetClass, commandCallbackOffset);
-						
-} 
-#else
-static void ClassInitialize()
-{
-  activateCommand = XtNewCallbackKind(commandWidgetClass,
-			 XtOffset(CommandWidget,command.callback_list));
-						
-} 
-#endif
 
 static void Get_inverseGC(cbw)
     CommandWidget cbw;
@@ -208,18 +188,13 @@ static void Get_highlightGC(cbw)
 static void Initialize(request, new, args, num_args)
  Widget request, new;
  ArgList args;
- Cardinal num_args;
+ Cardinal *num_args;
 {
     CommandWidget cbw = (CommandWidget) new;
 
     Get_inverseGC(cbw);
     Get_inverseTextGC(cbw);
     Get_highlightGC(cbw);
-      /* Start the callback list if the client specified one in
-	 the arglist */
-    ComWcallbackList = NULL;
-    if (ComWcallback != NULL)
-      XtAddCallback((Widget)cbw,activateCommand,ComWcallback,ComWclosure);
 
       /* init flags for state */
     ComWset = FALSE;
@@ -228,16 +203,6 @@ static void Initialize(request, new, args, num_args)
     ComWdisplaySet = FALSE;
 
 } 
-
-static void Realize(w, valueMask, attributes) 
-     /* This is the same as LabelWidget */
-    register Widget w;
-    Mask valueMask;
-    XSetWindowAttributes *attributes;
-{
-  XtCallParentProcedure3Args(realize,w,valueMask,attributes);
-} 
-
 
 /***************************
 *
@@ -290,8 +255,7 @@ static void Notify(w,event)
      Widget w;
      XEvent *event;
 {
-  CommandWidget cbw = (CommandWidget)w;
-  XtCallCallbacks((Widget)cbw,activateCommand,NULL);
+  XtCallCallbacks(w, XtNcallback, NULL);
 }
 /*
  * Repaint the widget window
@@ -370,13 +334,7 @@ static void Redisplay(w, event)
 }
 
 
-static void Resize(w)
-    Widget	w;
-{
-    /* Nothing changes specific to command.  Label must change. */
-  XtCallParentProcedure(resize,w);
-}
-
+/* ARGSUSED */
 static void Destroy(w)
     Widget w;
 {
@@ -387,6 +345,7 @@ static void Destroy(w)
 /*
  * Set specified arguments into widget
  */
+/* ARGSUSED */
 static Boolean SetValues (current, request, new, last)
     Widget current, request, new;
     Boolean last;
