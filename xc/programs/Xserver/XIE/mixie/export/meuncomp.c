@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: meuncomp.c,v 1.1 93/10/26 09:49:48 rws Exp $ */
 /**** module meuncomp.c ****/
 /******************************************************************************
 				NOTICE
@@ -112,14 +112,18 @@ void btoIS(src,dst,pvt)
 BytePixel *src, *dst;
 meUncompPtr pvt;
 {
-CARD32 width  = pvt->width;
 CARD32 stride = pvt->stride;
-CARD32 pitch  = pvt->pitch;
-CARD32 i, j;
+CARD32  width = pvt->width;
+CARD32  pitch = pvt->pitch;
+CARD32      j = pvt->bitOff;
+CARD32 i;
 
-	bzero(dst,pitch + 7 >> 3);
+	if (j) /* Don't bzero partial byte left from last scanline */
+	    bzero(dst + 1,(j + pitch + 7 >> 3) - 1); 
+	else
+	    bzero(dst,pitch + 7 >> 3);
 
-	for (i = 0, j = 0; i < width; i++, j += stride) {
+	for (i = 0; i < width; i++, j += stride) {
 	    if (LOGBYTE_tstbit(src,i) != 0) {
 		LOGBYTE_setbit(dst,j);	
 	    }
@@ -131,14 +135,18 @@ void sbtoIS(src,dst,pvt)
 BytePixel *src, *dst;
 meUncompPtr pvt;
 {
-CARD32 width  = pvt->width;
 CARD32 stride = pvt->stride;
-CARD32 pitch  = pvt->pitch;
-CARD32 i, j, s;
+CARD32  width = pvt->width;
+CARD32  pitch = pvt->pitch;
+CARD32      j = pvt->bitOff;
+CARD32 i, s;
 
-	bzero(dst,pitch + 7 >> 3);
+	if (j) /* Don't bzero partial byte left from last scanline */
+	    bzero(dst + 1,(j + pitch + 7 >> 3) - 1); 
+	else
+	    bzero(dst,pitch + 7 >> 3);
 
-	for (i = 0, j = 0; i < width; i++, j += stride) {
+	for (i = 0; i < width; i++, j += stride) {
 	    s = j ^ 7; /* Larry swap */
 	    if (LOGBYTE_tstbit(src,i) != 0) {
 		LOGBYTE_setbit(dst,s);	
