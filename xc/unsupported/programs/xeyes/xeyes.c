@@ -1,4 +1,4 @@
-/* $XConsortium: xeyes.c,v 1.13 91/02/22 18:02:50 converse Exp $ */
+/* $XConsortium: xeyes.c,v 1.14 91/05/22 19:49:34 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@ void usage()
 "       [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n");
     fprintf(stderr,
 "       [-fg {color}] [-bg {color}] [-bd {color}] [-bw {pixels}]");
-    fprintf(stderr, " [-shape]");
+    fprintf(stderr, " [-shape | +shape]");
     fprintf(stderr, "\n");
     fprintf(stderr,
 "       [-outline {color}] [-center {color}] [-backing {backing-store}]\n");
@@ -57,6 +57,7 @@ static XrmOptionDescRec options[] = {
 {"-center",	"*eyes.center",		XrmoptionSepArg,	NULL},
 {"-backing",	"*eyes.backingStore",	XrmoptionSepArg,	NULL},
 {"-shape",	"*eyes.shapeWindow",	XrmoptionNoArg,		"TRUE"},
+{"+shape",	"*eyes.shapeWindow",	XrmoptionNoArg,		"FALSE"},
 };
 
 static XtActionsRec actions[] = {
