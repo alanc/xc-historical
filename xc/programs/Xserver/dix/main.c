@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.15 91/05/27 12:48:00 rws Exp $ */
+/* $XConsortium: main.c,v 5.16 91/07/22 23:29:23 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -189,6 +189,7 @@ main(argc, argv)
 	    serverClient->saveSet = (pointer *)NULL;
 	    serverClient->index = 0;
 	    serverClient->clientAsMask = (Mask)0;
+	    serverClient->noClientException = Success;
 	}
 	else
 	    ResetWellKnownSockets ();
