@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: access.c,v 1.18 87/09/03 14:24:02 rws Locked $ */
+/* $Header: access.c,v 1.19 88/01/02 16:35:42 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -228,12 +228,39 @@ ResetHosts (display)
     }
 }
 
+static Bool
+AuthorizedClient(client)
+    ClientPtr client;
+{
+    int    		alen, family;
+    struct sockaddr	from;
+    pointer		addr;
+    register HOST	*host;
+
+    alen = sizeof (from);
+    if (!getpeername (((osPrivPtr)client->osPrivate)->fd, &from, &alen))
+    {
+        if ((family = ConvertAddr (&from, &alen, &addr)) >= 0)
+	{
+	    if (family == 0)
+		return TRUE;
+	    for (host = selfhosts; host; host = host->next)
+	    {
+		if (family == host->family &&
+		    !bcmp (addr, host->addr, alen))
+		    return TRUE;
+	    }
+	}
+    }
+    return FALSE;
+}
+
 /* Add a host to the access control list.  This is the external interface
  * called from the dispatcher */
 
 int
 AddHost (client, family, length, pAddr)
-    int			client;
+    ClientPtr		client;
     int                 family;
     unsigned            length;        /* of bytes in pAddr */
     pointer             pAddr;
@@ -242,16 +269,24 @@ AddHost (client, family, length, pAddr)
     register HOST	*host;
     int                 unixFamily;
 
+    if (!AuthorizedClient(client))
+	return(BadAccess);
     unixFamily = UnixFamily(family);
     if ((len = CheckFamily (DONT_CHECK, unixFamily)) < 0)
-        return BadMatch;
+    {
+	client->errorValue = family;
+        return(-len);
+    }
 
     if (len != length)
-        return BadMatch;
+    {
+	client->errorValue = length;
+        return(BadValue);
+    }
     for (host = validhosts; host; host = host->next)
     {
         if (unixFamily == host->family && !bcmp (pAddr, host->addr, len))
-    	    return Success;
+    	    return(Success);
     }
     host = (HOST *) xalloc (sizeof (HOST));
     host->family = unixFamily;
@@ -259,7 +294,7 @@ AddHost (client, family, length, pAddr)
     bcopy(pAddr, host->addr, len);
     host->next = validhosts;
     validhosts = host;
-    return Success;
+    return(Success);
 }
 
 /* Add a host to the access control list. This is the internal interface 
@@ -290,7 +325,7 @@ NewHost (family, addr)
 
 int
 RemoveHost (client, family, length, pAddr)
-    int			client;
+    ClientPtr		client;
     int                 family;
     unsigned            length;        /* of bytes in pAddr */
     pointer             pAddr;
@@ -299,11 +334,19 @@ RemoveHost (client, family, length, pAddr)
                         unixFamily;
     register HOST	*host, **prev;
 
+    if (!AuthorizedClient(client))
+	return(BadAccess);
     unixFamily = UnixFamily(family);
     if ((len = CheckFamily (DONT_CHECK, unixFamily)) < 0)
-        return BadMatch;
+    {
+	client->errorValue = family;
+        return(-len);
+    }
     if (len != length)
-        return BadMatch;
+    {
+	client->errorValue = length;
+        return(BadValue);
+    }
     for (prev = &validhosts;
          (host = *prev) && (unixFamily != host->family ||
 		            bcmp (pAddr, host->addr, len));
@@ -314,7 +357,7 @@ RemoveHost (client, family, length, pAddr)
         *prev = host->next;
         xfree (host);
     }
-    return Success;
+    return(Success);
 }
 
 /* Get all hosts in the access control list */
@@ -387,8 +430,7 @@ CheckFamily (connection, family)
         break;
 #endif
       default:
-        /* BadValue */
-        return (-1);
+        return (-BadValue);
     }
     if (connection == DONT_CHECK)
         return (len);
@@ -408,7 +450,7 @@ CheckFamily (connection, family)
 	}
     }
     /* Bad Access */
-    return (-1);
+    return (-BadAccess);
 }
 
 /* Check if a host is not in the access control list. 
@@ -471,30 +513,15 @@ ConvertAddr (saddr, len, addr)
     return (-1);
 }
 
+int
 ChangeAccessControl(client, fEnabled)
     ClientPtr client;
     int fEnabled;
 {
-    int    		alen, family;
-    struct sockaddr	from;
-    pointer		addr;
-    register HOST	*host;
-
-    alen = sizeof (from);
-    if (!getpeername (((osPrivPtr)client->osPrivate)->fd, &from, &alen))
-    {
-        if ((family = ConvertAddr (&from, &alen, &addr)) >= 0)
-	{
-	    if (family == 0)
-    		AccessEnabled = fEnabled;
-	    for (host = selfhosts; host; host = host->next)
-	    {
-		if (family == host->family &&
-		    !bcmp (addr, host->addr, alen))
-    		    AccessEnabled = fEnabled;
-	    }
-	}
-    }
+    if (!AuthorizedClient(client))
+	return BadAccess;
+    AccessEnabled = fEnabled;
+    return Success;
 }
 
 static int XFamily(af)
