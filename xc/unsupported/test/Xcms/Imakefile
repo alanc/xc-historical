@@ -1,5 +1,3 @@
-# $Header: Imakefile,v 1.3 91/02/17 17:24:54 rws Exp $
-
       SYS_LIBRARIES = -lm
 
             DEFINES =
