@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.25 93/09/12 09:59:36 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.26 93/09/12 17:48:12 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -32,6 +32,20 @@ Avoid.Error files:							@@\
 	$(CCOPTIONS) $(ALLDEFINES) options				@@\
 <<									@@\
 	$(MV) $@ dir\$@
+
+#define BuildIncludesTop(srclist,dstsubdir,dstupdir)			@@\
+includes::								@@\
+	MakeDir($(BUILDINCDIR:/=\))					@@\
+	@$(MAKE) $(MFLAGS) -f <<					@@\
+.SUFFIXES:								@@\
+									@@\
+all: srclist								@@\
+	cd $(BUILDINCDIR:/=\)						@@\
+	!RemoveFile($$**)						@@\
+	!$(LN) $(BUILDINCTOP:/=\)\$(CURRENT_DIR:/=\)\$$** .		@@\
+									@@\
+Avoid.Error srclist:							@@\
+<<
 
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
 XVARdef0 = $(BUILDINCDIR)/dstsubdir					@@\

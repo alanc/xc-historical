@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.169 93/09/12 19:35:52 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.170 93/09/12 20:19:43 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -30,6 +30,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.169 93/09/12 19:35:52 rws Exp $
  * ProofCleanTarget		()
  * RemoveTargetProgram		(program)
  * MakeDir			(dir)
+ * BuildIncludesTop		(srclist)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
  * LinkRule			(program,options,objects,libraries)
  * NormalProgramTarget		(program,objects,deplibs,locallibs,syslibs)
@@ -341,6 +342,16 @@ clean clean.tc::							@@\
 #define MakeDir(dir) DirFailPrefix@if [ -d dir ]; then set +x; \	@@\
 		else (set -x; $(MKDIRHIER) dir); fi
 #endif /* MakeDir */
+
+#ifndef BuildIncludesTop
+#define BuildIncludesTop(srclist)					@@\
+includes::								@@\
+	MakeDir($(BUILDINCDIR))						@@\
+	@(set -x; cd $(BUILDINCDIR); for i in srclist; do \		@@\
+		RemoveFile($$i); \					@@\
+		$(LN) $(BUILDINCTOP)/$(CURRENT_DIR)/$$i .; \		@@\
+	done)
+#endif /* BuildIncludesTop */
 
 #ifndef BuildIncludes
 #define BuildIncludes(srclist,dstsubdir,dstupdir)			@@\
