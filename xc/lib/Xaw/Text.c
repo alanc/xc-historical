@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.155 90/06/15 13:02:37 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.156 90/06/18 14:11:08 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1213,7 +1213,7 @@ caddr_t closure, callData; /* closure = TextWidget, callData = percent. */
   move = old_left - new_left;
 
   if (abs(move) < ctx->core.width) {
-    HScroll(w, (caddr_t) ctx, *(caddr_t *)&move);
+    HScroll(w, (caddr_t) ctx, move);
     return;
   }
   _XawTextPrepareToUpdate(ctx);
