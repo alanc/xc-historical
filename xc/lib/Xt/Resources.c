@@ -29,10 +29,10 @@ static char *sccsid = "@(#)ResourceList.c	1.10	2/25/87";
 
 /* XtResourceList.c -- compile and process resource lists. */
 
-#include "Xlib.h"
+
 #include "Intrinsic.h"
 #include "Atoms.h"
-#include "Xresource.h"
+/*#include "Xresource.h"*/
 #include <stdio.h>
 
 
@@ -98,7 +98,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 
     for (length = 0; w != NULL; w = (Widget) w->core.parent) {
 	names[length] = w->core.xrm_name;
-	classes[length] = w->core.widget_class->coreClass.xrm_class;
+	classes[length] = w->core.widget_class->core_class.xrm_class;
 	length++;
      }
     /* They're in backwards order, flop them around */
@@ -301,13 +301,13 @@ void GetResources(widgetClass, w, names, classes, length, args, argCount)
     Cardinal	  argCount;
 {
     /* First get resources for superclasses */
-    if (widgetClass->coreClass.superclass != NULL) {
-        GetResources(widgetClass->coreClass.superclass,
+    if (widgetClass->core_class.superclass != NULL) {
+        GetResources(widgetClass->core_class.superclass,
 	    w, names, classes, length, args, argCount);
     }
     /* Then for this class */
     XrmGetResources(XtDisplay(w), (caddr_t) w, names, classes, length,
-        widgetClass->coreClass.resources, widgetClass->coreClass.num_resource,
+        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
 	args, argCount);
 } /* GetResources */
 
@@ -322,9 +322,9 @@ void XtGetResources(w, args, argCount)
     Cardinal	length;
 
     /* Make sure xrm_class, xrm_name are valid */
-    if (w->core.widget_class->coreClass.xrm_class == NULLQUARK) {
-        w->core.widget_class->coreClass.xrm_class =
-	    XrmAtomToClass(w->core.widget_class->coreClass.class_name);
+    if (w->core.widget_class->core_class.xrm_class == NULLQUARK) {
+        w->core.widget_class->core_class.xrm_class =
+	    XrmAtomToClass(w->core.widget_class->core_class.class_name);
     }
     w->core.xrm_name = XrmAtomToName(w->core.name);
 
@@ -402,12 +402,12 @@ void GetValues(widgetClass, w, args, argCount)
     Cardinal	  argCount;
 {
     /* First get resource values for superclass */
-    if (widgetClass->coreClass.superclass != NULL) {
-        GetValues(widgetClass->coreClass.superclass, w, args, argCount);
+    if (widgetClass->core_class.superclass != NULL) {
+        GetValues(widgetClass->core_class.superclass, w, args, argCount);
     }
     /* Then for this class */
     XrmGetValues((caddr_t) w,
-        widgetClass->coreClass.resources, widgetClass->coreClass.num_resource,
+        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
 	args, argCount);
 } /* GetValues */
 
@@ -464,12 +464,12 @@ void SetValues(widgetClass, w, args, argCount)
     Cardinal	  argCount;
 {
     /* First set resource values for superclass */
-    if (widgetClass->coreClass.superclass != NULL) {
-        SetValues(widgetClass->coreClass.superclass, w, args, argCount);
+    if (widgetClass->core_class.superclass != NULL) {
+        SetValues(widgetClass->core_class.superclass, w, args, argCount);
     }
     /* Then for this class */
     XrmSetValues((caddr_t) w,
-        widgetClass->coreClass.resources, widgetClass->coreClass.num_resource,
+        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
 	args, argCount);
 } /* SetValues */
 
@@ -488,14 +488,14 @@ void XtSetValues(w, args, argCount)
     }
 
     /* Allocate and copy current widget into newWidget */
-    newWidget = (Widget) XtMalloc(w->core.widget_class->coreClass.size);
+    newWidget = (Widget) XtMalloc(w->core.widget_class->core_class.size);
     bcopy((char *) w, (char *) newWidget, (int) widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
     GetValues(w->core.widget_class, newWidget, args, argCount);
 
     /* Inform widget of changes and deallocate newWidget */
-    w->core.widget_class->coreClass.set_values(w, newWidget);
+    w->core.widget_class->core_class.set_values(w, newWidget);
     XtFree(newWidget);
 } /* XtSetValues */
  

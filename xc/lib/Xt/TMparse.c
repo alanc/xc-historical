@@ -24,9 +24,8 @@
 /* TMparse.c -- parse all X events into widget specific actions. */
 
 #include <stdio.h>
-#include "Xlib.h"
-#include "Xutil.h"
 #include "Intrinsic.h"
+#include "X11/Xutil.h"
 #include <strings.h>
 #include "Atoms.h"
 #include "TM.h"
@@ -617,10 +616,10 @@ void DefineTranslation(w)
 
     CompiledActionTable	compiledActionTable;
 
-    if (w->core.widget_class->coreClass.actions == NULL) return;
+    if (w->core.widget_class->core_class.actions == NULL) return;
 
     compiledActionTable =
-	CompileActionTable(w->core.widget_class->coreClass.actions);
+	CompileActionTable(w->core.widget_class->core_class.actions);
     ParseTranslationTable(w, compiledActionTable);
     FreeCompiledActionTable(compiledActionTable);
 

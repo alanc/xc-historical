@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "Xlib.h"
+
 #include "Intrinsic.h"
 
 typedef struct _GCrec {

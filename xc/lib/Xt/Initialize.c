@@ -31,11 +31,10 @@ static char *sccsid = "@(#)Initialize.c	1.0	8/2787";
 #include <pwd.h>
 #include <sys/param.h>
 
-#include <X11/Xlib.h> 
-#include <X11/Xutil.h>
  /* Xlib definitions  */
  /* things like Window, Display, XEvent are defined herein */
 #include "Intrinsic.h"
+#include <X11/Xutil.h>
 #include "Atoms.h"
 #include "TopLevel.h"
 /*
@@ -82,7 +81,7 @@ typedef struct {
 	char       *geostr;
 	int	    initial;
 	XSizeHints  hints;
-} TopLevel;
+} TopLevelPart;
 
 /****************************************************************
  *
@@ -91,10 +90,10 @@ typedef struct {
  ****************************************************************/
 
 typedef  struct {
-	Core core;
-	Composite composite;
-	TopLevel top;
-} TopLevelWidgetData, *TopLevelWidget;
+	CorePart core;
+	CompositePart composite;
+	TopLevelPart top;
+} TopLevelRec, *TopLevelWidget;
 
 static Resource resources[]=
 {
@@ -127,25 +126,27 @@ static void ChangeManaged(); /* XXX */
 static XtGeometryReturnCode GeometryManager();
 static void EventHandler();
 
-typedef struct _TopLevelWidgetClassData {
-  	CoreClass      coreclass;
-	CompositeClass compositeclass;
-} *TopLevelWidgetClass;
+typedef struct _TopLevelClassRec {
+  	CoreClassPart      core_class;
+	CompositeClassPart composite_class;
+} TopLevelClassRec,*TopLevelWidgetClass;
 
 
-TopLevelWidgetClassData topLevelWidgetClassData = {
-    /* superclass         */    (WidgetClass) &compositeWidgetClassData,
+TopLevelClassRec topLevelWidgetClassRec = {
+    /* superclass         */    (WidgetClass) &compositeClassRec,
     /* class_name         */    "TopLevel",
-    /* size               */    sizeof(TopLevelWidgetData),
+    /* size               */    sizeof(TopLevelRec),
     /* Class Initializer  */	NULL,
     /* Class init'ed ?    */	FALSE,
     /* initialize         */    Initialize,
     /* realize            */    Realize,
     /* actions            */    NULL,
+    /*                    */    0,
     /* resources          */    resources,
     /* resource_count     */	XtNumber(resources),
-    /* xrm_extra          */    NULL,
     /* xrm_class          */    NULLQUARK,
+    /* compress_motion    */    FALSE,
+    /* compress_exposure  */    TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    Destroy,
     /* resize             */    NULL,

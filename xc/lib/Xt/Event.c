@@ -49,9 +49,9 @@ void XtSetEventHandler(widget, eventMask,other, proc,closure)
           p = p-> next;
          }
     }     
-    if (widget->core.widget_class->coreClass.expose != NULL)
+    if (widget->core.widget_class->core_class.expose != NULL)
        tempMask |= ExposureMask;
-    if (widget->core.widget_class->coreClass.visible_interest) 
+    if (widget->core.widget_class->core_class.visible_interest) 
        tempMask |= VisibilityChangeMask;
     widget->core.event_mask = tempMask;
      
@@ -187,7 +187,7 @@ void XtDispatchEvent (event)
     ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
     if ((grabType == pass || grabList == NULL) && IsSensitive)
            DispatchEvent(event,widget, mask);
-    else if (onGrabList) {
+    else if (onGrabList()) {
            if (IsSensitive) DispatchEvent(event,widget,mask);
            else DispatchEvent(event, grabList->widget, mask);
            }  
@@ -270,13 +270,14 @@ void DispatchEvent(event, widget, mask)
 {
     EventRec *p;   
     if (mask == ExposureMask) {
-      if ((widget->core.compress_exposure) && (event->xexpose.count != 0)) 
+      if ((widget->core.widget_class->core_class.compress_exposure)
+        && (event->xexpose.count != 0)) 
         return;
-      if(widget->core.widget_class->coreClass.expose != NULL)
-         widget->core.widget_class->coreClass.expose (widget,event,NULL);
+      if(widget->core.widget_class->core_class.expose != NULL)
+         widget->core.widget_class->core_class.expose (widget,event,NULL);
     }
     if ((mask == VisibilityNotify) &&
-            !(widget->core.widget_class->coreClass.visible_interest)) return;
+            !(widget->core.widget_class->core_class.visible_interest)) return;
 
     for (p=widget->core.event_table; p != NULL; p = p -> next) {
 	if ((mask && p->mask != 0) || (mask==0 && p->non_filter == TRUE)) 
