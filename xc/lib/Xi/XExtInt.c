@@ -1,4 +1,4 @@
-/* $XConsortium: XExtInt.c,v 1.25 92/01/30 14:17:27 rws Exp $ */
+/* $XConsortium: XExtInt.c,v 1.26 92/03/02 13:13:02 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -49,6 +49,12 @@ static	char *XInputError();
 static Bool XInputWireToEvent();
 Status	XInputEventToWire();
 static	/* const */ XEvent	emptyevent;
+
+typedef struct _XInputData
+    {
+    XEvent	data;
+    XExtensionVersion 	*vers;
+    } XInputData;
 
 #define XInputCheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xinput_extension_name, val)
@@ -157,23 +163,23 @@ CheckExtInit(dpy, version_index)
 
     if (info->data == NULL)
 	{
-	info->data = (caddr_t) Xmalloc (sizeof (XEvent));
+	info->data = (caddr_t) Xmalloc (sizeof (XInputData));
 	if (!info->data)
 	    return (-1);
+	((XInputData *) info->data)->vers =
+	    XGetExtensionVersion (dpy, "XInputExtension");
 	}
 
     if (versions[version_index].major_version > Dont_Check)
 	{
-	ext = XGetExtensionVersion (dpy, "XInputExtension");
+	ext = ((XInputData *) info->data)->vers;
 	if ((ext->major_version < versions[version_index].major_version) ||
 	    ((ext->major_version == versions[version_index].major_version) &&
 	     (ext->minor_version < versions[version_index].minor_version)))
 	    {
-	    XFree ((char *)ext);
     	    UnlockDisplay(dpy);
 	    return (-1);
 	    }
-	XFree ((char *)ext);
 	}
     return (0);
     }
@@ -191,6 +197,7 @@ XInputClose (dpy, codes)
     {
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
 
+    XFree((char *)((XInputData *) info->data)->vers);
     XFree((char *)info->data);
     return XextRemoveDisplay (xinput_info, dpy);
     }
