@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.58 89/09/13 13:11:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.59 89/09/14 10:16:01 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -129,21 +129,25 @@ static void CallInitialize (class, req_widget, new_widget, args, num_args)
         CallInitialize (class->core_class.superclass,
 	    req_widget, new_widget, args, num_args);
     if (class->core_class.initialize != NULL)
-	(*class->core_class.initialize) (req_widget, new_widget);
+	(*class->core_class.initialize)
+	    (req_widget, new_widget, args, &num_args);
     if (class->core_class.initialize_hook != NULL)
 	(*class->core_class.initialize_hook) (new_widget, args, &num_args);
 }
 
-static void CallConstraintInitialize (class, req_widget, new_widget)
+static void CallConstraintInitialize (class, req_widget, new_widget, args, num_args)
     ConstraintWidgetClass class;
     Widget	req_widget, new_widget;
+    ArgList	args;
+    Cardinal	num_args;
 {
     if (class->core_class.superclass != constraintWidgetClass)
 	CallConstraintInitialize(
 	    (ConstraintWidgetClass) class->core_class.superclass,
-	    req_widget, new_widget);
+	    req_widget, new_widget, args, num_args);
     if (class->constraint_class.initialize != NULL)
-        (*class->constraint_class.initialize) (req_widget, new_widget);
+        (*class->constraint_class.initialize)
+	    (req_widget, new_widget, args, &num_args);
 }
 
 static Widget _XtCreate(
@@ -225,7 +229,8 @@ static Widget _XtCreate(
 	req_constraints = XtStackAlloc(size, constraint_cache);
 	bcopy(widget->core.constraints, (char*)req_constraints, (int) size);
 	req_widget->core.constraints = req_constraints;
-	CallConstraintInitialize(parent_constraint_class, req_widget, widget);
+	CallConstraintInitialize(parent_constraint_class, req_widget, widget,
+				 args, num_args);
 	XtStackFree(req_constraints, constraint_cache);
     }
     XtStackFree((XtPointer)req_widget, widget_cache);
