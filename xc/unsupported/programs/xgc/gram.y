@@ -98,7 +98,7 @@ stmt		: error
 		| DASHLIST NUMBER
 	{ GC_change_dashlist ($2, TRUE); }
 		| FONT STRING
-	{ GC_change_font ($2); }
+	{ GC_change_font ($2, TRUE); }
 		;
 
 %%
