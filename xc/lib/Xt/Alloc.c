@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: Alloc.c,v 1.13 87/10/27 13:33:30 guarino BL5 $";
 #endif lint
 
 /*
@@ -29,7 +29,11 @@ static char rcsid[] = "$Header$";
  */
 extern char *malloc(), *realloc(), *calloc();
 extern void exit(), free();
+#ifdef VMS
+#include Xlib
+#else
 #include "Xlib.h"
+#endif
 #include "Intrinsic.h"
 
 char *XtMalloc(size)
@@ -37,8 +41,7 @@ char *XtMalloc(size)
 {
     char *ptr;
 
-    if ((ptr = malloc(size)) == NULL) 
-	XtError("Cannot perform malloc");
+    if ((ptr = malloc(size)) == NULL) XtError("Cannot perform malloc");
     return(ptr);
 }
 
@@ -46,11 +49,10 @@ char *XtRealloc(ptr, size)
     char     *ptr;
     unsigned size;
 {
-   if (ptr == NULL) 
-	return(XtMalloc(size));
-   else if ((ptr = realloc(ptr, size)) == NULL) 
+   if (ptr == NULL) return(XtMalloc(size));
+   else if ((ptr = realloc(ptr, size)) == NULL)
 	XtError("Cannot perform realloc");
-    return(ptr);
+   return(ptr);
 }
 
 char *XtCalloc(num, size)
@@ -58,8 +60,7 @@ char *XtCalloc(num, size)
 {
     char *ptr;
 
-    if ((ptr = calloc(num, size)) == NULL) 
-	XtError("Cannot perform calloc");
+    if ((ptr = calloc(num, size)) == NULL) XtError("Cannot perform calloc");
     return(ptr);
 }
 
@@ -68,4 +69,5 @@ void XtFree(ptr)
 {
    if (ptr != NULL) free(ptr);
 }
+
 

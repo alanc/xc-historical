@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header$";
+static char rcsid[] = "$Header: ArgList.c,v 1.8 87/10/27 13:34:15 guarino BL5 $";
 #endif lint
 
 /*
@@ -24,15 +24,20 @@ static char rcsid[] = "$Header$";
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+#ifdef VMS
+#include	Xlib
+#include	stdio
+#else
 #include	"Xlib.h"
-#include	"Intrinsic.h"
 #include	<stdio.h>
+#endif
+#include	"Intrinsic.h"
 
-void PrintArgList(args, argCount)
+static void PrintArgList(args, num_args)
     ArgList	args;
-    int argCount;
+    int num_args;
 {
-    for (; --argCount >= 0; args++) {
+    for (; --num_args >= 0; args++) {
 	(void) printf("name: %s, value: 0x%x\n", args->name, args->value);
     }
 }
@@ -41,20 +46,21 @@ void PrintArgList(args, argCount)
  * This routine merges two arglists. It does NOT check for duplicate entries.
  */
 
-ArgList XtMergeArgLists(args1, argCount1, args2, argCount2)
-    register ArgList args1;
-    register int     argCount1;
-    register ArgList args2;
-    register int     argCount2;
+ArgList XtMergeArgLists(args1, num_args1, args2, num_args2)
+    ArgList args1;
+    Cardinal num_args1;
+    ArgList args2;
+    Cardinal num_args2;
 {
-    register ArgList result, args;
+    ArgList result, args;
 
-    result = (ArgList) XtCalloc((unsigned) argCount1 + argCount2, sizeof(Arg));
+    result = (ArgList) XtCalloc((unsigned) num_args1 + num_args2,
+				(unsigned) sizeof(Arg));
 
-    for (args = result; --argCount1 >= 0; args++, args1++)
-    	*args = *args1;
-    for (             ; --argCount2 >= 0; args++, args2++)
-    	*args = *args2;
+    for (args = result; num_args1 != 0; num_args1--)
+    	*args++ = *args1++;
+    for (             ; num_args2 != 0; num_args2--)
+    	*args++ = *args2++;
 
     return result;
 }
