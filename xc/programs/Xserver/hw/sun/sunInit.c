@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.48 94/02/01 11:06:14 kaleb Exp $ */
+/* $XConsortium: sunInit.c,v 5.49 94/02/21 10:21:02 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -133,6 +133,12 @@ extern Bool sunCG8Init(
 #endif /* } */
 #endif /* } */
 
+extern KeySymsRec sunKeySyms[];
+extern SunModmapRec *sunModMaps[];
+extern int sunMaxLayout;
+extern KeySym* sunType4KeyMaps[];
+extern SunModmapRec* sunType4ModMaps[];
+
 static Bool	sunDevsInited = FALSE;
 
 #ifndef XKB
@@ -141,7 +147,20 @@ Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 Bool sunSwapLkeys = FALSE;
 Bool sunFlipPixels = FALSE;
 Bool sunFbInfo = FALSE;
-int sunKbdFd = -1, sunPtrFd = -1;
+Bool sunCG4Frob = FALSE;
+
+sunKbdPrivRec sunKbdPriv = {
+    -1,		/* fd */
+    -1,		/* type */
+    -1,		/* layout */
+    0,		/* click */
+    (Leds)0,	/* leds */
+};
+
+sunPtrPrivRec sunPtrPriv = {
+    -1,		/* fd */
+    0		/* Current button state */
+};
 
 /*
  * The name member in the following table corresponds to the 
@@ -413,6 +432,53 @@ static char** GetDeviceList (argc, argv)
     return deviceList;
 }
 
+static void getKbdType()
+{
+/*
+ * The Sun 386i has system include files that preclude this pre SunOS 4.1
+ * test for the presence of a type 4 keyboard however it really doesn't
+ * matter since no 386i has ever been shipped with a type 3 keyboard.
+ * SunOS 4.1 no longer needs this kludge.
+ */
+#if !defined(i386) && !defined(KIOCGKEY)
+#define TYPE4KEYBOARDOVERRIDE
+#endif
+
+    int ii;
+
+    for (ii = 0; ii < 3; ii++) {
+	sunKbdWait();
+	(void) ioctl (sunKbdPriv.fd, KIOCTYPE, &sunKbdPriv.type);
+#ifdef TYPE4KEYBOARDOVERRIDE
+	/*
+	 * Magic. Look for a key which is non-existent on a real type
+	 * 3 keyboard but does exist on a type 4 keyboard.
+	 */
+	if (sunKbdPriv.type == KB_SUN3) {
+	    struct kiockey key;
+
+	    key.kio_tablemask = 0;
+	    key.kio_station = 118;
+	    if (ioctl(sunKbdPriv.fd, KIOCGETKEY, &key) == -1) {
+		Error( "ioctl KIOCGETKEY" );
+		FatalError("Can't KIOCGETKEY on fd %d\n", kbdFd);
+	    }
+	    if (key.kio_entry != HOLE)
+		sunKbdPriv.type = KB_SUN4;
+	}
+#endif
+	switch (sunKbdPriv.type) {
+	case KB_SUN2:
+	case KB_SUN3:
+	case KB_SUN4: return;
+	default: 
+	    sunChangeKbdTranslation(sunKbdPriv.fd, FALSE);
+	    continue;
+	}
+    }
+    FatalError ("Unsupported keyboard type %d\n", sunKbdPriv.type);
+}
+
 void OsVendorInit(
 #if NeedFunctionPrototypes
     void
@@ -435,8 +501,19 @@ void OsVendorInit(
 	    (void) setrlimit (RLIMIT_NOFILE, &rl);
 	}
 #endif
-	sunKbdFd = open ("/dev/kbd", O_RDWR, 0);
-	sunPtrFd = open ("/dev/mouse", O_RDWR, 0);
+	sunKbdPriv.fd = open ("/dev/kbd", O_RDWR, 0);
+	sunPtrPriv.fd = open ("/dev/mouse", O_RDWR, 0);
+	getKbdType ();
+	if (sunKbdPriv.type == KB_SUN4) {
+	    (void) ioctl (sunKbdPriv.fd, KIOCLAYOUT, &sunKbdPriv.layout);
+	    if (sunKbdPriv.layout < 0 ||
+		sunKbdPriv.layout > sunMaxLayout ||
+		sunType4KeyMaps[sunKbdPriv.layout] == NULL)
+		FatalError ("Unsupported keyboard type 4 layout %d\n",
+			    sunKbdPriv.layout);
+	    sunKeySyms[KB_SUN4].map = sunType4KeyMaps[sunKbdPriv.layout];
+	    sunModMaps[KB_SUN4] = sunType4ModMaps[sunKbdPriv.layout];
+        }
 	inited = 1;
     }
 }
@@ -569,17 +646,17 @@ void InitInput(argc, argv)
     (void) OsSignal(SIGIO, SigIOHandler);
 #define WANT_SIGNALS(fd) fcntl(fd, F_SETOWN, getpid())
 #endif
-    if (sunKbdFd >= 0) {
-	if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
-	    (void) close (sunKbdFd);
-	    sunKbdFd = -1;
+    if (sunKbdPriv.fd >= 0) {
+	if (SET_FLOW(sunKbdPriv.fd) == -1 || WANT_SIGNALS(sunKbdPriv.fd) == -1) {	
+	    (void) close (sunKbdPriv.fd);
+	    sunKbdPriv.fd = -1;
 	    FatalError("Async kbd I/O failed in InitInput");
 	}
     }
-    if (sunPtrFd >= 0) {
-	if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
-	    (void) close (sunPtrFd);
-	    sunPtrFd = -1;
+    if (sunPtrPriv.fd >= 0) {
+	if (SET_FLOW(sunPtrPriv.fd) == -1 || WANT_SIGNALS(sunPtrPriv.fd) == -1) {	
+	    (void) close (sunPtrPriv.fd);
+	    sunPtrPriv.fd = -1;
 	    FatalError("Async mouse I/O failed in InitInput");
 	}
     }

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.35 94/02/01 11:01:56 kaleb Exp $ */
+/* $XConsortium: sun.h,v 5.36 94/02/21 10:20:36 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -175,40 +175,31 @@ extern int monitorResolution;
 
 /*
  * Data private to any sun keyboard.
- *	GetEvents reads any events which are available for the keyboard
- *	ProcessEvent processes a single event and gives it to DIX
- *	DoneEvents is called when done handling a string of keyboard
- *	    events or done handling all events.
- *	devPrivate is private to the specific keyboard.
- *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
-typedef struct kbPrivate {
+typedef struct {
+    int		fd;
     int		type;		/* Type of keyboard */
     int		layout;		/* The layout of the keyboard */
     int		click;		/* kbd click save state */
-    Leds	leds;		/* last known led state */
-} KbPrivRec, *KbPrivPtr;
+    Leds	leds;		/* last known LED state */
+} sunKbdPrivRec, *sunKbdPrivPtr;
 
-extern int sunKbdFd;
+extern sunKbdPrivRec sunKbdPriv;
+
+/*
+ * Data private to any sun pointer device.
+ */
+typedef struct {
+    int		fd;
+    int		bmask;		/* last known button state */
+} sunPtrPrivRec, *sunPtrPrivPtr;
+
+extern sunPtrPrivRec sunPtrPriv;
 
 typedef struct {
     BYTE	key;
     CARD8	modifiers;
 } SunModmapRec;
-
-/*
- * Data private to any sun pointer device.
- *	GetEvents, ProcessEvent and DoneEvents have uses similar to the
- *	    keyboard fields of the same name.
- *	pScreen is the screen the pointer is on (only valid if it is the
- *	    main pointer device).
- *	dx and dy are relative coordinates on that screen (they may be negative)
- */
-typedef struct ptrPrivate {
-    int		bmask;		/* Current button state */
-} PtrPrivRec, *PtrPrivPtr;
-
-extern int sunPtrFd;
 
 typedef struct {
     int		    width, height;
@@ -229,9 +220,9 @@ typedef struct {
 
 typedef struct {
     unsigned char*  fb;		/* Frame buffer itself */
-    int		    fd;		/* frame buffer for ioctl()s, CG2 only */
+    int		    fd;		/* frame buffer for ioctl()s, */
     struct fbtype   info;	/* Frame buffer characteristics */
-    void	    (*EnterLeave)();/* screen switch, CG4 only */
+    void	    (*EnterLeave)();/* screen switch */
     unsigned char*  fbPriv;	/* fbattr stuff, for the real type */
 } fbFd;
 
@@ -260,6 +251,7 @@ extern Bool		sunSwapLkeys;
 extern Bool		sunFlipPixels;
 extern Bool		sunActiveZaphod;
 extern Bool		sunFbInfo;
+extern Bool		sunCG4Frob;
 extern int		sunScreenIndex;
 extern int*		sunProtected;
 
@@ -277,7 +269,7 @@ extern void sunDisableCursor(
 
 extern int sunChangeKbdTranslation(
 #if NeedFunctionPrototypes
-    DevicePtr /* pKeyboard */,
+    int /* fd */,
     Bool /* makeTranslated */
 #endif
 );
@@ -292,7 +284,7 @@ extern void sunNonBlockConsoleOff(
 #endif
 );
 
-extern void		sunEnqueueEvents(
+extern void sunEnqueueEvents(
 #if NeedFunctionPrototypes
     void
 #endif
@@ -347,6 +339,7 @@ extern Bool sunInitCommon(
 
 extern Firm_event* sunKbdGetEvents(
 #if NeedFunctionPrototypes
+    int /* fd */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -354,6 +347,7 @@ extern Firm_event* sunKbdGetEvents(
 
 extern Firm_event* sunMouseGetEvents(
 #if NeedFunctionPrototypes
+    int /* fd */,
     int* /* pNumEvents */,
     Bool* /* pAgain */
 #endif
@@ -384,6 +378,12 @@ extern int sunMouseProc(
 #if NeedFunctionPrototypes
     DeviceIntPtr /* pMouse */,
     int /* what */
+#endif
+);
+
+extern void sunKbdWait(
+#if NeedFunctionPrototypes
+    void
 #endif
 );
 

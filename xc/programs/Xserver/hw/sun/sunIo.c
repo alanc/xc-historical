@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.20 93/11/16 10:15:57 kaleb Exp $ */
+/* $XConsortium: sunIo.c,v 5.21 94/02/01 11:02:32 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -92,9 +92,13 @@ void sunEnqueueEvents (
 		KbdAgain;	/* need to (re)read */
     DeviceIntPtr	pPointer;
     DeviceIntPtr	pKeyboard;
+    sunKbdPrivPtr       kbdPriv;
+    sunPtrPrivPtr       ptrPriv;
 
     pPointer = (DeviceIntPtr)LookupPointerDevice();
     pKeyboard = (DeviceIntPtr)LookupKeyboardDevice();
+    ptrPriv = (sunPtrPrivPtr) pPointer->public.devicePrivate;
+    kbdPriv = (sunKbdPrivPtr) pKeyboard->public.devicePrivate;
     if (!pPointer->public.on || !pKeyboard->public.on)
 	return;
 
@@ -116,11 +120,11 @@ void sunEnqueueEvents (
 	 * in pE and kE
 	 */
 	if ((numPtrEvents == 0) && PtrAgain) {
-	    ptrEvents = sunMouseGetEvents (&nPE, &PtrAgain);
+	    ptrEvents = sunMouseGetEvents (ptrPriv->fd, &nPE, &PtrAgain);
 	    numPtrEvents = nPE;
 	}
 	if ((numKbdEvents == 0) && KbdAgain) {
-	    kbdEvents = sunKbdGetEvents (&nKE, &KbdAgain);
+	    kbdEvents = sunKbdGetEvents (kbdPriv->fd, &nKE, &KbdAgain);
 	    numKbdEvents = nKE;
 	}
 	if ((numPtrEvents == 0) && (numKbdEvents == 0))
@@ -239,6 +243,10 @@ ddxProcessArgument (argc, argv, i)
 	if (++i >= argc) UseMsg();
 	return 2;
     }
+    if (strcmp (argv[i], "-cg4frob") == 0) {
+	sunCG4Frob = TRUE;
+	return 1;
+    }
     return 0;
 }
 
@@ -255,4 +263,5 @@ ddxUseMsg()
     ErrorF("-mono               force monochrome-only screen\n");
     ErrorF("-zaphod             disable active Zaphod mode\n");
     ErrorF("-fbinfo             tell more about the found frame buffer(s)\n");
+    ErrorF("-cg4frob            don't use the mono plane of the cgfour\n");
 }

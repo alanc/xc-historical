@@ -1,4 +1,4 @@
-
+/* $XConsortium: sunMouse.c,v 5.19 94/02/23 15:55:52 dpw Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -63,10 +63,6 @@ miPointerScreenFuncRec sunPointerScreenFuncs = {
     sunCursorOffScreen,
     sunCrossScreen,
     sunWarpCursor,
-};
-
-static PtrPrivRec sysMousePriv = {
-    0	/* Current button state */
 };
 
 /*-
@@ -139,9 +135,9 @@ int sunMouseProc (device, what)
 		ErrorF ("Cannot open non-system mouse");	
 		return !Success;
 	    }
-	    if (sunPtrFd == -1)
+	    if (sunPtrPriv.fd == -1)
 		return !Success;
-	    pMouse->devicePrivate = (pointer) &sysMousePriv;
+	    pMouse->devicePrivate = (pointer) &sunPtrPriv;
 	    pMouse->on = FALSE;
 	    map[1] = 1;
 	    map[2] = 2;
@@ -152,28 +148,28 @@ int sunMouseProc (device, what)
 	    break;
 
 	case DEVICE_ON:
-	    if (ioctl (sunPtrFd, VUIDGFORMAT, &oformat) == -1) {
+	    if (ioctl (sunPtrPriv.fd, VUIDGFORMAT, &oformat) == -1) {
 		Error ("sunMouseProc ioctl VUIDGFORMAT");
 		return !Success;
 	    }
 	    format = VUID_FIRM_EVENT;
-	    if (ioctl (sunPtrFd, VUIDSFORMAT, &format) == -1) {
+	    if (ioctl (sunPtrPriv.fd, VUIDSFORMAT, &format) == -1) {
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 		return !Success;
 	    }
-	    sysMousePriv.bmask = 0;
-	    AddEnabledDevice (sunPtrFd);
+	    sunPtrPriv.bmask = 0;
+	    AddEnabledDevice (sunPtrPriv.fd);
 	    pMouse->on = TRUE;
 	    break;
 
 	case DEVICE_CLOSE:
-	    if (ioctl (sunPtrFd, VUIDSFORMAT, &oformat) == -1)
+	    if (ioctl (sunPtrPriv.fd, VUIDSFORMAT, &oformat) == -1)
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 	    break;
 
 	case DEVICE_OFF:
 	    pMouse->on = FALSE;
-	    RemoveEnabledDevice (sunPtrFd);
+	    RemoveEnabledDevice (sunPtrPriv.fd);
 	    break;
     }
     return Success;
@@ -196,18 +192,20 @@ int sunMouseProc (device, what)
 
 #if NeedFunctionPrototypes
 Firm_event* sunMouseGetEvents (
-    int	    	  *pNumEvents,
-    Bool	  *pAgain)
+    int		fd,
+    int*	pNumEvents,
+    Bool*	pAgain)
 #else
-Firm_event* sunMouseGetEvents (pNumEvents, pAgain)
-    int	    	  *pNumEvents;	    /* Place to return number of events */
-    Bool	  *pAgain;	    /* whether more might be available */
+Firm_event* sunMouseGetEvents (fd, pNumEvents, pAgain)
+    int		fd;
+    int*	pNumEvents;
+    Bool*	pAgain;
 #endif
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
     static Firm_event	evBuf[MAXEVENTS];   /* Buffer for Firm_events */
 
-    if ((nBytes = read (sunPtrFd, (char *)evBuf, sizeof(evBuf))) == -1) {
+    if ((nBytes = read (fd, (char *)evBuf, sizeof(evBuf))) == -1) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
 	    *pAgain = FALSE;
@@ -284,12 +282,12 @@ void sunMouseEnqueueEvent (device, fe)
 #endif
 {
     xEvent		xE;
-    PtrPrivPtr		pPriv;	/* Private data for pointer */
+    sunPtrPrivPtr	pPriv;	/* Private data for pointer */
     int			bmask;	/* Temporary button mask */
     unsigned long	time;
     int			x, y;
 
-    pPriv = (PtrPrivPtr)device->public.devicePrivate;
+    pPriv = (sunPtrPrivPtr)device->public.devicePrivate;
 
     time = xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb.c,v 1.10 94/02/21 10:20:56 kaleb Exp $ */
+/* $XConsortium: sunCfb.c,v 1.11 94/02/23 15:55:56 dpw Exp $ */
 
 /*
  * Copyright 1990 Massachusetts Institute of Technology
@@ -375,7 +375,10 @@ Bool sunCG4Init (screen, pScreen, argc, argv)
     char**	argv;   	/* The arguments themselves. Don't change! */
 {
     checkMono (argc, argv);
-    sunFbs[screen].EnterLeave = CG4Switch;
+    if (sunCG4Frob)
+	sunFbs[screen].EnterLeave = (void (*)())NoopDDA;
+    else
+	sunFbs[screen].EnterLeave = CG4Switch;
     return sunInitCommon (screen, pScreen, (off_t) 0,
 	sunCfbScreenInit, CGScreenInit,
 	cfbCreateDefColormap, sunSaveScreen, (int) ((CG4Ptr) 0)->cpixel);
