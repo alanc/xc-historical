@@ -1,7 +1,5 @@
-/* $Header$ */
-/* $Header$ */
 #ifndef lint
-static char *sccsid = "@(#)Atom.c	1.21	3/19/87";
+static char rcsid[] = "$Header: Quarks.c,v 1.1 87/09/12 12:27:03 swick Locked $";
 #endif lint
 
 /*
@@ -31,8 +29,7 @@ static char *sccsid = "@(#)Atom.c	1.21	3/19/87";
 /* File: Quarks.c - last edit by */
 
 #include <sys/param.h>
-#include "Xlib.h"
-#include "Xlibos.h"
+#include "Xlibint.h"
 #include "Xresource.h"
 #include "Quarks.h"
 #include <strings.h>
@@ -90,7 +87,7 @@ XrmQuark  XrmQEtrue;
 XrmQuark  XrmQEyes;
 
 
-static XrmAllocMoreQuartToAtomTable()
+static XrmAllocMoreQuarkToAtomTable()
 {
     unsigned	size;
 
@@ -145,20 +142,21 @@ XrmQuark XrmAtomToQuark(name)
     np->quark = nextQuark;
 
     if (nextQuark >= maxQuarks)
-	XrmAllocMoreQuartToAtomTable();
+	XrmAllocMoreQuarkToAtomTable();
 
     quarkToAtomTable[nextQuark] = np->name;
     ++nextQuark;
     return np->quark;
 }
 
-extern XrmQuark XrmUniqueQuark()
+XrmQuark XrmUniqueQuark()
 {
     XrmQuark quark;
 
     quark = nextQuark;
     if (nextQuark >= maxQuarks)
-	XrmAllocMoreQuartToAtomTable();
+	XrmAllocMoreQuarkToAtomTable();
+
     quarkToAtomTable[nextQuark] = NULLATOM;
     ++nextQuark;
     return (quark);
@@ -220,7 +218,7 @@ XrmQuarkList XrmNewQuarkList()
 /* ||| Could be replaced by define in Xresource.h, but Xfree being a macro
    complicates things. */
 
-XrmQuarkList XrmFreeQuarkList(list)
+extern void XrmFreeQuarkList(list)
   XrmQuarkList list;
 {
     Xfree((char *) list);
