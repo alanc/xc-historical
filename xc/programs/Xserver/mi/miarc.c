@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.18 90/08/03 17:51:46 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.19 90/08/14 09:41:06 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -352,8 +352,8 @@ miFillWideCircle(pDraw, pGC, parc)
 /*
  * miPolyArc strategy:
  *
- * If there's only 1 arc, or if the arc is draw with zero width lines, we 
- * don't have to worry about the rasterop or join styles.   
+ * If arc is zero width and solid, we don't have to worry about the rasterop
+ * or join styles.  For wide solid circles, we use a fast integer algorithm.
  * Otherwise, we set up pDrawTo and pGCTo according to the rasterop, then
  * draw using pGCTo and pDrawTo.  If the raster-op was "tricky," that is,
  * if it involves the destination, then we use PushPixels to move the bits
@@ -392,18 +392,17 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     }
     else 
     {
-	if (pGC->lineStyle == LineSolid)
+	if ((pGC->lineStyle == LineSolid) && narcs)
 	{
-	    while (narcs && (parcs->width == parcs->height) &&
+	    while ((parcs->width == parcs->height) &&
 		   ((parcs->angle2 >= FULLCIRCLE) ||
 		    (parcs->angle2 <= -FULLCIRCLE)))
 	    {
 		miFillWideCircle(pDraw, pGC, parcs);
-		narcs--;
+		if (!--narcs)
+		    return;
 		parcs++;
 	    }
-	    if (!narcs)
-		return;
 	}
 
 	/* Set up pDrawTo and pGCTo based on the rasterop */
