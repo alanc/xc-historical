@@ -1,5 +1,5 @@
 #ifdef XINPUT
-/* $XConsortium: xchgptr.c,v 1.4 89/10/10 16:08:37 gms Exp $ */
+/* $XConsortium: xchgptr.c,v 1.5 89/11/07 19:40:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -123,7 +123,12 @@ ProcXChangePointerDevice (client)
 
     if (inputInfo.pointer->focus == NULL)
 	InitFocusClassDeviceStruct (inputInfo.pointer);
-    ChangePointerDevice (inputInfo.pointer, dev);
+    if (ChangePointerDevice (inputInfo.pointer, dev) != Success)
+	{
+	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
+		BadDevice);
+	return Success;
+	}
     inputInfo.pointer = dev;
     inputInfo.pointer->focus->win = NULL;
 
