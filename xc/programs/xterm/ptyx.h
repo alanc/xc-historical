@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.61 92/09/15 15:29:07 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.62 1993/02/25 17:21:26 gildea Exp converse $
  */
 
 /*
@@ -343,7 +343,7 @@ typedef struct {
 	char		*selection;	/* the current selection */
 	int		selection_size; /* size of allocated buffer */
 	int		selection_length; /* number of significant bytes */
-	int		selection_time;	/* latest event timestamp */
+	Time		selection_time;	/* latest event timestamp */
 	int		startHRow, startHCol, /* highlighted text */
 			endHRow, endHCol,
 			startHCoord, endHCoord;
