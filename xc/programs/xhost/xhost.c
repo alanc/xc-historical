@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.29 89/05/11 18:34:06 kit Exp $";
+static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.30 89/07/16 15:16:42 jim Exp $";
 #endif
  
 #include <signal.h>
@@ -32,7 +32,9 @@ static char *rcsid_xhost_c = "$XConsortium: xhost.c,v 11.29 89/05/11 18:34:06 ki
 #include <arpa/inet.h>
 	bogus definition of inet_makeaddr() in BSD 4.2 and Ultrix
 #else
+#ifndef hpux
 extern unsigned long inet_makeaddr();
+#endif
 #endif
 #ifdef DNETCONN
 #include <netdnet/dn.h>
