@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicP.h,v 6.17 88/02/01 20:24:02 swick Locked $
+* $Header: IntrinsicP.h,v 6.19 88/02/04 19:34:27 swick Locked $
 */
 
 /*
@@ -102,9 +102,8 @@ typedef XtGeometryResult (*XtGeometryHandler)();
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
 #define XtIsManaged(widget)     ((widget)->core.managed)
 #define XtIsRealized(widget)	((widget)->core.window != NULL)
-#define XtMapWidget(widget)	XMapWindow(XtDisplay(widget), XtWindow(widget))
-#define XtUnmapWidget(widget)	\
-		XUnmapWindow(XtDisplay(widget), XtWindow(widget))
+#define XtIsSensitive(widget)	((widget)->core.sensitive && \
+				 (widget)->core.ancestor_sensitive)
 
 extern void XtCreateWindow ();
     /* Widget widget; */
