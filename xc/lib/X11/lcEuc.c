@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcEuc.c,v 1.1 93/09/17 13:30:13 rws Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED
@@ -30,7 +30,6 @@ SOFTWARE.
 
 *****************************************************************/
 
-#ifdef NOTDEF
 #include "Xlibint.h"
 #include "XlcGeneric.h"
 
@@ -48,42 +47,8 @@ typedef struct _StateRec {
     XlcCharSet GR_charset;
 } StateRec, *State;
 
-static int
-init_state(state)
-    register State state;
-{
-    register XLCdGenericPart *private = XLC_GENERIC_PART(state->lcd);
-    register CodeSet codeset;
+static int init_state();
 
-    if (codeset = private->initial_state_GL)
-	state->GL_charset = *codeset->charset_list;
-    if (codeset = private->initial_state_GR)
-	state->GR_charset = *codeset->charset_list;
-
-    if (state->GL_charset == NULL)
-	if (codeset = *private->codeset_list)
-	    state->GL_charset = *codeset->charset_list;
-    
-    return 0;
-}
-
-static int
-compare(src, encoding, length)
-    register char *src;
-    register char *encoding;
-    register int length;
-{
-    char *start = src;
-
-    while (length-- > 0) {
-	if (*src++ != *encoding++)
-	    return 0;
-	if (*encoding == '\0')
-	    return src - start;
-    }
-
-    return 0;
-}
 
 static int
 euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
@@ -107,7 +72,7 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
     register int shift_mult = 0;
     register unsigned int chrcode;
 
-    unsigned int wc_encode;
+    unsigned int wc_encode = 0;
     unsigned int wc_tmp = 0;
 
     int cs0flg = False;
@@ -250,15 +215,15 @@ euc_mbstowcs(conv, from, from_left, to, to_left, args, num_args)
 static int
 euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    wchar_t **from;
+    XPointer *from;
     int *from_left;
-    unsigned char **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
 {
-    wchar_t **inbufptr = from;
-    register unsigned char **outbufptr = to;
+    wchar_t **inbufptr = (wchar_t **)from;
+    register unsigned char **outbufptr = (unsigned char **)to;
     register wchar_t  wch;
     register length;
     unsigned char tmp;
@@ -275,8 +240,8 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
     unsigned long wc_shift = XLC_GENERIC(lcd, wc_shift_bits);
 
     unsigned long wch_encode;
-    unsigned long sshift;
-    XlcSide side;
+    unsigned long sshift = 0;
+    XlcSide side = 0;
 
     CodeSet *list_codesets = XLC_GENERIC(lcd, codeset_list); 
     int codeset_num = XLC_GENERIC(lcd, codeset_num);
@@ -367,7 +332,7 @@ euc_wcstombs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static int
-EUC_mbtocs(conv, from, from_left, to, to_left, args, num_args)
+euc_mbtocs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
     char **from;
     int *from_left;
@@ -376,90 +341,68 @@ EUC_mbtocs(conv, from, from_left, to, to_left, args, num_args)
     XPointer *args;
     int num_args;
 {
-    State state = (State) conv->state;
+    State state = (State)conv->state;
     XLCd lcd = state->lcd;
-    register char *src, *dst;
-    unsigned char ch, *mb_parse_table;
-    ParseInfo *parse_list, parse_info;
     XlcCharSet charset;
-    int length, number, encoding_len = 0;
-    register i;
+    CodeSet *codesets = XLC_GENERIC(lcd, codeset_list);
+    int length, leng;
+    register char *src = *from, *dst = *to;
+
+typedef unsigned char uchar;
+
+    SS2 = 0x8e;
+    SS3 = 0x8f;
+
+    if(*from_left <= 0)
+        return -1;
 
     if (from == NULL || *from == NULL)
-	return init_state(state);
-    
-    src = *from;
-    dst = *to;
+        return init_state(state);
 
-    if (mb_parse_table = XLC_GENERIC(lcd, mb_parse_table)) {
-	number = mb_parse_table[(unsigned char) *src];
-	if (number > 0) {
-	    parse_list = XLC_GENERIC(lcd, mb_parse_list) + number - 1;
-	    for ( ; parse_info = *parse_list; parse_list++) {
-		encoding_len = compare(src, parse_info->encoding, *from_left);
-		if (encoding_len > 0) {
-		    switch (parse_info->type) {
-			case E_SS:
-			    src += encoding_len;
-			    charset = *parse_info->codeset->charset_list;
-			    goto found;
-			case E_GL:
-			    charset = state->GL_charset;
-			    goto found;
-			case E_GR:
-			    charset = state->GR_charset;
-			    goto found;
-		    }
-		}
-	    }
-	}
-    }
-
-    if ((*src & 0x80) && state->GR_charset)
-	charset = state->GR_charset;
-    else
-	charset = state->GL_charset;
-
-found:
-    if (charset == NULL)
-	return -1;
-
-    length = charset->char_size;
-    if (length > *from_left - encoding_len)
-	return -1;
 
     if (dst) {
-	if (length > *to_left)
-	    return -1;
-	if (charset->side == XlcGL) {
-	    for (i = 0; i < length; i++)
-		*dst++ = *src++ & 0x7f;
-	} else if (charset->side == XlcGR) {
-	    for (i = 0; i < length; i++)
-		*dst++ = *src++ | 0x80;
-	} else {
-	    for (i = 0; i < length; i++)
-		*dst++ = *src++;
+	if ((uchar)(*src) == SS2) {    /* half-kana (CS2) */
+	    charset = *codesets[2]->charset_list;
+	    *src++;
+	    (*from_left)--;
 	}
-	*to = dst;
+	else if ((uchar)*src == SS3) {  /* user-def */
+	    charset = *codesets[3]->charset_list;
+	    *src++;
+	    (*from_left)--;
+	}
+	else if (!(*src & 0x80))  /* CS0 */
+   	    charset = *codesets[0]->charset_list;
+	else                   /* Kanji (CS1) */
+	    charset = *codesets[1]->charset_list;
+
+	length = charset->char_size;
 	*to_left -= length;
-    }
-end:
+
+	leng=length;
+	do {
+	    *dst++ = *src++;
+	} while (--leng);
+	*to = dst;
+
     *from = src;
-    *from_left -= encoding_len + length;
-    state->charset = charset;
+    *from_left -= length;
+
+    }
+
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = charset;
 
     return 0;
+
 }
 
 static int
-EUC_mbstocs(conv, from, from_left, to, to_left, args, num_args)
+euc_mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    char **from;
+    XPointer *from;
     int *from_left;
-    char **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
@@ -472,32 +415,32 @@ EUC_mbstocs(conv, from, from_left, to, to_left, args, num_args)
     XPointer tmp_args[1];
     int unconv_num = 0, ret;
 
+
     if (from == NULL || *from == NULL)
 	return init_state(state);
 
     tmp_args[0] = (XPointer) &charset;
 
-    do {
-	ret = EUC_mbtocs(conv, from, from_left, to, to_left, tmp_args, 1);
-	if (ret < 0)
-	    return ret;
-	unconv_num += ret;
-    } while (ret > 0) ;
+    if (ret = euc_mbtocs(conv, from, from_left, to, to_left, tmp_args, 1))
+	return ret;
+    unconv_num += ret;
 
     tmp_from = *from;
     tmp_from_left = *from_left;
     tmp_to = *to;
     tmp_to_left = *to_left;
-    tmp_state = *state;
+
+
     tmp_args[0] = (XPointer) &tmp_charset;
-    
     while (1) {
-	ret = EUC_mbtocs(conv, &tmp_from, &tmp_from_left, &tmp_to,
+	ret = euc_mbtocs(conv, &tmp_from, &tmp_from_left, &tmp_to,
 		     &tmp_to_left, tmp_args, 1);
+
 	if (ret > 0) {
 	    unconv_num += ret;
 	    continue;
 	}
+
 	if (ret < 0 || tmp_charset != charset)
 	    break;
 	
@@ -505,10 +448,8 @@ EUC_mbstocs(conv, from, from_left, to, to_left, args, num_args)
 	*from_left = tmp_from_left;
 	*to = tmp_to;
 	*to_left = tmp_to_left;
-	tmp_state = *state;
-    }
 
-    *state = tmp_state;
+    }
 
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = charset;
@@ -517,7 +458,7 @@ EUC_mbstocs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static CodeSet
-EUCwc_parse_codeset(lcd, wcstr)
+wc_parse_codeset(lcd, wcstr)
     XLCd lcd;
     wchar_t *wcstr;
 {
@@ -538,11 +479,11 @@ EUCwc_parse_codeset(lcd, wcstr)
 }
 
 static int
-EUC_wcstocs(conv, from, from_left, to, to_left, args, num_args)
+euc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    wchar_t **from;
+    XPointer *from;
     int *from_left;
-    char **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
@@ -561,12 +502,12 @@ EUC_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     if (from == NULL || *from == NULL)
 	return init_state(state);
 
-    wcptr = *from;
-    bufptr = *to;
+    wcptr = *(wchar_t **)from;
+    bufptr = *(char **)to;
     wcstr_len = *from_left;
     buf_len = *to_left;
 
-    codeset = EUCwc_parse_codeset(lcd, wcptr);
+    codeset = wc_parse_codeset(lcd, wcptr);
     wc_encoding = codeset->wc_encoding;
 
     if (wcstr_len < buf_len / codeset->length)
@@ -602,11 +543,11 @@ EUC_wcstocs(conv, from, from_left, to, to_left, args, num_args)
     if (num_args > 0)
 	*((XlcCharSet *) args[0]) = *codeset->charset_list;
 
-    *from_left -= wcptr - *from;
-    *from = wcptr;
+    *from_left -= wcptr - *(wchar_t **)from;
+    *(wchar_t **)from = wcptr;
 
-    *to_left -= bufptr - *to;
-    *to = bufptr;
+    *to_left -= bufptr - *(char **)to;
+    *(char **)to = bufptr;
 
     return 0;
 }
@@ -635,7 +576,7 @@ _XlcGetCodeSetFromCharSet(lcd, charset)
 }
 
 static int
-EUC_cstombs(conv, from, from_left, to, to_left, args, num_args)
+euc_cstombs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
     char **from;
     int *from_left;
@@ -718,11 +659,11 @@ EUC_cstombs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 static int
-EUC_cstowcs(conv, from, from_left, to, to_left, args, num_args)
+euc_cstowcs(conv, from, from_left, to, to_left, args, num_args)
     XlcConv conv;
-    char **from;
+    XPointer *from;
     int *from_left;
-    wchar_t **to;
+    XPointer *to;
     int *to_left;
     XPointer *args;
     int num_args;
@@ -742,7 +683,7 @@ EUC_cstowcs(conv, from, from_left, to, to_left, args, num_args)
 	return init_state(state);
     
     csptr = *from;
-    bufptr = *to;
+    bufptr = *(wchar_t **)to;
     csstr_len = *from_left;
     buf_len = *to_left;
 
@@ -763,7 +704,7 @@ EUC_cstowcs(conv, from, from_left, to, to_left, args, num_args)
     wc_shift_bits = XLC_GENERIC(lcd, wc_shift_bits);
 
     if (bufptr)
-	*to += buf_len;
+	*((wchar_t **)to) += buf_len;
     *to_left -= buf_len;
 
     if (bufptr) {
@@ -784,42 +725,607 @@ EUC_cstowcs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 
-static void
-close_cs_converter(conv)
-    XlcConv conv;
+/* BEGIN: Utility Functions for euc_cttocs() and euc_cstoct(): */
+
+/* NOTE:  If euc_cttocs() and euc_cstoct are found to be general enough
+ *        they should replace cttocs() and cstocs() in XlcCT.c.  If such
+ *        is the happy case, this section may be deleted, since the following
+ *        functions are duplicates of those in XlcCT.c.
+ */
+
+
+typedef struct _CTDataRec {
+    char *name;
+    char *encoding;		/* Compound Text encoding */
+} CTDataRec, *CTData;
+
+typedef struct _CTInfoRec {
+    XlcCharSet charset;
+    int encoding_len;
+    char *encoding;		/* Compound Text encoding */
+    int ext_segment_len;
+    char *ext_segment;		/* extended segment */
+    int set_size;		/* num of graphic characters */
+} CTInfoRec, *CTInfo;
+
+static CTDataRec default_ct_data[] =
 {
-    if (conv->state) {
-	_XlcFree((char *) conv->state);
+    { "ISO8859-1", "\033(B" },
+    { "ISO8859-1", "\033-A" },
+    { "ISO8859-2", "\033-B" },
+    { "ISO8859-3", "\033-C" },
+    { "ISO8859-4", "\033-D" },
+    { "ISO8859-7", "\033-F" },
+    { "ISO8859-6", "\033-G" },
+    { "ISO8859-8", "\033-H" },
+    { "ISO8859-5", "\033-L" },
+    { "ISO8859-9", "\033-M" },
+    { "JISX0201.1976-0", "\033(J" },
+    { "JISX0201.1976-0", "\033)I" },
+
+    { "GB2312.1980-0", "\033$(A" },
+    { "GB2312.1980-0", "\033$)A" },
+    { "JISX0208.1983-0", "\033$(B" },
+    { "JISX0208.1983-0", "\033$)B" },
+    { "KSC5601.1987-0", "\033$(C" },
+    { "KSC5601.1987-0", "\033$)C" },
+    { "JISX0212.1990-0", "\033$(D" },
+    { "JISX0212.1990-0", "\033$)D" },
+    { "CNS11643.1986-0", "\033$(G" },
+    { "CNS11643.1986-1", "\033$(H" },
+
+    /* Non-Standard Character Set Encodings */
+    { "TIS620.2533-1", "\033-T"},
+} ; 
+
+#define XctC0		0x0000
+#define XctHT		0x0009
+#define XctNL		0x000a
+#define XctESC		0x001b
+#define XctGL		0x0020
+#define XctC1		0x0080
+#define XctCSI		0x009b
+#define XctGR		0x00a0
+
+#define XctCntrlFunc	0x0023
+#define XctMB		0x0024
+#define XctOtherCoding	0x0025
+#define XctGL94		0x0028
+#define XctGR94		0x0029
+#define XctGR96		0x002d
+#define XctNonStandard	0x002f
+#define XctIgnoreExt	0x0030
+#define XctNotIgnoreExt	0x0031
+#define XctLeftToRight	0x0031
+#define XctRightToLeft	0x0032
+#define XctDirection	0x005d
+#define XctDirectionEnd	0x005d
+
+#define XctGL94MB	0x2428
+#define XctGR94MB	0x2429
+#define XctExtSeg	0x252f
+#define XctOtherSeg	0x2f00
+
+#define XctESCSeq	0x1b00
+#define XctCSISeq	0x9b00
+
+#define SKIP_I(str)	while (*(str) >= 0x20 && *(str) <=  0x2f) (str)++;
+#define SKIP_P(str)	while (*(str) >= 0x30 && *(str) <=  0x3f) (str)++;
+
+typedef struct {
+    XlcSide side;
+    int char_size;
+    int set_size;
+    XlcCharSet charset;
+    int ext_seg_length;
+    int version;
+} CTParseRec, *CTParse;
+
+static CTInfo ct_list = NULL;
+static ct_list_num = 0;
+
+static XlcCharSet
+_XlcGetCharSetFromEncoding(encoding, length)
+    register char *encoding;
+    register int length;
+{
+    register CTInfo ct_info;
+    register int i;
+
+    for (ct_info = ct_list, i = 0; i < ct_list_num; ct_info++, i++) {
+	if (length >= ct_info->encoding_len &&
+	    !strncmp(ct_info->encoding, encoding, ct_info->encoding_len))
+	    return ct_info->charset;
     }
 
-    _XlcFree((char *) conv);
+    return (XlcCharSet) NULL;
 }
 
-static void
-reset_cs_converter(conv)
-    XlcConv conv;
+static unsigned int
+_XlcParseCT(parse, text, length)
+    register CTParse parse;
+    char **text;
+    int *length;
 {
-    if (conv->state)
-	init_state(conv->state);
+    unsigned int ret = 0;
+    unsigned char ch;
+    register unsigned char *str = (unsigned char *) *text;
+
+
+    switch (ch = *str++) {
+	case XctESC:
+	    if (*str == XctOtherCoding && *(str + 1) == XctNonStandard
+		&& *(str + 2) >= 0x30 && *(str + 2) <= 0x3f && *length >= 6) {
+
+		/* non-standard encodings */
+		parse->side = XlcGLGR;
+		parse->set_size = 0;
+		str += 2;
+		if (*str <= 0x34) {
+		    parse->char_size = *str - 0x30;
+		    ret = XctExtSeg;
+		    /* XXX */
+		    parse->charset = _XlcGetCharSetFromEncoding(*text, *length);
+		} else
+		    ret = XctOtherSeg;
+		str++;
+		parse->ext_seg_length = (*str - 128) * 128 + *(str + 1) - 128;
+		str += 2;
+
+		goto done;
+	    } else if (*str == XctCntrlFunc && *length >= 4 &&
+		       *(str + 1) >= 0x20 && *(str + 1) <= 0x2f &&
+		       (*(str + 2) == XctIgnoreExt ||
+			*(str + 2) == XctNotIgnoreExt)) {
+		
+		/* ignore extension or not */
+		str++;
+		parse->version = *str++ - 0x20;
+		ret = *str++;
+
+		goto done;
+	    }
+	    
+	    if (*str == XctMB) {	/* multiple-byte sets */
+		parse->char_size = 2;
+		str++;
+	    } else
+		parse->char_size = 1;
+	
+	    switch (*str) {
+		case XctGL94:
+		    parse->side = XlcGL;
+		    parse->set_size = 94;
+		    ret = (parse->char_size == 1) ? XctGL94 : XctGL94MB;
+		    break;
+		case XctGR94:
+		    parse->side = XlcGR;
+		    parse->set_size = 94;
+		    ret = (parse->char_size == 1) ? XctGR94 : XctGR94MB;
+		    break;
+		case XctGR96:
+		    if (parse->char_size == 1) {
+			parse->side = XlcGR;
+			parse->set_size = 96;
+			ret = XctGR96;
+		    }
+		    break;
+	    }
+	    if (ret) {
+		str++;
+		if (*str >= 0x24 && *str <= 0x2f) {	/* non-standard */
+		    ret = 0;
+		    str++;
+		}
+	    }
+
+	    SKIP_I(str)
+
+	    if (ret && *str < 0x40)			/* non-standard */
+		ret = 0;
+
+	    if (*str < 0x30 || *str > 0x7e || (char *) str - *text >= *length)
+		break;
+	    
+	    if (ret == 0)
+		ret = XctESCSeq;
+	    else {
+		if (parse->char_size == 2) {
+		    if (*str >= 0x70)
+			parse->char_size = 4;
+		    else if (*str >= 0x60)
+			parse->char_size = 3;
+		}
+		parse->charset = _XlcGetCharSetFromEncoding(*text, *length);
+	    }
+	    str++;
+	    goto done;
+	case XctCSI:
+	    /* direction */
+	    if (*str == XctLeftToRight && *(str + 1) == XctDirection) {
+		ret = XctLeftToRight;
+		str += 2;
+		goto done;
+	    } else if (*str == XctRightToLeft && *(str + 1) == XctDirection) {
+		ret = XctRightToLeft;
+		str += 2;
+		goto done;
+	    } else if (*str == XctDirectionEnd) {
+		ret = XctDirectionEnd;
+		str++;
+		goto done;
+	    }
+
+	    SKIP_P(str)
+	    SKIP_I(str)
+
+	    if (*str < 0x40 && *str > 0x7e)
+		break;
+
+	    ret = XctCSISeq;
+	    str++;
+	    goto done;
+    }
+
+    if (ch & 0x80) {
+	if (ch < 0xa0)
+	    ret = XctC1;
+	else
+	    ret = XctGR;
+    } else {
+	if (ch == XctHT || ch == XctNL)
+	    ret = ch;
+	else if (ch < 0x20)
+	    ret = XctC0;
+	else
+	    ret = XctGL;
+    }
+
+    return ret;
+
+done:
+    *length -= (char *) str - *text;
+    *text = (char *) str;
+
+    return ret;
 }
 
-static XlcConvMethodsRec mbtocs_methods = {
-    close_cs_converter,
-    EUC_mbtocs,
-    reset_cs_converter
-} ;
 
-static XlcConvMethodsRec mbstocs_methods = {
-    close_cs_converter,
-    EUC_mbstocs,
-    reset_cs_converter
-} ;
+static XlcCharSet
+_XlcAddCT(name, encoding)
+    char *name;
+    char *encoding;
+{
+    CTInfo ct_info;
+    XlcCharSet charset;
+    CTParseRec parse;
+    char *ct_ptr = encoding;
+    char *ext_segment = NULL;
+    int length;
 
-static XlcConvMethodsRec wcstocs_methods = {
-    close_cs_converter,
-    EUC_wcstocs,
-    reset_cs_converter
-} ;
+    length = strlen(encoding);
+
+    switch (_XlcParseCT(&parse, &ct_ptr, &length)) {
+	case XctExtSeg:
+	    /* XXX */
+	    ext_segment = name;
+	case XctGL94:
+	case XctGL94MB:
+	case XctGR94:
+	case XctGR94MB:
+	case XctGR96:
+	    if (parse.charset)		/* existed */
+		return parse.charset;
+	    break;
+	default:
+	    return (XlcCharSet) NULL;
+    }
+
+
+    charset = _XlcCreateDefaultCharSet(name, encoding);
+
+    if (charset == (XlcCharSet) NULL)
+	return (XlcCharSet) NULL;
+
+    _XlcAddCharSet(charset);
+
+    if (ct_list == NULL)
+	ct_info = (CTInfo) Xmalloc(sizeof(CTInfoRec));
+    else
+	ct_info = (CTInfo) Xrealloc(ct_list, sizeof(CTInfoRec) *
+				       (ct_list_num + 1));
+    if (ct_info == NULL)
+	return (XlcCharSet) NULL;
+    
+    ct_list = ct_info;
+    ct_info += ct_list_num++;
+
+    ct_info->charset = charset;
+    ct_info->encoding_len = strlen(encoding);
+    ct_info->encoding = encoding;
+    ct_info->ext_segment_len = ext_segment ? strlen(ext_segment) : 0;
+    ct_info->ext_segment = ext_segment;
+    ct_info->set_size = parse.set_size;
+
+    return charset;
+}
+
+static CTInfo
+_XlcGetCTInfoFromCharSet(charset)
+    register XlcCharSet charset;
+{
+    register CTInfo ct_info;
+    register int i;
+
+    for (ct_info = ct_list, i = 0; i < ct_list_num; ct_info++, i++)
+	if (ct_info->charset == charset)
+	    return ct_info;
+
+    return (CTInfo) NULL;
+}
+
+static Bool
+_XlcInitCTInfo()
+{
+    register XlcCharSet charset;
+    register CTData ct_data;
+    register int num;
+
+    if (ct_list == NULL) {
+	num = sizeof(default_ct_data) / sizeof(CTDataRec);
+	for (ct_data = default_ct_data; num-- > 0; ct_data++) {
+	    charset = _XlcAddCT(ct_data->name, ct_data->encoding);
+	    if (charset == NULL)
+		continue;
+	}
+    }
+
+    return True;
+}
+
+
+static int
+_XlcCheckCTSequence(state, ctext, ctext_len)
+    State state;
+    char **ctext;
+    int *ctext_len;
+{
+    XlcCharSet charset;
+    CTParseRec parse;
+
+    switch (_XlcParseCT(&parse, ctext, ctext_len)) {
+	case XctExtSeg:
+	    /* XXX */
+	case XctGL94:
+	case XctGL94MB:
+	case XctGR94:
+	case XctGR94MB:
+	case XctGR96:
+	    charset = parse.charset;
+	    break;
+	default:
+	    /* XXX */
+	    return 0;
+    }
+
+    if (charset == (XlcCharSet) NULL)
+	return -1;	/* XXX  was 0????!!! */
+
+    if (charset->side == XlcGL)
+	state->GL_charset = charset;
+    else if (charset->side == XlcGR)
+	state->GR_charset = charset;
+
+    return 0 ;
+}
+
+/* END: Utility Functions for euc_cttocs() and euc_cstoct(): */
+
+
+/* euc_cttocs() - convert compound text to charset (SJIS version)
+ *
+ * cttocs() processes strings containing one or more compound text (CT) 
+ * segments.  On first invocation it processes the input string (from_left)
+ * until it detects a new CT sequence or the end of the string.  When this
+ * condition occurs, cttocs() passes the charset of the first segment via
+ * args[0] and saves the charset of the next segment in state->charset.
+ * Upon reinvocation, the ELSE part of the while loop is executed because
+ * from_left does not begin with a CT sequence.  Because charset is now
+ * NULL, cttocs() reinitializes charset and tmpcharset and the process
+ * continues.
+ */
+
+static int
+euc_cttocs(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    char **from;
+    int *from_left;
+    char **to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    register State state = (State) conv->state;
+    register unsigned char ch;
+    XlcCharSet charset = NULL;
+    XlcCharSet tmpcharset = NULL;
+    char *ctptr, *bufptr;
+    int ctext_len, buf_len;
+
+    XLCd lcd = state->lcd;
+    register XLCdGenericPart *private = XLC_GENERIC_PART(state->lcd);
+    register CodeSet codeset;
+
+
+
+    if (from == NULL || *from == NULL)
+	return init_state(state);
+    
+    ctptr = *from;
+    bufptr = *to;
+    ctext_len = *from_left;
+    buf_len = *to_left;
+
+    while (ctext_len > 0 && buf_len > 0) {
+	ch = *((unsigned char *) ctptr);
+
+	if (ch == 0x1b || ch == 0x9b) {    /* Process CT sequence */
+
+	    if (tmpcharset)
+		tmpcharset = charset;
+/*
+ * _XlcCheckCTSequence() identifies the charset of the CT sequence and points
+ * either state->GL_charset or state->GR_charset at the charset information.
+ * Only one of {GL,GR}_charset will be set.  _XlcCheckCTSequence() also sets
+ * ctptr to point to the first byte after the CT sequence.
+ */
+	    state->GL_charset = state->GR_charset = (XlcCharSet) NULL;
+
+	    if ( _XlcCheckCTSequence(state, &ctptr, &ctext_len) == -1)
+		return -1;
+
+	    if (state->GL_charset)
+		charset = state->GL_charset;
+	    else if (state->GR_charset)
+		charset = state->GR_charset;
+	    else
+		return -1;
+	    state->charset = charset;
+
+	    if (!tmpcharset)	        /* First invocation: initialize */
+		tmpcharset = charset;
+
+	} else {    /* Process remaining segment (character data) */
+
+	    if ((ch < 0x20 && ch != '\n' && ch != '\t'))
+		return -1;
+	    
+	    if (!charset) {	       /* Subsequent invocation: reinitialize. */
+		if (!state->charset){  /* Continuation of Codeset 0 segment    */
+		      init_state(state);
+		      state->charset = state->GL_charset;
+		}
+		charset = state->charset; 
+		tmpcharset = charset;
+	    }
+	    else if (tmpcharset != charset) {
+		state->charset = charset;
+		charset = tmpcharset;
+		break;
+	    }
+	    *bufptr++ = *ctptr++;
+	    ctext_len--;
+	    buf_len--;
+	}
+    }
+
+    if (num_args > 0)
+	*((XlcCharSet *) args[0]) = charset;
+
+    *from_left -= ctptr - *from;
+    *from = ctptr;
+
+    *to_left -= bufptr - *to;
+    *to = bufptr;
+
+
+    return 0;
+}
+
+static int
+euc_cstoct(conv, from, from_left, to, to_left, args, num_args)
+    XlcConv conv;
+    char **from;
+    int *from_left;
+    char **to;
+    int *to_left;
+    XPointer *args;
+    int num_args;
+{
+    State state = (State) conv->state;
+    XlcSide side;
+    unsigned char min_ch, max_ch;
+    register unsigned char ch;
+    int length, set_size, cvt_length;
+    CTInfo ct_info;
+    XlcCharSet charset;
+    char *csptr, *ctptr;
+    int csstr_len, ct_len;
+
+    if (from == NULL || *from == NULL)
+	return init_state(state);
+    
+    if (num_args < 1)
+	return -1;
+    
+    csptr = *from;
+    ctptr = *to;
+    csstr_len = *from_left;
+    ct_len = *to_left;
+    
+    charset = (XlcCharSet) args[0]; /* charset of current segment */
+
+
+    ct_info = _XlcGetCTInfoFromCharSet(charset);
+
+    if (ct_info == NULL)
+	return -1;
+
+    side = charset->side;
+    length = charset->char_size;
+    set_size = ct_info->set_size;
+
+    cvt_length = 0;
+
+/*
+ * state->charset == charset of previous csoct() invocation 
+ */
+    if (ct_info->ext_segment || state->charset != charset ) {
+	ct_len -= ct_info->encoding_len;
+
+	if (ct_len < 0)
+	    return -1;
+	cvt_length += ct_info->encoding_len;
+
+	if (ctptr) {
+	    strcpy(ctptr, ct_info->encoding);
+	    ctptr += ct_info->encoding_len;
+	}
+    }
+
+    min_ch = 0x20;
+    max_ch = 0x7f;
+
+    if (set_size == 94) {
+	max_ch--;
+	if (length > 1 || side == XlcGR)
+	    min_ch++;
+    }
+
+    while (csstr_len > 0 && ct_len > 0) {
+	ch = *((unsigned char *) csptr++);
+
+	if (ch < min_ch &&
+	     (ch != 0x00 && ch != 0x09 && ch != 0x0a && ch != 0x0b))
+		continue;
+	cvt_length++;
+
+	*ctptr++ = ch;
+	csstr_len--;
+	ct_len--;
+    }
+
+    state->charset = charset;
+
+    *from_left -= csptr - *from;
+    *from = csptr;
+
+    if (ctptr)
+	*to += cvt_length;
+    *to_left -= cvt_length;
+
+    return 0;
+}
 
 typedef enum {
     XlcNoneType,
@@ -856,167 +1362,28 @@ get_conversion_type(type)
     return XlcNoneType;
 }
 
-static XlcConv
-open_from_converter(lcd, from, to)
-    XLCd lcd;
-    char *from;
-    char *to;
-{
-    XlcConv conv;
-    State state;
-    XlcConvMethods methods;
-    XlcConvType from_type, to_type;
-
-    from_type = get_conversion_type(from);
-    to_type = get_conversion_type(to);
-
-    switch (from_type) {
-	case XlcMultiByteType:
-	    if (to_type == XlcCharType)
-		methods = &mbtocs_methods;
-	    else
-		methods = &mbstocs_methods;
-	    break;
-	case XlcWideCharType:
-	    methods = &wcstocs_methods;
-	    break;
-	default:
-	    return (XlcConv) NULL;
-    }
-
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
-    if (conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
-    
-    conv->methods = methods;
-    conv->state = (XPointer) _XlcAlloc(sizeof(StateRec));
-    if (conv->state == (XPointer) NULL)
-	goto err;
-    
-    state = (State) conv->state;
-    state->lcd = lcd;
-    init_state(state);
-    
-    return conv;
-
-err:
-    close_cs_converter(conv);
-
-    return (XlcConv) NULL;
-}
-
-
-static XlcConvMethodsRec cstombs_methods = {
-    close_cs_converter,
-    EUC_cstombs,
-    reset_cs_converter
-} ;
-
-static XlcConvMethodsRec cstowcs_methods = {
-    close_cs_converter,
-    EUC_cstowcs,
-    reset_cs_converter
-} ;
-
-static XlcConv
-open_to_converter(lcd, from, to)
-    XLCd lcd;
-    char *from;
-    char *to;
-{
-    XlcConv conv;
-    State state;
-    XlcConvMethods methods;
-    XlcConvType from_type, to_type;
-
-    from_type = get_conversion_type(from);
-    to_type = get_conversion_type(to);
-
-    switch (to_type) {
-	case XlcMultiByteType:
-	    methods = &cstombs_methods;
-	    break;
-	case XlcWideCharType:
-	    methods = &cstowcs_methods;
-	    break;
-	default:
-	    return (XlcConv) NULL;
-    }
-
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
-    if (conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
-    
-    conv->methods = methods;
-    conv->state = (XPointer) _XlcAlloc(sizeof(StateRec));
-    if (conv->state == (XPointer) NULL)
-	goto err;
-    
-    state = (State) conv->state;
-    state->lcd = lcd;
-    init_state(state);
-    
-    return conv;
-
-err:
-    close_cs_converter(conv);
-
-    return (XlcConv) NULL;
-}
-
-static void
-close_euc_converter(conv)
-    XlcConv conv;
-{
-    _XlcFree((char *) conv);
-}
-
-static XlcConvMethodsRec mbstowcs_methods = {
-    close_euc_converter,
-    euc_mbstowcs,
-    NULL
-} ;
-
-static XlcConvMethodsRec wcstombs_methods = {
-    close_euc_converter,
-    euc_wcstombs,
-    NULL
-} ;
-
-static XlcConv
-open_euc_converter(lcd, from, to)
-    XLCd lcd;
-    char *from;
-    char *to;
-{
-    XlcConv conv;
-    XlcConvType from_type, to_type;
-
-    from_type = get_conversion_type(from);
-    to_type = get_conversion_type(to);
-
-    conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
-    if (conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
-    
-    if (from_type == XlcMultiByteType)
-	conv->methods = &mbstowcs_methods;
-    else
-	conv->methods = &wcstombs_methods;
-
-    conv->state = (XPointer) lcd;
-    
-    return conv;
-
-err:
-    close_euc_converter(conv);
-
-    return (XlcConv) NULL;
-}
-
 
 static int
-convert(lc_conv, from, from_left, to, to_left, args, num_args)
+init_state(state)
+    register State state;
+{
+    register XLCdGenericPart *private = XLC_GENERIC_PART(state->lcd);
+    register CodeSet codeset;
+
+    if (codeset = private->initial_state_GL)
+	state->GL_charset = *codeset->charset_list;
+    if (codeset = private->initial_state_GR)
+	state->GR_charset = *codeset->charset_list;
+
+    if (state->GL_charset == NULL)
+	if (codeset = *private->codeset_list)
+	    state->GL_charset = *codeset->charset_list;
+    
+    return 0;
+}
+
+static int
+euc_convert(lc_conv, from, from_left, to, to_left, args, num_args)
     XlcConv lc_conv;
     XPointer *from;
     int *from_left;
@@ -1072,94 +1439,188 @@ convert(lc_conv, from, from_left, to, to_left, args, num_args)
     return unconv_num;
 }
 
-static void
-close_converter(lc_conv)
-    XlcConv lc_conv;
-{
-    Conv conv = (Conv) lc_conv->state;
-
-    if (conv) {
-	if (conv->from_conv)
-	    (*conv->from_conv->methods->close)(conv->from_conv);
-	if (conv->to_conv)
-	    (*conv->to_conv->methods->close)(conv->to_conv);
-
-	_XlcFree((char *) conv);
-    }
-
-    _XlcFree((char *) lc_conv);
-}
 
 static void
-reset_converter(lc_conv)
-    XlcConv lc_conv;
+close_converter(conv)
+    XlcConv conv;
 {
-    Conv conv = (Conv) lc_conv->state;
-
-    if (conv) {
-	if (conv->from_conv && conv->from_conv->methods->reset)
-	    (*conv->from_conv->methods->reset)(conv->from_conv);
-	if (conv->to_conv && conv->to_conv->methods->reset)
-	    (*conv->to_conv->methods->reset)(conv->to_conv);
+    if (conv->state) {
+        _XlcFree((char *) conv->state);
     }
+     _XlcFree((char *) conv);
 }
 
-static XlcConvMethodsRec conv_methods = {
-    close_converter,
-    convert,
-    reset_converter
-} ;
 
 static XlcConv
 open_converter(from_lcd, from, to_lcd, to)
-    XLCd from_lcd;
-    char *from;
-    XLCd to_lcd;
-    char *to;
+XLCd from_lcd;
+char *from;
+XLCd to_lcd;
+char *to;
 {
-    XlcConv lc_conv;
-    Conv conv;
+
+/*
+ * This routine sets up the data structures to invoke the appropriate
+ * functions and to pass locale data for the requested conversion.
+ *
+ * There are two types of converters:
+ *   single-hop (source->destination)
+ *   double-hop (source->charset->destination)
+ *
+ * Each converter type has its own set of data structures (prefixed by
+ * "sgl" (single) and "dbl" (double)).
+ */
+
+
+    static XlcConvRec sglconvrec;
+    static XlcConvMethodsRec sglconv_methods;
+    static XlcConvMethodsRec dblfrom_convrec;
+    static XlcConvMethodsRec dblto_convrec;
+
+    static XlcConvMethodsRec dbl_conv_methods = {
+	close_converter,
+	euc_convert,
+    };
+
+    register XlcConv sglconv = &sglconvrec;
+    register XlcConv dblconv = (XlcConv) NULL;
+    register Conv dbl_conv;
+    register State state;
+
     XlcConvType from_type, to_type;
+
+
+    if ( ! (
+      (dbl_conv = (Conv)_XlcAlloc(sizeof(ConvRec)))			&&
+      (dbl_conv->from_conv = (XlcConv)_XlcAlloc(sizeof(XlcConvRec)))	&&
+      (dbl_conv->to_conv = (XlcConv)_XlcAlloc(sizeof(XlcConvRec)))	&&
+      (dblconv = (XlcConv)_XlcAlloc(sizeof(XlcConvRec)))		&&
+      (state = (State)_XlcAlloc(sizeof(StateRec)))        	       ) )
+	goto err;
+
+    state->lcd = from_lcd;
+
+    sglconv->methods = &sglconv_methods;
+    sglconv->methods->close = close_converter;
+    sglconv->state = (XPointer)from_lcd;
+
+    dbl_conv->to_conv->methods = &dblto_convrec;
+    dbl_conv->to_conv->methods->close = close_converter;
+    dbl_conv->to_conv->state = (XPointer)state;
+    dbl_conv->from_conv->state = (XPointer)state;
+    dbl_conv->from_conv->methods = &dblfrom_convrec;
+    dbl_conv->from_conv->methods->close = close_converter;
+
+    dblconv->methods = &dbl_conv_methods;
+    dblconv->state = (XPointer)dbl_conv;
 
     from_type = get_conversion_type(from);
     to_type = get_conversion_type(to);
 
-    if (to_type == XlcCharSetType || to_type == XlcCharType)
-	return open_from_converter(from_lcd, from, to);
 
-    if (from_type == XlcCharSetType || from_type == XlcCharType)
-	return open_to_converter(from_lcd, from, to);
 
-    if ((from_type == XlcMultiByteType && to_type == XlcWideCharType)
-	|| (from_type == XlcWideCharType && to_type == XlcMultiByteType))
-	return open_euc_converter(from_lcd, from, to);
+/* Note:  For simplicity, cases XlcStringType/XlcCompoundTextType are 
+ * combined.  If invalid arguments such as _XctOpenConverter(XlcNString,
+ * XlcNString) are passed, _XctOpenConverter() returns NULL, causing
+ * open_converter() to return (XlcConv)NULL.
+ */
 
-    lc_conv = (XlcConv) _XlcAlloc(sizeof(XlcConvRec));
-    if (lc_conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
-    
-    lc_conv->methods = &conv_methods;
-
-    lc_conv->state = (XPointer) _XlcAlloc(sizeof(ConvRec));
-    if (lc_conv->state == (XPointer) NULL)
-	goto err;
-    
-    conv = (Conv) lc_conv->state;
-    conv->from_conv = conv->to_conv = (XlcConv) NULL;
-
-    conv->from_conv = open_from_converter(from_lcd, from, XlcNCharSet);
-    if (conv->from_conv == (XlcConv) NULL)
-	goto err;
-
-    conv->to_conv = open_to_converter(from_lcd, XlcNCharSet, to);
-    if (conv->to_conv == (XlcConv) NULL)
-	goto err;
-
-    return lc_conv;
+    switch (from_type) {
+	case XlcCompoundTextType:
+	    switch (to_type) {
+		case XlcMultiByteType:
+		    dbl_conv->from_conv->methods->convert = euc_cttocs;
+		    if (dbl_conv->from_conv->methods == (XlcConvMethods) NULL)
+			goto err;
+		    dbl_conv->to_conv->methods->convert = euc_cstombs;
+		    break;
+		case XlcWideCharType:
+		    dbl_conv->from_conv->methods->convert = euc_cttocs;
+		    if (dbl_conv->from_conv->methods == (XlcConvMethods) NULL)
+			goto err;
+		    dbl_conv->to_conv->methods->convert = euc_cstowcs;
+		    break;
+#ifdef notdef
+		case XlcCharType:
+		case XlcCharSetType:
+		    sglconv->methods->convert = euc_cttocs;
+		      _XctOpenConverter(from, to)->methods->convert;
+		    if (sglconv->methods->convert == (int) NULL)
+			goto err;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+#endif
+		default:
+		    goto err;
+	    }
+	    return dblconv;
+	case XlcMultiByteType:
+	    switch (to_type) {
+		case XlcWideCharType:
+		    sglconv->methods->convert = euc_mbstowcs;
+		    sglconv->state = (XPointer)from_lcd;
+		    return sglconv;
+		case XlcCompoundTextType:
+		    dbl_conv->from_conv->methods->convert = euc_mbstocs;
+		    dbl_conv->to_conv->methods->convert = euc_cstoct;
+		    if (dbl_conv->to_conv->methods == (XlcConvMethods) NULL)
+			goto err;
+		    break;	
+		case XlcCharType:
+		case XlcCharSetType:
+		    sglconv->methods->convert = euc_mbstocs;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+		default:
+		    goto err;
+	    }
+	    return dblconv;
+	case XlcWideCharType:
+	    switch (to_type) {
+		case XlcMultiByteType:
+		    sglconv->methods->convert = euc_wcstombs;
+		    sglconv->state = (XPointer)from_lcd;
+		    return sglconv;
+		case XlcCompoundTextType:
+		    dbl_conv->from_conv->methods->convert = euc_wcstocs;
+		    dbl_conv->to_conv->methods->convert = euc_cstoct;
+		    if (dbl_conv->to_conv->methods == (XlcConvMethods) NULL)
+			goto err;
+		    break;
+		case XlcCharType:
+		case XlcCharSetType:
+		    sglconv->methods->convert = euc_wcstocs;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+		default:
+		    goto err;
+	    }
+	    return dblconv;
+	case XlcCharType:
+	case XlcCharSetType:
+	    switch (to_type) {
+		case XlcMultiByteType:
+		    sglconv->methods->convert = euc_cstombs;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+		case XlcWideCharType:
+		    sglconv->methods->convert = euc_cstowcs;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+		case XlcCompoundTextType:
+		    sglconv->methods->convert = euc_cstoct;
+		    if (sglconv->methods->convert == (int) NULL)
+			goto err;
+		    sglconv->state = (XPointer)state;
+		    return sglconv;
+		default:
+		    goto err;
+	    }
+	    break;
+    }
 
 err:
-    close_converter(lc_conv);
-
+    close_converter(dbl_conv, dblconv, state);
     return (XlcConv) NULL;
 }
 
@@ -1178,20 +1639,26 @@ _XlcEucLoader(name)
 	return (XLCd) NULL;
     }
 
+    _XlcSetConverter(lcd, XlcNCompoundText, lcd, XlcNMultiByte, open_converter);
+    _XlcSetConverter(lcd, XlcNCompoundText, lcd, XlcNWideChar, open_converter);
+
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNWideChar, open_converter);
+    _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCompoundText, open_converter);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNCharSet, open_converter);
     _XlcSetConverter(lcd, XlcNMultiByte, lcd, XlcNChar, open_converter);
 
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNMultiByte, open_converter);
+    _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCompoundText, open_converter);
     _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNCharSet, open_converter);
+    _XlcSetConverter(lcd, XlcNWideChar, lcd, XlcNChar, open_converter);
 
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNMultiByte, open_converter);
     _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNWideChar, open_converter);
+    _XlcSetConverter(lcd, XlcNCharSet, lcd, XlcNCompoundText, open_converter);
+
+    _XlcSetConverter(lcd, XlcNChar, lcd, XlcNMultiByte, open_converter);
+    _XlcSetConverter(lcd, XlcNChar, lcd, XlcNWideChar, open_converter);
+    _XlcSetConverter(lcd, XlcNChar, lcd, XlcNCompoundText, open_converter);
 
     return lcd;
 }
-#else /* not NOTDEF */
-#ifndef lint
-static int dummy;       /* prevent ranlibs from complaining */
-#endif  
-#endif /* ifdef NOTDEF */
