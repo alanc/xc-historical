@@ -122,7 +122,6 @@ char **argv;
 			values.led = 0;
 			values.led_mode = 0;
 			value_mask |= KBLedMode;
-			i++;
 
 		        arg = nextarg(i, argv);
 			if (atoi(arg) == 0)
