@@ -1,5 +1,11 @@
-.\" Contrib manifest  Time-stamp: <91/10/11 14:35:23 gildea>  -*- Nroff -*-
+.\" Contrib manifest  -*- Nroff -*-
+.\" $XConsortium$
 .\" #! troff -ms
+.nr PS 11
+.if n \{
+.nr LL 72n
+.na
+.\}
 .			\" .DH - directory heading
 .\" .DH level name
 .de DH
@@ -19,7 +25,7 @@
 ..
 .			\" AT - apropos table
 .de AT
-.ta 24n
+.ta 20n
 .nf
 .\" end table with .fi
 ..
@@ -29,330 +35,246 @@
 .ds CH \"
 
 .ce 100
-\s+2\fBX Window System, Version 11, Release 5\fP\s-2
+\s+2\fBX Window System, Version 11, Release 6\fP\s-2
 
 \s+1\fBContrib Manifest\fP\s-1
 .ce 0
 .sp .5i
-Copyright \(co\ 1991 by the Massachusetts Institute of Technology.
+Copyright \(co\ 1994 X Consortium
+.nr PS -2
+.nr VS -2
 .LP
-.SM
-Permission to use, copy, modify, and distribute this document 
-for any purpose and without fee is hereby granted, provided 
-that the above copyright notice and this permission notice
-appear in all copies, and that the name of MIT not be used 
-in advertising or publicity pertaining to this document without 
-specific, written prior permission.
-MIT makes no representations about the suitability of this
-document for any purpose.
-It is provided ``as is'' without express or implied warranty.
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+\*QSoftware\*U), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+.LP
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+.LP
+THE SOFTWARE IS PROVIDED \*QAS IS\*U, WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+.LP
+Except as contained in this notice, the name of the X Consortium shall
+not be used in advertising or otherwise to promote the sale, use or
+other dealings in this Software without prior written authorization
+from the X Consortium.
+.nr PS +2
+.nr VS +2
 .NL
 .LP
-\fIX Window System\fP is a trademark of MIT.
+\fIX Window System\fP is a trademark of X Consortium, Inc.
 .sp 3
 .LP
-This document is a walk-through of the directories on the X11R5 contrib tape.
+This document is a walk-through of the directories of the X11R6
+contrib part.
 .LP
 Where programs have provided a top-level \fI.man\fP file, the
 line that \fIapropos\fP(1) would extract from that file is shown.
 For other packages, if there is a succinct description of
 the software near the top of a \fIREADME\fP file, that is given here.
-Otherwise only the name of the package is given.
 .LP
 The descriptions of the software given here are simply how
-the software describes itself; MIT has not tested that the software
-performs as described.
+the software describes itself; the X Consortium has not tested that
+the software performs as described.
 .LP
 We do not claim to have built or tested any of this software.  We do
 not know what hardware (if any) it will work on.  All questions
 regarding contributed software should be directed to the authors, not
-to the MIT X Consortium.
+to the X Consortium.
+.LP
+See the Release Notes for general guidelines on building contrib software.
+.LP
+Patches to some of this software can usually be found in the directory
+pub/R6/contrib-fixes on ftp.x.org or your local X mirror site, using
+anonymous FTP.
+Entirely new versions of some packages may be found in the appropriate
+subdirectory of contrib on ftp.x.org or your local X mirror site.
 .sp 2
 .LP
 And now the software, directory by directory:
-
-.DH 1 clients
-Additional clients and internationalized versions of MIT clients.
-
-additional clients:
-
-.AT
-AnswerGarden
-cpicker
-cxterm
-emu
-ImageMagick/XtoPS	dump an image of an X window as encapsulated Postscript
-ImageMagick/animate	display a sequence of images on any workstation running X
-ImageMagick/display	display an image on any workstation running X
-ImageMagick/import	dump an image of an X window as MIFF
-ImageMagick/montage	creates a composite image by combining several separate images
-exterm/Exterm	terminal emulator for X
-exterm/resize	utility to set TERMCAP and terminal settings to current window size
-gwm	Generic Window Manager for the X Window System
-i18nOlwmV2/olwm	OPEN LOOK window manager for OpenWindows
-ixterm	international terminal emulator for X
-kterm	kanji terminal emulator for X
-lclock	display time of day
-palette	X11 color FG/BG palette selection tool 
-pbmplus
-pixmap
-shinbun
-snftobdf	SNF to BDF font decompiler for X11
-tvtwm	Tom's Virtual Tab Window Manager for the X Window System
-vine
-xalarm
-xcalendar	calendar with a notebook for X11
-xcdplayer
-xco	display X11 color names and colors 
-xcolors	display all X11 color names and colors
-xcrtca	CRT color analyzer driver
-xcrtca/xsccd	Xcms property builder
-xdaliclock	melting digital clock
-xdu	display the output of "du" in an X window
-xfed	font editor for X window systems bdf fontfiles 
-xfig	Facility for Interactive Generation of figures under X11
-xforecast	X window system interface to the weather program
-xforecast/weather	display current weather for a city or state
-xhelp	X Window System Help Facility 
-xlbiff	mailbox message previewer for X
-xlogin	login for X
-xmail	X11 visual interface to the mail program
-xmailwatcher
-xmessage	display a message or query in a window (X-based /bin/echo)
-xmeter	rstat display for X
-xmh-icons
-xmh.editor
-xmon	interactive X protocol monitor
-xphoon	displays the PHase of the mOON on the root window
-xplot	plot(5) filter for X
-xpostit	X window system Postit notes
-xprompt	prompt a user for input
-xproof	preview typesetter-independent troff using X Windows
-xrsh	start an X program on a remote machine
-xrsh/xrlogin	start an xterm that uses rlogin or telnet to connect to a remote host
-xscope	X Window System Protocol Monitor
-xtalk	talk to another user
-xtiff	view a TIFF file in an X window
-xtv
-.fi
-
-.ne 4
-Internationalized versions of MIT clients:
-
-.AT
-bitmap
-editres
-listres
-twm	Tab Window Manager for the X Window System
-viewres
-xclipboard
-xedit
-xmh
-.fi
-
-.DH 1 demos
-Graphics demo programs for X.
-
-.AT
-beach_ball2
-muncher	draw interesting patterns in an X window
-plaid	paint some plaid-like patterns in an X window
-psycho	animate an icosahedron
-pyramid
-scdisp	display scaled text 
-sctext	display scaled text 
-vandal
-xtree	tree graphing filter
-.fi
-
 .DH 1 doc
-Xbibliography, a bibliography of good, publically available X Window System
-technical material.
-.LP
-color.bib, a bibliography of references on color.
-.LP
-SyncExt, a specification for an X synchronization extension.
+documentation on various items:
+.AT
+CLX	Common Lisp interface to X
+papers/tutorials	various papers, including the comp.windows.x FAQ
+PHIGS	PHIGS interface to PEX
+Xserver	X server internals
+.fi
 
 .DH 1 examples
-.DH 2 CLX
-Common Lisp programs using the CLX interface.
-
-.DH 2 OReilly
-Examples from O'Reilly X books, volumes 1 and 4, and the R5
-supplement.
-
-.DH 2 PEX
-PEX example programs.
-
-.DH 2 Xaw
-Simple Athena Widgets examples.  These programs were in the core
-distribution in R4.
-
-.DH 2 Xcms
-.AT
-hello_xcms	The client to display "Hello Xcms"
-.nf
-
-.DH 2 i18n
-xtail
-
-.DH 2 text
-ttextext
+Sample programs for Fresco.
 
 .DH 1 extensions
-.DH 2 mvex
-a minimal video extension to X
-.DH 2 xidle
-get server idle time
-.DH 2 xpli
-X Paper-Like-Interface extension (pen-based interface)
-.DH 2 xtrap
+.DH 2 XTrap
 X protocol trapper, allowing event capture and playback.
-.DH 2 xv
-X video extension
+.DH 2 screensaver
+a hack screen saver extension
 
 .DH 1 fonts
-
-.DH 2 bdf
 .AT
-9x13-3.bdf	ISO 8859-3 encoded 9x15 font
-chld8x13.bdf	child's scrawl 8x13 font
+8x13-2	8x13 font with ISO Latin 2 encoding
+ter7x14	terminal emulator 7x14 font
+ter7x14B	terminal emulator 7x14 bold font
 .fi
-
-.DH 2 lib/font
-Server code to support rasterization and scaling of Type 1 (Postscript)
-font outlines.
-
-.DH 2 scaled/Type1
-Type 1 outlines of IBM Courier font.
-
-.DH 2 Utopia
-Adobe Utopia font in both Type 1 and BDF formats.
-
-.DH 1 ftn
-PEX FORTRAN binding
-
-.DH 1 games
-.AT
-acm
-spider	play double deck solitaire 
-xboard	Xt/Athena user interface for GNU Chess, version 1.2
-xpipeman	connect the pipes to stop the leaks (X Windows)
-xtetris	X Window block dropping game
-.fi
-
-.DH 1 im
-Implementations of Input Methods.
-
-.DH 2 Canna
-A unified user interface for Japanese input.  Uses a client-server
-model for kana-to-kanji conversion.  Includes nemacs.  Supports kinput2.
-
-.DH 2 Ximp
-XIMP protocol input method servers.
-Includes ximdemo and xterm.
-
-.DH 2 Xsi
-An internationalized Wnn.  Includes Xwnmo (an input manager).
-
-.DH 2 kinput2
-A front-end for X11 applications that want Japanese text input.
-Upward compatible with kinput (from R4 contrib).  Can use Wnn or Canna
-conversion server.
 
 .DH 1 lib
+.DH 2 AF
+A device-independent network-transparent system including 
+client applications and audio servers.
+.DH 2 auis-6.3
+The Andrew Messaging System, the Andrew Toolkit.
+.DH 2 CLX
+Common Lisp X interface library.
 .DH 2 DPS
 Client libraries and utilities for writing applications that use the Display
 PostScript extension to X.  Includes the pswrap preprocessor.
-.DH 2 PEXt
-PEX toolkit
-.DH 2 Selfmoving
-A widget with grips that allow it to be moved or resized.
-.DH 2 Wcl
-Widget Creation Library, a simple package allowing users to define the
-X toolkit widget hierarchies and their binding to the application
-using X resource files.
-.DH 2 X
-Additional Xcms conversion routines.
-.DH 2 XO
-O'Neal X Library, a library of X and Xt-based convenience routines.
-.DH 2 Xaw
-Internationalized Athena Widget Set.
-.DH 2 Xcu
-Cornell University widget set.
-.DH 2 Xpex
-Low-level PEX client library from Sony.
-.DH 2 Xt
-Experimental extension event processing for Xt.
-.DH 2 Xwchar
-Wide character set support.
-.DH 2 andrew
-The Andrew Messaging System, the Andrew Toolkit.
-.DH 2 dec-pexlib
-Low-level PEX client library from Digital.
-.DH 2 elk
-A Scheme interpreter intended to be used as a general extension
-language.
-.DH 2 graphlib
-A library and collection of programs to support X programming.
-.DH 2 i18nXView2
-Internationalized XView library version 2.
-Includes cmdtool and textedit programs.
-.DH 2 iv
-Interviews 3.0, a C++ based toolkit.
-.DH 2 pexim
-A subset of PHIGS and the proposed PHIGS Immediate Mode Extensions.
-.DH 2 vroot
-Virtual root support.
-.DH 2 xpm
+.DH 2 IMdkit
+Input Method server developers kit.
+.DH 2 nas-1.2
+Network Audio System, a
+network-transparent, client/server audio system.
+.DH 2 pcthreads
+POSIX pthreads to MACH cthreads ininterface routines
+.DH 2 PHIGS
+3D graphics library interface to PEX using the PHIGS bindings.
+.DH 2 tcl
+An embeddable tool command language.
+.DH 2 Ximp
+Xlib internationalization support.
+.DH 2 xpm-3.4c
 Support for X Pixmap files.
-.DH 2 xview3
-XView library version 3.
-Includes the following clients: clock, cmdtool, olwm, and textedit.
+
+.DH 1 programs
+.AT
+a2x	converts ASCII into X device events
+AnswerGarden	organizational memory program
+auto_box	display a rotating cube using PHIGS
+beach_ball	display a bouncing sphere using PHIGS
+Canna32	yet another Japanese input system
+cmodext	control modifier extension
+crock	one or two player interactive fighting game
+ctwm-3.2	Tab Window Manager for the X Window System
+cxterm	Chinese terminal emulator for X
+Dclock	digital clock for X
+dish	Tcl application allowing invocation of Fresco objects
+dox	call Xlib function
+emu	X based extensible terminal emulator
+fdraw	graphics editor supporting instancing and embedding widgets
+gpc/plbpex	picture level benchmark program
+hterm	terminal emulator for X
+i2mif
+ico	animate an icosahedron or other polyhedron
+ImageMagick	display and interactive manipulation of images
+ixx
+kgames	a collection of games, and some useful widgets
+kinput2	an input server for easy input of Japanese text
+kterm-6.1.0	kanji terminal emulator for X
+listres	list resources in widgets
+MacFS	font server for Macintosh
+maze	demo repeatedly creating and solving a random maze
+mazewar	distributed rats in a maze
+mterm	terminal emulator for X
+ora-examples	O'Reilly and Associates examples
+pixmap	Xpm pixmap editor for X
+pubdic+	dictionary for kana-to-kanji conversion
+puzzle	15-puzzle game for X
+rr	collection of X11 clients
+showfont	font dumper for X font server
+sj3	Japanese input system
+sjxa	Japanese Input Method Server for X Window System
+timex	a manager for time lists
+tkpostage-1.3a	fancy mailbox message counter (like xbiff)
+tvtwm	Tom's Virtual Tab Window Manager
+viewres	graphical class browser for Xt
+xTeXcad.13	a graphic editor for portable LaTeX diagrams
+xancur-1.6	root cursor animation program for X
+xbiff	mailbox flag for X
+xboing2.2	An X Window System based blockout clone. V2.2
+xbuffy3	yet another biff for the X Window System
+xcalc	scientific calculator for X
+xcalendar	calendar with a notebook for X11
+xcmdmenu-1.6	command menu utility for X
+xcms/col2rgb	convert colors to RGB:0/0/0 or RGB.TXT format
+xco	display X11 color names and colors 
+xcolorize	start X client with pleasant background color
+xcolors	display all X11 color names and colors
+xdaliclock-2.03	melting digital clock
+xdiary	interactive daily diary and calendar for X
+xditview	display ditroff output
+xdu	display the output of "du" in an X window
+xdvi	program for previewing .dvi files
+xdvorak	Dvorak keyboard layout for X11.
+xearth-0.92	shaded image of the Earth in the root window
+xed	a text editor for X
+xedit	simple text editor for X
+xev	print contents of X events
+xexit-1.0	terminate all clients of a X session and exit
+xeyes	a follow the mouse X demo
+xfed	font editor for X Window System BDF font files
+xfedor	bdf/xbm/xpm/mouse editor
+xfeoak	Japanese Language Input Server
+xfontsel	point and click selection of X11 font names
+xgas	animated simulation of an ideal gas
+xgc	X graphics demo
+xkeycaps-2.22	graphically display and edit the X keyboard mapping
+xlax	X window system program to send keyboard input to multiple windows
+xlbiff	mailbox message previewer for X
+xless-1.6.1	File browsing program for the X Window System.
+xload	system load average display for X
+xmailbox	mailbox checker for X using XPM icons
+xman	Manual page display program for the X Window System
+xmandel 	window based interface to Mandelbrot sets and Julia sets
+xmessage	display a message or query in a window (X-based /bin/echo)
+xmove	pseudoserver to support mobile X11 clients
+xpd-1.03	process manager for X
+xpr/xdpr	dump an X window directly to a printer
+xpr	print an X window dump
+xpserv	X to PostScript Printing Server
+xrsh	start an X program on a remote machine
+xrsh/xrlogin	start an xterm that uses rlogin or telnet to connect to a remote host
+xrubik	Rubik's cube X widgets
+xrunclient	launch an X client
+xscreensaver-1.22	run graphics hacks after the user has been idle for a while
+xsession-1.1	session manager for the X Window System
+xterm_color	diffs to make xterm handle color changes in text
+youbin	mail arrival notification service
+.fi
+
+.DH 1 test
+.AT
+InsPEX	PEX test suite using PHIGS
+suspex	PEX test suite using PEXlib
+record	tests for RECORD extension
+Xcms	Xcms test program
+Xext	tests for some extensions: SHAPE, MIT-SHM, SYNC, Multi-Buffering, XTEST
+Xi	tests for X Input Extension
+.fi
 
 .DH 1 util
 .AT
-bm-convert
-cpp
-sdbm
-soelim
+att-nameserver	old name server for SVR3 network software
+PHIGS	convert previous version of PHIGS to ISO standard version
 .fi
 
 .DH 1 Motif
 Software that requires Motif.  Motif is not free software and is not
-available from the MIT X Consortium.
-
-.DH 2 clients
-programs that use Motif:
+available from the X Consortium.
 
 .AT
-cpicker
-winterp
+mgdiff	Motif-based graphical file difference browser
+pixedit	pixel color editor for X/Motif
+pixedit/cpicker	colormap editor for X/Motif
+winterp	Widget INTERPreter, an application development environment
 xmphone	while you were out phone message pad
-xmpostit	X window system (Motif-like) Postit notes
 .fi
-
-.DH 2 config
-imake configuration files for Motif
-
-.DH 2 demos
-.AT
-XMdemos	app-defaults for example programs
-xmfonts	font browser, no UIL
-xmter	shape & animation example, no UIL
-xmform	form constraint example, no UIL
-xmgendi	generic dialog prompter, no UIL
-motifanim	animation style program.
-periodic	The Periodic Table of Motif Widgets
-.fi
-
-.DH 2 doc
-Frequently Asked Questions posting from comp.windows.x.motif.
-
-.DH 2 examples/OReilly
-Examples from the O'Reilly books on Motif.
-
-.DH 2 widgets
-FsbGQS
 
 .\" the end
