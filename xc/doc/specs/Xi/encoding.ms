@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: encoding.ms,v 1.7 92/11/14 12:59:20 rws Exp $
 \&
 .sp 1
 .XS
@@ -120,8 +120,8 @@ becomes:
 	2	InputOnly
 .DE
 For components described in the protocol as:
-.DS I
 .LP
+.DS I
 NAME: TYPE or \fBAlternative1 ... or AlternativeI\fP
 .DE
 .LP
@@ -138,8 +138,8 @@ N	TYPE			NAME
 The alternative values are guaranteed not to conflict with the encoding
 of TYPE.  
 For example:
-.DS
 .LP
+.DS
 destination: WINDOW or \fBPointerWindow\fP or \fBInputFocus\fP
 .DE
 .LP
@@ -247,7 +247,7 @@ of the FOO encoding;
 the actual length of the list is encoded elsewhere.
 .LP
 SETofFOO
-.P 1
+.IP
 A set is always represented by a bitmask, with a 1-bit indicating presence in
 the set.
 .LP
@@ -1643,10 +1643,10 @@ DEVICERESOLUTIONSTATE
  	4n	LISTOfCARD32	resolution max_values
 .DE
 .LP
+.LP
 .DS 0
 .TA .2i .5i 1.5i 2.5i
 .ta .2i .5i 1.5i 2.5i
-.LP
 ChangeDeviceControl
  	1	CARD8		input extension opcode
  	1	35		ChangeDeviceControl opcode

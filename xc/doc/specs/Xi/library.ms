@@ -1,4 +1,4 @@
-.\" $XConsortium: library.ms,v 1.10 94/04/17 23:55:18 rws Exp $
+.\" $XConsortium: library.ms,v 1.11 94/04/17 23:56:35 rws Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''
@@ -1353,7 +1353,7 @@ that auto-repeat is enabled for the corresponding key.  The vector is
 represented as 32 bytes.  Byte N (from 0) contains the bits for keys
 8N to 8N + 7, with the least significant bit int the byte representing
 key 8N.
-.LI
+.LP
 Those feedbacks equivalent to those
 supported by the core pointer are reported in class \fBPtrFeedback\fP
 using he \fBXPtrFeedbackState\fP structure.
@@ -1475,7 +1475,6 @@ typedef struct {
 } XLedFeedbackState;
 \fP
 .DE
-.LE
 .LP
 Errors returned by this function: \fBBadDevice\fP, \fBBadMatch\fP.
 .LP
@@ -3428,7 +3427,7 @@ is less than the expression
       first_valuator + num_valuators, 
 \fP
 .DE
-.P  
+.LP  
 a BadValue error will result.
 .LP  
 .NH 3
