@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.127 93/08/05 19:22:28 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.128 93/12/29 19:06:08 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -547,22 +547,22 @@ void
 usage()
 {
     printf("usage: %s [-display host:dpy] option ...\n", progname);
-    printf("    -c\t\t\tclears the screen at startup\n");
-    printf("    -e\t\t\techoes all characters typed (for debugging)\n");
-    printf("    -E\t\t\tforce fake echo to help DOS telnet\n");
     printf("    -a\t\t\tuse Alt instead of Meta\n");
     printf("    -b\t\t\tdon't translate Backspace into Delete\n");
     printf("    -B\t\t\tPC switches Backspace and Delete\n");
     printf("    -bs\t\t\ttranslate Backspace into BackSpace\n");
+    printf("    -c\t\t\tclears the screen at startup\n");
     printf("    -C <char>\t\tmake the control sequence char control-<char>\n");
-    printf("    -U\t\t\tturn off undo interpretation\n");
-    printf("    -u <undofile>\tuse the named undo file\n");
-    printf("    -h <keysym>\t\thotkey for DESQview/X\n");
-    printf("    -w <name>\t\tname of DESQview/X DOS window\n");
+    printf("    -e\t\t\techoes all characters typed (for debugging)\n");
+    printf("    -E\t\t\tforce fake echo to help DOS telnet\n");
     printf("    -f\t\t\tDOS window should not receive synthetic focus\n");
     printf("    -g <geometry>\tgeometry to make DOS window\n");
+    printf("    -h <keysym>\t\thotkey for DESQview/X\n");
     printf("    -p\t\t\tquery pointer position before every pointer motion\n");
-    printf("    -dd <version>\tversion of DragonDictate being used\n");
+    printf("    -u <undofile>\tuse the named undo file\n");
+    printf("    -U\t\t\tturn off undo interpretation\n");
+    printf("    -v <version>\tversion of DragonDictate being used\n");
+    printf("    -w <name>\t\tname of DESQview/X DOS window\n");
     exit(1);
 }
 
@@ -2921,7 +2921,7 @@ main(argc, argv)
 		usage();
 	    hotwinname = *argv;
 	    break;
-	} else if (!strcmp(*argv, "-dd")) {
+	} else if (!strcmp(*argv, "-v")) {
 	    argc--; argv++;
 	    if (!argc)
 		usage();
