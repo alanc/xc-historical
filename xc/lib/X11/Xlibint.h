@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: Xlibint.h,v 11.40 87/06/24 11:32:42 newman Locked $ */
+/* $Header: Xlibint.h,v 11.41 87/10/19 20:17:51 newman Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -32,9 +32,15 @@ extern (*_XErrorFunction)();		/* X_Error event reporting routine. */
 extern char *_XAllocScratch();		/* fast memory allocator */
 extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 
+#ifndef BUFSIZE
 #define BUFSIZE 2048			/* X output buffer size. */
+#endif
+#ifndef EPERBATCH
 #define EPERBATCH 8			/* when batching, how many elements */
+#endif
+#ifndef CURSORFONT
 #define CURSORFONT "cursor"		/* standard cursor fonts */
+#endif
 
 /*
  * X Protocol packetizing macros.
