@@ -1,5 +1,5 @@
 
-	Sun X11 Beta-4 drivers -  29 August 1987
+	Sun X11 drivers -  10 September 1987
 
 A joint production of:
 
@@ -39,9 +39,7 @@ Things to check before building:
 2)	Make sure the fonts/Makefile uses the pad flag on the font
 	compiler to pad the glyphs to 4-byte boundaries.
 
-3)	Change the server makefile to build Xsun
-
-4)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
+3)	If you want the non-portable zoids extension, add -DZOIDS to CFLAGS.
 	The non-portable zoids have worse performance than portable zoids
 	but prove that the extension mechanism works for output.
 
@@ -64,9 +62,9 @@ Then build the system by:
 	This takes about forty minutes on a 4/260, and somewhat longer
 	on other Suns.
 
-4)	Exit suntools or whatever other window system you use.
+3)	Exit suntools or whatever other window system you use.
 
-5)	On the console, or from an rlogin connection,  start the server:
+4)	On the console, or from an rlogin connection,  start the server:
 
 	    clients/xinit/xinit
 	or
@@ -77,7 +75,7 @@ Then build the system by:
 
 	    clients/xinit/xinit >& /tmp/x11.out
 
-6)	xinit should start up an xterm window that acts as a console.  When
+5)	xinit should start up an xterm window that acts as a console.  When
 	this xterm terminates, the xinit will kill the server.  You can also
 	start up client programs from a terminal or rlogin, but you must
 	first set the DISPLAY environment variable:
@@ -86,7 +84,7 @@ Then build the system by:
 	    clients/xterm/xterm &
 
 
-7)	In general,  Xsun auto-configures to use all the available
+6)	In general,  Xsun auto-configures to use all the available
 	framebuffers.  In some circumstances,  you may need to use a
 	-dev argument on the command line to prevent this:
 
@@ -95,36 +93,21 @@ Then build the system by:
 	If you want to use color, use "xinit -- -dev /dev/cgfour0".
 	If you want to use monochrome, use "xinit -- -dev /dev/bwtwo0".
 		
-	These systems have a hybrid color/monochrome framebuffer, with an
-	enable plane that determines which gets displayed.  If you're
-	starting from the console, you're in monochrome mode.  If you start
-	up X using color, it will start up just fine, except that the color
-	planes will not be displayed.  The system will appear to hang,
-	displaying the monochrome console.  To get around this problem, use
-	the "switcher" command that is provided with the system software.
-	Use "switcher -e 0" to display the color planes, and use 
-	"switcher -e 1" to display the monochrome planes.  Type
-
-	    switcher -e 0 ; clients/xinit/xinit -- -dev /dev/cgfour0
-
-	This problem exists in the present release (beta4) and may be fixed
-	in future releases.
-
 	GP, GP+, GP2
 
 	If you have one of these GP's installed, use 
 
 	    xinit -- -dev /dev/cgtwo0
 
-8)	To shut the server down,  it  it with a Hangup or Terminate signal.
+7)	To shut the server down,  it  it with a Hangup or Terminate signal.
 
-9)	Xsun coexists with the SunWindows environment.  If you run Xsun
+8)	Xsun coexists with the SunWindows environment.  If you run Xsun
 	from a shell window under suntools, then Xsun will overlay that
 	desktop.  If you have two desktops, then 'adjacentscreens' will still
 	be in effect.  You may want to redirect the output of the server to a
 	window that is visible on another desktop.
 
-10)	If X crashes, it will leave the keyboard in a funny state.  There is a
+9)	If X crashes, it will leave the keyboard in a funny state.  There is a
 	program called "kbd_mode" that will reset the mode of the keyboard.
 	"kbd_mode -a" is the appropriate setting for the bare console, and
 	"kbd_mode -e" is the appropriate setting for running with SunWindows.
