@@ -130,7 +130,7 @@ The general group to which a specific object belongs.
 A function that uses a widget in an application or for composing
 other widgets.
 .LP
-.PN "Full name"
+.PN "Full\ name"
 .IP
 The name of a widget instance appended to the full name of its parent.
 .LP
@@ -582,8 +582,10 @@ the directory specified by the resource name
 .PN bitmapFilePath
 or class
 .PN BitmapFilePath
- is added to the beginning of the file name.
-If the bitmapFilePath resource is not defined,
+is added to the beginning of the file name.
+If the
+.PN bitmapFilePath
+resource is not defined,
 the default directory on a UNIX-based system is
 .PN /usr/include/X11/bitmaps .
 .NH 2
@@ -809,7 +811,7 @@ specifies the address to which the caller wants the value copied.
 The argument list entry for
 .PN XtSetValues ,
 however, contains the new value itself if the size of value is less
-than sizeof(XtArgVal) (at least 4 bytes);
+than sizeof(XtArgVal) (architecture dependent, but at least 4 bytes);
 otherwise, it is a pointer to the value.
 String resources are always passed as pointers, regardless of the
 length of the string.
@@ -844,6 +846,7 @@ a pointer to additional information about the widget,
 a reason for invoking the callback, and so on.
 It is perfectly normal to have client_data of NULL
 if all necessary information is in the widget.
+This field is also frequently known as the \fIclosure\fP.
 .IP \fIcall_data\fP 1i
 Specifies any callback-specific data the widget wants to pass to the client.
 For example, when Scrollbar executes its jumpProc callback list, 
@@ -962,7 +965,7 @@ For further information,
 see Section 2.1 and the \fI\*(xT\fP.
 .IP 4. 5
 To pass attributes to the widget creation routines
-that will over-ride any user customizations,
+that will over-ride any site or user customizations,
 set up argument lists.
 In this document,
 a list of valid argument names that start with 
@@ -1087,7 +1090,7 @@ thus preventing simple programming errors.
 The following provides an example:
 .LP
 .Ds 
-XtCreateWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIarg_list\fP, XtNumber(\fIarg_list\fP));
+XtCreateWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIarglist\fP, XtNumber(\fIarglist\fP));
 .De
 .LP
 The second approach lets you use the 
@@ -1202,8 +1205,8 @@ Syntax(call)
 .sp 6p
 void Activate(w, client_data, call_data)
 	Widget w;
-	caddr_t client_data;
-	caddr_t call_data;
+	caddr_t client_data;	/* unused */
+	caddr_t call_data;	/* unused */
 {
 	printf("button was activated.\\n");
 	exit(0);
@@ -1293,7 +1296,7 @@ pixmap label.
 When the pointer cursor is on the button,
 the button border is highlighted to indicate that the button is available 
 for selection.
-Then, when a pointer button is , 
+Then, when a pointer button is pressed and released,
 the button is selected, 
 and the application's callback routine is invoked.
 .LP
@@ -1483,8 +1486,9 @@ T{
 T}	T{
 If set to
 .PN False ,
-the Command widget will display a different border and a stippled
-label string.
+the Command widget will change its window border to
+.PN XtNinsensitiveBorder
+and will stipple the label string.
 T}
 .sp 6p
 T{
@@ -1504,19 +1508,12 @@ T}
 The Command widget supports the following actions:
 .IP \(bu 5
 Switching the button between the foreground and background
-colors with
-.PN set 
-and
-.PN unset 
+colors with \fBset\fP and \fBunset\fP
 .IP \(bu 5
-Processing application callbacks with 
-.PN notify 
+Processing application callbacks with \fBnotify\fP
 .IP \(bu 5
 Switching the internal border between highlighted
-and unhighlighted states with 
-.PN highlight
-and
-.PN unhighlight
+and unhighlighted states with \fBhighlight\fP and \fBunhighlight\fP
 .LE
 .LP
 The following are the default translation bindings that are used 
@@ -1533,6 +1530,35 @@ by the Command widget:
 .LP
 With these bindings, the user can cancel the action before
 releasing the button by moving the pointer out of the Command widget.
+.NH 3
+Command Actions
+.LP
+The full list of actions supported by Command is:
+.IP \fBhighlight\fP(\|) 1i
+Displays the internal highlight border in the
+.PN XtNforeground
+color.
+.IP \fBunhighlight\fP(\|) 1i
+Displays the internal highlight border in the
+.PN XtNbackground
+color.
+.IP \fBset\fP(\|) 1i
+Enters the "set" state, in which \fBNotify\fP is possible and displays the
+interior of the button, including the highlight border, in the
+foreground color.  The label is displayed in the background color.
+.IP \fBunset\fP(\|) 1i
+Cancels the "set" state and displays the interior of the button, including
+the highlight border, in the
+background color.  The label is displayed in the foreground color.
+.IP \fBreset\fP(\|) 1i
+Cancels any \fBset\fP or \fBhighlight\fP and displays the interior of the
+button in the background color, with the label displayed in the foreground
+color.
+.IP \fBNotify\fP(\|) 1i
+Executes the
+.PN XtNcallback
+callback list if executed in the \fBset\fP state.  The value of the call_data
+argument is undefined.
 .LP
 .IN "Command widget" "creating"
 .IN "Creating widgets" "Command"
@@ -1705,7 +1731,7 @@ argument is unused.
 .\".PN Toggle 
 .\"action causes the entire button to appear in reverse video.
 .\"The 
-.\".PN Notify 
+.\"\fBNotify\fP
 .\"action invokes the callback procedure.
 .\".LP
 .\"The Toggle button widget provides the following event bindings to
@@ -1842,12 +1868,16 @@ T{
 T}	T{
 Specifies a bitmap to display in place of the text label.
 The bitmap can be specified as a string in the resource data base.
-The StringToPixmap converter will use the string as the name of the
+The StringToPixmap converter will interpret the string as the name of the
 file in the bitmap utility format that is to be loaded into a pixmap.
 The string can be an absolute or a relative file name.
 If a relative file name is used,
-the directory specified by the resource name bitmapFilePath or
-the resource class BitmapFilePath is add to the beginning of the
+the directory specified by the resource name
+.PN bitmapFilePath
+or
+the resource class
+.PN BitmapFilePath
+is add to the beginning of the
 specified file name.
 If bitmapFilePath resource is not defined,
 the default directory on a UNIX-based system is
@@ -1921,8 +1951,9 @@ T{
 T}	T{
 If set to
 .PN False ,
-the label will display a different border and a stippled
-label string.
+the Label widget will change its window border to
+.PN XtNinsensitiveBorder
+and will stipple the label string.
 T}
 .sp 6p
 T{
@@ -1990,7 +2021,7 @@ before creating the Text widget.
 .LP
 The source stores and manipulates the text.
 The \*(tk provides string and disk file sources.
-The source determines what functions may be performed on the text.
+The source determines what editing functions may be performed on the text.
 .LP
 The sink obtains the fonts and the
 colors in which to paint the text.
@@ -2070,23 +2101,19 @@ A page corresponds to the size of the Text window.
 For example, if the Text window is 50 lines in length, 
 scrolling forward one page is the same as scrolling forward 50 lines.
 .IP 2. 5
-The 
-.PN delete 
+The \fBdelete\fP
 action deletes a text item.
-The 
-.PN kill 
-action deletes a text item and puts the item in the kill buffer (X buffer 1).
+The \fBkill\fP
+action deletes a text item and puts the item in the kill buffer
+(X cut buffer 1).
 .IP 3. 5
-The 
-.PN unkill 
+The \fBunkill\fP
 action inserts the contents of the kill buffer into the text at the current
 position.
-The 
-.PN stuff 
-action inserts the contents of the select buffer (X buffer 0) into the text at
-the current position.
-The
-.PN insert-selection
+The \fBstuff \fP
+action inserts the contents of the paste buffer (X cut buffer 0) into the
+text at the current position.
+The \fBinsert-selection\fP
 action retrieves the value of a specified X selection or cut
 buffer, with fall-back to alternative selections or cut buffers.
 .NE
@@ -2164,20 +2191,21 @@ subset of the default bindings:
 .TA .5i 1.75i
 .ta .5i 1.75i
 Xmh*Text.Translations: \\
-	<Key>Right:	forward-character(\|)\\n\\
-	<Key>Left:	backward-character(\|)\\n\\
-	<Meta>F:	forward-word(\|)\\n\\
-	<Meta>B:	backward-word(\|)\\n\\
-	<Meta>]:	forward-paragraph(\|)\\n\\
-	<Ctrl>[:	backward-paragraph(\|)
+	<Key>Right:	forward-character(\|) \\n\\
+	<Key>Left:	backward-character(\|) \\n\\
+	 Meta<Key>F:	forward-word(\|) \\n\\
+	 Meta<Key>B:	backward-word(\|) \\n\\
+	:Meta<Key>]:	forward-paragraph(\|) \\n\\
+	:Meta<Key>[:	backward-paragraph(\|) \\n\\
+	<Key>:		insert-char(\|)
 .De
 .LP
 An augmented binding that is useful with the xclipboard
 utility is:
 .LP
 .Ds 0
-.TA .5i 1.75i
-.ta .5i 1.75i
+.TA .5i 2.25i
+.ta .5i 2.25i
 *Text.Translations: #override \\
 	Button1 <Btn2Down>:	extend-end(CLIPBOARD)
 .De
@@ -2198,14 +2226,16 @@ Highlight specified text areas
 Replace specified text areas
 .LE
 .LP
-The text that is selected within a Text window may be put into an
-X selection or into a cut buffer
+The text that is selected within a Text window may be assigned to an
+X selection or copied into a cut buffer
 and can be retrieved by the application with the Intrinsics
 .PN XtGetSelectionValue
 or the Xlib 
 .PN XFetchBytes 
-functions.
-Several standard selection schemes are supported by the event bindings.
+functions respectively.
+Several standard selection schemes
+(e.g. character/word/paragraph with multi-click)
+are supported through the event bindings.
 .LP
 The class variable for the Text widget is 
 .PN textWidgetClass .
@@ -2266,7 +2296,7 @@ T}	T{
 Callbacks for 
 .PN XtDestroyWidget
 T}
-XtNdisplayPosition	int	0	Byte offset of first line
+XtNdisplayPosition	int	0	Character position of first line
 XtNeditType	XtEditType	XttextRead	Edit mode (see note)
 T{
 XtNfile
@@ -2281,7 +2311,7 @@ T}
 XtNforeground	Pixel	Black	Foreground color
 XtNfont	XFontStruct*	Fixed	Fontname
 XtNheight	Dimension	Font height	Height of widget
-XtNinsertPosition	int	0	Byte offset of cursor position
+XtNinsertPosition	int	0	Character position of cursor
 XtNleftMargin	Dimension	2	Left margin in pixels
 T{
 XtNlength
@@ -2303,7 +2333,7 @@ Whether
 .PN XtMapWidget
 is automatic
 T}
-XtNselectTypes	XtTextSelectType*	See below	See below
+XtNselectTypes	XtTextSelectType*	See below	Selection units for multi-click
 XtNsensitive	Boolean	True	Whether widget receives input
 T{
 XtNstring
@@ -2318,7 +2348,7 @@ T}
 XtNtextOptions	int	None	See below
 XtNtextSink	XtTextSink	None	See below
 XtNtextSource	XtTextSource	None	See below
-XtNtranslations	TranslationTable	None	event-to-action translations
+XtNtranslations	TranslationTable	See above	event-to-action translations
 XtNwidth	Dimension	100	Width of widget (pixels)
 XtNx	Position	0	x coordinate in pixels
 XtNy	Position	0	y coordinate in pixels
@@ -2350,6 +2380,14 @@ attribute has one of the values
 .PN XttextEdit ,
 or
 .PN XttextRead .
+.IP 3. 5
+If
+.PN asciiStringWidgetClass
+is used, the resource
+.PN XtNstring
+specifies a buffer containing the text to be displayed and edited.
+.PN AsciiStringWidget
+does not copy this buffer but uses it in-place.
 .NE
 .LP
 The options for the 
@@ -2500,7 +2538,7 @@ The specified name can be that of any selection (for example,
 .PN PRIMARY
 or
 .PN SECONDARY )
-or a cut buffer (
+or a cut buffer (i.e.
 .PN CUT_BUFFER0
 through
 .PN CUT_BUFFER7 ).
@@ -2528,7 +2566,7 @@ The specified name can be that of a selection (for example,
 .PN PRIMARY
 or
 .PN SECONDARY )
-or a cut buffer (
+or a cut buffer (i.e.
 .PN CUT_BUFFER0
 through
 .PN CUT_BUFFER7 ).
@@ -2590,11 +2628,11 @@ void XtTextGetSelectionPos(\fIw\fP, \fIpos1\fP, \fIpos2\fP)
 .IP \fIw\fP 1i
 Specifies the window ID.
 .IP \fIpos1\fP 1i
-Specifies an argument to which the beginning character position
+Specifies a pointer to the location to which the beginning character position
 of the selection
 is returned.
 .IP \fIpos2\fP 1i
-Specifies an argument to which the ending character position of
+Specifies a pointer to the location to which the ending character position of
 the selection is returned.
 .LP
 If the returned values are equal,
@@ -2643,8 +2681,9 @@ or the range to be deleted is larger than the length of the source.
 The
 .PN XtTextBlock 
 structure (defined in
-.PN <X11/Text.h>
+.Pn < X11/Text.h >
 contains:
+.LP
 .IN "XtTextBlock" "" "@DEF@"
 .Ds 0
 .TA .5i 1.5i 2.25i 
@@ -2659,24 +2698,22 @@ typedef struct {
 .LP
 The firstPos field is the starting point to use within the ptr field.
 The value is usually zero.
-The length field is the number of bytes that are transferred from the 
+The length field is the number of characters that are transferred from the 
 ptr field.
-The number of bytes transferred is usually the number of bytes in
+The number of characters transferred is usually the number of characters in
 ptr.  The format field is not currently used, but should be
 specified as
 .PN FMT8BIT .
 The 
 .PN XtTextReplace 
-arguments 
-.PN start_pos 
-and
-.PN end_pos 
-represent the text source byte offsets for text that is found in
+arguments \fBstart_pos\fP and \fBend_pos\fP
+represent the text source character positions for the existing text that is
+to be replaced by the text in
 the  
 .PN XtTextBlock 
 structure.
 The characters from start_pos up to but not including end_pos are deleted,
-and the characters that are specified by text are inserted in
+and the characters that are specified by the text block are inserted in
 their place.  If start_pos and end_pos are equal, not text is
 deleted and the new text is inserted after start_pos.
 .NT
@@ -2734,7 +2771,7 @@ or
 is called.
 .LP
 .sp
-To display all updates, use
+To display batched updates, use
 .PN XtTextDisplay .
 .IN "XtTextDisplay" "" "@DEF@" 
 .FD 0
@@ -2744,7 +2781,7 @@ void XtTextDisplay(\fIw\fP)
 .FN
 The 
 .PN XtTextDisplay
-function forces all updates to be displayed.
+function forces any accumulated updates to be displayed.
 .LP
 .sp
 To notify the source that the length has been changed, use
@@ -2857,7 +2894,20 @@ XtTextSource XtTextGetSource(\fIw\fP)
 .FN
 .LP
 .sp
-To create  a new ASCII text sink, use
+.NH 3
+Creating Sources and Sinks
+.LP
+The following functions for creating and destroying text sources and sinks
+are called automatically by
+.PN AsciiStringWidget
+and
+.PN AsciiDiskWidget
+and it is only necessary therefore for the client to use them when creating
+an instance of
+.PN textWidgetClass .
+.LP
+.sp
+To create a new ASCII text sink, use
 .PN XtAsciiSinkCreate .
 .IN "XtAsciiSinkCreate" "" "@DEF@"
 .FD 0
@@ -2872,7 +2922,9 @@ XtTextSink XtAsciiSinkCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .LP
 The resources required by the sink are
 qualified by the name and class of the parent and the sub-part name
-"textSink" and class "TextSink".
+.PN XtNtextSink
+and class
+.PN XtCTextSink .
 .LP
 .sp
 To deallocate an ASCII text sink, use
@@ -2902,7 +2954,9 @@ XtTextSource XtDiskSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .LP
 The resources required by the source are
 qualified by the name and class of the parent and the sub-part name
-"textSource" and class "TextSource".
+.PN XtNtextSource
+and class
+.PN XtCTextSource .
 .LP
 .sp
 To deallocate a text disk source, use
@@ -2932,7 +2986,9 @@ XtTextSource XtStringSourceCreate(\fIw\fP, \fIargs\fP, \fInum_args\fP)
 .LP
 The resources required by the source are
 qualified by the name and class of the parent and the sub-part name
-"textSource" and class "TextSource".
+.PN XtNtextSource
+and class
+.PN XtCTextSource .
 .LP
 .sp
 To deallocate a text string source, use
@@ -2952,7 +3008,7 @@ Scrollbar Widget
 \*(SN Scrollbar Widget
 .XE
 .IN "Scrollbar widget" "" "@DEF@"
-The Scrollbar widget is a rectangular box that contains a slide region and 
+The Scrollbar widget is a rectangular area that contains a slide region and 
 a thumb (slide bar).
 A Scrollbar can be used alone, as a valuator, or it can
 be used within a composite widget (for example, a Viewport).
@@ -2960,8 +3016,8 @@ A Scrollbar can be aligned either vertically or horizontally.
 .LP
 When a Scrollbar is created, 
 it is drawn with the thumb in a contrasting color.
-The thumb is used to scroll the data and to give visual feedback on 
-the percentage of the data visible.
+The thumb is normally used to scroll client data and to give visual
+feedback on the percentage of the client data that is visible.
 .LP
 Each pointer button invokes a specific scroll bar action.
 That is, given either a vertical or horizontal alignment, 
@@ -2976,11 +3032,11 @@ the thumb follows the pointer.
 .LP
 The cursor in the scroll region changes depending on the current action.
 When no pointer button is pressed, 
-the cursor appears as an arrow that points in the direction 
+the cursor appears as an arrow that points in the direction
 that scrolling can occur.
 When pointer button 1 or 3 is pressed, 
-the cursor appears as a single-headed arrow that points in the direction 
-that scrolling can occur.
+the cursor appears as a single-headed arrow that points in the logical
+direction that the client will move the data.
 When pointer button 2 is pressed, 
 the cursor appears as an arrow that points to the thumb.
 .LP
@@ -2994,8 +3050,9 @@ the callback routine returns the scroll bar window, the client data,
 and the current relative position of the thumb.
 When the thumb is moved using pointer button 2, 
 the callback procedure is invoked continuously.
-When the thumb is moved with either button 1 or 2,
-the callback procedure is invoked only when the button is released.
+When either button 1 or 3 is pressed,
+the callback procedure is invoked only when the button is released
+and the client callback procedure is responsible for moving the thumb.
 .LP
 The class variable for the Scrollbar widget is
 .PN scrollbarWidgetClass .
@@ -3118,7 +3175,7 @@ XtNshown	float	NULL	Percentage the thumb covers
 XtNthickness	Dimension	14	Minor dimension (height if XtorientHorizontal)
 XtNthumb	Pixmap	Grey	Thump pixmap
 XtNtop	float	NULL	Position on scroll bar
-XtNtranslations	TranslationTable	None	Event-to-action translations
+XtNtranslations	TranslationTable	See below	Event-to-action translations
 XtNwidth	Dimension	See below	Width of scroll bar
 XtNx	Position	NULL	x position of scroll bar
 XtNy	Position	NULL	y position of scroll bar
@@ -3166,9 +3223,16 @@ To create a Scrollbar widget instance, use
 and specify the class variable
 .PN scrollbarWidgetClass .
 .LP
-The
+.IN "Scrollbar widget" "destroying"
+.IN "Destroying widgets" "Scrollbar"
+To destroy a Scrollbar widget instance, use 
+.PN XtDestroyWidget
+and specify the widget ID for the Scrollbar.
+.LP
+.sp
+The arguments to the
 .PN XtNscrollProc
-callback procedure is:
+callback procedure are:
 .IN "ScrollProc" "" "@DEF@"
 .FD 0
 void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
@@ -3177,7 +3241,7 @@ void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
 .br
      caddr_t \fIclient_data\fP;
 .br
-     int \fIposition\fP;
+     caddr_t \fIposition\fP;    /* int */
 .FN
 .IP \fIscrollbar\fP 1i
 Specifies the ID of the Scrollbar.
@@ -3187,24 +3251,24 @@ Specifies the client data.
 Returns the pixel position of the thumb in integer form.
 .LP
 The 
-.PN ScrollProc 
+.PN XtNscrollProc 
 callback is used for incremental scrolling 
-and is called by the
-.PN NotifyScroll
-action.
-The position argument is a signed quantity.
+and is called by the \fBNotifyScroll\fP action.
+The position argument is a signed quantity and should be cast to an int
+when used.
 Using the default button bindings,
 button 1 returns a positive value,
 and button 3 returns a negative value.
 In both cases,
-the magnitude of the value is the distance of the pointer from the
+the magnitude of the value is the distance of the pointer in pixels from the
 top (or left) of the Scrollbar.
 The value will never be less than zero or greater than the length
 of the Scrollbar.
 .LP
-The
+.sp
+The arguments to the
 .PN XtNjumpProc
-callback procedure is:
+callback procedure are:
 .IN "JumpProc" "" "@DEF@"
 .FD 0
 void \fIJumpProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
@@ -3223,24 +3287,25 @@ Specifies the client data.
 Specifies the floating point position of the thumb (0.0 \- 1.0).
 .LP
 The 
-.PN JumpProc 
+.PN XtNjumpProc 
 callback is used to implement smooth scrolling and is called by the
-.PN NotifyThumb
+\fBNotifyThumb\fP
 action.  Percent_ptr must be cast to a pointer to float before
 use; i.e.
+.LP
 .Ds 0
-.TA 1i
-.ta 1i
+.TA .5i
+.ta .5i
 	float percent = *(float*)percent_ptr;
 .De
 .LP
 With the default button bindings,
 button 2 moves the thumb interactively,
 and the 
-.PN JumpProc 
+.PN XtNjumpProc
 is called on each new position of the pointer.
 .NT
-The older interface used
+An older interface used
 .PN XtNthumbProc
 and passed the percentage by value rather than by reference.
 This interface is not portable across machine architectures
@@ -3277,24 +3342,21 @@ in which case the current value is left unchanged.
 Values greater than 1.0 are truncated to 1.0.
 .LP
 If called from 
-.PN jumpProc ,
+.PN XtNjumpProc ,
 .PN XtScrollbarSetThumb
 has no effect.
 .LP
-.IN "Scrollbar widget" "destroying"
-.IN "Destroying widgets" "Scrollbar"
-To destroy a Scrollbar widget instance, use 
-.PN XtDestroyWidget
-and specify the widget ID for the Scrollbar.
-.LP
-The actions supported by the Scrollbar are:
+.sp
+The actions supported by the Scrollbar widget are:
 .IP \fBStartScroll\fP(\fIvalue\fP) 1i
 The possible values are Forward, Backward, or Continuous.
 This must be the first action to begin a new movement.
 .IP \fBNotifyScroll\fP(\fIvalue\fP) 1i
 The possible values are Proportional or FullLength.
 If the argument to StartScroll was Forward or Backward,
-StartScroll executes the XtNscrollProc callbacks 
+NotifyScroll executes the
+.PN XtNscrollProc
+callbacks 
 and passes either the position of the pointer if its argument is Proportional
 or the full length of the scroll bar if its argument is FullLength.
 If the argument to StartScroll was Continuous,
@@ -3304,7 +3366,9 @@ This must be the last action after a movement is complete.
 .IP \fBMoveThumb\fP(\^) 1i
 Repositions the scroll bar thumb to the current pointer location.
 .IP \fBNotifyThumb\fP(\^)\ \ \  1i
-Calls the XtNjumpProc callbacks and passes the relative position of the
+Calls the
+.PN XtNjumpProc
+callbacks and passes the relative position of the
 pointer as a percentage of the scroll bar length.
 .LP
 The default bindings for Scrollbar are:
@@ -3312,21 +3376,22 @@ The default bindings for Scrollbar are:
 .Ds 0
 .TA .5i 1.75i
 .ta .5i 1.75i
-	<Btn1Down>:	StartScroll(Forward) \\n\\
-	<Btn2Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb() \\n\\
-	<Btn3Down>:	StartScroll(Backward) \\n\\
-	<Btn2Motion>:	MoveThumb() NotifyThumb() \\n\\
+	<Btn1Down>:	StartScroll(Forward)
+	<Btn2Down>:	StartScroll(Continuous) MoveThumb() NotifyThumb()
+	<Btn3Down>:	StartScroll(Backward)
+	<Btn2Motion>:	MoveThumb() NotifyThumb()
 	<BtnUp>:	NotifyScroll(Proportional) EndScroll()
 .De
 .LP
 Examples of additional bindings a user might wish to specify in a
 resource file are:
+.LP
 .Ds 0
-.TA .5i 1.75i
-.ta .5i 1.75i
+.TA .5i 2.25i
+.ta .5i 2.25i
 *Scrollbar.Translations: \\
 	~Meta<KeyPress>space:	StartScroll(Forward) NotifyScroll(FullLength) \\n\\
-	Meta<KeyPress>space:	StartScroll(Backward) NotifyScroll(FullLength) \\n\\
+	 Meta<KeyPress>space:	StartScroll(Backward) NotifyScroll(FullLength) \\n\\
 		EndScroll()
 .De
 .NH 2
@@ -3420,9 +3485,14 @@ _
 .vs 13
 .nr VS 13
 .LP
-The initial size of the Viewport before it is realized is the
-width and height of the child unless an alternate width or height
-was specified.  After it is realized, the viewport will allow its
+The Viewport widget manages a single child widget.
+When the size of the child is larger than the size of the Viewport,
+the user can interactively move the child within the Viewport
+by repositioning the Scrollbars.
+.LP
+The default initial size of the Viewport before it is realized is the
+width and/or height of the child.
+After it is realized, the viewport will allow its
 child to grow vertically or horizontally if
 .PN XtNallowVert
 or
@@ -3434,12 +3504,7 @@ to change size only if the (grand) parent allows it.  Regardless
 of whether or not scrolling was enabled in the corresponding
 direction, if the child requests a new size smaller than the
 viewport size, the change will be allowed only if the parent of
-the viewwport allows the viewport to shrink to the appropriate dimension.
-.LP
-The Viewport widget manages a single child widget.
-When the size of the child is larger than the size of the Viewport,
-the user can interactively move the child within the Viewport
-by repositioning the Scrollbars.
+the viewport allows the viewport to shrink to the appropriate dimension.
 .LP
 .IN "Viewport widget" "creating"
 To create a Viewport widget instance, use 
@@ -3479,7 +3544,7 @@ The Box widget always attempts to pack its children as closely as possible
 within the geometry allowed by its parent.
 .LP
 Box widgets are commonly used to manage a related set of Command
-widgets and is frequently called ButtonBox, but the children are
+widgets and are frequently called ButtonBox widgets, but the children are
 not limited to buttons.
 .LP
 The children are arranged on a background that
@@ -3549,9 +3614,9 @@ _
 .nr VS 13
 .LP
 The Box widget positions its children in rows with
-.PN hSpace
+.PN XtNhSpace
 pixels to the left and right of each child and
-.PN vSpace
+.PN XtNvSpace
 pixels between rows.
 If the Box width is not specified,
 the Box widget uses the width of the widest child.
@@ -3561,10 +3626,10 @@ Children are positioned in order left to right, top to bottom.
 When the next child does not fit on the current row, a new row is
 started.  If a child is wider than the width of the box, the box
 will request a larger width from it parent and will begin the
-layout process form the beginning if a new width is granted.
+layout process from the beginning if a new width is granted.
 After positioning all children,
-the Box widget attempts to shrink its size to the minimum dimensions required
-for the layout.
+the Box widget attempts to shrink its own size to the minimum dimensions
+required for the layout.
 .LP
 .IN "Box widget" "creating"
 .IN "Creating widgets" "Box"
@@ -3758,8 +3823,8 @@ an arrow is displayed that indicates the significant pane that is
 being resized.
 While keeping the pointer button down, 
 the user can move the pointer up or down.
-This, in turn, changes the window borders, causing one widget to shrink
-and some other widget to grow.
+This, in turn, changes the window borders, causing one pane to shrink
+and some other pane to grow.
 The cursor indicates the pane that is of interest to the user;
 some other pane in the opposite direction will be chosen to grow
 or shrink an equal amount.  The choice of alternate pane is a
@@ -3820,10 +3885,10 @@ Callbacks for
 .PN XtDestroyWidget
 T}
 XtNforeground	Pixel	Black	Pixel value for the foreground color
-XtNgripCursor	Cursor	XC_sb_v_double_arrow	Cursor for grip
+XtNgripCursor	Cursor	XC_sb_v_double_arrow	Cursor for grip when not active
 XtNgripIndent	Position	10	Offset of grip from margin (pixels)
 XtNgripTranslations	TranslationTable	internal	button bindings for grip
-XtNheight	Dimension	NULL	Height of vPane
+XtNheight	Dimension	sum of child heights	Height of vPane
 T{
 XtNlowerCursor
 T}	T{
@@ -3856,9 +3921,9 @@ XC_sb_up_arrow
 T}	T{
 Cursor for resizing pane above grip
 T}
-XtNwidth	Dimension	NULL	Width of vPane
-XtNx	Position	NULL	x position of vPane
-XtNy	Position	NULL	y position of vPane
+XtNwidth	Dimension	width of widest child	Width of vPane
+XtNx	Position	0	x position of vPane
+XtNy	Position	0	y position of vPane
 .sp 3p
 _
 .TE
@@ -3912,7 +3977,7 @@ Boolean
 T}	T{
 False
 T}	T{
-True if child is allowed to make resize requests
+If False, ignore child resize requests
 T}
 XtNmax	Dimension	unlimited	Maximum height for pane
 XtNmin	Dimension	1	Minimum height for pane
@@ -4172,11 +4237,11 @@ _
 .vs 13
 .nr VS 13
 .LP
-When a widget is added to a Form, 
-it can specify hints to the form 
-where it should be positioned within the form.
+When a widget is added to a Form, constraints
+can be specified to the Form to indicate
+where the child should be positioned within the Form.
 .LP
-The parameters 
+The resources
 .PN XtNhorizDistance 
 and 
 .PN XtNfromHoriz 
@@ -4200,7 +4265,7 @@ equals NULL, then
 .PN XtNhorizDistance 
 is measured from the left edge of the Form.
 .LP
-Similarly, the parameters 
+Similarly, the resources 
 .PN XtNvertDistance 
 and 
 .PN XtNfromVert 
@@ -4227,11 +4292,11 @@ The
 .PN XtNleft , 
 and 
 .PN XtNright
-parameters tell the Form where to position the child when the Form is
+resources tell the Form where to position the child when the Form is
 resized.
 .PN XtEdgeType
 is defined in
-.PN <X11/Form.h>
+.Pn < X11/Form.h >
 and is one of
 .IN "XtEdgeType" "" "@DEF@"
 .PN XtChainTop ,
@@ -4247,15 +4312,18 @@ The values
 and 
 .PN XtChainRight 
 specify that a constant distance from an edge of the child to
-the top, bottom, left, and right edges of a Form is to be maintained.
+the top, bottom, left, and right edges respectively of a Form is to be
+maintained.
 The value
 .PN XtRubber 
 specifies that a proportional distance from the edge of the child to
 the left or top edge of the Form is to be maintained when the
 form is resized.  The proportion is determined from the initial
 position of the child and the initial size of the Form.
+Form provides a StringToEdgeType conversion procedure to allow the resize
+constraints to be easily specified in a resource file.
 .LP
-The default width of the Form is the minimum width needced to
+The default width of the Form is the minimum width needed to
 enclose the children after computing their initial layout, with a
 margin of
 .PN XtNdefaultDistance
@@ -4283,13 +4351,15 @@ will recalculate the positions of its children according to the
 values of the
 .PN XtNhorizDistance ,
 .PN XtNfromHoriz ,
-.PN XtNvertDistance and
+.PN XtNvertDistance
+and
 .PN XtNfromVert
-constraints.  No relayout is performed when a child makes a
+constraints at the time the change is made.
+No re-layout is performed when a child makes a
 geometry request.
 .LP
 .sp
-To force a re-layout of the Form, use
+To force or defer a re-layout of the Form, use
 .PN XtFormDoLayout .
 .IN "Form widget" "re-layout"
 .IN "XtFormDoLayout" "" "@DEF@"
@@ -4304,7 +4374,7 @@ void XtFormDoLayout(\fIw\fP, \fIdo_layout\fP)
 Specifies the Form widget.
 .IP \fIdo_layout\fP 1i
 Enables (if
-.PN True
+.PN True )
 or disables (if
 .PN False )
 layout of the Form widget.
@@ -4315,9 +4385,9 @@ re-layout until all changes have been made, then allow the
 layout.  Form increments an internal count each time
 .PN XtFormDoLayout
 is called with do_layout
-.PN True
+.PN False
 and decrements the count when do_layout is
-.PN False .
+.PN True .
 When the count reaches 0, Form performs a re-layout.
 .NH 2
 Dialog Widget
@@ -4377,8 +4447,8 @@ T}	T{
 Callbacks for 
 .PN XtDestroyWidget
 T}
-XtNheight	Dimension	10	Height of dialog
-XtNlabel	char*	Label name	String to be displayed
+XtNheight	Dimension	computed at create	Height of dialog
+XtNlabel	String	Label name	String to be displayed
 T{
 XtNmappedWhenManaged
 T}	T{
@@ -4394,7 +4464,7 @@ XtNmaximumLength	int	256	Maximum number of input characters
 XtNsensitive	Boolean	True	Whether widget receives input
 XtNtranslations	TranslationTable	None	Event-to-action translations
 XtNvalue	char*	NULL	Pointer to default string
-XtNwidth	Dimension	10	Width of dialog
+XtNwidth	Dimension	computed at create	Width of dialog
 XtNx	Position	NULL	x position of dialog
 XtNy	Position	NULL	y position of dialog
 .sp 3p
@@ -4405,8 +4475,8 @@ _
 .vs 13
 .nr VS 13
 .LP
-The instance name of the label for the Dialog widget is ``label'',
-and the instance name of the Dialog value field is ``value''.
+The instance name of the label widget within the Dialog widget is ``label'',
+and the instance name of the Dialog value widget is ``value''.
 .LP
 .IN "Dialog widget" "creating"
 .IN "Creating widgets" "Dialog"
@@ -4424,6 +4494,7 @@ When creating buttons,
 you do not have to specify form constraints.
 The Dialog box will automatically add the constraints.
 .LP
+.sp
 To return the character string in the text field, use
 .PN XtDialogGetValueString .
 .IN "XtDialogGetValueString" "" "@DEF@"
@@ -4435,6 +4506,11 @@ char *XtDialogGetValueString(\fIw\fP)
 .IP \fIw\fP 1i
 Specifies the widget ID of the Dialog box.
 .LP
+If a string was specified in the
+.PN XtNvalue
+resource, Dialog will store the input directly into the string.
+.LP
+.sp
 .IN "Dialog widget" "removing children"
 To remove a child button from the Dialog box, use
 .PN XtUnmanageChild
@@ -4581,8 +4657,7 @@ T{
 .br
 .PN XtNrowSpacing
 T}	T{
-Specify the amount of space between each of the rows and columns in
-the list that is displayed.
+Specify the amount of space between each of the rows and columns in the list.
 T}
 .sp
 T{
@@ -4667,8 +4742,9 @@ T{
 T}	T{
 If set to
 .PN False ,
-the List widget will display a different border 
-and all items in the list as stippled strings.
+the List widget will change its window border to
+.PN XtNinsensitiveBorder
+and display all items in the list as stippled strings.
 While the List widget is insensitive,
 no item in the list can be selected or highlighted.
 T}
@@ -4678,9 +4754,9 @@ T{
 T}	T{
 If this is
 .PN True ,
-the elements in the list are arranged vertically rather than
-horizontally.  The default is
-.PN False.
+the elements in the list are arranged vertically; if
+.PN False ,
+the elements are arranged horizontally.
 T}
 .sp 6p
 T{
@@ -4730,7 +4806,12 @@ The notify action executes the callbacks on the the
 .PN XtNcallback
 list.
 .LP
-The call_data argument returns a pointer to the following structure.
+The call_data argument passed to callbacks on the
+.PN XtNcallback
+list is a pointer to an
+.PN XtListReturnStruct
+structure, defined in 
+.Pn < X11/List.h >:
 .LP
 .Ds 0
 .TA .5i 2.25i
@@ -4746,7 +4827,7 @@ Changing the List
 .LP
 To change the list that is displayed, use
 .PN XtListChange .
-.IN "XtListChange" "@DEF@"
+.IN "XtListChange" "" "@DEF@"
 .FD 0
 void XtListChange(\fIw\fP, \fIlist\fP, \fInitems\fP, \fIlongest\fP, \fIresize\fP)
 .br
@@ -4775,7 +4856,8 @@ Specifies a Boolean value that indicates whether the List widget should try
 to resize itself
 .Pn ( True )
 or not
-.Pn ( False ).
+.Pn ( False )
+after making the change.
 Note that the constraints of the parent of this widget are always enforced,
 regardless of the value specified.
 .LP
@@ -4786,7 +4868,7 @@ Highlighting an Item
 .LP
 To highlight an item in the list use,
 .PN XtListHighlight
-.IN "XtListHighlight" "@DEF@"
+.IN "XtListHighlight" "" "@DEF@"
 .FD 0
 void XtListHighlight(\fIw\fP, \fIitem\fP);
 .br
@@ -4811,7 +4893,7 @@ Unhighlighting an Item
 .LP
 To unhighlight the currently highlighted item in the list, use
 .PN XtListUnhighlight
-.IN "XtListUnhighlight" "@DEF@"
+.IN "XtListUnhighlight" "" "@DEF@"
 .FD 0
 void XtListUnhightlight(\fIw\fP);
 .br
@@ -4824,7 +4906,7 @@ Retrieving the Currently Selected Item
 .LP
 To retrieve an item in the list use,
 .PN XtListShowCurrent
-.IN "XtListShowCurrent" "@DEF@"
+.IN "XtListShowCurrent" "" "@DEF@"
 .FD 0
 XtListReturnStruct *XtListShowCurrent(\fIw\fP);
 .br
@@ -4855,7 +4937,7 @@ The Grip widget provides a small region in which user input
 events
 (such as
 .PN ButtonPress or
-.PN ButtonRelease
+.PN ButtonRelease )
 may be handled.
 The most common use for the grip is as an attachment
 point for visually repositioning an object, 
@@ -4928,8 +5010,7 @@ Note that the Grip widget displays its region with the foreground pixel only.
 The Grip widget does not declare any default event translation bindings,
 but it does declare a single action routine named GripAction
 in its action table.
-Using this table, 
-the client specifies an arbitrary
+The client specifies an arbitrary
 event translation table giving parameters to the GripAction routine.
 .LP
 The
@@ -4939,7 +5020,7 @@ action executes the callbacks on the
 list, passing as call_data a pointer to a
 .PN GripCallData
 structure, defined in
-.PN <X11/Grip.h> :
+.Pn < X11/Grip.h > :
 .LP
 .Ds 0
 .TA .5i 2.25i
@@ -4955,16 +5036,17 @@ typedef struct _GripCallData {
 .LP
 In this structure, the event field is a pointer to the input
 event that triggered the action, and params and num_params give
-the string parameters specfified in the translation table for the
+the string parameters specified in the translation table for the
 particular event binding.
 .IN "Grip widget" "GripAction table"
 .LP
-The following is an example of a GripAction table:
+The following is an example of a GripAction translation table:
+.LP
 .Ds 0
 .TA .5i 2.5i
 .ta .5i 2.5i
-	<Btn1Down>:	GripAction(press) \\n\\
-	<Btn1Motion>:	GripAction(move) \\n\\
+	<Btn1Down>:	GripAction(press)
+	<Btn1Motion>:	GripAction(move)
 	<Btn1Up>:	GripAction(release)
 .De
 For a complete description of the format of action routines,
