@@ -304,7 +304,6 @@ cleanup1:
     pPriv->invSrcGC = tGC2;
 
     pPriv->state = CR_OUT;
-    pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
 
     bufWidth = 2 * pCursor->width;
 
@@ -378,6 +377,7 @@ cleanup1:
     ValidateGC((DrawablePtr) pScreen->devPrivate, pPriv->invSrcGC);
 
     FreeScratchGC( pGC );
+    pCursor->devPriv[pScreen->myNum] = (pointer) pPriv;
     return TRUE;
 }
 
