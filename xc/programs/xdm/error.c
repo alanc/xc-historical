@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: error.c,v 1.4 88/09/23 14:21:23 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -35,7 +35,7 @@ InitErrorLog ()
 		i = creat (errorLogFile, 0666);
 		if (i != -1) {
 			close (i);
-			freopen (errorLogFile, stderr, "w");
+			freopen (errorLogFile, "a+", stderr);
 		} else
 			LogError ("Cannot open errorLogFile %s\n", errorLogFile);
 	}
@@ -74,7 +74,7 @@ Debug (fmt, arg1, arg2, arg3, arg4, arg5)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5;
 {
-#ifdef DEBUG
-	printf (fmt, arg1, arg2, arg3, arg4, arg5);
-#endif
+	if (debugLevel > 1) {
+		printf (fmt, arg1, arg2, arg3, arg4, arg5);
+	}
 }
