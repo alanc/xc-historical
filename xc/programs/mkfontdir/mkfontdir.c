@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.6 91/02/10 18:22:18 rws Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.1 91/02/22 15:44:49 keith Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
@@ -50,7 +50,7 @@ SOFTWARE.
 #endif
 
 #include <X11/X.h>
-#include <X11/Xproto.h
+#include <X11/Xproto.h>
 #include "fontmisc.h"
 #include "fontstruct.h"
 #include "fontdir.h"
@@ -123,7 +123,7 @@ GetFontName(file_name, font_name)
     return FALSE;
 }
 
-static Bool
+static FontFileNamePtr
 FontNameExists (dir, font_name)
     FontFileDirPtr  dir;
     char	    *font_name;
@@ -132,8 +132,8 @@ FontNameExists (dir, font_name)
 
     for (i = 0; i < dir->used; i++)
 	if (!strcmp (dir->names[i].name, font_name))
-	    return TRUE;
-    return FALSE;
+	    return &dir->names[i];
+    return NULL;
 }
 
 static Bool
@@ -142,9 +142,9 @@ ProcessFile (dirName, fileName, dir)
     char		*fileName;
     FontFileDirPtr	dir;
 {
-    char	font_name[MAXPATHLEN];
-    char	ps_font_name[MAXPATHLEN];
-    char	full_name[MAXPATHLEN];
+    char	    font_name[MAXPATHLEN];
+    char	    full_name[MAXPATHLEN];
+    FontFileNamePtr existing;
 
     strcpy (full_name, dirName);
     if (dirName[strlen(dirName) - 1] != '/')
@@ -156,27 +156,17 @@ ProcessFile (dirName, fileName, dir)
 
     CopyISOLatin1Lowered (font_name, font_name, strlen(font_name));
 
-    if (FontNameExists (dir, font_name))
+    if (existing = FontNameExists (dir, font_name))
     {
 	fprintf (stderr, "Duplicate font names %s\n", font_name);
+	fprintf (stderr, "\t%s %s\n", existing->file, fileName);
 	return FALSE;
     }
     FontFileAddDir (dir, font_name, fileName, FALSE);
     return TRUE;
 }
 
-static Bool
-Ematch(ext, name)
-    char	*ext;
-    char	*name;
-{
-    int	i,j;
-
-    i = strlen(name);
-    j = strlen(ext);
-    return ((i > j) && (strcmp(ext, name + i - j) == 0));
-}
-
+static
 Estrip(ext,name)
     char	*ext;
     char	*name;
@@ -216,7 +206,7 @@ Hash(name)
 
     i = 0;
     while (c = *name++)
-	i = i << 1 ^ c;
+	i = (i << 1) ^ c;
     return i & (HASH_SIZE - 1);
 }
 
@@ -226,11 +216,7 @@ DoDirectory(dirName)
 {
     FontFileDirPtr	dir;
     char		fileName[MAXPATHLEN];
-    int			i;
-    char		**names;
     char		*extension, *FontFileExtension();
-    int			nnames;
-    int			namesize;
     DIR			*dirp;
     struct dirent	*file;
     NameBucketPtr	*hashTable, bucket, *prev, next;
@@ -241,9 +227,6 @@ DoDirectory(dirName)
     bzero((char *)hashTable, HASH_SIZE * sizeof(NameBucketPtr));
 
     dir = FontFileMakeDir (dirName, 100);
-    namesize = 0;
-    names = 0;
-    nnames = 0;
     if ((dirp = opendir (dirName)) == NULL)
 	return;
     while ((file = readdir (dirp)) != NULL) {
