@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.2 89/09/22 18:12:52 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.3 89/09/22 18:15:12 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,140 +27,22 @@
 #define NEED_REPLIES
 #include "Xlibint.h"
 #include "multibufst.h"
+#include "extutil.h"
 
-/*
- * We need to keep a list of open displays since the Xlib display list isn't
- * public.  We also have to per-display info in a separate block since it isn't
- * stored directly in the Display structure.
- */
-typedef struct _XmbufDisplayInfo {
-    struct _XmbufDisplayInfo *next;	/* keep a linked list */
-    Display *display;			/* which display this is */
-    XExtCodes *codes;			/* the extension protocol codes */
-} XmbufDisplayInfo;
-
-static XmbufDisplayInfo *mbuf_display_list;	/* starts out NULL */
-static XmbufDisplayInfo *mbuf_cached_display;	/* most recently used */
+static XExtDisplayInfo *display_list;	/* starts out NULL */
+static XExtDisplayInfo *last_display;	/* most recently used */
 
 
 /*
- * Xlib hook routines
- */
-static int mbuf_close_display();	/* catch close display */
-static int mbuf_wire_to_event();	/* when reading an event */
-static int mbuf_event_to_wire();	/* when writing an event */
-
-
-static XmbufDisplayInfo *find_display (dpy)
-    register Display *dpy;
-{
-    XmbufDisplayInfo *dpyinfo;
-
-    /*
-     * see if this was the most recently accessed display
-     */
-    if (mbuf_cached_display && mbuf_cached_display->display == dpy) {
-	return mbuf_cached_display;
-    }
-
-
-    /*
-     * look for display in list
-     */
-    for (dpyinfo = mbuf_display_list; dpyinfo; dpyinfo = dpyinfo->next) {
-	if (dpyinfo->display == dpy) break;
-    }
-
-
-    /*
-     * if not found, create a connection block
-     */
-    if (!dpyinfo) {
-	dpyinfo = (XmbufDisplayInfo *) Xmalloc (sizeof (XmbufDisplayInfo));
-	if (!dpyinfo) return NULL;
-	dpyinfo->next = mbuf_display_list;
-	dpyinfo->display = dpy;
-	dpyinfo->codes = XInitExtension (dpy, MULTIBUF_PROTOCOL_NAME);
-
-	/*
-	 * if the server has the extension, then we can initialize the 
-	 * appropriate function vectors
-	 */
-	if (dpyinfo->codes) {
-	    int i, j;
-
-	    XESetCloseDisplay (dpy, dpyinfo->codes->extension,
-			       mbuf_close_display);
-	    for (i = 0, j = dpyinfo->codes->first_event;
-		 i < MultibufNumberEvents; i++, j++) {
-		XESetWireToEvent (dpy, j, mbuf_wire_to_event);
-		XESetEventToWire (dpy, j, mbuf_event_to_wire);
-	    }
-	}
-
-	/*
-	 * now, chain it onto the list
-	 */
-	mbuf_display_list = dpyinfo;
-    }
-
-    /*
-     * set this display to be the most recently used and return
-     */
-    mbuf_cached_display = dpyinfo;
-    return dpyinfo;
-}
-
-				    
-/*
- * Xlib hooks
- */
-
-/*
- * mbuf_close_display - called on XCloseDisplay, this should remove the
- * dpyinfo from the display list and clear the cached display, if necessary.
- */
-
-/*ARGSUSED*/
-static int mbuf_close_display (dpy, codes)
-    Display *dpy;
-    XExtCodes *codes;
-{
-    XmbufDisplayInfo *dpyinfo, *prev;
-
-    /*
-     * locate this display and its back link so that it can be removed
-     */
-    prev = NULL;
-    for (dpyinfo = mbuf_display_list; dpyinfo; dpyinfo = dpyinfo->next) {
-	if (dpyinfo->display == dpy) break;
-	prev = dpyinfo;
-    }
-    if (!dpyinfo) return 0;		/* hmm, actually an error */
-
-    if (prev)
-	prev->next = dpyinfo->next;
-    else
-	mbuf_display_list = dpyinfo->next;
-
-    if (dpyinfo == mbuf_cached_display)
-	mbuf_cached_display = (XmbufDisplayInfo *) NULL;
-
-    Xfree ((char *) dpyinfo);
-    return 0;
-}
-
-
-/*
- * mbuf_wire_to_event - convert a wire event in network format to a C 
+ * wire_to_event - convert a wire event in network format to a C 
  * event structure
  */
-static int mbuf_wire_to_event (dpy, re, event)
+static int wire_to_event (dpy, re, event)
     Display *dpy;
     XEvent *re;
     xEvent *event;
 {
-    XmbufDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display (dpy);
 
     if (!info && !info->codes) return 0;
     switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
@@ -184,15 +66,15 @@ static int mbuf_wire_to_event (dpy, re, event)
 
 
 /*
- * mbuf_event_to_wire - convert a C event structure to a wire event in
+ * event_to_wire - convert a C event structure to a wire event in
  * network format
  */
-static int mbuf_event_to_wire (dpy, re, event)
+static int event_to_wire (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
 {
-    XmbufDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display (dpy);
 
     if (!info && !info->codes) return 0;
     switch ((re->type & 0x7f) - info->codes->first_event) {
@@ -213,18 +95,55 @@ static int mbuf_event_to_wire (dpy, re, event)
 }
 
 
+/*
+ * close_display - called on XCloseDisplay, this should remove the
+ * dpyinfo from the display list and clear the cached display, if necessary.
+ */
+
+/*ARGSUSED*/
+static int close_display (dpy, codes)
+    Display *dpy;
+    XExtCodes *codes;
+{
+    /* free any extension data */
+    return XextCloseDisplay(&display_list, &last_display, dpy);
+}
 
 
 /*
- * Multibuffering/stereo public interfaces
+ * find_display - locate the display info block
  */
+static XExtDisplayInfo *find_display (dpy)
+    register Display *dpy;
+{
+    XExtDisplayInfo *dpyinfo = XextFindDisplay (&display_list, &last_display,
+						dpy);
+    if (!dpyinfo) {
+	/* create any extension data blocks */
+	dpyinfo = XextInitDisplay (&display_list, &last_display, dpy,
+				   MULTIBUF_PROTOCOL_NAME, close_display,
+				   wire_to_event, event_to_wire, nevents,
+				   NULL);
+    }
+
+    return dpyinfo;
+}
+
+
+
+
+/*****************************************************************************
+ *                                                                           *
+ *		    Multibuffering/stereo public interfaces                  *
+ *                                                                           *
+ *****************************************************************************/
 
 
 Bool XmbufQueryExtension (dpy, event_base_return, error_base_return)
     Display *dpy;
     int *event_base_return, *error_base_return;
 {
-    XmbufDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display (dpy);
     
     if (info && info->codes) {
 	*event_base_return = info->codes->first_event;
@@ -240,7 +159,7 @@ Status XmbufGetVersion (dpy, major_version_return, minor_version_return)
     Display *dpy;
     int *major_version_return, *minor_version_return;
 {
-    XmbufDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display (dpy);
     xGetBufferVersionReply rep;
     register xGetBufferVersionReq *req;
 
@@ -272,7 +191,7 @@ int XCreateImageBuffers (dpy, w, count, update_action, update_hint,
     int update_action, update_hint;
     Multibuffer *buffers;
 {
-    XmbufDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display (dpy);
     xCreateImageBuffersReply rep;
     register xCreateImageBuffersReq *req;
     int i, result;
@@ -317,15 +236,15 @@ XDisplayImageBuffers (dpy, count, buffers, min_delay, max_delay)
     Buffer  *buffers;
     int	    min_delay, max_delay;
 {
-    XExtCodes			    *codes;
+    XExtDisplayInfo *info = find_display (dpy);
     register xDisplayImageBuffersReq *req;
-    int				    i;
+    int i;
 
-    if (!(codes = mbuf_find_display_codes (dpy)))
-	return;
+    if (!(info && info->codes)) return;
+
     LockDisplay (dpy);
     GetReq (DisplayImageBuffers, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->bufferReqType = X_DisplayImageBuffers;
     req->minDelay = min_delay;
     req->maxDelay = max_delay;
@@ -340,15 +259,15 @@ XDestroyImageBuffers (dpy, window)
     Display *dpy;
     Window  window;
 {
-    XExtCodes			    *codes;
+    XExtDisplayInfo *info = find_display (dpy);
     register xDestroyImageBuffersReq *req;
-    int				    i;
+    int i;
 
-    if (!(codes = mbuf_find_display_codes (dpy)))
-	return;
+    if (!(info && info->codes)) return;
+
     LockDisplay (dpy);
     GetReq (DestroyImageBuffers, req);
-    req->reqType = codes->major_opcode;
+    req->reqType = info->codes->major_opcode;
     req->bufferReqType = X_DestroyImageBuffers;
     req->window = window;
     UnlockDisplay (dpy);
