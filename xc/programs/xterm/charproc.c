@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.101 89/10/17 18:49:47 jim Exp $
+ * $XConsortium: charproc.c,v 1.102 89/10/19 14:57:49 jim Exp $
  */
 
 
@@ -94,7 +94,7 @@ static void VTallocbuf();
 #define	XtNreverseWrap		"reverseWrap"
 #define	XtNsaveLines		"saveLines"
 #define	XtNscrollBar		"scrollBar"
-#define	XtNscrollInput		"scrollInput"
+#define XtNscrollTtyOutput	"scrollTtyOutput"
 #define	XtNscrollKey		"scrollKey"
 #define XtNscrollLines		"scrollLines"
 #define XtNscrollPos    	"scrollPos"
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.101 89/10/17 18:49:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.102 89/10/19 14:57:49 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -241,6 +241,35 @@ static XtActionsRec actionsList[] = {
     { "string",		  HandleStringEvent },
     { "scroll-forw",	  HandleScrollForward },
     { "scroll-back",	  HandleScrollBack },
+    /* menu actions */
+    { "allow-send-events",	HandleAllowSends },
+    { "set-visual-bell",	HandleVisualBell },
+    { "set-logging",		HandleLogging },
+    { "redraw",			HandleRedraw },
+    { "send-signal",		HandleSendSignal },
+    { "quit",			HandleQuit },
+    { "set-scrollbar",		HandleScrollbar },
+    { "set-jumpscroll",		HandleJumpscroll },
+    { "set-reverse-video",	HandleReverseVideo },
+    { "set-autowrap",		HandleAutoWrap },
+    { "set-reversewrap",	HandleReverseWrap },
+    { "set-autolinefeed",	HandleAutoLineFeed },
+    { "set-appcursor",		HandleAppCursor },
+    { "set-appkeypad",		HandleAppKeypad },
+    { "set-scroll-on-key",	HandleScrollKey },
+    { "set-scroll-on-tty-output",	HandleScrollTtyOutput },
+    { "set-allow132",		HandleAllow132 },
+    { "set-cursesemul",		HandleCursesEmul },
+    { "set-marginbell",		HandleMarginBell },
+    { "set-altscreen",		HandleAltScreen },
+    { "soft-reset",		HandleSoftReset },
+    { "hard-reset",		HandleHardReset },
+    { "set-terminal-type",	HandleSetTerminalType },
+    { "set-visibility",		HandleVisibility },
+    { "set-tek-text",		HandleSetTekText },
+    { "tek-page",		HandleTekPage },
+    { "tek-reset",		HandleTekReset },
+    { "tek-copy",		HandleTekCopy },
 };
 
 static XtResource resources[] = {
@@ -337,8 +366,8 @@ static XtResource resources[] = {
 {XtNscrollBar, XtCScrollBar, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.scrollbar),
 	XtRBoolean, (caddr_t) &defaultFALSE},
-{XtNscrollInput,XtCScrollCond, XtRBoolean, sizeof(Boolean),
-	XtOffset(XtermWidget, screen.scrollinput),
+{XtNscrollTtyOutput,XtCScrollCond, XtRBoolean, sizeof(Boolean),
+	XtOffset(XtermWidget, screen.scrollttyoutput),
 	XtRBoolean, (caddr_t) &defaultTRUE},
 {XtNscrollKey, XtCScrollCond, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.scrollkey),
@@ -1080,7 +1109,7 @@ in_put()
 			} else if(bcnt == 0)
 				Panic("input: read returned zero\n", 0);
 			else {
-				if(screen->scrollWidget && screen->scrollinput &&
+				if(screen->scrollWidget && screen->scrollttyoutput &&
 				 screen->topline < 0)
 					/* Scroll to bottom */
 					WindowScroll(screen, 0);
@@ -1939,7 +1968,7 @@ static void VTInitialize (request, new)
    new->screen.nmarginbell = request->screen.nmarginbell;
    new->screen.savelines = request->screen.savelines;
    new->screen.scrolllines = request->screen.scrolllines;
-   new->screen.scrollinput = request->screen.scrollinput;
+   new->screen.scrollttyoutput = request->screen.scrollttyoutput;
    new->screen.scrollkey = request->screen.scrollkey;
    new->screen.visualbell = request->screen.visualbell;
    new->screen.TekEmu = request->screen.TekEmu;

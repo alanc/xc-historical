@@ -1,3 +1,5 @@
+/* Copyright 1989 Massachusetts Institute of Technology */
+
 typedef struct _MenuEntry {
     char *name;
     void (*function)();
@@ -6,6 +8,17 @@ typedef struct _MenuEntry {
 
 extern MenuEntry mainMenuEntries[], vtMenuEntries[], tekMenuEntries[];
 extern Arg menuArgs[];
+
+extern void HandleAllowSends(), HandleVisualBell(),
+  HandleLogging(), HandleRedraw(), HandleSendSignal(), 
+  HandleQuit(), HandleScrollbar(), HandleJumpscroll(), HandleReverseVideo(),
+  HandleAutoWrap(), HandleReverseWrap(), HandleAutoLineFeed(), 
+  HandleAppCursor(), HandleAppKeypad(), HandleScrollKey(), 
+  HandleScrollTtyOutput(), HandleAllow132(), HandleCursesEmul(), 
+  HandleMarginBell(), HandleAltScreen(), HandleSoftReset(), 
+  HandleHardReset(), HandleSetTerminalType(), HandleVisibility(), 
+  HandleSetTekText(), HandleTekPage(), HandleTekReset(), HandleTekCopy();
+
 
 
 /*
@@ -42,7 +55,7 @@ extern Arg menuArgs[];
 #define vtMenu_appcursor 6
 #define vtMenu_appkeypad 7
 #define vtMenu_scrollkey 8
-#define vtMenu_scrollinput 9
+#define vtMenu_scrollttyoutput 9
 #define vtMenu_allow132 10
 #define vtMenu_cursesemul 11
 #define vtMenu_visualbell 12
@@ -155,10 +168,10 @@ extern Arg menuArgs[];
 		    vtMenuEntries[vtMenu_scrollkey].widget,  \
 		    term->screen.scrollkey)
 
-#define update_scrollinput() \
+#define update_scrollttyoutput() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_scrollinput].widget, \
-		    term->screen.scrollinput)
+		    vtMenuEntries[vtMenu_scrollttyoutput].widget, \
+		    term->screen.scrollttyoutput)
 
 #define update_allow132() \
   update_menu_item (term->screen.vtMenu, \

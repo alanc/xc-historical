@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.65 89/09/21 17:54:13 jim Exp $
+ * $XConsortium: Tekproc.c,v 1.66 89/10/03 12:41:09 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -110,7 +110,7 @@ extern long time();
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.65 89/09/21 17:54:13 jim Exp $";
+static char rcs_id[] = "$XConsortium: Tekproc.c,v 1.66 89/10/03 12:41:09 jim Exp $";
 #endif	/* lint */
 
 extern Widget toplevel;
@@ -184,6 +184,35 @@ static XtActionsRec actionsList[] = {
     { "gin-press",		HandleGINInput },
     { "secure", 		HandleSecure },
     { "create-menu",		HandleCreateMenu },
+    /* menu actions */
+    { "allow-send-events",	HandleAllowSends },
+    { "set-visual-bell",	HandleVisualBell },
+    { "set-logging",		HandleLogging },
+    { "redraw",			HandleRedraw },
+    { "send-signal",		HandleSendSignal },
+    { "quit",			HandleQuit },
+    { "set-scrollbar",		HandleScrollbar },
+    { "set-jumpscroll",		HandleJumpscroll },
+    { "set-reverse-video",	HandleReverseVideo },
+    { "set-autowrap",		HandleAutoWrap },
+    { "set-reversewrap",	HandleReverseWrap },
+    { "set-autolinefeed",	HandleAutoLineFeed },
+    { "set-appcursor",		HandleAppCursor },
+    { "set-appkeypad",		HandleAppKeypad },
+    { "set-scroll-on-key",	HandleScrollKey },
+    { "set-scroll-on-tty-output",	HandleScrollTtyOutput },
+    { "set-allow132",		HandleAllow132 },
+    { "set-cursesemul",		HandleCursesEmul },
+    { "set-marginbell",		HandleMarginBell },
+    { "set-altscreen",		HandleAltScreen },
+    { "soft-reset",		HandleSoftReset },
+    { "hard-reset",		HandleHardReset },
+    { "set-terminal-type",	HandleSetTerminalType },
+    { "set-visibility",		HandleVisibility },
+    { "set-tek-text",		HandleSetTekText },
+    { "tek-page",		HandleTekPage },
+    { "tek-reset",		HandleTekReset },
+    { "tek-copy",		HandleTekCopy },
 };
 
 static Dimension defOne = 1;

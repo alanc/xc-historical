@@ -1,3 +1,5 @@
+/* Copyright 1989 Massachusetts Institute of Technology */
+
 #include <stdio.h>
 #include <signal.h>
 #include <X11/Intrinsic.h>
@@ -18,7 +20,7 @@ static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
   do_redraw(), do_suspend(), do_continue(), do_interrupt(), do_hangup(),
   do_terminate(), do_kill(), do_quit(), do_scrollbar(), do_jumpscroll(),
   do_reversevideo(), do_autowrap(), do_reversewrap(), do_autolinefeed(),
-  do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollinput(),
+  do_appcursor(), do_appkeypad(), do_scrollkey(), do_scrollttyoutput(),
   do_allow132(), do_cursesemul(), do_marginbell(), do_tekshow(), 
   do_altscreen(), do_softreset(), do_hardreset(), do_tekmode(), do_vthide(), 
   do_tektextlarge(), do_tektext2(), do_tektext3(), do_tektextsmall(), 
@@ -54,7 +56,7 @@ MenuEntry vtMenuEntries[] = {
     { "appcursor",	do_appcursor, NULL },		/*  6 */
     { "appkeypad",	do_appkeypad, NULL },		/*  7 */
     { "scrollkey",	do_scrollkey, NULL },		/*  8 */
-    { "scrollinput",	do_scrollinput, NULL },		/*  9 */
+    { "scrollttyoutput",	do_scrollttyoutput, NULL },	/*  9 */
     { "allow132",	do_allow132, NULL },		/* 10 */
     { "cursesemul",	do_cursesemul, NULL },		/* 11 */
     { "visualbell",	do_visualbell, NULL },		/* 12 */
@@ -142,7 +144,7 @@ void HandleCreateMenu (w, event, params, param_count)
 		update_appcursor();
 		update_appkeypad();
 		update_scrollkey();
-		update_scrollinput();
+		update_scrollttyoutput();
 		update_allow132();
 		update_cursesemul();
 		update_marginbell();
@@ -209,6 +211,14 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
     return m;
 }
 
+static void handle_send_signal (gw, sig)
+    Widget gw;
+    int sig;
+{
+    register TScreen *screen = &term->screen;
+
+    if (screen->pid > 1) killpg (screen->pid, sig);
+}
 
 
 /*
@@ -302,9 +312,7 @@ static void do_suspend (gw, closure, data)
     caddr_t closure, data;
 {
 #if !defined(SYSV) || defined(JOBCONTROL)
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGTSTP);
+    handle_send_signal (gw, SIGTSTP);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 }
 
@@ -314,9 +322,7 @@ static void do_continue (gw, closure, data)
     caddr_t closure, data;
 {
 #if !defined(SYSV) || defined(JOBCONTROL)
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGCONT);
+    handle_send_signal (gw, SIGCONT);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
 }
 
@@ -325,9 +331,7 @@ static void do_interrupt (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGINT);
+    handle_send_signal (gw, SIGINT);
 }
 
 
@@ -335,9 +339,7 @@ static void do_hangup (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGHUP);
+    handle_send_signal (gw, SIGHUP);
 }
 
 
@@ -345,9 +347,7 @@ static void do_terminate (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGTERM);
+    handle_send_signal (gw, SIGTERM);
 }
 
 
@@ -355,9 +355,7 @@ static void do_kill (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    if (screen->pid > 1) killpg (screen->pid, SIGKILL);
+    handle_send_signal (gw, SIGKILL);
 }
 
 
@@ -484,14 +482,14 @@ static void do_scrollkey (gw, closure, data)
 }
 
 
-static void do_scrollinput (gw, closure, data)
+static void do_scrollttyoutput (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
     register TScreen *screen = &term->screen;
 
-    screen->scrollinput = !screen->scrollinput;
-    update_scrollinput();
+    screen->scrollttyoutput = !screen->scrollttyoutput;
+    update_scrollttyoutput();
 }
 
 
@@ -528,18 +526,35 @@ static void do_marginbell (gw, closure, data)
 }
 
 
+static void handle_tekshow (gw, allowswitch)
+    Widget gw;
+    Bool allowswitch;
+{
+    register TScreen *screen = &term->screen;
+
+    if (!screen->Tshow) {		/* not showing, turn on */
+	set_tek_visibility (TRUE);
+    } else if (screen->Vshow || allowswitch) {  /* is showing, turn off */
+	set_tek_visibility (FALSE);
+	end_tek_mode ();		/* WARNING: this does a longjmp */
+    } else
+      Bell();
+}
+
+
 static void do_tekshow (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
+    handle_tekshow (gw, True);
+}
 
-    if (!screen->Tshow) {
-	set_tek_visibility (TRUE);
-    } else {
-	set_tek_visibility (FALSE);
-	end_tek_mode ();		/* WARNING: this does a longjmp */
-    }
+
+static void do_tekonoff (gw, closure, data)
+    Widget gw;
+    caddr_t closure, data;
+{
+    handle_tekshow (gw, False);
 }
 
 
@@ -660,21 +675,35 @@ static void do_tekcopy (gw, closure, data)
 }
 
 
+static void handle_vtshow (gw, allowswitch)
+    Widget gw;
+    Bool allowswitch;
+{
+    register TScreen *screen = &term->screen;
+
+    if (!screen->Vshow) {		/* not showing, turn on */
+	set_vt_visibility (TRUE);
+    } else if (screen->Tshow || allowswitch) {  /* is showing, turn off */
+	set_vt_visibility (FALSE);
+	if (!screen->TekEmu && TekRefresh) dorefresh ();
+	end_vt_mode ();
+    } else 
+      Bell();
+}
+
 static void do_vtshow (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    if (!screen->Vshow) {
-	set_vt_visibility (TRUE);
-    } else {
-	set_vt_visibility (FALSE);
-	if (!screen->TekEmu && TekRefresh) dorefresh ();
-	end_vt_mode ();
-    }
+    handle_vtshow (gw, True);
 }
 
+static void do_vtonoff (gw, closure, data)
+    Widget gw;
+    caddr_t closure, data;
+{
+    handle_vtshow (gw, False);
+}
 
 static void do_vtmode (gw, closure, data)
     Widget gw;
@@ -696,3 +725,392 @@ static void do_tekhide (gw, closure, data)
     TekRefresh = (TekLink *)0;
     if (screen->TekEmu) switch_modes (True);	/* does longjmp to vt mode */
 }
+
+
+
+/*
+ * public handler routines
+ */
+
+static void handle_toggle (proc, var, params, nparams, w, closure, data)
+    void (*proc)();
+    int var;
+    String *params;
+    Cardinal nparams;
+    Widget w;
+    caddr_t closure, data;
+{
+    int dir = -2;
+
+    switch (nparams) {
+      case 0:
+	dir = -1;
+      case 1:
+	if (XmuCompareISOLatin1 (params[0], "on") == 0) dir = 1;
+	else if (XmuCompareISOLatin1 (params[0], "off") == 0) dir = 0;
+	else if (XmuCompareISOLatin1 (params[0], "toggle") == 0) dir = -1;
+    }
+
+    switch (dir) {
+      case -2:
+	Bell();
+	break;
+
+      case -1:
+	(*proc) (w, closure, data);
+	break;
+
+      case 0:
+	if (var) (*proc) (w, closure, data);
+	else Bell();
+	break;
+
+      case 1:
+	if (!var) (*proc) (w, closure, data);
+	else Bell();
+	break;
+    }
+    return;
+}
+
+void HandleAllowSends(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_allowsends, (int) term->screen.allowSendEvents,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleVisualBell(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_visualbell, (int) term->screen.visualbell,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleLogging(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_logging, (int) term->screen.logging,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleRedraw(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_redraw(w, NULL, NULL);
+}
+
+void HandleSendSignal(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    static struct sigtab {
+	char *name;
+	int sig;
+    } signals[] = {
+	{ "suspend",	SIGTSTP },
+	{ "tstp",	SIGTSTP },
+	{ "cont",	SIGCONT },
+	{ "int",	SIGINT },
+	{ "hup",	SIGHUP },
+	{ "term",	SIGTERM },
+	{ "kill",	SIGKILL },
+	{ NULL, 0 },
+    };
+
+    if (*param_count == 1) {
+	struct sigtab *st;
+
+	for (st = signals; st->name; st++) {
+	    if (XmuCompareISOLatin1 (st->name, params[0]) == 0) {
+		handle_send_signal (w, st->sig);
+		return;
+	    }
+	}
+	/* one could allow numeric values, but that would be a security hole */
+    }
+
+    Bell();
+}
+
+void HandleQuit(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_quit(w, NULL, NULL);
+}
+
+void HandleScrollbar(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_scrollbar, (int) term->screen.scrollbar,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleJumpscroll(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_jumpscroll, (int) term->screen.jumpscroll,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleReverseVideo(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_reversevideo, (int) (term->flags & REVERSE_VIDEO),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAutoWrap(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_autowrap, (int) (term->flags & WRAPAROUND),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleReverseWrap(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_reversewrap, (int) (term->flags & REVERSEWRAP),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAutoLineFeed(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_autolinefeed, (int) (term->flags & LINEFEED),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAppCursor(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_appcursor, (int) (term->keyboard.flags & CURSOR_APL),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAppKeypad(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_appkeypad, (int) (term->keyboard.flags & KYPD_APL),
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleScrollKey(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_scrollkey, (int) term->screen.scrollkey,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleScrollTtyOutput(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_scrollttyoutput, (int) term->screen.scrollttyoutput,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAllow132(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_allow132, (int) term->screen.c132,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleCursesEmul(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_cursesemul, (int) term->screen.curses,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleMarginBell(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    handle_toggle (do_marginbell, (int) term->screen.marginbell,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleAltScreen(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    /* eventually want to see if sensitive or not */
+    handle_toggle (do_altscreen, (int) term->screen.alternate,
+		   params, *param_count, w, NULL, NULL);
+}
+
+void HandleSoftReset(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_softreset(w, NULL, NULL);
+}
+
+void HandleHardReset(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_hardreset(w, NULL, NULL);
+}
+
+void HandleSetTerminalType(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    if (*param_count == 1) {
+	switch (params[0][0]) {
+	  case 'v': case 'V':
+	    if (term->screen.TekEmu) do_vtmode (w, NULL, NULL);
+	    break;
+	  case 't': case 'T':
+	    if (!term->screen.TekEmu) do_tekmode (w, NULL, NULL);
+	    break;
+	  default:
+	    Bell();
+	}
+    } else {
+	Bell();
+    }
+}
+
+void HandleVisibility(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    if (*param_count == 2) {
+	switch (params[0][0]) {
+	  case 'v': case 'V':
+	    handle_toggle (do_vtonoff, (int) term->screen.Vshow,
+			   params+1, (*param_count) - 1, w, NULL, NULL);
+	    break;
+	  case 't': case 'T':
+	    handle_toggle (do_tekonoff, (int) term->screen.Tshow,
+			   params+1, (*param_count) - 1, w, NULL, NULL);
+	    break;
+	  default:
+	    Bell();
+	}
+    } else {
+	Bell();
+    }
+}
+
+void HandleSetTekText(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    void (*proc)() = NULL;
+
+    switch (*param_count) {
+      case 0:
+	proc = do_tektextlarge;
+	break;
+      case 1:
+	switch (params[0][0]) {
+	  case 'l': case 'L': proc = do_tektextlarge; break;
+	  case '2': proc = do_tektext2; break;
+	  case '3': proc = do_tektext3; break;
+	  case 's': case 'S': proc = do_tektextsmall; break;
+	}
+	break;
+    }
+    if (proc) (*proc) (w, NULL, NULL);
+    else Bell();
+}
+
+void HandleTekPage(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_tekpage(w, NULL, NULL);
+}
+
+void HandleTekReset(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_tekreset(w, NULL, NULL);
+}
+
+void HandleTekCopy(w, event, params, param_count)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *param_count;
+{
+    do_tekcopy(w, NULL, NULL);
+}
+
+
