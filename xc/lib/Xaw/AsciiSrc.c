@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.38 90/06/07 12:09:36 bugs Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.39 90/06/22 10:09:38 kit Exp $";
 #endif 
 
 /*
@@ -736,9 +736,10 @@ Widget w;
 {
   AsciiSrcObject src = (AsciiSrcObject) w;
 
-  if (src->ascii_src.allocated_string) {
+  if (src->ascii_src.allocated_string && src->ascii_src.type != XawAsciiFile) {
     src->ascii_src.allocated_string = FALSE;
     XtFree(src->ascii_src.string);
+    src->ascii_src.string = NULL;
   }
 }
 
@@ -922,6 +923,7 @@ AsciiSrcObject src;
 {
     char * open_mode;
     FILE * file;
+    char fileName[TMPSIZ];
 
     if (src->ascii_src.type == XawAsciiString) {
 	if (src->ascii_src.string == NULL)
@@ -944,7 +946,9 @@ AsciiSrcObject src;
  */
     
     src->ascii_src.is_tempfile = FALSE;
-    
+    if (src->ascii_src.allocated_string)
+	XtFree(src->ascii_src.string);
+
     switch (src->text_src.edit_mode) {
     case XawtextRead:
 	if (src->ascii_src.string == NULL)
@@ -956,23 +960,20 @@ AsciiSrcObject src;
     case XawtextAppend:
     case XawtextEdit:
 	if (src->ascii_src.string == NULL) {
-	    src->ascii_src.string = tmpnam (XtMalloc((unsigned)TMPSIZ));
+	    src->ascii_src.string = tmpnam(fileName);
 	    src->ascii_src.is_tempfile = TRUE;
-	} 
-	else {
-	    if (!src->ascii_src.allocated_string) {
-		src->ascii_src.allocated_string = TRUE;
-		src->ascii_src.string = XtNewString(src->ascii_src.string);
-	    }
+	    open_mode = "w";
+	} else
 	    open_mode = "r+";
-	}
-	
 	break;
     default:
 	XtErrorMsg("badMode", "asciiSourceCreate", "XawError",
 		"Bad editMode for ascii source; must be Read, Append or Edit.",
 		   NULL, NULL);
     }
+
+    src->ascii_src.string = XtNewString(src->ascii_src.string);
+    src->ascii_src.allocated_string = TRUE;
     
     if (!src->ascii_src.is_tempfile) {
 	if ((file = fopen(src->ascii_src.string, open_mode)) == 0) {
