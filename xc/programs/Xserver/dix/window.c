@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.210 88/08/28 20:39:05 keith Exp $ */
+/* $Header: window.c,v 1.211 88/09/04 20:55:17 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1148,6 +1148,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     int result;
     ScreenPtr pScreen;
     Mask vmaskCopy = 0;
+    Mask tmask;
     unsigned int val;
     int error;
 
@@ -1157,10 +1158,11 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     error = Success;
     pScreen = pWin->drawable.pScreen;
     pVlist = vlist;
-    while (vmask) 
+    tmask = vmask;
+    while (tmask) 
     {
-	index = (Mask) lowbit (vmask);
-	vmask &= ~index;
+	index = (Mask) lowbit (tmask);
+	tmask &= ~index;
 	switch (index) 
         {
 	  case CWBackPixmap: 
@@ -1459,7 +1461,10 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    }
 	    WindowHasNewCursor( pWin);
 	    break;
-	 default: break;
+	 default:
+	    error = BadValue;
+	    client->errorValue = vmask;
+	    goto PatchUp;
       }
       vmaskCopy |= index;
     }
@@ -2569,7 +2574,8 @@ ConfigureWindow(pWin, mask, vlist, client)
                    return(BadMatch);
 	    break;
 	  default: 
-	    return(BadMatch);
+	    client->errorValue = mask;
+	    return(BadValue);
 	}
     }
 	/* root really can't be reconfigured, so just return */
