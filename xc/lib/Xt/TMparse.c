@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.94 90/07/06 12:29:24 swick Exp $ */
+/* $XConsortium: TMparse.c,v 1.95 90/07/12 17:47:39 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1069,7 +1069,6 @@ static String ParseQuotedStringEvent(str, event,error)
     Value shiftMask;
     register char	c;
     char	s[2];
-    Cardinal	tmEvent;
     (void) _XtLookupModifier("Ctrl",(LateBindingsPtr*)NULL,
                  FALSE,(Value *) &ctrlMask,TRUE);
     (void) _XtLookupModifier("Alt",(LateBindingsPtr*)NULL,
@@ -1093,18 +1092,14 @@ static String ParseQuotedStringEvent(str, event,error)
 	    if (*str != '\0' && *str != '\n') str++;
 	    break;
 	}
-    tmEvent = (EventType) LookupTMEventType("Key",error);
-    if (*error)
-        return PanicModeRecovery(str);
-
-    event->event.eventType = events[tmEvent].eventType;
-    if ('A' <= c && c <= 'Z') {
-	event->event.modifiers |=  shiftMask;
-	c += 'a' - 'A';
-    }
+    event->event.eventType = KeyPress;
     s[0] = c;
     s[1] = '\0';
     event->event.eventCode = StringToKeySym(s, error);
+    if (*error) return PanicModeRecovery(str);
+    event->event.eventCodeMask = ~0L;
+    event->event.matchEvent = _XtMatchUsingStandardMods;
+    event->event.standard = True;
 
     return str;
 }
