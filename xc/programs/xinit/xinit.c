@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.45 91/02/08 11:54:34 rws Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.46 91/02/09 17:29:24 rws Exp $";
 #endif /* lint */
 
 /* Copyright    Massachusetts Institute of Technology    1986	*/
@@ -16,8 +16,8 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-#include <X11/Xos.h>
 #include <X11/Xlib.h>
+#include <X11/Xos.h>
 #include <X11/Xmu/SysUtil.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -29,7 +29,11 @@ without express or implied warranty.
 extern int sys_nerr;
 #include <setjmp.h>
 
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 extern char *getenv();
+#endif
 extern char **environ;
 char **newenviron = NULL;
 
