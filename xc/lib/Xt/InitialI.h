@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.54 91/04/28 14:04:24 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.55 91/05/04 13:23:56 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,8 +95,8 @@ typedef struct
 } FdStruct;
 
 typedef struct _LangProcRec {
-    XtLangProc	proc;
-    XtPointer	closure;
+    XtLanguageProc	proc;
+    XtPointer		closure;
 } LangProcRec;
 
 typedef struct _ProcessContextRec {
