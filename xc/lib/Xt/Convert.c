@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.42 90/08/22 13:40:03 swick Exp $ */
+/* $XConsortium: Convert.c,v 1.43 90/09/04 10:45:55 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -274,7 +274,9 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     register	CachePtr *pHashEntry;
     register	CachePtr p;
     register    Cardinal i;
+#ifndef _XtHeapAlloc
     extern char* _XtHeapAlloc();
+#endif
     XtDestructor nullProc = NULL; /* some compilers broken */
     Boolean	has_destructor = (destructor != nullProc);
 

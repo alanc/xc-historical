@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.51 90/10/08 09:15:47 rws Exp $ */
+/* $XConsortium: Display.c,v 1.52 90/10/20 13:42:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -40,7 +40,11 @@ SOFTWARE.
 static String XtNnoPerDisplay = "noPerDisplay";
 
 static void _XtHeapInit();
+#ifdef _XtHeapAlloc
+void _XtHeapFree();
+#else
 static void _XtHeapFree();
+#endif
 
 ProcessContext _XtGetProcessContext()
 {
@@ -404,6 +408,8 @@ static void _XtHeapInit(heap)
     heap->bytes_remaining = 0;
 }
 
+#ifndef _XtHeapAlloc
+
 char* _XtHeapAlloc(heap, bytes)
     Heap*	heap;
     Cardinal	bytes;
@@ -463,6 +469,8 @@ static void _XtHeapFree(heap)
     heap->start = NULL;
     heap->bytes_remaining = 0;
 }
+
+#endif /* ifndef _XtHeapAlloc */
 
 static XtPerDisplay NewPerDisplay(dpy)
 	Display *dpy;

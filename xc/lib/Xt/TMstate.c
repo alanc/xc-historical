@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.116 90/09/21 12:04:56 swick Exp $ */
+/* $XConsortium: TMstate.c,v 1.117 90/09/27 09:27:56 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -473,7 +473,9 @@ Boolean _XtRegularMatch(event,eventSeq)
 static TMContext AllocTMContext(dpy)
     Display *dpy;
 {
+#ifndef _XtHeapAlloc
     extern char* _XtHeapAlloc();
+#endif 
     XtPerDisplay pd = _XtGetPerDisplay(dpy);
     TMContext ctx =
 	(TMContext)_XtHeapAlloc( &pd->heap, (unsigned)sizeof(TMContextRec) );

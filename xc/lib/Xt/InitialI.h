@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.36 90/10/08 09:15:15 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.37 90/10/20 13:40:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -128,12 +128,14 @@ typedef struct _XtAppStruct {
     Widget in_phase2_destroy;
 } XtAppStruct;
 
+#ifndef _XtHeapAlloc
 extern char* _XtHeapAlloc(
 #if NeedFunctionPrototypes
     Heap*	/* heap */,
     Cardinal	/* size */
 #endif
 );
+#endif
 
 extern void _XtSetDefaultErrorHandlers(
 #if NeedFunctionPrototypes
