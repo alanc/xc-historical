@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -117,7 +117,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
 #define FontCompilerFlags -t
 #endif
 #ifndef ConnectionFlags
-#if SystemV || SystemV4
+#if (SystemV || SystemV4) && !HasSockets
 #define ConnectionFlags -DSTREAMSCONN
 #else
 #define ConnectionFlags -DTCPCONN -DUNIXCONN
@@ -355,7 +355,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.78 90/12/26 11:30:55 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.79 91/01/08 09:26:14 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
