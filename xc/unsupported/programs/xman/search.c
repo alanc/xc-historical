@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.14 91/04/02 15:25:04 gildea Exp $
+ * $XConsortium: search.c,v 1.15 91/06/03 17:00:26 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -244,6 +244,8 @@ int type;
     if (file == NULL) {
       sprintf(string_buf,"No manual entry for %s.", search_string);
       ChangeLabel(man_globals->label, string_buf);
+      if (man_globals->label == NULL)
+	PopupWarning(man_globals, string_buf);
       return(NULL);
     }
   }
