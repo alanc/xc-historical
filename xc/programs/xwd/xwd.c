@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.33 88/02/09 12:04:22 jim Exp $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.34 88/02/12 13:24:59 jim Exp $";
 #endif
 
 /*%
@@ -157,6 +157,14 @@ Window_Dump(window, out)
     if (debug) outl("xwd: Getting target window information.\n");
     if(!XGetWindowAttributes(dpy, window, &win_info)) 
       Fatal_Error("Can't get target window attributes.");
+
+    if (win_info.x + win_info.border_width * nobdrs < 0 ||
+        win_info.y + win_info.border_width * nobdrs < 0 ||
+	win_info.x + win_info.border_width + win_info.width + 
+	win_info.border_width * (!nobdrs) > DisplayWidth  (dpy, screen) ||
+	win_info.y + win_info.border_width + win_info.height + 
+	win_info.border_width * (!nobdrs) > DisplayHeight (dpy, screen))
+      Fatal_Error("Target window lies partially off screen \n");
 
     XFetchName(dpy, window, &win_name);
     if (!win_name || !win_name[0])
