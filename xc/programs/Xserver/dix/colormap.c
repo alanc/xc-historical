@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.79 89/03/12 17:39:33 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.80 89/03/16 08:25:46 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -38,10 +38,10 @@ SOFTWARE.
 extern XID clientErrorValue;
 
 static Pixel FindBestPixel();
-static void  CopyFree(), FreeCell(), AllocShared();
+static void  CopyFree(), FreeCell(), FreePixels();
 static int   AllComp(), RedComp(), GreenComp(), BlueComp(), FreeClientPixels();
 static int   AllocDirect(), AllocPseudo(), FreeCo();
-static Bool  AllocCP();
+static Bool  AllocCP(), AllocShared();
 static int   TellNoMap();
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
@@ -381,12 +381,8 @@ CopyColormapAndFree (mid, pSrc, client)
 	    bcopy((char *)pSrc->green, (char *)pmap->green, size * sizeof(Entry));
 	    bcopy((char *)pSrc->blue, (char *)pmap->blue, size * sizeof(Entry));
 	}
-	/* We're going to "change" the original map back to AllocNone. The
-	 * easiest way to do this is to delete the map and create a new one
-	 * with the same id */
-	FreeResource(midSrc, RC_NONE);
-	/* XXX if this fails we're in big trouble */
-	CreateColormap(midSrc, pScreen, pVisual, &pmap, AllocNone, client);
+	pSrc->flags &= ~AllAllocated;
+	FreePixels(pSrc, client);
 	return(Success);
     }
 
@@ -1014,30 +1010,14 @@ QueryColors (pmap, count, ppixIn, prgbList)
     return (errVal);
 }
 
-/* Free all of a client's colors and cells */
-/*ARGSUSED*/
-static int
-FreeClientPixels (pcr, fakeid)
-    colorResource *pcr;
-    XID	fakeid;
+static void
+FreePixels(pmap, client)
+    register ColormapPtr	pmap;
+    register int 		client;
 {
     register Pixel		*ppix, *ppixStart;
     register int 		n;
-    register ColormapPtr	pmap;
-    register int 		client;
     int				class;
-
-    /* if mid is no longer a resource, the colormap has already been freed
-     * and we can all go home.
-     */
-    if((pmap = (ColormapPtr) LookupID(pcr->mid, RT_COLORMAP, RC_CORE)) ==
-        (ColormapPtr) NULL)
-    {
-	xfree(pcr);
-	return(Success);
-    }
-    client = pcr->client;
-    xfree(pcr);
 
     class = pmap->class;
     ppix = pmap->clientPixelsRed[client];
@@ -1066,7 +1046,21 @@ FreeClientPixels (pcr, fakeid)
 	pmap->clientPixelsBlue[client] = (Pixel *) NULL;
 	pmap->numPixelsBlue[client] = 0;
     }
-    return(Success);
+}
+
+/* Free all of a client's colors and cells */
+/*ARGSUSED*/
+static
+FreeClientPixels (pcr, fakeid)
+    colorResource *pcr;
+    XID	fakeid;
+{
+    ColormapPtr pmap;
+
+    pmap = (ColormapPtr) LookupID(pcr->mid, RT_COLORMAP, RC_CORE);
+    if (pmap)
+	FreePixels(pmap, pcr->client);
+    xfree(pcr);
 }
 
 int
@@ -1220,8 +1214,12 @@ AllocColorPlanes (client, pmap, colors, r, g, b, contig, pixels,
 	    }
 
 	    /* set up the shared color cells */
-	    AllocShared(pmap, pixels, colors, r, g, b,
-	                *prmask, *pgmask, *pbmask, ppixFirst);
+	    if (!AllocShared(pmap, pixels, colors, r, g, b,
+			     *prmask, *pgmask, *pbmask, ppixFirst))
+	    {
+		(void)FreeColors(pmap, client, colors, pixels, mask);
+		ok = BadAlloc;
+	    }
 	}
     }
 
@@ -1597,7 +1595,7 @@ AllocCP (pmap, pentFirst, count, Free, planes, contig, pixels, pMask)
     return (FALSE);
 }
 
-static void
+static Bool
 AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     ColormapPtr	pmap;
     Pixel	*ppix;
@@ -1609,18 +1607,31 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
     Pixel	basemask;	/* bits not used in any mask */
     int		npix, z, npixClientNew;
     Pixel	base, bits;
-    SHAREDCOLOR *pshared;
+    SHAREDCOLOR *pshared, **ppshared, **psharedList;
 
     basemask = ~(rmask | gmask | bmask);
     npixClientNew = c << (r + g + b);
-
+    psharedList = (SHAREDCOLOR **)ALLOCATE_LOCAL(npixClientNew *
+						 sizeof(SHAREDCOLOR *));
+    if (!psharedList)
+	return FALSE;
+    ppshared = psharedList;
+    for (z = npixClientNew; --z >= 0; )
+    {
+	if (!(ppshared[z] = (SHAREDCOLOR *)xalloc(sizeof(SHAREDCOLOR))))
+	{
+	    for (z++ ; z < npixClientNew; z++)
+		xfree(ppshared[z]);
+	    return FALSE;
+	}
+    }
     for(pptr = ppix, npix = c; --npix >= 0; pptr++)
     {
 	bits = 0;
 	base = lowbit (rmask);
 	while(1)
 	{
-	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
+	    pshared = *ppshared++;
 	    pshared->refcnt = 1 << (g + b);
 	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 	    {
@@ -1638,7 +1649,7 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 	base = lowbit (gmask);
 	while(1)
 	{
-	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
+	    pshared = *ppshared++;
 	    pshared->refcnt = 1 << (r + b);
 	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 	    {
@@ -1649,14 +1660,13 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 		}
 	    }
 	    GetNextBitsOrBreak(bits, gmask, base);
-
 	}
 
 	bits = 0;
 	base = lowbit (bmask);
 	while(1)
 	{
-	    pshared = (SHAREDCOLOR *) xalloc (sizeof(SHAREDCOLOR));
+	    pshared = *ppshared++;
 	    pshared->refcnt = 1 << (r + g);
 	    for (cptr = ppixFirst, z = npixClientNew; --z >= 0; cptr++)
 	    {
@@ -1668,8 +1678,9 @@ AllocShared (pmap, ppix, c, r, g, b, rmask, gmask, bmask, ppixFirst)
 	    }
 	    GetNextBitsOrBreak(bits, bmask, base);
 	}
-
     }
+    DEALLOCATE_LOCAL(psharedList);
+    return TRUE;
 }
 
 
