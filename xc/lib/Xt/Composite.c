@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.20 93/08/27 16:27:09 kaleb Exp $ */
+/* $XConsortium: Composite.c,v 1.22 94/04/01 17:21:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -99,6 +99,45 @@ externaldef(compositeclassrec) CompositeClassRec compositeClassRec = {
 
 externaldef(compositewidgetclass) WidgetClass compositeWidgetClass = (WidgetClass) &compositeClassRec;
 
+static void InheritAllowsChangeManagedSet(widget_class)
+    WidgetClass widget_class;
+{
+    CompositeWidgetClass cc = (CompositeWidgetClass) widget_class;
+    CompositeClassExtension ext, super_ext, new_ext;
+
+    ext = (CompositeClassExtension)
+	XtGetClassExtension(widget_class,
+		    XtOffsetOf(CompositeClassRec, composite_class.extension),
+			    NULLQUARK, 1L, 0);
+
+    if (ext && ext->version == XtCompositeExtensionVersion)
+	return;
+
+    super_ext = (CompositeClassExtension)
+	XtGetClassExtension(cc->core_class.superclass,
+		    XtOffsetOf(CompositeClassRec, composite_class.extension),
+			    NULLQUARK, 1L, 0);
+
+    LOCK_PROCESS;
+    if (super_ext && super_ext->version == XtCompositeExtensionVersion &&
+	super_ext->record_size == sizeof(CompositeClassExtensionRec) &&
+	super_ext->allows_change_managed_set) {
+
+	new_ext = (CompositeClassExtension) 
+	    XtCalloc(1, sizeof(CompositeClassExtensionRec));
+
+	/* Be careful to inherit only what is appropriate */
+	new_ext->next_extension = cc->composite_class.extension;
+	new_ext->record_type = NULLQUARK;
+	new_ext->version = XtCompositeExtensionVersion;
+	new_ext->record_size = sizeof(CompositeClassExtensionRec);
+	new_ext->accepts_objects = (ext ? ext->accepts_objects : False);
+	new_ext->allows_change_managed_set = True;
+	cc->composite_class.extension = (XtPointer) new_ext;
+    }
+    UNLOCK_PROCESS;
+}
+
 static void CompositeClassPartInitialize(widgetClass)
 	WidgetClass widgetClass;
 {
@@ -129,6 +168,7 @@ static void CompositeClassPartInitialize(widgetClass)
     if (wcPtr->change_managed == XtInheritChangeManaged) {
 	wcPtr->change_managed =
 		superPtr->change_managed;
+	InheritAllowsChangeManagedSet(widgetClass);
     }
 
     if (wcPtr->insert_child == XtInheritInsertChild) {
