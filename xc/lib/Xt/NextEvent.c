@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.105 91/07/05 15:05:32 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 1.106 91/07/07 14:24:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -180,7 +180,7 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	register struct timeval *wait_time_ptr;
 	Fd_set rmaskfd, wmaskfd, emaskfd;
 	static Fd_set zero_fd = { 0 };
-	int nfound, i, d, last_d_with_no_events = -1;
+	int nfound, i, d;
 #ifdef DEBUG_SELECT
 	int loop_count = -1;
 #endif
@@ -299,22 +299,17 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 	    if (ignoreEvents) return -1; /* then only doing timers */
 	    for (d = 0; d < app->count; d++) {
 		if (FD_ISSET(ConnectionNumber(app->list[d]), &rmaskfd)) {
-		    /*
-		     * Have to be VERY careful here:  an error event
-		     * could have arrived without any real events, or
-		     * the stream may have been closed.  XEventsQueued
-		     * will process any error events but there's no way
-		     * to find out from Xlib that there aren't enough
-		     * bytes on the wire.  We save enough state to
-		     * notice that XEventsQueued has returned 0 more
-		     * than once for the same fd and if so go ahead and
-		     * let the Xlib IO processing handle things.
-		     */
-		    if (XEventsQueued( app->list[d], QueuedAfterReading )
-			|| last_d_with_no_events == d)
+		    if (XEventsQueued( app->list[d], QueuedAfterReading ))
 			return d;
-		    if (last_d_with_no_events == -1)
-			last_d_with_no_events = d;
+		    /*
+		     * An error event could have arrived
+		     * without any real events, or events
+		     * could have been swallowed by Xlib,
+		     * or the connection may be broken.
+		     * We can't tell the difference, so
+		     * ssume Xlib will eventually discover
+		     * a broken connection.
+		     */
 		}
 	    }
 	    goto WaitLoop;	/* must have been only error events */
@@ -331,17 +326,18 @@ int _XtwaitForSomething(ignoreTimers, ignoreInputs, ignoreEvents,
 		    for (d = 0; d < app->count; d++) {
 			if (i == ConnectionNumber(app->list[d])) {
 			    if (ret == -1) {
+				if (XEventsQueued( app->list[d],
+						   QueuedAfterReading ))
+				    ret = d;
 				/*
 				 * An error event could have arrived
-				 * without any real events, or the
-				 * stream may have been closed.
+				 * without any real events, or events
+				 * could have been swallowed by Xlib,
+				 * or the connection may be broken.
+				 * We can't tell the difference, so
+				 * assume Xlib will eventually discover
+				 * a broken connection.
 				 */
-				if (XEventsQueued( app->list[d],
-						   QueuedAfterReading )
-				    || last_d_with_no_events == d)
-				    ret = d;
-				else if (last_d_with_no_events == -1)
-				    last_d_with_no_events = d;
 			    }
 			    goto ENDILOOP;
 			}
