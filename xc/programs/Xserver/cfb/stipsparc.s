@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplesparc.s,v 1.4 90/12/09 13:11:34 keith Exp $
+ * $XConsortium: stipsparc.s,v 1.5 90/12/22 16:18:03 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -85,9 +85,11 @@
 #define	_stipplestack	_stipplestackte
 #endif
 
+	.seg	"text"
+	.proc	16
 	.globl	_stipplestack
 _stipplestack:
-	save	%sp,-(16*4),%sp
+	save	%sp,-64,%sp
 	sethi	%hi(CaseBegin),sbase		/* load up switch table */
 	or	sbase,%lo(CaseBegin),sbase
 
