@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.165 91/02/05 17:14:43 gildea Exp $ */
+/* $XConsortium: main.c,v 1.166 91/02/05 19:25:37 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -42,7 +42,6 @@ SOFTWARE.
 #include "ptyx.h"
 #include "data.h"
 #include "error.h"
-#include "main.h"
 #include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
@@ -345,7 +344,13 @@ static char passedPty[2];	/* name if pty if slave */
 
 #ifdef TIOCCONS
 static int Console;
+#include <X11/Xmu/SysUtil.h>	/* XmuGetHostname */
+#define MIT_CONSOLE_LEN	12
+#define MIT_CONSOLE "MIT_CONSOLE_"
+static char mit_console_name[255 + MIT_CONSOLE_LEN + 1] = MIT_CONSOLE;
+static Atom mit_console;
 #endif	/* TIOCCONS */
+
 #ifndef USE_SYSV_UTMP
 static int tslot;
 #endif	/* USE_SYSV_UTMP */
@@ -596,6 +601,21 @@ static void Help ()
     exit (0);
 }
 
+#ifdef TIOCCONS
+/* ARGSUSED */
+static Boolean
+ConvertConsoleSelection(w, selection, target, type, value, length, format)
+    Widget w;
+    Atom *selection, *target, *type;
+    XtPointer *value;
+    unsigned long *length;
+    int *format;
+{
+    /* we don't save console output, so can't offer it */
+    return False;
+}
+#endif /* TIOCCONS */
+
 
 extern WidgetClass xtermWidgetClass;
 
@@ -832,12 +852,14 @@ char **argv;
 		{
 		    struct stat sbuf;
 
-		    /* must be owner and have read/write permission */
-		    if (!stat("/dev/console", &sbuf) &&
-			(sbuf.st_uid == getuid()) &&
-			!access("/dev/console", R_OK|W_OK))
+		    /* Must be owner and have read/write permission.
+		       xdm cooperates to give the console the right user. */
+		    if ( !stat("/dev/console", &sbuf) &&
+			 (sbuf.st_uid == getuid()) &&
+			 !access("/dev/console", R_OK|W_OK))
+		    {
 			Console = TRUE;
-		    else
+		    } else
 			Console = FALSE;
 		}
 #endif	/* TIOCCONS */
@@ -1424,6 +1446,20 @@ spawn ()
 				       False);
 	(void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
 				&wm_delete_window, 1);
+#ifdef TIOCCONS
+	if (Console) {
+	    /*
+	     * Inform any running xconsole program
+	     * that we are going to steal the console.
+	     */
+	    XmuGetHostname (mit_console_name + MIT_CONSOLE_LEN, 255);
+	    mit_console = XInternAtom(screen->display, mit_console_name, False);
+	    /* the user told us to be the console, so we can use CurrentTime */
+	    XtOwnSelection(screen->TekEmu ? XtParent(tekWidget) : XtParent(term),
+			   mit_console, CurrentTime,
+			   ConvertConsoleSelection, NULL, NULL);
+	}
+#endif
 	if(screen->TekEmu) {
 		envnew = tekterm;
 		ptr = newtc;
@@ -1752,13 +1788,6 @@ spawn ()
 		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
 			    HsSysError(cp_pipe[1], ERROR_TIOCLSET);
 #endif	/* TIOCLSET */
-#ifdef TIOCCONS
-		    if (Console) {
-			    int on = 1;
-			    if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
-				    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
-		    }
-#endif	/* TIOCCONS */
 #else	/* USE_SYSV_TERMIO */
 		    sg.sg_flags &= ~(ALLDELAY | XTABS | CBREAK | RAW);
 		    sg.sg_flags |= ECHO | CRMOD;
@@ -1798,14 +1827,14 @@ spawn ()
 			    HsSysError (cp_pipe[1], ERROR_TIOCSLTC);
 		    if (ioctl (tty, TIOCLSET, (char *)&lmode) == -1)
 			    HsSysError (cp_pipe[1], ERROR_TIOCLSET);
+#endif	/* !USE_SYSV_TERMIO */
 #ifdef TIOCCONS
 		    if (Console) {
-			    int on = 1;
-			    if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
-				    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
+			int on = 1;
+			if (ioctl (tty, TIOCCONS, (char *)&on) == -1)
+			    HsSysError(cp_pipe[1], ERROR_TIOCCONS);
 		    }
 #endif	/* TIOCCONS */
-#endif	/* !USE_SYSV_TERMIO */
 		}
 
 		signal (SIGCHLD, SIG_DFL);
