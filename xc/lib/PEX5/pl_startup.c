@@ -1,4 +1,4 @@
-/* $XConsortium: pl_startup.c,v 1.11 93/02/23 14:41:06 mor Exp $ */
+/* $XConsortium: pl_startup.c,v 1.12 93/08/15 10:50:08 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "PEXlib.h"
 #include "PEXlibint.h"
-#include "pl_global_def.h"
+#include "pl_global.h"
 #include <stdio.h>
 
 
