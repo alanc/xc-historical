@@ -84,7 +84,7 @@ Xman*manualBrowser*manualPage.translations:  #override \
 				Ctrl<Btn2Down>: \
 					XawPositionSimpleMenu(sectionMenu) \
 					MenuPopup(sectionMenu) \n\
-				Meta<Btn2Down>,<Btn2Up>:GotoPage(Directory) \n\
+				Shift<Btn2Down>,<Btn2Up>:GotoPage(Directory)\n\
 				Ctrl<Key>q: Quit() \n\
 				Ctrl<Key>c: Quit() \n\
 				Ctrl<Key>r: RemoveThisManpage() \n\
@@ -102,7 +102,7 @@ Xman*manualBrowser*directory.translations:   #override \
 				Ctrl<Btn2Down>: \
 					XawPositionSimpleMenu(sectionMenu) \
 					MenuPopup(sectionMenu) \n\
-				Meta<Btn2Down>,<Btn2Up>: GotoPage(Manpage) \n\
+				Shift<Btn2Down>,<Btn2Up>: GotoPage(Manpage) \n\
 				Ctrl<Key>q: Quit() \n\
 				Ctrl<Key>c: Quit() \n\
 				Ctrl<Key>r: RemoveThisManpage() \n\
