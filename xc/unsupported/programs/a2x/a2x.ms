@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.16 92/08/21 11:21:30 rws Exp $
+$XConsortium: a2x.doc,v 1.17 92/09/02 09:40:48 rws Exp $
 
 				Using a2x
 
@@ -16,6 +16,7 @@ without express or implied warranty.
 
 DragonDictate is a trademark of Dragon Systems, Inc.
 X Window System is a trademark of the Massachusetts Institute of Technology
+DESQview/X is a trademark of Quarterdeck Office Systems
 
 
 			     Getting Started
@@ -29,14 +30,15 @@ a2x requires an X protocol extension to function.  Either the XTEST or
 XTRAP extension can be used.  (There is code for the old XTESTEXT1
 extension in the source, but it has never been tested and probably will not
 work.)  The XTEST extension was developed by the X Consortium for use in
-the X Test Suite.  It is not currently part of R5 or the Test Suite,
-although it is expected that the X Consortium will release it prior to R6.
-The XTRAP extension was developed by Digital Equipment Corp., and public
-versions are available for both R4 and R5.  a2x was originally written for
-the XTEST extension, but XTRAP is perfectly adequate.  (The main difference
-as far as a2x is concerned is that XTEST permits time delays inside the X
-server, while with XTRAP the delays are handled on the client side and
-hence can be somewhat less accurate, but time delays are rarely needed.)
+the X Test Suite, and an R5 patch to support the XTEST extension is
+available via anonymous ftp to export.lcs.mit.edu, as the file
+/pub/XTEST/fix-xtest.  The XTRAP extension was developed by Digital
+Equipment Corp., and public versions are available for both R4 and R5.  a2x
+was originally written for the XTEST extension, but XTRAP is perfectly
+adequate.  (The main difference as far as a2x is concerned is that XTEST
+permits time delays inside the X server, while with XTRAP the delays are
+handled on the client side and hence can be somewhat less accurate, but
+time delays are rarely needed.)
 
 The Imakefile for a2x comes configured for building with XTEST; to build
 with XTRAP change the line
