@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.12 87/06/16 00:50:43 chariot Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.13 87/06/16 06:44:44 chariot Locked $";
 #endif
 
 /*%
@@ -75,45 +75,20 @@ extern int errno;
 /* Include routines to do parsing */
 #include "jdisplay.h"
 
+/* Setable Options */
+
+int format;
+Bool nobdrs = False;
+Bool standard_out = True;
+Bool debug = False;
+
 main(argc, argv)
     int argc;
     char **argv;
 {
-    register int i, *histbuffer;
-    register u_short *wbuffer;
-    register char *buffer, *cbuffer;
-    
-    unsigned buffer_size;
-    unsigned int virt_width, virt_height;
-    int virt_x, virt_y;
-    int win_name_size;
-    int header_size;
-/*%    int ncolors = 0;   %*/
-    int depth;
-    int format;
-    int offset;
-    long plane_mask;
-    char *file_name;
-    char win_name[32];
-    Bool nobdrs = False;
-    Bool debug = False;
-    Bool standard_out = True;
-
-/*%
-    XColor *scolor;
-    XColor *bcolor;
-    XColor *pixcolors;
-%*/
+    register i;
     Window target_win;
-    Window rootwin;
-    XWindowAttributes win_info;
-    XImage *image;
-
-    XWDFileHeader header;
-
     FILE *out_file = stdout;
-
-/*%    *bcolor = *scolor = DONT_KNOW_YET    %*/
 
     INIT_NAME;
 
@@ -132,7 +107,8 @@ main(argc, argv)
 	  usage();
 	if (!strcmp(argv[i], "-out")) {
 	    if (++i >= argc) usage();
-	    file_name = argv[i];
+	    if (!(out_file = fopen(argv[i], "w")))
+	      Error("Can't open output file as specified.");
 	    standard_out = False;
 	    continue;
 	}
@@ -143,16 +119,6 @@ main(argc, argv)
 	usage();
     }
     
-    if (!standard_out) {
-	/*
-	 * Open the output file.
-	 */
-	if((out_file = fopen(file_name, "w")) == NULL)
-	  Error("Can't open output file as specified.");
-    }
-
-    rootwin = RootWindow(dpy, screen);
-
     /*
      * Set the right pixmap format for the display type.
      */
@@ -169,6 +135,49 @@ main(argc, argv)
     target_win = Select_Window(dpy);
 
     /*
+     * Dump it!
+     */
+    Window_Dump(target_win, out_file);
+
+    fclose(out_file);
+}
+
+
+/*
+ * Window_Dump: dump a window to a file which must already be open for
+ *              writting.
+ */
+Window_Dump(window, out)
+     Window window;
+     FILE *out;
+{
+    register int i, *histbuffer;
+    register u_short *wbuffer;
+    register char *buffer, *cbuffer;
+
+    unsigned buffer_size;
+    unsigned int virt_width, virt_height;
+    int virt_x, virt_y;
+    int win_name_size;
+    int header_size;
+/*%    int ncolors = 0;   %*/
+    int depth;
+    int offset;
+    long plane_mask;
+    char win_name[100];
+/*%
+    XColor *scolor;
+    XColor *bcolor;
+    XColor *pixcolors;
+%*/
+    XWindowAttributes win_info;
+    XImage *image;
+/*%    *bcolor = *scolor = DONT_KNOW_YET    %*/
+
+    XWDFileHeader header;
+
+    
+    /*
      * Inform the user not to alter the screen.
      */
     Beep();
@@ -176,12 +185,12 @@ main(argc, argv)
     /*
      * Get the parameters of the window being dumped.
      */
-    if (debug) fprintf(stderr,"xwd: Getting target window information.\n");
+    if (debug) outl("xwd: Getting target window information.\n");
 
-    if(XGetWindowAttributes(dpy, target_win, &win_info) == FAILURE) 
+    if(XGetWindowAttributes(dpy, window, &win_info) == FAILURE) 
       Fatal_Error("Can't query target window.\n");
 
-    XFetchName(dpy, target_win, win_name);
+    XFetchName(dpy, window, win_name);
     if (!win_name[0])
       strcpy(win_name, "xwdump");
 
@@ -195,14 +204,14 @@ main(argc, argv)
      * (this depends on whether or not the borders are included.
      */
     if (nobdrs) {
-	if (debug) fprintf(stderr,"xwd: Image without borders selected.\n");
+	if (debug) outl("xwd: Image without borders selected.\n");
 	virt_x = 0;
 	virt_y = 0;
 	virt_width = win_info.width;
 	virt_height = win_info.height;
     }
     else {
-	if (debug) fprintf(stderr,"xwd: Image with borders selected.\n");
+	if (debug) outl("xwd: Image with borders selected.\n");
 	virt_x = win_info.x;
 	virt_y = win_info.y;
 	virt_width = win_info.width + (win_info.border_width << 1);
@@ -219,24 +228,18 @@ main(argc, argv)
     else if (format == XYPixmap) {
 	buffer_size = XYPixmapSize(virt_width, virt_height,
 				   DisplayPlanes(dpy, screen));
-	if (debug) {
-	    fprintf(stderr,
-		    "xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
-	}
+	if (debug)
+	    outl("xwd: Pixmap in XYFormat, size %d bytes.\n", buffer_size);
     }
     else if (DisplayPlanes(dpy, screen) < 9) {
 	buffer_size = BZPixmapSize(virt_width, virt_height);
-	if (debug) {
-	    fprintf(stderr,
-	      "xwd: Pixmap in byte ZFormat, size %d bytes.\n", buffer_size);
-	}
+	if (debug)
+	  outl("xwd: Pixmap in byte ZFormat, size %d bytes.\n", buffer_size);
     }
     else {
-	buffer_size = WZPixmapSize(virt_width, virt_height);
-	if (debug) {
-	    fprintf(stderr,
-	      "xwd: Pixmap in word ZFormat, size %d bytes.\n", buffer_size);
-	}
+        buffer_size = WZPixmapSize(virt_width, virt_height);
+	if (debug)
+	  outl("xwd: Pixmap in word ZFormat, size %d bytes.\n", buffer_size);
     }
 %*/
 
@@ -251,10 +254,10 @@ main(argc, argv)
  *  does the memory allocation so we don't have to.
  */
 
-    image = XGetImage ( dpy, target_win, 0, 0, virt_width,
+    image = XGetImage ( dpy, window, 0, 0, virt_width,
 		       virt_height, plane_mask, format);
 
-    if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
+    if (debug) outl("xwd: Getting pixmap.\n");
 
     /*
      * Find the number of colors used, then write them out to the file.
@@ -274,13 +277,13 @@ main(argc, argv)
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
 		    if(debug)
-		      fprintf(stderr,"Color %3d at pixel val %5d, i= %5d =",
+		      outl("Color %3d at pixel val %5d, i= %5d =",
 			      ncolors, buffer[i], i);
 		    histbuffer[(int)buffer[i]]++;
 		    pixcolors[ncolors-1].pixel = (int)buffer[i];
 		    if(XQueryColor(&pixcolors[ncolors-1]) == 0) 
 		      Error("Unable to query color table?");
-		    if(debug) fprintf(stderr,"%5d %5d %5d\n",
+		    if(debug) outl("%5d %5d %5d\n",
 				      pixcolors[ncolors-1].red,
 				      pixcolors[ncolors-1].green,
 				      pixcolors[ncolors-1].blue);
@@ -300,13 +303,13 @@ main(argc, argv)
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
 		    if(debug)
-		      fprintf(stderr,"Color %2d at pixel val %d, i= %d =",
+		      outl("Color %2d at pixel val %d, i= %d =",
 			      ncolors, wbuffer[i], i);
 		    histbuffer[(int)wbuffer[i]]++;
 		    pixcolors[ncolors-1].pixel = (int)wbuffer[i];
 		    if(XQueryColor(&pixcolors[ncolors-1]) == 0) 
 		      Error("Unable to query color table?");
-		    if(debug) fprintf(stderr,"%d %d %d\n",
+		    if(debug) outl("%d %d %d\n",
 				      pixcolors[ncolors-1].red,
 				      pixcolors[ncolors-1].green,
 				      pixcolors[ncolors-1].blue);
@@ -321,7 +324,7 @@ if(DisplayPlanes(dpy, screen) > 16)
 	/* reread in XY format if necessary */
 /*%
 	if(format == XYPixmap) {
-	    image = XGetImage(dpy, target_win, 0, 0, virt_width,
+	    image = XGetImage(dpy, window, 0, 0, virt_width,
 	                      virt_height, plane_mask, format);
 %*/
 
@@ -344,13 +347,13 @@ if(DisplayPlanes(dpy, screen) > 16)
     /*
      * Calculate header size.
      */
-    if (debug) fprintf(stderr,"xwd: Calculating header size.\n");
+    if (debug) outl("xwd: Calculating header size.\n");
     header_size = sizeof(header) + win_name_size;
 
     /*
      * Write out header information.
      */
-    if (debug) fprintf(stderr,"xwd: Constructing and dumping file header.\n");
+    if (debug) outl("xwd: Constructing and dumping file header.\n");
     header.header_size = header_size;
     header.file_version = XWD_FILE_VERSION;
     header.display_type = 0; /* DisplayType(dpy, screen);  [obsolete] */
@@ -365,21 +368,21 @@ if(DisplayPlanes(dpy, screen) > 16)
     header.window_bdrwidth = win_info.border_width;
     header.window_ncolors = 0;  /*%  = ncolors;  %*/
 
-    (void) fwrite((char *)&header, sizeof(header), 1, out_file);
-    (void) fwrite(win_name, win_name_size, 1, out_file);
+    (void) fwrite((char *)&header, sizeof(header), 1, out);
+    (void) fwrite(win_name, win_name_size, 1, out);
 
     /*
      * Write out the color maps, if any
      */
 /*%
-    if (debug) fprintf(stderr,"xwd: Dumping %d colors.\n",ncolors);
-    (void) fwrite(pixcolors, sizeof(XColor), ncolors, out_file);
+    if (debug) outl(stderr,"xwd: Dumping %d colors.\n",ncolors);
+    (void) fwrite(pixcolors, sizeof(XColor), ncolors, out);
 %*/
 
     /*
      * Write out the buffer.
      */
-    if (debug) fprintf(stderr,"xwd: Dumping pixmap.  bufsize=%d\n",buffer_size);
+    if (debug) outl("xwd: Dumping pixmap.  bufsize=%d\n",buffer_size);
 
 /*
  *    This copying of the bit stream (data) to a file is to be replaced
@@ -387,32 +390,26 @@ if(DisplayPlanes(dpy, screen) > 16)
  *  what other functions of xwd will be taken over by this (as yet)
  *  non-existant X function.
  */
-    (void) fwrite(image->data, (int) buffer_size, 1, out_file);
-
-    /*
-     * Close the output file.
-     */
-    if (debug) fprintf(stderr,"xwd: Closing output file.\n");
-    (void) fclose(out_file);
+    (void) fwrite(image->data, (int) buffer_size, 1, out);
 
     /*
      * free the color buffer.
      */
 /*%
-    if(debug && ncolors > 0) fprintf(stderr,"xwd: Freeing color map.\n");
+    if(debug && ncolors > 0) outl("xwd: Freeing color map.\n");
     if(ncolors > 0) free(pixcolors);
 %*/
 
     /*
      * Free the pixmap buffer.
      */
-    if (debug) fprintf(stderr,"xwd: Freeing pixmap buffer.\n");
+    if (debug) outl("xwd: Freeing pixmap buffer.\n");
     free(buffer);
 
     /*
      * Free window name string.
      */
-    if (debug) fprintf(stderr,"xwd: Freeing window name string.\n");
+    if (debug) outl("xwd: Freeing window name string.\n");
     free(win_name);
 }
 
@@ -421,12 +418,8 @@ if(DisplayPlanes(dpy, screen) > 16)
  */
 usage()
 {
-    fprintf(
-	stderr,
-	"%s: %s [-debug] [-help] [-nobdrs] [-out <file>]\n",
-	    program_name
-    );
-    fprintf(stderr, "                [-xy] [[host]:vs]\n");
+    outl("%s: %s [-debug] [-help] [-nobdrs] [-out <file>]\n", program_name);
+    outl("                [-xy] [[host]:vs]\n");
     exit(1);
 }
 
@@ -437,10 +430,10 @@ usage()
 Error(string)
 	char *string;	/* Error description string. */
 {
-	fprintf(stderr, "\nxwd: Error => %s\n", string);
+	outl("\nxwd: Error => %s\n", string);
 	if (errno != 0) {
 		perror("xwd");
-		fprintf(stderr, "\n");
+		outl("\n");
 	}
 
 	exit(1);
