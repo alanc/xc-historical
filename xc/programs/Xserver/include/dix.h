@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.67 93/09/22 22:52:25 rws Exp $ */
+/* $XConsortium: dix.h,v 1.68 93/09/24 12:17:32 rws Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -125,11 +125,17 @@ SOFTWARE.
     if (pGC->serialNumber != pDraw->serialNumber)\
 	ValidateGC(pDraw, pGC);
 
+#ifdef MTX
+/* MTX assumes routines that call WriteReplyToClient have local variable msg */
+#define WriteReplyToClient(pClient, size, pReply) \
+    SendReplyToClient(pClient, msg);
+#else
 #define WriteReplyToClient(pClient, size, pReply) \
    if ((pClient)->swapped) \
       (*ReplySwapVector[((xReq *)(pClient)->requestBuffer)->reqType]) \
            (pClient, (int)(size), pReply); \
       else (void) WriteToClient(pClient, (int)(size), (char *)(pReply));
+#endif
 
 #define WriteSwappedDataToClient(pClient, size, pbuf) \
    if ((pClient)->swapped) \

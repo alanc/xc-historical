@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: message.h,v 1.1 93/11/12 17:03:07 rob Exp $ */
 
 #ifndef _message_h
 #define _message_h
@@ -154,7 +154,9 @@ typedef struct
 
 extern PooledMessagePtr GetPooledMessages();
 extern char *GetPooledReplyMessage();
+#ifdef MTX
 extern void ReturnPooledMessages();
+#endif
 extern int  InitializeMessageMonitor();
 extern void CleanupMessageMonitor();
 extern MsgBufferPtr RegisterLocalMessageBufferForThread();

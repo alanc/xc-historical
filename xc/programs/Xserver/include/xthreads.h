@@ -28,14 +28,14 @@
  *
  ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: xthreads.h,v 1.1 93/11/12 17:03:15 rob Exp $ */
 
 #ifndef XTHREADS_H
 #define XTHREADS_H
 
+#ifdef MTX
 #include "pthread.h"
 
-#ifdef MTX
 /******************************
  * Default attributes
  ******************************/

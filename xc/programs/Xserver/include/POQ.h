@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium$ */
+/* $XConsortium: POQ.h,v 1.1 93/11/12 17:02:46 rob Exp $ */
 
 #ifndef POQ_H
 #define POQ_H
@@ -296,7 +296,9 @@ extern void POQSelectRegionConflictType();
 extern void POQSetExtConflictFunc();
 extern void POQInitClient();
 extern void POQLock();
+#ifdef MTX
 extern void POQUnlock();
+#endif
 extern void POQGrabServer();
 extern void POQUngrabServer();
 extern void POQComeUpForAir();

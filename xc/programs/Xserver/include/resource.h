@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.14 93/09/03 08:26:15 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.15 93/09/20 17:38:03 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -176,6 +176,47 @@ extern pointer LookupIDByClass(
     RESTYPE /*classes*/
 #endif
 );
+
+/* XXX:SM new for MTX */
+#ifdef NOTYET
+extern void UnlockDrawableAndGC(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    GC /**pGC*/,
+    XID /*drawID*/,
+    XID /*gcID*/ 
+#endif
+)
+extern void UnlockTwoDrawablesAndGC(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pSrc*/,
+    DrawablePtr /*pDst*/,
+    GC /**pGC*/,
+    XID /*srcID*/,
+    XID /*dstID*/,
+    XID /*gcID*/ 
+#endif
+)
+extern void UnlockDrawable(
+#if NeedFunctionPrototypes
+    DrawablePtr /*pDraw*/,
+    XID /*drawID*/ 
+#endif
+)
+extern void UnlockGC(
+#if NeedFunctionPrototypes
+    GC /**pGC*/,
+    XID /*gcID*/ 
+#endif
+)
+extern void UnlockWindow(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/,
+    XID /*winID*/ 
+#endif
+)
+
+#endif
 
 #endif /* RESOURCE_H */
 
