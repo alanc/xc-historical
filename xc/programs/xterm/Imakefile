@@ -47,8 +47,8 @@ XCOMM
 
 #ifndef TermcapLibrary
 #if SystemV && !defined(MacIIArchitecture)
-#ifdef CrayArchitecture
-#define TermcapLibrary -lcurses		/* special case of system v */
+#if defined(CrayArchitecture) || defined(HPArchitecture)
+#define TermcapLibrary -lcurses		/* special cases of System V */
 #else
 #define TermcapLibrary -ltermlib	/* usually in here */
 #endif
