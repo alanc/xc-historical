@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.122 94/04/02 10:57:05 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.123 94/04/02 16:20:23 matt Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -216,7 +216,7 @@ clean::									@@\
 	$(RM) program
 #endif
 
-#if !defined(UseInstalled) && !defined(Win32Architecture)
+#if !defined(UseInstalled) && !defined(Win32Architecture) && !defined(CrayArchitecture)
 #ifdef InstallCmd
 #undef InstallCmd
 #endif
