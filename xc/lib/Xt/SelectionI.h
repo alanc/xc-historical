@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.6 89/06/16 18:09:17 jim Exp $ */
+/* $XConsortium: SelectionI.h,v 1.7 89/09/12 16:49:00 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -119,6 +119,7 @@ typedef struct {
     XtPointer owner_closure;
     Atom incremental_atom; 		/* constant */
     Atom indirect_atom; 		/* constant */
+    XSelectionRequestEvent event;	/* for XtGetSelectionRequest */
 } SelectRec, *Select;
 
 typedef struct {
