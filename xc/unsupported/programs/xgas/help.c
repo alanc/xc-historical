@@ -45,11 +45,10 @@ void pop_down(w, widget_to_popdown, call_data) /* ARGSUSED */
 createHelpWidgets( parent )
      Widget parent;
 {
-  Widget help, blank1, blank2;
   Widget helpShell, helpFrame, helpQuick, helpMan;
-  Widget helpDoc, helpBlank, helpQuit;
+  Widget helpDoc, helpQuit;
   int sizedoc = 0, sizeman;
-  char **docp, *docs, *doct, *mant;
+  char **docp, *doct, *mant;
 
   /* HELP POPUP */
   helpShell = XtVaCreatePopupShell("helpShell",
@@ -80,9 +79,9 @@ createHelpWidgets( parent )
   XtAddCallback(helpQuick, XtNcallback, (XtCallbackProc)show_text, 
 		(char*)quick);
 
-  sizeman = strlen(man[0]) + strlen(man[1]) + 2;
+  sizeman = strlen(man[0]) + strlen(man[1]) + 1;
   mant = XtMalloc(sizeman);
-  strcat(mant, man[0]);
+  strcpy(mant, man[0]);
   strcat(mant, man[1]);
   
   /* HELP COMMAND BUTTON: MAN */
@@ -100,7 +99,7 @@ createHelpWidgets( parent )
   docp = doc;
   sizedoc = strlen(*docp) + 1;
   doct = XtMalloc(sizedoc);
-  strcat(doct, *docp);
+  strcpy(doct, *docp);
   docp++;
   while (*docp[0]) {
     sizedoc += strlen(*docp) + 1;
