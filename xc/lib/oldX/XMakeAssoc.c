@@ -1,4 +1,4 @@
-/* $XConsortium: XMakeAssoc.c,v 10.17 88/09/06 16:09:41 jim Exp $ */
+/* $XConsortium: XMakeAssoc.c,v 10.18 91/01/06 12:09:28 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -16,12 +16,6 @@ without express or implied warranty.
 #include "Xlibint.h"
 #include "X10.h"
 
-void insque();
-struct qelem {
-	struct    qelem *q_forw;
-	struct    qelem *q_back;
-	char q_data[1];
-};
 /*
  * XMakeAssoc - Insert data into an XAssocTable keyed on an XId.
  * Data is inserted into the table only once.  Redundant inserts are
@@ -93,6 +87,9 @@ XMakeAssoc(dpy, table, x_id, data)
 	new_entry->data = data;
 
 	/* Insert the new entry. */
-	insque((struct qelem *)new_entry, (struct qelem *)Entry->prev);
+	new_entry->prev = Entry->prev;
+	new_entry->next = Entry;
+	Entry->prev->next = new_entry;
+	Entry->prev = new_entry;
 }
 
