@@ -986,7 +986,11 @@ The default bindings are:
 .Ds
 .TA .5i 1i 2i
 .ta .5i 1i 2i
-	~Meta	<KeyPress>:	insert-seven-bit() \\n\\
+ Shift <KeyPress> Prior:	scroll-back(1,halfpage) \\n\\
+ Shift <KeyPress> Next:		scroll-forw(1,halfpage) \\n\\
+ Shift <KeyPress> Select:	select-start() \\n\\
+ Shift <KeyPress> Insert:	insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
+	~Meta	<KeyPress>: 	insert-seven-bit() \\n\\
 	 Meta	<KeyPress:	insert-eight-bit() \\n\\
  Ctrl	~Meta	<Btn1Down>:	mode-menu() \\n\\
 	~Meta	<Btn1Down>:	select-start() \\n\\
