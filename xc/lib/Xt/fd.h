@@ -1,5 +1,5 @@
 /*
-* $XConsortium: fd.h,v 1.18 93/09/11 16:50:18 rws Exp $
+* $XConsortium: fd.h,v 1.19 93/09/20 10:13:14 kaleb Exp $
 * $oHeader: fd.h,v 1.4 88/08/26 14:49:54 asente Exp $
 */
 
@@ -49,6 +49,7 @@ SOFTWARE.
 #if (defined(SVR4) || defined(CRAY) || defined(AIXV3)) && !defined(FD_SETSIZE)
 #include <sys/select.h>		/* defines FD stuff except howmany() */
 #endif
+#include <X11/Xmd.h>
 
 #ifndef NBBY
 #define	NBBY	8		/* number of bits in a byte */
