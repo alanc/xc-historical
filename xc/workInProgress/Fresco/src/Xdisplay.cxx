@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xdisplay.cxx,v 1.5 94/04/07 11:29:27 matt Exp $
+ * $XConsortium: Xdisplay.cxx,v 1.6 94/05/09 17:42:26 matt Exp matt $
  */
 
 /*
@@ -99,10 +99,10 @@ DisplayRef FrescoImpl::open_default_display() {
 
 class CursorImpl : public Cursor {
 public:
-    CursorImpl(short x, short y, long pattern[16], long mask[16]);
+    CursorImpl(Short x, Short y, Long pattern[16], Long mask[16]);
     CursorImpl(RasterRef bitmap, RasterRef mask);
-    CursorImpl(FontRef f, long pattern, long mask);
-    CursorImpl(long index);
+    CursorImpl(FontRef f, Long pattern, Long mask);
+    CursorImpl(Long index);
     ~CursorImpl();
 
     //+ Cursor::*
@@ -120,7 +120,7 @@ private:
 };
 
 CursorImpl::CursorImpl(
-    short /* x */, short /* y */, long /* pattern */ [16], long /* mask */ [16]
+    Short /* x */, Short /* y */, Long /* pattern */ [16], Long /* mask */ [16]
 ) {
     /* not implemented */
 }
@@ -129,11 +129,11 @@ CursorImpl::CursorImpl(RasterRef /* bitmap */, RasterRef /* mask */) {
     /* not implemented */
 }
 
-CursorImpl::CursorImpl(FontRef /* f */, long /* pattern */, long /* mask */) {
+CursorImpl::CursorImpl(FontRef /* f */, Long /* pattern */, Long /* mask */) {
     /* not implemented */
 }
 
-CursorImpl::CursorImpl(long /* index */) {
+CursorImpl::CursorImpl(Long /* index */) {
     /* not implemented */
 }
 
@@ -1378,7 +1378,7 @@ ScreenImpl::VisualInfo* ScreenImpl::lookup_overlay(StyleRef s) {
     ScreenImpl::VisualInfo* info = nil;
     StyleValue_var a = s->resolve(Fresco::tmp_string_ref("overlay"));
     if (is_not_nil(a)) {
-	long layer;
+	Long layer;
 	if (find_layer(a, layer)) {
 	    for (ListItr(ScreenVisualList) i(*visuals_); i.more(); i.next()) {
 		ScreenImpl::OverlayInfo& ov = i.cur()->overlay;
@@ -1411,7 +1411,7 @@ ScreenImpl::VisualInfo* ScreenImpl::lookup_overlay(StyleRef s) {
  * the layer to zero.  Otherwise, return false.
  */
 
-Boolean ScreenImpl::find_layer(StyleValueRef a, long& layer) {
+Boolean ScreenImpl::find_layer(StyleValueRef a, Long& layer) {
     Boolean b = false;
     if (a->read_integer(layer)) {
 	b = true;
@@ -1488,7 +1488,7 @@ Boolean ScreenImpl::lookup_visual_id(StyleRef s, XVisualInfo& xinfo) {
     Boolean b = false;
     StyleValue_var a = s->resolve(Fresco::tmp_string_ref("visual_id"));
     if (a != nil) {
-	long id;
+	Long id;
 	if (a->read_integer(id)) {
 	    xinfo.visualid = id;
 	    b = find_visual_by_info(xinfo, VisualIDMask);
@@ -1646,7 +1646,7 @@ unsigned long ScreenImpl::xor(
     unsigned long p;
     StyleValue_var a = s->resolve(Fresco::tmp_string_ref("xor_pixel"));
     if (is_not_nil(a)) {
-	long n;
+	Long n;
 	p = a->read_integer(n) ? n : 1;
     } else if (info.visual->c_class == DirectColor) {
 	Visual* v = info.visual;

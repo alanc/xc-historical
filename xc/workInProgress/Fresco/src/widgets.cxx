@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: widgets.cxx,v 1.3 94/04/01 16:48:21 matt Exp matt $
  */
 
 /*
@@ -1040,7 +1040,7 @@ void WidgetKitImpl::make_thumb(Slider* slider, Axis a) {
     long r;
     StyleValue_var v = style_->resolve(Fresco::tmp_string_ref("thumbRidges"));
     if (is_not_nil(v)) {
-	long l;
+	Long l;
 	if (v->read_integer(l)) {
 	    r = l;
 	}
@@ -2290,6 +2290,7 @@ Slider::Slider(
     old_thumb_index(0), normal_thumb_index(1), visible_thumb_index(2)
 {
     layouts_ = f->layout_kit();
+    old_thumb_ = nil;
     normal_thumb_ = nil;
     visible_thumb_ = nil;
     min_thumb_size_ = default_minimum_thumb_size;

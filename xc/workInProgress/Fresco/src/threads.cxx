@@ -1,5 +1,5 @@
 /*
- * $XConsortium: threads.cxx,v 1.3 94/04/01 16:48:10 matt Exp $
+ * $XConsortium: threads.cxx,v 1.4 94/04/07 11:29:36 matt Exp matt $
  */
 
 /*
@@ -864,7 +864,7 @@ void ThreadImpl::terminate() {
     status_ = thread_canceled;
     pthread_cancel(thread_);
     lock_->release();
-    long status, exitcode;
+    Long status, exitcode;
     wait(status, exitcode);
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: layouts.cxx,v 1.3 94/04/01 16:47:53 matt Exp $
+ * $XConsortium: layouts.cxx,v 1.4 94/04/07 11:29:35 matt Exp matt $
  */
 
 /*
@@ -573,7 +573,7 @@ public:
     RegionImpl** children_allocations(Region_in a);
     void traverse_with_allocation(GlyphTraversal_in t, Region_in a);
     void traverse_without_allocation(GlyphTraversal_in t);
-    void child_allocate(long index, Glyph::AllocationInfo& a);
+    void child_allocate(Long index, Glyph::AllocationInfo& a);
     void modified();
 private:
     static const int static_size_;

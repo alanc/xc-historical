@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xwindow.cxx,v 1.3 94/04/01 16:47:51 matt Exp $
+ * $XConsortium: Xwindow.cxx,v 1.4 94/04/07 11:29:30 matt Exp matt $
  */
 
 /*
@@ -306,7 +306,7 @@ void WindowImpl::xor_pixel(Long p) {
 
 //+ WindowImpl(Window::xor_pixel?)
 Long WindowImpl::xor_pixel() {
-    long p = 0;
+    Long p = 0;
     StyleValue_var a = style_->resolve(Fresco::tmp_string_ref("xor_pixel"));
     if (is_not_nil(a)) {
 	a->read_integer(p);
@@ -709,7 +709,7 @@ void WindowImpl::set_attributes() {
     }
 
     xattrmask_ |= CWEventMask;
-    long events = (
+    Long events = (
 	KeyPressMask | KeyReleaseMask |
 	ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
 	EnterWindowMask | LeaveWindowMask |

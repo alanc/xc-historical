@@ -81,8 +81,8 @@ public:
     void traverse(GlyphTraversal_in t); //+ Glyph::traverse
     Transform_return transformation(); //+ Glyph::transformation
     void need_resize(); //+ Glyph::need_resize
-    void visit_trail(long, GlyphTraversalRef t);
-    void child_allocate(long, Glyph::AllocationInfo& a);
+    void visit_trail(Long, GlyphTraversalRef t);
+    void child_allocate(Long, Glyph::AllocationInfo& a);
  
     static void corners(
 	TransformRef t, Coord& left, Coord& bottom, Coord& right, Coord& top

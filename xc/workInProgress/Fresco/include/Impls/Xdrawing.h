@@ -97,8 +97,8 @@ public:
 //+
 public:
     BrushImpl(Coord width);
-    BrushImpl(const long* p, long c, Coord w);
-    BrushImpl(long pat, Coord w);
+    BrushImpl(const Long* p, Long c, Coord w);
+    BrushImpl(Long pat, Coord w);
 
     //+ Brush::*
     /* FrescoObject */
@@ -114,15 +114,15 @@ public:
     ULong hash();
     //+
 
-    void info(Coord& width, char*& dash_list, long& dash_count);
+    void info(Coord& width, char*& dash_list, Long& dash_count);
 protected:
     SharedFrescoObjectImpl object_;
     Coord width_;
     char* dash_list_;
     long dash_count_;
 
-    void init(const long* p, long c, Coord w);
-    void calc_dashes(long pat, long* dash, long& count);
+    void init(const Long* p, Long c, Coord w);
+    void calc_dashes(Long pat, Long* dash, Long& count);
 };
 
 //+ ColorImpl : Color

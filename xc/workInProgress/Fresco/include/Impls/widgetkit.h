@@ -334,12 +334,12 @@ public:
     /* PolyGlyph */
     void request(Glyph::Requisition& r); //+ Glyph::request
     void draw(GlyphTraversal_in t); //+ Glyph::draw
-    void child_allocation(long, Glyph::AllocationInfo&);
+    void child_allocation(Long, Glyph::AllocationInfo&);
     void update(); //+ FrescoObject::update
 
     /* For SliderViewer */
     void move_thumb(GlyphTraversalRef t, EventRef);
-    long hit_thumb(GlyphTraversalRef t, EventRef);
+    Long hit_thumb(GlyphTraversalRef t, EventRef);
     void show_old_thumb();
     void release_thumb();
     void redraw_thumb();

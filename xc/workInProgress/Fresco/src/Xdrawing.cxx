@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xdrawing.cxx,v 1.3 94/04/01 16:48:12 matt Exp $
+ * $XConsortium: Xdrawing.cxx,v 1.4 94/04/07 11:29:29 matt Exp matt $
  */
 
 /*
@@ -502,7 +502,7 @@ void FontImpl::load() {
 	/* raise exception? */
 	return;
     }
-    ULong value;
+    unsigned long value;
     if (XGetFontProperty(xfont_, XA_POINT_SIZE, &value)) {
 	point_size_ = Coord(value) / 10.0;
     }
@@ -2043,7 +2043,7 @@ Boolean XPainterImpl::scale_field(
     if (!zero) {
 	XCoord xvalue = atoi(spec.field(field));
 	if (xvalue != 0) {
-	    pvalue = xvalue * scale;
+	    pvalue = PixelCoord(xvalue * scale);
 	    zero = true;
 	}
     }

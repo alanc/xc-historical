@@ -119,7 +119,7 @@ protected:
 
     void set_dpi();
     ScreenImpl::VisualInfo* lookup_overlay(StyleRef);
-    Boolean find_layer(StyleValueRef, long& layer);
+    Boolean find_layer(StyleValueRef, Long& layer);
     Boolean find_overlay(long layer, XVisualInfo&, ScreenImpl::OverlayInfo&);
     Boolean lookup_visual_id(StyleRef, XVisualInfo&);
     Boolean lookup_visual(StyleRef, XVisualInfo&);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: objects.cxx,v 1.3 94/04/01 16:48:01 matt Exp matt $
  */
 
 /*
@@ -1017,14 +1017,14 @@ void MarshalBuffer::make_out_in() {
     cur_ = &data_[0];
 }
 
-void MarshalBuffer::put32(long n) {
+void MarshalBuffer::put32(Long n) {
     if (cur_ >= end_) {
 	overflow();
     }
     *cur_++ = n;
 }
 
-long MarshalBuffer::get32() {
+Long MarshalBuffer::get32() {
     if (cur_ >= end_) {
 	underflow();
     }
@@ -1089,7 +1089,7 @@ void MarshalBuffer::put_double(double d) {
     move(w);
 }
 
-void MarshalBuffer::put_string(const char* s, long length) {
+void MarshalBuffer::put_string(const char* s, Long length) {
     char* p = (char*)cur_;
     long n = (length == -1) ? strlen(s) : length;
     long n1 = n + 1;

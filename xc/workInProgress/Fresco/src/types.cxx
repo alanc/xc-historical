@@ -1,5 +1,5 @@
 /*
- * $XConsortium: types.cxx,v 1.6 94/04/01 16:48:18 matt Exp $
+ * $XConsortium: types.cxx,v 1.7 94/04/07 11:29:38 matt Exp matt $
  */
 
 /*
@@ -1226,7 +1226,7 @@ Boolean SharedStyleImpl::same_path(PathName* p1, PathName* p2) {
     return true;
 }
 
-void SharedStyleImpl::load_file(const char* filename, long priority) {
+void SharedStyleImpl::load_file(const char* filename, Long priority) {
     InputFile* f = InputFile::open(filename);
     if (f == nil) {
 	return;
@@ -1795,7 +1795,7 @@ void TransformImpl::init() {
     mat_[0][2] = mat_[1][2] = 0;
     mat_[0][3] = mat_[1][3] = 0;
     mat_[2][0] = mat_[2][1] = 0;
-    mat_[2][2] = mat_[3][2] = 0;
+    mat_[2][2] = mat_[2][3] = 0;
     mat_[3][0] = mat_[3][1] = 0;
     mat_[3][2] = mat_[3][3] = 0;
     identity_ = true;

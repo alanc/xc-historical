@@ -1,4 +1,4 @@
-/* $XConsortium: base.h,v 1.6 94/08/17 19:06:19 matt Exp matt $ */
+/* $XConsortium: base.h,v 1.7 94/08/17 21:48:05 matt Exp matt $ */
 /*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
@@ -86,23 +86,34 @@ typedef unsigned short UShort;
  * with respect to 32/64-bit machine ambiguities.
  */
 #if (_MIPS_SZLONG == 64)
+/* 64 bit MIPS machine from SGI? */
 typedef __int32_t Long;
 typedef __uint32_t ULong;
 typedef long LongLong;
 typedef unsigned long ULongLong;
 #else
-typedef long Long;
-typedef unsigned long ULong;
+#if defined(__alpha)
+/* 64 bit defs for DEC alpha */
+typedef int Long;
+typedef unsigned int ULong;
+typedef long LongLong;
+typedef unsigned long ULongLong;
+#else
 #if defined(__sgi)
 /* compiler supports long long */
+typedef long Long;
+typedef unsigned long ULong;
 typedef long long LongLong;
 typedef unsigned long long ULongLong;
 #else
 /* compiler does not support long long */
+typedef long Long;
+typedef unsigned long ULong;
 typedef long LongLong;
 typedef unsigned long ULongLong;
-#endif
-#endif
+#endif  /* __sgi */
+#endif  /* __alpha */
+#endif  /* _MIPS_SZLONG */
 
 typedef float Float;
 typedef double Double;
