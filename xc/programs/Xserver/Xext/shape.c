@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.10 89/12/13 15:26:57 keith Exp $ */
+/* $XConsortium: shape.c,v 5.11 90/01/23 10:49:17 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -815,7 +815,6 @@ ProcShapeGetRectangles (client)
 	    rects[i].width = box->x2 - box->x1;
 	    rects[i].height = box->y2 - box->y1;
 	}
-	DEALLOCATE_LOCAL (rects);
     }
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
@@ -830,6 +829,7 @@ ProcShapeGetRectangles (client)
     }
     WriteToClient (client, sizeof (rep), (char *) &rep);
     WriteToClient (client, nrects * sizeof (xRectangle), (char *) rects);
+    DEALLOCATE_LOCAL (rects);
     return client->noClientException;
 }
 
