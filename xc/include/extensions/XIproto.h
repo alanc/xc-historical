@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.11 90/01/09 13:11:19 gms Exp $ */
+/* $Header: XIproto.h,v 1.7 90/05/18 11:05:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -208,6 +208,7 @@ typedef struct _xKeyInfo {
     KeyCode 	min_keycode; 
     KeyCode 	max_keycode; 
     CARD16 	num_keys;
+    CARD8	pad1, pad2;
     } xKeyInfo;
 
 typedef struct _xButtonInfo *xButtonInfoPtr;
