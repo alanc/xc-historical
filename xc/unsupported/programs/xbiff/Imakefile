@@ -1,5 +1,5 @@
        INCLUDES = -I$(TOP) -I$(TOP)/X11
-LOCAL_LIBRARIES = $(XAWLIB) $(XTOOLLIB) $(XLIB)
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xbiff.c
            OBJS = xbiff.o
