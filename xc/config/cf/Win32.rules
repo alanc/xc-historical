@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.10 93/08/16 13:30:56 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.11 93/08/16 13:55:15 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -18,14 +18,12 @@ Avoid.Error files:							@@\
 #define MakeDir(dir) -$(MKDIRHIER) dir
 
 #define ObjectCompile(options) RemoveFile($@)				@@\
-	@echo $(CC) -c $(CFLAGS) options $*.c				@@\
-	@$(CC) -c $*.c @<<						@@\
+	$(CC) -c $*.c @<<						@@\
 	$(CFLAGS) options						@@\
 <<
 
 #define LibObjCompile(dir,options) RemoveFiles($@ dir\$@)		@@\
-	@echo $(CC) -c $(CCOPTIONS) $(ALLDEFINES) options $*.c		@@\
-	@$(CC) -c  $*.c @<<						@@\
+	$(CC) -c  $*.c @<<						@@\
 	$(CCOPTIONS) $(ALLDEFINES) options				@@\
 <<									@@\
 	$(MV) $@ dir\$@
