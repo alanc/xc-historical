@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.63 89/10/16 18:06:56 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.64 89/10/17 12:41:35 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -984,7 +984,7 @@ AllTarget(objname.o)							@@\
 									@@\
 objname.o: objlist							@@\
 	$(RM) $@							@@\
-	$(LD) -X -r objlist -o $@
+	$(LD) $(LDCOMBINEFLAGS) objlist -o $@
 #endif /* NormalRelocatableTarget */
 
 
