@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 2.14 88/01/22 14:59:22 swick Locked $";
+static char rcs_id[] = "$Header: bbox.c,v 2.15 88/02/14 20:52:11 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -336,9 +336,9 @@ void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
     static Arg args[] = {
-	{XtNmax, NULL},		/* first 3 are for VPaned */
-	{XtNmin, 5},
+	{XtNmax, NULL},		/* first 2 are for VPaned */
 	{XtNallowResize, False},
+/*	{XtNmin, 5}, */		/* let user select this */
 	{XtNallowVert, True},	/* for Viewport */
     };
 
