@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.15 93/09/20 18:07:43 hersh Exp $
+ * $XConsortium: xconsole.c,v 1.16 93/10/12 21:18:37 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -793,7 +793,7 @@ osm_pipe()
     }
     pty = open(ttydev, O_RDWR);
     if (pty < 0) exit(1);
-    osm = open("/dev/osm", O_RDWR);
+    osm = open("/dev/osm", O_RDONLY);
     if (osm < 0) exit(1);
     for (nbytes = 0; skip > 0 && nbytes >= 0; skip -= nbytes) {
 	nbytes = skip;
