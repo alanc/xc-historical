@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Converters.c,v 1.43 89/09/25 17:38:50 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Converters.c,v 1.44 89/09/26 10:58:27 swick Exp $";
 /* $oHeader: Converters.c,v 1.6 88/09/01 09:26:23 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -142,14 +142,30 @@ static Boolean IsInteger(string, value)
     String string;
     int *value;
 {
+    Boolean found_some = False;
     int val = 0;
     char ch;
     while (ch = *string++) {
 	if (ch >= '0' && ch <= '9') {
 	    val *= 10;
 	    val += ch - '0';
+	    found_some = True;
+	    continue;
 	}
-	else return False;
+	if (ch == ' ' || ch == '\t') {
+	    if (found_some) {
+		/* make sure only trailing whitespace */
+		while (ch = *string++) {
+		    if (ch != ' ' && ch != '\t')
+			return False;
+		}
+		break;
+	    }
+	    /* skip leading whitespace */
+	    while ((ch = *string) == ' ' || ch == '\t') string++;
+	    continue;
+	}
+	return False;
     }
     if (ch == '\0') {
 	*value = val;
@@ -649,7 +665,12 @@ static Boolean CvtStringToFont(dpy, args, num_args, fromVal, toVal, closure_ret)
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
 		f = XLoadFont(DisplayOfScreen(screen), (char *)value.addr);
-		if (f != 0) goto Done;
+		if (f != 0)
+		    goto Done;
+		else {
+		    XtDisplayStringConversionWarning( dpy, (char *)value.addr,
+						      "Font" );
+		}
 	    } else if (rep_type == XtQFont) {
 		f = *(Font*)value.addr;
 		goto Done;
@@ -736,7 +757,8 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
   Done:	    done( XFontStruct*, f);
 	}
 
-	XtDisplayStringConversionWarning(dpy, (char*)fromVal->addr, "XFontStruct");
+	XtDisplayStringConversionWarning( dpy, (char*)fromVal->addr,
+					  "FontStruct" );
     }
 
     /* try and get the default font */
@@ -755,7 +777,12 @@ CvtStringToFontStruct(dpy, args, num_args, fromVal, toVal, closure_ret)
 			    &rep_type, &value)) {
 	    if (rep_type == XtQString) {
 		f = XLoadQueryFont(DisplayOfScreen(screen), (char*)value.addr);
-		if (f != NULL) goto Done;
+		if (f != NULL)
+		    goto Done;
+		else {
+		    XtDisplayStringConversionWarning( dpy, (char*)value.addr,
+						      "FontStruct" );
+		}
 	    } else if (rep_type == XtQFont) {
 		f = XQueryFont(dpy, *(Font*)value.addr );
 		if (f != NULL) goto Done;
