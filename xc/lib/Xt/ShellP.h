@@ -1,7 +1,4 @@
-/*
-* $XConsortium: ShellP.h,v 1.30 91/01/11 16:41:19 converse Exp $
-* $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
-*/
+/* $XConsortium: ShellP.h,v 1.31 93/09/22 12:15:25 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -307,6 +304,7 @@ typedef struct {
 	XrmClass xrm_class;
 	int argc;
 	char **argv;
+	Widget session;
 } ApplicationShellPart;
 
 typedef  struct {
