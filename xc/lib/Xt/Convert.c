@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.41 90/07/26 09:59:07 swick Exp $ */
+/* $XConsortium: Convert.c,v 1.42 90/08/22 13:40:03 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -306,7 +306,7 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
     p->hash	    = hash;
     p->converter    = converter;
     p->from.size    = from->size;
-    p->from.addr = (XtPointer) _XtHeapAlloc(heap, from->size);
+    p->from.addr = (caddr_t)_XtHeapAlloc(heap, from->size);
     XtBCopy(from->addr, p->from.addr, from->size);
     p->num_args = num_args;
     if (num_args == 0) {
@@ -315,13 +315,13 @@ CacheEnter(heap, converter, args, num_args, from, to, succeeded, hash,
 	p->args = (XrmValuePtr) _XtHeapAlloc(heap, num_args * sizeof(XrmValue));
 	for (i = 0; i < num_args; i++) {
 	    p->args[i].size = args[i].size;
-	    p->args[i].addr = (XtPointer) _XtHeapAlloc(heap, args[i].size);
+	    p->args[i].addr = (caddr_t)_XtHeapAlloc(heap, args[i].size);
 	    XtBCopy(args[i].addr, p->args[i].addr, args[i].size);
 	}
     }
     p->to.size  = to->size;
     if (succeeded && to->addr != NULL) {
-	p->to.addr  = (XtPointer) _XtHeapAlloc(heap, to->size);
+	p->to.addr  = (caddr_t)_XtHeapAlloc(heap, to->size);
 	XtBCopy(to->addr, p->to.addr, to->size);
     }
     else {
@@ -432,9 +432,9 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 	case XtBaseOffset:
 #ifdef CRAY1
 	    args[i].addr =
-		(XtPointer)((int)widget + (int)convert_args[i].address_id);
+		(caddr_t)((int)widget + (int)convert_args[i].address_id);
 #else
-	    args[i].addr = (XtPointer)widget + (int)convert_args[i].address_id;
+	    args[i].addr = (caddr_t)((char *)widget + (int)convert_args[i].address_id);
 #endif
 	    break;
 
@@ -448,15 +448,15 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 
 #ifdef CRAY1
 	    args[i].addr =
-		(XtPointer)((int)ancestor + (int)convert_args[i].address_id);
+		(caddr_t)((int)ancestor + (int)convert_args[i].address_id);
 #else
 	    args[i].addr =
-		(XtPointer)ancestor + (int)convert_args[i].address_id;
+		(caddr_t)((char *)ancestor + (int)convert_args[i].address_id);
 #endif
 	    break;
 
 	case XtImmediate:
-	    args[i].addr = (XtPointer) &(convert_args[i].address_id);
+	    args[i].addr = (caddr_t) &(convert_args[i].address_id);
 	    break;
 
 	case XtProcedureArg:
@@ -483,9 +483,9 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		offset = 0;
 	    }
 #ifdef CRAY1
-	    args[i].addr = (XtPointer)((int)widget + offset);
+	    args[i].addr = (caddr_t)((int)widget + offset);
 #else
-	    args[i].addr = (XtPointer)widget + offset;
+	    args[i].addr = (caddr_t)((char *)widget + offset);
 #endif
 	    break;
 	default:

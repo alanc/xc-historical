@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.76 90/08/22 14:50:56 swick Exp $ */
+/* $XConsortium: Create.c,v 1.77 90/08/31 08:07:33 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -240,7 +240,7 @@ static Widget _XtCreate(
 	 offsetList != NULL;
 	 offsetList = offsetList->next) {
 	 pCallbacks = (XtCallbackList *)
-	     ((XtPointer)widget - offsetList->offset - 1);
+	     ((char *)widget - offsetList->offset - 1);
 	if (*pCallbacks != NULL) {
 	    extern CallbackStruct* _XtCompileCallbackList();
 	    *pCallbacks =

@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.52 90/08/27 18:04:53 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.53 90/08/27 20:47:57 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -381,7 +381,7 @@ static void SendIncrement(incr)
         incrSize = incr->bytelength - incr->offset;
     XChangeProperty(dpy, incr->requestor, incr->property, 
     	    incr->type, incr->format, PropModeReplace, 
-	    (unsigned char *)&incr->value[incr->offset], 
+	    (unsigned char *)incr->value + incr->offset,
 	    NUMELEM(incrSize, incr->format));
     incr->offset += incrSize;
 }
@@ -1270,7 +1270,10 @@ Boolean incremental;
 		    int bytelength = BYTELENGTH(length, format);
 		    total = XtRealloc(total, 
 			    (unsigned) (totallength += bytelength));
-		    bcopy(value, &total[totallength-bytelength], bytelength);
+		    bcopy( value,
+			   (unsigned char*)total + totallength - bytelength,
+			   bytelength
+			  );
 		    (*(XtConvertSelectionIncrProc)ctx->convert)
 			   (ctx->widget, &selection, &target, 
 			    &resulttype, &value, &length, &format,

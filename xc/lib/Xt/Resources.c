@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.86 90/07/27 11:34:54 swick Exp $ */
+/* $XConsortium: Resources.c,v 1.87 90/08/20 15:25:43 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -55,7 +55,7 @@ void XtCopyFromParent(widget, offset, value)
         value->addr = NULL;
         return;
     }
-    value->addr = ((XtPointer)widget->core.parent) + offset;
+    value->addr = (caddr_t)(((char *)widget->core.parent) + offset);
 } /* XtCopyFromParent */
 
 /*ARGSUSED*/
@@ -64,7 +64,7 @@ void XtCopyScreen(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (XtPointer)(&widget->core.screen);
+    value->addr = (caddr_t)(&widget->core.screen);
 } /* XtCopyScreen */
 
 /*ARGSUSED*/
@@ -73,7 +73,7 @@ void XtCopyDefaultColormap(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (XtPointer)(&DefaultColormapOfScreen(XtScreenOfObject(widget)));
+    value->addr = (caddr_t)(&DefaultColormapOfScreen(XtScreenOfObject(widget)));
 } /* XtCopyDefaultColormap */
 
 
@@ -87,7 +87,7 @@ void XtCopyAncestorSensitive(widget, offset, value)
 	   Widget   parent = widget->core.parent;
 
     sensitive = (parent->core.ancestor_sensitive & parent->core.sensitive);
-    value->addr = (XtPointer)(&sensitive);
+    value->addr = (caddr_t)(&sensitive);
 } /* XtCopyAncestorSensitive */
 
 /*ARGSUSED*/
@@ -96,7 +96,7 @@ void XtCopyDefaultDepth(widget, offset, value)
     int		offset;
     XrmValue    *value;
 {
-    value->addr = (XtPointer)(&DefaultDepthOfScreen(XtScreenOfObject(widget)));
+    value->addr = (caddr_t)(&DefaultDepthOfScreen(XtScreenOfObject(widget)));
 } /* XtCopyDefaultDepth */
 
 /* If the alignment characteristics of your machine are right, these may be
@@ -574,7 +574,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		if (rawType != QBoolean) {
 		    rawValue = value;
 		    value.size = sizeof(Boolean);
-		    value.addr = (XtPointer)&persistent_resources;
+		    value.addr = (caddr_t)&persistent_resources;
 		    if (!_XtConvert(widget, rawType, &rawValue, QBoolean,
 				    &value, NULL))
 			persistent_resources = *(Boolean*)value.addr;
@@ -658,7 +658,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    if (rawType != xrm_type) {
 			rawValue = *pv;
 			value.size = rx->xrm_size;
-			value.addr = (XtPointer)(base - rx->xrm_offset - 1);
+			value.addr = (caddr_t)(base - rx->xrm_offset - 1);
 			already_copied = have_value =
 			    _XtConvert(widget, rawType, &rawValue,
 				       xrm_type, &value,
@@ -692,21 +692,21 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			    pv->addr = rx->xrm_default_addr;
 			} else if (rx->xrm_size == sizeof(int)) {
 			    int_val = (int)(long)rx->xrm_default_addr;
-			    pv->addr = (XtPointer) &int_val;
+			    pv->addr = (caddr_t) &int_val;
 			} else if (rx->xrm_size == sizeof(short)) {
 			    short_val = (short)(long)rx->xrm_default_addr;
-			    pv->addr = (XtPointer) &short_val;
+			    pv->addr = (caddr_t) &short_val;
 			} else if (rx->xrm_size == sizeof(char)) {
 			    char_val = (char)(long)rx->xrm_default_addr;
-			    pv->addr = (XtPointer) &char_val;
+			    pv->addr = (caddr_t) &char_val;
 			} else if (rx->xrm_size == sizeof(long)) {
 			    long_val = (long)rx->xrm_default_addr;
-			    pv->addr = (XtPointer) &long_val;
+			    pv->addr = (caddr_t) &long_val;
 			} else if (rx->xrm_size == sizeof(char*)) {
 			    char_ptr = (char*)rx->xrm_default_addr;
-			    pv->addr = (XtPointer) &char_ptr;
+			    pv->addr = (caddr_t) &char_ptr;
 			} else {
-			    pv->addr = (XtPointer) &(rx->xrm_default_addr);
+			    pv->addr = (caddr_t) &(rx->xrm_default_addr);
 			}
 		    } else if (xrm_default_type == xrm_type) {
 			pv->addr = rx->xrm_default_addr;
@@ -718,7 +718,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			    rawValue.size = sizeof(XtPointer);
 			}
 			value.size = rx->xrm_size;
-			value.addr = (XtPointer)(base - rx->xrm_offset - 1);
+			value.addr = (caddr_t)(base - rx->xrm_offset - 1);
 			already_copied =
 			    _XtConvert(widget, xrm_default_type,
 				       &rawValue, xrm_type, &value,
