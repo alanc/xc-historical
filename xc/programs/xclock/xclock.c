@@ -2,15 +2,16 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char *rcsid_xclock_c = "$Header: xclock.c,v 1.6 87/12/04 16:08:58 swick Locked $";
+static char rcsid[] = "$Header: xclock.c,v 1.7 87/12/08 08:18:34 swick Locked $";
 #endif  lint
 
-#include "Xatom.h"
-#include "Xlib.h"
-#include "Intrinsic.h"
-#include "Atoms.h"
-#include "Shell.h"
-#include "Clock.h"
+#include <X/Xatom.h>
+#include <X/Xlib.h>
+#include <X/Intrinsic.h>
+#include <X/Atoms.h>
+#include <X/Shell.h>
+#include <X/Clock.h>
+#include <X/Cardinals.h>
 #include "clock.bit"
 
 extern void exit();
@@ -24,13 +25,11 @@ static XrmOptionDescRec options[] = {
 {"-hands",	XtNhand,	XrmoptionSepArg,	NULL},
 {"-hl",		XtNhigh,	XrmoptionSepArg,	NULL},
 {"-highlight",	XtNhigh,	XrmoptionSepArg,	NULL},
-{"-u",		XtNupdate,	XrmoptionSepArg,	NULL},
 {"-update",	XtNupdate,	XrmoptionSepArg,	NULL},
 {"-padding",	XtNpadding,	XrmoptionSepArg,	NULL},
 {"-d",		XtNanalog,	 XrmoptionNoArg,	"FALSE"},
 {"-digital",	XtNanalog,	 XrmoptionNoArg,	"FALSE"},
 {"-analog",	XtNanalog,	 XrmoptionNoArg,	"TRUE"},
-{"-a",		XtNanalog,	 XrmoptionNoArg,	"TRUE"},
 };
 
 
@@ -43,8 +42,8 @@ Syntax(call)
 	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital]\n", call);
 	(void) printf ("       [-fg <color>] [-bg <color>] [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
-	(void) printf ("       [-rv] [-update <seconds>] [[<host>]:[<vs>]]\n");
-	(void) printf ("       [=[<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
+	(void) printf ("       [-rv] [-update <seconds>] [-d [<host>]:[<vs>]]\n");
+	(void) printf ("       [-g =[<width>][x<height>][<+-><xoff>[<+-><yoff>]]]\n\n");
 	exit(0);
 }
 
@@ -52,18 +51,18 @@ void main(argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, w;
+    Widget toplevel;
     Arg arg;
 
-    toplevel = XtInitialize("Clock", "Clock", options, XtNumber(options), &argc, argv);
+    toplevel = XtInitialize(NULL, "XClock", options, XtNumber(options), &argc, argv);
     if (argc != 1) Syntax(argv[0]);
 
     arg.name = XtNiconPixmap;
     arg.value = (XtArgVal) XCreateBitmapFromData (XtDisplay(toplevel),
          XtScreen(toplevel)->root, clock_bits, clock_width, clock_height);
-    XtSetValues (toplevel, &arg, 1); 
+    XtSetValues (toplevel, &arg, ONE); 
 
-    w = XtCreateManagedWidget (argv[0], clockWidgetClass, toplevel, NULL, 0);
+    XtCreateManagedWidget ("clock", clockWidgetClass, toplevel, NULL, ZERO);
     XtRealizeWidget (toplevel);
     XtMainLoop();
 }
