@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.179 94/01/16 16:21:35 gildea Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.180 94/02/04 21:31:25 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1065,7 +1065,7 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef CPPOnlyCompile
 #define CPPOnlyCompile(src,options) RemoveFile($@)			@@\
-	$(CC) -E $(CDEBUGFLAGS) $(ALLDEFINES) options src > $@
+	$(CC) -E $(CFLAGS) options src > $@
 #endif
 
 /*
