@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.13 94/04/08 15:15:07 oops Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -1013,8 +1013,11 @@ XkbComputeCompatState(xkb)
     state->compat_state = 0;
     xkb->compatLookupState= 0;
     xkb->compatGrabState= 0;
-    map = &xkb->desc.compat->real_mod_compat[0];
-    for (i=0,bit=1;i<8;i++,bit<<=1,map++) {
+    for (i=0,bit=1;i<8;i++,bit<<=1) {
+	map= xkb->desc.compat->mod_compat[i];
+	if (map==NULL) {
+	    map= &xkb->desc.compat->real_mod_compat[i];
+	}
 	if ((map->mods&state->mods)||(map->groups&(1<<state->group)))
 	    state->compat_state|= bit;
 
