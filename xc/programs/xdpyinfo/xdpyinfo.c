@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.12 89/03/29 13:47:51 jim Exp $
+ * $XConsortium: xdpyinfo.c,v 1.13 89/09/18 16:08:11 jim Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -196,7 +196,7 @@ print_screen_info (dpy, scr)
 	    DisplayWidthMM(dpy, scr), DisplayHeightMM (dpy, scr));
     printf ("  resolution:    %dx%d dots per inch\n", 
 	    (int) (xres + 0.5), (int) (yres + 0.5));
-    if (XListDepths (dpy, scr, &ndepths, &depths)) {
+    if (XListDepths (dpy, scr, &depths, &ndepths)) {
 	printf ("  depths (%d):    ", ndepths);
 	for (i = 0; i < ndepths; i++) {
 	    printf ("%d", depths[i]);

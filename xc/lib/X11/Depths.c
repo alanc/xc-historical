@@ -8,11 +8,11 @@
 /*
  * XListDepths - return info from connection setup
  */
-Bool XListDepths (dpy, scrnum, countp, depthsp)
+Bool XListDepths (dpy, scrnum, depthsp, countp)
     Display *dpy;
     int scrnum;
-    int *countp;
     int **depthsp;
+    int *countp;
 {
     Screen *scr;
     int count;
