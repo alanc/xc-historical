@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.21 87/12/02 15:54:50 swick Locked $
+* $Header: Atoms.h,v 1.22 87/12/03 11:42:40 swick Locked $
 */
 
 /*
@@ -178,12 +178,9 @@
 
 /* Representation types */
 #define XtRBoolean		XrmRBoolean
+#define XtRCallback		"Callback"
 #define XtRColor		XrmRColor
-#ifdef XrmRCursor /* VMS */
 #define XtRCursor		XrmRCursor
-#else
-#define XtRCursor		"Cursor"
-#endif
 #define XtRDims			XrmRDims
 #define XtRDisplay		XrmRDisplay
 #define XtREditMode		"EditMode"
