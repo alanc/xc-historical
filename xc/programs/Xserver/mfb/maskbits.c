@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.8 91/04/07 18:28:29 keith Exp $ */
+/* $XConsortium: maskbits.c,v 1.9 91/07/05 10:56:00 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -983,7 +983,7 @@ unsigned int rmask[] =
 #include "mergerop.h"
 
 #define O 0
-#define I ~0
+#define I ~((unsigned long)0)
 
 mergeRopRec mergeRopBits[16] = {
 O,O,O,O,	/* clear	0x0		0 */
