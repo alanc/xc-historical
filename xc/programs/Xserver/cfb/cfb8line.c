@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.18 91/05/28 18:19:07 keith Exp $
+ * $XConsortium: cfb8line.c,v 1.19 91/07/09 16:07:32 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -35,6 +35,8 @@
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "cfbrrop.h"
+
+#ifdef PIXEL_ADDR
 
 #if defined(__GNUC__) && defined(mc68020)
 #define STUPID volatile
@@ -164,7 +166,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 {
     register int    e;
     register int    y1_or_e1;
-    register unsigned char   *addrb;
+    register PixelType   *addrp;
     register int    stepmajor;
     register int    stepminor;
 #ifndef REARRANGE
@@ -205,14 +207,14 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 # define Y2  intToY(c2)
 #endif
     unsigned long    ClipMask = 0x80008000;
-    unsigned char   *addr;
+    PixelType   *addr;
     int		    nwidth;
     cfbPrivGCPtr    devPriv;
     BoxPtr	    extents;
     int		    *ppt;
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
-    cfbGetByteWidthAndPointer (pDrawable, nwidth, addr);
+    cfbGetPixelWidthAndPointer (pDrawable, nwidth, addr);
 #ifndef REARRANGE
     RROP_FETCH_GCPRIV(devPriv);
 #endif
@@ -249,7 +251,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #ifdef SAVE_X2Y2
     intToCoord(c2,x2,y2);
 #endif
-    addrb = addr + WIDTH_MUL(Y2, nwidth) + X2;
+    addrp = addr + WIDTH_MUL(Y2, nwidth) + X2;
     while (--npt)
 #endif
     {
@@ -261,7 +263,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    break;
 	intToCoord(y1_or_e1,x1_or_len,y1_or_e1);
 	/* compute now to avoid needing x1, y1 later */
-	addrb = addr + WIDTH_MUL(y1_or_e1, nwidth) + x1_or_len;
+	addrp = addr + WIDTH_MUL(y1_or_e1, nwidth) + x1_or_len;
 #else
 #ifndef SAVE_X2Y2
 	y1_or_e1 = c2;
@@ -351,12 +353,12 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	e3 = e << 1;
 
 #define body {\
-	    RROP_SOLID(addrb); \
-	    addrb += stepmajor; \
+	    RROP_SOLID(addrp); \
+	    addrp += stepmajor; \
 	    e += y1_or_e1; \
 	    if (e >= 0) \
 	    { \
-		addrb += stepminor; \
+		addrp += stepminor; \
 		e += e3; \
 	     } \
 	}
@@ -413,7 +415,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 #endif
 
 #ifdef POLYSEGMENT
-	RROP_SOLID(addrb);
+	RROP_SOLID(addrp);
 #endif
 	}
 #undef body
@@ -422,7 +424,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	else
 	{
 # ifndef POLYSEGMENT
-	    unsigned char    *t;
+	    PixelType    *t;
 #endif
 
 # ifdef REARRANGE
@@ -432,33 +434,36 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 # endif
 	    if (stepmajor < 0)
 	    {
-		addrb -= x1_or_len;
+		addrp -= x1_or_len;
 # ifndef POLYSEGMENT
-		t = addrb;
+		t = addrp;
 # else
 		if (capStyle)
 		    x1_or_len++;
 		else
 # endif
-		    addrb++;
+		    addrp++;
 	    }
 	    else
 	    {
 # ifndef POLYSEGMENT
-		t = addrb + x1_or_len;
+		t = addrp + x1_or_len;
 # else
 		if (capStyle)
 		    x1_or_len++;
 # endif
 	    }
-	    y1_or_e1 = ((int) addrb) & 3;
-	    addrb = addrb - y1_or_e1;
+	    y1_or_e1 = ((int) addrp) & (sizeof (long) - 1);
+	    addrp = (PixelType *) (((unsigned char *) addrp) - y1_or_e1);
+#if PWSH != 2
+	    y1_or_e1 >>= (2 - PWSH);
+#endif
 	    if (y1_or_e1 + x1_or_len <= PPW)
 	    {
 		if (x1_or_len)
 		{
 		    maskpartialbits(y1_or_e1, x1_or_len, e)
-		    RROP_SOLID_MASK((int *) addrb, e);
+		    RROP_SOLID_MASK((unsigned long *) addrp, e);
 		}
 	    }
 	    else
@@ -466,15 +471,15 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 	    	maskbits(y1_or_e1, x1_or_len, e, e3, x1_or_len)
 	    	if (e)
 	    	{
-		    RROP_SOLID_MASK((int *) addrb, e);
-		    addrb += 4;
+		    RROP_SOLID_MASK((unsigned long *) addrp, e);
+		    addrp += PPW;
 	    	}
-		RROP_SPAN(addrb, x1_or_len)
+		RROP_SPAN(addrp, x1_or_len)
 	    	if (e3)
-		    RROP_SOLID_MASK((int *) addrb, e3);
+		    RROP_SOLID_MASK((unsigned long *) addrp, e3);
 	    }
 # ifndef POLYSEGMENT
-	    addrb = t;
+	    addrp = t;
 # endif
 	}
 #endif
@@ -500,7 +505,7 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit)
 
 	RROP_FETCH_GCPRIV(devPriv);
 # endif
-	RROP_SOLID (addrb);
+	RROP_SOLID (addrp);
     }
 #endif
     return -1;
@@ -539,7 +544,7 @@ cfb8SegmentSS1Rect (pDrawable, pGC, nseg, pSegInit)
 	func = cfb8SegmentSS1RectCopy;
 	clip = cfb8ClippedLineCopy;
 #ifdef FAST_MUL
-	if (cfbGetByteWidth (pDrawable) == WIDTH_FAST)
+	if (cfbGetPixelWidth (pDrawable) == WIDTH_FAST)
 	    func = cfb8SegmentSS1RectShiftCopy;
 #endif
 	break;
@@ -716,13 +721,13 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
     int		    signdx, signdy, axis, e, e1, e3, len;
     int		    adx, ady;
 
-    unsigned char   *addr;
+    PixelType   *addr;
     int		    nwidth;
     int		    stepx, stepy;
     int		    xorg, yorg;
 
 
-    cfbGetByteWidthAndPointer(pDrawable, nwidth, addr);
+    cfbGetPixelWidthAndPointer(pDrawable, nwidth, addr);
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -819,17 +824,17 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 	return;
 
     {
-    register unsigned char	*addrb;
+    register PixelType	*addrp;
     RROP_DECLARE
 
     RROP_FETCH_GC(pGC);
 
-    addrb = addr + (y1 * nwidth) + x1;
+    addrp = addr + (y1 * nwidth) + x1;
 
 #ifndef REARRANGE
     if (!ady)
     {
-#define body	{ RROP_SOLID(addrb); addrb += stepx; }
+#define body	{ RROP_SOLID(addrp); addrp += stepx; }
 	while (len >= 4)
 	{
 	    body body body body
@@ -845,12 +850,12 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 #endif
     {
 #define body {\
-	    RROP_SOLID(addrb); \
-	    addrb += stepx; \
+	    RROP_SOLID(addrp); \
+	    addrp += stepx; \
 	    e += e1; \
 	    if (e >= 0) \
 	    { \
-		addrb += stepy; \
+		addrp += stepy; \
 		e += e3; \
 	     } \
 	}
@@ -878,10 +883,11 @@ RROP_NAME (cfb8ClippedLine) (pDrawable, pGC, x1, y1, x2, y2, boxp, shorten)
 
 #endif
     }
-    RROP_SOLID(addrb);
+    RROP_SOLID(addrp);
 #undef body
 
     }
 }
 
 #endif /* !POLYSEGMENT && !PREVIOUS */
+#endif /* PIXEL_ADDR */

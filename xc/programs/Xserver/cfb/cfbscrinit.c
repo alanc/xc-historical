@@ -25,7 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XConsortium: cfbscrinit.c,v 5.18 90/09/24 17:46:11 rws Exp $ */
+/* $XConsortium: cfbscrinit.c,v 5.19 91/06/28 12:40:07 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -46,48 +46,6 @@ extern RegionPtr mfbPixmapToRegion();
 extern RegionPtr cfbCopyPlane();
 extern Bool mfbAllocatePrivates();
 
-extern int defaultColorVisualClass;
-
-#define _BP 8
-#define _RZ ((PSZ + 2) / 3)
-#define _RS 0
-#define _RM ((1 << _RZ) - 1)
-#define _GZ ((PSZ - _RZ + 1) / 2)
-#define _GS _RZ
-#define _GM (((1 << _GZ) - 1) << _GS)
-#define _BZ (PSZ - _RZ - _GZ)
-#define _BS (_RZ + _GZ)
-#define _BM (((1 << _BZ) - 1) << _BS)
-#define _CE (1 << _RZ)
-
-static VisualRec visuals[] = {
-/* vid  class        bpRGB cmpE nplan rMask gMask bMask oRed oGreen oBlue */
-#ifndef STATIC_COLOR
-    0,  PseudoColor, _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  DirectColor, _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  GrayScale,   _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-    0,  StaticGray,  _BP,  1<<PSZ,   PSZ,  0,   0,   0,   0,   0,   0,
-#endif
-    0,  StaticColor, _BP,  1<<PSZ,   PSZ,  _RM, _GM, _BM, _RS, _GS, _BS,
-    0,  TrueColor,   _BP, _CE,       PSZ,  _RM, _GM, _BM, _RS, _GS, _BS
-};
-
-#define	NUMVISUALS	((sizeof visuals)/(sizeof visuals[0]))
-
-static  VisualID VIDs[NUMVISUALS];
-
-static DepthRec depths[] = {
-/* depth	numVid		vids */
-    1,		0,		NULL,
-    8,		NUMVISUALS,	VIDs
-};
-
-#define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
-
-int cfbWindowPrivateIndex;
-int cfbGCPrivateIndex;
-
-static unsigned long cfbGeneration = 0;
 
 miBSFuncRec cfbBSFuncRec = {
     cfbSaveAreas,
@@ -98,6 +56,22 @@ miBSFuncRec cfbBSFuncRec = {
 };
 
 Bool
+cfbCloseScreen (index, pScreen)
+    int		index;
+    ScreenPtr	pScreen;
+{
+    int	    d;
+    DepthPtr	depths = pScreen->allowedDepths;
+
+    for (d = 0; d < pScreen->numDepths; d++)
+	xfree (depths[d].vids);
+    xfree (depths);
+    xfree (pScreen->visuals);
+    xfree (pScreen->devPrivate);
+    return TRUE;
+}
+
+Bool
 cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     register ScreenPtr pScreen;
     pointer pbits;		/* pointer to screen bitmap */
@@ -106,22 +80,9 @@ cfbSetupScreen(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int width;			/* pixel width of frame buffer */
 {
     int	i;
+    extern RegionPtr	(*cfbPuntCopyPlane)();
 
-    if (cfbGeneration != serverGeneration)
-    {
-	/*  Set up the visual IDs */
-	for (i = 0; i < NUMVISUALS; i++) {
-	    visuals[i].vid = FakeClientID(0);
-	    VIDs[i] = visuals[i].vid;
-	}
-	cfbGeneration = serverGeneration;
-    }
-    if (!mfbAllocatePrivates(pScreen,
-			     &cfbWindowPrivateIndex, &cfbGCPrivateIndex))
-	return FALSE;
-    if (!AllocateWindowPrivate(pScreen, cfbWindowPrivateIndex,
-			       sizeof(cfbPrivWin)) ||
-	!AllocateGCPrivate(pScreen, cfbGCPrivateIndex, sizeof(cfbPrivGC)))
+    if (!cfbAllocatePrivates(pScreen, (int *) 0, (int *) 0))
 	return FALSE;
     pScreen->defColormap = FakeClientID(0);
     /* let CreateDefColormap do whatever it wants for pixels */ 
@@ -166,25 +127,35 @@ cfbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int dpix, dpiy;		/* dots per inch */
     int width;			/* pixel width of frame buffer */
 {
-    int	i;
+    int	i, j;
+#ifdef CFB_NEED_SCREEN_PRIVATE
+    pointer oldDevPrivate;
+#endif
+    VisualPtr	visuals;
+    DepthPtr	depths;
+    int		nvisuals;
+    int		ndepths;
+    int		rootdepth;
+    VisualID	defaultVisual;
 
-    if (defaultColorVisualClass < 0)
-    {
-	i = 0;
-    }
-    else
-    {
-	for (i = 0;
-	     (i < NUMVISUALS) && (visuals[i].class != defaultColorVisualClass);
-	     i++)
-	    ;
-	if (i >= NUMVISUALS)
-	    i = 0;
-    }
-    return miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
-			8, NUMDEPTHS, depths,
-			visuals[i].vid, NUMVISUALS, visuals,
-			&cfbBSFuncRec);
+    rootdepth = 0;
+    if (!cfbInitVisuals (&visuals, &depths, &nvisuals, &ndepths, &rootdepth, &defaultVisual, 1<<PSZ))
+	return FALSE;
+#ifdef NEED_CFB_SCREEN_PRIVATE
+    oldDevPrivate = pScreen->devPrivate;
+#endif
+    if (! miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
+			rootdepth, ndepths, depths,
+			defaultVisual, nvisuals, visuals,
+			&cfbBSFuncRec))
+	return FALSE;
+#ifdef NEED_CFB_SCREEN_PRIVATE
+    pScreen->devPrivates[cfbScreenPrivateIndex].ptr = pScreen->devPrivate;
+    pScreen->devPrivate = oldDevPrivate;
+#endif
+    /* smash miScreenClose */
+    pScreen->CloseScreen = cfbCloseScreen;
+    return TRUE;
 }
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */

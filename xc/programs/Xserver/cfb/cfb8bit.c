@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.4 90/01/31 12:31:08 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.5 91/01/27 13:02:56 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

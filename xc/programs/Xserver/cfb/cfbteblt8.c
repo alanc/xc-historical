@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.13 91/01/27 13:02:52 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.14 91/04/10 11:41:38 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -45,9 +45,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #ifndef NGLYPHS
 #define NGLYPHS 4
-#endif
-
-#if NGLYPHS == 4
 #define DO_COMMON
 #endif
 
@@ -76,29 +73,27 @@ typedef unsigned short	*glyphPointer;
 typedef unsigned int	*glyphPointer;
 #endif
 
-#define GetBitsL    c = BitLeft (*leftChar++, lshift)
-
-#define GetBits1S   c = BitRight(*char1++, xoff1)
-#define GetBits1L   GetBitsL | BitRight(*char1++, xoff1)
-#define GetBits1U   c = *char1++
-#define GetBits2S   GetBits1S | BitRight(*char2++, xoff2)
-#define GetBits2L   GetBits1L | BitRight(*char2++, xoff2)
-#define GetBits2U   GetBits1U | BitRight(*char2++, xoff2)
-#define GetBits3S   GetBits2S | BitRight(*char3++, xoff3)
-#define GetBits3L   GetBits2L | BitRight(*char3++, xoff3)
-#define GetBits3U   GetBits2U | BitRight(*char3++, xoff3)
-#define GetBits4S   GetBits3S | BitRight(*char4++, xoff4)
-#define GetBits4L   GetBits3L | BitRight(*char4++, xoff4)
-#define GetBits4U   GetBits3U | BitRight(*char4++, xoff4)
-#define GetBits5S   GetBits4S | BitRight(*char5++, xoff5)
-#define GetBits5L   GetBits4L | BitRight(*char5++, xoff5)
-#define GetBits5U   GetBits4U | BitRight(*char5++, xoff5)
+#define GetBitsL       c = BitLeft (*leftChar++, lshift)
+#define GetBits1S(r)   c = BitRight(*char1++ r, xoff1)
+#define GetBits1L(r)   GetBitsL | BitRight(*char1++ r, xoff1)
+#define GetBits1U(r)   c = *char1++ r
+#define GetBits2S(r)   GetBits1S(| BitRight(*char2++ r, widthGlyph))
+#define GetBits2L(r)   GetBits1L(| BitRight(*char2++ r, widthGlyph))
+#define GetBits2U(r)   GetBits1U(| BitRight(*char2++ r, widthGlyph))
+#define GetBits3S(r)   GetBits2S(| BitRight(*char3++ r, widthGlyph))
+#define GetBits3L(r)   GetBits2L(| BitRight(*char3++ r, widthGlyph))
+#define GetBits3U(r)   GetBits2U(| BitRight(*char3++ r, widthGlyph))
+#define GetBits4S(r)   GetBits3S(| BitRight(*char4++ r, widthGlyph))
+#define GetBits4L(r)   GetBits3L(| BitRight(*char4++ r, widthGlyph))
+#define GetBits4U(r)   GetBits3U(| BitRight(*char4++ r, widthGlyph))
+#define GetBits5S(r)   GetBits4S(| BitRight(*char5++ r, widthGlyph))
+#define GetBits5L(r)   GetBits4L(| BitRight(*char5++ r, widthGlyph))
+#define GetBits5U(r)   GetBits4U(| BitRight(*char5++ r, widthGlyph))
 
 #else
 
-typedef unsigned char	*glyphPointer;
-
 #define USE_LEFTBITS
+#define ALL_LEFTBITS
 
 #define GetBitsL    WGetBitsL
 #define GetBits1S   WGetBits1S
@@ -135,6 +130,8 @@ typedef unsigned char	*glyphPointer;
 
 #endif
 
+#define EMPTYPARAM
+
 #ifdef USE_LEFTBITS
 extern long endtab[];
 
@@ -155,43 +152,43 @@ extern long endtab[];
 #define WGetBits1U  Get1Bits (char1, c)
 
 #else
-#define WGetBitsL   GetBitsL
-#define WGetBits1S  GetBits1S
-#define WGetBits1L  GetBits1L
-#define WGetBits1U  GetBits1U
+#define WGetBitsL   GetBitsL(EMPTYPARAM)
+#define WGetBits1S  GetBits1S(EMPTYPARAM)
+#define WGetBits1L  GetBits1L(EMPTYPARAM)
+#define WGetBits1U  GetBits1U(EMPTYPARAM)
 #endif
 
 #if NGLYPHS == 2
-# define GetBitsNS GetBits2S
-# define GetBitsNL GetBits2L
-# define GetBitsNU GetBits2U
+# define GetBitsNS GetBits2S(EMPTYPARAM)
+# define GetBitsNL GetBits2L(EMPTYPARAM)
+# define GetBitsNU GetBits2U(EMPTYPARAM)
 # define LastChar char2
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x2
 #endif
 #endif
 #if NGLYPHS == 3
-# define GetBitsNS GetBits3S
-# define GetBitsNL GetBits3L
-# define GetBitsNU GetBits3U
+# define GetBitsNS GetBits3S(EMPTYPARAM)
+# define GetBitsNL GetBits3L(EMPTYPARAM)
+# define GetBitsNU GetBits3U(EMPTYPARAM)
 # define LastChar char3
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x3
 #endif
 #endif
 #if NGLYPHS == 4
-# define GetBitsNS GetBits4S
-# define GetBitsNL GetBits4L
-# define GetBitsNU GetBits4U
+# define GetBitsNS GetBits4S(EMPTYPARAM)
+# define GetBitsNL GetBits4L(EMPTYPARAM)
+# define GetBitsNU GetBits4U(EMPTYPARAM)
 # define LastChar char4
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x4
 #endif
 #endif
 #if NGLYPHS == 5
-# define GetBitsNS GetBits5S
-# define GetBitsNL GetBits5L
-# define GetBitsNU GetBits5U
+# define GetBitsNS GetBits5S(EMPTYPARAM)
+# define GetBitsNL GetBits5L(EMPTYPARAM)
+# define GetBitsNU GetBits5U(EMPTYPARAM)
 # define LastChar char5
 #ifndef CFBTEGBLT8
 # define CFBTEGBLT8 cfbTEGlyphBlt8x5
@@ -306,16 +303,6 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register unsigned long  leftMask, rightMask;
     register int	    hTmp;
     register int	    xoff1;
-    register int	    xoff2;
-#if NGLYPHS >= 3
-    register int	    xoff3;
-#endif
-#if NGLYPHS >= 4
-    register int	    xoff4;
-#endif
-#if NGLYPHS >= 5
-    register int	    xoff5;
-#endif
     register glyphPointer   char1;
     register glyphPointer   char2;
 #if NGLYPHS >= 3
@@ -326,6 +313,9 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #endif
 #if NGLYPHS >= 5
     register glyphPointer   char5;
+#endif
+#ifdef ALL_LEFTBITS
+    int xoff2, xoff3, xoff4, xoff5;
 #endif
 
     FontPtr		pfont = pGC->font;
@@ -399,26 +389,28 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    hTmp = h;
 	    dstLine = pdstBase + (x >> 2);
 	    xoff1 = x & 0x3;
-	    xoff2 = xoff1 + widthGlyph;
-#if NGLYPHS >= 3
-	    xoff3 = xoff2 + widthGlyph;
-#endif
-#if NGLYPHS >= 4
-	    xoff4 = xoff3 + widthGlyph;
-#endif
-#if NGLYPHS >= 5
-	    xoff5 = xoff4 + widthGlyph;
-#endif
 	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 	    char2 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+#ifdef ALL_LEFTBITS
+	    xoff2 = xoff1 + widthGlyph;
+#endif
 #if NGLYPHS >= 3
 	    char3 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+#ifdef ALL_LEFTBITS
+	    xoff3 = xoff2 + widthGlyph;
+#endif
 #endif
 #if NGLYPHS >= 4
 	    char4 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+#ifdef ALL_LEFTBITS
+	    xoff4 = xoff3 + widthGlyph;
+#endif
 #endif
 #if NGLYPHS >= 5
 	    char5 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+#ifdef ALL_LEFTBITS
+	    xoff5 = xoff4 + widthGlyph;
+#endif
 #endif
 	    oldRightChar = LastChar;
 	    dst = dstLine;

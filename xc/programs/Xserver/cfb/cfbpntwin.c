@@ -43,6 +43,7 @@ cfbPaintWindow(pWin, pRegion, what)
     int		what;
 {
     register cfbPrivWin	*pPrivWin;
+    WindowPtr	pBgWin;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 
@@ -50,14 +51,14 @@ cfbPaintWindow(pWin, pRegion, what)
     case PW_BACKGROUND:
 	switch (pWin->backgroundState) {
 	case None:
-	    return;
+	    break;
 	case ParentRelative:
 	    do {
 		pWin = pWin->parent;
 	    } while (pWin->backgroundState == ParentRelative);
 	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
 							     what);
-	    return;
+	    break;
 	case BackgroundPixmap:
 	    if (pPrivWin->fastBackground)
 	    {
@@ -65,7 +66,6 @@ cfbPaintWindow(pWin, pRegion, what)
 				  (int)REGION_NUM_RECTS(pRegion),
 				  REGION_RECTS(pRegion),
 				  pPrivWin->pRotatedBackground);
-		return;
 	    }
 	    else
 	    {
@@ -74,7 +74,6 @@ cfbPaintWindow(pWin, pRegion, what)
 				   REGION_RECTS(pRegion),
 				   pWin->background.pixmap,
 				   (int) pWin->drawable.x, (int) pWin->drawable.y);
-		return;
 	    }
 	    break;
 	case BackgroundPixel:
@@ -82,7 +81,7 @@ cfbPaintWindow(pWin, pRegion, what)
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
 			     pWin->background.pixel);
-	    return;
+	    break;
     	}
     	break;
     case PW_BORDER:
@@ -92,7 +91,6 @@ cfbPaintWindow(pWin, pRegion, what)
 			     (int)REGION_NUM_RECTS(pRegion),
 			     REGION_RECTS(pRegion),
 			     pWin->border.pixel);
-	    return;
 	}
 	else if (pPrivWin->fastBorder)
 	{
@@ -100,20 +98,22 @@ cfbPaintWindow(pWin, pRegion, what)
 			      (int)REGION_NUM_RECTS(pRegion),
 			      REGION_RECTS(pRegion),
 			      pPrivWin->pRotatedBorder);
-	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width >= PPW/2)
+	else
 	{
+	    for (pBgWin = pWin;
+		 pBgWin->backgroundState == ParentRelative;
+		 pBgWin = pBgWin->parent);
+
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,
-			       (int) pWin->drawable.x, (int) pWin->drawable.y);
-	    return;
+			       (int) pBgWin->drawable.x,
+ 			       (int) pBgWin->drawable.y);
 	}
 	break;
     }
-    miPaintWindow (pWin, pRegion, what);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipplemips.s,v 1.6 90/12/01 15:24:42 keith Exp $
+ * $XConsortium: stipmips.s,v 1.8 90/12/02 12:13:05 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -52,7 +52,7 @@
 
 	
 /*
- * stipplestack(addr, stipple, value, stride, Count, Shift)
+ * cfbStippleStack(addr, stipple, value, stride, Count, Shift)
  *               4       5       6      7     16(sp) 20(sp)
  *
  *  Apply successive 32-bit stipples starting at addr, addr+stride, ...
@@ -89,12 +89,12 @@
 #define NextBits	$206
 
 #ifdef TETEXT
-#define	stipplestack	stipplestackte
+#define	cfbStippleStack	cfbStippleStackTE
 #endif
 
-	.globl	stipplestack
-	.ent	stipplestack 2
-stipplestack:
+	.globl	cfbStippleStack
+	.ent	cfbStippleStack 2
+cfbStippleStack:
 	.frame	$sp, 0, $31
 	lw	count, Count			/* fetch stack params */
 	la	sbase,CaseBegin			/* load up switch table */
@@ -275,4 +275,4 @@ NextLine:
 	nop
 	nop
 					
-	.end	stipplestack
+	.end	cfbStippleStack

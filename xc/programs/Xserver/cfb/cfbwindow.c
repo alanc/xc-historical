@@ -98,6 +98,8 @@ cfbPositionWindow(pWin, x, y)
 
     if (!pWin->borderIsPixel &&	pPrivWin->fastBorder)
     {
+	while (pWin->backgroundState == ParentRelative)
+	    pWin = pWin->parent;
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
 	cfbYRotatePixmap(pPrivWin->pRotatedBorder,
@@ -183,79 +185,111 @@ cfbChangeWindowAttributes(pWin, mask)
     register unsigned long index;
     register cfbPrivWin *pPrivWin;
     int width;
+    WindowPtr	pBgWin;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+
+    /*
+     * When background state changes from ParentRelative and
+     * we had previously rotated the fast border pixmap to match
+     * the parent relative origin, rerotate to match window
+     */
+    if (mask & (CWBackPixmap | CWBackPixel) &&
+	pWin->backgroundState != ParentRelative &&
+	pPrivWin->fastBorder &&
+	pPrivWin->oldRotate.x != pWin->drawable.x ||
+	pPrivWin->oldRotate.y != pWin->drawable.y)
+    {
+	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.x - pPrivWin->oldRotate.x);
+	cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.y - pPrivWin->oldRotate.y);
+	pPrivWin->oldRotate.x = pWin->drawable.x;
+	pPrivWin->oldRotate.y = pWin->drawable.y;
+    }
     while(mask)
     {
 	index = lowbit (mask);
 	mask &= ~index;
 	switch(index)
 	{
-	  case CWBackPixmap:
-	      if (pWin->backgroundState == None)
-	      {
-		  pPrivWin->fastBackground = FALSE;
-	      }
-	      else if (pWin->backgroundState == ParentRelative)
-	      {
-		  pPrivWin->fastBackground = FALSE;
-	      }
-	      else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
-		       !(width & (width - 1)))
-	      {
-		  cfbCopyRotatePixmap(pWin->background.pixmap,
-				      &pPrivWin->pRotatedBackground,
-				      pWin->drawable.x,
-				      pWin->drawable.y);
-		  if (pPrivWin->pRotatedBackground)
-		  {
-		      pPrivWin->fastBackground = TRUE;
-		      pPrivWin->oldRotate.x = pWin->drawable.x;
-		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		  }
-		  else
-		  {
-		      pPrivWin->fastBackground = FALSE;
-		  }
-	      }
-	      else
-	      {
-		  pPrivWin->fastBackground = FALSE;
-	      }
-	      break;
+	case CWBackPixmap:
+	    if (pWin->backgroundState == None)
+	    {
+		pPrivWin->fastBackground = FALSE;
+	    }
+	    else if (pWin->backgroundState == ParentRelative)
+	    {
+		pPrivWin->fastBackground = FALSE;
+		/* Rotate border to match parent origin */
+		if (pPrivWin->pRotatedBorder) {
+		    for (pBgWin = pWin->parent;
+			 pBgWin->backgroundState == ParentRelative;
+			 pBgWin = pBgWin->parent);
+		    cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				  pWin->drawable.x - pPrivWin->oldRotate.x);
+		    cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				  pWin->drawable.y - pPrivWin->oldRotate.y);
+		}
+	    }
+	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
+		     !(width & (width - 1)))
+	    {
+		cfbCopyRotatePixmap(pWin->background.pixmap,
+				    &pPrivWin->pRotatedBackground,
+				    pWin->drawable.x,
+				    pWin->drawable.y);
+		if (pPrivWin->pRotatedBackground)
+		{
+		    pPrivWin->fastBackground = TRUE;
+		    pPrivWin->oldRotate.x = pWin->drawable.x;
+		    pPrivWin->oldRotate.y = pWin->drawable.y;
+		}
+		else
+		{
+		    pPrivWin->fastBackground = FALSE;
+		}
+	    }
+	    else
+	    {
+		pPrivWin->fastBackground = FALSE;
+	    }
+	    break;
 
-	  case CWBackPixel:
-	      pPrivWin->fastBackground = FALSE;
-	      break;
+	case CWBackPixel:
+	    pPrivWin->fastBackground = FALSE;
+	    break;
 
-	  case CWBorderPixmap:
-	      if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
-		  !(width & (width - 1)))
-	      {
-		  cfbCopyRotatePixmap(pWin->border.pixmap,
-				      &pPrivWin->pRotatedBorder,
-				      pWin->drawable.x,
-				      pWin->drawable.y);
-		  if (pPrivWin->pRotatedBorder)
-		  {
-		      pPrivWin->fastBorder = TRUE;
-		      pPrivWin->oldRotate.x = pWin->drawable.x;
-		      pPrivWin->oldRotate.y = pWin->drawable.y;
-		  }
-		  else
-		  {
-		      pPrivWin->fastBorder = FALSE;
-		  }
-	      }
-	      else
-	      {
-		  pPrivWin->fastBorder = FALSE;
-	      }
-	      break;
-	    case CWBorderPixel:
-	      pPrivWin->fastBorder = FALSE;
-	      break;
-
+	case CWBorderPixmap:
+	    if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
+		!(width & (width - 1)))
+	    {
+		for (pBgWin = pWin;
+		     pBgWin->backgroundState == ParentRelative;
+		     pBgWin = pBgWin->parent);
+		cfbCopyRotatePixmap(pWin->border.pixmap,
+				    &pPrivWin->pRotatedBorder,
+				    pBgWin->drawable.x,
+				    pBgWin->drawable.y);
+		if (pPrivWin->pRotatedBorder)
+		{
+		    pPrivWin->fastBorder = TRUE;
+		    pPrivWin->oldRotate.x = pBgWin->drawable.x;
+		    pPrivWin->oldRotate.y = pBgWin->drawable.y;
+		}
+		else
+		{
+		    pPrivWin->fastBorder = FALSE;
+		}
+	    }
+	    else
+	    {
+		pPrivWin->fastBorder = FALSE;
+	    }
+	    break;
+	 case CWBorderPixel:
+	    pPrivWin->fastBorder = FALSE;
+	    break;
 	}
     }
     return (TRUE);

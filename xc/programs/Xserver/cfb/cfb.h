@@ -34,6 +34,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "servermd.h"
 #include "mfb.h"
 
+#include "cfbmap.h"
+
 extern Bool cfbScreenInit();
 extern void cfbQueryBestSize();
 extern Bool cfbCreateWindow();
@@ -173,21 +175,44 @@ typedef struct {
     PixmapPtr	pRotatedBorder;
     } cfbPrivWin;
 
+/*
+ * This is the only completely portable way to
+ * compute this info
+ */
+
+#define BitsPerPixel(d) (\
+    (1 << PixmapWidthPaddingInfo[d].padBytesLog2) * 8 / \
+    (PixmapWidthPaddingInfo[d].padRoundUp+1))
+
 /* Common macros for extracting drawing information */
+
+#if !defined(SINGLEDEPTH) && PPW != 4 || defined(FORCE_SEPARATE_PRIVATE)
+
+#define CFB_NEED_SCREEN_PRIVATE
+
+extern int cfbScreenPrivateIndex;
+#define cfbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivates[cfbScreenPrivateIndex].ptr)
+#else
+#define cfbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
+#endif
+
+#define cfbGetWindowPixmap(d)	cfbGetScreenPixmap((d)->pScreen)
 
 #define cfbGetTypedWidth(pDrawable,wtype) (\
     (((pDrawable)->type == DRAWABLE_WINDOW) ? \
-     (int) (((PixmapPtr)((pDrawable)->pScreen->devPrivate))->devKind) : \
+     (int) (cfbGetWindowPixmap(pDrawable)->devKind) : \
      (int)(((PixmapPtr)pDrawable)->devKind)) / sizeof (wtype))
 
 #define cfbGetByteWidth(pDrawable) cfbGetTypedWidth(pDrawable, unsigned char)
+
+#define cfbGetPixelWidth(pDrawable) cfbGetTypedWidth(pDrawable, PixelType)
 
 #define cfbGetLongWidth(pDrawable) cfbGetTypedWidth(pDrawable, unsigned long)
     
 #define cfbGetTypedWidthAndPointer(pDrawable, width, pointer, wtype, ptype) {\
     PixmapPtr   _pPix; \
     if ((pDrawable)->type == DRAWABLE_WINDOW) \
-	_pPix = (PixmapPtr) (pDrawable)->pScreen->devPrivate; \
+	_pPix = cfbGetWindowPixmap(pDrawable); \
     else \
 	_pPix = (PixmapPtr) (pDrawable); \
     (pointer) = (ptype *) _pPix->devPrivate.ptr; \
@@ -200,8 +225,11 @@ typedef struct {
 #define cfbGetLongWidthAndPointer(pDrawable, width, pointer) \
     cfbGetTypedWidthAndPointer(pDrawable, width, pointer, unsigned long, unsigned long)
 
+#define cfbGetPixelWidthAndPointer(pDrawable, width, pointer) \
+    cfbGetTypedWidthAndPointer(pDrawable, width, pointer, PixelType, PixelType)
+
 #define cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, wtype, ptype) {\
-    PixmapPtr	_pPix = (PixmapPtr) (pWin)->drawable.pScreen->devPrivate; \
+    PixmapPtr	_pPix = cfbGetWindowPixmap((DrawablePtr) (pWin)); \
     (pointer) = (ptype *) _pPix->devPrivate.ptr; \
     (width) = ((int) _pPix->devKind) / sizeof (wtype); \
 }
@@ -211,6 +239,9 @@ typedef struct {
 
 #define cfbGetWindowByteWidthAndPointer(pWin, width, pointer) \
     cfbGetWindowTypedWidthAndPointer(pWin, width, pointer, unsigned char, unsigned char)
+
+#define cfbGetWindowPixelWidthAndPointer(pDrawable, width, pointer) \
+    cfbGetWindowTypedWidthAndPointer(pDrawable, width, pointer, PixelType, PixelType)
 
 /* Macros which handle a coordinate in a single register */
 

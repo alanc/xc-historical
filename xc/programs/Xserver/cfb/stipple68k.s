@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: stipple68k.s,v 1.1 91/02/23 12:43:38 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
  */
 
 #ifdef TETEXT
-#define _stipplestack _stipplestackte
+#define _cfbStippleStack _cfbStippleStackTE
 #endif
 
 
@@ -63,8 +63,8 @@
 
 .text
 	.even
-	.globl _stipplestack
-_stipplestack:
+	.globl _cfbStippleStack
+_cfbStippleStack:
 	moveml	PushMask,sp@-
 	movel	sp@(arg0),addr
 	movel	sp@(arg1),stipple

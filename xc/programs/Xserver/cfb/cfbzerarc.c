@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.17 90/01/31 12:32:42 keith Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.18 91/04/10 11:41:47 keith Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -34,7 +34,7 @@ without any express or implied warranty.
 #include "mizerarc.h"
 #include "cfbrrop.h"
 
-#if PPW == 4
+#ifdef PIXEL_ADDR
 
 extern void miPolyArc(), miZeroPolyArc();
 
@@ -47,32 +47,32 @@ RROP_NAME(cfbZeroArcSS8) (pDraw, pGC, arc)
     miZeroArcRec info;
     Bool do360;
     register int x;
-    unsigned char *addrb;
-    register unsigned char *yorgb, *yorgob;
+    PixelType *addrp;
+    register PixelType *yorgp, *yorgop;
     RROP_DECLARE
     register int yoffset;
-    int nbwidth, dyoffset;
+    int npwidth, dyoffset;
     register int y, a, b, d, mask;
     register int k1, k3, dx, dy;
 
-    cfbGetByteWidthAndPointer(pDraw,nbwidth, addrb)
+    cfbGetPixelWidthAndPointer(pDraw,npwidth, addrp)
 
     RROP_FETCH_GC (pGC);
     do360 = miZeroArcSetup(arc, &info, TRUE);
-    yorgb = addrb + ((info.yorg + pDraw->y) * nbwidth);
-    yorgob = addrb + ((info.yorgo + pDraw->y) * nbwidth);
+    yorgp = addrp + ((info.yorg + pDraw->y) * npwidth);
+    yorgop = addrp + ((info.yorgo + pDraw->y) * npwidth);
     info.xorg += pDraw->x;
     info.xorgo += pDraw->x;
     MIARCSETUP();
-    yoffset = y ? nbwidth : 0;
+    yoffset = y ? npwidth : 0;
     dyoffset = 0;
     mask = info.initialMask;
     if (!(arc->width & 1))
     {
 	if (mask & 2)
-	    RROP_SOLID((yorgb + info.xorgo));
+	    RROP_SOLID((yorgp + info.xorgo));
 	if (mask & 8)
-	    RROP_SOLID((yorgob + info.xorgo));
+	    RROP_SOLID((yorgop + info.xorgo));
     }
     if (!info.end.x || !info.end.y)
     {
@@ -81,83 +81,83 @@ RROP_NAME(cfbZeroArcSS8) (pDraw, pGC, arc)
     }
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
     {
-	register int xoffset = nbwidth;
-	unsigned char *yorghb = yorgb + (info.h * nbwidth) + info.xorg;
-	unsigned char *yorgohb = yorghb - info.h;
+	register int xoffset = npwidth;
+	PixelType *yorghb = yorgp + (info.h * npwidth) + info.xorg;
+	PixelType *yorgohb = yorghb - info.h;
 
-	yorgb += info.xorg;
-	yorgob += info.xorg;
+	yorgp += info.xorg;
+	yorgop += info.xorg;
 	yorghb += info.h;
 	while (1)
 	{
-	    RROP_SOLID(yorgb + yoffset + x);
-	    RROP_SOLID(yorgb + yoffset - x);
-	    RROP_SOLID(yorgob - yoffset - x);
-	    RROP_SOLID(yorgob - yoffset + x);
+	    RROP_SOLID(yorgp + yoffset + x);
+	    RROP_SOLID(yorgp + yoffset - x);
+	    RROP_SOLID(yorgop - yoffset - x);
+	    RROP_SOLID(yorgop - yoffset + x);
 	    if (a < 0)
 		break;
 	    RROP_SOLID(yorghb - xoffset - y);
 	    RROP_SOLID(yorgohb - xoffset + y);
 	    RROP_SOLID(yorgohb + xoffset + y);
 	    RROP_SOLID(yorghb + xoffset - y);
-	    xoffset += nbwidth;
-	    MIARCCIRCLESTEP(yoffset += nbwidth;);
+	    xoffset += npwidth;
+	    MIARCCIRCLESTEP(yoffset += npwidth;);
 	}
-	yorgb -= info.xorg;
-	yorgob -= info.xorg;
+	yorgp -= info.xorg;
+	yorgop -= info.xorg;
 	x = info.w;
-	yoffset = info.h * nbwidth;
+	yoffset = info.h * npwidth;
     }
     else if (do360)
     {
 	while (y < info.h || x < info.w)
 	{
-	    MIARCOCTANTSHIFT(dyoffset = nbwidth;);
-	    RROP_SOLID(yorgb + yoffset + info.xorg + x);
-	    RROP_SOLID(yorgb + yoffset + info.xorgo - x);
-	    RROP_SOLID(yorgob - yoffset + info.xorgo - x);
-	    RROP_SOLID(yorgob - yoffset + info.xorg + x);
-	    MIARCSTEP(yoffset += dyoffset;, yoffset += nbwidth;);
+	    MIARCOCTANTSHIFT(dyoffset = npwidth;);
+	    RROP_SOLID(yorgp + yoffset + info.xorg + x);
+	    RROP_SOLID(yorgp + yoffset + info.xorgo - x);
+	    RROP_SOLID(yorgop - yoffset + info.xorgo - x);
+	    RROP_SOLID(yorgop - yoffset + info.xorg + x);
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += npwidth;);
 	}
     }
     else
     {
 	while (y < info.h || x < info.w)
 	{
-	    MIARCOCTANTSHIFT(dyoffset = nbwidth;);
+	    MIARCOCTANTSHIFT(dyoffset = npwidth;);
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
 		mask = info.start.mask;
 		info.start = info.altstart;
 	    }
 	    if (mask & 1)
-		RROP_SOLID(yorgb + yoffset + info.xorg + x);
+		RROP_SOLID(yorgp + yoffset + info.xorg + x);
 	    if (mask & 2)
-		RROP_SOLID(yorgb + yoffset + info.xorgo - x);
+		RROP_SOLID(yorgp + yoffset + info.xorgo - x);
 	    if (mask & 4)
-		RROP_SOLID(yorgob - yoffset + info.xorgo - x);
+		RROP_SOLID(yorgop - yoffset + info.xorgo - x);
 	    if (mask & 8)
-		RROP_SOLID(yorgob - yoffset + info.xorg + x);
+		RROP_SOLID(yorgop - yoffset + info.xorg + x);
 	    if ((x == info.end.x) || (y == info.end.y))
 	    {
 		mask = info.end.mask;
 		info.end = info.altend;
 	    }
-	    MIARCSTEP(yoffset += dyoffset;, yoffset += nbwidth;);
+	    MIARCSTEP(yoffset += dyoffset;, yoffset += npwidth;);
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
     if (mask & 1)
-	RROP_SOLID(yorgb + yoffset + info.xorg + x);
+	RROP_SOLID(yorgp + yoffset + info.xorg + x);
     if (mask & 4)
-	RROP_SOLID(yorgob - yoffset + info.xorgo - x);
+	RROP_SOLID(yorgop - yoffset + info.xorgo - x);
     if (arc->height & 1)
     {
 	if (mask & 2)
-	    RROP_SOLID(yorgb + yoffset + info.xorgo - x);
+	    RROP_SOLID(yorgp + yoffset + info.xorgo - x);
 	if (mask & 8)
-	    RROP_SOLID(yorgob - yoffset + info.xorg + x);
+	    RROP_SOLID(yorgop - yoffset + info.xorg + x);
     }
 }
 

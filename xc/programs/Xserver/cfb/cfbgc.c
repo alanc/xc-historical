@@ -45,6 +45,36 @@ SOFTWARE.
 void cfbValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
 void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
 
+#if PPW == 4
+# define useTEGlyphBlt  cfbTEGlyphBlt8
+#else
+# ifdef WriteFourBits
+#  define useTEGlyphBlt	cfbImageGlyphBlt8
+# else
+#  define useTEGlyphBlt	cfbTEGlyphBlt
+# endif
+#endif
+
+#ifdef WriteFourBits
+# define useImageGlyphBlt	cfbImageGlyphBlt8
+# define usePolyGlyphBlt	cfbPolyGlyphBlt8
+#else
+# define useImageGlyphBlt	miImageGlyphBlt
+# define usePolyGlyphBlt	miPolyGlyphBlt
+#endif
+
+#ifdef FOUR_BIT_CODE
+# define usePushPixels	cfbPushPixels8
+#else
+# define usePushPixels	mfbPushPixels
+#endif
+
+#ifdef PIXEL_ADDR
+# define ZeroPolyArc	cfbZeroPolyArcSS8Copy
+#else
+# define ZeroPolyArc	miZeroPolyArc
+#endif
+
 GCFuncs cfbGCFuncs = {
     cfbValidateGC,
     cfbChangeGC,
@@ -62,7 +92,7 @@ GCOps	cfbTEOps1Rect = {
     cfbCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-#if PPW == 4
+#ifdef PIXEL_ADDR
     cfb8LineSS1Rect,
     cfb8SegmentSS1Rect,
 #else
@@ -70,11 +100,7 @@ GCOps	cfbTEOps1Rect = {
     cfbSegmentSS,
 #endif
     miPolyRectangle,
-#if PPW == 4
-    cfbZeroPolyArcSS8Copy,
-#else
-    miZeroPolyArc,
-#endif
+    ZeroPolyArc,
     cfbFillPoly1RectCopy,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
@@ -82,15 +108,38 @@ GCOps	cfbTEOps1Rect = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    useTEGlyphBlt,
+    usePolyGlyphBlt,
+    usePushPixels,
+    NULL,
+};
+
+GCOps	cfbNonTEOps1Rect = {
+    cfbSolidSpansCopy,
+    cfbSetSpans,
+    cfbPutImage,
+    cfbCopyArea,
+    cfbCopyPlane,
+    cfbPolyPoint,
+#ifdef PIXEL_ADDR
+    cfb8LineSS1Rect,
+    cfb8SegmentSS1Rect,
 #else
-    cfbTEGlyphBlt,
-    miPolyGlyphBlt,
-    mfbPushPixels,
+    cfbLineSS,
+    cfbSegmentSS,
 #endif
+    miPolyRectangle,
+    ZeroPolyArc,
+    cfbFillPoly1RectCopy,
+    cfbPolyFillRect,
+    cfbPolyFillArcSolidCopy,
+    miPolyText8,
+    miPolyText16,
+    miImageText8,
+    miImageText16,
+    useImageGlyphBlt,
+    usePolyGlyphBlt,
+    usePushPixels,
     NULL,
 };
 
@@ -104,11 +153,7 @@ GCOps	cfbTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-#if PPW == 4
-    cfbZeroPolyArcSS8Copy,
-#else
-    miZeroPolyArc,
-#endif
+    ZeroPolyArc,
     miFillPolygon,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
@@ -116,48 +161,9 @@ GCOps	cfbTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
-    cfbTEGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
-#else
-    cfbTEGlyphBlt,
-    miPolyGlyphBlt,
-    mfbPushPixels,
-#endif
-    NULL,
-};
-
-GCOps	cfbNonTEOps1Rect = {
-    cfbSolidSpansCopy,
-    cfbSetSpans,
-    cfbPutImage,
-    cfbCopyArea,
-    cfbCopyPlane,
-    cfbPolyPoint,
-#if PPW == 4
-    cfb8LineSS1Rect,
-    cfb8SegmentSS1Rect,
-#else
-    cfbLineSS,
-    cfbSegmentSS,
-#endif
-    miPolyRectangle,
-#if PPW == 4
-    cfbZeroPolyArcSS8Copy,
-#else
-    miZeroPolyArc,
-#endif
-    cfbFillPoly1RectCopy,
-    cfbPolyFillRect,
-    cfbPolyFillArcSolidCopy,
-    miPolyText8,
-    miPolyText16,
-    miImageText8,
-    miImageText16,
-    cfbImageGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
+    useTEGlyphBlt,
+    usePolyGlyphBlt,
+    usePushPixels,
     NULL,
 };
 
@@ -171,7 +177,7 @@ GCOps	cfbNonTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
-#if PPW == 4
+#ifdef PIXEL_ADDR
     cfbZeroPolyArcSS8Copy,
 #else
     miZeroPolyArc,
@@ -183,15 +189,9 @@ GCOps	cfbNonTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
-#if PPW == 4
-    cfbImageGlyphBlt8,
-    cfbPolyGlyphBlt8,
-    cfbPushPixels8,
-#else
-    miImageGlyphBlt,
-    miPolyGlyphBlt,
-    mfbPushPixels,
-#endif
+    useImageGlyphBlt,
+    usePolyGlyphBlt,
+    usePushPixels,
     NULL,
 };
 
@@ -214,7 +214,7 @@ cfbMatchCommon (pGC, devPriv)
 	FONTMINBOUNDS(pGC->font,characterWidth) >= 0)
     {
 	if (TERMINALFONT(pGC->font)
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 	)
@@ -237,7 +237,7 @@ cfbCreateGC(pGC)
 {
     cfbPrivGC  *pPriv;
 
-    if (pGC->depth == 1)
+    if (PixmapWidthPaddingInfo[pGC->depth].padPixelsLog2 == LOG2_BITMAP_PAD)
 	return (mfbCreateGC(pGC));
     pGC->clientClip = NULL;
     pGC->clientClipType = CT_NONE;
@@ -603,7 +603,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		}
 	    }
 	    break;
-#if (PPW == 4)
+#ifdef FOUR_BIT_CODE
 	case FillStippled:
 	case FillOpaqueStippled:
 	    {
@@ -638,8 +638,10 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    new_rrop = FALSE;
 	else
 	{
-#if PPW ==  4
+#ifdef PIXEL_ADDR
 	    new_line = TRUE;
+#endif
+#ifdef WriteFourBits
 	    new_text = TRUE;
 #endif
 	    new_fillspans = TRUE;
@@ -685,7 +687,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
 	if (pGC->lineWidth == 0)
 	{
-#if PPW == 4
+#ifdef PIXEL_ADDR
 	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
 	    {
 		switch (devPriv->rop)
@@ -715,7 +717,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    {
 		if (pGC->fillStyle == FillSolid)
 		{
-#if PPW == 4
+#ifdef PIXEL_ADDR
 		    if (devPriv->oneRect)
 		    {
 			pGC->ops->Polylines = cfb8LineSS1Rect;
@@ -756,13 +758,17 @@ cfbValidateGC(pGC, changes, pDrawable)
         }
         else
         {
-#if PPW == 4
+#ifdef WriteFourBits
 	    if (pGC->fillStyle == FillSolid)
 	    {
 		if (devPriv->rop == GXcopy)
 		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
 		else
+#ifdef FOUR_BIT_CODE
 		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
+#else
+		    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
+#endif
 	    }
 	    else
 #endif
@@ -770,20 +776,16 @@ cfbValidateGC(pGC, changes, pDrawable)
             /* special case ImageGlyphBlt for terminal emulator fonts */
             if (TERMINALFONT(pGC->font) &&
 		(pGC->planemask & PMSK) == PMSK
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 		)
 	    {
-#if PPW == 4
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt8;
-#else
-                pGC->ops->ImageGlyphBlt = cfbTEGlyphBlt;
-#endif
+		pGC->ops->ImageGlyphBlt = useTEGlyphBlt;
 	    }
             else
 	    {
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 		if (devPriv->rop == GXcopy &&
 		    pGC->fillStyle == FillSolid &&
 		    (pGC->planemask & PMSK) == PMSK)
@@ -823,7 +825,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalTileFS;
 	    break;
 	case FillStippled:
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8Stipple32FS;
 	    else
@@ -831,7 +833,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->FillSpans = cfbUnnaturalStippleFS;
 	    break;
 	case FillOpaqueStippled:
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 	    if (devPriv->pRotatedPixmap)
 		pGC->ops->FillSpans = cfb8OpaqueStipple32FS;
 	    else
@@ -844,14 +846,14 @@ cfbValidateGC(pGC, changes, pDrawable)
     } /* end of new_fillspans */
 
     if (new_fillarea) {
-#if PPW != 4
+#ifndef FOUR_BIT_CODE
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled)
 	{
 	    pGC->ops->PolyFillRect = cfbPolyFillRect;
 	}
 #endif
-#if PPW == 4
+#ifdef FOUR_BIT_CODE
 	pGC->ops->PushPixels = mfbPushPixels;
 	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
 	    pGC->ops->PushPixels = cfbPushPixels8;

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.5 89/03/21 11:37:42 rws Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.6 91/07/05 10:52:59 rws Exp $ */
 
 /*
  * ==========================================================================
@@ -49,95 +49,110 @@ bit index 32-n in a longword
 #include	<X.h>
 #include	<Xmd.h>
 #include	<servermd.h>
+#include	"cfb.h"
 
 #if	(BITMAP_BIT_ORDER == MSBFirst)
+#define cfbBits(v)	(v)
+#else
+#define cfbFlip2(a)	((((a) & 0x1) << 1) | (((a) & 0x2) >> 1))
+#define cfbFlip4(a)	((cfbFlip2(a) << 2) | cfbFlip2(a >> 2))
+#define cfbFlip8(a)	((cfbFlip4(a) << 4) | cfbFlip4(a >> 4))
+#define cfbFlip16(a)	((cfbFlip8(a) << 8) | cfbFlip8(a >> 8))
+#define cfbFlip32(a)	((cfbFlip16(a) << 16) | cfbFlip16(a >> 16))
+#define cfbBits(a)	cfbFlip32(a)
+#endif
+
 /* NOTE:
 the first element in starttab could be 0xffffffff.  making it 0
 lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
+#if PPW == 4
 unsigned int cfbstarttab[] =
     {
-	0x00000000,
-	0x00FFFFFF,
-	0x0000FFFF,
-	0x000000FF
+	cfbBits(0x00000000),
+	cfbBits(0x00FFFFFF),
+	cfbBits(0x0000FFFF),
+	cfbBits(0x000000FF)
     };
-
 unsigned int cfbendtab[] =
     {
-	0x00000000,
-	0xFF000000,
-	0xFFFF0000,
-	0xFFFFFF00
+	cfbBits(0x00000000),
+	cfbBits(0xFF000000),
+	cfbBits(0xFFFF0000),
+	cfbBits(0xFFFFFF00)
     };
+#endif
+#if PPW == 2
+unsigned int cfbstarttab[] =
+    {
+	cfbBits(0x00000000),
+	cfbBits(0x0000FFFF),
+    };
+unsigned int cfbendtab[] =
+    {
+	cfbBits(0x00000000),
+	cfbBits(0xFFFF0000),
+    };
+#endif
+#if PPW == 1
+unsigned int cfbstarttab[] =
+    {
+	cfbBits(0x00000000),
+    };
+unsigned int cfbendtab[] = 
+    {
+	cfbBits(0x00000000),
+    };
+#endif
 
 /* a hack, for now, since the entries for 0 need to be all
    1 bits, not all zeros.
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
+#if PPW == 4
 unsigned int cfbstartpartial[] =
     {
-	0xFFFFFFFF,
-	0x00FFFFFF,
-	0x0000FFFF,
-	0x000000FF
+	cfbBits(0xFFFFFFFF),
+	cfbBits(0x00FFFFFF),
+	cfbBits(0x0000FFFF),
+	cfbBits(0x000000FF)
     };
 
 unsigned int cfbendpartial[] =
     {
-	0xFFFFFFFF,
-	0xFF000000,
-	0xFFFF0000,
-	0xFFFFFF00
+	cfbBits(0xFFFFFFFF),
+	cfbBits(0xFF000000),
+	cfbBits(0xFFFF0000),
+	cfbBits(0xFFFFFF00)
     };
-#else		/* (BITMAP_BIT_ORDER == LSBFirst) */
-/* NOTE:
-the first element in starttab could be 0xffffffff.  making it 0
-lets us deal with a full first word in the middle loop, rather
-than having to do the multiple reads and masks that we'd
-have to do if we thought it was partial.
-*/
-unsigned int cfbstarttab[] = 
-	{
-	0x00000000,
-	0xFFFFFF00,
-	0xFFFF0000,
-	0xFF000000
-	};
+#endif
+#if PPW == 2
+unsigned int cfbstartpartial[] =
+    {
+	cfbBits(0xFFFFFFFF),
+	cfbBits(0x0000FFFF),
+    };
 
-unsigned int cfbendtab[] = 
-	{
-	0x00000000,
-	0x000000FF,
-	0x0000FFFF,
-	0x00FFFFFF
-	};
+unsigned int cfbendpartial[] =
+    {
+	cfbBits(0xFFFFFFFF),
+	cfbBits(0xFFFF0000),
+    };
+#endif
+#if PPW ==  1
+unsigned int cfbstartpartial[] =
+    {
+	cfbBits(0xFFFFFFFF),
+    };
 
-/* a hack, for now, since the entries for 0 need to be all
-   1 bits, not all zeros.
-   this means the code DOES NOT WORK for segments of length
-   0 (which is only a problem in the horizontal line code.)
-*/
-unsigned int cfbstartpartial[] = 
-	{
-	0xFFFFFFFF,
-	0xFFFFFF00,
-	0xFFFF0000,
-	0xFF000000
-	};
-
-unsigned int cfbendpartial[] = 
-	{
-	0xFFFFFFFF,
-	0x000000FF,
-	0x0000FFFF,
-	0x00FFFFFF
-	};
-#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
-
+unsigned int cfbendpartial[] =
+    {
+	cfbBits(0xFFFFFFFF),
+    };
+#endif
 
 /* used for masking bits in bresenham lines
    mask[n] is used to mask out all but bit n in a longword (n is a
@@ -146,32 +161,52 @@ screen position).
 is a screen posiotion.)
 */
 
-#if	(BITMAP_BIT_ORDER == MSBFirst)
+#if PPW == 4
 unsigned int cfbmask[] =
     {
-	0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
+	cfbBits(0xFF000000),
+ 	cfbBits(0x00FF0000),
+ 	cfbBits(0x0000FF00),
+ 	cfbBits(0x000000FF)
     }; 
 unsigned int cfbrmask[] = 
     {
-	0x00FFFFFF, 0xFF00FFFF, 0xFFFF00FF, 0xFFFFFF00
+	cfbBits(0x00FFFFFF),
+ 	cfbBits(0xFF00FFFF),
+ 	cfbBits(0xFFFF00FF),
+ 	cfbBits(0xFFFFFF00)
     };
-#else	/* (BITMAP_BIT_ORDER == LSBFirst) */
+#endif
+#if PPW == 2
 unsigned int cfbmask[] =
     {
-	0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
+	cfbBits(0xFFFF0000),
+ 	cfbBits(0x0000FFFF),
     }; 
 unsigned int cfbrmask[] = 
     {
-	0xFFFFFF00, 0xFFFF00FF, 0xFF00FFFF, 0x00FFFFFF
+	cfbBits(0x0000FFFF),
+ 	cfbBits(0xFFFF0000),
     };
-#endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
+#endif
+#if PPW == 1
+unsigned int cfbmask[] =
+    {
+	cfbBits(0xFFFFFFFF),
+    }; 
+unsigned int cfbrmask[] = 
+    {
+	cfbBits(0xFFFFFFFF),
+    };
+#endif
 
 /*
- * QuartetBitsTable contains four masks whose binary values are masks in the
+ * QuartetBitsTable contains PPW+1 masks whose binary values are masks in the
  * low order quartet that contain the number of bits specified in the
  * index.  This table is used by getstipplepixels.
  */
-unsigned int QuartetBitsTable[5] = {
+#if PPW == 4
+unsigned int QuartetBitsTable[] = {
 #if (BITMAP_BIT_ORDER == MSBFirst)
     0x00000000,                         /* 0 - 0000 */
     0x00000008,                         /* 1 - 1000 */
@@ -186,12 +221,39 @@ unsigned int QuartetBitsTable[5] = {
     0x0000000F                          /* 4 - 1111 */
 #endif /* (BITMAP_BIT_ORDER == MSBFirst) */
 };
+#endif
+#if PPW == 2
+unsigned int QuartetBitsTable[] = {
+#if (BITMAP_BIT_ORDER == MSBFirst)
+    0x00000000,                         /* 0 - 00 */
+    0x00000002,                         /* 1 - 10 */
+    0x00000003,                         /* 2 - 11 */
+#else /* (BITMAP_BIT_ORDER == LSBFirst */
+    0x00000000,                         /* 0 - 00 */
+    0x00000001,                         /* 1 - 01 */
+    0x00000003,                         /* 2 - 11 */
+#endif /* (BITMAP_BIT_ORDER == MSBFirst) */
+};
+#endif
+#if PPW == 1
+unsigned int QuartetBitsTable[] = {
+#if (BITMAP_BIT_ORDER == MSBFirst)
+    0x00000000,                         /* 0 - 0 */
+    0x00000001,                         /* 1 - 1 */
+#else /* (BITMAP_BIT_ORDER == LSBFirst */
+    0x00000000,                         /* 0 - 0 */
+    0x00000001,                         /* 1 - 1 */
+#endif /* (BITMAP_BIT_ORDER == MSBFirst) */
+};
+#endif
 
 /*
  * QuartetPixelMaskTable is used by getstipplepixels to get a pixel mask
- * corresponding to a quartet of bits.
+ * corresponding to a quartet of bits.  Note: the bit/byte order dependency
+ * is handled by QuartetBitsTable above.
  */
-unsigned int QuartetPixelMaskTable[16] = {
+#if PPW == 4
+unsigned int QuartetPixelMaskTable[] = {
     0x00000000,
     0x000000FF,
     0x0000FF00,
@@ -209,6 +271,21 @@ unsigned int QuartetPixelMaskTable[16] = {
     0xFFFFFF00,
     0xFFFFFFFF
 };
+#endif
+#if PPW == 2
+unsigned int QuartetPixelMaskTable[] = {
+    0x00000000,
+    0x0000FFFF,
+    0xFFFF0000,
+    0xFFFFFFFF,
+};
+#endif
+#if PPW == 1
+unsigned int QuartetPixelMaskTable[] = {
+    0x00000000,
+    0xFFFFFFFF,
+};
+#endif
 
 #ifdef	vax
 #undef	VAXBYTEORDER

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.8 91/06/24 14:45:50 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.9 91/07/09 16:09:23 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -202,8 +202,18 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	l = x2;
 	    	r = x1;
     	    }
+#if PPW > 1
 	    c = l & PIM;
-	    addr = (unsigned long *) (((char *) addrl) + (l - c));
+	    l -= c;
+#endif
+#if PWSH > 2
+	    l = l >> (PWSH - 2);
+#endif
+#if PWSH < 2
+	    l = l << (2 - PWSH);
+#endif
+	    addr = (unsigned long *) (((char *) addrl) + l);
+#if PPW > 1
 	    if (c + nmiddle < PPW)
 	    {
 	    	mask = SCRRIGHT (bits,c) ^ SCRRIGHT (bits,c+nmiddle);
@@ -218,13 +228,16 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	    nmiddle += c - PPW;
 	    	    addr++;
 	    	}
+#endif
 	    	nmiddle >>= PWSH;
 		while (--nmiddle >= 0) {
 		    RROP_SOLID(addr); addr++;
 		}
+#if PPW > 1
 	    	if (mask = ~SCRRIGHT(bits, r & PIM))
 	    	    RROP_SOLID_MASK(addr,mask);
 	    }
+#endif
 	    if (!--h)
 		break;
 	    addrl = AddrYPlus (addrl, 1);

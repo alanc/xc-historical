@@ -18,9 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.10 91/07/03 14:24:09 keith Exp $ */
-
-#if (PPW == 4)
+/* $XConsortium: cfb8bit.h,v 1.11 91/07/11 17:58:48 keith Exp $ */
 
 #include "servermd.h"
 
@@ -43,6 +41,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 				: "=d" (x) \
  				: "0" (x), "dI" (k))
 #endif
+
+#if (PPW == 4)
 
 #define GetFourPixels(x)	(cfb8StippleXor[GetFourBits(x)])
 #define RRopPixels(dst,x)	(DoRRop(dst,cfb8StippleAnd[x], cfb8StippleXor[x]))
@@ -164,8 +164,9 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
     register int    _bitsTmp = (bits);				\
     *(dst) = MaskRRopPixels(*(dst),bits,mask);			\
     }
+#endif /* PPW == 4 */
 
-#ifndef AVOID_MEMORY_READ
+#if !defined(AVOID_MEMORY_READ) && PPW == 4
 
 #define WriteFourBits(dst,pixel,bits)				\
     {								\
@@ -184,183 +185,211 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 #else /* AVOID_MEMORY_READ */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
+#define Byte0	3
+#define Byte1	2
+#define Byte2	1
+#define Byte3	0
+#define Short0	1
+#define Short1	0
+#define Short2	3
+#define Short3	2
+#else
+#define Byte0	0
+#define Byte1	1
+#define Byte2	2
+#define Byte3	3
+#define Short0	0
+#define Short1	1
+#define Short2	2
+#define Short3	3
+#endif
+#define Long0	0
+#define Long1	1
+#define Long2	2
+#define Long3	3
+
+#if PPW == 4
+
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
 	case 0:				\
 	    break;			\
 	case 1:				\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((char *) (dst))[Byte0] = (pixel);	\
 	    break;			\
 	case 2:				\
-	    ((char *) (dst))[2] = (pixel);	\
+	    ((char *) (dst))[Byte1] = (pixel);	\
 	    break;			\
 	case 3:				\
-	    ((short *) (dst))[1] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
 	    break;			\
 	case 4:				\
-	    ((char *) (dst))[1] = (pixel);	\
+	    ((char *) (dst))[Byte2] = (pixel);	\
 	    break;			\
 	case 5:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
+	    ((char *) (dst))[Byte0] = (pixel);	\
+	    ((char *) (dst))[Byte2] = (pixel);	\
 	    break;			\
 	case 6:				\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
+	    ((char *) (dst))[Byte1] = (pixel);	\
+	    ((char *) (dst))[Byte2] = (pixel);	\
 	    break;			\
 	case 7:				\
-	    ((short *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
+	    ((char *) (dst))[Byte2] = (pixel);	\
 	    break;			\
 	case 8:				\
-	    ((char *) (dst))[0] = (pixel);	\
+	    ((char *) (dst))[Byte3] = (pixel);	\
 	    break;			\
 	case 9:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
+	    ((char *) (dst))[Byte0] = (pixel);	\
+	    ((char *) (dst))[Byte3] = (pixel);	\
 	    break;			\
 	case 10:			\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
+	    ((char *) (dst))[Byte1] = (pixel);	\
+	    ((char *) (dst))[Byte3] = (pixel);	\
 	    break;			\
 	case 11:			\
-	    ((short *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
+	    ((char *) (dst))[Byte3] = (pixel);	\
 	    break;			\
 	case 12:			\
-	    ((short *) (dst))[0] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
 	    break;			\
 	case 13:			\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((short *) (dst))[0] = (pixel);	\
+	    ((char *) (dst))[Byte0] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
 	    break;			\
 	case 14:			\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((short *) (dst))[0] = (pixel);	\
+	    ((char *) (dst))[Byte1] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
 	    break;			\
 	case 15:			\
 	    ((long *) (dst))[0] = (pixel);	\
 	    break;			\
 	}
 
+
 #define SwitchFourBits(dst,pixel,bits) { \
 	switch (bits) { \
 	case 0: \
-	    break; \
+       	    break; \
 	case 1: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte0] = (pixel);) \
 	    break; \
 	case 2: \
-	    SwitchBitsLoop (((char *) (dst))[2] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte1] = (pixel);) \
 	    break; \
 	case 3: \
-	    SwitchBitsLoop (((short *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel);) \
 	    break; \
 	case 4: \
-	    SwitchBitsLoop (((char *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte2] = (pixel);) \
 	    break; \
 	case 5: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel); \
-		     ((char *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte0] = (pixel); \
+		     ((char *) (dst))[Byte2] = (pixel);) \
 	    break; \
 	case 6: \
-	    SwitchBitsLoop (((char *) (dst))[2] = (pixel); \
-		     ((char *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte1] = (pixel); \
+		     ((char *) (dst))[Byte2] = (pixel);) \
 	    break; \
 	case 7: \
-	    SwitchBitsLoop (((short *) (dst))[1] = (pixel); \
-		     ((char *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel); \
+		     ((char *) (dst))[Byte2] = (pixel);) \
 	    break; \
 	case 8: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte3] = (pixel);) \
 	    break; \
 	case 9: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel); \
-		     ((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte0] = (pixel); \
+		     ((char *) (dst))[Byte3] = (pixel);) \
 	    break; \
 	case 10: \
-	    SwitchBitsLoop (((char *) (dst))[2] = (pixel); \
-		     ((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte1] = (pixel); \
+		     ((char *) (dst))[Byte3] = (pixel);) \
 	    break; \
 	case 11: \
-	    SwitchBitsLoop (((short *) (dst))[1] = (pixel); \
-		     ((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel); \
+		     ((char *) (dst))[Byte3] = (pixel);) \
 	    break; \
 	case 12: \
-	    SwitchBitsLoop (((short *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short1] = (pixel);) \
 	    break; \
 	case 13: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel); \
-		     ((short *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte0] = (pixel); \
+		     ((short *) (dst))[Short1] = (pixel);) \
 	    break; \
 	case 14: \
-	    SwitchBitsLoop (((char *) (dst))[2] = (pixel); \
-		     ((short *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((char *) (dst))[Byte1] = (pixel); \
+		     ((short *) (dst))[Short1] = (pixel);) \
 	    break; \
 	case 15: \
 	    SwitchBitsLoop (((long *) (dst))[0] = (pixel);) \
 	    break; \
 	} \
 }
+#endif /* PPW == 4 */
 
-#else /* BITMAP_BIT_ORDER */
+#if PPW == 2
 
 #define WriteFourBits(dst,pixel,bits) \
 	switch (bits) {			\
 	case 0:				\
 	    break;			\
 	case 1:				\
-	    ((char *) (dst))[0] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
 	    break;			\
 	case 2:				\
-	    ((char *) (dst))[1] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
 	    break;			\
 	case 3:				\
-	    ((short *) (dst))[0] = (pixel);	\
+	    ((long *) (dst))[Long0] = (pixel);	\
 	    break;			\
 	case 4:				\
-	    ((char *) (dst))[2] = (pixel);	\
+	    ((short *) (dst))[Short2] = (pixel);	\
 	    break;			\
 	case 5:				\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
+	    ((short *) (dst))[Short2] = (pixel);	\
 	    break;			\
 	case 6:				\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
+	    ((short *) (dst))[Short2] = (pixel);	\
 	    break;			\
 	case 7:				\
-	    ((short *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((short *) (dst))[Short2] = (pixel);	\
 	    break;			\
 	case 8:				\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((short *) (dst))[Short3] = (pixel);	\
 	    break;			\
 	case 9:				\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
+	    ((short *) (dst))[Short3] = (pixel);	\
 	    break;			\
 	case 10:			\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
+	    ((short *) (dst))[Short3] = (pixel);	\
 	    break;			\
 	case 11:			\
-	    ((short *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((short *) (dst))[Short3] = (pixel);	\
 	    break;			\
 	case 12:			\
-	    ((short *) (dst))[1] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
 	    break;			\
 	case 13:			\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((short *) (dst))[1] = (pixel);	\
+	    ((short *) (dst))[Short0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
 	    break;			\
 	case 14:			\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((short *) (dst))[1] = (pixel);	\
+	    ((short *) (dst))[Short1] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
 	    break;			\
 	case 15:			\
-	    ((long *) (dst))[0] = (pixel);	\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
 	    break;			\
 	}
 
@@ -369,65 +398,205 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 	case 0: \
        	    break; \
 	case 1: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel);) \
 	    break; \
 	case 2: \
-	    SwitchBitsLoop (((char *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short1] = (pixel);) \
 	    break; \
 	case 3: \
-	    SwitchBitsLoop (((short *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel);) \
 	    break; \
 	case 4: \
-	    SwitchBitsLoop (((char *) (dst))[2] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short2] = (pixel);) \
 	    break; \
 	case 5: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel); \
-		     ((char *) (dst))[2] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel); \
+		     ((short *) (dst))[Short2] = (pixel);) \
 	    break; \
 	case 6: \
-	    SwitchBitsLoop (((char *) (dst))[1] = (pixel); \
-		     ((char *) (dst))[2] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short1] = (pixel); \
+		     ((short *) (dst))[Short2] = (pixel);) \
 	    break; \
 	case 7: \
-	    SwitchBitsLoop (((short *) (dst))[0] = (pixel); \
-		     ((char *) (dst))[2] = (pixel);) \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+		     ((short *) (dst))[Short2] = (pixel);) \
 	    break; \
 	case 8: \
-	    SwitchBitsLoop (((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short3] = (pixel);) \
 	    break; \
 	case 9: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel); \
-		     ((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel); \
+		     ((short *) (dst))[Short3] = (pixel);) \
 	    break; \
 	case 10: \
-	    SwitchBitsLoop (((char *) (dst))[1] = (pixel); \
-		     ((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short1] = (pixel); \
+		     ((short *) (dst))[Short3] = (pixel);) \
 	    break; \
 	case 11: \
-	    SwitchBitsLoop (((short *) (dst))[0] = (pixel); \
-		     ((char *) (dst))[3] = (pixel);) \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+		     ((short *) (dst))[Short3] = (pixel);) \
 	    break; \
 	case 12: \
-	    SwitchBitsLoop (((short *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((long *) (dst))[Long1] = (pixel);) \
 	    break; \
 	case 13: \
-	    SwitchBitsLoop (((char *) (dst))[0] = (pixel); \
-		     ((short *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short0] = (pixel); \
+		     ((long *) (dst))[Long1] = (pixel);) \
 	    break; \
 	case 14: \
-	    SwitchBitsLoop (((char *) (dst))[1] = (pixel); \
-		     ((short *) (dst))[1] = (pixel);) \
+	    SwitchBitsLoop (((short *) (dst))[Short1] = (pixel); \
+		     ((long *) (dst))[Long1] = (pixel);) \
 	    break; \
 	case 15: \
-	    SwitchBitsLoop (((long *) (dst))[0] = (pixel);) \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long1] = (pixel);) \
 	    break; \
 	} \
 }
 
-# endif /* BITMAP_BIT_ORDER */
+#endif /* PPW == 2 */
+#if PPW == 1
+
+#define WriteFourBits(dst,pixel,bits) \
+	switch (bits) {			\
+	case 0:				\
+	    break;			\
+	case 1:				\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    break;			\
+	case 2:				\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    break;			\
+	case 3:				\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    break;			\
+	case 4:				\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    break;			\
+	case 5:				\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    break;			\
+	case 6:				\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    break;			\
+	case 7:				\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    break;			\
+	case 8:				\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 9:				\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 10:			\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 11:			\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 12:			\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 13:			\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 14:			\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	case 15:			\
+	    ((long *) (dst))[Long0] = (pixel);	\
+	    ((long *) (dst))[Long1] = (pixel);	\
+	    ((long *) (dst))[Long2] = (pixel);	\
+	    ((long *) (dst))[Long3] = (pixel);	\
+	    break;			\
+	}
+
+#define SwitchFourBits(dst,pixel,bits) { \
+	switch (bits) { \
+	case 0: \
+       	    break; \
+	case 1: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel);) \
+	    break; \
+	case 2: \
+	    SwitchBitsLoop (((long *) (dst))[Long1] = (pixel);) \
+	    break; \
+	case 3: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long1] = (pixel);) \
+	    break; \
+	case 4: \
+	    SwitchBitsLoop (((long *) (dst))[Long2] = (pixel);) \
+	    break; \
+	case 5: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel);) \
+	    break; \
+	case 6: \
+	    SwitchBitsLoop (((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel);) \
+	    break; \
+	case 7: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel);) \
+	    break; \
+	case 8: \
+	    SwitchBitsLoop (((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 9: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 10: \
+	    SwitchBitsLoop (((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 11: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 12: \
+	    SwitchBitsLoop (((long *) (dst))[Long2] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 13: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 14: \
+	    SwitchBitsLoop (((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	case 15: \
+	    SwitchBitsLoop (((long *) (dst))[Long0] = (pixel); \
+			    ((long *) (dst))[Long1] = (pixel); \
+			    ((long *) (dst))[Long2] = (pixel); \
+			    ((long *) (dst))[Long3] = (pixel);) \
+	    break; \
+	} \
+}
+
+#endif /* PPW == 1 */
 #endif /* AVOID_MEMORY_READ */
 
 extern unsigned long	cfb8BitLenMasks[32];
 extern int		cfb8ComputeClipMasks32 ();
 
-#endif /* PPW == 4 */

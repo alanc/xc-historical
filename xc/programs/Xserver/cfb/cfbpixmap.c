@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbpixmap.c,v 5.7 91/07/18 23:36:46 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -31,108 +31,34 @@ SOFTWARE.
 #include "Xmd.h"
 #include "servermd.h"
 #include "pixmapstr.h"
+#include "mi.h"
+#include "cfb.h"
 #include "cfbmskbits.h"
 
-#include "cfb.h"
-#include "mi.h"
+extern unsigned int endtab[];
 
 extern void mfbXRotatePixmap(), mfbYRotatePixmap();
 
-#if (BITMAP_BIT_ORDER == MSBFirst)
-static int masktab[32] = 
-    {
-        0x00000000,
-        0x80000000,
-        0xC0000000,
-        0xE0000000,
-        0xF0000000,
-        0xF8000000,
-        0xFC000000,
-        0xFE000000,
-        0xFF000000,
-        0xFF800000,
-        0xFFC00000,
-        0xFFE00000,
-        0xFFF00000,
-        0xFFF80000,
-        0xFFFC0000,
-        0xFFFE0000,
-        0xFFFF0000,
-        0xFFFF8000,
-        0xFFFFC000,
-        0xFFFFE000,
-        0xFFFFF000,
-        0xFFFFF800,
-        0xFFFFFC00,
-        0xFFFFFE00,
-        0xFFFFFF00,
-        0xFFFFFF80,
-        0xFFFFFFC0,
-        0xFFFFFFE0,
-        0xFFFFFFF0,
-        0xFFFFFFF8,
-        0xFFFFFFFC,
-        0xFFFFFFFE
-    };
-#else
-static int masktab[32] =
-        {
-        0x00000000,
-        0x00000001,
-        0x00000003,
-        0x00000007,
-        0x0000000F,
-        0x0000001F,
-        0x0000003F,
-        0x0000007F,
-        0x000000FF,
-        0x000001FF,
-        0x000003FF,
-        0x000007FF,
-        0x00000FFF,
-        0x00001FFF,
-        0x00003FFF,
-        0x00007FFF,
-        0x0000FFFF,
-        0x0001FFFF,
-        0x0003FFFF,
-        0x0007FFFF,
-        0x000FFFFF,
-        0x001FFFFF,
-        0x003FFFFF,
-        0x007FFFFF,
-        0x00FFFFFF,
-        0x01FFFFFF,
-        0x03FFFFFF,
-        0x07FFFFFF,
-        0x0FFFFFFF,
-        0x1FFFFFFF,
-        0x3FFFFFFF,
-        0x7FFFFFFF
-        };
-#endif
-
 PixmapPtr
-cfbCreatePixmap (pScreen, width, height, bitsPerPixel)
+cfbCreatePixmap (pScreen, width, height, depth)
     ScreenPtr	pScreen;
     int		width;
     int		height;
-    int		bitsPerPixel;
+    int		depth;
 {
     register PixmapPtr pPixmap;
     int size;
+    int bitsPerPixel;
 
-    if (bitsPerPixel != 1 && bitsPerPixel != PSZ)
-	return NullPixmap;
-
-    size = PixmapBytePad(width, bitsPerPixel);
+    bitsPerPixel = BitsPerPixel(depth);
+    size = PixmapBytePad(width, depth);
     pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.class = 0;
     pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.depth = bitsPerPixel;
+    pPixmap->drawable.depth = depth;
     pPixmap->drawable.bitsPerPixel = bitsPerPixel;
     pPixmap->drawable.id = 0;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
@@ -209,7 +135,7 @@ cfbPadPixmap(pPixmap)
     if (rep*width != 32)
         return;
  
-    mask = masktab[width];
+    mask = endtab[width];
  
     p = (unsigned int *)(pPixmap->devPrivate.ptr);
     for (h=0; h < pPixmap->drawable.height; h++)
@@ -316,7 +242,7 @@ cfbXRotatePixmap(pPix, rw)
 	register unsigned int *pwTmp;
 	int size, tsize;
 
-	tsize = PixmapBytePad(pPix->drawable.width - rot, PSZ);
+	tsize = PixmapBytePad(pPix->drawable.width - rot, pPix->drawable.depth);
 	pwTmp = (unsigned int *) ALLOCATE_LOCAL(pPix->drawable.height * tsize);
 	if (!pwTmp)
 	    return;

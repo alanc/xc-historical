@@ -50,7 +50,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.16 91/07/14 13:49:50 keith Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.17 91/07/18 23:31:04 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -376,7 +376,7 @@ int fSorted;
 				/* next three parameters are post-clip */
     int			    n;		/* number of spans to fill */
     register DDXPointPtr    ppt;	/* pointer to list of start points */
-    register unsigned long  *pwidth;	/* pointer to list of n widths */
+    register int	    *pwidth;	/* pointer to list of n widths */
     int			    iline;	/* first line of tile to use */
     unsigned long	    *addrlBase;	/* pointer to start of bitmap */
     int			    nlwidth;	/* width in longwords of bitmap */
@@ -467,7 +467,7 @@ int fSorted;
 	iline = (ppt->y - ySrc) % stippleHeight;
 	x = ppt->x;
 	pdst = addrlBase + (ppt->y * nlwidth);
-        psrcS = (int *) pStipple->devPrivate.ptr + (iline * stwidth);
+        psrcS = (unsigned long *) pStipple->devPrivate.ptr + (iline * stwidth);
 
 	if (*pwidth)
 	{
@@ -475,8 +475,8 @@ int fSorted;
 	    while(width > 0)
 	    {
 	        int xtemp, tmpx;
-		register unsigned int *ptemp;
-		register int *pdsttmp;
+		register unsigned long *ptemp;
+		register unsigned long *pdsttmp;
 		/*
 		 *  Do a stripe through the stipple & destination w pixels
 		 *  wide.  w is not more than:
@@ -497,7 +497,7 @@ int fSorted;
 		w = min(w, 32 - (x & 0x1f));
 
 	        xtemp = (xrem & 0x1f);
-	        ptemp = (unsigned int *)(psrcS + (xrem >> 5));
+	        ptemp = (unsigned long *)(psrcS + (xrem >> 5));
 		tmpx = x & PIM;
 		pdsttmp = pdst + (x>>PWSH);
 		switch ( pGC->fillStyle ) {

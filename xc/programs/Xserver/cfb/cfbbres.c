@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.9 90/01/31 12:31:15 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.10 91/07/10 14:53:48 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -34,31 +34,28 @@ SOFTWARE.
 */
 
 cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
-int rop;
-unsigned long and, xor;
-int *addrl;		/* pointer to base of bitmap */
-int nlwidth;		/* width in longwords of bitmap */
-register int signdx;
-int signdy;		/* signs of directions */
-int axis;		/* major axis (Y_AXIS or X_AXIS) */
-int x1, y1;		/* initial point */
-register int e;		/* error accumulator */
-register int e1;	/* bresenham increments */
-int e2;
-int len;		/* length of line */
+    int		    rop;
+    unsigned long   and, xor;
+    unsigned long   *addrl;		/* pointer to base of bitmap */
+    int		    nlwidth;		/* width in longwords of bitmap */
+    register int    signdx;
+    int		    signdy;		/* signs of directions */
+    int		    axis;		/* major axis (Y_AXIS or X_AXIS) */
+    int		    x1, y1;		/* initial point */
+    register int    e;			/* error accumulator */
+    register int    e1;			/* bresenham increments */
+    int		    e2;
+    int		    len;		/* length of line */
 {
-    register int    e3 = e2-e1;
-
-#if (PPW == 4)
-    register unsigned char *addrb;		/* bitmask long pointer 
-					     	 * cast to char pointer */
-    register unsigned char pix = xor;
+    register int	e3 = e2-e1;
+#ifdef PIXEL_ADDR
+    register PixelType	*addrp;		/* Pixel pointer */
 
     if (len == 0)
     	return;
     /* point to first point */
-    nlwidth <<= 2;
-    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    nlwidth <<= PWSH;
+    addrp = (PixelType *)(addrl) + (y1 * nlwidth) + x1;
     if (signdy < 0)
     	nlwidth = -nlwidth;
     e = e-e1;			/* to make looping easier */
@@ -75,32 +72,15 @@ int len;		/* length of line */
     {
 	--len;
 #define body {\
-	    *addrb = pix; \
-	    addrb += signdx; \
+	    *addrp = xor; \
+	    addrp += signdx; \
 	    e += e1; \
 	    if (e >= 0) \
 	    { \
-		addrb += nlwidth; \
+		addrp += nlwidth; \
 		e += e3; \
 	    } \
 	}
-#ifdef LARGE_INSTRUCTION_CACHE
-	while (len >= 16)
-	{
-	    body body body body
-	    body body body body
-	    body body body body
-	    body body body body
-	    len -= 16;
-	}
-	switch (len)
-	{
-	case 15: body case 14: body case 13: body case 12: body
-	case 11: body case 10: body case  9: body case  8: body
-	case  7: body case  6: body case  5: body case  4: body
-	case  3: body case  2: body case  1: body
-	}
-#else
 	while (len >= 4)
 	{
 	    body body body body
@@ -110,22 +90,21 @@ int len;		/* length of line */
 	{
 	case  3: body case  2: body case  1: body
 	}
-#endif
 #undef body
-	*addrb = pix;
+	*addrp = xor;
     }
     else
     {
 	while(len--)
 	{ 
-	    *addrb = DoRRop (*addrb, and, xor);
+	    *addrp = DoRRop (*addrp, and, xor);
 	    e += e1;
 	    if (e >= 0)
 	    {
-		addrb += nlwidth;
+		addrp += nlwidth;
 		e += e3;
 	    }
-	    addrb += signdx;
+	    addrp += signdx;
 	}
     }
 #else

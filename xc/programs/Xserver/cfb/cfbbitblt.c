@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.42 91/07/18 23:30:20 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.43 91/07/19 23:20:45 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -607,6 +607,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 
 #endif
 
+/* shared among all different cfb depths through linker magic */
+RegionPtr   (*cfbPuntCopyPlane)();
+
 RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
     DrawablePtr 	pSrcDrawable;
@@ -653,7 +656,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 		    pGC, srcx, srcy, width, height, dstx, dsty, cfbCopyPlane8to1, bitPlane);
 	pGC->alu = oldalu;
     }
-    else
+    else if (pSrcDrawable->bitsPerPixel == 8 && pDstDrawable->bitsPerPixel == 8)
     {
 	PixmapPtr	pBitmap;
 	ScreenPtr	pScreen = pSrcDrawable->pScreen;
@@ -691,9 +694,9 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 				 srcx, srcy, width, height,
 				 dstx, dsty, bitPlane);
     }
-    return ret;
-#else
-    return miCopyPlane (pSrcDrawable, pDstDrawable,
-	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+    else
 #endif
+    ret = (*cfbPuntCopyPlane) (pSrcDrawable, pDstDrawable,
+	    pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+    return ret;
 }

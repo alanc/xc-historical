@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.4 91/07/24 18:35:40 keith Exp $
+ * $XConsortium: cfb8cppl.c,v 1.5 91/08/22 15:41:05 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,12 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* 
- * this is actually an mfb-specific function, except that
- * it knows how to read from 8-bit cfb pixmaps.  Alas, this
- * means that it doesn't know PPW so it is always compiled
- */
-
+#if PPW == 4
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"
@@ -37,8 +32,8 @@
 #include "scrnintstr.h"
 #include "windowstr.h"
 #include "cfb.h"
+#undef PPW /* for maskbits.h */
 #include "maskbits.h"
-
 #include "mergerop.h"
 
 #if BITMAP_BIT_ORDER == MSBFirst
@@ -216,3 +211,5 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	}
     }
 }
+
+#endif

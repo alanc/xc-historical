@@ -309,3 +309,224 @@ cfbCreateDefColormap(pScreen)
     (*pScreen->InstallColormap)(cmap);
     return TRUE;
 }
+
+extern int defaultColorVisualClass;
+
+#define _BP 8
+#define _RZ(d) ((d + 2) / 3)
+#define _RS(d) 0
+#define _RM(d) ((1 << _RZ(d)) - 1)
+#define _GZ(d) ((d - _RZ(d) + 1) / 2)
+#define _GS(d) _RZ(d)
+#define _GM(d) (((1 << _GZ(d)) - 1) << _GS(d))
+#define _BZ(d) (d - _RZ(d) - _GZ(d))
+#define _BS(d) (_RZ(d) + _GZ(d))
+#define _BM(d) (((1 << _BZ(d)) - 1) << _BS(d))
+#define _CE(d) (1 << _RZ(d))
+
+#define MAX_PSEUDO_DEPTH    10	    /* largest DAC size I know */
+
+#define StaticGrayMask	(1 << StaticGray)
+#define GrayScaleMask	(1 << GrayScale)
+#define StaticColorMask	(1 << StaticColor)
+#define PseudoColorMask	(1 << PseudoColor)
+#define TrueColorMask	(1 << TrueColor)
+#define DirectColorMask (1 << DirectColor)
+
+#define ALL_VISUALS	(StaticGrayMask|\
+			 GrayScaleMask|\
+			 StaticColorMask|\
+			 PseudoColorMask|\
+			 TrueColorMask|\
+			 DirectColorMask)
+
+#define LARGE_VISUALS	(TrueColorMask|\
+			 DirectColorMask)
+
+typedef struct _cfbVisuals {
+    struct _cfbVisuals	*next;
+    int			depth;
+    int			bitsPerRGB;
+    int			visuals;
+    int			count;
+} cfbVisualsRec, *cfbVisualsPtr;
+
+static int  cfbVisualPriority[] = {
+    PseudoColor, DirectColor, GrayScale, StaticColor, TrueColor, StaticGray
+};
+
+#define NUM_PRIORITY	6
+
+static cfbVisualsPtr	cfbVisuals;
+
+Bool
+cfbSetVisualTypes (depth, visuals, bitsPerRGB)
+    int	    depth;
+    int	    visuals;
+{
+    cfbVisualsPtr   new, *prev, v;
+    int		    count;
+
+    new = (cfbVisualsPtr) xalloc (sizeof *new);
+    if (!new)
+	return FALSE;
+    new->next = 0;
+    new->depth = depth;
+    new->visuals = visuals;
+    new->bitsPerRGB = bitsPerRGB;
+    count = (visuals >> 1) & 033333333333;
+    count = visuals - count - ((count >> 1) & 033333333333);
+    count = (((count + (count >> 3)) & 030707070707) % 077);	/* HAKMEM 169 */
+    new->count = count;
+    for (prev = &cfbVisuals; v = *prev; prev = &v->next);
+    *prev = new;
+    return TRUE;
+}
+
+/*
+ * Given a list of formats for a screen, create a list
+ * of visuals and depths for the screen which coorespond to
+ * the set which can be used with this version of cfb.
+ */
+
+Bool
+cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, sizes)
+    VisualPtr	*visualp;
+    DepthPtr	*depthp;
+    int		*nvisualp, *ndepthp;
+    int		*rootDepthp;
+    VisualID	*defaultVisp;
+    unsigned long   sizes;
+{
+    int		i, j, k;
+    VisualPtr	visual;
+    DepthPtr	depth;
+    VisualID	*vid;
+    int		d, b;
+    int		f;
+    int		ndepth, nvisual;
+    int		nvtype;
+    int		vtype;
+    VisualID	defaultVisual;
+    cfbVisualsPtr   visuals, nextVisuals;
+
+    /* none specified, we'll guess from pixmap formats */
+    if (!cfbVisuals) 
+    {
+    	for (f = 0; f < screenInfo.numPixmapFormats; f++) 
+    	{
+	    d = screenInfo.formats[f].depth;
+	    b = screenInfo.formats[f].bitsPerPixel;
+	    if (sizes & (1 << (b - 1)))
+	    {
+	    	if (d > MAX_PSEUDO_DEPTH)
+		    vtype = LARGE_VISUALS;
+	    	else if (d == 1)
+		    vtype = StaticGrayMask;
+		else
+		    vtype = ALL_VISUALS;
+	    }
+	    else
+		vtype = 0;
+	    if (!cfbSetVisualTypes (d, vtype, _BP))
+		return FALSE;
+    	}
+    }
+    nvisual = 0;
+    ndepth = 0;
+    for (visuals = cfbVisuals; visuals; visuals = nextVisuals) 
+    {
+	nextVisuals = visuals->next;
+	ndepth++;
+	nvisual += visuals->count;
+    }
+    depth = (DepthPtr) xalloc (ndepth * sizeof (DepthRec));
+    visual = (VisualPtr) xalloc (nvisual * sizeof (VisualRec));
+    if (!depth || !visual)
+    {
+	xfree (depth);
+	xfree (visual);
+	return FALSE;
+    }
+    *depthp = depth;
+    *visualp = visual;
+    *ndepthp = ndepth;
+    *nvisualp = nvisual;
+    for (visuals = cfbVisuals; visuals; visuals = nextVisuals) 
+    {
+	nextVisuals = visuals->next;
+	d = visuals->depth;
+	vtype = visuals->visuals;
+	nvtype = visuals->count;
+	vid = (VisualID *) xalloc (nvtype * sizeof (VisualID));
+	if (!vid && nvtype)
+	    return FALSE;
+	depth->depth = d;
+	depth->numVids = nvtype;
+	depth->vids = (unsigned long *) vid;
+	depth++;
+	for (i = 0; i < NUM_PRIORITY; i++) {
+	    if (! (vtype & (1 << cfbVisualPriority[i])))
+		continue;
+	    visual->class = cfbVisualPriority[i];
+	    visual->bitsPerRGBValue = visuals->bitsPerRGB;
+	    visual->ColormapEntries = 1 << d;
+	    visual->nplanes = d;
+	    visual->vid = *vid = FakeClientID (0);
+	    switch (visual->class) {
+	    case PseudoColor:
+	    case GrayScale:
+	    case StaticGray:
+		visual->redMask = 0;
+		visual->greenMask =  0;
+		visual->blueMask =  0;
+		visual->offsetRed  =  0;
+		visual->offsetGreen = 0;
+		visual->offsetBlue =  0;
+		break;
+	    case DirectColor:
+	    case TrueColor:
+		visual->ColormapEntries = _CE(d);
+		/* fall through */
+	    case StaticColor:
+		visual->redMask =  _RM(d);
+		visual->greenMask =  _GM(d);
+		visual->blueMask =  _BM(d);
+		visual->offsetRed  =  _RS(d);
+		visual->offsetGreen = _GS(d);
+		visual->offsetBlue =  _BS(d);
+	    }
+	    vid++;
+	    visual++;
+	}
+	xfree (visuals);
+    }
+    cfbVisuals = NULL;
+    visual = *visualp;
+    depth = *depthp;
+    for (i = 0; i < ndepth; i++)
+    {
+	if (*rootDepthp && *rootDepthp != depth[i].depth)
+	    continue;
+	for (j = 0; j < depth[i].numVids; j++)
+	{
+	    for (k = 0; k < nvisual; k++)
+		if (visual[k].vid == depth[i].vids[j])
+		    break;
+	    if (k == nvisual)
+		continue;
+	    if (defaultColorVisualClass < 0 ||
+		visual[k].class == defaultColorVisualClass)
+		break;
+	}
+	if (j != depth[i].numVids)
+	    break;
+    }
+    if (i == ndepth) {
+	i = 0;
+	j = 0;
+    }
+    *rootDepthp = depth[i].depth;
+    *defaultVisp = depth[i].vids[j];
+    return TRUE;
+}

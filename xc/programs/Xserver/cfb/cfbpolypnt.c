@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.12 91/05/28 14:59:08 keith Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.13 91/07/14 13:51:14 keith Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -57,10 +57,10 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register long   c1, c2;
     register unsigned long   ClipMask = 0x80008000;
     register unsigned long   xor;
-#if PPW == 4
-    register unsigned char   *addrb;
-    register int    nbwidth;
-    unsigned char   *addrbt;
+#ifdef PIXEL_ADDR
+    register PixelType   *addrp;
+    register int    npwidth;
+    PixelType	    *addrpt;
 #else
     register unsigned long    *addrl;
     register int    nlwidth;
@@ -93,33 +93,33 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     }
     off = *((int *) &pDrawable->x);
     off -= (off & 0x8000) << 1;
-#if PPW == 4
-    cfbGetByteWidthAndPointer(pDrawable, nbwidth, addrb);
-    addrb = addrb + pDrawable->y * nbwidth + pDrawable->x;
+#ifdef PIXEL_ADDR
+    cfbGetPixelWidthAndPointer(pDrawable, npwidth, addrp);
+    addrp = addrp + pDrawable->y * npwidth + pDrawable->x;
     if (rop == GXcopy)
     {
-	if (!(nbwidth & (nbwidth - 1)))
+	if (!(npwidth & (npwidth - 1)))
 	{
-	    nbwidth = ffs(nbwidth) - 1;
-	    PointLoop(*(addrb + (intToY(pt) << nbwidth) + intToX(pt)) = xor;)
+	    npwidth = ffs(npwidth) - 1;
+	    PointLoop(*(addrp + (intToY(pt) << npwidth) + intToX(pt)) = xor;)
 	}
 #ifdef sun
-	else if (nbwidth == 1152)
+	else if (npwidth == 1152)
 	{
 	    register int    y;
-	    PointLoop(y = intToY(pt); *(addrb + (y << 10) + (y << 7) + intToX(pt)) = xor;)
+	    PointLoop(y = intToY(pt); *(addrp + (y << 10) + (y << 7) + intToX(pt)) = xor;)
 	}
 #endif
 	else
 	{
-	    PointLoop(*(addrb + intToY(pt) * nbwidth + intToX(pt)) = xor;)
+	    PointLoop(*(addrp + intToY(pt) * npwidth + intToX(pt)) = xor;)
 	}
     }
     else
     {
 	and = devPriv->and;
-	PointLoop(  addrbt = addrb + intToY(pt) * nbwidth + intToX(pt);
-		    *addrbt = DoRRop (*addrbt, and, xor);)
+	PointLoop(  addrpt = addrp + intToY(pt) * npwidth + intToX(pt);
+		    *addrpt = DoRRop (*addrpt, and, xor);)
     }
 #else
     cfbGetLongWidthAndPointer(pDrawable, nlwidth, addrl);

@@ -37,8 +37,6 @@
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 
-#if (PPW == 4)
-
 void
 cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr	    pDrawable;
@@ -94,4 +92,3 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     (*pGC->ops->PolyGlyphBlt) (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase);
     
 }
-#endif

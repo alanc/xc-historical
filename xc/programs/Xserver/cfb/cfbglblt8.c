@@ -1,8 +1,4 @@
-/*
- * Poly glyph blt for 8 bit displays.  Accepts
- * an arbitrary font <= 32 bits wide, in Copy mode only.
- */
-
+/* $XConsortium: cfbglblt8.c,v 5.23 91/07/18 23:44:50 keith Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -16,7 +12,11 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.22 91/06/12 17:03:34 keith Exp $ */
+
+/*
+ * Poly glyph blt.  Accepts an arbitrary font <= 32 bits wide, in Copy mode
+ * only.
+ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -44,7 +44,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 	 (box1)->y1 <= ((int) (box2)->y1 + (yoffset)) && \
  	 ((int) (box2)->y2 + (yoffset)) <= (box1)->y2)
 
-#if PPW == 4
+#if defined(FOUR_BIT_CODE) || defined(WriteFourBits) && !defined(GLYPHROP)
 
 #if GLYPHPADBYTES != 4
 #define USE_LEFTBITS
@@ -82,8 +82,12 @@ static void cfbPolyGlyphBlt8Clipped();
 #endif
 
 #if defined(__GNUC__) && !defined(GLYPHROP) && (defined(mc68020) || defined(mc68000) || defined(__mc68000__)) && !defined(USE_LEFTBITS)
-#include    <stip68kgnu.h>
+#ifdef USE_STIPPLE_CODE
+#undef USE_STIPPLE_CODE
 #endif
+#endif
+
+#define DST_INC	    (4 >> PWSH)
 
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
@@ -124,11 +128,11 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 #ifndef STIPPLE
 #ifdef USE_STIPPLE_CODE
     void		(*stipple)();
-    extern void		stipplestack (), stipplestackte ();
+    extern void		cfbStippleStack (), cfbStippleStackTE ();
 
-    stipple = stipplestack;
+    stipple = cfbStippleStack;
     if (FONTCONSTMETRICS(pfont))
-	stipple = stipplestackte;
+	stipple = cfbStippleStackTE;
 #endif
 #endif
     
@@ -194,11 +198,11 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	glyphBits = (glyphPointer) FONTGLYPHBITS(pglyphBase,pci);
 	xoff = x + pci->metrics.leftSideBearing;
 	dstLine = pdstBase +
-	          (y - pci->metrics.ascent) * widthDst + (xoff >> 2);
+	          (y - pci->metrics.ascent) * widthDst + (xoff >> PWSH);
 	x += pci->metrics.characterWidth;
 	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
 	{
-	    xoff &= 0x3;
+	    xoff &= PIM;
 #ifdef STIPPLE
 	    STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
@@ -215,13 +219,13 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	dstLine = (unsigned long *) (((char *) dstLine) + bwidthDst);
 	    	GlyphBits(glyphBits, w, c)
 	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
-	    	dst++;
+	    	dst += DST_INC;
 	    	c = BitLeft(c,4-xoff);
 	    	while (c)
 	    	{
 		    WriteFourBits(dst, pixel, GetFourBits(c));
 		    NextFourBits(c);
-		    dst++;
+		    dst += DST_INC;
 	    	}
 	    } while (--hTmp);
 #endif /* USE_STIPPLE_CODE else */
@@ -316,8 +320,8 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	x += pci->metrics.characterWidth;
 	if (hTmp = pci->metrics.descent + pci->metrics.ascent)
 	{
-	    dstLine = pdstBase + yG * widthDst + (xG >> 2);
-	    xoff = xG & 0x3;
+	    dstLine = pdstBase + yG * widthDst + (xG >> PWSH);
+	    xoff = xG & PIM;
 #ifdef USE_LEFTBITS
 	    w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
 	    widthGlyph = PADGLYPHWIDTHBYTES(w);
@@ -337,12 +341,12 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    {
 	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
 	    	    	c = BitLeft(c,4 - xoff);
-	    	    	dst++;
+	    	    	dst += DST_INC;
 	    	    	while (c)
 	    	    	{
 		    	    WriteFourBits(dst, pixel, GetFourBits(c));
 		    	    NextFourBits(c);
-		    	    dst++;
+		    	    dst += DST_INC;
 	    	    	}
 		    }
 	    	} while (--hTmp);
@@ -366,7 +370,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	STIPPLE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
 #ifdef USE_STIPPLE_CODE
-	    	stipplestackte(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
+	    	cfbStippleStackTE(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
 	    	do {
 	    	    dst = dstLine;
@@ -376,12 +380,12 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    {
 	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
 	    	    	c = BitLeft(c,4-xoff);
-	    	    	dst++;
+	    	    	dst += DST_INC;
 	    	    	while (c)
 	    	    	{
 		    	    WriteFourBits(dst, pixel, GetFourBits(c));
 		    	    NextFourBits(c);
-		    	    dst++;
+		    	    dst += DST_INC;
 	    	    	}
 		    }
 	    	} while (--hTmp);
@@ -394,4 +398,4 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DEALLOCATE_LOCAL (clips);
 }
 
-#endif /* PPW == 4 */
+#endif /* FOUR_BIT_CODE */

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.18 91/04/10 11:42:03 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.19 91/07/05 10:53:09 rws Exp $ */
 
 extern unsigned int cfbstarttab[];
 extern unsigned int cfbendtab[];
@@ -82,12 +82,43 @@ extern unsigned int QuartetPixelMaskTable[];
  * ==========================================================================
  */
 
-#define PPW	4
+#define PLST	(PPW-1)
+#define PIM	PLST
+#define PMSK	((1 << PSZ) - 1)
+
+#if PPW == 8
+#define PWSH	3
+#define PSZ	4
+#endif
+
+#if PPW == 4
 #define PLST	3
 #define PIM	0x03
 #define PWSH	2
 #define PSZ	8
 #define PMSK	0xFF
+#define PIXEL_ADDR
+#define FOUR_BIT_CODE
+#define PixelType   unsigned char
+#endif
+#if PPW == 2
+#define PLST	0
+#define PIM	1
+#define PWSH	1
+#define PSZ	16
+#define PMSK	0xFFFF
+#define PIXEL_ADDR
+#define PixelType   unsigned short
+#endif
+#if PPW == 1
+#define PLST	0
+#define PIM	0
+#define PWSH	0
+#define PSZ	32
+#define PMSK	0xFFFFFFFF
+#define PIXEL_ADDR
+#define PixelType   unsigned long
+#endif
 
 /* the following notes use the following conventions:
 SCREEN LEFT				SCREEN RIGHT
@@ -221,6 +252,23 @@ getleftbits(psrc, w, dst)
  * Note that the shift direction is independent of the byte ordering of the 
  * machine.  The following is portable code.
  */
+#if PPW == 8
+#define PFILL(p) ( ((p)&PMSK)          | \
+		   ((p)&PMSK) <<   PSZ | \
+		   ((p)&PMSK) << 2*PSZ | \
+		   ((p)&PMSK) << 3*PSZ | \
+		   ((p)&PMSK) << 4*PSZ | \
+		   ((p)&PMSK) << 5*PSZ | \
+		   ((p)&PMSK) << 6*PSZ | \
+		   ((p)&PMSK) << 7*PSZ )
+#define PFILL2(p, pf) { \
+    pf = (p) & PMSK; \
+    pf |= (pf << PSZ); \
+    pf |= (pf << 2*PSZ); \
+    pf |= (pf << 4*PSZ); \
+}
+#endif
+#if PPW == 4
 #define PFILL(p) ( ((p)&PMSK)          | \
 		   ((p)&PMSK) <<   PSZ | \
 		   ((p)&PMSK) << 2*PSZ | \
@@ -230,6 +278,19 @@ getleftbits(psrc, w, dst)
     pf |= (pf << PSZ); \
     pf |= (pf << 2*PSZ); \
 }
+#endif
+#if PPW == 2
+#define PFILL(p) ( ((p)&PMSK)          | \
+		   ((p)&PMSK) <<   PSZ )
+#define PFILL2(p, pf) { \
+    pf = (p) & PMSK; \
+    pf |= (pf << PSZ); \
+}
+#endif
+#if PPW == 1
+#define PFILL(p)	(p)
+#define PFILL2(p,pf)	(pf = (p))
+#endif
 
 /*
  * Reduced raster op - using precomputed values, perform the above
@@ -423,16 +484,10 @@ if ((x) + (w) <= PPW) {\
     }
 #endif /* GETLEFTBITS_ALIGNMENT == 4 */
 
-#if (PPW*PSZ==32)
-#define GET_VALID_BITS_FROM_LONG(l) (l)
-#else
-#define GET_VALID_BITS_FROM_LONG(l) ((l)&((1L<<(PPW*PSZ))-1))
-#endif
-
 /*
  * getstipplepixels( psrcstip, x, w, ones, psrcpix, destpix )
  *
- * Converts bits to pixels in a reasonable way.  Takes w (1 <= w <= 4)
+ * Converts bits to pixels in a reasonable way.  Takes w (1 <= w <= PPW)
  * bits from *psrcstip, starting at bit x; call this a quartet of bits.
  * Then, takes the pixels from *psrcpix corresponding to the one-bits (if
  * ones is TRUE) or the zero-bits (if ones is FALSE) of the quartet
@@ -456,10 +511,10 @@ if ((x) + (w) <= PPW) {\
 { \
     unsigned int q; \
     int m; \
-    if ((m = ((x) - ((PPW*PSZ)-4))) > 0) { \
+    if ((m = ((x) - ((PPW*PSZ)-PPW))) > 0) { \
         q = (*(psrcstip)) << m; \
 	if ( (x)+(w) > (PPW*PSZ) ) \
-	    q |= GET_VALID_BITS_FROM_LONG(*((psrcstip)+1)) >> ((PPW*PSZ)-m); \
+	    q |= *((psrcstip)+1) >> ((PPW*PSZ)-m); \
     } \
     else \
         q = (*(psrcstip)) >> -m; \
@@ -470,7 +525,7 @@ if ((x) + (w) <= PPW) {\
 #define getstipplepixels( psrcstip, xt, w, ones, psrcpix, destpix ) \
 { \
     unsigned int q; \
-    q = GET_VALID_BITS_FROM_LONG(*(psrcstip)) >> (xt); \
+    q = *(psrcstip) >> (xt); \
     if ( ((xt)+(w)) > (PPW*PSZ) ) \
         q |= (*((psrcstip)+1)) << ((PPW*PSZ)-(xt)); \
     q = QuartetBitsTable[(w)] & ((ones) ? q : ~q); \
