@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.49 89/12/03 19:36:15 converse Exp $ */
+/* $XConsortium: Xutil.h,v 11.50 89/12/08 18:29:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,10 @@ SOFTWARE.
 
 #ifndef _XUTIL_H_
 #define _XUTIL_H_
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 #ifndef NeedFunctionPrototypes
 #if defined(__STDC__) || defined(__cplusplus)
@@ -850,5 +854,9 @@ extern XXorRegion(
     Region		/* dr_return */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XUTIL_H_ */

@@ -1,6 +1,4 @@
-#include <X11/copyright.h>
-
-/* $XConsortium: Xlibint.h,v 11.72 89/11/19 14:16:13 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.73 89/12/08 18:29:13 converse Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -10,6 +8,13 @@
  *
  *	Warning, there be dragons here....
  */
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
+#include <X11/copyright.h>
+
 #ifndef NEED_EVENTS
 #define _XEVENT_
 #endif
@@ -499,4 +504,9 @@ extern Status (*XESetEventToWire(
             )		/* proc */   
 #endif
 ))();
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
 

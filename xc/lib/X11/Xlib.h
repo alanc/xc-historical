@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.163 89/12/03 19:31:00 converse Exp $ */
+/* $XConsortium: Xlib.h,v 11.164 89/12/08 18:28:13 converse Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -24,6 +24,10 @@
  */
 #ifndef _XLIB_H_
 #define _XLIB_H_
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 #if defined(CRAY) || defined(USG)
 #ifndef __TYPES__
@@ -3750,5 +3754,9 @@ extern XWindowEvent(
     XEvent*		/* event_return */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _XLIB_H_ */

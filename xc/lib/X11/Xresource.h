@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.17 89/12/03 21:39:19 converse Exp $ */
+/* $XConsortium: Xresource.h,v 1.18 89/12/08 18:29:24 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,10 @@ SOFTWARE.
 
 #ifndef _Xresource_h
 #define _Xresource_h
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
 
 /****************************************************************
  ****************************************************************
@@ -349,6 +353,10 @@ extern void XrmParseCommand(
     char**		/* argv_in_out */		     
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* _Xresource_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
