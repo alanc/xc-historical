@@ -1,4 +1,4 @@
-/* $XConsortium: XChKeyCon.c,v 11.11 91/01/06 11:44:20 rws Exp $ */
+/* $XConsortium: ChKeyCon.c,v 11.12 91/01/26 14:12:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -28,8 +28,6 @@ XChangeKeyboardControl(dpy, mask, value_list)
     LockDisplay(dpy);
     GetReq(ChangeKeyboardControl, req);
     req->mask = mask;
-
-    /* Warning!  This code assumes that "unsigned long" is 32-bits wide */
 
     if (mask & KBKeyClickPercent)
 	*value++ = value_list->key_click_percent;

@@ -1,4 +1,4 @@
-/* $XConsortium: XWindow.c,v 11.15 88/09/06 16:11:25 jim Exp $ */
+/* $XConsortium: Window.c,v 11.16 91/01/06 11:48:49 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -66,9 +66,6 @@ _XProcessWindowAttributes (dpy, req, valuemask, attributes)
     register unsigned long valuemask;
     register XSetWindowAttributes *attributes;
     {
-
-    /* Warning!  This code assumes that "unsigned long" is 32-bits wide */
-
     unsigned long values[32];
     register unsigned long *value = values;
     unsigned int nvalues;

@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWM.c,v 1.6 92/01/19 15:03:57 rws Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.7 92/01/19 15:10:29 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986   */
 
 /*
@@ -75,7 +75,6 @@ Status XReconfigureWMWindow (dpy, w, screen, mask, changes)
 	mask &= AllMaskBits;
 	req->mask = mask;
 
-	/* Warning!  This code assumes that "unsigned long" is 32-bits wide */
 	if (mask & CWX) *value++ = changes->x;
 	if (mask & CWY) *value++ = changes->y;
 	if (mask & CWWidth) *value++ = changes->width;

@@ -1,4 +1,4 @@
-/* $XConsortium: XCrGC.c,v 11.38 92/03/04 09:22:18 rws Exp $ */
+/* $XConsortium: CrGC.c,v 11.39 92/12/31 15:41:26 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -100,8 +100,6 @@ _XGenerateGCList (dpy, gc, req)
     xReq *req;
     GC gc;
     {
-    /* Warning!  This code assumes that "unsigned long" is 32-bits wide */
-
     unsigned long values[32];
     register unsigned long *value = values;
     long nvalues;

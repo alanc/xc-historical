@@ -1,4 +1,4 @@
-/* $XConsortium: XReconfWin.c,v 11.13 88/09/06 16:11:39 jim Exp $ */
+/* $XConsortium: ReconfWin.c,v 11.14 91/01/06 11:47:45 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -34,8 +34,6 @@ XConfigureWindow(dpy, w, mask, changes)
     req->window = w;
     mask &= AllMaskBits;
     req->mask = mask;
-
-    /* Warning!  This code assumes that "unsigned long" is 32-bits wide */
 
     if (mask & CWX)
 	*value++ = changes->x;
