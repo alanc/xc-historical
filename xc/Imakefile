@@ -133,10 +133,10 @@ RELNOTES.PS::  RELNOTES.ms
 	tbl RELNOTES.ms | ptroff -t -ms >$@
 
 RELNOTES.lpt:  RELNOTES.ms
-	tbl RELNOTES.ms | ntroff -ms >$@
+	tbl RELNOTES.ms | nroff -ms >$@
 
 RELNOTES.txt:  RELNOTES.ms
-	tbl RELNOTES.ms | ntroff -ms | colcrt >$@
+	tbl RELNOTES.ms | nroff -ms | colcrt >$@
 
     RESOLUTION = 75
 
