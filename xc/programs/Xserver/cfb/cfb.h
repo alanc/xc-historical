@@ -110,8 +110,9 @@ extern void miPushPixels();
 extern void cfbInstallColormap();
 extern void cfbUninstallColormap();
 extern int cfbListInstalledColormaps();
-extern void cfbResolveStaticColor();
 #endif
+extern void cfbResolveColor();
+extern Bool cfbInitializeColormap();
 
 /*
    private filed of pixmap
