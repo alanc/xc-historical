@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.107 93/12/28 14:39:56 kaleb Exp $
+XCOMM platform:  $XConsortium: fujitsu.cf,v 1.1 94/02/04 19:47:34 rws Exp $
 
 #ifdef SparcArchitecture
 
@@ -35,8 +35,11 @@ XCOMM operating system:    OSName
 
 #define DoRanlibCmd        NO 
 #define DefaultCCOptions   +Z384
-#define ExtraLibraries     -lXbsd -lsocket
-#define TermcapLibrary	   -lcurses
+#define ExtraLibraries     -lXbsd -lsocket -lu
+#define TermcapLibrary     -lcurses
 #define BuildServer        NO
+#define HasSymLinks        NO
+#define HasVFork           NO
+#define XawI18nDefines     -DUSE_X_WCHAR_STRING
 
 #endif
