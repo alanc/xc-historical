@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Vlib.h,v 1.1 92/06/11 15:31:24 rws Exp $ */
 #ifndef _VLIB_H_
 #define _VLIB_H_
 
@@ -11,6 +11,8 @@
 #define NeedFunctionPrototypes 1
 #else
 #define NeedFunctionPrototypes 0
+#endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
 
 #ifndef NeedWidePrototypes
 #if defined(NARROWPROTO)
