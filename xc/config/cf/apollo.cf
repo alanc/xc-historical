@@ -11,8 +11,10 @@
 
             PAS = /com/pas
 
+#define SignalReturnProcType int
 
-/**/# platform:  $XConsortium: apollo.cf,v 1.2 89/01/11 14:58:17 jim Exp $
+
+/**/# platform:  $XConsortium: apollo.cf,v 1.3 89/02/09 12:49:14 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************

@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.24 89/02/26 12:14:05 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.25 89/03/14 11:42:01 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -243,6 +243,9 @@
 #endif
 #ifndef LibraryCDebugFlags
 #define LibraryCDebugFlags OptimizedCDebugFlags
+#endif
+#ifndef SignalReturnProcType
+#define SignalReturnProcType int
 #endif
 #ifndef InstBinFlags
 #define InstBinFlags -m 0755

@@ -17,12 +17,14 @@
 /* This defines the server you want */
 #define XHPServer              Xhp
 
+#define SignalReturnProcType int
+
 #define NeedBerklibInXlib      YES		/* snag Berklib for Xlib */
 
 #define ServerDefines StandardDefines ExtensionDefines -DPURDUE
 
 
-/**/# platform:  $XConsortium: hp.cf,v 1.7 89/03/14 17:40:41 jim Exp $
+/**/# platform:  $XConsortium: hp.cf,v 1.8 89/03/20 13:43:12 jim Exp $
 /**/# operating system:  OSName
 
 /*

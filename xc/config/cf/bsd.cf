@@ -11,7 +11,9 @@
 #define XqdssServer Xqdss
 #endif
 
-/**/# platform:  $XConsortium: bsd.cf,v 1.1 89/01/11 14:58:35 jim Exp $
+#define SignalReturnProcType int
+
+/**/# platform:  $XConsortium: bsd.cf,v 1.2 89/03/02 13:28:20 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
