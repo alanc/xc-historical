@@ -1,4 +1,6 @@
 /*
+ * $XHeader$
+ * 
  * xconinfo - print information about X connecton
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -13,6 +15,7 @@
  * suitability of this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  *
+ * Author:  Jim Fulton, MIT X Consortium
  */
 
 #include <stdio.h>
