@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: strings.xaw,v 1.21 91/09/30 13:36:24 converse Exp $
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message
@@ -263,7 +263,7 @@ A list of all this composite widget's current children.
 .IP insertPosition 1.5i
 A function which allows the application programmer to specify the position
 of a new child.
-...
+..
 .de Nc \" Composite numChildren
 .IP numChildren 1.5i
 The number of children in this composite widget.
