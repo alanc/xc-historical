@@ -1,5 +1,6 @@
 Xditview.geometry: 600x800
-*Font: 	-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1
+*MenuButton*Font: 	-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1
+*SimpleMenu*Font: 	-*-helvetica-bold-r-normal--*-120-*-*-*-*-iso8859-1
 *Text*Font:	-*-courier-medium-r-normal--*-120-*-*-*-*-iso8859-1
 
 *paned.allowResize:		true
