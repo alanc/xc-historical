@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.152 91/02/17 13:04:31 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.153 91/03/11 15:25:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +30,6 @@ SOFTWARE.
 #include	<X11/Xlib.h>
 #include	<X11/Xutil.h>
 #include	<X11/Xresource.h>
-#include	<X11/Xos.h>
 #include	<X11/Xfuncproto.h>
 
 #define XtSpecificationRelease 4
