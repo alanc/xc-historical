@@ -29,7 +29,7 @@ SOFTWARE.
 
 #include "Xmd.h"
 #include "pixmapstr.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 
 #include "cfb.h"
 #include "mi.h"

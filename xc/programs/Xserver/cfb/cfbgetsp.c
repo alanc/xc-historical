@@ -33,7 +33,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
  * and continuing for pwidth[i] bits

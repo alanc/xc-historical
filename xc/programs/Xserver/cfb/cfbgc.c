@@ -35,7 +35,7 @@ SOFTWARE.
 #include "cfb.h"
 #include "mistruct.h"
 
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 extern cfbXRotatePixmap();
 extern cfbYRotatePixmap();
 extern void mfbPushPixels();

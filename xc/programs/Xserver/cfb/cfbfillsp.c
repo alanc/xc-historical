@@ -59,7 +59,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 
 /* scanline filling for color frame buffer
    written by drewry, oct 1986 modified by smarks

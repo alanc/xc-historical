@@ -63,7 +63,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 
 
 /* CopyArea and CopyPlane for a monchrome frame buffer

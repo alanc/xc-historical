@@ -1,5 +1,5 @@
 SRCS =	 cfbgc.c cfbwindow.c cfbmisc.c \
-	 cfbpntwin.c cfbmaskbits.c cfbpixmap.c cfbbitblt.c \
+	 cfbpntwin.c cfbmskbits.c cfbpixmap.c cfbbitblt.c \
 	 cfbfillsp.c cfbsetsp.c cfbscrinit.c \
 	 cfbgetsp.c cfbutils.c \
 	 cfbcmap.c cfboldmfb.c
@@ -7,7 +7,7 @@ SRCS =	 cfbgc.c cfbwindow.c cfbmisc.c \
 OBJS =   cfbgc.o cfbwindow.o cfbmisc.o \
 	 cfbgetsp.o cfbutils.o \
 	 cfbfillsp.o cfbsetsp.o cfbscrinit.o \
-	 cfbpntwin.o cfbmaskbits.o cfbpixmap.o cfbbitblt.o \
+	 cfbpntwin.o cfbmskbits.o cfbpixmap.o cfbbitblt.o \
 	 cfbcmap.o cfboldmfb.o
 
 CDEBUGFLAGS = ServerCDebugFlags

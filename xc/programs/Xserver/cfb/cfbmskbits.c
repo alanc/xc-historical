@@ -1,4 +1,4 @@
-/* $Header: cfbmaskbits.c,v 3.1 87/08/08 17:52:16 toddb Exp $ */
+/* $Header: cfbmskbits.c,v 4.0 87/08/31 20:59:26 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -45,7 +45,7 @@ bits on the screen the way they would be written on paper,
 (i.e. msb to the left), and so a bit index n on the screen is
 bit index 32-n in a longword
 
-   see also cfbmaskbits.h
+   see also cfbmskbits.h
 */
 #include	<X.h>
 #include	<Xmd.h>

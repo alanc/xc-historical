@@ -30,7 +30,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 /*
 NOTE
    PaintArea32() doesn't need to rotate the tile, since

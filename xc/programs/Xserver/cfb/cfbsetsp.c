@@ -33,7 +33,7 @@ SOFTWARE.
 #include "scrnintstr.h"
 
 #include "cfb.h"
-#include "cfbmaskbits.h"
+#include "cfbmskbits.h"
 
 
 /* cfbSetScanline -- copies the bits from psrc to the drawable starting at
