@@ -185,7 +185,11 @@ CreateSockets()
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
+#if defined(hpux) || defined(SVR4)
+    lastfdesc = _NFILE - 1;
+#else
     lastfdesc = getdtablesize() - 1;
+#endif	/* hpux */
 
     if (lastfdesc > MAXSOCKS) {
 	lastfdesc = MAXSOCKS;
