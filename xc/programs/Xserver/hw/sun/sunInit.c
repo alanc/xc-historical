@@ -288,12 +288,10 @@ short *pheight;
  *	The graphics context for the screen is created. The CreateGC,
  *	CreateWindow and ChangeWindowAttributes vectors are changed in
  *	the screen structure.
-#ifdef	autorepeat
  *
  *	Both a BlockHandler and a WakeupHandler are installed for the
  *	first screen.  Together, these handlers implement autorepeat
  *	keystrokes on the Sun.
-#endif	autorepeat
  *
  *-----------------------------------------------------------------------
  */
@@ -305,10 +303,8 @@ sunScreenInit (pScreen)
     DrawablePtr	  pDrawable;
     extern void   sunBlockHandler();
     extern void   sunWakeupHandler();
-#ifdef	autorepeat
     static	  autoRepeatHandlersInstalled = FALSE;
     static ScreenPtr autoRepeatScreen;
-#endif	autorepeat
 
     fb = &sunFbs[pScreen->myNum];
 
@@ -362,7 +358,6 @@ sunScreenInit (pScreen)
     /*
      *	Block/Unblock handlers
      */
-#ifdef	autorepeat
     if (autoRepeatHandlersInstalled == FALSE) {
 	autoRepeatScreen = pScreen;
 	autoRepeatHandlersInstalled = TRUE;
@@ -372,10 +367,6 @@ sunScreenInit (pScreen)
         pScreen->BlockHandler = sunBlockHandler;
         pScreen->WakeupHandler = sunWakeupHandler;
     }
-#else
-    pScreen->BlockHandler = NoopDDA;
-    pScreen->WakeupHandler = NoopDDA;
-#endif	autorepeat
 
 }
 

@@ -64,7 +64,6 @@ static void 	  sunKbdCtrl();
 static Firm_event *sunKbdGetEvents();
 static void 	  sunKbdProcessEvent();
 static void 	  sunKbdDoneEvents();
-#ifdef	autorepeat
 int	  	  autoRepeatKeyDown = 0;
 int	  	  autoRepeatDebug = 0;
 int	  	  autoRepeatReady;
@@ -85,7 +84,6 @@ static struct timeval autoRepeatDeltaTv;
 			(tv).tv_usec -= 1000000; \
 			(tv).tv_sec += 1; \
 		}
-#endif	autorepeat
 
 
 static SunKbPrivRec	sunKbPriv;  
@@ -295,13 +293,11 @@ sunKbdCtrl (pKeyboard)
  * Results:
  *	A pointer to an array of Firm_events or (Firm_event *)0 if no events
  *	The number of events contained in the array.
-#ifdef	autorepeat
  *	If there are no keyboard events ready and autoRepeatKeyDown > 0,
  *	then *pNumEvents is set to 1 and Firm_event id is set to
  *	AUTOREPEAT_EVENTID.  In sunKbdProcessEvent, if autoRepeatKeyDown > 0
  *	and Firm_event id == AUTOREPEAT_EVENTID, then the event buffer is
  *	ignored and the	event is generated from the last KeyPress event.
-#endif	autorepeat
  *
  * Side Effects:
  *	None.
@@ -330,7 +326,6 @@ sunKbdGetEvents (pKeyboard, pNumEvents)
 	*pNumEvents = nBytes / sizeof (Firm_event);
     }
 
-#ifdef	autorepeat
     if (autoRepeatKeyDown && autoRepeatReady && *pNumEvents == 0) {
 	*pNumEvents = 1;			/* Fake the event */
 	evBuf[0].id = AUTOREPEAT_EVENTID;	/* Flags autoRepeat event */
@@ -338,7 +333,6 @@ sunKbdGetEvents (pKeyboard, pNumEvents)
 	    ErrorF("sunKbdGetEvents: autoRepeatKeyDown = %d event\n",
 				autoRepeatKeyDown);
     }
-#endif	autorepeat
 
     return (evBuf);
 }
@@ -369,14 +363,11 @@ sunKbdProcessEvent (pKeyboard, fe)
 {
     xEvent		xE;
     PtrPrivPtr	  	ptrPriv;
-#ifdef	autorepeat
     int			delta;
     static xEvent	autoRepeatEvent;
-#endif	autorepeat
 
     ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
 
-#ifdef	autorepeat
     if (autoRepeatKeyDown && fe->id == AUTOREPEAT_EVENTID) {
 	/*
 	 * Generate auto repeat event.	XXX one for now.
@@ -417,7 +408,6 @@ sunKbdProcessEvent (pKeyboard, fe)
     autoRepeatKeyDown = 0;
     if (autoRepeatDebug)
 	ErrorF("sunKbdProcessEvent: autoRepeat off\n");
-#endif	autorepeat
 
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.keyButtonPointer.rootX = ptrPriv->x;
@@ -425,7 +415,6 @@ sunKbdProcessEvent (pKeyboard, fe)
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = (fe->id & 0x7F) + sysKbPriv.offset;
 
-#ifdef  autorepeat
     if (fe->value == VKEY_DOWN) {	/* turn on AutoRepeater */
 	if (autoRepeatDebug)
             ErrorF("sunKbdProcessEvent: VKEY_DOWN\n");
@@ -434,7 +423,6 @@ sunKbdProcessEvent (pKeyboard, fe)
 	autoRepeatKeyDown++;
 	autoRepeatLastKeyDownTv = fe->time;
     }
-#endif  autorepeat
 
     (* pKeyboard->processInputProc) (&xE, pKeyboard);
 }
@@ -657,7 +645,6 @@ LegalModifier(key)
     return (TRUE);
 }
 
-#ifdef	autorepeat
 /*ARGSUSED*/
 void
 sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
@@ -712,5 +699,4 @@ sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	ProcessInputEvents();
     autoRepeatReady = 0;
 }
-#endif	autorepeat
 

@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 4.1 87/09/07 17:02:36 sun Locked $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 4.2 87/09/11 19:17:58 sun Locked $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -275,7 +275,6 @@ extern int  	  lastEventTime;    /* Time (in ms.) of last event */
 extern void 	  SetTimeSinceLastInputEvent();
 extern void	ErrorF();
 
-#ifdef	autorepeat
 #define AUTOREPEAT_INITIATE     (300)           /* milliseconds */
 #define AUTOREPEAT_DELAY        (100)           /* milliseconds */
 /*
@@ -290,7 +289,6 @@ extern void	ErrorF();
 extern int	autoRepeatKeyDown;		/* TRUE if key down */
 extern int	autoRepeatReady;		/* TRUE if time out */
 extern int	autoRepeatDebug;		/* TRUE if debugging */
-#endif	autorepeat
 
 /*
  * Sun specific extensions:
