@@ -198,6 +198,8 @@ static void Initialize(request, new)
     ctx->text.lt.info = NULL;
     ctx->text.s.left = ctx->text.s.right = 0;
     ctx->text.s.type = XtselectPosition;
+    ctx->text.s.selections = NULL;
+    ctx->text.s.array_size = 0;
     ctx->text.sbar = ctx->text.outer = NULL;
     ctx->text.lasttime = 0; /* ||| correct? */
     ctx->text.time = 0; /* ||| correct? */
@@ -238,6 +240,41 @@ static void Realize( w, valueMask, attributes )
        XtMapWidget(ctx->text.sbar);
    }
    ForceBuildLineTable(ctx);
+}
+
+
+static /*void*/ _CreateCutBuffers(d)
+    Display *d;
+{
+    static struct _DisplayRec {
+	struct _DisplayRec *next;
+	Display *dpy;
+    } *dpy_list = NULL;
+    struct _DisplayRec *dpy_ptr;
+
+    for (dpy_ptr = dpy_list; dpy_ptr != NULL; dpy_ptr = dpy_ptr->next) {
+	if (dpy_ptr->dpy == d) return;
+    }
+
+    dpy_ptr = XtNew(struct _DisplayRec);
+    dpy_ptr->next = dpy_list;
+    dpy_ptr->dpy = d;
+    dpy_list = dpy_ptr;
+
+#define Create(buffer) \
+    XChangeProperty(d, RootWindow(d, 0), buffer, XA_STRING, 8, \
+		    PropModeAppend, NULL, 0 );
+
+    Create( XA_CUT_BUFFER0 );
+    Create( XA_CUT_BUFFER1 );
+    Create( XA_CUT_BUFFER2 );
+    Create( XA_CUT_BUFFER3 );
+    Create( XA_CUT_BUFFER4 );
+    Create( XA_CUT_BUFFER5 );
+    Create( XA_CUT_BUFFER6 );
+    Create( XA_CUT_BUFFER7 );
+
+#undef Create
 }
 
 /* Utility routines for support of Text */
@@ -779,16 +816,19 @@ static void LoseSelection(w, selection)
     Boolean update_in_progress = (ctx->text.old_insert >= 0);
 
     _XtTextPrepareToUpdate(ctx);
-    _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos);
+    _XtTextSetNewSelection(ctx, ctx->text.insertPos, ctx->text.insertPos,
+			   selection, ONE);
     if (!update_in_progress) {
 	_XtTextExecuteUpdate(ctx);
     }
 }
 
 
-static int _XtTextSetNewSelection(ctx, left, right)
+static int _XtTextSetNewSelection(ctx, left, right, selections, count)
   TextWidget ctx;
   XtTextPosition left, right;
+  Atom *selections;
+  Cardinal count;
 {
     XtTextPosition pos;
     void (*nullProc)() = NULL;
@@ -816,9 +856,37 @@ static int _XtTextSetNewSelection(ctx, left, right)
 	(*ctx->text.source->SetSelection) (ctx->text.source,
 					   left, right, XA_PRIMARY);
     }
-    if (right > left)
-	XtOwnSelection((Widget)ctx, XA_PRIMARY, ctx->text.time,
-		       ConvertSelection, LoseSelection, NULL);
+    if (left < right) {
+	int buffer;
+	while (count) {
+	    Atom selection = selections[--count];
+	    switch (selection) {
+	      case XA_CUT_BUFFER0: buffer = 0; break;
+	      case XA_CUT_BUFFER1: buffer = 1; break;
+	      case XA_CUT_BUFFER2: buffer = 2; break;
+	      case XA_CUT_BUFFER3: buffer = 3; break;
+	      case XA_CUT_BUFFER4: buffer = 4; break;
+	      case XA_CUT_BUFFER5: buffer = 5; break;
+	      case XA_CUT_BUFFER6: buffer = 6; break;
+	      case XA_CUT_BUFFER7: buffer = 7; break;
+	      default:		   buffer = -1;
+	    }
+	    if (buffer >= 0) {
+		char *ptr =
+		    _XtTextGetText(ctx, ctx->text.s.left, ctx->text.s.right);
+		if (buffer == 0) {
+		    _CreateCutBuffers(XtDisplay((Widget)ctx));
+		    XRotateBuffers(XtDisplay((Widget)ctx), 1);
+		}
+		XStoreBuffer(XtDisplay((Widget)ctx), ptr,
+			     min(strlen(ptr), MAXCUT), buffer);
+		XtFree (ptr);
+	    } else {
+		XtOwnSelection((Widget)ctx, selection, ctx->text.time,
+			       ConvertSelection, LoseSelection, NULL);
+	    }
+	}
+    }
 }
 
 
@@ -1075,7 +1143,7 @@ static void DoSelection (ctx, position, time, motion)
     }
     if ((newLeft != ctx->text.s.left) || (newRight != ctx->text.s.right)
 	    || (newType != ctx->text.s.type)) {
-	_XtTextSetNewSelection(ctx, newLeft, newRight);
+	_XtTextSetNewSelection(ctx, newLeft, newRight, NULL, ZERO);
 	ctx->text.s.type = newType;
 	if (position - ctx->text.s.left < ctx->text.s.right - position)
 	    ctx->text.insertPos = newLeft;
@@ -1124,7 +1192,7 @@ static void ExtendSelection (ctx, position, motion)
 	if ((ctx->text.extendDir == XtsdRight && position < ctx->text.origSel.left) ||
 		(ctx->text.extendDir == XtsdLeft && position > ctx->text.origSel.right)) {
 	    ctx->text.extendDir = (ctx->text.extendDir == XtsdRight)? XtsdLeft : XtsdRight;
-	    _XtTextSetNewSelection(ctx, ctx->text.origSel.left, ctx->text.origSel.right);
+	    _XtTextSetNewSelection(ctx, ctx->text.origSel.left, ctx->text.origSel.right, NULL, ZERO);
 	}
     newLeft = ctx->text.s.left;
     newRight = ctx->text.s.right;
@@ -1156,7 +1224,7 @@ static void ExtendSelection (ctx, position, motion)
 	    position = ctx->text.insertPos;
 	    break;
     }
-    _XtTextSetNewSelection(ctx, newLeft, newRight);
+    _XtTextSetNewSelection(ctx, newLeft, newRight, NULL, ZERO);
     ctx->text.insertPos = position;
 }
 
@@ -1259,18 +1327,61 @@ static CheckResizeOrOverflow(ctx)
     }
 }
 
+static Atom* _SelectionList(ctx, params, num_params)
+  TextWidget ctx;
+  String *params;
+  Cardinal num_params;
+{
+    /* converts (params, num_params) to a list of atoms & caches the
+     * list in the TextWidget instance.
+     */
+    Display *d = XtDisplay((Widget)ctx);
+    static AtomPtr* atoms;
+    static Cardinal atom_count = 0, last = 0;
+    int i;
+
+    if (num_params > ctx->text.s.array_size) {
+	ctx->text.s.selections =
+	    (Atom*)XtRealloc(ctx->text.s.selections, num_params*sizeof(Atom));
+	ctx->text.s.array_size = num_params;
+    }
+    if (num_params > atom_count) {
+	atom_count = num_params;
+	atoms = (AtomPtr*)XtRealloc(atoms, atom_count*sizeof(AtomPtr));
+    }
+    for (i = 0; i < num_params; i++) {
+	register int p;
+	for (p = 0; p < last; p++) {
+	    if (strcmp(params[i], XmuNameOfAtom(atoms[p])) == 0) {
+		break;
+	    }
+	}
+	if (p == last) {
+	    if (last == atom_count) {
+		atoms = (AtomPtr*)XtRealloc(atoms, (++atom_count)*sizeof(AtomPtr));
+	    }
+	    atoms[last++] = XmuMakeAtom(params[i]);
+	}
+	ctx->text.s.selections[i] = XmuInternAtom(d, &atoms[p]);
+    }
+    ctx->text.s.atom_count = num_params;
+    return ctx->text.s.selections;
+}
+
+
 /*
  * This routine is used to perform various selection functions. The goal is
  * to be able to specify all the more popular forms of draw-through and
  * multi-click selection user interfaces from the outside.
  */
-void AlterSelection (ctx, mode, action)
+void AlterSelection (ctx, mode, action, params, num_params)
     TextWidget     ctx;
     XtTextSelectionMode   mode;	/* {XtsmTextSelect, XtsmTextExtend} */
     XtTextSelectionAction action; /* {XtactionStart, XtactionAdjust, XtactionEnd} */
+    String	*params;
+    Cardinal	*num_params;
 {
     XtTextPosition position;
-    char   *ptr;
 
     position = PositionForXY (ctx, (int) ctx->text.ev_x, (int) ctx->text.ev_y);
     if (action == XtactionStart) {
@@ -1293,10 +1404,20 @@ void AlterSelection (ctx, mode, action)
 	    break;
 	}
     }
-    if (action == XtactionEnd && ctx->text.s.left < ctx->text.s.right) {
-	ptr = _XtTextGetText (ctx, ctx->text.s.left, ctx->text.s.right);
-	XStoreBuffer (XtDisplay(ctx), ptr, min (strlen (ptr), MAXCUT), 0);
-	XtFree (ptr);
+    if (action == XtactionEnd) {
+	if (ctx->text.s.left < ctx->text.s.right) {
+	    Cardinal count = *num_params;
+	    if (count == 0) {
+		static String defaultSelection = "CUT_BUFFER0";
+		params = &defaultSelection;
+		count = 1;
+	    }
+	    _XtTextSetNewSelection(
+		   ctx, ctx->text.s.left, ctx->text.s.right,
+		   _SelectionList(ctx, params, count),
+		   count );
+	}
+	else XtTextUnsetSelection((Widget)ctx);
     }
 }
 
@@ -1731,8 +1852,24 @@ XtTextPosition XtTextGetInsertionPoint(w)
 void XtTextUnsetSelection(w)
     Widget	    w;
 {
-    XtDisownSelection(w, XA_PRIMARY);
-    LoseSelection(w, XA_PRIMARY); /* in case it wasn't just called */
+    register TextWidget ctx = (TextWidget)w;
+    int i;
+
+    for (i = ctx->text.s.atom_count; i;) {
+	register Atom selection = ctx->text.s.selections[--i];
+	switch (selection) {
+	  case XA_CUT_BUFFER0:
+	  case XA_CUT_BUFFER1:
+	  case XA_CUT_BUFFER2:
+	  case XA_CUT_BUFFER3:
+	  case XA_CUT_BUFFER4:
+	  case XA_CUT_BUFFER5:
+	  case XA_CUT_BUFFER6:
+	  case XA_CUT_BUFFER7: continue;
+	}
+	XtDisownSelection(w, selection);
+	LoseSelection(w, selection); /* in case it wasn't just called */
+    }
 }
 
 
@@ -1759,11 +1896,12 @@ void XtTextSetSelection (w, left, right)
     XtTextPosition left, right;
 {
     TextWidget ctx = (TextWidget) w;
+    Atom selection = XA_PRIMARY;
 
 	_XtTextPrepareToUpdate(ctx);
         if (left == right)
 	    XtDisownSelection(w, XA_PRIMARY);
-        _XtTextSetNewSelection(ctx, left, right);
+        _XtTextSetNewSelection(ctx, left, right, &selection, ONE);
 	_XtTextExecuteUpdate(ctx);
 }
 
@@ -2393,22 +2531,55 @@ static void InsertNewLineAndIndent(ctx, event)
    EndAction(ctx);
 }
 
-static void NewSelection(ctx, l, r)
+static void NewSelection(ctx, l, r, params, num_params)
   TextWidget ctx;
   XtTextPosition l, r;
+  String *params;
+  Cardinal *num_params;
 {
+    Display *d = XtDisplay((Widget)ctx);
     char   *ptr;
-    _XtTextSetNewSelection(ctx, l, r);
-    if (l < r) {
-	ptr = _XtTextGetText(ctx, l, r);
-	XStoreBuffer(XtDisplay(ctx), ptr, min(strlen(ptr), MAXCUT), 0);
-	XtFree(ptr);
+    static Atom* selections;
+    static AtomPtr* atoms;
+    static Cardinal selection_count = 0;
+    static Cardinal atom_count = 0, last = 0;
+    int i;
+
+    if (*num_params > selection_count) {
+	selection_count = *num_params;
+	selections = (Atom*)XtRealloc(selections, selection_count*sizeof(Atom));
     }
+    if (*num_params > atom_count) {
+	atom_count = *num_params;
+	atoms = (AtomPtr*)XtRealloc(atoms, atom_count*sizeof(AtomPtr));
+    }
+    for (i = 0; i < *num_params; i++) {
+	register int p;
+	for (p = 0; p < last; p++) {
+	    if (strcmp(params[i], XmuNameOfAtom(atoms[p])) == 0) {
+		break;
+	    }
+	}
+	if (p == last) {
+	    if (last == atom_count) {
+		atoms = (AtomPtr*)XtRealloc(atoms, (++atom_count)*sizeof(AtomPtr));
+	    }
+	    atoms[last++] = XmuMakeAtom(params[i]);
+	}
+	selections[i] = XmuInternAtom(d, atoms[p]);
+    }
+
+    _XtTextSetNewSelection(
+	   ctx, l, r,
+	   _SelectionList(ctx, params, *num_params),
+	   *num_params );
 }
 
-static void SelectWord(ctx, event)
+static void SelectWord(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;
+   Cardinal *num_params;
 {
     XtTextPosition l, r;
    StartAction(ctx, event);
@@ -2416,71 +2587,85 @@ static void SelectWord(ctx, event)
     	XtstWhiteSpace, XtsdLeft, 1, FALSE);
     r = (*ctx->text.source->Scan)(ctx->text.source, l, XtstWhiteSpace, 
     	XtsdRight, 1, FALSE);
-    NewSelection(ctx, l, r);
+    NewSelection(ctx, l, r, params, num_params);
    EndAction(ctx);
 }
 
 
-static void SelectAll(ctx, event)
+static void SelectAll(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;
+   Cardinal *num_params;
 {
    StartAction(ctx, event);
-   NewSelection(ctx, (XtTextPosition) 0, ctx->text.lastPos);
+   NewSelection(ctx, (XtTextPosition)0, ctx->text.lastPos, params, num_params);
    EndAction(ctx);
 }
 
-static void SelectStart(ctx, event)
+static void SelectStart(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextSelect, XtactionStart);
+    AlterSelection(ctx, XtsmTextSelect, XtactionStart, NULL, ZERO);
    EndAction(ctx);
 }
 
-static void SelectAdjust(ctx, event)
+static void SelectAdjust(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextSelect, XtactionAdjust);
+    AlterSelection(ctx, XtsmTextSelect, XtactionAdjust, NULL, ZERO);
    EndAction(ctx);
 }
 
-static void SelectEnd(ctx, event)
+static void SelectEnd(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;
+   Cardinal *num_params;
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextSelect, XtactionEnd);
+    AlterSelection(ctx, XtsmTextSelect, XtactionEnd, params, num_params);
    EndAction(ctx);
 }
 
-static void ExtendStart(ctx, event)
+static void ExtendStart(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextExtend, XtactionStart);
+    AlterSelection(ctx, XtsmTextExtend, XtactionStart, NULL, ZERO);
    EndAction(ctx);
 }
 
-static void ExtendAdjust(ctx, event)
+static void ExtendAdjust(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;		/* unused */
+   Cardinal *num_params;	/* unused */
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextExtend, XtactionAdjust);
+    AlterSelection(ctx, XtsmTextExtend, XtactionAdjust, NULL, ZERO);
    EndAction(ctx);
 }
 
-static void ExtendEnd(ctx, event)
+static void ExtendEnd(ctx, event, params, num_params)
   TextWidget ctx;
    XEvent *event;
+   String *params;
+   Cardinal *num_params;
 {
    StartAction(ctx, event);
-    AlterSelection(ctx, XtsmTextExtend, XtactionEnd);
+    AlterSelection(ctx, XtsmTextExtend, XtactionEnd, params, num_params);
    EndAction(ctx);
 }
 

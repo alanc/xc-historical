@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.24 88/09/29 18:52:47 swick Exp $
+* $XConsortium: TextP.h,v 1.25 88/10/04 08:26:42 swick Exp $
 */
 
 
@@ -115,8 +115,11 @@ typedef enum {XtactionStart, XtactionAdjust, XtactionEnd}
     XtTextSelectionAction;
 
 typedef struct {
-    XtTextPosition left, right;
+    XtTextPosition   left, right;
     XtTextSelectType type;
+    Atom*	     selections;
+    int		     atom_count;
+    int		     array_size;
 } XtTextSelection;
 
 #define IsPositionVisible(ctx, pos) \
