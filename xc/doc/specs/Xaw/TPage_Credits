@@ -42,8 +42,9 @@ software described herein for any purpose.
 It is provided ``as is'' without express or implied warranty.
 .ps 11
 .nr PS 11
-.bp iii
-.XS iii
+.pn 5
+.bp 
+.XS v
 Acknowledgments
 .XE
 \&
@@ -110,8 +111,8 @@ details.
 Chris D. Peterson
 MIT X Consortium
 .De
+.af % i
 .EH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
 .OH '\fBX Toolkit Athena Widgets\fP''\fBX11, Release 4\fP'
 .EF ''\fB % \fP''
 .OF ''\fB % \fP''
-
