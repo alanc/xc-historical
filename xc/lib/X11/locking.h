@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.9 93/09/14 17:06:52 gildea Exp $
+ * $XConsortium: locking.h,v 1.10 93/11/11 17:45:17 kaleb Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author: Stephen Gildea, MIT X Consortium
  *
  * locking.h - data types for C Threads locking.
- * Used only by XlibInt.c and locking.c
+ * Used by XlibInt.c, locking.c, LockDis.c
  */
 
 #ifndef _X_locking_H_
@@ -33,17 +33,23 @@
 #define xfree(s) Xfree(s)
 #include <X11/Xthreads.h>
 
+struct _XCVList {
+    xcondition_t cv;
+    xReply *buf;
+    struct _XCVList *next;
+};
+
 extern xthread_t (*_Xthread_self_fn)( /* in XlibInt.c */
 #if NeedFunctionPrototypes
     void
 #endif
 );
 
-struct _XCVList {
-    xcondition_t cv;
-    xReply *buf;
-    struct _XCVList *next;
-};
+extern struct _XCVList *(*_XCreateCVL_fn)(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 /* Display->lock is a pointer to one of these */
 
@@ -56,11 +62,15 @@ struct _XLockInfo {
 	struct _XCVList *event_awaiters; /* list of CVs for _XReadEvents */
 	struct _XCVList **event_awaiters_tail;
 	/* for XLockDisplay */
+	int locking_level;	/* how many times into XLockDisplay we are */
 	xthread_t locking_thread; /* thread that did XLockDisplay */
+	xcondition_t cv;	/* wait if another thread has XLockDisplay */
 	xthread_t reading_thread; /* cache */
 	xthread_t conni_thread;	/* thread in XProcessInternalConnection */
-	xcondition_t cv;	/* wait if another thread has XLockDisplay */
 };
+
+#define UnlockNextEventReader(d,c) if ((d)->lock_fns) \
+    (*(d)->lock_fns->pop_reader)((d),(c), &(d)->lock->event_awaiters,&(d)->lock->event_awaiters_tail)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define ConditionWait(d,c) if ((d)->lock_fns) \
