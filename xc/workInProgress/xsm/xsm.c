@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.28 94/02/22 10:55:18 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.29 94/02/22 14:40:35 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1437,7 +1437,7 @@ main(argc, argv)
 
     /* the sizeof includes the \0, so we don't need to count the '=' */
     networkIds = IceComposeNetworkIdList (numTransports, listenObjs);
-    p = malloc((sizeof environment_name) + strlen(networkIds) + 1);
+    p = (char *) malloc((sizeof environment_name) + strlen(networkIds) + 1);
     if(!p) nomem();
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);

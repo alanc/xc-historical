@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: save.c,v 1.1 94/02/22 14:28:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -39,7 +39,7 @@ read_save()
     PendingList = ListInit();
     if(!PendingList) nomem();
 
-    p = getenv("HOME");
+    p = (char *) getenv("HOME");
     if(!p) p = ".";
     strcpy(session_save_file, p);
     strcat(session_save_file, "/.SM-save");
@@ -190,8 +190,8 @@ FILE	*f;
 	    if(i+2 > *plen) {
 		if(*plen) *plen *= 2;
 		else *plen = BUFSIZ;
-		if(*pbuf) *pbuf = realloc(*pbuf, *plen);
-		else *pbuf = malloc(*plen);
+		if(*pbuf) *pbuf = (char *) realloc(*pbuf, *plen);
+		else *pbuf = (char *) malloc(*plen);
 	    }
 	    c = getc(f);
 	    if(c == EOF) break;

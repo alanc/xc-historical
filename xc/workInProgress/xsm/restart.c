@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: restart.c,v 1.1 94/02/22 14:30:19 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -45,8 +45,8 @@ restart_everything()
     int		remote_allowed = 1;
 
     display_env = NULL;
-    if(p = getenv(envDISPLAY)) {
-	display_env = malloc(strlen(envDISPLAY)+1+strlen(p)+1);
+    if(p = (char *) getenv(envDISPLAY)) {
+	display_env = (char *) malloc(strlen(envDISPLAY)+1+strlen(p)+1);
 	if(!display_env) nomem();
 	sprintf(display_env, "%s=%s", envDISPLAY, p);
 
@@ -64,7 +64,7 @@ restart_everything()
 	{
 	    /* we have a host name */
 
-	    non_local_display_env = malloc (strlen (display_env) + 1);
+	    non_local_display_env = (char *) malloc (strlen (display_env) + 1);
 	    if (!non_local_display_env) nomem();
 
 	    strcpy (non_local_display_env, display_env);
@@ -74,7 +74,7 @@ restart_everything()
 	    char hostnamebuf[256];
 
 	    gethostname (hostnamebuf, sizeof hostnamebuf);
-	    non_local_display_env = malloc (strlen (envDISPLAY) + 1 +
+	    non_local_display_env = (char *) malloc (strlen (envDISPLAY) + 1 +
 		strlen (hostnamebuf) + strlen (temp) + 1);
 	    if (!non_local_display_env) nomem();
 	    sprintf(non_local_display_env, "%s=%s%s",
@@ -83,8 +83,9 @@ restart_everything()
     }
 
     session_env = NULL;
-    if(p = getenv(envSESSION_MANAGER)) {
-	session_env = malloc(strlen(envSESSION_MANAGER)+1+strlen(p)+1);
+    if(p = (char *) getenv(envSESSION_MANAGER)) {
+	session_env = (char *) malloc(
+	    strlen(envSESSION_MANAGER)+1+strlen(p)+1);
 	if(!session_env) nomem();
 	sprintf(session_env, "%s=%s", envSESSION_MANAGER, p);
 
@@ -93,7 +94,7 @@ restart_everything()
 	 * session environment does not have the SM's local connection port.
 	 */
 
-	non_local_session_env = malloc (strlen (session_env) + 1);
+	non_local_session_env = (char *) malloc (strlen (session_env) + 1);
 	if (!non_local_session_env) nomem();
 	strcpy (non_local_session_env, session_env);
 
@@ -121,8 +122,8 @@ restart_everything()
     }
 
     audio_env = NULL;
-    if(p = getenv(envAUDIOSERVER)) {
-	audio_env = malloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
+    if(p = (char *) getenv(envAUDIOSERVER)) {
+	audio_env = (char *) malloc(strlen(envAUDIOSERVER)+1+strlen(p)+1);
 	if(!audio_env) nomem();
 	sprintf(audio_env, "%s=%s", envAUDIOSERVER, p);
     }

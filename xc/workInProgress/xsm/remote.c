@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: remote.c,v 1.1 94/02/22 14:32:37 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -46,7 +46,7 @@ char	*non_local_session_env;
     int	 pipefd[2];
     int  i;
 
-    if ((tmp = strchr (client_host, '/')) == NULL)
+    if ((tmp = (char *) strchr (client_host, '/')) == NULL)
 	hostname = client_host;
     else
 	hostname = tmp + 1;
@@ -172,7 +172,7 @@ char *str;
     else
     {
 	int len = strlen (str) + 1 + (space_count * 4);
-	char *ret = malloc (len);
+	char *ret = (char *) malloc (len);
 	char *ptr = ret;
 
 	temp = str;
