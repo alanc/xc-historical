@@ -171,7 +171,7 @@ main(argc, argv)
  * SetBackgroundToBitmap: Set the root window background to a caller supplied 
  *                        bitmap.
  */
-SetBackgroundToBitmap(bitmap)
+SetBackgroundToBitmap(bitmap, width, height)
 Pixmap bitmap;
 {
 	Pixmap pix;
@@ -189,7 +189,8 @@ Pixmap bitmap;
 	gc = XCreateGC(dpy, RootWindow(dpy, screen),GCForeground|GCBackground,
 		       &gc_init);
 
-	pix = Bitmap_To_Pixmap(dpy, RootWindow(dpy, screen), gc, bitmap);
+	pix = Bitmap_To_Pixmap(dpy, RootWindow(dpy, screen), gc, bitmap,
+			       width, height);
 
 	XSetWindowBackgroundPixmap(dpy, RootWindow(dpy, screen), pix);
 }
