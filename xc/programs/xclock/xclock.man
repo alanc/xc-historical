@@ -105,7 +105,7 @@ Specifies the color for the tic marks.  Using the class specifies the
 color for all things that normally would appear in the foreground color.
 The default is ``black'' since the core default for background is ``white.''
 .TP 8
-.B hand (\fPclass\fB Foreground)
+.B hands (\fPclass\fB Foreground)
 Specifies the color of the insides of the clock's hands.
 .TP 8
 .B highlight (\fPclass\fB Foreground)
