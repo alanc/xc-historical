@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.1 91/02/16 09:55:57 rws Exp $ */
+/* $XConsortium: miRender.c,v 5.2 91/05/01 14:22:05 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -956,7 +956,7 @@ EndPicking(pRend)
     ErrorF( " EndPicking\n");
 #endif
 
-    EndRendering(pRend);
+    pRend->state = PEXIdle;
 
     pRend->render_mode = MI_REND_DRAWING;
 
@@ -1189,7 +1189,7 @@ EndSearching(pRend)
     ErrorF( " EndSearching\n");
 #endif
 
-    EndRendering(pRend);
+    pRend->state = PEXIdle;
 
     pRend->render_mode = MI_REND_DRAWING;
     /* copy the initial oc functions to the OC table */
