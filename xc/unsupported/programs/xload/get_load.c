@@ -1,7 +1,7 @@
 /*
  * get_load - get system load
  *
- * $XConsortium: get_load.c,v 1.16 91/02/02 18:25:46 rws Exp $
+ * $XConsortium: get_load.c,v 1.17 91/02/11 17:21:38 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -301,6 +301,10 @@ void GetLoadPoint( w, closure, call_data )
 #        endif /* SYSTYPE_SYSV */
 #    endif /* umips */
 
+#    ifdef sgi
+#	 define KERNEL_LOAD_VARIABLE "avenrun"
+#    endif
+
 #endif /* KERNEL_LOAD_VARIABLE */
 
 /*
@@ -364,7 +368,7 @@ InitLoadPoint()
 	nl[i].n_value = (int)nl[i].n_value - v.v_kvoffset;
     }
 #else /* not macII */
-#if !defined(SVR4) || !defined(__STDC__)
+#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi)
     extern void nlist();
 #endif
 	
