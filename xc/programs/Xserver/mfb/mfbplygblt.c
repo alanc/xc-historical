@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbplygblt.c,v 1.14 87/08/17 14:56:06 drewry Exp $ */
+/* $Header: mfbplygblt.c,v 1.15 87/08/30 22:30:07 drewry Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -351,7 +351,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    maskpartialbits(xoff, w, startmask);
 		    while (h--)
 		    {
-			getbits((int *)pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			pglyph += widthGlyph;
 			pdst += widthDst;
@@ -363,7 +363,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    nFirst = 32 - xoff;
 		    while (h--)
 		    {
-			getbits((int *)pglyph, glyphCol, w, tmpSrc);
+			getshiftedleftbits(pglyph, glyphCol, w, tmpSrc);
 			*pdst OPEQ (SCRRIGHT(tmpSrc, xoff) & startmask);
 			*(pdst+1) OPEQ (SCRLEFT(tmpSrc, nFirst) & endmask);
 			pglyph += widthGlyph;
