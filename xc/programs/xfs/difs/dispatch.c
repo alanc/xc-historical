@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.10 92/05/06 17:41:18 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.11 92/05/12 18:08:05 gildea Exp $ */
 /*
  * protocol dispatcher
  */
@@ -7,22 +7,22 @@
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
  *
- * Permission to use, copy, modify, and distribute this protoype software
- * and its documentation to Members and Affiliates of the MIT X Consortium
- * any purpose and without fee is hereby granted, provided
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
  * documentation, and that the names of Network Computing Devices, Digital or
- * MIT not be used in advertising or publicity pertaining to distribution of
- * the software without specific, written prior permission.
+ * M.I.T. not be used in advertising or publicity pertaining to distribution
+ * of the software without specific, written prior permission.
  *
- * NETWORK COMPUTING DEVICES, DIGITAL AND MIT DISCLAIM ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES, DIGITAL OR MIT BE
- * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * NETWORK COMPUTING DEVICES, DIGITAL AND M.I.T. DISCLAIM ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NETWORK COMPUTING DEVICES,
+ * DIGITAL OR M.I.T. BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR
+ * PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+ * THIS SOFTWARE.
  */
 
 #include	"FS.h"
@@ -182,7 +182,7 @@ ProcInitialConnection(client)
     client->major_version = prefix->major_version;
     client->minor_version = prefix->minor_version;
     stuff->reqType = 2;
-    stuff->length += (prefix->auth_len >> 2);
+    stuff->length += prefix->auth_len;
     if (client->swapped) {
 	swaps(&stuff->length, whichbyte);
     }
@@ -221,7 +221,7 @@ ProcEstablishConnection(client)
 /* XXXX -- this needs work for multiple auth replies */
 
     /* build up a list of the stuff */
-    for (i = 0, ad = auth_data; i < prefix->num_auths; i++) {
+    for (i = 0, ad = auth_data; i < (int)prefix->num_auths; i++) {
 	client_auth[i].namelen = *(short *) ad;
 	ad += 2;
 	client_auth[i].datalen = *(short *) ad;
@@ -501,7 +501,7 @@ ProcCreateAC(client)
     	}
     }
     /* build up a list of the stuff */
-    for (i = 0, ad = (pointer) &stuff[1]; i < stuff->num_auths; i++) {
+    for (i = 0, ad = (pointer) &stuff[1]; i < (int)stuff->num_auths; i++) {
 	acp[i].namelen = *(short *) ad;
 	ad += 2;
 	acp[i].datalen = *(short *) ad;
