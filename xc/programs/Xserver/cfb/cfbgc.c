@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cfbgc.c,v 1.1 87/07/13 17:57:36 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -112,7 +112,7 @@ cfbCreateGC(pGC)
 	    pPriv->pRotatedTile = NullPixmap;
 	    pPriv->pRotatedStipple = NullPixmap;
 	    pPriv->pAbsClientRegion = (*pGC->pScreen->RegionCreate) (NULL, 1);
-	    pPriv->pCompositeClip = (RegionPtr) NULL;
+	    pPriv->pCompositeClip = (*pGC->pScreen->RegionCreate) (NULL, 1);
 	    pPriv->freeCompClip = REPLACE_CC;
 	}
     }
