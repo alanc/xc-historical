@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.32 94/12/12 19:59:38 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.33 94/12/12 22:43:49 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -153,13 +153,15 @@ extern int		numClientListNames;
 extern int		current_client_selected;
 
 extern Bool		shutdownInProgress;
+extern Bool		phase2InProgress;
 extern Bool	        saveInProgress;
 extern Bool		shutdownCancelled;
 extern Bool		wantShutdown;
 
 extern int		sessionNameCount;
-extern String		*sessionNames;
-extern Bool		*sessionLocked;
+extern String		*sessionNamesShort;
+extern String		*sessionNamesLong;
+extern Bool		*sessionsLocked;
 
 extern int		num_clients_in_last_session;
 
