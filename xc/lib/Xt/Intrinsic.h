@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 6.20 88/01/29 12:59:07 asente Exp $
+* $Header: Intrinsic.h,v 1.67 88/02/01 20:29:21 swick Locked $
 */
 
 /*
@@ -420,7 +420,7 @@ extern XtGeometryResult XtMakeGeometryRequest();
     /*  widget, request, reply		    */
     /* Widget	widget; 		    */
     /* XtWidgetGeometry    *request;	    */
-    /* XtWidgetGeometry	 *reply;  /* RETURN */
+    /* XtWidgetGeometry	 *reply; *//* RETURN */
 
 extern XtGeometryResult XtMakeResizeRequest ();
     /* Widget    widget;	*/
@@ -591,7 +591,7 @@ extern void XtWarning();  /* message */
 
 #ifndef _XtIntrinsicP_h
 
-/* We're not included from the private file, so define these
+/* We're not included from the private file, so define these */
 
 extern Display *XtDisplay();
     /*	Widget widget;		*/
