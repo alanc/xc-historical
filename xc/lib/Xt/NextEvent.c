@@ -257,13 +257,13 @@ unsigned long *howlong;
 		}
 	    }
 	    if (FD_ISSET (i, &wmaskfd)) {
-		Select_rqueue[i]->ie_oq = outstanding_queue;
-		outstanding_queue = Select_rqueue[i];
+		Select_wqueue[i]->ie_oq = outstanding_queue;
+		outstanding_queue = Select_wqueue[i];
 		nfound--;
 	    }
 	    if (FD_ISSET (i, &emaskfd)) {
-		Select_rqueue[i]->ie_oq = outstanding_queue;
-		outstanding_queue = Select_rqueue[i];
+		Select_equeue[i]->ie_oq = outstanding_queue;
+		outstanding_queue = Select_equeue[i];
 		nfound--;
 	    }
     }
@@ -580,15 +580,15 @@ XEvent *event;
 				    nfound--;
 			    }
 			    if(FD_ISSET(i,&wmaskfd)) {
-				    Select_rqueue[i] -> ie_oq = 
+				    Select_wqueue[i] -> ie_oq = 
 				      outstanding_queue;
-				    outstanding_queue = Select_rqueue[i];
+				    outstanding_queue = Select_wqueue[i];
 				    nfound--;
 			    }
 			    if(FD_ISSET(i,&emaskfd)) {
-				    Select_rqueue[i] -> ie_oq = 
+				    Select_equeue[i] -> ie_oq = 
 				      outstanding_queue;
-				    outstanding_queue = Select_rqueue[i];
+				    outstanding_queue = Select_equeue[i];
 				    nfound--;
 			    }
 		    }
