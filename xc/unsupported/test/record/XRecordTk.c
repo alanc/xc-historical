@@ -1,4 +1,4 @@
-/* $XConsortium: XRecordTk.c,v 1.2 94/01/30 14:16:49 rws Exp $ */
+/* $XConsortium: XRecordTk.c,v 1.3 94/01/30 23:48:38 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -88,8 +88,10 @@ Dispatch(dpy, data, arg)
     XPointer arg;
 {
      char *type;
-     type = (data->direction ? "FromServer" : "FromClient");
 
+     if (!data->data)
+	 return;
+     type = (data->direction ? "FromServer" : "FromClient");
      fprintf(stderr, "%s  ", type); 
      if(data->direction)
      {
@@ -116,5 +118,4 @@ Dispatch(dpy, data, arg)
      	fprintf(stderr, "Request: %d (%s) Client: 0x%lx seq: 0x%lx\n", 
 	    data->data->u.req.reqType, buffer, data->id_base, data->client_seq);
      } 
-     XFree(data->data);
 }

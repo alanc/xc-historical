@@ -2,7 +2,7 @@
  * Copyright 1988-1993 Network Computing Devices, Inc.  All rights reserved.
  * An unpublished work.
  *
- * $XConsortium: XRecord.c,v 1.3 94/01/30 13:58:38 rws Exp $
+ * $XConsortium: XRecord.c,v 1.4 94/01/30 23:47:25 rws Exp $
  */
 
 #include <stdio.h>
@@ -211,15 +211,9 @@ XRecordDisableCG(dpy, config)
 Status
 XRecordEnableCG(dpy, config, func, arg)
     Display 		*dpy;
-    XRecordConfig 	config;
-    void (*func)(
-#if NeedNestedPrototypes
-		 Display*		/* display */,
-		 XRecordInterceptData*	/* attr */,
-		 XPointer		/* arg */
-#endif
-		 );
-    XPointer arg;
+    XRecordConfig 	 config;
+    XRecordInterceptProc func;
+    XPointer		 arg;
 {
     XExtDisplayInfo *info = find_display (dpy);
     register xRecordEnableConfigReq   	*req;
@@ -248,12 +242,109 @@ XRecordEnableCG(dpy, config, func, arg)
 	data.direction = rep.direction;
 	data.client_swapped = rep.client_swapped;
 	data.client_seq = rep.client_seq;
-	data.data = (XRecordDatum *)Xmalloc(rep.length << 2);
-	_XRead (dpy, (char *)data.data, (long) rep.length << 2);
+	data.data_len = rep.length << 2;
+	data.data = (XRecordDatum *)_XAllocScratch(dpy, data.data_len);
+	_XRead (dpy, (char *)data.data, (long) data.data_len);
 	(*func)(dpy, &data, arg);
     }
 
     UnlockDisplay(dpy);
     SyncHandle();
+    return(1);
+}
+
+typedef struct _CGState {
+    unsigned long enable_seq; 
+    _XAsyncHandler *async;
+    XRecordInterceptProc func;
+    XPointer arg;
+} _XCGState;
+
+static Bool
+_XCGHandler(dpy, rep, buf, len, adata)
+    register Display *dpy;
+    register xReply *rep;
+    char *buf;
+    int len;
+    XPointer adata;
+{
+    register _XCGState 			*state;
+    xRecordEnableConfigReply 		replbuf;
+    xRecordEnableConfigReply	 	*repl;
+    XRecordInterceptData data;
+
+    state = (_XCGState *)adata;
+    if (dpy->last_request_read != state->enable_seq) { 
+	return False;
+    }
+    if (rep->generic.type == X_Error) {
+	DeqAsyncHandler(dpy, state->async);
+	Xfree(state->async);
+	return False;
+    }
+    repl = (xRecordEnableConfigReply *)
+	_XGetAsyncReply(dpy, (char *)&replbuf, rep, buf, len, 0, True);
+    if (!repl->nReplies) {
+	data.id_base = 0;
+	data.direction = 0;
+	data.client_swapped = False;
+	data.client_seq = 0;
+	data.data = (XRecordDatum *)NULL;
+	(*state->func)(dpy, &data, state->arg);
+	DeqAsyncHandler(dpy, state->async);
+	Xfree(state->async);
+	return True;
+    }
+    data.id_base = repl->id_base;
+    data.direction = repl->direction;
+    data.client_swapped = repl->client_swapped;
+    data.client_seq = repl->client_seq;
+    data.data_len = repl->length << 2;
+    data.data = (XRecordDatum *)_XAllocScratch(dpy, data.data_len);
+    _XGetAsyncData(dpy, (char *)data.data, buf, len,
+		   SIZEOF(xRecordEnableConfigReply), data.data_len, 0);
+    (*state->func)(dpy, &data, state->arg);
+    return True;
+}
+
+Status
+XRecordEnableCGAsync(dpy, config, func, arg)
+    Display 		*dpy;
+    XRecordConfig 	 config;
+    XRecordInterceptProc func;
+    XPointer		 arg;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xRecordEnableConfigReq   	*req;
+    register xRecordEnableConfigReply 	rep; 
+    xReq *noopreq;
+    Status 				status;
+    _XAsyncHandler 			*async;
+    _XCGState 				*async_state;
+
+    XRecordCheckExtension (dpy, info, 0);
+    async = (_XAsyncHandler *)Xmalloc(sizeof(_XAsyncHandler) +
+				      sizeof(_XCGState));
+    if (!async)
+	return 0;
+    async_state = (_XCGState *)(async + 1);
+    LockDisplay(dpy);
+    GetReq(RecordEnableConfig, req);
+
+    req->reqType = info->codes->major_opcode;
+    req->minor_opcode = X_RecordEnableConfig;    
+    req->cid = config;
+
+    async_state->enable_seq = dpy->request; 
+    async_state->async = async;
+    async_state->func = func;
+    async_state->arg = arg;
+    async->next = dpy->async_handlers;
+    async->handler = _XCGHandler;
+    async->data = (XPointer)async_state;
+    dpy->async_handlers = async;
+
+    UnlockDisplay(dpy);
+    SyncHandle();     
     return(1);
 }

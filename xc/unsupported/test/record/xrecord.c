@@ -1,4 +1,4 @@
-/* $XConsortium: xrecord.c,v 1.3 94/01/30 23:48:25 rws Exp $ */
+/* $XConsortium: xrecord.c,v 1.4 94/01/31 00:00:27 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation
@@ -135,8 +135,8 @@ main(argc,argv)
 {
     XID		id = None;
     char 	*displayname = NULL;      /* server to contact */
-    int 	i, k;                     /* temp variables:  iterator */
-    int 	status, repeat; 
+    int 	i;
+    Bool	async = False;
 
     XRecordQueryVersionReply 	ret;
 
@@ -156,6 +156,10 @@ main(argc,argv)
             if (++i >= argc)
 	        usage();
             id = parse_id (argv[i]);
+            continue;
+        }
+        if(!strcmp(argv[i], "-async")) {
+	    async = True;
             continue;
         }
         usage(); 
@@ -209,12 +213,16 @@ main(argc,argv)
 
     if (!id)
 	id = 0x400000;
-    status = XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
+    XRecordChangeCG(dpy1, rec_config1, id, rec_flags1, True);
     XSync(dpy1, False);
           
     _InitExceptionHandling((void_function)SetGlobalDone); 
 
-    status = XRecordEnableCG(dpy2, rec_config1, Dispatch, NULL);
+    if (async) {
+	XRecordEnableCGAsync(dpy2, rec_config1, Dispatch, NULL);
+	XSync(dpy2, False);
+    } else
+	XRecordEnableCG(dpy2, rec_config1, Dispatch, NULL);
 
     _ClearExceptionHandling(); 
   
