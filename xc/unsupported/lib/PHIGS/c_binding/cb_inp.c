@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_inp.c,v 5.1 91/02/16 09:47:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1539,7 +1539,7 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 	case 2:
 	    /* Count and list of ON/OFF values. */
 	    args->data.cho.rec = *rec;
-	    list_count = rec->pet_r2.num_prompts;
+	    list_count = rec->pets.pet_r2.num_prompts;
 	    if ( istat == PIN_STATUS_OK && (init < 1 || init > ddt->choices) ) {
 		ERR_REPORT( cph->erh, ERR261);
 
@@ -1558,7 +1558,7 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 	     */
 	    args->data.cho.rec = *rec;
 	    args->data.cho.string_list_size = 0;
-	    list_count = rec->pet_r3.num_strings;
+	    list_count = rec->pets.pet_r3.num_strings;
 	    if ( list_count > ddt->choices || list_count < 1 ) {
 		/* too many or too few choice strings */
 		ERR_REPORT( cph->erh, ERR260);
@@ -1568,7 +1568,7 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 		ERR_REPORT( cph->erh, ERR261);
 
 	    } else {
-		strs = rec->pet_r3.strings;
+		strs = rec->pets.pet_r3.strings;
 		/* Compute total size of all strings and get space. */
 		for ( size = 0, cnt = list_count; cnt > 0; cnt--, strs++ )
 		    size += strlen(*strs) + 1; /* 1 for the terminator */
@@ -1577,8 +1577,8 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 
 		} else {
 		    /* Copy all strings into the single array. */
-		    strs = rec->pet_r3.strings;
-		    args->data.cho.rec.pet_r3.strings
+		    strs = rec->pets.pet_r3.strings;
+		    args->data.cho.rec.pets.pet_r3.strings
 			= (char**)strlist;
 		    args->data.cho.string_list_size = size;
 		    cnt = list_count;
@@ -1596,7 +1596,7 @@ choice_data_rec_ok( cph, pet, rec, dt, ddt, istat, init, args )
 	case 5:
 	    /* Structure id, + count and list of pickids. */
 	    args->data.cho.rec = *rec;
-	    list_count = rec->pet_r5.num_pick_ids;
+	    list_count = rec->pets.pet_r5.num_pick_ids;
 	    if ( istat == PIN_STATUS_OK && (init < 1 || init > ddt->choices) ) {
 		ERR_REPORT( cph->erh, ERR261);
 
@@ -1664,7 +1664,7 @@ init_choice( cph, func_id, ws, dev, istat, init, pet, ev, rec, cp_args )
 		    case 3:
 			if ( args->data.cho.string_list_size > 0 )
 			    free((char*)
-				args->data.cho.rec.pet_r3.strings);
+				args->data.cho.rec.pets.pet_r3.strings);
 			break;
 		}
 	    }
@@ -2045,14 +2045,14 @@ pinq_loc_st3( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 	*init_loc_pos = state->loc.position;
 	*prompt_echo = state->pet;
 	*echo_vol = state->e_volume;
-	*loc_data = &store->data.loc_data3;
+	*loc_data = &((_Pstore *)store)->data.loc_data3.drec;
 	switch ( *prompt_echo ) {
 	    /* Only case the ones with data. */
 	    case 4:
-		(*loc_data)->pet_r4 = state->record.pet_r4;
+		(*loc_data)->pets.pet_r4 = state->record.pets.pet_r4;
 		break;
 	    case 5:
-		(*loc_data)->pet_r5 = state->record.pet_r5;
+		(*loc_data)->pets.pet_r5 = state->record.pets.pet_r5;
 		break;
 	    default:
 		break;
@@ -2088,28 +2088,28 @@ pinq_loc_st( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 	*init_view_ind = state->loc.view_ind;
 	init_loc_pos->x = state->loc.position.x;
 	init_loc_pos->y = state->loc.position.y;
-	*loc_data = &store->data.loc_data;
+	*loc_data = &((_Pstore *)store)->data.loc_data.drec;
 	switch ( *prompt_echo ) {
 	    /* Only case the ones with data. */
 	    case 4:
-		(*loc_data)->pet_r4.line_attrs = state->record.pet_r4.line_attrs;
+		(*loc_data)->pets.pet_r4.line_attrs = state->record.pets.pet_r4.line_attrs;
 		break;
 	    case 5:
-		(*loc_data)->pet_r5.line_fill_ctrl_flag = state->record.pet_r5.line_fill_ctrl_flag;
-		switch ( state->record.pet_r5.line_fill_ctrl_flag ) {
+		(*loc_data)->pets.pet_r5.line_fill_ctrl_flag = state->record.pets.pet_r5.line_fill_ctrl_flag;
+		switch ( state->record.pets.pet_r5.line_fill_ctrl_flag ) {
 		    case PFLAG_LINE:
-			(*loc_data)->pet_r5.attr.line_attrs/* WARNING: may be ln */ =
-			    state->record.pet_r5.attr.line_attrs/* WARNING: may be ln */;
+			(*loc_data)->pets.pet_r5.attrs.line_attrs/* WARNING: may be ln */ =
+			    state->record.pets.pet_r5.attrs.line_attrs/* WARNING: may be ln */;
 			break;
 		    case PFLAG_FILL:
-			(*loc_data)->pet_r5.attr.int_attrs =
-			    state->record.pet_r5.attr.int_attrs;
+			(*loc_data)->pets.pet_r5.attrs.int_attrs =
+			    state->record.pets.pet_r5.attrs.int_attrs;
 			break;
 		    case PFLAG_FILL_SET:
-			(*loc_data)->pet_r5.attr.fill_set.int_attrs =
-			    state->record.pet_r5.attr.fill_set.int_attrs;
-			(*loc_data)->pet_r5.attr.fill_set.edge_attrs =
-			    state->record.pet_r5.attr.fill_set.edge_attrs;
+			(*loc_data)->pets.pet_r5.attrs.fill_set.int_attrs =
+			    state->record.pets.pet_r5.attrs.fill_set.int_attrs;
+			(*loc_data)->pets.pet_r5.attrs.fill_set.edge_attrs =
+			    state->record.pets.pet_r5.attrs.fill_set.edge_attrs;
 			break;
 		}
 		break;
@@ -2150,15 +2150,15 @@ pinq_stroke_st3( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
     Pint	ws;		/* workstation identifier	*/
     Pint	dev;		/* stroke device number	*/
     Pinq_type	type;		/* type of returned value	*/
-    Pstore	store; 	/* handle to Store object */
+    Pstore	store; 		/* handle to Store object */
     Pint	*err;		/* OUT error indicator	*/
     Pop_mode    *op_mode;       /* OUT operating mode   */
-    Pecho_switch       *echo_switch;   /* OUT echo switch      */
+    Pecho_switch *echo_switch;  /* OUT echo switch      */
     Pint        *init_view_ind; /* OUT initial view indicator */
-    Ppoint_list3 *init_stroke;   /* OUT initial stroke   */
+    Ppoint_list3 **init_stroke; /* OUT initial stroke   */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
-    Plimit3      *echo_vol;      /* OUT echo area        */
-    Pstroke_data3 **stroke_data;  /* OUT data record      */
+    Plimit3      *echo_vol;     /* OUT echo area        */
+    Pstroke_data3 **stroke_data; /* OUT data record      */
 {
 		int		size;
     		Phg_ret		ret;
@@ -2169,11 +2169,9 @@ pinq_stroke_st3( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 	*op_mode = state->mode;
 	*echo_switch = state->esw;
 	*init_view_ind = state->stroke.view_ind;
-	init_stroke->num_points = state->stroke.num_points;
-	init_stroke->points = state->stroke.points;
 	*prompt_echo = state->pet;
 	*echo_vol = state->e_volume;
-	*stroke_data = &store->data.stroke_data3;
+	*stroke_data = &((_Pstore *)store)->data.stroke_data3.drec;
 	(*stroke_data)->buffer_size = state->record.buffer_size;
 	(*stroke_data)->init_pos = state->record.init_pos;
 	(*stroke_data)->x_interval = state->record.x_interval;
@@ -2192,13 +2190,14 @@ pinq_stroke_st3( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 		break;
 	}
 	size = state->stroke.num_points * sizeof(Ppoint3);
-	init_stroke->num_points = state->stroke.num_points;
-	if ( CB_STORE_SPACE( store, size, err ) ) {
+	*init_stroke = &((_Pstore *)store)->data.stroke_data3.init_stroke;
+	(*init_stroke)->num_points = state->stroke.num_points;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
 	    /* Copy the initial stroke. */
 	    if ( state->stroke.num_points > 0 ) {
-		init_stroke->points = (Ppoint3 *)store->buf;
+		(*init_stroke)->points = (Ppoint3 *)((_Pstore *)store)->buf;
 		bcopy( (char *)state->stroke.points,
-		    (char *)init_stroke->points, size );
+		    (char *)(*init_stroke)->points, size );
 	    }
 	}
     }
@@ -2210,15 +2209,15 @@ pinq_stroke_st( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
     Pint	ws;		/* workstation identifier	*/
     Pint	dev;		/* stroke device number	*/
     Pinq_type	type;		/* type of returned value	*/
-    Pstore	store; 	/* handle to Store object */
+    Pstore	store; 		/* handle to Store object */
     Pint	*err;		/* OUT error indicator	*/
     Pop_mode    *op_mode;       /* OUT operating mode   */
-    Pecho_switch       *echo_switch;   /* OUT echo switch      */
+    Pecho_switch *echo_switch;  /* OUT echo switch      */
     Pint        *init_view_ind; /* OUT initial view indicator */
-    Ppoint_list *init_stroke;   /* OUT initial stroke   */
+    Ppoint_list **init_stroke;  /* OUT initial stroke   */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
-    Plimit      *echo_area;      /* OUT echo area        */
-    Pstroke_data **stroke_data;  /* OUT data record      */
+    Plimit      *echo_area;     /* OUT echo area        */
+    Pstroke_data **stroke_data; /* OUT data record      */
 {
 		int		size;
     		Phg_ret		ret;
@@ -2232,7 +2231,7 @@ pinq_stroke_st( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 	*echo_switch = state->esw;
 	*init_view_ind = state->stroke.view_ind;
 	*prompt_echo = state->pet;
-	*stroke_data = &store->data.stroke_data;
+	*stroke_data = &((_Pstore *)store)->data.stroke_data.drec;
 	(*stroke_data)->buffer_size = state->record.buffer_size;
 	(*stroke_data)->init_pos = state->record.init_pos;
 	(*stroke_data)->x_interval = state->record.x_interval;
@@ -2252,14 +2251,15 @@ pinq_stroke_st( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
 		break;
 	}
 	size = state->stroke.num_points * sizeof(Ppoint);
-	init_stroke->num_points = state->stroke.num_points;
-	if ( CB_STORE_SPACE( store, size, err ) ) {
+	*init_stroke = &((_Pstore *)store)->data.stroke_data.init_stroke;
+	(*init_stroke)->num_points = state->stroke.num_points;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
 	    /* Copy the initial stroke. */
 	    if ( state->stroke.num_points > 0 ) {
-		init_stroke->points = (Ppoint *)store->buf;
+		(*init_stroke)->points = (Ppoint *)((_Pstore *)store)->buf;
 		for ( i = 0; i < state->stroke.num_points; i++ ) {
-		    init_stroke->points[i].x = state->stroke.points[i].x;
-		    init_stroke->points[i].y = state->stroke.points[i].y;
+		    (*init_stroke)->points[i].x = state->stroke.points[i].x;
+		    (*init_stroke)->points[i].y = state->stroke.points[i].y;
 		}
 	    }
 	}
@@ -2293,7 +2293,7 @@ static void
 copy_val_rec( state, err, store, drec )
     Pvalst3	*state;
     Pint	*err;
-    Pstore	store;
+    _Pstore	*store;
     Pval_data3  *drec;
 {
     int		size;
@@ -2366,8 +2366,8 @@ pinq_val_st3( ws, dev, store, err, op_mode, echo_switch, init_value,
 	*init_value = state->val;
 	*prompt_echo = state->pet;
 	*echo_vol = state->e_volume;
-	*val_data = &store->data.val_data3;
-	copy_val_rec( state, err, store, *val_data );
+	*val_data = &((_Pstore *)store)->data.val_data3.drec;
+	copy_val_rec( state, err, ((_Pstore *)store), *val_data );
     }
 }
 
@@ -2395,8 +2395,8 @@ pinq_val_st( ws, dev, store, err, op_mode, echo_switch, init_value,
 	*echo_switch = state->esw;
 	*init_value = state->val;
 	*prompt_echo = state->pet;
-	*val_data = &store->data.val_data;
-	copy_val_rec( state, err, store, (Pval_data3 *)*val_data );
+	*val_data = &((_Pstore *)store)->data.val_data.drec;
+	copy_val_rec( state, err, ((_Pstore *)store), (Pval_data3 *)*val_data );
     }
 }
 
@@ -2450,34 +2450,39 @@ pinq_choice_st3( ws, dev, store, err, op_mode, echo_switch, init_status,
 	*prompt_echo = state->pet;
 	*init_status = state->choice.status;
 	*init_choice = state->choice.choice;
-	*choice_data = &store->data.choice_data3;
+	*choice_data = &((_Pstore *)store)->data.choice_data3.drec;
 	switch ( state->pet ) {
 	    case 2:
-		(*choice_data)->pet_r2.num_prompts =
-		    state->record.pet_r2.num_prompts;
-		size = (*choice_data)->pet_r2.num_prompts * sizeof(Ppr_switch);
-		if ( CB_STORE_SPACE( store, size, err ) ) {
-		    bcopy( (char *)state->record.pet_r2.prompts,
-			(char *)(*choice_data)->pet_r2.prompts, size );
+		(*choice_data)->pets.pet_r2.num_prompts =
+		    state->record.pets.pet_r2.num_prompts;
+		size = (*choice_data)->pets.pet_r2.num_prompts * 
+			sizeof(Ppr_switch);
+		if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+		    bcopy( (char *)state->record.pets.pet_r2.prompts,
+			(char *)(*choice_data)->pets.pet_r2.prompts, size );
 		}
 		break;
 	    case 3:
-		(*choice_data)->pet_r3.num_strings =
-		    state->record.pet_r3.num_strings;
+		(*choice_data)->pets.pet_r3.num_strings =
+		    state->record.pets.pet_r3.num_strings;
 		length = ret.data.inp_state.choice.length;
-		size = length + (*choice_data)->pet_r3.num_strings
+		size = length + (*choice_data)->pets.pet_r3.num_strings
 		    * sizeof(char*);
-		if ( size > 0 && CB_STORE_SPACE( store, size, err ) ) {
-		    (*choice_data)->pet_r3.strings = (char **)store->buf;
-		    (*choice_data)->pet_r3.strings[0] =
-			(char *)((*choice_data)->pet_r3.strings +
-			(*choice_data)->pet_r3.num_strings);
+		if ( size > 0 && 
+		     CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+		    (*choice_data)->pets.pet_r3.strings = 
+			(char **)((_Pstore *)store)->buf;
+		    (*choice_data)->pets.pet_r3.strings[0] =
+			(char *)((*choice_data)->pets.pet_r3.strings +
+			(*choice_data)->pets.pet_r3.num_strings);
 		    bcopy( (char*) ret.data.inp_state.choice.strings,
-			(char*)(*choice_data)->pet_r3.strings[0], length );
-		    for ( i = 1; i < (*choice_data)->pet_r3.num_strings; i++ )
-			(*choice_data)->pet_r3.strings[i] =
-			    (*choice_data)->pet_r3.strings[i-1] + 1 +
-			    strlen((*choice_data)->pet_r3.strings[i-1]);
+			(char*)(*choice_data)->pets.pet_r3.strings[0], 
+			length );
+		    for ( i = 1; i < (*choice_data)->pets.pet_r3.num_strings;
+			  i++ )
+			(*choice_data)->pets.pet_r3.strings[i] =
+			    (*choice_data)->pets.pet_r3.strings[i-1] + 1 +
+			    strlen((*choice_data)->pets.pet_r3.strings[i-1]);
 		}
 		break;
 	    default:
@@ -2513,34 +2518,34 @@ pinq_choice_st( ws, dev, store, err, op_mode, echo_switch, init_status,
 	*prompt_echo = state->pet;
 	*init_status = state->choice.status;
 	*init_choice = state->choice.choice;
-	*choice_data = &store->data.choice_data;
+	*choice_data = &((_Pstore *)store)->data.choice_data.drec;
 	switch ( *prompt_echo ) {
 	    case 2:
-		(*choice_data)->pet_r2.num_prompts =
-		    state->record.pet_r2.num_prompts;
-		size = (*choice_data)->pet_r2.num_prompts * sizeof(Ppr_switch);
-		if ( CB_STORE_SPACE( store, size, err ) ) {
-		    bcopy( (char *)state->record.pet_r2.prompts,
-			(char *)(*choice_data)->pet_r2.prompts, size );
+		(*choice_data)->pets.pet_r2.num_prompts =
+		    state->record.pets.pet_r2.num_prompts;
+		size = (*choice_data)->pets.pet_r2.num_prompts * sizeof(Ppr_switch);
+		if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+		    bcopy( (char *)state->record.pets.pet_r2.prompts,
+			(char *)(*choice_data)->pets.pet_r2.prompts, size );
 		}
 		break;
 	    case 3:
-		(*choice_data)->pet_r3.num_strings =
-		    state->record.pet_r3.num_strings;
+		(*choice_data)->pets.pet_r3.num_strings =
+		    state->record.pets.pet_r3.num_strings;
 		length = ret.data.inp_state.choice.length;
-		size = length + (*choice_data)->pet_r3.num_strings
+		size = length + (*choice_data)->pets.pet_r3.num_strings
 		    * sizeof(char*);
-		if ( size > 0 && CB_STORE_SPACE( store, size, err ) ) {
-		    (*choice_data)->pet_r3.strings = (char **)store->buf;
-		    (*choice_data)->pet_r3.strings[0] =
-			(char *)((*choice_data)->pet_r3.strings +
-			(*choice_data)->pet_r3.num_strings);
+		if ( size > 0 && CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+		    (*choice_data)->pets.pet_r3.strings = (char **)((_Pstore *)store)->buf;
+		    (*choice_data)->pets.pet_r3.strings[0] =
+			(char *)((*choice_data)->pets.pet_r3.strings +
+			(*choice_data)->pets.pet_r3.num_strings);
 		    bcopy( (char*) ret.data.inp_state.choice.strings,
-			(char*)(*choice_data)->pet_r3.strings[0], length );
-		    for ( i = 1; i < (*choice_data)->pet_r3.num_strings; i++ )
-			(*choice_data)->pet_r3.strings[i] =
-			    (*choice_data)->pet_r3.strings[i-1] + 1 +
-			    strlen((*choice_data)->pet_r3.strings[i-1]);
+			(char*)(*choice_data)->pets.pet_r3.strings[0], length );
+		    for ( i = 1; i < (*choice_data)->pets.pet_r3.num_strings; i++ )
+			(*choice_data)->pets.pet_r3.strings[i] =
+			    (*choice_data)->pets.pet_r3.strings[i-1] + 1 +
+			    strlen((*choice_data)->pets.pet_r3.strings[i-1]);
 		}
 		break;
 	    default:
@@ -2576,11 +2581,11 @@ inq_pick_state( ws, dev, type, err, ret )
 
 static void
 copy_pick_data( store, err, state, init_pick, filter )
-    Pstore	store;
+    _Pstore	*store;
     Pint	*err;
     Ppickst3	*state;
-    Ppick_path	*init_pick;
-    Pfilter	**filter;
+    Ppick_path	*init_pick;	/* Note: must be set before calling */
+    Pfilter	*filter;	/* Note: must be set before calling */
 {
     int		total_size, path_size, infilt_size, exfilt_size;
 
@@ -2594,17 +2599,16 @@ copy_pick_data( store, err, state, init_pick, filter )
 	if ( path_size > 0 )
 	    bcopy( (char*)state->pick.pick_path.path_list,
 		(char*)init_pick->path_list, path_size );
-	*filter = &store->data.pick_data.filter;
-	(*filter)->incl_set.num_ints = state->inclusion_filter.num_ints;
-	(*filter)->incl_set.ints = (Pint *)store->buf + path_size;
+	filter->incl_set.num_ints = state->inclusion_filter.num_ints;
+	filter->incl_set.ints = (Pint *)store->buf + path_size;
 	if ( infilt_size > 0 )
 	    bcopy( (char*)state->inclusion_filter.ints,
-		(char*)(*filter)->incl_set.ints, infilt_size );
-	(*filter)->excl_set.num_ints = state->exclusion_filter.num_ints;
-	(*filter)->excl_set.ints = (Pint *)store->buf + path_size;
+		(char*)filter->incl_set.ints, infilt_size );
+	filter->excl_set.num_ints = state->exclusion_filter.num_ints;
+	filter->excl_set.ints = (Pint *)store->buf + path_size;
 	if ( exfilt_size > 0 )
 	    bcopy( (char*)state->exclusion_filter.ints,
-		(char*)(*filter)->excl_set.ints, exfilt_size );
+		(char*)filter->excl_set.ints, exfilt_size );
     }
 }
 
@@ -2615,13 +2619,13 @@ pinq_pick_st3( ws, dev, type, store, err, op_mode, echo_switch, filter,
     Pint	ws;		/* workstation identifier	*/
     Pint	dev;		/* pick device number	*/
     Pinq_type	type;		/* type of returned value	*/
-    Pstore	store; 	/* pointer to buffer	*/
+    Pstore	store; 		/* pointer to buffer	*/
     Pint	*err;		/* OUT error indicator	*/
     Pop_mode    *op_mode;       /* OUT operating mode   */
-    Pecho_switch       *echo_switch;   /* OUT echo switch      */
+    Pecho_switch *echo_switch;  /* OUT echo switch      */
     Pfilter	**filter;	/* OUT pick filter */
-    Pin_status     *init_status;   /* OUT initial pick status */
-    Ppick_path  *init_pick;     /* OUT initial pick path */
+    Pin_status  *init_status;   /* OUT initial pick status */
+    Ppick_path  **init_pick;    /* OUT initial pick path */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
     Plimit3     *echo_vol;      /* OUT echo area        */
     Ppick_data3 **pick_data;    /* OUT data record      */
@@ -2638,9 +2642,11 @@ pinq_pick_st3( ws, dev, type, store, err, op_mode, echo_switch, filter,
 	*prompt_echo = state->pet;
 	*echo_vol = state->e_volume;
 	*path_order = state->order;
-	copy_pick_data( store, err, state, init_pick, filter );
-	if ( !err ) {
-	    *pick_data = &store->data.pick_data.drec.pd3;
+	*filter = &((_Pstore *)store)->data.pick_data3.filter;
+	*init_pick = &((_Pstore *)store)->data.pick_data3.init_pick;
+	copy_pick_data( ((_Pstore *)store), err, state, init_pick, filter );
+	if ( !*err ) {
+	    *pick_data = &((_Pstore *)store)->data.pick_data3.drec;
 	    /* Copy the data record. */
 	    switch ( state->pet ) {
 		default:
@@ -2659,12 +2665,12 @@ pinq_pick_st( ws, dev, type, store, err, op_mode, echo_switch, filter,
     Pstore	store; 		/* pointer to buffer	*/
     Pint	*err;		/* OUT error indicator	*/
     Pop_mode    *op_mode;       /* OUT operating mode   */
-    Pecho_switch       *echo_switch;   /* OUT echo switch      */
+    Pecho_switch *echo_switch;  /* OUT echo switch      */
     Pfilter	**filter;	/* OUT pick filter */
-    Pin_status     *init_status;   /* OUT initial pick status */
-    Ppick_path  *init_pick;     /* OUT initial pick path */
+    Pin_status  *init_status;   /* OUT initial pick status */
+    Ppick_path  **init_pick;    /* OUT initial pick path */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
-    Plimit      *echo_area;      /* OUT echo area        */
+    Plimit      *echo_area;     /* OUT echo area        */
     Ppick_data  **pick_data;    /* OUT data record      */
     Ppath_order	*path_order;	/* OUT path order */
 {
@@ -2679,9 +2685,11 @@ pinq_pick_st( ws, dev, type, store, err, op_mode, echo_switch, filter,
 	*init_status = state->pick.status;
 	*prompt_echo = state->pet;
 	*path_order = state->order;
-	copy_pick_data( store, err, state, init_pick, filter );
-	if ( !err ) {
-	    *pick_data = &store->data.pick_data.drec.pd;
+	*filter = &((_Pstore *)store)->data.pick_data.filter;
+	*init_pick = &((_Pstore *)store)->data.pick_data.init_pick;
+	copy_pick_data( ((_Pstore *)store), err, state, init_pick, filter );
+	if ( !*err ) {
+	    *pick_data = &((_Pstore *)store)->data.pick_data.drec;
 	    /* Copy the data record. */
 	    switch ( state->pet ) {
 		default:
@@ -2738,12 +2746,12 @@ pinq_string_st3( ws, dev, store, err, op_mode, echo_switch, init_string,
 	*echo_switch = state->esw;
 	*prompt_echo = state->pet;
 	*echo_vol = state->e_volume;
-	*string_data = &store->data.string_data3;
+	*string_data = &((_Pstore *)store)->data.string_data3.drec;
 	(*string_data)->buffer_size = state->record.buffer_size;
 	(*string_data)->init_pos = state->record.init_pos;
 	size = ret.data.inp_state.string.length;
-	if ( CB_STORE_SPACE( store, size, err ) ) {
-	    *init_string = store->buf;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+	    *init_string = ((_Pstore *)store)->buf;
 	    if ( ret.data.inp_state.string.state.string )
 		strcpy( *init_string, ret.data.inp_state.string.state.string );
 	}
@@ -2774,12 +2782,12 @@ pinq_string_st( ws, dev, store, err, op_mode, echo_switch, init_string,
 	*op_mode = state->mode;
 	*echo_switch = state->esw;
 	*prompt_echo = state->pet;
-	*string_data = &store->data.string_data;
+	*string_data = &((_Pstore *)store)->data.string_data.drec;
 	(*string_data)->buffer_size = state->record.buffer_size;
 	(*string_data)->init_pos = state->record.init_pos;
 	size = ret.data.inp_state.string.length;
-	if ( CB_STORE_SPACE( store, size, err ) ) {
-	    *init_string = store->buf;
+	if ( CB_STORE_SPACE( ((_Pstore *)store), size, err ) ) {
+	    *init_string = ((_Pstore *)store)->buf;
 	    if ( ret.data.inp_state.string.state.string )
 		strcpy( *init_string, ret.data.inp_state.string.state.string );
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_util.c,v 5.1 91/02/16 09:48:02 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -106,7 +106,7 @@ phg_cb_check_set_rep( cph, fnid, ws, index, colour)
 void
 phg_cb_copy_hierarchy( ret_hier, store, error_ind, paths )
     Phg_ret_hierarchy       	*ret_hier;	/* returned hierarchy */
-    Pstore		       	store;		/* OUT store handle */
+    _Pstore		       	*store;		/* OUT store handle */
     Pint			*error_ind;
     Pelem_ref_list_list		*paths;		/* OUT structure path list */
 {
@@ -173,12 +173,12 @@ pcreate_store( err, store )
     Pint		*err;
     Pstore		*store;
 {
-    if ( !(*store = (_Pstore *)calloc( 1, sizeof(_Pstore) )) ) {
+    if ( !(*store = (Pstore)calloc( 1, sizeof(_Pstore) )) ) {
 	*err = ERR900;
     } else {
 	*err = 0;
-	(*store)->next = store_list;
-	store_list = (*store);
+	((_Pstore *)(*store))->next = store_list;
+	store_list = ((_Pstore *)(*store));
     }
 }
 
@@ -192,10 +192,10 @@ pdel_store( store )
      *  found.
      */
     for ( node = &store_list; *node; node = &(*node)->next ) {
-	if ( *node == store ) {
+	if ( *node == (_Pstore *)store ) {
 	    (*node) = (*node)->next;	/* remove from list. */
-	    if ( store->size > 0 )
-		free( store->buf );
+	    if ( ((_Pstore *)store)->size > 0 )
+		free( ((_Pstore *)store)->buf );
 	    free( (char *)store );
 	    break;
 	}

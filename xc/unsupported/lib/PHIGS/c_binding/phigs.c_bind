@@ -1,4 +1,4 @@
-/* $XConsortium: phigs.c_bind,v 5.1 91/02/16 09:47:50 rws Exp $ */
+/* $XConsortium: phigs.c_bind,v 5.2 91/03/21 15:45:06 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -200,13 +200,13 @@ pinq_sys_st(sys_state)
     Psys_st	*sys_state;	/* OUT the system state	*/
 {}
 void
-pinq_phigs_facs(length, start, error_ind, open_ws, num_names, open_ar, char_sets, length_list, norm_filt, inv_filt)
+pinq_phigs_facs(length, start, error_ind, open_ws, open_ar, num_names, char_sets, length_list, norm_filt, inv_filt)
 Pint	length;	/* length of application list	*/
 Pint	start;	/* starting position	*/
 Pint	*error_ind;	/* OUT error indicator	*/
 Pint	*open_ws;	/* OUT max. num. simultaneously open ws	*/
-Pint	*num_names;	/* OUT number of available names for name sets */
 Pint	*open_ar;	/* OUT max. num. simultaneously open archive files */
+Pint	*num_names;	/* OUT number of available names for name sets */
 Pint_list *char_sets;	/* OUT list of character sets	*/
 Pint    *length_list;   /* OUT length of list in PHIGS  */
 Pint	*norm_filt;	/* OUT maximum length of normal filter list for ISS */
@@ -279,18 +279,11 @@ perr_log( errnum, funcnum, fname)
     char	*fname;
 {}
 void
-phg_cb_format_err_msg( binding, errnum, funcnum, buf )
-    int		binding;	/* IN: binding that's calling */
-    int		errnum;		/* IN: error number */
-    int		funcnum;	/* IN: function id */
-    char	*buf;		/* OUT: error message */
-{}
-void
 pescape( func_id, in, store, out )
     Pint        	func_id;	/* escape function identifier	*/
     Pescape_in_data	*in;		/* input data for the function	*/
     Pstore		store;
-    Pescape_out_data	*out;		/* OUT output data of the function	*/
+    Pescape_out_data	**out;		/* OUT output data of the function	*/
 {}
 /* FILL AREA 3 */
 void
@@ -304,9 +297,8 @@ Ppoint_list	*point_list;
 {}
 /* FILL AREA SET 3 */
 void
-pfill_area_set3(num_sets, sets)
-Pint		num_sets;	/* number of sets of points     */
-Ppoint_list3	*sets;		/* array of sets        */
+pfill_area_set3(point_list_list)
+Ppoint_list_list3	*point_list_list;	/* list of point lists */
 {}
 /* FILL AREA SET 3 WITH DATA */
 void
@@ -322,9 +314,8 @@ Pfacet_vdata_list3	*vdata;         /* facet vertex data list */
 {}
 /* FILL AREA SET */
 void
-pfill_area_set(num_sets, sets)
-Pint		num_sets;	/* number of sets of points     */
-Ppoint_list	*sets;		/* array of sets        */
+pfill_area_set(point_list_list)
+Ppoint_list_list	*point_list_list;	/* list of point lists */
 {}
 /* TRIANGLE STRIP 3 WITH DATA */
 void
@@ -881,7 +872,7 @@ pinq_stroke_st3( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
     Pop_mode    *op_mode;       /* OUT operating mode   */
     Pecho_switch       *echo_switch;   /* OUT echo switch      */
     Pint        *init_view_ind; /* OUT initial view indicator */
-    Ppoint_list3 *init_stroke;   /* OUT initial stroke   */
+    Ppoint_list3 **init_stroke;   /* OUT initial stroke   */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
     Plimit3      *echo_vol;      /* OUT echo area        */
     Pstroke_data3 **stroke_data;  /* OUT data record      */
@@ -897,7 +888,7 @@ pinq_stroke_st( ws, dev, type, store, err, op_mode, echo_switch, init_view_ind,
     Pop_mode    *op_mode;       /* OUT operating mode   */
     Pecho_switch       *echo_switch;   /* OUT echo switch      */
     Pint        *init_view_ind; /* OUT initial view indicator */
-    Ppoint_list *init_stroke;   /* OUT initial stroke   */
+    Ppoint_list **init_stroke;   /* OUT initial stroke   */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
     Plimit      *echo_area;      /* OUT echo area        */
     Pstroke_data **stroke_data;  /* OUT data record      */
@@ -973,7 +964,7 @@ pinq_pick_st3( ws, dev, type, store, err, op_mode, echo_switch, filter,
     Pecho_switch       *echo_switch;   /* OUT echo switch      */
     Pfilter	**filter;	/* OUT pick filter */
     Pin_status     *init_status;   /* OUT initial pick status */
-    Ppick_path  *init_pick;     /* OUT initial pick path */
+    Ppick_path  **init_pick;     /* OUT initial pick path */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
     Plimit3     *echo_vol;      /* OUT echo area        */
     Ppick_data3 **pick_data;    /* OUT data record      */
@@ -991,7 +982,7 @@ pinq_pick_st( ws, dev, type, store, err, op_mode, echo_switch, filter,
     Pecho_switch       *echo_switch;   /* OUT echo switch      */
     Pfilter	**filter;	/* OUT pick filter */
     Pin_status     *init_status;   /* OUT initial pick status */
-    Ppick_path  *init_pick;     /* OUT initial pick path */
+    Ppick_path  **init_pick;     /* OUT initial pick path */
     Pint        *prompt_echo;   /* OUT prompt/echo type */
     Plimit      *echo_area;      /* OUT echo area        */
     Ppick_data  **pick_data;    /* OUT data record      */
@@ -1670,8 +1661,8 @@ pinq_text_extent( wst, font, exp, sp, ht, path, hor, ver, str,
     Pfloat	sp;		/* char spacing	*/
     Pfloat	ht;		/* char height	*/
     Ptext_path	path;		/* text path	*/
-    Phor_align	hor;		/* horizontal alignment	*/
-    Pvert_align	ver;		/* vertical alignment	*/
+    Phor_text_align	hor;	/* horizontal alignment	*/
+    Pvert_text_align	ver;	/* vertical alignment	*/
     char	*str;		/* text string	*/
     Pint	*error_ind;	/* OUT error indicator	*/
     Prect	*rect;		/* OUT extent rectangle	*/
@@ -1721,8 +1712,8 @@ pdel_store( store )
 void
 popen_ws(ws_id, conn_id, ws_type)
     Pint    ws_id;	/* workstation identifier */
-    char   *conn_id;    /* connection identifier  */
-    Pint ws_type;    /* workstation type       */
+    Pconnid conn_id;	/* connection identifier  */
+    Pint    ws_type;	/* workstation type       */
 {}
 void
 pclose_ws( ws_id)
@@ -1808,15 +1799,15 @@ pinq_ws_st(ws_state)
     Pws_st	*ws_state;	/* OUT workstation state	*/
 {}
 void
-pinq_ws_conn_type( ws, string_length, error_ind, conn_id, ws_type )
+pinq_ws_conn_type( ws, store, error_ind, conn_id, ws_type )
     Pint	ws;		/* workstation identifier	*/
-    Pint	string_length;	/* size of application buffer	*/
+    Pstore	store;		/* handle to Store object	*/
     Pint	*error_ind;	/* OUT error indicator		*/
-    char	**conn_id;	/* OUT connection identifier	*/
+    Pconnid     *conn_id;	/* OUT connection identifier	*/
     Pint	*ws_type;	/* OUT workstation type		*/
 {}
 void
-pinq_set_open_ws( length, start, error_ind, idlist, total_length)
+pinq_open_wss( length, start, error_ind, idlist, total_length)
     Pint	length;		/* length of application list	*/
     Pint	start;		/* starting position	*/
     Pint	*error_ind;	/* OUT error indicator	*/
@@ -2492,172 +2483,134 @@ Pint    	*error_ind;	/* OUT error indicator	*/
 Pnum_in	*numbers;	/* OUT number of input devices	*/
 {}
 void
-pinq_def_loc_data3(type, device, len, st, store, error_ind, loc_pos, pets, tlen, echo_vol, loc_data)
+pinq_def_loc_data3(type, device, store, error_ind, loc_pos, pets, echo_vol, loc_data)
 Pint		type;		/* workstation type	             */
 Pint		device;		/* logical input device number	     */
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
 Pstore		store;		/* handle to Store object            */
 Pint		*error_ind;	/* OUT error indicator	             */
 Ppoint3         *loc_pos;       /* OUT default initial position      */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume           */
 Ploc_data3      **loc_data;     /* OUT default data record           */
 {}
 void
-pinq_def_loc_data(type, device, len, st, store, error_ind, loc_pos, pets, tlen, echo_area,
+pinq_def_loc_data(type, device, store, error_ind, loc_pos, pets, echo_area,
     loc_data)
 Pint	   type;		/* workstation type	*/
 Pint	   device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
 Pstore	   store;		/* handle to Store object       */
 Pint	   *error_ind;      	/* OUT error indicator	*/
 Ppoint     *loc_pos;            /* OUT default initial position  */
-Pint_list  *pets;               /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit     *echo_area;           /* OUT default echo volume       */
+Pint_list  **pets;              /* OUT list of prompt and echo types */
+Plimit     *echo_area;          /* OUT default echo volume       */
 Ploc_data  **loc_data;          /* OUT default data record       */
 {}
 void
-pinq_def_stroke_data3( type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_volume, stroke_data )
+pinq_def_stroke_data3( type, device, store, error_ind, max_buf_size, pets, echo_volume, stroke_data )
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_volume;   /* OUT default echo volume      */
 Pstroke_data3   **stroke_data;  /* OUT default data record      */
 {}
 void
-pinq_def_stroke_data(type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_area, stroke_data)
+pinq_def_stroke_data(type, device, store, error_ind, max_buf_size, pets, echo_area, stroke_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pstroke_data    **stroke_data;  /* OUT default data record      */
 {}
 void
-pinq_def_val_data3(type, device, len, st, store, error_ind, def_value, pets, tlen, echo_vol, val_data)
+pinq_def_val_data3(type, device, store, error_ind, def_value, pets, echo_vol, val_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
+Pstore          store;          /* handle to Store object       */
 Pint            *error_ind;     /* OUT error indicator          */
 Pfloat          *def_value;     /* OUT default initial value    */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit3         *echo_vol;     /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pval_data3      **val_data;     /* OUT default data record      */
 {}
 void
-pinq_def_val_data(type, device, len, st, store, error_ind, def_value, pets, tlen, echo_area, val_data)
+pinq_def_val_data(type, device, store, error_ind, def_value, pets, echo_area, val_data)
 Pint 	type;		/* workstation type	*/
 Pint    	device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pfloat          *def_value;     /* OUT default initial value    */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit          *echo_area;     /* OUT default echo volume      */
 Pval_data       **val_data;     /* OUT default data record      */
 {}
 void
-pinq_def_choice_data3(type, device, len, st, store, error_ind, max_choices, pets, tlen, echo_vol, choice_data)
+pinq_def_choice_data3(type, device, store, error_ind, max_choices, pets, echo_vol, choice_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_choices;   /* OUT max. number of choices   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pchoice_data3   **choice_data;  /* OUT default data record      */
 {}
 void
-pinq_def_choice_data(type, device, len, st, store, error_ind, max_choices, pets, tlen, echo_area, choice_data)
+pinq_def_choice_data(type, device, store, error_ind, max_choices, pets, echo_area, choice_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_choices;   /* OUT max. number of choices   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pchoice_data    **choice_data;  /* OUT default data record      */
 {}
 void
-pinq_def_pick_data3(type, device, len, st, store, error_ind, pets, tlen, echo_vol, pick_data, path_order)
+pinq_def_pick_data3(type, device, store, error_ind, pets, echo_vol, pick_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Ppick_data3     **pick_data;    /* OUT default data record      */
-Ppath_order	*path_order;	/* OUT default pick path order */
 {}
 void
-pinq_def_pick_data(type, device, len, st, store, error_ind, pets, tlen, echo_area, pick_data, path_order)
+pinq_def_pick_data(type, device, store, error_ind, pets, echo_area, pick_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Ppick_data      **pick_data;    /* OUT default data record      */
-Ppath_order	*path_order;	/* OUT default pick path order */
 {}
 void
-pinq_def_string_data3(type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_vol, string_data)
+pinq_def_string_data3(type, device, store, error_ind, max_buf_size, pets, echo_vol, string_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
 Plimit3         *echo_vol;      /* OUT default echo volume      */
 Pstring_data3   **string_data;  /* OUT default data record      */
 {}
 void
-pinq_def_string_data(type, device, len, st, store, error_ind, max_buf_size, pets, tlen, echo_area, string_data)
+pinq_def_string_data(type, device, store, error_ind, max_buf_size, pets, echo_area, string_data)
 Pint		type;		/* workstation type	*/
 Pint		device;		/* logical input device number	*/
-Pint		len;		/* length of application's pet list */
-Pint		st;		/* start position */
-Pstore          store;         /* handle to Store object       */
-Pint            *error_ind;       /* OUT error indicator          */
+Pstore          store;          /* handle to Store object       */
+Pint            *error_ind;     /* OUT error indicator          */
 Pint            *max_buf_size;  /* OUT max. input buffer size   */
-Pint_list       *pets;          /* OUT list of prompt and echo types */
-Pint		*tlen;		/* OUT total length of pet list */
-Plimit          *echo_area;      /* OUT default echo volume      */
+Pint_list       **pets;         /* OUT list of prompt and echo types */
+Plimit          *echo_area;     /* OUT default echo volume      */
 Pstring_data    **string_data;  /* OUT default data record      */
 {}
 void
@@ -2703,13 +2656,13 @@ Pdcue_bundle	*bundle;	/* OUT predefined depth cue rep	*/
 {}
 /* INQUIRE LIGHT SOURCE FACILITIES */
 void
-pinq_light_src_facs(type, length, start, error_ind, total_length, facilities)
+pinq_light_src_facs(type, length, start, error_ind, facilities, total_length)
 Pint		type;		/* workstation type	*/
 Pint		length;		/* length of application list	*/
 Pint		start;		/* starting position	*/
 Pint		*error_ind;	/* OUT error indicator	*/
-Pint		*total_length;	/* OUT length of list in PHIGS	*/
 Plight_src_facs	*facilities;	/* OUT light source facilities	*/
+Pint		*total_length;	/* OUT length of list in PHIGS	*/
 {}
 /* INQUIRE PREDEFINED LIGHT SOURCE REPRESENTATION */
 void
@@ -2945,7 +2898,7 @@ pinq_colr_map_method_facs(type, map_method, error_ind, map_st)
     Pcolr_map_st	*map_st;	/* OUT mapping state	*/
 {}
 void
-pinq_colr_map_method_st(ws, map_method, error_ind, map_st)
+pinq_colr_map_st(ws, map_method, error_ind, map_st)
     Pint		ws;		/* workstation id	*/
     Pint		map_method;	/* mapping method	*/
     Pint		*error_ind;	/* OUT error indicator	*/

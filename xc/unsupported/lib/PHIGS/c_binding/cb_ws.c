@@ -1,4 +1,4 @@
-/* $XConsortium: cb_ws.c,v 5.1 91/02/16 09:48:03 rws Exp $ */
+/* $XConsortium: cb_ws.c,v 5.2 91/04/04 17:05:21 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -65,9 +65,9 @@ valid_connection_id( wst, connid )
 
 void
 popen_ws(ws_id, conn_id, ws_type)
-    Pint	ws_id;	/* workstation identifier */
-    char	*conn_id;    /* connection identifier  */
-    Pint	ws_type;    /* workstation type       */
+    Pint	ws_id;		/* workstation identifier */
+    Pconnid     conn_id;	/* connection identifier  */
+    Pint	ws_type;	/* workstation type       */
 {
     Wst				*wst = (Wst *)ws_type;
     Phg_args			cp_args;
@@ -1183,11 +1183,11 @@ pinq_ws_st(ws_state)
 }
 
 void
-pinq_ws_conn_type( ws, string_length, error_ind, conn_id, ws_type )
+pinq_ws_conn_type( ws, store, error_ind, conn_id, ws_type )
     Pint	ws;		/* workstation identifier	*/
-    Pint	string_length;	/* size of application buffer	*/
+    Pstore	store;		/* handle to Store object	*/
     Pint	*error_ind;	/* OUT error indicator		*/
-    char	**conn_id;	/* OUT connection identifier	*/
+    Pconnid     *conn_id;	/* OUT connection identifier	*/
     Pint	*ws_type;	/* OUT workstation type		*/
 {
     Psl_ws_info		*ws_info;
@@ -1209,7 +1209,7 @@ pinq_ws_conn_type( ws, string_length, error_ind, conn_id, ws_type )
 }
 
 void
-pinq_set_open_ws( length, start, error_ind, idlist, total_length)
+pinq_open_wss( length, start, error_ind, idlist, total_length)
     Pint	length;		/* length of application list	*/
     Pint	start;		/* starting position	*/
     Pint	*error_ind;	/* OUT error indicator	*/
@@ -2343,9 +2343,9 @@ Ppat_rep	**rep;		/* OUT pattern representation	*/
 		int	i, size, num_colrs;
 		size = (num_colrs = (ret.data.rep.extptrep.dims.size_x *
 		    ret.data.rep.extptrep.dims.size_y)) * sizeof(Pint);
-		if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-		    *rep = &store->data.pat_rep;
-		    (*rep)->colr_array = (Pint *)store->buf;
+		if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+		    *rep = &((_Pstore *)store)->data.pat_rep;
+		    (*rep)->colr_array = (Pint *)((_Pstore *)store)->buf;
 		    (*rep)->dims = ret.data.rep.extptrep.dims;
 		    if ( num_colrs > 0 ) {
 			for ( i = 0; i < num_colrs; i++ )
@@ -2405,9 +2405,9 @@ Ppat_rep_plus	**rep;		/* OUT pattern representation	*/
 		int	size;
 		size = (ret.data.rep.extptrep.dims.size_x *
 		    ret.data.rep.extptrep.dims.size_y) * sizeof(Pcoval);
-		if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-		    *rep = &store->data.ext_pat_rep;
-		    (*rep)->colr_array = (Pcoval *)store->buf;
+		if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+		    *rep = &((_Pstore *)store)->data.ext_pat_rep;
+		    (*rep)->colr_array = (Pcoval *)((_Pstore *)store)->buf;
 		    (*rep)->dims = ret.data.rep.extptrep.dims;
 		    (*rep)->type = ret.data.rep.extptrep.type;
 		    if ( size > 0 )
@@ -2423,7 +2423,7 @@ static void
 inq_filter( type, ws, store, error_ind, filter)
     Phg_args_flt_type	type;
     Pint	 	ws;
-    Pstore              store;
+    _Pstore		*store;
     Pint		*error_ind;
     Pfilter             **filter;
 {
@@ -2488,11 +2488,12 @@ inq_filter( type, ws, store, error_ind, filter)
 void
 pinq_highl_filter( ws, store, error_ind, highl_filter)
     Pint	 ws;		/* workstation identifier	*/
-    Pstore       store;        /* handle to Store object       */
+    Pstore       store;		/* handle to Store object       */
     Pint	 *error_ind;	/* OUT error indicator	        */
     Pfilter      **highl_filter;/* OUT highlighting filter      */
 {
-    inq_filter( PHG_ARGS_FLT_HIGH, ws, store, error_ind, highl_filter);
+    inq_filter( PHG_ARGS_FLT_HIGH, ws, ((_Pstore *)store), error_ind, 
+		highl_filter);
 }
 
 void
@@ -2502,7 +2503,8 @@ pinq_invis_filter( ws, store, error_ind, invis_filter)
     Pint	 *error_ind;	/* OUT error indicator	        */
     Pfilter      **invis_filter;/* OUT invisibility filter      */
 {
-    inq_filter( PHG_ARGS_FLT_INVIS, ws, store, error_ind, invis_filter);
+    inq_filter( PHG_ARGS_FLT_INVIS, ws, ((_Pstore *)store), error_ind, 
+		invis_filter);
 }
 
 void
@@ -3027,12 +3029,12 @@ pinq_colr_map_rep( ws, index, type, store, error_ind, map_method, map_data)
 			    * sizeof(Pfloat)
 			+ ret.data.rep.colrmaprep.rec.meth_r2.colrs.num_colr_reps
 			    * sizeof(Pcolr_rep);
-		    if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-			*map_data = &store->data.colr_map_rec;
+		    if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+			*map_data = &((_Pstore *)store)->data.colr_map_rec;
 			(*map_data)->meth_r2 =
 			    ret.data.rep.colrmaprep.rec.meth_r2;
 			(*map_data)->meth_r2.weights.floats =
-			    (Pfloat *)store->buf;
+			    (Pfloat *)((_Pstore *)store)->buf;
 			(*map_data)->meth_r2.colrs.colr_reps = 
 			    (Pcolr_rep *)
 			    ((*map_data)->meth_r2.weights.floats +
@@ -3059,12 +3061,12 @@ pinq_colr_map_rep( ws, index, type, store, error_ind, map_method, map_data)
 		    size = colrs->num_lists * sizeof(Pfloat_list);
 		    for ( i = 0; i < colrs->num_lists; i++ )
 			size += colrs->lists[i].num_floats * sizeof(Pfloat);
-		    if ( CB_STORE_SPACE( store, size, error_ind ) ) {
-			*map_data = &store->data.colr_map_rec;
+		    if ( CB_STORE_SPACE( ((_Pstore *)store), size, error_ind ) ) {
+			*map_data = &((_Pstore *)store)->data.colr_map_rec;
 			(*map_data)->meth_r3 =
 			    ret.data.rep.colrmaprep.rec.meth_r3;
 			(*map_data)->meth_r3.colr_lists.lists =
-			    (Pfloat_list *)store->buf;
+			    (Pfloat_list *)((_Pstore *)store)->buf;
 			buf = (Pfloat *)
 			    ((*map_data)->meth_r3.colr_lists.lists
 				+ colrs->num_lists);
@@ -3084,9 +3086,9 @@ pinq_colr_map_rep( ws, index, type, store, error_ind, map_method, map_data)
     }
 }
 
-/* INQUIRE COLOUR MAPPING METHOD STATE */
+/* INQUIRE COLOUR MAPPING STATE */
 void
-pinq_colr_map_method_st(ws, map_method, error_ind, map_st)
+pinq_colr_map_st(ws, map_method, error_ind, map_st)
     Pint		ws;		/* workstation id	*/
     Pint		map_method;	/* mapping method	*/
     Pint		*error_ind;	/* OUT error indicator	*/
