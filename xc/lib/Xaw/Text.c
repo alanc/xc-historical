@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.5 87/12/02 16:07:42 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.6 87/12/11 09:41:44 swick Locked $";
 #endif lint
 
 /*
@@ -1199,16 +1199,26 @@ Boolean last;
     TextWidget oldtw = (TextWidget) current;
     TextWidget newtw = (TextWidget) new;
     Boolean    redisplay = FALSE;
+    XtWidgetGeometry reqGeom;
+    XtGeometryResult reply;
 
     _XtTextPrepareToUpdate(oldtw);
     
-    if (oldtw->text.sink != newtw->text.sink)
-	redisplay = TRUE;
+    reply = XtSetValuesGeometryRequest( current, new, &reqGeom );
 
-    if (oldtw->text.source != newtw->text.source) {
+    if (reply == XtGeometryAlmost)
+        reply = XtSetValuesGeometryRequest( current, &reqGeom, &reqGeom );
+
+    if (reply == XtGeometryYes)
+        redisplay = TRUE;
+
+    if (oldtw->text.source != newtw->text.source || redisplay) {
 	ForceBuildLineTable(oldtw);
 	redisplay = TRUE;
     }
+
+    if (oldtw->text.sink != newtw->text.sink)
+	redisplay = TRUE;
 
     if (oldtw->text.insertPos != newtw->text.insertPos)
 	oldtw->text.showposition = TRUE;
@@ -1224,9 +1234,9 @@ Boolean last;
      *     call our expose proc.
      */
     if (redisplay) 
-	DisplayTextWindow(oldtw);
+	DisplayTextWindow(newtw);
 
-    _XtTextExecuteUpdate(oldtw);
+    _XtTextExecuteUpdate(newtw);
 
     return (FALSE);
 }
