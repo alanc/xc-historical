@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.164 90/09/20 18:07:55 converse Exp $
+ * $XConsortium: menus.c,v 1.165 90/10/03 14:27:01 converse Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.164 90/09/20 18:07:55 converse Exp $";
+"$XConsortium: menus.c,v 1.165 90/10/03 14:27:01 converse Exp $";
 #endif
 
 #include <stdio.h>
@@ -1282,6 +1282,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    return TRUE;
 
 	tmp_win->auto_raise = !tmp_win->auto_raise;
+	if (tmp_win->auto_raise) ++(Scr->NumAutoRaises);
+	else --(Scr->NumAutoRaises);
 	break;
 
     case F_BEEP:
