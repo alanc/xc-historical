@@ -7,7 +7,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.26 88/02/09 11:57:43 jim Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.27 88/02/23 15:38:32 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -196,8 +196,7 @@ for (i = 1; i < argc; ) {
       set_saver(dpy, PREFER_BLANK, DontPreferBlanking);
       i++;
     }
-    arg = argv[i];
-    if (strcmp(arg, "expose") == 0) {       /* Alter exposure preference. */
+    else if (strcmp(arg, "expose") == 0) {       /* Alter exposure preference. */
       set_saver(dpy, ALLOW_EXP, AllowExposures);
       i++;
     }
