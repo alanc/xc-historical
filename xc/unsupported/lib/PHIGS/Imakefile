@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.12 91/03/29 16:01:53 rws Exp $
+# $XConsortium: Imakefile,v 5.14 91/04/04 14:11:57 gildea Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -84,7 +84,8 @@ lib:
 	-mkdir $@
 
 phigsmon:
-	cd cp;$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
+	@cd cp ; echo "making phigsmon in $(CURRENT_DIR)/cp..."; \
+	$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
 
 lib/phigsmon: cp/phigsmon
 	$(RM) $@
@@ -121,7 +122,7 @@ extract: FRC
 	done
 
 $(SUBDIRS) $(SWAPDIR): FRC
-	@cd $@ ; echo "making $@"; \
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \
 	$(MAKE) $(MFLAGS) PassCDebugFlags all
 
 InstallLibrary(phigs,$(USRLIBDIR))
