@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.5 89/07/14 18:26:32 jim Exp $
+/* $XConsortium: Atoms.c,v 1.6 89/12/07 09:22:32 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -39,27 +39,28 @@ static struct _AtomRec __/**/atom = { text, NULL }; \
 AtomPtr _/**/atom = &__/**/atom;
 #endif
 
-DeclareAtom(XA_TEXT,			"TEXT"			)
-DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
-DeclareAtom(XA_LIST_LENGTH,		"LIST_LENGTH"		)
-DeclareAtom(XA_LENGTH,			"LENGTH"		)
-DeclareAtom(XA_TARGETS,			"TARGETS"		)
+DeclareAtom(XA_ATOM_PAIR,		"ATOM_PAIR"		)
 DeclareAtom(XA_CHARACTER_POSITION,	"CHARACTER_POSITION"	)
+DeclareAtom(XA_CLASS,			"CLASS"			)
+DeclareAtom(XA_CLIENT_WINDOW,		"CLIENT_WINDOW"		)
+DeclareAtom(XA_CLIPBOARD,		"CLIPBOARD"		)
+DeclareAtom(XA_COMPOUND_TEXT,		"COMPOUND_TEXT"		)
+DeclareAtom(XA_DECNET_ADDRESS,		"DECNET_ADDRESS"	)
 DeclareAtom(XA_DELETE,			"DELETE"		)
+DeclareAtom(XA_FILENAME,		"FILENAME"		)
 DeclareAtom(XA_HOSTNAME,		"HOSTNAME"		)
 DeclareAtom(XA_IP_ADDRESS,		"IP_ADDRESS"		)
-DeclareAtom(XA_DECNET_ADDRESS,		"DECNET_ADDRESS"	)
-DeclareAtom(XA_USER,			"USER"			)
-DeclareAtom(XA_CLASS,			"CLASS"			)
+DeclareAtom(XA_LENGTH,			"LENGTH"		)
+DeclareAtom(XA_LIST_LENGTH,		"LIST_LENGTH"		)
 DeclareAtom(XA_NAME,			"NAME"			)
-DeclareAtom(XA_CLIENT_WINDOW,		"CLIENT_WINDOW"		)
-DeclareAtom(XA_ATOM_PAIR,		"ATOM_PAIR"		)
-DeclareAtom(XA_SPAN,			"SPAN"			)
 DeclareAtom(XA_NET_ADDRESS,		"NET_ADDRESS"		)
 DeclareAtom(XA_NULL,			"NULL"			)
-DeclareAtom(XA_FILENAME,		"FILENAME"		)
 DeclareAtom(XA_OWNER_OS,		"OWNER_OS"		)
-DeclareAtom(XA_CLIPBOARD,		"CLIPBOARD"		)
+DeclareAtom(XA_SPAN,			"SPAN"			)
+DeclareAtom(XA_TARGETS,			"TARGETS"		)
+DeclareAtom(XA_TEXT,			"TEXT"			)
+DeclareAtom(XA_TIMESTAMP,		"TIMESTAMP"		)
+DeclareAtom(XA_USER,			"USER"			)
 
 typedef struct _CacheEntry {
     struct _CacheEntry* next;

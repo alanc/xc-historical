@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Atoms.h,v 1.1 89/07/14 17:51:52 jim Exp $
+ * $XConsortium: Atoms.h,v 1.2 89/12/07 09:22:15 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -26,17 +26,35 @@
 typedef struct _AtomRec *AtomPtr;
 
 extern AtomPtr
-    _XA_TEXT, _XA_TIMESTAMP, _XA_LIST_LENGTH, _XA_LENGTH,
-    _XA_TARGETS, _XA_CHARACTER_POSITION, _XA_DELETE, _XA_HOSTNAME,
-    _XA_IP_ADDRESS, _XA_DECNET_ADDRESS, _XA_USER, _XA_CLASS,
-    _XA_NAME, _XA_CLIENT_WINDOW, _XA_ATOM_PAIR, _XA_SPAN,
-    _XA_NET_ADDRESS, _XA_NULL, _XA_FILENAME, _XA_OWNER_OS, _XA_CLIPBOARD;
+    _XA_ATOM_PAIR,
+    _XA_CHARACTER_POSITION,
+    _XA_CLASS,
+    _XA_CLIENT_WINDOW,
+    _XA_CLIPBOARD,
+    _XA_COMPOUND_TEXT,
+    _XA_DECNET_ADDRESS,
+    _XA_DELETE,
+    _XA_FILENAME,
+    _XA_HOSTNAME,
+    _XA_IP_ADDRESS,
+    _XA_LENGTH,
+    _XA_LIST_LENGTH,
+    _XA_NAME,
+    _XA_NET_ADDRESS,
+    _XA_NULL,
+    _XA_OWNER_OS,
+    _XA_SPAN,
+    _XA_TARGETS,
+    _XA_TEXT,
+    _XA_TIMESTAMP,
+    _XA_USER;
 
 #define XA_ATOM_PAIR(d)		XmuInternAtom(d, _XA_ATOM_PAIR)
 #define XA_CHARACTER_POSITION(d) XmuInternAtom(d, _XA_CHARACTER_POSITION)
 #define XA_CLASS(d)		XmuInternAtom(d, _XA_CLASS)
 #define XA_CLIENT_WINDOW(d)	XmuInternAtom(d, _XA_CLIENT_WINDOW)
 #define XA_CLIPBOARD(d)		XmuInternAtom(d, _XA_CLIPBOARD)
+#define XA_COMPOUND_TEXT(d)	XmuInternAtom(d, _XA_COMPOUND_TEXT)
 #define XA_DECNET_ADDRESS(d)	XmuInternAtom(d, _XA_DECNET_ADDRESS)
 #define XA_DELETE(d)		XmuInternAtom(d, _XA_DELETE)
 #define XA_FILENAME(d)		XmuInternAtom(d, _XA_FILENAME)
