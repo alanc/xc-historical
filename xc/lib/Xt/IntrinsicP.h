@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.44 89/10/04 12:21:36 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.45 89/12/12 11:28:12 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -48,9 +48,6 @@ typedef unsigned long XtVersionType;
 #define XT_REVISION 3
 #define XtVersion (XT_VERSION * 1000 + XT_REVISION)
 #define XtVersionDontCheck 0
-
-extern void _XtInherit();
-    /* takes no arguments */
 
 typedef void (*XtProc)();
     /* takes no arguments */
@@ -136,9 +133,6 @@ typedef struct _XtTMRec {
     unsigned long   lastEventTime;
 } XtTMRec, *XtTM;
 
-extern Widget _XtWindowedAncestor(); /* internal */
-   /* Object object; */
-
 #include <X11/CoreP.h>
 #include <X11/CompositeP.h>
 #include <X11/ConstrainP.h>
@@ -197,25 +191,77 @@ extern Widget _XtWindowedAncestor(); /* internal */
 #define XtCheckSubclass(w, widget_class, message)	/* nothing */
 #endif
 
-extern void XtCreateWindow ();
-    /* Widget widget; */
-    /* unsigned int windowClass; */
-    /* Visual *visual; */
-    /* Mask valueMask; */
-    /* XSetWindowAttributes *attributes; */
+#ifdef __cplusplus			/* do not leave open across includes */
+extern "C" {				/* for C++ V2.0 */
+#endif
 
-extern void XtResizeWidget(); /* widget, width, height, borderWidth */
-    /* Widget  widget */
-    /* Dimension width, height, borderWidth; */
+#if NeedWidePrototypes
+#define Boolean		int
+#define Dimension	unsigned int
+#define Position	int
+#define XtEnum		unsigned int
+#endif /* NeedWidePrototypes */
 
-extern void XtMoveWidget(); /* widget, x, y */
-    /* Widget  widget */
-    /* Position x, y  */
+extern Widget _XtWindowedAncestor( /* internal; implementation-dependent */
+#if NeedFunctionPrototypes
+    Widget 		/* object */
+#endif /* NeedFunctionPrototypes */
+);
 
-extern void XtConfigureWidget(); /* widget, x, y, width, height, borderWidth */
-    /* Widget widget; */
-    /* Position x, y; */
-    /* Dimension height, width, borderWidth; */
+extern void _XtInherit(
+#if NeedFunctionPrototypes
+    void
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtCreateWindow(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    unsigned int 	/* windowClass */,
+    Visual*		/* visual */,
+    Mask 		/* valueMask */,
+    XSetWindowAttributes* /* attributes */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtResizeWidget(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Dimension		/* width */,
+    Dimension		/* height */,
+    Dimension 		/* borderWidth */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtMoveWidget(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Position		/* x */,
+    Position 		/* y */
+#endif /* NeedFunctionPrototypes */
+);
+
+extern void XtConfigureWidget(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    Position		/* x */,
+    Position 		/* y */,
+    Dimension 		/* width */,
+    Dimension		/* height */,
+    Dimension 		/* borderWidth */
+#endif /* NeedFunctionPrototypes */
+);
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
+#if NeedWidePrototypes
+#undef Boolean
+#undef Dimension
+#undef Position
+#undef XtEnum
+#endif /* NeedWidePrototypes */
 
 #endif /* _XtIntrinsicP_h */
 /* DON'T ADD STUFF AFTER THIS #endif */
