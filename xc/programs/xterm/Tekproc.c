@@ -1467,7 +1467,7 @@ TekUnselect()
 {
 	register TScreen *screen = &term->screen;
 
-	if (tekWidget && TShellWindow)
+	if (!screen->select && tekWidget && TShellWindow)
 	  XSetWindowBorderPixmap (screen->display, TShellWindow,
 				  screen->graybordertile);
 }

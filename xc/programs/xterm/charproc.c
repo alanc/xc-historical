@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.19 88/02/20 15:28:59 swick Exp $
+ * $Header: charproc.c,v 1.20 88/02/25 18:15:40 swick Exp $
  */
 
 
@@ -110,7 +110,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.19 88/02/20 15:28:59 swick Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.20 88/02/25 18:15:40 swick Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2230,8 +2230,9 @@ VTSelect()
 VTUnselect()
 {
 	register Widget shell = term->core.parent;
+	register TScreen *screen = &term->screen;
 
-	if (shell->core.window)
+	if (!screen->select && shell->core.window)
 	  XSetWindowBorderPixmap (XtDisplay(shell), shell->core.window, 
 				  term->screen.graybordertile);
 }
