@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.157 88/10/02 17:29:34 rws Exp $ */
+/* $XConsortium: events.c,v 1.158 88/10/02 17:59:24 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -134,13 +134,13 @@ static  struct {
 static WindowPtr motionHintWindow;
 
 extern void DoEnterLeaveEvents();	/* merely forward declarations */
-extern WindowPtr XYToWindow();
+static WindowPtr XYToWindow();
 extern Bool CheckKeyboardGrabs();
-extern void NormalKeyboardEvent();
+static void NormalKeyboardEvent();
 extern int DeliverDeviceEvents();
-extern void DoFocusEvents();
+static void DoFocusEvents();
 extern Mask EventMaskForClient();
-extern WindowPtr CheckMotion();
+static WindowPtr CheckMotion();
 extern void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
 
