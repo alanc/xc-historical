@@ -15,13 +15,14 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.0 89/09/02 15:29:28 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.1 89/09/02 17:09:25 rws Exp $ */
 
 #include <math.h>
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"
 #include "gcstruct.h"
+#include "pixmapstr.h"
 #include "mi.h"
 #include "mizerarc.h"
 
@@ -233,6 +234,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
     register xArc *arc;
     register int i;
     DDXPointPtr points, pts;
+    register DDXPointPtr pt;
     Bool dospans;
     int *widths;
 
@@ -273,6 +275,14 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 		{
 		    while (max < n)
 			widths[max++] = 1;
+		}
+		if (pGC->miTranslate)
+		{
+		    for (pt = points; pt != pts; pt++)
+		    {
+			pt->x += pDraw->x;
+			pt->y += pDraw->y;
+		    }
 		}
 		(*pGC->ops->FillSpans)(pDraw, pGC, n, points, widths, FALSE);
 	    }
