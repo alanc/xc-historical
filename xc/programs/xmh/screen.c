@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 1.14 87/07/31 09:36:00 weissman Exp $";
+static char rcs_id[] = "$Header: screen.c,v 1.7 87/10/09 14:01:49 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,21 +29,7 @@ static char rcs_id[] = "$Header: screen.c,v 1.14 87/07/31 09:36:00 weissman Exp 
 /* scrn.c -- management of scrns. */
 
 #include "xmh.h"
-
-static int compscrncount = 0;	/* How many comp screens we currently have. */
-
-/* Handle geometry requests from the scrn. */
-/*ARGSUSED*/	/* -- keeps lint from complaining. */
-
-XtGeometryReturnCode
-ScrnGeometryRequest(window, request, requestBox, replyBox)
-Window window;
-XtGeometryRequest request;
-WindowBox *requestBox, *replyBox;
-{
-    return XtgeometryNo;
-}
-
+#include <Xatom.h>
 
 
 /* Fill in the buttons for the view commands. */
@@ -56,18 +42,17 @@ Scrn scrn;
     extern void ExecSaveView(), ExecPrintView();
     ButtonBox buttonbox = scrn->viewbuttons;
     BBoxStopUpdate(buttonbox);
-    if (scrn->tocwindow == NULL)
-	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE);
-    BBoxAddButton(buttonbox, "reply", ExecViewReply, 999, TRUE);
-    BBoxAddButton(buttonbox, "forward", ExecViewForward, 999, TRUE);
+    if (scrn->tocwidget == NULL)
+	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "reply", ExecViewReply, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "forward", ExecViewForward, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "useAsComp", ExecViewUseAsComposition,
-		  999, TRUE);
-    BBoxAddButton(buttonbox, "edit", ExecEditView, 999, TRUE);
-    BBoxAddButton(buttonbox, "save", ExecSaveView, 999, FALSE);
-    BBoxAddButton(buttonbox, "print", ExecPrintView, 999, TRUE);
+		  999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "edit", ExecEditView, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "save", ExecSaveView, 999, FALSE, NULL);
+    BBoxAddButton(buttonbox, "print", ExecPrintView, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxForceFullSize(buttonbox);
-    BBoxAllowAnySize(buttonbox);
+    BBoxLockSize(buttonbox);
 }
     
 
@@ -82,15 +67,14 @@ Scrn scrn;
     extern void ExecSendDraft();
     ButtonBox buttonbox = scrn->viewbuttons;
     BBoxStopUpdate(buttonbox);
-    if (scrn->tocwindow == NULL)
-	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE);
-    BBoxAddButton(buttonbox, "send", ExecSendDraft, 999, TRUE);
-    BBoxAddButton(buttonbox, "reset", ExecCompReset, 999, TRUE);
-    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE);
-    BBoxAddButton(buttonbox, "save", ExecSaveDraft, 999, TRUE);
+    if (scrn->tocwidget == NULL)
+	BBoxAddButton(buttonbox, "close", ExecCloseView, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "send", ExecSendDraft, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "reset", ExecCompReset, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "save", ExecSaveDraft, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
-    BBoxForceFullSize(buttonbox);
-    BBoxAllowAnySize(buttonbox);
+    BBoxLockSize(buttonbox);
 }
 
 
@@ -142,23 +126,9 @@ Scrn scrn;
     }
 }
 
-void PrepareDoubleClickFolder(scrn)
-Scrn scrn;
-{
-    extern void ExecOpenFolder();
-    DoubleClickProc = ExecOpenFolder;
-    DoubleClickParam = (caddr_t)scrn;
-}
 
-void PrepareDoubleClickSequence(scrn)
-Scrn scrn;
-{
-    extern void ExecOpenSeq();
-    DoubleClickProc = ExecOpenSeq;
-    DoubleClickParam = (caddr_t)scrn;
-}
 
-/* Create subwindows for a toc&view window. */
+/* Create subwidgets for a toc&view window. */
 
 static MakeTocAndView(scrn)
 Scrn scrn;
@@ -169,7 +139,6 @@ Scrn scrn;
     extern void ExecOpenFolderInNewWindow();
     extern void ExecCreateFolder();
     extern void ExecDeleteFolder();
-    extern XtEventReturnCode HandleTocButtons();
     extern void ExecIncorporate();
     extern void ExecNextView();
     extern void ExecPrevView();
@@ -191,108 +160,107 @@ Scrn scrn;
     extern void ExecPack();
     extern void ExecSort();
     extern void ExecForceRescan();
-    int i, width, height, theight, vheight;
+    int i, theight, min, max;
     ButtonBox buttonbox;
-    static Arg arglist[] = {
-	{XtNtextSink, NULL}
+    static Arg arglist[] = {XtNiconPixmap, NULL};
+    static char *extra[] = {
+	"<Btn1Down>(2): open-folder()",
+	NULL
     };
-    static XtSelectType sarray[] = {XtselectLine,
-				    XtselectPosition,
-				    XtselectWord,
-				    XtselectAll,
-				    XtselectNull};
+    static char *extra2[] = {
+	"<Btn1Down>(2): open-sequence()",
+	NULL
+    };
+    static DwtTextScanType sarray[] = {DwtstEOL,
+				       DwtstPositions,
+				       DwtstWordBreak,
+				       DwtstAll};
+    static Arg arglist2[] = {
+	{DwtNselectionArray, (XtArgVal) sarray},
+	{DwtNselectionArrayCount, (XtArgVal) XtNumber(sarray)}
+    };
 
-
-    XtVPanedRefigureMode(DISPLAY scrn->window, FALSE);
     scrn->folderbuttons = BBoxRadioCreate(scrn, 0, "folders",
 					  &(scrn->curfolder));
     scrn->mainbuttons = BBoxCreate(scrn, 1, "folderButtons");
     scrn->toclabel = CreateTitleBar(scrn, 2);
-    scrn->tocwindow = CreateTextSW(scrn, 3, "toc", 0);
+    scrn->tocwidget = CreateTextSW(scrn, 3, "toc", 0,
+				   arglist2, XtNumber(arglist2));
     scrn->seqbuttons = BBoxRadioCreate(scrn, 4, "seqButtons", &scrn->curseq);
     scrn->tocbuttons = BBoxCreate(scrn, 5, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, 6);
-    scrn->viewwindow = CreateTextSW(scrn, 7, "view", wordBreak);
+    scrn->viewwidget = CreateTextSW(scrn, 7, "view", 0, NULL, (Cardinal) 0);
     scrn->viewbuttons = BBoxCreate(scrn, 8, "viewButtons");
-
-    XtTextGetValues(DISPLAY scrn->tocwindow, arglist, XtNumber(arglist));
-    scrn->tocsink = (XtTextSink *) arglist[0].value;
 
     buttonbox = scrn->folderbuttons;
     BBoxStopUpdate(buttonbox);
     for (i=0 ; i<numFolders ; i++)
 	BBoxAddButton(buttonbox, TocGetFolderName(folderList[i]),
-		      PrepareDoubleClickFolder, 999, TRUE);
-    BBoxForceFullSize(buttonbox);
+		      NoOp, 999, TRUE, extra);
     BBoxStartUpdate(buttonbox);
+    BBoxLockSize(buttonbox);
 
     buttonbox = scrn->mainbuttons;
     BBoxStopUpdate(buttonbox);
-    BBoxAddButton(buttonbox, "close", ExecCloseScrn, 999, TRUE);
-    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE);
-    BBoxAddButton(buttonbox, "open", ExecOpenFolder, 999, TRUE);
+    BBoxAddButton(buttonbox, "close", ExecCloseScrn, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "compose", ExecComposeMessage, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "open", ExecOpenFolder, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "openInNew", ExecOpenFolderInNewWindow,
-		  999, TRUE);
-    BBoxAddButton(buttonbox, "create", ExecCreateFolder, 999, TRUE);
-    BBoxAddButton(buttonbox, "delete", ExecDeleteFolder, 999, TRUE);
-    BBoxForceFullSize(buttonbox);
+		  999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "create", ExecCreateFolder, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "delete", ExecDeleteFolder, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
+    BBoxLockSize(buttonbox);
 
     buttonbox = scrn->seqbuttons;
     BBoxStopUpdate(buttonbox);
-    BBoxAddButton(buttonbox, "all", PrepareDoubleClickSequence, 999, TRUE);
-    BBoxForceFullSize(buttonbox);
+    BBoxAddButton(buttonbox, "all", NoOp, 999, TRUE, extra2);
     BBoxStartUpdate(buttonbox);
+    BBoxLockSize(buttonbox);
 
-    if (defDoubleClick) {
-	XtSetEventHandler(theDisplay,
-			  XtTextGetInnerWindow(theDisplay, scrn->tocwindow),
-			  HandleTocButtons, ButtonReleaseMask, (caddr_t) scrn);
-	sarray[1] = XtselectNull;
-    }
-    XtTextSetSelectionArray(DISPLAY scrn->tocwindow, (XtSelectType *)sarray);
+/*    XtTextSetSelectionArray((Widget) scrn->tocwidget, (XtSelectType *)sarray); %%% */
 
     buttonbox = scrn->tocbuttons;
     BBoxStopUpdate(buttonbox);
-    BBoxAddButton(buttonbox, "inc", ExecIncorporate, 999, TRUE);
-    BBoxAddButton(buttonbox, "next", ExecNextView, 999, TRUE);
-    BBoxAddButton(buttonbox, "prev", ExecPrevView, 999, TRUE);
-    BBoxAddButton(buttonbox, "delete", ExecMarkDelete, 999, TRUE);
-    BBoxAddButton(buttonbox, "move", ExecMarkMove, 999, TRUE);
-    BBoxAddButton(buttonbox, "copy", ExecMarkCopy, 999, TRUE);
-    BBoxAddButton(buttonbox, "unmark", ExecMarkUnmarked, 999, TRUE);
-    BBoxAddButton(buttonbox, "viewNew", ExecViewNew, 999, TRUE);
-    BBoxAddButton(buttonbox, "reply", ExecTocReply, 999, TRUE);
-    BBoxAddButton(buttonbox, "forward", ExecTocForward, 999, TRUE);
+    BBoxAddButton(buttonbox, "inc", ExecIncorporate, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "next", ExecNextView, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "prev", ExecPrevView, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "delete", ExecMarkDelete, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "move", ExecMarkMove, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "copy", ExecMarkCopy, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "unmark", ExecMarkUnmarked, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "viewNew", ExecViewNew, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "reply", ExecTocReply, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "forward", ExecTocForward, 999, TRUE, NULL);
     BBoxAddButton(buttonbox, "useAsComp", ExecTocUseAsComposition,
-		  999, TRUE);
-    BBoxAddButton(buttonbox, "commit", ExecCommitChanges, 999, TRUE);
-    BBoxAddButton(buttonbox, "print", ExecPrintMessages, 999, TRUE);
-    BBoxAddButton(buttonbox, "pack", ExecPack, 999, TRUE);
-    BBoxAddButton(buttonbox, "sort", ExecSort, 999, TRUE);
-    BBoxAddButton(buttonbox, "rescan", ExecForceRescan, 999, TRUE);
-    BBoxAddButton(buttonbox, "pick", ExecPick, 999, TRUE);
-    BBoxAddButton(buttonbox, "openSeq", ExecOpenSeq, 999, TRUE);
-    BBoxAddButton(buttonbox, "addToSeq", ExecAddToSeq, 999, TRUE);
-    BBoxAddButton(buttonbox, "removeFromSeq", ExecRemoveFromSeq, 999, TRUE);
-    BBoxAddButton(buttonbox, "deleteSeq", ExecDeleteSeq, 999, TRUE);
-    BBoxForceFullSize(buttonbox);
+		  999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "commit", ExecCommitChanges, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "print", ExecPrintMessages, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "pack", ExecPack, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "sort", ExecSort, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "rescan", ExecForceRescan, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "pick", ExecPick, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "openSeq", ExecOpenSeq, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "addToSeq", ExecAddToSeq, 999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "removeFromSeq", ExecRemoveFromSeq,
+		  999, TRUE, NULL);
+    BBoxAddButton(buttonbox, "deleteSeq", ExecDeleteSeq, 999, TRUE, NULL);
     BBoxStartUpdate(buttonbox);
+    BBoxLockSize(buttonbox);
 
     FillViewButtons(scrn);
-    BBoxForceFullSize(scrn->viewbuttons);
-    XtVPanedRefigureMode(DISPLAY scrn->window, TRUE);
-    BBoxAllowAnySize(scrn->folderbuttons);
-    BBoxAllowAnySize(scrn->mainbuttons);
-    BBoxAllowAnySize(scrn->seqbuttons);
-    BBoxAllowAnySize(scrn->tocbuttons);
-    BBoxAllowAnySize(scrn->viewbuttons);
-    GetWindowSize(scrn->tocwindow, &width, &theight);
-    GetWindowSize(scrn->viewwindow, &width, &vheight);
-    height = theight + vheight;
-    theight = defTocPercentage * height / 100;
-    XtVPanedSetMinMax(DISPLAY scrn->window, scrn->tocwindow, theight, theight);
-    XtVPanedSetMinMax(DISPLAY scrn->window, scrn->tocwindow, 50, 1000);
+
+/*  DwtPaneAllowResizing(scrn->widget, FALSE);
+    theight = GetHeight((Widget)scrn->tocwidget) +
+	GetHeight((Widget)scrn->viewwidget);
+    theight = defTocPercentage * theight / 100;
+    DwtPaneGetMinMax((Widget) scrn->tocwidget, &min, &max);
+    DwtPaneSetMinMax((Widget) scrn->tocwidget, theight, theight);
+    DwtPaneSetMinMax((Widget) scrn->tocwidget, min, max);
+*/
+    arglist[0].value = (XtArgVal) NoMailPixmap;
+		/* %%% Wrong; should check InitialFolder->mailpending.  */
+    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
 }
 
 
@@ -300,7 +268,7 @@ MakeView(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwindow = CreateTextSW(scrn, 1, "view", wordBreak);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "view", 0, NULL, (Cardinal) 0);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "viewButtons");
     FillViewButtons(scrn);
 }
@@ -310,10 +278,9 @@ MakeComp(scrn)
 Scrn scrn;
 {
     scrn->viewlabel = CreateTitleBar(scrn, 0);
-    scrn->viewwindow = CreateTextSW(scrn, 1, "comp", wordBreak);
+    scrn->viewwidget = CreateTextSW(scrn, 1, "comp", 0, NULL, (Cardinal) 0);
     scrn->viewbuttons = BBoxCreate(scrn, 2, "compButtons");
     FillCompButtons(scrn);
-    compscrncount++;
 }
 
 
@@ -323,29 +290,18 @@ Scrn scrn;
 Scrn CreateNewScrn(kind)
 ScrnKind kind;
 {
-    extern XSetSizeHints();
     int i;
     Position x, y;
     Dimension width, height;
     Scrn scrn;
     char *geometry;
     static Arg arglist[] = {
-	{XtNname, NULL},
 	{XtNx, NULL},
 	{XtNy, NULL},
 	{XtNwidth, NULL},
 	{XtNheight, NULL},
     };
-#ifdef X11
     int bits;
-    XSizeHints sizehints;
-#endif
-#ifdef X10
-    Window window;
-    OpaqueFrame frame;
-    WindowInfo info;
-    static FontInfo *font = NULL;
-#endif X10
 
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->kind == kind && !scrnList[i]->mapped)
@@ -357,110 +313,49 @@ ScrnKind kind;
 	case STpick:		geometry = defPickGeometry;	break;
     }
 
-#ifdef X11
     bits = XParseGeometry(geometry, &x, &y, &width, &height);
     if (!(bits & XValue)) x = 0;
     else if (bits & XNegative) x = rootwidth - abs(x) - width;
     if (!(bits & YValue)) y = 0;
     else if (bits & YNegative) y = rootheight - abs(y) - height;
-#endif
-#ifdef X10
-    if (font == NULL) font = XOpenFont("vtsingle");
-    EmptyEventQueue();
-    ClearButtonTracks();
-    frame.bdrwidth = 1;
-    frame.border = BlackPixmap;
-    frame.background = WhitePixmap;
-    window = XCreateTerm(progName, progName, geometry, geometry,
-            &frame, 20, 20, 0, 0, &width, &height, font, 1, 1);
-    (void) XQueryWindow(window, &info);
-    x = info.x;
-    y = info.y;
-    width = info.width;
-    height = info.height;
-    XDestroyWindow(window);
-#endif X10
 
-    arglist[0].value = (XtArgVal)progName;
-    arglist[1].value = (XtArgVal)x;
-    arglist[2].value = (XtArgVal)y;
-    arglist[3].value = (XtArgVal)width;
-    arglist[4].value = (XtArgVal)height;
+    arglist[0].value = (XtArgVal)x;
+    arglist[1].value = (XtArgVal)y;
+    arglist[2].value = (XtArgVal)width;
+    arglist[3].value = (XtArgVal)height;
     numScrns++;
     scrnList = (Scrn *)
 	XtRealloc((char *) scrnList, (unsigned) numScrns*sizeof(Scrn));
-    scrn = scrnList[numScrns - 1] = (Scrn)XtMalloc(sizeof(ScrnRec));
+    scrn = scrnList[numScrns - 1] = XtNew(ScrnRec);
     bzero((char *)scrn, sizeof(ScrnRec));
     scrn->kind = kind;
-    scrn->window = XtVPanedWindowCreate(DISPLAY QDefaultRootWindow(theDisplay),
-					arglist, XtNumber(arglist));
-    (void) XtSetGeometryHandler(DISPLAY scrn->window,
-				(XtGeometryHandler)ScrnGeometryRequest);
-
-#ifdef X11
-#include <Xatom.h>
-    XtMakeMaster(DISPLAY scrn->window);
-    sizehints.flags = 0;
-    sizehints.x = x;
-    sizehints.y = y;
-    sizehints.width = width;
-    sizehints.height = height;
-    if ((bits & XValue) && (bits & YValue))
-	sizehints.flags |= USPosition;
-    if ((bits & WidthValue) && (bits & HeightValue))
-	sizehints.flags |= USSize;
-    else
-	sizehints.flags |= PSize;
-    XSetSizeHints(theDisplay, scrn->window, &sizehints, XA_WM_NORMAL_HINTS);
-    scrn->hints.flags = InputHint;
-    scrn->hints.input = FALSE;
-    if (kind == STtocAndView) {
-	scrn->hints.flags |= IconPixmapHint;
-	scrn->hints.icon_pixmap = NoMailPixmap;
-    }
-    XSetWMHints(theDisplay, scrn->window, &(scrn->hints));
-    XDefineCursor(theDisplay, scrn->window, XtGetCursor(DISPLAY XC_left_ptr));
-#endif X11
-#ifdef X10
-    XDefineCursor(scrn->window, XtGetCursor("left_ptr"));
-#endif
+    if (numScrns == 1) scrn->parent = toplevel;
+    else scrn->parent = XtCreatePopupShell(progName, shellWidgetClass,
+					   toplevel, NULL, (Cardinal) 0);
+    scrn->widget = (PaneWidget)
+	XtCreateWidget(progName, paneWidgetClass, scrn->parent,
+		       arglist, XtNumber(arglist));
 
     switch (kind) {
 	case STtocAndView:	MakeTocAndView(scrn);	break;
 	case STview:		MakeView(scrn);	break;
 	case STcomp:		MakeComp(scrn);	break;
     }
+if (debug) {fprintf(stderr, "Realizing..."); fflush(stderr);}
+    XtRealizeWidget((Widget) scrn->parent);
+if (debug) fprintf(stderr, "done\n");
+    scrn->mapped = (numScrns == 1);
     return scrn;
 }
 
 
 Scrn NewViewScrn()
 {
-/*
-    Scrn scrn;
-    int i;
-    for (i=0 ; i<numScrns ; i++) {
-	scrn = scrnList[i];
-	if (scrn->kind == STview && scrn->msg == NULL)
-	    return scrn;
-    }
-*/
     return CreateNewScrn(STview);
 }
 
 Scrn NewCompScrn()
 {
-/*
-    Scrn scrn;
-    int i;
-    for (i=0 ; i<numScrns ; i++) {
-	scrn = scrnList[i];
-	if (scrn->kind == STcomp && MsgGetReapable(scrn->msg)) {
-	    (void) MsgSetScrn((Msg) NULL, scrn);
-	    return scrn;
-	}
-    }
-*/
     return CreateNewScrn(STcomp);
 }
 
@@ -470,23 +365,11 @@ Scrn NewCompScrn()
 void DestroyScrn(scrn)
   Scrn scrn;
 {
+    XtPopdown(scrn->parent);
     DestroyConfirmWindow();
     TocSetScrn((Toc) NULL, scrn);
     MsgSetScrnForce((Msg) NULL, scrn);
-    if (scrn->kind == STcomp) compscrncount--;
-/*    (void) XtSendDestroyNotify(DISPLAY scrn->window);
-    QXDestroyWindow(theDisplay, scrn->window);
-    for (i = 0; i < numScrns; i++)
-	if (scrnList[i] == scrn)
-	    break;
-    scrnList[i] = scrnList[--numScrns];
-    XtFree((char *) scrn);
-*/
-    QXUnmapWindow(theDisplay, scrn->window);
     scrn->mapped = FALSE;
-#ifdef X10
-    ClearButtonTracks();
-#endif
 }
 
 
@@ -495,8 +378,23 @@ void MapScrn(scrn)
 Scrn scrn;
 {
     if (!scrn->mapped) {
-	XRaiseWindow(DISPLAY scrn->window);
-	QXMapWindow(theDisplay, scrn->window);
+	XtPopup(scrn->parent, XtGrabNone);
 	scrn->mapped = TRUE;
     }
+}
+
+
+Scrn ScrnFromWidget(w)
+Widget w;
+{
+    int i;
+    while (w && w->core.widget_class != paneWidgetClass)
+	w = w->core.parent;
+    if (w) {
+	for (i=0 ; i<numScrns ; i++) {
+	    if (w == (Widget) scrnList[i]->widget)
+		return scrnList[i];
+	}
+    }
+    Punt("ScrnFromWidget failed!");
 }

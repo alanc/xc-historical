@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocfuncs.c,v 1.13 87/07/31 09:36:06 weissman Exp $";
+static char rcs_id[] = "$Header: tocfuncs.c,v 1.7 87/10/09 14:01:54 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -26,7 +26,7 @@ static char rcs_id[] = "$Header: tocfuncs.c,v 1.13 87/07/31 09:36:06 weissman Ex
  * written prior permission.
  */
 
-/* tocfuncs.c -- handle things in the toc window. */
+/* tocfuncs.c -- handle things in the toc widget. */
 
 #include "xmh.h"
 
@@ -357,6 +357,17 @@ Scrn scrn;
 					   BBoxNameOfButton(scrn->curseq)));
 }
 
+/*ARGSUSED*/
+void OpenSequence(w, event, params, num_params)
+Widget w;
+XEvent *event;
+char **params;
+Cardinal num_params;
+{
+    ExecOpenSeq(ScrnFromWidget(w));
+}
+
+
 
 
 typedef enum {ADD, REMOVE, DELETE} TwiddleOperation;
@@ -443,11 +454,3 @@ Scrn scrn;
 }
 
 
-XtEventReturnCode HandleTocButtons(event, scrn)
-XEvent *event;
-Scrn scrn;
-{
-    DoubleClickProc = ExecNextView;
-    DoubleClickParam = (caddr_t)scrn;
-    return XteventHandled;
-}

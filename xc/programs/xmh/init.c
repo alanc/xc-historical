@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: init.c,v 1.20 87/08/06 13:22:04 swick Locked $";
+static char rcs_id[] = "$Header: init.c,v 1.7 87/10/09 14:01:36 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -32,59 +32,55 @@ static char rcs_id[] = "$Header: init.c,v 1.20 87/08/06 13:22:04 swick Locked $"
 
 /* Xmh-specific resources. */
 
-static Resource resourcelist[] = {
-    {"debug", "Debug", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&debug, NULL},
+static XtResource resources[] = {
+    {"debug", "Debug", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&debug, XrmRString, "on"},
     {"tempdir", "tempDir", XrmRString, sizeof(char *),
-	 (XtArgVal)&tempDir, NULL},
+	 (Cardinal)&tempDir, XrmRString, "/tmp"},
     {"mhpath", "MhPath", XrmRString, sizeof(char *),
-	 (XtArgVal)&defMhPath, NULL},
+	 (Cardinal)&defMhPath, XrmRString, "/usr/local/mh6"},
     {"initialfolder", "InitialFolder", XrmRString, sizeof(char *),
-	 (XtArgVal)&initialFolderName, NULL},
-    {"initialincfile", "InitialIncFile", XrmRString, sizeof(char *),
-         (XtArgVal)&initialIncFile, NULL},
+	 (Cardinal)&initialFolderName, XrmRString, "inbox"},
     {"draftsfolder", "DraftsFolder", XrmRString, sizeof(char *),
-	 (XtArgVal)&draftsFolderName, NULL},
+	 (Cardinal)&draftsFolderName, XrmRString, "drafts"},
     {"sendwidth", "SendWidth", XrmRInt, sizeof(int),
-	 (XtArgVal)&defSendLineWidth, NULL},
+	 (Cardinal)&defSendLineWidth, XrmRString, "72"},
     {"sendbreakwidth", "SendBreakWidth", XrmRInt, sizeof(int),
-	 (XtArgVal)&defBreakSendLineWidth, NULL},
+	 (Cardinal)&defBreakSendLineWidth, XrmRString, "85"},
     {"printcommand", "PrintCommand", XrmRString, sizeof(char *),
-	 (XtArgVal)&defPrintCommand, NULL},
+	 (Cardinal)&defPrintCommand, XrmRString,
+	 "enscript > /dev/null 2>/dev/null"},
     {"tocwidth", "TocWidth", XrmRInt, sizeof(int),
-	 (XtArgVal)&defTocWidth, NULL},
-    {"skipdeleted", "SkipDeleted", XrmRString, sizeof(char *),
-	 (XtArgVal)&SkipDeleted, NULL},
-    {"skipmoved", "SkipMoved", XrmRString, sizeof(char *),
-	 (XtArgVal)&SkipMoved, NULL},
-    {"skipCopied", "SkipCopied", XrmRString, sizeof(char *),
-	 (XtArgVal)&SkipCopied, NULL},
-    {"hideboringheaders", "HideBoringHeaders", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defHideBoringHeaders, NULL},
-    {"hidenullseqboxes", "HideNullSeqBoxes", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defHideNullSeqBoxes, NULL},
+	 (Cardinal)&defTocWidth, XrmRString, "100"},
+    {"skipdeleted", "SkipDeleted", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipDeleted, XrmRString, "True"},
+    {"skipmoved", "SkipMoved", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipMoved, XrmRString, "True"},
+    {"skipCopied", "SkipCopied", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&SkipCopied, XrmRString, "False"},
+    {"hideboringheaders", "HideBoringHeaders", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&defHideBoringHeaders, XrmRString, "True"},
     {"geometry", "Geometry", XrmRString, sizeof(char *),
-	 (XtArgVal)&defGeometry, NULL},
+	 (Cardinal)&defGeometry, XrmRString, ""},
     {"tocgeometry", "TocGeometry", XrmRString, sizeof(char *),
-	 (XtArgVal)&defTocGeometry, NULL},
+	 (Cardinal)&defTocGeometry, XrmRString, NULL},
     {"viewgeometry", "ViewGeometry", XrmRString, sizeof(char *),
-	 (XtArgVal)&defViewGeometry, NULL},
+	 (Cardinal)&defViewGeometry, XrmRString, NULL},
     {"compgeometry", "CompGeometry", XrmRString, sizeof(char *),
-	 (XtArgVal)&defCompGeometry, NULL},
+	 (Cardinal)&defCompGeometry, XrmRString, NULL},
     {"pickgeometry", "PickGeometry", XrmRString, sizeof(char *),
-	 (XtArgVal)&defPickGeometry, NULL},
+	 (Cardinal)&defPickGeometry, XrmRString, NULL},
     {"tocpercentage", "TocPercentage", XrmRInt, sizeof(int),
-	 (XtArgVal)&defTocPercentage, NULL},
-    {"checknewmail", "CheckNewMail", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defNewMailCheck, NULL},
-    {"makecheckpoints", "MakeCheckPoints", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defMakeCheckpoints, NULL},
-    {"grabFocus", "GrabFocus", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defGrabFocus, NULL},
-    {"doubleClick", "DoubleClick", XrmRBoolean, sizeof(int),
-	 (XtArgVal)&defDoubleClick, NULL}
+	 (Cardinal)&defTocPercentage, XrmRString, "33"},
+    {"checknewmail", "CheckNewMail", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&defNewMailCheck, XrmRString, "True"},
+    {"makecheckpoints", "MakeCheckPoints", XrmRBoolean, sizeof(Boolean),
+	 (Cardinal)&defMakeCheckpoints, XrmRString, "False"},
 };
 
+static XrmOptionDescRec table[] = {
+    {"-debug",	"debug",	XrmoptionNoArg,	"on"}
+};
 
 /* Tell the user how to use this program. */
 Syntax()
@@ -95,73 +91,57 @@ Syntax()
 }
 
 
-ProcessCommandLine(argc, argv)
-int argc;
-char **argv;
+static char *FixUpGeometry(geo, defwidth, defheight)
+char *geo;
+Dimension defwidth, defheight;
 {
-    int i;
-    char *ptr;
-    ptr = rindex(argv[0], '/');
-    if (ptr) progName = ptr + 1;
-    else progName = argv[0];
-    if (strcmp(progName, "xmh_d") == 0) progName = "xmh";
-    displayName = "";
-    defTocGeometry = NULL;
-    for (i=1 ; i<argc ; i++) {
-	if (argv[i][0] == '=') defTocGeometry = argv[i];
-	else if (index(argv[i], ':')) displayName = argv[i];
-	else Syntax();
+    int gbits;
+    Position x, y;
+    Dimension width, height;
+    if (geo == NULL) geo = defGeometry;
+    x = y = 0;
+    gbits = XParseGeometry(geo, &x, &y, &width, &height);
+    if (!(gbits & WidthValue)) {
+	width = defwidth;
+	gbits |= WidthValue;
     }
+    if (!(gbits & HeightValue)) {
+	height = defheight;
+	gbits |= HeightValue;
+    }
+    return CreateGeometry(gbits, x, y, width, height);
 }
 
-static char *defaultFile[] = { "%s/xmh.Xdefaults",	/* LIBDIR */
-			       "%s/xmh.X11defaults",	/* LIBDIR */
-			       "%s/.Xdefaults",		/* homeDir */
-			       "%s/.X11defaults"	/* homeDir */
-			     };
 
 /* All the start-up initialization goes here. */
 
 InitializeWorld(argc, argv)
-int argc;
+unsigned int argc;
 char **argv;
 {
-    int gbits, l;
-    Position x, y;
-    Dimension width, height;
+    int l;
     FILEPTR fid;
-    XrmResourceDataBase db = NULL, db2;
+    XrmResourceDataBase db, db2;
     char str[500], str2[500], *ptr;
     XrmNameList names;
     XrmClassList classes;
     Scrn scrn;
-    int defaultIndex;
+    static XtActionsRec actions[] = {
+	{"open-folder", OpenFolder},
+	{"open-sequence", OpenSequence},
+    };
 
-    XtInitialize();
-    ProcessCommandLine(argc, argv);
-    theDisplay = XOpenDisplay(displayName);
+    ptr = rindex(argv[0], '/');
+    if (ptr) progName = ptr + 1;
+    else progName = argv[0];
 
-    theScreen = 0;
-    if (theDisplay == NULL)
-	Punt("Couldn't open display!");
+    toplevel = XtInitialize(progName, "Xmh", table, XtNumber(table),
+			    &argc, argv);
+/*    if (argc > 1) Syntax();*/
+    theDisplay = XtDisplay(toplevel);
+    theScreen = DefaultScreen(theDisplay);
 
     homeDir = MallocACopy(getenv("HOME"));
-
-    (void) XrmInitialize();
-
-    for (defaultIndex=0; defaultIndex<XtNumber(defaultFile); defaultIndex++) {
-        (void) sprintf( str, defaultFile[defaultIndex],
-		        (defaultIndex<2 ? LIBDIR : homeDir) );
-	fid = myfopen(str, "r");
-	if (fid) {
-	    XrmGetDataBase(fid, &db2);
-	    (void)myfclose(fid);
-	    if (db) XrmMergeDataBases(db2, &db);
-	       else db = db2;
-	}
-    }
-
-    if (db) XrmSetCurrentDataBase(db);
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
     fid = myfopen(str, "r");
@@ -195,126 +175,38 @@ char **argv;
     (void) sprintf(str, "%s/xmhdraft", mailDir);
     xmhDraftFile = MallocACopy(str);
 
-    debug = FALSE;
-    tempDir = "/tmp";
-    defMhPath = "/usr/local/mh6";
-    initialFolderName = "inbox";
-    draftsFolderName = "drafts";
+    defViewGeometry = defCompGeometry = defPickGeometry = NULL;
 
-    defSendLineWidth = 72;
-    defBreakSendLineWidth = 85;
-    defPrintCommand = "enscript >/dev/null 2>/dev/null";
+    XtGetSubresources((Widget) toplevel, (caddr_t) NULL, progName, "Xmh",
+		      resources, XtNumber(resources), NULL, (Cardinal) 0);
 
-    defTocWidth = 300;
+    NullSource = XtCreateEDiskSource("/dev/null", FALSE);
 
-    SkipDeleted = TRUE;
-    SkipMoved = TRUE;
-    SkipCopied = FALSE;
+    l = strlen(defMhPath) - 1;
+    if (l > 0 && defMhPath[l] == '/')
+	defMhPath[l] = 0;
 
-    defHideBoringHeaders = TRUE;
-    defHideNullSeqBoxes = FALSE;
-
-    defGeometry = "";
-    defViewGeometry = NULL;
-    defCompGeometry = NULL;
-    defPickGeometry = NULL;
-
-    defTocPercentage = 33;
-    defNewMailCheck = TRUE;
-    defMakeCheckpoints = FALSE;
-    defGrabFocus = FALSE;
-    defDoubleClick = FALSE;
-
-    ptr = defTocGeometry;
-    XtGetResources(DISPLAY
-		   resourcelist, XtNumber(resourcelist), (ArgList)NULL, 0,
-		   QDefaultRootWindow(theDisplay),
-		   progName, "Xmh", &names, &classes);
-    if (ptr) defTocGeometry = ptr;
-    XrmFreeNameList(names);
-    XrmFreeClassList(classes);
-
-    NullSource = XtCreateEDiskSource("/dev/null", XttextRead);
-
-    x = strlen(defMhPath) - 1;
-    if (x > 0 && defMhPath[x] == '/')
-	defMhPath[x] = 0;
-
-    if (defTocGeometry == NULL)
-	defTocGeometry = defGeometry;
-    if (defViewGeometry == NULL)
-	defViewGeometry = defGeometry;
-    if (defCompGeometry == NULL)
-	defCompGeometry = defGeometry;
-    if (defPickGeometry == NULL)
-	defPickGeometry = defGeometry;
-
-#ifdef X11
     rootwidth = DisplayWidth(theDisplay, theScreen);
     rootheight = DisplayHeight(theDisplay, theScreen);
-#endif X11
-#ifdef X10
-    {
-	WindowInfo info;
-	XQueryWindow(RootWindow, &info);
-	rootwidth = info.width;
-	rootheight = info.height;
-    }
-#endif X10
 
-    gbits = XParseGeometry(defTocGeometry, &x, &y, &width, &height);
-    if (!(gbits & HeightValue)) {
-        height = 3 * rootheight / 4;
-        gbits |= HeightValue;
-    }
-    if (!(gbits & WidthValue)) {
-        width = rootwidth / 2;
-        gbits |= WidthValue;
-    }
-    defTocGeometry = CreateGeometry(gbits, x, y, width, height);
-
-    gbits = XParseGeometry(defViewGeometry, &x, &y, &width, &height);
-    if (!(gbits & HeightValue)) {
-	height = rootheight / 2;
-	gbits |= HeightValue;
-    }
-    if (!(gbits & WidthValue)) {
-	width = rootwidth / 2;
-	gbits |= WidthValue;
-    }
-    defViewGeometry = CreateGeometry(gbits, x, y, width, height);
-
-    gbits = XParseGeometry(defCompGeometry, &x, &y, &width, &height);
-    if (!(gbits & HeightValue)) {
-	height = rootheight / 2;
-	gbits |= HeightValue;
-    }
-    if (!(gbits & WidthValue)) {
-	width = rootwidth / 2;
-	gbits |= WidthValue;
-    }
-    defCompGeometry = CreateGeometry(gbits, x, y, width, height);
-
-    gbits = XParseGeometry(defPickGeometry, &x, &y, &width, &height);
-    if (!(gbits & HeightValue)) {
-	height = rootheight / 2;
-	gbits |= HeightValue;
-    }
-    if (!(gbits & WidthValue)) {
-	width = rootwidth / 2;
-	gbits |= WidthValue;
-    }
-    defPickGeometry = CreateGeometry(gbits, x, y, width, height);
+    defTocGeometry = FixUpGeometry(defTocGeometry,
+				   rootwidth / 2, 3 * rootheight / 4);
+    defViewGeometry = FixUpGeometry(defViewGeometry,
+				    rootwidth / 2, rootheight / 2);
+    defCompGeometry = FixUpGeometry(defCompGeometry,
+				    rootwidth / 2, rootheight / 2);
+    defPickGeometry = FixUpGeometry(defPickGeometry,
+				    rootwidth / 2, rootheight / 2);
 
     numScrns = 0;
-    scrnList = (Scrn *) XtMalloc(1);
+    scrnList = (Scrn *) XtMalloc((unsigned) 1);
     LastButtonPressed = NULL;
 
-    windowarglist[0].name = XtNwindow;
-    labelarglist[0].name = XtNlabel;
     TocInit();
     InitPick();
     IconInit();
+
+    XtAddActions(actions, XtNumber(actions));
 
 if (debug) {(void)fprintf(stderr, "Making screen ... "); (void)fflush(stderr);}
 
@@ -322,12 +214,11 @@ if (debug) {(void)fprintf(stderr, "Making screen ... "); (void)fflush(stderr);}
 
 if (debug) {(void)fprintf(stderr, " setting toc ... "); (void)fflush(stderr);}
 
-    TocSetScrn(TocGetNamed(initialFolderName), scrn);
+    TocSetScrn(InitialFolder, scrn);
 
 if (debug) (void)fprintf(stderr, "done\n");
 
-/* if (debug) {(void)fprintf(stderr, "Syncing ... "); (void)fflush(stderr); QXSync(theDisplay, 0); (void)fprintf(stderr, "done\n");} */
+/* if (debug) {(void)fprintf(stderr, "Syncing ... "); (void)fflush(stderr); XSync(theDisplay, 0); (void)fprintf(stderr, "done\n");} */
 
     MapScrn(scrn);
-    DoubleClickProc = NULL;
 }

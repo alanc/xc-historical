@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: bbox.c,v 1.12 87/07/31 09:35:43 weissman Exp $";
+static char rcs_id[] = "$Header: bbox.c,v 1.7 87/10/09 14:01:26 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -47,11 +47,11 @@ Button button;
 
 
 
-/* Handle a buttonbox getting resized.  In particular, tell the VPane widget
+#ifdef NOTDEF			/* %%% */
+/* Handle a buttonbox getting resized.  In particular, tell the Pane widget
    the new range of legal sizes for this buttonbox. */
 
-#ifdef X11
-static XtEventReturnCode HandleBBoxResize(event, buttonbox)
+static void HandleBBoxResize(event, buttonbox)
 XEvent *event;
 ButtonBox buttonbox;
 {
@@ -59,7 +59,7 @@ ButtonBox buttonbox;
       case ConfigureNotify:
 	if (event->xconfigure.height != buttonbox->maxheight) {
 	    buttonbox->maxheight = event->xconfigure.height;
-	    XtVPanedSetMinMax(DISPLAY buttonbox->scrn->window,
+	    XtPanedSetMinMax(buttonbox->scrn->widget,
 			      buttonbox->outer,
 			      buttonbox->fullsized ? buttonbox->maxheight : 5,
 			      buttonbox->maxheight);
@@ -72,45 +72,20 @@ ButtonBox buttonbox;
     }
     return XteventNotHandled;
 }
-#endif X11
-
-#ifdef X10
-static XtEventReturnCode HandleBBoxResize(event, buttonbox)
-XExposeEvent *event;
-ButtonBox buttonbox;
-{
-    switch (event->type) {
-      case ResizeWindow:
-	if (event->height != buttonbox->maxheight) {
-	    buttonbox->maxheight = event->height;
-	    XtVPanedSetMinMax(DISPLAY buttonbox->scrn->window,
-			      buttonbox->outer,
-			      buttonbox->fullsized ? buttonbox->maxheight : 5,
-			      buttonbox->maxheight);
-	}
-	return XteventHandled;
-      case DestroyWindow:
-	XtFree((char *) buttonbox->button);
-	XtFree((char *) buttonbox);
-	return XteventHandled;
-    }
-    return XteventNotHandled;
-}
-#endif X10    
+#endif
 
 
-/* Create a new button box.  The window for it will be a child of the given
-   scrn's window, and it will be added to the scrn's vpane. */
+/* Create a new button box.  The widget for it will be a child of the given
+   scrn's widget, and it will be added to the scrn's pane. */
 
 ButtonBox BBoxRadioCreate(scrn, position, name, radio)
   Scrn scrn;
-  int position;			/* Position to put it in the vpane. */
+  int position;			/* Position to put it in the pane. */
   char *name;			/* Name of the buttonbox widget. */
   Button *radio;		/* Pointer to place to store which radio
 				   button is active. */
 {
     static Arg arglist[] = {
-	{XtNname, (XtArgVal)NULL},
 	{XtNwidth, NULL},
 	{XtNinnerWidth, NULL},
 	{XtNallowVert, (XtArgVal)TRUE},
@@ -118,38 +93,31 @@ ButtonBox BBoxRadioCreate(scrn, position, name, radio)
     static Arg arglist2[] = {
 	{XtNwidth, NULL},
     };
-    int width, height;
+    int width;
     ButtonBox buttonbox;
 
-    arglist[0].value = (XtArgVal)name;
-    GetWindowSize(scrn->window, &width, &height);
-    arglist[1].value = arglist[2].value = arglist2[0].value = (XtArgVal) width;
-    buttonbox = (ButtonBox) XtMalloc(sizeof(ButtonBoxRec));
+    width = GetWidth((Widget)scrn->widget);
+    arglist[0].value = arglist[1].value = arglist2[0].value = (XtArgVal) width;
+    buttonbox = XtNew(ButtonBoxRec);
     bzero((char *)buttonbox, sizeof(ButtonBoxRec));
     buttonbox->updatemode = TRUE;
     buttonbox->scrn = scrn;
-    buttonbox->outer = XtScrolledWindowCreate(DISPLAY scrn->window, arglist,
-					      XtNumber(arglist));
-    buttonbox->inner =
-	XtButtonBoxCreate(DISPLAY XtScrolledWindowGetFrame(DISPLAY
-							   buttonbox->outer),
-			  arglist2, XtNumber(arglist2));
-    XtScrolledWindowSetChild(DISPLAY buttonbox->outer, buttonbox->inner);
+/*    buttonbox->outer = XtScrolledWindowCreate(theDis, scrn->widget, arglist,
+					      XtNumber(arglist)); %%% */
+    buttonbox->outer = buttonbox->inner =
+	XtCreateWidget(name, buttonBoxWidgetClass, (Widget) scrn->widget,
+		       arglist2, XtNumber(arglist2));
+/*    XtScrolledWindowSetChild(theDis, buttonbox->outer, buttonbox->inner);
+*/
     buttonbox->numbuttons = 0;
-    buttonbox->button = (Button *) XtMalloc(1);
-    XtVPanedWindowAddPane(DISPLAY scrn->window, buttonbox->outer, position, 5,
-			  5, FALSE);
+    buttonbox->button = (Button *) XtMalloc((unsigned) 1);
+    XtManageChild((Widget) buttonbox->outer);
     buttonbox->maxheight = 5;
     buttonbox->radio = radio;
     if (radio) *radio = NULL;
-    XtSetEventHandler(DISPLAY buttonbox->inner, HandleBBoxResize,
-#ifdef X11
-		      StructureNotifyMask,
-#endif
-#ifdef X10
-		      ExposeWindow,
-#endif
-		      (caddr_t) buttonbox);
+/*    XtSetEventHandler(theDisp, buttonbox->inner, HandleBBoxResize,
+		      StructureNotifyMask, (caddr_t) buttonbox);
+*/
     return buttonbox;
 }
 
@@ -190,40 +158,32 @@ static ProcessAddedButtons(buttonbox)
 ButtonBox buttonbox;
 {
     int i, position, index;
-    ArgList arglist, ptr;
+    WidgetList widgetlist, ptr;
     Button button;
     if (buttonbox->updatemode == FALSE) {
 	buttonbox->needsadding = TRUE;
 	return;
     }
     position = 0;
-    ptr = arglist = (ArgList)
-	XtMalloc((unsigned)sizeof(Arg) * (buttonbox->numbuttons + 1));
+    ptr = widgetlist = (WidgetList)
+	XtMalloc((unsigned)sizeof(Widget) * (buttonbox->numbuttons + 1));
     for (i=0 ; i<buttonbox->numbuttons ; i++) {
 	button = buttonbox->button[i];
 	if (button->needsadding) {
-	    if (ptr == arglist) {
-		ptr->name = XtNindex;
+	    if (ptr == widgetlist) {
 		index = position;
-		ptr->value = (XtArgVal)index;
-		ptr++;
 	    }
-	    ptr->name = XtNwindow;
-	    ptr->value = (XtArgVal)(button->window);
-	    ptr++;
+	    *ptr++ = (Widget) button->widget;
 	    button->needsadding = FALSE;
-	} else if (ptr != arglist) {
-	    (void)XtButtonBoxAddButton(DISPLAY buttonbox->inner,
-				       arglist, ptr-arglist);
-	    ptr = arglist;
+	} else if (ptr != widgetlist) {
+	    (void)XtManageChildren(widgetlist, ptr-widgetlist);
+	    ptr = widgetlist;
 	}
 	position++;
     }
-    if (ptr != arglist) {
-	(void)XtButtonBoxAddButton(DISPLAY buttonbox->inner,
-				   arglist, ptr-arglist);
-    }
-    XtFree((char *) arglist);
+    if (ptr != widgetlist)
+	XtManageChildren(widgetlist, (Cardinal) (ptr-widgetlist));
+    XtFree((char *) widgetlist);
     buttonbox->needsadding = FALSE;
 }
 
@@ -231,19 +191,20 @@ ButtonBox buttonbox;
 
 /* Create a new button, and add it to a buttonbox. */
 
-void BBoxAddButton(buttonbox, name, func, position, enabled)
-  ButtonBox buttonbox;
-  char *name;			/* Name of button. */
-  void (*func)();		/* Func to call when button pressed. */
-  int position;			/* Position to put button in box. */
-  int enabled;			/* Whether button is initially enabled. */
+void BBoxAddButton(buttonbox, name, func, position, enabled, extra)
+ButtonBox buttonbox;
+char *name;			/* Name of button. */
+void (*func)();			/* Func to call when button pressed. */
+int position;			/* Position to put button in box. */
+int enabled;			/* Whether button is initially enabled. */
+char **extra;			/* Extra translation bindings. */
 {
     extern void DoButtonPress();
+    static void (*foo)() = DoButtonPress;
     Button button;
     int i;
     static Arg arglist[] = {
-	{XtNname, NULL},
-	{XtNfunction, (XtArgVal)DoButtonPress},
+	{XtNfunction, NULL},
 	{XtNparameter, NULL},
     };
     if (position > buttonbox->numbuttons) position = buttonbox->numbuttons;
@@ -253,15 +214,17 @@ void BBoxAddButton(buttonbox, name, func, position, enabled)
 		  (unsigned) buttonbox->numbuttons * sizeof(Button));
     for (i=buttonbox->numbuttons-1 ; i>position ; i--)
 	buttonbox->button[i] = buttonbox->button[i-1];
-    button = buttonbox->button[position] =
-	(Button) XtMalloc(sizeof(ButtonRec));
+    button = buttonbox->button[position] = XtNew(ButtonRec);
     bzero((char *) button, sizeof(ButtonRec));
-    arglist[0].value = (XtArgVal)name;
-    arglist[2].value = (XtArgVal)button;
+    bcopy((char *)&foo, (char *)&(arglist[0].value), sizeof(XtArgVal));
+    arglist[1].value = (XtArgVal)button;
     button->buttonbox = buttonbox;
     button->name = MallocACopy(name);
-    button->window = XtCommandCreate(DISPLAY buttonbox->inner, arglist,
+    button->widget = XtCreateWidget(name, commandWidgetClass,
+				    (Widget) buttonbox->inner, arglist,
 				     XtNumber(arglist));
+/*    if (extra) XtAugmentTranslations(button->widget,
+				     XtParseTranslationTable(extra));*/
     button->func = func;
     button->needsadding = TRUE;
     button->enabled = TRUE;
@@ -284,19 +247,12 @@ Button button;
 {
     ButtonBox buttonbox = button->buttonbox;
     int i, found, reradio;
-    static Arg arglist[] = {
-	{XtNwindow, (XtArgVal)NULL}
-    };
     found = FALSE;
     for (i=0 ; i<buttonbox->numbuttons; i++) {
 	if (found) buttonbox->button[i-1] = buttonbox->button[i];
 	else if (buttonbox->button[i] == button) {
 	    found = TRUE;
-	    arglist[0].value = (XtArgVal) button->window;
-	    (void)XtButtonBoxDeleteButton(DISPLAY buttonbox->inner,
-					  arglist, XtNumber(arglist));
-	    QXDestroyWindow(theDisplay, button->window);
-	    (void) XtSendDestroyNotify(DISPLAY button->window);
+	    XtDestroyWidget(button->widget);
 	    reradio = (buttonbox->radio && *(buttonbox->radio) == button);
 	    FreeButton(button);
 	}
@@ -315,13 +271,13 @@ Button button;
 
 /* Enable or disable the given command button widget. */
 
-static void SendEnableMsg(window, value)
-Window window;
+static void SendEnableMsg(widget, value)
+Widget widget;
 int value;			/* TRUE for enable, FALSE for disable. */
 {
     static Arg arglist[] = {XtNsensitive, NULL};
     arglist[0].value = (XtArgVal) value;
-    XtCommandSetValues(DISPLAY window, arglist, XtNumber(arglist));
+    XtSetValues(widget, arglist, XtNumber(arglist));
 }
 
 
@@ -333,7 +289,7 @@ Button button;
 {
     if (!button->enabled) {
 	button->enabled = TRUE;
-	SendEnableMsg(button->window, TRUE);
+	SendEnableMsg((Widget) button->widget, TRUE);
     }
 }
 
@@ -346,13 +302,13 @@ Button button;
 {
     if (button->enabled) {
 	button->enabled = FALSE;
-	SendEnableMsg(button->window, FALSE);
+	SendEnableMsg((Widget) button->widget, FALSE);
     }
 }
 
 
 /* Given a buttonbox and a button name, find the button in the box with that
-   short name. */
+   name. */
 
 Button BBoxFindButtonNamed(buttonbox, name)
 ButtonBox buttonbox;
@@ -422,38 +378,18 @@ ButtonBox buttonbox;
 
 
 
-/* Set things to always display the entire contents of this buttonbox.  In
-   otherwords, tells the VPane to not let the user make this pane any smaller
-   than the buttonbox. */
+/* Set the minimum and maximum size for a bbox so that it cannot be resized
+   any bigger than its total height. */
 
-void BBoxForceFullSize(buttonbox)
+void BBoxLockSize(buttonbox)
 ButtonBox buttonbox;
 {
-#ifdef X10	/* X10 toolkit doesn't have magic configurenotify events */
-    WindowInfo info;
-    XQueryWindow(buttonbox->inner, &info);
-    buttonbox->maxheight = info.height;
-#endif
-    XtVPanedSetMinMax(DISPLAY buttonbox->scrn->window, buttonbox->outer, 
-		      buttonbox->maxheight, buttonbox->maxheight);
-    buttonbox->fullsized = TRUE;
-}
-
-
-/* Set things to allow the user to show only part of a buttonbox.  This is the
-   default action. */
-
-void BBoxAllowAnySize(buttonbox)
-ButtonBox buttonbox;
-{
-#ifdef X10
-    BBoxForceFullSize(buttonbox); /* VERY hackish; works only because of the
-				     limited way I use BBoxForceFullSize.%%% */
-#endif
-    XtVPanedSetMinMax(DISPLAY buttonbox->scrn->window, buttonbox->outer, 
-		      5, buttonbox->maxheight);
+    buttonbox->maxheight = GetHeight((Widget) buttonbox->inner);
+    DwtPaneSetMinMax(buttonbox->outer, 5, buttonbox->maxheight);
     buttonbox->fullsized = FALSE;
 }
+
+
 
 
 
@@ -463,8 +399,7 @@ void BBoxDeleteBox(buttonbox)
 ButtonBox buttonbox;
 {
     if (buttonbox->radio) *(buttonbox->radio) = NULL;
-    QXDestroyWindow(theDisplay, buttonbox->outer);
-    (void) XtSendDestroyNotify(DISPLAY buttonbox->outer);
+    XtDestroyWidget(buttonbox->outer);
 }
 
 
@@ -475,7 +410,7 @@ void BBoxChangeBorderWidth(button, borderWidth)
 Button button;
 unsigned int borderWidth;
 {
-#ifdef X11
-    XSetWindowBorderWidth(DISPLAY button->window, borderWidth);
-#endif
+    static Arg arglist[] = {XtNborderWidth, NULL};
+    arglist[0].value = (XtArgVal) borderWidth;
+    XtSetValues((Widget) button->widget, arglist, XtNumber(arglist));
 }

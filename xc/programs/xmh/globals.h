@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 1.13 87/08/06 13:20:07 toddb Locked $";
+ *	rcs_id[] = "$Header: globals.h,v 1.7 87/10/09 14:01:33 weissman Exp $";
  */
 
 /*
@@ -34,10 +34,11 @@
 #endif
 ext int *dptr;
 
-ext short	debug;
+ext Boolean	debug;
 
 ext Display	*theDisplay;	/* Display variable. */
 ext int		theScreen;	/* Which screen we're using. */
+ext Widget	toplevel;	/* The top level widget (A hack %%%). */
 
 ext char	*progName;	/* Program name. */
 ext char	*homeDir;	/* User's home directory. */
@@ -50,7 +51,6 @@ ext char	*defViewGeometry;
 ext char	*defCompGeometry;
 ext char	*defPickGeometry;
 ext char	*initialFolderName; /* Initial folder to use. */
-ext char	*initialIncFile;	/* -file for inc on initial folder */
 ext char	*draftsFolderName;	/* Folder for drafts. */
 ext char	*draftFile;		/* Filename of draft. */
 ext char	*xmhDraftFile;		/* Filename for sending. */
@@ -62,16 +62,15 @@ ext char	*defPrintCommand; /* Printing command. */
 
 ext int		defTocWidth;	/* How many characters wide to use in tocs */
 
-ext int		SkipDeleted;		/* If true, skip over deleted msgs. */
-ext int		SkipMoved;		/* If true, skip over moved msgs. */
-ext int		SkipCopied;		/* If true, skip over copied msgs. */
+ext Boolean	SkipDeleted;		/* If true, skip over deleted msgs. */
+ext Boolean	SkipMoved;		/* If true, skip over moved msgs. */
+ext Boolean	SkipCopied;		/* If true, skip over copied msgs. */
 
-ext int		defHideBoringHeaders;
-ext int 	defHideNullSeqBoxes;
+ext Boolean	defHideBoringHeaders;
 
 ext int		defTocPercentage;
-ext int		defNewMailCheck; /* Whether to check for new mail. */
-ext int		defMakeCheckpoints; /* Whether to create checkpoint files. */
+ext Boolean	defNewMailCheck; /* Whether to check for new mail. */
+ext Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
 
 ext Toc		*folderList;	/* Array of folders. */
 ext int		numFolders;	/* Number of entries in above array. */
@@ -81,21 +80,12 @@ ext Toc		DraftsFolder;	/* Toc containing drafts. */
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
 
-ext Arg		windowarglist[1];
-ext Arg		labelarglist[1];
-
 ext Button	LastButtonPressed;
 
-ext XtTextSource *NullSource;
+ext DwtTextSource NullSource;
 
-ext int		rootwidth;	/* Dimensions of root window.  */
-ext int		rootheight;
+ext Dimension	rootwidth;	/* Dimensions of root window.  */
+ext Dimension	rootheight;
 
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
 ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
-
-ext int		defGrabFocus;	/* Whether to grab input focus. */
-ext int		defDoubleClick;	/* Whether to look for double-clicks. */
-
-ext void	(*DoubleClickProc)(); /* Func to call on double-click. */
-ext caddr_t	DoubleClickParam; /* Parameter to above. */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: toc.c,v 1.16 87/08/06 13:23:39 toddb Locked $";
+static char rcs_id[] = "$Header: toc.c,v 1.7 87/10/09 14:01:51 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -26,7 +26,7 @@ static char rcs_id[] = "$Header: toc.c,v 1.16 87/08/06 13:23:39 toddb Locked $";
  * written prior permission.
  */
 
-/* toc.c -- handle things in the toc window. */
+/* toc.c -- handle things in the toc widget. */
 
 #include "xmh.h"
 #include "tocintrnl.h"
@@ -95,9 +95,6 @@ static void LoadCheckFiles()
 	    }
 	}
 	myfclose(fid);
-    } else if (initialIncFile) {
-        if (*initialIncFile != '\0')
-	    InitialFolder->incfile = initialIncFile;
     } else {
 	ptr = getenv("MAIL");
 	if (ptr == NULL) ptr = getenv("mail");
@@ -176,10 +173,10 @@ char *foldername;
 
 void TocCheckForNewMail()
 {
-#ifdef X11
     Toc toc;
     Scrn scrn;
     int i, j, hasmail;
+    static Arg arglist[] = {XtNiconPixmap, NULL};
     if (!defNewMailCheck) return;
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i];
@@ -191,10 +188,10 @@ void TocCheckForNewMail()
 		    scrn = scrnList[j];
 		    if (scrn->kind == STtocAndView) {
 			if (toc == InitialFolder) {
-			    scrn->hints.icon_pixmap =
+			    arglist[0].value = (XtArgVal)
 				hasmail ? NewMailPixmap : NoMailPixmap;
-			    XSetWMHints(theDisplay, scrn->window,
-					&(scrn->hints));
+			    XtSetValues(scrn->parent,
+					arglist, XtNumber(arglist));
 			} else {
 			    BBoxChangeBorderWidth(   /* %%% HACK */
 			       BBoxButtonNumber(scrnList[j]->folderbuttons, i),
@@ -205,7 +202,6 @@ void TocCheckForNewMail()
 	    }
 	}
     }
-#endif X11
 }
 
 
@@ -256,42 +252,51 @@ Toc toc;
 }
 
 
-
-/* Display the given toc in the given scrn. */
+/*
+ * Display the given toc in the given scrn.  If scrn is NULL, then remove the
+ * toc from all scrns displaying it.
+ */
 
 void TocSetScrn(toc, scrn)
-  Toc toc;
-  Scrn scrn;
+Toc toc;
+Scrn scrn;
 {
+    int i;
     if (toc == NULL && scrn == NULL) return;
-    if (scrn && scrn->toc != NULL)
-	TocSetScrn(scrn->toc, (Scrn) NULL);
-    if (toc == NULL) return;
-    if (toc->scrn == scrn) return;
-    if (toc->scrn) {
-	toc->scrn->toc = NULL;
-	TUResetTocLabel(toc->scrn);
-	TURedisplayToc(toc->scrn);
-	QXStoreName(theDisplay, toc->scrn->window, progName);
-	EnableProperButtons(toc->scrn);
-	toc->scrn = NULL;
-	if (scrn == NULL) return;
+    if (scrn == NULL) {
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TocSetScrn((Toc) NULL, toc->scrn[i]);
+	return;
     }
-
+    if (scrn->toc == toc) return;
+    if (scrn->toc != NULL) {
+	for (i=0 ; i<scrn->toc->num_scrns ; i++)
+	    if (scrn->toc->scrn[i] == scrn) break;
+	if (i >= scrn->toc->num_scrns)
+	    Punt("Couldn't find scrn in TocSetScrn!");
+	scrn->toc->scrn[i] = scrn->toc->scrn[--scrn->toc->num_scrns];
+    }
     scrn->toc = toc;
-    toc->scrn = scrn;
+    if (toc == NULL) {
+	TUResetTocLabel(scrn);
+	TURedisplayToc(scrn);
+	StoreName(scrn, progName);
+	EnableProperButtons(scrn);
+    } else {
+	toc->num_scrns++;
+	toc->scrn = (Scrn *) XtRealloc((char *) toc->scrn,
+				       (unsigned)toc->num_scrns*sizeof(Scrn));
+	toc->scrn[toc->num_scrns - 1] = scrn;
+	TUEnsureScanIsValidAndOpen(toc);
+	TUResetTocLabel(scrn);
+	StoreName(scrn, toc->foldername);
+	TURedisplayToc(scrn);
 
-    TUEnsureScanIsValidAndOpen(toc);
-    TUResetTocLabel(scrn);
-    QXStoreName(theDisplay, toc->scrn->window, toc->foldername);
-    TURedisplayToc(toc->scrn);
-
-    BBoxSetRadio(scrn->folderbuttons,
+	BBoxSetRadio(scrn->folderbuttons,
 		 BBoxFindButtonNamed(scrn->folderbuttons, toc->foldername));
 
-    EnableProperButtons(scrn);
-
-    return;
+	EnableProperButtons(scrn);
+    }
 }
 
 
@@ -328,8 +333,9 @@ Msg msg;
 	mlist = toc->seqlist[i]->mlist;
 	if (mlist) DeleteMsgFromMsgList(mlist, msg);
     }
-    
-    if (msg->visible) TURedisplayToc(toc->scrn);
+
+    if (msg->visible && toc->num_scrns > 0 && !toc->needsrepaint)
+	TSourceInvalid(toc, msg->position, -msg->length);
     TocSetCurMsg(toc, newcurmsg);
     TUSaveTocFile(toc);
 }
@@ -339,11 +345,13 @@ Msg msg;
 void TocRecheckValidity(toc)
   Toc toc;
 {
+    int i;
     if (toc && toc->validity == valid && TUScanFileOutOfDate(toc)) {
 	TUScanFileForToc(toc);
 	if (toc->source)
 	    TULoadTocFile(toc);
-	TURedisplayToc(toc->scrn);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TURedisplayToc(toc->scrn[i]);
     }
 }
 
@@ -355,6 +363,7 @@ void TocSetCurMsg(toc, msg)
   Msg msg;
 {
     Msg msg2;
+    int i;
     if (toc->validity != valid) return;
     if (msg != toc->curmsg) {
 	msg2 = toc->curmsg;
@@ -364,12 +373,14 @@ void TocSetCurMsg(toc, msg)
     }
     if (msg) {
 	MsgSetFate(msg, msg->fate, msg->desttoc);
-	if (toc->scrn) {
+	if (toc->num_scrns) {
 	    if (toc->stopupdate)
 		toc->needsrepaint = TRUE;
-	    else
-		XtTextSetInsertionPoint(DISPLAY toc->scrn->tocwindow,
-					msg->position);
+	    else {
+		for (i=0 ; i<toc->num_scrns ; i++)
+		    DwtTextSetInsertionPosition(toc->scrn[i]->tocwidget,
+						msg->position);
+	    }
 	}
     }
 }
@@ -427,12 +438,15 @@ Msg TocMsgBefore(toc, msg)
 void TocForceRescan(toc)
   Toc toc;
 {
-    if (toc->scrn) {
+    int i;
+    if (toc->num_scrns) {
 	toc->viewedseq = toc->seqlist[0];
-	TUResetTocLabel(toc->scrn);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TUResetTocLabel(toc->scrn[i]);
 	TUScanFileForToc(toc);
 	TULoadTocFile(toc);
-	TURedisplayToc(toc->scrn);
+	for (i=0 ; i<toc->num_scrns ; i++)
+	    TURedisplayToc(toc->scrn[i]);
     } else {
 	TUGetFullFolderInfo(toc);
 	(void) unlink(toc->scanfile);
@@ -447,11 +461,14 @@ void TocForceRescan(toc)
 void TocReloadSeqLists(toc)
 Toc toc;
 {
+    int i;
     TocSetCacheValid(toc);
     TULoadSeqLists(toc);
     TURefigureWhatsVisible(toc);
-    TUResetTocLabel(toc->scrn);
-    EnableProperButtons(toc->scrn);
+    for (i=0 ; i<toc->num_scrns ; i++) {
+	TUResetTocLabel(toc->scrn[i]);
+	EnableProperButtons(toc->scrn[i]);
+    }
 }
 
 
@@ -470,13 +487,17 @@ void TocChangeViewedSeq(toc, seq)
   Toc toc;
   Sequence seq;
 {
+    int i;
     if (seq == NULL) seq = toc->viewedseq;
     toc->viewedseq = seq;
     TURefigureWhatsVisible(toc);
-    if (toc->scrn && toc->scrn->seqbuttons)
-	BBoxSetRadio(toc->scrn->seqbuttons,
-		     BBoxFindButtonNamed(toc->scrn->seqbuttons, seq->name));
-    TUResetTocLabel(toc->scrn);
+    for (i=0 ; i<toc->num_scrns ; i++) {
+	if (toc->scrn[i]->seqbuttons)
+	    BBoxSetRadio(toc->scrn[i]->seqbuttons,
+			 BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
+					     seq->name));
+	TUResetTocLabel(toc->scrn[i]);
+    }
 }
 
 
@@ -509,22 +530,21 @@ MsgList TocCurMsgList(toc)
   Toc toc;
 {
     MsgList result;
-    XtTextPosition pos1, pos2;
+    DwtTextPosition pos1, pos2;
     extern Msg MsgFromPosition();
-    if (toc->scrn == NULL) return NULL;
+    if (toc->num_scrns == NULL) return NULL;
     result = MakeNullMsgList();
-    XtTextGetSelectionPos(DISPLAY toc->scrn->tocwindow, &pos1, &pos2);
-    if (pos1 < pos2) {
-	pos1 = toc->source->scan(toc->source, pos1, XtstEOL, XtsdLeft,
-				 1, FALSE);
-	pos2 = toc->source->scan(toc->source, pos2, XtstPositions, XtsdLeft,
-				 1, TRUE);
-	pos2 = toc->source->scan(toc->source, pos2, XtstEOL, XtsdRight,
-				 1, FALSE);
+    if ((*toc->source->GetSelection)(toc->source, &pos1, &pos2)) {
+	pos1 = (*toc->source->Scan)(toc->source, pos1, DwtstEOL, DwtsdLeft,
+				    1, FALSE);
+	pos2 = (*toc->source->Scan)(toc->source, pos2, DwtstPositions,
+				    DwtsdLeft, 1, TRUE);
+	pos2 = (*toc->source->Scan)(toc->source, pos2, DwtstEOL, DwtsdRight,
+				    1, FALSE);
 	while (pos1 < pos2) {
-	    AppendMsgList(result, MsgFromPosition(toc, pos1, XtsdRight));
-	    pos1 = toc->source->scan(toc->source, pos1, XtstEOL, XtsdRight,
-				     1, TRUE);
+	    AppendMsgList(result, MsgFromPosition(toc, pos1, DwtsdRight));
+	    pos1 = (*toc->source->Scan)(toc->source, pos1, DwtstEOL,
+					DwtsdRight, 1, TRUE);
 	}
     }
     return result;
@@ -537,8 +557,8 @@ MsgList TocCurMsgList(toc)
 void TocUnsetSelection(toc)
 Toc toc;
 {
-    if (toc->scrn)
-	XtTextUnsetSelection(DISPLAY toc->scrn->tocwindow);
+    if (toc->source)
+	(*toc->source->SetSelection)(toc->source, 1, 0);
 }
 
 
@@ -568,6 +588,9 @@ Toc toc;
 void TocStopUpdate(toc)
 Toc toc;
 {
+    int i;
+    for (i=0 ; i<toc->num_scrns ; i++)
+	DwtTextDisableRedisplay(toc->scrn[i]->tocwidget, FALSE);
     toc->stopupdate++;
 }
 
@@ -577,14 +600,19 @@ Toc toc;
 void TocStartUpdate(toc)
 Toc toc;
 {
+    int i;
     if (toc->stopupdate && --(toc->stopupdate) == 0) {
-	if (toc->needsrepaint) 
-	    TURedisplayToc(toc->scrn);
-	if (toc->needslabelupdate)
-	    TUResetTocLabel(toc->scrn);
+	for (i=0 ; i<toc->num_scrns ; i++) {
+	    if (toc->needsrepaint) 
+		TURedisplayToc(toc->scrn[i]);
+	    if (toc->needslabelupdate)
+		TUResetTocLabel(toc->scrn[i]);
+	}
 	if (toc->needscachesave)
 	    TUSaveTocFile(toc);
     }
+    for (i=0 ; i<toc->num_scrns ; i++)
+	DwtTextEnableRedisplay(toc->scrn[i]->tocwidget);
 }
 
 
@@ -636,7 +664,7 @@ Toc toc;
     if (found) {
 	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
 		      toc->foldername);
-	if (!Confirm(toc->scrn, str))
+	if (!Confirm(toc->scrn[0], str))
 	    return DELETEABORTED;
     }
     for (i=0 ; i<toc->nummsgs ; i++)
@@ -668,9 +696,10 @@ Toc toc;
 	    if (MsgSetScrn(msg, (Scrn) NULL))
 	        return;
     }
-    QXFlush(theDisplay);
+    XFlush(XtDisplay(toc->scrn[0]->parent));
     for (i=0 ; i<numFolders ; i++)
 	TocStopUpdate(folderList[i]);
+    toc->haschanged = TRUE;
     do {
 	curfate = Fignore;
 	i = 0;
@@ -702,8 +731,10 @@ Toc toc;
 		(void) sprintf(str, "%d", MsgGetId(msg));
 		argv[cur++] = MallocACopy(str);
 		MsgSetFate(msg, Fignore, (Toc)NULL);
-		if (curdesttoc)
+		if (curdesttoc) {
 		    (void) TUAppendToc(curdesttoc, MsgGetScanLine(msg));
+		    curdesttoc->haschanged = TRUE;
+		}
 		if (curfate != Fcopy) {
 		    TocRemoveMsg(toc, msg);
 		    MsgFree(msg);
@@ -740,7 +771,10 @@ Toc toc;
 	}
     } while (curfate != Fignore);
     for (i=0 ; i<numFolders ; i++) {
-	if (folderList[i]->needsrepaint) TocReloadSeqLists(folderList[i]);
+	if (folderList[i]->haschanged) {
+	    TocReloadSeqLists(folderList[i]);
+	    folderList[i]->haschanged = FALSE;
+	}
 	TocStartUpdate(folderList[i]);
     }
 }
@@ -837,13 +871,9 @@ Msg msg;
 		for (i=TUGetMsgPosition(toc, msg)+1; i<toc->nummsgs ; i++)
 		    toc->msgs[i]->position += delta;
 		toc->lastPos += delta;
-		TURedisplayToc(toc->scrn);
-	    } else {
-		if (toc->scrn)
-		    XtTextInvalidate(DISPLAY toc->scrn->tocwindow,
-				     msg->position,
-				     msg->position + msg->length);
 	    }
+	    for (i=0 ; i<toc->num_scrns ; i++)
+		TURedisplayToc(toc->scrn[i]);
 	}
 	MsgSetFate(msg, fate, desttoc);
 	TUSaveTocFile(toc);

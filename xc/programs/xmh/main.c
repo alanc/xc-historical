@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.13 87/07/31 09:35:52 weissman Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.7 87/10/09 14:01:38 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -32,131 +32,68 @@ static char rcs_id[] = "$Header: main.c,v 1.13 87/07/31 09:35:52 weissman Exp $"
 #include "xmh.h"
 #include <signal.h>
 
-Boolean shouldcheckscans;	/* If it's time to check for rescanning */
-Boolean emptying = FALSE;	/* Whether we're currently in EmptyEventQueue. */
 
+static XtIntervalId timerid;
 
-/* Handle one event.  Will block if there are no events to handle. */
+/* This gets called every five minutes. */
 
-HandleEvent()
+static void NeedToCheckScans()
 {
-    XEvent event;
-    int     i;
-    static int lasttime, lastx, lasty;
-    static Window lastwin;
-    QXNextEvent(theDisplay, &event);
-    if (shouldcheckscans && !emptying) {
-	if (debug) {
-	    (void) fprintf(stderr, "[magic toc check ...");
-	    (void) fflush(stderr);
-	}
-	QXPutBackEvent(theDisplay, &event);
-	shouldcheckscans = FALSE;
-	for (i = 0; i < numScrns; i++) {
-	    if (scrnList[i]->toc)
-		TocRecheckValidity(scrnList[i]->toc);
-	    if (scrnList[i]->msg)
-		TocRecheckValidity(MsgGetToc(scrnList[i]->msg));
-	}
-	(void) alarm(5 * 60);
-	if (debug) {(void)fprintf(stderr, "done]\n");(void)fflush(stderr);}
+    int i;
+    if (debug) {
+	(void) fprintf(stderr, "[magic toc check ...");
+	(void) fflush(stderr);
     }
-    else {
-	(void)XtDispatchEvent(&event);
-#ifdef X11
-	if (defDoubleClick) {
-	    if (event.xany.type == ButtonPress && DoubleClickProc
-		&& event.xbutton.window == lastwin
-		&& event.xbutton.x == lastx && event.xbutton.y == lasty
-		&& event.xbutton.time - lasttime <= 500) {
-		(*DoubleClickProc)(DoubleClickParam);
-		DoubleClickProc = NULL;
-	    }
-	    if (event.xany.type == ButtonRelease) {
-		lasttime = event.xbutton.time;
-		lastx = event.xbutton.x;
-		lasty = event.xbutton.y;
-		lastwin = event.xbutton.window;
-	    } else DoubleClickProc = NULL;
-	}
-#endif X11
-	HandleConfirmEvent(&event);
+    for (i = 0; i < numScrns; i++) {
+	if (scrnList[i]->toc)
+	    TocRecheckValidity(scrnList[i]->toc);
+	if (scrnList[i]->msg)
+	    TocRecheckValidity(MsgGetToc(scrnList[i]->msg));
     }
-}
-
-#ifdef X10
-EmptyEventQueue()
-{
-    XEvent event;
-    emptying = TRUE;
-    do {
-	while (XPending()) {
-	    XPeekEvent(&event);
-	    if (event.type & (KeyPressed | KeyReleased | MouseMoved |
-			      ButtonPressed | ButtonReleased))
-		XNextEvent(&event);
-	    else
-		HandleEvent();
-	}
-	XSync(0);
-    } while (XPending());
-    emptying = FALSE;
-}
-#endif
-
-
-/* This gets called by the alarm clock every five minutes. */
-
-NeedToCheckScans()
-{
-    shouldcheckscans = TRUE;
+    if (debug) {(void)fprintf(stderr, "done]\n");(void)fflush(stderr);}
 }
 
 
 
-#ifdef X11
-CheckMail(event)
+/*ARGSUSED*/
+static void CheckMail(widget, closure, event)
+Widget widget;
+Opaque closure;
 XEvent *event;
 {
     static int count = 0;
     int i;
     if (event->type == ClientMessage &&
 	    ((int)event->xclient.message_type) == XtTimerExpired) {
+	timerid = XtAddTimeOut(toplevel, (int)60000);
 	if (defNewMailCheck) {
 if (debug) {(void)fprintf(stderr, "(Checking for new mail..."); (void)fflush(stderr);}
 	    TocCheckForNewMail();
 if (debug) (void)fprintf(stderr, "done)\n");
 	}
-	if (defMakeCheckpoints && count++ % 5 == 0) {
+	if (count++ % 5 == 0) {
+	    NeedToCheckScans();
+	    if (defMakeCheckpoints) {
 if (debug) {(void)fprintf(stderr, "(Checkpointing..."); (void)fflush(stderr);}
-	    for (i=0 ; i<numScrns ; i++)
-		if (scrnList[i]->msg) 
-		    MsgCheckPoint(scrnList[i]->msg);
+		for (i=0 ; i<numScrns ; i++)
+		    if (scrnList[i]->msg) 
+			MsgCheckPoint(scrnList[i]->msg);
 if (debug) (void)fprintf(stderr, "done)\n");
+	    }
 	}
     }
 }
-#endif X11
 
 /* Main loop. */
 
 main(argc, argv)
-int argc;
+unsigned int argc;
 char **argv;
 {
     InitializeWorld(argc, argv);
-    shouldcheckscans = TRUE;
-    (void) signal(SIGALRM, NeedToCheckScans);
-#ifdef X11
     if (defNewMailCheck)
 	TocCheckForNewMail();
-    if (defNewMailCheck || defMakeCheckpoints) {
-	XtSetEventHandler(theDisplay, DefaultRootWindow(theDisplay), CheckMail,
-			  StructureNotifyMask, (caddr_t)NULL);
-	XtSetTimeOut(DefaultRootWindow(theDisplay), (caddr_t)NULL, (int)60000);
-    }
-#endif X11
-    for (;;) {
-	HandleEvent();
-    }
+    XtAddEventHandler(toplevel, (EventMask) 0, TRUE, CheckMail, (Opaque) NULL);
+    timerid = XtAddTimeOut(toplevel, (int)60000);
+    XtMainLoop();
 }

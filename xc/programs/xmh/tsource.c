@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tsource.c,v 1.10 87/06/01 17:20:51 weissman Exp $";
+static char rcs_id[] = "$Header: tsource.c,v 1.7 87/10/09 14:01:59 weissman Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -30,6 +30,8 @@ static char rcs_id[] = "$Header: tsource.c,v 1.10 87/06/01 17:20:51 weissman Exp
 
 #include "xmh.h"
 #include "tocintrnl.h"
+#include <TextPrivate.h>
+#include <Xatom.h>
 
 /* Private definitions. */
 
@@ -37,12 +39,13 @@ static char rcs_id[] = "$Header: tsource.c,v 1.10 87/06/01 17:20:51 weissman Exp
 
 Msg MsgFromPosition(toc, position, dir)
   Toc toc;
-  XtTextPosition position;
-  ScanDirection dir;
+  DwtTextPosition position;
+  DwtTextScanDirection dir;
 {
     Msg msg;
     int     h, l, m;
-    if (dir == XtsdLeft) position--;
+    if (position > toc->lastPos) position = toc->lastPos;
+    if (dir == DwtsdLeft) position--;
     l = 0;
     h = toc->nummsgs - 1;
     while (l < h - 1) {
@@ -63,38 +66,110 @@ Msg MsgFromPosition(toc, position, dir)
 }
 
 
-static XtTextPosition CoerceToLegalPosition(toc, position)
+static DwtTextPosition CoerceToLegalPosition(toc, position)
   Toc toc;
-  XtTextPosition position;
+  DwtTextPosition position;
 {
     return (position < 0) ? 0 :
 		 ((position > toc->lastPos) ? toc->lastPos : position);
 }
 
 
+/*ARGSUSED*/
+static Boolean Convert(w, desiredtype, type, value, length)
+Widget w;
+Atom desiredtype;
+Atom *type;
+caddr_t *value;
+int *length;
+{
+    TextWidget widget = (TextWidget) w;
+    DwtTextSource source = widget->source;
+    Toc toc = (Toc) source->data;
+    DwtTextBlockRec block;
+    DwtTextPosition position, lastpos;
+    *type = (Atom) FMT8BIT;		/* Only thing we know! */
+    if (toc == NULL || !toc->hasselection) return FALSE;
+    *length = toc->right - toc->left;
+    *value = XtMalloc((unsigned) *length + 1);
+    position = toc->left;
+    while (position < toc->right) {
+	lastpos = position;
+	position = (*source->Read)(source, position, toc->right, &block);
+	bcopy(block.ptr, (*value) + lastpos - toc->left, position - lastpos);
+    }
+    return TRUE;
+}
+
+/*ARGSUSED*/
+static void LoseSelection(w, selection)
+Widget w;
+Atom selection;
+{
+    TextWidget widget = (TextWidget) w;
+    Toc toc = (Toc) widget->source->data;
+    if (toc && toc->hasselection)
+	(*toc->source->SetSelection)(toc->source, 1, 0);
+}
+
+
 /* Semi-public definitions */
 
-static TSourceReadText(src, position, text, maxRead)
-  XtTextSource *src;
-  XtTextPosition position;
-  XtTextBlock *text;
-  int maxRead;
+static void AddWidget(source, widget)
+DwtTextSource source;
+TextWidget widget;
 {
-    Toc toc = (Toc) src->data;
+    Toc toc = (Toc) source->data;
+    toc->numwidgets++;
+    toc->widgets = (TextWidget *)
+	XtRealloc((char *) toc->widgets,
+		  (unsigned) (sizeof(TextWidget) * toc->numwidgets));
+    toc->widgets[toc->numwidgets - 1] = widget;
+    if (toc->hasselection && toc->numwidgets == 1)
+	XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
+			Convert, LoseSelection);
+}
+
+static void RemoveWidget(source, widget)
+DwtTextSource source;
+TextWidget widget;
+{
+    Toc toc = (Toc) source->data;
+    int i;
+    for (i=0 ; i<toc->numwidgets ; i++) {
+	if (toc->widgets[i] == widget) {
+	    toc->numwidgets--;
+	    toc->widgets[i] = toc->widgets[toc->numwidgets];
+	    if (i == 0 && toc->numwidgets > 0 && toc->hasselection)
+		XtSelectionGrab((Widget) toc->widgets[0], XA_PRIMARY,
+				Convert, LoseSelection);
+	    return;
+	}
+    }
+}
+
+
+static DwtTextPosition Read(source, position, lastPos, block)
+  DwtTextSource source;
+  DwtTextPosition position, lastPos;
+  DwtTextBlock block;
+{
+    Toc toc = (Toc) source->data;
     Msg msg;
     int count;
-    text->firstPos = position;
+    int maxRead = lastPos - position;
     if (position < toc->lastPos) {
-	msg = MsgFromPosition(toc, position, XtsdRight);
-	text->ptr = msg->buf + (position - msg->position);
+	msg = MsgFromPosition(toc, position, DwtsdRight);
+	block->ptr = msg->buf + (position - msg->position);
 	count = msg->length - (position - msg->position);
-	text->length = (count < maxRead) ? count : maxRead;
-	position += text->length;
+	block->length = (count < maxRead) ? count : maxRead;
+	position += block->length;
     }
     else {
-	text->length = 0;
-	text->ptr = "";
+	block->length = 0;
+	block->ptr = "";
     }
+    block->format = FMT8BIT;
     return position;
 }
 
@@ -102,43 +177,29 @@ static TSourceReadText(src, position, text, maxRead)
 /* Right now, we can only replace a piece with another piece of the same size,
    and it can't cross between lines. */
 
-static int TSourceReplaceText(src, startPos, endPos, text, delta)
-  XtTextSource *src;
-  XtTextPosition startPos, endPos;
-  XtTextBlock *text;
-  int *delta;
+static DwtTextStatus Replace(source, startPos, endPos, block)
+  DwtTextSource source;
+  DwtTextPosition startPos, endPos;
+  DwtTextBlock block;
 {
-    Toc toc = (Toc) src->data;
+    Toc toc = (Toc) source->data;
     Msg msg;
     int i;
-    *delta = text->length - (endPos - startPos);
-    if (*delta != 0)
-	return EDITERROR;
-    msg = MsgFromPosition(toc, startPos, XtsdRight);
-    for (i = 0; i < text->length; i++)
-	msg->buf[startPos - msg->position + i] = text->ptr[i];
-    return EDITDONE;
-}
-
-
-static XtTextPosition TSourceGetLastPos(src)
-  XtTextSource *src;
-{
-    return ((Toc) src->data)->lastPos;
-}
-
-
-/*ARGSUSED*/	/* -- keeps lint from complaining. */
-static TSourceSetLastPos(src)
-  XtTextSource *src;
-{
+    if (block->length != endPos - startPos)
+	return EditError;
+    msg = MsgFromPosition(toc, startPos, DwtsdRight);
+    for (i = 0; i < block->length; i++)
+	msg->buf[startPos - msg->position + i] = block->ptr[i];
+    for (i=0 ; i<toc->numwidgets ; i++)
+	Dwt_TextMarkRedraw(toc->widgets[i], startPos, endPos);
+    return EditDone;
 }
 
 
 #define Look(index, c)\
 {									\
-    if ((dir == XtsdLeft && index <= 0) ||				\
-	    (dir == XtsdRight && index >= toc->lastPos))			\
+    if ((dir == DwtsdLeft && index <= 0) ||				\
+	    (dir == DwtsdRight && index >= toc->lastPos))		\
 	c = 0;								\
     else {								\
 	if (index + doff < msg->position ||				\
@@ -150,33 +211,35 @@ static TSourceSetLastPos(src)
 
 
 
-static XtTextPosition TSourceScan(src, position, sType, dir, count, include)
-  XtTextSource *src;
-  XtTextPosition position;
-  ScanType sType;
-  ScanDirection dir;
-  int count, include;
+static DwtTextPosition Scan(source, position, sType, dir, count, include)
+DwtTextSource source;
+DwtTextPosition position;
+DwtTextScanType sType;
+DwtTextScanDirection dir;
+int count;
+Boolean include;
 {
-    Toc toc = (Toc) src->data;
-    XtTextPosition index;
+    Toc toc = (Toc) source->data;
+    DwtTextPosition index;
     Msg msg;
     char    c;
     int     ddir, doff, i, whiteSpace;
-    ddir = (dir == XtsdRight) ? 1 : -1;
-    doff = (dir == XtsdRight) ? 0 : -1;
+    ddir = (dir == DwtsdRight) ? 1 : -1;
+    doff = (dir == DwtsdRight) ? 0 : -1;
 
     if (toc->lastPos == 0) return 0;
     index = position;
     if (index + doff < 0) return 0;
-    if (dir == XtsdRight && index >= toc->lastPos) return toc->lastPos;
+    if (dir == DwtsdRight && index >= toc->lastPos) return toc->lastPos;
     msg = MsgFromPosition(toc, index, dir);
     switch (sType) {
-	case XtstPositions:
+	case DwtstPositions:
 	    if (!include && count > 0)
 		count--;
 	    index = CoerceToLegalPosition(toc, index + count * ddir);
 	    break;
-	case XtstWhiteSpace:
+	case DwtstWhiteSpace:
+	case DwtstWordBreak:
 	    for (i = 0; i < count; i++) {
 		whiteSpace = -1;
 		while (index >= 0 && index <= toc->lastPos) {
@@ -189,13 +252,13 @@ static XtTextPosition TSourceScan(src, position, sType, dir, count, include)
 		}
 	    }
 	    if (!include) {
-		if (whiteSpace < 0 && dir == XtsdRight)
+		if (whiteSpace < 0 && dir == DwtsdRight)
 		    whiteSpace = toc->lastPos;
 		index = whiteSpace;
 	    }
 	    index = CoerceToLegalPosition(toc, index);
 	    break;
-	case XtstEOL:
+	case DwtstEOL:
 	    for (i = 0; i < count; i++) {
 		while (index >= 0 && index <= toc->lastPos) {
 		    Look(index, c);
@@ -210,8 +273,8 @@ static XtTextPosition TSourceScan(src, position, sType, dir, count, include)
 		index += ddir;
 	    index = CoerceToLegalPosition(toc, index);
 	    break;
-	case XtstFile:
-	    if (dir == XtsdLeft)
+	case DwtstAll:
+	    if (dir == DwtsdLeft)
 		index = 0;
 	    else
 		index = toc->lastPos;
@@ -220,27 +283,78 @@ static XtTextPosition TSourceScan(src, position, sType, dir, count, include)
     return index;
 }
 
-
-/*ARGSUSED*/	/* -- keeps lint from complaining. */
-static XtEditType TSourceGetEditType(src)
-XtTextSource *src;
+static Boolean GetSelection(source, left, right)
+DwtTextSource source;
+DwtTextPosition *left, *right; 
 {
-    return XttextRead;
+    Toc toc = (Toc) source->data;
+    if (toc->hasselection && toc->left < toc->right) {
+	*left = toc->left;
+	*right = toc->right;
+	return TRUE;
+    }
+    toc->hasselection = FALSE;
+    return FALSE;
 }
+
+
+static void SetSelection(source, left, right)
+DwtTextSource source;
+DwtTextPosition left, right; 
+{
+    Toc toc = (Toc) source->data;
+    int i;
+    for (i=0 ; i<toc->numwidgets; i++) {
+	DwtTextDisableRedisplay(toc->widgets[i], FALSE);
+	if (toc->hasselection)
+	    Dwt_TextSetHighlight(toc->widgets[i], toc->left, toc->right,
+				Normal);
+	if (left < right)
+	    Dwt_TextSetHighlight(toc->widgets[i], left, right,
+				Selected);
+	DwtTextEnableRedisplay(toc->widgets[i]);
+    }
+    toc->hasselection = (left < right);
+    toc->left = left;
+    toc->right = right;
+    if (toc->numwidgets > 0) {
+	Widget widget = (Widget) toc->widgets[0];
+	if (toc->hasselection)
+	    XtSelectionGrab(widget, XA_PRIMARY, Convert, LoseSelection);
+	else
+	    XtSelectionUngrab(widget, XA_PRIMARY);
+    }
+}
+
 
 /* Public definitions. */
 
-XtTextSource *TSourceCreate(toc)
+DwtTextSource TSourceCreate(toc)
   Toc toc;
 {
-    XtTextSource *src;
-    src = (XtTextSource *) XtMalloc(sizeof(XtTextSource));
-    src->read = TSourceReadText;
-    src->replace = TSourceReplaceText;
-    src->getLastPos = TSourceGetLastPos;
-    src->setLastPos = TSourceSetLastPos;
-    src->editType = TSourceGetEditType;
-    src->scan = TSourceScan;
-    src->data = (int *) toc;
-    return src;
+    DwtTextSource source;
+    source = XtNew(DwtTextSourceRec);
+    source->data = (struct _DwtSourceDataRec *) toc;
+    source->AddWidget = AddWidget;
+    source->RemoveWidget = RemoveWidget;
+    source->Read = Read;
+    source->Replace = Replace;
+    source->Scan = Scan;
+    source->GetSelection = GetSelection;
+    source->SetSelection = SetSelection;
+    toc->numwidgets = 0;
+    toc->widgets = XtNew(TextWidget);
+    toc->hasselection = FALSE;
+    toc->left = toc->right = 0;
+    return source;
+}
+
+
+void TSourceInvalid(toc, position, length)
+Toc toc;
+{
+    int i;
+    SetSelection(toc->source, 1, 0); /* %%% A bit of a hack. */
+    for (i=0 ; i<toc->numwidgets ; i++)
+	Dwt_TextInvalidate(toc->widgets[i], position, length);
 }

@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: externs.h,v 1.12 87/07/31 09:35:47 weissman Exp $";
+ *	rcs_id[] = "$Header: externs.h,v 1.7 87/10/09 14:01:32 weissman Exp $";
  */
 
 /*
@@ -31,13 +31,14 @@ extern int errno;
 
 extern char *getenv();
 
-extern XtTextSource *XtCreateEDiskSource();
+extern DwtTextSource XtCreateEDiskSource();
 extern int *XtStringSourceCreate();
 extern void XtStringSourceDestroy();
 
 extern char *DoCommandToFile();
 extern char *DoCommandToString();
 
+extern void NoOp();
 extern int myopen();
 extern FILE *myfopen();
 extern int myclose();
@@ -52,13 +53,10 @@ extern char *MallocACopy();
 extern int DenyGeoRequest();
 extern char *CreateGeometry();
 extern char *MakeFileName();
-extern XtEventReturnCode SendFakeEvent();
-extern Window CreateTextSW();
-extern Window CreateTitleBar();
+extern TextWidget CreateTextSW();
+extern LabelWidget CreateTitleBar();
 extern MsgList CurMsgListOrCurMsg();
 extern Toc SelectedToc();
-
-extern void CenterWindow();
 
 extern Scrn CreateNewScrn();
 extern Scrn NewViewScrn();
@@ -66,11 +64,15 @@ extern Scrn NewCompScrn();
 extern void MapScrn();
 extern void DestroyScrn();
 extern void EnableProperButtons();
+extern Scrn ScrnFromWidget();
 
 extern Scrn LastButtonScreen();
 
 extern char *Version();
 
-XtTextSource *TSourceCreate();
+DwtTextSource TSourceCreate();
 
 extern void IconInit();
+
+extern void OpenFolder();
+extern void OpenSequence();
