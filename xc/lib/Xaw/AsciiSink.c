@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.5 87/09/18 21:32:46 newman Exp $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.4 87/09/18 21:35:35 swick Locked $";
 #endif lint
 
 /*
@@ -179,7 +179,7 @@ static AsciiInsertCursor (w, x, y, state)
 	      data->normgc, 0, 0, insertCursor_width, insertCursor_height,
 	      x - (insertCursor_width >> 1), y - (insertCursor_height));
 */
-    if (state != data->laststate)
+    if (state != data->laststate && XtIsRealized(w))
 	XCopyPlane(XtDisplay(w),
 		  data->insertCursorOn, XtWindow(w),
 		  data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
@@ -362,10 +362,10 @@ AsciiSinkInitialize()
 }
 
 
-caddr_t XtAsciiSinkCreate (w, args, argCount)
+caddr_t XtAsciiSinkCreate (w, args, num_args)
     Widget w;
     ArgList 	args;
-    int 	argCount;
+    Cardinal 	num_args;
 {
     XtTextSink *sink;
     AsciiSinkData *data;
@@ -378,7 +378,7 @@ caddr_t XtAsciiSinkCreate (w, args, argCount)
     if (!initialized)
     	AsciiSinkInitialize();
 
-    sink = (XtTextSink *) XtMalloc(sizeof(XtTextSink));
+    sink = XtNew(XtTextSink);
     sink->display = AsciiDisplayText;
     sink->insertCursor = AsciiInsertCursor;
     sink->clearToBackground = AsciiClearToBackground;
@@ -387,12 +387,12 @@ caddr_t XtAsciiSinkCreate (w, args, argCount)
     sink->resolve = AsciiResolveToPosition;
     sink->maxLines = AsciiMaxLinesForHeight;
     sink->maxHeight = AsciiMaxHeightForLines;
-    sink->data = (int *) XtMalloc(sizeof(AsciiSinkData));
-    data = (AsciiSinkData *) sink->data;
+    data = XtNew(AsciiSinkData);
+    sink->data = (int *)data;
 
-    XtGetSubresources (w, data, "subclass", "subclass", 
-        SinkResources, XtNumber(SinkResources),
-	args, argCount);
+    XtGetSubresources (w, (caddr_t)data, "subclass", "subclass", 
+		       SinkResources, XtNumber(SinkResources),
+		       args, num_args);
 
 /* XXX do i have to XLoadQueryFont or does the resource guy do it for me */
 
