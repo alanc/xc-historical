@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /*
  * transformed coordinate system objects for X
  */
@@ -16,7 +17,7 @@ int	mode;
 	int	i;
 	double	xoff = 0.0, yoff = 0.0;
 
-	xpoints = (XPoint *) malloc (n_points * sizeof (*xpoints));
+	xpoints = (XPoint *) malloc ((unsigned)n_points * sizeof (*xpoints));
 	if (!xpoints)
 		return 0;
 	for (i = 0; i < n_points; i++) {
