@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)client.h	4.1	91/05/02
+ * @(#)client.h	4.2	91/05/03
  *
  */
 
@@ -36,6 +36,11 @@ extern ClientPtr serverClient;
 
 #define	SERVER_CLIENT	0
 #define	MINCLIENT	1
+
+#define	CLIENT_ALIVE		0
+#define	CLIENT_GONE		1
+#define	CLIENT_AGED		2
+#define	CLIENT_TIMED_OUT	4
 
 extern int  currentMaxClients;
 

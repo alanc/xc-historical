@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)globals.h	4.1	91/05/02
+ * @(#)globals.h	4.2	91/05/03
  *
  */
 
@@ -30,6 +30,7 @@
 #include	"FSproto.h"	/* for fsResolution */
 
 extern long TimeOutValue;
+extern long ReapClientTime;
 
 extern int  currentMaxClients;
 extern long MaxClients;
@@ -40,9 +41,6 @@ extern char dispatchException;
 
 extern int  argcGlobal;
 extern char **argvGlobal;
-
-extern fsResolution DefaultResolution;
-extern int  DefaultPointSize;
 
 /* bit values for dispatchException */
 #define	DE_RESET	0x1

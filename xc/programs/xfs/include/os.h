@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)os.h	4.1	91/05/02
+ * %W%	%E%
  *
  */
 
@@ -84,6 +84,5 @@ typedef struct _auth *AuthPtr;
 
 extern int  ListCatalogues();
 extern int  ListAlternateServers();
-extern fsResolution *GetClientResolutions();
 
 #endif				/* _OS_H_ */

@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)clientstr.h	4.1	91/05/02
+ * @(#)clientstr.h	4.2	91/05/03
  *
  */
 
@@ -41,6 +41,7 @@ typedef struct _Client {
     int         clientGone;
     int         sequence;
     Bool        swapped;
+    long        last_request_time;
     void        (*pSwapReplyFunc) ();
     AuthContextPtr auth;
     char       *catalogues;

@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)difsfont.h	4.1	91/05/02
+ * %W%	%E%
  *
  */
 
@@ -30,6 +30,7 @@
 #include	"font.h"
 
 typedef struct _ClientFont *ClientFontPtr;
+typedef struct _FontIDList *FontIDListPtr;
 typedef struct _font_name_cache FontNameCachePtr;
 
 #define	NullClientFont		((ClientFontPtr)0)

@@ -20,7 +20,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * @(#)difsfontst.h	4.1	91/05/02
+ * %W%	%E%
  *
  */
 
@@ -42,5 +42,12 @@ typedef struct _font_name_cache {
     int         namelen;
     FontPtr     font;
 }           FontNameCacheRec;
+
+/* one of these per client, with as many IDs as are needed */
+typedef struct	_FontIDList {
+	Font	*client_list;
+	int	num;
+	int	size;
+}	FontIDListRec;
 
 #endif				/* _DIFSFONTST_H_ */
