@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pc.c,v 1.13 92/05/07 23:29:04 mor Exp $ */
+/* $XConsortium: pl_pc.c,v 1.1 92/05/08 15:13:37 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -319,11 +319,11 @@ INPUT PEXPCAttributes	  *values;
 	    /* note that there are 2 bytes of pad between 2 byte items */
             case PEXPCMarkerType:
 		*pv = values->marker_type;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCMarkerScale:
 		*((float *) pv) = values->marker_scale;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCMarkerColor:
 		PackColorSpecifier (&(values->marker_color), pv, sizeColor);
@@ -331,23 +331,23 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCMarkerBundleIndex:
 		*pv = values->marker_bundle_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCTextFont:
 		*pv = values->text_font;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCTextPrecision:
 		*pv = values->text_precision;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCCharExpansion:
 		*((float *) pv) = values->char_expansion;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCCharSpacing:
 		*((float *) pv) = values->char_spacing;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCTextColor:
 		PackColorSpecifier (&(values->text_color), pv, sizeColor);
@@ -355,7 +355,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCCharHeight:
 		*((float *) pv) = values->char_height;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCCharUpVector:
 #ifdef WORD64
@@ -367,7 +367,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCTextPath:
 		*pv = values->text_path;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCTextAlignment:
 #ifdef WORD64
@@ -379,7 +379,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCATextHeight:
 		*((float *) pv) = values->atext_height;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCATextUpVector:
 #ifdef WORD64
@@ -391,7 +391,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCATextPath:
 		*pv = values->atext_path;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCATextAlignment:
 #ifdef WORD64
@@ -403,19 +403,19 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCATextStyle:
 		*pv = values->atext_style;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCTextBundleIndex:
 		*pv = values->text_bundle_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLineType:
 		*pv = values->line_type;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCLineWidth:
 		*((float *) pv) = values->line_width;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCLineColor:
 		PackColorSpecifier (&(values->line_color), pv, sizeColor);
@@ -431,19 +431,19 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCPolylineInterp:
 		*pv = values->polyline_interp;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCLineBundleIndex:
 		*pv = values->line_bundle_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCInteriorStyle:
 		*pv = values->interior_style;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCInteriorStyleIndex:
 		*pv = values->interior_style_index;
-		pv += LENOF (pexTypeOrTableIndex);
+		pv++;
 		break;
             case PEXPCSurfaceColor:
 		PackColorSpecifier (&(values->surface_color), pv, sizeColor);
@@ -467,19 +467,19 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCReflectionModel:
 		*pv = values->reflection_model;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceInterp:
 		*pv = values->surface_interp;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFInteriorStyle:
 		*pv = values->bf_interior_style;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFInteriorStyleIndex:
 		*pv = values->bf_interior_style_index;
-		pv += LENOF (pexTypeOrTableIndex);
+		pv++;
 		break;
             case PEXPCBFSurfaceColor:
 		PackColorSpecifier (&(values->bf_surface_color),
@@ -505,11 +505,11 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCBFReflectionModel:
 		*pv = values->bf_reflection_model;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFSurfaceInterp:
 		*pv = values->bf_surface_interp;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceApprox:
 #ifdef WORD64
@@ -521,11 +521,11 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCCullingMode:
 		*pv = values->culling_mode;
-		pv += LENOF (pexCullMode);
+		pv++;
 		break;
             case PEXPCDistinguishFlag:
 		*pv = values->distinguish;
-		pv += LENOF (pexSwitch);
+		pv++;
 		break;
             case PEXPCPatternSize:
 #ifdef WORD64
@@ -560,19 +560,19 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCInteriorBundleIndex:
 		*pv = values->interior_bundle_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeFlag:
 		*pv = values->surface_edges;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeType:
 		*pv = values->surface_edge_type;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeWidth:
 		*((float *) pv) = values->surface_edge_width;
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeColor:
 		PackColorSpecifier (&(values->surface_edge_color), pv, 
@@ -581,7 +581,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCEdgeBundleIndex:
 		*pv = values->edge_bundle_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLocalTransform:
 		COPY_LARGE_AREA ((char *) values->local_transform,
@@ -595,7 +595,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCModelClip:
 		*pv = values->model_clip;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCModelClipVolume:
 		size = values->model_clip_volume.count;
@@ -608,7 +608,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCViewIndex:
 		*pv = values->view_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLightState:
 		size = values->light_state.count;
@@ -621,7 +621,7 @@ INPUT PEXPCAttributes	  *values;
 		break;
             case PEXPCDepthCueIndex:
 		*pv = values->depth_cue_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCPickID:
 		*((CARD32 *) pv) = values->pick_id;
@@ -643,11 +643,11 @@ INPUT PEXPCAttributes	  *values;
 		break;
 	    case PEXPCColorApproxIndex:
 		*pv = values->color_approx_index;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
 	    case PEXPCRenderingColorModel:
 		*pv = values->rendering_color_model;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPCParaSurfCharacteristics:
 #if 0
@@ -715,11 +715,11 @@ OUTPUT PEXPCAttributes			*ppca;
 	    /* note:  2 bytes of pad between 2 byte items */
             case PEXPCMarkerType:
 		ppca->marker_type = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCMarkerScale:
 		ppca->marker_scale = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCMarkerColor:
 		PackColorSpecifier (pv, &(ppca->marker_color), sizeColor);
@@ -727,23 +727,23 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCMarkerBundleIndex:
 		ppca->marker_bundle_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCTextFont:
 		ppca->text_font = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCTextPrecision:
 		ppca->text_precision = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCCharExpansion:
 	  	ppca->char_expansion = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCCharSpacing:
 		ppca->char_spacing = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCTextColor:
 		PackColorSpecifier (pv, &(ppca->text_color), sizeColor);
@@ -751,7 +751,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCCharHeight:
 		ppca->char_height = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCCharUpVector:
 		ppca->char_up_vector = *((PEXVector2D *) pv);
@@ -759,7 +759,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCTextPath:
 		ppca->text_path = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCTextAlignment:
 		ppca->text_alignment = *((PEXTextAlignment *)pv);
@@ -767,7 +767,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCATextHeight:
 		ppca->atext_height = *((float *) pv);
-		pv += LENOF (float);
+		pv++;
 		break;
             case PEXPCATextUpVector:
 		ppca->atext_up_vector = *((PEXVector2D *) pv);
@@ -775,7 +775,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCATextPath:
 		ppca->atext_path = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCATextAlignment:
 		ppca->atext_alignment = *((PEXTextAlignment *) pv);
@@ -783,19 +783,19 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCATextStyle:
 		ppca->atext_style = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCTextBundleIndex:
 		ppca->text_bundle_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLineType:
 		ppca->line_type = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCLineWidth:
 		ppca->line_width = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCLineColor:
 		PackColorSpecifier (pv, &(ppca->line_color), sizeColor);
@@ -807,19 +807,19 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCPolylineInterp:
 		ppca->polyline_interp = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCLineBundleIndex:
 		ppca->line_bundle_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCInteriorStyle:
 		ppca->interior_style = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCInteriorStyleIndex:
 		ppca->interior_style_index = *pv;
-		pv += LENOF (pexTypeOrTableIndex);
+		pv++;
 		break;
             case PEXPCSurfaceColor:
 		PackColorSpecifier (pv, &(ppca->surface_color), sizeColor);
@@ -843,19 +843,19 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCReflectionModel:
 		ppca->reflection_model = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceInterp:
 		ppca->surface_interp = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFInteriorStyle:
 		ppca->bf_interior_style = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFInteriorStyleIndex:
 		ppca->bf_interior_style_index = *pv;
-		pv += LENOF (pexTypeOrTableIndex);
+		pv++;
 		break;
             case PEXPCBFSurfaceColor:
 		PackColorSpecifier (pv, &(ppca->bf_surface_color), sizeColor);
@@ -879,11 +879,11 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCBFReflectionModel:
 		ppca->bf_reflection_model = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCBFSurfaceInterp:
 		ppca->bf_surface_interp = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceApprox:
 		ppca->surface_approx = *((PEXSurfaceApprox *) pv);
@@ -891,11 +891,11 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCCullingMode:
 		ppca->culling_mode = *pv;
-		pv += LENOF (pexCullMode);
+		pv++;
 		break;
             case PEXPCDistinguishFlag:
 		ppca->distinguish = *pv;
-		pv += LENOF (pexSwitch);
+		pv++;
 		break;
             case PEXPCPatternSize:
 		ppca->pattern_size = *((PEXCoord2D *) pv);
@@ -915,19 +915,19 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCInteriorBundleIndex:
 		ppca->interior_bundle_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeFlag:
 		ppca->surface_edges = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeType:
 		ppca->surface_edge_type = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
             case PEXPCSurfaceEdgeWidth:
 		ppca->surface_edge_width = *((float *) pv);
-		pv += LENOF (float); 
+		pv++;
 		break;
             case PEXPCSurfaceEdgeColor:
 		PackColorSpecifier (pv, &(ppca->surface_edge_color),
@@ -936,7 +936,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCEdgeBundleIndex:
 		ppca->edge_bundle_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLocalTransform:
 		COPY_LARGE_AREA ((char *) pv, (char *) ppca->local_transform,
@@ -950,7 +950,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCModelClip:
 		ppca->model_clip = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
             case PEXPCModelClipVolume:
 		size = *pv;
@@ -965,7 +965,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCViewIndex:
 		ppca->view_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCLightState:
 		size = *pv;
@@ -980,7 +980,7 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
             case PEXPCDepthCueIndex:
 		ppca->depth_cue_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
             case PEXPCPickID:
 		ppca->pick_id = *((INT32 *) pv);
@@ -1002,11 +1002,11 @@ OUTPUT PEXPCAttributes			*ppca;
 		break;
 	    case PEXPCColorApproxIndex:
 		ppca->color_approx_index = *pv;
-		pv += LENOF (pexTableIndex);
+		pv++;
 		break;
 	    case PEXPCRenderingColorModel:
 		ppca->rendering_color_model = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPCParaSurfCharacteristics:
 #if 0

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.14 92/05/07 23:29:27 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.1 92/05/08 15:14:04 mor Exp $ */
 
 /****************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -213,19 +213,19 @@ INPUT unsigned long	*valueMask;
 	    {
 	    case PEXPWDisplayUpdate:
 		ppwi->drawable_update = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPWVisualState:
 		ppwi->visual_state = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWDisplaySurface:
 		ppwi->drawable_surface = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWViewUpdate:
 		ppwi->view_update = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWDefinedViews:
 		size = *((int *) pv);
@@ -240,7 +240,7 @@ INPUT unsigned long	*valueMask;
 		break;
 	    case PEXPWWorkstationUpdate:
 		ppwi->wks_update = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWReqNPCSubVolume:
 		ppwi->req_npc_subvolume = *((PEXNPCSubVolume *) pv);
@@ -260,15 +260,15 @@ INPUT unsigned long	*valueMask;
 		break;
 	    case PEXPWHLHSRUpdate:
 		ppwi->hlhsr_update = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWReqHLHSRMode:
 		ppwi->req_hlhsr_mode = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPWCurHLHSRMode:
 		ppwi->cur_hlhsr_mode = *pv;
-		pv += LENOF (pexEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPWDrawable:
 		ppwi->drawable = *((Drawable *) pv);
@@ -347,19 +347,19 @@ INPUT unsigned long	*valueMask;
 		break;
 	    case PEXPWNumPriorities:
 		ppwi->count_priorities = *pv;
-		pv += LENOF (CARD32);
+		pv++;
 		break;
 	    case PEXPWBufferUpdate:
 		ppwi->buffer_update = *pv;
-		pv += LENOF (CARD8);
+		pv++;
 		break;
 	    case PEXPWReqBufferMode:
 		ppwi->req_buffer_mode = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
 	    case PEXPWCurBufferMode:
 		ppwi->cur_buffer_mode = *pv;
-		pv += LENOF (CARD16);
+		pv++;
 		break;
 	    }
 	}
@@ -511,9 +511,9 @@ OUTPUT PEXViewRep	*curViewReturn;
      */
 
     reqViewReturn->index = *pv;
-    pv += LENOF (pexTableIndex);
+    pv ++;
     reqViewReturn->view.clip_flags = *pv;
-    pv += LENOF (CARD16);
+    pv++;
 
 #ifdef WORD64
 #else
@@ -529,9 +529,9 @@ OUTPUT PEXViewRep	*curViewReturn;
     pv += LENOF (pexMatrix);
 
     curViewReturn->index = *pv;
-    pv += LENOF (pexTableIndex);
+    pv++;
     curViewReturn->view.clip_flags = *pv;
-    pv += LENOF (CARD16);
+    pv++;
 
 #ifdef WORD64
 #else

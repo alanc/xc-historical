@@ -1,4 +1,4 @@
-/* $XConsortium: pl_pick.c,v 1.8 92/05/07 23:29:10 mor Exp $ */
+/* $XConsortium: pl_pick.c,v 1.1 92/05/08 15:13:40 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by ShoGraphics, Inc., Mountain View, California,
@@ -486,7 +486,7 @@ INPUT PEXPickDeviceAttributes	*values;
 		break;
 	    case PEXPDPromptEchoType:
 		*pv = values->prompt_echo_type;
-		pv += LENOF (PEXEnumTypeIndex);
+		pv++;
 		break;
 	    case PEXPDEchoVolume:
 		*((PEXViewport *) pv) = values->echo_volume;
