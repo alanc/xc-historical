@@ -1,19 +1,5 @@
 /*
- * $Header: include.c,v 1.2 87/08/06 17:40:34 toddb Locked $
- *
- * $Log:	include.c,v $
- * Revision 1.2  87/08/06  17:40:34  toddb
- * Bug in removing .. (removedotdot).
- * 
- * Revision 1.1  87/08/06  17:34:55  toddb
- * Initial revision
- * 
- * Revision 1.1  87/04/08  16:40:43  rich
- * Initial revision
- * 
- * Revision 1.1  86/04/15  08:34:26  toddb
- * Initial revision
- * 
+ * $Header: include.c,v 1.3 87/08/14 18:14:41 toddb Exp $
  */
 #include "def.h"
 

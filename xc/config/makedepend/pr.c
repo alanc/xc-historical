@@ -1,26 +1,5 @@
 /*
- * $Header: pr.c,v 1.2 87/08/14 18:08:47 toddb Exp $
- *
- * $Log:	pr.c,v $
- * Revision 1.2  87/08/14  18:08:47  toddb
- * Don't unmark each included file in recursive_pr_includes(): leaving it
- * marked prevents multiple inclusions from being printed if an include
- * file happens to be a terminal node on the graph.
- * 
- * Revision 1.1  87/08/14  18:01:02  toddb
- * Initial revision
- * 
- * Revision 1.1  87/04/08  16:40:57  rich
- * Initial revision
- * 
- * Revision 1.2  86/04/18  14:06:52  toddb
- * Added a new field to struct inclist: "i_marked".  This is used
- * by recursive_pr() to tell if it is traversing a loop of include
- * files.
- * 
- * Revision 1.1  86/04/15  08:34:45  toddb
- * Initial revision
- * 
+ * $Header: pr.c,v 1.3 88/08/18 22:18:39 jim Exp $
  */
 #include "def.h"
 
