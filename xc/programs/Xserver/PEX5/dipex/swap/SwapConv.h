@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SwapConv.h,v 5.1 91/02/16 09:57:22 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -27,10 +27,10 @@ SOFTWARE.
 #ifndef SWAPCONV_H
 #define SWAPCONV_H 1
 
-#define SWAPINT(A)   if (swapPtr->ConvertCARD32) A = swapPtr->ConvertCARD32(&(A))
+#define SWAPINT(A)   if (swapPtr->ConvertCARD32) swapPtr->ConvertCARD32(&(A))
 
-#define SWAPSHORT(A) if (swapPtr->ConvertCARD16) A = swapPtr->ConvertCARD16(&(A))
+#define SWAPSHORT(A) if (swapPtr->ConvertCARD16) swapPtr->ConvertCARD16(&(A))
 
-#define SWAPFLOAT(A) if (swapPtr->ConvertFLOAT)  A = swapPtr->ConvertFLOAT(&(A))
+#define SWAPFLOAT(A) if (swapPtr->ConvertFLOAT)  swapPtr->ConvertFLOAT(&(A))
 
 #endif	/* SWAPCONV_H */

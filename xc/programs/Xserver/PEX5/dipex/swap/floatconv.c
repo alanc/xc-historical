@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.c,v 5.3 91/05/12 20:03:20 rws Exp $ */
+/* $XConsortium: floatconv.c,v 5.4 91/07/01 16:39:12 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -114,36 +114,38 @@ SOFTWARE.
  * 	brute force BITMASKS and shifts.
  */
 
-PEXFLOAT 
+void
 ConvertVaxToIEEE(VaxnumR)
     PEXFLOAT *VaxnumR;
 {
     register CARD32 Vaxnum = *(CARD32 *)VaxnumR;
-    CARD32 result=0;
+    CARD32 *VaxnumP = (CARD32 *)VaxnumR;
+    CARD32 result;
 
     if ((VAX_SIGN_MASK & Vaxnum)==MAX_VAX_POSITIVE)
     {
-	result = MAX_IEEE_POSITIVE |
+	*VaxnumP = MAX_IEEE_POSITIVE |
 	    (((0x00008000)&Vaxnum) ? 0x80000000 : 0L);
-	return *(PEXFLOAT *)(&result);
-    };
+	return;
+    }
     
     if ((VAX_SIGN_MASK & Vaxnum)==MIN_VAX_POSITIVE)
     {
-	result = MIN_IEEE_POSITIVE;
-	return *(PEXFLOAT *)(&result);
-    };
+	*VaxnumP = MIN_IEEE_POSITIVE;
+	return;
+    }
 
     /*
      * these bitfields should OR into mutually exclusive fields in
      * result field.
      */
     
-    result |= ((((BITMASK(8)<<7) & Vaxnum)>>7)+VAX_TO_IEEE_BIAS)<<23;
+    result = ((((BITMASK(8)<<7) & Vaxnum)>>7)+VAX_TO_IEEE_BIAS)<<23;
     result |= (((BITMASK(7) & Vaxnum)<<16) |
 	       (((BITMASK(16)<<16) & Vaxnum)>>16));
     result |= ( (0x00008000 & Vaxnum) ? 0x80000000 : 0L);
-    return *(PEXFLOAT *)(&result);
+    *VaxnumP = result;
+    return;
 }
 
 /*****************************************************************
@@ -172,24 +174,25 @@ ConvertVaxToIEEE(VaxnumR)
  * 	brute force BITMASKS and shifts.
  */
     
-PEXFLOAT 
+void 
 ConvertIEEEToVax(IEEEnumR)
     PEXFLOAT *IEEEnumR;
 {
     register CARD32 IEEEnum = *(CARD32 *)IEEEnumR;
+    CARD32 *IEEEnumP = (CARD32 *)IEEEnumR;
     CARD32 result=0;
 
     if ((IEEE_SIGN_MASK & IEEEnum)==MAX_IEEE_POSITIVE)
     {
-	result = MAX_VAX_POSITIVE |
+	*IEEEnumP = MAX_VAX_POSITIVE |
 	    (0x80000000&IEEEnum)>>16;
-	return *(PEXFLOAT *)(&result);
+	return;
     };
     
     if ((IEEE_SIGN_MASK & IEEEnum)==MIN_IEEE_POSITIVE)
     {
-	result = MIN_VAX_POSITIVE;
-	return *(PEXFLOAT *)(&result);
+	*IEEEnumP = MIN_VAX_POSITIVE;
+	return;
     };
 
     /*
@@ -197,9 +200,10 @@ ConvertIEEEToVax(IEEEnumR)
      * result field.
      */
 
-    result |= ((((BITMASK(8)<<23) & IEEEnum)>>23)+IEEE_TO_VAX_BIAS)<<7;
+    result = ((((BITMASK(8)<<23) & IEEEnum)>>23)+IEEE_TO_VAX_BIAS)<<7;
     result |= ((BITMASK(7)<<16)&IEEEnum)>>16;
     result |= (BITMASK(16)&IEEEnum)<<16;
     result |= (0x80000000&IEEEnum)>>16;
-    return *(PEXFLOAT *)(&result);  /* hopefully the *& will not generate code */
+    *IEEEnumP = result;
+    return;  
 }

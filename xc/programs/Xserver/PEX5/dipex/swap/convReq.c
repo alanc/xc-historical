@@ -1,4 +1,4 @@
-/* $XConsortium: convReq.c,v 5.8 91/07/18 20:36:35 hersh Exp $ */
+/* $XConsortium: convReq.c,v 5.9 91/10/01 02:39:59 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -802,21 +802,22 @@ pexCreatePhigsWksReq	*strmPtr;
     SWAP_CARD16 (strmPtr->length);
     SWAP_PHIGS_WKS (strmPtr->wks);
     SWAP_DRAWABLE (strmPtr->drawable);
-    SWAP_LOOKUP_TABLE (strmPtr->lineBundle);
     SWAP_LOOKUP_TABLE (strmPtr->markerBundle);
     SWAP_LOOKUP_TABLE (strmPtr->textBundle);
+    SWAP_LOOKUP_TABLE (strmPtr->lineBundle);
     SWAP_LOOKUP_TABLE (strmPtr->interiorBundle);
     SWAP_LOOKUP_TABLE (strmPtr->edgeBundle);
     SWAP_LOOKUP_TABLE (strmPtr->colourTable);
-    SWAP_LOOKUP_TABLE (strmPtr->patternTable);
-    SWAP_LOOKUP_TABLE (strmPtr->textFontTable);
     SWAP_LOOKUP_TABLE (strmPtr->depthCueTable);
     SWAP_LOOKUP_TABLE (strmPtr->lightTable);
     SWAP_LOOKUP_TABLE (strmPtr->colourApproxTable);
+    SWAP_LOOKUP_TABLE (strmPtr->patternTable);
+    SWAP_LOOKUP_TABLE (strmPtr->textFontTable);
     SWAP_NAMESET (strmPtr->highlightIncl);
     SWAP_NAMESET (strmPtr->highlightExcl);
     SWAP_NAMESET (strmPtr->invisIncl);
     SWAP_NAMESET (strmPtr->invisExcl);
+    SWAP_CARD16 (strmPtr->bufferMode);
     CALL_REQUEST;
 }
 
@@ -1116,7 +1117,7 @@ pexContext		*cntxtPtr;
 pexUpdatePickMeasureReq	*strmPtr;
 {
 
-    extern PEXFLOAT SwapFLOAT();
+    extern void SwapFLOAT();
 
     pexSwap *swapPtr = cntxtPtr->swap;
     SWAP_CARD16 (strmPtr->length);

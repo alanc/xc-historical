@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.h,v 5.3 91/02/17 12:27:22 rws Exp $ */
+/* $XConsortium: floatconv.h,v 5.4 91/07/01 16:27:01 hersh Exp $ */
 
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems and the X Consortium.
@@ -48,7 +48,7 @@
 #define MyFloatType Ieee_754_32
 #endif
 
-extern PEXFLOAT ConvertIEEEtoVax();
-extern PEXFLOAT ConvertVaxToIEEE();
+extern void ConvertIEEEtoVax();
+extern void ConvertVaxToIEEE();
 
 #endif /* FLOAT_CON_H */

@@ -1,4 +1,4 @@
-/* $XConsortium: check.c,v 5.2 91/03/15 18:40:03 hersh Exp $ */
+/* $XConsortium: check.c,v 5.3 91/07/01 16:42:42 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,7 +32,6 @@ SOFTWARE.
 #include "dipex.h"
 #include "pexSwap.h"
 #include "pex_site.h"
-#include "swapmacros.h"
 #include "pexError.h"
 
 /*
@@ -44,16 +43,22 @@ SOFTWARE.
 	as a floating point specifier;
  */
 
-extern PEXFLOAT SwapFLOAT();
-extern PEXFLOAT SwapIEEEToVax();
-extern PEXFLOAT SwapVaxToIEEE();
-extern PEXFLOAT ConvertIEEEToVax();
-extern PEXFLOAT ConvertVaxToIEEE();
+extern void SwapFLOAT();
+extern void SwapIEEEToVax();
+extern void SwapVaxToIEEE();
+extern void ConvertIEEEToVax();
+extern void ConvertVaxToIEEE();
 extern OCFunction cPEXOutputCmd[];
 extern OCFunction uPEXOutputCmd[];
 extern RequestFunction PEXRequest[];
 extern RequestFunction cPEXRequest[];
 extern ReplyFunction uPEXReply[];
+
+/* define some macros previously taken from swapmacros.h */
+/* byte swap AND COPY a short (given pointer) */
+#define SWAPSHORTC(x, y)\
+((char *) (y))[1] = ((char *) (x))[0];\
+((char *) (y))[0] = ((char *) (x))[1]
 
 
 typedef struct {
@@ -115,7 +120,7 @@ extern INT16 lastfp[];
 	cntxtPtr->pexSwapRequestOC  =  cPEXOutputCmd; 
 	cntxtPtr->pexSwapReply	    =  uPEXReply;
 	cntxtPtr->pexSwapReplyOC    =  uPEXOutputCmd;
-	swapshortc(strmPtr->fpFormat, fp);
+	SWAPSHORTC(&(strmPtr->fpFormat), &fp);
 
 	if ( fp == SERVER_NATIVE_FP ) {
 	    cntxtPtr->swap->ConvertFLOAT =  (ConvFunction)SwapFLOAT;
