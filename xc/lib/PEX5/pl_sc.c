@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.4 92/05/26 16:19:21 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.5 92/07/16 10:59:12 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -335,16 +335,16 @@ OUTPUT PEXSCAttributes	*values;
 }
 
 
-PEXStructurePath *
-PEXSearchNetwork (display, sc)
+Status
+PEXSearchNetwork (display, sc, path_return)
 
-INPUT Display		*display;
-INPUT PEXSearchContext	sc;
+INPUT Display			*display;
+INPUT PEXSearchContext		sc;
+OUTPUT PEXStructurePath		**path_return;
 
 {
     pexSearchNetworkReply	rep;
     pexSearchNetworkReq		*req;
-    PEXStructurePath		*scinfo;
 
 
     /*
@@ -365,7 +365,8 @@ INPUT PEXSearchContext	sc;
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
-        return (NULL);               /* return an error */
+	*path_return = NULL;
+        return (0);               /* return an error */
     }
 
 
@@ -373,14 +374,15 @@ INPUT PEXSearchContext	sc;
      * Allocate a buffer for the path to pass back to the client.
      */
 
-    scinfo = (PEXStructurePath *)
+    *path_return = (PEXStructurePath *)
 	PEXAllocBuf ((unsigned) (sizeof (PEXStructurePath)));
 
-    scinfo->count = rep.numItems;
-    scinfo->elements = (PEXElementRef *)
+    (*path_return)->count = rep.numItems;
+    (*path_return)->elements = (PEXElementRef *)
 	PEXAllocBuf ((unsigned) (rep.numItems * sizeof (PEXElementRef)));
 
-    _XRead (display, (char *) (scinfo->elements), (long) (rep.length << 2));
+    _XRead (display, (char *) ((*path_return)->elements),
+	(long) (rep.length << 2));
 
 
     /*
@@ -390,7 +392,7 @@ INPUT PEXSearchContext	sc;
     UnlockDisplay (display);
     PEXSyncHandle (display);
 
-    return (scinfo);
+    return (1);
 }
 
 
