@@ -1,6 +1,3 @@
-#
-# Make file for font handling routines
-#
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
