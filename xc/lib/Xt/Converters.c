@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.75 91/05/09 19:26:25 swick Exp $ */
+/* $XConsortium: Converters.c,v 1.76 91/05/11 14:56:24 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1254,6 +1254,23 @@ CvtStringToGeometry(dpy, args, num_args, fromVal, toVal, closure_ret)
                   "String to Geometry conversion needs no extra arguments",
                    (String *) NULL, (Cardinal *)NULL);
     done(String, *(String*)fromVal->addr);
+}
+#endif
+
+#ifdef MOTIFBUG
+void LowerCase(source, dest)
+    register char  *source, *dest;
+{
+    register char ch;
+    int i;
+
+    for (i = 0; (ch = *source) != 0 && i < 999; source++, dest++, i++) {
+    	if ('A' <= ch && ch <= 'Z')
+	    *dest = ch - 'A' + 'a';
+	else
+	    *dest = ch;
+    }
+    *dest = 0;
 }
 #endif
 
