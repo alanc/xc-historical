@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.53 89/07/18 14:20:26 jim Exp $
+ * $XConsortium: gram.y,v 1.54 89/07/18 17:15:52 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.53 89/07/18 14:20:26 jim Exp $";
+"$XConsortium: gram.y,v 1.54 89/07/18 17:15:52 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -643,7 +643,7 @@ action		: F_NOP			{ $$ = F_NOP; }
                 | F_RIGHTZOOM           { $$ = F_RIGHTZOOM; }
                 | F_TOPZOOM             { $$ = F_TOPZOOM; }
                 | F_BOTTOMZOOM          { $$ = F_BOTTOMZOOM; }
-		| F_HORIZOOM		{ $$ = F_ZOOM; }
+		| F_HORIZOOM		{ $$ = F_HORIZOOM; }
 		| F_FULLZOOM		{ $$ = F_FULLZOOM; }
 		| F_RAISE		{ $$ = F_RAISE; }
 		| F_RAISELOWER		{ $$ = F_RAISELOWER; }

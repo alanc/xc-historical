@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.38 89/07/18 11:26:12 jim Exp $
+ * $XConsortium: resize.c,v 1.39 89/07/18 17:16:11 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.38 89/07/18 11:26:12 jim Exp $";
+"$XConsortium: resize.c,v 1.39 89/07/18 17:16:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -529,7 +529,7 @@ ConstrainSize (tmp_win, widthp, heightp)
     if (tmp_win->hints.flags & PMaxSize) {
         maxWidth = tmp_win->hints.max_width;
         maxHeight = tmp_win->hints.max_height;
-    }
+    } else
         maxWidth = maxHeight = MAXSIZE;
 
     if (tmp_win->hints.flags & PResizeInc) {
