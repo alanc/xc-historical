@@ -61,6 +61,7 @@ SRCS = \
 	RectObj.c \
 	Resources.c \
 	Selection.c \
+	SetWMCW.c \
 	Shell.c \
 	TMparse.c \
 	TMstate.c \
@@ -93,6 +94,7 @@ OBJS = \
 	RectObj.o \
 	Resources.o \
 	Selection.o \
+	SetWMCW.o \
 	Shell.o \
 	TMparse.o \
 	TMstate.o \
