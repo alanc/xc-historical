@@ -170,8 +170,7 @@ cfbCreateGC(pGC)
     pPriv->rop = pGC->alu;
     pPriv->fExpose = TRUE;
     pPriv->freeCompClip = FALSE;
-    pPriv->pRotatedTile = (PixmapPtr) NULL;
-    pPriv->pRotatedStipple = (PixmapPtr) NULL;
+    pPriv->pRotatedPixmap = (PixmapPtr) NULL;
     return TRUE;
 }
 
@@ -431,7 +430,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 		if ((width <= 32) && !(width & (width - 1)) &&
 		    (nstipple = cfbCopyPixmap(pGC->stipple)))
 		{
-		    (void)cfbPadPixmap(nstipple);
+		    cfbPadPixmap(nstipple);
 		    cfbDestroyPixmap(pGC->stipple);
 		    pGC->stipple = nstipple;
 		}
@@ -481,14 +480,10 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_rotate || new_fillspans)
     {
+	Bool new_pix = FALSE;
+
 	xrot = pGC->patOrg.x + pDrawable->x;
 	yrot = pGC->patOrg.y + pDrawable->y;
-
-	if (devPriv->pRotatedTile)
-	{
-	    cfbDestroyPixmap (devPriv->pRotatedTile);
-	    devPriv->pRotatedTile = (PixmapPtr) NULL;
-	}
 
 	switch (pGC->fillStyle)
 	{
@@ -499,18 +494,18 @@ cfbValidateGC(pGC, changes, pDrawable)
 
 		if ((width <= 32) && !(width & (width - 1)))
 		{
-		    devPriv->pRotatedTile = cfbCopyPixmap (pGC->tile.pixmap);
-		    if (devPriv->pRotatedTile)
-		    {
-			(void)cfbPadPixmap(devPriv->pRotatedTile);
-			if (xrot)
-			    cfbXRotatePixmap(devPriv->pRotatedTile, xrot);
-			if (yrot)
-			    cfbYRotatePixmap(devPriv->pRotatedTile, yrot);
-		    }
+		    cfbCopyRotatePixmap(pGC->tile.pixmap,
+					&devPriv->pRotatedPixmap,
+					xrot, yrot);
+		    new_pix = TRUE;
 		}
 	    }
 	    break;
+	}
+	if (!new_pix && devPriv->pRotatedPixmap)
+	{
+	    cfbDestroyPixmap(devPriv->pRotatedPixmap);
+	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }
 
@@ -632,7 +627,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	    break;
 	case FillTiled:
 	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK &&
-	        devPriv->pRotatedTile)
+	        devPriv->pRotatedPixmap)
 	    {
 		pGC->ops->PolyFillRect = cfbPolyFillRect;
 	    }
