@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.11 89/12/17 16:38:52 rws Exp $";
+static char Xrcsid[] = "$XConsortium: Keyboard.c,v 1.12 90/02/09 14:59:17 swick Exp $";
 #endif
 
 /********************************************************
@@ -492,9 +492,11 @@ void _XtHandleFocus(widget, client_data, event)
 		  case XtMyAncestor:
 		    if (event->type == LeaveNotify)
 		      newFocalPoint = XtUnrelated;
+		    break;
 		  case XtUnrelated:
 		    if (event->type == EnterNotify)
 		      newFocalPoint = XtMyAncestor;
+		    break;
 		  case XtMySelf:
 		    break;
 		  case XtMyDescendant:
@@ -723,6 +725,8 @@ void XtSetKeyboardFocus(widget, descendant)
     Widget oldDesc = pwi->focusKid;
     Widget oldTarget, target;
     
+    if (descendant == widget) descendant = (Widget)None;
+
     target = descendant ? _GetWindowedAncestor(descendant) : NULL;
     oldTarget = oldDesc ? _GetWindowedAncestor(oldDesc) : NULL;
     
@@ -758,16 +762,19 @@ void XtSetKeyboardFocus(widget, descendant)
 	     * If there was a forward path then remove the handler if
 	     * the path is being set to null and it isn't a shell.
 	     * shells always have a handler for tracking focus for the
-	     * hierarchy. 
+	     * hierarchy.
+	     *
+	     * Keep the pwi record on the assumption that the client
+	     * will continue to dynamically assign focus for this widget.
 	     */
-	    if (!XtIsShell(widget) && !descendant)
+	    if (!XtIsShell(widget) && !descendant) {
 	      XtRemoveEventHandler(widget, XtAllEvents, True, 
 				   _XtHandleFocus, (XtPointer)pwi);
+	      pwi->haveFocus = FALSE;
+	  }
 	}
 	
-	if (!descendant)
-	  pwi->haveFocus = FALSE;
-	else {
+	if (descendant) {
 	    XtAddCallback (descendant, XtNdestroyCallback, 
 			   FocusDestroyCallback, (XtPointer) widget);
 
