@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.101 91/03/25 15:11:50 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.102 91/03/26 14:28:35 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -712,7 +712,7 @@ BuildMakefileTarget(Imakefile, /**/)
  * a normal library is not being built
  */
 #ifndef NormalSharedLibObjCompile
-#define NormalSharedLibObjCompile(options) NormalLibObjCompile(options $(SHAREDCODEDEF) $(PICFLAGS))
+#define NormalSharedLibObjCompile(options) NormalLibObjCompile(options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
 #endif
 
 /*
@@ -742,7 +742,7 @@ BuildMakefileTarget(Imakefile, /**/)
  * SharedLibObjCompile - compile fragment for shared objects
  */
 #ifndef SharedLibObjCompile
-#define SharedLibObjCompile(options) LibObjCompile(shared,options $(SHAREDCODEDEF) $(PICFLAGS) $(CDEBUGFLAGS))
+#define SharedLibObjCompile(options) LibObjCompile(shared,options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS) $(CDEBUGFLAGS))
 #endif
 
 /*
