@@ -22,7 +22,7 @@ Bob Scheifler
 .AI
 Massachusetts Institute of Technology
 .AI
-Revised for Release 4 by
+Revised for Release 4 and Release 5 by
 .AU
 Keith Packard
 .AI
@@ -120,6 +120,15 @@ This directory has font files in a text format and the compiler
 to compile them into a binary format that your server uses.
 
 .LP
+fonts/lib
+.RS
+.RE
+This directory contains a library of routines for handling fonts.  It
+contains all of the interfaces used by both the X and Font servers.  It also
+contains routines for manipulating font files which are used by bdftopcf and
+mkfontdir.
+
+.LP
 fonts/bdf
 .RS
 .RE
@@ -135,16 +144,17 @@ these fonts conform to the XLFD standard; most of them are in ISO-8859-1
 (Latin-1) encoding.
 
 .LP
-fonts/bdftosnf
+fonts/tools/bdftopcf
 .RS
 .RE
 This directory has the font compiler source.
-Be sure to change the bit-order and byte-order defines for the target machine 
-that the font files are destined for
-before compiling.
+The old bdftosnf compiler had private definitions for the glyph format;
+bdftopcf inherits the definitions from the server so special configuration
+is not needed here.  Besides, if you get it wrong, the server will still
+run, but will spend quite a bit of time reformating the fonts.
 
 .LP
-fonts/mkfontdir
+fonts/tools/mkfontdir
 .RS
 .RE
 mkfontdir is run over a directory containing font files.  It produces
@@ -217,13 +227,7 @@ manipulating rows of pixels by hand.
 See the "Definition" document for an explanation of these terms.
 
 .LP
-server/ddx/snf
-.RS
-.RE
-This directory has code to handle SNF font files.
-
-.LP
-server/ddx/apollo,dec,hp,ibm,macII,sun,tek
+server/ddx/apollo,dec,hp,ibm,macII,mips,sun,tek
 .RS
 .RE
 These directories contain device-specific code which runs
@@ -718,15 +722,6 @@ If BITMAP_SCANLINE_PAD is 32, this must be 5.
 LOG2_BYTES_PER_SCANLINE_PAD is the log 
 base 2 of (BITMAP_SCANLINE_PAD divided by 8, the number of bits in a byte).
 If BITMAP_SCANLINE_PAD is 32, this must be 2.
-
-(WARNING: the bit- and byte- order defines
-in the font compiler source are distinct from those for
-the main server code.  
-This is so that you can cross-compile
-a font file for a different machine without having to change
-definitions for your server source.
-If these are set differently for the same server then your text will
-be incorrectly drawn.)
 
 .NH 3
 Client Access
@@ -1853,10 +1848,6 @@ The next phase of optimization will probably concentrate on painting
 window backgrounds,
 wide lines, some of the easy-to-perform rectangle operations, and PushPixels().
 
-Painting window backgrounds is executed from a routine in the WindowRec.
-Since it can be changed when the background is changed, you can substitute
-different routines optimized to do solid colors, stipples or tiles, as appropriate.
-
 Wide lines no longer present much of an opportunity
 to invest a great deal of 
 work into an optimization and 
@@ -1870,28 +1861,30 @@ inside the graphics layer.
 
 The code you want to look at is in miwideline.c and miwideline.h
 
-Wide arcs could use some substantial speedups though.  Unfortunately,
-the protocol defines an object which is quartic in description, the solution
-of which can be generated in closed form, but is larger than reasonably
-implementable (13 pages of macsyma output described a small portion of the
-solution).  If you examine the implementation in miarc.c, you'll see a
-nightmare of complicated floating point arithmetic.  These routines attempt
-to come as close as possible to the protocol definition for a wide arc, and
-suffer tremendously in performance because of it.  Wide circles, however, do
-provide a reasonable opportunity for optimization.  As the both inner and
-outer edges of a wide circle are circular (unlike elliptical arcs), a
-fully-integer circle edge walker could be used to scan-convert them.  Look
-at the code in server/ddx/mi/mifillarc.c to discover some amazing integer
-code which draws protocol-conforming filled arcs and could be extended to
-draw protocol-conforming wide arcs.  New for R4 is a large body of code
-which implements zero-width ellipses and circles.  Mfb, cfb and mi all have
-sample implementations which you should examine closely.  The relevant files
-are ddx/mi/mizerarc.c,mizerarc.h, ddx/mfb/mfbzerarc.c and
-ddx/cfb/cfbzerarc.c.  X11perf shows a 5950 times speedup between using the
-cfb-specific zero-width arc code in R4 and using the mi wide-arc code in
-R3 on a sun 3/60 CG4 display for large (500 pixel) circles.
+Although wide arcs have seen a substantial speedup since the original
+protocol-conformant code was shipped with R3, it would be nice they ran much
+faster.  Unfortunately, the protocol defines an object which is quartic in
+description, the straight line code solution of which involves several
+square roots and a couple cube roots.  If you examine the implementation in
+miarc.c, you'll see a nightmare of complicated floating point arithmetic.
+These routines attempt to come as close as possible to the protocol
+definition for a wide arc, and suffer tremendously in performance because of
+it.  Wide circles, however, do provide a reasonable opportunity for
+optimization.  As the both inner and outer edges of a wide circle are
+circular (unlike elliptical arcs), a fully-integer circle edge walker is
+used to scan-convert them.  Zero width arcs (like lines) are not completely
+specified by the protocol, and so the traditional integer walker is included
+in mfb, cfb and mi.  If you can't use one of those version directly, look in
+the relevant code in ddx/mi/mizerarc.c,mizerarc.h, ddx/mfb/mfbzerarc.c and
+ddx/cfb/cfbzerarc.c.  
+
+Also included in cfb for R5 are some interesting optimizations for clipping
+points to rectangles and rendering polygons.  Look in ddx/cfb/cfb8line.c and
+ddx/cfb/cfbply1rct.c for these algorithms.  The polygon code could easily be
+ported to mfb, however the zero-width line code is dependent on having
+addressable pixels.
 
 PushPixels may also be an important routine to optimize.  This is because it
-is used in some places in the mi, most notably the software cursor
-code.  Both mfb and cfb have heavily tuned PushPixels routines which work in
-solid fill/copy mode and provide adequate performance for software cursors.
+is used by the software cursor code.  Both mfb and cfb have heavily tuned
+PushPixels routines which work in solid fill/copy mode and provide adequate
+performance for software cursors.
