@@ -1,7 +1,4 @@
-#ifndef lint
-static char Xrcsid[] =
-    "$XConsortium: Scrollbar.c,v 1.63 90/04/30 17:04:00 converse Exp $";
-#endif /* lint */
+/* $XConsortium: Scrollbar.c,v 1.64 90/05/08 15:16:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -211,8 +208,8 @@ static float FractionLoc(w, x, y)
 {
     float   result;
 
-    result = PICKLENGTH(w, (float) x/w->core.width,
-			(float) y/w->core.height);
+    result = PICKLENGTH(w, x / (float)w->core.width,
+		        y / (float)w->core.height);
     return FloatInRange(result, 0.0, 1.0);
 }
 
@@ -264,7 +261,7 @@ static void PaintThumb( w )
     oldbot = oldtop + w->scrollbar.shownLength;
     newtop = w->scrollbar.length * w->scrollbar.top;
     newbot = newtop + (int)(w->scrollbar.length * w->scrollbar.shown);
-    if (newbot < newtop + w->scrollbar.min_thumb) 
+    if (newbot < newtop + (int)w->scrollbar.min_thumb) 
       newbot = newtop + w->scrollbar.min_thumb;
     w->scrollbar.topLoc = newtop;
     w->scrollbar.shownLength = newbot - newtop;
