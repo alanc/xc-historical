@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.10 91/04/23 18:46:07 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.11 91/05/01 09:20:16 rws Exp $
  */
 
 /*
@@ -268,6 +268,7 @@ typedef struct {
     XFontStruct **	font_struct_list;   	/* font struct list */
     XFontSetExtents  	font_set_extents;   	/* font set extents */
     char *		default_string;     	/* default string */
+    Bool		context_dependent;	/* context-dependent drawing */
 } XFontSetCoreRec, *XFontSetCore;
 
 
