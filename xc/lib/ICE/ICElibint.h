@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.11 93/09/23 11:52:28 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.12 93/09/24 15:52:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -277,15 +277,15 @@ typedef struct {
     _iceConn->inbufptr += (_headerSize - SIZEOF (iceMsg)); \
 }
 
-#define IceReadData (_iceConn, _bytes, _pData) \
+#define IceReadData(_iceConn, _bytes, _pData) \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
 #ifndef WORD64
 
-#define IceReadData16 (_iceConn, _bytes, _pData) \
+#define IceReadData16(_iceConn, _bytes, _pData) \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
-#define IceReadData32 (_iceConn, _bytes, _pData) \
+#define IceReadData32(_iceConn, _bytes, _pData) \
     _IceRead (_iceConn, (unsigned long) (_bytes), (char *) _pData); \
 
 #endif
@@ -296,7 +296,7 @@ typedef struct {
  * A maxium of 7 pad bytes can be specified.
  */
 
-#define IceReadPad (_iceConn, _bytes) \
+#define IceReadPad(_iceConn, _bytes) \
 { \
     char _dummy[7]; \
     _IceRead (_iceConn, (unsigned long) (_bytes), _dummy); \
