@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.184 94/03/10 09:07:49 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.185 94/03/31 14:00:17 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -121,7 +121,7 @@ static Pid_t ParentProcess;
 
 static Bool debug_conns = FALSE;
 
-static FdSet IgnoredClientsWithInput;
+FdSet IgnoredClientsWithInput;
 static FdSet GrabImperviousClients;
 static FdSet SavedAllClients;
 static FdSet SavedAllSockets;
