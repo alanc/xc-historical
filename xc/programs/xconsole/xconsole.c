@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.8 91/07/22 15:43:11 gildea Exp $
+ * $XConsortium: xconsole.c,v 1.9 91/07/25 14:23:46 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -455,7 +455,7 @@ LoseSelection (w, selection)
     Widget  w;
     Atom    *selection;
 {
-    Quit ();
+    Quit (w, (XEvent*)NULL, (String*)NULL, (Cardinal*)NULL);
 }
 
 /*ARGSUSED*/
@@ -500,9 +500,9 @@ main (argc, argv)
     XtSetArg(arglist[num_args], XtNiconic, &iconified); num_args++;
     XtGetValues(top, arglist, num_args);
     if (iconified)
-	Iconified ();
+	Iconified((Widget)NULL, (XEvent*)NULL, (String*)NULL, (Cardinal*)NULL);
     else
-	Deiconified ();
+	Deiconified((Widget)NULL,(XEvent*)NULL,(String*)NULL,(Cardinal*)NULL);
     wm_delete_window = XInternAtom(XtDisplay(top), "WM_DELETE_WINDOW",
 				   False);
     (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
