@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.83 89/04/07 14:27:13 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.84 89/05/11 01:06:43 kit Exp $";
 #endif
 
 
@@ -1817,7 +1817,7 @@ int XawTextReplace(w, startPos, endPos, text)
     _XawTextPrepareToUpdate(ctx);
     if (endPos > ctx->text.lastPos) endPos = ctx->text.lastPos;
     if (startPos > ctx->text.lastPos) startPos = ctx->text.lastPos;
-    if ((result = ReplaceText(ctx, startPos, endPos, text)) == EditDone) {
+    if ((result = ReplaceText(ctx, startPos, endPos, text)) == XawEditDone) {
 	if (ctx->text.insertPos >= endPos) {
 	    int delta = text->length - (endPos - startPos);
 	    XawTextScanDirection sd;
@@ -2644,11 +2644,11 @@ static int InsertNewLineAndBackupInternal(ctx)
     text.firstPos = 0;
     if (ReplaceText(ctx, ctx->text.insertPos, ctx->text.insertPos, &text)) {
 	XBell( XtDisplay(ctx), 50);
-	return(EditError);
+	return(XawEditError);
     }
     XawTextUnsetSelection((Widget)ctx);
     ctx->text.showposition = TRUE;
-    return(EditDone);
+    return(XawEditDone);
 }
 
 
@@ -2661,12 +2661,12 @@ static int InsertNewLine(ctx, event)
 
    StartAction(ctx, event);
     if (InsertNewLineAndBackupInternal(ctx))
-	return(EditError);
+	return(XawEditError);
     next = (*ctx->text.source->Scan)(ctx->text.source, ctx->text.insertPos,
 	    XawstPositions, XawsdRight, 1, TRUE);
     ctx->text.insertPos = next;
    EndAction(ctx);
-    return(EditDone);
+    return(XawEditDone);
 }
 
 

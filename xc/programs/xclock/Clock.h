@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.23 88/10/23 13:25:38 swick Exp $
+* $XConsortium: Clock.h,v 1.24 89/03/30 16:05:20 jim Exp $
 */
 
 
@@ -27,14 +27,16 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtClock_h
-#define _XtClock_h
+#ifndef _XawClock_h
+#define _XawClock_h
 
 /***********************************************************************
  *
  * Clock Widget
  *
  ***********************************************************************/
+
+#include <X11/Xmu/Xmu.h>
 
 /* Parameters:
 
@@ -62,9 +64,6 @@ SOFTWARE.
 
 */
 
-
-#include <X11/Xmu.h>
-
 /* Resource names used to the clock widget */
 
 #define XtNupdate		"update"
@@ -87,5 +86,5 @@ typedef struct _ClockClassRec *ClockWidgetClass;    /* completely defined in Clo
 
 extern WidgetClass clockWidgetClass;
 
-#endif /* _XtClock_h */
+#endif /* _XawClock_h */
 /* DON'T ADD STUFF AFTER THIS #endif */

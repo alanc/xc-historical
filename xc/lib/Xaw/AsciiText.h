@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.11 88/10/23 13:20:46 swick Exp $ */
+/* $XConsortium: AsciiText.h,v 1.12 89/03/30 16:05:10 jim Exp $ */
 
 
 /***********************************************************
@@ -37,6 +37,8 @@ SOFTWARE.
  *
  ****************************************************************/
 
+#include <X11/Xaw/Text.h>		/* AsciiText is a subclass of Text */
+
 /* Resources:
 
  Name		     Class		RepType		Default Value
@@ -65,14 +67,9 @@ SOFTWARE.
 
 */
 
-
-#include <X11/Text.h>		/* AsciiText is a subclass of Text */
-
-#define XtNstring		"string"
-#define XtNfile			"file"
-
-#define XtCString		"String"
-#define XtCFile			"File"
+/*
+ * Everything we need is in StringDefs.h 
+ */
 
 typedef struct _AsciiStringClassRec	*AsciiStringWidgetClass;
 typedef struct _AsciiStringRec		*AsciiStringWidget;
