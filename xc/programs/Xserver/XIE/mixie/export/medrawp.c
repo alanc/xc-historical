@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: medrawp.c,v 1.1 93/07/19 10:14:06 rws Exp $ */
 /**** module medrawp.c ****/
 /******************************************************************************
 				NOTICE
@@ -192,7 +192,7 @@ static int ActivateEDrawP(flo,ped,pet)
 				 bnd->strip->length,	  /* height	 */
 				 bnd->strip->bitOff,	  /* padding? 	 */
 				 pixtype,		  /* data format */
-				 src			  /* data buffer */
+				 (char *)src		  /* data buffer */
 				 );
     while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE));
     /* make sure the scheduler knows how much src we used */
@@ -290,9 +290,9 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 	    if (ny > NLINES)
 		ny = NLINES;
 	    if ((scratch->serialNumber) != (bitmap->drawable.serialNumber))
-		ValidateGC(bitmap, scratch);
+		ValidateGC((DrawablePtr)bitmap, scratch);
 	    (*scratch->ops->PutImage) (
-		bitmap,				/* drawable bitmap */
+		(DrawablePtr)bitmap,		/* drawable bitmap */
 		scratch,			/* gc		*/
 		1,				/* depth	*/
 		0,				/* drawable-x	*/
@@ -301,7 +301,7 @@ static int ActivateEDrawPTrans(flo,ped,pet)
 		ny,				/* height	*/
 		bnd->strip->bitOff,		/* padding? 	*/
 		XYPixmap,			/* data format	*/
-		src				/* data buffer	*/
+		(char *)src			/* data buffer	*/
 		);
 	    if ((gc->serialNumber) != (draw->serialNumber))
 		ValidateGC(draw, gc);

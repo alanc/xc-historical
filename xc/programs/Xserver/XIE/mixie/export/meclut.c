@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: meclut.c,v 1.1 93/07/19 10:13:40 rws Exp $ */
 /**** module meclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -185,7 +185,7 @@ static int ActivateECLUT(flo,ped,pet)
 	} else if (byteInt == 2) {
 	    bcopy(src,dst,dlen);
 	    if (flo->client->swapped)
-		SwapShorts(dst, dlen);
+		SwapShorts((short *)dst, dlen);
 	} else { /* Must be 4 (er 3) byte entries */
 	    /* ... Convert From 4 bytes to 3 bytes */
 	    ImplementationError(flo,ped, return(FALSE)); /* XXX */

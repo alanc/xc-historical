@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: medraw.c,v 1.1 93/07/19 10:14:00 rws Exp $ */
 /**** module medraw.c ****/
 /******************************************************************************
 				NOTICE
@@ -175,7 +175,7 @@ static int ActivateEDraw(flo,ped,pet)
 				 bnd->strip->length,	  /* height	 */
 				 bnd->strip->bitOff,	  /* padding? 	 */
 				 ZPixmap,		  /* data format */
-				 src			  /* data buffer */
+				 (char *)src		  /* data buffer */
 				 );
     while(src = GetSrc(BytePixel,flo,pet,bnd,bnd->maxLocal,FALSE));
   }

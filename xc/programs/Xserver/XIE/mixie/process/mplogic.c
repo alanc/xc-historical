@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mplogic.c,v 1.1 93/07/19 10:20:13 rws Exp $ */
 /**** module mplogic.c ****/
 /******************************************************************************
 				NOTICE
@@ -125,11 +125,11 @@ typedef struct _mplogicdef {
 	CARD32	endix;
 } mpLogicPvtRec, *mpLogicPvtPtr;
 
-void action_tail();
-extern void (*action_mono[16])();
-extern void (*action_dyad[16])();
-extern void (*action_monoROI[16])();
-extern void (*action_dyadROI[16])();
+static void action_tail();
+static void (*action_mono[16])();
+static void (*action_dyad[16])();
+static void (*action_monoROI[16])();
+static void (*action_dyadROI[16])();
 
 static CARD32 replicate_const();
 
