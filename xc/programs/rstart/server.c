@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.10 94/03/29 19:47:53 rws Exp mor $ */
+/* $XConsortium: server.c,v 1.11 94/10/04 20:36:38 mor Exp mor $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/
@@ -124,7 +124,7 @@ char **argv;
 	setbuf(stdin, NULL);
 
 	printf(
-	    "%s: Ready: version 0.5, Feb 03 1994 X11R6beta jbrown@qdeck.com\n",
+	    "%s: Ready: version 1.0, May 02 1994 X11R6\n",
 	    myname);
 	fflush(stdout);
 
