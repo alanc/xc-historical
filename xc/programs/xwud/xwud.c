@@ -1,7 +1,7 @@
 /* 
- * $Locker: jim $ 
+ * $Locker: keith $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.18 88/02/09 12:07:17 jim Exp $";
+static char	*rcsid = "$Header: xwud.c,v 1.19 88/03/16 16:54:47 jim Exp $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.18 88/02/09 12:07:17 jim Exp $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.18 88/02/09 12:07:17 jim Exp $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.19 88/03/16 16:54:47 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -270,6 +270,12 @@ main(argc, argv)
 
     attributes.override_redirect = True;
     attributes.background_pixel = BlackPixel(dpy, screen); /* XXX */
+    attributes.bit_gravity = NorthWestGravity;
+    /*
+     * Select mouse ButtonPressed on the window, this is how we determine
+     * when to stop displaying the window.
+     */
+    attributes.event_mask = ButtonPressMask | ExposureMask;
     attributes.colormap = colormap;
 
     image_win = XCreateWindow(dpy,
@@ -277,15 +283,10 @@ main(argc, argv)
 	header.window_x, header.window_y,
 	header.pixmap_width, header.pixmap_height,
 	0, win_depth, InputOutput, visual,
-	CWOverrideRedirect|CWBackPixel|CWColormap, &attributes);
+	CWBackPixel|CWColormap|CWEventMask|CWBitGravity,
+	&attributes);
 
     if (!image_win) Error("Can't create image window.");
-
-    /*
-     * Select mouse ButtonPressed on the window, this is how we determine
-     * when to stop displaying the window.
-     */
-    XSelectInput(dpy,image_win, (ButtonPressMask | ExposureMask));
      
     /*
      * Store the window name string.
