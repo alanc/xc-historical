@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.127 89/12/10 19:20:08 jim Exp $
+ * $XConsortium: add_window.c,v 1.128 89/12/14 14:51:33 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.127 89/12/10 19:20:08 jim Exp $";
+"$XConsortium: add_window.c,v 1.128 89/12/14 14:51:33 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -1306,8 +1306,9 @@ FetchWmColormapWindows (tmp)
     TwmWindow *tmp;
 {
     register int i, j;
-    Window *cmap_windows;
-    int number_cmap_windows;
+    Window *cmap_windows = NULL;
+    Bool can_free_cmap_windows = False;
+    int number_cmap_windows = 0;
     ColormapWindow **cwins = NULL;
     int previously_installed;
     extern void free_cwins();
@@ -1324,6 +1325,28 @@ FetchWmColormapWindows (tmp)
     if (XGetWMColormapWindows (dpy, tmp->w, &cmap_windows, 
 			       &number_cmap_windows) &&
 	number_cmap_windows > 0) {
+
+	can_free_cmap_windows = False;
+	/*
+	 * check if the top level is in the list, add to front if not
+	 */
+	for (i = 0; i < number_cmap_windows; i++) {
+	    if (cmap_windows[i] == tmp->w) break;
+	}
+	if (i == number_cmap_windows) {	 /* not in list */
+	    Window *new_cmap_windows =
+	      (Window *) malloc (sizeof(Window) * (number_cmap_windows + 1));
+
+	    if (!new_cmap_windows) goto done;
+	    new_cmap_windows[0] = tmp->w;  /* add to front */
+	    for (i = 0; i < number_cmap_windows; i++) {	 /* append rest */
+		new_cmap_windows[i+1] = cmap_windows[i];
+	    }
+	    XFree ((char *) cmap_windows);
+	    can_free_cmap_windows = True;  /* do not use XFree any more */
+	    cmap_windows = new_cmap_windows;
+	    number_cmap_windows++;
+	}
 
 	cwins = (ColormapWindow **) malloc(sizeof(ColormapWindow *) *
 		number_cmap_windows);
@@ -1390,6 +1413,14 @@ FetchWmColormapWindows (tmp)
 		
     if (previously_installed)
 	InstallWindowColormaps(PropertyNotify, (TwmWindow *) NULL);
+
+  done:
+    if (cmap_windows) {
+	if (can_free_cmap_windows)
+	  free ((char *) cmap_windows);
+	else
+	  XFree ((char *) cmap_windows);
+    }
 
     return;
 }
