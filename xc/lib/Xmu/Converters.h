@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Converters.h,v 1.7 90/04/13 16:22:30 jim Exp $
+ * $XConsortium: Converters.h,v 1.8 90/05/11 11:25:03 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -105,7 +105,7 @@ extern Boolean XmuCvtStringToFontStruct (
 #endif
 );
 
-extern void XmuSetFontConverter (
+extern void XmuSetStringToFontStructConverter (
 #if NeedFunctionPrototypes
     Boolean		/* trydefaults */
 #endif

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.19 90/04/30 16:54:13 converse Exp $
+ * $XConsortium: xfd.c,v 1.20 90/05/11 11:43:26 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -138,7 +138,7 @@ main (argc, argv)
     if (argc != 1) usage ();
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));
-    XmuSetFontConverter (FALSE);
+    XmuSetStringToFontStructConverter (FALSE);
 
     XtGetApplicationResources (toplevel, (caddr_t) &xfd_resources, Resources,
 			       XtNumber (Resources), NULL, ZERO);
