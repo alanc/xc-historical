@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: saver.c,v 1.1 92/02/13 16:08:22 keith Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -107,7 +107,7 @@ typedef struct _ScreenSaverScreenPrivate {
     ScreenSaverEventPtr	    events;
     ScreenSaverAttrPtr	    attr;
     Bool		    hasWindow;
-    ColormapPtr		    oldMap;	/* XXX only handles one colormap */
+    Colormap		    oldMap;	/* XXX only handles one colormap */
 } ScreenSaverScreenPrivateRec, *ScreenSaverScreenPrivatePtr;
 
 static int ScreenPrivateIndex;
@@ -395,7 +395,7 @@ CreateSaverWindow (pScreen)
     int				numInstalled;
     int				i;
     Colormap			wantMap;
-    ColormapPtr			pcmap;
+    ColormapPtr			pCmap;
 
     pSaver = &savedScreenInfo[pScreen->myNum];
     if (pSaver->pWindow)
