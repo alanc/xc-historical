@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Callback.c,v 1.14 89/06/02 10:31:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Callback.c,v 1.15 89/06/16 19:33:57 jim Exp $";
 /* $oHeader: Callback.c,v 1.4 88/09/01 11:08:37 asente Exp $ */
 #endif /* lint */
 
@@ -58,7 +58,8 @@ static CallbackStruct **FetchCallbackStruct(widget, name)
     register XrmQuark       quark;
 
     quark = StringToQuark(name);
-    for (offsets = widget->core.widget_class->core_class.callback_private;
+    for (offsets = (_XtOffsetList)widget->core.widget_class->
+				 core_class.callback_private;
 	 offsets != NULL;
 	 offsets = offsets->next) {
 	if (quark == offsets->name) {
