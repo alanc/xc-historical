@@ -1,19 +1,20 @@
 #include <Library.tmpl>
 
-#if HasInputExtension
+#if HasInputExtension || BuildPexClients
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-      SUBDIRS = xinput
+#if HasInputExtension
+      XINPUTDIRS = xinput
+#endif
+#if BuildPexClients
+      PEXDIRS = PEX
+#endif
+      SUBDIRS = $(XINPUTDIRS) $(PEXDIRS)
 #endif
 
-IMAKE_DEFINES = ExtensionDefines
-
-#ifdef MITSHM
+#if HasShm
       SHMSRCS = XShm.c
       SHMOBJS = XShm.o
-#else
-      SHMSRCS = /* nothing */
-      SHMOBJS = /* nothing */
 #endif
   STD_DEFINES = LibraryDefines ExtensionDefines
   CDEBUGFLAGS = LibraryCDebugFlags
