@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Alloc.c,v 1.13 87/10/27 13:33:30 guarino BL5 $";
+static char rcsid[] = "$Header: Alloc.c,v 1.13 87/11/11 11:36:06 swick Exp $";
 #endif lint
 
 /*
@@ -41,7 +41,9 @@ char *XtMalloc(size)
 {
     char *ptr;
 
-    if ((ptr = malloc(size)) == NULL) XtError("Cannot perform malloc");
+    if ((ptr = malloc(size)) == NULL)
+      XtError("Cannot perform malloc");
+
     return(ptr);
 }
 
