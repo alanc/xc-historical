@@ -72,11 +72,13 @@ MenuEntry vtMenuEntries[] = {
 
 MenuEntry fontMenuEntries[] = {
     { "fontdefault",	do_vtfont, NULL },		/*  0 */
-    { "font1",		do_vtfont, NULL },		/*  1 */
-    { "font2",		do_vtfont, NULL },		/*  2 */
-    { "font3",		do_vtfont, NULL },		/*  3 */
-    { "font4",		do_vtfont, NULL },		/*  4 */
-    { "fontother",	do_vtfont, NULL }};		/*  5 */
+    { "line1",		NULL, NULL },			/*  1 */
+    { "font1",		do_vtfont, NULL },		/*  2 */
+    { "font2",		do_vtfont, NULL },		/*  3 */
+    { "font3",		do_vtfont, NULL },		/*  4 */
+    { "font4",		do_vtfont, NULL },		/*  5 */
+    { "line2",		NULL, NULL },			/*  6 */
+    { "fontescape",	do_vtfont, NULL }};		/*  7 */
     /* this should match NMENUFONTS in ptyx.h */
 
 MenuEntry tekMenuEntries[] = {
@@ -119,11 +121,11 @@ void HandleCreateMenu (w, event, params, param_count)
     Cardinal *param_count;      /* 0 or 1 */
 {
     TScreen *screen = &term->screen;
-    int gotmenus = 0;
+    static int gotmenus = 0;
 
     if (*param_count != 1) {
 	XBell (XtDisplay(w), 0);
-    } else if (gotmenus < 3) {
+    } else if (gotmenus < 4) {		/* Number of menus [optimization] */
 	switch (params[0][0]) {
 	  case 'm':
 	    if (!screen->mainMenu) {
@@ -165,7 +167,12 @@ void HandleCreateMenu (w, event, params, param_count)
 		screen->fontMenu = create_menu (term, toplevel, "fontMenu",
 						fontMenuEntries,
 						NMENUFONTS);  
-		set_vt_font (0);
+		set_menu_font (True);
+		set_sensitivity (screen->fontMenu,
+				 fontMenuEntries[fontMenu_fontescape].widget,
+				 (screen->menu_font_names[fontMenu_fontescape]
+				  ? TRUE : FALSE));
+		gotmenus++;
 	    }
 	    break;
 	  case 't':
@@ -646,7 +653,7 @@ static void do_vtfont (gw, closure, data)
 
     for (i = 0; i < NMENUFONTS; i++) {
 	if (strcmp (entryname, fontMenuEntries[i].name) == 0) {
-	    set_vt_font (i);
+	    set_vt_font (i, True);
 	    return;
 	}
     }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.104 89/10/27 18:35:26 jim Exp $
+ * $XConsortium: charproc.c,v 1.105 89/10/30 13:13:46 jim Exp $
  */
 
 
@@ -140,7 +140,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.104 89/10/27 18:35:26 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.105 89/10/30 13:13:46 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -412,7 +412,7 @@ static XtResource resources[] = {
 };
 
 
-static void VTInitialize(), VTRealize(), VTExpose(), VTConfigure();
+static void VTInitialize(), VTRealize(), VTExpose(), VTResize();
 static void VTDestroy();
 
 WidgetClassRec xtermClassRec = {
@@ -437,7 +437,7 @@ WidgetClassRec xtermClassRec = {
     /* compress_enterleave */   TRUE,
     /* visible_interest	  */	FALSE,
     /* destroy		  */	VTDestroy,
-    /* resize		  */	VTConfigure,
+    /* resize		  */	VTResize,
     /* expose		  */	VTExpose,
     /* set_values	  */	NULL,
     /* set_values_hook    */    NULL,
@@ -1923,7 +1923,7 @@ XEvent *event;
 
 
 
-static void VTConfigure(w)
+static void VTResize(w)
 Widget w;
 {
        if (XtIsRealized(w))
@@ -2000,7 +2000,7 @@ static void VTInitialize (request, new)
    }
    /* set default in realize proc */
    new->screen.menu_font_names[fontMenu_fontdefault] = NULL;
-   new->screen.menu_font_names[fontMenu_fontother] = NULL;
+   new->screen.menu_font_names[fontMenu_fontescape] = NULL;
    new->screen.menu_font_number = fontMenu_fontdefault;
 
     /*
@@ -2590,11 +2590,11 @@ void HandleSetFont(w, event, params, param_count)
     switch (*param_count) {
       case 1:
 	didit = try_new_font (&term->screen, params[0], NULL, True, 
-			      fontMenu_fontother);
+			      fontMenu_fontescape);
 	break;
       case 2:
 	didit = try_new_font (&term->screen, params[0], params[1], True, 
-			      fontMenu_fontother);
+			      fontMenu_fontescape);
 	break;
       default:
 	Bell();			/* want to ring twice */
@@ -2604,16 +2604,17 @@ void HandleSetFont(w, event, params, param_count)
 }
 
 
-void set_vt_font (i)
+void set_vt_font (i, doresize)
     int i;
+    Bool doresize;
 {
     TScreen *screen = &term->screen;
 
-    if (i < 0 || i > fontMenu_font4) {
+    if (i < 0 || i > fontMenu_fontescape) {
 	Bell();
 	return;
     }
-    if (!try_new_font(screen, screen->menu_font_names[i], NULL, True, i)) {
+    if (!try_new_font(screen, screen->menu_font_names[i], NULL, doresize, i)) {
 	Bell();
     }
     return;
@@ -2635,12 +2636,11 @@ int try_new_font (screen, nfontname, bfontname, doresize, fontnum)
 
     if (!nfontname) return 0;
 
-    if (fontnum == fontMenu_fontother &&
+    if (fontnum == fontMenu_fontescape &&
 	nfontname != screen->menu_font_names[fontnum]) {
-	/* copy name to static buf */
 	tmpname = (char *) malloc (strlen(nfontname) + 1);
 	if (!tmpname) return 0;
-	strcmp (tmpname, nfontname);
+	strcpy (tmpname, nfontname);
     }
 
     if (!(nfs = XLoadQueryFont (screen->display, nfontname))) goto bad;
@@ -2697,20 +2697,18 @@ int try_new_font (screen, nfontname, bfontname, doresize, fontnum)
     screen->fnt_bold = bfs;
     screen->fnt_bold = screen->fnt_norm;
     screen->enbolden = (nfs == bfs);
-    set_menu_font (0);
+    set_menu_font (False);
     screen->menu_font_number = fontnum;
-    set_menu_font (1);
-    set_cursor_gcs (screen);
-    update_font_info (screen, doresize);
-    if (tmpname) {			/* if setting other */
+    set_menu_font (True);
+    if (tmpname) {			/* if setting escape */
 	if (screen->menu_font_names[fontnum])
 	  free (screen->menu_font_names[fontnum]);
 	screen->menu_font_names[fontnum] = tmpname;
+	set_sensitivity (term->screen.fontMenu,
+			 fontMenuEntries[fontMenu_fontescape].widget, TRUE);
     }
-
-   /*
-    * XXX - need to resize and redisplay
-    */
+    set_cursor_gcs (screen);
+    update_font_info (screen, doresize);
     return 1;
 
   bad:
@@ -2753,8 +2751,8 @@ update_font_info (screen, doresize)
 	if (VWindow(screen)) {
 	    XClearWindow (screen->display, VWindow(screen));
 	}
-	DoResizeScreen (term);
-	VTConfigure (term);
+	DoResizeScreen (term);		/* set to the new natural size */
+/*	VTResize (term); */
 	Redraw ();
     }
     set_vt_box (screen);

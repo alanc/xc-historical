@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.27 89/10/17 17:04:28 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.28 89/10/19 15:27:12 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -46,7 +46,7 @@
 extern void bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.27 89/10/17 17:04:28 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.28 89/10/19 15:27:12 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -158,7 +158,9 @@ void DoResizeScreen (xw)
     register XtermWidget xw;
 {
     int border = 2 * xw->screen.border;
-    ResizeScreen (xw, border, border);
+    int sb = (xw->screen.scrollbar ? xw->screen.scrollWidget->core.width : 0);
+
+    ResizeScreen (xw, border + sb, border);
 }
 
 
@@ -377,7 +379,7 @@ ScrollBarOn (xw, init, doalloc)
 	screen->scrollbar = screen->scrollWidget->core.width;
 
 	ScrollBarDrawThumb(screen->scrollWidget);
-	ResizeScreen (xw, border + screen->scrollWidget->core.width, border);
+	DoResizeScreen (xw);
 	/* map afterwards so BitGravity can be used profitably */
 	XMapWindow(screen->display, XtWindow(screen->scrollWidget));
 	update_scrollbar ();
@@ -392,7 +394,7 @@ ScrollBarOff(screen)
 		return;
 	screen->scrollbar = 0;
 	XUnmapWindow(screen->display, XtWindow(screen->scrollWidget));
-	ResizeScreen( term, border, border );
+	DoResizeScreen (term);
 	update_scrollbar ();
 }
 

@@ -51,7 +51,7 @@ XTerm*fontMenu*font3*Label:	Medium
 XTerm*VT100*font3:		8x13
 XTerm*fontMenu*font4*Label:	Large
 XTerm*VT100*font4:		9x15
-XTerm*fontMenu*fontother*Label:	On The Fly
+XTerm*fontMenu*fontescape*Label:	Escape Sequence
 !fontother is overridden to control the escape sequence font
 
 XTerm*tekMenu.Label:  Tek Options
