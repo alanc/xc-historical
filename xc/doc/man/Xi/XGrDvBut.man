@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XGrabDeviceButton 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XGrabDeviceButton 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XGrabDeviceButton, XUngrabDeviceButton \- grab/ungrab extension input device buttons
 .SH SYNTAX

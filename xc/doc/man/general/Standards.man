@@ -1,5 +1,5 @@
-.\" $XConsortium: Standards.man,v 1.7 93/02/25 16:42:03 rws Exp $
-.TH XSTANDARDS 1 "Release 5"  "X Version 11"
+.\" $XConsortium: Standards.man,v 1.8 93/02/25 16:46:19 rws Exp $
+.TH XSTANDARDS 1 "Release 6"  "X Version 11"
 .SH NAME
 X Standards \- MIT X Consortium Standards
 .SH SYNOPSIS

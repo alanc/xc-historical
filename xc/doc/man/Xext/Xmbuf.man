@@ -1,8 +1,9 @@
+.\" $XConsortium$
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XMBUF 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XMBUF 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XmbufQueryExtension, XmbufGetVersion, XmbufCreateBuffers, XmbufDestroyBuffers, XmbufDisplayBuffers, XmbufGetWindowAttributes, XmbufChangeWindowAttributes, XmbufGetBufferAttributes, XmbufChangeBufferAttributes, XmbufGetScreenInfo, XmbufCreateStereoWindow - X multibuffering functions
 .SH SYNTAX

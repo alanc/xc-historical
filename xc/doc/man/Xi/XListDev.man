@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming with Xlib
-.TH XListInputDevices 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XListInputDevices 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XListInputDevices, XFreeDeviceList \- list available input devices
 .SH SYNTAX

@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH MKDIRHIER 1 "Release 5" "X Version 11"
+.\" $XConsortium: mkdirhier.man,v 1.4 93/08/02 11:14:12 gildea Exp $
+.TH MKDIRHIER 1 "Release 6" "X Version 11"
 .SH NAME
 mkdirhier \- makes a directory hierarchy
 .SH SYNOPSIS

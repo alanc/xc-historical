@@ -1,5 +1,5 @@
-.\" $XConsortium: x11perf.man,v 1.18 93/09/20 21:23:07 rws Exp $
-.TH X11PERF 1 "Release 5" "X Version 11"
+.\" $XConsortium: x11perf.man,v 1.19 94/03/07 12:11:40 dpw Exp $
+.TH X11PERF 1 "Release 6" "X Version 11"
 .SH NAME
 x11perf \- X11 server performance test program
 .SH SYNTAX

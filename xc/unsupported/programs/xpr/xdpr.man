@@ -1,5 +1,5 @@
-.\" $XConsortium: xdpr.man,v 1.12 91/06/30 19:38:44 rws Exp $
-.TH XDPR 1 "Release 5" "X Version 11"
+.\" $XConsortium: xdpr.man,v 1.13 91/07/30 18:10:03 gildea Exp $
+.TH XDPR 1 "Release 6" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer
 .SH SYNOPSIS

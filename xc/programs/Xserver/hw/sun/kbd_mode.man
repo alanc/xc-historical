@@ -1,5 +1,5 @@
-.\" $XConsortium: kbd_mode.man,v 1.6 89/12/21 10:05:42 rws Exp $
-.TH KBD_MODE 1 "Release 5" "X Version 11"
+.\" $XConsortium: kbd_mode.man,v 1.7 91/07/27 16:20:21 rws Exp $
+.TH KBD_MODE 1 "Release 6" "X Version 11"
 .SH NAME
 kbd_mode \- recover the Sun console keyboard
 .SH SYNOPSIS

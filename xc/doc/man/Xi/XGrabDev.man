@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XGrabDevice 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XGrabDevice 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XGrabDevice, XUngrabDevice \- grab/release the specified extension device
 .SH SYNTAX

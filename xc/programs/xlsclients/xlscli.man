@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH XLSCLIENTS 1 "Release 5" "X Version 11"
+.\" $XConsortium: xlscli.man,v 1.5 92/06/03 11:53:12 converse Exp $
+.TH XLSCLIENTS 1 "Release 6" "X Version 11"
 .SH NAME
 xlsclients - list client applications running on a display
 .SH SYNOPSIS

@@ -1,4 +1,4 @@
-.\" $XConsortium: twm.man,v 1.58 93/04/20 16:09:31 dave Exp $
+.\" $XConsortium: twm.man,v 1.59 93/09/02 11:11:52 dpw Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -13,7 +13,7 @@
 .if t .sp .5
 ..
 .ta .3i .6i .9i 1.2i 1.5i 1.8i
-.TH TWM 1 "Release 5" "X Version 11"
+.TH TWM 1 "Release 6" "X Version 11"
 .SH NAME
 twm - Tab Window Manager for the X Window System
 .SH SYNTAX

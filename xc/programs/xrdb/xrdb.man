@@ -1,5 +1,5 @@
-.\" $XConsortium: xrdb.man,v 11.33 92/09/14 18:59:22 rws Exp $
-.TH XRDB 1 "Release 5" "X Version 11"
+.\" $XConsortium: xrdb.man,v 11.34 92/11/05 14:35:10 rws Exp $
+.TH XRDB 1 "Release 6" "X Version 11"
 .SH NAME
 xrdb - X server resource database utility
 .SH SYNOPSIS

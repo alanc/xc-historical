@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH X11PERFCOMP 1 "Release 5" "X Version 11"
+.\" $XConsortium: x11pcomp.man,v 1.3 91/08/26 18:00:32 gildea Exp $
+.TH X11PERFCOMP 1 "Release 6" "X Version 11"
 .SH NAME
 x11perfcomp \- X11 server performance comparison program
 .SH SYNTAX

@@ -1,5 +1,5 @@
-.\" $XConsortium: startx.man,v 1.1 91/07/29 21:18:18 gildea Exp $
-.TH STARTX 1 "Release 5" "X Version 11"
+.\" $XConsortium: startx.man,v 1.2 91/07/30 14:12:47 gildea Exp $
+.TH STARTX 1 "Release 6" "X Version 11"
 .SH NAME
 startx \- initialize an X session
 .SH SYNOPSIS

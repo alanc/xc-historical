@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming with Xlib
-.TH XSelectExtensionEvent 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XSelectExtensionEvent 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XSelectExtensionEvent, XGetSelectedExtensionEvents \- select extension events, get the list of currently selected extension events
 .SH SYNTAX

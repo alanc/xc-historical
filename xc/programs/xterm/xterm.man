@@ -1,5 +1,5 @@
-.\" $XConsortium: xterm.man,v 1.73 93/02/25 19:20:09 gildea Exp $
-.TH XTERM 1 "Release 5" "X Version 11"
+.\" $XConsortium: xterm.man,v 1.74 93/02/25 19:32:10 gildea Exp $
+.TH XTERM 1 "Release 6" "X Version 11"
 .SH NAME
 xterm \- terminal emulator for X
 .SH SYNOPSIS

@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming with Xlib
-.TH XSetDeviceMode 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XSetDeviceMode 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XSetDeviceMode \- change the mode of a device
 .SH SYNTAX

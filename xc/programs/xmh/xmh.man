@@ -1,5 +1,5 @@
-.\" $XConsortium: xmh.man,v 1.29 92/08/03 12:04:44 converse Exp $
-.TH XMH 1 "Release 5" "X Version 11"
+.\" $XConsortium: xmh.man,v 1.30 93/10/07 15:22:45 gildea Exp $
+.TH XMH 1 "Release 6" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH
 .SH SYNOPSIS

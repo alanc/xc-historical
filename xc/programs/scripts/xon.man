@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH XON 1 "Release 5" "X Version 11"
+.\" $XConsortium: xon.man,v 1.3 92/07/31 11:51:38 rws Exp $
+.TH XON 1 "Release 6" "X Version 11"
 .SH NAME
 xon \- start an X program on a remote machine
 .SH SYNOPSIS

@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH RESIZE 1 "Release 5" "X Version 11"
+.\" $XConsortium: resize.man,v 1.7 93/08/02 11:13:09 gildea Exp $
+.TH RESIZE 1 "Release 6" "X Version 11"
 .SH NAME
 resize \- utility to set TERMCAP and terminal settings to current window size
 .SH SYNOPSIS

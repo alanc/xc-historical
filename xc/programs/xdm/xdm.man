@@ -1,5 +1,5 @@
-.\" $XConsortium: xdm.man,v 1.27 91/08/26 19:27:29 gildea Exp $
-.TH XDM 1 "Release 5" "X Version 11"
+.\" $XConsortium: xdm.man,v 1.28 94/02/02 09:01:37 gildea Exp $
+.TH XDM 1 "Release 6" "X Version 11"
 .SH NAME
 xdm \- X Display Manager with support for XDMCP
 .SH SYNOPSIS

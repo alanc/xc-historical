@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH OCLOCK 1 "Release 5" "X Version 11"
+.\" $XConsortium: oclock.man,v 1.10 92/04/01 17:14:12 converse Exp $
+.TH OCLOCK 1 "Release 6" "X Version 11"
 .SH NAME
 oclock \- display time of day
 .SH SYNOPSIS

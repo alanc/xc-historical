@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XGetFeedbackControl 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XGetFeedbackControl 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XGetFeedbackControl, XChangeFeedbackControl \- query and change input device feedbacks
 .SH SYNTAX

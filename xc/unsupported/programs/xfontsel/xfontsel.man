@@ -1,4 +1,4 @@
-.\" $XConsortium: xfontsel.man,v 1.9 91/07/27 18:36:05 rws Exp $
+.\" $XConsortium: xfontsel.man,v 1.10 91/07/29 17:57:38 rws Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -12,7 +12,7 @@
 .if n .sp 1
 .if t .sp .5
 ..
-.TH XFONTSEL 1 "Release 5" "X Version 11"
+.TH XFONTSEL 1 "Release 6" "X Version 11"
 .SH NAME
 xfontsel - point & click interface for selecting X11 font names
 .SH SYNTAX

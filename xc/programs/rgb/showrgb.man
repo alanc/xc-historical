@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH SHOWRGB 1 "Release 5" "X Version 11"
+.\" $XConsortium: showrgb.man,v 1.1 91/07/29 21:35:11 gildea Exp $
+.TH SHOWRGB 1 "Release 6" "X Version 11"
 .SH NAME
 showrgb \- uncompile an rgb color-name database
 .SH SYNOPSIS

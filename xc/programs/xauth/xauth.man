@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH XAUTH 1 "Release 5" "X Version 11"
+.\" $XConsortium: xauth.man,v 1.9 91/12/16 20:30:02 gildea Exp $
+.TH XAUTH 1 "Release 6" "X Version 11"
 .SH NAME
 xauth \- X authority file utility
 .SH SYNOPSIS

@@ -1,5 +1,5 @@
-.\" $XConsortium: mkdepend.man,v 1.9 92/08/22 14:57:52 rws Exp $
-.TH MAKEDEPEND 1 "Release 5" "X Version 11"
+.\" $XConsortium: mkdepend.man,v 1.10 94/02/04 19:11:44 matt Exp $
+.TH MAKEDEPEND 1 "Release 6" "X Version 11"
 .UC 4
 .SH NAME
 makedepend \- create dependencies in makefiles

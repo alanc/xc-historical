@@ -1,4 +1,5 @@
-.TH XGC 1 "Release 5" "X Version 11"
+.\" $XConsortium$
+.TH XGC 1 "Release 6" "X Version 11"
 .SH NAME
 xgc - X graphics demo
 .SH SYNOPSIS

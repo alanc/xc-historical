@@ -1,5 +1,5 @@
-.\" $XConsortium: xfs.man,v 1.4 91/10/24 21:27:20 rws Exp $
-.TH XFS 1 "Release 5" "X Version 11"
+.\" $XConsortium: xfs.man,v 1.5 93/09/24 15:24:22 gildea Exp $
+.TH XFS 1 "Release 6" "X Version 11"
 .SH NAME
 xfs \- X font server
 .SH SYNOPSIS

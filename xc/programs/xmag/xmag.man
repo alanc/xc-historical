@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH XMAG 1 "Release 5" "X Version 11"
+.\" $XConsortium: xmag.man,v 1.6 91/07/31 22:40:50 dave Exp $
+.TH XMAG 1 "Release 6" "X Version 11"
 .SH NAME
 xmag \- magnify parts of the screen
 .SH SYNOPSIS

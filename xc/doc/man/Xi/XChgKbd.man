@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XChangeKeyboardDevice 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XChangeKeyboardDevice 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XChangeKeyboardDevice \- change which device is used as the X keyboard
 .SH SYNTAX

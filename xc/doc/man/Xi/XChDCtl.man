@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XGetDeviceControl 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XGetDeviceControl 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XGetDeviceControl, XChangeDeviceControl \- query and change input device controls
 .SH SYNTAX

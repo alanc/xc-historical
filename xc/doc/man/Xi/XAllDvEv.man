@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming With Xlib
-.TH XAllowDeviceEvents 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XAllowDeviceEvents 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XAllowDeviceEvents \- release queued events
 .SH SYNTAX

@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH XPROP 1 "Release 5" "X Version 11"
+.\" $XConsortium: xprop.man,v 1.14 93/08/02 11:13:37 gildea Exp $
+.TH XPROP 1 "Release 6" "X Version 11"
 .SH NAME
 xprop - property displayer for X
 .SH SYNOPSIS

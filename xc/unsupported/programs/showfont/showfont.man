@@ -1,5 +1,5 @@
-.\" $XConsortium: showfont.man,v 1.2 92/05/20 16:25:01 gildea Exp $
-.TH SHOWFONT 1 "Release 5" "X Version 11"
+.\" $XConsortium: showfont.man,v 1.2 92/05/20 16:29:39 gildea Exp $
+.TH SHOWFONT 1 "Release 6" "X Version 11"
 .SH NAME
 showfont \- font dumper for X font server
 .SH SYNOPSIS

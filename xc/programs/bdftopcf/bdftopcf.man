@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH BDFTOPCF 1 "Release 5" "X Version 11"
+.\" $XConsortium: bdftopcf.man,v 1.2 93/08/02 11:12:57 gildea Exp $
+.TH BDFTOPCF 1 "Release 6" "X Version 11"
 .SH NAME
 bdftopcf \- convert font from Bitmap Distribution Format to Portable
 Compiled Format

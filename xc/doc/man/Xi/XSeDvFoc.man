@@ -1,5 +1,6 @@
+.\" $XConsortium$
 .ds xL Programming with Xlib
-.TH XSetDeviceFocus 3X11 "Release 5" "X Version 11" "X FUNCTIONS"
+.TH XSetDeviceFocus 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME
 XSetDeviceFocus, XGetDeviceFocus \- control extension input device focus
 .SH SYNTAX

@@ -1,5 +1,5 @@
-.\" $XConsortium$
-.TH LNDIR 1 "Release 5" "X Version 11"
+.\" $XConsortium: lndir.man,v 1.4 92/03/16 17:50:11 gildea Exp $
+.TH LNDIR 1 "Release 6" "X Version 11"
 .SH NAME
 lndir \- create a shadow directory of symbolic links to another directory tree
 .SH SYNOPSIS
