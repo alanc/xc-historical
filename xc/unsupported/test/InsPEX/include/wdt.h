@@ -1,5 +1,5 @@
 
-/* $XConsortium: wdt.h,v 5.6 91/11/26 16:01:32 hersh Exp $ */
+/* $XConsortium: wdt.h,v 5.7 94/04/17 20:49:20 hersh Exp gildea $ */
 
 /*****************************************************************
 
@@ -55,7 +55,7 @@ SOFTWARE.
  */
 
 /* JSH - include so that MAXFLOAT is defined */
-#if !defined(X_NOT_STDC_ENV) && (__STDC__ || !defined(sun))
+#if !defined(X_NOT_STDC_ENV) && (defined(__STDC__) || !defined(sun))
 #include <float.h>
 #endif
 #ifndef MAXFLOAT
