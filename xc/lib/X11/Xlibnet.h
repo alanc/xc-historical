@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.3 91/02/23 11:59:24 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.4 91/02/23 12:00:00 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -16,6 +16,15 @@ without express or implied warranty.
 /*
  * Xlibnet.h - Xlib networking include files for UNIX Systems.
  */
+
+#ifndef X_UNIX_PATH
+#ifdef hpux
+#define X_UNIX_PATH "/usr/spool/sockets/X11/"
+#define OLD_UNIX_PATH "/tmp/.X11-unix/X"
+#else
+#define X_UNIX_PATH "/tmp/.X11-unix/X"
+#endif
+#endif /* X_UNIX_PATH */
 
 #ifdef STREAMSCONN
 #ifdef SYSV
