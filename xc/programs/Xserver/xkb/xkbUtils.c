@@ -158,6 +158,7 @@ XkbApplyVirtualModChanges(info,changed,changes)
     XkbChangesPtr	 changes;
 {
 register unsigned 	i,n,bit;
+int 			lowChange,highChange;
 XkbDescPtr		xkb;
 
     xkb= &info->desc;
@@ -225,11 +226,10 @@ XkbDescPtr		xkb;
 	/* 3/1/94 (ef) - XXX! If modifier compatibility maps change, don't */
 	/*               forget to change the compatibility state          */
     }
+    lowChange= -1;
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
 	if (XkbKeyHasActions(xkb,i)) {
-	    register int lowChange,highChange;
 	    register XkbAction *pAct;
-	    lowChange= -1;
 	    pAct= XkbKeyActionsPtr(xkb,i);
 	    for (n=XkbKeyNumActions(xkb,i);n>0;n--,pAct++) {
 		register unsigned tmp;
@@ -254,20 +254,20 @@ XkbDescPtr		xkb;
 			break;
 		}
 	    }
-	    if (lowChange>0) {	/* something changed */
-		if (changes->map.changed&XkbKeyActionsMask) {
-		    i= changes->map.first_key_act;
-		    if (i<lowChange)
-			lowChange= i;
-		    i+= changes->map.num_key_acts-1;
-		    if (i>highChange)
-			highChange= i;
-		}
-		changes->map.changed|= XkbKeyActionsMask;
-		changes->map.first_key_act= lowChange;
-		changes->map.num_key_acts= (highChange-lowChange)+1;
-	    }
 	}
+    }
+    if (lowChange>0) {	/* something changed */
+	if (changes->map.changed&XkbKeyActionsMask) {
+	    i= changes->map.first_key_act;
+	    if (i<lowChange)
+		lowChange= i;
+	    i+= changes->map.num_key_acts-1;
+	    if (i>highChange)
+		highChange= i;
+	}
+	changes->map.changed|= XkbKeyActionsMask;
+	changes->map.first_key_act= lowChange;
+	changes->map.num_key_acts= (highChange-lowChange)+1;
     }
     return 1;
 }
