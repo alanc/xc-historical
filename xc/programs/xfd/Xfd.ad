@@ -7,6 +7,11 @@ Xfd*quit.Label: Quit
 Xfd*prev.Label: Prev
 Xfd*next.Label: Next
 
+Xfd*select.Label: Select a character
+Xfd*select.Justify: center
+Xfd*range.Justify: left
+Xfd*start.Justify: left
+
 Xfd*quit.Translations:  #override \
 		<Btn1Up>: Quit() unset()
 Xfd*next.Translations:  #override \

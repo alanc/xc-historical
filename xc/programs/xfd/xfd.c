@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.9 89/06/08 09:28:51 jim Exp $
+ * $XConsortium: xfd.c,v 1.10 89/06/08 10:05:59 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,8 +47,7 @@ static XrmOptionDescRec xfd_options[] = {
 };
 
 static void do_quit(), do_next(), do_prev();
-static void initialize_description_labels ();
-static void change_page (), set_page_label ();
+static void change_page ();
 static char *get_font_name();
 
 static XtActionsRec xfd_actions[] = {
@@ -69,13 +68,14 @@ usage()
 }
 
 
-static Widget chardesc1Label, charlabel2Label, charlabel3Label, fontGrid;
+static Widget selectLabel, rangeLabel, startLabel, fontGrid;
 
 main (argc, argv) 
     int argc;
     char **argv;
 {
     Widget toplevel, pane, toplabel, box, form;
+    char buf[256];
     Arg av[10];
     Cardinal i;
     char **cpp;
@@ -110,12 +110,14 @@ main (argc, argv)
     }
 
     /* and labels in which to put information */
-    chardesc1Label = XtCreateManagedWidget ("chardesc1", labelWidgetClass,
+    selectLabel = XtCreateManagedWidget ("select", labelWidgetClass,
 					    pane, NULL, ZERO);
-    charlabel2Label = XtCreateManagedWidget ("charlabel2", labelWidgetClass,
-					     pane, NULL, ZERO);
-    charlabel3Label = XtCreateManagedWidget ("charlabel3", labelWidgetClass,
-					     pane, NULL, ZERO);
+
+    rangeLabel = XtCreateManagedWidget ("range", labelWidgetClass, pane, 
+					NULL, ZERO);
+
+    startLabel = XtCreateManagedWidget ("start", labelWidgetClass, pane, 
+					NULL, ZERO);
 
     /* form in which to draw */
     form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
@@ -138,7 +140,16 @@ main (argc, argv)
     i = 0;
     XtSetArg (av[i], XtNlabel, fontname); i++;
     XtSetValues (toplabel, av, i);
-    initialize_description_labels (fs, 0, False);
+
+    i = 0;
+    XtSetArg (av[i], XtNlabel, buf); i++;
+    sprintf (buf, "range:  0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u)",
+	     fs->min_byte1, fs->min_char_or_byte2,
+	     fs->min_byte1, fs->min_char_or_byte2,
+	     fs->max_byte1, fs->max_char_or_byte2,
+	     fs->max_byte1, fs->max_char_or_byte2);
+    XtSetValues (rangeLabel, av, i);
+
 
     XtRealizeWidget (toplevel);
     change_page (0);
@@ -163,24 +174,27 @@ static void SelectChar (w, closure, data)
     char buf[256];
     Arg arg;
 
+    XtSetArg (arg, XtNlabel, buf);
+
     if (n < minn || n > maxn) {
-	initialize_description_labels (fs, n, True);
+	sprintf (buf, "no such character 0x%02x%02x (%u,%u)", 
+		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
+		 (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
+	XtSetValues (selectLabel, &arg, ONE);
 	return;
     }
 
     XTextExtents16 (fs, &p->thechar, 1, &direction, &fontascent, &fontdescent,
 		    &metrics);
-
-    XtSetArg (arg, XtNlabel, buf);
-    sprintf (buf, "character %u, 0x%02x%02x (%d, %d)",
-	     n, (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
+    sprintf (buf, "character 0x%02x%02x (%d,%d)",
+	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
-    XtSetValues (chardesc1Label, &arg, ONE);
+    XtSetValues (selectLabel, &arg, ONE);
 
     sprintf (buf, "width %d, left %d, right %d, ascent %d, descent %d",
 	     metrics.width, metrics.lbearing, metrics.rbearing,
 	     metrics.ascent, metrics.descent);
-    XtSetValues (charlabel2Label, &arg, ONE);
+    XtSetValues (rangeLabel, &arg, ONE);
 
     return;
 }
@@ -199,24 +213,35 @@ static void do_quit (w, event, params, num_params)
 static void change_page (page)
     int page;
 {
-    long start;
+    long oldstart, newstart;
     unsigned int ncols, nrows;
+    char buf[256];
     Arg arg;
 
     arg.name = XtNstartChar;
-    GetFontGridCellDimensions (fontGrid, &start, &ncols, &nrows);
+    GetFontGridCellDimensions (fontGrid, &oldstart, &ncols, &nrows);
 
     if (page) {
-	start += ((long) ncols) * ((long) nrows) * ((long) page);
+	long start = (oldstart + 
+		      ((long) ncols) * ((long) nrows) * ((long) page));
 
 	arg.value = (XtArgVal) start;
 	XtSetValues (fontGrid, &arg, ONE);
     }
 
     /* find out what it got set to */
-    arg.value = (XtArgVal) &start;
+    arg.value = (XtArgVal) &newstart;
     XtGetValues (fontGrid, &arg, ONE);
-    set_page_label ((unsigned int) start);
+
+    /* if not paging, then initialize it, else only do it actually changed */
+    if (!page || newstart != oldstart) {
+	unsigned int row = (unsigned int) ((newstart >> 8) & 0xff);
+	unsigned int col = (unsigned int) (newstart & 0xff);
+
+	XtSetArg (arg, XtNlabel, buf);
+	sprintf (buf, "upper left:  0x%04x (%d,%d)", newstart, row, col);
+	XtSetValues (startLabel, &arg, ONE);
+    }
 }
 
 
@@ -258,46 +283,3 @@ static char *get_font_name (dpy, fs)
     return NULL;
 }
 
-
-static void initialize_description_labels (fs, charnum, valid)
-    XFontStruct *fs;
-    unsigned int charnum;
-    Bool valid;
-{
-    char buf[256];
-    Arg arg;
-
-    XtSetArg (arg, XtNlabel, buf);
-
-    if (valid) {
-	unsigned low = (charnum & 0xff), hi = ((charnum >> 8) & 0xff);
-
-	sprintf (buf, "Character 0x%02x%02x (%u,%u) is out of the range",
-		 hi, low, hi, low);
-    } else {
-    	sprintf (buf, "Select a character in the range");
-    }
-    XtSetValues (chardesc1Label, &arg, ONE);
-
-    sprintf (buf, "0x%02x%02x (%u,%u) thru 0x%02x%02x (%u,%u).",
-	     fs->min_byte1, fs->min_char_or_byte2,
-	     fs->min_byte1, fs->min_char_or_byte2,
-	     fs->max_byte1, fs->max_char_or_byte2,
-	     fs->max_byte1, fs->max_char_or_byte2);
-    XtSetValues (charlabel2Label, &arg, ONE);
-}
-
-
-static void set_page_label (start)
-    unsigned int start;
-{
-    char buf[256];
-    unsigned int startcol = (start & 0xff), startrow = ((start >> 8) & 0xff);
-    Arg arg;
-
-    XtSetArg (arg, XtNlabel, buf);
-
-    sprintf (buf, "Current page starts at 0x%04x (%d,%d).",
-	     start, startrow, startcol);
-    XtSetValues (charlabel3Label, &arg, ONE);
-}
