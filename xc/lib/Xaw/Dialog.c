@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.35 89/11/05 13:18:05 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.36 89/11/12 14:02:28 kit Exp $";
 #endif /* lint */
 
 
@@ -65,7 +65,6 @@ static XtResource resources[] = {
 };
 
 static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
-static void Destroy();
 static Boolean SetValues();
 
 DialogClassRec dialogClassRec = {
@@ -199,19 +198,35 @@ Widget request, new;
     }
 }
 
+#define ICON 0
+#define LABEL 1
+#define NUM_CHECKS 2
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new)
+static Boolean SetValues(current, request, new, in_args, in_num_args)
 Widget current, request, new;
+ArgList in_args;
+Cardinal *in_num_args;
 {
     DialogWidget w = (DialogWidget)new;
     DialogWidget old = (DialogWidget)current;
     Arg args[5];
     Cardinal num_args;
+    int i;
+    Boolean checks[NUM_CHECKS];
 
-    if (w->dialog.icon != old->dialog.icon) {
+    for (i = 0; i < NUM_CHECKS; i++)
+	checks[i] = FALSE;
+
+    for (i = 0; i < *in_num_args; i++) {
+	if (streq(XtNicon, in_args[i].name))
+	    checks[ICON] = TRUE;
+	if (streq(XtNlabel, in_args[i].name))
+	    checks[LABEL] = TRUE;
+    }
+
+    if (checks[ICON]) {
 	if (w->dialog.icon != (Pixmap)0) {
-	    Arg args[5];
 	    XtSetArg( args[0], XtNbitmap, w->dialog.icon );
 	    if (old->dialog.iconW != (Widget)NULL) {
 		XtSetValues( old->dialog.iconW, args, ONE );
@@ -233,9 +248,8 @@ Widget current, request, new;
 	    w->dialog.iconW = (Widget)NULL;
 	}
     }
-    if ( (w->dialog.label != old->dialog.label) ||
-	 ((w->dialog.label != NULL) && /* so both are non-NULL */
-	   !streq(w->dialog.label, old->dialog.label)) ) {
+
+    if ( checks[LABEL] ) {
         num_args = 0;
         XtSetArg( args[num_args], XtNlabel, w->dialog.label ); num_args++;
 	if (w->dialog.iconW != (Widget)NULL &&
