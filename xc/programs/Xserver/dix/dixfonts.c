@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.17 91/03/01 16:05:29 keith Exp $ */
+/* $XConsortium: dixfonts.c,v 1.18 91/05/10 11:42:42 keith Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1139,6 +1139,20 @@ GetClientResolutions (num)
     return &res;
 }
 
+Font
+GetNewFontClientID()
+{
+    return FakeClientID(0);
+}
+
+int
+StoreFontClientFont(pfont, id)
+    FontPtr     pfont;
+    Font        id;
+{
+    return AddResource(id, RT_FONT, (pointer)pfont);
+}
+	
 /*
  * returns the type index of the new fpe
  *
