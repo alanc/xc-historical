@@ -1,9 +1,9 @@
 /*
- *	$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $
+ *	$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $";
+static char *rcsid_resize_c = "$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -38,17 +38,28 @@ static char *rcsid_resize_c = "$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/ioctl.h>
+
+#ifdef macII
+#define USE_SYSV_TERMIO
+#endif /* macII */
+
 #ifdef SYSV
+#define USE_SYSV_TERMIO
+#define USE_SYSV_UTMP
+#else /* else not SYSV */
+#define USE_TERMCAP
+#endif /* SYSV */
+
+#ifdef USE_SYSV_TERMIO
 #include <sys/termio.h>
-#else	/* !SYSV */
+#else /* else not USE_SYSV_TERMIO */
 #include <sgtty.h>
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
+
 #include <signal.h>
 #include <pwd.h>
-#ifdef macII
-#include <sys/ttold.h>
-#endif /* macII */
-#ifdef SYSV
+
+#ifdef USE_SYSV_TERMIO
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
 extern struct passwd *getpwnam();
@@ -56,10 +67,10 @@ extern void setpwent();
 extern void endpwent();
 extern struct passwd *fgetpwent();
 #define	bzero(s, n)	memset(s, 0, n)
-#endif	/* SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$Header: resize.c,v 1.2 88/05/11 15:48:50 jim Exp $";
+static char rcs_id[] = "$Header: resize.c,v 1.3 88/07/20 12:07:45 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -111,11 +122,11 @@ char *setsize[EMULATIONS] = {
 	0,
 	"\033[8;%s;%st",
 };
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 struct termio tioorig;
-#else	/* !SYSV */
+#else /* not USE_SYSV_TERMIO */
 struct sgttyb sgorig;
-#endif	/* !SYSV */
+#endif /* USE_SYSV_TERMIO */
 char *size[EMULATIONS] = {
 	"\033[%d;%dR",
 	"\033[8;%d;%dt",
@@ -146,13 +157,15 @@ char **argv;
 	struct passwd *pw;
 	int i;
 	int rows, cols;
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	struct termio tio;
-#else	/* !SYSV */
+#else /* not USE_SYSV_TERMIO */
 	struct sgttyb sg;
+#endif /* USE_SYSV_TERMIO */
+#ifdef USE_TERMCAP
 	char termcap [1024];
 	char newtc [1024];
-#endif	/* !SYSV */
+#endif /* USE_TERMCAP */
 	char buf[BUFSIZ];
 #ifdef sun
 #ifdef TIOCSSIZE
@@ -226,14 +239,7 @@ char **argv;
 		exit(1);
 	}
 	tty = fileno(ttyfp);
-#ifdef SYSV
-	if(!(env = getenv("TERM")) || !*env) {
-		env = "xterm";
-		if(SHELL_BOURNE == shell_type)
-			setname = "TERM=xterm;\nexport TERM;\n";
-		else	setname = "setenv TERM xterm;\n";
-	}
-#else	/* !SYSV */
+#ifdef USE_TERMCAP
 	if((env = getenv("TERMCAP")) && *env)
 		strcpy(termcap, env);
 	else {
@@ -249,9 +255,16 @@ char **argv;
 			exit(1);
 		}
 	}
-#endif	/* !SYSV */
+#else /* else not USE_TERMCAP */
+	if(!(env = getenv("TERM")) || !*env) {
+		env = "xterm";
+		if(SHELL_BOURNE == shell_type)
+			setname = "TERM=xterm;\nexport TERM;\n";
+		else	setname = "setenv TERM xterm;\n";
+	}
+#endif	/* USE_TERMCAP */
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCGETA, &tioorig);
 	tio = tioorig;
 	tio.c_iflag &= ~(ICRNL | IUCLC);
@@ -259,25 +272,20 @@ char **argv;
 	tio.c_cflag |= CS8;
 	tio.c_cc[VMIN] = 6;
 	tio.c_cc[VTIME] = 1;
-#else	/* !SYSV */
+#else	/* else not USE_SYSV_TERMIO */
  	ioctl (tty, TIOCGETP, &sgorig);
 	sg = sgorig;
-#ifdef macII
-	sg.sg_flags |= O_RAW;
-	sg.sg_flags &= ~O_ECHO;
-#else /* else not macII */
 	sg.sg_flags |= RAW;
 	sg.sg_flags &= ~ECHO;
-#endif /* macII */
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	signal(SIGINT, onintr);
 	signal(SIGQUIT, onintr);
 	signal(SIGTERM, onintr);
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tio);
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 	ioctl (tty, TIOCSETP, &sg);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 
 	if (argc == 2) {
 		sprintf (buf, setsize[emu], argv[0], argv[1]);
@@ -330,16 +338,16 @@ char **argv;
 #endif	/* TIOCGWINSZ */
 #endif	/* sun */
 
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 	ioctl (tty, TIOCSETP, &sgorig);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	signal(SIGTERM, SIG_DFL);
 
-#ifndef SYSV
+#ifdef USE_TERMCAP
 	/* update termcap string */
 	/* first do columns */
 	if ((ptr = strindex (termcap, "co#")) == NULL) {
@@ -360,24 +368,24 @@ char **argv;
 	sprintf (termcap + ((int) ptr - (int) newtc + 3), "%d", rows);
 	ptr = index (ptr, ':');
 	strcat (termcap, ptr);
-#endif	/* !SYSV */
+#endif /* USE_TERMCAP */
 
 	if(SHELL_BOURNE == shell_type)
-#ifdef SYSV
-		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
-		 setname, cols, rows);
-#else	/* !SYSV */
+#ifdef USE_TERMCAP
 		printf ("%sTERMCAP='%s'\n",
 		 setname, termcap);
-#endif	/* !SYSV */
-	else
-#ifdef SYSV
-		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
+#else /* else not USE_TERMCAP */
+		printf ("%sCOLUMNS=%d;\nLINES=%d;\nexport COLUMNS LINES;\n",
 		 setname, cols, rows);
-#else	/* !SYSV */
+#endif	/* USE_SYSV_TERMCAP */
+	else
+#ifdef USE_TERMCAP
 		printf ("set noglob;\n%ssetenv TERMCAP '%s';\nunset noglob;\n",
 		 setname, termcap);
-#endif	/* !SYSV */
+#else /* else not USE_TERMCAP */
+		printf ("set noglob;\n%ssetenv COLUMNS '%d';\nsetenv LINES '%d';\nunset noglob;\n",
+		 setname, cols, rows);
+#endif	/* USE_TERMCAP */
 	exit(0);
 }
 
@@ -450,10 +458,10 @@ timeout()
 
 onintr()
 {
-#ifdef SYSV
+#ifdef USE_SYSV_TERMIO
 	ioctl (tty, TCSETAW, &tioorig);
-#else	/* !SYSV */
+#else	/* not USE_SYSV_TERMIO */
 	ioctl (tty, TIOCSETP, &sgorig);
-#endif	/* !SYSV */
+#endif	/* USE_SYSV_TERMIO */
 	exit(1);
 }
