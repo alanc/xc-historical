@@ -294,6 +294,7 @@ static binding _event_mask_names[] = {
 	{ StructureNotifyMask, "StructureNotify" },
 	{ ResizeRedirectMask, "ResizeRedirect" },
 	{ SubstructureNotifyMask, "SubstructureNotify" },
+	{ SubstructureRedirectMask, "SubstructureRedirect" },
 	{ FocusChangeMask, "FocusChange" },
 	{ PropertyChangeMask, "PropertyChange" },
 	{ ColormapChangeMask, "ColormapChange" },
