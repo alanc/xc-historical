@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.15 87/09/09 13:10:48 sun Locked $ */
+/* $Header: dispatch.c,v 1.16 87/09/12 21:40:28 rws Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1745,7 +1745,7 @@ ProcGetImage(client)
               ((WindowPtr)pDraw)->borderWidth +
               ((WindowPtr)pDraw)->clientWinSize.width ||
          stuff->y < -((WindowPtr)pDraw)->borderWidth ||
-         stuff->y + stuff->height >
+         stuff->y + height >
               ((WindowPtr)pDraw)->borderWidth +
               ((WindowPtr)pDraw)->clientWinSize.height
         )
@@ -1757,34 +1757,42 @@ ProcGetImage(client)
       if((stuff->x < 0) ||
          (stuff->x+stuff->width > ((PixmapPtr) pDraw)->width) ||
          (stuff->y < 0) ||
-         (stuff->y+stuff->height > ((PixmapPtr) pDraw)->height)
+         (stuff->y+height > ((PixmapPtr) pDraw)->height)
         )
 	    return(BadMatch);
 	xgi.visual = None;
     }
     xgi.type = X_Reply;
-    /* should this be set??? */
     xgi.sequenceNumber = client->sequence;
     xgi.depth = pDraw->depth;
     if(stuff->format == ZPixmap)
     {
 	widthBytesLine = PixmapBytePad(stuff->width, pDraw->depth);
-	xgi.length = (widthBytesLine >> 2) * stuff->height;
+	xgi.length = (widthBytesLine >> 2) * height;
     }
     else 
     {
 	widthBytesLine = PixmapBytePad(stuff->width, 1);
-	xgi.length = (widthBytesLine >> 2) * stuff->height *
+	xgi.length = (widthBytesLine >> 2) * height *
 		     /* only planes asked for */
 		     Ones(stuff->planeMask & ((1 << pDraw->depth) - 1));
     }
-    linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
-    if(!(pBuf = (char *) ALLOCATE_LOCAL(IMAGE_BUFSIZE)))
-        return (client->noClientException = BadAlloc);
+    if (widthBytesLine == 0 || height == 0)
+	linesPerBuf = 0;
+    else if (widthBytesLine >= IMAGE_BUFSIZE)
+	linesPerBuf = 1;
+    else
+	linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
+    if(!(pBuf = (char *) ALLOCATE_LOCAL(linesPerBuf * widthBytesLine)))
+        return (BadAlloc);
 
     WriteReplyToClient(client, sizeof (xGetImageReply), &xgi);
 
-    if (stuff->format == ZPixmap)
+    if (linesPerBuf == 0)
+    {
+	/* nothing to do */
+    }
+    else if (stuff->format == ZPixmap)
     {
         linesDone = 0;
         while (height - linesDone > 0)
