@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.15 89/05/11 01:05:38 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.16 89/05/11 14:00:48 kit Exp $";
 #endif
 
 /***********************************************************
@@ -296,8 +296,7 @@ Widget junk, new;
       lw->list.nitems = 1;
     }
 
-    lw->list.is_highlighted = NO_HIGHLIGHT;
-    lw->list.highlight = NO_HIGHLIGHT;
+    lw->list.highlight = lw->list.is_highlighted = NO_HIGHLIGHT;
 
 } /* Initialize */
 
@@ -885,7 +884,7 @@ Boolean resize_it;
     lw->list.longest = longest;
 
     ResetList(w, resize_it, resize_it);
-    lw->list.highlight = NO_HIGHLIGHT;
+    lw->list.is_highlighted = lw->list.highlight = NO_HIGHLIGHT;
     if ( XtIsRealized(w) )
       Redisplay(w, NULL, NULL);
 }
