@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.84 89/05/11 01:06:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.85 89/05/11 15:11:51 kit Exp $";
 #endif
 
 
@@ -571,7 +571,7 @@ static void SetScrollBar(ctx)
 	    first = 0.0;
 	    last = 1.0;
 	}
-	XtScrollBarSetThumb(ctx->text.sbar, first, last - first);
+	XawScrollBarSetThumb(ctx->text.sbar, first, last - first);
     }
 }
 
@@ -2867,7 +2867,7 @@ static void DoInsert(w, closure, call_data)
     struct _dialog *dialog = (struct _dialog*)closure;
 
     if (InsertFileNamed( dialog->text,
-			 XtDialogGetValueString(dialog->widget) )) {
+			 XawDialogGetValueString(dialog->widget) )) {
 	char msg[128];
 	static Arg args[] = {
 	    {XtNlabel, NULL},
