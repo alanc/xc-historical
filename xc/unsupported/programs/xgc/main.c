@@ -28,8 +28,8 @@ static Widget bigdaddy;		/* the top level widget */
        Widget topform;		/* form surrounding the whole thing */
        Widget GCform;		/* form in which you choose the GC */
 static Widget Testform;		/* form in which you choose the test */
+       Widget testchoiceform;   /* form inside that */
 static Widget commandform;	/* form with run, quit, clear, etc. */
-static Widget testchoiceform;   /* form inside that */
        Widget test;		/* where the test is run */
        Widget result;           /* where the results are displayed */
 static Widget runbutton;	/* command for running */
@@ -40,8 +40,8 @@ static Widget playbackbutton;	/* playback from file */
 static Widget keyinputbutton;	/* start reading from keyboard */
 static Widget GCchoices[NUMCHOICES]; /* all the forms that contain stuff
 				        for changing GC's*/
-static Widget planemaskchoice;	/* form for choosing the plane mask */
-static Widget dashlistchoice;	/* form for choosing the dash list */
+       Widget planemaskchoice;	/* form for choosing the plane mask */
+       Widget dashlistchoice;	/* form for choosing the dash list */
 static Widget linewidthchoice;	/* form for choosing line width */
 static Widget fontchoice;	/* form for choosing the font */
        Widget foregroundchoice;	/* form for choosing foreground */
@@ -281,17 +281,17 @@ void fill_up_commandform(w)
   };
 
   runargs[0].value = (XtArgVal) runcallbacklist;
-  runbutton = XtCreateManagedWidget("Run Test",commandWidgetClass,
+  runbutton = XtCreateManagedWidget("Run",commandWidgetClass,
 			      w,runargs,XtNumber(runargs));
 
   clearargs[0].value = (XtArgVal) clearcallbacklist;
   clearargs[1].value = (XtArgVal) runbutton; /* under */
-  clearbutton = XtCreateManagedWidget("Clear the window",commandWidgetClass,
+  clearbutton = XtCreateManagedWidget("Clear window",commandWidgetClass,
          		      w,clearargs,XtNumber(clearargs));
 
   recordargs[0].value = (XtArgVal) recordcallbacklist;
   recordargs[1].value = (XtArgVal) clearbutton;	/* under */
-  recordbutton = XtCreateManagedWidget("Start Recording",commandWidgetClass,
+  recordbutton = XtCreateManagedWidget("Record",commandWidgetClass,
 			      w,recordargs,XtNumber(recordargs));
 
   playbackargs[0].value = (XtArgVal) playbackcallbacklist;
@@ -306,7 +306,7 @@ void fill_up_commandform(w)
 
   quitargs[0].value = (XtArgVal) quitcallbacklist;
   quitargs[1].value = (XtArgVal) keyinputbutton; /* under */
-  quitbutton = XtCreateManagedWidget("Quit Xgc",commandWidgetClass,
+  quitbutton = XtCreateManagedWidget("Quit",commandWidgetClass,
    			      w,quitargs,XtNumber(quitargs));
     
 }    
