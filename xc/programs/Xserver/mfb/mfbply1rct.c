@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.4 92/12/23 18:53:12 rws Exp $
+ * $XConsortium: mfbply1rct.c,v 1.5 92/12/24 09:26:32 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -80,7 +80,7 @@ MFBFILLPOLY1RECT (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    sign1, sign2;
     int		    h;
     int		    l, r;
-    PixelType	    mask, bits = ~0L;
+    PixelType	    mask, bits = ~((unsigned long)0);
     int		    nmiddle;
 
     devPriv = (mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr);

@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.8 91/12/19 18:36:27 keith Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.9 93/01/28 20:31:23 rws Exp $ */
 
 /*
  * ==========================================================================
@@ -51,15 +51,21 @@ bit index 32-n in a longword
 #include	<servermd.h>
 #include	"cfb.h"
 
+#if (__STDC__ && !defined(UNIXCPP)) || defined(ANSICPP)
+#define _cfbBits(a) a##U
+#else
+#define _cfbBits(a) ((unsigned int)a)
+#endif
+
 #if	(BITMAP_BIT_ORDER == MSBFirst)
-#define cfbBits(v)	(v)
+#define cfbBits(v)	_cfbBits(v)
 #else
 #define cfbFlip2(a)	((((a) & 0x1) << 1) | (((a) & 0x2) >> 1))
 #define cfbFlip4(a)	((cfbFlip2(a) << 2) | cfbFlip2(a >> 2))
 #define cfbFlip8(a)	((cfbFlip4(a) << 4) | cfbFlip4(a >> 4))
 #define cfbFlip16(a)	((cfbFlip8(a) << 8) | cfbFlip8(a >> 8))
 #define cfbFlip32(a)	((cfbFlip16(a) << 16) | cfbFlip16(a >> 16))
-#define cfbBits(a)	cfbFlip32(a)
+#define cfbBits(a)	cfbFlip32(_cfbBits(a))
 #endif
 
 /* NOTE:
