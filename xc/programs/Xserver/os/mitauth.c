@@ -1,7 +1,7 @@
 /*
  * MIT-MAGIC-COOKIE-1 authorization scheme
  *
- * $XConsortium: mitauth.c,v 1.1 88/12/08 16:39:51 keith Exp $
+ * $XConsortium: mitauth.c,v 1.2 89/03/14 09:11:48 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -18,7 +18,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include   "X.h"
+#include "X.h"
+#include "os.h"
+
 static struct auth {
     struct auth	*next;
     unsigned short	len;
