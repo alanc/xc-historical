@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.14 89/05/03 17:35:27 kit Exp $
+ * $XConsortium: defs.h,v 1.15 89/05/06 21:16:20 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -86,16 +86,20 @@
  * The command filters for the manual and apropos searches.
  */
 
-#define APROPOSFILTER ("man -M %s -k %s | pr -h Apropos > %s")
+#if ( defined(hpux) || defined(macII) )
+#  define NO_MANPATH_SUPPORT
+#endif
 
-#if defined( macII )
-#  define FORMAT "pcat"		              /* The format command. */
+#ifdef NO_MANPATH_SUPPORT
+#  define APROPOS_FORMAT ("man -k %s | pr -h Apropos >> %s")
 #else
-#  if defined( ultrix )
-#    define FORMAT "| nroff -man"             /* The format command. */
-#  else
-#    define FORMAT "| neqn | nroff -man"      /* The format command. */
-#  endif
+#  define APROPOS_FORMAT ("man -M %s -k %s | pr -h Apropos > %s")
+#endif
+
+#if defined( ultrix )
+#  define FORMAT "| nroff -man"             /* The format command. */
+#else
+#  define FORMAT "| neqn | nroff -man"      /* The format command. */
 #endif
 
 #define TBL "tbl"
@@ -108,29 +112,50 @@
 
 #define INITIAL_DIR 0		/* The Initial Directory displayed. */
 
-#define LMAN 3			/* Name and length of the man and cat dirs. */
-#define MAN "man"
-#define LCAT 3
-#define CAT "cat"
+/*
+ * Names of the man and cat dirs. 
+ */
 
-#ifdef pegasus
-#define SEARCHDIR  CAT
+#define MAN "man"
+
+#ifdef macII
+/*
+ * The Apple folks put the preformatted pages in the "man" directories,
+ * what a bunch of BOZOs. 
+ */
+#  define CAT MAN		
 #else
-#define SEARCHDIR  MAN
+#  define CAT "cat"
 #endif
 
-#define LSEARCHDIR LMAN		/* The directories to search we are making 
-				 the assumption that the manual directories 
-				 are more complete that the cat directories. 
-				 but you can change it if you like. */
+/*
+ * The directories to search we are making the assumption that the manual
+ * directories are more complete that the cat directories, but you can
+ * change it if you like. 
+ */
+
+#if ( defined(UTEK) || defined(apollo) )
+#  define SEARCHDIR  CAT
+#  define LSEARCHDIR LCAT
+#else
+#  define SEARCHDIR  MAN
+#  define LSEARCHDIR LMAN
+#endif
 
 #define COPY "cp"		/* The unix copy command.  */
 
 #define MANDESC "mandesc"	/* Name of the mandesc files.  */
+
+/*
+ * The default manual page directory. 
+ *
+ * The MANPATH enviornment variable will override this.
+ */
+
 #ifdef macII
-#define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	/* The default manual page directory. */
+#  define MANDIR "/usr/catman/u_man:/usr/catman/a_man"	
 #else
-#define MANDIR "/usr/man"	/* The default manual page directory. */
+#  define MANDIR "/usr/man"
 #endif
 
 #define INDENT 15
@@ -139,6 +164,28 @@
 #define FILE_SAVE "yes"
 #define CANCEL_FILE_SAVE "no"
 #define MANTEMP "/tmp/xmanXXXXXX"
+
+/*
+ * Compression Definitions.
+ */
+
+#if defined( macII )
+#  define COMPRESSION_EXTENSION   "z"
+#  define UNCOMPRESS_FORMAT       "pcat %s > %s"
+#  define NO_COMPRESS		/* mac can't handle using pack as a filter and
+				   xman needs it to be done that way. */
+#else 
+#  if defined ( UTEK )
+#    define COMPRESSION_EXTENSION "C"
+#    define UNCOMPRESS_FORMAT     "ccat < %s > %s"
+#    define COMPRESS              "compact"
+#  else
+#    define COMPRESSION_EXTENSION "Z"
+#    define UNCOMPRESS_FORMAT     "zcat < %s > %s"
+#    define COMPRESS              "compress"
+#  endif /* UTEK */
+#endif /* macII */
+
 
 /*
  * Macro Definitions.

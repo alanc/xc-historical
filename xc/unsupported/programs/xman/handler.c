@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.10 89/05/09 16:35:00 kit Exp $
+ * $XConsortium: handler.c,v 1.11 89/05/16 13:54:39 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -236,8 +236,8 @@ caddr_t global_pointer, ret_val;
   ManpageGlobals * man_globals = (ManpageGlobals *) global_pointer;
   XawListReturnStruct * ret_struct = (XawListReturnStruct *) ret_val;
 
-  file = FindFilename(man_globals,
-       manual[man_globals->current_directory].entries[ret_struct->list_index]);
+  file = FindManualFile(man_globals, man_globals->current_directory,
+			ret_struct->list_index);
   PutUpManpage(man_globals, file);
 }
 
@@ -316,7 +316,7 @@ String * params;
 Cardinal * num_params;
 {
   ManpageGlobals * man_globals;
-  char str[BUFSIZ], error_buf[BUFSIZ];
+  char cmdbuf[BUFSIZ], error_buf[BUFSIZ];
 
   if (*num_params != 1) {
     XtAppWarning(XtWidgetToApplicationContext(w), 
@@ -335,9 +335,25 @@ Cardinal * num_params;
   switch (params[0][0]) {
   case 'S':
   case 's':
-    sprintf(str,"%s %s %s", COPY, man_globals->tmpfile, man_globals->filename);
-    if(system(str) != 0)		/* execute copy. */
-      PrintError("Something went wrong trying to copy temp file to cat dir.");
+
+#ifndef NO_COMPRESS
+    if (!man_globals->compress)
+#endif
+
+      sprintf(cmdbuf, "%s %s %s", COPY, man_globals->tmpfile, 
+	      man_globals->save_file);
+
+#ifndef NO_COMPRESS
+    else
+      sprintf(cmdbuf, "%s < %s > %s", COMPRESS, man_globals->tmpfile, 
+	      man_globals->save_file);
+#endif
+
+    if(system(cmdbuf) != 0) {		/* execute copy. */
+      sprintf(error_buf, "Something went wrong executing the command '%s'.\n",
+	      cmdbuf);
+      PrintWarning( man_globals, error_buf);
+    }
     break;
   case 'C':
   case 'c':
@@ -345,7 +361,7 @@ Cardinal * num_params;
   default:
     sprintf(error_buf,"%s %s", "Xman - SaveFormattedPagee:",
 	    "Unknown argument must be either 'Save' or 'Cancel'.");
-    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+    PrintWarning(man_globals, error_buf);
     return;
   }
     
@@ -355,8 +371,6 @@ Cardinal * num_params;
  */
 
   unlink(man_globals->tmpfile);
-  man_globals->tmpfile[0] = '\0'; /* remove name of tmpfile. */
-
   XtPopdown( XtParent(XtParent(w)) );
 }
 

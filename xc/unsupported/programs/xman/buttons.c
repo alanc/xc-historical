@@ -1,8 +1,8 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.13 89/05/09 16:34:57 kit Exp $
- * $Header: buttons.c,v 1.13 89/05/09 16:34:57 kit Exp $
+ * $XConsortium: buttons.c,v 1.14 89/05/16 13:54:37 kit Exp $
+ * $Header: buttons.c,v 1.14 89/05/16 13:54:37 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -446,8 +446,8 @@ Widget parent;
 
 /*
  * If the filename is foo.3     - Create an entry of the form:  foo
- * If the filename is foo.3X11 
- * or foo.3X11.stuff            - Create an entry of the form:  foo(X11)
+ * If the filename is foo.3X11  - Create an entry of the form:  foo(X11)
+ * IF the filename is a.out.1   - Create an entry of the form:  a.out
  */
 
 char *
@@ -459,18 +459,19 @@ char * entry;
 
   ParseEntry(entry, NULL, NULL, page);
 
-  cp = index(page, '.');
-  if ( (cp[2] != '\0') && (cp[2] != '.') ) {
-    *cp++ = '(';
-    while( (cp[1] != '\0') && (cp[1] != '.') ) {
-      *cp = cp[1]; cp++;
+  if ( (cp = rindex(page, '.')) != NULL)
+    if ( (strlen(cp) > 2) ) {
+      *cp++ = '(';
+      while( (cp[1] != '\0') ) {
+	*cp = *(cp + 1); 
+	cp++;
+      }
+      *cp++ = ')';
+      *cp = '\0';
     }
-    *cp++ = ')';
-    *cp = '\0';
-  }
-  else
-    *cp = '\0';  
-
+    else
+      *cp = '\0';  
+  
   return(StrAlloc(page));
 }
 

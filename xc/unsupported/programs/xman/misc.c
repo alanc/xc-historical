@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.13 89/05/09 16:35:14 kit Exp $
+ * $XConsortium: misc.c,v 1.14 89/05/31 15:13:31 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,6 +24,13 @@
 #endif
 
 #include "globals.h"
+#include <X11/Xos.h> 		/* sys/types.h included in here. */
+#include <sys/stat.h>
+#include <errno.h>
+
+static FILE * Uncompress();
+static Boolean UncompressNamed(), UncompressUnformatted();
+extern int errno;		/* error codes. */
 
 /*
  * It would be very nice if these would pop up their own windows for 
@@ -88,34 +95,149 @@ FILE * file;
 }
 
 
-/*	Function Name: FindFilename
- *	Description: Opens the entry file given the entry struct.
+/*	Function Name: FindManualFile
+ *	Description: Opens the manual page file given the entry information.
  *	Arguments: man_globals - the globals info for this manpage.
- *                 entry - the structure containg the info on the file to open.
+ *                 section_num - section number of the man page.
+ *                 entry_num   - entry number of the man page.
  *	Returns: fp - the file pointer
+ *
+ * NOTES:
+ *
+ * If there is a uncompressed section it will look there for uncompresed 
+ * manual pages first and then for individually comressed file in the 
+ * uncompressed section.
+ * 
+ * If there is a compressed directory then it will also look there for 
+ * the manual pages.
+ *
+ * If both of these fail then it will attempt to format the manual page.
  */
 
 FILE *
-FindFilename(man_globals, entry)
+FindManualFile(man_globals, section_num, entry_num)
 ManpageGlobals * man_globals;
-char * entry;
+int section_num, entry_num;
 {
   FILE * file;
   char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], *temp;
+  char filename[BUFSIZ];
+  char * entry = manual[section_num].entries[entry_num];
+  int len_cat = strlen(CAT);
 
   temp = CreateManpageName(entry);
   sprintf(man_globals->manpage_title, "The current manual page is: %s.", temp);
   XtFree(temp);
   
   ParseEntry(entry, path, section, page);
-  sprintf(man_globals->filename, "%s/%s%c/%s", path, CAT, section[LCAT], page);
 
-/* if we find the formatted manpage then return it */
+/*
+ * Look for uncompressed files first.
+ */
 
-  if ( (file = fopen(man_globals->filename,"r")) != NULL)
+  sprintf(filename, "%s/%s%s/%s", path, CAT, section + len_cat, page);
+  if ( (file = fopen(filename,"r")) != NULL)
     return(file);
 
+/*
+ * Then for compressed files in an uncompressed directory.
+ */
+
+  sprintf(filename, "%s/%s%s/%s.%s", path, CAT, 
+	  section + len_cat, page, COMPRESSION_EXTENSION);
+  if ( (file = Uncompress(man_globals, filename)) != NULL) 
+    return(file);
+
+/*
+ * And lastly files in a compressed directory.
+ *
+ * The directory is not actually compressed it is just named man#.Z
+ * and all files in it are compressed without the .Z extension.
+ * HP does it this way (really :-).
+ */
+
+  sprintf(filename, "%s/%s%s.%s/%s", path, CAT, section + len_cat,
+	  COMPRESSION_EXTENSION, page);
+  if ( (file = Uncompress(man_globals, filename)) != NULL)
+    return(file);
+/*
+ * We did not find any preformatted manual pages, try to format it.
+ */
+
   return(Format(man_globals, entry));
+}
+
+/*	Function Namecompress
+ *	Description: This function will attempt to find a compressed man
+ *                   page and uncompress it.
+ *	Arguments: man_globals - the psuedo global info.
+ *                 filename - name of file to uncompress.
+ *	Returns:; a pointer to the file or NULL.
+ */
+
+static FILE *
+Uncompress(man_globals, filename)
+ManpageGlobals * man_globals;
+char * filename;
+{
+  char tmpfile[BUFSIZ], error_buf[BUFSIZ];
+  FILE * file;
+
+  if ( !UncompressNamed(man_globals, filename, tmpfile) )
+    return(NULL);
+
+  else if ((file = fopen(tmpfile, "r")) == NULL) {  
+    sprintf(error_buf, "Something went wrong in retrieving the %s",
+	    "uncompressed manual page try cleaning up /tmp.");
+    PrintWarning(man_globals, error_buf);
+  }
+
+  unlink(tmpfile);		/* remove name in tree, it will remain
+				   until we close the fd, however. */
+  return(file);
+}
+
+/*	Function Name: UncompressNamed
+ *	Description: This function will attempt to find a compressed man
+ *                   page and uncompress it.
+ *	Arguments: man_globals - the psuedo global info.
+ *                 filename - name of file to uncompress.
+ * RETURNED        output - the file name output (must be an allocated string).
+ *	Returns:; TRUE if the file was found.
+ */
+
+static Boolean
+UncompressNamed(man_globals, filename, output)
+ManpageGlobals * man_globals;
+char * filename, * output;
+{
+  char tmp[BUFSIZ], cmdbuf[BUFSIZ], error_buf[BUFSIZ];
+  struct stat junk;
+
+  if (stat(filename, &junk) != 0) { /* Check for existance of the file. */
+    if (errno != ENOENT) {
+      sprintf(error_buf, "Error while stating file %s, errno = %d",
+	      filename, errno);
+      PrintWarning(man_globals, error_buf);
+    }
+    return(FALSE);
+  }
+
+/*
+ * Using stdin is necessary to fool zcat since we cannot guarentee
+ * the .Z extension.
+ */
+
+  strcpy(tmp, MANTEMP);		/* get a temp file. */
+  strcpy(output, mktemp(tmp));
+
+  sprintf(cmdbuf, UNCOMPRESS_FORMAT, filename, output);
+  if(system(cmdbuf) == 0) 	/* execute search. */
+    return(TRUE);
+
+  sprintf(error_buf, "Error while uncompressing, command was: %s", cmdbuf);
+  PrintWarning(man_globals, error_buf);
+  return(FALSE);
 }
 
 /*	Function Name: Format
@@ -137,18 +259,11 @@ char * entry;
 {
   FILE * file;
   Widget manpage = man_globals->manpagewidgets.manpage;
-  char cmdbuf[BUFSIZ], tmp[BUFSIZ], catdir[BUFSIZ];
-  char path[BUFSIZ], section[BUFSIZ], error_buf[BUFSIZ];
+  char cmdbuf[BUFSIZ], tmp[BUFSIZ], filename[BUFSIZ], error_buf[BUFSIZ];
+  char path[BUFSIZ];
   XEvent event;
   Position x,y;			/* location to pop up the
 				   "would you like to save" widget. */
-
-  strcpy(tmp,MANTEMP);		/* get a temp file. */
-  strcpy(man_globals->tmpfile,mktemp(tmp));
-
-/*
- * Replace with XtPopupSync when this becomes avaliable. 
- */
 
   Popup(XtParent(man_globals->standby), XtGrabExclusive);
   while ( !XCheckTypedWindowEvent(XtDisplay(man_globals->standby), 
@@ -157,71 +272,131 @@ char * entry;
   XtDispatchEvent( &event );
   XFlush(XtDisplay(man_globals->standby));
 
-/* End replacement. */
-
-  if ( (file = fopen( entry , "r")) == NULL) {
+  if ( !UncompressUnformatted(man_globals, entry, filename) ) {
     /* We Really could not find it, this should never happen, yea right. */
-    sprintf(error_buf, "Could open manual page file, %s", entry);
+    sprintf(error_buf, "Could open manual page, %s", entry);
     PrintWarning(man_globals, error_buf);
+    XtPopdown( XtParent(man_globals->standby) );
     return(NULL);
   }
 
-  ParseEntry(entry, path, section, NULL);
+  strcpy(tmp,MANTEMP);		          /* Get a temp file. */
+  strcpy(man_globals->tmpfile,mktemp(tmp));
+  ParseEntry(entry, path, NULL, NULL);
 
-#ifdef macII
-  sprintf(cmdbuf,
-        "cd %s;/usr/bin/pcat %s | /usr/bin/col | /usr/bin/ul -t dumb > %s %s",
-	path, entry, man_globals->tmpfile, "2> /dev/null");
-#else
   sprintf(cmdbuf,"cd %s ; %s %s %s > %s %s", path, TBL,
-	  entry, FORMAT, man_globals->tmpfile, "2> /dev/null");
-#endif
+	  filename, FORMAT, man_globals->tmpfile, "2> /dev/null");
 
   if(system(cmdbuf) != 0) {	/* execute search. */
     sprintf(error_buf,
 	    "Something went wrong trying to run the command: %s", cmdbuf);
     PrintWarning(man_globals, error_buf);
-    return(NULL);
-  }
-
-  if ((file = fopen(man_globals->tmpfile,"r")) == NULL) {  
-    sprintf(error_buf, "Something went wrong in retrieving the temp file, %s",
-	    "Try cleaning up /tmp");
-    PrintWarning(man_globals, error_buf);
-    return(NULL);
-  }
-
-/*
- * If the catdir is writeable then ask the user if he/she wants to
- * write the man page to it. 
- */
-
-  sprintf(catdir,"%s/%s%c", path, CAT, section[LCAT]);
-
-  XtPopdown( XtParent(man_globals->standby) );
-  
-  if ( (man_globals->save != NULL) && 
-       (man_globals->manpagewidgets.manpage != NULL) &&
-       ((access(catdir,W_OK)) == 0) )  {
-    x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
-    y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
-    XtTranslateCoords(manpage, x, y, &x, &y);
-    PositionCenter( man_globals->save, (int) x, (int) y, 0, 0, 0, 0);
-    XtPopup( man_globals->save, XtGrabExclusive);
+    file = NULL;
   }
   else {
+    if ((file = fopen(man_globals->tmpfile,"r")) == NULL) {  
+      sprintf(error_buf, "Something went wrong in retrieving the %s",
+	      "temp file, try cleaning up /tmp");
+      PrintWarning(man_globals, error_buf);
+    }
+    else {
 
-/*
- * We do not need the filename anymore, and have the fd open.
- * We will unlink it.     
- */
-    unlink(man_globals->tmpfile);
-    man_globals->tmpfile[0] = '\0'; /* remove name of tmpfile. */
+      XtPopdown( XtParent(man_globals->standby) );
+  
+      if ( (man_globals->save == NULL) ||
+	   (man_globals->manpagewidgets.manpage == NULL) ) 
+	unlink(man_globals->tmpfile);
+      else {
+	char * ptr, catdir[BUFSIZ];
+
+	/*
+	 * If the catdir is writeable then ask the user if he/she wants to
+	 * write the man page to it. 
+	 */
+
+	strcpy(catdir, man_globals->save_file);
+	if ( (ptr = rindex(catdir, '/')) != NULL) {
+	  *ptr = '\0';
+
+	  if ( access(catdir, W_OK) != 0 )
+	    unlink(man_globals->tmpfile);
+	  else {
+	    x = (Position) Width(man_globals->manpagewidgets.manpage)/2;
+	    y = (Position) Height(man_globals->manpagewidgets.manpage)/2;
+	    XtTranslateCoords(manpage, x, y, &x, &y);
+	    PositionCenter( man_globals->save, (int) x, (int) y, 0, 0, 0, 0);
+	    XtPopup( man_globals->save, XtGrabExclusive);
+	  }
+	}
+	else 
+	  unlink(man_globals->tmpfile);
+      }
+    }
   }
-    
+
+  if (man_globals->compress)	/* If the original was compressed
+				   then this is a tempory file. */
+    unlink(filename);
+  
   return(file);
 }
 
+/*	Function Name: UncompressUnformatted
+ *	Description: Finds an uncompressed unformatted manual page.
+ *	Arguments: man_globals - the psuedo global structure.
+ *                 entry - the manual page entry.
+ * RETURNED        filename - location to put the name of the file.
+ *	Returns: TRUE if the file was found.
+ */
+
+static Boolean
+UncompressUnformatted(man_globals, entry, filename)
+ManpageGlobals * man_globals;
+char * entry, * filename;
+{
+  char path[BUFSIZ], page[BUFSIZ], section[BUFSIZ], input[BUFSIZ];
+  int len_cat = strlen(CAT), len_man = strlen(MAN);
+
+  ParseEntry(entry, path, section, page);
+
+/*
+ * Look for uncompressed file first.
+ */
+
+  sprintf(filename, "%s/%s%s/%s", path, MAN, section + len_man, page);
+  if ( access( filename, R_OK ) == 0 ) {
+    man_globals->compress = FALSE;
+    sprintf(man_globals->save_file, "%s/%s%s/%s", path,
+	    CAT, section + len_cat, page);
+    return(TRUE);
+  }
+
+/*
+ * Then for compressed files in an uncompressed directory.
+ */
+
+  sprintf(input, "%s.%s", filename, COMPRESSION_EXTENSION);
+  if ( UncompressNamed(man_globals, input, filename) ) {
+    man_globals->compress = TRUE;
+    sprintf(man_globals->save_file, "%s/%s%s/%s.%s", path,
+	    CAT, section + len_cat, page, COMPRESSION_EXTENSION);
+    return(TRUE);
+  }
+/*
+ * And lastly files in a compressed directory.
+ */
+
+  sprintf(input, "%s/%s%s.%s/%s", path, 
+	  MAN, section + len_man, COMPRESSION_EXTENSION, page);
+  if ( UncompressNamed(man_globals, input, filename) ) {
+    man_globals->compress = TRUE;
+    sprintf(man_globals->save_file, "%s/%s%s.%s/%s", path, 
+	    CAT, section + len_cat, COMPRESSION_EXTENSION, page);
+    return(TRUE);
+  }
+  return(FALSE);
+}
+  
 /*	Function Name: AddCursor
  *	Description: This function adds the cursor to the window.
  *	Arguments: w - the widget to add the cursor to.

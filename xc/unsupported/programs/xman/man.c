@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.9 89/07/10 17:43:36 kit Exp $
+ * $XConsortium: man.c,v 1.10 89/07/21 17:33:45 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@ static char error_buf[BUFSIZ];		/* The buffer for error messages. */
 
 static void SortList(), ReadMandescFile(), SortAndRemove(), InitManual();
 static void AddToCurrentSection(), AddNewSection(), AddStandardSections();
+static void ReadCurrentSection();
 static int CmpEntryLabel();
 
 #define SECT_ERROR -1
@@ -77,12 +78,13 @@ Man()
   ReadMandescFile(&list, path);
 
   SortList(&list);
-
+  
   sect = 0;
   num_alloced = SECTALLOC;
   manual = (Manual *) XtMalloc( sizeof(Manual) * num_alloced );
-  InitManual( manual + sect, list->label );
+  InitManual( manual, list->label );
   current_label = NULL;
+
   while ( list != NULL ) {
     SectionList * old_list;
 
@@ -265,11 +267,16 @@ char * path;
   register int i;
   char file[BUFSIZ];
 
-  for (i = 1 ; i <= 8 ; i++) {
-    sprintf(file, "%s%d", SEARCHDIR, i);
-    AddNewSection(list, path, file, names[i-1], TRUE);
+  for (i = 0 ; i < 8 ; i++) {
+    sprintf(file, "%s%d", SEARCHDIR, i + 1);
+    AddNewSection(list, path, file, names[i], TRUE);
+#ifdef hpux
+    if (i == 0) {
+      sprintf(file, "%s1m", SEARCHDIR);
+      AddNewSection(list, path, file, "(1m) Sys. Administration", TRUE);
+    }
+#endif
   }
-  i--;
   sprintf(file, "%sl", SEARCHDIR);
   AddNewSection(list, path, file, names[i++], TRUE);
   sprintf(file, "%sn", SEARCHDIR);
@@ -328,11 +335,32 @@ AddToCurrentSection(local_manual, path)
 Manual * local_manual;
 char * path;
 {
+  char temp_path[BUFSIZ];
+
+  ReadCurrentSection(local_manual, path);
+  sprintf(temp_path, "%s.%s", path, COMPRESSION_EXTENSION);
+  ReadCurrentSection(local_manual, temp_path);
+}
+
+/*	Function Name: ReadCurrentSection
+ *	Description: Actually does the work of adding entries to the 
+ *                   new section
+ *	Arguments:  local_manual - a pointer to a manual pages structure.
+ *                  path - the path to this directory.
+ *                  compressed - Is this a compressed directory?
+ *	Returns: TRUE if any entries are found.
+ */
+
+static void
+ReadCurrentSection(local_manual, path)
+Manual * local_manual;
+char * path;
+{
   DIR * dir;
   register struct direct *dp;
   register int nentries;
   register int nalloc;
-  char full_name[BUFSIZ];
+  char full_name[BUFSIZ], *ptr;
 
   if((dir = opendir(path)) == NULL) {	
 #ifdef DEBUG
@@ -341,6 +369,14 @@ char * path;
 #endif /* DEBUG */
     return;
   }
+
+/*
+ * Remove the compression extension from the path name.
+ */
+
+  if ( (ptr = rindex(path, '.')) != NULL) 
+    if (streq(ptr + 1, COMPRESSION_EXTENSION)) 
+      *ptr = '\0';
   
   nentries = local_manual->nentries;
   nalloc = local_manual->nalloc;
@@ -350,36 +386,47 @@ char * path;
     if( (name[0] == '.') || (index(name, '.') == NULL) ) 
       continue;
     if( nentries >= nalloc ) {
-      nalloc = local_manual->nalloc += ENTRYALLOC;
+      nalloc += ENTRYALLOC;
       local_manual->entries =(char **) XtRealloc((char *)local_manual->entries,
-				local_manual->nalloc * sizeof(char *));
+						 nalloc * sizeof(char *));
     }
+
     sprintf(full_name, "%s/%s", path, name);
+/*
+ * Remove the compression extension from the entry name.
+ */
+
+    if ( (ptr = rindex(full_name, '.')) != NULL) 
+      if (streq(ptr + 1, COMPRESSION_EXTENSION)) 
+	*ptr = '\0';
+
     local_manual->entries[nentries++] = StrAlloc(full_name);
   }
+
   local_manual->nentries = nentries;
+  local_manual->nalloc = nalloc;
+
   closedir(dir);
 }
 
 /*	Function Name: SortAndRemove
  *	Description: This function sorts all the entry names and
  *                   then removes all the duplicate entries.
- *	Arguments: manual - a pointer to the manual structure.
+ *	Arguments: man - a pointer to the manual structure.
  *                 number - the number of manual sections.
  *	Returns: an improved manual stucure
  */
 
 static void
-SortAndRemove(manual, number)
-Manual *manual;
+SortAndRemove(man, number)
+Manual *man;
 int number;
 {
   int i;
   char *l1, *l2;
 
-  for ( i = 0; i < number; i++) { /* sort each section */
-    register int j = 0;
-    Manual * man = manual + i;
+  for ( i = 0; i < number; man++, i++) { /* sort each section */
+    register int j = 0;      
 
 #ifdef DEBUG
   printf("sorting section %d - %s\n", i, man->blabel);
@@ -449,8 +496,6 @@ char * label;
 {
   bzero( l_manual, sizeof(Manual) );	        /* clear it. */
   l_manual->blabel = label;	                /* set label. */
-  l_manual->entries = (char **) XtMalloc( sizeof(char *) * ENTRYALLOC);
-  l_manual->nalloc = ENTRYALLOC;
 }
   
 #if defined(DEBUG)

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.h,v 1.11 89/07/06 16:26:31 kit Exp $
+ * $XConsortium: man.h,v 1.12 89/07/12 13:54:27 kit Exp $
  * $Athena: man.h,v 4.6 89/01/06 12:17:38 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -58,6 +58,10 @@
 
 typedef void (*fcall)();	/* function pointer typedef */
 
+/* 
+ * Assigning values here allows the user of Bitwise Or.
+ */
+
 typedef struct _XmanFonts {
   XFontStruct * directory;		/* The font for the directory.  */
 } XmanFonts;
@@ -90,8 +94,8 @@ typedef struct _MenuStruct {
 
 typedef struct tManual {
   char * blabel;		/* The button label. */
-  char ** entries;		/* the individual man page file names. */
-  int nentries;			/* how many */
+  char ** entries; 		/* The individual man page file names. */
+  int nentries;			/* how many (TOTAL)*/
   int nalloc;			/* how much space allocated */
 } Manual;
    
@@ -112,10 +116,11 @@ typedef struct _ManpageGlobals{
     option_menu,		/* The option menu. */
     text_widget;		/* text widget containing search string. */
   char manpage_title[80];	/* The label to use for the current manpage. */
-  char filename[80];		/* the name of the file that we are
-				   currently looking at.*/
-  char tmpfile[80];		/* the name of the file in /tmp that
-				   we are currently using. */
+  char save_file[80];		/* the name of the file to save fomatted 
+				   page into. */
+  char tmpfile[80];		/* the name of the file to copy the formatted
+				   page from. */
+  Boolean compress;		/* Compress file on save? */
   char ** section_name;		/* The name of each of the sections */
 
   ManPageWidgets manpagewidgets; /* The manpage widgets. */
@@ -198,7 +203,7 @@ int Man();
 
 void PrintError(),PrintWarning(), ChangeLabel(), OpenFile();
 void RemovePixmaps(),PositionCenter(),AddCursor(),ParseEntry();
-FILE *FindFilename(),*Format(), *OpenEntryFile();
+FILE *FindManualFile(),*Format(), *OpenEntryFile();
 ManpageGlobals * GetGlobals();
 void SaveGlobals(), RemoveGlobals();
 

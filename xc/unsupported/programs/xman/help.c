@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: help.c,v 1.5 89/05/06 21:16:24 kit Exp $
+ * $XConsortium: help.c,v 1.6 89/07/10 17:44:29 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -72,8 +72,6 @@ OpenHelpfile(man_globals)
 ManpageGlobals * man_globals;
 {
   FILE * help_file_ptr;
-  Arg arglist[1];
-  Cardinal num_args = 0;
 
   if( (help_file_ptr = fopen(resources.help_file, "r")) == NULL ) {
     PrintWarning(man_globals,

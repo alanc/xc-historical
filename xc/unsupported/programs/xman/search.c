@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: search.c,v 1.8 89/05/09 16:35:17 kit Exp $
+ * $XConsortium: search.c,v 1.9 89/05/16 13:54:41 kit Exp $
  * $oHeader: search.c,v 4.0 88/08/31 22:13:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -183,13 +183,19 @@ int type;
 
   if (type == APROPOS) {
     char label[BUFSIZ];
+    char * ptr, * temp_path;
 
-    sprintf(cmdbuf, APROPOSFILTER, path, search_string, mantmp);
     sprintf(label,"Results of apropos search on: %s", search_string);
+
+#ifdef NO_MANPATH_SUPPORT	/* not quite correct, but the best I can do. */
+    sprintf(cmdbuf, APROPOS_FORMAT, search_string, mantmp);
+#else
+    sprintf(cmdbuf, APROPOS_FORMAT, path, search_string, mantmp);
+#endif
 
     if(system(cmdbuf) != 0) {	/* execute search. */
       sprintf(error_buf,"Something went wrong trying to run %s\n",cmdbuf);
-      PrintError(error_buf);
+      PrintWarning(man_globals, error_buf);
     }
 
     if((file = fopen(mantmp,"r")) == NULL)
@@ -310,7 +316,7 @@ char * string;
     if ( man_globals->manpagewidgets.box != NULL)
       XawListHighlight(man_globals->manpagewidgets.box[i], e_num);
   }
-  return(FindFilename(man_globals, manual[i].entries[e_num]));
+  return(FindManualFile(man_globals, i, e_num));
 }
 
 /*	Function Name: BEntrySearch
