@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.41 94/06/30 12:06:46 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.42 94/07/06 15:48:54 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -34,10 +34,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include "xsm.h"
+#include "name.h"
 #include <X11/Xatom.h>
 #include <signal.h>
 
-#define CURRENT_SESSION_NAME "Current"
+#define DEFAULT_SESSION_NAME "Default"
 
 AppResources app_resources;
 
@@ -46,7 +47,7 @@ static XtResource resources [] = {
     {"verbose", "Verbose",  XtRBoolean, sizeof (Boolean), 
 	 Offset (verbose), XtRImmediate, (XtPointer) False},
     {"name", "Name", XtRString, sizeof (XtRString), 
-	 Offset (name), XtRString, (XtPointer) CURRENT_SESSION_NAME}
+	 Offset (name), XtRString, (XtPointer) DEFAULT_SESSION_NAME}
 };
 #undef Offset
 
@@ -136,6 +137,17 @@ Widget			shutdownDialog;
 Widget			    shutdownOkButton;
 Widget			    shutdownCancelButton;
 
+Widget		    nameSessionPopup;
+
+Widget			nameSessionDialog;
+
+Widget			    nameSessionOkButton;
+Widget			    nameSessionCancelButton;
+
+
+XtActionsRec xsm_actions[] = {
+	"XsmNameSessionOk",	XsmNameSessionOk
+};
 
 void FreeClientInfo ();
 
@@ -941,6 +953,10 @@ PopupSaveDialog ()
 	did_first_popup = 1;
     }
 
+    XtSetSensitive (mainWindow, 0);
+    XtSetSensitive (clientInfoPopup, 0);
+    XtSetSensitive (clientPropPopup, 0);
+
     if (ClientList == NULL)
     {
 	XtPopup (shutdownPopup, XtGrabNone);
@@ -958,10 +974,6 @@ PopupSaveDialog ()
 
 	XtPopup (savePopup, XtGrabNone);
     }
-
-    XtSetSensitive (mainWindow, 0);
-    XtSetSensitive (clientInfoPopup, 0);
-    XtSetSensitive (clientPropPopup, 0);
 }
 
 
@@ -1193,18 +1205,6 @@ XtPointer 	callData;
     XtSetSensitive (mainWindow, 1);
     XtSetSensitive (clientInfoPopup, 1);
     XtSetSensitive (clientPropPopup, 1);
-}
-
-
-
-void
-NameSessionXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
-
-{
 }
 
 
@@ -1441,6 +1441,9 @@ main(argc, argv)
     XtGetApplicationResources(topLevel, (XtPointer) &app_resources,
 			      resources, XtNumber(resources), NULL, 0);
     
+    XtAppAddActions (appContext,
+	xsm_actions, XtNumber (xsm_actions));
+
     sprintf (title, "xsm: %s", app_resources.name);
 
     XtVaSetValues (topLevel,
@@ -1747,6 +1750,34 @@ main(argc, argv)
 
 
     /*
+     * Pop up with dialog box for naming session
+     */
+
+    nameSessionPopup = XtVaCreatePopupShell ("nameSessionPopup",
+	transientShellWidgetClass, topLevel,
+	NULL);
+    
+    nameSessionDialog = XtVaCreateManagedWidget ("nameSessionDialog",
+	dialogWidgetClass, nameSessionPopup,
+	XtNvalue, "",				/* name prompt */
+        NULL);					      
+
+    nameSessionOkButton = XtVaCreateManagedWidget ("nameSessionOkButton",
+	commandWidgetClass, nameSessionDialog,
+	NULL);
+    
+    XtAddCallback (nameSessionOkButton, XtNcallback, NameSessionOkXtProc, 0);
+
+    nameSessionCancelButton = XtVaCreateManagedWidget (
+	"nameSessionCancelButton",
+	commandWidgetClass, nameSessionDialog,
+	NULL);
+
+    XtAddCallback (nameSessionCancelButton,
+	XtNcallback, NameSessionCancelXtProc, 0);
+
+
+    /*
      * Realize top level.
      */
 
@@ -1777,7 +1808,7 @@ main(argc, argv)
      * identify it.
      */
 
-    database_read = read_save(&sm_id);
+    database_read = read_save (app_resources.name /* session name */, &sm_id);
     if (!sm_id)
 	sm_id = SmsGenerateClientID (NULL);
     XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
