@@ -1,7 +1,17 @@
+/*
+ * If you have any extra files to be put into the library, define them here.
+ * Note that System V boxes should use os/sysV to get Berklib.c.
+ */
+
 #ifdef HPArchitecture
 #define OtherSources hpsocket.c hpalloca.c 
 #define OtherObjects hpsocket.o hpalloca.o dbm.o 
 #endif
+
+
+/*
+ * do not modify the following two definitions
+ */
 
 #ifndef OtherSources
 #define OtherSources
@@ -12,13 +22,10 @@
 #endif
 
 BOOTSTRAPCFLAGS = 
-
-           SRCS = connection.c WaitFor.c utils.c io.c access.c \
-		  osinit.c oscolor.c osfonts.c fonttype.c \
-		  OtherSources
-           OBJS = connection.o WaitFor.o utils.o io.o osfonts.o access.o \
-		  osinit.o oscolor.o osfonts.c fonttype.o \
-		  OtherObjects
+           SRCS = WaitFor.c access.c connection.c fonttype.c io.c oscolor.c \
+                  osfonts.c osinit.c utils.c OtherSources
+           OBJS = WaitFor.o access.o connection.o fonttype.o io.o oscolor.o \
+                  osfonts.o osinit.o utils.o OtherObjects
     STD_DEFINES = ServerDefines -DFONT_SNF
     CDEBUGFLAGS = ServerCDebugFlags
 #if SpecialMalloc
