@@ -287,8 +287,10 @@ void TranslateEvent(w, event)
 	case KeyPress:
 	case KeyRelease:
 	    buttonUp = FALSE;
+	    curEvent.modifiersMask = event->xkey.state;
+	    event->xkey.state = 0;
 	    curEvent.eventCode = XLookupKeysym(&event->xkey, 0);
-	    curEvent.modifiersMask = event->xkey.state; 
+	    event->xkey.state = curEvent.modifiersMask;
 	    break;
 	case ButtonPress:
 	    if (buttonUp && curState != NULL) 
@@ -298,14 +300,14 @@ void TranslateEvent(w, event)
 		    curState = NULL;
 	    buttonUp = FALSE;
  	    curEvent.eventCode = event->xbutton.button;
-	    curEvent.modifiersMask = event->xbutton.state;
+	    curEvent.modifiersMask = event->xbutton.state & 0x00FF; /* ||| */
 	    break;
 	case ButtonRelease:
 	    buttonUp = TRUE;
 	    upTime = event->xbutton.time;
 	    curEvent.eventCode = event->xbutton.button;
-	    curEvent.modifiersMask = event->xbutton.state & 0x00FF; /* ||| gross hack */
-
+	    curEvent.modifiersMask = event->xbutton.state & 0x00FF; /* ||| */
+;
 	    break;
 	case MotionNotify:
 	    buttonUp = FALSE;
@@ -339,7 +341,7 @@ void TranslateEvent(w, event)
            }
     } else {
 	index = EventIndex(w->core.translations, &curEvent);
-        if (index == -1) return;
+	if (index == -1) return;
         curState = w->core.translations->eventObjTbl[index].state;
     }
     if (curState != NULL && !specialCase) {
