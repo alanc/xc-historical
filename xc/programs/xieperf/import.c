@@ -1,4 +1,4 @@
-/* $XConsortium: do_import.c,v 1.1 93/07/19 13:02:50 rws Exp $ */
+/* $XConsortium: import.c,v 1.2 93/07/19 14:44:00 rws Exp $ */
 
 /**** module do_import.c ****/
 /******************************************************************************
@@ -71,10 +71,18 @@ int InitImportDrawablePixmap(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	monoflag = 0;
+	parms = NULL;
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
 	if ( xp->vinfo.depth == 1 )
 	{
 		monoflag = 1;
-                if ( !SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) )
+                if ( !SetupMonoClipScale( image, levels, in_low, 
+			in_high, out_low, out_high, &parms ) )
                 {
 			return 0;
                 }
@@ -95,10 +103,19 @@ int InitImportDrawableWindow(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	image = p->finfo.image1;
+
+	monoflag = 0;
+	parms = NULL;
+	if ( !image )
+		return( 0 );
 	if ( xp->vinfo.depth == 1 )
 	{
 		monoflag = 1;
-                if ( !SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) )
+                if ( !SetupMonoClipScale( image, levels, in_low, 
+			in_high, out_low, out_high, &parms ) )
                 {
 			return 0;
                 }
@@ -106,13 +123,13 @@ int InitImportDrawableWindow(xp, p, reps)
 	else
 		monoflag = 0;
 	GetXIEWindow( xp, p, xp->w, 1 );
-	if ( p->testPrivate == Obscuring )
+	if ( ( ( ImportParms * )p->ts )->obscure == Obscuring )
 		XMoveWindow( xp->d, drawableWindow, 100, 100 );
-	else if ( p->testPrivate == Obscured )
+	else if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
 		XMoveWindow( xp->d, drawableWindow, 400, 300 );
 	else
 		XMoveWindow( xp->d, drawableWindow, WIDTH + 10, 0 );
-	if ( p->testPrivate == Obscured )
+	if ( ( ( ImportParms * )p->ts )->obscure == Obscured )
 	{
 		XLowerWindow( xp->d, drawableWindow );
 		XSync( xp->d, 0 );
@@ -154,7 +171,7 @@ int InitImportLUT(xp, p, reps)
 		{
 			if ( i % 5 == 0 )
 			{
-				lut[ i ] = ( 1 << xp->vinfo.depth ) - i;
+				lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
 			}
 			else
 			{
@@ -162,7 +179,8 @@ int InitImportLUT(xp, p, reps)
 			}
 		}
 	}
-	if ( ( XIELut = GetXIELut( xp, p, lut, lutSize ) ) == ( XieLut ) NULL )
+	if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, lutSize ) ) == 
+		( XieLut ) NULL )
 	{
 		reps = 0;
 	}
@@ -220,7 +238,7 @@ void DoImportPhotoImmediate(xp, p, reps)
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
 	flo_id = 1;
-	flo_notify = False;	
+	flo_notify = decode_notify = False;	
 	flograph = XieAllocatePhotofloGraph(2);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -261,10 +279,11 @@ void DoImportPhotoStored(xp, p, reps)
 	int	flo_notify;
 	XiePhotoElement *flograph;
 	XiePhotoflo flo;
-        int     decode_notify;
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
+	int	decode_notify;
 
+	decode_notify = False;
 	flograph = XieAllocatePhotofloGraph(2);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -286,7 +305,7 @@ void DoImportPhotoStored(xp, p, reps)
 
 	/* crank it */
 
-	flo_notify = 0;
+	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
@@ -309,7 +328,6 @@ void DoImportDrawablePixmapImmediate(xp, p, reps)
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XiePhotoElement *flograph;
-	int	decode_notify;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
@@ -336,8 +354,8 @@ void DoImportDrawablePixmapImmediate(xp, p, reps)
 		flo_elements-1,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
     	for (i = 0; i != reps; i++) {
@@ -366,7 +384,6 @@ void DoImportDrawableWindowImmediate(xp, p, reps)
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XiePhotoElement *flograph;
-	int	decode_notify;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
@@ -396,8 +413,8 @@ void DoImportDrawableWindowImmediate(xp, p, reps)
 		1,              /* source phototag number */
 		drawableWindow,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
     	for (i = 0; i != reps; i++) {
@@ -428,7 +445,6 @@ void DoImportDrawablePlanePixmapImmediate(xp, p, reps)
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XiePhotoElement *flograph;
-	int	decode_notify;
 	int	planes;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
@@ -461,8 +477,8 @@ void DoImportDrawablePlanePixmapImmediate(xp, p, reps)
 		1,              /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	for ( i = 0; i < reps; i++ ) {
@@ -491,7 +507,6 @@ void DoImportDrawablePlaneWindowImmediate(xp, p, reps)
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 	XiePhotoElement *flograph;
-	int	decode_notify;
 	int	planes;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
@@ -525,8 +540,8 @@ void DoImportDrawablePlaneWindowImmediate(xp, p, reps)
 		1,              /* source phototag number */
 		drawableWindow,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
     	for (i = 0; i != reps; i++) {
@@ -610,7 +625,6 @@ void DoImportLUTStored(xp, p, reps)
 	int	flo_notify;
 	XiePhotoElement *flograph;
 	XiePhotoflo flo;
-        int     decode_notify;
         Bool    merge;
         XieLTriplet start;
 
@@ -639,7 +653,7 @@ void DoImportLUTStored(xp, p, reps)
 
 	/* crank it */
 
-	flo_notify = 0;
+	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
@@ -724,7 +738,7 @@ void DoImportROIStored(xp, p, reps)
 
 	/* crank it */
 
-	flo_notify = 0;
+	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
@@ -768,6 +782,8 @@ void EndImportDrawableWindow(xp, p)
     Parms   p;
 {
 	XUnmapWindow( xp->d, drawableWindow );
+	if ( parms )
+		free( parms );
 	dontClear = False;
 }
 
@@ -776,5 +792,7 @@ void EndImportDrawablePixmap(xp, p)
     Parms   p;
 {
 	XFreePixmap( xp->d, myPixmap );
+	if ( parms )
+		free( parms );
 }
 

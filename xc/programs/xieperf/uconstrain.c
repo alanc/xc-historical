@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: uconstrain.c,v 1.1 93/07/19 13:04:13 rws Exp $ */
 
 /**** module do_unconstrain.c ****/
 /******************************************************************************
@@ -58,6 +58,7 @@ int InitUnconstrainFlo(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	p->data = ( char * ) NULL;
 	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 		reps = 0;
 	return( reps );
@@ -83,8 +84,8 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
 	int	OutClampDelta = 0;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-
-	tech = p->constrain;
+	decode_notify = False;
+	tech = ( ( UnconstrainParms * ) p->ts )->constrain;
 
 	levels[ 0 ] = 1 << xp->vinfo.depth;
 	levels[ 1 ] = 0;
@@ -95,11 +96,11 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
 	out_low[ 0 ] = 0;
 	out_high[ 0 ] = ( 1 << xp->vinfo.depth ) - 1;
 
-	if ( p->clamp & ClampInputs )
+	if ( ( ( UnconstrainParms * ) p->ts )->clamp & ClampInputs )
 	{
 		InClampDelta = levels[ 0 ] / reps;
 	}
-	if ( p->clamp & ClampOutputs )
+	if ( ( ( UnconstrainParms * ) p->ts )->clamp & ClampOutputs )
 	{
 		OutClampDelta = out_high[ 0 ] / reps;
 	}	
@@ -117,8 +118,8 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
                	3,              /* source phototag number */
                	xp->w,
                	xp->fggc,
-               	p->dst_x,       /* x offset in window */
-               	p->dst_y        /* y offset in window */
+               	0,       /* x offset in window */
+               	0        /* y offset in window */
        	);
 	flo_notify = True;	
     	for (i = 0; i != reps; i++) {
@@ -151,6 +152,8 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
 			tech_parms
 		);
 
+		XSync( xp->d, 0 );
+
 		flo_id = i + 1;		
         	XieExecuteImmediate(xp->d, photospace,
                 	flo_id,		
@@ -158,6 +161,8 @@ void DoUnconstrainFloMapImmediate(xp, p, reps)
                 	flograph,       /* photoflo specification */
                 	4               /* number of elements */
         	);
+		if ( tech_parms )
+			free( tech_parms );
     	}
 	XieDestroyPhotospace( xp->d, photospace );
 	XieFreePhotofloGraph(flograph,4);	
@@ -179,16 +184,16 @@ void DoUnconstrainFloMapStored(xp, p, reps)
         XieConstant in_low,in_high;
         XieLTriplet out_low,out_high;
 
-	tech = p->constrain;
-
+	tech = ( ( UnconstrainParms * )p->ts )->constrain;
+	decode_notify = False;
 	levels[ 0 ] = 1 << xp->vinfo.depth;
 	levels[ 1 ] = 0;
 	levels[ 2 ] = 0;
 
 	in_low[ 0 ] = 0.0;
-	in_high[ 0 ] = ( float ) levels[ 0 ] / 2.0;
+	in_high[ 0 ] = ( float ) levels[ 0 ];
 	out_low[ 0 ] = 0;
-	out_high[ 0 ] = 1;
+	out_high[ 0 ] = levels[ 0 ] / 2;
 	if ( tech == xieValConstrainHardClip )
 	{
 		tech_parms = ( char * ) NULL;
@@ -227,15 +232,15 @@ void DoUnconstrainFloMapStored(xp, p, reps)
                	3,              /* source phototag number */
                	xp->w,
                	xp->fggc,
-               	p->dst_x,       /* x offset in window */
-               	p->dst_y        /* y offset in window */
+               	0,       /* x offset in window */
+               	0        /* y offset in window */
        	);
 
 	flo = XieCreatePhotoflo( xp->d, flograph, 4 );
 
 	/* crank it */
 
-	flo_notify = 0;
+	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
@@ -243,6 +248,10 @@ void DoUnconstrainFloMapStored(xp, p, reps)
 
 	/* destroy the photoflo */
 
+	if ( tech_parms )
+	{
+		free( tech_parms );
+	}
 	XieFreePhotofloGraph(flograph,4);	
 	XieDestroyPhotoflo( xp->d, flo );
 }
@@ -253,7 +262,11 @@ void EndUnconstrainFlo(xp, p)
 {
 	/* deallocate the data buffer */
 
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 
 	/* destroy the photomap */
 

@@ -105,9 +105,8 @@ int InitQueryPhotoflo(xp, p, reps)
     Parms   p;
     int     reps;
 {
-        int     lutSize;
+        int     lutSize, lutLevels;
         unsigned char   *lut1, *lut2;
-        int     decode_notify;
         Bool    merge;
         XieLTriplet start;
 
@@ -118,7 +117,8 @@ int InitQueryPhotoflo(xp, p, reps)
                 return 0;
         }
 
-        lutSize = 1 << p->levelsIn;
+        lutSize = ( ( QueryParms * ) p->ts )->lutSize;
+        lutLevels = ( ( QueryParms * ) p->ts )->lutLevels;
         lut1 = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut1 == ( unsigned char * ) NULL )
                 return 0;
@@ -129,16 +129,16 @@ int InitQueryPhotoflo(xp, p, reps)
                 free( lut1 );
                 return( 0 );
         }
-        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize ) ) ==
-                ( XieLut ) NULL )
+        if ( ( PhotofloTestLut1 = GetXIELut( xp, p, lut1, lutSize,
+		lutLevels ) ) == ( XieLut ) NULL )
         {
                 XieFreePhotofloGraph(flograph,2);
                 free( lut1 );
                 free( lut2 );
                 return 0;
         }
-        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize ) ) ==
-                ( XieLut ) NULL )
+        if ( ( PhotofloTestLut2 = GetXIELut( xp, p, lut2, lutSize,
+		lutLevels ) ) == ( XieLut ) NULL )
         {
                 XieFreePhotofloGraph(flograph,2);
                 free( lut1 );
@@ -176,7 +176,7 @@ void DoQueryTechniques(xp, p, reps)
 	XieTechnique		*techVector;
 	int			j, i, numTech;
 
-	techGroup = ( XieTechniqueGroup ) ( p->testPrivate );
+	techGroup = ( ( QueryParms * ) p->ts )->techGroup;
 
 	for ( i = 0; i < reps; i++ )
 	{
@@ -252,6 +252,11 @@ void DoQueryPhotomap(xp, p, reps)
 	XieDataClass	data_class;
 	Bool 	pop, error;
 	XieDecodeTechnique decode;
+        XIEimage *image;
+
+        image = p->finfo.image1;
+        if ( !image )
+                return;
 
 	error = False;
 	for ( i = 0; i < reps && error == False; i++ )
@@ -263,21 +268,21 @@ void DoQueryPhotomap(xp, p, reps)
 			fflush( stderr );
 			error = True;
 		}
-		if ( levels[ 0 ] != p->levels )
+		if ( levels[ 0 ] != image->levels )
 		{
-			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%x got 0x%x\n", p->levels, levels[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap levels return invalid should be 0x%x got 0x%x\n", image->levels, levels[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
-		if ( width[ 0 ] != p->width )
+		if ( width[ 0 ] != image->width )
 		{
-			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%x\n", p->width, width[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap width return invalid should be 0x%x got 0x%x\n", image->width, width[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}
-		if ( height[ 0 ] != p->height )
+		if ( height[ 0 ] != image->height )
 		{
-			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%x\n", p->height, height[ 0 ] );
+			fprintf( stderr, "XieQueryPhotomap height return invalid should be 0x%x got 0x%x\n", image->height, height[ 0 ] );
 			fflush( stderr );
 			error = True;
 		}

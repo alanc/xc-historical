@@ -1,4 +1,4 @@
-/* $XConsortium: do_pasteup.c,v 1.1 93/07/19 13:03:17 rws Exp $ */
+/* $XConsortium: pasteup.c,v 1.2 93/07/19 14:44:24 rws Exp $ */
 
 /**** module do_pasteup.c ****/
 /******************************************************************************
@@ -77,32 +77,55 @@ int InitPasteUp(xp, p, reps)
     XParms  xp;
     Parms   p;
     int     reps;
-{
+{	
+	XIEimage *image;
+	int	i;
+
+	parms = NULL;
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+        if ( !image )
+                return( 0 );
+
+	monoflag = 0;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, 
+		if ( SetupMonoClipScale( image, levels, 
 			in_low, in_high, out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
         }
 
-	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+	if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+		( XiePhotomap ) NULL )
 	{
 		reps = 0;
 	}
 
 	else if ( !SegmentPhotomap( xp, p, XIEPhotomap, 
-		segments, NTILES, SPLIT, p->width, p->height ) )
+		segments, NTILES, SPLIT, image->width, image->height ) )
 	{
+		CloseXIEPhotomap( xp, p, XIEPhotomap );
 		reps = 0;
 	}
 
 	else if ( !BuildPasteUpFlograph( xp, p, 
-		&flograph, segments, NTILES, SPLIT, p->width, p->height ) )
+		&flograph, segments, NTILES, SPLIT, image->width, 
+		image->height ) )
 	{
+		CloseXIEPhotomap( xp, p, XIEPhotomap );
+		for ( i = 0; i < NTILES; i++ )
+			XieDestroyPhotomap( xp->d, segments[ i ] );
 		reps = 0;
+	}
+	if ( !reps && parms )
+		free( parms );
+	if ( !reps && p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
 	}
         return( reps );
 }
@@ -254,7 +277,7 @@ int	height;
 	/* build all of the tiles, with initial dst_x and dst_y */
 
 	if ( !BuildMeSomeTiles( tiles, split, tile_width, tile_height, 1,
-		p->testPrivate ) )
+		( ( PasteUpParms * ) p->ts )->overlap ) )
 		return( 0 );
 
 	/* gee, that was easy */
@@ -279,8 +302,8 @@ int	height;
 		flo_elements - 1,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
@@ -373,20 +396,27 @@ void DoPasteUp(xp, p, reps)
 {
     	int     i, method;
 	int	flo_notify;
+	XIEimage *image;
+	int	width, height, overlap;
 
 	flo_notify = True;	
-
+	image = p->finfo.image1;
+	if ( !image )
+		return;
 	method = 0;
+	width = image->width;
+	height = image->height;
+	overlap = ( ( PasteUpParms * ) p->ts )->overlap;
 	for ( i = 0; i != reps; i++ )
 	{
                 XieExecutePhotoflo( xp->d, flo, flo_notify );
 		WaitForFloToFinish( xp, flo );
 		XSync( xp->d, 0 );
-		BuildMeSomeTiles( tiles, SPLIT, p->width / SPLIT,
-			p->height / SPLIT, method++, p->testPrivate );
+		BuildMeSomeTiles( tiles, SPLIT, width / SPLIT,
+			height / SPLIT, method++, overlap );
 		if ( method == 2 )
 			method = 0;
-		XieFloPasteUp( &flograph[ pasteUpIdx ], p->width, p->height, 
+		XieFloPasteUp( &flograph[ pasteUpIdx ], width, height, 
 			constant, tiles, NTILES );
 		XieModifyPhotoflo( xp->d, flo, pasteUpIdx + 1, &flograph[pasteUpIdx], 1 );
 		XSync( xp->d, 0 );
@@ -399,7 +429,13 @@ int EndPasteUp(xp, p)
 {
 	int	i;
 
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free( parms );
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
 	for ( i = 0; i < NTILES; i++ )
 		XieDestroyPhotomap( xp->d, segments[ i ] );

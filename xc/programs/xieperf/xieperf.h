@@ -83,37 +83,13 @@ static struct stat _Stat_Buffer;
 #define file_size(path) ( stat(path,&_Stat_Buffer)== 0 ? \
                 _Stat_Buffer.st_size :  -1)
 
-/* XXX this is getting ugly - needs re-thinking for beta release */
-
-typedef struct _XIEfile {
-    char	*fname1;	/* filename ( monadic tests )*/
-    int		fsize1;	      	/* size in bytes. set in init function */
-    char	*fname2;	/* filename ( dyadic tests ) */
-    int		fsize2;	      	/* size in bytes. set in init function */
-    char	*fname3;	/* filename ( alpha plane ) */
-    int		fsize3;	      	/* size in bytes. set in init function */
-
-/* other fields are possibilities for this struct. Time will tell
-   if such things are needed. */
-
-} XIEfile;
-
-typedef struct _XIEgeo {
-	int	geoType;
-	int	geoHeight;
-	int	geoWidth;
-	int	geoXOffset;
-	int	geoYOffset;
-	XieGeometryTechnique geoTech;
-	int	geoAngle;
-} XIEgeo;
-   
 #define	ClampInputs	1
 #define	ClampOutputs	2
 
 #define	Drawable	1
 #define	DrawablePlane 	2
 
+#define NoObscure 	0
 #define Obscured	1
 #define	Obscuring	2
 
@@ -148,9 +124,9 @@ typedef struct _XIEgeo {
 #define	IsColor24( x ) ( x & CAPA_COLOR_24 ? 1 : 0 )
 #define IsTripleBand( x ) ( x & CAPA_TRIPLE_BAND ) ? 1 : 0 )
 
-#define IsFaxImage( x ) ( x == xieValDecodeG42D   ||          \
-                          x == xieValDecodeG32D   ||            \
-                          x == xieValDecodeG31D )
+#define IsFaxImage( x ) ( x == xieValDecodeG42D   ||		\
+			  x == xieValDecodeG32D   ||		\
+			  x == xieValDecodeG31D )
 
 /* protocol subset masks */
 
@@ -165,44 +141,160 @@ typedef struct _XIEgeo {
 #define IsDIS( x ) ( x & SUBSET_DIS ? 1 : 0 )
 #define IsDISAndFull( x ) ( IsFullTest( x ) && IsDISTest( x ) )
 
-/* XXX yeech - this will be done better in subsequent releases */
+/*
+ * configuration shared by all tests 
+ */
  
+/* image configuration */
+
+typedef struct _Image {
+    char	*fname;		/* filename */
+    int		fsize;	      	/* size in bytes. set in init function */
+    int		data_class;    	/* singleband or tripleband */
+    int		width;		/* width of image */
+    int         height;         /* height of image */
+    int         depth;		/* pixel depth */
+    int         levels;		/* 1 << depth */
+    int		decode;	     	/* decode method */
+    int         fill_order;
+    int         pixel_order;
+    int         pixel_stride;
+    int         scanline_pad;
+    int         left_pad;
+    unsigned int chksum;
+} XIEimage;
+
+/* a file represents an image. 3 files per test are supported */
+
+typedef struct _XIEfile {
+    XIEimage	*image1;	
+    XIEimage	*image2;	
+    XIEimage	*image3;	
+} XIEifile;
+
+/* test parameters */
+
 typedef struct _Parms {
     /* Required fields */
-    int  	objects;/* Number of objects to process in one X call */
+    int  	objects;    /* Number of objects to process in one X call */
     /* Optional fields */
-    Window	w;
-    int		width;		/* width of image */
-    int 	height;		/* height of image */
-    int		depth;	      
-    int		levels;		
-    int		dst_x;		/* x offset in window */
-    int		dst_y;		/* y offset in window */
-    int 	fill_order;     
-    int 	pixel_order;    
-    int 	pixel_stride;   
-    int 	scanline_pad;   
-    int 	left_pad;
-    int 	buffer_size;    
-    char 	*data;		/* the data */
-    int		immediate;	/* XXX True or False */
-    XIEfile 	finfo;	
-    unsigned short description;
-    XieDataClass data_class;
-    XieDecodeTechnique decode; 
-    XieConstrainTechnique constrain;
+    int		description; /* server requirements flags */
+    int         buffer_size; /* size when sending/reading data from xie */
+    char        *data;       /* image data */
+    XIEifile 	finfo;      /* image file info */	
+    caddr_t	ts;	    /* test specifics */		
+} ParmRec, *Parms;
+
+/*
+ * test specific configuration. One structure per C source file.
+ */
+
+typedef struct _abortParms {
+    int 	lutSize; 
+    int		lutLevels;
+} AbortParms;
+
+typedef struct _awaitParms {
+    int		lutSize;
+    int		lutLevels;
+} AwaitParms;
+
+typedef struct _blendParms {
+    XieConstant constant;
+    XieFloat 	alphaConstant;
+    int		bandMask;
+} BlendParms;
+
+typedef struct _constrainParms {
+    int		constrain;
     int		clamp;
-    XieDitherTechnique dither;
-    int		testPrivate;
-    int		levelsIn;
-    int		levelsOut;
+} ConstrainParms;
+
+typedef struct _creatDstryParms {
+    int		dummy;
+} CreateDestroyParms;
+
+typedef struct _cvtToIndexParms {
+    int		dither;
+} CvtToIndexParms;
+
+typedef struct _ditherParms {
+    int		dither;
+    int		drawable;
+} DitherParms;
+
+typedef struct _exportClParms {
+    int		dummy;
+} ExportClParms;
+
+typedef struct _floParms {
+    int		dummy;
+} FloParms;
+
+typedef struct _floMapParms {
+    int		dummy;
+} FloMapParms;
+
+typedef struct _geometryParms {
+    int		geoType;
+    int		geoHeight;
+    int		geoWidth;
+    int		geoXOffset;
+    int		geoYOffset;
+    XieGeometryTechnique geoTech;
+    int		geoAngle;
+} GeometryParms;
+
+typedef struct _logicalParms {
     XieConstant	logicalConstant;
     unsigned long logicalOp;
-    int 	logicalBandMask;
-    XieFloat 	blendAlphaConstant;
-    XiePhototag blendAlpha;
-    XIEgeo	geo;
-} ParmRec, *Parms;
+    int		logicalBandMask;
+} LogicalParms;
+
+typedef struct _importParms {
+    int		obscure;
+} ImportParms;
+
+typedef struct _importClParms {
+    int		dummy;
+} ImportClParms;
+
+typedef struct _pasteUpParms {
+    int		overlap;
+} PasteUpParms;
+
+typedef struct _redefineParms {
+    XieConstant	constant;
+    int		bandMask;
+    unsigned long op1;
+    unsigned long op2;
+} RedefineParms;
+
+typedef struct _modifyParms {
+    XieConstant	constant;
+    int		bandMask;
+    unsigned long op;
+} ModifyParms;
+
+typedef struct _pointParms {
+    int		levelsIn;
+    int		levelsOut;
+} PointParms;
+
+typedef struct _unconstrainParms {
+    int		constrain;
+    int		clamp;
+} UnconstrainParms;
+
+typedef struct _purgeColStParms {
+    int		dummy;
+} PurgeColStParms;
+
+typedef struct _queryParms {
+    int		lutSize;
+    int		lutLevels;
+    XieTechniqueGroup techGroup;
+} QueryParms;
 
 typedef struct _XParms {
     Display	    *d;
@@ -217,15 +309,7 @@ typedef struct _XParms {
     Version	    version;
 } XParmRec, *XParms;
 
-#if 0
-typedef enum {
-    WINDOW,     /* Windowing test, rop has no affect		    */
-    ROP,	/* Graphics test, rop has some affect		    */
-    NONROP      /* Graphics or overhead test, top has no affect     */
-} TestType;
-#else
 typedef int TestType;
-#endif
 
 typedef struct _Test {
     char	*option;    /* Name to use in prompt line		    */

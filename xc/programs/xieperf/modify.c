@@ -1,4 +1,4 @@
-/* $XConsortium: do_modify.c,v 1.1 93/07/19 13:03:10 rws Exp $ */
+/* $XConsortium: modify.c,v 1.2 93/07/19 14:44:18 rws Exp $ */
 
 /**** module do_modify.c ****/
 /******************************************************************************
@@ -74,13 +74,21 @@ int InitModifyROI(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;	
         XieRectangle *rects;
         int     rectsSize, i;
 
+	p->data = ( char * ) NULL;
+	monoflag = 0;
+	parms = NULL;
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -113,6 +121,11 @@ int InitModifyROI(xp, p, reps)
 				rects[ i ].width = 50;
 				rects[ i ].height = 50;
 			}
+			if ( p->data )
+			{
+				free( p->data );
+				p->data = ( char * ) NULL;
+			}
 			if ( ( XIERoi2 = GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
 			{
 				XieDestroyROI( xp->d, XIERoi1 );
@@ -120,11 +133,20 @@ int InitModifyROI(xp, p, reps)
 			}
 			else
 			{
+				if ( p->data )
+				{
+					free( p->data );
+					p->data = ( char * ) NULL;
+				}
 				if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 				{
 					XieDestroyROI( xp->d, XIERoi1 );
 					XieDestroyROI( xp->d, XIERoi2 );
-					free( p->data );
+					if ( p->data ) 
+					{
+						free( p->data );
+						p->data = ( char * ) NULL;
+					}
 					reps = 0;
 				}
 			}
@@ -136,11 +158,22 @@ int InitModifyROI(xp, p, reps)
 			XieDestroyROI( xp->d, XIERoi1 );
 			XieDestroyROI( xp->d, XIERoi2 );
 			XieDestroyPhotomap( xp->d, XIEPhotomap );
-			free( p->data );
+			if ( p->data )
+			{
+				free( p->data );
+				p->data = ( char * ) NULL;
+			}
 			reps = 0;
 		}
         if ( rects )
                 free( rects );
+	if ( !reps && parms )
+		free( parms );
+	if ( !reps && p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
         return( reps );
 }
 
@@ -163,8 +196,7 @@ XiePhotoElement **flograph;
 		return( 0 );
 	}
 
-	XieFloImportPhotomap(&(*flograph)[0], XIEPhotomap,
-		False);
+	XieFloImportPhotomap(&(*flograph)[0], XIEPhotomap, False);
 
 	XieFloImportROI(&(*flograph)[1], XIERoi1); /* as good a ROI as any */
 
@@ -176,9 +208,9 @@ XiePhotoElement **flograph;
 		1,
 		0,
 		&domain,
-		p->logicalConstant,
-		p->logicalOp,
-		p->logicalBandMask );
+		((ModifyParms * )p->ts)->constant,
+		((ModifyParms * )p->ts)->op,
+		((ModifyParms * )p->ts)->bandMask );
 
         if ( monoflag )
         {
@@ -194,8 +226,8 @@ XiePhotoElement **flograph;
 		flo_elements - 1,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
@@ -241,12 +273,18 @@ int EndModifyROI(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
 	XieDestroyROI( xp->d, XIERoi1 );
 	XieDestroyROI( xp->d, XIERoi2 );
         XieFreePhotofloGraph(flograph,flo_elements);
         XieDestroyPhotoflo( xp->d, flo );
+	if ( parms )
+		free( parms );
 }
 
 int InitModifyPoint(xp, p, reps)
@@ -257,6 +295,7 @@ int InitModifyPoint(xp, p, reps)
     	unsigned char *lut; 
         int     lutSize, i;
 
+	p->data = ( char * ) NULL;
         lutSize = 1 << xp->vinfo.depth;
         lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut == ( unsigned char * ) NULL )
@@ -266,12 +305,14 @@ int InitModifyPoint(xp, p, reps)
 			lut[ i ] = 1;
 		else
 			lut[ i ] = 0;
-        if ( ( XIELut1 = GetXIELut( xp, p, lut, lutSize ) ) == ( XieLut ) NULL )
+        if ( ( XIELut1 = GetXIELut( xp, p, lut, lutSize, 2 ) ) == 
+		( XieLut ) NULL )
 	{
 		free( lut );
 		return( 0 );
 	}
-	free( lut );
+	if ( lut )
+		free( lut );
         lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
         if ( lut == ( unsigned char * ) NULL )
 	{
@@ -283,7 +324,8 @@ int InitModifyPoint(xp, p, reps)
 			lut[ i ] = 0;
 		else
 			lut[ i ] = 1;
-        if ( ( XIELut2 = GetXIELut( xp, p, lut, lutSize ) ) == ( XieLut ) NULL )
+        if ( ( XIELut2 = GetXIELut( xp, p, lut, lutSize, 2 ) ) == 
+		( XieLut ) NULL )
 	{
 		free( lut );
 		XieDestroyLUT( xp->d, XIELut1 );
@@ -295,7 +337,11 @@ int InitModifyPoint(xp, p, reps)
 	{
 		XieDestroyLUT( xp->d, XIELut1 );
 		XieDestroyLUT( xp->d, XIELut2 );
-		free( p->data );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
 		reps = 0;
 	}
 
@@ -305,7 +351,11 @@ int InitModifyPoint(xp, p, reps)
 			XieDestroyLUT( xp->d, XIELut1 );
 			XieDestroyLUT( xp->d, XIELut2 );
 			XieDestroyPhotomap( xp->d, XIEPhotomap );
-			free( p->data );
+			if ( p->data )
+			{
+				free( p->data );
+				p->data = ( char * ) NULL;
+			}
 			reps = 0;
 		}
         return( reps );
@@ -342,8 +392,8 @@ XiePhotoElement **flograph;
 		3,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
@@ -389,7 +439,11 @@ int EndModifyPoint(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
 	XieDestroyLUT( xp->d, XIELut1 );
 	XieDestroyLUT( xp->d, XIELut2 );
@@ -402,10 +456,19 @@ int InitModifySimple(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	image = p->finfo.image1;
+        if ( !image )
+                return( 0 );
+	parms = NULL;
+	monoflag = 0;
+	p->data = ( char * ) NULL;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, in_high, 
+			out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -415,12 +478,22 @@ int InitModifySimple(xp, p, reps)
 	{
 		reps = 0;
 	}
-
 	else if ( !BuildModifySimpleFlograph( xp, p, &flograph ) )
 	{
 		XieDestroyPhotomap( xp->d, XIEPhotomap );
-		free( p->data );
+		if ( p->data )
+		{
+			free( p->data );
+			p->data = ( char * ) NULL;
+		}
 		reps = 0;
+	}
+	if ( !reps && parms )
+		free(parms );
+	if ( !reps && p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
 	}
         return( reps );
 }
@@ -458,8 +531,8 @@ XiePhotoElement **flograph;
 		flo_elements - 1,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo = XieCreatePhotoflo( xp->d, *flograph, flo_elements );
@@ -493,8 +566,8 @@ void DoModifySimple(xp, p, reps)
 				flo_elements - 1,  /* source phototag number */
 				xp->w,
 				xp->fggc,
-				p->dst_x,       /* x offset in window */
-				p->dst_y        /* y offset in window */
+				0,       /* x offset in window */
+				0        /* y offset in window */
 			);
 		}
 		else
@@ -504,8 +577,8 @@ void DoModifySimple(xp, p, reps)
 				flo_elements - 1,  /* source phototag number */
 				xp->w,
 				xp->fggc,
-				p->dst_x + 100,       /* x offset in window */
-				p->dst_y + 100        /* y offset in window */
+				100,       /* x offset in window */
+				100        /* y offset in window */
 			);
 		}
 		XClearWindow( xp->d, xp->w );
@@ -518,7 +591,13 @@ int EndModifySimple(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free(parms );
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
         XieFreePhotofloGraph(flograph,flo_elements);
         XieDestroyPhotoflo( xp->d, flo );

@@ -1,4 +1,4 @@
-/* $XConsortium: do_logical.c,v 1.1 93/07/19 13:03:04 rws Exp $ */
+/* $XConsortium: logical.c,v 1.2 93/07/19 14:44:12 rws Exp $ */
 
 /**** module do_logical.c ****/
 /******************************************************************************
@@ -67,18 +67,36 @@ int InitLogicalMonadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
+	parms = NULL;
+	monoflag = 0;
 	if ( xp->vinfo.depth == 1 )
 	{
 		monoflag = 1;
-		if ( !SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) )
+		if ( !SetupMonoClipScale( image, levels, 
+			in_low, in_high, out_low, out_high, &parms ) )
 		{
 			reps = 0;
 		}
 	}	
 
 	if ( reps )
-		if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+		if ( ( XIEPhotomap = 
+			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 			reps = 0;
+	if ( !reps && parms )
+		free( parms );
+	if ( !reps && p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+		
 	return( reps );
 }
 
@@ -87,10 +105,19 @@ int InitLogicalDyadic(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+	parms = NULL;
+	if ( !image )
+		return( 0 );
+	monoflag = 0;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, 
+			in_high, out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -101,12 +128,21 @@ int InitLogicalDyadic(xp, p, reps)
         else
         {
 		free( p->data );
-                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == ( XiePhotomap ) NULL )
+		p->data = ( char * ) NULL;
+                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == 
+			( XiePhotomap ) NULL )
 		{
 			XieDestroyPhotomap( xp->d, src1 );
                         reps = 0;
 		}
         }
+	if ( !reps && parms )
+		free( parms );
+	if ( !reps && p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
         return( reps );
 }
 
@@ -117,11 +153,19 @@ int InitROILogicalMonadic(xp, p, reps)
 {
         XieRectangle *rects;
         int     rectsSize, i;
+	XIEimage *image;
 
+	image = p->finfo.image1;
+	if ( !image )
+		return( 0 );
+	p->data = ( char * ) NULL;
+	parms = NULL;
+	monoflag = 0;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, 
+			in_high, out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -140,16 +184,30 @@ int InitROILogicalMonadic(xp, p, reps)
                         rects[ i ].height = 100;
                 }
         }
-        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
+        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == 
+		( XieRoi ) NULL )
         {
                 reps = 0;
         }
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
         if ( rects )
                 free( rects );
-        if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+        if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == 
+		( XiePhotomap ) NULL )
 	{
 		XieDestroyROI( xp->d, XIERoi );
                 reps = 0;
+	}
+	if ( !reps && parms )
+		free( parms );
+	if ( !reps && p->data )
+	{	
+		free( p->data );
+		p->data = ( char * ) NULL;
 	}
         return( reps );
 }
@@ -161,11 +219,19 @@ int InitROILogicalDyadic(xp, p, reps)
 {
         XieRectangle *rects;
         int     rectsSize, i;
+        XIEimage *image;
 
+        image = p->finfo.image1;
+	p->data = ( char * ) NULL;
+        if ( !image )
+                return( 0 );
+	parms = NULL;
+	monoflag = 0;
         if ( xp->vinfo.depth == 1 )
         {
 		monoflag = 1;
-		if ( SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) == 0 )
+		if ( SetupMonoClipScale( image, levels, in_low, 
+			in_high, out_low, out_high, &parms ) == 0 )
 		{
 			return( 0 );
 		}
@@ -184,12 +250,18 @@ int InitROILogicalDyadic(xp, p, reps)
                         rects[ i ].height = 100;
                 }
         }
-        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == ( XieRoi ) NULL )
+        if ( ( XIERoi = GetXIERoi( xp, p, rects, rectsSize ) ) == 
+		( XieRoi ) NULL )
         {
                 reps = 0;
         }
         if ( rects )
                 free( rects );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 
         if ( ( src1 = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 	{
@@ -199,13 +271,22 @@ int InitROILogicalDyadic(xp, p, reps)
         else
         {
 		free( p->data );
-                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == ( XiePhotomap ) NULL )
+		p->data = ( char * ) NULL;
+                if ( ( src2 = GetXIEPhotomap( xp, p, 2 ) ) == 
+			( XiePhotomap ) NULL )
 		{
                         reps = 0;
 			XieDestroyPhotomap( xp->d, src1 );
 			XieDestroyROI( xp->d, XIERoi );
 		}
         }
+	if ( !reps && p->data )
+	{	
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms && !reps )
+		free( parms );
         return( reps );
 }
 
@@ -231,6 +312,7 @@ void DoLogicalMonadicImmediate(xp, p, reps)
 		flo_elements = 4;
 	else
 		flo_elements = 3;
+	decode_notify = False;
 	flograph = XieAllocatePhotofloGraph(flo_elements);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -247,9 +329,9 @@ void DoLogicalMonadicImmediate(xp, p, reps)
 		1,
 		0,
 		&domain,
-		p->logicalConstant,
-		p->logicalOp,
-		p->logicalBandMask );
+		( ( LogicalParms * ) p->ts )->logicalConstant,
+		( ( LogicalParms * ) p->ts )->logicalOp,
+		( ( LogicalParms * ) p->ts )->logicalBandMask );
 	if ( monoflag )
 	{
 		XieFloConstrain(&flograph[2],
@@ -263,8 +345,8 @@ void DoLogicalMonadicImmediate(xp, p, reps)
 		flo_elements - 1, /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 	flo_notify = True;	
     	for (i = 0; i != reps; i++) {
@@ -301,6 +383,7 @@ void DoLogicalDyadicImmediate(xp, p, reps)
 
         photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
+	decode_notify = False;
         flo_id = 1;
         if ( monoflag )
                 flo_elements = 5;
@@ -327,9 +410,9 @@ void DoLogicalDyadicImmediate(xp, p, reps)
 		1,
 		2,
 		&domain,
-		p->logicalConstant,
-		p->logicalOp,
-		p->logicalBandMask );
+		( ( LogicalParms * ) p->ts )->logicalConstant,
+		( ( LogicalParms * ) p->ts )->logicalOp,
+		( ( LogicalParms * ) p->ts )->logicalBandMask );
 	if ( monoflag )
 	{
 		XieFloConstrain(&flograph[3],
@@ -344,8 +427,8 @@ void DoLogicalDyadicImmediate(xp, p, reps)
 		flo_elements-1,         /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo_notify = True;
@@ -388,6 +471,7 @@ void DoROILogicalMonadicImmediate(xp, p, reps)
                 flo_elements = 5;
         else
                 flo_elements = 4;
+	decode_notify = False;
 	flograph = XieAllocatePhotofloGraph(flo_elements);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -407,9 +491,9 @@ void DoROILogicalMonadicImmediate(xp, p, reps)
 		1,
 		0,
 		&domain,
-		p->logicalConstant,
-		p->logicalOp,
-		p->logicalBandMask );
+		( ( LogicalParms * ) p->ts )->logicalConstant,
+		( ( LogicalParms * ) p->ts )->logicalOp,
+		( ( LogicalParms * ) p->ts )->logicalBandMask );
 
 	if ( monoflag )
 	{
@@ -425,8 +509,8 @@ void DoROILogicalMonadicImmediate(xp, p, reps)
 		flo_elements - 1,       /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo_notify = True;	
@@ -470,6 +554,7 @@ void DoROILogicalDyadicImmediate(xp, p, reps)
                 flo_elements = 6;
         else
                 flo_elements = 5;
+	decode_notify = False;
         flograph = XieAllocatePhotofloGraph(flo_elements);
         if ( flograph == ( XiePhotoElement * ) NULL )
         {
@@ -493,9 +578,9 @@ void DoROILogicalDyadicImmediate(xp, p, reps)
 		1,
 		2,
 		&domain,
-		p->logicalConstant,
-		p->logicalOp,
-		p->logicalBandMask );
+		( ( LogicalParms * ) p->ts )->logicalConstant,
+		( ( LogicalParms * ) p->ts )->logicalOp,
+		( ( LogicalParms * ) p->ts )->logicalBandMask );
 	if ( monoflag )
 	{
 		XieFloConstrain(&flograph[4],
@@ -509,8 +594,8 @@ void DoROILogicalDyadicImmediate(xp, p, reps)
 		flo_elements - 1,   /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 
 	flo_notify = True;
@@ -535,7 +620,13 @@ int EndLogicalMonadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free( parms );
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
 }
 
@@ -543,7 +634,13 @@ int EndLogicalDyadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free( parms );
 	XieDestroyPhotomap( xp->d, src1 );
 	XieDestroyPhotomap( xp->d, src2 );
 }
@@ -552,7 +649,13 @@ int EndROILogicalMonadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-        free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free( parms );
         XieDestroyPhotomap( xp->d, XIEPhotomap );
         XieDestroyROI( xp->d, XIERoi );
 }
@@ -561,7 +664,13 @@ int EndROILogicalDyadic(xp, p)
     XParms  xp;
     Parms   p;
 {
-        free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( parms )
+		free( parms );
         XieDestroyPhotomap( xp->d, src1 );
         XieDestroyPhotomap( xp->d, src2 );
         XieDestroyROI( xp->d, XIERoi );

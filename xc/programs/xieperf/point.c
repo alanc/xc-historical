@@ -1,4 +1,4 @@
-/* $XConsortium: do_point.c,v 1.1 93/07/19 13:03:23 rws Exp $ */
+/* $XConsortium: point.c,v 1.2 93/07/19 14:44:28 rws Exp $ */
 
 /**** module do_point.c ****/
 /******************************************************************************
@@ -67,58 +67,73 @@ int InitPoint(xp, p, reps)
     int     reps;
 {
 	unsigned char *lut;
-	int lutSize, i;
+	int lutSize, i, levelsIn, levelsOut;
+        XIEimage *image;
 
+        image = p->finfo.image1;
+        if ( !image )
+                return( 0 );
+
+	parms = NULL;
+	monoflag = 0;
         if ( xp->vinfo.depth == 1 )
         {
                 monoflag = 1;
-                if ( !SetupMonoClipScale( xp, p, levels, in_low, in_high, out_low, out_high, &parms ) )
+                if ( !SetupMonoClipScale( image, levels, 
+			in_low, in_high, out_low, out_high, &parms ) )
                 {
-			return;
+			return( 0 );
                 }
         }
 
-	lutSize = 1 << p->levelsIn;
+	levelsIn = (( PointParms * ) p->ts )->levelsIn;
+	levelsOut = (( PointParms * ) p->ts )->levelsOut;
+	lutSize = 1 << levelsIn;
 	lut = (unsigned char *)malloc( lutSize * sizeof( unsigned char ) );
 	if ( lut == ( unsigned char * ) NULL )
 		reps = 0;
-	else if ( p->levelsIn == 8 && p->levelsOut == 8 )
+	else if ( levelsIn == 8 && levelsOut == 8 )
 	{
 		for ( i = 0; i < 75; i++ )
 			lut[ i ] = i;
 		for ( i = 75; i < lutSize; i++ )
 		{
-			lut[ i ] = ( 1 << p->levelsOut ) - i;
+			lut[ i ] = ( 1 << levelsOut ) - i;
 		}
 	}
-	else if ( p->levelsIn == 1 && p->levelsOut == 8 )
+	else if ( levelsIn == 1 && levelsOut == 8 )
 	{
 		lut[ 0 ] = 0;
 		lut[ 1 ] = 255;
 	}
-	else if ( p->levelsIn == 8 && p->levelsOut == 1 )
+	else if ( levelsIn == 8 && levelsOut == 1 )
 	{
 		for ( i = 0; i < 75; i++ )
 			lut[ i ] = 0;
 		for ( i = 75; i < 256; i++ )
 			lut[ i ] = 1;
 	}	
-	if ( p->levelsIn == 1 )
+	if ( levelsIn == 1 )
 	{
 		if ( ( XIEPhotomap = GetXIEBitonalPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 			reps = 0;
 	}
 	else if ( ( XIEPhotomap = GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
+	{
 		reps = 0;
+	}
 	if ( reps != 0 )
 	{
-		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize ) ) == ( XieLut ) NULL )
+		if ( ( XIELut = GetXIELut( xp, p, lut, lutSize, 1 << levelsOut ) ) 
+			== ( XieLut ) NULL )
 		{
 			reps = 0;
 		}
 	}
 	if ( lut )
 		free( lut );
+	if ( !reps && parms )
+		free( parms );
 	return( reps );
 }
 
@@ -128,6 +143,7 @@ void DoPointImmediate(xp, p, reps)
     int     reps;
 {
     	int     i, flo_elements;
+	int	levelsOut;
 	int     band_mask = 1;
 	char 	*datatmp;
 	int	flo_notify, flo_id;
@@ -139,6 +155,7 @@ void DoPointImmediate(xp, p, reps)
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
 
+	levelsOut = (( PointParms * ) p->ts )->levelsOut;
 	flo_id = 1;
         if ( monoflag )
                 flo_elements = 5;
@@ -152,6 +169,7 @@ void DoPointImmediate(xp, p, reps)
 		return;
 	}
 
+	decode_notify = False;
 	XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
 
 	domain.offset_x = 0;
@@ -177,14 +195,14 @@ void DoPointImmediate(xp, p, reps)
 		);
 	}
 
-	if ( p->levelsOut == 1 )
+	if ( levelsOut == 1 )
 	{
 		XieFloExportDrawablePlane(&flograph[flo_elements - 1],
 			flo_elements - 1,  /* source phototag number */
 			xp->w,
 			xp->fggc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 	}
 	else
@@ -193,8 +211,8 @@ void DoPointImmediate(xp, p, reps)
 			flo_elements - 1,  /* source phototag number */
 			xp->w,
 			xp->fggc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 	}
 
@@ -227,8 +245,10 @@ void DoPointStored(xp, p, reps)
         int     band_mask = 1;
         int     band_order = xieValLSFirst;
         XieProcessDomain domain;
+	int	levelsOut;
         int     decode_notify;
 
+	levelsOut = ( ( PointParms * ) p->ts )->levelsOut;
         if ( monoflag )
                 flo_elements = 5;
         else
@@ -241,8 +261,8 @@ void DoPointStored(xp, p, reps)
 		return;
 	}
 
-        XieFloImportPhotomap(&flograph[0], XIEPhotomap,
-		decode_notify);
+	decode_notify = False;
+        XieFloImportPhotomap(&flograph[0], XIEPhotomap, decode_notify);
 
 	domain.offset_x = 0;
 	domain.offset_y = 0;
@@ -267,14 +287,14 @@ void DoPointStored(xp, p, reps)
 		);
 	}
 
-	if ( p->levelsOut == 1 )
+	if ( levelsOut == 1 )
 	{
 		XieFloExportDrawablePlane(&flograph[flo_elements-1],
 			flo_elements-1,      /* source phototag number */
 			xp->w,
 			xp->fggc,
-			p->dst_x,       /* x offset in window */
-			p->dst_y        /* y offset in window */
+			0,       /* x offset in window */
+			0        /* y offset in window */
 		);
 	}
 	else
@@ -283,8 +303,8 @@ void DoPointStored(xp, p, reps)
                         flo_elements-1,  /* source phototag number */
                         xp->w,
                         xp->fggc,
-                        p->dst_x,       /* x offset in window */
-                        p->dst_y        /* y offset in window */
+                        0,       /* x offset in window */
+                        0        /* y offset in window */
                 );
         }
 
@@ -293,7 +313,7 @@ void DoPointStored(xp, p, reps)
 
 	/* crank it */
 
-	flo_notify = 0;
+	flo_notify = False;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
@@ -311,5 +331,7 @@ void EndPoint(xp, p)
 {
 	CloseXIEPhotomap( xp, p, XIEPhotomap );
 	CloseXIELut( xp, p, XIELut );
+	if ( parms )
+		free( parms );
 }
 

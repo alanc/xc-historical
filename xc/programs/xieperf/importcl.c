@@ -64,6 +64,7 @@ int InitImportClientPhoto(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	p->data = ( char * ) NULL;
 	if (!GetImageData( xp, p, 1 ))
 		reps = 0;
 	else
@@ -88,7 +89,7 @@ int InitImportClientLUT(xp, p, reps)
 	{
 		for ( i = 0; i < lutSize; i++ )
 		{
-			lut[ i ] = ( 1 << xp->vinfo.depth ) - i;
+			lut[ i ] = ( ( 1 << xp->vinfo.depth ) - 1 ) - i;
 		}
 	}
 	return( reps );
@@ -127,6 +128,7 @@ void DoImportClientPhotoImmediate(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage	*image;
     	int     i;
 	int	flo_notify, flo_id;
 	XiePhotospace photospace;
@@ -138,16 +140,21 @@ void DoImportClientPhotoImmediate(xp, p, reps)
 	int	decode_notify;
 
 	photospace = XieCreatePhotospace(xp->d);/* XXX error check */
-        width[ 0 ] = p->width;
-        height[ 0 ] = p->height;
-        levels[ 0 ] = p->levels;
+
+	image = p->finfo.image1;
+	if ( !image )
+		return;
+	decode_notify = False;
+        width[ 0 ] = image->width;
+        height[ 0 ] = image->height;
+        levels[ 0 ] = image->levels;
 
         decode_params = XieTecDecodeUncompressedSingle(
-                p->fill_order,
-                p->pixel_order,
-                p->pixel_stride,
-                p->left_pad,
-                p->scanline_pad
+                image->fill_order,
+                image->pixel_order,
+                image->pixel_stride,
+                image->left_pad,
+                image->scanline_pad
         );
 	flo_id = 1;
 	flograph = XieAllocatePhotofloGraph(2);
@@ -157,10 +164,10 @@ void DoImportClientPhotoImmediate(xp, p, reps)
 		return;
 	}
 	XieFloImportClientPhoto(&flograph[0],
-		p->data_class,
+		image->data_class,
 		width, height, levels,
-		False,
-		p->decode, (char *)decode_params
+		decode_notify,
+		image->decode, (char *)decode_params
 	);
 
 	XieFloExportPhotomap(&flograph[1],
@@ -181,12 +188,13 @@ void DoImportClientPhotoImmediate(xp, p, reps)
 		);
 		XSync( xp->d, 0 );
 		PumpTheClientData( xp, p, flo_id, photospace, 1,
-                        p->data, p->finfo.fsize1 );
+                        p->data, image->fsize );
 		WaitForFloToFinish( xp, flo_id );
 		flo_id++;
     	}
 	XieFreePhotofloGraph(flograph,2);
 	XieDestroyPhotospace( xp->d, photospace );
+	free( decode_params );
 }
 
 void DoImportClientPhotoStored(xp, p, reps)
@@ -194,6 +202,7 @@ void DoImportClientPhotoStored(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage	*image;
     	int     i;
         XiePhotospace photospace;
 	int	flo_notify;
@@ -205,6 +214,10 @@ void DoImportClientPhotoStored(xp, p, reps)
         XieEncodeTechnique encode_tech=xieValEncodeServerChoice;
         char *encode_params=NULL;
 
+	image = p->finfo.image1;
+        if ( !image )
+                return;
+	decode_notify = False;
 	flograph = XieAllocatePhotofloGraph(2);	
 	if ( flograph == ( XiePhotoElement * ) NULL )
 	{
@@ -212,23 +225,23 @@ void DoImportClientPhotoStored(xp, p, reps)
 		return;
 	}
 
-        width[ 0 ] = p->width;
-        height[ 0 ] = p->height;
-        levels[ 0 ] = p->levels;
+        width[ 0 ] = image->width;
+        height[ 0 ] = image->height;
+        levels[ 0 ] = image->levels;
 
         decode_params = XieTecDecodeUncompressedSingle(
-                p->fill_order,
-                p->pixel_order,
-                p->pixel_stride,
-                p->left_pad,
-                p->scanline_pad
+                image->fill_order,
+                image->pixel_order,
+                image->pixel_stride,
+                image->left_pad,
+                image->scanline_pad
         );
 
       	XieFloImportClientPhoto(&flograph[0],
-		p->data_class,
+		image->data_class,
 		width, height, levels,
-		False,
-		p->decode, (char *)decode_params
+		decode_notify,
+		image->decode, (char *)decode_params
 	);
 
         XieFloExportPhotomap(&flograph[1],
@@ -242,18 +255,19 @@ void DoImportClientPhotoStored(xp, p, reps)
 
 	/* crank it */
 
-	flo_notify = 1;
+	flo_notify = True;
 	photospace = 0;
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
 		XSync( xp->d, 0 );
                 PumpTheClientData( xp, p, flo, photospace, 1,
-                        p->data, p->finfo.fsize1 );
+                        p->data, image->fsize );
                 WaitForFloToFinish( xp, flo );
     	}
 
 	/* destroy the photoflo */
 
+	free( decode_params );
 	XieDestroyPhotoflo( xp->d, flo );
 	XieFreePhotofloGraph(flograph,2);	
 }
@@ -284,10 +298,10 @@ void DoImportClientLUTImmediate(xp, p, reps)
 
         data_class = xieValSingleBand;
         band_order = xieValLSFirst;
-     	length[ 0 ] = 1 << p->depth;
+     	length[ 0 ] = 1 << xp->vinfo.depth;
 	length[ 1 ] = 0;
 	length[ 2 ] = 0;
-	levels[ 0 ] = 1 << p->depth;
+	levels[ 0 ] = 1 << xp->vinfo.depth;
 	levels[ 1 ] = 0;
 	levels[ 2 ] = 0;
 
@@ -340,7 +354,6 @@ void DoImportClientLUTStored(xp, p, reps)
 	int	flo_notify;
 	XiePhotoElement *flograph;
 	XiePhotoflo flo;
-        int     decode_notify;
         XieOrientation band_order = xieValLSFirst;
         XieDataClass    data_class;
         XieLTriplet     start, length, levels;
@@ -355,10 +368,10 @@ void DoImportClientLUTStored(xp, p, reps)
 
 	data_class = xieValSingleBand;
 	band_order = xieValLSFirst;
-	length[ 0 ] = 1 << p->depth;
+	length[ 0 ] = 1 << xp->vinfo.depth;
 	length[ 1 ] = 0;
 	length[ 2 ] = 0;
-	levels[ 0 ] = 1 << p->depth;
+	levels[ 0 ] = 1 << xp->vinfo.depth;
 	levels[ 1 ] = 0;
 	levels[ 2 ] = 0;
 
@@ -502,7 +515,12 @@ void EndImportClientLUT(xp, p)
         /* deallocate the data buffer */
 
 	XieDestroyLUT( xp->d, XIELut );
-        free( p->data );
+	free( lut );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 }
 
 void EndImportClientPhoto(xp, p)
@@ -512,7 +530,11 @@ void EndImportClientPhoto(xp, p)
         /* deallocate the data buffer */
 
 	XieDestroyPhotomap(xp->d, XIEPhotomap);
-        free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 }
 
 void EndImportClientROI(xp, p)
@@ -522,7 +544,11 @@ void EndImportClientROI(xp, p)
         /* deallocate the data buffer */
 
 	XieDestroyROI(xp->d, XIERoi );
-        free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
 	free( rects );
 }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: do_redefine.c,v 1.1 93/07/19 13:03:42 rws Exp $ */
+/* $XConsortium: redefine.c,v 1.2 93/07/19 14:44:39 rws Exp $ */
 
 /**** module do_redefine.c ****/
 /******************************************************************************
@@ -71,11 +71,20 @@ int InitRedefine(xp, p, reps)
     Parms   p;
     int     reps;
 {
+	XIEimage *image;
+
+	p->data = ( char * ) NULL;
+	image = p->finfo.image1;
+        if ( !image )
+                return( 0 );
+
+	parms = NULL;
+	monoflag = 0;
 	if ( xp->vinfo.depth == 1 )
 	{
 		flo_elements = 4;
 		monoflag = 1;
-		if ( !SetupMonoClipScale( xp, p, levels, in_low, 
+		if ( !SetupMonoClipScale( image, levels, in_low, 
 			in_high, out_low, out_high, &parms ) )
 		{
 			reps = 0;
@@ -88,12 +97,14 @@ int InitRedefine(xp, p, reps)
 		if ( ( XIEPhotomap = 
 			GetXIEPhotomap( xp, p, 1 ) ) == ( XiePhotomap ) NULL )
 			reps = 0;
-		else if ( !BuildRedefineFlograph( xp, p, &flograph1, GXclear ) )
+		else if ( !BuildRedefineFlograph( xp, p, &flograph1,
+			( ( RedefineParms * ) p->ts )->op1 ) )
 		{
 			XieDestroyPhotomap( xp->d, XIEPhotomap );
 			reps = 0;
 		}
-		else if ( !BuildRedefineFlograph( xp, p, &flograph2, GXset ) )
+		else if ( !BuildRedefineFlograph( xp, p, &flograph2,
+			( ( RedefineParms * ) p->ts )->op2 ) )
 		{
 			XieFreePhotofloGraph( flograph1, flo_elements);
 			XieDestroyPhotomap( xp->d, XIEPhotomap );
@@ -104,7 +115,13 @@ int InitRedefine(xp, p, reps)
 
 	        flo = XieCreatePhotoflo( xp->d, flograph1, flo_elements );
 	}
-	free( p->data );
+	if ( p->data )
+	{
+		free( p->data );
+		p->data = ( char * ) NULL;
+	}
+	if ( !reps && parms )
+		free( parms );
 	return( reps );
 }
 
@@ -123,6 +140,7 @@ unsigned long op;
 		fprintf( stderr, "XieAllocatePhotofloGraph failed\n" );
 		return( 0 );
 	}
+
 	XieFloImportPhotomap(&(*flograph)[0], XIEPhotomap, False);
 
 	domain.offset_x = 0;
@@ -133,9 +151,9 @@ unsigned long op;
 		1,
 		0,
 		&domain,
-		p->logicalConstant,
+		( ( RedefineParms * ) p->ts )->constant,
 		op,
-		p->logicalBandMask );
+		( ( RedefineParms * ) p->ts )->bandMask );
 	if ( monoflag )
 	{
 		XieFloConstrain(&(*flograph)[2],
@@ -149,8 +167,8 @@ unsigned long op;
 		flo_elements - 1, /* source phototag number */
 		xp->w,
 		xp->fggc,
-		p->dst_x,       /* x offset in window */
-		p->dst_y        /* y offset in window */
+		0,       /* x offset in window */
+		0        /* y offset in window */
 	);
 	return( 1 );
 }
@@ -193,5 +211,7 @@ EndRedefine(xp, p)
         XieFreePhotofloGraph(flograph2,flo_elements);
         XieDestroyPhotoflo( xp->d, flo );
 	XieDestroyPhotomap( xp->d, XIEPhotomap );
+	if ( parms )
+		free( parms );
 }
 
