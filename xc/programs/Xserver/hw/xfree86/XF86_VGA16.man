@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: XF86_VGA16.man,v 1.1 94/03/28 21:01:25 dpw Exp $
 .\" XF86_VGA16.man
 .TH XF86_VGA16 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -136,11 +136,13 @@ keyword \fBmodedb\fP.  This is covered in the
 manpage.
 .SH FILES
 .TP 30
-/usr/X11R6/bin/XF86_VGA16
+<XRoot>/bin/XF86_VGA16
 The 16 colour X server
 .TP 30
-/usr/X11R6/lib/X11/Xconfig
+<XRoot>/lib/X11/Xconfig
 Server configuration file
+.LP
+Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
 X(1), Xserver(1), XFree86(1), Xconfig(4/5), xdm(1), xinit(1)
 .SH BUGS

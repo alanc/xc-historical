@@ -1,4 +1,4 @@
-.\" $XConsortium: XF86_Acc.man,v 1.1 94/03/28 21:01:07 dpw Exp $
+.\" $XConsortium: XF86_Acc.man,v 1.2 94/04/01 17:49:34 dpw Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -231,20 +231,22 @@ keyword \fBmodedb\fP.   This is covered in the
 manpage.
 .SH FILES
 .TP 30
-/usr/X11R6/bin/XF86_S3
+<XRoot>/bin/XF86_S3
 The 8-bit color X server for S3
 .TP 30
-/usr/X11R6/bin/XF86_Mach8
+<XRoot>/bin/XF86_Mach8
 The 8-bit color X server for Mach8
 .TP 30
-/usr/X11R6/bin/XF86_Mach32
+<XRoot>/bin/XF86_Mach32
 The 8-bit color X server for Mach32
 .TP 30
-/usr/X11R6/bin/XF86_8514
+<XRoot>/bin/XF86_8514
 The 8-bit color X server for IBM 8514 and true compatibles
 .TP 30
-/usr/X11R6/lib/X11/Xconfig
+<XRoot>/lib/X11/Xconfig
 Server configuration file
+.LP
+Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
 X(1), Xserver(1), XFree86(1), Xconfig(4/5), xdm(1), xinit(1)
 .SH AUTHORS

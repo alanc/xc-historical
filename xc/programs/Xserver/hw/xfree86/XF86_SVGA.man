@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: XF86_SVGA.man,v 1.1 94/03/28 21:01:19 dpw Exp $
 .\" XF86_SVGA.man
 .TH XF86_SVGA 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -215,11 +215,13 @@ keyword \fBmodedb\fP.   This is covered in the
 manpage.
 .SH FILES
 .TP 30
-/usr/X11R6/bin/XF86_SVGA
+<XRoot>/bin/XF86_SVGA
 The 8-bit color X server
 .TP 30
-/usr/X11R6/lib/X11/Xconfig
+<XRoot>/lib/X11/Xconfig
 Server configuration file
+.LP
+Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
 X(1), Xserver(1), XFree86(1), Xconfig(4/5), xdm(1), xinit(1)
 .SH BUGS

@@ -1,4 +1,4 @@
-.\" $XConsortium: XFree86.man,v 1.1 94/03/28 21:01:32 dpw Exp $
+.\" $XConsortium: XFree86.man,v 1.2 94/04/01 17:49:44 dpw Exp $
 .\" XFree86.man
 .TH XFree86 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -98,7 +98,7 @@ To globally override the compiled-in defaults, you should define (and
 export if using \fIsh\fP or \fIksh\fP) \fIXLOCAL\fP globally.  If you
 use \fIstartx/xinit\fP, the definition should be at the top of your
 \fI.xinitrc\fP file.  If you use \fIxdm\fP, the definitions should be
-early on in the \fI/usr/X11R6/lib/X11/xdm/Xsession\fP script.
+early on in the \fI<XRoot>/lib/X11/xdm/Xsession\fP script.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, \fIXFree86\fP accepts the following command line switches:
@@ -156,56 +156,58 @@ Refer to the
 manual page for more information.
 .SH FILES
 .TP 30
-/usr/X11R6/bin/XF86_SVGA
+<XRoot>/bin/XF86_SVGA
 The 8-bit color X server
 .TP 30
-/usr/X11R6/bin/XF86_Mono
+<XRoot>/bin/XF86_Mono
 The monochrome VGA X server
 .TP 30
-/usr/X11R6/bin/XF86_Bdm
+<XRoot>/bin/XF86_Bdm
 The monochrome X server for special banked mono cards
 .TP 30
-/usr/X11R6/bin/XF86_S3
+<XRoot>/bin/XF86_S3
 The accelerated S3 X server
 .TP 30
-/usr/X11R6/bin/XF86_Mach8
+<XRoot>/bin/XF86_Mach8
 The accelerated Mach8 X server
 .TP 30
-/usr/X11R6/bin/XF86_Mach32
+<XRoot>/bin/XF86_Mach32
 The accelerated Mach32 X server
 .TP 30
-/usr/X11R6/bin/XF86_8514
+<XRoot>/bin/XF86_8514
 The accelerated 8514/A X server
 .TP 30
-/usr/X11R6/lib/X11/Xconfig
+<XRoot>/lib/X11/Xconfig
 Server configuration file
 .TP 30
-/usr/X11R6/bin/\(**
+<XRoot>/bin/\(**
 Client binaries
 .TP 30
-/usr/X11R6/include/\(**
+<XRoot>/include/\(**
 Header files
 .TP 30
-/usr/X11R6/lib/\(**
+<XRoot>/lib/\(**
 Libraries
 .TP 30
-/usr/X11R6/lib/X11/fonts/\(**
+<XRoot>/lib/X11/fonts/\(**
 Fonts
 .TP 30
-/usr/X11R6/lib/X11/rgb.txt
+<XRoot>/lib/X11/rgb.txt
 Color names to RGB mapping
 .TP 30
-/usr/X11R6/lib/X11/XErrorDB
+<XRoot>/lib/X11/XErrorDB
 Client error message database
 .TP 30
-/usr/X11R6/lib/X11/app-defaults/\(**
+<XRoot>/lib/X11/app-defaults/\(**
 Client resource specifications
 .TP 30
-/usr/X11R6/man/man?/\(**
+<XRoot>/man/man?/\(**
 Manual pages
 .TP 30
 /etc/X\fIn\fP.hosts
 Initial access control list for display \fIn\fP
+.LP
+Note: <XRoot> refers to the root of the X11 install tree.
 .SH "SEE ALSO"
 X(1), Xserver(1), xdm(1), xinit(1), Xconfig(4/5),
 XF86_SVGA(1), XF86_VGA16(1), XF86_Mono(1), XF86_S3(1), XF86_8514(1),
