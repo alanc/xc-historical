@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.2 92/05/20 21:18:04 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.3 92/05/26 16:20:58 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -300,7 +300,7 @@ INPUT PEXEncodedTextData	*encodedTextList;
      * Store the mono-encoded string.
      */
 
-    StoreEncodedStrings (display, numEncodings, encodedTextList);
+    StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
 }
@@ -352,7 +352,7 @@ INPUT PEXEncodedTextData	*encodedTextList;
      * Store the mono-encoded string.
      */
 
-    StoreEncodedStrings (display, numEncodings, encodedTextList);
+    StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
 }
@@ -406,7 +406,7 @@ INPUT PEXEncodedTextData 	*encodedTextList;
      * Store the mono-encoded string.
      */
 
-    StoreEncodedStrings (display, numEncodings, encodedTextList);
+    StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
 }
@@ -460,7 +460,7 @@ INPUT PEXEncodedTextData 	*encodedTextList;
      * Store the mono-encoded string.
      */
 
-    StoreEncodedStrings (display, numEncodings, encodedTextList);
+    StoreMonoStrings (display, numEncodings, encodedTextList);
 
     PEXFinishOC (display);
 }
@@ -537,7 +537,7 @@ INPUT PEXListOfVertex	*polylines;
      * Initialize the OC request.
      */
 
-    PEXInitOC ( display, resource_id, req_type, PEXOCPolylineSetWithData, 
+    PEXInitOC (display, resource_id, req_type, PEXOCPolylineSetWithData, 
 	LENOF (pexPolylineSet), 
 	numPolylines + (numPoints * lenofVertex),
 	pexPolylineSet, pReq);
@@ -549,7 +549,7 @@ INPUT PEXListOfVertex	*polylines;
      * Store the polyline request header data. 
      */
 
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->vertexAttribs = vertexAttributes;
     pReq->numLists = numPolylines;
 
@@ -785,7 +785,7 @@ INPUT PEXArrayOfVertex	vertices;
 
     pReq->shape = shape;
     pReq->ignoreEdges = ignoreEdges;
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->facetAttribs = facetAttributes;
     pReq->vertexAttribs = vertexAttributes;
 
@@ -1002,7 +1002,7 @@ INPUT PEXListOfVertex	*vertices;
     pReq->shape = shape;
     pReq->ignoreEdges = ignoreEdges;
     pReq->contourHint = contourHint;
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->facetAttribs = facetAttributes;
     pReq->vertexAttribs = vertexAttributes;
     pReq->numLists = numFillAreas;
@@ -1038,7 +1038,7 @@ void
 PEXSetOfFillAreaSets (display, resource_id, req_type, shape,
     facetAttributes, vertexAttributes, edgeAttributes, contourHint,
     contoursAllOne, colorType, numFillAreaSets, facetData,
-    numVertices, vertices, numEdges, edgeFlags, connectivity)
+    numVertices, vertices, numIndices, edgeFlags, connectivity)
 
 INPUT Display			*display;
 INPUT XID			resource_id;
@@ -1054,7 +1054,7 @@ INPUT unsigned int		numFillAreaSets;
 INPUT PEXArrayOfFacetData 	facetData;
 INPUT unsigned int		numVertices; 
 INPUT PEXArrayOfVertex		vertices;
-INPUT unsigned int		numEdges; 
+INPUT unsigned int		numIndices; 
 INPUT PEXSwitch			*edgeFlags;
 INPUT PEXConnectivityData	*connectivity;
 
@@ -1068,7 +1068,8 @@ INPUT PEXConnectivityData	*connectivity;
     int 		sizeofEdge;
     int			totLength;
     int 		numContours;
-    int 		count, i, j;
+    int 		count = 0;
+    int			i, j;
     CARD16		*pData;
 
 
@@ -1077,7 +1078,8 @@ INPUT PEXConnectivityData	*connectivity;
      */
 
     numContours = 0;
-    for (i = 0, pConnectivity = connectivity; i < numFillAreaSets; i++)
+    pConnectivity = connectivity;
+    for (i = 0; i < numFillAreaSets; i++, pConnectivity++)
 	numContours += pConnectivity->count;
 
 
@@ -1091,8 +1093,8 @@ INPUT PEXConnectivityData	*connectivity;
     sizeofEdge = ((edgeAttributes == PEXOn) ? sizeof (CARD8) : 0);
 
     totLength = (lenofFacet * numFillAreaSets) + (lenofVertex * numVertices) + 
-	NUMWORDS (sizeofEdge * numEdges) + NUMWORDS (sizeof (CARD16) *
-	(numFillAreaSets + numContours + numEdges));
+	NUMWORDS (sizeofEdge * numIndices) + NUMWORDS (sizeof (CARD16) *
+	(numFillAreaSets + numContours + numIndices));
 
 
     /*
@@ -1110,7 +1112,7 @@ INPUT PEXConnectivityData	*connectivity;
      */
 
     pReq->shape = shape;
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->FAS_Attributes = facetAttributes;
     pReq->vertexAttributes = vertexAttributes;
     pReq->edgeAttributes = edgeAttributes;
@@ -1118,7 +1120,7 @@ INPUT PEXConnectivityData	*connectivity;
     pReq->contourCountsFlag = contoursAllOne;
     pReq->numFAS = numFillAreaSets;
     pReq->numVertices = numVertices;
-    pReq->numEdges = numEdges;
+    pReq->numEdges = numIndices;
     pReq->numContours = numContours;
 
 
@@ -1134,7 +1136,7 @@ INPUT PEXConnectivityData	*connectivity;
             (char *) vertices.no_data);
 
     if (edgeAttributes)
-	_PEXCopyPaddedBytesToOC (display, numEdges * sizeof (CARD8),
+	_PEXCopyPaddedBytesToOC (display, numIndices * sizeof (CARD8),
 	    (char *) edgeFlags);
 
 
@@ -1149,7 +1151,7 @@ INPUT PEXConnectivityData	*connectivity;
 	if (pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16)))
 	    *pData = count = pConnectivity->count;
 
-	for (j = 0, pList = pConnectivity->lists; j < count; j++)
+	for (j = 0, pList = pConnectivity->lists; j < count; j++, pList++)
 	{
 	    if (pData = (CARD16 *) PEXGetOCAddr (display, sizeof (CARD16)))
 		*pData = pList->count;
@@ -1214,7 +1216,7 @@ INPUT PEXArrayOfVertex		vertices;
      * Store the triangle strip request header data. 
      */
 
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->facetAttribs = facetAttributes;
     pReq->vertexAttribs = vertexAttributes;
     pReq->numVertices = numVertices;
@@ -1285,7 +1287,7 @@ INPUT PEXArrayOfVertex		vertices;
      * Store the quad mesh request header data. 
      */
 
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->mPts = rowCount;
     pReq->nPts = colCount;
     pReq->facetAttribs = facetAttributes;
@@ -1335,8 +1337,8 @@ INPUT PEXListOfTrimCurve 	*trimLoops;
     int			lenofUKnotList;
     int			lenofVKnotList;
     int			lenofTrimData;
-    int			thisLength;
-    int			count, i;
+    int			thisLength, i;
+    int			count = 0;
 
 
     /* 
@@ -1602,7 +1604,7 @@ INPUT PEXArrayOfColor 	colors;
      * Store the cell array header data.
      */
 
-    pReq->colourType = colorType;
+    pReq->colorType = colorType;
     pReq->point1 = *(pexCoord3D *) pt1;
     pReq->point2 = *(pexCoord3D *) pt2;
     pReq->point3 = *(pexCoord3D *) pt3;
