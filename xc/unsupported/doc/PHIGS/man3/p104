@@ -1,5 +1,5 @@
 .\"
-.\" $XConsortium$
+.\" $XConsortium: p104,v 5.1 91/02/16 09:38:38 rws Exp $
 .\"
 .\" 
 .\" Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -60,6 +60,7 @@ The Pelem_type enumerated type is defined in phigs.h as follows:
 .sp .4
 typedef enum {
 .sp .2
+	PELEM_ALL,
 	PELEM_NIL,
 	PELEM_POLYLINE3,
 	PELEM_POLYLINE,
@@ -130,7 +131,6 @@ typedef enum {
 	PELEM_APPL_DATA,
 	PELEM_GSE,
 	PELEM_PICK_ID,
-	PELEM_ALL,
 	PELEM_POLYLINE_SET3_DATA,
 	PELEM_FILL_AREA_SET3_DATA,
 	PELEM_TRI_STRIP3_DATA,
