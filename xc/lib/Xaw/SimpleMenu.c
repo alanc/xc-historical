@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.28 89/10/11 11:55:18 jim Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.29 89/10/16 18:20:05 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -85,8 +85,8 @@ static XtResource resources[] = {
       offset(cursor), XtRImmediate, (caddr_t) None},
   {XtNmenuOnScreen,  XtCMenuOnScreen, XtRBoolean, sizeof(Boolean),
       offset(menu_on_screen), XtRImmediate, (caddr_t) TRUE},
-  {XtNpopupOnEntry,  XtCPopupOnEntry, XtRString, sizeof(String),
-      offset(popup_entry), XtRString, NULL},
+  {XtNpopupOnEntry,  XtCPopupOnEntry, XtRWidget, sizeof(Widget),
+      offset(popup_entry), XtRWidget, NULL},
   {XtNbackingStore, XtCBackingStore, XtRBackingStore, sizeof (int),
       offset(backing_store), 
       XtRImmediate, (caddr_t) (Always + WhenMapped + NotUseful)},
