@@ -18,7 +18,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.9 90/02/22 18:44:44 keith Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.10 91/07/03 14:24:09 keith Exp $ */
 
 #if (PPW == 4)
 
@@ -27,12 +27,10 @@ purpose.  It is provided "as is" without express or implied warranty.
 #if (BITMAP_BIT_ORDER == MSBFirst)
 #define GetFourBits(x)		(((unsigned long) (x)) >> 28)
 #define NextFourBits(x)		((x) <<= 4)
-#define GetSomeBits(x,n)	(((unsigned long) (x)) >> (32 - (n)))
 #define NextSomeBits(x,n)	((x) <<= (n))
 #else
 #define GetFourBits(x)		((x) & 0xf)
 #define NextFourBits(x)		((x) >>= 4)
-#define GetSomeBits(x,n)	((x) & ((1 << (n)) - 1))
 #define NextSomeBits(x,n)	((x) >>= (n))
 #endif
 
@@ -138,10 +136,10 @@ extern int			cfb8SetStipple (), cfb8SetOpaqueStipple();
 	partBitsLeft -= 4; \
     } else { \
 	bits = GetFourBits (inputBits); \
-	inputBits = *srcTemp++; \
 	nextPartBits = 4 - partBitsLeft; \
-	bits |= BitRight (GetSomeBits (inputBits, nextPartBits), \
-		          partBitsLeft); \
+	inputBits = *srcTemp++; \
+	bits |= BitRight (GetFourBits (inputBits), \
+		          partBitsLeft) & 0xf; \
 	NextSomeBits (inputBits, nextPartBits); \
 	partBitsLeft = 32 - nextPartBits; \
     }
