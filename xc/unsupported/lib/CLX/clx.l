@@ -277,9 +277,9 @@
 	  make-state-keys
 	  ))
 
-(pushnew :xlib *features*)
-
 (provide 'clx)
+
+(pushnew :xlib *features*)
 
 (defparameter *version* "MIT R4 Beta 2 11/89")
 
