@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.183 89/04/20 16:04:27 rws Exp $ */
+/* $XConsortium: events.c,v 1.184 89/04/22 15:57:39 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -95,7 +95,7 @@ static GrabRec keybdGrab;	/* used for active grabs */
 static GrabRec ptrGrab;
 
 static struct {
-    QdEventPtr		pending, *pendtail, free;
+    QdEventPtr		pending, *pendtail;
     DeviceIntPtr	replayDev;	/* kludgy rock to put flag for */
     WindowPtr		replayWin;	/*   ComputeFreezes            */
     Bool		playingEvents;
@@ -126,14 +126,19 @@ static Mask buttonMotionMask = 0;
 
 typedef struct {
     int		x, y;
+    ScreenPtr	pScreen;
 } HotSpot;
 
 static  struct {
     CursorPtr	current;
-    BoxRec	hotLimits;	/* logical constraints */
-    BoxRec	physLimits;	/* of hot spot due to hardware limits */
-    WindowPtr	win;
-    HotSpot	hot;
+    BoxRec	hotLimits;	/* logical constraints of hot spot */
+#ifdef SHAPE
+    RegionPtr	hotShape;	/* additional logical shape constraint */
+#endif
+    BoxRec	physLimits;	/* physical constraints of hot spot */
+    WindowPtr	win;		/* window of logical position */
+    HotSpot	hot;		/* logical pointer position */
+    HotSpot	hotPhys;	/* physical pointer position */
 } sprite;			/* info about the cursor sprite */
 
 static WindowPtr motionHintWindow;
@@ -145,7 +150,7 @@ static void NormalKeyboardEvent();
 extern int DeliverDeviceEvents();
 static void DoFocusEvents();
 extern Mask EventMaskForClient();
-static WindowPtr CheckMotion();
+static Bool CheckMotion();
 extern void WriteEventsToClient();
 static Bool CheckDeviceGrabs();
 
@@ -155,8 +160,6 @@ extern Bool DeletePassiveGrabFromList();
 extern int AddPassiveGrabToList();
 
 extern Bool permitOldBugs;
-
-static ScreenPtr currentScreen;
 
 /*
  *	For each key,  we keep a bitmap showing the modifiers it sets
@@ -243,6 +246,26 @@ SyntheticMotion(x, y)
     ProcessPointerEvent(&xE, inputInfo.pointer);
 }
 
+#ifdef SHAPE
+static void
+ConfineToShape(x, y)
+    int *x, *y;
+{
+    BoxRec box;
+    int inc = 1;
+
+    while (!(*sprite.hotPhys.pScreen->PointInRegion)(sprite.hotShape,
+						     *x, *y, &box))
+    {
+	if (*x <= sprite.physLimits.x1)
+	    inc = 1;
+	else if (*x >= sprite.physLimits.x2)
+	    inc = -1;
+	*x += inc;
+    }
+}
+#endif
+
 static void
 CheckPhysLimits(cursor, generateEvents)
     CursorPtr cursor;
@@ -252,9 +275,9 @@ CheckPhysLimits(cursor, generateEvents)
 
     if (!cursor)
 	return;
-    new = sprite.hot;
-    (*currentScreen->CursorLimits) (
-	currentScreen, cursor, &sprite.hotLimits, &sprite.physLimits);
+    new = sprite.hotPhys;
+    (*new.pScreen->CursorLimits) (
+	new.pScreen, cursor, &sprite.hotLimits, &sprite.physLimits);
     if (new.x < sprite.physLimits.x1)
 	new.x = sprite.physLimits.x1;
     else
@@ -265,61 +288,82 @@ CheckPhysLimits(cursor, generateEvents)
     else
 	if (new.y >= sprite.physLimits.y2)
 	    new.y = sprite.physLimits.y2 - 1;
-    if ((new.x != sprite.hot.x) || (new.y != sprite.hot.y))
+#ifdef SHAPE
+    if (sprite.hotShape)
+	ConfineToShape(&new.x, &new.y);
+#endif
+    if ((new.x != sprite.hotPhys.x) || (new.y != sprite.hotPhys.y))
     {
-	(*currentScreen->SetCursorPosition) (
-	    currentScreen, new.x, new.y, generateEvents);
+	if (!syncEvents.playingEvents)
+	    (*new.pScreen->SetCursorPosition) (new.pScreen, new.x, new.y,
+					       generateEvents);
 	if (!generateEvents)
 	    SyntheticMotion(new.x, new.y);
     }
 }
 
 static void
-ConfineCursorToWindow(pWin, x, y, generateEvents)
+ConfineCursorToWindow(pWin, generateEvents)
     WindowPtr pWin;
-    int x, y;
     Bool generateEvents;
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
 
     sprite.hotLimits = *(* pScreen->RegionExtents)(pWin->borderSize);
-    if (currentScreen != pScreen)
+#ifdef SHAPE
+    sprite.hotShape = pWin->boundingShape ? pWin->borderSize : NullRegion;
+#endif
+    if (sprite.hotPhys.pScreen != pScreen)
     {
-	/* XXX changing the (logical) currentScreen and sprite.hot is wrong;
-	 * the pointer might be frozen.
-	 */
-	currentScreen = pScreen;
-	ROOT = WindowTable[pScreen->myNum];
-	if (x < sprite.hotLimits.x1)
-	    x = sprite.hotLimits.x1;
-	else if (x >= sprite.hotLimits.x2)
-	    x = sprite.hotLimits.x2 - 1;
-	if (y < sprite.hotLimits.y1)
-	    y = sprite.hotLimits.y1;
-	else if (y >= sprite.hotLimits.y2)
-	    y = sprite.hotLimits.y2 - 1;
-	sprite.hot.x = -1; /* cause new sprite win computation */
-	sprite.hot.y = -1;
-	(* pScreen->SetCursorPosition)(pScreen, x, y, generateEvents);
+	sprite.hotPhys.pScreen = pScreen;
+	if (!inputInfo.pointer->sync.frozen)
+	{
+	    sprite.hot.pScreen = pScreen;
+	    ROOT = WindowTable[pScreen->myNum];
+	}
+	if (sprite.hotPhys.x < sprite.hotLimits.x1)
+	    sprite.hotPhys.x = sprite.hotLimits.x1;
+	else if (sprite.hotPhys.x >= sprite.hotLimits.x2)
+	    sprite.hotPhys.x = sprite.hotLimits.x2 - 1;
+	if (sprite.hotPhys.y < sprite.hotLimits.y1)
+	    sprite.hotPhys.y = sprite.hotLimits.y1;
+	else if (sprite.hotPhys.y >= sprite.hotLimits.y2)
+	    sprite.hotPhys.y = sprite.hotLimits.y2 - 1;
+#ifdef SHAPE
+	if (sprite.hotShape)
+	    ConfineToShape(&sprite.hotPhys.x, &sprite.hotPhys.y);
+#endif
+	if (!syncEvents.playingEvents)
+	    (* pScreen->SetCursorPosition)(pScreen,
+					   sprite.hotPhys.x, sprite.hotPhys.y,
+					   generateEvents);
 	if (!generateEvents)
-	    SyntheticMotion(x, y);
+	    SyntheticMotion(sprite.hotPhys.x, sprite.hotPhys.y);
     }
     CheckPhysLimits(sprite.current, generateEvents);
-    (* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
+    if (!syncEvents.playingEvents)
+	(* pScreen->ConstrainCursor)(pScreen, &sprite.physLimits);
+}
+
+Bool
+PointerConfinedToScreen()
+{
+    register GrabPtr grab = inputInfo.pointer->grab;
+
+    return (grab && grab->confineTo);
 }
 
 static void
 ChangeToCursor(cursor)
     CursorPtr cursor;
 {
-    if (!cursor)
-	FatalError("Somebody is setting NullCursor");
     if (cursor != sprite.current)
     {
 	if ((sprite.current->xhot != cursor->xhot) ||
 		(sprite.current->yhot != cursor->yhot))
 	    CheckPhysLimits(cursor, FALSE);
-	(*currentScreen->DisplayCursor) (currentScreen, cursor);
+	(*sprite.hotPhys.pScreen->DisplayCursor) (sprite.hotPhys.pScreen,
+						  cursor);
 	sprite.current = cursor;
     }
 }
@@ -339,6 +383,7 @@ PostNewCursor()
 {
     register    WindowPtr win;
     register    GrabPtr grab = inputInfo.pointer->grab;
+
     if (grab)
     {
 	if (grab->cursor)
@@ -373,30 +418,26 @@ EnqueueEvent(device, event)
     register QdEventPtr tail = *syncEvents.pendtail;
     register QdEventPtr new;
 
-    /* do motion compression */
-    if ((event->u.u.type == MotionNotify) &&
-	tail &&
-	(tail->event.u.u.type == MotionNotify) &&
-	(tail->device == device) &&
-	(tail->pScreen == currentScreen))
+    if (event->u.u.type == MotionNotify)
     {
-	tail->event = *event;
-	return;
-    }
-    if (!syncEvents.free)
-    {
-	new = (QdEventPtr)xalloc(sizeof(QdEventRec));
-	if (!new)
+	sprite.hotPhys.x = event->u.keyButtonPointer.rootX;
+	sprite.hotPhys.y = event->u.keyButtonPointer.rootY;
+	/* do motion compression */
+	if (tail &&
+	    (tail->event.u.u.type == MotionNotify) &&
+	    (tail->pScreen == sprite.hotPhys.pScreen))
+	{
+	    tail->event.u.keyButtonPointer.rootX = sprite.hotPhys.x;
+	    tail->event.u.keyButtonPointer.rootY = sprite.hotPhys.y;
 	    return;
+	}
     }
-    else
-    {
-	new = syncEvents.free;
-	syncEvents.free = new->next;
-    }
+    new = (QdEventPtr)xalloc(sizeof(QdEventRec));
+    if (!new)
+	return;
     new->next = (QdEventPtr)NULL;
     new->device = device;
-    new->pScreen = currentScreen;
+    new->pScreen = sprite.hotPhys.pScreen;
     new->event = *event;
     if (tail)
 	syncEvents.pendtail = &tail->next;
@@ -416,10 +457,25 @@ PlayReleasedEvents()
 	    *prev = qe->next;
 	    if (!qe->next)
 		syncEvents.pendtail = prev;
-	    /* XXX need to handle change of screen */
+	    if (qe->pScreen != sprite.hot.pScreen)
+	    {
+		if (PointerConfinedToScreen())
+		{
+		    qe->pScreen = sprite.hot.pScreen;
+		    qe->event.u.keyButtonPointer.rootX = 0;
+		    qe->event.u.keyButtonPointer.rootY = 0;
+		}
+		else
+		    NewCurrentScreen(qe->pScreen,
+				     qe->event.u.keyButtonPointer.rootX,
+				     qe->event.u.keyButtonPointer.rootY);
+	    }
+	    qe->event.u.keyButtonPointer.time = currentTime.milliseconds;
 	    (*qe->device->public.processInputProc)(&qe->event, qe->device);
-	    qe->next = syncEvents.free;
-	    syncEvents.free = qe;
+	    xfree(qe);
+	    if (inputInfo.pointer->sync.frozen &&
+		inputInfo.keyboard->sync.frozen)
+		break;
 	    /* Playing the event may have unfrozen another device. */
 	    /* So to play it safe, restart at the head of the queue */
 	    prev = &syncEvents.pending;
@@ -438,13 +494,15 @@ ComputeFreezes(dev1, dev2)
     WindowPtr w;
     Bool isKbd ;
     register xEvent *xE ;
+    HotSpot hot;
 
     dev1->sync.frozen =
 	((dev1->sync.other != NullGrab) || (dev1->sync.state >= FROZEN));
     dev2->sync.frozen =
 	((dev2->sync.other != NullGrab) || (dev2->sync.state >= FROZEN));
-    if (syncEvents.playingEvents)
+    if (syncEvents.playingEvents || (!replayDev && !syncEvents.pending))
 	return;
+    hot = sprite.hotPhys;
     syncEvents.playingEvents = TRUE;
     if (replayDev)
     {
@@ -473,6 +531,7 @@ playmore:
     if (!dev1->sync.frozen || !dev2->sync.frozen)
 	PlayReleasedEvents();
     syncEvents.playingEvents = FALSE;
+    NewCurrentScreen(hot.pScreen, hot.x, hot.y);
 }
 
 CheckGrabForSyncs(grab, thisDev, thisMode, otherDev, otherMode)
@@ -511,7 +570,11 @@ ActivatePointerGrab(mouse, grab, time, autoGrab)
 				     : sprite.win;
 
     if (grab->confineTo)
-	ConfineCursorToWindow(grab->confineTo, 0, 0, FALSE);
+    {
+	if (grab->confineTo->drawable.pScreen != sprite.hotPhys.pScreen)
+	    sprite.hotPhys.x = sprite.hotPhys.y = 0;
+	ConfineCursorToWindow(grab->confineTo, FALSE);
+    }
     DoEnterLeaveEvents(oldWin, grab->window, NotifyGrab);
     motionHintWindow = NullWindow;
     mouse->grabTime = time;
@@ -541,7 +604,7 @@ DeactivatePointerGrab(mouse)
 	keybd->sync.other = NullGrab;
     DoEnterLeaveEvents(grab->window, sprite.win, NotifyUngrab);
     if (grab->confineTo)
-	ConfineCursorToWindow(ROOT, 0, 0, FALSE);
+	ConfineCursorToWindow(ROOT, FALSE);
     PostNewCursor();
     if (grab->cursor)
 	FreeCursor(grab->cursor, (Cursor)0);
@@ -898,13 +961,6 @@ MaybeDeliverEventsToClient(pWin, pEvents, count, filter, dontDeliverToMe)
     return 2;
 }
 
-static WindowPtr
-RootForWindow(pWin)
-    WindowPtr pWin;
-{
-    return WindowTable[pWin->drawable.pScreen->myNum];
-}
-
 static void
 FixUpEventFromWindow(xE, pWin, child, calcChild)
     xEvent *xE;
@@ -942,7 +998,7 @@ FixUpEventFromWindow(xE, pWin, child, calcChild)
     }
     xE->u.keyButtonPointer.root = ROOT->wid;
     xE->u.keyButtonPointer.event = pWin->wid;
-    if (currentScreen == pWin->drawable.pScreen)
+    if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	xE->u.keyButtonPointer.sameScreen = xTrue;
 	xE->u.keyButtonPointer.child = child;
@@ -1028,10 +1084,6 @@ DeliverEvents(pWin, xE, count, otherParent)
     return deliveries;
 }
 
-/* 
- * XYToWindow is only called by CheckMotion after it has determined that
- * the current cache is not accurate.
- */
 static WindowPtr 
 XYToWindow(x, y)
 	int x, y;
@@ -1080,66 +1132,56 @@ XYToWindow(x, y)
     return spriteTrace[spriteTraceGood-1];
 }
 
-static WindowPtr 
-CheckMotion(x, y, ignoreCache)
-    int x, y;
-    Bool ignoreCache;
+static Bool
+CheckMotion()
 {
     WindowPtr prevSpriteWin = sprite.win;
 
-    if ((x != sprite.hot.x) || (y != sprite.hot.y))
+    sprite.win = XYToWindow(sprite.hot.x, sprite.hot.y);
+#ifdef notyet
+    if (!(sprite.win->deliverableEvents & Motion_Filter(keyButtonState))
+	!syncEvents.playingEvents)
     {
-	sprite.win = XYToWindow(x, y);
-	sprite.hot.x = x;
-	sprite.hot.y = y;
-/* XXX Do PointerNonInterestBox here */
-/*
-	if (!(sprite.win->deliverableEvents & Motion_Filter(keyButtonState)))
-        {
-	    
-	}
-*/
+	/* XXX Do PointerNonInterestBox here */
     }
-    else
-    {
-	if ((ignoreCache) || (!sprite.win))
-	    sprite.win = XYToWindow(x, y);
-    }
+#endif
     if (sprite.win != prevSpriteWin)
     {
 	if (prevSpriteWin != NullWindow)
 	    DoEnterLeaveEvents(prevSpriteWin, sprite.win, NotifyNormal);
-	PostNewCursor();
-        return NullWindow;
+	if (!syncEvents.playingEvents)
+	    PostNewCursor();
+        return FALSE;
     }
-    return sprite.win;
+    return TRUE;
 }
 
 WindowsRestructured()
 {
-    (void) CheckMotion(sprite.hot.x, sprite.hot.y, TRUE);
+    (void) CheckMotion();
 }
 
 void
 DefineInitialRootWindow(win)
     register WindowPtr win;
 {
-    currentScreen = win->drawable.pScreen;
-    sprite.hot.x = currentScreen->width / 2;
-    sprite.hot.y = currentScreen->height / 2;
-    sprite.hotLimits.x2 = currentScreen->width;
-    sprite.hotLimits.y2 = currentScreen->height;
+    register ScreenPtr pScreen = win->drawable.pScreen;
+
+    sprite.hotPhys.pScreen = pScreen;
+    sprite.hotPhys.x = pScreen->width / 2;
+    sprite.hotPhys.y = pScreen->height / 2;
+    sprite.hot = sprite.hotPhys;
+    sprite.hotLimits.x2 = pScreen->width;
+    sprite.hotLimits.y2 = pScreen->height;
     sprite.win = win;
     sprite.current = win->cursor;
     spriteTraceGood = 1;
     ROOT = win;
-    (*currentScreen->CursorLimits) (
-	currentScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
-    (*currentScreen->ConstrainCursor) (
-	currentScreen, &sprite.physLimits);
-    (*currentScreen->SetCursorPosition) (
-	currentScreen, sprite.hot.x, sprite.hot.y, FALSE);
-    (*currentScreen->DisplayCursor) (currentScreen, win->cursor);
+    (*pScreen->CursorLimits) (
+	pScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
+    (*pScreen->ConstrainCursor) (pScreen, &sprite.physLimits);
+    (*pScreen->SetCursorPosition) (pScreen, sprite.hot.x, sprite.hot.y, FALSE);
+    (*pScreen->DisplayCursor) (pScreen, win->cursor);
 }
 
 /*
@@ -1157,22 +1199,15 @@ WindowHasNewCursor(pWin)
     PostNewCursor();
 }
 
-Bool
-PointerConfinedToScreen()
-{
-    register GrabPtr grab = inputInfo.pointer->grab;
-
-    return (grab && grab->confineTo);
-}
-
 void
 NewCurrentScreen(newScreen, x, y)
     ScreenPtr newScreen;
     int x,y;
 {
-    /* XXX need to distinguish logical/physical screens when frozen */
-    if (newScreen != currentScreen)
-	ConfineCursorToWindow(WindowTable[newScreen->myNum], x, y, TRUE);
+    sprite.hotPhys.x = x;
+    sprite.hotPhys.y = y;
+    if (newScreen != sprite.hotPhys.pScreen)
+	ConfineCursorToWindow(WindowTable[newScreen->myNum], TRUE);
 }
 
 int
@@ -1200,14 +1235,13 @@ ProcWarpPointer(client)
 	    return BadWindow;
 	winX = source->absCorner.x;
 	winY = source->absCorner.y;
-	if (
-		(sprite.hot.x < (winX + stuff->srcX)) ||
-		(sprite.hot.y < (winY + stuff->srcY)) ||
-		((stuff->srcWidth != 0) &&
-		    (winX + stuff->srcX + (int)stuff->srcWidth < sprite.hot.x)) ||
-		((stuff->srcHeight != 0) &&
-		    (winY + stuff->srcY + (int)stuff->srcHeight < sprite.hot.y)) ||
-		(!PointInWindowIsVisible(source, sprite.hot.x, sprite.hot.y)))
+	if ((sprite.hot.x < (winX + stuff->srcX)) ||
+	    (sprite.hot.y < (winY + stuff->srcY)) ||
+	    ((stuff->srcWidth != 0) &&
+	     (winX + stuff->srcX + (int)stuff->srcWidth < sprite.hot.x)) ||
+	    ((stuff->srcHeight != 0) &&
+	     (winY + stuff->srcY + (int)stuff->srcHeight < sprite.hot.y)) ||
+	    (!PointInWindowIsVisible(source, sprite.hot.x, sprite.hot.y)))
 	    return Success;
     }
     if (dest)
@@ -1218,7 +1252,7 @@ ProcWarpPointer(client)
     } else {
 	x = sprite.hot.x + stuff->dstX;
 	y = sprite.hot.y + stuff->dstY;
-	newScreen = currentScreen;
+	newScreen = sprite.hot.pScreen;
     }
     if (x < 0)
 	x = 0;
@@ -1229,7 +1263,7 @@ ProcWarpPointer(client)
     else if (y >= newScreen->height)
 	y = newScreen->height - 1;
 
-    if (newScreen == currentScreen)
+    if (newScreen == sprite.hotPhys.pScreen)
     {
 	if (x < sprite.physLimits.x1)
 	    x = sprite.physLimits.x1;
@@ -1239,6 +1273,10 @@ ProcWarpPointer(client)
 	    y = sprite.physLimits.y1;
 	else if (y >= sprite.physLimits.y2)
 	    y = sprite.physLimits.y2 - 1;
+#ifdef SHAPE
+	if (sprite.hotShape)
+	    ConfineToShape(&x, &y);
+#endif
 	(*newScreen->SetCursorPosition)(newScreen, x, y, TRUE);
     }
     else if (!PointerConfinedToScreen())
@@ -1249,14 +1287,12 @@ ProcWarpPointer(client)
 }
 
 static void
-NoticeTimeAndState(xE)
+NoticeTime(xE)
     register xEvent *xE;
 {
     if (xE->u.keyButtonPointer.time < currentTime.milliseconds)
 	currentTime.months++;
     currentTime.milliseconds = xE->u.keyButtonPointer.time;
-    xE->u.keyButtonPointer.pad1 = 0;
-    xE->u.keyButtonPointer.state = keyButtonState;
 }
 
 /* "CheckPassiveGrabsOnWindow" checks to see if the event passed in causes a
@@ -1444,12 +1480,15 @@ ProcessKeyboardEvent (xE, keybd)
     GrabPtr         grab = keybd->grab;
     Bool            deactivateGrab = FALSE;
 
+    NoticeTime(xE);
     if (keybd->sync.frozen)
     {
 	EnqueueEvent(keybd, xE);
 	return;
     }
-    NoticeTimeAndState(xE);
+    xE->u.keyButtonPointer.state = keyButtonState;
+    xE->u.keyButtonPointer.rootX = sprite.hot.x;
+    xE->u.keyButtonPointer.rootY = sprite.hot.y;
     key = xE->u.u.detail;
     kptr = &keybd->down[key >> 3];
     bit = 1 << (key & 7);
@@ -1525,44 +1564,45 @@ ProcessPointerEvent (xE, mouse)
 {
     register int    	key;
     register GrabPtr	grab = mouse->grab;
-    Bool		moveIt = FALSE;
     Bool                deactivateGrab = FALSE;
     register BYTE	*kptr;
     int			bit;
 
-    if (xE->u.keyButtonPointer.rootX < sprite.physLimits.x1)
-    {
-	xE->u.keyButtonPointer.rootX = sprite.physLimits.x1;
-	moveIt = TRUE;
-    }
-    else if (xE->u.keyButtonPointer.rootX >= sprite.physLimits.x2)
-    {
-	xE->u.keyButtonPointer.rootX = sprite.physLimits.x2 - 1;
-	moveIt = TRUE;
-    }
-    if (xE->u.keyButtonPointer.rootY < sprite.physLimits.y1)
-    {
-	xE->u.keyButtonPointer.rootY = sprite.physLimits.y1;
-	moveIt = TRUE;
-    }
-    else if (xE->u.keyButtonPointer.rootY >= sprite.physLimits.y2)
-    {
-	xE->u.keyButtonPointer.rootY = sprite.physLimits.y2 - 1;
-	moveIt = TRUE;
-    }
-    if (moveIt)
-    {
-	/* XXX if playing a queued event, should we move phyiscally? */
-	(*currentScreen->SetCursorPosition)(
-	    currentScreen, xE->u.keyButtonPointer.rootX,
-	    xE->u.keyButtonPointer.rootY, FALSE);
-    }
+    NoticeTime(xE);
     if (mouse->sync.frozen)
     {
 	EnqueueEvent(mouse, xE);
 	return;
     }
-    NoticeTimeAndState(xE);
+    if (xE->u.u.type == MotionNotify)
+    {
+	sprite.hot.x = xE->u.keyButtonPointer.rootX;
+	sprite.hot.y = xE->u.keyButtonPointer.rootY;
+	if (sprite.hot.x < sprite.physLimits.x1)
+	    sprite.hot.x = sprite.physLimits.x1;
+	else if (sprite.hot.x >= sprite.physLimits.x2)
+	    sprite.hot.x = sprite.physLimits.x2 - 1;
+	if (sprite.hot.y < sprite.physLimits.y1)
+	    sprite.hot.y = sprite.physLimits.y1;
+	else if (sprite.hot.y >= sprite.physLimits.y2)
+	    sprite.hot.y = sprite.physLimits.y2 - 1;
+#ifdef SHAPE
+	if (sprite.hotShape)
+	    ConfineToShape(&sprite.hot.x, &sprite.hot.y);
+#endif
+	if (!syncEvents.playingEvents)
+	{
+	    sprite.hotPhys = sprite.hot;
+	    if ((sprite.hotPhys.x != xE->u.keyButtonPointer.rootX) ||
+		(sprite.hotPhys.y != xE->u.keyButtonPointer.rootY))
+		(*sprite.hotPhys.pScreen->SetCursorPosition)(
+		    sprite.hotPhys.pScreen,
+		    sprite.hotPhys.x, sprite.hotPhys.y, FALSE);
+	}
+    }
+    xE->u.keyButtonPointer.state = keyButtonState;
+    xE->u.keyButtonPointer.rootX = sprite.hot.x;
+    xE->u.keyButtonPointer.rootY = sprite.hot.y;
     key = xE->u.u.detail;
     kptr = &mouse->down[key >> 3];
     bit = 1 << (key & 7);
@@ -1600,9 +1640,7 @@ ProcessPointerEvent (xE, mouse)
 		deactivateGrab = TRUE;
 	    break;
 	case MotionNotify: 
-	    if (!CheckMotion(xE->u.keyButtonPointer.rootX,
-			     xE->u.keyButtonPointer.rootY, 
-			     FALSE))
+	    if (!CheckMotion())
                 return;
 	    break;
 	default: 
@@ -1892,17 +1930,17 @@ DoEnterLeaveEvents(fromWin, toWin, mode)
 	EnterLeaveEvent(LeaveNotify, mode, NotifyNonlinear, fromWin);
 	if (common)
 	{
-	    LeaveNotifies(
-		fromWin, common, mode, NotifyNonlinearVirtual, FALSE);
+	    LeaveNotifies(fromWin, common, mode,
+			  NotifyNonlinearVirtual, FALSE);
 	    EnterNotifies(common, toWin->parent, mode, NotifyNonlinearVirtual);
 	}
 	else
 	{
-	    LeaveNotifies(
-		fromWin, RootForWindow(fromWin), mode,
-		NotifyNonlinearVirtual, TRUE);
-	    EnterNotifies(
-		RootForWindow(toWin), toWin->parent, mode, NotifyNonlinearVirtual);
+	    LeaveNotifies(fromWin,
+			  WindowTable[fromWin->drawable.pScreen->myNum], mode,
+			  NotifyNonlinearVirtual, TRUE);
+	    EnterNotifies(WindowTable[toWin->drawable.pScreen->myNum],
+			  toWin->parent, mode, NotifyNonlinearVirtual);
 	}
 	EnterLeaveEvent(EnterNotify, mode, NotifyNonlinear, toWin);
     }
@@ -2261,7 +2299,7 @@ ProcGrabPointer(client)
 	GrabRec tempGrab;
 
 	if (grab && grab->confineTo && !confineTo)
-	    ConfineCursorToWindow(ROOT, 0, 0, FALSE);
+	    ConfineCursorToWindow(ROOT, FALSE);
 	tempGrab.cursor = cursor;
 	tempGrab.client = client;
 	tempGrab.ownerEvents = stuff->ownerEvents;
@@ -2505,7 +2543,7 @@ InitEvents()
     curKeySyms.maxKeyCode = 0;
     curKeySyms.mapWidth = 0;
 
-    currentScreen = (ScreenPtr)NULL;
+    sprite.hot.pScreen = sprite.hotPhys.pScreen = (ScreenPtr)NULL;
     inputInfo.numDevices = 0;
     if (spriteTraceSize == 0)
     {
@@ -2532,11 +2570,11 @@ InitEvents()
     sprite.hotLimits.y2 = 0;
     motionHintWindow = NullWindow;
     syncEvents.replayDev = (DeviceIntPtr)NULL;
-    if (syncEvents.pending)
+    while (syncEvents.pending)
     {
-	*syncEvents.pendtail = syncEvents.free;
-	syncEvents.free = syncEvents.pending;
-	syncEvents.pending = (QdEventPtr)NULL;
+	QdEventPtr next = syncEvents.pending->next;
+	xfree(syncEvents.pending);
+	syncEvents.pending = next;
     }
     syncEvents.pendtail = &syncEvents.pending;
     syncEvents.playingEvents = FALSE;
@@ -3613,7 +3651,7 @@ ProcQueryPointer(client)
     rep.rootX = sprite.hot.x;
     rep.rootY = sprite.hot.y;
     rep.child = None;
-    if (currentScreen == pWin->drawable.pScreen)
+    if (sprite.hot.pScreen == pWin->drawable.pScreen)
     {
 	rep.sameScreen = xTrue;
 	rep.winX = sprite.hot.x - pWin->absCorner.x;
@@ -4007,12 +4045,8 @@ CheckCursorConfinement(pWin)
 	if (!(* confineTo->drawable.pScreen->RegionNotEmpty)
 			(confineTo->borderSize))
 	    DeactivatePointerGrab(inputInfo.pointer);
-	/* We could traverse the tree rooted at pWin to see if it contained
-	 * confineTo, and only then call ConfineCursorToWindow, but it hardly
-	 * seems worth it.
-	 */
-	else if (pWin->firstChild || (pWin == confineTo))
-	    ConfineCursorToWindow(confineTo, sprite.hot.x, sprite.hot.y, TRUE);
+	else if ((pWin == confineTo) || IsParent(pWin, confineTo))
+	    ConfineCursorToWindow(confineTo, TRUE);
     }
 }
 
@@ -4063,7 +4097,8 @@ ProcRecolorCursor(client)
     {
 	pscr = screenInfo.screens[nscr];
 	( *pscr->RecolorCursor)(pscr, pCursor,
-		(pCursor == sprite.current) && (pscr == currentScreen));
+				(pCursor == sprite.current) &&
+				(pscr == sprite.hotPhys.pScreen));
     }
     return (Success);
 }
