@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.53 91/12/19 14:16:21 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.54 91/12/19 18:36:22 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -774,7 +774,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-            if (TERMINALFONT(pGC->font) &&
+#if !defined(WriteFourBits) || PSZ == 8
+	    if (TERMINALFONT(pGC->font) &&
 		(pGC->planemask & PMSK) == PMSK
 #ifdef FOUR_BIT_CODE
 		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
@@ -784,8 +785,9 @@ cfbValidateGC(pGC, changes, pDrawable)
 		pGC->ops->ImageGlyphBlt = useTEGlyphBlt;
 	    }
             else
+#endif
 	    {
-#ifdef FOUR_BIT_CODE
+#ifdef WriteFourBits
 		if (devPriv->rop == GXcopy &&
 		    pGC->fillStyle == FillSolid &&
 		    (pGC->planemask & PMSK) == PMSK)
