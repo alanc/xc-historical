@@ -1,4 +1,4 @@
-/* $XConsortium: extension.h,v 1.3 88/04/30 12:05:10 rws Exp $ */
+/* $XConsortium: extension.h,v 1.4 88/09/06 15:48:25 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -24,30 +24,6 @@ SOFTWARE.
 ******************************************************************/
 #ifndef EXTENSION_H
 #define EXTENSION_H 
-
-/****************************************************************
- *  extension.h: static bindings for extending X protocol.  
- *
- *  Each protocol extension is encapsulated in the following record:
- *  
- *      typedef struct _extension_entry {
- *          char *name;                  
- *          int base;                   
- *          void (* InitProc)();          
- *          int (* MainProc)();          
- *      } EXTENSION_ENTRY;
- *  
- *  When Dispatch() gets a request type > 128, it calls
- *  XDispatchToExtension. This routine looks in the extension table for the
- *  the (MainProc) to call.  It gets one parameter, char *request (the
- *  string returned from ReadRequestFromClient).  MainProc() should return 
- *  a status flag to the disptacher.  In main(), the init procedure
- *  for each loaded extension is called.  
- *  
- *  Extension procedures to call when a GC is created and destroy are
- *  defined in gc.h (in the include directory)
- *  
- ****************************************************************/
 
 #define GetGCAndDrawableAndValidate(gcID, pGC, drawID, pDraw, client)\
     if ((client->lastDrawableID != drawID) || (client->lastGCID != gcID))\
