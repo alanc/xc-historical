@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.9 90/01/31 12:31:19 keith Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.10 90/10/06 13:57:45 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -101,11 +101,9 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 	    RROP_SOLID_MASK(addrl, startmask);
 	    addrl++;
 	}
-	for (n = nlmiddle; n--; )
-	{
-	    RROP_SOLID(addrl);
-	    ++addrl;
-	}
+	n = nlmiddle;
+	RROP_SPAN(addrl,n)
+
 	if (endmask)
 	    RROP_SOLID_MASK(addrl, endmask);
 	if (!miFillArcLower(slw))
@@ -116,11 +114,8 @@ RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
 	    RROP_SOLID_MASK(addrl, startmask);
 	    addrl++;
 	}
-	for (n = nlmiddle; n--; )
-	{
-	    RROP_SOLID(addrl);
-	    addrl++;
-	}
+	n = nlmiddle;
+	RROP_SPAN(addrl, n);
 	if (endmask)
 	    RROP_SOLID_MASK(addrl, endmask);
     }

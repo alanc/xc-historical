@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.9 90/04/06 10:07:28 rws Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.1 90/05/15 18:40:37 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -34,6 +34,57 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include "mergerop.h"
 
+#ifdef sparc
+#define SHARED_IDCACHE
+#endif
+
+#define STORE(p)    (*(p) = MROP_SOLID(srcpix,*(p)))
+
+#if (RROP == GXCopy) && defined(FAST_CONSTANT_OFFSET_MODE) && defined(SHARED_IDCACHE)
+# define Expand(left,right) {\
+    int part = nlwMiddle & 7; \
+    nlwMiddle >>= 3; \
+    while (h--) { \
+	srcpix = psrc[srcy]; \
+	++srcy; \
+	if (srcy == tileHeight) \
+	    srcy = 0; \
+	left \
+	p += part; \
+	switch (part) { \
+	case 7: \
+	    STORE(p - 7); \
+	case 6: \
+	    STORE(p - 6); \
+	case 5: \
+	    STORE(p - 5); \
+	case 4: \
+	    STORE(p - 4); \
+	case 3: \
+	    STORE(p - 3); \
+	case 2: \
+	    STORE(p - 2); \
+	case 1: \
+	    STORE(p - 1); \
+	} \
+	nlw = nlwMiddle; \
+	while (nlw) { \
+	    STORE (p + 0); \
+	    STORE (p + 1); \
+	    STORE (p + 2); \
+	    STORE (p + 3); \
+	    STORE (p + 4); \
+	    STORE (p + 5); \
+	    STORE (p + 6); \
+	    STORE (p + 7); \
+	    p += 8; \
+	    nlw--; \
+	} \
+	right \
+	p += nlwExtra; \
+    } \
+}
+#else
 #define Expand(left,right) {\
     while (h--)	{ \
 	srcpix = psrc[srcy]; \
@@ -51,6 +102,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 	p += nlwExtra; \
     } \
 }
+#endif
 
 void
 MROP_NAME(cfbFillRectTile32) (pDrawable, pGC, nBox, pBox)

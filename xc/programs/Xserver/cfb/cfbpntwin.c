@@ -116,6 +116,53 @@ cfbPaintWindow(pWin, pRegion, what)
     miPaintWindow (pWin, pRegion, what);
 }
 
+/*
+ * Use the RROP macros in copy mode
+ */
+
+#define RROP GXcopy
+#include "cfbrrop.h"
+
+#ifdef RROP_UNROLL
+# define Expand(left,right,leftAdjust) {\
+    int part = nmiddle & RROP_UNROLL_MASK; \
+    int widthStep; \
+    widthStep = widthDst - nmiddle - leftAdjust; \
+    nmiddle >>= RROP_UNROLL_SHIFT; \
+    while (h--) { \
+	left \
+	pdst += part; \
+	switch (part) { \
+	    RROP_UNROLL_CASE(pdst) \
+	} \
+	m = nmiddle; \
+	while (m) { \
+	    pdst += RROP_UNROLL; \
+	    RROP_UNROLL_LOOP(pdst) \
+	    m--; \
+	} \
+	right \
+	pdst += widthStep; \
+    } \
+}
+
+#else
+# define Expand(left, right, leftAdjust) { \
+    int widthStep; \
+    widthStep = widthDst - nmiddle - leftAdjust; \
+    while (h--) { \
+	left \
+	m = nmiddle; \
+	while (m--) {\
+	    RROP_SOLID(pdst); \
+	    pdst++; \
+	} \
+	right \
+	pdst += widthStep; \
+    } \
+}
+#endif
+
 void
 cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
@@ -123,57 +170,45 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
     BoxPtr	    pBox;
     unsigned long   pixel;
 {
-    unsigned long   *pdstBase, *pdstRect;
+    unsigned long   *pdstBase;
     int		    widthDst;
     register int    h;
-    register unsigned long   fill;
+    register unsigned long   rrop_xor;
     register unsigned long   *pdst;
     register unsigned long   leftMask, rightMask;
     int		    nmiddle;
     register int    m;
     int		    w;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pdstBase = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	widthDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer(pDrawable, widthDst, pdstBase);
 
-    fill = PFILL(pixel);
+    rrop_xor = PFILL(pixel);
     for (; nBox; nBox--, pBox++)
     {
-    	pdstRect = pdstBase + pBox->y1 * widthDst;
+    	pdst = pdstBase + pBox->y1 * widthDst;
     	h = pBox->y2 - pBox->y1;
 	w = pBox->x2 - pBox->x1;
 #if PPW == 4
 	if (w == 1)
 	{
-	    register char    *pdstb = ((char *) pdstRect) + pBox->x1;
+	    register char    *pdstb = ((char *) pdst) + pBox->x1;
 	    int	    incr = widthDst << 2;
 
 	    while (h--)
 	    {
-		*pdstb = fill;
+		*pdstb = rrop_xor;
 		pdstb += incr;
 	    }
 	}
 	else
 	{
 #endif
-	pdstRect += (pBox->x1 >> PWSH);
+	pdst += (pBox->x1 >> PWSH);
 	if ((pBox->x1 & PIM) + w <= PPW)
 	{
 	    maskpartialbits(pBox->x1, w, leftMask);
-	    pdst = pdstRect;
 	    while (h--) {
-		*pdst = (*pdst & ~leftMask) | (fill & leftMask);
+		*pdst = (*pdst & ~leftMask) | (rrop_xor & leftMask);
 		pdst += widthDst;
 	    }
 	}
@@ -184,53 +219,30 @@ cfbFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	    {
 		if (rightMask)
 		{
-		    while (h--) {
-			pdst = pdstRect;
-			*pdst = (*pdst & ~leftMask) | (fill & leftMask);
-			pdst++;
-			m = nmiddle;
-			while (m--)
-			    *pdst++ = fill;
-			*pdst = (*pdst & ~rightMask) | (fill & rightMask);
-			pdstRect += widthDst;
-		    }
+		    Expand (RROP_SOLID_MASK (pdst, leftMask); pdst++; ,
+			    RROP_SOLID_MASK (pdst, rightMask); ,
+			    1)
 		}
 		else
 		{
-		    while (h--) {
-			pdst = pdstRect;
-			*pdst = (*pdst & ~leftMask) | (fill & leftMask);
-			pdst++;
-			m = nmiddle;
-			while (m--)
-			    *pdst++ = fill;
-			pdstRect += widthDst;
-		    }
+		    Expand (RROP_SOLID_MASK (pdst, leftMask); pdst++;,
+			    ,
+			    1)
 		}
 	    }
 	    else
 	    {
 		if (rightMask)
 		{
-		    while (h--) {
-			pdst = pdstRect;
-			m = nmiddle;
-			while (m--)
-			    *pdst++ = fill;
-			*pdst = (*pdst & ~rightMask) | (fill & rightMask);
-			pdstRect += widthDst;
-		    }
+		    Expand (,
+			    RROP_SOLID_MASK (pdst, rightMask);,
+			    0)
 		}
 		else
 		{
-		    while (h--)
-		    {
-			pdst = pdstRect;
-			m = nmiddle;
-			while (m--)
-			    *pdst++ = fill;
-			pdstRect += widthDst;
-		    }
+		    Expand (,
+			    ,
+			    0)
 		}
 	    }
 	}
@@ -247,129 +259,88 @@ cfbFillBoxTile32 (pDrawable, nBox, pBox, tile)
     BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
     PixmapPtr	    tile;	/* rotated, expanded tile */
 {
-    register int srcpix;	
-    int *psrc;		/* pointer to bits in tile, if needed */
-    int tileHeight;	/* height of the tile */
+    register unsigned long  rrop_xor;	
+    register unsigned long  *pdst;
+    register int	    m;
+    int			    *psrc;
+    int			    tileHeight;
 
-    int nlwDst;		/* width in longwords of the dest pixmap */
-    int w;		/* width of current box */
-    register int h;	/* height of current box */
-    register unsigned long startmask;
-    register unsigned long endmask; /* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
-    int nlwExtra;	/* to get from right of box to left of next span */
-    register int nlw;	/* loop version of nlwMiddle */
-    register unsigned long *p;	/* pointer to bits we're writing */
-    int y;		/* current scan line */
-    int srcy;		/* current tile position */
+    int			    widthDst;
+    int			    w;
+    int			    h;
+    register unsigned long  leftMask;
+    register unsigned long  rightMask;
+    int			    nmiddle;
+    int			    y;
+    int			    srcy;
 
-    unsigned long *pbits;/* pointer to start of pixmap */
+    unsigned long	    *pdstBase;
 
     tileHeight = tile->drawable.height;
     psrc = (int *)tile->devPrivate.ptr;
 
-    if (pDrawable->type == DRAWABLE_WINDOW)
-    {
-	pbits = (unsigned long *)
-		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
-	nlwDst = (int)
-		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
-    }
-    else
-    {
-	pbits = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
-	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
-    }
+    cfbGetLongWidthAndPointer (pDrawable, widthDst, pdstBase);
 
     while (nBox--)
     {
 	w = pBox->x2 - pBox->x1;
 	h = pBox->y2 - pBox->y1;
 	y = pBox->y1;
-	p = pbits + (pBox->y1 * nlwDst) + (pBox->x1 >> PWSH);
+	pdst = pdstBase + (pBox->y1 * widthDst) + (pBox->x1 >> PWSH);
 	srcy = y % tileHeight;
+
+#define StepTile    rrop_xor = psrc[srcy]; \
+		    ++srcy; \
+		    if (srcy == tileHeight) \
+		        srcy = 0;
 
 	if ( ((pBox->x1 & PIM) + w) < PPW)
 	{
-	    maskpartialbits(pBox->x1, w, startmask);
-	    nlwExtra = nlwDst;
+	    maskpartialbits(pBox->x1, w, leftMask);
+	    rightMask = ~leftMask;
 	    while (h--)
 	    {
-		srcpix = psrc[srcy];
-		++srcy;
-		if (srcy == tileHeight)
-		    srcy = 0;
-		*p = (*p & ~startmask) | (srcpix & startmask);
-		p += nlwExtra;
+		StepTile
+		*pdst = (*pdst & rightMask) | (rrop_xor & leftMask);
+		pdst += widthDst;
 	    }
 	}
 	else
 	{
-	    maskbits(pBox->x1, w, startmask, endmask, nlwMiddle);
-	    nlwExtra = nlwDst - nlwMiddle;
+	    maskbits(pBox->x1, w, leftMask, rightMask, nmiddle);
 
-	    if (startmask && endmask)
+	    if (leftMask)
 	    {
-		nlwExtra -= 1;
-		while (h--)
+		if (rightMask)
 		{
-		    srcpix = psrc[srcy];
-		    ++srcy;
-		    if (srcy == tileHeight)
-		        srcy = 0;
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
+		    Expand (StepTile
+			    RROP_SOLID_MASK(pdst, leftMask); pdst++;,
+			    RROP_SOLID_MASK(pdst, rightMask);,
+			    1)
+		}
+		else
+		{
+		    Expand (StepTile
+			    RROP_SOLID_MASK(pdst, leftMask); pdst++;,
+			    ,
+			    1)
 		}
 	    }
-	    else if (startmask && !endmask)
+	    else
 	    {
-		nlwExtra -= 1;
-		while (h--)
+		if (rightMask)
 		{
-		    srcpix = psrc[srcy];
-		    ++srcy;
-		    if (srcy == tileHeight)
-		        srcy = 0;
-		    nlw = nlwMiddle;
-		    *p = (*p & ~startmask) | (srcpix & startmask);
-		    p++;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
+		    Expand (StepTile
+			    ,
+			    RROP_SOLID_MASK(pdst, rightMask);,
+			    0)
 		}
-	    }
-	    else if (!startmask && endmask)
-	    {
-		while (h--)
+		else
 		{
-		    srcpix = psrc[srcy];
-		    ++srcy;
-		    if (srcy == tileHeight)
-		        srcy = 0;
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    *p = (*p & ~endmask) | (srcpix & endmask);
-		    p += nlwExtra;
-		}
-	    }
-	    else /* no ragged bits at either end */
-	    {
-		while (h--)
-		{
-		    srcpix = psrc[srcy];
-		    ++srcy;
-		    if (srcy == tileHeight)
-		        srcy = 0;
-		    nlw = nlwMiddle;
-		    while (nlw--)
-			*p++ = srcpix;
-		    p += nlwExtra;
+		    Expand (StepTile
+			    ,
+			    ,
+			    0)
 		}
 	    }
 	}

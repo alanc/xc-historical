@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfbsolid.c,v 1.1 90/05/15 18:40:25 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -38,34 +38,55 @@
 #include "cfbrrop.h"
 
 #if defined(FAST_CONSTANT_OFFSET_MODE) && (RROP != GXcopy)
-# define Expand(left,right) {\
+# define Expand(left,right,leftAdjust) {\
     int part = nmiddle & 3; \
+    int widthStep; \
+    widthStep = widthDst - nmiddle - leftAdjust; \
+    nmiddle >>= 2; \
+    pdst = pdstRect; \
     while (h--) { \
-	pdst = pdstRect; \
 	left \
-	m = nmiddle; \
 	pdst += part; \
 	switch (part) { \
-	case 3: \
-	    RROP_SOLID(pdst - 3); \
-	case 2: \
-	    RROP_SOLID(pdst - 2); \
-	case 1: \
-	    RROP_SOLID(pdst - 1); \
+	    RROP_UNROLL_CASE3(pdst) \
 	} \
-	while ((m -=4) >= 0) { \
-	    RROP_SOLID (pdst + 0); \
-	    RROP_SOLID (pdst + 1); \
-	    RROP_SOLID (pdst + 2); \
-	    RROP_SOLID (pdst + 3); \
+	m = nmiddle; \
+	while (m) { \
 	    pdst += 4; \
+	    RROP_UNROLL_LOOP4(pdst,-4) \
+	    m--; \
 	} \
 	right \
-	pdstRect += widthDst; \
+	pdst += widthStep; \
     } \
 }
 #else
-# define Expand(left, right) { \
+# ifdef RROP_UNROLL
+#  define Expand(left,right,leftAdjust) {\
+    int part = nmiddle & RROP_UNROLL_MASK; \
+    int widthStep; \
+    widthStep = widthDst - nmiddle - leftAdjust; \
+    nmiddle >>= RROP_UNROLL_SHIFT; \
+    pdst = pdstRect; \
+    while (h--) { \
+	left \
+	pdst += part; \
+	switch (part) { \
+	    RROP_UNROLL_CASE(pdst) \
+	} \
+	m = nmiddle; \
+	while (m) { \
+	    pdst += RROP_UNROLL; \
+	    RROP_UNROLL_LOOP(pdst) \
+	    m--; \
+	} \
+	right \
+	pdst += widthStep; \
+    } \
+}
+
+# else
+#  define Expand(left, right, leftAdjust) { \
     while (h--) { \
 	pdst = pdstRect; \
 	left \
@@ -78,6 +99,7 @@
 	pdstRect += widthDst; \
     } \
 }
+# endif
 #endif
 	
 
@@ -153,12 +175,12 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 		if (rightMask)	/* left mask and right mask */
 		{
 		    Expand(RROP_SOLID_MASK (pdst, leftMask); pdst++;,
-			   RROP_SOLID_MASK (pdst, rightMask);)
+			   RROP_SOLID_MASK (pdst, rightMask);, 1)
 		}
 		else	/* left mask and no right mask */
 		{
 		    Expand(RROP_SOLID_MASK (pdst, leftMask); pdst++;,
-			   )
+			   , 1)
 		}
 	    }
 	    else
@@ -166,12 +188,12 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 		if (rightMask)	/* no left mask and right mask */
 		{
 		    Expand(,
-			   RROP_SOLID_MASK (pdst, rightMask);)
+			   RROP_SOLID_MASK (pdst, rightMask);, 0)
 		}
 		else	/* no left mask and no right mask */
 		{
 		    Expand(,
-			    )
+			    , 0)
 		}
 	    }
 	}
@@ -211,7 +233,6 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     devPriv = (cfbPrivGCPtr)pGC->devPrivates[cfbGCPrivateIndex].ptr;
     RROP_FETCH_GCPRIV(devPriv)
-    
     n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -277,11 +298,8 @@ RROP_NAME(cfbSolidSpans) (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		RROP_SOLID_MASK (pdst, startmask);
 		++pdst;
 	    }
-	    while (nlmiddle--)
-	    {
-		RROP_SOLID(pdst);
-		++pdst;
-	    }
+	    
+	    RROP_SPAN(pdst,nlmiddle)
 	    if (endmask)
 	    {
 		RROP_SOLID_MASK (pdst, endmask);
