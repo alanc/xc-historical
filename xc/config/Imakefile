@@ -1,12 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/04 15:54:54 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/12/31 14:57:59 kaleb Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if BuildFresco
-FRESCOSUBDIR = ixx
-#endif
-
-SUBDIRS = cf imake makedepend util $(FRESCOSUBDIR)
+SUBDIRS = cf imake makedepend util
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
