@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.h,v 1.6 89/10/03 15:57:51 kit Exp $
+ * $XConsortium: globals.h,v 1.7 91/06/08 18:15:26 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -43,3 +43,5 @@ extern Widget initial_widget;	      /* The initial widget, never realized. */
 
 extern char * option_names[];
 
+extern char **saved_argv;
+extern int saved_argc;

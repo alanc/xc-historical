@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: buttons.c,v 1.30 91/07/21 18:58:54 converse Exp $
+ * $XConsortium: buttons.c,v 1.31 91/07/21 20:37:20 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -100,6 +100,9 @@ MakeTopBox()
   FormUpWidgets(form, full_size, half_size);
 
   XtRealizeWidget(top);
+				/* add WM_COMMAND property */
+  XSetCommand(XtDisplay(top), XtWindow(top), saved_argv, saved_argc);
+
   man_globals = (ManpageGlobals*) XtMalloc( (Cardinal) sizeof(ManpageGlobals));
   man_globals->label = NULL;
   man_globals->manpagewidgets.directory = NULL;

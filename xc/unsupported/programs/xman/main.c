@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: main.c,v 1.18 91/05/31 11:13:29 dave Exp $
+ * $XConsortium: main.c,v 1.19 91/06/05 09:50:04 dave Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -110,6 +110,10 @@ XtActionsRec xman_actions[] = {
   {"ShowVersion",       ShowVersion},
 };
 
+char **saved_argv;
+int saved_argc;
+
+
 /*	Function Name: main
  *	Description: This is the main driver for Xman.
  *	Arguments: argc, argv - the command line arguments.
@@ -122,6 +126,10 @@ char ** argv;
 int argc;
 {
   XtAppContext app_con;
+
+  saved_argc = argc;
+  saved_argv = XtMalloc(argc * sizeof(char *));
+  bcopy(argv, saved_argv, argc * sizeof(char *));
 
   initial_widget = XtAppInitialize(&app_con, "Xman", xman_options,
 				   XtNumber(xman_options), &argc, argv,
