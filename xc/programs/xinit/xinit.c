@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.21 88/08/30 20:54:23 jim Exp $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.22 88/08/31 10:17:16 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -83,7 +83,7 @@ char client_display[100];
 
 char *default_server = "X";
 char *default_display = ":0";		/* choose most efficient */
-char *default_client[] = {"xterm", "=+1+1", "-n", "login", "-display", NULL};
+char *default_client[] = {"xterm", "-geometry", "+1+1", "-n", "login", "-display", NULL};
 char *server[100];
 char *client[100];
 char *displayNum;
