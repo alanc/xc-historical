@@ -1,8 +1,5 @@
-/* $XConsortium: sunMouse.c,v 5.13 92/11/20 14:40:16 rws Exp $ */
+
 /*-
- * sunMouse.c --
- *	Functions for playing cat and mouse... sorry.
- *
  * Copyright (c) 1987 by the Regents of the University of California
  *
  * Permission to use, copy, modify, and distribute this
@@ -12,8 +9,6 @@
  * makes no representations about the suitability of this
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
- *
- *
  */
 
 /************************************************************
@@ -43,13 +38,20 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/*
+ * Copyright 1991, 1992, 1993 Kaleb S. Keithley
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software and its documentation for any purpose and without
+ * fee is hereby granted, provided that the above copyright
+ * notice appear in all copies.  Kaleb S. Keithley makes no 
+ * representations about the suitability of this software for 
+ * any purpose.  It is provided "as is" without express or 
+ * implied warranty.
+ */
 
 #define NEED_EVENTS
 #include    "sun.h"
-#include    "mipointer.h"
-#ifdef SVR4
-#include <sys/stropts.h>
-#endif
 
 Bool ActiveZaphod = TRUE;
 
@@ -109,42 +111,36 @@ sunMouseProc (pMouse, what)
     static int	  oformat;
     BYTE    	  map[4];
     char	  *device, *getenv ();
+    extern int    AddEnabledDevice(), RemoveEnabledDevice();
 
     switch (what) {
 	case DEVICE_INIT:
 	    if (pMouse != LookupPointerDevice()) {
 		ErrorF ("Cannot open non-system mouse");	
-		return (!Success);
+		return !Success;
 	    }
-
-	    if (! sunUseSunWindows()) {
-		if (sysMousePriv.fd >= 0) {
-		    fd = sysMousePriv.fd;
-		} else {
-		    if (!(device = getenv ("MOUSE")) ||
-			 (fd = open (device, O_RDWR, 0)) == -1)
-			fd = open ("/dev/mouse", O_RDWR, 0);
-		    if (fd < 0) {
-			Error ("Opening /dev/mouse");
-			return (!Success);
-		    }
-		    if (fcntl (fd, F_SETFL, (FNDELAY|FASYNC)) < 0
-#ifdef SVR4
-			|| ioctl(fd, I_SETSIG, S_RDNORM|S_RDBAND|S_HIPRI) < 0
-#else
-			|| fcntl(fd, F_SETOWN, getpid()) < 0
-#endif
-			) {
-			    perror("sunMouseProc");
-			    ErrorF("Can't set up mouse on fd %d\n", fd);
-			}
-		    
-		    sysMousePriv.fd = fd;
+	    if (sysMousePriv.fd >= 0) {
+		fd = sysMousePriv.fd;
+	    } else {
+		if (!(device = getenv ("MOUSE")))
+		    device = "/dev/mouse";
+		if ((fd = open (device, O_RDWR, 0)) == -1) {
+		    Error ("sunMouseProc");
+		    ErrorF ("opening %s", device);
+		    return !Success;
 		}
+		if (fcntl (fd, F_SETFL, FNDELAY | FASYNC) == -1
+#ifdef SVR4
+		    || ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI) < 0) {
+#else
+		    || fcntl(fd, F_SETOWN, getpid()) == -1) {
+#endif
+		    Error("sunMouseProc");
+		    ErrorF("Can't set up mouse on fd %d\n", fd);
+		}
+		sysMousePriv.fd = fd;
 	    }
-
 	    sunMousePriv.bmask = 0;
-
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
 	    map[1] = 1;
@@ -156,38 +152,30 @@ sunMouseProc (pMouse, what)
 	    break;
 
 	case DEVICE_ON:
-	    if (! sunUseSunWindows()) {
-		if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-			VUIDGFORMAT, &oformat) < 0) {
-		    Error ("VUIDGFORMAT");
-		    return(!Success);
-		}
-		format = VUID_FIRM_EVENT;
-		if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-			VUIDSFORMAT, &format) < 0) {
-		    Error ("VUIDSFORMAT");
-		    return(!Success);
-		}
-		AddEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
+	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
+		VUIDGFORMAT, &oformat) == -1) {
+		Error ("sunMouseProc ioctl VUIDGFORMAT");
+		return !Success;
 	    }
-
+	    format = VUID_FIRM_EVENT;
+	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
+		VUIDSFORMAT, &format) == -1) {
+		Error ("sunMouseProc ioctl VUIDSFORMAT");
+		return !Success;
+	    }
+	    AddEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
 	    pMouse->on = TRUE;
 	    break;
 
 	case DEVICE_CLOSE:
-	    if (! sunUseSunWindows()) {
-		if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-			VUIDSFORMAT, &oformat) < 0) {
-		    Error ("VUIDSFORMAT");
-		}
-	    }
+	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
+		VUIDSFORMAT, &oformat) == -1)
+		Error ("sunMouseProc ioctl VUIDSFORMAT");
 	    break;
 
 	case DEVICE_OFF:
 	    pMouse->on = FALSE;
-	    if (! sunUseSunWindows()) {
-		RemoveEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
-	    }
+	    RemoveEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
 	    break;
     }
     return (Success);
@@ -241,21 +229,19 @@ sunMouseGetEvents (pMouse, pNumEvents, pAgain)
 
     pPriv = (PtrPrivPtr) pMouse->devicePrivate;
 
-    nBytes = read (pPriv->fd, evBuf, sizeof(evBuf));
-
-    if (nBytes < 0) {
+    if ((nBytes = read (pPriv->fd, (char *)evBuf, sizeof(evBuf))) == -1) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
 	    *pAgain = FALSE;
 	} else {
-	    Error ("Reading mouse");
+	    Error ("sunMouseGetEvents read");
 	    FatalError ("Could not read from mouse");
 	}
     } else {
 	*pNumEvents = nBytes / sizeof (Firm_event);
 	*pAgain = (nBytes == sizeof (evBuf));
     }
-    return (evBuf);
+    return evBuf;
 }
 
 
@@ -279,17 +265,19 @@ MouseAccelerate (pMouse, delta)
 {
     register int  sgn = sign(delta);
     register PtrCtrl *pCtrl;
+    register short ret;
 
     delta = abs(delta);
     pCtrl = &((DeviceIntPtr) pMouse)->ptrfeed->ctrl;
-
     if (delta > pCtrl->threshold) {
-	return ((short) (sgn * (pCtrl->threshold +
-				((delta - pCtrl->threshold) * pCtrl->num) /
-				pCtrl->den)));
+	ret = 
+	    (short) sgn * 
+		(pCtrl->threshold + ((delta - pCtrl->threshold) * pCtrl->num) /
+		    pCtrl->den);
     } else {
-	return ((short) (sgn * delta));
+	ret = (short) sgn * delta;
     }
+    return ret;
 }
 
 /*-
@@ -323,8 +311,7 @@ sunMouseEnqueueEvent (pMouse, fe)
 
     time = xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
 
-    switch (fe->id)
-    {
+    switch (fe->id) {
     case MS_LEFT:
     case MS_MIDDLE:
     case MS_RIGHT:
@@ -385,7 +372,7 @@ sunCursorOffScreen (pScreen, x, y)
     ScreenPtr	*pScreen;
     int		*x, *y;
 {
-    int	    index;
+    int	    index, ret = FALSE;
 
     /*
      * Active Zaphod implementation:
@@ -394,24 +381,20 @@ sunCursorOffScreen (pScreen, x, y)
      *    the current screen.
      */
     if (ActiveZaphod &&
-	screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0))
-    {
+	screenInfo.numScreens > 1 && (*x >= (*pScreen)->width || *x < 0)) {
 	index = (*pScreen)->myNum;
-	if (*x < 0)
-	{
+	if (*x < 0) {
 	    index = (index ? index : screenInfo.numScreens) - 1;
 	    *pScreen = screenInfo.screens[index];
 	    *x += (*pScreen)->width;
-	}
-	else
-	{
+	} else {
 	    *x -= (*pScreen)->width;
 	    index = (index + 1) % screenInfo.numScreens;
 	    *pScreen = screenInfo.screens[index];
 	}
-	return TRUE;
+	ret = TRUE;
     }
-    return FALSE;
+    return ret;
 }
 
 static void
@@ -419,13 +402,8 @@ sunCrossScreen (pScreen, entering)
     ScreenPtr	pScreen;
     Bool	entering;
 {
-    u_char  select;
-
-    select = 1;
-    if (entering)
-	select = 0;
     if (sunFbs[pScreen->myNum].EnterLeave)
-	(*sunFbs[pScreen->myNum].EnterLeave) (pScreen, select);
+	(*sunFbs[pScreen->myNum].EnterLeave) (pScreen, entering ? 0 : 1);
 }
 
 static void
@@ -433,96 +411,23 @@ sunWarpCursor (pScreen, x, y)
     ScreenPtr	pScreen;
     int		x, y;
 {
-#ifdef SVR4
-    sigset_t newmask, oldmask;
-#else
-    int	    oldmask;
-#endif
+#ifndef i386
+    sigset_t newsigmask;
 
+    (void) sigemptyset (&newsigmask);
 #ifdef SVR4
-    sigemptyset(&newmask);
-    sigaddset(&newmask, SIGPOLL);
-    sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+    (void) sigaddset (&newsigmask, SIGPOLL);
 #else
-    oldmask = sigblock (sigmask(SIGIO));
+    (void) sigaddset (&newsigmask, SIGIO);
 #endif
+    (void) sigprocmask (SIG_BLOCK, &newsigmask, (sigset_t *)NULL);
     miPointerWarpCursor (pScreen, x, y);
-#ifdef SVR4
-    sigprocmask(SIG_SETMASK, &oldmask, NULL);
+    (void) sigprocmask (SIG_UNBLOCK, &newsigmask, (sigset_t *)NULL);
 #else
+    int oldmask;
+
+    oldmask = sigblock (sigmask (SIGIO));
+    miPointerWarpCursor (pScreen, x, y);
     sigsetmask (oldmask);
 #endif
 }
-
-#ifdef SUN_WINDOWS
-
-/*
- * Enqueue a sunwindows mouse event.  The possible events are
- *   LOC_MOVE
- *   MS_LEFT
- *   MS_MIDDLE
- *   MS_RIGHT
- */
-
-void
-sunMouseEnqueueEventSunWin(pMouse,se)
-    DeviceRec *pMouse;
-    register struct inputevent *se;
-{   
-    xEvent			xE;
-    register int	  	bmask;	/* Temporary button mask */
-    register PtrPrivPtr		pPriv;	/* Private data for pointer */
-    register SunMsPrivPtr	pSunPriv; /* Private data for mouse */
-    int				x, y;
-    unsigned long		time;
-
-    pPriv = (PtrPrivPtr)pMouse->devicePrivate;
-    time = xE.u.keyButtonPointer.time = TVTOMILLI(event_time(se));
-
-    switch (event_id(se)) {
-        case MS_LEFT:
-        case MS_MIDDLE:
-        case MS_RIGHT:
-	    /*
-	     * A button changed state. Sometimes we will get two events
-	     * for a single state change. Should we get a button event which
-	     * reflects the current state of affairs, that event is discarded.
-	     *
-	     * Mouse buttons start at 1.
-	     */
-	    pSunPriv = (SunMsPrivPtr) pPriv->devPrivate;
-	    xE.u.u.detail = (event_id(se) - MS_LEFT) + 1;
-	    bmask = 1 << xE.u.u.detail;
-	    if (win_inputnegevent(se)) {
-		if (pSunPriv->bmask & bmask) {
-		    xE.u.u.type = ButtonRelease;
-		    pSunPriv->bmask &= ~bmask;
-		} else {
-		    return;
-		}
-	    } else {
-		if ((pSunPriv->bmask & bmask) == 0) {
-		    xE.u.u.type = ButtonPress;
-		    pSunPriv->bmask |= bmask;
-		} else {
-		    return;
-		}
-	    }
-	    mieqEnqueue (&xE);
-    	    break;
-        case LOC_MOVE:
-	    miPointerAbsoluteCursor(event_x(se),event_y(se),time);
-	    miPointerPosition (&x, &y);
-	    if (x != event_x(se) || y != event_y(se))
-	        /*
-                 * Tell SunWindows that X is constraining the mouse
-                 * cursor so that the server and SunWindows stay in sync.
-	         */
-	        win_setmouseposition(windowFd, x, y);
-	    break;
-	default:
-	    FatalError ("sunMouseEnqueueEventSunWin: unrecognized id\n");
-	    break;
-    }
-}
-#endif /* SUN_WINDOWS */
