@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.115 89/11/14 10:08:03 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.116 89/11/14 14:20:09 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -874,9 +874,6 @@ extern XtGeometryResult XtQueryGeometry();
     /* XtWidgetGeometry *intended;	*/
     /* XtWidgetGeometry *reply_return;	*/
 
-
-/* Class record constants */
-
 extern Widget XtCreatePopupShell();
 
     /* String	    name;	    */
@@ -928,6 +925,11 @@ extern void XtCallbackPopdown();
     /* XtPointer    closure;	    */
     /* XtPointer    call_data;	    */
 
+extern void XtMenuPopupAction();
+    /* Widget widget;		*/
+    /* XEvent *event;		*/
+    /* String *params;		*/
+    /* Cardinal *num_params;	*/
 
 extern Widget XtCreateWidget();
     /* String	    name;	    */
