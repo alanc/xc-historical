@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.32 89/05/03 12:32:44 jim Exp $ */
+/* $XConsortium: access.c,v 1.33 89/06/21 16:38:05 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -147,6 +147,7 @@ DefineSelf (fd)
 	saddr.sa.sa_family = hp->h_addrtype;
 	inetaddr = (struct sockaddr_in *) (&(saddr.sa));
 	acopy ( hp->h_addr, &(inetaddr->sin_addr), hp->h_length);
+	len = sizeof(saddr.sa);
 	family = ConvertAddr ( &(saddr.sa), &len, &addr);
 	if ( family > 0)
 	{
@@ -193,6 +194,7 @@ DefineSelf (fd)
     for (ifr = ifc.ifc_req, n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0;
      ifr++)
     {
+	len = sizeof(ifr->ifr_addr);
 #ifdef DNETCONN
 	/*
 	 * this is ugly but SIOCGIFCONF returns decnet addresses in
@@ -297,6 +299,7 @@ ResetHosts (display)
 		{
     		    /* node was specified by name */
     		    saddr.sa.sa_family = np->n_addrtype;
+		    len = sizeof(saddr.sa);
     		    if ((family = ConvertAddr (&saddr.sa, &len, &addr)) ==
 		      AF_DECnet)
 		    {
@@ -316,6 +319,7 @@ ResetHosts (display)
     	    if (hp = gethostbyname (hostname))
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
+		len = sizeof(saddr.sa);
     		if ((family = ConvertAddr (&saddr.sa, &len, &addr)) > 0)
 #ifdef h_addr				/* new 4.3bsd version of gethostent */
 		{
