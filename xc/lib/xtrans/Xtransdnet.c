@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.6 94/02/06 16:03:22 mor Exp $ */
+/* $XConsortium: Xtransdnet.c,v 1.7 94/02/07 21:10:46 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -38,7 +38,7 @@
 #define DNETOBJ X$FONT
 #endif
 #if defined(ICE_t)
-#define DNETOBJ X$ICE
+#define DNETOBJ ICE$
 #endif
 #if defined(TEST_t)
 #define DNETOBJ X$TEST
