@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.6 88/10/20 17:37:13 keith Exp $
+ * $XConsortium: resource.c,v 1.7 88/10/22 21:50:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,6 +38,37 @@ int	daemonMode;
 # define DM_INT		1
 # define DM_BOOL	2
 
+/*
+ * the following constants are supposed to be set in the makefile from
+ * parameters set util/imake.includes/site.def (or *.macros in that directory
+ * if it is server-specific).  DO NOT CHANGE THESE DEFINITIONS!
+ */
+#ifndef DEF_SERVER_LINE 
+#define DEF_SERVER_LINE ":0 secure /usr/bin/X11/X :0"
+#endif
+#ifndef XRDB_PROGRAM
+#define XRDB_PROGRAM "/usr/bin/X11/xrdb"
+#endif
+#ifndef DEF_SESSION
+#define DEF_SESSION "/usr/bin/X11/xterm -ls"
+#endif
+#ifndef DEF_USER_PATH
+#define DEF_USER_PATH ":/bin:/usr/bin:/usr/bin/X11:/usr/ucb"
+#endif
+#ifndef DEF_SYSTEM_PATH
+#define DEF_SYSTEM_PATH "/etc:/bin:/usr/bin:/usr/bin/X11:/usr/ucb"
+#endif
+#ifndef DEF_SYSTEM_SHELL
+#define DEF_SYSTEM_SHELL "/bin/sh"
+#endif
+#ifndef DEF_FAILSAFE_CLIENT
+#define DEF_FAILSAFE_CLIENT "/usr/bin/X11/xterm"
+#endif
+#ifndef DEF_XDM_CONFIG
+#define DEF_XDM_CONFIG "/usr/lib/X11/xdm/xdm-config"
+#endif
+
+
 struct dmResources {
 	char	*name, *class;
 	int	type;
@@ -45,7 +76,7 @@ struct dmResources {
 	char	*default_value;
 } DmResources[] = {
 "servers",	"Servers", 	DM_STRING,	&servers,
-				":0 secure /usr/bin/X11/X :0",
+				DEF_SERVER_LINE,
 "requestPort",	"RequestPort",	DM_INT,		(char **) &request_port,
 				"0",
 "debugLevel",	"DebugLevel",	DM_INT,		(char **) &debugLevel,
@@ -69,13 +100,13 @@ struct displayResources {
 "resources",	"Resources",	DM_STRING,	boffset(resources),
 				"",
 "xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
-				"/usr/bin/X11/xrdb",
+				XRDB_PROGRAM,
 "startup",	"Startup",	DM_STRING,	boffset(startup),
 				"",
 "reset",	"Reset",	DM_STRING,	boffset(reset),
 				"",
 "session",	"Session",	DM_STRING,	boffset(session),
-				"/usr/bin/X11/xterm -ls",
+				DEF_SESSION,
 "openDelay",	"OpenDelay",	DM_INT,		boffset(openDelay),
 				"5",
 "openRepeat",	"OpenRepeat",	DM_INT,		boffset(openRepeat),
@@ -85,13 +116,13 @@ struct displayResources {
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
 "userPath",	"Path",		DM_STRING,	boffset(userPath),
-				":/bin:/usr/bin:/usr/bin/X11:/usr/ucb",
+				DEF_USER_PATH,
 "systemPath",	"Path",		DM_STRING,	boffset(systemPath),
-				"/etc:/bin:/usr/bin:/usr/bin/X11:/usr/ucb",
+				DEF_SYSTEM_PATH,
 "systemShell",	"Shell",	DM_STRING,	boffset(systemShell),
-				"/bin/sh",
+				DEF_SYSTEM_SHELL,
 "failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
-				"/usr/bin/X11/xterm",
+				DEF_FAILSAFE_CLIENT,
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
@@ -159,10 +190,6 @@ XrmOptionDescRec optionTable [] = {
 {"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
 };
 
-#ifndef DEFAULT_XDM_CONFIG
-# define DEFAULT_XDM_CONFIG "/usr/lib/X11/xdm/xdm-config"
-#endif
-
 InitResources (argc, argv)
 int	argc;
 char	**argv;
@@ -181,7 +208,7 @@ char	**argv;
 		}
 	}
 	if (!config) {
-		config = DEFAULT_XDM_CONFIG;
+		config = DEF_XDM_CONFIG;
 		if (access (config, 4) == -1)
 			config = 0;
 	}
