@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocfuncs.c,v 2.18 89/05/31 10:37:39 swick Exp $";
+    "$XConsortium: tocfuncs.c,v 2.19 89/07/12 16:23:52 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987

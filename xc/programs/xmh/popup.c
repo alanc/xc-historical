@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.9 89/06/02 18:34:50 rws Exp $ */
+/* $XConsortium: popup.c,v 2.10 89/06/12 18:14:56 converse Exp $ */
 /* popup.c -- Handle pop-up widgets. */
 
 #include "xmh.h"
