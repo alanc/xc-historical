@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.104 89/11/10 15:54:26 jim Exp $
+ * $XConsortium: events.c,v 1.105 89/11/13 18:11:14 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.104 89/11/10 15:54:26 jim Exp $";
+"$XConsortium: events.c,v 1.105 89/11/13 18:11:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -997,7 +997,8 @@ HandleDestroyNotify()
     if (Tmp_win->auto_raise) Scr->NumAutoRaises--;
 
     free_window_names (Tmp_win, True, True, True, True);	/* 1, 2, 3 */
-    XFree ((char *)Tmp_win->wmhints);				/* 4 */
+    if (Tmp_win->wmhints)					/* 4 */
+      XFree ((char *)Tmp_win->wmhints);
     if (Tmp_win->class.res_name && Tmp_win->class.res_name != NoName)  /* 5 */
       XFree ((char *)Tmp_win->class.res_name);
     if (Tmp_win->class.res_class && Tmp_win->class.res_class != NoName) /* 6 */
@@ -1009,7 +1010,8 @@ HandleDestroyNotify()
 	    free ((char *) Tmp_win->cmap_windows);
 	}
     }
-    if (Tmp_win->titlebuttons) free ((char *) Tmp_win->titlebuttons);  /* 10 */
+    if (Tmp_win->titlebuttons)					/* 10 */
+      free ((char *) Tmp_win->titlebuttons);
     free((char *)Tmp_win);
 }
 
