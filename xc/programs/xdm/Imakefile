@@ -17,6 +17,10 @@ RPCSRCS = rpcauth.c
 RPCLIB = -lrpcsvc
 #endif
 
+#if SystemV4 || HasShadowPasswd
+PWD_DEFINES = -DUSESHADOW
+#endif
+
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(XDMCONFIGDIR)
 
@@ -52,7 +56,8 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
  OSMAJORVERSION = OSMajorVersion
  OSMINORVERSION = OSMinorVersion
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
-		$(SIGNAL_DEFINES) $(DES_DEFINES) $(RPC_DEFINES) ConnectionFlags \
+		$(SIGNAL_DEFINES) $(DES_DEFINES) $(RPC_DEFINES) $(PWD_DEFINES) \
+		ConnectionFlags \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 
