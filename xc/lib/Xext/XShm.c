@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: XShm.c,v 1.6 89/10/06 11:20:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -47,18 +47,29 @@ static /* const */ char *shm_extension_name = SHMNAME;
  *                                                                           *
  *****************************************************************************/
 
-/*
- * find_display - locate the display info block
- */
-static int close_display(), wire_to_event(), event_to_wire();
+static int close_display(), error_string();
+static Bool wire_to_event();
+static Status event_to_wire();
+static /* const */ XExtensionHooks shm_extension_hooks = {
+    NULL,				/* create_gc */
+    NULL,				/* copy_gc */
+    NULL,				/* flush_gc */
+    NULL,				/* free_gc */
+    NULL,				/* create_font */
+    NULL,				/* free_font */
+    close_display,			/* close_display */
+    wire_to_event,			/* wire_to_event */
+    event_to_wire,			/* event_to_wire */
+    NULL,				/* error */
+    NULL,				/* error_string */
+};
+
 static XEXT_GENERATE_FIND_DISPLAY (find_display, shm_info, shm_extension_name, 
-				   close_display, wire_to_event, event_to_wire,
-				   ShmNumberEvents, NULL)
+				   &shm_extension_hooks, ShmNumberEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, shm_info)
 
-
-static int wire_to_event (dpy, re, event)
+static Bool wire_to_event (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;
@@ -67,7 +78,7 @@ static int wire_to_event (dpy, re, event)
     XShmCompletionEvent	*se;
     xShmCompletionEvent	*sevent;
 
-    ShmCheckExtension (dpy, info, 0);
+    ShmCheckExtension (dpy, info, False);
 
     switch ((event->u.u.type & 0x7f) - info->codes->first_event) {
     case ShmCompletion:
@@ -87,7 +98,7 @@ static int wire_to_event (dpy, re, event)
     return False;
 }
 
-static int event_to_wire (dpy, re, event)
+static Status event_to_wire (dpy, re, event)
     Display *dpy;
     XEvent  *re;
     xEvent  *event;

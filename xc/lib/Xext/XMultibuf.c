@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.12 89/10/06 11:27:27 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.13 89/10/08 15:12:25 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,10 +46,26 @@ static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
 /*
  * find_display - locate the display info block
  */
-static int close_display(), wire_to_event(), event_to_wire();
+static int close_display(), error_string();
+static Bool wire_to_event();
+static Status event_to_wire();
+static /* const */ XExtensionHooks multibuf_extension_hooks = {
+    NULL,				/* create_gc */
+    NULL,				/* copy_gc */
+    NULL,				/* flush_gc */
+    NULL,				/* free_gc */
+    NULL,				/* create_font */
+    NULL,				/* free_font */
+    close_display,			/* close_display */
+    wire_to_event,			/* wire_to_event */
+    event_to_wire,			/* event_to_wire */
+    NULL,				/* error */
+    error_string,			/* error_string */
+};
+
 static XEXT_GENERATE_FIND_DISPLAY (find_display, multibuf_info,
-				   multibuf_extension_name, close_display,
-				   wire_to_event, event_to_wire,
+				   multibuf_extension_name, 
+				   &multibuf_extension_hooks,
 				   MultibufferNumberOfEvents, NULL)
 
 static XEXT_GENERATE_CLOSE_DISPLAY (close_display, multibuf_info)
@@ -59,14 +75,14 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, multibuf_info)
  * wire_to_event - convert a wire event in network format to a C 
  * event structure
  */
-static int wire_to_event (dpy, libevent, netevent)
+static Bool wire_to_event (dpy, libevent, netevent)
     Display *dpy;
     XEvent *libevent;
     xEvent *netevent;
 {
     XExtDisplayInfo *info = find_display (dpy);
 
-    MbufCheckExtension (dpy, info, 0);
+    MbufCheckExtension (dpy, info, False);
 
     switch ((netevent->u.u.type & 0x7f) - info->codes->first_event) {
       case MultibufferClobberNotify:
@@ -81,7 +97,7 @@ static int wire_to_event (dpy, libevent, netevent)
     	    ev->send_event = ((event->type & 0x80) != 0);
     	    ev->display = dpy;
     	    ev->buffer = event->buffer;
-    	    return 1;
+    	    return True;
 	}
       case MultibufferUpdateNotify:
 	{
@@ -95,10 +111,10 @@ static int wire_to_event (dpy, libevent, netevent)
 	    ev->send_event = ((event->type & 0x80) != 0);
 	    ev->display = dpy;
 	    ev->buffer = event->buffer;
-	    return 1;
+	    return True;
 	}
     }
-    return 0;
+    return False;
 }
 
 
@@ -106,7 +122,7 @@ static int wire_to_event (dpy, libevent, netevent)
  * event_to_wire - convert a C event structure to a wire event in
  * network format
  */
-static int event_to_wire (dpy, libevent, netevent)
+static Status event_to_wire (dpy, libevent, netevent)
     Display *dpy;
     XEvent  *libevent;
     xEvent  *netevent;
@@ -142,6 +158,17 @@ static int event_to_wire (dpy, libevent, netevent)
 	}
     }
     return 0;
+}
+
+
+static int error_string (dpy, code, codes, buffer, nbytes)
+    Display  *dpy;
+    int code;
+    XExtCodes *codes;
+    char *buffer;
+    int nbytes;
+{
+    buffer[0] = '\0';
 }
 
 

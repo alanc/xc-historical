@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.4 89/10/05 11:18:45 jim Exp $
+ * $XConsortium: extutil.c,v 1.5 89/10/06 11:29:13 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -85,13 +85,11 @@ void XextDestroyExtension (info)
 /*
  * XextAddDisplay - add a display to this extension
  */
-XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, close_display,
-				 wire_to_event, event_to_wire, nevents, data)
+XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, hooks, nevents, data)
     XExtensionInfo *extinfo;
     Display *dpy;
     char *ext_name;
-    int (*close_display)();
-    int (*wire_to_event)(), (*event_to_wire)();
+    XExtensionHooks *hooks;
     int nevents;
     caddr_t data;
 {
@@ -111,11 +109,30 @@ XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, close_display,
     if (dpyinfo->codes) {
 	int i, j;
 
-	XESetCloseDisplay (dpy, dpyinfo->codes->extension, close_display);
 	for (i = 0, j = dpyinfo->codes->first_event; i < nevents; i++, j++) {
-	    XESetWireToEvent (dpy, j, wire_to_event);
-	    XESetEventToWire (dpy, j, event_to_wire);
+	    XESetWireToEvent (dpy, j, hooks->wire_to_event);
+	    XESetEventToWire (dpy, j, hooks->event_to_wire);
 	}
+	if (hooks->create_gc)
+	  XESetCreateGC (dpy, dpyinfo->codes->extension, hooks->create_gc);
+	if (hooks->copy_gc)
+	  XESetCopyGC (dpy, dpyinfo->codes->extension, hooks->copy_gc);
+	if (hooks->flush_gc)
+	  XESetFlushGC (dpy, dpyinfo->codes->extension, hooks->flush_gc);
+	if (hooks->free_gc)
+	  XESetFreeGC (dpy, dpyinfo->codes->extension, hooks->free_gc);
+	if (hooks->create_font)
+	  XESetCreateFont (dpy, dpyinfo->codes->extension, hooks->create_font);
+	if (hooks->free_font)
+	  XESetFreeFont (dpy, dpyinfo->codes->extension, hooks->free_font);
+	if (hooks->close_display)
+	  XESetCloseDisplay (dpy, dpyinfo->codes->extension, 
+			     hooks->close_display);
+	if (hooks->error)
+	  XESetError (dpy, dpyinfo->codes->extension, hooks->error);
+	if (hooks->error_string)
+	  XESetErrorString (dpy, dpyinfo->codes->extension,
+			    hooks->error_string);
     }
 
     /*
