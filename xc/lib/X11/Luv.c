@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.6 91/05/13 22:21:59 rws Exp $" */
+/* $XConsortium: CIELuv.c,v 1.7 91/06/27 10:52:12 dave Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -59,8 +59,6 @@ extern int XcmsCIEXYZToCIEuvY();
 
 static int CIELuv_ParseString();
 Status XcmsCIELuv_ValidSpec();
-Status XcmsCIELuvToCIEuvY();
-Status XcmsCIEuvYToCIELuv();
 
 /*
  *	DEFINES
@@ -81,7 +79,7 @@ Status XcmsCIEuvYToCIELuv();
     /*
      * NULL terminated list of functions applied to get from CIELuv to CIEXYZ
      */
-static XcmsFuncPtr Fl_CIELuv_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_CIELuv_to_CIEXYZ[] = {
     XcmsCIELuvToCIEuvY,
     XcmsCIEuvYToCIEXYZ,
     NULL
@@ -90,7 +88,7 @@ static XcmsFuncPtr Fl_CIELuv_to_CIEXYZ[] = {
     /*
      * NULL terminated list of functions applied to get from CIEXYZ to CIELuv
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_CIELuv[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_CIELuv[] = {
     XcmsCIEXYZToCIEuvY,
     XcmsCIEuvYToCIELuv,
     NULL
