@@ -1,5 +1,5 @@
 /*
- *	$Header: button.c,v 1.5 88/05/18 10:44:58 jim Exp $
+ *	$Header: button.c,v 1.6 88/07/11 15:45:02 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$Header: button.c,v 1.5 88/05/18 10:44:58 jim Exp $";
+static char rcs_id[] = "$Header: button.c,v 1.6 88/07/11 15:45:02 jim Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -990,6 +990,7 @@ register XButtonEvent *event;
 }
 
 #ifdef MODEMENU
+#define FIRSTMENU	0
 #define	XTERMMENU	0
 #define	VTMENU		1
 #define	TEKMENU		2
@@ -1130,7 +1131,7 @@ register Menu **menu;
 	register int i;
 
 	if (*menu == NULL) {
-		if ((*menu = NewMenu("xterm X11", term->misc.re_verse)) == NULL)
+		if ((*menu = NewMenu("xterm X11")) == NULL)
 			return(NULL);
 		for(cp = xtext ; *cp ; cp++)
 			AddMenuItem(*menu, *cp);
@@ -1239,6 +1240,28 @@ register Cursor cur;
 			 cur);
 	}
 }
+
+ReverseVideoAllMenus ()
+{
+    int i;
+    XtermWidget xw = term;
+    Display *dpy = XtDisplay (xw);
+    Pixel fg, bg;
+
+    MenuResetGCs (&bg, &fg);
+
+    for (i = FIRSTMENU; i < NMENUS; i++) {
+	Menu *menu = menus[i];
+
+	if (menu) {
+	    menu->menuBgColor = bg;
+	    menu->menuFgColor = fg;
+	    XSetWindowBackground (dpy, menu->menuWindow, menu->menuBgColor);
+	}
+    }
+    return;
+}
+
 #else	/* MODEMENU */
 
 /*ARGSUSED*/

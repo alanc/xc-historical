@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.3 88/06/28 15:11:48 swick Exp $
+ *	$Header: menu.c,v 1.4 88/07/13 09:49:23 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.3 88/06/28 15:11:48 swick Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.4 88/07/13 09:49:23 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -67,7 +67,7 @@ static char Check_MarkBits[] = {
 static GC MenuGC, MenuInverseGC, MenuInvertGC, MenuGrayGC;
 static int gotGCs = FALSE;
 
-Pixmap Gray_Tile, Check_Tile;
+Pixmap Gray_Tile, Check_Normal_Tile, Check_Inverse_Tile, Check_Tile;
 Menu Menu_Default;
 Cursor Menu_DefaultCursor;
 char *Menu_DefaultFont;
@@ -126,9 +126,13 @@ register char *name;
 	if(!Gray_Tile) 
 		Gray_Tile = XtGrayPixmap(XtScreen(xw));
 	if (!Check_Tile) {
-	        Check_Tile = Make_tile(checkMarkWidth, checkMarkHeight,
+	        Check_Normal_Tile = Make_tile(checkMarkWidth, checkMarkHeight,
 		  Check_MarkBits, foreground, background,
 		  DefaultDepth(dpy, DefaultScreen(dpy)));
+	        Check_Inverse_Tile = Make_tile(checkMarkWidth, checkMarkHeight,
+		  Check_MarkBits, background, foreground,
+		  DefaultDepth(dpy, DefaultScreen(dpy)));
+		Check_Tile = Check_Normal_Tile;
         }
 	Menu_Default.menuFlags = menuChanged;
 /*	if((cp = XGetDefault(dpy, name, "MenuFreeze")) && XStrCmp(cp, "on") == 0)
@@ -196,9 +200,8 @@ char *text;
  *
  * The Menu structure _menuDefault contains the default menu settings.
  */
-Menu *NewMenu(name, reverse)
+Menu *NewMenu (name)
 char *name;
-int reverse;
 {
 	register Menu *menu;
 	register XtermWidget xw = term;
@@ -239,13 +242,9 @@ int reverse;
 	 * Initialze the default background and border pixmaps and foreground
 	 * and background colors (black and white).
 	 */
-	if(reverse) {
-		menu->menuFgColor = background;
-		menu->menuBgColor = foreground;
-	} else {
-		menu->menuFgColor = foreground;
-		menu->menuBgColor = background;
-	}
+	menu->menuFgColor = foreground;
+	menu->menuBgColor = background;
+	
 	if(!gotGCs) {
 	        xgc.foreground = menu->menuFgColor;
 	        xgc.function = GXinvert;
@@ -1005,4 +1004,49 @@ register Menu *menu;
 		XtPopdown (menu->menuWidget);
 	menu->menuFlags &= ~menuMapped;
 }
+
+MenuResetGCs (bgp, fgp)
+    Pixel *bgp, *fgp;
+{
+    register XtermWidget xw = term;
+    Display *dpy = XtDisplay (xw);
+    XGCValues xgc;
+
+    *bgp = xw->core.background_pixel;
+    *fgp = xw->screen.foreground;
+
+    if (MenuInvertGC) {
+	xgc.foreground = *fgp;
+	xgc.plane_mask = XOR(*fgp, *bgp);
+	XChangeGC (dpy, MenuInvertGC, (GCForeground | GCPlaneMask), &xgc);
+    }
+
+    if (MenuGC) {
+	xgc.foreground = *fgp;
+	xgc.background = *bgp;
+	XChangeGC (dpy, MenuGC, (GCForeground | GCBackground), &xgc);
+    }
+
+    if (MenuInverseGC) {
+	xgc.foreground = *bgp;
+	xgc.background = *fgp;
+	XChangeGC (dpy, MenuInverseGC, (GCForeground | GCBackground), &xgc);
+    }
+
+    if (MenuGrayGC) {
+	xgc.foreground = *fgp;
+	xgc.background = *bgp;
+	xgc.function = *fgp ? GXor : GXand;
+	XChangeGC (dpy, MenuGrayGC,
+		   (GCForeground | GCBackground | GCFunction), &xgc);
+    }
+
+    if (Check_Tile) {
+	Check_Tile = ((Check_Tile == Check_Normal_Tile) ? Check_Inverse_Tile :
+		      Check_Normal_Tile);
+    }
+
+    return;
+}
+
 #endif MODEMENU
