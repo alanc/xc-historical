@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.50 93/07/13 17:57:22 gildea Exp $
+ * $XConsortium: imakemdep.h,v 1.51 93/07/28 10:53:54 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.
  * When porting imake, read each of the steps below and add in any necessary
@@ -126,6 +126,9 @@
 #endif
 #if defined(sun) && defined(SVR4)
 #define DEFAULT_CPP "/usr/ccs/lib/cpp"
+#endif
+#if defined(BSD) && !defined(Mips)
+#define DEFAULT_CPP "/usr/bin/cpp"
 #endif
 
 /*
