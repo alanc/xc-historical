@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: TMstate.c,v 1.55 88/09/05 11:20:25 swick Exp $";
+    "$XConsortium: TMstate.c,v 1.56 88/09/05 16:18:54 swick Exp $";
 /* $oHeader: TMstate.c,v 1.5 88/09/01 17:17:29 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -507,7 +507,7 @@ static unsigned long GetTime(tm, event)
 /* ARGSUSED */
 static void _XtTranslateEvent (w, closure, event)
     Widget w;
-    Opaque closure;
+    caddr_t closure;
     register    XEvent * event;
 {
     register XtTranslations stateTable = ((XtTM)closure)->translations;
@@ -848,7 +848,7 @@ void _XtInstallTranslations(widget, stateTable)
 
     XtAddEventHandler(
         widget, eventMask, nonMaskable,
-             _XtTranslateEvent, (Opaque)&widget->core.tm);
+             _XtTranslateEvent, (caddr_t)&widget->core.tm);
 
 }
 
@@ -856,7 +856,7 @@ void XtUninstallTranslations(widget)
     Widget widget;
 {
     XtRemoveEventHandler(widget,~0L,TRUE,_XtTranslateEvent,
-                     (Opaque)&widget->core.tm);
+                     (caddr_t)&widget->core.tm);
     widget->core.tm.translations = NULL;
     if (widget->core.tm.proc_table != NULL)
         XtFree((char *)widget->core.tm.proc_table);
@@ -1459,7 +1459,7 @@ void XtOverrideTranslations(widget, new)
 /* ARGSUSED */
 static void RemoveAccelerators(widget,closure,data)
     Widget widget;
-    Opaque closure,data;
+    caddr_t closure,data;
 {
     int i;
     XtTranslations table = (XtTranslations)closure;
@@ -1513,7 +1513,7 @@ void XtInstallAccelerators(destination,source)
         _XtInstallTranslations(destination,
              destination->core.tm.translations);
     XtAddCallback(source, XtNdestroyCallback,
-        RemoveAccelerators,(Opaque)temp);
+        RemoveAccelerators,(caddr_t)temp);
     if (XtClass(source)->core_class.display_accelerator != NULL){
          str[0] = '\0';
          (void) PrintEvent(&str[0],
