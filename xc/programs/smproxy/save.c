@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.1 94/07/07 10:23:04 mor Exp $ */
+/* $XConsortium: save.c,v 1.2 94/07/07 11:19:25 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -41,6 +41,8 @@ typedef struct ProxyFileEntry
 } ProxyFileEntry;
 
 ProxyFileEntry *proxyFileHead = NULL;
+
+extern WinInfo *win_head;
 
 
 
@@ -304,10 +306,17 @@ char *filename;
     FILE *proxyFile;
     ProxyFileEntry *entry;
     int done = 0;
+    short version;
 
     proxyFile = fopen (filename, "rb");
     if (!proxyFile)
 	return;
+
+    if (!read_short (proxyFile, &version) ||
+	version > SAVEFILE_VERSION)
+    {
+	done = 1;
+    }
 
     while (!done)
     {
@@ -321,6 +330,52 @@ char *filename;
     }
 
     fclose (proxyFile);
+}
+
+
+
+char *
+WriteProxyFile ()
+
+{
+    FILE *proxyFile;
+    char *path, *filename;
+    WinInfo *winptr;
+    Bool success = True;
+
+    path = getenv ("SM_SAVE_DIR");
+    if (!path)
+    {
+	path = getenv ("HOME");
+	if (!path)
+	    path = ".";
+    }
+
+    filename = tempnam (path, ".PRX");
+    proxyFile = fopen (filename, "wb");
+
+    if (!write_short (proxyFile, SAVEFILE_VERSION))
+	success = False;
+
+    winptr = win_head;
+    while (winptr && success)
+    {
+	if (winptr->client_id)
+	    if (!WriteProxyFileEntry (proxyFile, winptr))
+	    {
+		success = False;
+		break;
+	    }
+
+	winptr = winptr->next;
+    }
+
+    fclose (proxyFile);
+
+    if (success)
+	return (filename);
+    else
+	return (NULL);
 }
 
 
