@@ -1,11 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.55 93/09/04 18:00:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.56 93/09/13 14:12:04 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #ifndef Win32Architecture
 
 #if HasXServer
-XINITDIR = xinit
+XINIDIR = xinit
 #endif
 #if BuildServer
 RGBDIR = rgb
@@ -19,7 +19,7 @@ SUBDIRS = \
 	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf \
 	mkfontdir oclock $(RGBDIR) twm x11perf xauth xclipboard xclock \
 	xcmsdb xconsole xdm xdpyinfo xfd $(XFSDIR) xhost \
-	xieperf $(XINITDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
+	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
 	xwd xwininfo xwud $(XSDIR) scripts
 
