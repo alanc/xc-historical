@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 1.74 88/08/09 11:07:21 rws Exp $ */
+/* $XConsortium: colormap.c,v 1.75 88/09/06 15:40:10 jim Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -41,6 +41,7 @@ static Pixel FindBestPixel();
 static void  CopyFree(), FreeCell(), AllocShared();
 static int   AllComp(), RedComp(), GreenComp(), BlueComp(), FreeClientPixels();
 static int   AllocDirect(), AllocPseudo(), AllocCP(), FreeCo();
+static int   TellNoMap();
 
 /* GetNextBitsOrBreak(bits, mask, base)  -- 
  * (Suggestion: First read the macro, then read this explanation.
@@ -279,7 +280,7 @@ TellNoMap (pwin, pmid)
 	/* This should be call to DeliverEvent */
 	xE.u.u.type = ColormapNotify;
 	xE.u.colormap.window = pwin->wid;
-	xE.u.colormap.colormap = *pmid;
+	xE.u.colormap.colormap = None;
 	xE.u.colormap.new = TRUE;
 	xE.u.colormap.state = ColormapUninstalled;
 	DeliverEvents(pwin, &xE, 1, (WindowPtr)NULL);
