@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.43 89/07/21 20:06:27 kit Exp $";
+    "$XConsortium: screen.c,v 2.44 89/07/27 18:50:33 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -153,6 +153,9 @@ Scrn scrn;
     scrn->toclabel = CreateTitleBar(scrn, "tocTitlebar");
     scrn->tocwidget = CreateTextSW(scrn, "toc");
 /* %%%				   arglist2, XtNumber(arglist2)); */
+
+    XawTextSetSelectionArray(scrn->tocwidget, sarray);
+
     scrn->seqbuttons = BBoxRadioCreate(scrn, "seqButtons");
     scrn->tocbuttons = BBoxCreate(scrn, "tocButtons");
     scrn->viewlabel = CreateTitleBar(scrn, "viewTitlebar");
@@ -173,8 +176,6 @@ Scrn scrn;
 
     buttonbox = scrn->seqbuttons;
     BBoxAddButton(buttonbox, "all", 999, TRUE);
-
-    XawTextSetSelectionArray(scrn->tocwidget, sarray);
 
     buttonbox = scrn->tocbuttons;
     BBoxAddButton(buttonbox, "inc", 999, TRUE);
@@ -294,7 +295,8 @@ ScrnKind kind;
 	DEBUG("Realizing...")
 	XtRealizeWidget(scrn->parent);
 	DEBUG(" done.\n")
-	XtSetKeyboardFocus( scrn->parent, scrn->viewwidget );
+	if (kind != STtocAndView)
+	    XtSetKeyboardFocus(scrn->parent, scrn->viewwidget);
 	XDefineCursor(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 		      app_resources.cursor );
     }
