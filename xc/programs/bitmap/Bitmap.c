@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.8 90/03/31 06:40:25 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.9 90/04/14 03:44:27 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -3629,7 +3629,8 @@ void ZoomOut(BW)
     BW->bitmap.height = BW->bitmap.image->height;
     BW->bitmap.fold = BW->bitmap.zoom.fold;
     BW->bitmap.changed |= BW->bitmap.zoom.changed;
-    
+    BW->bitmap.grid = BW->bitmap.zoom.grid;
+
     if (QuerySet(BW->bitmap.hot.x, BW->bitmap.hot.y)) {
 	BW->bitmap.hot.x += BW->bitmap.zoom.at_x;
 	BW->bitmap.hot.y += BW->bitmap.zoom.at_y;
@@ -3710,6 +3711,7 @@ void BWZoomIn(w, from_x, from_y, to_x, to_y)
     BW->bitmap.zoom.fold = BW->bitmap.fold;
     BW->bitmap.zoom.changed = BW->bitmap.changed;
     BW->bitmap.zoom.hot = BW->bitmap.hot;
+    BW->bitmap.zoom.grid = BW->bitmap.grid;
 
     BW->bitmap.image = image;
     BW->bitmap.buffer = buffer;
@@ -3723,6 +3725,7 @@ void BWZoomIn(w, from_x, from_y, to_x, to_y)
     BW->bitmap.mark.to_x = NotSet;
     BW->bitmap.mark.to_y = NotSet;
     BW->bitmap.zooming = True;
+    BW->bitmap.grid = True; /* potencially true, could use a resource here */
 
     FixHotSpot(BW);
 
@@ -3823,8 +3826,8 @@ static void Resize(BW)
 					   BW->bitmap.height * 
 					   BW->bitmap.squareH) / 2);
 
-    BW->bitmap.grid = ((BW->bitmap.squareW > BW->bitmap.grid_tolerance) && 
-		       (BW->bitmap.squareH > BW->bitmap.grid_tolerance));
+    BW->bitmap.grid &= ((BW->bitmap.squareW > BW->bitmap.grid_tolerance) && 
+			(BW->bitmap.squareH > BW->bitmap.grid_tolerance));
 }
 
 static void Redisplay(BW, event, region)

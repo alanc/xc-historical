@@ -1,5 +1,5 @@
 /*
- * $XConsortium: BitmapP.h,v 1.2 90/03/30 15:26:21 dmatic Exp $
+ * $XConsortium: BitmapP.h,v 1.3 90/04/14 03:44:59 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -78,6 +78,7 @@ typedef struct {
     XPoint    hot;
     Position  at_x, at_y;
     Boolean   fold;
+    Boolean   grid;
     Boolean   changed;
 } BWZoom;
 
