@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.88 89/08/14 18:16:18 jim Exp $
+ * $XConsortium: add_window.c,v 1.89 89/08/15 13:56:24 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.88 89/08/14 18:16:18 jim Exp $";
+"$XConsortium: add_window.c,v 1.89 89/08/15 13:56:24 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -141,7 +141,7 @@ IconMgr *iconp;
     int x;
     XWindowChanges xwc;		/* change window structure */
     unsigned int xwcm;		/* change window mask */
-    int dont_know;		/* don't know where to put the window */
+    int ask_user;		/* don't know where to put the window */
     XColor blob, cret;
     XEvent event;
     XGCValues	    gcv;
@@ -187,20 +187,23 @@ IconMgr *iconp;
      */
 
     tmp_win->transient = Transient(tmp_win->w);
-    if ((tmp_win->hints.flags & USPosition) || tmp_win->transient)
-    {
-#ifdef DEBUG
-	fprintf(stderr, "	user-specified hints\n");
-#endif
-	dont_know = FALSE;
-    }
-    else
-    {
-#ifdef DEBUG
-	fprintf(stderr, "	no user-specified hints\n");
-#endif
-	dont_know = TRUE;
-    }
+    /*
+     * Don't bother user if:
+     * 
+     *     o  the window is a transient, or
+     * 
+     *     o  a USPosition was requested, or
+     * 
+     *     o  a PPosition was requested and UsePPosition is ON or
+     *        NON_ZERO if the window is at other than (0,0)
+     */
+    ask_user = TRUE;
+    if (tmp_win->transient || 
+	(tmp_win->hints.flags & USPosition) ||
+        ((tmp_win->hints.flags & PPosition) && Scr->UsePPosition &&
+	 (Scr->UsePPosition == PPOS_ON || 
+	  tmp_win->attr.x != 0 || tmp_win->attr.y != 0)))
+      ask_user = FALSE;
 
     if (tmp_win->name == NULL)
 	tmp_win->name = NoName;
@@ -272,7 +275,7 @@ IconMgr *iconp;
     /*
      * do any prompting for position
      */
-    if (HandlingEvents && dont_know) {
+    if (HandlingEvents && ask_user) {
       if (Scr->RandomPlacement) {	/* just stick it somewhere */
 	if ((PlaceX + tmp_win->attr.width) > Scr->MyDisplayWidth)
 	    PlaceX = 50;

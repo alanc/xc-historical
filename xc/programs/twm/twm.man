@@ -622,6 +622,15 @@ used as the default icon.  This bitmap will be used for the icon of all
 clients which do not provide an icon bitmap and are not listed
 in the \fBIcons\fP list.  The default is to use
 no bitmap.
+.IP "\fBUsePPosition\fP \fIstring\fP" 8
+This variable specifies how \fItwm\fP should deal with laying out windows
+for which the default position was specified by the application and not the
+user (i.e. PPosition was set in the size hints instead of USPosition).  The
+string may have three values:  "off" (the default) indicating that \fItwm\fP
+should ignore the program-supplied position, "on" indicating that the position
+should be used, and "non-zero" indicating that the position should used if
+it is other than (0,0).  The latter option is for working around a bug in 
+older toolkits.
 .IP "\fBWarpCursor\fP" 8
 This variable causes the pointer cursor to be warped to a window which
 is being deiconified.  The default is to not warp the cursor.

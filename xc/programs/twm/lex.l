@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.47 89/08/02 21:03:35 jim Exp $
+ * $XConsortium: lex.l,v 1.48 89/08/14 18:16:33 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.47 89/08/02 21:03:35 jim Exp $";
+"$XConsortium: lex.l,v 1.48 89/08/14 18:16:33 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -278,6 +278,7 @@ t.move				{ return F_MOVE; }
 [Rr][Ee][Ss][Tt][Aa][Rr][Tt][Pp][Rr][Ee][Vv][Ii][Oo][Uu][Ss][Ss][Tt][Aa][Tt][Ee] {
 					return RESTART_PREVIOUS_STATE; }
 [Cc][Oo][Nn][Ss][Tt][Rr][Aa][Ii][Nn][Ee][Dd][Mm][Oo][Vv][Ee][Tt][Ii][Mm][Ee] { return CONSTRAINED_MOVE_TIME; }
+[Uu][Ss][Ee][Pp][Pp][Oo][Ss][Ii][Tt][Ii][Oo][Nn] { return USE_PPOSITION; }
 {string}			{ yylval.ptr = (char *)yytext; return STRING; }
 {number}			{ (void)sscanf(yytext, "%d", &yylval.num);
 				  return (NUMBER);

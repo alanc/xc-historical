@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.57 89/07/26 12:47:29 jim Exp $
+ * $XConsortium: gram.y,v 1.58 89/08/14 18:16:30 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.57 89/07/26 12:47:29 jim Exp $";
+"$XConsortium: gram.y,v 1.58 89/08/14 18:16:30 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -56,6 +56,7 @@ static MenuRoot	*root,
 
 MenuRoot *GetRoot();
 
+static int ParseUsePPosition();
 static Bool CheckWarpScreenArg(), CheckColormapArg();
 static char *ptr;
 static int Button;
@@ -112,7 +113,7 @@ extern int yylineno;
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
 %token <num> F_WARPTOSCREEN AUTO_RELATIVE_RESIZE FRAME_PADDING TITLE_PADDING
-%token <num> CONSTRAINED_MOVE_TIME
+%token <num> CONSTRAINED_MOVE_TIME USE_PPOSITION
 %token <ptr> STRING
 
 %type <ptr> string
@@ -129,6 +130,15 @@ stmts		: /* Empty */
 		;
 
 stmt		: error
+		| USE_PPOSITION string { int ppos = ParseUsePPosition ($2);
+					 if (ppos < 0) {
+					     fprintf (stderr,
+	"twm: line %d:  ignoring invalid UsePPosition argument \"%s\"\n", 
+						      yylineno, $2);
+					 } else {
+					     Scr->UsePPosition = ppos;
+					 }
+				       }
 		| CONSTRAINED_MOVE_TIME number { ConstrainedMoveTime = $2; }
 		| AUTO_RELATIVE_RESIZE	{ Scr->AutoRelativeResize = True; }
 		| FORCE_ICON		{ if (Scr->FirstTime) Scr->ForceIcon = TRUE; }
@@ -938,4 +948,22 @@ static Bool CheckColormapArg (s)
       return True;
 
     return False;
+}
+
+
+static int ParseUsePPosition (s)
+    register char *s;
+{
+    XmuCopyISOLatin1Lowered (s, s);
+
+    if (strcmp (s, "off") == 0) {
+	return PPOS_OFF;
+    } else if (strcmp (s, "on") == 0) {
+	return PPOS_ON;
+    } else if (strcmp (s, "non-zero") == 0 ||
+	       strcmp (s, "nonzero") == 0) {
+	return PPOS_NON_ZERO;
+    }
+
+    return -1;
 }

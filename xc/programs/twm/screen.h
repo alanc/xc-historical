@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.37 89/07/18 17:16:15 jim Exp $
+ * $XConsortium: screen.h,v 1.38 89/07/26 12:47:42 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -152,6 +152,7 @@ typedef struct ScreenInfo
     int FramePadding;		/* distance between decorations and border */
     int TitlePadding;		/* distance between items in titlebar */
     int ButtonIndent;		/* amount to shrink buttons on each side */
+    short UsePPosition;		/* what do with PPosition, see values below */
     short AutoRelativeResize;	/* start resize relative to position in quad */
     short FocusRoot;		/* is the input focus on the root ? */
     short WarpCursor;		/* warp cursor on de-iconify ? */
@@ -193,5 +194,11 @@ extern int NumScreens;
 extern ScreenInfo **ScreenList;
 extern ScreenInfo *Scr, *PrevScr;
 extern int FirstScreen;
+
+#define PPOS_OFF 0
+#define PPOS_ON 1
+#define PPOS_NON_ZERO 2
+/* may eventually want an option for having the PPosition be the initial
+   location for the drag lines */
 
 #endif /* _SCREEN_ */
