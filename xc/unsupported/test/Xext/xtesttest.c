@@ -1,4 +1,4 @@
-/* $XConsortium: xtesttest.c,v 1.1 92/01/27 11:24:57 rws Exp $ */
+/* $XConsortium: xtesttest.c,v 1.2 92/01/27 11:41:22 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -20,6 +20,7 @@ without express or implied warranty.
 #include <X11/Xos.h>
 #include <X11/extensions/XTest.h>
 #include <X11/cursorfont.h>
+#include <X11/keysym.h>
 
 char *ProgramName;
 
@@ -43,6 +44,8 @@ main (argc, argv)
     XID gid;
     Window w;
     XSetWindowAttributes swa;
+    int key, minkey, maxkey;
+    XEvent ev;
 
     ProgramName = argv[0];
     for (i = 1; i < argc; i++) {
@@ -83,18 +86,58 @@ main (argc, argv)
     
     swa.override_redirect = True;
     swa.cursor = XCreateFontCursor(dpy, XC_boat);
+    swa.event_mask = KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|ButtonMotionMask;
     w = XCreateWindow(dpy, DefaultRootWindow(dpy), 0, 0, 100, 100, 0, 0,
 		      InputOnly, CopyFromParent,
-		      CWOverrideRedirect|CWCursor, &swa);
+		      CWEventMask|CWOverrideRedirect|CWCursor, &swa);
     XMapWindow(dpy, w);
     if (!XTestCompareCursorWithWindow(dpy, w, swa.cursor))
 	printf("error: window cursor is not the expected one\n");
-    XWarpPointer(dpy, None, w, 0, 0, 0, 0, 10, 10);
+    XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 10, 10, 0);
     if (!XTestCompareCurrentCursorWithWindow(dpy, w))
 	printf("error: window cursor is not the displayed one\n");
     XUndefineCursor(dpy, w);
     if (!XTestCompareCursorWithWindow(dpy, w, None))
 	printf("error: window cursor is not the expected None\n");
+    XSync(dpy, True);
+    XDisplayKeycodes(dpy, &minkey, &maxkey);
+    key = XKeysymToKeycode(dpy, XK_a);
+    if (!key)
+	key = minkey;
+    XTestFakeKeyEvent(dpy, key, True, 0);
+    XNextEvent(dpy, &ev);
+    if (ev.type != KeyPress ||
+	ev.xkey.keycode != key ||
+	ev.xkey.x_root != 10 ||
+	ev.xkey.y_root != 10)
+	printf("error: bad event received for key press\n");
+    XTestFakeKeyEvent(dpy, key, False, 0);
+    XNextEvent(dpy, &ev);
+    if (ev.type != KeyRelease ||
+	ev.xkey.keycode != key ||
+	ev.xkey.x_root != 10 ||
+	ev.xkey.y_root != 10)
+	printf("error: bad event received for key release\n");
+    XTestFakeButtonEvent(dpy, 1, True, 0);
+    XNextEvent(dpy, &ev);
+    if (ev.type != ButtonPress ||
+	ev.xbutton.button != 1 ||
+	ev.xbutton.x_root != 10 ||
+	ev.xbutton.y_root != 10)
+	printf("error: bad event received for button press\n");
+    XTestFakeMotionEvent(dpy, DefaultScreen(dpy), 9, 8, 0);
+    XNextEvent(dpy, &ev);
+    if (ev.type != MotionNotify ||
+	ev.xmotion.x_root != 9 ||
+	ev.xmotion.y_root != 8)
+	printf("error: bad event received for motion\n");
+    XTestFakeButtonEvent(dpy, 1, False, 0);
+    XNextEvent(dpy, &ev);
+    if (ev.type != ButtonRelease ||
+	ev.xbutton.button != 1 ||
+	ev.xbutton.x_root != 9 ||
+	ev.xbutton.y_root != 8)
+	printf("error: bad event received for button release\n");
     gc = DefaultGC(dpy, DefaultScreen(dpy));
     req = NextRequest(dpy);
     XDrawPoint(dpy, w, gc, 0, 0);
