@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.7 88/10/15 18:47:15 jim Exp $
+ * $XConsortium: xkill.c,v 1.8 88/10/15 19:19:26 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -54,6 +54,7 @@ usage ()
 "where options include:",
 "    -display displayname    X server to contact",
 "    -id resource            resource whose client is to be killed",
+"    -wmwindow               believe no window manager is running",
 "    -button number          specific button to be pressed to select window",
 "    -all                    kill all clients with top level windows",
 "",
@@ -79,6 +80,7 @@ main (argc, argv)
     char *button_name = NULL;		/* name of button for window select */
     int button;				/* button number or negative for all */
     Bool kill_all = False;
+    Bool top = False;
 
     ProgramName = argv[0];
 
@@ -98,6 +100,9 @@ main (argc, argv)
 	      case 'b':			/* -button number */
 		if (++i >= argc) usage ();
 		button_name = argv[i];
+		continue;
+	      case 'w':			/* -wmwindow */
+		top = True;
 		continue;
 	      case 'a':			/* -all */
 		kill_all = True;
@@ -120,7 +125,7 @@ main (argc, argv)
 
     if (kill_all) {
 	if (verify_okay_to_kill (dpy, screenno)) 
-	  kill_all_windows (dpy, screenno);
+	  kill_all_windows (dpy, screenno, top);
 	Exit (0);
     }
 
@@ -171,6 +176,7 @@ main (argc, argv)
 	id = get_window_id (dpy, screenno, button,
 			    "the window whose client you wish to kill");
 	if (id == RootWindow(dpy,screenno)) id = None;
+	else if (!top) id = XmuClientWindow(dpy, id);
     }
 
     if (id != None) {
@@ -298,33 +304,33 @@ int catch_window_errors (dpy, ev)
     Display *dpy;
     XErrorEvent *ev;
 {
-    if (ev->request_code != X_KillClient) {
-	XmuPrintDefaultErrorMessage (dpy, ev, stderr);
-    }
     return 0;
 }
 
-int kill_all_windows (dpy, screenno)
+int kill_all_windows (dpy, screenno, top)
     Display *dpy;
     int screenno;
+    Bool top;
 {
     Window root = RootWindow (dpy, screenno);
     Window dummywindow;
     Window *children;
-    int nchildren;
-    int i;
+    unsigned int nchildren;
+    unsigned int i;
+    XWindowAttributes attr;
 
     XSync (dpy, 0);
     XSetErrorHandler (catch_window_errors);
 
     nchildren = 0;
-    while (XQueryTree (dpy, root, &dummywindow, &dummywindow,
-		       &children, &nchildren) && nchildren > 0) {
-	for (i = 0; i < nchildren; i++) {
+    XQueryTree (dpy, root, &dummywindow, &dummywindow, &children, &nchildren);
+    for (i = 0; i < nchildren; i++) {
+	if (!XGetWindowAttributes(dpy, children[i], &attr) &&
+	    (attr.map_state == IsViewable))
+	    if (!top) children[i] = XmuClientWindow(children[i]);
 	    XKillClient (dpy, children[i]);
-	}
-	XFree (children);
     }
+    XFree (children);
 
     XSync (dpy, 0);
     XSetErrorHandler (NULL);		/* pretty stupid way to do things... */
