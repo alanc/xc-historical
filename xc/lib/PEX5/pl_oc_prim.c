@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_prim.c,v 1.5 92/06/12 15:22:22 mor Exp $ */
+/* $XConsortium: pl_oc_prim.c,v 1.6 92/07/16 11:17:59 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -1199,7 +1199,7 @@ INPUT unsigned int		facetAttributes;
 INPUT unsigned int		vertexAttributes;
 INPUT int			colorType;
 INPUT PEXArrayOfFacetData 	facetData;
-INPUT unsigned long		numVertices;
+INPUT unsigned int		numVertices;
 INPUT PEXArrayOfVertex		vertices;
 
 {
@@ -1346,7 +1346,7 @@ INPUT float			*vknots;
 INPUT unsigned int		numMPoints;
 INPUT unsigned int		numNPoints;
 INPUT PEXArrayOfCoord		points;
-INPUT unsigned long		numTrimLoops;
+INPUT unsigned int		numTrimLoops;
 INPUT PEXListOfTrimCurve 	*trimLoops;
 
 {
@@ -1500,8 +1500,8 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXCoord		*pt1;
 INPUT PEXCoord		*pt2;
 INPUT PEXCoord		*pt3;
-INPUT unsigned long	dx;
-INPUT unsigned long	dy;
+INPUT unsigned int	dx;
+INPUT unsigned int	dy;
 INPUT PEXTableIndex 	*icolors;
 
 {
@@ -1551,8 +1551,8 @@ INPUT XID		resource_id;
 INPUT PEXOCRequestType	req_type;
 INPUT PEXCoord2D	*pt1;
 INPUT PEXCoord2D	*pt2;
-INPUT unsigned long	dx;
-INPUT unsigned long	dy;
+INPUT unsigned int	dx;
+INPUT unsigned int	dy;
 INPUT PEXTableIndex	*icolors;
 
 {
@@ -1603,8 +1603,8 @@ INPUT PEXOCRequestType	req_type;
 INPUT PEXCoord		*pt1;
 INPUT PEXCoord		*pt2;
 INPUT PEXCoord		*pt3;
-INPUT unsigned long	dx;
-INPUT unsigned long	dy;
+INPUT unsigned int	dx;
+INPUT unsigned int	dy;
 INPUT int		colorType;
 INPUT PEXArrayOfColor 	colors;
 
