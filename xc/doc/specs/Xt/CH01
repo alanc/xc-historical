@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: CH01,v 1.5 91/07/31 20:23:22 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -123,6 +123,7 @@ On a POSIX-based system,
 the \*(xI object library file is named
 .PN libXt.a
 and is usually referenced as \-lXt when linking the application.
+
 .NH 2
 Procedures and Macros
 .LP
@@ -201,6 +202,7 @@ border widths, and so on) is customizable by users.
 This chapter discusses the base widget classes,
 Core, Composite, and Constraint, and
 ends with a discussion of widget classing.
+
 .NH 3
 Core Widgets
 .XS
@@ -219,6 +221,7 @@ and
 .PN CorePart 
 structures.
 .bp
+
 .NH 4
 CoreClassPart Structure
 .XS
@@ -496,8 +499,10 @@ sensitive
 T}	T{
 .PN True
 T}
-ancestor_sensitive	logical AND of parent's \fIsensitive\fP and
+ancestor_sensitive	T{
+logical AND of parent's \fIsensitive\fP and
 \fIancestor_sensitive\fP values.
+T}
 accelerators	NULL
 T{
 border_pixel	
@@ -573,6 +578,7 @@ The additional data used by composite widgets are defined by the
 and 
 .PN CompositePart
 structures.
+
 .NH 4
 CompositeClassPart Structure
 .XS
@@ -819,6 +825,7 @@ The additional data used by constraint widgets are defined by the
 and
 .PN ConstraintPart
 structures.
+
 .NH 4
 ConstraintClassPart Structure
 .XS
@@ -1136,6 +1143,7 @@ A private .h file, used by widgets whose classes
 are subclasses of the widget class.
 .IP \(bu 5
 A .c file, which implements the widget.
+
 .NH 3
 Widget Naming Conventions
 .XS
@@ -1302,6 +1310,7 @@ the public .h file for the
 Constraint 
 widget class is 
 .PN Constraint.h .
+
 .NH 3
 Widget Subclassing in Private .h Files
 .XS
@@ -1437,6 +1446,7 @@ the private .h file for the
 Constraint 
 widget class is 
 .PN ConstrainP.h .
+
 .NH 3
 Widget Subclassing in .c Files
 .XS
@@ -1621,6 +1631,7 @@ void LabelSetText(w, text)
 	.
 	.
 .De
+
 .NH 3
 Widget Class and Superclass Look Up
 .XS
@@ -1657,6 +1668,7 @@ Specifies the widget. \*(oI
 The
 .PN XtSuperclass
 function returns a pointer to the widget's superclass class structure.
+
 .NH 3
 Widget Subclass Verification
 .XS
@@ -1778,6 +1790,7 @@ that the client has passed in a valid widget class for the exported operation.
 is only executed when the module has been compiled with the compiler symbol
 DEBUG defined; otherwise, it is defined as the empty string 
 and generates no code.
+
 .NH 3
 Superclass Chaining
 .XS
@@ -2019,6 +2032,7 @@ static void ClassInitialize()
 		NULL, 0, XtCacheNone, NULL);
 }
 .De
+
 .NH 3
 Initializing a Widget Class
 .XS
@@ -2052,6 +2066,7 @@ of the class or subclass is created or
 .PN XtInitializeWidgetClass
 is called
 (see Section 9.6).
+
 .NH 3
 Inheritance of Superclass Operations
 .XS
@@ -2202,6 +2217,7 @@ as the widget's class may be a subclass of the
 class whose implementation is being referenced.
 .NE
 This technique is referred to as \fIenveloping\fP the superclass's operation.
+
 .NH 3
 Class Extension Records
 .XS
@@ -2277,7 +2293,6 @@ identify binary files that have been compiled with alternate
 definitions of the remainder of the extension record data structure.  The private
 header file for a widget class should provide a symbolic constant for
 subclasses to use to initialize this field.
-.LP
 The \fIrecord_size\fP field value includes the four common header fields and
 should normally be initialized with
 .PN sizeof ().
