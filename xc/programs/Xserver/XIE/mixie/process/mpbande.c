@@ -1,4 +1,4 @@
-/* $XConsortium: mpbande.c,v 1.1 93/10/26 09:48:01 rws Exp $ */
+/* $XConsortium: mpbande.c,v 1.2 93/10/31 09:48:04 dpw Exp $ */
 /**** module mpbande.c ****/
 /******************************************************************************
 				NOTICE
@@ -298,13 +298,13 @@ static int ActivateBandExt(flo,ped,pet)
   CARD32 b, i, width = oft->width;
   CARD32      maxLev = oft->levels-1;
   bandMsk  ok, ready = pet->scheduled;
-  void *o, *i0 = NULL, *i1 = NULL, *i2 = NULL;
+  pointer o, i0 = NULL, i1 = NULL, i2 = NULL;
   
   ok = NO_BANDS;
-  if(ready & 1 && (i0 = GetCurrentSrc(void,flo,pet,&ib[0]))) ok |= 1;
-  if(ready & 2 && (i1 = GetCurrentSrc(void,flo,pet,&ib[1]))) ok |= 2;
-  if(ready & 4 && (i2 = GetCurrentSrc(void,flo,pet,&ib[2]))) ok |= 4;
-  if((o = GetCurrentDst(void,flo,pet,ob)) && ok == ready)
+  if(ready & 1 && (i0 = GetCurrentSrc(pointer,flo,pet,&ib[0]))) ok |= 1;
+  if(ready & 2 && (i1 = GetCurrentSrc(pointer,flo,pet,&ib[1]))) ok |= 2;
+  if(ready & 4 && (i2 = GetCurrentSrc(pointer,flo,pet,&ib[2]))) ok |= 4;
+  if((o = GetCurrentDst(pointer,flo,pet,ob)) && ok == ready)
     do {
       /* if we have a "full service" extractor, go for the whole enchalada
        */
@@ -329,10 +329,10 @@ static int ActivateBandExt(flo,ped,pet)
 	(*ddx->output)(o, acc, width, maxLev, ddx->clip);
       }
       ok = NO_BANDS;
-      if(ready & 1 && (i0 = GetNextSrc(void,flo,pet,&ib[0],FLUSH))) ok |= 1;
-      if(ready & 2 && (i1 = GetNextSrc(void,flo,pet,&ib[1],FLUSH))) ok |= 2;
-      if(ready & 4 && (i2 = GetNextSrc(void,flo,pet,&ib[2],FLUSH))) ok |= 4;
-    } while((o = GetNextDst(void,flo,pet,ob,FLUSH)) && ok == ready);
+      if(ready & 1 && (i0 = GetNextSrc(pointer,flo,pet,&ib[0],FLUSH))) ok |= 1;
+      if(ready & 2 && (i1 = GetNextSrc(pointer,flo,pet,&ib[1],FLUSH))) ok |= 2;
+      if(ready & 4 && (i2 = GetNextSrc(pointer,flo,pet,&ib[2],FLUSH))) ok |= 4;
+    } while((o = GetNextDst(pointer,flo,pet,ob,FLUSH)) && ok == ready);
 
   /* free the input data we used
    */
@@ -396,7 +396,7 @@ static int DestroyBandExt(flo,ped)
 --------- extract functions -- used when input data classes match --------
 ------------------------------------------------------------------------*/
 static void extB4(O, I0, I1, I2, width, dummy, ddx)
-  void *O, *I0, *I1, *I2; CARD32 width, dummy; mpBandExtPtr ddx;
+  pointer O, I0, I1, I2; CARD32 width, dummy; mpBandExtPtr ddx;
 {
   QuadPixel *o  = (QuadPixel*)O;
   QuadPixel *i0 = (QuadPixel*)I0, *i1 = (QuadPixel*)I1, *i2 = (QuadPixel*)I2;
@@ -409,7 +409,7 @@ static void extB4(O, I0, I1, I2, width, dummy, ddx)
 }
 
 static void extRR(O, I0, I1, I2, width, dummy, ddx)
-  void *O, *I0, *I1, *I2; CARD32 width, dummy; mpBandExtPtr ddx;
+  pointer O, I0, I1, I2; CARD32 width, dummy; mpBandExtPtr ddx;
 {
   RealPixel *o  = (RealPixel*)O,
 	    *i0 = (RealPixel*)I0, *i1 = (RealPixel*)I1, *i2 = (RealPixel*)I2;
@@ -422,7 +422,7 @@ static void extRR(O, I0, I1, I2, width, dummy, ddx)
 
 #define BAND_EXTRACT(name,otype,itype)					\
 static  void name(O, I0, I1, I2, width, maxLev, ddx)			\
-  void *O, *I0, *I1, *I2; CARD32 width, maxLev; mpBandExtPtr ddx;	\
+  pointer O, I0, I1, I2; CARD32 width, maxLev; mpBandExtPtr ddx;	\
 {									\
   otype     *o  = (otype*)O;						\
   itype     *i0 = (itype*)I0,  *i1 = (itype*)I1,  *i2 = (itype*)I2;	\
@@ -466,7 +466,7 @@ BAND_EXTRACT(extQP,QuadPixel,PairPixel)
 ---- accumulator functions (accumulate products from individual bands) ---
 ------------------------------------------------------------------------*/
 static   void acc_b(acc, SRC, width, dummy, lut)
-   bndExtInt *acc; void *SRC; CARD32 width; bndExtInt dummy, *lut;
+   bndExtInt *acc; pointer SRC; CARD32 width; bndExtInt dummy, *lut;
 {
   LogInt    *i = (LogInt   *)SRC, ival, M;
   bndExtInt *o = (bndExtInt*)acc, c = lut[1];
@@ -480,7 +480,7 @@ static   void acc_b(acc, SRC, width, dummy, lut)
 
 #define BAND_ACCUMULATE(name,itype)					\
 static void name(acc, SRC, width, bits, lut)				\
-  bndExtInt *acc; void *SRC; CARD32 width; bndExtInt bits, *lut;	\
+  bndExtInt *acc; pointer SRC; CARD32 width; bndExtInt bits, *lut;	\
 {									\
   itype *src = (itype*)SRC;						\
   int      i = 0;							\
@@ -494,7 +494,7 @@ BAND_ACCUMULATE(acc_P,PairPixel)
 ---- output functions (convert accumulated data to output data class) ----
 ------------------------------------------------------------------------*/
 static void out_b(DST, acc, width, dummy1, dummy2)
-  void *DST; bndExtInt *acc; CARD32 width, dummy1; Bool dummy2;
+  pointer DST; bndExtInt *acc; CARD32 width, dummy1; Bool dummy2;
 {
   bndExtInt *i = acc;
   LogInt    *o = (LogInt*)DST, M, v;
@@ -509,7 +509,7 @@ static void out_b(DST, acc, width, dummy1, dummy2)
 
 #define BAND_OUTPUT(name,otype)						\
 static void name(DST, acc, width, maxLev, clip)				\
-     void *DST; bndExtInt *acc; CARD32 width, maxLev; Bool clip;	\
+     pointer DST; bndExtInt *acc; CARD32 width, maxLev; Bool clip;	\
 {									\
   otype      *dst = (otype*)DST;					\
   bndExtInt limit = (maxLev+1)<<BE_FBITS;				\
