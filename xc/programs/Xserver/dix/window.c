@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.157 87/08/10 15:50:16 newman Locked $ */
+/* $Header: window.c,v 1.158 87/08/11 14:54:00 swick Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -332,8 +332,7 @@ MakeRootTile(pWin)
    (*pGC->PutImage)(pWin->backgroundTile, pGC, 1,
 	            0, 0, 16, 16, 0, XYBitmap, _back);
 
-    pWin->backgroundTile->refcnt++;
-    FreeScratchGC(pGC);
+   FreeScratchGC(pGC);
 
 }
 
@@ -1182,18 +1181,11 @@ fixChildrenWinSize(pWin)
 }
 
 static WindowPtr
-MoveWindowInStack(pWin, pNextSib, above)
+MoveWindowInStack(pWin, pNextSib)
     WindowPtr pWin, pNextSib;
-    int above;
 {
     WindowPtr pParent = pWin->parent;
     WindowPtr pFirstChange = pWin; /* highest window where list changes */
-
-    if (above != Above)	{	/* then must be Below */
-        if (pNextSib)		/* so transform to an Above */
-	    pNextSib = pNextSib->nextSib;
-        above = Above;		/* note: (*,NULL) is always (Above,NULL); */
-    }
 
     if (pWin->nextSib != pNextSib)
     {
@@ -1260,12 +1252,10 @@ MoveWindowInStack(pWin, pNextSib, above)
 }
 
 static void
-MoveWindow(pWin, x, y, pNextSib, above)
-   /* for first pass, puts window on top of stack first */
+MoveWindow(pWin, x, y, pNextSib)
     WindowPtr pWin;
     short x,y;
     WindowPtr pNextSib;
-    int above;
 {
     WindowPtr pParent;
     Bool WasMapped = (Bool)(pWin->realized);
@@ -1324,7 +1314,7 @@ MoveWindow(pWin, x, y, pNextSib, above)
 
     (* pScreen->PositionWindow)(pWin,pWin->absCorner.x, pWin->absCorner.y);
 
-    windowToValidate = MoveWindowInStack(pWin, pNextSib, above);
+    windowToValidate = MoveWindowInStack(pWin, pNextSib);
 
     fixChildrenWinSize(pWin);
     if (WasMapped) 
@@ -1488,12 +1478,11 @@ ExposeAll(pWin, pScreen)
 
 
 static void
-SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
+SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     WindowPtr pWin;
     short x,y;
     unsigned short w, h;
     WindowPtr pSib;
-    int above;
 {
     WindowPtr pParent;
     Bool WasMapped = (Bool)(pWin->realized);
@@ -1566,7 +1555,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
     /* let the hardware adjust background and border pixmaps, if any */
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
 
-    pFirstChange = MoveWindowInStack(pWin, pSib, above);
+    pFirstChange = MoveWindowInStack(pWin, pSib);
 
     if (WasMapped) 
     {
@@ -1577,6 +1566,9 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib, above)
         if ((pWin->bitGravity == ForgetGravity) ||
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
 	{
+	    /* CopyWindow will step on borders, so re-paint them */
+	    (* pScreen->Subtract)(pWin->borderExposed, 
+			 pWin->borderClip, pWin->winSize);
 	    (* pScreen->ValidateTree)(pParent, pFirstChange, TRUE, anyMarked);
 	    TraverseTree(pWin, ExposeAll, pScreen); 
 	    DoObscures(pParent); 
@@ -1781,26 +1773,27 @@ ChangeBorderWidth(pWin, width)
 
 #define IllegalInputOnlyConfigureMask (CWBorderWidth)
 
-/* returns Above if pSib above pMe in stack or Below otherwise */
+/*
+ * IsSiblingAboveMe
+ *     returns Above if pSib above pMe in stack or Below otherwise 
+ */
 
-static Bool
-WhereIsSiblingWithRespectToMe(pMe, pSib, above)
+static int
+IsSiblingAboveMe(pMe, pSib)
     WindowPtr pMe, pSib;
-    int *above;
 {
     WindowPtr pWin;
 
-    *above = Above;
     pWin = pMe->parent->firstChild;
     while (pWin)
     {
         if (pWin == pSib)
-            return(TRUE);
-        if (pWin == pMe)
-            *above = Below;
+            return(Above);
+        else if (pWin == pMe)
+            return(Below);
         pWin = pWin->nextSib;
     }
-    return(FALSE);
+    return(Below);
 }
 
 static Bool
@@ -1845,19 +1838,43 @@ IOverlapAnyWindow(pWin, box)
     return((WindowPtr )NULL);
 }
 
+/*
+ *   WhereDoIGoInTheStack() 
+ *        Given pWin and pSib and the relationshipe smode, return
+ *        the window that pWin should go ABOVE.
+ *        If a pSib is specified:
+ *            Above:  pWin is placed just above pSib
+ *            Below:  pWin is placed just below pSib
+ *            TopIf:  if pSib occludes pWin, then pWin is placed
+ *                    at the top of the stack
+ *            BottomIf:  if pWin occludes pSib, then pWin is 
+ *                       placed at the bottom of the stack
+ *            Opposite: if pSib occludes pWin, then pWin is placed at the
+ *                      top of the stack, else if pWin occludes pSib, then
+ *                      pWin is placed at the bottom of the stack
+ *
+ *        If pSib is NULL:
+ *            Above:  pWin is placed at the top of the stack
+ *            Below:  pWin is placed at the bottom of the stack
+ *            TopIf:  if any sibling occludes pWin, then pWin is placed at
+ *                    the top of the stack
+ *            BottomIf: if pWin occludes any sibline, then pWin is placed at
+ *                      the bottom of the stack
+ *            Opposite: if any sibling occludes pWin, then pWin is placed at
+ *                      the top of the stack, else if pWin occludes any
+ *                      sibling, then pWin is placed at the bottom of the stack
+ *
+ */
 
 static WindowPtr 
-WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode, above)
+WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
     WindowPtr pWin, pSib;
     short x, y, w, h;
     int smode;
-    int *above;     /* return value: if Above, put pWin before pSib, if
-		       Below, put pSib before pWin */
 {
     BoxRec box;
     register ScreenPtr pScreen;
 
-    *above = smode;
     if ((pWin == pWin->parent->firstChild) && 
 	(pWin == pWin->parent->lastChild))
         return((WindowPtr ) NULL);
@@ -1878,67 +1895,72 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode, above)
         break;
       case Below:
         if (pSib)
-            return(pSib);
+            return(pSib->nextSib);
         else
             return((WindowPtr )NULL);
         break;
       case TopIf:
-      case Opposite:
         if (pSib)
 	{
-            WhereIsSiblingWithRespectToMe(pWin, pSib, above);
-            if ((*above == Above) && 
-		((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT))
-                return(pSib);
-	    else if ((smode == Opposite) && 
-                 ((*above == Below)&& 
-		  ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT)))
-		return(pSib);
+            if ((IsSiblingAboveMe(pWin, pSib) == Above) &&
+                ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT))
+                return(pWin->parent->firstChild);
             else
-	    {
-		*above = Above;
-		return(pSib->nextSib);
-	    }
+                return(pWin->nextSib);
 	}
         else if (AnyWindowOverlapsMe(pWin, &box))
-	{
-	    *above = Above;
             return(pWin->parent->firstChild);
-	}
-        else  if (smode == TopIf) 
-        {
-	    *above = Above;
+        else
             return(pWin->nextSib);
-	}
       case BottomIf:
         if (pSib)
 	{
-            WhereIsSiblingWithRespectToMe(pWin, pSib, above);
-            if ((*above == Below) && 
-		((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT))
-                return(pSib);
+            if ((IsSiblingAboveMe(pWin, pSib) == Below) &&
+                ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT))
+                return(WindowPtr)NULL;
             else
                 return(pWin->nextSib);
 	}
         else if (IOverlapAnyWindow(pWin, &box))
-	{
-	    *above = Above;
-            return((WindowPtr )NULL);
-	}
+            return((WindowPtr)NULL);
         else
-        {
-	    *above = Above;
             return(pWin->nextSib);
+      case Opposite:
+        if (pSib)
+	{
+	    if ((* pScreen->RectIn)(pSib->borderSize, &box) != rgnOUT)
+            {
+                if (IsSiblingAboveMe(pWin, pSib) == Above)
+                    return(pWin->parent->firstChild);
+                else 
+                    return((WindowPtr)NULL);
+            }
+            else
+                return(pWin->nextSib);
 	}
-        break;
+        else if (AnyWindowOverlapsMe(pWin, &box))
+	{
+	    /* If I'm occluded, I can't possibly be the first child
+             * if (pWin == pWin->parent->firstChild)
+             *    return pWin->nextSib;
+	     */
+            return(pWin->parent->firstChild);
+	}
+        else if (IOverlapAnyWindow(pWin, &box))
+            return((WindowPtr)NULL);
+        else
+            return pWin->nextSib;
+      default:
+      {
+        ErrorF("Internal error in ConfigureWindow, smode == %d\n",smode );
+        return((WindowPtr)pWin->nextSib);
+      }
     }
-    return((WindowPtr)NULL);
 }
 
 static void
-ReflectStackChange(pWin, pSib, above)
+ReflectStackChange(pWin, pSib)
     WindowPtr pWin, pSib;
-    int above;
 {
 /* Note that pSib might be NULL */
 
@@ -1952,7 +1974,7 @@ ReflectStackChange(pWin, pSib, above)
     if (!(pParent = pWin->parent))
         return ;
 
-    pFirstChange = MoveWindowInStack(pWin, pSib, above);
+    pFirstChange = MoveWindowInStack(pWin, pSib);
 
     if (doValidation)
     {
@@ -1988,7 +2010,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     unsigned short w = pWin->clientWinSize.width,
                    h = pWin->clientWinSize.height,
 	           bw = pWin->borderWidth;
-    int action, above, 
+    int action, 
         smode = Above;
     xEvent event;
 
@@ -2065,12 +2087,9 @@ ConfigureWindow(pWin, mask, vlist, client)
            make the changes to the window if event sent */
 
     if (mask & CWStackMode)
-        pSib = WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode, &above);
+        pSib = WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode);
     else
-    {
-	above = Above;
         pSib = pWin->nextSib;
-    }
 
     if ((!pWin->overrideRedirect) && 
         (pWin->parent->allEventMasks & SubstructureRedirectMask))
@@ -2134,9 +2153,7 @@ ConfigureWindow(pWin, mask, vlist, client)
             goto ActuallyDoSomething;
     if (mask & CWStackMode) 
     {
-        if ((above == Above) && (pWin->nextSib != pSib))
-            goto ActuallyDoSomething;
-        if ((above != Above) && (pSib->nextSib != pWin))
+        if (pWin->nextSib != pSib)
             goto ActuallyDoSomething;
     }
     return(Success);
@@ -2164,11 +2181,11 @@ ActuallyDoSomething:
             pWin->borderWidth = bw;
     }
     if (action == MOVE_WIN)
-        MoveWindow(pWin, x, y, pSib, above);
+        MoveWindow(pWin, x, y, pSib);
     else if (action == RESIZE_WIN)
-        SlideAndSizeWindow(pWin, x, y, w, h, pSib, above);
+        SlideAndSizeWindow(pWin, x, y, w, h, pSib);
     else if (mask & CWStackMode)
-        ReflectStackChange(pWin, pSib, above);
+        ReflectStackChange(pWin, pSib);
 
     return(Success);
 #undef RESTACK_WIN    
