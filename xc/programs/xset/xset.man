@@ -11,7 +11,8 @@ xset - X window system user setup program
 [m[ouse] [\fIacceleration\fP [\fIthreshold\fP]]] [m[ouse] default]
 [p \fIpixel\fP \fIcolor\fP]
 [[-]r] [r on/off]
-[s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank] [s on/off] [s default]
+[s [\fIlength\fP [\fIperiod\fP]]] [s blank/noblank]
+[s expose/noexpose] [s on/off] [s default]
 [q]
 .SH DESCRIPTION
 This program is used to set various user preference options of the display.
@@ -119,7 +120,7 @@ If no parameters or the 'on' flag is used, autorepeat will be enabled.
 .B s
 The \fBs\fP option lets you set the screen saver parameters.
 This option accepts up to two numerical parameters, a 'blank/noblank'
-flag, an 'on/off' flag, or the 'default' flag.
+flag, an 'expose/noexpose' flag, an 'on/off' flag, or the 'default' flag.
 If no parameters or the 'default' flag is used, the system will be set
 to its default screen saver characteristics.
 The 'on/off' flags simply turn the screen saver functions on or off.
@@ -127,6 +128,11 @@ The 'blank' flag sets the
 preference to blank the video (if the hardware can do so) rather than
 display a background pattern, while 'noblank' sets the
 preference to display a pattern rather than blank the video.
+The 'expose' flag sets the
+preference to allow window exposures (the server can freely discard
+window contents), while 'noexpose' sets the preference to disable
+screen saver unless the server can regenerate the screens without
+causing exposure events.
 The length and period
 parameters for the screen saver function determines how long the
 server must be inactive for screen saving to activate, and the period
