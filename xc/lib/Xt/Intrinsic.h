@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.131 90/02/06 17:41:27 converse Exp $
+* $XConsortium: Intrinsic.h,v 1.132 90/03/19 08:44:33 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1963,7 +1963,7 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
 
-#ifdef CRAY
+#if defined(CRAY) || defined(__arm)
 #ifdef CRAY2
 
 #define XtOffset(p_type,field) \
@@ -1974,7 +1974,7 @@ extern void XtGetConstraintResourceList(
 #define XtOffset(p_type,field) ((unsigned int)&(((p_type)NULL)->field))
 
 #endif	/* !CRAY2 */
-#else	/* !CRAY */
+#else	/* ! (CRAY || __arm) */
 
 #define XtOffset(p_type,field) \
 	((Cardinal) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))
