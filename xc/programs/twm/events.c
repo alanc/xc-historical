@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.78 89/07/14 12:26:05 jim Exp $
+ * $XConsortium: events.c,v 1.79 89/07/17 10:31:59 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.78 89/07/14 12:26:05 jim Exp $";
+"$XConsortium: events.c,v 1.79 89/07/17 10:31:59 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -703,9 +703,8 @@ HandleExpose()
 		5, (i*height) + Scr->DefaultFont.y, Info[i], strlen(Info[i]));
 	}
 	flush_expose (Event.xany.window);
-    }
-
-    if (Tmp_win != NULL)
+    } 
+    else if (Tmp_win != NULL)
     {
 	int h = Scr->TitleHeight - Scr->FramePadding * 2;
 
@@ -719,8 +718,23 @@ HandleExpose()
 		Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
 	}
-
-	if (Event.xany.window == Tmp_win->icon_w)
+	else if (Event.xany.window == Tmp_win->iconify_w)
+	{
+	    FB(Tmp_win->title.fore, Tmp_win->title.back);
+	    XCopyPlane(dpy, Scr->iconifyPm, Tmp_win->iconify_w, Scr->NormalGC,
+		0,0, h, h, 0, 0, 1);
+	    flush_expose (Event.xany.window);
+	    return;
+	}
+	else if (Event.xany.window == Tmp_win->resize_w)
+	{
+	    FB(Tmp_win->title.fore, Tmp_win->title.back);
+	    XCopyPlane(dpy, Scr->resizePm, Tmp_win->resize_w, Scr->NormalGC,
+		0,0, h, h, 0, 0, 1);
+	    flush_expose (Event.xany.window);
+	    return;
+  	}
+	else if (Event.xany.window == Tmp_win->icon_w)
 	{
 	    FBF(Tmp_win->iconc.fore, Tmp_win->iconc.back,
 		Scr->IconFont.font->fid);
@@ -732,8 +746,7 @@ HandleExpose()
 	    flush_expose (Event.xany.window);
 	    return;
 	}
-
-	if (Tmp_win->list)
+	else if (Tmp_win->list)
 	{
 	    if (Event.xany.window == Tmp_win->list->w)
 	    {
@@ -757,8 +770,7 @@ HandleExpose()
 	    }
 	}
     }
-
-    if (Event.xany.window == Scr->VersionWindow)
+    else if (Event.xany.window == Scr->VersionWindow)
     {
 	FBF(Scr->DefaultC.fore, Scr->DefaultC.back, Scr->VersionFont.font->fid);
 	XDrawString (dpy, Scr->VersionWindow, Scr->NormalGC,
