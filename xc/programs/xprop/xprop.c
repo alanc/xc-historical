@@ -1,4 +1,4 @@
-/* $XConsortium$*/
+/* $XConsortium: xprop.c,v 1.31 90/08/13 11:09:57 converse Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -310,7 +310,7 @@ propertyRec windowPropTable[] = {
     {"STRING",		XA_STRING,	 "8s",	      0 },
     {"WINDOW",		XA_WINDOW,	 "32x",	      ": window id # $0\n" },
     {"VISUALID",	XA_VISUALID,	 "32x",	      ": visual id # $0\n" },
-    {"WM_COLORMAP_WINDOWS",	0,	 "32cx",      ": window id #  $0+\n"},
+    {"WM_COLORMAP_WINDOWS",	0,	 "32x",       ": window id # $0+\n"},
     {"WM_COMMAND",	XA_WM_COMMAND,	 "8s",	      " = { $0+ }\n" },
     {"WM_HINTS",	XA_WM_HINTS,	 "32mbcxxiixx",	WM_HINTS_DFORMAT },
     {"WM_ICON_SIZE",	XA_WM_ICON_SIZE, "32cccccc",	WM_ICON_SIZE_DFORMAT},
