@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: lex.l,v 5.5 91/10/31 08:54:21 rws Exp $ */
+/* $XConsortium: lex.l,v 5.6 94/04/17 20:10:07 rws Exp $ */
 
 /*****************************************************************
 
@@ -53,9 +53,13 @@ SOFTWARE.
 #include <ctype.h>
 #include <math.h>
 #include "to_wfont.h"
-
+#include <X11/Xosdefs.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
 #if defined(ISC) && defined(SYSV) && defined(SYSV386) && __STDC__
 extern double atof(char *);
+#endif
 #endif
 
 %}
