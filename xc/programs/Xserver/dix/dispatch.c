@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.50 88/05/05 13:24:06 rws Exp $ */
+/* $Header: dispatch.c,v 1.51 88/06/27 19:35:04 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -830,8 +830,9 @@ ProcSetSelectionOwner(client)
 		event.u.selectionClear.time = time.milliseconds;
 		event.u.selectionClear.window = CurrentSelections[i].window;
 		event.u.selectionClear.atom = CurrentSelections[i].selection;
-		DeliverEvents(CurrentSelections[i].pWin, &event, 1,
-			      (WindowPtr)NULL);
+		(void) TryClientEvents (CurrentSelections[i].client, &event, 1,
+				NoEventMask, NoEventMask /* CantBeFiltered */,
+				NullGrab);
 	    }
 	    CurrentSelections[i].selection = stuff->selection;
 	    CurrentSelections[i].lastTimeChanged = time;
@@ -931,7 +932,7 @@ ProcConvertSelection(client)
 	    event.u.selectionRequest.property = stuff->property;
 	    if (TryClientEvents(
 		CurrentSelections[i].client, &event, 1, NoEventMask,
-		NoEventMask, NullGrab))
+		NoEventMask /* CantBeFiltered */, NullGrab))
 		return (client->noClientException);
 	}
 	event.u.u.type = SelectionNotify;
@@ -940,7 +941,8 @@ ProcConvertSelection(client)
 	event.u.selectionNotify.selection = stuff->selection;
 	event.u.selectionNotify.target = stuff->target;
 	event.u.selectionNotify.property = None;
-	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
+	(void) TryClientEvents(client, &event, 1, NoEventMask,
+			       NoEventMask /* CantBeFiltered */, NullGrab);
 	return (client->noClientException);
     }
     else 
