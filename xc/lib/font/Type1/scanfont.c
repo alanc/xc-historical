@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: scanfont.c,v 1.3 91/10/10 11:19:10 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -539,7 +539,7 @@ psfont *fontP;
   objFormatString(&(dictP[FULLNAME].value),0,NULL);
   objFormatName(&(dictP[FAMILYNAME].key),10,"FamilyName");
   objFormatString(&(dictP[FAMILYNAME].value),0,NULL);
-  objFormatName(&(dictP[WEIGHT].key),8,"Weight");
+  objFormatName(&(dictP[WEIGHT].key),6,"Weight");
   objFormatString(&(dictP[WEIGHT].value),0,NULL);
   objFormatName(&(dictP[ITALICANGLE].key),11,"ItalicAngle");
   objFormatReal(&(dictP[ITALICANGLE].value),0.0);
