@@ -2,7 +2,7 @@
 #define _Xct_h
 
 /* 
- * $XConsortium: Xct.h,v 1.0 89/05/09 08:36:35 rws Exp $
+ * $XConsortium: Xct.h,v 1.1 89/05/09 09:53:42 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -74,6 +74,11 @@ typedef unsigned long XctFlags;
 #define XctFreeString		0x0020
    /* This means that XctFree should free the Compound Text string (that was
     * passed to XctCreate.  If this flag is not set, the string is not freed.
+    */
+
+#define XctShiftMultiGRToGL	0x0040
+   /* Translate GR segments on-the-fly into GL segments for the GR sets:
+    * GB2312.1980-1, JISX0208.1983-1, and KSC5601.1987-1.
     */
 
 /* This is the return type for XctNextItem. */
