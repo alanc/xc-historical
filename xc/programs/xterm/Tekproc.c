@@ -1,5 +1,5 @@
 /*
- *	$Header: Tekproc.c,v 1.10 87/12/19 09:48:45 rws Exp $
+ *	$Header: TekprocReal.c,v 1.1 88/02/10 13:07:59 jim Exp $
  */
 
 
@@ -108,7 +108,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.10 87/12/19 09:48:45 rws Exp $";
+static char rcs_id[] = "$Header: TekprocReal.c,v 1.1 88/02/10 13:07:59 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1078,9 +1078,11 @@ TekInit()
 	
 	pr = XParseGeometry(term->misc.T_geometry, &winX, &winY, &width, &height);
          if ((pr & XValue) && (XNegative&pr))
-          winX += DisplayWidth(screen->display, DefaultScreen(screen->display))                        - width;
+          winX += DisplayWidth(screen->display, DefaultScreen(screen->display))
+                        - width - (term->core.parent->core.border_width * 2);
         if ((pr & YValue) && (YNegative&pr))
-          winY += DisplayHeight(screen->display, DefaultScreen(screen->display))                        - height;
+          winY += DisplayHeight(screen->display, DefaultScreen(screen->display))
+                        - height - (term->core.parent->core.border_width * 2;
   
 	/* set up size hints */
 	sizehints.min_width = TEKMINWIDTH + border;

@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.5 88/02/12 09:15:16 jim Exp $
+ *	$Header: charproc.c,v 1.6 88/02/12 10:04:59 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.5 88/02/12 09:15:16 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.6 88/02/12 10:04:59 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1621,10 +1621,10 @@ XSetWindowAttributes *values;
 
 	if ((pr & XValue) && (XNegative&pr)) 
 	  xpos += DisplayWidth(screen->display, DefaultScreen(screen->display)) 
-			- width;
+			- width - (term->core.parent->core.border_width * 2);
 	if ((pr & YValue) && (YNegative&pr))
 	  ypos += DisplayHeight(screen->display, DefaultScreen(screen->display)) 
-			- height;
+			- height - (term->core.parent->core.border_width * 2);
 
 	/* set up size hints for window manager */
 	sizehints.min_width = 2 * screen->border + screen->scrollbar;
