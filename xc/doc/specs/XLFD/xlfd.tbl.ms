@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.13 91/08/27 11:00:42 rws Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.14 93/12/28 14:43:49 gildea Exp $
 .EH ''''
 .OH ''''
 .EF ''''
@@ -665,8 +665,7 @@ that is, monospace (fixed pitch), proportional (variable pitch),
 or charcell (a special monospaced font that conforms to the traditional 
 data processing character cell font model).
 The encoding is as follows:
-.ps 9
-.nr PS 9
+.SM
 .TS H
 lw(.5i) lw(1.25i) lw(3.5i).
 _
@@ -707,8 +706,7 @@ T}
 .sp 6p
 _
 .TE
-.ps 11
-.nr PS 11
+.NL
 .NH 4
 AVERAGE_WIDTH Field
 .XS
@@ -751,8 +749,7 @@ To prevent collisions when defining character set names,
 it is recommended that CHARSET_REGISTRY and CHARSET_ENCODING name pairs 
 be constructed according to the following conventions:
 .IN "CHARSET Syntax"
-.ps 9
-.nr PS 9
+.SM
 .TS
 rw(1.5i) lw(3.75i).
 .sp 6p
@@ -780,8 +777,7 @@ T}
 Dot ::=	``\.''\-ISO 8859-1 FULL STOP (Column/Row 2/14)
 Year ::=	STRING8\-numeric year (for example, 1989)
 .TE
-.ps 11
-.nr PS 11
+.NL
 .LP
 The X Consortium shall maintain and publish a registry 
 of such character set names for use in X protocol font names and properties 
@@ -797,8 +793,7 @@ Examples
 .LP
 The following examples of font names are derived from the screen fonts 
 shipped with the MIT X distribution.
-.ps 9
-.nr PS 9
+.SM
 .TS H
 lw(1.45i) lw(4.45i).
 _
@@ -908,8 +903,7 @@ T}	T{
 T}
 _
 .TE
-.ps 11
-.nr PS 11
+.NL
 .NH 2
 FontProperties
 .XS
@@ -938,8 +932,7 @@ and terminated with the property name.
 .LP
 The Backus-Naur Form syntax description of X font properties is as follows:
 .IN "Font Properties" "BNF Syntax"
-.ps 9
-.nr PS 9
+.SM
 .TS
 rw(1.5i) lw(3.75i).
 .sp 6p
@@ -968,8 +961,7 @@ OrganizationId ::=	T{
 STRING8\-the registered name of the organization
 T}
 .TE
-.ps 11
-.nr PS 11
+.NL
 .NH 3
 FOUNDRY
 .XS
