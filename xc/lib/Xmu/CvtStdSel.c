@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.11 89/10/09 13:49:46 jim Exp $
+/* $XConsortium: CvtStdSel.c,v 1.12 89/10/09 14:28:01 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -138,30 +138,35 @@ Boolean XmuConvertStandardSelection(w, time, selection, target,
 	*format = 32;
 	return True;
     }
-    if (*target == XA_HOSTNAME(d) || *target == XA_IP_ADDRESS(d)) {
+    if (*target == XA_HOSTNAME(d)) {
 	char hostname[1024];
-	gethostname(hostname, 1024);
-	if (*target == XA_HOSTNAME(d)) {
-	    *value = XtNewString(hostname);
-	    *type = XA_STRING;
-	    *length = strlen(hostname);
-	    *format = 8;
-	    return True;
-	}
-	else { /* *target == XA_IP_ADDRESS(d) */
-	    struct hostent *hostent = gethostbyname(hostname);
-	    if (hostent->h_addrtype != AF_INET) return False;
-	    *length = hostent->h_length;
-	    *value = XtMalloc(*length);
-	    bcopy(hostent->h_addr, *value, *length);
-	    *type = XA_NET_ADDRESS(d);
-	    *format = 8;
-	    return True;
-	}
+	hostname[0] = '\0';
+	*length = XmuGetHostname (hostname, sizeof hostname);
+	*value = XtNewString(hostname);
+	*type = XA_STRING;
+	*format = 8;
+	return True;
     }
+#ifdef TCPCONN
+    if (*target == XA_IP_ADDRESS(d)) {
+	char hostname[1024];
+
+	struct hostent *hostent;
+	hostname[0] = '\0';
+	(void) XmuGetHostname (hostname, sizeof hostname);
+	hostent = gethostbyname (hostname);
+	if (hostent->h_addrtype != AF_INET) return False;
+	*length = hostent->h_length;
+	*value = XtMalloc(*length);
+	bcopy (hostent->h_addr, *value, *length);
+	*type = XA_NET_ADDRESS(d);
+	*format = 8;
+	return True;
+    }
+#endif
 #ifdef DNETCONN
     if (*target == XA_DECNET_ADDRESS(d)) {
-	return False;		/* %%% NYI */
+	return False;		/* XXX niy */
     }
 #endif
     if (*target == XA_USER(d)) {
