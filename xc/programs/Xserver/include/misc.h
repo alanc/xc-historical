@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.50 88/06/06 11:02:56 keith Exp $ */
+/* $XConsortium: misc.h,v 1.51 88/09/06 15:48:06 jim Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -96,6 +96,23 @@ typedef unsigned long ATOM;
 #define MINSHORT -MAXSHORT 
 
 
+/* some macros to help swap requests, replies, and events */
+
+#define LengthRestB(stuff) \
+    (((unsigned long)stuff->length << 2) - sizeof(*stuff))
+
+#define LengthRestS(stuff) \
+    (((unsigned long)stuff->length << 1) - (sizeof(*stuff) >> 1))
+
+#define LengthRestL(stuff) \
+    ((unsigned long)stuff->length - (sizeof(*stuff) >> 2))
+
+#define SwapRestS(stuff) \
+    SwapShorts((short *)(stuff + 1), LengthRestS(stuff))
+
+#define SwapRestL(stuff) \
+    SwapLongs((long *)(stuff + 1), LengthRestL(stuff))
+
 /* byte swap a long */
 #define swapl(x, n) n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[3];\
@@ -109,7 +126,20 @@ typedef unsigned long ATOM;
 		 ((char *) (x))[0] = ((char *) (x))[1];\
 		 ((char *) (x))[1] = n
 
+/* copy long from src to dst byteswapping on the way */
+#define cpswapl(src, dst) \
+                 ((char *)&(dst))[0] = ((char *) &(src))[3];\
+                 ((char *)&(dst))[1] = ((char *) &(src))[2];\
+                 ((char *)&(dst))[2] = ((char *) &(src))[1];\
+                 ((char *)&(dst))[3] = ((char *) &(src))[0];
 
+/* copy short from src to dst byteswapping on the way */
+#define cpswaps(src, dst)\
+		 ((char *) &(dst))[0] = ((char *) &(src))[1];\
+		 ((char *) &(dst))[1] = ((char *) &(src))[0];
+
+extern void SwapLongs();
+extern void SwapShorts();
 
 typedef struct _DDXPoint *DDXPointPtr;
 typedef struct _Box *BoxPtr;
