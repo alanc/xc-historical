@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.67 94/01/11 20:54:55 rob Exp $ */
+/* $XConsortium: servermd.h,v 1.68 94/01/21 21:54:28 dpw Exp $ */
 
 /*
  * Machine dependent values:
@@ -288,11 +288,39 @@ SOFTWARE.
 
 #endif /* luna */
 
-#ifdef SYSV386
+#if ((defined(SVR4) && defined(i386)) || \
+     (defined(SYSV) && defined(i386)) || \
+     (defined(sun) && defined (i386) && defined(SVR4)) || \
+     defined(__bsdi__) || \
+     (defined(__NetBSD__) && defined(__i386__)) || \
+     defined(__FreeBSD__) || \
+     defined(MACH386) || \
+     defined(linux) || \
+     (defined(AMOEBA) && defined(i80386)) || \
+     defined(_MINIX))
 
+#ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst
-#define BITMAP_BIT_ORDER	LSBFirst
-#define GLYPHPADBYTES		4
+#endif
+
+#ifndef BITMAP_BIT_ORDER
+# if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86BDM2)
+#  define BITMAP_BIT_ORDER      MSBFirst
+# else
+#  define BITMAP_BIT_ORDER      LSBFirst
+# endif
+#endif
+
+#ifndef BITMAP_SCANLINE_UNIT
+# if defined(XF86MONOVGA) || defined(XF86VGA16)
+#  define BITMAP_SCANLINE_UNIT  8
+# endif
+#endif
+
+#ifndef GLYPHPADBYTES
+#define GLYPHPADBYTES           4
+#endif
+
 #define GETLEFTBITS_ALIGNMENT	1
 #define AVOID_MEMORY_READ
 #ifdef XSVGA
@@ -303,7 +331,8 @@ SOFTWARE.
 #define SINGLEDEPTH
 #endif
 
-#endif /* SYSV386 */
+#endif /* SVR4 / BSD / i386 */
+
 
 #ifdef sgi
 
