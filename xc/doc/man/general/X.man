@@ -283,10 +283,6 @@ xprop(1), xrdb(1), xrefresh(1), xset(1), xsetroot(1), xwd(1),
 xwininfo(1), xwud(1), Xserver(1), Xapollo(1), Xqvss(1), Xsun(1),
 kbd_mode(1), todm(1), tox(1), biff(1), init(8), ttys(5)
 .I "Xlib \- C Language X Interface"
-.SH AUTHORS
-.PP
-It is no longer feasible to list all people who have contributed
-something to X, but see doc/contributors in the standard sources.
 .SH COPYRIGHT
 The following copyright and permission notice outlines the rights and
 restrictions covering most parts of the standard release of the X Window
@@ -311,3 +307,8 @@ without express or implied warranty.
 This software is not subject to any license of the American
 Telephone and Telegraph Company or of the Regents of the
 University of California.
+.SH AUTHORS
+.PP
+It is no longer feasible to list all people who have contributed
+something to X, but see doc/contributors in the standard sources.
+
