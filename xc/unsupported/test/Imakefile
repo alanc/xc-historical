@@ -1,4 +1,4 @@
-# $XConsortium: Imakefile,v 1.16 89/12/12 11:18:03 jim Exp $
+# $XConsortium: Imakefile,v 1.17 89/12/18 09:19:28 rws Exp $
     DEFINES = ExtensionDefines
 IMAKE_DEFINES = $(DEFINES)
   SHAPESRCS = shapetest.c
@@ -22,10 +22,10 @@ all: shapetest shmtest xmbufinfo
 all: shapetest xmbufinfo
 #endif
 
-SingleProgramTarget(xmbufinfo,$(MBUFOBJS), $(XLIB), /**/)
-SingleProgramTarget(shapetest,$(SHAPEOBJS),$(XLIB), /**/)
+NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB), /**/)
+NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB), /**/)
 #ifdef MITSHM
-SingleProgramTarget(shmtest,$(SHMOBJS),$(XLIB), /**/)
+NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB), /**/)
 #endif
 
 DependTarget()
