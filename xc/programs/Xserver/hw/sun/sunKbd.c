@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.24 93/09/03 17:21:34 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.25 93/09/09 17:07:40 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -78,7 +78,6 @@ extern SunModmapRec *sunType4ModMaps[];
 
 static CARD8 *sunConModMap = 0;
 static KeySymsRec *sunConKeySyms;
-static unsigned int sunModifiers = 0;
 
 extern void	ProcessInputEvents();
 extern void	miPointerPosition();
@@ -543,52 +542,6 @@ static Firm_event *kbdGetEvents (pKeyboard, pNumEvents, pAgain)
     return evBuf;
 }
 
-/*
- * This routine bears a striking resemblance to the XTranslateKey routine,
- * it has however been modified to work in the server.
- */
-static KeySym TranslateKey(pKeyboard, keycode, modifiers)
-DevicePtr pKeyboard;
-unsigned int keycode, modifiers;
-{
-    KeySymsPtr ksymsrec;
-    int per;
-    register KeySym *syms;
-    KeySym sym, lsym, usym, rsym;
-
-    ksymsrec = &((DeviceIntPtr)pKeyboard)->key->curKeySyms;
-    per = ksymsrec->mapWidth;
-    syms = &ksymsrec->map[(keycode+sysKbPriv.offset-ksymsrec->minKeyCode)*per];
-    while ((per > 2) && (syms[per - 1] == NoSymbol))
-	per--;
-    if ((per > 2) && (modifiers & Mod2Mask)) {
-	syms += 2;
-	per -= 2;
-    }
-    if (!(modifiers & ShiftMask) && !(modifiers & LockMask)) {
-	if ((per == 1) || (syms[1] == NoSymbol))
-	    ConvertCase(syms[0], &rsym, &usym);
-	else
-	    rsym = syms[0];
-    } else if (!(modifiers & LockMask)) {
-	if ((per == 1) || ((usym = syms[1]) == NoSymbol))
-	    ConvertCase(syms[0], &lsym, &usym);
-	rsym = usym;
-    } else {
-	if ((per == 1) || ((sym = syms[1]) == NoSymbol))
-	    sym = syms[0];
-	ConvertCase(sym, &lsym, &usym);
-	if (!(modifiers & ShiftMask) && (sym != syms[0]) &&
-	    ((sym != usym) || (lsym == usym)))
-	ConvertCase(syms[0], &lsym, &usym);
-	rsym = usym;
-    }
-    if (rsym == XK_VoidSymbol)
-	rsym = NoSymbol;
-
-    return rsym;
-}
-
 /*-
  *-----------------------------------------------------------------------
  * kbdEnqueueEvent --
@@ -621,13 +574,11 @@ static void kbdEnqueueEvent (pKeyboard, fe)
     BYTE		key;
     CARD8		keyModifiers;
     KeySym		ksym;
-    int			k;
+    int			led;
 
-    key = fe->id;
-    ksym = TranslateKey(pKeyboard, key, sunModifiers);
+    key = (fe->id & 0x7f) + sysKbPriv.offset;
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 
-    key += sysKbPriv.offset;
     keyModifiers = ((DeviceIntPtr)pKeyboard)->key->modifierMap[key];
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
@@ -637,41 +588,56 @@ static void kbdEnqueueEvent (pKeyboard, fe)
 	autoRepeatKeyDown = 0;
     }
 
-    if (keyModifiers != 0) {
-	if (fe->value == VKEY_DOWN)
-	    sunModifiers |= keyModifiers;
-	else
-	    sunModifiers &= ~keyModifiers;
-    }
-
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 
-    if (keyModifiers & LockMask) {
-	if (xE.u.u.type == KeyRelease)
-	    return; /* this assumes autorepeat is not desired */
-	if (pPriv->ctrl->leds & LED_CAPS_LOCK)
-	    xE.u.u.type = KeyRelease;
-	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
-    }
-#if 0
-    if (ksym == XK_Num_Lock) {
-	if (xE.u.u.type == KeyRelease)
-	    return; /* this assumes autorepeat is not desired */
-	if (pPriv->ctrl->leds & LED_NUM_LOCK)
-	    xE.u.u.type = KeyRelease;
+    /* 
+     * toggling keys are usually found in the first column, but Scroll_Lock
+     * is in the second column on Type_4 keyboards. So for the moment
+     * anyway, we'll only be lighting the Scroll_Lock LED on Type_5 kbds.
+     * Who knows what Scroll_Lock is used for anyway?
+     */
+    ksym = sunConKeySyms->map[(fe->id - 1) * sunConKeySyms->mapWidth];
+
+    /*
+     * Toggle functionality is hardcoded. This is achieved by always
+     * discarding KeyReleases on these keys, and converting every other
+     * KeyPress into a KeyRelease. There is a more generic way to test
+     * for Caps_Lock, but since there is currently never more than one
+     * locking key on Sun keyboards, we'll just take the simple way.
+     *
+     * Note that the "support" here does nothing more than toggle the 
+     * LEDS.  Caps_Lock has the LockMask attribute, and is handled thusly.
+     * Xlib and Xt now grok the Num_Lock key and are handled accordingly.
+     * Compose processing is handled by an input method. The input method
+     * can turn the LED off when it is appropriate to, otherwise the LED
+     * will remain lit until the user turns it off by pressing the Compose
+     * key again.  Scroll_Lock is a Ginsu feature -- the LED is toggled on 
+     * and off. Who knows how or where it's actually used.
+     */
+    if (xE.u.u.type == KeyRelease 
+	&& (ksym == XK_Num_Lock 
+	|| ksym == XK_Scroll_Lock 
+	|| ksym == SunXK_Compose
+	|| ksym == XK_Caps_Lock)) 
+	return;
+
+    if ((ksym == XK_Num_Lock && pPriv->ctrl->leds & LED_NUM_LOCK) 
+	|| (ksym == XK_Scroll_Lock && pPriv->ctrl->leds & LED_SCROLL_LOCK) 
+	|| (ksym == SunXK_Compose && pPriv->ctrl->leds & LED_COMPOSE)
+	|| (ksym == XK_Caps_Lock && pPriv->ctrl->leds & LED_CAPS_LOCK))
+	xE.u.u.type = KeyRelease;
+
+    if (ksym == XK_Num_Lock)
 	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_NUM_LOCK);
-    }
-    if (ksym == XK_Scroll_Lock) {
-	if (xE.u.u.type == KeyRelease)
-	    return; /* this assumes autorepeat is not desired */
-	if (pPriv->ctrl->leds & LED_SCROLL_LOCK)
-	    xE.u.u.type = KeyRelease;
+    else if (ksym == XK_Scroll_Lock)
 	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
-    }
-#endif
-    if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
+    else if (ksym == SunXK_Compose)
+	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_COMPOSE);
+    else if (ksym == XK_Caps_Lock)
+	sunKbdModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+    else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
 	autoRepeatFirst = TRUE;
