@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.28 90/03/07 17:34:10 jim Exp $
+ * $XConsortium: Panner.c,v 1.29 90/03/07 18:30:00 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,6 +100,8 @@ static XtResource resources[] = {
 	poff(shadow), XtRImmediate, (XtPointer) TRUE },
     { XtNshadowColor, XtCShadowColor, XtRPixel, sizeof(Pixel),
 	poff(shadow_color), XtRString, (XtPointer) "XtDefaultForeground" },
+    { XtNshadowThickness, XtCShadowThickness, XtRDimension, sizeof(Dimension),
+	poff(shadow_thickness), XtRImmediate, (XtPointer) 2 },
     { XtNbackgroundStipple, XtCBackgroundStipple, XtRString, sizeof(String),
 	poff(stipple_name), XtRImmediate, (XtPointer) NULL },
 #undef poff
@@ -261,23 +263,22 @@ static void move_shadow (pw)
     PannerWidget pw;
 {
     XRectangle *r = pw->panner.shadow_rects;
-    int lw = (pw->panner.line_width == 0 ? 1 : pw->panner.line_width) * 4;
+    int lw = (pw->panner.shadow_thickness +
+	      (pw->panner.line_width < 1 ? 1 : pw->panner.line_width) * 2);
     int pad = pw->panner.internal_border;
 
     if (pw->panner.knob_height > lw && pw->panner.knob_width > lw) {
-#define SHADOW_WIDTH 2
 	r->x = (short) (pw->panner.knob_x + pad + pw->panner.knob_width);
 	r->y = (short) (pw->panner.knob_y + pad + lw);
-	r->width = SHADOW_WIDTH;
+	r->width = pw->panner.shadow_thickness;
 	r->height = (unsigned short) (pw->panner.knob_height - lw);
 	r++;
 	r->x = (short) (pw->panner.knob_x + pad + lw);
 	r->y = (short) (pw->panner.knob_y + pad + pw->panner.knob_height);
 	r->width = (unsigned short) (pw->panner.knob_width - lw +
-				     SHADOW_WIDTH);
-	r->height = SHADOW_WIDTH;
+				     pw->panner.shadow_thickness);
+	r->height = pw->panner.shadow_thickness;
 	pw->panner.shadow_valid = TRUE;
-#undef SHADOW_WIDTH
     } else {
 	pw->panner.shadow_valid = FALSE;
     }

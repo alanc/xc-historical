@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.15 90/02/28 14:27:24 jim Exp $
+ * $XConsortium: Panner.h,v 1.16 90/03/01 17:05:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -53,6 +53,7 @@
  *  rubberBand		RubberBand	Boolean		FALSE
  *  shadow		Shadow		Boolean		TRUE
  *  shadowColor		ShadowColor	Pixel		XtDefaultForeground
+ *  shadowThickness	ShadowThickness	Dimension	2
  *  sliderX		SliderX		Position	0
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0
@@ -80,6 +81,8 @@
 #define XtCRubberBand "RubberBand"
 #define XtNshadow "shadow"
 #define XtCShadow "Shadow"
+#define XtNshadowThickness "shadowThickness"
+#define XtCShadowThickness "ShadowThickness"
 #define XtNshadowColor "shadowColor"
 #define XtCShadowColor "ShadowColor"
 #define XtNsliderX "sliderX"

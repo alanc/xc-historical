@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PannerP.h,v 1.12 90/02/28 11:38:58 jim Exp $
+ * $XConsortium: PannerP.h,v 1.13 90/02/28 13:35:36 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -46,6 +46,7 @@ typedef struct {			/* new fields in widget */
     Boolean resize_to_pref;		/* resizeToPreferred/Boolean */
     Pixel foreground;			/* foreground/Foreground */
     Pixel shadow_color;			/* shadowColor/ShadowColor */
+    Dimension shadow_thickness;		/* shadowThickness/ShadowThickness */
     Dimension default_scale;		/* defaultScale/DefaultScale */
     Dimension line_width;		/* lineWidth/LineWidth */
     Dimension canvas_width;		/* canvasWidth/CanvasWidth */
