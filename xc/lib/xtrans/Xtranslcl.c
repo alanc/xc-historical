@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranslcl.c,v 1.13 94/03/02 12:16:20 mor Exp $ */
+/* $XConsortium: Xtranslcl.c,v 1.14 94/03/15 13:24:56 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -193,12 +193,12 @@ int sig;
 #define NAMEDNODENAME "/dev/X/Nserver."
 
 /*
- * ICS and SCO are only defined for X11 since they are there for
+ * ISC and SCO are only defined for X11 since they are there for
  * backwards binary compatability only.
  */
 
 #define X_ISC_DIR	"/dev/X"
-#define ISCDEVNODENAME	"/dev/X/ICSCONN/X%s"
+#define ISCDEVNODENAME	"/dev/X/ISCCONN/X%s"
 #define ISCTMPNODENAME	"/tmp/.X11-unix/X%s"
 #define SCORNODENAME	"/dev/X/%1sR"
 #define SCOSNODENAME	"/dev/X/%1sS"
@@ -254,7 +254,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", PTSNODENAME, getpid());
     }
-#endif /* !PTSNODENAME */
 
 
     /*
@@ -360,6 +359,8 @@ char		*port;
     }
 
     return(fd);
+
+#endif /* !PTSNODENAME */
 }
 
 static int
@@ -387,7 +388,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", PTSNODENAME, getpid());
     }
-#endif /* !PTSNODENAME */
 
     mkdir(X_STREAMS_DIR, 0777);
     chmod(X_STREAMS_DIR, 0777);
@@ -448,6 +448,8 @@ char		*port;
     }
 
     return fd;
+
+#endif /* !PTSNODENAME */
 }
 
 static int
@@ -574,7 +576,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", NAMEDNODENAME, getpid());
     }
-#endif
 
     if (stat(server_path, &filestat) < 0 ) {
 	PRMSG(1,"No device %s for NAMED connection\n", server_path, 0,0 );
@@ -615,6 +616,8 @@ char		*port;
     }
 
     return(fd);
+
+#endif /* !NAMEDNODENAME */
 }
 
 static int
@@ -643,7 +646,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", NAMEDNODENAME, getpid());
     }
-#endif /* !NAMEDNODENAME */
 
     mkdir(X_STREAMS_DIR, 0777);
     chmod(X_STREAMS_DIR, 0777);
@@ -697,6 +699,8 @@ char		*port;
     }
 
     return(pipefd[1]);
+
+#endif /* !NAMEDNODENAME */
 }
 
 static int
@@ -831,7 +835,7 @@ char		*port;
     o_mode_t 	spmode;
     struct stat 	filestat;
     
-    PRMSG(2,"TRANS(ICSOpenClient)(%s)\n", port, 0,0 );
+    PRMSG(2,"TRANS(ISCOpenClient)(%s)\n", port, 0,0 );
     
 #if !defined(ISCDEVNODENAME)
     PRMSG(1,"Protocol is not supported by a ISC connection\n", 0,0,0);
@@ -839,7 +843,6 @@ char		*port;
 #else
     (void) sprintf(server_path, ISCTMPNODENAME, port);
     (void) sprintf(server_dev_path, ISCDEVNODENAME, port);
-#endif /* !ISCDEVNODE */
 
     fd = fds = server = -1;
 
@@ -853,7 +856,7 @@ char		*port;
     if (stat(server_path, &filestat) != -1) {
 	if ((filestat.st_mode & S_IFMT) == spmode) {
 	    if ((server = open(server_path, O_RDWR)) < 0) {
-		PRMSG(1,"TRANS(ICSOpenClient): failed to open %s\n",
+		PRMSG(1,"TRANS(ISCOpenClient): failed to open %s\n",
 		      server_path, 0,0 );
 	    }
 	}
@@ -864,7 +867,7 @@ char		*port;
 	if (stat(server_dev_path, &filestat) != -1) {
 	    if ((filestat.st_mode & S_IFMT) == spmode) {
 		if ((server = open(server_dev_path, O_RDWR)) < 0) {
-		    PRMSG(1,"TRANS(ICSOpenClient): failed to open %s\n",
+		    PRMSG(1,"TRANS(ISCOpenClient): failed to open %s\n",
 			  server_dev_path, 0,0 );
 		}
 	    }
@@ -872,7 +875,7 @@ char		*port;
     }
     
     if (server < 0) {
-	PRMSG(1,"TRANS(ICSOpenClient): can't open either device %s or %s\n",
+	PRMSG(1,"TRANS(ISCOpenClient): can't open either device %s or %s\n",
 	      server_path, server_dev_path, 0 );
 	return -1;
     }
@@ -880,7 +883,7 @@ char		*port;
     if ((fds = open(DEV_SPX, O_RDWR)) < 0 ||
 	(fd  = open(DEV_SPX, O_RDWR)) < 0) {
 	/* Failed to open all of the devices */
-	PRMSG(1,"TRANS(ICSOpenClient): can't open %s\n", DEV_SPX, 0,0 );
+	PRMSG(1,"TRANS(ISCOpenClient): can't open %s\n", DEV_SPX, 0,0 );
 	(void) close(server);
 	if (fds != -1)
 	    (void) close(fds);
@@ -903,7 +906,7 @@ char		*port;
     
     if (ioctl(fds, I_FDINSERT, &buf) < 0 ||
 	ioctl(server, I_SENDFD, fds) < 0) {
-	PRMSG(1,"TRANS(ICSOpenClient): ioctl(I_FDINSERT or I_SENDFD) failed\n",
+	PRMSG(1,"TRANS(ISCOpenClient): ioctl(I_FDINSERT or I_SENDFD) failed\n",
 								0,0,0 );
 	(void) close(server);
 	(void) close(fds);
@@ -924,6 +927,8 @@ char		*port;
     }
 
     return (fd);
+
+#endif /* !ISCDEVNODENAME */
 }
 
 static int
@@ -949,7 +954,6 @@ char		*port;
     chmod(X_STREAMS_DIR, 0777);
     mkdir(X_ISC_DIR, 0777); /* "/dev/X/ISCCONN" */
     chmod(X_ISC_DIR, 0777);
-#endif /* !ISCDEVNODE */
     
     unlink(server_path);
     
@@ -1012,6 +1016,8 @@ char		*port;
     }
 
     return fd;
+
+#endif /* !ISCDEVNODENAME */
 }
 
 static int
@@ -1092,7 +1098,6 @@ char		*port;
     return -1;
 #else
     (void) sprintf(server_path, SCORNODENAME, port);
-#endif
     
     if ((server = open(server_path, O_RDWR)) < 0) {
 	PRMSG(1,"TRANS(SCOOpenClient) failed to open %s\n", server_path, 0,0 );
@@ -1148,6 +1153,8 @@ char		*port;
     }
     
     return(fd);
+
+#endif  /* !SCORNODENAME */
 }
 
 
@@ -1171,7 +1178,6 @@ char		*port;
 #else
     (void) sprintf(serverR_path, SCORNODENAME, port);
     (void) sprintf(serverS_path, SCOSNODENAME, port);
-#endif /* SCORNODENAME */
     
     unlink(serverR_path);
     unlink(serverS_path);
@@ -1205,6 +1211,8 @@ char		*port;
     }
     
     return(fds);
+
+#endif /* !SCORNODENAME */
 }
 
 static int
@@ -1301,7 +1309,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", PTSNODENAME, getpid());
     }
-#endif /* !PTSNODENAME */
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
@@ -1311,6 +1318,8 @@ char		*port;
     }
 
     return 1;
+
+#endif /* !PTSNODENAME */
 }
 
 
@@ -1339,7 +1348,6 @@ char		*port;
     } else {
 	(void) sprintf(server_path, "%s%d", NAMEDNODENAME, getpid());
     }
-#endif /* !NAMEDNODENAME */
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
@@ -1349,6 +1357,8 @@ char		*port;
     }
 
     return 1;
+
+#endif /* !NAMEDNODENAME */
 }
 
 
@@ -1370,7 +1380,6 @@ char		*port;
 #else
     (void) sprintf(server_path, ISCDEVNODENAME, port);
     (void) sprintf(server_unix_path, ISCTMPNODENAME, port);
-#endif /* !ISCDEVNODE */
 
     if (TRANS(FillAddrInfo) (ciptr, server_path, server_path) == 0)
     {
@@ -1380,6 +1389,8 @@ char		*port;
     }
     
     return 1;
+
+#endif /* !ISCDEVNODENAME */
 }
 
 
@@ -1402,7 +1413,6 @@ char		*port;
 #else
     (void) sprintf(serverR_path, SCORNODENAME, port);
     (void) sprintf(serverS_path, SCOSNODENAME, port);
-#endif /* SCORNODENAME */
     
     if (TRANS(FillAddrInfo) (ciptr, serverS_path, serverR_path) == 0)
     {
@@ -1412,6 +1422,8 @@ char		*port;
     }
     
     return 1;
+
+#endif /* SCORNODENAME */
 }
 
 #endif /* TRANS_REOPEN */
