@@ -144,6 +144,7 @@ OBJS =\
 	XMapSubs.o \
 	XMapWindow.o \
 	XMaskEvent.o \
+	XMisc.o \
 	XModMap.o \
 	XMoveWin.o \
 	XNextEvent.o \
