@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$XConsortium: menu.c,v 1.9 88/09/06 17:08:13 jim Exp $
+ *	$XConsortium: menu.c,v 1.10 88/10/05 11:16:29 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: menu.c,v 1.9 88/09/06 17:08:13 jim Exp $";
+static char rcs_id[] = "$XConsortium: menu.c,v 1.10 88/10/05 11:16:29 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -489,9 +489,10 @@ XButtonEvent *event;
 	Unmap_Menu(menu);
 	drawn = 0;
 	if(hilited_item)
-		FinishModeMenu(menu->menuInitialItem = hilited_n);
+		FinishModeMenu(menu->menuInitialItem = hilited_n,
+			       event->time);
 	else
-		FinishModeMenu(-1);
+		FinishModeMenu(-1, event->time);
 }
 
 /*
