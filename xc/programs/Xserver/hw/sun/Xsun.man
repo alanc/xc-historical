@@ -1,4 +1,4 @@
-.\" $Header$
+.\" $Header: Xsun.man,v 1.1 87/09/14 14:50:44 toddb Exp $
 .TH XSUN 8 "9 Sep 1987" "X Version 11"
 .SH NAME
 Xsun \- Sun server for X Version 11
@@ -58,6 +58,12 @@ On a
 will use both the monochrome and color screens as if they were
 two separate screens side-by-side.  Sliding the mouse off the left and right 
 edges will swap screens.
+.PP
+For auto-configuration to work, you need /dev entries for each
+screen you want configured, and no /dev entries for any screens
+you do not want configured.  For example, on a 3/110, you would
+normally want both a /dev/bwtwo0 and a /dev/cgfour0 entry, to
+get dual screens.
 .SH "USE WITH SUNWINDOWS OR NeWS"
 .PP
 The server can be run from outside 
