@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/16 23:09:18 gildea Exp $
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 all: PHIGSerr.txt PHIGSfnc.txt phigsmon
@@ -10,11 +10,6 @@ LinkSourceFile(phigsmon,../cp)
 	$(MAKE) $(MFLAGS) PassCDebugFlags phigsmon
 
 LinkSourceFile(PHIGSerr.txt,../include)
-
-../include/PHIGSerr.txt: FRC
-	@cd ../include; echo "making PHIGSerr.txt in ../include..."; \
-	$(MAKE) $(MFLAGS) PassCDebugFlags PHIGSerr.txt
-
 LinkSourceFile(PHIGSfnc.txt,../include)
 
 InstallProgram(phigsmon,$(PEXAPIDIR))
