@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.15 91/06/30 17:49:57 rws Exp $
+/* $XConsortium: Atoms.c,v 1.16 93/02/08 10:44:27 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -148,10 +148,5 @@ void XmuInternStrings(d, names, count, atoms)
     register Cardinal count;
     register Atom *atoms;		/* return */
 {
-    register int i;
-
-    for (i = 0; i < count; i++) {
-	atoms[i] = XInternAtom(d, names[i], False);
-    }
-    return;
+    (void) XInternAtoms(d, (char**)names, (int)count, FALSE, atoms);
 }

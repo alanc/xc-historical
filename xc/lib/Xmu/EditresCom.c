@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditresCom.c,v 1.29 93/04/28 16:35:33 dave Exp $
+ * $XConsortium: EditresCom.c,v 1.30 93/08/16 14:36:16 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -166,14 +166,18 @@ Boolean *cont;
 	dpy = XtDisplay(w);
 
 	if (!first_time) {
+	    Atom atoms[4];
+	    static char* names[] = {
+		EDITRES_NAME, EDITRES_COMMAND_ATOM,
+		EDITRES_PROTOCOL_ATOM, EDITRES_CLIENT_VALUE };
+		
 	    first_time = TRUE;
-	    res_editor = XInternAtom(dpy, EDITRES_NAME, False);
-	    res_editor_command = XInternAtom(dpy, EDITRES_COMMAND_ATOM, False);
-	    res_editor_protocol = XInternAtom(dpy, EDITRES_PROTOCOL_ATOM,
-					      False);
-
+	    XInternAtoms(dpy, names, 4, FALSE, atoms);
+	    res_editor = atoms[0];
+	    res_editor_command = atoms[1];
+	    res_editor_protocol = atoms[2];
 	    /* Used in later procedures. */
-	    client_value = XInternAtom(dpy, EDITRES_CLIENT_VALUE, False);
+	    client_value = atoms[3];
 	    LoadResources(w);
 	}
 
