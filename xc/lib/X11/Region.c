@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.14 87/11/11 15:38:29 rws Locked $ */
+/* $Header: XRegion.c,v 11.15 87/11/11 16:31:15 rws Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -88,6 +88,22 @@ XClipBox( r, rect )
     rect->height = r->extents.y2 - r->extents.y1;
 }
 
+XUnionRectWithRegion(rect, source, dest)
+    register XRectangle *rect;
+    Region source, dest;
+{
+    REGION region;
+
+    region.rects = &region.extents;
+    region.numRects = 1;
+    region.extents.x1 = rect->x;
+    region.extents.y1 = rect->y;
+    region.extents.x2 = rect->x + rect->width;
+    region.extents.y2 = rect->y + rect->height;
+    region.size = 1;
+
+    XUnionRegion(&region, source, dest);
+}
 
 /*-
  *-----------------------------------------------------------------------
