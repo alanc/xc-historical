@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Quarks.c,v 1.34 91/03/08 18:42:25 rws Exp $
+ * $XConsortium: Quarks.c,v 1.35 91/03/09 17:45:57 rws Exp $
  */
 
 /***********************************************************
@@ -81,7 +81,10 @@ static XrmQuark nextUniq = -1;	/* next quark from XrmUniqueQuark */
 
 /* Permanent memory allocation */
 
-#define NEVERFREETABLESIZE 8180
+#define WALIGN sizeof(unsigned long)
+#define DALIGN sizeof(double)
+
+#define NEVERFREETABLESIZE ((8192-12) & ~(DALIGN-1))
 static char *neverFreeTable = NULL;
 static int  neverFreeTableSize = 0;
 
@@ -103,14 +106,6 @@ static char *permalloc(length)
     neverFreeTableSize -= length;
     return(ret);
 }
-
-#ifdef WORD64
-#define WALIGN 8
-#else
-#define WALIGN 4
-#endif
-
-#define DALIGN sizeof(double)
 
 char *Xpermalloc(length)
     unsigned int length;
