@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.4 89/05/09 09:54:10 rws Exp $
+ * $XConsortium: Xct.c,v 1.5 89/05/09 10:02:11 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -133,7 +133,7 @@ Handle94GR(data, c)
     switch (c) {
     case 0x49:
 	data->GR = "\111";
-	data->GR_encoding = "JISX0201-1983";
+	data->GR_encoding = "JISX0201-1976";
 	break;
     default:
 	return 0;
