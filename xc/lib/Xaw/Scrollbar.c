@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scrollbar.c,v 1.59 90/03/16 18:56:08 swick Exp $";
+    "$XConsortium: Scrollbar.c,v 1.60 90/04/11 17:33:49 jim Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -392,8 +392,11 @@ static void Realize( gw, valueMask, attributes )
 	? w->scrollbar.verCursor
 	: w->scrollbar.horCursor;
 
-    attributes->cursor = w->scrollbar.inactiveCursor;
-    *valueMask |= CWCursor;
+    XtVaSetValues(gw, XtNcursor, w->scrollbar.inactiveCursor, NULL);
+
+    /* 
+     * The Simple widget actually stuffs the value in the valuemask. 
+     */
     
     (*XtSuperclass(gw)->core_class.realize) (gw, valueMask, attributes);
 }
@@ -517,7 +520,7 @@ static void StartScroll( gw, event, params, num_params )
 	default:	return; /* invalid invocation */
     }
 
-    XDefineCursor(XtDisplay(w), XtWindow(w), cursor);
+    XtVaSetValues(gw, XtNcursor, cursor, NULL);
 
     XFlush(XtDisplay(w));
 }
@@ -665,8 +668,8 @@ static void EndScroll(gw, event, params, num_params )
 {
     ScrollbarWidget w = (ScrollbarWidget) gw;
 
-    XDefineCursor(XtDisplay(w), XtWindow(w), w->scrollbar.inactiveCursor);
-    XFlush(XtDisplay(w));
+    XtVaSetValues(gw, XtNcursor, w->scrollbar.inactiveCursor, NULL);
+    XFlush(XtDisplay(w));	/* make sure it get propogated. */
 
     w->scrollbar.direction = 0;
 }
