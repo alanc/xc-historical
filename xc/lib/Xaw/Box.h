@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.12 88/09/06 09:44:03 swick Exp $
+* $XConsortium: Box.h,v 1.13 88/09/06 16:40:54 jim Exp $
 */
 
 
@@ -42,15 +42,15 @@ SOFTWARE.
  ----		     -----		-------		-------------
  background	     Background		pixel		White
  border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
- hSpace 	     HSpace		int		4
- height		     Height		int		0
+ hSpace 	     HSpace		Dimension	4
+ height		     Height		Dimension	0
  mappedWhenManaged   MappedWhenManaged	Boolean		True
- vSpace 	     VSpace		int		4
- width		     Width		int		0
- x		     Position		int		0
- y		     Position		int		0
+ vSpace 	     VSpace		Dimension	4
+ width		     Width		Dimension	0
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 

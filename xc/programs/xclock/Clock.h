@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.20 88/09/06 16:41:04 jim Exp $
+* $XConsortium: Clock.h,v 1.21 88/10/09 11:39:40 rws Exp $
 */
 
 
@@ -44,21 +44,21 @@ SOFTWARE.
  background	     Background		pixel		White
  backingStore	     BackingStore	BackingStore	default
  border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ borderWidth	     BorderWidth	Dimension	1
  chime		     Boolean		Boolean		False
  destroyCallback     Callback		Pointer		NULL
  font		     Font		FontStruct*	fixed
  foreground	     Foreground		Pixel		Black
  hand		     Foreground		Pixel		Black
- height		     Height		int		164
+ height		     Height		Dimension	164
  highlight	     Foreground		Pixel		Black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
  reverseVideo	     ReverseVideo	Boolean		False
  update		     Interval		int		60 (seconds)
- width		     Width		int		164
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	164
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 

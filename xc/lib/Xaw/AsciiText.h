@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: AsciiText.h,v 1.8 88/09/06 09:43:56 swick Exp $ */
+/* $XConsortium: AsciiText.h,v 1.9 88/09/06 16:40:48 jim Exp $ */
 
 
 /***********************************************************
@@ -43,23 +43,23 @@ SOFTWARE.
  ----		     -----		-------		-------------
  background	     Background		pixel		White
  border		     BorderColor	pixel		Black
- borderWidth	     BorderWidth	int		1
+ borderWidth	     BorderWidth	Dimension	1
  destroyCallback     Callback		Pointer		NULL
  displayPosition     TextPosition	int		0
  editType	     EditType		XtTextEditType	XttextRead
  file		     File		String		NULL
- height		     Height		int		font height
+ height		     Height		Dimension	font height
  insertPosition	     TextPosition	int		0
- leftMargin	     Margin		int		2
+ leftMargin	     Margin		Dimension	2
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  selectTypes	     SelectTypes	Pointer		(internal)
  selection	     Selection		Pointer		empty selection
  sensitive	     Sensitive		Boolean		True
  string		     String		String		NULL
  textOptions	     TextOptions	int		0
- width		     Width		int		100
- x		     Position		int		0
- y		     Position		int		0
+ width		     Width		Dimension	100
+ x		     Position		Position	0
+ y		     Position		Position	0
 
 */
 
