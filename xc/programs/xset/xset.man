@@ -71,7 +71,7 @@ a font directory (after running \fImkfontdir\fP to recreate the font database).
 .PP
 .TP 8
 .B "\-fp \fRor\fP fp\-"
-This \fB\-fp\fP and \fBfp\-\fP options remove elements from the current
+The \fB\-fp\fP and \fBfp\-\fP options remove elements from the current
 font path.  They must be followed by a comma-separated list of directories.
 .PP
 .TP 8
