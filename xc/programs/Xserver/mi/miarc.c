@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.15 90/05/03 14:52:32 keith Exp $ */
+/* $XConsortium: miarc.c,v 5.16 90/08/02 13:25:52 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -266,7 +266,7 @@ miFillWideSpecialCircle(pDraw, pGC, parc)
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
     int slw;
     int inx, iny, ine, inex;
-    int inyk, inxk, inym, inxm, indx, indy, inxorg;
+    int inxk, indx, indy, inxorg;
     int inslw;
     miFillArcRec info, ininfo;
     DDXPointPtr points;
@@ -306,9 +306,6 @@ miFillWideSpecialCircle(pDraw, pGC, parc)
 	ine = ininfo.e;
 	inex = ininfo.ex;
 	inxk = ininfo.xk;
-	inxm = ininfo.xm;
-	inyk = ininfo.yk;
-	inym = ininfo.ym;
 	indx = ininfo.dx;
 	indy = ininfo.dy;
 	inxorg = ininfo.xorg;
@@ -418,7 +415,7 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     if(width == 0 && pGC->lineStyle == LineSolid)
     {
 	for(i = narcs, parc = parcs; --i >= 0; parc++)
-	    miArcSegment( pDraw, pGC, parc,
+	    miArcSegment( pDraw, pGC, *parc,
  	    (miArcFacePtr) 0, (miArcFacePtr) 0 );
 	fillSpans (pDraw, pGC);
     }
