@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.61 92/08/10 20:47:30 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.62 92/08/14 12:04:36 eswu Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -106,12 +106,11 @@ InstallProgram(chooser,$(XDMDIR))
 InstallAppDefaults(Chooser)
 #endif
 
-SpecialCObjectRule(resource, $(ICONFIGFILES), $(RES_DEFINES))
-SpecialCObjectRule(socket, $(ICONFIGFILES), $(SOCK_DEFINES))
-SpecialCObjectRule(xdmcp, $(ICONFIGFILES), $(SOCK_DEFINES))
-
-XCOMM these files depend on HASXDMAUTH
-auth.o policy.o: $(ICONFIGFILES)
+SpecialCObjectRule(auth,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(policy,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(resource,$(ICONFIGFILES),$(RES_DEFINES))
+SpecialCObjectRule(socket,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))
