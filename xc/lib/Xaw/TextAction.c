@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.16 89/10/04 17:08:36 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.17 89/10/05 13:25:39 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -112,6 +112,13 @@ TextWidget ctx;
   ctx->text.mult = 1;
 }
 
+
+#ifdef XAW_BC
+
+/*
+ * These functions are superceeded by insert-selection.
+ */
+
 static void
 StuffFromBuffer(ctx, buffer)
 TextWidget ctx;
@@ -149,6 +156,8 @@ XEvent *event;
   StuffFromBuffer(ctx, 0);
   EndAction(ctx);
 }
+
+#endif	/* XAW_BC */
 
 struct _SelectionList {
     String *params;
@@ -1394,9 +1403,11 @@ XtActionsRec textActionsTable[] = {
   {"kill-selection", 		KillCurrentSelection},
   {"kill-to-end-of-line", 	KillToEndOfLine},
   {"kill-to-end-of-paragraph", 	KillToEndOfParagraph},
+#ifdef XAW_BC
 /* unkill bindings */
   {"unkill", 			UnKill},
   {"stuff", 			Stuff},
+#endif /* XAW_BC */
 /* new line stuff */
   {"newline-and-indent", 	InsertNewLineAndIndent},
   {"newline-and-backup", 	InsertNewLineAndBackup},
