@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.18 91/07/26 15:21:52 keith Exp $ */
+/* $XConsortium: Dvi.c,v 1.19 91/10/21 14:32:14 eswu Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -190,15 +190,10 @@ static void Initialize(request, new, args, num_args)
 {
     DviWidget	dw = (DviWidget) new;
 
-    dw->dvi.current_page = 0;
-    dw->dvi.font_map = 0;
-    dw->dvi.cache.index = 0;
-    dw->dvi.file = 0;
-    dw->dvi.seek = False;
-    dw->dvi.device_resolution = 75;
     dw->dvi.tmpFile = 0;
     dw->dvi.readingTmp = 0;
     dw->dvi.ungot = 0;
+    dw->dvi.normal_GC = 0;
     dw->dvi.file_map = 0;
     dw->dvi.fonts = 0;
     dw->dvi.font_map = 0;
@@ -207,10 +202,12 @@ static void Initialize(request, new, args, num_args)
     dw->dvi.font_number = 0;
     dw->dvi.device_resolution = 0;
     dw->dvi.line_width = 0;
-    dw->dvi.backing_store = 0;
+    dw->dvi.line_style = 0;
     dw->dvi.font = 0;
     dw->dvi.display_enable = 0;
+    dw->dvi.scale = 0.0;
     dw->dvi.state = 0;
+    dw->dvi.cache.index = 0;
     dw->dvi.cache.font = 0; 
     RequestDesiredSize (dw);
 }

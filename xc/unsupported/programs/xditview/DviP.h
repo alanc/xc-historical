@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.6 91/07/25 21:34:02 keith Exp $
+ * $XConsortium: DviP.h,v 1.9 91/07/26 15:21:49 keith Exp $
  */
 
 /* 
@@ -125,10 +125,11 @@ typedef struct {
 	unsigned long	foreground;
 	int		requested_page;
 	int		last_page;
-	XFontStruct	*default_font;
 	FILE		*file;
-	Boolean		noPolyText;
 	Boolean		seek;		/* file is "seekable" */
+	XFontStruct	*default_font;
+	int		backing_store;
+	Boolean		noPolyText;
 	int		screen_resolution;
 	float		page_width;
 	float		page_height;
@@ -150,7 +151,6 @@ typedef struct {
 	int		line_style;
 	int		desired_width;
 	int		desired_height;
-	int		backing_store;
 	XFontStruct	*font;
 	int		display_enable;
 	double		scale;		/* device coordinates to pixels */
