@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XGetDflt.c,v 1.26 91/04/01 18:10:25 gildea Exp $
+ * $XConsortium: XGetDflt.c,v 1.27 91/07/09 14:54:15 rws Exp $
  */
 
 /***********************************************************
@@ -29,7 +29,9 @@ SOFTWARE.
 #include "Xlibint.h"
 #include <X11/Xos.h>
 #include <X11/Xresource.h>
+#ifndef WIN32
 #include <pwd.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 
@@ -37,9 +39,24 @@ SOFTWARE.
 extern char *getenv();
 #endif
 
-static char *GetHomeDir (dest)
+/*ARGSUSED*/
+static char *GetHomeDir (dest, destlen)
 	char *dest;
+	int destlen;
 {
+#ifdef WIN32
+	register char *ptr;
+
+	dest[0] = '\0';
+	if (ptr = getenv("HOME"))
+		(void) strcpy(dest, ptr);
+	else if (ptr = getenv("USERNAME")) {
+		(void) strcpy (dest, "\\users\\");
+		(void) strcat (dest, ptr);
+	} else
+	    (void) GetUserName(dest, destlen);
+	return dest;
+#else
 #ifndef X_NOT_POSIX
         uid_t uid;
 #else
@@ -52,11 +69,11 @@ static char *GetHomeDir (dest)
 	struct passwd *pw;
 	register char *ptr;
 
-	if((ptr = getenv("HOME")) != NULL) {
+	if (ptr = getenv("HOME")) {
 		(void) strcpy(dest, ptr);
 
 	} else {
-		if((ptr = getenv("USER")) != NULL) {
+		if (ptr = getenv("USER")) {
 			pw = getpwnam(ptr);
 		} else {
 			uid = getuid();
@@ -69,6 +86,7 @@ static char *GetHomeDir (dest)
 		}
 	}
 	return dest;
+#endif
 }
 
 
@@ -91,18 +109,16 @@ static XrmDatabase InitDefaults (dpy)
      */
 
     if (dpy->xdefaults == NULL) {
-	fname[0] = '\0';
-	(void) GetHomeDir (fname);
+	(void) GetHomeDir (fname, sizeof(fname));
 	(void) strcat (fname, "/.Xdefaults");
 	xdb = XrmGetFileDatabase (fname);
     } else {
 	xdb = XrmGetStringDatabase(dpy->xdefaults);
     }
 
-    if ((xenv = getenv ("XENVIRONMENT")) == NULL) {
+    if (!(xenv = getenv ("XENVIRONMENT"))) {
 	int len;
-	fname[0] = '\0';
-	(void) GetHomeDir (fname);
+	(void) GetHomeDir (fname, sizeof(fname));
 	(void) strcat (fname, "/.Xdefaults-");
 	len = strlen (fname);
 	(void) _XGetHostname (fname+len, BUFSIZ-len);
