@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.16 89/10/11 20:40:26 converse Exp $
+.\" $XConsortium: xmh.man,v 1.17 89/11/14 17:57:13 converse Exp $
 .TH XMH 1 "11 October 1989" "X Version 11"
 .SH NAME
 \fIxmh\fR \- X window interface to the MH message handling system.
@@ -343,7 +343,7 @@ Save this composition in your drafts folder.  (If you do not have a folder
 named ``drafts'', one will be created.)  Then you can safely close the
 composition.  At some future date, you can continue working on the
 composition by opening your drafts folder, selecting the message, and
-using the ``Use as Composition'' command.  (See BUGS).
+using the ``Use as Composition'' command.
 .PP
 .TP 8
 .B Insert
@@ -585,7 +585,9 @@ the ``Yes'' will proceed with the operation.
 A mh message sequence is just a set of messages associated with some name.
 They are local to a particular folder; two different folders can have
 sequences with the same name.  In all folders, the sequence ``all'' is
-predefined; it consists of the set of all messages in that folder.  (The
+predefined; it consists of the set of all messages in that folder.  As
+many as nine sequences may be defined for each folder, including 
+the predefined ``all'' sequence.  (The
 sequence ``cur'' is also usually defined for every folder; it consists of
 only the current message.  \fIXmh\fR hides ``cur'' from the user, instead
 placing a ``+'' by the current message.  Also, \fIxmh\fR does not support
@@ -669,6 +671,11 @@ As with all standard X applications, \fIxmh\fR may be customized through
 entries in the resource manager.  Resource class names are listed below;
 resource instance names are identical, except the first letter is in
 lower case.  The following resource manager entries are defined:
+.TP 8
+.B Banner
+A short string that is the default label of the folder, toc, and view.
+The default is "xmh    MIT X Consortium    R4".
+.PP
 .TP 8
 .B BlockEventsOnBusy
 Whether to disallow user input and show a busy cursor while \fIxmh\fP is
@@ -868,11 +875,6 @@ successive new composition.
 X(1), xrdb(1), X Toolkit, mh(1) - the mh Message Handler
 
 .SH BUGS
-
-Saving a message from the Drafts folder edited by ``Use As Composition''
-will overwrite the current message, whether or not the current message
-is the message originally selected for editing.
-
 The initial folder and initial inc folder cannot be subfolders.
 
 Exits if a message or a folder has been deleted through the \fImh\fR
@@ -890,6 +892,10 @@ Should determine by itself if the user hasn't used \fImh\fR before, and
 offer to set things up for him or her.
 
 Still a few commands missing (rename folder, remail message).
+
+A bug in mh limits the the number of characters in .mh_sequences to BUFSIZ.
+When the limit is reached, the .mh_sequences file often becomes corrupted,
+and sequence definitions may be lost.
 
 .SH COPYRIGHT
 Copyright 1988, Digital Equipment Corporation.
