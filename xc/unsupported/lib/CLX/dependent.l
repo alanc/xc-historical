@@ -727,9 +727,16 @@
 	 (if ,obtained-lock
 	     (mp::process-unlock ,lock ,curproc))))))
 
+;; Lucid has a process locking mechanism as well under release 3.0
+#+lcl3.0
+(defmacro holding-lock ((locator &optional whostate) &body body)
+  whostate ;not implemented in lcl.
+  `(lcl:with-process-lock (,locator)
+     ,@body))
+
 ;; If you're not sharing DISPLAY objects within a multi-processing
 ;; shared-memory environment, this is sufficient
-#-(or lispm excl)
+#-(or lispm excl lcl3.0)
 (defmacro holding-lock ((locator &optional whostate) &body body)
   locator whostate ;; not used
   `(progn ,@body))
@@ -750,13 +757,21 @@
 (defmacro atomic-pop (reference)
   `(process:atomic-pop ,reference))
 
+#+lcl3.0
+(defmacro atomic-push (item reference)
+  `(lcl:with-interrupts-deferred (push ,item ,reference)))
+
+#+lcl3.0
+(defmacro atomic-pop (list)
+  `(lcl:with-interrupts-deferred (pop ,list)))
+
 ;; If you don't have multi-processing or push is atomic, this is sufficient
-#-lispm
+#-(or lispm lcl3.0)
 (defmacro atomic-push (item reference)
   `(push ,item ,reference))
 
 ;; If you don't have multi-processing or pop is atomic, this is sufficient
-#-lispm
+#-(or lispm lcl3.0)
 (defmacro atomic-pop (list)
   `(pop ,list))
 
@@ -866,8 +881,7 @@
       (error "Failed to connect to server: ~A ~D" host display))
     (user::make-lisp-stream :input-handle fd
 			    :output-handle fd
-			    :element-type 'unsigned-byte
-			    :stream-type :ephemeral)))
+			    :element-type 'unsigned-byte)))
 
 #+kcl
 (defun open-x-stream (host display protocol)
