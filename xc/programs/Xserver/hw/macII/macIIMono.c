@@ -331,8 +331,8 @@ macIIBW2Probe(pScreenInfo, index, fbNum, argc, argv)
 		struct video_map vmap;
 		struct strioctl ctl; /* Streams ioctl control structure */
 
-		/* map to next 8MB segment boundary */
-		video_virtaddr = video_virtaddr + (8 * 1024 * 1024); 
+		/* map to next 32MB segment boundary */
+		video_virtaddr = video_virtaddr + (32 * 1024 * 1024); 
 	        vmap.map_physnum = 0;
         	vmap.map_virtaddr = video_virtaddr;
 
