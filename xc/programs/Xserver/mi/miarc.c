@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.10 89/09/14 19:10:56 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.11 89/10/20 09:19:36 rws Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -655,6 +655,54 @@ miArcCap (pDraw, pGC, pFace, end, xOrg, yOrg, xFtrans, yFtrans)
 			    -xOrg, -yOrg, xFtrans, yFtrans);
 		break;
 	}
+}
+
+/* MIROUNDCAP -- a private helper function
+ * Put Rounded cap on end. pCenter is the center of this end of the line
+ * pEnd is the center of the other end of the line. pCorner is one of the
+ * two corners at this end of the line.  
+ * NOTE:  pOtherCorner must be counter-clockwise from pCorner.
+ */
+/*ARGSUSED*/
+void
+miRoundCap(pDraw, pGC, pCenter, pEnd, pCorner, pOtherCorner, fLineEnd,
+     xOrg, yOrg, xFtrans, yFtrans)
+    DrawablePtr	pDraw;
+    GCPtr	pGC;
+    SppPointRec	pCenter, pEnd;
+    SppPointRec	pCorner, pOtherCorner;
+    int		fLineEnd, xOrg, yOrg;
+    double	xFtrans, yFtrans;
+{
+    int		cpt;
+    double	width;
+    double	miDatan2 ();
+    SppArcRec	arc;
+    SppPointPtr	pArcPts;
+
+    width = (pGC->lineWidth ? pGC->lineWidth : 1);
+
+    arc.x = pCenter.x - width/2;
+    arc.y = pCenter.y - width/2;
+    arc.width = width;
+    arc.height = width;
+    arc.angle1 = -miDatan2 (pCorner.y - pCenter.y, pCorner.x - pCenter.x);
+    if(PTISEQUAL(pCenter, pEnd))
+	arc.angle2 = - 180.0;
+    else {
+	arc.angle2 = -miDatan2 (pOtherCorner.y - pCenter.y, pOtherCorner.x - pCenter.x) - arc.angle1;
+	if (arc.angle2 < 0)
+	    arc.angle2 += 360.0;
+    }
+    pArcPts = (SppPointPtr) NULL;
+    if( cpt = miGetArcPts(&arc, 0, &pArcPts))
+    {
+	/* by drawing with miFillSppPoly and setting the endpoints of the arc
+	 * to be the corners, we assure that the cap will meet up with the
+	 * rest of the line */
+	miFillSppPoly(pDraw, pGC, cpt, pArcPts, -xOrg, -yOrg, xFtrans, yFtrans);
+	xfree(pArcPts);
+    }
 }
 
 /*
