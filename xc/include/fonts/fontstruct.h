@@ -197,4 +197,22 @@ extern int  InitFPETypes();
 
 #define BYTES_FOR_GLYPH(ci,pad)	(GLYPHHEIGHTPIXELS(ci) * \
 				 BYTES_PER_ROW(GLYPHWIDTHPIXELS(ci),pad))
+/*
+ * Macros for computing different bounding boxes for fonts; from
+ * the font protocol
+ */
+
+#define FONT_MAX_ASCENT(pi)	((pi)->fontAscent > (pi)->ink_maxbounds.ascent ? \
+			    (pi)->fontAscent : (pi)->ink_maxbounds.ascent)
+#define FONT_MAX_DESCENT(pi)	((pi)->fontDescent > (pi)->ink_maxbounds.descent ? \
+			    (pi)->fontDescent : (pi)->ink_maxbounds.descent)
+#define FONT_MAX_HEIGHT(pi)	(FONT_MAX_ASCENT(pi) + FONT_MAX_DESCENT(pi))
+#define FONT_MIN_LEFT(pi)	((pi)->ink_minbounds.leftSideBearing < 0 ? \
+			    (pi)->ink_minbounds.leftSideBearing : 0)
+#define FONT_MAX_RIGHT(pi)	((pi)->ink_maxbounds.rightSideBearing > \
+				(pi)->ink_maxbounds.characterWidth ? \
+			    (pi)->ink_maxbounds.rightSideBearing : \
+				(pi)->ink_maxbounds.characterWidth)
+#define FONT_MAX_WIDTH(pi)	(FONT_MAX_RIGHT(pi) - FONT_MIN_LEFT(pi))
+
 #endif				/* FONTSTR_H */
