@@ -1,10 +1,11 @@
-/* $XConsortium: Context.c,v 1.7 89/12/11 19:08:22 rws Exp $ */
+/* $XConsortium: Context.c,v 1.8 90/01/10 19:54:30 converse Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
 /***********************************************************
-Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
+Massachusetts, and the Massachusetts Institute of Technology, Cambridge,
+Massachusetts.
 
                         All Rights Reserved
 
@@ -40,13 +41,10 @@ SOFTWARE.
 
 */
 
-#include <stdio.h>
-#include "Xlib.h"
+#include "Xlibint.h"
 #include "Xutil.h"
-#include "Xlibos.h"
 
-#define INITHASHSIZE 1024 /* Number of entries originally in the hash table. */
-
+#define INITHASHMASK 63 /* Number of entries originally in the hash table. */
 
 typedef struct _TableEntryRec {	/* Stores one entry. */
     Window 			window;
@@ -59,155 +57,138 @@ typedef struct _TableEntryRec {	/* Stores one entry. */
     struct _TableEntryRec	*next;
 } TableEntryRec, *TableEntry;
 
-typedef struct _DspRec {	/* Stores hash table for one display. */
-    Display *display;		/* Which display this is a hash for. */
+typedef struct _XContextDB {	/* Stores hash table for one display. */
     TableEntry *table;		/* Pointer to array of hash entries. */
-    int size;			/* Current size of hash table. */
+    int mask;			/* Current size of hash table minus 1. */
     int numentries;		/* Number of entries currently in table. */
-    int maxentries;		/* How many entries we can take before
-				   increasing table size. */
-} DspRec, *Dsp;
+} DBRec, *DB;
 
-static Dsp *DspArray = NULL;	/* Pointer to array of display entries. */
-static int numDsp = 0;		/* How many display entries we have. */
-
-
-/* Assign dsp to be the Dsp entry that contains display. */
-
-static Dsp lastdsp = NULL;
-#define FindCorrectDsp \
-	if (lastdsp && display == lastdsp->display) dsp = lastdsp; \
-	else dsp = lastdsp = FindDsp(display);
-
+#ifdef MOTIFBUG
+static DB NullDB = (DB)0;
+#endif
 
 /* Given a Window and a context, returns a value between 0 and HashSize-1.
    Currently, this requires that HashSize be a power of 2.
 */
 
-#define HashValue(window, context, HashSize) \
-    ((((int)window << 3) + (int)context) & ((HashSize) - 1))
+#define Hash(db,window,context) \
+    (db)->table[(((window) << 1) + context) & (db)->mask]
 
+/* Resize the given db */
 
-/* Resize the given dsp to have the given number of hash buckets. */
-
-static int ResizeTable(dsp, NewSize)
-Dsp dsp;
-int NewSize;
+static void ResizeTable(db)
+    register DB db;
 {
-    TableEntry *OldHashTable;
-    register TableEntry CurEntry, NextEntry;
-    register int i, OldHashSize, CurHash;
-    OldHashTable = dsp->table;
-    OldHashSize = dsp->size;
-    dsp->table = (TableEntry *) Xcalloc((unsigned)NewSize,sizeof(TableEntry));
-    if (dsp->table == NULL) {
-	dsp->table = OldHashTable;
-	return XCNOMEM;
+    TableEntry *otable;
+    register TableEntry entry, next, *pold, *head;
+    register int i;
+
+    otable = db->table;
+    for (i = INITHASHMASK+1; (i + i) < db->numentries; )
+	i += i;
+    db->table = (TableEntry *) Xcalloc((unsigned)i, sizeof(TableEntry));
+    if (!db->table) {
+	db->table = otable;
+	return;
     }
-    dsp->size = NewSize;
-    dsp->maxentries = NewSize; /* When to next resize the hash table. */
-    if (OldHashTable != NULL) {
-	for (i=0 ; i<OldHashSize ; i++) {
-	    CurEntry = OldHashTable[i] ;
-	    while (CurEntry != NULL) {
-		(void) XDeleteContext(dsp->display,
-				       CurEntry->window, CurEntry->context);
-		NextEntry = CurEntry->next;
-		CurHash = HashValue(CurEntry->window, CurEntry->context,
-				    NewSize);
-		CurEntry->next = dsp->table[CurHash];
-		dsp->table[CurHash] = CurEntry;
-		CurEntry = NextEntry;
+    i = db->mask + 1;
+    db->mask = i - 1;
+    for (pold = otable ; --i >= 0; pold++) {
+	for (entry = *pold; entry; entry = next) {
+	    next = entry->next;
+	    head = &Hash(db, entry->window, entry->context);
+	    entry->next = *head;
+	    *head = entry;
+	}
+    }
+    Xfree((char *) otable);
+}
+
+static void _XFreeContextDB(display)
+    Display *display;
+{
+    register DB db;
+    register int i;
+    register TableEntry *pentry, entry, next;
+
+    if (db = display->context_db) {
+	for (i = db->mask + 1, pentry = db->table ; --i >= 0; pentry++) {
+	    for (entry = *pentry; entry; entry = next) {
+		next = entry->next;
+		Xfree((char *)entry);
 	    }
 	}
-	Xfree((char *) OldHashTable);
+	Xfree((char *) db->table);
+	Xfree((char *) db);
     }
-    return 0;
 }
-
-
-/* Given a display, find the corresponding dsp. */
-
-static Dsp FindDsp(display)
-Display *display;
-{
-    int i;
-    Dsp dsp;
-    for (i=0 ; i<numDsp ; i++)
-	if (DspArray[i]->display == display) return DspArray[i];
-
-    if (DspArray == NULL) {
-	if (! (DspArray = (Dsp *) Xmalloc(sizeof(Dsp))))
-	    return (Dsp) NULL;
-    }
-    else {
-	Dsp *tmp;
-	if (! (tmp = (Dsp *) Xrealloc((char *) DspArray,
-				      (unsigned) sizeof(Dsp) * (numDsp + 1))))
-	    return (Dsp) NULL;
-	DspArray = tmp;
-    }
-
-    if (! (dsp = DspArray[numDsp] = (Dsp) Xmalloc(sizeof(DspRec))))
-	return (Dsp) NULL;
-
-    numDsp++;
-    dsp->display = display;
-    dsp->table = NULL;
-    dsp->size = INITHASHSIZE / 2;
-    dsp->numentries = 0;
-    dsp->maxentries = -1;
-    if (ResizeTable(dsp, dsp->size * 2) == XCNOMEM) {
-	numDsp--;
-	Xfree((char *) dsp);
-	return (Dsp) NULL;
-    }
-    return dsp;
-}
-
-
 
 /* Public routines. */
 
 /* Save the given value of data to correspond with the keys Window and context.
-   If an entry with the given Window and context already exists, this one will 
-   override it; however, such an override has costs in time and space.  It
-   is better to call XDeleteContext first if you know the entry already exists.
    Returns nonzero error code if an error has occured, 0 otherwise.
    Possible errors are Out-of-memory.
 */   
 
 #if NeedFunctionPrototypes
 int XSaveContext(
-register Display *display,
-register Window window,
-register XContext context,
-const void* data)
+    Display *display,
+    register Window window,
+    register XContext context,
+    const void* data)
 #else
 int XSaveContext(display, window, context, data)
-register Display *display;
-register Window window;
-register XContext context;
-caddr_t data;
+    Display *display;
+    register Window window;
+    register XContext context;
+    caddr_t data;
 #endif
 {
-    register int CurHash;
-    register TableEntry CurEntry;
-    register Dsp dsp;
-    FindCorrectDsp;
-    if (dsp == NULL)
-	return XCNOMEM;
-    if (++(dsp->numentries) > dsp->maxentries) 
-	if (ResizeTable(dsp, dsp->size * 2) == XCNOMEM)
+    DB *pdb;
+    register DB db;
+    TableEntry *head;
+    register TableEntry entry;
+
+#ifdef MOTIFBUG
+    if (!display) pdb = &NullDB; else
+#endif
+    pdb = &display->context_db;
+    db = *pdb;
+    if (!db) {
+	db = (DB) Xmalloc(sizeof(DBRec));
+	if (!db)
 	    return XCNOMEM;
-    CurEntry = (TableEntry) Xmalloc(sizeof(TableEntryRec));
-    if (CurEntry == NULL) return XCNOMEM;
-    CurEntry->window = window;
-    CurEntry->context = context;
-    CurEntry->data = data;
-    CurHash = HashValue(window, context, dsp->size);
-    CurEntry->next = dsp->table[CurHash];
-    dsp->table[CurHash] = CurEntry;
+	db->mask = INITHASHMASK;
+	db->table = (TableEntry *)Xcalloc(db->mask + 1, sizeof(TableEntry));
+	if (!db->table) {
+	    Xfree((char *)db);
+	    return XCNOMEM;
+	}
+	db->numentries = 0;
+	*pdb = db;
+#ifdef MOTIFBUG
+	if (display)
+#endif
+	display->free_funcs->context_db = _XFreeContextDB;
+    }
+    head = &Hash(db, window, context);
+    for (entry = *head; entry; entry = entry->next) {
+	if (entry->window == window && entry->context == context) {
+	    entry->data = data;
+	    return 0;
+	}
+    }
+    entry = (TableEntry) Xmalloc(sizeof(TableEntryRec));
+    if (!entry)
+	return XCNOMEM;
+    entry->window = window;
+    entry->context = context;
+    entry->data = data;
+    entry->next = *head;
+    *head = entry;
+    db->numentries++;
+    if (db->numentries > (db->mask << 2))
+	ResizeTable(db);
     return 0;
 }
 
@@ -219,21 +200,24 @@ caddr_t data;
 */
 
 int XFindContext(display, window, context, data)
-register Display *display;
-register Window window;
-register XContext context;
-caddr_t *data;			/* RETURN */
+    Display *display;
+    register Window window;
+    register XContext context;
+    caddr_t *data;		/* RETURN */
 {
-    register TableEntry CurEntry;
-    register Dsp dsp;
-    FindCorrectDsp;
-    if (dsp == NULL) return XCNOENT;
-    for (CurEntry = dsp->table[HashValue(window, context, dsp->size)];
-	 CurEntry != NULL;
-	 CurEntry = CurEntry->next)
+    register DB db;
+    register TableEntry entry;
+
+#ifdef MOTIFBUG
+    if (!display) db = NullDB; else
+#endif
+    db = display->context_db;
+    if (!db)
+	return XCNOENT;
+    for (entry = Hash(db, window, context); entry; entry = entry->next)
     {
-	if (CurEntry->window == window && CurEntry->context == context) {
-	    *data = (caddr_t)(CurEntry->data);
+	if (entry->window == window && entry->context == context) {
+	    *data = (caddr_t)entry->data;
 	    return 0;
 	}
     }
@@ -242,43 +226,36 @@ caddr_t *data;			/* RETURN */
 
 
 
-/* Deletes all entries for the given window and context from the datastructure.
+/* Deletes the entry for the given window and context from the datastructure.
    This returns the same thing that FindContext would have returned if called
    with the same arguments.
 */
 
 int XDeleteContext(display, window, context)
-register Display *display;
-register Window window;
-register XContext context;
+    Display *display;
+    register Window window;
+    register XContext context;
 {
-    register int CurHash;
-    int Result;
-    register TableEntry CurEntry, PrevEntry, NextEntry;
-    register Dsp dsp;
+    register DB db;
+    register TableEntry entry, *prev;
 
-    FindCorrectDsp;
-    if (dsp == NULL) return XCNOENT;
-    Result = XCNOENT;
-    CurHash = HashValue(window, context, dsp->size);
-    PrevEntry = NULL;
-    CurEntry = dsp->table[CurHash];
-    while (CurEntry != NULL) {
-	if (CurEntry->window == window && CurEntry->context == context) {
-	    dsp->numentries--;
-	    Result = 0;
-	    NextEntry = CurEntry->next;
-	    if (PrevEntry == NULL) {
-		dsp->table[CurHash] = NextEntry;
-	    } else {
-		PrevEntry->next = NextEntry;
-	    }
-	    Xfree((char *) CurEntry);
-	    CurEntry = NextEntry;
-	} else {
-	    PrevEntry = CurEntry;
-	    CurEntry = CurEntry->next;
+#ifdef MOTIFBUG
+    if (!display) db = NullDB; else
+#endif
+    db = display->context_db;
+    if (!db)
+	return XCNOENT;
+    for (prev = &Hash(db, window, context);
+	 entry = *prev;
+	 prev = &entry->next) {
+	if (entry->window == window && entry->context == context) {
+	    *prev = entry->next;
+	    Xfree((char *) entry);
+	    db->numentries--;
+	    if (db->numentries < db->mask && db->mask > INITHASHMASK)
+		ResizeTable(db);
+	    return 0;
 	}
     }
-    return Result;
+    return XCNOENT;
 }
