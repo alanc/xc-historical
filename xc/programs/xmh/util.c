@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.37 89/12/10 20:20:47 converse Exp $
+ * $XConsortium: util.c,v 2.38 91/04/02 19:28:41 gildea Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -33,8 +33,9 @@
 #include <ctype.h>
 #include <X11/cursorfont.h>
 
+#ifndef abs
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
-
+#endif
 
 static char *SysErrorMsg (n)
     int n;
