@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.124 90/12/26 16:43:24 rws Exp $ */
+/* $XConsortium: Event.c,v 1.125 90/12/30 12:40:51 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -554,6 +554,7 @@ static Boolean DispatchEvent(event, widget, mask, pd)
     register XtEventRec *p;   
     XEvent nextEvent;
     Boolean was_dispatched = False;
+    Boolean call_tm = False;
 
     if ( (mask == ExposureMask) ||
 	 ((event->type == NoExpose) && NO_EXPOSE) ||
@@ -625,6 +626,10 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	    }
 	}
 
+    /* to maintain "copy" semantics we check TM now but call later */
+    if (widget->core.tm.translations &&
+	(mask & widget->core.tm.translations->eventMask))
+	call_tm = True;
     p=widget->core.event_table;
     if (p) {
 	if (p->next) {
@@ -635,13 +640,9 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	    was_dispatched = True;
 	}
     }
-
-    if (widget->core.tm.translations &&
-	(mask & widget->core.tm.translations->eventMask)) {
+    if (call_tm)
 	_XtTranslateEvent(widget, event);
-	was_dispatched = True;
-    }
-    return (was_dispatched);
+    return (was_dispatched|call_tm);
 }
 
 /*
