@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.16 88/08/22 17:48:49 jim Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.17 88/09/06 17:23:12 jim Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -140,15 +140,12 @@ DoCommand(argv, inputfile, outputfile)
     if (pid) {			/* We're the parent process. */
 	while (!childdone) {
 	    XEvent event;
+	    while (XCheckTypedEvent( theDisplay, Expose, &event )) {
+		XtDispatchEvent( &event );
+	    }
 	    readfds = fds;
 	    (void) select(ConnectionNumber(theDisplay)+1, (int *) &readfds,
 			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
-	    if (FD_ISSET(ConnectionNumber(theDisplay), &readfds)) {
-		(void) XPending(theDisplay);
-		while (XCheckTypedEvent( theDisplay, Expose, &event )) {
-		    XtDispatchEvent( &event );
-		}
-	    }
 	}
 #ifdef SYSV
 	(void) wait((int *) NULL);
