@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: utils.c,v 1.31 87/08/26 23:57:57 toddb Exp $ */
+/* $Header: utils.c,v 1.32 87/09/07 13:03:20 rws Locked $ */
 #include <stdio.h>
 #include <sys/time.h>
 #include "misc.h"
@@ -326,10 +326,11 @@ int amount;
         {
 	    ErrorF("Xrealloc: trying to free static storage\n");
 	    /* Force a core dump */
-	    abort();
+	    AbortServer();
 	}
 #ifdef DEBUG
-	CheckNode(ptr - 8);
+	if (!CheckNode(ptr - 8))
+	    AbortServer();
 	ptr = (pointer) realloc ((ptr - 8), (unsigned) amount + 12);
 #else
         ptr = (pointer) realloc (ptr, amount);
@@ -370,19 +371,21 @@ Xfree(ptr)
     if (ptr == (pointer) NULL)
 	return;
 #ifdef DEBUG
-    CheckNode(ptr - 8);
     if (ptr < (pointer) minfree)
-	FatalError("Xfree: trying to free static storage\n");
-    *(unsigned long *)(ptr - 8) = FREEDMAGIC;
-    free(ptr - 8); 
+	ErrorF("Xfree: trying to free static storage\n");
+    else if (CheckNode(ptr - 8))
+    {
+        *(unsigned long *)(ptr - 8) = FREEDMAGIC;
+	free(ptr - 8); 
+    }
 #else
-    if (ptr < (pointer) minfree)
-	FatalError("Xfree: trying to free static storage\n");
-    free(ptr); 
+    if (ptr >= (pointer) minfree)
+        free(ptr); 
 #endif /* DEBUG */
 }
 
 #ifdef DEBUG
+static Bool
 CheckNode(ptr)
     pointer ptr;
 {
@@ -390,10 +393,14 @@ CheckNode(ptr)
 
     amount = *((unsigned long *)(ptr + 4));
     if (*((unsigned long *) ptr) == FREEDMAGIC)
-        FatalError("Freeing something already freed!\n");
+    {
+        ErrorF("Freeing something already freed!\n");
+	return FALSE;
+    }
     if( *((unsigned long *) ptr) != FIRSTMAGIC ||
         *((unsigned long *) (ptr + amount + 8)) != SECONDMAGIC)
 	FatalError("Heap bug!\n");
+    return TRUE;
 }
 #endif /* DEBUG */
 #endif /* ibm032 */
