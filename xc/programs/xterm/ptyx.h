@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.15 88/10/05 12:04:39 swick Exp $
+ *	$XConsortium: ptyx.h,v 1.16 88/10/06 09:09:56 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -47,6 +47,7 @@
 
 
 #define Max(i, j)       ((i) > (j) ? (i) : (j))
+#define Min(i, j)       ((i) < (j) ? (i) : (j))
 
 #define MAX_COLS	200
 #define MAX_ROWS	128
