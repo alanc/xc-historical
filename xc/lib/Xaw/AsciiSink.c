@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.49 89/12/14 19:15:55 converse Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.50 90/04/26 15:22:49 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -548,8 +548,8 @@ Widget current, request, new;
     AsciiSinkObject old_w = (AsciiSinkObject) current;
 
     if (w->text_sink.font != old_w->text_sink.font) {
-	XtReleaseGC(w, w->ascii_sink.normgc);
-	XtReleaseGC(w, w->ascii_sink.invgc);
+	XtReleaseGC((Widget)w, w->ascii_sink.normgc);
+	XtReleaseGC((Widget)w, w->ascii_sink.invgc);
 	GetGC(w);
 	((TextWidget)XtParent(new))->text.redisplay_needed = True;
     } else {
