@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.69 91/04/09 17:08:57 converse Exp $ */
+/* $XConsortium: Converters.c,v 1.70 91/04/19 11:35:42 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -29,7 +29,6 @@ SOFTWARE.
 
 #include	"IntrinsicI.h"
 #include	"StringDefs.h"
-#include	"Quarks.h"
 #include	<stdio.h>
 #include        <X11/cursorfont.h>
 #include	<X11/keysym.h>
@@ -44,6 +43,61 @@ SOFTWARE.
 static Const String XtNwrongParameters = "wrongParameters";
 static Const String XtNconversionError = "conversionError";
 static Const String XtNmissingCharsetList = "missingCharsetList";
+
+static XrmQuark  XtQAtom;
+static XrmQuark  XtQBoolean;
+static XrmQuark  XtQBool;
+static XrmQuark  XtQColor;
+static XrmQuark  XtQCursor;
+static XrmQuark  XtQDisplay;
+static XrmQuark  XtQDimension;
+static XrmQuark  XtQFile;
+static XrmQuark  XtQFloat;
+static XrmQuark  XtQFont;
+static XrmQuark  XtQFontSet;
+static XrmQuark  XtQFontStruct;
+static XrmQuark  XtQGeometry;
+static XrmQuark  XtQInitialState;
+static XrmQuark  XtQInt;
+static XrmQuark  XtQPixel;
+static XrmQuark  XtQPixmap;
+static XrmQuark  XtQPointer;	/* unused */
+static XrmQuark  XtQPosition;
+static XrmQuark  XtQShort;
+XrmQuark  XtQString;
+static XrmQuark  XtQUnsignedChar;
+static XrmQuark  XtQVisual;
+static XrmQuark  XtQWindow;	/* unused */
+
+void _XtConvertInitialize()
+{
+/* Representation types */
+
+    XtQAtom		= XrmPermStringToQuark(XtRAtom);
+    XtQBoolean		= XrmPermStringToQuark(XtRBoolean);
+    XtQColor		= XrmPermStringToQuark(XtRColor);
+    XtQCursor		= XrmPermStringToQuark(XtRCursor);
+    XtQDimension	= XrmPermStringToQuark(XtRDimension);
+    XtQDisplay		= XrmPermStringToQuark(XtRDisplay);
+    XtQFile		= XrmPermStringToQuark(XtRFile);
+    XtQFloat		= XrmPermStringToQuark(XtRFloat);
+    XtQFont		= XrmPermStringToQuark(XtRFont);
+    XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
+    XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
+    XtQGeometry		= XrmPermStringToQuark(XtRGeometry);
+    XtQInitialState     = XrmPermStringToQuark(XtRInitialState);
+    XtQInt		= XrmPermStringToQuark(XtRInt);
+    XtQBool		= XrmPermStringToQuark(XtRBool);
+    XtQPixel		= XrmPermStringToQuark(XtRPixel);
+    XtQPixmap		= XrmPermStringToQuark(XtRPixmap);
+    XtQPointer		= XrmPermStringToQuark(XtRPointer);
+    XtQPosition		= XrmPermStringToQuark(XtRPosition);
+    XtQShort            = XrmPermStringToQuark(XtRShort);
+    XtQString		= XrmPermStringToQuark(XtRString);
+    XtQUnsignedChar     = XrmPermStringToQuark(XtRUnsignedChar);
+    XtQVisual	        = XrmPermStringToQuark(XtRVisual);
+    XtQWindow		= XrmPermStringToQuark(XtRWindow);
+}
 
 #define	done(type, value) \
 	{							\
@@ -1356,61 +1410,6 @@ CvtStringToAtom(dpy, args, num_args, fromVal, toVal, closure_ret)
     done(Atom, atom);
 }
 
-
-XrmQuark  XtQAtom;
-XrmQuark  XtQBoolean;
-XrmQuark  XtQBool;
-XrmQuark  XtQColor;
-XrmQuark  XtQCursor;
-XrmQuark  XtQDisplay;
-XrmQuark  XtQDimension;
-XrmQuark  XtQFile;
-XrmQuark  XtQFloat;
-XrmQuark  XtQFont;
-XrmQuark  XtQFontSet;
-XrmQuark  XtQFontStruct;
-XrmQuark  XtQGeometry;
-XrmQuark  XtQInitialState;
-XrmQuark  XtQInt;
-XrmQuark  XtQPixel;
-XrmQuark  XtQPixmap;
-XrmQuark  XtQPointer;
-XrmQuark  XtQPosition;
-XrmQuark  XtQShort;
-XrmQuark  XtQString;
-XrmQuark  XtQUnsignedChar;
-XrmQuark  XtQVisual;
-XrmQuark  XtQWindow;
-
-void _XtConvertInitialize()
-{
-/* Representation types */
-
-    XtQAtom		= XrmPermStringToQuark(XtRAtom);
-    XtQBoolean		= XrmPermStringToQuark(XtRBoolean);
-    XtQColor		= XrmPermStringToQuark(XtRColor);
-    XtQCursor		= XrmPermStringToQuark(XtRCursor);
-    XtQDimension	= XrmPermStringToQuark(XtRDimension);
-    XtQDisplay		= XrmPermStringToQuark(XtRDisplay);
-    XtQFile		= XrmPermStringToQuark(XtRFile);
-    XtQFloat		= XrmPermStringToQuark(XtRFloat);
-    XtQFont		= XrmPermStringToQuark(XtRFont);
-    XtQFontSet		= XrmPermStringToQuark(XtRFontSet);
-    XtQFontStruct	= XrmPermStringToQuark(XtRFontStruct);
-    XtQGeometry		= XrmPermStringToQuark(XtRGeometry);
-    XtQInitialState     = XrmPermStringToQuark(XtRInitialState);
-    XtQInt		= XrmPermStringToQuark(XtRInt);
-    XtQBool		= XrmPermStringToQuark(XtRBool);
-    XtQPixel		= XrmPermStringToQuark(XtRPixel);
-    XtQPixmap		= XrmPermStringToQuark(XtRPixmap);
-    XtQPointer		= XrmPermStringToQuark(XtRPointer);
-    XtQPosition		= XrmPermStringToQuark(XtRPosition);
-    XtQShort            = XrmPermStringToQuark(XtRShort);
-    XtQString		= XrmPermStringToQuark(XtRString);
-    XtQUnsignedChar     = XrmPermStringToQuark(XtRUnsignedChar);
-    XtQVisual	        = XrmPermStringToQuark(XtRVisual);
-    XtQWindow		= XrmPermStringToQuark(XtRWindow);
-}
 
 _XtAddDefaultConverters(table)
     ConverterTable table;
