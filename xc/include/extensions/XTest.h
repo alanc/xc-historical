@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.h,v 1.0 91/04/16 15:03:32 rws Exp $ */
+/* $XConsortium: XTest.h,v 1.1 92/01/25 16:33:27 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -44,6 +44,34 @@ Bool XTestCompareCurrentCursorWithWindow(
 #if NeedFunctionPrototypes
     Display*		/* dpy */,
     Window		/* window */
+#endif
+);
+
+extern XTestFakeKeyEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    unsigned int	/* keycode */,
+    Bool		/* is_press */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeButtonEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    unsigned int	/* button */,
+    Bool		/* is_press */,
+    unsigned long	/* delay */
+#endif
+);
+
+extern XTestFakeMotionEvent(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int			/* x */,
+    int			/* y */,
+    unsigned long	/* delay */
 #endif
 );
 
