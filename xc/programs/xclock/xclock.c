@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.37 94/03/30 20:37:59 converse Exp $ */
+/* $XConsortium: xclock.c,v 1.38 94/04/17 20:23:54 converse Exp converse $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
@@ -119,7 +119,7 @@ void main(argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, session;
+    Widget toplevel;
     Arg arg;
     Pixmap icon_pixmap = None;
     XtAppContext app_con;
