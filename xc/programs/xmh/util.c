@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.11 88/01/08 11:28:53 swick Locked $";
+static char rcs_id[] = "$Header: util.c,v 2.11 88/01/08 11:28:53 swick Locked $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -41,7 +41,13 @@ Punt(str)
     extern void abort();
     (void) fprintf(stderr, "%s\nerrno = %d\007\n", str, errno);
     (void) fflush(stderr);
-    abort();
+    if (debug)
+	abort();
+    else {
+	(void)fprintf(stderr, "exiting.\n");
+	(void)fflush(stderr);
+	_exit(-1);
+    }
 }
 
 
