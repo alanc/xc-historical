@@ -362,7 +362,9 @@ static void Redisplay(gw, event, region)
  * routines to draw the hands and jewel
  */
 
+#ifndef PI	/* may be found in <math.h> */
 # define PI (3.14159265358979323846)
+#endif
 
 /*
  * converts a number from 0..1 representing a clockwise radial distance
