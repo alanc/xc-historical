@@ -1,4 +1,4 @@
-/* $XConsortium: List.c,v 1.30 90/12/31 11:10:46 gildea Exp $ */
+/* $XConsortium: List.c,v 1.31 91/02/19 16:03:00 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -373,6 +373,7 @@ int *item;
  *	Returns: none.
  */
 
+static void
 FindCornerItems(w, event, ul_ret, lr_ret)
 Widget w;
 XEvent * event;
@@ -395,7 +396,8 @@ int *ul_ret, *lr_ret;
  *                 item - item to check.
  *	Returns: TRUE if the item passed is in the given rectangle.
  */
-    
+
+static Boolean
 ItemInRectangle(w, ul, lr, item)
 Widget w;
 int ul, lr, item;
@@ -426,6 +428,7 @@ int ul, lr, item;
  *	Returns: 
  */
 
+static void
 HighlightBackground(w, x, y, item, gc)
 Widget w;
 int x, y, item;
@@ -452,6 +455,7 @@ GC gc;
  *      NOTE: no action taken on an unrealized widget.
  */
 
+static void
 PaintItemName(w, item)
 Widget w;
 int item;
