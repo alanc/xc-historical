@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.3 91/04/27 17:55:12 keith Exp $ */
+/* $XConsortium: property.c,v 5.4 91/05/09 14:50:16 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -151,11 +151,9 @@ ProcChangeProperty(client)
     WindowPtr pWin;
     char format, mode;
     unsigned long len;
-    PropertyPtr pProp;
-    xEvent event;
     int sizeInBytes;
     int totalSize;
-    pointer data;
+    int err;
     REQUEST(xChangePropertyReq);
 
     REQUEST_AT_LEAST_SIZE(xChangePropertyReq);
@@ -192,12 +190,38 @@ ProcChangeProperty(client)
 	return(BadAtom);
     }
 
+    err = ChangeWindowProperty(pWin, stuff->property, stuff->type, (int)format,
+			       (int)mode, len, (pointer)&stuff[1], TRUE);
+    if (err != Success)
+	return err;
+    else
+	return client->noClientException;
+}
+
+int
+ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
+    WindowPtr	pWin;
+    Atom	property, type;
+    int		format, mode;
+    unsigned long len;
+    pointer	value;
+    Bool	sendevent;
+{
+    PropertyPtr pProp;
+    xEvent event;
+    int sizeInBytes;
+    int totalSize;
+    pointer data;
+
+    sizeInBytes = format>>3;
+    totalSize = len * sizeInBytes;
+
     /* first see if property already exists */
 
     pProp = wUserProps (pWin);
     while (pProp)
     {
-	if (pProp->propertyName ==stuff->property) 
+	if (pProp->propertyName == property)
 	    break;
 	pProp = pProp->next;
     }
@@ -214,19 +238,18 @@ ProcChangeProperty(client)
 	    xfree(pProp);
 	    return(BadAlloc);
 	}
-        pProp->propertyName = stuff->property;
-        pProp->type = stuff->type;
+        pProp->propertyName = property;
+        pProp->type = type;
         pProp->format = format;
         pProp->data = data;
 	if (len)
-	    bcopy((char *)&stuff[1], (char *)data, totalSize);
+	    bcopy((char *)value, (char *)data, totalSize);
 	pProp->size = len;
         pProp->next = pWin->optional->userProps;
         pWin->optional->userProps = pProp;
     }
     else
     {
-    
 	/* To append or prepend to a property the request format and type
 		must match those of the already defined property.  The
 		existing format and type are irrelevant when using the mode
@@ -234,7 +257,7 @@ ProcChangeProperty(client)
 
         if ((format != pProp->format) && (mode != PropModeReplace))
 	    return(BadMatch);
-        if ((pProp->type != stuff->type) && (mode != PropModeReplace))
+        if ((pProp->type != type) && (mode != PropModeReplace))
             return(BadMatch);
         if (mode == PropModeReplace) 
         {
@@ -246,10 +269,10 @@ ProcChangeProperty(client)
             	pProp->data = data;
 	    }
 	    if (len)
-		bcopy((char *)&stuff[1], (char *)pProp->data, totalSize);
+		bcopy((char *)value, (char *)pProp->data, totalSize);
 	    pProp->size = len;
-    	    pProp->type = stuff->type;
-	    pProp->format = stuff->format;
+    	    pProp->type = type;
+	    pProp->format = format;
 	}
 	else if (len == 0)
 	{
@@ -262,7 +285,7 @@ ProcChangeProperty(client)
 	    if (!data)
 		return(BadAlloc);
             pProp->data = data;
-	    bcopy((char *)&stuff[1],
+	    bcopy((char *)value,
 		  &((char *)data)[pProp->size * sizeInBytes], 
 		  totalSize);
             pProp->size += len;
@@ -274,7 +297,7 @@ ProcChangeProperty(client)
 		return(BadAlloc);
 	    bcopy((char *)pProp->data, &((char *)data)[totalSize], 
 		  (int)(pProp->size * sizeInBytes));
-            bcopy((char *)&stuff[1], (char *)data, totalSize);
+            bcopy((char *)value, (char *)data, totalSize);
 	    xfree(pProp->data);
             pProp->data = data;
             pProp->size += len;
@@ -287,7 +310,7 @@ ProcChangeProperty(client)
     event.u.property.time = currentTime.milliseconds;
     DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 
-    return(client->noClientException);
+    return(Success);
 }
 
 DeleteProperty(pWin, propName)
