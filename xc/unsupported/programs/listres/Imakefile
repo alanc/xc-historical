@@ -1,20 +1,20 @@
 DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 SYS_LIBRARIES = -lm
-SRCS = listres.c util.c 
-OBJS = listres.o util.o 
+SRCS = listres.c util.c widgets.c 
+OBJS = listres.o util.o widgets.o 
 HEADERS = $(AWIDGETSRC)\/*.h $(TOOLKITSRC)\/*.h
 
 AllTarget(listres)
 
-depend:: widgets.h
+depend:: widgets.c
 
 clean:: 
-	$(RM) widgets.h
+	$(RM) widgets.c
 
 ComplexProgramTarget(listres)
 InstallAppDefaults(Listres)
 
-widgets.h: genlist.sh
+widgets.c: genlist.sh
 	$(RM) $@
 	sh genlist.sh $(HEADERS) >$@
