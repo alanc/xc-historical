@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.29 88/12/20 10:40:02 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.30 88/12/20 16:34:04 swick Exp $";
 #endif lint
 
 
@@ -413,60 +413,56 @@ static void Resize(widget)
 	    XtWidgetGeometry preferred;
 	    Dimension prev_width, prev_height;
 	    intended.request_mode = CWWidth | CWHeight | CWBorderWidth;
-	    preferred.width = child->core.width;
-	    preferred.height = child->core.height;
 	    intended.width =
-		(!w->viewport.allowhoriz || preferred.width < clip_width)
+		(!w->viewport.allowhoriz || child->core.width < clip_width)
 		    ? clip_width
-		    : preferred.width;
+		    : child->core.width;
 	    intended.height =
-		(!w->viewport.allowvert || preferred.height < clip_height)
+		(!w->viewport.allowvert || child->core.height < clip_height)
 		    ? clip_height
-		    : preferred.height;
+		    : child->core.height;
 	    intended.border_width = 0;
 	    do { /* while intended != prev  */
-		Boolean clip_changed;
 		XtQueryGeometry( child, &intended, &preferred );
 		prev_width = intended.width;
 		prev_height = intended.height;
-		do { /* while (clip_changed) [at most three times] */
-		    clip_changed = False;
-		    /*
-		     * note that having once decided to turn on scrollbars
-		     * we'll not change our mind until we're next resized,
-		     * thus avoiding potential oscillations.
-		     */
-		    if (w->viewport.allowhoriz
-			&& !needshoriz
-			&& preferred.width > clip_width)
-		    {
-			needshoriz = True;
-			if (w->viewport.horiz_bar == (Widget)NULL)
-			    CreateScrollbar(w, True);
-			clip_height -= w->viewport.horiz_bar->core.height
-				    + w->viewport.horiz_bar->core.border_width;
-			if (clip_height < 1) clip_height = 1;
-			intended.width = preferred.width;
-			clip_changed = True;
-		    }
-		    if (w->viewport.allowvert
-			&& !needsvert
-			&& preferred.height > clip_height)
-		    {
-			needsvert = True;
-			if (w->viewport.vert_bar == (Widget)NULL)
-			    CreateScrollbar(w, False);
-			clip_width -= w->viewport.vert_bar->core.width
-				     + w->viewport.vert_bar->core.border_width;
-			if (clip_width < 1) clip_width = 1;
-			intended.height = preferred.height;
-			clip_changed = True;
-		    }
+		/*
+		 * note that having once decided to turn on either bar
+		 * we'll not change our mind until we're next resized,
+		 * thus avoiding potential oscillations.
+		 */
+#define CheckHoriz()							\
+		if (w->viewport.allowhoriz				\
+		    && !needshoriz					\
+		    && preferred.width > clip_width)			\
+		{							\
+		    needshoriz = True;					\
+		    if (w->viewport.horiz_bar == (Widget)NULL)		\
+			CreateScrollbar(w, True);			\
+		    clip_height -= w->viewport.horiz_bar->core.height	\
+			    + w->viewport.horiz_bar->core.border_width;	\
+		    if (clip_height < 1) clip_height = 1;		\
+		    intended.width = preferred.width;			\
+		}
+/*enddef*/
+		CheckHoriz();
+		if (w->viewport.allowvert
+		    && !needsvert
+		    && preferred.height > clip_height)
+		{
+		    needsvert = True;
+		    if (w->viewport.vert_bar == (Widget)NULL)
+			CreateScrollbar(w, False);
+		    clip_width -= w->viewport.vert_bar->core.width
+				  + w->viewport.vert_bar->core.border_width;
+		    if (clip_width < 1) clip_width = 1;
+		    intended.height = preferred.height;
+		    CheckHoriz();
+		}
 		if (!w->viewport.allowhoriz || preferred.width < clip_width)
 		    intended.width = clip_width;
 		if (!w->viewport.allowvert || preferred.height < clip_height)
 		    intended.height = clip_height;
-		} while (clip_changed);
 	    } while (intended.width != prev_width || intended.height != prev_height);
 	}
     }
