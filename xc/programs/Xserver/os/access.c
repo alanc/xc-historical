@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: access.c,v 1.40 89/10/03 16:43:48 keith Exp $ */
+/* $XConsortium: access.c,v 1.41 89/10/10 14:21:09 jim Exp $ */
 
 #include "Xos.h"
 #include "X.h"
@@ -83,7 +83,7 @@ typedef struct _host {
 static HOST *selfhosts = NULL;
 static HOST *validhosts = NULL;
 static int AccessEnabled = DEFAULT_ACCESS_CONTROL;
-static int LocalHostEnabled = TRUE;
+static int LocalHostEnabled = FALSE;
 static int UsingXdmcp = FALSE;
 
 typedef struct {
@@ -103,19 +103,17 @@ static FamilyMap familyMap[] = {
 };
 
 /*
- * called when authorization is enabled, to remove the
- * local host from the access list
+ * called when authorization is not enabled to add the
+ * local host to the access list
  */
-
-DisableLocalHost ()
-{
-    LocalHostEnabled = FALSE;
-}
 
 EnableLocalHost ()
 {
     if (!UsingXdmcp)
+    {
 	LocalHostEnabled = TRUE;
+	AddLocalHosts ();
+    }
 }
 
 /*
@@ -315,13 +313,12 @@ ResetHosts (display)
     register struct hostent *hp;
 
     AccessEnabled = DEFAULT_ACCESS_CONTROL;
+    LocalHostEnabled = FALSE;
     while (host = validhosts)
     {
         validhosts = host->next;
         xfree (host);
     }
-    if (LocalHostEnabled)
-	AddLocalHosts ();
     strcpy (fname, "/etc/X");
     strcat (fname, display);
     strcat (fname, ".hosts");
@@ -646,6 +643,9 @@ InvalidHost (saddr, len)
     int 			family;
     pointer			addr;
     register HOST 		*selfhost, *host;
+
+    if (!AccessEnabled)   /* just let them in */
+        return(0);    
     if ((family = ConvertAddr (saddr, &len, &addr)) < 0)
         return (1);
     if (family == 0)
@@ -669,8 +669,6 @@ InvalidHost (saddr, len)
 	} else
 	    return (0);
     }
-    if (!AccessEnabled)   /* just let them in */
-        return(0);    
     for (host = validhosts; host; host = host->next)
     {
         if (addrEqual (family, addr, len, host))
