@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.50 89/01/03 08:31:00 rws Exp $ */
+/* $XConsortium: io.c,v 1.51 89/01/16 14:00:26 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -97,8 +97,6 @@ extern int errno;
  *    a partial request) because others clients need to be scheduled.
  *****************************************************************/
 
-ConnectionInput inputBuffers[MAXSOCKS];    /* buffers for clients */
-
 #define YieldControl()				\
         { isItTimeToYield = TRUE;		\
 	  timesThisConnection = 0; }
@@ -116,23 +114,21 @@ ReadRequestFromClient(client, status, oldbuf)
     int *status;          /* read at least n from client */
     char *oldbuf;
 {
-    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    register OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int fd = oc->fd;
     int result, gotnow, needed;
-    register ConnectionInput *pBuff;
     register xReq *request;
 
     /* ignore oldbuf, just assume we're done with prev. buffer */
 
-    pBuff = &inputBuffers[fd];
-    pBuff->bufptr += pBuff->lenLastReq;
+    oc->input.bufptr += oc->input.lenLastReq;
 
-    request = (xReq *)pBuff->bufptr;
-    gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
+    request = (xReq *)oc->input.bufptr;
+    gotnow = oc->input.bufcnt + oc->input.buffer - oc->input.bufptr;
     if ((gotnow < sizeof(xReq)) ||
 	(gotnow < (needed = request_length(request, client))))
     {
-	pBuff->lenLastReq = 0;
+	oc->input.lenLastReq = 0;
 	if ((gotnow < sizeof(xReq)) || (needed == 0))
 	   needed = sizeof(xReq);
 	else if (needed > MAXBUFSIZE)
@@ -141,20 +137,21 @@ ReadRequestFromClient(client, status, oldbuf)
 	    YieldControlAndReturnNull();
 	}
 	if ((gotnow == 0) ||
-	    ((pBuff->bufptr - pBuff->buffer + needed) > pBuff->size))
+	    ((oc->input.bufptr - oc->input.buffer + needed) > oc->input.size))
 	{
-	    if ((gotnow > 0) && (pBuff->bufptr != pBuff->buffer))
-		bcopy(pBuff->bufptr, pBuff->buffer, gotnow);
-	    if (needed > pBuff->size)
+	    if ((gotnow > 0) && (oc->input.bufptr != oc->input.buffer))
+		bcopy(oc->input.bufptr, oc->input.buffer, gotnow);
+	    if (needed > oc->input.size)
 	    {
-		pBuff->size = needed;
-		pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
+		oc->input.size = needed;
+		oc->input.buffer = (char *)xrealloc(oc->input.buffer,
+						    oc->input.size);
 	    }
-	    pBuff->bufptr = pBuff->buffer;
-	    pBuff->bufcnt = gotnow;
+	    oc->input.bufptr = oc->input.buffer;
+	    oc->input.bufcnt = gotnow;
 	}
-	result = read(fd, pBuff->buffer + pBuff->bufcnt, 
-		      pBuff->size - pBuff->bufcnt); 
+	result = read(fd, oc->input.buffer + oc->input.bufcnt, 
+		      oc->input.size - oc->input.bufcnt); 
 	if (result <= 0)
 	{
 	    if ((result < 0) && (errno == EWOULDBLOCK))
@@ -163,17 +160,18 @@ ReadRequestFromClient(client, status, oldbuf)
 		*status = -1;
 	    YieldControlAndReturnNull();
 	}
-	pBuff->bufcnt += result;
+	oc->input.bufcnt += result;
 	gotnow += result;
 	/* free up some space after huge requests */
-	if ((pBuff->size > BUFWATERMARK) &&
-	    (pBuff->bufcnt < BUFSIZE) && (needed < BUFSIZE))
+	if ((oc->input.size > BUFWATERMARK) &&
+	    (oc->input.bufcnt < BUFSIZE) && (needed < BUFSIZE))
 	{
-	    pBuff->size = BUFSIZE;
-	    pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
-	    pBuff->bufptr = pBuff->buffer + pBuff->bufcnt - gotnow;
+	    oc->input.size = BUFSIZE;
+	    oc->input.buffer = (char *)xrealloc(oc->input.buffer,
+						oc->input.size);
+	    oc->input.bufptr = oc->input.buffer + oc->input.bufcnt - gotnow;
 	}
-	request = (xReq *)pBuff->bufptr;
+	request = (xReq *)oc->input.bufptr;
 	if ((gotnow < sizeof(xReq)) ||
 	    (gotnow < (needed = request_length(request, client))))
 	{
@@ -182,7 +180,7 @@ ReadRequestFromClient(client, status, oldbuf)
 	}
     }
     *status = needed;
-    pBuff->lenLastReq = needed;
+    oc->input.lenLastReq = needed;
 
     /*
      *  Check to see if client has at least one whole request in the
@@ -193,7 +191,7 @@ ReadRequestFromClient(client, status, oldbuf)
 
     if (gotnow >= needed + sizeof(xReq)) 
     {
-	request = (xReq *)(pBuff->bufptr + needed);
+	request = (xReq *)(oc->input.bufptr + needed);
         if (gotnow >= needed + request_length(request, client))
 	    BITSET(ClientsWithInput, fd);
         else
@@ -204,7 +202,7 @@ ReadRequestFromClient(client, status, oldbuf)
     if (++timesThisConnection >= MAX_TIMES_PER)
 	YieldControl();
 
-    return(pBuff->bufptr);
+    return(oc->input.bufptr);
 }
 
 /*****************************************************************
@@ -218,32 +216,30 @@ InsertFakeRequest(client, data, count)
     char *data;
     int count;
 {
-    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    register OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int fd = oc->fd;
-    register ConnectionInput *pBuff;
     register xReq *request;
     int gotnow, moveup;
 
-    pBuff = &inputBuffers[fd];
-    pBuff->lenLastReq = 0;
-    gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
-    if ((gotnow + count) > pBuff->size)
+    oc->input.lenLastReq = 0;
+    gotnow = oc->input.bufcnt + oc->input.buffer - oc->input.bufptr;
+    if ((gotnow + count) > oc->input.size)
     {
-	pBuff->size = gotnow + count;
-	pBuff->buffer = (char *)xrealloc(pBuff->buffer, pBuff->size);
-	pBuff->bufptr = pBuff->buffer + pBuff->bufcnt - gotnow;
+	oc->input.size = gotnow + count;
+	oc->input.buffer = (char *)xrealloc(oc->input.buffer, oc->input.size);
+	oc->input.bufptr = oc->input.buffer + oc->input.bufcnt - gotnow;
     }
-    moveup = count - (pBuff->bufptr - pBuff->buffer);
+    moveup = count - (oc->input.bufptr - oc->input.buffer);
     if (moveup > 0)
     {
 	if (gotnow > 0)
-	    bcopy(pBuff->bufptr, pBuff->bufptr + moveup, gotnow);
-	pBuff->bufptr += moveup;
-	pBuff->bufcnt += moveup;
+	    bcopy(oc->input.bufptr, oc->input.bufptr + moveup, gotnow);
+	oc->input.bufptr += moveup;
+	oc->input.bufcnt += moveup;
     }
-    bcopy(data, pBuff->bufptr - count, count);
-    pBuff->bufptr -= count;
-    request = (xReq *)pBuff->bufptr;
+    bcopy(data, oc->input.bufptr - count, count);
+    oc->input.bufptr -= count;
+    request = (xReq *)oc->input.bufptr;
     gotnow += count;
     if ((gotnow >= sizeof(xReq)) &&
 	(gotnow >= request_length(request, client)))
@@ -261,16 +257,14 @@ InsertFakeRequest(client, data, count)
 ResetCurrentRequest(client)
     ClientPtr client;
 {
-    OsCommPtr oc = (OsCommPtr)client->osPrivate;
+    register OsCommPtr oc = (OsCommPtr)client->osPrivate;
     int fd = oc->fd;
-    register ConnectionInput *pBuff;
     register xReq *request;
     int gotnow;
 
-    pBuff = &inputBuffers[fd];
-    pBuff->lenLastReq = 0;
-    request = (xReq *)pBuff->bufptr;
-    gotnow = pBuff->bufcnt + pBuff->buffer - pBuff->bufptr;
+    oc->input.lenLastReq = 0;
+    request = (xReq *)oc->input.bufptr;
+    gotnow = oc->input.bufcnt + oc->input.buffer - oc->input.bufptr;
     if ((gotnow >= sizeof(xReq)) &&
 	(gotnow >= request_length(request, client)))
     {
@@ -309,11 +303,11 @@ FlushClient(who, oc, extraBuf, extraCount)
     char padBuffer[3];
 
     total = 0;
-    if (oc->count)
+    if (oc->output.count)
     {
-	total += iov[iovCnt].iov_len = oc->count;
-	iov[iovCnt++].iov_base = (caddr_t)oc->buf;
-        /* Notice that padding isn't needed for oc->buf since
+	total += iov[iovCnt].iov_len = oc->output.count;
+	iov[iovCnt++].iov_base = (caddr_t)oc->output.buf;
+        /* Notice that padding isn't needed for oc->output.buf since
            it is alreay padded by WriteToClient */
     }
     if (extraCount)
@@ -377,28 +371,31 @@ FlushClient(who, oc, extraBuf, extraCount)
 	AnyClientsWriteBlocked = TRUE;
 
 	written = total - notWritten;
-	if (written < oc->count)
+	if (written < oc->output.count)
 	{
 	    if (written > 0)
 	    {
-		oc->count -= written;
-		bcopy((char *)oc->buf + written, (char *)oc->buf, oc->count);
+		oc->output.count -= written;
+		bcopy((char *)oc->output.buf + written,
+		      (char *)oc->output.buf,
+		      oc->output.count);
 		written = 0;
 	    }
 	}
 	else
 	{
-	    written -= oc->count;
-	    oc->count = 0;
+	    written -= oc->output.count;
+	    oc->output.count = 0;
 	}
 
-	if (notWritten > oc->bufsize)
+	if (notWritten > oc->output.size)
 	{
 	    /* allocate at least enough to contain it plus one
 	       OutputBufferSize */
-	    oc->bufsize = notWritten + OutputBufferSize;
-	    oc->buf = (unsigned char *)xrealloc(oc->buf, oc->bufsize);
-	    if (oc->buf == NULL)
+	    oc->output.size = notWritten + OutputBufferSize;
+	    oc->output.buf = (unsigned char *)xrealloc(oc->output.buf,
+						       oc->output.size);
+	    if (oc->output.buf == NULL)
 	    {
 	outOfMem:
 #ifdef notdef
@@ -412,8 +409,8 @@ FlushClient(who, oc, extraBuf, extraCount)
 #endif
 		close(connection);
 		MarkClientException(who);
-		oc->count = 0;
-		oc->bufsize = 0;
+		oc->output.count = 0;
+		oc->output.size = 0;
 		return(-1);
 	    }
 	}
@@ -421,20 +418,23 @@ FlushClient(who, oc, extraBuf, extraCount)
 	/* If the amount written extended into the padBuffer, then the
 	   difference "extraCount - written" may be less than 0 */
 	if ((n = extraCount - written) > 0)
-	    bcopy (extraBuf + written, (char *)oc->buf + oc->count, n);
+	    bcopy (extraBuf + written,
+		   (char *)oc->output.buf + oc->output.count,
+		   n);
 
-	oc->count = notWritten; /* this will include the pad */
+	oc->output.count = notWritten; /* this will include the pad */
 
 	return extraCount; /* return only the amount explicitly requested */
     }
 
     /* everything was flushed out */
-    oc->count = 0;
-    if (oc->bufsize > OutputBufferSize)
+    oc->output.count = 0;
+    if (oc->output.size > OutputBufferSize)
     {
-	oc->bufsize = OutputBufferSize;
-	oc->buf = (unsigned char *)xrealloc(oc->buf, OutputBufferSize);
-	if (oc->buf == NULL) /* nearly impossible */
+	oc->output.size = OutputBufferSize;
+	oc->output.buf = (unsigned char *)xrealloc(oc->output.buf,
+						   OutputBufferSize);
+	if (oc->output.buf == NULL) /* nearly impossible */
 	    goto outOfMem;
     }
     return extraCount; /* return only the amount explicitly requested */
@@ -529,7 +529,7 @@ WriteToClient (who, count, buf)
 
     padBytes =  padlength[count & 3];
 
-    if (oc->count + count + padBytes > oc->bufsize)
+    if (oc->output.count + count + padBytes > oc->output.size)
     {
 	BITCLEAR(OutputPending, oc->fd);
 	CriticalOutputPending = FALSE;
@@ -539,8 +539,8 @@ WriteToClient (who, count, buf)
 
     NewOutputPending = TRUE;
     BITSET(OutputPending, oc->fd);
-    bcopy(buf, (char *)oc->buf + oc->count, count);
-    oc->count += count + padBytes;
+    bcopy(buf, (char *)oc->output.buf + oc->output.count, count);
+    oc->output.count += count + padBytes;
     
     return(count);
 }

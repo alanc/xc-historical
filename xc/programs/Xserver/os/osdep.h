@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.16 88/12/08 16:39:33 keith Exp $ */
+/* $XConsortium: osdep.h,v 1.17 89/01/16 13:46:45 rws Exp $ */
 
 #ifndef NULL
 #define NULL 0
@@ -137,7 +137,6 @@ SOFTWARE.
 #endif
 
 typedef struct _connectionInput {
-    int used;                  /* is this client connected */
     char *buffer;               /* contains current client input */
     char *bufptr;               /* pointer to current start of data */
     int  bufcnt;                /* count of bytes in buffer */
@@ -145,11 +144,16 @@ typedef struct _connectionInput {
     int size;
 } ConnectionInput;
 
+typedef struct _connectionOutput {
+    int size;
+    unsigned char *buf;
+    int count;
+} ConnectionOutput;
+
 typedef struct _osComm {
     int fd;
-    unsigned char *buf;
-    int bufsize;
-    int count;
+    ConnectionInput input;
+    ConnectionOutput output;
     XID	auth_id;		/* authorization id */
     long conn_time;		/* timestamp if not established, else 0  */
 } OsCommRec, *OsCommPtr;

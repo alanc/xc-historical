@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.90 89/01/03 08:29:34 rws Exp $ */
+/* $XConsortium: connection.c,v 1.91 89/01/16 14:03:07 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -117,8 +117,6 @@ static Bool GrabDone = FALSE;
 
 int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
-
-extern ConnectionInput inputBuffers[];
 
 extern int AutoResetServer();
 extern int GiveUp();
@@ -287,15 +285,6 @@ CreateWellKnownSockets()
     FirstClient = request + 1;
     AllSockets[0] = WellKnownConnections;
     ResetHosts(display);
-
-    for (i=0; i<MaxClients; i++)
-    {
-	inputBuffers[i].buffer = (char *) NULL;
-	inputBuffers[i].bufptr = (char *) NULL;
-	inputBuffers[i].bufcnt = 0;
-	inputBuffers[i].lenLastReq = 0;
-	inputBuffers[i].size = 0;
-    }
 }
 
 void
@@ -475,15 +464,6 @@ EstablishNewConnections()
 #else
 		fcntl (newconn, F_SETFL, FNDELAY);
 #endif /* hpux */
-		inputBuffers[newconn].used = 1; 
-		if (! inputBuffers[newconn].size) 
-		{
-		    inputBuffers[newconn].buffer = 
-				(char *)xalloc(BUFSIZE);
-		    inputBuffers[newconn].size = BUFSIZE;
-		    inputBuffers[newconn].bufptr = 	
-				inputBuffers[newconn].buffer;
-		}
 		if (GrabDone)
 		{
 		    BITSET(SavedAllClients, newconn);
@@ -496,9 +476,14 @@ EstablishNewConnections()
 		}
 		oc =  (OsCommPtr)xalloc(sizeof(OsCommRec));
 		oc->fd = newconn;
-		oc->buf = (unsigned char *) xalloc(OutputBufferSize);
-		oc->bufsize = OutputBufferSize;
-		oc->count = 0;
+		oc->input.size = BUFSIZE;
+		oc->input.buffer = (char *)xalloc(oc->input.size);
+		oc->input.bufptr = oc->input.buffer;
+		oc->input.bufcnt = 0;
+		oc->input.lenLastReq = 0;
+		oc->output.size = OutputBufferSize;
+		oc->output.buf = (unsigned char *) xalloc(oc->output.size);
+		oc->output.count = 0;
 		oc->conn_time = connect_time;
 		if ((newconn < lastfdesc) &&
 		    (client = NextAvailableClient((pointer)oc)))
@@ -567,7 +552,7 @@ CloseConnMax(oc)
 
 /************
  *   CloseDownFileDescriptor:
- *     Remove this file descriptor and it's inputbuffers, etc.
+ *     Remove this file descriptor and it's I/O buffers, etc.
  ************/
 
 static void
@@ -577,16 +562,10 @@ CloseDownFileDescriptor(oc)
     int connection = oc->fd;
 
     close(connection);
-    if (inputBuffers[connection].size)
-    {
-	xfree(inputBuffers[connection].buffer);
-	inputBuffers[connection].buffer = (char *) NULL;
-	inputBuffers[connection].bufptr = (char *) NULL;
-	inputBuffers[connection].size = 0;
-    }
-    inputBuffers[connection].bufcnt = 0;
-    inputBuffers[connection].lenLastReq = 0;
-    inputBuffers[connection].used = 0;
+    if (oc->input.buffer)
+	xfree(oc->input.buffer);
+    if (oc->output.buf)
+	xfree(oc->output.buf);
 
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
@@ -648,10 +627,8 @@ CloseDownConnection(client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    if (oc->count)
+    if (oc->output.count)
 	FlushClient(client, oc, (char *)NULL, 0);
-    if (oc->buf != NULL) /* an Xrealloc may have returned NULL */
-	xfree(oc->buf);
     ConnectionTranslation[oc->fd] = 0;
     CloseDownFileDescriptor(oc);
 }
