@@ -71,7 +71,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 1.3 94/01/04 00:38:45 rob Exp $ */
+/* $XConsortium: cfbfillsp.c,v 1.4 94/01/04 00:42:21 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -635,7 +635,7 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     {
 #endif /* MTX */
 	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
-#ifdef /* MTX */
+#ifdef MTX
 	pstipple->change = FALSE;
     }
 #endif /* MTX */
