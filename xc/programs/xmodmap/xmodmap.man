@@ -26,9 +26,7 @@ xmodmap, xprkbd - X Window System keyboard modifier utilities
 is a utility for displaying and altering the X keyboard modifier map and
 keysym table on the specified display and host.  It is intended to be run
 from a user's X startup script to setup the keyboard according to personal
-tastes.  If no display is specified,  the value of the
-.B DISPLAY
-environment variable is used.
+tastes.
 .PP
 With no arguments,
 .I xmodmap
@@ -41,8 +39,8 @@ and the keynames for the keyboard on the appropriate X server.
 .PP
 Both programs accept the following option:
 .TP 8
-.B \-display \fIhost\fP:\fIdpy\fP
-This option specifies the host and display to use.
+.B \-display \fIdisplay\fP
+This option specifies the host and display to use; see \fIX(1)\fP.
 .PP
 The
 .I xmodmap
@@ -69,12 +67,12 @@ This option turns off the verbose logging.  This is the default.
 .B \-n
 This option indicates that 
 .I xmodmap
-should not change the mappings, but should display what it would do, like make
-does when given this option.
+should not change the mappings, but should display what it would do, like
+\fImake(1)\fP does when given this option.
 .TP 8
-.B \-e expression
-This option specifies an expression to be executed, just as it would appear
-in an input file.
+.B \-e \fIexpression\fB
+This option specifies an expression to be executed.  Any number of expressions
+may be specified from the command line.
 .TP 8
 .B \-p
 This option indicates that the current modifier map should be printed on the
@@ -85,26 +83,28 @@ A lone dash means that the standard input should be used as the input file.
 .PP
 The \fIfilename\fP specifies a file containing \fIxmodmap\fP expressions
 to be executed.  This file is usually kept in the user's home directory with
-a name like ``.keymap.km''.
+a name like ``\fI.keymap.km\fP''.
 .PP
-For compatibility, the new version of 
+For compatibility with an older version,
 .I xmodmap
-will also accept the old single letter options of the original version,
-although these are now obsolete:
+also accepts the following obsolete single letter options:
 .TP 8
 .B "-[SLC12345]"
 These options indicate that all current keys for the Shift, Lock, Control, or 
-Mod modifier sets should be removed from the modifier map.
+Mod modifier sets should be removed from the modifier map.  These are
+equivalent to \fBclear\fP expressions.
 .TP 8
 .B "-[slc]" \fIkeysym\fP
 These options specify a
 .I keysym
 to be removed from the Shift, Lock, or Control modifier sets.
+These are equivalent to \fBremove\fP expressions.
 .TP 8
 .B "+[slc12345]" \fIkeysym\fP
 These options specify a 
 .I keysym
 to be added to the Shift, Lock, or Control modifier sets.
+These are equivalent to \fBadd\fP expressions.
 .SH EXPRESSION GRAMMAR
 .PP
 The
@@ -119,7 +119,7 @@ The list of keysyms is assigned to the indicated keycode
 (which may be specified in decimal, hex or octal and can be determined by 
 running the 
 .I xev 
-program from the examples directory).  Usually only one keysym is assigned
+program in the examples directory).  Usually only one keysym is assigned
 to a given code.
 .TP 8
 .B keysym \fIKEYSYMNAME\fP = \fIKEYSYMNAME ...\fP
@@ -138,7 +138,7 @@ all any keys that were bound to the shift lock modifier.
 .B add \fIMODIFIERNAME\fP = \fIKEYSYMNAME ...\fP
 This adds the given keysyms to the indicated modifier map.  The keysym names
 are evaluated after all input expressions are read to make it easy to write
-expressions to swap keys (see examples).
+expressions to swap keys (see the EXAMPLES section).
 .TP 8
 .B remove \fIMODIFIERNAME\fP = \fIKEYSYMNAME ...\fP
 This removes the given keysyms from the indicated modifier map.  Unlike
@@ -153,18 +153,16 @@ If you want to change the binding of a modifier key, you must also remove it
 from the appropriate modifier map.
 .SH EXAMPLES
 .PP
-To make the backspace key be a delete instead, use 
+To make the backspace key generate a delete instead, use 
 .EX
 % xmodmap -e "keysym BackSpace = Delete"
 .EE
 .PP
 To swap the left control and caps lock keys you could use:
 .EX
-% cat swap.km | xmodmap -
 !
 ! Swap Caps_Lock and Control_L
 !
-
 remove Lock = Caps_Lock
 remove Control = Control_L
 keysym Control_L = Caps_Lock
@@ -175,32 +173,28 @@ add Control = Control_L
 .PP
 As a more complicated example, the following is what the author uses:
 .EX
-% cat ~/.keymap.km | xmodmap -
 !
-! On the HP, the following keycodes are bound to keys
-! with the following key caps:
+! On the HP, the following keycodes have key caps as listed:
 !
 !     101  Backspace
 !      55  Caps
 !      14  Ctrl
 !      15  Break/Reset
 !      86  Stop
-!      84  F1
+!      89  F5
 !
-! I prefer using ``keycode'' over ``keysym'' so that
-! I can rerun the file to fix up my keyboard.
+! I prefer using ``keycode'' over ``keysym'' so that I can rerun the file to
+! fix up my keyboard.
 !
-! This sets the backspace key to generate Delete,
-! flushes all caps lock bindings, assigned a control
-! key to what used to be the caps lock key, makes the
-! F1 generate ESC, and makes the Break/Reset key be
-! a shift lock.
+! This sets the backspace key to generate Delete, flushes all caps lock
+! bindings, assigned a control key to what used to be the caps lock key,
+! makes the F1 generate ESC, and makes the Break/Reset key be a shift lock.
 
 keycode 101 = Delete
 keycode 55 = Control_R
 clear Lock
 add Control = Control_R
-keycode 84 = Escape
+keycode 89 = Escape
 keycode 15 = Caps_Lock
 add Lock = Caps_Lock
 .EE
@@ -213,36 +207,20 @@ to get default host and display number.
 X(1)
 .SH BUGS
 .PP
-Assigning lists of keysyms doesn't work.
-.PP
 Every time a \fBkeycode\fP expression is evaluated, the server generates
 a \fIMappingNotify\fP event on every client.  This can cause some thrashing.
 All of the changes should be batched together and done at once.
-.PP
 Clients that receive keyboard input and ignore \fIMappingNotify\fP events
 will not notice any changes made to keyboard mappings.
 .PP
-It would be nice if 
-.I xmodmap
-were smart enough to generate "add" and "remove" expressions automatically
+.I Xmodmap
+should generate "add" and "remove" expressions automatically
 whenever a keycode that is already bound to a modifier is changed.
 .PP
 There should be a way to have the
 .I remove
 expression accept keycodes as well as keysyms for those times when you really
 mess up your mappings.
-.PP
-You can't increase the maximum number of keys per modifier.
-.PP
-The next step is to have
-.I xmodmap
-optionally pass the input file through cpp like 
-.I xrdb
-does.
-.PP
-Case sensitivity might be confusing at first.
-.PP
-There should be a nicer tool for setting up the keymap files.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
