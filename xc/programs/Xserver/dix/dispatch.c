@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.45 93/07/17 09:52:49 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.46 93/08/24 18:49:52 gildea Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -281,6 +281,9 @@ Dispatch()
 	    }
 	    FlushAllOutput();
 	}
+#ifdef SYNC
+	dispatchException &= ~DE_PRIORITYCHANGE;
+#endif
     }
     KillAllClients();
     DEALLOCATE_LOCAL(clientReady);
@@ -1604,7 +1607,7 @@ ProcPolyLine(client)
     }
     VALIDATE_DRAWABLE_AND_GC(stuff->drawable, pDraw, pGC, client);
     npoint = ((client->req_len << 2) - sizeof(xPolyLineReq)) >> 2;
-    if (npoint)
+    if (npoint > 1)
 	(*pGC->ops->Polylines)(pDraw, pGC, stuff->coordMode, npoint, 
 			      (DDXPointPtr) &stuff[1]);
     return(client->noClientException);
@@ -1944,7 +1947,6 @@ ProcGetImage(client)
     DEALLOCATE_LOCAL(pBuf);
     return (client->noClientException);
 }
-
 
 
 int
@@ -2931,9 +2933,8 @@ ProcKillClient(client)
     register ClientPtr client;
 {
     REQUEST(xResourceReq);
-
-    pointer *pResource;
-    int clientIndex, myIndex;
+    int		myIndex;
+    ClientPtr	killclient;
 
     REQUEST_SIZE_MATCH(xResourceReq);
     if (stuff->id == AllTemporary)
@@ -2941,17 +2942,12 @@ ProcKillClient(client)
 	CloseDownRetainedResources();
         return (client->noClientException);
     }
-    pResource = (pointer *)LookupIDByClass(stuff->id, RC_ANY);
-  
-    clientIndex = CLIENT_ID(stuff->id);
 
-    if (clientIndex && pResource && clients[clientIndex] &&
-	!(stuff->id & SERVER_BIT) &&
-	(clients[clientIndex]->requestVector != InitialVector))
+    if ((killclient = LookupClient(stuff->id)))
     {
 	myIndex = client->index;
-	CloseDownClient(clients[clientIndex]);
-	if (myIndex == clientIndex)
+	CloseDownClient(killclient);
+	if (myIndex == killclient->index)
 	{
 	    /* force yield and return Success, so that Dispatch()
 	     * doesn't try to touch client
@@ -3122,7 +3118,18 @@ CloseDownClient(client)
 	DeleteClientFromAnySelections(client);
 	ReleaseActiveGrabs(client);
 	DeleteClientFontStuff(client);
-    
+	if (!really_close_down)
+	{
+	    /*  This frees resources that should never be retained
+	     *  no matter what the close down mode is.  Actually we
+	     *  could do this unconditionally, but it's probably
+	     *  better not to traverse all the client's resources
+	     *  twice (once here, once a few lines down in
+	     *  FreeClientResources) in the common case of
+	     *  really_close_down == TRUE.
+	     */
+	    FreeClientNeverRetainResources(client);
+	}
 	client->clientGone = TRUE;  /* so events aren't sent to client */
 	CloseDownConnection(client);
 	--nClients;
