@@ -1,7 +1,7 @@
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
-SUBDIRS = bitmap gnuplot puzzle uwm xcalc \
+SUBDIRS = bitmap uwm xcalc \
 	xclock xedit xfd xhost xinit xload xlsfonts xmh xmodmap \
 	xpr xprop xrdb xrefresh xset xsetroot \
 	xterm xwd xwininfo xwud x10tox11 
