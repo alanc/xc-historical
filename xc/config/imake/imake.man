@@ -1,4 +1,4 @@
-.\" $XConsortium: imake.man,v 1.21 94/04/11 16:02:49 matt Exp $
+.\" $XConsortium: imake.man,v 1.22 94/04/11 22:00:43 gildea Exp $
 .TH IMAKE 1 "Release 6" "X Version 11"
 .SH NAME
 imake \- C preprocessor interface to the make utility
@@ -13,7 +13,7 @@ imake \- C preprocessor interface to the make utility
 is used to 
 generate \fIMakefiles\fP from a template, a set of \fIcpp\fP macro functions,
 and a per-directory input file called an \fIImakefile\fP.  This allows machine
-dependencies (such has compiler options, alternate command names, and special
+dependencies (such as compiler options, alternate command names, and special
 \fImake\fP rules) to be kept separate from the descriptions of the
 various items to be built.
 .SH OPTIONS
