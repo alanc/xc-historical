@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.180 91/05/06 17:11:59 gildea Exp $ */
+/* $XConsortium: main.c,v 1.181 91/05/06 17:22:23 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -646,19 +646,19 @@ extern void do_hangup();
  */
 void
 DeleteWindow(w, event, params, num_params)
-Widget w;
-XEvent * event;
-String * params;
-Cardinal * num_params;
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
 {
   if (w == toplevel)
     if (term->screen.Tshow)
-      set_vt_visibility(FALSE);
+      hide_vt_window();
     else
       do_hangup(w);
   else
     if (term->screen.Vshow)
-      set_tek_visibility(FALSE);
+      hide_tek_window();
     else
       do_hangup(w);
 }

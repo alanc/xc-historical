@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.53 91/04/26 15:03:51 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.54 91/05/06 17:12:06 gildea Exp $ */
 /*
 Copyright 1989 Massachusetts Institute of Technology
 
@@ -645,18 +645,6 @@ static void do_hardreset (gw, closure, data)
 }
 
 
-static void switch_modes (tovt)
-    Bool tovt;				/* if true, then become vt mode */
-{
-    if (tovt) {
-	if (TekRefresh) dorefresh();
-	end_tek_mode ();		/* WARNING: this does a longjmp... */
-    } else {
-	end_vt_mode ();			/* WARNING: this does a longjmp... */
-    }
-}
-
-
 static void do_tekmode (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
@@ -666,14 +654,12 @@ static void do_tekmode (gw, closure, data)
     switch_modes (screen->TekEmu);	/* switch to tek mode */
 }
 
+/* ARGSUSED */
 static void do_vthide (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    set_vt_visibility (FALSE);
-    if (!screen->TekEmu) switch_modes (False);	/* switch to tek mode */
+    hide_vt_window();
 }
 
 
@@ -799,15 +785,12 @@ static void do_vtmode (gw, closure, data)
 }
 
 
+/* ARGSUSED */
 static void do_tekhide (gw, closure, data)
     Widget gw;
     caddr_t closure, data;
 {
-    register TScreen *screen = &term->screen;
-
-    set_tek_visibility (FALSE);
-    TekRefresh = (TekLink *)0;
-    if (screen->TekEmu) switch_modes (True);	/* does longjmp to vt mode */
+    hide_tek_window();
 }
 
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.80 91/05/06 17:12:09 gildea Exp $
+ *	$XConsortium: misc.c,v 1.81 91/05/07 00:44:04 gildea Exp $
  */
 
 /*
@@ -911,4 +911,32 @@ void end_vt_mode ()
 	longjmp(VTend, 1);
     } 
     return;
+}
+
+void switch_modes (tovt)
+    Bool tovt;				/* if true, then become vt mode */
+{
+    if (tovt) {
+	if (TekRefresh) dorefresh();
+	end_tek_mode ();		/* WARNING: this does a longjmp... */
+    } else {
+	end_vt_mode ();			/* WARNING: this does a longjmp... */
+    }
+}
+
+void hide_vt_window ()
+{
+    register TScreen *screen = &term->screen;
+
+    set_vt_visibility (FALSE);
+    if (!screen->TekEmu) switch_modes (False);	/* switch to tek mode */
+}
+
+void hide_tek_window ()
+{
+    register TScreen *screen = &term->screen;
+
+    set_tek_visibility (FALSE);
+    TekRefresh = (TekLink *)0;
+    if (screen->TekEmu) switch_modes (True);	/* does longjmp to vt mode */
 }
