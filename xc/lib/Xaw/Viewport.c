@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.31 88/12/22 11:06:25 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.34 89/01/03 14:47:34 swick Exp $";
 #endif lint
 
 
@@ -446,32 +446,31 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 		 * thus avoiding potential oscillations.
 		 */
 #define CheckHoriz()							\
-		if (w->viewport.allowhoriz				\
-		    && !needshoriz					\
-		    && preferred.width > clip_width)			\
-		{							\
-		    Widget bar;						\
-		    needshoriz = True;					\
-		    if ((bar = w->viewport.horiz_bar) == (Widget)NULL)	\
-			bar = CreateScrollbar(w, True);			\
-		    clip_height -= bar->core.height + bar->core.border_width; \
-		    if (clip_height < 1) clip_height = 1;		\
+		if (w->viewport.allowhoriz && preferred.width > clip_width) { \
+		    if (!needshoriz) {					\
+			Widget bar;					\
+			needshoriz = True;				\
+			if ((bar = w->viewport.horiz_bar) == (Widget)NULL) \
+			    bar = CreateScrollbar(w, True);		\
+			clip_height -= bar->core.height +		\
+					bar->core.border_width;		\
+			if (clip_height < 1) clip_height = 1;		\
+		    }							\
 		    intended.width = preferred.width;			\
 		}
 /*enddef*/
 		CheckHoriz();
-		if (w->viewport.allowvert
-		    && !needsvert
-		    && preferred.height > clip_height)
-		{
-		    Widget bar;
-		    needsvert = True;
-		    if ((bar = w->viewport.vert_bar) == (Widget)NULL)
-			bar = CreateScrollbar(w, False);
-		    clip_width -= bar->core.width + bar->core.border_width;
-		    if (clip_width < 1) clip_width = 1;
+		if (w->viewport.allowvert && preferred.height > clip_height) {
+		    if (!needsvert) {
+			Widget bar;
+			needsvert = True;
+			if ((bar = w->viewport.vert_bar) == (Widget)NULL)
+			    bar = CreateScrollbar(w, False);
+			clip_width -= bar->core.width + bar->core.border_width;
+			if (clip_width < 1) clip_width = 1;
+			CheckHoriz();
+		    }
 		    intended.height = preferred.height;
-		    CheckHoriz();
 		}
 		if (!w->viewport.allowhoriz || preferred.width < clip_width)
 		    intended.width = clip_width;
