@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.3 93/09/26 23:50:14 rws Exp $ */
+/* $XConsortium: XKBsrv.h,v 1.4 93/09/27 22:14:12 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -30,8 +30,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <X11/extensions/XKBstr.h>
 
-typedef struct _XKBInterestRec {
-	struct _XKBSrvInfoRec	*kbd;
+typedef struct _XkbInterestRec {
+	struct _XkbSrvInfoRec	*kbd;
 	ClientRec		*client;
 	CARD16			 stateNotifyMask;
 	CARD16			 namesNotifyMask;
@@ -43,34 +43,34 @@ typedef struct _XKBInterestRec {
 	CARD32			 iMapNotifyMask;
 	CARD16			 altSymsNotifyMask;
 	XID			 resource;
-	struct _XKBInterestRec	*next;
-} XKBInterestRec,*XKBInterestPtr;
+	struct _XkbInterestRec	*next;
+} XkbInterestRec,*XkbInterestPtr;
 
-typedef struct _XKBRadioGroup {
+typedef struct _XkbRadioGroup {
 	CARD8		flags;
 	CARD8		nMembers;
 	CARD8		dfltDown;
 	CARD8		currentDown;
 	CARD8		members[XKB_RG_MAX_MEMBERS];
-} XKBRadioGroupRec, *XKBRadioGroupPtr;
+} XkbRadioGroupRec, *XkbRadioGroupPtr;
 
 #define	_OFF_TIMER	0
 #define	_KRG_TIMER	1
 #define	_TIMEOUT_TIMER	2
 
-typedef struct _XKBSrvInfoRec {
-	XKBStateRec	 state;
-	XKBControlsRec	 Controls;
-	XKBServerMapRec	 Server;
-	XKBClientMapRec	 Map;
-	XKBIndicatorRec	 Indicators;
-	XKBNamesRec	 Names;
-	XKBCompatRec	 Compat;
-	XKBDescRec	 desc;
+typedef struct _XkbSrvInfoRec {
+	XkbStateRec	 state;
+	XkbControlsRec	 Controls;
+	XkbServerMapRec	 Server;
+	XkbClientMapRec	 Map;
+	XkbIndicatorRec	 Indicators;
+	XkbNamesRec	 Names;
+	XkbCompatRec	 Compat;
+	XkbDescRec	 desc;
 
 	DeviceIntRec	*device;
 
-	XKBRadioGroupRec *radioGroups;
+	XkbRadioGroupRec *radioGroups;
 	CARD8		 nRadioGroups;
 	CARD8		 clearMods;
 	CARD8		 setMods;
@@ -120,8 +120,8 @@ typedef struct _XKBSrvInfoRec {
 	} iAccel;
 	CARD32		 iState;
 
-	XKBInterestRec	*interest;
-} XKBSrvInfoRec, *XKBSrvInfoPtr;
+	XkbInterestRec	*interest;
+} XkbSrvInfoRec, *XkbSrvInfoPtr;
 
 /************************************************************************
  *
@@ -141,10 +141,10 @@ typedef struct _XKBSrvInfoRec {
 #define KRG_PRESS_SOUND_MASK            (1 << 14)
 #define KRG_ACCEPT_SOUND_MASK           (1 << 15)
 
-#define KRG_MASK                (XKBSlowKeysMask|XKBBounceKeysMask)
+#define KRG_MASK                (XkbSlowKeysMask|XkbBounceKeysMask)
 
-#define	ALL_FILTERED_MASK	(XKBRepeatKeysMask|KRG_MASK)
-#define ANY_OPTIONS_MASK        (XKBStickyKeysMask|XKBMouseKeysMask|KRG_MASK)
+#define	ALL_FILTERED_MASK	(XkbRepeatKeysMask|KRG_MASK)
+#define ANY_OPTIONS_MASK        (XkbStickyKeysMask|XkbMouseKeysMask|KRG_MASK)
 
 /************************************************************************
  *
@@ -182,46 +182,46 @@ typedef struct _XKBSrvInfoRec {
 #define X_AccessXPressButton            18
 #define X_AccessXReleaseButton          19
 
-extern int XKBEventBase;
+extern int XkbEventBase;
 
 _XFUNCPROTOBEGIN
 
-extern KeySym *_XKBNewSymsForKey(
+extern KeySym *_XkbNewSymsForKey(
 #if NeedFunctionPrototypes
-    XKBDescRec *	/* xkb */,
+    XkbDescRec *	/* xkb */,
     int 		/* key */,
     int 		/* needed */
 #endif
 );
 
-extern XKBAction *_XKBNewActionsForKey(
+extern XkbAction *_XkbNewActionsForKey(
 #if NeedFunctionPrototypes
-    XKBDescRec *	/* xkb */,
+    XkbDescRec *	/* xkb */,
     int 		/* key */,
     int 		/* needed */
 #endif
 );
 
-extern void XKBUpdateKeyTypesFromCore(
+extern void XkbUpdateKeyTypesFromCore(
 #if NeedFunctionPrototypes
     DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
-    xKBMapNotify *	/* pChanges */
+    xkbMapNotify *	/* pChanges */
 #endif
 );
 
 void
-XKBUpdateActions(
+XkbUpdateActions(
 #if NeedFunctionPrototypes
     DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
-    xKBMapNotify *	/* pChanges */
+    xkbMapNotify *	/* pChanges */
 #endif
 );
 
-extern void XKBApplyMappingChange(
+extern void XkbApplyMappingChange(
 #if NeedFunctionPrototypes
     DeviceIntPtr	/* pXDev */,
     CARD8 		/* request */,
@@ -230,65 +230,65 @@ extern void XKBApplyMappingChange(
 #endif
 );
 
-extern void XKBUpdateIndicators(
+extern void XkbUpdateIndicators(
 #if NeedFunctionPrototypes
     DeviceIntPtr		/* keybd */,
     CARD32		 	/* changed */,
-    XKBIndicatorChangesRec *	/* pChanges */
+    XkbIndicatorChangesRec *	/* pChanges */
 #endif
 );
 
-extern void XKBComputeDerivedState(
+extern void XkbComputeDerivedState(
 #if NeedFunctionPrototypes
-    XKBSrvInfoRec *		/* xkb */
+    XkbSrvInfoRec *		/* xkb */
 #endif
 );
 
-extern unsigned XKBStateChangedFlags(
+extern unsigned XkbStateChangedFlags(
 #if NeedFunctionPrototypes
-    XKBStateRec *	/* old */,
-    XKBStateRec *	/* new */
+    XkbStateRec *	/* old */,
+    XkbStateRec *	/* new */
 #endif
 );
 
-extern	void XKBSendStateNotify(
-#if NeedFunctionPrototypes
-       DeviceIntPtr	/* kbd */,
-       xKBStateNotify *	/* pSN */
-#endif
-);
-
-extern	void XKBSendMapNotify(
+extern	void XkbSendStateNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr	/* kbd */,
-       xKBMapNotify *	/* ev */
+       xkbStateNotify *	/* pSN */
 #endif
 );
 
-extern	int  XKBComputeControlsNotify(
+extern	void XkbSendMapNotify(
+#if NeedFunctionPrototypes
+       DeviceIntPtr	/* kbd */,
+       xkbMapNotify *	/* ev */
+#endif
+);
+
+extern	int  XkbComputeControlsNotify(
 #if NeedFunctionPrototypes
 	DeviceIntPtr		/* kbd */,
-	XKBControlsRec *	/* old */,
-	XKBControlsRec *	/* new */,
-	xKBControlsNotify *	/* pCN */
+	XkbControlsRec *	/* old */,
+	XkbControlsRec *	/* new */,
+	xkbControlsNotify *	/* pCN */
 #endif
 );
 
-extern	void XKBSendControlsNotify(
+extern	void XkbSendControlsNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
-       xKBControlsNotify *	/* ev */
+       xkbControlsNotify *	/* ev */
 #endif
 );
 
-extern	void XKBSendIndicatorNotify(
+extern	void XkbSendIndicatorNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
-       xKBIndicatorNotify *	/* ev */
+       xkbIndicatorNotify *	/* ev */
 #endif
 );
 
-extern	void XKBHandleBell(
+extern	void XkbHandleBell(
 #if NeedFunctionPrototypes
        DeviceIntPtr	/* kbd */,
        CARD8		/* percent */,
@@ -298,35 +298,35 @@ extern	void XKBHandleBell(
 #endif
 );
 
-extern	void XKBSendSlowKeyNotify(
+extern	void XkbSendSlowKeyNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
-       xKBSlowKeyNotify *	/* pEv */
+       xkbSlowKeyNotify *	/* pEv */
 #endif
 );
 
-extern	void XKBSendNamesNotify(
+extern	void XkbSendNamesNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr	/* kbd */,
-       xKBNamesNotify *	/* ev */
+       xkbNamesNotify *	/* ev */
 #endif
 );
 
-extern	void XKBSendCompatNotify(
+extern	void XkbSendCompatNotify(
 #if NeedFunctionPrototypes
        DeviceIntPtr		/* kbd */,
-       xKBCompatMapNotify *	/* ev */
+       xkbCompatMapNotify *	/* ev */
 #endif
 );
 
-extern void XKBSendNotification(
+extern void XkbSendNotification(
 #if NeedFunctionPrototypes
     DeviceIntPtr		/* kbd */,
-    XKBChangesRec *		/* pChanges */
+    XkbChangesRec *		/* pChanges */
 #endif
 );
 
-extern void XKBProcessKeyboardEvent(
+extern void XkbProcessKeyboardEvent(
 #if NeedFunctionPrototypes
     xEvent * 			/* xE */,
     DeviceIntPtr		/* keybd */,
@@ -334,14 +334,14 @@ extern void XKBProcessKeyboardEvent(
 #endif
 );
 
-extern	XKBInterestRec *XKBFindClientResource(
+extern	XkbInterestRec *XkbFindClientResource(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        ClientPtr	/* client */
 #endif
 );
 
-extern	XKBInterestRec *XKBAddClientResource(
+extern	XkbInterestRec *XkbAddClientResource(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        ClientPtr	/* client */,
@@ -349,14 +349,14 @@ extern	XKBInterestRec *XKBAddClientResource(
 #endif
 );
 
-extern	int XKBRemoveClient(
+extern	int XkbRemoveClient(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        ClientPtr	/* client */
 #endif
 );
 
-extern	int XKBRemoveResourceClient(
+extern	int XkbRemoveResourceClient(
 #if NeedFunctionPrototypes
        DevicePtr	/* inDev */,
        XID		/* id */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xkb.h,v 1.1 93/09/26 21:12:18 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -52,76 +52,76 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	X_KBSetGeometry			21
 #define	X_KBSetDebuggingFlags		101
 
-#define	XKBEventCode			0
-#define	XKBNumberEvents			(XKBEventCode+1)
+#define	XkbEventCode			0
+#define	XkbNumberEvents			(XkbEventCode+1)
 
-#define	XKBStateNotify			0
-#define XKBMapNotify			1
-#define XKBControlsNotify		2
-#define	XKBIndicatorNotify		3
-#define	XKBBellNotify			4
-#define	XKBSlowKeyNotify		5
-#define	XKBNamesNotify			6
-#define XKBCompatMapNotify		7
-#define	XKBAlternateSymsNotify		8
+#define	XkbStateNotify			0
+#define XkbMapNotify			1
+#define XkbControlsNotify		2
+#define	XkbIndicatorNotify		3
+#define	XkbBellNotify			4
+#define	XkbSlowKeyNotify		5
+#define	XkbNamesNotify			6
+#define XkbCompatMapNotify		7
+#define	XkbAlternateSymsNotify		8
 
-#define	XKBStateNotifyMask		(1L << 0)
-#define XKBMapNotifyMask		(1L << 1)
-#define XKBControlsNotifyMask		(1L << 2)
-#define	XKBIndicatorNotifyMask		(1L << 3)
-#define	XKBBellNotifyMask		(1L << 4)
-#define	XKBSlowKeyNotifyMask		(1L << 5)
-#define	XKBNamesNotifyMask		(1L << 6)
-#define XKBCompatMapNotifyMask		(1L << 7)
-#define XKBAlternateSymsNotifyMask	(1L << 8)
-#define	XKBAllEventsMask		(0x01FF)
+#define	XkbStateNotifyMask		(1L << 0)
+#define XkbMapNotifyMask		(1L << 1)
+#define XkbControlsNotifyMask		(1L << 2)
+#define	XkbIndicatorNotifyMask		(1L << 3)
+#define	XkbBellNotifyMask		(1L << 4)
+#define	XkbSlowKeyNotifyMask		(1L << 5)
+#define	XkbNamesNotifyMask		(1L << 6)
+#define XkbCompatMapNotifyMask		(1L << 7)
+#define XkbAlternateSymsNotifyMask	(1L << 8)
+#define	XkbAllEventsMask		(0x01FF)
 
-#define	XKBSKPress			0
-#define	XKBSKAccept			1
-#define	XKBSKReject			2
-#define	XKBSKRelease			3
+#define	XkbSKPress			0
+#define	XkbSKAccept			1
+#define	XkbSKReject			2
+#define	XkbSKRelease			3
 
-#define	XKBSKPressMask			(1L << 0)
-#define	XKBSKAcceptMask			(1L << 1)
-#define	XKBSKRejectMask			(1L << 2)
-#define	XKBSKReleaseMask		(1L << 3)
-#define	XKBSKAllEventsMask		(0xf)
+#define	XkbSKPressMask			(1L << 0)
+#define	XkbSKAcceptMask			(1L << 1)
+#define	XkbSKRejectMask			(1L << 2)
+#define	XkbSKReleaseMask		(1L << 3)
+#define	XkbSKAllEventsMask		(0xf)
 
 #define	XKB_Keyboard			0
-#define	XKBNumberErrors			1
+#define	XkbNumberErrors			1
 
-#define	XKBModifierStateMask		(1L << 0)
-#define	XKBModifierBaseMask		(1L << 1)
-#define	XKBModifierLatchMask		(1L << 2)
-#define	XKBModifierLockMask		(1L << 3)
-#define	XKBGroupStateMask		(1L << 4)
-#define	XKBGroupBaseMask		(1L << 5)
-#define	XKBGroupLatchMask		(1L << 6)
-#define XKBGroupLockMask		(1L << 7)
-#define	XKBCompatStateMask		(1L << 8)
-#define	XKBModifierUnlockMask		(1L << 9)
-#define	XKBGroupUnlockMask		(1L << 10)
-#define	XKBAllStateComponentsMask	(0x7ff)
+#define	XkbModifierStateMask		(1L << 0)
+#define	XkbModifierBaseMask		(1L << 1)
+#define	XkbModifierLatchMask		(1L << 2)
+#define	XkbModifierLockMask		(1L << 3)
+#define	XkbGroupStateMask		(1L << 4)
+#define	XkbGroupBaseMask		(1L << 5)
+#define	XkbGroupLatchMask		(1L << 6)
+#define XkbGroupLockMask		(1L << 7)
+#define	XkbCompatStateMask		(1L << 8)
+#define	XkbModifierUnlockMask		(1L << 9)
+#define	XkbGroupUnlockMask		(1L << 10)
+#define	XkbAllStateComponentsMask	(0x7ff)
 
-#define	XKBRepeatKeysMask	 (1L << 0)
-#define	XKBSlowKeysMask		 (1L << 1)
-#define	XKBBounceKeysMask	 (1L << 2)
-#define	XKBStickyKeysMask	 (1L << 3)
-#define	XKBMouseKeysMask	 (1L << 4)
-#define	XKBMouseKeysAccelMask	 (1L << 5)
-#define	XKBAccessXKeysMask	 (1L << 6)
-#define	XKBAccessXTimeoutMask	 (1L << 7)
-#define	XKBGroupsWrapMask	 (1L << 8)
-#define	XKBAudibleBellMask	 (1L << 9)
-#define	XKBAutoAutorepeatMask	 (1L << 10)
+#define	XkbRepeatKeysMask	 (1L << 0)
+#define	XkbSlowKeysMask		 (1L << 1)
+#define	XkbBounceKeysMask	 (1L << 2)
+#define	XkbStickyKeysMask	 (1L << 3)
+#define	XkbMouseKeysMask	 (1L << 4)
+#define	XkbMouseKeysAccelMask	 (1L << 5)
+#define	XkbAccessXKeysMask	 (1L << 6)
+#define	XkbAccessXTimeoutMask	 (1L << 7)
+#define	XkbGroupsWrapMask	 (1L << 8)
+#define	XkbAudibleBellMask	 (1L << 9)
+#define	XkbAutoAutorepeatMask	 (1L << 10)
 
-#define XKBKeyboardGroupsMask	 (1L << 12)
-#define	XKBInternalModsMask	 (1L << 13)
-#define	XKBIgnoreLockModsMask	 (1L << 14)
-#define	XKBControlsEnabledMask	 (1L << 15)
+#define XkbKeyboardGroupsMask	 (1L << 12)
+#define	XkbInternalModsMask	 (1L << 13)
+#define	XkbIgnoreLockModsMask	 (1L << 14)
+#define	XkbControlsEnabledMask	 (1L << 15)
 
-#define	XKBAllAccessXMask	 (0x00FF)
-#define	XKBAllControlsMask	 (0xF7FF)
+#define	XkbAllAccessXMask	 (0x00FF)
+#define	XkbAllControlsMask	 (0xF7FF)
 
 #define	XKB_USE_CORE_KBD	0x0100
 #define	XKB_PRIVATE		0x4000
@@ -172,15 +172,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XKB_MAJOR_VERSION	0
 #define	XKB_MINOR_VERSION	21
 
-#define	XKBKeyTypesMask		(1<<0)
-#define	XKBKeySymsMask		(1<<1)
-#define XKBKeyActionsMask	(1<<8)
-#define	XKBKeyBehaviorsMask	(1<<9)
+#define	XkbKeyTypesMask		(1<<0)
+#define	XkbKeySymsMask		(1<<1)
+#define XkbKeyActionsMask	(1<<8)
+#define	XkbKeyBehaviorsMask	(1<<9)
 
-#define	XKBFullClientInfoMask	(XKBKeyTypesMask|XKBKeySymsMask)
-#define	XKBFullServerInfoMask	(XKBKeyActionsMask|XKBKeyBehaviorsMask)
-#define	XKBAllMapComponentsMask	(XKBFullClientInfoMask|XKBFullServerInfoMask)
-#define	XKBResizableInfoMask	(XKBKeyTypesMask)
+#define	XkbFullClientInfoMask	(XkbKeyTypesMask|XkbKeySymsMask)
+#define	XkbFullServerInfoMask	(XkbKeyActionsMask|XkbKeyBehaviorsMask)
+#define	XkbAllMapComponentsMask	(XkbFullClientInfoMask|XkbFullServerInfoMask)
+#define	XkbResizableInfoMask	(XkbKeyTypesMask)
 
 #define	XKB_SI_NoIndicator	0xff
 #define	XKB_SI_Autorepeat	(1<<0)
@@ -204,15 +204,15 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XKB_IMUseCompat		(1L << 5)
 #define	XKB_IMUseAnyState	(0xF)
 
-#define	XKBKeycodesNameMask	(1<<0)
-#define	XKBGeometryNameMask	(1<<1)
-#define	XKBSymbolsNameMask	(1<<2)
-#define	XKBKeyTypeNamesMask	(1<<3)
-#define	XKBKTLevelNamesMask	(1<<4)
-#define	XKBRGNamesMask		(1<<5)
-#define	XKBIndicatorNamesMask	(1<<6)
-#define	XKBModifierNamesMask	(1<<7)
-#define	XKBCharSetsMask		(1<<8)
-#define	XKBAllNamesMask		(0x1ff)
+#define	XkbKeycodesNameMask	(1<<0)
+#define	XkbGeometryNameMask	(1<<1)
+#define	XkbSymbolsNameMask	(1<<2)
+#define	XkbKeyTypeNamesMask	(1<<3)
+#define	XkbKTLevelNamesMask	(1<<4)
+#define	XkbRGNamesMask		(1<<5)
+#define	XkbIndicatorNamesMask	(1<<6)
+#define	XkbModifierNamesMask	(1<<7)
+#define	XkbCharSetsMask		(1<<8)
+#define	XkbAllNamesMask		(0x1ff)
 
 #endif /* _XKB_H_ */

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XKBstr.h,v 1.1 93/09/26 21:12:23 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -34,7 +34,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	 * Common data structures and access macros
 	 */
 
-typedef struct _XKBStateRec {
+typedef struct _XkbStateRec {
 	CARD8	group;
 	CARD8	baseGroup;
 	CARD8	latchedGroup;
@@ -47,59 +47,59 @@ typedef struct _XKBStateRec {
 	CARD8	unlockedMods;
 	CARD8	groupsUnlocked;
 	CARD8	pad;
-} XKBStateRec,*XKBStatePtr;
-#define	XKBModLocks(s)	 ((s)->lockedMods&(~(s)->unlockedMods))
-#define	XKBStateMods(s)	 ((s)->baseMods|(s)->latchedMods|XKBModLocks(s))
-#define	XKBGroupLock(s)	 ((s)->groupsUnlocked?0:(s)->lockedGroup)
-#define	XKBStateGroup(s) ((s)->baseGroup+(s)->latchedGroup+XKBGroupLock(s))
+} XkbStateRec,*XkbStatePtr;
+#define	XkbModLocks(s)	 ((s)->lockedMods&(~(s)->unlockedMods))
+#define	XkbStateMods(s)	 ((s)->baseMods|(s)->latchedMods|XkbModLocks(s))
+#define	XkbGroupLock(s)	 ((s)->groupsUnlocked?0:(s)->lockedGroup)
+#define	XkbStateGroup(s) ((s)->baseGroup+(s)->latchedGroup+XkbGroupLock(s))
 
-typedef struct _XKBKeyType {
+typedef struct _XkbKeyType {
 	CARD8		 flags;
 	CARD8		 mask;
 	CARD8		 groupWidth;
 	CARD8		 pad;
 	CARD8		*map;
 	CARD8		*preserve;
-} XKBKeyTypeRec, *XKBKeyTypePtr;
+} XkbKeyTypeRec, *XkbKeyTypePtr;
 #define	XKB_KT_FOR_SYMS			(1<<0)
 #define	XKB_KT_FOR_ACTIONS		(1<<1)
 #define	XKB_KT_DONT_FREE_MAP		(1<<5)
 #define	XKB_KT_DONT_FREE_PRESERVE	(1<<6)
 #define	XKB_KT_DONT_FREE_STRUCT		(1<<7)
-#define	XKBKTIndex(cm,s)	((cm)->map[(cm)->mask&(s)])
-#define	XKBKTModsToClear(cm,s)	((cm)->preserve?\
+#define	XkbKTIndex(cm,s)	((cm)->map[(cm)->mask&(s)])
+#define	XkbKTModsToClear(cm,s)	((cm)->preserve?\
 				 ((cm->mask)&(~(cm)->preserve[(cm)->mask&(s)]))\
 				 ((cm)->mask))
-#define	XKBKTResultMods(cm,s)	((s)&(~XKBColModsToClear(cm,s)))
-#define	XKBKTMapWidth(cm)		(((cm)->mask&0xff)+1)
+#define	XkbKTResultMods(cm,s)	((s)&(~XkbColModsToClear(cm,s)))
+#define	XkbKTMapWidth(cm)		(((cm)->mask&0xff)+1)
 
-#define	XKBNumGroups(g)		((g)&0x1f)
-#define	XKBGroupsWrap(g)	(((g)&0x80)!=0)
-#define	XKBSetGroupInfo(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
-#define	XKBSetNumGroups(g,n)	(((g)&0x80)|((n)&0x1f))
-#define	XKBSetGroupsWrap(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
+#define	XkbNumGroups(g)		((g)&0x1f)
+#define	XkbGroupsWrap(g)	(((g)&0x80)!=0)
+#define	XkbSetGroupInfo(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
+#define	XkbSetNumGroups(g,n)	(((g)&0x80)|((n)&0x1f))
+#define	XkbSetGroupsWrap(g,w)	(((w)?0x80:0x00)|((g)&0x1f))
 
 	/*
 	 * Structures and access macros used primarily by the server
 	 */
 
-typedef	struct _XKBAction {
+typedef	struct _XkbAction {
 	CARD16	type;
 	CARD8	flags;
 	CARD8	data;
-} XKBAction;
-#define	XKBActionType(a)		((a).type)
-#define	XKBActionData(a)		((((a).flags)<<8)|((a).data))
-#define	XKBActionDataLow(a)		((a).data)
-#define	XKBActionDataHigh(a)		((a).flags)
-#define	XKBActionSetType(a,t)		((a).type=(t))
-#define	XKBActionSetData(a,d)		(((a).flags=(((d)>>8)&0xff)),(a).data=((d)&0xff))
-#define	XKBActionSetDataLow(a,d)	((a).data=(d))
-#define	XKBActionSetDataHigh(a,d)	((a).flags=(d))
-#define	XKBNewAction(a,t,d)		(((a).type=(t)),XKBActionSetData(a,d))
-#define	XKBNewAction2(a,t,d1,d2)	(((a).type=(t)),((a).flags=(d1)),((a).data=(d2)))
+} XkbAction;
+#define	XkbActionType(a)		((a).type)
+#define	XkbActionData(a)		((((a).flags)<<8)|((a).data))
+#define	XkbActionDataLow(a)		((a).data)
+#define	XkbActionDataHigh(a)		((a).flags)
+#define	XkbActionSetType(a,t)		((a).type=(t))
+#define	XkbActionSetData(a,d)		(((a).flags=(((d)>>8)&0xff)),(a).data=((d)&0xff))
+#define	XkbActionSetDataLow(a,d)	((a).data=(d))
+#define	XkbActionSetDataHigh(a,d)	((a).flags=(d))
+#define	XkbNewAction(a,t,d)		(((a).type=(t)),XkbActionSetData(a,d))
+#define	XkbNewAction2(a,t,d1,d2)	(((a).type=(t)),((a).flags=(d1)),((a).data=(d2)))
 
-typedef	struct _XKBControls {
+typedef	struct _XkbControls {
 	CARD8		mouseKeysDfltBtn;
 	CARD8		numGroups;
 	CARD16		internalMods;
@@ -116,92 +116,92 @@ typedef	struct _XKBControls {
 	CARD16		mouseKeysCurve;
 	CARD16		accessXTimeout;
 	CARD32		accessXTimeoutMask;
-} XKBControlsRec, *XKBControlsPtr;
+} XkbControlsRec, *XkbControlsPtr;
 
-typedef struct _XKBServerMapRec {
+typedef struct _XkbServerMapRec {
 	CARD16			 nActions;
 	CARD16			 szActions;
-	XKBAction		*actions;
+	XkbAction		*actions;
 
-	XKBAction		*keyBehaviors;
+	XkbAction		*keyBehaviors;
 	CARD16			*keyActions;
-} XKBServerMapRec, *XKServerMapRec;
+} XkbServerMapRec, *XKbServerMapPtr;
 
-#define	XKBSMKeyActionsPtr(m,k) (&(m)->actions[(m)->keyActions[k]])
+#define	XkbSMKeyActionsPtr(m,k) (&(m)->actions[(m)->keyActions[k]])
 
 	/*
 	 * Structures and access macros used primarily by clients
 	 */
 
-typedef	struct _XKBSymMapRec {
+typedef	struct _XkbSymMapRec {
 	CARD8		 ktIndex;
 	CARD8		 groupInfo;
 	CARD16		 offset;
-} XKBSymMapRec;
+} XkbSymMapRec;
 
-typedef struct _XKBClientMapRec {
+typedef struct _XkbClientMapRec {
 	CARD8			 nKeyTypes;
-	XKBKeyTypeRec		*keyTypes;
+	XkbKeyTypeRec		*keyTypes;
 
 	CARD16			 szSyms;
 	CARD16			 nSyms;
 	KeySym			*syms;
-	XKBSymMapRec		*keySymMap;
-} XKBClientMapRec, *XKBClientMapPtr;
+	XkbSymMapRec		*keySymMap;
+} XkbClientMapRec, *XkbClientMapPtr;
 
-#define	XKBCMKeyGroupsWrap(m,k) (XKBGroupsWrap((m)->keySymMap[k].groupInfo))
-#define	XKBCMKeyNumGroups(m,k)	(XKBNumGroups((m)->keySymMap[k].groupInfo))
-#define	XKBCMKeyGroupWidth(m,k)	(XKBCMKeyType(m,k)->groupWidth)
-#define	XKBCMKeyTypeIndex(m,k)	((m)->keySymMap[k].ktIndex)
-#define	XKBCMKeyType(m,k)	(&(m)->keyTypes[XKBCMKeyTypeIndex(m,k)])
-#define	XKBCMKeyNumSyms(m,k)	(XKBCMKeyGroupWidth(m,k)*XKBCMKeyNumGroups(m,k))
-#define	XKBCMKeySymsOffset(m,k)	((m)->keySymMap[k].offset)
-#define	XKBCMKeySymsPtr(m,k)	(&(m)->syms[XKBCMKeySymsOffset(m,k)])
+#define	XkbCMKeyGroupsWrap(m,k) (XkbGroupsWrap((m)->keySymMap[k].groupInfo))
+#define	XkbCMKeyNumGroups(m,k)	(XkbNumGroups((m)->keySymMap[k].groupInfo))
+#define	XkbCMKeyGroupWidth(m,k)	(XkbCMKeyType(m,k)->groupWidth)
+#define	XkbCMKeyTypeIndex(m,k)	((m)->keySymMap[k].ktIndex)
+#define	XkbCMKeyType(m,k)	(&(m)->keyTypes[XkbCMKeyTypeIndex(m,k)])
+#define	XkbCMKeyNumSyms(m,k)	(XkbCMKeyGroupWidth(m,k)*XkbCMKeyNumGroups(m,k))
+#define	XkbCMKeySymsOffset(m,k)	((m)->keySymMap[k].offset)
+#define	XkbCMKeySymsPtr(m,k)	(&(m)->syms[XkbCMKeySymsOffset(m,k)])
 
 	/*
 	 * Compatibility structures and access macros
 	 */
 
-typedef struct _XKBModCompatRec {
+typedef struct _XkbModCompatRec {
 	CARD8	mods;
 	CARD8	groups;
-} XKBModCompatRec,*XKBModCompatPtr;
+} XkbModCompatRec,*XkbModCompatPtr;
 
-typedef struct _XKBSymInterpretRec {
+typedef struct _XkbSymInterpretRec {
 	KeySym		sym;
 	CARD8		flags;
 	CARD8		match;
 	CARD8		mods;
 	CARD8		indicator;
-	XKBAction	action;
-	XKBAction	behavior;
-} XKBSymInterpretRec,*XKBSymInterpretPtr;
+	XkbAction	action;
+	XkbAction	behavior;
+} XkbSymInterpretRec,*XkbSymInterpretPtr;
 
-typedef struct _XKBCompatRec {
+typedef struct _XkbCompatRec {
 	CARD16			 nSymInterpret;
-	XKBSymInterpretRec	*symInterpret;
-	XKBModCompatRec		 modCompat[8];
-} XKBCompatRec, *XKBCompatPtr;
+	XkbSymInterpretRec	*symInterpret;
+	XkbModCompatRec		 modCompat[8];
+} XkbCompatRec, *XkbCompatPtr;
 
-typedef struct _XKBIndicatorMapRec {
+typedef struct _XkbIndicatorMapRec {
 	CARD8		whichMods;
 	CARD8		mods;
 	CARD8		whichGroups;
 	CARD8		groups;
 	CARD32		controls;
-} XKBIndicatorMapRec, *XKBIndicatorMapPtr;
+} XkbIndicatorMapRec, *XkbIndicatorMapPtr;
 
-typedef struct _XKBIndicatorRec {
+typedef struct _XkbIndicatorRec {
 	CARD8		  	nRealIndicators;
 	CARD8		  	pad1;
 	CARD16		  	pad2;
-	XKBIndicatorMapRec	maps[XKB_NUM_INDICATORS];
-} XKBIndicatorRec,*XKBIndicatorPtr;
+	XkbIndicatorMapRec	maps[XKB_NUM_INDICATORS];
+} XkbIndicatorRec,*XkbIndicatorPtr;
 
 	/*
 	 * Names for everything 
 	 */
-typedef struct _XKBNamesRec {
+typedef struct _XkbNamesRec {
 	Atom		  keycodes;
 	Atom		  geometry;
 	Atom		  symbols;
@@ -213,12 +213,12 @@ typedef struct _XKBNamesRec {
 	CARD16		  nCharSets;
 	CARD16		  nRadioGroups;
 	Atom		 *charSets;
-} XKBNamesRec,*XKBNamesPtr;
+} XkbNamesRec,*XkbNamesPtr;
 
 	/*
 	 * Alternate Symbol Sets
 	 */
-typedef struct _XKBAlternateSymsRec {
+typedef struct _XkbAlternateSymsRec {
 	Atom		 name;
 	CARD8		 index;
 	CARD8		 nCharSets;
@@ -227,41 +227,41 @@ typedef struct _XKBAlternateSymsRec {
 	CARD8		 nKeys;
 	CARD16		 nSyms;
 	KeySym		*syms;
-	XKBSymMapRec	*maps;
-	struct _XKBAlternateSymsRec	*next;
-} XKBAlternateSymsRec, *XKBAlternateSymsPtr;
+	XkbSymMapRec	*maps;
+	struct _XkbAlternateSymsRec	*next;
+} XkbAlternateSymsRec, *XkbAlternateSymsPtr;
 
 	/*
 	 * Tie it all together into one big keyboard description
 	 */
-typedef	struct _XKBDesc {
+typedef	struct _XkbDesc {
 	CARD16		 	 flags;
 	CARD16			 deviceSpec;
 	KeyCode			 minKeyCode;
 	KeyCode			 maxKeyCode;
 
-	XKBControlsRec		*controls;
-	XKBServerMapRec		*server;
-	XKBClientMapRec		*map;
-	XKBIndicatorRec		*indicators;
-	XKBNamesRec		*names;
-	XKBCompatRec		*compat;
-	XKBAlternateSymsRec	*altSymSets;
-} XKBDescRec, *XKBDescPtr;
-#define	XKBKeyKeyType(d,k)	(XKBCMKeyType((d)->map,k))
-#define	XKBKeyGroupWidth(d,k)	(XKBKeyKeyType(d,k)->groupWidth)
-#define	XKBKeyGroupsWrap(d,k)	(XKBCMKeyGroupsWrap((d)->map,(k)))
-#define	XKBKeyNumGroups(d,k)	(XKBCMKeyNumGroups((d)->map,(k)))
-#define	XKBKeyNumSyms(d,k)	(XKBCMKeyNumSyms((d)->map,(k)))
-#define	XKBKeySymsPtr(d,k)	(XKBCMKeySymsPtr((d)->map,(k)))
-#define	XKBKeySym(d,k,n)	(XKBKeySymsPtr(d,k)[n])
+	XkbControlsRec		*controls;
+	XkbServerMapRec		*server;
+	XkbClientMapRec		*map;
+	XkbIndicatorRec		*indicators;
+	XkbNamesRec		*names;
+	XkbCompatRec		*compat;
+	XkbAlternateSymsRec	*altSymSets;
+} XkbDescRec, *XkbDescPtr;
+#define	XkbKeyKeyType(d,k)	(XkbCMKeyType((d)->map,k))
+#define	XkbKeyGroupWidth(d,k)	(XkbKeyKeyType(d,k)->groupWidth)
+#define	XkbKeyGroupsWrap(d,k)	(XkbCMKeyGroupsWrap((d)->map,(k)))
+#define	XkbKeyNumGroups(d,k)	(XkbCMKeyNumGroups((d)->map,(k)))
+#define	XkbKeyNumSyms(d,k)	(XkbCMKeyNumSyms((d)->map,(k)))
+#define	XkbKeySymsPtr(d,k)	(XkbCMKeySymsPtr((d)->map,(k)))
+#define	XkbKeySym(d,k,n)	(XkbKeySymsPtr(d,k)[n])
 
-#define	XKBKeyNumActions(d,k)	(((d)->server->keyActions[k]==0)?1:\
-							XKBKeyNumSyms(d,k))
-#define	XKBKeyActionsPtr(d,k)	(XKBSMKeyActionsPtr((d)->server,k))
-#define	XKBNumKeys(d)		((d)->maxKeyCode-(d)->minKeyCode+1)
+#define	XkbKeyNumActions(d,k)	(((d)->server->keyActions[k]==0)?1:\
+							XkbKeyNumSyms(d,k))
+#define	XkbKeyActionsPtr(d,k)	(XkbSMKeyActionsPtr((d)->server,k))
+#define	XkbNumKeys(d)		((d)->maxKeyCode-(d)->minKeyCode+1)
 
-typedef struct _XKBMapChanges {
+typedef struct _XkbMapChanges {
 	CARD16			 changed;
 	CARD8			 firstKeyType;
 	CARD8			 nKeyTypes;
@@ -271,19 +271,19 @@ typedef struct _XKBMapChanges {
 	CARD8			 nKeyActions;
 	CARD8			 firstKeyBehavior;
 	CARD8			 nKeyBehaviors;
-} XKBMapChangesRec;
+} XkbMapChangesRec;
 
-typedef struct _XKBControlsChanges {
+typedef struct _XkbControlsChanges {
 	CARD32			 changedControls;
 	CARD32			 enabledControlsChanges;
-} XKBControlsChangesRec;
+} XkbControlsChangesRec;
 
-typedef struct _XKBIndicatorChanges {
+typedef struct _XkbIndicatorChanges {
 	CARD32			 stateChanges;
 	CARD32			 mapChanges;
-} XKBIndicatorChangesRec;
+} XkbIndicatorChangesRec;
 
-typedef struct _XKBNameChanges {
+typedef struct _XkbNameChanges {
 	CARD16			changed;
 	CARD8			firstKeyType;
 	CARD8			nKeyTypes;
@@ -295,31 +295,31 @@ typedef struct _XKBNameChanges {
 	CARD8			changedMods;
 	CARD8			pad1;
 	CARD16			pad2;
-} XKBNameChangesRec;
+} XkbNameChangesRec;
 
-typedef struct _XKBCompatChanges {
+typedef struct _XkbCompatChanges {
 	CARD8			changedMods;
 	CARD8			pad1;
 	CARD16			pad2;
 	CARD16			firstSym;
 	CARD16			nSyms;
-} XKBCompatChangesRec;
+} XkbCompatChangesRec;
 
-typedef struct _XKBAlternateSymChanges {
+typedef struct _XkbAlternateSymChanges {
 	CARD8			id;
 	CARD8			firstKey;
 	CARD8			nKeys;
 	CARD8			pad1;
-} XKBAlternateSymChanges;
+} XkbAlternateSymChanges;
 
-typedef struct _XKBChanges {
+typedef struct _XkbChanges {
 	CARD16			 deviceSpec;
 	CARD16			 stateChanges;
-	XKBMapChangesRec	 map;
-	XKBControlsChangesRec	 controls;
-	XKBIndicatorChangesRec	 indicators;
-	XKBNameChangesRec	 names;
-	XKBCompatChangesRec	 compat;
-} XKBChangesRec, *XKBChangesPtr;
+	XkbMapChangesRec	 map;
+	XkbControlsChangesRec	 controls;
+	XkbIndicatorChangesRec	 indicators;
+	XkbNameChangesRec	 names;
+	XkbCompatChangesRec	 compat;
+} XkbChangesRec, *XkbChangesPtr;
 
 #endif /* _XKBSTR_H_ */
