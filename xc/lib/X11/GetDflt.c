@@ -1,36 +1,42 @@
-#include <copyright.h>
-
-/* $Header: XGetDflt.c,v 1.1 87/08/22 10:24:06 rws Locked $ */
-/* Copyright (c) 1985, Massachusetts Institute of Technology */
-
 /*
- * This routine returns options out of the X user preferences file
- * found in the RESOURCE_MANAGER property, possibly modified by the 
- * .Xdefaults in the user's home
- * directory.  It either returns a pointer to
- * the option or returns NULL if option not set.  It is patterned after
- * Andrew's file format (why be different for the sake of being different?).
- * Andrew's code was NOT examined before writing this routine.
- * It parses lines of the format "progname.option:value" and returns a pointer
- * to value.
- */
+*****************************************************************************
+**                                                                          *
+**                         COPYRIGHT (c) 1987 BY                            *
+**             DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.                *
+**			   ALL RIGHTS RESERVED                              *
+**                                                                          *
+**  THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED  *
+**  ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE  *
+**  INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER  *
+**  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY  *
+**  OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY  *
+**  TRANSFERRED.                                                            *
+**                                                                          *
+**  THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE  *
+**  AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT  *
+**  CORPORATION.                                                            *
+**                                                                          *
+**  DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS  *
+**  SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.                 *
+**                                                                          *
+*****************************************************************************
+**/
 
 #include <stdio.h>
-#include <X11/Xos.h>
+#include <string.h>
 #include <ctype.h>
 #include "Xlibint.h"
 #include "Xresource.h"
-#include "Quarks.h"
 
-#define XOPTIONFILE "/.Xdefaults"	/* name in home directory of options
-					   file. */
+#define XOPTIONFILE "/.Xdefaults"  /* name in home directory of options file */
 
-static XrmResourceDataBase InitDefaults (dpy)
+static XrmDatabase InitDefaults (dpy)
     Display *dpy;			/* display for defaults.... */
 {
-    XrmResourceDataBase userdb = NULL;
-    XrmResourceDataBase xdb = NULL;
-    char fname[BUFSIZ];             /* longer than any conceivable size */
+    XrmDatabase userdb = NULL;
+    XrmDatabase xdb = NULL;
+    int status;
+    char fname[BUFSIZ], *f;             /* longer than any conceivable size */
     char *getenv();
     char *home = getenv("HOME");
 
@@ -42,11 +48,12 @@ static XrmResourceDataBase InitDefaults (dpy)
 	strcpy (fname, home);
 	strcat (fname, XOPTIONFILE);
 	}
+
     XrmInitialize();
 
-    if (fname[0] != '\0') userdb =  XrmGetDataBase(fname);
-    xdb = XrmLoadDataBase(dpy->xdefaults);
-    XrmMergeDataBases(userdb, &xdb);
+    if (fname[0] != '\0') userdb =  XrmGetFileDatabase(fname);
+    xdb = XrmGetStringDatabase(dpy->xdefaults);
+    XrmMergeDatabases(userdb, &xdb);
     return xdb;
 }
 
@@ -56,10 +63,10 @@ char *XGetDefault(dpy, prog, name)
 	char *prog;			/* name of program for option	*/
 
 {					/* to get, for example, "font"  */
-	char temp[BUFSIZ];
-	XrmName namelist[5];
-	XrmClass classlist[5];
+	char temp[BUFSIZ], *t;
+	XrmAtom type;
 	XrmValue result;
+
 
 	/*
 	 * see if database has ever been initialized.  Lookups can be done
@@ -70,12 +77,10 @@ char *XGetDefault(dpy, prog, name)
 		dpy->db = InitDefaults(dpy);
 		}
 	UnlockDisplay(dpy);
-	sprintf(temp, "%s.%s", prog, name);
-	XrmStringToNameList(temp, namelist);
-	XrmStringToClassList("Program.Name", classlist);
 
-	XrmGetResource(DefaultScreen(dpy), dpy->db, 
-		namelist, classlist, XrmQString, &result);
+	sprintf(temp, "%s.%s", prog, name);
+	XrmGetResource(dpy->db, temp, "Program.Name", &type, &result);
+
 	return (result.addr);
 }
 
