@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: link_scen,v 1.2 92/06/11 19:23:51 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).
@@ -18,6 +18,9 @@ linkbuild
 	/tset/CH10/all
 	/tset/XPROTO/all
 
+linkbuildExt
+	/tset/Xi/all
+	/tset/XiPROTO/all
 
 #
 # This scenario is used to run the linked executables.
@@ -665,3 +668,79 @@ linkexec
 	/tset/XPROTO/unmpwdw/unmpwdw{all}
 	/tset/XPROTO/unnstllclr/unnstllclr{all}
 	/tset/XPROTO/wrppntr/wrppntr{all}
+
+linkexecExt
+#	
+#	 	X Input Device Extension section
+#	
+	/tset/Xi/alldvevnts/alldvevnts{all}
+	/tset/Xi/chgdvctl/chgdvctl{all}
+	/tset/Xi/chgfctl/chgfctl{all}
+	/tset/Xi/chgprop/chgprop{all}
+	/tset/Xi/chngdvkmap/chngdvkmap{all}
+	/tset/Xi/closdev/closdev{all}
+	/tset/Xi/dvbell/dvbell{all}
+	/tset/Xi/getdctl/getdctl{all}
+	/tset/Xi/getfctl/getfctl{all}
+	/tset/Xi/getfocus/getfocus{all}
+	/tset/Xi/getprop/getprop{all}
+	/tset/Xi/getvers/getvers{all}
+	/tset/Xi/grbdev/grbdev{all}
+	/tset/Xi/grbdvbtn/grbdvbtn{all}
+	/tset/Xi/grbdvky/grbdvky{all}
+	/tset/Xi/gtbtnmppn/gtbtnmppn{all}
+	/tset/Xi/gtdvkmap/gtdvkmap{all}
+	/tset/Xi/gtdvmmap/gtdvmmap{all}
+	/tset/Xi/gtdvmtnevnts/gtdvmtnevnts{all}
+	/tset/Xi/gtslctevnt/gtslctevnt{all}
+	/tset/Xi/listdev/listdev{all}
+	/tset/Xi/misc/misc{all}
+	/tset/Xi/opendev/opendev{all}
+	/tset/Xi/querydvst/querydvst{all}
+	/tset/Xi/setdval/setdval{all}
+	/tset/Xi/setdvbmap/setdvbmap{all}
+	/tset/Xi/setdvfocus/setdvfocus{all}
+	/tset/Xi/setdvmmap/setdvmmap{all}
+	/tset/Xi/setdvmode/setdvmode{all}
+	/tset/Xi/slextevnt/slextevnt{all}
+	/tset/Xi/sndextevnt/sndextevnt{all}
+	/tset/Xi/ungrbdvbtn/ungrbdvbtn{all}
+	/tset/Xi/ungrbdvky/ungrbdvky{all}
+	/tset/Xi/ungrbdv/ungrbdv{all}
+	/tset/Xi/chgkbd/chgkbd{all}
+	/tset/Xi/chgptr/chgptr{all}
+	/tset/XiPROTO/alldvevnts/alldvevnts{all}
+	/tset/XiPROTO/chgdvctl/chgdvctl{all}
+	/tset/XiPROTO/chgdvprop/chgdvprop{all}
+	/tset/XiPROTO/chgfctl/chgfctl{all}
+	/tset/XiPROTO/chgkbd/chgkbd{all}
+	/tset/XiPROTO/chgptr/chgptr{all}
+	/tset/XiPROTO/chngdvkmap/chngdvkmap{all}
+	/tset/XiPROTO/closdev/closdev{all}
+	/tset/XiPROTO/dvbell/dvbell{all}
+	/tset/XiPROTO/getdvmmap/getdvmmap{all}
+	/tset/XiPROTO/getfctl/getfctl{all}
+	/tset/XiPROTO/getvers/getvers{all}
+	/tset/XiPROTO/grbdev/grbdev{all}
+	/tset/XiPROTO/grbdvbtn/grbdvbtn{all}
+	/tset/XiPROTO/grbdvky/grbdvky{all}
+	/tset/XiPROTO/gtbtnmppn/gtbtnmppn{all}
+	/tset/XiPROTO/gtdvctl/gtdvctl{all}
+	/tset/XiPROTO/gtdvfcs/gtdvfcs{all}
+	/tset/XiPROTO/gtdvmtnevnts/gtdvmtnevnts{all}
+	/tset/XiPROTO/gtdvprop/gtdvprop{all}
+	/tset/XiPROTO/gtkeymppn/gtkeymppn{all}
+	/tset/XiPROTO/gtslctexevnt/gtslctexevnt{all}
+	/tset/XiPROTO/listdev/listdev{all}
+	/tset/XiPROTO/opendev/opendev{all}
+	/tset/XiPROTO/qrydvstat/qrydvstat{all}
+	/tset/XiPROTO/setdval/setdval{all}
+	/tset/XiPROTO/setdvbmap/setdvbmap{all}
+	/tset/XiPROTO/setdvfcs/setdvfcs{all}
+	/tset/XiPROTO/setdvmmap/setdvmmap{all}
+	/tset/XiPROTO/setdvmode/setdvmode{all}
+	/tset/XiPROTO/slctexevnt/slctexevnt{all}
+	/tset/XiPROTO/sndextevnt/sndextevnt{all}
+	/tset/XiPROTO/ungrbdev/ungrbdev{all}
+	/tset/XiPROTO/ungrbdvbtn/ungrbdvbtn{all}
+	/tset/XiPROTO/ungrbdvky/ungrbdvky{all}
