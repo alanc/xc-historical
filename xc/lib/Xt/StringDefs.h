@@ -1,5 +1,5 @@
 /*
-* $Header: Atoms.h,v 1.25 88/01/07 17:23:06 swick Locked $
+* $Header: Atoms.h,v 1.26 88/01/08 11:18:44 swick Locked $
 */
 
 /*
@@ -58,8 +58,7 @@
 #define XtNinternalHeight	"internalHeight"
 #define XtNinternalWidth	"internalWidth"
 #define XtNjustify		"justify"
-#define XtNknobIndent		"knobIndent"
-#define XtNknobPixel		"knobPixel"
+#define XtNgripIndent		"gripIndent"
 #define XtNlabel		"label"
 #define XtNlength		"length"
 #define XtNlowerRight		"lowerRight"
@@ -127,8 +126,7 @@
 #define XtCIndex		"Index"
 #define XtCInterval		"Interval"
 #define XtCJustify		"Justify"
-#define XtCKnobIndent		"KnobIndent"
-#define XtCKnobPixel		"KnobPixel"
+#define XtCGripIndent		"GripIndent"
 #define XtCLabel		"Label"
 #define XtCLength		"Length"
 #define XtCMappedWhenManaged	"MappedWhenManaged"
