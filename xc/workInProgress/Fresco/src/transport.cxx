@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+ 
+/*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -24,7 +28,6 @@
 
 #include <X11/Fresco/Ox/marshal.h>
 #include <X11/Fresco/Ox/transport.h>
-#include <rpc/rpc.h>
 #if defined(sun) && defined(SVR4)
 #include <rpc/types.h>
 #include <rpc/clnt_soc.h>
