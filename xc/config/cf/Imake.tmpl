@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.141 91/10/30 15:55:20 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.142 91/11/17 17:16:29 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -497,7 +497,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define InstKmemFlags InstUidFlags    /* put -g kmem -m 2755 in site.def... */
 #endif
 #ifndef ArCmd
-#if HasLargeTmp | SystemV4
+#if HasLargeTmp || SystemV4
 #define ArCmd ar cq	/* do nothing special */
 #else
 #define ArCmd ar clq	/* use local dir for temp files */
@@ -540,7 +540,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define PreProcessCmd CcCmd -E
 #endif
 #ifndef InstallCmd
-#if SystemV | SystemV4
+#if SystemV || SystemV4
 #ifdef UseInstalled
 #define InstallCmd $(BINDIR)/bsdinst		/* hack should be in project */
 #else
