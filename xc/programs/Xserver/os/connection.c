@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: connection.c,v 1.72 88/07/19 18:06:44 toddb Exp $ */
+/* $Header: connection.c,v 1.73 88/07/20 13:24:26 xguest Locked $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -46,6 +46,9 @@ SOFTWARE.
 #include <sys/param.h>
 #include <errno.h>
 #include <sys/types.h>
+#ifdef macII
+#include <sys/file.h>
+#endif
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <signal.h>
