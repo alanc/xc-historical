@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 5.25 93/07/12 16:28:37 dpw Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.26 93/09/13 09:35:15 dpw Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 
@@ -272,6 +272,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			w;
     RegionPtr		pRegion;
     int			yBand;
+#ifdef GLYPHROP
+    unsigned long       bits;
+#endif
 #ifdef USE_LEFTBITS
     int			widthGlyph;
     unsigned long	widthMask;
@@ -379,9 +382,29 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	    GlyphBits(glyphBits, w, c)
 		    if (c)
 		    {
+		        /* This code originally could read memory locations
+			 * that were not mapped. Hence we have to check the
+			 * trailing bits to see whether they are zero and if
+			 * then skip them correctly. This is no problem for
+			 * the GXcopy case, since there only the pixels that
+			 * are non-zero are written ...
+			 */
+#ifndef GLYPHROP
 	    	    	WriteFourBits(dst, pixel, GetFourBits(BitRight(c,xoff)));
 	    	    	c = BitLeft(c,4-xoff);
 	    	    	dst += DST_INC;
+#else
+                        if (bits = GetFourBits(BitRight(c,xoff)))
+	    	    	  WriteFourBits(dst, pixel, bits);
+	    	    	c = BitLeft(c,4-xoff);
+	    	    	dst += DST_INC;
+
+			while (c && ((bits = GetFourBits(c)) == 0))
+		        {
+		    	    NextFourBits(c);
+		    	    dst += DST_INC;
+                        } 
+#endif
 	    	    	while (c)
 	    	    	{
 		    	    WriteFourBits(dst, pixel, GetFourBits(c));
