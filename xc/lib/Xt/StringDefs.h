@@ -168,15 +168,27 @@
 
 
 /* Representation types */
-#define XtRInt			"int"
-#define XtRString               "string"
+#define XtRBoolean		XrmRBoolean
+#define XtRColor		XrmRColor
+#define XtRDims			XrmRDims
+#define XtRDisplay		XrmRDisplay
 #define XtREditMode		"EditMode"
 #define XtREventBindings	"EventBindings"
+#define XtRFile			XrmRFile
+#define XtRFloat		XrmRFloat
+#define XtRFont			XrmRFont
+#define XtRFontStruct		XrmRFontStruct
 #define XtRFunction		"Function"
 #define XtRJustify		"Justify"
+#define XtRGeometry		XrmRGeometry
+#define XtRInt			XrmRInt
 #define XtROrientation		"Orientation"
-#define XtRTextPosition         "XtTextPosition"
-
+#define XtRPixel		"Pixel"
+#define XtRPixmap		"Pixmap"
+#define XtRPointer		"Pointer"
+#define XtRString               XrmRString
+#define XtRTextPosition 	"XtTextPosition"
+#define XtRWindow		XrmRWindow
 
 /* Orientation enumeration constants */
 
