@@ -49,8 +49,8 @@ extern TreeClassRec treeClassRec;
 
 typedef struct {
     /* fields available through resources */
-    Dimension h_min_space;		/* hSpace/HSpace */
-    Dimension v_min_space;		/* vSpace/VSpace */
+    Dimension hpad;			/* hSpace/HSpace */
+    Dimension vpad;			/* vSpace/VSpace */
     Dimension line_width;		/* lineWidth/LineWidth */
     Pixel foreground;			/* foreground/Foreground */
     XtOrientation orientation;		/* orientation/Orientation */
@@ -75,7 +75,7 @@ typedef struct _TreeRec {
  */
 typedef struct _TreeConstraintsPart {
   Widget parent;
-  WidgetList children;
+  Widget *children;
   int n_children;
   int max_children;
   Dimension bbwidth, bbheight;
@@ -94,7 +94,9 @@ typedef struct _TreeConstraintsRec {
 #define TREE_CONSTRAINT(w) \
                    ((TreeConstraints)((w)->core.constraints))
 
-#define INITIAL_TREE_DEPTH 10		/* for allocating largest array */
+#define TREE_INITIAL_DEPTH 10		/* for allocating largest array */
+#define TREE_HORIZONTAL_DEFAULT_SPACING 20
+#define TREE_VERTICAL_DEFAULT_SPACING 6
 
 #endif /* _XawTreeP_h */
 
