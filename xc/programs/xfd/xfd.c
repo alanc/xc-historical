@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.3 89/06/02 20:08:45 jim Exp $
+ * $XConsortium: xfd.c,v 1.4 89/06/05 14:22:37 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,28 +41,14 @@ char *ProgramName;
 
 static XrmOptionDescRec xfd_options[] = {
 {"-fn",		"*grid.font",	XrmoptionSepArg,	(caddr_t) NULL },
-{"-bf",		"*bottomFont",	XrmoptionSepArg,	(caddr_t) NULL },
 {"-start",	"*startChar",	XrmoptionSepArg, 	(caddr_t) NULL },
 {"-box",	"*grid.boxChars", XrmoptionNoArg,	(caddr_t) "on" },
 {"-bc",		"*grid.boxColor", XrmoptionSepArg, 	(caddr_t) NULL },
 {"-center",	"*grid.centerChars", XrmoptionNoArg,	(caddr_t) "on" },
 };
 
-static struct resources {
-  XFontStruct *bottom_font;
-  Boolean verbose;
-} xfd_resources;
-
-static XtResource Resources[] = {
-#define offset(field) XtOffset(struct resources *, field)
-{ "bottomFont", "Font", XtRFontStruct, sizeof(XFontStruct *),
-    offset(bottom_font), XtRString, (caddr_t) "XtDefaultFont" },
-{ "verbose", "Verbose", XtRBoolean, sizeof(Boolean),
-    offset(verbose), XtRString, (caddr_t) "FALSE" },
-#undef offset
-};
-
 static void do_quit(), do_next(), do_prev();
+static void initialize_description_labels ();
 static char *get_font_name();
 
 static XtActionsRec xfd_actions[] = {
@@ -76,22 +62,25 @@ static char *button_list[] = { "quit", "prev", "next", NULL };
 
 usage()
 {
-    fprintf (stderr, "usage:  %s [-v] [-s num] -fn font\n",
+    fprintf (stderr,
+	     "usage:  %s [-start num] [-box] [-center] -fn font\n",
 	     ProgramName);
     exit (1);
 }
 
 
+static Widget chardesc1Label, charlabel2Label;
+
 main (argc, argv) 
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, toplabel, box, form, grid, bottomlabel;
+    Widget toplevel, pane, toplabel, box, form, grid;
     Arg av[10];
     Cardinal i;
     char **cpp;
-    static void GotCharacter();
-    static XtCallbackRec cb[2] = { { GotCharacter, NULL }, { NULL, NULL } };
+    static void SelectChar();
+    static XtCallbackRec cb[2] = { { SelectChar, NULL }, { NULL, NULL } };
     XFontStruct *fs;
     char *fontname;
 
@@ -103,15 +92,6 @@ main (argc, argv)
     XtAppAddActions (XtWidgetToApplicationContext (toplevel),
                      xfd_actions, XtNumber (xfd_actions));
 
-    XtGetApplicationResources (toplevel, (caddr_t)&xfd_resources, Resources,
-			       XtNumber(Resources), NULL, 0);
-
-
-    /*
-     * In the application shell, create a pane that separates the various
-     * parts.  Put buttons in a box on top, a core within a form in the middle,
-     * and text widgets at the bottom.
-     */
 
     /* pane wrapping everything */
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
@@ -128,9 +108,14 @@ main (argc, argv)
                                       NULL, ZERO);
     }
 
+    /* and labels in which to put information */
+    chardesc1Label = XtCreateManagedWidget ("chardesc1", labelWidgetClass,
+					    pane, NULL, ZERO);
+    charlabel2Label = XtCreateManagedWidget ("charlabel2", labelWidgetClass,
+					     pane, NULL, ZERO);
+
     /* form in which to draw */
     form = XtCreateManagedWidget ("form", formWidgetClass, pane, NULL, ZERO);
-
     
     /*
      * set the sucker to expand; really ought to compute this according to 
@@ -141,10 +126,10 @@ main (argc, argv)
 #define DEFAULT_DRAWING_HEIGHT 200
 
     i = 0;
+/*
     XtSetArg (av[i], XtNtop, XtChainTop); i++;
     XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
-    XtSetArg (av[i], XtNleft, XtChainLeft); i++;
-    XtSetArg (av[i], XtNright, XtChainRight); i++;
+ */
     XtSetArg (av[i], XtNcallback, cb); i++;
     grid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form, av, i);
 
@@ -157,18 +142,14 @@ main (argc, argv)
     i = 0;
     XtSetArg (av[i], XtNlabel, fontname); i++;
     XtSetValues (toplabel, av, i);
-
-    /* and a label in which to put information */
-    bottomlabel = XtCreateManagedWidget ("label", labelWidgetClass, pane,
-					 NULL, ZERO);
-
+    initialize_description_labels (fs);
 
     XtRealizeWidget (toplevel);
     XtMainLoop ();
 }
 
 
-static void GotCharacter (w, closure, data)
+static void SelectChar (w, closure, data)
     Widget w;
     caddr_t closure, data;
 {
@@ -176,22 +157,33 @@ static void GotCharacter (w, closure, data)
     XFontStruct *fs = p->thefont;
     unsigned n = ((((unsigned) p->thechar.byte1) << 8) |
 		  ((unsigned) p->thechar.byte2));
+    unsigned minn = ((((unsigned) fs->min_byte1) << 8) |
+		     ((unsigned) fs->min_char_or_byte2));
+    unsigned maxn = ((((unsigned) fs->max_byte1) << 8) |
+		     ((unsigned) fs->max_char_or_byte2));
     int direction, fontascent, fontdescent;
     XCharStruct metrics;
+    char buf[256];
+    Arg arg;
+
+    if (n < minn || n > maxn) {
+	initialize_description_labels (fs);
+	return;
+    }
 
     XTextExtents16 (fs, &p->thechar, 1, &direction, &fontascent, &fontdescent,
 		    &metrics);
 
-    /*
-     * XXX - display in a text widget, along with perchar info
-     */
-    printf ("Character %u, 0x%02x%02x (%d, %d); font ascent %d, descent %d\n",
-	    n, (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
-	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
-	    fontascent, fontdescent);
-    printf ("    width %d, left %d, right %d, ascent %d, descent %d\n",
-	    metrics.width, metrics.lbearing, metrics.rbearing,
-	    metrics.ascent, metrics.descent);
+    XtSetArg (arg, XtNlabel, buf);
+    sprintf (buf, "character %u, 0x%02x%02x (%d, %d)",
+	     n, (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
+	     (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
+    XtSetValues (chardesc1Label, &arg, ONE);
+
+    sprintf (buf, "width %d, left %d, right %d, ascent %d, descent %d",
+	     metrics.width, metrics.lbearing, metrics.rbearing,
+	     metrics.ascent, metrics.descent);
+    XtSetValues (charlabel2Label, &arg, ONE);
 
     return;
 }
@@ -278,4 +270,24 @@ static char *get_font_name (dpy, fs)
 	}
     }
     return NULL;
+}
+
+
+static void initialize_description_labels (fs)
+    XFontStruct *fs;
+{
+    char buf[256];
+    Arg arg;
+
+    XtSetArg (arg, XtNlabel, buf);
+
+    sprintf (buf, "Select a character in the range");
+    XtSetValues (chardesc1Label, &arg, ONE);
+
+    sprintf (buf, "0x%02x%02x (%u,%u) through 0x%02x%02x (%u,%u).",
+	     fs->min_byte1, fs->min_char_or_byte2,
+	     fs->min_byte1, fs->min_char_or_byte2,
+	     fs->max_byte1, fs->max_char_or_byte2,
+	     fs->max_byte1, fs->max_char_or_byte2);
+    XtSetValues (charlabel2Label, &arg, ONE);
 }

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.2 89/06/02 20:08:38 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.3 89/06/05 14:22:39 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -140,16 +140,31 @@ static void Initialize (request, new)
     Widget request, new;
 {
     FontGridWidget newfg = (FontGridWidget) new;
+    int tcols = 0, nrows = 16;
 
     newfg->fontgrid.cell_width = CellWidth (newfg);
     newfg->fontgrid.cell_height = CellHeight (newfg);
 
-    if (newfg->core.width == 0)
-      newfg->core.width = (newfg->fontgrid.cell_width * 16 +
-			   newfg->fontgrid.grid_width);
-    if (newfg->core.height == 0)
-      newfg->core.height = (newfg->fontgrid.cell_height * 16 +
-			    newfg->fontgrid.grid_width);
+    /* give a nice size that fits one screen full */
+    if (newfg->core.width == 0) {
+	tcols = 16;
+	newfg->core.width = (newfg->fontgrid.cell_width * 16 +
+			     newfg->fontgrid.grid_width);
+    }
+
+    if (newfg->core.height == 0) {
+	/* if small font, default to not showing extra empty lines */
+	if (newfg->fontgrid.text_font->max_byte1 == 0) {
+	    if (tcols == 0) {
+		tcols = ((newfg->core.width + newfg->fontgrid.grid_width) /
+			 newfg->fontgrid.cell_width);
+	    }
+	    nrows = (newfg->fontgrid.text_font->max_char_or_byte2 / tcols) + 1;
+	    if (nrows > 16) nrows = 16;
+	}
+	newfg->core.height = (newfg->fontgrid.cell_height * nrows +
+			      newfg->fontgrid.grid_width);
+    }
 
     return;
 }
@@ -213,8 +228,8 @@ static void paint_grid (fgw, col, row, ncols, nrows)
     Window wind = XtWindow(fgw);
     int cw = p->cell_width;
     int ch = p->cell_height;
-    int trows = fgw->core.width / cw;
-    int tcols = fgw->core.height / ch;
+    int tcols = fgw->core.width / cw;
+    int trows = fgw->core.height / ch;
     int x1, y1, x2, y2, x, y;
     unsigned maxn = ((p->text_font->max_byte1 << 8) |
 		     p->text_font->max_char_or_byte2);
@@ -335,6 +350,10 @@ static Boolean SetValues (current, request, new)
 	redisplay = TRUE;
     }
 
+    if (curfg->fontgrid.center_chars != newfg->fontgrid.center_chars ||
+	curfg->fontgrid.box_chars != newfg->fontgrid.box_chars)
+      redisplay = TRUE;
+
     return redisplay;
 }
 
@@ -378,9 +397,15 @@ static void Notify (gw, event, params, nparams)
      */
     {
 	int cw = fgw->fontgrid.cell_width, ch = fgw->fontgrid.cell_height;
-        int tcols = fgw->core.height / ch;
-	register unsigned n = (fgw->fontgrid.start_char +
-			       ((y / ch) * tcols) + (x / cw));
+        int tcols = fgw->core.width / cw;
+	unsigned n;
+
+	if (x > (tcols * cw)) {
+	    Bell (gw);
+	    return;
+	}
+
+	n= (fgw->fontgrid.start_char + ((y / ch) * tcols) + (x / cw));
 
 	rec.thefont = fgw->fontgrid.text_font;
 	rec.thechar.byte1 = (n >> 8);
