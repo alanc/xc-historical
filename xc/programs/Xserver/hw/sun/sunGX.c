@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.6 91/07/26 21:09:11 keith Exp $
+ * $XConsortium: sunGX.c,v 1.7 91/09/09 21:17:40 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -380,7 +380,6 @@ sunGXFillRectAll (pDrawable, pGC, nBox, pBox)
 {
     register sunGXPtr	gx = sunGXGetScreenPrivate (pDrawable->pScreen);
     register sunGXPrivGCPtr gxPriv = sunGXGetGCPrivate (pGC);
-    register cfbPrivGCPtr   devPriv = cfbGetGCPrivate (pGC);
     register int	r;
 
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
@@ -415,7 +414,6 @@ sunGXPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     BoxRec	    stackRects[NUM_STACK_RECTS];
     cfbPrivGC	    *priv;
     int		    numRects;
-    void	    (*BoxFill)();
     int		    n;
     int		    xorg, yorg;
 
@@ -697,7 +695,6 @@ sunGXFillEllipse (pDraw, gx, arc)
     int yk, xk, ym, xm, dx, dy, xorg, yorg;
     int	y_top, y_bot;
     miFillArcRec info;
-    register int n;
     register int xpos;
     int	r;
     int	slw;
@@ -794,13 +791,14 @@ sunGXPolyFillArc (pDraw, pGC, narcs, parcs)
     register sunGXPtr	gx = sunGXGetScreenPrivate (pDraw->pScreen);
     sunGXPrivGCPtr	gxPriv = sunGXGetGCPrivate (pGC);
     register int	r;
-    int			old_width;
+#ifdef NOTDEF
+    int			old_width = 0;
+#endif
 
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
     cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
-    old_width = 0;
     for (arc = parcs, i = narcs; --i >= 0; arc++)
     {
 	if (miFillArcEmpty(arc))
@@ -1073,8 +1071,6 @@ sunGXPolySeg1Rect (pDrawable, pGC, nseg, pSeg)
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
-    x = pDrawable->x;
-    y = pDrawable->y;
     gx->offx = pDrawable->x;
     gx->offy = pDrawable->y;
     
@@ -1087,8 +1083,8 @@ sunGXPolySeg1Rect (pDrawable, pGC, nseg, pSeg)
     if (pGC->capStyle == CapNotLast)
     {
 	cfbGetWindowByteWidthAndPointer((WindowPtr)pDrawable,x,baseAddr);
-	baseAddr = baseAddr + WIDTH_MUL(y) + x;
-	topAddr = baseAddr + WIDTH_MUL(pDrawable->height) + pDrawable->width;
+	topAddr = baseAddr + WIDTH_MUL(extents->y2) + extents->x2;
+	baseAddr = baseAddr + WIDTH_MUL(extents->y1) + extents->x1;
     	while (nseg--)
     	{
 	    gx->aliney = pSeg->y1;
@@ -1150,10 +1146,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
     GXDrawInit(gx,pGC->fgPixel,gx_solid_rop_table[pGC->alu],pGC->planemask);
     if (gxPriv->stipple)
 	GXStippleInit(gx,gxPriv->stipple);
-    x = pDrawable->x;
-    y = pDrawable->y;
-    gx->offx = x;
-    gx->offy = y;
+    gx->offx = pDrawable->x;
+    gx->offy = pDrawable->y;
     careful = (pGC->alu & 0xc == 0x8 || pGC->alu & 0x3 == 0x2);
     capNotLast = pGC->capStyle == CapNotLast;
     mode -= CoordModePrevious;
@@ -1183,8 +1177,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
     else
     {
 	cfbGetWindowByteWidthAndPointer((WindowPtr)pDrawable,x,baseAddr);
-	baseAddr = baseAddr + WIDTH_MUL(y) + x;
-	topAddr = baseAddr + WIDTH_MUL(pDrawable->height) + pDrawable->width;
+	topAddr = baseAddr + WIDTH_MUL(extents->y2) + extents->x2;
+	baseAddr = baseAddr + WIDTH_MUL(extents->y1) + extents->x1;
 	y = ppt->y;
 	x = ppt->x;
 	ppt++;
@@ -1204,8 +1198,8 @@ sunGXPolylines1Rect (pDrawable, pGC, mode, npt, ppt)
 	    }
 	    if (careful || !npt && capNotLast)
 	    {
-	    	if ((saveAddr = baseAddr + WIDTH_MUL(y) + x) >= baseAddr &&
-		    saveAddr < topAddr)
+	    	if ((saveAddr = baseAddr + WIDTH_MUL(y) + x) < baseAddr ||
+		    saveAddr >= topAddr)
 		    saveAddr = 0;
 	    	else
 		    save = *saveAddr;
@@ -1388,7 +1382,7 @@ sunGXCheckStipple (pPixmap, stipple)
     unsigned long   *stippleBits;
     unsigned long   sbit, mask;
     int		    h, w;
-    int		    x, y;
+    int		    y;
     int		    s_y, s_x;
 
     h = pPixmap->drawable.height;
@@ -2476,5 +2470,6 @@ sunGXInit (pScreen, fb)
     pScreen->PaintWindowBackground = sunGXPaintWindow;
     pScreen->PaintWindowBorder = sunGXPaintWindow;
     pScreen->CopyWindow = sunGXCopyWindow;
+    return TRUE;
 }
 
