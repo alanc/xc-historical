@@ -1,4 +1,4 @@
-/* $XConsortium: exportcl.c,v 1.4 93/10/26 21:08:38 rws Exp $ */
+/* $XConsortium: exportcl.c,v 1.5 93/10/27 21:52:15 rws Exp $ */
 
 /**** module exportcl.c ****/
 /******************************************************************************
@@ -80,7 +80,6 @@ int InitExportClientPhoto(xp, p, reps)
     int     reps;
 {
         char *encode_params=NULL;
-	char *decode_params=NULL;
 	int *size;
 	extern char *imagepath;
 	unsigned char pixel_stride[ 3 ];
@@ -288,7 +287,7 @@ int InitExportClientLUT(xp, p, reps)
 {
 	int	i;
         XieOrientation band_order = xieValLSFirst;
-        XieLTriplet     start, length, levels;
+        XieLTriplet     start, length;
 
 	XIELut = ( XieLut ) NULL;
 	flograph = ( XiePhotoElement * ) NULL;
@@ -614,7 +613,6 @@ void DoExportClientPhoto(xp, p, reps)
     int     reps;
 {
     	int     i, done;
-	unsigned int checksum;
 
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
@@ -641,7 +639,6 @@ Parms   p;
 int     reps;
 {
     	int     i, done, numHistos;
-	unsigned int checksum;
 
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
@@ -662,7 +659,6 @@ Parms   p;
 int     reps;
 {
     	int     i, j, done;
-	int	maxcount;
 
     	for (i = 0; i != reps; i++) {
 		XieExecutePhotoflo( xp->d, flo, flo_notify );
@@ -671,7 +667,6 @@ int     reps;
                         sizeof( unsigned char ), lutSize, 
 			&data, &done );
                	WaitForXIEEvent( xp, xieEvnNoPhotofloDone, flo, 0, False ); 
-		maxcount = 0;
 		for ( j = 0; j < lutSize; j++ )
 		{
 			histos[ j ].value = j;
