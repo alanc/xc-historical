@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.18 89/12/06 19:35:57 keith Exp $
+ * $XConsortium: greet.c,v 1.19 90/02/12 17:56:26 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -106,7 +106,7 @@ struct display	*d;
     XtToolkitInitialize ();
     context = XtCreateApplicationContext();
     dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
-			    &argc, argv);
+			 (Cardinal *)&argc, argv);
 
     SecureDisplay (d, dpy);
 
