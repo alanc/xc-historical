@@ -21,6 +21,7 @@ HEADERS = \
 	CloseHook.h \
 	Converters.h \
 	CurUtil.h \
+	DisplayQue.h \
 	Drawing.h \
 	Error.h \
 	Initer.h \
@@ -42,6 +43,7 @@ SRCS = \
 	CvtStdSel.c \
 	DefErrMsg.c \
 	DelCmap.c \
+	DisplayQue.c \
 	DrawLogo.c \
 	DrRndRect.c \
 	FToCback.c \
@@ -73,6 +75,7 @@ OBJS = \
 	CvtStdSel.o \
 	DefErrMsg.o \
 	DelCmap.o \
+	DisplayQue.o \
 	DrawLogo.o \
 	DrRndRect.o \
 	FToCback.o \
