@@ -1,34 +1,27 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/10/05 13:53:02 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/Imakefile,v 3.1 1994/07/24 11:56:38 dawes Exp $
 #include <Server.tmpl>
 
-#if i386Mach
-SRCS = et4_driver.c
-#else
-SRCS = et4_driver.c bank.s
-#endif
+SRCS = et4_driver.c et4_bank.s
 
-#if defined(i386BsdArchitecture)
-OBJS = driver4.o bank4.o
-#else
-OBJS = et4_driver.o bank.o
-#endif
+OBJS = et4_driver.o et4_bank.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
-           -I../../cfb.banked -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+           -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
+           -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(FONTINCSRC)
 #endif
+
+DEFINES = -DPSZ=8
 
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
 NormalRelocatableTarget(et4_drv, $(OBJS))
 
-#if defined(i386BsdArchitecture)
-ObjectFromSpecialAsmSource(bank4,bank,NullParameter)
-ObjectFromSpecialSource(driver4,et4_driver,NullParameter)
-#endif
+ObjectFromSpecialAsmSource(et4_bank,bank,NullParameter)
 
 InstallLinkKitNonExecFile(et4_driver.c,$(LINKKITDIR)/drivers/vga256/et4000)
 InstallLinkKitNonExecFile(bank.s,$(LINKKITDIR)/drivers/vga256/et4000)

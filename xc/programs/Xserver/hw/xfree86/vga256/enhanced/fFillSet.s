@@ -1,4 +1,5 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: fFillSet.s,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFillSet.s,v 3.1 1994/09/08 14:40:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -191,10 +192,13 @@ GLNAME(fastFillSolidGXset):
 	MOV_L	(REGDB(.jumptab1,lp),tmp)
 	JMP	(CODEPTR(tmp))
 
-	ALIGNTEXT4
+	SEG_DATA
+	ALIGNDATA4
 .jumptab1:
 	D_LONG	.Lnoop, .L0, .L1, .L2, .L3, .L4, .L5, .L6
 
+	SEG_TEXT
+	ALIGNTEXT4
 .L6:	MOV_L	(fill1,tmp)
 	AND_L	(REGOFF(-28,pdst),tmp)
 	XOR_L	(fill2,tmp)

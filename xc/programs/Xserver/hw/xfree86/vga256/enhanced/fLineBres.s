@@ -1,4 +1,5 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: fLineBres.s,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineBres.s,v 3.3 1994/09/21 10:59:42 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 
 		All Rights Reserved
@@ -46,14 +47,15 @@ PERFORMANCE OF THIS SOFTWARE.
 #define Y_AXIS	CONST(1)
 
 	SEG_DATA
+	ALIGNDATA4
 e3:
 	D_LONG 0
 
 	SEG_TEXT
 	ALIGNTEXT4
-GLOBL	GLNAME(fastcfbBresS)
+GLOBL	GLNAME(fastvga256BresS)
 
-GLNAME(fastcfbBresS):
+GLNAME(fastvga256BresS):
 	PUSH_L	(EBP)
 	MOV_L	(ESP,EBP)
 	PUSH_L	(EDI)
@@ -108,19 +110,22 @@ GLNAME(fastcfbBresS):
 	JB	(.L4)
 	CMP_L	(CONTENT(GLNAME(vgaWriteTop)),addrb)
 	JAE	(.L9)
-	LOOP	(.writeloopC)
+	DEC_L	(ECX)
+	JNZ	(.writeloopC)
 	JMP	(.allfinish)
 .L9:	PUSH_L	(addrb)
 	CALL	(GLNAME(vgaWriteNext))
 	MOV_L	(tmp,addrb)
 	ADD_L	(CONST(4),ESP)
-	LOOP	(.writeloopC)
+	DEC_L	(ECX)
+	JNZ	(.writeloopC)
 	JMP	(.allfinish)
 .L4:	PUSH_L	(addrb)
 	CALL	(GLNAME(vgaWritePrev))
 	MOV_L	(tmp,addrb)
 	ADD_L	(CONST(4),ESP)
-	LOOP	(.writeloopC)
+	DEC_L	(ECX)
+	JNZ	(.writeloopC)
 	JMP	(.allfinish)
 
 	ALIGNTEXT4
@@ -131,7 +136,8 @@ GLNAME(fastcfbBresS):
 	ADD_L	(nlwidth,addrb)
 	ADD_L	(CONTENT(e3),e)
 .L5:	ADD_L	(signdx,addrb)
-	LOOP	(.nocheckloopC)
+	DEC_L	(ECX)
+	JNZ	(.nocheckloopC)
 
 	ALIGNTEXT4ifNOP
 .allfinish:
@@ -164,19 +170,22 @@ GLNAME(fastcfbBresS):
 	JB	(.L7)
 	CMP_L	(CONTENT(GLNAME(vgaWriteTop)),addrb)
 	JAE	(.L10)
-	LOOP	(.writeloopS)
+	DEC_L	(ECX)
+	JNZ	(.writeloopS)
 	JMP	(.allfinish)
 .L10:	PUSH_L	(addrb)
 	CALL	(GLNAME(vgaReadWriteNext))
 	MOV_L	(tmp,addrb)
 	ADD_L	(CONST(4),ESP)
-	LOOP	(.writeloopS)
+	DEC_L	(ECX)
+	JNZ	(.writeloopS)
 	JMP	(.allfinish)
 .L7:	PUSH_L	(addrb)
 	CALL	(GLNAME(vgaReadWritePrev))
 	MOV_L	(EAX,addrb)
 	ADD_L	(CONST(4),ESP)
-	LOOP	(.writeloopS)
+	DEC_L	(ECX)
+	JNZ	(.writeloopS)
 	JMP	(.allfinish)
 
 	ALIGNTEXT4
@@ -190,7 +199,8 @@ GLNAME(fastcfbBresS):
 	ADD_L	(nlwidth,addrb)
 	ADD_L	(CONTENT(e3),e)
 .L8:	ADD_L	(signdx,addrb)
-	LOOP	(.nocheckloopS)
+	DEC_L	(ECX)
+	JNZ	(.nocheckloopS)
 	JMP	(.allfinish)
 
 

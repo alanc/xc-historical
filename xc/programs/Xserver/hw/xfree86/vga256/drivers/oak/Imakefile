@@ -1,14 +1,8 @@
-XCOMM $XConsortium$
-XCOMM
-XCOMM This is an Imakefile for the oak driver.  
-XCOMM 
+XCOMM $XConsortium: Imakefile,v 1.1 94/10/05 13:54:40 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/Imakefile,v 3.1 1994/09/22 15:51:56 dawes Exp $
 #include <Server.tmpl>
 
-#if i386Mach
-SRCS = oak_driver.c
-#else
 SRCS = oak_driver.c oak_bank.s
-#endif
 
 OBJS = oak_driver.o oak_bank.o
 
@@ -16,13 +10,13 @@ OBJS = oak_driver.o oak_bank.o
 INCLUDES = -I. -I../../../include -I../..
 #else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
-           -I../../cfb.banked -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
+           -I../../vga -I$(SERVERSRC)/include -I$(INCLUDESRC)
 #endif
 
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-NormalRelocatableTarget(oak_drv, $(OBJS))
+NormalRelocatableTarget(oak_drv,$(OBJS))
 
 InstallLinkKitNonExecFile(oak_driver.c,$(LINKKITDIR)/drivers/vga256/oak)
 InstallLinkKitNonExecFile(oak_bank.s,$(LINKKITDIR)/drivers/vga256/oak)

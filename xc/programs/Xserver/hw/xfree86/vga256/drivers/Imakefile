@@ -1,23 +1,21 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/10/05 15:51:32 kaleb Exp kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/Imakefile,v 3.3 1994/09/25 12:30:38 dawes Exp $
 #include <Server.tmpl>
 #define IHaveSubdirs
 
 
-SUBDIRS = XF86Vga256Drivers
+SUBDIRS = et4000 et3000 pvga1 gvga ati tvga8900 cirrus ncr77c22 compaq \
+	oak mx al2101 cl6420 video7 generic
 
 SRCS = */?*.c 
 
 OBJS = */?*_drv.o 
 
-all:: subdirs libdriver256.a
+NormalDepLibraryTarget(driver256,$(SUBDIRS),$(OBJS))
 
 NormalLibraryObjectRule()
 
-NamedMakeSubdirs(subdirs,$(SUBDIRS))
-
-InstallLinkKitLibrary(driver256,$(LINKKITDIR)/drivers)
-
-NormalDepLibraryTarget(driver256,$(SUBDIRS),$(OBJS))
+ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
 

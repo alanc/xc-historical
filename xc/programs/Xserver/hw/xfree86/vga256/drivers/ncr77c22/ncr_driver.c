@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: ncr_driver.c,v 1.1 94/10/05 13:54:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.3 1994/09/11 00:52:57 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -116,6 +117,13 @@ vgaVideoChipRec NCR77C22 = {
   VGA_DIVIDE_VERT,	/* Interlace (77C22E,E+ only) requires divide-by-2 */
   {0,},
   8,
+  FALSE,
+  0,
+  0,
+  FALSE,
+  FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaNCRPtr)vgaNewVideoState)
@@ -569,9 +577,9 @@ NCRAdjust(x, y)
 {
   unsigned char	temp;
 #if defined(MONOVGA) || defined(XF86VGA16)
-  unsigned long	Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  unsigned long	Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-  unsigned long	Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+  unsigned long	Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
 
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

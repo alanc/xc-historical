@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: et3_driver.c,v 1.1 94/10/05 13:52:55 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.3 1994/09/11 00:52:41 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -87,6 +88,13 @@ vgaVideoChipRec ET3000 = {
   VGA_DIVIDE_VERT,
   {0,},
   16,
+  FALSE,
+  0,
+  0,
+  FALSE,
+  FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaET3000Ptr)vgaNewVideoState)
@@ -390,17 +398,17 @@ ET3000Adjust(x, y)
 {
 #ifdef USE_PAN
 #ifdef MONOVGA
-  int Base = (y * vga256InfoRec.virtualX + x + 3) >> 4;
-  int wants_pan = (y * vga256InfoRec.virtualX + x + 3) & 8;
+  int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 4;
+  int wants_pan = (y * vga256InfoRec.displayWidth + x + 3) & 8;
 #else
-  int Base = (y * vga256InfoRec.virtualX + x + 1) >> 3;
-  int wants_pan = (y * vga256InfoRec.virtualX + x + 1) & 4;
+  int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 3;
+  int wants_pan = (y * vga256InfoRec.displayWidth + x + 1) & 4;
 #endif
 #else
 #ifdef MONOVGA
-  int Base = (y * vga256InfoRec.virtualX + x + 7) >> 4;
+  int Base = (y * vga256InfoRec.displayWidth + x + 7) >> 4;
 #else
-  int Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+  int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #endif
 #endif
 
@@ -425,6 +433,3 @@ ET3000Adjust(x, y)
   outb(0x3C0, wants_pan ? 3 : 0);
 #endif
 }
-
-
-

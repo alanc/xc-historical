@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: vgaBitBlt.c,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaBitBlt.c,v 3.0 1994/07/24 11:58:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -25,27 +26,11 @@
  * /proj/X11/mit/server/ddx/at386/vga/RCS/vgaBitBlt.c,v 1.5 91/02/10 16:44:40 root Exp
  */
 
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
-#include	"gcstruct.h"
-#include	"windowstr.h"
-#include	"scrnintstr.h"
-#include	"pixmapstr.h"
-#include	"regionstr.h"
-#include	"cfb.h"
-#include	"cfbmskbits.h"
-#include	"cfb8bit.h"
+#include	"vga256.h"
 #include	"fastblt.h"
 #include	"mergerop.h"
-#include        "vgaBank.h"
-
-
-extern void fastBitBltCopy();
 
 void (*ourvgaBitBlt)();
-void vgaImageRead();
-void vgaImageWrite();
 
 void
 vgaBitBlt(pdstBase, psrcBase, widthSrc, widthDst, x, y,

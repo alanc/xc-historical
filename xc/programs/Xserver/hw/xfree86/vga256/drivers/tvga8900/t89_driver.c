@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: t89_driver.c,v 1.1 94/10/05 13:55:06 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.4 1994/09/23 10:26:49 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -108,6 +109,13 @@ vgaVideoChipRec TVGA8900 = {
   VGA_DIVIDE_VERT,
   {0,},
   8,				/* Set to 16 for 512k cards in Probe() */
+  FALSE,
+  0,
+  0,
+  FALSE,
+  FALSE,
+  NULL,
+  1,
 };
 
 #define new ((vgaTVGA8900Ptr)vgaNewVideoState)
@@ -252,7 +260,7 @@ TVGA8900Probe()
   	if (vga256InfoRec.chipset)
     	{
 		/*
-		 * If chipset from Xconfig matches...
+		 * If chipset from XF86Config matches...
 		 */
 		if (!StrCaseCmp(vga256InfoRec.chipset, "tvga8900"))
 		{
@@ -432,7 +440,7 @@ TVGA8900Probe()
 		TVGA8900.ChipRounding = 16;
 
 	/*
-	 * If clocks are not specified in Xconfig file, probe for them
+	 * If clocks are not specified in XF86Config file, probe for them
 	 */
     	if (!vga256InfoRec.clocks) 
 	{
@@ -469,6 +477,13 @@ TVGA8900Probe()
 	vga256InfoRec.chipset = TVGA8900Ident(TVGAchipset);
 	vga256InfoRec.bankedMono = TRUE;
 
+#ifndef MONOVGA
+	/* For 512k in 256 colour, the pixel clock is half the raw clock */
+	if (vga256InfoRec.videoRam != 1024)
+	{
+		TVGA8900.ChipClockScaleFactor = 2;
+	}
+#endif
 	/* Initialize option flags allowed for this driver */
 	if ((TVGAchipset == TVGA8900B) || (TVGAchipset == TVGA8900C))
 	{
@@ -630,7 +645,7 @@ TVGA8900Init(mode)
 	 * In 256-color mode, with less than 1M memory, the horizontal
 	 * timings and the dot-clock must be doubled.  We can (and
 	 * should) do the former here.  The latter must, unfortunately,
-	 * be handled by the user in the Xconfig file.
+	 * be handled by the user in the XF86Config file.
 	 */
 	if (vga256InfoRec.videoRam != 1024)
 	{
@@ -729,10 +744,12 @@ TVGA8900Adjust(x, y)
 	 * Go see the comments in the Init function.
 	 */
 	if (vga256InfoRec.videoRam != 1024)
-		base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+		base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 	else
+		base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
+#else
+		base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #endif
-		base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
 
   	outw(vgaIOBase + 4, (base & 0x00FF00) | 0x0C);
 	outw(vgaIOBase + 4, ((base & 0x00FF) << 8) | 0x0D);

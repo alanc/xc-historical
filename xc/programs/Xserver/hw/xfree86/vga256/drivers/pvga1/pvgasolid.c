@@ -1,5 +1,6 @@
 /*
- * $XConsortium: pvgasolid.c,v 1.4 94/03/28 21:53:00 dpw Exp $
+ * $XConsortium: pvgasolid.c,v 1.1 94/10/05 13:54:47 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgasolid.c,v 3.0 1994/07/24 11:57:07 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -28,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /* WD90C31 code: Mike Tierney <floyd@eng.umd.edu> */
-
+/* WD90C33 accel code: Bill Morgart <wsm@morticia.ssw.com> */
 
 #include "X.h"
 #include "Xmd.h"

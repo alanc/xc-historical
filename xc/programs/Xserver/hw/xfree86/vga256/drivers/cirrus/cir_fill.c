@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: cir_fill.c,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.5 1994/08/31 04:44:24 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -34,17 +35,7 @@
  * low-level functions depending on size, card configuration etc.
  */
 
-#include "X.h"
-#include "Xmd.h"
-#include "servermd.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
-
-#include "cfb.h"
-#include "cfbmskbits.h"
+#include "vga256.h"
 #include "cfbrrop.h"
 #include "mergerop.h"
 #include "vgaBank.h"
@@ -84,53 +75,17 @@ CirrusFillRectSolidGeneral (pDrawable, pGC, nBox, pBox)
   unsigned long rrop_xor,rrop_and;
   RROP_FETCH_GC(pGC);
 
-  if ((pGC->planemask & 0xff) == 0xff)
+  if ((pGC->planemask & 0xff) == 0xff && (HAVEBITBLTENGINE() ||
+  pGC->alu == GXcopy))
       CirrusFillBoxSolid(pDrawable, nBox, pBox, pGC->fgPixel, pGC->bgPixel,
           pGC->alu);
   else
-      cfbFillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
+      vga256FillRectSolidGeneral(pDrawable, pGC, nBox, pBox);
 }
-
-
-#ifdef DETERMINE_BUSSPEED
-
-/* Function to determine bus speed. This is a bad hack, but we need to */
-/* know how fast the bus is for good acceleration selection. */
-
-static int busspeed_initialized = 0;
-
-static void CirrusDetermineBusSpeed() {
-	int starttime, difftime;
-	int count;
-	starttime = GetTimeInMillis();
-	/* Write 1Mb to the card. */
-	count = 20;
-	while (count > 0) {
-		memset(vgaBase, 0, 50000);
-		count--;
-	}
-	difftime = GetTimeInMillis() - starttime;
-	if (difftime == 0)
-		difftime = 1;
-	cirrusBusType = CIRRUS_SLOWBUS;
-	if (1000 / difftime >= 8)
-		cirrusBusType = CIRRUS_FASTBUS;
-#if 0
-	if (xf86Verbose)
-#endif	
-		ErrorF("Cirrus: Approximate bus speed (memset): %dMb/s %s\n",
-			1000 / difftime,
-			cirrusBusType == CIRRUS_FASTBUS ?
-			"(fast color expansion via bus)" :
-			"(emphasis on BitBLT engine)"
-			);
-	busspeed_initialized = 1;
-}
-
-#endif
 
 
 /* General mid-level solid fill. Makes a choice of low-level routines. */
+
 
 void
 CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
@@ -146,13 +101,6 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
   int		  widthDst;
   int             h;
   int		  w;
-
-#ifdef DETERMINE_BUSSPEED
-  /* Hook into the initial server root fill to determine */
-  /* the bus speed (another hack). */
-  if (!busspeed_initialized)
-      CirrusDetermineBusSpeed();
-#endif
 
   if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -188,30 +136,26 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
           if (alu == GXcopy) {
               unsigned long bits;
 
-              /* For small widths, we use the specific function for small */
-              /* widths (which is not really accelerated). */          
-              if (w < 32) {
-                  bits = 0xffffffff;
-       	          Cirrus32bitFillSmall(pBox->x1, pBox->y1, w, h,
-       	              &bits, 1, 0, 0, pixel1, pixel1, widthDst);
-       	          continue;
-       	      }
-	
 	      /* We use the color expansion function for solid fills in the
 	       * following cases:
 	       * - If the chip has no bitblt engine (i.e. 5420/2/4).
-	       * - If we have a bitblt engine, but the card is local bus
-	       *   and the width is big enough, with different cut-off
-	       *   points for the 5426 and 5428.
+	       * - If we have a 542x bitblt engine. Color expansion is
+	       *   faster.
 	       *   For 5434 (speculative), the bitblt engine is used.
 	       */
-	      if (!HAVEBITBLTENGINE() ||
-	          (cirrusBusType == CIRRUS_FASTBUS &&
-	          ((cirrusChip == CLGD5426 && w >= 200) ||
-	           (cirrusChip == CLGD5428 && w >= 250)))) {
-                  bits = 0xffffffff;
-                  CirrusColorExpand32bitFill(pBox->x1, pBox->y1, w, h,
-        	      &bits, 1, 0, 0, pixel1, pixel1, widthDst);
+	      if ((!HAVEBITBLTENGINE() || w >= 11 || h >= 11) && !HAVE543X()
+		  && !cirrusFavourBLT) {
+                  /* For small sizes, we use the specific function */
+                  /* widths (which is not really accelerated). */          
+                  if (w < 10 && h < 10) {
+                      bits = 0xffffffff;
+       	              Cirrus32bitFillSmall(pBox->x1, pBox->y1, w, h,
+       	                  &bits, 1, 0, 0, pixel1, pixel1, widthDst);
+       	              continue;
+       	          }
+
+		  CirrusColorExpandSolidFill(pBox->x1, pBox->y1, w, h, pixel1,
+		  	widthDst);
         	  continue;
               }
 
@@ -224,25 +168,46 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
        	      }
 
               /* Use the blitter. */
-              CirrusBLTColorExpand8x8PatternFill(dstAddr, pixel1, pixel2, w,
-                  h, widthDst, CROP_SRC, 0xffffffff, 0xffffffff);
+              if (cirrusUseMMIO)
+                  CirrusMMIOBLTColorExpand8x8PatternFill(dstAddr, pixel1,
+                      pixel2, w, h, widthDst, CROP_SRC, 0xffffffff, 0xffffffff);
+              else
+                  CirrusBLTColorExpand8x8PatternFill(dstAddr, pixel1,
+                      pixel2, w, h, widthDst, CROP_SRC, 0xffffffff, 0xffffffff);
 
           }
           else {	/* alu != GXcopy */
-              /* This is a joke. The alu is always GXcopy. */
-              /* When this is changed, we'll be able use the blitter for */
-              /* almost all operations (notably Invert will help the */
-              /* xstone benchmark, for what it's worth). */
-             
-              /* OK, it should be fixed now. It is used. And we support all */
-              /* rops. */
-              /* [Note: Invert basically doubled the blit xstones...] */
-
-	      CirrusBLTColorExpand8x8PatternFill(dstAddr, pixel1, pixel2, w,
-	          h, widthDst, cirrus_rop[alu], 0xffffffff, 0xffffffff);
+              if (w * h < 40) {
+              	  if (cirrusBLTisBusy)
+              	  	/* We can't access video memory during a blit. */
+			CirrusBLTWaitUntilFinished();
+                  vga256FillBoxSolid(pDrawable, 1, pBox, pixel1,
+              	      pixel2, alu);
+              	  continue;
+              }
+#if 0	/* Seems to give problems. */
+              cirrusDoBackgroundBLT = TRUE;
+#endif
+              if (cirrusUseMMIO)
+	          CirrusMMIOBLTColorExpand8x8PatternFill(dstAddr, pixel1, pixel2,
+	              w, h, widthDst, cirrus_rop[alu], 0xffffffff, 0xffffffff);
+	      else
+	          CirrusBLTColorExpand8x8PatternFill(dstAddr, pixel1, pixel2,
+	              w, h, widthDst, cirrus_rop[alu], 0xffffffff, 0xffffffff);
           }
-	}
+	} /* for all boxes */
+	/* Make sure any background blits are finished. */
+	if (cirrusBLTisBusy)
+	    CirrusBLTWaitUntilFinished();
+	if (cirrusDoBackgroundBLT)
+	    /* Hack. See blitter.c. The last BLT set the foreground */
+	    /* color, but could not restore it because it ran in the */
+	    /* background. The register doubles as a critical */
+	    /* packed-pixel framebuffer register. */
+	    SETFOREGROUNDCOLOR(0);	
+	cirrusDoBackgroundBLT = FALSE;	/* no more */
     }
-  else vgacfbFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu);
+  /* Shouldn't happen. */
+  else vga256FillBoxSolid(pDrawable, nBox, pBox, pixel1, pixel2, alu);
 
 }

@@ -1,4 +1,5 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: cir_imblt.s,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.3 1994/08/31 04:44:27 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -100,7 +101,6 @@ GLNAME(CirrusImageWriteTransfer):
 	MOV_L	(height_arg,EDX)
 	TEST_L	(EDX,EDX)
 	JMP	(.loop_entry)
-	ALIGNTEXT4
 
 .line_loop:
 	MOV_L	(nu_dwords_var,ECX)	/* ECX = #dwords. */
@@ -129,7 +129,6 @@ GLNAME(CirrusImageWriteTransfer):
 	ADD_L	(CONST(0x20),ESI)
 	SUB_L	(CONST(0x08),ECX)
 	JMP	(.unrolled_word_loop)
-	ALIGNTEXT4
 
 .word_loop_check:
 	CMP_L	(CONST(0),ECX)
@@ -177,6 +176,126 @@ GLNAME(CirrusImageWriteTransfer):
 	DEC_L	(EDX)
 .loop_entry:
 	JNZ 	(.line_loop)
+
+	POP_L	(EDI)
+	POP_L	(ESI)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	ADD_L 	(CONST(0x04),ESP)	/* De-allocate local variable. */
+	POP_L	(EBP)
+	RET
+
+/*
+ * This is an image transfer function that only uses 16-bit accesses
+ * (32-bit acesses may cause occasional problems on a VLB 542x).
+ */
+
+	ALIGNTEXT4
+
+	GLOBL GLNAME(CirrusImageWriteTransfer16bit)
+GLNAME(CirrusImageWriteTransfer16bit):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	SUB_L 	(CONST(0x04),ESP)	/* Allocate one local variable. */
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(ESI)
+	PUSH_L	(EDI)
+
+	MOV_L	(width_arg,EAX)
+	MOV_L   (EAX,EBX)
+	SHR_L	(CONST(0x02),EAX)	/* #dwords. */
+	MOV_L	(EAX,nu_dwords_var)	/* Store in local variable. */
+	AND_B   (CONST(0x03),BL)	/* Remainder. */
+
+	MOV_L   (srcaddr_arg,ESI)	/* Source address. */
+	MOV_L	(vaddr_arg,EDI)		/* Video address for blit. */
+
+	MOV_L	(height_arg,EDX)
+	TEST_L	(EDX,EDX)
+	JMP	(.loop_entry6)
+
+.line_loop6:
+	MOV_L	(nu_dwords_var,ECX)	/* ECX = #dwords. */
+
+.unrolled_word_loop6:
+	CMP_L	(CONST(0x04),ECX)	/* Do we have 4 dwords left? */
+	JL	(.word_loop_check6)	/* If not, jump over unrolled loop. */
+
+	MOV_W	(REGIND(ESI),AX)	/* Unrolled loop. */
+	MOV_W	(AX,REGIND(EDI))	/* Transfer 8 dwords. */
+	MOV_W	(REGOFF(2,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(4,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(6,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(8,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(10,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(12,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(14,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+
+	ADD_L	(CONST(16),ESI)
+	SUB_L	(CONST(0x04),ECX)
+	JMP	(.unrolled_word_loop6)
+
+.word_loop_check6:
+	CMP_L	(CONST(0),ECX)
+	JZ	(.do_remainder6)	/* No dwords left. */
+
+.word_loop6:
+	MOV_W	(REGIND(ESI),AX)	/* Transfer a dword. */
+	MOV_W	(AX,REGIND(EDI))
+	MOV_W	(REGOFF(2,ESI),AX)
+	MOV_W	(AX,REGIND(EDI))
+
+	/* Check-and-unroll could be used here. */
+
+	ADD_L	(CONST(0x04),ESI)
+	DEC_L	(ECX)
+	JNZ	(.word_loop6)
+
+.do_remainder6:
+	CMP_B	(CONST(0),BL)
+	JE 	(.line_finished6)	/* No bytes left, line finished. */
+	CMP_B	(CONST(1),BL)
+	JE	(.one_byte_remaining6)
+	CMP_B	(CONST(2),BL)
+	JE	(.two_bytes_remaining6)
+
+	/* Three bytes remaining. */
+	MOV_L	(REGOFF(-1,ESI),EAX)
+	SHR_L	(CONST(8),EAX)
+	ADD_L	(CONST(0x03),ESI)
+	MOV_W	(AX,REGIND(EDI))		/* Write dword. */
+	SHR_L	(CONST(16),EAX)
+	MOV_W	(AX,REGIND(EDI))
+	JMP	(.line_finished6)
+
+.one_byte_remaining6:
+	MOV_B	(REGIND(ESI),AL)
+	INC_L	(ESI)
+	MOV_W	(AX,REGIND(EDI))	/* Write dword with remainder. */
+	MOV_W	(AX,REGIND(EDI))
+	JMP	(.line_finished6)
+
+.two_bytes_remaining6:
+	MOV_W	(REGIND(ESI),AX)
+	ADD_L	(CONST(0x02),ESI)
+	MOV_W	(AX,REGIND(EDI))	/* Write dword with remainder. */
+	MOV_W	(AX,REGIND(EDI))
+
+.line_finished6:
+	ADD_L	(srcwidth_arg,ESI)	/* Adjust source pointer for */
+	SUB_L	(width_arg,ESI)		/* bitmap pitch. */
+	DEC_L	(EDX)
+.loop_entry6:
+	JNZ 	(.line_loop6)
 
 	POP_L	(EDI)
 	POP_L	(ESI)
@@ -320,5 +439,432 @@ GLNAME(CirrusImageReadTransfer):
 	POP_L	(ECX)
 	POP_L	(EBX)
 	ADD_L 	(CONST(0x04),ESP)	/* De-allocate local variable. */
+	POP_L	(EBP)
+	RET
+
+
+/* 
+ * Function to transfer monochrome bitmap data to the blitter.
+ * Has to reverse the per-byte bit order.
+ * Assumes source data can be transfered as-is, i.e. scanlines are in a
+ * format suitable for the BitBLT engine (not padded).
+ *
+ * Prototype:
+ * CirrusAlignedBitmapTransfer( int count, void *srcaddr, void *vaddr )
+ *
+ * count is the number of 32-bit words to transfer.
+ * srcaddr is the address of the bitmap data.
+ * vaddr is a video memory address (doesn't really matter).
+ *
+ * Optimized for 486 pipeline.
+ */
+
+#define count3_arg	REGOFF(8,EBP)
+#define srcaddr3_arg	REGOFF(12,EBP)
+#define vaddr3_arg	REGOFF(16,EBP)
+
+	GLOBL GLNAME(CirrusAlignedBitmapTransfer)
+GLNAME(CirrusAlignedBitmapTransfer):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(ESI)
+	PUSH_L	(EDI)
+
+	MOV_L	(count3_arg,ECX)
+	MOV_L	(srcaddr3_arg,ESI)
+	MOV_L	(vaddr3_arg,EDI)
+	XOR_L	(EDX,EDX)
+
+.unrolled_loop3:
+	CMP_L	(CONST(4),ECX)
+	JL	(.word_loop_check3)
+
+	/* Handle four dwords. */
+	MOV_B	(REGOFF(2,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(3,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGIND(ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(6,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(7,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(4,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(5,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(10,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(11,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(8,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(9,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(14,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(15,ESI),DL)
+	SUB_L	(CONST(4),ECX)			/* Blended in from loop end. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(12,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(13,ESI),DL)
+	ADD_L	(CONST(16),ESI)			/* Blended in from loop end. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_L	(EAX,REGIND(EDI))
+
+	JMP	(.unrolled_loop3)
+
+.word_loop_check3:
+	TEST_L	(ECX,ECX)
+	JZ	(.end3)
+
+.word_loop3:
+	MOV_B	(REGOFF(2,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(3,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGIND(ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	DEC_L	(ECX)			/* Blended in from loop end. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_L	(EAX,REGIND(EDI))
+
+	JNZ	(.word_loop3)
+
+.end3:
+	POP_L	(EDI)
+	POP_L	(ESI)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	POP_L	(EBP)
+	RET
+
+
+
+/* 
+ * Function to transfer monochrome bitmap data to the blitter.
+ * Has to reverse the per-byte bit order. 
+ * Because the BitBLT engine wants only dword transfers and cannot accept
+ * scanline padding, bytes from different scanlines have to be combined.
+ *
+ * Prototype:
+ * CirrusBitmapTransfer( int bytewidth, int h, int bwidth, void *srcaddr,
+ * 	void *vaddr )
+ *
+ * bytewidth is the number of bytes to be transferred per scanline.
+ * h is the number of bitmap scanlines to be transfered.
+ * bwidth is the total (padded) width of a bitmap scanline.
+ * srcaddr is the address of the bitmap data.
+ * vaddr is a video memory address (doesn't really matter).
+ *
+ * Optimized for 486 pipeline.
+ */
+
+#define bytewidth4_arg	REGOFF(8,EBP)
+#define height4_arg	REGOFF(12,EBP)
+#define bwidth4_arg	REGOFF(16,EBP)	/* Overwritten with #padding bytes. */
+#define srcaddr4_arg	REGOFF(20,EBP)
+#define vaddr4_arg	REGOFF(24,EBP)
+
+#define scanline_pad_bytes4 bwidth4_arg
+
+	GLOBL GLNAME(CirrusBitmapTransfer)
+GLNAME(CirrusBitmapTransfer):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	PUSH_L	(EBX)
+	PUSH_L	(ECX)
+	PUSH_L	(ESI)
+	PUSH_L	(EDI)
+
+	MOV_L	(srcaddr4_arg,ESI)
+	MOV_L	(vaddr4_arg,EDI)
+	XOR_L	(EDX,EDX)
+	MOV_L	(height4_arg,EBX)	/* Scanline counter. */
+
+	MOV_L	(bytewidth4_arg,ECX)
+
+	/* Calculate bitmap scanline padding, overwrite bwidth. */
+	SUB_L	(ECX,bwidth4_arg)
+
+	CMP_L   (CONST(0),EBX)		/* Sanity check. */
+	JLE	(.end4)
+
+.scanline_loop4:
+
+.unrolled_loop4:
+	CMP_L	(CONST(16),ECX)
+	JL	(.word_loop_check4)
+
+	/* Handle four dwords. */
+	MOV_B	(REGOFF(2,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(3,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGIND(ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(6,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(7,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(4,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(5,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(10,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(11,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(8,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(9,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	MOV_B	(REGOFF(14,ESI),DL)
+	MOV_L	(EAX,REGIND(EDI))		/* Delayed. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(15,ESI),DL)
+	SUB_L	(CONST(16),ECX)			/* Blended in from loop end. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(12,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(13,ESI),DL)
+	ADD_L	(CONST(16),ESI)			/* Blended in from loop end. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_L	(EAX,REGIND(EDI))
+
+	JMP	(.unrolled_loop4)
+
+.word_loop_check4:
+	TEST_B	(CL,CL)
+	JZ	(.zero_bytes_remaining4)
+	CMP_B	(CONST(4),CL)
+	JL	(.handle_remainder4)
+
+.word_loop4:
+	MOV_B	(REGOFF(2,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(3,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGIND(ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	ADD_L	(CONST(4),ESI)		/* Blended in. */
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_L	(EAX,REGIND(EDI))
+
+	SUB_B	(CONST(4),CL)
+	CMP_B	(CONST(4),CL)
+	JGE	(.word_loop4)
+
+.handle_remainder4:
+	TEST_B	(CL,CL)
+	JZ	(.zero_bytes_remaining4)
+	CMP_B	(CONST(2),CL)
+	JE	(.two_bytes_remaining4)
+	CMP_B	(CONST(1),CL)
+	JE	(.one_byte_remaining4)
+
+	/* Three bytes remaining. */
+	MOV_B	(REGIND(ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(2,ESI),DL)
+	ADD_L	(CONST(3),ESI)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+
+	CMP_L	(CONST(1),EBX)
+	JE	(.three_remaining_lastscanline4)
+
+	ADD_L	(scanline_pad_bytes4,ESI)
+
+	MOV_B	(REGIND(ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	ROL_L	(CONST(16),EAX)
+.three_remaining_lastscanline4:
+	MOV_L	(EAX,REGIND(EDI))
+
+	MOV_L	(bytewidth4_arg,ECX)
+	DEC_L	(ECX)
+
+	INC_L	(ESI)
+	DEC_L	(EBX)
+	JNZ	(.scanline_loop4)
+	JMP	(.end4)
+
+.zero_bytes_remaining4:
+	ADD_L	(scanline_pad_bytes4,ESI)
+
+	MOV_L	(bytewidth4_arg,ECX)
+
+	DEC_L	(EBX)
+	JNZ	(.scanline_loop4)
+	JMP	(.end4)
+
+.one_byte_remaining4:
+	MOV_B	(REGIND(ESI),DL)
+	INC_L	(ESI)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+
+	CMP_L	(CONST(1),EBX)
+	JE	(.one_remaining_lastscanline4)
+
+	ADD_L	(scanline_pad_bytes4,ESI)
+
+	MOV_B	(REGIND(ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	MOV_B	(REGOFF(1,ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(2,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	ROL_L	(CONST(16),EAX)
+.one_remaining_lastscanline4:
+	MOV_L	(EAX,REGIND(EDI))
+
+	MOV_L	(bytewidth4_arg,ECX)
+	SUB_L	(CONST(3),ECX)
+
+	ADD_L	(CONST(3),ESI)
+	DEC_L	(EBX)
+	JNZ	(.scanline_loop4)
+	JMP	(.end4)
+
+.two_bytes_remaining4:
+	MOV_B	(REGIND(ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	ADD_L	(CONST(2),ESI)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+
+	CMP_L	(CONST(1),EBX)
+	JE	(.two_remaining_lastscanline4)
+
+	ADD_L	(scanline_pad_bytes4,ESI)
+
+	MOV_B	(REGIND(ESI),DL)
+	SHL_L	(CONST(16),EAX)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AL)
+	MOV_B	(REGOFF(1,ESI),DL)
+	MOV_B	(REGOFF(GLNAME(byte_reversed),EDX),AH)
+	ROL_L	(CONST(16),EAX)
+.two_remaining_lastscanline4:
+	MOV_L	(EAX,REGIND(EDI))
+
+	MOV_L	(bytewidth4_arg,ECX)
+	SUB_L	(CONST(2),ECX)
+
+	ADD_L	(CONST(2),ESI)
+	DEC_L	(EBX)
+	JNZ	(.scanline_loop4)
+
+.end4:
+	POP_L	(EDI)
+	POP_L	(ESI)
+	POP_L	(ECX)
+	POP_L	(EBX)
+	POP_L	(EBP)
+	RET
+
+
+
+/* 
+ * Experimental routine to blast constant data to the blitter.
+ *
+ * Prototype:
+ * CirrusWordTransfer( int count, unsigned long word, void *vaddr )
+ *
+ * count is the number of 32-bit words to transfer.
+ * word is the 32-bit data to be written.
+ * vaddr is a video memory address (doesn't really matter).
+ */
+
+#define count5_arg	REGOFF(8,EBP)
+#define word5_arg	REGOFF(12,EBP)
+#define vaddr5_arg	REGOFF(16,EBP)
+
+	GLOBL GLNAME(CirrusWordTransfer)
+GLNAME(CirrusWordTransfer):
+
+	PUSH_L	(EBP)
+	MOV_L	(ESP,EBP)
+	PUSH_L	(ECX)
+	PUSH_L	(EDI)
+
+	MOV_L	(count5_arg,ECX)
+	MOV_L	(word5_arg,EDX)
+	MOV_L	(vaddr5_arg,EDI)
+
+.unrolled_loop5:
+	CMP_L	(CONST(16),ECX)
+	JL	(.word_loop_check5)
+
+	/* Handle 16 dwords. */
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	MOV_L	(EDX,REGIND(EDI))
+	SUB_L	(CONST(16),ECX)
+	MOV_L	(EDX,REGIND(EDI))
+
+	JMP	(.unrolled_loop5)
+
+.word_loop_check5:
+	TEST_L	(ECX,ECX)
+	JZ	(.end5)
+
+.word_loop5:
+	MOV_L	(EDX,REGIND(EDI))
+
+	DEC_L	(ECX)
+	JNZ	(.word_loop5)
+
+.end5:
+	POP_L	(EDI)
+	POP_L	(ECX)
 	POP_L	(EBP)
 	RET

@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: gvg_driver.c,v 1.1 94/10/05 13:54:21 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.3 1994/09/11 00:52:50 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -86,6 +87,13 @@ vgaVideoChipRec GVGA = {
   VGA_NO_DIVIDE_VERT,
   {0,},
   16,
+  FALSE,
+  0,
+  0,
+  FALSE,
+  FALSE,
+  NULL,
+  1,
 };
 
 
@@ -317,9 +325,8 @@ static void
 GVGAAdjust(x, y)
      int x, y;
 {
-  int Base =(y * vga256InfoRec.virtualX + x + 3) >> 3;
+  int Base =(y * vga256InfoRec.displayWidth + x + 3) >> 3;
 
   outw(vgaIOBase + 4, (Base & 0x00FF00)      | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 }
-

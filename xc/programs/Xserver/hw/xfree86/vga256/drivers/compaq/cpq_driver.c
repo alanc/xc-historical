@@ -1,4 +1,5 @@
-/* $XConsortium$ */
+/* $XConsortium: cpq_driver.c,v 1.1 94/10/05 13:52:47 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.3 1994/09/11 00:52:38 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -98,6 +99,13 @@ vgaVideoChipRec COMPAQ = {
 	VGA_NO_DIVIDE_VERT,
 	{0,},
 	8,
+	FALSE,
+	0,
+	0,
+	FALSE,
+	FALSE,
+	NULL,
+	1,
 };
 
 #define new ((vgaCOMPAQPtr)vgaNewVideoState)
@@ -364,9 +372,9 @@ COMPAQAdjust(x, y)
      int x, y;
 {
 #ifdef MONOVGA
-	int Base = (y * vga256InfoRec.virtualX + x + 3) >> 3;
+	int Base = (y * vga256InfoRec.displayWidth + x + 3) >> 3;
 #else
-	int Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+	int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 #endif
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);

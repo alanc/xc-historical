@@ -1,4 +1,5 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: fFill.s,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.1 1994/08/31 06:20:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -138,14 +139,16 @@ GL_RROP_NAME:
 .byteloop:
 	RROPB	(fillb,REGIND(pdst))
 	LEA_L	(REGBID(widthPitch,pdst,1),pdst)
-	LOOP	(.byteloop)
+	DEC_L	(ECX)	
+	JNZ	(.byteloop)
 	JMP	(.finish)
 
 	ALIGNTEXT4
 .wordloop:
 	RROPW	(fillw,REGIND(pdst))
 	LEA_L	(REGBID(widthPitch,pdst,2),pdst)
-	LOOP	(.wordloop)
+	DEC_L	(ECX)	
+	JNZ	(.wordloop)
 	JMP	(.finish)
 
 	ALIGNTEXT4
@@ -153,7 +156,8 @@ GL_RROP_NAME:
 	RROPW	(fillw,REGIND(pdst))
 	RROPB	(fillb,REGOFF(2,pdst))
 	LEA_L	(REGBID(widthPitch,pdst,3),pdst)
-	LOOP	(.tribbleloop)
+	DEC_L	(ECX)	
+	JNZ	(.tribbleloop)
 	JMP	(.finish)
 
 #undef count
@@ -197,7 +201,8 @@ GL_RROP_NAME:
 	ALIGNTEXT4ifNOP
 .loop0: RROPL	(fill,REGIND(pdst))
 	ADD_L	(CONST(4),pdst)
-	LOOP	(.loop0)
+	DEC_L	(ECX)	
+	JNZ	(.loop0)
 .endloop:
 #endif
 	TEST_L	(CONST(2),CONTENT(countt))

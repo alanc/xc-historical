@@ -1,4 +1,5 @@
-/* $XConsortium: cir_bltC.c,v 1.1 94/03/28 21:48:29 dpw Exp $ */
+/* $XConsortium: cir_bltC.c,v 1.1 94/10/05 13:52:22 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.3 1994/08/20 07:36:19 dawes Exp $ */
 /*
  
 
@@ -34,6 +35,8 @@ Author: Keith Packard
  * Author:  Bill Reynolds, bill@goshawk.lanl.gov
  *
  * Reworked by: Simon P. Cooper, <scooper@vizlab.rutgers.edu>
+ * Modified: H. Hanemaayer, <hhanemaa@cs.ruu.nl>
+ *	Added CirrusCopyPlane1to8.
  *
  * Id: cir_bltC.c,v 0.7 1993/09/16 01:07:25 scooper Exp
  */
@@ -52,11 +55,8 @@ Author: Keith Packard
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
-#include	"cfbmskbits.h"
-#include	"cfb8bit.h"
-#include	"fastblt.h"
 #include        "vgaBank.h"
+#include	"vga256.h"
 
 #include "cir_driver.h"
 
@@ -91,9 +91,9 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
   void fastBitBltCopy();
   void vgaImageRead();
   void vgaImageWrite();
-  void CirrusImageWrite();
-  void CirrusImageRead();
-  void CirrusBitBlt();
+  void CirrusBLTImageWrite();
+  void CirrusBLTImageRead();
+  void CirrusPolyBitBlt();	/* Special, different args. */
   void vgaPixBitBlt();
 
   if (pSrc->type == DRAWABLE_WINDOW)
@@ -139,28 +139,41 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
        {
        if (CHECKSCREEN(pdstBase)) /* Screen -> Screen */
 	    {
-	    fnp = CirrusBitBlt;	/* This works fine */
+	    /* Forget about non-GXcopy BitBLTs. We can do them, but */
+	    /* I don't know how common they are. */
+	    if (alu == GXcopy && (planemask & 0xff) == 0xff)
+	    	/* NULL indicates potential hardware Cirrus BitBlt; we
+	    	 * let that function traverse the list of regions.
+	    	 * for efficiency. See end of function. */
+	        fnp = NULL;
+	    else
+	        fnp = vgaBitBlt;
 	    }
        else			/* Screen -> Mem */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE())
+/*	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X()) */
+	    if (1)	/* ImageRead is unreliable. */
 		 {
 		 fnp = vgaImageRead;
 		 }
 	    else 
 		 {
-		 fnp = CirrusImageRead;
+		 fnp = CirrusBLTImageRead;
 		 }
 	    }
        }
   else 
        if (CHECKSCREEN(pdstBase)) /* Mem -> Screen */
 	    {
-	    if(NoCirrus || !HAVEBITBLTENGINE()) 
+	    if(NoCirrus || !HAVEBITBLTENGINE() || HAVE543X())
+	    /* ImageWrite seems prone to pixel errors. Probably
+	     * caused by other function -- ImageWrite is used all
+	     * the time by the cursor.
+	     */
 		 {
 		 fnp = vgaImageWrite;
 		 }
-	    else fnp = CirrusImageWrite;
+	    else fnp = CirrusBLTImageWrite;
 	    }
        else fnp = vgaPixBitBlt;	/* Don't need to change: Mem -> Mem */
        
@@ -262,7 +275,14 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
       /* walk source left to right */
       xdir = 1;
     }
-  
+
+  /* Avoid the calling overhead for (potential) hardware blits. */
+  if (fnp == NULL)
+  	/* Screen-to-screen, alu == GXcopy, (planemask & 0xff) == 0xff */
+  	CirrusPolyBitBlt(pdstBase, psrcBase, widthSrc, widthDst, nbox,
+  	    pptSrc, pbox, xdir, ydir);
+
+  else
   while(nbox--) {
     (*fnp)(pdstBase, psrcBase,widthSrc,widthDst,
 	   pptSrc->x, pptSrc->y, pbox->x1, pbox->y1,
@@ -286,3 +306,76 @@ CirrusDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 }
 
 
+#ifdef CIRRUS_INCLUDE_COPYPLANE1TO8
+
+extern void cfbCopyPlane1to8();
+
+void CirrusCopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+planemask, bitplane)
+	DrawablePtr pSrcDrawable;
+	DrawablePtr pDstDrawable;
+	int rop;
+	unsigned long planemask;
+	RegionPtr prgnDst;
+	DDXPointPtr pptSrc;
+	int bitplane;	/* Unused. */
+{
+    unsigned long *psrcBase, *pdstBase;
+    int	widthSrc, widthDst;
+    int pixwidth;
+    int nbox;
+    BoxPtr  pbox;
+
+    cfbGetLongWidthAndPointer (pSrcDrawable, widthSrc, psrcBase)
+
+    cfbGetLongWidthAndPointer (pDstDrawable, widthDst, pdstBase)
+
+    if (!CHECKSCREEN(pdstBase) || cfb8StippleRRop != GXcopy) {
+    	vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+    		planemask, 1);
+    	return;
+    }
+
+    nbox = REGION_NUM_RECTS(prgnDst);
+    pbox = REGION_RECTS(prgnDst);
+
+    /* The planemask is understood to be 1 for all cases in which */
+    /* this function is called. */
+
+    while (nbox--)
+    {
+	int srcx, srcy, dstx, dsty, width, height;
+	int bg, fg;
+	dstx = pbox->x1;
+	dsty = pbox->y1;
+	srcx = pptSrc->x;
+	srcy = pptSrc->y;
+	width = pbox->x2 - pbox->x1;
+	height = pbox->y2 - pbox->y1;
+	pbox++;
+	pptSrc++;
+
+	fg = cfb8StippleFg;
+	bg = cfb8StippleBg;
+
+	if (width >= 32)
+		if (cirrusUseMMIO)
+			CirrusMMIOBLTWriteBitmap(dstx, dsty, width, height,
+				psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
+				widthDst * 4);
+		else
+			CirrusBLTWriteBitmap(dstx, dsty, width, height,
+				psrcBase, widthSrc * 4, srcx, srcy, bg, fg,
+				widthDst * 4);
+	else {
+		/* Create singular region. */
+		RegionRec reg;
+		(*pDstDrawable->pScreen->RegionInit)(&reg, pbox - 1, 1);
+		vga256CopyPlane1to8(pSrcDrawable, pDstDrawable, rop,
+			&reg, pptSrc - 1, planemask, 1);
+		(*pDstDrawable->pScreen->RegionUninit)(&reg);
+	}
+    }
+}
+
+#endif
