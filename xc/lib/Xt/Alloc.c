@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.39 91/01/09 15:36:02 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.40 91/01/09 19:39:04 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -95,6 +95,10 @@ char *XtCalloc(num, size)
 {
     char *ptr;
 
+#ifdef MALLOC_0_RETURNS_NULL
+    if (!size)
+	num = size = 1;
+#endif
     if ((ptr = Xcalloc(num, size)) == NULL)
 	_XtAllocError("calloc");
 
@@ -280,7 +284,7 @@ char *_XtCalloc(num, size, file, line)
 
     total = num * size;
     newsize = StatsSize(total);
-    if ((ptr = (StatsPtr)Xcalloc(1, newsize)) == NULL)
+    if ((ptr = (StatsPtr)Xcalloc(newsize, 1)) == NULL)
         _XtAllocError("calloc");
     CHAIN(ptr, total, NULL);
     return(ToMem(ptr));
