@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.17 91/07/19 16:32:54 gildea Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.18 91/07/23 19:01:27 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -212,7 +212,7 @@ without express or implied warranty.
  *		int iov_len;
  *	};
  */
-#if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA)
+#if defined(USG) && !defined(CRAY) && !defined(umips) && !defined(MOTOROLA) && !defined(uniosu)
 struct iovec {
     caddr_t iov_base;
     int iov_len;
@@ -244,7 +244,7 @@ extern Xstream _XsStream[];
 
 
 #ifndef USL_COMPAT
-#if !defined(USG) || defined(MOTOROLA)
+#if !defined(USG) || defined(MOTOROLA) || defined(uniosu)
 #if !(defined(SYSV) && defined(SYSV386))
 #define _XReadV readv
 #endif
