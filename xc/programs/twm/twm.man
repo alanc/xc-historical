@@ -380,6 +380,15 @@ divided by the number of columns.
 This variable is a list of windows you wish to appear in the icon
 manager.  When used in conjunction with the \fBIconManagerDontShow\fP
 variable, only windows in this list will be shown in the icon manager.
+.IP "\fBIconRegion\fP ``geometry'' grav-a grav-b x-space y-space"
+This is more a command than a variable, as multiple IconRegions may be
+specified.  An IconRegion is an area of the root window in which icons are
+placed if no specific position is given.  grav-a specifies the way in which
+icons are placed in the area, NORTH gravity attempts to bunch icons at the
+top of the window, similarly for the other 3 cardinal directions.  grav-b
+specifies a secondary ordering, and should be orthogonal to grav-a.  x-space
+and y-space create a grid within the icon region which icons are bound to,
+this tends to organize the icons in neat rows/columns.
 .IP "\fBInterpolateMenuColors\fP" 20
 This variable causes menu entry colors to be interpolated between
 entry specified colors.  For example:
