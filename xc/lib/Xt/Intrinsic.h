@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.149 91/01/11 16:58:54 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.150 91/01/29 13:39:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1763,6 +1763,12 @@ extern XtAppContext XtDisplayToApplicationContext(
 extern XrmDatabase XtDatabase(
 #if NeedFunctionPrototypes
     Display*		/* dpy */
+#endif
+);
+
+extern XrmDatabase XtScreenDatabase(
+#if NeedFunctionPrototypes
+    Screen*		/* screen */
 #endif
 );
 
