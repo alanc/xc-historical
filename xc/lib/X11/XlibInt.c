@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.165 93/03/10 16:31:22 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.166 93/04/30 15:39:52 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -28,7 +28,7 @@ without express or implied warranty.
 #include "Xlibnet.h"
 #include <stdio.h>
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 #include "locking.h"
 
 /* these pointers get initialized by XInitThreads */
@@ -48,7 +48,7 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define DisplayLockWait(d) if ((d)->lock_fns && (d)->lock_fns->lock_wait) \
     (*(d)->lock_fns->lock_wait)(d)
 
-#else /* MULTI_THREADED else */
+#else /* XTHREADS else */
 
 #define UnlockNextReplyReader(d)   
 #define UnlockNextEventReader(d)
@@ -58,7 +58,7 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define ConditionSignal(d,c)
 #define DisplayLockWait(d)
 
-#endif /* MULTI_THREADED else */ 
+#endif /* XTHREADS else */ 
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
  * systems are broken and return EWOULDBLOCK when they should return EAGAIN
@@ -144,12 +144,12 @@ static xReq _dummy_request = {
  */
 static void
 _XWaitForWritable(dpy
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		  , cv
 #endif
 		  )
     Display *dpy;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
     condition_t cv;		/* our reading condition variable */
 #endif
 {
@@ -161,7 +161,7 @@ _XWaitForWritable(dpy
     CLEARBITS(w_mask);
 
     while (1) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	/* We allow only one thread at a time to read, to minimize
 	   passing of read data between threads.
 	   Now, who is it?  If there is a non-NULL reply_awaiters and
@@ -258,7 +258,7 @@ _XWaitForReadable(dpy)
 	LockDisplay(dpy);
 	if (result == -1 && errno != EINTR) _XIOError(dpy);
     } while (result <= 0);
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 #ifdef TDEBUG
     printf("thread %x _XWaitForReadable returning\n", cthread_self());
 #endif
@@ -274,7 +274,7 @@ _XWaitForReadable(dpy)
 _XFlush (dpy)
 	register Display *dpy;
 {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
     /* With multi-threading we introduce an internal routine to which
        we can pass a condition variable to do locking correctly. */
 
@@ -289,7 +289,7 @@ static _XFlushInt (dpy, cv)
 	register Display *dpy;
         register condition_t cv;
 {
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 	register long size, todo;
 	register int write_stat;
 	register char *bufindex;
@@ -311,14 +311,14 @@ static _XFlushInt (dpy, cv)
 		todo = size;
 		bufindex += write_stat;
 	    } else if (ETEST(errno)) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		_XWaitForWritable(dpy, cv);
 #else
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
 	    } else if (errno == 0) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		_XWaitForWritable(dpy, cv);
 #else
 		_XWaitForWritable(dpy);
@@ -329,7 +329,7 @@ static _XFlushInt (dpy, cv)
 		if (todo > 1) 
 		    todo >>= 1;
 		else {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		    _XWaitForWritable(dpy, cv);
 #else
 		    _XWaitForWritable(dpy);
@@ -355,14 +355,14 @@ _XEventsQueued (dpy, mode)
 	_XAlignedBuffer buf;
 	register xReply *rep;
 	char *read_buf;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	int entry_event_serial_num;
 	struct _XCVList *cvl;
 
 #ifdef TDEBUG
 	printf("_XEventsQueued called in thread %x\n", cthread_self());
 #endif
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	if (mode == QueuedAfterFlush)
 	{
@@ -372,7 +372,7 @@ _XEventsQueued (dpy, mode)
 	}
 	if (dpy->flags & XlibDisplayIOError) return(dpy->qlen);
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	/* In the multi-threaded case, if there is someone else
 	   reading events, then there aren't any available, so
 	   we just return.  If we waited we would block.
@@ -403,7 +403,7 @@ _XEventsQueued (dpy, mode)
 		qev = qev->next;
 	    }
 	}
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    _XIOError(dpy);
@@ -445,12 +445,12 @@ _XEventsQueued (dpy, mode)
        * and we've seen at least one OS that appears to not update
        * the result from FIONREAD once it has returned nonzero.
        */
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	if (dpy->lock && dpy->lock->reply_awaiters) {
 	    read_buf = (char *)dpy->lock->reply_awaiters->buf;
 	    len = SIZEOF(xReply);
 	} else
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 	{
 	    read_buf = buf.buf;
 	    
@@ -466,7 +466,7 @@ _XEventsQueued (dpy, mode)
 
 	_XRead (dpy, read_buf, (long) len);
 	
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	/* what did we actually read: reply or event? */
 	if (dpy->lock && dpy->lock->reply_awaiters) {
 	    if (((xReply *)read_buf)->generic.type == X_Reply)
@@ -481,7 +481,7 @@ _XEventsQueued (dpy, mode)
 	    } else if (read_buf != buf.buf)
 		bcopy(read_buf, buf.buf, len);
 	}
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	STARTITERATE(rep,xReply,buf.buf,len > 0) {
 	    if (rep->generic.type == X_Reply) {
@@ -516,7 +516,7 @@ _XReadEvents(dpy)
 	register xReply *rep;
 	Bool not_yet_flushed = True;
 	char *read_buf;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	struct _XCVList *cvl;
 	int entry_event_serial_num;
 	Bool first_time = True;
@@ -531,11 +531,11 @@ _XReadEvents(dpy)
 	/* note which events we have already seen so we'll know
 	   if _XReply (in another thread) reads one */
 	entry_event_serial_num = dpy->next_event_serial_num;
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	do {
 	    
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	    /* if it is not our turn to read an event off the wire,
 	       wait til we're at head of list */
 	    if (first_time && dpy->lock &&
@@ -558,7 +558,7 @@ _XReadEvents(dpy)
 		ConditionWait(dpy, cvl);
 
 	    first_time = False;
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	    /* find out how much data can be read */
 	    if (BytesReadable(dpy->fd, (char *) &pend) < 0)
@@ -581,7 +581,7 @@ _XReadEvents(dpy)
 		}
 	    }
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	    /* If someone is waiting for a reply, gamble that
 	       the reply will be the next thing on the wire
 	       and read it into their buffer. */
@@ -589,7 +589,7 @@ _XReadEvents(dpy)
 		read_buf = (char *)dpy->lock->reply_awaiters->buf;
 		len = SIZEOF(xReply);
 	    } else
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 	    {
 		read_buf = buf.buf;
 
@@ -603,7 +603,7 @@ _XReadEvents(dpy)
 
 	    _XRead (dpy, read_buf, (long) len);
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	    /* what did we actually read: reply or event? */
 	    if (dpy->lock && dpy->lock->reply_awaiters) {
 		if (((xReply *)read_buf)->generic.type == X_Reply)
@@ -618,7 +618,7 @@ _XReadEvents(dpy)
 		} else if (read_buf != buf.buf)
 		    bcopy(read_buf, buf.buf, len);
 	    }
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 
 	    STARTITERATE(rep,xReply,buf.buf,len > 0) {
 		if (rep->generic.type == X_Reply) {
@@ -653,7 +653,7 @@ _XRead (dpy, data, size)
 	register long size;
 {
 	register long bytes_read;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	int original_size = size;
 #endif
 
@@ -687,14 +687,14 @@ _XRead (dpy, data, size)
 		    	_XIOError(dpy);
 		    }
 	    	 }
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
        if (dpy->lock && dpy->lock->reply_bytes_left > 0)
        {
            dpy->lock->reply_bytes_left -= original_size;
            if (dpy->lock->reply_bytes_left == 0)
                UnlockNextReplyReader(dpy);
        }
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 }
 
 #ifdef WORD64
@@ -830,7 +830,7 @@ _XReadPad (dpy, data, size)
     	register long bytes_read;
 	struct iovec iov[2];
 	char pad[3];
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
         int original_size;
 #endif
 
@@ -846,7 +846,7 @@ _XReadPad (dpy, data, size)
 	iov[1].iov_len = padlength[size & 3];
 	iov[1].iov_base = pad;
 	size += iov[1].iov_len;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	original_size = size;
 #endif
 	errno = 0;
@@ -883,14 +883,14 @@ _XReadPad (dpy, data, size)
 		    _XIOError(dpy);
 		}
 	    }
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
        if (dpy->lock && dpy->lock->reply_bytes_left > 0)
        {
            dpy->lock->reply_bytes_left -= original_size;
            if (dpy->lock->reply_bytes_left == 0)
                UnlockNextReplyReader(dpy);
        }
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 }
 
 /*
@@ -968,14 +968,14 @@ _XSend (dpy, data, size)
 		total -= len;
 		todo = total;
 	    } else if (ETEST(errno)) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		_XWaitForWritable(dpy, NULL);
 #else
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
 	    } else if (errno == 0) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		_XWaitForWritable(dpy, NULL);
 #else
 		_XWaitForWritable(dpy);
@@ -986,11 +986,11 @@ _XSend (dpy, data, size)
 		if (todo > 1) 
 		  todo >>= 1;
 		else {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		    _XWaitForWritable(dpy, NULL);
 #else
 		    _XWaitForWritable(dpy);
-#endif /* MULTI_THREADED*/
+#endif /* XTHREADS*/
 		}
 #endif
 	    } else if (errno != EINTR) {
@@ -1084,14 +1084,14 @@ Status _XReply (dpy, rep, extra, discard)
      * generated by an error handler don't confuse us.
      */
     unsigned long cur_request = dpy->request;
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
     struct _XCVList *cvl;
 #endif
 
     if (dpy->flags & XlibDisplayIOError)
 	return 0;
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
     /* create our condition variable and append to list */
     cvl = QueueReplyReaderLock(dpy);
 
@@ -1109,17 +1109,17 @@ Status _XReply (dpy, rep, extra, discard)
 	cvl->buf = rep;
 	ConditionWait(dpy, cvl);
     }
-#else /* MULTI_THREADED else */
+#else /* XTHREADS else */
     _XFlush(dpy);
 #endif
 
     for (;;) {
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	/* Did another thread's _XReadEvents get our reply by accident? */
 	if (!dpy->lock || !dpy->lock->reply_was_read)
 #endif
 	    _XRead(dpy, (char *)rep, (long)SIZEOF(xReply));
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 	if (dpy->lock)
 	    dpy->lock->reply_was_read = False;
 #endif
@@ -1150,7 +1150,7 @@ Status _XReply (dpy, rep, extra, discard)
 			if (extra < rep->generic.length)
 			    _XEatData(dpy, (rep->generic.length - extra) << 2);
 		    }
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 		    if (dpy->lock) {
 			if (discard) {
 			    dpy->lock->reply_bytes_left = 0;
@@ -1254,7 +1254,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 	(void) fprintf(stderr, 
 		       "Xlib: unexpected async reply (sequence 0x%lx)!\n",
 		       dpy->last_request_read);
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 #ifdef TDEBUG
 	printf("thread %x, unexpected async reply\n", cthread_self());
 #endif

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.132 93/03/10 16:37:18 converse Exp $
+ * $XConsortium: XOpenDis.c,v 11.132 93/03/10 16:48:37 converse Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -37,7 +37,7 @@ typedef struct {
 
 extern int _Xdebug;
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 int  (*_XInitDisplayLock_fn)() = NULL;
 void (*_XFreeDisplayLock_fn)() = NULL;
 

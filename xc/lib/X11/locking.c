@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.1 93/06/21 15:25:52 gildea Exp $
+ * $XConsortium: locking.c,v 1.1 93/06/21 17:27:07 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * locking.c - multi-thread locking routines implemented in C Threads
  */
 
-#ifdef MULTI_THREADED
+#ifdef XTHREADS
 
 #include "Xlibint.h"
 #include <stdio.h>		/* for debugging stuff */
@@ -283,6 +283,6 @@ void _XFreeDisplayLock(dpy)
     }
 }
 
-#else /* MULTI_THREADED */
+#else /* XTHREADS */
 static int unused;		/* always create a symbol table */
-#endif /* MULTI_THREADED */
+#endif /* XTHREADS */
