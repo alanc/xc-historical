@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.49 90/06/13 09:35:30 rws Exp $ */
+/* $XConsortium: WaitFor.c,v 1.50 91/02/14 19:36:26 keith Exp $ */
 
 /*****************************************************************
  * OS Depedent input routines:
@@ -101,22 +101,6 @@ extern int playback_on;
  *****************/
 
 static long timeTilFrob = 0;		/* while screen saving */
-
-#if (mskcnt>4)
-/*
- * This is a macro if mskcnt <= 4
- */
-ANYSET(src)
-    long	*src;
-{
-    int i;
-
-    for (i=0; i<mskcnt; i++)
-	if (src[ i ])
-	    return (TRUE);
-    return (FALSE);
-}
-#endif
 
 int
 WaitForSomething(pClientsReady)
@@ -285,5 +269,22 @@ WaitForSomething(pClientsReady)
     return nready;
 }
 
+/* XXX should be if (mskcnt>4), but font server says otherwise */
+#if (NOFILE>128)
+#ifdef ANYSET
+#undef ANYSET
+#endif
+/*
+ * This is a macro if mskcnt <= 4
+ */
+ANYSET(src)
+    long	*src;
+{
+    int i;
 
-
+    for (i=0; i<mskcnt; i++)
+	if (src[ i ])
+	    return (TRUE);
+    return (FALSE);
+}
+#endif
