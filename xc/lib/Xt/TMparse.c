@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.58 88/02/26 12:48:03 swick Exp $";
+static char rcsid[] = "$Header: TMparse.c,v 1.59 88/04/09 15:58:27 rws Exp $";
 #endif lint
 
 /***********************************************************
@@ -567,7 +567,7 @@ static unsigned long StrToNum(str)
     return val;
 }
 
-static KeySym XStringToKeySym(str)
+static KeySym StringToKeySym(str)
     String str;
 {
     KeySym sym;
@@ -576,7 +576,7 @@ static KeySym XStringToKeySym(str)
 #ifndef NOTASCII
     /* special case single character ASCII, for speed */
     if (!*(str+1)) {
-	/* XXX why are handling A-Z, but not upper case in general??? */
+	/* XXX why downcase A-Z, but not capitals in all character sets??? */
 	if ('A' <= *str && *str <= 'Z')
 	    return XK_a + (*str - 'A' + 'a');
 	if (' ' <= *str && *str <= '~')
@@ -639,7 +639,7 @@ static String ParseKeySym(str, closure, event)
 	keySymName[0] = *str;
 	if (*str != '\0' && *str != '\n') str++;
 	keySymName[1] = '\0';
-	event->event.eventCode = XStringToKeySym(keySymName);
+	event->event.eventCode = StringToKeySym(keySymName);
 	event->event.eventCodeMask = ~0L;
     } else if (*str == ',' || *str == ':') {
 	/* no detail */
@@ -656,7 +656,7 @@ static String ParseKeySym(str, closure, event)
 		&& *str != '\0') str++;
 	(void) strncpy(keySymName, start, str-start);
 	keySymName[str-start] = '\0';
-	event->event.eventCode = XStringToKeySym(keySymName);
+	event->event.eventCode = StringToKeySym(keySymName);
 	event->event.eventCodeMask = ~0L;
     }
 
@@ -772,7 +772,7 @@ static String ParseQuotedStringEvent(str, event)
     }
     s[0] = c;
     s[1] = '\0';
-    event->event.eventCode = XStringToKeySym(s);
+    event->event.eventCode = StringToKeySym(s);
 
     return str;
 }
