@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.33 88/09/06 09:53:44 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Vendor.c,v 1.35 88/09/06 17:12:12 swick Exp $";
 /* $oHeader: Vendor.c,v 1.3 88/08/19 13:11:01 asente Exp $ */
 #endif lint
 
@@ -46,8 +46,6 @@ SOFTWARE.
  * Vendor shell class record
  *
  ***************************************************************************/
-
-#define Offset(x)	(XtOffset(VendorShellWidget, x))
 
 static void _VendorShellInitialize();
 static Boolean _VendorShellSetValues();
