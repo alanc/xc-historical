@@ -1,4 +1,4 @@
-/* $Header: dsimple.c,v 1.5 88/02/09 11:20:49 jim Exp $ */
+/* $Header: dsimple.c,v 1.5 88/02/09 11:28:35 jim Exp $ */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -495,6 +495,6 @@ Window Window_With_Name(dpy, top, name)
 		if (w)
 		  break;
 	}
-	XFree(children);
+	if (children) XFree (children);
 	return(w);
 }
