@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.17 92/11/20 14:39:51 rws Exp $ */
+/* $XConsortium: sunKbd.c,v 5.18 92/11/24 10:49:19 rws Exp $ */
 /*-
  * sunKbd.c --
  *	Functions for retrieving data from a keyboard.
@@ -379,8 +379,8 @@ sunBell (loudness, pKeyboard)
 
 	ival.it_interval.tv_sec = 0;
 	ival.it_interval.tv_usec = 0;
-	gettimeofday(&ival.it_value);
-	ival.it_value.tv_usec += pPriv->ctrl->bell_duration * 1000;
+	ival.it_value.tv_sec = 0;
+	ival.it_value.tv_usec = pPriv->ctrl->bell_duration * 1000;
 	if (ival.it_value.tv_usec >= 1000000)
 	{
 	    ival.it_value.tv_sec += ival.it_value.tv_usec / 1000000;
