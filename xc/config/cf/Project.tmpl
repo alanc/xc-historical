@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl,v 1.247 94/12/27 19:54:32 gildea Exp gildea $
+XCOMM $XConsortium: Project.tmpl,v 1.248 95/01/06 19:12:51 gildea Exp matt $
 
 /***************************************************************************
  *                                                                         *
@@ -71,11 +71,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.247 94/12/27 19:54:32 gildea Exp gildea $
 #define BuildXKBlib		NO	/* not yet a standard part of Xlib */
 #endif
 #ifndef BuildFresco
-#if HasCplusplus 
-#define BuildFresco		YES
-#else
-#define BuildFresco		NO
-#endif
+#define BuildFresco		NO	/* R6 snapshot is obsolete */
 #endif
 #ifndef InstallLibManPages
 #define InstallLibManPages	YES
