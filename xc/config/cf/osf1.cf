@@ -1,10 +1,17 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.22 93/09/21 17:32:33 kaleb Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.23 93/09/21 18:12:53 rws Exp $
 /* only tested with Digital OSF/1 V1.0 */
 
+#ifdef AlphaArchitecture
+#define OSName			OSF/1 1.2
+XCOMM operating system:  OSName
+#define OSMajorVersion		1
+#define OSMinorVersion		2
+#else
 #define OSName			OSF/1 1.0
 XCOMM operating system:  OSName
 #define OSMajorVersion		1
 #define OSMinorVersion		0
+#endif
 
 #define HasPutenv		YES
 #define Malloc0ReturnsNull	YES
@@ -45,6 +52,10 @@ XCOMM operating system:  OSName
 #define NoRConst YES
 #define SharedLibPex		NO  /* losing, no shared -lm */
 
+#ifdef AlphaArchitecture
+#define BuildServer NO	/* not yet, anyway */
+#define ServerExtraDefines -D_XSERVER64
+#endif
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
 #define XdecServer YES
