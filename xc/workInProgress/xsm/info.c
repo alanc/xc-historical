@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.23 94/12/21 16:56:57 mor Exp mor $ */
+/* $XConsortium: info.c,v 1.24 94/12/27 17:52:00 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -333,6 +333,8 @@ XtPointer 	callData;
 
     if (client)
 	Clone (client, False /* don't use saved state */);
+
+    XtFree ((char *) current);
 }
 
 
@@ -360,6 +362,8 @@ XtPointer 	callData;
     client = clientListRecs[current->list_index];
 
     SmsDie (client->smsConn);
+
+    XtFree ((char *) current);
 }
 
 
@@ -637,7 +641,10 @@ XtPointer 	callData;
     else if (active == restartNever)
 	hint = SmRestartNever;
     else
+    {
+	XtFree ((char *) current);
 	return;
+    }
 
     client->restartHint = hint;
 
@@ -680,6 +687,8 @@ XtPointer 	callData;
     {
 	DisplayProps (client);
     }
+
+    XtFree ((char *) current);
 }
 
 
