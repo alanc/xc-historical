@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.149 88/07/19 18:09:58 toddb Exp $ */
+/* $Header: events.c,v 1.150 88/08/09 10:19:06 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -142,7 +142,7 @@ extern void DoFocusEvents();
 extern Mask EventMaskForClient();
 extern WindowPtr CheckMotion();
 extern void WriteEventsToClient();
-static Bool CheckDeviceGrabs(), IsParent();
+static Bool CheckDeviceGrabs();
 
 extern GrabPtr CreateGrab();		/* Defined in grabs.c */
 extern void  DeleteGrab();
@@ -307,6 +307,16 @@ ChangeToCursor(cursor)
 	(*currentScreen->DisplayCursor) (currentScreen, cursor);
 	sprite.current = cursor;
     }
+}
+
+/* returns true if b is a descendent of a */
+static Bool
+IsParent(a, b)
+    register WindowPtr a, b;
+{
+    for (b = b->parent; b; b = b->parent)
+	if (b == a) return TRUE;
+    return FALSE;
 }
 
 static void
@@ -1684,17 +1694,6 @@ EventSuppressForWindow(pWin, client, mask)
     pWin->dontPropagateMask = mask;
     RecalculateDeliverableEvents(pWin);
     return Success;
-}
-
-
-/* returns true if b is a descendent of a */
-static Bool
-IsParent(a, b)
-    register WindowPtr a, b;
-{
-    for (b = b->parent; b; b = b->parent)
-	if (b == a) return TRUE;
-    return FALSE;
 }
 
 static WindowPtr 
