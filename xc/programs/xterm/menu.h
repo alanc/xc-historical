@@ -1,6 +1,7 @@
 typedef struct _MenuEntry {
     char *name;
     void (*function)();
+    Widget widget;
 } MenuEntry;
 
 extern MenuEntry mainMenuEntries[], vtMenuEntries[], tekMenuEntries[];
@@ -76,15 +77,15 @@ extern Arg menuArgs[];
  * macros for updating menus
  */
 
-#define update_menu_item(w,itemname,val) { if (w) { \
+#define update_menu_item(w,mi,val) { if (mi) { \
     menuArgs[0].value = (XtArgVal) ((val) ? term->screen.menu_item_bitmap \
 				          : None); \
-    XawSimpleMenuSetEntryValues (w, itemname, menuArgs, (Cardinal) 1); }}
+    XtSetValues (mi, menuArgs, (Cardinal) 1); }}
 
 
-#define set_sensitivity(w,itemname,val) { if (w) { \
+#define set_sensitivity(w,mi,val) { if (mi) { \
     menuArgs[1].value = (XtArgVal) (val); \
-    XawSimpleMenuSetEntryValues (w, itemname, menuArgs+1, (Cardinal) 1); }}
+    XtSetValues (mi, menuArgs+1, (Cardinal) 1);  }}
 
 
 
@@ -95,123 +96,128 @@ extern Arg menuArgs[];
 
 #define update_securekbd() \
   update_menu_item (term->screen.mainMenu, \
-		    mainMenuEntries[mainMenu_securekbd].name, \
+		    mainMenuEntries[mainMenu_securekbd].widget, \
 		    term->screen.grabbedKbd)
 
 #define update_allowsends() \
   update_menu_item (term->screen.mainMenu, \
-		    mainMenuEntries[mainMenu_allowsends].name, \
+		    mainMenuEntries[mainMenu_allowsends].widget, \
 		    term->screen.allowSendEvents)
 
 #define update_logging() \
   update_menu_item (term->screen.mainMenu, \
-		    mainMenuEntries[mainMenu_logging].name, \
+		    mainMenuEntries[mainMenu_logging].widget, \
 		    term->screen.logging)
 
 
 #define update_scrollbar() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_scrollbar].name, \
+		    vtMenuEntries[vtMenu_scrollbar].widget, \
 		    term->screen.scrollbar)
 
 #define update_jumpscroll() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_jumpscroll].name, \
+		    vtMenuEntries[vtMenu_jumpscroll].widget, \
 		    term->screen.jumpscroll)
 
 #define update_reversevideo() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_reversevideo].name, \
+		    vtMenuEntries[vtMenu_reversevideo].widget, \
 		    (term->flags & REVERSE_VIDEO))
 
 #define update_autowrap() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_autowrap].name, \
+		    vtMenuEntries[vtMenu_autowrap].widget, \
 		    (term->flags & WRAPAROUND))
 
 #define update_reversewrap() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_reversewrap].name, \
+		    vtMenuEntries[vtMenu_reversewrap].widget, \
 		    (term->flags & REVERSEWRAP))
 
 #define update_autolinefeed() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_autolinefeed].name, \
+		    vtMenuEntries[vtMenu_autolinefeed].widget, \
 		    (term->flags & LINEFEED))
 
 #define update_appcursor() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_appcursor].name, \
+		    vtMenuEntries[vtMenu_appcursor].widget, \
 		    (term->keyboard.flags & CURSOR_APL))
 
 #define update_appkeypad() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_appkeypad].name, \
+		    vtMenuEntries[vtMenu_appkeypad].widget, \
 		    (term->keyboard.flags & KYPD_APL))
 
 #define update_scrollkey() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_scrollkey].name,  \
+		    vtMenuEntries[vtMenu_scrollkey].widget,  \
 		    term->screen.scrollkey)
 
 #define update_scrollinput() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_scrollinput].name, \
+		    vtMenuEntries[vtMenu_scrollinput].widget, \
 		    term->screen.scrollinput)
 
 #define update_allow132() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_allow132].name, \
+		    vtMenuEntries[vtMenu_allow132].widget, \
 		    term->screen.c132)
   
 #define update_cursesemul() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_cursesemul].name, \
+		    vtMenuEntries[vtMenu_cursesemul].widget, \
 		    term->screen.curses)
 
 #define update_visualbell() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_visualbell].name, \
+		    vtMenuEntries[vtMenu_visualbell].widget, \
 		    term->screen.visualbell)
 
 #define update_marginbell() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_marginbell].name, \
+		    vtMenuEntries[vtMenu_marginbell].widget, \
 		    term->screen.marginbell)
 
 #define update_altscreen() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_altscreen].name, \
+		    vtMenuEntries[vtMenu_altscreen].widget, \
 		    term->screen.alternate)
 
 #define update_tekshow() \
   update_menu_item (term->screen.vtMenu, \
-		    vtMenuEntries[vtMenu_tekshow].name, \
+		    vtMenuEntries[vtMenu_tekshow].widget, \
 		    term->screen.Tshow)
 
 #define update_vttekmode() { \
     update_menu_item (term->screen.vtMenu, \
-		      vtMenuEntries[vtMenu_tekmode].name, \
+		      vtMenuEntries[vtMenu_tekmode].widget, \
 		      term->screen.TekEmu) \
     update_menu_item (term->screen.tekMenu, \
-		      tekMenuEntries[tekMenu_vtmode].name, \
+		      tekMenuEntries[tekMenu_vtmode].widget, \
 		      !term->screen.TekEmu) }
 
 #define update_vtshow() \
   update_menu_item (term->screen.tekMenu, \
-		    tekMenuEntries[tekMenu_vtshow].name, \
+		    tekMenuEntries[tekMenu_vtshow].widget, \
 		    term->screen.Vshow)
 
 
 #define set_vthide_sensitivity() \
   set_sensitivity (term->screen.vtMenu, \
-		   vtMenuEntries[vtMenu_vthide].name, \
+		   vtMenuEntries[vtMenu_vthide].widget, \
 		   term->screen.Tshow)
 
 #define set_tekhide_sensitivity() \
   set_sensitivity (term->screen.tekMenu, \
-		   tekMenuEntries[tekMenu_tekhide].name, \
+		   tekMenuEntries[tekMenu_tekhide].widget, \
 		   term->screen.Vshow)
+
+#define set_altscreen_sensitivity(val) \
+  set_sensitivity (term->screen.vtMenu,\
+		   vtMenuEntries[vtMenu_altscreen].widget, (val))
+
 
 /*
  * macros for mapping font size to tekMenu placement
@@ -221,5 +227,5 @@ extern Arg menuArgs[];
 
 #define set_tekfont_menu_item(n,val) \
   update_menu_item (term->screen.tekMenu, \
-		    tekMenuEntries[FS2MI(n)].name, \
+		    tekMenuEntries[FS2MI(n)].widget, \
 		    (val))

@@ -4,6 +4,7 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/BSBMenuEnt.h>
 #include "ptyx.h"
 #include <setjmp.h>			/* for data.h */
 #include "data.h"
@@ -28,57 +29,57 @@ static void do_securekbd(), do_allowsends(), do_visualbell(), do_logging(),
  * The order entries MUST match the values given in menu.h
  */
 MenuEntry mainMenuEntries[] = {
-    { "securekbd",	do_securekbd },		/*  0 */
-    { "allowsends",	do_allowsends },	/*  1 */
-    { "logging",	do_logging },		/*  2 */
-    { "redraw",		do_redraw },		/*  3 */
-    { "line1",		NULL },			/*  4 */
-    { "suspend",	do_suspend },		/*  5 */
-    { "continue",	do_continue },		/*  6 */
-    { "interrupt",	do_interrupt },		/*  7 */
-    { "hangup",		do_hangup },		/*  8 */
-    { "terminate",	do_terminate },		/*  9 */
-    { "kill",		do_kill },		/* 10 */
-    { "line2",		NULL },			/* 11 */
-    { "quit",		do_quit }};		/* 12 */
+    { "securekbd",	do_securekbd, NULL },		/*  0 */
+    { "allowsends",	do_allowsends, NULL },		/*  1 */
+    { "logging",	do_logging, NULL },		/*  2 */
+    { "redraw",		do_redraw, NULL },		/*  3 */
+    { "line1",		NULL, NULL },			/*  4 */
+    { "suspend",	do_suspend, NULL },		/*  5 */
+    { "continue",	do_continue, NULL },		/*  6 */
+    { "interrupt",	do_interrupt, NULL },		/*  7 */
+    { "hangup",		do_hangup, NULL },		/*  8 */
+    { "terminate",	do_terminate, NULL },		/*  9 */
+    { "kill",		do_kill, NULL },		/* 10 */
+    { "line2",		NULL, NULL },			/* 11 */
+    { "quit",		do_quit, NULL }};		/* 12 */
 
 MenuEntry vtMenuEntries[] = {
-    { "scrollbar",	do_scrollbar },		/*  0 */
-    { "jumpscroll",	do_jumpscroll },	/*  1 */
-    { "reversevideo",	do_reversevideo },	/*  2 */
-    { "autowrap",	do_autowrap },		/*  3 */
-    { "reversewrap",	do_reversewrap },	/*  4 */
-    { "autolinefeed",	do_autolinefeed },	/*  5 */
-    { "appcursor",	do_appcursor },		/*  6 */
-    { "appkeypad",	do_appkeypad },		/*  7 */
-    { "scrollkey",	do_scrollkey },		/*  8 */
-    { "scrollinput",	do_scrollinput },	/*  9 */
-    { "allow132",	do_allow132 },		/* 10 */
-    { "cursesemul",	do_cursesemul },	/* 11 */
-    { "visualbell",	do_visualbell },	/* 12 */
-    { "marginbell",	do_marginbell },	/* 13 */
-    { "altscreen",	do_altscreen },		/* 14 */
-    { "line1",		NULL },			/* 15 */
-    { "softreset",	do_softreset },		/* 16 */
-    { "hardreset",	do_hardreset },		/* 17 */
-    { "line2",		NULL },			/* 18 */
-    { "tekshow",	do_tekshow },		/* 19 */
-    { "tekmode",	do_tekmode },		/* 20 */
-    { "vthide",		do_vthide }};		/* 21 */
+    { "scrollbar",	do_scrollbar, NULL },		/*  0 */
+    { "jumpscroll",	do_jumpscroll, NULL },		/*  1 */
+    { "reversevideo",	do_reversevideo, NULL },	/*  2 */
+    { "autowrap",	do_autowrap, NULL },		/*  3 */
+    { "reversewrap",	do_reversewrap, NULL },		/*  4 */
+    { "autolinefeed",	do_autolinefeed, NULL },	/*  5 */
+    { "appcursor",	do_appcursor, NULL },		/*  6 */
+    { "appkeypad",	do_appkeypad, NULL },		/*  7 */
+    { "scrollkey",	do_scrollkey, NULL },		/*  8 */
+    { "scrollinput",	do_scrollinput, NULL },		/*  9 */
+    { "allow132",	do_allow132, NULL },		/* 10 */
+    { "cursesemul",	do_cursesemul, NULL },		/* 11 */
+    { "visualbell",	do_visualbell, NULL },		/* 12 */
+    { "marginbell",	do_marginbell, NULL },		/* 13 */
+    { "altscreen",	do_altscreen, NULL },		/* 14 */
+    { "line1",		NULL, NULL },			/* 15 */
+    { "softreset",	do_softreset, NULL },		/* 16 */
+    { "hardreset",	do_hardreset, NULL },		/* 17 */
+    { "line2",		NULL, NULL },			/* 18 */
+    { "tekshow",	do_tekshow, NULL },		/* 19 */
+    { "tekmode",	do_tekmode, NULL },		/* 20 */
+    { "vthide",		do_vthide, NULL }};		/* 21 */
 
 MenuEntry tekMenuEntries[] = {
-    { "tektextlarge",	do_tektextlarge },	/*  0 */
-    { "tektext2",	do_tektext2 },		/*  1 */
-    { "tektext3",	do_tektext3 },		/*  2 */
-    { "tektextsmall",	do_tektextsmall },	/*  3 */
-    { "line1",		NULL },			/*  4 */
-    { "tekpage",	do_tekpage },		/*  5 */
-    { "tekreset",	do_tekreset },		/*  6 */
-    { "tekcopy",	do_tekcopy },		/*  7 */
-    { "line2",		NULL },			/*  8 */
-    { "vtshow",		do_vtshow },		/*  9 */
-    { "vtmode",		do_vtmode },		/* 10 */
-    { "tekhide",	do_tekhide }};		/* 11 */
+    { "tektextlarge",	do_tektextlarge, NULL },	/*  0 */
+    { "tektext2",	do_tektext2, NULL },		/*  1 */
+    { "tektext3",	do_tektext3, NULL },		/*  2 */
+    { "tektextsmall",	do_tektextsmall, NULL },	/*  3 */
+    { "line1",		NULL, NULL },			/*  4 */
+    { "tekpage",	do_tekpage, NULL },		/*  5 */
+    { "tekreset",	do_tekreset, NULL },		/*  6 */
+    { "tekcopy",	do_tekcopy, NULL },		/*  7 */
+    { "line2",		NULL, NULL },			/*  8 */
+    { "vtshow",		do_vtshow, NULL },		/*  9 */
+    { "vtmode",		do_vtmode, NULL },		/* 10 */
+    { "tekhide",	do_tekhide, NULL }};		/* 11 */
 
 static Widget create_menu();
 extern Widget toplevel;
@@ -130,8 +131,7 @@ void HandleCreateMenu (w, event, params, param_count)
 					      vtMenuEntries,
 					      XtNumber(vtMenuEntries));
 		/* and turn off the alternate screen entry */
-		set_sensitivity (screen->vtMenu,
-				 vtMenuEntries[vtMenu_altscreen].name, FALSE);
+		set_altscreen_sensitivity (FALSE);
 		update_scrollbar();
 		update_jumpscroll();
 		update_reversevideo();
@@ -197,7 +197,11 @@ static Widget create_menu (xtw, toplevel, name, entries, nentries)
 
     for (; nentries > 0; nentries--, entries++) {
 	cb[0].callback = (XtCallbackProc) entries->function;
-	XawSimpleMenuAddEntry (m, entries->name, &arg, (Cardinal) 1);
+	entries->widget = XtCreateManagedWidget (entries->name, 
+						 (entries->function ?
+						  bSBMenuEntryObjectClass :
+						  menuEntryObjectClass), m,
+						 &arg, (Cardinal) 1);
     }
 
     /* do not realize at this point */
