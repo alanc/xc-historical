@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.38 94/04/11 14:56:03 dpw Exp $"
+.\" $XConsortium: ddx.tbl.ms,v 1.39 94/04/17 20:05:25 dpw Exp $"
 .EF 'Porting Layer Definition'- % -'April 8, 1994'
 .OF 'Porting Layer Definition'- % -'April 8, 1994'
 .EH '''
@@ -721,7 +721,7 @@ The rest of the request you return is
 assumed NOT to be correctly swapped for internal 
 use, because that is the responsibility of DIX.
 .LP
-'who' is the ClientPtr returned from WaitForSomething.
+The 'who' argument is the ClientPtr returned from WaitForSomething.
 The return value indicating status should be set to the (positive) byte count if the read is successful, 
 0 if the read was blocked, or a negative error code if an error happened.
 .LP
@@ -1543,8 +1543,8 @@ the bits are transferred onto the screen.
 The screenInfo structure (in scrnintstr.h) is a global data structure
 that has a pointer to an array of ScreenRecs, one for each screen on
 the server.  (These constitute the one and only description of each
-screen in the server.)  Each screen has an identifying index (0, 1, 2,
-...).  In addition, the screenInfo struct contains global server-wide
+screen in the server.)  Each screen has an identifying index (0, 1, 2, ...).
+In addition, the screenInfo struct contains global server-wide
 details, such as the bit- and byte- order in all bit images, and the
 list of pixmap image formats that are supported.  The X protocol
 insists that these must be the same for all screens on the server.
@@ -4593,7 +4593,7 @@ initialization.  A typical allocation sequence for WindowPrivates would be:
 				      sizeof(windowPrivateStructure)));
     }
 .fi
-.NH
+.NH 4
 GC and Pixmap devPrivates
 .XS
 GC and Pixmap devPrivates
