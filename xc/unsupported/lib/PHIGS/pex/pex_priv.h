@@ -1,4 +1,4 @@
-/* $XConsortium: pex_priv.h,v 5.2 91/02/18 11:16:54 rws Exp $ */
+/* $XConsortium: pex_priv.h,v 5.3 91/07/01 09:07:19 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,15 +26,13 @@ SOFTWARE.
 #ifndef PEX_INTERNAL_H
 #define PEX_INTERNAL_H
 
-#define NEED_REPLIES
-
 #include <stdio.h>
-#include <X11/Xlib.h>
 #include <X11/Xmd.h>
-#include "X11/Xlibint.h"
-#include "X11/Xutil.h"
-#include "X11/Xproto.h"
-#include "X11/Xatom.h"
+#define NEED_REPLIES
+#include <X11/Xlibint.h>
+#include <X11/Xutil.h>
+#include <X11/Xproto.h>
+#include <X11/Xatom.h>
 #include "PEX.h"
 #include "PEXproto.h"
 #include "pex_md.h"
