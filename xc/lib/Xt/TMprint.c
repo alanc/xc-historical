@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.5 91/03/28 15:42:31 rws Exp $ */
+/* $XConsortium: TMprint.c,v 1.6 91/06/26 13:03:01 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -306,20 +306,29 @@ static void PrintActions(sb, actions, quarkTbl, accelWidget)
     *sb->current = '\0';
 }
 
-static Boolean LookAheadForCycleOrMulticlick(state, countP, nextLevelP)
+static Boolean LookAheadForCycleOrMulticlick(state, state_return, countP,
+					     nextLevelP)
     register StatePtr state;
+    StatePtr *state_return;	/* state to print, usually startState */
     int *countP;
     StatePtr *nextLevelP;
 {
     int repeatCount = 0;
     StatePtr	startState = state;
+    Boolean	isCycle = startState->isCycleEnd;
     TMTypeMatch sTypeMatch = TMGetTypeMatch(startState->typeIndex);
     TMModifierMatch sModMatch = TMGetModifierMatch(startState->modIndex);
 
-    *nextLevelP = NULL;
+    *state_return = startState;
+
     for (state = state->nextLevel; state != NULL; state = state->nextLevel) {
 	TMTypeMatch typeMatch = TMGetTypeMatch(state->typeIndex);
 	TMModifierMatch modMatch = TMGetModifierMatch(state->modIndex);
+
+	/* try to pick up the correct state with actions, to be printed */
+	/* This is to accommodate <ButtonUp>(2+), for example */
+	if (state->isCycleStart)
+	    *state_return = state;
 
 	if (state->isCycleEnd) {
 	    *countP = repeatCount;
@@ -351,7 +360,7 @@ static Boolean LookAheadForCycleOrMulticlick(state, countP, nextLevelP)
 	}
     }
     *countP = repeatCount;
-    return False;
+    return isCycle;
 }
 
 static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy)
@@ -365,32 +374,30 @@ static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy
     int 		clickCount = 0;
     Boolean 		cycle;
     StatePtr 		nextLevel = NULL;
+    StatePtr		triggerState = NULL;
 
     /* print the current state */
-    if (state == NULL) return;
-
-    PrintEvent(sb,
-	       TMGetTypeMatch(state->typeIndex),
-	       TMGetModifierMatch(state->modIndex),
-	       dpy);
+    if (! state) return;
     
-#ifdef DEBUG
-    cycle = state->isCycleEnd;
-#else
-    cycle = LookAheadForCycleOrMulticlick(state, &clickCount, &nextLevel )
-      || state->isCycleEnd;
-#endif /* DEBUG */    
-    if (cycle || clickCount > 0) {
-	if (clickCount > 0)
-	  sprintf( sb->current, "(%d%s)", clickCount+1, cycle ? "+" : "" );
+    cycle = LookAheadForCycleOrMulticlick(state, &triggerState, &clickCount,
+					  &nextLevel);
+
+    PrintEvent(sb, TMGetTypeMatch(triggerState->typeIndex),
+	       TMGetModifierMatch(triggerState->modIndex), dpy);
+
+    if (cycle || clickCount) {
+	if (clickCount)
+	    sprintf(sb->current, "(%d%s)", clickCount+1, cycle ? "+" : "");
 	else
-	  XtBCopy("(+)", sb->current, 4);
+	    (void) strncpy(sb->current, "(+)", 4);
 	sb->current += strlen(sb->current);
-	if (state->actions == NULL && nextLevel != NULL)
-	  state = nextLevel;
+	if (! state->actions && nextLevel)
+	    state = nextLevel;
+	while (! state->actions && ! state->isCycleEnd)
+	    state = state->nextLevel;	/* should be trigger state */
     }
     
-    if (state->actions != NULL) {
+    if (state->actions) {
 	if (includeRHS) {
 	    CHECK_STR_OVERFLOW(sb);
 	    *sb->current++ = ':';
@@ -402,16 +409,20 @@ static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy
 	}
     } 
     else {
-	*sb->current++ = ',';
+	if (state->nextLevel && !cycle && !clickCount)
+	    *sb->current++ = ',';
+	else {
+	    /* no actions are attached to this production */
+	    *sb->current++ = ':';
+	    *sb->current++ = '\n';
+	}
     }
     *sb->current = '\0';
     
     /* print succeeding states */
-    if (state->nextLevel != NULL && !cycle && !clickCount) {
+    if (state->nextLevel && !cycle && !clickCount)
 	PrintComplexState(sb, includeRHS, state->nextLevel,
-			  stateTree, accelWidget, dpy );
-    }
-    *sb->current = '\0';
+			  stateTree, accelWidget, dpy);
 }
 
 typedef struct{
