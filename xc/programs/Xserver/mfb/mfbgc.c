@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbgc.c,v 1.117 88/01/16 17:37:22 rws Exp $ */
+/* $Header: mfbgc.c,v 1.119 88/02/02 14:31:07 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -944,21 +944,6 @@ mfbChangeClip(pGC, type, pvalue, nrects)
     pointer	pvalue;
     int		nrects;
 {
-    /*
-       remember to bump the pixmap's refcnt before destroying the old
-       one, since the two may be the same.
-       regions that have been fed to the clip code are assumed to have
-       disappeared, so we'll never see the same one twice.
-    */
-
-    if (type == CT_PIXMAP)
-    {
-	/* so we can call destroy later, and leave this as
-	   an example
-	*/
-	((PixmapPtr)(pvalue))->refcnt++;
-    }
-
     mfbDestroyClip(pGC);
     if(type == CT_PIXMAP)
     {
@@ -992,8 +977,10 @@ mfbCopyClip (pgcDst, pgcSrc)
 
     switch(pgcSrc->clientClipType)
     {
-      case CT_NONE:
       case CT_PIXMAP:
+	((PixmapPtr) pgcSrc->clientClip)->refcnt++;
+	/* Fall through !! */
+      case CT_NONE:
 	mfbChangeClip(pgcDst, pgcSrc->clientClipType, pgcSrc->clientClip, 0);
 	break;
       case CT_REGION:
