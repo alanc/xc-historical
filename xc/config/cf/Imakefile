@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Imakefile,v 1.17 93/07/28 10:52:26 rws Exp $
+ * $XConsortium: Imakefile,v 1.18 93/08/11 09:48:21 rws Exp $
  * 
  * This is used to recreate imake.  Makefile.ini is used to generate imake
  * the first time.
@@ -60,9 +60,12 @@ usl.cf \
 x386.cf
 
 INSTFILES = $(HEADERS) $(RULEFILES) $(TMPLFILES) $(DEFFILES) $(CFFILES) $(LOCALFILES)
-CPP_PROGRAM = CppCmd
 INCLUDES = -I$(BUILDINCDIR)
-DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) -DCPP_PROGRAM=\"$(CPP_PROGRAM)\"
+#ifdef CppCmd
+CPP_PROGRAM = CppCmd
+CPP_DEFINES = -DCPP_PROGRAM=\"$(CPP_PROGRAM)\"
+#endif
+DEFINES = $(SIGNAL_DEFINES) $(BOOTSTRAPCFLAGS) $(CPP_DEFINES)
 
 #ifdef MacIIArchitecture
 XBSDLIB = /**/
