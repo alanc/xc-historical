@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.133 90/03/13 15:29:01 jim Exp $
+ * $XConsortium: add_window.c,v 1.134 90/03/15 14:22:51 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.133 90/03/13 15:29:01 jim Exp $";
+"$XConsortium: add_window.c,v 1.134 90/03/15 14:22:51 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -151,6 +151,7 @@ IconMgr *iconp;
     long supplied = 0;
     int gravx, gravy;			/* gravity signs for positioning */
     int namelen;
+    int bw2;
 
 #ifdef DEBUG
     fprintf(stderr, "AddWindow: w = 0x%x\n", w);
@@ -291,6 +292,7 @@ IconMgr *iconp;
     } else {
     	tmp_win->frame_bw = Scr->BorderWidth;
     }
+    bw2 = tmp_win->frame_bw * 2;
 
     tmp_win->title_height = Scr->TitleHeight + tmp_win->frame_bw;
     if (Scr->NoTitlebar)
@@ -405,12 +407,8 @@ IconMgr *iconp;
 			      SIZE_VINDENT + Scr->SizeFont.font->ascent,
 			      tmp_win->name, namelen);
 
-	    AddingW = tmp_win->attr.width;
-	    AddingH = tmp_win->attr.height;
-
-	    AddingW = tmp_win->attr.width + 2* tmp_win->frame_bw;
-	    AddingH = tmp_win->attr.height + tmp_win->title_height +
-	      2 * tmp_win->frame_bw;
+	    AddingW = tmp_win->attr.width + bw2;
+	    AddingH = tmp_win->attr.height + tmp_win->title_height + bw2;
 
 	    while (TRUE)
 	    {
@@ -447,7 +445,7 @@ IconMgr *iconp;
 		    if (dy < HALF_AVE_CURSOR_SIZE) dy = HALF_AVE_CURSOR_SIZE;
 #undef HALF_AVE_CURSOR_SIZE
 		    dx += (tmp_win->frame_bw + 1);
-		    dy += (tmp_win->frame_bw * 2 + tmp_win->title_height + 1);
+		    dy += (bw2 + tmp_win->title_height + 1);
 		    if (AddingX + dx >= Scr->MyDisplayWidth)
 		      dx = Scr->MyDisplayWidth - AddingX - 1;
 		    if (AddingY + dy >= Scr->MyDisplayHeight)
@@ -489,8 +487,8 @@ IconMgr *iconp;
 	    } 
 	    else if (event.xbutton.button == Button3)
 	    {
-		int maxw = Scr->MyDisplayWidth - AddingX;
-		int maxh = Scr->MyDisplayHeight - AddingY;
+		int maxw = Scr->MyDisplayWidth - AddingX - bw2;
+		int maxh = Scr->MyDisplayHeight - AddingY - bw2;
 
 		/*
 		 * Make window go to bottom of screen, and clip to right edge.
@@ -500,8 +498,9 @@ IconMgr *iconp;
 		if (AddingW > maxw) AddingW = maxw;
 		AddingH = maxh;
 
-		/* includes any border */
-		ConstrainSize (tmp_win, &AddingW, &AddingH);
+		ConstrainSize (tmp_win, &AddingW, &AddingH);  /* w/o borders */
+		AddingW += bw2;
+		AddingH += bw2;
 	    }
 	    else
 	    {
@@ -515,9 +514,8 @@ IconMgr *iconp;
 
 	    tmp_win->attr.x = AddingX;
 	    tmp_win->attr.y = AddingY + tmp_win->title_height;
-	    tmp_win->attr.width = AddingW - 2 * tmp_win->frame_bw;
-	    tmp_win->attr.height = AddingH - tmp_win->title_height -
-	      2 * tmp_win->frame_bw;
+	    tmp_win->attr.width = AddingW - bw2;
+	    tmp_win->attr.height = AddingH - tmp_win->title_height - bw2;
 
 	    XUngrabServer(dpy);
 	}
