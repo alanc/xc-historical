@@ -1,31 +1,15 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.8 89/10/08 12:23:11 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.9 91/01/09 17:39:34 rws Exp $
  */
-
-#ifndef lint
-static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.8 89/10/08 12:23:11 rws Exp $";
-#endif /* lint */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
  * IBM 3812 PagePrinter.
-
- * If the variable X10 is defined (cc -DX10), it will yield a version
- * that works for X10, xwd version 6.  It assumes that the bytes are
- * stored in (VAX) byte inverted words.  I have yet to find out what
- * the description in the X10 document implies.
-
- * Otherwise, it will yield a version for X11.
  */
 #include <stdio.h>
 #include <math.h>
-#ifdef X10
-#include <X10/Xlib.h>
-#include "XWDFile.10.h"
-typedef XColor Color
-#else /* X11 */
 #include <X11/Xlib.h>
 #include <X11/XWDFile.h>
-#endif
+#include <X11/Xfuncs.h>
 
 #include "pmp.h"
 #include "xpr.h"
@@ -70,30 +54,14 @@ int invert;
 	return;
       else
 	leave("fread");
-#ifndef X10
     if (*(char *) &swaptest)
       _swaplong((char *) &header, sizeof(header));
-#endif
 
     if (header.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"%s: file format version %d, not %d\n", progname,
 		header.file_version, XWD_FILE_VERSION);
     }
 
-#ifdef X10
-    if (header.pixmap_format != XYFormat)
-      leave("Windump not in XYFormat; ZFormat is not supported.");
-#ifdef notdef
-    if (header.pixmap_format != XYPixmap)
-      leave("Windump not in XYPixmap; ZPixmap is not supported.");
-#endif
-#endif
-/*    else if (header.display_planes > 1) {
-	fprintf(stderr, "Windump has %d display planes\n",
-		header.display_planes);
-	leave("Only one display plane supported");
-    }
-*/
     win_name_size = abs_(header.header_size - sizeof(header));
     if ((win_name = (unsigned char *)
 	 calloc(win_name_size, (unsigned) sizeof(char))) == NULL)
@@ -106,24 +74,12 @@ int invert;
     DEBUG(>= 1)
       fprintf(stderr,"win_name =%s\n", win_name);
 
-#ifdef X10
-    buffer_size =
-      XYPixmapSize(width = header.pixmap_width,
-		   height = header.pixmap_height,
-		   header.display_planes);
-    one_plane_size = XYPixmapSize(width, height, 1);
-    fixed_width = 8 * (byte_width = BitmapSize(width, 1));
-#else /* X11 */
     width = header.pixmap_width;
     height = header.pixmap_height;
     fixed_width = 8 * (byte_width = header.bytes_per_line);
-#ifdef notdef
-    fixed_width = (width + 7) & ~0x3; /* round up to nearest byte boundary */
-#endif
     one_plane_size = byte_width * height;
     buffer_size = one_plane_size *
       ((header.pixmap_format == ZPixmap)? header.pixmap_depth: 1);
-#endif
     
     /* Determine orientation and scale if not specified */
     if (orient == UNSPECIFIED)
@@ -151,11 +107,7 @@ int invert;
 		  scale, fixed_width*scale, height*scale);
     }
 
-#ifdef X10
-    ncolors = header.window_ncolors;
-#else /* X11 */
     ncolors = header.ncolors;
-#endif
     if (ncolors) {
 	int i;
 	XColor *colors = (XColor *)malloc((unsigned) (header.ncolors * sizeof(XColor)));
@@ -185,13 +137,7 @@ int invert;
 	!= buffer_size)
       leave("Unable to read pixmap from dump file.");
 
-    /* In X10 XYPixmap format, "the least significant bit of a word is
-     * the leftmost visible pixel on the display".  We want the
-     * opposite, therefore the following: (see note above about
-     * byte-order) */
-#ifndef X10
     if (header.bitmap_bit_order == LSBFirst)
-#endif
     {
 	unsigned char bitswap[256], *bp;
 	int c;
@@ -305,9 +251,16 @@ int scale;
 	int b = c, bit;
 	unsigned char *entry = tbl+c*scale;
 
-	while(bit = ffs(b)) {
-	    int i, last = scale*(bit-1);
-
+	while (b) {
+	    int i, last, mask;
+	    bit = 0;
+	    i = 1;
+	    mask = b;
+	    while (! (mask & 1)) {
+		i++;
+		mask = mask >> 1;
+	    }
+	    last = scale*(bit-1);
 	    for(i = scale*bit; i-- > last ;)
 	      entry[(scale - 1) - i / 8] |= 1 << (i % 8);
 	    b &= ~(1 << bit-1);
