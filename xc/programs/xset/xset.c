@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker: jim $ 
+ * $Locker:  $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.25 88/02/05 16:30:22 jim Locked $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.26 88/02/09 11:57:43 jim Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -194,6 +194,15 @@ for (i = 1; i < argc; ) {
     }
     else if (strcmp(arg, "noblank") == 0) {     /*  Ditto.  */
       set_saver(dpy, PREFER_BLANK, DontPreferBlanking);
+      i++;
+    }
+    arg = argv[i];
+    if (strcmp(arg, "expose") == 0) {       /* Alter exposure preference. */
+      set_saver(dpy, ALLOW_EXP, AllowExposures);
+      i++;
+    }
+    else if (strcmp(arg, "noexpose") == 0) {     /*  Ditto.  */
+      set_saver(dpy, ALLOW_EXP, DontAllowExposures);
       i++;
     }
     else if (strcmp(arg, "off") == 0) {
@@ -494,9 +503,15 @@ printf ("LED Mode: %o \t\t", values.led_mode);         %%*/
 printf ("Pointer (Mouse) Control Values:\n");
 printf ("Acceleration: %d \t", acc_num / acc_denom);
 printf ("Threshold: %d \n", threshold);
-printf ("Screen Saver: (yes = %d, no = %d, default = %d)\n",
-	PreferBlanking, DontPreferBlanking, DefaultBlanking);
-printf ("Prefer Blanking: %d \t", prefer_blank);
+printf ("Screen Saver:\n");
+printf ("Prefer Blanking: %s\t",
+	(prefer_blank == PreferBlanking) ? "Yes" :
+	(prefer_blank == DontPreferBlanking) ? "No" :
+	"<server violates spec>");
+printf ("Allow Exposures: %s\t",
+	(allow_exp == AllowExposures) ? "Yes" :
+	(allow_exp == DontAllowExposures) ? "No" :
+	"<server violates spec>");
 printf ("Time-out: %d \t Cycle: %d\n", timeout, interval);
 if (npaths) {
     printf( "Font Path: %s", *font_path++ );
@@ -538,6 +553,7 @@ char *prog;
 	printf("    For screen-saver control:\n");
 	printf("\t s [timeout [cycle]]  s default\n");
 	printf("\t s blank              s noblank\n");
+	printf("\t s expose             s noexpose\n");
 	printf("    For status information:  q   or  query\n");
 	exit(0);
 }
