@@ -1,0 +1,215 @@
+#ifndef lint
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.49 89/03/30 16:53:29 jim Exp $";
+#endif /* lint */
+
+/***********************************************************
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
+and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
+
+                        All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its 
+documentation for any purpose and without fee is hereby granted, 
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in 
+supporting documentation, and that the names of Digital or MIT not be
+used in advertising or publicity pertaining to distribution of the
+software without specific, written prior permission.  
+
+DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
+DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
+ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE.
+
+******************************************************************/
+
+/*
+ * Command.c - Command button widget
+ *
+ */
+
+#include <X11/IntrinsicP.h>
+#include <X11/StringDefs.h>
+#include <stdio.h>
+#include <X11/XawMisc.h>
+#include <X11/MenuButtonP.h>
+
+static void Initialize();
+static Boolean SetValues();
+static void PositionMenu();
+
+#define superclass ((CommandWidgetClass)&commandClassRec)
+
+#define TRANS_TEMPLATE ("\
+     <EnterWindow>:     highlight()             \n\
+     <LeaveWindow>:     reset()                 \n\
+     <BtnDown>:         PositionMenu() MenuPopup(%s)")
+
+/****************************************************************
+ *
+ * Full class record constant
+ *
+ ****************************************************************/
+
+/* Private Data */
+
+#define offset(field) XtOffset(MenuButtonWidget, field)
+static XtResource resources[] = {
+  {
+    XtNmenuName, XtCMenuName, XtRString, sizeof(String), 
+    offset(menu_button.menu_name), XtRString, (caddr_t)"menu"},
+};
+#undef offset
+
+static XtActionsRec actionsList[] =
+{
+  {"PositionMenu",	PositionMenu}
+};
+
+MenuButtonClassRec menuButtonClassRec = {
+  {
+    (WidgetClass) superclass,		/* superclass		  */	
+    "MenuButton",			/* class_name		  */
+    sizeof(MenuButtonRec),       	/* size			  */
+    NULL,				/* class_initialize	  */
+    NULL,				/* class_part_initialize  */
+    FALSE,				/* class_inited		  */
+    Initialize,				/* initialize		  */
+    NULL,				/* initialize_hook	  */
+    XtInheritRealize, 			/* realize		  */
+    actionsList,			/* actions		  */
+    XtNumber(actionsList),		/* num_actions		  */
+    resources,				/* resources		  */
+    XtNumber(resources),		/* resource_count	  */
+    NULLQUARK,				/* xrm_class		  */
+    FALSE,				/* compress_motion	  */
+    TRUE,				/* compress_exposure	  */
+    TRUE,				/* compress_enterleave    */
+    FALSE,				/* visible_interest	  */
+    NULL,				/* destroy		  */
+    XtInheritResize,			/* resize		  */
+    XtInheritExpose,			/* expose		  */
+    SetValues,				/* set_values		  */
+    NULL,				/* set_values_hook	  */
+    XtInheritSetValuesAlmost,		/* set_values_almost	  */
+    NULL,				/* get_values_hook	  */
+    NULL,				/* accept_focus		  */
+    XtVersion,				/* version		  */
+    NULL,				/* callback_private	  */
+    NULL,                        	/* tm_table		  */
+    XtInheritQueryGeometry,		/* query_geometry	  */
+    XtInheritDisplayAccelerator,	/* display_accelerator	  */
+    NULL				/* extension		  */
+  },  /* CoreClass fields initialization */
+  {
+    0,                                     /* field not used    */
+  },  /* LabelClass fields initialization */
+  {
+    0,                                     /* field not used    */
+  },  /* CommandClass fields initialization */
+  {
+    0,                                     /* field not used    */
+  },  /* MenuButtonClass fields initialization */
+};
+
+  /* for public consumption */
+WidgetClass menuButtonWidgetClass = (WidgetClass) &menuButtonClassRec;
+
+/****************************************************************
+ *
+ * Private Procedures
+ *
+ ****************************************************************/
+
+/* ARGSUSED */
+static void 
+Initialize(req, new)
+Widget req, new;
+{
+  MenuButtonWidget mbw = (MenuButtonWidget) new;
+  char trans_buffer[BUFSIZ];
+  Arg arglist[1];
+
+  if (new->core.tm.translations == NULL) {
+    sprintf(trans_buffer, TRANS_TEMPLATE, mbw->menu_button.menu_name);
+    XtSetArg(arglist[0], XtNtranslations, 
+	     XtParseTranslationTable(trans_buffer));
+    XtSetValues(new, arglist, (Cardinal) 1);
+  }
+} 
+
+/* ARGSUSED */
+static Boolean 
+SetValues(current, request, new)
+{
+  MenuButtonWidget old_mbw = (MenuButtonWidget) current;
+  MenuButtonWidget new_mbw = (MenuButtonWidget) new;
+  
+  if (old_mbw->menu_button.menu_name != new_mbw->menu_button.menu_name)
+    XtAppWarning(XtWidgetToApplicationContext(new), 
+	      "Changing the menu is not supported by the MenuButton Widget.");
+
+  return(FALSE);
+}
+  
+/* ARGSUSED */
+static void
+PositionMenu(w, event, params, num_params)
+Widget w;
+XEvent * event;
+String * params;
+Cardinal * num_params;
+{
+  MenuButtonWidget mbw = (MenuButtonWidget) w;
+  Widget menu;
+  Arg arglist[2];
+  Cardinal num_args;
+  int menu_x, menu_y, menu_width, menu_height, button_width;
+  Position button_x, button_y;
+
+  menu = XtNameToWidget(w, mbw->menu_button.menu_name);
+  if (menu == NULL) {
+    char error_buf[BUFSIZ];
+    sprintf(error_buf, "MenuButton: %s %s.  %s",
+	    "Could not find menu widget named", mbw->menu_button.menu_name,
+	    "Is it popup child of its menu button?");
+    XtAppWarning(XtWidgetToApplicationContext(w), error_buf);
+    return;
+  }
+  if (!XtIsRealized(menu))
+    XtRealizeWidget(menu);
+  
+  menu_width = menu->core.width + 2 * menu->core.border_width;
+  button_width = w->core.width + 2 * w->core.border_width;
+
+  menu_height = menu->core.height + 2 * menu->core.border_width;
+
+  XtTranslateCoords(w, 0, 0, &button_x, &button_y);
+  menu_x = button_x + (button_width - menu_width)/2;
+  menu_y = button_y;
+
+  if (menu_x < 0) 
+    menu_x = 0;
+  else {
+    int scr_width = WidthOfScreen(XtScreen(menu));
+    if (menu_x + menu_width > scr_width)
+      menu_x = scr_width - menu_width;
+  }
+
+  if (menu_y < 0)
+    menu_y = 0;
+  else {
+    int scr_height = HeightOfScreen(XtScreen(menu));
+    if (menu_y + menu_height > scr_height)
+      menu_y = scr_height - menu_height;
+  }
+
+  num_args = 0;
+  XtSetArg(arglist[num_args], XtNx, menu_x); num_args++;
+  XtSetArg(arglist[num_args], XtNy, menu_y); num_args++;
+  XtSetValues(menu, arglist, num_args);
+}
+
