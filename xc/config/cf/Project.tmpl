@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.155 93/02/08 11:14:20 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.156 93/04/27 16:38:22 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -278,7 +278,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.155 93/02/08 11:14:20 rws Exp $
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif
 #ifndef ServerExtraDefines
-#define ServerExtraDefines -DXDMCP
+#define ServerExtraDefines -DXDMCP -DPIXPRIV
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines /**/
