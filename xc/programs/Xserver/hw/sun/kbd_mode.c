@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: kbd_mode.c,v 4.3 92/12/14 14:34:11 rws Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -57,7 +57,7 @@ main(argc, argv)
     int             argc;
     char          **argv;
 {
-    int             code, translate;
+    int             code, translate, direct = -1;
 
     if ((kbd_fd = open("/dev/kbd", O_RDONLY, 0)) < 0) {
 	die("Couldn't open /dev/kbd");
@@ -72,6 +72,7 @@ main(argc, argv)
       case 'a':
       case 'A':
 	translate = TR_ASCII;
+	direct = 0;
 	break;
       case 'e':
       case 'E':
@@ -89,7 +90,10 @@ main(argc, argv)
 	usage();
     }
     if (ioctl(kbd_fd, KIOCTRANS, (caddr_t) &translate)) {
-	die("Couldn't initialize translation to Event");
+	die("Couldn't set translation");
+    }
+    if (direct != -1 && ioctl(kbd_fd, KIOCSDIRECT, (caddr_t) &direct)) {
+	die("Couldn't set redirect");
     }
     exit(0);
 }
