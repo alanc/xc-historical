@@ -15,6 +15,7 @@
 
 # include	<stdio.h>
 # include	<X11/Xos.h>
+# include	<X11/Xfuncs.h>
 # include	<utmp.h>
 
 #ifndef WTMP_FILE
@@ -208,19 +209,6 @@ char	**argv;
 	}
 	return 0;
 }
-
-#ifdef SYSV
-/*
- * someday sysV will have this in libc.  I just know it.
- */
-bzero (c, n)
-char	*c;
-int	n;
-{
-	while (n-- > 0)
-		*c++ = '\0';
-}
-#endif
 
 /*
  * fill in the appropriate records of the utmp entry
