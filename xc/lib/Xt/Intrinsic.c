@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.154 90/12/12 14:51:49 rws Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.155 90/12/14 09:25:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,6 +31,7 @@ SOFTWARE.
 #ifndef VMS
 #include <sys/stat.h>
 #endif /* VMS */
+#include "Quarks.h"
 
 String XtCXtToolkitError = "XtToolkitError";
 
@@ -891,6 +892,7 @@ static SubstitutionRec defaultSubs[] = {
     {'N', NULL},
     {'T', NULL},
     {'S', NULL},
+    {'C', NULL},
     {'L', NULL},
     {'l', NULL}, 
     {'t', NULL},
@@ -926,6 +928,10 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     char *ch, *result;
     extern char* getenv();
     Substitution merged_substitutions;
+    XrmRepresentation db_type;
+    XrmValue value;
+    XrmName name_list[3];
+    XrmClass class_list[3];
 
     if (path == NULL) {
 #ifndef VMS
@@ -1002,14 +1008,26 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     merged_substitutions[0].substitution = (String)filename;
     merged_substitutions[1].substitution = (String)type;
     merged_substitutions[2].substitution = (String)suffix;
-    FillInLangSubs(&merged_substitutions[3], pd);
+    name_list[0] = pd->name;
+    name_list[1] = XrmPermStringToQuark("customization");
+    name_list[2] = NULLQUARK;
+    class_list[0] = pd->class;
+    class_list[1] = XrmPermStringToQuark("Customization");
+    class_list[2] = NULLQUARK;
+    if (XrmQGetResource(XrmGetDatabase(dpy), name_list, class_list,
+			&db_type, &value) &&
+	db_type == XtQString)
+	merged_substitutions[3].substitution = (char *)value.addr;
+    else
+	merged_substitutions[3].substitution = NULL;
+    FillInLangSubs(&merged_substitutions[4], pd);
 
     result = XtFindFile(massagedPath, merged_substitutions,
 			num_substitutions + XtNumber(defaultSubs),
 			predicate);
 
-    if (merged_substitutions[4].substitution != NULL)
-	XtFree( (XtPointer)merged_substitutions[4].substitution );
+    if (merged_substitutions[5].substitution != NULL)
+	XtFree( (XtPointer)merged_substitutions[5].substitution );
 
     if (merged_substitutions != defaultSubs) 
 	DEALLOCATE_LOCAL(merged_substitutions);
