@@ -16,5 +16,4 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
                   version.o viewfuncs.o
 
 ComplexProgramTarget(xmh)
-InstallNonExec(xmh.Xdefaults,$(LIBDIR))
 InstallAppDefaults(Xmh)
