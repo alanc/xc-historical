@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.15 92/08/05 16:34:21 gildea Exp $";
+static char *rid="$XConsortium: sunGX.c,v 1.16 92/11/24 11:36:33 rws Exp $";
 #endif /* lint */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -2663,8 +2663,8 @@ sunGXChangeWindowAttributes (pWin, mask)
     if (mask & (CWBackPixmap | CWBackPixel) &&
 	pWin->backgroundState != ParentRelative &&
 	pPrivWin->fastBorder &&
-	pPrivWin->oldRotate.x != pWin->drawable.x ||
-	pPrivWin->oldRotate.y != pWin->drawable.y)
+	(pPrivWin->oldRotate.x != pWin->drawable.x ||
+	 pPrivWin->oldRotate.y != pWin->drawable.y))
     {
 	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
 		      pWin->drawable.x - pPrivWin->oldRotate.x);
