@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.53 91/04/26 19:50:32 keith Exp $
+ * $XConsortium: main.c,v 1.54 91/05/11 17:09:45 gildea Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -69,7 +69,11 @@ catch (sig)
 	fatal ("got signal %d\n", sig);
 }
 
-#ifndef USG
+#if defined(USG) || (defined(SYSV386) && defined(SYSV))
+#define USGISH
+#endif
+
+#ifndef USGISH
 #ifndef _POSIX_SOURCE
 #define sigaction sigvec
 #define sa_handler sv_handler
@@ -77,7 +81,7 @@ catch (sig)
 #define sa_flags sv_flags
 #endif
 struct sigaction sig_act;
-#endif /* USG */
+#endif /* USGISH */
 
 main(argc, argv)
 	int	argc;
@@ -233,7 +237,7 @@ main(argc, argv)
 	/*
 	 * catch signals.
 	 */
-#ifdef USG
+#ifdef USGISH
 /*  should really reset SIGINT to SIG_IGN if it was.  */
 	signal (SIGHUP, catch);
 	signal (SIGINT, catch);
@@ -263,7 +267,7 @@ main(argc, argv)
 			   |(1<<(SIGHUP-1))
 			   |(1<<(SIGPIPE-1))
 			   |(1<<(SIGSYS-1)));
-#endif
+#endif /* _POSIX_SOURCE */
 	sig_act.sa_flags = 0;
 	sigaction(SIGHUP, &sig_act, (struct sigaction *)0);
 	sigaction(SIGINT, &sig_act, (struct sigaction *)0);
@@ -272,7 +276,7 @@ main(argc, argv)
 	sigaction(SIGBUS, &sig_act, (struct sigaction *)0);
 	sigaction(SIGSEGV, &sig_act, (struct sigaction *)0);
 	sigaction(SIGSYS, &sig_act, (struct sigaction *)0);
-#endif
+#endif /* USGISH */
 
 	/*
 	 * now peruse through the list of files.
@@ -419,7 +423,7 @@ char *basename(file)
 	return(file);
 }
 
-#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(ISC)
+#if defined(USG) && !defined(CRAY) && !defined(SVR4)
 int rename (from, to)
     char *from, *to;
 {
@@ -431,7 +435,7 @@ int rename (from, to)
 	return -1;
     }
 }
-#endif /* USG */
+#endif /* USGISH */
 
 redirect(line, makefile)
 	char	*line,
@@ -484,11 +488,11 @@ redirect(line, makefile)
 		puts(line); /* same as fputs(fdout); but with newline */
 	}
 	fflush(fdout);
-#ifdef USG
+#ifdef USGISH
 	chmod(makefile, st.st_mode);
 #else
         fchmod(fileno(fdout), st.st_mode);
-#endif /* USG */
+#endif /* USGISH */
 }
 
 /*VARARGS*/
