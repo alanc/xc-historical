@@ -1,8 +1,8 @@
-XCOMM $XConsortium: Imakefile,v 1.81 93/09/04 16:33:10 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.78 91/09/18 14:28:23 rws Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
-#define DoDebugLib DebugLibXaw
-#define DoProfileLib ProfileLibXaw
+#define DoDebugLib DebugLibXaw 
+#define DoProfileLib ProfileLibXaw 
 #define HasSharedData YES
 #define LibName Xaw
 #define SoRev SOXAWREV
@@ -40,6 +40,10 @@ HEADERS = \
 	ListP.h \
 	MenuButton.h \
 	MenuButtoP.h \
+	MultiSrc.h \
+	MultiSrcP.h \
+	MultiSink.h \
+	MultiSinkP.h \
 	Paned.h \
 	PanedP.h \
 	Panner.h \
@@ -76,9 +80,11 @@ HEADERS = \
 	ToggleP.h \
 	Tree.h \
 	TreeP.h \
+	VendorEP.h \
 	Viewport.h \
 	ViewportP.h \
-	XawInit.h 
+	XawImP.h\
+	XawInit.h
 
 SRCS = \
 	AllWidgets.c \
@@ -93,6 +99,8 @@ SRCS = \
 	Label.c \
 	List.c \
 	MenuButton.c \
+	MultiSrc.c \
+	MultiSink.c \
 	Paned.c \
 	Panner.c \
 	Porthole.c \
@@ -107,14 +115,16 @@ SRCS = \
 	Text.c \
 	TextSink.c \
 	TextSrc.c \
-        TextAction.c \
-        TextPop.c \
+	TextAction.c \
+	TextPop.c \
 	TextTr.c \
 	Toggle.c \
 	Tree.c \
 	Vendor.c \
 	Viewport.c \
+	XawIm.c \
 	XawInit.c \
+	XawI18n.c \
 	sharedlib.c
 
 #if SharedDataSeparation
@@ -134,6 +144,8 @@ OBJS = \
 	Label.o \
 	List.o \
 	MenuButton.o \
+	MultiSrc.o \
+	MultiSink.o \
 	Paned.o \
 	Panner.o \
 	Porthole.o \
@@ -148,14 +160,16 @@ OBJS = \
 	Text.o \
 	TextSink.o \
 	TextSrc.o \
-        TextAction.o \
+	TextAction.o \
 	TextPop.o \
 	TextTr.o \
 	Toggle.o \
 	Tree.o \
 	Vendor.o \
 	Viewport.o \
-	XawInit.o 
+	XawIm.o \
+	XawI18n.o \
+	XawInit.o
 
 #include <Library.tmpl>
 
