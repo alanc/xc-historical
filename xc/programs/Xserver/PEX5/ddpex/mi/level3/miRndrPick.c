@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.5 92/11/10 19:00:00 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.6 92/11/17 17:30:48 hersh Exp $ */
 
 /************************************************************
 Copyright 1992 by The Massachusetts Institute of Technology
@@ -247,19 +247,29 @@ ddRendererPtr       pRend;    /* renderer handle */
     ddpex3rtn		err = Success;
     ddElementRange      range;
     miStructPtr         pstruct;
+    miTraverserState    trav_state;
+    diPMHandle          pPM = (diPMHandle) NULL;
+    ddULONG            	offset1, offset2;
+    diStructHandle 	psh = pRend->pickstr.strHandle;
 
-    /* JSH this one uses the structure handle in prend->pickstr
-       and makes a fake ddElementRange so that it can call
-       RenderElements to render all elements in the structure
-   */
 
    pstruct = (miStructPtr) (pRend->pickstr.strHandle)->deviceData;
-   range.position1.whence = PEXBeginning;
-   range.position1.offset = 1;
-   range.position2.whence = PEXBeginning;
-   range.position2.offset = MISTR_NUM_EL(pstruct);
 
-   err = RenderElements(pRend, pRend->pickstr.strHandle, &range);
+
+    /* now call the traverser to traverse this structure */
+    /* set exec_str_flag */
+    trav_state.exec_str_flag = ES_YES;
+    trav_state.p_curr_pick_el = (ddPickPath *) NULL;
+    trav_state.p_curr_sc_el = (ddElementRef *) NULL;
+    trav_state.max_depth = 0;
+    trav_state.pickId = 0;
+    trav_state.ROCoffset = 0;
+    pPM = pRend->pickstr.pseudoPM;
+
+    offset1 = 1;
+    offset2 =  MISTR_NUM_EL(pstruct);
+
+    err = traverser(pRend, psh, offset1, offset2, pPM, NULL, &trav_state);
 
   return(err);
 }
