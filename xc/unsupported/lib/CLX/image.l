@@ -1993,7 +1993,7 @@
 	 (unit (bitmap-format-unit bitmap-format))
 	 (byte-lsb-first-p (display-image-lsb-first-p display))
 	 (bit-lsb-first-p  (bitmap-format-lsb-first-p bitmap-format)))
-    (declare (type (member :xy-pixmap :z-pixmap) format)
+    (declare (type (member :bitmap :xy-pixmap :z-pixmap) format)
 	     (type card16 src-x image-width image-height width height)
 	     (type image-depth depth)
 	     (type display display)
@@ -2009,7 +2009,7 @@
     (when (and (index> width 0) (index> height 0))
       (multiple-value-bind (pad bits-per-pixel)
 	  (ecase format
-	    (:xy-pixmap
+	    ((:bitmap :xy-pixmap)
 	      (values (bitmap-format-pad bitmap-format) 1))
 	    (:z-pixmap
 	      (if (= depth 1) 
@@ -2034,7 +2034,7 @@
 	       (padded-bytes-per-line (index-ceiling padded-bits-per-line 8))
 	       (request-bytes-per-line
 		 (ecase format
-		   (:xy-pixmap (index* padded-bytes-per-line depth))
+		   ((:bitmap :xy-pixmap) (index* padded-bytes-per-line depth))
 		   (:z-pixmap padded-bytes-per-line)))
 	       (max-bytes-per-request
 		 (index* (index- (display-max-request-length display) 6) 4))
@@ -2071,7 +2071,7 @@
 		       (type card8 request-pad))
 	      (with-buffer-request (display *x-putimage* :gc-force gcontext)
 		((data (member :bitmap :xy-pixmap :z-pixmap))
-		 (cond (bitmap-p :bitmap)
+		 (cond ((or (eq format :bitmap) bitmap-p) :bitmap)
 		       ((plusp left-pad) :xy-pixmap)
 		       (t format)))
 		(drawable drawable)
@@ -2086,7 +2086,7 @@
 		  (etypecase image
 		    (image-x
 		      (ecase (image-x-format (the image-x image))
-			(:xy-pixmap
+			((:bitmap :xy-pixmap)
 			  (write-xy-format-image-x
 			    display image left-padded-src-x request-src-y
 			    left-padded-width request-height
@@ -2156,7 +2156,7 @@
 	  unit byte-lsb-first-p bit-lsb-first-p)))
     (create-image
       :width width :height height :depth (image-depth image)
-      :data obuf :format :xy-pixmap :bits-per-pixel 1
+      :data obuf :format (image-x-format image) :bits-per-pixel 1
       :bytes-per-line padded-bytes-per-line
       :unit unit :byte-lsb-first-p byte-lsb-first-p
       :bit-lsb-first-p bit-lsb-first-p :pad pad :left-pad left-pad)))
@@ -2207,7 +2207,7 @@
 	   (type card16 x y width height)
 	   (values image-x))
   (ecase (image-x-format image)
-    (:xy-pixmap
+    ((:bitmap :xy-pixmap)
       (xy-format-image-x->image-x image x y width height))
     (:z-pixmap
       (z-format-image-x->image-x image x y width height))))
@@ -2216,7 +2216,8 @@
   (declare (type image-x image)
 	   (type card16 x y width height)
 	   (values image-xy))
-  (unless (or (eq (image-x-format image) :xy-pixmap)
+  (unless (or (eq (image-x-format image) :bitmap)
+	      (eq (image-x-format image) :xy-pixmap)
 	      (and (eq (image-x-format image) :z-pixmap)
 		   (index= (image-depth image) 1)))
     (error "Format conversion from ~S to ~S not supported"
@@ -2234,6 +2235,7 @@
 	   (type card16 x y width height)
 	   (values image-z))
   (unless (or (eq (image-x-format image) :z-pixmap)
+	      (eq (image-x-format image) :bitmap)
 	      (and (eq (image-x-format image) :xy-pixmap)
 		   (index= (image-depth image) 1)))
     (error "Format conversion from ~S to ~S not supported"
@@ -2537,15 +2539,17 @@
 	    :unit 32 :byte-lsb-first-p t :bit-lsb-first-p t
 	    :pad 32 :left-pad left-pad))))))
 
-(defun write-bitmap-file (pathname image &optional name)
+(defun write-bitmap-file (pathname image &rest options &key name &allow-other-keys)
   ;; Writes an image to a C include file in standard X11 format
   ;; NAME argument used for variable prefixes.  Defaults to "image"
   (declare (type (or pathname string stream) pathname)
 	   (type image image)
-	   (type (or null stringable) name))
+	   (type (or null stringable) name)
+	   (arglist pathname image &key name if-exists if-does-not-exist))
   (unless (typep image 'image-x)
     (setq image (copy-image image :result-type 'image-x)))
-  (let* ((plist (image-plist image))
+  (let* ((options (copy-list options))
+	 (plist (image-plist image))
 	 (name (or name (image-name image) 'image))
 	 (left-pad (image-x-left-pad image))
 	 (width (index+ (image-width image) left-pad))
@@ -2559,13 +2563,15 @@
 	 (bytes-per-line (index-ceiling bits-per-line 8))
 	 (last (index* bytes-per-line height))
 	 (count 0))
-    (declare (type list plist)
+    (declare (type list options plist)
 	     (type stringable name)
 	     (type card8 left-pad)
 	     (type card16 width height)
 	     (type (member 1 4 8 16 24 32) bits-per-pixel)
 	     (type image-depth depth)
 	     (type array-index bits-per-line bytes-per-line count last))
+    ;; Remove NAME from options
+    (remf options :name)
     ;; Move x-hot by left-pad, if there is an x-hot, so image readers that
     ;; don't know about left pad get the hot spot in the right place.  We have
     ;; already increased width by left-pad.
@@ -2588,7 +2594,7 @@
 	  32 t t))
       (with-vector (data buffer-bytes)
 	(setq name (string-downcase (string name)))
-	(with-open-file (fstream pathname :direction :output)
+	(with-open-stream (fstream (apply #'open pathname :direction :output options))
 	  (format fstream "#define ~a_width ~d~%" name width)
 	  (format fstream "#define ~a_height ~d~%" name height)
 	  (unless (= depth 1)
