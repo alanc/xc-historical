@@ -29,7 +29,9 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(oldX,$(OBJS))
 LintLibraryTarget(oldX,*.c)
 InstallLibrary(oldX,$(USRLIBDIR))
+#if InstallLintLibs
 InstallLintLibrary(oldX,$(LINTLIBDIR))
+#endif
 InstallMultiple($(HEADERS),$(INCDIR))
 
 

@@ -254,7 +254,9 @@ AliasedLibraryTarget(X11,X)
 LintLibraryTarget(X11,*.c)
 InstallLibrary(X11,$(USRLIBDIR))
 InstallLibraryAlias(X11,X,$(USRLIBDIR))
+#if InstallLintLibs
 InstallLintLibrary(X11,$(LINTLIBDIR))
+#endif
 InstallMultiple($(HEADERS),$(INCDIR))
 InstallNonExec(XErrorDB,$(LIBDIR))
 
