@@ -1,7 +1,7 @@
 /*
  * xkill - simple program for destroying unwanted clients
  *
- * $XConsortium: xkill.c,v 1.13 89/07/16 16:01:09 jim Exp $
+ * $XConsortium: xkill.c,v 1.14 89/10/10 17:20:39 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -180,9 +180,10 @@ main (argc, argv)
 	    if (id == RootWindow(dpy,screenno)) id = None;
 	    else if (!top) {
 		Window root;
-		int dummy;
+		int dummyi;
+		unsigned int dummy;
 
-		if (XGetGeometry (dpy, id, &root, &dummy, &dummy,
+		if (XGetGeometry (dpy, id, &root, &dummyi, &dummyi,
 				  &dummy, &dummy, &dummy, &dummy) &&
 		    id != root)
 		  id = XmuClientWindow(dpy, id);
@@ -341,7 +342,7 @@ int kill_all_windows (dpy, screenno, top)
 	    if (!top) children[i] = XmuClientWindow(children[i]);
 	    XKillClient (dpy, children[i]);
     }
-    XFree (children);
+    XFree ((char *)children);
 
     XSync (dpy, 0);
     XSetErrorHandler (NULL);		/* pretty stupid way to do things... */
