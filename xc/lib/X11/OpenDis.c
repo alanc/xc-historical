@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.106 91/02/01 16:34:31 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.107 91/02/02 17:20:12 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -795,6 +795,10 @@ _XFreeDisplayStructure(dpy)
 	    Xfree ((char *)dpy->error_vec);
 	if (dpy->context_db)
 	   (*dpy->free_funcs->context_db)(dpy);
+	if (dpy->cms.defaultCCCs)
+	   _XcmsFreeDefaultCCCs(dpy);
+	if (dpy->cms.clientCmaps)
+	   _XcmsFreeClientCmaps(dpy);
 
 	while (dpy->ext_procs) {
 	    _XExtension *ext = dpy->ext_procs;

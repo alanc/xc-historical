@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.13 91/01/28 14:33:23 alt Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.1 91/01/30 18:34:24 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -44,21 +44,18 @@
  *              Include files for local use only, therefore, NOT exported
  *		to any package or program using this package.
  */
-#ifdef UTEKV
-#include <sys/fcntl.h>
-#endif /* UTEKV */
 #include <sys/file.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include <ctype.h>
-#ifdef ANSI_C
+#if __STDC__
 #include <stdlib.h>
-#endif ANSI_C
+#endif 
 #include "Xlibos.h"
 #define XK_LATIN1
-#include "keysymdef.h"
+#include <X11/keysymdef.h>
 
 
 /*

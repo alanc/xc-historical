@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.1 90/11/14 00:25:47 alt Exp $" */
+/* $XConsortium: XcmsProp.c,v 1.1 91/01/30 18:52:43 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -43,7 +43,7 @@
  *              Include files for local use only, therefore, NOT exported
  *		to any package or program using this package.
  */
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include "XcmsLRGBSD.h"
 
 

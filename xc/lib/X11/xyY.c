@@ -1,4 +1,4 @@
-/* $XConsortium: CIExyY.c,v 1.10 91/01/22 22:14:00 alt Exp $" */
+/* $XConsortium: CIExyY.c,v 1.1 91/01/30 17:25:08 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -45,7 +45,7 @@
  *		program using this package.
  */
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include "TekCMSext.h"
 
 /*

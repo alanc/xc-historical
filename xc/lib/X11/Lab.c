@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.12 91/01/28 14:30:45 alt Exp $" */
+/* $XConsortium: CIELab.c,v 1.1 91/01/30 16:52:38 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -46,7 +46,7 @@
  *		Include files that need NOT be exported to any package or
  *		program using this package.
  */
-#include <string.h>
+#include <X11/Xos.h>
 #include "TekCMSext.h"
 #include "XcmsMath.h"
 

@@ -274,8 +274,55 @@ OBJS2 =\
 	$(AUTHOBJS) \
 	$(DESOBJS)
 
+CMS_OBJS = \
+	CIELab.o \
+	CIELabWpAj.o \
+	CIELuv.o \
+	CIELuvWpAj.o \
+	CIEXYZ.o \
+	CIEuvY.o \
+	CIExyY.o \
+	CIExyYWpAj.o \
+	TekHVC.o \
+	TekHVCGcC.o \
+	TekHVCGcV.o \
+	TekHVCGcVC.o \
+	TekHVCMnV.o \
+	TekHVCMxC.o \
+	TekHVCMxV.o \
+	TekHVCMxVC.o \
+	TekHVCMxVs.o \
+	TekHVCWpAj.o \
+	UNDEFINED.o \
+	XcmsAddDIC.o \
+	XcmsAddSF.o \
+	XcmsAlNCol.o \
+	XcmsAllCol.o \
+	XcmsCCC.o \
+	XcmsCmap.o \
+	XcmsColNm.o \
+	XcmsCvColW.o \
+	XcmsCvCols.o \
+	XcmsDefSD.o \
+	XcmsGlobls.o \
+	XcmsGRAY.o \
+	XcmsIdOfPr.o \
+	XcmsInt.o \
+	XcmsLRGB.o \
+	XcmsLRGBFr.o \
+	XcmsLkCol.o \
+	XcmsMath.o \
+	XcmsPrOfId.o \
+	XcmsProp.o \
+	XcmsQuCol.o \
+	XcmsQuCols.o \
+	XcmsSetGet.o \
+	XcmsStCol.o \
+	XcmsStCols.o \
+	XcmsXRGB.o
+
 OBJS =\
-	$(OBJS1) $(OBJS2)
+	$(OBJS1) $(OBJS2) $(CMS_OBJS)
 
 all::
 
@@ -359,7 +406,7 @@ SpecialObjectRule(XInitExt.o,/**/,-U__STDC__)
 NormalSharedLibraryTarget(X11,$(SOXLIBREV),$(OBJS))
 InstallSharedLibrary(X11,$(SOXLIBREV),$(USRLIBDIR))
 #endif
-NormalLibraryTarget2(X11,$(OBJS1),$(OBJS2))
+NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(CMS_OBJS))
 InstallLibrary(X11,$(USRLIBDIR))
 
 

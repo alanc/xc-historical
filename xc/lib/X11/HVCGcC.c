@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcC.c,v 1.11 91/01/28 14:33:04 alt Exp $" */
+/* $XConsortium: TekHVCGcC.c,v 1.1 91/01/30 17:56:25 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -33,7 +33,6 @@
  *		Include files that must be exported to any package or
  *		program using this package.
  */
-#include <Xlib.h>
 #include "TekCMS.h"
 
 /*

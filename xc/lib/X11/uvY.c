@@ -1,4 +1,4 @@
-/* $XConsortium: CIEuvY.c,v 1.9 91/01/28 14:31:10 alt Exp $" */
+/* $XConsortium: CIEuvY.c,v 1.1 91/01/30 17:07:43 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -45,7 +45,7 @@
  *		Include files that need NOT be exported to any package or
  *		program using this package.
  */
-#include <string.h>
+#include <X11/Xos.h>
 #include "TekCMSext.h"
 
 

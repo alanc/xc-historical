@@ -1,4 +1,4 @@
-/* $XConsortium: XCrCmap.c,v 11.8 88/09/06 16:05:41 jim Exp $ */
+/* $XConsortium: XCrCmap.c,v 11.9 91/01/06 11:44:52 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -31,7 +31,11 @@ int alloc;
     req->alloc = alloc;
     if (visual == CopyFromParent) req->visual = CopyFromParent;
     else req->visual = visual->visualid;
+
     UnlockDisplay(dpy);
     SyncHandle();
+
+    _XcmsAddCmapRec(dpy, mid, w, visual);
+
     return(mid);
 }

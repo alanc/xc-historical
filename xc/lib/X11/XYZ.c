@@ -43,7 +43,7 @@
  *              Include files for local use only, therefore, NOT exported
  *		to any package or program using this package.
  */
-#include <string.h>
+#include <X11/Xos.h>
 #include "TekCMS.h"
 #include "TekCMSext.h"
 

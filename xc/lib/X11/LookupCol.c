@@ -1,4 +1,4 @@
-/* $XConsortium: XLookupCol.c,v 11.10 90/12/12 09:18:37 rws Exp $ */
+/* $XConsortium: XLookupCol.c,v 11.11 91/01/06 11:46:52 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -14,7 +14,12 @@ without express or implied warranty.
 */
 
 #define NEED_REPLIES
+#include <stdio.h>
 #include "Xlibint.h"
+#include "TekCMS.h"
+
+
+extern XcmsCCC *XcmsCCCofColormap();
 
 #if NeedFunctionPrototypes
 Status XLookupColor (
@@ -34,14 +39,43 @@ Status XLookupColor (dpy, cmap, spec, def, scr)
 	register int n;
 	xLookupColorReply reply;
 	register xLookupColorReq *req;
+	XcmsCCC *pCCC;
+	char tmpName[BUFSIZ];
+	XcmsColor cmsColor_exact;
 
-	n = spec ? strlen (spec) : 0;
+	/*
+	 * Let's Attempt to use TekCMS and i18n approach to Parse Color
+	 */
+	/* copy string to allow overwrite by _XcmsResolveColorString() */
+	strncpy(tmpName, spec, BUFSIZ - 1);
+	if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
+	    if (_XcmsResolveColorString(pCCC, tmpName,
+		    &cmsColor_exact, XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+		_XcmsRGB_to_XColor(&cmsColor_exact, def, 1);
+		bcopy((char *)def, (char *)scr, sizeof(XColor));
+		_XcmsResolveColor(pCCC, scr, 1);
+		return(1);
+	    }
+	    /*
+	     * Otherwise we failed; or tmpName was overwritten with yet another
+	     * name.  Thus pass name to the X Server.
+	     */
+	}
+
+
+	/*
+	 * TekCMS and i18n methods failed, so lets pass it to the server
+	 * for parsing.  Remember to use tmpName since it may have been
+	 * overwritten by XcmsResolveColorString().
+	 */
+
+	n = tmpName ? strlen (tmpName) : 0;
 	LockDisplay(dpy);
 	GetReq (LookupColor, req);
 	req->cmap = cmap;
 	req->nbytes = n;
 	req->length += (n + 3) >> 2;
-	Data (dpy, spec, (long)n);
+	Data (dpy, tmpName, (long)n);
 	if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {
 	    UnlockDisplay(dpy);
 	    SyncHandle();

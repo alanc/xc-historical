@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsGlobls.c,v 1.4 91/01/28 14:33:39 alt Exp $" */
+/*$XConsortium: XcmsGlobls.c,v 1.4 91/01/28 14:33:39 alt Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -29,7 +29,6 @@
  *
  *
  */
-#ifndef LINT
 
 /*
  *      EXTERNAL INCLUDES

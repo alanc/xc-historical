@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.22 91/01/28 14:34:10 alt Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.1 91/01/30 18:43:27 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -48,11 +48,11 @@
  *		to any package or program using this package.
  */
 #include <stdio.h>
-#include <string.h>
+#include <X11/Xos.h>
 #include "Xlibos.h"
 #include "TekCMSP.h"
 #include "TekCMSext.h"
-#include "Xatom.h"
+#include <X11/Xatom.h>
 #include "XcmsLRGBSD.h"
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.13 91/01/27 00:36:30 alt Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.1 91/01/30 18:33:06 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -45,7 +45,7 @@
  */
 #include "Xlibos.h"
 #include "Xutil.h"
-#include "Xproto.h"
+#include <X11/Xproto.h>
 
 /*
  *      EXTERNS

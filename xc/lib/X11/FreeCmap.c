@@ -1,4 +1,4 @@
-/* $XConsortium: XFreeCmap.c,v 11.6 88/09/06 16:07:26 jim Exp $ */
+/* $XConsortium: XFreeCmap.c,v 11.7 91/01/06 11:45:43 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -23,6 +23,9 @@ Colormap cmap;
 
     LockDisplay(dpy);
     GetResReq(FreeColormap, cmap, req);
+
     UnlockDisplay(dpy);
     SyncHandle();
+
+    _XcmsDeleteCmapRec(dpy, cmap);
 }

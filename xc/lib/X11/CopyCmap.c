@@ -1,4 +1,4 @@
-/* $XConsortium: XCopyCmap.c,v 11.6 88/09/06 16:05:22 jim Exp $ */
+/* $XConsortium: XCopyCmap.c,v 11.7 91/01/06 11:44:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -27,7 +27,11 @@ Colormap src_cmap;
 
     mid = req->mid = XAllocID(dpy);
     req->srcCmap = src_cmap;
+
     UnlockDisplay(dpy);
     SyncHandle();
+
+    _XcmsCopyCmapRecAndFree(dpy, src_cmap, mid);
+
     return(mid);
 }

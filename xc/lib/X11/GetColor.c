@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.16 90/12/12 09:17:57 rws Exp $ */
+/* $XConsortium: XGetColor.c,v 11.17 91/01/06 11:45:53 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -14,7 +14,11 @@ without express or implied warranty.
 */
 
 #define NEED_REPLIES
+#include <stdio.h>
 #include "Xlibint.h"
+#include "TekCMS.h"
+
+extern XcmsCCC *XcmsCCCofColormap();
 
 #if NeedFunctionPrototypes
 Status XAllocNamedColor(
@@ -37,14 +41,40 @@ XColor *exact_def; /* RETURN */
     xAllocNamedColorReply rep;
     xAllocNamedColorReq *req;
 
+    char tmpName[BUFSIZ];
+    XcmsCCC *pCCC;
+    XcmsColor cmsColor_exact;
+
+
+    /*
+     * Let's Attempt to use TekCMS and i18n approach to Parse Color
+     */
+    /* copy string to allow overwrite by _XcmsResolveColorString() */
+    strncpy(tmpName, colorname, BUFSIZ - 1);
+    if ((pCCC = XcmsCCCofColormap(dpy, cmap)) != (XcmsCCC *)NULL) {
+	if (_XcmsResolveColorString(pCCC, tmpName, &cmsColor_exact,
+		XCMS_RGB_FORMAT) == XCMS_SUCCESS) {
+	    _XcmsRGB_to_XColor(&cmsColor_exact, exact_def, 1);
+	    bcopy((char *)exact_def, (char *)hard_def, sizeof(XColor));
+	    return(XAllocColor(dpy, cmap, hard_def));
+	}
+	/*
+	 * Otherwise we failed; or tmpName was overwritten with yet another
+	 * name.  Thus pass name to the X Server.
+	 */
+    }
+
+    /*
+     * TekCMS and i18n approach failed.
+     */
     LockDisplay(dpy);
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = colorname ? strlen(colorname) : 0;
+    nbytes = req->nbytes = tmpName ? strlen(tmpName) : 0;
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
-    _XSend(dpy, colorname, nbytes);
+    _XSend(dpy, tmpName, nbytes);
        /* _XSend is more efficient that Data, since _XReply follows */
 
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {
