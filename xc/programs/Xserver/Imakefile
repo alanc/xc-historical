@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.127 91/07/19 17:11:56 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.128 91/07/20 13:34:07 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -58,12 +58,16 @@ XCOMM
  *		  ALL definitions, add one for each server                   *
  *****************************************************************************/
 
-#if XqvssServer
-ALL1 = Xqvss
+#if XqdssServer
+ALL1 = Xqdss
 #endif
 
+#if XqvssServer
 #if XqdssServer
-ALL2 = Xqdss
+ALL2 = Xqvss
+#else
+ALL1 = Xqvss
+#endif
 #endif
 
 #if XdecServer
@@ -130,33 +134,33 @@ all: $(ALL)
  *****************************************************************************/
 
 
-#if XqvssServer
-XCOMM
-XCOMM Digital qvss server
-XCOMM
-SUBDIRS0 = MFBSubdirs ddx/dec/lk201
-SUBDIRS1 = ddx/dec/qvss
-QVSSDIRS = $(SUBDIRS0) $(SUBDIRS1) $(DEPDIRS)
-QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o
-QVSSLIBS = MFBLibs
-
-ServerTarget(Xqvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
-#endif /* XqvssServer */
-
-
 #if XqdssServer
 XCOMM
 XCOMM Digital qdss server
 XCOMM
 SUBDIRS0 = MFBSubdirs ddx/dec/lk201
-SUBDIRS2 = ddx/dec/qdss ddx/dec/qdss/libtl
-QDSSDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
+SUBDIRS1 = ddx/dec/qdss ddx/dec/qdss/libtl
+QDSSDIRS = $(SUBDIRS0) $(SUBDIRS1) $(DEPDIRS)
 QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o
 QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
            ddx/dec/qdss/libqdss.a MFBLibs
 
 ServerTarget(Xqdss,$(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
 #endif /* XqdssServer */
+
+
+#if XqvssServer
+XCOMM
+XCOMM Digital qvss server
+XCOMM
+SUBDIRS0 = MFBSubdirs ddx/dec/lk201
+SUBDIRS2 = ddx/dec/qvss
+QVSSDIRS = $(SUBDIRS0) $(SUBDIRS2) $(DEPDIRS)
+QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o
+QVSSLIBS = MFBLibs
+
+ServerTarget(Xqvss,$(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
+#endif /* XqvssServer */
 
 
 #if XdecServer
