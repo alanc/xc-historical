@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.18 94/03/28 14:36:30 kaleb Exp $ */
+/* $XConsortium: sunKeyMap.c,v 4.19 94/04/17 20:29:43 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -482,7 +482,7 @@ static SunModmapRec FrBeNeth4Modmap[] = {
 
 #endif
 
-#if defined(ITALY4) || defined(NOR4) || defined(PORT4) || defined(SPAINLATAM4)
+#if defined(ITALY4) || defined(NORW4) || defined(PORT4) || defined(SPAINLATAM4)
 
 static SunModmapRec ItNorPortSp4Modmap[] = {
 	99,	ShiftMask,
@@ -2632,7 +2632,7 @@ static KeySym Netherland5Keymap[] = {
 #endif /* NETHERLAND5 */
 
 
-#ifdef NOR4
+#ifdef NORW4
 
 static KeySym Norway4Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -2772,7 +2772,7 @@ static KeySym Norway4Keymap[] = {
 #endif /* NORWAY4 */
 
 
-#ifdef NOR5
+#ifdef NORW5
 
 static KeySym Norway5Keymap[] = {
 	SunXK_Stop,  	NoSymbol,  	XK_L1,		NoSymbol,	/*  1*/
@@ -5239,7 +5239,7 @@ static KeySym US5Keymap[] = {
 	SunXK_Paste,  	NoSymbol,  	XK_L8,		NoSymbol,	/* 73*/
 	XK_End, 	NoSymbol,	NoSymbol,	NoSymbol,	/* 74*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/* 75*/
-	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
+	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/* 76*/
 	XK_A,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 77*/
 	XK_S,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 78*/
 	XK_D,   	NoSymbol,	NoSymbol,	NoSymbol,	/* 79*/
@@ -5282,7 +5282,7 @@ static KeySym US5Keymap[] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*116*/
 	NoSymbol,	NoSymbol,	NoSymbol,	NoSymbol,	/*117*/
 	XK_Help,	NoSymbol,	NoSymbol,	NoSymbol,	/*118*/
-	XK_Control_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
+	XK_Caps_Lock,	NoSymbol,	NoSymbol,	NoSymbol,	/*119*/
 	XK_Meta_L,	NoSymbol,	NoSymbol,	NoSymbol,	/*120*/
 	XK_space,	NoSymbol,	NoSymbol,	NoSymbol,	/*121*/
 	XK_Meta_R,	NoSymbol,	NoSymbol,	NoSymbol,	/*122*/
