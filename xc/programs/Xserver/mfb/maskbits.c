@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.10 91/07/09 16:11:02 rws Exp $ */
+/* $XConsortium: maskbits.c,v 1.11 91/07/09 17:05:36 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +45,7 @@ lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-unsigned int starttab[33] =
+PixelType starttab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -82,7 +82,7 @@ unsigned int starttab[33] =
 	LONG2CHARS( 0x00000000 )
     };
 
-unsigned int endtab[33] =
+PixelType endtab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x80000000 ),
@@ -125,7 +125,7 @@ unsigned int endtab[33] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-unsigned int startpartial[33] =
+PixelType startpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -162,7 +162,7 @@ unsigned int startpartial[33] =
 	LONG2CHARS( 0x00000000 )
     };
 
-unsigned int endpartial[33] =
+PixelType endpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x80000000 ),
@@ -200,7 +200,7 @@ unsigned int endpartial[33] =
     };
 #endif
 
-unsigned int partmasks[32][32] = {
+PixelType partmasks[32][32] = {
      {LONG2CHARS( 0xFFFFFFFF ), LONG2CHARS( 0x80000000 ), LONG2CHARS( 0xC0000000 ), LONG2CHARS( 0xE0000000 ),
       LONG2CHARS( 0xF0000000 ), LONG2CHARS( 0xF8000000 ), LONG2CHARS( 0xFC000000 ), LONG2CHARS( 0xFE000000 ),
       LONG2CHARS( 0xFF000000 ), LONG2CHARS( 0xFF800000 ), LONG2CHARS( 0xFFC00000 ), LONG2CHARS( 0xFFE00000 ),
@@ -466,7 +466,7 @@ lets us deal with a full first word in the middle loop ), rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-unsigned int starttab[33] = 
+PixelType starttab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -503,7 +503,7 @@ unsigned int starttab[33] =
 	LONG2CHARS( 0x00000000 )
 	};
 
-unsigned int endtab[33] = 
+PixelType endtab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x00000001 ),
@@ -546,7 +546,7 @@ unsigned int endtab[33] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-unsigned int startpartial[33] = 
+PixelType startpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -583,7 +583,7 @@ unsigned int startpartial[33] =
 	LONG2CHARS( 0x00000000 )
 	};
 
-unsigned int endpartial[33] = 
+PixelType endpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x00000001 ),
@@ -621,7 +621,7 @@ unsigned int endpartial[33] =
 	};
 #endif
 
-unsigned int partmasks[32][32] = {
+PixelType partmasks[32][32] = {
      {LONG2CHARS( 0xFFFFFFFF ), LONG2CHARS( 0x00000001 ), LONG2CHARS( 0x00000003 ), LONG2CHARS( 0x00000007 ),
       LONG2CHARS( 0x0000000F ), LONG2CHARS( 0x0000001F ), LONG2CHARS( 0x0000003F ), LONG2CHARS( 0x0000007F ),
       LONG2CHARS( 0x000000FF ), LONG2CHARS( 0x000001FF ), LONG2CHARS( 0x000003FF ), LONG2CHARS( 0x000007FF ),
@@ -892,7 +892,7 @@ is a screen posiotion.)
 #define _1_ ((unsigned long)1)
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-unsigned int mask[] =
+PixelType mask[] =
     {
     LONG2CHARS( _1_<<31 ), LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<29 ), 
     LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<26 ), 
@@ -906,7 +906,7 @@ unsigned int mask[] =
     LONG2CHARS( 1<<4 ), LONG2CHARS( 1<<3 ), LONG2CHARS( 1<<2 ), 
     LONG2CHARS( 1<<1 ), LONG2CHARS( 1<<0 )
     }; 
-unsigned int rmask[] = 
+PixelType rmask[] = 
     {
     0xffffffff ^ LONG2CHARS( _1_<<31 ), 0xffffffff ^ LONG2CHARS( 1<<30 ), 
     0xffffffff ^ LONG2CHARS( 1<<29 ), 0xffffffff ^ LONG2CHARS( 1<<28), 
@@ -926,7 +926,7 @@ unsigned int rmask[] =
     0xffffffff ^ LONG2CHARS( 1<<1 ),  0xffffffff ^ LONG2CHARS( 1<<0)
     };
 #else	/* LSBFirst */
-unsigned int mask[] =
+PixelType mask[] =
     {
     LONG2CHARS( 1<<0 ), LONG2CHARS( 1<<1 ), LONG2CHARS( 1<<2), 
     LONG2CHARS( 1<<3 ), LONG2CHARS( 1<<4 ), LONG2CHARS( 1<<5), 
@@ -940,7 +940,7 @@ unsigned int mask[] =
     LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<29), 
     LONG2CHARS( 1<<30 ), LONG2CHARS( _1_<<31 )
     }; 
-unsigned int rmask[] = 
+PixelType rmask[] = 
     {
     0xffffffff ^ LONG2CHARS( 1<<0), 0xffffffff ^ LONG2CHARS( 1<<1), 
     0xffffffff ^ LONG2CHARS( 1<<2), 0xffffffff ^ LONG2CHARS( 1<<3), 
