@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.6 89/08/08 08:37:41 rws Exp $ */
+/* $XConsortium: main.c,v 5.7 89/09/11 13:04:14 keith Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -161,6 +161,7 @@ main(argc, argv)
 	ScreenSaverInterval = defaultScreenSaverInterval;
 	ScreenSaverBlanking = defaultScreenSaverBlanking;
 	ScreenSaverAllowExposures = defaultScreenSaverAllowExposures;
+	InitBlockAndWakeupHandlers();
 	/* Perform any operating system dependent initializations you'd like */
 	OsInit();		
 	if(serverGeneration == 1)
@@ -187,6 +188,8 @@ main(argc, argv)
 	    serverClient->index = 0;
 	    serverClient->clientAsMask = (Mask)0;
 	}
+	else
+	    ResetWellKnownSockets ();
         clients[0] = serverClient;
         currentMaxClients = 1;
 
@@ -268,8 +271,6 @@ main(argc, argv)
 	}
 
 	xfree(ConnectionInfo);
-
-	ResetWellKnownSockets ();
     }
     exit(0);
 }
