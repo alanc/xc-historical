@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.39 94/03/30 22:10:03 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.40 94/04/07 12:19:09 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -129,7 +129,8 @@ typedef void (*_IceProcessCoreMsgProc) (
     unsigned long	/* length */,
     Bool		/* swap */,
     IceReplyWaitInfo *  /* replyWait */,
-    Bool *		/* replyReadyRet */
+    Bool *		/* replyReadyRet */,
+    Bool *		/* connectionClosedRet */
 #endif
 );
 
