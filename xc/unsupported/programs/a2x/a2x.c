@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.10 92/03/13 13:59:15 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.11 92/03/13 16:17:36 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -59,6 +59,7 @@ unsigned short modmask[256];
 unsigned short curmods = 0;
 unsigned short tempmods = 0;
 KeyCode shift, control, mod1, mod2, mod3, mod4, mod5, meta;
+int bs_is_del = 1;
 KeySym last_sym = 0;
 KeyCode last_keycode = 0;
 struct termios oldterm;
@@ -67,17 +68,24 @@ char buttons[5];
 int moving = 0;
 int moving_x = 0;
 int moving_y = 0;
+int (*olderror)();
+int (*oldioerror)();
 
 usage()
 {
-    printf("a2x: [-d display] [-e]\n");
+    printf("a2x: [-d display] [-e] [-b]\n");
     exit(1);
+}
+
+reset()
+{
+    if (istty)
+	tcsetattr(0, TCSANOW, &oldterm);
 }
 
 quit(val)
 {
-    if (istty)
-	tcsetattr(0, TCSANOW, &oldterm);
+    reset();
     exit(val);
 }
 
@@ -89,11 +97,19 @@ catch(sig)
     quit(1);
 }
 
+error(Dpy, err)
+    Display *Dpy;
+    XErrorEvent *err;
+{
+    reset();
+    (*olderror)(Dpy, err);
+}
+
 ioerror(Dpy)
     Display *Dpy;
 {
-    fprintf(stderr, "a2x: display connection lost, exiting\n");
-    quit(1);
+    reset();
+    (*oldioerror)(Dpy);
 }
 
 reset_mapping()
@@ -193,6 +209,10 @@ reset_mapping()
 	break;
     }
     last_sym = 0;
+    if (bs_is_del) {
+	keycodes['\b'] = keycodes['\177'];
+	modifiers['\b'] = modifiers['\177'];
+    }
 }
 
 setup_tempmods()
@@ -417,6 +437,9 @@ main(argc, argv)
 	case 'e':
 	    noecho = 0;
 	    break;
+	case 'b':
+	    bs_is_del = 0;
+	    break;
 	default:
 	    usage();
 	}
@@ -432,18 +455,27 @@ main(argc, argv)
 		argv[0], DisplayString(dpy));
 	exit(1);
     }	
+    signal(SIGPIPE, SIG_IGN);
     if (tcgetattr(0, &term) >= 0) {
 	istty = 1;
 	oldterm = term;
 	term.c_lflag &= ~(ICANON|ECHOCTL|ISIG);
 	term.c_iflag &= ~(IXOFF|IXON|ICRNL);
-	term.c_cc[VERASE] = '\b';
 	if (noecho)
 	    term.c_lflag &= ~ECHO;
+#ifdef _POSIX_VDISABLE
+	for (i = 0; i < NCCS; i++)
+	    term.c_cc[i] = _POSIX_VDISABLE;
+#else
+	bzero((char *)term.c_cc, sizeof(term.c_cc));
+#endif
+	term.c_cc[VMIN] = 1;
+	term.c_cc[VTIME] = 0;
 	tcsetattr(0, TCSANOW, &term);
 	signal(SIGINT, catch);
 	signal(SIGTERM, catch);
-	XSetIOErrorHandler(ioerror);
+	oldioerror = XSetIOErrorHandler(ioerror);
+	olderror = XSetErrorHandler(error);
     }
     reset_mapping(dpy);
     while (1) {
