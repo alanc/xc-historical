@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: misc.c,v 1.18 89/12/06 19:58:37 jim Exp $
+ * $XConsortium: misc.c,v 1.19 89/12/10 17:19:10 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -274,7 +274,7 @@ char * entry;
 
   if ( !UncompressUnformatted(man_globals, entry, filename) ) {
     /* We Really could not find it, this should never happen, yea right. */
-    sprintf(error_buf, "Could open manual page, %s", entry);
+    sprintf(error_buf, "Could not open manual page, %s", entry);
     PrintWarning(man_globals, error_buf);
     XtPopdown( XtParent(man_globals->standby) );
     return(NULL);
