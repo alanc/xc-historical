@@ -8,18 +8,15 @@
 \&
 .sp 8
 .ce 50
-\s+2\fBThe X Font Service Protocol\fP\s-2
+\s+3\fBThe X Font Service Protocol\fP\s-3
 .sp
-.ps +1
-\fBV1.0\fP
+\fBVersion 1.0\fP
 \fBMIT X Consortium Standard\fR
 .sp
 \fBX Version 11, Release 5\fR
 .sp 6
-.ps -1
 Jim Fulton
 Network Computing Devices, Inc.
-.ps
 .ce 0
 .bp
 .br
