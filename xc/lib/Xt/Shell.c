@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.46 89/01/18 17:04:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.47 89/02/21 14:44:24 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -595,9 +595,10 @@ static void Initialize(req, new)
 	Widget req, new;
 {
 	ShellWidget w = (ShellWidget) new;
-	int flag;
 
 	w->shell.popped_up = FALSE;
+	w->shell.client_specified =
+	    _XtShellNotReparented | _XtShellPositionValid;
 
 	XtAddEventHandler(new, (EventMask) StructureNotifyMask,
 		TRUE, EventHandler, (caddr_t) NULL);
@@ -934,6 +935,15 @@ static void EventHandler(wid, closure, event)
 		w->core.width = event->xconfigure.width;
 		w->core.height = event->xconfigure.height;
 		w->core.border_width = event->xconfigure.border_width;
+		if (event->xany.send_event /* ICCCM compliant synthetic ev */
+		    /* || w->shell.override_redirect */
+		    || w->shell.client_specified & _XtShellNotReparented)
+	        {
+		    w->core.x = event->xconfigure.x;
+		    w->core.y = event->xconfigure.y;
+		    w->shell.client_specified |= _XtShellPositionValid;
+		}
+		else w->shell.client_specified &= ~_XtShellPositionValid;
 		if (XtIsSubclass(wid, wmShellWidgetClass) &&
 			!wmshell->wm.wait_for_wm) {
 		    /* Consider trusting the wm again */
@@ -944,20 +954,6 @@ static void EventHandler(wid, closure, event)
 		    }
 #undef EQ
 		}		    
-		break;
-
-	    case MapNotify:
-		/* We've been mapped--let's find out where we really are,
-		   unless we believe that we already know it. */
-		if (!w->shell.override_redirect) {
-		    (void) XTranslateCoordinates(XtDisplay(w), XtWindow(w), 
-			    RootWindowOfScreen(XtScreen(w)),
-			    (int) -w->core.border_width,
-			    (int) -w->core.border_width,
-			    &tmpx, &tmpy, &tmpchild);
-		    w->core.x = tmpx;
-		    w->core.y = tmpy;
-		}
 		break;
 
 	    case ClientMessage:
@@ -1009,6 +1005,10 @@ static void EventHandler(wid, closure, event)
 		    }
 		}
 		break;
+
+	      case ReparentNotify:
+		  w->shell.client_specified &= ~_XtShellNotReparented;
+		  return;
 
 	      default:
 		 return;
@@ -1351,6 +1351,14 @@ Cardinal mask;
 			w->core.width = event.xconfigure.width;
 			w->core.height = event.xconfigure.height;
 			w->core.border_width = event.xconfigure.border_width;
+			if (event.xany.send_event /* ICCCM compliant synth */
+			    || w->shell.client_specified & _XtShellNotReparented)
+			{
+			    w->core.x = event.xconfigure.x;
+			    w->core.y = event.xconfigure.y;
+			    w->shell.client_specified |= _XtShellPositionValid;
+			}
+			else w->shell.client_specified &= ~_XtShellPositionValid;
 			return TRUE;
 		} else if (event.type == ClientMessage &&
 			   event.xclient.message_type == WM_CONFIGURE_DENIED(w)) {
@@ -1361,6 +1369,7 @@ Cardinal mask;
 			    event.xclient.message_type == WM_MOVED(w)) {
 		    	w->core.x = event.xclient.data.s[0];
 			w->core.y = event.xclient.data.s[1];
+			w->shell.client_specified |= _XtShellPositionValid;
 			return TRUE;
 		} else XtAppErrorMsg(XtWidgetToApplicationContext(w),
 				"internalError","shell","XtToolkitError",
@@ -1567,4 +1576,27 @@ static Boolean TopLevelSetValues(old, ref, new)
 	    }
 	}
 	return FALSE;
+}
+
+
+void _XtShellGetCoordinates( widget, x, y)
+    Widget widget;
+    Position* x;
+    Position* y;
+{
+    ShellWidget w = (ShellWidget)widget;
+    if (!(w->shell.client_specified & _XtShellPositionValid)) {
+	int tmpx, tmpy;
+	Window tmpchild;
+	(void) XTranslateCoordinates(XtDisplay(w), XtWindow(w), 
+				     RootWindowOfScreen(XtScreen(w)),
+				     (int) -w->core.border_width,
+				     (int) -w->core.border_width,
+				     &tmpx, &tmpy, &tmpchild);
+	w->core.x = tmpx;
+	w->core.y = tmpy;
+	w->shell.client_specified |= _XtShellPositionValid;
+    }
+    *x = w->core.x;
+    *y = w->core.y;
 }
