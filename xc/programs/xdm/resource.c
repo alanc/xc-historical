@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.41 91/07/18 18:37:36 rws Exp $
+ * $XConsortium: resource.c,v 1.42 91/07/18 21:03:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -94,10 +94,10 @@ char	*randomFile;
 #define DEF_USER_AUTH_DIR	"/tmp"
 #endif
 #ifndef DEF_KEY_FILE
-#define DEF_KEY_FILE	"/usr/lib/X11/xdm/Xkeys"
+#define DEF_KEY_FILE	""
 #endif
 #ifndef DEF_ACCESS_FILE
-#define DEF_ACCESS_FILE	"/usr/lib/X11/xdm/Xaccess"
+#define DEF_ACCESS_FILE	""
 #endif
 #ifndef DEF_RANDOM_FILE
 #define DEF_RANDOM_FILE "/dev/mem"
