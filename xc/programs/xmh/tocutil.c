@@ -1,5 +1,6 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: tocutil.c,v 2.22 89/05/04 15:43:02 converse Exp $";
+#if !defined(lint) && !defined(SABER)
+static char rcs_id[] =
+    "$XConsortium: tocutil.c,v 2.23 89/05/11 19:24:25 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -507,6 +508,18 @@ void TUGetFullFolderInfo(toc)
 	toc->path = MallocACopy(str);
 	(void) sprintf(str, "%s/.xmhcache", toc->path);
 	toc->scanfile = MallocACopy(str);
+	if (app_resources.debug) {
+	    /* Sometimes, app_resources.mailDir is duplicated in the string.
+	     * I don't know why; nor can I get the problem to repeat.
+	     */
+	    DEBUG1("TuGetFullFolderInfo: toc->scanfile = %s.\n",
+		   toc->scanfile);
+	    DEBUG1("TuGetFullFolderInfo: app_resources.mailDir = %s.\n",
+		  app_resources.mailDir);
+	    DEBUG1("TuGetFullFolderInfo: toc->foldername = %s.\n",
+		  toc->foldername);
+	    DEBUG1("TuGetFullFolderInfo: toc->path = %s.\n", toc->path);
+	}
 	toc->lastreaddate = LastModifyDate(toc->scanfile);
 	if (TUScanFileOutOfDate(toc))
 	    toc->validity = invalid;
