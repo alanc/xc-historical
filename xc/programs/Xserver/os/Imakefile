@@ -28,4 +28,6 @@ fileio.o: $(IRULESRC)/$(MACROFILE)
 filenames.o: $(IRULESRC)/$(MACROFILE)
 fileutils.o: $(IRULESRC)/$(MACROFILE)
 
+SpecialObjectRule(osinit.o, $(IRULESRC)/$(MACROFILE), -DADMPATH=\"$(ADMDIR)/X\%dmsgs\")
+
 DependTarget()

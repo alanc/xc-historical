@@ -21,13 +21,17 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: osinit.c,v 1.10 87/10/29 07:47:49 swick Exp $ */
+/* $Header: osinit.c,v 1.11 88/02/21 17:51:01 rws Exp $ */
 #include "os.h"
 #include "opaque.h"
 #undef NULL
 #include <dbm.h>
 #undef NULL
 #include <stdio.h>
+
+#ifndef ADMPATH
+#define ADMPATH "/usr/adm/X%dmsgs"
+#endif
 
 int	havergb = 0;
 extern char *display;
@@ -46,9 +50,7 @@ OsInit()
 	    char *ctime();
 	    fclose(stdin);
 	    fclose(stdout);
-	    strcpy (fname, "/usr/adm/X");
-	    strcat (fname, display);
-	    strcat (fname, "msgs");
+	    sprintf (fname, ADMPATH, display);
 	    freopen (fname, "a+", stderr);
 	    setlinebuf(stderr);
 	    time (&t);
