@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.48 89/09/17 19:40:54 converse Exp $";
-#endif
 /*
+ * $XConsortium: screen.c,v 2.49 89/09/27 19:16:26 converse Exp $
+ *
+ *
  *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -17,7 +16,6 @@ static char rcs_id[] =
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
  *
- *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
@@ -31,32 +29,18 @@ static char rcs_id[] =
 
 #include "xmh.h"
 
-
-typedef struct _XmhMenuEntry {
-    char	*name;			/* menu entry name */
-    void   	(*function)();		/* menu entry callback function */
-} XmhMenuEntryRec, *XmhMenuEntry;	
-
-
-typedef struct _XmhMenuButtonDesc {
-    char	*button_name;		/* menu button name */
-    char	*menu_name;		/* menu name */
-    XmhMenuEntry entry;			/* list of menu entries */
-    Cardinal	num_entries;		/* count of menu entries in list */
-} XmhMenuButtonDescRec, *XmhMenuButtonDesc;
-
-
-XmhMenuEntryRec	folderOps[] = {
+XmhMenuEntryRec	folderMenu[] = {
     {"compose",			DoComposeMessage},
-    {"close",			DoClose},
-    {"XawMenuSeparator",	(XtCallbackProc) NULL},
+    {"line1",			(XtCallbackProc) NULL},
     {"open",			DoOpenFolder},
     {"openInNew", 		DoOpenFolderInNewWindow},
     {"create",			DoCreateFolder},
     {"delete",			DoDeleteFolder},
+    {"line2",			(XtCallbackProc) NULL},
+    {"close",			DoClose},
 };
 
-XmhMenuEntryRec	tocOps[] = {
+XmhMenuEntryRec	tocMenu[] = {
     {"inc",			DoIncorporateNewMail},
     {"commit",			DoCommit},
     {"pack",			DoPack},
@@ -64,7 +48,7 @@ XmhMenuEntryRec	tocOps[] = {
     {"rescan",			DoForceRescan},
 };
 
-XmhMenuEntryRec	messageOps[] = {
+XmhMenuEntryRec	messageMenu[] = {
     {"next",			DoNextView},
     {"prev",			DoPrevView},
     {"delete",			DoDelete},
@@ -78,19 +62,17 @@ XmhMenuEntryRec	messageOps[] = {
     {"print",			DoPrint},
 };
 
-XmhMenuEntryRec	sequenceOps[] = {
+XmhMenuEntryRec	sequenceMenu[] = {
     {"pick",			DoPickMessages},
     {"openSeq",			DoOpenSeq},
     {"addToSeq",		DoAddToSeq},
     {"removeFromSeq",		DoRemoveFromSeq},
     {"deleteSeq",		DoDeleteSeq},
+    {"line1",			(XtCallbackProc) NULL},
+    {"all",			DoSelectSequence},
 };
 
-XmhMenuEntryRec	sequences[] = {
-    {"all",			(XtCallbackProc) NULL},
-};
-
-XmhMenuEntryRec	viewOps[] = {
+XmhMenuEntryRec	viewMenu[] = {
     {"reply",			DoViewReply},
     {"forward",			DoViewForward},
     {"useAsComp",		DoViewUseAsComposition},
@@ -99,25 +81,23 @@ XmhMenuEntryRec	viewOps[] = {
     {"print",			DoPrintView},
 };
 
-XmhMenuEntryRec	options[] = {
+XmhMenuEntryRec	optionMenu[] = {
     {"reverse",			DoReverseReadOrder},
 };
 
 XmhMenuButtonDescRec	MenuBoxButtons[] = {
-    {"folderOpsButton",
-     "folderOpsMenu",	folderOps,	XtNumber(folderOps) },
-    {"tocOpsButton",
-     "tocOpsMenu",	tocOps,		XtNumber(tocOps) },
-    {"messageOpsButton",
-     "messageOpsMenu",	messageOps,	XtNumber(messageOps) },
-    {"sequenceOpsButton",
-     "sequenceOpsMenu",	sequenceOps,	XtNumber(sequenceOps) },
-    {"sequenceButton",
-     "sequenceMenu",	sequences,	XtNumber(sequences) },
-    {"viewOpsButton",
-     "viewOpsMenu",	viewOps,	XtNumber(viewOps) },
-    {"optionButton",
-     "optionMenu",	options,	XtNumber(options) },
+    {"folderButton",	"folderMenu",	XMH_FOLDER,	folderMenu,
+	 XtNumber(folderMenu) },
+    {"tocButton",	"tocMenu",	XMH_TOC,	tocMenu,
+	 XtNumber(tocMenu) },
+    {"messageButton",	"messageMenu",	XMH_MESSAGE,	messageMenu,
+	 XtNumber(messageMenu) },
+    {"sequenceButton",	"sequenceMenu",	XMH_SEQUENCE,	sequenceMenu,
+	 XtNumber(sequenceMenu) },
+    {"viewButton",	"viewMenu",	XMH_VIEW,	viewMenu,
+	 XtNumber(viewMenu) },
+    {"optionButton",	"optionMenu",	XMH_OPTION,	optionMenu,
+	 XtNumber(optionMenu) },
 };
 
 
@@ -155,59 +135,56 @@ static void MakeCommandMenu(scrn, mbd)
     Scrn		scrn;
     XmhMenuButtonDesc	mbd;
 {
-    register int i, n;
+    register int i;
+    Cardinal	 n;
     Widget	menu;
     ButtonBox	buttonbox = scrn->mainbuttons;
     XmhMenuEntry	e;
+    Boolean	indent;
+    WidgetClass	widgetclass;
     Arg		args[4];
     static XtCallbackRec callbacks[] = {
 	{ (XtCallbackProc) NULL, (XtPointer) NULL},
 	{ (XtCallbackProc) NULL, (XtPointer) NULL},
 	{ (XtCallbackProc) NULL, (XtPointer) NULL},
     };
-    extern void DoRememberMenuSelection();
 
     /* Menus are created as childen of the shell of the scrn in order
      * that they can be used both as pop-up and as pull-down menus.
      */
 
+    n = 0;
+    if (mbd->id == XMH_SEQUENCE) {
+	XtSetArg(args[n], XtNallowShellResize, True); 	n++;
+    }
     menu = XtCreatePopupShell(mbd->menu_name, simpleMenuWidgetClass,
-			      scrn->widget, args, (Cardinal) 0);
+			      scrn->widget, args, n);
 
+    indent = (mbd->id == XMH_SEQUENCE || mbd->id == XMH_OPTION) ? True : False;
     e = mbd->entry;
     for (i=0; i < mbd->num_entries; i++, e++) {
 	n = 0;
 	if (e->function) {
 	    callbacks[0].callback = e->function;
 	    callbacks[0].closure  = (XtPointer) scrn;
-	    if (app_resources.sticky_menu) {	/* this may disappear */
-		callbacks[1].callback = DoRememberMenuSelection;
-		callbacks[1].closure  = (XtPointer) e->name;
-	    } else {
-		callbacks[1].callback = (XtCallbackProc) NULL;
-		callbacks[1].closure  = (XtPointer) NULL;
-	    }
-	    XtSetArg(args[n], XtNcallback, callbacks);		n++;
-	}
-	else if (strcmp(e->name, "XawMenuSeparator") == 0) {
-	    XtSetArg(args[n], XtNtype, XawMenuSeparator);	n++;
-	}
+	    callbacks[1].callback = (app_resources.sticky_menu
+				     ? (XtCallbackProc) DoRememberMenuSelection
+				     : (XtCallbackProc) NULL);
+	    XtSetArg(args[n], XtNcallback, callbacks);	n++;
 
-	XawSimpleMenuAddEntry(menu, XtNewString(e->name), args, (Cardinal) n);
+	    if (indent) { XtSetArg(args[n], XtNleftMargin, 18);	n++; }
+	    widgetclass = bSBMenuEntryObjectClass;
+	} else 
+	    widgetclass = lineMenuEntryObjectClass;
+	XtCreateManagedWidget(e->name, widgetclass, menu, args, n);
     }
 
     AttachMenuToButton( BBoxFindButtonNamed( buttonbox, mbd->button_name),
 		       menu, mbd->menu_name);
-
-    /* awkward */
-    if (strcmp("optionMenu", mbd->menu_name) == 0) {
-	n = 0;
-	XtSetArg(args[n], XtNleftMargin, 18);	n++;
-	XtSetValues(menu, args, (Cardinal) n);
-	if (app_resources.reverse_read_order)
-	    ToggleMenuItem(menu, "reverse", True);
-    }
+    if (mbd->id == XMH_OPTION && app_resources.reverse_read_order)
+	ToggleMenuItem(XtNameToWidget(menu, "reverse"), True);
 }
+
 
 /* Create subwidgets for a toc&view window. */
 
@@ -227,25 +204,15 @@ Scrn scrn;
 	{ XtNdisplayCaret,	(XtArgVal) False}
     };
 
+    scrn->mainbuttons   = BBoxCreate(scrn, "menuBox");
     scrn->folderlabel   = CreateTitleBar(scrn, "folderTitlebar");
     scrn->folderbuttons = BBoxCreate(scrn, "folders");
-    scrn->seqbuttons    = RadioBBoxCreate(scrn, "seqButtons");
-    scrn->mainbuttons   = BBoxCreate(scrn, "menuBox");
     scrn->toclabel      = CreateTitleBar(scrn, "tocTitlebar");
     scrn->tocwidget	= CreateTextSW(scrn, "toc", args, XtNumber(args));
     if (app_resources.command_button_count > 0) 
 	scrn->miscbuttons = BBoxCreate(scrn, "commandBox");
     scrn->viewlabel     = CreateTitleBar(scrn, "viewTitlebar");
     scrn->viewwidget    = CreateTextSW(scrn, "view", args, (Cardinal) 0);
-
-    /* the folder buttons and menus */
-
-    buttonbox = scrn->folderbuttons;
-    for (i=0 ; i<numFolders ; i++) {
-	name = TocName(folderList[i]);
-	if (numScrns == 1 || (! IsSubfolder(name)))
-	    BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
-    }
 
     /* the command buttons and menus */
 
@@ -257,10 +224,14 @@ Scrn scrn;
 	MakeCommandMenu(scrn, mbd);
     }
 
-    /* the sequence buttons, soon to disappear? */
+    /* the folder buttons; folder menus are created on demand. */
 
-    buttonbox = scrn->seqbuttons;
-    RadioBBoxAddButton(buttonbox, "all", True);
+    buttonbox = scrn->folderbuttons;
+    for (i=0 ; i<numFolders ; i++) {
+	name = TocName(folderList[i]);
+	if (numScrns == 1 || (! IsSubfolder(name)))
+	    BBoxAddButton(buttonbox, name, menuButtonWidgetClass, True);
+    }
 
     /* the optional miscellaneous command buttons */
 
@@ -274,7 +245,7 @@ Scrn scrn;
 	}
     }
 
-    if (app_resources.mailWaitingFlag) {
+    if (app_resources.mail_waiting_flag) {
 	static Arg arglist[] = {XtNiconPixmap, NULL};
 	arglist[0].value = (XtArgVal) NoMailPixmap;
 	XtSetValues(scrn->parent, arglist, XtNumber(arglist));
@@ -319,13 +290,13 @@ ScrnKind kind;
 	    return scrnList[i];
     switch (kind) {
        case STtocAndView: arglist[0].value =
-			   (XtArgVal)app_resources.defTocGeometry;	break;
+			   (XtArgVal)app_resources.toc_geometry;	break;
        case STview:	  arglist[0].value =
-			   (XtArgVal)app_resources.defViewGeometry;	break;
+			   (XtArgVal)app_resources.view_geometry;	break;
        case STcomp:	  arglist[0].value =
-			   (XtArgVal)app_resources.defCompGeometry;	break;
+			   (XtArgVal)app_resources.comp_geometry;	break;
        case STpick:	  arglist[0].value =
-			   (XtArgVal)app_resources.defPickGeometry;	break;
+			   (XtArgVal)app_resources.pick_geometry;	break;
     }
 
     numScrns++;
@@ -358,34 +329,38 @@ ScrnKind kind;
 
 	switch (kind) {
 	  case STtocAndView:
-
-	    BBoxLockSize(scrn->folderbuttons);
-	    BBoxLockSize(scrn->seqbuttons);	/* %%% too early, only one */
 	    BBoxLockSize(scrn->mainbuttons);
+	    BBoxLockSize(scrn->folderbuttons);
 	    theight = GetHeight(scrn->tocwidget) + GetHeight(scrn->viewwidget);
-	    theight = app_resources.defTocPercentage * theight / 100;
+	    theight = app_resources.toc_percentage * theight / 100;
 	    XawPanedGetMinMax((Widget) scrn->tocwidget, &min, &max);
 	    XawPanedSetMinMax((Widget) scrn->tocwidget, theight, theight);
 	    XawPanedSetMinMax((Widget) scrn->tocwidget, min, max);
 	    if (scrn->miscbuttons)
 		BBoxLockSize(scrn->miscbuttons);
 
+	    /* fall through */
+
+	  case STview:
+
 	    /* Install accelerators; not active while editing in the view */
 
 	    XtSetArg(args[0], XtNtranslations, &(scrn->edit_translations));
 	    XtGetValues(scrn->viewwidget, args, (Cardinal) 1);
 	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
-	    XtInstallAllAccelerators(scrn->tocwidget, scrn->widget);
+	    if (kind == STtocAndView)
+		XtInstallAllAccelerators(scrn->tocwidget, scrn->widget);
 	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
 	    XtSetArg(args[0], XtNtranslations, &(scrn->read_translations));
 	    XtGetValues(scrn->viewwidget, args, (Cardinal) 1);
+
+	    if (kind == STview)
+		BBoxLockSize(scrn->viewbuttons);
 	    break;
 
-	  case STview:
 	  case STcomp:
 	    BBoxLockSize(scrn->viewbuttons);
 	    XtInstallAllAccelerators(scrn->widget, scrn->widget);
-	    XtInstallAllAccelerators(scrn->viewwidget, scrn->widget);
 	    break;
 	}
 
@@ -489,19 +464,21 @@ Scrn scrn;
     if (scrn) {
 	switch (scrn->kind) {
 	  case STtocAndView:
-	    button = BBoxFindButtonNamed(scrn->mainbuttons, "tocOpsButton");
+	    button = BBoxFindButtonNamed
+		(scrn->mainbuttons, MenuBoxButtons[XMH_TOC].button_name);
 	    value = TocCanIncorporate(scrn->toc);
 	    SendMenuEntryEnableMsg(button, "inc", value);
 
-	    button = BBoxFindButtonNamed(scrn->mainbuttons,
-					 "sequenceOpsButton");
+	    button = BBoxFindButtonNamed
+		(scrn->mainbuttons, MenuBoxButtons[XMH_SEQUENCE].button_name);
 	    value = TocHasSequences(scrn->toc);
 	    SendMenuEntryEnableMsg(button, "openSeq", value);
 	    SendMenuEntryEnableMsg(button, "addToSeq", value);
 	    SendMenuEntryEnableMsg(button, "removeFromSeq", value);
 	    SendMenuEntryEnableMsg(button, "deleteSeq", value);
 
-	    button = BBoxFindButtonNamed(scrn->mainbuttons, "viewOpsButton");
+	    button = BBoxFindButtonNamed
+		 (scrn->mainbuttons, MenuBoxButtons[XMH_VIEW].button_name);
 	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
 	    SendMenuEntryEnableMsg(button, "edit", value);
 	    SendMenuEntryEnableMsg(button, "save",

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.27 89/09/17 19:40:27 converse Exp $";
+    "$XConsortium: command.c,v 2.28 89/09/27 19:14:54 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987, 1989
@@ -95,7 +95,7 @@ static char *FullPathOfCommand(str)
   char *str;
 {
     static char result[100];
-    (void) sprintf(result, "%s/%s", app_resources.defMhPath, str);
+    (void) sprintf(result, "%s/%s", app_resources.mh_path, str);
     return result;
 }
 
@@ -250,7 +250,7 @@ DEBUG1("unblocked; child%s done.\n", childdone ? "" : " not")
 		if (childdone) break;
 		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))
 {DEBUG("reading alternate input...")
-		    XtProcessEvent(XtIMAlternateInput);
+		    XtProcessEvent((unsigned) XtIMAlternateInput);
 DEBUG("read.\n")}
 	    }
 	    if (childdone) break;
@@ -382,7 +382,7 @@ CheckReadFromPipe( fd, bufP, lenP )
     else if (nread) {
 	char buf[BUFSIZ];
 	int old_end = *lenP;
-	*bufP = XtRealloc( *bufP, (*lenP += nread) + 1 );
+	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
 	while (nread > BUFSIZ) {
 	    read( fd, buf, BUFSIZ );
 	    bcopy( buf, *bufP+old_end, BUFSIZ );
@@ -454,7 +454,7 @@ char ** argv;
     char *result = NULL;
     int len = 0;
     _DoCommandToFileOrPipe( argv, -1, -2, &result, &len );
-    if (result == NULL) result = XtMalloc(1);
+    if (result == NULL) result = XtMalloc((Cardinal) 1);
     result[len] = '\0';
     DEBUG1("('%s')\n", result)
     return result;

@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: viewfuncs.c,v 2.16 89/09/15 16:16:39 converse Exp $";
-#endif
 /*
+ * $XConsortium: viewfuncs.c,v 2.17 89/09/27 19:17:00 converse Exp $
+ *
+ *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -172,10 +171,8 @@ void DoEditView(w, client_data, call_data)
     XtTranslations editTranslations = scrn->edit_translations;
 
     if (scrn->msg == NULL) return;
-    if (scrn->kind == STtocAndView) {
-	XtSetArg(args[0], XtNtranslations, editTranslations);
-	XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
-    }
+    XtSetArg(args[0], XtNtranslations, editTranslations);
+    XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
     MsgSetEditable(scrn->msg);
 }
 
@@ -202,12 +199,11 @@ void DoSaveView(w, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     Arg		args[2];
 
+    DEBUG("DoSaveView\n")
     if (scrn->msg == NULL) return;
     if (MsgSaveChanges(scrn->msg)) {
-	if (scrn->kind == STtocAndView) {
-	    XtSetArg(args[0], XtNtranslations, scrn->read_translations);
-	    XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
-	}
+	XtSetArg(args[0], XtNtranslations, scrn->read_translations);
+	XtSetValues(scrn->viewwidget, args, (Cardinal) 1);
 	MsgClearEditable(scrn->msg);
     }
 }
@@ -236,7 +232,7 @@ void DoPrintView(w, client_data, call_data)
     char str[200];
 
     if (scrn->msg == NULL) return;
-    (void) sprintf(str, "%s %s", app_resources.defPrintCommand,
+    (void) sprintf(str, "%s %s", app_resources.print_command,
 		   MsgFileName(scrn->msg));
     (void) system(str);
 }

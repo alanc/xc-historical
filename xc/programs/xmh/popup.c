@@ -1,9 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.19 89/09/17 19:40:50 converse Exp $";
-#endif
-
 /*
+ * $XConsortium: popup.c,v 2.20 89/09/27 19:16:23 converse Exp $
+ *
+ *
  *			  COPYRIGHT 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -17,7 +15,6 @@ static char rcs_id[]=
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided

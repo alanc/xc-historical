@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: init.c,v 2.34 89/09/17 19:40:37 converse Exp $";
-#endif
 /*
+ * $XConsortium: init.c,v 2.35 89/09/27 19:15:09 converse Exp $
+ *
+ *
  *		        COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -54,64 +52,64 @@ static char check_bits[] = {
 static XtResource resources[] = {
     {"debug", "Debug", XtRBoolean, sizeof(Boolean),
 	 offset(debug), XtRBoolean, (XtPointer)&defFalse},
-    {"tempdir", "tempDir", XtRString, sizeof(char *),
-	 offset(tempDir), XtRString, "/tmp"},
-    {"mhpath", "MhPath", XtRString, sizeof(char *),
-	 offset(defMhPath), XtRString, "/usr/local/mh6"},
-    {"initialfolder", "InitialFolder", XtRString, sizeof(char *),
-	 offset(initialFolderName), XtRString, "inbox"},
-    {"initialincfile", "InitialIncFile", XtRString, sizeof(char *),
-         offset(initialIncFile), XtRString, NULL},
-    {"replyinsertfilter", "ReplyInsertFilter", XtRString, sizeof(char *),
-	 offset(defInsertFilter), XtRString, NULL},
-    {"draftsfolder", "DraftsFolder", XtRString, sizeof(char *),
-	 offset(draftsFolderName), XtRString, "drafts"},
-    {"sendwidth", "SendWidth", XtRInt, sizeof(int),
-	 offset(defSendLineWidth), XtRString, "72"},
-    {"sendbreakwidth", "SendBreakWidth", XtRInt, sizeof(int),
-	 offset(defBreakSendLineWidth), XtRString, "85"},
-    {"printcommand", "PrintCommand", XtRString, sizeof(char *),
-	 offset(defPrintCommand), XtRString,
+    {"tempDir", "TempDir", XtRString, sizeof(char *),
+	 offset(temp_dir), XtRString, "/tmp"},
+    {"mhPath", "MhPath", XtRString, sizeof(char *),
+	 offset(mh_path), XtRString, "/usr/local/mh6"},
+    {"initialFolder", "InitialFolder", XtRString, sizeof(char *),
+	 offset(initial_folder_name), XtRString, "inbox"},
+    {"initialIncFile", "InitialIncFile", XtRString, sizeof(char *),
+         offset(initial_inc_file), XtRString, NULL},
+    {"replyInsertFilter", "ReplyInsertFilter", XtRString, sizeof(char *),
+	 offset(insert_filter), XtRString, NULL},
+    {"draftsFolder", "DraftsFolder", XtRString, sizeof(char *),
+	 offset(drafts_folder_name), XtRString, "drafts"},
+    {"sendWidth", "SendWidth", XtRInt, sizeof(int),
+	 offset(send_line_width), XtRString, "72"},
+    {"sendBreakWidth", "SendBreakWidth", XtRInt, sizeof(int),
+	 offset(break_send_line_width), XtRString, "85"},
+    {"printCommand", "PrintCommand", XtRString, sizeof(char *),
+	 offset(print_command), XtRString,
 	 "enscript > /dev/null 2>/dev/null"},
-    {"tocwidth", "TocWidth", XtRInt, sizeof(int),
-	 offset(defTocWidth), XtRString, "100"},
-    {"skipdeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
-	 offset(SkipDeleted), XtRBoolean, (XtPointer)&defTrue},
-    {"skipmoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
-	 offset(SkipMoved), XtRBoolean, (XtPointer)&defTrue},
-    {"skipcopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
-	 offset(SkipCopied), XtRBoolean, (XtPointer)&defFalse},
-    {"hideboringheaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
-	 offset(defHideBoringHeaders), XtRBoolean, (XtPointer)&defTrue},
+    {"tocWidth", "TocWidth", XtRInt, sizeof(int),
+	 offset(toc_width), XtRString, "100"},
+    {"skipDeleted", "SkipDeleted", XtRBoolean, sizeof(Boolean),
+	 offset(skip_deleted), XtRBoolean, (XtPointer)&defTrue},
+    {"skipMoved", "SkipMoved", XtRBoolean, sizeof(Boolean),
+	 offset(skip_moved), XtRBoolean, (XtPointer)&defTrue},
+    {"skipCopied", "SkipCopied", XtRBoolean, sizeof(Boolean),
+	 offset(skip_copied), XtRBoolean, (XtPointer)&defFalse},
+    {"hideBoringHeaders", "HideBoringHeaders", XtRBoolean, sizeof(Boolean),
+	 offset(hide_boring_headers), XtRBoolean, (XtPointer)&defTrue},
     {"geometry", "Geometry", XtRString, sizeof(char *),
-	 offset(defGeometry), XtRString, NULL},
-    {"tocgeometry", "TocGeometry", XtRString, sizeof(char *),
-	 offset(defTocGeometry), XtRString, NULL},
-    {"viewgeometry", "ViewGeometry", XtRString, sizeof(char *),
-	 offset(defViewGeometry), XtRString, NULL},
-    {"compgeometry", "CompGeometry", XtRString, sizeof(char *),
-	 offset(defCompGeometry), XtRString, NULL},
-    {"pickgeometry", "PickGeometry", XtRString, sizeof(char *),
-	 offset(defPickGeometry), XtRString, NULL},
-    {"tocpercentage", "TocPercentage", XtRInt, sizeof(int),
-	 offset(defTocPercentage), XtRString, "33"},
-    {"checknewmail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
-	 offset(defNewMailCheck), XtRBoolean, (XtPointer)&defTrue},
-    {"makecheckpoints", "MakeCheckPoints", XtRBoolean, sizeof(Boolean),
-	 offset(defMakeCheckpoints), XtRBoolean, (XtPointer)&defFalse},
-    {"checkfrequency", "CheckFrequency", XtRInt, sizeof(int),
+	 offset(geometry), XtRString, NULL},
+    {"tocGeometry", "TocGeometry", XtRString, sizeof(char *),
+	 offset(toc_geometry), XtRString, NULL},
+    {"viewGeometry", "ViewGeometry", XtRString, sizeof(char *),
+	 offset(view_geometry), XtRString, NULL},
+    {"compGeometry", "CompGeometry", XtRString, sizeof(char *),
+	 offset(comp_geometry), XtRString, NULL},
+    {"pickGeometry", "PickGeometry", XtRString, sizeof(char *),
+	 offset(pick_geometry), XtRString, NULL},
+    {"tocPercentage", "TocPercentage", XtRInt, sizeof(int),
+	 offset(toc_percentage), XtRString, "33"},
+    {"checkNewMail", "CheckNewMail", XtRBoolean, sizeof(Boolean),
+	 offset(new_mail_check), XtRBoolean, (XtPointer)&defTrue},
+    {"makeCheckpoints", "MakeCheckpoints", XtRBoolean, sizeof(Boolean),
+	 offset(make_checkpoints), XtRBoolean, (XtPointer)&defFalse},
+    {"checkFrequency", "CheckFrequency", XtRInt, sizeof(int),
 	 offset(check_frequency), XtRString, "1"},
-    {"mailpath", "MailPath", XtRString, sizeof(char *),
-	 offset(mailDir), XtRString, NULL},
-    {"mailwaitingflag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
-	 offset(mailWaitingFlag), XtRBoolean, &defFalse},
+    {"mailPath", "MailPath", XtRString, sizeof(char *),
+	 offset(mail_path), XtRString, NULL},
+    {"mailWaitingFlag", "MailWaitingFlag", XtRBoolean, sizeof(Boolean),
+	 offset(mail_waiting_flag), XtRBoolean, &defFalse},
     {"cursor", "Cursor", XtRCursor, sizeof(Cursor),
 	 offset(cursor), XtRString, "left_ptr"},
-    {"cursorcolor", "CursorColor", XtRPixel, sizeof(Pixel),
-	 offset(cursor_color), XtRString, XtDefaultForeground},
-    {"stickymenu", "StickyMenu", XtRBoolean, sizeof(Boolean), 	
+    {"pointerColor", "PointerColor", XtRPixel, sizeof(Pixel),
+	 offset(pointer_color), XtRString, XtDefaultForeground},
+    {"stickyMenu", "StickyMenu", XtRBoolean, sizeof(Boolean), 	
 	 offset(sticky_menu), XtRBoolean, (XtPointer) &defFalse},
-    {"prefixwmandiconname", "PrefixWmAndIconName", XtRBoolean, sizeof(Boolean),
+    {"prefixWmAndIconName", "PrefixWmAndIconName", XtRBoolean, sizeof(Boolean),
 	 offset(prefix_wm_and_icon_name), XtRBoolean, (XtPointer)&defTrue},
     {"reverseReadOrder", "ReverseReadOrder", XtRBoolean, sizeof(Boolean),
 	 offset(reverse_read_order), XtRBoolean, (XtPointer)&defFalse},
@@ -119,8 +117,8 @@ static XtResource resources[] = {
 	 offset(block_events_on_busy), XtRBoolean, (XtPointer)&defTrue},
     {"busyCursor", "BusyCursor", XtRCursor, sizeof(Cursor),
 	 offset(busy_cursor), XtRString, "watch"},
-    {"busyCursorColor", "BusyCursorColor", XtRPixel, sizeof(Pixel),
-	 offset(busy_cursor_color), XtRString, XtDefaultForeground},
+    {"busyPointerColor", "BusyPointerColor", XtRPixel, sizeof(Pixel),
+	 offset(busy_pointer_color), XtRString, XtDefaultForeground},
     {"commandButtonCount", "CommandButtonCount", XtRInt, sizeof(int),
 	 offset(command_button_count), XtRString, "0"},
 };
@@ -151,7 +149,7 @@ Dimension defwidth, defheight;
 {
     int gbits;
     int x, y, width, height;
-    if (geo == NULL) geo = app_resources.defGeometry;
+    if (geo == NULL) geo = app_resources.geometry;
     x = y = 0;
     gbits = XParseGeometry(geo, &x, &y, &width, &height);
     if (!(gbits & WidthValue)) {
@@ -296,7 +294,7 @@ char **argv;
 			       resources, XtNumber(resources),
 			       NULL, (Cardinal)0 );
 
-    if (app_resources.mailWaitingFlag) app_resources.defNewMailCheck = True;
+    if (app_resources.mail_waiting_flag) app_resources.new_mail_check = True;
 
     (void) sprintf(str, "%s/.mh_profile", homeDir);
     fid = myfopen(str, "r");
@@ -328,33 +326,33 @@ char **argv;
     (void) sprintf(str, "%s/xmhdraft", str2);
     xmhDraftFile = XtNewString(str);
 
-    if (app_resources.mailDir == NULL)
-	app_resources.mailDir = XtNewString(str2);
+    if (app_resources.mail_path == NULL)
+	app_resources.mail_path = XtNewString(str2);
 
     NullSource = (Widget) NULL;
 
-    l = strlen(app_resources.defMhPath) - 1;
-    if (l > 0 && app_resources.defMhPath[l] == '/')
-	app_resources.defMhPath[l] = 0;
+    l = strlen(app_resources.mh_path) - 1;
+    if (l > 0 && app_resources.mh_path[l] == '/')
+	app_resources.mh_path[l] = 0;
 
     rootwidth = WidthOfScreen(XtScreen(toplevel));
     rootheight = HeightOfScreen(XtScreen(toplevel));
 
-    app_resources.defTocGeometry =
-	FixUpGeometry(app_resources.defTocGeometry,
+    app_resources.toc_geometry =
+	FixUpGeometry(app_resources.toc_geometry,
 		      rootwidth / 2, 3 * rootheight / 4);
-    app_resources.defViewGeometry =
-	FixUpGeometry(app_resources.defViewGeometry,
+    app_resources.view_geometry =
+	FixUpGeometry(app_resources.view_geometry,
 		      rootwidth / 2, rootheight / 2);
-    app_resources.defCompGeometry =
-	FixUpGeometry(app_resources.defCompGeometry,
+    app_resources.comp_geometry =
+	FixUpGeometry(app_resources.comp_geometry,
 		      rootwidth / 2, rootheight / 2);
-    app_resources.defPickGeometry =
-	FixUpGeometry(app_resources.defPickGeometry,
+    app_resources.pick_geometry =
+	FixUpGeometry(app_resources.pick_geometry,
 		      rootwidth / 2, rootheight / 2);
 
     numScrns = 0;
-    scrnList = (Scrn *) XtMalloc((unsigned) 1);
+    scrnList = (Scrn *) NULL;
     NoMenuForButton = (Widget) &static_variable;
 
     TocInit();
@@ -375,10 +373,10 @@ char **argv;
     scrn = CreateNewScrn(STtocAndView);
 
     SetCursorColor(scrn->parent, app_resources.cursor,
-		   app_resources.cursor_color);
+		   app_resources.pointer_color);
     if (app_resources.block_events_on_busy)
 	SetCursorColor(scrn->parent, app_resources.busy_cursor, 
-		       app_resources.busy_cursor_color);
+		       app_resources.busy_pointer_color);
 
     DEBUG(" setting toc ... ")
 

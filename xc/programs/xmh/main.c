@@ -1,9 +1,8 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: main.c,v 2.14 89/07/21 18:56:31 converse Exp $";
-#endif
 /*
- *			  COPYRIGHT 1987
+ * $XConsortium: main.c,v 2.15 89/08/14 15:43:31 converse Exp $
+ *
+ *
+ *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -55,21 +53,21 @@ static void NeedToCheckScans()
 
 /*ARGSUSED*/
 static void CheckMail(client_data, id)
-    caddr_t client_data;	/* unused */
+    XtPointer client_data;	/* unused */
     XtIntervalId *id;		/* unused */
 {
     static int count = 0;
     register int i;
     timerid = XtAppAddTimeOut(XtWidgetToApplicationContext( toplevel ),
-			      interval, CheckMail, (caddr_t) NULL);
-    if (app_resources.defNewMailCheck) {
+			      interval, CheckMail, (XtPointer) NULL);
+    if (app_resources.new_mail_check) {
 	DEBUG("(Checking for new mail...")
 	TocCheckForNewMail();
 	DEBUG(" done)\n")
     }
     if (!subProcessRunning && (count++ % 5 == 0)) {
 	NeedToCheckScans();
-	if (app_resources.defMakeCheckpoints) {
+	if (app_resources.make_checkpoints) {
 	    DEBUG("(Checkpointing...")
 	    for (i=0 ; i<numScrns ; i++)
 		if (scrnList[i]->msg) 
@@ -86,14 +84,14 @@ unsigned int argc;
 char **argv;
 {
     InitializeWorld(argc, argv);
-    if (app_resources.defNewMailCheck)
+    if (app_resources.new_mail_check)
 	TocCheckForNewMail();
     subProcessRunning = False;
 
     if (app_resources.check_frequency > 0) {
 	interval = app_resources.check_frequency * 60000;
 	timerid = XtAppAddTimeOut( XtWidgetToApplicationContext( toplevel ),
-				  interval, CheckMail, (caddr_t) NULL);
+				  interval, CheckMail, (XtPointer) NULL);
     }
 
     lastInput.win = -1;		/* nothing mapped yet */

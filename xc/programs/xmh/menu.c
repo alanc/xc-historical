@@ -1,5 +1,5 @@
 /*
- * $XConsortium: menu.c,v 1.2 89/09/17 19:40:40 converse Exp $
+ * $XConsortium: menu.c,v 1.3 89/09/27 19:15:12 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -59,15 +59,15 @@ void AttachMenuToButton(button, menu, menu_name)
 
 /*ARGSUSED*/
 void DoRememberMenuSelection(widget, client_data, call_data)
-    Widget	widget;		/* menu */
-    XtPointer	client_data;	/* menu entry name */
+    Widget	widget;		/* menu entry object */
+    XtPointer	client_data;
     XtPointer	call_data;
 {
     static Arg	args[] = {
 	{ XtNpopupOnEntry,	(XtArgVal) NULL },
     };
-    args[0].value = (XtArgVal) client_data;
-    XtSetValues(widget, args, XtNumber(args));
+    args[0].value = (XtArgVal) widget;
+    XtSetValues(XtParent(widget), args, XtNumber(args));
 }
 
 
@@ -76,19 +76,22 @@ void SendMenuEntryEnableMsg(button, entry_name, value)
     char *	entry_name;
     int		value;
 {
+    Widget	entry;
     static Arg	args[] = { XtNsensitive, (XtArgVal) NULL };
-    args[0].value = (XtArgVal) ((value == 0) ? False : True);
-    XawSimpleMenuSetEntryValues(button->menu, entry_name, args, (Cardinal) 1);
+
+    if ((entry = XtNameToWidget(button->menu, entry_name)) != NULL) {
+	args[0].value = (XtArgVal) ((value == 0) ? False : True);
+	XtSetValues(entry, args, (Cardinal) 1);
+    }
 }
 
 
-void ToggleMenuItem(widget, name, state)
-    Widget	widget;
-    char 	*name;
+void ToggleMenuItem(entry, state)
+    Widget	entry;
     Boolean	state;
 {
     Arg		args[1];
-    
+
     XtSetArg(args[0], XtNleftBitmap, (state ? MenuItemBitmap : None));
-    XawSimpleMenuSetEntryValues(widget, name, args, (Cardinal) 1);
+    XtSetValues(entry, args, (Cardinal) 1);
 }

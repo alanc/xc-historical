@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: util.c,v 2.33 89/09/17 19:41:01 converse Exp $";
-#endif
 /*
+ * $XConsortium: util.c,v 2.34 89/09/27 19:16:51 converse Exp $
+ *
+ *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -36,6 +34,15 @@ static char rcs_id[] =
 #include <X11/cursorfont.h>
 
 #define abs(x)		((x) < 0 ? (-(x)) : (x))
+
+
+/* Function to return the current version number, as a string. */
+
+char *Version()
+{
+    return "xmh     MIT X Consortium   R4 Beta";
+}
+
 
 static char *SysErrorMsg (n)
     int n;
@@ -114,7 +121,7 @@ char *MakeNewTempFileName()
     static char name[60];
     static int  uniqueid = 0;
     do {
-	(void) sprintf(name, "%s/xmh_%ld_%d", app_resources.tempDir,
+	(void) sprintf(name, "%s/xmh_%ld_%d", app_resources.temp_dir,
 		       getpid(), uniqueid++);
     } while (FileExists(name));
     return name;

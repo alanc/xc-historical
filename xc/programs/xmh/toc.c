@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] = 
-    "$XConsortium: toc.c,v 2.29 89/09/15 16:16:19 converse Exp $";
-#endif
 /*
+ * $XConsortium: toc.c,v 2.30 89/09/27 19:16:30 converse Exp $
+ *
+ *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -44,7 +42,7 @@ struct direct *ent;
     struct stat buf;
     if (ent->d_name[0] == '.')
 	return FALSE;
-    (void) sprintf(str, "%s/%s", app_resources.mailDir, ent->d_name);
+    (void) sprintf(str, "%s/%s", app_resources.mail_path, ent->d_name);
     if (stat(str, &buf) /* failed */) return False;
     return (buf.st_mode & S_IFMT) == S_IFDIR;
 }
@@ -61,9 +59,9 @@ char *name;
     char str[200];
     for (i=0 ; i<*numfoldersptr ; i++)
 	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
-    (void) sprintf(str, "%s/%s", app_resources.mailDir, name);
+    (void) sprintf(str, "%s/%s", app_resources.mail_path, name);
     (void) mkdir(str, 0700);
-    *numfoldersptr = scandir(app_resources.mailDir, namelistptr,
+    *numfoldersptr = scandir(app_resources.mail_path, namelistptr,
 			     IsDir, alphasort);
     for (i=0 ; i<*numfoldersptr ; i++)
 	if (strcmp((*namelistptr)[i]->d_name, name) == 0) return;
@@ -95,9 +93,9 @@ static void LoadCheckFiles()
 	    }
 	}
 	myfclose(fid);
-    } else if (app_resources.initialIncFile != NULL) {
-        if (*app_resources.initialIncFile != '\0')
-	    InitialFolder->incfile = app_resources.initialIncFile;
+    } else if (app_resources.initial_inc_file != NULL) {
+        if (*app_resources.initial_inc_file != '\0')
+	    InitialFolder->incfile = app_resources.initial_inc_file;
     } else {
 	ptr = getenv("MAIL");
 	if (ptr == NULL) ptr = getenv("mail");
@@ -125,28 +123,28 @@ void TocInit()
     struct direct **namelist;
     int i;
     extern alphasort();
-    numFolders = scandir(app_resources.mailDir, &namelist, IsDir, alphasort);
+    numFolders = scandir(app_resources.mail_path, &namelist, IsDir, alphasort);
     if (numFolders < 0) {
-	(void) mkdir(app_resources.mailDir, 0700);
-	numFolders = scandir(app_resources.mailDir, &namelist, IsDir,
+	(void) mkdir(app_resources.mail_path, 0700);
+	numFolders = scandir(app_resources.mail_path, &namelist, IsDir,
 			     alphasort);
 	if (numFolders < 0)
 	    Punt("Can't create or read mail directory!");
     }
     MakeSureFolderExists(&namelist, &numFolders,
-			 app_resources.initialFolderName);
+			 app_resources.initial_folder_name);
     MakeSureFolderExists(&namelist, &numFolders,
-			 app_resources.draftsFolderName);
+			 app_resources.drafts_folder_name);
     folderList = (Toc *) XtMalloc((Cardinal)numFolders * sizeof(Toc));
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i] = TUMalloc();
 	toc->foldername = XtNewString(namelist[i]->d_name);
 	XtFree((char *)namelist[i]);
     }
-    InitialFolder = TocGetNamed(app_resources.initialFolderName);
-    DraftsFolder = TocGetNamed(app_resources.draftsFolderName);
+    InitialFolder = TocGetNamed(app_resources.initial_folder_name);
+    DraftsFolder = TocGetNamed(app_resources.drafts_folder_name);
     XtFree((char *)namelist);
-    if (app_resources.defNewMailCheck) LoadCheckFiles();
+    if (app_resources.new_mail_check) LoadCheckFiles();
 }
 
 
@@ -174,7 +172,7 @@ char *foldername;
     Toc toc;
     char str[500];
     if (TocGetNamed(foldername)) return NULL;
-    (void) sprintf(str, "%s/%s", app_resources.mailDir, foldername);
+    (void) sprintf(str, "%s/%s", app_resources.mail_path, foldername);
     if (mkdir(str, 0700) < 0) return NULL;
     toc = TocCreate(foldername);
     return toc;
@@ -192,7 +190,7 @@ void TocCheckForNewMail()
     int i, j, hasmail;
     static Arg arglist[] = {XtNiconPixmap, NULL};
 
-    if (!app_resources.defNewMailCheck) return;
+    if (!app_resources.new_mail_check) return;
 
     for (i=0 ; i<numFolders ; i++) {
 	toc = folderList[i];
@@ -205,7 +203,7 @@ void TocCheckForNewMail()
 		    scrn = scrnList[j];
 		    if (scrn->kind == STtocAndView) {
 
-			if (app_resources.mailWaitingFlag
+			if (app_resources.mail_waiting_flag
 			    && toc == InitialFolder) {
 			    arglist[0].value = (XtArgVal)
 				hasmail ? NewMailPixmap : NoMailPixmap;
@@ -400,7 +398,7 @@ void TocRecheckValidity(toc)
 {
     int i;
     if (toc && toc->validity == valid && TUScanFileOutOfDate(toc)) {
-	if (app_resources.block_events_on_busy) ShowBusyCursor(toc->scrn[0]);
+	if (app_resources.block_events_on_busy) ShowBusyCursor();
 
 	TUScanFileForToc(toc);
 	if (toc->source)
@@ -408,7 +406,7 @@ void TocRecheckValidity(toc)
 	for (i=0 ; i<toc->num_scrns ; i++)
 	    TURedisplayToc(toc->scrn[i]);
 
-	if (app_resources.block_events_on_busy) UnshowBusyCursor(toc->scrn[0]);
+	if (app_resources.block_events_on_busy) UnshowBusyCursor();
     }
 }
 
@@ -548,12 +546,9 @@ void TocChangeViewedSeq(toc, seq)
     if (seq == NULL) seq = toc->viewedseq;
     toc->viewedseq = seq;
     TURefigureWhatsVisible(toc);
-    for (i=0 ; i<toc->num_scrns ; i++) {
-	if (toc->scrn[i]->seqbuttons)
-	    RadioBBoxSet(BBoxFindButtonNamed(toc->scrn[i]->seqbuttons,
-					     seq->name));
+
+    for (i=0 ; i<toc->num_scrns ; i++) 
 	TUResetTocLabel(toc->scrn[i]);
-    }
 }
 
 
@@ -563,7 +558,7 @@ Sequence TocGetSeqNamed(toc, name)
 Toc toc;
 char *name;
 {
-    int i;
+    register int i;
     if (name == NULL)
 	return (Sequence) NULL;
 
@@ -581,6 +576,30 @@ Toc toc;
 {
     return toc->viewedseq;
 }
+
+
+/* Set the selected sequence in the toc */
+
+void TocSetSelectedSequence(toc, name)
+    Toc		toc;
+    char	*name;
+{
+    if (toc && toc->prevseqname)
+	XtFree((char *) toc->prevseqname);
+    toc->prevseqname = XtNewString(name);
+}
+
+
+/* Return the sequence currently selected */
+
+Sequence TocSelectedSequence(toc)
+    Toc	toc;
+{
+    if (toc->prevseqname) 
+	return TocGetSeqNamed(toc, toc->prevseqname);
+    return TocGetSeqNamed(toc, "all");
+}
+
 
 /* Return the list of messages currently selected. */
 
@@ -721,32 +740,31 @@ char *name;
    Requires confirmation by the user. */
 
 
-#ifdef OBSOLETE_CODE	/* %%% dmc */
-int TocConfirmCataclysm(toc)
-Toc toc;
-{
-    int i;
-    int found = FALSE;
-    char str[500];
-
-    if (toc == NULL) return 0;
-    for (i=0 ; i<toc->nummsgs && !found ; i++)
-	if (toc->msgs[i]->fate != Fignore) found = TRUE;
-    if (found) {
-	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
-		      toc->foldername);
-	if (!Confirm(toc->scrn[0], str))
-	    return DELETEABORTED;
-    }
-
-    for (i=0 ; i<toc->nummsgs ; i++)
-	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
-    for (i=0 ; i<toc->nummsgs ; i++)
-	if (MsgSetScrn(toc->msgs[i], (Scrn) NULL)) return DELETEABORTED;
-
-    return 0;
-}
-#endif
+/* int TocConfirmCataclysm(toc)  OBSOLETE_CODE  %%% dmc
+ *Toc toc;
+ *{
+ *    int i;
+ *    int found = FALSE;
+ *    char str[500];
+ *
+ *    if (toc == NULL) return 0;
+ *    for (i=0 ; i<toc->nummsgs && !found ; i++)
+ *	if (toc->msgs[i]->fate != Fignore) found = TRUE;
+ *    if (found) {
+ *	(void)sprintf(str,"Are you sure you want to remove all changes to %s?",
+ *		      toc->foldername);
+ *	if (!Confirm(toc->scrn[0], str))
+ *	    return DELETEABORTED;
+ *    }
+ *
+ *    for (i=0 ; i<toc->nummsgs ; i++)
+ *	MsgSetFate(toc->msgs[i], Fignore, (Toc)NULL);
+ *    for (i=0 ; i<toc->nummsgs ; i++)
+ *	if (MsgSetScrn(toc->msgs[i], (Scrn) NULL)) return DELETEABORTED;
+ *
+ *    return 0;
+ *}
+ */
 
 
 /*ARGSUSED*/
@@ -962,7 +980,7 @@ Toc toc;
     argv[0] = "inc";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-width";
-    (void) sprintf(str, "%d", app_resources.defTocWidth);
+    (void) sprintf(str, "%d", app_resources.toc_width);
     argv[3] = str;
     if (toc->incfile) {
 	argv[4] = "-file";
@@ -1016,7 +1034,7 @@ Msg msg;
     (void) sprintf(str, "%d", msg->msgid);
     argv[2] = str;
     argv[3] = "-width";
-    (void) sprintf(str2, "%d", app_resources.defTocWidth);
+    (void) sprintf(str2, "%d", app_resources.toc_width);
     argv[4] = str2;
     ptr = DoCommandToString(argv);
     XtFree(argv[1]);

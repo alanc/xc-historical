@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: compfuncs.c,v 2.15 89/09/15 16:15:12 converse Exp $";
-#endif
 /*
+ * $XConsortium: compfuncs.c,v 2.16 89/09/27 19:14:58 converse Exp $
+ *
+ *
  * 		      COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -102,6 +101,7 @@ void XmhSave(w, event, params, num_params)
     Cardinal	*num_params;
 {
     Scrn scrn = ScrnFromWidget(w);
+    DEBUG("XmhSave\n")
     if (scrn->msg == NULL) return;
     MsgSetPermanent(scrn->msg);
     if (MsgSaveChanges(scrn->msg))

@@ -1,9 +1,8 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: tocfuncs.c,v 2.23 89/09/15 16:16:26 converse Exp $";
-#endif
 /*
- *			  COPYRIGHT 1987
+ * $XConsortium: tocfuncs.c,v 2.24 89/09/27 19:16:38 converse Exp $
+ *
+ *
+ *			COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -52,9 +50,9 @@ static void NextAndPreviousView(scrn, next)
 	if (msg && msg == scrn->msg) 
 	    msg = (next ? TocMsgAfter(toc, msg) : TocMsgBefore(toc, msg));
 	if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
-	while (msg && ((app_resources.SkipDeleted && fate == Fdelete)
-		|| (app_resources.SkipMoved && fate == Fmove)
-		|| (app_resources.SkipCopied && fate == Fcopy))) {
+	while (msg && ((app_resources.skip_deleted && fate == Fdelete)
+		|| (app_resources.skip_moved && fate == Fmove)
+		|| (app_resources.skip_copied && fate == Fcopy))) {
 	    msg = (next ? TocMsgAfter(toc, msg) : TocMsgBefore(toc, msg));
 	    if (msg) fate = MsgGetFate(msg, (Toc *)NULL);
 	}
@@ -81,13 +79,13 @@ static void NextAndPreviousView(scrn, next)
 
 /*ARGSUSED*/
 void DoReverseReadOrder(widget, client_data, call_data)
-    Widget	widget;
+    Widget	widget;		/* the menu entry widget */
     XtPointer	client_data;
     XtPointer	call_data;
 {
     app_resources.reverse_read_order =
 	(app_resources.reverse_read_order ? False : True);
-    ToggleMenuItem(widget, "reverse", app_resources.reverse_read_order);
+    ToggleMenuItem(widget, app_resources.reverse_read_order);
 }
 
 
@@ -298,7 +296,7 @@ void DoDelete(w, client_data, call_data)
     XtPointer	call_data;
 {
     Scrn scrn = (Scrn) client_data;
-    MarkMessages(scrn, Fdelete, app_resources.SkipDeleted);
+    MarkMessages(scrn, Fdelete, app_resources.skip_deleted);
 }
 
 
@@ -309,7 +307,7 @@ void DoCopy(w, client_data, call_data)
     XtPointer	call_data;
 {
     Scrn scrn = (Scrn) client_data;
-    MarkMessages(scrn, Fcopy, app_resources.SkipCopied);
+    MarkMessages(scrn, Fcopy, app_resources.skip_copied);
 }
 
 
@@ -332,7 +330,7 @@ void DoMove(w, client_data, call_data)
     XtPointer	call_data;
 {
     Scrn scrn = (Scrn) client_data;
-    MarkMessages(scrn, Fmove, app_resources.SkipMoved);
+    MarkMessages(scrn, Fmove, app_resources.skip_moved);
 }
 
 
@@ -411,7 +409,7 @@ void DoPrint(w, client_data, call_data)
     i = 0;
     if (mlist->nummsgs) {
 	while (i < mlist->nummsgs) {
-	    (void) strcpy( str, app_resources.defPrintCommand );
+	    (void) strcpy( str, app_resources.print_command );
 	    used = strlen(str) + 2;
 	    while (i < mlist->nummsgs &&
 		   (msg = MsgFileName(mlist->msglist[i])) &&
@@ -556,11 +554,11 @@ void DoForceRescan(w, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
     if (toc == NULL) return;
-    if (app_resources.block_events_on_busy) ShowBusyCursor(scrn);
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
 
     TocForceRescan(toc);
     
-    if (app_resources.block_events_on_busy) UnshowBusyCursor(scrn);
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
 }
 
 
@@ -641,14 +639,18 @@ void DoPickMessages(w, client_data, call_data)
     Toc		toc = scrn->toc;
     Scrn	nscrn;
     char *	toseq;
+    Sequence	selectedseq;
 
     if (toc == NULL) return;
-    if ((toseq = RadioBBoxGetCurrent(scrn->seqbuttons)) == (char *) NULL)
+    if ((selectedseq = TocSelectedSequence(toc)) == NULL)
 	toseq = "temp";
-    if (strcmp(toseq, "all") == 0)
-	toseq = "temp";
+    else {
+	toseq = selectedseq->name;
+	if (strcmp(toseq, "all") == 0)
+	    toseq = "temp";
+    }
     nscrn = CreateNewScrn(STpick);
-    AddPick(nscrn, toc, TocViewedSequence(toc)->name, toseq);
+    AddPick(nscrn, toc, (TocViewedSequence(toc))->name, toseq);
     DEBUG("Realizing Pick...")
     XtRealizeWidget(nscrn->parent);
     DEBUG(" done.\n")
@@ -672,6 +674,34 @@ void XmhPickMessages(w, event, params, num_params)
 
 
 /*ARGSUSED*/
+void DoSelectSequence(widget, client_data, call_data)
+    Widget	widget;		/* menu entry object */
+    XtPointer	client_data;	/* the screen */
+    XtPointer	call_data;
+{
+    Scrn	scrn = (Scrn) client_data;
+    Toc		toc  = (Toc) scrn->toc;
+    Sequence	pseq;
+
+    if ((pseq = TocSelectedSequence(toc)) != NULL) {
+	Widget	pobj;
+	Widget	menu;
+
+	menu = BBoxMenuOfButton
+	    ( BBoxFindButtonNamed(scrn->mainbuttons, 
+				  MenuBoxButtons[XMH_SEQUENCE].button_name ));
+	if ((pobj = XtNameToWidget(menu, pseq->name)) != NULL) {
+	    if (pobj != widget)
+		ToggleMenuItem(pobj, False);
+	}
+    }
+
+    ToggleMenuItem(widget, True);
+    TocSetSelectedSequence(toc, XtName(widget));
+}
+
+
+/*ARGSUSED*/
 void DoOpenSeq(w, client_data, call_data)
     Widget	w;
     XtPointer	client_data;
@@ -680,8 +710,7 @@ void DoOpenSeq(w, client_data, call_data)
     Scrn	scrn = (Scrn) client_data;
     Toc		toc = scrn->toc;
     if (toc == NULL) return;
-    TocChangeViewedSeq
-	(toc, TocGetSeqNamed(toc, RadioBBoxGetCurrent(scrn->seqbuttons)));
+    TocChangeViewedSeq(toc, TocSelectedSequence(toc));
 }
 
 
@@ -705,12 +734,14 @@ Scrn scrn;
 TwiddleOperation op;
 {
     Toc toc = scrn->toc;
-    char **argv, str[100], *seqname;
+    char **argv, str[100];
     int i;
     MsgList mlist;
-    if (toc == NULL ||
-	(seqname = RadioBBoxGetCurrent(scrn->seqbuttons)) == NULL) return;
-    if (strcmp(seqname, "all") == 0) {
+    Sequence	selectedseq;
+
+    if (toc == NULL || ((selectedseq = TocSelectedSequence(toc)) == NULL))
+	return;
+    if (strcmp(selectedseq->name, "all") == 0) {
 	Feep();
 	return;
     }
@@ -728,7 +759,7 @@ TwiddleOperation op;
     argv[0] = "mark";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-sequence";
-    argv[3] = seqname;
+    argv[3] = selectedseq->name;
     switch (op) {
       case ADD:
 	argv[4] = "-add";

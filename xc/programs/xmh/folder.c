@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.18 89/09/17 19:40:31 converse Exp $";
-#endif
 /*
+ * $XConsortium: folder.c,v 2.19 89/09/27 19:15:01 converse Exp $
+ *
+ *
  *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -17,7 +16,6 @@ static char rcs_id[] =
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
  *
- *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
@@ -29,14 +27,15 @@ static char rcs_id[] =
 
 /* folder.c -- implement buttons relating to folders and other globals. */
 
+
 #include <X11/Xos.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
 #include <ctype.h>
-#include <X11/Xaw/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
 #include "tocintrnl.h"
+#include <X11/Xaw/Cardinals.h>
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
@@ -45,9 +44,9 @@ typedef struct {	/* client data structure for callbacks */
 } DeleteDataRec, *DeleteData;
 
 
-void CreateFolderMenu();
-void AddFolderMenuEntry();
-void DeleteFolderMenuEntry();
+static void CreateFolderMenu();
+static void AddFolderMenuEntry();
+static void DeleteFolderMenuEntry();
 
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
 
@@ -382,13 +381,14 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 	    
 	    if (IsSubfolder(foldername)) {
 		char	*parent_folder = MakeParentFolderName(foldername);
-				
-		/* Since menus are built upon demand, and are a per-screen
-		 * resources, not all toc & view screens will have the same
-		 * menus built.  So the menu entry deletion routines must
-		 * be able to handle a button whose menu field is null.
-		 * It would be better to share folder menus between screens.
-		 */
+
+/* Since menus are built upon demand, and are a per-screen resource, 
+ * resources, not all toc & view screens will have the same menus built.
+ * So the menu entry deletion routines must be able to handle a button
+ * whose menu field is null.  It would be better to share folder menus
+ * between screens, but accelerators call action procedures which depend
+ * upon being able to get the screen from the widget argument.
+ */
 
 		DeleteFolderMenuEntry
 		    ( BBoxFindButtonNamed( scrnList[i]->folderbuttons,
@@ -406,7 +406,7 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
 
 	    if ((! strcmp(scrnList[i]->curfolder, foldername)) 
 		&& (BBoxNumButtons(scrnList[i]->folderbuttons))
-		&& (strcmp(foldername, app_resources.initialFolderName)))
+		&& (strcmp(foldername, app_resources.initial_folder_name)))
 		TocSetScrn(InitialFolder, scrnList[i]);
 	}
     XtFree(foldername);
@@ -472,12 +472,6 @@ static char filename[500];	/* for IsFolder() and for callback */
 static int  flen = 0;		/* length of a substring of filename */
 
 
-typedef struct _MenuButtonDataRec {
-    char 	*foldername;
-    Button	button;
-} MenuButtonDataRec, *MenuButtonData;
-
-
 /* Function name:	IsFolder
  * Description:		determines if a file is an mh subfolder.
  */
@@ -508,17 +502,13 @@ static int IsFolder(ent)
 /* menu entry selection callback for folder menus. */
 
 /*ARGSUSED*/
-static void SelectFolder(w, closure, data)
-    Widget 	w;		/* unused */
-    XtPointer	closure;
-    XtPointer	data;		/* unused */
+static void DoSelectFolder(w, closure, data)
+    Widget 	w;		/* the menu entry object */
+    XtPointer	closure;	/* foldername */
+    XtPointer	data;	
 {
-
-    MenuButtonData menu_button_data = (MenuButtonData) closure;
-    Button	button = menu_button_data->button;
-    Scrn	scrn = button->buttonbox->scrn;
-
-    SetCurrentFolderName(scrn, menu_button_data->foldername);
+    Scrn	scrn = ScrnFromWidget(w);
+    SetCurrentFolderName(scrn, (char *) closure);
 }
 
 
@@ -536,9 +526,8 @@ static void AddFolderMenuEntry(button, entryname)
     Cardinal	n = 0;
     Arg		args[3];
     char *	name;
-    MenuButtonData menu_button_data;
     static XtCallbackRec callbacks[] = {
-	{ SelectFolder,			(XtPointer) NULL },
+	{ DoSelectFolder,			(XtPointer) NULL },
 	{ (XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
@@ -549,10 +538,8 @@ static void AddFolderMenuEntry(button, entryname)
 	return;
     }
 
-    menu_button_data = XtNew(MenuButtonDataRec);
-    name = menu_button_data->foldername = XtNewString(entryname);
-    menu_button_data->button = button;
-    callbacks[0].closure = (XtPointer) menu_button_data;
+    name = XtNewString(entryname);
+    callbacks[0].closure = (XtPointer) name;
     XtSetArg(args[n], XtNcallback, callbacks);			n++;
 
     /* When a subfolder and its parent folder have identical names,
@@ -570,8 +557,8 @@ static void AddFolderMenuEntry(button, entryname)
 	else name = subfolder;
 	XtFree(parent);
     }
-
-    XawSimpleMenuAddEntry(button->menu, name, args, n);
+    XtCreateManagedWidget(name, bSBMenuEntryObjectClass, button->menu, 
+			  args, n);
 }
 
 
@@ -580,7 +567,7 @@ static void AddFolderMenuEntry(button, entryname)
  * Description:	
  *	Menus are created for folder
  *	buttons if the folder has at least one subfolder.  For the directory
- *	given by the concatentation of app_resources.mailDir, '/', and the
+ *	given by the concatentation of app_resources.mail_path, '/', and the
  *	name of the button, CreateFolderMenu creates the menu whose entries are
  *	the subdirectories which do not begin with '.' and do not have
  *	names which are all digits, and do not have names which are a '#'
@@ -597,8 +584,8 @@ static void CreateFolderMenu(button)
     char	directory[500];
 
     DEBUG1("Building menu for %s...", button->name)
-    n = strlen(app_resources.mailDir);
-    (void) strncpy(directory, app_resources.mailDir, n);
+    n = strlen(app_resources.mail_path);
+    (void) strncpy(directory, app_resources.mail_path, n);
     directory[n++] = '/';
     (void) strcpy(directory + n, button->name);
     flen = strlen(directory);		/* for IsFolder */
@@ -644,42 +631,33 @@ static void DeleteFolderMenuEntry(button, foldername)
     Button	button;
     char	*foldername;	/* guaranteed to be a subfolder */
 {
-    struct direct	**namelist;
-    int			i, n;
-    char		directory[500];
+    int		n;
+    Arg		args[2];
 
     if (button == NULL || button->menu == NULL) return;
 
-    /* %%% memory leak on the entry's callback closure */
+    XtSetArg(args[0], XtNnumChildren, &n);
+    XtGetValues(button->menu, args, (Cardinal) 1);
 
-/* %%% This interface is gone.  Wait for menu entry objects to be rewritten.
- *	Meanwhile, subfolder deletion will be significantly slower.
- *
- *    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) { 
- */
-    n = strlen(app_resources.mailDir);
-    (void) strncpy(directory, app_resources.mailDir, n);
-    directory[n++] = '/';
-    (void) strcpy(directory + n, button->name);
-    flen = strlen(directory);		/* for IsFolder */
-    (void) strcpy(filename, directory);	/* for IsFolder */
-    if (!(n =  scandir(directory, &namelist, IsFolder, NULL ))) {
-	for (i=0; i < n; i++)
-	    XtFree((char *) namelist[i]);
-	XtFree((char *) namelist);
+    if (n <= 2 ) {    /*%%% If there's a label, this number ought to be 3 */
+		      /*%%% memory leak on the entry's callback closure */
 	XtDestroyWidget(button->menu);	
 	button->menu = NoMenuForButton;
     }
     else {
-	char *subfolder = MakeSubfolderName(foldername);
+	char	*subfolder = MakeSubfolderName(foldername);
+	Widget	entry;
 
 	if (strcmp(button->name, subfolder) == 0) {
 	    char * label = MakeSubfolderLabel(subfolder);
-	    XawSimpleMenuRemoveEntry(button->menu, label);
+	    if ((entry = XtNameToWidget(button->menu, label)) != NULL)
+		XtDestroyWidget(entry);
 	    XtFree(label);
 	}
-	else
-	    XawSimpleMenuRemoveEntry(button->menu, subfolder);
+	else {
+	    if ((entry = XtNameToWidget(button->menu, subfolder)) != NULL)
+		XtDestroyWidget(entry);
+	}
 	XtFree(subfolder);
     }
 }
@@ -797,24 +775,34 @@ void XmhOpenFolderFromMenu(w, event, vector, count)
     XmhOpenFolder(w, event, vector, count);
 }
 
-static String	Stack = NULL;
-static int	StackCount = 0;
 
-static void	Push(scrn, string)
+static void	Push(scrn, data)
     Scrn	scrn;
-    String	string;
+    char 	*data;
 {
-    Stack = XtRealloc(Stack, ++StackCount);
-    Stack[StackCount - 1] = string;
+    Stack	new = XtNew(StackRec);
+    new->data = data;
+    new->next = scrn->stack;
+    scrn->stack = new;
 }
-
 
 static char * Pop(scrn)
     Scrn	scrn;
 {
-    return (char *) NULL;
+    Stack	top;
+    char 	*data = NULL;
+
+    if ((top = scrn->stack) != NULL) {
+	data = top->data;
+	scrn->stack = top->next;
+	XtFree((char *) top);
+    }
+    return data;
 }
 
+/* Parameters are taken as names of folders to be pushed on the stack.
+ * With no parameters, the currently selected folder is pushed.
+ */
 
 /*ARGSUSED*/
 void XmhPushFolder(w, event, params, count)
@@ -826,16 +814,14 @@ void XmhPushFolder(w, event, params, count)
     Scrn	scrn = ScrnFromWidget(w);
     int		i;
 
-    /* Parameters are taken as names of folders to be pushed on the stack. */
-
     for (i=0; i < *count; i++) {
 	Push(scrn, params[i]);
     }
-
-    if (*count == 0) /* push the currently _selected_ folder onto the stack */
+    if (*count == 0 && scrn->curfolder)
 	Push(scrn, scrn->curfolder);
 }
 
+/* Pop the stack & take that folder to be the currently selected folder. */
 
 /*ARGSUSED*/
 void XmhPopFolder(w, event, params, count)
@@ -846,8 +832,6 @@ void XmhPopFolder(w, event, params, count)
 {
     Scrn	scrn = ScrnFromWidget(w);
     char	*folder;
-
-    /* pop the stack & take that folder to be the currently selected folder. */
 
     if ((folder = Pop(scrn)) != NULL)
 	SetCurrentFolderName(scrn, folder);

@@ -1,8 +1,6 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] = 
-    "$XConsortium: bbox.c,v 2.29 89/09/15 16:14:40 converse Exp $";
-#endif
 /*
+ * $XConsortium: bbox.c,v 2.30 89/09/27 19:14:36 converse Exp $
+ *
  *
  *			COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -31,10 +29,8 @@ static char rcs_id[] =
  *
  * This module implements a simple interface to buttonboxes, allowing a client
  * to create new buttonboxes and manage their contents. 
- *
  */
 
-#include <X11/Xaw/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
 
@@ -72,7 +68,7 @@ ButtonBox BBoxCreate(scrn, name)
 	XtCreateManagedWidget(name, boxWidgetClass, buttonbox->outer,
 			      args, (Cardinal) 0);
     buttonbox->numbuttons = 0;
-    buttonbox->button = (Button *) XtMalloc((Cardinal) 1);
+    buttonbox->button = (Button *) NULL;
     buttonbox->scrn = scrn;
     return buttonbox;
 }
@@ -308,6 +304,15 @@ char *BBoxNameOfButton(button)
     Button button;
 {
     return button->name;
+}
+
+
+/* Given a button, return its menu. */
+
+Widget	BBoxMenuOfButton(button)
+    Button button;
+{
+    return button->menu;
 }
 
 

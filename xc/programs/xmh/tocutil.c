@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.31 89/09/17 19:40:57 converse Exp $";
-#endif
 /*
+ * $XConsortium: tocutil.c,v 2.32 89/09/27 19:16:47 converse Exp $
+ *
+ *
  *			COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -40,8 +38,8 @@ Toc TUMalloc()
     Toc toc;
     toc = XtNew(TocRec);
     bzero((char *)toc, (int) sizeof(TocRec));
-    toc->msgs = (Msg *) XtMalloc((unsigned) 1);
-    toc->seqlist = (Sequence *) XtMalloc((unsigned) 1);
+    toc->msgs = (Msg *) NULL;
+    toc->seqlist = (Sequence *) NULL;
     toc->validity = unknown;
     return toc;
 }
@@ -56,42 +54,96 @@ int TUScanFileOutOfDate(toc)
 }
 
 
-/* Make sure the shown sequence buttons correspond exactly to the sequences
-   for this toc.  If not, then rebuild the buttonbox. */
+/* Make sure the shown sequence menu entries correspond exactly to the
+   sequences for this toc.  If not, then rebuild the sequence menu. */
 
-static void CheckSeqButtons(toc)
-Toc toc;
+static void CheckSequenceMenu(toc)
+    Toc		toc;
 {
-    Scrn scrn;
-    int w, i, numinbox;
-    int rebuild;
+    Scrn	scrn;
+    int 	w, i, num_entries, stable_entry_count;
+    Boolean	rebuild;
+    Widget	menu, item;
+    WidgetList	entry_list;
+    char 	*name;
+    Arg		query_args[2];
 
-    for (w=0 ; w<toc->num_scrns ; w++) {
+    static XtCallbackRec callbacks[] = {
+	{ DoSelectSequence,		(XtPointer) NULL},
+	{ (XtCallbackProc) NULL,	(XtPointer) NULL},
+    };
+
+    static Arg  args[] = {
+	{ XtNcallback,			(XtArgVal) callbacks},
+	{ XtNleftMargin, 		(XtArgVal) 18},
+    };
+
+    for (w=0; w < toc->num_scrns; w++) {
 	scrn = toc->scrn[w];
-	rebuild = FALSE;
-	numinbox = BBoxNumButtons(scrn->seqbuttons);
-	if (numinbox != toc->numsequences)
-	    rebuild = TRUE;
-	else {
-	    for (i=0 ; i<toc->numsequences && !rebuild; i++)
-		rebuild =
-		    strcmp(toc->seqlist[i]->name,
-			   BBoxNameOfButton(BBoxButtonNumber(scrn->seqbuttons,
-							     i)));
-	}
+
+	/* Find the sequence menu and the number of entries in it. */
+
+	stable_entry_count = MenuBoxButtons[XMH_SEQUENCE].num_entries;
+
+	menu = BBoxMenuOfButton
+	    ( BBoxFindButtonNamed( scrn->mainbuttons,
+				  MenuBoxButtons[XMH_SEQUENCE].button_name));
+	XtSetArg(query_args[0], XtNnumChildren, &num_entries);
+	XtSetArg(query_args[1], XtNchildren, &entry_list);
+	XtGetValues(menu, query_args, (Cardinal) 2);
+
+	/* Assume that the label is the first entry in the list. */
+
+	if (XtClass(entry_list[0]) != bSBMenuEntryObjectClass) /* a label */
+	    stable_entry_count++;
+
+	/* See if the sequences in the menu need to be rebuilt. */
+
+	rebuild = False;	/* subtract one for the stable "all" seq */
+	if (num_entries != toc->numsequences + stable_entry_count - 1)
+	    rebuild = True;
+	                       /* start at 1, skipping "all" */
+	else for (i=1; i < toc->numsequences && !rebuild; i++) 
+	    rebuild = (XtNameToWidget(menu, toc->seqlist[i]->name)
+		       ? False : True);
+
+	/* In rebuilding, I dangerously assume that the entries in the list
+         * occur in the same order in the list as they do in the visible menu.
+         */
+
 	if (rebuild) {
-	    for (i = 1; i < numinbox ; i++)
-		RadioBBoxDeleteButton(BBoxButtonNumber(scrn->seqbuttons, 1));
-	    for (i = (numinbox ? 1 : 0); i < toc->numsequences; i++)
-		RadioBBoxAddButton(scrn->seqbuttons, toc->seqlist[i]->name,
-				   True);
+
+	    /* Since entry_list is a pointer into private widget data which
+	     * could or will change as menu entries are deleted, I make a
+	     * private copy of the list of widgets to be destroyed.
+	     */
+
+	    Widget	destroy_list[10];
+	    register int j;
+
+	    for (i=0, j=stable_entry_count; j < num_entries; i++, j++)
+		destroy_list[i] = entry_list[j];
+
+            num_entries -= stable_entry_count;
+	    for (i=0; i < num_entries; i++)
+	        XtDestroyWidget(destroy_list[i]);
+
+	    callbacks[0].closure = (XtPointer) scrn;
+	    			/* start at 1, skipping "all" */
+	    for (i=1; i < toc->numsequences; i++) 
+		XtCreateManagedWidget(toc->seqlist[i]->name,
+				      bSBMenuEntryObjectClass, menu,
+				      args, XtNumber(args));
 	}
-	if (scrn->seqbuttons) 
-	    RadioBBoxSet(BBoxFindButtonNamed(scrn->seqbuttons,
-					     toc->viewedseq->name));
+
+	/* Insure that the correct sequence is indicated in the menu. */
+
+	if ((name = toc->viewedseq->name) == (char *) NULL)
+	    name = "all";
+	if ((item = XtNameToWidget(menu, name)) != NULL) 
+	    DoSelectSequence(item, (XtPointer) scrn, (XtPointer) NULL); 
     }
 }
-
 
 
 void TUScanFileForToc(toc)
@@ -118,7 +170,7 @@ void TUScanFileForToc(toc)
 	argv[0] = "scan";
 	argv[1] = TocMakeFolderName(toc);
 	argv[2] = "-width";
-	(void) sprintf(str, "%d", app_resources.defTocWidth);
+	(void) sprintf(str, "%d", app_resources.toc_width);
 	argv[3] = str;
 	DoCommand(argv, (char *) NULL, toc->scanfile);
 	XtFree(argv[1]);
@@ -206,7 +258,7 @@ void TURedisplayToc(scrn)
 				 (XawTextPosition) 0);
 	    TocSetCurMsg(toc, TocGetCurMsg(toc));
 	    XawTextEnableRedisplay(scrn->tocwidget);
-	    CheckSeqButtons(toc);
+	    CheckSequenceMenu(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
 	    XawTextSetSource(scrn->tocwidget, PNullSource, (XawTextPosition) 0);
@@ -234,7 +286,6 @@ void TULoadSeqLists(toc)
     toc->seqlist = (Sequence *) XtRealloc((char *) toc->seqlist,
 					  (Cardinal) sizeof(Sequence));
     seq = toc->seqlist[0] = XtNew(SequenceRec);
-    bzero((char *) seq, sizeof(SequenceRec));
     seq->name = XtNewString("all");
     seq->mlist = NULL;
     toc->viewedseq = seq;
@@ -250,11 +301,10 @@ void TULoadSeqLists(toc)
 		    strcmp(ptr, "unseen") != 0) {
 		    toc->numsequences++;
 		    toc->seqlist = (Sequence *)
-			XtRealloc((char *) toc->seqlist,
-				  (unsigned) toc->numsequences * sizeof(Sequence));
+			XtRealloc((char *) toc->seqlist, (Cardinal)
+				  toc->numsequences * sizeof(Sequence));
 		    seq = toc->seqlist[toc->numsequences - 1] =
 			XtNew(SequenceRec);
-		    bzero((char *) seq, sizeof(SequenceRec));
 		    seq->name = XtNewString(ptr);
 		    seq->mlist = StringToMsgList(toc, ptr2 + 1);
 		    if (strcmp(seq->name, viewed) == 0) {
@@ -285,7 +335,7 @@ Toc toc;
     TocSetCurMsg(toc, (Msg)NULL);
     w = 0;
     changed = FALSE;
-    CheckSeqButtons(toc);
+    CheckSequenceMenu(toc);
     for (i = 0; i < toc->nummsgs; i++) {
 	msg = toc->msgs[i];
 	msgid = msg->msgid;
@@ -345,7 +395,7 @@ void TULoadTocFile(toc)
     orignummsgs = toc->nummsgs;
     toc->nummsgs = 0;
     origmsgs = toc->msgs;
-    toc->msgs = (Msg *) XtMalloc((unsigned) maxmsgs * sizeof(Msg));
+    toc->msgs = (Msg *) XtMalloc((Cardinal) maxmsgs * sizeof(Msg));
     position = 0;
     i = 0;
     curmsg = NULL;
@@ -369,7 +419,7 @@ void TULoadTocFile(toc)
 	if (toc->nummsgs >= maxmsgs) {
 	    maxmsgs += 100;
 	    toc->msgs = (Msg *) XtRealloc((char *) toc->msgs,
-					  (unsigned) maxmsgs * sizeof(Msg));
+					  (Cardinal) maxmsgs * sizeof(Msg));
 	}
 	while (i < orignummsgs && origmsgs[i]->msgid < msg->msgid) i++;
 	if (i < orignummsgs) {
@@ -380,7 +430,7 @@ void TULoadTocFile(toc)
     }
     toc->length = toc->origlength = toc->lastPos = position;
     toc->msgs = (Msg *) XtRealloc((char *) toc->msgs,
-				  (unsigned) toc->nummsgs * sizeof(Msg));
+				  (Cardinal) toc->nummsgs * sizeof(Msg));
     (void) myfclose(fid);
     if ( (toc->source == NULL) && ( toc->num_scrns > 0 ) ) {
         Arg args[1];
@@ -509,7 +559,7 @@ void TUGetFullFolderInfo(toc)
 {
     char str[500];
     if (toc->path == NULL) {
-	(void) sprintf(str, "%s/%s", app_resources.mailDir, toc->foldername);
+	(void) sprintf(str, "%s/%s", app_resources.mail_path, toc->foldername);
 	toc->path = XtNewString(str);
 	(void) sprintf(str, "%s/.xmhcache", toc->path);
 	toc->scanfile = XtNewString(str);
@@ -534,6 +584,7 @@ Msg TUAppendToc(toc, ptr)
     char str[10];
     Msg msg;
     int msgid, i;
+
     TUGetFullFolderInfo(toc);
     if (toc->validity != valid)
 	return NULL;
@@ -544,7 +595,7 @@ Msg TUAppendToc(toc, ptr)
 	msgid = 1;
     (toc->nummsgs)++;
     toc->msgs = (Msg *) XtRealloc((char *) toc->msgs,
-				  (unsigned) toc->nummsgs * sizeof(Msg));
+				  (Cardinal) toc->nummsgs * sizeof(Msg));
     toc->msgs[toc->nummsgs - 1] = msg = XtNew(MsgRec);
     bzero((char *) msg, (int) sizeof(MsgRec));
     msg->toc = toc;
@@ -566,7 +617,7 @@ Msg TUAppendToc(toc, ptr)
 	msg->visible = FALSE;
     toc->length += msg->length;
     if ( (msg->visible) && (toc->source != NULL) )
-      TSourceInvalid(toc, msg->position, msg->length);
+	TSourceInvalid(toc, msg->position, msg->length);
     TUSaveTocFile(toc);
     return msg;
 }

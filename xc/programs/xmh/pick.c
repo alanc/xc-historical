@@ -1,8 +1,7 @@
-#if !defined(lint) && !defined(SABER)
-static char rcs_id[] =
-    "$XConsortium: pick.c,v 2.34 89/09/05 16:28:28 converse Exp $";
-#endif
 /*
+ * $XConsortium: pick.c,v 2.35 89/09/27 19:16:05 converse Exp $
+ *
+ *
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
@@ -16,7 +15,6 @@ static char rcs_id[] =
  * IF THE SOFTWARE IS MODIFIED IN A MANNER CREATING DERIVATIVE COPYRIGHT
  * RIGHTS, APPROPRIATE LEGENDS MAY BE PLACED ON THE DERIVATIVE WORK IN
  * ADDITION TO THAT SET FORTH ABOVE.
- *
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
@@ -549,7 +547,7 @@ static RowList AddRow(group, type)
     group->rlist[group->numrows - 1] = row = XtNew(RowListRec);
     row->type = type;
     row->numwidgets = 0;
-    row->wlist = (FormEntry *) XtMalloc((Cardinal) 1);
+    row->wlist = (FormEntry *) NULL;
     row->group = group;
     if (group->numrows > 1)
 	arglist[1].value = (XtArgVal)group->rlist[group->numrows - 2]->widget;
@@ -590,10 +588,10 @@ static Group AddGroup(form)
 	XtRealloc((char *) form->glist,
 		  (unsigned) form->numgroups * sizeof(Group));
     form->glist[form->numgroups - 1] = group =
-	(Group) XtMalloc(sizeof(GroupRec));
+	(Group) XtMalloc((Cardinal) sizeof(GroupRec));
     group->numrows = 0;
     group->form = form;
-    group->rlist = (RowList *) XtMalloc(1);
+    group->rlist = (RowList *) NULL;
     if (form->numgroups > 1)
 	arglist[1].value = (XtArgVal)form->glist[form->numgroups - 2]->widget;
     else
@@ -709,7 +707,7 @@ Pick pick;
 	{XtNborderWidth, (XtArgVal) 0}
     };
     FormBox result;
-    result = (FormBox) XtMalloc(sizeof(FormBoxRec));
+    result = (FormBox) XtMalloc((Cardinal) sizeof(FormBoxRec));
     result->outer = XtCreateWidget( "pick", viewportWidgetClass,
 				    pick->scrn->widget,
 				    arglist1, XtNumber(arglist1) );
@@ -717,7 +715,7 @@ Pick pick;
 				    arglist2, XtNumber(arglist2) );
     result->pick = pick;
     result->numgroups = 0;
-    result->glist = (Group *) XtMalloc(1);
+    result->glist = (Group *) NULL;
     return result;
 }
 
@@ -739,7 +737,7 @@ AddPick(scrn, toc, fromseq, toseq)
 	CleanForm(pick->details);
 	CleanForm(pick->general);
     } else {
-	pick = scrn->pick = (Pick) XtMalloc(sizeof(PickRec));
+	pick = scrn->pick = (Pick) XtMalloc((Cardinal) sizeof(PickRec));
 	pick->scrn = scrn;
 	pick->label = CreateTitleBar(scrn, "pickTitlebar");
 	pick->details = details = MakeAForm(pick);
