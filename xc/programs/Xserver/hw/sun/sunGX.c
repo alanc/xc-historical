@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.c,v 1.12 91/11/14 14:00:20 keith Exp $
+ * $XConsortium: sunGX.c,v 1.13 92/02/27 14:06:37 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -604,6 +604,8 @@ RegionPtr sunGXCopyPlane(pSrcDrawable, pDstDrawable,
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbBitBlt (pSrcDrawable, (DrawablePtr) pBitmap,
 			    pGC1, srcx, srcy, width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+	copyPlaneFG = pGC->fgPixel;
+	copyPlaneBG = pGC->bgPixel;
 	(void) cfbBitBlt ((DrawablePtr) pBitmap, pDstDrawable, pGC,
 			    0, 0, width, height, dstx, dsty, sunGXCopyPlane1to8, 1);
 	FreeScratchGC (pGC1);
@@ -1883,6 +1885,11 @@ sunGXCheckStipple (pPixmap, stipple)
     return TRUE;
 }
 
+/* cache one stipple; figuring out if we can use the stipple is as hard as
+ * computing it, so we just use this one and leave it here if it
+ * can't be used this time
+ */
+
 static  sunGXStipplePtr tmpStipple;
 
 sunGXCheckFill (pGC, pDrawable)
@@ -2641,10 +2648,29 @@ sunGXChangeWindowAttributes (pWin, mask)
 {
     sunGXStipplePtr stipple;
     Mask	    index;
+    WindowPtr	pBgWin;
     register cfbPrivWin *pPrivWin;
     int		    width;
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
+    /*
+     * When background state changes from ParentRelative and
+     * we had previously rotated the fast border pixmap to match
+     * the parent relative origin, rerotate to match window
+     */
+    if (mask & (CWBackPixmap | CWBackPixel) &&
+	pWin->backgroundState != ParentRelative &&
+	pPrivWin->fastBorder &&
+	pPrivWin->oldRotate.x != pWin->drawable.x ||
+	pPrivWin->oldRotate.y != pWin->drawable.y)
+    {
+	cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.x - pPrivWin->oldRotate.x);
+	cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+		      pWin->drawable.y - pPrivWin->oldRotate.y);
+	pPrivWin->oldRotate.x = pWin->drawable.x;
+	pPrivWin->oldRotate.y = pWin->drawable.y;
+    }
     while (mask)
     {
 	index = lowbit(mask);
@@ -2653,37 +2679,55 @@ sunGXChangeWindowAttributes (pWin, mask)
 	{
 	case CWBackPixmap:
 	    stipple = sunGXGetWindowPrivate(pWin);
-	    if (!stipple)
-	    {
-		tmpStipple = (sunGXStipplePtr) xalloc (sizeof *tmpStipple);
-		stipple = tmpStipple;
-	    }
 	    if (pWin->backgroundState == None ||
 		pWin->backgroundState == ParentRelative)
 	    {
 		pPrivWin->fastBackground = FALSE;
-		if (stipple = sunGXGetWindowPrivate(pWin))
+		if (stipple)
 		{
 		    xfree (stipple);
 		    sunGXSetWindowPrivate(pWin,0);
 		}
+		/* Rotate border to match parent origin */
+		if (pWin->backgroundState == ParentRelative &&
+		    pPrivWin->pRotatedBorder) 
+		{
+		    for (pBgWin = pWin->parent;
+			 pBgWin->backgroundState == ParentRelative;
+			 pBgWin = pBgWin->parent);
+		    cfbXRotatePixmap(pPrivWin->pRotatedBorder,
+				  pBgWin->drawable.x - pPrivWin->oldRotate.x);
+		    cfbYRotatePixmap(pPrivWin->pRotatedBorder,
+				  pBgWin->drawable.y - pPrivWin->oldRotate.y);
+		}
+		
+		break;
 	    }
- 	    else if (stipple && sunGXCheckTile (pWin->background.pixmap, stipple))
+	    if (!stipple)
+	    {
+		if (!tmpStipple)
+		    tmpStipple = (sunGXStipplePtr) xalloc (sizeof *tmpStipple);
+		stipple = tmpStipple;
+	    }
+ 	    if (stipple && sunGXCheckTile (pWin->background.pixmap, stipple))
 	    {
 		stipple->alu = gx_opaque_stipple_rop_table[GXcopy]|GX_PATTERN_MASK;
 		pPrivWin->fastBackground = FALSE;
-		sunGXSetWindowPrivate(pWin, stipple);
 		if (stipple == tmpStipple)
+		{
+		    sunGXSetWindowPrivate(pWin, stipple);
 		    tmpStipple = 0;
+		}
+		break;
 	    }
- 	    else if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
+	    if (stipple = sunGXGetWindowPrivate(pWin))
+	    {
+		xfree (stipple);
+		sunGXSetWindowPrivate(pWin,0);
+	    }	    
+ 	    if (((width = (pWin->background.pixmap->drawable.width * PSZ)) <= 32) &&
 		       !(width & (width - 1)))
 	    {
-		if (stipple = sunGXGetWindowPrivate(pWin))
-		{
-		    xfree (stipple);
-		    sunGXSetWindowPrivate(pWin,0);
-		}
 		cfbCopyRotatePixmap(pWin->background.pixmap,
 				  &pPrivWin->pRotatedBackground,
 				  pWin->drawable.x,
@@ -2698,34 +2742,32 @@ sunGXChangeWindowAttributes (pWin, mask)
 		{
 		    pPrivWin->fastBackground = FALSE;
 		}
+		break;
 	    }
-	    else
-	    {
-		if (stipple = sunGXGetWindowPrivate(pWin))
-		{
-		    xfree (stipple);
-		    sunGXSetWindowPrivate(pWin,0);
-		}
-		pPrivWin->fastBackground = FALSE;
-	    }
+	    pPrivWin->fastBackground = FALSE;
 	    break;
+
 	case CWBackPixel:
 	    pPrivWin->fastBackground = FALSE;
 	    break;
 
 	case CWBorderPixmap:
+	    /* don't bother with accelerator for border tiles (just lazy) */
 	    if (((width = (pWin->border.pixmap->drawable.width * PSZ)) <= 32) &&
 		!(width & (width - 1)))
 	    {
+		for (pBgWin = pWin;
+		     pBgWin->backgroundState == ParentRelative;
+		     pBgWin = pBgWin->parent);
 		cfbCopyRotatePixmap(pWin->border.pixmap,
 				    &pPrivWin->pRotatedBorder,
-				    pWin->drawable.x,
-				    pWin->drawable.y);
+				    pBgWin->drawable.x,
+				    pBgWin->drawable.y);
 		if (pPrivWin->pRotatedBorder)
 		{
 		    pPrivWin->fastBorder = TRUE;
-		    pPrivWin->oldRotate.x = pWin->drawable.x;
-		    pPrivWin->oldRotate.y = pWin->drawable.y;
+		    pPrivWin->oldRotate.x = pBgWin->drawable.x;
+		    pPrivWin->oldRotate.y = pBgWin->drawable.y;
 		}
 		else
 		{
@@ -2753,6 +2795,7 @@ sunGXPaintWindow(pWin, pRegion, what)
 {
     register cfbPrivWin	*pPrivWin;
     sunGXStipplePtr stipple;
+    WindowPtr	pBgWin;
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
 
     switch (what) {
@@ -2817,18 +2860,22 @@ sunGXPaintWindow(pWin, pRegion, what)
 			      pPrivWin->pRotatedBorder);
 	    return;
 	}
-	else if ((int)pWin->border.pixmap->drawable.width >= PPW/2)
+	else
 	{
+	    for (pBgWin = pWin;
+		 pBgWin->backgroundState == ParentRelative;
+		 pBgWin = pBgWin->parent);
+
 	    cfbFillBoxTileOdd ((DrawablePtr)pWin,
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,
-			       (int) pWin->drawable.x, (int) pWin->drawable.y);
+			       (int) pBgWin->drawable.x,
+ 			       (int) pBgWin->drawable.y);
 	    return;
 	}
 	break;
     }
-    miPaintWindow (pWin, pRegion, what);
 }
 
 void 
