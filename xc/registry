@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.57 91/12/31 18:48:26 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.58 92/01/25 16:38:10 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -198,6 +198,8 @@ SunXK_Paste		0x1005FF74		[58]
 SunXK_Cut		0x1005FF75		[58]
 
 WYXK_Setup		0x1006FF00		[68]
+
+ncdXK_Setup		0x1006FF00		[66]
 
 
 3. AUTHORIZATION PROTOCOL NAMES
