@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.c,v 1.18 91/02/20 18:50:14 dave Exp $
+ * $XConsortium: ScrollByL.c,v 1.19 91/03/19 17:38:12 converse Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -118,8 +118,8 @@ ScrollByLineClassRec scrollByLineClassRec = {
     /* resources          */    resources,
     /* num_resources      */    XtNumber(resources),
     /* xrm_class          */    NULLQUARK,
-    /* compress_motion	  */	TRUE,
-    /* compress_exposure  */	FALSE,
+    /* compress_motion	  */	XtExposeCompressMaximal,
+    /* compress_exposure  */	TRUE,
     /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    Destroy,
@@ -218,6 +218,8 @@ Boolean *cont;			/* unused */
  * Repaint the widget's child Window Widget.
  */
 
+Boolean fromRedisplay = False;
+
 /* ARGSUSED */
 static void Redisplay(w, event, region)
 Widget w;
@@ -232,6 +234,7 @@ Region region;
  * repaint in his callback function which does the actual repainting.
  */
 
+  fromRedisplay = True;
   if (event->type == Expose) {
     top = event->xexpose.y;
     height = event->xexpose.height;
@@ -242,6 +245,8 @@ Region region;
   }
   
   PaintText(w, top, height);
+  fromRedisplay = False;
+
 } /* redisplay (expose) */
 
 /*	Function Name: PaintText
@@ -765,6 +770,9 @@ Cardinal *num_args;
 #define ADD_MORE_MEM 100	/* first guesses for allocations. */
 #define CHAR_PER_LINE 40
 
+char title[BUFSIZ];
+Boolean saveTitle;
+
 /*	Function Name: LoadFile
  *	Description: Loads the current file into the internal memory.
  *	Arguments: w - the sblw.
@@ -820,6 +828,16 @@ Widget w;
     XtAppError(XtWidgetToApplicationContext(w), 
 	       "SBLW LoadFile: Failure in fread.");
 
+/*
+ * Get the man page "title" string.
+ */
+  { 
+    char *sp; char *tp = title;
+    sp = page; 
+    while (*sp == '\n') sp++;
+    while (*sp != '\n') {*tp = *sp; tp++; sp++; }
+    *tp = '\0';
+  }
 
 /* put NULL at end of buffer. */
 
@@ -867,6 +885,7 @@ Widget w;
 #define NLINES  66		/* This is the number of lines to wait until
 				   we boldify the line again, this allows 
 				   me to bold the first line of each page.*/
+
 #define BACKSPACE 010		/* I doubt you would want to change this. */
 
 /*	Function Name: PrintText
@@ -877,6 +896,8 @@ Widget w;
  *                 location - the location to print the text.
  *	Returns: none.
  */
+
+
 
 /* ARGSUSED */
 
@@ -894,6 +915,7 @@ int  start_line, num_lines, location;
   Boolean italicflag = FALSE;	/* Print text in italics?? */
   Boolean first = FALSE;	/* First line of a manual page??? */
   int x_loc, y_loc;		/* x and y location of text. */
+
 
 /*
  * Nothing loaded, take no action.
@@ -928,9 +950,9 @@ int  start_line, num_lines, location;
 
   bufp = buf;
   x_loc = sblw->scroll.offset + sblw->scroll.indent;
-  
+ 
   while(TRUE) {
-    if (current_line % NLINES == 1)
+    if (current_line % NLINES == 1) 
       first = TRUE;
 
 /* 
@@ -953,8 +975,9 @@ int  start_line, num_lines, location;
       if (bufp != buf) {
 	Boolean bold;
 	*bufp = '\0';		/* for Boldify. */
+
 	bold = ( (first) || ((x_loc == (sblw->scroll.offset +
-			      sblw->scroll.indent)) && Boldify(buf)) );
+			      sblw->scroll.indent)) && Boldify(buf)));
 
 	(void) DumpText(w, x_loc, y_loc, buf, bufp - buf, italicflag, bold);
 	if (bold)
@@ -1082,6 +1105,7 @@ char * buf;
 int len;
 Boolean italic, bold;
 {
+
   ScrollByLineWidget sblw = (ScrollByLineWidget) w;
   GC gc;
   XFontStruct * font;
@@ -1101,11 +1125,15 @@ Boolean italic, bold;
     else {
       gc = sblw->scroll.normal_gc;
       font = sblw->scroll.normal_font;
-    }
+    } 
   }  
+
   XDrawString(XtDisplay(w), XtWindow(w), gc, x_loc, y_loc, buf, len);
+  XFlush(XtDisplay(w));
   return(x_loc + XTextWidth(font, buf, len));
 }
+
+#define isparen(c) (c == '(' || c == ')')
 
 /*	Function Name: Boldify
  *	Description: look for keyword.
@@ -1121,15 +1149,21 @@ register char *sp;
   int length,count;
 
 /* 
- * If there are not lower case letters in the line the assume it is a
+ * If there are not lower case letters in the line then assume it is a
  * keyword and boldify it in PrintManpage.
  */
 
-  length = strlen(sp);
-  for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
-    if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) )
-      return(0);
-  return(1);
+  if (!strcmp(sp, title)) 
+    return(1); 
+  else {
+    length = strlen(sp);
+    /*if (!strncmp(sp, "XMAN", 4)) return(1);*/
+    for (sp_pointer = sp, count = 0; count < length; sp_pointer++,count++) 
+      if ( !isupper(*sp_pointer) && !isspace(*sp_pointer) && 
+	  !isdigit(*sp_pointer) && !isparen(*sp_pointer))
+	return(0);
+    return(1);
+  }
 }
 
 #undef superclass
