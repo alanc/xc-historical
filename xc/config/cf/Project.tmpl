@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.130 91/07/23 14:53:44 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.131 91/07/23 23:16:49 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -126,6 +126,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.130 91/07/23 14:53:44 rws Exp $
 #ifndef ManDirectoryRoot
 #ifdef ProjectRoot
 #define ManDirectoryRoot Concat(ProjectRoot,/man)
+#ifndef XmanLocalSearchPath
+#define XmanLocalSearchPath ManDirectoryRoot
+#endif
 #else
 #if SystemV4
 #define ManDirectoryRoot /usr/share/man
