@@ -1,4 +1,4 @@
-/* $XConsortium: xqueryst.c,v 1.9 92/12/30 16:05:25 rws Exp $ */
+/* $XConsortium: xqueryst.c,v 1.10 93/01/28 19:51:23 rws Exp $ */
 
 /***********************************************************************
  *
@@ -177,5 +177,5 @@ SRepXQueryDeviceState (client, size, rep)
 
     swaps(&rep->sequenceNumber, n);
     swapl(&rep->length, n);
-    WriteToClient(client, size, rep);
+    WriteToClient(client, size, (char *)rep);
     }
