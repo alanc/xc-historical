@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.91 89/03/24 07:38:55 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.92 89/03/24 09:19:16 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1019,25 +1019,13 @@ ProcTranslateCoords(client)
 		(y < pWin->absCorner.y + (int)pWin->clientWinSize.height +
 		 pWin->borderWidth)
 #ifdef SHAPE
-		/* this is ugly.  x,y are in the window if
-		 * they are either in the border, or in the
-		 * window itself.  The above test already
-		 * demonstrated that the point is in the
-		 * window bounding box, the below checks
-		 * simply constrain the valid points to the
-		 * appropriate regions.
+		/* When a window is shaped, a further check
+		 * is made to see if the point is inside
+		 * borderSize
 		 */
-		&& (pWin->borderWidth > 0 &&
-		    (!pWin->borderShape ||
-		     (*pWin->drawable.pScreen->PointInRegion)
-		       (pWin->borderShape,
-			   x - pWin->absCorner.x, y - pWin->absCorner.y,
-			   &box)) ||
-		    (!pWin->windowShape ||
-		     (*pWin->drawable.pScreen->PointInRegion)
-		       (pWin->windowShape,
-			   x - pWin->absCorner.x, y - pWin->absCorner.y,
-			   &box)))
+		&& (!pWin->boundingShape ||
+		    (*pWin->drawable.pScreen->PointInRegion)
+			    (pWin->borderSize, x, y, &box))
 #endif
 		)
             {

@@ -514,8 +514,8 @@ SetWindowToDefaults(pWin, pScreen)
     pWin->exposed = (* pScreen->RegionCreate)(NULL, 1);
     pWin->borderExposed = (* pScreen->RegionCreate)(NULL, 1);
 #ifdef SHAPE
-    pWin->windowShape = (RegionPtr) NULL;
-    pWin->borderShape = (RegionPtr) NULL;
+    pWin->boundingShape = (RegionPtr) NULL;
+    pWin->clipShape = (RegionPtr) NULL;
 #endif
 }
 
@@ -959,10 +959,10 @@ FreeWindowResources(pWin)
     (* proc)(pWin->exposed);
     (* proc)(pWin->borderExposed);
 #ifdef SHAPE
-    if (pWin->windowShape)
-	(* proc)(pWin->windowShape);
-    if (pWin->borderShape)
-	(* proc)(pWin->borderShape);
+    if (pWin->boundingShape)
+	(* proc)(pWin->boundingShape);
+    if (pWin->clipShape)
+	(* proc)(pWin->clipShape);
 #endif
     (* pScreen->DestroyPixmap)(pWin->borderTile);
     (* pScreen->DestroyPixmap)(pWin->backgroundTile);
@@ -1416,7 +1416,7 @@ PatchUp:
         for the tile to be rotated, and the correct function selected.
     */
     if ((vmaskCopy & (CWBorderPixel | CWBorderPixmap)) 
-	&& pWin->viewable && pWin->borderWidth)
+	&& pWin->viewable && HasBorder (pWin))
     {
         (* pScreen->Subtract)(pWin->borderExposed, pWin->borderClip, 
 			      pWin->winSize);
@@ -1554,13 +1554,17 @@ WindowPtr   pWin;
  			 (int)pWin->clientWinSize.width,
  			 (int)pWin->clientWinSize.height);
 #ifdef SHAPE
-    if (pWin->windowShape) {
+    if (pWin->boundingShape || pWin->clipShape) {
         ScreenPtr	pScreen = pWin->drawable.pScreen;
 
 	(*pScreen->TranslateRegion)
 	    (pWin->winSize, - pWin->absCorner.x, - pWin->absCorner.y);
-	(*pScreen->Intersect)
-	    (pWin->winSize, pWin->winSize, pWin->windowShape);
+	if (pWin->boundingShape)
+	    (*pScreen->Intersect)
+		(pWin->winSize, pWin->winSize, pWin->boundingShape);
+	if (pWin->clipShape)
+	    (*pScreen->Intersect)
+		(pWin->winSize, pWin->winSize, pWin->clipShape);
 	(*pScreen->TranslateRegion)
 	    (pWin->winSize, pWin->absCorner.x, pWin->absCorner.y);
     }
@@ -1571,21 +1575,22 @@ static void
 SetBorderSize (pWin)
 WindowPtr   pWin;
 {
-    int	bw = pWin->borderWidth;
+    int	bw;
 
-    if (bw) {
+    if (HasBorder (pWin)) {
+	bw = pWin->borderWidth;
 	ClippedRegionFromBox(pWin->parent, pWin->borderSize,
 		pWin->absCorner.x - (int)bw, pWin->absCorner.y - (int)bw,
 		(int)(pWin->clientWinSize.width + (bw<<1)),
  		(int)(pWin->clientWinSize.height + (bw<<1)));
 #ifdef SHAPE
-    	if (pWin->borderShape) {
+    	if (pWin->boundingShape) {
             ScreenPtr	pScreen = pWin->drawable.pScreen;
     
 	    (*pScreen->TranslateRegion)
 	    	(pWin->borderSize, - pWin->absCorner.x, - pWin->absCorner.y);
 	    (*pScreen->Intersect)
-	    	(pWin->borderSize, pWin->borderSize, pWin->borderShape);
+	    	(pWin->borderSize, pWin->borderSize, pWin->boundingShape);
 	    (*pScreen->TranslateRegion)
 	    	(pWin->borderSize, pWin->absCorner.x, pWin->absCorner.y);
 	    (*pScreen->Union) (pWin->borderSize, pWin->borderSize, pWin->winSize);
@@ -2215,11 +2220,10 @@ WindowExtents(pWin, pBox)
 }
 
 #ifdef SHAPE
-#define IS_SHAPED(pWin)\
-    (((pWin)->borderWidth != 0 && (pWin)->borderShape) || (pWin)->windowShape)
+#define IS_SHAPED(pWin)	(pWin->boundingShape != (RegionPtr) NULL)
 
 static RegionPtr
-MakeWindowRegion (pWin, pBox)
+MakeBoundingRegion (pWin, pBox)
     WindowPtr	pWin;
     BoxPtr	pBox;
 {
@@ -2228,28 +2232,10 @@ MakeWindowRegion (pWin, pBox)
     BoxRec	shapeBox;
 
     pRgn = (*pScreen->RegionCreate) (pBox, 1);
-    if (pWin->borderWidth) {
-	if (pWin->borderShape) {
-	    (*pScreen->TranslateRegion) (pRgn, -(pWin->clientWinSize.x - pWin->borderWidth),
-					       -(pWin->clientWinSize.y - pWin->borderWidth));
-	    shapeBox.x1 = 0;
-	    shapeBox.y1 = 0;
-	    shapeBox.x2 = pWin->clientWinSize.width;
-	    shapeBox.y2 = pWin->clientWinSize.height;
-	    pShape = (*pScreen->RegionCreate) (&shapeBox, 1);
-	    if (pWin->windowShape)
-		(*pScreen->Union) (pShape, pWin->windowShape, pWin->borderShape);
-	    else
-		(*pScreen->Union) (pShape, pShape, pWin->borderShape);
-	    (*pScreen->Intersect) (pRgn, pRgn, pShape);
-	    (*pScreen->RegionDestroy) (pShape);
-	    (*pScreen->TranslateRegion) (pRgn, pWin->clientWinSize.x - pWin->borderWidth,
-					       pWin->clientWinSize.y - pWin->borderWidth);
-	}
-    } else if (pWin->windowShape) {
+    if (pWin->boundingShape) {
 	    (*pScreen->TranslateRegion) (pRgn, -pWin->clientWinSize.x,
 					          -pWin->clientWinSize.y);
-	    (*pScreen->Intersect) (pRgn, pRgn, pWin->windowShape);
+	    (*pScreen->Intersect) (pRgn, pRgn, pWin->boundingShape);
 	    (*pScreen->TranslateRegion) (pRgn, pWin->clientWinSize.x,
 					          pWin->clientWinSize.y);
     }
@@ -2268,8 +2254,8 @@ ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
     if (!IS_SHAPED(pWin) && !IS_SHAPED(pSib))
 	return TRUE;
     pScreen = pWin->drawable.pScreen;
-    pWinRgn = MakeWindowRegion (pWin, pWinBox);
-    pSibRgn = MakeWindowRegion (pSib, pSibBox);
+    pWinRgn = MakeBoundingRegion (pWin, pWinBox);
+    pSibRgn = MakeBoundingRegion (pSib, pSibBox);
     (*pScreen->Intersect) (pWinRgn, pWinRgn, pSibRgn);
     ret = (*pScreen->RegionNotEmpty) (pWinRgn);
     (*pScreen->RegionDestroy) (pWinRgn);
