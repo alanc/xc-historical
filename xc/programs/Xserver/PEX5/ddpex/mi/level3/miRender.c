@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.4 91/11/15 19:43:06 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.6 92/04/23 16:05:30 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -36,6 +36,7 @@ SOFTWARE.
 #include "miscstruct.h"
 #include "miRender.h"
 #include "miStruct.h"
+#include "miStrMacro.h"
 #include "miWks.h"
 #include "ddpex4.h"
 
@@ -313,8 +314,6 @@ RenderOCs(pRend, numOCs, pOCs)
     ErrorF( " RenderOCs\n");
 #endif
 
-    ValidateRenderer(pRend);
-
     for ( poc=pOCs; numOCs>0; numOCs-- )
     {
 	switch( poc->elementType ) {
@@ -372,6 +371,54 @@ RenderOCs(pRend, numOCs, pOCs)
     return (Success);
 }
 
+ddpex3rtn
+convertoffset(pstruct, ppos, poffset)
+/* in */
+    miStructStr    *pstruct;  /* pointer to the structure involved */
+    ddElementPos   *ppos;     /* the position information */
+/* out */
+    ddULONG        *poffset;  /* valid offset calculated from the postition */
+
+{
+	/* shamelessly lifted from the pos2offset routine in miStruct.c */
+
+        ddUSHORT        whence = ppos->whence;
+	ddLONG          offset = ppos->offset, temp;
+
+	switch (whence) {
+	    case PEXBeginning:
+                temp = offset;
+		break;
+
+	    case PEXCurrent:
+                temp = MISTR_CURR_EL_OFFSET(pstruct) + offset;
+		break;
+
+	    case PEXEnd:
+                /* numElements is the same as the last elements offset */
+		temp = MISTR_NUM_EL(pstruct) + offset;
+		break;
+
+	    default:
+                /* value error */
+		return (BadValue);
+		break;
+        }
+
+        /* now check that the new offset is in range of the structure */
+		if (temp < 0)
+		    *poffset = 0;
+		else if (temp > MISTR_NUM_EL(pstruct))
+		    *poffset = MISTR_NUM_EL(pstruct);
+		else
+		    *poffset = temp;
+
+        return (Success);
+			
+}
+
+
+
 /*++
  |
  |  Function Name:	RenderElements
@@ -391,10 +438,83 @@ RenderElements(pRend, pStr, range)
     ddElementRange      *range;
 /* out */
 {
-
     ddpex3rtn		err = Success;
+    miStructPtr         pstruct;
+    miGenericElementPtr pel;
+    ddULONG             offset1, offset2, i;
+    int                 eltype;
 
-  /* JSH - this functionality to be added later */
+    pstruct = (miStructPtr) pStr->deviceData;
+
+    /* convert the offset based on whence value */
+    if (convertoffset(pstruct, &(range->position1), &offset1))
+	    return (BadValue);      /* bad whence value */
+
+    if (convertoffset(pstruct, &(range->position2), &offset2))
+	    return (BadValue);      /* bad whence value */
+
+    /* flip the range if necessary */
+    if (offset1 > offset2) {
+	    i = offset1;
+	    offset1 = offset2;
+	    offset2 = i;
+    }
+
+    /* return early if offsets out of range */
+    if (offset1 == 0)
+	if (offset2 == 0)
+	      return(Success);
+	else
+	      offset1 = 1;
+
+    for (i = offset1; i <= offset2; i++){
+
+	/* set the element pointer */
+	if ( i == offset1) {
+	    MISTR_FIND_EL(pstruct, offset1, pel);
+	}
+	else
+	    pel = MISTR_NEXT_EL(pel);
+
+	    eltype = MISTR_EL_TYPE (pel);
+
+            switch (eltype) {
+	       /* drawing primitives */
+		case PEXOCMarker:
+		case PEXOCMarker2D:
+		case PEXOCText:
+		case PEXOCText2D:
+		case PEXOCAnnotationText:
+		case PEXOCAnnotationText2D:
+		case PEXOCPolyline:
+		case PEXOCPolyline2D:
+		case PEXOCPolylineSet:
+		case PEXOCNurbCurve:
+		case PEXOCFillArea:
+		case PEXOCFillArea2D:
+		case PEXOCExtFillArea:
+		case PEXOCFillAreaSet:
+		case PEXOCFillAreaSet2D:
+		case PEXOCExtFillAreaSet:
+		case PEXOCTriangleStrip:
+		case PEXOCQuadrilateralMesh:
+		case PEXOCSOFAS:
+		case PEXOCNurbSurface:
+		case PEXOCCellArray:
+		case PEXOCCellArray2D:
+		case PEXOCExtCellArray:
+		case PEXOCGdp:
+
+		/* drop out if not doing primitives
+		 * otherwise fall through */
+		 if (!MI_DDC_DO_PRIMS(pRend))
+		    break;
+	    default:
+		pRend->executeOCs[ eltype]( pRend,
+					(ddPointer)&(MISTR_EL_DATA (pel)));
+	}
+    }
+
 
   return(err);
 }
@@ -417,10 +537,106 @@ AccumulateState(pRend,  pAccSt )
 ddAccStPtr          pAccSt;	  /* accumulate state handle */
 /* out */
 {
-
+    register int	depth, offset;
     ddpex3rtn		err = Success;
+    ddElementRef	*elemRef;
+    miStructPtr		structPtr;
+    miGenericElementPtr	elemPtr;
 
-  /* JSH - this functionality to be added later */
+    /* The path has already been validated */
+    
+    elemRef = (ddElementRef *) pAccSt->Path->pList;
+    for (depth = 1; depth <= pAccSt->numElRefs; depth++) {
+	structPtr = (miStructPtr) elemRef->structure->deviceData;
+	elemPtr = MISTR_NEXT_EL (MISTR_ZERO_EL (structPtr));
+	for (offset = 0; offset < elemRef->offset; offset++) {
+	    switch (MISTR_EL_TYPE (elemPtr)) {
+	    case PEXOCMarkerType:
+	    case PEXOCMarkerScale:
+	    case PEXOCMarkerColourIndex:
+	    case PEXOCMarkerColour:
+	    case PEXOCMarkerBundleIndex:
+	    case PEXOCTextFontIndex:
+	    case PEXOCTextPrecision:
+	    case PEXOCCharExpansion:
+	    case PEXOCCharSpacing:
+	    case PEXOCTextColourIndex:
+	    case PEXOCTextColour:
+	    case PEXOCCharHeight:
+	    case PEXOCCharUpVector:
+	    case PEXOCTextPath:
+	    case PEXOCTextAlignment:
+	    case PEXOCAtextHeight:
+	    case PEXOCAtextUpVector:
+	    case PEXOCAtextPath:
+	    case PEXOCAtextAlignment:
+	    case PEXOCAtextStyle:
+	    case PEXOCTextBundleIndex:
+	    case PEXOCLineType:
+	    case PEXOCLineWidth:
+	    case PEXOCLineColourIndex:
+	    case PEXOCLineColour:
+	    case PEXOCCurveApproximation:
+	    case PEXOCPolylineInterp:
+	    case PEXOCLineBundleIndex:
+	    case PEXOCInteriorStyle:
+	    case PEXOCInteriorStyleIndex:
+	    case PEXOCSurfaceColourIndex:
+	    case PEXOCSurfaceColour:
+	    case PEXOCSurfaceReflAttr:
+	    case PEXOCSurfaceReflModel:
+	    case PEXOCSurfaceInterp:
+	    case PEXOCBfInteriorStyle:
+	    case PEXOCBfInteriorStyleIndex:
+	    case PEXOCBfSurfaceColourIndex:
+	    case PEXOCBfSurfaceColour:
+	    case PEXOCBfSurfaceReflAttr:
+	    case PEXOCBfSurfaceReflModel:
+	    case PEXOCBfSurfaceInterp:
+	    case PEXOCSurfaceApproximation:
+	    case PEXOCCullingMode:
+	    case PEXOCDistinguishFlag:
+	    case PEXOCPatternSize:
+	    case PEXOCPatternRefPt:
+	    case PEXOCPatternAttr:
+	    case PEXOCInteriorBundleIndex:
+	    case PEXOCSurfaceEdgeFlag:
+	    case PEXOCSurfaceEdgeType:
+	    case PEXOCSurfaceEdgeWidth:
+	    case PEXOCSurfaceEdgeColourIndex:
+	    case PEXOCSurfaceEdgeColour:
+	    case PEXOCEdgeBundleIndex:
+	    case PEXOCSetAsfValues:
+	    case PEXOCLocalTransform:
+	    case PEXOCLocalTransform2D:
+	    case PEXOCGlobalTransform:
+	    case PEXOCGlobalTransform2D:
+	    case PEXOCModelClip:
+	    case PEXOCModelClipVolume:
+	    case PEXOCModelClipVolume2D:
+	    case PEXOCRestoreModelClip:
+	    case PEXOCViewIndex:
+	    case PEXOCLightState:
+	    case PEXOCDepthCueIndex:
+	    case PEXOCPickId:
+	    case PEXOCHlhsrIdentifier:
+	    case PEXOCColourApproxIndex:
+	    case PEXOCRenderingColourModel:
+	    case PEXOCParaSurfCharacteristics:
+	    case PEXOCAddToNameSet:
+	    case PEXOCRemoveFromNameSet:
+		pRend->executeOCs[(int) MISTR_EL_TYPE (elemPtr)]
+		    (pRend, (ddPointer) &(MISTR_EL_DATA (elemPtr)));
+		break;
+	    default:
+		break;
+	    }
+
+	    elemPtr = MISTR_NEXT_EL (elemPtr);
+	}
+
+	elemRef++;
+    }
 
   return(err);
 }
