@@ -145,7 +145,7 @@
 
 ;; Read from the given fd into 'vector', which has element type card8.
 ;; Start storing at index 'start-index' and read exactly 'length' bytes.
-;; Return t if an error occurred, nil otherwise.
+;; Return t if an error or eof occurred, nil otherwise.
 (defun fd-read-bytes (fd vector start-index length)
   (declare (fixnum fd start-index length)
 	   (type (simple-array (unsigned-byte 8) (*)) vector))
@@ -166,24 +166,17 @@
 	  else (incf totread numread))))))
 
 
-(when
-    (plusp
-     (ff:get-entry-points
+(when (plusp (ff:get-entry-points
       (make-array 1 :initial-contents
-		  (list (ff:convert-to-lang "c_read_bytes" :language :c)))
+			  (list (ff:convert-to-lang "fd_wait_for_input")))
       (make-array 1 :element-type '(unsigned-byte 32))))
-  (ff:remove-entry-point (ff:convert-to-lang "c_read_bytes" :language :c))
-  (ff:remove-entry-point (ff:convert-to-lang "c_read_bytes_interruptible"
-					     :language :c))
+  (ff:remove-entry-point (ff:convert-to-lang "fd_wait_for_input"))
   (load "excldep.o"))
 
-(when
-    (plusp (ff:get-entry-points
+(when (plusp (ff:get-entry-points
 	    (make-array 1 :initial-contents
-			(list (ff:convert-to-lang "connect_to_server"
-						  :language :c)))
+			  (list (ff:convert-to-lang "connect_to_server")))
 	    (make-array 1 :element-type '(unsigned-byte 32))))
-  
   (ff:remove-entry-point (ff:convert-to-lang "connect_to_server" :language :c))
   (load "socket.o"))
 
@@ -299,6 +292,33 @@
      (error "~s is a bad type specifier for sequences." type ))))
 
 
+;; Allegro Common Lisp
+;; 				-[Wed Oct 11 08:50:30 1989 by layer]-
+;; special patch for CLX (process-lock and with-timeout)
+
+;;
+;; copyright (c) 1989 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are proprietary
+;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
+;; given in confidence by Franz, Inc. pursuant to a written license
+;; agreement, and stored only in accordance with the terms of such license.
+;;
+;; Restricted Rights Legend
+;; ------------------------
+;; Use, duplication, and disclosure by the Government are subject to
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
+
+;; $Header: skel.cl,v 1.1 89/02/15 14:58:11 layer Exp $
+
+(in-package 'patch :use '(lisp excl))
+
+(defvar *patches* nil)
+
+(push (cons 1000 "special patch for CLX (process-lock and with-timeout")
+      *patches*)
+
 #+(or allegro-v3.0 allegro-v3.1)
 (in-package :mp)
 
@@ -312,3 +332,27 @@
        then (with-timeout (timeout (when .got-process-lock. lock-value))
 	      (process-lock-1 lock lock-value whostate))
        else (process-lock-1 lock lock-value whostate))))
+
+#+(or allegro-v3.0 allegro-v3.1)
+(defmacro with-timeout ((interval . timeout-forms) &body body)
+  `(let* ((clock-event (with-timeout-event ,interval mp:*current-process*))
+	  (excl::*without-interrupts* t)
+	  ret)
+     (unwind-protect
+	 ;; Warning: Branch tensioner better not reorder this code!
+	 (setq ret (catch 'with-timeout-internal
+		     (add-to-clock-queue clock-event)
+		     (let ((excl::*without-interrupts* nil))
+		       (multiple-value-list (progn ,@body)))))
+       (if* (eq ret 'with-timeout-internal)
+	  then (let ((excl::*without-interrupts* nil))
+		 (setq ret (multiple-value-list (progn ,@timeout-forms))))
+	  else (remove-from-clock-queue clock-event)))
+     (values-list ret)))
+
+#+(or allegro-v3.0 allegro-v3.1)
+(defun process-wait-with-timeout (whostate interval function &rest args)
+  ;; Now returns T upon completion, NIL upon timeout. -- 6Jun89 smh
+  (with-timeout (interval 'nil)
+    (apply #'process-wait whostate function args)
+    't))
