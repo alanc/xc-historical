@@ -54,7 +54,7 @@ a tree of widgets created by this application.
 .IN "fallback resources" "" "@DEF@"
 .FD 0
 Widget XtAppInitialize(\fIapp_con_return\fP, \fIapplication_class\fP, \
-\fIoptions\fP, \fInum_options\fP, \fIfallback_resources\fP,
+\fIoptions\fP, \fInum_options\fP, \fIargc_in_out\fP, \fIargv_in_out\fP, \fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
 .br
       \fIargc_in_out\fP, \fIargv_in_out\fP)
 .br
@@ -66,11 +66,15 @@ Widget XtAppInitialize(\fIapp_con_return\fP, \fIapplication_class\fP, \
 .br
       Cardinal \fInum_options\fP;
 .br
-      String *\fIfallback_resources\fP;
-.br
       Cardinal *\fIargc_in_out\fP;
 .br
+      String *\fIfallback_resources\fP;
+.br
       String \fIargv_in_out\fP[];
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
 .FN
 .IP \fIapp_con_return\fP 1.5i
 Returns the application context of this application.
@@ -89,13 +93,17 @@ For further information,
 see \fI\*(xL\fP.
 .IP \fInum_options\fP 1.5i
 Specifies the number of entries in the options list.
-.IP \fIfallback_resources\fP 1.5i
-Specifies resource values to be used if the site-wide application class
-defaults file cannot be opened, or is NULL.
 .IP \fIargc_in_out\fP 1.5i
 Specifies a pointer to the number of command line parameters.
 .IP \fIargv_in_out\fP 1.5i
 Specifies the command line parameters.
+.IP \fIfallback_resources\fP 1.5i
+Specifies resource values to be used if the site-wide application class
+defaults file cannot be opened, or NULL.
+.IP \fIargs\fP 1.5i
+Specifies the argument list to use when creating the Application shell.
+.IP \fInum_args\fP 1.5i
+Specifies the number of arguments in \fIargs\fP.
 .LP
 This function will remove the command line arguments that the toolkit
 reads from \fIargc_in_out\fP, and \fIargv_in_out\fP.  It will then
