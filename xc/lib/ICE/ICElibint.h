@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.19 93/11/08 16:34:10 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.20 93/11/18 14:22:46 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -548,6 +548,9 @@ extern IcePaAuthRec	_IcePaAuthRecs[];
 extern int		 _IceAuthDataEntryCount;
 extern IceAuthDataEntry *_IceAuthDataEntries;
 
+extern IceHostBasedAuthProc _IceHostBasedAuthProc;
+extern IcePointer	    _IceHostBasedAuthProcClientData = NULL;
+
 extern int		_IceVersionCount;
 extern _IceVersion	_IceVersions[];
 
@@ -699,6 +702,13 @@ _IceAddOpcodeMapping (
     IceConn		/* iceConn */,
     int			/* hisOpcode */,
     int			/* myOpcode */
+#endif
+);
+
+extern char *
+_IceGetPeerName (
+#if NeedFunctionPrototypes
+    IceConn		/* iceConn */
 #endif
 );
 
