@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.15 92/04/22 16:51:17 rws Exp $ */
+/* $XConsortium: TMkey.c,v 1.16 92/05/19 11:16:48 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -267,6 +267,7 @@ Boolean _XtMatchUsingStandardMods (typeMatch, modMatch, eventSeq)
     TMKeyContext tm_context = pd->tm_context;
     Modifiers translateModifiers;
 
+    _InitializeKeysymTables(dpy, pd);
     translateModifiers =(Modifiers)
       (eventSeq->event.modifiers & ((ShiftMask|LockMask) | pd->mode_switch));
 
@@ -309,7 +310,6 @@ void _XtBuildKeysymTables(dpy,pd)
     FLUSHKEYCACHE(pd->tm_context);
     if (pd->keysyms)
 	XFree( (char *)pd->keysyms );
-    XDisplayKeycodes(dpy, &pd->min_keycode, &pd->max_keycode);
     pd->keysyms_serial = NextRequest(dpy);
     pd->keysyms = XGetKeyboardMapping(dpy, pd->min_keycode,
 				      pd->max_keycode-pd->min_keycode+1,
