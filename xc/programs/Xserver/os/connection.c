@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.141 91/09/09 14:27:23 rws Exp $ */
+/* $XConsortium: connection.c,v 1.142 91/12/17 21:21:11 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -135,7 +135,7 @@ static Bool debug_conns = FALSE;
 static int SavedAllClients[mskcnt];
 static int SavedAllSockets[mskcnt];
 static int SavedClientsWithInput[mskcnt];
-static int GrabInProgress = 0;
+int GrabInProgress = 0;
 
 int ConnectionTranslation[MAXSOCKS];
 extern ClientPtr NextAvailableClient();
