@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CursorName.c,v 1.3 89/07/19 17:16:10 converse Exp $
+ * $XConsortium: CursorName.c,v 1.4 90/06/15 18:58:23 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #include <X11/Xmu/CurUtil.h>
 #include <X11/cursorfont.h>
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.c,v 1.9 90/12/09 17:13:51 rws Exp $
+/* $XConsortium: Atoms.c,v 1.10 90/12/10 08:19:07 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@ struct _AtomRec {
     DisplayRec* head;
 };
 
-#if defined(__STDC__) && !defined(UNIXCPP)
+#if __STDC__ && !defined(UNIXCPP)
 #define DeclareAtom(atom,text) \
 static struct _AtomRec __##atom = { text, NULL }; \
 AtomPtr _##atom = &__##atom;

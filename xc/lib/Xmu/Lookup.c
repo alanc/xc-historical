@@ -1,4 +1,4 @@
-/* "$XConsortium: Lookup.c,v 1.10 90/04/17 16:30:37 rws Exp $"; */
+/* "$XConsortium: Lookup.c,v 1.11 90/06/15 18:58:07 rws Exp $"; */
 
 /* 
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -21,7 +21,7 @@
 #define XK_PUBLISHING
 #include <X11/keysymdef.h>
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/
