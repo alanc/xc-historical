@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.10 88/03/03 14:39:18 swick Exp $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.13 88/08/25 15:57:42 swick Exp $";
 #endif lint
 
 
@@ -164,12 +164,13 @@ static void StringCreateSourceSink(widget, args, num_args)
 {
     AsciiStringWidget w = (AsciiStringWidget)widget;
 
-    w->text.source = XtStringSourceCreate( w, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( w, args, *num_args );
+    w->text.source = XtStringSourceCreate( widget, args, *num_args );
+    w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
 
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
-        w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
+        w->core.height = (2*yMargin) + 2
+			  + (*w->text.sink->MaxHeight)(widget, 1);
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
@@ -224,15 +225,16 @@ static void DiskCreateSourceSink(widget, args, num_args)
 {
     AsciiDiskWidget w = (AsciiDiskWidget)widget;
 
-    w->text.source = XtDiskSourceCreate( w, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( w, args, *num_args );
+    w->text.source = XtDiskSourceCreate( widget, args, *num_args );
+    w->text.sink = XtAsciiSinkCreate( widget, args, *num_args );
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
     if (w->core.height == DEFAULT_TEXT_HEIGHT)
-        w->core.height = (2*yMargin) + 2 + (*w->text.sink->MaxHeight)(w, 1);
+        w->core.height = (2*yMargin) + 2
+			  + (*w->text.sink->MaxHeight)(widget, 1);
 
     ForceBuildLineTable( (TextWidget)w );
 }
