@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.65 90/09/25 19:12:29 converse Exp $
+ * $XConsortium: viewres.c,v 1.66 90/11/06 18:02:36 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -690,8 +690,8 @@ static void select_callback (gw, closure, data)
 /* ARGSUSED */
 static void toggle_callback (gw, closure, data)
     Widget gw;
-    caddr_t closure;			/* XmuWidgetNode for this widget */
-    caddr_t data;			/* on or off */
+    XtPointer closure;		/* XmuWidgetNode for this widget */
+    XtPointer data;		/* on or off */
 {
     XmuWidgetNode *node = (XmuWidgetNode *) closure;
     Boolean selected = (Boolean) data;
