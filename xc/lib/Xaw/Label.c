@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.66 89/05/11 01:05:29 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.67 89/05/18 16:15:42 kit Exp $";
 #endif /* lint */
 
 
@@ -205,10 +205,9 @@ static void Initialize(request, new)
     LabelWidget lw = (LabelWidget) new;
 
     if (lw->label.label == NULL) 
-        lw->label.label = lw->core.name;
+        lw->label.label = XtNewString(lw->core.name);
     else {
-        lw->label.label = strcpy( XtMalloc( strlen(lw->label.label) + 1 ),
-				  lw->label.label );
+        lw->label.label = XtNewString(lw->label.label);
     }
 
     GetnormalGC(lw);
@@ -331,9 +330,7 @@ static Boolean SetValues(current, request, new)
 	    XtFree( (char *)curlw->label.label );
 
 	if (newlw->label.label != newlw->core.name) {
-	    newlw->label.label = strcpy(
-	        XtMalloc((unsigned) XtStrlen(newlw->label.label) + 1),
-		newlw->label.label);
+	    newlw->label.label = XtNewString( newlw->label.label );
 	}
 	was_resized = True;
     }
@@ -425,6 +422,7 @@ static void Destroy(w)
 {
     LabelWidget lw = (LabelWidget)w;
 
+    XtFree( lw->label.label );
     XtReleaseGC( w, lw->label.normal_GC );
     XtReleaseGC( w, lw->label.gray_GC);
 }
