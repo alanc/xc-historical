@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.15 87/10/13 12:42:24 swick Exp $";
+static char rcs_id[] = "$Header: util.c,v 1.8 87/12/24 10:39:49 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,11 +29,6 @@ static char rcs_id[] = "$Header: util.c,v 1.15 87/10/13 12:42:24 swick Exp $";
 /* util.c -- little miscellaneous utilities. */
 
 #include "xmh.h"
-#ifdef X10
-#include <sys/file.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#endif	/* X10 */
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
@@ -49,6 +44,8 @@ Punt(str)
     abort();
 }
 
+
+void NoOp() {}
 
 int myopen(path, flags, mode)
 char *path;
@@ -66,7 +63,7 @@ char *path, *mode;
 {
     FILE *result;
     result = fopen(path, mode);
-    if (debug && result)  fprintf(stderr, "# %d : %s\n", fileno(result), path);
+    if (debug && result)  fprintf(stderr, "# %d : %s\n", result->_file, path);
     return result;
 }
 
@@ -82,7 +79,7 @@ int myclose(fid)
 int myfclose(file)
 FILE *file;
 {
-    int fid = fileno(file);
+    int fid = file->_file;
     if (fclose(file) < 0) Punt("Error in myfclose!");
     if (debug) fprintf(stderr, "# %d : <Closed>\n", fid);
 }
@@ -252,7 +249,7 @@ char *CreateGeometry(gbits, x, y, width, height)
 	(void) sprintf(str4, "%c%d", (gbits & YNegative) ? '-' : '+', abs(y));
     else
 	(void) strcpy(str4, "");
-    result = XtMalloc(22);
+    result = XtMalloc((unsigned) 22);
     (void) sprintf(result, "%s%s%s%s", str1, str2, str3, str4);
     return result;
 }
@@ -290,118 +287,58 @@ char *file;
 
 
 
-#ifdef NOTDEF
-SetValues(dpy, window, arglist, argcount)
-Display *dpy;
-Window window;
-ArgList arglist;
-int argcount;
-{
-    (void) XtSendMessage(dpy, window, messageSETVALUES, arglist, argcount);
-}
-
-
-GetValues(dpy, window, arglist, argcount)
-Display *dpy;
-Window window;
-ArgList arglist;
-int argcount;
-{
-    (void) XtSendMessage(dpy, window, messageGETVALUES, arglist, argcount);
-}
-#endif
-
-
-ChangeLabel(window, str)
-Window window;
+ChangeLabel(widget, str)
+Widget widget;
 char *str;
 {
-    labelarglist[0].value = (XtArgVal)MallocACopy(str);
-    XtLabelSetValues(DISPLAY window, labelarglist, XtNumber(labelarglist));
+    static Arg arglist[] = {XtNlabel, NULL};
+    arglist[0].value = (XtArgVal) str;
+    XtSetValues(widget, arglist, XtNumber(arglist));
 }
 
 
 
 
-Window CreateTextSW(scrn, position, name, options)
+TextWidget CreateTextSW(scrn, position, name, options, arglist, argcount)
 Scrn scrn;
 int position;
 char *name;
 int options;
+ArgList arglist;
+Cardinal argcount;
 {
-    Window result;
-    static Arg arglist[] = {
-	{XtNname, NULL},
-	{XtNtextOptions, NULL},
-	{XtNfile, (XtArgVal)"/dev/null"}
-    };
-    arglist[0].value = (XtArgVal)name;
-    arglist[1].value = (XtArgVal) (scrollVertical | options);
-    result = XtTextDiskCreate(DISPLAY scrn->window,
-			      arglist, XtNumber(arglist));
-    XtVPanedWindowAddPane(DISPLAY scrn->window,
-			  result, position, 50, 1000, TRUE);
-    return result;
+    Widget result;
+    result = XtCreateWidget(name, textWidgetClass, (Widget) scrn->widget,
+			    arglist, argcount);
+    XtManageChild(result);
+    return (TextWidget) result;
 }
 
 
 
-Window CreateTitleBar(scrn, position)
+LabelWidget CreateTitleBar(scrn, position)
 Scrn scrn;
 int position;
 {
-    Window result;
+    Widget result;
     int width, height;
     static Arg arglist[] = {
-	{XtNname, (XtArgVal)"titlebar"},
 	{XtNlabel, NULL},
     };
-    arglist[1].value = (XtArgVal) Version();
-    result = XtLabelCreate(DISPLAY scrn->window, arglist, XtNumber(arglist));
-    GetWindowSize(result, &width, &height);
-    XtVPanedWindowAddPane(DISPLAY scrn->window, result, position,
-			  height, height, TRUE);
-    return result;
+    arglist[0].value = (XtArgVal) Version();
+    result = XtCreateWidget("titlebar", labelWidgetClass, (Widget)scrn->widget,
+			    arglist, XtNumber(arglist));
+    height = GetHeight(result);
+    DwtPaneSetMinMax(result, height, height);
+    XtManageChild(result);
+    return (LabelWidget) result;
 }
 
-
-GetWindowSize(window, width, height)
-Window window;
-int *width, *height;		/* RETURN */
-{
-    WindowBox bbox, rbox;
-    if (XtMakeGeometryRequest(DISPLAY window,
-			      XtgeometryGetWindowBox, &bbox, &rbox) ==
-	    XtgeometryYes) {
-	*width = rbox.width;
-	*height = rbox.height;
-    } else {
-#ifdef X11
-	Drawable root;
-	int x, y;
-	unsigned int borderwidth, depth;
-	(void) XGetGeometry(theDisplay, window, &root, &x, &y,
-			    (unsigned int *)width, (unsigned int *)height,
-			    &borderwidth, &depth);
-#endif
-#ifdef X10
-	WindowInfo info;
-	XQueryWindow(window, &info);
-	*width = info.width;
-	*height = info.height;
-#endif
-    }
-}
 
 
 Feep()
 {
-#ifdef X11
     XBell(theDisplay, 50);
-#endif
-#ifdef X10
-    XFeep(0);
-#endif
 }
 
 
@@ -441,3 +378,17 @@ int length;
     }
     return 0;
 }
+
+
+void StoreName(scrn, str)
+Scrn scrn;
+char *str;
+{
+    static Arg arglist[] = {XtNiconName, (XtArgVal) NULL};
+    arglist[0].value = (XtArgVal) str;
+    XtSetValues(scrn->parent, arglist, XtNumber(arglist));
+}
+
+
+void DwtInitCallbacks(){}
+void DwtCallCallbacks(){}
