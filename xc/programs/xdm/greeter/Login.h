@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.h,v 1.6 88/11/23 16:53:56 keith Exp $
+ * $XConsortium: Login.h,v 1.7 89/07/21 13:43:56 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
  */
 
 /*
-* $XConsortium: Login.h,v 1.6 88/11/23 16:53:56 keith Exp $
+* $XConsortium: Login.h,v 1.7 89/07/21 13:43:56 jim Exp $
 */
 
 #ifndef _XtLogin_h
@@ -78,7 +78,7 @@
 #define NAME_LEN	32
 
 typedef struct _LoginData { 
-	char	name[NAME_LEN], passwd[NAME_LEN] 
+	char	name[NAME_LEN], passwd[NAME_LEN];
 } LoginData;
 
 # define NOTIFY_OK	0
