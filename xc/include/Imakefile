@@ -17,30 +17,36 @@ IMPORTS1 = \
 	$(XLIBSRC)/Xresource.h \
 	$(XLIBSRC)/Xutil.h \
 	$(FONTSRC)/cursorfont.h \
-	$(TOOLKITSRC)/Cardinals.h \
+	$(TOOLKITSRC)/CompObjP.h \
+	$(TOOLKITSRC)/CompObj.h \
 	$(TOOLKITSRC)/Composite.h \
 	$(TOOLKITSRC)/CompositeP.h \
 	$(TOOLKITSRC)/Constraint.h \
 	$(TOOLKITSRC)/ConstrainP.h \
-	$(TOOLKITSRC)/Convert.h \
 	$(TOOLKITSRC)/Core.h \
 	$(TOOLKITSRC)/CoreP.h \
 	$(TOOLKITSRC)/Intrinsic.h \
 	$(TOOLKITSRC)/IntrinsicP.h \
-	$(TOOLKITSRC)/Misc.h \
+	$(TOOLKITSRC)/Object.h \
+	$(TOOLKITSRC)/ObjectP.h \
 	$(TOOLKITSRC)/Quarks.h \
+	$(TOOLKITSRC)/RectObj.h \
+	$(TOOLKITSRC)/RectObjP.h \
+	$(TOOLKITSRC)/Selection.h \
 	$(TOOLKITSRC)/Shell.h \
 	$(TOOLKITSRC)/ShellP.h \
 	$(TOOLKITSRC)/StringDefs.h \
-	$(TOOLKITSRC)/TM.h \
 	$(TOOLKITSRC)/Vendor.h \
-	$(TOOLKITSRC)/VendorP.h
+	$(TOOLKITSRC)/VendorP.h \
+	$(TOOLKITSRC)/WindowObj.h \
+	$(TOOLKITSRC)/WindowObjP.h
 
 IMPORTS2 = \
 	$(AWIDGETSRC)/AsciiText.h \
 	$(AWIDGETSRC)/AsciiTextP.h \
 	$(AWIDGETSRC)/Box.h \
 	$(AWIDGETSRC)/BoxP.h \
+	$(AWIDGETSRC)/Cardinals.h \
 	$(AWIDGETSRC)/Cascade.h \
 	$(AWIDGETSRC)/CascadeP.h \
 	$(AWIDGETSRC)/Clock.h \
@@ -92,8 +98,6 @@ all: $(IMPORTS1) $(IMPORTS2) $(SUBIMPORTS) extensions
 	@for i in $(SUBIMPORTS); do \
 		(set -x; cd extensions; $(LN) ../$$i .); \
 	done
-	$(RM) Atoms.h
-	$(LN) StringDefs.h Atoms.h
 
 extensions:
 	-mkdir $@
