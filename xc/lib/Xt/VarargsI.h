@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.13 91/03/26 08:34:31 rws Exp $ */
+/* $XConsortium: VarargsI.h,v 1.14 91/04/10 20:28:15 rws Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -28,13 +28,6 @@ without express or implied warranty.
 # include <varargs.h>
 # define Va_start(a,b) va_start(a)
 #endif
-
-typedef struct _XtTypedArg {
-    String      name;
-    String      type;
-    XtArgVal    value;
-    int         size;
-} XtTypedArg;
  
 /* private routines */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: ResourceI.h,v 1.7 90/06/12 16:30:12 kit Exp $ */
+/* $XConsortium: ResourceI.h,v 1.8 91/06/11 20:06:59 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,8 +33,6 @@ SOFTWARE.
 #define StringToQuark(string) XrmStringToQuark(string)
 #define StringToName(string) XrmStringToName(string)
 #define StringToClass(string) XrmStringToClass(string)
-
-typedef struct _XtTypedArg* XtTypedArgList;
 
 extern void _XtResourceDependencies(
 #if NeedFunctionPrototypes
