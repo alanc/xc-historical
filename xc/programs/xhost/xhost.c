@@ -17,7 +17,7 @@ without express or implied warranty.
 */
 
 #ifndef lint
-static char *rcsid_xhost_c = "$Header: xhost.c,v 11.11 87/08/26 21:14:06 toddb Exp $";
+static char *rcsid_xhost_c = "$Header: xhost.c,v 11.12 87/11/06 14:45:26 jim Locked $";
 #endif
  
 #include <signal.h>
@@ -38,10 +38,10 @@ extern unsigned long inet_makeaddr();
 #include <netdnet/dn.h>
 #include <netdnet/dnetdb.h>
 #endif
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
  
-char *index();
 int local_xerror();
 
 #define NAMESERVER_TIMEOUT 5	/* time to wait for nameserver */
@@ -92,7 +92,7 @@ main(argc, argv)
 	char *dnet_htoa();
 	struct nodeent *np;
 	struct dn_naddr *nlist, dnaddr, *dnaddrp, *dnet_addr();
-	char *cp, *index();
+	char *cp;
 #endif
  
 	if ((dpy = XOpenDisplay(NULL)) == NULL) {
@@ -175,7 +175,7 @@ char *name;
 #ifdef DNETCONN
   struct dn_naddr *dnaddrp;
   struct nodeent *np;
-  char *cp, *index();
+  char *cp;
   static struct dn_naddr dnaddr;
 #endif /* DNETCONN */
 
