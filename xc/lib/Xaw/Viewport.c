@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.35 89/01/10 07:52:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.36 89/01/10 13:10:25 swick Exp $";
 #endif lint
 
 
@@ -429,25 +429,39 @@ static void ComputeLayout(widget, query, destroy_scrollbars)
 	     * but we don't set the mode bits until after we decide that the
 	     * child's preferences are not acceptable.
 	     */
-	    if (!w->viewport.allowhoriz || child->core.width < clip_width) {
-		intended.width = clip_width;
+
+	    if (!w->viewport.allowhoriz) 
 		intended.request_mode |= CWWidth;
-	    }
+
+	    if (child->core.width < clip_width) 
+		intended.width = clip_width;
 	    else
-		intended.width = child->core.width;
-	    if (!w->viewport.allowvert || child->core.height < clip_height) {
+	        intended.width = child->core.width;
+
+	    if (child->core.height < clip_height) 
 		intended.height = clip_height;
-		intended.request_mode |= CWHeight;
-	    }
 	    else
 		intended.height = child->core.height;
+
+	    if (!w->viewport.allowvert) 
+		intended.request_mode |= CWHeight;
+
 	    intended.border_width = 0;
 	    if (!query) {
 		preferred.width = child->core.width;
 		preferred.height = child->core.height;
 	    }
 	    do { /* while intended != prev  */
-		if (query) XtQueryGeometry( child, &intended, &preferred );
+		if (query) {
+		    XtGeometryResult ret_val;
+		    ret_val = XtQueryGeometry( child, &intended, &preferred );
+		    if (ret_val == XtGeometryYes) 
+		        break;
+		    if ( !(preferred.request_mode & CWWidth) )
+		        preferred.width = intended.width;
+		    if ( !(preferred.request_mode & CWHeight) )
+		        preferred.height = intended.height;
+		}
 		prev_width = intended.width;
 		prev_height = intended.height;
 		prev_mode = intended.request_mode;
