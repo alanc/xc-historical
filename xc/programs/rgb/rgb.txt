@@ -55,8 +55,8 @@
 119 136 153		LightSlateGray
 119 136 153		light slate grey
 119 136 153		LightSlateGrey
-192 192 192		gray
-192 192 192		grey
+190 190 190		gray
+190 190 190		grey
 211 211 211		light grey
 211 211 211		LightGrey
 211 211 211		light gray
