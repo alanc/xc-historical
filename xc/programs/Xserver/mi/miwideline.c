@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.5 89/10/29 12:24:52 rws Exp $
+ * $XConsortium: miwideline.c,v 1.6 89/10/29 14:48:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -73,9 +73,9 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
     if (!pptInit)
 	return;
     pwidthInit = (int *) ALLOCATE_LOCAL (overall_height * sizeof(*pwidth));
-    if (!pwidth)
+    if (!pwidthInit)
     {
-	DEALLOCATE_LOCAL (ppt);
+	DEALLOCATE_LOCAL (pptInit);
 	return;
     }
     ppt = pptInit;
@@ -737,8 +737,8 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	    rights[0] = right;
 	    rights[1] = bottom;
 	}
-	(*FillPoly) (pDrawable, pGC, pixel, topy, bottom.height + bottomy,
-		     lefts, rights, 2, 2);
+	(*FillPoly) (pDrawable, pGC, pixel, topy,
+		     bottom.height + bottomy - topy, lefts, rights, 2, 2);
     }
 }
 
@@ -758,7 +758,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 
     if (npt == 0)
 	return;
-    FillPoly = pGC->ops->LineHelper;
+    FillPoly = miFillPolyHelper;
     pixel = pGC->fgPixel;
     x2 = pPts->x;
     y2 = pPts->y;
@@ -796,6 +796,307 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	}
 	if (npt == 1 && pGC->capStyle == CapRound)
 	    miLineCapRound (pDrawable, pGC, pixel, &rightFace, FALSE);
+	prevRightFace = rightFace;
+	first = FALSE;
+	projectLeft = FALSE;
+    }
+}
+
+#define V_TOP	    0
+#define V_RIGHT	    1
+#define V_BOTTOM    2
+#define V_LEFT	    3
+
+miWideDashSegment (pDrawable, pGC, FillPoly, pDashOffset, pDashIndex,
+	   x1, y1, x2, y2, projectLeft, projectRight, leftFace, rightFace)
+    DrawablePtr	    pDrawable;
+    GCPtr	    pGC;
+    int		    *pDashOffset, *pDashIndex;
+    void	    (*FillPoly)();
+    int		    x1, y1, x2, y2;
+    Bool	    projectLeft, projectRight;
+    LineFacePtr	    leftFace, rightFace;
+{
+    int		    dashIndex, dashRemain;
+    unsigned char   *pDash;
+    double	    L, l;
+    PolyVertexRec   vertices[4];
+    PolyVertexRec   saveRight, saveBottom;
+    PolySlopeRec    slopes[4];
+    PolyEdgeRec	    left[2], right[2];
+    int		    nleft, nright;
+    int		    h;
+    int		    y;
+    int		    dy, dx;
+    unsigned long   pixel;
+    double	    LRemain;
+    double	    r;
+    double	    rdx, rdy;
+    double	    dashDx, dashDy;
+    Bool	    first = TRUE;
+    
+    dx = x2 - x1;
+    dy = y2 - y1;
+    dashIndex = *pDashIndex;
+    pDash = pGC->dash;
+    dashRemain = pDash[dashIndex] - *pDashOffset;
+
+    l = ((double) pGC->lineWidth) / 2.0;
+    L = hypot ((double) dx, (double) dy);
+    if (L)
+    {
+	r = l / L;
+
+	rdx = r * dx;
+	rdy = r * dy;
+    }
+    else
+    {
+	rdx = l;
+	rdy = 0;
+    }
+    LRemain = L;
+    /* All position comments are relative to a line with dx and dy > 0,
+     * but the code does not depend on this */
+    /* top */
+    slopes[V_TOP].dx = dx;
+    slopes[V_TOP].dy = dy;
+    /* right */
+    slopes[V_RIGHT].dx = -dy;
+    slopes[V_RIGHT].dy = dx;
+    /* bottom */
+    slopes[V_BOTTOM].dx = -dx;
+    slopes[V_BOTTOM].dy = -dy;
+    /* left */
+    slopes[V_LEFT].dx = dy;
+    slopes[V_LEFT].dy = -dx;
+
+    leftFace->x = x1;
+    leftFace->y = y1;
+    leftFace->dx = dx;
+    leftFace->dy = dy;
+
+    rightFace->x = x1;	/* for round dash caps */
+    rightFace->y = y1;
+    rightFace->dx = -dx;
+    rightFace->dy = -dy;
+
+    /* preload the start coordinates */
+    vertices[V_RIGHT].x = vertices[V_TOP].x = rdy;
+    vertices[V_RIGHT].y = vertices[V_TOP].y = -rdx;
+
+    vertices[V_BOTTOM].x = vertices[V_LEFT].x = -rdy;
+    vertices[V_BOTTOM].y = vertices[V_LEFT].y = rdx;
+
+    if (projectLeft)
+    {
+	vertices[V_TOP].x -= rdx;
+	vertices[V_TOP].y -= rdy;
+
+	vertices[V_LEFT].x -= rdx;
+	vertices[V_LEFT].y -= rdy;
+    }
+
+    while (LRemain > dashRemain)
+    {
+	dashDx = (dashRemain * dx) / L;
+	dashDy = (dashRemain * dy) / L;
+
+	vertices[V_RIGHT].x += dashDx;
+	vertices[V_RIGHT].y += dashDy;
+
+	vertices[V_BOTTOM].x += dashDx;
+	vertices[V_BOTTOM].y += dashDy;
+
+	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
+	{
+	    if (pGC->lineStyle == LineOnOffDash &&
+ 	        pGC->capStyle == CapProjecting)
+	    {
+		saveRight = vertices[V_RIGHT];
+		saveBottom = vertices[V_BOTTOM];
+		
+		if (!first)
+		{
+		    vertices[V_TOP].x -= rdx;
+		    vertices[V_TOP].y -= rdy;
+    
+		    vertices[V_LEFT].x -= rdx;
+		    vertices[V_LEFT].y -= rdy;
+		}
+		
+		vertices[V_RIGHT].x += rdx;
+		vertices[V_RIGHT].x += rdy;
+
+		vertices[V_BOTTOM].x += rdx;
+		vertices[V_BOTTOM].y += rdy;
+
+	    }
+	    y = miPolyBuildPoly (vertices, slopes, 4, x1, y1,
+			     	 left, right, &nleft, &nright, &h);
+	    pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	    (*FillPoly) (pDrawable, pGC, pixel, y, h, left, right, nleft, nright);
+
+	    if (pGC->lineStyle == LineOnOffDash)
+	    {
+		switch (pGC->capStyle)
+		{
+		case CapProjecting:
+		    vertices[V_BOTTOM] = saveBottom;
+		    vertices[V_RIGHT] = saveRight;
+		    break;
+		case CapRound:
+		    leftFace->xa = vertices[V_TOP].x;
+		    leftFace->ya = vertices[V_TOP].y;
+		    miLineCapRound (pDrawable, pGC, pixel, leftFace, TRUE);
+		    rightFace->xa = vertices[V_BOTTOM].x;
+		    rightFace->ya = vertices[V_BOTTOM].y;
+		    miLineCapRound (pDrawable, pGC, pixel, rightFace, FALSE);
+		    break;
+		}
+	    }
+	}
+	LRemain -= dashRemain;
+	++dashIndex;
+	if (dashIndex == pGC->numInDashList)
+	    dashIndex = 0;
+	dashRemain = pDash[dashIndex];
+
+	vertices[V_TOP] = vertices[V_RIGHT];
+	vertices[V_LEFT] = vertices[V_BOTTOM];
+	first = FALSE;
+    }
+
+    if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
+    {
+    	vertices[V_TOP].x -= dx;
+    	vertices[V_TOP].y -= dy;
+
+	vertices[V_LEFT].x -= dx;
+	vertices[V_LEFT].y -= dy;
+
+	vertices[V_RIGHT].x = rdy;
+	vertices[V_RIGHT].y = -rdx;
+
+	vertices[V_BOTTOM].x = -rdy;
+	vertices[V_BOTTOM].y = rdx;
+	
+	if (projectRight)
+	{
+	    vertices[V_RIGHT].x += rdx;
+	    vertices[V_RIGHT].y += rdy;
+    
+	    vertices[V_BOTTOM].x += rdx;
+	    vertices[V_BOTTOM].y += rdy;
+	}
+
+	if (!first && pGC->lineStyle == LineOnOffDash &&
+	    pGC->capStyle == CapProjecting)
+	{
+	    vertices[V_TOP].x -= rdx;
+	    vertices[V_TOP].y -= rdy;
+
+	    vertices[V_LEFT].x -= rdx;
+	    vertices[V_LEFT].y -= rdy;
+	}
+
+	y = miPolyBuildPoly (vertices, slopes, 4, x2, y2,
+			     left, right, &nleft, &nright, &h);
+
+	pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	(*FillPoly) (pDrawable, pGC, pixel, y, h, left, right, nleft, nright);
+	if (!first && pGC->lineStyle == LineOnOffDash &&
+	    pGC->capStyle == CapRound)
+	{
+	    leftFace->xa = vertices[V_TOP].x;
+	    leftFace->ya = vertices[V_TOP].y;
+	    miLineCapRound (pDrawable, pGC, pixel, leftFace, TRUE);
+	}
+    }
+    dashRemain = ((double) dashRemain) - LRemain;
+    if (dashRemain == 0)
+    {
+	dashIndex++;
+	if (dashIndex == pGC->numInDashList)
+	    dashIndex = 0;
+	dashRemain = pDash[dashIndex];
+    }
+
+    leftFace->xa = rdy;
+    leftFace->ya = -rdx;
+
+    rightFace->x = x2;
+    rightFace->y = y2;
+    rightFace->xa = -rdy;
+    rightFace->ya = rdx;
+
+    *pDashIndex = dashIndex;
+    *pDashOffset = pDash[dashIndex] - dashRemain;
+}
+
+miWideDash (pDrawable, pGC, mode, npt, pPts)
+    DrawablePtr	pDrawable;
+    GCPtr	pGC;
+    int		mode;
+    int		npt;
+    DDXPointPtr	pPts;
+{
+    int		    x1, y1, x2, y2;
+    void	    (*FillPoly)();
+    unsigned long   pixel;
+    Bool	    projectLeft, projectRight, doJoin;
+    LineFaceRec	    leftFace, rightFace, prevRightFace;
+    int		    first;
+    int		    dashIndex, dashOffset;
+
+    if (npt == 0)
+	return;
+    FillPoly = miFillPolyHelper;
+    x2 = pPts->x;
+    y2 = pPts->y;
+    first = TRUE;
+    doJoin = FALSE;
+    projectLeft = pGC->capStyle == CapProjecting;
+    projectRight = FALSE;
+    dashIndex = 0;
+    dashOffset = 0;
+    miStepDash (pGC->dashOffset, &dashIndex,
+	        pGC->dash, pGC->numInDashList, &dashOffset);
+    while (--npt)
+    {
+	x1 = x2;
+	y1 = y2;
+	++pPts;
+	x2 = pPts->x;
+	y2 = pPts->y;
+	if (mode == CoordModePrevious)
+	{
+	    x2 += x1;
+	    y2 += y1;
+	}
+	if (x1 == x2 && y1 == y2)
+	    continue;
+	if (npt == 1 && pGC->capStyle == CapProjecting)
+	    projectRight = TRUE;
+	miWideDashSegment (pDrawable, pGC, FillPoly, &dashOffset, &dashIndex,
+			   x1, y1, x2, y2,
+			   projectLeft, projectRight, &leftFace, &rightFace);
+	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
+	{
+	    pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	    if (first)
+	    {
+	    	if (pGC->capStyle == CapRound)
+		    miLineCapRound (pDrawable, pGC, pixel, &leftFace, TRUE);
+	    }
+	    else
+	    {
+	    	miLineJoin (pDrawable, pGC, pixel, FillPoly, &leftFace,
+		            &prevRightFace);
+	    }
+	    if (npt == 1 && pGC->capStyle == CapRound)
+	    	miLineCapRound (pDrawable, pGC, pixel, &rightFace, FALSE);
+	}
 	prevRightFace = rightFace;
 	first = FALSE;
 	projectLeft = FALSE;
