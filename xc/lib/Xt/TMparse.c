@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.55 88/02/02 09:36:48 swick Locked $";
+static char rcsid[] = "$Header: TMparse.c,v 1.56 88/02/02 13:37:30 swick Locked $";
 #endif lint
 
 /*
@@ -134,6 +134,7 @@ static String ParseKeyAndModifiers();
 static String ParseTable();
 static String ParseImmed();
 static String ParseNone();
+static String ParseModImmed();
 
 static EventKey events[] = {
 
@@ -171,6 +172,18 @@ static EventKey events[] = {
 {"PtrMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"Motion", 	    NULL, MotionNotify,	ParseNone,	NULL},
 {"MouseMoved", 	    NULL, MotionNotify,	ParseNone,	NULL},
+{"ButtonMotion", NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
+{"BtnMotion",    NULL, MotionNotify, ParseModImmed, (Opaque)AnyButtonModifier},
+{"Button1Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
+{"Btn1Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button1Mask},
+{"Button2Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
+{"Btn2Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button2Mask},
+{"Button3Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
+{"Btn3Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button3Mask},
+{"Button4Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
+{"Btn4Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button4Mask},
+{"Button5Motion",   NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
+{"Btn5Motion",      NULL, MotionNotify, ParseModImmed,	(Opaque)Button5Mask},
 
 {"EnterNotify",     NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
 {"Enter",	    NULL, EnterNotify,    ParseTable,(Opaque)notifyModes},
@@ -567,6 +580,17 @@ static String ParseImmed(str, closure, event)
 {
     event->event.eventCode = (unsigned long)closure;
     event->event.eventCodeMask = (unsigned long)~0L;
+
+    return str;
+}
+
+static String ParseModImmed(str, closure, event)
+    String str;
+    Opaque closure;
+    EventPtr event;
+{
+    event->event.modifiers |= (unsigned long)closure;
+    event->event.modifierMask |= (unsigned long)closure;
 
     return str;
 }
