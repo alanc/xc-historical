@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.4 88/09/23 14:21:29 keith Exp $
+ * $XConsortium: resource.c,v 1.5 88/10/15 19:12:30 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,10 +26,13 @@
 # include <X11/Xlib.h>
 # include <X11/Xresource.h>
 
+/* XtOffset() hack for ibmrt BandAidCompiler */
+
 char	*servers;
 int	request_port;
 int	debugLevel;
 char	*errorLogFile;
+int	daemonMode;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -49,6 +52,8 @@ struct dmResources {
 				"0",
 "errorLogFile",	"ErrorLogFile",	DM_STRING,	&errorLogFile,
 				"",
+"daemonMode",	"DaemonMode",	DM_BOOL,	(char **) &daemonMode,
+				"true"
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -77,8 +82,14 @@ struct displayResources {
 				"5",
 "terminateServer","TerminateServer",DM_BOOL,	boffset(terminateServer),
 				"false",
-"unixPath",	"UnixPath",	DM_STRING,	boffset(unixPath),
-		":/bin:/usr/bin:/usr/bin/X11:/usr/ucb"
+"userPath",	"Path",		DM_STRING,	boffset(userPath),
+				":/bin:/usr/bin:/usr/bin/X11:/usr/ucb",
+"systemPath",	"Path",		DM_STRING,	boffset(systemPath),
+				"/etc:/bin:/usr/bin:/usr/bin/X11:/usr/ucb",
+"systemShell",	"Shell",	DM_STRING,	boffset(systemShell),
+				"/bin/sh",
+"failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
+				"/usr/bin/X11/xterm",
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\
@@ -142,6 +153,8 @@ XrmOptionDescRec optionTable [] = {
 {"-debug",	"*debugLevel",		XrmoptionSepArg,	(caddr_t) NULL },
 {"-config",	NULL,			XrmoptionSkipArg,	(caddr_t) NULL },
 {"-xrm",	NULL,			XrmoptionResArg,	(caddr_t) NULL },
+{"-daemon",	".daemonMode",		XrmoptionNoArg,		"true"         },
+{"-nodaemon",	".daemonMode",		XrmoptionNoArg,		"false"        },
 };
 
 #ifndef DEFAULT_XDM_CONFIG
@@ -167,7 +180,7 @@ char	**argv;
 	}
 	if (!config) {
 		config = DEFAULT_XDM_CONFIG;
-		if (access (config, 1) == -1)
+		if (access (config, 4) == -1)
 			config = 0;
 	}
 	if (config) {

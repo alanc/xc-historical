@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.4 88/09/23 14:21:31 keith Exp $
+ * $XConsortium: session.c,v 1.5 88/10/15 19:12:57 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,7 +38,6 @@ struct display	*d;
 	/*
 	 * Step 5: Load system default Resources
 	 */
-	Debug ("ManageSession %s\n", d->name);
 	LoadXloginResources (d);
 	InitGreet (d);
 	for (;;) {
@@ -60,13 +59,12 @@ struct display	*d;
 	 * Step 8: Run system-wide initialization file
 	 *	   /etc/Xstartup
 	 */
-	source (d->startup);
+	source (&verify, d->startup);
 	/*
 	 * Step 9: Start the clients, changing uid/groups
 	 *	   setting up environment and running /etc/Xsession
 	 */
-	Debug ("Startup sourced\n");
-	if (StartClient (&verify, &clientPid)) {
+	if (StartClient (&verify, d, &clientPid)) {
 		Debug ("Client Started\n");
 		/*
 		 * Step 13: Wait for session to end,
@@ -82,7 +80,7 @@ struct display	*d;
 	/*
 	 * Step 15: run /etc/Xreset
 	 */
-	source (d->reset);
+	source (&verify, d->reset);
 	exit (OBEYTERM_DISPLAY);
 }
 
@@ -99,52 +97,89 @@ struct display	*d;
 	}
 }
 
-StartClient (verify, pidp)
+StartClient (verify, d, pidp)
 struct verify_info	*verify;
+struct display		*d;
 int			*pidp;
 {
 	char	**f, *home, *getEnv ();
+	char	*failsafeArgv[2];
 	int	pid;
 
 	Debug ("StartSession %s: ", verify->argv[0]);
 	for (f = verify->argv; *f; f++)
 		Debug ("%s ", *f);
 	Debug ("; ");
-	for (f = verify->environ; *f; f++)
+	for (f = verify->userEnviron; *f; f++)
 		Debug ("%s ", *f);
 	Debug ("\n");
 	switch (pid = fork ()) {
 	case 0:
+		CloseOnFork ();
 		setpgrp (0, getpid ());
 #ifdef NGROUPS
+
 		setgroups (verify->ngroups, verify->groups);
 		setgid (verify->groups[0]);
 #else
 		setgid (verify->gid);
 #endif
 		setuid (verify->uid);
-		home = getEnv (verify->environ, "HOME");
+		home = getEnv (verify->userEnviron, "HOME");
 		if (home)
-			if (chdir (home) == -1)
+			if (chdir (home) == -1) {
+				LogError ("No home directory %s for user %s, using /\n",
+					  home, getEnv (verify->userEnviron, "USER"));
 				chdir ("/");
-		execve (verify->argv[0], verify->argv, verify->environ);
+			}
+		Debug ("executing session %s\n", verify->argv[0]);
+		execve (verify->argv[0], verify->argv, verify->userEnviron);
+		LogError ("Session execution failed %s\n", verify->argv[0]);
 		Debug ("exec failed\n");
+		failsafeArgv[0] = d->failsafeClient;
+		failsafeArgv[1] = 0;
+		execve (failsafeArgv[0], failsafeArgv, verify->userEnviron);
 		exit (1);
 	case -1:
-		Debug ("StartSession failed\n");
+		Debug ("StartSession, fork failed\n");
 		return 0;
 	default:
-		Debug ("StartSession suceeded\n");
+		Debug ("StartSession, fork suceeded %d\n", pid);
 		*pidp = pid;
 		return 1;
 	}
 }
 
-source (file)
-char	*file;
+source (verify, file)
+struct verify_info	*verify;
+char			*file;
 {
+	char	*args[4];
+	int	pid, wpid;
+	extern int	errno;
+
+	Debug ("source %s\n", file);
 	if (file[0] && access (file, 1) == 0) {
-		Debug ("source %s\n", file);
-		system (file);
+		switch (pid = fork ()) {
+		case 0:
+			CloseOnFork ();
+			setpgrp (0, getpid ());
+			if (!(args[0] = getEnv (verify->systemEnviron, "SHELL")))
+				args[0] = "/bin/sh";
+			args[1] = "-c";
+			args[2] = file;
+			args[3] = 0;
+			Debug ("interpreting %s with %s\n", args[2], args[0]);
+			execve (args[0], args, verify->systemEnviron);
+			LogError ("can't execute system shell %s\n", args[0]);
+			exit (1);
+		case -1:
+			Debug ("fork failed\n");
+			break;
+		default:
+			while ((wpid = wait ((waitType *) 0)) != pid)
+				;
+			break;
+		}
 	}
 }

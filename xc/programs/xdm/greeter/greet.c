@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: greet.c,v 1.5 88/10/15 19:10:59 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,6 +30,7 @@
 # include "Login.h"
 # include <X11/Shell.h>
 # include <X11/Command.h>
+# include <X11/Logo.h>
 # include "dm.h"
 
 extern Display	*dpy;
@@ -38,7 +39,8 @@ static int	done;
 static char	name[128], password[128];
 static Widget		toplevel;
 static Widget		login;
-static Widget		loginFailedButton;
+static Widget		logoToplevel;
+static Widget		logo;
 
 GreetDone (w, data, status)
     Widget	w;
@@ -81,9 +83,19 @@ struct display	*d;
 	i = 0;
 	XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
 
-	login = XtCreateManagedWidget ("login", loginWidgetClass,
-					toplevel, arglist, i);
+	login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
+					arglist, i);
 	XtRealizeWidget (toplevel);
+#ifdef DRAWLOGO
+	i = 0;
+	XtSetArg (arglist[i], XtNgeometry, "100x100-0-0"); i++;
+	logoToplevel = XtCreateApplicationShell (0, topLevelShellWidgetClass,
+						arglist, i);
+	i = 0;
+	logo = XtCreateManagedWidget ("logo", logoWidgetClass, logoToplevel,
+					arglist, i);
+	XtRealizeWidget (logoToplevel);
+#endif
 }
 
 CloseGreet (d)
@@ -97,6 +109,7 @@ struct display		*d;
 struct greet_info	*greet;
 {
 	XEvent		event;
+	Arg		args[1];
 
 	Debug ("dispatching\n");
 	done = 0;
@@ -107,7 +120,9 @@ struct greet_info	*greet;
 	XFlush (XtDisplay (toplevel));
 	greet->name = name;
 	greet->password = password;
-	greet->string = 0;
+	XtSetArg (args[0], XtNsessionArgument, (char *) &(greet->string));
+	XtGetValues (login, args, 1);
+	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
 }
 
 
