@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.94 87/08/19 11:30:09 toddb Locked $ */
+/* $Header: events.c,v 1.95 87/08/19 21:59:19 newman Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -42,6 +42,7 @@ extern WindowRec WindowTable[];
 
 extern void (* EventSwapVector[128]) ();
 extern void (* ReplySwapVector[256]) ();
+extern void CopySwap32Write(), SwapTimeCoordWrite();
 
 #define NoSuchEvent 0x80000000	/* so doesn't match NoEventMask */
 #define StructureAndSubMask ( StructureNotifyMask | SubstructureNotifyMask )
@@ -2827,7 +2828,7 @@ ProcGetModifierMapping(client)
     WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
 
     /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    WriteReplyToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
+    WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
     return client->noClientException;
 }
 
@@ -2917,7 +2918,7 @@ ProcGetKeyboardMapping(client)
 /* length is a count of 4 byte quantities and KeySyms are 4 bytes */
     rep.length = (curKeySyms.mapWidth * stuff->count);
     WriteReplyToClient(client, sizeof(xGetKeyboardMappingReply), &rep);
-
+    client->pSwapReplyFunc = CopySwap32Write;
     WriteSwappedDataToClient(
 	client,
 	curKeySyms.mapWidth * stuff->count * sizeof(KeySym),
@@ -3219,7 +3220,7 @@ ProcGetMotionEvents(client)
     WindowPtr pWin;
     xTimecoord * coords;
     xGetMotionEventsReply rep;
-    int     i, count, xmin, xmax, ymin, ymax;
+    int     i, count, nEvents, xmin, xmax, ymin, ymax;
     DeviceIntPtr mouse = inputInfo.pointer;
     TimeStamp start, stop;
     REQUEST(xGetMotionEventsReq);
@@ -3265,10 +3266,12 @@ ProcGetMotionEvents(client)
 	    }
     }
     rep.length = rep.nEvents * sizeof(xTimecoord) / 4;
+    nEvents = rep.nEvents;  /* save this away before it gets swapped */
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
     if (inputInfo.numMotionEvents)
     {
-	WriteSwappedDataToClient( client, rep.nEvents * sizeof(xTimecoord), coords);
+        client->pSwapReplyFunc = SwapTimeCoordWrite;
+	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord), coords);
 	Xfree(coords);
     }
     return Success;
