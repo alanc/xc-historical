@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: XFree86.man,v 1.1 94/03/28 21:01:32 dpw Exp $
 .\" XFree86.man
 .TH XFree86 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -226,6 +226,37 @@ SGCS:  SVR3 support, X Consortium Sponsor
 .PP
  ... and many more people out there on the net who helped with ideas and
 bug-fixes.
+.PP
+XFree86 was integrated into X11R6 by the following team:
+.PP
+.nf
+Stuart Anderson    \fIStuart.Anderson@ColumbiaSC.NCR.COM\fP
+Doug Anson         \fIdanson@lgc.com\fP
+Gertjan Akkerman   \fIakkerman@dutiba.twi.tudelft.nl\fP
+Mike Bernson       \fImike@mbsun.mlb.org\fP
+David Dawes        \fIdawes@physics.su.oz.au\fP
+Marc Evans         \fIMarc@Synergytics.Com\fP
+Pascal Haible      \fIhaible@izfm.uni-stuttgart.de\fP
+Matthieu Herrb     \fIMatthieu.Herrb@laas.fr\fP
+Dirk Hohndel       \fIhohndel@aib.com\fP
+David Holland      \fIdavidh@use.com\fP
+Alan Hourihane     \fIalanh@metro.co.uk\fP
+Jeffrey Hsu        \fIhsu@soda.berkeley.edu\fP
+Glenn Lai          \fIglenn@cs.utexas.edu\fP
+Ted Lemon          \fImellon@ncd.com\fP
+Rich Murphey       \fIrich@lamprey.utmb.edu\fP
+Hans Nasten        \fInasten@everyware.se\fP
+Mark Snitily       \fImark@sgcs.com\fP
+Randy Terbush      \fIrandyt@cse.unl.edu\fP
+Jon Tombs          \fIjon@esiix2.us.es\fP
+Kees Verstoep      \fIversto@cs.vu.nl\fP
+Paul Vixie         \fIpaul@vix.com\fP
+Mark Weaver        \fIMark_Weaver@brown.edu\fP
+David Wexelblat    \fIdwex@aib.com\fP
+Philip Wheatley    \fIPhilip.Wheatley@ColumbiaSC.NCR.COM\fP
+Thomas Wolfram     \fIwolf@prz.tu-berlin.de\fP
+Orest Zborowski    \fIorestz@eskimo.com\fP
+.fi
 .PP
 The \fIXFree86\fP enhancement package was provided by:
 .TP 8

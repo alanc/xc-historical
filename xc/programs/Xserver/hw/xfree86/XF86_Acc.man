@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: XF86_Acc.man,v 1.1 94/03/28 21:01:07 dpw Exp $
 .\" XF86_Acc.man
 .TH XF86_Accel 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -263,7 +263,7 @@ Did the overall work on the base accelerated servers.
 .PP
 .nf
 David Dawes,     \fIdawes@physics.su.oz.au\fP
-Dirk Hohndel,    \fIhohndel@informatik.uni-wuerzburg.de\fP
+Dirk Hohndel,    \fIhohndel@aib.com\fP
 David Wexelblat, \fIdwex@goblin.org\fP, \fIdwex@aib.com\fP
 .fi
 .RS 8

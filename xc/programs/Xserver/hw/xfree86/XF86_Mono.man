@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: XF86_Mono.man,v 1.1 94/03/28 21:01:13 dpw Exp $
 .\" XF86_Mono.man
 .TH XF86_Mono 1 "Version 3.0"  "XFree86"
 .SH NAME
@@ -53,14 +53,8 @@ server supports the Hyundai HGC1280 card and Sigma LaserView monochrome cards.
 .PP
 On supported SVGA chipsets, 
 .I XF86_Mono
-will use up to 256Kb of display memory (the memory available to the mono 
-server is one quarter of the total for SVGA chipsets), which yields a
-maximum virtual resolution of (approximately) 1600x1200.  On unsupported 
-SVGA chipsets, and generic VGA cards, this server uses only 64Kb of display
-memory, which yields a maximum virtual resolution of (approximately) 800x650.
-For a Hercules card, the standard resolution of 720x348 is supported.  On 
-systems with both a VGA and Hercules card installed, the monochrome server 
-can drive both in a double-headed configuration.
+will use up to 64 of display memory, which yields a maximum virtual
+resolution of (approximately) 800x650.
 .I XF86_Mono
 does not support the accelerated functions of the supported chipsets.
 .SH OPTIONS
