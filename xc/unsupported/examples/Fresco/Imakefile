@@ -1,50 +1,84 @@
-XCOMM
-XCOMM Sample programs
-XCOMM
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 20:35:13 matt Exp $
 
-XFCCFLAGS = $(CCLDFLAGS) $(CCFLAGS)
+/*
+ * TODO:  Figure out what to do with the stubs/ and raster/
+ * subdirectories.			-- Matt Landau 2.10.94
+ */
 
-#define Example(ex)                                       		@@\
-all:: ex								@@\
-ex: ex.$(CCSUFFIX) $(CCDEPLIBS)						@@\
-	$(CCDRIVER) $(XFCCFLAGS) ex.$(CCSUFFIX) $(CCLDLIBS) -o ex	@@\
-clean::									@@\
-	$(RM) ex
+        DEPLIBS = FrescoClientDepLibs
+LOCAL_LIBRARIES = FrescoClientLibs 
 
-#if defined(SGIArchitecture) && OSMajorVersion < 5
-XTCCFLAGS = $(CCFLAGS) -DFUNCPROTO -D__STDC__
-#else
-XTCCFLAGS = $(CCLDFLAGS) $(CCFLAGS)
+           SRCS = barrier.CCsuf \
+		  box.CCsuf \
+	  	  buttons.CCsuf \
+		  check.CCsuf \
+		  circle.CCsuf \
+		  figviewer.CCsuf \
+		  hello.CCsuf \
+		  mtcircles.CCsuf \
+		  narrow.CCsuf \
+		  styles.CCsuf \
+		  subpaths.CCsuf \
+		  xtf.CCsuf 
+
+           OBJS = barrier.Osuf \
+		  box.Osuf \
+	  	  buttons.Osuf \
+		  check.Osuf \
+		  circle.Osuf \
+		  figviewer.Osuf \
+		  hello.Osuf \
+		  mtcircles.Osuf \
+		  narrow.Osuf \
+		  styles.Osuf \
+		  subpaths.Osuf \
+		  xtf.Osuf 
+
+       EXAMPLES = barrier \
+		  box \
+	  	  buttons \
+		  check \
+		  circle \
+		  figviewer \
+		  hello \
+		  mtcircles \
+		  narrow \
+		  styles \
+		  subpaths \
+ 		  xtf
+
+#if ThreadedX
+  LOCAL_LDFLAGS = ThreadsLoadFlags
+  SYS_LIBRARIES = ThreadsLibraries
 #endif
 
-XTLIBS = -L$(LIBSRC)/Xtf/$(ARCH) -lXtf -lXaw -lXmu -lXt $(CCLDLIBS)
+ALL: $(EXAMPLES)
 
-#define XtExample(ex)                                       		@@\
-all:: ex								@@\
-ex: ex.$(CCSUFFIX) $(CCDEPLIBS) XfDepPath(Xtf)				@@\
-	$(CCDRIVER) $(XTCCFLAGS) ex.$(CCSUFFIX) $(XTLIBS) -o ex		@@\
-clean::									@@\
-	$(RM) ex
+#define CplusplusSource
+NormalCplusplusObjectRule()
 
-Use_libFresco()
+#ifdef FrescoExample
+#undef FrescoExample
+#endif
 
-Example(barrier)
-Example(box)
-Example(buttons)
-Example(check)
-Example(circle)
-Example(figviewer)
-Example(hello)
-Example(mtcircles)
-Example(narrow)
-Example(styles)
-Example(subpaths)
+#define FrescoExample(name)			@@\
+NormalCplusplusProgramTarget(name,name.Osuf,$(DEPLIBS),$(LOCAL_LIBRARIES),$(SYS_LIBRARIES))
 
-XtExample(xtf)
+#define FrescoExampleWithLibs(name,libs)	@@\
+NormalCplusplusProgramTarget(name,name.Osuf,$(DEPLIBS),libs $(LOCAL_LIBRARIES),$(SYS_LIBRARIES))
 
-SUBDIRS = stubs
+FrescoExample(barrier)
+FrescoExample(box)
+FrescoExample(buttons)
+FrescoExample(check)
+FrescoExample(circle)
+FrescoExample(figviewer)
+FrescoExample(hello)
+FrescoExample(mtcircles)
+FrescoExample(narrow)
+FrescoExample(styles)
+FrescoExample(subpaths)
 
-MakeInSubdirs($(SUBDIRS))
+FrescoExampleWithLibs(xtf, $(XTFLIB) XawClientLibs)
 
-depend::
-	$(DEPEND) -o "" -s "# DO NOT DELETE" -- $(DEPEND_CCFLAGS) -- $(SRCS)
+DependTarget()
