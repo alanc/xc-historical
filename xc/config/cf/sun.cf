@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.81 93/03/10 20:02:05 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.82 93/03/12 18:58:44 rws Exp $
 
 #ifdef SVR4
-#define OSName            SunOS 5.0
+#define OSName            SunOS 5.1
 XCOMM operating system:  OSName
 #define OSMajorVersion    5
-#define OSMinorVersion    0
+#define OSMinorVersion    1
 #define OSTeenyVersion    0
 #else
 #define OSName            SunOS 4.1.2
