@@ -288,7 +288,7 @@ follows a specific pattern to allow the programmer to easily find the
 desired information.
 .LP
 The first few pages of every chapter give an overview of the widgets
-is that section.  Widgets are grouped into chapters by functionality.
+in that section.  Widgets are grouped into chapters by functionality.
 .IP "Chapter 3" .75i
 Simple Widgets
 .IP "Chapter 4" .75i
@@ -298,7 +298,7 @@ Text Widgets
 .IP "Chapter 6" .75i
 Composite and Constraint Widget
 .LP
-Following the introduction will be a description of each widget is that
+Following the introduction will be a description of each widget in that
 chapter.  When no functional grouping is obvious the widgets are listed
 in alphabetical order, such as in chapters three and six.
 .LP
