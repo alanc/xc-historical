@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.27 89/09/21 08:33:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.28 89/10/03 17:06:37 swick Exp $";
 /* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
 #endif /* lint */
 
@@ -29,13 +29,15 @@ SOFTWARE.
 
 /*
  * X Toolkit Memory Allocation Routines
+ *
+ * Uses Xlib memory management, which is spec'd to be re-entrant.
  */
 
-extern char *malloc(), *realloc(), *calloc();
-extern void free();
-extern void exit();
 #include <X11/Xlib.h>
+#include <X11/Xlibos.h>
 #include "IntrinsicI.h"
+
+extern void exit();
 
 void _XtAllocError(type)
     String type;
@@ -50,11 +52,7 @@ char *XtMalloc(size)
     unsigned size;
 {
     char *ptr;
-#ifdef MALLOC_0_RETURNS_NULL
-    if ((ptr = malloc(size ? size : 1)) == NULL)
-#else
-    if ((ptr = malloc(size)) == NULL)
-#endif
+    if ((ptr = Xmalloc(size)) == NULL)
         _XtAllocError("malloc");
 
     return(ptr);
@@ -65,11 +63,7 @@ char *XtRealloc(ptr, size)
     unsigned size;
 {
    if (ptr == NULL) return(XtMalloc(size));
-#ifdef MALLOC_0_RETURNS_NULL
-   else if ((ptr = realloc(ptr, (size ? size : 1))) == NULL)  
-#else
-   else if ((ptr = realloc(ptr, size)) == NULL)
-#endif
+   else if ((ptr = Xrealloc(ptr, size)) == NULL)
 	_XtAllocError("realloc");
 
    return(ptr);
@@ -80,13 +74,7 @@ char *XtCalloc(num, size)
 {
     char *ptr;
 
-#ifdef MALLOC_0_RETURNS_NULL
-    if (num == 0 || size == 0) {
-	num = size = 1;
-    }
-#endif
-
-    if ((ptr = calloc(num, size)) == NULL)
+    if ((ptr = Xcalloc(num, size)) == NULL)
 	_XtAllocError("calloc");
 
     return(ptr);
@@ -95,7 +83,7 @@ char *XtCalloc(num, size)
 void XtFree(ptr)
     char *ptr;
 {
-   if (ptr != NULL) free(ptr);
+   if (ptr != NULL) Xfree(ptr);
 }
 
 
