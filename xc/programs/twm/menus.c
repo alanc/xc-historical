@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.161 90/06/04 17:53:58 jim Exp $
+ * $XConsortium: menus.c,v 1.162 90/06/05 14:17:35 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.161 90/06/04 17:53:58 jim Exp $";
+"$XConsortium: menus.c,v 1.162 90/06/05 14:17:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1105,6 +1105,27 @@ FindMenuRoot(name)
 }
 
 
+static Bool belongs_to_twm_window (t, w)
+    register TwmWindow *t;
+    register Window w;
+{
+    if (!t) return False;
+
+    if (w == t->frame || w == t->title_w || w == t->hilite_w ||
+	w == t->icon_w || w == t->icon_bm_w) return True;
+    
+    if (t && t->titlebuttons) {
+	register TBWindow *tbw;
+	register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
+	for (tbw = t->titlebuttons; nb > 0; tbw++, nb--) {
+	    if (tbw->window == w) return True;
+	}
+    }
+    return False;
+}
+
+
+
 /***********************************************************************
  *
  *  Procedure:
@@ -1298,16 +1319,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    /*
 	     * see if this is being done from the titlebar
 	     */
-	    if (tmp_win && tmp_win->titlebuttons) {
-		register TBWindow *tbw;
-		register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
-		for (tbw = tmp_win->titlebuttons; nb > 0; tbw++, nb--) {
-		    if (tbw->window == eventp->xbutton.window) {
-			fromtitlebar = True;
-			break;
-		    }
-		}
-	    }
+	    fromtitlebar = belongs_to_twm_window (tmp_win, eventp->xbutton.window);
 
 	    /* Save pointer position so we can tell if it was moved or
 	       not during the resize. */
@@ -1467,17 +1479,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	/*
 	 * see if this is being done from the titlebar
 	 */
-	if (tmp_win && tmp_win->titlebuttons) {
-	    register TBWindow *tbw;
-	    register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
-	    for (tbw = tmp_win->titlebuttons; nb > 0; tbw++, nb--) {
-		if (tbw->window == eventp->xbutton.window) {
-		    fromtitlebar = True;
-		    break;
-		}
-	    }
-	}
-
+	fromtitlebar = belongs_to_twm_window (tmp_win, eventp->xbutton.window);
 
 	while (TRUE)
 	{
