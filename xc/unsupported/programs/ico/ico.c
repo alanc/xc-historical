@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.33 91/01/10 13:36:30 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.34 91/07/13 17:51:19 converse Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -291,19 +291,18 @@ char **argv;
 	fg = WhitePixel(dpy, DefaultScreen(dpy));
 	bg = BlackPixel(dpy, DefaultScreen(dpy));
 	if (background_colorname) {
-	    XColor cdef;
+	    XColor cdef, igndef;
 
-	    if (XParseColor (dpy, cmap, background_colorname, &cdef) &&
-		XAllocColor (dpy, cmap, &cdef))
+	    if (XAllocNamedColor (dpy, cmap, background_colorname,
+				  &cdef, &igndef))
 	      bg = cdef.pixel;
 	    else 
 	      icoFatal ("no such color \"%s\"", background_colorname);
 	}
 	if (numcolors && (!dofaces || numcolors == 1)) {
-	    XColor cdef;
+	    XColor cdef, igndef;
 
-	    if (XParseColor (dpy, cmap, colornames[0], &cdef) &&
-		XAllocColor (dpy, cmap, &cdef))
+	    if (XAllocNamedColor (dpy, cmap, colornames[0], &cdef, &igndef))
 	      fg = cdef.pixel;
 	    else 
 	      icoFatal ("no such color \"%s\"", colornames[0]);
