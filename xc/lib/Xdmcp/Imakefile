@@ -5,7 +5,7 @@ XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
 XCOMM
 
-       INCLUDES = -I. -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I. -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) 
 
