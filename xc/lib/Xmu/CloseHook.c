@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CloseHook.c,v 1.5 90/03/13 16:53:53 jim Exp $
+ * $XConsortium: CloseHook.c,v 1.6 91/05/28 15:01:24 converse Exp $
  *
  * CloseDisplayHook package - provide callback on XCloseDisplay
  *
@@ -92,6 +92,9 @@ static DisplayEntry *_FindDisplayEntry();
  * the given function will be called as:
  *
  *         (*func) (dpy, arg)
+ *
+ * This function is declared to return an int even though the value is ignored
+ * because some compilers have problems with functions returning void.
  *
  * This routine returns NULL if it was unable to add the callback, otherwise
  * it returns an untyped pointer that can be used with Remove or Lookup, but
