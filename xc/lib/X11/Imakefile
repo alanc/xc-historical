@@ -194,6 +194,7 @@ OBJS2 =\
 	XRepWindow.o \
 	XRestackWs.o \
 	XRotProp.o \
+	XScrResStr.o \
 	XSelInput.o \
 	XSendEvent.o \
 	XSetBack.o \
