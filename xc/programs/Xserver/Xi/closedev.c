@@ -1,4 +1,4 @@
-/* $XConsortium: xclosedev.c,v 1.9 91/01/24 16:24:01 rws Exp $ */
+/* $XConsortium: xclosedev.c,v 1.10 92/10/20 17:11:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -61,6 +61,7 @@ SProcXCloseDevice(client)
 
     REQUEST(xCloseDeviceReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xCloseDeviceReq);
     return(ProcXCloseDevice(client));
     }
 

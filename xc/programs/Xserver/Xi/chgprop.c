@@ -1,4 +1,4 @@
-/* $XConsortium: xchgprop.c,v 1.9 91/01/24 16:22:19 rws Exp $ */
+/* $XConsortium: xchgprop.c,v 1.10 92/10/20 17:11:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,6 +60,7 @@ SProcXChangeDeviceDontPropagateList(client)
 
     REQUEST(xChangeDeviceDontPropagateListReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xChangeDeviceDontPropagateListReq);
     swapl(&stuff->window, n);
     swaps(&stuff->count, n);
     p = (long *) &stuff[1];

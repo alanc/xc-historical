@@ -1,4 +1,4 @@
-/* $XConsortium: xsendexev.c,v 1.6 90/05/18 10:55:24 rws Exp $ */
+/* $XConsortium: xsendexev.c,v 1.7 90/05/18 11:32:30 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -65,6 +65,7 @@ SProcXSendExtensionEvent(client)
 
     REQUEST(xSendExtensionEventReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xSendExtensionEventReq);
     swapl(&stuff->destination, n);
     swaps(&stuff->count, n);
     eventP = (xEvent *) &stuff[1];

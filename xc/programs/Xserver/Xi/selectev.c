@@ -1,4 +1,4 @@
-/* $XConsortium: xselectev.c,v 1.8 90/05/18 11:03:13 rws Exp $ */
+/* $XConsortium: xselectev.c,v 1.9 90/05/18 15:35:37 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -62,6 +62,7 @@ register ClientPtr client;
 
     REQUEST(xSelectExtensionEventReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xSelectExtensionEventReq);
     swapl(&stuff->window, n);
     swaps(&stuff->count, n);
     p = (long *) &stuff[1];

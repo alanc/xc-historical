@@ -1,4 +1,4 @@
-/* $XConsortium: xallowev.c,v 1.5 89/10/10 16:00:59 gms Exp $ */
+/* $XConsortium: xallowev.c,v 1.6 89/12/02 15:20:24 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -56,8 +56,9 @@ SProcXAllowDeviceEvents(client)
     register char n;
 
     REQUEST(xAllowDeviceEventsReq);
-    swapl(&stuff->time, n);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xAllowDeviceEventsReq);
+    swapl(&stuff->time, n);
     return(ProcXAllowDeviceEvents(client));
     }
 

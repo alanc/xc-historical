@@ -1,4 +1,4 @@
-/* $XConsortium: xgetvers.c,v 1.4 89/12/02 15:21:09 rws Exp $ */
+/* $XConsortium: xgetvers.c,v 1.5 90/05/18 15:35:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,6 +57,7 @@ SProcXGetExtensionVersion(client)
 
     REQUEST(xGetExtensionVersionReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xGetExtensionVersionReq);
     swaps(&stuff->nbytes, n);
     return(ProcXGetExtensionVersion(client));
     }
@@ -75,6 +76,13 @@ ProcXGetExtensionVersion (client)
     REQUEST(xGetExtensionVersionReq);
     REQUEST_AT_LEAST_SIZE(xGetExtensionVersionReq);
 
+    if (stuff->length != (sizeof(xGetExtensionVersionReq) + 
+	stuff->nbytes + 3)>>2)
+	{
+	SendErrorToClient(client, IReqCode, X_GetExtensionVersion, 0, 
+		BadLength);
+	return Success;
+	}
 
     rep.repType = X_Reply;
     rep.RepType = X_GetExtensionVersion;

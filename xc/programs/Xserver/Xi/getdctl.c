@@ -1,4 +1,4 @@
-/* $XConsortium: xgetdctl.c,v 1.3 91/01/18 15:34:49 gms Exp $ */
+/* $XConsortium: xgetdctl.c,v 1.1 91/07/24 15:50:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -59,6 +59,7 @@ SProcXGetDeviceControl(client)
 
     REQUEST(xGetDeviceControlReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xGetDeviceControlReq);
     swaps(&stuff->control, n);
     return(ProcXGetDeviceControl(client));
     }

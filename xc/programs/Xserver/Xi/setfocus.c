@@ -1,4 +1,4 @@
-/* $XConsortium: xsetfocus.c,v 1.4 89/12/02 15:21:36 rws Exp $ */
+/* $XConsortium: xsetfocus.c,v 1.5 90/05/18 14:15:11 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -59,6 +59,7 @@ SProcXSetDeviceFocus(client)
 
     REQUEST(xSetDeviceFocusReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xSetDeviceFocusReq);
     swapl(&stuff->focus, n);
     swapl(&stuff->time, n);
     return(ProcXSetDeviceFocus(client));

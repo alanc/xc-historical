@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdevb.c,v 1.9 91/05/05 18:29:38 rws Exp $ */
+/* $XConsortium: xgrabdevb.c,v 1.10 92/10/20 17:11:49 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,6 +60,7 @@ SProcXGrabDeviceButton(client)
 
     REQUEST(xGrabDeviceButtonReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xGrabDeviceButtonReq);
     swapl(&stuff->grabWindow, n);
     swaps(&stuff->modifiers, n);
     swaps(&stuff->event_count, n);

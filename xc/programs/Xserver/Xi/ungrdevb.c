@@ -1,4 +1,4 @@
-/* $XConsortium: xungrdevb.c,v 1.7 91/05/05 18:29:43 rws Exp $ */
+/* $XConsortium: xungrdevb.c,v 1.8 92/10/20 17:12:06 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -39,6 +39,9 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
+#define AllModifiersMask ( \
+	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
+	Mod3Mask | Mod4Mask | Mod5Mask )
 extern	int 	IReqCode;
 extern	int	BadDevice;
 extern	int	DeviceButtonPress;
@@ -59,6 +62,7 @@ SProcXUngrabDeviceButton(client)
 
     REQUEST(xUngrabDeviceButtonReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xUngrabDeviceButtonReq);
     swapl(&stuff->grabWindow, n);
     swaps(&stuff->modifiers, n);
     return(ProcXUngrabDeviceButton(client));
@@ -120,6 +124,14 @@ ProcXUngrabDeviceButton(client)
 	{
 	SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
 	    BadWindow);
+	return Success;
+	}
+
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+	{
+	SendErrorToClient(client, IReqCode, X_UngrabDeviceButton, 0, 
+	    BadValue);
 	return Success;
 	}
 

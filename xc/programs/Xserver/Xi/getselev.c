@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: xgetselev.c,v 1.8 90/05/18 11:37:37 rws Exp $ */
+/* $XConsortium: xgetselev.c,v 1.9 90/05/18 15:35:21 rws Exp $ */
 
 /***********************************************************************
  *
@@ -57,6 +57,7 @@ SProcXGetSelectedExtensionEvents(client)
 
     REQUEST(xGetSelectedExtensionEventsReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xGetSelectedExtensionEventsReq);
     swapl(&stuff->window, n);
     return(ProcXGetSelectedExtensionEvents(client));
     }

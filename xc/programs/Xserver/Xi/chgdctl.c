@@ -1,4 +1,4 @@
-/* $XConsortium: xchgdctl.c,v 1.4 91/01/18 15:28:04 gms Exp $ */
+/* $XConsortium: xchgdctl.c,v 1.1 91/07/24 15:51:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,6 +58,7 @@ SProcXChangeDeviceControl(client)
 
     REQUEST(xChangeDeviceControlReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xChangeDeviceControlReq);
     swaps(&stuff->control, n);
     return(ProcXChangeDeviceControl(client));
     }
@@ -98,6 +99,15 @@ ProcXChangeDeviceControl(client)
     switch (stuff->control) 
 	{
 	case DEVICE_RESOLUTION:
+    	    r = (xDeviceResolutionCtl *) &stuff[1];
+	    if ((len < (sizeof(xDeviceResolutionCtl)>>2)) ||
+	        (len != (sizeof(xDeviceResolutionCtl)>>2) +
+		 r->num_valuators))
+		{
+		SendErrorToClient (client, IReqCode, X_ChangeDeviceControl, 
+			0, BadLength);
+		return Success;
+		}
 	    if (!dev->valuator)
 		{
 		SendErrorToClient (client, IReqCode, X_ChangeDeviceControl, 0, 
@@ -111,7 +121,6 @@ ProcXChangeDeviceControl(client)
 		    &rep);
 		return Success;
 		}
-    	    r = (xDeviceResolutionCtl *) &stuff[1];
 	    resolution = (CARD32 *) (r + 1);
 	    if (r->first_valuator + r->num_valuators > dev->valuator->numAxes)
 		{

@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.13 91/05/05 17:37:27 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.14 92/10/20 17:11:26 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,6 +60,7 @@ SProcXChangeKeyboardDevice(client)
 
     REQUEST(xChangeKeyboardDeviceReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xChangeKeyboardDeviceReq);
     return(ProcXChangeKeyboardDevice(client));
     }
 

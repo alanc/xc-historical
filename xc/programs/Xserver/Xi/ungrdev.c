@@ -1,4 +1,4 @@
-/* $XConsortium: xungrdev.c,v 1.5 89/10/10 16:11:25 gms Exp $ */
+/* $XConsortium: xungrdev.c,v 1.6 89/12/02 15:21:45 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,6 +57,7 @@ register ClientPtr client;
 
     REQUEST(xUngrabDeviceReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xUngrabDeviceReq);
     swapl(&stuff->time, n);
     return(ProcXUngrabDevice(client));
     }

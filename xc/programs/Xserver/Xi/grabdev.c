@@ -1,4 +1,4 @@
-/* $XConsortium: xgrabdev.c,v 1.9 90/05/18 11:02:36 rws Exp $ */
+/* $XConsortium: xgrabdev.c,v 1.10 90/05/18 15:32:29 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,7 +43,6 @@ SOFTWARE.
 extern	int 		IReqCode;
 extern	int		BadDevice;
 extern	int		BadClass;
-extern	InputInfo	inputInfo;
 extern	XExtEventInfo	EventInfo[];
 extern	void		(* ReplySwapVector[256]) ();
 DeviceIntPtr		LookupDeviceIntRec();
@@ -64,6 +63,7 @@ SProcXGrabDevice(client)
 
     REQUEST(xGrabDeviceReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xGrabDeviceReq);
     swapl(&stuff->grabWindow, n);
     swapl(&stuff->time, n);
     swaps(&stuff->event_count, n);

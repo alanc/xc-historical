@@ -1,4 +1,4 @@
-/* $XConsortium: xgtmotion.c,v 1.10 91/07/17 16:38:25 rws Exp $ */
+/* $XConsortium: xgtmotion.c,v 1.11 92/10/20 17:11:55 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -57,6 +57,7 @@ register ClientPtr client;
 
     REQUEST(xGetDeviceMotionEventsReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xGetDeviceMotionEventsReq);
     swapl(&stuff->start, n);
     swapl(&stuff->stop, n);
     return(ProcXGetDeviceMotionEvents(client));

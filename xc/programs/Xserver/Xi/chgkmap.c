@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkmap.c,v 1.4 89/09/25 16:23:18 gms Exp $ */
+/* $XConsortium: xchgkmap.c,v 1.5 89/12/02 15:20:34 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -60,6 +60,7 @@ SProcXChangeDeviceKeyMapping(client)
 
     REQUEST(xChangeDeviceKeyMappingReq);
     swaps(&stuff->length, n);
+    REQUEST_AT_LEAST_SIZE(xChangeDeviceKeyMappingReq);
     p = (long *) &stuff[1];
     count = stuff->keyCodes * stuff->keySymsPerKeyCode;
     for (i = 0; i < count; i++)

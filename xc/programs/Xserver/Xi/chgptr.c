@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.14 91/05/05 17:36:57 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.15 92/10/20 17:11:33 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -65,6 +65,7 @@ SProcXChangePointerDevice(client)
 
     REQUEST(xChangePointerDeviceReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xChangePointerDeviceReq);
     return(ProcXChangePointerDevice(client));
     }
 

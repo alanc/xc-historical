@@ -1,4 +1,4 @@
-/* $XConsortium: xgetprop.c,v 1.7 91/01/24 17:03:42 rws Exp $ */
+/* $XConsortium: xgetprop.c,v 1.8 92/10/20 17:11:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -58,6 +58,7 @@ SProcXGetDeviceDontPropagateList(client)
 
     REQUEST(xGetDeviceDontPropagateListReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xGetDeviceDontPropagateListReq);
     swapl(&stuff->window, n);
     return(ProcXGetDeviceDontPropagateList(client));
     }

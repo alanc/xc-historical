@@ -1,4 +1,4 @@
-/* $XConsortium: xungrdevk.c,v 1.7 91/05/05 18:29:40 rws Exp $ */
+/* $XConsortium: xungrdevk.c,v 1.8 92/10/20 17:12:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -39,6 +39,9 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
+#define AllModifiersMask ( \
+	ShiftMask | LockMask | ControlMask | Mod1Mask | Mod2Mask | \
+	Mod3Mask | Mod4Mask | Mod5Mask )
 extern	int 	IReqCode;
 extern	int	BadDevice;
 extern	void	(* ReplySwapVector[256]) ();
@@ -59,6 +62,7 @@ SProcXUngrabDeviceKey(client)
 
     REQUEST(xUngrabDeviceKeyReq);
     swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xUngrabDeviceKeyReq);
     swapl(&stuff->grabWindow, n);
     swaps(&stuff->modifiers, n);
     return(ProcXUngrabDeviceKey(client));
@@ -119,6 +123,21 @@ ProcXUngrabDeviceKey(client)
 	{
 	SendErrorToClient(client, IReqCode, X_UngrabDeviceKey, 0, 
 	    BadWindow);
+	return Success;
+	}
+    if (((stuff->key > dev->key->curKeySyms.maxKeyCode) ||
+	 (stuff->key < dev->key->curKeySyms.minKeyCode))
+	&& (stuff->key != AnyKey))
+	{
+	SendErrorToClient(client, IReqCode, X_UngrabDeviceKey, 0, 
+	    BadValue);
+	return Success;
+	}
+    if ((stuff->modifiers != AnyModifier) &&
+	(stuff->modifiers & ~AllModifiersMask))
+	{
+	SendErrorToClient(client, IReqCode, X_UngrabDeviceKey, 0, 
+	    BadValue);
 	return Success;
 	}
 
