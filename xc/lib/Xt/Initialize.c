@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.158 90/08/23 12:58:40 swick Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.159 90/11/30 18:31:55 rws Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -41,7 +41,7 @@ SOFTWARE.
 #include "ShellP.h"
 #include "Quarks.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* $XConsortium: VarargsI.h,v 1.7 89/11/14 14:27:10 swick Exp $ */
+/* $XConsortium: VarargsI.h,v 1.8 89/12/14 14:55:30 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -27,7 +27,7 @@ without express or implied warranty.
 #define NeedFunctionPrototypes 1
 #endif
 
-#ifdef __STDC__
+#if __STDC__
 # ifndef MISSING_STDARG_H
 #  include <stdarg.h>
 # endif

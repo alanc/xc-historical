@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.120 90/12/03 17:43:32 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.121 90/12/05 13:49:43 rws Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -39,7 +39,7 @@ SOFTWARE.
 #include "IntrinsicI.h"
 
 /* VMS linker doesn't believe relocatable addrs can be const */
-#if defined(__STDC__) && !defined(VMS)
+#if __STDC__ && !defined(VMS)
 #define Const const
 #else
 #define Const /**/

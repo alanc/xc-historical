@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.119 90/10/08 09:21:39 rws Exp $ */
+/* $XConsortium: Event.c,v 1.120 90/10/31 14:51:34 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -29,7 +29,7 @@ SOFTWARE.
 #include "Shell.h"
 #include "StringDefs.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/

@@ -1,4 +1,4 @@
-/* "$XConsortium: Converters.c,v 1.57 90/11/30 18:31:10 rws Exp $"; */
+/* "$XConsortium: Converters.c,v 1.58 90/12/09 17:14:15 rws Exp $"; */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -34,7 +34,7 @@ SOFTWARE.
 #include	"IntrinsicI.h"
 #include	"Quarks.h"
 
-#ifdef __STDC__
+#if __STDC__
 #define Const const
 #else
 #define Const /**/
