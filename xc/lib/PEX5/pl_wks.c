@@ -1,4 +1,4 @@
-/* $XConsortium: pl_wks.c,v 1.2 92/05/11 13:13:59 mor Exp $ */
+/* $XConsortium: pl_wks.c,v 1.3 92/05/18 14:19:22 mor Exp $ */
 
 /****************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,17 +37,17 @@ PEXCreateWorkstation (display, drawable, lineBundle, markerBundle, textBundle,
 
 INPUT Display		*display;
 INPUT Drawable		drawable;
-INPUT PEXLookUpTable	lineBundle;
-INPUT PEXLookUpTable	markerBundle;
-INPUT PEXLookUpTable	textBundle;
-INPUT PEXLookUpTable	interiorBundle;
-INPUT PEXLookUpTable	edgeBundle;
-INPUT PEXLookUpTable	colorTable;
-INPUT PEXLookUpTable	patternTable;
-INPUT PEXLookUpTable	textFontTable;
-INPUT PEXLookUpTable	depthCueTable;
-INPUT PEXLookUpTable	lightTable;
-INPUT PEXLookUpTable	colorApproxTable;
+INPUT PEXLookupTable	lineBundle;
+INPUT PEXLookupTable	markerBundle;
+INPUT PEXLookupTable	textBundle;
+INPUT PEXLookupTable	interiorBundle;
+INPUT PEXLookupTable	edgeBundle;
+INPUT PEXLookupTable	colorTable;
+INPUT PEXLookupTable	patternTable;
+INPUT PEXLookupTable	textFontTable;
+INPUT PEXLookupTable	depthCueTable;
+INPUT PEXLookupTable	lightTable;
+INPUT PEXLookupTable	colorApproxTable;
 INPUT PEXNameSet	highlightIncl;
 INPUT PEXNameSet	highlightExcl;
 INPUT PEXNameSet	invisibilityIncl;
@@ -173,8 +173,8 @@ INPUT unsigned long	*valueMask;
 
     PEXGetFPReq (GetWorkstationAttributes, req, convertFP);
     req->wks = wks;
-    req->itemMask[0] = valueMask[0];
-    req->itemMask[1] = valueMask[1];
+    req->itemMask0 = valueMask[0];
+    req->itemMask1 = valueMask[1];
 
     if (_XReply (display, &rep, 0, xFalse) == 0)
     {
@@ -201,10 +201,12 @@ INPUT unsigned long	*valueMask;
     ppwi = (PEXWorkstationAttributes *)
         PEXAllocBuf ((unsigned) (sizeof (PEXWorkstationAttributes)));
 
+    ppwi->defined_views.count = 0;
     ppwi->defined_views.views = NULL;
-    ppwi->posted_structures.structure = NULL;
+    ppwi->posted_structures.count = 0;
+    ppwi->posted_structures.structures = NULL;
 
-    for (i = 0; i < (PEXPWMaxIndex + 1); i++)
+    for (i = 0; i < (PEXPWMaxShift + 1); i++)
     {
 	bitSet = valueMask[i >> 5] & (1L << (i & 0x1f));
 	if (bitSet != 0)
@@ -275,47 +277,47 @@ INPUT unsigned long	*valueMask;
 		pv += LENOF (Drawable);
 		break;
 	    case PEXPWMarkerBundle:
-		ppwi->marker_bundle = *((PEXLookUpTable *) pv);
+		ppwi->marker_bundle = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWTextBundle:
-		ppwi->text_bundle = *((PEXLookUpTable *) pv);
+		ppwi->text_bundle = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWLineBundle:
-		ppwi->line_bundle = *((PEXLookUpTable *) pv);
+		ppwi->line_bundle = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWInteriorBundle:
-		ppwi->interior_bundle = *((PEXLookUpTable *) pv);
+		ppwi->interior_bundle = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWEdgeBundle:
-		ppwi->edge_bundle = *((PEXLookUpTable *) pv);
+		ppwi->edge_bundle = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWColorTable:
-		ppwi->color_table = *((PEXLookUpTable *) pv);
+		ppwi->color_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWDepthCueTable:
-		ppwi->depth_cue_table = *((PEXLookUpTable *) pv);
+		ppwi->depth_cue_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWLightTable:
-		ppwi->light_table = *((PEXLookUpTable *) pv);
+		ppwi->light_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWColorApproxTable:
-		ppwi->color_approx_table = *((PEXLookUpTable *) pv);
+		ppwi->color_approx_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWPatternTable:
-		ppwi->pattern_table = *((PEXLookUpTable *) pv);
+		ppwi->pattern_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWTextFontTable:
-		ppwi->text_font_table = *((PEXLookUpTable *) pv);
+		ppwi->text_font_table = *((PEXLookupTable *) pv);
 		pv += LENOF (pexLookupTable);
 		break;
 	    case PEXPWHighlightIncl:
@@ -339,10 +341,10 @@ INPUT unsigned long	*valueMask;
 		pv++;
 		ppwi->posted_structures.count = size;
 		size *= sizeof (pexStructureInfo);
-		ppwi->posted_structures.structure = 
+		ppwi->posted_structures.structures = 
 		    (PEXPostedStructure *) PEXAllocBuf ((unsigned) size);
 		COPY_AREA ((char *) pv,
-		    (char *) (ppwi->posted_structures.structure), size);
+		    (char *) (ppwi->posted_structures.structures), size);
 		pv += NUMWORDS (size);
 		break;
 	    case PEXPWNumPriorities:

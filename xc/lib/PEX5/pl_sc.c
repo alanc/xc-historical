@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.1 92/05/08 15:13:47 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.2 92/05/12 18:59:34 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -208,9 +208,12 @@ INPUT unsigned long	valueMask;
     scattr = (PEXSCAttributes *)
 	PEXAllocBuf ((unsigned) (sizeof (PEXSCAttributes)));
 
-    scattr->start_path.element = NULL;
-    scattr->normal.pair = NULL;
-    scattr->inverted.pair = NULL;
+    scattr->start_path.count = 0;
+    scattr->start_path.elements = NULL;
+    scattr->normal.count = 0;
+    scattr->normal.pairs = NULL;
+    scattr->inverted.count = 0;
+    scattr->inverted.pairs = NULL;
 
     for (i = 0; i < (PEXSCMaxShift + 1); i++)
     {
@@ -240,10 +243,10 @@ INPUT unsigned long	valueMask;
 		pv++;
 		scattr->start_path.count = tmp;
 		tmp *= sizeof (PEXElementRef);
-		scattr->start_path.element =
+		scattr->start_path.elements =
 		    (PEXElementRef *) PEXAllocBuf ((unsigned) tmp);
 		COPY_AREA ((char *) pv,
-		    (char *) (scattr->start_path.element), tmp);
+		    (char *) (scattr->start_path.elements), tmp);
 		pv = (unsigned long *) ((char *) pv + tmp);
 		break;
 	    case PEXSCNormalList:
@@ -251,9 +254,9 @@ INPUT unsigned long	valueMask;
 		pv++;
 		scattr->normal.count = tmp;
 		tmp *= sizeof (PEXNameSetPair);
-		scattr->normal.pair =
+		scattr->normal.pairs =
 		    (PEXNameSetPair *) PEXAllocBuf ((unsigned) tmp);
-		COPY_AREA ((char *) pv, (char *) (scattr->normal.pair), tmp);
+		COPY_AREA ((char *) pv, (char *) (scattr->normal.pairs), tmp);
 		pv = (unsigned long *) ((char *) pv + tmp);
 		break;
 	    case PEXSCInvertedList:
@@ -261,10 +264,10 @@ INPUT unsigned long	valueMask;
 		pv++;
 		scattr->inverted.count = tmp;
 		tmp *= sizeof (PEXNameSetPair);
-		scattr->inverted.pair =
+		scattr->inverted.pairs =
 		    (PEXNameSetPair *) PEXAllocBuf ((unsigned) tmp);
 		COPY_AREA ((char *) pv,
-		    (char *) (scattr->inverted.pair), tmp);
+		    (char *) (scattr->inverted.pairs), tmp);
 		pv = (unsigned long *) ((char *) pv + tmp);
 		break;
 	    }
@@ -365,10 +368,10 @@ INPUT PEXSearchContext	sc;
 	PEXAllocBuf ((unsigned) (sizeof (PEXStructurePath)));
 
     scinfo->count = rep.numItems;
-    scinfo->element = (PEXElementRef *)
+    scinfo->elements = (PEXElementRef *)
 	PEXAllocBuf ((unsigned) (rep.numItems * sizeof (PEXElementRef)));
 
-    _XRead (display, (char *) (scinfo->element), (long) (rep.length << 2));
+    _XRead (display, (char *) (scinfo->elements), (long) (rep.length << 2));
 
 
     /*
@@ -445,7 +448,7 @@ INPUT PEXSCAttributes	*values;
 		tmp = *((CARD32 *) pv) = values->start_path.count;
 		pv++;
 		tmp *= sizeof (PEXElementRef);
-		COPY_AREA ((char *) (values->start_path.element),
+		COPY_AREA ((char *) (values->start_path.elements),
 		    (char *) pv, tmp);
 		pv = (CARD32 *) ((char *) pv + tmp);
 		break;
@@ -453,14 +456,14 @@ INPUT PEXSCAttributes	*values;
 		tmp = *((CARD32 *) pv) = values->normal.count;
 		pv++;
 		tmp *= sizeof (PEXNameSetPair);
-		COPY_AREA ((char *) (values->normal.pair), (char *) pv, tmp);
+		COPY_AREA ((char *) (values->normal.pairs), (char *) pv, tmp);
 		pv = (CARD32 *) ((char *) pv + tmp);
 		break;
 	    case PEXSCInvertedList:
 		tmp = *((CARD32 *) pv) = values->inverted.count;
 		pv++;
 		tmp *= sizeof (PEXNameSetPair);
-		COPY_AREA ((char *) (values->inverted.pair),
+		COPY_AREA ((char *) (values->inverted.pairs),
 		    (char *) pv, tmp);
 		pv = (CARD32 *) ((char *) pv + tmp);
 		break;

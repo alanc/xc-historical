@@ -1,4 +1,4 @@
-/* $XConsortium: pl_struct.c,v 1.1 92/05/08 15:13:59 mor Exp $ */
+/* $XConsortium: pl_struct.c,v 1.2 92/05/18 14:17:37 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -414,7 +414,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	per = (pexElementRef *) PEXAllocBuf ((unsigned) size);
 	COPY_AREA ((char *) prep, (char *) per, size);
 	psp->count = numElements;
-	psp->element = (PEXElementRef *) per;
+	psp->elements = (PEXElementRef *) per;
 	psp++;
 	prep += size;
     }
@@ -501,7 +501,7 @@ OUTPUT unsigned long	*numPathsReturn;
 	per = (pexElementRef *) PEXAllocBuf ((unsigned) size);
 	COPY_AREA ((char *) prep, (char *) per, size);
 	psp->count = numElements;
-	psp->element = (PEXElementRef *) per;
+	psp->elements = (PEXElementRef *) per;
 	psp++;
 	prep += size;
     }
