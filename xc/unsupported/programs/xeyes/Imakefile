@@ -1,4 +1,14 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.13 91/07/16 23:07:55 gildea Exp $
+
+#if defined(i386SVR3Architecture) && HasGcc
+XCOMM We are told gcc 1.40 is a loser on System V/386 R3.2, xeyes gets a
+XCOMM floating point exception.  Why we bother with silly workarounds
+XCOMM like this is beyond me.
+CC = cc
+CCOPTIONS =
+EXTRA_LOAD_FLAGS = /usr/local/lib/gcc-gnulib
+#endif
+
 SYS_LIBRARIES = -lm
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPEXTENSIONLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)

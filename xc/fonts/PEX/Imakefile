@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.7 91/04/09 19:32:08 rws Exp $
+# $XConsortium: Imakefile,v 5.8 91/06/26 17:29:33 rws Exp $
 ## 
 ## Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 
@@ -21,6 +21,15 @@
 ## USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 ## OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 ## PERFORMANCE OF THIS SOFTWARE.
+
+#if defined(i386SVR3Architecture) && HasGcc
+XCOMM We are told gcc 1.40 is a loser on System V/386 R3.2, xeyes gets a
+XCOMM floating point exception.  Why we bother with silly workarounds
+XCOMM like this is beyond me.
+CC = cc
+CCOPTIONS =
+EXTRA_LOAD_FLAGS = /usr/local/lib/gcc-gnulib
+#endif
 
 #define PassCDebugFlags
 
