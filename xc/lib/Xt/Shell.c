@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.77 89/12/05 14:14:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.78 89/12/09 17:01:15 rws Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1351,7 +1351,7 @@ static void GetGeometry(W, child)
 			    XScreenNumberOfScreen(XtScreen(W)),
 			    w->shell.geometry, def_geom,
 			    (unsigned int)w->core.border_width,
-			    hintsP, &x, &y, &width, &height,
+			    (XSizeHints *)hintsP, &x, &y, &width, &height,
 			    &win_gravity
 			   );
 	if (flag) {
