@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.27 94/05/02 11:44:22 mor Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.28 94/06/02 10:32:16 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -724,7 +724,7 @@ int		socknamelen;
 	    PRMSG (1, "TRANS(SocketCreateListener): failed to bind listener\n",
 		0, 0, 0);
 	    close (fd);
-	    return TRANS_BIND_FAILED;
+	    return TRANS_CREATE_LISTENER_FAILED;
 	}
 #ifdef SO_REUSEADDR
 	sleep (1);
@@ -751,7 +751,7 @@ int		socknamelen;
     {
 	PRMSG (1, "TRANS(SocketCreateListener): listen() failed\n", 0, 0, 0);
 	close (fd);
-	return TRANS_BIND_FAILED;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
 	
     /* Set a flag to indicate that this connection is a listener */
@@ -815,7 +815,7 @@ char 		*port;
 		PRMSG (1,
 	     "TRANS(SocketINETCreateListener): Unable to get service for %s\n",
 		      port, 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	    }
 	    
 	    sockname.sin_port = servp->s_port;
@@ -849,7 +849,7 @@ char 		*port;
 	PRMSG (1,
        "TRANS(SocketINETCreateListener): TRANS(SocketINETGetAddr) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
 
     return 0;
@@ -928,7 +928,7 @@ char *port;
         PRMSG (1,
         "TRANS(SocketUNIXCreateListener): Can't allocate space for the addr\n",
 	    0, 0, 0);
-        return -1;
+        return TRANS_CREATE_LISTENER_FAILED;
     }
 
     ciptr->family = sockname.sun_family;

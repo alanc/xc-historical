@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.24 94/05/02 10:45:32 mor Exp $ */
+/* $XConsortium: Xtrans.h,v 1.26 94/06/02 10:28:58 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -189,11 +189,11 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 
 
 /*
- * Return values of Bind (0 is success)
+ * Return values of CreateListener (0 is success)
  */
 
-#define TRANS_BIND_FAILED 	-1
-#define TRANS_ADDR_IN_USE	-2
+#define TRANS_CREATE_LISTENER_FAILED 	-1
+#define TRANS_ADDR_IN_USE		-2
 
 
 /*
