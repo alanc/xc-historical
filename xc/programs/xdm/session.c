@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.66 94/02/02 08:42:15 gildea Exp $
+ * $XConsortium: session.c,v 1.67 94/02/10 15:47:28 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -156,6 +156,11 @@ struct display	*d;
 	}
 #endif
 
+    /* tell the possibly dynamically loaded greeter function
+     * what data structure formats to expect.
+     * These version numbers are registered with the X Consortium. */
+    verify.version = 1;
+    greet.version = 1;
     greet_stat = (*greet_user_proc)(d, &dpy, &verify, &greet);
 
     if (greet_stat == Greet_Success)

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.26 91/07/16 22:19:56 gildea Exp $
+ * $XConsortium: dpylist.c,v 1.27 91/07/18 21:03:49 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -252,6 +252,11 @@ char		*class;
     d->clientAddr.length = 0;
     d->connectionType = 0;
 #endif
+    d->version = 1;		/* registered with X Consortium */
     displays = d;
     return d;
 }
+
+
+
+

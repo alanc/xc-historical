@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.56 93/12/06 15:19:41 kaleb Exp $
+ * $XConsortium: dm.h,v 1.57 94/02/02 08:42:18 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -173,6 +173,7 @@ struct display {
 	int		resetSignal;	/* signal to reset server */
 	int		termSignal;	/* signal to terminate server */
 	int		resetForAuth;	/* server reads auth file at reset */
+	char            *keymaps;       /* binary compat with DEC */
 	char		*greeterLib;	/* greeter shared library name */
 
 	/* session resources */
@@ -201,6 +202,9 @@ struct display {
 	Xauth		**authorizations;/* authorization data */
 	int		authNum;	/* number of authorizations */
 	char		*authFile;	/* file to store authorization in */
+
+	int		version;	/* to keep dynamic greeter clued in */
+	/* add new fields only after here.  And preferably at the end. */
 };
 
 #ifdef XDMCP
@@ -228,6 +232,9 @@ struct greet_info {
 	char		*name;		/* user name */
 	char		*password;	/* user password */
 	char		*string;	/* random string */
+	char            *passwd;        /* binary compat with DEC */
+	int		version;	/* for dynamic greeter to see */
+	/* add new fields below this line, and preferably at the end */
 };
 
 /* setgroups is not covered by POSIX, arg type varies */
@@ -248,6 +255,8 @@ struct verify_info {
 	char		**argv;		/* arguments to session */
 	char		**userEnviron;	/* environment for session */
 	char		**systemEnviron;/* environment for startup/reset */
+	int		version;	/* for dynamic greeter to see */
+	/* add new fields below this line, and preferably at the end */
 };
 
 /* display manager exit status definitions */
