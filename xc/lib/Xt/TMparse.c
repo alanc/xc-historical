@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.78 89/09/12 16:48:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: TMparse.c,v 1.79 89/09/19 20:15:05 swick Exp $";
 /* $oHeader: TMparse.c,v 1.4 88/09/01 17:30:39 asente Exp $ */
 #endif /*lint*/
 
@@ -609,13 +609,13 @@ static String ParseModifiers(str, event,error)
             }
          str = start; /*if plain modifier, reset to beginning */
     }
-    else {
+    else while (*str == '!' || *str == ':') {
         if (*str == '!') {
              exclusive = TRUE;
              str++;
              str = ScanWhitespace(str);
         }
-        else if (*str == ':') {
+        if (*str == ':') {
              exclusive = TRUE;
              event->event.standard = TRUE;
              str++;
