@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.8 89/10/03 19:58:02 rws Exp $ */
+/* $XConsortium: mipointer.c,v 5.9 89/12/10 11:06:17 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -322,12 +322,12 @@ miPointerSetCursor (pScreen, x, y, generateEvent, afterEvents)
      */
     if (x < pPointer->limits.x1)
 	x = pPointer->limits.x1;
-    if (x > pPointer->limits.x2)
-	x = pPointer->limits.x2;
+    if (x >= pPointer->limits.x2)
+	x = pPointer->limits.x2 - 1;
     if (y < pPointer->limits.y1)
 	y = pPointer->limits.y1;
-    if (y > pPointer->limits.y2)
-	y = pPointer->limits.y2;
+    if (y >= pPointer->limits.y2)
+	y = pPointer->limits.y2 - 1;
     if (pPointer->x == x && pPointer->y == y && pPointer->pScreen == pScreen)
 	return;
     pPointer->x = x;
