@@ -1,4 +1,4 @@
-/* $XConsortium: XSendEv.c,v 1.2 91/02/17 11:14:35 rws Exp $ */
+/* $XConsortium: XSendEv.c,v 1.1 91/02/18 10:25:29 rws Exp $ */
 /************************************************************************
  *
  * XSendEv.c.
@@ -103,7 +103,6 @@ int 		ndevices;
 XEvent		savev[16];
 XDeviceInfoPtr	savlist[256];
 XDevice		*sdev[256];
-XEventClass	bogusclass[] = {-1,-1,-1};
 
 main(argc,argv)
     int argc;
