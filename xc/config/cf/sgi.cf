@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.44 94/10/22 01:30:31 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.45 94/12/12 22:43:39 kaleb Exp kaleb $
 
 #define OSName			IRIX 5.2
 XCOMM operating system:  OSName
@@ -8,23 +8,30 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion < 4
 /* We do not guarantee this will work */
-#define BootstrapCFlags   -DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
-#define StandardDefines   -DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
+#define BootstrapCFlags		-DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
+#define StandardDefines		-DX_WCHAR -DX_LOCALE -DX_USEBFUNCS -DSYSV
+#define SetTtyGroup		NO
+#else
+#define SetTtyGroup		YES
 #endif
 
+#if OSMajorVersion < 5
 #define SystemV			YES
+#define Malloc0ReturnsNull	YES
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
+#else
+#define BootstrapCFlags		-DSVR4
+#define StandardDefines		-DSVR4
+#define SystemV4		YES
+#define HasWChar32              YES
+#define HasVFork		NO
+#define XawI18nDefines		-DHAS_WCTYPE_H
+#endif
+
 #define HasPutenv		YES
 #define ExecableScripts		YES
-#if OSMajorVersion > 3
-#define SetTtyGroup		YES
-#else
-#define SetTtyGroup		NO
-#endif
 #define HasNdbm			YES
 #define HasPoll                 YES
-#if OSMajorVersion < 5
-#define Malloc0ReturnsNull	YES
-#endif
 #define ExpandManNames          YES
 #ifndef BuildXInputExt
 #define BuildXInputExt		YES
@@ -34,11 +41,6 @@ XCOMM operating system:  OSName
 #define NeedVarargsPrototypes	YES
 #define NeedConstPrototypes	YES
 #define NeedWidePrototypes	NO
-#endif
-
-#if OSMajorVersion > 4
-#define HasWChar32              YES
-#define XawI18nDefines		-DHAS_WCTYPE_H
 #endif
 
 #include <sgiLib.rules>
@@ -54,7 +56,10 @@ XCOMM operating system:  OSName
 #define sgiCCOptions -xansi -D__STDC__=1 -float
 #else
 #define sgiCCOptions -float
+/* SGI's -lsocket -lnsl is broken, at least in 5.2, so override here */
+#define ExtraLibraries -lw
 #endif
+
 #define DefaultCCOptions sgiCCOptions SymbolTables
 #define PexCCOptions sgiCCOptions PexSymbolTables
 #define ServerCCOptions sgiCCOptions ServerSymbolTables
@@ -86,9 +91,9 @@ XCOMM operating system:  OSName
 #define DefaultSystemPath /usr/sbin:/usr/bsd:/bin:/etc:/usr/bin:/usr/etc:$(BINDIR)
 
 #define BuildServer             NO
-#define ServerOSDefines -DDDXTIME
+#define ServerOSDefines		-DDDXTIME
 /* only need this for binary compatibility with their ddx */
-#define ServerExtraDefines -DNEED_LINEHELPER
+#define ServerExtraDefines	-DNEED_LINEHELPER
 
 /* Changed to a single shell command for pmake/smake */
 #if OSMajorVersion < 5

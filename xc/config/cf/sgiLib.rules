@@ -1,4 +1,4 @@
-XCOMM $XConsortium: sgiLib.rules,v 1.8 93/09/11 17:59:30 rws Exp kaleb $
+XCOMM $XConsortium: sgiLib.rules,v 1.9 94/12/12 22:44:24 kaleb Exp kaleb $
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
@@ -136,7 +136,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~ 							@@\
-	(cd down; $(CCENVSETUP) $(LD) -o up/$@~ $(SHLIBLDFLAGS) -soname $@ -set_version Concat(xc,rev) solist $(REQUIREDLIBS))	@@\
+	(cd down; $(CCENVSETUP) $(LD) -o up/$@~ $(SHLIBLDFLAGS) -soname $@ solist $(REQUIREDLIBS))	@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\
