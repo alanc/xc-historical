@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.72 89/03/15 17:02:59 jim Exp $
+ * $XConsortium: charproc.c,v 1.73 89/03/22 14:11:56 jim Exp $
  */
 
 
@@ -138,7 +138,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.72 89/03/15 17:02:59 jim Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.73 89/03/22 14:11:56 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1863,13 +1863,11 @@ Widget w;
           ScreenResize (&term->screen, term->core.width, term->core.height, &term->flags);
 }
 
-static Boolean failed = FALSE;
 
 int VTInit ()
 {
     register TScreen *screen = &term->screen;
 
-    if (failed) return (0);
     XtRealizeWidget (term->core.parent);
     if (screen->allbuf == NULL) VTallocbuf ();
     return (1);
@@ -1995,7 +1993,6 @@ XSetWindowAttributes *values;
 	register TScreen *screen = &term->screen;
 	register int i, j;
 	XPoint	*vp;
-	static short failed;
 	int xpos, ypos, pr;
 	extern char *malloc();
 	XGCValues		xgcv;
@@ -2005,9 +2002,6 @@ XSetWindowAttributes *values;
 	extern int		VTgcFontMask;
 	int scrollbar_width;
 
-	if(failed)
-		return;
-	
 	TabReset (term->tabs);
 
 	screen->fnt_norm = screen->fnt_bold = NULL;
