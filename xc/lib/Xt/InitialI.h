@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.65 93/07/10 12:17:14 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.66 93/07/10 12:19:06 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -149,6 +149,7 @@ typedef struct _XtAppStruct {
     DestroyRec* destroy_list;
     Widget in_phase2_destroy;
     LangProcRec langProcRec;
+    struct _TMBindCacheRec * free_bindings;
 } XtAppStruct;
 
 #ifdef XTTRACEMEMORY
@@ -354,6 +355,12 @@ extern void _XtDoPhase2Destroy(
 #if NeedFunctionPrototypes
     XtAppContext /* app */,
     int		 /* dispatch_level */
+#endif
+);
+
+extern void _XtDoFreeBindings(
+#if NeedFunctionPrototypes
+    XtAppContext /* app */
 #endif
 );
 
