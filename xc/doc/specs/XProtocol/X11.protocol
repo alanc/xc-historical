@@ -820,23 +820,46 @@ KEYCODE to any one of the modifiers Mod1 through Mod5.  This modifier is
 called the ``group modifier.''  For any KEYCODE, Group 1 is used when the
 group modifier is off, and Group 2 is used when the group modifier is on.
 .LP
-Within a group, the modifier state determines which KEYSYM to use.  The
-first KEYSYM is used when the Shift and Lock modifiers are off.  The second
-KEYSYM is used when the Shift modifier is on, or when the Lock modifier is on
-and the second KEYSYM is uppercase alphabetic, or when the Lock modifier is on
-and is interpreted as ShiftLock.  Otherwise, when the Lock modifier is on and
-is interpreted as CapsLock, the state of the Shift modifier is applied first to
-select a KEYSYM; but if that KEYSYM is lowercase alphabetic, then the
-corresponding uppercase KEYSYM is used instead.
+The Lock modifier is interpreted as CapsLock when the KEYSYM named CAPS
+LOCK is attached to some KEYCODE and that KEYCODE is attached to the Lock
+modifier.  The Lock modifier is interpreted as ShiftLock when the KEYSYM
+named SHIFT LOCK is attached to some KEYCODE and that KEYCODE is attached
+to the Lock modifier.  If the Lock modifier could be interpreted as both
+CapsLock and ShiftLock, the CapsLock interpretation is used.
+.LP
+The operation of ``keypad'' keys is controlled by the KEYSYM named NUM LOCK,
+by attaching that KEYSYM to some KEYCODE and attaching that KEYCODE to any
+one of the modifiers Mod1 through Mod5.  This modifier is called the
+``numlock modifier.''  The standard KEYSYMs with the prefix KEYPAD in their
+name are called ``keypad'' KEYSYMs; these are KEYSYMS with numeric value in
+the range 0xFF80 to 0xFFBD inclusive.  In addition, vendor-specific KEYSYMS
+in the range 0x11000000 to 0x1100FFFF are also keypad KEYSYMs.
+.LP
+Within a group, the choice of KEYSYM is determined by applying the first
+rule that is satisfied from the following list:
+.IP \(bu 5
+The numlock modifier is on and the second KEYSYM is a keypad KEYSYM.  In
+this case, if the Shift modifier is on, or if the Lock modifier is on and
+is interpreted as ShiftLock, then the first KEYSYM is used, otherwise the
+second KEYSYM is used.
+.IP \(bu 5
+The Shift and Lock modifiers are both off.  In this case, the first
+KEYSYM is used.
+The Shift modifier is off, and the Lock modifier is on and is
+interpreted as CapsLock.  In this case, the first KEYSYM is used, but if
+that KEYSYM is lowercase alphabetic, then the corresponding uppercase
+KEYSYM is used instead.
+.IP \(bu 5
+The Shift modifier is on, and the Lock modifier is on and is interpreted
+as CapsLock.  In this case, the second KEYSYM is used, but if that KEYSYM
+is lowercase alphabetic, then the corresponding uppercase KEYSYM is used
+instead.
+.IP \(bu 5
+The Shift modifier is on, or the Lock modifier is on and is interpreted
+as ShiftLock, or both.  In this case, the second KEYSYM is used.
 .LP
 The mapping between KEYCODEs and KEYSYMs is not used directly by the server;
 it is merely stored for reading and writing by clients.
-.LP
-The KEYMASK modifier named Lock is intended to be mapped to either a CapsLock
-or a ShiftLock key, but which one is left as application-specific
-and/or user-specific.
-However, it is suggested that the determination be made according to the
-associated KEYSYM(s) of the corresponding KEYCODE.
 .NH 1
 Pointers
 .XS
