@@ -1,4 +1,4 @@
-/* $XConsortium: UconvName.h,v 5.2 93/02/08 11:03:45 rws Exp $ */
+/* $XConsortium: UconvName.h,v 5.3 94/04/17 20:36:24 rws Exp gildea $ */
 
 /***********************************************************
 
@@ -47,7 +47,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#if (__STDC__&& !defined(UNIXCPP)) || defined(ANSICPP)
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
 #define SWAP_FUNC_PREFIX(nm)	u##nm
 #define SWAP_FUNC_PEX_PFX(nm)	uPEX##nm
 #else

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.8 91/05/29 18:06:08 gildea Exp $
+ *	$XConsortium: VTPrsTbl.c,v 1.9 92/09/15 15:28:28 gildea Exp gildea $
  */
 
 /*
@@ -27,7 +27,7 @@
 
 #include "VTparse.h"
 
-#if __STDC__
+#ifdef __STDC__
 #define Const const
 #else
 #define Const /**/
