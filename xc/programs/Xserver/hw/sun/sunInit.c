@@ -1,4 +1,3 @@
-/* $XConsortium: sunInit.c,v 5.24 91/08/23 16:14:53 keith Exp $ */
 /*-
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -61,6 +60,7 @@ extern Bool sunCG4CProbe(), sunCG4CCreate();
 #ifdef FBTYPE_SUNFAST_COLOR /* doesn't exist in sunos3.x */
 extern Bool sunCG6CProbe(), sunCG6CCreate();
 #endif
+extern Bool sunCG8CProbe(), sunCG8CCreate ();
 #endif
 extern void ProcessInputEvents();
 
@@ -75,6 +75,7 @@ static int autoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 
 static Bool sunDevsProbed = FALSE;
 Bool sunSupportsDepth8 = FALSE;
+Bool sunSupportsDepth24 = FALSE;
 unsigned long sunGeneration = 0;
 int sunScreenIndex;
 Bool FlipPixels = FALSE;
@@ -112,6 +113,7 @@ sunFbDataRec sunFbData[] = {
 #endif
     sunCG2CProbe,  	"/dev/cgtwo0",	    sunCG2CCreate,
     sunCG4CProbe,  	"/dev/cgfour0",	    sunCG4CCreate,
+    sunCG8CProbe,	"/dev/cgeight0",    sunCG8CCreate,
 #endif
     sunBW2Probe,  	"/dev/bwtwo0",	    sunBW2Create,
 };
@@ -133,11 +135,15 @@ sunFbDataRec sunFbData[] = {
 
 fbFd sunFbs[NUMDEVICES];
 
-static PixmapFormatRec	formats[] = {
+static PixmapFormatRec	format1 = {
     1, 1, BITMAP_SCANLINE_PAD,	/* 1-bit deep */
+};
+static PixmapFormatRec	format8 = {
     8, 8, BITMAP_SCANLINE_PAD,	/* 8-bit deep */
 };
-#define NUMFORMATS	(sizeof formats)/(sizeof formats[0])
+static PixmapFormatRec	format24 = {
+    24, 32, BITMAP_SCANLINE_PAD,	/* 24-bit deep */
+};
 
 /*-
  *-----------------------------------------------------------------------
@@ -224,9 +230,8 @@ InitOutput(pScreenInfo, argc, argv)
     pScreenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
     pScreenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
 
-    pScreenInfo->numPixmapFormats = NUMFORMATS;
-    for (i=0; i< NUMFORMATS; i++)
-        pScreenInfo->formats[i] = formats[i];
+    pScreenInfo->numPixmapFormats = 1;
+    pScreenInfo->formats[0] = format1;
 
     autoRepeatHandlersInstalled = FALSE;
 
@@ -243,8 +248,10 @@ InitOutput(pScreenInfo, argc, argv)
 	if (n == 0)
 	    return;
     }
-    if (!sunSupportsDepth8)
-	pScreenInfo->numPixmapFormats--;
+    if (sunSupportsDepth8)
+	pScreenInfo->formats[pScreenInfo->numPixmapFormats++] = format8;
+    if (sunSupportsDepth24)
+	pScreenInfo->formats[pScreenInfo->numPixmapFormats++] = format24;
     for (i = NUMSCREENS, dev = devStart; --i >= DEV_END; dev++) {
 	if (sunFbData[dev].createProc)
 	    (*sunFbData[dev].createProc)(pScreenInfo, argc, argv);
@@ -724,7 +731,7 @@ badfb:
 #else
 	ErrorF("Not configured to run inside SunWindows\n");
 	fd = -1;
-#endif /* SUN_WINDOWS */
+#endif	SUN_WINDOWS
     } else if (name) {
 	fd = open(name, O_RDWR, 0);
         if (fd < 0) {
