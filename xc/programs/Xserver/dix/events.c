@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.88 87/08/11 12:53:29 toddb Locked $ */
+/* $Header: events.c,v 1.89 87/08/11 12:54:16 swick Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2275,7 +2275,7 @@ InitEvents()
 	focusTraceSize = 20;
 	focusTrace = (WindowPtr *)Xalloc(20*sizeof(WindowPtr));
     }
-    focusTraceGood = 1;
+    focusTraceGood = 0;
     lastEventMask = OwnerGrabButtonMask;
     sprite.win = NullWindow;
     sprite.current = NullCursor;
