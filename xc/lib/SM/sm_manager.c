@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.21 94/03/30 21:27:47 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.22 94/04/17 20:16:56 mor Exp $ */
 
 /*
 
@@ -156,26 +156,7 @@ SmsClientHostName (smsConn)
 SmsConn smsConn;
 
 {
-    int		family, peer_addrlen;
-    Xtransaddr	*peer_addr;
-    char 	*networkId;
-
-    char	*hostname;
-
-
-    if (_IceTransGetPeerAddr (smsConn->iceConn->trans_conn,
-	&family, &peer_addrlen, &peer_addr) < 0)
-    {
-	return (NULL);
-    }
-    else
-    {
-	hostname = _IceTransGetPeerNetworkId (family, peer_addrlen, peer_addr);
-
-	free ((char *) peer_addr);
-
-	return (hostname);
-    }
+    return (_IceTransGetPeerNetworkId (smsConn->iceConn->trans_conn));
 }
 
 
