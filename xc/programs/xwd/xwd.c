@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.44 89/04/10 14:50:49 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.45 89/04/10 15:38:02 jim Exp $";
 #endif
 
 /*%
@@ -285,31 +285,31 @@ Window_Dump(window, out)
      * Write out header information.
      */
     if (debug) outl("xwd: Constructing and dumping file header.\n");
-    header.header_size = (xwdval) header_size;
-    header.file_version = (xwdval) XWD_FILE_VERSION;
-    header.pixmap_format = (xwdval) format;
-    header.pixmap_depth = (xwdval) image->depth;
-    header.pixmap_width = (xwdval) image->width;
-    header.pixmap_height = (xwdval) image->height;
-    header.xoffset = (xwdval) image->xoffset;
-    header.byte_order = (xwdval) image->byte_order;
-    header.bitmap_unit = (xwdval) image->bitmap_unit;
-    header.bitmap_bit_order = (xwdval) image->bitmap_bit_order;
-    header.bitmap_pad = (xwdval) image->bitmap_pad;
-    header.bits_per_pixel = (xwdval) image->bits_per_pixel;
-    header.bytes_per_line = (xwdval) image->bytes_per_line;
-    header.visual_class = (xwdval) win_info.visual->class;
-    header.red_mask = (xwdval) win_info.visual->red_mask;
-    header.green_mask = (xwdval) win_info.visual->green_mask;
-    header.blue_mask = (xwdval) win_info.visual->blue_mask;
-    header.bits_per_rgb = (xwdval) win_info.visual->bits_per_rgb;
-    header.colormap_entries = (xwdval) win_info.visual->map_entries;
+    header.header_size = (CARD32) header_size;
+    header.file_version = (CARD32) XWD_FILE_VERSION;
+    header.pixmap_format = (CARD32) format;
+    header.pixmap_depth = (CARD32) image->depth;
+    header.pixmap_width = (CARD32) image->width;
+    header.pixmap_height = (CARD32) image->height;
+    header.xoffset = (CARD32) image->xoffset;
+    header.byte_order = (CARD32) image->byte_order;
+    header.bitmap_unit = (CARD32) image->bitmap_unit;
+    header.bitmap_bit_order = (CARD32) image->bitmap_bit_order;
+    header.bitmap_pad = (CARD32) image->bitmap_pad;
+    header.bits_per_pixel = (CARD32) image->bits_per_pixel;
+    header.bytes_per_line = (CARD32) image->bytes_per_line;
+    header.visual_class = (CARD32) win_info.visual->class;
+    header.red_mask = (CARD32) win_info.visual->red_mask;
+    header.green_mask = (CARD32) win_info.visual->green_mask;
+    header.blue_mask = (CARD32) win_info.visual->blue_mask;
+    header.bits_per_rgb = (CARD32) win_info.visual->bits_per_rgb;
+    header.colormap_entries = (CARD32) win_info.visual->map_entries;
     header.ncolors = ncolors;
-    header.window_width = (xwdval) win_info.width;
-    header.window_height = (xwdval) win_info.height;
+    header.window_width = (CARD32) win_info.width;
+    header.window_height = (CARD32) win_info.height;
     header.window_x = absx;
     header.window_y = absy;
-    header.window_bdrwidth = (xwdval) win_info.border_width;
+    header.window_bdrwidth = (CARD32) win_info.border_width;
 
     if (*(char *) &swaptest) {
 	_swaplong((char *) &header, sizeof(header));
