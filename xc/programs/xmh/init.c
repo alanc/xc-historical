@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.78 95/01/06 16:39:19 swick Exp swick $
+ * $XConsortium: init.c,v 2.79 95/01/18 19:29:20 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -262,10 +262,11 @@ static void _Die(w, client_data, call_data)
 
 /* All the start-up initialization goes here. */
 
-InitializeWorld(argc, argv, envp)
+InitializeWorld(argc, argv)
 int argc;
-char **argv, **envp;
+char **argv;
 {
+    extern char** environ;	/* POSIX doesn't specify a .h for this */
     int l;
     FILEPTR fid;
     char str[500], str2[500], *ptr;
@@ -372,7 +373,7 @@ char **argv, **envp;
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
-    shell_args[2].value = (XtArgVal)envp;
+    shell_args[2].value = (XtArgVal)environ;
     toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
 				 &argc, argv, FallbackResources,
 				 sessionShellWidgetClass,

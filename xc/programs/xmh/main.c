@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.28 91/07/22 21:50:02 converse Exp swick $
+/* $XConsortium: main.c,v 2.29 95/01/06 16:39:19 swick Exp swick $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -90,13 +90,13 @@ static void CheckMail(client_data, id)
 Boolean ExitLoop = FALSE;
 #endif
 
-main(argc, argv, envp)
+main(argc, argv)
 int argc;
-char **argv, **envp;
+char **argv;
 {
     XtAppContext appCtx;
 
-    InitializeWorld(argc, argv, envp);
+    InitializeWorld(argc, argv);
     subProcessRunning = False;
     appCtx = XtWidgetToApplicationContext(toplevel);
     (void) XtAppSetWarningMsgHandler(appCtx, PopupWarningHandler);
