@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.134 89/12/13 19:05:51 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.135 89/12/15 11:57:13 swick Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -40,7 +40,7 @@ SOFTWARE.
 
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xaw/Scroll.h>
+#include <X11/Xaw/Scrollbar.h>
 #include <X11/Xaw/TextP.h>
 
 Atom FMT8BIT = NULL;
