@@ -22,13 +22,10 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.2 91/02/27 18:38:45 keith Exp $ */
+/* $XConsortium: snfread.c,v 1.1 91/05/10 14:45:50 keith Exp $ */
 
 #include <ctype.h>
-#include <X11/X.h>
-#include <X11/Xproto.h>
 #include "fontfilest.h"
-#include "fontstruct.h"
 #include "bitmap.h"
 #include "snfstr.h"
 
@@ -42,12 +39,15 @@ snfReadCharInfo(file, charInfo, base)
 {
     snfCharInfoRec snfCharInfo;
 
+#define Width(m)    ((m).rightSideBearing - (m).leftSideBearing)
+#define Height(m)   ((m).ascent + (m).descent)
+
     if (FontFileRead(file, (char *) &snfCharInfo, sizeof snfCharInfo) !=
 	    sizeof(snfCharInfo)) {
 	return BadFontName;
     }
     charInfo->metrics = snfCharInfo.metrics;
-    if (snfCharInfo.exists)
+    if (snfCharInfo.exists && Width(charInfo->metrics) > 0 && Height(charInfo->metrics) > 0)
 	charInfo->bits = base + snfCharInfo.byteOffset;
     else
 	charInfo->bits = 0;

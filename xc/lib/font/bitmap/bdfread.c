@@ -22,11 +22,9 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.7 91/02/26 18:08:07 keith Exp $ */
+/* $XConsortium: bdfread.c,v 1.1 91/05/10 14:45:34 keith Exp $ */
 
 #include <ctype.h>
-#include <X11/X.h>
-#include <X11/Xproto.h>
 #include "fontfilest.h"
 /* use bitmap structure */
 #include "bitmap.h"

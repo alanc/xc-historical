@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfwrite.c,v 1.4 91/02/26 18:08:16 keith Exp $
+ * $XConsortium: pcfwrite.c,v 1.1 91/05/10 12:49:49 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -24,10 +24,7 @@
  */
 
 
-#include    <X11/Xproto.h>
-#include    <X11/X.h>
 #include    "fontfilest.h"
-#include    "fontstruct.h"
 #include    "bitmap.h"
 #include    "pcf.h"
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: bitscale.c,v 1.1 91/05/10 14:45:41 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,6 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/X.h>
 #include    "fontfilest.h"
 #include    "bitmap.h"
 

@@ -22,13 +22,11 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfutils.c,v 1.2 91/02/22 16:52:39 rws Exp $ */
+/* $XConsortium: bdfutils.c,v 1.1 91/05/10 14:45:36 keith Exp $ */
 
 #include <ctype.h>
 
 #include <stdio.h>
-#include <X11/X.h>
-#include <X11/Xproto.h>
 #include "fontfilest.h"
 #include "fontstruct.h"
 /* use bitmap structure */

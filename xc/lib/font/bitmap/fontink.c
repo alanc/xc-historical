@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontink.c,v 1.1 91/02/22 15:42:32 keith Exp $
+ * $XConsortium: fontink.c,v 1.1 91/05/10 14:45:44 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,11 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/X.h>
-#include    <X11/Xproto.h>
-#include    "fontmisc.h"
-#include    "fontstruct.h"
-
+#include "fontfilest.h"
 
 static unsigned char ink_mask_msb[8] = {
     0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01,

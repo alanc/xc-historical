@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.6 91/02/22 21:52:51 keith Exp $
+ * $XConsortium: pcfread.c,v 1.1 91/05/10 14:45:48 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -23,10 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    <X11/Xproto.h>
-#include    <X11/X.h>
 #include    "fontfilest.h"
-#include    "fontstruct.h"
 #include    "bitmap.h"
 #include    "pcf.h"
 

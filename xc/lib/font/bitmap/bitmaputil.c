@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfutils.c,v 1.1 91/02/22 15:42:11 keith Exp $
+ * $XConsortium: bitmaputils.c,v 1.1 91/05/10 14:45:40 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -22,10 +22,7 @@
  *
  */
 
-#include    <X11/Xproto.h>
-#include    <X11/X.h>
 #include    "fontfilest.h"
-#include    "fontstruct.h"
 #include    "bitmap.h"
 
 #ifndef MAXSHORT
