@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.56 89/05/10 01:25:58 keith Exp $
+ * $XConsortium: menus.c,v 1.57 89/05/11 16:18:15 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.56 89/05/10 01:25:58 keith Exp $";
+"$XConsortium: menus.c,v 1.57 89/05/11 16:18:15 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2395,7 +2395,7 @@ Bool GetWMState (w, statep, iwp)
 
     if (XGetWindowProperty (dpy, w, wmStateAtom, 0, 2, False, wmStateAtom,
 			    &actual_type, &actual_format, &nitems, &bytesafter,
-			    (unsigned char **) &datap) != Success)
+			    (unsigned char **) &datap) != Success || !datap)
       return False;
 
     *statep = (int) datap[0];
