@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: globals.c,v 1.35 87/08/19 15:38:24 todd Exp $ */
+/* $Header: globals.c,v 1.36 87/08/30 14:22:20 todd Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -95,4 +95,5 @@ TimeStamp currentTime;
 char *display;
 
 int TimeOutValue = DEFAULT_TIMEOUT;
-
+int	argcGlobal;
+char	**argvGlobal;
