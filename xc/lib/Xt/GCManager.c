@@ -169,3 +169,11 @@ GC XtGetGC(widget, valueMask, values)
     GClist = cur;
     return cur->gc;
 }
+
+void
+XtDestroyGC(widget, gc)
+Widget widget;
+GC gc;
+{
+}
+
