@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.126 91/07/17 00:43:21 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.127 91/07/19 17:11:56 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -364,6 +364,9 @@ SUBDIRS = $(SUBDIRS0) $(SUBDIRS1) $(SUBDIRS2) $(SUBDIRS3)
 
 InstallMultipleFlags($(ALL),$(BINDIR),$(INSTPGMFLAGS))
 
+install::
+	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) $(ALL1) X)
+
 #define IHaveSubdirs
 
 DependSubdirs($(SUBDIRS))
@@ -378,13 +381,5 @@ clean::
 	$(RM) $(ALL)
 
 InstallManPage(Xserver,$(MANDIR))
-
-install::
-	@echo "************************************************************"
-	@echo "* "
-	@echo "*     Do not forget to create a link called $(BINDIR)/X"
-	@echo "*     pointing to the default server, if there is one."
-	@echo "* "
-	@echo "************************************************************"
 
 FRC:
