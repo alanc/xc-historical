@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.124 89/06/08 17:25:40 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.125 89/06/16 19:34:49 jim Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -322,14 +322,6 @@ void XtUnrealizeWidget (widget)
     if (window != NULL) XDestroyWindow(XtDisplay(widget), window);
 } /* XtUnrealizeWidget */
 
-
-void _XtInherit()
-
-{
-    XtErrorMsg("invalidProcedure","inheritanceProc","XtToolkitError",
-            "Unresolved inheritance operation",
-              (String *)NULL, (Cardinal *)NULL);
-}
 
 void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     Widget		 widget;
