@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.11 94/07/07 15:16:27 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.12 94/07/07 16:46:56 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -59,6 +59,7 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 #endif
 #include <X11/Xos.h>
+#include <X11/Xatom.h>
 
 /* Fix ISC brain damage.  When using gcc fdopen isn't declared in <stdio.h>. */
 #if defined(SYSV) && defined(SYSV386) && defined(__STDC__) && defined(ISC)
@@ -100,7 +101,6 @@ typedef struct _PendingValue {
 
 typedef struct _AppResources {
     Boolean	verbose;
-    String	name;
 } AppResources;
 
 extern AppResources app_resources;
@@ -108,6 +108,8 @@ extern AppResources app_resources;
 extern XtAppContext	appContext;
 
 extern char		*sm_id;
+
+extern char		*session_name;
 
 extern ClientRec	*ClientList;
 extern List	 	*PendingList;
@@ -128,6 +130,8 @@ extern Widget		topLevel;
 extern Widget		    chooseSessionPopup;
 
 extern Widget		    	chooseSessionForm;
+
+extern Widget			    chooseSessionLabel;
 
 extern Widget			    chooseSessionListWidget;
 
