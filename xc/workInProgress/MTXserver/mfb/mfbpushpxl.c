@@ -42,7 +42,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 1.1 93/12/29 12:30:58 rob Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 1.2 93/12/29 15:13:18 rob Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -122,10 +122,10 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
     srcBox.y1 = yOrg;
     srcBox.x2 = xOrg + dx;
     srcBox.y2 = yOrg + dy;
-    (*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
+    REGION_INIT(pGC->pScreen, &rgnDst, &srcBox, 1);
 
     /* clip the shape of the dst to the destination composite clip */
-    (*pGC->pScreen->Intersect)(&rgnDst, &rgnDst,
+    REGION_INTERSECT(pGC->pScreen, &rgnDst, &rgnDst,
 			       ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->pCompositeClip);
 
     if (!REGION_NIL(&rgnDst))
@@ -145,7 +145,7 @@ mfbSolidPP(pGC, pBitMap, pDrawable, dx, dy, xOrg, yOrg)
 	    DEALLOCATE_LOCAL(pptSrc);
 	}
     }
-    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    REGION_UNINIT(pGC->pScreen, &rgnDst);
 }
 
 #define NPT 128
