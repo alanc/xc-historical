@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.52 95/01/03 14:32:35 dpw Exp $ */
+/* $XConsortium$ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -307,11 +307,10 @@ doOpenFont(client, c)
 	err = BadFontName;
 	goto bail;
     }
-    if (!pfont->fpe)
-	pfont->fpe = fpe;
     pfont->refcnt++;
     if (pfont->refcnt == 1) {
-	UseFPE(pfont->fpe);
+	pfont->fpe = fpe;
+	UseFPE(fpe);
 	for (i = 0; i < screenInfo.numScreens; i++) {
 	    pScr = screenInfo.screens[i];
 	    if (pScr->RealizeFont)
@@ -554,8 +553,6 @@ doListFontsAndAliases(client, c)
     char       *name, *resolved;
     int         namelen, resolvedlen;
     int		nnames;
-    int         numFonts;
-    int         length;
     int         stringLens;
     int         i;
     xListFontsReply reply;
@@ -661,6 +658,7 @@ doListFontsAndAliases(client, c)
 	     * old state
 	     */
 	    else if (err == FontNameAlias) {
+		char	tmp_pattern[256];
 		/*
 		 * when an alias recurses, we need to give
 		 * the last FPE a chance to clean up; so we call
@@ -668,6 +666,7 @@ doListFontsAndAliases(client, c)
 		 * is BadFontName, indicating the alias resolution
 		 * is complete.
 		 */
+		memmove(tmp_pattern, resolved, resolvedlen);
 		if (c->haveSaved)
 		{
 		    char    *tmpname;
@@ -695,7 +694,7 @@ doListFontsAndAliases(client, c)
 		    c->savedNameLen = namelen;
 		    aliascount = 20;
 		}
-		c->current.pattern = resolved;
+		memmove(c->current.pattern, tmp_pattern, resolvedlen);
 		c->current.patlen = resolvedlen;
 		c->current.max_names = c->names->nnames + 1;
 		c->current.current_fpe = -1;
@@ -799,7 +798,6 @@ bail:
     xfree(c->fpe_list);
     if (c->savedName) xfree(c->savedName);
     FreeFontNames(names);
-    xfree(c->current.pattern);
     xfree(c);
     return TRUE;
 }
@@ -816,14 +814,9 @@ ListFonts(client, pattern, length, max_names)
 
     if (!(c = (LFclosurePtr) xalloc(sizeof *c)))
 	return BadAlloc;
-    if (!(c->current.pattern = (char *) xalloc(length)) && length) {
-	xfree(c);
-	return BadAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list) {
-	xfree(c->current.pattern);
 	xfree(c);
 	return BadAlloc;
     }
@@ -831,7 +824,6 @@ ListFonts(client, pattern, length, max_names)
     if (!c->names)
     {
 	xfree(c->fpe_list);
-	xfree(c->current.pattern);
 	xfree(c);
 	return BadAlloc;
     }
@@ -963,7 +955,7 @@ doListFontsWithInfo(client, c)
 		c->savedName = (char *) pFontInfo;
 		aliascount = 20;
 	    }
-	    c->current.pattern = name;
+	    memmove(c->current.pattern, name, namelen);
 	    c->current.patlen = namelen;
 	    c->current.max_names = 1;
 	    c->current.current_fpe = 0;
@@ -1067,7 +1059,6 @@ bail:
 	FreeFPE(c->fpe_list[i]);
     xfree(c->reply);
     xfree(c->fpe_list);
-    xfree(c->current.pattern);
     xfree(c);
     return TRUE;
 }
@@ -1084,16 +1075,10 @@ StartListFontsWithInfo(client, length, pattern, max_names)
 
     if (!(c = (LFWIclosurePtr) xalloc(sizeof *c)))
 	goto badAlloc;
-    if (!(c->current.pattern = (char *) xalloc(length)) && length)
-    {
-	xfree(c);
-	goto badAlloc;
-    }
     c->fpe_list = (FontPathElementPtr *)
 	xalloc(sizeof(FontPathElementPtr) * num_fpes);
     if (!c->fpe_list)
     {
-	xfree(c->current.pattern);
 	xfree(c);
 	goto badAlloc;
     }
