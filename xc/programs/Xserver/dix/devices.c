@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.8 90/03/29 11:07:44 rws Exp $ */
+/* $XConsortium: devices.c,v 5.13 91/01/24 17:28:37 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -866,10 +866,11 @@ ProcSetModifierMapping(client)
 	}
     }
 
-    WriteReplyToClient(client, sizeof(xSetModifierMappingReply), &rep);
-
     if (rep.success == MappingSuccess)
         SendMappingNotify(MappingModifier, 0, 0);
+
+    WriteReplyToClient(client, sizeof(xSetModifierMappingReply), &rep);
+
     return(client->noClientException);
 }
 
@@ -966,8 +967,8 @@ ProcSetPointerMapping(client)
 	}
     for (i = 0; i < stuff->nElts; i++)
 	mouse->button->map[i + 1] = map[i];
-    WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
     SendMappingNotify(MappingPointer, 0, 0);
+    WriteReplyToClient(client, sizeof(xSetPointerMappingReply), &rep);
     return Success;
 }
 
