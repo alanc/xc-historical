@@ -1,6 +1,6 @@
 #! /bin/csh -f
 # Copyright 1985,1988 Massacusetts Institute of Technology.
-# $XConsortium: xdpr.script,v 1.4 88/09/06 17:20:32 jim Exp $
+# $XConsortium: xdpr.script,v 1.5 91/06/30 18:32:18 rws Exp $
 # origin: paul 4/12/88
 	set xwdv=()
 	set xprv=() noglob
@@ -12,7 +12,10 @@
 	[{-root | -id <id> | -name <name>}] [-nobdrs] [-xy] \
 	[-scale scale] [-height inches] [-width inches] [-left inches] \
 	[-top inches] [-split n] [-header string] [-trailer string] \
-	[-landscape] [-portrait] [-rv] [-compact] [-noff] [-help]"
+	[-landscape] [-portrait] [-rv] [-compact] [-noff] [-frame] \
+	[-plane number] [-gray number] [-psfig] [-density dpi] \
+	[-cutoff level] [-noposition] [-gamma correction] [-render algorithm] \
+	[-slide] [-add value] [-help]"
 
 # quit if there is no DISPLAY specified
 	 if ( ! $?DISPLAY && "$argv" !~ *-display* ) then
@@ -37,6 +40,7 @@
 		case -nobdrs:
 		case -root:
 		case -xy:
+		case -frame:
 			set xwdv = ($xwdv $i)
 			breaksw
 		case -font:
@@ -45,6 +49,7 @@
 # Note: xwd -font <font> is not implemented at this time
 		case -display:
 		case -out:
+		case -add:
 			set xwdv = ($xwdv $i $argv[2])
 			shift argv
 			breaksw
@@ -58,6 +63,12 @@
 		case -top:
 		case -split:
 		case -device:
+		case -plane:
+		case -gray:
+		case -density:
+		case -cutoff:
+		case -gamma:
+		case -render:
 			set xprv = ($xprv $i $argv[2])
 			shift argv
 			breaksw
@@ -74,6 +85,9 @@
 		case -rv:
 		case -compact:
 		case -noff:
+		case -psfig:
+		case -noposition:
+		case -slide:
 			set xprv = ($xprv $i)
 			breaksw
 # ...arguments to lpr...
