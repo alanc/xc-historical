@@ -1,5 +1,5 @@
 /*
-* $Header: Intrinsic.h,v 1.62 87/12/14 09:26:43 swick Locked $
+* $Header: Intrinsic.h,v 1.63 87/12/18 08:08:04 swick Locked $
 */
 
 /*
@@ -292,7 +292,7 @@ typedef struct _CompositeClassRec {
 } CompositeClassRec, *CompositeWidgetClass;
 
 extern CompositeClassRec compositeClassRec;
-extern CompositeWidgetClass compositeWidgetClass;
+extern WidgetClass compositeWidgetClass;
 
 
 typedef struct _ConstraintClassPart {
@@ -311,7 +311,7 @@ typedef struct _ConstraintClassRec {
 } ConstraintClassRec, *ConstraintWidgetClass;
 
 extern ConstraintClassRec constraintClassRec;
-extern ConstraintWidgetClass constraintWidgetClass;
+extern WidgetClass constraintWidgetClass;
 
 /*************************************************************************
  *
