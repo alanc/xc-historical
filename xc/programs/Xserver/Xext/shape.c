@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 1.5 89/03/28 16:40:49 keith Exp $ */
+/* $XConsortium: shape.c,v 1.6 89/03/31 13:17:14 keith Exp $ */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "X.h"
@@ -82,10 +82,7 @@ ShapeExtensionInit()
     ExtensionEntry *extEntry, *AddExtension();
     int ProcShapeDispatch(), SProcShapeDispatch();
     void  ShapeResetProc();
-    Atom MakeAtom();
 
-    if (!MakeAtom(SHAPENAME, 13, TRUE))
-	return;
     extEntry = AddExtension(SHAPENAME, ShapeNumberEvents, 0, ProcShapeDispatch,
 			    SProcShapeDispatch, ShapeResetProc);
     if (extEntry)
