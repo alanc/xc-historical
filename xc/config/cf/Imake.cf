@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.7 94/02/04 19:45:50 rws Exp $
+XCOMM $XConsortium: Imake.cf,v 1.8 94/02/04 21:37:43 rws Exp $
 /*
  * To add support for another platform:
  * 
@@ -183,6 +183,7 @@ XCOMM $XConsortium: Imake.cf,v 1.7 94/02/04 19:45:50 rws Exp $
 #undef luna
 #define MacroIncludeFile <luna.cf>
 #define MacroFile luna.cf
+#define LunaArchitecture
 #ifdef mc68000
 #undef mc68000
 #define Mc68000Architecture
