@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.62 89/10/11 13:18:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.61 89/10/03 12:35:02 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -28,6 +28,7 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
+#include "VarargsI.h"
 #include "StringDefs.h"
 #include "Shell.h"
 #include "ShellP.h"
@@ -152,13 +153,15 @@ static void CallConstraintInitialize (class, req_widget, new_widget, args, num_a
 
 static Widget _XtCreate(
 	name, class, widget_class, parent, default_screen,
-	args, num_args, parent_constraint_class)
+	args, num_args, typed_args, num_typed_args, parent_constraint_class)
     char        *name, *class;
     WidgetClass widget_class;
     Widget      parent;
     Screen*     default_screen;
-    ArgList     args;
+    ArgList     args;		/* must be NULL if typed_args is NULL */
     Cardinal    num_args;
+    XtTypedArgList typed_args;	/* must be NULL if args is non-NULL */
+    Cardinal	num_typed_args;
     ConstraintWidgetClass parent_constraint_class;
         /* NULL if not a subclass of Constraint or if child is popup shell */
 {
@@ -169,8 +172,9 @@ static Widget _XtCreate(
     char                    constraint_cache[100];
     XtPointer               req_constraints;
     Cardinal                size;
-    register Widget widget;
+    register Widget	    widget;
     XtCacheRef		    *cache_refs;
+    register int	    i;
     extern XtCacheRef* _XtGetResources();
 
     if (! (widget_class->core_class.class_inited))
@@ -200,7 +204,18 @@ static Widget _XtCreate(
     }
 
     /* fetch resources */
-    cache_refs = _XtGetResources(widget, args, num_args);
+    cache_refs = _XtGetResources(widget, args, num_args, 
+			          typed_args, num_typed_args);
+
+    /* Convert typed arg list to arg list */
+    if (typed_args != NULL) {
+	args = (ArgList)XtMalloc(sizeof(Arg) * num_typed_args);
+	for (i = 0; i < num_typed_args; i++) {
+	    args[i].name = typed_args[i].name;
+	    args[i].value = typed_args[i].value;
+	}
+	num_args = num_typed_args;
+    }
 
     /* Compile any callback lists into internal form */
     for (offsetList = (_XtOffsetList)widget->core.widget_class->
@@ -225,6 +240,25 @@ static Widget _XtCreate(
     req_widget = (Widget) XtStackAlloc(size, widget_cache);
     bcopy ((char *) widget, (char *) req_widget, (int) size);
     CallInitialize (XtClass(widget), req_widget, widget, args, num_args);
+
+    if (typed_args != NULL) {
+	
+	/* in GetResources we may have dynamically alloc'ed store to hold a 	*/
+	/* copy of a resource whischwas larger then sizeof(XtARgVal) ....	*/
+	/* we must free this store now in order to preevnt a memory leak ...    */
+	/* a typed arg that has a converted value in dynamic store has a 	*/
+	/* negated size field							*/
+
+	for (i = 0; i < num_typed_args; i++) {
+		if (typed_args[i].size < 0) { /* we alloc`ed store dynamically */
+			XtFree((char *)typed_args[i].value);
+			typed_args[i].size = -(typed_args[i].size);
+		}
+	}
+
+	XtFree((char *)args);
+    }
+
     if (parent_constraint_class != NULL) {
 	size = parent_constraint_class->constraint_class.constraint_size;
 	req_constraints = XtStackAlloc(size, constraint_cache);
@@ -239,12 +273,15 @@ static Widget _XtCreate(
 }
 
 
-Widget XtCreateWidget(name, widget_class, parent, args, num_args)
+Widget _XtCreateWidget(name, widget_class, parent, args, num_args,
+		       typed_args, num_typed_args)
     String      name;
     WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
+    XtTypedArgList typed_args;
+    Cardinal	num_typed_args;
 {
     register Widget	    widget;
     ConstraintWidgetClass   cwc;
@@ -304,7 +341,8 @@ Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     }
     default_screen = parent->core.screen;
     widget = _XtCreate(name, (char *)NULL, widget_class, parent,
-                          default_screen,args, num_args, cwc);
+		       default_screen, args, num_args,
+		       typed_args, num_typed_args, cwc);
     if (XtIsComposite(parent)) {
         insert_child = ((CompositeWidgetClass) parent->core.widget_class)->
 	    composite_class.insert_child;
@@ -321,6 +359,18 @@ Widget XtCreateWidget(name, widget_class, parent, args, num_args)
     }
     return (widget);
 }
+
+Widget XtCreateWidget(name, widget_class, parent, args, num_args)
+    String	name;
+    WidgetClass widget_class;
+    Widget   	parent;
+    ArgList 	args;
+    Cardinal    num_args;
+{
+    return(_XtCreateWidget(name, widget_class, parent, args, num_args,
+			   (XtTypedArgList)NULL, (Cardinal)0));
+}
+
 
 Widget XtCreateManagedWidget(name, widget_class, parent, args, num_args)
     String      name;
@@ -384,12 +434,15 @@ static void RemovePopupFromParent(widget,closure,call_data)
 
 }
 
-Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
+Widget _XtCreatePopupShell(name, widget_class, parent, args, num_args,
+			   typed_args, num_typed_args)
     String      name;
     WidgetClass widget_class;
     Widget      parent;
     ArgList     args;
     Cardinal    num_args;
+    XtTypedArgList      typed_args;
+    Cardinal            num_typed_args;
 {
     register Widget widget;
     Screen* default_screen;
@@ -406,8 +459,9 @@ Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
     }
     default_screen = parent->core.screen;
     widget = _XtCreate(
-        name, (char *)NULL, widget_class, parent, default_screen,
-	args, num_args, (ConstraintWidgetClass) NULL);
+		       name, (char *)NULL, widget_class, parent,
+		       default_screen, args, num_args, typed_args,
+		       num_typed_args, (ConstraintWidgetClass)NULL);
 
     parent->core.popup_list =
 	(WidgetList) XtRealloc((XtPointer) parent->core.popup_list,
@@ -416,15 +470,30 @@ Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
     XtAddCallback(
        widget,XtNdestroyCallback,RemovePopupFromParent, (XtPointer)NULL);
     return(widget);
-} /* XtCreatePopupShell */
+}
 
-Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
+
+Widget XtCreatePopupShell(name, widget_class, parent, args, num_args)
+    String      name;
+    WidgetClass widget_class;
+    Widget      parent;
+    ArgList     args;
+    Cardinal    num_args;
+{
+    return _XtCreatePopupShell(name, widget_class, parent, args, num_args,
+			       (XtTypedArgList)NULL, (Cardinal)0);
+}
+
+
+Widget _XtAppCreateShell(name, class, widget_class, display, args, num_args,
+			 typed_args, num_typed_args)
     String      name, class;
     WidgetClass widget_class;
     Display*    display;
     ArgList     args;
     Cardinal    num_args;
-
+    XtTypedArgList typed_args;
+    Cardinal	num_typed_args;
 {
     if (widget_class == NULL) {
 	XtAppErrorMsg(XtDisplayToApplicationContext(display),
@@ -438,8 +507,20 @@ Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
 
     return _XtCreate(name, class, widget_class, (Widget)NULL,
 	    (Screen*)DefaultScreenOfDisplay(display),
-	    args, num_args, (ConstraintWidgetClass) NULL);
-} /* XtAppCreateShell */
+	    args, num_args, typed_args, num_typed_args,
+	    (ConstraintWidgetClass) NULL);
+}
+
+Widget XtAppCreateShell(name, class, widget_class, display, args, num_args)
+    String              name, class;
+    WidgetClass         widget_class;
+    Display             *display;
+    ArgList             args;
+    Cardinal            num_args;
+{
+    return _XtAppCreateShell(name, class, widget_class, display, args, 
+			     num_args, (XtTypedArgList)NULL, (Cardinal)0);
+}
 
 /* ARGSUSED */
 Widget XtCreateApplicationShell(name, widget_class, args, num_args)
@@ -451,7 +532,8 @@ Widget XtCreateApplicationShell(name, widget_class, args, num_args)
     Display *dpy = _XtDefaultAppContext()->list[0];
     XrmClass class = _XtGetPerDisplay(dpy)->class;
 
-    return XtAppCreateShell((String)NULL, XrmQuarkToString((XrmQuark)class),
-			    widget_class, dpy, args, num_args);
+    return _XtAppCreateShell((String)NULL, XrmQuarkToString((XrmQuark)class),
+			     widget_class, dpy, args, num_args,
+			     (XtTypedArgList)NULL, (Cardinal)0);
 }
 
