@@ -11,7 +11,7 @@ if ( "$TERM" == "dialup" || "$TERM" == "network" ) then
 endif
 clear
 if ( $?A2XOPTS ) then
-  echo exec a2x $* $A2XOPTS
+  exec a2x $* $A2XOPTS
 else
-  echo exec a2x $*
+  exec a2x $*
 endif
