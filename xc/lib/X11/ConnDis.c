@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.120 94/03/31 18:59:41 mor Exp $ */
+/* $XConsortium: ConnDis.c,v 11.121 94/04/17 20:18:53 mor Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -159,7 +159,10 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
     /* check if phostname == localnodename */
     if (phostname && uname(&sys) >= 0 &&
 	!strncmp(phostname, sys.nodename, strlen(sys.nodename)))
-	phostname = "unix";
+    {
+	Xfree (phostname);
+	phostname = copystring ("unix", 4);
+    }
 #endif
 
 
