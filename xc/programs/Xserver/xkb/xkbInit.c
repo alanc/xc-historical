@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
+/* $XConsortium: xkbInit.c,v 1.5 94/04/08 15:15:34 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -49,9 +49,10 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	NUM_PHYS	7
 #else
 #ifdef sun
-#define LED_CAPS	4
 #define LED_NUM		1
 #define	LED_SCROLL	2
+#define LED_COMPOSE	3
+#define LED_CAPS	4
 #define	NUM_PHYS	4
 #else
 #define	LED_CAPS	1
@@ -296,6 +297,10 @@ register int	i;
 	names->indicators[LED_CAPS-1] = CREATE_ATOM("Caps Lock");
 	names->indicators[LED_NUM-1] = CREATE_ATOM("Num Lock");
 	names->indicators[LED_SCROLL-1] = CREATE_ATOM("Scroll Lock");
+#ifdef LED_COMPOSE
+	names->indicators[LED_COMPOSE-1] = CREATE_ATOM("Compose");
+#endif
+
     }
 #ifdef DEBUG_RADIO_GROUPS
     names->radio_groups= (Atom *)Xcalloc(RG_COUNT*sizeof(Atom));
@@ -392,7 +397,7 @@ register int 	i;
     map->maps[LED_NUM-1].which_mods= XkbIM_UseLocked;
     map->maps[LED_NUM-1].mask= 0;
     map->maps[LED_NUM-1].real_mods= 0;
-    map->maps[LED_NUM-1].vmods= vmod_NumLock;
+    map->maps[LED_NUM-1].vmods= vmod_NumLockMask;
     xkb->iAccel.haveMap|= (1<<(LED_NUM-1));
 
     xkb->iAccel.usedComponents|= XkbModifierLockMask;
@@ -721,16 +726,16 @@ XkbProcessArguments(argc,argv,i)
     }
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatDelay = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatDelay > 1000000)
-	    XkbDfltRepeatDelay =  999000;
+	XkbDfltRepeatDelay = (long)atoi(argv[i]);
+	if (XkbDfltRepeatDelay > 1000)
+	    XkbDfltRepeatDelay =  999;
 	return 2;
     }
     if (strcmp (argv[i], "-ar2") == 0) {	/* -ar2 int */
 	if (++i >= argc) UseMsg ();
-	XkbDfltRepeatInterval = 1000 * (long)atoi(argv[i]);
-	if (XkbDfltRepeatInterval > 1000000)
-	    XkbDfltRepeatInterval =  999000;
+	XkbDfltRepeatInterval = (long)atoi(argv[i]);
+	if (XkbDfltRepeatInterval > 1000)
+	    XkbDfltRepeatInterval =  999;
 	return 2;
     }
     return 0;
