@@ -1,5 +1,4 @@
-/* static char Xrcsid[] = "$XConsortium: GrayPixmap.c,v 1.5 90/07/15 16:18:37 rws Exp $"; */
-
+/* $XConsortium: GrayPixmap.c,v 1.6 90/12/01 12:58:06 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,7 +25,8 @@ SOFTWARE.
 ******************************************************************/
 
 #include <stdio.h>
-#include <X11/IntrinsicP.h>
+#include <X11/Intrinsic.h>
+#include <X11/Xmu/Drawing.h>
 
 typedef struct _PixmapCache {
     Screen *screen;
