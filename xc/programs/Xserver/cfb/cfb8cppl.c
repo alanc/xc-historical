@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.3 91/07/05 11:05:07 rws Exp $
+ * $XConsortium: cfb8cppl.c,v 1.4 91/07/24 18:35:40 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -125,6 +125,7 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	pptSrc++;
 	psrcLine = psrcBase + srcy * widthSrc + srcx;
 	pdstLine = pdstBase + dsty * widthDst + (dstx >> 5);
+	dstx &= 0x1f;
 	if (dstx + width <= 32)
 	{
 	    maskpartialbits(dstx, width, startmask);
@@ -137,9 +138,9 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask, b
 	}
 	if (startmask)
 	{
-	    niStart = 32 - (dstx & 0x1f);
+	    niStart = 32 - dstx;
 	    bitStart = LeftMost;
-	    StepBit (bitStart, (dstx & 0x1f));
+	    StepBit (bitStart, dstx);
 	}
 	if (endmask)
 	{
