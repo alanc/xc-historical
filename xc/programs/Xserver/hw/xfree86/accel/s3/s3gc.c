@@ -1,4 +1,4 @@
-/* $XConsortium: s3gc.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3gc.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc.c,v 3.2 1994/08/03 13:27:58 dawes Exp $ */
 /*
 
@@ -84,8 +84,7 @@ Modified for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 
 #include "s3.h"
 
-static void s3ValidateGC(), cfbChangeGC(), cfbCopyGC(), cfbDestroyGC();
-static void cfbChangeClip(), cfbDestroyClip(), cfbCopyClip();
+static void s3ValidateGC();
 
 static GCFuncs cfbFuncs =
 {
