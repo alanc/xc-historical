@@ -21,21 +21,41 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.24 91/05/08 09:59:00 jap Exp $ */
-
-#ifndef NULL
-#define NULL 0
-#endif
+/* $XConsortium: osdep.h,v 1.25 91/05/12 10:07:53 rws Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 18)
 
-#if NOFILE <= 128
-#define MAXSOCKS (NOFILE - 1)
+#ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <limits.h>
+#else
+#define _POSIX_SOURCE
+#include <limits.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+#ifndef OPEN_MAX
+#include <sys/param.h>
+#ifndef OPEN_MAX
+#ifdef NOFILE
+#define OPEN_MAX NOFILE
+#else
+#define OPEN_MAX NOFILES_MAX
+#endif
+#endif
+#endif
+
+#if OPEN_MAX <= 128
+#define MAXSOCKS (OPEN_MAX - 1)
 #else
 #define MAXSOCKS 128
+#endif
+
+#ifndef NULL
+#define NULL 0
 #endif
 
 #define mskcnt ((MAXSOCKS + 31) / 32)	/* size of bit array */
