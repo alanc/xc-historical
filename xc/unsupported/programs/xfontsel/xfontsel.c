@@ -1,8 +1,7 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.2 89/11/06 17:18:12 swick Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.3 89/11/07 08:29:49 swick Exp $";
 #endif
 
-/* $XConsortium: fntchoosr.c,v 1.2 89/11/06 17:18:12 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -43,6 +42,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 
 #define MIN_APP_DEFAULTS_VERSION 1
 #define FIELD_COUNT 14
+#define DELIM '-'
 
 /* number of font names to parse in each background iteration */
 #define PARSE_QUANTUM 25
@@ -197,7 +197,7 @@ void main(argc, argv)
 		XtCreateManagedWidget("countLabel",labelWidgetClass,commandBox,NZ);
 
 	    XtAddCallback(quitButton, XtNcallback, Quit, NULL);
-	    XtAddCallback(ownButton, XtNcallback, OwnSelection, NULL);
+	    XtAddCallback(ownButton,XtNcallback,OwnSelection,(XtPointer)True);
 	}
 
 	fieldBox = XtCreateManagedWidget("fieldBox", boxWidgetClass, pane, NZ);
@@ -388,11 +388,11 @@ void ParseFontNames( closure )
 	    char *fieldP;
 
 	    if (*p) fieldP = ++p;
-	    if (*p == '-' || *p == '\0') {
+	    if (*p == DELIM || *p == '\0') {
 		fieldP = "";
 		len = 0;
 	    } else {
-		while (*p && *++p != '-');
+		while (*p && *++p != DELIM);
 		len = p - fieldP;
 	    }
 	    for (i=fieldValues[f]->count,v=fieldValues[f]->value; i; i--,v++) {
@@ -493,10 +493,9 @@ void SelectValue(w, closure, callData)
 #endif
 
     currentFont.value_index[val->field] = val - fieldValues[val->field]->value;
-#ifdef LOG_CHOICES
+
     choice->prev = choiceList;
     choice->value = val;
-#endif
     choiceList = choice;
 	
     SetCurrentFont();
@@ -530,7 +529,7 @@ SetCurrentFont()
 	int len, i;
 	String str;
 
-	currentFontNameString[pos++] = '-';
+	currentFontNameString[pos++] = DELIM;
 	if ((i = currentFont.value_index[f]) != -1) {
 	    FieldValue *val = &fieldValues[f]->value[i];
 	    str = val->string;
@@ -589,6 +588,7 @@ SetCurrentFont()
 	    XtMapWidget(mapWidget);
 	    if (sampleFont) XFreeFont( dpy, sampleFont );
 	    sampleFont = font;
+	    OwnSelection( sampleText, (XtPointer)False, (XtPointer)True );
 	}
 	FlushEvents();
     }
@@ -818,20 +818,24 @@ void OwnSelection(w, closure, callData)
 {
     static AtomPtr _XA_PRIMARY_FONT = NULL;
     Time time = XtLastTimestampProcessed(XtDisplay(w));
+    Boolean primary = (Boolean)closure;
+    Boolean own = (Boolean)callData;
 
     if (_XA_PRIMARY_FONT == NULL)
 	_XA_PRIMARY_FONT = XmuMakeAtom("PRIMARY_FONT");
 
 #define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(w),_XA_PRIMARY_FONT)
 
-    if (callData) {
-	XtOwnSelection( w, XA_PRIMARY, time,
-		        ConvertSelection, LoseSelection, DoneSelection );
+    if (own) {
 	XtOwnSelection( w, XA_PRIMARY_FONT, time,
 			ConvertSelection, LoseSelection, DoneSelection );
+	if (primary)
+	    XtOwnSelection( w, XA_PRIMARY, time,
+			   ConvertSelection, LoseSelection, DoneSelection );
     }
     else {
-	XtDisownSelection(w, XA_PRIMARY, time);
 	XtDisownSelection(w, XA_PRIMARY_FONT, time);
+	if (primary)
+	    XtDisownSelection(w, XA_PRIMARY, time);
     }
 }
