@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexFont.c,v 5.1 91/02/16 09:56:52 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -108,7 +108,7 @@ pexOpenFontReq  *strmPtr;
 
     return(err);
 
-}; /* end-PEXOpenFont() */
+} /* end-PEXOpenFont() */
 
 static dipexFont *
 FindPEXFontEntry(fname)
