@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XKeyBind.c,v 11.47 89/04/17 17:06:31 rws Exp $ */
+/* $XConsortium: XKeyBind.c,v 11.48 89/04/27 18:26:22 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -13,6 +13,9 @@
 #define XK_LATIN1
 #include "keysymdef.h"
 #include <stdio.h>
+
+#define AllMods (ShiftMask|LockMask|ControlMask| \
+		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
 static ComputeMaskFromKeytrans();
 static int Initialize();
@@ -37,7 +40,7 @@ static KeySym KeyCodetoKeySym(dpy, keycode, col)
       * if keycode not defined in set, this should really be impossible.
       * in any case, if sanity check fails, return NoSymbol.
       */
-     if (col < 0 || col > dpy->keysyms_per_keycode) return (NoSymbol);
+     if (col < 0 || col >= dpy->keysyms_per_keycode) return (NoSymbol);
      if (keycode < dpy->min_keycode || keycode > dpy->max_keycode) 
        return(NoSymbol);
 
@@ -231,7 +234,7 @@ static int KeySymRebound(event, buf, symbol)
     register struct XKeytrans *p;
 
     for (p = event->display->key_bindings; p; p = p->next) {
-	if ((event->state == p->state) && (symbol == p->key)) {
+	if (((event->state & AllMods) == p->state) && (symbol == p->key)) {
 		bcopy (p->string, buf, p->len);
 		return p->len;
 		}
@@ -385,7 +388,8 @@ static CARD8 FindKeyCode(dpy, code)
 /*
  * given a list of modifiers, computes the mask necessary for later matching.
  * This routine must lookup the key in the Keymap and then search to see
- * what modifier it is bound to, if any.
+ * what modifier it is bound to, if any.  Sets the AnyModifier bit if it
+ * can't map some keysym to a modifier.
  */
 static ComputeMaskFromKeytrans(dpy, p)
     Display *dpy;
@@ -395,20 +399,21 @@ static ComputeMaskFromKeytrans(dpy, p)
     register CARD8 code;
     register XModifierKeymap *m = dpy->modifiermap;
 
-    p->state = 0;
+    p->state = AnyModifier;
     for (i = 0; i < p->mlen; i++) {
 	/* if not found, then not on current keyboard */
 	if ((code = FindKeyCode(dpy, p->modifiers[i])) == 0)
-		continue;
+		return;
 	/* code is now the keycode for the modifier you want */
 	{
-	    register int j;
+	    register int j = m->max_keypermod<<3;
 
-	    for (j = 0; j < (m->max_keypermod<<3); j++) {
-		if (code == m->modifiermap[j])
-		    p->state |= (1<<(j/m->max_keypermod));
-	    }
+	    while ((--j >= 0) && (code != m->modifiermap[j]))
+		;
+	    if (j < 0)
+		return;
+	    p->state |= (1<<(j/m->max_keypermod));
 	}
     }
-    return;
+    p->state &= AllMods;
 }
