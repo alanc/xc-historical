@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.80 93/08/09 17:14:14 kaleb Exp $ */
+/* $XConsortium: Selection.c,v 1.81 93/08/27 16:29:37 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -644,14 +644,8 @@ Boolean *incremental;
     req->event = *event;
 
     if (timestamp_target) {
-	value = XtMalloc(4);
-	if (sizeof(long) == 4)
-	    *(long*)value = ctx->time;
-	else {
-	    /* NOTREACHED */ /* sizeof(long)!=4 */
-	    long temp = ctx->time;
-	    bcopy( ((char*)&temp)+sizeof(long)-4, value, 4);
-	}
+	value = XtMalloc(sizeof(long));
+	*(long*)value = ctx->time;
 	targetType = XA_INTEGER;
 	length = 1;
 	format = 32;
