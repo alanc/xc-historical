@@ -1,4 +1,4 @@
-/* $XConsortium: ICElibint.h,v 1.12 93/09/24 15:52:20 mor Exp $ */
+/* $XConsortium: ICElibint.h,v 1.13 93/09/26 15:06:57 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -253,18 +253,6 @@ typedef struct {
 
 #define IceGetInBufSize(_iceConn) (_iceConn->inbufmax - _iceConn->inbuf)
 
-#define IceReadCompleteMessage(_iceConn, _headerSize, _msgType, _pMsg, _pData)\
-{ \
-    iceMsg *header = (iceMsg *) (_iceConn->inbuf); \
-    unsigned long bytes = header->length << 3; \
-    if ((IceGetInBufSize (_iceConn) - SIZEOF (iceMsg)) < bytes) \
-        bytes = IceGetInBufSize (_iceConn) - SIZEOF (iceMsg); \
-    _pMsg = (_msgType *) (_iceConn->inbuf); \
-    _pData = _iceConn->inbuf + _headerSize; \
-    _IceRead (_iceConn, bytes, _iceConn->inbufptr); \
-    _iceConn->inbufptr += bytes; \
-}
-
 #define IceReadSimpleMessage(_iceConn, _msgType, _pMsg) \
     _pMsg = (_msgType *) (_iceConn->inbuf);
 
@@ -275,6 +263,36 @@ typedef struct {
 	_iceConn->inbufptr); \
     _pMsg = (_msgType *) (_iceConn->inbuf); \
     _iceConn->inbufptr += (_headerSize - SIZEOF (iceMsg)); \
+}
+
+#define IceReadMessage(_iceConn, _headerSize, _msgType, _pMsg, _pData)\
+{ \
+    iceMsg *header = (iceMsg *) (_iceConn->inbuf); \
+    unsigned long bytes = header->length << 3; \
+    _pMsg = (_msgType *) (_iceConn->inbuf); \
+    _pData = _iceConn->inbuf + _headerSize; \
+    _IceRead (_iceConn, bytes, _iceConn->inbufptr); \
+    _iceConn->inbufptr += bytes; \
+}
+
+#define IceCheckAndReadMessage(_iceConn, _headerSize, _msgType, _pMsg, _pData, _freeMsgData)\
+{ \
+    unsigned long _bytes; \
+    IceReadMessageHeader (_iceConn, _headerSize, _msgType, _pMsg); \
+    _bytes = (_pMsg->length << 3) - (_headerSize - SIZEOF (iceMsg)); \
+    if ((_iceConn->inbufmax - _iceConn->inbufptr) >= _bytes) \
+    { \
+	_IceRead (_iceConn, _bytes, _iceConn->inbufptr); \
+	_pData = _iceConn->inbufptr; \
+	_iceConn->inbufptr += _bytes; \
+        _freeMsgData = False; \
+    } \
+    else \
+    { \
+	_pData = (char *) malloc ((unsigned) _bytes); \
+	_IceRead (_iceConn, _bytes, _pData); \
+        _freeMsgData = True; \
+    } \
 }
 
 #define IceReadData(_iceConn, _bytes, _pData) \
