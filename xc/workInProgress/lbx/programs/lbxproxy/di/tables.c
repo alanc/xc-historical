@@ -1,6 +1,7 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)tables.c,v 1.8 1994/01/21 23:46:57 lemke Exp $
+ * $NCDId: @(#)tables.c,v 1.10 1994/02/11 00:13:30 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -24,8 +25,6 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
-/* $XConsortium:$ */
-
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 
 extern int    ProcStandardRequest ();
@@ -41,6 +40,8 @@ extern int	ProcLBXInternAtom(),
                 ProcLBXAllocNamedColor(),
                 ProcLBXGetModifierMapping(),
                 ProcLBXGetKeyboardMapping(),
+                ProcLBXQueryFont(),
+                ProcLBXGetProperty(),
 		ProcLBXPolyPoint(),
 		ProcLBXPolyLine(),
 		ProcLBXPolySegment(),
@@ -189,7 +190,7 @@ int (* ProcVector[256]) () =
     ProcLBXGetAtomName,
     ProcStandardRequest,
     ProcStandardRequest,
-    ProcStandardRequest,			/* 20 */
+    ProcLBXGetProperty,			/* 20 */
     ProcStandardRequest,
     ProcStandardRequest,
     ProcStandardRequest,
@@ -216,7 +217,7 @@ int (* ProcVector[256]) () =
     ProcStandardRequest,
     ProcStandardRequest,			/* 45 */
     ProcStandardRequest,
-    ProcStandardRequest,
+    ProcLBXQueryFont,
     ProcStandardRequest,
     ProcStandardRequest,
     ProcStandardRequest,		/* 50 */

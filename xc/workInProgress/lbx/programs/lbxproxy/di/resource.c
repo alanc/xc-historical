@@ -1,6 +1,6 @@
 /* Copyright 1988, 1989 Network Computing Devices, Inc.  All rights reserved. */
 
-#ident "$NCDId: @(#)resource.c,v 1.1 1993/12/01 23:48:26 lemke Exp $"
+#ident "$NCDId: @(#)resource.c,v 1.3 1994/02/11 00:09:50 lemke Exp $"
 
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,7 +26,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.1 94/02/04 13:36:35 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.88 92/04/20 17:34:59 rws Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -90,21 +90,19 @@ static RESTYPE lastResourceType;
 static RESTYPE lastResourceClass;
 static RESTYPE TypeMask;
 
-typedef int (*LbxDeleteType)();
-
-static LbxDeleteType *DeleteFuncs = (LbxDeleteType *)NULL;
+static DeleteType *DeleteFuncs = (DeleteType *)NULL;
 
 RESTYPE
 CreateNewResourceType(deleteFunc)
-    LbxDeleteType deleteFunc;
+    DeleteType deleteFunc;
 {
     RESTYPE next = lastResourceType + 1;
-    LbxDeleteType *funcs;
+    DeleteType *funcs;
 
     if (next & lastResourceClass)
 	return 0;
-    funcs = (LbxDeleteType *)xrealloc(DeleteFuncs,
-				   (next + 1) * sizeof(LbxDeleteType));
+    funcs = (DeleteType *)xrealloc(DeleteFuncs,
+				   (next + 1) * sizeof(DeleteType));
     if (!funcs)
 	return 0;
     lastResourceType = next;
@@ -137,8 +135,8 @@ InitDeleteFuncs()
     TypeMask = RC_LASTPREDEF - 1;
     if (DeleteFuncs)
 	xfree(DeleteFuncs);
-    DeleteFuncs = (LbxDeleteType *) xalloc((lastResourceType + 1) *
-					sizeof(LbxDeleteType));
+    DeleteFuncs = (DeleteType *) xalloc((lastResourceType + 1) *
+					sizeof(DeleteType));
     if (!DeleteFuncs)
 	return FALSE;
 #ifdef notyet
@@ -519,7 +517,7 @@ FreeClientResources(client)
     clientTable[client->index].buckets = 0;
 }
 
-#ifdef notyet
+void
 FreeAllResources()
 {
     int	i;
@@ -530,7 +528,6 @@ FreeAllResources()
 	    FreeClientResources(clients[i]);
     }
 }
-#endif
 
 Bool
 LegalNewID(id, client)

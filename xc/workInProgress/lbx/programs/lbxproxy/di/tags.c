@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -19,10 +20,8 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)tags.c,v 1.3 1994/01/21 19:07:44 lemke Exp $
+ * $NCDId: @(#)tags.c,v 1.4 1994/02/09 00:13:51 lemke Exp $
  */
-
-/* $XConsortium:$ */
 
 #include	"cache.h"
 #include	"tags.h"
@@ -71,16 +70,29 @@ TagStoreData(cache, id, size, dtype, data)
     tag = (TagData) xalloc(sizeof(TagDataRec));
     if (!tag)
 	return FALSE;
-    tag->tid = id;
-    tag->data_type = dtype;
     tag->tdata = (pointer) xalloc(size);
     if (!tag->tdata) {
 	xfree(tag);
 	return FALSE;
     }
     bcopy((char *) data, (char *) tag->tdata, size);
+    tag->tid = id;
+    tag->data_type = dtype;
+    tag->size = size;
 
     return CacheStoreMemory(cache, id, (pointer) tag, size, cache_free);
+}
+
+TagData
+TagGetTag(cache, id)
+    Cache       cache;
+    CacheID     id;
+{
+    TagData     tag;
+
+    assert(lbxUseTags);
+    tag = (TagData) CacheFetchMemory(cache, id, TRUE);
+    return tag;
 }
 
 pointer

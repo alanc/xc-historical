@@ -1,6 +1,7 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr$
- * $NCDId: @(#)main.c,v 1.9 1994/02/03 01:48:44 lemke Exp $
+ * $NCDId: @(#)main.c,v 1.10 1994/02/11 00:11:00 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -23,8 +24,6 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-
- /* $XConsortium:$ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -93,12 +92,13 @@ main (argc, argv)
 
 	if (Dispatch () != 0)
 	    break;
+        FreeAllResources();
     }
     exit (0);
 }
 
 void
 MarkClientException (client)
-    ClientPtr client;
+    ClientPtr	client;
 {
 }

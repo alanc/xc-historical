@@ -1,28 +1,27 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
- * Copyright 1988-1993 Network Computing Devices
+ * Copyright 1994 Network Computing Devices, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
+ * Permission to use, copy, modify, distribute, and sell this software and
+ * its documentation for any purpose is hereby granted without fee, provided
+ * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of NCD. not be used in advertising or
- * publicity pertaining to distribution of the software without specific,
- * written prior permission.  NCD. makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- *
- * NCD. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NCD.
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * documentation, and that the name Network Computing Devices, Inc. not be
+ * used in advertising or publicity pertaining to distribution of this 
+ * software without specific, written prior permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED `AS-IS'.  NETWORK COMPUTING DEVICES, INC.,
+ * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING WITHOUT
+ * LIMITATION ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NONINFRINGEMENT.  IN NO EVENT SHALL NETWORK
+ * COMPUTING DEVICES, INC., BE LIABLE FOR ANY DAMAGES WHATSOEVER, INCLUDING
+ * SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF USE, DATA,
+ * OR PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS OF
+ * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Author:  Keith Packard, Network Computing Devices
+ * 
+ * $NCDId: @(#)colormap.c,v 1.5 1994/02/11 00:10:19 lemke Exp $
  */
-
-/* $XConsortium:$ */
-
 /*
  * XXX
  *
@@ -450,8 +449,13 @@ StoreNamedPixel(client, cmap, name, namelen, xred, xgreen, xblue,
     case GrayScale:
 	pent = pmap->red;
 
-	if (pent[pixel].refcnt)
-	    fprintf(stderr, "Overwriting existing pixel name\n");
+	if (pent[pixel].refcnt) {
+#ifdef DEBUG
+	    fprintf(stderr, "Changing existing pixel name from %s to %s\n",
+            		pent[pixel].name, name);
+#endif
+            xfree(pent[pixel].name);
+        }
 
 	pent[pixel].red = xred;
 	pent[pixel].green = xgreen;
@@ -675,6 +679,7 @@ create_colormap(cmap, win, visual)
     pmap = (ColormapPtr) xalloc(tsize);
     if (!pmap)
 	return pmap;
+    bzero((char *)pmap, tsize);
     pmap->size = size;
     pmap->id = cmap;
     pmap->window = win;
@@ -719,7 +724,6 @@ DestroyColormap(pmap, id)
     ColormapPtr pmap;
     Colormap    id;
 {
-    xfree(pmap->red);
     xfree(pmap->blue);
     xfree(pmap->green);
     xfree(pmap);

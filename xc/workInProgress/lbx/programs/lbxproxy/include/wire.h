@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr: wire.h,v 1.1 1993/11/16 17:58:49 keithp Exp keithp $
  * $NCDId: @(#)wire.h,v 1.5 1994/01/18 19:27:47 dct Exp $
@@ -23,8 +24,6 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-
-/* $XConsortium:$ */
 
 #include "lbx.h"
 #include "lbxdeltastr.h"

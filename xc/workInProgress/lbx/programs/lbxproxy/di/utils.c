@@ -78,6 +78,19 @@ OsSignal(sig, handler)
     int sig;
     OsSigHandlerPtr handler;
 {
+#ifdef X_NOT_POSIX
+    return signal(sig, handler);
+#else
+    struct sigaction act, oact;
+
+    sigemptyset(&act.sa_mask);
+    if (handler != SIG_IGN)
+	sigaddset(&act.sa_mask, sig);
+    act.sa_flags = 0;
+    act.sa_handler = handler;
+    sigaction(sig, &act, &oact);
+    return oact.sa_handler;
+#endif
 }
 
 /* Force connections to close on SIGHUP from init */
@@ -191,9 +204,6 @@ char	*argv[];
 {
     int i, skip;
 
-#ifdef AIXV3
-    OpenDebug();
-#endif
     for ( i = 1; i < argc; i++ )
     {
 	/* call ddx first, so it can peek/override if it wants */
@@ -469,14 +479,7 @@ VErrorF(f, args)
     char *f;
     va_list args;
 {
-#ifdef AIXV3
-    vfprintf(aixfd, f, args);
-    fflush (aixfd);
-    if (SyncOn)
-        sync();
-#else
     vfprintf(stderr, f, args);
-#endif /* AIXV3 */
 }
 #endif
 
@@ -497,14 +500,7 @@ ErrorF(
     VErrorF(f, args);
     va_end(args);
 #else
-#ifdef AIXV3
-    fprintf(aixfd, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-    fflush (aixfd);
-    if (SyncOn)
-        sync();
-#else /* not AIXV3 */
     fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif /* AIXV3 */
 #endif
 }
 

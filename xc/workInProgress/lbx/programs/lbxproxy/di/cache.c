@@ -21,7 +21,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)cache.c,v 1.1 1993/12/01 23:46:52 lemke Exp $
+ * $NCDId: @(#)cache.c,v 1.2 1994/02/09 00:58:32 lemke Exp $
  *
  */
 #include	"cachestr.h"
@@ -309,10 +309,13 @@ CacheFetchMemory(cid, id, update)
 	if (cp->id == id) {
 	    if (update) {
 		cp->timestamp = GetTimeInMillis();
+#ifdef bogus
+/* XXX this gets the damn thing circular -- why is it even here? */
 		if (cp != *head) {	/* put it in the front */
 		    cp->next = *head;
 		    *head = cp;
 		}
+#endif
 	    }
 	    return cp->data;
 	}

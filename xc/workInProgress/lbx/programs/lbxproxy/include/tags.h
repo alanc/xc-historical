@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -19,10 +20,8 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)tags.h,v 1.1 1993/12/01 23:48:34 lemke Exp $
+ * $NCDId: @(#)tags.h,v 1.2 1994/02/09 00:13:48 lemke Exp $
  */
-
-/* $XConsortium:$ */
 
 #ifndef _TAGS_H_
 #define _TAGS_H_
@@ -35,6 +34,7 @@
 typedef struct _tagdata {
     XID         tid;
     int         data_type;
+    unsigned long size;
     pointer     tdata;
 }           TagDataRec;
 
@@ -42,6 +42,7 @@ typedef struct _tagdata *TagData;
 
 extern Bool TagStoreData();
 extern pointer TagGetData();
+extern TagData TagGetTag();
 extern void TagFreeData();
 
 

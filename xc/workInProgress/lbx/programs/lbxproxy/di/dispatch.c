@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
  * $NCDId: @(#)dispatch.c,v 1.13 1994/02/03 01:48:48 lemke Exp $
@@ -23,8 +24,6 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-
-/* $XConsortium:$ */
 
 #include "X.h"
 #define NEED_REPLIES

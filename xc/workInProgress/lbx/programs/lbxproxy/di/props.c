@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -112,7 +113,7 @@ FinishGetPropertyReply(client, seqnum, offset, length, ptdp, pdata)
     CARD32		offset;
     CARD32		length;
     PropertyTagDataPtr	ptdp;
-    pointer	pdata;
+    char               *pdata;
 {
     xGetPropertyReply reply;
     int         bytesafter,

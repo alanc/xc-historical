@@ -1,3 +1,4 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr$
  *
@@ -22,8 +23,6 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-
- /* $XConsortium:$ */
 
 #ifndef _LBX_H_
 #define _LBX_H_

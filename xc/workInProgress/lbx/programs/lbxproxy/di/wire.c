@@ -1,6 +1,7 @@
+/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
 /*
  * $NCDOr: wire.c,v 1.2 1993/11/19 21:29:10 keithp Exp keithp $
- * $NCDId: @(#)wire.c,v 1.19 1994/02/03 01:48:39 lemke Exp $
+ * $NCDId: @(#)wire.c,v 1.23 1994/02/11 00:11:39 lemke Exp $
  *
  * Copyright 1992 Network Computing Devices
  *
@@ -23,8 +24,6 @@
  *
  * Author:  Keith Packard, Network Computing Devices
  */
-
-/* $XConsortium:$ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -235,6 +234,100 @@ SendGetKeyboardMapping(client)
     WriteToServer (client, sizeof (req), &req);
 }
 
+SendQueryFont(client, fid)
+    ClientPtr	client;
+    XID		fid;
+{
+    xLbxQueryFontReq	req;
+    XServerPtr		server = client->server;
+    
+    if (client->server->serverClient == client)
+	return;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxQueryFont;
+    req.length = 2;
+    req.fid = fid;
+
+    WriteToServer (client, sizeof (req), &req);
+}
+
+SendChangeProperty(client, win, prop, type, format, mode, num)
+    ClientPtr	client;
+    Window	win;
+    Atom	prop, 
+    		type;
+    int		format,
+    		mode;
+    unsigned long	num;
+{
+    xLbxChangePropertyReq req;
+    XServerPtr  server = client->server;
+
+    if (client->server->serverClient == client)
+	return;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxChangeProperty;
+    req.length = 2;
+    req.window = win;
+    req.property = prop;
+    req.type = type;
+    req.format = format;
+    req.mode = mode;
+    req.nUnits = num;
+
+    WriteToServer(client, sizeof(req), &req);
+}
+
+SendGetProperty(client, win, prop, type, delete, off, len)
+    ClientPtr	client;
+    Window	win;
+    Atom	prop, type;
+    Bool	delete;
+    unsigned long	off,
+    			len;
+{
+    xLbxGetPropertyReq req;
+    XServerPtr  server = client->server;
+
+    if (client->server->serverClient == client)
+	return;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxGetProperty;
+    req.length = 7;
+    req.window = win;
+    req.property = prop;
+    req.type = type;
+    req.delete = delete;
+    req.longOffset = off;
+    req.longLength = len;
+
+    WriteToServer(client, sizeof(req), &req);
+}
+
+SendPropertyData(client, tag, dlen, data)
+    ClientPtr	client;
+    XID		tag;
+    unsigned long dlen;
+    pointer	data;
+{
+    xLbxPropertyDataReq req;
+    XServerPtr  server = client->server;
+
+    if (client->server->serverClient == client)
+	return;
+
+    req.reqType = server->lbxReq;
+    req.lbxReqType = X_LbxPropertyData;
+    req.length = 2 + (dlen >> 2);
+    req.tag = tag;
+
+    WriteToServer(client, sizeof(req), &req);
+    WriteToServer(client, dlen, data);
+}
+
 SendQueryTag(client, tag)
     ClientPtr	client;
     XID		tag;
@@ -265,6 +358,7 @@ SendInvalidateTag(client, tag)
     req.lbxReqType = X_LbxInvalidateTag;
     req.length = 2;
     req.tag = tag;
+    /* need tag type ? */
     WriteToServer (client, sizeof (req), &req);
 }
 
@@ -354,6 +448,13 @@ ServerProcStandardEvent (sc)
 
     rep = (xReply *) sc->requestBuffer;
 
+    /* need to calculate length up from for Delta cache */
+    if (rep->generic.type != server->lbxEvent) {
+	len = RequestLength (rep, sc, 8, &part);
+    } else {
+	len = sizeof(xLbxEvent);
+    }
+
     if (rep->generic.type == server->lbxEvent &&
 	rep->generic.data1 == LbxDeltaEvent)
     {
@@ -369,6 +470,14 @@ ServerProcStandardEvent (sc)
 
 	cacheable = FALSE;
     }
+    else if (rep->generic.type == server->lbxEvent &&
+	rep->generic.data1 == LbxSwitchEvent) {
+	cacheable = FALSE;
+    }
+
+    /* stick in delta buffer before LBX code modified things */
+    if (cacheable && DELTA_CACHEABLE(&server->indeltas, len))
+	LBXAddDeltaIn(&server->indeltas, (char *)rep, len);
 
     if (rep->generic.type != server->lbxEvent)
     {
@@ -410,7 +519,6 @@ ServerProcStandardEvent (sc)
 	    DBG(DBG_SWITCH, (stderr, "switch upstream to %d\n", lbx->client));
 	    server->recv = client;
 	    (void) CheckPendingClientInput (sc);
-	    cacheable = FALSE;
 	    break;
 	case LbxCloseEvent:
 	    DBG(DBG_CLIENT,  (stderr, "close client %d\n", lbx->client));
@@ -418,14 +526,11 @@ ServerProcStandardEvent (sc)
 	    CloseDownClient (client);
 	    break;
         case LbxInvalidateTagEvent:
-            DBG(DBG_CLIENT, (stderr, "invalidate tag %d\n", lbx->detail));
-            LbxFreeTag((XID)lbx->detail);
+            DBG(DBG_CLIENT, (stderr, "invalidate tag %d\n", lbx->detail1));
+            LbxFreeTag((XID)lbx->detail1, lbx->detail2);
             break;
 	}
     }
-
-    if (cacheable && DELTA_CACHEABLE(&server->indeltas, len))
-	LBXAddDeltaIn(&server->indeltas, (char *)rep, len);
 
     return Success;
 }
