@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.171 91/01/08 17:48:06 dave Exp $
+ * $XConsortium: events.c,v 1.172 91/01/09 17:16:35 dave Exp $
  *
  * twm event handling
  *
@@ -998,12 +998,12 @@ HandleClientMessage()
  ***********************************************************************
  */
 
+static void flush_expose();
+
 void
 HandleExpose()
 {
     MenuRoot *tmp;
-    static void flush_expose();
-
     if (XFindContext(dpy, Event.xany.window, MenuContext, (caddr_t *)&tmp) == 0)
     {
 	PaintMenu(tmp, &Event);
