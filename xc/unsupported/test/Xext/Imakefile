@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/23 14:33:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/23 16:30:49 rws Exp $
 
   SHAPESRCS = shapetest.c
   SHAPEOBJS = shapetest.o
@@ -11,16 +11,13 @@ XCOMM $XConsortium: Imakefile,v 1.1 93/09/23 14:33:48 rws Exp $
    MBUFOBJS = xmbufinfo.o
   XTESTSRCS = xtesttest.c
   XTESTOBJS = xtesttest.o
-  SAVERSRCS = savertest.c
-  SAVEROBJS = savertest.o
-  SAVERPROG = ProgramTargetName(savertest)
   SYNCTESTSRCS = synctest.c
   SYNCTESTOBJS = synctest.o
 
-       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS) $(SAVERSRCS) $(SYNCTESTSRCS)
-       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS) $(SAVEROBJS)  $(SYNCTESTOBJS)
+       SRCS = $(SHAPESRCS) $(SHMSRCS) $(MBUFSRCS) $(XTESTSRCS) $(SYNCTESTSRCS)
+       OBJS = $(SHAPEOBJS) $(SHMOBJS) $(MBUFOBJS) $(XTESTOBJS) $(SYNCTESTOBJS)
 
-all:: ProgramTargetName(shapetest) $(SHMPROG) ProgramTargetName(xmbufinfo) ProgramTargetName(xtesttest) $(SAVERPROG) ProgramTargetName(synctest)
+all:: ProgramTargetName(shapetest) $(SHMPROG) ProgramTargetName(xmbufinfo) ProgramTargetName(xtesttest) ProgramTargetName(synctest)
 
 NormalProgramTarget(xmbufinfo,$(MBUFOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
@@ -28,7 +25,6 @@ NormalProgramTarget(shapetest,$(SHAPEOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(shmtest,$(SHMOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 #endif
 NormalProgramTarget(xtesttest,$(XTESTOBJS),$(DEPXILIB) $(DEPXTESTLIB) $(DEPXLIB),$(XILIB) $(XTESTLIB) $(XLIB),NullParameter)
-NormalProgramTarget(savertest,$(SAVEROBJS),$(DEPXLIB),$(XLIB),NullParameter)
 NormalProgramTarget(synctest,$(SYNCTESTOBJS),$(DEPXLIB),$(XLIB),NullParameter)
 
 DependTarget()
