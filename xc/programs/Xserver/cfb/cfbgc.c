@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.11 89/07/28 12:50:49 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.12 89/07/31 17:48:45 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -60,17 +60,12 @@ static GCFuncs cfbFuncs = {
 };
 
 extern void	    mfbPushPixels(), cfbPushPixels8();
-extern RegionPtr    cfbCopyArea8();
 
 static GCOps	cfbTEOps = {
     cfbSolidFS,
     cfbSetSpans,
     miPutImage,
-#if (PPW == 4)
-    cfbCopyArea8,
-#else
     cfbCopyArea,
-#endif
     miCopyPlane,
     miPolyPoint,
     miZeroLine,
@@ -100,11 +95,7 @@ static GCOps	cfbNonTEOps = {
     cfbSolidFS,
     cfbSetSpans,
     miPutImage,
-#if (PPW == 4)
-    cfbCopyArea8,
-#else
     cfbCopyArea,
-#endif
     miCopyPlane,
     miPolyPoint,
     miZeroLine,

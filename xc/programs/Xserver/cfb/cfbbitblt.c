@@ -1,501 +1,125 @@
-/************************************************************
-Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
-
-                    All Rights Reserved
-
-Permission  to  use,  copy,  modify,  and  distribute   this
-software  and  its documentation for any purpose and without
-fee is hereby granted, provided that the above copyright no-
-tice  appear  in all copies and that both that copyright no-
-tice and this permission notice appear in  supporting  docu-
-mentation,  and  that the names of Sun or MIT not be used in
-advertising or publicity pertaining to distribution  of  the
-software  without specific prior written permission. Sun and
-M.I.T. make no representations about the suitability of this
-software for any purpose. It is provided "as is" without any
-express or implied warranty.
-
-SUN DISCLAIMS ALL WARRANTIES WITH REGARD TO  THIS  SOFTWARE,
-INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FIT-
-NESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL SUN BE  LI-
-ABLE  FOR  ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,  DATA  OR
-PROFITS,  WHETHER  IN  AN  ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
-THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-********************************************************/
-
-
-/***********************************************************
-Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
-and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
-
-                        All Rights Reserved
-
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Digital or MIT not be
-used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
-
-DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
-ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
-DIGITAL BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR
-ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
-WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
-ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-SOFTWARE.
-
-******************************************************************/
-
-#include "X.h"
-#include "Xprotostr.h"
-
-#include "miscstruct.h"
-#include "regionstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "mi.h"
-
-#include "cfb.h"
-#include "cfbmskbits.h"
-
-
-/* CopyArea and CopyPlane for a color frame buffer
-
-
-    clip the source rectangle to the source's available bits.  (this
-avoids copying unnecessary pieces that will just get exposed anyway.)
-this becomes the new shape of the destination.
-    clip the destination region to the composite clip in the
-GC.  this requires translating the destination region to (dstx, dsty).
-    build a list of source points, one for each rectangle in the
-destination.  this is a simple translation.
-    go do the multiple rectangle copies
-    do graphics exposures
-*/
-
-RegionPtr
-cfbCopyArea(pSrcDrawable, pDstDrawable,
-            pGC, srcx, srcy, width, height, dstx, dsty)
-register DrawablePtr pSrcDrawable;
-register DrawablePtr pDstDrawable;
-GC *pGC;
-int srcx, srcy;
-int width, height;
-int dstx, dsty;
-{
-    BoxRec srcBox;
-    RegionPtr prgnSrcClip;      /* may be a new region, or just a copy */
-    int realSrcClip = 0;        /* non-0 if we've created a src clip */
- 
-    RegionPtr prgnDst, prgnExposed = NULL;
-    DDXPointPtr pptSrc;
-    register DDXPointPtr ppt;
-    register BoxPtr pbox;
-    int i;
-    register int dx;
-    register int dy;
-    xRectangle origSource;
-    DDXPointRec origDest;
-
-    origSource.x = srcx;
-    origSource.y = srcy;
-    origSource.width = width;
-    origSource.height = height;
-    origDest.x = dstx;
-    origDest.y = dsty;
-
-    /* clip the source */
-
-    srcx += pSrcDrawable->x;
-    srcy += pSrcDrawable->y;
-    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
-    {
-        if ((pSrcDrawable == pDstDrawable) &&
-            (pGC->clientClipType == CT_NONE))
-        {
-            prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
-        }
-        else
-        {
-            BoxRec box;
-
-            box.x1 = 0;
-            box.y1 = 0;
-            box.x2 = pSrcDrawable->width;
-            box.y2 = pSrcDrawable->height;
-
-            prgnSrcClip = (*pGC->pScreen->RegionCreate)(&box, 1);
-            realSrcClip = 1;
-        }
-    }    
-    else
-    {   
-        if (pGC->subWindowMode == IncludeInferiors)
-        {
-            if ((pSrcDrawable == pDstDrawable) &&
-                (pGC->clientClipType == CT_NONE))
-            {
-                prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
-            }
-            else
-            {   
-                prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
-                realSrcClip = 1;
-            }
-        }
-        else
-        {
-            prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
-        }
-    }    
-
-    srcBox.x1 = srcx;
-    srcBox.y1 = srcy;
-    srcBox.x2 = srcx + width;
-    srcBox.y2 = srcy + height;
-
-    prgnDst = (*pGC->pScreen->RegionCreate)(&srcBox, 1);
-    (*pGC->pScreen->Intersect)(prgnDst, prgnDst, prgnSrcClip);
-
-    dstx += pDstDrawable->x;
-    dsty += pDstDrawable->y;
-
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
-    {
-        if (!((WindowPtr)pDstDrawable)->realized)
-        {
-            (*pGC->pScreen->RegionDestroy)(prgnDst);
-            if (realSrcClip)
-                (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-            return NULL;
-        }
-    }
-
-    dx = srcx - dstx;
-    dy = srcy - dsty;
-
-    /* clip the shape of the dst to the destination composite clip */
-    (*pGC->pScreen->TranslateRegion)(prgnDst, -dx, -dy);
-    (*pGC->pScreen->Intersect)(prgnDst,
-                prgnDst,
-                ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
-
-    i = REGION_NUM_RECTS(prgnDst);
-    if (i)
-    {
-	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(i * sizeof(DDXPointRec))))
-	{
-	    (*pGC->pScreen->RegionDestroy)(prgnDst);
-	    if (realSrcClip)
-		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-	    return NULL;
-	}
-	pbox = REGION_RECTS(prgnDst);
-	ppt = pptSrc;
-	for (; --i >= 0; pbox++, ppt++)
-	{
-	    ppt->x = pbox->x1 + dx;
-	    ppt->y = pbox->y1 + dy;
-	}
-    
-	cfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, prgnDst, pptSrc);
-    
-	DEALLOCATE_LOCAL(pptSrc);
-    }
-
-    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
-	prgnExposed = miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
-			  origSource.x, origSource.y,
-			  (int)origSource.width, (int)origSource.height,
-			  origDest.x, origDest.y, (unsigned long)0);
-
-    (*pGC->pScreen->RegionDestroy)(prgnDst);
-    if (realSrcClip)
-        (*pGC->pScreen->RegionDestroy)(prgnSrcClip);
-    return prgnExposed;
-}
-
-
-/* macro for bitblt to avoid a switch on the alu per scanline 
-   comments are in the real code in cfbDoBitblt.
-   we need tmpDst for things less than 1 word wide becuase
-the destination may cross a word boundary, and we need to read
-it all at once to do the rasterop.  (this perhaps argues for
-sub-casing narrow things that don't cross a word boundary.)
-*/
-#define DOBITBLT(ALU) \
-while (nbox--) \
-{ \
-    w = pbox->x2 - pbox->x1; \
-    h = pbox->y2 - pbox->y1; \
-    if (ydir == -1) \
-    { \
-        psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc); \
-        pdstLine = pdstBase + ((pbox->y2-1) * -widthDst); \
-    } \
-    else \
-    { \
-        psrcLine = psrcBase + (pptSrc->y * widthSrc); \
-        pdstLine = pdstBase + (pbox->y1 * widthDst); \
-    } \
-    if (w <= PPW) \
-    { \
-	int tmpDst; \
-        int srcBit, dstBit; \
-        pdstLine += (pbox->x1 >> PWSH); \
-        psrcLine += (pptSrc->x >> PWSH); \
-        psrc = psrcLine; \
-        pdst = pdstLine; \
-        srcBit = pptSrc->x & PIM; \
-        dstBit = pbox->x1 & PIM; \
-        while(h--) \
-        { \
-	    getbits(psrc, srcBit, w, tmpSrc) \
-	    getbits(pdst, dstBit, w, tmpDst) \
-	    tmpSrc = ALU(tmpSrc, tmpDst); \
-/*XXX*/	    putbits(tmpSrc, dstBit, w, pdst, -1) \
-	    pdst += widthDst; \
-	    psrc += widthSrc; \
-        } \
-    } \
-    else \
-    { \
-        register int xoffSrc; \
-        int nstart; \
-        int nend; \
-        int srcStartOver; \
-	int tmpDst; \
-        maskbits(pbox->x1, w, startmask, endmask, nlMiddle) \
-        if (startmask) \
-	    nstart = PPW - (pbox->x1 & PIM); \
-        else \
-	    nstart = 0; \
-        if (endmask) \
-            nend = pbox->x2 & PIM; \
-        else \
-	    nend = 0; \
-        xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM; \
-        srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST; \
-        if (xdir == 1) \
-        { \
-            pdstLine += (pbox->x1 >> PWSH); \
-            psrcLine += (pptSrc->x >> PWSH); \
-	    while (h--) \
-	    { \
-	        psrc = psrcLine; \
-	        pdst = pdstLine; \
-	        if (startmask) \
-	        { \
-		    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) \
-		    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) \
-		    tmpSrc = ALU(tmpSrc, tmpDst); \
-/*XXX*/		    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, -1) \
-		    pdst++; \
-		    if (srcStartOver) \
-		        psrc++; \
-	        } \
-	        nl = nlMiddle; \
-	        while (nl--) \
-	        { \
-		    getbits(psrc, xoffSrc, PPW, tmpSrc) \
-		    *pdst = ALU(tmpSrc, *pdst); \
-		    pdst++; \
-		    psrc++; \
-	        } \
-	        if (endmask) \
-	        { \
-		    getbits(psrc, xoffSrc, nend, tmpSrc) \
-		    tmpSrc = ALU(tmpSrc, *pdst); \
-/*XXX*/		    putbits(tmpSrc, 0, nend, pdst, -1) \
-	        } \
-	        pdstLine += widthDst; \
-	        psrcLine += widthSrc; \
-	    } \
-        } \
-        else  \
-        { \
-            pdstLine += (pbox->x2 >> PWSH); \
-            psrcLine += (pptSrc->x+w >> PWSH); \
-	    if (xoffSrc + nend >= PPW) \
-	        --psrcLine; \
-	    while (h--) \
-	    { \
-	        psrc = psrcLine; \
-	        pdst = pdstLine; \
-	        if (endmask) \
-	        { \
-		    getbits(psrc, xoffSrc, nend, tmpSrc) \
-		    tmpSrc = ALU(tmpSrc, *pdst); \
-/*XXX*/		    putbits(tmpSrc, 0, nend, pdst, -1) \
-	        } \
-	        nl = nlMiddle; \
-	        while (nl--) \
-	        { \
-		    --psrc; \
-		    getbits(psrc, xoffSrc, PPW, tmpSrc) \
-		    --pdst; \
-		    *pdst = ALU(tmpSrc, *pdst); \
-	        } \
-	        if (startmask) \
-	        { \
-		    if (srcStartOver) \
-		        --psrc; \
-		    --pdst; \
-		    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) \
-		    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) \
-		    tmpSrc = ALU(tmpSrc, tmpDst); \
-/*XXX*/		    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, -1) \
-	        } \
-	        pdstLine += widthDst; \
-	        psrcLine += widthSrc; \
-	    } \
-        } \
-    } \
-    pbox++; \
-    pptSrc++; \
-}
-
-/* DoBitblt() does multiple rectangle moves into the rectangles
-   DISCLAIMER:
-   this code can be made much faster; this implementation is
-designed to be independent of byte/bit order, processor
-instruction set, and the like.  it could probably be done
-in a similarly device independent way using mask tables instead
-of the getbits/putbits macros.  the narrow case (w<32) can be
-subdivided into a case that crosses word boundaries and one that
-doesn't.
-
-   we have to cope with the dircetion on a per band basis,
-rather than a per rectangle basis.  moving bottom to top
-means we have to invert the order of the bands; moving right
-to left requires reversing the order of the rectangles in
-each band.
-
-   if src or dst is a window, the points have already been
-translated.
-*/
-
-
 /*
- * magic macro for copying longword aligned regions -
- * can easily be replaced with bcopy (from, to, count * 4)
- * with some reduction in performance...
+ * cfb copy area
  */
 
-#ifdef vax /* or rather, if it has fast bcopy */
-#define longcopy(from,to,count)\
-{ \
-      bcopy((char *) (from),(char *) (to),(count)<<2); \
-      (from) += (count); \
-      (to) += (count); \
-}
-#else /* else not vax; doesn't have fast bcopy */
-#define longcopy(from,to,count)    \
-{ \
-    switch (count & 7) { \
-          case 0:   *to++ = *from++; \
-          case 7:   *to++ = *from++; \
-          case 6:   *to++ = *from++; \
-          case 5:   *to++ = *from++; \
-          case 4:   *to++ = *from++; \
-          case 3:   *to++ = *from++; \
-          case 2:   *to++ = *from++; \
-          case 1:   *to++ = *from++; \
-    } \
-    while ((count -= 8) > 0) { \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-          *to++ = *from++; \
-    } \
-}
-#endif /* vax */
+/*
+Copyright 1989 by the Massachusetts Institute of Technology
 
-cfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
-DrawablePtr pSrcDrawable;
-DrawablePtr pDstDrawable;
-int alu;
-RegionPtr prgnDst;
-DDXPointPtr pptSrc;
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation, and that the name of M.I.T. not be used in
+advertising or publicity pertaining to distribution of the software
+without specific, written prior permission.  M.I.T. makes no
+representations about the suitability of this software for any
+purpose.  It is provided "as is" without express or implied warranty.
+
+Author: Keith Packard
+
+*/
+/* $XConsortium: cfbcopy8.c,v 5.2 89/07/31 17:48:52 keith Exp $ */
+
+#include	"X.h"
+#include	"Xmd.h"
+#include	"Xproto.h"
+#include	"fontstruct.h"
+#include	"dixfontstr.h"
+#include	"gcstruct.h"
+#include	"windowstr.h"
+#include	"scrnintstr.h"
+#include	"pixmapstr.h"
+#include	"regionstr.h"
+#include	"cfb.h"
+#include	"cfbmskbits.h"
+
+#include	"cfb8bit.h"
+
+cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
 {
-    int *psrcBase, *pdstBase;	/* start of src and dst bitmaps */
+    unsigned int *psrcBase, *pdstBase;	
+				/* start of src and dst bitmaps */
     int widthSrc, widthDst;	/* add to get to same position in next line */
 
     register BoxPtr pbox;
     int nbox;
 
-    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNewX, pboxNewY;
+    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
 				/* temporaries for shuffling rectangles */
-    DDXPointPtr pptTmp, pptNewX, pptNewY; /* shuffling boxes entails shuffling the
-					     source points too */
+    DDXPointPtr pptTmp, pptNew1, pptNew2;
+				/* shuffling boxes entails shuffling the
+				   source points too */
     int w, h;
     int xdir;			/* 1 = left right, -1 = right left/ */
     int ydir;			/* 1 = top down, -1 = bottom up */
 
-    int *psrcLine, *pdstLine;	/* pointers to line with current src and dst */
-    register int *psrc;		/* pointer to current src longword */
-    register int *pdst;		/* pointer to current dst longword */
+    unsigned int *psrcLine, *pdstLine;	
+				/* pointers to line with current src and dst */
+    register unsigned int *psrc;/* pointer to current src longword */
+    register unsigned int *pdst;/* pointer to current dst longword */
 
 				/* following used for looping through a line */
-    int startmask, endmask;	/* masks for writing ends of dst */
+    unsigned int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
-    register int tmpSrc;	/* place to store full source word */
+    register unsigned int tmp, bits;
+				/* place to store full source word */
+    int xoffSrc, xoffDst;
+    int	leftShift, rightShift;
+
+    int nstart;			/* number of ragged bits at start of dst */
+    int nend;			/* number of ragged bits at end of dst */
+    int srcStartOver;		/* pulling nstart bits from src
+				   overflows into the next word? */
     int careful;
+    int	xoff;
 
-    if (pSrcDrawable->type == DRAWABLE_WINDOW)
+    if (pSrc->type == DRAWABLE_WINDOW)
     {
-	psrcBase = (int *)
-		(((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	psrcBase = (unsigned int *)
+		(((PixmapPtr)(pSrc->pScreen->devPrivate))->devPrivate.ptr);
 	widthSrc = (int)
-		   ((PixmapPtr)(pSrcDrawable->pScreen->devPrivate))->devKind
+		   ((PixmapPtr)(pSrc->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	psrcBase = (int *)(((PixmapPtr)pSrcDrawable)->devPrivate.ptr);
-	widthSrc = (int)(((PixmapPtr)pSrcDrawable)->devKind) >> 2;
+	psrcBase = (unsigned int *)(((PixmapPtr)pSrc)->devPrivate.ptr);
+	widthSrc = (int)(((PixmapPtr)pSrc)->devKind) >> 2;
     }
 
-    if (pDstDrawable->type == DRAWABLE_WINDOW)
+    if (pDst->type == DRAWABLE_WINDOW)
     {
-	pdstBase = (int *)
-		(((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	pdstBase = (unsigned int *)
+		(((PixmapPtr)(pDst->pScreen->devPrivate))->devPrivate.ptr);
 	widthDst = (int)
-		   ((PixmapPtr)(pDstDrawable->pScreen->devPrivate))->devKind
+		   ((PixmapPtr)(pDst->pScreen->devPrivate))->devKind
 		    >> 2;
     }
     else
     {
-	pdstBase = (int *)(((PixmapPtr)pDstDrawable)->devPrivate.ptr);
-	widthDst = (int)(((PixmapPtr)pDstDrawable)->devKind) >> 2;
+	pdstBase = (unsigned int *)(((PixmapPtr)pDst)->devPrivate.ptr);
+	widthDst = (int)(((PixmapPtr)pDst)->devKind) >> 2;
     }
 
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
      */
-    careful = ((pSrcDrawable == pDstDrawable) ||
-	       ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
-		(pDstDrawable->type == DRAWABLE_WINDOW)));
+    careful = ((pSrc == pDst) ||
+	       ((pSrc->type == DRAWABLE_WINDOW) &&
+		(pDst->type == DRAWABLE_WINDOW)));
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);
 
-    pboxNewX = NULL;
-    pboxNewY = NULL;
-    pptNewX = NULL;
-    pptNewY = NULL;
+    pboxNew1 = NULL;
+    pptNew1 = NULL;
+    pboxNew2 = NULL;
+    pptNew2 = NULL;
     if (careful && (pptSrc->y < pbox->y1))
     {
         /* walk source botttom to top */
@@ -506,13 +130,13 @@ DDXPointPtr pptSrc;
 	if (nbox > 1)
 	{
 	    /* keep ordering in each band, reverse order of bands */
-	    pboxNewY = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    if(!pboxNewY)
+	    pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    if(!pboxNew1)
 		return;
-	    pptNewY = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pptNewY)
+	    pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pptNew1)
 	    {
-		DEALLOCATE_LOCAL(pboxNewY);
+	        DEALLOCATE_LOCAL(pboxNew1);
 	        return;
 	    }
 	    pboxBase = pboxNext = pbox+nbox-1;
@@ -525,15 +149,15 @@ DDXPointPtr pptSrc;
 	        pptTmp = pptSrc + (pboxTmp - pbox);
 	        while (pboxTmp <= pboxBase)
 	        {
-		    *pboxNewY++ = *pboxTmp++;
-		    *pptNewY++ = *pptTmp++;
+		    *pboxNew1++ = *pboxTmp++;
+		    *pptNew1++ = *pptTmp++;
 	        }
 	        pboxBase = pboxNext;
 	    }
-	    pboxNewY -= nbox;
-	    pbox = pboxNewY;
-	    pptNewY -= nbox;
-	    pptSrc = pptNewY;
+	    pboxNew1 -= nbox;
+	    pbox = pboxNew1;
+	    pptNew1 -= nbox;
+	    pptSrc = pptNew1;
         }
     }
     else
@@ -549,17 +173,17 @@ DDXPointPtr pptSrc;
 
 	if (nbox > 1)
 	{
-	    /* reverse order of rects ineach band */
-	    pboxNewX = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
-	    pptNewX = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
-	    if(!pboxNewX || !pptNewX)
+	    /* reverse order of rects in each band */
+	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pboxNew2 || !pptNew2)
 	    {
-		if (pptNewX) DEALLOCATE_LOCAL(pptNewX);
-		if (pboxNewX) DEALLOCATE_LOCAL(pboxNewX);
-		if (pboxNewY)
+		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+		if (pboxNew1)
 		{
-		    DEALLOCATE_LOCAL(pptNewY);
-		    DEALLOCATE_LOCAL(pboxNewY);
+		    DEALLOCATE_LOCAL(pptNew1);
+		    DEALLOCATE_LOCAL(pboxNew1);
 		}
 	        return;
 	    }
@@ -573,15 +197,15 @@ DDXPointPtr pptSrc;
 	        pptTmp = pptSrc + (pboxTmp - pbox);
 	        while (pboxTmp != pboxBase)
 	        {
-		    *pboxNewX++ = *--pboxTmp;
-		    *pptNewX++ = *--pptTmp;
+		    *pboxNew2++ = *--pboxTmp;
+		    *pptNew2++ = *--pptTmp;
 	        }
 	        pboxBase = pboxNext;
 	    }
-	    pboxNewX -= nbox;
-	    pbox = pboxNewX;
-	    pptNewX -= nbox;
-	    pptSrc = pptNewX;
+	    pboxNew2 -= nbox;
+	    pbox = pboxNew2;
+	    pptNew2 -= nbox;
+	    pptSrc = pptNew2;
 	}
     }
     else
@@ -590,12 +214,11 @@ DDXPointPtr pptSrc;
         xdir = 1;
     }
 
-
-    /* special case copy, to avoid some redundant moves into temporaries */
-    if (alu == GXcopy)
+    /* special case copy */
+    if (alu == GXcopy && (planemask & PIM) == PIM)
     {
-        while (nbox--)
-        {
+	while(nbox--)
+	{
 	    w = pbox->x2 - pbox->x1;
 	    h = pbox->y2 - pbox->y1;
 
@@ -609,239 +232,596 @@ DDXPointPtr pptSrc;
 	        psrcLine = psrcBase + (pptSrc->y * widthSrc);
 	        pdstLine = pdstBase + (pbox->y1 * widthDst);
 	    }
-
-	    /* x direction doesn't matter for < 1 longword */
-	    if (w <= PPW)
+	    if ((pbox->x1 & PIM) + w <= PPW)
 	    {
-	        int srcBit, dstBit;	/* bit offset of src and dst */
-
-	        pdstLine += (pbox->x1 >> PWSH);
-	        psrcLine += (pptSrc->x >> PWSH);
-	        psrc = psrcLine;
-	        pdst = pdstLine;
-
-	        srcBit = pptSrc->x & PIM;
-	        dstBit = pbox->x1 & PIM;
-
-	        while(h--)
-	        {
-		    getbits(psrc, srcBit, w, tmpSrc)
-/*XXX*/		    putbits(tmpSrc, dstBit, w, pdst, -1)
-		    pdst += widthDst;
+		pdst = pdstLine + (pbox->x1 >> PWSH);
+		psrc = psrcLine + (pptSrc->x >> PWSH);
+		xoffSrc = pptSrc->x & PIM;
+		xoffDst = pbox->x1 & PIM;
+		while (h--)
+		{
+		    getbits (psrc, xoffSrc, w, bits)
+		    putbits (bits, xoffDst, w, pdst, ~0)
 		    psrc += widthSrc;
-	        }
+		    pdst += widthDst;
+		}
 	    }
 	    else
 	    {
-    	        register int xoffSrc;	/* offset (>= 0, < 32) from which to
-				           fetch whole longwords fetched 
-					   in src */
-	        int nstart;		/* number of ragged bits 
-					   at start of dst */
-	        int nend;		/* number of ragged bits at end 
-					   of dst */
-	        int srcStartOver;	/* pulling nstart bits from src
-					   overflows into the next word? */
-
-	        maskbits(pbox->x1, w, startmask, endmask, nlMiddle)
-	        if (startmask)
-		    nstart = PPW - (pbox->x1 & PIM);
-	        else
-		    nstart = 0;
-	        if (endmask)
-	            nend = pbox->x2 & PIM;
-	        else
-		    nend = 0;
-
-	        xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM;
-	        srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST;
-
-	        if (xdir == 1) /* move left to right */
-	        {
-	            pdstLine += (pbox->x1 >> PWSH);
-	            psrcLine += (pptSrc->x >> PWSH);
-
-		    while (h--)
+	    	maskbits(pbox->x1, w, startmask, endmask, nlMiddle);
+	    	if (xdir == 1)
+	    	{
+	    	    xoffSrc = pptSrc->x & PIM;
+	    	    xoffDst = pbox->x1 & PIM;
+		    pdstLine += (pbox->x1 >> PWSH);
+		    psrcLine += (pptSrc->x >> PWSH);
+		    if (xoffSrc > xoffDst)
 		    {
-		        psrc = psrcLine;
-		        pdst = pdstLine;
-
-		        if (startmask)
-		        {
-			    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
-/*XXX*/			    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, 
-				-1)
-			    pdst++;
-			    if (srcStartOver)
-			        psrc++;
-		        }
-
-			/* special case for aligned copies (scrolling) */
-			if (xoffSrc == 0)
-			{
-			    
-			    if ((nl = nlMiddle) != 0)
+		    	leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+		    	rightShift = 32 - leftShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    bits = *psrc++;
+			    if (startmask)
 			    {
-				longcopy (psrc, pdst, nl)
+			    	tmp = BitLeft(bits,leftShift);
+			    	bits = *psrc++;
+			    	tmp |= BitRight(bits,rightShift);
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    	pdst++;
 			    }
-			}
- 			else
-			{
-			    nl = nlMiddle + 1;
-			    while (--nl)
-		            {
-				getbits (psrc, xoffSrc, PPW, *pdst++);
-				psrc++;
+			    nl = nlMiddle;
+			    while (nl--)
+ 			    {
+			    	tmp = BitLeft(bits, leftShift);
+			    	bits = *psrc++;
+			    	tmp |= BitRight(bits, rightShift);
+			    	*pdst++ = tmp;
 			    }
-			}
-
-		        if (endmask)
-		        {
-			    getbits(psrc, xoffSrc, nend, tmpSrc)
-/*XXX*/			    putbits(tmpSrc, 0, nend, pdst, -1)
-		        }
-
-		        pdstLine += widthDst;
-		        psrcLine += widthSrc;
+			    if (endmask)
+			    {
+			    	tmp = BitLeft(bits, leftShift);
+			    	if (BitLeft(endmask, rightShift))
+			    	{
+				    bits = *psrc++;
+				    tmp |= BitRight(bits, rightShift);
+			    	}
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+		    	}
 		    }
-	        }
-	        else /* move right to left */
-	        {
-	            pdstLine += (pbox->x2 >> PWSH);
-	            psrcLine += (pptSrc->x+w >> PWSH);
-		    /* if fetch of last partial bits from source crosses
-		       a longword boundary, start at the previous longword
-		    */
-		    if (xoffSrc + nend >= PPW)
-		        --psrcLine;
-
-		    while (h--)
+		    else if (xoffDst > xoffSrc)
 		    {
-		        psrc = psrcLine;
-		        pdst = pdstLine;
-
-		        if (endmask)
-		        {
-			    getbits(psrc, xoffSrc, nend, tmpSrc)
-/*XXX*/			    putbits(tmpSrc, 0, nend, pdst, -1)
-		        }
-
-		        nl = nlMiddle;
-		        while (nl--)
-		        {
-			    --psrc;
-			    getbits(psrc, xoffSrc, PPW, *--pdst)
-		        }
-
-		        if (startmask)
-		        {
-			    if (srcStartOver)
-			        --psrc;
-			    --pdst;
-			    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc)
-/*XXX*/			    putbits(tmpSrc, (pbox->x1 & PIM), nstart, pdst, 
-			    -1)
-		        }
-
-		        pdstLine += widthDst;
-		        psrcLine += widthSrc;
+		    	rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+		    	leftShift = 32 - rightShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    tmp = 0;
+			    if (startmask)
+			    {
+			    	bits = *psrc++;
+			    	tmp |= BitRight(bits, rightShift);
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    	pdst++;
+			    	tmp = BitLeft(bits, leftShift);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	bits = *psrc++;
+			    	tmp |= BitRight(bits, rightShift);
+			    	*pdst++ = tmp;
+			    	tmp = BitLeft (bits, leftShift);
+			    }
+			    if (endmask)
+			    {
+			    	if (BitLeft (endmask, rightShift))
+			    	{
+			    	    bits = *psrc++;
+			    	    tmp |= BitRight (bits, rightShift);
+			    	}
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+		    	}
 		    }
-	        } /* move right to left */
+		    else
+		    {
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    if (startmask)
+			    {
+			    	*pdst = (*pdst & ~startmask) | (*psrc++ & startmask);
+			    	pdst++;
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+				    *pdst++ = *psrc++;
+			    if (endmask)
+			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
+		    	}
+	    	    }
+	    	}
+	    	else	/* xdir == -1 */
+	    	{
+	    	    xoffSrc = (pptSrc->x + w - 1) & PIM;
+	    	    xoffDst = (pbox->x2 - 1) & PIM;
+		    pdstLine += ((pbox->x2-1) >> PWSH) + 1;
+		    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
+		    if (xoffSrc > xoffDst)
+		    {
+		    	leftShift = (xoffSrc - xoffDst) << (5 - PWSH);
+		    	rightShift = 32 - leftShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    tmp = 0;
+			    if (endmask)
+			    {
+			    	bits = *--psrc;
+			    	tmp = BitLeft(bits, leftShift);
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    	tmp = BitRight(bits, rightShift);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	bits = *--psrc;
+			    	tmp |= BitLeft (bits, leftShift);
+			    	*--pdst = tmp;
+			    	tmp = BitRight (bits, rightShift);
+			    }
+			    if (startmask)
+			    {
+			    	if (BitRight (startmask, leftShift))
+			    	{
+			    	    bits = *--psrc;
+			    	    tmp |= BitLeft(bits, leftShift);
+			    	}
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    }
+		    	}
+		    }
+		    else if (xoffDst > xoffSrc)
+		    {
+		    	rightShift = (xoffDst - xoffSrc) << (5 - PWSH);
+		    	leftShift = 32 - rightShift;
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    bits = *--psrc;
+			    if (endmask)
+			    {
+			    	tmp = BitRight(bits, rightShift);
+			    	bits = *--psrc;
+			    	tmp |= BitLeft(bits, leftShift);
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) |
+				    	(tmp & endmask);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    {
+			    	tmp = BitRight (bits, rightShift);
+			    	bits = *--psrc;
+			    	tmp |= BitLeft (bits, leftShift);
+			    	*--pdst = tmp;
+			    }
+			    if (startmask)
+			    {
+			    	tmp = BitRight(bits, rightShift);
+			    	if (BitRight (startmask, leftShift))
+			    	{
+				    bits = *--psrc;
+				    tmp |= BitLeft(bits, leftShift);
+			    	}
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) |
+				    	(tmp & startmask);
+			    }
+		    	}
+		    }
+		    else
+		    {
+	    	    	while (h--)
+	    	    	{
+		    	    psrc = psrcLine;
+		    	    pdst = pdstLine;
+		    	    pdstLine += widthDst;
+		    	    psrcLine += widthSrc;
+			    if (endmask)
+			    {
+			    	pdst--;
+			    	*pdst = (*pdst & ~endmask) | (*--psrc & endmask);
+			    }
+			    nl = nlMiddle;
+			    while (nl--)
+			    	*--pdst = *--psrc;
+			    if (startmask)
+			    {
+			    	--pdst;
+			    	*pdst = (*pdst & ~startmask) | (*--psrc & startmask);
+			    }
+		    	}
+	    	    }
+	    	}
 	    }
 	    pbox++;
 	    pptSrc++;
-        } /* while (nbox--) */
+	}
+    } else {
+    	while (nbox--) 
+    	{ 
+    	    w = pbox->x2 - pbox->x1; 
+    	    h = pbox->y2 - pbox->y1; 
+    	    if (ydir == -1) 
+    	    { 
+            	psrcLine = psrcBase + ((pptSrc->y+h-1) * -widthSrc); 
+            	pdstLine = pdstBase + ((pbox->y2-1) * -widthDst); 
+    	    } 
+    	    else 
+    	    { 
+            	psrcLine = psrcBase + (pptSrc->y * widthSrc); 
+            	pdstLine = pdstBase + (pbox->y1 * widthDst); 
+    	    } 
+    	    if (w <= PPW) 
+    	    { 
+	    	int tmpDst, tmpSrc;
+            	int srcBit, dstBit; 
+            	pdstLine += (pbox->x1 >> PWSH); 
+            	psrcLine += (pptSrc->x >> PWSH); 
+            	psrc = psrcLine; 
+            	pdst = pdstLine; 
+            	srcBit = pptSrc->x & PIM; 
+            	dstBit = pbox->x1 & PIM; 
+            	while(h--) 
+            	{ 
+	    	    getbits(psrc, srcBit, w, tmpSrc) 
+	    	    getbits(pdst, dstBit, w, tmpDst) 
+    		    putbitsrop(tmpSrc, dstBit, w, pdst, planemask, alu) 
+	    	    pdst += widthDst; 
+	    	    psrc += widthSrc; 
+            	} 
+    	    } 
+    	    else 
+    	    { 
+            	register int xoffSrc; 
+            	int nstart; 
+            	int nend; 
+            	int srcStartOver; 
+	    	int tmpDst, tmpSrc; 
+            	maskbits(pbox->x1, w, startmask, endmask, nlMiddle) 
+            	if (startmask) 
+	    	    nstart = PPW - (pbox->x1 & PIM); 
+            	else 
+	    	    nstart = 0; 
+            	if (endmask) 
+            	    nend = pbox->x2 & PIM; 
+            	else 
+	    	    nend = 0; 
+            	xoffSrc = ((pptSrc->x & PIM) + nstart) & PIM; 
+            	srcStartOver = ((pptSrc->x & PIM) + nstart) > PLST; 
+            	if (xdir == 1) 
+            	{ 
+            	    pdstLine += (pbox->x1 >> PWSH); 
+            	    psrcLine += (pptSrc->x >> PWSH); 
+	    	    while (h--) 
+	    	    { 
+	            	psrc = psrcLine; 
+	            	pdst = pdstLine; 
+	            	if (startmask) 
+	            	{ 
+		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) 
+		    	    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) 
+    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu) 
+		    	    pdst++; 
+		    	    if (srcStartOver) 
+		            	psrc++; 
+	            	} 
+	            	nl = nlMiddle; 
+	            	while (nl--) 
+	            	{ 
+		    	    getbits(psrc, xoffSrc, PPW, tmpSrc) 
+			    putbitsrop (tmpSrc, 0, 32, pdst, planemask, alu)
+		    	    pdst++; 
+		    	    psrc++; 
+	            	} 
+	            	if (endmask) 
+	            	{ 
+		    	    getbits(psrc, xoffSrc, nend, tmpSrc) 
+    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu) 
+	            	} 
+	            	pdstLine += widthDst; 
+	            	psrcLine += widthSrc; 
+	    	    } 
+            	} 
+            	else  
+            	{ 
+            	    pdstLine += (pbox->x2 >> PWSH); 
+            	    psrcLine += (pptSrc->x+w >> PWSH); 
+	    	    if (xoffSrc + nend >= PPW) 
+	            	--psrcLine; 
+	    	    while (h--) 
+	    	    { 
+	            	psrc = psrcLine; 
+	            	pdst = pdstLine; 
+	            	if (endmask) 
+	            	{ 
+		    	    getbits(psrc, xoffSrc, nend, tmpSrc) 
+    			    putbitsrop(tmpSrc, 0, nend, pdst, planemask, alu) 
+	            	} 
+	            	nl = nlMiddle; 
+	            	while (nl--) 
+	            	{ 
+		    	    --psrc; 
+		    	    getbits(psrc, xoffSrc, PPW, tmpSrc) 
+		    	    --pdst; 
+			    putbitsrop(tmpSrc, 0, 32, pdst, planemask, alu);
+	            	} 
+	            	if (startmask) 
+	            	{ 
+		    	    if (srcStartOver) 
+		            	--psrc; 
+		    	    --pdst; 
+		    	    getbits(psrc, (pptSrc->x & PIM), nstart, tmpSrc) 
+		    	    getbits(pdst, (pbox->x1 & PIM), nstart, tmpDst) 
+    			    putbitsrop(tmpSrc, (pbox->x1 & PIM), nstart, pdst, planemask, alu) 
+	            	} 
+	            	pdstLine += widthDst; 
+	            	psrcLine += widthSrc; 
+	    	    } 
+            	} 
+    	    } 
+    	    pbox++; 
+    	    pptSrc++; 
+    	}
+    }
+}
+
+RegionPtr
+cfbCopyArea(pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty)
+    register DrawablePtr pSrcDrawable;
+    register DrawablePtr pDstDrawable;
+    GC *pGC;
+    int srcx, srcy;
+    int width, height;
+    int dstx, dsty;
+{
+    RegionPtr prgnSrcClip;	/* may be a new region, or just a copy */
+    RegionRec rgnSrcRec;
+    Bool freeSrcClip = FALSE;
+
+    RegionPtr prgnExposed;
+    RegionRec rgnDst;
+    DDXPointPtr pptSrc;
+    register DDXPointPtr ppt;
+    register BoxPtr pbox;
+    int i;
+    register int dx;
+    register int dy;
+    xRectangle origSource;
+    DDXPointRec origDest;
+    int numRects;
+    BoxRec fastBox;
+    int fastClip = 0;		/* for fast clipping with pixmap source */
+    int fastExpose = 0;		/* for fast exposures with pixmap source */
+
+    origSource.x = srcx;
+    origSource.y = srcy;
+    origSource.width = width;
+    origSource.height = height;
+    origDest.x = dstx;
+    origDest.y = dsty;
+
+    srcx += pSrcDrawable->x;
+    srcy += pSrcDrawable->y;
+
+    /* clip the source */
+
+    if (pSrcDrawable->type == DRAWABLE_PIXMAP)
+    {
+	if ((pSrcDrawable == pDstDrawable) &&
+	    (pGC->clientClipType == CT_NONE))
+	{
+	    prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	}
+	else
+	{
+	    /* Pixmap sources generate simple exposure events */
+	    fastExpose = 1;
+
+	    /* Pixmap is just one clipping rectangle so we can avoid
+	       allocating a full-blown region. */
+	    fastClip = 1;
+
+	    fastBox.x1 = srcx;
+	    fastBox.y1 = srcy;
+	    fastBox.x2 = srcx + width;
+	    fastBox.y2 = srcy + height;
+	    
+	    /* Left and top are already clipped, so clip right and bottom */
+	    if (fastBox.x2 > pSrcDrawable->x + (int) pSrcDrawable->width)
+	      fastBox.x2 = pSrcDrawable->x + (int) pSrcDrawable->width;
+	    if (fastBox.y2 > pSrcDrawable->y + (int) pSrcDrawable->height)
+	      fastBox.y2 = pSrcDrawable->y + (int) pSrcDrawable->height;
+	}
     }
     else
     {
-#if defined(hpux) || defined(macII)
-      if (alu == GXxor) {
-	  DOBITBLT(fnXOR);
-      } else switch (alu) {
-	case  GXclear:
-	  DOBITBLT(fnCLEAR);
-	  break;
-	case GXand:
-	  DOBITBLT(fnAND);
-	  break;
-	case  GXandReverse:
-	  DOBITBLT(fnANDREVERSE);
-	  break;
-	case  GXandInverted:
-	  DOBITBLT(fnANDINVERTED);
-	  break;
-	case  GXor:
-	  DOBITBLT(fnOR);
-	  break;
-	case  GXnor:
-	  DOBITBLT(fnNOR);
-	  break;
-	case  GXequiv:
-	  DOBITBLT(fnEQUIV);
-	  break;
-	case  GXinvert:
-	  DOBITBLT(fnINVERT);
-	  break;
-	case  GXorReverse:
-	  DOBITBLT(fnORREVERSE);
-	  break;
-	case  GXcopyInverted:
-	  DOBITBLT(fnCOPYINVERTED);
-	  break;
-	case  GXorInverted:
-	  DOBITBLT(fnORINVERTED);
-	  break;
-	case  GXnand:
-	  DOBITBLT(fnNAND);
-	  break;
-	case  GXset:
-	  DOBITBLT(fnSET);
-	  break;
-	case  GXnoop:
-	default:
-	  break;
-      } /* end switch */
-#else
-    if (alu == GXclear) {
-	DOBITBLT(fnCLEAR);
-    } else if (alu == GXand) {
-	DOBITBLT(fnAND);
-    } else if (alu == GXandReverse) {
-	DOBITBLT(fnANDREVERSE);
-    } else if (alu == GXandInverted) {
-	DOBITBLT(fnANDINVERTED);
-    } else if (alu == GXxor) {
-	DOBITBLT(fnXOR);
-    } else if (alu == GXor) {
-	DOBITBLT(fnOR);
-    } else if (alu == GXnor) {
-	DOBITBLT(fnNOR);
-    } else if (alu == GXequiv) {
-	DOBITBLT(fnEQUIV);
-    } else if (alu == GXinvert) {
-	DOBITBLT(fnINVERT);
-    } else if (alu == GXorReverse) {
-	DOBITBLT(fnORREVERSE);
-    } else if (alu == GXcopyInverted) {
-	DOBITBLT(fnCOPYINVERTED);
-    } else if (alu == GXorInverted) {
-	DOBITBLT(fnORINVERTED);
-    } else if (alu == GXnand) {
-	DOBITBLT(fnNAND);
-    } else if (alu == GXset) {
-	DOBITBLT(fnSET);
-    }
-#endif /* hpux */
+	if (pGC->subWindowMode == IncludeInferiors)
+	{
+	    if ((pSrcDrawable == pDstDrawable) &&
+		(pGC->clientClipType == CT_NONE))
+	    {
+		prgnSrcClip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+	    }
+	    else
+	    {
+		prgnSrcClip = NotClippedByChildren((WindowPtr)pSrcDrawable);
+		freeSrcClip = TRUE;
+	    }
+	}
+	else
+	{
+	    prgnSrcClip = &((WindowPtr)pSrcDrawable)->clipList;
+	}
     }
 
-    if (pboxNewX)
+    /* Don't create a source region if we are doing a fast clip */
+    if (!fastClip)
     {
-	DEALLOCATE_LOCAL(pptNewX);
-	DEALLOCATE_LOCAL(pboxNewX);
+	BoxRec srcBox;
+
+	srcBox.x1 = srcx;
+	srcBox.y1 = srcy;
+	srcBox.x2 = srcx + width;
+	srcBox.y2 = srcy + height;
+	
+	(*pGC->pScreen->RegionInit)(&rgnDst, &srcBox, 1);
+	(*pGC->pScreen->Intersect)(&rgnDst, &rgnDst, prgnSrcClip);
     }
-    if (pboxNewY)
+    
+    dstx += pDstDrawable->x;
+    dsty += pDstDrawable->y;
+
+    if (pDstDrawable->type == DRAWABLE_WINDOW)
     {
-	DEALLOCATE_LOCAL(pptNewY);
-	DEALLOCATE_LOCAL(pboxNewY);
+	if (!((WindowPtr)pDstDrawable)->realized)
+	{
+	    if (!fastClip)
+		(*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (prgnSrcClip == &rgnSrcRec)
+		(*pGC->pScreen->RegionUninit)(prgnSrcClip);
+	    else if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
     }
+
+    dx = srcx - dstx;
+    dy = srcy - dsty;
+
+    /* Translate and clip the dst to the destination composite clip */
+    if (fastClip)
+    {
+	RegionPtr cclip;
+
+        /* Translate the region directly */
+        fastBox.x1 -= dx;
+        fastBox.x2 -= dx;
+        fastBox.y1 -= dy;
+        fastBox.y2 -= dy;
+
+	/* If the destination composite clip is one rectangle we can
+	   do the clip directly.  Otherwise we have to create a full
+	   blown region and call intersect */
+	cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+        if (REGION_NUM_RECTS(cclip) == 1)
+        {
+	    BoxPtr pBox = REGION_RECTS(cclip);
+	  
+	    if (fastBox.x1 < pBox->x1) fastBox.x1 = pBox->x1;
+	    if (fastBox.x2 > pBox->x2) fastBox.x2 = pBox->x2;
+	    if (fastBox.y1 < pBox->y1) fastBox.y1 = pBox->y1;
+	    if (fastBox.y2 > pBox->y2) fastBox.y2 = pBox->y2;
+
+	    /* Check to see if the region is empty */
+	    if (fastBox.x1 >= fastBox.x2 || fastBox.y1 >= fastBox.y2)
+		(*pGC->pScreen->RegionInit)(&rgnDst, NullBox, 0);
+	    else
+		(*pGC->pScreen->RegionInit)(&rgnDst, &fastBox, 1);
+	}
+        else
+	{
+	    /* We must turn off fastClip now, since we must create
+	       a full blown region.  It is intersected with the
+	       composite clip below. */
+	    fastClip = 0;
+	    (*pGC->pScreen->RegionInit)(&rgnDst, &fastBox,1);
+	}
+    }
+    else
+    {
+        (*pGC->pScreen->TranslateRegion)(&rgnDst, -dx, -dy);
+    }
+
+    if (!fastClip)
+    {
+	(*pGC->pScreen->Intersect)(&rgnDst,
+				   &rgnDst,
+				 ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    }
+
+    /* Do bit blitting */
+    numRects = REGION_NUM_RECTS(&rgnDst);
+    if (numRects)
+    {
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
+						  sizeof(DDXPointRec))))
+	{
+	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (prgnSrcClip == &rgnSrcRec)
+		(*pGC->pScreen->RegionUninit)(prgnSrcClip);
+	    else if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
+	pbox = REGION_RECTS(&rgnDst);
+	ppt = pptSrc;
+	for (i = numRects; --i >= 0; pbox++, ppt++)
+	{
+	    ppt->x = pbox->x1 + dx;
+	    ppt->y = pbox->y1 + dy;
+	}
+    
+	cfbDoBitblt(pSrcDrawable, pDstDrawable, pGC->alu, &rgnDst, pptSrc, pGC->planemask);
+	DEALLOCATE_LOCAL(pptSrc);
+    }
+
+    prgnExposed = NULL;
+    if (((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->fExpose)
+    {
+	extern RegionPtr    miHandleExposures();
+
+        /* Pixmap sources generate a NoExposed (we return NULL to do this) */
+        if (!fastExpose)
+	    prgnExposed =
+		miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
+				  origSource.x, origSource.y,
+				  (int)origSource.width,
+				  (int)origSource.height,
+				  origDest.x, origDest.y, (unsigned long)0);
+    }
+    (*pGC->pScreen->RegionUninit)(&rgnDst);
+    if (prgnSrcClip == &rgnSrcRec)
+	(*pGC->pScreen->RegionUninit)(prgnSrcClip);
+    else if (freeSrcClip)
+	(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+    return prgnExposed;
 }
