@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.51 90/03/16 15:29:15 rws Exp $ */
+/* $XConsortium: window.c,v 5.52 90/03/16 17:16:47 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2249,6 +2249,34 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     if (WasViewable)
     {
+	/* avoid the border */
+	if (HasBorder (pWin))
+	{
+	    int	offx, offy, dx, dy;
+	    offx = 0;
+	    offy = 0;
+	    for (g = 0; g <= StaticGravity; g++)
+	    {
+		if (!gravitate[g])
+		    continue;
+
+		/* align winSize to gravitate[g] */
+		GravityTranslate (x, y, oldx, oldy, dw, dh, g, &nx, &ny);
+		
+		dx = (nx - oldx) - offx;
+		dy = (ny - oldy) - offy;
+		if (dx || dy)
+		{
+		    (*pScreen->TranslateRegion) (&pWin->winSize, dx, dy);
+		    offx += dx;
+		    offy += dy;
+		}
+		(*pScreen->Intersect) (gravitate[g], gravitate[g], &pWin->winSize);
+	    }
+	    /* get winSize back where it belongs */
+	    if (offx || offy)
+		(*pScreen->TranslateRegion) (&pWin->winSize, -offx, -offy);
+	}
 	/*
 	 * add screen bits to the appropriate bucket
 	 */
