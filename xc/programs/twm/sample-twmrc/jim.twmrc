@@ -12,7 +12,7 @@ NoGrabServer
 NoRaiseOnMove
 NoRaiseOnResize
 DecorateTransients
-OpaqueMove
+#OpaqueMove
 BorderWidth	2
 TitleFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
 MenuFont	"-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
@@ -189,4 +189,6 @@ menu "apps"
 "xterm"			!"xterm &"
 "xterm -e /bin/sh"	!"xterm -e /bin/sh &"
 "xcalc"			!"xcalc &"
+"xhost +"		!"xhost + >/dev/null"
+"xhost -"		!"xhost - >/dev/null"
 }
