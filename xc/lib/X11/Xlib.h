@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.205 91/05/13 20:50:19 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.206 91/06/05 08:22:45 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -4022,12 +4022,6 @@ extern void XFreeFontSet(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     XFontSet		/* font_set */
-#endif
-);
-
-extern void XFreeStringList(
-#if NeedFunctionPrototypes
-    char**		/* list */
 #endif
 );
 
