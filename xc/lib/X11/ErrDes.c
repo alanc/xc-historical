@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.42 90/12/12 09:17:35 rws Exp $
+ * $XConsortium: XErrDes.c,v 11.43 91/02/01 16:34:04 gildea Exp $
  */
 
 /***********************************************************
@@ -65,7 +65,6 @@ static Const char * Const _XErrorList[] = {
     /* BadLength */		"BadLength",
     /* BadImplementation */	"BadImplementation",
 };
-static int _XErrorListSize = sizeof(_XErrorList);
 
 
 XGetErrorText(dpy, code, buffer, nbytes)
