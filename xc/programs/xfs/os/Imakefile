@@ -1,3 +1,4 @@
+#undef ServerDefines
 #include <Server.tmpl>
 
 SRCS =	connection.c waitfor.c io.c utils.c osinit.c config.c access.c osglue.c
