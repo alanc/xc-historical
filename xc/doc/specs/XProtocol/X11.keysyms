@@ -31,7 +31,22 @@ Byte 3 is the next most-significant 8 bits
 .IP \(bu 5
 Byte 4 is the least-significant 8 bits
 .LP
-The standard KEYSYM values all have the zero values for bytes 1 and 2.
+There are two special KEYSYM values, NoSymbol and VoidSymbol.
+.TS
+l l l l l.
+_
+.TB
+Byte 1	Byte 2	Byte 3	Byte 4	Name
+.sp 6p
+_
+.sp 6p
+.R
+0	0	0	0	NoSymbol
+0	255	255	255	VoidSymbol
+.sp 6p
+_
+.TE
+All other standard KEYSYM values have zero values for bytes 1 and 2.
 Byte 3 indicates a character code set,
 and byte 4 indicates a particular character within that set.
 .TS
