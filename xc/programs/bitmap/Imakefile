@@ -47,7 +47,6 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
           OBJS2 = bmtoa.o
           SRCS3 = atobm.c
           OBJS3 = atobm.o
-       INCLUDES = -I$(TOOLKITSRC) -I$(TOP)
        PROGRAMS = bitmap bmtoa atobm
 
 ComplexProgramTarget_1(bitmap, $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB), -lm)
