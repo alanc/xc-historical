@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.26 89/09/19 20:11:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Alloc.c,v 1.27 89/09/21 08:33:30 swick Exp $";
 /* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
 #endif /* lint */
 
@@ -79,11 +79,14 @@ char *XtCalloc(num, size)
     unsigned num, size;
 {
     char *ptr;
+
 #ifdef MALLOC_0_RETURNS_NULL
-    if ((ptr = calloc(num, (size ? size : 1))) == NULL)
-#else
-    if ((ptr = calloc(num, size)) == NULL)
+    if (num == 0 || size == 0) {
+	num = size = 1;
+    }
 #endif
+
+    if ((ptr = calloc(num, size)) == NULL)
 	_XtAllocError("calloc");
 
     return(ptr);
