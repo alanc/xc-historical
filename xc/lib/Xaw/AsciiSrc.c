@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.28 90/01/10 14:25:21 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.29 90/01/31 17:08:15 kit Exp $";
 #endif 
 
 /*
@@ -676,14 +676,16 @@ Cardinal * num_args;
   AsciiSrcObject src = (AsciiSrcObject) w;
   register int i;
 
-  if (src->ascii_src.use_string_in_place) 
-      return;
-
   if (src->ascii_src.type == XawAsciiString) {
     for (i = 0; i < *num_args ; i++ ) 
       if (streq(args[i].name, XtNstring)) {
-	if (XawAsciiSave(w))	/* If save sucessful. */
-	  *((char **) args[i].value) = src->ascii_src.string;
+	  if (src->ascii_src.use_string_in_place) {
+	      *((char **) args[i].value) = src->ascii_src.first_piece->text;
+	  }
+	  else {
+	      if (XawAsciiSave(w))	/* If save sucessful. */
+		  *((char **) args[i].value) = src->ascii_src.string;
+	  }
 	break;
       }
   }
@@ -755,7 +757,7 @@ Widget w;
 
     string = StorePiecesInString(src);
 
-    if (WriteToFile(src, string, src->ascii_src.string) == FALSE) {
+    if (WriteToFile(string, src->ascii_src.string) == FALSE) {
       XtFree(string);
       return(FALSE);
     }
@@ -791,7 +793,7 @@ String name;
 
   string = StorePiecesInString(src); 
 
-  ret = WriteToFile(src, string, name);
+  ret = WriteToFile(string, name);
   XtFree(string);
   return(ret);
 }
@@ -828,19 +830,15 @@ AsciiSrcObject src;
 /*	Function Name: WriteToFile
  *	Description: Write the string specified to the begining of the file
  *                   specified.
- *	Arguments: w - the widget.          (for error messages only)
- *                 string - string to write.
+ *	Arguments: string - string to write.
  *                 name - the name of the file
- *                 file - file to write it to.
  *	Returns: returns TRUE if sucessful, FALSE otherwise.
  */
 
 static Boolean
-WriteToFile(src, string, name)
-AsciiSrcObject src;
+WriteToFile(string, name)
 String string, name;
 {
-  unsigned char buf[BUFSIZ];
   int fd;
   
   if ( ((fd = creat(name, 0666)) == -1 ) ||
