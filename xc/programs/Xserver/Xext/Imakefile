@@ -3,8 +3,8 @@ STD_DEFINES = ServerDefines
        SRCS = zoid.c bezier.c plxvideo.c xtest1di.c xtest1dd.c shape.c
        OBJS = zoid.o bezier.o plxvideo.o xtest1di.o xtest1dd.o shape.o
 #else
-       SRCS = shape.c
-       OBJS = shape.o
+       SRCS = shape.c shm.c
+       OBJS = shape.o shm.o
 #endif
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
