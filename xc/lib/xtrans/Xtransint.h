@@ -262,7 +262,8 @@ typedef struct _Xtransport {
  * Flags for the flags member of Xtransport.
  */
 
-#define TRANS_ALIAS	0x01	/* record is an alias, don't create server */
+#define TRANS_ALIAS	(1<<0)	/* record is an alias, don't create server */
+#define TRANS_LOCAL	(1<<1)	/* local transport */
 
 
 /*
