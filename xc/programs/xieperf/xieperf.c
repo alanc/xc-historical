@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.31 94/03/02 15:04:21 kaleb Exp $ */
+/* $XConsortium: xieperf.c,v 1.32 94/03/02 16:20:34 kaleb Exp $ */
 
 /**** module xieperf.c ****/
 /******************************************************************************
@@ -4609,7 +4609,7 @@ Bool	computeLutFromLevels;
 	}
 
 	if ( lutCellSize != sizeof( char ) && lutCellSize != sizeof( short )
-		 && lutCellSize != sizeof( long ) )
+	     && lutCellSize != sizeof( int ) && lutCellSize != sizeof( long ) )
 	{
 		fprintf( stderr, "CreatePointLut: cell size not supported\n" );
 		return( ( XieLut ) NULL );
