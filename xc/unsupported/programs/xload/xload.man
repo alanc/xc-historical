@@ -5,18 +5,40 @@ xload - X window system load average display
 .B xload
 [ option ] ...
 .SH DESCRIPTION
+The 
 .I xload 
-continuously displays the system load average under the
+program continuously displays the system load average under the
 .I X
-window system.
-.I xload
+window system.  It
 creates a window in which the load average is represented as a bar graph
 with n divisions. Each division represents one unit of load average.
-The name of the host is displayed in the upper left corner.
+The name of the host is displayed in the upper left corner.  This program
+is nothing more than a wrapper around the Athena Load widget.
 .SH OPTIONS
 .PP
 This program accepts all of the standard X toolkit options along with its
 own specific options shown below:
+.PP
+.TP 8
+.B \-scale \fIinteger\fP
+This option specifies the minimum number of divisions on the graph (default 1).
+.I Xload
+is free to use more divisions if the load gets too high to display,
+but it will never use fewer divisions than this.
+.PP
+.TP 8
+.B \-update \fIseconds\fP
+This option specifies the frequency in seconds with which
+.I xload
+updates its display (except if the
+.I xload
+window is obscured and then exposed, immediate redisplay occurs).  The default
+update frequency is 5 seconds.  Specification of a frequency
+less than 5 seconds is ignored and the default frequency is used instead.
+.PP
+The following standard X toolkit arguments are commonly used
+with \fIxload\fP.
+.PP
 .TP 8
 .B \-bd \fIcolor\fP
 This option specifies the border color.
@@ -44,36 +66,12 @@ The hostname will be displayed in the specified font (if none
 is specified, this defaults to 6x10).
 .PP
 .TP 8
-.B \-hl \fIcolor\fP
-This option specifies the hostname and scale line color; the default is to 
-make it the same
-as the graph color.
-.PP
-.TP 8
 .B \-rv
-This is a standard X toolkit option.  The foreground and background colors
+The foreground and background colors
 are reversed.
 .PP
 .TP 8
-.B \-scale \fIinteger\fP
-This option specifies the minimum number of divisions on the graph (default 1).
-.I Xload
-is free to use more divisions if the load gets too high to display,
-but it will never use fewer divisions than this.
-.PP
-.TP 8
-.B \-update \fIseconds\fP
-This option specifies the frequency in seconds with which
-.I xload
-updates its display (except if the
-.I xload
-window is obscured and then exposed, immediate redisplay occurs).  The default
-update frequency is 5 seconds.  Specification of a frequency
-less than 5 seconds is ignored and the default frequency is used instead.
-.PP
-.TP 8
 .B \-geometry \fIgeometry\fP
-This is a standard X toolkit option.
 The load graph window is created with the specified
 size and location
 determined
@@ -81,8 +79,7 @@ by the supplied geometry specification.
 See \fIX(1)\fP for a full explanation.
 .PP
 .TP 8
-.B \-display \[\fIhost\fP]:\[\fIdisplay\fP]
-This is a standard X toolkit option.
+.B \-display \fIhost\fP:\fIdisplay\fP
 Normally,
 .I xload
 gets the host and display number to use from the environment
@@ -94,10 +91,15 @@ window on, and
 .I display
 specifies the display number.
 For example,
-``mit-grape-nehi:0'' creates an
+``xload -display nehi:0'' creates an
 .I xload
-on display 0 on machine mit-grape-nehi. Either value can be defaulted
+on display 0 on machine nehi. Either value can be defaulted
 by omission but ``:'' is necessary to specify one or both.
+.PP
+.TP 8
+.B \-xrm \fIresourcestring\fP
+This option can be used to set resources that do not have command line
+arguments.
 .SH X DEFAULTS
 .PP
 This program uses the 
