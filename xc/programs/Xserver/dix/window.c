@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.59 91/03/11 09:31:02 rws Exp $ */
+/* $XConsortium: window.c,v 5.60 91/04/07 17:30:38 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -3879,7 +3879,12 @@ NotClippedByChildren(pWin)
 
     pScreen = pWin->drawable.pScreen;
     pReg = (* pScreen->RegionCreate)(NullBox, 1);
-    (* pScreen->Intersect) (pReg, &pWin->borderClip, &pWin->winSize);
+    if (pWin->parent ||
+	screenIsSaved != SCREEN_SAVER_ON ||
+	!HasSaverWindow (savedScreenInfo[pWin->drawable.pScreen->myNum].blanked))
+    {
+	(* pScreen->Intersect) (pReg, &pWin->borderClip, &pWin->winSize);
+    }
     return(pReg);
 }
 
