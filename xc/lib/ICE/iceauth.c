@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.19 94/03/30 19:02:50 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.20 94/04/17 20:15:34 mor Exp mor $ */
 /******************************************************************************
 
 
@@ -221,7 +221,7 @@ char    	**errorStringRet;
 	    IcePaAuthStatus stat;
 
 	    if (authDataLen == length &&
-	        binaryEqual (authData, data, authDataLen))
+	        binaryEqual ((char *) authData, data, authDataLen))
 	    {
 		stat = IcePaAuthAccepted;
 	    }
