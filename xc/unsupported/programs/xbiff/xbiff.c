@@ -1,6 +1,6 @@
 /*
- * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.c,v $
- * $Header: Mailbox.c,v 1.2 88/02/23 15:52:38 jim Exp $
+ * $Source: /usr/expo/X/src/clients/xbiff/RCS/xbiff.c,v $
+ * $Header: xbiff.c,v 1.3 88/02/23 17:39:54 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,7 +21,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-#include <X11/Atoms.h>
+#include <X11/StringDefs.h>
 #include "Mailbox.h"
 
 extern void exit();
