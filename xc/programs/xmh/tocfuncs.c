@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.36 91/07/14 18:53:33 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.37 91/07/17 12:29:21 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -790,8 +790,8 @@ void DoPickMessages(w, client_data, call_data)
 	InitBusyCursor(nscrn);
 	XDefineCursor(XtDisplay(nscrn->parent), XtWindow(nscrn->parent),
 		      app_resources.cursor);
-	XSetWMProtocols(XtDisplay(toplevel), XtWindow(nscrn->parent),
-			&wm_delete_window, 1);
+	(void) XSetWMProtocols(XtDisplay(toplevel), XtWindow(nscrn->parent),
+			       protocolList, XtNumber(protocolList));
     }
     MapScrn(nscrn);
 }
