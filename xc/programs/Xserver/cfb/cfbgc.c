@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.54 91/12/19 18:36:22 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.55 92/02/05 16:07:46 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -347,7 +347,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     pGC->lastWinOrg.x = pDrawable->x;
     pGC->lastWinOrg.y = pDrawable->y;
-    if (pDrawable->type == DRAWABLE_WINDOW)
+    if (pDrawable->type != DRAWABLE_PIXMAP)
     {
 	pWin = (WindowPtr) pDrawable;
     }
