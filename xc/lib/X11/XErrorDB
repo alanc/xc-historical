@@ -1,4 +1,4 @@
-# these are used in XGetErrorMessage.
+! these are used in XGetErrorMessage.
 XlibMessage.XError: X Error of failed request
 XlibMessage.MajorCode: Major opcode of failed request:  %d
 XlibMessage.MinorCode: Minor opcode of failed request:  %d
@@ -7,7 +7,7 @@ XlibMessage.Value: Value in failed request:  0x%lx
 XlibMessage.AtomID: Atom id in failed request:  0x%lx
 XlibMessage.ErrorSerial: Serial number of failed request:  %lu
 XlibMessage.CurrentSerial: Current serial number in output stream:  %lu
-# X request codes.
+! X request codes.
 XRequest.1:X_CreateWindow
 XRequest.2:X_ChangeWindowAttributes
 XRequest.3:X_GetWindowAttributes
@@ -128,7 +128,7 @@ XRequest.117:X_GetPointerMapping
 XRequest.118:X_SetModifierMapping
 XRequest.119:X_GetModifierMapping
 XRequest.127:X_NoOperation
-# X Error Codes
+! X Error Codes
 XProtoError.0: unknown error code 0
 XProtoError.1: BadRequest (invalid request code or no such operation)
 XProtoError.2: BadValue (integer parameter out of range for operation)
@@ -147,7 +147,7 @@ XProtoError.14: BadIDChoice (invalid resource ID chosen for this connection)
 XProtoError.15: BadName (named color or font does not exist)
 XProtoError.16: BadLength (poly request too large or internal Xlib length error)
 XProtoError.17: BadImplementation (server does not implement operation)
-# Multi-Buffering extension
+! Multi-Buffering extension
 XRequest.Multi-Buffering.0: X_MbufGetBufferVersion
 XRequest.Multi-Buffering.1: X_MbufCreateImageBuffers
 XRequest.Multi-Buffering.2: X_MbufDestroyImageBuffers
@@ -159,7 +159,7 @@ XRequest.Multi-Buffering.7: X_MbufGetBufferAttributes
 XRequest.Multi-Buffering.8: X_MbufGetBufferInfo
 XRequest.Multi-Buffering.9: X_MbufCreateStereoWindow
 XProtoError.Multi-Buffering.0: BadBuffer (invalid Buffer parameter)
-# SHAPE extension, an X Consortium standard
+! SHAPE extension, an X Consortium standard
 XRequest.SHAPE.0: X_ShapeQueryVersion
 XRequest.SHAPE.1: X_ShapeRectangles
 XRequest.SHAPE.2: X_ShapeMask
@@ -169,7 +169,7 @@ XRequest.SHAPE.5: X_ShapeQueryExtents
 XRequest.SHAPE.6: X_ShapeSelectInput
 XRequest.SHAPE.7: X_ShapeInputSelected
 XRequest.SHAPE.8: X_ShapeGetRectangles
-# Input extension, not (yet) an X Consortium standard
+! Input extension, not (yet) an X Consortium standard
 XRequest.XInputExtension.1:X_GetExtensionVersion
 XRequest.XInputExtension.2:X_ListInputDevices
 XRequest.XInputExtension.3:X_OpenDevice
@@ -201,7 +201,7 @@ XRequest.XInputExtension.28:X_GetDeviceButtonMapping
 XRequest.XInputExtension.29:X_SetDeviceButtonMapping
 XRequest.XInputExtension.30:X_QueryDeviceState
 XRequest.XInputExtension.31:X_SendExtensionEvent
-# MIT-SHM extension, experimental, not an X Consortium standard
+! MIT-SHM extension, experimental, not an X Consortium standard
 XRequest.MIT-SHM.0: X_ShmQueryVersion
 XRequest.MIT-SHM.1: X_ShmAttach
 XRequest.MIT-SHM.2: X_ShmDetach
@@ -209,6 +209,6 @@ XRequest.MIT-SHM.3: X_ShmPutImage
 XRequest.MIT-SHM.4: X_ShmGetImage
 XRequest.MIT-SHM.5: X_ShmCreatePixmap
 XProtoError.MIT-SHM.0: BadShmSeg (invalid shared segment parameter)
-# MIT-SUNDRY-NONSTANDARD extension, definitely not an X Consortium standard
+! MIT-SUNDRY-NONSTANDARD extension, definitely not an X Consortium standard
 XRequest.MIT-SUNDRY-NONSTANDARD.0: X_MITSetBugMode
 XRequest.MIT-SUNDRY-NONSTANDARD.1: X_MITGetBugMode
