@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.17 94/12/21 16:58:04 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.18 94/12/27 17:56:40 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -50,8 +50,13 @@ Widget	   interactStyleLabel;
 Widget	   interactStyleNone;
 Widget	   interactStyleErrors;
 Widget	   interactStyleAny;
-Widget	 saveOkButton;
-Widget	 saveCancelButton;
+Widget	   saveOkButton;
+Widget     helpSaveButton;
+Widget	   saveCancelButton;
+Widget helpPopup;
+Widget   helpForm;
+Widget     helpSaveText;
+Widget     helpSaveOkButton;
 Widget nameInUsePopup;
 Widget   nameInUseForm;
 Widget	   nameInUseLabel;
@@ -82,6 +87,8 @@ static int interactStyleData[] = {
 
 static String *failedNames = NULL;
 static int numFailedNames = 0;
+
+static Bool help_visible = False;
 
 static String name_in_use = NULL;
 static Bool name_locked = False;
@@ -258,6 +265,12 @@ DoSave ()
     char	*_shutdown;
     char	*_interactStyle;
 
+    if (help_visible)
+    {
+	XtPopdown (helpPopup);
+	help_visible = 0;
+    }
+
     ptr = XawToggleGetCurrent (saveTypeLocal /* just 1 of the group */);
     saveType = *((int *) ptr);
 
@@ -380,6 +393,20 @@ Cardinal *num_params;
 	XtCallCallbacks (badSaveCancelButton, XtNcallback, NULL);
     else
 	XtCallCallbacks (badSaveOkButton, XtNcallback, NULL);
+}
+
+
+
+static void
+DelSaveHelpWinAction (w, event, params, num_params)
+
+Widget w;
+XEvent *event;
+String *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (helpSaveOkButton, XtNcallback, NULL);
 }
 
 
@@ -612,6 +639,13 @@ XtPointer 	callData;
 
 {
     XtPopdown (savePopup);
+
+    if (help_visible)
+    {
+	XtPopdown (helpPopup);
+	help_visible = 0;
+    }
+
     SetAllSensitive (1);
 }
 
@@ -827,6 +861,44 @@ XtPointer 	callData;
 
 
 
+static void
+HelpSaveXtProc (w, client_data, callData)
+
+Widget	  w;
+XtPointer client_data;
+XtPointer callData;
+
+{
+    static int first_time = 1;
+
+    if (!help_visible)
+    {
+	PopupPopup (savePopup, helpPopup,
+	    True, first_time, 50, 50, "DelSaveHelpWinAction()");
+
+	help_visible = 1;
+
+	if (first_time)
+	    first_time = 0;
+    }
+}
+
+
+
+static void
+HelpSaveOkXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (helpPopup);
+    help_visible = 0;
+}
+
+
+
 void
 create_save_popup ()
 
@@ -837,7 +909,8 @@ create_save_popup ()
         {"SaveOkAction", SaveOkAction},
         {"DelSaveWinAction", DelSaveWinAction},
 	{"DelNameInUseWinAction", DelNameInUseWinAction},
-	{"DelBadSaveWinAction", DelBadSaveWinAction}
+	{"DelBadSaveWinAction", DelBadSaveWinAction},
+	{"DelSaveHelpWinAction", DelSaveHelpWinAction}
     };
 
 
@@ -960,9 +1033,20 @@ create_save_popup ()
     
     XtAddCallback (saveOkButton, XtNcallback, SaveOkXtProc, 0);
 
+
+    helpSaveButton = XtVaCreateManagedWidget (
+	"helpSaveButton", commandWidgetClass, saveForm,
+        XtNfromHoriz, saveOkButton,
+        XtNfromVert, interactStyleLabel,
+        XtNvertDistance, 20,
+	NULL);
+
+    XtAddCallback (helpSaveButton, XtNcallback, HelpSaveXtProc, 0);
+
+
     saveCancelButton = XtVaCreateManagedWidget (
 	"saveCancelButton", commandWidgetClass, saveForm,
-        XtNfromHoriz, saveOkButton,
+        XtNfromHoriz, helpSaveButton,
         XtNfromVert, interactStyleLabel,
         XtNvertDistance, 20,
         NULL);
@@ -1029,6 +1113,39 @@ create_save_popup ()
     XtAddCallback (nameInUseCancelButton, XtNcallback,
 	NameInUseCancelXtProc, 0);
 
+
+    /*
+     * Pop up for help.
+     */
+
+    helpPopup = XtVaCreatePopupShell (
+	"helpPopup", transientShellWidgetClass, topLevel,
+	NULL);
+    
+
+    helpForm = XtVaCreateManagedWidget (
+	"helpForm", formWidgetClass, helpPopup,
+	NULL);
+
+    helpSaveText = XtVaCreateManagedWidget (
+	"helpSaveText", labelWidgetClass, helpForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
+	NULL);
+
+    helpSaveOkButton = XtVaCreateManagedWidget (
+	"helpSaveOkButton", commandWidgetClass, helpForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, helpSaveText,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+        XtNvertDistance, 20,
+        NULL);
+    
+    XtAddCallback (helpSaveOkButton, XtNcallback,
+	HelpSaveOkXtProc, 0);
 
 
     /*
