@@ -17,13 +17,14 @@ without any express or implied warranty.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: MITMisc.h,v 1.0 89/08/31 12:58:22 rws Exp $ */
+/* $XConsortium: MITMisc.h,v 1.1 89/10/08 19:39:25 rws Exp $ */
 
 #ifndef _XMITMISC_H_
 #define _XMITMISC_H_
 
 #define X_MITSetBugMode			0
 #define X_MITGetBugMode			1
+#define X_MITPushPixels			2
 
 #define MITMiscNumberEvents		0
 

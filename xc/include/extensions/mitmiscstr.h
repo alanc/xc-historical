@@ -17,7 +17,7 @@ without any express or implied warranty.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: mitmiscstr.h,v 1.0 89/08/31 12:58:17 rws Exp $ */
+/* $XConsortium: mitmiscstr.h,v 1.1 89/10/08 19:39:32 rws Exp $ */
 
 #include "MITMisc.h"
 
@@ -39,6 +39,17 @@ typedef struct _GetBugMode {
     CARD16	length B16;
 } xMITGetBugModeReq;
 #define sz_xMITGetBugModeReq	4
+
+typedef struct _PushPixels {
+    CARD8 reqType;		/* always MITReqCode */
+    CARD8 mitReqType;		/* always X_MITPushPixels */
+    CARD16 length B16;
+    Drawable srcDrawable B32, dstDrawable B32;
+    GContext gc B32;
+    CARD16 width B16, height B16;
+    INT16 dstX B16, dstY B16;
+} xMITPushPixelsReq;
+#define sz_xMITPushPixelsReq	24
 
 typedef struct {
     BYTE	type;			/* X_Reply */
