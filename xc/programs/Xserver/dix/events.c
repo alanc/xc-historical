@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $Header: events.c,v 1.95 87/08/19 21:59:19 newman Locked $ */
+/* $Header: events.c,v 1.96 87/08/20 16:25:35 swick Locked $ */
 
 #include "X.h"
 #include "misc.h"
@@ -75,10 +75,18 @@ static debug_events = 0;
 static debug_modifiers = 0;
 static InputInfo inputInfo;
 
+static int keyThatActivatedPassiveGrab; 	/* The key that activated the
+						current passive grab must be
+						recorded, so that the grab may
+						be deactivated upon that key's
+						release. PRH
+						*/
+
 static lastInputFocusChangeMode = NotifyNormal; /* Useful for avoiding sending
 						 focus events when the input
 						 focus is sent twice to the
-						 same window. PRH */
+						 same window. PRH 
+						*/
 
 static KeySymsRec curKeySyms;
 
@@ -137,6 +145,12 @@ extern Bool CheckKeyboardGrabs();
 extern void NormalKeyboardEvent();
 extern int DeliverDeviceEvents();
 extern void DoFocusEvents();
+
+extern GrabPtr CreateGrab();		/* Defined in grabs.c */
+extern void  DeleteGrab();
+extern BOOL GrabMatchesSecond();
+extern void DeletePassiveGrabsFromList();
+extern void AddPassiveGrabToWindowList();
 
 static ScreenPtr currentScreen;
 
@@ -968,6 +982,7 @@ DefineInitialRootWindow(win)
     sprite.hot.y = currentScreen->height / 2;
     sprite.win = win;
     sprite.current = c;
+    spriteTraceGood = 1;
     ROOT = win;
     (*currentScreen->CursorLimits) (
 	currentScreen, win->cursor, &sprite.hotLimits, &sprite.physLimits);
@@ -1081,61 +1096,6 @@ ProcWarpPointer(client)
     return Success;
 }
 
-static Bool
-IsGrabbed(key, modifiers, dev, grab, keybd)
-    int key, modifiers;
-    DeviceIntPtr dev;
-    register GrabPtr grab;
-    Bool keybd;
-{
-    if (grab->device != dev)
-	return FALSE;
-    if ((grab->modifiers != AnyModifier) && (grab->modifiers != modifiers))
-	return FALSE;
-    if (keybd)
-    {
-	if ((key != grab->u.keybd.key) &&
-	    (grab->u.keybd.key != AnyKey || keyModifiersList[key]))
-	    return FALSE;
-    }
-    else
-    {
-	if ((key != grab->u.ptr.button) && (grab->u.ptr.button != AnyButton))
-	    return FALSE;
-    }
-    return TRUE;
-}
-
-static Bool
-MatchingGrab(key, modifiers, dev, grab, keybd)
-    int key, modifiers;
-    DeviceIntPtr dev;
-    register GrabPtr grab;
-    Bool keybd;
-{
-    if (grab->device != dev)
-	return FALSE;
-    if ((grab->modifiers != modifiers) &&
-	(grab->modifiers != AnyModifier) &&
-	(modifiers != AnyModifier))
-	return FALSE;
-    if (keybd)
-    {
-	if ((key != grab->u.keybd.key) &&
-	    (grab->u.keybd.key != AnyKey || keyModifiersList[key]) &&
-	    (key != AnyKey || keyModifiersList[grab->u.keybd.key]))
-	    return FALSE;
-    }
-    else
-    {
-	if ((key != grab->u.ptr.button) &&
-	    (grab->u.ptr.button != AnyButton) &&
-	    (key != AnyButton))
-	    return FALSE;
-    }
-    return TRUE;
-}
-
 static void
 NoticeTimeAndState(xE)
     register xEvent *xE;
@@ -1159,11 +1119,16 @@ CheckPassiveGrabsOnWindow(pWin, device, xE, isKeyboard)
     int isKeyboard;
 {
     GrabPtr grab;
+    GrabRec temporaryGrab;
+
+    temporaryGrab.window = pWin;
+    temporaryGrab.device = device;
+    temporaryGrab.u.keybd.keyDetail.exact = xE->u.u.detail;
+    temporaryGrab.modifiersDetail.exact = keyButtonState & AllModifiersMask;
 
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
-	if (IsGrabbed(xE->u.u.detail, keyButtonState & AllModifiersMask, device, grab,
-	    isKeyboard))
+	if (GrabMatchesSecond(&temporaryGrab, grab))
 	{
 	    if (isKeyboard)
 		ActivateKeyboardGrab(device, grab, currentTime, TRUE);
@@ -1290,51 +1255,71 @@ ProcessKeyboardEvent (xE, keybd)
 	    if (!xE->u.u.detail)
 		return;
 	    BitOn(keybd->down, xE->u.u.detail);
-		{
-		    register int i = 0;
-		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
-		    register CARD16 mask = 1;
-
-		    while (modifiers) {
-			if (mask & modifiers) {
-			    /* This key affects modifier "i" */
-			    modifierKeyCount[i]++;
-			    keyButtonState |= mask;
-			}
-			i++;
-			modifiers &= ~mask;
-			mask <<= 1;
-		    }
-		}
+	 
 	    if (!grab)
 		if (CheckDeviceGrabs(keybd, xE, 0, TRUE))
+		{
+		    keyThatActivatedPassiveGrab = xE->u.u.detail;
+ 		{
+ 		    register int i = 0;
+ 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
+ 		    register CARD16 mask = 1;
+ 
+ 		    while (modifiers) {
+ 			if (mask & modifiers) {
+ 			    /* This key affects modifier "i" */
+ 			    modifierKeyCount[i]++;
+ 			    keyButtonState |= mask;
+ 			}
+ 			i++;
+ 			modifiers &= ~mask;
+ 			mask <<= 1;
+ 		    }
+ 		}
 		    return;
+		}
+ 		{
+ 		    register int i = 0;
+ 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
+ 		    register CARD16 mask = 1;
+ 
+ 		    while (modifiers) {
+ 			if (mask & modifiers) {
+ 			    /* This key affects modifier "i" */
+ 			    modifierKeyCount[i]++;
+ 			    keyButtonState |= mask;
+ 			}
+ 			i++;
+ 			modifiers &= ~mask;
+ 			mask <<= 1;
+ 		    }
+ 		}
 	    break;
 	case KeyRelease: 
 	    BitOff(keybd->down, key);
 	    if (!xE->u.u.detail)
 		return;
 	    BitOff(keybd->down, xE->u.u.detail);
-		{
-		    register int i = 0;
-		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
-		    register CARD16 mask = 1;
-
-		    while (modifiers) {
-			if (mask & modifiers) {
-			    /* This key affects modifier "i" */
-			    if (--modifierKeyCount[i] <= 0) {
-				keyButtonState &= ~mask;
-				modifierKeyCount[i] = 0;
-			    }
-			}
-			i++;
-			modifiers &= ~mask;
-			mask <<= 1;
-		    }
-		}
+ 		{
+ 		    register int i = 0;
+ 		    register CARD16 modifiers = keyModifiersList[xE->u.u.detail];
+ 		    register CARD16 mask = 1;
+ 
+ 		    while (modifiers) {
+ 			if (mask & modifiers) {
+ 			    /* This key affects modifier "i" */
+ 			    if (--modifierKeyCount[i] <= 0) {
+ 				keyButtonState &= ~mask;
+ 				modifierKeyCount[i] = 0;
+ 			    }
+ 			}
+ 			i++;
+ 			modifiers &= ~mask;
+ 			mask <<= 1;
+ 		    }
+ 		}
 	    if ((keybd->u.keybd.passiveGrab) &&
-			(xE->u.u.detail == grab->u.keybd.key))
+			(xE->u.u.detail == keyThatActivatedPassiveGrab))
 		deactiveGrab = TRUE;
 	    break;
 	default: 
@@ -1531,7 +1516,7 @@ OtherClientGone(pWin, id)
     FatalError("client not on event list");
 }
 
-static void
+void
 PassiveClientGone(pWin, id)
     WindowPtr pWin;
     long   id;
@@ -1981,7 +1966,7 @@ ProcSetInputFocus(client)
         focusTraceGood = 0;
     else if (focusWin == PointerRootWin)
     {
-        focusTraceGood = 1;
+        focusTraceGood = 0;
         focusTrace[0] = ROOT;
     }
     else
@@ -2324,7 +2309,7 @@ InitEvents()
 	spriteTraceSize = 20;
 	spriteTrace = (WindowPtr *)Xalloc(20*sizeof(WindowPtr));
     }
-    spriteTraceGood = 1;
+    spriteTraceGood = 0;
     if (focusTraceSize == 0)
     {
 	focusTraceSize = 20;
@@ -2818,19 +2803,19 @@ ProcGetModifierMapping(client)
     xGetModifierMappingReply rep;
     REQUEST(xReq);
 
-    REQUEST_SIZE_MATCH(xReq);
-    rep.type = X_Reply;
-    rep.numKeyPerModifier = maxKeysPerModifier;
-    rep.sequenceNumber = client->sequence;
-    /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
-    rep.length = 2*maxKeysPerModifier;
-
-    WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
-
-    /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
-    WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
-    return client->noClientException;
-}
+      REQUEST_SIZE_MATCH(xReq);
+      rep.type = X_Reply;
+      rep.numKeyPerModifier = maxKeysPerModifier;
+      rep.sequenceNumber = client->sequence;
+      /* length counts 4 byte quantities - there are 8 modifiers 1 byte big */
+      rep.length = 2*maxKeysPerModifier;
+  
+      WriteReplyToClient(client, sizeof(xGetModifierMappingReply), &rep);
+  
+      /* Reply with the (modified by DDX) map that SetModifierMapping passed in */
+      WriteToClient(client, 8*maxKeysPerModifier, modifierKeyMap);
+      return client->noClientException;
+  }
 
 int
 ProcChangeKeyboardMapping(client)
@@ -3266,11 +3251,11 @@ ProcGetMotionEvents(client)
 	    }
     }
     rep.length = rep.nEvents * sizeof(xTimecoord) / 4;
-    nEvents = rep.nEvents;  /* save this away before it gets swapped */
+    nEvents = rep.nEvents;
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
     if (inputInfo.numMotionEvents)
     {
-        client->pSwapReplyFunc = SwapTimeCoordWrite;
+	client->pSwapReplyFunc = SwapTimeCoordWrite;
 	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord), coords);
 	Xfree(coords);
     }
@@ -3409,6 +3394,7 @@ ProcUngrabKey(client)
     REQUEST(xUngrabKeyReq);
     WindowPtr pWin;
     GrabPtr grab;
+    GrabRec temporaryGrab;
 
     REQUEST_SIZE_MATCH(xUngrabKeyReq);
     pWin = LookupWindow(stuff->grabWindow, client);
@@ -3417,19 +3403,17 @@ ProcUngrabKey(client)
 	client->errorValue = stuff->grabWindow;
 	return BadWindow;
     }
-    for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
-    {
-	if (MatchingGrab(
-	    stuff->key, stuff->modifiers, inputInfo.keyboard, grab, TRUE))
-	{
-	    if (client == grab->client)
-		FreeResource(grab->resource, RC_NONE);
-		/*
-		 * Might need to unlink multiple requests, the keys might
-		 * be put on individually, but taken off with an AnyMumble.
-		 */
-	}
-    }
+
+    temporaryGrab.client = client;
+    temporaryGrab.device = inputInfo.keyboard;
+    temporaryGrab.window = pWin;
+    temporaryGrab.modifiersDetail.exact = stuff->modifiers;
+    temporaryGrab.modifiersDetail.pMask = NULL;
+    temporaryGrab.u.keybd.keyDetail.exact = stuff->key;
+    temporaryGrab.u.keybd.keyDetail.pMask = NULL;
+
+    DeletePassiveGrabFromList(&temporaryGrab);
+
     return(Success);
 }
 
@@ -3440,6 +3424,7 @@ ProcGrabKey(client)
     WindowPtr pWin;
     REQUEST(xGrabKeyReq);
     GrabPtr grab;
+    GrabPtr temporaryGrab;
     Bool useOld = FALSE;
 
     REQUEST_SIZE_MATCH(xGrabKeyReq);
@@ -3453,37 +3438,27 @@ ProcGrabKey(client)
 	client->errorValue = stuff->grabWindow;
 	return BadWindow;
     }
+ 
+    temporaryGrab = CreateGrab(client, inputInfo.keyboard, pWin, 
+	(KeyPressMask | KeyReleaseMask), stuff->ownerEvents,
+	stuff->keyboardMode, stuff->pointerMode, stuff->modifiers, stuff->key);
+
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
-	if (MatchingGrab(
-	    stuff->key, stuff->modifiers, inputInfo.keyboard, grab, TRUE))
+	if (GrabMatchesSecond(temporaryGrab, grab))
 	{
-	    if (client == grab->client)
+	    if (client != grab->client)
 	    {
-		useOld = TRUE;
-		break;
-	    }
-	    else
+		DeleteGrab(temporaryGrab);
 		return BadAccess;
+	    }
 	}
     }
-    if (!useOld)
-    {
-	grab = (GrabPtr)Xalloc(sizeof(GrabRec));
-	grab->next = PASSIVEGRABS(pWin);
-	grab->resource = FakeClientID(client->index);
-	pWin->passiveGrabs = (pointer)grab;
-	AddResource(grab->resource, RT_FAKE, pWin, PassiveClientGone, RC_CORE);
-    }
-    grab->client = client;
-    grab->device = inputInfo.keyboard;
-    grab->window = pWin;
-    grab->eventMask = KeyPressMask | KeyReleaseMask;
-    grab->ownerEvents = stuff->ownerEvents;
-    grab->keyboardMode = stuff->keyboardMode;
-    grab->pointerMode = stuff->pointerMode;
-    grab->modifiers = stuff->modifiers;
-    grab->u.keybd.key = stuff->key;
+
+    DeletePassiveGrabFromList(temporaryGrab);
+
+    AddPassiveGrabToWindowList(temporaryGrab);
+
     return(Success);
 }
 
@@ -3496,6 +3471,7 @@ ProcGrabButton(client)
     GrabPtr grab;
     Bool useOld = FALSE;
     CursorPtr cursor;
+    GrabPtr temporaryGrab;
 
     REQUEST_SIZE_MATCH(xGrabButtonReq);
     if ((stuff->pointerMode != GrabModeSync) && 
@@ -3532,39 +3508,31 @@ ProcGrabButton(client)
 	    return BadCursor;
 	}
     }
+
+
+    temporaryGrab = CreateGrab(client, inputInfo.pointer, pWin, 
+	(stuff->eventMask | ButtonPressMask | ButtonReleaseMask), stuff->ownerEvents,
+	stuff->keyboardMode, stuff->pointerMode, stuff->modifiers, stuff->button);
+
+    temporaryGrab->u.ptr.confineTo = confineTo;
+    temporaryGrab->u.ptr.cursor = cursor;
+
     for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
     {
-	if (MatchingGrab(
-	    stuff->button, stuff->modifiers, inputInfo.pointer, grab, FALSE))
+	if (GrabMatchesSecond(temporaryGrab, grab))
 	{
-	    if (client == grab->client)
+	    if (client != grab->client)
 	    {
-		useOld = TRUE;
-		break;
-	    }
-	    else
+		DeleteGrab(temporaryGrab);
 		return BadAccess;
+	    }
 	}
     }
-    if (!useOld)
-    {
-	grab = (GrabPtr)Xalloc(sizeof(GrabRec));
-	grab->next = PASSIVEGRABS(pWin);
-	grab->resource = FakeClientID(client->index);
-	pWin->passiveGrabs = (pointer)grab;
-	AddResource(grab->resource, RT_FAKE, pWin, PassiveClientGone, RC_CORE);
-    }
-    grab->client = client;
-    grab->device = inputInfo.pointer;
-    grab->window = pWin;
-    grab->eventMask = stuff->eventMask | ButtonPress | ButtonRelease;
-    grab->ownerEvents = stuff->ownerEvents;
-    grab->keyboardMode = stuff->keyboardMode;
-    grab->pointerMode = stuff->pointerMode;
-    grab->modifiers = stuff->modifiers;
-    grab->u.ptr.button = stuff->button;
-    grab->u.ptr.confineTo = confineTo;
-    grab->u.ptr.cursor = cursor;
+
+    DeletePassiveGrabFromList(temporaryGrab);
+
+    AddPassiveGrabToWindowList(temporaryGrab);
+
     return(Success);
 }
 
@@ -3575,6 +3543,7 @@ ProcUngrabButton(client)
     REQUEST(xUngrabButtonReq);
     WindowPtr pWin;
     GrabPtr grab;
+    GrabRec temporaryGrab;
 
     REQUEST_SIZE_MATCH(xUngrabButtonReq);
     pWin = LookupWindow(stuff->grabWindow, client);
@@ -3583,19 +3552,17 @@ ProcUngrabButton(client)
 	client->errorValue = stuff->grabWindow;
 	return BadWindow;
     }
-    for (grab = PASSIVEGRABS(pWin); grab; grab = grab->next)
-    {
-	if (MatchingGrab(
-	    stuff->button, stuff->modifiers, inputInfo.pointer, grab, FALSE))
-	{
-	    if (client == grab->client)
-		FreeResource(grab->resource, RC_NONE);
-		/*
-		 * Might need to unlink multiple requests, the buttons might
-		 * be put on individually, but taken off with an AnyMumble.
-		 */
-	}
-    }
+
+    temporaryGrab.client = client;
+    temporaryGrab.device = inputInfo.pointer;
+    temporaryGrab.window = pWin;
+    temporaryGrab.modifiersDetail.exact = stuff->modifiers;
+    temporaryGrab.modifiersDetail.pMask = NULL;
+    temporaryGrab.u.ptr.buttonDetail.exact = stuff->button;
+    temporaryGrab.u.ptr.buttonDetail.pMask = NULL;
+
+    DeletePassiveGrabFromList(&temporaryGrab);
+
     return(Success);
 }
 
@@ -3643,12 +3610,14 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	    case RevertToNone:
 		DoFocusEvents(pWin, NoneWin, focusEventMode);
 		focus->win = NoneWin;
+	        focusTraceGood = 0;
 		break;
 	    case RevertToParent:
 		for (
 		    parent = pWin->parent; 
 		    !parent->realized; 
-		    parent = parent->parent);
+		    parent = parent->parent)
+		    focusTraceGood--;
 		DoFocusEvents(pWin, parent, focusEventMode);
 		focus->win = parent;
 		focus->revert = RevertToNone;
@@ -3656,6 +3625,7 @@ DeleteWindowFromAnyEvents(pWin, freeResources)
 	    case RevertToPointerRoot:
 		DoFocusEvents(pWin, PointerRootWin, focusEventMode);
 		focus->win = PointerRootWin;
+		focusTraceGood = 0;
 		break;
 	}
     }
@@ -3731,17 +3701,24 @@ WriteEventsToClient(pClient, count, events)
     int		count;
     xEvent	*events;
 {
-    if(pClient->swapped) {
-        int i;
-        xEvent eventTo, *eventFrom;
-        for(i = 0; i < count; i++) {
-            eventFrom = &events[i];
+    if(pClient->swapped)
+    {
+        int	i;
+        xEvent	eventTo, *eventFrom;
+
+	for(i = 0; i < count; i++)
+	{
+	    eventFrom = &events[i];
 	    /* Remember to strip off the leading bit of type in case
-               this event was sent with "SendEvent" */
-            (*EventSwapVector[eventFrom->u.u.type & 0177]) (eventFrom, &eventTo);
-            WriteToClient (pClient, sizeof(xEvent), (char *) &eventTo);
-            }
+	       this event was sent with "SendEvent." */
+	    (*EventSwapVector[eventFrom->u.u.type & 0177])
+		(eventFrom, &eventTo);
+	    WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
 	}
+    }
+
     else
+    {
 	WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
+    }
 }
