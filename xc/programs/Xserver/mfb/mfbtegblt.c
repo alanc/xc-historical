@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.2 89/11/08 15:48:15 keith Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.3 89/11/17 13:36:54 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -89,7 +89,7 @@ typedef	unsigned char	*glyphPointer;
 #endif
 
 #if GLYPHPADBYTES == 2
-typedef unsighed short	*glyphPointer;
+typedef unsigned short	*glyphPointer;
 #define USE_LEFTBITS
 #endif
 
