@@ -224,8 +224,8 @@ show_fonts()
 		}
 		if (max_width == 0)
 			Fatal_Error("Max width of font names is 0!");
-		max_width += 3;
-		columns = (79 + max_width - 1) / max_width;
+		max_width += 3;				/* 3 for padding */
+		columns = (79 + 3) / max_width;		/* 79 for dumb terms */
 		if (font_cnt < columns)
 			columns = font_cnt;
 		lines_per_column = (font_cnt + columns - 1) / columns;
