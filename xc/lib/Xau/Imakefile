@@ -4,18 +4,18 @@
 
     STD_DEFINES = LibraryDefines $(ALIGN_DEFINES)
     CDEBUGFLAGS = LibraryCDebugFlags
-       INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
+       INCLUDES = -I. -I$(TOP)
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)
 
 HEADERS = \
 	Xauth.h
 
-SRCS =	Dispose.c FileName.c GetByAddr.c Lock.c \
-	Read.c Unlock.c Write.c
+SRCS =	AuDispose.c AuFileName.c AuGetAddr.c AuLock.c \
+	AuRead.c AuUnlock.c AuWrite.c
 
-OBJS =	Dispose.o FileName.o GetByAddr.o Lock.o \
-	Read.o Unlock.o Write.o
+OBJS =	AuDispose.o AuFileName.o AuGetAddr.o AuLock.o \
+	AuRead.o AuUnlock.o AuWrite.o
 
 all::
 
