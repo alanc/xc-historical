@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: necLib.rules,v 1.1 94/03/26 18:15:16 rws Exp $
 
 /*
  * NECOS shared library rules
@@ -77,6 +77,8 @@ AllTarget(Concat(lib,libname.so))					@@\
 Concat(lib,libname.so):  Concat(lib,libname.so.rev)			@@\
 	$(RM) $@ 							@@\
 	$(LN) $? $@							@@\
+	LinkBuildLibrary($@)						@@\
+	LinkBuildLibrary(Concat(lib,libname.so))			@@\
 									@@\
 clean::									@@\
 	$(RM) Concat(lib,libname.so.rev)
