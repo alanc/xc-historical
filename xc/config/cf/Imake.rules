@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.180 94/02/04 21:31:25 gildea Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.181 94/02/06 16:36:27 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1252,7 +1252,7 @@ clean::									@@\
 interfaces:: name.h							@@\
 									@@\
 name.h: name.idl							@@\
-	@$(RM) name.h							@@\
+	@RemoveFile(name.h)						@@\
 	$(CPP) $(CCDEFINES) name.idl | \				@@\
 	$(IXX) $(IXXFLAGS) $(IXXINCLUDES) -file name.idl flags > name.h
 #endif /* MakeHFromIDL */
