@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSConnServ.c,v 1.8 91/05/13 15:11:27 gildea Exp $ */
 
 /* @(#)FSConnServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -39,6 +39,8 @@
 
 #endif
 
+void        bcopy();
+
 #define FamilyLocal (256)
 #define FamilyWild  (65535)
 
@@ -71,6 +73,7 @@ _FSConnectServer(server_name, expanded_name)
 #ifdef	X_NOT_STDC_ENV
     extern char *getenv();
 #endif
+    extern struct hostent *gethostbyname();
     int         fd;		/* Network socket */
 
 #ifdef DNETCONN
@@ -202,7 +205,7 @@ _FSConnectServer(server_name, expanded_name)
 	     * Open the network connection.
 	     */
 	    if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0 ||
-		fd >= OPEN_MAX) {
+	        fd >= OPEN_MAX) {
 		if (tmp_svr_num)
 		    FSfree(tmp_svr_num);
 		return (-1);	/* errno set by system call. */
@@ -227,10 +230,16 @@ _FSConnectServer(server_name, expanded_name)
 #endif
 
 	{
+	    char	*sp = serverbuf;
+
+	    /* ignore a leading "tcp/" */
+	    if (strncmp(sp, "tcp/", 4) == 0)
+	    	sp += 4;
+
 	    /* Get the statistics on the specified host. */
-	    hostinetaddr = inet_addr(serverbuf);
+	    hostinetaddr = inet_addr(sp);
 	    if (hostinetaddr == -1) {
-		if ((host_ptr = gethostbyname(serverbuf)) == NULL) {
+		if ((host_ptr = gethostbyname(sp)) == NULL) {
 		    /* No such host! */
 		    errno = EINVAL;
 		    if (tmp_svr_num)
@@ -277,7 +286,6 @@ _FSConnectServer(server_name, expanded_name)
 	    addr = (struct sockaddr *) & inaddr;
 	    addrlen = sizeof(struct sockaddr_in);
 	    inaddr.sin_port = server_num;
-	    inaddr.sin_port += FS_TCP_PORT;
 	    inaddr.sin_port = htons(inaddr.sin_port);
 	    /*
 	     * Open the network connection.

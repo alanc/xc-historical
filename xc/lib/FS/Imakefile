@@ -1,28 +1,16 @@
 INCLUDES = -I$(FONTSRC)/include
 
-SRCS =	FSlibInt.c FSOpenServ.c  FSClServ.c FSConnServ.c FSServName.c	\
-	FSSynchro.c FSErrDis.c FSSync.c FSFlush.c 	\
-	FSListExt.c FSQuExt.c			\
-	FSMisc.c				\
-	FSFtNames.c FSFontInfo.c 		\
-	FSOpenFont.c FSCloseFt.c		\
-	FSNextEv.c				\
-	FSQXInfo.c                              \
-	FSQXExt.c                               \
-	FSQGlyphs.c				\
-	FSErrHndlr.c
+SRCS =	FSClServ.c FSCloseFt.c FSConnServ.c FSErrDis.c FSErrHndlr.c\
+	FSFlush.c FSFontInfo.c FSFtNames.c FSGetCats.c FSListCats.c\
+	FSListExt.c FSMisc.c FSNextEv.c FSOpenFont.c FSOpenServ.c\
+	FSQGlyphs.c FSQXExt.c FSQXInfo.c FSQuExt.c FSServName.c\
+	FSSetCats.c FSSync.c FSSynchro.c FSlibInt.c
 
-OBJS =	FSlibInt.o FSOpenServ.o  FSClServ.o FSConnServ.o FSServName.o	\
-	FSSynchro.o FSErrDis.o FSSync.o FSFlush.o 	\
-	FSListExt.o FSQuExt.o			\
-	FSMisc.o				\
-	FSFtNames.o FSFontInfo.o 		\
-	FSOpenFont.o FSCloseFt.o		\
-	FSNextEv.o				\
-	FSQXInfo.o                              \
-	FSQXExt.o                               \
-	FSQGlyphs.o				\
-	FSErrHndlr.o
+OBJS =	FSClServ.o FSCloseFt.o FSConnServ.o FSErrDis.o FSErrHndlr.o\
+	FSFlush.o FSFontInfo.o FSFtNames.o FSGetCats.o FSListCats.o\
+	FSListExt.o FSMisc.o FSNextEv.o FSOpenFont.o FSOpenServ.o\
+	FSQGlyphs.o FSQXExt.o FSQXInfo.o FSQuExt.o FSServName.o\
+	FSSetCats.o FSSync.o FSSynchro.o FSlibInt.o
 
 NormalLibraryTarget(FS,$(OBJS))
 

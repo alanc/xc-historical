@@ -1,6 +1,6 @@
-/* $XConsortium: FSOpenFont.c,v 1.2 91/05/13 15:11:46 gildea Exp $ */
+/* $XConsortium: FSFlush.c,v 1.2 91/05/13 15:11:35 gildea Exp $ */
 
-/* @(#)FSOpenFont.c	4.1	91/05/02
+/* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -25,33 +25,33 @@
 
 #include	"FSlibint.h"
 
-Font
-FSOpenBitmapFont(svr, hint, fmask, name, otherid)
+int
+FSSetCatalogues(svr, num, cats)
     FSServer   *svr;
-    fsBitmapFormat hint;
-    fsBitmapFormatMask fmask;
-    char       *name;
-    Font       *otherid;
+    int         num;
+    char      **cats;
 {
     unsigned char nbytes;
-    fsOpenBitmapFontReq *req;
-    fsOpenBitmapFontReply reply;
-    Font        fid;
+    fsSetCataloguesReq *req;
     char        buf[256];
+    int         i;
+    int         len;
 
-    GetReq(OpenBitmapFont, req);
-    nbytes = name ? strlen(name) : 0;
-    buf[0] = (char) nbytes;
-    bcopy(name, &buf[1], nbytes);
-    nbytes++;
-    req->fid = fid = svr->resource_id++;
-    req->format_hint = hint;
-    req->format_mask = fmask;
-    req->length += (nbytes + 3) >> 2;
-    _FSSend(svr, buf, (long) nbytes);
-    (void) _FSReply(svr, (fsReply *) & reply,
-     (sizeof(fsOpenBitmapFontReply) - sizeof(fsGenericReply)) >> 2, fsFalse);
-    *otherid = reply.otherid;
+    for (i = 0, len = 0; i < num; i++) {
+	len += strlen(cats[i]);
+    }
+
+    GetReq(SetCatalogues, req);
+    req->num_catalogues = num;
+    req->length += (len + 3) >> 2;
+
+    for (i = 0; i < num; i++) {
+	nbytes = strlen(cats[i]);
+	buf[0] = (char) nbytes;
+	bcopy(cats[i], &buf[1], nbytes);
+	nbytes++;
+	_FSSend(svr, buf, (long) nbytes);
+    }
     SyncHandle();
-    return fid;
+    return FSSuccess;
 }

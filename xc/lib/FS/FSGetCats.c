@@ -1,6 +1,6 @@
-/* $XConsortium: FSOpenFont.c,v 1.2 91/05/13 15:11:46 gildea Exp $ */
+/* $XConsortium: FSFlush.c,v 1.2 91/05/13 15:11:35 gildea Exp $ */
 
-/* @(#)FSOpenFont.c	4.1	91/05/02
+/* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -25,33 +25,54 @@
 
 #include	"FSlibint.h"
 
-Font
-FSOpenBitmapFont(svr, hint, fmask, name, otherid)
+char      **
+FSGetCatalogues(svr, num)
     FSServer   *svr;
-    fsBitmapFormat hint;
-    fsBitmapFormatMask fmask;
-    char       *name;
-    Font       *otherid;
+    int        *num;
 {
-    unsigned char nbytes;
-    fsOpenBitmapFontReq *req;
-    fsOpenBitmapFontReply reply;
-    Font        fid;
-    char        buf[256];
+    fsGetCataloguesReply rep;
+    char      **list;
+    char       *c;
+    int         i,
+                length;
+    fsReq      *req;
+    long        rlen;
 
-    GetReq(OpenBitmapFont, req);
-    nbytes = name ? strlen(name) : 0;
-    buf[0] = (char) nbytes;
-    bcopy(name, &buf[1], nbytes);
-    nbytes++;
-    req->fid = fid = svr->resource_id++;
-    req->format_hint = hint;
-    req->format_mask = fmask;
-    req->length += (nbytes + 3) >> 2;
-    _FSSend(svr, buf, (long) nbytes);
-    (void) _FSReply(svr, (fsReply *) & reply,
-     (sizeof(fsOpenBitmapFontReply) - sizeof(fsGenericReply)) >> 2, fsFalse);
-    *otherid = reply.otherid;
+    GetEmptyReq(GetCatalogues, req);
+
+    if (!_FSReply(svr, (fsReply *) & rep, 0, fsFalse)) {
+	SyncHandle();
+	return (char **) NULL;
+    }
+    if (rep.num_catalogues) {
+	list = (char **)
+	    FSmalloc((unsigned) (rep.num_catalogues * sizeof(char *)));
+	rlen = (rep.length << 2) - sizeof(fsGetCataloguesReply);
+	c = (char *) FSmalloc((unsigned) rlen + 1);
+	if ((!list) || (!c)) {
+	    if (list)
+		FSfree((char *) list);
+	    if (c)
+		FSfree(c);
+	    _FSEatData(svr, (unsigned long) rlen);
+	    SyncHandle();
+	    return (char **) NULL;
+	}
+	_FSReadPad(svr, c, rlen);
+	/*
+	 * unpack the strings
+	 */
+	length = *c;
+	for (i = 0; i < rep.num_catalogues; i++) {
+	    list[i] = c + 1;	/* skip length */
+	    c += length + 1;	/* find next length */
+	    length = *c;
+	    *c = '\0';		/* change length to NULL */
+	}
+    } else {
+	list = (char **) NULL;
+    }
     SyncHandle();
-    return fid;
+    *num = rep.num_catalogues;
+    return list;
 }

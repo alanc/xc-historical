@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSlib.h,v 1.5 91/05/13 15:11:57 gildea Exp $ */
 /*
  * Font server C interface library
  */
@@ -170,6 +170,9 @@ extern int  (*FSSetAfterFunction()) ();
 char       *FSServerName();
 char      **FSListExtensions();
 Bool        FSQueryExtension();
+
+char      **FSListCatalogues();
+char      **FSGetCatalogues();
 
 long        FSMaxRequestSize();
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: FSOpenServ.c,v 1.2 91/05/13 15:11:48 gildea Exp $ */
 
 /* @(#)FSOpenServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
@@ -140,7 +140,7 @@ FSOpenServer(server)
 	}
 	bcopy(ad, alts[i].name, altlen);
 	alts[i].name[altlen] = '\0';
-	ad += altlen + (altlen + 2) % 4 ;
+	ad += altlen + (4 - (altlen + 2) & 3);
     }
     FSfree((char *) alt_data);
 
