@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.50 88/07/19 18:16:47 toddb Exp $ */
+/* $XConsortium: dix.h,v 1.51 88/09/06 15:48:03 jim Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -44,6 +44,10 @@ SOFTWARE.
 
 #define REQUEST_AT_LEAST_SIZE(req) \
     if ((sizeof(req) >> 2) > stuff->length )\
+         return(BadLength)
+
+#define REQUEST_FIXED_SIZE(req, n)\
+    if (((sizeof(req) + (n) + 3) >> 2) != stuff->length)\
          return(BadLength)
 
 #define WriteReplyToClient(pClient, size, pReply) \
