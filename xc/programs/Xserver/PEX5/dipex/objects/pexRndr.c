@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.7 92/03/04 14:16:18 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.8 92/04/23 16:16:44 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -871,6 +871,14 @@ pexRenderNetworkReq    	*strmPtr;
 
     LU_RENDERER(strmPtr->rdr, prend);
     LU_STRUCTURE(strmPtr->sid, ps);
+
+    /* set drawableId = 0 : this helps protect us if we error-return
+       out of the lookup id, and then later try to RenderOC's on this
+       renderer with a bad drawable */
+    prend->drawableId = 0;
+
+    LU_DRAWABLE(strmPtr->drawable, prend->pDrawable);
+    prend->drawableId = strmPtr->drawable;
 
     err = BeginRendering(prend, prend->pDrawable);
     if (err) PEX_ERR_EXIT(err,0,cntxtPtr);
