@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.173 87/11/03 18:10:25 rws Locked $ */
+/* $Header: window.c,v 1.174 87/11/05 11:24:29 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -862,7 +862,6 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pVlist++;
 	    if (pixID == CopyFromParent)
 	    {
-		GCPtr pGC;
 		PixmapPtr parentPixmap;
 		if ((pWin->parent == (WindowPtr) NULL) || (pWin->parent && 
 		        	       (pWin->drawable.depth != 
@@ -877,28 +876,12 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		{
 		    pWin->borderTile = (PixmapPtr)USE_BORDER_PIXEL;
 		    pWin->borderPixel = pWin->parent->borderPixel;
+		    index = CWBorderPixel;
 		}
                 else
 		{
-		    CARD32 attribute;
-
-		    pPixmap = (* pWin->drawable.pScreen->CreatePixmap)
-				(pWin->drawable.pScreen, parentPixmap->width,
-				 parentPixmap->height, pWin->drawable.depth);
-		    pGC = GetScratchGC(pWin->drawable.depth, 
-				   pWin->drawable.pScreen);
-			
-		    attribute = GXcopy;
-		    ChangeGC(pGC, GCFunction, &attribute, 1);
-		    ValidateGC(pPixmap, pGC);
-
-		    (* pGC->CopyArea)(parentPixmap, pPixmap, pGC, 0, 0,
-				       parentPixmap->width,
-				       parentPixmap->height, 
-				       pWin->drawable.depth,
-				       0, 0);
-		    pWin->borderTile = pPixmap;
-		    FreeScratchGC(pGC);
+		    pWin->borderTile = parentPixmap;
+		    parentPixmap->refcnt++;
 		}
 	    }
 	    else
