@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.50 91/05/08 11:02:37 dave Exp $
+ * $XConsortium: parse.c,v 1.51 91/05/31 11:58:54 dave Exp $
  *
  * parse the .twmrc file
  *
@@ -203,7 +203,7 @@ static int twmFileInput()
     while (ptr == len)
     {
 	if (fgets(buff, BUF_LEN, twmrc) == NULL)
-	    return NULL;
+	    return 0;
 
 	yylineno++;
 

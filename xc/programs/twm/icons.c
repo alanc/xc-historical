@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.20 90/03/27 13:51:34 jim Exp $
+ * $XConsortium: icons.c,v 1.21 90/04/13 13:34:47 jim Exp $
  *
  * Icon releated routines
  *
@@ -364,7 +364,7 @@ int def_x, def_y;
 	    icon_name = LookInList(Scr->IconNames, tmp_win->full_name,
 				   &tmp_win->class);
 
-	bm = NULL;
+	bm = None;
 	if (icon_name != NULL)
 	{
 	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == None)
@@ -374,7 +374,7 @@ int def_x, def_y;
 	    }
 	}
 
-	if (bm != NULL)
+	if (bm != None)
 	{
 	    XGetGeometry(dpy, bm, &JunkRoot, &JunkX, &JunkY,
 		(unsigned int *) &tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height,
@@ -424,7 +424,7 @@ int def_x, def_y;
 	    icon_name = LookInList(Scr->IconNames, tmp_win->full_name,
 				   &tmp_win->class);
 
-	bm = NULL;
+	bm = None;
 	if (icon_name != NULL)
 	{
 	    if ((bm = (Pixmap)LookInNameList(Scr->Icons, icon_name)) == None)
@@ -434,7 +434,7 @@ int def_x, def_y;
 	    }
 	}
 
-	if (bm != NULL)
+	if (bm != None)
 	{
 	    XGetGeometry(dpy, bm, &JunkRoot, &JunkX, &JunkY,
 		(unsigned int *)&tmp_win->icon_width, (unsigned int *)&tmp_win->icon_height,
@@ -451,7 +451,7 @@ int def_x, def_y;
 
     /* if we still don't have an icon, assign the UnknownIcon */
 
-    if (pm == None && Scr->UnknownPm != NULL)
+    if (pm == None && Scr->UnknownPm != None)
     {
 	tmp_win->icon_width = Scr->UnknownWidth;
 	tmp_win->icon_height = Scr->UnknownHeight;
@@ -502,7 +502,7 @@ int def_x, def_y;
 		     (unsigned int *)&tmp_win->icon_w_width, (unsigned int *)&tmp_win->icon_w_height,
 		     &JunkBW, &JunkDepth) == 0)
 	{
-	    tmp_win->icon_w = NULL;
+	    tmp_win->icon_w = None;
 	    tmp_win->wmhints->flags &= ~IconWindowHint;
 	}
 	else
@@ -513,10 +513,10 @@ int def_x, def_y;
     }
     else
     {
-	tmp_win->icon_w = NULL;
+	tmp_win->icon_w = None;
     }
 
-    if (tmp_win->icon_w == NULL)
+    if (tmp_win->icon_w == None)
     {
 	tmp_win->icon_w = XCreateSimpleWindow(dpy, Scr->Root,
 	    0,0,
@@ -529,7 +529,7 @@ int def_x, def_y;
 		  KeyPressMask | ButtonPressMask | ButtonReleaseMask |
 		  event_mask);
 
-    tmp_win->icon_bm_w = NULL;
+    tmp_win->icon_bm_w = None;
     if (pm != None &&
 	(! (tmp_win->wmhints && tmp_win->wmhints->flags & IconWindowHint)))
     {
