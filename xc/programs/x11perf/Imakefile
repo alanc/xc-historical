@@ -29,7 +29,7 @@ tar:
 	mv Makefile Makefile.bak
 	awk '/^# DO NOT DELETE/ {print; exit}; {print}' Makefile.bak >Makefile
 	tar chf x11perf.tar Imakefile Makefile x11perf.h $(SRCS) \
-		x11perf_labels x11perf.man RCS \
+		x11perf_labels x11perf.man *.sh RCS \
 		link.com link.options make.com;
 	mv Makefile.bak Makefile
 	compress x11perf.tar
