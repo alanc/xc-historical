@@ -10,4 +10,4 @@ LOCAL_LIBRARIES = XawClientLibs
 		  svpopup.o utils.o widgets.o wtree.o 
 
 ComplexProgramTarget(editres)
-
+InstallAppDefaults(Editres)
