@@ -1,4 +1,4 @@
-/* $XConsortium: fontstruct.h,v 1.12 93/08/24 18:49:32 gildea Exp $ */
+/* $XConsortium: fontstruct.h,v 1.14 94/02/03 10:07:05 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <X11/Xproto.h>
 #include "font.h"
+#include <X11/Xfuncproto.h>
 
 /*
  * This version of the server font data strucutre is only for describing
@@ -146,28 +147,113 @@ typedef struct _FontPathElement {
 }           FontPathElementRec;
 
 typedef struct _FPEFunctions {
-    int         (*name_check) ( /* name */ );
-    int         (*init_fpe) ( /* fpe */ );
-    int         (*reset_fpe) ( /* fpe */ );
-    int         (*free_fpe) ( /* fpe */ );
-    int         (*open_font) (	/* client, fpe, flags, name, namelen, format,
-			          fid,  ppfont, alias, non_cached_font */ );
-    int         (*close_font) ( /* pfont */ );
-    int         (*list_fonts) (	/* client, fpe, pattern, patlen, maxnames,
-			           paths */ );
-    int         (*start_list_fonts_and_aliases) ( /* client, fpe, name, namelen,
-					           maxnames, data */ );
-    int         (*list_next_font_or_alias) (	/* client, fpe, name, namelen,
-					         resolved, resolvedlen,
-						 data */ );
-    int         (*start_list_fonts_with_info) (	/* client, fpe, name, namelen,
-					           maxnames, data */ );
+    int         (*name_check) (
+#if NeedFunctionPrototypes
+			       char* /* name */
+#endif
+			       );
+    int         (*init_fpe) (
+#if NeedNestedPrototypes
+			     FontPathElementPtr /* fpe */
+#endif
+			     );
+    int         (*reset_fpe) (
+#if NeedNestedPrototypes
+			     FontPathElementPtr /* fpe */
+#endif
+			     );
+    int         (*free_fpe) (
+#if NeedNestedPrototypes
+			     FontPathElementPtr /* fpe */
+#endif
+			     );
+    int         (*open_font) (
+#if NeedNestedPrototypes
+			      pointer /* client */,
+			      FontPathElementPtr /* fpe */,
+			      int /* flags */,
+			      char* /* name */,
+			      int /* namelen */,
+			      fsBitmapFormat /* format */,
+			      fsBitmapFormatMask /* fmask */,
+			      unsigned long /* id (type XID or FSID) */,
+			      FontPtr* /* pFont */,
+			      char** /* aliasName */,
+			      FontPtr /* non_cachable_font */
+#endif
+			      );
+
+    int         (*close_font) (
+#if NeedNestedPrototypes
+			       FontPathElementPtr /* fpe */,
+			       FontPtr /* pFont */
+#endif
+			       );
+    int         (*list_fonts) (
+#if NeedNestedPrototypes
+			       pointer /* client */,
+			       FontPathElementPtr /* fpe */,
+			       char* /* pat */,
+			       int /* len */,
+			       int /* max */,
+			       FontNamesPtr /* names */
+#endif
+			       );
+    int         (*start_list_fonts_and_aliases) (
+#if NeedNestedPrototypes
+						 pointer /* client */,
+						 FontPathElementPtr /* fpe */,
+						 char* /* pat */,
+						 int /* len */,
+						 int /* max */,
+						 pointer* /* privatep */
+#endif
+						 );
+    int         (*list_next_font_or_alias) (
+#if NeedNestedPrototypes
+					    pointer /* client */,
+					    FontPathElementPtr /* fpe */,
+					    char** /* namep */,
+					    int* /* namelenp */,
+					    char** /* resolvedp */,
+					    int* /* resolvedlenp */,
+					    pointer /* private */
+#endif
+					    );
+    int         (*start_list_fonts_with_info) (
+#if NeedNestedPrototypes
+					       pointer /* client */,
+					       FontPathElementPtr /* fpe */,
+					       char* /* pat */,
+					       int /* patlen */,
+					       int /* maxnames */,
+					       pointer* /* privatep */
+#endif
+					       );
     int         (*list_next_font_with_info) (	/* client, fpe, name, namelen,
-					         info, num, data */ );
-    int         (*wakeup_fpe) ( /* fpe, mask */ );
-    int		(*client_died) ( /* client, fpe */ );
-    int		(*load_glyphs) ( /* client, pfont, range_flag,
-				    nchars, item_size, data */ );
+					         info, num, data */
+#if NeedNestedPrototypes
+					     pointer /* client */,
+					     FontPathElementPtr /* fpe */,
+					     char** /* name */,
+					     int* /* namelen */,
+					     FontInfoPtr* /* info */,
+					     int* /* numFonts */,
+					     pointer /* private */
+#endif
+					     );
+    int         (*wakeup_fpe) (
+#if NeedNestedPrototypes
+			       FontPathElementPtr /* fpe */,
+			       unsigned long* /* LastSelectMask */
+#endif
+			       );
+    int		(*client_died) (
+#if NeedNestedPrototypes
+				pointer /* client */,
+				FontPathElementPtr /* fpe */
+#endif
+				);
 		/* for load_glyphs, range_flag = 0 ->
 			nchars = # of characters in data
 			item_size = bytes/char
@@ -176,6 +262,21 @@ typedef struct _FPEFunctions {
 			nchars = # of fsChar2b's in data
 			item_size is ignored
 			data = list of fsChar2b's */
+    int		(*load_glyphs) (
+#if NeedNestedPrototypes
+				pointer /* client */,
+				FontPtr /* pfont */,
+				Bool /* range_flag */,
+				unsigned int /* nchars */,
+				int /* item_size */,
+				unsigned char* /* data */
+#endif
+				);
+    void	(*set_path_hook)(
+#if NeedFunctionPrototypes
+				 void
+#endif
+				 );
 }           FPEFunctionsRec, FPEFunctions;
 
 extern int  InitFPETypes();
