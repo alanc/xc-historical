@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_ctrl.c,v 5.1 91/02/16 09:47:38 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -69,7 +69,7 @@ merge_args( xinfo )
     }
 
     if ( xinfo->rmdb )
-	XrmMergeDatabases( db, xinfo->rmdb );
+	XrmMergeDatabases( db, &xinfo->rmdb );
     else
 	xinfo->rmdb = db;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: cb_wst.c,v 5.1 91/02/16 09:48:07 rws Exp $ */
+/* $XConsortium: cb_wst.c,v 5.2 91/03/21 15:44:18 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -3105,7 +3105,7 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
 {
     Wst			*wst = (Wst *)ws_type;
     Wst_phigs_dt	*dt;
-    unsigned		size = 0;
+    int			size = 0;
     Phg_colr_map_rep	*rep;
 
     if ( !CB_ENTRY_CHECK( phg_cur_cph, 0, Pfn_INQUIRY)) {
@@ -3147,14 +3147,14 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
 			((*map_data)->meth_r2.weights.floats +
 			    (*map_data)->meth_r2.weights.num_floats);
 		    bcopy(
-		      rep->rec.meth_r2.weights.floats,
-			(*map_data)->meth_r2.weights.floats,
-			(*map_data)->meth_r2.weights.num_floats *
-			    sizeof(Pfloat) );
+		      (char *)rep->rec.meth_r2.weights.floats,
+					(char *)(*map_data)->meth_r2.weights.floats,
+					(*map_data)->meth_r2.weights.num_floats *
+					sizeof(Pfloat) );
 		    bcopy(
-		      rep->rec.meth_r2.colrs.colr_reps,
-			(*map_data)->meth_r2.colrs.colr_reps,
-			(*map_data)->meth_r2.colrs.num_colr_reps *
+		      (char *)rep->rec.meth_r2.colrs.colr_reps,
+					(char *)(*map_data)->meth_r2.colrs.colr_reps,
+					(*map_data)->meth_r2.colrs.num_colr_reps *
 			    sizeof(Pcolr_rep) );
 		}
 		break;
@@ -3182,8 +3182,8 @@ pinq_pred_colr_map_rep( ws_type, index, store, error_ind, map_method, map_data)
 				= colrs->lists[i].num_floats;
 			    (*map_data)->meth_r3.colr_lists.lists[i].floats
 				= buf;
-			    bcopy( colrs->lists[i].floats, buf,
-				colrs->lists[i].num_floats * sizeof(Pfloat) );
+			    bcopy( (char *)colrs->lists[i].floats, (char *)buf,
+						colrs->lists[i].num_floats * sizeof(Pfloat) );
 			    buf += colrs->lists[i].num_floats;
 			}
 		    }

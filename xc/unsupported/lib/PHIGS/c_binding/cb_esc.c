@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_esc.c,v 5.1 91/02/16 09:47:43 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -135,9 +135,9 @@ esc_u4( cph, in, out )
 	    out->escape_out_u4.pick.depth =
 		MIN(in->escape_in_u4.depth, ret.data.drawable_pick.pick.depth);
 	    /* Assumes the output array is allocated by the application. */
-	    bcopy( ret.data.drawable_pick.pick.path_list,
-		out->escape_out_u4.pick.path_list,
-		out->escape_out_u4.pick.depth * sizeof(Ppick_path_elem) );
+	    bcopy( (char *)ret.data.drawable_pick.pick.path_list,
+				(char *)out->escape_out_u4.pick.path_list,
+				out->escape_out_u4.pick.depth * sizeof(Ppick_path_elem) );
 	}
     }
 }
@@ -170,9 +170,9 @@ esc_u5( cph, in, out )
 	    ret.data.map_points.points.num_points;
 	if ( out->escape_out_u5.points.num_points > 0 ) {
 	    /* Assumes the output array is allocated by the application. */
-	    bcopy( ret.data.map_points.points.points,
-		out->escape_out_u5.points.points,
-		ret.data.map_points.points.num_points * sizeof(Ppoint3) );
+	    bcopy( (char *)ret.data.map_points.points.points,
+				(char *)out->escape_out_u5.points.points,
+				ret.data.map_points.points.num_points * sizeof(Ppoint3) );
 	}
     }
 }
