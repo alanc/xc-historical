@@ -661,6 +661,7 @@ EXPORTS
  _XReply
  _XSend
  _XSetLastRequestRead
+ _XUnknownNativeEvent
  _XUnregisterFilter
  _XUnregisterInternalConnection
  _XVIDtoVisual
