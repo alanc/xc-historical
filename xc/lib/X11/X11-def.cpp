@@ -539,64 +539,6 @@ EXPORTS
  XcmsTekHVCToCIEuvY
  XcmsTekHVCWhiteShiftColors
  XcmsVisualOfCCC
- XkbAllocClientMap
- XkbAllocCompatMap
- XkbAllocNames
- XkbAllocServerMap
- XkbBell
- XkbChangeMap
- XkbChangeSymsForKey
- XkbChangeTypeOfKey
- XkbComputeEffectiveMap
- XkbDeviceBell
- XkbEnlargeKeyActions
- XkbEnlargeKeySyms
- XkbForceBell
- XkbForceDeviceBell
- XkbFreeCompatMap
- XkbFreeNames
- XkbGetAutoRepeatRate
- XkbGetCompatMap
- XkbGetControls
- XkbGetIndicatorMap
- XkbGetIndicatorState
- XkbGetKeyActions
- XkbGetKeyBehaviors
- XkbGetKeyExplicitComponents
- XkbGetKeySyms
- XkbGetKeyTypes
- XkbGetMap
- XkbGetNames
- XkbGetState
- XkbGetUpdatedMap
- XkbGetVirtualMods
- XkbIgnoreExtension
- XkbInitCanonicalKeyTypes
- XkbKeysymToModifiers
- XkbLatchModifiers
- XkbLibraryVersion
- XkbLockModifiers
- XkbLookupKeyBinding
- XkbNoteCoreMapChanges
- XkbNoteMapChanges
- XkbQueryExtension
- XkbRefreshMap
- XkbSelectEventDetails
- XkbSelectEvents
- XkbSetAutoRepeatRate
- XkbSetCompatMap
- XkbSetControls
- XkbSetDebuggingFlags
- XkbSetIgnoreLockMods
- XkbSetIndicatorMap
- XkbSetMap
- XkbSetNames
- XkbSetServerInternalMods
- XkbToControl
- XkbTranslateKey
- XkbTranslateKeySym
- XkbUseExtension
- XkbVirtualModsToReal
  XmbDrawImageString
  XmbDrawString
  XmbDrawText
