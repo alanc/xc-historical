@@ -282,22 +282,26 @@ widget.  When these occur, the documentation section for that widget
 will describe the converter.
 .NH 3
 Cursor Conversion
+.IN "conversions" "ColorCursor" "@DEF@"
 .IN "conversions" "Cursor" "@DEF@"
 .IN "cursor" "" ""
 .LP
-The value for the \fBcursor\fP resource is specified in the resource
+The value for the \fBcursorName\fP resource is specified in the resource
 database as a string, and is of the following forms:
-.IP "\(bu A standard X cursor name from \fB< X11/cursorfont.h >\fP" .5i
+.IP \(bu 5
+A standard X cursor name from \fB< X11/cursorfont.h >\fP.
 The names in \fBcursorfont.h\fP each describe a specific cursor.  The
 resource names for these cursors are exactly like the names in this file
 except the \fBXC_\fP is not used.  The cursor definition \fBXC_gumby\fP
 has a resource name of \fBgumby\fP.
-.IP "\(bu FONT font-name glyph-index [[ font-name ] glyph-index ]" .5i
+.IP \(bu 5
+Glyphs, as in \fIFONT font-name glyph-index [[ font-name ] glyph-index ]\fP.
 The first font and glyph specify the cursor source pixmap.
 The second font and glyph specify the cursor mask pixmap.
 The mask font defaults to the source font,
 and the mask glyph index defaults to the source glyph index.
-.IP "\(bu A relative or absolute file name" .5i
+.IP \(bu 5
+A relative or absolute file name.
 If a relative or absolute file name is specified, that file is used to
 create the source pixmap.  Then the string "Mask" is appended to
 locate the cursor mask pixmap.  If the "Mask" file does not exist, the
