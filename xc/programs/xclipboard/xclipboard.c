@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.9 89/12/08 16:09:37 kit Exp $
+ * $XConsortium: xclipboard.c,v 1.10 89/12/08 16:43:01 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.9 89/12/08 16:09:37 kit Exp $ */
+/* $XConsortium: xclipboard.c,v 1.10 89/12/08 16:43:01 kit Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -49,6 +49,18 @@ static XrmOptionDescRec table[] = {
     {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
 };
 
+static long TextLength (w)
+    Widget  w;
+{
+    return XawTextSourceScan (XawTextGetSource (w),
+			      (XawTextPosition) 0,
+ 			      XawstAll, XawsdRight, 1, TRUE);
+}
+
+static void	LoseSelection ();
+static void	InsertClipboard ();
+static Boolean	ConvertSelection();
+
 static void 
 InsertClipboard(w, client_data, selection, type, value, length, format)
 Widget w;
@@ -66,32 +78,20 @@ int *format;
 	XBell( XtDisplay(w), 0 );
 	return;
     }
-
-    XawTextSetInsertionPoint(w, INFINITY);
-    last = XawTextGetInsertionPoint(w);
-
+    
     text.ptr = (char*)value;
     text.firstPos = 0;
     text.length = *length;
     text.format = FMT8BIT;
 
-    if (XawTextReplace(w, last, last, &text))
+    if (XawTextReplace(w, 0, TextLength (w), &text))
 	XBell( XtDisplay(w), 0);
-    else {
-	XawTextPosition newend;
-	XawTextSetInsertionPoint(w, last + text.length);
-	newend = XawTextGetInsertionPoint(w);
-	if (text.ptr[text.length-1] != '\n') {
-	    text.ptr = "\n";
-	    text.length = 1;
-	    XawTextReplace(w, newend, newend, &text);
-	    XawTextSetInsertionPoint(w, newend += 1);
-	}
-    }
-    
+
+    XtOwnSelection(w, XA_CLIPBOARD(XtDisplay(w)), CurrentTime,
+		   ConvertSelection, LoseSelection, NULL);
+
     XtFree(value);
 }
-
 
 static Boolean ConvertSelection(w, selection, target,
 				type, value, length, format)
@@ -111,16 +111,14 @@ static Boolean ConvertSelection(w, selection, target,
 	unsigned long std_length;
 	XmuConvertStandardSelection(w, req->time, selection, target, type,
 				  (caddr_t*)&std_targets, &std_length, format);
-	*value = XtMalloc(sizeof(Atom)*(std_length /* + 5 */));
+	*value = XtMalloc(sizeof(Atom)*(std_length + 5));
 	targetP = *(Atom**)value;
-	*length = std_length /* + 5 */;
-/*
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
-*/
+	*length = std_length + (targetP - (*(Atom **) value));
 	bcopy((char*)std_targets, (char*)targetP, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
 	*type = XA_ATOM;
@@ -128,11 +126,57 @@ static Boolean ConvertSelection(w, selection, target,
 	return True;
     }
 
+    if (*target == XA_LIST_LENGTH(d) ||
+	*target == XA_LENGTH(d))
+    {
+    	long * temp;
+    	
+    	temp = (long *) XtMalloc(sizeof(long));
+    	if (*target == XA_LIST_LENGTH(d))
+      	  *temp = 1L;
+    	else			/* *target == XA_LENGTH(d) */
+      	  *temp = (long) TextLength (w);
+    	
+    	*value = (caddr_t) temp;
+    	*type = XA_INTEGER;
+    	*length = 1L;
+    	*format = 32;
+    	return True;
+    }
+    
+    if (*target == XA_CHARACTER_POSITION(d))
+    {
+    	long * temp;
+    	
+    	temp = (long *) XtMalloc(2 * sizeof(long));
+    	temp[0] = (long) 0;
+    	temp[1] = TextLength (w);
+    	*value = (caddr_t) temp;
+    	*type = XA_SPAN(d);
+    	*length = 2L;
+    	*format = 32;
+    	return True;
+    }
+    
+    if (*target == XA_STRING ||
+      *target == XA_TEXT(d) ||
+      *target == XA_COMPOUND_TEXT(d))
+    {
+	extern char *_XawTextGetSTRING();
+    	if (*target == XA_COMPOUND_TEXT(d))
+	    *type = *target;
+    	else
+	    *type = XA_STRING;
+	*length = TextLength (w);
+    	*value = _XawTextGetSTRING((TextWidget) w, 0, *length);
+    	*format = 8;
+    	return True;
+    }
+    
     if (XmuConvertStandardSelection(w, req->time, selection, target, type,
 				    value, length, format))
 	return True;
 
-    /* else */
     return False;
 }
 
@@ -143,9 +187,6 @@ static void LoseSelection(w, selection)
 {
     XtGetSelectionValue(w, *selection, XA_STRING, InsertClipboard,
 			NULL, CurrentTime);
-
-    XtOwnSelection(w, XA_CLIPBOARD(XtDisplay(w)), CurrentTime,
-		   ConvertSelection, LoseSelection, NULL);
 }
 
 static void 
@@ -215,7 +256,7 @@ char **argv;
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
     erase = XtCreateManagedWidget("erase", Command, parent, NULL, ZERO);
 
-    XtSetArg(args[0], XtNtype, XawAsciiFile);
+    XtSetArg(args[0], XtNtype, XawAsciiString);
     XtSetArg(args[1], XtNeditType, XawtextEdit);
     text = XtCreateManagedWidget( "text", Text, parent, args, TWO);
 
